@@ -4,13 +4,18 @@ open Std (Format)
 
 -- If a
 def stripParens {α : Type u}
-    (reprAuxFn : α  → Nat → Format) (parenLeft: Char := '(')  (parenRight: Char := ')') :
-    α  → Nat → Format :=
-  fun (a:α)(prec: Nat) =>
-    let rawFormat : Format := reprAuxFn a prec
-    let str  : String := Format.pretty rawFormat
-    if str.length ≥ 2 && str.front = parenLeft && str.back = parenRight then
+    (toStringFn : α  → String) (parenLeft: Char := '(')  (parenRight: Char := ')') :
+    α  → String :=
+  fun (a:α) =>
+    let str  : String  := toStringFn a
+    if str.length ≥ 2 && str.front == parenLeft && str.back == parenRight then
       -- drop the first and last character
-      Format.text <| (str.drop 1).dropRight 1
+      (str.drop 1).dropRight 1
     else
-      rawFormat
+      str
+
+def addParens (f : String) : String :=  "(" ++ f ++  ")"
+
+def getReprFn {α : Type u} (toStringFn : α  → String) : α -> Nat -> Std.Format :=
+    fun (a:α)(_:Nat) =>
+      Format.text (toStringFn a)
