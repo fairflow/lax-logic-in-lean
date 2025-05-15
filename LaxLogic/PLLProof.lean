@@ -14,8 +14,8 @@ namespace PLLProof
 def  formulas (proof:  PLLProof): List PLLFormula :=
   match proof with
   | emptyProof => []
-  | axiomStep prev ax => [ax.get] ++ prev.formulas
-  | modusPonens prev conditional => [conditional.consequent] ++ prev.formulas
+  | axiomStep prev ax =>  prev.formulas ++ [ax.get]
+  | modusPonens prev conditional =>  prev.formulas ++ [conditional.consequent]
 
 
 -- Proposition that a proof is valid
