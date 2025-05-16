@@ -45,6 +45,17 @@ lemma OSL (φ ψ : PLLFormula) : [] ⊢- ifThen (somehow (and φ ψ)) (and (some
   apply andElim2 ; apply iden
 lemma OSLtrue (φ ψ : PLLFormula) : LaxValid <| ifThen (somehow (and φ ψ)) (and (somehow φ) (somehow ψ)) := by apply OSL
 
+lemma OSR (φ ψ : PLLFormula) : [] ⊢- ifThen (and (somehow φ) (somehow ψ)) (somehow (and φ ψ)) := by
+  apply @impIntro [] [] ; -- simp -- makes progress but not needed
+  apply @laxElim [φ.somehow.and ψ.somehow] [] φ ; -- simp
+  apply andElim1; apply iden []; -- simp
+  apply @laxElim [φ.somehow.and ψ.somehow] [φ] ψ ; -- simp
+  apply andElim2; apply iden []; -- simp
+  apply laxIntro; apply andIntro
+  apply iden [φ.somehow.and ψ.somehow, ψ] [] φ
+  apply iden [φ.somehow.and ψ.somehow] [φ] ψ   -- note it looks "out of order" but makes same context as above
+lemma OSRtrue (φ ψ : PLLFormula) : LaxValid <| ifThen (and (somehow φ) (somehow ψ)) (somehow (and φ ψ)) := by apply OSR
+
 lemma OMoops {Γ : List PLLFormula} {φ : PLLFormula} : (Γ ++ []) ⊢- ifThen (somehow (somehow φ)) (somehow φ) :=
   impIntro (
     laxElim
