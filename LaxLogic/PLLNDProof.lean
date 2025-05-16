@@ -10,13 +10,18 @@ inductive LaxND : (List PLLFormula)→ PLLFormula → Prop -- Natural deduction 
   | falsoElim : {Γ : List PLLFormula} → (φ : PLLFormula) → LaxND Γ falsePLL → LaxND Γ φ
   | impIntro : {Γ Δ : List PLLFormula} → {φ ψ : PLLFormula} →
       LaxND (Γ ++ [φ] ++ Δ) ψ → LaxND (Γ ++ Δ) (ifThen φ ψ)
-  | impElim : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxND Γ (ifThen φ ψ) → LaxND Γ φ → LaxND Γ ψ
+  | impElim  : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxND Γ (ifThen φ ψ) → LaxND Γ φ → LaxND Γ ψ
   | andIntro : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxND Γ φ → LaxND Γ ψ → LaxND Γ (and φ ψ)
   | andElim1 : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxND Γ (and φ ψ) → LaxND Γ φ
   | andElim2 : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxND Γ (and φ ψ) → LaxND Γ ψ
+  | orIntro1 : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxND Γ φ → LaxND Γ (or φ ψ)
+  | orIntro2 : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxND Γ ψ → LaxND Γ (or φ ψ)
+  | orElim   : {Γ Δ : List PLLFormula} → {φ ψ χ : PLLFormula} →
+      LaxND (Γ ++ [φ] ++ Δ) χ →
+      LaxND (Γ ++ [ψ] ++ Δ) χ → LaxND (Γ ++ Δ) χ
   | laxIntro : {Γ : List PLLFormula} → {φ : PLLFormula} → LaxND Γ φ → LaxND Γ (somehow φ)
   | laxElim : {Γ Δ : List PLLFormula} → {φ ψ : PLLFormula} →
-      LaxND (Γ ++ Δ) (somehow φ)→ LaxND (Γ ++ [φ] ++ Δ) (somehow ψ) → LaxND (Γ ++ Δ) (somehow ψ)
+      LaxND (Γ ++ Δ) (somehow φ) → LaxND (Γ ++ [φ] ++ Δ) (somehow ψ) → LaxND (Γ ++ Δ) (somehow ψ)
 --  | laxFlatten : {Γ : List PLLFormula} → {φ : PLLFormula} → LaxND Γ (somehow (somehow φ)) → LaxND Γ (somehow φ)
 -- this last is derivable
 
