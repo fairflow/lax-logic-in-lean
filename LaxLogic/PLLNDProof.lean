@@ -46,7 +46,7 @@ lemma OMoops {Γ : List PLLFormula} {φ : PLLFormula} : (Γ ++ []) ⊢- ifThen (
       (iden Γ [] (somehow (somehow φ)))
       (iden (Γ ++ [φ.somehow.somehow]) [] (somehow φ))
   )
--- well I did think that way of permuting contexts might throw up problems!
+-- well I did think that way of permuting contexts might throw up problems! simp helps interactively
 lemma OM {φ : PLLFormula} : [] ⊢- ifThen (somehow (somehow φ)) (somehow φ) := by
   apply @impIntro [] ; simp;  apply @laxElim [(somehow (somehow φ))] [] (somehow φ) ; simp;
   apply iden [] ; apply iden
