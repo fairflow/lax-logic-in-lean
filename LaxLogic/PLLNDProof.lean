@@ -67,3 +67,53 @@ lemma OM {φ : PLLFormula} : [] ⊢- ifThen (somehow (somehow φ)) (somehow φ) 
   apply @impIntro [] ; simp;  apply @laxElim [(somehow (somehow φ))] [] (somehow φ) ; simp;
   apply iden [] ; apply iden
 lemma OMtrue (φ : PLLFormula) : LaxValid <| ifThen (somehow (somehow φ)) (somehow φ) := by apply OM
+
+section Conservativity
+
+-- Define what it means for a formula to be in IPL (no somehow modality)
+def isIPLFormula : PLLFormula → Prop
+  | PLLFormula.prop _  => true
+  | falsePLL    => true
+  | ifThen φ ψ  => isIPLFormula φ ∧ isIPLFormula ψ
+  | PLLFormula.and φ ψ => isIPLFormula φ ∧ isIPLFormula ψ
+  | PLLFormula.or φ ψ  => isIPLFormula φ ∧ isIPLFormula ψ
+  | somehow _   => false
+
+@[match_pattern] -- is this needed, and if so, why?
+inductive LaxNDτ: (List PLLFormula)→ PLLFormula → Type -- ND for PLL, proof term version
+  | idenτ : (Γ Δ : List PLLFormula) → (φ : PLLFormula) → LaxNDτ (Γ ++ [φ] ++ Δ) φ
+  | falsoElimτ  : {Γ : List PLLFormula} → (φ : PLLFormula) → LaxNDτ Γ falsePLL → LaxNDτ Γ φ
+  | impIntroτ  : {Γ Δ : List PLLFormula} → {φ ψ : PLLFormula} →
+      LaxNDτ (Γ ++ [φ] ++ Δ) ψ → LaxNDτ (Γ ++ Δ) (ifThen φ ψ)
+  | impElimτ   : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxNDτ Γ (ifThen φ ψ) → LaxNDτ Γ φ → LaxNDτ Γ ψ
+  | andIntroτ  : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxNDτ Γ φ → LaxNDτ Γ ψ → LaxNDτ Γ (and φ ψ)
+  | andElim1τ  : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxNDτ Γ (and φ ψ) → LaxNDτ Γ φ
+  | andElim2τ  : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxNDτ Γ (and φ ψ) → LaxNDτ Γ ψ
+  | orIntro1τ  : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxNDτ Γ φ → LaxNDτ Γ (or φ ψ)
+  | orIntro2τ  : {Γ : List PLLFormula} → {φ ψ : PLLFormula} → LaxNDτ Γ ψ → LaxNDτ Γ (or φ ψ)
+  | orElimτ    : {Γ Δ : List PLLFormula} → {φ ψ χ : PLLFormula} →
+      LaxNDτ (Γ ++ [φ] ++ Δ) χ →
+      LaxNDτ (Γ ++ [ψ] ++ Δ) χ → LaxNDτ (Γ ++ Δ) χ
+  | laxIntroτ  : {Γ : List PLLFormula} → {φ : PLLFormula} → LaxNDτ Γ φ → LaxNDτ Γ (somehow φ)
+  | laxElimτ  : {Γ Δ : List PLLFormula} → {φ ψ : PLLFormula} →
+      LaxNDτ (Γ ++ Δ) (somehow φ) → LaxNDτ (Γ ++ [φ] ++ Δ) (somehow ψ) → LaxNDτ (Γ ++ Δ) (somehow ψ)
+
+open LaxNDτ
+
+-- Define what it means for a PLL proof to be an IPL proof
+-- more inference could be requested
+def isIPLProof : (Γ : List PLLFormula) → (φ : PLLFormula) → LaxNDτ Γ φ → Prop
+  | _, _,  idenτ Γ Δ φ     => isIPLFormula φ
+  | _, _,  falsoElimτ _ prf  => isIPLProof _ falsePLL prf
+  | _, _,  @impIntroτ Γ Δ φ ψ prf => isIPLProof (Γ ++ [φ] ++ Δ) ψ prf
+  | _, _,  @impElimτ Γ _ _ prf1 prf2  => isIPLProof Γ _ prf1 ∧ isIPLProof _ _ prf2
+  | _, _,  @andIntroτ _ _ _ prf1 prf2 => isIPLProof _ _ prf1 ∧ isIPLProof _ _ prf2
+  | _, _,  @andElim1τ _ _ _ prf     => isIPLProof _ _ prf
+  | _, _,  andElim2τ prf => isIPLProof _ _ prf
+  | _, _,  orIntro1τ prf => isIPLProof _ _ prf
+  | _, _,  orIntro2τ prf => isIPLProof _ _ prf
+  | _, _,  orElimτ prf1 prf2 => isIPLProof _ _ prf1 ∧ isIPLProof _ _ prf2
+  | _, _,  laxIntroτ _  => false
+  | _, _,  laxElimτ _ _ => false
+
+end Conservativity
