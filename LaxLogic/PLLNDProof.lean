@@ -103,7 +103,7 @@ open LaxNDτ
 -- Define what it means for a PLL proof to be an IPL proof
 -- more inference could be requested
 def isIPLProof : (Γ : List PLLFormula) → (φ : PLLFormula) → LaxNDτ Γ φ → Prop
-  | _, _,  idenτ Γ Δ φ     => isIPLFormula φ
+  | _, _,  idenτ Γ Δ φ     => isIPLFormula φ -- only you could have a proof in IPL using lax formulae
   | _, _,  falsoElimτ _ prf  => isIPLProof _ falsePLL prf
   | _, _,  @impIntroτ Γ Δ φ ψ prf => isIPLProof (Γ ++ [φ] ++ Δ) ψ prf
   | _, _,  @impElimτ Γ _ _ prf1 prf2  => isIPLProof Γ _ prf1 ∧ isIPLProof _ _ prf2

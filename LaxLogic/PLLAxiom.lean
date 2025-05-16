@@ -24,6 +24,7 @@ inductive PLLAxiom where
 namespace PLLAxiom
 
 -- Gets a list of the formulas used to generate an axiom
+@[simp]
 def formulas (ax: PLLAxiom) : List PLLFormula :=
   match ax with
   | somehowR M => [M]
