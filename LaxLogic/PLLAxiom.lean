@@ -18,7 +18,7 @@ inductive PLLAxiom where
   | orIntro2 (A B: PLLFormula)
   | orElim (A B C: PLLFormula)
   | explosion (A: PLLFormula)
-  deriving Inhabited, DecidableEq
+  deriving Inhabited, DecidableEq, BEq
 
 
 namespace PLLAxiom
@@ -42,6 +42,7 @@ def formulas (ax: PLLAxiom) : List PLLFormula :=
 
 
 -- Gets the formula for the axiom
+@[simp]
 def get (ax: PLLAxiom): PLLFormula :=
   match ax with
     | somehowR M => ifThen M (somehow M)
@@ -66,3 +67,19 @@ def get (ax: PLLAxiom): PLLFormula :=
     | orElim A B C=> ifThen (ifThen A C) (ifThen (ifThen B C) (ifThen (and A B) C))
   -- 9. ⊥ ⊃ A
     | explosion A => ifThen falsePLL A
+
+-- This only used for printing proofs
+def getName (ax: PLLAxiom) : String :=
+match ax with
+  | somehowR _  => "◯R"
+  | somehowM _  => "◯M"
+  | somehowS _ _  => "◯S"
+  | impK _ _  => "⊃K"
+  | impS _ _ _  => "⊃S"
+  | andElim1 _ _  => "∧E₁"
+  | andElim2 _ _  => "∧E₂"
+  | andIntro _ _  => "∧I"
+  | orIntro1 _ _  => "∨I₁"
+  | orIntro2 _ _  => "∨I₂"
+  | orElim _ _ _  => "∨E"
+  | explosion _  => "ex falso"
