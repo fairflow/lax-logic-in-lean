@@ -4,3 +4,7 @@ A Lean 4 implementation of the paper [Propositional Lax Logic](https://www.scien
 
 ## Work in progress
 
+## Superceded by 
+https://github.com/AviCraimer/lax-logic-in-lean/tree/matthew-develop
+
+
