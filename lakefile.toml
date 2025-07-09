@@ -11,5 +11,8 @@ autoImplicit = false
 name = "mathlib"
 scope = "leanprover-community"
 
+[package.dependencies]
+verso = { git = "https://github.com/leanprover/verso", rev = "main" }
+
 [[lean_lib]]
 name = "LaxLogic"

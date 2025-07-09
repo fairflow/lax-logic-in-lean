@@ -253,15 +253,83 @@ def zapPLLProof {Γ : Context} {φ : PLLFormula} (h : LaxND Γ φ) :
 
 section Casting
 
--- 0) good this checks; can we use it?
+#check congrArg -- this is the function we need to use
+/-
+congrArg.{u, v} {α : Sort u} {β : Sort v} {a₁ a₂ : α}
+  (f : α → β) (h : a₁ = a₂) : f a₁ = f a₂
+-/
+
+/-- congrArg2 is a version of congrArg that works for two arguments
+-/
 def congrArg2 {α β γ : Sort*} (f : α → β → γ) {a₁ a₂ : α} {b₁ b₂ : β}
   (ha : a₁ = a₂) (hb : b₁ = b₂) : f a₁ b₁ = f a₂ b₂ :=
 by cases ha; cases hb; rfl
 
--- 1) checks but is useless
+
+universe u v
+
+variable {S T U : Sort u}
+variable (C D : Sort u → Sort u)
+variable (p : S = T)
+variable (g : S → T)
+variable (q : T = U)
+variable (f : S → C S)
+variable (r : S)
+variable (h : C S)
+variable (t : T)
+variable (nt : (U : Sort u) → C U = D U)
+variable (m : D (C S))
+
+#check congrArg C p
+#check congrArg (fun x => C x) p
+
+def κ := fun (p : S = T) => congrArg C p -- cannot infer C from p
+#check cast (κ C p) (f r)
+-- #check cast (κ q) m
+#check cast (congrArg (fun x => x → C x) p) f
+
+def qup : T → C T := cast (congrArg (fun x => x → C x) p) f
+#check (cast p r)
+#check (qup C p f) (cast p r)
+#check (qup C p f) (cast p r) = cast (κ C p) (f r)
+#check (cast (κ C p) h)
+#check (cast (congrArg C p) h)
+#check cast (congrArg (fun x => x → D x) q)
+#check cast (congrArg D q)
+#check (cast (congrArg C q) (cast (congrArg C p) h))
+#check (cast (congrArg C (Eq.trans p q)) h)
+#check cast (nt T)
+#check (cast (κ C p) (f r))
+#check cast (κ D p) (cast (nt S) (f r))
+#check cast (nt T) (cast (κ C p) (f r)) = cast (κ D p) (cast (nt S) (f r))
+
+lemma castSymm_def : cast (nt T) (cast (κ C p) h) = cast (κ D p) (cast (nt S) h) := by
+  unfold κ
+  simp
+
+lemma castSymm : cast (nt T) (cast (congrArg C p) h) = cast (congrArg D p) (cast (nt S) h) := by simp
+
+lemma castTrans :
+      (cast (congrArg C q) (cast (congrArg C p) h)) =
+      (cast (congrArg C (Eq.trans p q)) h)
+      := by cases p; cases q; rfl
+
+lemma castInwards_def : (qup C p f) (cast p r) = cast (κ C p) (f r) := by
+  simp [qup, κ]
+  cases p
+  rfl
+#print castInwards_def
+
+lemma castInwards :
+        cast (congrArg (fun x => x → C x) p) f (cast p r)
+      = cast (congrArg C p) (f r) := by
+  cases p
+  rfl
+
+-- 1) checks and might be useful
 lemma cast_congrArg_context_id
-  {Γ₁ Γ₂ : Context} {φ : PLLFormula} (h : Γ₁ = Γ₂) (x : LaxND Γ₁ φ) :
-  cast (congrArg (fun Γ => LaxND Γ φ) h) x = (cast (congrArg (fun Γ => LaxND Γ φ) h) x : LaxND Γ₂ φ) :=
+  {Γ₁ Γ₂ : Context} {φ : PLLFormula} (g h : Γ₁ = Γ₂) (x : LaxND Γ₁ φ) :
+  cast (congrArg (fun Γ => LaxND Γ φ) g) x = (cast (congrArg (fun Γ => LaxND Γ φ) h) x : LaxND Γ₂ φ) :=
 rfl
 
 /- -- 1) nope
@@ -305,8 +373,9 @@ by cases hΓ; cases hφ; rfl
 -- 5a) good this works
 lemma isIPLProof_cast_eq {Γ₁ Γ₂ : Context} {φ₁ φ₂ : PLLFormula}
   {prf : LaxND Γ₁ φ₁} (hΓ : Γ₁ = Γ₂) (hφ : φ₁ = φ₂) :
-  isIPLProof (cast (congrArg2 LaxND hΓ hφ) prf) = isIPLProof prf :=
+  isIPLProof prf = isIPLProof (cast (congrArg2 LaxND hΓ hφ) prf)  :=
 by cases hΓ; cases hφ; rfl
+
 
 /- -- 5b) not yet
 theorem isIPLProof_cast_eq {Γ₁ Γ₂ : Context} {φ₁ φ₂ : PLLFormula}
@@ -380,7 +449,7 @@ by cases hΓ; cases hφ; rfl
 lemma cast_iden {Γ Γ' : Context} {φ φ' : PLLFormula}
    (hφ : φ = φ') (hΓ : Γ ∪ {φ} = Γ' ∪ {φ'}) :
   cast (congrArg2 LaxND hΓ hφ) (iden Γ φ) = iden Γ' φ' :=
-  sorry -- by cases hΓ; cases hφ; rfl
+  sorry -- by cases hφ; cases hΓ; rfl
 end Casting
 
 -- universe u -- for the next theorem, will be deleted later
@@ -561,6 +630,13 @@ theorem isIPLProofList_cast {Γ₁ Γ₂ : List PLLFormula} {φ₁ φ₂ : PLLFo
   subst h_form
   subst h_cast
   rfl
+
+/- lemma isIPLProofList_cast_eq {Γ₁ Γ₂ : List PLLFormula} {φ₁ φ₂ : PLLFormula}
+  {prf : LaxNDList Γ₁ φ₁} (hΓ : Γ₁ = Γ₂) (hφ : φ₁ = φ₂) :
+  isIPLProofList prf = isIPLProof (cast (congrArg2 LaxND hΓ hφ) prf)  :=
+by cases hΓ; cases hφ; rfl
+ -/
+
 
 section recursors
 
@@ -765,16 +841,26 @@ theorem PLLconservative2 : {Γ : List PLLFormula} → {φ : PLLFormula} → (prf
     exact h
     -- norm_cast at h -- THIS SOLVED THE GOAL!! but so did exact h
 
-  case falsoElimτ Γ' φ' p =>
+  case falsoElimτ p =>
     simp [zapSomehow, zapPLLProofList, isIPLFormula, isIPLProofList]
     exact p
 
-  case moveτ Γ φ ψ prf p =>
+  case moveτ prf p =>
     -- unfold isIPLProofList
     simp [zapSomehow, zapPLLProofList, isIPLFormula, isIPLProofList]
-
+    simp [cast]
     have h : isIPLProofList (zapPLLProofList prf) := by
       apply p -- pointless it's the same term
+    norm_cast at h -- does nothing
+    /- have h_cast_cancel :
+      cast (congrArg (fun x => LaxNDListτ x _) h_context) (zapPLLProofList prf) = zapPLLProofList prf :=
+      cast_congrArg_context_cancel h_context (zapPLLProofList prf)
+ -/
+ --- think we need to move the cast inwards now before we do the below
+    simp [castInwards]
+    apply Eq.mp
+    apply isIPLProofList_cast
+
     sorry -- exact h
 
   case impIntroτ =>
