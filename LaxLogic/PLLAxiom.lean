@@ -64,7 +64,9 @@ def get (ax: PLLAxiom): PLLFormula :=
   -- 7. B ⊃ (A ∨ B)
     | orIntro2 A B => ifThen B (or A B)
   -- 8. (A ⊃ C) ⊃ ((B ⊃ C) ⊃ ((A ∨ B) ⊃ C))
-    | orElim A B C=> ifThen (ifThen A C) (ifThen (ifThen B C) (ifThen (and A B) C))
+  -- (was `and A B` in the final antecedent — a typo that made ∨-elimination
+  --  underivable in the Hilbert system; fixed to match the comment above)
+    | orElim A B C=> ifThen (ifThen A C) (ifThen (ifThen B C) (ifThen (or A B) C))
   -- 9. ⊥ ⊃ A
     | explosion A => ifThen falsePLL A
 
