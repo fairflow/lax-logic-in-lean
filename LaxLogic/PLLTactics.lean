@@ -80,6 +80,33 @@ theorem Acc.pairInduction {α : Sort u} {β : Sort v}
         hb)
     ha b hb
 
+/-- Transfer accessibility along a simulation: if every `R`-predecessor of
+`f a` is the image of an `r`-predecessor of `a`, then accessibility of `a`
+gives accessibility of `f a`.  This is the shape of every "SN is preserved
+by a unary constructor / by renaming" lemma: `inv` is the step-inversion
+fact for `f`. -/
+theorem Acc.of_inversion {α : Sort u} {β : Sort v}
+    {r : α → α → Prop} {R : β → β → Prop} {f : α → β}
+    (inv : ∀ {a : α} {y : β}, R y (f a) → ∃ a', y = f a' ∧ r a' a)
+    {a : α} (ha : Acc r a) : Acc R (f a) :=
+  Acc.selfInduction (P := fun x => Acc R (f x)) ha fun a _ ih =>
+    Acc.intro (f a) fun _y hy =>
+      match inv hy with
+      | ⟨a', heq, hr⟩ => heq ▸ ih a' hr
+
+/-- Binary variant of `Acc.of_inversion`, for two-argument constructors
+whose steps are exactly the congruence steps in either argument. -/
+theorem Acc.of_inversion₂ {α : Sort u} {β : Sort v} {γ : Sort w}
+    {r : α → α → Prop} {q : β → β → Prop} {R : γ → γ → Prop} {f : α → β → γ}
+    (inv : ∀ {a : α} {b : β} {y : γ}, R y (f a b) →
+      (∃ a', y = f a' b ∧ r a' a) ∨ (∃ b', y = f a b' ∧ q b' b))
+    {a : α} {b : β} (ha : Acc r a) (hb : Acc q b) : Acc R (f a b) :=
+  Acc.pairInduction (P := fun a b => Acc R (f a b)) ha hb fun a b _ _ iha ihb =>
+    Acc.intro (f a b) fun _y hy =>
+      match inv hy with
+      | .inl ⟨a', heq, hr⟩ => heq ▸ iha a' hr
+      | .inr ⟨b', heq, hq⟩ => heq ▸ ihb b' hq
+
 /-- Simultaneous accessibility induction on a triple; the three-branch
 analogue of `Acc.pairInduction`. -/
 theorem Acc.tripleInduction {α : Sort u} {β : Sort v} {γ : Sort w}
