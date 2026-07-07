@@ -165,10 +165,7 @@ theorem Tm.rename_id : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
   | _, _, .lam t => by
       simp only [Tm.rename]
       rw [show t.rename (Ren.lift fun {_} v => v) = t.rename (fun {_} v => v)
-        from t.rename_congr (fun {ψ} v => by
-          cases v with
-          | here => rfl
-          | there w => rfl), t.rename_id]
+        from t.rename_congr (by lift_cases), t.rename_id]
   | _, _, .app t s => by simp [Tm.rename, t.rename_id, s.rename_id]
   | _, _, .pair t s => by simp [Tm.rename, t.rename_id, s.rename_id]
   | _, _, .fst t => by simp [Tm.rename, t.rename_id]
@@ -180,25 +177,16 @@ theorem Tm.rename_id : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
       rw [t.rename_id]
       congr 1
       · rw [show u₁.rename (Ren.lift fun {_} v => v) = u₁.rename (fun {_} v => v)
-          from u₁.rename_congr (fun {ψ} v => by
-            cases v with
-            | here => rfl
-            | there w => rfl), u₁.rename_id]
+          from u₁.rename_congr (by lift_cases), u₁.rename_id]
       · rw [show u₂.rename (Ren.lift fun {_} v => v) = u₂.rename (fun {_} v => v)
-          from u₂.rename_congr (fun {ψ} v => by
-            cases v with
-            | here => rfl
-            | there w => rfl), u₂.rename_id]
+          from u₂.rename_congr (by lift_cases), u₂.rename_id]
   | _, _, .val t => by simp [Tm.rename, t.rename_id]
   | _, _, .bind t u => by
       simp only [Tm.rename]
       rw [t.rename_id]
       congr 1
       rw [show u.rename (Ren.lift fun {_} v => v) = u.rename (fun {_} v => v)
-        from u.rename_congr (fun {ψ} v => by
-          cases v with
-          | here => rfl
-          | there w => rfl), u.rename_id]
+        from u.rename_congr (by lift_cases), u.rename_id]
 
 /-! ### Reduction versus renaming and substitution -/
 
@@ -208,11 +196,7 @@ theorem Tm.subst1_rename {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
     (t.subst1 s).rename ρ = (t.rename ρ.lift).subst1 (s.rename ρ) := by
   simp only [Tm.subst1]
   rw [Tm.rename_subst, Tm.subst_rename]
-  refine t.subst_congr ?_
-  intro χ v
-  cases v with
-  | here => rfl
-  | there w => rfl
+  exact t.subst_congr (by lift_cases)
 
 /-- `subst1` after a lifted substitution (restatement of
 `subst_lift_subst1` in the direction reduction needs). -/
@@ -222,11 +206,7 @@ theorem Tm.subst1_subst {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
   rw [Tm.subst_lift_subst1]
   simp only [Tm.subst1]
   rw [Tm.subst_subst]
-  refine t.subst_congr ?_
-  intro χ v
-  cases v with
-  | here => rfl
-  | there w => rfl
+  exact t.subst_congr (by lift_cases)
 
 /-- β-steps are preserved by renaming. -/
 theorem RStep.rename : ∀ {Γ Δ : List PLLFormula} {φ : PLLFormula}
@@ -664,10 +644,7 @@ theorem Tm.subst_var : ∀ {Γ Δ : List PLLFormula} {φ : PLLFormula}
       simp only [Tm.subst, Tm.rename]
       rw [show t.subst (Sub.lift fun {_} v => .var (ρ v))
           = t.subst (fun {_} v => .var (ρ.lift v)) from
-        t.subst_congr (fun {ψ} v => by
-          cases v with
-          | here => rfl
-          | there w => rfl), t.subst_var]
+        t.subst_congr (by lift_cases), t.subst_var]
   | _, _, _, .app t s, ρ => by
       simp [Tm.subst, Tm.rename, t.subst_var, s.subst_var]
   | _, _, _, .pair t s, ρ => by
@@ -682,16 +659,10 @@ theorem Tm.subst_var : ∀ {Γ Δ : List PLLFormula} {φ : PLLFormula}
       congr 1
       · rw [show u₁.subst (Sub.lift fun {_} v => .var (ρ v))
             = u₁.subst (fun {_} v => .var (ρ.lift v)) from
-          u₁.subst_congr (fun {ψ} v => by
-            cases v with
-            | here => rfl
-            | there w => rfl), u₁.subst_var]
+          u₁.subst_congr (by lift_cases), u₁.subst_var]
       · rw [show u₂.subst (Sub.lift fun {_} v => .var (ρ v))
             = u₂.subst (fun {_} v => .var (ρ.lift v)) from
-          u₂.subst_congr (fun {ψ} v => by
-            cases v with
-            | here => rfl
-            | there w => rfl), u₂.subst_var]
+          u₂.subst_congr (by lift_cases), u₂.subst_var]
   | _, _, _, .val t, ρ => by simp [Tm.subst, Tm.rename, t.subst_var]
   | _, _, _, .bind t u, ρ => by
       simp only [Tm.subst, Tm.rename]
@@ -699,10 +670,7 @@ theorem Tm.subst_var : ∀ {Γ Δ : List PLLFormula} {φ : PLLFormula}
       congr 1
       rw [show u.subst (Sub.lift fun {_} v => .var (ρ v))
           = u.subst (fun {_} v => .var (ρ.lift v)) from
-        u.subst_congr (fun {ψ} v => by
-          cases v with
-          | here => rfl
-          | there w => rfl), u.subst_var]
+        u.subst_congr (by lift_cases), u.subst_var]
 
 /-- The key β-equation for the `lam` case of the fundamental theorem. -/
 theorem subst_lift_rename_subst1 {Γ Δ Δ' : List PLLFormula}
@@ -725,97 +693,62 @@ theorem subst_lift_rename_subst1 {Γ Δ Δ' : List PLLFormula}
 
 /-- Abort terms over SN scrutinees are reducible. -/
 theorem red_abort {Γ : List PLLFormula} {φ : PLLFormula}
-    {t : Tm Γ .falsePLL} (h : RSN t) : Red φ (.abort φ t) := by
-  induction h with
-  | intro t hacc ih =>
-      refine Red.cr3 trivial ?_
-      intro y hy
+    {t : Tm Γ .falsePLL} (h : RSN t) : Red φ (.abort φ t) :=
+  Acc.selfInduction (P := fun t => Red φ (Tm.abort φ t)) h fun t _ ih =>
+    Red.cr3 trivial fun y hy => by
       cases hy with
       | abortCong h' => exact ih _ h'
 
 /-- β-expansion for application. -/
-theorem red_beta_exp : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {b : Tm (A :: Γ) B}, RSN b →
-    ∀ {s : Tm Γ A}, Red A s →
-    (∀ s' : Tm Γ A, Red A s' → Red B (b.subst1 s')) →
+theorem red_beta_exp {Γ : List PLLFormula} {A B : PLLFormula}
+    {b : Tm (A :: Γ) B} (hbsn : RSN b) {s : Tm Γ A} (hs : Red A s)
+    (H : ∀ s' : Tm Γ A, Red A s' → Red B (b.subst1 s')) :
     Red B (.app (.lam b) s) := by
-  intro Γ A B b hbsn
-  induction hbsn with
-  | intro b hbacc ihb =>
-      intro s hs H
-      have hssn : RSN s := hs.sn
-      revert hs
-      induction hssn with
-      | intro s hsacc ihs =>
-          intro hs
-          refine Red.cr3 trivial ?_
-          intro y hy
-          cases hy with
-          | beta _ _ => exact H s hs
-          | appCong₁ h' =>
-              cases h' with
-              | lamCong h'' =>
-                  exact ihb _ h'' hs
-                    (fun s' hs' => Red.step (H s' hs') (RStep.subst _ h''))
-          | appCong₂ h' =>
-              exact ihs _ h' (Red.step hs h')
+  refine Acc.pairInduction (P := fun b s =>
+      Red A s → (∀ s', Red A s' → Red B (b.subst1 s')) →
+      Red B (.app (.lam b) s)) hbsn hs.sn ?_ hs H
+  intro b s _ _ ihb ihs hs H
+  refine Red.cr3 trivial fun y hy => ?_
+  cases hy with
+  | beta _ _ => exact H s hs
+  | appCong₁ h' =>
+      cases h' with
+      | lamCong h'' =>
+          exact ihb _ h'' hs
+            (fun s' hs' => (H s' hs').step (RStep.subst _ h''))
+  | appCong₂ h' => exact ihs _ h' (hs.step h') H
 
 /-- Abstractions with reducible instances are reducible. -/
 theorem red_lam {Γ : List PLLFormula} {A B : PLLFormula} {b : Tm (A :: Γ) B}
     (hbsn : RSN b)
     (H : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
       Red A s → Red B ((b.rename ρ.lift).subst1 s)) :
-    Red (A.ifThen B) (.lam b) := by
-  refine ⟨?_, ?_⟩
-  · clear H
-    induction hbsn with
-    | intro b hacc ih =>
-        refine .intro _ ?_
-        intro y hy
-        cases hy with
-        | lamCong h' => exact ih _ h'
-  · intro Δ ρ s hs
-    exact red_beta_exp (hbsn.rename ρ.lift) hs (fun s' hs' => H ρ s' hs')
+    Red (A.ifThen B) (.lam b) :=
+  ⟨hbsn.lam, fun ρ _s hs =>
+    red_beta_exp (hbsn.rename ρ.lift) hs (fun s' hs' => H ρ s' hs')⟩
 
 /-- Pairs of reducibles are reducible. -/
-theorem red_pair : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {a : Tm Γ A}, RSN a → ∀ {b : Tm Γ B}, RSN b →
-    Red A a → Red B b → Red (A.and B) (.pair a b) := by
-  intro Γ A B a hasn
-  induction hasn with
-  | intro a haacc iha =>
-      intro b hbsn
-      induction hbsn with
-      | intro b hbacc ihb =>
-          intro ha hb
-          refine ⟨?_, ?_, ?_⟩
-          · refine .intro _ ?_
-            intro y hy
-            cases hy with
-            | pairCong₁ h' =>
-                exact (iha _ h' (.intro _ hbacc) (Red.step ha h') hb).sn
-            | pairCong₂ h' =>
-                exact (ihb _ h' ha (Red.step hb h')).sn
-          · refine Red.cr3 trivial ?_
-            intro y hy
-            cases hy with
-            | fstPair _ _ => exact ha
-            | fstCong h' =>
-                cases h' with
-                | pairCong₁ h'' =>
-                    exact (iha _ h'' (.intro _ hbacc) (Red.step ha h'') hb).2.1
-                | pairCong₂ h'' =>
-                    exact (ihb _ h'' ha (Red.step hb h'')).2.1
-          · refine Red.cr3 trivial ?_
-            intro y hy
-            cases hy with
-            | sndPair _ _ => exact hb
-            | sndCong h' =>
-                cases h' with
-                | pairCong₁ h'' =>
-                    exact (iha _ h'' (.intro _ hbacc) (Red.step ha h'') hb).2.2
-                | pairCong₂ h'' =>
-                    exact (ihb _ h'' ha (Red.step hb h'')).2.2
+theorem red_pair {Γ : List PLLFormula} {A B : PLLFormula}
+    {a : Tm Γ A} {b : Tm Γ B} (ha : Red A a) (hb : Red B b) :
+    Red (A.and B) (.pair a b) := by
+  refine Acc.pairInduction (P := fun a b =>
+      Red A a → Red B b → Red (A.and B) (.pair a b)) ha.sn hb.sn ?_ ha hb
+  intro a b _ _ iha ihb ha hb
+  refine ⟨RSN.pair ha.sn hb.sn, ?_, ?_⟩
+  · refine Red.cr3 trivial fun y hy => ?_
+    cases hy with
+    | fstPair _ _ => exact ha
+    | fstCong h' =>
+        cases h' with
+        | pairCong₁ h'' => exact (iha _ h'' (ha.step h'') hb).2.1
+        | pairCong₂ h'' => exact (ihb _ h'' ha (hb.step h'')).2.1
+  · refine Red.cr3 trivial fun y hy => ?_
+    cases hy with
+    | sndPair _ _ => exact hb
+    | sndCong h' =>
+        cases h' with
+        | pairCong₁ h'' => exact (iha _ h'' (ha.step h'') hb).2.2
+        | pairCong₂ h'' => exact (ihb _ h'' ha (hb.step h'')).2.2
 
 /-- Reduction sequences from `inl` stay `inl`. -/
 theorem rsteps_inl : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
@@ -870,96 +803,58 @@ theorem rsteps_val : ∀ {Γ : List PLLFormula} {A : PLLFormula}
 
 /-- Left injections of reducibles are reducible. -/
 theorem red_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
-    (ha : Red A a) : Red (A.or B) (.inl a) := by
-  have hasn := ha.sn
-  revert ha
-  induction hasn with
-  | intro a hacc ih =>
-      intro ha
-      refine ⟨?_, ?_, ?_⟩
-      · refine .intro _ ?_
-        intro y hy
-        cases hy with
-        | inlCong h' => exact (ih _ h' (Red.step ha h')).sn
-      · intro w hst
-        obtain ⟨a', heq, hsteps⟩ := rsteps_inl hst rfl
-        cases heq
-        exact Red.steps ha hsteps
-      · intro w hst
-        obtain ⟨a', heq, _⟩ := rsteps_inl hst rfl
-        exact Tm.noConfusion heq
+    (ha : Red A a) : Red (A.or B) (.inl a) :=
+  ⟨RSN.inl ha.sn,
+   fun hst => by
+     obtain ⟨a', heq, hsteps⟩ := rsteps_inl hst rfl
+     cases heq
+     exact ha.steps hsteps,
+   fun hst => by
+     obtain ⟨a', heq, _⟩ := rsteps_inl hst rfl
+     exact Tm.noConfusion heq⟩
 
 /-- Right injections of reducibles are reducible. -/
 theorem red_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
-    (ha : Red B a) : Red (A.or B) (.inr a) := by
-  have hasn := ha.sn
-  revert ha
-  induction hasn with
-  | intro a hacc ih =>
-      intro ha
-      refine ⟨?_, ?_, ?_⟩
-      · refine .intro _ ?_
-        intro y hy
-        cases hy with
-        | inrCong h' => exact (ih _ h' (Red.step ha h')).sn
-      · intro w hst
-        obtain ⟨a', heq, _⟩ := rsteps_inr hst rfl
-        exact Tm.noConfusion heq
-      · intro w hst
-        obtain ⟨a', heq, hsteps⟩ := rsteps_inr hst rfl
-        cases heq
-        exact Red.steps ha hsteps
+    (ha : Red B a) : Red (A.or B) (.inr a) :=
+  ⟨RSN.inr ha.sn,
+   fun hst => by
+     obtain ⟨a', heq, _⟩ := rsteps_inr hst rfl
+     exact Tm.noConfusion heq,
+   fun hst => by
+     obtain ⟨a', heq, hsteps⟩ := rsteps_inr hst rfl
+     cases heq
+     exact ha.steps hsteps⟩
 
 /-- `val`s of reducibles are reducible. -/
 theorem red_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}
-    (ha : Red A a) : Red (somehow A) (.val a) := by
-  have hasn := ha.sn
-  revert ha
-  induction hasn with
-  | intro a hacc ih =>
-      intro ha
-      refine ⟨?_, ?_⟩
-      · refine .intro _ ?_
-        intro y hy
-        cases hy with
-        | valCong h' => exact (ih _ h' (Red.step ha h')).sn
-      · intro w hst
-        obtain ⟨a', heq, hsteps⟩ := rsteps_val hst rfl
-        cases heq
-        exact Red.steps ha hsteps
+    (ha : Red A a) : Red (somehow A) (.val a) :=
+  ⟨RSN.val ha.sn,
+   fun hst => by
+     obtain ⟨a', heq, hsteps⟩ := rsteps_val hst rfl
+     cases heq
+     exact ha.steps hsteps⟩
 
 /-- Case analysis over reducibles with reducible branches is reducible. -/
-theorem red_case : ∀ {Γ : List PLLFormula} {A B χ : PLLFormula}
-    {t : Tm Γ (A.or B)}, RSN t →
-    ∀ {u₁ : Tm (A :: Γ) χ}, RSN u₁ → ∀ {u₂ : Tm (B :: Γ) χ}, RSN u₂ →
-    Red (A.or B) t →
-    (∀ s : Tm Γ A, Red A s → Red χ (u₁.subst1 s)) →
-    (∀ s : Tm Γ B, Red B s → Red χ (u₂.subst1 s)) →
+theorem red_case {Γ : List PLLFormula} {A B χ : PLLFormula}
+    {t : Tm Γ (A.or B)} {u₁ : Tm (A :: Γ) χ} {u₂ : Tm (B :: Γ) χ}
+    (h1sn : RSN u₁) (h2sn : RSN u₂) (ht : Red (A.or B) t)
+    (H₁ : ∀ s : Tm Γ A, Red A s → Red χ (u₁.subst1 s))
+    (H₂ : ∀ s : Tm Γ B, Red B s → Red χ (u₂.subst1 s)) :
     Red χ (.case t u₁ u₂) := by
-  intro Γ A B χ t htsn
-  induction htsn with
-  | intro t htacc iht =>
-      intro u₁ h1sn
-      induction h1sn with
-      | intro u₁ h1acc ih1 =>
-          intro u₂ h2sn
-          induction h2sn with
-          | intro u₂ h2acc ih2 =>
-              intro ht H₁ H₂
-              refine Red.cr3 trivial ?_
-              intro y hy
-              cases hy with
-              | caseInl s _ _ => exact H₁ s (ht.2.1 (.refl _))
-              | caseInr s _ _ => exact H₂ s (ht.2.2 (.refl _))
-              | caseCong₀ h' =>
-                  exact iht _ h' (.intro _ h1acc) (.intro _ h2acc)
-                    (Red.step ht h') H₁ H₂
-              | caseCong₁ h' =>
-                  exact ih1 _ h' (.intro _ h2acc) ht
-                    (fun s hs => Red.step (H₁ s hs) (RStep.subst _ h')) H₂
-              | caseCong₂ h' =>
-                  exact ih2 _ h' ht H₁
-                    (fun s hs => Red.step (H₂ s hs) (RStep.subst _ h'))
+  refine Acc.tripleInduction (P := fun t u₁ u₂ =>
+      Red (A.or B) t → (∀ s, Red A s → Red χ (u₁.subst1 s)) →
+      (∀ s, Red B s → Red χ (u₂.subst1 s)) → Red χ (.case t u₁ u₂))
+    ht.sn h1sn h2sn ?_ ht H₁ H₂
+  intro t u₁ u₂ _ _ _ iht ih1 ih2 ht H₁ H₂
+  refine Red.cr3 trivial fun y hy => ?_
+  cases hy with
+  | caseInl s _ _ => exact H₁ s (ht.2.1 (.refl _))
+  | caseInr s _ _ => exact H₂ s (ht.2.2 (.refl _))
+  | caseCong₀ h' => exact iht _ h' (ht.step h') H₁ H₂
+  | caseCong₁ h' =>
+      exact ih1 _ h' ht (fun s hs => (H₁ s hs).step (RStep.subst _ h')) H₂
+  | caseCong₂ h' =>
+      exact ih2 _ h' ht H₁ (fun s hs => (H₂ s hs).step (RStep.subst _ h'))
 
 /-- Value analysis of reduction sequences from a `bind` (no assoc rule in
 the β-fragment, so a `bind` reaches a `val` only through `let`-β). -/
@@ -989,31 +884,21 @@ theorem rsteps_bind_val : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
             (fun s hs => Red.step (H s hs) (RStep.subst _ h')) hz
 
 /-- Binds of reducibles with reducible bodies are reducible. -/
-theorem red_bind : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
-    {t : Tm Γ (somehow A)}, RSN t →
-    ∀ {u : Tm (A :: Γ) (somehow B)}, RSN u →
-    Red (somehow A) t →
-    (∀ s : Tm Γ A, Red A s → Red (somehow B) (u.subst1 s)) →
+theorem red_bind {Γ : List PLLFormula} {A B : PLLFormula}
+    {t : Tm Γ (somehow A)} {u : Tm (A :: Γ) (somehow B)}
+    (husn : RSN u) (ht : Red (somehow A) t)
+    (H : ∀ s : Tm Γ A, Red A s → Red (somehow B) (u.subst1 s)) :
     Red (somehow B) (.bind t u) := by
-  intro Γ A B t htsn
-  induction htsn with
-  | intro t htacc iht =>
-      intro u husn
-      induction husn with
-      | intro u huacc ihu =>
-          intro ht H
-          refine ⟨?_, ?_⟩
-          · refine .intro _ ?_
-            intro y hy
-            cases hy with
-            | bindVal s _ => exact (H s (ht.2 (.refl _))).sn
-            | bindCong₁ h' =>
-                exact (iht _ h' (.intro _ huacc) (Red.step ht h') H).sn
-            | bindCong₂ h' =>
-                exact (ihu _ h' ht
-                  (fun s hs => Red.step (H s hs) (RStep.subst _ h'))).sn
-          · intro w hst
-            exact rsteps_bind_val hst rfl ht H rfl
+  refine Acc.pairInduction (P := fun t u =>
+      Red (somehow A) t → (∀ s, Red A s → Red (somehow B) (u.subst1 s)) →
+      Red (somehow B) (.bind t u)) ht.sn husn ?_ ht H
+  intro t u _ _ iht ihu ht H
+  refine ⟨.intro _ fun y hy => ?_, fun hst => rsteps_bind_val hst rfl ht H rfl⟩
+  cases hy with
+  | bindVal s _ => exact (H s (ht.2 (.refl _))).sn
+  | bindCong₁ h' => exact (iht _ h' (ht.step h') H).sn
+  | bindCong₂ h' =>
+      exact (ihu _ h' ht (fun s hs => (H s hs).step (RStep.subst _ h'))).sn
 
 /-! ### The fundamental theorem and strong normalisation -/
 
@@ -1070,8 +955,7 @@ theorem fundamental : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
       rwa [Tm.rename_id] at h
   | pair t s iht ihs =>
       intro Δ σ hσ
-      exact red_pair (Red.sn (iht σ hσ)) (Red.sn (ihs σ hσ))
-        (iht σ hσ) (ihs σ hσ)
+      exact red_pair (iht σ hσ) (ihs σ hσ)
   | fst t ih =>
       intro Δ σ hσ
       exact (ih σ hσ).2.1
@@ -1086,7 +970,7 @@ theorem fundamental : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
       exact red_inr (ih σ hσ)
   | case t u₁ u₂ iht ih1 ih2 =>
       intro Δ σ hσ
-      refine red_case (Red.sn (iht σ hσ)) (Red.sn (ih1 σ.lift (RedS.lift hσ)))
+      refine red_case (Red.sn (ih1 σ.lift (RedS.lift hσ)))
         (Red.sn (ih2 σ.lift (RedS.lift hσ))) (iht σ hσ) ?_ ?_
       · intro s hs
         rw [Tm.subst_lift_subst1]
@@ -1099,8 +983,7 @@ theorem fundamental : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
       exact red_val (ih σ hσ)
   | bind t u iht ihu =>
       intro Δ σ hσ
-      refine red_bind (Red.sn (iht σ hσ)) (Red.sn (ihu σ.lift (RedS.lift hσ)))
-        (iht σ hσ) ?_
+      refine red_bind (Red.sn (ihu σ.lift (RedS.lift hσ))) (iht σ hσ) ?_
       intro s hs
       rw [Tm.subst_lift_subst1]
       exact ihu (Sub.cons s σ) (RedS.cons hs hσ)
