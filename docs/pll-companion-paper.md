@@ -100,8 +100,9 @@ theory): one canonical cast per indexed family plus a simp set
 (`cast_rfl`, `cast_trans`, commutation, predicate-invariance), each lemma
 provable by `subst; rfl` thanks to definitional proof irrelevance.  This
 retroactively unblocked the old system's conservativity theorem
-(`PLLNDProofPostZoom.lean`), demonstrating that the technique works — but it
-manages the problem rather than removing it.
+(`PLLNDProofPostZoom.lean`, preserved in the repository history),
+demonstrating that the technique works — but it manages the problem
+rather than removing it.
 
 **(b) Slime removal** (`PLLNDCore.lean`): contexts are `List PLLFormula`,
 rules extend them only as `φ :: Γ`, and the identity rule is
