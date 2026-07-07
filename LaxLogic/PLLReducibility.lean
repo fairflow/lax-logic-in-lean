@@ -1,4 +1,5 @@
 import LaxLogic.PLLStrongNorm
+import LaxLogic.PLLTactics
 
 /-!
 # Strong normalisation of β-reduction (Kripke–Tait reducibility)
@@ -100,29 +101,7 @@ inductive RStep : ∀ {Γ : List PLLFormula} {φ : PLLFormula},
 theorem RStep.toStep : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
     {t t' : Tm Γ φ}, RStep t t' → Step t t' := by
   intro Γ φ t t' h
-  induction h with
-  | beta t s => exact .beta t s
-  | fstPair t s => exact .fstPair t s
-  | sndPair t s => exact .sndPair t s
-  | caseInl s u₁ u₂ => exact .caseInl s u₁ u₂
-  | caseInr s u₁ u₂ => exact .caseInr s u₁ u₂
-  | bindVal s t => exact .bindVal s t
-  | abortCong _ ih => exact .abortCong ih
-  | lamCong _ ih => exact .lamCong ih
-  | appCong₁ _ ih => exact .appCong₁ ih
-  | appCong₂ _ ih => exact .appCong₂ ih
-  | pairCong₁ _ ih => exact .pairCong₁ ih
-  | pairCong₂ _ ih => exact .pairCong₂ ih
-  | fstCong _ ih => exact .fstCong ih
-  | sndCong _ ih => exact .sndCong ih
-  | inlCong _ ih => exact .inlCong ih
-  | inrCong _ ih => exact .inrCong ih
-  | caseCong₀ _ ih => exact .caseCong₀ ih
-  | caseCong₁ _ ih => exact .caseCong₁ ih
-  | caseCong₂ _ ih => exact .caseCong₂ ih
-  | valCong _ ih => exact .valCong ih
-  | bindCong₁ _ ih => exact .bindCong₁ ih
-  | bindCong₂ _ ih => exact .bindCong₂ ih
+  induction h <;> mirror
 
 /-- Strong normalisation for the β-fragment. -/
 def RSN {Γ : List PLLFormula} {φ : PLLFormula} (t : Tm Γ φ) : Prop :=
@@ -137,6 +116,45 @@ inductive RSteps {Γ : List PLLFormula} {φ : PLLFormula} :
     Tm Γ φ → Tm Γ φ → Prop
   | refl (t : Tm Γ φ) : RSteps t t
   | head {t t' t'' : Tm Γ φ} : RStep t t' → RSteps t' t'' → RSteps t t''
+
+/-! ### SN congruence lemmas
+
+Each is `Acc.of_inversion(₂)` at the step-inversion fact for one
+constructor: a step of the compound is a step of a component. -/
+
+theorem RSN.abort {Γ : List PLLFormula} (φ : PLLFormula) {t : Tm Γ .falsePLL}
+    (h : RSN t) : RSN (Tm.abort φ t) :=
+  Acc.of_inversion (f := Tm.abort φ)
+    (fun hy => by cases hy with | abortCong h' => exact ⟨_, rfl, h'⟩) h
+
+theorem RSN.lam {Γ : List PLLFormula} {φ ψ : PLLFormula} {b : Tm (φ :: Γ) ψ}
+    (h : RSN b) : RSN (Tm.lam b) :=
+  Acc.of_inversion (f := Tm.lam)
+    (fun hy => by cases hy with | lamCong h' => exact ⟨_, rfl, h'⟩) h
+
+theorem RSN.inl {Γ : List PLLFormula} {φ ψ : PLLFormula} {a : Tm Γ φ}
+    (h : RSN a) : RSN (Tm.inl (ψ := ψ) a) :=
+  Acc.of_inversion (f := Tm.inl (ψ := ψ))
+    (fun hy => by cases hy with | inlCong h' => exact ⟨_, rfl, h'⟩) h
+
+theorem RSN.inr {Γ : List PLLFormula} {φ ψ : PLLFormula} {a : Tm Γ ψ}
+    (h : RSN a) : RSN (Tm.inr (φ := φ) a) :=
+  Acc.of_inversion (f := Tm.inr (φ := φ))
+    (fun hy => by cases hy with | inrCong h' => exact ⟨_, rfl, h'⟩) h
+
+theorem RSN.val {Γ : List PLLFormula} {φ : PLLFormula} {a : Tm Γ φ}
+    (h : RSN a) : RSN (Tm.val a) :=
+  Acc.of_inversion (f := Tm.val)
+    (fun hy => by cases hy with | valCong h' => exact ⟨_, rfl, h'⟩) h
+
+theorem RSN.pair {Γ : List PLLFormula} {φ ψ : PLLFormula}
+    {a : Tm Γ φ} {b : Tm Γ ψ} (ha : RSN a) (hb : RSN b) :
+    RSN (Tm.pair a b) :=
+  Acc.of_inversion₂ (f := Tm.pair)
+    (fun hy => by
+      cases hy with
+      | pairCong₁ h' => exact .inl ⟨_, rfl, h'⟩
+      | pairCong₂ h' => exact .inr ⟨_, rfl, h'⟩) ha hb
 
 /-! ### The identity renaming -/
 
@@ -215,74 +233,14 @@ theorem RStep.rename : ∀ {Γ Δ : List PLLFormula} {φ : PLLFormula}
     {t t' : Tm Γ φ} (ρ : Ren Γ Δ),
     RStep t t' → RStep (t.rename ρ) (t'.rename ρ) := by
   intro Γ Δ φ t t' ρ h
-  induction h generalizing Δ with
-  | beta t s =>
-      rw [Tm.subst1_rename]
-      exact .beta _ _
-  | fstPair t s => exact .fstPair _ _
-  | sndPair t s => exact .sndPair _ _
-  | caseInl s u₁ u₂ =>
-      rw [Tm.subst1_rename]
-      exact .caseInl _ _ _
-  | caseInr s u₁ u₂ =>
-      rw [Tm.subst1_rename]
-      exact .caseInr _ _ _
-  | bindVal s t =>
-      rw [Tm.subst1_rename]
-      exact .bindVal _ _
-  | abortCong _ ih => exact .abortCong (ih ρ)
-  | lamCong _ ih => exact .lamCong (ih ρ.lift)
-  | appCong₁ _ ih => exact .appCong₁ (ih ρ)
-  | appCong₂ _ ih => exact .appCong₂ (ih ρ)
-  | pairCong₁ _ ih => exact .pairCong₁ (ih ρ)
-  | pairCong₂ _ ih => exact .pairCong₂ (ih ρ)
-  | fstCong _ ih => exact .fstCong (ih ρ)
-  | sndCong _ ih => exact .sndCong (ih ρ)
-  | inlCong _ ih => exact .inlCong (ih ρ)
-  | inrCong _ ih => exact .inrCong (ih ρ)
-  | caseCong₀ _ ih => exact .caseCong₀ (ih ρ)
-  | caseCong₁ _ ih => exact .caseCong₁ (ih ρ.lift)
-  | caseCong₂ _ ih => exact .caseCong₂ (ih ρ.lift)
-  | valCong _ ih => exact .valCong (ih ρ)
-  | bindCong₁ _ ih => exact .bindCong₁ (ih ρ)
-  | bindCong₂ _ ih => exact .bindCong₂ (ih ρ.lift)
+  induction h generalizing Δ <;> (try rw [Tm.subst1_rename]) <;> mirror
 
 /-- β-steps are preserved by substitution. -/
 theorem RStep.subst : ∀ {Γ Δ : List PLLFormula} {φ : PLLFormula}
     {t t' : Tm Γ φ} (σ : Sub Γ Δ),
     RStep t t' → RStep (t.subst σ) (t'.subst σ) := by
   intro Γ Δ φ t t' σ h
-  induction h generalizing Δ with
-  | beta t s =>
-      rw [Tm.subst1_subst]
-      exact .beta _ _
-  | fstPair t s => exact .fstPair _ _
-  | sndPair t s => exact .sndPair _ _
-  | caseInl s u₁ u₂ =>
-      rw [Tm.subst1_subst]
-      exact .caseInl _ _ _
-  | caseInr s u₁ u₂ =>
-      rw [Tm.subst1_subst]
-      exact .caseInr _ _ _
-  | bindVal s t =>
-      rw [Tm.subst1_subst]
-      exact .bindVal _ _
-  | abortCong _ ih => exact .abortCong (ih σ)
-  | lamCong _ ih => exact .lamCong (ih σ.lift)
-  | appCong₁ _ ih => exact .appCong₁ (ih σ)
-  | appCong₂ _ ih => exact .appCong₂ (ih σ)
-  | pairCong₁ _ ih => exact .pairCong₁ (ih σ)
-  | pairCong₂ _ ih => exact .pairCong₂ (ih σ)
-  | fstCong _ ih => exact .fstCong (ih σ)
-  | sndCong _ ih => exact .sndCong (ih σ)
-  | inlCong _ ih => exact .inlCong (ih σ)
-  | inrCong _ ih => exact .inrCong (ih σ)
-  | caseCong₀ _ ih => exact .caseCong₀ (ih σ)
-  | caseCong₁ _ ih => exact .caseCong₁ (ih σ.lift)
-  | caseCong₂ _ ih => exact .caseCong₂ (ih σ.lift)
-  | valCong _ ih => exact .valCong (ih σ)
-  | bindCong₁ _ ih => exact .bindCong₁ (ih σ)
-  | bindCong₂ _ ih => exact .bindCong₂ (ih σ.lift)
+  induction h generalizing Δ <;> (try rw [Tm.subst1_subst]) <;> mirror
 
 /-- SN transfers along renaming (any reduction of the term embeds into a
 reduction of its renaming). -/
@@ -522,13 +480,11 @@ theorem Neut.rename : ∀ {Γ Δ : List PLLFormula} {φ : PLLFormula}
 
 /-- SN transfers forwards along renaming, by reflection. -/
 theorem RSN.rename {Γ Δ : List PLLFormula} {φ : PLLFormula}
-    {t : Tm Γ φ} (ρ : Ren Γ Δ) (h : RSN t) : RSN (t.rename ρ) := by
-  induction h generalizing Δ with
-  | intro t hacc ih =>
-      refine .intro _ ?_
-      intro y hy
-      obtain ⟨t', hs, rfl⟩ := RStep.rename_reflect t ρ hy
-      exact ih t' hs ρ
+    {t : Tm Γ φ} (ρ : Ren Γ Δ) (h : RSN t) : RSN (t.rename ρ) :=
+  Acc.of_inversion (f := fun t : Tm Γ φ => t.rename ρ)
+    (fun hy => by
+      obtain ⟨t', hs, heq⟩ := RStep.rename_reflect _ ρ hy
+      exact ⟨t', heq, hs⟩) h
 
 /-- **The reducibility predicate**, by recursion on the formula.
 Strong normalisation is conjoined into every clause. -/
@@ -1162,30 +1118,13 @@ partition `Step`. -/
 theorem step_split : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
     {t t' : Tm Γ φ}, Step t t' → RStep t t' ∨ AStep t t' := by
   intro Γ φ t t' h
-  induction h with
-  | beta t s => exact .inl (.beta t s)
-  | fstPair t s => exact .inl (.fstPair t s)
-  | sndPair t s => exact .inl (.sndPair t s)
-  | caseInl s u₁ u₂ => exact .inl (.caseInl s u₁ u₂)
-  | caseInr s u₁ u₂ => exact .inl (.caseInr s u₁ u₂)
-  | bindVal s t => exact .inl (.bindVal s t)
-  | bindAssoc s t u => exact .inr (.bindAssoc s t u)
-  | abortCong _ ih => exact ih.imp .abortCong .abortCong
-  | lamCong _ ih => exact ih.imp .lamCong .lamCong
-  | appCong₁ _ ih => exact ih.imp .appCong₁ .appCong₁
-  | appCong₂ _ ih => exact ih.imp .appCong₂ .appCong₂
-  | pairCong₁ _ ih => exact ih.imp .pairCong₁ .pairCong₁
-  | pairCong₂ _ ih => exact ih.imp .pairCong₂ .pairCong₂
-  | fstCong _ ih => exact ih.imp .fstCong .fstCong
-  | sndCong _ ih => exact ih.imp .sndCong .sndCong
-  | inlCong _ ih => exact ih.imp .inlCong .inlCong
-  | inrCong _ ih => exact ih.imp .inrCong .inrCong
-  | caseCong₀ _ ih => exact ih.imp .caseCong₀ .caseCong₀
-  | caseCong₁ _ ih => exact ih.imp .caseCong₁ .caseCong₁
-  | caseCong₂ _ ih => exact ih.imp .caseCong₂ .caseCong₂
-  | valCong _ ih => exact ih.imp .valCong .valCong
-  | bindCong₁ _ ih => exact ih.imp .bindCong₁ .bindCong₁
-  | bindCong₂ _ ih => exact ih.imp .bindCong₂ .bindCong₂
+  induction h <;>
+    first
+    | (refine .inl ?_; mirror)
+    | (refine .inr ?_; mirror)
+    | (cases ‹_ ∨ _› with
+        | inl h => refine .inl ?_; mirror
+        | inr h => refine .inr ?_; mirror)
 
 /-! ### Why the two halves do not combine: machine-checked counterexamples
 
