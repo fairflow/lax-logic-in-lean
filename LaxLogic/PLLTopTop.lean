@@ -476,4 +476,249 @@ theorem lex₃_of_le_eq_lt {o₁ o₁' : Ordinal} {n n' : ℕ} {o₂ o₂' : Ord
   · exact .left _ _ h
   · exact .right _ (.right _ h3)
 
+theorem rank_eq_of_eq {Γ : List PLLFormula} {φ : PLLFormula}
+    {t t' : Tm Γ φ} (heq : t = t') (h : SNt t) (h' : SNt t') :
+    Acc.rank h = Acc.rank h' := by
+  cases heq
+  rw [Subsingleton.elim h h']
+
+/-! ### Continuation stacks
+
+`Kont Γ C A` is a stack of `bind`-bodies awaiting a scrutinee of type
+`◯A` and producing a term of type `◯C`.  The *result* type `C` is a
+parameter and the *hole* type `A` is the index — `nil`'s index is then a
+bare variable (the `Eq.refl` shape), so matches iota-reduce and the
+plugging equations below hold definitionally.  (The first draft indexed
+both ends and `nil : Kont Γ A A` repeated an index — green slime, in this
+project of all places.)
+-/
+
+/-- Continuation stacks with result type `◯C` and hole type `◯A`. -/
+inductive Kont (Γ : List PLLFormula) (C : PLLFormula) : PLLFormula → Type
+  | nil : Kont Γ C C
+  | cons {A B : PLLFormula} (u : Tm (A :: Γ) (somehow B)) (K : Kont Γ C B) :
+      Kont Γ C A
+
+namespace Kont
+
+/-- Plugging, innermost frame first: `(cons u K).plug t = K.plug (bind t u)`.
+The parameters `Γ, C` stay out of the match columns so that the equations
+hold by iota-reduction. -/
+def plug {Γ : List PLLFormula} {C : PLLFormula} :
+    ∀ {A : PLLFormula}, Kont Γ C A → Tm Γ (somehow A) → Tm Γ (somehow C)
+  | _, .nil, t => t
+  | _, .cons u K, t => plug K (.bind t u)
+
+/-- Number of frames. -/
+def size {Γ : List PLLFormula} {C : PLLFormula} :
+    ∀ {A : PLLFormula}, Kont Γ C A → ℕ
+  | _, .nil => 0
+  | _, .cons _ K => size K + 1
+
+/-- Framewise renaming (under the binder). -/
+def rename {Γ Δ : List PLLFormula} {C : PLLFormula} (ρ : Ren Γ Δ) :
+    ∀ {A : PLLFormula}, Kont Γ C A → Kont Δ C A
+  | _, .nil => .nil
+  | _, .cons u K => .cons (u.rename ρ.lift) (rename ρ K)
+
+theorem rename_id {Γ : List PLLFormula} {C : PLLFormula} :
+    ∀ {A : PLLFormula} (K : Kont Γ C A), K.rename (fun {_} v => v) = K
+  | _, .nil => rfl
+  | _, .cons u K => by
+      show Kont.cons (u.rename (Ren.lift fun {_} v => v))
+        (K.rename fun {_} v => v) = _
+      rw [show u.rename (Ren.lift fun {_} v => v) = u from
+        (u.rename_congr (by lift_cases)).trans u.rename_id, rename_id K]
+
+theorem rename_rename {Γ Δ Θ : List PLLFormula} {C : PLLFormula}
+    (ρ : Ren Γ Δ) (ρ' : Ren Δ Θ) :
+    ∀ {A : PLLFormula} (K : Kont Γ C A),
+    (K.rename ρ).rename ρ' = K.rename (fun v => ρ' (ρ v))
+  | _, .nil => rfl
+  | _, .cons u K => by
+      show Kont.cons ((u.rename ρ.lift).rename ρ'.lift) ((K.rename ρ).rename ρ')
+        = Kont.cons (u.rename (Ren.lift fun v => ρ' (ρ v))) (K.rename _)
+      rw [Tm.rename_rename, rename_rename ρ ρ' K,
+        show u.rename (fun v => Ren.lift ρ' (Ren.lift ρ v))
+            = u.rename (Ren.lift fun v => ρ' (ρ v)) from
+          u.rename_congr (by lift_cases)]
+
+/-- Scrutinee steps lift through the stack. -/
+theorem plug_step {Γ : List PLLFormula} {C : PLLFormula} :
+    ∀ {A : PLLFormula} (K : Kont Γ C A) {t t' : Tm Γ (somehow A)},
+    Step t t' → Step (K.plug t) (K.plug t')
+  | _, .nil, _, _, h => h
+  | _, .cons u K, _, _, h => plug_step K (.bindCong₁ h)
+
+theorem plug_steps {Γ : List PLLFormula} {C A : PLLFormula}
+    (K : Kont Γ C A) {t t' : Tm Γ (somehow A)}
+    (h : Steps t t') : Steps (K.plug t) (K.plug t') :=
+  Steps.cong (fun hs => K.plug_step hs) h
+
+end Kont
+
+/-- One-step reduction of a stack: the innermost frame steps, a deeper
+part steps, or two adjacent frames merge by `let`-assoc. -/
+inductive KStep : ∀ {Γ : List PLLFormula} {C A : PLLFormula},
+    Kont Γ C A → Kont Γ C A → Prop
+  | frame {Γ : List PLLFormula} {C A B : PLLFormula}
+      {u u' : Tm (A :: Γ) (somehow B)} {K : Kont Γ C B} :
+      Step u u' → KStep (.cons u K) (.cons u' K)
+  | tail {Γ : List PLLFormula} {C A B : PLLFormula}
+      {u : Tm (A :: Γ) (somehow B)} {K K' : Kont Γ C B} :
+      KStep K K' → KStep (.cons u K) (.cons u K')
+  | assocK {Γ : List PLLFormula} {C A B₁ B₂ : PLLFormula}
+      (u₁ : Tm (A :: Γ) (somehow B₁)) (u₂ : Tm (B₁ :: Γ) (somehow B₂))
+      (K : Kont Γ C B₂) :
+      KStep (.cons u₁ (.cons u₂ K)) (.cons (.bind u₁ (u₂.rename Ren.skip1)) K)
+
+/-- Stack steps are steps of any plugged term. -/
+theorem KStep.plug_step : ∀ {Γ : List PLLFormula} {C A : PLLFormula}
+    {K K' : Kont Γ C A}, KStep K K' →
+    ∀ (t : Tm Γ (somehow A)), Step (K.plug t) (K'.plug t) := by
+  intro Γ C A K K' h
+  induction h with
+  | frame h' => exact fun t => Kont.plug_step _ (.bindCong₂ h')
+  | tail _ ih => exact fun t => ih (.bind t _)
+  | assocK u₁ u₂ K => exact fun t => Kont.plug_step K (.bindAssoc t u₁ u₂)
+
+/-- Stack steps are preserved by renaming. -/
+theorem KStep.rename : ∀ {Γ Δ : List PLLFormula} {C A : PLLFormula}
+    (ρ : Ren Γ Δ) {K K' : Kont Γ C A},
+    KStep K K' → KStep (K.rename ρ) (K'.rename ρ) := by
+  intro Γ Δ C A ρ K K' h
+  induction h with
+  | frame h' => exact .frame (Step.rename ρ.lift h')
+  | tail _ ih => exact .tail ih
+  | assocK u₁ u₂ K =>
+      show KStep _ (Kont.cons ((Tm.bind u₁ (u₂.rename Ren.skip1)).rename ρ.lift)
+        (K.rename ρ))
+      simp only [Tm.rename]
+      rw [← Tm.rename_lift_skip1]
+      exact .assocK (u₁.rename ρ.lift) (u₂.rename ρ.lift) (K.rename ρ)
+
+/-- **Classification of the steps of a plugged term**, for an arbitrary
+scrutinee `X`: either `X` steps, or the stack steps, or `X`'s head
+constructor meets the innermost frame (`let`-β or `let`-assoc at the
+interface).  This is `cut_aux`'s `leftCommute` in continuation clothing;
+the scrutinee is kept general precisely so the lemma can be reused for
+neutral, `val`- and `bind`-headed `X` alike. -/
+theorem plug_step_cases : ∀ {Γ : List PLLFormula} {C A : PLLFormula}
+    (K : Kont Γ C A) (X : Tm Γ (somehow A)) {y : Tm Γ (somehow C)},
+    Step (K.plug X) y →
+    (∃ X', Step X X' ∧ y = K.plug X') ∨
+    (∃ K', KStep K K' ∧ y = K'.plug X) ∨
+    (∃ (s₀ : Tm Γ A) (B : PLLFormula) (u₀ : Tm (A :: Γ) (somehow B))
+        (K₀ : Kont Γ C B), X = .val s₀ ∧ K = .cons u₀ K₀ ∧
+        y = K₀.plug (u₀.subst1 s₀)) ∨
+    (∃ (A₀ : PLLFormula) (t₀ : Tm Γ (somehow A₀))
+        (t₁ : Tm (A₀ :: Γ) (somehow A)) (B : PLLFormula)
+        (u₀ : Tm (A :: Γ) (somehow B)) (K₀ : Kont Γ C B),
+        X = .bind t₀ t₁ ∧ K = .cons u₀ K₀ ∧
+        y = K₀.plug (.bind t₀ (.bind t₁ (u₀.rename Ren.skip1)))) := by
+  intro Γ C A K
+  induction K with
+  | nil =>
+      intro X y h
+      exact .inl ⟨y, h, rfl⟩
+  | cons u₀ K₀ ih =>
+      intro X y h
+      rcases ih (.bind X u₀) h with
+        ⟨Z', hZ, rfl⟩ | ⟨K', hK, rfl⟩ | ⟨s₀, B', w, K₁, hXeq, hKeq, rfl⟩ |
+        ⟨A₀, t₀, t₁, B', w, K₁, hXeq, hKeq, rfl⟩
+      · cases hZ with
+        | bindVal s _ =>
+            exact .inr (.inr (.inl ⟨s, _, u₀, K₀, rfl, rfl, rfl⟩))
+        | bindAssoc s t _ =>
+            exact .inr (.inr (.inr ⟨_, s, t, _, u₀, K₀, rfl, rfl, rfl⟩))
+        | bindCong₁ h' =>
+            exact .inl ⟨_, h', rfl⟩
+        | bindCong₂ h' =>
+            exact .inr (.inl ⟨.cons _ K₀, .frame h', rfl⟩)
+      · exact .inr (.inl ⟨.cons u₀ K', .tail hK, rfl⟩)
+      · exact Tm.noConfusion hXeq
+      · cases hXeq
+        subst hKeq
+        exact .inr (.inl ⟨_, .assocK u₀ w K₁, rfl⟩)
+
+/-! ### The interface σ-lemma and the principal lemma -/
+
+/-- Renaming by `skip1` and then substituting under a lifted `cons`
+collapses to the identity: the merged frame of an interface assoc, once
+the `let`-β fires, is the original frame. -/
+theorem Tm.rename_skip1_subst_lift {Γ : List PLLFormula} {A B χ : PLLFormula}
+    (u₀ : Tm (B :: Γ) χ) (s : Tm Γ A) :
+    (u₀.rename (Ren.skip1 (φ := A))).subst (Sub.lift (Sub.cons s Sub.ids)) = u₀ := by
+  rw [Tm.subst_rename]
+  exact (u₀.subst_congr (by lift_cases)).trans u₀.subst_ids
+
+/-- Instantiating a merged frame is binding the instance against the
+original frame. -/
+theorem bind_subst1_merge {Γ : List PLLFormula} {A B C : PLLFormula}
+    (u : Tm (A :: Γ) (somehow B)) (u₀ : Tm (B :: Γ) (somehow C)) (s : Tm Γ A) :
+    (Tm.bind u (u₀.rename Ren.skip1)).subst1 s = Tm.bind (u.subst1 s) u₀ := by
+  show Tm.bind (u.subst (Sub.cons s Sub.ids))
+      ((u₀.rename Ren.skip1).subst (Sub.lift (Sub.cons s Sub.ids))) = _
+  rw [Tm.rename_skip1_subst_lift]
+  exact rfl
+
+/-- **The principal lemma** (Lindley–Stark): a `let`-β redex in a stack
+context is SN as soon as its contractum-in-context and its value part are.
+Induction over `(rank (K.plug (u[s])), K.size, rank s)`: the
+interface-assoc reduct keeps the first component — the underlying term is
+literally unchanged — and shortens the stack, which is exactly the case
+bare `Acc`-induction cannot handle and ordinal rank can. -/
+theorem principal : ∀ {Γ : List PLLFormula} {A B C : PLLFormula}
+    (s : Tm Γ A) (u : Tm (A :: Γ) (somehow B)) (K : Kont Γ C B),
+    SNt s → SNt (K.plug (u.subst1 s)) →
+    SNt (K.plug (.bind (.val s) u)) := by
+  suffices H : ∀ (μ : Ordinal × ℕ × Ordinal) {Γ A B C}
+      (s : Tm Γ A) (u : Tm (A :: Γ) (somehow B)) (K : Kont Γ C B)
+      (hs : SNt s) (hKu : SNt (K.plug (u.subst1 s))),
+      μ = (Acc.rank hKu, K.size, Acc.rank hs) →
+      SNt (K.plug (.bind (.val s) u)) by
+    intro Γ A B C s u K hs hKu
+    exact H _ s u K hs hKu rfl
+  intro μ
+  induction μ using lex₃_wf.induction with
+  | _ μ IH =>
+    intro Γ A B C s u K hs hKu hμ
+    subst hμ
+    refine Acc.intro _ fun y hy => ?_
+    rcases plug_step_cases K _ hy with
+      ⟨X', hX, rfl⟩ | ⟨K', hK, rfl⟩ | ⟨s₀, B', u₀, K₀, hXeq, hKeq, rfl⟩ |
+      ⟨A₀, t₀, t₁, B', u₀, K₀, hXeq, hKeq, rfl⟩
+    · -- the redex part stepped
+      cases hX with
+      | bindVal _ _ =>
+          exact hKu
+      | bindCong₁ h' =>
+          cases h' with
+          | valCong h'' =>
+              have hs' := hs.step h''
+              have hsteps := Kont.plug_steps K (u.subst1_steps_arg h'')
+              have hKu' := SNt.steps hsteps hKu
+              exact IH _ (lex₃_of_le_eq_lt (rank_le_of_steps hsteps hKu hKu')
+                rfl (rank_lt_of_step hs hs' h'')) _ u K hs' hKu' rfl
+      | bindCong₂ h' =>
+          have hstep := Kont.plug_step K (Step.subst (Sub.cons s Sub.ids) h')
+          have hKu' := hKu.step hstep
+          exact IH _ (lex₃_of_lt (rank_lt_of_step hKu hKu' hstep)) s _ K hs hKu' rfl
+    · -- the stack stepped
+      have hstep := KStep.plug_step hK (u.subst1 s)
+      have hKu' := hKu.step hstep
+      exact IH _ (lex₃_of_lt (rank_lt_of_step hKu hKu' hstep)) s u K' hs hKu' rfl
+    · -- X = val s₀: impossible, X is a bind
+      exact Tm.noConfusion hXeq
+    · -- interface assoc: same contractum, shorter stack
+      cases hXeq
+      subst hKeq
+      have heq : K₀.plug ((Tm.bind u (u₀.rename Ren.skip1)).subst1 s)
+          = K₀.plug (Tm.bind (u.subst1 s) u₀) :=
+        congrArg _ (bind_subst1_merge u u₀ s)
+      have hKu' : SNt (K₀.plug ((Tm.bind u (u₀.rename Ren.skip1)).subst1 s)) :=
+        heq ▸ hKu
+      exact IH _ (lex₃_of_le_lt (rank_eq_of_eq heq hKu' hKu).le
+        (Nat.lt_succ_self _)) s _ K₀ hs hKu' rfl
+
 end PLLND
