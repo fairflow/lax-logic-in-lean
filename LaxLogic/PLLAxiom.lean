@@ -8,6 +8,11 @@ inductive PLLAxiom where
   | somehowR (M: PLLFormula)
   | somehowM (M: PLLFormula)
   | somehowS (M N: PLLFormula)
+  -- Kleisli extension / bind: (M ⊃ ◯N) ⊃ (◯M ⊃ ◯N).  Without it (or the
+  -- regularity rule "from M ⊃ N infer ◯M ⊃ ◯N", F&M p.6) the system cannot
+  -- derive ◯-functoriality: interpreting ◯ as the constant-⊥ operator
+  -- validates ◯R, ◯M, ◯S but refutes (M ⊃ N) ⊃ (◯M ⊃ ◯N).
+  | somehowBind (M N: PLLFormula)
 -- Axioms for propositional intuitionistic
   | impK (A B: PLLFormula)
   | impS (A B C: PLLFormula)
@@ -18,17 +23,19 @@ inductive PLLAxiom where
   | orIntro2 (A B: PLLFormula)
   | orElim (A B C: PLLFormula)
   | explosion (A: PLLFormula)
-  deriving Inhabited, DecidableEq
+  deriving Inhabited, DecidableEq, BEq
 
 
 namespace PLLAxiom
 
 -- Gets a list of the formulas used to generate an axiom
-def PLLAxiom.formulas (ax: PLLAxiom) : List PLLFormula :=
+@[simp]
+def formulas (ax: PLLAxiom) : List PLLFormula :=
   match ax with
   | somehowR M => [M]
   | somehowM M => [M]
   | somehowS M N => [M,N]
+  | somehowBind M N => [M,N]
   | impK A B => [A,B]
   | impS A B C => [A,B,C]
   | andElim1 A B => [A,B]
@@ -41,12 +48,14 @@ def PLLAxiom.formulas (ax: PLLAxiom) : List PLLFormula :=
 
 
 -- Gets the formula for the axiom
+@[simp]
 def get (ax: PLLAxiom): PLLFormula :=
   match ax with
     | somehowR M => ifThen M (somehow M)
     | somehowM M => ifThen (somehow (somehow M)) (somehow M)
     | somehowS M N => ifThen (and (somehow M) (somehow N)) (somehow (and M N))
--- stardard axioms for propostinal intuistionalist logic, source: https://homepage.mi-ras.ru/~sk/lehre/penn2017/lecture1.pdf
+    | somehowBind M N => ifThen (ifThen M (somehow N)) (ifThen (somehow M) (somehow N))
+-- standard axioms for propositional intuitionistic logic, source: https://homepage.mi-ras.ru/~sk/lehre/penn2017/lecture1.pdf
   -- 1. A ⊃ (B ⊃ A)
     | impK A B =>  ifThen A (ifThen B A)
   -- 2. (A ⊃ (B ⊃ C)) ⊃ ((A ⊃ B) ⊃ (A ⊃ C))
@@ -62,6 +71,25 @@ def get (ax: PLLAxiom): PLLFormula :=
   -- 7. B ⊃ (A ∨ B)
     | orIntro2 A B => ifThen B (or A B)
   -- 8. (A ⊃ C) ⊃ ((B ⊃ C) ⊃ ((A ∨ B) ⊃ C))
-    | orElim A B C=> ifThen (ifThen A C) (ifThen (ifThen B C) (ifThen (and A B) C))
+  -- (was `and A B` in the final antecedent — a typo that made ∨-elimination
+  --  underivable in the Hilbert system; fixed to match the comment above)
+    | orElim A B C=> ifThen (ifThen A C) (ifThen (ifThen B C) (ifThen (or A B) C))
   -- 9. ⊥ ⊃ A
     | explosion A => ifThen falsePLL A
+
+-- This only used for printing proofs
+def getName (ax: PLLAxiom) : String :=
+match ax with
+  | somehowR _  => "◯R"
+  | somehowM _  => "◯M"
+  | somehowS _ _  => "◯S"
+  | somehowBind _ _  => "◯Bind"
+  | impK _ _  => "⊃K"
+  | impS _ _ _  => "⊃S"
+  | andElim1 _ _  => "∧E₁"
+  | andElim2 _ _  => "∧E₂"
+  | andIntro _ _  => "∧I"
+  | orIntro1 _ _  => "∨I₁"
+  | orIntro2 _ _  => "∨I₂"
+  | orElim _ _ _  => "∨E"
+  | explosion _  => "ex falso"
