@@ -330,12 +330,157 @@ high-yield sanity properties for any formalised logic.
 | Fig 3 | three counter-models | `not_provable_*` (by `decide`) | `PLLFrames.lean` |
 | Thm 4.5 (soundness) | frame correspondences | `force_not_somehow_false_of_F_empty`, `force_somehow_iff_of_confluent`, `force_somehow_or_dist_of_confluent` | `PLLFrames.lean` |
 | — | axioms `◯R`,`◯M`,`◯S`; functoriality | `somehowR/M/S`, `somehowFunctor` | `PLLTheorems.lean` |
+| Lemma 2.1 | PLL = IPC + `(N⊃◯K) ≡ (◯N⊃◯K)` | `lemma21` | `PLLHilbert.lean` |
+| Prop 2.2 | deduction theorem, Hilbert form | `HdOn.deduction` | `PLLHilbert.lean` |
+| Thm 2.3 (full) | Hilbert ⟷ ND ⟷ cut-free Gentzen | `hd_iff_ND`, `cutElimination` | `PLLHilbert.lean`, `PLLSequent.lean` |
+| Thm 2.6 | cut elimination | `cut_aux`, `SC.cut` | `PLLSequent.lean` |
+| Lemma 2.7(i) | disjunction property | `disjunction_property` | `PLLSequent.lean` |
+| Lemma 2.7(ii) | `◯`-reflection | `somehow_reflection` | `PLLSequent.lean` |
+| Thm 4.6 | finite model property | `filt_force`, `finite_model_property` | `PLLFiniteModel.lean` |
 
-Not yet mechanised: cut elimination (Thm 2.6) and its corollaries
-(disjunction property, `◯`-reflection, subformula property, decidability,
-Thm 2.8); the finite model property (Thm 4.6); the completeness halves of
-Thm 4.5; the J-space translation (Thm 3.5); the bimodal classical embedding
-(Thm 5.1).
+Not yet mechanised: the subformula property as a statement about derivation
+trees (Lemma 2.7(iii)) and decidability as a *computable* decision procedure
+(Thm 2.8 — the FMP gives decidability only in principle); the completeness
+halves of Thm 4.5; the J-space translation (Thm 3.5); the bimodal classical
+embedding (Thm 5.1); the concrete models of §6.
+
+## 8a. The second sweep: cut elimination, Hilbert equivalence, FMP
+
+A second pass mechanised most of the remaining paper.
+
+**Cut elimination** (`PLLSequent.lean`).  The sequent calculus `SCh` is
+G3-style — left rules keep their principal formula via a *membership*
+hypothesis, so weakening, exchange and contraction are height-preserving
+admissible by the same one-lemma renaming as in natural deduction — and
+carries an explicit height index.  Heights are what let a `Prop`-valued
+calculus support the lexicographic induction of cut admissibility (size of
+cut formula, sum of heights): no derivation-sized data, no casts.  The proof
+factors the entire left-commutation into a single `leftCommute` combinator,
+leaving the principal-principal reductions — including F&M's Figure 2
+`laxR`/`laxL` step — as the only interesting cases.  Corollaries fall out by
+last-rule analysis on cut-free proofs of `⊢ A ∨ B` and `⊢ ◯A`: the
+disjunction property and `◯`-reflection, F&M Lemma 2.7(i)–(ii).
+
+**Hilbert equivalence and a fourth bug** (`PLLHilbert.lean`).  F&M's Hilbert
+system has, besides modus ponens, the regularity rule "from `M ⊃ N` infer
+`◯M ⊃ ◯N`" (p. 6).  The repository's checker has no such rule — and cannot
+compensate: interpreting `◯` as the constant-`⊥` operator validates `◯R`,
+`◯M`, `◯S` and refutes functoriality, so the axiom set was *incomplete*
+(bug #4, dual to the earlier unsoundness bugs).  The repair follows F&M
+Lemma 2.1: PLL is a purely axiomatic extension of IPC by the single Kleisli
+scheme, provided that scheme is read as the **bi**-implication
+`(N ⊃ ◯K) ≡ (◯N ⊃ ◯K)` — the forward (bind) direction alone fails to yield
+`◯R` by the same constant-`⊥` counter-interpretation.  We add `somehowBind`
+as an axiom, prove the deduction theorem for any axiom set containing `K`
+and `S` (F&M Prop 2.2 in Hilbert form), and obtain the full Theorem 2.3:
+Hilbert consequence = natural deduction = cut-free sequent derivability,
+plus Lemma 2.1 as a two-way translation through natural deduction.
+
+**Finite model property** (`PLLFiniteModel.lean`).  F&M's filtration
+identifies worlds with the same validated subformulas `T(w)` *and* the same
+modally-refuted subformulas `Fₘ(w)`.  Instead of a quotient we take the
+worlds of the filtered model to be the realised pairs `(T(w), Fₘ(w))`
+themselves: well-definedness obligations vanish, and finiteness is a
+two-line powerset argument.  The filtration lemma's `◯` cases run on
+membership transfer (`◯N ∈ T(w) ⊆ T(v)`) rather than on any relation
+between representatives — the trick that makes the paper's "one verifies"
+go through.  Combined with soundness and the canonical model: `⊢ φ` iff `φ`
+holds in every finite constraint model.
+
+**Independent review.**  A separate fidelity audit
+(`docs/formalisation-notes.md`) checked each formal statement against the
+paper: all headline statements assert what they claim; the one caveat is
+that `ConstraintModel.W : Type` fixes carriers to universe 0, making
+soundness marginally weaker (and completeness correspondingly stronger)
+than a universe-polymorphic reading — immaterial for every result here.
+The audit also classifies constructivity: classicality enters only through
+Zorn and excluded middle in the completeness development; soundness, the
+erasure translation, cut elimination, and the Hilbert/Gentzen equivalences
+are constructive.
+
+## 8b. Proof terms, and what cut elimination does and does not give
+
+`PLLTerms.lean` adds the missing computational layer: an intrinsically-typed
+term calculus — Moggi's computational metalanguage, with `val`/`bind` for
+`◯` — whose typing derivations are exactly `LaxND` derivations
+(`curry_howard`).  The slime-free discipline survives one upgrade: proof
+terms must compute, so variables are `Type`-valued de Bruijn witnesses
+`Var Γ φ` (indices again only `φ :: Γ`) rather than `Prop`-membership;
+renaming and substitution are the standard parallel traversals, and the
+whole calculus remains cast-free.  Because typing is intrinsic, **subject
+reduction is definitional**: the reduction relation `Step` — β for every
+connective plus `let`-β and `let`-assoc — only relates terms of one sequent.
+
+The relationship to the cut-elimination procedure of `PLLSequent.lean` is
+now a statement about artefacts in the same repository, and it is exact at
+the level of *rules*: cut is substitution (`Tm.cut = subst1`), each
+principal case of `cut_aux` is the sequent shadow of a β-rule (the
+`laxR`/`laxL` case of F&M Figure 2 *is* `bind (val s) t ⟶ t[s]`), and the
+left/right commutation cases are the congruence closure.  But the two
+results differ in strength, and the difference is instructive:
+
+* cut admissibility is *weak* normalisation of one cut-reduction strategy,
+  and its lexicographic metric (cut formula, derivation heights) survives
+  at `Prop`-level because heights never grow along the strategy;
+* β-reduction of terms duplicates subterms through substitution, so no
+  height measure survives — strong normalisation genuinely needs
+  reducibility (Tait), and for `let`-assoc specifically the
+  Lindley–Stark ⊤⊤-lifting interpretation of `◯`.
+
+Both normalisation theorems are set up (`Step`, `SNt`) and queued: weak
+normalisation is harvestable from the cut-free calculus via normal/neutral
+forms (a cut-free `SCh` derivation denotes a β-normal term with neutral
+eliminations), and strong normalisation is the natural next milestone.
+
+`PLLConstraints.lean` delivers F&M's motivating reading (§1(6)): interpret
+`◯φ` as `M × ⟦φ⟧` for a combination structure `(M, op, e)` — a writer
+monad — and evaluation of proof terms *is* constraint extraction.  The
+two-gate circuit of the timing-analysis motivation is the worked example: a
+proof of `A ⊃ ◯C` from gates `A ⊃ ◯B` and `B ⊃ ◯C` evaluates, **by
+`rfl`**, to delay `d₁ + d₂` under `(ℕ, +, 0)` and to `max d₁ d₂` under the
+ready-time reading `(ℕ, max, 0)` — the two halves of F&M's delay algebra
+`(ℕ, 0, +, max)`.  The `◯R` term (a wire) emits `0`; the `◯M` term (join)
+adds its two constraint layers.  Proofs compute constraints, kernel-checked.
+
+## 8c. Normalisation: the substitution algebra, WN, and a certified reducer
+
+A third pass built the normalisation layer on the proof-term calculus.
+
+**The substitution algebra** (`PLLSubst.lean`): the σ-calculus equations —
+congruence, the four composition laws (`rename_rename`, `subst_rename`,
+`rename_subst`, `subst_subst`), identity, and the β-law
+`(t.subst σ.lift).subst1 s = t.subst (Sub.cons s σ)` — all stated
+*pointwise* (no function extensionality) and proved by structural
+inductions whose binder cases are two-line variable analyses.
+
+**Normal forms and weak normalisation** (`PLLNormal.lean`).  β-normal forms
+are a mutual normal/neutral grammar with two design points: `case` and
+`abort` on a neutral scrutinee are neutral (no commuting conversions), and
+`bind` is *not* neutral — `bind (bind s t) u` is an assoc-redex even when
+the inner `bind` is stuck — so normal `bind`-chains are exactly the
+right-nested assoc-normal forms of the computational metalanguage.  `Nf` is
+closed under renaming and neutral substitution, normal terms are stuck
+(`not_step_of_nf`), stuck terms are normal (`nf_or_step`, progress), and —
+the harvest — **every cut-free sequent proof denotes a normal proof term**
+(`nf_of_SCh`): left rules become neutral substitutions, `laxL` becomes a
+right-nested `bind` on a variable.  Hence every inhabited sequent has a
+normal inhabitant (`normal_form_exists`): weak normalisation via cut
+elimination, with the caveat stated honestly — the normal form is produced
+by cut elimination, not by reducing the given term.
+
+**Assoc termination and a certified reducer** (`PLLStrongNorm.lean`).  The
+`let`-assoc fragment terminates by a weight measure
+(`w(bind t u) = 2·w(t) + w(u) + 1`, renaming-invariant) — the part of
+`Step` invisible to β-methods.  A computable one-step reducer `Tm.step?`
+returns proof-carrying steps (`Option {t' // Step t t'}`); `step?_none`
+shows a `none` answer certifies normality, so `step?` decides normality,
+and the fueled normaliser `reduceFuel` is sound by construction: its result
+is reduction-reachable and, when it reports normal, normal.  Full strong
+normalisation — termination of the whole relation — is the one remaining
+normalisation theorem, precisely scoped: Kripke-indexed Tait reducibility
+(branches of `case`/`bind` live in extended contexts) with Lindley–Stark
+⊤⊤-lifting to absorb `let`-assoc; with it, `reduceFuel` upgrades to a total
+normaliser by well-founded recursion.
 
 ## 9. Engineering lessons
 
@@ -365,13 +510,22 @@ Thm 4.5; the J-space translation (Thm 3.5); the bimodal classical embedding
 
 ## 10. Future work
 
-- **Cut elimination and decidability** (F&M Thms 2.6, 2.8): a sequent
-  calculus with the `◯R`/`◯L` rules, the extra principal reduction of F&M
-  Figure 2, and the disjunction property and `◯`-reflection as corollaries;
-  alternatively decidability via the finite model property (Thm 4.6),
-  whose filtration argument should sit well on `PLLCompleteness.lean`.
+- **Strong normalisation** of `Step`: Kripke-indexed Tait reducibility with
+  ⊤⊤-lifting for `let`-assoc (weak normalisation, assoc-termination, the
+  certified reducer, and the σ-algebra are done — SN is the last brick).
+- **A computable decision procedure** (F&M Thm 2.8): the FMP bounds the
+  model search in principle; a verified decision procedure would go through
+  terminating proof search in the height-indexed calculus of
+  `PLLSequent.lean` (whose subformula-boundedness is manifest rule-by-rule)
+  or through enumerating the finitely many filtration models.
+- **Lemma 2.7(iii)** as a statement about derivation trees (a
+  subformula-bounded variant of `SCh` and an embedding into it).
 - **Completeness for the extensions** of Thm 4.5, by relativising theories
-  to an extended consequence relation.
+  to an extended consequence relation (the soundness halves are done in
+  `PLLFrames.lean`).
+- **The bimodal embedding** (F&M §5, Thm 5.1) — at least in semantic form,
+  translating constraint models to `[S4,S4]`-models and back; and the
+  concrete constraint models of §6.
 - **Quantified lax logic (QLL)**: first-order extension; the slime-free
   discipline should extend with well-scoped binders (de Bruijn or locally
   nameless), and the constraint-model semantics with (co)domains per world.

@@ -8,6 +8,11 @@ inductive PLLAxiom where
   | somehowR (M: PLLFormula)
   | somehowM (M: PLLFormula)
   | somehowS (M N: PLLFormula)
+  -- Kleisli extension / bind: (M ⊃ ◯N) ⊃ (◯M ⊃ ◯N).  Without it (or the
+  -- regularity rule "from M ⊃ N infer ◯M ⊃ ◯N", F&M p.6) the system cannot
+  -- derive ◯-functoriality: interpreting ◯ as the constant-⊥ operator
+  -- validates ◯R, ◯M, ◯S but refutes (M ⊃ N) ⊃ (◯M ⊃ ◯N).
+  | somehowBind (M N: PLLFormula)
 -- Axioms for propositional intuitionistic
   | impK (A B: PLLFormula)
   | impS (A B C: PLLFormula)
@@ -30,6 +35,7 @@ def formulas (ax: PLLAxiom) : List PLLFormula :=
   | somehowR M => [M]
   | somehowM M => [M]
   | somehowS M N => [M,N]
+  | somehowBind M N => [M,N]
   | impK A B => [A,B]
   | impS A B C => [A,B,C]
   | andElim1 A B => [A,B]
@@ -48,6 +54,7 @@ def get (ax: PLLAxiom): PLLFormula :=
     | somehowR M => ifThen M (somehow M)
     | somehowM M => ifThen (somehow (somehow M)) (somehow M)
     | somehowS M N => ifThen (and (somehow M) (somehow N)) (somehow (and M N))
+    | somehowBind M N => ifThen (ifThen M (somehow N)) (ifThen (somehow M) (somehow N))
 -- standard axioms for propositional intuitionistic logic, source: https://homepage.mi-ras.ru/~sk/lehre/penn2017/lecture1.pdf
   -- 1. A ⊃ (B ⊃ A)
     | impK A B =>  ifThen A (ifThen B A)
@@ -76,6 +83,7 @@ match ax with
   | somehowR _  => "◯R"
   | somehowM _  => "◯M"
   | somehowS _ _  => "◯S"
+  | somehowBind _ _  => "◯Bind"
   | impK _ _  => "⊃K"
   | impS _ _ _  => "⊃S"
   | andElim1 _ _  => "∧E₁"

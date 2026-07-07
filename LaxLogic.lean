@@ -8,3 +8,10 @@ import LaxLogic.PLLCompleteness
 import LaxLogic.PLLTheorems
 import LaxLogic.PLLFrames
 import LaxLogic.PLLHilbert
+import LaxLogic.PLLSequent
+import LaxLogic.PLLFiniteModel
+import LaxLogic.PLLTerms
+import LaxLogic.PLLConstraints
+import LaxLogic.PLLSubst
+import LaxLogic.PLLNormal
+import LaxLogic.PLLStrongNorm
