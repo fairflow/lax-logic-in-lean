@@ -525,10 +525,70 @@ weak normalisation, already delivered by cut elimination.)  The
 value-style `◯`-interpretation used here is the empty-stack shadow of
 Lindley–Stark's ⊤⊤-lifting semantics — reducibility of a computation as
 orthogonality, with the SN predicate as pole, against reducible
-continuation stacks — and upgrading to it is the precisely-scoped
-remaining step: the principal lemma trades the value clause for an
-induction on stack length inside a reduction-length measure, which is why
-an inductive or length-based characterisation of SN joins the toolkit.
+continuation stacks — and upgrading to it is exactly what the next
+section does, with mathlib's ordinal rank of accessibility in place of
+the anticipated reduction-length machinery.
+
+## 8e. Strong normalisation of the full reduction: ⊤⊤-lifting
+
+`PLLTopTop.lean` closes the normalisation story: **every proof term is
+strongly normalising for the full reduction** (`strong_normalisation`),
+β and `let`-assoc freely interleaved, by Lindley–Stark ⊤⊤-lifting.  This
+appears to be the first mechanisation of the technique in Lean, and the
+first anywhere with sums and intrinsically-typed syntax (the one prior
+mechanisation we know of, Doczkal–Schwinghammer's Isabelle/HOL-Nominal
+proof, treats the calculus without sums).
+
+* **Continuation stacks.**  `Kont Γ C A` is a list of `bind`-bodies with
+  hole type `◯A` and result type `◯C`; plugging is innermost-first, so
+  `(cons u K).plug t = K.plug (bind t u)` holds *definitionally*.  Getting
+  that equation definitional required this project's own medicine: a first
+  draft indexed both ends, and `nil : Kont Γ A A`'s repeated index — green
+  slime — silently blocked iota-reduction; making the result type a
+  parameter and the hole the sole index (the `Eq.refl` shape) fixed it.
+* **The candidates.**  Only the `◯`-clause changes relative to §8d:
+  `SRed (◯A) t` holds when `K.plug (t.rename ρ)` is SN for every renaming
+  `ρ` and every stack `K ∈ (SRed A)^⊤` — where membership (`KRedP`) means
+  `K[val s]` is SN for every reducible `s` in every renaming extension.
+  `val`-reducibility falls out of the pole at the empty stack;
+  `bind`-reducibility is the theorem the file exists for: the `◯`-clause
+  of `bind t u` at `K` is *definitionally* the clause of `t` at
+  `cons u K`, so everything reduces to reducibility of extended stacks —
+  the principal lemma.
+* **The principal lemma**: `SN s → SN (K[u[s]]) → SN (K[bind (val s) u])`.
+  Its case analysis is `plug_step_cases`, a classification of the steps of
+  a plugged term with *general* scrutinee (`cut_aux`'s `leftCommute`
+  reborn): the scrutinee steps, the stack steps (framewise, or two
+  adjacent frames merging by assoc), or the scrutinee's head meets the
+  innermost frame.  The interface-assoc reduct
+  `K₀[bind (val s) (bind u u₀↑)]` has — after the σ-computation
+  `(u₀↑)[⇑(s·id)] = u₀` — *the same* contractum-in-context as the redex:
+  the term under the SN hypothesis is literally unchanged while the stack
+  shortens, which is exactly what bare `Acc`-induction cannot recurse on.
+  The induction is instead over the lexicographic measure
+  `(Acc.rank of K[u[s]], |K|, Acc.rank of s)`, using mathlib's ordinal
+  rank of accessibility: ranks are proof-irrelevant, single steps drop
+  them strictly, multi-steps weakly — and the three decrease modes cover
+  the five reduct classes.  No finite-branching argument, no
+  maximal-reduction-length function, no inductive SN characterisation:
+  `Acc.rank` replaces all three.
+* **Neutrality shifts.**  `bind` is not neutral for the full reduction —
+  its scrutinee position participates in assoc — matching the normal-form
+  grammar of §8c, where `bind` is not `Ne`.  CR3's `◯`-case
+  (`sn_plug_neut`) then meets no interface redexes, and its induction
+  measure is the weakened stack plugged with a reducible *variable* — the
+  Kripke quantification in the pole earning its keep, since the ambient
+  context may have no reducible inhabitant of the hole type.
+* **The dividend.**  With `strong_normalisation`, the certified one-step
+  reducer of §8c upgrades from fuelled to total: `Tm.normalize` computes
+  for every term a normal form reachable by reduction (`normalize_spec`),
+  closing the loop from logic to computation.
+
+The file is ~1300 lines, zero sorries, written in one session with the
+tactic toolkit distilled beforehand (`docs/tactic-shakedown.md`) doing
+visible work: the `Step`-level 22-case congruence inductions are
+one-liners under `mirror`, and the simultaneous-accessibility eliminators
+carry every SN induction.
 
 ## 9. Engineering lessons
 
