@@ -721,4 +721,587 @@ theorem principal : ∀ {Γ : List PLLFormula} {A B C : PLLFormula}
       exact IH _ (lex₃_of_le_lt (rank_eq_of_eq heq hKu' hKu).le
         (Nat.lt_succ_self _)) s _ K₀ hs hKu' rfl
 
+/-! ### Neutrality for the full reduction -/
+
+/-- Neutral terms for the full reduction: non-introduction terms that are
+also not `bind`s — a `bind` in scrutinee position participates in
+`let`-assoc, so a `bind`-headed plug can head-step without either part
+stepping (this matches `PLLNormal.lean`, where `bind` is not `Ne`). -/
+def SNeut : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, Tm Γ φ → Prop
+  | _, _, .lam _ => False
+  | _, _, .pair _ _ => False
+  | _, _, .inl _ => False
+  | _, _, .inr _ => False
+  | _, _, .val _ => False
+  | _, _, .bind _ _ => False
+  | _, _, _ => True
+
+theorem SNeut.rename {Γ Δ : List PLLFormula} {φ : PLLFormula}
+    {t : Tm Γ φ} (ρ : Ren Γ Δ) (h : SNeut t) : SNeut (t.rename ρ) := by
+  cases t <;> first | exact h.elim | trivial
+
+/-! ### The ⊤⊤ reducibility candidates -/
+
+/-- Reducibility of a continuation stack relative to a predicate on values:
+the `(-)^⊤` operation with SN as its pole.  All plugs of `val`s of
+`P`-terms, in every renaming extension, are SN. -/
+def KRedP {Γ : List PLLFormula} {C A : PLLFormula}
+    (P : ∀ {Δ : List PLLFormula}, Tm Δ A → Prop) (K : Kont Γ C A) : Prop :=
+  ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
+    P s → SNt ((K.rename ρ).plug (.val s))
+
+/-- **The reducibility predicate** for the full reduction, by recursion on
+the formula.  Only the `◯`-clause differs from the β-fragment
+(`PLLReducibility.lean`): the value clause is upgraded to Lindley–Stark
+biorthogonality — `t` is reducible at `◯A` when every reducible stack
+consumes (every renaming of) it into an SN term. -/
+def SRed : (φ : PLLFormula) → ∀ {Γ : List PLLFormula}, Tm Γ φ → Prop
+  | .prop _, _, t => SNt t
+  | .falsePLL, _, t => SNt t
+  | .ifThen A B, Γ, t => SNt t ∧
+      ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
+        SRed A s → SRed B (.app (t.rename ρ) s)
+  | .and A B, _, t => SNt t ∧ SRed A (.fst t) ∧ SRed B (.snd t)
+  | .or A B, _, t => SNt t ∧
+      (∀ {w}, Steps t (.inl w) → SRed A w) ∧
+      (∀ {w}, Steps t (.inr w) → SRed B w)
+  | .somehow A, Γ, t => SNt t ∧
+      ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) {C : PLLFormula}
+        (K : Kont Δ C A), KRedP (SRed A) K → SNt (K.plug (t.rename ρ))
+
+/-- Stack reducibility at a formula: `K ∈ (SRed A)^⊤`. -/
+abbrev KRed (A : PLLFormula) {Γ : List PLLFormula} {C : PLLFormula}
+    (K : Kont Γ C A) : Prop :=
+  KRedP (SRed A) K
+
+theorem KRedP.rename {Γ Δ : List PLLFormula} {C A : PLLFormula}
+    {P : ∀ {Δ' : List PLLFormula}, Tm Δ' A → Prop} {K : Kont Γ C A}
+    (hK : KRedP P K) (ρ : Ren Γ Δ) : KRedP P (K.rename ρ) := by
+  intro Δ' ρ' s hs
+  rw [Kont.rename_rename]
+  exact hK (fun v => ρ' (ρ v)) s hs
+
+theorem KRedP.step {Γ : List PLLFormula} {C A : PLLFormula}
+    {P : ∀ {Δ' : List PLLFormula}, Tm Δ' A → Prop} {K K' : Kont Γ C A}
+    (hK : KRedP P K) (h : KStep K K') : KRedP P K' := by
+  intro Δ ρ s hs
+  exact (hK ρ s hs).step (KStep.plug_step (KStep.rename ρ h) _)
+
+/-- CR1: reducible terms are strongly normalising (free, by construction). -/
+theorem SRed.sn : ∀ {φ : PLLFormula} {Γ : List PLLFormula} {t : Tm Γ φ},
+    SRed φ t → SNt t := by
+  intro φ
+  cases φ <;> intro Γ t h
+  · exact h
+  · exact h
+  · exact h.1
+  · exact h.1
+  · exact h.1
+  · exact h.1
+
+/-- The `◯`-clause at the identity renaming. -/
+theorem SRed.plugSN {Γ : List PLLFormula} {A C : PLLFormula}
+    {t : Tm Γ (somehow A)} (ht : SRed (somehow A) t)
+    {K : Kont Γ C A} (hK : KRedP (SRed A) K) : SNt (K.plug t) := by
+  have h := ht.2 (fun {_} v => v) K hK
+  rwa [Tm.rename_id] at h
+
+/-- CR2: reducibility is closed under reduction. -/
+theorem SRed.step {φ : PLLFormula} : ∀ {Γ : List PLLFormula}
+    {t t' : Tm Γ φ}, SRed φ t → Step t t' → SRed φ t' := by
+  induction φ with
+  | prop a => exact fun h hs => SNt.step h hs
+  | falsePLL => exact fun h hs => SNt.step h hs
+  | ifThen A B ihA ihB =>
+      intro Γ t t' h hs
+      refine ⟨h.1.step hs, ?_⟩
+      intro Δ ρ s hsred
+      exact ihB (h.2 ρ s hsred) (.appCong₁ (Step.rename ρ hs))
+  | and A B ihA ihB =>
+      intro Γ t t' h hs
+      exact ⟨h.1.step hs, ihA h.2.1 (.fstCong hs), ihB h.2.2 (.sndCong hs)⟩
+  | or A B ihA ihB =>
+      intro Γ t t' h hs
+      exact ⟨h.1.step hs,
+        fun hst => h.2.1 (.head hs hst),
+        fun hst => h.2.2 (.head hs hst)⟩
+  | somehow A ihA =>
+      intro Γ t t' h hs
+      refine ⟨h.1.step hs, ?_⟩
+      intro Δ ρ C K hK
+      exact (h.2 ρ K hK).step (Kont.plug_step K (Step.rename ρ hs))
+
+/-- CR2, many steps. -/
+theorem SRed.steps {φ : PLLFormula} {Γ : List PLLFormula}
+    {t t' : Tm Γ φ} (h : SRed φ t) (hs : Steps t t') : SRed φ t' := by
+  induction hs with
+  | refl _ => exact h
+  | head h₁ _ ih => exact ih (h.step h₁)
+
+/-- Reducibility is stable under renaming. -/
+theorem SRed.rename {φ : PLLFormula} : ∀ {Γ Δ : List PLLFormula}
+    (ρ : Ren Γ Δ) {t : Tm Γ φ}, SRed φ t → SRed φ (t.rename ρ) := by
+  induction φ with
+  | prop a =>
+      intro Γ Δ ρ t h
+      exact SNt.rename ρ h
+  | falsePLL =>
+      intro Γ Δ ρ t h
+      exact SNt.rename ρ h
+  | ifThen A B ihA ihB =>
+      intro Γ Δ ρ t h
+      refine ⟨h.1.rename ρ, ?_⟩
+      intro Δ' ρ' s hs
+      rw [Tm.rename_rename]
+      exact h.2 (fun v => ρ' (ρ v)) s hs
+  | and A B ihA ihB =>
+      intro Γ Δ ρ t h
+      exact ⟨h.1.rename ρ, ihA ρ h.2.1, ihB ρ h.2.2⟩
+  | or A B ihA ihB =>
+      intro Γ Δ ρ t h
+      refine ⟨h.1.rename ρ, ?_, ?_⟩
+      · intro w hst
+        obtain ⟨t₀, hsteps, heq⟩ := Steps.rename_reflect hst
+        obtain ⟨w₀, rfl, rfl⟩ := Tm.rename_eq_inl heq.symm
+        exact ihA ρ (h.2.1 hsteps)
+      · intro w hst
+        obtain ⟨t₀, hsteps, heq⟩ := Steps.rename_reflect hst
+        obtain ⟨w₀, rfl, rfl⟩ := Tm.rename_eq_inr heq.symm
+        exact ihB ρ (h.2.2 hsteps)
+  | somehow A ihA =>
+      intro Γ Δ ρ t h
+      refine ⟨h.1.rename ρ, ?_⟩
+      intro Δ' ρ' C K hK
+      rw [Tm.rename_rename]
+      exact h.2 (fun v => ρ' (ρ v)) K hK
+
+/-- SN of a neutral plug (the `◯`-case of CR3).  `t` is neutral — in
+particular neither `val` nor `bind` — so no interface redex forms; the
+induction is on the SN of a canonical witness for the stack, namely the
+weakened stack plugged with a reducible variable. -/
+theorem sn_plug_neut {Γ : List PLLFormula} {C A : PLLFormula}
+    (hvar : SRed A (Tm.var (Var.here (Γ := Γ) (φ := A))))
+    {t : Tm Γ (somehow A)} (hne : SNeut t)
+    (hred : ∀ t', Step t t' → SRed (somehow A) t')
+    {K : Kont Γ C A} (hK : KRedP (SRed A) K) : SNt (K.plug t) := by
+  have hmt : SNt ((K.rename (fun v => .there v)).plug (.val (.var .here))) :=
+    hK _ _ hvar
+  refine Acc.selfInduction (P := fun mt => ∀ K : Kont Γ C A,
+      KRedP (SRed A) K →
+      mt = (K.rename (fun v => .there v)).plug (.val (.var .here)) →
+      SNt (K.plug t)) hmt ?_ K hK rfl
+  intro mt _ ihmt K hK hmteq
+  refine Acc.intro _ fun y hy => ?_
+  rcases plug_step_cases K t hy with
+    ⟨t', ht', rfl⟩ | ⟨K', hK', rfl⟩ | ⟨s₀, B', u₀, K₀, hXeq, _, rfl⟩ |
+    ⟨A₀, t₀, t₁, B', u₀, K₀, hXeq, _, rfl⟩
+  · exact (hred t' ht').plugSN hK
+  · subst hmteq
+    exact ihmt _ (KStep.plug_step (KStep.rename _ hK') _) K' (hK.step hK') rfl
+  · subst hXeq
+    exact hne.elim
+  · subst hXeq
+    exact hne.elim
+
+/-- CR3: a neutral term whose one-step reducts are all reducible is
+reducible. -/
+theorem SRed.cr3 : ∀ {φ : PLLFormula} {Γ : List PLLFormula} {t : Tm Γ φ},
+    SNeut t → (∀ t', Step t t' → SRed φ t') → SRed φ t := by
+  intro φ
+  induction φ with
+  | prop a =>
+      intro Γ t _ hred
+      exact .intro _ (fun y hy => hred y hy)
+  | falsePLL =>
+      intro Γ t _ hred
+      exact .intro _ (fun y hy => hred y hy)
+  | ifThen A B ihA ihB =>
+      intro Γ t hneut hred
+      refine ⟨.intro _ (fun y hy => (hred y hy).sn), ?_⟩
+      intro Δ ρ s hs
+      have hsn : SNt s := hs.sn
+      revert hs
+      induction hsn with
+      | intro s hacc ihs =>
+          intro hs
+          refine ihB trivial ?_
+          intro y hy
+          generalize hX : t.rename ρ = X at hy
+          cases hy with
+          | beta b s' =>
+              obtain ⟨b₀, hb₀, _⟩ := Tm.rename_eq_lam hX
+              subst hb₀
+              exact hneut.elim
+          | appCong₁ h' =>
+              subst hX
+              obtain ⟨t'', hs'', rfl⟩ := Step.rename_reflect t ρ h'
+              exact (hred t'' hs'').2 ρ s hs
+          | appCong₂ h' =>
+              subst hX
+              exact ihs _ h' (hs.step h')
+  | and A B ihA ihB =>
+      intro Γ t hneut hred
+      refine ⟨.intro _ (fun y hy => (hred y hy).sn), ?_, ?_⟩
+      · refine ihA trivial ?_
+        intro y hy
+        cases hy with
+        | fstPair a b => exact hneut.elim
+        | fstCong h' => exact (hred _ h').2.1
+      · refine ihB trivial ?_
+        intro y hy
+        cases hy with
+        | sndPair a b => exact hneut.elim
+        | sndCong h' => exact (hred _ h').2.2
+  | or A B ihA ihB =>
+      intro Γ t hneut hred
+      refine ⟨.intro _ (fun y hy => (hred y hy).sn), ?_, ?_⟩
+      · intro w hst
+        cases hst with
+        | refl _ => exact hneut.elim
+        | head h₁ hrest => exact (hred _ h₁).2.1 hrest
+      · intro w hst
+        cases hst with
+        | refl _ => exact hneut.elim
+        | head h₁ hrest => exact (hred _ h₁).2.2 hrest
+  | somehow A ihA =>
+      intro Γ t hneut hred
+      refine ⟨.intro _ (fun y hy => (hred y hy).sn), ?_⟩
+      intro Δ ρ C K hK
+      have hvar : SRed A (Tm.var (Var.here (Γ := Δ) (φ := A))) :=
+        ihA trivial (fun _ hy => by cases hy)
+      refine sn_plug_neut hvar (hneut.rename ρ) ?_ hK
+      intro t' ht'
+      obtain ⟨t₀, h₀, rfl⟩ := Step.rename_reflect t ρ ht'
+      exact (hred t₀ h₀).rename ρ
+
+/-- Variables are reducible. -/
+theorem SRed.var {φ : PLLFormula} {Γ : List PLLFormula} (v : Var Γ φ) :
+    SRed φ (.var v) :=
+  SRed.cr3 trivial (fun _ hy => by cases hy)
+
+/-! ### Closure lemmas
+
+The β-connective lemmas are the retrofitted `PLLReducibility.lean` proofs
+re-run over `Step` (which adds no rules at those heads); `val` and `bind`
+are new, via the pole and the principal lemma respectively.
+-/
+
+/-- Reduction sequences from `inl` stay `inl`. -/
+theorem steps_inl : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
+    {x z : Tm Γ (A.or B)}, Steps x z →
+    ∀ {a : Tm Γ A}, x = .inl a → ∃ a', z = .inl a' ∧ Steps a a' := by
+  intro Γ A B x z h
+  induction h with
+  | refl t =>
+      intro a hx
+      exact ⟨a, hx, .refl a⟩
+  | head h₁ _ ih =>
+      intro a hx
+      subst hx
+      cases h₁ with
+      | inlCong h' =>
+          obtain ⟨a', rfl, hsteps⟩ := ih rfl
+          exact ⟨a', rfl, .head h' hsteps⟩
+
+/-- Reduction sequences from `inr` stay `inr`. -/
+theorem steps_inr : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
+    {x z : Tm Γ (A.or B)}, Steps x z →
+    ∀ {a : Tm Γ B}, x = .inr a → ∃ a', z = .inr a' ∧ Steps a a' := by
+  intro Γ A B x z h
+  induction h with
+  | refl t =>
+      intro a hx
+      exact ⟨a, hx, .refl a⟩
+  | head h₁ _ ih =>
+      intro a hx
+      subst hx
+      cases h₁ with
+      | inrCong h' =>
+          obtain ⟨a', rfl, hsteps⟩ := ih rfl
+          exact ⟨a', rfl, .head h' hsteps⟩
+
+/-- Abort terms over SN scrutinees are reducible. -/
+theorem sred_abort {Γ : List PLLFormula} {φ : PLLFormula}
+    {t : Tm Γ .falsePLL} (h : SNt t) : SRed φ (.abort φ t) :=
+  Acc.selfInduction (P := fun t => SRed φ (Tm.abort φ t)) h fun t _ ih =>
+    SRed.cr3 trivial fun y hy => by
+      cases hy with
+      | abortCong h' => exact ih _ h'
+
+/-- β-expansion for application. -/
+theorem sred_beta_exp {Γ : List PLLFormula} {A B : PLLFormula}
+    {b : Tm (A :: Γ) B} (hbsn : SNt b) {s : Tm Γ A} (hs : SRed A s)
+    (H : ∀ s' : Tm Γ A, SRed A s' → SRed B (b.subst1 s')) :
+    SRed B (.app (.lam b) s) := by
+  refine Acc.pairInduction (P := fun b s =>
+      SRed A s → (∀ s', SRed A s' → SRed B (b.subst1 s')) →
+      SRed B (.app (.lam b) s)) hbsn hs.sn ?_ hs H
+  intro b s _ _ ihb ihs hs H
+  refine SRed.cr3 trivial fun y hy => ?_
+  cases hy with
+  | beta _ _ => exact H s hs
+  | appCong₁ h' =>
+      cases h' with
+      | lamCong h'' =>
+          exact ihb _ h'' hs
+            (fun s' hs' => (H s' hs').step (Step.subst _ h''))
+  | appCong₂ h' => exact ihs _ h' (hs.step h') H
+
+/-- Abstractions with reducible instances are reducible. -/
+theorem sred_lam {Γ : List PLLFormula} {A B : PLLFormula} {b : Tm (A :: Γ) B}
+    (hbsn : SNt b)
+    (H : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
+      SRed A s → SRed B ((b.rename ρ.lift).subst1 s)) :
+    SRed (A.ifThen B) (.lam b) :=
+  ⟨hbsn.lam, fun ρ _s hs =>
+    sred_beta_exp (hbsn.rename ρ.lift) hs (fun s' hs' => H ρ s' hs')⟩
+
+/-- Pairs of reducibles are reducible. -/
+theorem sred_pair {Γ : List PLLFormula} {A B : PLLFormula}
+    {a : Tm Γ A} {b : Tm Γ B} (ha : SRed A a) (hb : SRed B b) :
+    SRed (A.and B) (.pair a b) := by
+  refine Acc.pairInduction (P := fun a b =>
+      SRed A a → SRed B b → SRed (A.and B) (.pair a b)) ha.sn hb.sn ?_ ha hb
+  intro a b _ _ iha ihb ha hb
+  refine ⟨SNt.pair ha.sn hb.sn, ?_, ?_⟩
+  · refine SRed.cr3 trivial fun y hy => ?_
+    cases hy with
+    | fstPair _ _ => exact ha
+    | fstCong h' =>
+        cases h' with
+        | pairCong₁ h'' => exact (iha _ h'' (ha.step h'') hb).2.1
+        | pairCong₂ h'' => exact (ihb _ h'' ha (hb.step h'')).2.1
+  · refine SRed.cr3 trivial fun y hy => ?_
+    cases hy with
+    | sndPair _ _ => exact hb
+    | sndCong h' =>
+        cases h' with
+        | pairCong₁ h'' => exact (iha _ h'' (ha.step h'') hb).2.2
+        | pairCong₂ h'' => exact (ihb _ h'' ha (hb.step h'')).2.2
+
+/-- Left injections of reducibles are reducible. -/
+theorem sred_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
+    (ha : SRed A a) : SRed (A.or B) (.inl a) :=
+  ⟨SNt.inl ha.sn,
+   fun hst => by
+     obtain ⟨a', heq, hsteps⟩ := steps_inl hst rfl
+     cases heq
+     exact ha.steps hsteps,
+   fun hst => by
+     obtain ⟨a', heq, _⟩ := steps_inl hst rfl
+     exact Tm.noConfusion heq⟩
+
+/-- Right injections of reducibles are reducible. -/
+theorem sred_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
+    (ha : SRed B a) : SRed (A.or B) (.inr a) :=
+  ⟨SNt.inr ha.sn,
+   fun hst => by
+     obtain ⟨a', heq, _⟩ := steps_inr hst rfl
+     exact Tm.noConfusion heq,
+   fun hst => by
+     obtain ⟨a', heq, hsteps⟩ := steps_inr hst rfl
+     cases heq
+     exact ha.steps hsteps⟩
+
+/-- `val`s of reducibles are reducible: immediate from the pole. -/
+theorem sred_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}
+    (ha : SRed A a) : SRed (somehow A) (.val a) := by
+  refine ⟨SNt.val ha.sn, ?_⟩
+  intro Δ ρ C K hK
+  have h := hK (fun {_} v => v) (a.rename ρ) (ha.rename ρ)
+  rw [Kont.rename_id] at h
+  exact h
+
+/-- Case analysis over reducibles with reducible branches is reducible. -/
+theorem sred_case {Γ : List PLLFormula} {A B χ : PLLFormula}
+    {t : Tm Γ (A.or B)} {u₁ : Tm (A :: Γ) χ} {u₂ : Tm (B :: Γ) χ}
+    (h1sn : SNt u₁) (h2sn : SNt u₂) (ht : SRed (A.or B) t)
+    (H₁ : ∀ s : Tm Γ A, SRed A s → SRed χ (u₁.subst1 s))
+    (H₂ : ∀ s : Tm Γ B, SRed B s → SRed χ (u₂.subst1 s)) :
+    SRed χ (.case t u₁ u₂) := by
+  refine Acc.tripleInduction (P := fun t u₁ u₂ =>
+      SRed (A.or B) t → (∀ s, SRed A s → SRed χ (u₁.subst1 s)) →
+      (∀ s, SRed B s → SRed χ (u₂.subst1 s)) → SRed χ (.case t u₁ u₂))
+    ht.sn h1sn h2sn ?_ ht H₁ H₂
+  intro t u₁ u₂ _ _ _ iht ih1 ih2 ht H₁ H₂
+  refine SRed.cr3 trivial fun y hy => ?_
+  cases hy with
+  | caseInl s _ _ => exact H₁ s (ht.2.1 (.refl _))
+  | caseInr s _ _ => exact H₂ s (ht.2.2 (.refl _))
+  | caseCong₀ h' => exact iht _ h' (ht.step h') H₁ H₂
+  | caseCong₁ h' =>
+      exact ih1 _ h' ht (fun s hs => (H₁ s hs).step (Step.subst _ h')) H₂
+  | caseCong₂ h' =>
+      exact ih2 _ h' ht H₁ (fun s hs => (H₂ s hs).step (Step.subst _ h'))
+
+/-- **Binds of reducibles with reducible bodies are reducible** — the
+lemma the whole file exists for.  The `◯`-clause of `bind t u` at a stack
+`K` is, definitionally, the `◯`-clause of `t` at the extended stack
+`cons u K`; reducibility of the extended stack is exactly the principal
+lemma. -/
+theorem sred_bind {Γ : List PLLFormula} {A B : PLLFormula}
+    {t : Tm Γ (somehow A)} {u : Tm (A :: Γ) (somehow B)}
+    (ht : SRed (somehow A) t)
+    (H : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) (s : Tm Δ A),
+      SRed A s → SRed (somehow B) ((u.rename ρ.lift).subst1 s)) :
+    SRed (somehow B) (.bind t u) := by
+  have hcl : ∀ {Δ : List PLLFormula} (ρ : Ren Γ Δ) {C : PLLFormula}
+      (K : Kont Δ C B), KRedP (SRed B) K →
+      SNt (K.plug ((Tm.bind t u).rename ρ)) := by
+    intro Δ ρ C K hK
+    show SNt ((Kont.cons (u.rename ρ.lift) K).plug (t.rename ρ))
+    refine ht.2 ρ (Kont.cons (u.rename ρ.lift) K) ?_
+    intro Δ' ρ' s hs
+    show SNt ((K.rename ρ').plug
+      (.bind (.val s) ((u.rename ρ.lift).rename ρ'.lift)))
+    refine principal s _ (K.rename ρ') hs.sn ?_
+    have hu : SRed (somehow B)
+        (((u.rename ρ.lift).rename ρ'.lift).subst1 s) := by
+      rw [Tm.rename_rename,
+        show u.rename (fun v => Ren.lift ρ' (Ren.lift ρ v))
+            = u.rename (Ren.lift fun v => ρ' (ρ v)) from
+          u.rename_congr (by lift_cases)]
+      exact H (fun v => ρ' (ρ v)) s hs
+    exact hu.plugSN (hK.rename ρ')
+  have hnil : KRedP (SRed B) (Kont.nil (Γ := Γ) (C := B)) :=
+    fun _ s hs => SNt.val hs.sn
+  have h0 := hcl (fun {_} v => v) Kont.nil hnil
+  rw [Tm.rename_id] at h0
+  exact ⟨h0, hcl⟩
+
+/-! ### The fundamental theorem and strong normalisation -/
+
+/-- Reducibility-respecting substitutions. -/
+def SRedS {Γ Δ : List PLLFormula} (σ : Sub Γ Δ) : Prop :=
+  ∀ {φ : PLLFormula} (v : Var Γ φ), SRed φ (σ v)
+
+theorem SRedS.ids {Γ : List PLLFormula} : SRedS (Sub.ids (Γ := Γ)) :=
+  fun v => SRed.var v
+
+theorem SRedS.cons {Γ Δ : List PLLFormula} {A : PLLFormula}
+    {s : Tm Δ A} {σ : Sub Γ Δ} (hs : SRed A s) (hσ : SRedS σ) :
+    SRedS (Sub.cons s σ) := by
+  intro φ v
+  cases v with
+  | here => exact hs
+  | there w => exact hσ w
+
+theorem SRedS.rename {Γ Δ Δ' : List PLLFormula} {σ : Sub Γ Δ}
+    (ρ : Ren Δ Δ') (hσ : SRedS σ) :
+    SRedS (fun {χ} v => (σ v).rename ρ) :=
+  fun v => (hσ v).rename ρ
+
+theorem SRedS.lift {Γ Δ : List PLLFormula} {A : PLLFormula} {σ : Sub Γ Δ}
+    (hσ : SRedS σ) : SRedS (Sub.lift (ψ := A) σ) := by
+  intro φ v
+  cases v with
+  | here => exact SRed.var .here
+  | there w => exact (hσ w).rename (fun v => .there v)
+
+/-- **The fundamental theorem of the logical relation** for the full
+reduction: substituting reducibles into any term yields a reducible
+term. -/
+theorem fundamental_step : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
+    (t : Tm Γ φ) {Δ : List PLLFormula} (σ : Sub Γ Δ),
+    SRedS σ → SRed φ (t.subst σ) := by
+  intro Γ φ t
+  induction t with
+  | var v =>
+      intro Δ σ hσ
+      exact hσ v
+  | abort φ t ih =>
+      intro Δ σ hσ
+      exact sred_abort (SRed.sn (ih σ hσ))
+  | lam b ihb =>
+      intro Δ σ hσ
+      refine sred_lam (SRed.sn (ihb σ.lift (SRedS.lift hσ))) ?_
+      intro Δ' ρ s hs
+      rw [subst_lift_rename_subst1]
+      exact ihb (Sub.cons s (fun {χ} v => (σ v).rename ρ))
+        (SRedS.cons hs (SRedS.rename ρ hσ))
+  | app t s iht ihs =>
+      intro Δ σ hσ
+      have h := (iht σ hσ).2 (fun {χ} v => v) (s.subst σ) (ihs σ hσ)
+      rwa [Tm.rename_id] at h
+  | pair t s iht ihs =>
+      intro Δ σ hσ
+      exact sred_pair (iht σ hσ) (ihs σ hσ)
+  | fst t ih =>
+      intro Δ σ hσ
+      exact (ih σ hσ).2.1
+  | snd t ih =>
+      intro Δ σ hσ
+      exact (ih σ hσ).2.2
+  | inl t ih =>
+      intro Δ σ hσ
+      exact sred_inl (ih σ hσ)
+  | inr t ih =>
+      intro Δ σ hσ
+      exact sred_inr (ih σ hσ)
+  | case t u₁ u₂ iht ih1 ih2 =>
+      intro Δ σ hσ
+      refine sred_case (SRed.sn (ih1 σ.lift (SRedS.lift hσ)))
+        (SRed.sn (ih2 σ.lift (SRedS.lift hσ))) (iht σ hσ) ?_ ?_
+      · intro s hs
+        rw [Tm.subst_lift_subst1]
+        exact ih1 (Sub.cons s σ) (SRedS.cons hs hσ)
+      · intro s hs
+        rw [Tm.subst_lift_subst1]
+        exact ih2 (Sub.cons s σ) (SRedS.cons hs hσ)
+  | val t ih =>
+      intro Δ σ hσ
+      exact sred_val (ih σ hσ)
+  | bind t u iht ihu =>
+      intro Δ σ hσ
+      refine sred_bind (iht σ hσ) ?_
+      intro Δ' ρ s hs
+      rw [subst_lift_rename_subst1]
+      exact ihu (Sub.cons s (fun {χ} v => (σ v).rename ρ))
+        (SRedS.cons hs (SRedS.rename ρ hσ))
+
+/-- **Strong normalisation of the full PLL proof-term reduction**: every
+term is strongly normalising for `Step` — β for every connective and
+`let`-assoc, freely interleaved. -/
+theorem strong_normalisation {Γ : List PLLFormula} {φ : PLLFormula}
+    (t : Tm Γ φ) : SNt t := by
+  have h := fundamental_step t Sub.ids SRedS.ids
+  rw [Tm.subst_ids] at h
+  exact h.sn
+
+/-! ### The total normaliser
+
+Strong normalisation upgrades the certified one-step reducer `Tm.step?`
+of `PLLStrongNorm.lean` from fuelled to total: iterate it, with
+`strong_normalisation` as the termination argument.  The result is a
+computable function producing a normal form (`Nf`, the grammar of
+`PLLNormal.lean`) reachable by reduction.
+-/
+
+/-- Reverse reduction is well-founded: the strong-normalisation theorem
+packaged for `termination_by`. -/
+instance (priority := high) instWFStep {Γ : List PLLFormula} {φ : PLLFormula} :
+    WellFoundedRelation (Tm Γ φ) :=
+  ⟨fun a b => Step b a, ⟨fun t => strong_normalisation t⟩⟩
+
+/-- The total normaliser. -/
+def Tm.normalize {Γ : List PLLFormula} {φ : PLLFormula} (t : Tm Γ φ) : Tm Γ φ :=
+  match t.step? with
+  | some t' => t'.1.normalize
+  | none => t
+termination_by t
+decreasing_by exact t'.2
+
+/-- The normaliser computes a normal form reachable by reduction. -/
+theorem Tm.normalize_spec {Γ : List PLLFormula} {φ : PLLFormula} (t : Tm Γ φ) :
+    Steps t t.normalize ∧ Nf t.normalize := by
+  refine Acc.selfInduction (P := fun t => Steps t t.normalize ∧ Nf t.normalize)
+    (strong_normalisation t) ?_
+  intro t _ ih
+  rw [Tm.normalize]
+  split
+  next t' heq =>
+      obtain ⟨hsteps, hnf⟩ := ih t'.1 t'.2
+      exact ⟨.head t'.2 hsteps, hnf⟩
+  next heq => exact ⟨.refl t, Tm.step?_none heq⟩
+
 end PLLND
