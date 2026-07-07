@@ -1,4 +1,5 @@
 import LaxLogic.PLLNormal
+import LaxLogic.PLLTactics
 
 /-!
 # Towards strong normalisation: assoc termination and a certified reducer
@@ -123,49 +124,13 @@ inductive AStep : ∀ {Γ : List PLLFormula} {φ : PLLFormula},
 theorem AStep.toStep : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
     {t t' : Tm Γ φ}, AStep t t' → Step t t' := by
   intro Γ φ t t' h
-  induction h with
-  | bindAssoc s t u => exact .bindAssoc s t u
-  | abortCong _ ih => exact .abortCong ih
-  | lamCong _ ih => exact .lamCong ih
-  | appCong₁ _ ih => exact .appCong₁ ih
-  | appCong₂ _ ih => exact .appCong₂ ih
-  | pairCong₁ _ ih => exact .pairCong₁ ih
-  | pairCong₂ _ ih => exact .pairCong₂ ih
-  | fstCong _ ih => exact .fstCong ih
-  | sndCong _ ih => exact .sndCong ih
-  | inlCong _ ih => exact .inlCong ih
-  | inrCong _ ih => exact .inrCong ih
-  | caseCong₀ _ ih => exact .caseCong₀ ih
-  | caseCong₁ _ ih => exact .caseCong₁ ih
-  | caseCong₂ _ ih => exact .caseCong₂ ih
-  | valCong _ ih => exact .valCong ih
-  | bindCong₁ _ ih => exact .bindCong₁ ih
-  | bindCong₂ _ ih => exact .bindCong₂ ih
+  induction h <;> mirror
 
 /-- Assoc steps strictly decrease the weight. -/
 theorem AStep.weight_lt : ∀ {Γ : List PLLFormula} {φ : PLLFormula}
     {t t' : Tm Γ φ}, AStep t t' → t'.weight < t.weight := by
   intro Γ φ t t' h
-  induction h with
-  | bindAssoc s t u =>
-      simp only [Tm.weight, u.weight_rename]
-      omega
-  | abortCong _ ih => simp only [Tm.weight]; omega
-  | lamCong _ ih => simp only [Tm.weight]; omega
-  | appCong₁ _ ih => simp only [Tm.weight]; omega
-  | appCong₂ _ ih => simp only [Tm.weight]; omega
-  | pairCong₁ _ ih => simp only [Tm.weight]; omega
-  | pairCong₂ _ ih => simp only [Tm.weight]; omega
-  | fstCong _ ih => simp only [Tm.weight]; omega
-  | sndCong _ ih => simp only [Tm.weight]; omega
-  | inlCong _ ih => simp only [Tm.weight]; omega
-  | inrCong _ ih => simp only [Tm.weight]; omega
-  | caseCong₀ _ ih => simp only [Tm.weight]; omega
-  | caseCong₁ _ ih => simp only [Tm.weight]; omega
-  | caseCong₂ _ ih => simp only [Tm.weight]; omega
-  | valCong _ ih => simp only [Tm.weight]; omega
-  | bindCong₁ _ ih => simp only [Tm.weight]; omega
-  | bindCong₂ _ ih => simp only [Tm.weight]; omega
+  induction h <;> simp only [Tm.weight, Tm.weight_rename] <;> omega
 
 /-- **The assoc fragment is strongly normalising.** -/
 theorem assoc_sn {Γ : List PLLFormula} {φ : PLLFormula} (t : Tm Γ φ) :

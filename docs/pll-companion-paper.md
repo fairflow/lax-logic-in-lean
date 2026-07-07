@@ -482,6 +482,54 @@ normalisation theorem, precisely scoped: Kripke-indexed Tait reducibility
 ⊤⊤-lifting to absorb `let`-assoc; with it, `reduceFuel` upgrades to a total
 normaliser by well-founded recursion.
 
+## 8d. Strong normalisation of β-reduction
+
+`PLLReducibility.lean` proves the largest single theorem of the
+development: **strong normalisation of the β-fragment** `RStep` — function,
+projection, case and `let`-β with full congruence closure — for every
+proof term (`beta_sn`), by Tait's reducibility method arranged for
+intrinsic syntax.  The design points:
+
+* `Red φ t` by recursion on the formula: Kripke function spaces at `⊃`
+  (quantified over renamings, since `lam`-bodies inhabit extended
+  contexts), elimination clauses at `∧`, *value clauses* at `∨` and `◯`
+  (`t ⟶* val w → Red w`) — sound precisely because the β-fragment cannot
+  restructure `bind`s;
+* strong normalisation is conjoined into every clause, making CR1 free;
+  CR2, CR3 and renaming-stability go by induction on the formula, with
+  renaming-stability of the value clauses resting on **reflection of
+  reduction under renaming** (`RStep.rename_reflect`), a
+  constructor-inversion grind organised by head-splitting before step
+  inversion;
+* one closure lemma per construct (β-expansion for `lam`, double
+  SN-inductions for `pair`/`case`/`bind`, value-invariance lemmas for
+  `inl`/`inr`/`val`), then the fundamental theorem and `beta_sn` at the
+  identity substitution.
+
+`step_split` makes the reduction landscape precise: every `Step` is a
+β-step or an assoc-step, and both halves are separately strongly
+normalising (`beta_sn`, `assoc_sn`).  Their *interleaving* — full `SNt` —
+is the one theorem left standing, and the obstruction is machine-checked:
+the file exhibits a β-normal term that one assoc step equips with a fresh
+`let`-β redex (the associativity law feeding the left-unit law: a `val` in
+body position — the right-unit shape, not a redex — is reassociated into
+scrutinee position), and an assoc-normal term whose β step creates an
+assoc redex; the second reduces exactly to the first, a two-rule
+ping-pong.  These four terms close both orientations of
+Bachmair–Dershowitz/Geser quasi-commutation, so no generic
+modular-termination theorem applies; and since assoc-created β-redexes
+have unbounded scrutinees which `let`-β then duplicates, no size or count
+measure survives the phase boundary either.  (A measure for the phased
+strategy alone would in any case prove only that one strategy normalises —
+weak normalisation, already delivered by cut elimination.)  The
+value-style `◯`-interpretation used here is the empty-stack shadow of
+Lindley–Stark's ⊤⊤-lifting semantics — reducibility of a computation as
+orthogonality, with the SN predicate as pole, against reducible
+continuation stacks — and upgrading to it is the precisely-scoped
+remaining step: the principal lemma trades the value clause for an
+induction on stack length inside a reduction-length measure, which is why
+an inductive or length-based characterisation of SN joins the toolkit.
+
 ## 9. Engineering lessons
 
 1. **Remove slime; don't manage it.**  The blessed-cast API works (we built
@@ -510,9 +558,10 @@ normaliser by well-founded recursion.
 
 ## 10. Future work
 
-- **Strong normalisation** of `Step`: Kripke-indexed Tait reducibility with
-  ⊤⊤-lifting for `let`-assoc (weak normalisation, assoc-termination, the
-  certified reducer, and the σ-algebra are done — SN is the last brick).
+- **Strong normalisation of full `Step`** (β *and* assoc interleaved):
+  upgrade the value-style `◯`-clause of `Red` to Lindley–Stark reducible
+  continuation stacks (β-SN, assoc-SN, `step_split`, WN, the certified
+  reducer and the σ-algebra are all done — this is the last brick).
 - **A computable decision procedure** (F&M Thm 2.8): the FMP bounds the
   model search in principle; a verified decision procedure would go through
   terminating proof search in the height-indexed calculus of

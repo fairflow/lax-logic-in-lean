@@ -15,3 +15,4 @@ import LaxLogic.PLLConstraints
 import LaxLogic.PLLSubst
 import LaxLogic.PLLNormal
 import LaxLogic.PLLStrongNorm
+import LaxLogic.PLLReducibility
