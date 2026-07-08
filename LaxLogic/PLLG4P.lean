@@ -295,9 +295,9 @@ end G4p
 
 /-! ### Smoke tests -/
 
--- The G4iLL gap sequent `◯((◯p→r)→◯p), ◯p→r ⇒ r` is `G4p`-derivable:
--- `L◯→′` duplicates the implication into the box-opening.
-example : G4p [PLLG4Gap.Ga.somehow, PLLG4Gap.Fa] (prop "r") :=
+/-- The G4iLL gap sequent `◯((◯p→r)→◯p), ◯p→r ⇒ r` is `G4p`-derivable:
+`L◯→′` duplicates the implication into the box-opening. -/
+theorem G4p.gap_derivable : G4p [PLLG4Gap.Ga.somehow, PLLG4Gap.Fa] (prop "r") :=
   .impLLaxLax (List.Perm.swap _ _ _)
     (-- F′, G′ ⊢ ◯p, with the implication retained
       .impLImp (List.Perm.swap _ _ _)
