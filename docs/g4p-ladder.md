@@ -46,7 +46,48 @@ Verified case analyses (on paper, twice):
   well-founded: the `F₂`-population comes from contexts, which the kept
   implication keeps re-supplying.
 
-## Candidate resolutions (in preference order)
+## Design revision 2 (2026-07-08, evening): the knot dissolves
+
+Re-deriving the `K`-cases exposed that every appeal to `OStr`/`S`
+inside cut has the same root: a rule premise whose context has *lost*
+material (`◯χ` traded for `χ`) that the transported derivation still
+needs.  The fix is to stop consuming boxes altogether — make **both**
+box rules keep their box:
+
+    Γ, ◯χ, χ ⇒ ◯B                            Γ, ◯χ, ◯φ→ψ, χ ⇒ ◯φ    Γ, ◯χ, ψ ⇒ Δ
+    -------------- laxL″                     ------------------------------------- L◯→″
+    Γ, ◯χ ⇒ ◯B                                        Γ, ◯χ, ◯φ→ψ ⇒ Δ
+
+(`laxL″` is *exactly* G3iLL's `L◯`; `L◯→″` keeps both the implication
+and the box in its first premise.)  Consequences, each checked at the
+case level:
+
+1. boxed-vs-unboxed absorption never arises: contraction's
+   `◯`-principal cases are purely structural (the two copies always
+   travel together — the minimal form of the iSL `⊗`-insight);
+2. `OStr`/`ABS` drop out of the ladder entirely (the completeness
+   simulation of `SC.laxL` becomes a direct `laxL″` rebuild);
+3. every rule's premise context now contains the conclusion context
+   minus at most a *decomposed* principal — so cut's parametric
+   transports are inversions (for decomposed principals) or pure
+   weakenings (box rules only add), never a box-crossing;
+4. the dependency graph is acyclic by weight levels:
+   `atomC → K_w (⇐ K_{<w}) → S_w (⇐ K_{<w}) → C_w (⇐ S_w, C_{<w})`;
+5. remaining cost: `K`'s principal-left recursions transport the right
+   derivation by weakening, which a `Prop`-valued structural induction
+   cannot absorb — so the calculus gets a **height index**
+   (`G4h : Nat → …` with `G4p″ := ∃ n, G4h n …`, the repo's own
+   `SCh`/`SC` pattern) and height-preserving `perm`/`weaken`/`Inv`,
+   after which `K` and `C` run on the classical
+   (weight, height)-lexicographic measures.
+
+`G4p″` has a tidy description: **G3iLL plus Dyckhoff's implication
+splitting, with maximal retention in the two lax-implication rules.**
+Termination is unaffected as a deferral (naive search now loops even
+more freely, but decidability was always a separate discipline —
+Bílková order or strategy-bounded search on the cut-free system).
+
+## Superseded candidate resolutions (kept for the record)
 
 1. **Height-index the calculus** (`G4pH : Nat → …`, the `SCh` pattern
    already used in this repo): port perm/weaken/inversions
