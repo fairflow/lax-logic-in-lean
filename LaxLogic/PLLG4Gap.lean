@@ -346,6 +346,59 @@ theorem sc_but_not_G4 :
     SC [Ga.somehow, Fa] (prop "r") ∧ ¬ G4 [Ga.somehow, Fa] (prop "r") :=
   ⟨sep_SC, sep_not_G4⟩
 
+/-! ## The failures of contraction and cut, as explicit derivations
+
+The positive halves are plain proof terms, so the structural-rule
+failures need no decision procedure at all. -/
+
+/-- `G′, F′ ⊢ ◯p`: inside the box-opening, `G′` and a copy of `F′`
+produce `◯p` (this is the sequent whose `F′`-free version `G′ ⊢ ◯p`
+is refuted by `not_S2`). -/
+private theorem GF_proves_boxp : G4 [G', F'] p₀.somehow :=
+  .impLImp (List.Perm.refl _)
+    (-- r→◯p, F′ ⊢ F′ : the copy of F′ fires under `impR`
+      .impR
+        (.impLLaxLax
+          (List.perm_middle (l₁ := [p₀.somehow, r₀.ifThen p₀.somehow]))
+          (.laxR (.init (.head _)))
+          (.init (.head _))))
+    (-- ◯p, F′ ⊢ ◯p
+      .laxL (List.Perm.refl _) (.laxR (.init (.head _))))
+
+/-- **Two copies of `F′` suffice**: the explicit derivation, one copy
+consumed by `impLLaxLax` outside the box-opening, the other inside it
+(within `GF_proves_boxp`). -/
+theorem two_copies_G4 : G4 [Ga.somehow, Fa, Fa] (prop "r") :=
+  .impLLaxLax (List.Perm.swap _ _ _)
+    GF_proves_boxp
+    (.init (.head _))
+
+/-- **Contraction is not admissible in G4iLL**: derivable with two
+copies of `F′`, underivable with one — both directions kernel-checked. -/
+theorem contraction_not_admissible :
+    G4 [Ga.somehow, Fa, Fa] (prop "r") ∧ ¬ G4 [Ga.somehow, Fa] (prop "r") :=
+  ⟨two_copies_G4, sep_not_G4⟩
+
+/-- `◯G′, F′ ⊢ ◯p`: the left premise of the failing cut. -/
+theorem cut_left_G4 : G4 [Ga.somehow, Fa] ((prop "p").somehow) :=
+  .laxL (List.Perm.refl _) GF_proves_boxp
+
+/-- `◯p, ◯G′, F′ ⊢ r`: the right premise of the failing cut — with
+`◯p` supplied as a hypothesis, `impLLaxLax` can use it as the box. -/
+theorem cut_right_G4 :
+    G4 [(prop "p").somehow, Ga.somehow, Fa] (prop "r") :=
+  .impLLaxLax (List.perm_middle (l₁ := [p₀.somehow, G'.somehow]))
+    (.laxR (.init (.head _)))
+    (.init (.head _))
+
+/-- **Cut is not admissible in G4iLL** either: `◯p` interpolates
+between `◯G′, F′` and `r`, but the cut cannot be eliminated. -/
+theorem cut_not_admissible :
+    G4 [Ga.somehow, Fa] ((prop "p").somehow) ∧
+    G4 [(prop "p").somehow, Ga.somehow, Fa] (prop "r") ∧
+    ¬ G4 [Ga.somehow, Fa] (prop "r") :=
+  ⟨cut_left_G4, cut_right_G4, sep_not_G4⟩
+
 /-! Axiom audit, pinned at build time: the underivability needs
 `propext` only — no choice, no quotients, and in particular no
 `Lean.ofReduceBool` (i.e. no trusted compiled evaluation). -/
@@ -353,6 +406,18 @@ theorem sc_but_not_G4 :
 /-- info: 'PLLG4Gap.sep_not_G4' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms sep_not_G4
+
+/-- info: 'PLLG4Gap.two_copies_G4' does not depend on any axioms -/
+#guard_msgs in
+#print axioms two_copies_G4
+
+/-- info: 'PLLG4Gap.contraction_not_admissible' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms contraction_not_admissible
+
+/-- info: 'PLLG4Gap.cut_not_admissible' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms cut_not_admissible
 
 /--
 info: 'PLLG4Gap.sc_but_not_G4' depends on axioms: [propext, Classical.choice, Quot.sound]
