@@ -342,6 +342,400 @@ theorem succs_complete : ∀ {Γ : List PLLFormula} {C : PLLFormula},
       · exact d₂.perm ((he.cons X.somehow).cons B)
       · exact nomatch hs
 
+/-! ### The measure decreases along every backward rule instance -/
+
+/-- Package a Dershowitz–Manna witness from list-level data: the smaller
+multiset is `Y ++ M` up to permutation, the larger `Z ++ M`, and every
+element of `Y` is below some element of `Z`. -/
+private theorem dm_of_perms {s t Y Z M : List ℕ}
+    (hs : s.Perm (Y ++ M)) (ht : t.Perm (Z ++ M)) (hZ : Z ≠ [])
+    (h : ∀ y ∈ Y, ∃ z ∈ Z, y < z) :
+    Multiset.IsDershowitzMannaLT (↑s : Multiset ℕ) (↑t : Multiset ℕ) := by
+  refine ⟨(M : Multiset ℕ), (Y : Multiset ℕ), (Z : Multiset ℕ), ?_, ?_, ?_, ?_⟩
+  · simpa using hZ
+  · rw [Multiset.coe_add]
+    exact Multiset.coe_eq_coe.mpr (hs.trans List.perm_append_comm)
+  · rw [Multiset.coe_add]
+    exact Multiset.coe_eq_coe.mpr (ht.trans List.perm_append_comm)
+  · simpa using h
+
+private theorem perm_back1 {α : Type _} (a b : α) (l : List α) :
+    (a :: b :: l).Perm (b :: a :: l) := List.Perm.swap b a l
+
+private theorem perm_back2 {α : Type _} (a b c : α) (l : List α) :
+    (a :: b :: c :: l).Perm (b :: c :: a :: l) :=
+  (perm_back1 a b _).trans ((perm_back1 a c l).cons b)
+
+/-- **Termination**: along every instance in `succs Γ C`, every premise is
+strictly below the conclusion in the Dershowitz–Manna order on weight
+multisets.  Case sweep matching `succs_sound`, each case exhibiting the
+`X/Y/Z` decomposition; the only arithmetic is Dyckhoff's weight bookkeeping
+(`weight_pos` + `omega`). -/
+theorem succs_dec : ∀ {Γ : List PLLFormula} {C : PLLFormula}
+    {inst : List Sequent} {s : Sequent}, inst ∈ succs Γ C → s ∈ inst →
+    Multiset.IsDershowitzMannaLT (smeasure s) (smeasure (Γ, C)) := by
+  intro Γ C inst s hi hs
+  simp only [succs, List.mem_append] at hi
+  rcases hi with (hi | hi) | hi
+  · -- botL: no premises
+    split at hi
+    · cases hi with
+      | head => exact nomatch hs
+      | tail _ h => cases h
+    · cases hi
+  · -- right rules
+    cases C with
+    | prop a =>
+        simp only [rightInsts] at hi
+        split at hi
+        · cases hi with
+          | head => exact nomatch hs
+          | tail _ h => cases h
+        · cases hi
+    | falsePLL => cases hi
+    | and A B =>
+        cases hi with
+        | head =>
+            rcases List.mem_cons.mp hs with rfl | hs'
+            · refine dm_of_perms (Y := [A.weight]) (Z := [(A.and B).weight])
+                (M := Γ.map weight) (List.Perm.refl _) (List.Perm.refl _)
+                (by simp) ?_
+              intro y hy
+              have hB := B.weight_pos
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            rcases List.mem_cons.mp hs' with rfl | hs'
+            · refine dm_of_perms (Y := [B.weight]) (Z := [(A.and B).weight])
+                (M := Γ.map weight) (List.Perm.refl _) (List.Perm.refl _)
+                (by simp) ?_
+              intro y hy
+              have hA := A.weight_pos
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            · exact nomatch hs'
+        | tail _ h => cases h
+    | or A B =>
+        cases hi with
+        | head =>
+            rcases List.mem_cons.mp hs with rfl | hs'
+            · refine dm_of_perms (Y := [A.weight]) (Z := [(A.or B).weight])
+                (M := Γ.map weight) (List.Perm.refl _) (List.Perm.refl _)
+                (by simp) ?_
+              intro y hy
+              have hB := B.weight_pos
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            · exact nomatch hs'
+        | tail _ h =>
+            cases h with
+            | head =>
+                rcases List.mem_cons.mp hs with rfl | hs'
+                · refine dm_of_perms (Y := [B.weight]) (Z := [(A.or B).weight])
+                    (M := Γ.map weight) (List.Perm.refl _) (List.Perm.refl _)
+                    (by simp) ?_
+                  intro y hy
+                  have hA := A.weight_pos
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                · exact nomatch hs'
+            | tail _ h => cases h
+    | ifThen A B =>
+        cases hi with
+        | head =>
+            rcases List.mem_cons.mp hs with rfl | hs'
+            · refine dm_of_perms (Y := [B.weight, A.weight])
+                (Z := [(A.ifThen B).weight])
+                (M := Γ.map weight) (List.Perm.refl _) (List.Perm.refl _)
+                (by simp) ?_
+              intro y hy
+              have hA := A.weight_pos; have hB := B.weight_pos
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            · exact nomatch hs'
+        | tail _ h => cases h
+    | somehow A =>
+        cases hi with
+        | head =>
+            rcases List.mem_cons.mp hs with rfl | hs'
+            · refine dm_of_perms (Y := [A.weight]) (Z := [A.somehow.weight])
+                (M := Γ.map weight) (List.Perm.refl _) (List.Perm.refl _)
+                (by simp) ?_
+              intro y hy
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            · exact nomatch hs'
+        | tail _ h => cases h
+  · -- left rules
+    obtain ⟨P, hP, hi⟩ := List.mem_flatMap.mp hi
+    have hΓ : (Γ.map weight).Perm (P.weight :: (Γ.erase P).map weight) :=
+      (List.perm_cons_erase hP).map _
+    cases P with
+    | prop a => cases hi
+    | falsePLL => cases hi
+    | and A B =>
+        cases hi with
+        | head =>
+            rcases List.mem_cons.mp hs with rfl | hs'
+            · refine dm_of_perms (Y := [A.weight, B.weight])
+                (Z := [(A.and B).weight])
+                (M := C.weight :: (Γ.erase (A.and B)).map weight)
+                (perm_back2 _ _ _ _)
+                ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+              intro y hy
+              have hA := A.weight_pos; have hB := B.weight_pos
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            · exact nomatch hs'
+        | tail _ h => cases h
+    | or A B =>
+        cases hi with
+        | head =>
+            rcases List.mem_cons.mp hs with rfl | hs'
+            · refine dm_of_perms (Y := [A.weight]) (Z := [(A.or B).weight])
+                (M := C.weight :: (Γ.erase (A.or B)).map weight)
+                (perm_back1 _ _ _)
+                ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+              intro y hy
+              have hB := B.weight_pos
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            rcases List.mem_cons.mp hs' with rfl | hs'
+            · refine dm_of_perms (Y := [B.weight]) (Z := [(A.or B).weight])
+                (M := C.weight :: (Γ.erase (A.or B)).map weight)
+                (perm_back1 _ _ _)
+                ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+              intro y hy
+              have hA := A.weight_pos
+              rcases List.mem_cons.mp hy with rfl | hy
+              · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+              · exact nomatch hy
+            · exact nomatch hs'
+        | tail _ h => cases h
+    | somehow A =>
+        cases C with
+        | somehow B =>
+            cases hi with
+            | head =>
+                rcases List.mem_cons.mp hs with rfl | hs'
+                · refine dm_of_perms (Y := [A.weight])
+                    (Z := [A.somehow.weight])
+                    (M := B.somehow.weight ::
+                      (Γ.erase A.somehow).map weight)
+                    (perm_back1 _ _ _)
+                    ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+                  intro y hy
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .head _, by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                · exact nomatch hs'
+            | tail _ h => cases h
+        | prop a => cases hi
+        | falsePLL => cases hi
+        | and _ _ => cases hi
+        | or _ _ => cases hi
+        | ifThen _ _ => cases hi
+    | ifThen A' B =>
+        cases A' with
+        | prop a =>
+            simp only [instsFor] at hi
+            split at hi
+            · cases hi with
+              | head =>
+                  rcases List.mem_cons.mp hs with rfl | hs'
+                  · refine dm_of_perms (Y := [B.weight])
+                      (Z := [((prop a).ifThen B).weight])
+                      (M := C.weight ::
+                        (Γ.erase ((prop a).ifThen B)).map weight)
+                      (perm_back1 _ _ _)
+                      ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+                    intro y hy
+                    rcases List.mem_cons.mp hy with rfl | hy
+                    · exact ⟨_, .head _,
+                        by simp only [PLLFormula.weight]; omega⟩
+                    · exact nomatch hy
+                  · exact nomatch hs'
+              | tail _ h => cases h
+            · cases hi
+        | falsePLL =>
+            cases hi with
+            | head =>
+                rcases List.mem_cons.mp hs with rfl | hs'
+                · refine dm_of_perms (Y := [])
+                    (Z := [(falsePLL.ifThen B).weight])
+                    (M := C.weight ::
+                      (Γ.erase (falsePLL.ifThen B)).map weight)
+                    (List.Perm.refl _)
+                    ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp)
+                    (by intro y hy; exact nomatch hy)
+                · exact nomatch hs'
+            | tail _ h => cases h
+        | and A₁ A₂ =>
+            cases hi with
+            | head =>
+                rcases List.mem_cons.mp hs with rfl | hs'
+                · refine dm_of_perms
+                    (Y := [(A₁.ifThen (A₂.ifThen B)).weight])
+                    (Z := [((A₁.and A₂).ifThen B).weight])
+                    (M := C.weight ::
+                      (Γ.erase ((A₁.and A₂).ifThen B)).map weight)
+                    (perm_back1 _ _ _)
+                    ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+                  intro y hy
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .head _,
+                      by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                · exact nomatch hs'
+            | tail _ h => cases h
+        | or A₁ A₂ =>
+            cases hi with
+            | head =>
+                rcases List.mem_cons.mp hs with rfl | hs'
+                · refine dm_of_perms
+                    (Y := [(A₁.ifThen B).weight, (A₂.ifThen B).weight])
+                    (Z := [((A₁.or A₂).ifThen B).weight])
+                    (M := C.weight ::
+                      (Γ.erase ((A₁.or A₂).ifThen B)).map weight)
+                    (perm_back2 _ _ _ _)
+                    ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+                  intro y hy
+                  have h₁ := A₁.weight_pos; have h₂ := A₂.weight_pos
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .head _,
+                      by simp only [PLLFormula.weight]; omega⟩
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .head _,
+                      by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                · exact nomatch hs'
+            | tail _ h => cases h
+        | ifThen A₁ A₂ =>
+            cases hi with
+            | head =>
+                rcases List.mem_cons.mp hs with rfl | hs'
+                · -- first premise: goal changes to A₁ ⊃ A₂
+                  refine dm_of_perms
+                    (Y := [(A₁.ifThen A₂).weight, (A₂.ifThen B).weight])
+                    (Z := [C.weight, ((A₁.ifThen A₂).ifThen B).weight])
+                    (M := (Γ.erase ((A₁.ifThen A₂).ifThen B)).map weight)
+                    (List.Perm.refl _) (hΓ.cons _) (by simp) ?_
+                  intro y hy
+                  have h₁ := A₁.weight_pos; have h₂ := A₂.weight_pos
+                  have hB := B.weight_pos
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .tail _ (.head _),
+                      by simp only [PLLFormula.weight]; omega⟩
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .tail _ (.head _),
+                      by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                rcases List.mem_cons.mp hs' with rfl | hs'
+                · refine dm_of_perms (Y := [B.weight])
+                    (Z := [((A₁.ifThen A₂).ifThen B).weight])
+                    (M := C.weight ::
+                      (Γ.erase ((A₁.ifThen A₂).ifThen B)).map weight)
+                    (perm_back1 _ _ _)
+                    ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+                  intro y hy
+                  have h₁ := A₁.weight_pos; have h₂ := A₂.weight_pos
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .head _,
+                      by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                · exact nomatch hs'
+            | tail _ h => cases h
+        | somehow A₁ =>
+            cases hi with
+            | head =>
+                rcases List.mem_cons.mp hs with rfl | hs'
+                · -- first premise of R#→: goal changes to A₁, context shrinks
+                  refine dm_of_perms (Y := [A₁.weight])
+                    (Z := [C.weight, (A₁.somehow.ifThen B).weight])
+                    (M := (Γ.erase (A₁.somehow.ifThen B)).map weight)
+                    (List.Perm.refl _) (hΓ.cons _) (by simp) ?_
+                  intro y hy
+                  have hB := B.weight_pos
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .tail _ (.head _),
+                      by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                rcases List.mem_cons.mp hs' with rfl | hs'
+                · refine dm_of_perms (Y := [B.weight])
+                    (Z := [(A₁.somehow.ifThen B).weight])
+                    (M := C.weight ::
+                      (Γ.erase (A₁.somehow.ifThen B)).map weight)
+                    (perm_back1 _ _ _)
+                    ((hΓ.cons _).trans (perm_back1 _ _ _)) (by simp) ?_
+                  intro y hy
+                  have h₁ := A₁.weight_pos
+                  rcases List.mem_cons.mp hy with rfl | hy
+                  · exact ⟨_, .head _,
+                      by simp only [PLLFormula.weight]; omega⟩
+                  · exact nomatch hy
+                · exact nomatch hs'
+            | tail _ hi =>
+                -- L#→ instances from the filterMap over boxed context formulas
+                obtain ⟨Q, hQ, hf⟩ := List.mem_filterMap.mp hi
+                cases Q with
+                | somehow X =>
+                    simp only [Option.some_inj] at hf; subst hf
+                    have hΔ : ((Γ.erase (A₁.somehow.ifThen B)).map weight).Perm
+                        (X.somehow.weight ::
+                          ((Γ.erase (A₁.somehow.ifThen B)).erase
+                            X.somehow).map weight) :=
+                      (List.perm_cons_erase hQ).map _
+                    rcases List.mem_cons.mp hs with rfl | hs'
+                    · refine dm_of_perms
+                        (Y := [A₁.somehow.weight, X.weight])
+                        (Z := [C.weight, (A₁.somehow.ifThen B).weight,
+                               X.somehow.weight])
+                        (M := ((Γ.erase (A₁.somehow.ifThen B)).erase
+                          X.somehow).map weight)
+                        (List.Perm.refl _)
+                        ((hΓ.trans (hΔ.cons _)).cons _) (by simp) ?_
+                      intro y hy
+                      have hB := B.weight_pos
+                      rcases List.mem_cons.mp hy with rfl | hy
+                      · exact ⟨_, .tail _ (.head _),
+                          by simp only [PLLFormula.weight]; omega⟩
+                      rcases List.mem_cons.mp hy with rfl | hy
+                      · exact ⟨_, .tail _ (.tail _ (.head _)),
+                          by simp only [PLLFormula.weight]; omega⟩
+                      · exact nomatch hy
+                    rcases List.mem_cons.mp hs' with rfl | hs'
+                    · refine dm_of_perms (Y := [B.weight])
+                        (Z := [(A₁.somehow.ifThen B).weight])
+                        (M := C.weight :: X.somehow.weight ::
+                          ((Γ.erase (A₁.somehow.ifThen B)).erase
+                            X.somehow).map weight)
+                        (perm_back1 _ _ _)
+                        (((hΓ.trans (hΔ.cons _)).cons _).trans
+                          (perm_back1 _ _ _)) (by simp) ?_
+                      intro y hy
+                      have h₁ := A₁.weight_pos
+                      rcases List.mem_cons.mp hy with rfl | hy
+                      · exact ⟨_, .head _,
+                          by simp only [PLLFormula.weight]; omega⟩
+                      · exact nomatch hy
+                    · exact nomatch hs'
+                | prop _ => cases hf
+                | falsePLL => cases hf
+                | and _ _ => cases hf
+                | or _ _ => cases hf
+                | ifThen _ _ => cases hf
+
 end G4
 
 end PLLND
