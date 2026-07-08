@@ -736,6 +736,94 @@ theorem succs_dec : ∀ {Γ : List PLLFormula} {C : PLLFormula}
                 | or _ _ => cases hf
                 | ifThen _ _ => cases hf
 
+/-! ### The decision procedure -/
+
+/-- Dependent bounded-∀ decidability: decide `∀ x ∈ l, p x` from
+deciders available only for members. -/
+private def decBAll {α : Type _} (p : α → Prop) :
+    (l : List α) → (∀ x ∈ l, Decidable (p x)) → Decidable (∀ x ∈ l, p x)
+  | [], _ => isTrue fun _ hx => nomatch hx
+  | a :: l, h =>
+      match h a (.head _), decBAll p l (fun x hx => h x (.tail _ hx)) with
+      | isTrue ha, isTrue hl => isTrue (by
+          intro x hx
+          rcases List.mem_cons.mp hx with rfl | hx
+          · exact ha
+          · exact hl x hx)
+      | isFalse ha, _ => isFalse fun H => ha (H a (.head _))
+      | _, isFalse hl => isFalse fun H => hl fun x hx => H x (.tail _ hx)
+
+/-- Dependent bounded-∃ decidability. -/
+private def decBEx {α : Type _} (p : α → Prop) :
+    (l : List α) → (∀ x ∈ l, Decidable (p x)) → Decidable (∃ x ∈ l, p x)
+  | [], _ => isFalse fun ⟨_, hx, _⟩ => nomatch hx
+  | a :: l, h =>
+      match h a (.head _), decBEx p l (fun x hx => h x (.tail _ hx)) with
+      | isTrue ha, _ => isTrue ⟨a, .head _, ha⟩
+      | isFalse _, isTrue hl =>
+          isTrue (hl.imp fun _ ⟨hx, hp⟩ => ⟨.tail _ hx, hp⟩)
+      | isFalse ha, isFalse hl => isFalse (by
+          rintro ⟨x, hx, hp⟩
+          rcases List.mem_cons.mp hx with rfl | hx
+          · exact ha hp
+          · exact hl ⟨x, hx, hp⟩)
+
+/-- **The decision procedure for G4iLL** (hence, once G3→G4 completeness
+lands, for PLL derivability — F&M Theorem 2.8): well-founded recursion on
+the Dershowitz–Manna measure, searching the finitely many backward rule
+instances at each sequent. -/
+def decideG4 : ∀ s : Sequent, Decidable (G4 s.1 s.2) :=
+  WellFounded.fix (C := fun s => Decidable (G4 s.1 s.2))
+    (InvImage.wf smeasure Multiset.wellFounded_isDershowitzMannaLT)
+    fun s ih =>
+      letI : Decidable (∃ inst ∈ succs s.1 s.2, ∀ p ∈ inst, G4 p.1 p.2) :=
+        decBEx _ (succs s.1 s.2) fun inst hinst =>
+          decBAll _ inst fun p hp => ih p (succs_dec hinst hp)
+      decidable_of_iff _
+        ⟨fun ⟨_, hi, hp⟩ => succs_sound hi hp, succs_complete⟩
+
+instance instDecidableG4 (Γ : List PLLFormula) (C : PLLFormula) :
+    Decidable (G4 Γ C) := decideG4 (Γ, C)
+
+/-! ### Executable tests
+
+`decide`-style kernel reduction is unavailable (`WellFounded.fix` does not
+iota-reduce in the kernel), but the compiler runs the procedure fine; the
+`#guard_msgs`/`#eval` pairs below are checked at build time. -/
+
+-- ◯-unit `A ⊃ ◯A`
+/-- info: true -/
+#guard_msgs in
+#eval decide (G4 [] ((prop "A").ifThen (prop "A").somehow))
+
+-- ◯-multiplication `◯◯A ⊃ ◯A`
+/-- info: true -/
+#guard_msgs in
+#eval decide (G4 [] ((prop "A").somehow.somehow.ifThen (prop "A").somehow))
+
+-- ◯-reflection `◯A ⊃ A` is NOT a theorem of PLL
+/-- info: false -/
+#guard_msgs in
+#eval decide (G4 [] ((prop "A").somehow.ifThen (prop "A")))
+
+-- excluded middle fails (PLL is intuitionistic)
+/-- info: false -/
+#guard_msgs in
+#eval decide (G4 [] ((prop "A").or ((prop "A").ifThen falsePLL)))
+
+-- Howe's duplication sequent, this time found by the prover
+/-- info: true -/
+#guard_msgs in
+#eval decide (G4 [((prop "B").ifThen ((prop "A").somehow.ifThen (prop "C"))).ifThen
+    (prop "A").somehow, (prop "A").somehow.ifThen (prop "C"), (prop "B").somehow]
+    (prop "C"))
+
+-- ◯ does not commute with ∨ in general: `◯(A ∨ B) ⊃ (◯A ∨ ◯B)` fails
+/-- info: false -/
+#guard_msgs in
+#eval decide (G4 [] (((prop "A").or (prop "B")).somehow.ifThen
+    ((prop "A").somehow.or (prop "B").somehow)))
+
 end G4
 
 end PLLND
