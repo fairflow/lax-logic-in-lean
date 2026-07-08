@@ -99,4 +99,20 @@ example : SC [Gm.somehow, Fm] (prop "q") := by
     · exact SC.iden _ (.head _)
   · exact SC.botL (.head _)
 
+/-! ## Contraction is not admissible in G4iLL
+
+With **two** copies of `F'` the separation sequent *is* derivable: one
+copy is consumed by `impLLaxLax` (box `◯G'`), whose first premise
+`G', F' ⇒ ◯p` spends the second copy inside the box-opening (via
+`impLImp` on `G'` and `impLLaxLax` again, box `◯p`).  Together with the
+`false` verdict on the single-copy sequent above, this machine-checks
+that the contraction rule is **not** admissible in G4iLL — the very
+hypothesis the referee-patched Theorem 3.4 of Studia Logica 110 (2022)
+added, and the substance of Howe's conjecture (MSCS 2001, §5), whose
+example this is (in packaged form). -/
+
+/-- info: true -/
+#guard_msgs in
+#eval decide (G4 [Ga.somehow, Fa, Fa] (prop "r"))
+
 end PLLG4Gap
