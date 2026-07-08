@@ -184,6 +184,164 @@ theorem succs_sound : ∀ {Γ : List PLLFormula} {C : PLLFormula}
                 | or _ _ => cases hf
                 | ifThen _ _ => cases hf
 
+/-- Cancel the head of a `Perm` against the canonical `erase`
+representative: a rule's own side context is a permutation of it. -/
+private theorem perm_erase {Γ Δ : List PLLFormula} {P : PLLFormula}
+    (h : Γ.Perm (P :: Δ)) : Δ.Perm (Γ.erase P) :=
+  (h.symm.trans (List.perm_cons_erase (h.symm.subset (.head _)))).cons_inv
+
+/-- **Completeness of the enumeration**: every derivation ends with one of
+the instances in `succs Γ C`, all premises derivable.  Pure case analysis
+on the last rule — no induction — with `G4.perm` mediating between the
+rule's side context `Δ` and the canonical representative `Γ.erase P`. -/
+theorem succs_complete : ∀ {Γ : List PLLFormula} {C : PLLFormula},
+    G4 Γ C → ∃ inst ∈ succs Γ C, ∀ s ∈ inst, G4 s.1 s.2 := by
+  intro Γ C d
+  cases d with
+  | init h =>
+      exact ⟨[], by simp [succs, rightInsts, h], fun s hs => nomatch hs⟩
+  | botL h =>
+      exact ⟨[], by simp [succs, h], fun s hs => nomatch hs⟩
+  | @andR _ A B d₁ d₂ =>
+      refine ⟨[(Γ, A), (Γ, B)], by simp [succs, rightInsts], ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₂
+      · exact nomatch hs
+  | @orR1 _ A B d₁ =>
+      refine ⟨[(Γ, A)], by simp [succs, rightInsts], ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁
+      · exact nomatch hs
+  | @orR2 _ A B d₂ =>
+      refine ⟨[(Γ, B)], by simp [succs, rightInsts], ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₂
+      · exact nomatch hs
+  | @impR _ A B d₁ =>
+      refine ⟨[(A :: Γ, B)], by simp [succs, rightInsts], ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁
+      · exact nomatch hs
+  | @laxR _ A d₁ =>
+      refine ⟨[(Γ, A)], by simp [succs, rightInsts], ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁
+      · exact nomatch hs
+  | @andL _ Δ A B _ h d₁ =>
+      have hP : A.and B ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase (A.and B)) := perm_erase h
+      refine ⟨[(A :: B :: Γ.erase (A.and B), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm ((he.cons B).cons A)
+      · exact nomatch hs
+  | @orL _ Δ A B _ h d₁ d₂ =>
+      have hP : A.or B ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase (A.or B)) := perm_erase h
+      refine ⟨[(A :: Γ.erase (A.or B), C), (B :: Γ.erase (A.or B), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm (he.cons A)
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₂.perm (he.cons B)
+      · exact nomatch hs
+  | @laxL _ Δ A B h d₁ =>
+      have hP : A.somehow ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase A.somehow) := perm_erase h
+      refine ⟨[(A :: Γ.erase A.somehow, B.somehow)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm (he.cons A)
+      · exact nomatch hs
+  | @impLProp _ Δ a B _ h ha d₁ =>
+      have hP : (prop a).ifThen B ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase ((prop a).ifThen B)) := perm_erase h
+      refine ⟨[(B :: Γ.erase ((prop a).ifThen B), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, ?_⟩), ?_⟩
+      · simp only [instsFor]
+        rw [if_pos (he.subset ha)]
+        exact .head _
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm (he.cons B)
+      · exact nomatch hs
+  | @impLBot _ Δ B _ h d₁ =>
+      have hP : falsePLL.ifThen B ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase (falsePLL.ifThen B)) := perm_erase h
+      refine ⟨[(Γ.erase (falsePLL.ifThen B), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm he
+      · exact nomatch hs
+  | @impLAnd _ Δ A B D _ h d₁ =>
+      have hP : (A.and B).ifThen D ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase ((A.and B).ifThen D)) := perm_erase h
+      refine ⟨[(A.ifThen (B.ifThen D) :: Γ.erase ((A.and B).ifThen D), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm (he.cons _)
+      · exact nomatch hs
+  | @impLOr _ Δ A B D _ h d₁ =>
+      have hP : (A.or B).ifThen D ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase ((A.or B).ifThen D)) := perm_erase h
+      refine ⟨[(A.ifThen D :: B.ifThen D :: Γ.erase ((A.or B).ifThen D), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm ((he.cons _).cons _)
+      · exact nomatch hs
+  | @impLImp _ Δ A B D _ h d₁ d₂ =>
+      have hP : (A.ifThen B).ifThen D ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase ((A.ifThen B).ifThen D)) := perm_erase h
+      refine ⟨[(B.ifThen D :: Γ.erase ((A.ifThen B).ifThen D), A.ifThen B),
+               (D :: Γ.erase ((A.ifThen B).ifThen D), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm (he.cons _)
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₂.perm (he.cons _)
+      · exact nomatch hs
+  | @impLLax _ Δ A B _ h d₁ d₂ =>
+      have hP : A.somehow.ifThen B ∈ Γ := h.symm.subset (.head _)
+      have he : Δ.Perm (Γ.erase (A.somehow.ifThen B)) := perm_erase h
+      refine ⟨[(Γ.erase (A.somehow.ifThen B), A),
+               (B :: Γ.erase (A.somehow.ifThen B), C)],
+        List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP, .head _⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm he
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₂.perm (he.cons B)
+      · exact nomatch hs
+  | @impLLaxLax _ Δ A B X _ h d₁ d₂ =>
+      have hP : A.somehow.ifThen B ∈ Γ := h.symm.subset (.head _)
+      have h₁ : (X.somehow :: Δ).Perm (Γ.erase (A.somehow.ifThen B)) :=
+        perm_erase h
+      have hQ : X.somehow ∈ Γ.erase (A.somehow.ifThen B) := h₁.subset (.head _)
+      have he : Δ.Perm ((Γ.erase (A.somehow.ifThen B)).erase X.somehow) :=
+        (h₁.trans (List.perm_cons_erase hQ)).cons_inv
+      refine ⟨_, List.mem_append_right _ (List.mem_flatMap.mpr ⟨_, hP,
+        .tail _ (List.mem_filterMap.mpr ⟨X.somehow, hQ, rfl⟩)⟩), ?_⟩
+      intro s hs
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₁.perm (he.cons X)
+      rcases List.mem_cons.mp hs with rfl | hs
+      · exact d₂.perm ((he.cons X.somehow).cons B)
+      · exact nomatch hs
+
 end G4
 
 end PLLND
