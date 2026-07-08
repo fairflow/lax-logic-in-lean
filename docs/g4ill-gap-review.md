@@ -26,8 +26,8 @@ Abbreviations throughout: `F′ := ◯p→r`, `G′ := F′→◯p`, and the
 
 | # | Statement | Artifact | Checked by |
 |---|-----------|----------|------------|
-| 1 | `SC [◯G′, F′] r` (G3-derivability) | `example` in `LaxLogic/PLLG4Gap.lean` | **Lean kernel** (an explicit derivation term) |
-| 2 | `¬ G4 [◯G′, F′] r` (G4-underivability) | `#guard_msgs`/`#eval decide … = false`, same file | **compiled evaluation** of the *formally verified* decision procedure (see §3) |
+| 1 | `SC [◯G′, F′] r` (G3-derivability) | `theorem sep_SC` in `LaxLogic/PLLG4Gap.lean` | **Lean kernel** (an explicit derivation term; axioms: `propext, Classical.choice, Quot.sound`) |
+| 2 | `¬ G4 [◯G′, F′] r` (G4-underivability) | **`theorem sep_not_G4`**, same file (§7 item 1 is DONE); the `decide … = false` guard remains as an independent second witness | **Lean kernel** — an explicit inversion proof, axiom audit pinned at build time: **`[propext]` only**. Packaged with row 1 as `theorem sc_but_not_G4`. |
 | 3 | `G4 [◯G′, F′, F′] r` (two copies derivable) | `decide … = true`, same file | compiled evaluation (a hand derivation also exists, §6, usable as a kernel-checked term on request) |
 | 4 | `G4 [◯G′, F′] ◯p` (control: the boxed detour exists) | `decide … = true` | compiled evaluation |
 | 5 | All of 1–4 for the `⊥`-variant `◯G, F ⇒ q` | same file | as above |
