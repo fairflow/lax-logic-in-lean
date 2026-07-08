@@ -18,3 +18,4 @@ import LaxLogic.PLLStrongNorm
 import LaxLogic.PLLReducibility
 import LaxLogic.PLLTactics
 import LaxLogic.PLLTopTop
+import LaxLogic.PLLG4
