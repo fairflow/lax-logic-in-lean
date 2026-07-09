@@ -2,13 +2,15 @@ import LaxLogic.PLLG4H
 import LaxLogic.PLLG4Inv
 
 /-!
-# Height-preserving inversions for G4iLL″ (brick 2)
+# Height-preserving inversions for G4iLL″
 
 The master inversion of `PLLG4Inv.lean`, restated for `G4h` **with the
 height preserved**: if `G4h n Γ C` and `Γ` exposes a principal `P` with
 `Inv P L`, then `G4h n (L ++ Δ) C`.  Height preservation is what the
-cut/contraction measures will consume: inverting a side premise costs
-nothing.
+cut and contraction measures will consume: inverting a side premise costs
+nothing.  The two **right** inversions `impR_inv` and (in `PLLG4HCut.lean`)
+`andR_inv` are what later let the main cut avoid a left-analysis in every
+implication-shaped principal case.
 
 Two bookkeeping notes against the `G4p` version:
 

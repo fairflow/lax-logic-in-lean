@@ -1,20 +1,23 @@
 import LaxLogic.PLLG4HAdm
 
 /-!
-# Bricks 4–6: spines, `weak_Imp`, and `L→→`-duplication for G4iLL″
+# Spines, `weak_Imp`, and `L→→`-duplication for G4iLL″
 
-* **Brick 4** — `Spine φ σ` (`φ = ◯^k σ`) with `laxR`-lifts: the
-  bookkeeping for goals descending a `◯`-tower.
-* **Brick 5** — `weak_Imp` (Dyckhoff–Negri Lemma 4.1, all antecedents):
-  from `Γ ⇒ D` and `Γ, B ⇒ E` conclude `Γ, D→B ⇒ E`.  Induction on the
-  first derivation (at `G4h`, since `∃`-wrapped judgments cannot be
-  inducted on), conclusion at `G4c`.  The rule-ending table of
-  `PLLG4PStr.lean` carries over; the two box rules give *shorter* cases
-  than before, their premises already carrying the full context.
-* **Brick 6** — `impLImp_dup` (Dyckhoff–Negri Lemma 4.2): a context
-  occurrence of `(A→B)→D` may be replaced by `A, B→D, B→D`; plain
-  structural induction, the principal case closed by `impR_inv` +
-  `weak_Imp`.
+The three Dyckhoff–Negri ingredients the contraction and cut proofs
+consume, ported to the lax setting.
+
+* `Spine φ σ` (`φ = ◯^k σ`) with `laxR`-lifts: the bookkeeping for goals
+  descending a `◯`-tower.
+* `weak_Imp` (Dyckhoff–Negri Lemma 4.1, all antecedents): from `Γ ⇒ D`
+  and `Γ, B ⇒ E` conclude `Γ, D→B ⇒ E`.  Induction on the first
+  derivation (at `G4h`, since `∃`-wrapped judgments cannot be inducted
+  on), conclusion at `G4c`.  The rule-ending table of `PLLG4PStr.lean`
+  carries over; the two box rules give *shorter* cases than before, their
+  premises already carrying the full context.
+* `impLImp_dup` (Dyckhoff–Negri Lemma 4.2): a context occurrence of
+  `(A→B)→D` may be replaced by `A, B→D, B→D`; plain structural induction,
+  the principal case closed by `impR_inv` + `weak_Imp`.  This is the
+  engine of the `⊃⊃` case of contraction.
 -/
 
 open PLLFormula

@@ -1,16 +1,31 @@
 import LaxLogic.PLLG4HCtr
 
 /-!
-# Toward cut for G4iLL″: pre-lemmas
+# Cut for G4iLL″: ex falso, atomic cut, the main cut, and self-absorption
 
-The cut ladder (`docs/g4p-ladder.md`, revision 3) runs
-`exfalso → cut_atom → K(w)`.  This file opens with the first:
+The summit of the ladder.  The cut development runs
+`exfalso → cut_atom → cut` (design in `docs/g4p-ladder.md`), and this
+file carries all of it, ending with **cut proved outright**
+(`G4c.cut`, unconditional, axiom audit in `PLLG4HComp.lean`).  The
+structure, in order:
 
 * `exfalso_adm` — from `Γ ⇒ ⊥` conclude `Γ ⇒ E`.  No right rule
   concludes `⊥`, so a `⊥`-derivation is a tree of left rules over
   `botL` leaves; rebuild every rule at goal `E`, reusing the
   goal-independent auxiliary premises (`L→→`'s first premise, the two
   lax rules' box premises) verbatim.  Purely structural — no measure.
+* `cut_atom` — atomic cut, by a left-right switching induction on the
+  height sum.
+* `cut_of_selfAbsorb` — the main cut, by lexicographic induction on
+  (cut-formula weight, height sum), reducing every obligation but one to
+  the isolated proposition `SelfAbsorb`; the height-preserving right
+  inversions `impR_inv`/`andR_inv` remove the left-analysis from all
+  implication-shaped principal cases.
+* `selfAbsorb_aux`/`selfAbsorb` — `SelfAbsorb` **proved outright**, by
+  plain structural induction on the box-derivation, with no cut and no
+  measure: the two firing shapes are absorbed verbatim by the two
+  retained lax rules (`R◯→″`, `L◯→″`).  So the condition discharges and
+  `G4c.cut` is unconditional.
 -/
 
 open PLLFormula

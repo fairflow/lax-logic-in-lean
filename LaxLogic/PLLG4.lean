@@ -1,12 +1,12 @@
 import LaxLogic.PLLSequent
 
 /-!
-# G4iLL: a terminating, contraction-free sequent calculus for PLL
+# G4iLL: Iemhoff's terminating sequent calculus for PLL — the faithful transcription
 
-Towards F&M Theorem 2.8 (decidability) as a *computable, verified* decision
-procedure.  The calculus `G4` below is Iemhoff's **G4iLL** — Dyckhoff's
-contraction-free G4ip for intuitionistic propositional logic extended with
-four lax rules — from
+Towards F&M Theorem 2.8 (decidability).  The calculus `G4` below is
+Iemhoff's **G4iLL** — Dyckhoff's contraction-free G4ip for intuitionistic
+propositional logic extended with four lax rules — transcribed verbatim,
+from
 
 * R. Iemhoff, *Proof Theory for Lax Logic*, in: Dick de Jongh on
   Intuitionistic and Provability Logics, Outstanding Contributions to
@@ -17,16 +17,27 @@ four lax rules — from
 As in G4ip, the left implication rule is split by the shape of the
 antecedent of the implication; the two rules for `◯A ⊃ B` are Iemhoff's
 `R#→` (`impLLax`) and `L#→` (`impLLaxLax`).  The latter keeps `◯X` in the
-context, which is exactly what absorbs Howe's duplication example
-(see the smoke test at the bottom) — Howe (MSCS 11(4), 2001) conjectured
-that no contraction-free calculus for lax logic exists; Iemhoff's calculus
-refutes this.
+context — Iemhoff's device for Howe's duplication (Howe, MSCS 11(4),
+2001, conjectured that no contraction-free calculus for lax logic
+exists).
+
+**But this calculus is incomplete for PLL** — that is the discovery of
+`PLLG4Gap.lean`, which is downstream of this file.  `L◯→` keeps the box
+but *consumes the implication*, and the sequent
+`◯((◯p→r)→◯p), ◯p→r ⇒ r` needs the implication `◯p→r` twice, on the two
+sides of a box-opening, so it is G3iLL-derivable and G4iLL-underivable
+(both kernel-checked); contraction is not admissible here.  Howe's
+conjecture is *not* refuted by G4iLL.  See `PLLG4Gap.lean` for the
+separation, `PLLG4Tower.lean` for Howe's own sequent, and
+`docs/commentary.md` / `docs/g4ill-gap-review.md` for the full account.
+The complete repair is `G4h`/`G4c` (**G4iLL″**) in `PLLG4H.lean` and its
+successors.  This file remains as the faithful base for the decider
+(`PLLDecide.lean`) and the gap proof.
 
 Every premise is smaller than its conclusion in the Dershowitz–Manna
 multiset extension of `PLLFormula.weight` (Dyckhoff's weight with
 `weight (◯A) = weight A + 1`), so naive backward proof search terminates;
-that measure drives the prover (a later chunk), not the inductive
-definition itself.
+that measure drives the prover, not the inductive definition itself.
 
 ## Design notes (slime discipline)
 
@@ -45,11 +56,12 @@ unifier.  This buys three things at once:
   principal formula — `erase` appears in *proof terms* only, never in
   types being matched.
 
-This file, chunks 1–2: the weight, the calculus, structural admissibility
+This file: the weight, the calculus, structural admissibility
 (`perm`, `weaken`), and **soundness** into the cut-free G3 calculus
 `SCh`/`SC` of `PLLSequent.lean` (which has admissible cut, `SC.cut`).
-Completeness (`SC Γ C → G4 Γ C`, the Dyckhoff/Iemhoff equivalence) and the
-prover are follow-on chunks.
+The converse — completeness `SC Γ C → G4 Γ C`, the claimed
+Dyckhoff/Iemhoff equivalence — is exactly what fails (`PLLG4Gap.lean`);
+completeness holds only for the repaired `G4c` (`PLLG4HComp.lean`).
 -/
 
 open PLLFormula
@@ -317,11 +329,14 @@ example : G4 [] ((prop "A").somehow.somehow.ifThen (prop "A").somehow) :=
   .impR (.laxL (List.Perm.refl _) (.laxL (List.Perm.refl _)
     (.laxR (.init (.head _)))))
 
-/-- Howe's duplication sequent `(B ⊃ (◯A ⊃ C)) ⊃ ◯A, ◯A ⊃ C, ◯B ⊢ C` —
-his evidence that "a contraction-free calculus for Lax Logic cannot be
-found" (MSCS 2001, §5): the hypothesis `◯A ⊃ C` must be used twice, in its
-entirety.  G4iLL absorbs the duplication in `impLLaxLax`, whose second
-premise re-uses the boxed context formula. -/
+/-- A duplication sequent `(B ⊃ (◯A ⊃ C)) ⊃ ◯A, ◯A ⊃ C, ◯B ⊢ C` that G4iLL
+*does* derive, `impLLaxLax` re-using the boxed context formula in each
+premise.  **NB this is not Howe's sequent** (MSCS 2001, §5): Howe's major
+premise is bracketed `B ⊃ ((◯A ⊃ C) ⊃ ◯A)`, not `(B ⊃ (◯A ⊃ C)) ⊃ ◯A`,
+and with that bracketing the sequent is G4iLL-*underivable*
+(`PLLG4Tower.lean`, `howeCtx`).  This mis-bracketed derivable variant was
+the original source of the belief that G4iLL absorbs Howe's example; the
+belief is false — see `PLLG4Gap.lean`. -/
 example :
     G4 [((prop "B").ifThen ((prop "A").somehow.ifThen (prop "C"))).ifThen
           (prop "A").somehow,
