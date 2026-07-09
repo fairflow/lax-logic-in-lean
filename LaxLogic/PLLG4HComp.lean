@@ -82,6 +82,55 @@ theorem g4c_iff_tm (hS : SelfAbsorb) {Γ : List PLLFormula}
     {φ : PLLFormula} : G4c Γ φ ↔ Nonempty (Tm Γ φ) :=
   (g4c_iff_nd hS).trans curry_howard.symm
 
+/-!
+### Unconditional versions — self-absorption is proved
+(`PLLG4HCut.lean`), so the conditions discharge.
+-/
+
+/-- **Completeness of G4iLL″** — unconditional. -/
+theorem completeness {Γ : List PLLFormula} {C : PLLFormula}
+    (d : SC Γ C) : G4c Γ C := by
+  obtain ⟨n, hd⟩ := d
+  exact completeness_of_selfAbsorb selfAbsorb hd
+
+/-- **G4iLL″ = SC.** -/
+theorem equiv_sc {Γ : List PLLFormula} {C : PLLFormula} :
+    G4c Γ C ↔ SC Γ C := g4c_iff_sc selfAbsorb
+
+/-- **G4iLL″ = natural deduction.** -/
+theorem equiv_nd {Γ : List PLLFormula} {C : PLLFormula} :
+    G4c Γ C ↔ Nonempty (LaxND Γ C) := g4c_iff_nd selfAbsorb
+
+/-- **G4iLL″ = the term calculus**: the repaired calculus proves
+exactly the PLL sequents — the proof-theoretic half of F&M
+Theorem 2.8, unconditional. -/
+theorem equiv_tm {Γ : List PLLFormula} {φ : PLLFormula} :
+    G4c Γ φ ↔ Nonempty (Tm Γ φ) := g4c_iff_tm selfAbsorb
+
+/--
+info: 'PLLND.G4c.selfAbsorb' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms selfAbsorb
+
+/--
+info: 'PLLND.G4c.cut' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms cut
+
+/--
+info: 'PLLND.G4c.completeness' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms completeness
+
+/--
+info: 'PLLND.G4c.equiv_tm' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms equiv_tm
+
 end G4c
 
 end PLLND
