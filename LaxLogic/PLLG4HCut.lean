@@ -827,6 +827,163 @@ theorem cut' (hS : SelfAbsorb) {Γ : List PLLFormula} {A E : PLLFormula}
   exact cut_of_selfAbsorb hS A.weight (Nat.le_refl _) (m + n)
     (Nat.le_refl _) h₁ h₂ (List.Perm.refl _)
 
+/-!
+### Self-absorption is provable
+
+By plain structural induction on the `◯A`-derivation — no cut, no
+measure.  The two firing shapes are absorbed by the two
+lax-implication rules: a `laxR` ending feeds `R◯→″` (whose revision-3
+first premise is the *full* context, so the subderivation fits
+verbatim), and a `laxL` ending feeds `L◯→″` (whose box-witness form —
+introduced by Iemhoff exactly because of Howe's duplication — takes
+the opened premise verbatim, revision 2 having kept the implication in
+it).  If the implication is itself fired inside the derivation, its
+first premise is again a verbatim firing input.  All remaining cases
+are parametric rebuilds, the side derivation transported by
+height-preserving inversion at the principal.
+-/
+
+private theorem selfAbsorb_aux :
+    ∀ {na : Nat} {Γ : List PLLFormula} {G : PLLFormula}, G4h na Γ G →
+    ∀ {A B : PLLFormula}, G = A.somehow →
+    ∀ {l₀ : List PLLFormula} {E : PLLFormula},
+    Γ.Perm (A.somehow.ifThen B :: l₀) → G4c (B :: l₀) E → G4c Γ E := by
+  intro na Γ G d
+  induction d with
+  | init _ => intro A B e; cases e
+  | botL h => intro A B e l₀ E hΓ side; exact botL h
+  | andR _ _ _ _ => intro A B e; cases e
+  | orR1 _ _ => intro A B e; cases e
+  | orR2 _ _ => intro A B e; cases e
+  | impR _ _ => intro A B e; cases e
+  | @laxR _ _ A₂ dL _ =>
+      -- the goal was produced: fire `R◯→″` at the full context
+      intro A B e l₀ E hΓ side
+      injection e with e₁
+      subst e₁
+      exact impLLax hΓ ⟨_, dL⟩ side
+  | @laxL _ _ Y B₂ h₁ dP _ =>
+      -- a box was opened: fire `L◯→″` with that very box as witness
+      intro A B e l₀ E hΓ side
+      injection e with e₁
+      subst e₁
+      have hY : Y.somehow ∈ l₀ := by
+        rcases List.mem_cons.mp (hΓ.subset h₁) with e' | h'
+        · cases e'
+        · exact h'
+      exact impLLaxLax hΓ hY ⟨_, dP⟩ side
+  | @andL _ _ Θ C₁ C₂ _ h₁ _ ih =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', _⟩ | ⟨l₂, hΘ, hl₀⟩
+      · cases e'
+      · exact andL h₁ (ih rfl
+          (((hΘ.cons C₂).cons C₁).trans (List.perm_middle (l₁ := [C₁, C₂])))
+          (((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.and C₁ C₂) (List.Perm.refl _)).perm
+            (List.perm_middle (l₁ := [C₁, C₂]))))
+  | @orL _ _ Θ C₁ C₂ _ h₁ _ _ ih₁ ih₂ =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', _⟩ | ⟨l₂, hΘ, hl₀⟩
+      · cases e'
+      · have side' := side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))
+        exact orL h₁
+          (ih₁ rfl ((hΘ.cons C₁).trans (List.Perm.swap _ _ _))
+            ((side'.inv (.or₁ C₁ C₂) (List.Perm.refl _)).perm
+              (List.Perm.swap _ _ _)))
+          (ih₂ rfl ((hΘ.cons C₂).trans (List.Perm.swap _ _ _))
+            ((side'.inv (.or₂ C₁ C₂) (List.Perm.refl _)).perm
+              (List.Perm.swap _ _ _)))
+  | @impLProp _ _ Θ a C₁ _ h₁ ha _ ih =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', _⟩ | ⟨l₂, hΘ, hl₀⟩
+      · injection e' with e₁ e₂; cases e₁
+      · exact impLProp h₁ ha (ih rfl
+          ((hΘ.cons C₁).trans (List.Perm.swap _ _ _))
+          (((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.impProp a C₁) (List.Perm.refl _)).perm
+            (List.Perm.swap _ _ _)))
+  | @impLBot _ _ Θ C₁ _ h₁ _ ih =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', _⟩ | ⟨l₂, hΘ, hl₀⟩
+      · injection e' with e₁ e₂; cases e₁
+      · exact impLBot h₁ (ih rfl hΘ
+          ((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.impBot C₁) (List.Perm.refl _)))
+  | @impLAnd _ _ Θ C₁ C₂ D₃ _ h₁ _ ih =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', _⟩ | ⟨l₂, hΘ, hl₀⟩
+      · injection e' with e₁ e₂; cases e₁
+      · exact impLAnd h₁ (ih rfl
+          ((hΘ.cons _).trans (List.Perm.swap _ _ _))
+          (((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.impAnd C₁ C₂ D₃) (List.Perm.refl _)).perm
+            (List.Perm.swap _ _ _)))
+  | @impLOr _ _ Θ C₁ C₂ D₃ _ h₁ _ ih =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', _⟩ | ⟨l₂, hΘ, hl₀⟩
+      · injection e' with e₁ e₂; cases e₁
+      · exact impLOr h₁ (ih rfl
+          (((hΘ.cons _).cons _).trans
+            (List.perm_middle (l₁ := [C₁.ifThen D₃, C₂.ifThen D₃])))
+          (((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.impOr C₁ C₂ D₃) (List.Perm.refl _)).perm
+            (List.perm_middle (l₁ := [C₁.ifThen D₃, C₂.ifThen D₃]))))
+  | @impLImp _ _ Θ C₁ C₂ D₃ _ h₁ dp₁ _ _ ih₂ =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', _⟩ | ⟨l₂, hΘ, hl₀⟩
+      · injection e' with e₁ e₂; cases e₁
+      · exact impLImp h₁ ⟨_, dp₁⟩ (ih₂ rfl
+          ((hΘ.cons D₃).trans (List.Perm.swap _ _ _))
+          (((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.impImp C₁ C₂ D₃) (List.Perm.refl _)).perm
+            (List.Perm.swap _ _ _)))
+  | @impLLax _ _ Θ C₁ C₂ _ h₁ dp₁ _ _ ih₂ =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', hΘl⟩ | ⟨l₂, hΘ, hl₀⟩
+      · -- the implication was fired inside: its first premise is the
+        -- verbatim firing input at the full context
+        injection e' with e₁ e₂
+        injection e₁ with e₃
+        subst e₃; subst e₂
+        exact impLLax hΓ ⟨_, dp₁⟩ side
+      · exact impLLax h₁ ⟨_, dp₁⟩ (ih₂ rfl
+          ((hΘ.cons C₂).trans (List.Perm.swap _ _ _))
+          (((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.impLax C₁ C₂) (List.Perm.refl _)).perm
+            (List.Perm.swap _ _ _)))
+  | @impLLaxLax _ _ Θ C₁ C₂ X _ h₁ hX₁ dp₁ _ _ ih₂ =>
+      intro A B e l₀ E hΓ side
+      subst e
+      rcases cross_split' h₁ hΓ with ⟨e', hΘl⟩ | ⟨l₂, hΘ, hl₀⟩
+      · injection e' with e₁ e₂
+        injection e₁ with e₃
+        subst e₃; subst e₂
+        exact impLLaxLax hΓ (hΘl.subset hX₁) ⟨_, dp₁⟩ side
+      · exact impLLaxLax h₁ hX₁ ⟨_, dp₁⟩ (ih₂ rfl
+          ((hΘ.cons C₂).trans (List.Perm.swap _ _ _))
+          (((side.perm ((hl₀.cons B).trans (List.Perm.swap _ _ _))).inv
+            (.impLax C₁ C₂) (List.Perm.refl _)).perm
+            (List.Perm.swap _ _ _)))
+
+/-- **Self-absorption holds** — the residual obligation discharges. -/
+theorem selfAbsorb : SelfAbsorb := by
+  intro Γ l₀ A B E hΓ dbox side
+  obtain ⟨na, d⟩ := dbox
+  exact selfAbsorb_aux d rfl hΓ side
+
+/-- **Cut is admissible in G4iLL″** — unconditional. -/
+theorem cut {Γ : List PLLFormula} {A E : PLLFormula}
+    (d₁ : G4c Γ A) (d₂ : G4c (A :: Γ) E) : G4c Γ E :=
+  cut' selfAbsorb d₁ d₂
+
 end G4c
 
 end PLLND
