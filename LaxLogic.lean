@@ -32,3 +32,4 @@ import LaxLogic.PLLG4HAdm
 import LaxLogic.PLLG4HStr
 import LaxLogic.KleeneBrouwer
 import LaxLogic.PLLG4HCtr
+import LaxLogic.PLLG4Tower
