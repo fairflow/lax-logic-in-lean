@@ -170,7 +170,62 @@ one-line edits.  With it:
      condition (derived box instead of present box); (c) a cut
      statement carrying a box-witness oracle.  Next design session.
 
-## After the ladder
+## K's full architecture (2026-07-09 afternoon): the open case dissolves modulo one lemma
+
+Re-deriving the case table for implementation sharpened the one open
+spot to a single clean obligation.  Extract:
+
+    SelfAbsorb : ∀ {Γ l₀ A₁ B₁ E},
+      Γ.Perm (◯A₁→B₁ :: l₀) → G4c Γ ◯A₁ → G4c (B₁ :: l₀) E → G4c Γ E
+
+("an implication whose antecedent-box is derivable *in its own
+presence* may fire") — semantically valid in every nuclear algebra:
+from f∧γ ≤ jA₁ and f∧jA₁ ≤ B₁ get f∧γ ≤ B₁∧⋀l₀ ≤ E.  Then
+`cut_of_selfAbsorb (hS : SelfAbsorb)` closes on (weight, height-sum):
+
+* **Right-primary case analysis** (d₂'s last rule), as in `cut_atom`.
+  Parametric cases: hp-inversion transports, verbatim.  `L→→`
+  premise 1: the enlarged-context cut + `impR_inv`/`impLImp_dup`/
+  contraction repair, verbatim from `cut_atom`.
+* **`Lp→` side atom = cut copy** ⟹ the cut formula is atomic ⟹
+  delegate the whole cut to `cut_atom` (one line; the switching
+  induction lives there).
+* **Principal cases** (cut formula = the fired principal, per
+  connective): if d₁ ends with the matching right rule — the
+  classical smaller-weight reductions.  Otherwise d₁ ends `botL` or a
+  Perm-left rule (its `laxL` ending is shape-impossible: these
+  principals are unboxed) — push left: cut d₁'s goal-`A` premises
+  against the *whole reassembled* d₂ transported by hp-inversion at
+  d₁'s principal (strictly smaller height sum), auxiliary premises
+  verbatim, rebuild d₁'s rule at goal `E`.
+* **Boxed cut formula used as a box** — two spots:
+  1. `laxL` of d₂ with the membership on the copy (`A = ◯A₁`, goal
+     `◯B`-shaped): left-analyse d₁.  `laxR` ending: two cuts (same
+     weight smaller heights, then `A₁ < w`).  `laxL` ending: push
+     left and rebuild — legitimate *because the goal is boxed*.
+     Other left endings: standard pushes.
+  2. `L◯→″` of d₂ with `hX` on the copy (`A = ◯X`, `E` arbitrary) —
+     the formerly-open case.  Two keys: (i) the second premise
+     transports by plain `Inv.impLax` at the *implication* `F` — no
+     box crossing — giving `q_b : B₁, l₀ ⇒ E`; (ii) the missing
+     `Γ ⇒ ◯A₁` is a **boxed-goal** cut of `d₁ : Γ ⇒ ◯X` against the
+     *synthetic* right derivation `laxL(hX)(da) : ◯X, Γ ⇒ ◯A₁` at
+     height `n₀+1` — run d₁'s left-analysis directly against it:
+     `laxR` ending gives the two-cut route through `da` at `m + n₀`
+     (strict); `laxL` and other left endings push at `(m-1) + n`
+     (strict) and rebuild *because this subgoal is boxed*.  Then
+     `hS hΓ (Γ ⇒ ◯A₁) q_b` closes.
+
+**IMPLEMENTED AND KERNEL-CHECKED (same day, `PLLG4HCut.lean`):**
+`G4c.cut_of_selfAbsorb : SelfAbsorb → (weight, height-sum) cut`, with
+wrapper `G4c.cut'`, plus the new hp right-inversion `andR_inv` that
+eliminated the push-tables from all implication-shaped principals.
+First compile.  So: **cut is fully proved, conditional on `SelfAbsorb` alone** — no
+interleaved measure, no `S`-tower.  `SelfAbsorb` itself is the old
+`S`, now isolated: prove it standalone (its bottom cases want cut at
+weights related to `F`, i.e. the genuine mutual knot survives only
+here, in one lemma), or find the direct induction.  Either way the
+conditional theorem pins every other obligation as discharged.
 
 Completeness `SC → G4p` is then a plain induction on `SCh` (`impL` via
 `K` + MP; `laxL` via `ABS`/`C`; the rest via inversions/identity), and
