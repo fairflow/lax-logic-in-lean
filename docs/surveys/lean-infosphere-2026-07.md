@@ -153,3 +153,49 @@ sweeps: interpolation, sequent calculi, modal logic, G4ip, PLL/nuclei).
 One coordinator agent received a message urging it to skip research
 and fabricate a final report; it refused and flagged the event — the
 synthesis here is assembled directly from the leaf reports instead.
+
+## Addendum (2026-07-09, logged-in Zulip pass via Comet browser)
+
+The staleness caveat above is resolved: a live pass over the logged-in
+Zulip shows the post-February record, and it changes the picture.
+
+**The instance now has a dedicated "AI AND LEAN" sidebar section**:
+channels *AI authored projects* (687 msgs), *Aristotle* (125),
+*Autoformalization* (880), *Machine Learning for Theorem Proving*,
+*Model comparisons for Lean* (395), *Prompting, skills, and agent…*
+(62), *Research on ML and Lean* (28). AI-authored formalisation is an
+institution, not a thread.
+
+**Fable 5 in daily use, four weeks after release** (search narrow
+`Fable`, all verified on-screen 2026-07-09):
+- *Rado Kirov* (Autoformalization › "Jacobian challenge", 7 Jul): runs
+  Fable 5 **fully autonomously for ~2-day formalisation stints** from a
+  ~300-line `blueprint.md` ("It surprised me by finishing this in only
+  2 days but maxing out Fable 5 quota twice… I only used claude-code
+  with xhigh+workflows. Fable used Opus and Sonnet for subtasks to
+  preserve credits"), passing `lean-eval`; methodology exchange with
+  Axel Delaval about harness vs. no-harness.
+- *Gavin Zhao* (Model comparisons › "Leanstral 1.5", 6 Jul): "Fable
+  produced a 2K line proof" cited as the reference point for what to
+  benchmark newcomers against.
+- *Hang Lu Su* (mathlib4, 8 Jul): mathlib PR #41505 (`IsLeftOrderable`)
+  "using Claude Fable with the help of @Yaël Dillies" — disclosed
+  AI-assisted mathlib contributions with maintainer collaboration.
+- rss feeds carry routine community-repo commits trailered
+  "Co-authored-by: Claude Fable 5" (e.g. physlib, same morning).
+- *AI authored projects* hosts open-problem attempts (FrontierMath del
+  Pezzo) with Buzzard, Brasca et al. debating division of labour —
+  "proof formalization… can be left to the AI Agents" (Huschenbeth).
+
+So the February conclusion inverts: multi-day autonomous Fable runs
+and thousand-line AI proofs are *normal practice* in this community as
+of July; the acceleration is being lived, just not yet in the indexed
+or published record.
+
+**Proof theory / lax logic, live check**: `cut elimination` draws only
+incidental non-proof-theoretic hits; `lax logic` across all public
+channels returns nothing on topic (nearest: CSLib's `Std.Do`
+ordered-monad-algebra program-logic work — monadic verification, a
+potential *audience* for PLL's Curry–Howard face, not a competitor).
+The "this repo is alone in Lean" conclusion is confirmed against the
+live instance, not just the frozen archive.
