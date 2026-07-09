@@ -7,7 +7,7 @@ inductive PLLFormula where
 | or (a: PLLFormula)(b: PLLFormula)
 | ifThen (antecedant: PLLFormula)(consequent: PLLFormula)
 | somehow (a: PLLFormula)
-deriving Inhabited, DecidableEq, BEq
+deriving Inhabited, DecidableEq
 
 open Std (Format)
 namespace PLLFormula

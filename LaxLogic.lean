@@ -18,3 +18,17 @@ import LaxLogic.PLLStrongNorm
 import LaxLogic.PLLReducibility
 import LaxLogic.PLLTactics
 import LaxLogic.PLLTopTop
+import LaxLogic.PLLG4
+import LaxLogic.PLLDecide
+import LaxLogic.PLLG4Gap
+import LaxLogic.PLLRun
+import LaxLogic.PLLG4P
+import LaxLogic.PLLG4PInv
+import LaxLogic.PLLG4PAdm
+import LaxLogic.PLLG4PStr
+import LaxLogic.PLLG4H
+import LaxLogic.PLLG4HInv
+import LaxLogic.PLLG4HAdm
+import LaxLogic.PLLG4HStr
+import LaxLogic.KleeneBrouwer
+import LaxLogic.PLLG4HCtr
