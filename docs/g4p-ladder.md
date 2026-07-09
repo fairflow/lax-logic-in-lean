@@ -119,6 +119,57 @@ The incompleteness discovery means none of this has a published
 blueprint — G4iSLt's escape (⊗-opening + Löb diagonal) is structurally
 unavailable for lax.  Next session: attempt 2, falling back to 3+1.
 
+## Design revision 3 (2026-07-09): `R◯→` keeps its context — contraction lands, cut-free
+
+Writing the general-contraction case table *in Lean* exposed a case the
+revision-2 paper analysis had missed: a doubled `◯φ→ψ` whose visible
+copy is fired by `R◯→` (old premise 1 `Δ ⇒ φ` — the rule *consumes*
+the implication).  The inverted premises `ψ,Γ ⇒ φ` and `ψ,Γ ⇒ E` do
+**not** suffice to rebuild `◯φ→ψ,Γ ⇒ E`: with `j = id`, `φ := p`,
+`ψ := p∧q`, `E := q` the required inference fails in a Heyting algebra
+with nucleus — no proof was being overlooked, the rule shape itself was
+the obstacle (with the consuming rule, this case genuinely needs the
+self-absorption lemma `S`, as the pre-revision analysis had said).
+
+Fix, same medicine as revision 2: `R◯→″`'s first premise keeps the
+whole conclusion context — G3's `L⊃` premise-1 discipline:
+
+    Γ, ◯φ→ψ ⇒ φ    Γ, ψ ⇒ Δ
+    ------------------------ R◯→″
+    Γ, ◯φ→ψ ⇒ Δ
+
+Sound (a weakening of the old premise), `toSC` *simplifies* (premise 1
+is already G3-shaped), and the whole `G4h` tower re-compiled after six
+one-line edits.  With it:
+
+* **Contraction is proved, cut-free** (`PLLG4HCtr.lean`,
+  `G4c.contract`): outer weight induction, inner structural induction.
+  Principal cases: inversion of the surviving copy + strictly lighter
+  contractions (∧, ∨, `p⊃`, `⊥⊃`, `∧⊃`, `∨⊃`); `⊃⊃` by the
+  Dyckhoff–Negri recipe (`impLImp_dup`, three lighter contractions,
+  re-abstraction); all three lax rules close by the *inner* induction
+  because their premises now carry both copies.  `S` has dropped out of
+  contraction entirely.
+* The ladder reorders to the classical Dyckhoff–Negri shape:
+  `atomC → C (cut-free) → K(w) (⇐ K(<w), C, exfalso, cut_atom) →
+  completeness`.
+* `K`'s case table after re-tabulation under revision 3 — two former
+  hard spots and one still open:
+  1. `⊃⊃` parametric-right, premise-1 transport (the residue `B→D` is
+     not an inversion piece) — **solved**: cut at the enlarged context,
+     then `impR_inv` + `impLImp_dup` + `C` (now closed) + `impR`
+     re-abstraction.
+  2. cut formula principal-right in `R◯→″` — **now classical**:
+     premise 1 keeps the cut formula, so a structural cut cleans it,
+     then two strictly-smaller-weight cuts finish.
+  3. **open**: cut formula `◯X` serving as the *box witness* `hX` of an
+     `L◯→″` instance whose implication `F₂` has unrelated weight — the
+     self-absorption flavour survives exactly here and nowhere else.
+     Candidate escapes: (a) an `S`-interleave under a
+     subformula-bounded measure; (b) generalising `L◯→″`'s witness side
+     condition (derived box instead of present box); (c) a cut
+     statement carrying a box-witness oracle.  Next design session.
+
 ## After the ladder
 
 Completeness `SC → G4p` is then a plain induction on `SCh` (`impL` via

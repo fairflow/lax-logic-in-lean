@@ -102,7 +102,7 @@ theorem impLImp {Γ Δ : List PLLFormula} {A B D E : PLLFormula}
 
 theorem impLLax {Γ Δ : List PLLFormula} {A B C : PLLFormula}
     (h : Γ.Perm (A.somehow.ifThen B :: Δ))
-    (d₁ : G4c Δ A) (d₂ : G4c (B :: Δ) C) : G4c Γ C := by
+    (d₁ : G4c Γ A) (d₂ : G4c (B :: Δ) C) : G4c Γ C := by
   obtain ⟨n, h₁, h₂⟩ := toSame d₁ d₂
   exact ⟨n + 1, .impLLax h h₁ h₂⟩
 

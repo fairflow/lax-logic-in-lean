@@ -138,7 +138,7 @@ theorem inv : ∀ {n : Nat} {Γ : List PLLFormula} {C : PLLFormula},
       · subst e; cases hInv
         exact (d₂.perm (hΘΔ.cons _)).succ_mono
       · exact .impLLax ((hΔ.append_left L).trans List.perm_middle)
-          (ih₁ hInv hΘ)
+          (ih₁ hInv hp)
           ((ih₂ hInv ((hΘ.append_left [B₁]).trans List.perm_middle)).perm
             (perm_shuffle L [B₁] l'))
   | @impLLaxLax _ Γ' Θ A₁ B₁ X _ h hX d₁ d₂ ih₁ ih₂ =>

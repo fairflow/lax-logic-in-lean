@@ -74,7 +74,7 @@ theorem weak_Imp : ∀ {n : Nat} {Γ : List PLLFormula} {D : PLLFormula},
         (impR ⟨_, (d₁.weaken _).perm (List.Perm.swap _ _ _)⟩) side
   | laxR d₁ _ =>
       intro B E side
-      exact impLLax (List.Perm.refl _) ⟨_, d₁⟩ side
+      exact impLLax (List.Perm.refl _) ⟨_, d₁.weaken _⟩ side
   | @laxL _ Γ' A _ h d₁ _ =>
       -- box-keeping `laxL`: rebuild with `L◯→″`, box already present
       intro B E side
@@ -292,7 +292,7 @@ theorem impLImp_dup : ∀ {n : Nat} {Γ' : List PLLFormula} {E : PLLFormula},
       · exact impLLax
           ((hΓ.append_left [A, B.ifThen D, B.ifThen D]).trans
             (List.perm_middle (l₁ := [A, B.ifThen D, B.ifThen D])))
-          (ih₁ hΘ)
+          (ih₁ hp)
           ((ih₂ ((hΘ.append_left [B₁]).trans List.perm_middle)).perm
             (perm_shuffle [A, B.ifThen D, B.ifThen D] [B₁] l'))
   | @impLLaxLax _ Γ₀ Θ A₁ B₁ X _ h hX d₁ d₂ ih₁ ih₂ =>

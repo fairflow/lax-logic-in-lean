@@ -3,12 +3,18 @@ import LaxLogic.PLLG4P
 /-!
 # G4iLL″, height-indexed: the final repaired calculus `G4h`/`G4c`
 
-Design revision 2 (`docs/g4p-ladder.md`): both box rules **keep their
-box**, so no rule ever separates a boxed hypothesis from its unboxing —
+Design revisions 2–3 (`docs/g4p-ladder.md`): the box rules **keep
+their box**, and `R◯→` **keeps its principal in the first premise**,
+so no rule ever separates a hypothesis from material its premises may
+still need —
 
     Γ, ◯χ, χ ⇒ ◯B                        Γ, ◯χ, ◯φ→ψ, χ ⇒ ◯φ    Γ, ◯χ, ψ ⇒ Δ
     -------------- laxL (= G3's L◯)      ------------------------------------ L◯→″
     Γ, ◯χ ⇒ ◯B                                    Γ, ◯χ, ◯φ→ψ ⇒ Δ
+
+    Γ, ◯φ→ψ ⇒ φ    Γ, ψ ⇒ Δ
+    ------------------------ R◯→″
+    Γ, ◯φ→ψ ⇒ Δ
 
 — and the judgment carries a **height index** (`G4h n Γ C`, premises at
 `n`, conclusion at `n + 1`, exactly the `SCh` pattern of
@@ -19,8 +25,14 @@ classical (formula weight, height) lexicographic measures.
 Because the boxes are kept, `laxL` needs only a membership hypothesis
 (as in `SCh`), and `L◯→″`'s first premise is simply `X :: Γ` — the
 whole conclusion context, box and implication included, plus the
-opening.  The implication is still *consumed* in the second premise:
-that is the Dyckhoff residue that keeps the calculus G4-shaped.
+opening.  Revision 3 (2026-07-09) gives `R◯→″`'s first premise the
+same discipline — the full conclusion context, exactly G3's `L⊃`
+premise 1: contraction with a doubled `◯φ→ψ` fired by `R◯→` is
+*semantically unfixable* from the consuming form's inverted premises (a
+nucleus countermodel refutes the required inference), while the keeping
+form hands the inner induction both copies.  The implication is still
+*consumed* in every second premise: that is the Dyckhoff residue that
+keeps the calculus G4-shaped.
 
 This file: the calculus, height monotonicity, height-preserving
 exchange and weakening, the working judgment `G4c := ∃ n, G4h n`, the
@@ -76,7 +88,7 @@ inductive G4h : Nat → List PLLFormula → PLLFormula → Prop
       G4h (n + 1) Γ E
   | impLLax {n : Nat} {Γ Δ : List PLLFormula} {A B C : PLLFormula}
       (h : Γ.Perm (A.somehow.ifThen B :: Δ)) :
-      G4h n Δ A → G4h n (B :: Δ) C → G4h (n + 1) Γ C
+      G4h n Γ A → G4h n (B :: Δ) C → G4h (n + 1) Γ C
   | impLLaxLax {n : Nat} {Γ Δ : List PLLFormula} {A B X C : PLLFormula}
       (h : Γ.Perm (A.somehow.ifThen B :: Δ)) (hX : X.somehow ∈ Δ) :
       G4h n (X :: Γ) A.somehow → G4h n (B :: Δ) C → G4h (n + 1) Γ C
@@ -138,7 +150,9 @@ theorem perm : ∀ {n : Nat} {Γ : List PLLFormula} {C : PLLFormula},
   | impLAnd h d _ => intro Γ' hp; exact .impLAnd (hp.symm.trans h) d
   | impLOr h d _ => intro Γ' hp; exact .impLOr (hp.symm.trans h) d
   | impLImp h d₁ d₂ _ _ => intro Γ' hp; exact .impLImp (hp.symm.trans h) d₁ d₂
-  | impLLax h d₁ d₂ _ _ => intro Γ' hp; exact .impLLax (hp.symm.trans h) d₁ d₂
+  | impLLax h _ d₂ ih₁ _ =>
+      intro Γ' hp
+      exact .impLLax (hp.symm.trans h) (ih₁ hp) d₂
   | impLLaxLax h hX _ d₂ ih₁ _ =>
       intro Γ' hp
       exact .impLLaxLax (hp.symm.trans h) hX (ih₁ (hp.cons _)) d₂
@@ -243,7 +257,8 @@ theorem ofG4p : ∀ {Γ : List PLLFormula} {C : PLLFormula},
       obtain ⟨n, h₁, h₂⟩ := toSame ih₁ ih₂
       exact ⟨n + 1, .impLImp hp h₁ h₂⟩
   | impLLax hp _ _ ih₁ ih₂ =>
-      obtain ⟨n, h₁, h₂⟩ := toSame ih₁ ih₂
+      -- old premise 1 over `Δ`; the new one wants the full context
+      obtain ⟨n, h₁, h₂⟩ := toSame ((ih₁.weaken _).perm hp.symm) ih₂
       exact ⟨n + 1, .impLLax hp h₁ h₂⟩
   | @impLLaxLax Γ₀ Δ A B X _ hp _ _ ih₁ ih₂ =>
       -- old premise 1 over `F :: X :: Δ`; new wants `X :: Γ₀ ~ X :: F :: ◯X :: Δ`
@@ -332,7 +347,7 @@ theorem toSC : ∀ {n : Nat} {Γ : List PLLFormula} {C : PLLFormula},
       exact SC.impL hmem hAB (ih₂.rename (sub_cons hΔ D))
   | @impLLax _ Γ' Δ' A B _ h _ _ ih₁ ih₂ =>
       have hΔ : ∀ ψ ∈ Δ', ψ ∈ Γ' := fun ψ hψ => h.symm.subset (.tail _ hψ)
-      exact SC.impL (h.symm.subset (.head _)) (SC.laxR (ih₁.rename hΔ))
+      exact SC.impL (h.symm.subset (.head _)) (SC.laxR ih₁)
         (ih₂.rename (sub_cons hΔ B))
   | @impLLaxLax _ Γ' Δ' A B X _ h hX _ _ ih₁ ih₂ =>
       have hΔ : ∀ ψ ∈ Δ', ψ ∈ Γ' := fun ψ hψ => h.symm.subset (.tail _ hψ)
