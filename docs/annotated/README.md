@@ -49,14 +49,16 @@ what `lake build` accepts from the actual repository files.
 
 A snapshot looks like this (from `contraction.md`, the `andL`
 principal case of `G4c.contract_bounded`, anchored at
-`PLLG4HCtr.lean:241`):
+`PLLG4HCtr.lean:241` — already trimmed by the elision and
+shared-line-grouping rules below, exactly as it appears in that
+document, so the reader sees the actual output form rather than an
+idealised one):
 
 ```
 case succ.andL.inl.intro
 w : ℕ
-ihw : ∀ {A : PLLFormula}, A.weight ≤ w → …
-n : ℕ
-Γ' E : …
+ihw : …
+n Γ' E : …
 n✝ : ℕ
 Γ✝ Θ : List PLLFormula
 A₁ B₁ E₀ : PLLFormula

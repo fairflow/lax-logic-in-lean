@@ -11,7 +11,7 @@ countermodel — `docs/g4p-ladder.md`.
 
 ## The calculus
 
-`G4h : Nat → List PLLFormula → PLLFormula → Prop` (`PLLG4H.lean:38`)
+`G4h : Nat → List PLLFormula → PLLFormula → Prop` (`PLLG4H.lean:49`)
 is G4iLL (Iemhoff's contraction-free calculus for PLL) height-indexed
 in the manner of this repository's `SCh`, with two rules revised
 against the textbook G4 shape. The revision that matters for
@@ -36,7 +36,7 @@ form that *consumed* `◯φ→ψ` in `R◯→`'s first premise admits a
 counterexample to the contraction case it would need, in a Heyting
 algebra with nucleus; see `docs/g4p-ladder.md` §"Design revision 3").
 The working judgment is `G4c Γ C := ∃ n, G4h n Γ C`
-(`PLLG4H.lean:87`) — derivability at *some* height, which is what the
+(`PLLG4H.lean:97`) — derivability at *some* height, which is what the
 two contraction theorems below conclude.
 
 ## `G4h.contract_atom`
@@ -365,7 +365,7 @@ r₃ : G4h n₂ (A₁ :: K :: A₁ :: Γ) B₁
 
 `r₂ : K, A₁, Γ ⊢ A₁.ifThen B₁` — a single copy of `K`, a fresh `A₁`
 (from the duplication) and `Γ`, deriving `A₁ ⊃ B₁`. `impR_inv`
-(`PLLG4HInv.lean:262`) inverts the right-implication conclusion itself,
+(`PLLG4HInv.lean:267`) inverts the right-implication conclusion itself,
 exposing `B₁` with `A₁` added to the antecedent — `r₃`. The right
 implication `A₁.ifThen B₁` that `impLImp_dup` manufactured has now
 served its purpose and is gone from the state; what is left,
