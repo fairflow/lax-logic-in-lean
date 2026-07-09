@@ -235,3 +235,31 @@ except `L◯→′`'s first is DM-decreasing; that premise strictly decreases
 the *boxed-antecedent multiset* while trading the succedent for `◯φ` —
 a lex/Bílková combination or a strategy-completeness argument is
 needed, and weak termination + a complete strategy suffices.
+
+## THE LADDER IS COMPLETE (2026-07-09, evening)
+
+`SelfAbsorb` is **proved outright** (`PLLG4HCut.selfAbsorb_aux`), by
+plain structural induction on the `◯A`-derivation — no cut, no
+measure.  The resolution is poetic: the `laxL` ending that walled
+every previous attempt is *exactly the firing shape of `L◯→″`* — the
+box-witness rule Iemhoff introduced because of Howe's duplication
+absorbs the opened premise verbatim (revision 2 having kept the full
+context in it), and a `laxR` ending feeds `R◯→″` the same way
+(revision 3).  If the implication is fired inside the derivation, its
+own first premise is again a verbatim firing input.  Everything else
+is parametric, the side derivation transported by hp-inversion.
+
+Hence, unconditional and kernel-checked, each with pinned axiom audits
+(`[propext, Classical.choice, Quot.sound]` — no `sorryAx`):
+
+    G4c.cut            : G4c Γ A → G4c (A::Γ) E → G4c Γ E
+    G4c.completeness   : SC Γ C → G4c Γ C
+    G4c.equiv_sc/nd/tm : G4c = SC = LaxND = Tm-inhabitation
+
+Together with `PLLG4Gap.lean` (G4 ⊊ SC): **G4iLL″ is a complete
+cut-free calculus for PLL with all structural rules admissible**,
+obtained from Iemhoff's G4iLL by exactly three retention repairs.
+The proof-theoretic half of F&M Theorem 2.8 is mechanised end to end;
+what remains for decidability is the termination/strategy discipline
+(Bílková-style order or strategy-bounded search), now over a calculus
+that is *known* complete.
