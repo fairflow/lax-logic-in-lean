@@ -65,13 +65,18 @@ contribution bar is high and human-accountable.
   work."
 - **No named individual publicly claims 10×/20× Lean-specific
   productivity.** The measured public claims are ~2× (Stérin), with
-  explicit negative reports (Galois, Cook). Fable 5 is four weeks old;
-  its Lean-specific reception hasn't crystallised on Zulip yet (thread
-  bodies unfetchable). Conclusion: an experience of order-of-magnitude
-  acceleration on expert-steered proof-theory development is *ahead of
-  the published curve*, not echoed in print yet — consistent with
-  Tao's "bottleneck shifts to review" once the human supplies
-  architecture and expert verification.
+  explicit negative reports (Galois, Cook). **Staleness caveat
+  (correction, 2026-07-09, due M. Fairtlough):** the public Zulip
+  archive mirror is frozen at **2026-02-28** — everything after,
+  including the entire Fable 5 era (from 06-09), is invisible to
+  logged-out tooling. So "no echo yet" is only certified for the
+  *pre-Fable* record; current Zulip sentiment is unknown without a
+  logged-in pass. Conclusion, so qualified: order-of-magnitude
+  acceleration on expert-steered proof-theory development is ahead of
+  the *February* published curve — consistent with Tao's "bottleneck
+  shifts to review" once the human supplies architecture and expert
+  verification — and the pace of change is itself outrunning the
+  indexed record.
 - Benchmark context: miniF2F effectively saturated (Mistral's
   Leanstral 1.5 self-reports 100%, 2026-07-02; Papers-with-Code — the
   old leaderboard home — shut down July 2025). PutnamBench near-done:
