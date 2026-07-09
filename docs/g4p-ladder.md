@@ -216,7 +216,11 @@ from f∧γ ≤ jA₁ and f∧jA₁ ≤ B₁ get f∧γ ≤ B₁∧⋀l₀ ≤ E
      (strict) and rebuild *because this subgoal is boxed*.  Then
      `hS hΓ (Γ ⇒ ◯A₁) q_b` closes.
 
-So: **cut is fully designed, conditional on `SelfAbsorb` alone** — no
+**IMPLEMENTED AND KERNEL-CHECKED (same day, `PLLG4HCut.lean`):**
+`G4c.cut_of_selfAbsorb : SelfAbsorb → (weight, height-sum) cut`, with
+wrapper `G4c.cut'`, plus the new hp right-inversion `andR_inv` that
+eliminated the push-tables from all implication-shaped principals.
+First compile.  So: **cut is fully proved, conditional on `SelfAbsorb` alone** — no
 interleaved measure, no `S`-tower.  `SelfAbsorb` itself is the old
 `S`, now isolated: prove it standalone (its bottom cases want cut at
 weights related to `F`, i.e. the genuine mutual knot survives only
