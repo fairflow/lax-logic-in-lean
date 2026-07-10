@@ -1440,7 +1440,7 @@ proved together.  Everything at the list calculus, where `cut` and
 theorem G4c.iden {A : PLLFormula} {Γ : List PLLFormula} (h : A ∈ Γ) :
     G4c Γ A := G4c.completeness (SC.iden _ h)
 
-private theorem imp_mono {X X' Y Y' : PLLFormula}
+theorem imp_mono {X X' Y Y' : PLLFormula}
     (hX : G4c [X] X') (hY : G4c [Y'] Y) :
     G4c [X'.ifThen Y'] (X.ifThen Y) := by
   refine G4c.impR ?_
@@ -1448,18 +1448,18 @@ private theorem imp_mono {X X' Y Y' : PLLFormula}
   · exact (hX.weaken (X'.ifThen Y')).perm (List.Perm.swap _ _ _)
   · exact (hY.weaken X).perm (List.Perm.swap _ _ _)
 
-private theorem box_mono {Y Y' : PLLFormula} (hY : G4c [Y'] Y) :
+theorem box_mono {Y Y' : PLLFormula} (hY : G4c [Y'] Y) :
     G4c [Y'.somehow] Y.somehow :=
   G4c.laxL (.head _)
     ((hY.laxR.weaken Y'.somehow).perm (List.Perm.swap _ _ _))
 
-private theorem and_mono {X X' Y Y' : PLLFormula}
+theorem and_mono {X X' Y Y' : PLLFormula}
     (h₁ : G4c [X] X') (h₂ : G4c [Y] Y') :
     G4c [X.and Y] (X'.and Y') := by
   refine G4c.andL (List.Perm.refl _) ?_
   exact G4c.andR ((h₁.weaken Y).perm (List.Perm.swap _ _ _)) (h₂.weaken X)
 
-private theorem or_mono {X X' Y Y' : PLLFormula}
+theorem or_mono {X X' Y Y' : PLLFormula}
     (h₁ : G4c [X] X') (h₂ : G4c [Y] Y') :
     G4c [X.or Y] (X'.or Y') := by
   refine G4c.orL (List.Perm.refl _) ?_ ?_
