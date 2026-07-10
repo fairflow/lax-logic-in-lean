@@ -1,6 +1,6 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
-**Last updated:** 2026-07-09 by Fable 5 (handoff to Opus)
+**Last updated:** 2026-07-10 by Fable 5 (Termination A–C landed; Thm 2.8 complete)
 **Repo state:** `worktree-g4ill` @ 0456582 — `lake build` clean, every `#guard_msgs` audit green
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.
 
@@ -70,9 +70,9 @@ Longer log: `docs/g4p-ladder.md` is the design history (this repo's DECISIONS.md
 
 ## 7. Next actions (each sized for ONE session; tracker = THIS list — no beads; mirror to `gh issue` if a queue is wanted)
 
-1. [ ] **Termination A — subformula closure**: define the closure and prove every `G4h` rule keeps premise formulas inside the conclusion's closure. — *Done when:* lemma + `lake build` green.
-2. [ ] **Termination B — set-context calculus**: `G4s` over deduplicated contexts + equivalence with `G4c` (contraction/weakening are proved — use them). — *Done when:* both directions compile.
-3. [ ] **Termination C — decidability**: history/loop-check backward search terminates by finiteness; `Decidable` instance; `#guard_msgs`-pinned `#eval`s on the gap sequents. — *Done when:* `decide`-level verdicts reproduce `PLLG4Tower`'s.
+1. [x] **Termination A** — done 2026-07-10 (`PLLG4Space.lean`, PR #7).
+2. [x] **Termination B** — done 2026-07-10 (`PLLG4Set.lean`, PR #7): fully *cumulative* set calculus (design refinement: nothing erased, `impLBot` vanishes, `weaken_subset` replaces all structural plumbing).
+3. [x] **Termination C** — done 2026-07-10 (`PLLG4Dec.lean`, PR #7): fuel-structural visited-set search; `search_complete` via minimal heights + the visited-invariant; `instance decidablePLL : Decidable (Nonempty (Tm Γ φ))` — **F&M Thm 2.8 decidability, mechanised**. Note: `#eval` guards use tiny sequents (the gap sequent's space is astronomically large — the instance is total but exponential; fuel is computed arithmetically, never the powerset).
 4. [ ] *(Fable session)* **Uniform interpolation**: Pitts `∃p/∀p` over the terminating search; adequacy from `completeness`. (Session task #9.)
 5. [ ] **Multiplicity-3 hunt**: decider sweep for a sequent needing 3 copies (strong-Howe dichotomy); record either outcome in `PLLG4Tower.lean`. — *Done when:* a pinned witness or a documented negative sweep.
 6. [ ] **Draft `docs/note-to-iemhoff.md`** from `docs/commentary.md` + `docs/g4ill-gap-review.md`: the gap, the repair, the offer. Matthew edits and sends personally. — *Done when:* draft committed; NOT sent.
