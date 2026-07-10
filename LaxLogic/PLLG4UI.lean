@@ -277,6 +277,15 @@ theorem orAll_elim : ∀ {l : List PLLFormula} {Δ : Finset PLLFormula}
       · exact (ih fun ψ hψ => h ψ (.tail _ hψ)).weaken_subset
           (Finset.insert_subset_insert _ (Finset.subset_insert _ _))
 
+/-- `andAll_elim`, keeping the bundle in context (retention pays:
+`insert_idem` merges the duplicate). -/
+theorem andAll_elim_keep {l : List PLLFormula} {φ : PLLFormula}
+    (hmem : φ ∈ l) {Δ : Finset PLLFormula} {D : PLLFormula}
+    (d : G4s (insert φ (insert (andAll l) Δ)) D) :
+    G4s (insert (andAll l) Δ) D := by
+  have h := andAll_elim hmem (Δ := insert (andAll l) Δ) d
+  rwa [Finset.insert_idem] at h
+
 /-- **Cut, transported to the set calculus** through `G4c.iff_set`. -/
 theorem cut_adm {Δ : Finset PLLFormula} {A E : PLLFormula}
     (d₁ : G4s Δ A) (d₂ : G4s (insert A Δ) E) : G4s Δ E := by
