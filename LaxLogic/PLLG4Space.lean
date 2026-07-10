@@ -139,11 +139,11 @@ this finite set (`InSpace.mem_enum`); the converse is not needed. -/
 def enum (as : Finset String) : Nat → Finset PLLFormula
   | 0 => ∅
   | W + 1 =>
-      as.image prop ∪ {falsePLL}
+      (as.image prop ∪ {falsePLL}
       ∪ ((enum as W ×ˢ enum as W).image fun p => p.1.and p.2)
       ∪ ((enum as W ×ˢ enum as W).image fun p => p.1.or p.2)
       ∪ ((enum as W ×ˢ enum as W).image fun p => p.1.ifThen p.2)
-      ∪ ((enum as W).image somehow)
+      ∪ ((enum as W).image somehow)).filter (fun φ => φ.weight ≤ W + 1)
 
 theorem InSpace.mem_enum : ∀ (W : Nat) {as : Finset String} {φ : PLLFormula},
     InSpace W as φ → φ ∈ enum as W := by
@@ -156,6 +156,7 @@ theorem InSpace.mem_enum : ∀ (W : Nat) {as : Finset String} {φ : PLLFormula},
       intro as φ h
       obtain ⟨hw, ha⟩ := h
       simp only [enum]
+      refine Finset.mem_filter.mpr ⟨?_, hw⟩
       cases φ with
       | prop a =>
           have haa : a ∈ as := ha (by rw [atoms_prop]; exact Finset.mem_singleton_self a)
