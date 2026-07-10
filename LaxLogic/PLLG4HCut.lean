@@ -369,7 +369,10 @@ private theorem andR_inv : ∀ {n : Nat} {Γ : List PLLFormula} {G : PLLFormula}
 /-- **Self-absorption**: an implication whose antecedent-box is
 derivable *in its own presence* may fire.  Valid in every nuclear
 algebra (`f∧γ ≤ jA` and `f∧jA ≤ B` give `f∧γ ≤ B∧⋀l₀ ≤ E`); the one
-obligation of the conditional cut theorem below. -/
+obligation of the conditional cut theorem below.  This is the
+`◯`-antecedent instance of general retained modus ponens (`impL_adm`),
+and the *only* instance provable below cut — see `impL_adm`'s
+docstring for why the general statement is not inductively stable. -/
 def SelfAbsorb : Prop :=
   ∀ {Γ l₀ : List PLLFormula} {A B E : PLLFormula},
     Γ.Perm (A.somehow.ifThen B :: l₀) → G4c Γ A.somehow →
@@ -998,6 +1001,24 @@ theorem selfAbsorb : SelfAbsorb := by
 theorem cut {Γ : List PLLFormula} {A E : PLLFormula}
     (d₁ : G4c Γ A) (d₂ : G4c (A :: Γ) E) : G4c Γ E :=
   cut' selfAbsorb d₁ d₂
+
+/-- **General retained modus ponens: G3's `L⊃` is admissible**, for an
+implication with *any* antecedent, whose first premise may use the
+implication itself.  `selfAbsorb` is the `◯`-antecedent instance, and
+the order of proof is forced: the lax firing rules are MP-shaped with
+verbatim-reusable retained premises, so that instance closes by plain
+structural induction *below* cut; for compound antecedents the
+Dyckhoff rules *restructure* the implication (e.g. `(D₁∧D₂)→B` becomes
+`D₁→(D₂→B)`), the statement is not inductively stable, and the direct
+proof would re-derive cut.  Hence: minimal instance first, cut second,
+this general corollary third. -/
+theorem impL_adm {Γ l₀ : List PLLFormula} {D B E : PLLFormula}
+    (hΓ : Γ.Perm (D.ifThen B :: l₀)) (d₁ : G4c Γ D)
+    (d₂ : G4c (B :: l₀) E) : G4c Γ E := by
+  have lB : G4c Γ B :=
+    cut d₁ ((mp D B l₀).perm (hΓ.symm.cons D))
+  exact cut lB ((d₂.weaken (D.ifThen B)).perm
+    ((List.Perm.swap _ _ _).trans (hΓ.symm.cons B)))
 
 end G4c
 
