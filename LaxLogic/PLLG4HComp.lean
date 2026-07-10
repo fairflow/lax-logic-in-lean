@@ -2,18 +2,26 @@ import LaxLogic.PLLG4HCut
 import LaxLogic.PLLTerms
 
 /-!
-# Completeness of G4iLL″, conditional on self-absorption
+# Completeness of G4iLL″, and the equivalences — unconditional
 
 `SC → G4c` by plain structural induction on the height-indexed G3
 derivation: the right rules and the two membership-keeping lax rules
 transfer verbatim; `andL`/`orL` invert the surviving copy and contract
-the strictly lighter pieces; `impL` is two cuts through the
-in-context modus ponens.  Combined with `G4c.toSC` and the banked
+the strictly lighter pieces; `impL` is two cuts through the in-context
+modus ponens.  Combined with `G4c.toSC` (`PLLG4H.lean`) and the banked
 equivalences `SC ↔ LaxND ↔ Tm`, the full chain
 
-    G4c  =  SC  =  LaxND  =  Tm-inhabitation   (modulo `SelfAbsorb`)
+    G4c  =  SC  =  LaxND  =  Tm-inhabitation
 
-pins F&M Theorem 2.8's proof-theoretic half on that one lemma.
+closes.  Because `SelfAbsorb` is proved in `PLLG4HCut.lean`, everything
+here is unconditional — the proof-theoretic half of F&M Theorem 2.8.
+
+The development is layered: the induction is first run against the
+hypothesis `SelfAbsorb` (`completeness_of_selfAbsorb`, `g4c_iff_*`),
+then `selfAbsorb` is fed in to give the unconditional `completeness`,
+`equiv_sc`, `equiv_nd`, `equiv_tm`.  The `#print axioms` audits at the
+foot report `[propext, Classical.choice, Quot.sound]` — no `sorryAx`,
+no compiled evaluation.
 -/
 
 open PLLFormula

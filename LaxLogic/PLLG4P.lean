@@ -1,7 +1,7 @@
 import LaxLogic.PLLG4Gap
 
 /-!
-# G4iLL′: the repaired terminating-style calculus for PLL
+# G4iLL′: the first (single-retention) repair — superseded by G4iLL″
 
 `PLLG4Gap.lean` shows Iemhoff's G4iLL is incomplete: the sequent
 `◯((◯p→r)→◯p), ◯p→r ⇒ r` needs the implication `◯p→r` **twice, on the
@@ -24,20 +24,32 @@ unchanged from `PLLG4.lean`.
 
 `G4p` is **not** Dershowitz–Manna terminating (the first premise trades
 the succedent for `◯φ`); termination and the decision procedure are a
-later, separate concern.  What this file and its successors establish
-is the *proof theory*, by pure structural inductions — the plan:
+later, separate concern.
+
+**Superseded, but live.**  `G4p` was the *first* repair (one retained
+premise).  Writing its admissibility ladder in Lean exposed that a
+single retention is not enough: cut needs the box rules to keep their
+box too, and contraction needs `R◯→` to keep its context — two further
+retentions that also force a height index.  The finished calculus is
+therefore `G4h`/`G4c` (**G4iLL″**) in `PLLG4H.lean`; `G4p` survives only
+as the intermediate whose `ofG4p` embedding routes `G4` and the gap
+sequent into `G4c` (`PLLG4H.lean`).  The design history of all three
+retentions is `docs/g4p-ladder.md`; the synthesis is `docs/commentary.md`.
+
+What this file and the `PLLG4P*` successors establish, by pure
+structural inductions, is the `G4p`-level proof theory that the G4iLL″
+ladder reuses:
 
 1. this file: exchange, weakening, `G4 ⊆ G4p`, soundness into `SC`,
    and the gap sequent now derivable;
-2. inversions (port of `PLLG4Inv.lean`);
-3. generalised identity (port of `PLLG4Adm.lean`);
-4. `weak_ImpLax`, the **self-absorbing** `weak_ImpLax_self` (the lemma
-   whose failure for G4iLL was the root of the incompleteness — the
-   kept implication is exactly what its `laxL` case needs), and the
-   `◯`-strengthening `open_box`;
-5. contraction, cut;
-6. completeness `SC Γ C → G4p Γ C` — closing F&M Theorem 2.8's
-   proof-theoretic half with a *correct* calculus.
+2. inversions (port of `PLLG4Inv.lean`, `PLLG4PInv.lean`);
+3. generalised identity (port of `PLLG4Adm.lean`, `PLLG4PAdm.lean`);
+4. `weak_ImpLax` and `impLImp_dup` (`PLLG4PStr.lean`).
+
+The self-absorbing `weak_ImpLax_self` and the `G4p`-native
+contraction/cut/completeness that item 4 once anticipated were *not*
+pursued for `G4p`: they are done instead over `G4c`, where cut needs no
+standing self-absorption lemma (`PLLG4HCtr/HCut/HComp.lean`).
 -/
 
 open PLLFormula

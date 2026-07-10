@@ -3,11 +3,15 @@ import LaxLogic.PLLG4
 /-!
 # Inversion lemmas for G4iLL
 
-Chunk 4a of the decision procedure.  Towards the equivalence
-`SC Γ C ↔ G4 Γ C` (Dyckhoff/Iemhoff), whose engine is admissibility of
-contraction in G4; contraction in turn runs on the *inversion* lemmas
-proved here: for most left rules, if the conclusion is derivable then so
-is (the relevant) premise.
+The goal-preserving inversions of Iemhoff's `G4`: for most left rules, if
+the conclusion is derivable then so is (the relevant) premise.  These are
+rule-local facts, true of `G4` independently of its incompleteness
+(`PLLG4Gap.lean`); they support the decision procedure (`PLLDecide.lean`),
+and the decomposition relation `Inv` they are parameterised by is reused
+verbatim, height-preservingly, for the repaired calculus in
+`PLLG4HInv.lean`.  (The equivalence `SC ↔ G4` these were once aimed at
+does *not* hold — contraction is not admissible in `G4`; the equivalence
+holds for the repaired `G4c`, `PLLG4HComp.lean`.)
 
 All the goal-preserving inversions are instances of one master theorem
 `G4.inv`, parameterised by an inductive relation `Inv P L` ("a context
@@ -26,8 +30,10 @@ traversal.
 It is semantically valid (`A ⊢ ◯A`), but *not* provable by this
 structural induction: when the derivation ends in `impLLaxLax` using `◯A`
 as its box, the strengthened context has lost the box and no rule fires.
-Its status (and the route around it) is exactly what the
-Dyckhoff–Negri/Iemhoff contraction-and-cut machinery settles.
+This is the very obstruction the development turns on: the repair keeps
+the box (revision 1), so the strengthening is never needed, and the
+residual self-absorption it stood in for is proved outright over `G4c`
+(`selfAbsorb`, `PLLG4HCut.lean`).
 
 The traversal never mentions `List.erase`: the case split on "is the
 rule's principal the formula being inverted, or a different one?" is the

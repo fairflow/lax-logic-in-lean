@@ -1,7 +1,7 @@
 import LaxLogic.PLLG4PInv
 
 /-!
-# Structural admissibility for G4iLL, chunk 4b: generalised identity
+# Generalised identity for G4iLL′
 
 `G4p` proves only atomic axioms (`init`), so the general identity
 `A, Γ ⊢ A` is a theorem, not a rule.  Following Dyckhoff–Negri

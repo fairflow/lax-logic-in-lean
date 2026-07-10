@@ -2,7 +2,7 @@ import LaxLogic.PLLG4HInv
 import LaxLogic.PLLG4Adm
 
 /-!
-# Brick 3: the `G4c` rule API, generalised identity, telescoped MP
+# The `G4c` rule API, generalised identity, telescoped MP
 
 `G4c := ∃ n, G4h n` hides the height, so existence-level developments
 (identity, `weak_Imp`, …) need the rules at the wrapper.  The **rule
@@ -12,6 +12,9 @@ development of `PLLG4Adm.lean` ports token-for-token except in the two
 modal cases, which *shrink*: the box-keeping `laxL` needs no `Perm`
 surgery at all, and in the `◯`-antecedent telescope case the identity
 premise sits at the head of the full context, unswapped.
+
+`identity_mem` and the two-hypothesis `mp` below are the corollaries the
+cut and completeness proofs actually call.
 
 The telescope machinery (`curryImp`, `telWeight`) is shared with the
 original development (`G4.curryImp` etc.).

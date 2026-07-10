@@ -1,9 +1,9 @@
 import LaxLogic.PLLG4PAdm
 
 /-!
-# G4iLL′ chunk D: the weak implication rule, and `◯`-spines
+# G4iLL′: the weak implication rule, and `◯`-spines
 
-The engine of the contraction/cut ladder for `G4p`: **`weak_Imp`**, the
+The reusable engine of the contraction/cut ladder: **`weak_Imp`**, the
 full Dyckhoff–Negri Lemma 4.1 extended to the lax modality —
 
     Γ ⇒ D        Γ, B ⇒ E
@@ -26,12 +26,13 @@ calculus, which is the design rationale of the G4 rule set laid bare:
 | a left rule | invert the side premise, IH, re-apply |
 
 The file also defines `◯`-**spines** (`Spine φ σ` iff `φ = ◯^k σ`) with
-their `laxR`-lifts: infrastructure for the *self-absorbing* variant
-`weak_Imp_self` (the lemma whose G4iLL-failure caused the
-incompleteness), whose `laxL`/`L◯→′` cases close by re-using the kept
-implication verbatim and whose spine-bottom cases reduce to
-smaller-weight cuts — see `docs/g4p-ladder.md` for the dependency
-design of that next chunk.
+their `laxR`-lifts.  `weak_Imp`, `impLImp_dup` and the spines are the
+end of the `G4p` line: the ladder proper (inversions, identity, these
+three, then contraction, cut, completeness) is carried out over the
+final `G4c` (**G4iLL″**) in the `PLLG4H*` files, where — thanks to the
+two further retentions of revisions 2–3 — cut needs no standing
+self-absorption lemma at all (`docs/g4p-ladder.md` records the design;
+`docs/commentary.md` the synthesis).
 -/
 
 open PLLFormula
