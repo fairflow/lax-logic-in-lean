@@ -279,6 +279,111 @@ theorem orAll_elim : ∀ {l : List PLLFormula} {Δ : Finset PLLFormula}
 
 end G4s
 
+namespace G4sh
+
+/-- **Height-preserving `impR`-inversion** for the cumulative calculus:
+an implication goal can always be unfolded first.  (The other right
+rules are not invertible: `◯A` via `laxR` does not imply `A`, and a
+disjunction goal proved by `orL` splits.) -/
+theorem impR_inv : ∀ {n : Nat} {Γ : Finset PLLFormula} {C : PLLFormula},
+    G4sh n Γ C → ∀ {A B : PLLFormula}, C = A.ifThen B →
+    G4sh n (insert A Γ) B := by
+  intro n Γ C d
+  induction d with
+  | init h => intro A B hC; cases hC
+  | botL h => intro A B hC; exact .botL (Finset.mem_insert_of_mem h)
+  | andR _ _ _ _ => intro A B hC; cases hC
+  | orR1 _ _ => intro A B hC; cases hC
+  | orR2 _ _ => intro A B hC; cases hC
+  | laxR _ _ => intro A B hC; cases hC
+  | laxL _ _ _ => intro A B hC; cases hC
+  | @impR _ _ A₀ B₀ d _ =>
+      intro A B hC
+      injection hC with h₁ h₂
+      subst h₁; subst h₂
+      exact d.succ_mono
+  | @andL _ Γ₀ A₀ B₀ C₀ h _ ih =>
+      intro A B hC
+      subst hC
+      refine .andL (Finset.mem_insert_of_mem h) ?_
+      exact (ih rfl).weaken_subset (by
+        intro y hy
+        simp only [Finset.mem_insert] at hy ⊢
+        tauto)
+  | @orL _ Γ₀ A₀ B₀ C₀ h _ _ ih₁ ih₂ =>
+      intro A B hC
+      subst hC
+      refine .orL (Finset.mem_insert_of_mem h) ?_ ?_
+      · exact (ih₁ rfl).weaken_subset (by
+          intro y hy
+          simp only [Finset.mem_insert] at hy ⊢
+          tauto)
+      · exact (ih₂ rfl).weaken_subset (by
+          intro y hy
+          simp only [Finset.mem_insert] at hy ⊢
+          tauto)
+  | @impLProp _ Γ₀ a B₀ C₀ h ha _ ih =>
+      intro A B hC
+      subst hC
+      refine .impLProp (Finset.mem_insert_of_mem h)
+        (Finset.mem_insert_of_mem ha) ?_
+      exact (ih rfl).weaken_subset (by
+        intro y hy
+        simp only [Finset.mem_insert] at hy ⊢
+        tauto)
+  | @impLAnd _ Γ₀ A₀ B₀ D₀ C₀ h _ ih =>
+      intro A B hC
+      subst hC
+      refine .impLAnd (Finset.mem_insert_of_mem h) ?_
+      exact (ih rfl).weaken_subset (by
+        intro y hy
+        simp only [Finset.mem_insert] at hy ⊢
+        tauto)
+  | @impLOr _ Γ₀ A₀ B₀ D₀ C₀ h _ ih =>
+      intro A B hC
+      subst hC
+      refine .impLOr (Finset.mem_insert_of_mem h) ?_
+      exact (ih rfl).weaken_subset (by
+        intro y hy
+        simp only [Finset.mem_insert] at hy ⊢
+        tauto)
+  | @impLImp _ Γ₀ A₀ B₀ D₀ C₀ h d₁ _ _ ih₂ =>
+      intro A B hC
+      subst hC
+      refine .impLImp (Finset.mem_insert_of_mem h) ?_ ?_
+      · exact d₁.weaken_subset (by
+          intro y hy
+          simp only [Finset.mem_insert] at hy ⊢
+          tauto)
+      · exact (ih₂ rfl).weaken_subset (by
+          intro y hy
+          simp only [Finset.mem_insert] at hy ⊢
+          tauto)
+  | @impLLax _ Γ₀ A₀ B₀ C₀ h d₁ _ _ ih₂ =>
+      intro A B hC
+      subst hC
+      refine .impLLax (Finset.mem_insert_of_mem h)
+        (d₁.weaken_subset (Finset.subset_insert _ _)) ?_
+      exact (ih₂ rfl).weaken_subset (by
+        intro y hy
+        simp only [Finset.mem_insert] at hy ⊢
+        tauto)
+  | @impLLaxLax _ Γ₀ A₀ B₀ X₀ C₀ h hX d₁ _ _ ih₂ =>
+      intro A B hC
+      subst hC
+      refine .impLLaxLax (Finset.mem_insert_of_mem h)
+        (Finset.mem_insert_of_mem hX) ?_ ?_
+      · exact d₁.weaken_subset (by
+          intro y hy
+          simp only [Finset.mem_insert] at hy ⊢
+          tauto)
+      · exact (ih₂ rfl).weaken_subset (by
+          intro y hy
+          simp only [Finset.mem_insert] at hy ⊢
+          tauto)
+
+end G4sh
+
 /-! ### The Pitts quantifiers -/
 
 mutual
