@@ -181,4 +181,264 @@ def interA (p : String) : Nat → List PLLFormula → PLLFormula → PLLFormula
 
 end
 
+/-! ### p-freeness -/
+
+private theorem mem_atoms_andAll {x : String} :
+    ∀ {l : List PLLFormula}, x ∈ (andAll l).atoms → ∃ φ ∈ l, x ∈ φ.atoms := by
+  intro l
+  induction l with
+  | nil => intro h; simp [andAll, truePLL] at h
+  | cons φ l ih =>
+      intro h
+      simp only [andAll, atoms_and, Finset.mem_union] at h
+      rcases h with h | h
+      · exact ⟨φ, .head _, h⟩
+      · obtain ⟨ψ, hmem, hx⟩ := ih h
+        exact ⟨ψ, .tail _ hmem, hx⟩
+
+private theorem mem_atoms_orAll {x : String} :
+    ∀ {l : List PLLFormula}, x ∈ (orAll l).atoms → ∃ φ ∈ l, x ∈ φ.atoms := by
+  intro l
+  induction l with
+  | nil => intro h; simp [orAll] at h
+  | cons φ l ih =>
+      intro h
+      simp only [orAll, atoms_or, Finset.mem_union] at h
+      rcases h with h | h
+      · exact ⟨φ, .head _, h⟩
+      · obtain ⟨ψ, hmem, hx⟩ := ih h
+        exact ⟨ψ, .tail _ hmem, hx⟩
+
+/-- **The quantifiers are p-free.** -/
+theorem inter_pfree (p : String) : ∀ (fuel : Nat),
+    (∀ Γ, p ∉ (interE p fuel Γ).atoms) ∧
+    (∀ Γ C, p ∉ (interA p fuel Γ C).atoms) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      constructor
+      · intro Γ h; simp [interE, truePLL] at h
+      · intro Γ C h; simp [interA] at h
+  | succ fuel ih =>
+      obtain ⟨ihE, ihA⟩ := ih
+      constructor
+      · intro Γ hmem
+        simp only [interE] at hmem
+        obtain ⟨φ, hφ, hx⟩ := mem_atoms_andAll hmem
+        rcases List.mem_append.mp hφ with hφ | hφ
+        · rcases List.mem_append.mp hφ with hφ | hφ
+          · -- the ⊥ clause
+            split at hφ
+            · rcases List.mem_singleton.mp hφ with rfl
+              simp at hx
+            · cases hφ
+          · -- the atom clauses
+            obtain ⟨F, _, heq⟩ := List.mem_filterMap.mp hφ
+            cases F with
+            | prop q =>
+                simp only at heq
+                split at heq
+                · cases heq
+                · injection heq with heq'
+                  subst heq'
+                  rw [atoms_prop, Finset.mem_singleton] at hx
+                  subst hx
+                  simp_all
+            | falsePLL => cases heq
+            | and _ _ => cases heq
+            | or _ _ => cases heq
+            | ifThen _ _ => cases heq
+            | somehow _ => cases heq
+        · -- the rule clauses
+          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
+          cases F with
+          | prop _ => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              rcases List.mem_singleton.mp hin with rfl
+              exact ihE _ hx
+          | or A B =>
+              rcases List.mem_singleton.mp hin with rfl
+              rw [atoms_or, Finset.mem_union] at hx
+              rcases hx with hx | hx
+              · exact ihE _ hx
+              · exact ihE _ hx
+          | somehow χ =>
+              rcases List.mem_singleton.mp hin with rfl
+              rw [atoms_somehow] at hx
+              exact ihE _ hx
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  · split at hin
+                    · rcases List.mem_singleton.mp hin with rfl
+                      exact ihE _ hx
+                    · cases hin
+                  · rcases List.mem_singleton.mp hin with rfl
+                    rw [atoms_ifThen, Finset.mem_union] at hx
+                    rcases hx with hx | hx
+                    · rw [atoms_prop, Finset.mem_singleton] at hx
+                      subst hx
+                      simp_all
+                    · exact ihE _ hx
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  exact ihE _ hx
+              | or A₁ B₁ =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  exact ihE _ hx
+              | ifThen A₁ B₁ =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  rw [atoms_ifThen, Finset.mem_union] at hx
+                  rcases hx with hx | hx
+                  · exact ihA _ _ hx
+                  · exact ihE _ hx
+              | somehow A₁ =>
+                  rcases List.mem_cons.mp hin with rfl | hin'
+                  · rw [atoms_ifThen, Finset.mem_union] at hx
+                    rcases hx with hx | hx
+                    · exact ihA _ _ hx
+                    · exact ihE _ hx
+                  · obtain ⟨X, _, heq⟩ := List.mem_filterMap.mp hin'
+                    cases X with
+                    | somehow x =>
+                        injection heq with heq'
+                        subst heq'
+                        rw [atoms_ifThen, Finset.mem_union] at hx
+                        rcases hx with hx | hx
+                        · exact ihA _ _ hx
+                        · exact ihE _ hx
+                    | prop _ => cases heq
+                    | falsePLL => cases heq
+                    | and _ _ => cases heq
+                    | or _ _ => cases heq
+                    | ifThen _ _ => cases heq
+      · intro Γ C hmem
+        simp only [interA] at hmem
+        obtain ⟨φ, hφ, hx⟩ := mem_atoms_orAll hmem
+        rcases List.mem_append.mp hφ with hφ | hφ
+        · rcases List.mem_append.mp hφ with hφ | hφ
+          · -- the ⊥-in-Γ clause
+            split at hφ
+            · rcases List.mem_singleton.mp hφ with rfl
+              simp [truePLL] at hx
+            · cases hφ
+          · -- the goal clauses
+            cases C with
+            | prop q =>
+                rcases List.mem_append.mp hφ with hφ | hφ
+                · split at hφ
+                  · rcases List.mem_singleton.mp hφ with rfl
+                    simp [truePLL] at hx
+                  · cases hφ
+                · split at hφ
+                  · cases hφ
+                  · rcases List.mem_singleton.mp hφ with rfl
+                    rw [atoms_prop, Finset.mem_singleton] at hx
+                    subst hx
+                    simp_all
+            | falsePLL => cases hφ
+            | and C₁ C₂ =>
+                rcases List.mem_singleton.mp hφ with rfl
+                rw [atoms_and, Finset.mem_union] at hx
+                rcases hx with hx | hx
+                · exact ihA _ _ hx
+                · exact ihA _ _ hx
+            | or C₁ C₂ =>
+                rcases List.mem_cons.mp hφ with rfl | hφ'
+                · exact ihA _ _ hx
+                · rcases List.mem_singleton.mp hφ' with rfl
+                  exact ihA _ _ hx
+            | ifThen C₁ C₂ =>
+                rcases List.mem_singleton.mp hφ with rfl
+                exact ihA _ _ hx
+            | somehow C' =>
+                rcases List.mem_cons.mp hφ with rfl | hφ'
+                · exact ihA _ _ hx
+                · obtain ⟨X, _, heq⟩ := List.mem_filterMap.mp hφ'
+                  cases X with
+                  | somehow x =>
+                      injection heq with heq'
+                      subst heq'
+                      exact ihA _ _ hx
+                  | prop _ => cases heq
+                  | falsePLL => cases heq
+                  | and _ _ => cases heq
+                  | or _ _ => cases heq
+                  | ifThen _ _ => cases heq
+        · obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
+          cases F with
+          | prop _ => cases hin
+          | falsePLL => cases hin
+          | somehow _ => cases hin
+          | and A B =>
+              rcases List.mem_singleton.mp hin with rfl
+              exact ihA _ _ hx
+          | or A B =>
+              rcases List.mem_singleton.mp hin with rfl
+              rw [atoms_and, Finset.mem_union] at hx
+              rcases hx with hx | hx
+              · exact ihA _ _ hx
+              · exact ihA _ _ hx
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  rcases List.mem_append.mp hin with hin | hin
+                  · split at hin
+                    · rcases List.mem_singleton.mp hin with rfl
+                      exact ihA _ _ hx
+                    · cases hin
+                  · split at hin
+                    · cases hin
+                    · rcases List.mem_singleton.mp hin with rfl
+                      rw [atoms_and, Finset.mem_union] at hx
+                      rcases hx with hx | hx
+                      · rw [atoms_prop, Finset.mem_singleton] at hx
+                        subst hx
+                        simp_all
+                      · exact ihA _ _ hx
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  exact ihA _ _ hx
+              | or A₁ B₁ =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  exact ihA _ _ hx
+              | ifThen A₁ B₁ =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  rw [atoms_and, Finset.mem_union] at hx
+                  rcases hx with hx | hx
+                  · exact ihA _ _ hx
+                  · exact ihA _ _ hx
+              | somehow A₁ =>
+                  rcases List.mem_cons.mp hin with rfl | hin'
+                  · rw [atoms_and, Finset.mem_union] at hx
+                    rcases hx with hx | hx
+                    · exact ihA _ _ hx
+                    · exact ihA _ _ hx
+                  · obtain ⟨X, _, heq⟩ := List.mem_filterMap.mp hin'
+                    cases X with
+                    | somehow x =>
+                        injection heq with heq'
+                        subst heq'
+                        rw [atoms_and, Finset.mem_union] at hx
+                        rcases hx with hx | hx
+                        · exact ihA _ _ hx
+                        · exact ihA _ _ hx
+                    | prop _ => cases heq
+                    | falsePLL => cases heq
+                    | and _ _ => cases heq
+                    | or _ _ => cases heq
+                    | ifThen _ _ => cases heq
+
+theorem interE_pfree (p : String) (fuel : Nat) (Γ : List PLLFormula) :
+    p ∉ (interE p fuel Γ).atoms := (inter_pfree p fuel).1 Γ
+
+theorem interA_pfree (p : String) (fuel : Nat) (Γ : List PLLFormula)
+    (C : PLLFormula) : p ∉ (interA p fuel Γ C).atoms :=
+  (inter_pfree p fuel).2 Γ C
+
 end PLLND
