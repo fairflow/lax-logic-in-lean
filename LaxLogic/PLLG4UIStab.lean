@@ -420,4 +420,38 @@ theorem inter_congr (p : String) : ∀ (fuel : Nat),
                       | or _ _ => cases heq
                       | ifThen _ _ => cases heq
 
+/-! ### The lax fixpoint lemma
+
+The PLL analogue of Bílková's Lemma 2.18 for GL: a ◯-guarded
+self-referential disjunct is provably redundant after one unfolding —
+`◯((α ∨ ◯δ) ∧ β) ⊣⊢ ◯(α ∧ β)` for `δ := α ∧ β`.  Where GL needs the
+4-axiom (and Löb elsewhere), PLL needs only the monad: the collapsing
+step is `◯(◯δ ∧ β) ⊢ ◯δ` — strength to pair `β` into the box and
+multiplication to flatten.  This is the engine for truncating the
+self-referential ◯-goal disjunct in the uniformity layer. -/
+
+theorem lax_fixpoint (α β : PLLFormula) :
+    (G4c [((α.or (α.and β).somehow).and β).somehow]
+      ((α.and β).somehow)) ∧
+    (G4c [(α.and β).somehow]
+      (((α.or (α.and β).somehow).and β).somehow)) := by
+  constructor
+  · -- collapse: distribute, then multiply
+    refine G4c.laxL (.head _) ?_
+    refine G4c.andL (List.Perm.refl _) ?_
+    refine G4c.orL (List.Perm.refl _) ?_ ?_
+    · -- the α-branch: unit
+      exact G4c.laxR (G4c.andR (G4c.iden (.head _))
+        (G4c.iden (.tail _ (.head _))))
+    · -- the ◯δ-branch: open the inner box (multiplication)
+      refine G4c.laxL (.head _) ?_
+      refine G4c.andL (List.Perm.refl _) ?_
+      exact G4c.laxR (G4c.andR (G4c.iden (.head _))
+        (G4c.iden (.tail _ (.head _))))
+  · -- expansion: unit into the left disjunct
+    refine G4c.laxL (.head _) ?_
+    refine G4c.andL (List.Perm.refl _) ?_
+    exact G4c.laxR (G4c.andR (G4c.orR1 (G4c.iden (.head _)))
+      (G4c.iden (.tail _ (.head _))))
+
 end PLLND
