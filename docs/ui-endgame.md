@@ -163,6 +163,25 @@ falls out:
   never used (∧-decrease as projection).  Budget-mono is the easy
   half; the cascade is the hard half; `lax_fixpoint`/`box_guard`
   handle the ◯-goal self-reference separately.
+
+  Intended Lean statement (mutual, at every fuel, threshold
+  `K := bcap S := 2·S.card + 4`, overcounting the jump states
+  `{E} ∪ {A_F, ◯A_F : ◯A_F⊃B ∈ S} ∪ {A⊃B : (A⊃B)⊃D ∈ S}`; note the
+  guarded shapes make chains alternate `E`/`A` states, hence the
+  factor 2):
+
+      itp_absorb : K ≤ b → ∀ fuel,
+        (∀ Γ, G4c [itpE p S fuel b Γ] (itpE p S fuel (b+1) Γ)) ∧
+        (∀ Γ C, G4c [itpA p S fuel (b+1) Γ C] (itpA p S fuel b Γ C))
+
+  The auxiliary cascade needs a seen-state parameter (list of visited
+  jump states with their budget offsets, values in context); at a
+  fresh state, orL/andL one level deeper on the source and introduce
+  the matching target component; at a repeated state, stop — the
+  in-context source value reaches the *spliced* target slot by
+  `itp_budget_mono_le` and a cut.  All grown-context and
+  goal-decomposition side obligations discharge by the fuel-level
+  induction hypothesis (the statement is ∀Γ∀C at fuel−1).
 * **Adequacy then transfers P4a-style**: fuel > height exactly as
   before (fuel-mono re-proved for v3), with absorption as the new
   `E_step`-analogue gluing jump landings, and one application of the

@@ -1898,4 +1898,1367 @@ theorem itp_budget_mono (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
         exact itpAfull_map (map_append hGOAL hENV)
           (fun b' hb => ⟨b, rfl, by rw [hb]; exact ihE b' Γ⟩)
 
+/-! ### Multi-step budget monotonicity
+
+Composing the single steps with cut closes any budget gap, at every
+fixed fuel — the absorption device that will make budgets above the
+jump-goal threshold interchangeable. -/
+
+theorem itp_budget_mono_le (p : String) (S : Finset PLLFormula) {b b' : Nat}
+    (h : b ≤ b') : ∀ fuel,
+    (∀ Γ, G4c [itpE p S fuel b' Γ] (itpE p S fuel b Γ)) ∧
+    (∀ Γ C, G4c [itpA p S fuel b Γ C] (itpA p S fuel b' Γ C)) := by
+  intro fuel
+  induction h with
+  | refl =>
+      exact ⟨fun Γ => G4c.iden (.head _), fun Γ C => G4c.iden (.head _)⟩
+  | @step m _ ih =>
+      obtain ⟨ihE, ihA⟩ := ih
+      constructor
+      · intro Γ
+        exact G4c.cut ((itp_budget_mono p S fuel).1 m Γ)
+          (((ihE Γ).weaken _).perm (List.Perm.swap _ _ _))
+      · intro Γ C
+        exact G4c.cut (ihA Γ C)
+          ((((itp_budget_mono p S fuel).2 m Γ C).weaken _).perm
+            (List.Perm.swap _ _ _))
+
+/-! ### p-freeness
+
+Every clause builds from recursive values (p-free by the induction
+hypotheses), non-`p` atoms (the clauses guard against `p` explicitly),
+`⊤` and `⊥`; the truncation disjunct adds only an `orAll` over the
+already-covered table. -/
+
+private theorem mem_atoms_andAll {x : String} :
+    ∀ {l : List PLLFormula}, x ∈ (andAll l).atoms → ∃ φ ∈ l, x ∈ φ.atoms := by
+  intro l
+  induction l with
+  | nil => intro h; simp [andAll, truePLL] at h
+  | cons φ l ih =>
+      intro h
+      simp only [andAll, atoms_and, Finset.mem_union] at h
+      rcases h with h | h
+      · exact ⟨φ, .head _, h⟩
+      · obtain ⟨ψ, hmem, hx⟩ := ih h
+        exact ⟨ψ, .tail _ hmem, hx⟩
+
+private theorem mem_atoms_orAll {x : String} :
+    ∀ {l : List PLLFormula}, x ∈ (orAll l).atoms → ∃ φ ∈ l, x ∈ φ.atoms := by
+  intro l
+  induction l with
+  | nil => intro h; simp [orAll] at h
+  | cons φ l ih =>
+      intro h
+      simp only [orAll, atoms_or, Finset.mem_union] at h
+      rcases h with h | h
+      · exact ⟨φ, .head _, h⟩
+      · obtain ⟨ψ, hmem, hx⟩ := ih h
+        exact ⟨ψ, .tail _ hmem, hx⟩
+
+set_option maxHeartbeats 4000000 in
+/-- **The truncated quantifiers are p-free.** -/
+theorem itp_pfree (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
+    (∀ b Γ, p ∉ (itpE p S fuel b Γ).atoms) ∧
+    (∀ b Γ C, p ∉ (itpA p S fuel b Γ C).atoms) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      constructor
+      · intro b Γ h; simp [itpE, truePLL] at h
+      · intro b Γ C h; simp [itpA] at h
+  | succ fuel ih =>
+      obtain ⟨ihE, ihA⟩ := ih
+      constructor
+      · intro b Γ hmem
+        rw [itpE_succ p S fuel b Γ] at hmem
+        obtain ⟨φ, hφ, hx⟩ := mem_atoms_andAll hmem
+        simp only [itpEcls] at hφ
+        rcases List.mem_append.mp hφ with hφ | hφ
+        · rcases List.mem_append.mp hφ with hφ | hφ
+          · -- the ⊥ clause
+            split at hφ
+            · rcases List.mem_singleton.mp hφ with rfl
+              simp at hx
+            · cases hφ
+          · -- the atom clauses
+            obtain ⟨F, _, heq⟩ := List.mem_filterMap.mp hφ
+            cases F with
+            | prop q =>
+                simp only at heq
+                split at heq
+                · cases heq
+                · injection heq with heq'
+                  subst heq'
+                  rw [atoms_prop, Finset.mem_singleton] at hx
+                  subst hx
+                  simp_all
+            | falsePLL => cases heq
+            | and _ _ => cases heq
+            | or _ _ => cases heq
+            | ifThen _ _ => cases heq
+            | somehow _ => cases heq
+        · -- the rule clauses
+          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
+          cases F with
+          | prop _ => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                split at hin
+                next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  exact ihE _ _ hx
+                next => cases hin
+          | or A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                split at hin
+                next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  rw [atoms_or, Finset.mem_union] at hx
+                  rcases hx with hx | hx
+                  · exact ihE _ _ hx
+                  · exact ihE _ _ hx
+                next => cases hin
+          | somehow χ =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                rcases List.mem_singleton.mp hin with rfl
+                rw [atoms_somehow] at hx
+                exact ihE _ _ hx
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      split at hin
+                      next =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        exact ihE _ _ hx
+                      next =>
+                        split at hin
+                        next => cases hin
+                        next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          rw [atoms_ifThen, Finset.mem_union] at hx
+                          rcases hx with hx | hx
+                          · rw [atoms_prop, Finset.mem_singleton] at hx
+                            subst hx
+                            simp_all
+                          · exact ihE _ _ hx
+                    next => cases hin
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      exact ihE _ _ hx
+                    next => cases hin
+              | or A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      exact ihE _ _ hx
+                    next => cases hin
+              | ifThen A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      split at hin
+                      next =>
+                        split at hin
+                        next =>
+                          cases b with
+                          | zero => cases hin
+                          | succ b' =>
+                              rcases List.mem_singleton.mp hin with rfl
+                              rw [atoms_ifThen, Finset.mem_union] at hx
+                              rcases hx with hx | hx
+                              · rw [atoms_ifThen, Finset.mem_union] at hx
+                                rcases hx with hx | hx
+                                · exact ihE _ _ hx
+                                · exact ihA _ _ _ hx
+                              · exact ihE _ _ hx
+                        next => cases hin
+                      next =>
+                        split at hin
+                        next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          rw [atoms_ifThen, Finset.mem_union] at hx
+                          rcases hx with hx | hx
+                          · rw [atoms_ifThen, Finset.mem_union] at hx
+                            rcases hx with hx | hx
+                            · exact ihE _ _ hx
+                            · exact ihA _ _ _ hx
+                          · exact ihE _ _ hx
+                        next => cases hin
+                    next => cases hin
+              | somehow A₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_append.mp hin with hin | hin
+                      · split at hin
+                        next =>
+                          cases b with
+                          | zero => cases hin
+                          | succ b' =>
+                              rcases List.mem_cons.mp hin with rfl | hin'
+                              · rw [atoms_ifThen, Finset.mem_union] at hx
+                                rcases hx with hx | hx
+                                · exact ihA _ _ _ hx
+                                · exact ihE _ _ hx
+                              · rcases List.mem_singleton.mp hin' with rfl
+                                rw [atoms_ifThen, Finset.mem_union] at hx
+                                rcases hx with hx | hx
+                                · rw [atoms_somehow, atoms_ifThen,
+                                    Finset.mem_union] at hx
+                                  rcases hx with hx | hx
+                                  · exact ihE _ _ hx
+                                  · exact ihA _ _ _ hx
+                                · exact ihE _ _ hx
+                        next => cases hin
+                      · obtain ⟨X, _, heq⟩ := List.mem_filterMap.mp hin
+                        cases X with
+                        | somehow x =>
+                            simp only at heq
+                            split at heq
+                            next => cases heq
+                            next =>
+                              injection heq with heq'
+                              subst heq'
+                              rw [atoms_ifThen, Finset.mem_union] at hx
+                              rcases hx with hx | hx
+                              · rw [atoms_somehow, atoms_ifThen,
+                                  Finset.mem_union] at hx
+                                rcases hx with hx | hx
+                                · exact ihE _ _ hx
+                                · exact ihA _ _ _ hx
+                              · exact ihE _ _ hx
+                        | prop _ => cases heq
+                        | falsePLL => cases heq
+                        | and _ _ => cases heq
+                        | or _ _ => cases heq
+                        | ifThen _ _ => cases heq
+                    next => cases hin
+      · intro b Γ C hmem
+        rw [itpA_succ p S fuel b Γ C] at hmem
+        obtain ⟨φ, hφ, hx⟩ := mem_atoms_orAll hmem
+        -- the undecorated table, analysed once: consumed by both the
+        -- main disjuncts and the truncation disjunct
+        have hoth : ∀ ψ ∈ itpAoth p S fuel b Γ C, p ∉ ψ.atoms := by
+          intro ψ hψ hx
+          simp only [itpAoth] at hψ
+          rcases List.mem_append.mp hψ with hψ | hψ
+          · -- the goal clauses
+            cases C with
+            | prop q =>
+                simp only [itpAgoal] at hψ
+                split at hψ
+                · cases hψ
+                · rcases List.mem_singleton.mp hψ with rfl
+                  rw [atoms_prop, Finset.mem_singleton] at hx
+                  subst hx
+                  simp_all
+            | falsePLL => simp only [itpAgoal] at hψ; cases hψ
+            | and C₁ C₂ =>
+                simp only [itpAgoal] at hψ
+                rcases List.mem_singleton.mp hψ with rfl
+                rw [atoms_and, Finset.mem_union] at hx
+                rcases hx with hx | hx
+                · exact ihA _ _ _ hx
+                · exact ihA _ _ _ hx
+            | or C₁ C₂ =>
+                simp only [itpAgoal] at hψ
+                rcases List.mem_cons.mp hψ with rfl | hψ'
+                · exact ihA _ _ _ hx
+                · rcases List.mem_singleton.mp hψ' with rfl
+                  exact ihA _ _ _ hx
+            | ifThen C₁ C₂ =>
+                simp only [itpAgoal] at hψ
+                split at hψ
+                next =>
+                  cases b with
+                  | zero => cases hψ
+                  | succ b' =>
+                      rcases List.mem_singleton.mp hψ with rfl
+                      rw [atoms_ifThen, Finset.mem_union] at hx
+                      rcases hx with hx | hx
+                      · exact ihE _ _ hx
+                      · exact ihA _ _ _ hx
+                next =>
+                  rcases List.mem_singleton.mp hψ with rfl
+                  rw [atoms_ifThen, Finset.mem_union] at hx
+                  rcases hx with hx | hx
+                  · exact ihE _ _ hx
+                  · exact ihA _ _ _ hx
+            | somehow D =>
+                simp only [itpAgoal] at hψ
+                cases b with
+                | zero => cases hψ
+                | succ b' =>
+                    rcases List.mem_singleton.mp hψ with rfl
+                    rw [atoms_somehow, atoms_ifThen, Finset.mem_union] at hx
+                    rcases hx with hx | hx
+                    · exact ihE _ _ hx
+                    · exact ihA _ _ _ hx
+          · -- the context clauses
+            simp only [itpAenv] at hψ
+            obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hψ
+            cases F with
+            | prop q =>
+                simp only at hin
+                split at hin
+                · rcases List.mem_singleton.mp hin with rfl
+                  simp [truePLL] at hx
+                · cases hin
+            | falsePLL => cases hin
+            | and A B =>
+                simp only at hin
+                split at hin
+                next => cases hin
+                next =>
+                  split at hin
+                  next =>
+                    rcases List.mem_singleton.mp hin with rfl
+                    exact ihA _ _ _ hx
+                  next => cases hin
+            | or A B =>
+                simp only at hin
+                split at hin
+                next => cases hin
+                next =>
+                  split at hin
+                  next =>
+                    rcases List.mem_singleton.mp hin with rfl
+                    rw [atoms_and, Finset.mem_union] at hx
+                    rcases hx with hx | hx
+                    · rw [atoms_ifThen, Finset.mem_union] at hx
+                      rcases hx with hx | hx
+                      · exact ihE _ _ hx
+                      · exact ihA _ _ _ hx
+                    · rw [atoms_ifThen, Finset.mem_union] at hx
+                      rcases hx with hx | hx
+                      · exact ihE _ _ hx
+                      · exact ihA _ _ _ hx
+                  next => cases hin
+            | somehow χ =>
+                simp only at hin
+                split at hin
+                · split at hin
+                  next => cases hin
+                  next =>
+                    rcases List.mem_singleton.mp hin with rfl
+                    rw [atoms_somehow, atoms_ifThen, Finset.mem_union] at hx
+                    rcases hx with hx | hx
+                    · exact ihE _ _ hx
+                    · exact ihA _ _ _ hx
+                all_goals cases hin
+            | ifThen A' B =>
+                cases A' with
+                | prop q =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next =>
+                      split at hin
+                      next =>
+                        split at hin
+                        next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          exact ihA _ _ _ hx
+                        next =>
+                          split at hin
+                          next => cases hin
+                          next =>
+                            rcases List.mem_singleton.mp hin with rfl
+                            rw [atoms_and, Finset.mem_union] at hx
+                            rcases hx with hx | hx
+                            · rw [atoms_prop, Finset.mem_singleton] at hx
+                              subst hx
+                              simp_all
+                            · exact ihA _ _ _ hx
+                      next => cases hin
+                | falsePLL => cases hin
+                | and A₁ B₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next =>
+                      split at hin
+                      next =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        exact ihA _ _ _ hx
+                      next => cases hin
+                | or A₁ B₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next =>
+                      split at hin
+                      next =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        exact ihA _ _ _ hx
+                      next => cases hin
+                | ifThen A₁ B₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next =>
+                      split at hin
+                      next =>
+                        split at hin
+                        next =>
+                          split at hin
+                          next =>
+                            cases b with
+                            | zero => cases hin
+                            | succ b' =>
+                                rcases List.mem_singleton.mp hin with rfl
+                                rw [atoms_and, Finset.mem_union] at hx
+                                rcases hx with hx | hx
+                                · rw [atoms_ifThen, Finset.mem_union] at hx
+                                  rcases hx with hx | hx
+                                  · exact ihE _ _ hx
+                                  · exact ihA _ _ _ hx
+                                · exact ihA _ _ _ hx
+                          next => cases hin
+                        next =>
+                          split at hin
+                          next =>
+                            rcases List.mem_singleton.mp hin with rfl
+                            rw [atoms_and, Finset.mem_union] at hx
+                            rcases hx with hx | hx
+                            · rw [atoms_ifThen, Finset.mem_union] at hx
+                              rcases hx with hx | hx
+                              · exact ihE _ _ hx
+                              · exact ihA _ _ _ hx
+                            · exact ihA _ _ _ hx
+                          next => cases hin
+                      next => cases hin
+                | somehow A₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next =>
+                      split at hin
+                      next =>
+                        rcases List.mem_append.mp hin with hin | hin
+                        · split at hin
+                          next =>
+                            cases b with
+                            | zero => cases hin
+                            | succ b' =>
+                                rcases List.mem_cons.mp hin with rfl | hin'
+                                · rw [atoms_and, Finset.mem_union] at hx
+                                  rcases hx with hx | hx
+                                  · exact ihA _ _ _ hx
+                                  · exact ihA _ _ _ hx
+                                · rcases List.mem_singleton.mp hin' with rfl
+                                  rw [atoms_and, Finset.mem_union] at hx
+                                  rcases hx with hx | hx
+                                  · rw [atoms_somehow, atoms_ifThen,
+                                      Finset.mem_union] at hx
+                                    rcases hx with hx | hx
+                                    · exact ihE _ _ hx
+                                    · exact ihA _ _ _ hx
+                                  · exact ihA _ _ _ hx
+                          next => cases hin
+                        · obtain ⟨X, _, heq⟩ := List.mem_filterMap.mp hin
+                          cases X with
+                          | somehow x =>
+                              simp only at heq
+                              split at heq
+                              next => cases heq
+                              next =>
+                                injection heq with heq'
+                                subst heq'
+                                rw [atoms_and, Finset.mem_union] at hx
+                                rcases hx with hx | hx
+                                · rw [atoms_somehow, atoms_ifThen,
+                                    Finset.mem_union] at hx
+                                  rcases hx with hx | hx
+                                  · exact ihE _ _ hx
+                                  · exact ihA _ _ _ hx
+                                · exact ihA _ _ _ hx
+                          | prop _ => cases heq
+                          | falsePLL => cases heq
+                          | and _ _ => cases heq
+                          | or _ _ => cases heq
+                          | ifThen _ _ => cases heq
+                      next => cases hin
+        cases C with
+        | somehow D =>
+            simp only [itpAfull] at hφ
+            rcases List.mem_append.mp hφ with hφ | hφ
+            · exact hoth φ hφ hx
+            · -- the truncation disjunct
+              split at hφ
+              next => cases hφ
+              next =>
+                cases b with
+                | zero => cases hφ
+                | succ b' =>
+                    rcases List.mem_singleton.mp hφ with rfl
+                    rw [atoms_somehow, atoms_ifThen, Finset.mem_union] at hx
+                    rcases hx with hx | hx
+                    · exact ihE _ _ hx
+                    · obtain ⟨ψ, hψ, hx⟩ := mem_atoms_orAll hx
+                      exact hoth ψ hψ hx
+        | prop q => simp only [itpAfull] at hφ; exact hoth φ hφ hx
+        | falsePLL => simp only [itpAfull] at hφ; exact hoth φ hφ hx
+        | and C₁ C₂ => simp only [itpAfull] at hφ; exact hoth φ hφ hx
+        | or C₁ C₂ => simp only [itpAfull] at hφ; exact hoth φ hφ hx
+        | ifThen C₁ C₂ => simp only [itpAfull] at hφ; exact hoth φ hφ hx
+
+/-! ### Soundness (Pitts E1/A1)
+
+`itpE p S fuel b Γ` is a consequence of `Γ`, and `itpA p S fuel b Γ C`
+suffices for `C` alongside `Γ` — at every fuel *and every budget*.
+One mutual fuel induction at the `G4s` level, exactly as for the v2
+quantifiers: omission and space guards only remove obligations, the
+budget-gated clauses are instances of the ∀-budget induction
+hypotheses, and the one new case — the truncation disjunct — opens
+with `laxL`, fires its guard by modus ponens against E1 at the inner
+fuel, and lands on the same per-disjunct obligations as the main
+proof (the `hOTH` bundle below serves both consumers). -/
+
+private theorem memF {F : PLLFormula} {Γ : List PLLFormula} (h : F ∈ Γ) :
+    F ∈ Γ.toFinset := List.mem_toFinset.mpr h
+
+set_option maxHeartbeats 4000000 in
+theorem itp_sound (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat),
+    (∀ b Γ, G4s Γ.toFinset (itpE p S fuel b Γ)) ∧
+    (∀ b Γ C, G4s (insert (itpA p S fuel b Γ C) Γ.toFinset) C) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      constructor
+      · intro b Γ
+        simp only [itpE]
+        exact G4s.truePLL_intro _
+      · intro b Γ C
+        simp only [itpA]
+        exact G4s.botL (Finset.mem_insert_self _ _)
+  | succ fuel ih =>
+      obtain ⟨ihE, ihA⟩ := ih
+      constructor
+      · -- E1: Γ ⊢ itpE p S (fuel+1) b Γ
+        intro b Γ
+        rw [itpE_succ p S fuel b Γ]
+        refine G4s.andAll_intro ?_
+        intro φ hφ
+        simp only [itpEcls] at hφ
+        rcases List.mem_append.mp hφ with hφ | hφ
+        · rcases List.mem_append.mp hφ with hφ | hφ
+          · -- the ⊥ clause
+            split at hφ
+            next hbot =>
+              rcases List.mem_singleton.mp hφ with rfl
+              exact G4s.botL (memF hbot)
+            next => cases hφ
+          · -- the atom clauses
+            obtain ⟨F, hFΓ, heq⟩ := List.mem_filterMap.mp hφ
+            cases F with
+            | prop q =>
+                simp only at heq
+                split at heq
+                · cases heq
+                · injection heq with heq'
+                  subst heq'
+                  exact G4s.init (memF hFΓ)
+            | falsePLL => cases heq
+            | and _ _ => cases heq
+            | or _ _ => cases heq
+            | ifThen _ _ => cases heq
+            | somehow _ => cases heq
+        · -- the rule clauses
+          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
+          cases F with
+          | prop _ => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                split at hin
+                next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  have ih' := ihE b (A :: B :: Γ)
+                  rw [List.toFinset_cons, List.toFinset_cons] at ih'
+                  exact G4s.andL (memF hFΓ) ih'
+                next => cases hin
+          | or A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                split at hin
+                next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  have ih₁ := ihE b (A :: Γ)
+                  rw [List.toFinset_cons] at ih₁
+                  have ih₂ := ihE b (B :: Γ)
+                  rw [List.toFinset_cons] at ih₂
+                  exact G4s.orL (memF hFΓ) (G4s.orR1 ih₁) (G4s.orR2 ih₂)
+                next => cases hin
+          | somehow χ =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                rcases List.mem_singleton.mp hin with rfl
+                have ih' := ihE b (χ :: Γ)
+                rw [List.toFinset_cons] at ih'
+                exact G4s.laxL (memF hFΓ) (G4s.laxR ih')
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      split at hin
+                      next hq =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        have ih' := ihE b (B :: Γ)
+                        rw [List.toFinset_cons] at ih'
+                        exact G4s.impLProp (memF hFΓ) (memF hq) ih'
+                      next =>
+                        split at hin
+                        next => cases hin
+                        next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4s.impR ?_
+                          have ih' := ihE b (B :: Γ)
+                          rw [List.toFinset_cons] at ih'
+                          refine G4s.impLProp
+                            (Finset.mem_insert_of_mem (memF hFΓ))
+                            (Finset.mem_insert_self _ _) ?_
+                          exact ih'.weaken_subset
+                            (Finset.insert_subset_insert _
+                              (Finset.subset_insert _ _))
+                    next => cases hin
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      have ih' := ihE b (A₁.ifThen (B₁.ifThen B) :: Γ)
+                      rw [List.toFinset_cons] at ih'
+                      exact G4s.impLAnd (memF hFΓ) ih'
+                    next => cases hin
+              | or A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      have ih' := ihE b (A₁.ifThen B :: B₁.ifThen B :: Γ)
+                      rw [List.toFinset_cons, List.toFinset_cons] at ih'
+                      exact G4s.impLOr (memF hFΓ) ih'
+                    next => cases hin
+              | ifThen A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      split at hin
+                      next =>
+                        split at hin
+                        next =>
+                          -- E8 at a present piece: guard components at
+                          -- budget b', continuation at b = b'+1
+                          cases b with
+                          | zero => cases hin
+                          | succ b' =>
+                              rcases List.mem_singleton.mp hin with rfl
+                              refine G4s.impR ?_
+                              have ihd := ihE (b' + 1) (B :: Γ)
+                              rw [List.toFinset_cons] at ihd
+                              refine G4s.impLImp
+                                (Finset.mem_insert_of_mem (memF hFΓ)) ?_ ?_
+                              · refine G4s.mp_adm
+                                  (X := itpE p S fuel b' Γ)
+                                  (Y := itpA p S fuel b' Γ (A₁.ifThen B₁))
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_self _ _)) ?_ ?_
+                                · exact (ihE b' Γ).weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                                · exact (ihA b' Γ
+                                      (A₁.ifThen B₁)).weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                              · exact ihd.weaken_subset
+                                  (Finset.insert_subset_insert _
+                                    (Finset.subset_insert _ _))
+                        next => cases hin
+                      next =>
+                        split at hin
+                        next =>
+                          -- E8 at a fresh piece: the v2 shape
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4s.impR ?_
+                          have ihe' := ihE b (B₁.ifThen B :: Γ)
+                          rw [List.toFinset_cons] at ihe'
+                          have iha' := ihA b (B₁.ifThen B :: Γ)
+                            (A₁.ifThen B₁)
+                          rw [List.toFinset_cons] at iha'
+                          have ihd := ihE b (B :: Γ)
+                          rw [List.toFinset_cons] at ihd
+                          refine G4s.impLImp
+                            (Finset.mem_insert_of_mem (memF hFΓ)) ?_ ?_
+                          · refine G4s.mp_adm
+                              (X := itpE p S fuel b (B₁.ifThen B :: Γ))
+                              (Y := itpA p S fuel b (B₁.ifThen B :: Γ)
+                                (A₁.ifThen B₁))
+                              (Finset.mem_insert_of_mem
+                                (Finset.mem_insert_self _ _)) ?_ ?_
+                            · exact ihe'.weaken_subset (by
+                                intro y hy
+                                simp only [Finset.mem_insert] at hy ⊢
+                                tauto)
+                            · exact iha'.weaken_subset (by
+                                intro y hy
+                                simp only [Finset.mem_insert] at hy ⊢
+                                tauto)
+                          · exact ihd.weaken_subset
+                              (Finset.insert_subset_insert _
+                                (Finset.subset_insert _ _))
+                        next => cases hin
+                    next => cases hin
+              | somehow A₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_append.mp hin with hin | hin
+                      · split at hin
+                        next =>
+                          cases b with
+                          | zero => cases hin
+                          | succ b' =>
+                              rcases List.mem_cons.mp hin with rfl | hin'
+                              · -- head clause: bare A(Γ ⇒ A₁) antecedent
+                                refine G4s.impR ?_
+                                have ihe := ihE (b' + 1) (B :: Γ)
+                                rw [List.toFinset_cons] at ihe
+                                refine G4s.impLLax
+                                  (Finset.mem_insert_of_mem (memF hFΓ))
+                                  (ihA b' Γ A₁) ?_
+                                exact ihe.weaken_subset
+                                  (Finset.insert_subset_insert _
+                                    (Finset.subset_insert _ _))
+                              · rcases List.mem_singleton.mp hin' with rfl
+                                -- γ-clause: the guard is its own witness
+                                refine G4s.impR ?_
+                                have ihe := ihE (b' + 1) (B :: Γ)
+                                rw [List.toFinset_cons] at ihe
+                                refine G4s.impLLaxLax
+                                  (Finset.mem_insert_of_mem (memF hFΓ))
+                                  (Finset.mem_insert_self _ _) ?_ ?_
+                                · refine G4s.mp_adm
+                                    (X := itpE p S fuel b' Γ)
+                                    (Y := itpA p S fuel b' Γ A₁.somehow)
+                                    (Finset.mem_insert_self _ _) ?_ ?_
+                                  · exact (ihE b' Γ).weaken_subset (by
+                                      intro y hy
+                                      simp only [Finset.mem_insert] at hy ⊢
+                                      tauto)
+                                  · exact (ihA b' Γ
+                                        A₁.somehow).weaken_subset (by
+                                      intro y hy
+                                      simp only [Finset.mem_insert] at hy ⊢
+                                      tauto)
+                                · exact ihe.weaken_subset
+                                    (Finset.insert_subset_insert _
+                                      (Finset.subset_insert _ _))
+                        next => cases hin
+                      · obtain ⟨X, hXΓ, heq⟩ := List.mem_filterMap.mp hin
+                        cases X with
+                        | somehow x =>
+                            simp only at heq
+                            split at heq
+                            next => cases heq
+                            next =>
+                              injection heq with heq'
+                              subst heq'
+                              refine G4s.impR ?_
+                              have ihe := ihE b (B :: Γ)
+                              rw [List.toFinset_cons] at ihe
+                              refine G4s.impLLaxLax
+                                (Finset.mem_insert_of_mem (memF hFΓ))
+                                (Finset.mem_insert_self _ _) ?_ ?_
+                              · -- open the Γ-side witness box, then MP
+                                refine G4s.laxL
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_of_mem
+                                      (memF hXΓ))) ?_
+                                have ihe' := ihE b (x :: Γ)
+                                rw [List.toFinset_cons] at ihe'
+                                have iha' := ihA b (x :: Γ) A₁.somehow
+                                rw [List.toFinset_cons] at iha'
+                                refine G4s.mp_adm
+                                  (X := itpE p S fuel b (x :: Γ))
+                                  (Y := itpA p S fuel b (x :: Γ) A₁.somehow)
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_self _ _)) ?_ ?_
+                                · exact ihe'.weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                                · exact iha'.weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                              · exact ihe.weaken_subset
+                                  (Finset.insert_subset_insert _
+                                    (Finset.subset_insert _ _))
+                        | prop _ => cases heq
+                        | falsePLL => cases heq
+                        | and _ _ => cases heq
+                        | or _ _ => cases heq
+                        | ifThen _ _ => cases heq
+                    next => cases hin
+      · -- A1: itpA p S (fuel+1) b Γ C, Γ ⊢ C
+        intro b Γ C
+        rw [itpA_succ p S fuel b Γ C]
+        -- the goal-directed disjuncts
+        have hGOAL : ∀ φ ∈ itpAgoal p S fuel b Γ C,
+            G4s (insert φ Γ.toFinset) C := by
+          intro φ hφ
+          cases C with
+          | prop q =>
+              simp only [itpAgoal] at hφ
+              split at hφ
+              · cases hφ
+              · rcases List.mem_singleton.mp hφ with rfl
+                exact G4s.init (Finset.mem_insert_self _ _)
+          | falsePLL => simp only [itpAgoal] at hφ; cases hφ
+          | and C₁ C₂ =>
+              simp only [itpAgoal] at hφ
+              rcases List.mem_singleton.mp hφ with rfl
+              refine G4s.andL_ins ?_
+              refine G4s.andR ?_ ?_
+              · exact (ihA b Γ C₁).weaken_subset
+                  (Finset.insert_subset_insert _
+                    (Finset.subset_insert _ _))
+              · exact (ihA b Γ C₂).weaken_subset (Finset.subset_insert _ _)
+          | or C₁ C₂ =>
+              simp only [itpAgoal] at hφ
+              rcases List.mem_cons.mp hφ with rfl | hφ'
+              · exact G4s.orR1 (ihA b Γ C₁)
+              · rcases List.mem_singleton.mp hφ' with rfl
+                exact G4s.orR2 (ihA b Γ C₂)
+          | ifThen C₁ C₂ =>
+              simp only [itpAgoal] at hφ
+              split at hφ
+              next =>
+                cases b with
+                | zero => cases hφ
+                | succ b' =>
+                    rcases List.mem_singleton.mp hφ with rfl
+                    refine G4s.impR ?_
+                    have ihe := ihE b' (C₁ :: Γ)
+                    rw [List.toFinset_cons] at ihe
+                    have iha := ihA (b' + 1) (C₁ :: Γ) C₂
+                    rw [List.toFinset_cons] at iha
+                    refine G4s.mp_adm
+                      (X := itpE p S fuel b' (C₁ :: Γ))
+                      (Y := itpA p S fuel (b' + 1) (C₁ :: Γ) C₂)
+                      (Finset.mem_insert_of_mem
+                        (Finset.mem_insert_self _ _)) ?_ ?_
+                    · exact ihe.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                    · exact iha.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+              next =>
+                rcases List.mem_singleton.mp hφ with rfl
+                refine G4s.impR ?_
+                have ihe := ihE b (C₁ :: Γ)
+                rw [List.toFinset_cons] at ihe
+                have iha := ihA b (C₁ :: Γ) C₂
+                rw [List.toFinset_cons] at iha
+                refine G4s.mp_adm (X := itpE p S fuel b (C₁ :: Γ))
+                  (Y := itpA p S fuel b (C₁ :: Γ) C₂)
+                  (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))
+                  ?_ ?_
+                · exact ihe.weaken_subset (by
+                    intro y hy
+                    simp only [Finset.mem_insert] at hy ⊢
+                    tauto)
+                · exact iha.weaken_subset (by
+                    intro y hy
+                    simp only [Finset.mem_insert] at hy ⊢
+                    tauto)
+          | somehow D =>
+              simp only [itpAgoal] at hφ
+              cases b with
+              | zero => cases hφ
+              | succ b' =>
+                  rcases List.mem_singleton.mp hφ with rfl
+                  refine G4s.laxL (Finset.mem_insert_self _ _) ?_
+                  refine G4s.mp_adm (X := itpE p S fuel b' Γ)
+                    (Y := itpA p S fuel (b' + 1) Γ D)
+                    (Finset.mem_insert_self _ _) ?_ ?_
+                  · exact (ihE b' Γ).weaken_subset (by
+                      intro y hy
+                      simp only [Finset.mem_insert] at hy ⊢
+                      tauto)
+                  · exact (G4s.laxR (ihA (b' + 1) Γ D)).weaken_subset (by
+                      intro y hy
+                      simp only [Finset.mem_insert] at hy ⊢
+                      tauto)
+        -- the context-directed disjuncts
+        have hENV : ∀ φ ∈ itpAenv p S fuel b Γ C,
+            G4s (insert φ Γ.toFinset) C := by
+          intro φ hφ
+          simp only [itpAenv] at hφ
+          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
+          cases F with
+          | prop q =>
+              simp only at hin
+              split at hin
+              next hg =>
+                rcases List.mem_singleton.mp hin with rfl
+                obtain ⟨hq, hC⟩ := hg
+                subst hq
+                subst hC
+                exact G4s.init (Finset.mem_insert_of_mem (memF hFΓ))
+              next => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                split at hin
+                next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  refine G4s.andL (Finset.mem_insert_of_mem (memF hFΓ)) ?_
+                  have ih' := ihA b (A :: B :: Γ) C
+                  rw [List.toFinset_cons, List.toFinset_cons] at ih'
+                  exact ih'.weaken_subset (by
+                    intro y hy
+                    simp only [Finset.mem_insert] at hy ⊢
+                    tauto)
+                next => cases hin
+          | or A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next =>
+                split at hin
+                next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  refine G4s.andL_ins ?_
+                  refine G4s.orL (Finset.mem_insert_of_mem
+                    (Finset.mem_insert_of_mem (memF hFΓ))) ?_ ?_
+                  · have ihe := ihE b (A :: Γ)
+                    rw [List.toFinset_cons] at ihe
+                    have iha := ihA b (A :: Γ) C
+                    rw [List.toFinset_cons] at iha
+                    refine G4s.mp_adm (X := itpE p S fuel b (A :: Γ))
+                      (Y := itpA p S fuel b (A :: Γ) C)
+                      (Finset.mem_insert_of_mem
+                        (Finset.mem_insert_self _ _)) ?_ ?_
+                    · exact ihe.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                    · exact iha.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                  · have ihe := ihE b (B :: Γ)
+                    rw [List.toFinset_cons] at ihe
+                    have iha := ihA b (B :: Γ) C
+                    rw [List.toFinset_cons] at iha
+                    refine G4s.mp_adm (X := itpE p S fuel b (B :: Γ))
+                      (Y := itpA p S fuel b (B :: Γ) C)
+                      (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
+                        (Finset.mem_insert_self _ _))) ?_ ?_
+                    · exact ihe.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                    · exact iha.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                next => cases hin
+          | somehow χ =>
+              simp only at hin
+              split at hin
+              · split at hin
+                next => cases hin
+                next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  -- goal is ◯-shaped; open ◯χ, then the clause box
+                  refine G4s.laxL
+                    (Finset.mem_insert_of_mem (memF hFΓ)) ?_
+                  refine G4s.laxL
+                    (Finset.mem_insert_of_mem
+                      (Finset.mem_insert_self _ _)) ?_
+                  have ihe := ihE b (χ :: Γ)
+                  rw [List.toFinset_cons] at ihe
+                  exact G4s.mp_adm (Finset.mem_insert_self _ _)
+                    (ihe.weaken_subset (by
+                      intro y hy
+                      simp only [Finset.mem_insert] at hy ⊢
+                      tauto))
+                    ((ihA b (χ :: Γ) _).weaken_subset (by
+                      intro y hy
+                      simp only [Finset.mem_insert, List.mem_toFinset,
+                        List.mem_cons] at hy ⊢
+                      tauto))
+              all_goals cases hin
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      split at hin
+                      next hq =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        refine G4s.impLProp
+                          (Finset.mem_insert_of_mem (memF hFΓ))
+                          (Finset.mem_insert_of_mem (memF hq)) ?_
+                        have ih' := ihA b (B :: Γ) C
+                        rw [List.toFinset_cons] at ih'
+                        exact ih'.weaken_subset (by
+                          intro y hy
+                          simp only [Finset.mem_insert] at hy ⊢
+                          tauto)
+                      next =>
+                        split at hin
+                        next => cases hin
+                        next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4s.andL_ins ?_
+                          refine G4s.impLProp
+                            (Finset.mem_insert_of_mem
+                              (Finset.mem_insert_of_mem (memF hFΓ)))
+                            (Finset.mem_insert_self _ _) ?_
+                          have ih' := ihA b (B :: Γ) C
+                          rw [List.toFinset_cons] at ih'
+                          exact ih'.weaken_subset (by
+                            intro y hy
+                            simp only [Finset.mem_insert] at hy ⊢
+                            tauto)
+                    next => cases hin
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine G4s.impLAnd
+                        (Finset.mem_insert_of_mem (memF hFΓ)) ?_
+                      have ih' := ihA b (A₁.ifThen (B₁.ifThen B) :: Γ) C
+                      rw [List.toFinset_cons] at ih'
+                      exact ih'.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                    next => cases hin
+              | or A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine G4s.impLOr
+                        (Finset.mem_insert_of_mem (memF hFΓ)) ?_
+                      have ih' := ihA b (A₁.ifThen B :: B₁.ifThen B :: Γ) C
+                      rw [List.toFinset_cons, List.toFinset_cons] at ih'
+                      exact ih'.weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                    next => cases hin
+              | ifThen A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      split at hin
+                      next =>
+                        split at hin
+                        next =>
+                          -- present piece: guard components at budget b'
+                          cases b with
+                          | zero => cases hin
+                          | succ b' =>
+                              rcases List.mem_singleton.mp hin with rfl
+                              refine G4s.andL_ins ?_
+                              refine G4s.impLImp
+                                (Finset.mem_insert_of_mem
+                                  (Finset.mem_insert_of_mem (memF hFΓ)))
+                                ?_ ?_
+                              · refine G4s.mp_adm
+                                  (X := itpE p S fuel b' Γ)
+                                  (Y := itpA p S fuel b' Γ (A₁.ifThen B₁))
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_self _ _)) ?_ ?_
+                                · exact (ihE b' Γ).weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                                · exact (ihA b' Γ
+                                      (A₁.ifThen B₁)).weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                              · have ih' := ihA (b' + 1) (B :: Γ) C
+                                rw [List.toFinset_cons] at ih'
+                                exact ih'.weaken_subset (by
+                                  intro y hy
+                                  simp only [Finset.mem_insert] at hy ⊢
+                                  tauto)
+                        next => cases hin
+                      next =>
+                        split at hin
+                        next =>
+                          -- fresh piece: the v2 shape
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4s.andL_ins ?_
+                          refine G4s.impLImp
+                            (Finset.mem_insert_of_mem
+                              (Finset.mem_insert_of_mem (memF hFΓ))) ?_ ?_
+                          · have ihe := ihE b (B₁.ifThen B :: Γ)
+                            rw [List.toFinset_cons] at ihe
+                            have iha := ihA b (B₁.ifThen B :: Γ)
+                              (A₁.ifThen B₁)
+                            rw [List.toFinset_cons] at iha
+                            refine G4s.mp_adm
+                              (X := itpE p S fuel b (B₁.ifThen B :: Γ))
+                              (Y := itpA p S fuel b (B₁.ifThen B :: Γ)
+                                (A₁.ifThen B₁))
+                              (Finset.mem_insert_of_mem
+                                (Finset.mem_insert_self _ _)) ?_ ?_
+                            · exact ihe.weaken_subset (by
+                                intro y hy
+                                simp only [Finset.mem_insert] at hy ⊢
+                                tauto)
+                            · exact iha.weaken_subset (by
+                                intro y hy
+                                simp only [Finset.mem_insert] at hy ⊢
+                                tauto)
+                          · have ih' := ihA b (B :: Γ) C
+                            rw [List.toFinset_cons] at ih'
+                            exact ih'.weaken_subset (by
+                              intro y hy
+                              simp only [Finset.mem_insert] at hy ⊢
+                              tauto)
+                        next => cases hin
+                    next => cases hin
+              | somehow A₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next =>
+                    split at hin
+                    next =>
+                      rcases List.mem_append.mp hin with hin | hin
+                      · split at hin
+                        next =>
+                          cases b with
+                          | zero => cases hin
+                          | succ b' =>
+                              rcases List.mem_cons.mp hin with rfl | hin'
+                              · -- head: A(Γ ⇒ A₁) ∧ A(B::Γ ⇒ C)
+                                refine G4s.andL_ins ?_
+                                refine G4s.impLLax
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_of_mem (memF hFΓ)))
+                                  ?_ ?_
+                                · exact (ihA b' Γ A₁).weaken_subset
+                                    (Finset.insert_subset_insert _
+                                      (Finset.subset_insert _ _))
+                                · have ih' := ihA (b' + 1) (B :: Γ) C
+                                  rw [List.toFinset_cons] at ih'
+                                  exact ih'.weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                              · rcases List.mem_singleton.mp hin' with rfl
+                                -- γ-form: the ◯-guard is its own witness
+                                refine G4s.andL_ins ?_
+                                refine G4s.impLLaxLax
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_of_mem (memF hFΓ)))
+                                  (Finset.mem_insert_self _ _) ?_ ?_
+                                · refine G4s.mp_adm
+                                    (X := itpE p S fuel b' Γ)
+                                    (Y := itpA p S fuel b' Γ A₁.somehow)
+                                    (Finset.mem_insert_self _ _) ?_ ?_
+                                  · exact (ihE b' Γ).weaken_subset (by
+                                      intro y hy
+                                      simp only [Finset.mem_insert] at hy ⊢
+                                      tauto)
+                                  · exact (ihA b' Γ
+                                        A₁.somehow).weaken_subset (by
+                                      intro y hy
+                                      simp only [Finset.mem_insert] at hy ⊢
+                                      tauto)
+                                · have ih' := ihA (b' + 1) (B :: Γ) C
+                                  rw [List.toFinset_cons] at ih'
+                                  exact ih'.weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                        next => cases hin
+                      · obtain ⟨X, hXΓ, heq⟩ := List.mem_filterMap.mp hin
+                        cases X with
+                        | somehow x =>
+                            simp only at heq
+                            split at heq
+                            next => cases heq
+                            next =>
+                              injection heq with heq'
+                              subst heq'
+                              refine G4s.andL_ins ?_
+                              refine G4s.impLLaxLax
+                                (Finset.mem_insert_of_mem
+                                  (Finset.mem_insert_of_mem (memF hFΓ)))
+                                (Finset.mem_insert_self _ _) ?_ ?_
+                              · -- open the Γ-side box, then MP
+                                refine G4s.laxL
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_of_mem
+                                      (Finset.mem_insert_of_mem
+                                        (memF hXΓ)))) ?_
+                                have ihe := ihE b (x :: Γ)
+                                rw [List.toFinset_cons] at ihe
+                                have iha := ihA b (x :: Γ) A₁.somehow
+                                rw [List.toFinset_cons] at iha
+                                refine G4s.mp_adm
+                                  (X := itpE p S fuel b (x :: Γ))
+                                  (Y := itpA p S fuel b (x :: Γ) A₁.somehow)
+                                  (Finset.mem_insert_of_mem
+                                    (Finset.mem_insert_self _ _)) ?_ ?_
+                                · exact ihe.weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                                · exact iha.weaken_subset (by
+                                    intro y hy
+                                    simp only [Finset.mem_insert] at hy ⊢
+                                    tauto)
+                              · have ih' := ihA b (B :: Γ) C
+                                rw [List.toFinset_cons] at ih'
+                                exact ih'.weaken_subset (by
+                                  intro y hy
+                                  simp only [Finset.mem_insert] at hy ⊢
+                                  tauto)
+                        | prop _ => cases heq
+                        | falsePLL => cases heq
+                        | and _ _ => cases heq
+                        | or _ _ => cases heq
+                        | ifThen _ _ => cases heq
+                    next => cases hin
+        -- the undecorated table, bundled once: consumed by both the
+        -- main disjunct cases and the truncation case
+        have hOTH : ∀ φ ∈ itpAoth p S fuel b Γ C,
+            G4s (insert φ Γ.toFinset) C := by
+          intro φ hφ
+          simp only [itpAoth] at hφ
+          rcases List.mem_append.mp hφ with hφ | hφ
+          · exact hGOAL φ hφ
+          · exact hENV φ hφ
+        refine G4s.orAll_elim ?_
+        intro φ hφ
+        cases C with
+        | somehow D =>
+            simp only [itpAfull] at hφ
+            rcases List.mem_append.mp hφ with hφ | hφ
+            · exact hOTH φ hφ
+            · -- the truncation disjunct: open with laxL, fire the
+              -- guard by MP against E1 at (fuel, b'), then land on
+              -- the bundled per-disjunct obligations
+              split at hφ
+              next => cases hφ
+              next =>
+                cases b with
+                | zero => cases hφ
+                | succ b' =>
+                    rcases List.mem_singleton.mp hφ with rfl
+                    refine G4s.laxL (Finset.mem_insert_self _ _) ?_
+                    refine G4s.mp_adm (X := itpE p S fuel b' Γ)
+                      (Y := orAll (itpAoth p S fuel (b' + 1) Γ D.somehow))
+                      (Finset.mem_insert_self _ _) ?_ ?_
+                    · exact (ihE b' Γ).weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+                    · refine G4s.orAll_elim ?_
+                      intro ψ hψ
+                      exact (hOTH ψ hψ).weaken_subset (by
+                        intro y hy
+                        simp only [Finset.mem_insert] at hy ⊢
+                        tauto)
+        | prop q => simp only [itpAfull] at hφ; exact hOTH φ hφ
+        | falsePLL => simp only [itpAfull] at hφ; exact hOTH φ hφ
+        | and C₁ C₂ => simp only [itpAfull] at hφ; exact hOTH φ hφ
+        | or C₁ C₂ => simp only [itpAfull] at hφ; exact hOTH φ hφ
+        | ifThen C₁ C₂ => simp only [itpAfull] at hφ; exact hOTH φ hφ
+
 end PLLND
