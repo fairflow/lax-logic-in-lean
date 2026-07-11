@@ -422,7 +422,7 @@ these symbols, so the (large) clause tables are transcribed once; the
 unfold lemmas are definitional. -/
 
 /-- The conjunct table of `itpE p S (f+1) b Γ`, references folded. -/
-private def itpEcls (p : String) (S : Finset PLLFormula) (f b : Nat)
+def itpEcls (p : String) (S : Finset PLLFormula) (f b : Nat)
     (Γ : List PLLFormula) : List PLLFormula :=
   (if falsePLL ∈ Γ then [falsePLL] else [])
   ++ Γ.filterMap (fun F => match F with
@@ -502,12 +502,12 @@ private def itpEcls (p : String) (S : Finset PLLFormula) (f b : Nat)
       | _ => [])
 
 /-- One-level unfolding of `itpE` at successor fuel. -/
-private theorem itpE_succ (p : String) (S : Finset PLLFormula) (f b : Nat)
+theorem itpE_succ (p : String) (S : Finset PLLFormula) (f b : Nat)
     (Γ : List PLLFormula) :
     itpE p S (f + 1) b Γ = andAll (itpEcls p S f b Γ) := rfl
 
 /-- The goal-directed disjunct table of `itpA p S (f+1) b Γ C`. -/
-private def itpAgoal (p : String) (S : Finset PLLFormula) (f b : Nat)
+def itpAgoal (p : String) (S : Finset PLLFormula) (f b : Nat)
     (Γ : List PLLFormula) (C : PLLFormula) : List PLLFormula :=
   match C with
   | .prop q => if q = p then [] else [prop q]
@@ -533,7 +533,7 @@ private def itpAgoal (p : String) (S : Finset PLLFormula) (f b : Nat)
               (itpA p S f b Γ D)).somehow]
 
 /-- The context-directed disjunct table of `itpA p S (f+1) b Γ C`. -/
-private def itpAenv (p : String) (S : Finset PLLFormula) (f b : Nat)
+def itpAenv (p : String) (S : Finset PLLFormula) (f b : Nat)
     (Γ : List PLLFormula) (C : PLLFormula) : List PLLFormula :=
   Γ.flatMap (fun F => match F with
       | .prop q =>
@@ -618,13 +618,13 @@ private def itpAenv (p : String) (S : Finset PLLFormula) (f b : Nat)
       | _ => [])
 
 /-- The undecorated disjunct table (`others`) of `itpA p S (f+1) b Γ C`. -/
-private def itpAoth (p : String) (S : Finset PLLFormula) (f b : Nat)
+def itpAoth (p : String) (S : Finset PLLFormula) (f b : Nat)
     (Γ : List PLLFormula) (C : PLLFormula) : List PLLFormula :=
   itpAgoal p S f b Γ C ++ itpAenv p S f b Γ C
 
 /-- The full disjunct table of `itpA p S (f+1) b Γ C`, including the
 truncation disjunct for ◯-goals. -/
-private def itpAfull (p : String) (S : Finset PLLFormula) (f b : Nat)
+def itpAfull (p : String) (S : Finset PLLFormula) (f b : Nat)
     (Γ : List PLLFormula) (C : PLLFormula) : List PLLFormula :=
   match C with
   | .somehow _ =>
@@ -638,14 +638,14 @@ private def itpAfull (p : String) (S : Finset PLLFormula) (f b : Nat)
   | _ => itpAoth p S f b Γ C
 
 /-- One-level unfolding of `itpA` at successor fuel. -/
-private theorem itpA_succ (p : String) (S : Finset PLLFormula) (f b : Nat)
+theorem itpA_succ (p : String) (S : Finset PLLFormula) (f b : Nat)
     (Γ : List PLLFormula) (C : PLLFormula) :
     itpA p S (f + 1) b Γ C = orAll (itpAfull p S f b Γ C) := rfl
 
 /-! ### Member-wise mapping helpers -/
 
 /-- Conjunction-table monotonicity from a member-wise mapping. -/
-private theorem andAll_map {l L : List PLLFormula}
+theorem andAll_map {l L : List PLLFormula}
     (hmap : ∀ φ ∈ l, ∃ ψ ∈ L, G4c [ψ] φ) : G4c [andAll L] (andAll l) := by
   refine G4c.andAll_intro ?_
   intro φ hφ
@@ -653,7 +653,7 @@ private theorem andAll_map {l L : List PLLFormula}
   exact G4c.andAll_elim hψ hd
 
 /-- Disjunction-table monotonicity from a member-wise mapping. -/
-private theorem orAll_map {l L : List PLLFormula}
+theorem orAll_map {l L : List PLLFormula}
     (hmap : ∀ φ ∈ l, ∃ ψ ∈ L, G4c [φ] ψ) : G4c [orAll l] (orAll L) := by
   refine G4c.orAll_elim ?_
   intro φ hφ
@@ -661,7 +661,7 @@ private theorem orAll_map {l L : List PLLFormula}
   exact G4c.orAll_intro hψ hd
 
 /-- Append two member-wise mappings. -/
-private theorem map_append {l₁ l₂ L₁ L₂ : List PLLFormula}
+theorem map_append {l₁ l₂ L₁ L₂ : List PLLFormula}
     (h₁ : ∀ φ ∈ l₁, ∃ ψ ∈ L₁, G4c [φ] ψ)
     (h₂ : ∀ φ ∈ l₂, ∃ ψ ∈ L₂, G4c [φ] ψ) :
     ∀ φ ∈ l₁ ++ l₂, ∃ ψ ∈ L₁ ++ L₂, G4c [φ] ψ := by
@@ -675,7 +675,7 @@ private theorem map_append {l₁ l₂ L₁ L₂ : List PLLFormula}
 /-- The ◯-goal disjunction with its truncation disjunct: a member-wise
 mapping on the `others` plus a contravariant feed for the truncation
 guard whenever the low-side truncation is live. -/
-private theorem itpAfull_box_map {p : String} {S : Finset PLLFormula}
+theorem itpAfull_box_map {p : String} {S : Finset PLLFormula}
     {f₁ b₁ f₂ b₂ : Nat} {Γ : List PLLFormula} {D : PLLFormula}
     (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ (D.somehow),
         ∃ ψ ∈ itpAoth p S f₂ b₂ Γ (D.somehow), G4c [φ] ψ)
@@ -713,7 +713,7 @@ private theorem itpAfull_box_map {p : String} {S : Finset PLLFormula}
 
 /-- Full-table monotonicity: dispatch on the goal shape (the
 truncation disjunct exists only for ◯-goals). -/
-private theorem itpAfull_map {p : String} {S : Finset PLLFormula}
+theorem itpAfull_map {p : String} {S : Finset PLLFormula}
     {f₁ b₁ f₂ b₂ : Nat} {Γ : List PLLFormula} {C : PLLFormula}
     (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ C,
         ∃ ψ ∈ itpAoth p S f₂ b₂ Γ C, G4c [φ] ψ)
@@ -3279,7 +3279,7 @@ with its truncation disjunct, mapped member-wise across two (not
 necessarily equal) contexts.  Nonemptiness of the `others` transfers
 through the mapping; `htr` feeds the contravariant `E`-guard of the
 truncation disjunct. -/
-private theorem itpAfull_box_map₂ {p : String} {S : Finset PLLFormula}
+theorem itpAfull_box_map₂ {p : String} {S : Finset PLLFormula}
     {f₁ b₁ f₂ b₂ : Nat} {Γ₁ Γ₂ : List PLLFormula} {D : PLLFormula}
     (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ₁ (D.somehow),
         ∃ ψ ∈ itpAoth p S f₂ b₂ Γ₂ (D.somehow), G4c [φ] ψ)
@@ -3317,7 +3317,7 @@ private theorem itpAfull_box_map₂ {p : String} {S : Finset PLLFormula}
 
 /-- Two-context version of `itpAfull_map`: dispatch on the goal shape
 (the truncation disjunct exists only for ◯-goals). -/
-private theorem itpAfull_map₂ {p : String} {S : Finset PLLFormula}
+theorem itpAfull_map₂ {p : String} {S : Finset PLLFormula}
     {f₁ b₁ f₂ b₂ : Nat} {Γ₁ Γ₂ : List PLLFormula} {C : PLLFormula}
     (hoth : ∀ φ ∈ itpAoth p S f₁ b₁ Γ₁ C,
         ∃ ψ ∈ itpAoth p S f₂ b₂ Γ₂ C, G4c [φ] ψ)
