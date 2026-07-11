@@ -229,3 +229,146 @@ No frozen file is touched; this is a new self-contained section (or a
 - **Ternary-simulation exactness (candidate D) is a separate development.**
   Cite Mendler–Shiple–Berry 2012 as the semantic anchor; do not fold its
   mechanisation into this task.
+
+---
+
+## Phase 2 results
+
+*Delivered 2026-07-11. Two new files, both sorry-free and axiom-audited, built
+via `lake build`; `PLLConstraints.lean` and every other existing file
+untouched. Namespace `PLLND`.*
+
+### What was mechanised
+
+**`LaxLogic/PLLTiming.lean` — the two-operation algebra + Mendler's `CIRC`.**
+The extractor of `PLLConstraints.lean` is *imported unchanged* and instantiated
+at the delay algebra `(ℕ, 0, +, max)`: `Tm.eval (· + ·) 0` supplies Mendler's
+`η = (0,·)` and `μ = +` on the object-level `bind`, while the `max` (his
+tensorial strength `σ`) lives inside the multi-input gate denotations
+`gate2 δ = λ p q ↦ (max p.1 q.1 + δ, ⟨⟩)` — exactly the least-invasive split
+proposed in §4. Both operations now occur in one evaluation, which the single
+`op` of the old toy could not do.
+
+- `circUp : Tm ΓCIRC (◯a ⊃ ◯b ⊃ ◯c)` over `Γ = [gOR, gINV, gAND]` — the
+  netlist `OR(a,b)=d, INV(b)=e, AND(d,e)=c`, with `b` fanning out and
+  reconverging at `AND`. Certified a genuine PLL derivation via `circUp.toND`
+  (`Nonempty (LaxND …)`).
+- **Extraction (`rfl`):** `circUp_extract` reads the composite delay straight
+  off the proof term:
+  `max (max δa δb + δ_OR) (δb + δ_INV) + δ_AND` — Mendler's symbolic delay
+  table `T_OR, T_INV, T_AND` composed, kept fully symbolic.
+- **Rising bound:** at inputs ready `0`, `circUp_rising` gives
+  `δ_CIRC↑ = max(δ_OR, δ_INV) + δ_AND` — a genuine `max`. Concrete nominal
+  sky130: **210 ps**.
+- **Both operations, one evaluation:** `gateThenBuf_extract` (`rfl`) exhibits
+  the object-level `bind` paying `μ = +` *on top of* a 2-input gate's
+  `σ = max`: `max δd δe + δ_G + δ_BUF`.
+
+**The false path in `CIRC` (miniature punchline).** On the input class `a = 1`,
+`d = a ∨ b = 1` is stable, so `◯d` is available at time `0` and the correct
+per-class proof `circUp_a1 : Tm [gINV, gAND, ◯d, ◯b] ◯c` **never mentions
+`gOR`** — the reconvergent `OR → AND` branch is literally absent from the term
+(and certified via `.toND`).
+- `circUp_a1_extract` (`rfl`): `max δd (δb + δ_INV) + δ_AND`;
+  `circUp_a1_bound` (at ready `0`): `δ_INV + δ_AND` = **130 ps**.
+- `falsePath_beats_topological` (`decide`): **130 < 210**, i.e. the extracted
+  data-dependent bound is strictly below the topological longest path
+  `dTopo = max(δ_OR, δ_INV) + δ_AND = 210`. The saving is exactly the
+  non-sensitised `δ_OR − δ_INV = 80 ps`.
+
+**`LaxLogic/PLLTimingAdder.lean` — the carry-skip false path at scale.** An
+explicit 4-bit block (proposal candidate B), *not* descoped:
+- `rippleTm : Tm Γripple ◯c₄` — four ripple carry stages
+  (`csᵢ : ◯cᵢ ⊃ ◯pᵢ ⊃ ◯cᵢ₊₁`, each `max + δ_carry`). `ripple_extract` (`rfl`)
+  and `ripple_bound` (`= 4·δ_carry`): the long ripple sub-path, **480 ps**.
+- `coutSkip : Tm Γskip ◯cout` — the all-propagate (`P = 1`) skip derivation:
+  balanced `P`-tree `(p₀∧p₁)∧(p₂∧p₃)` then `muxSkip : ◯cin ⊃ ◯P ⊃ ◯cout`.
+  It bypasses the ripple entirely, so the carry chain `c₁…c₄` is **absent from
+  the term**. `coutSkip_bound` (`= 2·δ_and + δ_mux`): **280 ps**.
+- `skip_beats_topological` (`decide`): **280 < 580**, where the topological
+  longest path `dTopoAdder = 4·δ_carry + δ_mux = 580` is the classic
+  ripple-**and**-skip false path (needs `P = 1` to ripple and `P = 0` to select
+  ripple — contradictory). Extraction beats topological STA by **300 ps
+  (> 2×)**, because a correct proof only ever traverses a sensitisable path.
+- Both terms certified genuine PLL derivations via `.toND`.
+
+### Extracted numbers (nominal sky130 `sky130_fd_sc_hd`, single scalars, ps)
+
+| gate | delay | cell |
+|------|-------|------|
+| INV   | 40  | `inv_1` |
+| OR2   | 120 | `or2_1` |
+| AND2  | 90  | `and2_1` |
+| carry | 120 | `maj3_1` / full-adder carry |
+| MUX2  | 100 | `mux2_1` |
+
+| quantity | value | provenance |
+|----------|-------|-----------|
+| `CIRC↑` rising bound | 210 ps | `max(δ_OR,δ_INV)+δ_AND`, `= dTopo` |
+| `CIRC↑` on `a=1` class | **130 ps** | `δ_INV+δ_AND` (OR path absent) |
+| carry-skip topological longest | 580 ps | `4·δ_carry+δ_mux` (false path) |
+| carry-skip ripple sub-path | 480 ps | `4·δ_carry` |
+| carry-skip `P=1` skip bound | **280 ps** | `2·δ_and+δ_mux` (ripple absent) |
+
+### The false-path verdict
+
+Confirmed twice, kernel-checked by `decide`: the delay **extracted from a
+proof** is strictly below the topological longest path whenever that longest
+path is non-sensitisable — `130 < 210` in `CIRC` (the `a=1` class drops the
+`OR→AND` reconvergent branch) and `280 < 580` in the carry-skip adder (the
+`P=1` class drops the whole ripple chain). "A proof only traverses real logical
+dependencies, so a non-sensitisable path is absent from its constraint set —
+for free," exactly as forecast. Per-transition/per-input, as Mendler frames it.
+
+### Axiom audit (honest report)
+
+`#guard_msgs`-pinned `#print axioms` on the extraction and punchline theorems.
+The results are **stronger** than the expected
+`[propext, Classical.choice, Quot.sound]`: no theorem here touches
+`Classical.choice`, and `decide`/`rfl` results are entirely **axiom-free**.
+
+- `circUp_extract`, `circUp_a1_extract`, `falsePath_beats_topological`,
+  `ripple_extract`, `coutSkip_extract`, `skip_beats_topological` —
+  *"does not depend on any axioms."*
+- `circUp_rising` — `[propext, Quot.sound]` (the only appeal is `omega`'s use
+  of propositional extensionality; the `_bound` lemmas are the same shape).
+- No `native_decide` anywhere, so no `Lean.ofReduceBool`: every number is
+  kernel-reduced, not compiled.
+
+### Deviations from the proposal
+
+1. **`rfl` vs. arithmetic normalisation.** The proposal expected
+   `Tm.eval CIRC↑ = max(δ_OR,δ_INV)+δ_AND` *by `rfl`*. The honest split is: the
+   **raw** extraction (`circUp_extract`) — the constraint the kernel reads off
+   the term — *is* `rfl`; collapsing it to Mendler's table entry needs one line
+   of `omega`, because Lean's `Nat` makes neither `0 + n` nor `max 0 0`
+   definitional. Concrete numbers are `decide`. No fidelity lost — arguably
+   gained: the `rfl` witnesses the *symbolic table*, `omega` its evaluation.
+2. **`gateThenBuf` added.** With gates modelled as `◯`-consuming hypotheses
+   (the proposal's own `gAND ↦ λ(δd,_)(δe,_).(max δd δe+δ_AND,⟨⟩)`), the `CIRC↑`
+   term is pure application and never fires an object-level `bind`. To
+   demonstrate the "`+` on `bind`" half of the split *explicitly* — not merely
+   as the `+δ` inside gate denotations — `gateThenBuf` routes a 2-input gate
+   into a buffer via `bind`. Over-delivers on §4's "both operations in the same
+   evaluation."
+3. **`a = 1` rather than `a = 0, b = 0`.** The proposal named the `a=0,b=0`
+   case in passing; the `a = 1` class gives the cleaner "`OR → AND` branch
+   absent" story (`δ_INV+δ_AND` vs. `max(δ_OR,δ_INV)+δ_AND`). Both are
+   sanctioned by §3 ("the two falling cases … each traversing one reconvergent
+   branch").
+4. **4-bit adder block, fully mechanised** (the fallback in §3 — "stop at
+   `CIRC` plus a single 2-bit comparison" — was not needed). The topological
+   bound is defined independently and the ripple sub-chain is extracted from a
+   real term, so the `280 < 580` inequality compares two kernel-checked
+   quantities.
+5. **`gate1`/`gate2` denotations** are a mild `◯`-consuming generalisation of
+   `PLLConstraints.gate` (which consumes an *unlifted* input); the buffer in
+   `gateThenBuf` reuses the original `gate`. `PLLConstraints.lean` is imported,
+   not modified.
+
+### What remains (future work, not descoped from this task)
+
+- A generic `n`-fold ripple builder (the chain here is unrolled to 4 stages);
+  the carry-lookahead vs. ripple contrast (candidate C) on the same netlist
+  substrate; the ternary-simulation exactness anchor (candidate D) as a
+  separate development, per §5.

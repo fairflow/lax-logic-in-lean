@@ -43,4 +43,6 @@ import LaxLogic.PLLG4UIAdq
 import LaxLogic.PLLG4UIStab
 import LaxLogic.PLLG4UITrunc
 import LaxLogic.PLLCraig
+import LaxLogic.PLLTiming
+import LaxLogic.PLLTimingAdder
 import LaxLogic.PLLDemos
