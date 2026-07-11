@@ -164,24 +164,36 @@ falls out:
   half; the cascade is the hard half; `lax_fixpoint`/`box_guard`
   handle the ◯-goal self-reference separately.
 
-  Intended Lean statement (mutual, at every fuel, threshold
-  `K := bcap S := 2·S.card + 4`, overcounting the jump states
-  `{E} ∪ {A_F, ◯A_F : ◯A_F⊃B ∈ S} ∪ {A⊃B : (A⊃B)⊃D ∈ S}`; note the
-  guarded shapes make chains alternate `E`/`A` states, hence the
-  factor 2):
+  Intended Lean statement — **corrected 2026-07-11 morning after
+  hand-executing the boxed cases**: the *pure* form
+  `[itpA@(b+1)] ⊢ itpA@b` is stronger than anything the adequacy
+  landing needs, and its γ-box positions demand an E-glue one budget
+  below the band at every crossing — an infinite regress (each route
+  tried funnels into the pure descent at ◯-shaped jump goals).  The
+  landing always holds the ambient `E(Γ)`, and the correct statement
+  is **ambient-relative** (`wip/absorb_base.lean`, threshold
+  `kcap S := 2·S.card + 4` overcounting the jump states):
 
-      itp_absorb : K ≤ b → ∀ fuel,
-        (∀ Γ, G4c [itpE p S fuel b Γ] (itpE p S fuel (b+1) Γ)) ∧
-        (∀ Γ C, G4c [itpA p S fuel (b+1) Γ C] (itpA p S fuel b Γ C))
+      itp_stab : kcap S < b → ∀ fuel,
+        (∀ Γ,   G4c [itpE@(b-1)] (itpE@b)) ∧
+        (∀ Γ C, G4c [itpE@b, itpA@b Γ C] (itpA@(b-1) Γ C))
 
-  The auxiliary cascade needs a seen-state parameter (list of visited
-  jump states with their budget offsets, values in context); at a
-  fresh state, orL/andL one level deeper on the source and introduce
-  the matching target component; at a repeated state, stop — the
-  in-context source value reaches the *spliced* target slot by
-  `itp_budget_mono_le` and a cut.  All grown-context and
-  goal-decomposition side obligations discharge by the fuel-level
-  induction hypothesis (the statement is ∀Γ∀C at fuel−1).
+  The E-half needs no extra ambient — E is its own.  With ambient E
+  the box barrier dissolves: budget-mono (`E@b ⊢ E@(b−1)`, the easy
+  direction) matches any lower guard, `box_guard_collapse` opens the
+  guarded box against the ◯-shaped target, and `laxL` re-imports the
+  ambient at every box crossing, so the inner value lands *in
+  context* — which is exactly what the pigeonhole/splice shortcut
+  consumes (at a repeated jump state, `itp_budget_mono_le` lifts the
+  in-context low-budget value into the spliced target slot).  The
+  cascade auxiliary still carries a seen-state list; fresh states
+  descend (orL/andL one level, matching target component
+  introduced), repeats stop by the mono-splice.  Grown-context and
+  goal-decomposition obligations discharge by the fuel-level IH.
+  A pure upper band (`itp_absorb_of_base` over a pure base) is being
+  ground in parallel as insurance, but the ambient-relative form is
+  the mainline: it is what the adequacy case-map's jump landings
+  actually consume (their context is `interE@B, Δ`).
 * **Adequacy then transfers P4a-style**: fuel > height exactly as
   before (fuel-mono re-proved for v3), with absorption as the new
   `E_step`-analogue gluing jump landings, and one application of the

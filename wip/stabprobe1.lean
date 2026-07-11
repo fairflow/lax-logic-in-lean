@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UI
+import LaxLogic.PLLG4UITrunc
 
 /-! Adversarial stabilization probe (falsification attempt for UI).
 
@@ -79,18 +79,33 @@ private def alt : PLLFormula :=
   (pP.ifThen ((rP.ifThen (pP.somehow)).somehow)).somehow
 private def T3 : List PLLFormula := [alt, pP.somehow.ifThen rP]
 
--- approximant sizes (watch the growth rate)
-#eval [fsize (interE "p" 4 T2), fsize (interE "p" 5 T2),
-       fsize (interE "p" 4 T3), fsize (interE "p" 5 T3)]
+-- spaces (piece closures, hand-listed)
+private def S1 : Finset PLLFormula :=
+  {chi1.somehow, chi1, (pP.somehow).ifThen rP, rP.ifThen pP.somehow,
+   pP.somehow, pP, rP}
+private def S2 : Finset PLLFormula :=
+  {chi2.somehow, chi2, (chi1.somehow).ifThen sP, sP.ifThen chi1.somehow,
+   chi1.somehow, chi1, (pP.somehow).ifThen rP, rP.ifThen pP.somehow,
+   pP.somehow, pP, sP, rP}
+private def S3 : Finset PLLFormula :=
+  {alt, pP.ifThen ((rP.ifThen pP.somehow).somehow),
+   (rP.ifThen pP.somehow).somehow, rP.ifThen pP.somehow,
+   (pP.somehow).ifThen rP, pP.somehow, pP, rP}
 
--- stabilization ladders: first (0,0) = stabilized by that fuel
-#eval [eqFails ["p","r"] (interE "p" 4 T1) (interE "p" 5 T1),
-       eqFails ["p","r"] (interE "p" 5 T1) (interE "p" 6 T1)]
-#eval [eqFails ["p","r","s"] (interE "p" 4 T2) (interE "p" 5 T2),
-       eqFails ["p","r","s"] (interE "p" 5 T2) (interE "p" 6 T2)]
-#eval [eqFails ["p","r"] (interE "p" 4 T3) (interE "p" 5 T3),
-       eqFails ["p","r"] (interE "p" 5 T3) (interE "p" 6 T3)]
-#eval [eqFails ["p","r"] (interA "p" 4 T1 rP) (interA "p" 5 T1 rP),
-       eqFails ["p","r","s"] (interA "p" 4 T2 sP) (interA "p" 5 T2 sP)]
+-- sizes at budget 2/3 (gate: only proceed if sane)
+#eval [fsize (itpE "p" S2 200 2 T2), fsize (itpE "p" S2 200 3 T2),
+       fsize (itpE "p" S3 200 2 T3), fsize (itpE "p" S3 200 3 T3)]
+
+-- budget-stability of the tower approximants (the falsification test:
+-- persistent strict descent would be the danger signal)
+#eval [eqFails ["p","r"] (itpE "p" S1 200 2 T1) (itpE "p" S1 200 3 T1),
+       eqFails ["p","r","s"] (itpE "p" S2 200 2 T2) (itpE "p" S2 200 3 T2),
+       eqFails ["p","r"] (itpE "p" S3 200 2 T3) (itpE "p" S3 200 3 T3)]
+#eval [eqFails ["p","r","s"] (itpA "p" S2 200 2 T2 sP) (itpA "p" S2 200 3 T2 sP),
+       eqFails ["p","r"] (itpA "p" S3 200 2 T3 rP.somehow) (itpA "p" S3 200 3 T3 rP.somehow)]
+
+-- v2 direction-consistency at low fuel (cheap)
+#eval [eqFails ["p","r","s"] (itpE "p" S2 200 2 T2) (interE "p" 3 T2),
+       eqFails ["p","r"] (itpE "p" S3 200 2 T3) (interE "p" 3 T3)]
 
 end PLLND
