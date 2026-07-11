@@ -107,3 +107,95 @@ research (Litak's Open Problem 1 is the substitution cousin for PLL).
   verified by the kernel decider): every instance stabilizes by fuel 3;
   the movers grow syntactically forever while staying ⊣⊢-constant —
   any mechanisation of Route S must live in the Lindenbaum quotient.
+
+## Route T, second design pass (2026-07-11): the jump system
+
+Working the v3 definition against the rules exposed one more knot the
+first pass had underestimated: `impLLax`'s first premise (`Γ ⊢ A` with
+`◯A⊃B ∈ Γ` retained) keeps the context **identical** and only jumps
+the goal — the retention repair transfers the very payment that made
+Iemhoff's recursion terminate.  The GL/iSL mechanisations never face
+this: their modal premises always shrink the context weight.  What
+falls out:
+
+* **Empirical validation first** (session probes; algebraic
+  differencing over Heyting-algebras-with-a-nucleus — sound for PLL,
+  linear-time on megaformula values — plus the kernel decider on small
+  instances): the *omission law* (same-set clauses dropped) and the
+  *N-truncation* match the stabilized v2 values; a jump **budget**
+  `b` stabilizes empirically by `b ≈ 2–3`.  The *bare law*
+  (`◯(E⇢Z) ⊣⊢ ◯Z` under ambient `E`) validated on most of the battery
+  but **failed on the gap-theorem context**: v2's E-value was still
+  strictly climbing at fuel 4→5 there while the bared v3 sat strictly
+  below it.  Diagnosis: the bare law is *ambient-relative*, not a
+  congruence, and the first v3 cut applied it inside negatively
+  occurring positions (γ-clause antecedents), where no ambient `E`
+  exists.  Repair (v3.1): keep v2's guarded shapes verbatim and make
+  every same-context reference — `E` and `A` alike — pay the budget;
+  budget-annotation is congruence-grade once absorption holds, so it
+  is safe in any polarity.  The moral for the paper: only
+  congruence-grade equivalences may be folded into a quantifier
+  definition; ambient-relative ones belong to consumption sites.
+* **The consumer-side bookkeeping cannot mirror the budget.**  A
+  Δ-side decomposition between two Γ-side jumps changes the consumer
+  sequent (so no splicing) without touching the quantifier's
+  arguments; cumulative Δ-stages are bounded only by Δ's piece
+  closure, which uniformity must not mention.  So a refined
+  "chain-credit" judgment does not close the gap by itself: the glue
+  has to live at the **value level**.
+* **The absorption lemma** (the genuinely novel step, replacing the
+  first pass's N-redundancy): for `b` at least the jump-goal count,
+  `itpA@(b+1) ⊢ itpA@b` (with `itpE` dually) — one-step budget
+  stabilization.  Proof design, validated case-by-case: a lazy
+  orL-cascade down the source's jump components, keeping the target
+  goal un-introduced; a chain of length `> K` must repeat a jump goal
+  (pigeonhole — premise-1 chains keep the context fixed, goals range
+  over the space's `≤ K` jump goals); at the repeat, the *spliced*
+  target chain (length `a < j`) is introduced instead, and the leaf
+  hypothesis `A@(b−j+1)(g)` reaches the target component `A@(b−a)(g)`
+  by **budget monotonicity** (`b−j+1 ≤ b−a` — the slack `j−a ≥ 1` is
+  exactly what the repeat buys); the skipped coefficients are simply
+  never used (∧-decrease as projection).  Budget-mono is the easy
+  half; the cascade is the hard half; `lax_fixpoint`/`box_guard`
+  handle the ◯-goal self-reference separately.
+* **Adequacy then transfers P4a-style**: fuel > height exactly as
+  before (fuel-mono re-proved for v3), with absorption as the new
+  `E_step`-analogue gluing jump landings, and one application of the
+  syntactic fuel-indifference lemma (`μ = (defect + b)·(W₀+1) + goal
+  weight` strictly decreases on every call) converting "every fuel
+  above the height" into the fixed, Γ-only packaged formula.  Fuel
+  disappears; uniformity is definitional.
+
+### Adequacy case-map: the landings that differ from P4a
+
+Dry-run of all fifteen rules against the v3 clauses; only these
+deviate from the P4a proof text (everything else is verbatim modulo
+the extra guard-splits):
+
+* `impR`, same-set antecedent (`C₁ ∈ Γ`): the unguarded `A13`
+  disjunct lands from the premise IH through **set-congruence**
+  (`itp_congr`, the v2 lemma re-proved for v3 — new obligation).
+* `laxR`: the basic ◯-disjunct is bare (`◯(A(Γ,D))`) — lands by
+  `laxR` + IH directly; simpler than v2 (no guard-click).
+* `laxL`, Δ-side box (goal `◯D`): land the **truncation disjunct**
+  `◯(⋁others)` — `laxL` the Δ-box, **cut in the IH**, orL: an
+  `others`-disjunct closes by `laxR`+`orAll_intro`, the truncation
+  disjunct itself closes by *identity* (the monad-multiplication
+  move).  Verified against the rules 2026-07-11.
+* `impLImp` at a present piece (`B⊃D ∈ Γ, D ∉ Γ`) and `impLLax`
+  Γ-side (the jump cases): premise-1's IH arrives at the top budget;
+  **absorption** lowers it into the `b−1` component slot; the E-side
+  jump conjunct then fires by MP to unlock `E(B::Γ)` for premise-2's
+  IH — the P4a `hfire` pattern with absorption as new glue.
+* `impLLaxLax` with Γ-side principal and Δ-side witness: land the
+  bare γ-disjunct `◯(A@b'(Γ,◯A))` by `laxL` on the Δ-box + cut-in
+  IH₁ (+ absorption) + `laxR`-identity; its E-side twin fires by
+  self-witnessing MP as in v2 (verified: bare form still
+  self-witnesses, since `A1` supplies premise-1 directly).
+
+Consolidated new-obligation list for the v3 tower: `itp_congr`,
+absorption (+ its easy half budget-mono), fuel-mono, `E1`/`A1`,
+p-freeness, fuel-indifference (packaging only), piece-closure
+instantiation of the space `S` (packaging only; use the linear
+piece-closure finset, not `enum`, so the budget cap and the measure
+stay small).
