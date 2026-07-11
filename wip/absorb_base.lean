@@ -173,9 +173,11 @@ value at the current budget), because the target chain above a splice
 cannot be rebuilt after the fact.  The four *sealed* branch shapes —
 γ-goal, clause-γ-head, truncation, unpaid fresh antecedent — cannot
 carry the continuations across their box/impR introduction and funnel
-through the single remaining sorried holdout `cascade_low` (its
-docstring records the failure analysis; at those sites only the
-defect-tower room survives).
+through `cascade_low`, which splits by saturation: the `defect = 0`
+band is proved (`cascade_zero` — every space-guarded clause is dead),
+and the `defect ≥ 1` band is the single remaining sorried holdout
+`cascade_low_pos` (its docstring records the failure analysis; at
+those sites only the defect-tower room survives).
 -/
 
 /-! ### Sequent-level glue
@@ -353,6 +355,499 @@ private theorem defect_lt_of_mem {S : Finset PLLFormula}
     rw [Finset.mem_sdiff] at h2
     exact h2.2 (List.mem_toFinset.mpr hxΓ')
 
+/-! ### The ambient full-table mapping
+
+`itpAfull_map` with the ambient E-value carried in the sequents: the
+truncation disjunct maps by guard-fire against the ambient feed and
+re-crossing, then reuses the per-disjunct bundle — the list-level
+counterpart of `itp_sound`'s trunc case. -/
+
+private theorem itpAfull_map_amb {p : String} {S : Finset PLLFormula}
+    {f b₁ b₂ : Nat} {Γ : List PLLFormula} {C : PLLFormula} {Eamb : PLLFormula}
+    (hoth : ∀ φ ∈ itpAoth p S f b₁ Γ C,
+        ∃ ψ ∈ itpAoth p S f b₂ Γ C, G4c [φ, Eamb] ψ)
+    (htr : ∀ b₁', b₁ = b₁' + 1 → ∃ b₂', b₂ = b₂' + 1 ∧
+        G4c [Eamb] (itpE p S f b₁' Γ)) :
+    G4c [Eamb, orAll (itpAfull p S f b₁ Γ C)]
+        (orAll (itpAfull p S f b₂ Γ C)) := by
+  refine G4c.perm ?_ (List.Perm.swap _ _ _)
+  refine G4c.orAll_elim ?_
+  intro φ hφ
+  cases C with
+  | somehow D =>
+      simp only [itpAfull] at hφ ⊢
+      rcases List.mem_append.mp hφ with hφ | hφ
+      · obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
+        exact G4c.orAll_intro (List.mem_append.mpr (Or.inl hψ)) hd
+      · by_cases h1 : (itpAoth p S f b₁ Γ (D.somehow)).isEmpty = true
+        · rw [if_pos h1] at hφ; cases hφ
+        · rw [if_neg h1] at hφ
+          cases b₁ with
+          | zero => cases hφ
+          | succ b₁' =>
+              rcases List.mem_singleton.mp hφ with rfl
+              obtain ⟨b₂', rfl, hfeed⟩ := htr b₁' rfl
+              have h2 : ¬ (itpAoth p S f (b₂' + 1) Γ (D.somehow)).isEmpty
+                  = true := by
+                intro h2
+                have h2' : itpAoth p S f (b₂' + 1) Γ (D.somehow) = [] := by
+                  simpa using h2
+                cases hl : itpAoth p S f (b₁' + 1) Γ (D.somehow) with
+                | nil => rw [hl] at h1; simp at h1
+                | cons a t =>
+                    obtain ⟨ψ, hψ, -⟩ := hoth a (by rw [hl]; exact .head _)
+                    rw [h2'] at hψ; cases hψ
+              refine G4c.orAll_intro (φ := ((itpE p S f b₂' Γ).ifThen
+                  (orAll (itpAoth p S f (b₂' + 1) Γ (D.somehow)))).somehow)
+                (List.mem_append.mpr (Or.inr ?_)) ?_
+              · rw [if_neg h2]
+                exact .head _
+              · refine box_fire (W := (itpE p S f b₂' Γ).ifThen
+                    (orAll (itpAoth p S f (b₂' + 1) Γ (D.somehow))))
+                  (G4c.identity_mem (.head _))
+                  (weaken_sub (fun ψ hψ => .tail _ hψ) hfeed) ?_
+                refine G4c.laxR (G4c.impR ?_)
+                refine G4c.perm (Γ := orAll (itpAoth p S f (b₁' + 1) Γ
+                    (D.somehow)) :: itpE p S f b₂' Γ ::
+                    [((itpE p S f b₁' Γ).ifThen (orAll (itpAoth p S f
+                      (b₁' + 1) Γ (D.somehow)))).somehow, Eamb])
+                  (G4c.orAll_elim ?_) (List.Perm.swap _ _ _)
+                intro χ hχ
+                obtain ⟨ψ, hψ, hd⟩ := hoth χ hχ
+                refine G4c.orAll_intro hψ (weaken_sub ?_ hd)
+                intro ξ hξ
+                rcases List.mem_cons.mp hξ with rfl | hξ
+                · exact .head _
+                · rcases List.mem_singleton.mp hξ with rfl
+                  exact .tail _ (.tail _ (.tail _ (.head _)))
+  | prop q =>
+      simp only [itpAfull] at hφ ⊢
+      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
+      exact G4c.orAll_intro hψ hd
+  | falsePLL =>
+      simp only [itpAfull] at hφ ⊢
+      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
+      exact G4c.orAll_intro hψ hd
+  | and C₁ C₂ =>
+      simp only [itpAfull] at hφ ⊢
+      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
+      exact G4c.orAll_intro hψ hd
+  | or C₁ C₂ =>
+      simp only [itpAfull] at hφ ⊢
+      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
+      exact G4c.orAll_intro hψ hd
+  | ifThen C₁ C₂ =>
+      simp only [itpAfull] at hφ ⊢
+      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
+      exact G4c.orAll_intro hψ hd
+
+/-! #### The saturated tier
+
+At `defect S Γ = 0` the space is absorbed (`S ⊆ Γ` as sets): every
+space-guarded clause of both tables is dead, the `E`-value is a
+budget-independent conjunction of atoms, and the `A`-descent closes by
+a plain fuel induction — no jumps, no pigeonhole.  This tier settles
+the sealed sites whenever their context is saturated; the holdout
+below then only claims the `defect ≥ 1` band. -/
+
+private theorem sat_of_defect_zero {S : Finset PLLFormula}
+    {Γ : List PLLFormula} (h : defect S Γ = 0) : ∀ x ∈ S, x ∈ Γ := by
+  intro x hx
+  by_contra hxΓ
+  have hmem : x ∈ S \ Γ.toFinset := Finset.mem_sdiff.mpr
+    ⟨hx, fun h' => hxΓ (List.mem_toFinset.mp h')⟩
+  rw [defect, Finset.card_eq_zero] at h
+  rw [h] at hmem
+  cases hmem
+
+/-- At a saturated context the `E`-value is budget-free: only the
+atom and ⊥ clauses survive, and they do not mention the budget. -/
+private theorem easc_zero (p : String) (S : Finset PLLFormula)
+    (fh : Nat) (Γ : List PLLFormula) (b b' : Nat)
+    (hsat : ∀ x ∈ S, x ∈ Γ) {Δ : List PLLFormula}
+    (hsrc : G4c Δ (itpE p S fh b Γ)) :
+    G4c Δ (itpE p S fh b' Γ) := by
+  cases fh with
+  | zero =>
+      simp only [itpE]
+      exact G4c.truePLL_intro _
+  | succ FE =>
+      rw [itpE_succ p S FE b' Γ]
+      refine G4c.andAll_intro ?_
+      intro ψ hψ
+      simp only [itpEcls] at hψ
+      rcases List.mem_append.mp hψ with hψ | hψ
+      · rcases List.mem_append.mp hψ with hψ | hψ
+        · split at hψ
+          next hbot =>
+            rcases List.mem_singleton.mp hψ with rfl
+            refine projE (l := itpEcls p S FE b Γ) hsrc ?_
+            simp only [itpEcls]
+            exact List.mem_append.mpr (Or.inl (List.mem_append.mpr
+              (Or.inl (by rw [if_pos hbot]; exact .head _))))
+          next => cases hψ
+        · obtain ⟨F', hF'Γ, heq⟩ := List.mem_filterMap.mp hψ
+          cases F' with
+          | prop q =>
+              simp only at heq
+              split at heq
+              next => cases heq
+              next hq =>
+                injection heq with heq'
+                subst heq'
+                refine projE (l := itpEcls p S FE b Γ) hsrc ?_
+                simp only [itpEcls]
+                refine List.mem_append.mpr (Or.inl (List.mem_append.mpr
+                  (Or.inr (List.mem_filterMap.mpr ⟨prop q, hF'Γ, ?_⟩))))
+                simp only
+                rw [if_neg hq]
+          | falsePLL => cases heq
+          | and _ _ => cases heq
+          | or _ _ => cases heq
+          | ifThen _ _ => cases heq
+          | somehow _ => cases heq
+      · obtain ⟨F', hF'Γ, hin⟩ := List.mem_flatMap.mp hψ
+        exfalso
+        cases F' with
+        | prop _ => cases hin
+        | falsePLL => cases hin
+        | and A B =>
+            simp only at hin
+            split at hin
+            next => cases hin
+            next h1 =>
+              split at hin
+              next h2 =>
+                exact h1 ⟨h2.1.elim id (hsat A), h2.2.elim id (hsat B)⟩
+              next => cases hin
+        | or A B =>
+            simp only at hin
+            split at hin
+            next => cases hin
+            next h1 =>
+              split at hin
+              next h2 => exact h1 (Or.inl (hsat A h2.1))
+              next => cases hin
+        | somehow χ =>
+            simp only at hin
+            split at hin
+            next => cases hin
+            next hg =>
+              exact hg (by
+                by_cases hχ : χ ∈ S
+                · exact Or.inl (hsat χ hχ)
+                · exact Or.inr hχ)
+        | ifThen A' B =>
+            cases A' with
+            | prop q =>
+                simp only at hin
+                split at hin
+                next => cases hin
+                next hBΓ =>
+                  split at hin
+                  next hBS => exact hBΓ (hsat B hBS)
+                  next => cases hin
+            | falsePLL => cases hin
+            | and A₁ B₁ =>
+                simp only at hin
+                split at hin
+                next => cases hin
+                next h1 =>
+                  split at hin
+                  next h2 => exact h1 (hsat _ h2)
+                  next => cases hin
+            | or A₁ B₁ =>
+                simp only at hin
+                split at hin
+                next => cases hin
+                next h1 =>
+                  split at hin
+                  next h2 =>
+                    exact h1 ⟨h2.1.elim id (hsat _), h2.2.elim id (hsat _)⟩
+                  next => cases hin
+            | ifThen A₁ B₁ =>
+                simp only at hin
+                split at hin
+                next => cases hin
+                next hDΓ =>
+                  split at hin
+                  next hDS => exact hDΓ (hsat B hDS)
+                  next => cases hin
+            | somehow A₁ =>
+                simp only at hin
+                split at hin
+                next => cases hin
+                next hBΓ =>
+                  split at hin
+                  next hBS => exact hBΓ (hsat B hBS)
+                  next => cases hin
+
+/-- The saturated descent: at `defect S Γ = 0` the pair descent holds
+at every budget `c ≥ 1`, by a plain fuel induction — the jump, growth
+and γ-context clauses are all dead, so the only recursive positions
+are goal-directed, and the fresh-antecedent guard ascends for free
+(`easc_zero`). -/
+private theorem cascade_zero (p : String) (S : Finset PLLFormula) :
+    ∀ (fh : Nat) (Γ : List PLLFormula), (∀ x ∈ S, x ∈ Γ) →
+    ∀ (fuel c : Nat) (g : PLLFormula) (Δ : List PLLFormula),
+    1 ≤ c →
+    G4c Δ (itpE p S fuel (c + 1) Γ) →
+    G4c Δ (itpA p S fh (c + 1) Γ g) →
+    fh ≤ fuel →
+    G4c Δ (itpA p S fuel c Γ g) := by
+  intro fh
+  induction fh with
+  | zero =>
+      intro Γ hsat fuel c g Δ hc hamb hhead hfh
+      simp only [itpA] at hhead
+      exact G4c.cut hhead (G4c.botL (.head _))
+  | succ F' ihf =>
+      intro Γ hsat fuel c g Δ hc hamb hhead hfh
+      obtain ⟨c₀, rfl⟩ : ∃ c₀, c = c₀ + 1 := ⟨c - 1, by omega⟩
+      obtain ⟨fl, rfl⟩ : ∃ fl, fuel = fl + 1 := ⟨fuel - 1, by omega⟩
+      have hF : F' ≤ fl := Nat.succ_le_succ_iff.mp hfh
+      -- map the whole table at the head fuel, then lift
+      have hmap : G4c [itpE p S (fl + 1) (c₀ + 2) Γ,
+          orAll (itpAfull p S F' (c₀ + 2) Γ g)]
+          (orAll (itpAfull p S F' (c₀ + 1) Γ g)) := by
+        refine itpAfull_map_amb ?_ ?_
+        · -- the undecorated disjuncts
+          intro φ hφ
+          simp only [itpAoth] at hφ ⊢
+          rcases List.mem_append.mp hφ with hφ | hφ
+          · -- goal-directed
+            cases g with
+            | prop q =>
+                simp only [itpAgoal] at hφ ⊢
+                split at hφ
+                next => cases hφ
+                next hq =>
+                  rcases List.mem_singleton.mp hφ with rfl
+                  refine ⟨prop q, List.mem_append.mpr (Or.inl ?_),
+                    G4c.init (.head _)⟩
+                  rw [if_neg hq]
+                  exact .head _
+            | falsePLL => simp only [itpAgoal] at hφ; cases hφ
+            | and C₁ C₂ =>
+                simp only [itpAgoal] at hφ ⊢
+                rcases List.mem_singleton.mp hφ with rfl
+                refine ⟨(itpA p S F' (c₀ + 1) Γ C₁).and
+                  (itpA p S F' (c₀ + 1) Γ C₂),
+                  List.mem_append.mpr (Or.inl (.head _)), ?_⟩
+                refine G4c.andL (List.Perm.refl _) (G4c.andR ?_ ?_)
+                · exact ihf Γ hsat F' (c₀ + 1) C₁ _ (by omega)
+                    (consume₁ (G4c.identity_mem
+                      (.tail _ (.tail _ (.head _))))
+                      ((itp_fuel_mono_le p S
+                        (le_trans hF (Nat.le_succ _))).1 _ _))
+                    (G4c.identity_mem (.head _)) (Nat.le_refl _)
+                · exact ihf Γ hsat F' (c₀ + 1) C₂ _ (by omega)
+                    (consume₁ (G4c.identity_mem
+                      (.tail _ (.tail _ (.head _))))
+                      ((itp_fuel_mono_le p S
+                        (le_trans hF (Nat.le_succ _))).1 _ _))
+                    (G4c.identity_mem (.tail _ (.head _))) (Nat.le_refl _)
+            | or C₁ C₂ =>
+                simp only [itpAgoal] at hφ ⊢
+                rcases List.mem_cons.mp hφ with rfl | hφ'
+                · refine ⟨itpA p S F' (c₀ + 1) Γ C₁,
+                    List.mem_append.mpr (Or.inl (.head _)), ?_⟩
+                  exact ihf Γ hsat F' (c₀ + 1) C₁ _ (by omega)
+                    (consume₁ (G4c.identity_mem (.tail _ (.head _)))
+                      ((itp_fuel_mono_le p S
+                        (le_trans hF (Nat.le_succ _))).1 _ _))
+                    (G4c.identity_mem (.head _)) (Nat.le_refl _)
+                · rcases List.mem_singleton.mp hφ' with rfl
+                  refine ⟨itpA p S F' (c₀ + 1) Γ C₂,
+                    List.mem_append.mpr (Or.inl (.tail _ (.head _))), ?_⟩
+                  exact ihf Γ hsat F' (c₀ + 1) C₂ _ (by omega)
+                    (consume₁ (G4c.identity_mem (.tail _ (.head _)))
+                      ((itp_fuel_mono_le p S
+                        (le_trans hF (Nat.le_succ _))).1 _ _))
+                    (G4c.identity_mem (.head _)) (Nat.le_refl _)
+            | ifThen C₁ C₂ =>
+                simp only [itpAgoal] at hφ ⊢
+                have hsat' : ∀ x ∈ S, x ∈ C₁ :: Γ :=
+                  fun x hx => .tail _ (hsat x hx)
+                split at hφ
+                next hpres =>
+                  rcases List.mem_singleton.mp hφ with rfl
+                  refine ⟨(itpE p S F' c₀ (C₁ :: Γ)).ifThen
+                    (itpA p S F' (c₀ + 1) (C₁ :: Γ) C₂),
+                    List.mem_append.mpr (Or.inl ?_), ?_⟩
+                  · rw [if_pos hpres]
+                    exact .head _
+                  · refine G4c.impR ?_
+                    have hEg : G4c (itpE p S F' c₀ (C₁ :: Γ) ::
+                        (itpE p S F' (c₀ + 1) (C₁ :: Γ)).ifThen
+                          (itpA p S F' (c₀ + 2) (C₁ :: Γ) C₂) ::
+                        [itpE p S (fl + 1) (c₀ + 2) Γ])
+                        (itpE p S F' (c₀ + 1) (C₁ :: Γ)) :=
+                      amb_congr (consume₁ (G4c.identity_mem
+                          (.tail _ (.tail _ (.head _))))
+                        (consume₁ ((itp_fuel_mono_le p S
+                            (le_trans hF (Nat.le_succ _))).1 _ Γ)
+                          ((itp_budget_mono p S F').1 (c₀ + 1) Γ)))
+                        hpres
+                    refine ihf (C₁ :: Γ) hsat' F' (c₀ + 1) C₂ _ (by omega)
+                      (easc_zero p S F' (C₁ :: Γ) (c₀ + 1) (c₀ + 2)
+                        hsat' hEg) ?_ (Nat.le_refl _)
+                    exact fire (G4c.identity_mem (.tail _ (.head _))) hEg
+                next hpres =>
+                  rcases List.mem_singleton.mp hφ with rfl
+                  refine ⟨(itpE p S F' (c₀ + 1) (C₁ :: Γ)).ifThen
+                    (itpA p S F' (c₀ + 1) (C₁ :: Γ) C₂),
+                    List.mem_append.mpr (Or.inl ?_), ?_⟩
+                  · rw [if_neg hpres]
+                    exact .head _
+                  · refine G4c.impR ?_
+                    have hEg : G4c (itpE p S F' (c₀ + 1) (C₁ :: Γ) ::
+                        (itpE p S F' (c₀ + 2) (C₁ :: Γ)).ifThen
+                          (itpA p S F' (c₀ + 2) (C₁ :: Γ) C₂) ::
+                        [itpE p S (fl + 1) (c₀ + 2) Γ])
+                        (itpE p S F' (c₀ + 2) (C₁ :: Γ)) :=
+                      easc_zero p S F' (C₁ :: Γ) (c₀ + 1) (c₀ + 2) hsat'
+                        (G4c.identity_mem (.head _))
+                    refine ihf (C₁ :: Γ) hsat' F' (c₀ + 1) C₂ _ (by omega)
+                      hEg ?_ (Nat.le_refl _)
+                    exact fire (G4c.identity_mem (.tail _ (.head _))) hEg
+            | somehow D =>
+                simp only [itpAgoal] at hφ ⊢
+                rcases List.mem_singleton.mp hφ with rfl
+                refine ⟨((itpE p S F' c₀ Γ).ifThen
+                  (itpA p S F' (c₀ + 1) Γ D)).somehow,
+                  List.mem_append.mpr (Or.inl (.head _)), ?_⟩
+                refine box_fire (W := (itpE p S F' c₀ Γ).ifThen
+                    (itpA p S F' (c₀ + 1) Γ D))
+                  (G4c.identity_mem (.head _))
+                  (consume₁ (G4c.identity_mem (.tail _ (.head _)))
+                    (consume₁ ((itp_fuel_mono_le p S
+                        (le_trans hF (Nat.le_succ _))).1 _ Γ)
+                      ((itp_budget_mono p S F').1 (c₀ + 1) Γ))) ?_
+                refine G4c.laxR (G4c.impR ?_)
+                refine ihf Γ hsat F' (c₀ + 1) D _ (by omega) ?_
+                  (G4c.identity_mem (.tail _ (.head _))) (Nat.le_refl _)
+                exact consume₁ (G4c.identity_mem
+                  (.tail _ (.tail _ (.tail _ (.head _)))))
+                  ((itp_fuel_mono_le p S (le_trans hF (Nat.le_succ _))).1 _ Γ)
+          · -- context-directed: only the p-atom clause survives saturation
+            simp only [itpAenv] at hφ ⊢
+            obtain ⟨F0, hF0Γ, hin⟩ := List.mem_flatMap.mp hφ
+            cases F0 with
+            | prop q =>
+                simp only at hin
+                split at hin
+                next hq =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  refine ⟨truePLL, List.mem_append.mpr (Or.inr ?_),
+                    G4c.truePLL_intro _⟩
+                  refine List.mem_flatMap.mpr ⟨prop q, hF0Γ, ?_⟩
+                  simp only
+                  rw [if_pos hq]
+                  exact .head _
+                next => cases hin
+            | falsePLL => cases hin
+            | and A B =>
+                simp only at hin
+                exfalso
+                split at hin
+                next => cases hin
+                next h1 =>
+                  split at hin
+                  next h2 =>
+                    exact h1 ⟨h2.1.elim id (hsat A), h2.2.elim id (hsat B)⟩
+                  next => cases hin
+            | or A B =>
+                simp only at hin
+                exfalso
+                split at hin
+                next => cases hin
+                next h1 =>
+                  split at hin
+                  next h2 => exact h1 (Or.inl (hsat A h2.1))
+                  next => cases hin
+            | somehow χ =>
+                simp only at hin
+                exfalso
+                cases g with
+                | somehow D =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next hg2 =>
+                      exact hg2 (by
+                        by_cases hχ : χ ∈ S
+                        · exact Or.inl (hsat χ hχ)
+                        · exact Or.inr hχ)
+                | prop _ => cases hin
+                | falsePLL => cases hin
+                | and _ _ => cases hin
+                | or _ _ => cases hin
+                | ifThen _ _ => cases hin
+            | ifThen A' B =>
+                exfalso
+                cases A' with
+                | prop q =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next hBΓ =>
+                      split at hin
+                      next hBS => exact hBΓ (hsat B hBS)
+                      next => cases hin
+                | falsePLL => cases hin
+                | and A₁ B₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next h1 =>
+                      split at hin
+                      next h2 => exact h1 (hsat _ h2)
+                      next => cases hin
+                | or A₁ B₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next h1 =>
+                      split at hin
+                      next h2 =>
+                        exact h1 ⟨h2.1.elim id (hsat _),
+                          h2.2.elim id (hsat _)⟩
+                      next => cases hin
+                | ifThen A₁ B₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next hDΓ =>
+                      split at hin
+                      next hDS => exact hDΓ (hsat B hDS)
+                      next => cases hin
+                | somehow A₁ =>
+                    simp only at hin
+                    split at hin
+                    next => cases hin
+                    next hBΓ =>
+                      split at hin
+                      next hBS => exact hBΓ (hsat B hBS)
+                      next => cases hin
+        · -- the truncation feed
+          intro b₁' hb₁
+          obtain rfl : b₁' = c₀ + 1 := by omega
+          refine ⟨c₀, rfl, ?_⟩
+          exact consume₁ (consume₁ (G4c.identity_mem (.head _))
+            ((itp_fuel_mono_le p S (le_trans hF (Nat.le_succ _))).1 _ Γ))
+            ((itp_budget_mono p S F').1 (c₀ + 1) Γ)
+      -- assemble: cut in the head, map, lift the result
+      have hres : G4c Δ (itpA p S (F' + 1) (c₀ + 1) Γ g) := by
+        refine G4c.cut hamb (G4c.cut (hhead.weaken _) ?_)
+        exact weaken_sub (by
+          intro ψ hψ
+          rcases List.mem_cons.mp hψ with rfl | hψ
+          · exact .tail _ (.head _)
+          · rcases List.mem_singleton.mp hψ with rfl
+            exact .head _) hmap
+      exact val_lift hres hfh (Nat.le_refl _)
+
 /-- HOLDOUT — the one remaining `sorry` of the cascade development.
 
 The ambient-relative pair descent at *burned* room: only the defect
@@ -384,13 +879,37 @@ resets are fuel-indexed, not S-indexed, so no Γ-computable `kcap`
 covers chains-of-seals; (d) box-proof continuation interfaces —
 circular.  The residual mathematical content: chains restarted inside
 a seal revisit jump goals whose pending slots are outside the box, so
-the pigeonhole cannot close them; empirically (probe battery,
-`wip/v3probe*.lean`) budgets stabilise at `b ≈ 2–3` regardless, so
-this statement is believed true — it is exactly the one-step budget
+the pigeonhole cannot close them; empirically budgets stabilise at
+`b ≈ 2–3` regardless (probe battery, `wip/v3probe*.lean`), so this
+statement is believed true — it is exactly the one-step budget
 stabilisation at low budget, the open frontier of the development.
-At `defect S Γ = 0` every space-guarded clause is dead and the
-statement reduces to goal-directed disjuncts only, provable by the
-fuel induction alone; the `defect ≥ 1` band is the open part. -/
+
+Direct semantic adjudication of THIS statement (2026-07-11, session
+scratchpad, `v3probe2`'s 7-algebra zoo on the real `itpA`/`itpE`):
+zero counterexample points on two adversarial defect-1 configurations
+— `S = {◯p⊃r, r}`, `Γ = [◯p⊃r]` (J = 2), and the shared-consequent
+pair `S = {◯p⊃r, ◯p₂⊃r, r}` (J = 4, the shape whose live-jump-goal
+count exceeds every defect bound, i.e. the worst case for any
+defect-indexed ledger) — across goal shapes `p`, `◯p`, `p⊃r`, `◯r`,
+`◯(◯p∧r)`, `◯r⊃p` and eliminated atoms absent/live/consequent, at
+budgets both in the open band and far below the floor (`c = 1, 2`).
+A refutation would have voided the design; none was found.
+The `defect S Γ = 0` band is settled (`cascade_zero` above: every
+space-guarded clause is dead and the plain fuel induction closes), so
+this statement now carries `1 ≤ defect S Γ` — the open band only. -/
+private theorem cascade_low_pos (p : String) (S : Finset PLLFormula)
+    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
+    (Δ : List PLLFormula)
+    (hd1 : 1 ≤ defect S Γ)
+    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
+    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
+    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
+    (hfh : fh ≤ fuel) :
+    G4c Δ (itpA p S fuel c Γ g) := by
+  sorry
+
+/-- The sealed-site descent: saturated contexts settle by the
+zero tier, the rest is the holdout. -/
 private theorem cascade_low (p : String) (S : Finset PLLFormula)
     (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
     (Δ : List PLLFormula)
@@ -399,7 +918,11 @@ private theorem cascade_low (p : String) (S : Finset PLLFormula)
     (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
     (hfh : fh ≤ fuel) :
     G4c Δ (itpA p S fuel c Γ g) := by
-  sorry
+  by_cases hd0 : defect S Γ = 0
+  · exact cascade_zero p S fh Γ (sat_of_defect_zero hd0) fuel c g Δ hc
+      hamb hhead hfh
+  · exact cascade_low_pos p S fh Γ fuel c g Δ (by omega) hroom hamb
+      hhead hfh
 
 private theorem cascade_main (p : String) (S : Finset PLLFormula) :
     ∀ (d fh : Nat),
@@ -2057,92 +2580,6 @@ private theorem cascade_gamma_box (p : String) (S : Finset PLLFormula)
   refine consume₂ (G4c.identity_mem (.tail _ (.head _)))
     (weaken_sub (fun ψ hψ => .tail _ (.tail _ hψ)) dE)
     (cascade_gamma p S fuel c hb Γ A B hFΓ hBΓ hBS hAS)
-
-/-! ### The ambient full-table mapping
-
-`itpAfull_map` with the ambient E-value carried in the sequents: the
-truncation disjunct maps by guard-fire against the ambient feed and
-re-crossing, then reuses the per-disjunct bundle — the list-level
-counterpart of `itp_sound`'s trunc case. -/
-
-private theorem itpAfull_map_amb {p : String} {S : Finset PLLFormula}
-    {f b₁ b₂ : Nat} {Γ : List PLLFormula} {C : PLLFormula} {Eamb : PLLFormula}
-    (hoth : ∀ φ ∈ itpAoth p S f b₁ Γ C,
-        ∃ ψ ∈ itpAoth p S f b₂ Γ C, G4c [φ, Eamb] ψ)
-    (htr : ∀ b₁', b₁ = b₁' + 1 → ∃ b₂', b₂ = b₂' + 1 ∧
-        G4c [Eamb] (itpE p S f b₁' Γ)) :
-    G4c [Eamb, orAll (itpAfull p S f b₁ Γ C)]
-        (orAll (itpAfull p S f b₂ Γ C)) := by
-  refine G4c.perm ?_ (List.Perm.swap _ _ _)
-  refine G4c.orAll_elim ?_
-  intro φ hφ
-  cases C with
-  | somehow D =>
-      simp only [itpAfull] at hφ ⊢
-      rcases List.mem_append.mp hφ with hφ | hφ
-      · obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
-        exact G4c.orAll_intro (List.mem_append.mpr (Or.inl hψ)) hd
-      · by_cases h1 : (itpAoth p S f b₁ Γ (D.somehow)).isEmpty = true
-        · rw [if_pos h1] at hφ; cases hφ
-        · rw [if_neg h1] at hφ
-          cases b₁ with
-          | zero => cases hφ
-          | succ b₁' =>
-              rcases List.mem_singleton.mp hφ with rfl
-              obtain ⟨b₂', rfl, hfeed⟩ := htr b₁' rfl
-              have h2 : ¬ (itpAoth p S f (b₂' + 1) Γ (D.somehow)).isEmpty
-                  = true := by
-                intro h2
-                have h2' : itpAoth p S f (b₂' + 1) Γ (D.somehow) = [] := by
-                  simpa using h2
-                cases hl : itpAoth p S f (b₁' + 1) Γ (D.somehow) with
-                | nil => rw [hl] at h1; simp at h1
-                | cons a t =>
-                    obtain ⟨ψ, hψ, -⟩ := hoth a (by rw [hl]; exact .head _)
-                    rw [h2'] at hψ; cases hψ
-              refine G4c.orAll_intro (φ := ((itpE p S f b₂' Γ).ifThen
-                  (orAll (itpAoth p S f (b₂' + 1) Γ (D.somehow)))).somehow)
-                (List.mem_append.mpr (Or.inr ?_)) ?_
-              · rw [if_neg h2]
-                exact .head _
-              · refine box_fire (W := (itpE p S f b₂' Γ).ifThen
-                    (orAll (itpAoth p S f (b₂' + 1) Γ (D.somehow))))
-                  (G4c.identity_mem (.head _))
-                  (weaken_sub (fun ψ hψ => .tail _ hψ) hfeed) ?_
-                refine G4c.laxR (G4c.impR ?_)
-                refine G4c.perm (Γ := orAll (itpAoth p S f (b₁' + 1) Γ
-                    (D.somehow)) :: itpE p S f b₂' Γ ::
-                    [((itpE p S f b₁' Γ).ifThen (orAll (itpAoth p S f
-                      (b₁' + 1) Γ (D.somehow)))).somehow, Eamb])
-                  (G4c.orAll_elim ?_) (List.Perm.swap _ _ _)
-                intro χ hχ
-                obtain ⟨ψ, hψ, hd⟩ := hoth χ hχ
-                refine G4c.orAll_intro hψ (weaken_sub ?_ hd)
-                intro ξ hξ
-                rcases List.mem_cons.mp hξ with rfl | hξ
-                · exact .head _
-                · rcases List.mem_singleton.mp hξ with rfl
-                  exact .tail _ (.tail _ (.tail _ (.head _)))
-  | prop q =>
-      simp only [itpAfull] at hφ ⊢
-      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
-      exact G4c.orAll_intro hψ hd
-  | falsePLL =>
-      simp only [itpAfull] at hφ ⊢
-      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
-      exact G4c.orAll_intro hψ hd
-  | and C₁ C₂ =>
-      simp only [itpAfull] at hφ ⊢
-      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
-      exact G4c.orAll_intro hψ hd
-  | or C₁ C₂ =>
-      simp only [itpAfull] at hφ ⊢
-      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
-      exact G4c.orAll_intro hψ hd
-  | ifThen C₁ C₂ =>
-      simp only [itpAfull] at hφ ⊢
-      obtain ⟨ψ, hψ, hd⟩ := hoth φ hφ
-      exact G4c.orAll_intro hψ hd
 
 /-! ### The stabilization core, successor form
 
