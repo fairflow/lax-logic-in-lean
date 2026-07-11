@@ -125,17 +125,22 @@ falls out:
   *N-truncation* match the stabilized v2 values; a jump **budget**
   `b` stabilizes empirically by `b ≈ 2–3`.  The *bare law*
   (`◯(E⇢Z) ⊣⊢ ◯Z` under ambient `E`) validated on most of the battery
-  but **failed on the gap-theorem context**: v2's E-value was still
-  strictly climbing at fuel 4→5 there while the bared v3 sat strictly
-  below it.  Diagnosis: the bare law is *ambient-relative*, not a
-  congruence, and the first v3 cut applied it inside negatively
-  occurring positions (γ-clause antecedents), where no ambient `E`
-  exists.  Repair (v3.1): keep v2's guarded shapes verbatim and make
-  every same-context reference — `E` and `A` alike — pay the budget;
-  budget-annotation is congruence-grade once absorption holds, so it
-  is safe in any polarity.  The moral for the paper: only
+  but **flagged a divergence on the gap-theorem context**, which
+  prompted the v3.1 repair: keep v2's guarded shapes verbatim and
+  make every same-context reference — `E` and `A` alike — pay the
+  budget.  **Resolution (later the same night):** the flag was a
+  *comparison* artifact — `E`-values descend pointwise toward the
+  fixpoint as fuel grows (fuel-mono direction), and v2 simply had not
+  converged by fuel 4–5 on that context: the fuel-5→6 step dropped by
+  exactly the 40 points separating it from v3.1, while v3.1 was
+  already budget-stable at `b = 2`.  So v3.1 computes the limit
+  directly.  The guarded v3.1 shapes are kept regardless: the
+  adequacy case-map consumes guarded pairs (the IHs deliver exactly
+  that shape), and the design principle stands on its own — only
   congruence-grade equivalences may be folded into a quantifier
-  definition; ambient-relative ones belong to consumption sites.
+  definition; ambient-relative ones (the bare law included) belong to
+  consumption sites.  Budget-annotation is congruence-grade once
+  absorption holds, so it is safe in any polarity.
 * **The consumer-side bookkeeping cannot mirror the budget.**  A
   Δ-side decomposition between two Γ-side jumps changes the consumer
   sequent (so no splicing) without touching the quantifier's
