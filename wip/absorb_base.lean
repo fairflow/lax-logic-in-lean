@@ -893,10 +893,40 @@ count exceeds every defect bound, i.e. the worst case for any
 defect-indexed ledger) — across goal shapes `p`, `◯p`, `p⊃r`, `◯r`,
 `◯(◯p∧r)`, `◯r⊃p` and eliminated atoms absent/live/consequent, at
 budgets both in the open band and far below the floor (`c = 1, 2`).
-A refutation would have voided the design; none was found.
+A refutation would have voided the design; none was found.  (The
+kernel decider was also pointed at the smallest instance and killed
+at a 20-minute cap — its search space is infeasible even there, as
+`HANDOFF.md` warns; the zoo is the effective adjudicator.)
 The `defect S Γ = 0` band is settled (`cascade_zero` above: every
 space-guarded clause is dead and the plain fuel induction closes), so
-this statement now carries `1 ≤ defect S Γ` — the open band only. -/
+this statement now carries `1 ≤ defect S Γ` — the open band only.
+
+Two structural leads adjudicated 2026-07-11 (evening):
+
+* **Piece-closure kills the fourth site — but only for closed `S`.**
+  If `S` is subformula-closed, a goal-membership invariant `g ∈ S`
+  threads through every recursion of `cascade_main` (entry goals are
+  antecedent/body pieces of `S`-clauses; decomposition, `C₂`,
+  γ-unboxing and carried goals preserve it), and then a fresh goal
+  antecedent outside `S` is impossible — the fresh-antecedent seal is
+  dead code.  This CANNOT be used here: the three interface lemmas
+  quantify over arbitrary `S`, and for non-closed `S` the site is
+  reachable at depth 0 (goal `A₁⊃B₁` with `A₁ ∉ Γ ∪ S`).  The
+  downstream adequacy instantiation uses the piece-closed space, so a
+  closed-`S` variant of this lemma would face only the three ◯-seals;
+  recorded for the consumer, not usable for the ∀`S` statements.
+* **The ◯-goal specialization is a circular reduction.**  Landing the
+  target's truncation disjunct keeps the goal ◯-shaped through every
+  box (laxL/`box_fire` need no fresh seen-allotment for the crossing
+  itself), and the collapse+re-import moves reduce the γ-family seals
+  to: inner descents at strictly smaller goals (weight-paying),
+  pointwise `others`-maps (fuel-paying), and the jump-env first
+  components at `(c → c−1)` — which are again pair descents at
+  arbitrary-shaped jump goals at burned room, i.e. THIS statement one
+  budget down.  No measure decreases across that residue (jump goals
+  reset weight and ◯-depth; `c` burns without pigeonhole room), so
+  the specialization re-derives what the seen-machinery already gives
+  above the threshold and cannot close the band below it. -/
 private theorem cascade_low_pos (p : String) (S : Finset PLLFormula)
     (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
     (Δ : List PLLFormula)
