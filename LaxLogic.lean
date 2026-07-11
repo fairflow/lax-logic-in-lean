@@ -41,4 +41,6 @@ import LaxLogic.PLLG4Dec
 import LaxLogic.PLLG4UI
 import LaxLogic.PLLG4UIAdq
 import LaxLogic.PLLG4UIStab
+import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLLCraig
 import LaxLogic.PLLDemos
