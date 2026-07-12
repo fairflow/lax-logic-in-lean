@@ -116,19 +116,12 @@ def search (W : Nat) (as : Finset String) :
           | _ => false
     else false
 
-private theorem pair_heights {Γ₁ Γ₂ : Finset PLLFormula} {C₁ C₂ : PLLFormula}
-    (d₁ : G4s Γ₁ C₁) (d₂ : G4s Γ₂ C₂) :
-    ∃ n, G4sh n Γ₁ C₁ ∧ G4sh n Γ₂ C₂ := by
-  obtain ⟨n₁, h₁⟩ := d₁
-  obtain ⟨n₂, h₂⟩ := d₂
-  exact ⟨max n₁ n₂, h₁.mono (Nat.le_max_left _ _),
-    h₂.mono (Nat.le_max_right _ _)⟩
-
-/-- **Soundness of the search.** -/
+/-- **Soundness of the search, with the height payload**: success at
+fuel `n` yields a derivation of height at most `n`. -/
 theorem search_sound (W : Nat) (as : Finset String) :
     ∀ (fuel : Nat) (V : Finset (Finset PLLFormula × PLLFormula))
     (Γ : List PLLFormula) (C : PLLFormula),
-    search W as fuel V Γ C = true → G4s Γ.toFinset C := by
+    search W as fuel V Γ C = true → G4sh fuel Γ.toFinset C := by
   intro fuel
   induction fuel with
   | zero => intro V Γ C h; simp [search] at h
@@ -140,37 +133,33 @@ theorem search_sound (W : Nat) (as : Finset String) :
     case isTrue hg =>
     simp only [Bool.or_eq_true, decide_eq_true_eq, List.any_eq_true] at h
     rcases h with (hbot | hC) | ⟨F, hFmem, hF⟩
-    · exact ⟨0, .botL (List.mem_toFinset.mpr hbot)⟩
+    · exact .botL (List.mem_toFinset.mpr hbot)
     · cases C with
       | prop a =>
           simp only [decide_eq_true_eq] at hC
-          exact ⟨0, .init (List.mem_toFinset.mpr hC)⟩
+          exact .init (List.mem_toFinset.mpr hC)
       | falsePLL => simp at hC
       | and A B =>
           simp only [Bool.and_eq_true] at hC
-          obtain ⟨n, h₁, h₂⟩ := pair_heights (ih _ _ _ hC.1) (ih _ _ _ hC.2)
-          exact ⟨n + 1, .andR h₁ h₂⟩
+          exact .andR (ih _ _ _ hC.1) (ih _ _ _ hC.2)
       | or A B =>
           simp only [Bool.or_eq_true] at hC
           rcases hC with hs | hs
-          · obtain ⟨n, d⟩ := ih _ _ _ hs
-            exact ⟨n + 1, .orR1 d⟩
-          · obtain ⟨n, d⟩ := ih _ _ _ hs
-            exact ⟨n + 1, .orR2 d⟩
+          · exact .orR1 (ih _ _ _ hs)
+          · exact .orR2 (ih _ _ _ hs)
       | ifThen A B =>
-          obtain ⟨n, d⟩ := ih _ _ _ hC
+          have d := ih _ _ _ hC
           rw [List.toFinset_cons] at d
-          exact ⟨n + 1, .impR d⟩
+          exact .impR d
       | somehow A =>
           simp only [Bool.or_eq_true, List.any_eq_true] at hC
           rcases hC with hs | ⟨X, hXmem, hX⟩
-          · obtain ⟨n, d⟩ := ih _ _ _ hs
-            exact ⟨n + 1, .laxR d⟩
+          · exact .laxR (ih _ _ _ hs)
           · cases X with
             | somehow x =>
-                obtain ⟨n, d⟩ := ih _ _ _ hX
+                have d := ih _ _ _ hX
                 rw [List.toFinset_cons] at d
-                exact ⟨n + 1, .laxL (List.mem_toFinset.mpr hXmem) d⟩
+                exact .laxL (List.mem_toFinset.mpr hXmem) d
             | prop a => simp at hX
             | falsePLL => simp at hX
             | and _ _ => simp at hX
@@ -181,52 +170,53 @@ theorem search_sound (W : Nat) (as : Finset String) :
       | prop a => simp at hF
       | falsePLL => simp at hF
       | and A B =>
-          obtain ⟨n, d⟩ := ih _ _ _ hF
+          have d := ih _ _ _ hF
           rw [List.toFinset_cons, List.toFinset_cons] at d
-          exact ⟨n + 1, .andL hFΓ d⟩
+          exact .andL hFΓ d
       | or A B =>
           simp only [Bool.and_eq_true] at hF
-          obtain ⟨n, h₁, h₂⟩ := pair_heights (ih _ _ _ hF.1) (ih _ _ _ hF.2)
+          have h₁ := ih _ _ _ hF.1
+          have h₂ := ih _ _ _ hF.2
           rw [List.toFinset_cons] at h₁ h₂
-          exact ⟨n + 1, .orL hFΓ h₁ h₂⟩
+          exact .orL hFΓ h₁ h₂
       | somehow A => simp at hF
       | ifThen A' B =>
           cases A' with
           | prop a =>
               simp only [Bool.and_eq_true, decide_eq_true_eq] at hF
-              obtain ⟨n, d⟩ := ih _ _ _ hF.2
+              have d := ih _ _ _ hF.2
               rw [List.toFinset_cons] at d
-              exact ⟨n + 1, .impLProp hFΓ (List.mem_toFinset.mpr hF.1) d⟩
+              exact .impLProp hFΓ (List.mem_toFinset.mpr hF.1) d
           | falsePLL => simp at hF
           | and A₁ B₁ =>
-              obtain ⟨n, d⟩ := ih _ _ _ hF
+              have d := ih _ _ _ hF
               rw [List.toFinset_cons] at d
-              exact ⟨n + 1, .impLAnd hFΓ d⟩
+              exact .impLAnd hFΓ d
           | or A₁ B₁ =>
-              obtain ⟨n, d⟩ := ih _ _ _ hF
+              have d := ih _ _ _ hF
               rw [List.toFinset_cons, List.toFinset_cons] at d
-              exact ⟨n + 1, .impLOr hFΓ d⟩
+              exact .impLOr hFΓ d
           | ifThen A₁ B₁ =>
               simp only [Bool.and_eq_true] at hF
-              obtain ⟨n, h₁, h₂⟩ := pair_heights (ih _ _ _ hF.1) (ih _ _ _ hF.2)
+              have h₁ := ih _ _ _ hF.1
+              have h₂ := ih _ _ _ hF.2
               rw [List.toFinset_cons] at h₁ h₂
-              exact ⟨n + 1, .impLImp hFΓ h₁ h₂⟩
+              exact .impLImp hFΓ h₁ h₂
           | somehow A₁ =>
               simp only [Bool.or_eq_true, Bool.and_eq_true,
                 List.any_eq_true] at hF
               rcases hF with ⟨hs₁, hs₂⟩ | ⟨X, hXmem, hX⟩
-              · obtain ⟨n, h₁, h₂⟩ :=
-                  pair_heights (ih _ _ _ hs₁) (ih _ _ _ hs₂)
+              · have h₁ := ih _ _ _ hs₁
+                have h₂ := ih _ _ _ hs₂
                 rw [List.toFinset_cons] at h₂
-                exact ⟨n + 1, .impLLax hFΓ h₁ h₂⟩
+                exact .impLLax hFΓ h₁ h₂
               · cases X with
                 | somehow x =>
                     simp only [Bool.and_eq_true] at hX
-                    obtain ⟨n, h₁, h₂⟩ :=
-                      pair_heights (ih _ _ _ hX.1) (ih _ _ _ hX.2)
+                    have h₁ := ih _ _ _ hX.1
+                    have h₂ := ih _ _ _ hX.2
                     rw [List.toFinset_cons] at h₁ h₂
-                    exact ⟨n + 1,
-                      .impLLaxLax hFΓ (List.mem_toFinset.mpr hXmem) h₁ h₂⟩
+                    exact .impLLaxLax hFΓ (List.mem_toFinset.mpr hXmem) h₁ h₂
                 | prop a => simp at hX
                 | falsePLL => simp at hX
                 | and _ _ => simp at hX
@@ -583,7 +573,17 @@ theorem G4c_iff_search {Γ : List PLLFormula} {C : PLLFormula} :
     · rw [Finset.sdiff_empty, seqEnum_card]
       exact Nat.lt_succ_self _
   · intro h
-    exact G4c.iff_set.mpr (search_sound _ _ _ _ _ _ h)
+    exact G4c.iff_set.mpr ⟨_, search_sound _ _ _ _ _ _ h⟩
+
+/-- **The pigeonhole height bound, for free from the decider
+round-trip**: every derivable sequent has a derivation of height at
+most `decideFuel`.  This is what lets the Pitts interpolants be
+defined by plain fuel recursion — no termination order on sequents is
+needed, which is precisely the ingredient Iemhoff's method lacked for
+retention calculi. -/
+theorem height_bound {Γ : List PLLFormula} {C : PLLFormula}
+    (h : G4c Γ C) : G4sh (decideFuel Γ C) Γ.toFinset C :=
+  search_sound _ _ _ _ _ _ (G4c_iff_search.mp h)
 
 /-- `G4c` — hence PLL — is decidable. -/
 instance decidableG4c (Γ : List PLLFormula) (C : PLLFormula) :
