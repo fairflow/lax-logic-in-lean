@@ -784,4 +784,344 @@ theorem existsP_and_factor_r (p : String)
   exact G4c.andL (List.Perm.refl _)
     (g4c_wk h2 (by intro x hx; simp at hx ⊢; tauto))
 
+/-! ### §6 Box-freedom is preserved by piece closure (FACT #2)
+
+The piece-closure of a `◯`-free formula is `◯`-free: every piece
+formation only recombines existing subformulas (curried implications,
+components), never introducing a `◯`.  This is the structural fact
+that lets the box-free adequacy tier instantiate its space `S` with a
+piece closure and still meet the `∀ F ∈ S, boxFree F` side condition. -/
+
+/-- Piece closure preserves box-freedom. -/
+theorem boxFree_pieceClosure :
+    ∀ (φ : PLLFormula), boxFree φ → ∀ ψ ∈ pieceClosure φ, boxFree ψ := by
+  intro φ
+  induction φ using pieceClosure.induct with
+  | case1 a =>
+      intro _ ψ hψ
+      rw [pieceClosure_prop, Finset.mem_singleton] at hψ
+      subst hψ; trivial
+  | case2 =>
+      intro _ ψ hψ
+      rw [pieceClosure_false, Finset.mem_singleton] at hψ
+      subst hψ; trivial
+  | case3 A B ihA ihB =>
+      intro hbf ψ hψ
+      obtain ⟨hA, hB⟩ := hbf
+      rw [pieceClosure_and] at hψ
+      rcases Finset.mem_insert.mp hψ with rfl | h
+      · exact ⟨hA, hB⟩
+      · rcases Finset.mem_union.mp h with h | h
+        · exact ihA hA ψ h
+        · exact ihB hB ψ h
+  | case4 A B ihA ihB =>
+      intro hbf ψ hψ
+      obtain ⟨hA, hB⟩ := hbf
+      rw [pieceClosure_or] at hψ
+      rcases Finset.mem_insert.mp hψ with rfl | h
+      · exact ⟨hA, hB⟩
+      · rcases Finset.mem_union.mp h with h | h
+        · exact ihA hA ψ h
+        · exact ihB hB ψ h
+  | case5 a D ihX ihD =>
+      intro hbf ψ hψ
+      rw [pieceClosure_impProp] at hψ
+      rcases Finset.mem_insert.mp hψ with rfl | h
+      · exact hbf
+      · rcases Finset.mem_union.mp h with h | h
+        · exact ihX hbf.1 ψ h
+        · exact ihD hbf.2 ψ h
+  | case6 D ihX ihD =>
+      intro hbf ψ hψ
+      rw [pieceClosure_impFalse] at hψ
+      rcases Finset.mem_insert.mp hψ with rfl | h
+      · exact hbf
+      · rcases Finset.mem_union.mp h with h | h
+        · exact ihX hbf.1 ψ h
+        · exact ihD hbf.2 ψ h
+  | case7 A B D ihX ihD ihC =>
+      intro hbf ψ hψ
+      rw [pieceClosure_impAnd] at hψ
+      rcases Finset.mem_insert.mp hψ with rfl | h
+      · exact hbf
+      · rcases Finset.mem_union.mp h with h | h
+        · rcases Finset.mem_union.mp h with h | h
+          · exact ihX hbf.1 ψ h
+          · exact ihD hbf.2 ψ h
+        · exact ihC ⟨hbf.1.1, hbf.1.2, hbf.2⟩ ψ h
+  | case8 A B D ihX ihD ihL ihR =>
+      intro hbf ψ hψ
+      rw [pieceClosure_impOr] at hψ
+      rcases Finset.mem_insert.mp hψ with rfl | h
+      · exact hbf
+      · rcases Finset.mem_union.mp h with h | h
+        · rcases Finset.mem_union.mp h with h | h
+          · rcases Finset.mem_union.mp h with h | h
+            · exact ihX hbf.1 ψ h
+            · exact ihD hbf.2 ψ h
+          · exact ihL ⟨hbf.1.1, hbf.2⟩ ψ h
+        · exact ihR ⟨hbf.1.2, hbf.2⟩ ψ h
+  | case9 A B D ihX ihD ihC =>
+      intro hbf ψ hψ
+      rw [pieceClosure_impImp] at hψ
+      rcases Finset.mem_insert.mp hψ with rfl | h
+      · exact hbf
+      · rcases Finset.mem_union.mp h with h | h
+        · rcases Finset.mem_union.mp h with h | h
+          · exact ihX hbf.1 ψ h
+          · exact ihD hbf.2 ψ h
+        · exact ihC ⟨hbf.1.2, hbf.2⟩ ψ h
+  | case10 X D ihX ihD =>
+      intro hbf ψ _
+      exact absurd hbf.1 (by simp [boxFree])
+  | case11 χ ihχ =>
+      intro hbf ψ _
+      exact absurd hbf (by simp [boxFree])
+
+/-- Piece closure of a box-free context is box-free (list form). -/
+theorem boxFree_pieceClosureList {Γ : List PLLFormula}
+    (hΓ : ∀ F ∈ Γ, boxFree F) : ∀ ψ ∈ pieceClosureList Γ, boxFree ψ := by
+  intro ψ hψ
+  obtain ⟨φ, hφΓ, hφ⟩ := Finset.mem_biUnion.mp hψ
+  exact boxFree_pieceClosure φ (hΓ φ (List.mem_toFinset.mp hφΓ)) ψ hφ
+
+
+/-! ### §7 Box-free adequacy corollaries (FACT #1 + FACT #2 packaged)
+
+Mirror of §4/§5's `existsP_adequate`/`forallP_adequate` under
+box-free hypotheses, routing through `itp_adequate_bf`/`itp_stab_le_bf`
+(sorry-free) and discharging the box-free-space side condition via
+`boxFree_pieceClosureList` (FACT #2). -/
+
+theorem existsP_adequate_bf (p : String)
+    (hFI : FuelIndiffE p) (hSI : SpaceIndiffE p)
+    {φ ψ : PLLFormula} {Δ : List PLLFormula}
+    (hφbf : boxFree φ) (hψbf : boxFree ψ) (hΔbf : ∀ χ ∈ Δ, boxFree χ)
+    (hΔp : ∀ χ ∈ Δ, p ∉ χ.atoms) (hψp : p ∉ ψ.atoms)
+    (h : G4c (φ :: Δ) ψ) : G4c (existsP p φ :: Δ) ψ := by
+  by_cases hp : p ∈ φ.atoms
+  · obtain ⟨n, d⟩ := G4c.iff_set.mp h
+    have hPCd : PieceClosed (pieceClosureList (φ :: ψ :: Δ)) :=
+      pieceClosed_pieceClosureList _
+    have hPCφ : PieceClosed (pieceClosure φ) := pieceClosed_pieceClosure φ
+    have hsub : pieceClosure φ ⊆ pieceClosureList (φ :: ψ :: Δ) :=
+      pieceClosure_subset_pieceClosureList (by simp)
+    have hSbfd : ∀ F ∈ pieceClosureList (φ :: ψ :: Δ), boxFree F :=
+      boxFree_pieceClosureList (by
+        intro F hF
+        rcases List.mem_cons.mp hF with rfl | hF
+        · exact hφbf
+        · rcases List.mem_cons.mp hF with rfl | hF
+          · exact hψbf
+          · exact hΔbf F hF)
+    have hSbfφ : ∀ F ∈ pieceClosure φ, boxFree F :=
+      boxFree_pieceClosure φ hφbf
+    have d' : G4sh n ([φ].toFinset ∪ Δ.toFinset) ψ := by simpa using d
+    have key := itp_adequate_bf p (pieceClosureList (φ :: ψ :: Δ)) hPCd hSbfd
+      (show kcap (pieceClosureList (φ :: ψ :: Δ))
+          < kcap (pieceClosureList (φ :: ψ :: Δ)) + 1 from Nat.lt_succ_self _)
+      n
+      (max (n + 1) (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
+      [φ] Δ.toFinset ψ
+      (lt_of_lt_of_le (Nat.lt_succ_self n) (le_max_left _ _))
+      d'
+      (fun χ hχ => hΔp χ (List.mem_toFinset.mp hχ))
+      (by
+        intro F hF
+        rw [List.mem_singleton.mp hF]
+        exact pieceClosureList_mem (by simp))
+      (fun χ hχ =>
+        pieceClosureList_mem (by simp [List.mem_toFinset.mp hχ]))
+      (pieceClosureList_mem (by simp))
+    have hE : G4s
+        (insert (itpE p (pieceClosureList (φ :: ψ :: Δ))
+          (max (n + 1)
+            (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
+          (kcap (pieceClosureList (φ :: ψ :: Δ)) + 1) [φ]) Δ.toFinset) ψ :=
+      key.1 hψp
+    -- space step: land on the packaged space
+    rw [hSI (pieceClosureList (φ :: ψ :: Δ)) (pieceClosure φ)
+      (max (n + 1)
+        (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
+      (kcap (pieceClosureList (φ :: ψ :: Δ)) + 1) [φ] hPCd hPCφ
+      (by simpa using hsub) (by simp)] at hE
+    -- budget step: stabilize down to the packaged budget
+    have hstab : G4c
+        [itpE p (pieceClosure φ)
+          (max (n + 1)
+            (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
+          (kcap (pieceClosure φ) + 1) [φ]]
+        (itpE p (pieceClosure φ)
+          (max (n + 1)
+            (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
+          (kcap (pieceClosureList (φ :: ψ :: Δ)) + 1) [φ]) :=
+      (itp_stab_le_bf p (pieceClosure φ) hSbfφ hPCφ.and_mem hPCφ.or_mem hPCφ.imp_mem
+        hPCφ.impAnd_mem hPCφ.impOr_mem hPCφ.impImp_mem
+        (show kcap (pieceClosure φ) < kcap (pieceClosure φ) + 1 from
+          Nat.lt_succ_self _)
+        (Nat.succ_le_succ (kcap_mono hsub))).1 [φ]
+        (by intro F hF; rw [List.mem_singleton.mp hF]; exact self_mem_pieceClosure φ)
+    have hcut : G4s
+        (insert (itpE p (pieceClosure φ)
+          (max (n + 1)
+            (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
+          (kcap (pieceClosure φ) + 1) [φ]) Δ.toFinset) ψ :=
+      G4s.cut_adm (of_G4c1 hstab (Finset.mem_insert_self _ _))
+        (hE.weaken_subset
+          (Finset.insert_subset_insert _ (Finset.subset_insert _ _)))
+    -- fuel step: land on the packaged fuel
+    rw [hFI (pieceClosure φ) (kcap (pieceClosure φ) + 1) [φ]
+      (max (n + 1)
+        (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
+      (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ])
+      hPCφ (by simp) (le_max_right _ _) (le_refl _)] at hcut
+    have hfin : G4c
+        (itpE p (pieceClosure φ)
+          (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ])
+          (kcap (pieceClosure φ) + 1) [φ] :: Δ) ψ :=
+      G4c.iff_set.mpr (by simpa using hcut)
+    unfold existsP
+    rw [if_pos hp]
+    exact hfin
+  · rw [existsP_pfree hp]
+    exact h
+
+theorem forallP_adequate_bf (p : String)
+    (hFI : FuelIndiffA p) (hSI : SpaceIndiffA p)
+    {C : PLLFormula} {Δ : List PLLFormula}
+    (hCbf : boxFree C) (hΔbf : ∀ χ ∈ Δ, boxFree χ)
+    (hΔp : ∀ χ ∈ Δ, p ∉ χ.atoms)
+    (h : G4c Δ C) : G4c Δ (forallP p C) := by
+  by_cases hp : p ∈ C.atoms
+  · obtain ⟨n, d⟩ := G4c.iff_set.mp h
+    have hPCd : PieceClosed (pieceClosureList (C :: Δ)) :=
+      pieceClosed_pieceClosureList _
+    have hPCC : PieceClosed (pieceClosure C) := pieceClosed_pieceClosure C
+    have hsub : pieceClosure C ⊆ pieceClosureList (C :: Δ) :=
+      pieceClosure_subset_pieceClosureList (by simp)
+    have hSbfd : ∀ F ∈ pieceClosureList (C :: Δ), boxFree F :=
+      boxFree_pieceClosureList (by
+        intro F hF
+        rcases List.mem_cons.mp hF with rfl | hF
+        · exact hCbf
+        · exact hΔbf F hF)
+    have hSbfC : ∀ F ∈ pieceClosure C, boxFree F :=
+      boxFree_pieceClosure C hCbf
+    have d' : G4sh n (([] : List PLLFormula).toFinset ∪ Δ.toFinset) C := by
+      simpa using d
+    have key := itp_adequate_bf p (pieceClosureList (C :: Δ)) hPCd hSbfd
+      (show kcap (pieceClosureList (C :: Δ))
+          < kcap (pieceClosureList (C :: Δ)) + 1 from Nat.lt_succ_self _)
+      n
+      (max (n + 1)
+        (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+      [] Δ.toFinset C
+      (lt_of_lt_of_le (Nat.lt_succ_self n) (le_max_left _ _))
+      d'
+      (fun χ hχ => hΔp χ (List.mem_toFinset.mp hχ))
+      (by simp)
+      (fun χ hχ =>
+        pieceClosureList_mem (by simp [List.mem_toFinset.mp hχ]))
+      (pieceClosureList_mem (by simp))
+    have hA : G4s
+        (insert (itpE p (pieceClosureList (C :: Δ))
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) []) Δ.toFinset)
+        (itpA p (pieceClosureList (C :: Δ))
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) [] C) :=
+      key.2
+    -- the ambient E at the empty context is free: cut it away
+    have hEd : G4s (Δ.toFinset : Finset PLLFormula)
+        (itpE p (pieceClosureList (C :: Δ))
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) []) :=
+      ((itp_sound p (pieceClosureList (C :: Δ)) _).1 _ []).weaken_subset
+        (by simp)
+    have hA0 : G4s (Δ.toFinset : Finset PLLFormula)
+        (itpA p (pieceClosureList (C :: Δ))
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) [] C) :=
+      G4s.cut_adm hEd hA
+    -- space step
+    rw [hSI (pieceClosureList (C :: Δ)) (pieceClosure C)
+      (max (n + 1)
+        (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+      (kcap (pieceClosureList (C :: Δ)) + 1) [] C hPCd hPCC
+      (by simp) (by simp) hsub (Finset.Subset.refl _)] at hA0
+    -- budget step: two-premise stabilization consumed under Δ
+    have hstab : G4c
+        [itpE p (pieceClosure C)
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) [],
+         itpA p (pieceClosure C)
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) [] C]
+        (itpA p (pieceClosure C)
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosure C) + 1) [] C) :=
+      (itp_stab_le_bf p (pieceClosure C) hSbfC hPCC.and_mem hPCC.or_mem hPCC.imp_mem
+        hPCC.impAnd_mem hPCC.impOr_mem hPCC.impImp_mem
+        (show kcap (pieceClosure C) < kcap (pieceClosure C) + 1 from
+          Nat.lt_succ_self _)
+        (Nat.succ_le_succ (kcap_mono hsub))).2 [] C (by simp) (self_mem_pieceClosure C)
+    have hE2 : G4s
+        (insert (itpA p (pieceClosure C)
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) [] C) Δ.toFinset)
+        (itpE p (pieceClosure C)
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosureList (C :: Δ)) + 1) []) :=
+      ((itp_sound p (pieceClosure C) _).1 _ []).weaken_subset (by simp)
+    have hA1 : G4s (Δ.toFinset : Finset PLLFormula)
+        (itpA p (pieceClosure C)
+          (max (n + 1)
+            (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+          (kcap (pieceClosure C) + 1) [] C) :=
+      G4s.cut_adm hA0
+        (G4s.cut_adm hE2
+          (of_G4c2 hstab (Finset.mem_insert_self _ _)
+            (Finset.mem_insert_of_mem (Finset.mem_insert_self _ _))))
+    -- fuel step
+    rw [hFI (pieceClosure C) (kcap (pieceClosure C) + 1) [] C
+      (max (n + 1)
+        (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
+      (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight [])
+      hPCC (by simp) (Finset.Subset.refl _)
+      (le_max_right _ _) (le_refl _)] at hA1
+    have hfin : G4c Δ
+        (itpA p (pieceClosure C)
+          (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight [])
+          (kcap (pieceClosure C) + 1) [] C) :=
+      G4c.iff_set.mpr hA1
+    unfold forallP
+    rw [if_pos hp]
+    exact hfin
+  · rw [forallP_pfree hp]
+    exact h
+
+/-- (iv∃) box-free single-antecedent corollary. -/
+theorem existsP_adequate₀_bf (p : String)
+    (hFI : FuelIndiffE p) (hSI : SpaceIndiffE p)
+    {φ ψ : PLLFormula} (hφbf : boxFree φ) (hψbf : boxFree ψ)
+    (hψp : p ∉ ψ.atoms) (h : G4c [φ] ψ) : G4c [existsP p φ] ψ :=
+  existsP_adequate_bf p hFI hSI hφbf hψbf (by simp) (by simp) hψp h
+
+/-- (iv∀) box-free single-antecedent corollary. -/
+theorem forallP_adequate₀_bf (p : String)
+    (hFI : FuelIndiffA p) (hSI : SpaceIndiffA p)
+    {ψ C : PLLFormula} (hψbf : boxFree ψ) (hCbf : boxFree C)
+    (hψp : p ∉ ψ.atoms) (h : G4c [ψ] C) : G4c [ψ] (forallP p C) :=
+  forallP_adequate_bf p hFI hSI hCbf
+    (by intro χ hχ; rw [List.mem_singleton.mp hχ]; exact hψbf)
+    (by intro χ hχ; rw [List.mem_singleton.mp hχ]; exact hψp) h
 end PLLND

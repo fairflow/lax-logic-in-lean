@@ -5013,4 +5013,804 @@ theorem itp_stab_le (p : String) (S : Finset PLLFormula)
             ((itp_budget_mono p S fuel).1 m Γ)
         exact consume₂ d2 d1 (ihA Γ C)
 
+/-! ### The box-free stabilization tier (FACT #1)
+
+`itp_stab` transitively depends on the `◯`-band holdout `sorry`
+(via `cascade_main`).  For the `◯`-free fragment the whole descent is
+a theorem: with `S` box-free and piece-closed and the context/goal
+membership invariants threaded, every `◯`-shaped clause and goal is
+dead code, and the two live cascade sites route through the
+sorry-free `cascade_main_bf` (via `cascade_low_pos_boxfree`).  The
+result, `itp_stab_bf`, is `itp_stab`'s conclusion under the box-free
+side conditions. -/
+
+/-- Prepend an `∈ S` fact to a context invariant. -/
+private theorem memS_cons_ab {S : Finset PLLFormula} {X : PLLFormula}
+    {Γ : List PLLFormula} (hX : X ∈ S) (hΓ : ∀ F ∈ Γ, F ∈ S) :
+    ∀ F ∈ X :: Γ, F ∈ S := by
+  intro F hF
+  rcases List.mem_cons.mp hF with rfl | h
+  · exact hX
+  · exact hΓ F h
+
+/-- Prepend two `∈ S` facts to a context invariant. -/
+private theorem memS_cons₂_ab {S : Finset PLLFormula} {X Y : PLLFormula}
+    {Γ : List PLLFormula} (hX : X ∈ S) (hY : Y ∈ S)
+    (hΓ : ∀ F ∈ Γ, F ∈ S) : ∀ F ∈ X :: Y :: Γ, F ∈ S :=
+  memS_cons_ab hX (memS_cons_ab hY hΓ)
+
+/-- Box-free `impLImp` cascade: the descent for the present guarded
+piece, routed through `cascade_low_pos_boxfree` (hence `cascade_main_bf`,
+no `sorry`).  `g = A₁ ⊃ B₁ ∈ S` by piece closure of the clause. -/
+private theorem cascade_impLImp_bf (p : String) (S : Finset PLLFormula)
+    (hSbf : ∀ F ∈ S, boxFree F)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
+    (A₁ B₁ D : PLLFormula)
+    (hΓS : ∀ F ∈ Γ, F ∈ S) (hABD : (A₁.ifThen B₁).ifThen D ∈ S) :
+    G4c [itpA p S fuel (c + 1) Γ (A₁.ifThen B₁),
+         itpE p S (fuel + 1) (c + 1) Γ]
+      (itpA p S fuel c Γ (A₁.ifThen B₁)) := by
+  have hroom := kcap_room hb Γ
+  have hc : 1 ≤ c := by have := kcap_ge (S := S); omega
+  refine cascade_low_pos_boxfree p S hSbf hand hor himp fuel Γ fuel c
+    (A₁.ifThen B₁) _ (himp hABD).1 hΓS (by omega) hc
+    (consume₁ (G4c.identity_mem (.tail _ (.head _)))
+      ((itp_fuel_mono p S fuel).1 (c + 1) Γ))
+    (G4c.identity_mem (.head _)) (Nat.le_refl _)
+
+/-- Box-free antecedent conversion for the gated `impLImp` clause,
+mirroring `cascade_impLImp_ant` but via `cascade_impLImp_bf`. -/
+private theorem cascade_impLImp_ant_bf (p : String) (S : Finset PLLFormula)
+    (hSbf : ∀ F ∈ S, boxFree F)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
+    (A₁ B₁ D : PLLFormula)
+    (hΓS : ∀ F ∈ Γ, F ∈ S) (hABD : (A₁.ifThen B₁).ifThen D ∈ S)
+    {Δ : List PLLFormula}
+    (dJ : G4c Δ ((itpE p S fuel (c + 1) Γ).ifThen
+      (itpA p S fuel (c + 1) Γ (A₁.ifThen B₁))))
+    (dE : G4c Δ (itpE p S (fuel + 1) (c + 1) Γ)) :
+    G4c Δ ((itpE p S fuel c Γ).ifThen
+      (itpA p S fuel c Γ (A₁.ifThen B₁))) := by
+  refine G4c.impR ?_
+  have dE' : G4c (itpE p S fuel c Γ :: Δ) (itpE p S (fuel + 1) (c + 1) Γ) :=
+    dE.weaken _
+  have dA1 : G4c (itpE p S fuel c Γ :: Δ)
+      (itpA p S fuel (c + 1) Γ (A₁.ifThen B₁)) :=
+    fire (dJ.weaken _) (consume₁ dE' ((itp_fuel_mono p S fuel).1 (c + 1) Γ))
+  exact consume₂ dA1 dE'
+    (cascade_impLImp_bf p S hSbf hand hor himp fuel c hb Γ A₁ B₁ D hΓS hABD)
+
+set_option maxHeartbeats 4000000 in
+set_option linter.unusedVariables false in
+set_option linter.unusedTactic false in
+private theorem itp_stab_aux_bf (p : String) (S : Finset PLLFormula)
+    (hSbf : ∀ F ∈ S, boxFree F)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (himpAnd : ∀ {A B D : PLLFormula},
+      (A.and B).ifThen D ∈ S → A.ifThen (B.ifThen D) ∈ S)
+    (himpOr : ∀ {A B D : PLLFormula},
+      (A.or B).ifThen D ∈ S → A.ifThen D ∈ S ∧ B.ifThen D ∈ S)
+    (himpImp : ∀ {A B D : PLLFormula},
+      (A.ifThen B).ifThen D ∈ S → B.ifThen D ∈ S) :
+    ∀ (fuel : Nat), ∀ (c : Nat), kcap S < c + 2 →
+    (∀ Γ, (∀ F ∈ Γ, F ∈ S) →
+      G4c [itpE p S fuel (c + 1) Γ] (itpE p S fuel (c + 2) Γ)) ∧
+    (∀ Γ C, (∀ F ∈ Γ, F ∈ S) → C ∈ S →
+      G4c [itpE p S fuel (c + 2) Γ, itpA p S fuel (c + 2) Γ C]
+      (itpA p S fuel (c + 1) Γ C)) := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro c hb
+      constructor
+      · intro Γ hΓS
+        simp only [itpE]
+        exact G4c.truePLL_intro _
+      · intro Γ C hΓS hCS
+        simp only [itpA]
+        exact G4c.botL (.tail _ (.head _))
+  | succ fuel ih =>
+      intro c hb
+      have ihE : ∀ Γ', (∀ F ∈ Γ', F ∈ S) → G4c [itpE p S fuel (c + 1) Γ']
+          (itpE p S fuel (c + 2) Γ') := fun Γ' hΓ' => (ih c hb).1 Γ' hΓ'
+      have ihA : ∀ Γ' C', (∀ F ∈ Γ', F ∈ S) → C' ∈ S →
+          G4c [itpE p S fuel (c + 2) Γ',
+          itpA p S fuel (c + 2) Γ' C'] (itpA p S fuel (c + 1) Γ' C') :=
+        fun Γ' C' hΓ' hC' => (ih c hb).2 Γ' C' hΓ' hC'
+      constructor
+      · -- E-half: [E@(fuel+1)@(c+1)] ⊢ E@(fuel+1)@(c+2)
+        intro Γ hΓS
+        rw [itpE_succ p S fuel (c + 2) Γ]
+        refine G4c.andAll_intro ?_
+        intro φ hφ
+        -- per-conjunct goal: G4c [itpE p S (fuel+1) (c+1) Γ] φ
+        simp only [itpEcls] at hφ
+        rcases List.mem_append.mp hφ with hφ | hφ
+        · rcases List.mem_append.mp hφ with hφ | hφ
+          · -- the ⊥ clause: project the source's
+            split at hφ
+            next hbot =>
+              rcases List.mem_singleton.mp hφ with rfl
+              refine projE (l := itpEcls p S fuel (c + 1) Γ)
+                (G4c.identity_mem (.head _)) ?_
+              simp only [itpEcls]
+              exact List.mem_append.mpr (Or.inl (List.mem_append.mpr
+                (Or.inl (by rw [if_pos hbot]; exact .head _))))
+            next => cases hφ
+          · -- the atom clauses: project the source's
+            obtain ⟨F, hFΓ, heq⟩ := List.mem_filterMap.mp hφ
+            cases F with
+            | prop q =>
+                simp only at heq
+                split at heq
+                next => cases heq
+                next hq =>
+                  injection heq with heq'
+                  subst heq'
+                  refine projE (l := itpEcls p S fuel (c + 1) Γ)
+                    (G4c.identity_mem (.head _)) ?_
+                  simp only [itpEcls]
+                  refine List.mem_append.mpr (Or.inl (List.mem_append.mpr
+                    (Or.inr (List.mem_filterMap.mpr ⟨prop q, hFΓ, ?_⟩))))
+                  simp only
+                  rw [if_neg hq]
+            | falsePLL => cases heq
+            | and _ _ => cases heq
+            | or _ _ => cases heq
+            | ifThen _ _ => cases heq
+            | somehow _ => cases heq
+        · -- the rule clauses
+          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
+          cases F with
+          | prop _ => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  refine consume₁ (projE (l := itpEcls p S fuel (c + 1) Γ)
+                    (G4c.identity_mem (.head _)) ?_) (ihE (A :: B :: Γ) (memS_cons₂_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))
+                  simp only [itpEcls]
+                  refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
+                    ⟨A.and B, hFΓ, ?_⟩))
+                  simp only
+                  rw [if_neg h1, if_pos h2]
+                  exact .head _
+                next => cases hin
+          | or A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  refine consume₁ (projE (l := itpEcls p S fuel (c + 1) Γ)
+                    (G4c.identity_mem (.head _)) ?_)
+                    (or_mono (ihE (A :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)) (ihE (B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)))
+                  simp only [itpEcls]
+                  refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
+                    ⟨A.or B, hFΓ, ?_⟩))
+                  simp only
+                  rw [if_neg h1, if_pos h2]
+                  exact .head _
+                next => cases hin
+          | somehow χ =>
+              exact absurd (hSbf _ (hΓS _ hFΓ)) (by simp [boxFree])
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hBΓ =>
+                    split at hin
+                    next hBS =>
+                      split at hin
+                      next hq =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        refine consume₁ (projE
+                          (l := itpEcls p S fuel (c + 1) Γ)
+                          (G4c.identity_mem (.head _)) ?_) (ihE (B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))
+                        simp only [itpEcls]
+                        refine List.mem_append.mpr (Or.inr
+                          (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
+                        simp only
+                        rw [if_neg hBΓ, if_pos hBS, if_pos hq]
+                        exact .head _
+                      next hq =>
+                        split at hin
+                        next => cases hin
+                        next hqp =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine consume₁ (projE
+                            (l := itpEcls p S fuel (c + 1) Γ)
+                            (G4c.identity_mem (.head _)) ?_)
+                            (imp_mono (G4c.init (.head _)) (ihE (B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)))
+                          simp only [itpEcls]
+                          refine List.mem_append.mpr (Or.inr
+                            (List.mem_flatMap.mpr
+                              ⟨(prop q).ifThen B, hFΓ, ?_⟩))
+                          simp only
+                          rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
+                          exact .head _
+                    next => cases hin
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine consume₁ (projE
+                        (l := itpEcls p S fuel (c + 1) Γ)
+                        (G4c.identity_mem (.head _)) ?_)
+                        (ihE (A₁.ifThen (B₁.ifThen B) :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))
+                      simp only [itpEcls]
+                      refine List.mem_append.mpr (Or.inr
+                        (List.mem_flatMap.mpr ⟨(A₁.and B₁).ifThen B, hFΓ, ?_⟩))
+                      simp only
+                      rw [if_neg h1, if_pos h2]
+                      exact .head _
+                    next => cases hin
+              | or A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine consume₁ (projE
+                        (l := itpEcls p S fuel (c + 1) Γ)
+                        (G4c.identity_mem (.head _)) ?_)
+                        (ihE (A₁.ifThen B :: B₁.ifThen B :: Γ) (memS_cons₂_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))
+                      simp only [itpEcls]
+                      refine List.mem_append.mpr (Or.inr
+                        (List.mem_flatMap.mpr ⟨(A₁.or B₁).ifThen B, hFΓ, ?_⟩))
+                      simp only
+                      rw [if_neg h1, if_pos h2]
+                      exact .head _
+                    next => cases hin
+              | ifThen A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hDΓ =>
+                    split at hin
+                    next hDS =>
+                      split at hin
+                      next hBD =>
+                        split at hin
+                        next hABD =>
+                          -- gated at (c+2): the jump-imp conjunct
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4c.impR ?_
+                          -- [J@(c+1), E_src] ⊢ E@fuel@(c+2)(B::Γ)
+                          refine consume₁ (fire (projE
+                              (l := itpEcls p S fuel (c + 1) Γ)
+                              (G4c.identity_mem (.tail _ (.head _))) ?_)
+                              (cascade_impLImp_ant_bf p S hSbf hand hor himp fuel c hb Γ A₁ B₁ B
+                                hΓS hABD
+                                (G4c.identity_mem (.head _))
+                                (G4c.identity_mem (.tail _ (.head _)))))
+                            (ihE (B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))
+                          simp only [itpEcls]
+                          refine List.mem_append.mpr (Or.inr
+                            (List.mem_flatMap.mpr
+                              ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩))
+                          simp only
+                          rw [if_neg hDΓ, if_pos hDS, if_pos hBD, if_pos hABD]
+                          exact .head _
+                        next => cases hin
+                      next hBD =>
+                        split at hin
+                        next hBDS =>
+                          -- fresh piece: impR-texture, no cascade
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4c.impR ?_
+                          -- [J'@(c+2), E_src] ⊢ E@fuel@(c+2)(B::Γ)
+                          refine consume₁ (fire
+                            (X := (itpE p S fuel (c + 1)
+                                (B₁.ifThen B :: Γ)).ifThen
+                              (itpA p S fuel (c + 1) (B₁.ifThen B :: Γ)
+                                (A₁.ifThen B₁)))
+                            (projE (l := itpEcls p S fuel (c + 1) Γ)
+                              (G4c.identity_mem (.tail _ (.head _))) ?_) ?_)
+                            (ihE (B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))
+                          · simp only [itpEcls]
+                            refine List.mem_append.mpr (Or.inr
+                              (List.mem_flatMap.mpr
+                                ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩))
+                            simp only
+                            rw [if_neg hDΓ, if_pos hDS, if_neg hBD,
+                              if_pos hBDS]
+                            exact .head _
+                          · -- the source guard-implication, by impR-texture
+                            refine G4c.impR ?_
+                            refine consume₂ (consume₁
+                                (G4c.identity_mem (.head _))
+                                (ihE (B₁.ifThen B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))) ?_
+                              (ihA (B₁.ifThen B :: Γ) (A₁.ifThen B₁) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                            exact fire (G4c.identity_mem (.tail _ (.head _)))
+                              (consume₁ (G4c.identity_mem (.head _))
+                                (ihE (B₁.ifThen B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)))
+                        next => cases hin
+                    next => cases hin
+              | somehow A₁ =>
+                  exact absurd (hSbf _ (hΓS _ hFΓ)) (by simp [boxFree])
+      · -- A-half: [E@(fuel+1)@(c+2), A@(fuel+1)@(c+2)] ⊢ A@(fuel+1)@(c+1)
+        intro Γ C hΓS hCS
+        rw [itpA_succ p S fuel (c + 2) Γ C, itpA_succ p S fuel (c + 1) Γ C]
+        -- the goal-directed disjuncts, mapped under the ambient
+        have hGOAL : ∀ φ ∈ itpAgoal p S fuel (c + 2) Γ C,
+            ∃ ψ ∈ itpAgoal p S fuel (c + 1) Γ C,
+              G4c [φ, itpE p S (fuel + 1) (c + 2) Γ] ψ := by
+          intro φ hφ
+          cases C with
+          | prop q =>
+              simp only [itpAgoal] at hφ ⊢
+              split at hφ
+              next => cases hφ
+              next hq =>
+                rcases List.mem_singleton.mp hφ with rfl
+                refine ⟨prop q, ?_, G4c.init (.head _)⟩
+                rw [if_neg hq]
+                exact .head _
+          | falsePLL =>
+              simp only [itpAgoal] at hφ
+              cases hφ
+          | and C₁ C₂ =>
+              simp only [itpAgoal] at hφ ⊢
+              rcases List.mem_singleton.mp hφ with rfl
+              refine ⟨(itpA p S fuel (c + 1) Γ C₁).and
+                (itpA p S fuel (c + 1) Γ C₂), .head _, ?_⟩
+              refine G4c.andL (List.Perm.refl _) (G4c.andR ?_ ?_)
+              · exact consume₂ (amb_step (.tail _ (.tail _ (.head _)))
+                  (Nat.le_refl _)) (G4c.identity_mem (.head _)) (ihA Γ C₁ hΓS (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+              · exact consume₂ (amb_step (.tail _ (.tail _ (.head _)))
+                  (Nat.le_refl _)) (G4c.identity_mem (.tail _ (.head _)))
+                  (ihA Γ C₂ hΓS (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+          | or C₁ C₂ =>
+              simp only [itpAgoal] at hφ ⊢
+              rcases List.mem_cons.mp hφ with rfl | hφ'
+              · refine ⟨itpA p S fuel (c + 1) Γ C₁, .head _, ?_⟩
+                exact consume₂ (amb_step (.tail _ (.head _)) (Nat.le_refl _))
+                  (G4c.identity_mem (.head _)) (ihA Γ C₁ hΓS (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+              · rcases List.mem_singleton.mp hφ' with rfl
+                refine ⟨itpA p S fuel (c + 1) Γ C₂, .tail _ (.head _), ?_⟩
+                exact consume₂ (amb_step (.tail _ (.head _)) (Nat.le_refl _))
+                  (G4c.identity_mem (.head _)) (ihA Γ C₂ hΓS (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+          | ifThen C₁ C₂ =>
+              simp only [itpAgoal] at hφ ⊢
+              split at hφ
+              next hpres =>
+                -- present antecedent (gated): guard restep by set-congruence
+                rcases List.mem_singleton.mp hφ with rfl
+                refine ⟨(itpE p S fuel c (C₁ :: Γ)).ifThen
+                  (itpA p S fuel (c + 1) (C₁ :: Γ) C₂), ?_, ?_⟩
+                · rw [if_pos hpres]
+                  exact .head _
+                · refine G4c.impR ?_
+                  -- [E@c(C₁::Γ), φ, Eamb]
+                  refine consume₂ (amb_congr (amb_step
+                      (.tail _ (.tail _ (.head _))) (Nat.le_refl _)) hpres) ?_
+                    (ihA (C₁ :: Γ) C₂ (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                  refine fire (G4c.identity_mem (.tail _ (.head _))) ?_
+                  exact consume₁ (amb_congr (amb_step
+                      (.tail _ (.tail _ (.head _))) (Nat.le_refl _)) hpres)
+                    ((itp_budget_mono p S fuel).1 (c + 1) (C₁ :: Γ))
+              next hpres =>
+                -- fresh antecedent: impR-texture on the introduced guard
+                rcases List.mem_singleton.mp hφ with rfl
+                refine ⟨(itpE p S fuel (c + 1) (C₁ :: Γ)).ifThen
+                  (itpA p S fuel (c + 1) (C₁ :: Γ) C₂), ?_, ?_⟩
+                · rw [if_neg hpres]
+                  exact .head _
+                · refine G4c.impR ?_
+                  -- [E@(c+1)(C₁::Γ), φ, Eamb]
+                  refine consume₂ (consume₁ (G4c.identity_mem (.head _))
+                      (ihE (C₁ :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))) ?_ (ihA (C₁ :: Γ) C₂ (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                  exact fire (G4c.identity_mem (.tail _ (.head _)))
+                    (consume₁ (G4c.identity_mem (.head _)) (ihE (C₁ :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)))
+          | somehow D =>
+              exact absurd (hSbf _ hCS) (by simp [boxFree])
+        -- the context-directed disjuncts, mapped under the ambient
+        have hENV : ∀ φ ∈ itpAenv p S fuel (c + 2) Γ C,
+            ∃ ψ ∈ itpAenv p S fuel (c + 1) Γ C,
+              G4c [φ, itpE p S (fuel + 1) (c + 2) Γ] ψ := by
+          intro φ hφ
+          simp only [itpAenv] at hφ
+          obtain ⟨F, hFΓ, hin⟩ := List.mem_flatMap.mp hφ
+          cases F with
+          | prop q =>
+              simp only at hin
+              split at hin
+              next hg =>
+                rcases List.mem_singleton.mp hin with rfl
+                refine ⟨truePLL, ?_, G4c.truePLL_intro _⟩
+                simp only [itpAenv]
+                refine List.mem_flatMap.mpr ⟨prop q, hFΓ, ?_⟩
+                simp only
+                rw [if_pos hg]
+                exact .head _
+              next => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  refine ⟨itpA p S fuel (c + 1) (A :: B :: Γ) C, ?_, ?_⟩
+                  · simp only [itpAenv]
+                    refine List.mem_flatMap.mpr ⟨A.and B, hFΓ, ?_⟩
+                    simp only
+                    rw [if_neg h1, if_pos h2]
+                    exact .head _
+                  · refine consume₂ (projE (l := itpEcls p S fuel (c + 2) Γ)
+                      (G4c.identity_mem (.tail _ (.head _))) ?_)
+                      (G4c.identity_mem (.head _)) (ihA (A :: B :: Γ) C (memS_cons₂_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                    simp only [itpEcls]
+                    refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
+                      ⟨A.and B, hFΓ, ?_⟩))
+                    simp only
+                    rw [if_neg h1, if_pos h2]
+                    exact .head _
+                next => cases hin
+          | or A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  refine ⟨((itpE p S fuel (c + 1) (A :: Γ)).ifThen
+                      (itpA p S fuel (c + 1) (A :: Γ) C)).and
+                    ((itpE p S fuel (c + 1) (B :: Γ)).ifThen
+                      (itpA p S fuel (c + 1) (B :: Γ) C)), ?_, ?_⟩
+                  · simp only [itpAenv]
+                    refine List.mem_flatMap.mpr ⟨A.or B, hFΓ, ?_⟩
+                    simp only
+                    rw [if_neg h1, if_pos h2]
+                    exact .head _
+                  · refine G4c.andL (List.Perm.refl _) (G4c.andR ?_ ?_)
+                    · refine G4c.impR ?_
+                      -- [E@(c+1)(A::Γ), φ₁, φ₂, Eamb]
+                      refine consume₂ (consume₁ (G4c.identity_mem (.head _))
+                          (ihE (A :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))) ?_ (ihA (A :: Γ) C (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                      exact fire (G4c.identity_mem (.tail _ (.head _)))
+                        (consume₁ (G4c.identity_mem (.head _)) (ihE (A :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)))
+                    · refine G4c.impR ?_
+                      -- [E@(c+1)(B::Γ), φ₁, φ₂, Eamb]
+                      refine consume₂ (consume₁ (G4c.identity_mem (.head _))
+                          (ihE (B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))) ?_ (ihA (B :: Γ) C (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                      exact fire (G4c.identity_mem
+                          (.tail _ (.tail _ (.head _))))
+                        (consume₁ (G4c.identity_mem (.head _)) (ihE (B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)))
+                next => cases hin
+          | somehow χ =>
+              exact absurd (hSbf _ (hΓS _ hFΓ)) (by simp [boxFree])
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hBΓ =>
+                    split at hin
+                    next hBS =>
+                      split at hin
+                      next hq =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        refine ⟨itpA p S fuel (c + 1) (B :: Γ) C, ?_, ?_⟩
+                        · simp only [itpAenv]
+                          refine List.mem_flatMap.mpr
+                            ⟨(prop q).ifThen B, hFΓ, ?_⟩
+                          simp only
+                          rw [if_neg hBΓ, if_pos hBS, if_pos hq]
+                          exact .head _
+                        · refine consume₂
+                            (projE (l := itpEcls p S fuel (c + 2) Γ)
+                              (G4c.identity_mem (.tail _ (.head _))) ?_)
+                            (G4c.identity_mem (.head _)) (ihA (B :: Γ) C (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                          simp only [itpEcls]
+                          refine List.mem_append.mpr (Or.inr
+                            (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
+                          simp only
+                          rw [if_neg hBΓ, if_pos hBS, if_pos hq]
+                          exact .head _
+                      next hq =>
+                        split at hin
+                        next => cases hin
+                        next hqp =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine ⟨(prop q).and
+                            (itpA p S fuel (c + 1) (B :: Γ) C), ?_, ?_⟩
+                          · simp only [itpAenv]
+                            refine List.mem_flatMap.mpr
+                              ⟨(prop q).ifThen B, hFΓ, ?_⟩
+                            simp only
+                            rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
+                            exact .head _
+                          · refine G4c.andL (List.Perm.refl _)
+                              (G4c.andR (G4c.init (.head _)) ?_)
+                            -- [prop q, K, Eamb] ⊢ A@(c+1)(B::Γ)C
+                            refine consume₂ ?_
+                              (G4c.identity_mem (.tail _ (.head _)))
+                              (ihA (B :: Γ) C (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                            refine fire
+                              (projE (l := itpEcls p S fuel (c + 2) Γ)
+                                (G4c.identity_mem
+                                  (.tail _ (.tail _ (.head _)))) ?_)
+                              (G4c.init (.head _))
+                            simp only [itpEcls]
+                            refine List.mem_append.mpr (Or.inr
+                              (List.mem_flatMap.mpr
+                                ⟨(prop q).ifThen B, hFΓ, ?_⟩))
+                            simp only
+                            rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
+                            exact .head _
+                    next => cases hin
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine ⟨itpA p S fuel (c + 1)
+                        (A₁.ifThen (B₁.ifThen B) :: Γ) C, ?_, ?_⟩
+                      · simp only [itpAenv]
+                        refine List.mem_flatMap.mpr
+                          ⟨(A₁.and B₁).ifThen B, hFΓ, ?_⟩
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                      · refine consume₂
+                          (projE (l := itpEcls p S fuel (c + 2) Γ)
+                            (G4c.identity_mem (.tail _ (.head _))) ?_)
+                          (G4c.identity_mem (.head _))
+                          (ihA (A₁.ifThen (B₁.ifThen B) :: Γ) C (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                        simp only [itpEcls]
+                        refine List.mem_append.mpr (Or.inr
+                          (List.mem_flatMap.mpr ⟨(A₁.and B₁).ifThen B, hFΓ, ?_⟩))
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                    next => cases hin
+              | or A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine ⟨itpA p S fuel (c + 1)
+                        (A₁.ifThen B :: B₁.ifThen B :: Γ) C, ?_, ?_⟩
+                      · simp only [itpAenv]
+                        refine List.mem_flatMap.mpr
+                          ⟨(A₁.or B₁).ifThen B, hFΓ, ?_⟩
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                      · refine consume₂
+                          (projE (l := itpEcls p S fuel (c + 2) Γ)
+                            (G4c.identity_mem (.tail _ (.head _))) ?_)
+                          (G4c.identity_mem (.head _))
+                          (ihA (A₁.ifThen B :: B₁.ifThen B :: Γ) C (memS_cons₂_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                        simp only [itpEcls]
+                        refine List.mem_append.mpr (Or.inr
+                          (List.mem_flatMap.mpr ⟨(A₁.or B₁).ifThen B, hFΓ, ?_⟩))
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                    next => cases hin
+              | ifThen A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hDΓ =>
+                    split at hin
+                    next hDS =>
+                      split at hin
+                      next hBD =>
+                        split at hin
+                        next hABD =>
+                          -- present piece (gated): first = cascade,
+                          -- second = identity-fire of the ambient's conjunct
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine ⟨((itpE p S fuel c Γ).ifThen
+                              (itpA p S fuel c Γ (A₁.ifThen B₁))).and
+                            (itpA p S fuel (c + 1) (B :: Γ) C), ?_, ?_⟩
+                          · simp only [itpAenv]
+                            refine List.mem_flatMap.mpr
+                              ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩
+                            simp only
+                            rw [if_neg hDΓ, if_pos hDS, if_pos hBD,
+                              if_pos hABD]
+                            exact .head _
+                          · refine G4c.andL (List.Perm.refl _)
+                              (G4c.andR ?_ ?_)
+                            · -- [J, K, Eamb] ⊢ E@c ⇢ A@c(A₁⇢B₁)
+                              exact cascade_impLImp_ant_bf p S hSbf hand hor himp fuel c hb Γ
+                                A₁ B₁ B hΓS hABD
+                                (G4c.identity_mem (.head _))
+                                (amb_pack_step (.tail _ (.tail _ (.head _)))
+                                  (Nat.le_succ _))
+                            · -- [J, K, Eamb] ⊢ A@(c+1)(B::Γ)C
+                              refine consume₂ ?_
+                                (G4c.identity_mem (.tail _ (.head _)))
+                                (ihA (B :: Γ) C (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                              refine fire
+                                (projE (l := itpEcls p S fuel (c + 2) Γ)
+                                  (G4c.identity_mem
+                                    (.tail _ (.tail _ (.head _)))) ?_)
+                                (G4c.identity_mem (.head _))
+                              simp only [itpEcls]
+                              refine List.mem_append.mpr (Or.inr
+                                (List.mem_flatMap.mpr
+                                  ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩))
+                              simp only
+                              rw [if_neg hDΓ, if_pos hDS, if_pos hBD,
+                                if_pos hABD]
+                              exact .head _
+                        next => cases hin
+                      next hBD =>
+                        split at hin
+                        next hBDS =>
+                          -- fresh piece: impR-texture, no cascade
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine ⟨((itpE p S fuel (c + 1)
+                                (B₁.ifThen B :: Γ)).ifThen
+                              (itpA p S fuel (c + 1) (B₁.ifThen B :: Γ)
+                                (A₁.ifThen B₁))).and
+                            (itpA p S fuel (c + 1) (B :: Γ) C), ?_, ?_⟩
+                          · simp only [itpAenv]
+                            refine List.mem_flatMap.mpr
+                              ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩
+                            simp only
+                            rw [if_neg hDΓ, if_pos hDS, if_neg hBD,
+                              if_pos hBDS]
+                            exact .head _
+                          · refine G4c.andL (List.Perm.refl _)
+                              (G4c.andR ?_ ?_)
+                            · -- [J', K, Eamb] ⊢ E@(c+1)grown ⇢ A@(c+1)grown
+                              refine G4c.impR ?_
+                              refine consume₂ (consume₁
+                                  (G4c.identity_mem (.head _))
+                                  (ihE (B₁.ifThen B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS))) ?_
+                                (ihA (B₁.ifThen B :: Γ) (A₁.ifThen B₁) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                              exact fire
+                                (G4c.identity_mem (.tail _ (.head _)))
+                                (consume₁ (G4c.identity_mem (.head _))
+                                  (ihE (B₁.ifThen B :: Γ) (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS)))
+                            · -- second: identity-fire of the ambient's conjunct
+                              refine consume₂ ?_
+                                (G4c.identity_mem (.tail _ (.head _)))
+                                (ihA (B :: Γ) C (memS_cons_ab (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2) hΓS) (by first | assumption | exact hCS | exact hΓS _ hFΓ | exact (hand (hΓS _ hFΓ)).1 | exact (hand (hΓS _ hFΓ)).2 | exact (hor (hΓS _ hFΓ)).1 | exact (hor (hΓS _ hFΓ)).2 | exact (himp (hΓS _ hFΓ)).1 | exact (himp (hΓS _ hFΓ)).2 | exact himpAnd (hΓS _ hFΓ) | exact (himpOr (hΓS _ hFΓ)).1 | exact (himpOr (hΓS _ hFΓ)).2 | exact himpImp (hΓS _ hFΓ) | exact (hand hCS).1 | exact (hand hCS).2 | exact (hor hCS).1 | exact (hor hCS).2 | exact (himp hCS).1 | exact (himp hCS).2))
+                              refine fire
+                                (projE (l := itpEcls p S fuel (c + 2) Γ)
+                                  (G4c.identity_mem
+                                    (.tail _ (.tail _ (.head _)))) ?_)
+                                (G4c.identity_mem (.head _))
+                              simp only [itpEcls]
+                              refine List.mem_append.mpr (Or.inr
+                                (List.mem_flatMap.mpr
+                                  ⟨(A₁.ifThen B₁).ifThen B, hFΓ, ?_⟩))
+                              simp only
+                              rw [if_neg hDΓ, if_pos hDS, if_neg hBD,
+                                if_pos hBDS]
+                              exact .head _
+                        next => cases hin
+                    next => cases hin
+              | somehow A₁ =>
+                  exact absurd (hSbf _ (hΓS _ hFΓ)) (by simp [boxFree])
+        -- bundle and close through the ambient full-table mapping
+        have hOTH : ∀ φ ∈ itpAoth p S fuel (c + 2) Γ C,
+            ∃ ψ ∈ itpAoth p S fuel (c + 1) Γ C,
+              G4c [φ, itpE p S (fuel + 1) (c + 2) Γ] ψ := by
+          intro φ hφ
+          simp only [itpAoth] at hφ ⊢
+          rcases List.mem_append.mp hφ with hφ | hφ
+          · obtain ⟨ψ, hψ, hd⟩ := hGOAL φ hφ
+            exact ⟨ψ, List.mem_append.mpr (Or.inl hψ), hd⟩
+          · obtain ⟨ψ, hψ, hd⟩ := hENV φ hφ
+            exact ⟨ψ, List.mem_append.mpr (Or.inr hψ), hd⟩
+        refine itpAfull_map_amb hOTH ?_
+        intro b₁' hb₁
+        refine ⟨c, rfl, ?_⟩
+        obtain rfl : b₁' = c + 1 := by omega
+        exact amb_step (.head _) (Nat.le_succ _)
+
+/-- Box-free ambient-relative budget stabilization: `itp_stab`'s
+conclusion under the box-free / piece-closure side conditions and the
+threaded context/goal membership invariants.  Sorry-free (routes
+through `cascade_main_bf`, not `cascade_main`). -/
+theorem itp_stab_bf (p : String) (S : Finset PLLFormula)
+    (hSbf : ∀ F ∈ S, boxFree F)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (himpAnd : ∀ {A B D : PLLFormula},
+      (A.and B).ifThen D ∈ S → A.ifThen (B.ifThen D) ∈ S)
+    (himpOr : ∀ {A B D : PLLFormula},
+      (A.or B).ifThen D ∈ S → A.ifThen D ∈ S ∧ B.ifThen D ∈ S)
+    (himpImp : ∀ {A B D : PLLFormula},
+      (A.ifThen B).ifThen D ∈ S → B.ifThen D ∈ S) :
+    ∀ (fuel : Nat) (b : Nat), kcap S < b →
+    (∀ Γ, (∀ F ∈ Γ, F ∈ S) →
+      G4c [itpE p S fuel (b - 1) Γ] (itpE p S fuel b Γ)) ∧
+    (∀ Γ C, (∀ F ∈ Γ, F ∈ S) → C ∈ S →
+      G4c [itpE p S fuel b Γ, itpA p S fuel b Γ C]
+      (itpA p S fuel (b - 1) Γ C)) := by
+  intro fuel b hb
+  obtain ⟨c, rfl⟩ : ∃ c, b = c + 2 :=
+    ⟨b - 2, by have := kcap_ge (S := S); omega⟩
+  exact itp_stab_aux_bf p S hSbf hand hor himp himpAnd himpOr himpImp fuel c hb
+
+/-- Box-free consumption form (mirror of `itp_stab_le`): the packaged
+budget value feeds any lower slot above the threshold, under the
+box-free side conditions and the threaded membership invariants. -/
+theorem itp_stab_le_bf (p : String) (S : Finset PLLFormula)
+    (hSbf : ∀ F ∈ S, boxFree F)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (himpAnd : ∀ {A B D : PLLFormula},
+      (A.and B).ifThen D ∈ S → A.ifThen (B.ifThen D) ∈ S)
+    (himpOr : ∀ {A B D : PLLFormula},
+      (A.or B).ifThen D ∈ S → A.ifThen D ∈ S ∧ B.ifThen D ∈ S)
+    (himpImp : ∀ {A B D : PLLFormula},
+      (A.ifThen B).ifThen D ∈ S → B.ifThen D ∈ S)
+    {fuel b b' : Nat} (hk : kcap S < b') (hle : b' ≤ b) :
+    (∀ Γ, (∀ F ∈ Γ, F ∈ S) →
+      G4c [itpE p S fuel b' Γ] (itpE p S fuel b Γ)) ∧
+    (∀ Γ C, (∀ F ∈ Γ, F ∈ S) → C ∈ S →
+      G4c [itpE p S fuel b Γ, itpA p S fuel b Γ C]
+      (itpA p S fuel b' Γ C)) := by
+  induction hle with
+  | refl =>
+      exact ⟨fun Γ _ => G4c.iden (.head _),
+        fun Γ C _ _ => G4c.identity_mem (.tail _ (.head _))⟩
+  | @step m hm ih =>
+      obtain ⟨ihE, ihA⟩ := ih
+      have hm' : b' ≤ m := hm
+      have hkm : kcap S < m + 1 := by omega
+      constructor
+      · intro Γ hΓS
+        refine consume₁ (ihE Γ hΓS) ?_
+        exact (itp_stab_bf p S hSbf hand hor himp himpAnd himpOr himpImp
+          fuel (m + 1) hkm).1 Γ hΓS
+      · intro Γ C hΓS hCS
+        have d1 : G4c [itpE p S fuel (m + 1) Γ, itpA p S fuel (m + 1) Γ C]
+            (itpA p S fuel m Γ C) :=
+          (itp_stab_bf p S hSbf hand hor himp himpAnd himpOr himpImp
+            fuel (m + 1) hkm).2 Γ C hΓS hCS
+        have d2 : G4c [itpE p S fuel (m + 1) Γ, itpA p S fuel (m + 1) Γ C]
+            (itpE p S fuel m Γ) :=
+          consume₁ (G4c.identity_mem (.head _))
+            ((itp_budget_mono p S fuel).1 m Γ)
+        exact consume₂ d2 d1 (ihA Γ C hΓS hCS)
+
 end PLLND

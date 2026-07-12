@@ -214,4 +214,58 @@ info: 'PLLND.existsP_sound' depends on axioms: [propext, Classical.choice, Quot.
 #guard_msgs in
 #print axioms existsP_sound
 
+/-! ### §6 Uniform interpolation for the box-free fragment (IPC)
+
+The `◯`-free specialization: for box-free `φ`/`C` the interpolants
+`existsP p φ`/`forallP p C` are uniform interpolants against every
+box-free p-free `ψ`, and the derivation is **`sorryAx`-free** — it
+routes through `itp_stab_bf`/`itp_adequate_bf`, never the `◯`-band
+holdout `cascade_low_pos`.  `existsP_sound`/`forallP_sound` and the
+atom lemmas are shared with the full-PLL crown (they never touch the
+open kernel). -/
+
+/-- (iv∃) box-free single-antecedent, indifference discharged. -/
+theorem existsP_adequate₀_bf' (p : String) {φ ψ : PLLFormula}
+    (hφbf : boxFree φ) (hψbf : boxFree ψ) (hψp : p ∉ ψ.atoms)
+    (h : G4c [φ] ψ) : G4c [existsP p φ] ψ :=
+  existsP_adequate₀_bf p (fuelIndiffE p) (spaceIndiffE p) hφbf hψbf hψp h
+
+/-- (iv∀) box-free single-antecedent, indifference discharged. -/
+theorem forallP_adequate₀_bf' (p : String) {ψ C : PLLFormula}
+    (hψbf : boxFree ψ) (hCbf : boxFree C) (hψp : p ∉ ψ.atoms)
+    (h : G4c [ψ] C) : G4c [ψ] (forallP p C) :=
+  forallP_adequate₀_bf p (fuelIndiffA p) (spaceIndiffA p) hψbf hCbf hψp h
+
+/-- **Uniform interpolation for IPC** (the `◯`-free fragment of PLL):
+for box-free `φ, C` and every *box-free* p-free `ψ`, the packaged
+quantifiers `existsP p φ` and `forallP p C` are p-free uniform
+interpolants — the box-free mirror of `uniform_interpolation_PLL`, and
+`sorryAx`-free:
+
+* `∃p φ` is p-free, `φ ⊢ ∃p φ`, and any box-free p-free `ψ` with
+  `φ ⊢ ψ` has `∃p φ ⊢ ψ`;
+* `∀p C` is p-free, `∀p C ⊢ C`, and any box-free p-free `ψ` with
+  `ψ ⊢ C` has `ψ ⊢ ∀p C`.
+
+The `boxFree ψ` restriction is the natural one: the interpolants are
+strongest/weakest *within the box-free fragment*, whose piece-closure
+space carries no `◯`-clause (that is exactly what keeps the descent
+off the open kernel). -/
+theorem uniform_interpolation_IPC (p : String) (φ C : PLLFormula)
+    (hφ : boxFree φ) (hC : boxFree C) :
+    (p ∉ (existsP p φ).atoms ∧ G4c [φ] (existsP p φ) ∧
+      ∀ ψ, boxFree ψ → p ∉ ψ.atoms → G4c [φ] ψ → G4c [existsP p φ] ψ) ∧
+    (p ∉ (forallP p C).atoms ∧ G4c [forallP p C] C ∧
+      ∀ ψ, boxFree ψ → p ∉ ψ.atoms → G4c [ψ] C → G4c [ψ] (forallP p C)) :=
+  ⟨⟨existsP_atoms p φ, existsP_sound p φ,
+      fun _ψ hψbf hψp h => existsP_adequate₀_bf' p hφ hψbf hψp h⟩,
+    ⟨forallP_atoms p C, forallP_sound p C,
+      fun _ψ hψbf hψp h => forallP_adequate₀_bf' p hψbf hC hψp h⟩⟩
+
+/--
+info: 'PLLND.uniform_interpolation_IPC' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms uniform_interpolation_IPC
+
 end PLLND
