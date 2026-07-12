@@ -175,9 +175,12 @@ cannot be rebuilt after the fact.  The four *sealed* branch shapes —
 carry the continuations across their box/impR introduction and funnel
 through `cascade_low`, which splits by saturation: the `defect = 0`
 band is proved (`cascade_zero` — every space-guarded clause is dead),
-and the `defect ≥ 1` band is the single remaining sorried holdout
-`cascade_low_pos` (its docstring records the failure analysis; at
-those sites only the defect-tower room survives).
+and the `defect ≥ 1` band splits again by box-freeness: the box-free
+closed covered instance is proved (`cascade_main_bf`, the shifted
+ledger — no ◯-clauses means no seals), leaving the ◯-involving band
+as the single sorried holdout `cascade_low_pos_box` (its docstring
+records the failure analysis; at those sites only the defect-tower
+room survives).
 -/
 
 /-! ### Sequent-level glue
@@ -848,7 +851,1216 @@ private theorem cascade_zero (p : String) (S : Finset PLLFormula) :
             exact .head _) hmap
       exact val_lift hres hfh (Nat.le_refl _)
 
-/-- HOLDOUT — the one remaining `sorry` of the cascade development.
+/-- No `◯` anywhere in the formula. -/
+def boxFree : PLLFormula → Prop
+  | .prop _ => True
+  | .falsePLL => True
+  | .and A B => boxFree A ∧ boxFree B
+  | .or A B => boxFree A ∧ boxFree B
+  | .ifThen A B => boxFree A ∧ boxFree B
+  | .somehow _ => False
+
+instance boxFree.dec : (φ : PLLFormula) → Decidable (boxFree φ)
+  | .prop _ => .isTrue trivial
+  | .falsePLL => .isTrue trivial
+  | .and A B => @instDecidableAnd _ _ (boxFree.dec A) (boxFree.dec B)
+  | .or A B => @instDecidableAnd _ _ (boxFree.dec A) (boxFree.dec B)
+  | .ifThen A B => @instDecidableAnd _ _ (boxFree.dec A) (boxFree.dec B)
+  | .somehow _ => .isFalse id
+
+/-! #### The box-free tier
+
+With `S` piece-closed and every formula of `S`, `Γ` and the goal
+box-free, all four sealed positions are dead code, and the shifted
+ledger (`… ≤ c + (J+2)`: the fresh-chain allotment paid out of the
+first defect level) lets the full CPS machinery run from the holdout
+sites' own room.  The clone below is `cascade_main` with the seal
+branches replaced by gate contradictions and the goal/context
+invariants threaded. -/
+
+private theorem cascade_main_bf (p : String) (S : Finset PLLFormula)
+    (hSbf : ∀ F ∈ S, boxFree F)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S) :
+    ∀ (d fh : Nat),
+    (∀ (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
+       (seen : Finset PLLFormula) (Δ : List PLLFormula) (R : PLLFormula),
+     defect S Γ ≤ d → g ∈ S → (∀ F ∈ Γ, F ∈ S) → g ∈ seen → 1 ≤ c →
+     ((jumpGoals S \ seen).card + 1 + defect S Γ * ((jumpGoals S).card + 2)
+       ≤ c + ((jumpGoals S).card + 2)) →
+     (∀ g' ∈ seen, ∀ Δ', (∀ ψ ∈ Δ, ψ ∈ Δ') →
+       G4c Δ' (itpA p S fuel c Γ g') → G4c Δ' R) →
+     G4c Δ (itpE p S fuel (c + 1) Γ) →
+     G4c Δ (itpA p S fh (c + 1) Γ g) →
+     fh ≤ fuel →
+     G4c Δ R) ∧
+    (∀ (Γ : List PLLFormula) (c : Nat) (Δ : List PLLFormula),
+     defect S Γ ≤ d → (∀ F ∈ Γ, F ∈ S) →
+     ((jumpGoals S).card + 3 + defect S Γ * ((jumpGoals S).card + 2)
+       ≤ c + ((jumpGoals S).card + 2)) →
+     G4c Δ (itpE p S fh c Γ) →
+     G4c Δ (itpE p S fh (c + 1) Γ)) := by
+  intro d
+  induction d using Nat.strong_induction_on with
+  | _ d ihd =>
+  intro fh
+  induction fh with
+  | zero =>
+      constructor
+      · intro Γ fuel c g seen Δ R hd hgS hΓS hg hc hroom hcls hamb hhead hfh
+        have hΓbf : ∀ F ∈ Γ, boxFree F := fun F h => hSbf _ (hΓS _ h)
+        simp only [itpA] at hhead
+        exact G4c.cut hhead (G4c.botL (.head _))
+      · intro Γ c Δ hd hΓS hroom hsrc
+        have hΓbf : ∀ F ∈ Γ, boxFree F := fun F h => hSbf _ (hΓS _ h)
+        simp only [itpE]
+        exact G4c.truePLL_intro _
+  | succ F ihf =>
+      obtain ⟨ihfA, ihfE⟩ := ihf
+      constructor
+      · -- A-half: the descent cascade
+        intro Γ fuel c g seen Δ R hd hgS hΓS hg hc hroom hcls hamb hhead hfh
+        have hΓbf : ∀ F ∈ Γ, boxFree F := fun F h => hSbf _ (hΓS _ h)
+        obtain ⟨c', rfl⟩ : ∃ c', c = c' + 1 := ⟨c - 1, by omega⟩
+        obtain ⟨fl, rfl⟩ : ∃ fl, fuel = fl + 1 := ⟨fuel - 1, by omega⟩
+        rw [itpA_succ p S F (c' + 2) Γ g] at hhead
+        have hF : F ≤ fl := Nat.succ_le_succ_iff.mp hfh
+        have hSor : ∀ {X : PLLFormula}, X ∈ Γ ∨ X ∈ S → X ∈ S :=
+          fun h => h.elim (fun h' => hΓS _ h') id
+        have hScons : ∀ {X : PLLFormula}, X ∈ S →
+            ∀ F' ∈ X :: Γ, F' ∈ S := by
+          intro X hX F' hF'
+          rcases List.mem_cons.mp hF' with rfl | hF'
+          · exact hX
+          · exact hΓS _ hF'
+        -- lowered ambient at any weaker fuel/budget
+        have hambL : ∀ (f' b' : Nat), f' ≤ fl + 1 → b' ≤ c' + 2 →
+            G4c Δ (itpE p S f' b' Γ) := fun f' b' hf hb =>
+          consume₁ (consume₁ hamb ((itp_fuel_mono_le p S hf).1 _ Γ))
+            ((itp_budget_mono_le p S hb f').1 Γ)
+        -- weak rooms for the sealed sites
+        -- target-disjunct introduction at the reference-fuel table: a
+        -- derivation of any member of the target table closes R
+        have hfinT : ∀ (Δ' : List PLLFormula), (∀ ψ ∈ Δ, ψ ∈ Δ') →
+            ∀ (ψ : PLLFormula), ψ ∈ itpAfull p S fl (c' + 1) Γ g →
+            G4c Δ' ψ → G4c Δ' R := by
+          intro Δ' hs ψ hmem dψ
+          refine hcls g hg Δ' hs ?_
+          rw [itpA_succ]
+          exact G4c.orAll_intro hmem dψ
+        -- room after a neutral seen-insertion (nested same-pair calls)
+        have hroomI : ∀ (x : PLLFormula),
+            (jumpGoals S \ insert x seen).card + 1 +
+              defect S Γ * ((jumpGoals S).card + 2)
+              ≤ c' + 1 + ((jumpGoals S).card + 2) :=
+          fun x => le_trans (Nat.add_le_add_right (Nat.add_le_add_right
+            (Finset.card_le_card (Finset.sdiff_subset_sdiff
+              (Finset.Subset.refl _) (Finset.subset_insert _ _))) 1) _) hroom
+        -- room after a paying seen-insertion (jump recursion, c drops)
+        have hroomJ : ∀ (x : PLLFormula), x ∈ jumpGoals S → x ∉ seen →
+            (jumpGoals S \ insert x seen).card + 1 +
+              defect S Γ * ((jumpGoals S).card + 2)
+              ≤ c' + ((jumpGoals S).card + 2) := by
+          intro x hxJ hxs
+          have h1 : (jumpGoals S \ insert x seen).card <
+              (jumpGoals S \ seen).card := by
+            refine Finset.card_lt_card ⟨Finset.sdiff_subset_sdiff
+              (Finset.Subset.refl _) (Finset.subset_insert _ _), ?_⟩
+            intro hsub
+            have h2 := hsub (Finset.mem_sdiff.mpr ⟨hxJ, hxs⟩)
+            rw [Finset.mem_sdiff] at h2
+            exact h2.2 (Finset.mem_insert_self _ _)
+          omega
+        -- restated continuations for same-context nested calls
+        have hclsR : ∀ (Δ₀ : List PLLFormula), (∀ ψ ∈ Δ, ψ ∈ Δ₀) →
+            ∀ g' ∈ seen, ∀ Δ', (∀ ψ ∈ Δ₀, ψ ∈ Δ') →
+            G4c Δ' (itpA p S fl (c' + 1) Γ g') → G4c Δ' R :=
+          fun Δ₀ h0 g' hg' Δ' hs val =>
+            hcls g' hg' Δ' (fun ψ h => hs ψ (h0 ψ h))
+              (val_lift val (Nat.le_succ fl) (Nat.le_refl _))
+        -- grown-context full descent: the strong induction on defect
+        have hgrown : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
+            ∀ (fw c₂ : Nat) (h : PLLFormula) (Δ' : List PLLFormula),
+            h ∈ S → (∀ F' ∈ Γ', F' ∈ S) → 1 ≤ c₂ →
+            ((jumpGoals S).card + 1 +
+              defect S Γ' * ((jumpGoals S).card + 2)
+              ≤ c₂ + ((jumpGoals S).card + 2)) →
+            G4c Δ' (itpE p S fw (c₂ + 1) Γ') →
+            G4c Δ' (itpA p S fw (c₂ + 1) Γ' h) →
+            G4c Δ' (itpA p S fw c₂ Γ' h) := by
+          intro Γ' hlt fw c₂ h Δ' hgS' hΓS' hc' hroom' hamb' hhead'
+          refine (ihd (defect S Γ') (lt_of_lt_of_le hlt hd) fw).1 Γ' fw c₂ h
+            {h} Δ' _ (Nat.le_refl _) hgS' hΓS'
+            (Finset.mem_singleton_self h) hc' ?_ ?_
+            hamb' hhead' (Nat.le_refl _)
+          · exact le_trans (Nat.add_le_add_right (Nat.add_le_add_right
+              (Finset.card_le_card Finset.sdiff_subset) 1) _) hroom'
+          · intro g' hg' Δ'' _ hval
+            rcases Finset.mem_singleton.mp hg' with rfl
+            exact hval
+        -- room arithmetic for a defect-paying descent
+        have hroomG : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
+            (jumpGoals S).card + 1 +
+              defect S Γ' * ((jumpGoals S).card + 2)
+              ≤ c' + 1 + ((jumpGoals S).card + 2) := by
+          intro Γ' hlt
+          have hexp : (defect S Γ' + 1) * ((jumpGoals S).card + 2) =
+              defect S Γ' * ((jumpGoals S).card + 2) +
+              ((jumpGoals S).card + 2) := by ring
+          have hmul : (defect S Γ' + 1) * ((jumpGoals S).card + 2) ≤
+              defect S Γ * ((jumpGoals S).card + 2) :=
+            Nat.mul_le_mul_right _ (by omega)
+          omega
+        have hroomE : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
+            (jumpGoals S).card + 3 +
+              defect S Γ' * ((jumpGoals S).card + 2)
+              ≤ c' + 1 + ((jumpGoals S).card + 2) := by
+          intro Γ' hlt
+          have hexp : (defect S Γ' + 1) * ((jumpGoals S).card + 2) =
+              defect S Γ' * ((jumpGoals S).card + 2) +
+              ((jumpGoals S).card + 2) := by ring
+          have hmul : (defect S Γ' + 1) * ((jumpGoals S).card + 2) ≤
+              defect S Γ * ((jumpGoals S).card + 2) :=
+            Nat.mul_le_mul_right _ (by omega)
+          omega
+        -- guarded-implication component descent at a paying piece: the
+        -- introduced target guard ascends by the E-half, fires the
+        -- source, and the value descends by the defect induction
+        have himpX : ∀ (X h : PLLFormula) (Δ' : List PLLFormula),
+            defect S (X :: Γ) < defect S Γ →
+            h ∈ S → X ∈ S →
+            G4c Δ' ((itpE p S F (c' + 2) (X :: Γ)).ifThen
+              (itpA p S F (c' + 2) (X :: Γ) h)) →
+            G4c Δ' ((itpE p S fl (c' + 1) (X :: Γ)).ifThen
+              (itpA p S fl (c' + 1) (X :: Γ) h)) := by
+          intro X h Δ' hlt hgS' hXS dJ
+          have hΓS' : ∀ F' ∈ X :: Γ, F' ∈ S := hScons hXS
+          refine G4c.impR ?_
+          have hE2 : G4c (itpE p S fl (c' + 1) (X :: Γ) :: Δ')
+              (itpE p S fl (c' + 2) (X :: Γ)) :=
+            (ihd (defect S (X :: Γ)) (lt_of_lt_of_le hlt hd) fl).2 (X :: Γ)
+              (c' + 1) _ (Nat.le_refl _) hΓS' (hroomE (X :: Γ) hlt)
+              (G4c.identity_mem (.head _))
+          refine hgrown (X :: Γ) hlt fl (c' + 1) h _ hgS' hΓS' (by omega)
+            (hroomG (X :: Γ) hlt) hE2 ?_
+          refine val_lift (b := c' + 2) ?_ hF (Nat.le_refl _)
+          exact fire (dJ.weaken _) (consume₁ hE2
+            ((itp_fuel_mono_le p S hF).1 _ _))
+        -- the per-disjunct branch analysis
+        have hGOAL : ∀ φ ∈ itpAgoal p S F (c' + 2) Γ g, G4c (φ :: Δ) R := by
+          intro φ hφ
+          cases g with
+          | prop q =>
+              simp only [itpAgoal] at hφ
+              split at hφ
+              next => cases hφ
+              next hq =>
+                rcases List.mem_singleton.mp hφ with rfl
+                refine hfinT _ (fun χ h => .tail _ h) (prop q) ?_
+                  (G4c.init (.head _))
+                simp only [itpAfull, itpAoth, itpAgoal]
+                rw [if_neg hq]
+                exact List.mem_append.mpr (Or.inl (.head _))
+          | falsePLL => simp only [itpAgoal] at hφ; cases hφ
+          | and C₁ C₂ =>
+              simp only [itpAgoal] at hφ
+              rcases List.mem_singleton.mp hφ with rfl
+              refine G4c.andL (List.Perm.refl _) ?_
+              -- V₁ :: V₂ :: Δ ⊢ R, CPS-chained through both components
+              refine ihfA Γ fl (c' + 1) C₁ (insert C₁ seen) _ R hd
+                (hand hgS).1 hΓS
+                (Finset.mem_insert_self _ _) hc (hroomI C₁) ?_
+                (((hambL fl (c' + 2) (Nat.le_succ _)
+                  (Nat.le_refl _)).weaken _).weaken _)
+                (G4c.identity_mem (.head _)) hF
+              intro g' hg' Δ' hs' val₁
+              rcases Finset.mem_insert.mp hg' with rfl | hg'
+              · -- C₁ landed: chain into C₂
+                refine ihfA Γ fl (c' + 1) C₂ (insert C₂ seen) Δ' R hd
+                  (hand hgS).2 hΓS
+                  (Finset.mem_insert_self _ _) hc (hroomI C₂) ?_
+                  (weaken_sub (fun ψ h => hs' ψ (.tail _ (.tail _ h)))
+                    (hambL fl (c' + 2) (Nat.le_succ _) (Nat.le_refl _)))
+                  (G4c.identity_mem (hs' _ (.tail _ (.head _)))) hF
+                intro g'' hg'' Δ'' hs'' val₂
+                rcases Finset.mem_insert.mp hg'' with rfl | hg''
+                · -- both landed: assemble the target conjunction
+                  refine hfinT Δ''
+                    (fun ψ h => hs'' ψ (hs' ψ (.tail _ (.tail _ h)))) _ ?_
+                    (G4c.andR (weaken_sub hs'' val₁) val₂)
+                  simp only [itpAfull, itpAoth, itpAgoal]
+                  exact List.mem_append.mpr (Or.inl (.head _))
+                · exact hclsR Δ' (fun ψ h => hs' ψ (.tail _ (.tail _ h)))
+                    g'' hg'' Δ'' hs'' val₂
+              · exact hclsR _ (fun ψ h => .tail _ (.tail _ h)) g' hg' Δ' hs'
+                  val₁
+          | or C₁ C₂ =>
+              simp only [itpAgoal] at hφ
+              rcases List.mem_cons.mp hφ with rfl | hφ'
+              · refine ihfA Γ fl (c' + 1) C₁ (insert C₁ seen) _ R hd
+                  (hor hgS).1 hΓS
+                  (Finset.mem_insert_self _ _) hc (hroomI C₁) ?_
+                  ((hambL fl (c' + 2) (Nat.le_succ _)
+                    (Nat.le_refl _)).weaken _)
+                  (G4c.identity_mem (.head _)) hF
+                intro g' hg' Δ' hs' val
+                rcases Finset.mem_insert.mp hg' with rfl | hg'
+                · refine hfinT Δ' (fun ψ h => hs' ψ (.tail _ h)) _ ?_ val
+                  simp only [itpAfull, itpAoth, itpAgoal]
+                  exact List.mem_append.mpr (Or.inl (.head _))
+                · exact hclsR _ (fun ψ h => .tail _ h) g' hg' Δ' hs' val
+              · rcases List.mem_singleton.mp hφ' with rfl
+                refine ihfA Γ fl (c' + 1) C₂ (insert C₂ seen) _ R hd
+                  (hor hgS).2 hΓS
+                  (Finset.mem_insert_self _ _) hc (hroomI C₂) ?_
+                  ((hambL fl (c' + 2) (Nat.le_succ _)
+                    (Nat.le_refl _)).weaken _)
+                  (G4c.identity_mem (.head _)) hF
+                intro g' hg' Δ' hs' val
+                rcases Finset.mem_insert.mp hg' with rfl | hg'
+                · refine hfinT Δ' (fun ψ h => hs' ψ (.tail _ h)) _ ?_ val
+                  simp only [itpAfull, itpAoth, itpAgoal]
+                  exact List.mem_append.mpr (Or.inl (.tail _ (.head _)))
+                · exact hclsR _ (fun ψ h => .tail _ h) g' hg' Δ' hs' val
+          | ifThen C₁ C₂ =>
+              simp only [itpAgoal] at hφ
+              split at hφ
+              next hpres =>
+                -- present antecedent: congr-transferred CPS descent
+                rcases List.mem_singleton.mp hφ with rfl
+                have hset : (C₁ :: Γ).toFinset = Γ.toFinset := by
+                  rw [List.toFinset_cons]
+                  exact Finset.insert_eq_self.mpr (List.mem_toFinset.mpr hpres)
+                have hdef : defect S (C₁ :: Γ) = defect S Γ :=
+                  defect_cons_eq hpres
+                have hΓS' : ∀ F' ∈ C₁ :: Γ, F' ∈ S := hScons (himp hgS).1
+                refine ihfA (C₁ :: Γ) fl (c' + 1) C₂ (insert C₂ seen) _ R
+                  (by rw [hdef]; exact hd) (himp hgS).2 hΓS'
+                  (Finset.mem_insert_self _ _) hc
+                  (by rw [hdef]; exact hroomI C₂) ?_
+                  ((amb_congr (hambL fl (c' + 2) (Nat.le_succ _)
+                    (Nat.le_refl _)) hpres).weaken _)
+                  (fire (G4c.identity_mem (.head _))
+                    ((amb_congr (hambL F (c' + 1)
+                      (le_trans hF (Nat.le_succ _))
+                      (Nat.le_succ _)) hpres).weaken _)) hF
+                intro g' hg' Δ' hs' val
+                rcases Finset.mem_insert.mp hg' with rfl | hg'
+                · refine hfinT Δ' (fun ψ h => hs' ψ (.tail _ h)) _ ?_
+                    (G4c.impR (val.weaken (itpE p S fl c' (C₁ :: Γ))))
+                  simp only [itpAfull, itpAoth, itpAgoal]
+                  rw [if_pos hpres]
+                  exact List.mem_append.mpr (Or.inl (.head _))
+                · exact hclsR _ (fun ψ h => .tail _ h) g' hg' Δ' hs'
+                    (consume₁ val ((itp_congr p S fl).2 (c' + 1)
+                      (C₁ :: Γ) Γ g' hset))
+              next hpres =>
+                -- fresh antecedent
+                rcases List.mem_singleton.mp hφ with rfl
+                by_cases hC₁S : C₁ ∈ S
+                · -- the new piece pays: guard ascent by the E-half,
+                  -- component descent by the defect induction
+                  have hlt : defect S (C₁ :: Γ) < defect S Γ :=
+                    defect_cons_lt hC₁S hpres
+                  have hΓS' : ∀ F' ∈ C₁ :: Γ, F' ∈ S := hScons hC₁S
+                  refine hfinT _ (fun χ h => .tail _ h)
+                    ((itpE p S fl (c' + 1) (C₁ :: Γ)).ifThen
+                      (itpA p S fl (c' + 1) (C₁ :: Γ) C₂)) ?_ (G4c.impR ?_)
+                  · simp only [itpAfull, itpAoth, itpAgoal]
+                    rw [if_neg hpres]
+                    exact List.mem_append.mpr (Or.inl (.head _))
+                  · -- W :: φ :: Δ ⊢ the descended component at C₁ :: Γ
+                    have hE2 : G4c (itpE p S fl (c' + 1) (C₁ :: Γ) ::
+                        (itpE p S F (c' + 2) (C₁ :: Γ)).ifThen
+                          (itpA p S F (c' + 2) (C₁ :: Γ) C₂) :: Δ)
+                        (itpE p S fl (c' + 2) (C₁ :: Γ)) :=
+                      (ihd (defect S (C₁ :: Γ))
+                          (lt_of_lt_of_le hlt hd) fl).2 (C₁ :: Γ) (c' + 1) _
+                        (Nat.le_refl _) hΓS' (hroomE _ hlt)
+                        (G4c.identity_mem (.head _))
+                    have hV : G4c (itpE p S fl (c' + 1) (C₁ :: Γ) ::
+                        (itpE p S F (c' + 2) (C₁ :: Γ)).ifThen
+                          (itpA p S F (c' + 2) (C₁ :: Γ) C₂) :: Δ)
+                        (itpA p S F (c' + 2) (C₁ :: Γ) C₂) :=
+                      fire (G4c.identity_mem (.tail _ (.head _)))
+                        (consume₁ hE2 ((itp_fuel_mono_le p S hF).1 _ _))
+                    exact hgrown (C₁ :: Γ) hlt fl (c' + 1) C₂ _
+                      (himp hgS).2 hΓS' (by omega)
+                      (hroomG _ hlt) hE2 (val_lift hV hF (Nat.le_refl _))
+                · -- impossible: closure keeps goal antecedents in S
+                  exact absurd (himp hgS).1 hC₁S
+          | somehow D =>
+              exact absurd (hSbf _ hgS) (by simp [boxFree])
+        have hENV : ∀ φ ∈ itpAenv p S F (c' + 2) Γ g, G4c (φ :: Δ) R := by
+          intro φ hφ
+          simp only [itpAenv] at hφ
+          obtain ⟨F', hF'Γ, hin⟩ := List.mem_flatMap.mp hφ
+          have hsub1 : ∀ ψ ∈ Δ, ψ ∈ φ :: Δ := fun ψ h => .tail _ h
+          cases F' with
+          | prop q =>
+              simp only at hin
+              split at hin
+              next hq =>
+                rcases List.mem_singleton.mp hin with rfl
+                refine hfinT _ hsub1 truePLL ?_ (G4c.truePLL_intro _)
+                refine mem_itpAfull_of_oth ?_
+                simp only [itpAoth]
+                refine List.mem_append.mpr (Or.inr ?_)
+                simp only [itpAenv]
+                refine List.mem_flatMap.mpr ⟨prop q, hF'Γ, ?_⟩
+                simp only
+                rw [if_pos hq]
+                exact .head _
+              next => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  have hlt : defect S (A :: B :: Γ) < defect S Γ := by
+                    by_cases hA : A ∈ Γ
+                    · have hB : B ∉ Γ := fun hB => h1 ⟨hA, hB⟩
+                      exact defect_lt_of_mem (Γ' := A :: B :: Γ)
+                        (by intro y hy; simp only [List.toFinset_cons,
+                          Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                        (h2.2.resolve_left hB) hB
+                        (.tail _ (.head _))
+                    · exact defect_lt_of_mem (Γ' := A :: B :: Γ)
+                        (by intro y hy; simp only [List.toFinset_cons,
+                          Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                        (h2.1.resolve_left hA) hA (.head _)
+                  refine hfinT _ hsub1 (itpA p S fl (c' + 1) (A :: B :: Γ) g)
+                    ?_ ?_
+                  · refine mem_itpAfull_of_oth ?_
+                    simp only [itpAoth]
+                    refine List.mem_append.mpr (Or.inr ?_)
+                    simp only [itpAenv]
+                    refine List.mem_flatMap.mpr ⟨A.and B, hF'Γ, ?_⟩
+                    simp only
+                    rw [if_neg h1, if_pos h2]
+                    exact .head _
+                  · refine hgrown (A :: B :: Γ) hlt fl (c' + 1) g _ hgS
+                      (by
+                        intro F' hF'
+                        rcases List.mem_cons.mp hF' with rfl | hF'
+                        · exact hSor h2.1
+                        · exact hScons (hSor h2.2) _ hF')
+                      (by omega) (hroomG _ hlt) ?_
+                      (val_lift (G4c.identity_mem (.head _)) hF
+                        (Nat.le_refl _))
+                    refine projE (l := itpEcls p S fl (c' + 2) Γ)
+                      (hamb.weaken _) ?_
+                    simp only [itpEcls]
+                    refine List.mem_append.mpr (Or.inr
+                      (List.mem_flatMap.mpr ⟨A.and B, hF'Γ, ?_⟩))
+                    simp only
+                    rw [if_neg h1, if_pos h2]
+                    exact .head _
+                next => cases hin
+          | or A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  have hA : A ∉ Γ := fun h => h1 (Or.inl h)
+                  have hB : B ∉ Γ := fun h => h1 (Or.inr h)
+                  refine hfinT _ hsub1
+                    (((itpE p S fl (c' + 1) (A :: Γ)).ifThen
+                        (itpA p S fl (c' + 1) (A :: Γ) g)).and
+                      ((itpE p S fl (c' + 1) (B :: Γ)).ifThen
+                        (itpA p S fl (c' + 1) (B :: Γ) g))) ?_
+                    (G4c.andL (List.Perm.refl _) (G4c.andR ?_ ?_))
+                  · refine mem_itpAfull_of_oth ?_
+                    simp only [itpAoth]
+                    refine List.mem_append.mpr (Or.inr ?_)
+                    simp only [itpAenv]
+                    refine List.mem_flatMap.mpr ⟨A.or B, hF'Γ, ?_⟩
+                    simp only
+                    rw [if_neg h1, if_pos h2]
+                    exact .head _
+                  · exact (himpX A g _ (defect_cons_lt h2.1 hA) hgS
+                      h2.1
+                      (G4c.identity_mem (.head _))).perm
+                      (List.Perm.refl _)
+                  · exact himpX B g _ (defect_cons_lt h2.2 hB) hgS
+                      h2.2
+                      (G4c.identity_mem (.tail _ (.head _)))
+                next => cases hin
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hBΓ =>
+                    split at hin
+                    next hBS =>
+                      split at hin
+                      next hq =>
+                        -- present prop antecedent: bare growth
+                        rcases List.mem_singleton.mp hin with rfl
+                        refine hfinT _ hsub1
+                          (itpA p S fl (c' + 1) (B :: Γ) g) ?_ ?_
+                        · refine mem_itpAfull_of_oth ?_
+                          simp only [itpAoth]
+                          refine List.mem_append.mpr (Or.inr ?_)
+                          simp only [itpAenv]
+                          refine List.mem_flatMap.mpr
+                            ⟨(prop q).ifThen B, hF'Γ, ?_⟩
+                          simp only
+                          rw [if_neg hBΓ, if_pos hBS, if_pos hq]
+                          exact .head _
+                        · refine hgrown (B :: Γ) (defect_cons_lt hBS hBΓ)
+                            fl (c' + 1) g _ hgS (hScons hBS)
+                            (by omega)
+                            (hroomG _ (defect_cons_lt hBS hBΓ)) ?_
+                            (val_lift (G4c.identity_mem (.head _)) hF
+                              (Nat.le_refl _))
+                          refine projE (l := itpEcls p S fl (c' + 2) Γ)
+                            (hamb.weaken _) ?_
+                          simp only [itpEcls]
+                          refine List.mem_append.mpr (Or.inr
+                            (List.mem_flatMap.mpr
+                              ⟨(prop q).ifThen B, hF'Γ, ?_⟩))
+                          simp only
+                          rw [if_neg hBΓ, if_pos hBS, if_pos hq]
+                          exact .head _
+                      next hq =>
+                        split at hin
+                        next => cases hin
+                        next hqp =>
+                          -- fresh prop antecedent: atom-guarded growth
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine hfinT _ hsub1 ((prop q).and
+                            (itpA p S fl (c' + 1) (B :: Γ) g)) ?_ ?_
+                          · refine mem_itpAfull_of_oth ?_
+                            simp only [itpAoth]
+                            refine List.mem_append.mpr (Or.inr ?_)
+                            simp only [itpAenv]
+                            refine List.mem_flatMap.mpr
+                              ⟨(prop q).ifThen B, hF'Γ, ?_⟩
+                            simp only
+                            rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
+                            exact .head _
+                          · refine G4c.andL (List.Perm.refl _)
+                              (G4c.andR (G4c.init (.head _)) ?_)
+                            refine hgrown (B :: Γ) (defect_cons_lt hBS hBΓ)
+                              fl (c' + 1) g _ hgS (hScons hBS)
+                              (by omega)
+                              (hroomG _ (defect_cons_lt hBS hBΓ)) ?_
+                              (val_lift (G4c.identity_mem
+                                (.tail _ (.head _))) hF (Nat.le_refl _))
+                            refine fire (projE
+                              (l := itpEcls p S fl (c' + 2) Γ)
+                              (weaken_sub (fun ψ h =>
+                                .tail _ (.tail _ h)) hamb) ?_)
+                              (G4c.init (.head _))
+                            simp only [itpEcls]
+                            refine List.mem_append.mpr (Or.inr
+                              (List.mem_flatMap.mpr
+                                ⟨(prop q).ifThen B, hF'Γ, ?_⟩))
+                            simp only
+                            rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
+                            exact .head _
+                    next => cases hin
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine hfinT _ hsub1 (itpA p S fl (c' + 1)
+                        (A₁.ifThen (B₁.ifThen B) :: Γ) g) ?_ ?_
+                      · refine mem_itpAfull_of_oth ?_
+                        simp only [itpAoth]
+                        refine List.mem_append.mpr (Or.inr ?_)
+                        simp only [itpAenv]
+                        refine List.mem_flatMap.mpr
+                          ⟨(A₁.and B₁).ifThen B, hF'Γ, ?_⟩
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                      · refine hgrown _ (defect_cons_lt h2 h1) fl (c' + 1)
+                          g _ hgS (hScons h2) (by omega)
+                          (hroomG _ (defect_cons_lt h2 h1)) ?_
+                          (val_lift (G4c.identity_mem (.head _)) hF
+                            (Nat.le_refl _))
+                        refine projE (l := itpEcls p S fl (c' + 2) Γ)
+                          (hamb.weaken _) ?_
+                        simp only [itpEcls]
+                        refine List.mem_append.mpr (Or.inr
+                          (List.mem_flatMap.mpr
+                            ⟨(A₁.and B₁).ifThen B, hF'Γ, ?_⟩))
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                    next => cases hin
+              | or A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      have hlt : defect S (A₁.ifThen B :: B₁.ifThen B :: Γ) <
+                          defect S Γ := by
+                        by_cases hA : A₁.ifThen B ∈ Γ
+                        · have hBn : B₁.ifThen B ∉ Γ := fun hB => h1 ⟨hA, hB⟩
+                          exact defect_lt_of_mem
+                            (Γ' := A₁.ifThen B :: B₁.ifThen B :: Γ)
+                            (by intro y hy; simp only [List.toFinset_cons,
+                              Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                            (h2.2.resolve_left hBn) hBn (.tail _ (.head _))
+                        · exact defect_lt_of_mem
+                            (Γ' := A₁.ifThen B :: B₁.ifThen B :: Γ)
+                            (by intro y hy; simp only [List.toFinset_cons,
+                              Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                            (h2.1.resolve_left hA) hA (.head _)
+                      refine hfinT _ hsub1 (itpA p S fl (c' + 1)
+                        (A₁.ifThen B :: B₁.ifThen B :: Γ) g) ?_ ?_
+                      · refine mem_itpAfull_of_oth ?_
+                        simp only [itpAoth]
+                        refine List.mem_append.mpr (Or.inr ?_)
+                        simp only [itpAenv]
+                        refine List.mem_flatMap.mpr
+                          ⟨(A₁.or B₁).ifThen B, hF'Γ, ?_⟩
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                      · refine hgrown _ hlt fl (c' + 1) g _ hgS
+                          (by
+                            intro F' hF'
+                            rcases List.mem_cons.mp hF' with rfl | hF'
+                            · exact hSor h2.1
+                            · exact hScons (hSor h2.2) _ hF')
+                          (by omega) (hroomG _ hlt) ?_
+                          (val_lift (G4c.identity_mem (.head _)) hF
+                            (Nat.le_refl _))
+                        refine projE (l := itpEcls p S fl (c' + 2) Γ)
+                          (hamb.weaken _) ?_
+                        simp only [itpEcls]
+                        refine List.mem_append.mpr (Or.inr
+                          (List.mem_flatMap.mpr
+                            ⟨(A₁.or B₁).ifThen B, hF'Γ, ?_⟩))
+                        simp only
+                        rw [if_neg h1, if_pos h2]
+                        exact .head _
+                    next => cases hin
+              | ifThen A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hDΓ =>
+                    split at hin
+                    next hDS =>
+                      split at hin
+                      next hBD =>
+                        split at hin
+                        next hABS =>
+                          -- gated present piece: the impLImp jump chain
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4c.andL (List.Perm.refl _) ?_
+                          -- J_s :: W :: Δ ⊢ R
+                          have dHead : G4c
+                              (((itpE p S F (c' + 1) Γ).ifThen
+                                (itpA p S F (c' + 1) Γ (A₁.ifThen B₁))) ::
+                               itpA p S F (c' + 2) (B :: Γ) g :: Δ)
+                              (itpA p S F (c' + 1) Γ (A₁.ifThen B₁)) :=
+                            fire (G4c.identity_mem (.head _))
+                              (weaken_sub (fun ψ h => .tail _ (.tail _ h))
+                                (hambL F (c' + 1)
+                                  (le_trans hF (Nat.le_succ _))
+                                  (Nat.le_succ _)))
+                          have hgJ : A₁.ifThen B₁ ∈ jumpGoals S :=
+                            mem_jumpGoals_imp hABS
+                          have hd1s : 1 ≤ defect S Γ :=
+                            Finset.card_pos.mpr ⟨B, Finset.mem_sdiff.mpr
+                              ⟨hDS, fun h => hDΓ (List.mem_toFinset.mp h)⟩⟩
+                          have hmul1 : 1 * ((jumpGoals S).card + 2) ≤
+                              defect S Γ * ((jumpGoals S).card + 2) :=
+                            Nat.mul_le_mul_right _ hd1s
+                          by_cases hseen : A₁.ifThen B₁ ∈ seen
+                          · -- repeat leaf: the mono-splice
+                            exact hcls _ hseen _
+                              (fun ψ h => .tail _ (.tail _ h))
+                              (val_lift dHead
+                                (le_trans hF (Nat.le_succ _))
+                                (Nat.le_refl _))
+                          · -- fresh jump goal: descend
+                            have hxf : 1 ≤ (jumpGoals S \ seen).card :=
+                              Finset.card_pos.mpr ⟨_, Finset.mem_sdiff.mpr
+                                ⟨hgJ, hseen⟩⟩
+                            refine ihfA Γ fl c' (A₁.ifThen B₁)
+                              (insert (A₁.ifThen B₁) seen) _ R hd
+                              (himp hABS).1 hΓS
+                              (Finset.mem_insert_self _ _) (by omega)
+                              (hroomJ _ hgJ hseen) ?_
+                              (weaken_sub (fun ψ h => .tail _ (.tail _ h))
+                                (hambL fl (c' + 1) (Nat.le_succ _)
+                                  (Nat.le_succ _)))
+                              dHead hF
+                            intro g'' hg'' Δ' hs' val
+                            rcases Finset.mem_insert.mp hg'' with rfl | hg''
+                            · -- the new continuation: assemble the target
+                              -- jump disjunct around the returned value
+                              refine hfinT Δ'
+                                (fun ψ h => hs' ψ (.tail _ (.tail _ h)))
+                                (((itpE p S fl c' Γ).ifThen
+                                    (itpA p S fl c' Γ (A₁.ifThen B₁))).and
+                                  (itpA p S fl (c' + 1) (B :: Γ) g))
+                                ?_ (G4c.andR
+                                  (G4c.impR (val.weaken (itpE p S fl c' Γ)))
+                                  ?_)
+                              · refine mem_itpAfull_of_oth ?_
+                                simp only [itpAoth]
+                                refine List.mem_append.mpr (Or.inr ?_)
+                                simp only [itpAenv]
+                                refine List.mem_flatMap.mpr
+                                  ⟨(A₁.ifThen B₁).ifThen B, hF'Γ, ?_⟩
+                                simp only
+                                rw [if_neg hDΓ, if_pos hDS, if_pos hBD,
+                                  if_pos hABS]
+                                exact .head _
+                              · -- second component: grown descent, ambient
+                                -- unlocked by firing the packaged jump conjunct
+                                refine hgrown (B :: Γ)
+                                  (defect_cons_lt hDS hDΓ) fl (c' + 1) g Δ'
+                                  hgS (hScons hDS) (by omega)
+                                  (hroomG _ (defect_cons_lt hDS hDΓ)) ?_
+                                  (val_lift (G4c.identity_mem
+                                    (A := itpA p S F (c' + 2) (B :: Γ) g)
+                                    (hs' _ (.tail _ (.head _)))) hF
+                                    (Nat.le_refl _))
+                                refine fire
+                                  (X := (itpE p S fl (c' + 1) Γ).ifThen
+                                    (itpA p S fl (c' + 1) Γ (A₁.ifThen B₁)))
+                                  (projE
+                                  (l := itpEcls p S fl (c' + 2) Γ)
+                                  (weaken_sub (fun ψ h =>
+                                    hs' ψ (.tail _ (.tail _ h))) hamb) ?_)
+                                  (G4c.impR ((val_lift val (Nat.le_refl _)
+                                    (Nat.le_succ _)).weaken _))
+                                simp only [itpEcls]
+                                refine List.mem_append.mpr (Or.inr
+                                  (List.mem_flatMap.mpr
+                                    ⟨(A₁.ifThen B₁).ifThen B, hF'Γ, ?_⟩))
+                                simp only
+                                rw [if_neg hDΓ, if_pos hDS, if_pos hBD,
+                                  if_pos hABS]
+                                exact .head _
+                            · exact hcls g'' hg'' Δ'
+                                (fun ψ h => hs' ψ (.tail _ (.tail _ h)))
+                                (val_lift val (Nat.le_succ _)
+                                  (Nat.le_succ _))
+                        next => cases hin
+                      next hBD =>
+                        split at hin
+                        next hBDS =>
+                          -- fresh piece: guarded growth on both components
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4c.andL (List.Perm.refl _) ?_
+                          refine hfinT _
+                            (fun ψ h => .tail _ (.tail _ h))
+                            (((itpE p S fl (c' + 1) (B₁.ifThen B :: Γ)).ifThen
+                                (itpA p S fl (c' + 1) (B₁.ifThen B :: Γ)
+                                  (A₁.ifThen B₁))).and
+                              (itpA p S fl (c' + 1) (B :: Γ) g)) ?_
+                            (G4c.andR ?_ ?_)
+                          · refine mem_itpAfull_of_oth ?_
+                            simp only [itpAoth]
+                            refine List.mem_append.mpr (Or.inr ?_)
+                            simp only [itpAenv]
+                            refine List.mem_flatMap.mpr
+                              ⟨(A₁.ifThen B₁).ifThen B, hF'Γ, ?_⟩
+                            simp only
+                            rw [if_neg hDΓ, if_pos hDS, if_neg hBD,
+                              if_pos hBDS]
+                            exact .head _
+                          · exact himpX (B₁.ifThen B) (A₁.ifThen B₁) _
+                              (defect_cons_lt hBDS hBD)
+                              (himp (hΓS _ hF'Γ)).1 hBDS
+                              (G4c.identity_mem (.head _))
+                          · refine hgrown (B :: Γ)
+                              (defect_cons_lt hDS hDΓ) fl (c' + 1) g _
+                              hgS (hScons hDS) (by omega)
+                              (hroomG _ (defect_cons_lt hDS hDΓ)) ?_
+                              (val_lift (G4c.identity_mem
+                                (.tail _ (.head _))) hF (Nat.le_refl _))
+                            refine fire (projE
+                              (l := itpEcls p S fl (c' + 2) Γ)
+                              (weaken_sub (fun ψ h =>
+                                .tail _ (.tail _ h)) hamb) ?_)
+                              (G4c.impR (val_lift (fire
+                                ((G4c.identity_mem (A := (itpE p S F (c' + 2)
+                                    (B₁.ifThen B :: Γ)).ifThen
+                                  (itpA p S F (c' + 2) (B₁.ifThen B :: Γ)
+                                    (A₁.ifThen B₁)))
+                                  (.tail _ (.head _))))
+                                (consume₁ (G4c.identity_mem (.head _))
+                                  ((itp_fuel_mono_le p S hF).1 _ _)))
+                                hF (Nat.le_refl _)))
+                            simp only [itpEcls]
+                            refine List.mem_append.mpr (Or.inr
+                              (List.mem_flatMap.mpr
+                                ⟨(A₁.ifThen B₁).ifThen B, hF'Γ, ?_⟩))
+                            simp only
+                            rw [if_neg hDΓ, if_pos hDS, if_neg hBD,
+                              if_pos hBDS]
+                            exact .head _
+                        next => cases hin
+                    next => cases hin
+              | somehow A₁ =>
+                  exact absurd (hΓbf _ hF'Γ) (by simp [boxFree])
+          | somehow χ =>
+              exact absurd (hΓbf _ hF'Γ) (by simp [boxFree])
+        have hOTH : ∀ φ ∈ itpAoth p S F (c' + 2) Γ g, G4c (φ :: Δ) R := by
+          intro φ hφ
+          simp only [itpAoth] at hφ
+          rcases List.mem_append.mp hφ with hφ | hφ
+          · exact hGOAL φ hφ
+          · exact hENV φ hφ
+        refine G4c.cut hhead (G4c.orAll_elim ?_)
+        intro φ hφ
+        cases g with
+        | somehow D =>
+            exact absurd (hSbf _ hgS) (by simp [boxFree])
+        | prop q => exact hOTH φ hφ
+        | falsePLL => exact hOTH φ hφ
+        | and C₁ C₂ => exact hOTH φ hφ
+        | or C₁ C₂ => exact hOTH φ hφ
+        | ifThen C₁ C₂ => exact hOTH φ hφ
+      · -- E-half: the one-step ascent
+        intro Γ c Δ hd hΓS hroom hsrc
+        have hΓbf : ∀ F ∈ Γ, boxFree F := fun F h => hSbf _ (hΓS _ h)
+        obtain ⟨c'', rfl⟩ : ∃ c'', c = c'' + 1 := ⟨c - 1, by omega⟩
+        rw [itpE_succ p S F (c'' + 2) Γ]
+        refine G4c.andAll_intro ?_
+        intro ψ hψ
+        -- fuel-level source at any weaker budget
+        have hsrcF : ∀ (b' : Nat), b' ≤ c'' + 1 → G4c Δ (itpE p S F b' Γ) :=
+          fun b' hb' => consume₁ (consume₁ hsrc
+            ((itp_fuel_mono p S F).1 _ Γ))
+            ((itp_budget_mono_le p S hb' F).1 Γ)
+        have hSor : ∀ {X : PLLFormula}, X ∈ Γ ∨ X ∈ S → X ∈ S :=
+          fun h => h.elim (fun h' => hΓS _ h') id
+        have hScons : ∀ {X : PLLFormula}, X ∈ S →
+            ∀ F' ∈ X :: Γ, F' ∈ S := by
+          intro X hX F' hF'
+          rcases List.mem_cons.mp hF' with rfl | hF'
+          · exact hX
+          · exact hΓS _ hF'
+        -- entry room for same-context A-descents
+        have hroomA : ∀ (x : PLLFormula), (jumpGoals S \ {x}).card + 1 +
+            defect S Γ * ((jumpGoals S).card + 2)
+            ≤ c'' + ((jumpGoals S).card + 2) := by
+          intro x
+          have hc := Finset.card_le_card
+            (Finset.sdiff_subset (s := jumpGoals S) (t := {x}))
+          omega
+        -- one-step ascent at a defect-paying grown context
+        have hEg : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
+            (∀ F' ∈ Γ', F' ∈ S) →
+            ∀ (Δ' : List PLLFormula), G4c Δ' (itpE p S F (c'' + 1) Γ') →
+            G4c Δ' (itpE p S F (c'' + 2) Γ') := by
+          intro Γ' hlt hΓS' Δ' hsrc'
+          refine ihfE Γ' (c'' + 1) Δ' (le_trans (le_of_lt hlt) hd) hΓS'
+            ?_ hsrc'
+          have hexp : (defect S Γ' + 1) * ((jumpGoals S).card + 2) =
+              defect S Γ' * ((jumpGoals S).card + 2) +
+              ((jumpGoals S).card + 2) := by ring
+          have hmul : (defect S Γ' + 1) * ((jumpGoals S).card + 2) ≤
+              defect S Γ * ((jumpGoals S).card + 2) :=
+            Nat.mul_le_mul_right _ (by omega)
+          omega
+        -- entry-shaped same-context A-descent
+        have hAd : ∀ (β : Nat) (h : PLLFormula) (Δ' : List PLLFormula),
+            h ∈ S → 1 ≤ β →
+            ((jumpGoals S \ {h}).card + 1 +
+              defect S Γ * ((jumpGoals S).card + 2)
+              ≤ β + ((jumpGoals S).card + 2)) →
+            G4c Δ' (itpE p S F (β + 1) Γ) →
+            G4c Δ' (itpA p S F (β + 1) Γ h) →
+            G4c Δ' (itpA p S F β Γ h) := by
+          intro β h Δ' hgS' hβ hr hamb' hhead'
+          refine ihfA Γ F β h {h} Δ' _ hd hgS' hΓS
+            (Finset.mem_singleton_self h) hβ hr
+            ?_ hamb' hhead' (Nat.le_refl _)
+          intro g' hg' Δ'' _ hval
+          rcases Finset.mem_singleton.mp hg' with rfl
+          exact hval
+        -- entry-shaped A-descent at a defect-paying grown context
+        have hAg : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
+            ∀ (β : Nat) (h : PLLFormula) (Δ' : List PLLFormula),
+            h ∈ S → (∀ F' ∈ Γ', F' ∈ S) → 1 ≤ β → c'' ≤ β →
+            G4c Δ' (itpE p S F (β + 1) Γ') →
+            G4c Δ' (itpA p S F (β + 1) Γ' h) →
+            G4c Δ' (itpA p S F β Γ' h) := by
+          intro Γ' hlt β h Δ' hgS' hΓS' hβ1 hβ hamb' hhead'
+          refine ihfA Γ' F β h {h} Δ' _ (le_trans (le_of_lt hlt) hd)
+            hgS' hΓS' (Finset.mem_singleton_self h) hβ1 ?_ ?_ hamb'
+            hhead' (Nat.le_refl _)
+          · have hc := Finset.card_le_card
+              (Finset.sdiff_subset (s := jumpGoals S) (t := {h}))
+            have hexp : (defect S Γ' + 1) * ((jumpGoals S).card + 2) =
+                defect S Γ' * ((jumpGoals S).card + 2) +
+                ((jumpGoals S).card + 2) := by ring
+            have hmul : (defect S Γ' + 1) * ((jumpGoals S).card + 2) ≤
+                defect S Γ * ((jumpGoals S).card + 2) :=
+              Nat.mul_le_mul_right _ (by omega)
+            omega
+          · intro g' hg' Δ'' _ hval
+            rcases Finset.mem_singleton.mp hg' with rfl
+            exact hval
+        simp only [itpEcls] at hψ
+        rcases List.mem_append.mp hψ with hψ | hψ
+        · rcases List.mem_append.mp hψ with hψ | hψ
+          · -- the ⊥ clause
+            split at hψ
+            next hbot =>
+              rcases List.mem_singleton.mp hψ with rfl
+              refine projE (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_
+              simp only [itpEcls]
+              exact List.mem_append.mpr (Or.inl (List.mem_append.mpr
+                (Or.inl (by rw [if_pos hbot]; exact .head _))))
+            next => cases hψ
+          · -- the atom clauses
+            obtain ⟨F', hF'Γ, heq⟩ := List.mem_filterMap.mp hψ
+            cases F' with
+            | prop q =>
+                simp only at heq
+                split at heq
+                next => cases heq
+                next hq =>
+                  injection heq with heq'
+                  subst heq'
+                  refine projE (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_
+                  simp only [itpEcls]
+                  refine List.mem_append.mpr (Or.inl (List.mem_append.mpr
+                    (Or.inr (List.mem_filterMap.mpr ⟨prop q, hF'Γ, ?_⟩))))
+                  simp only
+                  rw [if_neg hq]
+            | falsePLL => cases heq
+            | and _ _ => cases heq
+            | or _ _ => cases heq
+            | ifThen _ _ => cases heq
+            | somehow _ => cases heq
+        · -- the rule clauses
+          obtain ⟨F', hF'Γ, hin⟩ := List.mem_flatMap.mp hψ
+          cases F' with
+          | prop _ => cases hin
+          | falsePLL => cases hin
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  have hlt : defect S (A :: B :: Γ) < defect S Γ := by
+                    by_cases hA : A ∈ Γ
+                    · have hB : B ∉ Γ := fun hB => h1 ⟨hA, hB⟩
+                      exact defect_lt_of_mem (Γ' := A :: B :: Γ)
+                        (by intro y hy; simp only [List.toFinset_cons,
+                          Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                        (h2.2.resolve_left hB) hB (.tail _ (.head _))
+                    · exact defect_lt_of_mem (Γ' := A :: B :: Γ)
+                        (by intro y hy; simp only [List.toFinset_cons,
+                          Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                        (h2.1.resolve_left hA) hA (.head _)
+                  refine hEg _ hlt (by
+                      intro F' hF'
+                      rcases List.mem_cons.mp hF' with rfl | hF'
+                      · exact hSor h2.1
+                      · exact hScons (hSor h2.2) _ hF') Δ (projE
+                    (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
+                  simp only [itpEcls]
+                  refine List.mem_append.mpr (Or.inr
+                    (List.mem_flatMap.mpr ⟨A.and B, hF'Γ, ?_⟩))
+                  simp only
+                  rw [if_neg h1, if_pos h2]
+                  exact .head _
+                next => cases hin
+          | or A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  have hA : A ∉ Γ := fun h => h1 (Or.inl h)
+                  have hB : B ∉ Γ := fun h => h1 (Or.inr h)
+                  refine consume₁ (projE
+                    (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
+                    (or_mono
+                      (hEg _ (defect_cons_lt h2.1 hA)
+                        (hScons h2.1) _
+                        (G4c.identity_mem (.head _)))
+                      (hEg _ (defect_cons_lt h2.2 hB)
+                        (hScons h2.2) _
+                        (G4c.identity_mem (.head _))))
+                  simp only [itpEcls]
+                  refine List.mem_append.mpr (Or.inr
+                    (List.mem_flatMap.mpr ⟨A.or B, hF'Γ, ?_⟩))
+                  simp only
+                  rw [if_neg h1, if_pos h2]
+                  exact .head _
+                next => cases hin
+          | somehow χ =>
+              exact absurd (hΓbf _ hF'Γ) (by simp [boxFree])
+          | ifThen A' B =>
+              cases A' with
+              | prop q =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hBΓ =>
+                    split at hin
+                    next hBS =>
+                      split at hin
+                      next hq =>
+                        rcases List.mem_singleton.mp hin with rfl
+                        refine hEg _ (defect_cons_lt hBS hBΓ)
+                          (hScons hBS) Δ (projE
+                          (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
+                        simp only [itpEcls]
+                        refine List.mem_append.mpr (Or.inr
+                          (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hF'Γ, ?_⟩))
+                        simp only
+                        rw [if_neg hBΓ, if_pos hBS, if_pos hq]
+                        exact .head _
+                      next hq =>
+                        split at hin
+                        next => cases hin
+                        next hqp =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine consume₁ (projE
+                            (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
+                            (imp_mono (G4c.init (.head _))
+                              (hEg _ (defect_cons_lt hBS hBΓ)
+                                (hScons hBS) _
+                                (G4c.identity_mem (.head _))))
+                          simp only [itpEcls]
+                          refine List.mem_append.mpr (Or.inr
+                            (List.mem_flatMap.mpr
+                              ⟨(prop q).ifThen B, hF'Γ, ?_⟩))
+                          simp only
+                          rw [if_neg hBΓ, if_pos hBS, if_neg hq, if_neg hqp]
+                          exact .head _
+                    next => cases hin
+              | falsePLL => cases hin
+              | and A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      refine hEg _ (defect_cons_lt h2 h1)
+                        (hScons h2) Δ (projE
+                        (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
+                      simp only [itpEcls]
+                      refine List.mem_append.mpr (Or.inr
+                        (List.mem_flatMap.mpr
+                          ⟨(A₁.and B₁).ifThen B, hF'Γ, ?_⟩))
+                      simp only
+                      rw [if_neg h1, if_pos h2]
+                      exact .head _
+                    next => cases hin
+              | or A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next h1 =>
+                    split at hin
+                    next h2 =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      have hlt : defect S (A₁.ifThen B :: B₁.ifThen B :: Γ) <
+                          defect S Γ := by
+                        by_cases hA : A₁.ifThen B ∈ Γ
+                        · have hBn : B₁.ifThen B ∉ Γ := fun hB => h1 ⟨hA, hB⟩
+                          exact defect_lt_of_mem
+                            (Γ' := A₁.ifThen B :: B₁.ifThen B :: Γ)
+                            (by intro y hy; simp only [List.toFinset_cons,
+                              Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                            (h2.2.resolve_left hBn) hBn (.tail _ (.head _))
+                        · exact defect_lt_of_mem
+                            (Γ' := A₁.ifThen B :: B₁.ifThen B :: Γ)
+                            (by intro y hy; simp only [List.toFinset_cons,
+                              Finset.mem_insert]; exact Or.inr (Or.inr hy))
+                            (h2.1.resolve_left hA) hA (.head _)
+                      refine hEg _ hlt (by
+                          intro F' hF'
+                          rcases List.mem_cons.mp hF' with rfl | hF'
+                          · exact hSor h2.1
+                          · exact hScons (hSor h2.2) _ hF') Δ (projE
+                        (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
+                      simp only [itpEcls]
+                      refine List.mem_append.mpr (Or.inr
+                        (List.mem_flatMap.mpr
+                          ⟨(A₁.or B₁).ifThen B, hF'Γ, ?_⟩))
+                      simp only
+                      rw [if_neg h1, if_pos h2]
+                      exact .head _
+                    next => cases hin
+              | ifThen A₁ B₁ =>
+                  simp only at hin
+                  split at hin
+                  next => cases hin
+                  next hDG =>
+                    split at hin
+                    next hDS =>
+                      split at hin
+                      next hBD =>
+                        split at hin
+                        next hABS =>
+                          -- gated present piece: convert the antecedent
+                          -- through the A-descent, fire, ascend
+                          rcases List.mem_singleton.mp hin with rfl
+                          have hd1s : 1 ≤ defect S Γ :=
+                            Finset.card_pos.mpr ⟨B, Finset.mem_sdiff.mpr
+                              ⟨hDS, fun h => hDG (List.mem_toFinset.mp h)⟩⟩
+                          have hmul1 : 1 * ((jumpGoals S).card + 2) ≤
+                              defect S Γ * ((jumpGoals S).card + 2) :=
+                            Nat.mul_le_mul_right _ hd1s
+                          refine G4c.impR ?_
+                          have hJs : G4c ((itpE p S F (c'' + 1) Γ).ifThen
+                              (itpA p S F (c'' + 1) Γ (A₁.ifThen B₁)) :: Δ)
+                              ((itpE p S F c'' Γ).ifThen
+                                (itpA p S F c'' Γ (A₁.ifThen B₁))) := by
+                            refine G4c.impR ?_
+                            refine hAd c'' (A₁.ifThen B₁) _
+                              (himp hABS).1 (by omega) (hroomA _)
+                              (weaken_sub (fun ψ h => .tail _ (.tail _ h))
+                                (hsrcF (c'' + 1) (Nat.le_refl _))) ?_
+                            exact fire (G4c.identity_mem (.tail _ (.head _)))
+                              (weaken_sub (fun ψ h => .tail _ (.tail _ h))
+                                (hsrcF (c'' + 1) (Nat.le_refl _)))
+                          refine consume₁ (fire (projE
+                            (l := itpEcls p S F (c'' + 1) Γ)
+                            (hsrc.weaken _) ?_) hJs)
+                            (hEg (B :: Γ) (defect_cons_lt hDS hDG)
+                              (hScons hDS) _
+                              (G4c.identity_mem (.head _)))
+                          simp only [itpEcls]
+                          refine List.mem_append.mpr (Or.inr
+                            (List.mem_flatMap.mpr
+                              ⟨(A₁.ifThen B₁).ifThen B, hF'Γ, ?_⟩))
+                          simp only
+                          rw [if_neg hDG, if_pos hDS, if_pos hBD, if_pos hABS]
+                          exact .head _
+                        next => cases hin
+                      next hBD =>
+                        split at hin
+                        next hBDS =>
+                          -- fresh piece: ascend the introduced guard,
+                          -- fire, descend at the grown context
+                          rcases List.mem_singleton.mp hin with rfl
+                          refine G4c.impR ?_
+                          have hJs : G4c ((itpE p S F (c'' + 2)
+                              (B₁.ifThen B :: Γ)).ifThen
+                              (itpA p S F (c'' + 2) (B₁.ifThen B :: Γ)
+                                (A₁.ifThen B₁)) :: Δ)
+                              ((itpE p S F (c'' + 1)
+                                (B₁.ifThen B :: Γ)).ifThen
+                                (itpA p S F (c'' + 1) (B₁.ifThen B :: Γ)
+                                  (A₁.ifThen B₁))) := by
+                            refine G4c.impR ?_
+                            have hE2 : G4c (itpE p S F (c'' + 1)
+                                (B₁.ifThen B :: Γ) ::
+                                (itpE p S F (c'' + 2)
+                                  (B₁.ifThen B :: Γ)).ifThen
+                                (itpA p S F (c'' + 2) (B₁.ifThen B :: Γ)
+                                  (A₁.ifThen B₁)) :: Δ)
+                                (itpE p S F (c'' + 2)
+                                  (B₁.ifThen B :: Γ)) :=
+                              hEg _ (defect_cons_lt hBDS hBD)
+                                (hScons hBDS) _
+                                (G4c.identity_mem (.head _))
+                            refine hAg _ (defect_cons_lt hBDS hBD)
+                              (c'' + 1) (A₁.ifThen B₁) _
+                              (himp (hΓS _ hF'Γ)).1
+                              (hScons hBDS) (by omega)
+                              (Nat.le_succ _) hE2 ?_
+                            exact fire (G4c.identity_mem
+                              (.tail _ (.head _))) hE2
+                          refine consume₁ (fire (projE
+                            (l := itpEcls p S F (c'' + 1) Γ)
+                            (hsrc.weaken _) ?_) hJs)
+                            (hEg (B :: Γ) (defect_cons_lt hDS hDG)
+                              (hScons hDS) _
+                              (G4c.identity_mem (.head _)))
+                          simp only [itpEcls]
+                          refine List.mem_append.mpr (Or.inr
+                            (List.mem_flatMap.mpr
+                              ⟨(A₁.ifThen B₁).ifThen B, hF'Γ, ?_⟩))
+                          simp only
+                          rw [if_neg hDG, if_pos hDS, if_neg hBD,
+                            if_pos hBDS]
+                          exact .head _
+                        next => cases hin
+                    next => cases hin
+              | somehow A₁ =>
+                  exact absurd (hΓbf _ hF'Γ) (by simp [boxFree])
+
+/-- Stage-1 entry: the box-free pair descent at the holdout's own
+room.  With `S` box-free and subformula-closed and the goal and
+context inside `S`, no sealed position exists and the shifted-ledger
+machine closes outright. -/
+private theorem cascade_low_pos_boxfree (p : String) (S : Finset PLLFormula)
+    (hSbf : ∀ F ∈ S, boxFree F)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
+    (Δ : List PLLFormula)
+    (hgS : g ∈ S) (hΓS : ∀ F ∈ Γ, F ∈ S)
+    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
+    (hc : 1 ≤ c)
+    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
+    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
+    (hfh : fh ≤ fuel) :
+    G4c Δ (itpA p S fuel c Γ g) := by
+  refine (cascade_main_bf p S hSbf hand hor himp (defect S Γ) fh).1
+    Γ fuel c g {g} Δ _ (Nat.le_refl _) hgS hΓS
+    (Finset.mem_singleton_self g) hc ?_ ?_ hamb hhead hfh
+  · have hcard := Finset.card_le_card
+      (Finset.sdiff_subset (s := jumpGoals S) (t := {g}))
+    omega
+  · intro g' hg' Δ' _ hval
+    rcases Finset.mem_singleton.mp hg' with rfl
+    exact hval
+
+/-- HOLDOUT — the one remaining `sorry` of the cascade development,
+now restricted to the ◯-involving band: by the dispatcher below it
+carries, besides `1 ≤ defect S Γ`, the negation `hbox` — some member
+of `S` mentions `◯`, or `S` is not subformula-closed, or the goal or
+context escapes `S`.  In the complementary (box-free, closed,
+covered) instance the descent is a THEOREM (`cascade_low_pos_boxfree`
+via `cascade_main_bf`): there are no ◯-clauses, hence no sealed
+positions, and the shifted ledger runs the full pigeonhole machine
+from this statement's own room.
+
+Stage-3 note (fuel-indifference, `wip/indiff.lean`): re-leveling
+fuels above `mu` is an `Eq` in the FUEL dimension; the seal deficit
+is in the BUDGET dimension (the seen-discounted room), which
+indifference cannot touch — and removing the fuel descent removes the
+only decreasing measure the seal-nesting had, so it does not re-fund
+the ◯-band either.
 
 The ambient-relative pair descent at *burned* room: only the defect
 tower (`defect·(J+2) ≤ c`, `J = |jumpGoals S|`) survives at the call
@@ -927,6 +2139,25 @@ Two structural leads adjudicated 2026-07-11 (evening):
   reset weight and ◯-depth; `c` burns without pigeonhole room), so
   the specialization re-derives what the seen-machinery already gives
   above the threshold and cannot close the band below it. -/
+private theorem cascade_low_pos_box (p : String) (S : Finset PLLFormula)
+    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
+    (Δ : List PLLFormula)
+    (hbox : ¬ ((∀ F ∈ S, boxFree F) ∧
+      (∀ A B : PLLFormula, A.and B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      (∀ A B : PLLFormula, A.or B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      (∀ A B : PLLFormula, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      g ∈ S ∧ (∀ F ∈ Γ, F ∈ S)))
+    (hd1 : 1 ≤ defect S Γ)
+    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
+    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
+    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
+    (hfh : fh ≤ fuel) :
+    G4c Δ (itpA p S fuel c Γ g) := by
+  sorry
+
+/-- The open-band descent, dispatched: the box-free/closed/covered
+instance is settled by `cascade_low_pos_boxfree`; the rest is the
+◯-involving (or space-uncovered) holdout `cascade_low_pos_box`. -/
 private theorem cascade_low_pos (p : String) (S : Finset PLLFormula)
     (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
     (Δ : List PLLFormula)
@@ -936,7 +2167,22 @@ private theorem cascade_low_pos (p : String) (S : Finset PLLFormula)
     (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
     (hfh : fh ≤ fuel) :
     G4c Δ (itpA p S fuel c Γ g) := by
-  sorry
+  have hc : 1 ≤ c := by
+    have hmul1 : 1 * ((jumpGoals S).card + 2) ≤
+        defect S Γ * ((jumpGoals S).card + 2) :=
+      Nat.mul_le_mul_right _ hd1
+    omega
+  by_cases hbf : (∀ F ∈ S, boxFree F) ∧
+      (∀ A B : PLLFormula, A.and B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      (∀ A B : PLLFormula, A.or B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      (∀ A B : PLLFormula, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      g ∈ S ∧ (∀ F ∈ Γ, F ∈ S)
+  · exact cascade_low_pos_boxfree p S hbf.1
+      (fun {A B} => hbf.2.1 A B) (fun {A B} => hbf.2.2.1 A B)
+      (fun {A B} => hbf.2.2.2.1 A B) fh Γ fuel c g Δ
+      hbf.2.2.2.2.1 hbf.2.2.2.2.2 hroom hc hamb hhead hfh
+  · exact cascade_low_pos_box p S fh Γ fuel c g Δ hbf hd1 hroom
+      hamb hhead hfh
 
 /-- The sealed-site descent: saturated contexts settle by the
 zero tier, the rest is the holdout. -/
