@@ -183,7 +183,7 @@ def test1 (A: PLLFormula): PLLProof :=
   PLLProof.fromInstructions steps
 
 lemma test1b (A: PLLFormula) : ¬ (test1 A).isEmpty := by
-simp [isEmpty, test1, fromInstructions, fromInstructions.fromReverse]
+  simp [isEmpty, test1, fromInstructions, fromInstructions.fromReverse]
 
 def A := prop ("A")
 #eval PLLProof.NonEmpty.conclusion ⟨ (test1 A), by exact test1b A⟩

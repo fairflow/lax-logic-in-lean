@@ -2,7 +2,10 @@ import LaxLogic.PLLFormula
 
 open PLLFormula
 
-@[match_pattern]
+-- `@[match_pattern]` removed for Lean ≥4.31: the attribute now requires an
+-- "exposed definition" (a `def`/`abbrev` body to unfold), which a bare
+-- `inductive` type never was; it was a no-op here (constructors are already
+-- directly usable in `match` without it) and is now a hard error instead.
 inductive PLLAxiom where
 -- Axioms for the modal "somehow" operator
   | somehowR (M: PLLFormula)
