@@ -57,7 +57,7 @@ private theorem andAll_project {l : List PLLFormula} {φ : PLLFormula}
   have h := G4c.iff_set.mp (G4c.iden (Γ := [φ]) (.head _))
   refine h.weaken_subset ?_
   intro y hy
-  simp only [List.toFinset_cons, List.toFinset_nil, insert_emptyc_eq,
+  simp only [List.toFinset_cons, List.toFinset_nil, Finset.insert_empty,
     Finset.mem_insert, Finset.mem_singleton] at hy
   simp only [Finset.mem_insert]
   tauto
@@ -73,7 +73,7 @@ theorem E_step {p : String} {fuel : Nat} {Γ : List PLLFormula}
     refine h₁.weaken_subset ?_
     intro y hy
     simp only [List.toFinset_cons, List.toFinset_nil,
-      insert_emptyc_eq, Finset.mem_insert, Finset.mem_singleton] at hy
+      Finset.insert_empty, Finset.mem_insert, Finset.mem_singleton] at hy
     simp only [Finset.mem_insert]
     tauto
   refine G4s.cut_adm hm (h.weaken_subset ?_)
