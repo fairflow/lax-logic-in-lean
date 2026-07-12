@@ -235,3 +235,95 @@ p-freeness, fuel-indifference (packaging only), piece-closure
 instantiation of the space `S` (packaging only; use the linear
 piece-closure finset, not `enum`, so the budget cap and the measure
 stay small).
+
+## The guarded/consumed reshaping of the seals (2026-07-12)
+
+The G4iLL post-mortem (task #13, `wip/g4ill_ui.lean`) produced two
+structural facts with a plausible transfer to the cascade holdout:
+consumed-form glue (`guardMP`: from `Δ ⊢ X` and `Y,Δ ⊢ C` conclude
+`X→Y,Δ ⊢ C`) is admissible in cut-free-incomplete G4iLL exactly where
+the retained G3 form fails, and Pitts'/UIML's *guarded* `L4→` clause
+`(E(S₁)→A(S₁)) → E(D,Γ∖F)` is in-habitat provable where Iemhoff's
+unguarded `∃pS₁` needs cut.  The transfer hypothesis — restate the
+four seal crossings of `cascade_low_pos_box` in guarded/consumed
+style — was adjudicated on a 34-pair exhaustive-nuclei zoo
+(`wip/refute4.lean`) and mechanised where it survived (`box_remap` /
+`box_reguard`, `wip/absorb_base.lean`).  Verdict: the analogy breaks
+for an identifiable structural reason; the holdout stands, but its
+obstruction and its residue are now machine-sharp.
+
+**What a seal crossing can carry is machine-delimited.**  `box_remap`
+(proved): from `Δ ⊢ ◯(E ⇢ Z)`, `E′,Δ ⊢ E`, and the inner map
+`Z, E′, Δ ⊢ Z′`, conclude `Δ ⊢ ◯(E′ ⇢ Z′)`.  The inner obligation
+receives the opened source body, the target guard, and the ENTIRE
+outer context — `laxL` retains contexts, so every formula-shaped
+resource crosses a seal.  What cannot cross is exactly the meta-level
+material: the seen-set continuations, which conclude the outer `R`.
+Every "(A)-family" guarded-engine candidate is therefore a
+repackaging of the same inner sequent.
+
+**The guard family is ambient-dominated at same-context seals.**  All
+guards in reach at a seal sit at the same `Γ` as the ambient, and
+budget-mono orders them pointwise (`E@(c+1) ⊢ E@c ⊢ E@(c−1)`), so no
+guard-strengthened restatement adds leverage there: Z6 (guarded
+descent) tracks Z1 (bare descent) on the zoo, failing at the same
+unique point with the same witness.  The surviving guarded-crossing
+law, Z2b — re-guarding one budget down with the ambient OUTSIDE the
+box — is proved (`box_reguard`); it discharges guard plumbing only,
+never the value map.
+
+**The budget floor is a ledger artifact on the A-side — with one
+structural false point.**  The bare descent
+`E@(c+1) ⊓ A@(c+1)(Γ,g) ≤ A@c(Γ,g)` with only `1 ≤ c` is zoo-TRUE at
+every probed configuration and budget `c ≥ 1` — defect 1 and 2,
+`J ∈ {1,2,4}`, chained (`S={◯p⊃r,r,◯r⊃s,s}`, floor 12) and
+shared-consequent (`S={◯p⊃r,◯p₂⊃r,r}`, floor 6) jump structures,
+mostly with zero slack — and zoo-FALSE at exactly (◯-shaped goal,
+`c = 0`), where the target table is empty (goal clause and truncation
+both b-gated; `orAll [] = ⊥`).  The defect-scaled floor
+`defect·(J+2)` is invisible to the semantics.  But the E-mate
+genuinely fails low: the floorless ascent `E@c ⊢ E@(c+1)` (Z8) is
+zoo-REFUTED at (chained-d2, `c = 1`) — chain3, nucleus `[0,2,2]`,
+`v(r)=v(s)=1` — so the mutual-pair decomposition, the only known
+proof scheme, is closed below `c = 2` by countermodel, independently
+of the seal problem.
+
+**Why the Pitts/guardMP analogy breaks.**  Her guards are
+ANTECEDENT-side: weakening carries hypotheses across any commit,
+which is exactly why the consumed forms close.  The seal deficit is
+SUCCEDENT-side-under-◯: continuations are conclusion-anchored — they
+conclude the outer disjunction `R`, strictly weaker than the single
+◯-disjunct a seal must produce — and formula-shaped stand-ins fail
+(in-context oracles `(value ⇢ R)` fire to the wrong conclusion inside
+a seal; the budget-family oracles `⋀_{β≤c}(A@(β+1) ⇢ A@β)` are the
+stabilization ladder itself).  Ledger-raising cannot compensate:
+entry `… + X` funds seals to `defect·(J+2)+X ≤ c−1` while the raised
+holdout needs `J+1+defect·(J+2)+X ≤ c−1` — short by `J+1` for every
+`X`.  This is the precise sense in which the seal problem is not a
+guardMP-shaped problem.
+
+**The fresh-antecedent seal's missing law is semantically free.**
+Z5: `E@(c+1)(Γ) ⊓ E@c(C₁::Γ) = E@(c+1)(C₁::Γ)` for `C₁ ∉ S ∪ Γ`,
+with EQUALITY on the zoo at every probed instance
+(`C₁ ∈ {u, u⊃r, ◯u}`, at and below the floor, and at the moving-E
+d2-chain config where the bare ascent Z8 fails).  A proof would kill
+the fourth seal — the one
+with no decreasing measure — without the whole-head rebuild; its
+γ-conjunct conversions recurse into the A-descent one budget down,
+i.e. into the holdout itself: same knot, but now with a zoo-true
+target on both ends.
+
+**Residue, sharpened.**  The holdout's conclusion from `1 ≤ c` alone
+is TRUE on the zoo; no known decomposition reaches it: value-form
+chains burn one budget per jump visit, cannot splice at repeats (the
+deep obligation needs a LOWER-budget value; the context holds only
+higher ones), and are forced into the (◯-goal, 0) false point; the
+continuation form splices but loses its `(J∖seen)+1` allotment at
+every seal; the mutual pair fails at `(E, c=1)`.  The mechanism the
+semantics uses at `c = 1` is SYNTACTIC starvation — b-gated tables at
+saturated/grown contexts collapse to literal `⊥`, killing every pair
+disjunct whose partner starves (e.g. `A@1(Γ,p) ⊢ ⊥` at the canonical
+config).  The identified future route: starvation-collapse lemmas
+(which `(Γ, g, b)` starve) plus a `(defect, budget)`-lex landing map
+for the `c = 1` base, meeting the pigeonhole band from below —
+cascade_main-scale machinery, recorded not attempted.
