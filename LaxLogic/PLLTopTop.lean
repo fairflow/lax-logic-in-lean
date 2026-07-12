@@ -636,7 +636,7 @@ theorem plug_step_cases : ∀ {Γ : List PLLFormula} {C A : PLLFormula}
         | bindCong₂ h' =>
             exact .inr (.inl ⟨.cons _ K₀, .frame h', rfl⟩)
       · exact .inr (.inl ⟨.cons u₀ K', .tail hK, rfl⟩)
-      · exact Tm.noConfusion hXeq
+      · cases hXeq
       · cases hXeq
         subst hKeq
         exact .inr (.inl ⟨_, .assocK u₀ w K₁, rfl⟩)
@@ -709,7 +709,7 @@ theorem principal : ∀ {Γ : List PLLFormula} {A B C : PLLFormula}
       have hKu' := hKu.step hstep
       exact IH _ (lex₃_of_lt (rank_lt_of_step hKu hKu' hstep)) s u K' hs hKu' rfl
     · -- X = val s₀: impossible, X is a bind
-      exact Tm.noConfusion hXeq
+      cases hXeq
     · -- interface assoc: same contractum, shorter stack
       cases hXeq
       subst hKeq
@@ -1089,19 +1089,20 @@ theorem sred_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
      exact ha.steps hsteps,
    fun hst => by
      obtain ⟨a', heq, _⟩ := steps_inl hst rfl
-     exact Tm.noConfusion heq⟩
+     cases heq⟩
 
 /-- Right injections of reducibles are reducible. -/
 theorem sred_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
-    (ha : SRed B a) : SRed (A.or B) (.inr a) :=
-  ⟨SNt.inr ha.sn,
-   fun hst => by
-     obtain ⟨a', heq, _⟩ := steps_inr hst rfl
-     exact Tm.noConfusion heq,
-   fun hst => by
-     obtain ⟨a', heq, hsteps⟩ := steps_inr hst rfl
-     cases heq
-     exact ha.steps hsteps⟩
+    (ha : SRed B a) : SRed (A.or B) (.inr a) := by
+  -- (Lean ≥4.31: see `red_inr` in PLLReducibility.lean for why the
+  -- impossible branch, listed first here, needs `refine` up front rather
+  -- than a plain term-mode anonymous constructor.)
+  refine ⟨SNt.inr ha.sn, fun hst => ?_, fun hst => ?_⟩
+  · obtain ⟨a', heq, _⟩ := steps_inr hst rfl
+    cases heq
+  · obtain ⟨a', heq, hsteps⟩ := steps_inr hst rfl
+    cases heq
+    exact ha.steps hsteps
 
 /-- `val`s of reducibles are reducible: immediate from the pole. -/
 theorem sred_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}

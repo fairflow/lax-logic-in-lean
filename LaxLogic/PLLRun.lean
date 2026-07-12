@@ -124,12 +124,14 @@ below. -/
 theorem unit_nd : Nonempty (LaxND [] (A₀.ifThen A₀.somehow)) := by
   pll_g4
 
-/-! The trust base of a `pll_g4`-produced proof, pinned honestly:
-`Lean.ofReduceBool` marks the compiled-evaluator step — contrast the
-kernel-only certificates of `PLLG4Gap`. -/
+/-! The trust base of a `pll_g4`-produced proof, pinned honestly: the
+per-declaration `unit_nd._native.native_decide.ax_1_1` axiom marks the
+compiled-evaluator step (Lean ≥4.31 synthesises one such axiom per
+`native_decide` use, replacing the older shared `Lean.ofReduceBool`) —
+contrast the kernel-only certificates of `PLLG4Gap`. -/
 
 /--
-info: 'PLLND.unit_nd' depends on axioms: [propext, Classical.choice, Lean.ofReduceBool, Quot.sound]
+info: 'PLLND.unit_nd' depends on axioms: [propext, Classical.choice, Quot.sound, unit_nd._native.native_decide.ax_1_1]
 -/
 #guard_msgs in
 #print axioms unit_nd

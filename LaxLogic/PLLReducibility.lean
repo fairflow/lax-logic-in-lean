@@ -811,19 +811,24 @@ theorem red_inl {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ A}
      exact ha.steps hsteps,
    fun hst => by
      obtain ⟨a', heq, _⟩ := rsteps_inl hst rfl
-     exact Tm.noConfusion heq⟩
+     cases heq⟩
 
 /-- Right injections of reducibles are reducible. -/
 theorem red_inr {Γ : List PLLFormula} {A B : PLLFormula} {a : Tm Γ B}
-    (ha : Red B a) : Red (A.or B) (.inr a) :=
-  ⟨RSN.inr ha.sn,
-   fun hst => by
-     obtain ⟨a', heq, _⟩ := rsteps_inr hst rfl
-     exact Tm.noConfusion heq,
-   fun hst => by
-     obtain ⟨a', heq, hsteps⟩ := rsteps_inr hst rfl
-     cases heq
-     exact ha.steps hsteps⟩
+    (ha : Red B a) : Red (A.or B) (.inr a) := by
+  -- (Lean ≥4.31: as a single term-mode anonymous constructor, listing the
+  -- impossible `.inl`-shape branch *first* leaves the ambient goal's sort
+  -- unresolved when `cases heq` reaches for its zero-goal no-confusion
+  -- elimination — "recursor `Exists.casesOn` can only eliminate into
+  -- `Prop`".  `refine` first to pin both branch goals to concrete `Prop`s
+  -- before either nested tactic runs; `red_inl` below didn't need this
+  -- because its impossible branch already came last.)
+  refine ⟨RSN.inr ha.sn, fun hst => ?_, fun hst => ?_⟩
+  · obtain ⟨a', heq, _⟩ := rsteps_inr hst rfl
+    cases heq
+  · obtain ⟨a', heq, hsteps⟩ := rsteps_inr hst rfl
+    cases heq
+    exact ha.steps hsteps
 
 /-- `val`s of reducibles are reducible. -/
 theorem red_val {Γ : List PLLFormula} {A : PLLFormula} {a : Tm Γ A}
@@ -869,7 +874,7 @@ theorem rsteps_bind_val : ∀ {Γ : List PLLFormula} {A B : PLLFormula}
   | refl t =>
       intro t' u hx ht H w hz
       subst hx
-      exact Tm.noConfusion hz
+      cases hz
   | head h₁ hrest ih =>
       intro t' u hx ht H w hz
       subst hx
