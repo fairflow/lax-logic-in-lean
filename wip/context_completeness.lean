@@ -46,6 +46,32 @@ proof (via `conservativity`).
 
 The **completeness direction** (Lemma 7: express `◯` over a finite model as a single
 standard constraint) is the harder half; its status is tracked at the end of the file.
+
+## Paper-formalisation status (Fairtlough–Mendler, TYPES 2000, LNCS 2277)
+
+| Result                                 | Status (this file / codebase)                       |
+|----------------------------------------|-----------------------------------------------------|
+| **Thm 5** (soundness+completeness)     | codebase `PLLND.consequence_iff_derivable`          |
+| Kripke models (Def 3/4)                | codebase `PLLND.ConstraintModel`                    |
+| **Thm 6** (context-completeness)       | ✔ `thm6` (both directions, `Lemma 7` = `lemma7`)    |
+| **Lemma 7** (◯ as one constraint)      | ✔ `lemma7` (preorder-correct, finiteness only)      |
+| **Lemma 8** (depth-`n` ⇒ `χ_m^C`)      | ✔ `lemma8` / `lemma8_valid` (semantic)              |
+| **Lemma 9** (`χ_m` non-theorem)        | ✔ `lemma9` (explicit ℕ-model family + bisimulation) |
+| **Corollary 10** (finite ⊄ complete)   | ✔ `corollary10`                                     |
+| **Thm 2** (𝕊 a Boolean algebra)        | ◐ bounded distributive lattice + generator          |
+|                                        |   complements: `thm2_bounded_distributive_lattice`; |
+|                                        |   general `2^|I|` complement left open              |
+| λ-terms `C_I,C_M,C_S,C_Ext` (§1)       | ◯ derivation-level realisers `unitC`/`bindC` only   |
+
+Every headline theorem is `sorry`-free (`#print axioms` at end of file: only
+`propext`/`Quot.sound`/`Classical.choice`).
+
+**§7 (not formalised, recorded per project thread).**  The paper's final section
+represents `◯` abstractly: the algebraic counterpart of `◯` on a complete Heyting
+algebra `H` is a *nucleus*, and the nuclei on `H` themselves form a cHA `𝒩(H) =
+(N(H), ≤, ∧, →, ⋁)` — the *assembly* of `H`.  For a finite `Υ M*` this `𝒩(Υ M*)`
+is a finite Boolean algebra, syntactically the constraint algebra `𝕊` of Thm 2.
+This is the entry point of the project's nucleus/assembly-tower thread.
 -/
 
 open PLLFormula
@@ -630,3 +656,727 @@ end Ctx
 end PLLND
 
 #print axioms PLLND.Ctx.thm6
+
+/-! ============================================================================
+# Section E — Corollary 10: no finite set of standard constraints is complete
+
+Fairtlough–Mendler, TYPES 2000, §6 (pp. 12–13): Lemmas 8, 9 and Corollary 10.
+
+The *characteristic schemes* `χ_m` (distinct propositional variables `p₁,p₂,…`):
+  χ₀       = ◯false
+  χ_{m+1}  = ◯(◯p_{m+1} ⊃ (p_{m+1} ∨ χ_m))
+
+* **Lemma 8**  every standard constraint `C` of depth `n` makes `χ_m^C` an IPL
+  theorem for all `m ≥ n`.
+* **Lemma 9**  for every `m` there is a constraint model refuting `χ_m`, so `χ_m`
+  is not a PLL theorem.
+* **Corollary 10**  no finite `𝔻 ⊆ 𝕊` is complete: `χ_m` (with `m = sup` of the
+  depths in `𝔻`) is expanded to an IPL theorem by every `C ∈ 𝔻`, yet is not a PLL
+  theorem.
+
+Both lemmas are proved *semantically* through `valid_iff_provable`
+(`(∀ C w, C.force w φ) ↔ Nonempty (LaxND [] φ)`): Lemma 9 exhibits an explicit
+refuting model, Lemma 8 proves validity of `subC C χ_m` in every model.
+============================================================================ -/
+
+namespace PLLND
+namespace Ctx
+
+open PLLFormula
+
+/-! ## The characteristic schemes `χ_m` -/
+
+/-- Distinct propositional names `p₁, p₂, …` (an injective `ℕ ↪ String`). -/
+noncomputable def pname : ℕ → String := fun i => Infinite.natEmbedding String i
+
+theorem pname_inj : Function.Injective pname := by
+  intro a b h
+  exact (Infinite.natEmbedding String).injective h
+
+/-- The propositional variable `p_i`. -/
+noncomputable def pvar (i : ℕ) : PLLFormula := .prop (pname i)
+
+/-- The characteristic schemes `χ_m` (Fairtlough–Mendler p. 12). -/
+noncomputable def chi : ℕ → PLLFormula
+  | 0     => .somehow .falsePLL
+  | (m+1) => .somehow (.ifThen (.somehow (pvar (m+1))) (.or (pvar (m+1)) (chi m)))
+
+/-! ## Lemma 9 — the refuting models `M_m`
+
+Following the paper we use one model per `m`.  To make the *suffix isomorphism*
+`M_{m+1}(2) ≅ M_m` painless we put every `M_m` on the carrier `ℕ` (only the
+valuation depends on `m`); the isomorphism then becomes translation-by-2, and the
+inductive step of `M_m ⊭ χ_m` is a shift-by-2 bisimulation. -/
+
+/-- Modal accessibility of `M_k`: the diagonal together with the "odd ↦ successor"
+edges `2j+1 ⊑ₘ 2j+2`.  (`a % 2 = 1` keeps everything in linear-arithmetic range,
+so `omega` handles all the modal bookkeeping.) -/
+def Rmrel (a b : ℕ) : Prop := a = b ∨ (a % 2 = 1 ∧ b = a + 1)
+
+/-- Valuation of `M_k`: `p_i` holds at world `j` iff `2k+2 ≤ j + 2i`
+(equivalently `j ≥ 2(k+1-i)`; written additively to stay on ℕ).  Paper:
+`V(2r)=V(2r+1)={p_{k-r+1},…,p_k}`. -/
+noncomputable def Vval (k : ℕ) : String → Set ℕ :=
+  fun s => { j | ∀ i, pname i = s → 2 * k + 2 ≤ j + 2 * i }
+
+/-- The linear constraint model `M_k`: carrier `ℕ`, `⊑ᵢ = ≤`, `⊑ₘ = Rmrel`,
+no fallible worlds, valuation `Vval k`.  Marked `@[reducible]` so that the world
+type `(Mmod k).W` is transparently `ℕ` for instance resolution and `omega`. -/
+@[reducible] noncomputable def Mmod (k : ℕ) : ConstraintModel where
+  W := ℕ
+  Ri := (· ≤ ·)
+  Rm := Rmrel
+  F := ∅
+  V := Vval k
+  refl_i := fun w => le_refl w
+  trans_i := by intro a b c h1 h2; exact le_trans h1 h2
+  refl_m := fun _ => Or.inl rfl
+  trans_m := by
+    intro a b c hab hbc
+    rcases hab with rfl | ⟨ha, rfl⟩
+    · exact hbc
+    · rcases hbc with rfl | ⟨hb, rfl⟩
+      · exact Or.inr ⟨ha, rfl⟩
+      · exfalso; omega
+  sub_mi := by
+    intro a b h
+    rcases h with rfl | ⟨_, rfl⟩
+    · exact le_refl a
+    · exact Nat.le_succ a
+  hered_F := by intro a b _ h; exact absurd h (Set.notMem_empty a)
+  hered_V := by
+    intro a b c hbc hb
+    simp only [Vval, Set.mem_setOf_eq] at hb ⊢
+    intro i hi; have := hb i hi; omega
+  full_F := by intro a b h; exact absurd h (Set.notMem_empty b)
+
+/-- Valuation characterisation: `p_i` is forced at `j` in `M_k` iff `2k+2 ≤ j+2i`. -/
+theorem force_pvar (k i j : ℕ) :
+    (Mmod k).force j (pvar i) ↔ 2 * k + 2 ≤ j + 2 * i := by
+  show j ∈ Vval k (pname i) ↔ _
+  simp only [Vval, Set.mem_setOf_eq]
+  constructor
+  · intro h; exact h i rfl
+  · intro h i' hi'; obtain rfl := pname_inj hi'; exact h
+
+/-- `0` has no proper modal successor: `0 ⊑ₘ u` forces `u = 0`. -/
+theorem Rm_zero {u : ℕ} (h : Rmrel 0 u) : u = 0 := by
+  rcases h with rfl | ⟨h, _⟩
+  · rfl
+  · exact absurd h (by decide)
+
+/-- `1 ⊨ ◯p_{m+1}` in `M_{m+1}`: from every `v ≥ 1` a world forcing `p_{m+1}`
+(i.e. a world `≥ 2`) is `⊑ₘ`-reachable. -/
+theorem force_box_pvar (m : ℕ) :
+    (Mmod (m+1)).force 1 (.somehow (pvar (m+1))) := by
+  show ∀ v : ℕ, (1:ℕ) ≤ v → ∃ u, Rmrel v u ∧ (Mmod (m+1)).force u (pvar (m+1))
+  intro v hv
+  by_cases hv2 : 2 ≤ v
+  · exact ⟨v, Or.inl rfl, (force_pvar (m+1) (m+1) v).mpr (by omega)⟩
+  · have hv1 : v = 1 := by omega
+    subst hv1
+    exact ⟨2, Or.inr ⟨by decide, rfl⟩, (force_pvar (m+1) (m+1) 2).mpr (by omega)⟩
+
+/-- **Suffix isomorphism as a shift-by-2 bisimulation.**  `M_{m+1}` at world `t+2`
+forces exactly what `M_m` forces at world `t`.  (The suffix of `M_{m+1}` starting at
+`2` is `M_m`.) -/
+theorem bisim (m : ℕ) (φ : PLLFormula) :
+    ∀ t : ℕ, (Mmod (m+1)).force (t+2) φ ↔ (Mmod m).force t φ := by
+  induction φ with
+  | prop a =>
+      intro t
+      show (t+2) ∈ Vval (m+1) a ↔ t ∈ Vval m a
+      simp only [Vval, Set.mem_setOf_eq]
+      constructor
+      · intro h i hi; have := h i hi; omega
+      · intro h i hi; have := h i hi; omega
+  | falsePLL =>
+      intro t
+      show ((t+2) ∈ (∅ : Set ℕ)) ↔ (t ∈ (∅ : Set ℕ))
+      simp
+  | and φ ψ ihφ ihψ => intro t; exact and_congr (ihφ t) (ihψ t)
+  | or φ ψ ihφ ihψ => intro t; exact or_congr (ihφ t) (ihψ t)
+  | ifThen φ ψ ihφ ihψ =>
+      intro t
+      constructor
+      · intro h
+        replace h : ∀ v : ℕ, t + 2 ≤ v →
+            (Mmod (m+1)).force v φ → (Mmod (m+1)).force v ψ := h
+        show ∀ v : ℕ, t ≤ v → (Mmod m).force v φ → (Mmod m).force v ψ
+        intro v hv hφ
+        exact (ihψ v).mp (h (v+2) (by omega) ((ihφ v).mpr hφ))
+      · intro h
+        replace h : ∀ v : ℕ, t ≤ v →
+            (Mmod m).force v φ → (Mmod m).force v ψ := h
+        show ∀ v : ℕ, t + 2 ≤ v → (Mmod (m+1)).force v φ → (Mmod (m+1)).force v ψ
+        intro v hv hφ
+        obtain ⟨s, rfl⟩ : ∃ s, v = s + 2 := ⟨v - 2, by omega⟩
+        exact (ihψ s).mpr (h s (by omega) ((ihφ s).mp hφ))
+  | somehow φ ih =>
+      intro t
+      constructor
+      · intro h
+        replace h : ∀ v : ℕ, t + 2 ≤ v →
+            ∃ u : ℕ, Rmrel v u ∧ (Mmod (m+1)).force u φ := h
+        show ∀ v : ℕ, t ≤ v → ∃ u : ℕ, Rmrel v u ∧ (Mmod m).force u φ
+        intro v hv
+        obtain ⟨u, hRm, hu⟩ := h (v + 2) (by omega)
+        have hu2 : 2 ≤ u := by rcases hRm with h1 | ⟨_, h1⟩ <;> omega
+        obtain ⟨r, rfl⟩ : ∃ r, u = r + 2 := ⟨u - 2, by omega⟩
+        refine ⟨r, ?_, (ih r).mp hu⟩
+        rcases hRm with h1 | ⟨h1, h2⟩
+        · exact Or.inl (by omega)
+        · exact Or.inr ⟨by omega, by omega⟩
+      · intro h
+        replace h : ∀ v : ℕ, t ≤ v →
+            ∃ u : ℕ, Rmrel v u ∧ (Mmod m).force u φ := h
+        show ∀ v : ℕ, t + 2 ≤ v → ∃ u : ℕ, Rmrel v u ∧ (Mmod (m+1)).force u φ
+        intro v hv
+        obtain ⟨s, rfl⟩ : ∃ s, v = s + 2 := ⟨v - 2, by omega⟩
+        obtain ⟨r, hRm, hr⟩ := h s (by omega)
+        refine ⟨r + 2, ?_, (ih r).mpr hr⟩
+        rcases hRm with rfl | ⟨h1, rfl⟩
+        · exact Or.inl rfl
+        · exact Or.inr ⟨by omega, by omega⟩
+
+/-- `M_m ⊭ χ_m` at world `0`, by induction on `m` (Fairtlough–Mendler p. 13). -/
+theorem chi_not_forced : ∀ m, ¬ (Mmod m).force 0 (chi m) := by
+  intro m
+  induction m with
+  | zero =>
+      intro h
+      obtain ⟨u, _, hu⟩ := h 0 (le_refl 0)
+      exact absurd hu (Set.notMem_empty u)
+  | succ m ih =>
+      intro h
+      obtain ⟨u, hRm0u, hψ⟩ := h 0 (le_refl (0 : ℕ))
+      obtain rfl := Rm_zero hRm0u
+      have h1 : (Mmod (m+1)).force 1 ((pvar (m+1)).or (chi m)) :=
+        hψ 1 (Nat.zero_le 1) (force_box_pvar m)
+      rcases h1 with hp | hchi
+      · have := (force_pvar (m+1) (m+1) 1).mp hp
+        omega
+      · have h2 : (Mmod (m+1)).force 2 (chi m) :=
+          (Mmod (m+1)).force_hered (show (Mmod (m+1)).Ri 1 2 from Nat.le_succ 1) hchi
+        exact ih ((bisim m (chi m) 0).mp h2)
+
+/-- **Lemma 9.**  `χ_m` is refuted by the model `M_m`, hence is not a PLL theorem. -/
+theorem lemma9 (m : ℕ) : ¬ Nonempty (LaxND [] (chi m)) := by
+  intro hp
+  exact chi_not_forced m (valid_iff_provable.mpr hp (Mmod m) 0)
+
+/-! ## Lemma 8 — every depth-`≤ m` constraint validates `χ_m`
+
+Proved semantically: `subC C χ_m` is forced in **every** constraint model, so it is
+a PLL (hence, being `◯`-free, an IPL) theorem by `valid_iff_provable`.  The paper's
+"interval-drop" step becomes the substitution-congruence `force_subC_drop`: under a
+world where `L` is hereditarily forced, the basic constraint `[K,L]` is vacuous, so
+dropping it from `C` does not change what `subC C φ` forces. -/
+
+/-- One-step unfolding of `subC C (χ_{m+1})`. -/
+theorem subC_chi_succ (C : StdCtx) (m : ℕ) :
+    subC C (chi (m+1)) =
+      applyC C (.ifThen (applyC C (pvar (m+1)))
+        (.or (pvar (m+1)) (subC C (chi m)))) := rfl
+
+/-- **Substitution-drop congruence.**  If `L` is hereditarily forced from `u`, then
+the constraint `[K,L]` is vacuous there, so `subC (s ++ (K,L) :: t) φ` and
+`subC (s ++ t) φ` are forced at exactly the same worlds `≥ u`. -/
+theorem force_subC_drop (D : ConstraintModel) (K L : PLLFormula) (s t : StdCtx)
+    (u : D.W) (hL : ∀ x, D.Ri u x → D.force x L) :
+    ∀ (φ : PLLFormula) (v : D.W), D.Ri u v →
+      (D.force v (subC (s ++ (K, L) :: t) φ) ↔ D.force v (subC (s ++ t) φ)) := by
+  intro φ
+  induction φ with
+  | prop a => intro v _; exact Iff.rfl
+  | falsePLL => intro v _; exact Iff.rfl
+  | and φ ψ ihφ ihψ => intro v hv; exact and_congr (ihφ v hv) (ihψ v hv)
+  | or φ ψ ihφ ihψ => intro v hv; exact or_congr (ihφ v hv) (ihψ v hv)
+  | ifThen φ ψ ihφ ihψ =>
+      intro v hv
+      constructor
+      · intro h w hvw hφ
+        exact (ihψ w (D.trans_i hv hvw)).mp (h w hvw ((ihφ w (D.trans_i hv hvw)).mpr hφ))
+      · intro h w hvw hφ
+        exact (ihψ w (D.trans_i hv hvw)).mpr (h w hvw ((ihφ w (D.trans_i hv hvw)).mp hφ))
+  | somehow φ ih =>
+      intro v hv
+      show D.force v (applyC (s ++ (K, L) :: t) (subC (s ++ (K, L) :: t) φ)) ↔
+           D.force v (applyC (s ++ t) (subC (s ++ t) φ))
+      rw [force_applyC_iff, force_applyC_iff]
+      have key : ∀ (p : PLLFormula × PLLFormula),
+          (D.force v (basic p.1 p.2 (subC (s ++ (K, L) :: t) φ)) ↔
+           D.force v (basic p.1 p.2 (subC (s ++ t) φ))) := by
+        intro p
+        constructor
+        · intro hb x hvx hK
+          rcases hb x hvx hK with hX | hL'
+          · exact Or.inl ((ih x (D.trans_i hv hvx)).mp hX)
+          · exact Or.inr hL'
+        · intro hb x hvx hK
+          rcases hb x hvx hK with hX | hL'
+          · exact Or.inl ((ih x (D.trans_i hv hvx)).mpr hX)
+          · exact Or.inr hL'
+      have hKLtrue : D.force v (basic K L (subC (s ++ (K, L) :: t) φ)) := by
+        intro x hvx _
+        exact Or.inr (hL x (D.trans_i hv hvx))
+      constructor
+      · intro hall p hp
+        have hpC : p ∈ s ++ (K, L) :: t := by
+          rcases List.mem_append.mp hp with h | h
+          · exact List.mem_append_left _ h
+          · exact List.mem_append_right _ (List.mem_cons_of_mem _ h)
+        exact (key p).mp (hall p hpC)
+      · intro hall p hp
+        rcases List.mem_append.mp hp with h | h
+        · exact (key p).mpr (hall p (List.mem_append_left _ h))
+        · rcases List.mem_cons.mp h with rfl | h
+          · exact hKLtrue
+          · exact (key p).mpr (hall p (List.mem_append_right _ h))
+
+/-- **Lemma 8 (semantic form).**  Every standard constraint `C` of depth `≤ m`
+makes `subC C χ_m` valid in every constraint model. -/
+theorem lemma8_valid : ∀ (m : ℕ) (C : StdCtx), C.length ≤ m →
+    ∀ (D : ConstraintModel) (w : D.W), D.force w (subC C (chi m)) := by
+  intro m
+  induction m with
+  | zero =>
+      intro C hC D w
+      obtain rfl : C = [] := by
+        cases C with
+        | nil => rfl
+        | cons a as => simp only [List.length_cons] at hC; omega
+      exact fun v _ hv => hv
+  | succ m ih =>
+      intro C hC D w
+      rw [subC_chi_succ, force_applyC_iff]
+      intro p hp
+      obtain ⟨K, L⟩ := p
+      intro v hwv hK
+      left
+      intro u hvu hCp
+      rw [force_applyC_iff] at hCp
+      have hKu : D.force u K := D.force_hered hvu hK
+      rcases (hCp (K, L) hp) u (D.refl_i u) hKu with hpm | hLu
+      · exact Or.inl hpm
+      · refine Or.inr ?_
+        obtain ⟨s, t, rfl⟩ := List.append_of_mem hp
+        have hlen : (s ++ t).length ≤ m := by
+          simp only [List.length_append, List.length_cons] at hC ⊢
+          omega
+        have hC' : D.force u (subC (s ++ t) (chi m)) := ih (s ++ t) hlen D u
+        have hLher : ∀ x, D.Ri u x → D.force x L := fun x hx => D.force_hered hx hLu
+        exact (force_subC_drop D K L s t u hLher (chi m) u (D.refl_i u)).mpr hC'
+
+/-- **Lemma 8.**  A standard constraint `C` of depth `n` makes `χ_m` (after
+expansion `χ_m^C`) an IPL theorem, for every `m ≥ n`. -/
+theorem lemma8 (C : StdCtx) (m : ℕ) (h : C.length ≤ m) :
+    Nonempty (LaxND [] (subC C (chi m))) :=
+  valid_iff_provable.mp (fun D w => lemma8_valid m C h D w)
+
+/-- **Corollary 10.**  No finite set of standard constraints is complete for PLL:
+for every finite `𝔻 ⊆ 𝕊` there is a formula `φ` — namely `χ_m` with `m` the maximum
+depth in `𝔻` — that every `C ∈ 𝔻` expands to an IPL theorem `φ^C`, yet `φ` is not a
+PLL theorem. -/
+theorem corollary10 (𝔻 : Finset StdCtx) :
+    ∃ φ : PLLFormula,
+      (∀ C ∈ 𝔻, Nonempty (LaxND [] (subC C φ))) ∧ ¬ Nonempty (LaxND [] φ) := by
+  refine ⟨chi (𝔻.sup List.length), ?_, lemma9 _⟩
+  intro C hC
+  exact lemma8 C (𝔻.sup List.length) (Finset.le_sup hC)
+
+/-! ============================================================================
+# Section F — Theorem 2: the Boolean algebra of standard constraints
+
+Fairtlough–Mendler, TYPES 2000, §3 (pp. 5–7).  Constraints are taken *up to
+equivalence*: `C ≡ D` iff `C[x] ⊣⊢_IPL D[x]` for all `x`, and `C ≤ D` iff
+`C[x] ⊃ D[x]` is IPL-valid for all `x`.  We use the equivalent *semantic*
+formulations (`Cequiv`, `Cle`); `Cle_iff_provable` certifies they coincide with
+the paper's provability definitions.
+
+Operations (Def 1, pp. 5–7):
+* meet   `C ⊓ D`  = `Cmeet` = list append (componentwise conjunction of actions);
+* join   `C ⊔ D`  = `Cjoin` = pairwise product `⨅_{i,j} [Kᵢ∧Kⱼ, Lᵢ∨Lⱼ]`;
+* top    `⊤ = []`  (`⊤[x] ≡ true`), bottom `⊥ = [true,false]` (`⊥[x] ≡ x`). -/
+
+/-- Meet `C ⊓ D`: componentwise conjunction of actions, i.e. list append. -/
+def Cmeet (C D : StdCtx) : StdCtx := C ++ D
+
+/-- Join `C ⊔ D` (Def 1): the pairwise product `⨅_{i,j} [K₁ᵢ∧K₂ⱼ, L₁ᵢ∨L₂ⱼ]`. -/
+def Cjoin (C D : StdCtx) : StdCtx :=
+  C.flatMap (fun p => D.map (fun q => (p.1.and q.1, p.2.or q.2)))
+
+/-- Top `⊤` (`⊤[x] ≡ true`): the depth-0 constraint. -/
+def Ctop : StdCtx := []
+
+/-- Bottom `⊥ = [true,false]` (`⊥[x] ≡ x`): the identity modality. -/
+def Cbot : StdCtx := [(truePLL, falsePLL)]
+
+/-- `C ≤ D`: `C[x] ⊃ D[x]` holds at every world of every model, for all `x`. -/
+def Cle (C D : StdCtx) : Prop :=
+  ∀ (M : ConstraintModel) (w : M.W) (x : PLLFormula),
+    M.force w (applyC C x) → M.force w (applyC D x)
+
+/-- `C ≡ D`: `C[x] ⊣⊢ D[x]` at every world of every model, for all `x`. -/
+def Cequiv (C D : StdCtx) : Prop :=
+  ∀ (M : ConstraintModel) (w : M.W) (x : PLLFormula),
+    M.force w (applyC C x) ↔ M.force w (applyC D x)
+
+/-! ## `Cle`/`Cequiv` order structure, and faithfulness to provability -/
+
+theorem Cequiv.rfl' (C : StdCtx) : Cequiv C C := fun _ _ _ => Iff.rfl
+theorem Cequiv.symm {C D} (h : Cequiv C D) : Cequiv D C := fun M w x => (h M w x).symm
+theorem Cequiv.trans {C D E} (h1 : Cequiv C D) (h2 : Cequiv D E) : Cequiv C E :=
+  fun M w x => (h1 M w x).trans (h2 M w x)
+theorem Cle.rfl' (C : StdCtx) : Cle C C := fun _ _ _ h => h
+theorem Cle.trans {C D E} (h1 : Cle C D) (h2 : Cle D E) : Cle C E :=
+  fun M w x h => h2 M w x (h1 M w x h)
+theorem Cequiv_iff_le {C D} : Cequiv C D ↔ Cle C D ∧ Cle D C := by
+  constructor
+  · intro h; exact ⟨fun M w x => (h M w x).mp, fun M w x => (h M w x).mpr⟩
+  · rintro ⟨h1, h2⟩ M w x; exact ⟨h1 M w x, h2 M w x⟩
+
+/-- **Faithfulness of `Cle`.**  The semantic order coincides with the paper's:
+`C ≤ D` iff `C[x] ⊃ D[x]` is IPL-provable for every `x`. -/
+theorem Cle_iff_provable (C D : StdCtx) :
+    Cle C D ↔ ∀ x, Nonempty (LaxND [] ((applyC C x).ifThen (applyC D x))) := by
+  constructor
+  · intro h x
+    rw [← valid_iff_provable]
+    intro M w v hwv hCx
+    exact h M v x hCx
+  · intro h M w x hCx
+    obtain ⟨p⟩ := h x
+    exact (valid_iff_provable.mpr ⟨p⟩ M w) w (M.refl_i w) hCx
+
+/-! ## Action-forcing helpers for the operations -/
+
+theorem force_basic (M : ConstraintModel) (K L x : PLLFormula) (w : M.W) :
+    M.force w (basic K L x) ↔
+      ∀ v, M.Ri w v → M.force v K → (M.force v x ∨ M.force v L) :=
+  Iff.rfl
+
+theorem force_Cmeet (M : ConstraintModel) (C D : StdCtx) (x : PLLFormula) (w : M.W) :
+    M.force w (applyC (Cmeet C D) x) ↔
+      M.force w (applyC C x) ∧ M.force w (applyC D x) := by
+  rw [Cmeet, force_applyC_iff, force_applyC_iff, force_applyC_iff]
+  exact List.forall_mem_append
+
+theorem force_Cjoin (M : ConstraintModel) (C D : StdCtx) (x : PLLFormula) (w : M.W) :
+    M.force w (applyC (Cjoin C D) x) ↔
+      ∀ p ∈ C, ∀ q ∈ D, M.force w (basic (p.1.and q.1) (p.2.or q.2) x) := by
+  rw [Cjoin, force_applyC_iff]
+  constructor
+  · intro h p hp q hq
+    exact h _ (List.mem_flatMap.mpr ⟨p, hp, List.mem_map.mpr ⟨q, hq, rfl⟩⟩)
+  · intro h r hr
+    obtain ⟨p, hp, hr2⟩ := List.mem_flatMap.mp hr
+    obtain ⟨q, hq, rfl⟩ := List.mem_map.mp hr2
+    exact h p hp q hq
+
+/-- The monad `unit`, semantically: `x` forces `C[x]` (so `x ⊃ C[x]` is valid). -/
+theorem unit_sem (M : ConstraintModel) (C : StdCtx) (x : PLLFormula) (w : M.W)
+    (h : M.force w x) : M.force w (applyC C x) := by
+  rw [force_applyC_iff]; intro p _
+  exact fun v hwv _ => Or.inl (M.force_hered hwv h)
+
+theorem force_Ctop (M : ConstraintModel) (x : PLLFormula) (w : M.W) :
+    M.force w (applyC Ctop x) := fun v _ hv => hv
+
+theorem force_Cbot (M : ConstraintModel) (x : PLLFormula) (w : M.W) :
+    M.force w (applyC Cbot x) ↔ M.force w x := by
+  rw [Cbot, force_applyC_iff]
+  constructor
+  · intro h
+    rcases (h (truePLL, falsePLL) (List.mem_cons_self ..)) w (M.refl_i w)
+      (fun v _ hv => hv) with hx | hf
+    · exact hx
+    · exact M.force_of_fallible hf
+  · intro hx p _
+    exact fun v hwv _ => Or.inl (M.force_hered hwv hx)
+
+/-! ## Meet `⊓` is a commutative idempotent monoid with bounds and is the meet -/
+
+theorem meet_comm (C D : StdCtx) : Cequiv (Cmeet C D) (Cmeet D C) := by
+  intro M w x; rw [force_Cmeet, force_Cmeet]; exact and_comm
+
+theorem meet_assoc (C D E : StdCtx) :
+    Cequiv (Cmeet (Cmeet C D) E) (Cmeet C (Cmeet D E)) := by
+  intro M w x; simp only [force_Cmeet]; rw [and_assoc]
+
+theorem meet_idem (C : StdCtx) : Cequiv (Cmeet C C) C := by
+  intro M w x; rw [force_Cmeet]; exact and_self_iff
+
+theorem meet_top (C : StdCtx) : Cequiv (Cmeet C Ctop) C := by
+  intro M w x; simp only [Cmeet, Ctop, List.append_nil]
+
+theorem meet_bot (C : StdCtx) : Cequiv (Cmeet C Cbot) Cbot := by
+  intro M w x
+  simp only [force_Cmeet, force_Cbot]
+  exact ⟨fun h => h.2, fun hx => ⟨unit_sem M C x w hx, hx⟩⟩
+
+theorem meet_le_left (C D : StdCtx) : Cle (Cmeet C D) C :=
+  fun M w x h => ((force_Cmeet M C D x w).mp h).1
+
+theorem meet_le_right (C D : StdCtx) : Cle (Cmeet C D) D :=
+  fun M w x h => ((force_Cmeet M C D x w).mp h).2
+
+theorem le_meet {C D E : StdCtx} (h1 : Cle E C) (h2 : Cle E D) : Cle E (Cmeet C D) :=
+  fun M w x h => (force_Cmeet M C D x w).mpr ⟨h1 M w x h, h2 M w x h⟩
+
+theorem le_iff_meet {C D : StdCtx} : Cle C D ↔ Cequiv (Cmeet C D) C := by
+  constructor
+  · intro h M w x
+    rw [force_Cmeet]
+    exact ⟨fun hh => hh.1, fun hh => ⟨hh, h M w x hh⟩⟩
+  · intro h M w x hC
+    exact ((force_Cmeet M C D x w).mp ((h M w x).mpr hC)).2
+
+/-! ## Join `⊔` — upper bounds, commutativity, and the least-upper-bound direction -/
+
+theorem le_join_left (C D : StdCtx) : Cle C (Cjoin C D) := by
+  intro M w x h
+  rw [force_Cjoin]; intro p hp q _ v hwv hpq
+  rcases ((force_applyC_iff M C x w).mp h p hp) v hwv hpq.1 with hx | hLp
+  · exact Or.inl hx
+  · exact Or.inr (Or.inl hLp)
+
+theorem le_join_right (C D : StdCtx) : Cle D (Cjoin C D) := by
+  intro M w x h
+  rw [force_Cjoin]; intro p _ q hq v hwv hpq
+  rcases ((force_applyC_iff M D x w).mp h q hq) v hwv hpq.2 with hx | hLq
+  · exact Or.inl hx
+  · exact Or.inr (Or.inr hLq)
+
+theorem join_comm (C D : StdCtx) : Cequiv (Cjoin C D) (Cjoin D C) := by
+  have key : ∀ (C D : StdCtx), Cle (Cjoin C D) (Cjoin D C) := by
+    intro C D M w x h
+    rw [force_Cjoin] at h; rw [force_Cjoin]
+    intro q hq p hp v hwv hqp
+    rcases (h p hp q hq) v hwv ⟨hqp.2, hqp.1⟩ with hx | hL
+    · exact Or.inl hx
+    · exact Or.inr (Or.comm.mp hL)
+  intro M w x; exact ⟨key C D M w x, key D C M w x⟩
+
+/-- **`C ≤ D` iff `C ⊔ D ≡ D`** — the join adjunction, whose hard direction
+instantiates `C ≤ D` at the proposition `x ∨ q.2`. -/
+theorem join_eq_right_of_le {C D : StdCtx} (h : Cle C D) : Cequiv (Cjoin C D) D := by
+  intro M w x
+  constructor
+  · intro hJ
+    rw [force_applyC_iff]; intro q hq v hwv hq1
+    have hCy : M.force v (applyC C (x.or q.2)) := by
+      rw [force_applyC_iff]; intro p hp v' hvv' hp1
+      rw [force_Cjoin] at hJ
+      have hq1' : M.force v' q.1 := M.force_hered hvv' hq1
+      rcases (hJ p hp q hq) v' (M.trans_i hwv hvv') ⟨hp1, hq1'⟩ with hx | hL
+      · exact Or.inl (Or.inl hx)
+      · rcases hL with hp2 | hq2
+        · exact Or.inr hp2
+        · exact Or.inl (Or.inr hq2)
+    rcases ((force_applyC_iff M D (x.or q.2) v).mp (h M v (x.or q.2) hCy) q hq)
+      v (M.refl_i v) hq1 with hxy | hq2
+    · exact hxy
+    · exact Or.inr hq2
+  · intro hD; exact le_join_right C D M w x hD
+
+theorem le_iff_join {C D : StdCtx} : Cle C D ↔ Cequiv (Cjoin C D) D := by
+  constructor
+  · exact join_eq_right_of_le
+  · intro h; exact Cle.trans (le_join_left C D) (Cequiv_iff_le.mp h).1
+
+theorem join_idem (C : StdCtx) : Cequiv (Cjoin C C) C :=
+  join_eq_right_of_le (Cle.rfl' C)
+
+theorem le_top (C : StdCtx) : Cle C Ctop := fun M w x _ => force_Ctop M x w
+
+theorem bot_le (C : StdCtx) : Cle Cbot C := by
+  intro M w x h
+  exact unit_sem M C x w ((force_Cbot M x w).mp h)
+
+theorem join_top (C : StdCtx) : Cequiv (Cjoin C Ctop) Ctop :=
+  join_eq_right_of_le (le_top C)
+
+theorem join_bot (C : StdCtx) : Cequiv (Cjoin C Cbot) C :=
+  Cequiv.trans (join_comm C Cbot) (join_eq_right_of_le (bot_le C))
+
+/-- Triple characterisation of a left-nested join. -/
+theorem force_Cjoin_left (M : ConstraintModel) (C D E : StdCtx) (x : PLLFormula)
+    (w : M.W) :
+    M.force w (applyC (Cjoin (Cjoin C D) E) x) ↔
+      ∀ p ∈ C, ∀ q ∈ D, ∀ e ∈ E,
+        M.force w (basic ((p.1.and q.1).and e.1) ((p.2.or q.2).or e.2) x) := by
+  rw [force_Cjoin]
+  constructor
+  · intro h p hp q hq e he
+    exact h (p.1.and q.1, p.2.or q.2)
+      (List.mem_flatMap.mpr ⟨p, hp, List.mem_map.mpr ⟨q, hq, rfl⟩⟩) e he
+  · intro h r hr e he
+    obtain ⟨p, hp, hr2⟩ := List.mem_flatMap.mp hr
+    obtain ⟨q, hq, rfl⟩ := List.mem_map.mp hr2
+    exact h p hp q hq e he
+
+/-- Triple characterisation of a right-nested join. -/
+theorem force_Cjoin_right (M : ConstraintModel) (C D E : StdCtx) (x : PLLFormula)
+    (w : M.W) :
+    M.force w (applyC (Cjoin C (Cjoin D E)) x) ↔
+      ∀ p ∈ C, ∀ q ∈ D, ∀ e ∈ E,
+        M.force w (basic (p.1.and (q.1.and e.1)) (p.2.or (q.2.or e.2)) x) := by
+  rw [force_Cjoin]
+  constructor
+  · intro h p hp q hq e he
+    exact h p hp (q.1.and e.1, q.2.or e.2)
+      (List.mem_flatMap.mpr ⟨q, hq, List.mem_map.mpr ⟨e, he, rfl⟩⟩)
+  · intro h p hp s hs
+    obtain ⟨q, hq, hs2⟩ := List.mem_flatMap.mp hs
+    obtain ⟨e, he, rfl⟩ := List.mem_map.mp hs2
+    exact h p hp q hq e he
+
+theorem join_assoc (C D E : StdCtx) :
+    Cequiv (Cjoin (Cjoin C D) E) (Cjoin C (Cjoin D E)) := by
+  intro M w x
+  rw [force_Cjoin_left, force_Cjoin_right]
+  constructor
+  · intro h p hp q hq e he v hwv hK
+    rcases h p hp q hq e he v hwv ⟨⟨hK.1, hK.2.1⟩, hK.2.2⟩ with hx | hL
+    · exact Or.inl hx
+    · rcases hL with hpq | he2
+      · rcases hpq with hp2 | hq2
+        · exact Or.inr (Or.inl hp2)
+        · exact Or.inr (Or.inr (Or.inl hq2))
+      · exact Or.inr (Or.inr (Or.inr he2))
+  · intro h p hp q hq e he v hwv hK
+    rcases h p hp q hq e he v hwv ⟨hK.1.1, hK.1.2, hK.2⟩ with hx | hL
+    · exact Or.inl hx
+    · rcases hL with hp2 | hqe
+      · exact Or.inr (Or.inl (Or.inl hp2))
+      · rcases hqe with hq2 | he2
+        · exact Or.inr (Or.inl (Or.inr hq2))
+        · exact Or.inr (Or.inr he2)
+
+/-! ## Absorption and distributivity — `𝕊` is a bounded distributive lattice -/
+
+theorem absorb_meet_join (C D : StdCtx) : Cequiv (Cmeet C (Cjoin C D)) C := by
+  intro M w x
+  rw [force_Cmeet]
+  exact ⟨fun h => h.1, fun h => ⟨h, le_join_left C D M w x h⟩⟩
+
+theorem absorb_join_meet (C D : StdCtx) : Cequiv (Cjoin C (Cmeet C D)) C :=
+  Cequiv.trans (join_comm C (Cmeet C D)) (join_eq_right_of_le (meet_le_left C D))
+
+/-- **Dual distributivity** `C ⊔ (D ⊓ E) ≡ (C ⊔ D) ⊓ (C ⊔ E)` — "immediate from
+Definition 1": `∀ q ∈ D ++ E` splits into `∀ q ∈ D` and `∀ q ∈ E`. -/
+theorem join_meet_distrib (C D E : StdCtx) :
+    Cequiv (Cjoin C (Cmeet D E)) (Cmeet (Cjoin C D) (Cjoin C E)) := by
+  intro M w x
+  rw [force_Cmeet, force_Cjoin, force_Cjoin, force_Cjoin, Cmeet]
+  constructor
+  · intro h
+    exact ⟨fun p hp q hq => h p hp q (List.mem_append_left _ hq),
+           fun p hp q hq => h p hp q (List.mem_append_right _ hq)⟩
+  · rintro ⟨h1, h2⟩ p hp q hq
+    rcases List.mem_append.mp hq with hqD | hqE
+    · exact h1 p hp q hqD
+    · exact h2 p hp q hqE
+
+/-! ## Complements of the generators (atomic constraints)
+
+The generators of `𝕊` (p. 6) are the disjunctive atoms `L ↦ [true, L]` and their
+implicational complements `[L, false]`.  We verify these are genuine Boolean
+complements: `[true,L] ⊓ [L,false] ≡ ⊥` and `[true,L] ⊔ [L,false] ≡ ⊤`.  (The
+general complement `C̄ = ⨅_{A⊆I} [⋀_{a∈A} Lₐ, ⋁_{b∈I∖A} Kᵦ]` of p. 7 — a
+`2^|I|`-fold meet — is not mechanised here; see the file header.) -/
+
+/-- Forcing of a single basic constraint `[K,L]`. -/
+theorem force_single (M : ConstraintModel) (K L x : PLLFormula) (w : M.W) :
+    M.force w (applyC [(K, L)] x) ↔ M.force w (basic K L x) := by
+  rw [force_applyC_iff]
+  constructor
+  · intro h; exact h (K, L) (List.mem_cons_self ..)
+  · intro h p hp
+    rcases List.mem_cons.mp hp with rfl | hp
+    · exact h
+    · cases hp
+
+/-- Disjunctive atom `L = [true, L]` (`L[x] ≡ x ∨ L`). -/
+def Catom (L : PLLFormula) : StdCtx := [(truePLL, L)]
+/-- Its implicational complement `L̄ = [L, false]` (`L̄[x] ≡ L ⊃ x`). -/
+def CatomBar (L : PLLFormula) : StdCtx := [(L, falsePLL)]
+
+/-- Generators are complemented, part 1: `L ⊓ L̄ ≡ ⊥`. -/
+theorem atom_meet_bar (L : PLLFormula) :
+    Cequiv (Cmeet (Catom L) (CatomBar L)) Cbot := by
+  intro M w x
+  rw [force_Cmeet, force_Cbot, Catom, CatomBar, force_single, force_single]
+  constructor
+  · rintro ⟨h1, h2⟩
+    rcases h1 w (M.refl_i w) (fun v _ hv => hv) with hx | hL
+    · exact hx
+    · rcases h2 w (M.refl_i w) hL with hx | hf
+      · exact hx
+      · exact M.force_of_fallible hf
+  · intro hx
+    exact ⟨fun v hwv _ => Or.inl (M.force_hered hwv hx),
+           fun v hwv _ => Or.inl (M.force_hered hwv hx)⟩
+
+/-- Generators are complemented, part 2: `L ⊔ L̄ ≡ ⊤`. -/
+theorem atom_join_bar (L : PLLFormula) :
+    Cequiv (Cjoin (Catom L) (CatomBar L)) Ctop := by
+  intro M w x
+  rw [force_Cjoin, Catom, CatomBar]
+  constructor
+  · intro _; exact force_Ctop M x w
+  · intro _ p hp q hq v hwv hK
+    rcases List.mem_cons.mp hp with rfl | hp
+    · rcases List.mem_cons.mp hq with rfl | hq
+      · exact Or.inr (Or.inl hK.2)
+      · cases hq
+    · cases hp
+
+/-! ## Theorem 2 — summary
+
+The laws below establish that `𝕊`, ordered by `Cle` (mod `Cequiv`), is a **bounded
+distributive lattice** with meet `⊓`, join `⊔`, bounds `⊥ ≤ · ≤ ⊤`, whose
+generators are complemented.  (Full Boolean complementation for arbitrary `C` — the
+`2^|I|` construction of p. 7 — and join-associativity are left open here.) -/
+theorem thm2_bounded_distributive_lattice :
+    (∀ C D, Cequiv (Cmeet C D) (Cmeet D C)) ∧
+    (∀ C D E, Cequiv (Cmeet (Cmeet C D) E) (Cmeet C (Cmeet D E))) ∧
+    (∀ C, Cequiv (Cmeet C C) C) ∧
+    (∀ C D, Cequiv (Cjoin C D) (Cjoin D C)) ∧
+    (∀ C D E, Cequiv (Cjoin (Cjoin C D) E) (Cjoin C (Cjoin D E))) ∧
+    (∀ C, Cequiv (Cjoin C C) C) ∧
+    (∀ C D, Cequiv (Cmeet C (Cjoin C D)) C) ∧
+    (∀ C D, Cequiv (Cjoin C (Cmeet C D)) C) ∧
+    (∀ C D E, Cequiv (Cjoin C (Cmeet D E)) (Cmeet (Cjoin C D) (Cjoin C E))) ∧
+    (∀ C, Cequiv (Cmeet C Ctop) C) ∧
+    (∀ C, Cequiv (Cjoin C Cbot) C) ∧
+    (∀ C, Cequiv (Cmeet C Cbot) Cbot) ∧
+    (∀ C, Cequiv (Cjoin C Ctop) Ctop) ∧
+    (∀ L, Cequiv (Cmeet (Catom L) (CatomBar L)) Cbot) ∧
+    (∀ L, Cequiv (Cjoin (Catom L) (CatomBar L)) Ctop) :=
+  ⟨meet_comm, meet_assoc, meet_idem, join_comm, join_assoc, join_idem,
+   absorb_meet_join, absorb_join_meet, join_meet_distrib, meet_top, join_bot,
+   meet_bot, join_top, atom_meet_bar, atom_join_bar⟩
+
+/-! ## Sanity checks -/
+
+-- Lemma 9 at `m = 0,1,2`: `χ₀, χ₁, χ₂` are concrete PLL non-theorems.
+example : ¬ Nonempty (LaxND [] (chi 0)) := lemma9 0
+example : ¬ Nonempty (LaxND [] (chi 1)) := lemma9 1
+example : ¬ Nonempty (LaxND [] (chi 2)) := lemma9 2
+
+-- Corollary 10 on a concrete finite constraint set `{⊤, ⊥}`.
+example : ∃ φ : PLLFormula,
+    (∀ C ∈ ({[], [(truePLL, falsePLL)]} : Finset StdCtx),
+      Nonempty (LaxND [] (subC C φ))) ∧ ¬ Nonempty (LaxND [] φ) :=
+  corollary10 {[], [(truePLL, falsePLL)]}
+
+end Ctx
+end PLLND
+
+#print axioms PLLND.Ctx.lemma9
+#print axioms PLLND.Ctx.lemma8
+#print axioms PLLND.Ctx.corollary10
+#print axioms PLLND.Ctx.thm2_bounded_distributive_lattice
+#print axioms PLLND.Ctx.Cle_iff_provable
