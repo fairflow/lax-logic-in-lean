@@ -56,14 +56,18 @@ sorry-free:
   run's key rigorous-but-unmechanised claim.
 * `exists_escaping_rungs` — derived `sorry`-free from `ipc_escaping` via the
   embedding (rungs `= subOb ∘ ρ`).
-* `ipc_escaping` — **the sole residual** (one clearly-scoped `sorry`), now entirely
+* `ipc_escaping` — **the former residual, now proved `sorry`-free.**  Entirely
   `◯`-free: a one-variable IPC disjunctive ladder each of whose rungs strictly
   escapes the running join, witnessed by base IPC models.  This is exactly the
   classical infinitude of the one-generated free Heyting algebra RN({p}) (the
-  Rieger–Nishimura lattice).  It cannot be met by a *single* finite model — every
+  Rieger–Nishimura lattice).  It cannot be met by a *single finite* model — every
   finite model caps the fragment (checked: ≤ 9 classes for all height-≤ 8 combs,
-  and `MC = C₃` already realises the 8 of `closed_lax_ge_eight`) — so a sound proof
-  needs the unbounded Rieger–Nishimura frame family + adequacy induction.
+  and `MC = C₃` already realises the 8 of `closed_lax_ge_eight`) — so the witness
+  is one *infinite* model `rnModel`, a clean `ℕ`-presentation of de Jongh's
+  one-variable universal model (`w ⊑ v :⟺ v = w ∨ v + 1 < w`, generator `p` at the
+  top world `0`).  On it the RN ladder `sLad` is forced *exactly* on the initial
+  segment `{0, …, n}` (`rn_staircase`), so `sₙ₊₁` escapes `sₙ` at world `n + 1`;
+  the rungs `rhoLad` package it as `disjLadder rhoLad n = sLad n` (`rn_disj_eq`).
 -/
 
 open PLLFormula
@@ -447,15 +451,152 @@ This is exactly the classical infinitude of the one-generated free Heyting algeb
 RN({p}) (the Rieger–Nishimura lattice).  It cannot be met by a *single* finite
 model — every finite model caps the fragment (checked: ≤ 9 classes for all
 height-≤ 8 combs) — so a sound proof needs the unbounded Rieger–Nishimura frame
-family + adequacy induction (the crux the mission flags).  Isolated as one
-clearly-scoped `sorry`; the reduction to it (embedding + `not_Le_subOb` +
-`subOb_disjLadder`) is `sorry`-free. -/
+family + adequacy induction (the crux the mission flags).
+
+**This is now discharged, `sorry`-free.**  `rnModel` is a clean `ℕ`-presentation of
+de Jongh's one-variable universal model — the order `w ⊑ v :⟺ v = w ∨ v + 1 < w`,
+generator `p` at the single top world `0`.  On it the Rieger–Nishimura ladder
+`sLad` (`s₀ = p`, `s₁ = p ∨ ¬p`, `sₙ₊₂ = sₙ₊₁ ∨ (sₙ₊₁ ⊃ sₙ)`) is forced *exactly*
+on the initial segment `{0, …, n}` (`rn_staircase`, a two-step induction), so each
+`sₙ₊₁` escapes `sₙ` at world `n + 1`.  The rungs `rhoLad` are chosen so that
+`disjLadder rhoLad n = sLad n` (`rn_disj_eq`), packaging the ladder as the required
+disjunctive ladder. -/
+/-- The Rieger–Nishimura staircase order on `ℕ`: `w ⊑ v` iff `v = w ∨ v + 1 < w`.
+World `w` sees every world `< w` except `w - 1`, plus itself; worlds `0, 1` are the
+two maximal points.  (A clean `ℕ`-presentation of de Jongh's one-variable universal
+model.) -/
+def rnLe (x y : ℕ) : Prop := y = x ∨ y + 1 < x
+
+/-- The staircase constraint model.  Carrier `ℕ`, `Rᵢ = rnLe`, `Rₘ` the diagonal
+(the fragment is `◯`-free), no fallible worlds, generator realised at the single top
+world `0` (`V a = {0}` for *every* atom, so the valuation is constant). -/
+@[reducible] def rnModel : ConstraintModel where
+  W := ℕ
+  Ri := rnLe
+  Rm := (· = ·)
+  F := ∅
+  V _ := {x | x = 0}
+  refl_i _ := Or.inl rfl
+  trans_i {x y z} h1 h2 := by simp only [rnLe] at *; omega
+  refl_m _ := rfl
+  trans_m {x y z} h1 h2 := h1.trans h2
+  sub_mi {x y} h := Or.inl h.symm
+  hered_F {x y} _ hw := absurd hw (Set.notMem_empty x)
+  hered_V {a x y} h hw := by
+    simp only [Set.mem_setOf_eq] at *; simp only [rnLe] at h; omega
+  full_F {a x} hw := absurd hw (Set.notMem_empty x)
+
+/-- The Rieger–Nishimura ladder over one variable `p`:
+`s₀ = p`, `s₁ = p ∨ ¬p`, `sₙ₊₂ = sₙ₊₁ ∨ (sₙ₊₁ ⊃ sₙ)`. -/
+def sLad : ℕ → PLLFormula
+  | 0 => prop "p"
+  | 1 => (prop "p").or ((prop "p").ifThen falsePLL)
+  | (n+2) => (sLad (n+1)).or ((sLad (n+1)).ifThen (sLad n))
+
+/-- The disjunctive-ladder *rungs* whose running join is `sLad`:
+`ρ₀ = p`, `ρ₁ = ¬p`, `ρₙ₊₂ = sₙ₊₁ ⊃ sₙ`.  Then `disjLadder rhoLad n = sLad n`. -/
+def rhoLad : ℕ → PLLFormula
+  | 0 => prop "p"
+  | 1 => (prop "p").ifThen falsePLL
+  | (n+2) => (sLad (n+1)).ifThen (sLad n)
+
+theorem rn_force_prop (a : String) (w : ℕ) : rnModel.force w (prop a) ↔ w = 0 := Iff.rfl
+theorem rn_force_bot (w : ℕ) : rnModel.force w falsePLL ↔ False :=
+  ⟨fun h => absurd h (Set.notMem_empty w), False.elim⟩
+theorem rn_force_or (w : ℕ) (a b : PLLFormula) :
+    rnModel.force w (a.or b) ↔ rnModel.force w a ∨ rnModel.force w b := Iff.rfl
+theorem rn_force_imp (w : ℕ) (a b : PLLFormula) :
+    rnModel.force w (a.ifThen b) ↔ ∀ v, rnLe w v → rnModel.force v a → rnModel.force v b := Iff.rfl
+theorem rn_force_negp (w : ℕ) :
+    rnModel.force w ((prop "p").ifThen falsePLL) ↔ ∀ v, rnLe w v → v ≠ 0 := by
+  rw [rn_force_imp]
+  constructor
+  · intro h v hv hv0; exact (rn_force_bot v).mp (h v hv ((rn_force_prop "p" v).mpr hv0))
+  · intro h v hv hvp; exact absurd ((rn_force_prop "p" v).mp hvp) (h v hv)
+
+/-- **The staircase.**  `sLad n` is forced in `rnModel` exactly at the worlds `≤ n`:
+each new rung reaches exactly one world deeper.  Two-step induction on `n` (the
+inductive step for `sₙ₊₂ = sₙ₊₁ ∨ (sₙ₊₁ ⊃ sₙ)` uses that world `k+2` does *not* see
+world `k+1`, so the fresh implication is forced there vacuously). -/
+theorem rn_staircase : ∀ n, (∀ w : ℕ, rnModel.force w (sLad n) ↔ w ≤ n) ∧
+                            (∀ w : ℕ, rnModel.force w (sLad (n+1)) ↔ w ≤ n+1) := by
+  intro n
+  induction n with
+  | zero =>
+    refine ⟨fun w => ?_, fun w => ?_⟩
+    · show rnModel.force w (prop "p") ↔ w ≤ 0
+      rw [rn_force_prop]; omega
+    · show rnModel.force w ((prop "p").or ((prop "p").ifThen falsePLL)) ↔ w ≤ 1
+      rw [rn_force_or, rn_force_prop, rn_force_negp]
+      constructor
+      · rintro (h | h)
+        · omega
+        · by_contra hw
+          exact (h 0 (by simp only [rnLe]; omega)) rfl
+      · intro hw
+        rcases Nat.lt_or_ge w 1 with h | h
+        · left; omega
+        · right; intro v hv; simp only [rnLe] at hv; omega
+  | succ k ih =>
+    refine ⟨ih.2, fun w => ?_⟩
+    show rnModel.force w ((sLad (k+1)).or ((sLad (k+1)).ifThen (sLad k))) ↔ w ≤ k+2
+    rw [rn_force_or, rn_force_imp]
+    constructor
+    · rintro (h | h)
+      · have := (ih.2 w).mp h; omega
+      · by_contra hw
+        have hvle : rnLe w (k+1) := by simp only [rnLe]; omega
+        have h1 : rnModel.force (k+1) (sLad (k+1)) := (ih.2 (k+1)).mpr (le_refl _)
+        have h2 : rnModel.force (k+1) (sLad k) := h (k+1) hvle h1
+        have := (ih.1 (k+1)).mp h2; omega
+    · intro hw
+      rcases Nat.lt_or_ge w (k+2) with hlt | hge
+      · left; exact (ih.2 w).mpr (by omega)
+      · have hwe : w = k+2 := by omega
+        right
+        intro v hv hvs
+        have hvle : v ≤ k+1 := (ih.2 v).mp hvs
+        have hvk : v ≤ k := by simp only [rnLe] at hv; omega
+        exact (ih.1 v).mpr hvk
+
+theorem rn_force_sLad (n w : ℕ) : rnModel.force w (sLad n) ↔ w ≤ n := (rn_staircase n).1 w
+
+/-- `disjLadder rhoLad n` is literally `sLad n`. -/
+theorem rn_disj_eq : ∀ n, disjLadder rhoLad n = sLad n := by
+  intro n
+  induction n with
+  | zero => rfl
+  | succ k ih =>
+    show (disjLadder rhoLad k).or (rhoLad (k+1)) = sLad (k+1)
+    rw [ih]; cases k with | zero => rfl | succ m => rfl
+
+theorem rn_sLad_isIPL : ∀ n, isIPL (sLad n) := by
+  have H : ∀ n, isIPL (sLad n) ∧ isIPL (sLad (n+1)) := by
+    intro n; induction n with
+    | zero => exact ⟨by simp [sLad], by simp [sLad]⟩
+    | succ k ih =>
+      refine ⟨ih.2, ?_⟩
+      show isIPL ((sLad (k+1)).or ((sLad (k+1)).ifThen (sLad k)))
+      simp only [isIPL]; exact ⟨ih.2, ih.2, ih.1⟩
+  exact fun n => (H n).1
+
+theorem rn_rho_isIPL : ∀ n, isIPL (rhoLad n)
+  | 0 => by simp [rhoLad]
+  | 1 => by simp [rhoLad]
+  | (n+2) => by
+      show isIPL ((sLad (n+1)).ifThen (sLad n))
+      simp only [isIPL]; exact ⟨rn_sLad_isIPL (n+1), rn_sLad_isIPL n⟩
+
 theorem ipc_escaping :
     ∃ ρ : ℕ → PLLFormula, (∀ n, isIPL (ρ n)) ∧
       (∀ n, ∃ (P : ConstraintModel) (w : P.W),
         (∀ v, v ∉ P.F) ∧ (∀ a v, v ∈ P.V a ↔ v ∈ P.V "p") ∧
         P.force w (disjLadder ρ (n+1)) ∧ ¬ P.force w (disjLadder ρ n)) := by
-  sorry
+  refine ⟨rhoLad, rn_rho_isIPL, fun n => ⟨rnModel, n+1, ?_, ?_, ?_, ?_⟩⟩
+  · intro v; exact Set.notMem_empty v
+  · intro a v; exact Iff.rfl
+  · rw [rn_disj_eq]; exact (rn_force_sLad (n+1) (n+1)).mpr (le_refl _)
+  · rw [rn_disj_eq, rn_force_sLad]; omega
 
 /-- **The closed escaping rungs** — reduced, `sorry`-free, to `ipc_escaping` via the
 `◯⊥`-embedding.  The rungs are `subOb ∘ ρ` for the IPC ladder `ρ`. -/
@@ -485,7 +626,9 @@ end PLLND
 -- Forward entailment of the disjunctive ladder: NO axioms at all.
 -- The `◯⊥`-as-free-generator embedding: mechanised, only `propext`.
 -- IPC-separation ⇒ closed-separation transport: only `propext`.
--- The infinitude theorem: sorry-free *reduction*; the only `sorryAx` enters
--- through the single isolated residual `ipc_escaping` (◯-free RN({p}) infinitude).
+-- The `◯`-free residual `ipc_escaping`: proved via the infinite staircase model
+-- `rnModel` + the RN ladder `sLad` (`rn_staircase`), so the whole file is now
+-- `sorry`-free.  `closed_lax_infinite` depends only on the clean axiom set
+-- [propext, Classical.choice, Quot.sound] — no `sorryAx`.
 
 #print axioms PLLND.LaxInfinite.closed_lax_infinite
