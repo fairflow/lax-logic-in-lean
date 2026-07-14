@@ -58,9 +58,9 @@ standard constraint) is the harder half; its status is tracked at the end of the
 | **Lemma 8** (depth-`n` ⇒ `χ_m^C`)      | ✔ `lemma8` / `lemma8_valid` (semantic)              |
 | **Lemma 9** (`χ_m` non-theorem)        | ✔ `lemma9` (explicit ℕ-model family + bisimulation) |
 | **Corollary 10** (finite ⊄ complete)   | ✔ `corollary10`                                     |
-| **Thm 2** (𝕊 a Boolean algebra)        | ◐ bounded distributive lattice + generator          |
-|                                        |   complements: `thm2_bounded_distributive_lattice`; |
-|                                        |   general `2^|I|` complement left open              |
+| **Thm 2** (𝕊 a Boolean algebra)        | ✔ `thm2_boolean_algebra` (both complement laws,     |
+|                                        |   complement `Cbar` = powerset-free De Morgan join, |
+|                                        |   `compl_unique`); bundled `BooleanAlgebra CQuot`   |
 | λ-terms `C_I,C_M,C_S,C_Ext` (§1)       | ◯ derivation-level realisers `unitC`/`bindC` only   |
 
 Every headline theorem is `sorry`-free (`#print axioms` at end of file: only
@@ -1284,8 +1284,8 @@ theorem join_meet_distrib (C D E : StdCtx) :
 The generators of `𝕊` (p. 6) are the disjunctive atoms `L ↦ [true, L]` and their
 implicational complements `[L, false]`.  We verify these are genuine Boolean
 complements: `[true,L] ⊓ [L,false] ≡ ⊥` and `[true,L] ⊔ [L,false] ≡ ⊤`.  (The
-general complement `C̄ = ⨅_{A⊆I} [⋀_{a∈A} Lₐ, ⋁_{b∈I∖A} Kᵦ]` of p. 7 — a
-`2^|I|`-fold meet — is not mechanised here; see the file header.) -/
+general complement for *arbitrary* `C` is `Cbar` in Section F.2 below — the
+powerset-free De Morgan join, not the paper's `2^|I|`-fold meet normal form.) -/
 
 /-- Forcing of a single basic constraint `[K,L]`. -/
 theorem force_single (M : ConstraintModel) (K L x : PLLFormula) (w : M.W) :
@@ -1337,8 +1337,8 @@ theorem atom_join_bar (L : PLLFormula) :
 
 The laws below establish that `𝕊`, ordered by `Cle` (mod `Cequiv`), is a **bounded
 distributive lattice** with meet `⊓`, join `⊔`, bounds `⊥ ≤ · ≤ ⊤`, whose
-generators are complemented.  (Full Boolean complementation for arbitrary `C` — the
-`2^|I|` construction of p. 7 — and join-associativity are left open here.) -/
+generators are complemented.  Full Boolean complementation for arbitrary `C` is
+completed in Section F.2 (`thm2_boolean_algebra`, `compl_inf`, `compl_sup`). -/
 theorem thm2_bounded_distributive_lattice :
     (∀ C D, Cequiv (Cmeet C D) (Cmeet D C)) ∧
     (∀ C D E, Cequiv (Cmeet (Cmeet C D) E) (Cmeet C (Cmeet D E))) ∧
@@ -1359,7 +1359,365 @@ theorem thm2_bounded_distributive_lattice :
    absorb_meet_join, absorb_join_meet, join_meet_distrib, meet_top, join_bot,
    meet_bot, join_top, atom_meet_bar, atom_join_bar⟩
 
+/-! ============================================================================
+# Section F.2 — Theorem 2 completed: `𝕊` is a (finitary) Boolean algebra
+
+Fairtlough–Mendler, TYPES 2000, §3 (pp. 6–7).  We upgrade the bounded distributive
+lattice `thm2_bounded_distributive_lattice` to a full **Boolean algebra** by exhibiting,
+for every standard constraint `C`, a complement `C̄ = Cbar C ∈ 𝕊` with
+
+  `C ⊓ C̄ ≡ ⊥`  (`compl_inf`)   and   `C ⊔ C̄ ≡ ⊤`  (`compl_sup`).
+
+The paper's explicit complement `C̄ = ⨅_{A⊆I}[⋀_{a∈A}Lₐ, ⋁_{b∈I∖A}Kᵦ]` is the `2^|I|`
+*normal form*; we avoid the powerset.  By Definition 1 a basic `[K,L] = [K,⊥] ⊔ [⊤,L]`,
+so by De Morgan `[K,L]‾ = [⊤,K] ⊓ [L,⊥]` (a 2-basic constraint), and the complement of a
+meet is the join of complements:  `Cbar (⨅ᵢ[Kᵢ,Lᵢ]) := ⨆ᵢ ([⊤,Kᵢ] ⊓ [Lᵢ,⊥])`
+(a `foldr ⊔ ⊥`).  This stays inside `𝕊` (a join of standard constraints is standard) and
+equals the powerset form up to `≈`, but never normalises.  `𝕊` is only *finitary* (finite
+meets/joins), so it is an **incomplete** Boolean algebra — the intended result. -/
+
+/-! ## Congruence of `⊔` and the least-upper-bound property
+
+The whole complement induction rewrites under `⊔`, so we first record that `⊔` respects
+`≈`.  The crux is left-monotonicity `A ≤ A' ⟹ A⊔B ≤ A'⊔B`, proved by the same
+proposition-enlargement trick (`x ↦ x ∨ q.2`) as `join_eq_right_of_le`; congruence and the
+LUB property (`join_lub`) then follow algebraically. -/
+
+/-- Meet respects `≈` (immediate, since `(C⊓D)[x] ⊣⊢ C[x] ∧ D[x]`). -/
+theorem meet_congr {A A' B B' : StdCtx} (hA : Cequiv A A') (hB : Cequiv B B') :
+    Cequiv (Cmeet A B) (Cmeet A' B') := by
+  intro M w x
+  rw [force_Cmeet, force_Cmeet]
+  exact and_congr (hA M w x) (hB M w x)
+
+/-- **Left-monotonicity of `⊔`.**  `A ≤ A'` gives `A ⊔ B ≤ A' ⊔ B`.  Proof: to certify the
+`(p', q)`-conjunct of `(A'⊔B)[x]` at `v`, build `A[x ∨ q.2]` at `v` from the join
+hypothesis, transport it along `A ≤ A'`, and read off the `p'`-conjunct. -/
+theorem join_mono_left {A A' B : StdCtx} (h : Cle A A') :
+    Cle (Cjoin A B) (Cjoin A' B) := by
+  intro M w x hJ
+  have hJ' := (force_Cjoin M A B x w).mp hJ
+  rw [force_Cjoin]
+  intro p' hp' q hq v hwv hpq
+  have hAy : M.force v (applyC A (x.or q.2)) := by
+    rw [force_applyC_iff]
+    intro p hp v' hvv' hp1
+    have hq1' : M.force v' q.1 := M.force_hered hvv' hpq.2
+    rcases hJ' p hp q hq v' (M.trans_i hwv hvv') ⟨hp1, hq1'⟩ with hx | hL
+    · exact Or.inl (Or.inl hx)
+    · rcases hL with hp2 | hq2
+      · exact Or.inr hp2
+      · exact Or.inl (Or.inr hq2)
+  have hA'y : M.force v (applyC A' (x.or q.2)) := h M v (x.or q.2) hAy
+  rcases (force_applyC_iff M A' (x.or q.2) v).mp hA'y p' hp' v (M.refl_i v) hpq.1
+    with hxy | hp'2
+  · rcases hxy with hx | hq2
+    · exact Or.inl hx
+    · exact Or.inr (Or.inr hq2)
+  · exact Or.inr (Or.inl hp'2)
+
+/-- Right-monotonicity of `⊔`, by commutativity. -/
+theorem join_mono_right {A B B' : StdCtx} (h : Cle B B') :
+    Cle (Cjoin A B) (Cjoin A B') :=
+  Cle.trans (Cequiv_iff_le.mp (join_comm A B)).1
+    (Cle.trans (join_mono_left h) (Cequiv_iff_le.mp (join_comm B' A)).1)
+
+/-- `⊔` is monotone in both arguments. -/
+theorem join_mono {A A' B B' : StdCtx} (h1 : Cle A A') (h2 : Cle B B') :
+    Cle (Cjoin A B) (Cjoin A' B') :=
+  Cle.trans (join_mono_left h1) (join_mono_right h2)
+
+/-- **`⊔` respects `≈`** — the congruence the complement induction rewrites with. -/
+theorem join_congr {A A' B B' : StdCtx} (hA : Cequiv A A') (hB : Cequiv B B') :
+    Cequiv (Cjoin A B) (Cjoin A' B') :=
+  Cequiv_iff_le.mpr
+    ⟨join_mono (Cequiv_iff_le.mp hA).1 (Cequiv_iff_le.mp hB).1,
+     join_mono (Cequiv_iff_le.mp hA).2 (Cequiv_iff_le.mp hB).2⟩
+
+/-- **Least-upper-bound property of `⊔`.**  `C ≤ E`, `D ≤ E` ⟹ `C ⊔ D ≤ E`. -/
+theorem join_lub {C D E : StdCtx} (h1 : Cle C E) (h2 : Cle D E) :
+    Cle (Cjoin C D) E :=
+  Cle.trans (join_mono h1 h2) (Cequiv_iff_le.mp (join_idem E)).1
+
+/-- **Meet distributes over join** `A ⊓ (B ⊔ C) ≡ (A⊓B) ⊔ (A⊓C)` — the second
+distributive law (the dual `join_meet_distrib` is already proved).  Direct from
+Definition 1: every conjunct of the right-hand join is a monotone weakening of a conjunct
+supplied by `A[x]` (when its index lies in `A`) or by `(B⊔C)[x]` (indices in `B×C`). -/
+theorem meet_join_distrib (A B C : StdCtx) :
+    Cequiv (Cmeet A (Cjoin B C)) (Cjoin (Cmeet A B) (Cmeet A C)) := by
+  intro M w x
+  rw [force_Cmeet, force_applyC_iff, force_Cjoin, force_Cjoin]
+  constructor
+  · rintro ⟨hA, hBC⟩ p hp q hq v hwv hpq
+    rcases List.mem_append.mp hp with hpA | hpB
+    · rcases (hA p hpA) v hwv hpq.1 with hx | hp2
+      · exact Or.inl hx
+      · exact Or.inr (Or.inl hp2)
+    · rcases List.mem_append.mp hq with hqA | hqC
+      · rcases (hA q hqA) v hwv hpq.2 with hx | hq2
+        · exact Or.inl hx
+        · exact Or.inr (Or.inr hq2)
+      · exact (hBC p hpB q hqC) v hwv hpq
+  · intro h
+    refine ⟨fun a ha v hwv ha1 => ?_, fun b hb c hc v hwv hbc => ?_⟩
+    · rcases (h a (List.mem_append_left _ ha) a (List.mem_append_left _ ha)) v hwv
+        ⟨ha1, ha1⟩ with hx | ha2
+      · exact Or.inl hx
+      · exact Or.inr (ha2.elim id id)
+    · exact (h b (List.mem_append_right _ hb) c (List.mem_append_right _ hc)) v hwv hbc
+
+/-! ## The complement `C̄` and its two Boolean laws -/
+
+/-- Complement of a single basic constraint: `[K,L]‾ = [⊤,K] ⊓ [L,⊥]`, the 2-basic
+standard constraint `[(⊤,K),(L,⊥)]` (De Morgan applied to `[K,L] = [K,⊥] ⊔ [⊤,L]`). -/
+def basicBar (p : PLLFormula × PLLFormula) : StdCtx :=
+  [(truePLL, p.1), (p.2, falsePLL)]
+
+/-- The complement `C̄` of a standard constraint `C = ⨅ᵢ [Kᵢ,Lᵢ]`: the finite join
+`⨆ᵢ [Kᵢ,Lᵢ]‾` (`foldr ⊔ ⊥`).  A join of standard constraints, hence standard. -/
+def Cbar : StdCtx → StdCtx
+  | []        => Cbot
+  | p :: rest => Cjoin (basicBar p) (Cbar rest)
+
+/-- **Single-basic complement, meet law:** `[K,L] ⊓ [K,L]‾ ≡ ⊥`.  Semantically, the three
+conjuncts `K⊃(x∨L)`, `⊤⊃(x∨K)`, `L⊃(x∨⊥)` force `x` outright (chase `x∨K`, then `x∨L`,
+then `x∨⊥`), and conversely `x` forces each. -/
+theorem single_meet_bar (p : PLLFormula × PLLFormula) :
+    Cequiv (Cmeet [p] (basicBar p)) Cbot := by
+  obtain ⟨K, L⟩ := p
+  intro M w x
+  rw [force_Cbot, force_applyC_iff]
+  constructor
+  · intro h
+    have hKL := h (K, L) (by simp [Cmeet, basicBar])
+    have hK  := h (truePLL, K) (by simp [Cmeet, basicBar])
+    have hL  := h (L, falsePLL) (by simp [Cmeet, basicBar])
+    rcases hK w (M.refl_i w) (fun v _ hv => hv) with hx | hKw
+    · exact hx
+    · rcases hKL w (M.refl_i w) hKw with hx | hLw
+      · exact hx
+      · rcases hL w (M.refl_i w) hLw with hx | hf
+        · exact hx
+        · exact M.force_of_fallible hf
+  · intro hx q _
+    exact fun v hwv _ => Or.inl (M.force_hered hwv hx)
+
+/-- **Single-basic complement, join law:** `[K,L] ⊔ [K,L]‾ ≡ ⊤`.  Every pairwise conjunct
+`(K∧⊤)⊃(x∨L∨K)` and `(K∧L)⊃(x∨L∨⊥)` is a tautology (the antecedent supplies `K`, resp.
+`L`, already among the disjuncts), so the join acts as `⊤`. -/
+theorem single_join_bar (p : PLLFormula × PLLFormula) :
+    Cequiv (Cjoin [p] (basicBar p)) Ctop := by
+  obtain ⟨K, L⟩ := p
+  intro M w x
+  rw [force_Cjoin]
+  constructor
+  · intro _; exact force_Ctop M x w
+  · intro _ pp hpp q hq v hwv hpq
+    obtain rfl := List.mem_singleton.mp hpp
+    rcases List.mem_cons.mp hq with rfl | hq2
+    · exact Or.inr (Or.inr hpq.1)
+    · rcases List.mem_cons.mp hq2 with rfl | hq3
+      · exact Or.inr (Or.inl hpq.2)
+      · cases hq3
+
+/-- `C ⊓ C̄ ≤ ⊥` by induction on `C`.  For `C = [p] ⊓ R` with `C̄ = p̄ ⊔ R̄`, distribute the
+meet over the join and bound each summand: `([p]⊓R)⊓p̄ ≤ [p]⊓p̄ ≡ ⊥` (single-basic law) and
+`([p]⊓R)⊓R̄ ≤ R⊓R̄ ≡ ⊥` (induction hypothesis). -/
+theorem compl_inf_le (C : StdCtx) : Cle (Cmeet C (Cbar C)) Cbot := by
+  induction C with
+  | nil => exact Cle.rfl' Cbot
+  | cons p rest ih =>
+      show Cle (Cmeet (Cmeet [p] rest) (Cjoin (basicBar p) (Cbar rest))) Cbot
+      have hX : Cle (Cmeet (Cmeet [p] rest) (basicBar p)) Cbot :=
+        Cle.trans
+          (le_meet (Cle.trans (meet_le_left _ _) (meet_le_left _ _)) (meet_le_right _ _))
+          (Cequiv_iff_le.mp (single_meet_bar p)).1
+      have hY : Cle (Cmeet (Cmeet [p] rest) (Cbar rest)) Cbot :=
+        Cle.trans
+          (le_meet (Cle.trans (meet_le_left _ _) (meet_le_right _ _)) (meet_le_right _ _))
+          ih
+      exact Cle.trans
+        (Cequiv_iff_le.mp (meet_join_distrib (Cmeet [p] rest) (basicBar p) (Cbar rest))).1
+        (join_lub hX hY)
+
+/-- **Complement law (meet):** `C ⊓ C̄ ≡ ⊥`.  With `⊥ ≤ C ⊓ C̄` always (`bot_le`). -/
+theorem compl_inf (C : StdCtx) : Cequiv (Cmeet C (Cbar C)) Cbot :=
+  Cequiv_iff_le.mpr ⟨compl_inf_le C, bot_le _⟩
+
+/-- `⊤ ≤ C ⊔ C̄` by induction on `C`.  For `C = [p] ⊓ R` with `C̄ = p̄ ⊔ R̄`, commute and
+distribute the join over the meet: `⊤ ≡ [p]⊔p̄ ≤ (p̄⊔R̄)⊔[p]` (single-basic law) and
+`⊤ ≡ R⊔R̄ ≤ (p̄⊔R̄)⊔R` (induction hypothesis) bound the two meet factors. -/
+theorem compl_sup_ge (C : StdCtx) : Cle Ctop (Cjoin C (Cbar C)) := by
+  induction C with
+  | nil => exact Cle.rfl' Ctop
+  | cons p rest ih =>
+      show Cle Ctop (Cjoin (Cmeet [p] rest) (Cjoin (basicBar p) (Cbar rest)))
+      have hP : Cle Ctop (Cjoin (Cjoin (basicBar p) (Cbar rest)) [p]) :=
+        Cle.trans (Cequiv_iff_le.mp (single_join_bar p)).2
+          (join_lub (le_join_right _ _)
+            (Cle.trans (le_join_left (basicBar p) (Cbar rest))
+              (le_join_left (Cjoin (basicBar p) (Cbar rest)) [p])))
+      have hR : Cle Ctop (Cjoin (Cjoin (basicBar p) (Cbar rest)) rest) :=
+        Cle.trans ih
+          (join_lub (le_join_right _ _)
+            (Cle.trans (le_join_right (basicBar p) (Cbar rest))
+              (le_join_left (Cjoin (basicBar p) (Cbar rest)) rest)))
+      have equiv : Cequiv (Cjoin (Cmeet [p] rest) (Cjoin (basicBar p) (Cbar rest)))
+          (Cmeet (Cjoin (Cjoin (basicBar p) (Cbar rest)) [p])
+                 (Cjoin (Cjoin (basicBar p) (Cbar rest)) rest)) :=
+        Cequiv.trans (join_comm (Cmeet [p] rest) (Cjoin (basicBar p) (Cbar rest)))
+          (join_meet_distrib (Cjoin (basicBar p) (Cbar rest)) [p] rest)
+      exact Cle.trans (le_meet hP hR) (Cequiv_iff_le.mp equiv).2
+
+/-- **Complement law (join):** `C ⊔ C̄ ≡ ⊤`.  With `C ⊔ C̄ ≤ ⊤` always (`le_top`). -/
+theorem compl_sup (C : StdCtx) : Cequiv (Cjoin C (Cbar C)) Ctop :=
+  Cequiv_iff_le.mpr ⟨le_top _, compl_sup_ge C⟩
+
+/-! ## Theorem 2 — the Boolean algebra of standard constraints -/
+
+/-- **Theorem 2 (Fairtlough–Mendler, TYPES 2000, §3).**  The standard constraints `𝕊`,
+ordered by `Cle` modulo `Cequiv`, form a **Boolean algebra**: a bounded distributive
+lattice (meet `⊓`, join `⊔`, bounds `⊥ ≤ · ≤ ⊤`, *both* distributive laws) in which every
+`C` has a complement `C̄ = Cbar C ∈ 𝕊` satisfying `C ⊓ C̄ ≡ ⊥` and `C ⊔ C̄ ≡ ⊤`.
+
+`𝕊` carries only *finitary* meets and joins (`Cmeet`, `Cjoin` are binary), so this is an
+**incomplete** Boolean algebra — the intended result: the *complete* Boolean algebras are
+the fixpoints of the assembly tower, whereas the syntactic constraint algebra is finitary.
+The complement `Cbar` avoids the paper's `2^|I|` powerset normal form (it is a `foldr ⊔ ⊥`
+of the 2-basic De Morgan duals `[Kᵢ,Lᵢ]‾ = [⊤,Kᵢ] ⊓ [Lᵢ,⊥]`), yet agrees with it up to `≈`. -/
+theorem thm2_boolean_algebra :
+    -- bounded distributive lattice (both distributive laws)
+    (∀ C D, Cequiv (Cmeet C D) (Cmeet D C)) ∧
+    (∀ C D E, Cequiv (Cmeet (Cmeet C D) E) (Cmeet C (Cmeet D E))) ∧
+    (∀ C, Cequiv (Cmeet C C) C) ∧
+    (∀ C D, Cequiv (Cjoin C D) (Cjoin D C)) ∧
+    (∀ C D E, Cequiv (Cjoin (Cjoin C D) E) (Cjoin C (Cjoin D E))) ∧
+    (∀ C, Cequiv (Cjoin C C) C) ∧
+    (∀ C D, Cequiv (Cmeet C (Cjoin C D)) C) ∧
+    (∀ C D, Cequiv (Cjoin C (Cmeet C D)) C) ∧
+    (∀ C D E, Cequiv (Cjoin C (Cmeet D E)) (Cmeet (Cjoin C D) (Cjoin C E))) ∧
+    (∀ C D E, Cequiv (Cmeet C (Cjoin D E)) (Cjoin (Cmeet C D) (Cmeet C E))) ∧
+    (∀ C, Cequiv (Cmeet C Ctop) C) ∧
+    (∀ C, Cequiv (Cjoin C Cbot) C) ∧
+    (∀ C, Cequiv (Cmeet C Cbot) Cbot) ∧
+    (∀ C, Cequiv (Cjoin C Ctop) Ctop) ∧
+    -- Boolean complement: every `C` is complemented by `Cbar C`
+    (∀ C, Cequiv (Cmeet C (Cbar C)) Cbot) ∧
+    (∀ C, Cequiv (Cjoin C (Cbar C)) Ctop) :=
+  ⟨meet_comm, meet_assoc, meet_idem, join_comm, join_assoc, join_idem,
+   absorb_meet_join, absorb_join_meet, join_meet_distrib, meet_join_distrib,
+   meet_top, join_bot, meet_bot, join_top, compl_inf, compl_sup⟩
+
+/-! ## Uniqueness of complements (and hence `Cbar` respects `≈`)
+
+The standard Boolean-algebra argument: if `B` complements `C` then
+`B ≡ B ⊓ ⊤ ≡ B ⊓ (C ⊔ C̄) ≡ (B⊓C) ⊔ (B⊓C̄) ≡ ⊥ ⊔ (B⊓C̄) ≡ B ⊓ C̄`, and symmetrically
+`C̄ ≡ B ⊓ C̄`; hence `B ≡ C̄`.  This makes the complement well-defined modulo `≈`. -/
+
+/-- **Complements are unique.**  Any `B` with `C ⊓ B ≡ ⊥` and `C ⊔ B ≡ ⊤` equals `Cbar C`. -/
+theorem compl_unique {C B : StdCtx} (hm : Cequiv (Cmeet C B) Cbot)
+    (hj : Cequiv (Cjoin C B) Ctop) : Cequiv B (Cbar C) := by
+  have hmb : Cequiv (Cmeet B C) Cbot := Cequiv.trans (meet_comm B C) hm
+  have hcb : Cequiv (Cmeet (Cbar C) C) Cbot :=
+    Cequiv.trans (meet_comm (Cbar C) C) (compl_inf C)
+  have e1 : Cequiv B (Cmeet B (Cbar C)) :=
+    Cequiv.trans (meet_top B).symm
+     (Cequiv.trans (meet_congr (Cequiv.rfl' B) (compl_sup C).symm)
+      (Cequiv.trans (meet_join_distrib B C (Cbar C))
+       (Cequiv.trans (join_congr hmb (Cequiv.rfl' (Cmeet B (Cbar C))))
+        (Cequiv.trans (join_comm Cbot (Cmeet B (Cbar C))) (join_bot (Cmeet B (Cbar C)))))))
+  have e2 : Cequiv (Cbar C) (Cmeet B (Cbar C)) :=
+    Cequiv.trans (meet_top (Cbar C)).symm
+     (Cequiv.trans (meet_congr (Cequiv.rfl' (Cbar C)) hj.symm)
+      (Cequiv.trans (meet_join_distrib (Cbar C) C B)
+       (Cequiv.trans (join_congr hcb (Cequiv.rfl' (Cmeet (Cbar C) B)))
+        (Cequiv.trans (join_comm Cbot (Cmeet (Cbar C) B))
+         (Cequiv.trans (join_bot (Cmeet (Cbar C) B)) (meet_comm (Cbar C) B))))))
+  exact Cequiv.trans e1 e2.symm
+
+/-- **`Cbar` respects `≈`.**  `C ≡ C'` ⟹ `C̄ ≡ C̄'` (the complement is well-defined on
+`𝕊/≈`): `C̄'` also complements `C` by transporting the two laws along `C ≡ C'`. -/
+theorem compl_congr {C C' : StdCtx} (h : Cequiv C C') : Cequiv (Cbar C) (Cbar C') := by
+  have hm : Cequiv (Cmeet C (Cbar C')) Cbot :=
+    Cequiv.trans (meet_congr h (Cequiv.rfl' (Cbar C'))) (compl_inf C')
+  have hj : Cequiv (Cjoin C (Cbar C')) Ctop :=
+    Cequiv.trans (join_congr h (Cequiv.rfl' (Cbar C'))) (compl_sup C')
+  exact (compl_unique hm hj).symm
+
+/-! ## Bundled Mathlib `BooleanAlgebra` on the quotient `𝕊 = StdCtx/≈`
+
+Every operation descends to the setoid quotient by its congruence lemma (`meet_congr`,
+`join_congr`, `compl_congr`, and `Cle`'s respect for `≈`), and each `BooleanAlgebra` axiom
+is the corresponding `Cle`/`Cequiv` fact.  `sdiff`/`himp` take Mathlib's defaults. -/
+
+/-- Constraint-equivalence `≈` as a `Setoid` on standard constraints. -/
+def stdSetoid : Setoid StdCtx where
+  r := Cequiv
+  iseqv := ⟨Cequiv.rfl', fun h => h.symm, fun h1 h2 => h1.trans h2⟩
+
+/-- The constraint algebra `𝕊 = StdCtx / ≈`, carrying the Boolean-algebra instance below. -/
+def CQuot : Type := Quotient stdSetoid
+
+/-- Class of a standard constraint into `𝕊`. -/
+def CQuot.mk (C : StdCtx) : CQuot := Quotient.mk stdSetoid C
+
+/-- **Theorem 2, bundled.**  `𝕊 = StdCtx/≈` is a Mathlib `BooleanAlgebra`.  The lattice
+data are the lifts of `Cmeet`/`Cjoin`, the complement is the lift of `Cbar`, bounds are
+`⟦⊤⟧`/`⟦⊥⟧`, and every axiom reduces (on representatives) to a lemma proved above. -/
+instance CQuot.instBooleanAlgebra : BooleanAlgebra CQuot where
+  le x y := Quotient.liftOn₂ x y Cle fun _ _ _ _ ha hb => propext
+    ⟨fun h => Cle.trans (Cequiv_iff_le.mp ha).2 (Cle.trans h (Cequiv_iff_le.mp hb).1),
+     fun h => Cle.trans (Cequiv_iff_le.mp ha).1 (Cle.trans h (Cequiv_iff_le.mp hb).2)⟩
+  sup x y := Quotient.liftOn₂ x y (fun a b => CQuot.mk (Cjoin a b))
+    fun _ _ _ _ ha hb => Quotient.sound (join_congr ha hb)
+  inf x y := Quotient.liftOn₂ x y (fun a b => CQuot.mk (Cmeet a b))
+    fun _ _ _ _ ha hb => Quotient.sound (meet_congr ha hb)
+  compl x := Quotient.liftOn x (fun a => CQuot.mk (Cbar a))
+    fun _ _ ha => Quotient.sound (compl_congr ha)
+  top := CQuot.mk Ctop
+  bot := CQuot.mk Cbot
+  le_refl := by rintro ⟨a⟩; exact Cle.rfl' a
+  le_trans := by rintro ⟨a⟩ ⟨b⟩ ⟨c⟩ hab hbc; exact Cle.trans hab hbc
+  le_antisymm := by rintro ⟨a⟩ ⟨b⟩ hab hba; exact Quotient.sound (Cequiv_iff_le.mpr ⟨hab, hba⟩)
+  le_sup_left := by rintro ⟨a⟩ ⟨b⟩; exact le_join_left a b
+  le_sup_right := by rintro ⟨a⟩ ⟨b⟩; exact le_join_right a b
+  sup_le := by rintro ⟨a⟩ ⟨b⟩ ⟨c⟩ hac hbc; exact join_lub hac hbc
+  inf_le_left := by rintro ⟨a⟩ ⟨b⟩; exact meet_le_left a b
+  inf_le_right := by rintro ⟨a⟩ ⟨b⟩; exact meet_le_right a b
+  le_inf := by rintro ⟨a⟩ ⟨b⟩ ⟨c⟩ hab hac; exact le_meet hab hac
+  le_sup_inf := by rintro ⟨a⟩ ⟨b⟩ ⟨c⟩; exact (Cequiv_iff_le.mp (join_meet_distrib a b c)).2
+  le_top := by rintro ⟨a⟩; exact le_top a
+  bot_le := by rintro ⟨a⟩; exact bot_le a
+  inf_compl_le_bot := by rintro ⟨a⟩; exact (Cequiv_iff_le.mp (compl_inf a)).1
+  top_le_sup_compl := by rintro ⟨a⟩; exact (Cequiv_iff_le.mp (compl_sup a)).2
+
 /-! ## Sanity checks -/
+
+-- Theorem 2 complement laws on concrete small constraints (independent atoms `p₀,p₁`).
+-- 1-basic `C = [p₀, p₁]` (i.e. `p₀ ⊃ (x ∨ p₁)`): complement is `[⊤,p₀] ⊓ [p₁,⊥]`.
+example : Cbar [(pvar 0, pvar 1)] = Cjoin (basicBar (pvar 0, pvar 1)) Cbot := rfl
+example : Cequiv (Cmeet [(pvar 0, pvar 1)] (Cbar [(pvar 0, pvar 1)])) Cbot :=
+  compl_inf _
+example : Cequiv (Cjoin [(pvar 0, pvar 1)] (Cbar [(pvar 0, pvar 1)])) Ctop :=
+  compl_sup _
+-- 2-basic `C = [p₀,p₁] ⊓ [p₂,p₃]`.
+example : Cequiv
+    (Cmeet [(pvar 0, pvar 1), (pvar 2, pvar 3)] (Cbar [(pvar 0, pvar 1), (pvar 2, pvar 3)]))
+    Cbot := compl_inf _
+example : Cequiv
+    (Cjoin [(pvar 0, pvar 1), (pvar 2, pvar 3)] (Cbar [(pvar 0, pvar 1), (pvar 2, pvar 3)]))
+    Ctop := compl_sup _
+
+-- The bundled quotient `𝕊` is a genuine Mathlib `BooleanAlgebra`, and the class into it
+-- carries the operations: `⟦C⟧ ⊔ ⟦D⟧ = ⟦C ⊔ D⟧`, `(⟦C⟧)ᶜ = ⟦C̄⟧`, bounds `⟦⊤⟧`/`⟦⊥⟧`.
+example : BooleanAlgebra CQuot := inferInstance
+example (C D : StdCtx) : CQuot.mk C ⊔ CQuot.mk D = CQuot.mk (Cjoin C D) := rfl
+example (C D : StdCtx) : CQuot.mk C ⊓ CQuot.mk D = CQuot.mk (Cmeet C D) := rfl
+example (C : StdCtx) : (CQuot.mk C)ᶜ = CQuot.mk (Cbar C) := rfl
+example : (⊤ : CQuot) = CQuot.mk Ctop := rfl
+example : (⊥ : CQuot) = CQuot.mk Cbot := rfl
+-- The Boolean law `x ⊓ xᶜ = ⊥` now holds by Mathlib's generic API, via our complement.
+example (C : StdCtx) : CQuot.mk C ⊓ (CQuot.mk C)ᶜ = ⊥ := inf_compl_eq_bot
 
 -- Lemma 9 at `m = 0,1,2`: `χ₀, χ₁, χ₂` are concrete PLL non-theorems.
 example : ¬ Nonempty (LaxND [] (chi 0)) := lemma9 0
@@ -1379,4 +1737,9 @@ end PLLND
 #print axioms PLLND.Ctx.lemma8
 #print axioms PLLND.Ctx.corollary10
 #print axioms PLLND.Ctx.thm2_bounded_distributive_lattice
+#print axioms PLLND.Ctx.thm2_boolean_algebra
+#print axioms PLLND.Ctx.compl_inf
+#print axioms PLLND.Ctx.compl_sup
+#print axioms PLLND.Ctx.compl_unique
+#print axioms PLLND.Ctx.CQuot.instBooleanAlgebra
 #print axioms PLLND.Ctx.Cle_iff_provable
