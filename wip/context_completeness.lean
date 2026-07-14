@@ -184,3 +184,449 @@ end Ctx
 end PLLND
 
 #print axioms PLLND.Ctx.thm6_soundness
+
+/-! ============================================================================
+# Completeness direction of Theorem 6
+
+The plan (Fairtlough–Mendler, TYPES 2000, Lemma 7 + Thm 6 completeness):
+
+1. `PLL ⊬ φ` ⟹ (FMP) a **finite** constraint model `M` with a world refuting `φ`.
+2. **Semantic completion** `M*`: adjoin a fresh atom `α_w` per world `w`, forced
+   at `x` iff `Ri w x` (or `x` fallible).  `M*` agrees with `M` on old atoms.
+3. **Lemma 7**: over `M*`, `◯ψ` is forced exactly where the single standard
+   constraint `C = ⨅_{u∈Stab} [α_u , ⋁_{u'∈iSucc u} α_{u'}]` applied to `ψ` is.
+4. **Congruence**: replacing every `◯` by `C[·]` (i.e. `subC C`) preserves forcing
+   in `M*`.  Hence `M* ⊭ subC C φ`, so `PLL ⊬ subC C φ` (soundness), and since
+   `subC C φ` is `◯`-free this is `IPL ⊬ φ^C`.
+
+The definitions are adapted to the codebase's **preorders** (the paper uses
+partial orders): `Stab` = `Rm`-maximal *cluster* (`∀ t, Rm u t → Rm t u`) and
+`iSucc` carries an explicit strictness clause (`¬ Ri v u`).  With these, Lemma 7
+needs only **finiteness**, no antisymmetry.
+============================================================================ -/
+
+namespace PLLND
+namespace Ctx
+
+open Classical
+
+/-! ## Section A — finite-preorder combinatorics (antisymmetry-free)
+
+Two facts about a reflexive-transitive relation `R` on a finite type:
+reaching a maximal cluster, and factoring a strict step through a cover. -/
+
+/-- In a finite preorder, every nonempty set has an `R`-minimal *cluster*
+element: some `m ∈ S` with no element of `S` strictly below it. -/
+theorem exists_min_strict {W : Type} [Finite W] (R : W → W → Prop)
+    (hrefl : ∀ x, R x x) (htrans : ∀ {a b c}, R a b → R b c → R a c)
+    (S : Set W) (hS : S.Nonempty) :
+    ∃ m ∈ S, ∀ x ∈ S, R x m → R m x := by
+  classical
+  let Rlt : W → W → Prop := fun a b => R a b ∧ ¬ R b a
+  haveI : IsTrans W Rlt :=
+    ⟨fun a b c ⟨hab, hba⟩ ⟨hbc, _⟩ => ⟨htrans hab hbc, fun hca => hba (htrans hbc hca)⟩⟩
+  haveI : IsIrrefl W Rlt := ⟨fun _ ⟨h, hn⟩ => hn h⟩
+  have hwf : WellFounded Rlt := Finite.wellFounded_of_trans_of_irrefl Rlt
+  obtain ⟨m, hmS, hmin⟩ := hwf.has_min S hS
+  refine ⟨m, hmS, fun x hxS hxm => ?_⟩
+  by_contra hmx
+  exact hmin x hxS ⟨hxm, hmx⟩
+
+/-- From any `v`, a maximal cluster is reachable: `∃ u, R v u ∧ ∀ t, R u t → R t u`. -/
+theorem exists_max_cluster {W : Type} [Finite W] (R : W → W → Prop)
+    (hrefl : ∀ x, R x x) (htrans : ∀ {a b c}, R a b → R b c → R a c) (v : W) :
+    ∃ u, R v u ∧ ∀ t, R u t → R t u := by
+  obtain ⟨m, hmS, hmin⟩ :=
+    exists_min_strict (W := W) (fun a b => R b a) hrefl
+      (fun hab hbc => htrans hbc hab) {u | R v u} ⟨v, hrefl v⟩
+  refine ⟨m, hmS, fun t hmt => ?_⟩
+  exact hmin t (htrans hmS hmt) hmt
+
+/-- A strict `R`-step `R u v`, `¬ R v u` factors through a *cover* of `u`: an
+immediate strict successor `u'` (in the cluster sense) with `R u' v`. -/
+theorem exists_cover {W : Type} [Finite W] (R : W → W → Prop)
+    (hrefl : ∀ x, R x x) (htrans : ∀ {a b c}, R a b → R b c → R a c)
+    (u v : W) (huv : R u v) (hvu : ¬ R v u) :
+    ∃ u', (R u u' ∧ ¬ R u' u ∧ ∀ t, R u t → R t u' → R t u ∨ R u' t) ∧ R u' v := by
+  obtain ⟨m, hmB, hmin⟩ :=
+    exists_min_strict (W := W) R hrefl htrans
+      {t | R u t ∧ ¬ R t u ∧ R t v} ⟨v, huv, hvu, hrefl v⟩
+  obtain ⟨hum, hmu, hmv⟩ := hmB
+  refine ⟨m, ⟨hum, hmu, fun t hut htm => ?_⟩, hmv⟩
+  by_cases htu : R t u
+  · exact Or.inl htu
+  · exact Or.inr (hmin t ⟨hut, htu, htrans htm hmv⟩ htm)
+
+/-! ## Section B — the semantic completion `M*` -/
+
+/-- The propositional atoms occurring in a formula. -/
+def atoms : PLLFormula → Finset String
+  | .prop a     => {a}
+  | .falsePLL   => ∅
+  | .and φ ψ    => atoms φ ∪ atoms ψ
+  | .or φ ψ     => atoms φ ∪ atoms ψ
+  | .ifThen φ ψ => atoms φ ∪ atoms ψ
+  | .somehow φ  => atoms φ
+
+/-- A finite type admits an injective naming by strings avoiding any given finite
+set — the fresh atoms `α_w` of the completion. -/
+theorem exists_freshNames (M : ConstraintModel) [Finite M.W] (A : Finset String) :
+    ∃ f : M.W → String, Function.Injective f ∧ ∀ w, f w ∉ A := by
+  classical
+  have hInf : Infinite {s : String // s ∉ A} := by
+    have h : ({s : String | s ∈ A}).Finite := A.finite_toSet
+    exact (h.infinite_compl).to_subtype
+  letI := Fintype.ofFinite M.W
+  let e : M.W ≃ Fin (Fintype.card M.W) := Fintype.equivFin M.W
+  let g : M.W → ℕ := fun w => (e w).val
+  have hg : Function.Injective g := fun a b hab => e.injective (Fin.val_injective hab)
+  let ne : ℕ ↪ {s : String // s ∉ A} := Infinite.natEmbedding _
+  refine ⟨fun w => (ne (g w)).val, fun a b hab => ?_, fun w => (ne (g w)).property⟩
+  exact hg (ne.injective (Subtype.ext hab))
+
+section Completion
+
+open Classical
+
+variable (M : ConstraintModel) [Finite M.W] (φ₀ : PLLFormula)
+
+/-- The fresh naming `α_·` for the completion, avoiding `atoms φ₀`. -/
+noncomputable def nm : M.W → String := (exists_freshNames M (atoms φ₀)).choose
+
+theorem nm_inj : Function.Injective (nm M φ₀) :=
+  (exists_freshNames M (atoms φ₀)).choose_spec.1
+
+theorem nm_fresh (w : M.W) : nm M φ₀ w ∉ atoms φ₀ :=
+  (exists_freshNames M (atoms φ₀)).choose_spec.2 w
+
+/-- Valuation of the completion: at fresh names `nm w`, force `{x | Ri w x} ∪ F`
+(the up-set of `w`, closed under `F` for fullness); elsewhere unchanged. -/
+noncomputable def Vstar : String → Set M.W := fun s =>
+  if h : ∃ w, nm M φ₀ w = s then {x | M.Ri h.choose x ∨ x ∈ M.F} else M.V s
+
+theorem Vstar_name (w : M.W) :
+    Vstar M φ₀ (nm M φ₀ w) = {x | M.Ri w x ∨ x ∈ M.F} := by
+  have hex : ∃ w', nm M φ₀ w' = nm M φ₀ w := ⟨w, rfl⟩
+  have hw : hex.choose = w := nm_inj M φ₀ hex.choose_spec
+  simp only [Vstar, dif_pos hex, hw]
+
+theorem Vstar_eq_of_not_range {a : String} (h : ¬ ∃ w, nm M φ₀ w = a) :
+    Vstar M φ₀ a = M.V a := by
+  simp only [Vstar, dif_neg h]
+
+theorem Vstar_hered : ∀ {a : String} {x y : M.W},
+    M.Ri x y → x ∈ Vstar M φ₀ a → y ∈ Vstar M φ₀ a := by
+  intro a x y hxy hx
+  by_cases h : ∃ w, nm M φ₀ w = a
+  · rw [Vstar, dif_pos h] at hx ⊢
+    rcases hx with h1 | h2
+    · exact Or.inl (M.trans_i h1 hxy)
+    · exact Or.inr (M.hered_F hxy h2)
+  · rw [Vstar, dif_neg h] at hx ⊢
+    exact M.hered_V hxy hx
+
+theorem Vstar_full : ∀ {a : String} {x : M.W}, x ∈ M.F → x ∈ Vstar M φ₀ a := by
+  intro a x hx
+  by_cases h : ∃ w, nm M φ₀ w = a
+  · rw [Vstar, dif_pos h]; exact Or.inr hx
+  · rw [Vstar, dif_neg h]; exact M.full_F hx
+
+/-- The semantic completion `M*`: `M` with the enriched valuation. -/
+noncomputable def Mstar : ConstraintModel :=
+  { M with V := Vstar M φ₀, hered_V := Vstar_hered M φ₀, full_F := Vstar_full M φ₀ }
+
+@[simp] theorem Mstar_W : (Mstar M φ₀).W = M.W := rfl
+@[simp] theorem Mstar_Ri : (Mstar M φ₀).Ri = M.Ri := rfl
+@[simp] theorem Mstar_Rm : (Mstar M φ₀).Rm = M.Rm := rfl
+@[simp] theorem Mstar_F : (Mstar M φ₀).F = M.F := rfl
+
+/-- The fresh propositional variable `α_w`. -/
+noncomputable def alpha (w : M.W) : PLLFormula := PLLFormula.prop (nm M φ₀ w)
+
+/-- Characterisation of `α_w` in `M*` (`property (a)`): forced at `x` iff `Ri w x`
+(or `x` fallible). -/
+theorem force_alpha (w x : M.W) :
+    (Mstar M φ₀).force x (alpha M φ₀ w) ↔ M.Ri w x ∨ x ∈ M.F := by
+  have h1 : (Mstar M φ₀).force x (alpha M φ₀ w) = (x ∈ Vstar M φ₀ (nm M φ₀ w)) := rfl
+  rw [h1, Vstar_name]
+  exact Iff.rfl
+
+/-- Coincidence (`property (b)`): `M*` agrees with `M` on any formula whose atoms
+avoid the fresh names — in particular on `φ₀` and its subformulas. -/
+theorem force_coincide : ∀ (ψ : PLLFormula), (∀ w, nm M φ₀ w ∉ atoms ψ) →
+    ∀ (x : M.W), ((Mstar M φ₀).force x ψ ↔ M.force x ψ) := by
+  intro ψ
+  induction ψ with
+  | prop a =>
+      intro hψ x
+      have hnr : ¬ ∃ w, nm M φ₀ w = a := by
+        rintro ⟨w, rfl⟩
+        exact hψ w (Finset.mem_singleton_self _)
+      have h1 : (Mstar M φ₀).force x (.prop a) = (x ∈ Vstar M φ₀ a) := rfl
+      have h2 : M.force x (.prop a) = (x ∈ M.V a) := rfl
+      rw [h1, h2, Vstar_eq_of_not_range M φ₀ hnr]
+  | falsePLL => intro hψ x; exact Iff.rfl
+  | and φ ψ ihφ ihψ =>
+      intro hψ x
+      have hφ : ∀ w, nm M φ₀ w ∉ atoms φ := fun w hw =>
+        hψ w (Finset.mem_union_left _ hw)
+      have hψ' : ∀ w, nm M φ₀ w ∉ atoms ψ := fun w hw =>
+        hψ w (Finset.mem_union_right _ hw)
+      exact and_congr (ihφ hφ x) (ihψ hψ' x)
+  | or φ ψ ihφ ihψ =>
+      intro hψ x
+      have hφ : ∀ w, nm M φ₀ w ∉ atoms φ := fun w hw =>
+        hψ w (Finset.mem_union_left _ hw)
+      have hψ' : ∀ w, nm M φ₀ w ∉ atoms ψ := fun w hw =>
+        hψ w (Finset.mem_union_right _ hw)
+      exact or_congr (ihφ hφ x) (ihψ hψ' x)
+  | ifThen φ ψ ihφ ihψ =>
+      intro hψ x
+      have hφ : ∀ w, nm M φ₀ w ∉ atoms φ := fun w hw =>
+        hψ w (Finset.mem_union_left _ hw)
+      have hψ' : ∀ w, nm M φ₀ w ∉ atoms ψ := fun w hw =>
+        hψ w (Finset.mem_union_right _ hw)
+      exact forall_congr' fun v => imp_congr Iff.rfl (imp_congr (ihφ hφ v) (ihψ hψ' v))
+  | somehow φ ih =>
+      intro hψ x
+      exact forall_congr' fun v =>
+        imp_congr Iff.rfl (exists_congr fun u => and_congr Iff.rfl (ih hψ u))
+
+end Completion
+
+/-! ## Section C — Lemma 7 -/
+
+/-- Forcing of a constraint conjunction `C[x]` is the conjunction of the basic
+constraints, over any model. -/
+theorem force_applyC_iff (D : ConstraintModel) (C : StdCtx) (x : PLLFormula)
+    (w : D.W) :
+    D.force w (applyC C x) ↔ ∀ p ∈ C, D.force w (basic p.1 p.2 x) := by
+  induction C with
+  | nil =>
+      constructor
+      · intro _ p hp; exact (List.not_mem_nil hp).elim
+      · intro _; exact fun v _ hv => hv
+  | cons hd tl ih =>
+      obtain ⟨K, L⟩ := hd
+      have hstep : D.force w (applyC ((K, L) :: tl) x) ↔
+          D.force w (basic K L x) ∧ D.force w (applyC tl x) := Iff.rfl
+      rw [hstep, ih]
+      constructor
+      · rintro ⟨hb, hrest⟩ p hp
+        rcases List.mem_cons.mp hp with rfl | hp
+        · exact hb
+        · exact hrest p hp
+      · intro h
+        exact ⟨h (K, L) (List.mem_cons_self ..), fun p hp => h p (List.mem_cons_of_mem _ hp)⟩
+
+/-- Finite disjunction of a list of formulas (empty = `⊥`). -/
+def bigOr : List PLLFormula → PLLFormula
+  | []       => .falsePLL
+  | q :: rest => q.or (bigOr rest)
+
+/-- Forcing of `bigOr L`: some disjunct is forced, or the world is fallible
+(the empty disjunction `⊥` is still forced at fallible worlds). -/
+theorem force_bigOr_iff (D : ConstraintModel) (L : List PLLFormula) (w : D.W) :
+    D.force w (bigOr L) ↔ (∃ q ∈ L, D.force w q) ∨ w ∈ D.F := by
+  induction L with
+  | nil =>
+      constructor
+      · intro h; exact Or.inr h
+      · rintro (⟨q, hq, _⟩ | h)
+        · exact (List.not_mem_nil hq).elim
+        · exact h
+  | cons q rest ih =>
+      have hstep : D.force w (bigOr (q :: rest)) ↔
+          D.force w q ∨ D.force w (bigOr rest) := Iff.rfl
+      rw [hstep, ih]
+      constructor
+      · rintro (hq | (⟨q', hq', hf'⟩ | hF))
+        · exact Or.inl ⟨q, List.mem_cons_self .., hq⟩
+        · exact Or.inl ⟨q', List.mem_cons_of_mem _ hq', hf'⟩
+        · exact Or.inr hF
+      · rintro (⟨q', hq', hf'⟩ | hF)
+        · rcases List.mem_cons.mp hq' with rfl | hq'
+          · exact Or.inl hf'
+          · exact Or.inr (Or.inl ⟨q', hq', hf'⟩)
+        · exact Or.inr (Or.inr hF)
+
+section Lemma7
+
+open Classical
+
+attribute [local instance] Classical.propDecidable
+
+variable (M : ConstraintModel) [Fintype M.W] (φ₀ : PLLFormula)
+
+/-- A world is **stable** if it is `Rm`-maximal *up to cluster*: every `Rm`-successor
+maps back.  (Preorder-correct form of the paper's "no proper modal successor".) -/
+def Stab (u : M.W) : Prop := ∀ t, M.Rm u t → M.Rm t u
+
+/-- `v` is an **immediate successor** (cover) of `u`: strictly `Ri`-above with
+nothing strictly in between (up to cluster). -/
+def iSucc (u v : M.W) : Prop :=
+  M.Ri u v ∧ ¬ M.Ri v u ∧ ∀ t, M.Ri u t → M.Ri t v → M.Ri t u ∨ M.Ri v t
+
+/-- The disjunction `⋁_{u'∈iSucc u} α_{u'}` (empty = `⊥`). -/
+noncomputable def Ldis (u : M.W) : PLLFormula :=
+  bigOr ((Finset.univ.filter (iSucc M u)).toList.map (alpha M φ₀))
+
+/-- The single standard constraint `C = ⨅_{u∈Stab} [α_u , ⋁_{u'∈iSucc u} α_{u'}]`. -/
+noncomputable def C0 : StdCtx :=
+  (Finset.univ.filter (Stab M)).toList.map (fun u => (alpha M φ₀ u, Ldis M φ₀ u))
+
+/-- Forcing of `Ldis u` in `M*`: some cover's variable is forced, or fallible. -/
+theorem force_Ldis (u w : M.W) :
+    (Mstar M φ₀).force w (Ldis M φ₀ u) ↔
+      (∃ u', iSucc M u u' ∧ (Mstar M φ₀).force w (alpha M φ₀ u')) ∨ w ∈ M.F := by
+  rw [Ldis, force_bigOr_iff]
+  constructor
+  · rintro (⟨q, hq, hfq⟩ | hF)
+    · rw [List.mem_map] at hq
+      obtain ⟨u', hu', rfl⟩ := hq
+      simp only [Finset.mem_toList, Finset.mem_filter, Finset.mem_univ, true_and] at hu'
+      exact Or.inl ⟨u', hu', hfq⟩
+    · exact Or.inr hF
+  · rintro (⟨u', hu', hf⟩ | hF)
+    · refine Or.inl ⟨alpha M φ₀ u', ?_, hf⟩
+      rw [List.mem_map]
+      have hmem : u' ∈ (Finset.univ.filter (iSucc M u)).toList := by
+        simp only [Finset.mem_toList, Finset.mem_filter, Finset.mem_univ, true_and]; exact hu'
+      exact ⟨u', hmem, rfl⟩
+    · exact Or.inr hF
+
+/-- Forcing of `C[ψ]` in `M*`, unfolded over stable worlds. -/
+theorem force_applyC_C0 (ψ : PLLFormula) (w : M.W) :
+    (Mstar M φ₀).force w (applyC (C0 M φ₀) ψ) ↔
+      ∀ u, Stab M u →
+        (Mstar M φ₀).force w (basic (alpha M φ₀ u) (Ldis M φ₀ u) ψ) := by
+  rw [force_applyC_iff]
+  constructor
+  · intro h u hu
+    apply h (alpha M φ₀ u, Ldis M φ₀ u)
+    rw [C0, List.mem_map]
+    have hmem : u ∈ (Finset.univ.filter (Stab M)).toList := by
+      simp only [Finset.mem_toList, Finset.mem_filter, Finset.mem_univ, true_and]; exact hu
+    exact ⟨u, hmem, rfl⟩
+  · intro h p hp
+    rw [C0, List.mem_map] at hp
+    obtain ⟨u, hu, rfl⟩ := hp
+    simp only [Finset.mem_toList, Finset.mem_filter, Finset.mem_univ, true_and] at hu
+    exact h u hu
+
+/-- **Lemma 7.**  Over the completion `M*`, the modality `◯ψ` is forced exactly
+where the single standard constraint `C0` applied to `ψ` is forced.  Uses only
+finiteness (reachable maximal cluster + cover factorization), no antisymmetry. -/
+theorem lemma7 (ψ : PLLFormula) (w : M.W) :
+    (Mstar M φ₀).force w (.somehow ψ) ↔
+      (Mstar M φ₀).force w (applyC (C0 M φ₀) ψ) := by
+  constructor
+  · -- (⟹)
+    intro hSom
+    rw [force_applyC_C0]
+    intro u hu v hwv hav
+    rw [force_alpha] at hav
+    show (Mstar M φ₀).force v ψ ∨ (Mstar M φ₀).force v (Ldis M φ₀ u)
+    rcases hav with hRiuv | hvF
+    · by_cases hvu : M.Ri v u
+      · -- v is in u's cluster: use stability of u
+        have hRiwu : M.Ri w u := M.trans_i hwv hvu
+        obtain ⟨z, hzrm, hzf⟩ := hSom u hRiwu
+        have hzu : M.Ri z u := M.sub_mi (hu z hzrm)
+        have hfu : (Mstar M φ₀).force u ψ := (Mstar M φ₀).force_hered hzu hzf
+        exact Or.inl ((Mstar M φ₀).force_hered hRiuv hfu)
+      · -- v strictly above u: factor through a cover
+        obtain ⟨u', hcov, hu'v⟩ := exists_cover M.Ri M.refl_i M.trans_i u v hRiuv hvu
+        refine Or.inr ?_
+        rw [force_Ldis]
+        refine Or.inl ⟨u', hcov, ?_⟩
+        rw [force_alpha]
+        exact Or.inl hu'v
+    · exact Or.inl ((Mstar M φ₀).force_of_fallible hvF)
+  · -- (⟸)
+    intro hC
+    rw [force_applyC_C0] at hC
+    intro v hwv
+    -- reach a stable world u above v
+    obtain ⟨u, hvu_rm, hStab_u⟩ :=
+      exists_max_cluster M.Rm M.refl_m M.trans_m v
+    have hRiwu : M.Ri w u := M.trans_i hwv (M.sub_mi hvu_rm)
+    have hau : (Mstar M φ₀).force u (alpha M φ₀ u) := by
+      rw [force_alpha]; exact Or.inl (M.refl_i u)
+    have hstep : (Mstar M φ₀).force u ψ ∨ (Mstar M φ₀).force u (Ldis M φ₀ u) :=
+      hC u hStab_u u hRiwu hau
+    have hfin : (Mstar M φ₀).force u ψ := by
+      rcases hstep with hψ | hLdis
+      · exact hψ
+      · rw [force_Ldis] at hLdis
+        rcases hLdis with ⟨u', hisucc, halpha⟩ | huF
+        · rw [force_alpha] at halpha
+          rcases halpha with hriu' | huF
+          · exact absurd hriu' hisucc.2.1
+          · exact (Mstar M φ₀).force_of_fallible huF
+        · exact (Mstar M φ₀).force_of_fallible huF
+    exact ⟨u, hvu_rm, hfin⟩
+
+/-- **Congruence under uniform `◯`-replacement.**  Substituting `C0[·]` for every
+`◯` (i.e. `subC (C0 M φ₀)`) preserves forcing in `M*` — structural induction with
+Lemma 7 at each `◯`. -/
+theorem force_subC_C0 : ∀ (ψ : PLLFormula) (w : M.W),
+    (Mstar M φ₀).force w (subC (C0 M φ₀) ψ) ↔ (Mstar M φ₀).force w ψ := by
+  intro ψ
+  induction ψ with
+  | prop a => intro w; exact Iff.rfl
+  | falsePLL => intro w; exact Iff.rfl
+  | and φ ψ ihφ ihψ => intro w; exact and_congr (ihφ w) (ihψ w)
+  | or φ ψ ihφ ihψ => intro w; exact or_congr (ihφ w) (ihψ w)
+  | ifThen φ ψ ihφ ihψ =>
+      intro w
+      exact forall_congr' fun v => imp_congr Iff.rfl (imp_congr (ihφ v) (ihψ v))
+  | somehow φ ih =>
+      intro w
+      have h1 : (Mstar M φ₀).force w (subC (C0 M φ₀) (.somehow φ)) ↔
+          (Mstar M φ₀).force w (.somehow (subC (C0 M φ₀) φ)) :=
+        (lemma7 M φ₀ (subC (C0 M φ₀) φ) w).symm
+      rw [h1]
+      exact forall_congr' fun v =>
+        imp_congr Iff.rfl (exists_congr fun u => and_congr Iff.rfl (ih u))
+
+end Lemma7
+
+/-! ## Section D — the completeness direction of Theorem 6 -/
+
+/-- **Theorem 6, completeness direction.**  If every standard-constraint expansion
+`φ^C` is IPL-provable, then `φ` is a PLL theorem.  (Contrapositive: a finite
+countermodel `M ⊭ φ`, completed to `M*`, refutes the single constraint `C0`, and
+`subC C0 φ` being `◯`-free this is an IPL refutation.) -/
+theorem thm6_completeness {φ : PLLFormula}
+    (h : ∀ C : StdCtx, Nonempty (LaxND [] (subC C φ))) : Nonempty (LaxND [] φ) := by
+  by_contra hnp
+  rw [finite_model_property] at hnp
+  push_neg at hnp
+  obtain ⟨M, hMfin, w₀, hw₀⟩ := hnp
+  haveI : Finite M.W := hMfin
+  haveI : Fintype M.W := Fintype.ofFinite M.W
+  -- `M*` agrees with `M` on `φ`, so `M* ⊭ φ`:
+  have hcoin : (Mstar M φ).force w₀ φ ↔ M.force w₀ φ :=
+    force_coincide M φ φ (fun w => nm_fresh M φ w) w₀
+  have hMstar_nf : ¬ (Mstar M φ).force w₀ φ := fun hf => hw₀ (hcoin.mp hf)
+  -- congruence: `M* ⊭ subC C0 φ`:
+  have hsub : ¬ (Mstar M φ).force w₀ (subC (C0 M φ) φ) := fun hf =>
+    hMstar_nf ((force_subC_C0 M φ φ w₀).mp hf)
+  -- but the hypothesis makes `subC C0 φ` provable, hence valid in `M*` — contradiction:
+  obtain ⟨p⟩ := h (C0 M φ)
+  exact hsub (soundness_valid p (Mstar M φ) w₀)
+
+/-- **Theorem 6** (full context-completeness).  `PLL ⊢ φ` iff every standard
+constraint expansion `φ^C` is IPL-provable.  (`subC C φ` is `◯`-free when `C`'s
+`K,L` are — `subC_isIPL` — so `Nonempty (LaxND [] (subC C φ))` is genuine IPL
+provability via `conservativity`; the witness `C0` built in the completeness proof
+has propositional `K,L`, so `CtxIsIPL (C0 M φ)` holds.) -/
+theorem thm6 {φ : PLLFormula} :
+    Nonempty (LaxND [] φ) ↔ ∀ C : StdCtx, Nonempty (LaxND [] (subC C φ)) :=
+  ⟨fun h C => thm6_soundness C h, thm6_completeness⟩
+
+end Ctx
+end PLLND
+
+#print axioms PLLND.Ctx.thm6
