@@ -974,6 +974,215 @@ theorem extract_sound {C : ConstraintModel} (Ev : Evidence Q.toPca C)
 
 end Extraction
 
+/-- Shift every variable up by one — the de Bruijn `bump`. -/
+def Poly.bump {Q : PcaKS} : Poly Q → Poly Q
+  | .var i => .var (i + 1)
+  | .const c => .const c
+  | .app f a => .app (Poly.bump f) (Poly.bump a)
+
+theorem Poly.eval_bump {Q : PcaKS} (t : Poly Q) (a : Q.Carrier) (ρ : ℕ → Q.Carrier) :
+    Poly.eval Q (Poly.bump t) (extendEnv a ρ) = Poly.eval Q t ρ := by
+  induction t with
+  | var i => rfl
+  | const c => rfl
+  | app f b ihf ihb => simp only [Poly.bump, Poly.eval, ihf, ihb]
+
+/-- Strategy-realiser environment for a context at a world. -/
+def EnvRealS (P : Pca) {C : ConstraintModel} (Ev : Evidence P C)
+    (κ : C.W → P.Carrier) (Γ : List PLLFormula) (ρ : ℕ → P.Carrier) (w : C.W) : Prop :=
+  ∀ i ψ, Γ[i]? = some ψ → realS P Ev κ ψ (ρ i) w
+
+theorem envRealS_hered {P : Pca} {C : ConstraintModel} {Ev : Evidence P C}
+    {κ : C.W → P.Carrier} {Γ : List PLLFormula} {ρ : ℕ → P.Carrier} {w v : C.W}
+    (h : C.Ri w v) (hρ : EnvRealS P Ev κ Γ ρ w) : EnvRealS P Ev κ Γ ρ v :=
+  fun i ψ hi => realS_hered P Ev κ ψ h (hρ i ψ hi)
+
+theorem envRealS_cons {P : Pca} {C : ConstraintModel} {Ev : Evidence P C}
+    {κ : C.W → P.Carrier} {Γ : List PLLFormula} {ρ : ℕ → P.Carrier} {w : C.W}
+    {φ : PLLFormula} {a : P.Carrier} (hρ : EnvRealS P Ev κ Γ ρ w)
+    (ha : realS P Ev κ φ a w) : EnvRealS P Ev κ (φ :: Γ) (extendEnv a ρ) w := by
+  intro i ψ hi
+  cases i with
+  | zero =>
+      simp only [List.getElem?_cons_zero] at hi
+      obtain rfl := Option.some.inj hi; exact ha
+  | succ j => simp only [List.getElem?_cons_succ] at hi; exact hρ j ψ hi
+
+section StrategyExtraction
+
+variable (Q : PcaFull)
+
+/-- **Strategy extraction**: like `extract`, but the two lax rules thread the
+future.  `laxIntro` becomes `λc. ⟨c, ·⟩` (name the future as the witness code);
+`laxElim` becomes `λc. (⌜run p₂⌝ · snd(s₁·c)) · fst(s₁·c)` — apply `p₁`'s
+strategy to the future, run `p₂` with the produced evidence, then apply the
+resulting `◯ψ`-strategy at the *named* witness code `fst(s₁·c)`. -/
+def extractS : {Γ : List PLLFormula} → {φ : PLLFormula} → LaxND Γ φ → Poly Q.toPcaKS
+  | Γ, _, .iden h => .var (memIdx Γ _ h)
+  | _, _, .falsoElim _ p => extractS p
+  | _, _, .impIntro p => Poly.abs Q.toPcaKS (extractS p)
+  | _, _, .impElim p₁ p₂ => .app (extractS p₁) (extractS p₂)
+  | _, _, .andIntro p₁ p₂ =>
+      .app (.app (.const Q.pairE) (extractS p₁)) (extractS p₂)
+  | _, _, .andElim1 p => .app (.const Q.fstE) (extractS p)
+  | _, _, .andElim2 p => .app (.const Q.sndE) (extractS p)
+  | _, _, .orIntro1 p => .app (.const (Q.tagE false)) (extractS p)
+  | _, _, .orIntro2 p => .app (.const (Q.tagE true)) (extractS p)
+  | _, _, .orElim p₀ p₁ p₂ =>
+      .app (.app (.app (.const Q.caseE) (extractS p₀))
+        (Poly.abs Q.toPcaKS (extractS p₁))) (Poly.abs Q.toPcaKS (extractS p₂))
+  | _, _, .laxIntro p =>
+      Poly.abs Q.toPcaKS
+        (.app (.app (.const Q.pairE) (.var 0)) (Poly.bump (extractS p)))
+  | _, _, .laxElim p₁ p₂ =>
+      Poly.abs Q.toPcaKS
+        (.app
+          (.app (Poly.bump (Poly.abs Q.toPcaKS (extractS p₂)))
+            (.app (.const Q.sndE) (.app (Poly.bump (extractS p₁)) (.var 0))))
+          (.app (.const Q.fstE) (.app (Poly.bump (extractS p₁)) (.var 0))))
+
+/-- **O3ˢ, strategy soundness with evidence extraction** (models without
+fallible worlds): the extracted polynomial evaluates, and its value
+`⊩ˢ`-realises the conclusion, under any environment `⊩ˢ`-realising the context.
+The `◯`-cases exhibit belief-evidence as a genuine *constraint-discharge
+program*: a function on presented futures returning `(⌜witness⌝, evidence)`. -/
+theorem extractS_sound {C : ConstraintModel} (Ev : Evidence Q.toPca C)
+    (κ : C.W → Q.Carrier) (hF : ∀ u : C.W, u ∉ C.F) :
+    ∀ {Γ : List PLLFormula} {φ : PLLFormula} (p : LaxND Γ φ)
+      (w : C.W) (ρ : ℕ → Q.Carrier),
+      EnvRealS Q.toPca Ev κ Γ ρ w →
+      ∃ g, Poly.eval Q.toPcaKS (extractS Q p) ρ = some g ∧
+        realS Q.toPca Ev κ φ g w := by
+  intro Γ φ p
+  induction p with
+  | @iden Γ φ h =>
+      intro w ρ hρ
+      exact ⟨ρ (memIdx Γ φ h), by simp [extractS, Poly.eval],
+        hρ _ _ (memIdx_get Γ φ h)⟩
+  | @falsoElim Γ φ p ih =>
+      intro w ρ hρ; obtain ⟨g, _, hr⟩ := ih w ρ hρ; exact (hF w hr).elim
+  | @impIntro Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hga⟩ := Poly.abs_spec Q.toPcaKS (extractS Q p) ρ
+      refine ⟨g, by simpa [extractS] using hg, ?_⟩
+      simp only [realS]; intro v hv
+      refine Or.inr fun b hb => ?_
+      obtain ⟨y, hey, hry⟩ :=
+        ih v (extendEnv b ρ) (envRealS_cons (envRealS_hered hv hρ) hb)
+      exact ⟨y, by rw [hga b]; exact hey, hry⟩
+  | @impElim Γ φ ψ p₁ p₂ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨g₁, hg₁, hr₁⟩ := ih₁ w ρ hρ
+      obtain ⟨g₂, hg₂, hr₂⟩ := ih₂ w ρ hρ
+      simp only [realS] at hr₁
+      rcases hr₁ w (C.refl_i w) with hF' | himp
+      · exact (hF w hF').elim
+      · obtain ⟨y, happ, hry⟩ := himp g₂ hr₂
+        exact ⟨y, by simp [extractS, Poly.eval, hg₁, hg₂, happ], hry⟩
+  | @andIntro Γ φ ψ p₁ p₂ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨g₁, hg₁, hr₁⟩ := ih₁ w ρ hρ
+      obtain ⟨g₂, hg₂, hr₂⟩ := ih₂ w ρ hρ
+      obtain ⟨pa, hpa, hpab⟩ := Q.pairE_app g₁
+      refine ⟨Q.pair g₁ g₂,
+        by simp [extractS, Poly.eval, hg₁, hg₂, hpa, hpab g₂], ?_⟩
+      simp only [realS]
+      exact Or.inr ⟨by rw [Q.fst_pair]; exact hr₁, by rw [Q.snd_pair]; exact hr₂⟩
+  | @andElim1 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      simp only [realS] at hr
+      rcases hr with hF' | ⟨h1, _⟩
+      · exact (hF w hF').elim
+      · exact ⟨Q.fst g, by simp [extractS, Poly.eval, hg, Q.fstE_app], h1⟩
+  | @andElim2 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      simp only [realS] at hr
+      rcases hr with hF' | ⟨_, h2⟩
+      · exact (hF w hF').elim
+      · exact ⟨Q.snd g, by simp [extractS, Poly.eval, hg, Q.sndE_app], h2⟩
+  | @orIntro1 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      refine ⟨Q.tag false g, by simp [extractS, Poly.eval, hg, Q.tagE_app], ?_⟩
+      simp only [realS]
+      exact Or.inr (Or.inl ⟨by rw [Q.untag_tag], by rw [Q.untag_tag]; exact hr⟩)
+  | @orIntro2 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      refine ⟨Q.tag true g, by simp [extractS, Poly.eval, hg, Q.tagE_app], ?_⟩
+      simp only [realS]
+      exact Or.inr (Or.inr ⟨by rw [Q.untag_tag], by rw [Q.untag_tag]; exact hr⟩)
+  | @orElim Γ φ ψ χ p₀ p₁ p₂ ih₀ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨x, hx, hrx⟩ := ih₀ w ρ hρ
+      obtain ⟨l, hl, hla⟩ := Poly.abs_spec Q.toPcaKS (extractS Q p₁) ρ
+      obtain ⟨r, hr', hra⟩ := Poly.abs_spec Q.toPcaKS (extractS Q p₂) ρ
+      obtain ⟨c₁, hc₁, hc₁l⟩ := Q.caseE_app x
+      obtain ⟨c₂, hc₂, hc₂r⟩ := hc₁l l
+      simp only [realS] at hrx
+      rcases hrx with hF' | ⟨ht, hpay⟩ | ⟨ht, hpay⟩
+      · exact (hF w hF').elim
+      · obtain ⟨y, hey, hry⟩ :=
+          ih₁ w (extendEnv (Q.untag x).2 ρ) (envRealS_cons hρ hpay)
+        refine ⟨y, ?_, hry⟩
+        simp only [extractS, Poly.eval, hx, hl, hr', hc₁, hc₂, Option.bind_some]
+        rw [hc₂r r, ht]; simpa [hla ((Q.untag x).2)] using hey
+      · obtain ⟨y, hey, hry⟩ :=
+          ih₂ w (extendEnv (Q.untag x).2 ρ) (envRealS_cons hρ hpay)
+        refine ⟨y, ?_, hry⟩
+        simp only [extractS, Poly.eval, hx, hl, hr', hc₁, hc₂, Option.bind_some]
+        rw [hc₂r r, ht]; simpa [hra ((Q.untag x).2)] using hey
+  | @laxIntro Γ φ p ih =>
+      intro w ρ hρ
+      obtain ⟨gp, hgp, hrp⟩ := ih w ρ hρ
+      obtain ⟨g, hg, hga⟩ := Poly.abs_spec Q.toPcaKS
+        (.app (.app (.const Q.pairE) (.var 0)) (Poly.bump (extractS Q p))) ρ
+      refine ⟨g, by simpa [extractS] using hg, ?_⟩
+      simp only [realS]; intro v hv
+      obtain ⟨pa, hpa, hpab⟩ := Q.pairE_app (κ v)
+      refine Or.inr ⟨Q.pair (κ v) gp, ?_, v, C.refl_m v, ?_, ?_⟩
+      · rw [hga (κ v)]
+        simp only [Poly.eval, Option.bind_some, extendEnv, Poly.eval_bump, hgp,
+          hpa, hpab gp]
+      · rw [Q.fst_pair]
+      · rw [Q.snd_pair]; exact realS_hered Q.toPca Ev κ φ hv hrp
+  | @laxElim Γ φ ψ p₁ p₂ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨s₁, hs₁, hr₁⟩ := ih₁ w ρ hρ
+      obtain ⟨rp₂, hrp₂, hrp₂a⟩ := Poly.abs_spec Q.toPcaKS (extractS Q p₂) ρ
+      obtain ⟨g, hg, hga⟩ := Poly.abs_spec Q.toPcaKS
+        (.app
+          (.app (Poly.bump (Poly.abs Q.toPcaKS (extractS Q p₂)))
+            (.app (.const Q.sndE) (.app (Poly.bump (extractS Q p₁)) (.var 0))))
+          (.app (.const Q.fstE) (.app (Poly.bump (extractS Q p₁)) (.var 0)))) ρ
+      refine ⟨g, by simpa [extractS] using hg, ?_⟩
+      -- g realises ◯ψ at w: for each future v, run p₁'s strategy then p₂'s.
+      simp only [realS]; intro v hv
+      -- p₁'s strategy at future v
+      simp only [realS] at hr₁
+      rcases hr₁ v hv with hF' | ⟨y₁, hy₁, u, hmu, hfu, hφu⟩
+      · exact Or.inl hF'
+      -- run p₂ at u with the produced φ-evidence (snd y₁)
+      have hwu : C.Ri w u := C.trans_i hv (C.sub_mi hmu)
+      obtain ⟨g₂, hg₂, hr₂⟩ :=
+        ih₂ u (extendEnv (Q.snd y₁) ρ)
+          (envRealS_cons (envRealS_hered hwu hρ) hφu)
+      -- apply g₂ (a ◯ψ-strategy at u) at the named witness code fst y₁ = κ u
+      simp only [realS] at hr₂
+      rcases hr₂ u (C.refl_i u) with hFu | ⟨y₂, hy₂, u₂, hmu₂, hfu₂, hψu₂⟩
+      · exact (hF u hFu).elim
+      refine Or.inr ⟨y₂, ?_, u₂, C.trans_m hmu hmu₂, hfu₂, hψu₂⟩
+      -- evaluate: g·(κ v) = (rp₂ · snd y₁) · (fst y₁) = g₂ · (κ u) = y₂
+      rw [hga (κ v)]
+      have hg₂eq : Q.app rp₂ (Q.snd y₁) = some g₂ := by rw [hrp₂a]; exact hg₂
+      rw [← hfu] at hy₂
+      simp only [Poly.eval, Option.bind_some, extendEnv, Poly.eval_bump, hs₁, hy₁,
+        Q.sndE_app, Q.fstE_app, hrp₂, hg₂eq, hy₂]
+
+end StrategyExtraction
+
 end BeliefReal
 end PLLND
 
@@ -1004,3 +1213,6 @@ end PLLND
 #print axioms PLLND.BeliefReal.Poly.abs_spec
 #print axioms PLLND.BeliefReal.extract
 #print axioms PLLND.BeliefReal.extract_sound
+#print axioms PLLND.BeliefReal.Poly.eval_bump
+#print axioms PLLND.BeliefReal.extractS
+#print axioms PLLND.BeliefReal.extractS_sound

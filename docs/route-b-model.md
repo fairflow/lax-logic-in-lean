@@ -292,6 +292,22 @@ strategy now returning `(⌜witness⌝, evidence)` packages).
 
 ## 8. Mechanisation ladder (proposed order, revised)
 
+*Status 2026-07-17: **rung 5 COMPLETE for BOTH clauses**. `wip/belief_realisability.lean`
+now has combinatory completeness (`Poly.abs_spec`, `Poly.eval_bump`), the two
+extractions `extract` (uniform, `[propext]`) and `extractS` (strategy, `[propext]`),
+and the two soundness-with-extraction theorems `extract_sound` and **`extractS_sound`**
+(both clean audits): over models without fallible worlds, from every `LaxND`
+derivation an extracted polynomial evaluates to a realiser of the conclusion. The
+strategy extraction needed the named-witness clause (`fst y = κ u`) and one de
+Bruijn `bump`; `laxIntro` extracts to `λc. ⟨c, ·⟩`, `laxElim` to
+`λc. (⌜run p₂⌝ · snd(s₁·c)) · fst(s₁·c)` — belief-evidence as a genuine
+constraint-discharge program. Remaining: rung 6 completeness for `⊩ˢ` (OPEN — the
+collapse lemma is refuted, see §6; needs canonical term-model or per-formula
+tailored evidence, possibly seeded by a countermodel extractor from the mechanised
+PLL decision procedure `decidablePLL`), then `PLLᵘ` characterisation, then the
+tripos/categorical rung.*
+
+
 *Status 2026-07-16 (evening): triptych pieces (ii) and (iv) LANDED —
 `uniform_dist_valid` (the identity `⊩ᵘ`-realises `◯(φ∨ψ)⊃(◯φ∨◯ψ)` at every
 world of every model, arbitrary `φ,ψ`, any structure with an identity
