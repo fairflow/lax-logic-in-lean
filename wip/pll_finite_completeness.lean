@@ -632,6 +632,312 @@ theorem finite_canonical_countermodel {Γ : List PLLFormula} {C : PLLFormula}
       (mem_clOf C (List.mem_cons_self ..)) ⟨T, hM⟩).2
       (hle.2.1 (Finset.mem_singleton_self ..))
 
+/-! ## Part 4: enumeration into a `FinCM`, and emitter completeness -/
+
+instance : Inhabited FTheory := ⟨⟨∅, ∅, ∅⟩⟩
+
+noncomputable instance (cl : Finset PLLFormula) :
+    DecidablePred (MaxIn cl) := fun T => by
+  unfold MaxIn InCl
+  infer_instance
+
+/-- All closure-maximal triples, as a finset. -/
+noncomputable def worldFinset (cl : Finset PLLFormula) : Finset FTheory :=
+  ((cl.powerset ×ˢ cl.powerset ×ˢ cl.powerset).image
+    fun p => (⟨p.1, p.2.1, p.2.2⟩ : FTheory)).filter (MaxIn cl)
+
+theorem mem_worldFinset {cl : Finset PLLFormula} {T : FTheory} :
+    T ∈ worldFinset cl ↔ MaxIn cl T := by
+  simp only [worldFinset, Finset.mem_filter, Finset.mem_image,
+    Finset.mem_product]
+  constructor
+  · rintro ⟨_, hM⟩
+    exact hM
+  · intro hM
+    exact ⟨⟨(T.val, T.fal, T.mfal),
+      ⟨Finset.mem_powerset.mpr hM.2.1.1,
+       Finset.mem_powerset.mpr hM.2.1.2.1,
+       Finset.mem_powerset.mpr hM.2.1.2.2⟩, rfl⟩, hM⟩
+
+/-- The enumerated worlds. -/
+noncomputable def worldList (cl : Finset PLLFormula) : List FTheory :=
+  (worldFinset cl).toList
+
+theorem mem_worldList {cl : Finset PLLFormula} {T : FTheory} :
+    T ∈ worldList cl ↔ MaxIn cl T := by
+  rw [worldList, Finset.mem_toList, mem_worldFinset]
+
+/-- The finite canonical model as checker data. -/
+noncomputable def canonFinCM (cl : Finset PLLFormula) : FinCM :=
+  { n := (worldList cl).length
+    ri := (List.range (worldList cl).length).flatMap fun i =>
+      (List.range (worldList cl).length).filterMap fun j =>
+        if (worldList cl)[i]!.val ⊆ (worldList cl)[j]!.val then
+          some (i, j) else none
+    rm := (List.range (worldList cl).length).flatMap fun i =>
+      (List.range (worldList cl).length).filterMap fun j =>
+        if (worldList cl)[i]!.val ⊆ (worldList cl)[j]!.val ∧
+            (worldList cl)[i]!.mfal ⊆ (worldList cl)[j]!.mfal then
+          some (i, j) else none
+    fall := (List.range (worldList cl).length).filter fun i =>
+      decide (PLLFormula.falsePLL ∈ (worldList cl)[i]!.val)
+    val := (List.range (worldList cl).length).flatMap fun i =>
+      (worldList cl)[i]!.val.toList.filterMap fun φ =>
+        match φ with | .prop a => some (i, a) | _ => none }
+
+@[simp] theorem canonFinCM_n (cl : Finset PLLFormula) :
+    (canonFinCM cl).n = (worldList cl).length := rfl
+
+/-! ### Characterisation of the built data -/
+
+section Charac
+
+variable {cl : Finset PLLFormula}
+
+private theorem wl_get_eq {i : Nat} (hi : i < (worldList cl).length) :
+    (worldList cl)[i]! = (worldList cl)[i] := by
+  exact getElem!_pos (worldList cl) i hi
+
+theorem ri_mem_iff {i j : Nat} :
+    (i, j) ∈ (canonFinCM cl).ri ↔
+      i < (worldList cl).length ∧ j < (worldList cl).length ∧
+        (worldList cl)[i]!.val ⊆ (worldList cl)[j]!.val := by
+  simp only [canonFinCM, List.mem_flatMap, List.mem_filterMap,
+    List.mem_range]
+  constructor
+  · rintro ⟨i', hi', j', hj', hif⟩
+    split at hif
+    · simp only [Option.some.injEq, Prod.mk.injEq] at hif
+      obtain ⟨rfl, rfl⟩ := hif
+      exact ⟨hi', hj', by assumption⟩
+    · cases hif
+  · rintro ⟨hi, hj, hsub⟩
+    exact ⟨i, hi, j, hj, if_pos hsub⟩
+
+theorem rm_mem_iff {i j : Nat} :
+    (i, j) ∈ (canonFinCM cl).rm ↔
+      i < (worldList cl).length ∧ j < (worldList cl).length ∧
+        ((worldList cl)[i]!.val ⊆ (worldList cl)[j]!.val ∧
+          (worldList cl)[i]!.mfal ⊆ (worldList cl)[j]!.mfal) := by
+  simp only [canonFinCM, List.mem_flatMap, List.mem_filterMap,
+    List.mem_range]
+  constructor
+  · rintro ⟨i', hi', j', hj', hif⟩
+    split at hif
+    · simp only [Option.some.injEq, Prod.mk.injEq] at hif
+      obtain ⟨rfl, rfl⟩ := hif
+      exact ⟨hi', hj', by assumption⟩
+    · cases hif
+  · rintro ⟨hi, hj, hsub⟩
+    exact ⟨i, hi, j, hj, if_pos hsub⟩
+
+theorem fall_mem_iff {i : Nat} :
+    i ∈ (canonFinCM cl).fall ↔
+      i < (worldList cl).length ∧
+        PLLFormula.falsePLL ∈ (worldList cl)[i]!.val := by
+  simp only [canonFinCM, List.mem_filter, List.mem_range,
+    decide_eq_true_eq]
+
+theorem valPair_mem_iff {i : Nat} {a : String} :
+    (i, a) ∈ (canonFinCM cl).val ↔
+      i < (worldList cl).length ∧
+        PLLFormula.prop a ∈ (worldList cl)[i]!.val := by
+  simp only [canonFinCM, List.mem_flatMap, List.mem_filterMap,
+    List.mem_range]
+  constructor
+  · rintro ⟨i', hi', φ, hφ, hmatch⟩
+    cases φ with
+    | prop b =>
+        simp only [Option.some.injEq, Prod.mk.injEq] at hmatch
+        obtain ⟨rfl, rfl⟩ := hmatch
+        exact ⟨hi', Finset.mem_toList.mp hφ⟩
+    | falsePLL => cases hmatch
+    | and _ _ => cases hmatch
+    | or _ _ => cases hmatch
+    | ifThen _ _ => cases hmatch
+    | somehow _ => cases hmatch
+  · rintro ⟨hi, hmem⟩
+    exact ⟨i, hi, .prop a, Finset.mem_toList.mpr hmem, rfl⟩
+
+theorem maxIn_get {i : Nat} (hi : i < (worldList cl).length) :
+    MaxIn cl (worldList cl)[i]! := by
+  rw [wl_get_eq hi]
+  exact mem_worldList.mp (List.getElem_mem ..)
+
+theorem riB_iff {i j : Nat} (hi : i < (worldList cl).length)
+    (hj : j < (worldList cl).length) :
+    (canonFinCM cl).riB i j = true ↔
+      (worldList cl)[i]!.val ⊆ (worldList cl)[j]!.val := by
+  simp only [FinCM.riB, Bool.or_eq_true, decide_eq_true_eq]
+  constructor
+  · rintro (hmem | rfl)
+    · exact (ri_mem_iff.mp hmem).2.2
+    · exact subset_rfl
+  · intro h
+    exact .inl (ri_mem_iff.mpr ⟨hi, hj, h⟩)
+
+theorem rmB_iff {i j : Nat} (hi : i < (worldList cl).length)
+    (hj : j < (worldList cl).length) :
+    (canonFinCM cl).rmB i j = true ↔
+      ((worldList cl)[i]!.val ⊆ (worldList cl)[j]!.val ∧
+        (worldList cl)[i]!.mfal ⊆ (worldList cl)[j]!.mfal) := by
+  simp only [FinCM.rmB, Bool.or_eq_true, decide_eq_true_eq]
+  constructor
+  · rintro (hmem | rfl)
+    · exact (rm_mem_iff.mp hmem).2.2
+    · exact ⟨subset_rfl, subset_rfl⟩
+  · intro h
+    exact .inl (rm_mem_iff.mpr ⟨hi, hj, h⟩)
+
+theorem fallB_iff {i : Nat} (hi : i < (worldList cl).length) :
+    (canonFinCM cl).fallB i = true ↔
+      PLLFormula.falsePLL ∈ (worldList cl)[i]!.val := by
+  simp only [FinCM.fallB, decide_eq_true_eq]
+  constructor
+  · intro h
+    exact (fall_mem_iff.mp h).2
+  · intro h
+    exact fall_mem_iff.mpr ⟨hi, h⟩
+
+theorem valB_of_mem {i : Nat} {a : String}
+    (hi : i < (worldList cl).length)
+    (h : PLLFormula.prop a ∈ (worldList cl)[i]!.val) :
+    (canonFinCM cl).valB i a = true := by
+  simp only [FinCM.valB, Bool.or_eq_true, decide_eq_true_eq]
+  exact .inl (valPair_mem_iff.mpr ⟨hi, h⟩)
+
+theorem valB_iff {i : Nat} {a : String} (hi : i < (worldList cl).length)
+    (ha : PLLFormula.prop a ∈ cl) :
+    (canonFinCM cl).valB i a = true ↔
+      PLLFormula.prop a ∈ (worldList cl)[i]!.val := by
+  constructor
+  · intro h
+    simp only [FinCM.valB, FinCM.fallB, Bool.or_eq_true,
+      decide_eq_true_eq] at h
+    rcases h with hmem | hfall
+    · exact (valPair_mem_iff.mp hmem).2
+    · exact (maxIn_get hi).ded_closed ha (falso _ (of_mem
+        (Finset.mem_coe.mpr ((fall_mem_iff.mp hfall).2))))
+  · exact valB_of_mem hi
+
+/-- The built model satisfies the frame conditions. -/
+theorem canonFinCM_wf : (canonFinCM cl).WellFormed := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro w hw v hv u hu h₁ h₂
+    exact (riB_iff hw hu).mpr
+      (((riB_iff hw hv).mp h₁).trans ((riB_iff hv hu).mp h₂))
+  · intro w hw v hv u hu h₁ h₂
+    obtain ⟨ha₁, hb₁⟩ := (rmB_iff hw hv).mp h₁
+    obtain ⟨ha₂, hb₂⟩ := (rmB_iff hv hu).mp h₂
+    exact (rmB_iff hw hu).mpr ⟨ha₁.trans ha₂, hb₁.trans hb₂⟩
+  · intro w hw v hv h
+    exact (riB_iff hw hv).mpr ((rmB_iff hw hv).mp h).1
+  · intro w hw v hv h hf
+    exact (fallB_iff hv).mpr ((riB_iff hw hv).mp h ((fallB_iff hw).mp hf))
+  · intro p hp v hv h
+    obtain ⟨hi, hmem⟩ := valPair_mem_iff.mp hp
+    exact valB_of_mem hv ((riB_iff hi hv).mp h hmem)
+
+/-- The world of an index. -/
+noncomputable def wAt (i : Fin (canonFinCM cl).n) : (canonFin cl).W :=
+  ⟨(worldList cl)[i.1]!, maxIn_get i.2⟩
+
+theorem exists_idx (T : (canonFin cl).W) :
+    ∃ i : Fin (canonFinCM cl).n, (worldList cl)[i.1]! = T.1 := by
+  have hmem : T.1 ∈ worldList cl := mem_worldList.mpr T.2
+  obtain ⟨i, hi, heq⟩ := List.mem_iff_getElem.mp hmem
+  exact ⟨⟨i, hi⟩, by rw [wl_get_eq hi]; exact heq⟩
+
+/-- **The transfer lemma**: on closure formulas, forcing in the checker
+model coincides with forcing in the finite canonical model. -/
+theorem transfer (hcl : SubClosed cl) :
+    ∀ φ, φ ∈ cl → ∀ i : Fin (canonFinCM cl).n,
+      ((canonFinCM cl).toModel canonFinCM_wf).force i φ ↔
+        (canonFin cl).force (wAt i) φ := by
+  intro φ
+  induction φ with
+  | prop a =>
+      intro hφ i
+      constructor
+      · intro h
+        exact .inr ((valB_iff i.2 hφ).mp h)
+      · rintro (hout | hv)
+        · exact absurd hφ hout
+        · exact (valB_iff i.2 hφ).mpr hv
+  | falsePLL =>
+      intro hφ i
+      exact fallB_iff i.2
+  | and φ ψ ihφ ihψ =>
+      intro hφ i
+      exact and_congr (ihφ (hcl.and_left hφ) i) (ihψ (hcl.and_right hφ) i)
+  | or φ ψ ihφ ihψ =>
+      intro hφ i
+      exact or_congr (ihφ (hcl.or_left hφ) i) (ihψ (hcl.or_right hφ) i)
+  | ifThen φ ψ ihφ ihψ =>
+      intro hφ i
+      have hφ₁ := hcl.imp_left hφ
+      have hψ₁ := hcl.imp_right hφ
+      constructor
+      · intro H T' hle hφ'
+        obtain ⟨j, hj⟩ := exists_idx T'
+        have hwj : wAt j = T' := Subtype.ext hj
+        have hri : (canonFinCM cl).riB i.1 j.1 = true :=
+          (riB_iff i.2 j.2).mpr (by rw [hj]; exact hle)
+        have hφj : ((canonFinCM cl).toModel canonFinCM_wf).force j φ :=
+          (ihφ hφ₁ j).mpr (by rw [hwj]; exact hφ')
+        have := (ihψ hψ₁ j).mp (H j hri hφj)
+        rwa [hwj] at this
+      · intro H v hri hφv
+        have hsub := (riB_iff i.2 v.2).mp hri
+        exact (ihψ hψ₁ v).mpr (H (wAt v) hsub ((ihφ hφ₁ v).mp hφv))
+  | somehow φ ih =>
+      intro hφ i
+      have hφ₁ := hcl.lax hφ
+      constructor
+      · intro H T' hle
+        obtain ⟨j, hj⟩ := exists_idx T'
+        have hwj : wAt j = T' := Subtype.ext hj
+        have hri : (canonFinCM cl).riB i.1 j.1 = true :=
+          (riB_iff i.2 j.2).mpr (by rw [hj]; exact hle)
+        obtain ⟨u, hrm, hu⟩ := H j hri
+        refine ⟨wAt u, ?_, (ih hφ₁ u).mp hu⟩
+        have := (rmB_iff j.2 u.2).mp hrm
+        rw [← hwj]
+        exact this
+      · intro H v hri
+        have hsub := (riB_iff i.2 v.2).mp hri
+        obtain ⟨T₂, hRm, hf⟩ := H (wAt v) hsub
+        obtain ⟨u, hu⟩ := exists_idx T₂
+        have hwu : wAt u = T₂ := Subtype.ext hu
+        refine ⟨u, (rmB_iff v.2 u.2).mpr (by rw [hu]; exact hRm), ?_⟩
+        exact (ih hφ₁ u).mpr (by rw [hwu]; exact hf)
+
+/-- **Emitter completeness**: every underivable sequent has a finite
+countermodel *as checker data* — a `FinCM` and a world passing the
+verified `checkB`.  Composed with `realP_refutes_sequent`
+(`wip/belief_realisability.lean`), this closes the completeness of PLL for
+`⊩ᵖ`-realisability over decorated finite models. -/
+theorem emitter_completeness {Γ : List PLLFormula} {C : PLLFormula}
+    (h : ¬ Nonempty (LaxND Γ C)) :
+    ∃ (M : FinCM) (w : Nat), FinCM.checkB M w Γ C = true := by
+  obtain ⟨T, hΓ, hC⟩ := finite_canonical_countermodel h
+  obtain ⟨i, hieq⟩ := exists_idx T
+  have hwT : wAt i = T := Subtype.ext hieq
+  refine ⟨canonFinCM (clOf Γ C), i.1,
+    FinCM.checkB_intro canonFinCM_wf i.2 ?_ ?_⟩
+  · intro ψ hψ
+    refine (transfer (clOf_subClosed Γ C) ψ
+      (mem_clOf ψ (List.mem_cons_of_mem _ hψ)) i).mpr ?_
+    rw [hwT]
+    exact hΓ ψ hψ
+  · intro hf
+    refine hC ?_
+    rw [← hwT]
+    exact (transfer (clOf_subClosed Γ C) C
+      (mem_clOf C (List.mem_cons_self ..)) i).mp hf
+
+end Charac
+
 end FinComp
 end PLLND
 
@@ -639,3 +945,4 @@ end PLLND
 #print axioms PLLND.FinComp.cons_insVal_or_insFal
 #print axioms PLLND.FinComp.truth_lemma
 #print axioms PLLND.FinComp.finite_canonical_countermodel
+#print axioms PLLND.FinComp.emitter_completeness
