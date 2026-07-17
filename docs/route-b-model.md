@@ -127,6 +127,18 @@ which, at every world and modulo discharging one constraint step, is itself
 evidence for `M` — "a proof of `◯M` contains the evidence for believing M" is the
 `◯`-clause read off O3.
 
+**Scoping note (2026-07-16).** O3 is stated over models **without fallible
+worlds** (`F = ∅`), the standard Kleene-style class: at fallible worlds the
+`F`-guards make hypothesis-realisers non-strict, so applications may diverge and
+no extracted value need exist. Extending O3 to `F ≠ ∅` needs a strictness
+discipline (guarded application / lazy pairing) — OPEN. The countermodel and
+separation results are unaffected (they already use `F = ∅` models).
+**Extraction shape:** `iden ↦` variable, `impIntro ↦` bracket abstraction,
+`impElim ↦` application, `∧/∨ ↦` pairing/tagging/case, and the lax rules:
+`laxIntro ↦` **identity**, `laxElim ↦` **let** — under uniform evidence the
+`◯`-monad's computational shadow is the identity monad, which is exactly the
+rigidity the incompleteness theorem (§5) detects.
+
 ## 5. The evidential bite is an INCOMPLETENESS theorem (revised 2026-07-16)
 
 *Matthew's observation: the "bite" of the first draft's §5 and the completeness

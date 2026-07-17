@@ -25,6 +25,22 @@ nucleus laws (inflationarity + meet-preservation); idempotence is not needed.
 
 namespace BeliefLax
 
+section Heyting
+variable {H : Type*} [HeytingAlgebra H]
+
+/-- The **closed** nucleus `c_b(x) = x ⊔ b` — dogmatic belief in `b`.
+(Shared base definition; `BeliefBooleanIso` and `BeliefOpenClosed` build on
+it.) -/
+def closedNucleus (b : H) : Nucleus H where
+  toFun x := x ⊔ b
+  map_inf' x y := by rw [sup_inf_right]
+  le_apply' x := le_sup_left
+  idempotent' x := le_of_eq (by rw [sup_assoc, sup_idem])
+
+@[simp] lemma closedNucleus_apply (b x : H) : closedNucleus b x = x ⊔ b := rfl
+
+end Heyting
+
 variable {B : Type*} [BooleanAlgebra B]
 
 /-- **The Boolean collapse.**  Every nucleus on a Boolean algebra `B` is the

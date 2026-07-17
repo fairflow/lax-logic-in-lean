@@ -47,3 +47,12 @@ import LaxLogic.PLLTiming
 import LaxLogic.PLLTimingAdder
 import LaxLogic.PLLDemos
 import LaxLogic.PLLExec
+import LaxLogic.PLLCtxCompleteness
+import LaxLogic.PLLLaxInfinite
+import LaxLogic.BeliefCollapse
+import LaxLogic.BeliefBooleanIso
+import LaxLogic.BeliefNormality
+import LaxLogic.BeliefIdealisation
+import LaxLogic.BeliefFalsum
+import LaxLogic.BeliefOpenClosed
+import LaxLogic.BeliefExamples

@@ -1,4 +1,4 @@
-import Mathlib
+import LaxLogic.BeliefCollapse
 
 /-!
 # Open vs closed nuclei: hypothetical belief is invisible classically (§3b-2)
@@ -29,15 +29,10 @@ def openNucleus (a : H) : Nucleus H where
   le_apply' x := le_himp_iff.mpr inf_le_left
   idempotent' x := le_of_eq (by rw [himp_himp, inf_idem])
 
-/-- The **closed** nucleus `c_b(x) = x ⊔ b` — dogmatic belief in `b`. -/
-def closedNucleus (b : H) : Nucleus H where
-  toFun x := x ⊔ b
-  map_inf' x y := by rw [sup_inf_right]
-  le_apply' x := le_sup_left
-  idempotent' x := le_of_eq (by rw [sup_assoc, sup_idem])
+-- `closedNucleus` and `closedNucleus_apply` come from `BeliefCollapse`
+-- (the shared base module).
 
 @[simp] lemma openNucleus_apply (a x : H) : openNucleus a x = a ⇨ x := rfl
-@[simp] lemma closedNucleus_apply (b x : H) : closedNucleus b x = x ⊔ b := rfl
 
 /-- If the open nucleus `u_a` equals the closed nucleus `c_{aᶜ}`, then excluded
 middle holds at `a`: `a ⊔ aᶜ = ⊤`.  (Evaluate at `a`; `a ⇨ a = ⊤`.) -/

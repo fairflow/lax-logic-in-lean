@@ -1,4 +1,4 @@
-import Mathlib
+import LaxLogic.BeliefCollapse
 
 /-!
 # `N(B) ≅ B`: nuclei on a Boolean algebra are an order isomorphism with `B`
@@ -28,31 +28,8 @@ namespace BeliefLax
 
 variable {B : Type*} [BooleanAlgebra B]
 
-/-- The **closed** nucleus `c_b(x) = x ⊔ b` — dogmatic belief in `b`. -/
-def closedNucleus (b : B) : Nucleus B where
-  toFun x := x ⊔ b
-  map_inf' x y := by rw [sup_inf_right]
-  le_apply' x := le_sup_left
-  idempotent' x := le_of_eq (by rw [sup_assoc, sup_idem])
-
-@[simp] lemma closedNucleus_apply (b x : B) : closedNucleus b x = x ⊔ b := rfl
-
-/-- **The Boolean collapse.** Every nucleus on a Boolean algebra `B` is the
-closed nucleus `x ↦ x ⊔ j ⊥`. -/
-theorem nucleus_eq_sup_bot (j : Nucleus B) (x : B) : j x = x ⊔ j ⊥ := by
-  apply le_antisymm
-  · have hsplit : j x = x ⊔ (j x ⊓ xᶜ) := by
-      calc j x = j x ⊓ ⊤ := by rw [inf_top_eq]
-        _ = j x ⊓ (x ⊔ xᶜ) := by rw [sup_compl_eq_top]
-        _ = (j x ⊓ x) ⊔ (j x ⊓ xᶜ) := by rw [inf_sup_left]
-        _ = x ⊔ (j x ⊓ xᶜ) := by rw [inf_eq_right.mpr j.le_apply]
-    have hle : j x ⊓ xᶜ ≤ j ⊥ := by
-      have h1 : j x ⊓ xᶜ ≤ j x ⊓ j xᶜ := inf_le_inf le_rfl j.le_apply
-      have h2 : j x ⊓ j xᶜ = j ⊥ := by rw [← j.map_inf, inf_compl_eq_bot]
-      exact h1.trans_eq h2
-    calc j x = x ⊔ (j x ⊓ xᶜ) := hsplit
-      _ ≤ x ⊔ j ⊥ := sup_le_sup_left hle x
-  · exact sup_le j.le_apply (j.monotone bot_le)
+-- `closedNucleus`, `closedNucleus_apply` and the collapse `nucleus_eq_sup_bot`
+-- are provided by `BeliefCollapse` (the shared base module).
 
 /-- The underlying bijection `Nucleus B ≃ B` of `j ↦ j ⊥`, with inverse
 `a ↦ closedNucleus a`. Built first, as its own `Equiv`, so that its

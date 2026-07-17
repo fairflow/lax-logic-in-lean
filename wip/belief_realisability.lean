@@ -718,6 +718,251 @@ theorem Poly.abs_spec (t : Poly Q) (ρ : ℕ → Q.Carrier) :
 
 end Combinatory
 
+/-! ## Rung 5 (O3): evidence extraction — soundness with an extracted realiser
+
+`extract` maps every `LaxND` derivation to a polynomial; `extract_sound` shows
+its value realises the conclusion (uniform clause `⊩ᵘ`) in every realisability
+model **without fallible worlds**, under any environment realising the context.
+The `F = ∅` scoping is the standard Kleene-style one: at fallible worlds the
+`F`-guards make hypothesis-realisers non-strict, so application may diverge;
+lifting this needs a strictness discipline and is left OPEN
+(`route-b-model.md` §4).
+
+The internal structural combinators (`pairE`, `fstE`, `sndE`, `tagE`, `caseE`)
+are the element-level versions of the pairing/tag structure; in `K₁` all are
+definable.  Note the lax cases: `laxIntro` extracts to the **identity** and
+`laxElim` to a **let** — under uniform evidence the `◯`-monad's computational
+shadow is the identity monad, which is precisely the rigidity that the
+incompleteness theorem (§5) detects. -/
+
+/-- A PCA with internal pairing, tagging and case analysis (all definable in
+`K₁` by combinatory completeness). -/
+structure PcaFull extends PcaKS where
+  pairE : Carrier
+  fstE : Carrier
+  sndE : Carrier
+  tagE : Bool → Carrier
+  caseE : Carrier
+  pairE_app : ∀ a : Carrier, ∃ pa, app pairE a = some pa ∧
+      ∀ b, app pa b = some (pair a b)
+  fstE_app : ∀ a : Carrier, app fstE a = some (fst a)
+  sndE_app : ∀ a : Carrier, app sndE a = some (snd a)
+  tagE_app : ∀ (i : Bool) (a : Carrier), app (tagE i) a = some (tag i a)
+  caseE_app : ∀ x : Carrier, ∃ c₁, app caseE x = some c₁ ∧
+      ∀ l, ∃ c₂, app c₁ l = some c₂ ∧
+        ∀ r, app c₂ r =
+          bif (untag x).1 then app r (untag x).2 else app l (untag x).2
+
+/-- Index of a hypothesis, by decidable search (a membership *proof* is a
+`Prop` and cannot compute the index). -/
+def memIdx : (Γ : List PLLFormula) → (φ : PLLFormula) → φ ∈ Γ → ℕ
+  | [], _, h => absurd h (by simp)
+  | a :: Γ', φ, h =>
+      if heq : φ = a then 0
+      else memIdx Γ' φ ((List.mem_cons.mp h).resolve_left heq) + 1
+
+theorem memIdx_get : ∀ (Γ : List PLLFormula) (φ : PLLFormula) (h : φ ∈ Γ),
+    Γ[memIdx Γ φ h]? = some φ := by
+  intro Γ
+  induction Γ with
+  | nil => intro φ h; exact absurd h (by simp)
+  | cons a Γ' ih =>
+      intro φ h
+      by_cases heq : φ = a
+      · subst heq; simp [memIdx]
+      · simp only [memIdx, dif_neg heq, List.getElem?_cons_succ]
+        exact ih φ _
+
+/-- An environment of realisers for a context at a world. -/
+def EnvReal (P : Pca) {C : ConstraintModel} (Ev : Evidence P C)
+    (Γ : List PLLFormula) (ρ : ℕ → P.Carrier) (w : C.W) : Prop :=
+  ∀ i ψ, Γ[i]? = some ψ → realU P Ev ψ (ρ i) w
+
+theorem envReal_hered {P : Pca} {C : ConstraintModel} {Ev : Evidence P C}
+    {Γ : List PLLFormula} {ρ : ℕ → P.Carrier} {w v : C.W}
+    (h : C.Ri w v) (hρ : EnvReal P Ev Γ ρ w) : EnvReal P Ev Γ ρ v :=
+  fun i ψ hi => realU_hered P Ev ψ h (hρ i ψ hi)
+
+theorem envReal_cons {P : Pca} {C : ConstraintModel} {Ev : Evidence P C}
+    {Γ : List PLLFormula} {ρ : ℕ → P.Carrier} {w : C.W} {φ : PLLFormula}
+    {a : P.Carrier} (hρ : EnvReal P Ev Γ ρ w) (ha : realU P Ev φ a w) :
+    EnvReal P Ev (φ :: Γ) (extendEnv a ρ) w := by
+  intro i ψ hi
+  cases i with
+  | zero =>
+      simp only [List.getElem?_cons_zero] at hi
+      have hψ : φ = ψ := Option.some.inj hi
+      subst hψ
+      exact ha
+  | succ j =>
+      simp only [List.getElem?_cons_succ] at hi
+      exact hρ j ψ hi
+
+section Extraction
+
+variable (Q : PcaFull)
+
+/-- **The extraction**: from a derivation to a polynomial.  `iden` is a
+variable, `impIntro` a bracket abstraction, `laxIntro` the identity,
+`laxElim` a `let`. -/
+def extract : {Γ : List PLLFormula} → {φ : PLLFormula} → LaxND Γ φ → Poly Q.toPcaKS
+  | Γ, _, .iden h => .var (memIdx Γ _ h)
+  | _, _, .falsoElim _ p => extract p
+  | _, _, .impIntro p => Poly.abs Q.toPcaKS (extract p)
+  | _, _, .impElim p₁ p₂ => .app (extract p₁) (extract p₂)
+  | _, _, .andIntro p₁ p₂ =>
+      .app (.app (.const Q.pairE) (extract p₁)) (extract p₂)
+  | _, _, .andElim1 p => .app (.const Q.fstE) (extract p)
+  | _, _, .andElim2 p => .app (.const Q.sndE) (extract p)
+  | _, _, .orIntro1 p => .app (.const (Q.tagE false)) (extract p)
+  | _, _, .orIntro2 p => .app (.const (Q.tagE true)) (extract p)
+  | _, _, .orElim p₀ p₁ p₂ =>
+      .app (.app (.app (.const Q.caseE) (extract p₀))
+        (Poly.abs Q.toPcaKS (extract p₁))) (Poly.abs Q.toPcaKS (extract p₂))
+  | _, _, .laxIntro p => extract p
+  | _, _, .laxElim p₁ p₂ =>
+      .app (Poly.abs Q.toPcaKS (extract p₂)) (extract p₁)
+
+/-- **O3, soundness with evidence extraction** (models without fallible
+worlds): the extracted polynomial evaluates, and its value `⊩ᵘ`-realises the
+conclusion, under any environment realising the context. -/
+theorem extract_sound {C : ConstraintModel} (Ev : Evidence Q.toPca C)
+    (hF : ∀ u : C.W, u ∉ C.F) :
+    ∀ {Γ : List PLLFormula} {φ : PLLFormula} (p : LaxND Γ φ)
+      (w : C.W) (ρ : ℕ → Q.Carrier),
+      EnvReal Q.toPca Ev Γ ρ w →
+      ∃ g, Poly.eval Q.toPcaKS (extract Q p) ρ = some g ∧
+        realU Q.toPca Ev φ g w := by
+  intro Γ φ p
+  induction p with
+  | @iden Γ φ h =>
+      intro w ρ hρ
+      exact ⟨ρ (memIdx Γ φ h), by simp [extract, Poly.eval],
+        hρ _ _ (memIdx_get Γ φ h)⟩
+  | @falsoElim Γ φ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      exact (hF w hr).elim
+  | @impIntro Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hga⟩ := Poly.abs_spec Q.toPcaKS (extract Q p) ρ
+      refine ⟨g, by simpa [extract] using hg, ?_⟩
+      simp only [realU]
+      intro v hv
+      refine Or.inr fun b hb => ?_
+      obtain ⟨y, hey, hry⟩ :=
+        ih v (extendEnv b ρ) (envReal_cons (envReal_hered hv hρ) hb)
+      exact ⟨y, by rw [hga b]; exact hey, hry⟩
+  | @impElim Γ φ ψ p₁ p₂ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨g₁, hg₁, hr₁⟩ := ih₁ w ρ hρ
+      obtain ⟨g₂, hg₂, hr₂⟩ := ih₂ w ρ hρ
+      simp only [realU] at hr₁
+      rcases hr₁ w (C.refl_i w) with hF' | himp
+      · exact (hF w hF').elim
+      · obtain ⟨y, happ, hry⟩ := himp g₂ hr₂
+        exact ⟨y, by simp [extract, Poly.eval, hg₁, hg₂, happ], hry⟩
+  | @andIntro Γ φ ψ p₁ p₂ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨g₁, hg₁, hr₁⟩ := ih₁ w ρ hρ
+      obtain ⟨g₂, hg₂, hr₂⟩ := ih₂ w ρ hρ
+      obtain ⟨pa, hpa, hpab⟩ := Q.pairE_app g₁
+      refine ⟨Q.pair g₁ g₂,
+        by simp [extract, Poly.eval, hg₁, hg₂, hpa, hpab g₂], ?_⟩
+      simp only [realU]
+      exact Or.inr ⟨by rw [Q.fst_pair]; exact hr₁, by rw [Q.snd_pair]; exact hr₂⟩
+  | @andElim1 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      simp only [realU] at hr
+      rcases hr with hF' | ⟨h1, _⟩
+      · exact (hF w hF').elim
+      · exact ⟨Q.fst g, by simp [extract, Poly.eval, hg, Q.fstE_app], h1⟩
+  | @andElim2 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      simp only [realU] at hr
+      rcases hr with hF' | ⟨_, h2⟩
+      · exact (hF w hF').elim
+      · exact ⟨Q.snd g, by simp [extract, Poly.eval, hg, Q.sndE_app], h2⟩
+  | @orIntro1 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      refine ⟨Q.tag false g,
+        by simp [extract, Poly.eval, hg, Q.tagE_app], ?_⟩
+      simp only [realU]
+      refine Or.inr (Or.inl ⟨?_, ?_⟩)
+      · rw [Q.untag_tag]
+      · rw [Q.untag_tag]; exact hr
+  | @orIntro2 Γ φ ψ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      refine ⟨Q.tag true g,
+        by simp [extract, Poly.eval, hg, Q.tagE_app], ?_⟩
+      simp only [realU]
+      refine Or.inr (Or.inr ⟨?_, ?_⟩)
+      · rw [Q.untag_tag]
+      · rw [Q.untag_tag]; exact hr
+  | @orElim Γ φ ψ χ p₀ p₁ p₂ ih₀ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨x, hx, hrx⟩ := ih₀ w ρ hρ
+      obtain ⟨l, hl, hla⟩ := Poly.abs_spec Q.toPcaKS (extract Q p₁) ρ
+      obtain ⟨r, hr', hra⟩ := Poly.abs_spec Q.toPcaKS (extract Q p₂) ρ
+      obtain ⟨c₁, hc₁, hc₁l⟩ := Q.caseE_app x
+      obtain ⟨c₂, hc₂, hc₂r⟩ := hc₁l l
+      simp only [realU] at hrx
+      rcases hrx with hF' | ⟨ht, hpay⟩ | ⟨ht, hpay⟩
+      · exact (hF w hF').elim
+      · -- tag false: left branch
+        obtain ⟨y, hey, hry⟩ :=
+          ih₁ w (extendEnv (Q.untag x).2 ρ) (envReal_cons hρ hpay)
+        refine ⟨y, ?_, hry⟩
+        simp [extract, Poly.eval, hx, hl, hr', hc₁, hc₂]
+        rw [hc₂r r, ht]
+        simpa [hla ((Q.untag x).2)] using hey
+      · -- tag true: right branch
+        obtain ⟨y, hey, hry⟩ :=
+          ih₂ w (extendEnv (Q.untag x).2 ρ) (envReal_cons hρ hpay)
+        refine ⟨y, ?_, hry⟩
+        simp [extract, Poly.eval, hx, hl, hr', hc₁, hc₂]
+        rw [hc₂r r, ht]
+        simpa [hra ((Q.untag x).2)] using hey
+  | @laxIntro Γ φ p ih =>
+      intro w ρ hρ
+      obtain ⟨g, hg, hr⟩ := ih w ρ hρ
+      refine ⟨g, by simpa [extract] using hg, ?_⟩
+      simp only [realU]
+      intro v hv
+      exact Or.inr ⟨v, C.refl_m v, realU_hered Q.toPca Ev φ hv hr⟩
+  | @laxElim Γ φ ψ p₁ p₂ ih₁ ih₂ =>
+      intro w ρ hρ
+      obtain ⟨g₁, hg₁, hr₁⟩ := ih₁ w ρ hρ
+      obtain ⟨l, hl, hla⟩ := Poly.abs_spec Q.toPcaKS (extract Q p₂) ρ
+      simp only [realU] at hr₁
+      rcases hr₁ w (C.refl_i w) with hF' | ⟨u₀, hm₀, hφ₀⟩
+      · exact (hF w hF').elim
+      · obtain ⟨g, hgeval, _hgOb⟩ :=
+          ih₂ u₀ (extendEnv g₁ ρ)
+            (envReal_cons (envReal_hered (C.sub_mi hm₀) hρ) hφ₀)
+        refine ⟨g, ?_, ?_⟩
+        · simp [extract, Poly.eval, hl, hg₁]
+          rw [hla g₁]; exact hgeval
+        · simp only [realU]
+          intro v hv
+          rcases hr₁ v hv with hF' | ⟨u, hm, hφ⟩
+          · exact Or.inl hF'
+          · obtain ⟨y, hyeval, hyOb⟩ :=
+              ih₂ u (extendEnv g₁ ρ)
+                (envReal_cons (envReal_hered (C.trans_i hv (C.sub_mi hm)) hρ) hφ)
+            have hyg : y = g := Option.some.inj (hyeval.symm.trans hgeval)
+            subst hyg
+            simp only [realU] at hyOb
+            rcases hyOb u (C.refl_i u) with hFu | ⟨u₂, hm₂, hψ⟩
+            · exact (hF u hFu).elim
+            · exact Or.inr ⟨u₂, C.trans_m hm hm₂, hψ⟩
+
+end Extraction
+
 end BeliefReal
 end PLLND
 
@@ -746,3 +991,5 @@ end PLLND
 #print axioms PLLND.BeliefReal.strategy_realises_obAB_split
 #print axioms PLLND.BeliefReal.strategy_dist_refuted_split
 #print axioms PLLND.BeliefReal.Poly.abs_spec
+#print axioms PLLND.BeliefReal.extract
+#print axioms PLLND.BeliefReal.extract_sound
