@@ -38,6 +38,7 @@ import LaxLogic.PLLG4HComp
 import LaxLogic.PLLG4Space
 import LaxLogic.PLLG4Set
 import LaxLogic.PLLG4Dec
+import LaxLogic.PLLG4Term
 import LaxLogic.PLLG4UI
 import LaxLogic.PLLG4UIAdq
 import LaxLogic.PLLG4UIStab
