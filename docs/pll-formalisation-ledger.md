@@ -101,25 +101,64 @@ here, subsumed by the above.)*
 | **The constraint algebra `𝕊` is a Boolean algebra** (Thm 2, bundled Mathlib instance) | `Ctx.thm2_boolean_algebra`, `Ctx.CQuot.instBooleanAlgebra` | `:1588,:1667` | **[p,Q]** |
 | **The closed lax fragment `RN(◯,{})` is infinite** | `LaxInfinite.closed_lax_infinite` | [`PLLLaxInfinite.lean:616`](../LaxLogic/PLLLaxInfinite.lean) | clean |
 
-## 7. The G4iLL gap — the decidability route, machine-refuted
+## 7. Decidability of PLL — F&M Theorem 2.8, MECHANISED
+
+*Ledger correction (2026-07-17): an earlier version of §7/§8 wrongly recorded
+decidability as "not mechanised". It **is** mechanised — as a full, terminating,
+kernel-honest decision procedure — via the **repaired** calculus `G4iLL″`
+(`G4h`/`G4c`), not the naive Iemhoff `G4iLL` (`G4`). The naive calculus is
+incomplete for PLL (§7.2 below); that incompleteness is exactly what *motivated*
+the repair, and the repair carries the decidability.*
+
+### 7.1 The decision procedure (via `G4iLL″` = `G4c`)
+
+| result | Lean name | location | axioms |
+|---|---|---|---|
+| Repaired calculus proves exactly PLL (proof-theoretic half of Thm 2.8): `G4c Γ φ ↔ Nonempty (Tm Γ φ)` | `G4c.equiv_tm` | [`PLLG4HComp.lean:115`](../LaxLogic/PLLG4HComp.lean) | clean |
+| …and `↔ Nonempty (LaxND Γ C)` | `G4c.g4c_iff_nd` (via `equiv_nd`) | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | clean |
+| Cut admissible / completeness of `G4c` | `G4c.cut`, `G4c.completeness` | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | clean |
+| Loop-checked, fuel-bounded backward search decides `G4c` | `G4c_iff_search` | [`PLLG4Dec.lean:556`](../LaxLogic/PLLG4Dec.lean) | clean |
+| search success ⟹ derivation | `search_sound` | [`PLLG4Dec.lean:121`](../LaxLogic/PLLG4Dec.lean) | clean |
+| minimal-height derivation ⟹ search success | `search_complete` | [`PLLG4Dec.lean:228`](../LaxLogic/PLLG4Dec.lean) | clean |
+| **`G4c` is decidable** | `decidableG4c` (`Decidable (G4c Γ C)`) | [`PLLG4Dec.lean:589`](../LaxLogic/PLLG4Dec.lean) | clean |
+| **PLL provability is decidable** (F&M Thm 2.8): `Decidable (Nonempty (Tm Γ φ))` | `decidablePLL` | [`PLLG4Dec.lean:596`](../LaxLogic/PLLG4Dec.lean) | clean |
+| Pigeonhole height bound (bonus): derivable ⟹ height ≤ `decideFuel` | `height_bound` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | clean |
+
+It is a **full** decision procedure (total `Decidable`, terminates on every
+input by the fuel bound + finite gated space + visited-set loop-check), and it is
+**kernel-honest**: `#eval decide (Nonempty (Tm [p] p.somehow))` and
+`#eval decide (G4c …)` run in `PLLDemos.lean` under `#guard_msgs`, **no
+`native_decide`**. `decide`/`#eval` on `decidablePLL` reduce, through
+`equiv_tm` and `G4c_iff_search`, to the executable `search`; the loop-check
+(visited sequents keyed by `toFinset`) is the efficiency device (no re-search),
+and `decideFuel` is computed arithmetically (the powerset is never built).
+
+### 7.2 The naive Iemhoff `G4iLL` is incomplete (why the repair was needed)
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
 | The separating sequent is PLL-derivable | `PLLG4Gap.sep_SC` | [`PLLG4Gap.lean:58`](../LaxLogic/PLLG4Gap.lean) | clean |
-| …but not G4iLL-derivable | `PLLG4Gap.sep_not_G4` | [`PLLG4Gap.lean:340`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
-| Contraction not admissible in G4iLL | `PLLG4Gap.contraction_not_admissible` | [`PLLG4Gap.lean:378`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
-| Cut not admissible in G4iLL | `PLLG4Gap.cut_not_admissible` | [`PLLG4Gap.lean:396`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
+| …but not naive-`G4iLL`-derivable | `PLLG4Gap.sep_not_G4` | [`PLLG4Gap.lean:340`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
+| Contraction not admissible in naive `G4iLL` | `PLLG4Gap.contraction_not_admissible` | [`PLLG4Gap.lean:378`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
+| Cut not admissible in naive `G4iLL` | `PLLG4Gap.cut_not_admissible` | [`PLLG4Gap.lean:396`](../LaxLogic/PLLG4Gap.lean) | **[p]** |
+
+(`G4` = naive Iemhoff `G4iLL`, `PLLG4.lean`; `G4h`/`G4c` = repaired `G4iLL″`,
+`PLLG4H.lean`. The gap results refute *only* the naive calculus.)
 
 ## 8. Open items (stated honestly)
 
-- **Decidability of PLL (F&M Thm 2.8): NOT mechanised.** Proved on paper via
-  the finite model property; the planned mechanisation route (Iemhoff's G4iLL)
-  was **machine-refuted** (§7: the calculus is incomplete for PLL). A repaired
-  calculus or an FMP mechanisation remains open.
+- **Decidability (F&M Thm 2.8): DONE** (§7.1) — this line previously mis-stated it
+  as open; corrected 2026-07-17. F&M's own route was via the finite model
+  property; the mechanised route is the repaired terminating calculus `G4iLL″`.
+  A ConstraintModel **countermodel extractor from a failed search** is *not* built
+  (the decider returns a verdict, not a refuting model; the mechanised
+  `completeness` gives such a model's existence non-constructively) — a natural,
+  well-scoped extension that would also seed the Route B realisability
+  completeness (see `route-b-model.md` §6).
 - **The uniform-interpolation probe** (`wip/onevar.lean`, `wip/absorb_base.lean`,
   `wip/g4ill_ui.lean`) is a separate research thread and carries the repo's only
-  open `sorry`s (5, all listed in those files' headers). No result above
-  depends on them.
+  open `sorry`s (5, all listed in those files' headers). No result above depends
+  on them. (`height_bound` of §7.1 is the pigeonhole ingredient that route needs.)
 
 ## 9. The belief-paper layer (2026-07-14…16)
 
@@ -437,10 +476,40 @@ instance closedSetoid : Setoid Closed where r x y := LaxEquiv x.1 y.1 …
 theorem closed_lax_infinite : Infinite (Quotient closedSetoid)
 ```
 
-## II.11 The G4iLL gap ([`PLLG4Gap.lean`](../LaxLogic/PLLG4Gap.lean))
+## II.11 Decidability — F&M Theorem 2.8 ([`PLLG4H.lean`](../LaxLogic/PLLG4H.lean), [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean))
 
-The G4 calculus (`G4`, Iemhoff-style contraction-free) is defined in
-[`PLLG4.lean`](../LaxLogic/PLLG4.lean) (not reproduced). The separating formulas and results:
+The repaired calculus `G4iLL″` is `G4h` (height-indexed) / `G4c`; the decider is
+the loop-checked backward `search` over the set calculus (both large, not
+reproduced — see `PLLG4H.lean`, `PLLG4Dec.lean`). The bridge and the two
+`Decidable` instances:
+
+```lean
+def G4c (Γ : List PLLFormula) (C : PLLFormula) : Prop := ∃ n, G4h n Γ C
+
+/-- G4iLL″ proves exactly the PLL sequents (proof-theoretic half of Thm 2.8). -/
+theorem G4c.equiv_tm {Γ φ} : G4c Γ φ ↔ Nonempty (Tm Γ φ)
+
+/-- The loop-checked, fuel-bounded search decides G4c. -/
+theorem G4c_iff_search {Γ C} :
+    G4c Γ C ↔
+    search (listWeight (C :: Γ)) (listAtoms (C :: Γ)) (decideFuel Γ C) ∅ Γ C = true
+
+instance decidableG4c (Γ C) : Decidable (G4c Γ C) :=
+  decidable_of_iff _ G4c_iff_search.symm
+
+/-- F&M Theorem 2.8: PLL provability (term-calculus inhabitation) is decidable. -/
+instance decidablePLL (Γ φ) : Decidable (Nonempty (Tm Γ φ)) :=
+  decidable_of_iff _ G4c.equiv_tm
+```
+
+A full, terminating, kernel-honest decider (`#eval decide (Nonempty (Tm [p] p.somehow))`
+runs under `#guard_msgs` in `PLLDemos.lean`; no `native_decide`).
+
+## II.12 The naive-G4iLL incompleteness gap ([`PLLG4Gap.lean`](../LaxLogic/PLLG4Gap.lean))
+
+The *naive* Iemhoff calculus (`G4`, contraction-free) is defined in
+[`PLLG4.lean`](../LaxLogic/PLLG4.lean) (not reproduced); these results show it is
+incomplete for PLL — the motivation for the `G4iLL″` repair above:
 
 ```lean
 def Fa : PLLFormula := ((prop "p").somehow).ifThen (prop "r")   -- F' = ◯p ⊃ r
