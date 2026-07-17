@@ -292,6 +292,38 @@ strategy now returning `(⌜witness⌝, evidence)` packages).
 
 ## 8. Mechanisation ladder (proposed order, revised)
 
+*Status 2026-07-17 (evening): **rung 6 RESOLVED — by repair, and the repair is
+a theorem.** First the obstruction: `realS_fullness_obstruction` (audit
+`[propext, Quot.sound]`, choice-free) — on a three-world frame (`t` at both
+leaves, `p` only at one, `q` only at the other), **no** evidence assignment is
+both atom-adequate and full for `⊩ˢ`, for every PCA with finite tables against
+the world-coding. The failure is **`◯`-essential**: one strategy table
+realises `◯t` at both incomparable leaves, so a would-be realiser of
+`◯t ⊃ (p∨q)` must give one answer for two futures demanding opposite tags;
+purely intuitionistic antecedents are rescued by world-tagged evidence, but
+strategies carry no world-marks. So the `⊃`-clause must present the future —
+exactly as the `◯`-clause already does. `realP` (`⊩ᵖ`, presented-strategy
+realisability) makes that single change: the `⊃`-realiser is applied to
+`pair (κ v) b`. Then, over ANY finite frame validated by the verified
+countermodel checker (`PLLCountermodelEmit.lean`) with token evidence:
+**`realP_adequate_and_full`** — realised ⟺ forced, with explicit
+table-built witnesses (the `∨`-witness branches by the executable `forceB`,
+the `◯`-witness searches the finite frame, the `⊃`-witness looks up the
+consequent's witness at the presented world) — and
+**`realP_refutes_sequent`** — every checked countermodel is a
+`⊩ᵖ`-refutation: hypotheses realised at the refuting world, conclusion
+unrealisable. BOTH `[propext, Quot.sound]` — **no choice anywhere in the
+chain** (checker certificate, obstruction, decoration, squeeze). Flagship:
+`somehow_p_not_p_realP` realisability-refutes `◯p ⊢ p` at the pinned emitted
+model by `decide`. Still OPEN for the full constructive completeness of PLL
+w.r.t. `⊩ᵖ`: **emitter completeness** (a proof that `CounterEmit.emit`
+succeeds on every underivable sequent — per-instance certificates exist
+today; the classical existence route via the FMP is available meanwhile), and
+a concrete PCA instantiation of the table hypotheses (met in `K₁`,
+pen-and-paper). The triptych statements for `⊩ˢ` are untouched — `⊩ˢ` remains
+the right relation for the separation story; `⊩ᵖ` is the completeness-grade
+refinement the obstruction forces.*
+
 *Status 2026-07-17: **rung 5 COMPLETE for BOTH clauses**. `wip/belief_realisability.lean`
 now has combinatory completeness (`Poly.abs_spec`, `Poly.eval_bump`), the two
 extractions `extract` (uniform, `[propext]`) and `extractS` (strategy, `[propext]`),
