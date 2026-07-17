@@ -650,10 +650,11 @@ axiom-audit drill to bring the entire chain to `[propext, Quot.sound]`.
 
 ---
 
-*Appendix (planned): annotated walk-throughs in the style of
-`docs/annotated/strong-normalisation.md` for (a) the truth lemma with its
-three decided extensions, (b) adequacy/fullness for ⊩ᵖ, (c) the
-obstruction. The Lean statements quoted in this draft are verbatim from
+*Appendix: annotated walk-throughs in the style of
+`docs/annotated/strong-normalisation.md` — (a) the truth lemma with its
+three decided extensions: `docs/annotated/finite-truth-lemma.md`;
+(b) adequacy/fullness for ⊩ᵖ: `docs/annotated/adequacy-fullness.md`;
+(c) the obstruction: `docs/annotated/fullness-obstruction.md`. The Lean statements quoted in this draft are verbatim from
 `LaxLogic/PLLEvidence.lean`, `LaxLogic/PLLFinComp.lean`,
 `LaxLogic/PLLRealCompleteness.lean`, `LaxLogic/PLLCountermodelEmit.lean`
 and `wip/belief_realisability.lean` at commit 32022fd.*
