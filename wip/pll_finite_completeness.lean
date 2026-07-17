@@ -38,11 +38,26 @@ The plan (mirroring F&M §4 / `PLLCompleteness.lean` case for case):
    sequent has a checked countermodel; composed with
    `realP_refutes_sequent`, completeness of PLL for `⊩ᵖ`.
 
-Audit note: the mathematics here is finitary (no Zorn anywhere); the
-`#print axioms` audit currently inherits `Classical.choice` from the
-decidability infrastructure (`decidablePLL`) and from incidental classical
-tactic steps in the cut-elimination chain — scrubbing those is a separate,
-mechanical hygiene task, after which this development audits choice-free.
+Audit note (updated 2026-07-17, after the axiom-hygiene pass): the
+mathematics here is finitary (no Zorn anywhere).  The incidental
+classical steps in the cut-elimination chain are now scrubbed
+(`cutElimination` and `G4c.equiv_tm` audit `[propext, Quot.sound]`),
+but this development still audits
+`[propext, Classical.choice, Quot.sound]`, and a dependency-frontier
+measurement shows the remainder is structural, not tactic hygiene:
+
+1. the decidability infrastructure (`decidablePLL`, `G4c_iff_search`)
+   sits on Mathlib `Finset` operations whose bodies embed choice, and
+   on a `Nat.find` minimal-height induction — see the audit note in
+   `PLLG4Dec.lean`;
+2. the world enumeration here (`worldFinset`, `worldList`,
+   `cons_iff_check`) uses `Finset.powerset`/`Finset.toList`, and
+   `Multiset.toList` is defined by `Classical.choice` outright;
+3. `not_consistent_iff` (`PLLCompleteness.lean`) is a `push_neg`
+   double negation over an existential with no choice-free decider.
+
+A choice-free audit therefore needs a list-based world representation
+and a list-based decider, not further proof repairs.
 -/
 
 open PLLFormula
