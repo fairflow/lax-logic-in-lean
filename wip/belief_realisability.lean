@@ -107,6 +107,12 @@ def realS (P : Pca) {C : ConstraintModel} (Ev : Evidence P C) (κ : C.W → P.Ca
         (∃ y, P.app x (κ v) = some y ∧
           ∃ u, C.Rm v u ∧ P.fst y = κ u ∧ realS P Ev κ φ (P.snd y) u)
 
+/-- `x ⊩ᵘ[Ev, w] φ` — `x` uniformly realises `φ` at world `w` (evidence `Ev`). -/
+scoped notation:50 x:51 " ⊩ᵘ[" Ev ", " w "] " φ:51 => realU _ Ev φ x w
+
+/-- `x ⊩ˢ[Ev, κ, w] φ` — `x` strategy-realises `φ` at `w` (coding `κ`). -/
+scoped notation:50 x:51 " ⊩ˢ[" Ev ", " κ ", " w "] " φ:51 => realS _ Ev κ φ x w
+
 /-! ## Rung 2: heredity (increasing belief) and fallible saturation -/
 
 /-- **Heredity for `⊩ᵘ`** — belief increases along the branching order. -/
@@ -1238,7 +1244,7 @@ theorem realS_fullness_obstruction (P : Pca) (κ : obsC.W → P.Carrier)
     ¬ ∃ Ev : Evidence P obsC,
       (∀ (a : String) (w : obsC.W), ∀ x ∈ Ev.E a w, w ∈ obsC.V a) ∧
       (∀ (φ : PLLFormula) (w : obsC.W), obsC.force w φ →
-        ∃ x, realS P Ev κ φ x w) := by
+        ∃ x, x ⊩ˢ[Ev, κ, w] φ) := by
   rintro ⟨Ev, hA, hF⟩
   -- Fullness at the atom `t` hands over tokens at both leaves.
   obtain ⟨m₁, hm₁⟩ := hF (prop "t") (1 : Fin 3)
@@ -1374,6 +1380,9 @@ def realP (P : Pca) {C : ConstraintModel} (Ev : Evidence P C) (κ : C.W → P.Ca
         (∃ y, P.app x (κ v) = some y ∧
           ∃ u, C.Rm v u ∧ P.fst y = κ u ∧ realP P Ev κ φ (P.snd y) u)
 
+/-- `x ⊩ᵖ[Ev, κ, w] φ` — `x` presented-strategy-realises `φ` at `w`. -/
+scoped notation:50 x:51 " ⊩ᵖ[" Ev ", " κ ", " w "] " φ:51 => realP _ Ev κ φ x w
+
 variable {P : Pca} {M : FinCM}
 
 /-- **Token evidence** on a checked frame: one token per atom, exactly where
@@ -1404,10 +1413,10 @@ theorem realP_adequate_and_full (h : M.WellFormed) (tok : String → P.Carrier)
       ∃ s, ∀ i b, P.app s (P.pair (κ i) b) = some (g i)) :
     ∀ φ : PLLFormula,
       (∀ (w : Fin M.n) (x : P.Carrier),
-        realP P (tokenEvidence P M h tok) κ φ x w → (M.toModel h).force w φ) ∧
+        (x ⊩ᵖ[tokenEvidence P M h tok, κ, w] φ) → (M.toModel h).force w φ) ∧
       (∃ wit : Fin M.n → P.Carrier, ∀ w : Fin M.n,
         (M.toModel h).force w φ →
-          realP P (tokenEvidence P M h tok) κ φ (wit w) w) := by
+          (wit w) ⊩ᵖ[tokenEvidence P M h tok, κ, w] φ) := by
   intro φ
   induction φ with
   | prop s =>
@@ -1529,8 +1538,8 @@ theorem realP_refutes_sequent {w : Nat} {Γ : List PLLFormula}
     (htabP : ∀ g : Fin M.n → P.Carrier,
       ∃ s, ∀ i b, P.app s (P.pair (κ i) b) = some (g i)) :
     ∃ hwf : M.WellFormed, ∃ hlt : w < M.n,
-      (∀ ψ ∈ Γ, ∃ x, realP P (tokenEvidence P M hwf tok) κ ψ x ⟨w, hlt⟩) ∧
-      ¬ ∃ x, realP P (tokenEvidence P M hwf tok) κ C x ⟨w, hlt⟩ := by
+      (∀ ψ ∈ Γ, ∃ x, x ⊩ᵖ[tokenEvidence P M hwf tok, κ, ⟨w, hlt⟩] ψ) ∧
+      ¬ ∃ x, x ⊩ᵖ[tokenEvidence P M hwf tok, κ, ⟨w, hlt⟩] C := by
   simp only [FinCM.checkB, Bool.and_eq_true, decide_eq_true_eq,
     List.all_eq_true, Bool.not_eq_true'] at hcheck
   obtain ⟨⟨⟨hwb, hlt⟩, hΓ⟩, hC⟩ := hcheck
@@ -1555,16 +1564,131 @@ theorem somehow_p_not_p_realP (P : Pca) (tok : String → P.Carrier)
     (htabP : ∀ g : Fin demoM.n → P.Carrier,
       ∃ s, ∀ i b, P.app s (P.pair (κ i) b) = some (g i)) :
     ∃ hwf : demoM.WellFormed, ∃ hlt : 2 < demoM.n,
-      (∃ x, realP P (tokenEvidence P demoM hwf tok) κ
-        ((prop "p").somehow) x ⟨2, hlt⟩) ∧
-      ¬ ∃ x, realP P (tokenEvidence P demoM hwf tok) κ
-        (prop "p") x ⟨2, hlt⟩ := by
+      (∃ x, x ⊩ᵖ[tokenEvidence P demoM hwf tok, κ, ⟨2, hlt⟩]
+        (prop "p").somehow) ∧
+      ¬ ∃ x, x ⊩ᵖ[tokenEvidence P demoM hwf tok, κ, ⟨2, hlt⟩] (prop "p") := by
   obtain ⟨hwf, hlt, hΓ, hC⟩ := realP_refutes_sequent
     (M := demoM) (w := 2) (Γ := [(prop "p").somehow]) (C := prop "p")
     (by decide) tok κ htab htabP
   exact ⟨hwf, hlt, hΓ _ (List.mem_singleton_self _), hC⟩
 
 end PresentedClause
+
+/-! ## An explicit witness algebra — the table hypotheses are consistent
+
+Everything above is hypothesis-style over an abstract `Pca` with tables
+against the world-coding.  Here is an **explicit applicative structure**
+meeting every assumed law, so the whole `⊩ᵖ` chain closes with *nothing*
+assumed: elements are formal pairs, tags, base codes, and two kinds of
+finite lookup tables — `tbl` answering on a world-code, `ptbl` answering on
+the first component of a pair (the presented world), ignoring the second.
+Application is the (decidable) lookup; the world-coding sends `i` to
+`base i`.  Both table hypotheses hold by construction, choice-free.
+
+(This algebra is not combinatorially complete — no `k`, `s` — and makes no
+claim to be `K₁`; it is the *existence* witness.  The Kleene-algebra
+instantiation, where tables are computable functions, is the classical
+upgrade and remains open.) -/
+
+section TableAlgebra
+
+/-- Elements of the table algebra. -/
+inductive Tbl where
+  | base (n : ℕ)
+  | pair (a b : Tbl)
+  | tag (i : Bool) (a : Tbl)
+  | tbl (l : List (ℕ × Tbl))
+  | ptbl (l : List (ℕ × Tbl))
+
+/-- Finite association lookup on `ℕ` keys. -/
+def assoc : List (ℕ × Tbl) → ℕ → Option Tbl
+  | [], _ => none
+  | (k, r) :: l, x => if x = k then some r else assoc l x
+
+/-- Application: tables look up world-codes; pair-tables look up the first
+component of a pair (the presented world) and ignore the second. -/
+def tapp : Tbl → Tbl → Option Tbl
+  | .tbl l, .base k => assoc l k
+  | .ptbl l, .pair (.base k) _ => assoc l k
+  | _, _ => none
+
+def tfst : Tbl → Tbl | .pair a _ => a | x => x
+def tsnd : Tbl → Tbl | .pair _ b => b | x => x
+def tuntag : Tbl → Bool × Tbl | .tag i a => (i, a) | x => (false, x)
+
+/-- The table algebra as a `Pca`. -/
+def tblPca : Pca where
+  Carrier := Tbl
+  app := tapp
+  pair := .pair
+  fst := tfst
+  snd := tsnd
+  tag := .tag
+  untag := tuntag
+  fst_pair _ _ := rfl
+  snd_pair _ _ := rfl
+  untag_tag _ _ := rfl
+
+/-- The world-coding: `i ↦ base i`. -/
+def tblκ {n : ℕ} : Fin n → Tbl := fun i => .base i.1
+
+theorem assoc_map {n : ℕ} (val : Fin n → Tbl) :
+    ∀ (l : List (Fin n)) {i : Fin n}, i ∈ l →
+      assoc (l.map fun j => (j.1, val j)) i.1 = some (val i) := by
+  intro l
+  induction l with
+  | nil => intro i h; cases h
+  | cons a l ih =>
+      intro i h
+      simp only [List.map_cons, assoc]
+      by_cases he : i.1 = a.1
+      · have hia : i = a := Fin.ext he
+        subst hia
+        rw [if_pos rfl]
+      · rw [if_neg he]
+        exact ih ((List.mem_cons.mp h).resolve_left
+          fun hia => he (congrArg Fin.val hia))
+
+/-- The table algebra meets the `◯`-witness table hypothesis. -/
+theorem tbl_htab {n : ℕ} (g : Fin n → Tbl) :
+    ∃ s, ∀ i, tblPca.app s (tblκ i) = some (g i) := by
+  refine ⟨.tbl ((List.finRange n).map fun j => (j.1, g j)), fun i => ?_⟩
+  show assoc ((List.finRange n).map fun j => (j.1, g j)) i.1 = some (g i)
+  exact assoc_map g (List.finRange n) (List.mem_finRange i)
+
+/-- …and the `⊃`-witness pair-table hypothesis. -/
+theorem tbl_htabP {n : ℕ} (g : Fin n → Tbl) :
+    ∃ s, ∀ i b, tblPca.app s (tblPca.pair (tblκ i) b) = some (g i) := by
+  refine ⟨.ptbl ((List.finRange n).map fun j => (j.1, g j)), fun i _ => ?_⟩
+  show assoc ((List.finRange n).map fun j => (j.1, g j)) i.1 = some (g i)
+  exact assoc_map g (List.finRange n) (List.mem_finRange i)
+
+/-- **The squeeze over the explicit algebra — nothing assumed**: every
+countermodel validated by the verified checker is `⊩ᵖ`-refuted over
+`tblPca`. -/
+theorem realP_refutes_sequent_tbl {M : FinCM} {w : Nat}
+    {Γ : List PLLFormula} {C : PLLFormula}
+    (hcheck : FinCM.checkB M w Γ C = true) :
+    ∃ hwf : M.WellFormed, ∃ hlt : w < M.n,
+      (∀ ψ ∈ Γ, ∃ x,
+        x ⊩ᵖ[tokenEvidence tblPca M hwf (fun _ => Tbl.base 0), tblκ,
+          ⟨w, hlt⟩] ψ) ∧
+      ¬ ∃ x, x ⊩ᵖ[tokenEvidence tblPca M hwf (fun _ => Tbl.base 0), tblκ,
+          ⟨w, hlt⟩] C :=
+  realP_refutes_sequent (P := tblPca) hcheck (fun _ => Tbl.base 0) tblκ
+    tbl_htab tbl_htabP
+
+/-- **Fully closed flagship**: `◯p ⊢ p` is realisability-refuted — explicit
+finite model, explicit evidence, explicit algebra; no hypotheses. -/
+theorem somehow_p_not_p_realP_tbl :
+    ∃ hwf : demoM.WellFormed, ∃ hlt : 2 < demoM.n,
+      (∃ x, x ⊩ᵖ[tokenEvidence tblPca demoM hwf (fun _ => Tbl.base 0), tblκ,
+        ⟨2, hlt⟩] (prop "p").somehow) ∧
+      ¬ ∃ x, x ⊩ᵖ[tokenEvidence tblPca demoM hwf (fun _ => Tbl.base 0), tblκ,
+        ⟨2, hlt⟩] (prop "p") :=
+  somehow_p_not_p_realP tblPca (fun _ => Tbl.base 0) tblκ tbl_htab tbl_htabP
+
+end TableAlgebra
 
 end BeliefReal
 end PLLND
@@ -1602,3 +1726,6 @@ end PLLND
 #print axioms PLLND.BeliefReal.realS_fullness_obstruction
 #print axioms PLLND.BeliefReal.realP_adequate_and_full
 #print axioms PLLND.BeliefReal.realP_refutes_sequent
+#print axioms PLLND.BeliefReal.tbl_htab
+#print axioms PLLND.BeliefReal.realP_refutes_sequent_tbl
+#print axioms PLLND.BeliefReal.somehow_p_not_p_realP_tbl
