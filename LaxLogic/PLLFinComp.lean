@@ -14,9 +14,9 @@ mechanised decision procedure (`decidablePLL`), and the else-branch is
 justified by the same disjunction-combination argument that classically
 proves `mem_val_or_mem_fal`.
 
-The plan (mirroring F&M §4 / `PLLCompleteness.lean` case for case):
+Contents (mirroring F&M §4 / `PLLCompleteness.lean` case for case):
 
-1. **This file, part 1 (foundation)** — finite theory triples `FTheory`
+1. **Part 1 (foundation)** — finite theory triples `FTheory`
    (`val`/`fal`/`mfal` as `Finset`s), consistency reused verbatim from the
    classical development through `FTheory.toTheory`, its *decidability*
    (`cons_iff_check`: consistency of a finite triple is one derivability
@@ -35,8 +35,8 @@ The plan (mirroring F&M §4 / `PLLCompleteness.lean` case for case):
    steps of the classical proof replaced by `lindenbaum`.
 4. Part 4 — enumeration of the (finitely many) worlds into a `FinCM`,
    `checkB` certification, and **emitter completeness**: every underivable
-   sequent has a checked countermodel; composed with
-   `realP_refutes_sequent`, completeness of PLL for `⊩ᵖ`.
+   sequent has a checked countermodel.  The composition with the
+   presented-strategy squeeze lives in `PLLRealCompleteness.lean`.
 
 Audit note: the mathematics here is finitary (no Zorn anywhere); the
 `#print axioms` audit currently inherits `Classical.choice` from the
@@ -914,9 +914,9 @@ theorem transfer (hcl : SubClosed cl) :
 
 /-- **Emitter completeness**: every underivable sequent has a finite
 countermodel *as checker data* — a `FinCM` and a world passing the
-verified `checkB`.  Composed with `realP_refutes_sequent`
-(`wip/belief_realisability.lean`), this closes the completeness of PLL for
-`⊩ᵖ`-realisability over decorated finite models. -/
+verified `checkB`.  Composed with `realP_refutes_sequent` (`PLLEvidence.lean`),
+this closes the completeness of PLL for `⊩ᵖ`-realisability over decorated
+finite models — see `PLLRealCompleteness.lean`. -/
 theorem emitter_completeness {Γ : List PLLFormula} {C : PLLFormula}
     (h : ¬ Nonempty (LaxND Γ C)) :
     ∃ (M : FinCM) (w : Nat), FinCM.checkB M w Γ C = true := by

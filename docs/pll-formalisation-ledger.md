@@ -234,6 +234,40 @@ nucleus laws, the separation triptych, the double-negation believer, and
 combinatory completeness `Poly.abs_spec` **[p,Q]**):
 [`wip/belief_realisability.lean`](../wip/belief_realisability.lean), statuses in [`route-b-model.md`](route-b-model.md) §8.
 
+## 10. Realisability completeness (promoted 2026-07-17/18)
+
+The `⊩ᵖ` programme, promoted to the library after all proofs closed.  The
+narrative: uniformity fails at `∨`-under-`◯` (the bite) and at `⊃` (the
+barrier); the barrier provably blocks completeness for `⊩ˢ` (the
+obstruction, still in `wip/`); presenting the future to the `⊃`-clause
+(`⊩ᵖ`) restores it, and the countermodels are supplied Zorn-free by the
+finitised canonical model with the mechanised decision procedure making
+every Lindenbaum decision.
+
+| result | Lean name | location | axioms |
+|---|---|---|---|
+| Applicative structures + hereditary atom evidence | `Pca`, `Evidence` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | (defs) |
+| `⊩ᵖ` presented-strategy realisability (`x ⊩ᵖ[Ev, κ, w] φ`) | `realP` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | (def) |
+| **Adequacy + fullness** over token-decorated checked frames | `realP_adequate_and_full` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** — no choice |
+| **The squeeze**: checked countermodels are `⊩ᵖ`-refutations | `realP_refutes_sequent` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** |
+| Explicit table algebra; both table hypotheses by construction | `Tbl`, `tblPca`, `tbl_htab`, `tbl_htabP` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p]** |
+| Closed capstones (nothing assumed) | `realP_refutes_sequent_tbl`, `somehow_p_not_p_realP_tbl` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** |
+| Finite theory triples; decidable consistency; extension dichotomy | `FTheory`, `cons_iff_check`, `cons_insVal_or_insFal` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
+| **Constructive Lindenbaum** (decided fold, no Zorn) | `lindenbaum` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
+| Closure-relative Lemma 4.2 suite | `MaxIn.*` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
+| **Truth lemma** on the finite canonical model | `truth_lemma` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
+| Finite countermodel existence | `finite_canonical_countermodel` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
+| **Emitter completeness**: underivable ⟹ checked countermodel | `emitter_completeness` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
+| Realisability countermodels for underivable sequents | `realP_countermodel_of_underivable` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | clean† |
+| **Completeness of PLL for `⊩ᵖ`** (biconditional) | `derivable_iff_no_realP_refutation` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | clean† |
+
+† The mathematics is finitary (no Zorn; the only case decisions are by
+`decidablePLL`, and the crown avoids excluded middle deliberately); the
+`Classical.choice` in these audits is inherited from incidental classical
+tactic steps in the decidability/cut-elimination infrastructure.  A scrub
+of that chain is in progress; when it lands these audits drop to `[p,Q]`
+with no changes to the files above.
+
 ---
 ---
 

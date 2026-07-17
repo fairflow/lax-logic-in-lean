@@ -39,6 +39,9 @@ import LaxLogic.PLLG4Set
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLG4Term
 import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLLEvidence
+import LaxLogic.PLLFinComp
+import LaxLogic.PLLRealCompleteness
 import LaxLogic.PLLRun
 import LaxLogic.PLLG4UI
 import LaxLogic.PLLG4UIAdq
