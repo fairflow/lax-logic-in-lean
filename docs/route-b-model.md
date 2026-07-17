@@ -233,18 +233,43 @@ frame-decidability hypotheses at all.
   tag at `r`, and whichever tag it commits fails at the opposite branch — the
   truth countermodel survives realiser-level. OPEN (mechanise; per-candidate
   argument is uniform in `e`).
-- **Completeness squeeze — now for `⊩ˢ`:** derivable ⟹ `⊩ˢ`-valid (O3ˢ) ⟹
-  truth-valid over full-evidence models (collapse lemma: `∃a. a ⊩ˢ_w φ ⟺ w ⊨ φ`,
-  by mutual induction — the strategy clause restores the truth ⟹ realiser
-  direction that `⊩ᵘ` breaks; may use choice, harmless in Lean) ⟹ derivable (F&M
-  completeness, PROVED: `PLLCompleteness.lean`). Status: OPEN; no new canonical
-  model needed if the collapse lemma lands.
+- **Completeness — the collapse lemma is REFUTED as first sketched
+  (2026-07-17).** The hoped-for lemma `∃a. a ⊩ˢ_w φ ⟺ w ⊨ φ` over full-evidence
+  models **fails in both directions**, for `⊩ˢ` as much as `⊩ᵘ`, at nested
+  implications:
+  1. *truth ⇏ realisability (tag-mixing):* over full evidence every element
+     evidences every true atom, so a realiser of `p ⊃ (q∨r)` must send
+     arbitrary elements to one **fixed-tag** value — but the `p`-cone may force
+     `q` at one future and `r` at another; one tag cannot serve a mixed cone.
+  2. *realisability ⇏ truth (vacuity):* where (1) empties the antecedent's
+     realisers, any element realises `(p⊃(q∨r)) ⊃ s` vacuously while its truth
+     fails.
+  (The `◯`-clause direction I had checked does hold; the error was generalising
+  it past `⊃`.) Consequently the completeness question for `⊩ˢ` — is
+  `{φ : ⊩ˢ`-valid`} = {φ : PLL ⊢ φ}`? — is genuinely **OPEN**, and needs one of:
+  (a) **canonical term-model realisability**: realisers = extracted polynomials
+  over a syntactic PCA, evidence tailored so realisability tracks derivability
+  by construction; or (b) **per-formula tailored evidence**: given a truth
+  countermodel of `φ` (F&M completeness, PROVED), choose `E` so that `φ` is not
+  realised at the refuting world — evidence rich enough that antecedent
+  realisers exist and carry branch information. Route (b) per-formula may be
+  easier than a uniform collapse. Soundness (O3ˢ) is unaffected and comes
+  first.
 
-**Paper shape.** `⊩ˢ` is *the* semantics of evidential belief (sound + complete,
-conjecturally); `⊩ᵘ` with §5(b) is the **evidential-bite theorem** — what uniform
+**Paper shape.** `⊩ˢ` is *the* semantics of evidential belief (soundness O3ˢ
+pending mechanisation; completeness genuinely OPEN per the 2026-07-17 finding
+above); `⊩ᵘ` with §5(b) is the **evidential-bite theorem** — what uniform
 (strategy-free) evidence costs — and `◯(A∨B)` is the separating formula. Both
 clauses share §§1–4 unchanged (heredity, nucleus laws, sequential meet,
 evidence-extraction soundness).
+
+**Named-witness upgrade (2026-07-17).** The `⊩ˢ` `◯`-clause now requires the
+package to *name* its constraint-witness: `fst y = ⌜u⌝`. This is forced by
+strategy-soundness: the extracted `laxElim` composite must apply the
+continuation *at the witness's code*, which the purely semantic `∃u` clause
+withholds. Mechanised (`realS` revised; heredity, saturation, and the
+triptych-(iii) theorems all survive the upgrade, with the concrete `splitPca`
+strategy now returning `(⌜witness⌝, evidence)` packages).
 
 ## 7. Variants and relation to Nakata
 

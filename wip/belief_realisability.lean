@@ -82,10 +82,13 @@ def realU (P : Pca) {C : ConstraintModel} (Ev : Evidence P C) :
 
 /-- `⊩ˢ` — **strategy** realisability, relative to a world-coding
 `κ : W → Carrier`.  Evidence for `◯φ` is a function: applied to the code of any
-information-future `v`, it returns (under `snd`) evidence for `φ` at some
-constraint-witness of `v`.  The strategy needs no foreknowledge of the frame —
-the future is its *input*; the side conditions `Rₘ` and realisation are checked
-in the semantics, not by the realiser. -/
+information-future `v`, it returns a package naming a constraint-witness `u`
+(under `fst`, as `κ u`) together with evidence for `φ` at `u` (under `snd`).
+The strategy needs no foreknowledge of the frame — the future is its *input*;
+the side conditions (`Rₘ`, and that the named world realises) are checked in
+the semantics.  The witness is **named** rather than semantic (`fst y = κ u`)
+because strategy-soundness requires it: the `laxElim` composite must apply the
+continuation at the witness's code. -/
 def realS (P : Pca) {C : ConstraintModel} (Ev : Evidence P C) (κ : C.W → P.Carrier) :
     PLLFormula → P.Carrier → C.W → Prop
   | .prop s, x, w => w ∈ C.F ∨ x ∈ Ev.E s w
@@ -100,7 +103,8 @@ def realS (P : Pca) {C : ConstraintModel} (Ev : Evidence P C) (κ : C.W → P.Ca
         (∀ b, realS P Ev κ φ b v → ∃ y, P.app x b = some y ∧ realS P Ev κ ψ y v)
   | .somehow φ, x, w =>
       ∀ v, C.Ri w v → v ∈ C.F ∨
-        (∃ y, P.app x (κ v) = some y ∧ ∃ u, C.Rm v u ∧ realS P Ev κ φ (P.snd y) u)
+        (∃ y, P.app x (κ v) = some y ∧
+          ∃ u, C.Rm v u ∧ P.fst y = κ u ∧ realS P Ev κ φ (P.snd y) u)
 
 /-! ## Rung 2: heredity (increasing belief) and fallible saturation -/
 
@@ -537,25 +541,28 @@ variable (P : Pca) (κ : W3 → P.Carrier)
 are answered with disjunct `A` (tag `false`), future `b` with disjunct `B`
 (tag `true`).  Under `⊩ˢ` the root's belief in the disjunction is evidenced. -/
 theorem strategy_realises_obAB (b₀ : P.Carrier)
-    (h_r : ∃ y, P.app b₀ (κ W3.r) = some y ∧ (P.untag (P.snd y)).1 = false)
-    (h_a : ∃ y, P.app b₀ (κ W3.a) = some y ∧ (P.untag (P.snd y)).1 = false)
-    (h_b : ∃ y, P.app b₀ (κ W3.b) = some y ∧ (P.untag (P.snd y)).1 = true) :
+    (h_r : ∃ y, P.app b₀ (κ W3.r) = some y ∧ P.fst y = κ W3.a ∧
+      (P.untag (P.snd y)).1 = false)
+    (h_a : ∃ y, P.app b₀ (κ W3.a) = some y ∧ P.fst y = κ W3.a ∧
+      (P.untag (P.snd y)).1 = false)
+    (h_b : ∃ y, P.app b₀ (κ W3.b) = some y ∧ P.fst y = κ W3.b ∧
+      (P.untag (P.snd y)).1 = true) :
     realS P (fullEvidence P modelOrSplit) κ
       (somehow ((prop "A").or (prop "B"))) b₀ W3.r := by
   intro v _hv
   refine Or.inr ?_
   cases v with
   | r =>
-      obtain ⟨y, hy, ht⟩ := h_r
-      exact ⟨y, hy, W3.a, Or.inr rfl,
+      obtain ⟨y, hy, hw, ht⟩ := h_r
+      exact ⟨y, hy, W3.a, Or.inr rfl, hw,
         Or.inr (Or.inl ⟨ht, Or.inr (show W3.a ∈ vSplit "A" by decide)⟩)⟩
   | a =>
-      obtain ⟨y, hy, ht⟩ := h_a
-      exact ⟨y, hy, W3.a, Or.inl rfl,
+      obtain ⟨y, hy, hw, ht⟩ := h_a
+      exact ⟨y, hy, W3.a, Or.inl rfl, hw,
         Or.inr (Or.inl ⟨ht, Or.inr (show W3.a ∈ vSplit "A" by decide)⟩)⟩
   | b =>
-      obtain ⟨y, hy, ht⟩ := h_b
-      exact ⟨y, hy, W3.b, Or.inl rfl,
+      obtain ⟨y, hy, hw, ht⟩ := h_b
+      exact ⟨y, hy, W3.b, Or.inl rfl, hw,
         Or.inr (Or.inr ⟨ht, Or.inr (show W3.b ∈ vSplit "B" by decide)⟩)⟩
 
 /-- **Triptych (iii).**  Under `⊩ˢ`, `◯(A∨B) ⊃ (◯A ∨ ◯B)` has no realiser at
@@ -563,9 +570,12 @@ the split-model root: whatever the candidate returns must commit one tag at
 `r`, and whichever disjunct it commits has no evidence at the opposite maximal
 world. -/
 theorem strategy_dist_refuted (b₀ : P.Carrier)
-    (h_r : ∃ y, P.app b₀ (κ W3.r) = some y ∧ (P.untag (P.snd y)).1 = false)
-    (h_a : ∃ y, P.app b₀ (κ W3.a) = some y ∧ (P.untag (P.snd y)).1 = false)
-    (h_b : ∃ y, P.app b₀ (κ W3.b) = some y ∧ (P.untag (P.snd y)).1 = true)
+    (h_r : ∃ y, P.app b₀ (κ W3.r) = some y ∧ P.fst y = κ W3.a ∧
+      (P.untag (P.snd y)).1 = false)
+    (h_a : ∃ y, P.app b₀ (κ W3.a) = some y ∧ P.fst y = κ W3.a ∧
+      (P.untag (P.snd y)).1 = false)
+    (h_b : ∃ y, P.app b₀ (κ W3.b) = some y ∧ P.fst y = κ W3.b ∧
+      (P.untag (P.snd y)).1 = true)
     (e : P.Carrier) :
     ¬ realS P (fullEvidence P modelOrSplit) κ
         ((somehow ((prop "A").or (prop "B"))).ifThen
@@ -576,14 +586,14 @@ theorem strategy_dist_refuted (b₀ : P.Carrier)
   · obtain ⟨y, _, hy⟩ := himp b₀ (strategy_realises_obAB P κ b₀ h_r h_a h_b)
     rcases hy with hF | ⟨_, hA⟩ | ⟨_, hB⟩
     · exact hF.elim
-    · rcases hA W3.b (Or.inr rfl) with hFb | ⟨y', _, u, hmu, hu⟩
+    · rcases hA W3.b (Or.inr rfl) with hFb | ⟨y', _, u, hmu, _, hu⟩
       · exact hFb.elim
       · rcases hmu with rfl | habs
         · rcases hu with hF' | hmem
           · exact hF'.elim
           · exact absurd (show W3.b ∈ vSplit "A" from hmem) (by decide)
         · exact absurd habs (by decide)
-    · rcases hB W3.a (Or.inr rfl) with hFa | ⟨y', _, u, hmu, hu⟩
+    · rcases hB W3.a (Or.inr rfl) with hFa | ⟨y', _, u, hmu, _, hu⟩
       · exact hFa.elim
       · rcases hmu with rfl | habs
         · rcases hu with hF' | hmem
@@ -599,7 +609,8 @@ complete PCA — it witnesses that the hypotheses of the theorems above are
 satisfiable; in `K₁` they hold by combinatory completeness.) -/
 @[reducible] def splitPca : Pca where
   Carrier := ℕ
-  app _ x := some (Nat.pair 0 (Nat.pair (if x = 2 then 1 else 0) 0))
+  app _ x := some (Nat.pair (if x = 2 then 2 else 1)
+    (Nat.pair (if x = 2 then 1 else 0) 0))
   pair := Nat.pair
   fst n := n.unpair.1
   snd n := n.unpair.2
@@ -621,9 +632,9 @@ theorem strategy_realises_obAB_split :
     realS splitPca (fullEvidence splitPca modelOrSplit) splitCode
       (somehow ((prop "A").or (prop "B"))) 0 W3.r :=
   strategy_realises_obAB splitPca splitCode 0
-    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩
-    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩
-    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩
+    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
+    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
+    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
 
 /-- **Triptych (iii), unconditional instance**: under `⊩ˢ` the split model
 refutes `◯(A∨B) ⊃ (◯A ∨ ◯B)` at the root — the truth countermodel survives the
@@ -633,9 +644,9 @@ theorem strategy_dist_refuted_split (e : ℕ) :
         ((somehow ((prop "A").or (prop "B"))).ifThen
           ((somehow (prop "A")).or (somehow (prop "B")))) e W3.r :=
   strategy_dist_refuted splitPca splitCode 0
-    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩
-    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩
-    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩ e
+    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
+    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩
+    ⟨_, rfl, by simp [splitCode, Nat.unpair_pair], by simp [splitCode, Nat.unpair_pair]⟩ e
 
 /-! ## Rung 5 groundwork: genuine PCAs and combinatory completeness
 
