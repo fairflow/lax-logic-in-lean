@@ -7,8 +7,8 @@ toolchain Lean v4.31.0 + Mathlib v4.31.0.*
 directory, prepend `../`). *Promotion note (2026-07-16): under the policy that
 nothing in `wip/` is ever claimed as formally proved, the Curry-paper files and
 the finished belief modules were moved into the `LaxLogic/` library —
-[`LaxLogic/PLLCtxCompleteness.lean`](../LaxLogic/PLLCtxCompleteness.lean) → [`LaxLogic/PLLCtxCompleteness.lean`](../LaxLogic/PLLCtxCompleteness.lean),
-[`LaxLogic/PLLLaxInfinite.lean`](../LaxLogic/PLLLaxInfinite.lean) → [`LaxLogic/PLLLaxInfinite.lean`](../LaxLogic/PLLLaxInfinite.lean), and the seven
+`wip/context_completeness.lean` → [`LaxLogic/PLLCtxCompleteness.lean`](../LaxLogic/PLLCtxCompleteness.lean),
+`wip/lax_infinite.lean` → [`LaxLogic/PLLLaxInfinite.lean`](../LaxLogic/PLLLaxInfinite.lean), and the seven
 `wip/belief_*.lean` files → `LaxLogic/Belief*.lean` (see
 [belief-mechanisation-index.md](belief-mechanisation-index.md)) — all imported
 by the library root, so `lake build` checks them. Only the in-development
