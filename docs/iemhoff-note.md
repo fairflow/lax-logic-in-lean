@@ -265,3 +265,156 @@ procedure verdicts, or the transcribed tables in whatever form is most useful.
 transcription notes; the arXiv numbers in the left column were each checked
 against the arXiv source text, the book numbers were not independently verified
 against a book PDF here.
+
+---
+
+## Appendix: the calculi and the key statements, precisely
+
+*For self-containedness, this appendix states the central definitions and
+theorems both as they stand in the Lean sources (verbatim) and in ordinary
+mathematical language. `PLLFormula` is the propositional lax language
+(atoms `prop a`, `falsePLL`, `and`, `or`, `ifThen`, `somehow` = ◯);
+contexts are lists; `Γ.Perm Δ` is list permutation, so a premise of the
+form `Γ.Perm (F :: Δ)` reads "the principal formula F occurs in Γ, and Δ
+is the rest". Everything is in `github.com/fairflow/lax-logic-in-lean`.*
+
+### A.1 The transcribed G4iLL (`G4`, `LaxLogic/PLLG4.lean`)
+
+```lean
+inductive G4 : List PLLFormula → PLLFormula → Prop
+  | init     (h : prop a ∈ Γ) : G4 Γ (prop a)
+  | botL     (h : falsePLL ∈ Γ) : G4 Γ C
+  | andR     : G4 Γ A → G4 Γ B → G4 Γ (A.and B)
+  | orR1     : G4 Γ A → G4 Γ (A.or B)
+  | orR2     : G4 Γ B → G4 Γ (A.or B)
+  | impR     : G4 (A :: Γ) B → G4 Γ (A.ifThen B)
+  | laxR     : G4 Γ A → G4 Γ A.somehow
+  | andL     (h : Γ.Perm (A.and B :: Δ)) :
+      G4 (A :: B :: Δ) C → G4 Γ C
+  | orL      (h : Γ.Perm (A.or B :: Δ)) :
+      G4 (A :: Δ) C → G4 (B :: Δ) C → G4 Γ C
+  | laxL     (h : Γ.Perm (A.somehow :: Δ)) :
+      G4 (A :: Δ) B.somehow → G4 Γ B.somehow
+  | impLProp (h : Γ.Perm ((prop a).ifThen B :: Δ)) (ha : prop a ∈ Δ) :
+      G4 (B :: Δ) C → G4 Γ C
+  | impLBot  (h : Γ.Perm (falsePLL.ifThen B :: Δ)) :
+      G4 Δ C → G4 Γ C
+  | impLAnd  (h : Γ.Perm ((A.and B).ifThen D :: Δ)) :
+      G4 (A.ifThen (B.ifThen D) :: Δ) E → G4 Γ E
+  | impLOr   (h : Γ.Perm ((A.or B).ifThen D :: Δ)) :
+      G4 (A.ifThen D :: B.ifThen D :: Δ) E → G4 Γ E
+  | impLImp  (h : Γ.Perm ((A.ifThen B).ifThen D :: Δ)) :
+      G4 (B.ifThen D :: Δ) (A.ifThen B) → G4 (D :: Δ) E → G4 Γ E
+  | impLLax  (h : Γ.Perm (A.somehow.ifThen B :: Δ)) :
+      G4 Δ A → G4 (B :: Δ) C → G4 Γ C
+  | impLLaxLax (h : Γ.Perm (A.somehow.ifThen B :: X.somehow :: Δ)) :
+      G4 (X :: Δ) A.somehow → G4 (B :: X.somehow :: Δ) C → G4 Γ C
+```
+
+*(Implicit binders elided for readability here; the source spells them
+out. This is our transcription of Fig. 2.3 of arXiv:2209.08976v1.)*
+
+In words: the right rules and `init`/`⊥L` are as in G3; every left rule
+**consumes** its principal formula — the premise context is `Δ`, the rest
+of `Γ`. In particular: `laxL` (from A, Δ ⊢ ◯B infer Γ ⊢ ◯B when ◯A ∈ Γ)
+deletes the box; `impLLax` — the first of the two rules for an
+implication with ◯-antecedent — proves its first premise Δ ⊢ A *without*
+the implication ◯A ⊃ B; and `impLLaxLax` — the second such rule, which
+uses an auxiliary box ◯X from the context — proves its first premise
+X, Δ ⊢ ◯A with *both* the implication and the auxiliary box deleted.
+Contraction-freeness is thus taken in the strongest possible sense:
+nothing principal survives into any premise.
+
+### A.2 The repair (`G4h`/`G4c`, `LaxLogic/PLLG4H.lean`)
+
+`G4h` is the same calculus with a height index (`G4h n Γ C`: derivable
+with height at most `n`; the index is bookkeeping for the termination
+and interpolation analyses) and with exactly **three rules changed**, all
+in the direction of *retention*:
+
+```lean
+  | laxL {n Γ A B} (h : A.somehow ∈ Γ) :
+      G4h n (A :: Γ) B.somehow → G4h (n + 1) Γ B.somehow
+  | impLLax {n Γ Δ A B C} (h : Γ.Perm (A.somehow.ifThen B :: Δ)) :
+      G4h n Γ A → G4h n (B :: Δ) C → G4h (n + 1) Γ C
+  | impLLaxLax {n Γ Δ A B X C}
+      (h : Γ.Perm (A.somehow.ifThen B :: Δ)) (hX : X.somehow ∈ Δ) :
+      G4h n (X :: Γ) A.somehow → G4h n (B :: Δ) C → G4h (n + 1) Γ C
+
+def G4c (Γ : List PLLFormula) (C : PLLFormula) : Prop := ∃ n, G4h n Γ C
+```
+
+In words, the one-token repair: `laxL` now **keeps the box** — the
+premise is A, Γ ⊢ ◯B with ◯A still present in Γ; `impLLax`'s first
+premise is now Γ ⊢ A over the **full** context — the implication
+◯A ⊃ B is retained there (compare the →SL rule of van der
+Giessen–Iemhoff's G4iSL, whose first premise likewise retains its
+principal); and `impLLaxLax`'s first premise is X, Γ ⊢ ◯A over the full
+context — implication and auxiliary box both retained. Every other rule
+is unchanged. We write G4iLL″ for the repaired calculus in prose, `G4c`
+in Lean.
+
+### A.3 The counterexample and the two failed structural rules
+
+With `Fa := ◯p ⊃ r` and `Ga := (◯p ⊃ r) ⊃ ◯p`:
+
+```lean
+theorem sep_SC : SC [Ga.somehow, Fa] (prop "r")          -- audit: [propext, Quot.sound]
+theorem sep_not_G4 : ¬ G4 [Ga.somehow, Fa] (prop "r")    -- audit: [propext]
+```
+
+In words: the sequent ◯((◯p ⊃ r) ⊃ ◯p), ◯p ⊃ r ⊢ r is derivable in the
+cut-free G3-style calculus (hence in PLL), and underivable in the
+transcribed G4iLL. The underivability is a genuine finite analysis of
+the (finite, loop-checked) G4-search space, kernel-checked with
+`propext` as the only axiom — no classical logic, no trusted evaluation.
+
+```lean
+theorem contraction_not_admissible :
+    G4 [Ga.somehow, Fa, Fa] (prop "r") ∧ ¬ G4 [Ga.somehow, Fa] (prop "r")
+
+theorem cut_not_admissible :
+    G4 [Ga.somehow, Fa] ((prop "p").somehow) ∧
+    G4 [(prop "p").somehow, Ga.somehow, Fa] (prop "r") ∧
+    ¬ G4 [Ga.somehow, Fa] (prop "r")
+```
+
+In words: with *two* copies of ◯p ⊃ r the sequent becomes G4-derivable,
+with one it is not — contraction fails; and ◯p interpolates (both
+premises of the cut are G4-derivable) while the conclusion is not —
+cut fails. The mechanism in both is the same consumed token: a
+derivation needs ◯p ⊃ r once to *produce* ◯p and once more to *use* it,
+and the consuming rules cannot have both.
+
+### A.4 The repaired calculus is the right one
+
+```lean
+theorem G4c.cut : G4c Γ (A) → G4c (A :: Γ) C → G4c Γ C        -- [propext, Quot.sound]
+theorem G4c.completeness : SC Γ C → G4c Γ C                    -- [propext, Quot.sound]
+theorem G4c.equiv_tm : G4c Γ φ ↔ Nonempty (Tm Γ φ)             -- [propext, Quot.sound]
+
+instance decidablePLL (Γ : List PLLFormula) (φ : PLLFormula) :
+    Decidable (Nonempty (Tm Γ φ))
+
+theorem height_bound (h : G4c Γ C) : G4sh (decideFuel Γ C) Γ.toFinset C
+```
+
+In words: cut is admissible in G4iLL″; G4iLL″ derives everything the
+cut-free G3 calculus does; and G4iLL″-derivability coincides with
+PLL-derivability (stated through the proof-term calculus `Tm`; the
+natural-deduction form `equiv_nd` is also proved). Backward search in
+G4iLL″ over set-contexts with a loop check terminates, giving a full
+decision procedure for PLL (`decidablePLL`) — the mechanised form of
+Fairtlough–Mendler's Theorem 2.8 — and, as a by-product of the
+termination analysis, an explicit derivation-height bound
+(`height_bound`), which is exactly the ingredient a fuel-recursive
+Pitts-style interpolant assignment needs. The audits shown are the
+current measured values; the two `Decidable` instances additionally use
+`Classical.choice` in two identified places of their totality proof
+(a least-height step, and Mathlib finite-set internals), currently
+being removed.
+
+*(Statement sources: `LaxLogic/PLLG4Gap.lean`, `LaxLogic/PLLG4HComp.lean`,
+`LaxLogic/PLLG4Dec.lean`. The `#print axioms` audits are pinned by
+`#guard_msgs` at build time, so the values quoted here are enforced by
+the build, not transcribed by hand.)*
