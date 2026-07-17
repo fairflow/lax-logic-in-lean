@@ -157,6 +157,29 @@ build a term, Lean can check it*.  The gap sequent
 out beyond 6.5 minutes, is solved in milliseconds with its derivation tree
 emitted (`#eval` smoke tests in the file).
 
+### 7.1b The derivability tactic `pll_g4c` — certificate splicing (added 2026-07-17)
+
+[`PLLRun.lean`](../LaxLogic/PLLRun.lean) packages the searcher as a tactic.
+`pll_g4c` runs `G4cTm.find` at *elaboration time* as untrusted code, quotes the
+found derivation back into surface syntax (membership side conditions as
+explicit `List.Mem` constructor chains — no decision procedure, no axioms), and
+the kernel checks the spliced `G4cTm` certificate, transported to the goal by
+the §7.1/§7.1a equivalences.  It closes `Nonempty (Tm Γ C)`,
+`Nonempty (LaxND Γ C)`, `SC Γ C`, `G4c Γ C`, `G4cTm Γ C` and
+`Nonempty (G4cTm Γ C)` for concrete sequents.
+
+- **Complete** (`G4c.equiv_tm`): a search failure *refutes* derivability — an
+  underivable specimen (`◯p ⊢ p`) is pinned as an expected error under
+  `#guard_msgs`.
+- **No `native_decide`**: the trust base of a `pll_g4c` proof is exactly that
+  of the transport lemmas — clean-classical for `Tm`/`LaxND`/`SC`/`G4c` goals
+  (pinned: `PLLND.unit_nd`), and **no axioms at all** for a bare `G4cTm`
+  certificate (pinned: `PLLND.gap_certificate`, the gap-sequent derivation).
+
+This **retires `pll_g4`** (same file, removed 2026-07-17), which ran the
+*naive* `G4iLL` (§7.2 — incomplete, so its failures proved nothing) under
+`native_decide` (so its successes carried a per-use compiled-evaluator axiom).
+
 ### 7.2 The naive Iemhoff `G4iLL` is incomplete (why the repair was needed)
 
 | result | Lean name | location | axioms |
