@@ -616,8 +616,21 @@ reality of formalisation for mathematics at research level: the checker is
 not a notary but a collaborator with an unerring nose for the case one
 had not considered.
 
-[Publication-route discussion to be inserted: survey of venues for
-machine-checked mathematics in progress.]
+On routes to publication for machine-checked mathematics by unaffiliated
+authors (full verified survey: `docs/publication-routes.md`): the working
+plan is the split the survey recommends — the technical core to a
+formalisation-literate venue (CPP 2027, submission 10 September 2026,
+with a fuller journal version to JAR's Proof Pearls track or LMCS
+afterwards: the perfectoid-spaces trajectory), and the belief argument as
+a companion paper to a philosophical-logic venue (the new diamond-OA
+*Philosophical Logic*, or Studia Logica). The artefact is made citable by
+a Zenodo-archived GitHub release with `CITATION.cff`, following the
+now-standard practice of citing Lean repositories as first-class research
+objects (perfectoid spaces, the Mathlib paper, the Liquid Tensor
+Experiment). One administrative note: arXiv's January 2026 endorsement
+policy means an unaffiliated first-time arXiv author needs a personal
+endorsement — a solvable, one-email matter given prior conventional
+publications in the field.
 
 ## 10. Conclusion and open problems
 
