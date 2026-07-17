@@ -67,47 +67,47 @@ theorem SCh.mono : ∀ {n : Nat} {Γ : List PLLFormula} {C : PLLFormula},
   | andR _ _ ih₁ ih₂ =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .andR (ih₁ (by omega)) (ih₂ (by omega))
   | andL h _ ih =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .andL h (ih (by omega))
   | orR1 _ ih =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .orR1 (ih (by omega))
   | orR2 _ ih =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .orR2 (ih (by omega))
   | orL h _ _ ih₁ ih₂ =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .orL h (ih₁ (by omega)) (ih₂ (by omega))
   | impR _ ih =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .impR (ih (by omega))
   | impL h _ _ ih₁ ih₂ =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .impL h (ih₁ (by omega)) (ih₂ (by omega))
   | laxR _ ih =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .laxR (ih (by omega))
   | laxL h _ ih =>
       intro m hnm
       cases m with
-      | zero => omega
+      | zero => exact absurd hnm (Nat.not_succ_le_zero _)
       | succ m' => exact .laxL h (ih (by omega))
 
 /-- Height-preserving admissible weakening/contraction/exchange. -/
@@ -323,7 +323,8 @@ theorem cut_aux : ∀ (k : Nat), ∀ {A : PLLFormula}, sizeOf A ≤ k →
         | andR d₁₁ d₁₂ =>
             -- principal-principal: cut Y, then X
             have hY : SC (X :: Γ) C := by
-              refine cutF (by simp <;> omega)
+              refine cutF (by simp only [and.sizeOf_spec, or.sizeOf_spec,
+                ifThen.sizeOf_spec, somehow.sizeOf_spec]; omega)
                 ⟨_, d₁₂.rename (fun ψ h => .tail _ h)⟩ step ?_
               intro ψ hψ
               simp only [List.mem_cons] at hψ
@@ -331,7 +332,8 @@ theorem cut_aux : ∀ (k : Nat), ∀ {A : PLLFormula}, sizeOf A ≤ k →
               · exact .inr (.head _)
               · exact .inl rfl
               · exact .inr (.tail _ hψ)
-            refine cutF (by simp <;> omega) ⟨_, d₁₁⟩ hY ?_
+            refine cutF (by simp only [and.sizeOf_spec, or.sizeOf_spec,
+                ifThen.sizeOf_spec, somehow.sizeOf_spec]; omega) ⟨_, d₁₁⟩ hY ?_
             intro ψ hψ
             simp only [List.mem_cons] at hψ
             rcases hψ with rfl | hψ
@@ -383,14 +385,16 @@ theorem cut_aux : ∀ (k : Nat), ∀ {A : PLLFormula}, sizeOf A ≤ k →
         cases d₁ with
         | botL h' => exact SC.botL h'
         | orR1 d₁' =>
-            refine cutF (by simp <;> omega) ⟨_, d₁'⟩ step₁ ?_
+            refine cutF (by simp only [and.sizeOf_spec, or.sizeOf_spec,
+                ifThen.sizeOf_spec, somehow.sizeOf_spec]; omega) ⟨_, d₁'⟩ step₁ ?_
             intro ψ hψ
             simp only [List.mem_cons] at hψ
             rcases hψ with rfl | hψ
             · exact .inl rfl
             · exact .inr hψ
         | orR2 d₁' =>
-            refine cutF (by simp <;> omega) ⟨_, d₁'⟩ step₂ ?_
+            refine cutF (by simp only [and.sizeOf_spec, or.sizeOf_spec,
+                ifThen.sizeOf_spec, somehow.sizeOf_spec]; omega) ⟨_, d₁'⟩ step₂ ?_
             intro ψ hψ
             simp only [List.mem_cons] at hψ
             rcases hψ with rfl | hψ
@@ -443,13 +447,15 @@ theorem cut_aux : ∀ (k : Nat), ∀ {A : PLLFormula}, sizeOf A ≤ k →
         | impR d₁' =>
             -- principal-principal: cut X into the body, then cut Y
             have hY : SC Γ Y := by
-              refine cutF (by simp <;> omega) argX ⟨_, d₁'⟩ ?_
+              refine cutF (by simp only [and.sizeOf_spec, or.sizeOf_spec,
+                ifThen.sizeOf_spec, somehow.sizeOf_spec]; omega) argX ⟨_, d₁'⟩ ?_
               intro ψ hψ
               simp only [List.mem_cons] at hψ
               rcases hψ with rfl | hψ
               · exact .inl rfl
               · exact .inr hψ
-            refine cutF (by simp <;> omega) hY stepY ?_
+            refine cutF (by simp only [and.sizeOf_spec, or.sizeOf_spec,
+                ifThen.sizeOf_spec, somehow.sizeOf_spec]; omega) hY stepY ?_
             intro ψ hψ
             simp only [List.mem_cons] at hψ
             rcases hψ with rfl | hψ
@@ -490,7 +496,8 @@ theorem cut_aux : ∀ (k : Nat), ∀ {A : PLLFormula}, sizeOf A ≤ k →
         cases d₁ with
         | botL h' => exact SC.botL h'
         | laxR d₁' =>
-            refine cutF (by simp <;> omega) ⟨_, d₁'⟩ step ?_
+            refine cutF (by simp only [and.sizeOf_spec, or.sizeOf_spec,
+                ifThen.sizeOf_spec, somehow.sizeOf_spec]; omega) ⟨_, d₁'⟩ step ?_
             intro ψ hψ
             simp only [List.mem_cons] at hψ
             rcases hψ with rfl | hψ
@@ -540,7 +547,7 @@ def LaxND.cut1 {Γ : List PLLFormula} {φ ψ : PLLFormula}
   (LaxND.cut p q).rename (by
     intro χ h
     simp only [List.mem_append] at h
-    tauto)
+    exact h.elim id id)
 
 /-- Every cut-free sequent proof yields a natural deduction proof. -/
 theorem SC_to_ND : ∀ {n : Nat} {Γ : List PLLFormula} {C : PLLFormula},
@@ -597,18 +604,18 @@ theorem ND_to_SC : ∀ {Γ : List PLLFormula} {C : PLLFormula},
       · exact ih₁.rename (by
           intro ψ h
           simp only [List.mem_cons] at h ⊢
-          tauto)
+          exact h.imp id .inr)
       · exact ih₂.rename (by
           intro ψ h
           simp only [List.mem_cons] at h ⊢
-          tauto)
+          exact h.imp id .inr)
   | laxIntro _ ih => exact SC.laxR ih
   | laxElim _ _ ih₁ ih₂ =>
       refine SC.cut ih₁ (SC.laxL (.head _) ?_)
       exact ih₂.rename (by
         intro ψ h
         simp only [List.mem_cons] at h ⊢
-        tauto)
+        exact h.imp id .inr)
 
 /-- **Cut elimination**, headline form (F&M Theorem 2.6): natural deduction
 derivability coincides with cut-free sequent derivability. -/
@@ -644,5 +651,12 @@ theorem somehow_reflection {A : PLLFormula}
   | impL h _ _ => exact absurd h (by simp)
   | laxL h _ => exact absurd h (by simp)
   | laxR d' => exact SC_to_ND d'
+
+-- Cut elimination is choice-free: the lexicographic induction is plain
+-- arithmetic on heights and `sizeOf`, and the ND↔SC round trip is
+-- membership bookkeeping.
+/-- info: 'PLLND.cutElimination' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms cutElimination
 
 end PLLND

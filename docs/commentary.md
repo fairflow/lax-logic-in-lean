@@ -504,11 +504,12 @@ inversion at the principal. The lemma that had walled every earlier
 attempt turns out to be *exactly* what the two retained rules were shaped
 to accept.
 
-Hence, unconditional and each with a pinned axiom audit
-(`[propext, Classical.choice, Quot.sound]`, no `sorryAx`):
+Hence, unconditional and each with a pinned axiom audit, no `sorryAx`
+(choice-free since the 2026-07-17 axiom-hygiene pass):
 
-- `G4c.selfAbsorb : SelfAbsorb`;
-- `G4c.cut : G4c Γ A → G4c (A :: Γ) E → G4c Γ E`.
+- `G4c.selfAbsorb : SelfAbsorb` — audit `[propext]`;
+- `G4c.cut : G4c Γ A → G4c (A :: Γ) E → G4c Γ E` — audit
+  `[propext, Quot.sound]`.
 
 ### 5.9 Completeness and the equivalences — `PLLG4HComp.lean`
 

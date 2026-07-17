@@ -60,9 +60,9 @@ theorem perm_cons_cases {a b : PLLFormula} {l m : List PLLFormula}
       rcases List.mem_cons.mp (h.symm.subset (.head _)) with e | hb
       · exact absurd e.symm hab
       · exact hb
-    refine .inr ⟨l.erase b, List.perm_cons_erase hb, ?_⟩
+    refine .inr ⟨l.erase b, perm_cons_erase hb, ?_⟩
     -- b :: m ~ a :: l ~ a :: b :: l.erase b ~ b :: a :: l.erase b
-    exact ((h.symm.trans ((List.perm_cons_erase hb).cons a)).trans
+    exact ((h.symm.trans ((perm_cons_erase hb).cons a)).trans
       (List.Perm.swap b a _)).cons_inv
 
 /-- `L ++ (S ++ X) ~ S ++ (L ++ X)`: move a block past another block. -/

@@ -22,6 +22,37 @@ current set-sequent into `V`, and gated sequents live in `seqEnum`.
 
 Chained through `G4c.iff_set` and `G4c.equiv_tm`:
 `Decidable (G4c Γ C)` and **decidability of PLL provability**.
+
+**Axiom audit (measured 2026-07-17).**  The audit at the foot reports
+`[propext, Classical.choice, Quot.sound]`.  The proof-theory chain
+feeding this file is choice-free (`cutElimination`, `G4c.completeness`,
+`G4c.equiv_tm` all audit `[propext, Quot.sound]`); the residual
+`Classical.choice` has exactly two sources, and neither is removable by
+changing proofs alone:
+
+1. *Definition-level*: the executable layer (`search`, `seqEnum`,
+   `enum`, `atoms`, `InSpace`) is built on Mathlib `Finset` operations
+   (`List.toFinset`, `Finset.decidableEq`, `Finset.powerset`,
+   `Finset.image`, `Finset.union`) whose current Mathlib bodies carry
+   `Classical.choice` in embedded proofs — e.g. `Multiset.dedup`'s
+   permutation-invariance lemma, and `Multiset.toList`, which picks a
+   representative by `Classical.choice` outright.  `#print axioms`
+   walks the bodies of statement constants, so `G4c_iff_search`
+   inherits this however it is proved.  (`Finset.instInsert`,
+   `Finset.mem_insert`, `Finset.card` are clean, which is why the
+   `G4sh` *calculus* itself audits choice-free.)
+2. *Proof-level*: `search_complete` and `G4c_iff_search` induct on the
+   **minimal** derivation height, obtained as `Nat.find` over
+   `∃ m, G4sh m Γ C` under `Classical.propDecidable`.  Minimality is
+   load-bearing (it is what keeps a premise from colliding with the
+   visited set), and the least-number principle for a predicate not
+   yet known to be decidable is itself non-constructive: a choice-free
+   variant needs a `Decidable (G4sh n Γ C)` height-bounded decider
+   first — a second search procedure, not a proof repair.
+
+So `[propext, Classical.choice, Quot.sound]` is the audit floor here
+until Mathlib's `Multiset`/`Finset` layer is de-classicalised or the
+executable layer is rebuilt list-only.
 -/
 
 open PLLFormula
@@ -615,10 +646,26 @@ instance decidablePLL (Γ : List PLLFormula) (φ : PLLFormula) :
 #guard_msgs in
 #eval decide (G4c [] (prop "p"))
 
+-- `Classical.choice` here is the measured floor — Mathlib `Finset`
+-- bodies inside `search`/`seqEnum` plus the `Nat.find` minimal-height
+-- induction; see the module docstring.  The proof-theory chain below
+-- this file is choice-free.
 /--
 info: 'PLLND.G4c_iff_search' depends on axioms: [propext, Classical.choice, Quot.sound]
 -/
 #guard_msgs in
 #print axioms G4c_iff_search
+
+/--
+info: 'PLLND.decidableG4c' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms decidableG4c
+
+/--
+info: 'PLLND.decidablePLL' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms decidablePLL
 
 end PLLND

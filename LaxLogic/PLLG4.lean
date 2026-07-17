@@ -146,6 +146,24 @@ inductive G4 : List PLLFormula → PLLFormula → Prop
       (h : Γ.Perm (A.somehow.ifThen B :: X.somehow :: Δ)) :
       G4 (X :: Δ) A.somehow → G4 (B :: X.somehow :: Δ) C → G4 Γ C
 
+/-- A member permutes to the head: `l ~ a :: l.erase a`.  This is
+`List.perm_cons_erase` restated for `PLLFormula` lists with a plain
+structural induction, because Mathlib's proof of the general lemma
+depends on `Classical.choice` and would taint the whole
+`G4 → G4c → decidability` audit chain. -/
+theorem perm_cons_erase {a : PLLFormula} {l : List PLLFormula} (h : a ∈ l) :
+    l.Perm (a :: l.erase a) := by
+  induction l with
+  | nil => cases h
+  | cons b l ih =>
+    by_cases hba : b = a
+    · subst hba
+      rw [List.erase_cons_head]
+    · rw [List.erase_cons_tail (by simpa using hba)]
+      rcases List.mem_cons.mp h with e | h'
+      · exact absurd e.symm hba
+      · exact ((ih h').cons b).trans (.swap a b _)
+
 namespace G4
 
 /-! ### Structural admissibility -/

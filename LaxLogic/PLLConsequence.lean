@@ -43,7 +43,7 @@ def cut {L L' : List PLLFormula} {φ ψ : PLLFormula}
     (.impIntro (p₂.rename (by
       intro χ h
       simp only [List.mem_cons, List.mem_append] at h ⊢
-      tauto)))
+      exact h.imp id .inr)))
     (p₁.rename (by intro χ h; exact List.mem_append.mpr (.inl h)))
 
 /-- Introduce a finite disjunction at any disjunct.  (`Prop`-level:
@@ -68,7 +68,7 @@ def bigOrElim {L : List PLLFormula} {χ : PLLFormula} :
           (fun φ h => (br φ (.tail _ h)).rename (by
             intro χ' h'
             simp only [List.mem_cons] at h' ⊢
-            tauto)))
+            exact h'.imp id .inr)))
 
 /-- The lax modality is functorial: from `φ ⊢ ψ` (over side context `L`)
 conclude `◯φ ⊢ ◯ψ`. -/
@@ -78,7 +78,7 @@ def somehowMono {L : List PLLFormula} {φ ψ : PLLFormula}
     (.laxIntro (p.rename (by
       intro χ h
       simp only [List.mem_cons] at h ⊢
-      tauto)))
+      exact h.imp id .inr)))
 
 end LaxND
 
@@ -140,7 +140,9 @@ theorem map₃ {Γ : Set PLLFormula} {φ ψ χ ω : PLLFormula}
     · exact hL₁ ψ' h
     · exact hL₂ ψ' h
     · exact hL₃ ψ' h
-  all_goals intro χ' h; simp only [List.mem_append]; tauto
+  · intro χ' h; simp only [List.mem_append]; exact .inl (.inl h)
+  · intro χ' h; simp only [List.mem_append]; exact .inl (.inr h)
+  · intro χ' h; simp only [List.mem_append]; exact .inr h
 
 theorem mp {Γ : Set PLLFormula} {φ ψ : PLLFormula}
     (h₁ : Γ ⊩ φ.ifThen ψ) (h₂ : Γ ⊩ φ) : Γ ⊩ ψ :=

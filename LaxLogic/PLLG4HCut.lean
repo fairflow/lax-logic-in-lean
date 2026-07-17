@@ -600,8 +600,8 @@ theorem cut_of_selfAbsorb (hS : SelfAbsorb) :
           have ha' : prop a ∈ Γ := hΔ.subset ha
           have r : G4c Γ B₁ :=
             (contract ⟨m, d₁.impR_inv rfl⟩
-              ((List.perm_cons_erase ha').cons (prop a))).perm
-              (List.perm_cons_erase ha').symm
+              ((perm_cons_erase ha').cons (prop a))).perm
+              (perm_cons_erase ha').symm
           obtain ⟨nr, r'⟩ := r
           exact ihw (by omega) (nr + n₀) (Nat.le_refl _) r' da (hΔ.cons B₁)
         · have q : G4c (B₁ :: l₀) E :=

@@ -20,8 +20,8 @@ The development is layered: the induction is first run against the
 hypothesis `SelfAbsorb` (`completeness_of_selfAbsorb`, `g4c_iff_*`),
 then `selfAbsorb` is fed in to give the unconditional `completeness`,
 `equiv_sc`, `equiv_nd`, `equiv_tm`.  The `#print axioms` audits at the
-foot report `[propext, Classical.choice, Quot.sound]` — no `sorryAx`,
-no compiled evaluation.
+foot report `[propext, Quot.sound]` — no `Classical.choice`, no
+`sorryAx`, no compiled evaluation: the whole chain is choice-free.
 -/
 
 open PLLFormula
@@ -44,7 +44,7 @@ theorem completeness_of_selfAbsorb (hS : SelfAbsorb) :
   | botL h => exact botL h
   | andR _ _ ih₁ ih₂ => exact andR ih₁ ih₂
   | @andL _ Γ₀ A B _ h _ ih =>
-      have hΓ := List.perm_cons_erase h
+      have hΓ := perm_cons_erase h
       have q : G4c (A :: B :: A :: B :: Γ₀.erase (A.and B)) _ :=
         ih.inv (.and A B)
           (((hΓ.cons B).cons A).trans (List.perm_middle (l₁ := [A, B])))
@@ -54,7 +54,7 @@ theorem completeness_of_selfAbsorb (hS : SelfAbsorb) :
   | orR1 _ ih => exact orR1 ih
   | orR2 _ ih => exact orR2 ih
   | @orL _ Γ₀ A B _ h _ _ ih₁ ih₂ =>
-      have hΓ := List.perm_cons_erase h
+      have hΓ := perm_cons_erase h
       exact orL hΓ
         (contract (ih₁.inv (.or₁ A B)
           ((hΓ.cons A).trans (List.Perm.swap _ _ _))) (List.Perm.refl _))
@@ -62,7 +62,7 @@ theorem completeness_of_selfAbsorb (hS : SelfAbsorb) :
           ((hΓ.cons B).trans (List.Perm.swap _ _ _))) (List.Perm.refl _))
   | impR _ ih => exact impR ih
   | @impL _ Γ₀ A B _ h _ _ ih₁ ih₂ =>
-      have hΓ := List.perm_cons_erase h
+      have hΓ := perm_cons_erase h
       have q : G4c (A :: Γ₀) B :=
         (mp A B (Γ₀.erase (A.ifThen B))).perm (hΓ.symm.cons A)
       exact cut' hS (cut' hS ih₁ q) ih₂
@@ -115,27 +115,19 @@ Theorem 2.8, unconditional. -/
 theorem equiv_tm {Γ : List PLLFormula} {φ : PLLFormula} :
     G4c Γ φ ↔ Nonempty (Tm Γ φ) := g4c_iff_tm selfAbsorb
 
-/--
-info: 'PLLND.G4c.selfAbsorb' depends on axioms: [propext, Classical.choice, Quot.sound]
--/
+/-- info: 'PLLND.G4c.selfAbsorb' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms selfAbsorb
 
-/--
-info: 'PLLND.G4c.cut' depends on axioms: [propext, Classical.choice, Quot.sound]
--/
+/-- info: 'PLLND.G4c.cut' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms cut
 
-/--
-info: 'PLLND.G4c.completeness' depends on axioms: [propext, Classical.choice, Quot.sound]
--/
+/-- info: 'PLLND.G4c.completeness' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms completeness
 
-/--
-info: 'PLLND.G4c.equiv_tm' depends on axioms: [propext, Classical.choice, Quot.sound]
--/
+/-- info: 'PLLND.G4c.equiv_tm' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms equiv_tm
 

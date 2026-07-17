@@ -245,7 +245,7 @@ theorem identity (A : PLLFormula) (Γ : List PLLFormula) : G4c (A :: Γ) A :=
 /-- Identity from membership. -/
 theorem identity_mem {A : PLLFormula} {Γ : List PLLFormula} (h : A ∈ Γ) :
     G4c Γ A :=
-  (identity A (Γ.erase A)).perm (List.perm_cons_erase h).symm
+  (identity A (Γ.erase A)).perm (perm_cons_erase h).symm
 
 /-- **Modus ponens in the context**: `A, A ⊃ B, Γ ⊢ B`. -/
 theorem mp (A B : PLLFormula) (Γ : List PLLFormula) :

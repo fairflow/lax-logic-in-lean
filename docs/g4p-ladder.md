@@ -250,7 +250,8 @@ own first premise is again a verbatim firing input.  Everything else
 is parametric, the side derivation transported by hp-inversion.
 
 Hence, unconditional and kernel-checked, each with pinned axiom audits
-(`[propext, Classical.choice, Quot.sound]` — no `sorryAx`):
+(`[propext, Quot.sound]` — choice-free since the 2026-07-17 axiom-hygiene
+pass, no `sorryAx`):
 
     G4c.cut            : G4c Γ A → G4c (A::Γ) E → G4c Γ E
     G4c.completeness   : SC Γ C → G4c Γ C
