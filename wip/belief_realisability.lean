@@ -384,6 +384,139 @@ theorem force_somehow_iff_notnot (C : ConstraintModel)
     rw [hF] at hvF
     exact hvF
 
+/-! ## Triptych (ii): the uniform clause validates `◯(φ∨ψ) ⊃ (◯φ ∨ ◯ψ)`
+
+Over any structure with an identity combinator (`skk` in a genuine PCA), the
+identity realises `∨`-distribution **at every world of every model**, for
+arbitrary `φ, ψ`: a uniform realiser of `◯(φ∨ψ)` is one fixed tagged pair, and
+its fixed tag already decides the disjunct at every constraint-witness.  With
+`not_provable_somehow_or_dist` (`PLLFrames`) this makes PLL sound but
+**incomplete** for `⊩ᵘ`: `PLLᵘ` is a proper extension. -/
+
+/-- **Universal `⊩ᵘ`-realiser for `∨`-distribution.** -/
+theorem uniform_dist_valid (P : Pca) {C : ConstraintModel} (Ev : Evidence P C)
+    (I : P.Carrier) (hI : ∀ b, P.app I b = some b) (φ ψ : PLLFormula) (w : C.W) :
+    realU P Ev ((somehow (φ.or ψ)).ifThen ((somehow φ).or (somehow ψ))) I w := by
+  simp only [realU]
+  intro v _hv
+  refine Or.inr fun b hb => ⟨b, hI b, ?_⟩
+  rcases Bool.eq_false_or_eq_true (P.untag b).1 with ht | ht
+  · refine Or.inr (Or.inr ⟨ht, fun v' hv' => ?_⟩)
+    rcases hb v' hv' with hF | ⟨u, hm, hu⟩
+    · exact Or.inl hF
+    · rcases hu with hFu | ⟨htt, _⟩ | ⟨_, hc⟩
+      · exact Or.inr ⟨u, hm, realU_of_fallible P Ev ψ hFu⟩
+      · rw [ht] at htt; exact absurd htt (by decide)
+      · exact Or.inr ⟨u, hm, hc⟩
+  · refine Or.inr (Or.inl ⟨ht, fun v' hv' => ?_⟩)
+    rcases hb v' hv' with hF | ⟨u, hm, hu⟩
+    · exact Or.inl hF
+    · rcases hu with hFu | ⟨_, hc⟩ | ⟨htt, _⟩
+      · exact Or.inr ⟨u, hm, realU_of_fallible P Ev φ hFu⟩
+      · exact Or.inr ⟨u, hm, hc⟩
+      · rw [ht] at htt; exact absurd htt (by decide)
+
+/-! ## Triptych (iv): the collapse stops at implication
+
+Over the chain countermodel `modelNoImpDist` (`r ≤ a ≤ b`, `Rₘ` reflexive plus
+`a Rₘ b`, `A` at `{a,b}`, `B` at `{b}`, `F = ∅`) with full evidence:
+`(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)` has **no** `⊩ᵘ`-realiser at the root, for any structure
+with an identity combinator.  So `◯(A⊃B)` does not reduce to `◯A ⊃ ◯B` in
+`PLLᵘ` — the "push `◯` to the atoms" normal form fails at `⊃`. -/
+
+section ImpDist
+
+variable (P : Pca)
+
+private abbrev EvChain (P : Pca) : Evidence P modelNoImpDist :=
+  fullEvidence P modelNoImpDist
+
+/-- No element evidences `B` at world `a`. -/
+theorem no_evidence_B_at_a (y : P.Carrier) :
+    ¬ realU P (EvChain P) (prop "B") y W3.a := by
+  rintro (hF | hmem)
+  · exact hF.elim
+  · exact absurd (show W3.a ∈ vChain "B" from hmem) (by decide)
+
+/-- No element realises `A ⊃ B` at the root. -/
+theorem no_realU_impAB_at_root (y : P.Carrier) :
+    ¬ realU P (EvChain P) ((prop "A").ifThen (prop "B")) y W3.r := by
+  intro hy
+  rcases hy W3.a (Or.inr (Or.inl rfl)) with hF | himp
+  · exact hF.elim
+  · obtain ⟨y', _, hy'⟩ :=
+      himp y (Or.inr (show W3.a ∈ vChain "A" by decide))
+    exact no_evidence_B_at_a P y' hy'
+
+/-- No element realises `◯(A ⊃ B)` at the root: the only `Rₘ`-witness of `r` is
+`r` itself. -/
+theorem no_realU_obImpAB_at_root (y : P.Carrier) :
+    ¬ realU P (EvChain P) (somehow ((prop "A").ifThen (prop "B"))) y W3.r := by
+  intro hy
+  rcases hy W3.r (Or.inl rfl) with hF | ⟨u, hmu, hu⟩
+  · exact hF.elim
+  · rcases hmu with rfl | ⟨habs, _⟩
+    · exact no_realU_impAB_at_root P y hu
+    · exact absurd habs (by decide)
+
+/-- No element realises `◯A` at the root (the only witness is `r`, where `A`
+has no evidence). -/
+theorem no_realU_obA_at_root (b : P.Carrier) :
+    ¬ realU P (EvChain P) (somehow (prop "A")) b W3.r := by
+  intro hb
+  rcases hb W3.r (Or.inl rfl) with hF | ⟨u, hmu, hu⟩
+  · exact hF.elim
+  · rcases hmu with rfl | ⟨habs, _⟩
+    · rcases hu with hF | hmem
+      · exact hF.elim
+      · exact absurd (show W3.r ∈ vChain "A" from hmem) (by decide)
+    · exact absurd habs (by decide)
+
+/-- Every element realises `◯B` at worlds `a` and `b` (the witness is `b`). -/
+theorem realU_obB_above (b' : P.Carrier) (v : W3) (hv : v ≠ W3.r) :
+    realU P (EvChain P) (somehow (prop "B")) b' v := by
+  intro v' hv'
+  refine Or.inr ⟨W3.b, ?_, Or.inr (show W3.b ∈ vChain "B" by decide)⟩
+  -- `v' Rₘ b`: from `a` via the step `a Rₘ b`, from `b` by reflexivity
+  cases v' with
+  | r =>
+      -- `v'` is `Rᵢ`-above `v ≠ r`, so `v' = r` is impossible
+      cases v with
+      | r => exact absurd rfl hv
+      | a => rcases hv' with h | h | ⟨_, h⟩ <;> simp_all
+      | b => rcases hv' with h | h | ⟨h, _⟩ <;> simp_all
+  | a => exact Or.inr ⟨rfl, rfl⟩
+  | b => exact Or.inl rfl
+
+/-- The identity realises `◯A ⊃ ◯B` at the root: vacuously at `r` (no realiser
+of `◯A` there), and via the `b`-witness above `r`. -/
+theorem id_realises_obA_imp_obB (I : P.Carrier) (hI : ∀ b, P.app I b = some b) :
+    realU P (EvChain P) ((somehow (prop "A")).ifThen (somehow (prop "B"))) I
+      W3.r := by
+  intro v _hv
+  refine Or.inr fun b' hb' => ⟨b', hI b', ?_⟩
+  cases v with
+  | r => exact absurd hb' (no_realU_obA_at_root P b')
+  | a => exact realU_obB_above P b' W3.a (by decide)
+  | b => exact realU_obB_above P b' W3.b (by decide)
+
+/-- **The `⊃`-barrier (triptych (iv)).**  `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)` has no
+`⊩ᵘ`-realiser at the root of the chain model — for any structure with an
+identity combinator (`skk` in a genuine PCA).  With `uniform_dist_valid`, the
+`PLLᵘ`-collapse of `◯` goes through `∧` and `∨` but **stops at implication**. -/
+theorem impdist_not_uniform (I : P.Carrier) (hI : ∀ b, P.app I b = some b)
+    (e : P.Carrier) :
+    ¬ realU P (EvChain P)
+        (((somehow (prop "A")).ifThen (somehow (prop "B"))).ifThen
+          (somehow ((prop "A").ifThen (prop "B")))) e W3.r := by
+  intro he
+  rcases he W3.r (Or.inl rfl) with hF | himp
+  · exact hF.elim
+  · obtain ⟨y, _, hy⟩ := himp I (id_realises_obA_imp_obB P I hI)
+    exact no_realU_obImpAB_at_root P y hy
+
+end ImpDist
+
 end BeliefReal
 end PLLND
 
@@ -403,3 +536,7 @@ end PLLND
 #print axioms PLLND.BeliefReal.ob_strength
 #print axioms PLLND.BeliefReal.realU_somehow_mem
 #print axioms PLLND.BeliefReal.force_somehow_iff_notnot
+#print axioms PLLND.BeliefReal.uniform_dist_valid
+#print axioms PLLND.BeliefReal.no_realU_obA_at_root
+#print axioms PLLND.BeliefReal.id_realises_obA_imp_obB
+#print axioms PLLND.BeliefReal.impdist_not_uniform

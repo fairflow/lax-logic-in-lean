@@ -11,6 +11,17 @@ Throughout, `A` is a partial combinatory algebra (PCA) with application `·`
 (partial), pairing `⟨−,−⟩` with projections `p₁, p₂`, and tags `0, 1` for case
 analysis; `a·b↓` means the application is defined.
 
+**Design ruling (Matthew, 2026-07-16).** The realiser structure is a **genuine
+partial combinatory algebra in the classical realisability tradition** (Kleene's
+`K₁`, or a PCF-style closed-term model) — chosen precisely because it connects
+the model solidly to prior art in realisability semantics. Practically one would
+realise with Lean's own language and type system; but the primary aim is to
+study **what is calculable** with the belief semantics, not **how** things are
+calculated, and the motivation section is to be written in exactly those terms.
+(The Lean development keeps `Pca` minimal — pairing + total tag decode — adding
+`k`/`s` only where a result needs them; the refutation theorems are parametrised
+by an identity combinator `I`, derivable in any genuine PCA as `skk`.)
+
 ---
 
 ## 1. The model
@@ -243,6 +254,16 @@ evidence-extraction soundness).
   ℙ-realizability extends de Jongh–Goodman sheaf realizability (Thm 5.20).
 
 ## 8. Mechanisation ladder (proposed order, revised)
+
+*Status 2026-07-16 (evening): triptych pieces (ii) and (iv) LANDED —
+`uniform_dist_valid` (the identity `⊩ᵘ`-realises `◯(φ∨ψ)⊃(◯φ∨◯ψ)` at every
+world of every model, arbitrary `φ,ψ`, any structure with an identity
+combinator; **axiom-free**) and `impdist_not_uniform` (+ its lemma chain: no
+`⊩ᵘ`-realiser for `(◯A⊃◯B)⊃◯(A⊃B)` at the chain-model root; audit clean). With
+`bite_uniform_split` (i) and the PROVED `not_provable_somehow_or_dist`, the
+incompleteness of `⊩ᵘ` and the `⊃`-barrier of §5 are now fully machine-checked;
+only (iii), the `⊩ˢ`-refutation of `∨`-distribution, remains of the separation
+results.*
 
 *Status 2026-07-16 (later): rung 3 LANDED too — `HProp`, `ob`, `obH`
 (stability), `ob_infl`, `ob_mono`, `ob_idem`, `ob_strength` (the sequential-
