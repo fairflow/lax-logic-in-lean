@@ -21,7 +21,9 @@ what they are claimed to say. This ledger is that checklist: each row names a
 result, its Lean identifier and location, and its axiom audit, so the human
 task reduces to reading the statement at the cited location and agreeing it
 formalises the intended claim. Every audit below was **re-run on 2026-07-16**
-(not copied from earlier notes); to re-verify any row, run
+(not copied from earlier notes) and the affected rows re-measured on
+**2026-07-18** after the `Classical.choice` scrub of the proof-theory chain;
+to re-verify any row, run
 `lake env lean <file>` for a file containing `#print axioms <name>`.
 
 **Axiom key.**
@@ -40,16 +42,16 @@ formalises the intended claim. Every audit below was **re-run on 2026-07-16**
 |---|---|---|---|
 | Natural deduction for PLL (membership-based contexts; weakening/exchange/contraction admissible, cast-free) | `LaxND` (+ `LaxND.rename`) | [`PLLNDCore.lean:72`](../LaxLogic/PLLNDCore.lean) | (def) |
 | Cut-free G3-style sequent calculus, height-indexed | `SCh` / `SC` | [`PLLSequent.lean:31,58`](../LaxLogic/PLLSequent.lean) | (def) |
-| **Cut admissibility** (lexicographic induction; F&M Thm 2.6 engine) | `SC.cut` | [`PLLSequent.lean:524`](../LaxLogic/PLLSequent.lean) | clean |
-| **Cut elimination** | `cutElimination` | [`PLLSequent.lean:615`](../LaxLogic/PLLSequent.lean) | clean |
-| Sequent ⟶ natural deduction | `SC_to_ND` | [`PLLSequent.lean:546`](../LaxLogic/PLLSequent.lean) | clean |
-| Natural deduction ⟶ sequent | `ND_to_SC` | [`PLLSequent.lean:578`](../LaxLogic/PLLSequent.lean) | clean |
-| **Disjunction property** (F&M Lemma 2.7) | `disjunction_property` | [`PLLSequent.lean:623`](../LaxLogic/PLLSequent.lean) | clean |
-| **`◯`-reflection**: `⊢ ◯M ⟹ ⊢ M` (F&M Lemma 2.7) | `somehow_reflection` | [`PLLSequent.lean:637`](../LaxLogic/PLLSequent.lean) | clean |
+| **Cut admissibility** (lexicographic induction; F&M Thm 2.6 engine) | `SC.cut` | [`PLLSequent.lean:524`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
+| **Cut elimination** | `cutElimination` | [`PLLSequent.lean:615`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
+| Sequent ⟶ natural deduction | `SC_to_ND` | [`PLLSequent.lean:546`](../LaxLogic/PLLSequent.lean) | **[p]** |
+| Natural deduction ⟶ sequent | `ND_to_SC` | [`PLLSequent.lean:578`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
+| **Disjunction property** (F&M Lemma 2.7) | `disjunction_property` | [`PLLSequent.lean:623`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
+| **`◯`-reflection**: `⊢ ◯M ⟹ ⊢ M` (F&M Lemma 2.7) | `somehow_reflection` | [`PLLSequent.lean:637`](../LaxLogic/PLLSequent.lean) | **[p,Q]** |
 | **Hilbert ⟷ natural deduction** | `hd_iff_ND` | [`PLLHilbert.lean:194`](../LaxLogic/PLLHilbert.lean) | **[p]** |
 | **Conservativity over IPL** (erasure form) | `conservativity_prop` | [`PLLNDCore.lean:193`](../LaxLogic/PLLNDCore.lean) | [p,Q] |
 | **Conservativity over IPL** (classic form: IPL sequents) | `conservativity_IPL` | [`PLLNDCore.lean:211`](../LaxLogic/PLLNDCore.lean) | **[p,Q]** — no choice |
-| Strong extensionality (F&M Thm 2.5) | `strong_extensionality` | [`PLLTheorems.lean:178`](../LaxLogic/PLLTheorems.lean) | clean |
+| Strong extensionality (F&M Thm 2.5) | `strong_extensionality` | [`PLLTheorems.lean:178`](../LaxLogic/PLLTheorems.lean) | **[p,Q]** |
 
 ## 2. Kripke constraint semantics (F&M §3–4)
 
@@ -114,9 +116,9 @@ the repair, and the repair carries the decidability.*
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| Repaired calculus proves exactly PLL (proof-theoretic half of Thm 2.8): `G4c Γ φ ↔ Nonempty (Tm Γ φ)` | `G4c.equiv_tm` | [`PLLG4HComp.lean:115`](../LaxLogic/PLLG4HComp.lean) | clean |
-| …and `↔ Nonempty (LaxND Γ C)` | `G4c.g4c_iff_nd` (via `equiv_nd`) | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | clean |
-| Cut admissible / completeness of `G4c` | `G4c.cut`, `G4c.completeness` | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | clean |
+| Repaired calculus proves exactly PLL (proof-theoretic half of Thm 2.8): `G4c Γ φ ↔ Nonempty (Tm Γ φ)` | `G4c.equiv_tm` | [`PLLG4HComp.lean:115`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
+| …and `↔ Nonempty (LaxND Γ C)` | `G4c.g4c_iff_nd` (via `equiv_nd`) | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
+| Cut admissible / completeness of `G4c` | `G4c.cut`, `G4c.completeness` | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
 | Loop-checked, fuel-bounded backward search decides `G4c` | `G4c_iff_search` | [`PLLG4Dec.lean:556`](../LaxLogic/PLLG4Dec.lean) | clean |
 | search success ⟹ derivation | `search_sound` | [`PLLG4Dec.lean:121`](../LaxLogic/PLLG4Dec.lean) | clean |
 | minimal-height derivation ⟹ search success | `search_complete` | [`PLLG4Dec.lean:228`](../LaxLogic/PLLG4Dec.lean) | clean |
@@ -262,11 +264,19 @@ every Lindenbaum decision.
 | **Completeness of PLL for `⊩ᵖ`** (biconditional) | `derivable_iff_no_realP_refutation` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | clean† |
 
 † The mathematics is finitary (no Zorn; the only case decisions are by
-`decidablePLL`, and the crown avoids excluded middle deliberately); the
-`Classical.choice` in these audits is inherited from incidental classical
-tactic steps in the decidability/cut-elimination infrastructure.  A scrub
-of that chain is in progress; when it lands these audits drop to `[p,Q]`
-with no changes to the files above.
+`decidablePLL`, and the crown avoids excluded middle deliberately).  After
+the 2026-07-17 axiom scrub (which brought the whole cut/`G4c` chain to
+`[p,Q]`, `selfAbsorb` and `SC_to_ND` to `[p]` alone), the remaining
+`Classical.choice` here is *measured*, from three sources: (i) the
+`decidablePLL` floor — `search_complete`'s `Nat.find` over height
+existence, plus Mathlib `Finset`/`Multiset` internals in the executable
+layer (`Multiset.dedup`'s permutation lemma; `Multiset.toList` is choice
+outright) — documented in `PLLG4Dec.lean`; the same `List.toFinset` floor
+reaches `G4c.iff_set`, hence the `G4cTm` bridges; (ii) `Finset.toList` in
+`PLLFinComp.lean` (`cons_iff_check`, `worldList`); (iii)
+`not_consistent_iff`'s `push_neg`.  Drilling the floor — a height-bounded
+`Decidable (G4sh n Γ C)` and a list-based executable layer — would drop
+every row here to `[p,Q]` with no change to the mathematics.
 
 ---
 ---
