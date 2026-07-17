@@ -1,4 +1,5 @@
 import LaxLogic.PLLFrames
+import LaxLogic.PLLCountermodelEmit
 
 /-!
 # Route B: realisability constraint models for PLL (ladder rungs 1–2, + bite (i))
@@ -1183,6 +1184,144 @@ theorem extractS_sound {C : ConstraintModel} (Ev : Evidence Q.toPca C)
 
 end StrategyExtraction
 
+/-! ## The ⊃-barrier blocks fullness for `⊩ˢ` — the obstruction to §6
+
+*Fullness* (every forced formula has a realiser) is one half of the mutual
+induction any completeness-by-decoration proof needs (the other half,
+*adequacy* — realised implies forced — consumes it at the `⊃` clause).  The
+theorem below shows fullness is **unachievable** for `⊩ˢ`: on a three-world
+frame there is **no** evidence assignment that is atom-adequate (evidence only
+where the atom holds) and full — for *every* PCA that can implement finite
+tables against the world-coding `κ`.
+
+The failure is **`◯`-essential**.  For a purely intuitionistic antecedent,
+world-tagged atom evidence would let a table-building PCA rescue fullness
+(forcing a disjunction at a branch point already commits to a disjunct, by
+heredity).  The unrescuable case is an antecedent whose realisers cannot carry
+world-marks — and strategies are exactly that: one finite table realises
+`◯t` at *both* incomparable futures simultaneously.  Feeding that single
+strategy to a would-be realiser of `◯t ⊃ (p ∨ q)` at the root forces one
+answer `y` for two futures that demand opposite tags.
+
+Frame: `0 ≤ 1`, `0 ≤ 2`; `Rₘ` reflexive only; `t` at both leaves, `p` only
+at `1`, `q` only at `2`.  Then `◯t ⊃ (p ∨ q)` is truth-forced at the root
+(vacuously there — `◯t` fails at `0` — and via the local atom at each leaf),
+but fullness would hand it a realiser, which the tag-clash refutes.
+
+This is why the §6 completeness construction moves to the *presented* clause
+family `⊩ᵖ`, where the `⊃` clause, like the `◯` clause, receives the code of
+the evaluation world. -/
+
+section FullnessObstruction
+
+/-- The three-world obstruction frame, as checker data. -/
+abbrev obsM : FinCM :=
+  { n := 3, ri := [(0, 1), (0, 2)], rm := [], fall := [],
+    val := [(1, "p"), (2, "q"), (1, "t"), (2, "t")] }
+
+theorem obsM_wf : obsM.WellFormed := FinCM.wellFormed_of_wellB (by decide)
+
+/-- The obstruction model. -/
+abbrev obsC : ConstraintModel := obsM.toModel obsM_wf
+
+/-- No world of the obstruction model is fallible. -/
+theorem obsC_no_fallible : ∀ w : obsC.W, w ∉ obsC.F := by
+  intro w hw
+  have h : FinCM.fallB obsM w.1 = true := hw
+  simp [FinCM.fallB, obsM] at h
+
+/-- **Fullness is unachievable for `⊩ˢ`**: no evidence on the obstruction
+model is both atom-adequate and full, for any PCA with finite tables against
+the coding `κ`. -/
+theorem realS_fullness_obstruction (P : Pca) (κ : obsC.W → P.Carrier)
+    (htab : ∀ g : obsC.W → P.Carrier, ∃ s, ∀ i, P.app s (κ i) = some (g i)) :
+    ¬ ∃ Ev : Evidence P obsC,
+      (∀ (a : String) (w : obsC.W), ∀ x ∈ Ev.E a w, w ∈ obsC.V a) ∧
+      (∀ (φ : PLLFormula) (w : obsC.W), obsC.force w φ →
+        ∃ x, realS P Ev κ φ x w) := by
+  rintro ⟨Ev, hA, hF⟩
+  -- Fullness at the atom `t` hands over tokens at both leaves.
+  obtain ⟨m₁, hm₁⟩ := hF (prop "t") (1 : Fin 3)
+    ((obsM.force_iff obsM_wf (prop "t") (1 : Fin 3)).mpr (by decide))
+  obtain ⟨m₂, hm₂⟩ := hF (prop "t") (2 : Fin 3)
+    ((obsM.force_iff obsM_wf (prop "t") (2 : Fin 3)).mpr (by decide))
+  simp only [realS] at hm₁ hm₂
+  have hm₁' : m₁ ∈ Ev.E "t" (1 : Fin 3) :=
+    hm₁.resolve_left (obsC_no_fallible _)
+  have hm₂' : m₂ ∈ Ev.E "t" (2 : Fin 3) :=
+    hm₂.resolve_left (obsC_no_fallible _)
+  -- Only-reflexive narrowing of the frame relations, decided once.
+  have key1 : ∀ n, n < 3 → FinCM.riB obsM 1 n = true → n = 1 := by decide
+  have key2 : ∀ n, n < 3 → FinCM.riB obsM 2 n = true → n = 2 := by decide
+  -- The single strategy table serving both leaves.
+  obtain ⟨s, hs⟩ := htab fun i =>
+    if i.1 = 1 then P.pair (κ (1 : Fin 3)) m₁
+    else P.pair (κ (2 : Fin 3)) m₂
+  have hsval₁ : P.app s (κ (1 : Fin 3)) = some (P.pair (κ (1 : Fin 3)) m₁) := by
+    simpa using hs (1 : Fin 3)
+  have hsval₂ : P.app s (κ (2 : Fin 3)) = some (P.pair (κ (2 : Fin 3)) m₂) := by
+    simpa using hs (2 : Fin 3)
+  -- `s` realises `◯t` at leaf 1 …
+  have hs₁ : realS P Ev κ (somehow (prop "t")) s (1 : Fin 3) := by
+    simp only [realS]
+    intro v hv
+    right
+    have hveq : v = (1 : Fin 3) := Fin.ext (key1 v.1 v.2 hv)
+    subst hveq
+    refine ⟨P.pair (κ (1 : Fin 3)) m₁, hsval₁,
+      (1 : Fin 3), ?_, P.fst_pair .., ?_⟩
+    · show FinCM.rmB obsM 1 1 = true
+      decide
+    · rw [P.snd_pair]
+      exact .inr hm₁'
+  -- … and at leaf 2.
+  have hs₂ : realS P Ev κ (somehow (prop "t")) s (2 : Fin 3) := by
+    simp only [realS]
+    intro v hv
+    right
+    have hveq : v = (2 : Fin 3) := Fin.ext (key2 v.1 v.2 hv)
+    subst hveq
+    refine ⟨P.pair (κ (2 : Fin 3)) m₂, hsval₂,
+      (2 : Fin 3), ?_, P.fst_pair .., ?_⟩
+    · show FinCM.rmB obsM 2 2 = true
+      decide
+    · rw [P.snd_pair]
+      exact .inr hm₂'
+  -- Fullness at the implication, fed the common strategy at both leaves.
+  obtain ⟨x, hx⟩ := hF ((somehow (prop "t")).ifThen ((prop "p").or (prop "q")))
+    (0 : Fin 3)
+    ((obsM.force_iff obsM_wf _ (0 : Fin 3)).mpr (by decide))
+  simp only [realS] at hx
+  have h1 := (hx (1 : Fin 3)
+    (show FinCM.riB obsM 0 1 = true by decide)).resolve_left
+    (obsC_no_fallible _)
+  have h2 := (hx (2 : Fin 3)
+    (show FinCM.riB obsM 0 2 = true by decide)).resolve_left
+    (obsC_no_fallible _)
+  obtain ⟨y, happ₁, hy₁⟩ := h1 s hs₁
+  obtain ⟨y', happ₂, hy₂⟩ := h2 s hs₂
+  have hyy : y = y' := by
+    rw [happ₁] at happ₂
+    exact Option.some.inj happ₂
+  subst hyy
+  -- The tag clash.
+  rcases hy₁.resolve_left (obsC_no_fallible _) with ⟨htag, hmem⟩ | ⟨htag, hmem⟩
+  · -- tag `false` at leaf 1; leaf 2 then demands `true` or `p`-evidence at 2.
+    rcases hy₂.resolve_left (obsC_no_fallible _) with ⟨_, hmem'⟩ | ⟨htag', _⟩
+    · have hp := hA "p" (2 : Fin 3) _
+        (hmem'.resolve_left (obsC_no_fallible _))
+      have hb : FinCM.valB obsM 2 "p" = true := hp
+      exact absurd hb (by decide)
+    · rw [htag] at htag'
+      exact Bool.false_ne_true htag'
+  · -- tag `true` at leaf 1 needs `q`-evidence at 1: refuted by atom-adequacy.
+    have hq := hA "q" (1 : Fin 3) _
+      (hmem.resolve_left (obsC_no_fallible _))
+    have hb : FinCM.valB obsM 1 "q" = true := hq
+    exact absurd hb (by decide)
+
+end FullnessObstruction
+
 end BeliefReal
 end PLLND
 
@@ -1216,3 +1355,4 @@ end PLLND
 #print axioms PLLND.BeliefReal.Poly.eval_bump
 #print axioms PLLND.BeliefReal.extractS
 #print axioms PLLND.BeliefReal.extractS_sound
+#print axioms PLLND.BeliefReal.realS_fullness_obstruction

@@ -123,8 +123,9 @@ theorem wellFormed_of_wellB {M : FinCM} (h : M.wellB = true) :
     simpa [a] using h₅ p hp v hv
 
 /-- A well-formed `FinCM` is a genuine Fairtlough–Mendler constraint model
-on `Fin n`. -/
-def toModel (M : FinCM) (h : M.WellFormed) : ConstraintModel where
+on `Fin n`.  (Reducible so that concrete instances expose `W = Fin n` and the
+relation/valuation fields to `simp` and `decide`.) -/
+@[reducible] def toModel (M : FinCM) (h : M.WellFormed) : ConstraintModel where
   W := Fin M.n
   Ri w v := M.riB w.1 v.1 = true
   Rm w v := M.rmB w.1 v.1 = true
