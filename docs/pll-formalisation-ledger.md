@@ -178,12 +178,24 @@ emitted (`#eval` smoke tests in the file).
   `not_provable_iff_exists_finite_countermodel` ([`PLLCountermodel.lean`](../LaxLogic/PLLCountermodel.lean),
   clean) — `⊬φ ⟺ ∃ finite constraint model refuting φ` (contrapositive of the
   finite model property). This is the guarantee any extractor must meet and the
-  seed for Route B realisability completeness (`route-b-model.md` §6). Still open:
-  a *computable* extractor `φ ↦ Option (finite model)` — either by **emitting the
-  saturated branch** of `decidablePLL` (the genuine "from failed search" route,
-  constructive) or by **decidable enumeration** over the filtration space; the
-  existence here comes classically from the Zorn canonical model inside
-  `completeness`.
+  seed for Route B realisability completeness (`route-b-model.md` §6).
+  **A computable emitter with a verified checker now exists** (added
+  2026-07-17, [`PLLCountermodelEmit.lean`](../LaxLogic/PLLCountermodelEmit.lean)):
+  `FinCM` (finite models as data), `forceB` (computable forcing), the
+  reflection lemma `force_iff`, and the certificate theorem
+  `not_provable_of_check` — **choice-free** `[propext, Quot.sound]`: any
+  finite model passing the executable check refutes derivability, by
+  soundness.  The emitter `CounterEmit.emit` (untrusted, checker-gated)
+  builds worlds as pairs (prime `G4c`-closed theory, coherent refutation
+  promises — the syntactic mirror of the filtration's `Fmset`) and emits
+  guarded countermodels for `⊬ p`, `◯p ⊬ p`, `⊬ ¬◯⊥` and the
+  ∨-distribution `◯(p∨q) ⊬ ◯p∨◯q` (mechanically rediscovering the split
+  model), with a pinned kernel-`decide` certificate `somehow_p_not_p` (no
+  `native_decide`).  Still open: *completeness of the emitter* (a proof
+  that it succeeds on every underivable sequent — the constructive
+  upgrade of the Zorn existence inside `completeness`), and the Route B
+  step of decorating emitted worlds with evidence (§6 of
+  `route-b-model.md`).
 - **The uniform-interpolation probe** (`wip/onevar.lean`, `wip/absorb_base.lean`,
   `wip/g4ill_ui.lean`) is a separate research thread and carries the repo's only
   open `sorry`s (5, all listed in those files' headers). No result above depends
