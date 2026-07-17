@@ -133,6 +133,30 @@ input by the fuel bound + finite gated space + visited-set loop-check), and it i
 (visited sequents keyed by `toFinset`) is the efficiency device (no re-search),
 and `decideFuel` is computed arithmetically (the powerset is never built).
 
+### 7.1a Proof-term emission — fuel-free search (added 2026-07-17)
+
+The verified decider above is a *theorem*, not a practical tool: `decideFuel`
+is exponential (it exists only to make the completeness induction go through),
+and running `search` to it times out even on the gap sequent.  The practical
+searcher lives in [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) and returns
+the **derivation itself**:
+
+| result | Lean name | location | axioms |
+|---|---|---|---|
+| `Type`-valued proof terms for `G4iLL″` (list contexts, membership `Prop`s, `Tm`-style) | `G4cTm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | — (a datatype) |
+| Fuel-free backward searcher emitting terms (untrusted `partial`; loop-checked by canonical list keys — no `decideFuel`, no `enum`) | `prove` / `G4cTm.find` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | — (a program) |
+| Every term projects to a `G4s` derivation | `G4cTm.sound` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
+| A term certifies `G4c`, hence PLL, provability | `G4cTm.toG4c`, `G4cTm.toTm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
+| Every `G4c`-derivable sequent has a term | `G4cTm.ofG4c` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
+| `Nonempty (G4cTm Γ C) ↔ Nonempty (Tm Γ C)` | `G4cTm.equiv_tm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
+
+Trust is factored by the type discipline: the searcher is untrusted code, but
+anything it emits inhabits `G4cTm Γ C`, which the kernel checks — *if we can
+build a term, Lean can check it*.  The gap sequent
+`◯((◯p → r) → ◯p), ◯p → r ⊢ r`, on which running the verified decider timed
+out beyond 6.5 minutes, is solved in milliseconds with its derivation tree
+emitted (`#eval` smoke tests in the file).
+
 ### 7.2 The naive Iemhoff `G4iLL` is incomplete (why the repair was needed)
 
 | result | Lean name | location | axioms |
