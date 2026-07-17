@@ -262,8 +262,13 @@ combinator; **axiom-free**) and `impdist_not_uniform` (+ its lemma chain: no
 `⊩ᵘ`-realiser for `(◯A⊃◯B)⊃◯(A⊃B)` at the chain-model root; audit clean). With
 `bite_uniform_split` (i) and the PROVED `not_provable_somehow_or_dist`, the
 incompleteness of `⊩ᵘ` and the `⊃`-barrier of §5 are now fully machine-checked;
-only (iii), the `⊩ˢ`-refutation of `∨`-distribution, remains of the separation
-results.*
+and (iii) LANDED as well — `strategy_realises_obAB`(_split) (a case-splitting
+strategy realises `◯(A∨B)` at the root: the bite vanishes under `⊩ˢ`) and
+`strategy_dist_refuted`(_split) (`◯(A∨B)⊃(◯A∨◯B)` has no `⊩ˢ`-realiser at the
+root: the countermodel survives). **The separation triptych is complete and
+fully machine-checked.** The strategy is the first genuine program in the
+development — hypothesised by its application equations (class-robust; met in
+`K₁` by combinatory completeness) and witnessed concretely by `splitPca`.*
 
 *Status 2026-07-16 (later): rung 3 LANDED too — `HProp`, `ob`, `obH`
 (stability), `ob_infl`, `ob_mono`, `ob_idem`, `ob_strength` (the sequential-
