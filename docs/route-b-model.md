@@ -244,6 +244,17 @@ evidence-extraction soundness).
 
 ## 8. Mechanisation ladder (proposed order, revised)
 
+*Status 2026-07-16 (later): rung 3 LANDED too — `HProp`, `ob`, `obH`
+(stability), `ob_infl`, `ob_mono`, `ob_idem`, `ob_strength` (the sequential-
+composition meet, machine-checked with **no confluence**), `realU_somehow_mem`
+(the `⊩ᵘ` clause = the operator) — all **axiom-free**. Also
+`force_somehow_iff_notnot`: the **double-negation believer** — in constraint
+models with `Rₘ = Rᵢ` and `F = ∅`, `◯M` is forced exactly where `¬¬M` is; the
+continuation reading `◯ = ¬¬` is the `Rₘ = Rᵢ` instance of the semantics
+(inhabitation reading: every strong monad interprets the proof theory —
+idempotence is inter-derivability, not a computational identity; the nucleus
+picture is its propositional shadow).*
+
 *Status 2026-07-16: rungs 1–2 LANDED, plus triptych piece (i) — see
 `wip/belief_realisability.lean`: `Pca`, `Evidence`, `realU`, `realS`,
 `realU_hered`/`realS_hered` (increasing belief), `realU_of_fallible`/

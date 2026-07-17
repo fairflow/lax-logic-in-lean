@@ -277,6 +277,113 @@ theorem bite_uniform_split :
         exact absurd hVB (by decide)
   · exact absurd habs (by decide)
 
+/-! ## Rung 3: the belief operator is a stable local nucleus
+
+`ob` is the `∀∃` clause as an operator on `α`-valued semantic propositions
+(hereditary along `Rᵢ`, saturated on `F`).  The five laws of `route-b-model.md`
+§2 (O2): stability, inflation, idempotence, monotonicity, and the meet law by
+**sequential composition** — no confluence anywhere.  `realU_somehow_mem` ties
+the operator back to the `⊩ᵘ` clause. -/
+
+/-- A semantic proposition: hereditary and fallible-saturated. -/
+structure HProp (α : Type) (C : ConstraintModel) where
+  pred : C.W → Set α
+  hered : ∀ {w v : C.W}, C.Ri w v → pred w ⊆ pred v
+  satF : ∀ {w : C.W}, w ∈ C.F → ∀ x : α, x ∈ pred w
+
+/-- The belief operator on `α`-valued propositions: the `∀∃` clause. -/
+def ob (C : ConstraintModel) {α : Type} (Q : C.W → Set α) : C.W → Set α :=
+  fun w => {x | ∀ v, C.Ri w v → v ∈ C.F ∨ (∃ u, C.Rm v u ∧ x ∈ Q u)}
+
+/-- **Stability**: `◯` maps semantic propositions to semantic propositions
+(heredity by `trans_i`, saturation by `hered_F`). -/
+def obH {α : Type} {C : ConstraintModel} (A : HProp α C) : HProp α C where
+  pred := ob C A.pred
+  hered := fun h _x hx v' hv' => hx v' (C.trans_i h hv')
+  satF := fun hF _x _v hv => Or.inl (C.hered_F hv hF)
+
+/-- **Inflation** `P ≤ ◯P` — uses heredity of `P` and `refl_m`. -/
+theorem ob_infl {α : Type} {C : ConstraintModel} (A : HProp α C) (w : C.W) :
+    A.pred w ⊆ ob C A.pred w :=
+  fun _x hx v hv => Or.inr ⟨v, C.refl_m v, A.hered hv hx⟩
+
+/-- **Monotonicity**. -/
+theorem ob_mono {α : Type} {C : ConstraintModel} {Q R : C.W → Set α}
+    (h : ∀ w, Q w ⊆ R w) (w : C.W) : ob C Q w ⊆ ob C R w :=
+  fun _x hx v hv => (hx v hv).imp id (fun ⟨u, hm, hu⟩ => ⟨u, hm, h u hu⟩)
+
+/-- **Idempotence** `◯◯P ≤ ◯P` — `trans_m`, with saturation absorbing a
+fallible intermediate witness. -/
+theorem ob_idem {α : Type} {C : ConstraintModel} (A : HProp α C) (w : C.W) :
+    ob C (ob C A.pred) w ⊆ ob C A.pred w := by
+  intro x hx v hv
+  rcases hx v hv with hF | ⟨u₁, hm₁, hu₁⟩
+  · exact Or.inl hF
+  · rcases hu₁ u₁ (C.refl_i u₁) with hF₁ | ⟨u₂, hm₂, hu₂⟩
+    · exact Or.inr ⟨u₁, hm₁, A.satF hF₁ x⟩
+    · exact Or.inr ⟨u₂, C.trans_m hm₁ hm₂, hu₂⟩
+
+/-- Pairing meet of semantic propositions. -/
+def hmeet (P : Pca) {C : ConstraintModel} (A B : HProp P.Carrier C) :
+    HProp P.Carrier C where
+  pred w := {x | P.fst x ∈ A.pred w ∧ P.snd x ∈ B.pred w}
+  hered := fun h _x hx => ⟨A.hered h hx.1, B.hered h hx.2⟩
+  satF := fun hF x => ⟨A.satF hF (P.fst x), B.satF hF (P.snd x)⟩
+
+/-- **The meet law, by sequential composition** (`◯P ⊓ ◯Q ≤ ◯(P ⊓ Q)`): the
+second constraint is discharged **at the world the first produced** — `sub_mi`,
+`trans_m`, heredity; **no confluence**. -/
+theorem ob_strength (P : Pca) {C : ConstraintModel} (A B : HProp P.Carrier C)
+    (w : C.W) (x : P.Carrier)
+    (h1 : P.fst x ∈ ob C A.pred w) (h2 : P.snd x ∈ ob C B.pred w) :
+    x ∈ ob C (hmeet P A B).pred w := by
+  intro v hv
+  rcases h1 v hv with hF | ⟨u₁, hm₁, hP⟩
+  · exact Or.inl hF
+  · have hwu₁ : C.Ri w u₁ := C.trans_i hv (C.sub_mi hm₁)
+    rcases h2 u₁ hwu₁ with hF₁ | ⟨u₂, hm₂, hQ⟩
+    · exact Or.inr ⟨u₁, hm₁, ⟨hP, B.satF hF₁ _⟩⟩
+    · exact Or.inr ⟨u₂, C.trans_m hm₁ hm₂, ⟨A.hered (C.sub_mi hm₂) hP, hQ⟩⟩
+
+/-- The `⊩ᵘ` clause for `◯φ` *is* membership in `ob` of the realisability
+predicate of `φ`: the modality is interpreted by the belief operator. -/
+theorem realU_somehow_mem (P : Pca) {C : ConstraintModel} (Ev : Evidence P C)
+    (φ : PLLFormula) (x : P.Carrier) (w : C.W) :
+    realU P Ev (.somehow φ) x w ↔
+      x ∈ ob C (fun u => {y | realU P Ev φ y u}) w :=
+  Iff.rfl
+
+/-! ## The double-negation believer (the continuation reading)
+
+Reading PLL as a logic of **inhabitation**, every strong monad interprets the
+proof theory — idempotence `◯◯M ⊣⊢ ◯M` is inter-derivability, never a
+computational identity.  The propositional shadow of the continuation monad is
+`◯M = ¬¬M`, and in the constraint semantics this believer is exactly the model
+in which **every information step counts as constraint discharge**: -/
+
+/-- **The double-negation believer.**  In any constraint model with `Rₘ = Rᵢ`
+and no fallible worlds, `◯M` is forced exactly where `¬¬M` is: the continuation
+reading `◯ = ¬¬` is the `Rₘ = Rᵢ` instance of the constraint semantics. -/
+theorem force_somehow_iff_notnot (C : ConstraintModel)
+    (hRm : ∀ {w v : C.W}, C.Rm w v ↔ C.Ri w v) (hF : C.F = ∅)
+    (M : PLLFormula) (w : C.W) :
+    C.force w (somehow M) ↔ C.force w (notPLL (notPLL M)) := by
+  constructor
+  · intro h v hv hneg
+    rcases h v hv with ⟨u, hmu, hu⟩
+    have huF : u ∈ C.F := hneg u (hRm.mp hmu) hu
+    rw [hF] at huF
+    exact huF.elim
+  · intro h v hv
+    by_contra hcon
+    push Not at hcon
+    have hnegM : C.force v (notPLL M) := by
+      intro u hu hM
+      exact absurd hM (hcon u (hRm.mpr hu))
+    have hvF : v ∈ C.F := h v hv hnegM
+    rw [hF] at hvF
+    exact hvF
+
 end BeliefReal
 end PLLND
 
@@ -289,3 +396,10 @@ end PLLND
 #print axioms PLLND.BeliefReal.natPca
 #print axioms PLLND.BeliefReal.fullEvidence
 #print axioms PLLND.BeliefReal.bite_uniform_split
+#print axioms PLLND.BeliefReal.obH
+#print axioms PLLND.BeliefReal.ob_infl
+#print axioms PLLND.BeliefReal.ob_mono
+#print axioms PLLND.BeliefReal.ob_idem
+#print axioms PLLND.BeliefReal.ob_strength
+#print axioms PLLND.BeliefReal.realU_somehow_mem
+#print axioms PLLND.BeliefReal.force_somehow_iff_notnot
