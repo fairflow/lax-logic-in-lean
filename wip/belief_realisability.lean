@@ -637,6 +637,87 @@ theorem strategy_dist_refuted_split (e : ℕ) :
     ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩
     ⟨_, rfl, by simp [splitCode, Nat.unpair_pair]⟩ e
 
+/-! ## Rung 5 groundwork: genuine PCAs and combinatory completeness
+
+`PcaKS` is a genuine partial combinatory algebra: `Pca` plus `k`, `s` with the
+standard laws (`k·a` defined with `k·a·b = a`; `s·a`, `s·a·b` defined with
+`s·a·b·c ≃ a·c·(b·c)`).  `Poly` is the language of polynomials over the algebra
+(variables, constants, formal application); `Poly.abs` is bracket abstraction,
+and `abs_spec` is **combinatory completeness**: an abstraction always denotes,
+and applying it computes substitution.  This is the engine for O3: the realiser
+extracted from a `LaxND` derivation will be a closed polynomial. -/
+
+/-- A genuine PCA: `k`, `s` with the standard partial-application laws. -/
+structure PcaKS extends Pca where
+  k : Carrier
+  s : Carrier
+  k_app : ∀ a : Carrier, ∃ ka, app k a = some ka ∧ ∀ b, app ka b = some a
+  s_app : ∀ a b : Carrier, ∃ sa sab, app s a = some sa ∧ app sa b = some sab ∧
+      ∀ c, app sab c =
+        (app a c).bind fun ac => (app b c).bind fun bc => app ac bc
+
+section Combinatory
+
+variable (Q : PcaKS)
+
+/-- Polynomials over the algebra (variables are plain ℕ names; well-scopedness
+is an invariant of the extraction, not of the syntax). -/
+inductive Poly (Q : PcaKS) : Type where
+  | var : ℕ → Poly Q
+  | const : Q.Carrier → Poly Q
+  | app : Poly Q → Poly Q → Poly Q
+
+/-- Evaluation of a polynomial in an environment (partial, via `Option`). -/
+def Poly.eval : Poly Q → (ℕ → Q.Carrier) → Option Q.Carrier
+  | .var i, ρ => some (ρ i)
+  | .const c, _ => some c
+  | .app f a, ρ =>
+      (Poly.eval f ρ).bind fun f' => (Poly.eval a ρ).bind fun a' => Q.app f' a'
+
+/-- Extend an environment with a value for variable `0`. -/
+def extendEnv {α : Type} (a : α) (ρ : ℕ → α) : ℕ → α
+  | 0 => a
+  | j + 1 => ρ j
+
+/-- Bracket abstraction: `abs t` behaves as `λx₀. t`. -/
+def Poly.abs : Poly Q → Poly Q
+  | .var 0 => .app (.app (.const Q.s) (.const Q.k)) (.const Q.k)
+  | .var (j + 1) => .app (.const Q.k) (.var j)
+  | .const c => .app (.const Q.k) (.const c)
+  | .app f a => .app (.app (.const Q.s) (Poly.abs f)) (Poly.abs a)
+
+/-- **Combinatory completeness.**  A bracket abstraction always denotes, and
+applying it evaluates the body in the extended environment:
+`(λx₀. t)·a ≃ t[x₀ := a]`. -/
+theorem Poly.abs_spec (t : Poly Q) (ρ : ℕ → Q.Carrier) :
+    ∃ g, Poly.eval Q (Poly.abs Q t) ρ = some g ∧
+      ∀ a, Q.app g a = Poly.eval Q t (extendEnv a ρ) := by
+  induction t with
+  | var i =>
+      cases i with
+      | zero =>
+          obtain ⟨sk, skk, h1, h2, h3⟩ := Q.s_app Q.k Q.k
+          refine ⟨skk, by simp [Poly.abs, Poly.eval, h1, h2], fun a => ?_⟩
+          obtain ⟨ka, hka, hkab⟩ := Q.k_app a
+          simp [Poly.eval, extendEnv, h3, hka, hkab]
+      | succ j =>
+          obtain ⟨ka, hka, hkab⟩ := Q.k_app (ρ j)
+          refine ⟨ka, by simp [Poly.abs, Poly.eval, hka], fun a => ?_⟩
+          simp [Poly.eval, extendEnv, hkab]
+  | const c =>
+      obtain ⟨ka, hka, hkab⟩ := Q.k_app c
+      exact ⟨ka, by simp [Poly.abs, Poly.eval, hka],
+        fun a => by simp [Poly.eval, hkab]⟩
+  | app f b ihf ihb =>
+      obtain ⟨gf, hf, hfa⟩ := ihf
+      obtain ⟨gb, hb, hba⟩ := ihb
+      obtain ⟨sa, sab, h1, h2, h3⟩ := Q.s_app gf gb
+      refine ⟨sab, by simp [Poly.abs, Poly.eval, hf, hb, h1, h2], fun a => ?_⟩
+      rw [h3 a, hfa a, hba a]
+      simp [Poly.eval]
+
+end Combinatory
+
 end BeliefReal
 end PLLND
 
@@ -664,3 +745,4 @@ end PLLND
 #print axioms PLLND.BeliefReal.strategy_dist_refuted
 #print axioms PLLND.BeliefReal.strategy_realises_obAB_split
 #print axioms PLLND.BeliefReal.strategy_dist_refuted_split
+#print axioms PLLND.BeliefReal.Poly.abs_spec
