@@ -202,11 +202,58 @@ theorem force_iff (M : FinCM) (h : M.WellFormed) :
         rw [Bool.and_eq_true] at hb
         exact ⟨⟨u, hu⟩, hb.1, (ih ⟨u, hu⟩).mpr hb.2⟩
 
+theorem wellB_of_wellFormed {M : FinCM} (h : M.WellFormed) :
+    M.wellB = true := by
+  obtain ⟨h₁, h₂, h₃, h₄, h₅⟩ := h
+  simp only [wellB, Bool.and_eq_true, List.all_eq_true, List.mem_range]
+  refine ⟨⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩, ?_⟩
+  · intro w hw v hv u hu
+    by_cases ha : M.riB w v = true
+    · by_cases hb : M.riB v u = true
+      · simp [h₁ _ hw _ hv _ hu ha hb]
+      · simp [hb]
+    · simp [ha]
+  · intro w hw v hv u hu
+    by_cases ha : M.rmB w v = true
+    · by_cases hb : M.rmB v u = true
+      · simp [h₂ _ hw _ hv _ hu ha hb]
+      · simp [hb]
+    · simp [ha]
+  · intro w hw v hv
+    by_cases ha : M.rmB w v = true
+    · simp [h₃ _ hw _ hv ha]
+    · simp [ha]
+  · intro w hw v hv
+    by_cases ha : M.riB w v = true
+    · by_cases hb : M.fallB w = true
+      · simp [h₄ _ hw _ hv ha hb]
+      · simp [hb]
+    · simp [ha]
+  · intro p hp v hv
+    by_cases ha : M.riB p.1 v = true
+    · simp [h₅ p hp _ hv ha]
+    · simp [ha]
+
 /-- The computable countermodel check: well-formed, the world is in range,
 all hypotheses forced there, the conclusion not. -/
 def checkB (M : FinCM) (w : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
     Bool :=
   M.wellB && decide (w < M.n) && Γ.all (M.forceB w) && !(M.forceB w C)
+
+/-- Introduction rule for the check: a genuine refutation in the induced
+model certifies. -/
+theorem checkB_intro {M : FinCM} (h : M.WellFormed) {w : Nat} (hlt : w < M.n)
+    {Γ : List PLLFormula} {C : PLLFormula}
+    (hΓ : ∀ ψ ∈ Γ, (M.toModel h).force ⟨w, hlt⟩ ψ)
+    (hC : ¬ (M.toModel h).force ⟨w, hlt⟩ C) :
+    checkB M w Γ C = true := by
+  simp only [checkB, Bool.and_eq_true, decide_eq_true_eq,
+    List.all_eq_true, Bool.not_eq_true']
+  refine ⟨⟨⟨wellB_of_wellFormed h, hlt⟩,
+    fun ψ hψ => (M.force_iff h ψ ⟨w, hlt⟩).mp (hΓ ψ hψ)⟩, ?_⟩
+  by_cases hb : M.forceB w C = true
+  · exact absurd ((M.force_iff h C ⟨w, hlt⟩).mpr hb) hC
+  · exact Bool.not_eq_true _ |>.mp hb
 
 /-- **The certificate theorem**: a checked finite countermodel refutes
 derivability, by soundness.  Everything upstream of `soundness` here is

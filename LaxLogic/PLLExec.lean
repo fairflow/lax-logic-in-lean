@@ -200,7 +200,7 @@ def searchInstances : List SearchInstance :=
                 (prop "A").somehow,
               (prop "A").somehow.ifThen (prop "C"), (prop "B").somehow]
       goal := prop "C"
-      note := "Howe's duplication sequent (PLLRun.lean's `pll_g4` demo), \
+      note := "Howe's duplication sequent (PLLRun.lean's `pll_g4c` demo), \
         cut-free SC — expect true" } ]
 
 /-- A named uniform-interpolation instance: the quantified atom, the

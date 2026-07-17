@@ -21,7 +21,7 @@ on every build:
 A guided reading of this file (with wall-clock timings and the practical
 frontier) is in `docs/demos.md`; the reduction-strategy analysis prompted
 by the SN proof is in `docs/sn-strategy.md`.  `PLLRun.lean` carries the
-minimal first demos (basic β, the `pll_g4` tactic); this file grows them
+minimal first demos (basic β, the `pll_g4c` tactic); this file grows them
 into program-shaped examples and probes the engineering limits.
 
 ## The engineering headline
