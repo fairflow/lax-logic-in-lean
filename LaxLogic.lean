@@ -21,7 +21,6 @@ import LaxLogic.PLLTopTop
 import LaxLogic.PLLG4
 import LaxLogic.PLLDecide
 import LaxLogic.PLLG4Gap
-import LaxLogic.PLLRun
 import LaxLogic.PLLG4P
 import LaxLogic.PLLG4PInv
 import LaxLogic.PLLG4PAdm
@@ -39,6 +38,7 @@ import LaxLogic.PLLG4Space
 import LaxLogic.PLLG4Set
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLG4Term
+import LaxLogic.PLLRun
 import LaxLogic.PLLG4UI
 import LaxLogic.PLLG4UIAdq
 import LaxLogic.PLLG4UIStab
