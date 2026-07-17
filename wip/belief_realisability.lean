@@ -1322,6 +1322,250 @@ theorem realS_fullness_obstruction (P : Pca) (κ : obsC.W → P.Carrier)
 
 end FullnessObstruction
 
+/-! ## `⊩ᵖ` — the presented clause family, and completeness by decoration
+
+The obstruction above shows the `⊃`-clause must, like the `◯`-clause, receive
+the code of the evaluation world: strategies exist, carry no world-marks, and
+so an implication realiser fed the same strategy at two incomparable futures
+cannot answer both.  `realP` makes that single change — the `⊃`-clause
+applies the realiser to the *pair* of the presented world-code and the
+argument; every other clause is exactly `realS`.
+
+The payoff is the two-way bridge that `⊩ˢ` provably lacks, over any finite
+checked frame decorated with *token evidence* (one token per atom, exactly
+where the atom holds):
+
+* **adequacy** — whatever is `⊩ᵖ`-realised is truth-forced;
+* **fullness** — whatever is truth-forced has an explicit realiser, built by
+  finite tables against the world-coding: the `∨`-witness *decides* the
+  branch with the executable `forceB`, the `◯`-witness searches the finite
+  frame for its constraint-witness, the `⊃`-witness looks up the consequent's
+  witness at the presented world.
+
+Consequently every countermodel validated by the verified checker is a
+`⊩ᵖ`-refutation: at the refuting world all hypotheses are realised and the
+conclusion is unrealisable (`realP_refutes_sequent`).  Combined with the
+emitter this turns failed proof search into realisability countermodels; the
+table hypotheses `htab`/`htabP` are met in Kleene's first algebra (finite
+lookup tables are computable), and the development below is deliberately
+free of `Classical.choice` — the branch decisions are made by `forceB`. -/
+
+section PresentedClause
+
+/-- `⊩ᵖ` — **presented-strategy** realisability: `realS` with the one
+repair the obstruction demands.  In the `⊃`-clause the realiser is applied
+to `pair (κ v) b` — the presented future together with the argument — just
+as the `◯`-clause already presents `κ v` to the strategy. -/
+def realP (P : Pca) {C : ConstraintModel} (Ev : Evidence P C) (κ : C.W → P.Carrier) :
+    PLLFormula → P.Carrier → C.W → Prop
+  | .prop s, x, w => w ∈ C.F ∨ x ∈ Ev.E s w
+  | .falsePLL, _x, w => w ∈ C.F
+  | .and φ ψ, x, w =>
+      w ∈ C.F ∨ (realP P Ev κ φ (P.fst x) w ∧ realP P Ev κ ψ (P.snd x) w)
+  | .or φ ψ, x, w =>
+      w ∈ C.F ∨ ((P.untag x).1 = false ∧ realP P Ev κ φ (P.untag x).2 w)
+             ∨ ((P.untag x).1 = true ∧ realP P Ev κ ψ (P.untag x).2 w)
+  | .ifThen φ ψ, x, w =>
+      ∀ v, C.Ri w v → v ∈ C.F ∨
+        (∀ b, realP P Ev κ φ b v →
+          ∃ y, P.app x (P.pair (κ v) b) = some y ∧ realP P Ev κ ψ y v)
+  | .somehow φ, x, w =>
+      ∀ v, C.Ri w v → v ∈ C.F ∨
+        (∃ y, P.app x (κ v) = some y ∧
+          ∃ u, C.Rm v u ∧ P.fst y = κ u ∧ realP P Ev κ φ (P.snd y) u)
+
+variable {P : Pca} {M : FinCM}
+
+/-- **Token evidence** on a checked frame: one token per atom, exactly where
+the atom holds (fallible worlds evidence everything, as required). -/
+def tokenEvidence (P : Pca) (M : FinCM) (h : M.WellFormed)
+    (tok : String → P.Carrier) : Evidence P (M.toModel h) where
+  E s w := {x | M.fallB w.1 = true ∨ (M.valB w.1 s = true ∧ x = tok s)}
+  hered_E := by
+    intro s w v hri x hx
+    rcases hx with hf | ⟨hval, rfl⟩
+    · exact .inl (h.2.2.2.1 _ w.2 _ v.2 hri hf)
+    · rcases Bool.or_eq_true .. |>.mp hval with hmem | hf
+      · exact .inr ⟨h.2.2.2.2 (w.1, s) (of_decide_eq_true hmem) _ v.2 hri, rfl⟩
+      · exact .inl (h.2.2.2.1 _ w.2 _ v.2 hri hf)
+  full_E := by
+    intro s w hf x
+    exact .inl hf
+
+/-- **Adequacy and fullness for `⊩ᵖ`**, jointly, over any checked frame with
+token evidence: realised implies forced, and forced formulas have explicit
+realisers given by a per-world witness function.  The construction is
+choice-free: all branch decisions are made by the executable `forceB`, and
+the `◯`-witness is found by searching the finite frame. -/
+theorem realP_adequate_and_full (h : M.WellFormed) (tok : String → P.Carrier)
+    (κ : Fin M.n → P.Carrier)
+    (htab : ∀ g : Fin M.n → P.Carrier, ∃ s, ∀ i, P.app s (κ i) = some (g i))
+    (htabP : ∀ g : Fin M.n → P.Carrier,
+      ∃ s, ∀ i b, P.app s (P.pair (κ i) b) = some (g i)) :
+    ∀ φ : PLLFormula,
+      (∀ (w : Fin M.n) (x : P.Carrier),
+        realP P (tokenEvidence P M h tok) κ φ x w → (M.toModel h).force w φ) ∧
+      (∃ wit : Fin M.n → P.Carrier, ∀ w : Fin M.n,
+        (M.toModel h).force w φ →
+          realP P (tokenEvidence P M h tok) κ φ (wit w) w) := by
+  intro φ
+  induction φ with
+  | prop s =>
+      constructor
+      · intro w x hx
+        rcases hx with hf | hx
+        · show FinCM.valB M w.1 s = true
+          simp only [FinCM.valB, Bool.or_eq_true]
+          exact .inr hf
+        · rcases hx with hf | ⟨hval, _⟩
+          · show FinCM.valB M w.1 s = true
+            simp only [FinCM.valB, Bool.or_eq_true]
+            exact .inr hf
+          · exact hval
+      · refine ⟨fun _ => tok s, fun w hw => ?_⟩
+        exact .inr (.inr ⟨hw, rfl⟩)
+  | falsePLL =>
+      constructor
+      · intro w x hx
+        exact hx
+      · exact ⟨fun _ => tok "", fun w hw => hw⟩
+  | and φ ψ ihφ ihψ =>
+      obtain ⟨witφ, hwitφ⟩ := ihφ.2
+      obtain ⟨witψ, hwitψ⟩ := ihψ.2
+      constructor
+      · intro w x hx
+        rcases hx with hf | ⟨h₁, h₂⟩
+        · exact (M.toModel h).force_of_fallible hf
+        · exact ⟨ihφ.1 w _ h₁, ihψ.1 w _ h₂⟩
+      · refine ⟨fun w => P.pair (witφ w) (witψ w), fun w hw => ?_⟩
+        dsimp only
+        refine .inr ⟨?_, ?_⟩
+        · rw [P.fst_pair]; exact hwitφ w hw.1
+        · rw [P.snd_pair]; exact hwitψ w hw.2
+  | or φ ψ ihφ ihψ =>
+      obtain ⟨witφ, hwitφ⟩ := ihφ.2
+      obtain ⟨witψ, hwitψ⟩ := ihψ.2
+      constructor
+      · intro w x hx
+        rcases hx with hf | ⟨_, hr⟩ | ⟨_, hr⟩
+        · exact (M.toModel h).force_of_fallible hf
+        · exact .inl (ihφ.1 w _ hr)
+        · exact .inr (ihψ.1 w _ hr)
+      · refine ⟨fun w =>
+          if M.forceB w.1 φ = true then P.tag false (witφ w)
+          else P.tag true (witψ w), fun w hw => ?_⟩
+        dsimp only
+        by_cases hb : M.forceB w.1 φ = true
+        · rw [if_pos hb]
+          refine .inr (.inl ?_)
+          rw [P.untag_tag]
+          exact ⟨rfl, hwitφ w ((M.force_iff h φ w).mpr hb)⟩
+        · rw [if_neg hb]
+          refine .inr (.inr ?_)
+          rw [P.untag_tag]
+          rcases hw with hφ | hψ
+          · exact absurd ((M.force_iff h φ w).mp hφ) hb
+          · exact ⟨rfl, hwitψ w hψ⟩
+  | ifThen φ ψ ihφ ihψ =>
+      obtain ⟨witψ, hwitψ⟩ := ihψ.2
+      constructor
+      · intro w x hx v hri hφv
+        by_cases hf : v ∈ (M.toModel h).F
+        · exact (M.toModel h).force_of_fallible hf
+        · obtain ⟨witφ, hwitφ⟩ := ihφ.2
+          obtain ⟨y, _, hy⟩ :=
+            (hx v hri).resolve_left hf (witφ v) (hwitφ v hφv)
+          exact ihψ.1 v y hy
+      · obtain ⟨s, hs⟩ := htabP witψ
+        refine ⟨fun _ => s, fun w hw v hri => ?_⟩
+        by_cases hf : v ∈ (M.toModel h).F
+        · exact .inl hf
+        · refine .inr fun b hb => ⟨witψ v, hs v b, ?_⟩
+          exact hwitψ v (hw v hri (ihφ.1 v b hb))
+  | somehow φ ih =>
+      obtain ⟨witφ, hwitφ⟩ := ih.2
+      constructor
+      · intro w x hx v hri
+        by_cases hf : v ∈ (M.toModel h).F
+        · exact ⟨v, (M.toModel h).refl_m v,
+            (M.toModel h).force_of_fallible hf⟩
+        · obtain ⟨y, _, u, hrm, _, hy⟩ := (hx v hri).resolve_left hf
+          exact ⟨u, hrm, ih.1 u _ hy⟩
+      · obtain ⟨s, hs⟩ := htab fun v =>
+          match (List.finRange M.n).find?
+              (fun u => M.rmB v.1 u.1 && M.forceB u.1 φ) with
+          | some u => P.pair (κ u) (witφ u)
+          | none => P.pair (κ v) (witφ v)
+        refine ⟨fun _ => s, fun w hw v hri => ?_⟩
+        by_cases hf : v ∈ (M.toModel h).F
+        · exact .inl hf
+        · obtain ⟨u₀, hrm₀, hu₀⟩ := hw v hri
+          have hfind : ∃ u, (List.finRange M.n).find?
+              (fun u => M.rmB v.1 u.1 && M.forceB u.1 φ) = some u := by
+            cases hcase : (List.finRange M.n).find?
+                (fun u => M.rmB v.1 u.1 && M.forceB u.1 φ) with
+            | some u => exact ⟨u, rfl⟩
+            | none =>
+                exfalso
+                have := List.find?_eq_none.mp hcase u₀ (List.mem_finRange u₀)
+                rw [Bool.and_eq_true] at this
+                exact this ⟨hrm₀, (M.force_iff h φ u₀).mp hu₀⟩
+          obtain ⟨u, hu⟩ := hfind
+          have hpred := List.find?_some hu
+          rw [Bool.and_eq_true] at hpred
+          refine .inr ⟨P.pair (κ u) (witφ u), ?_, u, hpred.1, P.fst_pair ..,
+            ?_⟩
+          · simp only [hs v, hu]
+          · rw [P.snd_pair]
+            exact hwitφ u ((M.force_iff h φ u).mpr hpred.2)
+
+/-- **The completeness squeeze**: every countermodel validated by the
+verified checker is a `⊩ᵖ`-refutation of its sequent — at the refuting
+world every hypothesis is realised, and the conclusion is unrealisable. -/
+theorem realP_refutes_sequent {w : Nat} {Γ : List PLLFormula}
+    {C : PLLFormula} (hcheck : FinCM.checkB M w Γ C = true)
+    (tok : String → P.Carrier) (κ : Fin M.n → P.Carrier)
+    (htab : ∀ g : Fin M.n → P.Carrier, ∃ s, ∀ i, P.app s (κ i) = some (g i))
+    (htabP : ∀ g : Fin M.n → P.Carrier,
+      ∃ s, ∀ i b, P.app s (P.pair (κ i) b) = some (g i)) :
+    ∃ hwf : M.WellFormed, ∃ hlt : w < M.n,
+      (∀ ψ ∈ Γ, ∃ x, realP P (tokenEvidence P M hwf tok) κ ψ x ⟨w, hlt⟩) ∧
+      ¬ ∃ x, realP P (tokenEvidence P M hwf tok) κ C x ⟨w, hlt⟩ := by
+  simp only [FinCM.checkB, Bool.and_eq_true, decide_eq_true_eq,
+    List.all_eq_true, Bool.not_eq_true'] at hcheck
+  obtain ⟨⟨⟨hwb, hlt⟩, hΓ⟩, hC⟩ := hcheck
+  have hwf := FinCM.wellFormed_of_wellB hwb
+  refine ⟨hwf, hlt, fun ψ hψ => ?_, fun ⟨x, hx⟩ => ?_⟩
+  · obtain ⟨wit, hwit⟩ := (realP_adequate_and_full hwf tok κ htab htabP ψ).2
+    exact ⟨wit ⟨w, hlt⟩,
+      hwit _ ((M.force_iff hwf ψ ⟨w, hlt⟩).mpr (hΓ ψ hψ))⟩
+  · have := (realP_adequate_and_full hwf tok κ htab htabP C).1 ⟨w, hlt⟩ x hx
+    rw [M.force_iff hwf C ⟨w, hlt⟩, hC] at this
+    exact Bool.false_ne_true this
+
+/-- **Flagship instance**: at the pinned emitted countermodel for
+`◯p ⊢ p` (`demoM`, `PLLCountermodelEmit.lean`), the hypothesis `◯p` is
+`⊩ᵖ`-realised at the refuting world while `p` is unrealisable — the sequent
+is realisability-refuted, not merely truth-refuted.  The checker certificate
+discharges by `decide`. -/
+theorem somehow_p_not_p_realP (P : Pca) (tok : String → P.Carrier)
+    (κ : Fin demoM.n → P.Carrier)
+    (htab : ∀ g : Fin demoM.n → P.Carrier,
+      ∃ s, ∀ i, P.app s (κ i) = some (g i))
+    (htabP : ∀ g : Fin demoM.n → P.Carrier,
+      ∃ s, ∀ i b, P.app s (P.pair (κ i) b) = some (g i)) :
+    ∃ hwf : demoM.WellFormed, ∃ hlt : 2 < demoM.n,
+      (∃ x, realP P (tokenEvidence P demoM hwf tok) κ
+        ((prop "p").somehow) x ⟨2, hlt⟩) ∧
+      ¬ ∃ x, realP P (tokenEvidence P demoM hwf tok) κ
+        (prop "p") x ⟨2, hlt⟩ := by
+  obtain ⟨hwf, hlt, hΓ, hC⟩ := realP_refutes_sequent
+    (M := demoM) (w := 2) (Γ := [(prop "p").somehow]) (C := prop "p")
+    (by decide) tok κ htab htabP
+  exact ⟨hwf, hlt, hΓ _ (List.mem_singleton_self _), hC⟩
+
+end PresentedClause
+
 end BeliefReal
 end PLLND
 
@@ -1356,3 +1600,5 @@ end PLLND
 #print axioms PLLND.BeliefReal.extractS
 #print axioms PLLND.BeliefReal.extractS_sound
 #print axioms PLLND.BeliefReal.realS_fullness_obstruction
+#print axioms PLLND.BeliefReal.realP_adequate_and_full
+#print axioms PLLND.BeliefReal.realP_refutes_sequent
