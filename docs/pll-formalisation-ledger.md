@@ -150,11 +150,16 @@ and `decideFuel` is computed arithmetically (the powerset is never built).
 - **Decidability (F&M Thm 2.8): DONE** (§7.1) — this line previously mis-stated it
   as open; corrected 2026-07-17. F&M's own route was via the finite model
   property; the mechanised route is the repaired terminating calculus `G4iLL″`.
-  A ConstraintModel **countermodel extractor from a failed search** is *not* built
-  (the decider returns a verdict, not a refuting model; the mechanised
-  `completeness` gives such a model's existence non-constructively) — a natural,
-  well-scoped extension that would also seed the Route B realisability
-  completeness (see `route-b-model.md` §6).
+  A countermodel **specification** is now proved:
+  `not_provable_iff_exists_finite_countermodel` ([`PLLCountermodel.lean`](../LaxLogic/PLLCountermodel.lean),
+  clean) — `⊬φ ⟺ ∃ finite constraint model refuting φ` (contrapositive of the
+  finite model property). This is the guarantee any extractor must meet and the
+  seed for Route B realisability completeness (`route-b-model.md` §6). Still open:
+  a *computable* extractor `φ ↦ Option (finite model)` — either by **emitting the
+  saturated branch** of `decidablePLL` (the genuine "from failed search" route,
+  constructive) or by **decidable enumeration** over the filtration space; the
+  existence here comes classically from the Zorn canonical model inside
+  `completeness`.
 - **The uniform-interpolation probe** (`wip/onevar.lean`, `wip/absorb_base.lean`,
   `wip/g4ill_ui.lean`) is a separate research thread and carries the repo's only
   open `sorry`s (5, all listed in those files' headers). No result above depends
