@@ -797,6 +797,27 @@ records — it was one of the development's early machine-checked
 surprises — that no confluence assumption appears anywhere: belief
 composition is ordered, as inquiry is.
 
+A further exercise in the same currency, this time negative.
+Idempotence ◯◯M ⊣⊢ ◯M is two proof terms: the multiplication
+μ = λx. let val y ⇐ x in y and the unit η = λx. val x. Are they
+mutually inverse? One composite is the identity: μ ∘ η reduces to
+λx. x — the monad's unit law, holding as computation, since the let
+fires on the val. The other is not: η ∘ μ normalises to
+λx. val (let val y ⇐ x in y), a stuck term in which the collapse
+remains pending inside the re-assertion, and the artefact computes the
+composite's complete reduction graph — four terms, closed under
+reduction, the identity not among them
+(`mu_eta_not_mutually_inverse`, `PLLIdempotency.lean`, audited at
+[propext] alone). So idempotence is inter-derivability, not
+isomorphism: under reading (7), collapsing a belief about a belief and
+then re-asserting belief in the result is not a null operation on
+evidence, although it is one on truth. (What is machine-checked is the
+sharp unconditional pair — μ ∘ η reaches the identity, η ∘ μ provably
+never does, and the two have no common reduct; separating them up to
+the equivalence closure of reduction would additionally need
+uniqueness of normal forms, i.e. confluence, which the development
+does not yet contain.)
+
 One asymmetry visible in these examples deserves promotion to a remark.
 Evidence extracted from proofs is *frame-uniform*: one polynomial
 serves every model. The fullness witnesses of Theorem 6.1 are

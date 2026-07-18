@@ -79,6 +79,11 @@ why).  To re-verify any row, run
 |---|---|---|---|
 | **Strong normalisation of the full reduction** (β + `let`-assoc interleaved; Lindley–Stark ⊤⊤-lifting) | `strong_normalisation` | [`PLLTopTop.lean:1266`](../LaxLogic/PLLTopTop.lean) | clean |
 | Certified normaliser (normal form reached) | `Tm.normalize_spec` | [`PLLTopTop.lean:1296`](../LaxLogic/PLLTopTop.lean) | clean |
+| **Idempotence is inter-derivability, not isomorphism**: `μ ∘ η ⇝* id` but `η ∘ μ` never reaches the identity (complete four-term reduction graph) | `mu_eta_not_mutually_inverse` | [`PLLIdempotency.lean`](../LaxLogic/PLLIdempotency.lean) | `[propext]` (pinned) |
+| `η ∘ μ` and the identity have no common reduct | `eta_mu_id_not_joinable` | [`PLLIdempotency.lean`](../LaxLogic/PLLIdempotency.lean) | `[propext]` (pinned) |
+
+*(Separation up to the equivalence closure of reduction would additionally
+need uniqueness of normal forms — confluence, not yet mechanised: OPEN.)*
 
 *(Component results — `assoc_sn`, the certified one-step reducer `Tm.step?`, and
 the machine-checked failure of quasi-commutation forcing the semantic method —
