@@ -283,3 +283,25 @@ dictionary exhibits (the induction's candidate carrier). Next session:
 mechanise the absorption law, then attack H2 with the seen-set threshold,
 then the H1 walk; independently, the 2-variable probe (each quantifier one
 free variable) is ready to run on this harness.
+
+---
+
+## 7. 2026-07-18 addendum (from the belief-paper session)
+
+The instruments changed while this file slept; the mathematics above is
+untouched. In one line each — details and file pointers in
+`docs/ui-notes-belief-session.md`:
+
+* the oracle is **two-sided** now: `G4cTm.find` (fuel-free, returns
+  kernel-checkable proof terms) on the yes-side, and
+  `CounterEmit.emit` → verified `checkB` → `not_provable_of_check`
+  giving *certified* underivability on the no-side — a refuted H1/H2
+  instance can be cashed as a machine-checked countermodel, not a fuel
+  timeout;
+* `emitMin`/`emitMinClean` shrink countermodels (20 → 3 recovers F&M
+  Fig. 3, pinned) and `PLLDiagram.lean` draws them (TikZ/SVG);
+* the finitised canonical model + truth lemma + enumeration landed
+  constructively (`PLLFinComp.lean`, `[propext, Quot.sound]`) — a
+  Ghilardi-style semantic route to UI is now attemptable, and
+  refutation search over a closure is complete, not merely sound;
+* toolchain `v4.31.0` on `main`: native ≈22× the old interpreter.
