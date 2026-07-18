@@ -59,6 +59,13 @@ def riEquiv (M : FinCM) : List (Nat × Nat) :=
   idx.flatMap fun i => idx.filterMap fun j =>
     if decide (i < j) && M.riB i j && M.riB j i then some (i, j) else none
 
+/-- The `Rₘ`-equivalent pairs, likewise: empty exactly when `Rₘ` is
+antisymmetric on the worlds `< n`. -/
+def rmEquiv (M : FinCM) : List (Nat × Nat) :=
+  let idx := List.range M.n
+  idx.flatMap fun i => idx.filterMap fun j =>
+    if decide (i < j) && M.rmB i j && M.rmB j i then some (i, j) else none
+
 /-! ## Layout -/
 
 /-- Hasse layer of each world: the length of the longest strictly
@@ -305,6 +312,36 @@ def regen : IO Unit := do
 #guard riEquiv demoM = [(0, 1)]
 #guard riLayers demoM = [0, 0, 1, 2, 3]
 #guard autoPos demoM 1 = (250, 510)
+
+/-! ### The order profile: `Rᵢ` a preorder, `Rₘ` a partial order
+
+Canonical and emitted `Rᵢ` compares beliefs only, so same-belief worlds
+differing in their standing promises are mutually related: `Rᵢ` is a
+genuine preorder, not a poset.  `Rₘ` carries promises along and is
+antisymmetric in all the models here.  Minimisation removes the
+`Rᵢ`-equivalent twins by deletion rather than quotienting, so the
+minimised models are posets.  (Discussion: the paper draft, §7.) -/
+
+#guard rmEquiv demoM = []
+
+-- The 20-world ∨-distribution model: thirteen `Rᵢ`-equivalent pairs —
+-- the refuting world w4 and its two promise-bound critical futures
+-- w5, w6 form one class, so the refutation of `◯(p∨q) ⊢ ◯p ∨ ◯q` is
+-- transacted entirely inside a single `Rᵢ`-equivalence class — and no
+-- `Rₘ`-equivalent pair.
+/-- info: some ([(0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3), (4, 5), (4, 6), (5, 6), (7, 8), (9, 10), (12, 13), (15, 16)], []) -/
+#guard_msgs in
+#eval (CounterEmit.emit [((prop "p").or (prop "q")).somehow]
+  (((prop "p").somehow).or ((prop "q").somehow))).map
+    fun (M, _) => (riEquiv M, rmEquiv M)
+
+-- …and both minimised models are partial orders: no equivalent pairs.
+/-- info: (some [], some []) -/
+#guard_msgs in
+#eval ((CounterEmit.emitMinClean [((prop "p").or (prop "q")).somehow]
+    (((prop "p").somehow).or ((prop "q").somehow))).map fun (M, _) => riEquiv M,
+  (CounterEmit.emitMinClean [(prop "p").somehow] (prop "p")).map
+    fun (M, _) => riEquiv M)
 
 #eval regen
 

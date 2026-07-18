@@ -734,7 +734,43 @@ nor a fallible world remaining — which is *precisely* the hand-built
 split model of [F&M 1997, Fig. 3], now pinned as a build-time
 regression guard. The systematic model proves existence; deletion
 recovers the presentable one; and a failed proof search terminates in
-a structured epistemic explanation rather than a bare verdict.
+a structured epistemic explanation rather than a bare verdict. A
+second, finer pass (`emitMinClean`) sweeps attributes rather than
+worlds — a fallible flag, a valuation pair, a relation pair is deleted
+whenever the checker still certifies the sequent without it — and
+answers small questions a reader might not think to ask: one
+constraint arrow of the split model does no work (◯(p ∨ q) at the root
+is witnessed through the q-leaf alone), and the countermodel to
+◯p ⊢ p needs no fallible world at all — the emitted model's fallible
+ceiling survives world-deletion but not attribute-cleaning, leaving a
+two-world model: believe nothing, then p. Both prunings are pinned.
+
+**Remark 7.1 (preorder, not partial order).** In all these models Rᵢ
+is a genuine preorder: distinct worlds can be mutually related. The
+five-world model of ◯p ⊬ p has one such pair — the belief-empty world
+and its promise-bound twin — and the twenty-world model has thirteen,
+among them the refuting world and its two critical futures: w₄, w₅, w₆
+believe exactly the same formulas and differ only in their standing
+promises, so the refutation just displayed is transacted entirely
+inside a single Rᵢ-equivalence class. This is the geometry of the
+construction: canonical Rᵢ compares beliefs and deliberately ignores
+promises, and refuting a ◯-formula is a move that changes no belief —
+it only takes on a commitment. Rₘ, which carries promises along, is
+antisymmetric in every model of this section. Nothing is lost for
+validity: forcing is hereditary along Rᵢ (`force_hered`), so mutually
+related worlds force the same formulas, and the parent paper already
+observed on this ground that Rᵢ may be assumed a partial order
+[F&M 1997]; one may also simply pass to the quotient. The artefact
+effects the reduction by deletion instead — minimisation removes the
+equivalent twins, and both minimised models above are posets. Each of
+these counts is a build-time guard (`riEquiv`/`rmEquiv`,
+`PLLDiagram.lean`). We record one design observation without
+mechanised warrant: a canonical Rᵢ refined to respect promises — which
+would be antisymmetric by construction — would obstruct the ◯-case of
+the truth lemma, whose refuting step needs a same-belief future in
+which the old promises have lapsed and one fresh promise stands. The
+preorder is not an accident of the construction but the room the
+modality moves in.
 
 Finally, evidence in the positive direction. The sequent
 ◯A, ◯(A ⊃ B) ⊢ ◯B — combine a belief with a believed implication — has
@@ -869,8 +905,7 @@ computable functions (the choice-free statement needs care around
 partiality). The tripos-level formulation of the evidence semantics.
 Uniform interpolation for PLL — the repaired terminating calculus
 supplies the height bound the published method lacked, and the
-mechanised investigation continues. And the completion of the axiom
-cleanup that will render the entire chain, crown included, choice-free.
+mechanised investigation continues.
 
 ---
 
