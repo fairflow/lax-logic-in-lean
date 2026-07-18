@@ -224,7 +224,7 @@ so everything is stable under passing to the generated submodel. "A strategy to
 deal with future situations does not imply foreknowledge of what those
 situations will actually be" — exactly; the strategy is a function *on*
 presented futures, not a table *of* them. Mechanised: the `⊩ˢ` clause and its
-heredity in `wip/belief_realisability.lean` (`realS`, `realS_hered`) carry no
+heredity in `LaxLogic/BeliefRealisability.lean` (`realS`, `realS_hered`) carry no
 frame-decidability hypotheses at all.
 
 - **Bite vanishes:** `◯(A∨B)` regains a realiser at `r` (choose the disjunct per
@@ -324,7 +324,7 @@ pen-and-paper). The triptych statements for `⊩ˢ` are untouched — `⊩ˢ` re
 the right relation for the separation story; `⊩ᵖ` is the completeness-grade
 refinement the obstruction forces.*
 
-*Status 2026-07-17: **rung 5 COMPLETE for BOTH clauses**. `wip/belief_realisability.lean`
+*Status 2026-07-17: **rung 5 COMPLETE for BOTH clauses**. `LaxLogic/BeliefRealisability.lean`
 now has combinatory completeness (`Poly.abs_spec`, `Poly.eval_bump`), the two
 extractions `extract` (uniform, `[propext]`) and `extractS` (strategy, `[propext]`),
 and the two soundness-with-extraction theorems `extract_sound` and **`extractS_sound`**
@@ -367,7 +367,7 @@ idempotence is inter-derivability, not a computational identity; the nucleus
 picture is its propositional shadow).*
 
 *Status 2026-07-16: rungs 1–2 LANDED, plus triptych piece (i) — see
-`wip/belief_realisability.lean`: `Pca`, `Evidence`, `realU`, `realS`,
+`LaxLogic/BeliefRealisability.lean`: `Pca`, `Evidence`, `realU`, `realS`,
 `realU_hered`/`realS_hered` (increasing belief), `realU_of_fallible`/
 `realS_of_fallible` (all axiom-FREE), `natPca`, `fullEvidence`,
 `bite_uniform_split` (audit `[propext, Classical.choice, Quot.sound]`).

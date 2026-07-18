@@ -11,9 +11,11 @@ the finished belief modules were moved into the `LaxLogic/` library —
 `wip/lax_infinite.lean` → [`LaxLogic/PLLLaxInfinite.lean`](../LaxLogic/PLLLaxInfinite.lean), and the seven
 `wip/belief_*.lean` files → `LaxLogic/Belief*.lean` (see
 [belief-mechanisation-index.md](belief-mechanisation-index.md)) — all imported
-by the library root, so `lake build` checks them. Only the in-development
-[`wip/belief_realisability.lean`](../wip/belief_realisability.lean) and the separate UI-probe files remain in
-`wip/`.*
+by the library root, so `lake build` checks them. The realisability file
+followed on 2026-07-18 — `wip/belief_realisability.lean` →
+[`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean), audits measured and
+`#guard_msgs`-pinned on promotion — so only the separate UI-probe files
+remain in `wip/`.*
 
 **Purpose.** Lean's kernel checks the *proofs*; what remains for a human is to
 check that the *statements* — the definitions and the displayed theorems — say
@@ -94,8 +96,9 @@ here, subsumed by the above.)*
 
 | result | Lean name | location | axioms |
 |---|---|---|---|
-| **Craig interpolation for PLL** (Maehara over the cut-free calculus) | `craig_interpolation` | [`PLLCraig.lean:401`](../LaxLogic/PLLCraig.lean) | clean |
-| Interpolation for implications | `craig_implication` | [`PLLCraig.lean:411`](../LaxLogic/PLLCraig.lean) | clean |
+| **Craig interpolation for PLL** (Maehara over the cut-free calculus; scrubbed 2026-07-18 onto `finUnion`/membership forms) | `craig_interpolation'` (+ engine `SCh.maehara`, `SC.maehara'`) | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | **[p,Q]** — no choice |
+| Interpolation for implications | `craig_implication'` | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | **[p,Q]** |
+| legacy `∪`/`∩`-phrased forms (two-line wrappers of the primed) | `SC.maehara`, `craig_interpolation`, `craig_implication` | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | clean — statement-tainted‡ |
 | **Kleene–Brouwer order on an inductively well-founded tree over a well-founded alphabet is well-founded** | `wellFounded_kb`, `wellFounded_kb'` | [`KleeneBrouwer.lean:164,180`](../LaxLogic/KleeneBrouwer.lean) | **none — fully constructive** (in-file guard asserts it) |
 
 *(Naming: the file and the literature say Kleene–Brouwer, also Lusin–Sierpiński;
@@ -253,15 +256,18 @@ Statement-level index for the *Belief in Lax Logic* results (Boolean collapse,
 facts, small-algebra enumerations): [`belief-mechanisation-index.md`](belief-mechanisation-index.md).
 Route B realisability results (the two evidence clauses, heredity, the local
 nucleus laws, the separation triptych, the double-negation believer, and
-combinatory completeness `Poly.abs_spec` **[p,Q]**):
-[`wip/belief_realisability.lean`](../wip/belief_realisability.lean), statuses in [`route-b-model.md`](route-b-model.md) §8.
+combinatory completeness `Poly.abs_spec` **[p,Q]**): promoted 2026-07-18 to
+[`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean) with all 31 audits
+`#guard_msgs`-pinned in-file (headline: `realS_fullness_obstruction` **[p,Q]**
+— no choice; `bite_uniform_split`, `extract_sound`, `extractS_sound`,
+`force_somehow_iff_notnot` clean); design history in [`route-b-model.md`](route-b-model.md) §8.
 
 ## 10. Realisability completeness (promoted 2026-07-17/18)
 
 The `⊩ᵖ` programme, promoted to the library after all proofs closed.  The
 narrative: uniformity fails at `∨`-under-`◯` (the bite) and at `⊃` (the
 barrier); the barrier provably blocks completeness for `⊩ˢ` (the
-obstruction, still in `wip/`); presenting the future to the `⊃`-clause
+obstruction, [`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean)); presenting the future to the `⊃`-clause
 (`⊩ᵖ`) restores it, and the countermodels are supplied Zorn-free by the
 finitised canonical model with the mechanised decision procedure making
 every Lindenbaum decision.
@@ -533,6 +539,22 @@ theorem Tm.normalize_spec {Γ φ} (t : Tm Γ φ) :
 
 ## II.8 Craig interpolation ([`PLLCraig.lean`](../LaxLogic/PLLCraig.lean))
 
+Choice-free primary forms (`atomsList` is built on the kit's `finUnion`):
+
+```lean
+theorem craig_interpolation' {Γ₁ Γ₂ C} (h : SC (Γ₁ ++ Γ₂) C) :
+    ∃ I : PLLFormula,
+      SC Γ₁ I ∧ SC (I :: Γ₂) C ∧
+      I.atoms ⊆ atomsList Γ₁ ∧ I.atoms ⊆ finUnion (atomsList Γ₂) C.atoms
+
+theorem craig_implication' {A B} (h : SC [] (A.ifThen B)) :
+    ∃ I : PLLFormula,
+      SC [] (A.ifThen I) ∧ SC [] (I.ifThen B) ∧
+      I.atoms ⊆ A.atoms ∧ I.atoms ⊆ B.atoms
+```
+
+Mathlib-phrased wrappers (statement-tainted‡, two lines from the primed):
+
 ```lean
 theorem craig_interpolation {Γ₁ Γ₂ C} (h : SC (Γ₁ ++ Γ₂) C) :
     ∃ I : PLLFormula,
@@ -668,4 +690,4 @@ theorem cut_not_admissible :
 ```
 
 *(End of Part II. The belief-paper layer's statements are indexed separately in
-[`belief-mechanisation-index.md`](belief-mechanisation-index.md) and [`wip/belief_realisability.lean`](../wip/belief_realisability.lean).)*
+[`belief-mechanisation-index.md`](belief-mechanisation-index.md) and [`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean).)*
