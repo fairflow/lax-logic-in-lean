@@ -22,8 +22,12 @@ result, its Lean identifier and location, and its axiom audit, so the human
 task reduces to reading the statement at the cited location and agreeing it
 formalises the intended claim. Every audit below was **re-run on 2026-07-16**
 (not copied from earlier notes) and the affected rows re-measured on
-**2026-07-18** after the `Classical.choice` scrub of the proof-theory chain;
-to re-verify any row, run
+**2026-07-18** after the two `Classical.choice` scrubs — first of the
+proof-theory chain, then of the decidability-and-completeness chain
+(the choice-free `Finset` toolkit `PLLFinsetKit.lean`, the
+height-bounded decider `G4sh.dec`, and the representative-based
+world enumeration; see §10's footnote for what remains tainted and
+why).  To re-verify any row, run
 `lake env lean <file>` for a file containing `#print axioms <name>`.
 
 **Axiom key.**
@@ -119,12 +123,14 @@ the repair, and the repair carries the decidability.*
 | Repaired calculus proves exactly PLL (proof-theoretic half of Thm 2.8): `G4c Γ φ ↔ Nonempty (Tm Γ φ)` | `G4c.equiv_tm` | [`PLLG4HComp.lean:115`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
 | …and `↔ Nonempty (LaxND Γ C)` | `G4c.g4c_iff_nd` (via `equiv_nd`) | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
 | Cut admissible / completeness of `G4c` | `G4c.cut`, `G4c.completeness` | [`PLLG4HComp.lean`](../LaxLogic/PLLG4HComp.lean) | **[p,Q]** |
-| Loop-checked, fuel-bounded backward search decides `G4c` | `G4c_iff_search` | [`PLLG4Dec.lean:556`](../LaxLogic/PLLG4Dec.lean) | clean |
-| search success ⟹ derivation | `search_sound` | [`PLLG4Dec.lean:121`](../LaxLogic/PLLG4Dec.lean) | clean |
-| minimal-height derivation ⟹ search success | `search_complete` | [`PLLG4Dec.lean:228`](../LaxLogic/PLLG4Dec.lean) | clean |
-| **`G4c` is decidable** | `decidableG4c` (`Decidable (G4c Γ C)`) | [`PLLG4Dec.lean:589`](../LaxLogic/PLLG4Dec.lean) | clean |
-| **PLL provability is decidable** (F&M Thm 2.8): `Decidable (Nonempty (Tm Γ φ))` | `decidablePLL` | [`PLLG4Dec.lean:596`](../LaxLogic/PLLG4Dec.lean) | clean |
-| Pigeonhole height bound (bonus): derivable ⟹ height ≤ `decideFuel` | `height_bound` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | clean |
+| Height-bounded decidability of the cumulative set calculus | `G4sh.dec` (`Decidable (G4sh n Γ C)`) | [`PLLG4Set.lean`](../LaxLogic/PLLG4Set.lean) | **[p,Q]** |
+| Set-calculus embedding, choice-free form (`G4c Γ E ↔ G4s (toFin Γ) E`) | `G4c.iff_setFin` | [`PLLG4Set.lean`](../LaxLogic/PLLG4Set.lean) | **[p,Q]** |
+| Loop-checked, fuel-bounded backward search decides `G4c` | `G4c_iff_search` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** — no choice |
+| search success ⟹ derivation (choice-free `toFin` form) | `search_sound'` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** |
+| minimal-height derivation ⟹ search success (choice-free; `Nat.find` on `G4sh.dec`) | `search_complete'` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** |
+| **`G4c` is decidable** | `decidableG4c` (`Decidable (G4c Γ C)`) | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** — no choice |
+| **PLL provability is decidable** (F&M Thm 2.8): `Decidable (Nonempty (Tm Γ φ))` | `decidablePLL` | [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | **[p,Q]** — no choice |
+| legacy `toFinset`-phrased forms | `G4c.iff_set`, `search_sound`, `search_complete`, `height_bound` | [`PLLG4Set.lean`](../LaxLogic/PLLG4Set.lean), [`PLLG4Dec.lean`](../LaxLogic/PLLG4Dec.lean) | clean — statement-tainted‡ |
 
 It is a **full** decision procedure (total `Decidable`, terminates on every
 input by the fuel bound + finite gated space + visited-set loop-check), and it is
@@ -132,8 +138,17 @@ input by the fuel bound + finite gated space + visited-set loop-check), and it i
 `#eval decide (G4c …)` run in `PLLDemos.lean` under `#guard_msgs`, **no
 `native_decide`**. `decide`/`#eval` on `decidablePLL` reduce, through
 `equiv_tm` and `G4c_iff_search`, to the executable `search`; the loop-check
-(visited sequents keyed by `toFinset`) is the efficiency device (no re-search),
-and `decideFuel` is computed arithmetically (the powerset is never built).
+(visited sequents keyed by the choice-free `toFin`) is the efficiency device
+(no re-search), and `decideFuel` is computed arithmetically (the powerset is
+never built).
+
+‡ *Statement-tainted* (here and in §7.1a/§10): the statement itself mentions
+`List.toFinset` or `Finset.toList`, whose current Mathlib bodies embed
+`Classical.choice` (`Multiset.dedup`'s permutation-invariance lemma;
+`Multiset.toList` is `Quotient.out`, i.e. choice outright).  `#print axioms`
+walks the bodies of statement constants, so these rows cannot audit
+choice-free *by any proof*; each has a `[p,Q]` primed form carrying the same
+mathematics through the choice-free `toFin`/representative route.
 
 ### 7.1a Proof-term emission — fuel-free search (added 2026-07-17)
 
@@ -147,10 +162,10 @@ the **derivation itself**:
 |---|---|---|---|
 | `Type`-valued proof terms for `G4iLL″` (list contexts, membership `Prop`s, `Tm`-style) | `G4cTm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | — (a datatype) |
 | Fuel-free backward searcher emitting terms (untrusted `partial`; loop-checked by canonical list keys — no `decideFuel`, no `enum`) | `prove` / `G4cTm.find` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | — (a program) |
-| Every term projects to a `G4s` derivation | `G4cTm.sound` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
-| A term certifies `G4c`, hence PLL, provability | `G4cTm.toG4c`, `G4cTm.toTm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
-| Every `G4c`-derivable sequent has a term | `G4cTm.ofG4c` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
-| `Nonempty (G4cTm Γ C) ↔ Nonempty (Tm Γ C)` | `G4cTm.equiv_tm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | clean-classical |
+| Every term projects to a `G4s` derivation | `G4cTm.sound'` (choice-free); `G4cTm.sound` (legacy, statement-tainted‡) | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]**; clean |
+| A term certifies `G4c`, hence PLL, provability | `G4cTm.toG4c`, `G4cTm.toTm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]** |
+| Every `G4c`-derivable sequent has a term | `G4cTm.ofG4c` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]** |
+| `Nonempty (G4cTm Γ C) ↔ Nonempty (Tm Γ C)` | `G4cTm.equiv_tm` | [`PLLG4Term.lean`](../LaxLogic/PLLG4Term.lean) | **[p,Q]** |
 
 Trust is factored by the type discipline: the searcher is untrusted code, but
 anything it emits inhabits `G4cTm Γ C`, which the kernel checks — *if we can
@@ -254,29 +269,41 @@ every Lindenbaum decision.
 | **The squeeze**: checked countermodels are `⊩ᵖ`-refutations | `realP_refutes_sequent` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** |
 | Explicit table algebra; both table hypotheses by construction | `Tbl`, `tblPca`, `tbl_htab`, `tbl_htabP` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p]** |
 | Closed capstones (nothing assumed) | `realP_refutes_sequent_tbl`, `somehow_p_not_p_realP_tbl` | [`PLLEvidence.lean`](../LaxLogic/PLLEvidence.lean) | **[p,Q]** |
-| Finite theory triples; decidable consistency; extension dichotomy | `FTheory`, `cons_iff_check`, `cons_insVal_or_insFal` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
-| **Constructive Lindenbaum** (decided fold, no Zorn) | `lindenbaum` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
-| Closure-relative Lemma 4.2 suite | `MaxIn.*` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
-| **Truth lemma** on the finite canonical model | `truth_lemma` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
-| Finite countermodel existence | `finite_canonical_countermodel` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
-| **Emitter completeness**: underivable ⟹ checked countermodel | `emitter_completeness` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | clean† |
-| Realisability countermodels for underivable sequents | `realP_countermodel_of_underivable` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | clean† |
-| **Completeness of PLL for `⊩ᵖ`** (biconditional) | `derivable_iff_no_realP_refutation` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | clean† |
+| Finite theory triples; decidable consistency (`consB`/`cons_iff_rep`); extension dichotomy | `FTheory`, `cons_iff_rep`, `cons_insVal_or_insFal` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** (legacy `cons_iff_check` clean, statement-tainted‡) |
+| **Constructive Lindenbaum** (decided fold, no Zorn) | `lindenbaum` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
+| Closure-relative Lemma 4.2 suite | `MaxIn.*` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
+| **Truth lemma** on the finite canonical model | `truth_lemma` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
+| Finite countermodel existence | `finite_canonical_countermodel` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
+| **Emitter completeness**: underivable ⟹ checked countermodel | `emitter_completeness` | [`PLLFinComp.lean`](../LaxLogic/PLLFinComp.lean) | **[p,Q]** |
+| Realisability countermodels for underivable sequents | `realP_countermodel_of_underivable` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | **[p,Q]** |
+| **Completeness of PLL for `⊩ᵖ`** (biconditional) | `derivable_iff_no_realP_refutation` | [`PLLRealCompleteness.lean`](../LaxLogic/PLLRealCompleteness.lean) | **[p,Q]** |
 
-† The mathematics is finitary (no Zorn; the only case decisions are by
-`decidablePLL`, and the crown avoids excluded middle deliberately).  After
-the 2026-07-17 axiom scrub (which brought the whole cut/`G4c` chain to
-`[p,Q]`, `selfAbsorb` and `SC_to_ND` to `[p]` alone), the remaining
-`Classical.choice` here is *measured*, from three sources: (i) the
-`decidablePLL` floor — `search_complete`'s `Nat.find` over height
-existence, plus Mathlib `Finset`/`Multiset` internals in the executable
-layer (`Multiset.dedup`'s permutation lemma; `Multiset.toList` is choice
-outright) — documented in `PLLG4Dec.lean`; the same `List.toFinset` floor
-reaches `G4c.iff_set`, hence the `G4cTm` bridges; (ii) `Finset.toList` in
-`PLLFinComp.lean` (`cons_iff_check`, `worldList`); (iii)
-`not_consistent_iff`'s `push_neg`.  Drilling the floor — a height-bounded
-`Decidable (G4sh n Γ C)` and a list-based executable layer — would drop
-every row here to `[p,Q]` with no change to the mathematics.
+The mathematics is finitary (no Zorn; the only case decisions are by
+`decidablePLL`, and the crown avoids excluded middle deliberately), and
+after the **2026-07-18 scrub the audits above are measured, not
+conjectured**: the three former `Classical.choice` sources were drilled
+exactly as the 2026-07-17 footnote predicted.  (i) The `decidablePLL`
+floor fell to the height-bounded decider `G4sh.dec` (`PLLG4Set.lean`) —
+`search_complete'`'s minimal-height `Nat.find` now runs on a real
+decision procedure, not `Classical.propDecidable` — together with the
+choice-free `Finset` toolkit `PLLFinsetKit.lean` (`toFin`, `finUnion`,
+`finImage`, `finPairMap`, `finPow`, `finSdiff`, `finDecEq`: the set
+algebra lifted from list operations with *extensionality* as the
+permutation-invariance proof, where Mathlib's own operations lean on the
+choice-tainted `Perm.dedup`), on which `atoms`, `enum`, `subF`, `clOf`
+and `search` are now built.  (ii) The `Finset.toList` uses fell to
+`Prop`-level representatives (`exists_rep`: every finset *has* an
+enumerating list, by `Quot.ind` — only a canonical choice of one would
+need choice): consistency is decided by the Boolean `consB` lifted over
+representatives, and the emitter's world list is built inside the proof
+(`canonCMof` + sublists of a closure representative).  (iii)
+`not_consistent_iff`'s `push_neg` fell to decidable case analysis on the
+representative check (`cons_iff_rep`) in `cons_insVal_or_insFal`.  What
+*cannot* fall: rows marked ‡ have statements mentioning
+`List.toFinset`/`Finset.toList`, choice-tainted inside Mathlib at
+definition level, so they stay at `clean` however proved — their
+mathematical content is carried choice-free by the primed forms
+(`G4c.iff_setFin`, `G4cTm.sound'`, `cons_iff_rep`).
 
 ---
 ---

@@ -194,13 +194,13 @@ def G4cTm.find (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
 namespace G4cTm
 
 /-- **Soundness by projection**: a proof term yields a `G4s` derivation of the
-corresponding set-sequent. -/
-theorem sound : ∀ {Γ : List PLLFormula} {C : PLLFormula},
-    G4cTm Γ C → G4s Γ.toFinset C := by
+corresponding set-sequent (choice-free `toFin` form). -/
+theorem sound' : ∀ {Γ : List PLLFormula} {C : PLLFormula},
+    G4cTm Γ C → G4s (toFin Γ) C := by
   intro Γ C t
   induction t with
-  | init h => exact ⟨0, .init (List.mem_toFinset.mpr h)⟩
-  | botL h => exact ⟨0, .botL (List.mem_toFinset.mpr h)⟩
+  | init h => exact ⟨0, .init (mem_toFin.mpr h)⟩
+  | botL h => exact ⟨0, .botL (mem_toFin.mpr h)⟩
   | andR _ _ ih₁ ih₂ =>
       obtain ⟨n₁, d₁⟩ := ih₁; obtain ⟨n₂, d₂⟩ := ih₂
       exact ⟨_, .andR (d₁.mono (Nat.le_max_left n₁ n₂))
@@ -209,56 +209,63 @@ theorem sound : ∀ {Γ : List PLLFormula} {C : PLLFormula},
   | orR2 _ ih => obtain ⟨n, d⟩ := ih; exact ⟨n + 1, .orR2 d⟩
   | impR _ ih =>
       obtain ⟨n, d⟩ := ih
-      rw [List.toFinset_cons] at d
+      rw [toFin_cons] at d
       exact ⟨n + 1, .impR d⟩
   | laxR _ ih => obtain ⟨n, d⟩ := ih; exact ⟨n + 1, .laxR d⟩
   | laxL h _ ih =>
       obtain ⟨n, d⟩ := ih
-      rw [List.toFinset_cons] at d
-      exact ⟨n + 1, .laxL (List.mem_toFinset.mpr h) d⟩
+      rw [toFin_cons] at d
+      exact ⟨n + 1, .laxL (mem_toFin.mpr h) d⟩
   | andL h _ ih =>
       obtain ⟨n, d⟩ := ih
-      rw [List.toFinset_cons, List.toFinset_cons] at d
-      exact ⟨n + 1, .andL (List.mem_toFinset.mpr h) d⟩
+      rw [toFin_cons, toFin_cons] at d
+      exact ⟨n + 1, .andL (mem_toFin.mpr h) d⟩
   | orL h _ _ ih₁ ih₂ =>
       obtain ⟨n₁, d₁⟩ := ih₁; obtain ⟨n₂, d₂⟩ := ih₂
-      rw [List.toFinset_cons] at d₁ d₂
-      exact ⟨_, .orL (List.mem_toFinset.mpr h)
+      rw [toFin_cons] at d₁ d₂
+      exact ⟨_, .orL (mem_toFin.mpr h)
         ((d₁.mono (Nat.le_max_left n₁ n₂)))
         ((d₂.mono (Nat.le_max_right n₁ n₂)))⟩
   | impLProp h ha _ ih =>
       obtain ⟨n, d⟩ := ih
-      rw [List.toFinset_cons] at d
-      exact ⟨n + 1, .impLProp (List.mem_toFinset.mpr h)
-        (List.mem_toFinset.mpr ha) d⟩
+      rw [toFin_cons] at d
+      exact ⟨n + 1, .impLProp (mem_toFin.mpr h)
+        (mem_toFin.mpr ha) d⟩
   | impLAnd h _ ih =>
       obtain ⟨n, d⟩ := ih
-      rw [List.toFinset_cons] at d
-      exact ⟨n + 1, .impLAnd (List.mem_toFinset.mpr h) d⟩
+      rw [toFin_cons] at d
+      exact ⟨n + 1, .impLAnd (mem_toFin.mpr h) d⟩
   | impLOr h _ ih =>
       obtain ⟨n, d⟩ := ih
-      rw [List.toFinset_cons, List.toFinset_cons] at d
-      exact ⟨n + 1, .impLOr (List.mem_toFinset.mpr h) d⟩
+      rw [toFin_cons, toFin_cons] at d
+      exact ⟨n + 1, .impLOr (mem_toFin.mpr h) d⟩
   | impLImp h _ _ ih₁ ih₂ =>
       obtain ⟨n₁, d₁⟩ := ih₁; obtain ⟨n₂, d₂⟩ := ih₂
-      rw [List.toFinset_cons] at d₁ d₂
-      exact ⟨_, .impLImp (List.mem_toFinset.mpr h)
+      rw [toFin_cons] at d₁ d₂
+      exact ⟨_, .impLImp (mem_toFin.mpr h)
         (d₁.mono (Nat.le_max_left n₁ n₂)) (d₂.mono (Nat.le_max_right n₁ n₂))⟩
   | impLLax h _ _ ih₁ ih₂ =>
       obtain ⟨n₁, d₁⟩ := ih₁; obtain ⟨n₂, d₂⟩ := ih₂
-      rw [List.toFinset_cons] at d₂
-      exact ⟨_, .impLLax (List.mem_toFinset.mpr h)
+      rw [toFin_cons] at d₂
+      exact ⟨_, .impLLax (mem_toFin.mpr h)
         (d₁.mono (Nat.le_max_left n₁ n₂)) (d₂.mono (Nat.le_max_right n₁ n₂))⟩
   | impLLaxLax h hX _ _ ih₁ ih₂ =>
       obtain ⟨n₁, d₁⟩ := ih₁; obtain ⟨n₂, d₂⟩ := ih₂
-      rw [List.toFinset_cons] at d₁ d₂
-      exact ⟨_, .impLLaxLax (List.mem_toFinset.mpr h)
-        (List.mem_toFinset.mpr hX)
+      rw [toFin_cons] at d₁ d₂
+      exact ⟨_, .impLLaxLax (mem_toFin.mpr h)
+        (mem_toFin.mpr hX)
         (d₁.mono (Nat.le_max_left n₁ n₂)) (d₂.mono (Nat.le_max_right n₁ n₂))⟩
+
+/-- Legacy `toFinset` form, derived; statement-tainted through
+`List.toFinset`.  The clean chain uses `sound'`. -/
+theorem sound {Γ : List PLLFormula} {C : PLLFormula} (t : G4cTm Γ C) :
+    G4s Γ.toFinset C := by
+  rw [← toFin_eq_toFinset]
+  exact t.sound'
 
 /-- A proof term certifies `G4c` derivability. -/
 theorem toG4c {Γ : List PLLFormula} {C : PLLFormula} (t : G4cTm Γ C) :
-    G4c Γ C := G4c.iff_set.mpr t.sound
+    G4c Γ C := G4c.iff_setFin.mpr t.sound' 
 
 /-- A proof term certifies PLL provability (via `G4c.equiv_tm`). -/
 theorem toTm {Γ : List PLLFormula} {C : PLLFormula} (t : G4cTm Γ C) :
@@ -266,15 +273,15 @@ theorem toTm {Γ : List PLLFormula} {C : PLLFormula} (t : G4cTm Γ C) :
 
 private theorem nonempty_ofSet :
     ∀ {n : Nat} {Γs : Finset PLLFormula} {E : PLLFormula}, G4sh n Γs E →
-    ∀ {Γ : List PLLFormula}, Γ.toFinset = Γs → Nonempty (G4cTm Γ E) := by
+    ∀ {Γ : List PLLFormula}, toFin Γ = Γs → Nonempty (G4cTm Γ E) := by
   intro n Γs E d
   induction d with
   | init h =>
       intro Γ hΓ; subst hΓ
-      exact ⟨.init (List.mem_toFinset.mp h)⟩
+      exact ⟨.init (mem_toFin.mp h)⟩
   | botL h =>
       intro Γ hΓ; subst hΓ
-      exact ⟨.botL (List.mem_toFinset.mp h)⟩
+      exact ⟨.botL (mem_toFin.mp h)⟩
   | andR _ _ ih₁ ih₂ =>
       intro Γ hΓ; subst hΓ
       obtain ⟨t₁⟩ := ih₁ rfl; obtain ⟨t₂⟩ := ih₂ rfl
@@ -289,7 +296,7 @@ private theorem nonempty_ofSet :
       exact ⟨.orR2 t⟩
   | @impR _ _ A B _ ih =>
       intro Γ hΓ; subst hΓ
-      obtain ⟨t⟩ := ih (Γ := A :: Γ) (by rw [List.toFinset_cons])
+      obtain ⟨t⟩ := ih (Γ := A :: Γ) (by rw [toFin_cons])
       exact ⟨.impR t⟩
   | laxR _ ih =>
       intro Γ hΓ; subst hΓ
@@ -297,54 +304,54 @@ private theorem nonempty_ofSet :
       exact ⟨.laxR t⟩
   | @laxL _ _ A B h _ ih =>
       intro Γ hΓ; subst hΓ
-      obtain ⟨t⟩ := ih (Γ := A :: Γ) (by rw [List.toFinset_cons])
-      exact ⟨.laxL (List.mem_toFinset.mp h) t⟩
+      obtain ⟨t⟩ := ih (Γ := A :: Γ) (by rw [toFin_cons])
+      exact ⟨.laxL (mem_toFin.mp h) t⟩
   | @andL _ _ A B _ h _ ih =>
       intro Γ hΓ; subst hΓ
       obtain ⟨t⟩ := ih (Γ := A :: B :: Γ)
-        (by rw [List.toFinset_cons, List.toFinset_cons])
-      exact ⟨.andL (List.mem_toFinset.mp h) t⟩
+        (by rw [toFin_cons, toFin_cons])
+      exact ⟨.andL (mem_toFin.mp h) t⟩
   | @orL _ _ A B _ h _ _ ih₁ ih₂ =>
       intro Γ hΓ; subst hΓ
-      obtain ⟨t₁⟩ := ih₁ (Γ := A :: Γ) (by rw [List.toFinset_cons])
-      obtain ⟨t₂⟩ := ih₂ (Γ := B :: Γ) (by rw [List.toFinset_cons])
-      exact ⟨.orL (List.mem_toFinset.mp h) t₁ t₂⟩
+      obtain ⟨t₁⟩ := ih₁ (Γ := A :: Γ) (by rw [toFin_cons])
+      obtain ⟨t₂⟩ := ih₂ (Γ := B :: Γ) (by rw [toFin_cons])
+      exact ⟨.orL (mem_toFin.mp h) t₁ t₂⟩
   | @impLProp _ _ a B _ h ha _ ih =>
       intro Γ hΓ; subst hΓ
-      obtain ⟨t⟩ := ih (Γ := B :: Γ) (by rw [List.toFinset_cons])
-      exact ⟨.impLProp (List.mem_toFinset.mp h) (List.mem_toFinset.mp ha) t⟩
+      obtain ⟨t⟩ := ih (Γ := B :: Γ) (by rw [toFin_cons])
+      exact ⟨.impLProp (mem_toFin.mp h) (mem_toFin.mp ha) t⟩
   | @impLAnd _ _ A B D _ h _ ih =>
       intro Γ hΓ; subst hΓ
       obtain ⟨t⟩ := ih (Γ := A.ifThen (B.ifThen D) :: Γ)
-        (by rw [List.toFinset_cons])
-      exact ⟨.impLAnd (List.mem_toFinset.mp h) t⟩
+        (by rw [toFin_cons])
+      exact ⟨.impLAnd (mem_toFin.mp h) t⟩
   | @impLOr _ _ A B D _ h _ ih =>
       intro Γ hΓ; subst hΓ
       obtain ⟨t⟩ := ih (Γ := A.ifThen D :: B.ifThen D :: Γ)
-        (by rw [List.toFinset_cons, List.toFinset_cons])
-      exact ⟨.impLOr (List.mem_toFinset.mp h) t⟩
+        (by rw [toFin_cons, toFin_cons])
+      exact ⟨.impLOr (mem_toFin.mp h) t⟩
   | @impLImp _ _ A B D _ h _ _ ih₁ ih₂ =>
       intro Γ hΓ; subst hΓ
-      obtain ⟨t₁⟩ := ih₁ (Γ := B.ifThen D :: Γ) (by rw [List.toFinset_cons])
-      obtain ⟨t₂⟩ := ih₂ (Γ := D :: Γ) (by rw [List.toFinset_cons])
-      exact ⟨.impLImp (List.mem_toFinset.mp h) t₁ t₂⟩
+      obtain ⟨t₁⟩ := ih₁ (Γ := B.ifThen D :: Γ) (by rw [toFin_cons])
+      obtain ⟨t₂⟩ := ih₂ (Γ := D :: Γ) (by rw [toFin_cons])
+      exact ⟨.impLImp (mem_toFin.mp h) t₁ t₂⟩
   | @impLLax _ _ A B _ h _ _ ih₁ ih₂ =>
       intro Γ hΓ; subst hΓ
       obtain ⟨t₁⟩ := ih₁ rfl
-      obtain ⟨t₂⟩ := ih₂ (Γ := B :: Γ) (by rw [List.toFinset_cons])
-      exact ⟨.impLLax (List.mem_toFinset.mp h) t₁ t₂⟩
+      obtain ⟨t₂⟩ := ih₂ (Γ := B :: Γ) (by rw [toFin_cons])
+      exact ⟨.impLLax (mem_toFin.mp h) t₁ t₂⟩
   | @impLLaxLax _ _ A B X _ h hX _ _ ih₁ ih₂ =>
       intro Γ hΓ; subst hΓ
-      obtain ⟨t₁⟩ := ih₁ (Γ := X :: Γ) (by rw [List.toFinset_cons])
-      obtain ⟨t₂⟩ := ih₂ (Γ := B :: Γ) (by rw [List.toFinset_cons])
-      exact ⟨.impLLaxLax (List.mem_toFinset.mp h) (List.mem_toFinset.mp hX)
+      obtain ⟨t₁⟩ := ih₁ (Γ := X :: Γ) (by rw [toFin_cons])
+      obtain ⟨t₂⟩ := ih₂ (Γ := B :: Γ) (by rw [toFin_cons])
+      exact ⟨.impLLaxLax (mem_toFin.mp h) (mem_toFin.mp hX)
         t₁ t₂⟩
 
 /-- **Completeness in principle**: every `G4c`-derivable sequent has a proof
 term — nothing is out of the searcher's reach. -/
 theorem ofG4c {Γ : List PLLFormula} {C : PLLFormula} (h : G4c Γ C) :
     Nonempty (G4cTm Γ C) := by
-  obtain ⟨n, d⟩ := G4c.iff_set.mp h
+  obtain ⟨n, d⟩ := G4c.iff_setFin.mp h
   exact nonempty_ofSet d rfl
 
 /-- **G4iLL″ proof terms = PLL proof terms**, at the level of inhabitation. -/
@@ -373,8 +380,24 @@ end G4cTm
   let φ₂ := ((prop "p").somehow).ifThen (prop "r")
   (G4cTm.find [φ₁, φ₂] (prop "r")).map (·.pretty)
 
+-- `sound` is statement-tainted (`List.toFinset`); everything else in the
+-- bridge is choice-free.
+/--
+info: 'PLLND.G4cTm.sound' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms G4cTm.sound
+
+/-- info: 'PLLND.G4cTm.sound'' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms G4cTm.sound'
+
+/-- info: 'PLLND.G4cTm.ofG4c' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms G4cTm.ofG4c
+
+/-- info: 'PLLND.G4cTm.equiv_tm' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms G4cTm.equiv_tm
 
 end PLLND

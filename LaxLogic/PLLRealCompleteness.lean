@@ -22,9 +22,10 @@ no token-decorated checked finite model realisability-refutes it.
 Every quantifier here ranges over concrete objects — finite models as
 printable data, evidence with one token per atom, realisers in an explicit
 algebra of finite lookup tables — and the countermodel construction is the
-iterated *decided* extension of `PLLFinComp.lean`: no Zorn.  The
-`#print axioms` audit currently carries `Classical.choice` inherited from
-the decidability infrastructure; the mathematics is finitary throughout.
+iterated *decided* extension of `PLLFinComp.lean`: no Zorn.  After the
+2026-07-18 choice-scrub of the decidability infrastructure the audit is
+**`[propext, Quot.sound]`** — no `Classical.choice` anywhere in the
+chain, as the guards below check.
 -/
 
 open PLLFormula
@@ -85,5 +86,14 @@ theorem derivable_iff_no_realP_refutation {Γ : List PLLFormula}
 end BeliefReal
 end PLLND
 
+/--
+info: 'PLLND.BeliefReal.realP_countermodel_of_underivable' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realP_countermodel_of_underivable
+
+/--
+info: 'PLLND.BeliefReal.derivable_iff_no_realP_refutation' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.derivable_iff_no_realP_refutation

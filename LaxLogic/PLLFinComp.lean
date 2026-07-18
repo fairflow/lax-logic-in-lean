@@ -38,26 +38,34 @@ Contents (mirroring F&M §4 / `PLLCompleteness.lean` case for case):
    sequent has a checked countermodel.  The composition with the
    presented-strategy squeeze lives in `PLLRealCompleteness.lean`.
 
-Audit note (updated 2026-07-17, after the axiom-hygiene pass): the
-mathematics here is finitary (no Zorn anywhere).  The incidental
-classical steps in the cut-elimination chain are now scrubbed
-(`cutElimination` and `G4c.equiv_tm` audit `[propext, Quot.sound]`),
-but this development still audits
-`[propext, Classical.choice, Quot.sound]`, and a dependency-frontier
-measurement shows the remainder is structural, not tactic hygiene:
+Audit note (re-measured 2026-07-18, after the choice-scrub): the
+mathematics here is finitary (no Zorn anywhere), and the whole
+development now audits **`[propext, Quot.sound]`** — see the guards at
+the foot for `lindenbaum`, `cons_insVal_or_insFal`, `truth_lemma`,
+`finite_canonical_countermodel` and `emitter_completeness`.  The three
+former `Classical.choice` sources were removed structurally:
 
 1. the decidability infrastructure (`decidablePLL`, `G4c_iff_search`)
-   sits on Mathlib `Finset` operations whose bodies embed choice, and
-   on a `Nat.find` minimal-height induction — see the audit note in
-   `PLLG4Dec.lean`;
-2. the world enumeration here (`worldFinset`, `worldList`,
-   `cons_iff_check`) uses `Finset.powerset`/`Finset.toList`, and
-   `Multiset.toList` is defined by `Classical.choice` outright;
-3. `not_consistent_iff` (`PLLCompleteness.lean`) is a `push_neg`
-   double negation over an existential with no choice-free decider.
+   now runs on the choice-free `Finset` toolkit
+   (`PLLFinsetKit.lean`) and the height-bounded decider `G4sh.dec`
+   (`PLLG4Set.lean`) — see the audit note in `PLLG4Dec.lean`;
+2. consistency of a triple is decided by the Boolean `consB`, lifted
+   over `Prop`-level representative lists of `fal`/`mfal`
+   (`Quotient.liftOn` with `disjOf_mono` as permutation-invariance) —
+   no `Finset.toList`; the world enumeration for the emitter is
+   likewise parameterised over listed worlds (`canonCMof`), supplied
+   inside the proof from `exists_rep`;
+3. the extension dichotomy `cons_insVal_or_insFal` extracts its
+   failure witnesses by decidable case analysis on the representative
+   check — no `push_neg`, no `not_consistent_iff`.
 
-A choice-free audit therefore needs a list-based world representation
-and a list-based decider, not further proof repairs.
+The only remaining choice-tainted results in this file are the legacy
+`Finset.toList`-phrased forms (`setDeriv_coe_iff`, `cons_iff_check`,
+`worldFinset`/`worldList`/`canonFinCM` and their `Charac` lemmas,
+including `transfer`): their *statements* mention `Finset.toList`
+(`Classical.choice` by definition) or are built on it, so they cannot
+audit choice-free however proved.  Nothing in the clean chain uses
+them.
 -/
 
 open PLLFormula
@@ -119,9 +127,38 @@ theorem setDeriv_coe_iff {V : Finset PLLFormula} {φ : PLLFormula} :
   · rintro ⟨p⟩
     exact ⟨V.toList, fun ψ hψ => Finset.mem_toList.mp hψ, ⟨p⟩⟩
 
-noncomputable instance (V : Finset PLLFormula) (φ : PLLFormula) :
+/-- Set-derivability from a finset coercion, as a Boolean: lift
+`decide (Nonempty (Tm l φ))` over any representative list of the
+underlying multiset — the value is permutation-invariant because
+derivability is stable under renaming, and `decidablePLL` decides each
+representative.  Choice-free, unlike the `Finset.toList` route. -/
+def setDerivB (V : Finset PLLFormula) (φ : PLLFormula) : Bool :=
+  Quotient.liftOn V.val (fun l => decide (Nonempty (Tm l φ)))
+    (fun l₁ l₂ p =>
+      decide_eq_decide.mpr
+        ⟨fun h => curry_howard.mpr
+            ((curry_howard.mp h).elim fun q =>
+              ⟨q.rename fun ψ hψ => p.mem_iff.mp hψ⟩),
+         fun h => curry_howard.mpr
+            ((curry_howard.mp h).elim fun q =>
+              ⟨q.rename fun ψ hψ => p.mem_iff.mpr hψ⟩)⟩)
+
+theorem setDerivB_iff (V : Finset PLLFormula) (φ : PLLFormula) :
+    setDerivB V φ = true ↔ (↑V : Set PLLFormula) ⊩ φ := by
+  rcases V with ⟨m, hm⟩
+  induction m using Quotient.inductionOn with
+  | h l =>
+      show decide (Nonempty (Tm l φ)) = true ↔ _
+      rw [decide_eq_true_eq, curry_howard]
+      constructor
+      · rintro ⟨q⟩
+        exact ⟨l, fun ψ hψ => hψ, ⟨q⟩⟩
+      · rintro ⟨L, hL, ⟨q⟩⟩
+        exact ⟨q.rename fun ψ hψ => hL ψ hψ⟩
+
+instance (V : Finset PLLFormula) (φ : PLLFormula) :
     Decidable ((↑V : Set PLLFormula) ⊩ φ) :=
-  decidable_of_iff _ (curry_howard.trans setDeriv_coe_iff.symm)
+  decidable_of_iff _ (setDerivB_iff V φ)
 
 /-- Consistency of a finite triple is a single derivability check on the
 full selection (empty selections aside): `disjOf` is monotone, so the full
@@ -156,8 +193,100 @@ theorem cons_iff_check (T : FTheory) :
       · exact fun ψ hψ => Finset.mem_toList.mpr (hDs ψ hψ)
       · exact fun ψ hψ => Finset.mem_toList.mpr (hTs ψ hψ)
 
-noncomputable instance (T : FTheory) : Decidable T.Cons :=
-  decidable_of_iff _ (cons_iff_check T).symm
+/-- The consistency check phrased over *any* lists enumerating `fal`
+and `mfal` (membership is all the proof consumes, so duplicates and
+order are irrelevant).  This is the choice-free replacement for the
+`Finset.toList`-phrased `cons_iff_check`. -/
+theorem cons_iff_rep (T : FTheory) {lf lm : List PLLFormula}
+    (hlf : ∀ x, x ∈ lf ↔ x ∈ T.fal) (hlm : ∀ x, x ∈ lm ↔ x ∈ T.mfal) :
+    T.Cons ↔ (lf = [] ∧ lm = []) ∨
+      ¬ (↑T.val : Set PLLFormula) ⊩ disjOf lf lm := by
+  constructor
+  · intro hT
+    by_cases he : lf = [] ∧ lm = []
+    · exact .inl he
+    · refine .inr (hT lf lm
+        (fun ψ hψ => Finset.mem_coe.mpr ((hlf ψ).mp hψ))
+        (fun ψ hψ => Finset.mem_coe.mpr ((hlm ψ).mp hψ)) ?_)
+      intro hnil
+      rcases List.append_eq_nil_iff.mp hnil with ⟨h₁, h₂⟩
+      exact he ⟨h₁, h₂⟩
+  · rintro (⟨he₁, he₂⟩ | hnd) Ds Ts hDs hTs hg hder
+    · cases Ds with
+      | nil =>
+          cases Ts with
+          | nil => exact hg rfl
+          | cons K Ts =>
+              have hK : K ∈ T.mfal := by
+                have := hTs K (List.mem_cons_self ..)
+                rw [FTheory.toTheory_mfal] at this
+                exact Finset.mem_coe.mp this
+              have := (hlm K).mpr hK
+              rw [he₂] at this
+              cases this
+      | cons D Ds =>
+          have hD : D ∈ T.fal := by
+            have := hDs D (List.mem_cons_self ..)
+            rw [FTheory.toTheory_fal] at this
+            exact Finset.mem_coe.mp this
+          have := (hlf D).mpr hD
+          rw [he₁] at this
+          cases this
+    · refine hnd (disjOf_mono ?_ ?_ hder)
+      · exact fun ψ hψ => (hlf ψ).mpr (Finset.mem_coe.mp (hDs ψ hψ))
+      · exact fun ψ hψ => (hlm ψ).mpr (Finset.mem_coe.mp (hTs ψ hψ))
+
+private theorem bool_eq_of_iff {a b : Bool} (h : a = true ↔ b = true) :
+    a = b := by
+  cases a <;> cases b <;> simp_all
+
+/-- Consistency of a finite triple, as a Boolean — lifted over
+representatives of `fal` and `mfal`; permutation-invariance is by
+`disjOf_mono` (membership-monotonicity of the consistency formula). -/
+def consB (T : FTheory) : Bool :=
+  Quotient.liftOn₂ T.fal.val T.mfal.val
+    (fun lf lm =>
+      (decide (lf = []) && decide (lm = [])) ||
+        !setDerivB T.val (disjOf lf lm))
+    (fun lf₁ lm₁ lf₂ lm₂ pf pm => by
+      have hf : lf₁ = [] ↔ lf₂ = [] := by
+        rw [← List.length_eq_zero_iff, ← List.length_eq_zero_iff,
+          pf.length_eq]
+      have hm : lm₁ = [] ↔ lm₂ = [] := by
+        rw [← List.length_eq_zero_iff, ← List.length_eq_zero_iff,
+          pm.length_eq]
+      have hd : setDerivB T.val (disjOf lf₁ lm₁)
+          = setDerivB T.val (disjOf lf₂ lm₂) :=
+        bool_eq_of_iff (by
+          rw [setDerivB_iff, setDerivB_iff]
+          exact ⟨disjOf_mono (fun φ h => pf.mem_iff.mp h)
+              (fun φ h => pm.mem_iff.mp h),
+            disjOf_mono (fun φ h => pf.mem_iff.mpr h)
+              (fun φ h => pm.mem_iff.mpr h)⟩)
+      rw [decide_eq_decide.mpr hf, decide_eq_decide.mpr hm, hd])
+
+theorem consB_iff (T : FTheory) : consB T = true ↔ T.Cons := by
+  obtain ⟨lf, hlf⟩ := exists_rep_val T.fal
+  obtain ⟨lm, hlm⟩ := exists_rep_val T.mfal
+  have hlf' : ∀ x, x ∈ lf ↔ x ∈ T.fal := fun x => by
+    rw [← Multiset.mem_coe, hlf]
+    exact Iff.rfl
+  have hlm' : ∀ x, x ∈ lm ↔ x ∈ T.mfal := fun x => by
+    rw [← Multiset.mem_coe, hlm]
+    exact Iff.rfl
+  have hred : consB T =
+      ((decide (lf = []) && decide (lm = [])) ||
+        !setDerivB T.val (disjOf lf lm)) := by
+    unfold consB
+    rw [← hlf, ← hlm]
+    rfl
+  rw [hred]
+  simp only [Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq,
+    Bool.not_eq_true', ← Bool.not_eq_true, setDerivB_iff]
+  exact (cons_iff_rep T hlf' hlm').symm
+
+instance (T : FTheory) : Decidable T.Cons :=
+  decidable_of_iff _ (consB_iff T)
 
 /-! ## The extension dichotomy -/
 
@@ -171,13 +300,32 @@ theorem cons_insVal_or_insFal {T : FTheory} (hT : T.Cons) (φ : PLLFormula) :
   by_cases h2 : (T.insFal φ).Cons
   · exact .inr h2
   exfalso
-  rw [FTheory.Cons, not_consistent_iff] at h1 h2
-  obtain ⟨Ds₁, Ts₁, hDs₁, hTs₁, hg₁, hd₁⟩ := h1
-  obtain ⟨Ds₂, Ts₂, hDs₂, hTs₂, hg₂, hd₂⟩ := h2
-  simp only [FTheory.insVal, FTheory.insFal, FTheory.toTheory,
-    Finset.coe_insert] at hDs₁ hTs₁ hd₁ hDs₂ hTs₂ hd₂
+  -- Enumerate `fal`/`mfal` (Prop-level representatives, no choice) and
+  -- turn the two failed checks into explicit full-selection derivations
+  -- by decidable case analysis — no `push_neg`, no `not_consistent_iff`.
+  obtain ⟨lf, -, hlf⟩ := exists_rep T.fal
+  obtain ⟨lm, -, hlm⟩ := exists_rep T.mfal
+  have hlf₂ : ∀ x, x ∈ φ :: lf ↔ x ∈ (T.insFal φ).fal := fun x => by
+    rw [List.mem_cons, hlf x]
+    exact (Finset.mem_insert).symm
+  have hc1 : ¬((lf = [] ∧ lm = []) ∨
+      ¬ (↑(insert φ T.val) : Set PLLFormula) ⊩ disjOf lf lm) :=
+    fun hc => h1 ((cons_iff_rep (T.insVal φ) hlf hlm).mpr hc)
+  have hc2 : ¬((φ :: lf = [] ∧ lm = []) ∨
+      ¬ (↑T.val : Set PLLFormula) ⊩ disjOf (φ :: lf) lm) :=
+    fun hc => h2 ((cons_iff_rep (T.insFal φ) hlf₂ hlm).mpr hc)
+  have hg₁ : ¬(lf = [] ∧ lm = []) := fun hA => hc1 (.inl hA)
+  have hd₁ : (↑(insert φ T.val) : Set PLLFormula) ⊩ disjOf lf lm := by
+    by_cases hD : (↑(insert φ T.val) : Set PLLFormula) ⊩ disjOf lf lm
+    · exact hD
+    · exact absurd (.inr hD) hc1
+  have hd₂ : (↑T.val : Set PLLFormula) ⊩ disjOf (φ :: lf) lm := by
+    by_cases hD : (↑T.val : Set PLLFormula) ⊩ disjOf (φ :: lf) lm
+    · exact hD
+    · exact absurd (.inr hD) hc2
+  rw [coeInsert] at hd₁
   have hd : (↑T.val : Set PLLFormula) ⊩
-      disjOf (Ds₁ ++ rmv φ Ds₂) (Ts₁ ++ Ts₂) := by
+      disjOf (lf ++ rmv φ (φ :: lf)) (lm ++ lm) := by
     refine disjOf_transform hd₂ (fun ψ hψ => ?_)
       (fun ψ hψ => List.mem_append.mpr (.inr hψ))
     by_cases he : ψ = φ
@@ -188,30 +336,34 @@ theorem cons_insVal_or_insFal {T : FTheory} (hT : T.Cons) (φ : PLLFormula) :
     · exact disjOf_intro_fal
         (List.mem_append.mpr (.inr (mem_rmv_iff.mpr ⟨hψ, he⟩)))
         (SetDeriv.of_mem (Set.mem_insert ..))
-  refine hT _ _ ?_ ?_ (guard_append hg₁) hd
+  refine hT _ _ ?_ ?_ ?_ hd
   · intro ψ hψ
     rcases List.mem_append.mp hψ with h | h
-    · exact hDs₁ ψ h
+    · exact Finset.mem_coe.mpr ((hlf ψ).mp h)
     · obtain ⟨hin, hne⟩ := mem_rmv_iff.mp h
-      rcases hDs₂ ψ hin with rfl | h'
+      rcases List.mem_cons.mp hin with rfl | h'
       · exact absurd rfl hne
-      · exact h'
+      · exact Finset.mem_coe.mpr ((hlf ψ).mp h')
   · intro ψ hψ
     rcases List.mem_append.mp hψ with h | h
-    exacts [hTs₁ ψ h, hTs₂ ψ h]
+    exacts [Finset.mem_coe.mpr ((hlm ψ).mp h),
+      Finset.mem_coe.mpr ((hlm ψ).mp h)]
+  · intro hnil
+    rcases List.append_eq_nil_iff.mp hnil with ⟨hA, hB⟩
+    rcases List.append_eq_nil_iff.mp hA with ⟨hA₁, -⟩
+    rcases List.append_eq_nil_iff.mp hB with ⟨hB₁, -⟩
+    exact hg₁ ⟨hA₁, hB₁⟩
 
 /-! ## The constructive Lindenbaum extension -/
 
 /-- One decided extension step: add `φ` to `val` if that is consistent,
-otherwise to `fal`.  (`noncomputable` only because Mathlib's
-`Finset.toList` picks a representative by choice; the fold is effective
-once the closure is enumerated as a list, which the model-construction
-layer does.) -/
-noncomputable def extendStep (T : FTheory) (φ : PLLFormula) : FTheory :=
+otherwise to `fal` — the decision by the computable, choice-free
+consistency check `consB`. -/
+def extendStep (T : FTheory) (φ : PLLFormula) : FTheory :=
   if (T.insVal φ).Cons then T.insVal φ else T.insFal φ
 
 /-- Fold the decided extension over a list of formulas. -/
-noncomputable def extendAll (T : FTheory) (l : List PLLFormula) : FTheory :=
+def extendAll (T : FTheory) (l : List PLLFormula) : FTheory :=
   l.foldl extendStep T
 
 theorem extendStep_cons {T : FTheory} (hT : T.Cons) (φ : PLLFormula) :
@@ -293,9 +445,10 @@ truth-lemma constructions require). -/
 theorem lindenbaum {cl : Finset PLLFormula} {T : FTheory}
     (hT : T.Cons) (hIn : InCl cl T) :
     ∃ T', T.le T' ∧ MaxIn cl T' ∧ T'.mfal = T.mfal := by
-  refine ⟨extendAll T cl.toList, extendAll_le T _,
+  obtain ⟨lcl, -, hlcl⟩ := exists_rep cl
+  refine ⟨extendAll T lcl, extendAll_le T _,
     ⟨extendAll_cons hT _, ?_, fun φ hφ =>
-      extendAll_total T _ φ (Finset.mem_toList.mpr hφ)⟩,
+      extendAll_total T _ φ ((hlcl φ).mpr hφ)⟩,
     extendAll_mfal T _⟩
   -- the extension stays inside the closure
   have step : ∀ (T' : FTheory) (l : List PLLFormula), InCl cl T' →
@@ -310,9 +463,9 @@ theorem lindenbaum {cl : Finset PLLFormula} {T : FTheory}
         have hψ : ψ ∈ cl := hl ψ (List.mem_cons_self ..)
         unfold extendStep
         split
-        · exact ⟨Finset.insert_subset hψ h.1, h.2.1, h.2.2⟩
-        · exact ⟨h.1, Finset.insert_subset hψ h.2.1, h.2.2⟩
-  exact step T cl.toList hIn (fun φ hφ => Finset.mem_toList.mp hφ)
+        · exact ⟨insertSubset hψ h.1, h.2.1, h.2.2⟩
+        · exact ⟨h.1, insertSubset hψ h.2.1, h.2.2⟩
+  exact step T lcl hIn (fun φ hφ => (hlcl φ).mp hφ)
 
 /-! ## Part 2: the Lemma 4.2 suite, closure-relative
 
@@ -437,6 +590,14 @@ def canonFin (cl : Finset PLLFormula) : ConstraintModel where
         (falso _ (of_mem (Finset.mem_coe.mpr hw))))
     · exact .inl hcl
 
+private theorem not_mem_coe_empty {K : PLLFormula}
+    (h : K ∈ (↑(∅ : Finset PLLFormula) : Set PLLFormula)) : False :=
+  Finset.notMem_empty K (Finset.mem_coe.mp h)
+
+private theorem eq_of_mem_coe_singleton {K ψ : PLLFormula}
+    (h : K ∈ (↑({ψ} : Finset PLLFormula) : Set PLLFormula)) : K = ψ :=
+  Finset.mem_singleton.mp (Finset.mem_coe.mp h)
+
 /-- **The truth lemma**, finitely: on the finite canonical model over a
 subformula-closed closure, membership in `val` forces and membership in
 `fal` refutes — with all three extension steps supplied by the
@@ -502,16 +663,17 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
           have hTs' : Ts = [] := by
             cases Ts with
             | nil => rfl
-            | cons K Ts => simpa using hTs K (List.mem_cons_self ..)
+            | cons K Ts =>
+                exact absurd (hTs K (List.mem_cons_self ..)) not_mem_coe_empty
           subst hTs'
-          rw [disjOf_nil_right] at hder
+          rw [disjOf_nil_right, FTheory.toTheory_val, coeInsert] at hder
           have hψd : (insert φ (↑T.1.val : Set PLLFormula)) ⊩ ψ := by
-            refine bigOr_collapse (fun χ hχ => ?_) (by simpa using hder)
-            simpa using hDs χ hχ
+            refine bigOr_collapse (fun χ hχ => ?_) hder
+            exact eq_of_mem_coe_singleton (hDs χ hχ)
           exact T.2.not_fal_deriv h (deduct hψd)
         obtain ⟨T', hle, hM', _⟩ := lindenbaum hcons
-          ⟨Finset.insert_subset hφ₁ T.2.2.1.1,
-           Finset.singleton_subset_iff.mpr hψ₁, Finset.empty_subset _⟩
+          ⟨insertSubset hφ₁ T.2.2.1.1,
+           singletonSubset hψ₁, Finset.empty_subset _⟩
         have hRi : T.1.val ⊆ T'.val :=
           (Finset.subset_insert ..).trans hle.1
         have hfφ' : (canonFin cl).force ⟨T', hM'⟩ φ :=
@@ -530,23 +692,24 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
           have hDs' : Ds = [] := by
             cases Ds with
             | nil => rfl
-            | cons D Ds => simpa using hDs D (List.mem_cons_self ..)
+            | cons D Ds =>
+                exact absurd (hDs D (List.mem_cons_self ..)) not_mem_coe_empty
           subst hDs'
           cases Ts with
           | nil => exact hg rfl
           | cons K Ts =>
-              rw [disjOf_nil_left] at hder
+              rw [disjOf_nil_left, FTheory.toTheory_val, coeInsert] at hder
               have himp : (↑T₁.1.val : Set PLLFormula) ⊩
                   φ.ifThen (.somehow (bigOr (K :: Ts))) :=
-                deduct (by simpa using hder)
+                deduct hder
               have hlax : (↑T₁.1.val : Set PLLFormula) ⊩
                   .somehow (bigOr (K :: Ts)) :=
                 somehow_bind (of_mem (Finset.mem_coe.mpr (hle h))) himp
-              refine T₁.2.1 [] (K :: Ts) (by simp) (by simpa using hTs)
-                (by simp) ?_
+              refine T₁.2.1 [] (K :: Ts) (fun φ' hφ' => nomatch hφ') hTs
+                (List.cons_ne_nil _ _) ?_
               rwa [disjOf_nil_left]
         obtain ⟨T₂, hle₂, hM₂, hmf₂⟩ := lindenbaum hcons
-          ⟨Finset.insert_subset hφ₁ T₁.2.2.1.1, Finset.empty_subset _,
+          ⟨insertSubset hφ₁ T₁.2.2.1.1, Finset.empty_subset _,
            T₁.2.2.1.2.2⟩
         refine ⟨⟨T₂, hM₂⟩,
           ⟨(Finset.subset_insert ..).trans hle₂.1, hmf₂ ▸ subset_rfl⟩, ?_⟩
@@ -558,7 +721,8 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
           have hDs' : Ds = [] := by
             cases Ds with
             | nil => rfl
-            | cons D Ds => simpa using hDs D (List.mem_cons_self ..)
+            | cons D Ds =>
+                exact absurd (hDs D (List.mem_cons_self ..)) not_mem_coe_empty
           subst hDs'
           cases Ts with
           | nil => exact hg rfl
@@ -568,11 +732,11 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
                 refine somehow_mono hder ?_
                 refine bigOr_collapse (fun χ hχ => ?_)
                   (of_mem (Set.mem_insert ..))
-                simpa using hTs χ hχ
+                exact eq_of_mem_coe_singleton (hTs χ hχ)
               exact T.2.not_fal_deriv h hφd
         obtain ⟨T', hle, hM', hmf'⟩ := lindenbaum hcons
           ⟨T.2.2.1.1, Finset.empty_subset _,
-           Finset.singleton_subset_iff.mpr hφ₁⟩
+           singletonSubset hφ₁⟩
         obtain ⟨T₂, hRm, hfφ⟩ := hf ⟨T', hM'⟩ hle.1
         have hmem : φ ∈ T₂.1.mfal :=
           hRm.2 (hmf' ▸ Finset.mem_singleton_self ..)
@@ -582,10 +746,10 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
 
 /-- The subformula closure of a sequent, `⊥` included. -/
 def clOf (Γ : List PLLFormula) (C : PLLFormula) : Finset PLLFormula :=
-  insert .falsePLL ((C :: Γ).foldr (fun φ s => subF φ ∪ s) ∅)
+  insert .falsePLL ((C :: Γ).foldr (fun φ s => finUnion (subF φ) s) ∅)
 
 theorem mem_foldr_subF {l : List PLLFormula} {φ : PLLFormula} :
-    φ ∈ l.foldr (fun φ s => subF φ ∪ s) ∅ ↔ ∃ χ ∈ l, φ ∈ subF χ := by
+    φ ∈ l.foldr (fun φ s => finUnion (subF φ) s) ∅ ↔ ∃ χ ∈ l, φ ∈ subF χ := by
   induction l with
   | nil => simp
   | cons ψ l ih => simp [ih]
@@ -621,28 +785,29 @@ theorem finite_canonical_countermodel {Γ : List PLLFormula} {C : PLLFormula}
     ∃ T : (canonFin (clOf Γ C)).W,
       (∀ ψ ∈ Γ, (canonFin (clOf Γ C)).force T ψ) ∧
         ¬ (canonFin (clOf Γ C)).force T C := by
-  have hcons : (⟨Γ.toFinset, {C}, ∅⟩ : FTheory).Cons := by
+  have hcons : (⟨toFin Γ, {C}, ∅⟩ : FTheory).Cons := by
     intro Ds Ts hDs hTs hg hder
     have hTs' : Ts = [] := by
       cases Ts with
       | nil => rfl
-      | cons K Ts => simpa using hTs K (List.mem_cons_self ..)
+      | cons K Ts =>
+          exact absurd (hTs K (List.mem_cons_self ..)) not_mem_coe_empty
     subst hTs'
     rw [disjOf_nil_right] at hder
-    have hd : (↑Γ.toFinset : Set PLLFormula) ⊩ C := by
+    have hd : (↑(toFin Γ) : Set PLLFormula) ⊩ C := by
       refine bigOr_collapse (fun χ hχ => ?_) hder
-      simpa using hDs χ hχ
+      exact eq_of_mem_coe_singleton (hDs χ hχ)
     obtain ⟨L, hL, ⟨p⟩⟩ := hd
-    exact h ⟨p.rename fun ψ hψ => by simpa using hL ψ hψ⟩
+    exact h ⟨p.rename fun ψ hψ => mem_toFin.mp (Finset.mem_coe.mp (hL ψ hψ))⟩
   obtain ⟨T, hle, hM, _⟩ := lindenbaum hcons
     ⟨fun ψ hψ => mem_clOf ψ (List.mem_cons_of_mem _
-        (List.mem_toFinset.mp hψ)),
-     Finset.singleton_subset_iff.mpr (mem_clOf C (List.mem_cons_self ..)),
+        (mem_toFin.mp hψ)),
+     singletonSubset (mem_clOf C (List.mem_cons_self ..)),
      Finset.empty_subset _⟩
   refine ⟨⟨T, hM⟩, fun ψ hψ => ?_, ?_⟩
   · exact (truth_lemma (clOf_subClosed Γ C) ψ
       (mem_clOf ψ (List.mem_cons_of_mem _ hψ)) ⟨T, hM⟩).1
-      (hle.1 (List.mem_toFinset.mpr hψ))
+      (hle.1 (mem_toFin.mpr hψ))
   · exact (truth_lemma (clOf_subClosed Γ C) C
       (mem_clOf C (List.mem_cons_self ..)) ⟨T, hM⟩).2
       (hle.2.1 (Finset.mem_singleton_self ..))
@@ -651,7 +816,7 @@ theorem finite_canonical_countermodel {Γ : List PLLFormula} {C : PLLFormula}
 
 instance : Inhabited FTheory := ⟨⟨∅, ∅, ∅⟩⟩
 
-noncomputable instance (cl : Finset PLLFormula) :
+instance (cl : Finset PLLFormula) :
     DecidablePred (MaxIn cl) := fun T => by
   unfold MaxIn InCl
   infer_instance
@@ -927,37 +1092,362 @@ theorem transfer (hcl : SubClosed cl) :
         refine ⟨u, (rmB_iff v.2 u.2).mpr (by rw [hu]; exact hRm), ?_⟩
         exact (ih hφ₁ u).mpr (by rw [hwu]; exact hf)
 
+end Charac
+
+/-! ### Choice-free world enumeration and emitter completeness
+
+The legacy layer above extracts its world list by `Finset.toList` —
+`Classical.choice` by definition.  The clean chain instead parameterises
+the checker model over *any* explicit list of worlds, each paired with a
+list enumerating its `val`-component (the atom table's source); the
+countermodel proof supplies such a list from `Prop`-level
+representatives (`exists_rep`), never choosing one canonically. -/
+
+section CleanEmitter
+
+variable {cl : Finset PLLFormula}
+
+/-- The checker model over an explicitly listed world enumeration. -/
+def canonCMof (wl : List (FTheory × List PLLFormula)) : FinCM :=
+  { n := wl.length
+    ri := (List.range wl.length).flatMap fun i =>
+      (List.range wl.length).filterMap fun j =>
+        if (wl[i]!).1.val ⊆ (wl[j]!).1.val then some (i, j) else none
+    rm := (List.range wl.length).flatMap fun i =>
+      (List.range wl.length).filterMap fun j =>
+        if (wl[i]!).1.val ⊆ (wl[j]!).1.val ∧
+            (wl[i]!).1.mfal ⊆ (wl[j]!).1.mfal then some (i, j) else none
+    fall := (List.range wl.length).filter fun i =>
+      decide (PLLFormula.falsePLL ∈ (wl[i]!).1.val)
+    val := (List.range wl.length).flatMap fun i =>
+      (wl[i]!).2.filterMap fun φ =>
+        match φ with | .prop a => some (i, a) | _ => none }
+
+variable (wl : List (FTheory × List PLLFormula))
+
+theorem riL_mem_iff {i j : Nat} :
+    (i, j) ∈ (canonCMof wl).ri ↔
+      i < wl.length ∧ j < wl.length ∧
+        (wl[i]!).1.val ⊆ (wl[j]!).1.val := by
+  simp only [canonCMof, List.mem_flatMap, List.mem_filterMap,
+    List.mem_range]
+  constructor
+  · rintro ⟨i', hi', j', hj', hif⟩
+    split at hif
+    · simp only [Option.some.injEq, Prod.mk.injEq] at hif
+      obtain ⟨rfl, rfl⟩ := hif
+      exact ⟨hi', hj', by assumption⟩
+    · cases hif
+  · rintro ⟨hi, hj, hsub⟩
+    exact ⟨i, hi, j, hj, if_pos hsub⟩
+
+theorem rmL_mem_iff {i j : Nat} :
+    (i, j) ∈ (canonCMof wl).rm ↔
+      i < wl.length ∧ j < wl.length ∧
+        ((wl[i]!).1.val ⊆ (wl[j]!).1.val ∧
+          (wl[i]!).1.mfal ⊆ (wl[j]!).1.mfal) := by
+  simp only [canonCMof, List.mem_flatMap, List.mem_filterMap,
+    List.mem_range]
+  constructor
+  · rintro ⟨i', hi', j', hj', hif⟩
+    split at hif
+    · simp only [Option.some.injEq, Prod.mk.injEq] at hif
+      obtain ⟨rfl, rfl⟩ := hif
+      exact ⟨hi', hj', by assumption⟩
+    · cases hif
+  · rintro ⟨hi, hj, hsub⟩
+    exact ⟨i, hi, j, hj, if_pos hsub⟩
+
+theorem fallL_mem_iff {i : Nat} :
+    i ∈ (canonCMof wl).fall ↔
+      i < wl.length ∧ PLLFormula.falsePLL ∈ (wl[i]!).1.val := by
+  simp only [canonCMof, List.mem_filter, List.mem_range,
+    decide_eq_true_eq]
+
+theorem valPairL_mem_iff
+    (hval : ∀ p ∈ wl, ∀ x, x ∈ p.2 ↔ x ∈ p.1.val) {i : Nat} {a : String} :
+    (i, a) ∈ (canonCMof wl).val ↔
+      i < wl.length ∧ PLLFormula.prop a ∈ (wl[i]!).1.val := by
+  simp only [canonCMof, List.mem_flatMap, List.mem_filterMap,
+    List.mem_range]
+  constructor
+  · rintro ⟨i', hi', φ, hφ, hmatch⟩
+    cases φ with
+    | prop b =>
+        simp only [Option.some.injEq, Prod.mk.injEq] at hmatch
+        obtain ⟨rfl, rfl⟩ := hmatch
+        have hmem : wl[i']! ∈ wl := by
+          rw [getElem!_pos wl i' hi']
+          exact List.getElem_mem ..
+        exact ⟨hi', (hval _ hmem _).mp hφ⟩
+    | falsePLL => cases hmatch
+    | and _ _ => cases hmatch
+    | or _ _ => cases hmatch
+    | ifThen _ _ => cases hmatch
+    | somehow _ => cases hmatch
+  · rintro ⟨hi, hmem⟩
+    have hmemL : wl[i]! ∈ wl := by
+      rw [getElem!_pos wl i hi]
+      exact List.getElem_mem ..
+    exact ⟨i, hi, .prop a, (hval _ hmemL _).mpr hmem, rfl⟩
+
+theorem maxIn_getL (hw : ∀ p ∈ wl, MaxIn cl p.1) {i : Nat}
+    (hi : i < wl.length) : MaxIn cl (wl[i]!).1 := by
+  rw [getElem!_pos wl i hi]
+  exact hw _ (List.getElem_mem ..)
+
+theorem riBL_iff {i j : Nat} (hi : i < wl.length) (hj : j < wl.length) :
+    (canonCMof wl).riB i j = true ↔
+      (wl[i]!).1.val ⊆ (wl[j]!).1.val := by
+  simp only [FinCM.riB, Bool.or_eq_true, decide_eq_true_eq]
+  constructor
+  · rintro (hmem | rfl)
+    · exact ((riL_mem_iff wl).mp hmem).2.2
+    · exact subset_rfl
+  · intro h
+    exact .inl ((riL_mem_iff wl).mpr ⟨hi, hj, h⟩)
+
+theorem rmBL_iff {i j : Nat} (hi : i < wl.length) (hj : j < wl.length) :
+    (canonCMof wl).rmB i j = true ↔
+      ((wl[i]!).1.val ⊆ (wl[j]!).1.val ∧
+        (wl[i]!).1.mfal ⊆ (wl[j]!).1.mfal) := by
+  simp only [FinCM.rmB, Bool.or_eq_true, decide_eq_true_eq]
+  constructor
+  · rintro (hmem | rfl)
+    · exact ((rmL_mem_iff wl).mp hmem).2.2
+    · exact ⟨subset_rfl, subset_rfl⟩
+  · intro h
+    exact .inl ((rmL_mem_iff wl).mpr ⟨hi, hj, h⟩)
+
+theorem fallBL_iff {i : Nat} (hi : i < wl.length) :
+    (canonCMof wl).fallB i = true ↔
+      PLLFormula.falsePLL ∈ (wl[i]!).1.val := by
+  simp only [FinCM.fallB, decide_eq_true_eq]
+  constructor
+  · intro h
+    exact ((fallL_mem_iff wl).mp h).2
+  · intro h
+    exact (fallL_mem_iff wl).mpr ⟨hi, h⟩
+
+theorem valBL_of_mem
+    (hval : ∀ p ∈ wl, ∀ x, x ∈ p.2 ↔ x ∈ p.1.val) {i : Nat} {a : String}
+    (hi : i < wl.length)
+    (h : PLLFormula.prop a ∈ (wl[i]!).1.val) :
+    (canonCMof wl).valB i a = true := by
+  simp only [FinCM.valB, Bool.or_eq_true, decide_eq_true_eq]
+  exact .inl ((valPairL_mem_iff wl hval).mpr ⟨hi, h⟩)
+
+theorem valBL_iff (hw : ∀ p ∈ wl, MaxIn cl p.1)
+    (hval : ∀ p ∈ wl, ∀ x, x ∈ p.2 ↔ x ∈ p.1.val) {i : Nat} {a : String}
+    (hi : i < wl.length) (ha : PLLFormula.prop a ∈ cl) :
+    (canonCMof wl).valB i a = true ↔
+      PLLFormula.prop a ∈ (wl[i]!).1.val := by
+  constructor
+  · intro h
+    simp only [FinCM.valB, FinCM.fallB, Bool.or_eq_true,
+      decide_eq_true_eq] at h
+    rcases h with hmem | hfall
+    · exact ((valPairL_mem_iff wl hval).mp hmem).2
+    · exact (maxIn_getL wl hw hi).ded_closed ha (falso _ (of_mem
+        (Finset.mem_coe.mpr ((fallL_mem_iff wl).mp hfall).2)))
+  · exact valBL_of_mem wl hval hi
+
+/-- The parametric model satisfies the frame conditions. -/
+theorem canonCMof_wf
+    (hval : ∀ p ∈ wl, ∀ x, x ∈ p.2 ↔ x ∈ p.1.val) :
+    (canonCMof wl).WellFormed := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩
+  · intro w hw v hv u hu h₁ h₂
+    exact (riBL_iff wl hw hu).mpr
+      (((riBL_iff wl hw hv).mp h₁).trans ((riBL_iff wl hv hu).mp h₂))
+  · intro w hw v hv u hu h₁ h₂
+    obtain ⟨ha₁, hb₁⟩ := (rmBL_iff wl hw hv).mp h₁
+    obtain ⟨ha₂, hb₂⟩ := (rmBL_iff wl hv hu).mp h₂
+    exact (rmBL_iff wl hw hu).mpr ⟨ha₁.trans ha₂, hb₁.trans hb₂⟩
+  · intro w hw v hv h
+    exact (riBL_iff wl hw hv).mpr ((rmBL_iff wl hw hv).mp h).1
+  · intro w hw v hv h hf
+    exact (fallBL_iff wl hv).mpr
+      ((riBL_iff wl hw hv).mp h ((fallBL_iff wl hw).mp hf))
+  · intro p hp v hv h
+    obtain ⟨hi, hmem⟩ := (valPairL_mem_iff wl hval).mp hp
+    exact valBL_of_mem wl hval hv ((riBL_iff wl hi hv).mp h hmem)
+
+/-- The world of an index. -/
+def wAtL (hw : ∀ p ∈ wl, MaxIn cl p.1) (i : Fin (canonCMof wl).n) :
+    (canonFin cl).W :=
+  ⟨(wl[i.1]!).1, maxIn_getL wl hw i.2⟩
+
+theorem exists_idxL (hcov : ∀ T : FTheory, MaxIn cl T → ∃ p ∈ wl, p.1 = T)
+    (T : (canonFin cl).W) :
+    ∃ i : Fin (canonCMof wl).n, (wl[i.1]!).1 = T.1 := by
+  obtain ⟨p, hp, hpT⟩ := hcov T.1 T.2
+  obtain ⟨i, hi, heq⟩ := List.mem_iff_getElem.mp hp
+  refine ⟨⟨i, hi⟩, ?_⟩
+  rw [getElem!_pos wl i hi, heq, hpT]
+
+/-- **The transfer lemma**, parametric: on closure formulas, forcing in
+the listed checker model coincides with forcing in the finite canonical
+model. -/
+theorem transferL (hw : ∀ p ∈ wl, MaxIn cl p.1)
+    (hval : ∀ p ∈ wl, ∀ x, x ∈ p.2 ↔ x ∈ p.1.val)
+    (hcov : ∀ T : FTheory, MaxIn cl T → ∃ p ∈ wl, p.1 = T)
+    (hcl : SubClosed cl) :
+    ∀ φ, φ ∈ cl → ∀ i : Fin (canonCMof wl).n,
+      ((canonCMof wl).toModel (canonCMof_wf wl hval)).force i φ ↔
+        (canonFin cl).force (wAtL wl hw i) φ := by
+  intro φ
+  induction φ with
+  | prop a =>
+      intro hφ i
+      constructor
+      · intro h
+        exact .inr ((valBL_iff wl hw hval i.2 hφ).mp h)
+      · rintro (hout | hv)
+        · exact absurd hφ hout
+        · exact (valBL_iff wl hw hval i.2 hφ).mpr hv
+  | falsePLL =>
+      intro hφ i
+      exact fallBL_iff wl i.2
+  | and φ ψ ihφ ihψ =>
+      intro hφ i
+      exact and_congr (ihφ (hcl.and_left hφ) i) (ihψ (hcl.and_right hφ) i)
+  | or φ ψ ihφ ihψ =>
+      intro hφ i
+      exact or_congr (ihφ (hcl.or_left hφ) i) (ihψ (hcl.or_right hφ) i)
+  | ifThen φ ψ ihφ ihψ =>
+      intro hφ i
+      have hφ₁ := hcl.imp_left hφ
+      have hψ₁ := hcl.imp_right hφ
+      constructor
+      · intro H T' hle hφ'
+        obtain ⟨j, hj⟩ := exists_idxL wl hcov T'
+        have hwj : wAtL wl hw j = T' := Subtype.ext hj
+        have hri : (canonCMof wl).riB i.1 j.1 = true :=
+          (riBL_iff wl i.2 j.2).mpr (by rw [hj]; exact hle)
+        have hφj : ((canonCMof wl).toModel (canonCMof_wf wl hval)).force j φ :=
+          (ihφ hφ₁ j).mpr (by rw [hwj]; exact hφ')
+        have := (ihψ hψ₁ j).mp (H j hri hφj)
+        rwa [hwj] at this
+      · intro H v hri hφv
+        have hsub := (riBL_iff wl i.2 v.2).mp hri
+        exact (ihψ hψ₁ v).mpr (H (wAtL wl hw v) hsub ((ihφ hφ₁ v).mp hφv))
+  | somehow φ ih =>
+      intro hφ i
+      have hφ₁ := hcl.lax hφ
+      constructor
+      · intro H T' hle
+        obtain ⟨j, hj⟩ := exists_idxL wl hcov T'
+        have hwj : wAtL wl hw j = T' := Subtype.ext hj
+        have hri : (canonCMof wl).riB i.1 j.1 = true :=
+          (riBL_iff wl i.2 j.2).mpr (by rw [hj]; exact hle)
+        obtain ⟨u, hrm, hu⟩ := H j hri
+        refine ⟨wAtL wl hw u, ?_, (ih hφ₁ u).mp hu⟩
+        have := (rmBL_iff wl j.2 u.2).mp hrm
+        rw [← hwj]
+        exact this
+      · intro H v hri
+        have hsub := (riBL_iff wl i.2 v.2).mp hri
+        obtain ⟨T₂, hRm, hf⟩ := H (wAtL wl hw v) hsub
+        obtain ⟨u, hu⟩ := exists_idxL wl hcov T₂
+        have hwu : wAtL wl hw u = T₂ := Subtype.ext hu
+        refine ⟨u, (rmBL_iff wl v.2 u.2).mpr (by rw [hu]; exact hRm), ?_⟩
+        exact (ih hφ₁ u).mpr (by rw [hwu]; exact hf)
+
+end CleanEmitter
+
 /-- **Emitter completeness**: every underivable sequent has a finite
 countermodel *as checker data* — a `FinCM` and a world passing the
-verified `checkB`.  Composed with `realP_refutes_sequent` (`PLLEvidence.lean`),
-this closes the completeness of PLL for `⊩ᵖ`-realisability over decorated
-finite models — see `PLLRealCompleteness.lean`. -/
+verified `checkB`.  The world list is produced inside the proof from
+`Prop`-level representatives of the closure (sublists of an enumerating
+list, filtered by the decidable `MaxIn`) — no `Finset.toList`, no
+choice.  Composed with `realP_refutes_sequent` (`PLLEvidence.lean`),
+this closes the completeness of PLL for `⊩ᵖ`-realisability over
+decorated finite models — see `PLLRealCompleteness.lean`. -/
 theorem emitter_completeness {Γ : List PLLFormula} {C : PLLFormula}
     (h : ¬ Nonempty (LaxND Γ C)) :
     ∃ (M : FinCM) (w : Nat), FinCM.checkB M w Γ C = true := by
   obtain ⟨T, hΓ, hC⟩ := finite_canonical_countermodel h
-  obtain ⟨i, hieq⟩ := exists_idx T
-  have hwT : wAt i = T := Subtype.ext hieq
-  refine ⟨canonFinCM (clOf Γ C), i.1,
-    FinCM.checkB_intro canonFinCM_wf i.2 ?_ ?_⟩
+  obtain ⟨lcl, -, hlcl⟩ := exists_rep (clOf Γ C)
+  let cand : List (FTheory × List PLLFormula) :=
+    lcl.sublists.flatMap fun lv =>
+      lcl.sublists.flatMap fun lf =>
+        lcl.sublists.map fun lm => (⟨toFin lv, toFin lf, toFin lm⟩, lv)
+  let wl := cand.filter fun p => decide (MaxIn (clOf Γ C) p.1)
+  have hw : ∀ p ∈ wl, MaxIn (clOf Γ C) p.1 := fun p hp =>
+    of_decide_eq_true (List.mem_filter.mp hp).2
+  have hval : ∀ p ∈ wl, ∀ x, x ∈ p.2 ↔ x ∈ p.1.val := by
+    intro p hp x
+    obtain ⟨lv, hlv, hrest⟩ := List.mem_flatMap.mp (List.mem_filter.mp hp).1
+    obtain ⟨lf, hlf, hrest⟩ := List.mem_flatMap.mp hrest
+    obtain ⟨lm, hlm, hpe⟩ := List.mem_map.mp hrest
+    cases hpe
+    exact mem_toFin.symm
+  have hcov : ∀ T' : FTheory, MaxIn (clOf Γ C) T' → ∃ p ∈ wl, p.1 = T' := by
+    intro T' hT'
+    have hsub : ∀ s : Finset PLLFormula, s ⊆ clOf Γ C →
+        ∃ ls ∈ lcl.sublists, toFin ls = s := by
+      intro s hs
+      refine ⟨lcl.filter (fun x => decide (x ∈ s)), ?_, ?_⟩
+      · rw [List.mem_sublists]
+        exact List.filter_sublist
+      · refine subAntisymm (fun a ha => ?_) (fun a ha => ?_)
+        · rw [mem_toFin, List.mem_filter, decide_eq_true_eq] at ha
+          exact ha.2
+        · rw [mem_toFin, List.mem_filter, decide_eq_true_eq]
+          exact ⟨(hlcl a).mpr (hs ha), ha⟩
+    obtain ⟨lv, hlv, hveq⟩ := hsub T'.val hT'.2.1.1
+    obtain ⟨lf, hlf, hfeq⟩ := hsub T'.fal hT'.2.1.2.1
+    obtain ⟨lm, hlm, hmeq⟩ := hsub T'.mfal hT'.2.1.2.2
+    refine ⟨(⟨toFin lv, toFin lf, toFin lm⟩, lv), ?_, ?_⟩
+    · refine List.mem_filter.mpr ⟨?_, ?_⟩
+      · exact List.mem_flatMap.mpr ⟨lv, hlv,
+          List.mem_flatMap.mpr ⟨lf, hlf,
+            List.mem_map.mpr ⟨lm, hlm, rfl⟩⟩⟩
+      · rw [decide_eq_true_eq, hveq, hfeq, hmeq]
+        exact hT'
+    · rw [hveq, hfeq, hmeq]
+  obtain ⟨i, hieq⟩ := exists_idxL wl hcov T
+  have hwT : wAtL wl hw i = T := Subtype.ext hieq
+  refine ⟨canonCMof wl, i.1,
+    FinCM.checkB_intro (canonCMof_wf wl hval) i.2 ?_ ?_⟩
   · intro ψ hψ
-    refine (transfer (clOf_subClosed Γ C) ψ
+    refine (transferL wl hw hval hcov (clOf_subClosed Γ C) ψ
       (mem_clOf ψ (List.mem_cons_of_mem _ hψ)) i).mpr ?_
     rw [hwT]
     exact hΓ ψ hψ
   · intro hf
     refine hC ?_
     rw [← hwT]
-    exact (transfer (clOf_subClosed Γ C) C
+    exact (transferL wl hw hval hcov (clOf_subClosed Γ C) C
       (mem_clOf C (List.mem_cons_self ..)) i).mp hf
 
-end Charac
 
 end FinComp
 end PLLND
 
+/-- info: 'PLLND.FinComp.lindenbaum' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms PLLND.FinComp.lindenbaum
+
+/--
+info: 'PLLND.FinComp.cons_insVal_or_insFal' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.FinComp.cons_insVal_or_insFal
+
+/-- info: 'PLLND.FinComp.truth_lemma' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms PLLND.FinComp.truth_lemma
+
+/--
+info: 'PLLND.FinComp.finite_canonical_countermodel' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.FinComp.finite_canonical_countermodel
+
+/--
+info: 'PLLND.FinComp.emitter_completeness' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.FinComp.emitter_completeness

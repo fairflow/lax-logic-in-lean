@@ -1,4 +1,5 @@
 import LaxLogic.PLLCompleteness
+import LaxLogic.PLLFinsetKit
 
 /-!
 # The finite model property (F&M Theorem 4.6)
@@ -25,9 +26,9 @@ namespace PLLND
 def subF : PLLFormula → Finset PLLFormula
   | .prop a => {.prop a}
   | .falsePLL => {.falsePLL}
-  | .and φ ψ => insert (.and φ ψ) (subF φ ∪ subF ψ)
-  | .or φ ψ => insert (.or φ ψ) (subF φ ∪ subF ψ)
-  | .ifThen φ ψ => insert (.ifThen φ ψ) (subF φ ∪ subF ψ)
+  | .and φ ψ => insert (.and φ ψ) (finUnion (subF φ) (subF ψ))
+  | .or φ ψ => insert (.or φ ψ) (finUnion (subF φ) (subF ψ))
+  | .ifThen φ ψ => insert (.ifThen φ ψ) (finUnion (subF φ) (subF ψ))
   | .somehow φ => insert (.somehow φ) (subF φ)
 
 @[simp] theorem self_mem_subF (φ : PLLFormula) : φ ∈ subF φ := by
@@ -61,42 +62,42 @@ theorem subF_trans : ∀ (χ : PLLFormula) {φ : PLLFormula},
       exact subset_rfl
   | and α β ihα ihβ =>
       intro φ h
-      simp only [subF, Finset.mem_insert, Finset.mem_union] at h
+      simp only [subF, Finset.mem_insert, mem_finUnion] at h
       rcases h with rfl | h | h
       · exact subset_rfl
       · refine (ihα h).trans ?_
         intro x hx
-        simp only [subF, Finset.mem_insert, Finset.mem_union]
+        simp only [subF, Finset.mem_insert, mem_finUnion]
         exact .inr (.inl hx)
       · refine (ihβ h).trans ?_
         intro x hx
-        simp only [subF, Finset.mem_insert, Finset.mem_union]
+        simp only [subF, Finset.mem_insert, mem_finUnion]
         exact .inr (.inr hx)
   | or α β ihα ihβ =>
       intro φ h
-      simp only [subF, Finset.mem_insert, Finset.mem_union] at h
+      simp only [subF, Finset.mem_insert, mem_finUnion] at h
       rcases h with rfl | h | h
       · exact subset_rfl
       · refine (ihα h).trans ?_
         intro x hx
-        simp only [subF, Finset.mem_insert, Finset.mem_union]
+        simp only [subF, Finset.mem_insert, mem_finUnion]
         exact .inr (.inl hx)
       · refine (ihβ h).trans ?_
         intro x hx
-        simp only [subF, Finset.mem_insert, Finset.mem_union]
+        simp only [subF, Finset.mem_insert, mem_finUnion]
         exact .inr (.inr hx)
   | ifThen α β ihα ihβ =>
       intro φ h
-      simp only [subF, Finset.mem_insert, Finset.mem_union] at h
+      simp only [subF, Finset.mem_insert, mem_finUnion] at h
       rcases h with rfl | h | h
       · exact subset_rfl
       · refine (ihα h).trans ?_
         intro x hx
-        simp only [subF, Finset.mem_insert, Finset.mem_union]
+        simp only [subF, Finset.mem_insert, mem_finUnion]
         exact .inr (.inl hx)
       · refine (ihβ h).trans ?_
         intro x hx
-        simp only [subF, Finset.mem_insert, Finset.mem_union]
+        simp only [subF, Finset.mem_insert, mem_finUnion]
         exact .inr (.inr hx)
   | somehow α ihα =>
       intro φ h

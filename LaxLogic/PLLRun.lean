@@ -307,9 +307,7 @@ on no axioms at all. -/
 for the axiom audit. -/
 theorem unit_nd : Nonempty (LaxND [] (A₀.ifThen A₀.somehow)) := by pll_g4c
 
-/--
-info: 'PLLND.unit_nd' depends on axioms: [propext, Classical.choice, Quot.sound]
--/
+/-- info: 'PLLND.unit_nd' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms unit_nd
 
