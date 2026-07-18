@@ -1,6 +1,9 @@
 # belief.bib → paper-section map
 
-*Companion to `docs/belief.bib` (compiled 2026-07-18, 115 entries, large-first —
+*Companion to `docs/belief.bib` (compiled 2026-07-18, 115 entries + 4
+normalisation-literature entries added after the same-day source check
+(`Lindley2005`, `DoczkalSchwinghammer2009`, `Prawitz1971`, `deGroote2002`) =
+119, large-first —
 pruning is a later human step). Keys below are BibTeX keys in `belief.bib`.
 Verification policy is recorded at the head of the `.bib` file: every entry was
 checked against a publisher/primary record this session, or against one of the
@@ -35,7 +38,13 @@ entries with residual uncertainty carry `note = {UNVERIFIED: ...}` in the file.
 - Term calculus and monadic laws: `Moggi1991`, `BentonBiermanDePaiva1998`.
 - Strong normalisation by ⊤⊤-lifting: `LindleyStark2005` (flagged: artefact's
   `PLLTopTop.lean` appears to be the first mechanised ⊤⊤-lifting with sums;
-  mechanisation benchmark neighbour `AbelEtAl2019`).
+  mechanisation benchmark neighbour `AbelEtAl2019`), `Lindley2005` (thesis:
+  unrestricted sums via frame stacks, plus confluence and decidable
+  convertibility for λml), `DoczkalSchwinghammer2009` (the sole prior
+  mechanisation — Isabelle/HOL-Nominal, core calculus, no sums; AFP
+  `Lam-ml-Normalization`). SN-for-λml prehistory (translation proofs):
+  `BentonBiermanDePaiva1998` via `Prawitz1971`/`deGroote2002`
+  permutative-conversion SN.
 - Decidability via a contraction-free terminating calculus: `Dyckhoff1992`
   (G4ip template), `Iemhoff2024` (G4iLL — incomplete as published;
   artefact counterexample + repair), `Iemhoff2022` (the transfer theorem whose
@@ -91,7 +100,9 @@ entries with residual uncertainty carry `note = {UNVERIFIED: ...}` in the file.
 - Proof terms and extraction: `Moggi1991`, `BentonBiermanDePaiva1998`,
   `PfenningDavies2001`.
 - Confluence/normal forms for the η∘μ separation: `Newman1942` (Newman's
-  lemma, mechanised in `PLLConfluence.lean`), `LindleyStark2005` (SN input).
+  lemma, mechanised in `PLLConfluence.lean`), `LindleyStark2005` (SN input),
+  `Lindley2005` (paper-form confluence for λml, with η and without sums —
+  the mechanised counterpart differs in both respects).
 - Fig. 3 countermodels recovered by minimisation: `FairtloughMendler1997`.
 - Frame-uniform vs frame-aware evidence remark: `Hintikka1962`.
 
