@@ -417,5 +417,151 @@ These are the ⊃/◯/amalgamation cases of `semEx_definable`/
 `semAll_definable`, and the reason the general theorem needs the finite
 canonical model rather than a structural recursion. -/
 
+/-! ## The amalgamation case at one variable (PROVED)
+
+Two halves.  NEGATIVE: the pointwise ∧-candidate is provably wrong —
+`∃p.p = ⊤` and `∃p.¬p = ⊤` (witnessing decorations: p everywhere,
+p exactly on the fallible set), yet `∃p.(p ∧ ¬p) = ⊥`: the two
+witnesses decorate p INCOMPATIBLY (⊤-decoration vs F-decoration), and
+no single p-variant serves both conjuncts at a non-fallible world.
+`semEx_and_pointwise_fails` machine-checks this on a one-world model.
+This is the amalgamation obstruction in miniature: it is exactly what
+the canonical-model descriptions must negotiate.
+
+POSITIVE: the first genuinely modal quantifier values, matching the
+{⊥, ◯⊥, ⊤} landscape the one-variable descent probe observed:
+
+    ∃p.¬p = ⊤     ∀p.¬p = ⊥     ∃p.◯p = ⊤     **∀p.◯p = ◯⊥**
+
+The last is the interesting one: the strongest legal p-decoration is
+p := F (the fallible set), under which ◯p becomes literally ◯⊥ — and
+against ALL variants, full_F pins the value.  ◯⊥, the free generator of
+the closed fragment, is the ∀p-shadow of the modality itself. -/
+
+/-- `∃p.¬p = ⊤`: decorate p by the fallible set; then p ⊃ ⊥ holds
+everywhere. -/
+theorem semEx_neg_p (p : String) : IsSemEx p ((PLLFormula.prop p).ifThen .falsePLL) truePLL := by
+  refine ⟨by simp [truePLL], ?_⟩
+  intro M w
+  constructor
+  · intro _
+    refine ⟨redecorate M p M.F (fun h hw => M.hered_F h hw) (fun hw => hw),
+            redecorate_pbisim M p M.F (fun h hw => M.hered_F h hw) (fun hw => hw),
+            w, rfl, ?_⟩
+    intro v _ hp
+    have hv : v ∈ (if p = p then M.F else M.V p) := hp
+    rwa [if_pos rfl] at hv
+  · intro _
+    exact fun v _ h => h
+
+/-- `∀p.¬p = ⊥`: against the ⊤-decoration, ¬p forces only where
+everything ahead is fallible — i.e. exactly on F. -/
+theorem semAll_neg_p (p : String) : IsSemAll p ((PLLFormula.prop p).ifThen .falsePLL) .falsePLL := by
+  refine ⟨by simp, ?_⟩
+  intro M w
+  constructor
+  · intro hw v hv N B v' hZ
+    have hvF' : v' ∈ N.F := (B.fall hZ).mp (M.hered_F hv hw)
+    intro u' hu' _
+    exact N.hered_F hu' hvF'
+  · intro h'
+    have h'' := h' w (M.refl_i w)
+      (redecorate M p Set.univ (fun _ _ => trivial) (fun _ => trivial))
+      (redecorate_pbisim M p Set.univ (fun _ _ => trivial) (fun _ => trivial))
+      w rfl
+    exact h'' w (M.refl_i w)
+      (by show w ∈ (if p = p then Set.univ else M.V p); rw [if_pos rfl]; trivial)
+
+/-- `∃p.◯p = ⊤`: under the ⊤-decoration every world Rₘ-reaches itself
+forcing p. -/
+theorem semEx_box_p (p : String) : IsSemEx p (PLLFormula.prop p).somehow truePLL := by
+  refine ⟨by simp [truePLL], ?_⟩
+  intro M w
+  constructor
+  · intro _
+    refine ⟨redecorate M p Set.univ (fun _ _ => trivial) (fun _ => trivial),
+            redecorate_pbisim M p Set.univ (fun _ _ => trivial) (fun _ => trivial),
+            w, rfl, ?_⟩
+    intro v _
+    refine ⟨v, M.refl_m v, ?_⟩
+    show v ∈ (if p = p then Set.univ else M.V p)
+    rw [if_pos rfl]
+    trivial
+  · intro _
+    exact fun v _ h => h
+
+/-- **`∀p.◯p = ◯⊥`** — the first genuinely modal quantifier value.
+Forward: ◯⊥ is p-free, so it crosses any p-bisimulation, and `full_F`
+turns its fallible witnesses into p-witnesses.  Backward: the
+F-decoration is a legal p-variant on which ◯p IS ◯⊥. -/
+theorem semAll_box_p (p : String) :
+    IsSemAll p (PLLFormula.prop p).somehow PLLFormula.falsePLL.somehow := by
+  refine ⟨by simp, ?_⟩
+  intro M w
+  constructor
+  · intro hw v hv N B v' hZ
+    have hvbox : M.force v (PLLFormula.falsePLL.somehow) := M.force_hered hv hw
+    have hA : ∀ a ∈ (PLLFormula.falsePLL.somehow).atoms, a ≠ p := by simp
+    have hvbox' : N.force v' (PLLFormula.falsePLL.somehow) :=
+      (force_iff_of_bisim B hA hZ).mp hvbox
+    intro v₂' hv₂'
+    obtain ⟨u', hu', hF⟩ := hvbox' v₂' hv₂'
+    exact ⟨u', hu', N.full_F hF⟩
+  · intro h'
+    have h'' := h' w (M.refl_i w)
+      (redecorate M p M.F (fun h hw => M.hered_F h hw) (fun hw => hw))
+      (redecorate_pbisim M p M.F (fun h hw => M.hered_F h hw) (fun hw => hw))
+      w rfl
+    intro v hv
+    obtain ⟨u, hu, hp⟩ := h'' v hv
+    refine ⟨u, hu, ?_⟩
+    have hu' : u ∈ (if p = p then M.F else M.V p) := hp
+    rwa [if_pos rfl] at hu'
+
+/-- `∃p.(p ∧ ¬p) = ⊥`: a p-variant forcing both p and ¬p is fallible,
+and fallibility crosses the bisimulation. -/
+theorem semEx_p_and_neg_p (p : String) :
+    IsSemEx p ((PLLFormula.prop p).and ((PLLFormula.prop p).ifThen .falsePLL)) .falsePLL := by
+  refine ⟨by simp, ?_⟩
+  intro M w
+  constructor
+  · intro hw
+    refine ⟨M, ABisim.id _ M, w, rfl, M.full_F hw, ?_⟩
+    intro v hv _
+    exact M.hered_F hv hw
+  · rintro ⟨N, B, w', hZ, hp, hnp⟩
+    exact (B.fall hZ).mpr (hnp w' (N.refl_i w') hp)
+
+/-- The trivial one-world, nowhere-fallible model. -/
+def oneW : ConstraintModel where
+  W := Unit
+  Ri := fun _ _ => True
+  Rm := fun _ _ => True
+  F := ∅
+  V := fun _ => ∅
+  refl_i := fun _ => trivial
+  trans_i := fun _ _ => trivial
+  refl_m := fun _ => trivial
+  trans_m := fun _ _ => trivial
+  sub_mi := fun _ => trivial
+  hered_F := fun _ hw => hw.elim
+  hered_V := fun _ hw => hw.elim
+  full_F := fun hw => hw.elim
+
+/-- **The amalgamation obstruction, machine-checked**: ∃p does NOT
+commute with ∧.  The pointwise candidate for `∃p.(p ∧ ¬p)` from
+`semEx_prop_self` and `semEx_neg_p` is `⊤ ∧ ⊤`; it fails the spec,
+because at the non-fallible world of `oneW` the two conjuncts demand
+INCOMPATIBLE p-decorations (everywhere vs nowhere-but-F). -/
+theorem semEx_and_pointwise_fails (p : String) :
+    ¬ IsSemEx p ((PLLFormula.prop p).and ((PLLFormula.prop p).ifThen .falsePLL))
+        (truePLL.and truePLL) := by
+  rintro ⟨-, hspec⟩
+  have htop : oneW.force () (truePLL.and truePLL) :=
+    ⟨fun _ _ h => h, fun _ _ h => h⟩
+  obtain ⟨N, B, w', hZ, hp, hnp⟩ := (hspec oneW ()).mp htop
+  have hF' : w' ∈ N.F := hnp w' (N.refl_i w') hp
+  exact ((B.fall hZ).mpr hF').elim
+
 end SemUI
 end PLLND

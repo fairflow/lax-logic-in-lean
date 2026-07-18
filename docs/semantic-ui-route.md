@@ -100,6 +100,29 @@ must be AMALGAMATED into one) and ∀ through ∨ — which is exactly where
 the canonical-model descriptions must enter and why the general theorem
 is not a structural recursion.
 
+**The amalgamation case at one variable — tried, and settled both ways
+(PROVED, same file, 2026-07-18 eve):**
+
+* *The obstruction is real and machine-checked*
+  (`semEx_and_pointwise_fails`): ∃p.p = ⊤ and ∃p.¬p = ⊤ — but their
+  witnessing decorations are INCOMPATIBLE (p everywhere vs p exactly on
+  the fallible set), and ∃p.(p ∧ ¬p) = ⊥ (`semEx_p_and_neg_p`), so the
+  pointwise candidate ⊤ ∧ ⊤ fails the spec on a one-world model. ∃p
+  provably does not commute with ∧: amalgamation is exactly what a
+  definability proof must supply.
+* *The first genuinely modal quantifier values*
+  (`semEx_neg_p`, `semAll_neg_p`, `semEx_box_p`, `semAll_box_p`):
+
+      ∃p.¬p = ⊤    ∀p.¬p = ⊥    ∃p.◯p = ⊤    **∀p.◯p = ◯⊥**
+
+  The last is the telling one: the strongest legal p-decoration is
+  p := F, under which ◯p is literally ◯⊥, and `full_F` pins the value
+  against every other variant. ◯⊥ — the free generator of the closed
+  fragment — is the ∀p-shadow of the modality itself, and this matches
+  the {⊥, ◯⊥, ⊤} landscape the one-variable descent probe observed for
+  the syntactic interpolants: the two routes are computing the same
+  objects.
+
 **Strategic advice to the fresh session:** attack definability at ONE
 propositional variable first, over the canonical models of the 1-pv
 closures. Everything we know says this case is tiny: the deep probe
