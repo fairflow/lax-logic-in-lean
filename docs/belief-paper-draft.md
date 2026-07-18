@@ -591,12 +591,22 @@ worlds yields the countermodel as literal checker data:*
 
     ¬ (Γ ⊢ C)  implies  ∃ M w, checkB M w Γ C = true.
 
-We pause on what has and has not been achieved axiomatically. No
-maximality principle appears anywhere above; the only classical
-residues in the audit of this subsection are inherited from the
-decidability infrastructure, they are measured and named, and their
-removal is mechanical work in progress. It is tempting, and would be
-wrong, to say that the logic proves its own completeness: the proof
+We pause on what has been achieved axiomatically. No maximality
+principle appears anywhere above, and after the axiom-hygiene pass the
+entire chain of this subsection — the decidability of consistency, the
+decided Lindenbaum fold (now, in fact, a computable function), the
+truth lemma, and the countermodel enumeration — audits at
+`[propext, Quot.sound]`: no choice. Two named statements in the
+artefact remain classical for a reason worth recording, since it is a
+lesson about audits rather than about mathematics: an axiom audit walks
+the bodies of the constants a *statement* mentions, and Mathlib's
+`List.toFinset` is choice-tainted at definition level (its
+deduplication carries a permutation-invariance proof that uses choice) —
+so any theorem phrased through it can never audit clean, however its
+proof is conducted. The artefact provides clean restatements through a
+local choice-free deduplicator, and keeps the original phrasings as
+one-line wrappers. It is tempting, and would be wrong, to say that the
+logic proves its own completeness: the proof
 lives in the metatheory, and a quantifier-free propositional logic
 cannot so much as state completeness. What is true, and we think worth
 saying carefully, is that the metatheoretic proof's only oracle is the
@@ -624,9 +634,12 @@ own fullness witness. Backward: Corollary 6.3 composed with the closed
 squeeze. Every quantifier ranges over concrete objects — finite models
 as printable data, one token per atom, realisers in an explicit algebra
 of lookup tables — and the backward case decision is made by the
-decision procedure, not by excluded middle. PLL is complete for the
-semantics in which evidence may react to the future; incomplete, by
-Section 5, for every more rigid discipline.
+decision procedure, not by excluded middle. The theorem audits at
+`[propext, Quot.sound]`, enforced by build-time guards: the
+completeness of PLL for realisability is, in the formal sense the audit
+measures, a choice-free theorem. PLL is complete for the semantics in
+which evidence may react to the future; incomplete, by Section 5, for
+every more rigid discipline.
 
 ## 7. The theory, run
 
@@ -748,9 +761,12 @@ a well-foundedness theorem for the Kleene–Brouwer order, a standalone
 fully constructive result in the artefact); `[propext]` or
 `[propext, Quot.sound]` — no choice — for the proof theory, the
 decoration half of completeness, the obstruction, and the executable
-countermodel certificates; classical axioms remain in the parent's Zorn
-completeness (kept deliberately) and, pending a mechanical cleanup, in
-measured residues of the decidability infrastructure.
+countermodel certificates, the decidability of the logic, the finitised
+canonical model, and the completeness theorem itself; classical axioms
+remain only in the parent's Zorn completeness (kept deliberately, as
+the foil) and in two statements whose Mathlib vocabulary is
+choice-tainted at definition level, each provided with a clean
+restatement.
 
 We have already said that the formalisation functioned as an
 instrument. It is worth saying how. Three intended theorems failed, and
