@@ -34,9 +34,10 @@ in the paper's methodology note: the paper is *about* a modality — verified,
 lax truth — and its method *is* one, working throughout under the modality
 "machine-checked".)
 
-Practical consequence you inherit: some claims the argument leans on are **not
-yet mechanised** — most importantly the Boolean-collapse hinge of §2(A). Those
-are now *required tasks*, not background facts. See the second ledger in §3.
+Practical consequence (UPDATED 2026-07-18): the original §3b to-mechanise
+ledger is now CLOSED except for "more worked examples" — see the §3b status
+update. The Boolean-collapse hinge and its companions are mechanised and in
+the library.
 
 **(b) Whose paper this is.** Matthew Fairtlough is the *Fairtlough* of
 Fairtlough–Mendler. This is his logic and his paper. You are an assistant: you
@@ -93,8 +94,8 @@ extremes are Matthew's two kinds:
 > `a = ⊤` : the **totally credulous** — `◯M ⟺ ⊤`, believes everything.
 Classically a believer can be *nothing but* truth-plus-a-prejudice. No
 conditional belief, no evidential structure. Belief is boring.
-*(Status: literature + elementary, NOT yet machine-checked — a required task
-under rule 0(a); see §3.)*
+*(Status: MACHINE-CHECKED 2026-07-16 — `BeliefCollapse.lean` +
+`BeliefBooleanIso.lean` (`N(B) ≃o B`); see the §3b status update.)*
 
 **(B) Constructive belief is rich.**
 Off Boolean, nuclei are no longer all closed. Standard families reappear as
@@ -183,39 +184,41 @@ These anchor §2(C) (`thm6`, + `lemma7` at `context_completeness.lean:546`) and
 Kripke models provably cap the one-variable fragment at ≤ 5–9 classes, so an
 *infinite* model is genuinely required — the constructive richness is real.
 
-### 3b. Required but NOT yet machine-checked (mechanise before it stands in print)
+### 3b. STATUS UPDATE 2026-07-18: items 1–4 are DONE, item 5 partial
 
-Under rule 0(a) each of these is a task, not a background fact. Ordered roughly
-easiest first; all are believed true.
+The 2026-07-16 mechanisation sweep closed this ledger; everything is
+promoted into the library (`LaxLogic/Belief*.lean`, root-imported, checked
+by `lake build`), indexed in `docs/belief-mechanisation-index.md`. Current
+truth, verified against the library 2026-07-18:
 
-1. **The Boolean collapse (§2A hinge).** *Every nucleus `j` on a Boolean algebra
-   `B` is closed:* `j(x) = x ∨ j(0)`; hence the map `j ↦ j(0)` gives `N(B) ≅ B`.
-   Elementary (from `x ∨ ¬x = 1`); Beazer–Macnab territory. This is the load-
-   bearing claim of the whole "classical belief is degenerate" argument, so it
-   **must** be mechanised. Do it as a standalone Lean lemma over a
-   `BooleanAlgebra` (Mathlib has the structure), stating `IsNucleus j → j x = x ⊔ j ⊥`.
-2. **Open = closed on a Boolean algebra (§2B).** `a → x = x ⊔ aᶜ`, i.e. the open
-   nucleus `u_a` equals the closed nucleus `c_{aᶜ}`; and the two families are
-   distinct on a non-Boolean Heyting algebra (exhibit a witness). Mechanise both
-   the identity and a separating example.
-3. **Full introspection (§2E).** `◯◯M ⊣⊢ ◯M`. Almost certainly *immediate* from
-   the already-mechanised core (unit + multiplication); **check** whether it is
-   already a lemma in `PLLNDCore`/`PLLND` and, if so, just cite it; otherwise a
-   two-line proof.
-4. **`◯⊥` non-trivial and credulous collapse (§2E).** `◯⊥ ≠ ⊤` (extractable from
-   `closed_lax_infinite`/`force_subOb`), and `◯⊥ ⊢ ◯M` for all M (monotonicity
-   of `◯`, surely in the core). **Check** the core first; cite or prove.
-5. **Worked examples on small Heyting algebras (§5).** Enumerate the nuclei on
-   the 3- and 4-element chains and one small non-linear Heyting algebra, and
-   exhibit sceptic / credulous / genuinely-intermediate believers side by side.
-   The algebra-enumeration code already computes nuclei on small Heyting
-   algebras — run it and certify the output by `decide`/`native_decide` so the
-   examples in the paper are machine-checked, not hand-tabulated. (If
-   `native_decide` is used, note the extra `ofReduceBool`-style axiom in the
-   audit and flag it to Matthew.)
+1. **The Boolean collapse — DONE.** Every nucleus on a Boolean algebra is
+   closed, plus the sharp iso `N(B) ≃o B` (`BeliefCollapse.lean`,
+   `BeliefBooleanIso.lean`).
+2. **Open = closed on a Boolean algebra — DONE, and sharper.**
+   `openNucleus_eq_closedNucleus` (on any `BooleanAlgebra`); the converse
+   `em_of_openNucleus_eq_closedNucleus` (collapse at `a` ⟹ excluded middle
+   at `a` — so the separation is *exact*, `open = closed ⇔ EM at a`); and
+   the explicit non-Boolean witness `open_ne_closed_Fin3`
+   (`BeliefOpenClosed.lean`).
+3. **Full introspection — DONE.** `◯◯M ⊣⊢ ◯M`, plus logical omniscience
+   `Γ ⊢ M ⇒ ◯Γ ⊢ ◯M` (`BeliefIdealisation.lean`; normality of `◯` in
+   `BeliefNormality.lean` — note the earlier "not normal" claim was wrong,
+   `◯` validates K).
+4. **`◯⊥` facts — DONE.** `⊬ ¬◯⊥`, `⊬ ◯⊥`, and the credulous collapse
+   (`BeliefFalsum.lean`).
+5. **Worked examples — PARTIAL; more wanted (Matthew, 2026-07-18).**
+   `BeliefExamples.lean` has: the 3-chain's complete nucleus enumeration
+   (`chain3_card = 4`, sceptic/credulous/closed/open all exhibited,
+   `chain3_open_ne_closed`) with clean axioms; `chain4_card = 8` and
+   `boolean22_card = 4` via `native_decide` (`ofReduceBool` flagged in the
+   index, per policy). STILL WANTED: a small **non-linear non-Boolean**
+   Heyting algebra with its full believer menagerie side by side (the
+   pentagon-free 5-element HA is the natural pick), RN truncations, and
+   ideally clean-axiom (`decide`, not `native_decide`) versions of the
+   4-chain/2×2 counts.
 
-Do **not** present any 3b item as established until its Lean proof exists and
-its `#print axioms` is clean.
+Everything here may be cited as established (rule 0(a) satisfied); the
+axiom audits are in the mechanisation index.
 
 ---
 
