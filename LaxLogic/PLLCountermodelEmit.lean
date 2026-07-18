@@ -407,6 +407,46 @@ partial def minimise (M : FinCM) (w : Nat) (Γ : List PLLFormula)
   | some (M', w') => minimise M' w' Γ C
   | none => (M, w)
 
+/-- One sweep of checker-gated attribute deletions: each fallible flag,
+then each valuation pair, then each non-reflexive `ri`/`rm` pair is
+removed if `checkB` still certifies the sequent afterwards.  Deleting a
+relation pair can break transitivity or `Rₘ ⊆ Rᵢ`; the `wellB` conjunct
+of `checkB` rejects exactly those edits, so gating on the full check
+suffices. -/
+def cleanStep (M : FinCM) (w : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
+    FinCM :=
+  let ok : FinCM → Bool := (FinCM.checkB · w Γ C)
+  let M₁ := M.fall.foldl (init := M) fun acc i =>
+    let cand := { acc with fall := acc.fall.erase i }
+    if ok cand then cand else acc
+  let M₂ := M₁.val.foldl (init := M₁) fun acc p =>
+    let cand := { acc with val := acc.val.erase p }
+    if ok cand then cand else acc
+  let M₃ := M₂.ri.foldl (init := M₂) fun acc p =>
+    if p.1 = p.2 then acc
+    else
+      let cand := { acc with ri := acc.ri.erase p }
+      if ok cand then cand else acc
+  M₃.rm.foldl (init := M₃) fun acc p =>
+    if p.1 = p.2 then acc
+    else
+      let cand := { acc with rm := acc.rm.erase p }
+      if ok cand then cand else acc
+
+/-- **Checker-gated attribute cleaning**: `minimise` deletes worlds but
+never edits the survivors' attributes, so a minimised model can carry
+vestigial data — a fallible flag no longer doing any work, a valuation
+pair or relation pair the refutation never uses.  `clean` sweeps the
+attributes with `cleanStep` and iterates to a fixpoint.  Worlds are never
+deleted or renumbered, so the refuting world `w` passes through
+unchanged.  Untrusted and greedy, like `minimise`: every step is gated by
+the verified `checkB`, so a wrong edit can only be rejected, never
+mis-certify. -/
+partial def clean (M : FinCM) (w : Nat) (Γ : List PLLFormula)
+    (C : PLLFormula) : FinCM × Nat :=
+  let M' := cleanStep M w Γ C
+  if M' = M then (M, w) else clean M' w Γ C
+
 /-- Semantic profile of a world: which of the given formulas it forces —
 for reading minimised models, whose belief-set provenance is gone. -/
 def profile (M : FinCM) (φs : List PLLFormula) (w : Nat) :
@@ -418,6 +458,16 @@ presentable one by checker-gated deletion. -/
 partial def emitMin (Γ : List PLLFormula) (C : PLLFormula) :
     Option (FinCM × Nat) :=
   (emit Γ C).map fun (M, w) => minimise M w Γ C
+
+/-- Emit, minimise, then clean: the systematic countermodel cut down by
+checker-gated world deletion, then stripped of vestigial attributes by
+checker-gated edits.  The result is certified by the same `checkB` as
+every intermediate model. -/
+partial def emitMinClean (Γ : List PLLFormula) (C : PLLFormula) :
+    Option (FinCM × Nat) :=
+  (emit Γ C).map fun (M, w) =>
+    let (M', w') := minimise M w Γ C
+    clean M' w' Γ C
 
 /-- Human-readable formula rendering. -/
 def fmt : PLLFormula → String
@@ -479,6 +529,27 @@ open CounterEmit
 #guard_msgs in
 #eval (emitMin [((prop "p").or (prop "q")).somehow]
   (((prop "p").somehow).or ((prop "q").somehow))).map (·.1)
+
+-- Cleaning strips a vestigial modal pair even from the split model: the
+-- constraint arrow 0 → 1 does no work (`◯(p∨q)` at 0 is witnessed through
+-- 0 → 2, and world 1 answers for itself by reflexivity), so the checker
+-- confirms its removal.  Everything else survives as pinned above.
+/-- info: some { n := 3,
+  ri := [(0, 0), (0, 1), (0, 2), (1, 1), (2, 2)],
+  rm := [(0, 0), (0, 2), (1, 1), (2, 2)],
+  fall := [],
+  val := [(1, "p"), (2, "q")] } -/
+#guard_msgs in
+#eval (emitMinClean [((prop "p").or (prop "q")).somehow]
+  (((prop "p").somehow).or ((prop "q").somehow))).map (·.1)
+
+-- ◯p ⊬ p, cleaned: minimisation leaves the top world flagged fallible (a
+-- leftover of the fallible ceiling of the emitted model), but the
+-- valuation pair `(1, p)` already witnesses `◯p` at the root, so cleaning
+-- deletes the flag — two worlds, `p` at the top, no fallible world at all.
+/-- info: some { n := 2, ri := [(0, 0), (0, 1), (1, 1)], rm := [(0, 0), (0, 1), (1, 1)], fall := [], val := [(1, "p")] } -/
+#guard_msgs in
+#eval (emitMinClean [(prop "p").somehow] (prop "p")).map (·.1)
 
 -- p ⊢ ◯p is provable: the emitter must return none.
 /-- info: none -/
