@@ -360,3 +360,128 @@ then do the two highest-value things in parallel — (i) mechanise §3b-1 (the
 Boolean collapse), the hinge the whole classical-degeneracy argument rests on,
 and (ii) read Artemov–Protopopescu IEL and report to Matthew where PLL belief
 sits relative to it. Settle both before any section prose is written.
+
+---
+
+# ADDENDUM (2026-07-18) — post-drill state, successor project, queued tasks
+
+*Added at Matthew's request at the close of the long g4ill/UI session, so a
+fresh session starts with this instead of a degraded compaction chain. The
+original brief above is kept intact; where it disagrees with this addendum,
+the addendum wins.*
+
+## A1. Headline result since the brief: the completeness chain is choice-free
+
+The mechanised completeness theorem (and the whole decidability chain) has
+been **finitised: it no longer uses the axiom of choice**. Commit `2d38c2c`
+"drill the Classical.choice floor — decidability and completeness chain now
+`[propext, Quot.sound]`". Methodological point Matthew wants kept: surgery
+of this kind — re-founding a completeness proof choice-free — is not
+feasible by hand through the conventional review process; the Lean+AI
+combination did it "without a lot of fuss". This belongs in the paper's
+methodology note (§0(a) of the brief) as a first-class exhibit.
+
+Current library facts a fresh session should NOT re-derive (see the
+`belief-paper` memory for the full ledger): `LaxLogic/` has zero sorries;
+decidability (F&M Thm 2.8) IS mechanised (`decidablePLL`/`decidableG4c`);
+G3 sequent calculus with cut-elimination + disjunction property; the
+Belief* mechanisations promoted into the library; Route B realisability
+with the separation triptych; the ⊩ᵖ adequacy+fullness theorem choice-free.
+
+## A2. Terminology guard: Theorem 2.8 vs UI
+
+**F&M Theorem 2.8 = DECIDABILITY of PLL — not uniform interpolation.** It
+has LANDED (mechanised, clean axioms, via the repaired calculus G4c).
+**UI (uniform interpolation)** = the Pitts-style ∀p/∃p quantifiers = the
+separate, still-open thread whose sole gap is one lemma (task #9; see A4).
+The successor-project nomination below was originally conditioned "once
+Theorem 2.8 lands" — that condition is **already met**.
+
+## A3. Nominated successor project: multi-nucleus lax logic with a join modality
+
+Extracted from the nuclei/model-completions/monads survey
+(`docs/surveys/nuclei-model-completions-monads.md`, sections (d), (e) and
+the synthesis — read them verbatim when starting):
+
+* **The gap (verified negative, §(d)):** there is no published term
+  calculus for the JOIN of two lax modalities — "◯₁ ⊔ ◯₂ as a quotiented
+  alternating bind-tower" exists nowhere: the literature offers either
+  categorical answers (Beck distributive laws + no-go theorems;
+  coproducts of monads: Kelly, Hyland–Plotkin–Power, Ghani–Uustalu) or
+  algebraic-effects answers, never a lax-modal proof theory.
+* **What it would look like (§(e)):** two nuclei j₁, j₂, each with its own
+  I/M/S/Ext rule pack; the join ◯ = j₁∨j₂ = least nucleus above both;
+  proof-theoretically the closure of the two rule-sets under alternating
+  nesting. In the F&M Boolean constraint algebra this closure is FINITE
+  and explicit (TYPES-2000 Def. 1: ⊓ᵢⱼ[K₁ᵢ∧K₂ⱼ, L₁ᵢ∨L₂ⱼ]); over a general
+  frame of nuclei it is the transfinite reflection tamed by
+  Escardó–Pataraia induction (choice-free — Lean-friendly). Natural
+  substrates: adjoint logic (◯ = UF), Mendler–Scheele multimodal CK,
+  and Valliappan *Lax Modal Lambda Calculi* (CSL 2026) — check whether it
+  treats multiple ◯s before claiming novelty.
+* **Why this repo:** the constraint-context machinery (Thm 6), the G4c
+  calculus + decider + proof-term emitter + countermodel emitter, and the
+  nuclei/assembly groundwork are exactly the toolkit the construction
+  needs. **"Multi-nucleus lax logic with an explicit join modality" is
+  unclaimed territory for which this repo is unusually well-armed** —
+  Matthew nominates it as the successor project. One theorem, three faces
+  (survey synthesis): model completion of nuclear HAs (open, coherence the
+  hinge) ⟺ joins in N(H) (Escardó) ⟺ coproducts of idempotent monads —
+  "coherence is the model-theoretic name for 'the join-iteration doesn't
+  terminate finitely'".
+
+## A4. UI thread — current true state (refresh of task #9)
+
+Proof effort RESUMED 2026-07-15 (the "STOPPED 2026-07-12" note is stale).
+State: the sole `sorry` of the UI development (`cascade_low_pos_box`) is
+reduced, sorry-free, to the one-variable semantic residual
+`descent_forcing`; the Lean development `wip/onevar_descent_dev.lean`
+compiles with exactly two named holes — (H1) the mechanical clause walk,
+(H2) `itpE_stab`, the ∃-side stabilisation past the threshold. The X9
+counterexample candidate is DEAD (stabilises at budget 2 against
+threshold 16; 5-class state space; oracle-sound). New proof-relevant law,
+two lines from the ◯-unit: truncation absorption
+`orAll (others ++ [◯(E ⊃ orAll others)]) ≡ ◯(E ⊃ orAll others)` — first
+mechanisation target. Full detail: `PROGRESS.md` (repo root) and the
+`onevar-descent-probe` memory.
+
+## A5. New tooling to exploit (built 2026-07-17, on main)
+
+* **Fast decider from G4c** — same algorithm as the verified one, much
+  more efficient (`prove`, `PLLG4Term.lean`: loop-checked, fuel-free;
+  gap sequent instant vs >6.5 min for the verified decider).
+* **Proof-term emitter** (`G4cTm`): searcher untrusted, kernel checks the
+  emitted term — "if we can build a term, Lean can check it".
+* **Countermodel emitter** (`PLLCountermodelEmit.lean`): checker-gated
+  FinCM certificates, choice-free; minimisation + TikZ/SVG export.
+  Fine-tuning in progress; emitter completeness OPEN.
+
+**Queued study:** assess what this tooling changes about the previously
+exhausting proof/countermodel searches, then REVISIT UI at 1 and 2
+propositional variables with it (the 2-pv probe — each quantifier one
+variable — is designed and ready on the `wip/slick_probe.lean` harness).
+
+## A6. Queued task: the bibliography
+
+Build a LARGE BibTeX bibliography for the Belief paper (now drafted at
+`docs/belief-paper-draft.md`, currently very light on references), then
+prune. Sources to mine: every reference already cited across
+`docs/*-lit.md`, `docs/surveys/`, `docs/iel-justification-lit.md`,
+`docs/realisability-modal-lit.md`, the F&M corpus, and the belief-thread
+memories. Inclusion bias: **any item with a formal development (Lean, Coq,
+Agda) is a candidate** (e.g. Férée–van der Giessen–van Gool–Shillito's
+mechanised UI, iSL work). Deliverable: `docs/belief.bib` + a short note
+mapping bib keys → paper sections. Second-order goal (Matthew): hunt
+HIDDEN CONNECTIONS inside this body — Lean+AI is the instrument; flag
+candidates rather than silently dropping them.
+
+## A7. Fresh-session start list
+
+1. Read this addendum, the `belief-paper` + `machine-checked-mandate` +
+   `onevar-descent-probe` memories, `PROGRESS.md`.
+2. Esakia duality tutorial for Matthew: `docs/esakia-duality-tutorial.md`
+   (written 2026-07-18; Johnstone's *Stone Spaces* has Priestley §II.4 but
+   not Esakia duality by name).
+3. Then, per Matthew's priorities: (a) bibliography (A6, delegable);
+   (b) tooling-potential study + UI revisit at 1–2 pvs (A5/A4);
+   (c) the successor project (A3) awaits its moment.
