@@ -303,7 +303,14 @@ def regen : IO Unit := do
       write "ordist20"
         (toTikz M (posOf ordistPos) labs (some w))
         (toSvg M (posOf ordistPos) labs (some w) 880 1040)
-      IO.println s!"figures regenerated: demoM, obsM, ordist20 ({M.n} worlds, refuting w{w})"
+      match CounterEmit.emitMinClean Γ C with
+      | some (Mc, wc) =>
+          let labsC := labelsOf [("∅", ""), ("p", ""), ("q", "")]
+          write "ordist3clean"
+            (toTikz Mc (posOf obsPos) labsC (some wc))
+            (toSvg Mc (posOf obsPos) labsC (some wc) 420 320)
+          IO.println s!"figures regenerated: demoM, obsM, ordist20 ({M.n} worlds, refuting w{w}), ordist3clean ({Mc.n} worlds, refuting w{wc})"
+      | none => throw <| IO.userError "ordist3clean: emitMinClean returned none"
   | none => throw <| IO.userError "ordist20: emitter returned none"
 
 /-! ## Pinned display invariants of the demo model -/
