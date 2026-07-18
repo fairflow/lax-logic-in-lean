@@ -33,7 +33,7 @@ namespace SemUIProbe
 
 /-! ## Oracle (as in `wip/lattice_cmp.lean`) -/
 
-def FUEL : Nat := 1200
+def FUEL : Nat := 500
 
 def provF (fuel : Nat) (Γ : List PLLFormula) (C : PLLFormula) : Bool :=
   search (listWeight (C :: Γ)) (listAtoms (C :: Γ)) fuel ∅ Γ C
@@ -139,7 +139,7 @@ def sideT (p : String) : PLLFormula → PLLFormula
 
 /-- Reduced fuel for the *failing* certificate probes (the successful
 certificates we mechanise are re-checked at full fuel anyway). -/
-def CFUEL : Nat := 500
+def CFUEL : Nat := 350
 
 def provC (Γ : List PLLFormula) (C : PLLFormula) : Bool := provF CFUEL Γ C
 

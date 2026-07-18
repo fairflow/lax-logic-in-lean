@@ -84,6 +84,42 @@ the values beyond substitution fall mechanically:
     ∀p.(p ∨ ¬p) = ⊥      ∀p.(◯p ⊃ p) = ⊥      ∀p.(¬¬p ⊃ p) = ⊥
     (semAll_em_p)         (semAll_boxp_imp_p)   (semAll_nnp_imp_p)
 
+**(d′) The third generator: the sideways-witness construction and
+`sideT`.**  The Löb-shaped `◯(◯p ⊃ p)` defeats both substitution and
+the doubling.  Its value falls to `lobModel`/`lobVariant`: ℕ-levelled
+copies with `Rᵢ` level-monotone but `Rₘ` level-rigid **except the
+single step 1 → 2**, `p` decorated on levels ≥ 2.  Level 1 forces ◯p
+but not p, so `◯p ⊃ p` fails at level 0 over every non-fallible base
+world; level-0 constraint witnesses stay at level 0, so a level-0 world
+satisfies `◯(◯p ⊃ p)` only through fallible witnesses:
+
+    ∀p.◯(◯p ⊃ p) = ◯⊥        (semAll_box_lob)
+
+The p-worlds are Rₘ-reachable *sideways* (as constraint witnesses) but
+never lie on the Rₘ-cone of level 0 — precisely the promise/Θ mechanism
+of the canonical model, surfacing as a variant construction.  The
+levels of `lobVariant` again evaluate by syntactic transforms
+(`lobVariant_force_high/one/zero`): levels ≥ 2 are the `p:=⊤`
+substitution, level 1 is `lowT` again, and level 0 is the new
+
+    sideT p p       = ⊥        sideT p (A ⊃ B) = (sideT A ⊃ sideT B)
+    sideT p (◯A)    = ◯(sideT A) ∧ ◯(A[p:=⊤])       ∧ lowT p (A ⊃ B)
+
+with `sideT p (◯(◯p⊃p)) ≡ ◯⊥` exactly.  The criteria now carry the
+full generator basis {substitution instances, lowT, sideT}
+(`isSemAll_of_certificates_side`, `isSemEx_of_certificates_side`).
+
+**Roadmap observation (no Lean anchor).**  The three generators are the
+level-0 transforms of a tower of levelled models (2-chain, 3-level
+sideways, …); the ◯/⊃-alternation depth of M bounds the tower depth it
+can see, and the finite canonical model over cl(M) bounds it
+per-instance.  A uniform definability proof at one variable now has a
+concrete shape: show that for every 1-variable M the candidate value
+(the maximum closed ξ ⊢ M) is derivable from finitely many generator
+instances — the generator set standing in for the promise-aware world
+descriptions.  Rows of the value table that resist the current basis
+name the next construction.
+
 **(e) Uniqueness** (`semEx_unique`, `semAll_unique`): any two
 spec-satisfiers are interderivable, so "the value of ∀p.M" is
 well-defined up to ≡ — the probe's candidates, once certified, ARE the
