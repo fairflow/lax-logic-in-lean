@@ -1075,6 +1075,275 @@ theorem em_p_no_certificate (p : String) (χs : List PLLFormula) :
     exact oneW_em χ)
   exact hval
 
+/-! ## The doubling as a certificate generator: the lower transform
+
+Forcing at the LOWER copy of the decorated double is computable by a
+syntactic transform.  Within the cone over `w₀`, writing `M[⊤]` for
+`substP p truePLL M`:
+
+    (x, true)  ⊩ M   iff   x ⊩ M[⊤]
+    (x, false) ⊩ M   iff   x ⊩ lowT p M
+
+where the *lower transform* is
+
+    lowT p p        = ⊥              lowT p q = q  (q ≠ p),  lowT p ⊥ = ⊥
+    lowT p (A ∧ B)  = lowT A ∧ lowT B          (and dually for ∨)
+    lowT p (A ⊃ B)  = (lowT A ⊃ lowT B) ∧ (A[⊤] ⊃ B[⊤])
+    lowT p (◯A)     = ◯(A[⊤])
+
+(The ◯-clause: from a lower world every constraint witness may be taken
+in the upper copy, and only upper witnesses serve upper futures.)  So
+the doubling contributes `lowT p M` as one more premise available to the
+certificate criteria — a strictly stronger criterion than substitution
+instances alone (`em_p_no_certificate`), which reaches
+`∀p.(p ∨ ¬p) = ⊥` and `∀p.(◯p ⊃ p) = ⊥`. -/
+
+/-- The lower transform: forcing of `M` at the generic lower point of
+the decorated double. -/
+def lowT (p : String) : PLLFormula → PLLFormula
+  | .prop a     => if a = p then .falsePLL else .prop a
+  | .falsePLL   => .falsePLL
+  | .and A B    => (lowT p A).and (lowT p B)
+  | .or A B     => (lowT p A).or (lowT p B)
+  | .ifThen A B => ((lowT p A).ifThen (lowT p B)).and
+      ((substP p truePLL A).ifThen (substP p truePLL B))
+  | .somehow A  => (substP p truePLL A).somehow
+
+/-- Upper-copy evaluation: within the cone over `w₀`, the upper copy
+forces `M` iff the base world forces `M[p:=⊤]`. -/
+theorem emVariant_force_true (C : ConstraintModel) (p : String) (w₀ : C.W) :
+    ∀ (M : PLLFormula) {x : C.W}, C.Ri w₀ x →
+      ((emVariant C p w₀).force (x, true) M ↔
+        C.force x (substP p truePLL M)) := by
+  intro M
+  induction M with
+  | prop a =>
+      intro x hx
+      show (x, true) ∈ (if a = p then emSet C w₀ else (double C).V a) ↔
+        C.force x (substP p truePLL (.prop a))
+      by_cases ha : a = p
+      · rw [if_pos ha]
+        simp only [substP, if_pos ha]
+        constructor
+        · intro _
+          exact fun v _ hv => hv
+        · intro _
+          exact Or.inl ⟨rfl, hx⟩
+      · rw [if_neg ha]
+        simp only [substP, if_neg ha]
+        exact Iff.rfl
+  | falsePLL => intro x _; exact Iff.rfl
+  | and A B ihA ihB =>
+      intro x hx
+      simp only [ConstraintModel.force, substP]
+      exact and_congr (ihA hx) (ihB hx)
+  | or A B ihA ihB =>
+      intro x hx
+      simp only [ConstraintModel.force, substP]
+      exact or_congr (ihA hx) (ihB hx)
+  | ifThen A B ihA ihB =>
+      intro x hx
+      simp only [ConstraintModel.force, substP]
+      constructor
+      · intro hf y hy hA
+        have hcone := C.trans_i hx hy
+        exact (ihB hcone).mp
+          (hf (y, true) ⟨hy, fun h => h⟩ ((ihA hcone).mpr hA))
+      · intro hf v hv hA
+        obtain ⟨v1, v2⟩ := v
+        have hv2 : v2 = true := hv.2 rfl
+        subst hv2
+        have hcone : C.Ri w₀ v1 := C.trans_i hx hv.1
+        exact (ihB hcone).mpr (hf v1 hv.1 ((ihA hcone).mp hA))
+  | somehow A ihA =>
+      intro x hx
+      simp only [ConstraintModel.force, substP]
+      constructor
+      · intro hf y hy
+        obtain ⟨u, hu, hA⟩ := hf (y, true) ⟨hy, fun h => h⟩
+        obtain ⟨u1, u2⟩ := u
+        have hu2 : u2 = true := hu.2 rfl
+        subst hu2
+        have hcone : C.Ri w₀ u1 :=
+          C.trans_i (C.trans_i hx hy) (C.sub_mi hu.1)
+        exact ⟨u1, hu.1, (ihA hcone).mp hA⟩
+      · intro hf v hv
+        obtain ⟨v1, v2⟩ := v
+        have hv2 : v2 = true := hv.2 rfl
+        subst hv2
+        have hcv : C.Ri w₀ v1 := C.trans_i hx hv.1
+        obtain ⟨u, hu, hA⟩ := hf v1 hv.1
+        have hcu : C.Ri w₀ u := C.trans_i hcv (C.sub_mi hu)
+        exact ⟨(u, true), ⟨hu, fun _ => rfl⟩, (ihA hcu).mpr hA⟩
+
+/-- **Lower-copy evaluation**: within the cone over `w₀`, the lower copy
+forces `M` iff the base world forces the lower transform `lowT p M`. -/
+theorem emVariant_force_false (C : ConstraintModel) (p : String) (w₀ : C.W) :
+    ∀ (M : PLLFormula) {x : C.W}, C.Ri w₀ x →
+      ((emVariant C p w₀).force (x, false) M ↔ C.force x (lowT p M)) := by
+  intro M
+  induction M with
+  | prop a =>
+      intro x hx
+      show (x, false) ∈ (if a = p then emSet C w₀ else (double C).V a) ↔
+        C.force x (lowT p (.prop a))
+      by_cases ha : a = p
+      · rw [if_pos ha]
+        simp only [lowT, if_pos ha]
+        constructor
+        · rintro (⟨h2, -⟩ | hF)
+          · exact (Bool.false_ne_true h2).elim
+          · exact hF
+        · intro hF
+          exact Or.inr hF
+      · rw [if_neg ha]
+        simp only [lowT, if_neg ha]
+        exact Iff.rfl
+  | falsePLL => intro x _; exact Iff.rfl
+  | and A B ihA ihB =>
+      intro x hx
+      simp only [ConstraintModel.force, lowT]
+      exact and_congr (ihA hx) (ihB hx)
+  | or A B ihA ihB =>
+      intro x hx
+      simp only [ConstraintModel.force, lowT]
+      exact or_congr (ihA hx) (ihB hx)
+  | ifThen A B ihA ihB =>
+      intro x hx
+      simp only [ConstraintModel.force, lowT]
+      constructor
+      · intro hf
+        refine ⟨?_, ?_⟩
+        · intro y hy hA
+          have hcone := C.trans_i hx hy
+          exact (ihB hcone).mp
+            (hf (y, false) ⟨hy, fun h => h⟩ ((ihA hcone).mpr hA))
+        · intro y hy hA
+          have hcone := C.trans_i hx hy
+          exact (emVariant_force_true C p w₀ B hcone).mp
+            (hf (y, true) ⟨hy, fun _ => rfl⟩
+              ((emVariant_force_true C p w₀ A hcone).mpr hA))
+      · rintro ⟨hlow, hup⟩ v hv hA
+        obtain ⟨v1, v2⟩ := v
+        have hcone : C.Ri w₀ v1 := C.trans_i hx hv.1
+        cases v2 with
+        | false =>
+            exact (ihB hcone).mpr (hlow v1 hv.1 ((ihA hcone).mp hA))
+        | true =>
+            exact (emVariant_force_true C p w₀ B hcone).mpr
+              (hup v1 hv.1 ((emVariant_force_true C p w₀ A hcone).mp hA))
+  | somehow A ihA =>
+      intro x hx
+      simp only [ConstraintModel.force, lowT]
+      constructor
+      · intro hf y hy
+        obtain ⟨u, hu, hA⟩ := hf (y, true) ⟨hy, fun _ => rfl⟩
+        obtain ⟨u1, u2⟩ := u
+        have hu2 : u2 = true := hu.2 rfl
+        subst hu2
+        have hcone : C.Ri w₀ u1 :=
+          C.trans_i (C.trans_i hx hy) (C.sub_mi hu.1)
+        exact ⟨u1, hu.1, (emVariant_force_true C p w₀ A hcone).mp hA⟩
+      · intro hf v hv
+        obtain ⟨v1, v2⟩ := v
+        have hcv : C.Ri w₀ v1 := C.trans_i hx hv.1
+        obtain ⟨u, hu, hA⟩ := hf v1 hv.1
+        have hcu : C.Ri w₀ u := C.trans_i hcv (C.sub_mi hu)
+        exact ⟨(u, true), ⟨hu, fun _ => rfl⟩,
+          (emVariant_force_true C p w₀ A hcu).mpr hA⟩
+
+/-- **∀-side extended criterion**: the lower transform joins the
+substitution instances as one more certificate premise:
+`lowT p M, M[p:=χ₁], …, M[p:=χₖ] ⊢ ψ` (with `ψ ⊢ M`, `ψ` p-free)
+establishes the ∀p-spec. -/
+theorem isSemAll_of_certificates_low {p : String} {M ψ : PLLFormula}
+    {χs : List PLLFormula} (hp : p ∉ ψ.atoms) (d₁ : LaxND [ψ] M)
+    (d₂ : LaxND (lowT p M :: χs.map (fun χ => substP p χ M)) ψ) :
+    IsSemAll p M ψ := by
+  have hAψ : ∀ a ∈ ψ.atoms, a ≠ p := fun a ha he => hp (he ▸ ha)
+  refine ⟨hp, ?_⟩
+  intro C w
+  constructor
+  · intro hw v hv N B v' hZ
+    have hψ' : N.force v' ψ :=
+      (force_iff_of_bisim B hAψ hZ).mp (C.force_hered hv hw)
+    exact soundness d₁ N v' (fun ξ hξ => by
+      simp only [List.mem_singleton] at hξ
+      exact hξ ▸ hψ')
+  · intro h'
+    refine soundness d₂ C w ?_
+    intro ξ hξ
+    rcases List.mem_cons.mp hξ with rfl | hξ'
+    · exact (emVariant_force_false C p w M (C.refl_i w)).mp
+        (h' w (C.refl_i w) (emVariant C p w) (emVariant_pbisim C p w)
+          (w, false) rfl)
+    · obtain ⟨χ, -, rfl⟩ := List.mem_map.mp hξ'
+      exact (force_truthDeco C p χ M w).mp
+        (h' w (C.refl_i w) (truthDeco C p χ) (truthDeco_pbisim C p χ) w rfl)
+
+/-- **∃-side extended criterion**: if `ψ ⊢ lowT p M`, the decorated
+double is the required p-variant. -/
+theorem isSemEx_of_certificates_low {p : String} {M ψ : PLLFormula}
+    (hp : p ∉ ψ.atoms) (d₁ : LaxND [M] ψ) (d₂ : LaxND [ψ] (lowT p M)) :
+    IsSemEx p M ψ := by
+  have hAψ : ∀ a ∈ ψ.atoms, a ≠ p := fun a ha he => hp (he ▸ ha)
+  refine ⟨hp, ?_⟩
+  intro C w
+  constructor
+  · intro hw
+    have hlow : C.force w (lowT p M) := soundness d₂ C w (fun ξ hξ => by
+      simp only [List.mem_singleton] at hξ
+      exact hξ ▸ hw)
+    exact ⟨emVariant C p w, emVariant_pbisim C p w, (w, false), rfl,
+      (emVariant_force_false C p w M (C.refl_i w)).mpr hlow⟩
+  · rintro ⟨N, B, w', hZ, hM'⟩
+    have hψ' : N.force w' ψ := soundness d₁ N w' (fun ξ hξ => by
+      simp only [List.mem_singleton] at hξ
+      exact hξ ▸ hM')
+    exact (force_iff_of_bisim B hAψ hZ).mpr hψ'
+
+/-- **`∀p.(◯p ⊃ p) = ⊥`** — the probe's first substitution-uncertifiable
+∀p-value, reached by the lower transform:
+`lowT p (◯p ⊃ p) = (◯⊤ ⊃ ⊥) ∧ (◯⊤ ⊃ ⊤) ⊢ ⊥`. -/
+theorem semAll_boxp_imp_p (p : String) :
+    IsSemAll p ((PLLFormula.prop p).somehow.ifThen (.prop p)) .falsePLL := by
+  have hL : lowT p ((PLLFormula.prop p).somehow.ifThen (.prop p))
+      = (truePLL.somehow.ifThen .falsePLL).and
+          (truePLL.somehow.ifThen truePLL) := by
+    simp [lowT, substP]
+  refine isSemAll_of_certificates_low (χs := []) (by simp)
+    (.falsoElim _ (.iden (List.mem_singleton.mpr rfl))) ?_
+  rw [List.map_nil, hL]
+  exact .impElim (.andElim1 (.iden (List.mem_cons_self ..)))
+    (.laxIntro (.impIntro (.iden (List.mem_cons_self ..))))
+
+/-- **`∀p.(¬¬p ⊃ p) = ⊥`** — classicality of `p` also has ∀p-value ⊥,
+again through the lower transform. -/
+theorem semAll_nnp_imp_p (p : String) :
+    IsSemAll p ((((PLLFormula.prop p).ifThen .falsePLL).ifThen
+        .falsePLL).ifThen (.prop p)) .falsePLL := by
+  have hL : lowT p ((((PLLFormula.prop p).ifThen .falsePLL).ifThen
+        .falsePLL).ifThen (.prop p))
+      = (((((PLLFormula.falsePLL.ifThen .falsePLL).and
+              (truePLL.ifThen .falsePLL)).ifThen .falsePLL).and
+            ((truePLL.ifThen .falsePLL).ifThen .falsePLL)).ifThen
+          .falsePLL).and
+        (((truePLL.ifThen .falsePLL).ifThen .falsePLL).ifThen truePLL) := by
+    simp [lowT, substP]
+  refine isSemAll_of_certificates_low (χs := []) (by simp)
+    (.falsoElim _ (.iden (List.mem_singleton.mpr rfl))) ?_
+  rw [List.map_nil, hL]
+  -- from the first conjunct, applied to ¬¬-data built from the second-level
+  -- pieces: (¬⊤-refuters are refutable outright)
+  refine .impElim (.andElim1 (.iden (List.mem_cons_self ..))) ?_
+  refine .andIntro ?_ ?_
+  · -- ((⊥ ⊃ ⊥) ∧ (⊤ ⊃ ⊥)) ⊃ ⊥
+    refine .impIntro (.impElim (.andElim2 (.iden (List.mem_cons_self ..))) ?_)
+    exact .impIntro (.iden (List.mem_cons_self ..))
+  · -- (⊤ ⊃ ⊥) ⊃ ⊥
+    refine .impIntro (.impElim (.iden (List.mem_cons_self ..)) ?_)
+    exact .impIntro (.iden (List.mem_cons_self ..))
+
 /-! ## Concrete fibre data
 
 The conjecture's data points, now instances of the image theorems.  Two
