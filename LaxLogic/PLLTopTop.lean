@@ -36,10 +36,22 @@ re-run over `Step`: the reducibility candidates change only at `◯`, and
 `bind` is no longer neutral (its scrutinee position participates in assoc),
 matching the normal-form grammar of `PLLNormal.lean`.
 
-The only prior mechanisation of ⊤⊤-lifting we know of is
-Doczkal–Schwinghammer (Isabelle/HOL-Nominal, LFMTP 2009), for the calculus
-without sums; this appears to be the first in Lean, and the first with
-sums and an intrinsically-typed syntax.
+On paper, the method including sums is Lindley–Stark's own: TLCA 2005
+§4.1 treats λml with sums, case restricted to computation-typed branches,
+via sum continuations, and the unrestricted case construct is handled by
+frame stacks in Lindley's PhD thesis (Edinburgh, 2005, §3.5) — which also
+proves confluence and decidability of convertibility for λml.  Strong
+normalisation for λml itself predates the method: Benton–Bierman–de Paiva
+(JFP 1998) obtained it by translation into a λ-calculus with sums plus
+Prawitz's permutation-conversion result, and Lindley–Stark's §5.1 surveys
+the other translation-based proofs.  The only prior *mechanisation* of
+⊤⊤-lifting we know of is Doczkal–Schwinghammer (Isabelle/HOL-Nominal,
+LFMTP 2009; AFP entry `Lam-ml-Normalization`), for the core calculus
+without sums; the present file appears to be the first mechanisation with
+sums, the first in Lean, and the first over intrinsically-typed syntax.
+(Two differences from the published system, both making our relation
+smaller: `Step` has no η-rules and no case commuting conversions — it is
+β together with `let`-assoc, exactly.)
 -/
 
 open PLLFormula
