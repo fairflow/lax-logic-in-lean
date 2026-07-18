@@ -165,8 +165,15 @@ the ∀∃ statement
                    v Rₘ u and u ⊨ N.
 
 The clause endows ◯ with properties both of possibility and of
-necessity, as the original paper observed; under reading (7) it says
-"however inquiry develops, the believer can somehow make N good". The
+necessity, as the original paper observed. Under reading (7) it is a
+stability statement. Call N **credible** at a world v when a constraint
+step from v reaches a world satisfying N:
+
+    N is credible at v   iff   ∃ u. v Rₘ u and u ⊨ N.
+
+Then w ⊨ ◯N says exactly that N *remains credible in all future
+worlds*: however inquiry develops, some admissible discharge of the
+constraint still verifies N. The
 fallible worlds — worlds with inconsistent information, validating
 everything — are what keep ◯false satisfiable, and under (7) they are
 the semantic form of quarantined absurdity. Soundness for sequents is
