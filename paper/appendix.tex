@@ -1,0 +1,73 @@
+%% Appendix stubs per docs/belief-paper-selection.md \S{}4.  Each section is to
+%% be distilled at the merge pass from the named source; the stubs carry one
+%% orienting paragraph and, where useful, a sample formal statement so the
+%% appendix typography is visible in the page count.
+
+\section{The Mechanised Base}\label{app:base}
+%% Source: docs/pll-formalisation-ledger.md Part II \S{}\S{}II.1–II.6, II.8,
+%% II.11–II.12 (trim, renumber, de-link).
+
+This appendix reproduces, verbatim from the artefact, the definitions a
+reader must accept as formalising the intended notions, and the exact
+statements of the audited theorems of the base: the language, the four
+calculi and their equivalences, cut elimination, the constraint
+semantics, soundness and the two completeness theorems, decidability via
+the repaired terminating calculus, and Craig interpolation. As a sample
+of the format, the natural-deduction judgement and the two lax rules:
+
+\begin{lstlisting}
+inductive LaxND : List PLLFormula → PLLFormula → Type
+  | laxIntro {Γ φ}   (p : LaxND Γ φ) : LaxND Γ (.somehow φ)
+  | laxElim  {Γ φ ψ} (p₁ : LaxND Γ (.somehow φ))
+      (p₂ : LaxND (φ :: Γ) (.somehow ψ)) : LaxND Γ (.somehow ψ)
+\end{lstlisting}
+
+Craig interpolation, in its choice-free form
+(\texttt{craig\_interpolation\textquotesingle}, audit
+\texttt{[propext, Quot.sound]}):
+
+\begin{lstlisting}
+theorem craig_interpolation' {Γ₁ Γ₂ C} (h : SC (Γ₁ ++ Γ₂) C) :
+    ∃ I : PLLFormula,
+      SC Γ₁ I ∧ SC (I :: Γ₂) C ∧
+      I.atoms ⊆ atomsList Γ₁ ∧ I.atoms ⊆ finUnion (atomsList Γ₂) C.atoms
+\end{lstlisting}
+
+\section{Evidence and the Clause Families}\label{app:evidence}
+%% Source: LaxLogic/PLLEvidence.lean + LaxLogic/BeliefRealisability.lean +
+%% docs/annotated/fullness-obstruction.md.
+
+The applicative structures and evidence assignments of
+Section~4 in full; the three realisability relations \ensuremath{\Vdash{}^{\mathrm{u}}}, \ensuremath{\Vdash{}^{\mathrm{s}}}, \ensuremath{\Vdash{}^{\mathrm{p}}}
+clause by clause; the heredity and fallible-saturation lemmas; the exact
+statements of the four separations and of the obstruction, with the
+three-world frame as checker data.
+
+\section{The Finite Canonical Model}\label{app:canonical}
+%% Source: docs/annotated/finite-truth-lemma.md +
+%% docs/annotated/adequacy-fullness.md (the case detail cut from \S{}6.1
+%% lands here).
+
+The finite theory triples, the consistency formula and its \ensuremath{\bigcirc}-guard, the
+decided Lindenbaum fold, the closure-total lemma suite, the model
+\texttt{canonFin}, the two-sided truth lemma, and the enumeration
+producing checker data; then the decoration theorem's case analysis in
+full, including the \ensuremath{\vee}- and \ensuremath{\bigcirc}-witness computations elided from the main
+text.
+
+\section{The Term Calculus}\label{app:terms}
+%% Source: ledger Part II \S{}II.7 + docs/annotated/strong-normalisation.md
+%% (statements only; the walk-through stays with the artefact).
+
+The proof-term calculus, the full reduction (\ensuremath{\beta} together with the
+let-associativity law), strong normalisation by \ensuremath{\top\top}-lifting and the
+certified normaliser, confluence via Newman's lemma, and the \ensuremath{\mu}/\ensuremath{\eta}
+non-isomorphism statements of Section~7.
+
+\section{Artefact Guide}\label{app:artefact}
+%% Source: ledger Part I, condensed (D8).
+
+File map of the artefact, the condensed audit table (every named result
+with its axiom footprint), and instructions for re-running the audits
+(\texttt{lake build}; \texttt{\#print axioms} under
+\texttt{\#guard\_msgs} pins).

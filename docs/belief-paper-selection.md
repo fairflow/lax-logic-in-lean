@@ -203,7 +203,23 @@ with the companion paper; `strong-normalisation.md` serves both (belief paper
 takes statements only); the three belief walk-throughs are cited as artefact
 documentation, with App B/C carrying self-contained distillations.
 
-## 5. Page budget (working targets, to be trued up in TeX)
+## 5. Page budget
+
+**MEASURED (2026-07-19, first TeX pour — `paper/belief.tex`, acmart
+sigplan/screen/review, LuaLaTeX):** the full rev-2 draft typesets to
+**≈8.7 pp of main matter** (§1 p1, §2–§3 p2, §4–§5 p3, §6 to p7, §7
+p7–8, §8 p8, §9–§10 end p9), + appendix stubs and a 9-entry reference
+list to p10. So there is **≈3.3 pp of headroom** under the 12-page
+limit — the §6/§7 compressions below are now quality choices, not
+page-forced, and the additions (§8 growth, §3 examples + Prop 3.4,
+Thm 5.1 display, Craig sentence) fit comfortably. Caveats: prose
+mathematics is still pour-time Unicode substitution (proper display
+math will grow it somewhat), listings are `\footnotesize`, and the full
+bibliography will add 1.5–2 pp of references (outside the limit on the
+working assumption). The pre-TeX estimates below are retained for the
+record; the measured column supersedes them.
+
+### (superseded) working targets from the markdown estimate
 
 | section | words now | target pp | note |
 |---|---|---|---|
