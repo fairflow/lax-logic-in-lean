@@ -18,6 +18,7 @@ import LaxLogic.PLLStrongNorm
 import LaxLogic.PLLReducibility
 import LaxLogic.PLLTactics
 import LaxLogic.PLLTopTop
+import LaxLogic.PLLConfluence
 import LaxLogic.PLLIdempotency
 import LaxLogic.PLLG4
 import LaxLogic.PLLDecide

@@ -79,11 +79,11 @@ why).  To re-verify any row, run
 |---|---|---|---|
 | **Strong normalisation of the full reduction** (β + `let`-assoc interleaved; Lindley–Stark ⊤⊤-lifting) | `strong_normalisation` | [`PLLTopTop.lean:1266`](../LaxLogic/PLLTopTop.lean) | clean |
 | Certified normaliser (normal form reached) | `Tm.normalize_spec` | [`PLLTopTop.lean:1296`](../LaxLogic/PLLTopTop.lean) | clean |
+| **Local confluence** of the full reduction (critical pairs: `let`-β and `let`-assoc under `let`-assoc) | `local_confluence` | [`PLLConfluence.lean`](../LaxLogic/PLLConfluence.lean) | `[propext]` (pinned) |
+| **Confluence / Church–Rosser** (Newman's lemma from strong normalisation) | `confluence` | [`PLLConfluence.lean`](../LaxLogic/PLLConfluence.lean) | `[propext, Classical.choice, Quot.sound]` (pinned) |
+| Uniqueness of normal forms; conversion = joinability; conversion decided by the normaliser (`Conv t u ↔ t.normalize = u.normalize`) | `normal_form_unique`, `conv_iff_joinable`, `conv_iff_normalize_eq` | [`PLLConfluence.lean`](../LaxLogic/PLLConfluence.lean) | as above |
 | **Idempotence is inter-derivability, not isomorphism**: `μ ∘ η ⇝* id` but `η ∘ μ` never reaches the identity (complete four-term reduction graph) | `mu_eta_not_mutually_inverse` | [`PLLIdempotency.lean`](../LaxLogic/PLLIdempotency.lean) | `[propext]` (pinned) |
-| `η ∘ μ` and the identity have no common reduct | `eta_mu_id_not_joinable` | [`PLLIdempotency.lean`](../LaxLogic/PLLIdempotency.lean) | `[propext]` (pinned) |
-
-*(Separation up to the equivalence closure of reduction would additionally
-need uniqueness of normal forms — confluence, not yet mechanised: OPEN.)*
+| `η ∘ μ` and the identity have no common reduct; **nor are they convertible** (via Church–Rosser) | `eta_mu_id_not_joinable`, `eta_mu_not_conv_id` | [`PLLIdempotency.lean`](../LaxLogic/PLLIdempotency.lean) | `[propext]` / conversion form `[propext, Classical.choice, Quot.sound]` (pinned) |
 
 *(Component results — `assoc_sn`, the certified one-step reducer `Tm.step?`, and
 the machine-checked failure of quasi-commutation forcing the semantic method —

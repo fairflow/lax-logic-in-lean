@@ -811,12 +811,13 @@ reduction, the identity not among them
 [propext] alone). So idempotence is inter-derivability, not
 isomorphism: under reading (7), collapsing a belief about a belief and
 then re-asserting belief in the result is not a null operation on
-evidence, although it is one on truth. (What is machine-checked is the
-sharp unconditional pair — μ ∘ η reaches the identity, η ∘ μ provably
-never does, and the two have no common reduct; separating them up to
-the equivalence closure of reduction would additionally need
-uniqueness of normal forms, i.e. confluence, which the development
-does not yet contain.)
+evidence, although it is one on truth. The separation holds in the
+strongest sense the calculus can express: the artefact proves the
+reduction confluent (`PLLConfluence.lean` — Newman's lemma from strong
+normalisation, the critical pairs being `let`-β and `let`-assoc
+overlapping at a `bind`), so normal forms are unique, conversion is
+decided by the normaliser, and η ∘ μ is not *convertible* to the
+identity (`eta_mu_not_conv_id`), not merely unable to reduce to it.
 
 One asymmetry visible in these examples deserves promotion to a remark.
 Evidence extracted from proofs is *frame-uniform*: one polynomial

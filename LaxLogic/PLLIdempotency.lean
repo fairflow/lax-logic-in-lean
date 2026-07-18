@@ -1,4 +1,4 @@
-import LaxLogic.PLLStrongNorm
+import LaxLogic.PLLConfluence
 
 /-!
 # Idempotence is inter-derivability, not isomorphism
@@ -37,12 +37,12 @@ refutes invertibility of `μ` outright.)
 Both normal forms are computed by the certified fuelled normaliser
 `Tm.reduceFuel` of `PLLStrongNorm.lean`, by `rfl`, uniformly in `M`;
 `Tm.reduceFuel_sound` then delivers the `Steps` and `Nf` facts for
-free.  One honest caveat, recorded per the machine-checked mandate:
-separating the two terms up to the *equivalence closure* of reduction
-would additionally need uniqueness of normal forms, i.e. confluence,
-which is not yet mechanised for this calculus — OPEN.  What is proved
-here is the sharper unconditional pair: `μ ∘ η` reaches the identity;
-`η ∘ μ` provably never does, by any reduction sequence whatever.
+free.  With confluence (`PLLConfluence.lean`) the separation also
+holds up to the full equivalence closure of reduction:
+`eta_mu_not_conv_id`.  The reduction-graph argument is kept as well
+because it is unconditional and choice-free (`[propext]`); the
+conversion-level statement inherits `Classical.choice` from the
+strong-normalisation theorem behind Newman's lemma.
 -/
 
 open PLLFormula
@@ -232,6 +232,14 @@ theorem mu_eta_not_mutually_inverse :
     ¬ Steps (compTm (etaTm M) (muTm M)) (idTm (somehow (somehow M))) :=
   ⟨mu_eta_steps_id M, not_steps_eta_mu_id M⟩
 
+/-- **`η ∘ μ` is not convertible to the identity**: the separation up
+to the full equivalence closure of reduction, by Church–Rosser — a
+conversion would give a common reduct, which `eta_mu_id_not_joinable`
+rules out. -/
+theorem eta_mu_not_conv_id :
+    ¬ Conv (compTm (etaTm M) (muTm M)) (idTm (somehow (somehow M))) :=
+  fun h => eta_mu_id_not_joinable M h.joinable
+
 /-! ## Axiom audit (build-time guards) -/
 
 /-- info: 'PLLND.mu_eta_not_mutually_inverse' depends on axioms: [propext] -/
@@ -241,5 +249,11 @@ theorem mu_eta_not_mutually_inverse :
 /-- info: 'PLLND.eta_mu_id_not_joinable' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms eta_mu_id_not_joinable
+
+/--
+info: 'PLLND.eta_mu_not_conv_id' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms eta_mu_not_conv_id
 
 end PLLND
