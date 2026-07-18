@@ -33,7 +33,7 @@ namespace SemUIProbe
 
 /-! ## Oracle (as in `wip/lattice_cmp.lean`) -/
 
-def FUEL : Nat := 3000
+def FUEL : Nat := 1200
 
 def provF (fuel : Nat) (Γ : List PLLFormula) (C : PLLFormula) : Bool :=
   search (listWeight (C :: Γ)) (listAtoms (C :: Γ)) fuel ∅ Γ C
@@ -127,11 +127,24 @@ def lowT (p : String) : PLLFormula → PLLFormula
       ((substP p truePLL A).ifThen (substP p truePLL B))
   | .somehow A  => (substP p truePLL A).somehow
 
+/-- The level-0 transform of the sideways-witness (Löb) model:
+`sideT(◯A) = ◯(sideT A) ∧ ◯(A[⊤])`, implication collects all levels. -/
+def sideT (p : String) : PLLFormula → PLLFormula
+  | .prop a     => if a = p then .falsePLL else .prop a
+  | .falsePLL   => .falsePLL
+  | .and A B    => (sideT p A).and (sideT p B)
+  | .or A B     => (sideT p A).or (sideT p B)
+  | .ifThen A B => ((sideT p A).ifThen (sideT p B)).and (lowT p (A.ifThen B))
+  | .somehow A  => ((sideT p A).somehow).and ((substP p truePLL A).somehow)
+
 /-- Reduced fuel for the *failing* certificate probes (the successful
 certificates we mechanise are re-checked at full fuel anyway). -/
-def CFUEL : Nat := 800
+def CFUEL : Nat := 500
 
 def provC (Γ : List PLLFormula) (C : PLLFormula) : Bool := provF CFUEL Γ C
+
+/-- Pair searches are the expensive tail; off for the fast sweep. -/
+def TRY_PAIRS : Bool := false
 
 /-- ∀-side: substitution singletons (full fuel), then the lower
 transform alone / with a single, then substitution pairs, then
@@ -147,7 +160,15 @@ def certAllX (p : String) (M ψ : PLLFormula) (pool poolSmall : List PLLFormula)
   else match pool.find? (fun χ => provC [lw, substP p χ M] ψ) with
   | some χ => s!"CERT-LOW[{pf χ}]"
   | none =>
-  match (pairsOf poolSmall).find?
+  let sw := sideT p M
+  if sw.weight > 100 then
+    (if !TRY_PAIRS then "NO-CERT(singles+low;side-skipped)" else "NO-CERT(side-skipped)")
+  else if provC [sw] ψ then "CERT-SIDE[]"
+  else match pool.find? (fun χ => provC [sw, substP p χ M] ψ) with
+  | some χ => s!"CERT-SIDE[{pf χ}]"
+  | none =>
+  if !TRY_PAIRS then "NO-CERT(singles+low+side)"
+  else match (pairsOf poolSmall).find?
       (fun ab => provC [substP p ab.1 M, substP p ab.2 M] ψ) with
   | some ab => s!"CERT-SUBST[{pf ab.1}, {pf ab.2}]"
   | none =>
@@ -165,6 +186,10 @@ def certExX (p : String) (M ψ : PLLFormula) (pool : List PLLFormula) :
   let lw := lowT p M
   if lw.weight > 60 then "LOW-SKIPPED(weight)"
   else if provC [ψ] lw then "CERT-LOW"
+  else
+  let sw := sideT p M
+  if sw.weight > 100 then "NO-CERT(side-skipped)"
+  else if provC [ψ] sw then "CERT-SIDE"
   else "NO-CERT"
 
 /-- Essentiality by separation of two instances. -/

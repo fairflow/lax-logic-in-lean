@@ -1505,6 +1505,308 @@ theorem semAll_box_lob (p : String) :
       · omega
       · exact hz hF⟩
 
+/-! ## The level tower of the Löb variant: the transform `sideT`
+
+`lobVariant` is level-homogeneous above 2 and its levels evaluate by
+syntactic transforms, exactly as the double did:
+
+    (x, k) ⊩ M  for k ≥ 2   iff   x ⊩ M[p:=⊤]
+    (x, 1) ⊩ M              iff   x ⊩ lowT p M      (the double reappears)
+    (x, 0) ⊩ M              iff   x ⊩ sideT p M
+
+with the *sideways transform*
+
+    sideT p p       = ⊥         (pointwise on ∧, ∨, atoms ≠ p, ⊥)
+    sideT p (A ⊃ B) = (sideT A ⊃ sideT B) ∧ lowT p (A ⊃ B)
+    sideT p (◯A)    = ◯(sideT A) ∧ ◯(A[p:=⊤])
+
+The ◯-clause is the new content: level-0 constraint witnesses stay at
+level 0 (first conjunct) while every higher future is served through
+the sideways 1→2 step (second conjunct).  `sideT` joins `lowT` and the
+substitution instances as a third certificate generator; on the Löb
+formula, `sideT p (◯(◯p ⊃ p)) ≡ ◯⊥` — the exact value. -/
+
+/-- The level-0 transform of the Löb variant. -/
+def sideT (p : String) : PLLFormula → PLLFormula
+  | .prop a     => if a = p then .falsePLL else .prop a
+  | .falsePLL   => .falsePLL
+  | .and A B    => (sideT p A).and (sideT p B)
+  | .or A B     => (sideT p A).or (sideT p B)
+  | .ifThen A B => ((sideT p A).ifThen (sideT p B)).and (lowT p (A.ifThen B))
+  | .somehow A  => ((sideT p A).somehow).and ((substP p truePLL A).somehow)
+
+/-- Levels ≥ 2 of the Löb variant force `M` iff the base world forces
+`M[p:=⊤]`. -/
+theorem lobVariant_force_high (C : ConstraintModel) (p : String) :
+    ∀ (M : PLLFormula) (x : C.W) (k : ℕ), 2 ≤ k →
+      ((lobVariant C p).force (x, k) M ↔
+        C.force x (substP p truePLL M)) := by
+  intro M
+  induction M with
+  | prop a =>
+      intro x k hk
+      show (x, k) ∈ (if a = p then {a : (lobModel C).W | 2 ≤ a.2 ∨ a.1 ∈ C.F}
+        else (lobModel C).V a) ↔ C.force x (substP p truePLL (.prop a))
+      by_cases ha : a = p
+      · rw [if_pos ha]
+        simp only [substP, if_pos ha]
+        constructor
+        · intro _; exact fun v _ hv => hv
+        · intro _; exact Or.inl hk
+      · rw [if_neg ha]
+        simp only [substP, if_neg ha]
+        exact Iff.rfl
+  | falsePLL => intro x k _; exact Iff.rfl
+  | and A B ihA ihB =>
+      intro x k hk
+      simp only [ConstraintModel.force, substP]
+      exact and_congr (ihA x k hk) (ihB x k hk)
+  | or A B ihA ihB =>
+      intro x k hk
+      simp only [ConstraintModel.force, substP]
+      exact or_congr (ihA x k hk) (ihB x k hk)
+  | ifThen A B ihA ihB =>
+      intro x k hk
+      simp only [ConstraintModel.force, substP]
+      constructor
+      · intro hf y hy hA
+        exact (ihB y k hk).mp
+          (hf (y, k) ⟨hy, Nat.le_refl k⟩ ((ihA y k hk).mpr hA))
+      · intro hf v hv hA
+        obtain ⟨y, j⟩ := v
+        have hj : 2 ≤ j := Nat.le_trans hk hv.2
+        exact (ihB y j hj).mpr (hf y hv.1 ((ihA y j hj).mp hA))
+  | somehow A ihA =>
+      intro x k hk
+      simp only [ConstraintModel.force, substP]
+      constructor
+      · intro hf y hy
+        obtain ⟨u, hu, hA⟩ := hf (y, k) ⟨hy, Nat.le_refl k⟩
+        obtain ⟨z, l⟩ := u
+        have hl : 2 ≤ l := by have := hu.2; omega
+        exact ⟨z, hu.1, (ihA z l hl).mp hA⟩
+      · intro hf v hv
+        obtain ⟨y, j⟩ := v
+        have hj : 2 ≤ j := Nat.le_trans hk hv.2
+        obtain ⟨z, hz, hA⟩ := hf y hv.1
+        exact ⟨(z, j), ⟨hz, Or.inl rfl⟩, (ihA z j hj).mpr hA⟩
+
+/-- Level 1 of the Löb variant forces `M` iff the base world forces
+`lowT p M`: the double reappears one level up. -/
+theorem lobVariant_force_one (C : ConstraintModel) (p : String) :
+    ∀ (M : PLLFormula) (x : C.W),
+      ((lobVariant C p).force (x, 1) M ↔ C.force x (lowT p M)) := by
+  intro M
+  induction M with
+  | prop a =>
+      intro x
+      show (x, 1) ∈ (if a = p then {a : (lobModel C).W | 2 ≤ a.2 ∨ a.1 ∈ C.F}
+        else (lobModel C).V a) ↔ C.force x (lowT p (.prop a))
+      by_cases ha : a = p
+      · rw [if_pos ha]
+        simp only [lowT, if_pos ha]
+        constructor
+        · rintro (h2 | hF)
+          · exact absurd h2 (by omega)
+          · exact hF
+        · exact fun hF => Or.inr hF
+      · rw [if_neg ha]
+        simp only [lowT, if_neg ha]
+        exact Iff.rfl
+  | falsePLL => intro x; exact Iff.rfl
+  | and A B ihA ihB =>
+      intro x
+      simp only [ConstraintModel.force, lowT]
+      exact and_congr (ihA x) (ihB x)
+  | or A B ihA ihB =>
+      intro x
+      simp only [ConstraintModel.force, lowT]
+      exact or_congr (ihA x) (ihB x)
+  | ifThen A B ihA ihB =>
+      intro x
+      simp only [ConstraintModel.force, lowT]
+      constructor
+      · intro hf
+        refine ⟨?_, ?_⟩
+        · intro y hy hA
+          exact (ihB y).mp
+            (hf (y, 1) ⟨hy, Nat.le_refl 1⟩ ((ihA y).mpr hA))
+        · intro y hy hA
+          exact (lobVariant_force_high C p B y 2 (Nat.le_refl 2)).mp
+            (hf (y, 2) ⟨hy, by omega⟩
+              ((lobVariant_force_high C p A y 2 (Nat.le_refl 2)).mpr hA))
+      · rintro ⟨h1, h2⟩ v hv hA
+        obtain ⟨y, j⟩ := v
+        rcases Nat.lt_or_ge j 2 with hjlt | hjge
+        · have hj1 : j = 1 := by have := hv.2; omega
+          subst hj1
+          exact (ihB y).mpr (h1 y hv.1 ((ihA y).mp hA))
+        · exact (lobVariant_force_high C p B y j hjge).mpr
+            (h2 y hv.1 ((lobVariant_force_high C p A y j hjge).mp hA))
+  | somehow A ihA =>
+      intro x
+      simp only [ConstraintModel.force, lowT]
+      constructor
+      · intro hf y hy
+        obtain ⟨u, hu, hA⟩ := hf (y, 2) ⟨hy, by omega⟩
+        obtain ⟨z, l⟩ := u
+        have hl : 2 ≤ l := by have := hu.2; omega
+        exact ⟨z, hu.1, (lobVariant_force_high C p A z l hl).mp hA⟩
+      · intro hf v hv
+        obtain ⟨y, j⟩ := v
+        obtain ⟨z, hz, hA⟩ := hf y hv.1
+        rcases Nat.lt_or_ge j 2 with hjlt | hjge
+        · have hj1 : j = 1 := by have := hv.2; omega
+          subst hj1
+          exact ⟨(z, 2), ⟨hz, Or.inr ⟨rfl, rfl⟩⟩,
+            (lobVariant_force_high C p A z 2 (Nat.le_refl 2)).mpr hA⟩
+        · exact ⟨(z, j), ⟨hz, Or.inl rfl⟩,
+            (lobVariant_force_high C p A z j hjge).mpr hA⟩
+
+/-- **Level 0 of the Löb variant forces `M` iff the base world forces
+`sideT p M`** — the sideways-witness construction as a transform. -/
+theorem lobVariant_force_zero (C : ConstraintModel) (p : String) :
+    ∀ (M : PLLFormula) (x : C.W),
+      ((lobVariant C p).force (x, 0) M ↔ C.force x (sideT p M)) := by
+  intro M
+  induction M with
+  | prop a =>
+      intro x
+      show (x, 0) ∈ (if a = p then {a : (lobModel C).W | 2 ≤ a.2 ∨ a.1 ∈ C.F}
+        else (lobModel C).V a) ↔ C.force x (sideT p (.prop a))
+      by_cases ha : a = p
+      · rw [if_pos ha]
+        simp only [sideT, if_pos ha]
+        constructor
+        · rintro (h2 | hF)
+          · exact absurd h2 (by omega)
+          · exact hF
+        · exact fun hF => Or.inr hF
+      · rw [if_neg ha]
+        simp only [sideT, if_neg ha]
+        exact Iff.rfl
+  | falsePLL => intro x; exact Iff.rfl
+  | and A B ihA ihB =>
+      intro x
+      simp only [ConstraintModel.force, sideT]
+      exact and_congr (ihA x) (ihB x)
+  | or A B ihA ihB =>
+      intro x
+      simp only [ConstraintModel.force, sideT]
+      exact or_congr (ihA x) (ihB x)
+  | ifThen A B ihA ihB =>
+      intro x
+      simp only [ConstraintModel.force, sideT, lowT]
+      constructor
+      · intro hf
+        refine ⟨?_, ?_, ?_⟩
+        · intro y hy hA
+          exact (ihB y).mp
+            (hf (y, 0) ⟨hy, Nat.le_refl 0⟩ ((ihA y).mpr hA))
+        · intro y hy hA
+          exact (lobVariant_force_one C p B y).mp
+            (hf (y, 1) ⟨hy, by omega⟩ ((lobVariant_force_one C p A y).mpr hA))
+        · intro y hy hA
+          exact (lobVariant_force_high C p B y 2 (Nat.le_refl 2)).mp
+            (hf (y, 2) ⟨hy, by omega⟩
+              ((lobVariant_force_high C p A y 2 (Nat.le_refl 2)).mpr hA))
+      · rintro ⟨h0, h1, h2⟩ v hv hA
+        obtain ⟨y, j⟩ := v
+        rcases Nat.eq_zero_or_pos j with hj0 | hjpos
+        · subst hj0
+          exact (ihB y).mpr (h0 y hv.1 ((ihA y).mp hA))
+        · rcases Nat.lt_or_ge j 2 with hjlt | hjge
+          · have hj1 : j = 1 := by omega
+            subst hj1
+            exact (lobVariant_force_one C p B y).mpr
+              (h1 y hv.1 ((lobVariant_force_one C p A y).mp hA))
+          · exact (lobVariant_force_high C p B y j hjge).mpr
+              (h2 y hv.1 ((lobVariant_force_high C p A y j hjge).mp hA))
+  | somehow A ihA =>
+      intro x
+      simp only [ConstraintModel.force, sideT]
+      constructor
+      · intro hf
+        refine ⟨?_, ?_⟩
+        · intro y hy
+          obtain ⟨u, hu, hA⟩ := hf (y, 0) ⟨hy, Nat.le_refl 0⟩
+          obtain ⟨z, l⟩ := u
+          have hl : l = 0 := by have := hu.2; omega
+          subst hl
+          exact ⟨z, hu.1, (ihA z).mp hA⟩
+        · intro y hy
+          obtain ⟨u, hu, hA⟩ := hf (y, 2) ⟨hy, by omega⟩
+          obtain ⟨z, l⟩ := u
+          have hl : 2 ≤ l := by have := hu.2; omega
+          exact ⟨z, hu.1, (lobVariant_force_high C p A z l hl).mp hA⟩
+      · rintro ⟨h0, h2⟩ v hv
+        obtain ⟨y, j⟩ := v
+        rcases Nat.eq_zero_or_pos j with hj0 | hjpos
+        · subst hj0
+          obtain ⟨z, hz, hA⟩ := h0 y hv.1
+          exact ⟨(z, 0), ⟨hz, Or.inl rfl⟩, (ihA z).mpr hA⟩
+        · rcases Nat.lt_or_ge j 2 with hjlt | hjge
+          · have hj1 : j = 1 := by omega
+            subst hj1
+            obtain ⟨z, hz, hA⟩ := h2 y hv.1
+            exact ⟨(z, 2), ⟨hz, Or.inr ⟨rfl, rfl⟩⟩,
+              (lobVariant_force_high C p A z 2 (Nat.le_refl 2)).mpr hA⟩
+          · obtain ⟨z, hz, hA⟩ := h2 y hv.1
+            exact ⟨(z, j), ⟨hz, Or.inl rfl⟩,
+              (lobVariant_force_high C p A z j hjge).mpr hA⟩
+
+/-- **∀-side criterion with the full generator basis**: the sideways
+transform and the lower transform join the substitution instances. -/
+theorem isSemAll_of_certificates_side {p : String} {M ψ : PLLFormula}
+    {χs : List PLLFormula} (hp : p ∉ ψ.atoms) (d₁ : LaxND [ψ] M)
+    (d₂ : LaxND (sideT p M :: lowT p M ::
+      χs.map (fun χ => substP p χ M)) ψ) :
+    IsSemAll p M ψ := by
+  have hAψ : ∀ a ∈ ψ.atoms, a ≠ p := fun a ha he => hp (he ▸ ha)
+  refine ⟨hp, ?_⟩
+  intro C w
+  constructor
+  · intro hw v hv N B v' hZ
+    have hψ' : N.force v' ψ :=
+      (force_iff_of_bisim B hAψ hZ).mp (C.force_hered hv hw)
+    exact soundness d₁ N v' (fun ξ hξ => by
+      simp only [List.mem_singleton] at hξ
+      exact hξ ▸ hψ')
+  · intro h'
+    refine soundness d₂ C w ?_
+    intro ξ hξ
+    rcases List.mem_cons.mp hξ with rfl | hξ'
+    · exact (lobVariant_force_zero C p M w).mp
+        (h' w (C.refl_i w) (lobVariant C p) (lobVariant_pbisim C p) (w, 0) rfl)
+    rcases List.mem_cons.mp hξ' with rfl | hξ''
+    · exact (emVariant_force_false C p w M (C.refl_i w)).mp
+        (h' w (C.refl_i w) (emVariant C p w) (emVariant_pbisim C p w)
+          (w, false) rfl)
+    · obtain ⟨χ, -, rfl⟩ := List.mem_map.mp hξ''
+      exact (force_truthDeco C p χ M w).mp
+        (h' w (C.refl_i w) (truthDeco C p χ) (truthDeco_pbisim C p χ) w rfl)
+
+/-- **∃-side criterion via the sideways transform**: if `ψ ⊢ sideT p M`,
+the Löb variant is the required p-variant. -/
+theorem isSemEx_of_certificates_side {p : String} {M ψ : PLLFormula}
+    (hp : p ∉ ψ.atoms) (d₁ : LaxND [M] ψ) (d₂ : LaxND [ψ] (sideT p M)) :
+    IsSemEx p M ψ := by
+  have hAψ : ∀ a ∈ ψ.atoms, a ≠ p := fun a ha he => hp (he ▸ ha)
+  refine ⟨hp, ?_⟩
+  intro C w
+  constructor
+  · intro hw
+    have hside : C.force w (sideT p M) := soundness d₂ C w (fun ξ hξ => by
+      simp only [List.mem_singleton] at hξ
+      exact hξ ▸ hw)
+    exact ⟨lobVariant C p, lobVariant_pbisim C p, (w, 0), rfl,
+      (lobVariant_force_zero C p M w).mpr hside⟩
+  · rintro ⟨N, B, w', hZ, hM'⟩
+    have hψ' : N.force w' ψ := soundness d₁ N w' (fun ξ hξ => by
+      simp only [List.mem_singleton] at hξ
+      exact hξ ▸ hM')
+    exact (force_iff_of_bisim B hAψ hZ).mpr hψ'
+
 /-! ## Concrete fibre data
 
 The conjecture's data points, now instances of the image theorems.  Two
