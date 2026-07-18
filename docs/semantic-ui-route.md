@@ -85,6 +85,21 @@ lives.
    Θ-promises are what distinguish a world pretending to be fallible
    from one committed against it.
 
+**The induction has been started (PROVED, same file, 2026-07-18 pm):**
+the universal p-variant constructor `redecorate` (same frame, atom p
+re-decorated by any hereditary F-full set; the identity carrier is a
+`PBisim p`), and with it the base and pointwise-compositional cases:
+
+    ∃p.p = ⊤    ∀p.p = ⊥    ∃p.q = q  (q≠p)    ∀p.q = q  (q≠p)
+    ∃p.⊥ = ⊥    ∀p.⊥ = ⊥    ∃p distributes over ∨    ∀p over ∧
+
+(`semEx_prop_self`, `semAll_prop_self`, `semEx/semAll_prop_ne`,
+`semEx/semAll_false`, `semEx_or`, `semAll_and`). What is deliberately
+absent is the quantificational core — ∃ through ∧/⊃/◯ (two p-variants
+must be AMALGAMATED into one) and ∀ through ∨ — which is exactly where
+the canonical-model descriptions must enter and why the general theorem
+is not a structural recursion.
+
 **Strategic advice to the fresh session:** attack definability at ONE
 propositional variable first, over the canonical models of the 1-pv
 closures. Everything we know says this case is tiny: the deep probe
@@ -131,18 +146,27 @@ the analogue of the bite on the split model. If it behaves, the Belief
 paper gains a section: *propositional quantifiers as evidence
 uniformity* — and UI becomes a statement about evidence, not just truth.
 
-**(c) The constraint-translation route is blocked, for a reason worth
-recording.** One might hope to DERIVE PLL-UI from the mechanised IPC-UI
-(the box-free crown) through context completeness (Thm 6: PLL ⊢ φ iff
-∀C, IPL ⊢ φ^C), quantifier-by-quantifier. This fails in the naive form:
-the standard constraints C range over formulas that may themselves
-mention p, so ∃p must quantify through the constraint alphabet, and by
-Corollary 10 no finite set of constraints is complete — the very
-infinitude that theorem establishes is what prevents commuting a finite
-p-quantifier past the ∀C. Status: OPEN whether a cleverer transfer
-exists (e.g. constraints restricted to p-free K, L with a separate
-absorption argument), but the direct route is dead and the reason is a
-theorem we already have.
+**(c) The constraint-translation route — CORRECTED (Matthew,
+2026-07-18): not dead, but requires per-instance finite support.** One
+might hope to DERIVE PLL-UI from the mechanised IPC-UI (the box-free
+crown) through context completeness (Thm 6: PLL ⊢ φ iff ∀C, IPL ⊢ φ^C).
+The naive form does fail — the constraints mention p, and commuting a
+p-quantifier past the unrestricted ∀C would need a single finite
+constraint set complete for the whole logic, which Corollary 10 refutes.
+But — Matthew's point — Corollary 10 is a statement about ALL of PLL,
+not about any one interpolation instance: for a SPECIFIC φ the
+derivability facts the interpolant must govern may be controlled by a
+FINITE set S_φ of constraints, and then a candidate interpolant is
+constructible from { IPC-∃p.(φ^C) : C ∈ S_φ }. There is a natural
+candidate for S_φ: Lemma 7 manufactures ONE standard constraint per
+finite constraint model (the semantic completion), so S_φ = the
+constraints of the canonical models over φ's subformula closure — a
+finite set, by the finite canonical construction. OPEN: whether the
+adjunction properties survive the assembly (the ∀χ over p-free χ ranges
+over formulas outside φ's closure; the finite-support claim must be
+proved against that quantifier, plausibly via the FMP bound). Status:
+a live THIRD route (syntactic cascade / semantic definability /
+finite-support constraint transfer), currently unexplored.
 
 **(d) Shared infrastructure.** The finite canonical model is now
 carrying three loads: the choice-free completeness (Belief §6.2), the

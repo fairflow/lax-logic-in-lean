@@ -243,5 +243,179 @@ theorem semAll_definable (p : String) (φ : PLLFormula) :
     ∃ ψ, IsSemAll p φ ψ := by
   sorry
 
+/-! ## Base and compositional cases of definability (PROVED)
+
+The definability induction begins here.  The atomic and ⊥ cases and the
+"pointwise" compositional cases (∃ through ∨, ∀ through ∧) are proved
+outright; the genuinely quantificational content is confined to what is
+NOT here — ∃ through ∧/⊃/◯ and ∀ through ∨/⊃/◯ — exactly the cases
+where the canonical-model descriptions must enter. -/
+
+/-- **The universal p-variant constructor**: redecorate the atom `p`
+with an arbitrary hereditary, fallibility-respecting set of worlds;
+frame and all other atoms unchanged. -/
+def redecorate (M : ConstraintModel) (p : String) (S : Set M.W)
+    (hh : ∀ {w v}, M.Ri w v → w ∈ S → v ∈ S)
+    (hf : ∀ {w}, w ∈ M.F → w ∈ S) : ConstraintModel where
+  W := M.W
+  Ri := M.Ri
+  Rm := M.Rm
+  F := M.F
+  V := fun a => if a = p then S else M.V a
+  refl_i := M.refl_i
+  trans_i := M.trans_i
+  refl_m := M.refl_m
+  trans_m := M.trans_m
+  sub_mi := M.sub_mi
+  hered_F := M.hered_F
+  hered_V := by
+    intro a w v h hw
+    have hw' : w ∈ (if a = p then S else M.V a) := hw
+    show v ∈ (if a = p then S else M.V a)
+    by_cases ha : a = p
+    · rw [if_pos ha] at hw' ⊢
+      exact hh h hw'
+    · rw [if_neg ha] at hw' ⊢
+      exact M.hered_V h hw'
+  full_F := by
+    intro a w hw
+    show w ∈ (if a = p then S else M.V a)
+    by_cases ha : a = p
+    · rw [if_pos ha]
+      exact hf hw
+    · rw [if_neg ha]
+      exact M.full_F hw
+
+/-- Redecoration is a p-variant: the identity carrier is a `PBisim p`. -/
+def redecorate_pbisim (M : ConstraintModel) (p : String) (S : Set M.W)
+    (hh : ∀ {w v}, M.Ri w v → w ∈ S → v ∈ S)
+    (hf : ∀ {w}, w ∈ M.F → w ∈ S) :
+    PBisim p M (redecorate M p S hh hf) where
+  Z := fun w w' => w = w'
+  atoms := by
+    rintro w _ rfl a ha
+    show w ∈ M.V a ↔ w ∈ (if a = p then S else M.V a)
+    rw [if_neg ha]
+  fall := by rintro w _ rfl; exact Iff.rfl
+  iforth := by rintro w _ rfl v hv; exact ⟨v, hv, rfl⟩
+  iback := by rintro w _ rfl v' hv'; exact ⟨v', hv', rfl⟩
+  mforth := by rintro w _ rfl u hu; exact ⟨u, hu, rfl⟩
+  mback := by rintro w _ rfl u' hu'; exact ⟨u', hu', rfl⟩
+
+/-- `∃p.p = ⊤` — every world has a p-variant forcing p (redecorate with
+the universal set). -/
+theorem semEx_prop_self (p : String) : IsSemEx p (.prop p) truePLL := by
+  refine ⟨by simp [truePLL], ?_⟩
+  intro M w
+  constructor
+  · intro _
+    refine ⟨redecorate M p Set.univ (fun _ _ => trivial) (fun _ => trivial),
+            redecorate_pbisim M p Set.univ (fun _ _ => trivial) (fun _ => trivial),
+            w, rfl, ?_⟩
+    show w ∈ (if p = p then Set.univ else M.V p)
+    rw [if_pos rfl]
+    trivial
+  · intro _
+    exact fun v _ h => h
+
+/-- `∀p.p = ⊥` — only fallible worlds have p forced by ALL p-variants
+(redecorate with the fallible set). -/
+theorem semAll_prop_self (p : String) : IsSemAll p (.prop p) falsePLL := by
+  refine ⟨by simp, ?_⟩
+  intro M w
+  constructor
+  · intro hw v hv N B v' hZ
+    have hvF : v ∈ M.F := M.hered_F hv hw
+    exact N.full_F ((B.fall hZ).mp hvF)
+  · intro h
+    have := h w (M.refl_i w)
+      (redecorate M p M.F (fun hri hF => M.hered_F hri hF) (fun hF => hF))
+      (redecorate_pbisim M p M.F (fun hri hF => M.hered_F hri hF) (fun hF => hF))
+      w rfl
+    have hw : w ∈ (if p = p then M.F else M.V p) := this
+    rwa [if_pos rfl] at hw
+
+/-- `∃p.q = q` for `q ≠ p`. -/
+theorem semEx_prop_ne {p q : String} (h : q ≠ p) :
+    IsSemEx p (.prop q) (.prop q) := by
+  refine ⟨by simpa using fun hp => h hp.symm, ?_⟩
+  intro M w
+  constructor
+  · intro hw
+    exact ⟨M, ABisim.id _ M, w, rfl, hw⟩
+  · rintro ⟨N, B, w', hZ, hq⟩
+    exact (B.atoms hZ q h).mpr hq
+
+/-- `∀p.q = q` for `q ≠ p`. -/
+theorem semAll_prop_ne {p q : String} (h : q ≠ p) :
+    IsSemAll p (.prop q) (.prop q) := by
+  refine ⟨by simpa using fun hp => h hp.symm, ?_⟩
+  intro M w
+  constructor
+  · intro hw v hv N B v' hZ
+    exact (B.atoms hZ q h).mp (M.hered_V hv hw)
+  · intro h'
+    exact h' w (M.refl_i w) M (ABisim.id _ M) w rfl
+
+/-- `∃p.⊥ = ⊥`. -/
+theorem semEx_false (p : String) : IsSemEx p .falsePLL .falsePLL := by
+  refine ⟨by simp, ?_⟩
+  intro M w
+  constructor
+  · intro hw
+    exact ⟨M, ABisim.id _ M, w, rfl, hw⟩
+  · rintro ⟨N, B, w', hZ, hF⟩
+    exact (B.fall hZ).mpr hF
+
+/-- `∀p.⊥ = ⊥`. -/
+theorem semAll_false (p : String) : IsSemAll p .falsePLL .falsePLL := by
+  refine ⟨by simp, ?_⟩
+  intro M w
+  constructor
+  · intro hw v hv N B v' hZ
+    exact (B.fall hZ).mp (M.hered_F hv hw)
+  · intro h'
+    exact h' w (M.refl_i w) M (ABisim.id _ M) w rfl
+
+/-- ∃p commutes with ∨ (the SAME p-variant serves whichever disjunct). -/
+theorem semEx_or {p : String} {φ₁ φ₂ ψ₁ ψ₂ : PLLFormula}
+    (h₁ : IsSemEx p φ₁ ψ₁) (h₂ : IsSemEx p φ₂ ψ₂) :
+    IsSemEx p (φ₁.or φ₂) (ψ₁.or ψ₂) := by
+  refine ⟨fun hp => (mem_atoms_or.mp hp).elim h₁.1 h₂.1, ?_⟩
+  intro M w
+  show M.force w ψ₁ ∨ M.force w ψ₂ ↔ _
+  rw [h₁.2 M w, h₂.2 M w]
+  constructor
+  · rintro (⟨N, B, w', hZ, hφ⟩ | ⟨N, B, w', hZ, hφ⟩)
+    · exact ⟨N, B, w', hZ, Or.inl hφ⟩
+    · exact ⟨N, B, w', hZ, Or.inr hφ⟩
+  · rintro ⟨N, B, w', hZ, hφ | hφ⟩
+    · exact Or.inl ⟨N, B, w', hZ, hφ⟩
+    · exact Or.inr ⟨N, B, w', hZ, hφ⟩
+
+/-- ∀p commutes with ∧. -/
+theorem semAll_and {p : String} {φ₁ φ₂ ψ₁ ψ₂ : PLLFormula}
+    (h₁ : IsSemAll p φ₁ ψ₁) (h₂ : IsSemAll p φ₂ ψ₂) :
+    IsSemAll p (φ₁.and φ₂) (ψ₁.and ψ₂) := by
+  refine ⟨fun hp => (mem_atoms_and.mp hp).elim h₁.1 h₂.1, ?_⟩
+  intro M w
+  show M.force w ψ₁ ∧ M.force w ψ₂ ↔ _
+  rw [h₁.2 M w, h₂.2 M w]
+  constructor
+  · rintro ⟨ha, hb⟩ v hv N B v' hZ
+    exact ⟨ha v hv N B v' hZ, hb v hv N B v' hZ⟩
+  · intro h'
+    exact ⟨fun v hv N B v' hZ => (h' v hv N B v' hZ).1,
+           fun v hv N B v' hZ => (h' v hv N B v' hZ).2⟩
+
+/-! What is deliberately NOT here — the quantificational core, where the
+canonical-model descriptions must enter:
+* ∃ through ∧ (two variants must be AMALGAMATED into one),
+* ∃ through ⊃ and ◯ (variant construction against ∀-clauses),
+* ∀ through ∨ (a disjunction of ∀'s under-approximates).
+These are the ⊃/◯/amalgamation cases of `semEx_definable`/
+`semAll_definable`, and the reason the general theorem needs the finite
+canonical model rather than a structural recursion. -/
+
 end SemUI
 end PLLND
