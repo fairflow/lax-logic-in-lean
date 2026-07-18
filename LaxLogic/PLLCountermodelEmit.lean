@@ -376,6 +376,49 @@ partial def emit (Γ : List PLLFormula) (C : PLLFormula) :
     (List.range M.n).findSome? fun w =>
       if FinCM.checkB M w Γ C then some (M, w) else none
 
+/-- Restrict a model to the listed worlds (renumbered in list order).
+Every frame condition is universally quantified over the worlds present,
+so any restriction of a well-formed model is well-formed; forcing, of
+course, changes — which is why every use below is checker-gated. -/
+def restrict (M : FinCM) (keep : List Nat) : FinCM :=
+  let f := fun i => keep.idxOf i
+  { n := keep.length
+    ri := M.ri.filterMap fun p =>
+      if p.1 ∈ keep ∧ p.2 ∈ keep then some (f p.1, f p.2) else none
+    rm := M.rm.filterMap fun p =>
+      if p.1 ∈ keep ∧ p.2 ∈ keep then some (f p.1, f p.2) else none
+    fall := M.fall.filterMap fun i =>
+      if i ∈ keep then some (f i) else none
+    val := M.val.filterMap fun p =>
+      if p.1 ∈ keep then some (f p.1, p.2) else none }
+
+/-- **Greedy countermodel minimisation**: repeatedly remove any single
+world whose removal leaves the checker satisfied, until none can go.
+Untrusted, checker-gated at every step — the result is certified by the
+same `checkB` as the input. -/
+partial def minimise (M : FinCM) (w : Nat) (Γ : List PLLFormula)
+    (C : PLLFormula) : FinCM × Nat :=
+  let step := (List.range M.n).filter (· ≠ w) |>.findSome? fun j =>
+    let keep := (List.range M.n).filter (· ≠ j)
+    let M' := restrict M keep
+    let w' := keep.idxOf w
+    if FinCM.checkB M' w' Γ C then some (M', w') else none
+  match step with
+  | some (M', w') => minimise M' w' Γ C
+  | none => (M, w)
+
+/-- Semantic profile of a world: which of the given formulas it forces —
+for reading minimised models, whose belief-set provenance is gone. -/
+def profile (M : FinCM) (φs : List PLLFormula) (w : Nat) :
+    List PLLFormula :=
+  φs.filter fun φ => M.forceB w φ
+
+/-- Emit and then minimise: the systematic countermodel, cut down to a
+presentable one by checker-gated deletion. -/
+partial def emitMin (Γ : List PLLFormula) (C : PLLFormula) :
+    Option (FinCM × Nat) :=
+  (emit Γ C).map fun (M, w) => minimise M w Γ C
+
 /-- Human-readable formula rendering. -/
 def fmt : PLLFormula → String
   | .prop a => a
@@ -426,6 +469,16 @@ open CounterEmit
 #guard_msgs in
 #eval (emit [((prop "p").or (prop "q")).somehow]
   (((prop "p").somehow).or ((prop "q").somehow))).map fun (M, w) => (M.n, w)
+
+-- …and minimisation recovers the three-world split model of F&M Fig. 3.
+/-- info: some { n := 3,
+  ri := [(0, 0), (0, 1), (0, 2), (1, 1), (2, 2)],
+  rm := [(0, 0), (0, 1), (0, 2), (1, 1), (2, 2)],
+  fall := [],
+  val := [(1, "p"), (2, "q")] } -/
+#guard_msgs in
+#eval (emitMin [((prop "p").or (prop "q")).somehow]
+  (((prop "p").somehow).or ((prop "q").somehow))).map (·.1)
 
 -- p ⊢ ◯p is provable: the emitter must return none.
 /-- info: none -/

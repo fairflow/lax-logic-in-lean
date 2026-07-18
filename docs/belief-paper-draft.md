@@ -722,10 +722,19 @@ The refuting world believes exactly ◯(p ∨ q); its two critical futures
 carry the standing promises "never p" and "never q"; a promise binds
 all constraint-successors, so ◯p dies along one future and ◯q along the
 other, while each future can still discharge the *disjunction* through
-its unpromised disjunct. The machine has rediscovered the hand-built
-split model of [F&M 1997, Fig. 3] — and a failed proof search now
-terminates in a structured epistemic explanation rather than a bare
-verdict.
+its unpromised disjunct. The twenty worlds are an artefact of the
+systematic construction — the canonical enumeration keeps every
+coherent belief state — and a checker-gated *minimisation* strips the
+scaffolding: repeatedly delete any world whose removal leaves the
+certificate intact (`emitMin`; untrusted, like the emitter, and
+harmless for the same reason). For this sequent the minimiser descends
+from twenty worlds to three — a root believing ◯(p ∨ q) below one leaf
+satisfying p and one satisfying q, with Rₘ = Rᵢ and neither promises
+nor a fallible world remaining — which is *precisely* the hand-built
+split model of [F&M 1997, Fig. 3], now pinned as a build-time
+regression guard. The systematic model proves existence; deletion
+recovers the presentable one; and a failed proof search terminates in
+a structured epistemic explanation rather than a bare verdict.
 
 Finally, evidence in the positive direction. The sequent
 ◯A, ◯(A ⊃ B) ⊢ ◯B — combine a belief with a believed implication — has
