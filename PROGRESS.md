@@ -305,3 +305,33 @@ untouched. In one line each — details and file pointers in
   Ghilardi-style semantic route to UI is now attemptable, and
   refutation search over a closure is complete, not merely sound;
 * toolchain `v4.31.0` on `main`: native ≈22× the old interpreter.
+
+---
+
+## 8. 2026-07-19 addendum (semantic-route session, worktree branch)
+
+The semantic route (task #33) moved past its universal-property layer;
+the mathematics of §1–6 (syntactic route) is untouched. Full statements
+and file anchors in `docs/semantic-ui-route.md` §0; everything below is
+machine-checked in `wip/semantic_ui.lean` (the file's only sorries
+remain the two definability targets).
+
+* **The essential-fibre conjecture is PROVED, as an iff.** For p-free ξ:
+  ξ is the ∀p-value of some formula in which p is essential iff ⊬ ξ
+  (witness `ξ ∨ p`); dually for ∃p iff ξ ⊬ ⊥ (witness `ξ ∧ p`). On the
+  closed fragment: essential ∀p-image = RN(◯,{}) ∖ {⊤}, essential
+  ∃p-image = RN(◯,{}) ∖ {⊥}. The two exercise lemmas
+  (`IsSemAll p M ⊤ → ⊢ M`, `IsSemEx p M ⊥ → M ⊢ ⊥`) are the ⊤/⊥
+  exclusions.
+* **Certificate method for definability**: substitution instances
+  (via truth-set redecorations) and the lower transform of the DOUBLED
+  model (two copies stacked on the 2-chain) turn oracle-checkable
+  derivability facts into `IsSemAll`/`IsSemEx` proofs. First values
+  beyond substitution: ∀p.(p∨¬p) = ∀p.(◯p⊃p) = ∀p.(¬¬p⊃p) = ⊥ —
+  with a machine-checked proof that substitution certificates alone
+  cannot reach the first.
+* **Value-table probe** (`wip/semui_probe.lean`): candidate ∀p/∃p
+  values for every 1-variable class up to weight 5 + extras, over the
+  7-class RN(◯,{}) ladder truncation (weight ≤ 8); certificates found
+  make each row a mechanisable theorem; NO-CERT rows = the surgery
+  frontier for the definability induction.

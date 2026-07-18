@@ -5,6 +5,102 @@
 PROVED = machine-checked in that file today; OPEN = stated with `sorry`;
 observations without Lean anchors are marked as such.
 
+**Update 2026-07-19 — see §0 below for the session's results: the
+essential-fibre conjecture is PROVED (both image theorems), and
+definability acquired a two-generator certificate method (substitution
+instances + the lower transform of the doubled model) with a
+computational value table at one variable.**
+
+## 0. Results of 2026-07-19 (all machine-checked in `wip/semantic_ui.lean`)
+
+**(a) The essential fibre of the quantifiers — the conjecture is a
+theorem.**  Call `p` *inessential* in M when M is PLL-equivalent to some
+p-free formula (`Inessential`), *essential* otherwise.  The two warm-up
+exercises:
+
+    IsSemAll p M ⊤  →  ⊢ M          (semAll_true_derivable)
+    IsSemEx  p M ⊥  →  M ⊢ ⊥        (semEx_false_refutes)
+
+so ⊤ is never an essential ∀p-value and ⊥ never an essential ∃p-value.
+The full image theorems, for p-free ξ:
+
+    (∃ M, IsSemAll p M ξ ∧ p essential in M)  ⟺  ⊬ ξ
+                                       (essential_semAll_image)
+    (∃ M, IsSemEx p M ξ ∧ p essential in M)   ⟺  ξ ⊬ ⊥
+                                       (essential_semEx_image)
+
+Witnesses: `∀p.(ξ ∨ p) = ξ` and `∃p.(ξ ∧ p) = ξ` (`semAll_or_p`,
+`semEx_and_p`); essentiality of the witnesses by separating the
+substitution instances `p := ⊤` and `p := ⊥` at the countermodel that
+classical completeness extracts from the underivability hypothesis.  On
+the closed fragment this reads: **the essential ∀p-image is
+RN(◯,{}) ∖ {⊤} and the essential ∃p-image is RN(◯,{}) ∖ {⊥}** —
+exactly the conjectured structure theorem.  Concrete instances proved:
+⊥, ◯⊥, ¬◯⊥ are essential ∀p-values (`essential_fibre_boxFalse`,
+`essential_fibre_neg_boxFalse`), and the original data points carry
+essential preimages: `∀p.p = ⊥` with p essential in p
+(`essential_prop_self`), `∀p.◯p = ◯⊥` with p essential in ◯p
+(`essential_box_p`).
+
+**(b) The certificate method for definability.**  Decorating p by the
+truth set of any formula χ is a legal redecoration, and forcing there is
+forcing of the substitution instance M[p:=χ] (`force_truthDeco`).  This
+yields sound, oracle-checkable criteria:
+
+    ∃-side:  p ∉ atoms ψ,  M ⊢ ψ,  ψ ⊢ M[p:=χ]        ⟹  IsSemEx p M ψ
+    ∀-side:  p ∉ atoms ψ,  ψ ⊢ M,  M[p:=χ₁],…,M[p:=χₖ] ⊢ ψ
+                                                       ⟹  IsSemAll p M ψ
+
+(`isSemEx_of_certificates`, `isSemAll_of_certificates`).  Every
+certificate found by the search oracle is immediately a Lean proof of a
+quantifier value.
+
+**(c) The criteria are provably incomplete, and the first repair is the
+doubling.**  `∀p.(p ∨ ¬p) = ⊥` (`semAll_em_p`), but every substitution
+instance of p ∨ ¬p is an excluded-middle instance, forced at the
+one-world classical model — so no finite family of instances derives ⊥
+(`em_p_no_certificate`).  The proof instead *doubles* the model
+(`double`: two copies stacked along the 2-chain, both relations
+monotone into the upper copy; the projection is a total p-bisimulation)
+and decorates p on the upper copy only (`emVariant`): a non-fallible
+lower world then forces neither p nor ¬p.
+
+**(d) The doubling is itself a certificate generator: the lower
+transform.**  Within the cone over the base world, forcing on the two
+copies of `emVariant` is computed by syntactic transforms
+(`emVariant_force_true/false`, both axiom-free):
+
+    (x, true)  ⊩ M   iff   x ⊩ M[p:=⊤]
+    (x, false) ⊩ M   iff   x ⊩ lowT p M
+
+    lowT p p       = ⊥            lowT p (A ⊃ B) = (lowT A ⊃ lowT B)
+    lowT p (◯A)    = ◯(A[p:=⊤])                    ∧ (A[p:=⊤] ⊃ B[p:=⊤])
+
+(pointwise on ∧, ∨, atoms ≠ p, ⊥).  So `lowT p M` joins the
+substitution instances as one more premise available to the criteria
+(`isSemAll_of_certificates_low`, `isSemEx_of_certificates_low`), and
+the values beyond substitution fall mechanically:
+
+    ∀p.(p ∨ ¬p) = ⊥      ∀p.(◯p ⊃ p) = ⊥      ∀p.(¬¬p ⊃ p) = ⊥
+    (semAll_em_p)         (semAll_boxp_imp_p)   (semAll_nnp_imp_p)
+
+**(e) Uniqueness** (`semEx_unique`, `semAll_unique`): any two
+spec-satisfiers are interderivable, so "the value of ∀p.M" is
+well-defined up to ≡ — the probe's candidates, once certified, ARE the
+quantifiers.
+
+**(f) The value-table probe** (`wip/semui_probe.lean`): for every
+one-variable M up to weight 5 (plus named extras), compute the
+candidate ∀p-value (maximum of the closed ξ ⊢ M, over the RN(◯,{})
+ladder truncation — 7 classes at weight ≤ 8) and candidate ∃p-value
+(minimum of the closed ξ with M ⊢ ξ), then search certificates in the
+order substitution-singles, substitution-pairs, lower transform,
+lowT + instances.  Empirical findings are recorded in §0(g) once the
+run completes; rows certified by nothing are the *surgery frontier* —
+the exact places where a further variant construction (beyond doubling)
+is required, i.e. where the general canonical-model descriptions must
+do genuinely new work.
+
 ## 1. What was proved today, and what it compresses the problem to
 
 Ghilardi's semantic method characterises the Pitts quantifiers by

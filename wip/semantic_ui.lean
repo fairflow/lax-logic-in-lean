@@ -36,6 +36,26 @@ closure-total triples (Γ, Δ, Θ), finitely many per closure, and the
 candidate interpolant is a disjunction of promise-aware world
 descriptions.  See docs/semantic-ui-route.md for the full plan and the
 relation to the realisability semantics.
+
+Added 2026-07-19 (all PROVED, `#print axioms`-clean; the file's only
+`sorry`s remain the two definability targets):
+
+* uniqueness of spec-satisfiers (`semEx_unique`, `semAll_unique`);
+* substitution `substP`, the truth-set decoration, and the
+  **certificate criteria** `isSemEx_of_certificates` /
+  `isSemAll_of_certificates`: derivability facts (oracle-checkable)
+  that establish the spec;
+* the **essential fibre**: `IsSemAll p M ⊤ → ⊢ M` and
+  `IsSemEx p M ⊥ → M ⊢ ⊥` (the two exercises), and the image theorems
+  `essential_semAll_image` / `essential_semEx_image` — for p-free ξ,
+  ξ is the ∀p-value of a p-essential formula iff ⊬ ξ (witness ξ ∨ p),
+  and the ∃p-value of one iff ξ ⊬ ⊥ (witness ξ ∧ p): the essential
+  images are RN(◯,{}) ∖ {⊤} and RN(◯,{}) ∖ {⊥};
+* the **doubling** `double`/`emVariant` (first frame-changing
+  p-variant), the **lower transform** `lowT` with its two evaluation
+  lemmas, the extended criteria `…_of_certificates_low`, and the values
+  `∀p.(p ∨ ¬p) = ∀p.(◯p ⊃ p) = ∀p.(¬¬p ⊃ p) = ⊥` — the first two
+  provably beyond substitution certificates (`em_p_no_certificate`).
 -/
 
 open PLLFormula
@@ -214,6 +234,21 @@ theorem semAll_adjunction {p : String} {φ ψ : PLLFormula}
       simp only [List.mem_singleton] at hξ
       exact hξ ▸ hw χ (by simp)
     exact (h.2 M w).mp hψw w (M.refl_i w) M (ABisim.id _ M) w rfl
+
+/-- Any two ∃p-spec-satisfiers are interderivable: the value is unique
+up to ≡. -/
+theorem semEx_unique {p : String} {φ ψ₁ ψ₂ : PLLFormula}
+    (h₁ : IsSemEx p φ ψ₁) (h₂ : IsSemEx p φ ψ₂) :
+    Nonempty (LaxND [ψ₁] ψ₂) ∧ Nonempty (LaxND [ψ₂] ψ₁) :=
+  ⟨(semEx_adjunction h₁ h₂.1).mp (semEx_upper h₂),
+   (semEx_adjunction h₂ h₁.1).mp (semEx_upper h₁)⟩
+
+/-- Any two ∀p-spec-satisfiers are interderivable. -/
+theorem semAll_unique {p : String} {φ ψ₁ ψ₂ : PLLFormula}
+    (h₁ : IsSemAll p φ ψ₁) (h₂ : IsSemAll p φ ψ₂) :
+    Nonempty (LaxND [ψ₁] ψ₂) ∧ Nonempty (LaxND [ψ₂] ψ₁) :=
+  ⟨(semAll_adjunction h₂ h₁.1).mp (semAll_lower h₁),
+   (semAll_adjunction h₁ h₂.1).mp (semAll_lower h₂)⟩
 
 /-! ## The single open target per quantifier: DEFINABILITY
 
@@ -1343,6 +1378,132 @@ theorem semAll_nnp_imp_p (p : String) :
   · -- (⊤ ⊃ ⊥) ⊃ ⊥
     refine .impIntro (.impElim (.iden (List.mem_cons_self ..)) ?_)
     exact .impIntro (.iden (List.mem_cons_self ..))
+
+/-! ## The sideways-witness construction, and `∀p.◯(◯p ⊃ p) = ◯⊥`
+
+The Löb-shaped `◯(◯p ⊃ p)` is the 1-variable frontier case: its
+∀p-value is `◯⊥`, but neither substitution instances nor the doubling
+reach it (`lowT` gives `◯(◯⊤ ⊃ ⊤) ≡ ⊤`).  The construction that does:
+ℕ-levelled copies of the model where `Rᵢ` is level-monotone but `Rₘ` is
+**level-rigid except for the single step 1 → 2**, and `p` is decorated
+on levels ≥ 2 (plus fallible worlds).  Then
+
+* level 1 forces `◯p` (every future has the sideways 1→2 or an in-level
+  ≥2 witness) but not `p` — so `◯p ⊃ p` FAILS at level 0 over any
+  non-fallible base world (level 1 sits above it);
+* every constraint witness FROM level 0 stays at level 0, so a level-0
+  world satisfies `◯(◯p ⊃ p)` only through fallible witnesses — i.e.
+  exactly where `◯⊥` holds.
+
+The `p`-worlds are Rₘ-reachable as constraint witnesses but never lie
+on the Rₘ-cone of level 0: precisely the promise/Θ mechanism of the
+canonical model, appearing here as a variant construction. -/
+
+/-- ℕ-levelled copies: `Rᵢ` level-monotone, `Rₘ` level-rigid except the
+single step 1 → 2; fallibility and valuation inherited. -/
+def lobModel (C : ConstraintModel) : ConstraintModel where
+  W := C.W × ℕ
+  Ri := fun a b => C.Ri a.1 b.1 ∧ a.2 ≤ b.2
+  Rm := fun a b => C.Rm a.1 b.1 ∧ (a.2 = b.2 ∨ (a.2 = 1 ∧ b.2 = 2))
+  F := {a | a.1 ∈ C.F}
+  V := fun q => {a | a.1 ∈ C.V q}
+  refl_i := fun a => ⟨C.refl_i a.1, Nat.le_refl _⟩
+  trans_i := fun h₁ h₂ => ⟨C.trans_i h₁.1 h₂.1, Nat.le_trans h₁.2 h₂.2⟩
+  refl_m := fun a => ⟨C.refl_m a.1, Or.inl rfl⟩
+  trans_m := fun h₁ h₂ => ⟨C.trans_m h₁.1 h₂.1, by
+    have := h₁.2; have := h₂.2; omega⟩
+  sub_mi := fun h => ⟨C.sub_mi h.1, by have := h.2; omega⟩
+  hered_F := fun h hw => C.hered_F h.1 hw
+  hered_V := fun h hw => C.hered_V h.1 hw
+  full_F := fun hw => C.full_F hw
+
+/-- The Löb variant: `p` decorated on levels ≥ 2 plus fallible worlds. -/
+def lobVariant (C : ConstraintModel) (p : String) : ConstraintModel :=
+  redecorate (lobModel C) p {a | 2 ≤ a.2 ∨ a.1 ∈ C.F}
+    (by rintro a b hab (h2 | hF)
+        · exact Or.inl (Nat.le_trans h2 hab.2)
+        · exact Or.inr (C.hered_F hab.1 hF))
+    (fun hF => Or.inr hF)
+
+/-- Projection to the first coordinate is a p-bisimulation onto the Löb
+variant. -/
+def lobVariant_pbisim (C : ConstraintModel) (p : String) :
+    PBisim p C (lobVariant C p) where
+  Z := fun x a => a.1 = x
+  atoms := by
+    rintro x a rfl q hq
+    show a.1 ∈ C.V q ↔
+      a ∈ (if q = p then {a | 2 ≤ a.2 ∨ a.1 ∈ C.F} else (lobModel C).V q)
+    rw [if_neg hq]
+    exact Iff.rfl
+  fall := by rintro x a rfl; exact Iff.rfl
+  iforth := by
+    rintro x a rfl v hv
+    exact ⟨(v, a.2), ⟨hv, Nat.le_refl _⟩, rfl⟩
+  iback := by
+    rintro x a rfl v' hv'
+    exact ⟨v'.1, hv'.1, rfl⟩
+  mforth := by
+    rintro x a rfl u hu
+    exact ⟨(u, a.2), ⟨hu, Or.inl rfl⟩, rfl⟩
+  mback := by
+    rintro x a rfl u' hu'
+    exact ⟨u'.1, hu'.1, rfl⟩
+
+/-- **`∀p.◯(◯p ⊃ p) = ◯⊥`** — the Löb-shaped frontier value, by the
+sideways-witness construction. -/
+theorem semAll_box_lob (p : String) :
+    IsSemAll p (((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow)
+      PLLFormula.falsePLL.somehow := by
+  refine ⟨by simp, ?_⟩
+  intro C w
+  constructor
+  · intro hw v hv N B v' hZ
+    have hbox : N.force v' PLLFormula.falsePLL.somehow :=
+      (force_iff_of_bisim B (by simp) hZ).mp (C.force_hered hv hw)
+    intro y' hy'
+    obtain ⟨u', hu', hF⟩ := hbox y' hy'
+    exact ⟨u', hu', N.force_of_fallible hF⟩
+  · intro h'
+    have hforce := h' w (C.refl_i w) (lobVariant C p) (lobVariant_pbisim C p)
+      (w, 0) rfl
+    intro v hv
+    obtain ⟨u, hu, himp⟩ := hforce (v, 0) ⟨hv, Nat.le_refl 0⟩
+    obtain ⟨z, j⟩ := u
+    have hj : j = 0 := by have := hu.2; omega
+    subst hj
+    -- the level-0 witness forces ◯p ⊃ p; show its base world is fallible
+    by_contra hzF
+    -- hzF : ¬ ∃ u, C.Rm v u ∧ C.force u ⊥ — no: goal is ∃ …; contradict via z
+    exact hzF ⟨z, hu.1, by
+      -- z ∈ C.F, else (z,1) refutes ◯p ⊃ p at (z,0)
+      by_contra hz
+      -- (z,1) is a future of (z,0)
+      have h01 : (lobVariant C p).Ri (z, 0) (z, 1) := ⟨C.refl_i z, by omega⟩
+      -- (z,1) forces ◯p
+      have hboxp : (lobVariant C p).force (z, 1) (PLLFormula.prop p).somehow := by
+        rintro ⟨y, k⟩ ⟨hy, h1k⟩
+        rcases Nat.lt_or_ge k 2 with hk | hk
+        · have hk1 : k = 1 := by omega
+          subst hk1
+          refine ⟨(y, 2), ⟨C.refl_m y, Or.inr ⟨rfl, rfl⟩⟩, ?_⟩
+          show (y, 2) ∈ (if p = p then {a : (lobModel C).W | 2 ≤ a.2 ∨ a.1 ∈ C.F}
+            else (lobModel C).V p)
+          rw [if_pos rfl]
+          exact Or.inl (Nat.le_refl 2)
+        · refine ⟨(y, k), ⟨C.refl_m y, Or.inl rfl⟩, ?_⟩
+          show (y, k) ∈ (if p = p then {a : (lobModel C).W | 2 ≤ a.2 ∨ a.1 ∈ C.F}
+            else (lobModel C).V p)
+          rw [if_pos rfl]
+          exact Or.inl hk
+      -- so (z,1) forces p — but it is on level 1 over a non-fallible base
+      have hp1 := himp (z, 1) h01 hboxp
+      have hp1' : (z, 1) ∈ (if p = p then {a : (lobModel C).W | 2 ≤ a.2 ∨ a.1 ∈ C.F}
+          else (lobModel C).V p) := hp1
+      rw [if_pos rfl] at hp1'
+      rcases hp1' with h2 | hF
+      · omega
+      · exact hz hF⟩
 
 /-! ## Concrete fibre data
 
