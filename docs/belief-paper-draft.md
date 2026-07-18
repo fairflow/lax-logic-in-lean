@@ -602,8 +602,9 @@ are part of this artefact (a separate corrective note is in preparation).
 
 Every claim above is a Lean theorem; the ledger records, for each, the
 axioms it stands on — a hierarchy from *nothing at all* (the
-Kleene–Brouwer well-foundedness used in the normalisation development)
-through `[propext]`, `[propext, Quot.sound]` (no choice — most of this
+Kleene–Brouwer well-foundedness theorem, a standalone fully constructive
+result in the artefact — imported and checked by the build, used by
+nothing else) through `[propext]`, `[propext, Quot.sound]` (no choice — most of this
 paper), to classical (`Classical.choice`, now confined to measured
 residues of the decidability infrastructure and the genuinely classical
 Zorn completeness kept for comparison). Three times in this development an
@@ -631,6 +632,28 @@ Experiment). One administrative note: arXiv's January 2026 endorsement
 policy means an unaffiliated first-time arXiv author needs a personal
 endorsement — a solvable, one-email matter given prior conventional
 publications in the field.
+
+### 9.1 Disclosure of AI assistance (draft wording, for the author's revision)
+
+The formalisation and the drafting of this paper were carried out in an
+extended collaboration between the author and a large language model
+(Anthropic's Claude — Opus 4.8 and Fable 5 — operating the Lean
+toolchain directly). The model wrote the majority of the Lean proof
+scripts and of the prose here, proposed constructions, and in several
+instances discovered the mathematical turning points — notably the
+fullness obstruction of §5, found in the attempt to prove its negation.
+The author set the research programme and the doxastic reading, fixed
+the methodological standard (no claim asserted beyond its machine-checked
+status, with axiom audits recorded per theorem), directed every design
+decision, rejected and corrected the model's errors, and takes sole
+responsibility for the mathematics and the text. Under prevailing
+authorship norms a language model cannot be an author — authorship
+carries accountability and consent that a model cannot bear — so its
+contribution is recorded here and, commit by commit, in the artefact's
+history (`Co-Authored-By` trailers throughout). The kernel-checked
+artefact is indifferent to the provenance of its proofs; the reader need
+trust neither the author nor the model, which is the point of the
+method.
 
 ## 10. Conclusion and open problems
 

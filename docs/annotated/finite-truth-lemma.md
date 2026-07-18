@@ -221,5 +221,12 @@ combination argument relocated from "maximality" to "totality". Nothing
 else changes: the consistency notion, the `disjOf` calculus, the truth
 lemma's case analysis and even the three start triples are the
 classical ones. The infinitary principle was never load-bearing; what
-was load-bearing was the ability to *decide* — which PLL, being
-decidable, supplies about itself.
+was load-bearing was the ability to *decide* consistency questions —
+and the decider consulted is PLL's own mechanised decision procedure.
+To be precise about a formulation it is tempting to overstate: the
+completeness proof lives in the metatheory (Lean's type theory), not in
+PLL — a propositional, quantifier-free logic cannot even *state* its
+completeness. What is true, and worth saying carefully, is that the
+metatheoretic proof's only oracle is the object logic's own decision
+procedure; PLL's decidability (no embedded arithmetic, no
+Gödelian obstruction) is what makes that arrangement possible.
