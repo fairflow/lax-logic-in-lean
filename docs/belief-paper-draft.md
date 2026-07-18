@@ -614,9 +614,42 @@ object logic's own decision procedure — an arrangement made possible by
 the fact, special to a decidable logic with no embedded arithmetic,
 that there is no Gödelian obstruction to consulting it.
 
+**Remark 6.4 (the apparent circle).** Decidability before completeness
+has an air of circularity about it, since the familiar route runs the
+other way: the original paper's own Theorem 2.8 obtained decidability
+*from* completeness, through the finite model property, and a
+decidability so obtained could not be used inside a completeness proof
+without vicious regress. The present arrangement is innocent, for three
+reasons which it is worth setting out once. First, the decision
+procedure's correctness is a fact of proof theory alone: it rests on
+the repaired terminating calculus proving exactly the PLL sequents —
+established by cut admissibility, the structural lemmas, and the
+translations among the four calculi — and on the loop-checked search
+deciding that calculus; no model is mentioned anywhere in the chain.
+Second, the completeness proof consumes decidability only as a
+*derivability* oracle, never a semantic one: what the Lindenbaum fold
+asks, formula by formula, is whether a particular disjunction is
+derivable, and what the oracle really contributes is the totality of a
+case analysis — "believe or refute" — for which the classical proof
+pays with Zorn and excluded middle and we pay with a computation. The
+semantics enters only afterwards, in the truth lemma, which is the
+genuinely new fact and presupposes nothing about the decider beyond its
+proof-theoretic correctness. Third — and this is a kind of argument
+available only to a mechanised development — the absence of the circle
+is itself machine-checked: a proof assistant's import graph is acyclic
+by construction, the completeness modules import the decidability
+module, and the decidability module imports no semantic module
+whatever. The reversal has a respectable pedigree: decidability of
+intuitionistic propositional logic (Gentzen, 1935) preceded its Kripke
+completeness (1965) by thirty years, and for the same reason — a
+terminating calculus is a creature of syntax. Completeness then
+discovers that this syntactic creature knows enough to build every
+countermodel. The discovery flows one way, and the compiler enforces
+the direction.
+
 ### 6.3 The theorem
 
-**Theorem 6.4** (`derivable_iff_no_realP_refutation`,
+**Theorem 6.5** (`derivable_iff_no_realP_refutation`,
 `PLLRealCompleteness.lean`). *A sequent is derivable in PLL exactly
 when no token-decorated, checker-verified finite model
 ⊩ᵖ-realisability-refutes it:*
