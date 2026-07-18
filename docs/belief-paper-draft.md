@@ -580,8 +580,8 @@ the monotonicity composite for ◯, to Γ ⊢ ◯M, contradicting the
 falsification; and every constraint-successor of the extension inherits
 the promise, hence — promises being falsified, by the Θ ⊆ Δ law —
 refutes M. So the ∀∃ clause fails at the extension, which is an
-ordinary future of the world one started at. This is the semantic
-promise mechanism in its native habitat; the executable countermodels
+ordinary future of the world one started at. This is the semantic machinery
+of promises in its native habitat; the executable countermodels
 of Section 7 merely print it.
 
 **Corollary 6.3** (`finite_canonical_countermodel`,
@@ -710,7 +710,7 @@ remaining forever pending.
 
 For the distribution scheme ◯(p ∨ q) ⊢ ◯p ∨ ◯q the emitter builds
 twenty worlds, and its report is worth displaying verbatim, for it is
-the promise mechanism of Theorem 6.2 printed by a program:
+the machinery of promises from Theorem 6.2, printed by a program:
 
     refuting world: w4  (20 worlds)
       w4: believes [◯(p ∨ q)]

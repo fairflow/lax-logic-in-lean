@@ -181,7 +181,7 @@ total extension T′ is a *future* of T (only beliefs grew; `Rᵢ` ignores
 promises) at which every constraint-successor U honours φ ∈ mfal′ ⊆
 mfal(U); by `mfal_sub_fal` and the inductive hypothesis, no U forces φ
 — so the ∀∃ clause fails at T′, hence at T. This is the semantic
-promise mechanism of the executable countermodels, derived rather than
+machinery of promises behind the executable countermodels, derived rather than
 posited.
 
 ## From the truth lemma to the checker
