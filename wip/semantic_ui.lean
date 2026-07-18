@@ -532,6 +532,57 @@ theorem semEx_p_and_neg_p (p : String) :
   · rintro ⟨N, B, w', hZ, hp, hnp⟩
     exact (B.fall hZ).mpr (hnp w' (N.refl_i w') hp)
 
+/-! ## The quantifiers fix the p-free fragment; surjectivity onto RN(◯,{})
+
+Matthew's conjecture (2026-07-18): every element of the closed lax
+fragment RN(◯,{}) is the value of ∀p.M for some one-variable M.  TRUE —
+and by a short route: the quantifiers FIX every p-free formula
+(`semAll_pfree_fixpoint`, `semEx_pfree_fixpoint`), so a closed ξ is its
+own ∀p-value (and ∃p-value).  Surjectivity is therefore immediate
+(`semAll_hits_every_closed`); the non-trivial content moves to the
+FIBRES of ∀p — which one-variable formulas map to which closed value —
+where the lattice-height induction over RN(◯,{}) belongs.  Structurally
+(modulo definability) the two adjunctions + these fixpoints say:
+∃p ⊣ inclusion ⊣ ∀p, a retraction triple — incl∘∀p is an interior
+(meet-preserving, cf. `semAll_and`) comonad and incl∘∃p a closure
+(join-preserving, cf. `semEx_or`) monad on the free one-variable lax
+algebra, both with fixpoint set exactly RN(◯,{}). -/
+
+/-- ∀p fixes every p-free formula. -/
+theorem semAll_pfree_fixpoint {p : String} {ψ : PLLFormula}
+    (hp : p ∉ ψ.atoms) : IsSemAll p ψ ψ := by
+  have hA : ∀ a ∈ ψ.atoms, a ≠ p := fun a ha he => hp (he ▸ ha)
+  refine ⟨hp, ?_⟩
+  intro M w
+  constructor
+  · intro hw v hv N B v' hZ
+    exact (force_iff_of_bisim B hA hZ).mp (M.force_hered hv hw)
+  · intro h'
+    exact h' w (M.refl_i w) M (ABisim.id _ M) w rfl
+
+/-- ∃p fixes every p-free formula. -/
+theorem semEx_pfree_fixpoint {p : String} {ψ : PLLFormula}
+    (hp : p ∉ ψ.atoms) : IsSemEx p ψ ψ := by
+  have hA : ∀ a ∈ ψ.atoms, a ≠ p := fun a ha he => hp (he ▸ ha)
+  refine ⟨hp, ?_⟩
+  intro M w
+  constructor
+  · intro hw
+    exact ⟨M, ABisim.id _ M, w, rfl, hw⟩
+  · rintro ⟨N, B, w', hZ, hφ⟩
+    exact (force_iff_of_bisim B hA hZ).mpr hφ
+
+/-- **Every closed formula is a ∀p-value** (Matthew's conjecture,
+2026-07-18): the ∀p-image covers all of RN(◯,{}). -/
+theorem semAll_hits_every_closed (p : String) {ξ : PLLFormula}
+    (h : ξ.atoms = ∅) : ∃ M, IsSemAll p M ξ :=
+  ⟨ξ, semAll_pfree_fixpoint (by simp [h])⟩
+
+/-- Dually for ∃p. -/
+theorem semEx_hits_every_closed (p : String) {ξ : PLLFormula}
+    (h : ξ.atoms = ∅) : ∃ M, IsSemEx p M ξ :=
+  ⟨ξ, semEx_pfree_fixpoint (by simp [h])⟩
+
 /-- The trivial one-world, nowhere-fallible model. -/
 def oneW : ConstraintModel where
   W := Unit
