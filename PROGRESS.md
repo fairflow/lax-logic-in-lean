@@ -459,3 +459,19 @@ finite model, injective p-avoiding naming, any IsIPCAll-value A of the
 translated frame-changing row: A ⊢_Θ value ⟺ all Rₘ-stable worlds
 fallible.  decide-pins: c0Of reproduces the probes' chain2C/chain3C.
 The fallibility prediction is a machine-checked iff at model level.
+
+## 14. 2026-07-19: the pool experiment — disjoint-alphabet saturations REFUTED (certified)
+
+Pools {c0Of m, c0Of double(m), c0Of lob3(m)} on alphabets a/b/c, value
+= meet of relative tower ∀-values, target = translated PLL value under
+the joint fallibility theory.  chain3, BOTH frame-changing rows: every
+sub-pool REFUTED by a one-world checkB-verified countermodel forcing
+ALL residue names at once (a0, b3, c0).  Mechanism: interpolants are
+alphabet-local, so the joint residue defeats each conjunct
+independently; Cmeet-concatenation already dead by the proved
+fails-half (combined constraint keeps a residue pair).  Consequence:
+frame-changing content is unreachable from the constraint side —
+the routes factor (constraints = substitution fragment, exactly;
+transforms lowT/sideT = frame content, irreplaceably).  Capstone
+target: set-valued residue ⟹ general disjoint-pool obstruction.
+Harness note: certified verdicts at sequent weight ~10⁶ in ms.

@@ -54,3 +54,8 @@ root = "wip.semui_ctx_rel"
 [[lean_exe]]
 name = "ctxcert"
 root = "wip.semui_ctx_cert"
+
+# The constraint-pool experiment (variant saturations).
+[[lean_exe]]
+name = "poolprobe"
+root = "wip.semui_pool"

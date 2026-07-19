@@ -732,3 +732,44 @@ the iff captures commutation).  Coherence pins: `c0Of` with the
 probes' naming reproduces `chain2C`/`chain3C` literally (`by decide`).
 The §0(j) prediction is now a machine-checked iff at the level it was
 conjectured.
+
+### (q) 2026-07-19: the POOL experiment — variant saturations REFUTED (certified)
+
+The pool form of the constraint conjecture tested
+(`wip/semui_pool.lean`, `lake exe poolprobe`): candidate value =
+`A_a ∧ A_b ∧ A_c`, the meet of the tower ∀-values of M translated by
+the Lemma-7 constraints of the model itself (alphabet a), its DOUBLING
+(alphabet b), and its 3-level LÖB variant (alphabet c); target = the
+translated PLL value, relative to the joint fallibility theory Θpool;
+verdicts by the certified two-sided oracle.
+
+VERDICT (chain3, both frame-changing rows; fork pending in the run
+log): EVERY pool REFUTED — {a}, {a,b}, {a,c}, {a,b,c} alike — each by
+a ONE-WORLD checkB-verified countermodel that forces ALL the residue
+names simultaneously (chain3: a0, b3 = the double's (0,hi), c0 = the
+Löb variant's (0,level0)).  THE MECHANISM: each conjunct A_i is an
+interpolant over its OWN alphabet, so its forcing at a point depends
+only on that alphabet — the residue argument applies to each conjunct
+independently, and the JOINT residue point (all residue names on,
+everything else off) defeats the whole meet.  Disjoint-alphabet
+pooling cannot work, for the same one-world reason as single
+constraints; `Cmeet`-style pooling (concatenating pairs into one
+constraint) is already covered by the PROVED fails-half (the combined
+constraint still carries a residue pair).
+
+CONSEQUENCE for the route: the frame-changing content CANNOT be
+reached from the constraint side by enlarging the constraint family —
+single, frame-relative, meet-pooled, or concatenated.  What defeats
+the residue on the semantic side is that `lowT`/`sideT` transform the
+FORMULA (mixing `M[⊤]` into implications), not the ◯-interpretation.
+The two routes therefore genuinely factor: constraints = the
+substitution fragment (sandwich, exact); transforms = the frame
+content (irreplaceably).  Obvious capstone target (one lemma away):
+generalise `residue` to a set-valued valuation and prove the
+disjoint-alphabet pool obstruction outright — the per-conjunct
+argument is alphabet-local and composes.
+
+Engineering note: the pool sequents reach weight ~10⁶ (the Löb-variant
+towers); the battery + verified checker still certify in
+milliseconds — the harness is comfortable three orders of magnitude
+above the morning's weight caps.
