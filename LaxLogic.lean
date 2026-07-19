@@ -41,6 +41,7 @@ import LaxLogic.PLLG4Set
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLG4Term
 import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLLSearch
 import LaxLogic.PLLDiagram
 import LaxLogic.PLLEvidence
 import LaxLogic.PLLFinComp
