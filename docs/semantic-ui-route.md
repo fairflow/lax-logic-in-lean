@@ -882,3 +882,51 @@ the tower of levelled models predicted by the roadmap, now forced at
 depth 3.  Also noted: `CounterEmit.emit` missed this countermodel on
 the small sequent [¬¬◯⊥] ⊢ row (its closure is within the gate) — an
 emitter-incompleteness datum for the tooling ledger.
+
+### (u) 2026-07-20: t₃ designed — the SPLIT variant (one-point cluster duplication)
+
+The third generator is not a doubling at all.  **The split of C at
+w₀** adjoins ONE fresh point ⋆ — a duplicate of w₀ sitting strictly
+above w₀'s Rᵢ-cluster and below/inside its strict cone — and
+decorates p on ⋆'s upset:
+
+    W'  := W ⊎ {⋆}
+    Rᵢ' := Rᵢ  ∪  {(x,⋆) : x Rᵢ w₀}  ∪  {(⋆,y) : w₀ Rᵢ y, y ∉ cluster(w₀)}  ∪  {(⋆,⋆)}
+    Rₘ' := Rₘ  ∪  {(⋆,⋆)}  ∪  {(⋆,u) : w₀ Rₘ u, u ∉ cluster(w₀)}
+    F'  := F;   V'(a) := V(a) ∪ {⋆ if w₀ ∈ V(a)}  (a ≠ p);
+    V'(p) := ↑⋆ ∪ F'
+
+    Z   := id  ∪  {(v,⋆) : v ∈ cluster(w₀)}
+
+Zigzag checks (hand-verified, to be mechanised): i-forth from a
+cluster point escapes upward to ⋆ or the shared cone; i-back from ⋆
+lands in w₀'s cone; m-forth at (v,⋆) matches cluster witnesses to ⋆
+itself (⋆ Rₘ' ⋆) and strict witnesses directly; Rₘ' ⊆ Rᵢ' holds
+because ⋆'s modal successors are its own reflexive loop plus w₀'s
+STRICT Rₘ-successors.  ⋆ inherits every protected atom and w₀'s
+fallibility status, so the closed pattern is preserved — as
+bisimulation invariance demands.
+
+**Instance check (machine-certified already)**: the split of the
+3-chain w < c < f (Rₘ = id ∪ {c→f}, F = {f}) at w IS the 4-chain
+0<1<2<3 with Rₘ = id ∪ {2→3}, p at {1,2,3} — literally the certified
+countermodel of §0(t): ⋆ = world 1.  At w the antecedent (p⊃◯⊥)⊃p
+holds (the only p-free world is w itself, and w ⊭ p⊃◯⊥ because ⋆
+forces p without ◯⊥) while p fails — M₀ refuted, with no stray
+un-p'd copy of c to break the antecedent (the failure mode of the
+plain doubling, whose lower copy of c forces p⊃◯⊥ without p).
+
+**Unification observation**: the split at a non-fallible w also
+refutes p ∨ ¬p there (w ⊭ p, and ¬p fails through ⋆) — the depth-1
+job.  The split may thus be the UNIFORM generator whose iteration
+(split of a split, at deeper points) is the whole transform tower —
+de Jongh's generic-point trick surfacing as a construction.
+
+**The syntactic transform** `splT p M` (to be mechanised): evaluate M
+at w₀ in the split.  Three mutually-recursive cone-relative
+evaluations — at the cluster (t), at ⋆ (s), on the strict cone
+(p := ⊤ substitution) — with w₀-anchored ◯-clauses (the ⋆-successor
+contributes an ∃-witness condition over w₀'s strict Rₘ-successors).
+Equations sketched in the session log; the mechanisation
+(splitVariant + PBisim + evaluation lemmas + extended criterion +
+`semAll_frontier : ∀p.(((p⊃◯⊥)⊃p)⊃p) = ◯⊥`) is the next work item.
