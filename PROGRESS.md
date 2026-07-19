@@ -399,3 +399,26 @@ remain the two definability targets).
 * **Toolchain**: this branch is on v4.31.0 — `lean_exe` builds run
   fine (~10 s incremental; stale lakefile segfault comment fixed);
   `lake exe oracle2` is a compiled decision tool.
+
+## 10. 2026-07-19 (afternoon, Matthew's follow-ups): fuel demoted, compiled probes, the prediction lands
+
+* **"Are you using the most efficient versions?" — no, and now yes.**
+  The fuel-free `G4cTm.find` (built 2026-07-18, left on the shelf)
+  decides the ENTIRE oracle2 benchmark at 0 ms in find-only mode —
+  including failing fast on the refutables where fueled `search`
+  ground for minutes.  The chaotic failing cost was an artifact of the
+  fueled engine, not the problem.  oracle2 v3: nf preprocessing (the
+  built simplifier), battery first, find as the positive engine; fuel
+  appears nowhere in the decision path.
+* **Compiled probes** (`lake exe ctxprobe/ctxrel/ctxcert`): the
+  stalled §0(j) rows ran.  Full chain2 table (9/9) + chain3 (8/9):
+  every substitution row commutes, the failures are exactly the
+  frame-changing rows (`◯p⊃p` LOW, `◯(◯p⊃p)` SIDE — the latter a NEW
+  frozen-C failure), as the sandwich mandates.
+* **The fallibility prediction (was OPEN)**: chain2 rel-comm HOLDS
+  (all rows, find-term grade); chain3 rel-comm FAILS at both ◯-rows,
+  **certified by checkB-verified ONE-WORLD countermodels** — the
+  single non-fallible world with only `a0` true, i.e. the α-top
+  residue world of the §0(j) analysis, now machine-checked.  Frame
+  theories over the same names provably cannot close the lowT/sideT
+  gap; the constraint pool itself must grow.  Fork: BOTH ◯-rows certified-refuted by the same one-world model (§0(m)); prediction confirmed on all three test models.

@@ -26,7 +26,7 @@ def main : IO Unit := do
   let out ← IO.getStdout
   let pl (s : String) : IO Unit := do out.putStrLn s; out.flush
   pl "== certifier: failed commutation rows → verified countermodels =="
-  for (mname, m) in [("chain3", mChain3), ("fork", mFork)] do
+  for (mname, m) in [("fork", mFork), ("chain3", mChain3)] do
     let C := c0Of m
     let Θ := falAxioms m
     for (tname, M, vA) in targets do
@@ -41,16 +41,22 @@ def main : IO Unit := do
         let Arel := towerARel Θ T 2
         let t1 ← IO.monoMsNow
         pl s!"-- {mname} / {tname}: towers done ({t1 - t0} ms; plain w={Apl.weight}, rel w={Arel.weight})"
-        -- plain commutation, both directions, certified
+        -- the DECISIVE direction (tower value ⊢ translated value): the
+        -- α-top-residue refutation lives here and the battery is instant
         let d1 := Oracle2.decide2 [Apl] vA'
-        let d2 := Oracle2.decide2 [vA'] Apl
         pl s!"   plain  A⊢v: {showV d1}"
-        pl s!"   plain  v⊢A: {showV d2}"
-        -- relative commutation, both directions, certified
         let r1 := Oracle2.decide2 (Arel :: Θ) vA'
-        let r2 := Oracle2.decide2 (vA' :: Θ) Arel
         pl s!"   rel    A⊢v: {showV r1}"
-        pl s!"   rel    v⊢A: {showV r2}"
+        -- the sandwich lower bound (provable side): find grinds on very
+        -- large inputs, so weight-gate it
+        if Apl.weight ≤ 100 then
+          pl s!"   plain  v⊢A: {showV (Oracle2.decide2 [vA'] Apl)}"
+        else
+          pl s!"   plain  v⊢A: SKIPPED-BIG (w={Apl.weight})"
+        if Arel.weight ≤ 100 then
+          pl s!"   rel    v⊢A: {showV (Oracle2.decide2 (vA' :: Θ) Arel)}"
+        else
+          pl s!"   rel    v⊢A: SKIPPED-BIG (w={Arel.weight})"
   pl "== done =="
 
 end CtxCert

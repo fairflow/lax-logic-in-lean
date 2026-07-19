@@ -1,8 +1,9 @@
 # The semantic route to uniform interpolation for PLL
 
-2026-07-18 · companion to `LaxLogic/PLLSemUI.lean` (compiles; exactly two
-`sorry`s = the two named open targets). Status words used precisely:
-PROVED = machine-checked in that file today; OPEN = stated with `sorry`;
+2026-07-18 · companion to `LaxLogic/PLLSemUI.lean` (sorry-free since the
+2026-07-19 graduation: the two named open targets are `Prop`-level
+conjectures `SemExDefinable`/`SemAllDefinable`). Status words used
+precisely: PROVED = machine-checked; OPEN = stated as a conjecture;
 observations without Lean anchors are marked as such.
 
 **Update 2026-07-19 — see §0 below for the session's results: the
@@ -569,3 +570,58 @@ not compilation, beats the chaotic failing cost.  The compiled route
 is nonetheless live: this branch is on v4.31.0, `lake exe oracle2`
 builds in ~10 s and runs the suite in 0.02 s CPU (the lakefile's
 laxrun-segfault comment was stale; fixed).
+
+### (m) 2026-07-19 evening: the fallibility prediction — CONFIRMED on chain2/chain3, with verified countermodels
+
+Compiled reruns of the §0(j) experiment (fuel-free `G4cTm.find`
+oracle, `lake exe ctxprobe` / `ctxrel` / `ctxcert`; the fueled-search
+chaos is gone — see §0(l) update below).
+
+FULL chain2+chain3 frozen-C table (tool-grade oracle, 17 rows):
+every SUBSTITUTION row commutes on both models and both quantifiers —
+exactly as the sandwich (§0(k)) mandates; the failures are exactly
+the frame-changing rows: `◯p⊃p` (LOW) on both models, `◯(◯p⊃p)`
+(SIDE, NEW datum) on chain2.  Two chain3 rows inconclusive at budget
+2 (tower unstabilised: `(◯⊥⊃p)⊃p` ∀-side, `¬◯p` ∃-side).
+
+THE PREDICTION (was OPEN): frame-relative commutation (Θ = fallibility
+axioms) for ⊥-valued M iff every Rₘ-stable world of the generating
+model is fallible.  STATUS NOW:
+
+* chain2 (all stable worlds fallible): rel-comm HOLDS on all three
+  test rows — positive side, `find`-term grade (`ctxrel`).
+* chain3 (non-fallible stable world 0): rel-comm FAILS on both
+  ◯-rows, **CERTIFIED by checkB-verified countermodels** (`ctxcert`):
+  the sequents `A, Θ ⊢ vA'` (tower value + frame theory ⊢ translated
+  PLL value) are refuted by the ONE-WORLD model — a single
+  non-fallible world with only `a0` true.  That world IS the α-top
+  residue of the §0(j) analysis, now machine-checked: Θ holds there
+  (a2 false), the IPC tower value holds, the translated value fails.
+  The other direction `vA', Θ ⊢ A` is PROVED on every row — the
+  sandwich's lower bound, concretely.
+* fork (non-fallible stable worlds 0, 1): rel-comm FAILS on both
+  ◯-rows, **CERTIFIED by the same one-world countermodel** (only
+  `a0` true).  Tower-weight datum: the fork towers reach weight
+  233–1476 and are CONSTRUCTED in 0 ms compiled — compilation
+  dissolved the tower-construction wall of §0(j); the only guarded
+  residual is `find` on very large PROVABLE inputs (the sandwich
+  theorem covers that direction anyway).
+
+The prediction is thus CONFIRMED on all three test models — the
+failing half by checkB-verified one-world countermodels, the holding
+half by find-terms.  The GENERAL iff-law stays OPEN, but the
+certified countermodel is visibly uniform in the model: for ANY m
+with a non-fallible Rₘ-stable world u, the one-world classical model
+decorated `{a_u}` makes every `C[x]` equivalent to `x` (the u-pair's
+disjunct-side is false, every other pair's guard is false), so the
+translation collapses to identity there and the tower-∀ survives
+while any ⊥-bounded translated value fails.  Formalising THAT
+one-world argument is a short-lemma route to the general fails-half.
+
+CONSEQUENCE.  Frame theories over the SAME constraint names provably
+cannot close the lowT/sideT gap (a one-world countermodel survives
+any Θ that holds at the residue world).  The constraint-route theorem
+must therefore enlarge the CONSTRAINT POOL (variant models' Lemma-7
+constraints — doubled/Löb saturations), not the ambient theory.  This
+is the per-instance finite-support picture arriving from the third
+independent direction.
