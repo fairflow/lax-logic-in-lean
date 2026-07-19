@@ -152,7 +152,7 @@ uniform proof target: for every one-variable M, the generator
 instances {M[p:=⊥], M[p:=⊤], lowT p M, sideT p M} derive the maximum
 closed ξ ⊢ M (dually for ∃) — a purely syntactic statement over the
 RN lattice.  Oracle pathology recorded in the table doc: failing
-`search` cost is chaotic (non-monotone in fuel); successes instant.
+`search` cost is unpredictable (non-monotone in fuel); successes instant.
 
 **(h) The reconstruction reduction (2026-07-19, overnight session;
 PROVED in `LaxLogic/PLLSemUI.lean`).**  Writing `M[χ]` for the
@@ -496,7 +496,7 @@ demands growing constraint families — reconverging, from the
 constraint side, with the per-instance support law of §0(i).
 
 Tooling note: tower cost (raw term construction before nf) is the
-binding constraint — chaotic in fuel/budget like the failing-search
+binding constraint — unpredictable in fuel/budget like the failing-search
 cost; rows beyond weight ~7 translations need the fuel/budget caps of
 the probe, and some still wedge.  All probe verdicts are sound on
 `true`.
@@ -566,7 +566,7 @@ paper-grade certificates are wanted.  Benchmarks (numbers in
 PROGRESS.md §9): 10/10 correct at 0 ms each, including the weight-40
 Peirce reconstruction failure on which plain one-sided `search`
 grinds >100 s interpreted and >120 s NATIVE — the countermodel stage,
-not compilation, beats the chaotic failing cost.  The compiled route
+not compilation, beats the unpredictable failing cost.  The compiled route
 is nonetheless live: this branch is on v4.31.0, `lake exe oracle2`
 builds in ~10 s and runs the suite in 0.02 s CPU (the lakefile's
 laxrun-segfault comment was stale; fixed).
@@ -805,3 +805,36 @@ to weight 9 with the certified oracle — battery countermodels first
 (a REFUTED verdict would be a checkB-verified counterexample to the
 law), fuel-free find for positives.  Results recorded below when the
 run lands.
+
+### (s) 2026-07-19 night: the sweep corrects the law; clean to weight 8; one frontier row
+
+The certified sweep immediately REFUTED the occurring-rungs-only
+formalization: witness `((◯p)⊃p)⊃p` (Peirce pivot ◯p contains p, so
+NO closed rung occurs — the pool degenerated to the fixed basis),
+one-world-family countermodels checkB-verified; 39 such failures to
+weight 8, all in the ◯p/◯◯p-Peirce family; the ∃-law had NO failures
+anywhere.  CORRECTED LAW (committed): `poolAll` carries the BASE
+rungs ⊥, ⊤, ◯⊥ unconditionally plus the occurring rungs — pinned in
+Lean by `rungsIn_peirceBoxP` (`= []`, by decide) and
+`occurring_only_insufficient` (the fixed-basis premises do not derive
+the witness; `FinCM.not_provable_of_check` by decide on the sweep's
+3-world model).
+
+CORRECTED-LAW SWEEP: weights 1–8, 11,708 formulas, BOTH laws —
+**zero refutations**; exactly ONE ∀-side UNKNOWN:
+
+    M₀ := ((p ⊃ ◯⊥) ⊃ p) ⊃ p        (weight 8)
+
+battery found no ≤4-world countermodel, `find` exhausted without a
+proof — the next frontier row (its Peirce pivot p⊃◯⊥ again contains
+p).  Weight 9 pending a longer run.
+
+TIMING CORRECTION (from the reproduction probe, see §0(l) erratum):
+the probes' "towers built in 0 ms" lines were an instrumentation
+artifact — the compiler inlines used-once pure `let` bindings to
+their first use, moving the construction past the timing brackets.
+Honestly forced: the large towers cost on the order of 10–100 s
+compiled (still versus interpreter runs that never finished); the
+VERIFIED checker really does certify the weight-856k pool sequent in
+< 1 ms with inputs pre-forced (the countermodel has one world, where
+the checker is linear in formula size).

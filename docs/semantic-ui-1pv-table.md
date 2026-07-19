@@ -88,7 +88,7 @@ RN(◯,{}) truncated to weight ≤ 8 has exactly **7 classes**:
    p-free-equivalent classes appearing; every essential row certified
    by a separation pair (always `⊥` against one of `◯⊥`/`⊤`).
 6. **Oracle pathology** (tooling): the cost of a FAILING `search` call
-   is chaotic — non-monotone in fuel ([inst(¬¬◯⊥)] ⊢ ◯⊥: 0 ms at fuel
+   is unpredictable — non-monotone in fuel ([inst(¬¬◯⊥)] ⊢ ◯⊥: 0 ms at fuel
    ≤ 200, minutes at 500; [lowT, inst(¬◯⊥)] ⊢ ◯⊥: 0 ms at 350,
    minutes at 200).  Successes are instant even at weight 40.  The
    probe therefore weight-caps failing-prone calls, orders cheap

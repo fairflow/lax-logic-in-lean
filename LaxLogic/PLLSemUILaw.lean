@@ -1,4 +1,5 @@
 import LaxLogic.PLLSemUIRes
+import LaxLogic.PLLCountermodelEmit
 
 /-!
 # The per-instance reconstruction law, made exact
@@ -68,11 +69,20 @@ theorem rungsIn_pfree {p : String} {M χ : PLLFormula}
 /-! ## The per-instance pools and candidates -/
 
 /-- The ∀-side pool: the two transforms, then the substitution
-instances at ⊥, ⊤ and every rung occurring in `M`. -/
+instances at the BASE rungs ⊥, ⊤, ◯⊥ and at every rung occurring in
+`M`.
+
+CORRECTION (2026-07-19, certified by the law sweep): the
+occurring-rungs-only pool is REFUTED — witness `((◯p)⊃p)⊃p`, whose
+Peirce pivot ◯p contains p, so it has NO atom-free subformulas and
+the occurring-only pool degenerates to the fixed basis, which
+provably fails there (`occurring_only_insufficient` below, a
+`decide`-checked countermodel).  The base instance ◯⊥ is needed
+unconditionally: `M[p:=◯⊥] ≡ ◯⊥` is the value of that witness. -/
 def poolAll (p : String) (M : PLLFormula) : List PLLFormula :=
   lowT p M :: sideT p M ::
-    (PLLFormula.falsePLL :: truePLL :: rungsIn M).map
-      (fun χ => substP p χ M)
+    (PLLFormula.falsePLL :: truePLL :: PLLFormula.falsePLL.somehow ::
+      rungsIn M).map (fun χ => substP p χ M)
 
 /-- The ∃-side pool: additionally the ◯⊥ instance (the fixed basis's
 fifth generator). -/
@@ -101,6 +111,8 @@ theorem poolAll_pfree {p : String} {M : PLLFormula} :
   · exact substP_pfree (by simp) M
   rcases List.mem_cons.mp hχ with rfl | hχ
   · exact substP_pfree (truePLL_pfree p) M
+  rcases List.mem_cons.mp hχ with rfl | hχ
+  · exact substP_pfree (by simp) M
   · exact substP_pfree (rungsIn_pfree hχ) M
 
 theorem poolEx_pfree {p : String} {M : PLLFormula} :
@@ -147,7 +159,8 @@ theorem isSemAll_of_poolRec {p : String} {M : PLLFormula}
     (d : LaxND [allCandP p M] M) : IsSemAll p M (allCandP p M) := by
   have hmem : ∀ ξ ∈ poolAll p M,
       ξ ∈ (sideT p M :: lowT p M ::
-        (PLLFormula.falsePLL :: truePLL :: rungsIn M).map
+        (PLLFormula.falsePLL :: truePLL ::
+          PLLFormula.falsePLL.somehow :: rungsIn M).map
           (fun χ => substP p χ M)) := by
     intro ξ hξ
     rcases List.mem_cons.mp hξ with rfl | hξ
@@ -157,7 +170,8 @@ theorem isSemAll_of_poolRec {p : String} {M : PLLFormula}
     · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hξ)
   obtain ⟨d₂⟩ := andAll_intro (poolAll p M) hmem
   exact isSemAll_of_certificates_side
-    (χs := PLLFormula.falsePLL :: truePLL :: rungsIn M)
+    (χs := PLLFormula.falsePLL :: truePLL ::
+      PLLFormula.falsePLL.somehow :: rungsIn M)
     (allCandP_pfree p M) d d₂
 
 /-- **∃-reduction**: if `M` derives the pool disjunction, that
@@ -247,6 +261,36 @@ theorem pool_reconstructs_peirce :
     .impIntro (.impElim (.iden (List.mem_cons_self ..))
       (.iden (List.mem_cons_of_mem _ (List.mem_cons_self ..))))
   exact ⟨compose dpeirce (compose dinst dproj)⟩
+
+/-! ## The correction pins: why the base rung ◯⊥ is unconditional
+
+The ◯p-pivoted Peirce formula `((◯p)⊃p)⊃p` has NO atom-free
+subformulas — its pivot contains p — so an occurring-rungs-only pool
+degenerates to the fixed four-generator basis there, and that basis
+provably fails: the three-world countermodel found (and
+checkB-verified) by the law sweep discharges by `decide`. -/
+
+/-- The ◯p-pivoted Peirce witness. -/
+def peirceBoxP : PLLFormula :=
+  (((PLLFormula.prop "p").somehow.ifThen (.prop "p")).ifThen (.prop "p"))
+
+/-- No closed rung occurs in it. -/
+theorem rungsIn_peirceBoxP : rungsIn peirceBoxP = [] := by decide
+
+/-- The sweep's countermodel: 0 < 1 < 2, Rₘ rigid except 1 → 2, top
+fallible, p at {1, 2}. -/
+def lawCM : FinCM :=
+  ⟨3, [(0,1),(1,2),(0,2)], [(1,2)], [2], [(1,"p"),(2,"p")]⟩
+
+/-- **The occurring-only pool is insufficient** (machine-checked): the
+fixed-basis premises — all an occurring-only pool offers for
+`peirceBoxP` — do not derive it. -/
+theorem occurring_only_insufficient :
+    ¬ Nonempty (LaxND
+      [lowT "p" peirceBoxP, sideT "p" peirceBoxP,
+       substP "p" .falsePLL peirceBoxP, substP "p" truePLL peirceBoxP]
+      peirceBoxP) :=
+  FinCM.not_provable_of_check (M := lawCM) (w := 0) (by decide)
 
 end SemUI
 end PLLND

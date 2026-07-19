@@ -64,3 +64,8 @@ root = "wip.semui_pool"
 [[lean_exe]]
 name = "lawsweep"
 root = "wip.semui_lawsweep"
+
+# Reproduction of the large-object harness claims.
+[[lean_exe]]
+name = "weightrepro"
+root = "wip.semui_repro"

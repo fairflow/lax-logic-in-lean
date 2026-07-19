@@ -339,7 +339,7 @@ remain the two definability targets).
   schemata; first ∃-side beyond-substitution value ∃p.(¬◯p ∨ ◯p) = ⊤
   (proved: `semEx_wem_box`). Definability at 1 pv = empirically
   complete conjecture with a uniform syntactic proof target (see the
-  table doc). Oracle warning: failing `search` cost is CHAOTIC in
+  table doc). Oracle warning: failing `search` cost is UNPREDICTABLE in
   fuel (non-monotone); cap weights and order cheap attempts first.
 
 ### §8 continued — overnight 2026-07-19 (same branch)
@@ -391,7 +391,7 @@ remain the two definability targets).
   (interpreted); compiled suite 0.02 s CPU total.  Contrast: plain
   one-sided `search` on `allCand(peirce) ⊢ peirce` @fuel 400 grinds
   >100 s interpreted AND >120 s native (both killed) — the
-  countermodel stage, not compilation, is what beats the chaotic
+  countermodel stage, not compilation, is what beats the unpredictable
   failing-search cost.  Countermodels arrive minimal (1–3 worlds,
   verified by `FinCM.checkB`).  Correction to the recorded pathology:
   bare `¬¬◯⊥ ⊢ ◯⊥` @500 is 0 ms — the recorded minutes-case had a
@@ -406,7 +406,7 @@ remain the two definability targets).
   The fuel-free `G4cTm.find` (built 2026-07-18, left on the shelf)
   decides the ENTIRE oracle2 benchmark at 0 ms in find-only mode —
   including failing fast on the refutables where fueled `search`
-  ground for minutes.  The chaotic failing cost was an artifact of the
+  ground for minutes.  The unpredictable failing cost was an artifact of the
   fueled engine, not the problem.  oracle2 v3: nf preprocessing (the
   built simplifier), battery first, find as the positive engine; fuel
   appears nowhere in the decision path.
