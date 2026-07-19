@@ -12,10 +12,13 @@ characterised by the axiom schemes
 with Modus Ponens and the rule ``from \ensuremath{M \supset N} infer \ensuremath{\bigcirc M \supset \bigcirc N}''. The
 introduction of \cite{FairtloughMendler1997} motivated \ensuremath{\bigcirc} by a list of six perspectives ---
 Curry\textquotesingle s 1948 lectures~\cite{Curry1950,Curry1952}, nuclei on complete
-Heyting algebras~\cite{Macnab1981,Johnstone1982}, Kripke and J-space
-semantics~\cite{Kripke1965,Goldblatt1981}, the strong monads of
-computational type theory~\cite{Moggi1991,BentonBiermanDePaiva1998},
-the proof-theoretic constraint reading, and the timing analysis of
+Heyting algebras~\cite{Macnab1981,Johnstone1982,PicadoPultr2012}, Kripke
+and J-space semantics~\cite{Kripke1965,Goldblatt1981,Simpson1994}, the
+strong monads of computational type
+theory~\cite{Moggi1991,BentonBiermanDePaiva1998,Kobayashi1997,
+PfenningDavies2001},
+the proof-theoretic constraint
+reading~\cite{FairtloughMendlerWalton1997}, and the timing analysis of
 combinational circuits~\cite{Mendler2000} --- and settled on the constraint reading: \ensuremath{\bigcirc M} as
 ``for some constraint c, formula M holds under c''. This paper adds a
 seventh reading and pursues it:
@@ -168,7 +171,8 @@ true; at a = true, the totally credulous believer. Nothing between these poles
 distinguishes one classical believer from another except the choice of
 a. There is, classically, no structure of belief; there is only a
 measure of laxity. (The algebraic fact is
-classical~\cite{BeazerMacnab1979,Macnab1981}; the mechanisation, the
+classical~\cite{BeazerMacnab1979,Macnab1981}, with the modern treatment
+of~\cite{AvilaBezhanishviliMorandiZaldivar2020}; the mechanisation, the
 sharp order-isomorphism, and the reading are what is added here.)
 
 \begin{theorem}[\texttt{em\_of\_openNucleus\_eq\_closedNucleus}, \texttt{closed\_lax\_infinite}]\label{thm:openclosed}
@@ -184,7 +188,9 @@ closed fragment of even the generator-free algebra is infinite says the
 constructive believer has infinitely many pairwise inequivalent modal
 degrees where the classical believer had a single parameter (the
 embedding is through the Rieger--Nishimura
-lattice~\cite{Rieger1949,Nishimura1960}).
+lattice~\cite{Rieger1949,Nishimura1960}; nuclei over such
+non-complete Heyting algebras are studied
+in~\cite{Erne2022,ErnePicadoPultr2022}).
 
 The smallest algebra already exhibits the separation, and the artefact
 enumerates it exactly (\texttt{BeliefExamples.lean}, kernel-checked by
@@ -236,8 +242,11 @@ believes everything, and nothing is thereby true.
 \section{Evidence}\label{4-evidence}
 
 We now equip the constraint models with evidence; the ancestry is
-Kleene realisability~\cite{Kleene1945,Troelstra1998} in its
-Kripke-indexed form~\cite{Lipton1992}, with partial applicative
+Kleene realisability~\cite{Kleene1945,Troelstra1973,Troelstra1998,
+TroelstraVanDalen1988} in its Kripke-indexed form~\cite{Lipton1992}
+(evidence-function possible-world
+models~\cite{Fitting2005,MarinPadhiarShillito2026} are closely
+related), with partial applicative
 structures the standard carriers~\cite{VanOosten2008}. The equipment
 is deliberately light.
 
@@ -888,8 +897,9 @@ futures. The idealisation Hintikka told us to own lives exactly in the
 completeness theorem\textquotesingle s omniscient survey --- stated, and confined to
 where it belongs.
 
-Finally, one applied study from the programme that motivated PLL is
-carried out in the artefact end to end. Mendler\textquotesingle s timing analysis of
+Finally, a first applied step from the programme that motivated
+PLL~\cite{FairtloughMendler1994}.
+Mendler\textquotesingle s timing analysis of
 combinational circuits~\cite{Mendler2000} reads a proof as a
 stabilisation bound --- unit: a wire, delay 0; multiplication:
 sequential composition, +; strength: reconvergent merge, max --- and
@@ -904,10 +914,18 @@ bound (\texttt{falsePath\_beats\_topological},
 \texttt{skip\_beats\_topological}; both, pleasingly, with \emph{no
 axioms at all}). Under reading (7) these are belief computations: a
 signal\textquotesingle s delay is the cost of discharging the constraint under
-which its stability is believed. The wider case-study programme ---
-timing constraint models at scale, proof-carrying authorization,
-certified effectful computation --- outgrows this paper; the staged
-programme accompanies the artefact, and a companion paper is in
+which its stability is believed. We are explicit about what this is
+and is not: it is the delay-algebra half of the programme\textquotesingle s first
+case study, exercised on small circuits. The study itself --- a family
+of small but non-trivial netlists (a ripple-carry adder, an arbiter, a
+C-element handshake) with their stabilises-to specifications
+formalised \emph{in the evidence semantics}, the components composed
+into a larger netlist under a formally combined specification,
+\ensuremath{\bigcirc}(out = spec) proved there and its evidence term
+extracted --- awaits its realiser layer, which is designed but not
+implemented; a staged design brief accompanies the artefact, and the
+programme --- timing at scale, proof-carrying authorization, certified
+effectful computation --- is the subject of a companion paper in
 preparation.
 
 \section{Related work}\label{8-related-work}
@@ -919,17 +937,19 @@ so that K false is consistent --- the same quarantining of absurdity. PLL
 adds idempotence; we conjecture PLL-\ensuremath{\bigcirc} is exactly IEL\ensuremath{{}^{-}} extended by
 \ensuremath{\bigcirc\bigcirc}A \ensuremath{\supset \bigcirc A}, and record the question as open. IEL itself has
 been mechanised, in Coq~\cite{HagemeierKirst2022}. Justification
-logic~\cite{Artemov2001,ArtemovFitting2019} in its forgetful reading
-forces factivity and is therefore not this.
+logic~\cite{Artemov2001,Artemov2008,ArtemovFitting2019} in its
+forgetful reading forces factivity and is therefore not this.
 
 Two classical traditions are illuminated by the collapse theorem.
 Doxastic logic in the Hintikka--KD45
-tradition~\cite{Hintikka1962,FaginHalpernMosesVardi1995} is the
+tradition~\cite{Hintikka1962,FaginHalpernMosesVardi1995,Stalnaker2006}
+is the
 baseline against which Proposition~\ref{prop:profile} should be read:
 the lax believer is fully introspective but has no D --- its
 inconsistency is quarantined where KD45\textquotesingle s is outlawed. The evidence
 models of the classical belief-revision
-literature~\cite{VanBenthemPacuit2011,BaltagBezhanishviliOzgunSmets2016}
+literature~\cite{VanBenthemPacuit2011,BaltagBezhanishviliOzgunSmets2016,
+BaltagBezhanishviliOzgunSmets2022}
 build belief from evidence with interior-type operators over a
 \emph{topology}; Theorem~\ref{thm:collapse} says why that extra
 structure is obligatory --- on the bare classical algebra every nucleus
@@ -950,7 +970,7 @@ the two established computational faces
 of \ensuremath{\bigcirc}; the doxastic reading is compatible with both, and the
 double-negation believer --- in constraint models with \ensuremath{R_{m}} = \ensuremath{R_{i}} and no
 fallible worlds, \ensuremath{\bigcirc M} is forced exactly where \ensuremath{\lnot\lnot}M is (machine-checked,
-\texttt{force\_somehow\_iff\_notnot}) --- recovers the continuation reading as a
+\texttt{force\_somehow\_iff\_notnot}) --- recovers the continuation reading~\cite{Krivine2009} as a
 special case. On the mechanised side, the normalisation-by-evaluation
 line for modal and lax calculi in
 Agda~\cite{ValliappanRuchTomeCortinas2022,Valliappan2026} is the
@@ -959,18 +979,22 @@ of a prior completeness theorem for a
 lax logic with respect to a realisability semantics, nor of a prior
 mechanised canonical-model construction whose Lindenbaum step is an
 appeal to the object logic\textquotesingle s decision procedure. The
-terminating-calculus route to decidability for PLL is due to Iemhoff~\cite{Iemhoff2024};
-the artefact contains a machine-checked counterexample to the published
-calculus and a repaired one, communicated separately.
+terminating-calculus route to decidability for PLL is due to
+Iemhoff~\cite{Iemhoff2024}, resting on a general G3i-to-G4i
+transfer~\cite{Iemhoff2022}, with earlier proof search for PLL due to
+Howe~\cite{Howe2001}; the artefact contains a machine-checked
+counterexample to the published calculus and a repaired one,
+communicated separately.
 
 \section{Method}\label{9-method}
 
 Every claim of this paper is a theorem of a Lean
-4~\cite{DeMouraUllrich2021} development, over
+4~\cite{DeMouraUllrich2021} development~\cite{BeliefArtefact}, over
 Mathlib~\cite{MathlibCommunity2020}, that also contains its parent
 paper entire. The axiom footprint of each
 result is recorded: nothing at all for a handful of results (among them
-a well-foundedness theorem for the Kleene--Brouwer order, a standalone
+a well-foundedness theorem for the Kleene--Brouwer
+order~\cite{Kechris1995}, a standalone
 fully constructive result in the artefact); \texttt{[propext]} or
 \texttt{[propext, Quot.sound]} --- no choice --- for the proof theory, the
 decoration half of completeness, the obstruction, and the executable
@@ -999,7 +1023,9 @@ mechanisation of strong normalisation for the computational
 metalanguage treats the core calculus without sums, in
 Isabelle/HOL-Nominal~\cite{DoczkalSchwinghammer2009}, and the
 paper-form treatments of sums~\cite{Lindley2005,LindleyStark2005} are
-unmechanised.
+unmechanised; cf.\ the POPLMark Reloaded
+benchmark~\cite{AbelEtAl2019} for mechanised logical-relations
+normalisation.
 
 We have already said that the formalisation functioned as an
 instrument. It is worth saying how. Three intended theorems failed, and
@@ -1039,7 +1065,10 @@ the model, which is the point of the method.
 
 On routes to publication for machine-checked mathematics by
 unaffiliated authors, and the artefact-citation norms this paper relies
-on (Zenodo-archived repository, \texttt{CITATION.cff}), see the survey in the
+on (Zenodo-archived repository, \texttt{CITATION.cff}) --- with the
+Lean formalisation of perfectoid
+spaces~\cite{BuzzardCommelinMassot2020} an established precedent for
+citing a repository as a refereed artefact --- see the survey in the
 artefact (\texttt{docs/publication-routes.md}).
 
 \section{Conclusion and open problems}\label{10-conclusion-and-open-problems}
@@ -1059,12 +1088,15 @@ The exact relation of PLL-\ensuremath{\bigcirc} to IEL\ensuremath{{}^{-}} (conje
 Kleene-algebra instantiation of the table capacities via partial
 computable functions~\cite{Kleene1945} (the choice-free statement
 needs care around partiality). The tripos-level formulation of the
-evidence semantics~\cite{Hyland1982,VanOosten2008}.
+evidence
+semantics~\cite{Hyland1982,VanOosten2008,CohenGrunfeldKirstMiquey2025}.
 Uniform interpolation for PLL --- ordinary Craig interpolation is
 settled, choice-free, in the artefact (Section 2), while the uniform
 case is where the repaired terminating calculus supplies the height
 bound the published method lacked~\cite{Pitts1992}; the mechanised
 investigation continues, with the Coq/Rocq mechanisations of uniform
 interpolation for intuitionistic and intuitionistic modal
-logics~\cite{FereeVanDerGiessenVanGoolShillito2024,ShillitoVanDerGiessenGoreIemhoff2023}
-as the reference points.
+logics~\cite{FereeVanDerGiessenVanGoolShillito2024,
+ShillitoVanDerGiessenGoreIemhoff2023,VanDerGiessenShillito2026}
+as the reference points, alongside a live Lean interpolation effort for
+PDL~\cite{GattingerLean4PDL}.
