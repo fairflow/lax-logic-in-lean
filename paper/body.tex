@@ -974,7 +974,27 @@ fallible worlds, \ensuremath{\bigcirc M} is forced exactly where \ensuremath{\ln
 special case. On the mechanised side, the normalisation-by-evaluation
 line for modal and lax calculi in
 Agda~\cite{ValliappanRuchTomeCortinas2022,Valliappan2026} is the
-closest packaged artefact to our term-calculus layer. We are not aware
+closest packaged artefact to our term-calculus layer, and the relation
+is technical, not merely bibliographical. That semantics interprets
+the lax modality by a \emph{bare existential} over the constraint
+relation --- a clause that is not hereditary by itself --- and
+accordingly assumes \emph{forward confluence} of the two accessibility
+relations; the parent paper\textquotesingle s \ensuremath{\forall\exists} clause
+internalises heredity and assumes nothing. The two clause styles are
+reconciled exactly on the mutually confluent frames of Section 10:
+there the \ensuremath{\forall\exists} clause collapses to the bare
+existential (\texttt{force\_somehow\_iff\_of\_confluent}), and the
+logic of that frame class is precisely PLL +
+\ensuremath{\bigcirc}(A \ensuremath{\vee} B) \ensuremath{\supset}
+(\ensuremath{\bigcirc}A \ensuremath{\vee} \ensuremath{\bigcirc}B)
+(\texttt{derivU\_iff\_confluent\_valid}) --- a scheme PLL does not
+prove. The simpler clause is therefore bought at the price of a
+strictly stronger logic. Nothing in the evidence semantics of
+Sections 4--6 assumes confluence anywhere; in the one place it might
+look tempting --- the meet law composing two beliefs --- the mechanised
+proof is sequential composition, discharging the second constraint at
+the world the first produced (Section 7), never a common refinement of
+independent successors. We are not aware
 of a prior completeness theorem for a
 lax logic with respect to a realisability semantics, nor of a prior
 mechanised canonical-model construction whose Lindenbaum step is an
@@ -1110,11 +1130,11 @@ because of the scheme}, and mutual confluence holds with
 \ensuremath{\bigcirc^{-1}} of the \ensuremath{R_{i}}-successor as
 witness; no promise component is needed anywhere, because on confluent
 frames the clause is already bare possibility.
-%% TODO(Matthew): check I&C Thm 4.5 on paper — does it prove, or
-%% announce, completeness of PLL + the scheme for confluent constraint
-%% models? And which cited reference the confluence condition is
-%% associated with (Fischer Servi / Simpson / Plotkin–Stirling?);
-%% ScienceDirect blocked the automated check.
+%% TODO(Matthew): check I&C Thm 4.5 on paper — exact statement (does it
+%% prove, or announce, completeness for confluent constraint models?).
+%% The "which reference required confluence" question is ANSWERED:
+%% Valliappan (bare-∃ clause + forward confluence), now drawn out
+%% technically in §8; completeness itself is ours, mechanised.
 What remains open is the realisability side of the identification:
 whether \ensuremath{\Vdash{}^{\mathrm{u}}}-validity coincides with
 validity over confluent constraint models --- that is, whether
