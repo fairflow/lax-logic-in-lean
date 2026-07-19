@@ -773,3 +773,35 @@ Engineering note: the pool sequents reach weight ~10⁶ (the Löb-variant
 towers); the battery + verified checker still certify in
 milliseconds — the harness is comfortable three orders of magnitude
 above the morning's weight caps.
+
+### (r) 2026-07-19 late: the per-instance reconstruction law, made exact (mainline resumed)
+
+`LaxLogic/PLLSemUILaw.lean`: the law is now a formal object.
+`rungsIn M` = the atom-free subformulas of M; the pools
+
+    poolAll p M = {lowT p M, sideT p M} ∪ {M[p:=χ] : χ ∈ ⊥ :: ⊤ :: rungsIn M}
+    poolEx  p M = poolAll + the ◯⊥ instance
+
+with candidates `allCandP = ⋀ poolAll`, `exCandP = ⋁ poolEx`.  PROVED
+(unconditional in M, audited): the REDUCTIONS
+
+    isSemAll_of_poolRec : [allCandP p M] ⊢ M → IsSemAll p M (allCandP p M)
+    isSemEx_of_poolRec  : [M] ⊢ exCandP p M → IsSemEx p M (exCandP p M)
+
+(∀ via the full-basis certificate criterion; ∃ by mapping each
+disjunct to its p-variant — truth-set decorations / doubled model /
+levelled model, fallible worlds through the ⊥-instance).  The LAW
+itself = sorry-free Prop conjectures `ReconLawAll`/`ReconLawEx`
+(stated at one variable), with `onevar_definable_of_laws`: the two
+laws imply one-variable definability of both quantifiers.  PINNED in
+Lean: `pool_reconstructs_peirce` — the per-instance pool reconstructs
+the Peirce witness `(◯⊥⊃p)⊃p` that machine-refuted the fixed basis
+(the occurring rung ◯⊥ supplies the decisive instance
+`(◯⊥⊃◯⊥)⊃◯⊥ ≡ ◯⊥`).
+
+SWEEP (superseding the fueled weight-≤7 sweep): `lake exe lawsweep`
+tests the library's own law sequents over all raw 1-variable formulas
+to weight 9 with the certified oracle — battery countermodels first
+(a REFUTED verdict would be a checkB-verified counterexample to the
+law), fuel-free find for positives.  Results recorded below when the
+run lands.

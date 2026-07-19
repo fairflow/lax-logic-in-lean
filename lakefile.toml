@@ -59,3 +59,8 @@ root = "wip.semui_ctx_cert"
 [[lean_exe]]
 name = "poolprobe"
 root = "wip.semui_pool"
+
+# The certified reconstruction-law sweep.
+[[lean_exe]]
+name = "lawsweep"
+root = "wip.semui_lawsweep"
