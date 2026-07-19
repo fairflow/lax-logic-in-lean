@@ -843,3 +843,42 @@ object — the Löb-variant tower c, raw weight 432,814,618, costing
 weight-856,179 pool sequent in < 1 ms with inputs pre-forced (the
 countermodel has one world, where the checker is linear in formula
 size).  Reproduction: `wip/semui_repro.lean`, `lake exe weightrepro`.
+
+### (t) 2026-07-19 midnight: the frontier row settled — the ∀-law is refuted IN LEAN; the third generator is named
+
+`((p⊃◯⊥)⊃p)⊃p`, the sweep's lone UNKNOWN, fully resolved
+(`wip/frontier_row.lean`; pins in `LaxLogic/PLLSemUILaw.lean`):
+
+* every closed substitution instance ≡ ⊤ (substitutions contribute
+  nothing); `lowT ≡ sideT ≡ ¬¬◯⊥` (four find-term directions);
+  ∀p-value = ◯⊥ (rung scan: only ⊥, ◯⊥ derive the row);
+* the CERTIFIED countermodel — the 4-chain 0<1<2<3, Rₘ = id ∪ {2→3},
+  top fallible, p at {1,2,3} — forces every pool member at the root
+  (◯⊥ holds NON-fallibly at world 2, giving ¬¬◯⊥) while refuting the
+  row (world 1 forces p without ◯⊥, so only worlds 2, 3 force p⊃◯⊥,
+  and both force p);
+* PINNED by kernel `decide` (seconds): `nnBoxBot_not_derives_frontier`
+  ([propext, Quot.sound]), `poolAll_insufficient_frontier`, and
+  **`reconLawAll_refuted : ¬ ReconLawAll`** — the corrected ∀-law is
+  itself refuted in Lean.  The ∃-law stands untouched.
+
+Instructive detour, on the record: my first hand countermodel (the
+rigid-Rₘ 3-chain) was WRONG — at its middle world ¬◯⊥ holds because
+the only ◯⊥-point above is fallible, so the root refutes ¬¬◯⊥; the
+battery's silence exposed the error and forced the correct model,
+whose key feature is a NON-fallible ◯⊥-world (Rₘ-witnessed by the
+fallible top).  That frame family (4-chain, Rₘ rigid except 2→3) was
+missing from both batteries and is now added to
+`Search.defaultFrames` and the probe battery.
+
+WHERE THE MAINLINE NOW STANDS: the ∀-side basis {substitutions at
+rungs, lowT, sideT} is provably incomplete at weight 8 — the row
+demands a THIRD frame construction whose level-0 transform descends
+to ◯⊥ where both existing transforms stop at ¬¬◯⊥.  The certified
+countermodel names its shape: the construction must separate
+"◯⊥ non-fallibly above" from "p everywhere above", i.e. a variant
+with a fresh Rₘ-side witness one level deeper than the doubling —
+the tower of levelled models predicted by the roadmap, now forced at
+depth 3.  Also noted: `CounterEmit.emit` missed this countermodel on
+the small sequent [¬¬◯⊥] ⊢ row (its closure is within the gate) — an
+emitter-incompleteness datum for the tooling ledger.

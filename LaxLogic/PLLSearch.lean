@@ -183,7 +183,12 @@ def defaultFrames : List Frame :=
   , ⟨3, [(0,1),(1,2),(0,2)], [(0,1),(1,2),(0,2)], [2]⟩
   , ⟨4, [(0,1),(0,2),(2,3),(0,3)], [(2,3)], [3]⟩
   , ⟨3, [(0,1),(0,2)], [(0,2)], [2]⟩
-  , ⟨4, [(0,1),(0,2),(0,3),(1,3),(2,3)], [(1,3),(2,3)], [3]⟩ ]
+  , ⟨4, [(0,1),(0,2),(0,3),(1,3),(2,3)], [(1,3),(2,3)], [3]⟩
+  -- 4-chain, Rₘ rigid except 2→3, top fallible: the frame that
+  -- refutes ¬¬◯⊥-level premises against Peirce-shaped goals
+  -- (added 2026-07-19 after it certified the frontier row
+  -- ((p⊃◯⊥)⊃p)⊃p; the earlier battery missed that family).
+  , ⟨4, [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)], [(2,3)], [3]⟩ ]
 
 /-- Strict `Rᵢ`-edge test on a `Frame`. -/
 def riStep (f : Frame) (w v : Nat) : Bool := decide ((w, v) ∈ f.ri)

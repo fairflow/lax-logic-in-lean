@@ -33,10 +33,22 @@ def rungs : List (String × PLLFormula) :=
    ("◯¬◯⊥", (nF gB).somehow), ("¬¬◯⊥", nF (nF gB)),
    ("¬◯⊥∨◯⊥", (nF gB).or gB)]
 
-/-- The rigid-Rₘ 3-chain missing from the default battery. -/
+/-- The rigid-Rₘ 3-chain (first countermodel guess — WRONG, kept as
+the instructive failure: at its middle world ¬◯⊥ holds because the
+only ◯⊥-point above is fallible, so the root refutes ¬¬◯⊥ and never
+forces the pool; the battery's silence exposed the error). -/
 def rigidChain3 : Frame := ⟨3, [(0,1),(1,2),(0,2)], [], [2]⟩
 
-def extCfg : Config := { frames := defaultFrames ++ [rigidChain3] }
+/-- The corrected countermodel frame: the 4-chain 0<1<2<3 with
+`Rₘ = id ∪ {2→3}` and top fallible.  Decorated with p at {1,2,3}:
+◯⊥ holds NON-fallibly at 2 (its Rₘ-witness is the fallible 3), so
+the root forces ¬¬◯⊥; world 1 forces p but not ◯⊥, so the only
+worlds forcing `p⊃◯⊥` are 2 and 3, both forcing p — the root forces
+`(p⊃◯⊥)⊃p` but not p, refuting the row. -/
+def chain4 : Frame :=
+  ⟨4, [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)], [(2,3)], [3]⟩
+
+def extCfg : Config := { frames := defaultFrames ++ [rigidChain3, chain4] }
 
 def prov (Γ : List PLLFormula) (C : PLLFormula) : Bool :=
   (prove? Γ C).isSome

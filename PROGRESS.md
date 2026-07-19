@@ -475,3 +475,15 @@ the routes factor (constraints = substitution fragment, exactly;
 transforms lowT/sideT = frame content, irreplaceably).  Capstone
 target: set-valued residue ⟹ general disjoint-pool obstruction.
 Harness note: certified verdicts at sequent weight ~10⁶ in ms.
+
+## 15. 2026-07-19 midnight: frontier row settled — ∀-law REFUTED in Lean
+
+((p⊃◯⊥)⊃p)⊃p: instances all ⊤; lowT ≡ sideT ≡ ¬¬◯⊥; value = ◯⊥;
+certified 4-chain countermodel (Rₘ = id ∪ {2→3}, top fallible,
+p at {1,2,3}) — pool forced at root, row refuted.  Kernel-decide pins
+in PLLSemUILaw: poolAll_insufficient_frontier + reconLawAll_refuted
+(¬ ReconLawAll).  ∃-law untouched.  Third generator (depth-3 levelled
+construction descending to ◯⊥) is now the named mainline target;
+chain4 frame added to Search.defaultFrames + probe battery.  Also:
+PLLSearchEx (Hilbert axioms via PLLSearch, answers→decisions, both
+#guard-verified; WF-recursion kernel-reduction limitation documented).

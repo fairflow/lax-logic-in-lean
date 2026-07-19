@@ -292,5 +292,55 @@ theorem occurring_only_insufficient :
       peirceBoxP) :=
   FinCM.not_provable_of_check (M := lawCM) (w := 0) (by decide)
 
+/-! ## The frontier row: the CORRECTED ∀-law is refuted too
+
+`((p⊃◯⊥)⊃p)⊃p` (the weight-8 UNKNOWN of the corrected-law sweep).
+Machine-checked facts (probe `wip/frontier_row.lean`, find-terms):
+every closed substitution instance collapses to ⊤; `lowT` and `sideT`
+are each equivalent to ¬¬◯⊥; the ∀p-value is ◯⊥ (only ⊥ and ◯⊥
+among the rungs derive the row).  So the pool conjunction sits at
+¬¬◯⊥, strictly above the value — and the 4-chain below certifies the
+gap: at its root, ◯⊥ holds NON-fallibly at world 2 (whose Rₘ-witness
+is the fallible top), giving ¬¬◯⊥ and with it every pool member,
+while world 1 forces p without ◯⊥, so the only worlds forcing
+`p⊃◯⊥` are 2 and 3, both forcing p — the root forces `(p⊃◯⊥)⊃p`
+but not p.
+
+CONSEQUENCE: `ReconLawAll` as stated is FALSE
+(`reconLawAll_refuted`).  The ∀-side basis needs a THIRD frame
+construction — one whose level-0 transform descends to ◯⊥ on this
+row, where both existing transforms stop at ¬¬◯⊥.  The ∃-law is
+untouched (no failure anywhere to weight 8). -/
+
+/-- The frontier row `((p⊃◯⊥)⊃p)⊃p`. -/
+def frontierRow : PLLFormula :=
+  (((PLLFormula.prop "p").ifThen PLLFormula.falsePLL.somehow).ifThen
+    (.prop "p")).ifThen (.prop "p")
+
+/-- The certified countermodel: the 4-chain `0<1<2<3`,
+`Rₘ = id ∪ {2→3}`, top fallible, p at {1,2,3}. -/
+def frontierCM : FinCM :=
+  ⟨4, [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)], [(2,3)], [3],
+   [(1,"p"),(2,"p"),(3,"p")]⟩
+
+/-- ¬¬◯⊥ does not derive the frontier row (so the ∀p-value ◯⊥ is
+strictly below ¬¬◯⊥ here). -/
+theorem nnBoxBot_not_derives_frontier :
+    ¬ Nonempty (LaxND
+      [(PLLFormula.falsePLL.somehow.ifThen .falsePLL).ifThen .falsePLL]
+      frontierRow) :=
+  FinCM.not_provable_of_check (M := frontierCM) (w := 0) (by decide)
+
+/-- **The corrected pool is insufficient at the frontier row.** -/
+theorem poolAll_insufficient_frontier :
+    ¬ Nonempty (LaxND (poolAll "p" frontierRow) frontierRow) :=
+  FinCM.not_provable_of_check (M := frontierCM) (w := 0) (by decide)
+
+/-- **The ∀-side per-instance reconstruction law is REFUTED.** -/
+theorem reconLawAll_refuted : ¬ ReconLawAll := fun h => by
+  obtain ⟨d⟩ := h "p" frontierRow (by decide)
+  obtain ⟨e⟩ := andAll_intro (poolAll "p" frontierRow) (fun _ hψ => hψ)
+  exact poolAll_insufficient_frontier ⟨compose d e⟩
+
 end SemUI
 end PLLND
