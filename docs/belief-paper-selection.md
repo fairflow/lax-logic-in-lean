@@ -265,6 +265,11 @@ extracted via O3) is NOT completed — the realiser layer E is designed
 but unimplemented. §7 reworded to claim exactly the half that is
 proved; the applications draft gains Matthew's composition
 requirement + a five-stage design brief for E (Study 1 (c′)).
+FURTHER (2026-07-19 late): confluent-frame COMPLETENESS proved on
+Matthew's ask — derivU_iff_confluent_valid (PLLConfluentComplete.lean,
+clean-classical, pinned): PLL + ◯(A∨B)⊃(◯A∨◯B) sound+complete for
+mutually confluent models; §10 claims both sides, open problem narrows
+to PLLᵘ =? PLL + scheme.
 Main matter now ends p10 (~9.8pp); App A–E pp11–13 (scriptsize
 listings); references pp14–15. Two-column stays for camera-ready
 (acmart/TAPS constraint); wide material's escape hatch is figure*.
