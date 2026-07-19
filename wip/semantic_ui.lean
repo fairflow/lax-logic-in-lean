@@ -2010,6 +2010,218 @@ theorem semEx_definable_of_reconstruction
   obtain ⟨d⟩ := h p M
   exact ⟨exCand p M, isSemEx_of_reconstruction d⟩
 
+/-! ## REFUTED: the fixed five-generator ∃-reconstruction
+
+The basis {⊥, ⊤, ◯⊥, lowT, sideT} does NOT suffice uniformly.  Witness
+the biconditional
+
+    bicond p  :=  (¬◯⊥ ⊃ p) ∧ (p ⊃ ¬◯⊥)
+
+Decorating `p` by the truth set of ¬◯⊥ forces `bicond p` at EVERY world
+of every model, so `∃p.(bicond p) = ⊤` (proved below,
+`semEx_bicond_top`, with the substitution `p := ¬◯⊥` as certificate).
+But on the four-world model
+
+    w₀ < v₁,  w₀ < v₂ < f,   Rₘ = id ∪ {v₂ → f},   F = {f},
+    V(p) = the ¬◯⊥-truth set = {v₁, f}
+
+the root w₀ forces `bicond p` while ALL FIVE disjuncts of
+`exCand p (bicond p)` fail there — ◯⊥ holds at v₂ (killing ¬◯⊥-shaped
+disjuncts) and ¬◯⊥ holds at v₁ (killing ◯⊥/¬¬◯⊥-shaped ones)
+(`exRec_fails`, `exCand_not_value`).  So the ∃-side generator family
+must grow with M: the substitution pool has to reach the closed
+fragment of cl(M) — ¬◯⊥ is a subformula of the witness.  Per-instance
+finite support, exactly as in the constraint-transfer route's corrected
+Corollary-10 analysis.  (At weight ≤ 7 the fixed basis saturates — the
+witness has weight 14 — which is why the sweep sees no failure.) -/
+
+/-- ¬◯⊥, the counterexample's pivot. -/
+def negBoxBot : PLLFormula := PLLFormula.falsePLL.somehow.ifThen .falsePLL
+
+theorem negBoxBot_pfree (p : String) : p ∉ negBoxBot.atoms := by
+  simp [negBoxBot]
+
+/-- The biconditional `(¬◯⊥ ⊃ p) ∧ (p ⊃ ¬◯⊥)`. -/
+def bicond (p : String) : PLLFormula :=
+  (negBoxBot.ifThen (PLLFormula.prop p)).and
+    ((PLLFormula.prop p).ifThen negBoxBot)
+
+/-- `substP` at the substituted atom. -/
+theorem substP_self (p : String) (χ : PLLFormula) :
+    substP p χ (PLLFormula.prop p) = χ := by simp [substP]
+
+/-- The four-world counterexample frame. -/
+inductive W4 : Type
+  | w0 | v1 | v2 | fl
+deriving DecidableEq
+
+instance : Fintype W4 :=
+  ⟨⟨{W4.w0, W4.v1, W4.v2, W4.fl}, by decide⟩, by intro x; cases x <;> decide⟩
+
+namespace W4
+
+def riB : W4 → W4 → Bool
+  | w0, _ => true
+  | v2, v2 => true
+  | v2, fl => true
+  | v1, v1 => true
+  | fl, fl => true
+  | _, _ => false
+
+def rmB : W4 → W4 → Bool
+  | v2, fl => true
+  | a, b => a == b
+
+def fB : W4 → Bool
+  | fl => true
+  | _ => false
+
+/-- `V(q) := {v₁, f}` for every atom — the ¬◯⊥-truth set. -/
+def vB : W4 → Bool
+  | v1 => true
+  | fl => true
+  | _ => false
+
+end W4
+
+open W4 in
+/-- The counterexample model. -/
+def C4 : ConstraintModel where
+  W := W4
+  Ri := fun a b => riB a b = true
+  Rm := fun a b => rmB a b = true
+  F := {x | fB x = true}
+  V := fun _ => {x | vB x = true}
+  refl_i := by decide
+  trans_i := by decide
+  refl_m := by decide
+  trans_m := by decide
+  sub_mi := by decide
+  hered_F := by decide
+  hered_V := fun {a} => by decide
+  full_F := fun {a} => by decide
+
+namespace W4
+
+/-- ◯⊥ holds at v₂ (the constraint relation reaches the fallible top). -/
+theorem force_v2_boxBot : C4.force v2 PLLFormula.falsePLL.somehow := by
+  intro v hv
+  cases v with
+  | w0 => exact Bool.noConfusion hv
+  | v1 => exact Bool.noConfusion hv
+  | v2 => exact ⟨fl, rfl, rfl⟩
+  | fl => exact ⟨fl, rfl, rfl⟩
+
+/-- ◯⊥ fails at v₁ (its only constraint witness is itself). -/
+theorem not_force_v1_boxBot : ¬ C4.force v1 PLLFormula.falsePLL.somehow := by
+  intro h
+  obtain ⟨u, hu, huF⟩ := h v1 rfl
+  cases u with
+  | w0 => exact Bool.noConfusion hu
+  | v1 => exact Bool.noConfusion huF
+  | v2 => exact Bool.noConfusion hu
+  | fl => exact Bool.noConfusion hu
+
+/-- ¬◯⊥ holds at v₁. -/
+theorem force_v1_negBoxBot : C4.force v1 negBoxBot := by
+  intro v hv hbox
+  cases v with
+  | w0 => exact Bool.noConfusion hv
+  | v1 => exact absurd hbox not_force_v1_boxBot
+  | v2 => exact Bool.noConfusion hv
+  | fl => exact Bool.noConfusion hv
+
+/-- ¬◯⊥ fails at v₂. -/
+theorem not_force_v2_negBoxBot : ¬ C4.force v2 negBoxBot := by
+  intro h
+  exact Bool.noConfusion (h v2 rfl force_v2_boxBot)
+
+/-- ¬◯⊥ fails at w₀ (through the future v₂). -/
+theorem not_force_w0_negBoxBot : ¬ C4.force w0 negBoxBot := by
+  intro h
+  exact Bool.noConfusion (h v2 rfl force_v2_boxBot)
+
+/-- ¬¬◯⊥-shaped failure at w₀: v₁ is a non-fallible ¬◯⊥-future. -/
+theorem not_force_w0_negnegBoxBot :
+    ¬ C4.force w0 (negBoxBot.ifThen .falsePLL) := by
+  intro h
+  exact Bool.noConfusion (h v1 rfl force_v1_negBoxBot)
+
+/-- The root forces the biconditional under the ¬◯⊥-decoration. -/
+theorem force_w0_bicond (p : String) : C4.force w0 (bicond p) := by
+  constructor
+  · -- ¬◯⊥ ⊃ p : the ¬◯⊥-worlds are exactly the p-worlds
+    intro v hv hneg
+    cases v with
+    | w0 => exact absurd hneg not_force_w0_negBoxBot
+    | v1 => exact rfl
+    | v2 => exact absurd hneg not_force_v2_negBoxBot
+    | fl => exact rfl
+  · -- p ⊃ ¬◯⊥
+    intro v hv hp
+    cases v with
+    | w0 => exact Bool.noConfusion hp
+    | v1 => exact force_v1_negBoxBot
+    | v2 => exact Bool.noConfusion hp
+    | fl => exact C4.force_of_fallible rfl
+
+/-- **All five `exCand` disjuncts fail at the root.** -/
+theorem not_force_w0_exCand (p : String) :
+    ¬ C4.force w0 (exCand p (bicond p)) := by
+  have hX : p ∉ negBoxBot.atoms := negBoxBot_pfree p
+  rintro (h | h | h | h | h)
+  · -- M[⊥] : first conjunct (¬◯⊥ ⊃ ⊥) dies on v₁
+    have h1 := h.1
+    simp only [substP, substP_of_not_mem hX] at h1
+    exact Bool.noConfusion (h1 v1 rfl force_v1_negBoxBot)
+  · -- M[⊤] : second conjunct (⊤ ⊃ ¬◯⊥) dies on v₂
+    have h2 := h.2
+    simp only [substP, substP_of_not_mem hX] at h2
+    exact not_force_v2_negBoxBot (h2 v2 rfl (fun u _ hu => hu))
+  · -- M[◯⊥] : first conjunct (¬◯⊥ ⊃ ◯⊥) dies on v₁
+    have h1 := h.1
+    simp only [substP, substP_of_not_mem hX] at h1
+    exact not_force_v1_boxBot (h1 v1 rfl force_v1_negBoxBot)
+  · -- lowT : the piece (p[⊤] ⊃ ¬◯⊥[⊤]) = (⊤ ⊃ ¬◯⊥) dies on v₂
+    have h2 := h.2.2
+    simp only [substP, substP_of_not_mem hX] at h2
+    exact not_force_v2_negBoxBot (h2 v2 rfl (fun u _ hu => hu))
+  · -- sideT : its lowT-piece contains the same (⊤ ⊃ ¬◯⊥), dies on v₂
+    have h2 := h.2.2.2
+    simp only [substP, substP_of_not_mem hX] at h2
+    exact not_force_v2_negBoxBot (h2 v2 rfl (fun u _ hu => hu))
+
+end W4
+
+/-- **REFUTED: the fixed-basis ∃-reconstruction.**  `bicond p` does not
+derive its five-generator disjunction. -/
+theorem exRec_fails (p : String) :
+    ¬ Nonempty (LaxND [bicond p] (exCand p (bicond p))) := by
+  rintro ⟨d⟩
+  exact W4.not_force_w0_exCand p (soundness d C4 W4.w0 (fun ξ hξ => by
+    simp only [List.mem_singleton] at hξ
+    exact hξ ▸ W4.force_w0_bicond p))
+
+/-- Hence `exCand` is NOT the ∃p-value of `bicond p`. -/
+theorem exCand_not_value (p : String) :
+    ¬ IsSemEx p (bicond p) (exCand p (bicond p)) :=
+  fun h => exRec_fails p (semEx_upper h)
+
+/-- **The value nevertheless exists**: `∃p.(bicond p) = ⊤`, certified by
+the substitution `p := ¬◯⊥` — a pool element the fixed basis lacks, and
+a subformula of the witness: the ∃-side generator family is
+per-instance. -/
+theorem semEx_bicond_top (p : String) : IsSemEx p (bicond p) truePLL := by
+  have hX : p ∉ negBoxBot.atoms := negBoxBot_pfree p
+  have hsub : substP p negBoxBot (bicond p)
+      = (negBoxBot.ifThen negBoxBot).and (negBoxBot.ifThen negBoxBot) := by
+    simp [bicond, substP, substP_of_not_mem hX]
+  refine isSemEx_of_certificates (χ := negBoxBot) (by simp [truePLL])
+    (.impIntro (.iden (List.mem_cons_self ..))) ?_
+  rw [hsub]
+  exact .andIntro (.impIntro (.iden (List.mem_cons_self ..)))
+    (.impIntro (.iden (List.mem_cons_self ..)))
+
 /-- **`∃p.(¬◯p ∨ ◯p) = ⊤`** — the first ∃-side value beyond
 substitution instances (machine-found by the probe): no instance
 `¬◯χ ∨ ◯χ` is derivable, but the lower copy of the doubled model
