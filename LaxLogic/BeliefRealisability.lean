@@ -1198,6 +1198,21 @@ This is why the §6 completeness construction moves to the *presented* clause
 family `⊩ᵖ`, where the `⊃` clause, like the `◯` clause, receives the code of
 the evaluation world. -/
 
+/-! ## The split model fails mutual confluence
+
+`◯(A∨B) ⊃ (◯A∨◯B)` is valid on mutually confluent models
+(`force_somehow_or_dist_of_confluent`, the soundness half of F&M
+Theorem 4.5, `PLLFrames.lean`); the split model that refutes the
+scheme (`not_provable_somehow_or_dist`) is accordingly a confluence
+failure: from the root, the `Rₘ`-step to leaf `a` and the `Rᵢ`-step to
+leaf `b` admit no common closure. -/
+
+theorem modelOrSplit_not_confluent : ¬ MutuallyConfluent modelOrSplit := by
+  intro hc
+  rcases @hc W3.r W3.a W3.b (by decide) (by decide) with ⟨u, hau, hbu⟩
+  revert hau hbu
+  cases u <;> decide
+
 section FullnessObstruction
 
 /-- The three-world obstruction frame, as checker data. -/
@@ -1464,3 +1479,11 @@ info: 'PLLND.BeliefReal.realS_fullness_obstruction' depends on axioms: [propext,
 -/
 #guard_msgs in
 #print axioms PLLND.BeliefReal.realS_fullness_obstruction
+
+-- clean is this statement's floor: it mentions `modelOrSplit`, as do
+-- the Fig. 3 countermodel rows.
+/--
+info: 'PLLND.BeliefReal.modelOrSplit_not_confluent' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.BeliefReal.modelOrSplit_not_confluent

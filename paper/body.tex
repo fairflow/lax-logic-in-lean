@@ -347,8 +347,8 @@ root, and the distribution scheme acquires a countermodel.
 Read in order: truth outruns rigid evidence (i) --- a uniform realiser
 carries one tag, and would have to decide the disjunct before the
 branch happens --- while rigid evidence validates a strictly stronger
-logic (ii), which we call PLL\ensuremath{{}^{\mathrm{u}}} and whose axiomatisation we leave
-open; strategy evidence removes the bite and restores the countermodel
+logic (ii), which we call PLL\ensuremath{{}^{\mathrm{u}}} --- Section 10
+identifies its natural candidate axiomatisation and what remains open; strategy evidence removes the bite and restores the countermodel
 (iii), and is the first point in the development at which evidence is a
 program in more than name; and uniformity fails at implication in its
 own way (iv).
@@ -1083,7 +1083,33 @@ realisers meet the future as an input. The countermodels witnessing the
 canonical construction that produces them is the parent paper\textquotesingle s, with
 Zorn\textquotesingle s lemma traded for the logic\textquotesingle s own decision procedure.
 
-Open problems. The axiomatisation of PLL\ensuremath{{}^{\mathrm{u}}}, the logic of rigid evidence.
+Open problems. The identification of PLL\ensuremath{{}^{\mathrm{u}}},
+the logic of rigid evidence --- for which the natural candidate
+axiomatisation is the distribution scheme itself. The parent
+paper\textquotesingle s Theorem 4.5 ties
+\ensuremath{\bigcirc}(A \ensuremath{\vee} B) \ensuremath{\supset}
+(\ensuremath{\bigcirc}A \ensuremath{\vee} \ensuremath{\bigcirc}B) to
+\emph{mutual confluence} of the two accessibility relations --- from
+any world, an \ensuremath{R_{m}}-step and an \ensuremath{R_{i}}-step
+close at a common world --- under which the \ensuremath{\forall\exists}
+clause collapses to bare possibility, so that credibility, once
+attained, is already stable. The artefact carries the soundness side:
+the collapse (\texttt{force\_somehow\_iff\_of\_confluent}, no axioms at
+all), the validity of the scheme on confluent models
+(\texttt{force\_somehow\_or\_dist\_of\_confluent}), and the fact that
+the split model refuting the scheme fails confluence exactly
+(\texttt{modelOrSplit\_not\_confluent}).
+%% TODO(Matthew): check I&C Thm 4.5 on paper — does it prove, or
+%% announce, completeness of PLL + the scheme for confluent constraint
+%% models? And which cited reference the confluence condition is
+%% associated with (Fischer Servi / Simpson / Plotkin–Stirling?);
+%% ScienceDirect blocked the automated check.
+What remains open is the realisability side of the identification:
+whether \ensuremath{\Vdash{}^{\mathrm{u}}}-validity coincides with
+validity over confluent constraint models --- that is, whether
+PLL\ensuremath{{}^{\mathrm{u}}} is precisely PLL +
+\ensuremath{\bigcirc}(A \ensuremath{\vee} B) \ensuremath{\supset}
+(\ensuremath{\bigcirc}A \ensuremath{\vee} \ensuremath{\bigcirc}B).
 The exact relation of PLL-\ensuremath{\bigcirc} to IEL\ensuremath{{}^{-}} (conjecturally: idempotence). A
 Kleene-algebra instantiation of the table capacities via partial
 computable functions~\cite{Kleene1945} (the choice-free statement
