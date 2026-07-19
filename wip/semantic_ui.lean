@@ -2222,6 +2222,204 @@ theorem semEx_bicond_top (p : String) : IsSemEx p (bicond p) truePLL := by
   exact .andIntro (.impIntro (.iden (List.mem_cons_self ..)))
     (.impIntro (.iden (List.mem_cons_self ..)))
 
+/-! ## REFUTED: the fixed four-generator ∀-reconstruction
+
+The ∀-side fixed basis fails too — found by the exhaustive sweep at
+weight 7.  Witness the Peirce shape at ◯⊥:
+
+    peirce p  :=  (◯⊥ ⊃ p) ⊃ p
+
+Its four generators are `¬¬◯⊥, ⊤, ¬¬◯⊥-variants` — but
+`¬¬◯⊥ ⊬ peirce p`: on the three-world chain a < b < f with
+Rₘ = id ∪ {b → f}, F = {f}, and p decorated by the ◯⊥-truth set {b, f},
+the root a forces all four generators while `peirce p` fails there
+(◯⊥ ⊃ p holds everywhere, p fails at a).  The true value is
+
+    ∀p.((◯⊥ ⊃ p) ⊃ p)  =  ◯⊥        (semAll_peirce)
+
+certified by the substitution `p := ◯⊥` — which the four-generator
+`allCand` lacks.  So BOTH quantifiers need per-instance substitution
+pools reaching the closed fragment of cl(M). -/
+
+/-- `(◯⊥ ⊃ p) ⊃ p`. -/
+def peirce (p : String) : PLLFormula :=
+  (PLLFormula.falsePLL.somehow.ifThen (PLLFormula.prop p)).ifThen
+    (PLLFormula.prop p)
+
+theorem lowT_self (p : String) : lowT p (PLLFormula.prop p) = .falsePLL := by
+  simp [lowT]
+
+theorem sideT_self (p : String) : sideT p (PLLFormula.prop p) = .falsePLL := by
+  simp [sideT]
+
+/-- The three-world chain a < b < f. -/
+inductive W3 : Type
+  | a | b | fl
+deriving DecidableEq
+
+instance : Fintype W3 :=
+  ⟨⟨{W3.a, W3.b, W3.fl}, by decide⟩, by intro x; cases x <;> decide⟩
+
+namespace W3
+
+def riB : W3 → W3 → Bool
+  | a, _ => true
+  | b, b => true
+  | b, fl => true
+  | fl, fl => true
+  | _, _ => false
+
+def rmB : W3 → W3 → Bool
+  | b, fl => true
+  | x, y => x == y
+
+def fB : W3 → Bool
+  | fl => true
+  | _ => false
+
+/-- `V(q) := {b, f}` for every atom — the ◯⊥-truth set. -/
+def vB : W3 → Bool
+  | b => true
+  | fl => true
+  | _ => false
+
+end W3
+
+open W3 in
+/-- The ∀-side counterexample model. -/
+def C3 : ConstraintModel where
+  W := W3
+  Ri := fun x y => riB x y = true
+  Rm := fun x y => rmB x y = true
+  F := {x | fB x = true}
+  V := fun _ => {x | vB x = true}
+  refl_i := by decide
+  trans_i := by decide
+  refl_m := by decide
+  trans_m := by decide
+  sub_mi := by decide
+  hered_F := by decide
+  hered_V := fun {q} => by decide
+  full_F := fun {q} => by decide
+
+namespace W3
+
+/-- ◯⊥ holds at b. -/
+theorem force_b_boxBot : C3.force b PLLFormula.falsePLL.somehow := by
+  intro v hv
+  cases v with
+  | a => exact Bool.noConfusion hv
+  | b => exact ⟨fl, rfl, rfl⟩
+  | fl => exact ⟨fl, rfl, rfl⟩
+
+/-- ◯⊥ fails at a. -/
+theorem not_force_a_boxBot : ¬ C3.force a PLLFormula.falsePLL.somehow := by
+  intro h
+  obtain ⟨u, hu, huF⟩ := h a rfl
+  cases u with
+  | a => exact Bool.noConfusion huF
+  | b => exact Bool.noConfusion hu
+  | fl => exact Bool.noConfusion hu
+
+/-- At a and b, `◯⊥ ⊃ ⊥` is not forced (b sees ◯⊥ non-fallibly);
+packaged: any world Rᵢ-below b refutes it. -/
+theorem not_force_negBoxBot {w : W3} (hw : riB w b = true) :
+    ¬ C3.force w (PLLFormula.falsePLL.somehow.ifThen .falsePLL) := by
+  intro h
+  exact Bool.noConfusion (h b hw force_b_boxBot)
+
+/-- The root forces all four `allCand` generators of `peirce p`. -/
+theorem force_a_allCand (p : String) : C3.force a (allCand p (peirce p)) := by
+  have hX : p ∉ (PLLFormula.falsePLL.somehow).atoms := by simp
+  refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
+  · -- M[⊥] = (◯⊥ ⊃ ⊥) ⊃ ⊥ : forced since ◯⊥ ⊃ ⊥ fails at a and b
+    show C3.force a (substP p .falsePLL (peirce p))
+    simp only [peirce, substP]
+    intro v hv hneg
+    cases v with
+    | a => exact absurd hneg (not_force_negBoxBot rfl)
+    | b => exact absurd hneg (not_force_negBoxBot rfl)
+    | fl => exact rfl
+  · -- M[⊤] = (◯⊥ ⊃ ⊤) ⊃ ⊤ : consequent trivial
+    show C3.force a (substP p truePLL (peirce p))
+    simp only [peirce, substP]
+    exact fun v _ _ u _ hb => hb
+  · -- lowT M = ((lowT(◯⊥⊃p) ⊃ ⊥) ∧ ((◯⊥⊃⊤) ⊃ ⊤))
+    show C3.force a (lowT p (peirce p))
+    simp only [peirce, lowT, substP]
+    refine ⟨?_, ?_⟩
+    · -- lowT(◯⊥⊃p) = (◯⊥⊃⊥) ∧ (◯⊥⊃⊤): its first conjunct fails below b
+      intro v hv hlow
+      cases v with
+      | a => exact absurd hlow.1 (not_force_negBoxBot rfl)
+      | b => exact absurd hlow.1 (not_force_negBoxBot rfl)
+      | fl => exact rfl
+    · exact fun v _ _ u _ hb => hb
+  · -- sideT M = ((sideT(◯⊥⊃p) ⊃ ⊥) ∧ lowT M): sideT(◯⊥⊃p) contains
+    -- lowT(◯⊥⊃p) as its second conjunct, which fails below b
+    show C3.force a (sideT p (peirce p))
+    simp only [peirce, sideT, lowT, substP]
+    refine ⟨?_, ?_, ?_⟩
+    · intro v hv hside
+      cases v with
+      | a => exact absurd hside.2.1 (not_force_negBoxBot rfl)
+      | b => exact absurd hside.2.1 (not_force_negBoxBot rfl)
+      | fl => exact rfl
+    · intro v hv hlow
+      cases v with
+      | a => exact absurd hlow.1 (not_force_negBoxBot rfl)
+      | b => exact absurd hlow.1 (not_force_negBoxBot rfl)
+      | fl => exact rfl
+    · exact fun v _ _ u _ hb => hb
+
+/-- The root does NOT force `peirce p` under the ◯⊥-decoration:
+`◯⊥ ⊃ p` holds everywhere, but p fails at a. -/
+theorem not_force_a_peirce (p : String) : ¬ C3.force a (peirce p) := by
+  intro h
+  have hant : C3.force a (PLLFormula.falsePLL.somehow.ifThen
+      (PLLFormula.prop p)) := by
+    intro v hv hbox
+    cases v with
+    | a => exact absurd hbox not_force_a_boxBot
+    | b => exact rfl
+    | fl => exact rfl
+  exact Bool.noConfusion (h a rfl hant)
+
+end W3
+
+/-- **REFUTED: the fixed-basis ∀-reconstruction.**  The four-generator
+conjunction does not derive `peirce p` back. -/
+theorem allRec_fails (p : String) :
+    ¬ Nonempty (LaxND [allCand p (peirce p)] (peirce p)) := by
+  rintro ⟨d⟩
+  exact W3.not_force_a_peirce p (soundness d C3 W3.a (fun ξ hξ => by
+    simp only [List.mem_singleton] at hξ
+    exact hξ ▸ W3.force_a_allCand p))
+
+/-- Hence `allCand` is NOT the ∀p-value of `peirce p`. -/
+theorem allCand_not_value (p : String) :
+    ¬ IsSemAll p (peirce p) (allCand p (peirce p)) :=
+  fun h => allRec_fails p (semAll_lower h)
+
+/-- **The value nevertheless exists**: `∀p.((◯⊥ ⊃ p) ⊃ p) = ◯⊥`,
+certified by the substitution `p := ◯⊥` — again a subformula of the
+witness. -/
+theorem semAll_peirce (p : String) :
+    IsSemAll p (peirce p) PLLFormula.falsePLL.somehow := by
+  have hsub : substP p PLLFormula.falsePLL.somehow (peirce p)
+      = (PLLFormula.falsePLL.somehow.ifThen PLLFormula.falsePLL.somehow).ifThen
+          PLLFormula.falsePLL.somehow := by
+    simp [peirce, substP]
+  refine isSemAll_of_certificates (χs := [PLLFormula.falsePLL.somehow])
+    (by simp) ?_ ?_
+  · -- ◯⊥ ⊢ (◯⊥ ⊃ p) ⊃ p
+    exact .impIntro (.impElim (.iden (List.mem_cons_self ..))
+      (.iden (by simp)))
+  · -- (◯⊥ ⊃ ◯⊥) ⊃ ◯⊥ ⊢ ◯⊥
+    rw [List.map_cons, List.map_nil, hsub]
+    exact .impElim (.iden (List.mem_cons_self ..))
+      (.impIntro (.iden (List.mem_cons_self ..)))
+
 /-- **`∃p.(¬◯p ∨ ◯p) = ⊤`** — the first ∃-side value beyond
 substitution instances (machine-found by the probe): no instance
 `¬◯χ ∨ ◯χ` is derivable, but the lower copy of the doubled model
