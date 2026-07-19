@@ -1807,6 +1807,209 @@ theorem isSemEx_of_certificates_side {p : String} {M ψ : PLLFormula}
       exact hξ ▸ hM')
     exact (force_iff_of_bisim B hAψ hZ).mpr hψ'
 
+/-! ## The reconstruction reduction
+
+The value table suggests a UNIFORM shape for one-variable definability.
+Writing `M[χ]` for `substP p χ M`, define the two candidates
+
+    allCand p M  :=  M[⊥] ∧ M[⊤] ∧ lowT p M ∧ sideT p M         (p-free)
+    exCand  p M  :=  M[⊥] ∨ M[⊤] ∨ M[◯⊥] ∨ lowT p M ∨ sideT p M (p-free)
+
+Both are built from generator instances, so one direction of each spec
+holds by construction: `allCand` is derivable from the generator
+premises (a conjunction of identity axioms), and a world forcing
+`exCand` has a p-variant forcing M (case on the disjunct, take the
+corresponding variant).  Consequently definability REDUCES to two
+sequent families, the **reconstruction sequents**:
+
+    (∀-rec)   M[⊥] ∧ M[⊤] ∧ lowT p M ∧ sideT p M  ⊢  M
+    (∃-rec)   M  ⊢  M[⊥] ∨ M[⊤] ∨ M[◯⊥] ∨ lowT p M ∨ sideT p M
+
+(`isSemAll_of_reconstruction`, `isSemEx_of_reconstruction`,
+`semAll_definable_of_reconstruction`, `semEx_definable_of_reconstruction`).
+At one variable both sequents follow from the value table's
+certificates for every class of weight ≤ 5; whether they hold at all
+◯/⊃-alternation depths — or the generator basis must instead grow with
+the depth — is the sharp open question the deep battery probes. -/
+
+/-- Substitution by a p-free formula is p-free. -/
+theorem substP_pfree {p : String} {χ : PLLFormula} (hχ : p ∉ χ.atoms) :
+    ∀ M : PLLFormula, p ∉ (substP p χ M).atoms := by
+  intro M
+  induction M with
+  | prop a =>
+      show p ∉ (if a = p then χ else .prop a).atoms
+      by_cases ha : a = p
+      · rw [if_pos ha]; exact hχ
+      · rw [if_neg ha]
+        simp only [atoms_prop, Finset.mem_singleton]
+        exact fun he => ha he.symm
+  | falsePLL => simp [substP]
+  | and A B ihA ihB =>
+      simp only [substP]
+      exact fun h => (mem_atoms_and.mp h).elim ihA ihB
+  | or A B ihA ihB =>
+      simp only [substP]
+      exact fun h => (mem_atoms_or.mp h).elim ihA ihB
+  | ifThen A B ihA ihB =>
+      simp only [substP]
+      exact fun h => (mem_atoms_ifThen.mp h).elim ihA ihB
+  | somehow A ihA =>
+      simp only [substP]
+      exact ihA
+
+/-- `p ∉ truePLL.atoms`, packaged. -/
+theorem truePLL_pfree (p : String) : p ∉ (truePLL : PLLFormula).atoms := by
+  simp [truePLL]
+
+/-- The lower transform is p-free. -/
+theorem lowT_pfree (p : String) : ∀ M : PLLFormula, p ∉ (lowT p M).atoms := by
+  intro M
+  induction M with
+  | prop a =>
+      show p ∉ (if a = p then PLLFormula.falsePLL else PLLFormula.prop a).atoms
+      by_cases ha : a = p
+      · rw [if_pos ha]; simp
+      · rw [if_neg ha]
+        simp only [atoms_prop, Finset.mem_singleton]
+        exact fun he => ha he.symm
+  | falsePLL => simp [lowT]
+  | and A B ihA ihB =>
+      simp only [lowT]
+      exact fun h => (mem_atoms_and.mp h).elim ihA ihB
+  | or A B ihA ihB =>
+      simp only [lowT]
+      exact fun h => (mem_atoms_or.mp h).elim ihA ihB
+  | ifThen A B ihA ihB =>
+      simp only [lowT]
+      intro h
+      rcases mem_atoms_and.mp h with h' | h'
+      · exact (mem_atoms_ifThen.mp h').elim ihA ihB
+      · exact (mem_atoms_ifThen.mp h').elim
+          (substP_pfree (truePLL_pfree p) A) (substP_pfree (truePLL_pfree p) B)
+  | somehow A _ =>
+      simp only [lowT]
+      exact substP_pfree (truePLL_pfree p) A
+
+/-- The sideways transform is p-free. -/
+theorem sideT_pfree (p : String) : ∀ M : PLLFormula, p ∉ (sideT p M).atoms := by
+  intro M
+  induction M with
+  | prop a =>
+      show p ∉ (if a = p then PLLFormula.falsePLL else PLLFormula.prop a).atoms
+      by_cases ha : a = p
+      · rw [if_pos ha]; simp
+      · rw [if_neg ha]
+        simp only [atoms_prop, Finset.mem_singleton]
+        exact fun he => ha he.symm
+  | falsePLL => simp [sideT]
+  | and A B ihA ihB =>
+      simp only [sideT]
+      exact fun h => (mem_atoms_and.mp h).elim ihA ihB
+  | or A B ihA ihB =>
+      simp only [sideT]
+      exact fun h => (mem_atoms_or.mp h).elim ihA ihB
+  | ifThen A B ihA ihB =>
+      simp only [sideT]
+      intro h
+      rcases mem_atoms_and.mp h with h' | h'
+      · exact (mem_atoms_ifThen.mp h').elim ihA ihB
+      · exact lowT_pfree p (A.ifThen B) h'
+  | somehow A ihA =>
+      simp only [sideT]
+      intro h
+      rcases mem_atoms_and.mp h with h' | h'
+      · exact ihA h'
+      · exact substP_pfree (truePLL_pfree p) A h'
+
+/-- The ∀-side reconstruction candidate. -/
+def allCand (p : String) (M : PLLFormula) : PLLFormula :=
+  ((substP p .falsePLL M).and (substP p truePLL M)).and
+    ((lowT p M).and (sideT p M))
+
+/-- The ∃-side reconstruction candidate. -/
+def exCand (p : String) (M : PLLFormula) : PLLFormula :=
+  (substP p .falsePLL M).or ((substP p truePLL M).or
+    ((substP p PLLFormula.falsePLL.somehow M).or
+      ((lowT p M).or (sideT p M))))
+
+theorem allCand_pfree (p : String) (M : PLLFormula) :
+    p ∉ (allCand p M).atoms := by
+  intro h
+  rcases mem_atoms_and.mp h with h' | h'
+  · exact (mem_atoms_and.mp h').elim
+      (substP_pfree (by simp) M) (substP_pfree (truePLL_pfree p) M)
+  · exact (mem_atoms_and.mp h').elim (lowT_pfree p M) (sideT_pfree p M)
+
+theorem exCand_pfree (p : String) (M : PLLFormula) :
+    p ∉ (exCand p M).atoms := by
+  intro h
+  rcases mem_atoms_or.mp h with h' | h'
+  · exact substP_pfree (by simp) M h'
+  rcases mem_atoms_or.mp h' with h'' | h''
+  · exact substP_pfree (truePLL_pfree p) M h''
+  rcases mem_atoms_or.mp h'' with h₃ | h₃
+  · exact substP_pfree (by simp) M h₃
+  · exact (mem_atoms_or.mp h₃).elim (lowT_pfree p M) (sideT_pfree p M)
+
+/-- **∀-definability from reconstruction**: if the generator conjunction
+derives `M` back, it is the ∀p-value — the certificate direction is a
+conjunction of identity axioms. -/
+theorem isSemAll_of_reconstruction {p : String} {M : PLLFormula}
+    (d : LaxND [allCand p M] M) : IsSemAll p M (allCand p M) := by
+  refine isSemAll_of_certificates_side (χs := [.falsePLL, truePLL])
+    (allCand_pfree p M) d ?_
+  exact .andIntro
+    (.andIntro (.iden (by simp)) (.iden (by simp)))
+    (.andIntro (.iden (by simp)) (.iden (by simp)))
+
+/-- **∃-definability from reconstruction**: if `M` derives the generator
+disjunction, it is the ∃p-value — a world forcing a disjunct has the
+corresponding variant forcing `M`, so no certificate is needed. -/
+theorem isSemEx_of_reconstruction {p : String} {M : PLLFormula}
+    (d : LaxND [M] (exCand p M)) : IsSemEx p M (exCand p M) := by
+  have hA : ∀ a ∈ (exCand p M).atoms, a ≠ p :=
+    fun a ha he => exCand_pfree p M (he ▸ ha)
+  refine ⟨exCand_pfree p M, ?_⟩
+  intro C w
+  constructor
+  · intro hw
+    rcases hw with h | h | h | h | h
+    · exact ⟨truthDeco C p .falsePLL, truthDeco_pbisim C p .falsePLL, w, rfl,
+        (force_truthDeco C p .falsePLL M w).mpr h⟩
+    · exact ⟨truthDeco C p truePLL, truthDeco_pbisim C p truePLL, w, rfl,
+        (force_truthDeco C p truePLL M w).mpr h⟩
+    · exact ⟨truthDeco C p PLLFormula.falsePLL.somehow,
+        truthDeco_pbisim C p PLLFormula.falsePLL.somehow, w, rfl,
+        (force_truthDeco C p PLLFormula.falsePLL.somehow M w).mpr h⟩
+    · exact ⟨emVariant C p w, emVariant_pbisim C p w, (w, false), rfl,
+        (emVariant_force_false C p w M (C.refl_i w)).mpr h⟩
+    · exact ⟨lobVariant C p, lobVariant_pbisim C p, (w, 0), rfl,
+        (lobVariant_force_zero C p M w).mpr h⟩
+  · rintro ⟨N, B, w', hZ, hM'⟩
+    have hψ' : N.force w' (exCand p M) := soundness d N w' (fun ξ hξ => by
+      simp only [List.mem_singleton] at hξ
+      exact hξ ▸ hM')
+    exact (force_iff_of_bisim B hA hZ).mpr hψ'
+
+/-- **Definability reduces to the ∀-reconstruction sequents.** -/
+theorem semAll_definable_of_reconstruction
+    (h : ∀ (p : String) (M : PLLFormula),
+      Nonempty (LaxND [allCand p M] M)) :
+    ∀ (p : String) (M : PLLFormula), ∃ ψ, IsSemAll p M ψ := by
+  intro p M
+  obtain ⟨d⟩ := h p M
+  exact ⟨allCand p M, isSemAll_of_reconstruction d⟩
+
+/-- **Definability reduces to the ∃-reconstruction sequents.** -/
+theorem semEx_definable_of_reconstruction
+    (h : ∀ (p : String) (M : PLLFormula),
+      Nonempty (LaxND [M] (exCand p M))) :
+    ∀ (p : String) (M : PLLFormula), ∃ ψ, IsSemEx p M ψ := by
+  intro p M
+  obtain ⟨d⟩ := h p M
+  exact ⟨exCand p M, isSemEx_of_reconstruction d⟩
+
 /-- **`∃p.(¬◯p ∨ ◯p) = ⊤`** — the first ∃-side value beyond
 substitution instances (machine-found by the probe): no instance
 `¬◯χ ∨ ◯χ` is derivable, but the lower copy of the doubled model
