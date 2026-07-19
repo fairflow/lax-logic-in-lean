@@ -304,4 +304,3 @@ def main (args : List String) : IO Unit := do
 
 end Oracle2
 
-def main (args : List String) : IO Unit := Oracle2.main args

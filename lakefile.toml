@@ -24,11 +24,17 @@ name = "LaxLogic"
 name = "laxrun"
 root = "Main"
 
+# Shared wip modules that other wip files import (lake resolves imports
+# only against declared targets; exe roots alone don't cover imports).
+[[lean_lib]]
+name = "wipshared"
+globs = ["wip.oracle2", "wip.semui_ctx_core"]
+
 # The two-sided decision tool (countermodel-first; wip/oracle2.lean) and its
 # one-sided baseline, compiled — the native oracle route.
 [[lean_exe]]
 name = "oracle2"
-root = "wip.oracle2"
+root = "wip.oracle2_run"
 
 [[lean_exe]]
 name = "o2base"
@@ -38,3 +44,13 @@ root = "wip.oracle2_baseline"
 [[lean_exe]]
 name = "ctxprobe"
 root = "wip.semui_ctx_probe"
+
+# The frame-relative fallibility-prediction probe (route doc §0(j)).
+[[lean_exe]]
+name = "ctxrel"
+root = "wip.semui_ctx_rel"
+
+# Certifier: failed commutation rows → checkB-verified countermodels.
+[[lean_exe]]
+name = "ctxcert"
+root = "wip.semui_ctx_cert"
