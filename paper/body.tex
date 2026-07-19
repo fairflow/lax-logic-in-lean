@@ -1093,12 +1093,23 @@ paper\textquotesingle s Theorem 4.5 ties
 any world, an \ensuremath{R_{m}}-step and an \ensuremath{R_{i}}-step
 close at a common world --- under which the \ensuremath{\forall\exists}
 clause collapses to bare possibility, so that credibility, once
-attained, is already stable. The artefact carries the soundness side:
-the collapse (\texttt{force\_somehow\_iff\_of\_confluent}, no axioms at
-all), the validity of the scheme on confluent models
+attained, is already stable. The artefact now carries both
+sides. Soundness: the collapse
+(\texttt{force\_somehow\_iff\_of\_confluent}, no axioms at all), the
+validity of the scheme on confluent models
 (\texttt{force\_somehow\_or\_dist\_of\_confluent}), and the fact that
 the split model refuting the scheme fails confluence exactly
-(\texttt{modelOrSplit\_not\_confluent}).
+(\texttt{modelOrSplit\_not\_confluent}). And completeness, proved
+here: \emph{PLL extended by the scheme --- taken as additional
+hypotheses --- is sound and complete for mutually confluent constraint
+models} (\texttt{derivU\_iff\_confluent\_valid},
+\texttt{PLLConfluentComplete.lean}), by a canonical model whose worlds
+are the deductively closed prime sets of formulas, in which
+\ensuremath{\bigcirc^{-1}} of a prime set is prime \emph{precisely
+because of the scheme}, and mutual confluence holds with
+\ensuremath{\bigcirc^{-1}} of the \ensuremath{R_{i}}-successor as
+witness; no promise component is needed anywhere, because on confluent
+frames the clause is already bare possibility.
 %% TODO(Matthew): check I&C Thm 4.5 on paper — does it prove, or
 %% announce, completeness of PLL + the scheme for confluent constraint
 %% models? And which cited reference the confluence condition is

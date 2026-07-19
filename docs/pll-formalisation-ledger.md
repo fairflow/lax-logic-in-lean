@@ -99,6 +99,8 @@ here, subsumed by the above.)*
 | **Craig interpolation for PLL** (Maehara over the cut-free calculus; scrubbed 2026-07-18 onto `finUnion`/membership forms) | `craig_interpolation'` (+ engine `SCh.maehara`, `SC.maehara'`) | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | **[p,Q]** — no choice |
 | Interpolation for implications | `craig_implication'` | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | **[p,Q]** |
 | legacy `∪`/`∩`-phrased forms (two-line wrappers of the primed) | `SC.maehara`, `craig_interpolation`, `craig_implication` | [`PLLCraig.lean`](../LaxLogic/PLLCraig.lean) | clean — statement-tainted‡ |
+| **PLL + `◯(A∨B)⊃(◯A∨◯B)` sound + complete for mutually confluent constraint models** (completeness side of F&M Thm 4.5; canonical model of closed prime sets, `◯⁻¹` prime via the scheme, confluence witness `◯⁻¹` of the `Rᵢ`-successor, Zorn Lindenbaum) | `ConfluentU.derivU_iff_confluent_valid` (+ `canonU_confluent`, `truth`) | [`PLLConfluentComplete.lean`](../LaxLogic/PLLConfluentComplete.lean) | clean (pinned) |
+| split model fails mutual confluence | `BeliefReal.modelOrSplit_not_confluent` | [`BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean) | clean (pinned; floor) |
 | **Kleene–Brouwer order on an inductively well-founded tree over a well-founded alphabet is well-founded** | `wellFounded_kb`, `wellFounded_kb'` | [`KleeneBrouwer.lean:164,180`](../LaxLogic/KleeneBrouwer.lean) | **none — fully constructive** (in-file guard asserts it) |
 
 *(Naming: the file and the literature say Kleene–Brouwer, also Lusin–Sierpiński;
