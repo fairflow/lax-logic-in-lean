@@ -454,3 +454,48 @@ are now the canonical interface; the two efforts meet there.
 | `LaxLogic/PLLCountermodelEmit.lean` + diagrams | the two-sided oracle for testing candidate descriptions |
 | `wip/lattice_cmp.lean`, `wip/slick_probe.lean` | 1-pv computation harnesses for candidate descriptions |
 | task #9 / `PROGRESS.md` | the syntactic route (independent; meets this one at the spec) |
+
+**(j) The constraint-commutation experiment (2026-07-19, Matthew's
+proposal; probe `wip/semui_ctx_probe.lean`).**  Conjecture tested: for
+each M there is a standard constraint C, built from M à la Lemma 7,
+with
+
+    ∀ᴵᴾᶜ p.(M^C) ≡ᴵᴾᶜ (∀p.M)^C          (dually ∃p)
+
+where `M^C = subC C M` (mechanised), the PLL-values are the
+spec-verified ones, and ∀ᴵᴾᶜ is computed by the box-free tower
+(`itpA`/`itpE`), oracle-compared.  Constraints: Lemma 7's recipe
+`(α_u, ⋁ covers)` over Rₘ-stable worlds of concrete finite models.
+
+ORACLE-VERIFIED (two-world chain, fallible top; tower calibration row
+`∀ᴵᴾᶜp.(p∨¬p) = ⊥` passed): the commutation HOLDS for `◯p`, `¬p`,
+`◯⊥ ⊃ p`, `(◯⊥⊃p)⊃p` — and FAILS exactly at `◯p ⊃ p`:
+`∀ᴵᴾᶜp.((a1⊃p)⊃p) = a1` (the IPC shadow of the Peirce family — an
+independent cross-check of `semAll_peirce_family`) against
+`(∀p.(◯p⊃p))^C = ⊥`.  REPAIR VERIFIED (same model): relative to the
+frame theory Θ = {α_w ⊃ ⊥ : w fallible}, the failing row commutes —
+the tower value is Θ-equivalent to ⊥.
+
+ANALYSIS (recorded as analysis, not machine-checked): a single frozen
+C realises exactly the REDECORATION approximation of ∀p — the IPC
+quantifier sees decorations of the named frame but not frame-changing
+variants.  Every non-fallible Rₘ-stable world contributes an
+"α-top residue": at α_u-everywhere IPC-worlds the pair `(α_u, …)`
+forces `C[p] ⊢ p`, so `C[p]⊃p`-type translations are forced under
+every decoration and the relative value stays ≥ α_u > ⊥; no frame
+theory over the same names removes it, and re-generating C from the
+doubled model reproduces the residue one level up (the doubling
+regress).  PREDICTION (OPEN, runs timeboxed out): frame-relative
+commutation for ⊥-valued M holds iff every Rₘ-stable world of the
+generating model is fallible; the three-chain and fork models (each
+with a non-fallible stable world) fail even frame-relatively.  If
+confirmed, the one-constraint form of the conjecture holds exactly up
+to the redecoration approximation, and the frame-changing content
+demands growing constraint families — reconverging, from the
+constraint side, with the per-instance support law of §0(i).
+
+Tooling note: tower cost (raw term construction before nf) is the
+binding constraint — chaotic in fuel/budget like the failing-search
+cost; rows beyond weight ~7 translations need the fuel/budget caps of
+the probe, and some still wedge.  All probe verdicts are sound on
+`true`.
