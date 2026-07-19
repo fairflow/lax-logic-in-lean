@@ -139,10 +139,13 @@ sideT} suffices for the whole table; every candidate is a unique
 maximum/minimum over the 7-class ladder; the values attained are
 {⊥, ◯⊥, ⊤, ¬◯⊥, ◯¬◯⊥}; the probe's values agree with every Lean
 theorem where they overlap.  The doubling is needed exactly at
-`◯p ⊃ p` and `p ∨ ¬p` (∀-side) and — machine-found — at
-`∃p.(¬◯p ∨ ◯p) = ⊤` (∃-side, since ¬◯χ ∨ ◯χ is underivable for
-closed χ); the sideways construction exactly at the ◯-guarded
-schemata `◯(◯p⊃p)`, `◯(p∨¬p)`, `¬◯p∨◯p`.  Definability at one
+`◯p ⊃ p` and `p ∨ ¬p` (∀-side); the sideways construction exactly at
+the ◯-guarded schemata `◯(◯p⊃p)`, `◯(p∨¬p)`, `¬◯p∨◯p` — all on the
+∀-side.  (CORRECTION 2026-07-19: the probe's CERT-LOW on the ∃-row of
+`¬◯p ∨ ◯p` was a weight-cap artifact; `p := ⊤` also certifies it.  No
+∃-side value is known to require a frame-changing generator — that
+necessity is machine-checked only on the ∀-side,
+`em_p_no_certificate`.)  Definability at one
 variable is therefore an empirically complete conjecture with a
 uniform proof target: for every one-variable M, the generator
 instances {M[p:=⊥], M[p:=⊤], lowT p M, sideT p M} derive the maximum

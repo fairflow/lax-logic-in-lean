@@ -69,12 +69,15 @@ RN(◯,{}) truncated to weight ≤ 8 has exactly **7 classes**:
 2. **The probe agrees with the Lean theorems on every overlapping
    case**: `∀p.p = ⊥`, `∀p.◯p = ◯⊥`, `∀p.¬p = ⊥`,
    `∀p.(p∨¬p) = ∀p.(◯p⊃p) = ⊥` (LOW), `∀p.◯(◯p⊃p) = ◯⊥` (SIDE).
-3. **First ∃-side value beyond substitution** (machine-found):
-   `∃p.(¬◯p ∨ ◯p) = ⊤` needs the doubled variant — no substitution
-   instance works because `¬◯χ ∨ ◯χ` is underivable for closed χ
-   (weak excluded middle for ◯⊥ was kernel-checked underivable in the
-   2026-07-13 session).  Mechanisable via
-   `isSemEx_of_certificates_low`.
+3. ~~First ∃-side value beyond substitution~~ **CORRECTED
+   (2026-07-19)**: the CERT-LOW on the `¬◯p ∨ ◯p` ∃-row is a
+   weight-cap artifact — the substitution `p := ⊤` also certifies
+   (`¬◯⊤ ∨ ◯⊤` is derivable by its right disjunct; the ⊤-instance
+   exceeded the probe's per-call weight cap and was skipped).  The
+   value is proved both ways (`semEx_wem_box` uses the lowT route).
+   No ∃-side value is currently known to REQUIRE a frame-changing
+   generator; on the ∀-side the requirement is machine-checked
+   (`em_p_no_certificate`).
 4. **The value landscape is tame**: every candidate is a UNIQUE
    maximum/minimum over the 7-class ladder (never a join or meet of
    incomparable elements), and the values attained at weight ≤ 5 are

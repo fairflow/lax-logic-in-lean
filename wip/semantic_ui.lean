@@ -2420,11 +2420,14 @@ theorem semAll_peirce (p : String) :
     exact .impElim (.iden (List.mem_cons_self ..))
       (.impIntro (.iden (List.mem_cons_self ..)))
 
-/-- **`∃p.(¬◯p ∨ ◯p) = ⊤`** — the first ∃-side value beyond
-substitution instances (machine-found by the probe): no instance
-`¬◯χ ∨ ◯χ` is derivable, but the lower copy of the doubled model
-forces `◯p` outright, so `lowT p (¬◯p ∨ ◯p)` has `◯⊤` as its right
-disjunct. -/
+/-- `∃p.(¬◯p ∨ ◯p) = ⊤`, proved through the lower transform: the
+lower copy of the doubled model forces `◯p` outright, so
+`lowT p (¬◯p ∨ ◯p)` has the derivable `◯⊤` as its right disjunct.
+CORRECTION (2026-07-19): the probe's CERT-LOW on this row was a
+weight-cap artifact — the substitution `p := ⊤` also certifies, since
+`¬◯⊤ ∨ ◯⊤` is derivable (right disjunct).  No ∃-side value is
+currently known to REQUIRE a frame-changing generator; the ∀-side
+necessity is `em_p_no_certificate`. -/
 theorem semEx_wem_box (p : String) :
     IsSemEx p (((PLLFormula.prop p).somehow.ifThen .falsePLL).or
       (PLLFormula.prop p).somehow) truePLL := by
