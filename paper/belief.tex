@@ -17,6 +17,8 @@
 %% (check the CFP when it appears).
 
 \usepackage{fancyvrb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
 
 %% Mono font for the Lean listings: DejaVu covers most of the symbol set;
 %% a luaotfload fallback to STIX Two Math fills the rest (⊩, ⊨, ◯ — the
@@ -40,7 +42,13 @@
 %% is \texttt with pour-time escaping (no \lstinline anywhere).  The
 %% pdflatex/TAPS path, if ever needed, reverts to listings + the literate
 %% table kept in unicode.tex.
-\DefineVerbatimEnvironment{lstlisting}{Verbatim}{fontsize=\footnotesize,xleftmargin=1em}
+\DefineVerbatimEnvironment{lstlisting}{Verbatim}{}
+\fvset{fontsize=\footnotesize,xleftmargin=0.5em}
+%% Long Lean identifiers in prose may break (without hyphen) after an
+%% escaped underscore — the column is narrow and the names are not.
+\renewcommand{\_}{\textunderscore\allowbreak}
+%% Monospace-heavy justified lines: stretch rather than overflow.
+\setlength{\emergencystretch}{2em}
 
 %% acmart predefines theorem/proposition/lemma/corollary/example/definition,
 %% but only late in class setup — extend at begin-document.  Numbering is

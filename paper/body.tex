@@ -9,19 +9,21 @@ characterised by the axiom schemes
   ◯S : (◯M ∧ ◯N) ⊃ ◯(M ∧ N)
 \end{lstlisting}
 
-with Modus Ponens and the rule "from M \ensuremath{\supset} N infer \ensuremath{\bigcirc}M \ensuremath{\supset} \ensuremath{\bigcirc}N". The
+with Modus Ponens and the rule ``from \ensuremath{M \supset N} infer \ensuremath{\bigcirc M \supset \bigcirc N}''. The
 introduction of \cite{FairtloughMendler1997} motivated \ensuremath{\bigcirc} by a list of six perspectives ---
-Curry\textquotesingle s 1948 lectures, nuclei on complete Heyting algebras, Kripke and
-J-space semantics, the strong monads of computational type theory, the
-proof-theoretic constraint reading, and the timing analysis of
-combinational circuits --- and settled on the constraint reading: \ensuremath{\bigcirc}M as
-"for some constraint c, formula M holds under c". This paper adds a
+Curry\textquotesingle s 1948 lectures~\cite{Curry1950,Curry1952}, nuclei on complete
+Heyting algebras~\cite{Macnab1981,Johnstone1982}, Kripke and J-space
+semantics~\cite{Kripke1965,Goldblatt1981}, the strong monads of
+computational type theory~\cite{Moggi1991,BentonBiermanDePaiva1998},
+the proof-theoretic constraint reading, and the timing analysis of
+combinational circuits~\cite{Mendler2000} --- and settled on the constraint reading: \ensuremath{\bigcirc M} as
+``for some constraint c, formula M holds under c''. This paper adds a
 seventh reading and pursues it:
 
-(7) \ensuremath{\bigcirc}M is "\textbf{M is believed}". The unit \ensuremath{\bigcirc}R says "what is true is
-believed"; the multiplication \ensuremath{\bigcirc}M says "what is believed to be believed
-is believed"; \ensuremath{\bigcirc}S says "beliefs combine". The reading is doxastic and
-not epistemic: nothing gives \ensuremath{\bigcirc}M \ensuremath{\supset} M, and indeed \ensuremath{\bigcirc}false is consistent ---
+(7) \ensuremath{\bigcirc M} is ``\textbf{M is believed}''. The unit \ensuremath{\bigcirc R} says ``what is true is
+believed''; the multiplication \ensuremath{\bigcirc M} says ``what is believed to be believed
+is believed''; \ensuremath{\bigcirc S} says ``beliefs combine''. The reading is doxastic and
+not epistemic: nothing gives \ensuremath{\bigcirc M \supset} M, and indeed \ensuremath{\bigcirc\mathit{false}} is consistent ---
 a believer may harbour an absurd belief without thereby believing
 everything outright. The modality quarantines inconsistency rather than
 exploding it.
@@ -32,13 +34,13 @@ exercise in modal-logic reinterpretation, and they are connected.
 The first is that the reading earns its keep by \emph{theorems}, the central
 ones new. Classically the reading is degenerate: every nucleus on a
 Boolean algebra is closed, so a classical \ensuremath{\bigcirc} is determined by the single
-proposition \ensuremath{\bigcirc}false, its "credulity level", and the spectrum of possible
-believers is bracketed by the total sceptic (\ensuremath{\bigcirc}M \ensuremath{\equiv} M) and the total
-credulist (\ensuremath{\bigcirc}M \ensuremath{\equiv} true). Constructively the picture is quite different ---
+proposition \ensuremath{\bigcirc\mathit{false}}, its ``credulity level'', and the spectrum of possible
+believers is bracketed by the total sceptic (\ensuremath{\bigcirc M \equiv} M) and the total
+credulist (\ensuremath{\bigcirc M \equiv} true). Constructively the picture is quite different ---
 open nuclei, invisible classically, model belief under a hypothesis,
 and the closed \ensuremath{\bigcirc}-fragment of even one free algebra is infinite --- and,
 by the context-completeness theorem descending from Curry\textquotesingle s problem, a
-proof of \ensuremath{\bigcirc}M literally contains the evidence for believing M. Belief
+proof of \ensuremath{\bigcirc M} literally contains the evidence for believing M. Belief
 worth the name is \emph{evidential} belief, and evidential belief is
 non-degenerate only over intuitionistic logic. Making this argument
 precise occupies Sections 3--6, whose main novelty is a realisability
@@ -92,9 +94,10 @@ propositional logic (\texttt{conservativity\_IPL}) are theorems, and the term ca
 strongly normalising for \ensuremath{\beta} together with the monadic associativity law,
 by a \ensuremath{\top\top}-lifting argument~\cite{LindleyStark2005} that appears to be the first mechanised one
 with sums (\texttt{PLLTopTop.lean}). Decidability is likewise mechanised, as a
-terminating, kernel-honest procedure over a contraction-free calculus ---
+terminating, kernel-honest procedure over a contraction-free
+calculus~\cite{Dyckhoff1992,Iemhoff2024} ---
 with the wrinkle, documented in the artefact and communicated
-separately to its author, that the published G4-style calculus for PLL
+separately to the calculus\textquotesingle s author, that the published G4-style calculus for PLL
 is provably incomplete and a small repair is both necessary and
 sufficient. Craig interpolation holds, by a Maehara induction over the
 cut-free calculus, stated choice-free through an explicitly
@@ -110,20 +113,20 @@ verbatim (\texttt{PLLKripke.lean}):
 \begin{lstlisting}
 structure ConstraintModel where
   W : Type
-  Ri : W → W → Prop      -- intuitionistic accessibility: a preorder
-  Rm : W → W → Prop      -- constraint accessibility: a preorder, Rm ⊆ Ri
-  F : Set W              -- fallible worlds; hereditary, valuation full there
-  V : String → Set W     -- hereditary valuation
-  ...                    -- (eight structural conditions)
+  Ri : W → W → Prop   -- information order
+  Rm : W → W → Prop   -- constraint order; Rm ⊆ Ri
+  F : Set W           -- fallible worlds
+  V : String → Set W  -- valuation; full on F
+  ...                 -- eight structural conditions
 \end{lstlisting}
 
-Forcing is as in intuitionistic logic on the frame (W, R\ensuremath{{}_{i}}, V), with
+Forcing is as in intuitionistic logic on the frame (W, \ensuremath{R_{i}}, V), with
 false holding exactly at the fallible worlds, and the modal clause is
 the \ensuremath{\forall\exists} statement
 
 \begin{lstlisting}
-w ⊨ ◯N   iff   for all v with w Rᵢ v there exists u with
-               v Rₘ u and u ⊨ N.
+w ⊨ ◯N  iff  for all v with w Rᵢ v
+             there exists u with v Rₘ u, u ⊨ N
 \end{lstlisting}
 
 The clause endows \ensuremath{\bigcirc} with properties both of possibility and of
@@ -132,14 +135,14 @@ stability statement. Call N \emph{credible} at a world v when a
 constraint step from v reaches a world satisfying N:
 
 \begin{lstlisting}
-N is credible at v   iff   ∃ u. v Rₘ u and u ⊨ N.
+N is credible at v  iff  ∃ u. v Rₘ u and u ⊨ N
 \end{lstlisting}
 
-Then w \ensuremath{\vDash} \ensuremath{\bigcirc}N says exactly that N \emph{remains credible in all
+Then w \ensuremath{\vDash \bigcirc N} says exactly that N \emph{remains credible in all
 future worlds}: however inquiry develops, some admissible discharge of
 the constraint still verifies N. The
 fallible worlds --- worlds with inconsistent information, validating
-everything --- are what keep \ensuremath{\bigcirc}false satisfiable, and under (7) they are
+everything --- are what keep \ensuremath{\bigcirc\mathit{false}} satisfiable, and under (7) they are
 the semantic form of quarantined absurdity. Soundness for sequents is
 \texttt{soundness} (\texttt{PLLKripke.lean}, audit \texttt{[propext]}); the classical
 completeness theorem of \cite[\S4]{FairtloughMendler1997} is \texttt{completeness}
@@ -151,51 +154,57 @@ all, as the foil for Section 6.2.
 We first make precise the claim that reading (7) has no classical
 content.
 
-\begin{theorem}[\texttt{BeliefCollapse.lean}, \texttt{BeliefBooleanIso.lean}]\label{thm:collapse}
+\begin{theorem}[\texttt{nucleus\_eq\_sup\_bot}, \texttt{nucleusOrderIsoBot}]\label{thm:collapse}
 On a
-Boolean algebra every nucleus is closed: j x = x \ensuremath{\sqcup} j \ensuremath{\bot}. The nuclei on B
+Boolean algebra every nucleus is closed: j x = \ensuremath{x \sqcup j \bot}. The nuclei on B
 form a lattice order-isomorphic to B itself.
 \end{theorem}
 
 Under (7): a classical believer is exhausted by one proposition,
-a = \ensuremath{\bigcirc}false, the strongest thing believed for no reason; belief is then
-"M, or a" --- disjoining one\textquotesingle s credulity onto every proposition alike. At
+a = \ensuremath{\bigcirc\mathit{false}}, the strongest thing believed for no reason; belief is then
+``M, or a'' --- disjoining one\textquotesingle s credulity onto every proposition alike. At
 a = false the believer is the total sceptic, believing only what is
-true; at a = true, the total credulist. Nothing between these poles
+true; at a = true, the totally credulous believer. Nothing between these poles
 distinguishes one classical believer from another except the choice of
 a. There is, classically, no structure of belief; there is only a
-measure of laxity.
+measure of laxity. (The algebraic fact is
+classical~\cite{BeazerMacnab1979,Macnab1981}; the mechanisation, the
+sharp order-isomorphism, and the reading are what is added here.)
 
-\begin{theorem}[\texttt{BeliefOpenClosed.lean}, \texttt{PLLLaxInfinite.lean}]\label{thm:openclosed}
-Intuitionistically, the open nucleus u\ensuremath{{}_{a}} = (a \ensuremath{\supset} \ensuremath{\cdot}) coincides with a
+\begin{theorem}[\texttt{em\_of\_openNucleus\_eq\_closedNucleus}, \texttt{closed\_lax\_infinite}]\label{thm:openclosed}
+Intuitionistically, the open nucleus \ensuremath{u_{a}} = (a \ensuremath{\supset \cdot}) coincides with a
 closed nucleus exactly when excluded middle holds at a; and the closed
 \ensuremath{\bigcirc}-fragment RN(\ensuremath{\bigcirc}, \{\}) of the free algebra on no generators is infinite.
 \end{theorem}
 
 The open nucleus is belief under the hypothesis a --- the natural logic
-of conditional commitment, "believing M modulo a" --- and it is invisible
-classically precisely because a \ensuremath{\supset} M and M \ensuremath{\vee} \ensuremath{\lnot}a coincide there. That the
+of conditional commitment, ``believing M modulo a'' --- and it is invisible
+classically precisely because \ensuremath{a \supset M} and M \ensuremath{\vee \lnot}a coincide there. That the
 closed fragment of even the generator-free algebra is infinite says the
 constructive believer has infinitely many pairwise inequivalent modal
-degrees where the classical believer had a single parameter.
+degrees where the classical believer had a single parameter (the
+embedding is through the Rieger--Nishimura
+lattice~\cite{Rieger1949,Nishimura1960}).
 
 The smallest algebra already exhibits the separation, and the artefact
 enumerates it exactly (\texttt{BeliefExamples.lean}, kernel-checked by
 \texttt{decide}): on the three-element chain there are precisely four
-believers (\texttt{chain3\_card}) --- the sceptic, the credulist, one
+believers (\texttt{chain3\_card}) --- the sceptic, the credulous believer, one
 dogmatic (closed) and one hypothetical (open) --- and the last two
 differ (\texttt{chain3\_open\_ne\_closed}). Hypothetical belief is a new
 attitude from the first non-Boolean algebra onwards.
 
-\begin{theorem}[context completeness; \texttt{PLLCtxCompleteness.lean}, after
-the Curry-problem analysis of TYPES 2000~\cite{FairtloughMendler2002}]\label{thm:ctx}
-PLL \ensuremath{\vdash} \ensuremath{\varphi} iff for every
-standard constraint context C, IPL \ensuremath{\vdash} \ensuremath{\varphi}\^{}C; and no finite set of
+\begin{theorem}[context completeness]\label{thm:ctx}
+PLL \ensuremath{\vdash \varphi} iff for every
+standard constraint context C, IPL \ensuremath{\vdash \varphi}\^{}C; and no finite set of
 constraint contexts suffices.
+(\texttt{Ctx.thm6}, \texttt{Ctx.corollary10}.)
 \end{theorem}
 
-This is the theorem that makes "evidential" more than a slogan: a proof
-of \ensuremath{\bigcirc}M is, uniformly in the constraint, a proof of M under that
+This — mechanised after the Curry-problem analysis of TYPES
+2000~\cite{FairtloughMendler2002} — is the theorem that makes
+``evidential'' more than a slogan: a proof
+of \ensuremath{\bigcirc M} is, uniformly in the constraint, a proof of M under that
 constraint --- the grounds are contained in the belief. Taken together,
 Theorems 3.1--3.3 give the paper\textquotesingle s philosophical spine: classically
 belief collapses; constructively it is rich; the richness is
@@ -206,13 +215,14 @@ themselves form a Boolean algebra (\texttt{Ctx.thm2\_boolean\_algebra})
 --- the space of a believer\textquotesingle s possible grounds is classical even
 though the belief those grounds discipline is not.
 
-\begin{proposition}[the doxastic profile; \texttt{BeliefIdealisation.lean},
-\texttt{BeliefNormality.lean}, \texttt{BeliefFalsum.lean}]\label{prop:profile}
+\begin{proposition}[the doxastic profile]\label{prop:profile}
 \ensuremath{\bigcirc} is a normal modality (it validates K, and \ensuremath{\bigcirc\top} = \ensuremath{\top}); the derived
-rule "from \ensuremath{\Gamma} \ensuremath{\vdash} M infer \ensuremath{\bigcirc\Gamma} \ensuremath{\vdash} \ensuremath{\bigcirc}M" holds --- logical omniscience;
-introspection is exact, \ensuremath{\bigcirc\bigcirc}M \ensuremath{\dashv\vdash} \ensuremath{\bigcirc}M; and there is no factivity and
-no D axiom: \ensuremath{\nvdash} \ensuremath{\lnot\bigcirc}false and \ensuremath{\nvdash} \ensuremath{\bigcirc}false, while
-\ensuremath{\bigcirc}false \ensuremath{\vdash} \ensuremath{\bigcirc}M for every M.
+rule ``from \ensuremath{\Gamma \vdash} M infer \ensuremath{\bigcirc\Gamma \vdash \bigcirc M}'' holds --- logical omniscience;
+introspection is exact, \ensuremath{\bigcirc\bigcirc}M \ensuremath{\dashv\vdash \bigcirc M}; and there is no factivity and
+no D axiom: \ensuremath{\nvdash \lnot\bigcirc}false and \ensuremath{\nvdash \bigcirc\mathit{false}}, while
+\ensuremath{\bigcirc\mathit{false} \vdash \bigcirc M} for every M.
+(\texttt{BeliefIdealisation.lean}, \texttt{BeliefNormality.lean},
+\texttt{BeliefFalsum.lean}.)
 \end{proposition}
 
 This, following Hintikka~\cite{Hintikka1962}, is the idealisation
@@ -225,8 +235,11 @@ believes everything, and nothing is thereby true.
 
 \section{Evidence}\label{4-evidence}
 
-We now equip the constraint models with evidence. The equipment is
-deliberately light.
+We now equip the constraint models with evidence; the ancestry is
+Kleene realisability~\cite{Kleene1945,Troelstra1998} in its
+Kripke-indexed form~\cite{Lipton1992}, with partial applicative
+structures the standard carriers~\cite{VanOosten2008}. The equipment
+is deliberately light.
 
 \begin{lstlisting}
 structure Pca where
@@ -236,9 +249,10 @@ structure Pca where
   fst snd : Carrier → Carrier
   tag : Bool → Carrier → Carrier
   untag : Carrier → Bool × Carrier
-  ...                        -- pairing and tagging laws only
+  ...        -- pairing and tagging laws only
 
-structure Evidence (P : Pca) (C : ConstraintModel) where
+structure Evidence
+    (P : Pca) (C : ConstraintModel) where
   E : String → C.W → Set P.Carrier
   hered_E : ∀ {s w v}, C.Ri w v → E s w ⊆ E s v
   full_E  : ∀ {s w}, w ∈ C.F → ∀ x, x ∈ E s w
@@ -247,7 +261,7 @@ structure Evidence (P : Pca) (C : ConstraintModel) where
 A partial applicative structure with total pairing and tag decoding ---
 no combinatory completeness is assumed at this stage --- and, for each
 atom and world, a set of elements evidencing that atom there. Evidence
-is hereditary ("belief increases along the branching order"; heredity
+is hereditary (``belief increases along the branching order''; heredity
 of all the realisability relations below is a theorem) and full at
 fallible worlds, mirroring the fullness of the valuation there.
 
@@ -258,10 +272,11 @@ at \ensuremath{\supset} and \ensuremath{\bigcirc} --- and there only in \emph{ho
 future}. Uniform realisability \ensuremath{\Vdash{}^{\mathrm{u}}} tells it nothing:
 
 \begin{lstlisting}
-x ⊩ᵘ M ⊃ N at w  iff  for all v ≥ w and all b ⊩ᵘ M at v,
-                      x·b is defined and ⊩ᵘ N at v;
-x ⊩ᵘ ◯M at w     iff  for all v ≥ w there is u with v Rₘ u
-                      and x ⊩ᵘ M at u
+x ⊩ᵘ M ⊃ N at w  iff  for all v ≥ w
+                      and all b ⊩ᵘ M at v,
+                      x·b is defined, ⊩ᵘ N at v;
+x ⊩ᵘ ◯M at w     iff  for all v ≥ w there is u
+                      with v Rₘ u, x ⊩ᵘ M at u
 \end{lstlisting}
 
 --- the same element must serve every future and every
@@ -273,10 +288,11 @@ presented future:
 | .somehow φ, x, w =>
     ∀ v, C.Ri w v → v ∈ C.F ∨
       (∃ y, P.app x (κ v) = some y ∧
-        ∃ u, C.Rm v u ∧ P.fst y = κ u ∧ realS P Ev κ φ (P.snd y) u)
+        ∃ u, C.Rm v u ∧ P.fst y = κ u ∧
+          realS P Ev κ φ (P.snd y) u)
 \end{lstlisting}
 
-In words: evidence for \ensuremath{\bigcirc}M is a strategy which, handed the code of
+In words: evidence for \ensuremath{\bigcirc M} is a strategy which, handed the code of
 whatever future v has actually arrived, answers with a package naming a
 constraint-witness u --- naming it, as \ensuremath{\kappa} u, rather than merely having
 one --- together with evidence for M there. The strategy has no
@@ -286,14 +302,15 @@ continuation at that name; this is the point at which the semantics
 remembers that it is a semantics of proofs.
 
 Presented-strategy realisability \ensuremath{\Vdash{}^{\mathrm{p}}} extends the same courtesy to
-implication: the realiser of M \ensuremath{\supset} N receives the pair \ensuremath{\langle\kappa} v, b\ensuremath{\rangle} of the
+implication: the realiser of \ensuremath{M \supset N} receives the pair \ensuremath{\langle\kappa} v, b\ensuremath{\rangle} of the
 presented world and the argument:
 
 \begin{lstlisting}
 | .ifThen φ ψ, x, w =>
     ∀ v, C.Ri w v → v ∈ C.F ∨
       (∀ b, realP P Ev κ φ b v →
-        ∃ y, P.app x (P.pair (κ v) b) = some y ∧ realP P Ev κ ψ y v)
+        ∃ y, P.app x (P.pair (κ v) b) = some y ∧
+          realP P Ev κ ψ y v)
 \end{lstlisting}
 
 One might suspect this of being a convenience. Section 5 shows it is
@@ -307,15 +324,15 @@ at the other --- together with small variants.
 
 \begin{theorem}[the separations; \texttt{BeliefRealisability.lean}]\label{thm:separations}
 (i) (the bite; \texttt{bite\_uniform\_split}) At the root of the split
-model \ensuremath{\bigcirc}(A \ensuremath{\vee} B) is truth-forced, but no element \ensuremath{\Vdash{}^{\mathrm{u}}}-realises it.
+model \ensuremath{\bigcirc}(\ensuremath{A \vee B}) is truth-forced, but no element \ensuremath{\Vdash{}^{\mathrm{u}}}-realises it.
 (ii) (\texttt{uniform\_dist\_valid}) An identity element \ensuremath{\Vdash{}^{\mathrm{u}}}-realises
-\ensuremath{\bigcirc}(A \ensuremath{\vee} B) \ensuremath{\supset} (\ensuremath{\bigcirc}A \ensuremath{\vee} \ensuremath{\bigcirc}B) at every world of every model --- a
+\ensuremath{\bigcirc}(\ensuremath{A \vee B}) \ensuremath{\supset} (\ensuremath{\bigcirc A \vee \bigcirc B}) at every world of every model --- a
 scheme PLL does not prove (\texttt{not\_provable\_somehow\_or\_dist}).
 (iii) (\texttt{strategy\_realises\_obAB}, \texttt{strategy\_dist\_refuted})
-Under \ensuremath{\Vdash{}^{\mathrm{s}}} a case-splitting strategy realises \ensuremath{\bigcirc}(A \ensuremath{\vee} B) at the
+Under \ensuremath{\Vdash{}^{\mathrm{s}}} a case-splitting strategy realises \ensuremath{\bigcirc}(\ensuremath{A \vee B}) at the
 root, and the distribution scheme acquires a countermodel.
 (iv) (the \ensuremath{\supset}-barrier; \texttt{impdist\_not\_uniform})
-(\ensuremath{\bigcirc}A \ensuremath{\supset} \ensuremath{\bigcirc}B) \ensuremath{\supset} \ensuremath{\bigcirc}(A \ensuremath{\supset} B) is not \ensuremath{\Vdash{}^{\mathrm{u}}}-valid.
+(\ensuremath{\bigcirc A \supset \bigcirc B}) \ensuremath{\supset \bigcirc}(\ensuremath{A \supset B}) is not \ensuremath{\Vdash{}^{\mathrm{u}}}-valid.
 \end{theorem}
 
 Read in order: truth outruns rigid evidence (i) --- a uniform realiser
@@ -340,12 +357,15 @@ implement finite lookup tables against the world-coding.
 \end{theorem}
 
 \begin{lstlisting}
-theorem realS_fullness_obstruction (P : Pca) (κ : obsC.W → P.Carrier)
-    (htab : ∀ g : obsC.W → P.Carrier, ∃ s, ∀ i, P.app s (κ i) = some (g i)) :
+theorem realS_fullness_obstruction
+    (P : Pca) (κ : obsC.W → P.Carrier)
+    (htab : ∀ g : obsC.W → P.Carrier,
+      ∃ s, ∀ i, P.app s (κ i) = some (g i)) :
     ¬ ∃ Ev : Evidence P obsC,
-      (∀ (a : String) (w : obsC.W), ∀ x ∈ Ev.E a w, w ∈ obsC.V a) ∧
-      (∀ (φ : PLLFormula) (w : obsC.W), obsC.force w φ →
-        ∃ x, x ⊩ˢ[Ev, κ, w] φ)
+      (∀ (a : String) (w : obsC.W),
+        ∀ x ∈ Ev.E a w, w ∈ obsC.V a) ∧
+      (∀ (φ : PLLFormula) (w : obsC.W),
+        obsC.force w φ → ∃ x, x ⊩ˢ[Ev, κ, w] φ)
 \end{lstlisting}
 
 Note the quantifier structure: the evidence assignment is inside the
@@ -359,13 +379,13 @@ this way on these frames.
 The model has a root below two incomparable leaves; an atom t holds at
 both leaves, p only at the first, q only at the second; the constraint
 relation is trivial. The proof is short enough to give whole. Fullness
-at the atom t hands over tokens m\ensuremath{{}_{1}}, m\ensuremath{{}_{2}} at the two leaves. One
+at the atom t hands over tokens \ensuremath{m_{1}}, \ensuremath{m_{2}} at the two leaves. One
 application of the table hypothesis then produces a \emph{single} element s
-realising \ensuremath{\bigcirc}t at both leaves simultaneously: presented \ensuremath{\kappa}(leaf), it
+realising \ensuremath{\bigcirc t} at both leaves simultaneously: presented \ensuremath{\kappa}(leaf), it
 answers with that leaf\textquotesingle s own name and that leaf\textquotesingle s token --- and nothing
 about s betrays which leaf it is serving, for a strategy is a function
-of the presented future and carries no world-marks. Now \ensuremath{\bigcirc}t \ensuremath{\supset} (p \ensuremath{\vee} q) is
-truth-forced at the root (vacuously there, since \ensuremath{\bigcirc}t fails at the root;
+of the presented future and carries no world-marks. Now \ensuremath{\bigcirc t \supset} (\ensuremath{p \vee q}) is
+truth-forced at the root (vacuously there, since \ensuremath{\bigcirc t} fails at the root;
 via the local atom at each leaf), so fullness hands over a realiser x.
 The \ensuremath{\supset}-clause of \ensuremath{\Vdash{}^{\mathrm{s}}} shows x the argument alone; instantiating it at each
 leaf with the same argument s, application being a function, both
@@ -397,8 +417,9 @@ theorem, saying that every suitable countermodel refutes in the
 realisability sense, and a countermodel-existence theorem --- and we take
 them in that order. Both halves are effective in a sense made precise
 below; the existence half finitises the canonical construction of
-\cite[\S4]{FairtloughMendler1997}, replacing its one appeal to Zorn\textquotesingle s lemma with an
-iterated appeal to the mechanised decision procedure.
+\cite[\S4]{FairtloughMendler1997}, replacing its one appeal to
+Zorn\textquotesingle s lemma~\cite{Zorn1935} with an iterated appeal to the
+mechanised decision procedure.
 
 \subsection{Decoration: adequacy and fullness}\label{61-decoration-adequacy-and-fullness}
 
@@ -419,11 +440,12 @@ evidence, and any applicative structure with two table-forming
 capacities against the world-coding: for every formula \ensuremath{\varphi},
 
 \begin{lstlisting}
-    (∀ w x, (x ⊩ᵖ[tokenEvidence P M h tok, κ, w] φ) →
-       (M.toModel h).force w φ) ∧
-    (∃ wit : Fin M.n → P.Carrier, ∀ w,
-       (M.toModel h).force w φ →
-         (wit w) ⊩ᵖ[tokenEvidence P M h tok, κ, w] φ)
+(∀ w x,
+   (x ⊩ᵖ[tokenEvidence P M h tok, κ, w] φ) →
+   (M.toModel h).force w φ) ∧
+(∃ wit : Fin M.n → P.Carrier, ∀ w,
+   (M.toModel h).force w φ →
+   (wit w) ⊩ᵖ[tokenEvidence P M h tok, κ, w] φ)
 \end{lstlisting}
 
 --- whatever is realised is forced (adequacy), and whatever is forced is
@@ -431,8 +453,8 @@ realised by an explicit per-world witness function (fullness).
 \end{theorem}
 
 The shape of the fullness clause deserves a remark before the proof:
-not "at each world there is a witness" but "there is a function of
-worlds". The induction requires the whole function at once, because the
+not ``at each world there is a witness'' but ``there is a function of
+worlds''. The induction requires the whole function at once, because the
 witnesses at \ensuremath{\supset} and \ensuremath{\bigcirc} are tables whose entries are the subformula\textquotesingle s
 witnesses at other worlds.
 
@@ -457,13 +479,13 @@ witness computations are given in full in
 Appendix~\ref{app:canonical}.)
 
 At \ensuremath{\supset}, the case where the obstruction is answered. Adequacy: given a
-realiser x of \ensuremath{\varphi} \ensuremath{\supset} \ensuremath{\psi} and a future v forcing \ensuremath{\varphi},
+realiser x of \ensuremath{\varphi \supset \psi} and a future v forcing \ensuremath{\varphi},
 feed x the pair \ensuremath{\langle\kappa} v, wit\ensuremath{\varphi} v\ensuremath{\rangle} --- the antecedent\textquotesingle s fullness witness --- and
 apply \ensuremath{\psi}\textquotesingle s adequacy to the answer. Fullness: apply the pair-table
 capacity to \ensuremath{\psi}\textquotesingle s witness function, obtaining a single element s with
 s\ensuremath{\cdot\langle\kappa} v, b\ensuremath{\rangle} = wit\ensuremath{\psi} v for every v and b. The obligation fires only when b
 realises \ensuremath{\varphi} at v; then \ensuremath{\varphi} is forced at v by \ensuremath{\varphi}\textquotesingle s adequacy, so \ensuremath{\psi} is forced
-at v since \ensuremath{\varphi} \ensuremath{\supset} \ensuremath{\psi} is forced below, and wit\ensuremath{\psi} v realises it by \ensuremath{\psi}\textquotesingle s
+at v since \ensuremath{\varphi \supset \psi} is forced below, and wit\ensuremath{\psi} v realises it by \ensuremath{\psi}\textquotesingle s
 fullness. The table ignores its second argument entirely: the presented
 world alone determines the right answer --- which is precisely the lookup
 Theorem~\ref{thm:obstruction} proves impossible when the world is not
@@ -488,15 +510,15 @@ may find it useful to have \cite[\S4]{FairtloughMendler1997} open beside this su
 
 The canonical model there is built from worlds which are \emph{triples}
 (\ensuremath{\Gamma}, \ensuremath{\Delta}, \ensuremath{\Theta}) of sets of formulas --- validated, falsified, and falsified at
-every R\ensuremath{{}_{m}}-reachable world --- the third component being, as the original
+every \ensuremath{R_{m}}-reachable world --- the third component being, as the original
 explains, a special feature introduced because the falsity of a formula
-\ensuremath{\bigcirc}M cannot be recorded by placing M, or any subformula of M, in the
+\ensuremath{\bigcirc M} cannot be recorded by placing M, or any subformula of M, in the
 other two components; it must be tracked separately. Under reading (7)
 the third component is the record of a \emph{promise}: a formula the
 believer has pledged never to evidence, however the constraint is
 discharged. Promises are what prevent the fallible world, which
 validates everything, from trivialising the \ensuremath{\forall\exists} clause. A triple is
-consistent if for no finite selections N\ensuremath{{}_{1}},\ldots,N\ensuremath{{}_{n}} from \ensuremath{\Delta} and K\ensuremath{{}_{1}},\ldots,K\ensuremath{{}_{k}} from
+consistent if for no finite selections \ensuremath{N_{1}},\ldots,\ensuremath{N_{n}} from \ensuremath{\Delta} and \ensuremath{K_{1}},\ldots,\ensuremath{K_{k}} from
 \ensuremath{\Theta}, jointly nonempty, does
 
 \begin{lstlisting}
@@ -527,8 +549,10 @@ of finite triples is decidable --- and so the Lindenbaum construction can
 be a computation:
 
 \begin{lstlisting}
-noncomputable def extendStep (T : FTheory) (φ : PLLFormula) : FTheory :=
-  if (T.insVal φ).Cons then T.insVal φ else T.insFal φ
+noncomputable def extendStep
+    (T : FTheory) (φ : PLLFormula) : FTheory :=
+  if (T.insVal φ).Cons
+  then T.insVal φ else T.insFal φ
 \end{lstlisting}
 
 Walk the closure once; at each formula ask the decision procedure
@@ -544,10 +568,10 @@ writes to the third component, an equality the truth lemma uses twice.
 The second observation is that under totality the original\textquotesingle s
 maximal-theory lemmas --- deductive closure, primeness of \ensuremath{\Gamma}, the
 decomposition laws for falsified conjunctions, disjunctions and
-implications, \ensuremath{\Theta} \ensuremath{\subseteq} \ensuremath{\Delta} --- all \emph{simplify}. Maximality entered those proofs
+implications, \ensuremath{\Theta \subseteq \Delta} --- all \emph{simplify}. Maximality entered those proofs
 only through extension-failure witnesses, existentially quantified
 selections needing combination; under totality every witness is a
-singleton. Primeness, in full: if M \ensuremath{\vee} N is validated but neither
+singleton. Primeness, in full: if \ensuremath{M \vee N} is validated but neither
 disjunct is, totality refutes both, and the selection \{M, N\} together
 with \ensuremath{\vee}-elimination contradicts consistency directly. Five lines of
 formal text against the original\textquotesingle s thirty. Constructivisation, for
@@ -555,8 +579,8 @@ once, is a simplification.
 
 \begin{theorem}[truth lemma; \texttt{truth\_lemma}]\label{thm:truth}
 On the model whose
-worlds are the closure-total consistent triples, with R\ensuremath{{}_{i}} inclusion of
-validated parts, R\ensuremath{{}_{m}} inclusion of validated and promised parts, the
+worlds are the closure-total consistent triples, with \ensuremath{R_{i}} inclusion of
+validated parts, \ensuremath{R_{m}} inclusion of validated and promised parts, the
 fallible worlds those validating false, and atoms outside the closure
 true everywhere: for every closure formula \ensuremath{\varphi}, membership in the
 validated part forces \ensuremath{\varphi}, and membership in the falsified part refutes
@@ -566,19 +590,19 @@ it.
 The propositional cases ride on the simplified lemma suite. Three cases
 require a Lindenbaum extension, and they are the exact three of the
 original, each start-triple carried over unchanged; only the engine
-that extends them has changed. To refute a falsified M \ensuremath{\supset} N one extends
-(\ensuremath{\Gamma} \ensuremath{\cup} \{M\}, \{N\}, \ensuremath{\varnothing}). To force a validated \ensuremath{\bigcirc}M at an arbitrary future one
-extends (\ensuremath{\Gamma{}_{1}} \ensuremath{\cup} \{M\}, \ensuremath{\varnothing}, \ensuremath{\Theta{}_{1}}) --- the body added, the \emph{promises carried
+that extends them has changed. To refute a falsified \ensuremath{M \supset N} one extends
+(\ensuremath{\Gamma \cup} \{M\}, \{N\}, \ensuremath{\varnothing}). To force a validated \ensuremath{\bigcirc M} at an arbitrary future one
+extends (\ensuremath{\Gamma{}_{1} \cup} \{M\}, \ensuremath{\varnothing}, \ensuremath{\Theta{}_{1}}) --- the body added, the \emph{promises carried
 across} --- and consistency of this triple is the \ensuremath{\bigcirc}-guard\textquotesingle s showcase: a
-violation would give \ensuremath{\Gamma{}_{1}} \ensuremath{\vdash} M \ensuremath{\supset} \ensuremath{\bigcirc}(\ensuremath{\bigvee} of a \ensuremath{\Theta{}_{1}}-selection), whence, since \ensuremath{\bigcirc}M
+violation would give \ensuremath{\Gamma{}_{1} \vdash} M \ensuremath{\supset \bigcirc}(\ensuremath{\bigvee} of a \ensuremath{\Theta{}_{1}}-selection), whence, since \ensuremath{\bigcirc M}
 is validated at the future, the elimination composite yields
-\ensuremath{\Gamma{}_{1}} \ensuremath{\vdash} \ensuremath{\bigcirc}(\ensuremath{\bigvee} of the selection), an inconsistency of the future with its own
+\ensuremath{\Gamma{}_{1} \vdash \bigcirc}(\ensuremath{\bigvee} of the selection), an inconsistency of the future with its own
 promises. The extension is then a constraint-successor --- beliefs grew,
-promises exactly preserved --- forcing M. To refute a falsified \ensuremath{\bigcirc}M one
+promises exactly preserved --- forcing M. To refute a falsified \ensuremath{\bigcirc M} one
 extends (\ensuremath{\Gamma}, \ensuremath{\varnothing}, \{M\}): a promise \emph{created}. Its consistency reduces, by
-the monotonicity composite for \ensuremath{\bigcirc}, to \ensuremath{\Gamma} \ensuremath{\vdash} \ensuremath{\bigcirc}M, contradicting the
+the monotonicity composite for \ensuremath{\bigcirc}, to \ensuremath{\Gamma \vdash \bigcirc M}, contradicting the
 falsification; and every constraint-successor of the extension inherits
-the promise, hence --- promises being falsified, by the \ensuremath{\Theta} \ensuremath{\subseteq} \ensuremath{\Delta} law ---
+the promise, hence --- promises being falsified, by the \ensuremath{\Theta \subseteq \Delta} law ---
 refutes M. So the \ensuremath{\forall\exists} clause fails at the extension, which is an
 ordinary future of the world one started at. This is the semantic machinery
 of promises in its native habitat; the executable countermodels
@@ -591,7 +615,7 @@ world of its finite canonical model; enumerating the (finitely many)
 worlds yields the countermodel as literal checker data:
 
 \begin{lstlisting}
-  ¬ (Γ ⊢ C)  implies  ∃ M w, checkB M w Γ C = true.
+¬ (Γ ⊢ C)  implies  ∃ M w, checkB M w Γ C = true
 \end{lstlisting}
 \end{corollary}
 
@@ -624,7 +648,7 @@ loop-checked search decides that calculus; no model is mentioned
 anywhere in the chain. Second, the completeness proof consumes
 decidability only as a \emph{derivability} oracle, never a semantic
 one: what the oracle contributes is the totality of the case analysis
-"believe or refute", for which the classical proof pays with Zorn and
+``believe or refute'', for which the classical proof pays with Zorn and
 excluded middle and we pay with a computation; the semantics enters
 only afterwards, in the truth lemma. Third --- an argument available
 only to a mechanised development --- the absence of the circle is
@@ -649,9 +673,12 @@ when no token-decorated, checker-verified finite model
 
 \begin{lstlisting}
 Nonempty (LaxND Γ C) ↔
-  ¬ ∃ (M : FinCM) (w : Nat) (hwf : M.WellFormed) (hlt : w < M.n),
-    (∀ ψ ∈ Γ, ∃ x, x ⊩ᵖ[tokenEvidence tblPca M hwf tok₀, tblκ, ⟨w, hlt⟩] ψ) ∧
-    ¬ ∃ x, x ⊩ᵖ[tokenEvidence tblPca M hwf tok₀, tblκ, ⟨w, hlt⟩] C
+  ¬ ∃ (M : FinCM) (w : Nat)
+      (hwf : M.WellFormed) (hlt : w < M.n),
+    (∀ ψ ∈ Γ, ∃ x,
+        x ⊩ᵖ[Ev₀, tblκ, ⟨w, hlt⟩] ψ) ∧
+    ¬ ∃ x, x ⊩ᵖ[Ev₀, tblκ, ⟨w, hlt⟩] C
+  -- Ev₀ := tokenEvidence tblPca M hwf tok₀
 \end{lstlisting}
 \end{theorem}
 
@@ -682,9 +709,9 @@ proposal can produce only a failure, never a wrong certificate. In the
 other direction, any certified model refutes in the full realisability
 sense, by the squeeze.
 
-For \ensuremath{\bigcirc}p \ensuremath{\vdash} p the emitter produces a five-world model, pinned in the
+For \ensuremath{\bigcirc p \vdash} p the emitter produces a five-world model, pinned in the
 artefact as data (\texttt{demoM}), whose worlds read as belief states: a state
-believing exactly \ensuremath{\bigcirc}p (the refuting world); above it a state where the
+believing exactly \ensuremath{\bigcirc p} (the refuting world); above it a state where the
 constraint has been discharged and p is believed; the fallible ceiling;
 and --- the instructive one --- a state that has \emph{promised} never to
 evidence p, whose only constraint-successor is itself. The
@@ -692,17 +719,35 @@ kernel-checked certificate
 
 \begin{lstlisting}
 theorem somehow_p_not_p :
-    ¬ Nonempty (LaxND [(prop "p").somehow] (prop "p")) :=
-  FinCM.not_provable_of_check (M := demoM) (w := 2) (by decide)
+    ¬ Nonempty
+        (LaxND [(prop "p").somehow] (prop "p")) :=
+  FinCM.not_provable_of_check
+    (M := demoM) (w := 2) (by decide)
 \end{lstlisting}
 
 runs the verified checker inside the kernel; no compiled evaluation is
-trusted, and the audit is choice-free. Under reading (7): believing \ensuremath{\bigcirc}p
+trusted, and the audit is choice-free. Under reading (7): believing \ensuremath{\bigcirc p}
 cannot be cashed for believing p, and the countermodel says why --- there
 is a coherent belief state committed to the constraint\textquotesingle s discharge
-remaining forever pending.
+remaining forever pending. Figure~\ref{fig:demoM} is the model, drawn
+by the artefact from its own data.
 
-For the distribution scheme \ensuremath{\bigcirc}(p \ensuremath{\vee} q) \ensuremath{\vdash} \ensuremath{\bigcirc}p \ensuremath{\vee} \ensuremath{\bigcirc}q the emitter builds
+\begin{figure}
+\centering
+\input{figs/demoM}
+\caption{The emitted five-world countermodel to
+\ensuremath{\bigcirc p \vdash p} (\texttt{demoM}). Labels above a world
+are its beliefs, labels below its standing promises
+(\ensuremath{\oslash} marks a formula promised never to be evidenced);
+the red doubled node is the refuting world, the black node the fallible
+ceiling. Solid arrows are constraint steps (\ensuremath{R_{m}}), dashed
+grey arrows information steps (\ensuremath{R_{i}} only), and the thin
+grey edge joins the mutually \ensuremath{R_{i}}-related pair of
+Remark~\ref{rem:preorder}. Generated by \texttt{PLLDiagram.lean}.}
+\label{fig:demoM}
+\end{figure}
+
+For the distribution scheme \ensuremath{\bigcirc}(\ensuremath{p \vee q}) \ensuremath{\vdash \bigcirc p \vee \bigcirc q} the emitter builds
 twenty worlds, and its report is worth displaying verbatim, for it is
 the machinery of promises from Theorem~\ref{thm:truth}, printed by a
 program:
@@ -715,9 +760,9 @@ refuting world: w4  (20 worlds)
   ...
 \end{lstlisting}
 
-The refuting world believes exactly \ensuremath{\bigcirc}(p \ensuremath{\vee} q); its two critical futures
-carry the standing promises "never p" and "never q"; a promise binds
-all constraint-successors, so \ensuremath{\bigcirc}p dies along one future and \ensuremath{\bigcirc}q along the
+The refuting world believes exactly \ensuremath{\bigcirc}(\ensuremath{p \vee q}); its two critical futures
+carry the standing promises ``never p'' and ``never q''; a promise binds
+all constraint-successors, so \ensuremath{\bigcirc p} dies along one future and \ensuremath{\bigcirc q} along the
 other, while each future can still discharge the \emph{disjunction} through
 its unpromised disjunct. The twenty worlds are an artefact of the
 systematic construction --- the canonical enumeration keeps every
@@ -725,8 +770,8 @@ coherent belief state --- and a checker-gated \emph{minimisation} strips the
 scaffolding: repeatedly delete any world whose removal leaves the
 certificate intact (\texttt{emitMin}; untrusted, like the emitter, and
 harmless for the same reason). For this sequent the minimiser descends
-from twenty worlds to three --- a root believing \ensuremath{\bigcirc}(p \ensuremath{\vee} q) below one leaf
-satisfying p and one satisfying q, with R\ensuremath{{}_{m}} = R\ensuremath{{}_{i}} and neither promises
+from twenty worlds to three --- a root believing \ensuremath{\bigcirc}(\ensuremath{p \vee q}) below one leaf
+satisfying p and one satisfying q, with \ensuremath{R_{m}} = \ensuremath{R_{i}} and neither promises
 nor a fallible world remaining --- which is \emph{precisely} the hand-built
 split model of \cite[Fig.~3]{FairtloughMendler1997}, now pinned as a build-time
 regression guard. The systematic model proves existence; deletion
@@ -736,26 +781,40 @@ second, finer pass (\texttt{emitMinClean}) sweeps attributes rather than
 worlds, deleting any fallible flag, valuation pair or relation pair the
 certificate survives without; it answers questions a reader might not
 think to ask --- one constraint arrow of the split model does no work,
-and the countermodel to \ensuremath{\bigcirc}p \ensuremath{\vdash} p needs no fallible world at all,
+and the countermodel to \ensuremath{\bigcirc p \vdash} p needs no fallible world at all,
 minimising to two worlds: believe nothing, then p. Both prunings are
-pinned.
+pinned, and Figure~\ref{fig:ordist} shows the first.
+
+\begin{figure}
+\centering
+\input{figs/ordist3clean}
+\caption{The minimised countermodel to
+\ensuremath{\bigcirc(p \vee q) \vdash \bigcirc p \vee \bigcirc q} after
+attribute-cleaning: the root (refuting, red) reaches its
+constraint-witness through the q-leaf alone --- the solid
+\ensuremath{R_{m}} arrow --- while the edge to the p-leaf is an
+information step only (dashed grey); the workless constraint arrow of
+the hand-built split model has been deleted by the checker-gated sweep.
+Generated by \texttt{PLLDiagram.lean}.}
+\label{fig:ordist}
+\end{figure}
 
 \begin{remark}[preorder, not partial order]\label{rem:preorder}
-In all these models R\ensuremath{{}_{i}} is a genuine preorder: distinct worlds can be
+In all these models \ensuremath{R_{i}} is a genuine preorder: distinct worlds can be
 mutually related. The twenty-world model has thirteen such pairs, among
-them the refuting world and its two critical futures --- w\ensuremath{{}_{4}}, w\ensuremath{{}_{5}}, w\ensuremath{{}_{6}}
+them the refuting world and its two critical futures --- \ensuremath{w_{4}}, \ensuremath{w_{5}}, \ensuremath{w_{6}}
 believe exactly the same formulas and differ only in their standing
 promises, so the refutation just displayed is transacted entirely
-inside a single R\ensuremath{{}_{i}}-equivalence class. This is the geometry of the
-construction: canonical R\ensuremath{{}_{i}} compares beliefs and deliberately ignores
+inside a single \ensuremath{R_{i}}-equivalence class. This is the geometry of the
+construction: canonical \ensuremath{R_{i}} compares beliefs and deliberately ignores
 promises; refuting a \ensuremath{\bigcirc}-formula changes no belief --- it only takes on
-a commitment. R\ensuremath{{}_{m}}, which carries promises along, is antisymmetric in
+a commitment. \ensuremath{R_{m}}, which carries promises along, is antisymmetric in
 every model of this section, and nothing is lost for validity: forcing
-is hereditary along R\ensuremath{{}_{i}} (\texttt{force\_hered}), minimisation removes
+is hereditary along \ensuremath{R_{i}} (\texttt{force\_hered}), minimisation removes
 the equivalent twins, and both minimised models above are posets
 (build-time guards \texttt{riEquiv}/\texttt{rmEquiv},
 \texttt{PLLDiagram.lean}). One design observation, recorded without
-mechanised warrant: a canonical R\ensuremath{{}_{i}} refined to respect promises ---
+mechanised warrant: a canonical \ensuremath{R_{i}} refined to respect promises ---
 antisymmetric by construction --- would obstruct the \ensuremath{\bigcirc}-case of the
 truth lemma, whose refuting step needs a same-belief future in which
 the old promises have lapsed and one fresh promise stands. The preorder
@@ -764,7 +823,7 @@ in.
 \end{remark}
 
 Finally, evidence in the positive direction. The sequent
-\ensuremath{\bigcirc}A, \ensuremath{\bigcirc}(A \ensuremath{\supset} B) \ensuremath{\vdash} \ensuremath{\bigcirc}B --- combine a belief with a believed implication --- has
+\ensuremath{\bigcirc A}, \ensuremath{\bigcirc}(\ensuremath{A \supset B}) \ensuremath{\vdash \bigcirc B} --- combine a belief with a believed implication --- has
 the kernel-checked proof term
 
 \begin{lstlisting}
@@ -773,10 +832,10 @@ let val• := #0 in (let val• := #2 in val (#0 #1))
 
 two monadic binds and an application: run the belief in A, obtaining
 evidence under its constraint; under that constraint run the belief in
-A \ensuremath{\supset} B; apply; return under the composed constraint. The uniform
+\ensuremath{A \supset B}; apply; return under the composed constraint. The uniform
 extraction of the artefact (\texttt{extract\_sound}) compiles this derivation,
-by the equations "laxIntro is the identity, laxElim is
-abstraction-then-application", to the polynomial
+by the equations ``laxIntro is the identity, laxElim is
+abstraction-then-application'', to the polynomial
 
 \begin{lstlisting}
 (λa. (λg. g · a) · f) · x
@@ -793,19 +852,19 @@ surprises --- that no confluence assumption appears anywhere: belief
 composition is ordered, as inquiry is.
 
 A further exercise in the same currency, this time negative.
-Idempotence \ensuremath{\bigcirc\bigcirc}M \ensuremath{\dashv\vdash} \ensuremath{\bigcirc}M is two proof terms: the multiplication
-\ensuremath{\mu} = \ensuremath{\lambda}x. let val y \ensuremath{\Leftarrow} x in y and the unit \ensuremath{\eta} = \ensuremath{\lambda}x. val x. Are they
+Idempotence \ensuremath{\bigcirc\bigcirc}M \ensuremath{\dashv\vdash \bigcirc M} is two proof terms: the multiplication
+\ensuremath{\mu} = \ensuremath{\lambda}x. let val \ensuremath{y \Leftarrow x} in y and the unit \ensuremath{\eta} = \ensuremath{\lambda}x. val x. Are they
 mutually inverse?
 
 \begin{proposition}[\texttt{mu\_eta\_not\_mutually\_inverse},
 \texttt{eta\_mu\_not\_conv\_id}; \texttt{PLLIdempotency.lean}]\label{prop:mueta}
-\ensuremath{\mu} \ensuremath{\circ} \ensuremath{\eta} reduces to the identity; \ensuremath{\eta} \ensuremath{\circ} \ensuremath{\mu} is not even convertible
+\ensuremath{\mu \circ \eta} reduces to the identity; \ensuremath{\eta \circ \mu} is not even convertible
 to it. Idempotence is inter-derivability, not isomorphism.
 \end{proposition}
 
 The first composite is the monad\textquotesingle s unit law, holding as computation
 (the let fires on the val); the second normalises to
-\ensuremath{\lambda}x. val (let val y \ensuremath{\Leftarrow} x in y), a stuck term in which the collapse
+\ensuremath{\lambda}x. val (let val \ensuremath{y \Leftarrow x} in y), a stuck term in which the collapse
 remains pending inside the re-assertion, and the artefact computes the
 composite\textquotesingle s complete reduction graph --- four terms, closed under
 reduction, the identity not among them. The separation holds in the
@@ -829,6 +888,28 @@ futures. The idealisation Hintikka told us to own lives exactly in the
 completeness theorem\textquotesingle s omniscient survey --- stated, and confined to
 where it belongs.
 
+Finally, one applied study from the programme that motivated PLL is
+carried out in the artefact end to end. Mendler\textquotesingle s timing analysis of
+combinational circuits~\cite{Mendler2000} reads a proof as a
+stabilisation bound --- unit: a wire, delay 0; multiplication:
+sequential composition, +; strength: reconvergent merge, max --- and
+the artefact evaluates PLL proof terms in exactly this delay algebra
+(\texttt{PLLTiming.lean}, \texttt{PLLTimingAdder.lean}). The
+reconvergent-fanout circuit of \cite[\S7]{Mendler2000} is reproduced
+with its false-path punchline --- on the input class holding a = 1 the
+extracted bound is strictly below the topological longest path,
+because a proof traverses only real logical dependencies --- and a
+four-bit carry-skip adder is certified faster than its topological
+bound (\texttt{falsePath\_beats\_topological},
+\texttt{skip\_beats\_topological}; both, pleasingly, with \emph{no
+axioms at all}). Under reading (7) these are belief computations: a
+signal\textquotesingle s delay is the cost of discharging the constraint under
+which its stability is believed. The wider case-study programme ---
+timing constraint models at scale, proof-carrying authorization,
+certified effectful computation --- outgrows this paper; the staged
+programme accompanies the artefact, and a companion paper is in
+preparation.
+
 \section{Related work}\label{8-related-work}
 
 The nearest neighbour of reading (7) in the literature is the
@@ -836,7 +917,7 @@ intuitionistic epistemic logic of Artemov and Protopopescu~\cite{ArtemovProtopop
 belief system IEL\ensuremath{{}^{-}} adopts co-reflection A \ensuremath{\supset} KA and rejects factivity,
 so that K false is consistent --- the same quarantining of absurdity. PLL
 adds idempotence; we conjecture PLL-\ensuremath{\bigcirc} is exactly IEL\ensuremath{{}^{-}} extended by
-\ensuremath{\bigcirc\bigcirc}A \ensuremath{\supset} \ensuremath{\bigcirc}A, and record the question as open. IEL itself has
+\ensuremath{\bigcirc\bigcirc}A \ensuremath{\supset \bigcirc A}, and record the question as open. IEL itself has
 been mechanised, in Coq~\cite{HagemeierKirst2022}. Justification
 logic~\cite{Artemov2001,ArtemovFitting2019} in its forgetful reading
 forces factivity and is therefore not this.
@@ -856,7 +937,7 @@ is closed, so evidence must live somewhere else. And a security
 literature arrived at the two signature facts of Section 3
 independently, in doxastic vocabulary: in the authorization logics
 descended from the dependency core
-calculus~\cite{Abadi2006,GargAbadi2008}, the modality "K says"
+calculus~\cite{Abadi2006,GargAbadi2008}, the modality ``K says''
 validates A \ensuremath{\supset} (K says A) --- every principal believes what is
 true --- and (K says false) does not entail false: a principal may
 assert the absurd without collapsing the logic. A lax modality read as
@@ -867,8 +948,8 @@ The constraint reading of the parent paper and the monadic reading of
 computational type theory~\cite{Moggi1991,BentonBiermanDePaiva1998} are
 the two established computational faces
 of \ensuremath{\bigcirc}; the doxastic reading is compatible with both, and the
-double-negation believer --- in constraint models with R\ensuremath{{}_{m}} = R\ensuremath{{}_{i}} and no
-fallible worlds, \ensuremath{\bigcirc}M is forced exactly where \ensuremath{\lnot\lnot}M is (machine-checked,
+double-negation believer --- in constraint models with \ensuremath{R_{m}} = \ensuremath{R_{i}} and no
+fallible worlds, \ensuremath{\bigcirc M} is forced exactly where \ensuremath{\lnot\lnot}M is (machine-checked,
 \texttt{force\_somehow\_iff\_notnot}) --- recovers the continuation reading as a
 special case. On the mechanised side, the normalisation-by-evaluation
 line for modal and lax calculi in
@@ -884,8 +965,10 @@ calculus and a repaired one, communicated separately.
 
 \section{Method}\label{9-method}
 
-Every claim of this paper is a theorem of a Lean 4 development that
-also contains its parent paper entire. The axiom footprint of each
+Every claim of this paper is a theorem of a Lean
+4~\cite{DeMouraUllrich2021} development, over
+Mathlib~\cite{MathlibCommunity2020}, that also contains its parent
+paper entire. The axiom footprint of each
 result is recorded: nothing at all for a handful of results (among them
 a well-foundedness theorem for the Kleene--Brouwer order, a standalone
 fully constructive result in the artefact); \texttt{[propext]} or
@@ -967,17 +1050,21 @@ mathematical contexts; what the present paper adds is that its logic of
 evidential belief is non-degenerate exactly over intuitionistic logic,
 and that PLL is precisely complete for the evidence discipline in which
 realisers meet the future as an input. The countermodels witnessing the
-"precisely" are finite, executable, and legible as belief states; the
+``precisely'' are finite, executable, and legible as belief states; the
 canonical construction that produces them is the parent paper\textquotesingle s, with
 Zorn\textquotesingle s lemma traded for the logic\textquotesingle s own decision procedure.
 
 Open problems. The axiomatisation of PLL\ensuremath{{}^{\mathrm{u}}}, the logic of rigid evidence.
 The exact relation of PLL-\ensuremath{\bigcirc} to IEL\ensuremath{{}^{-}} (conjecturally: idempotence). A
 Kleene-algebra instantiation of the table capacities via partial
-computable functions (the choice-free statement needs care around
-partiality). The tripos-level formulation of the evidence semantics.
+computable functions~\cite{Kleene1945} (the choice-free statement
+needs care around partiality). The tripos-level formulation of the
+evidence semantics~\cite{Hyland1982,VanOosten2008}.
 Uniform interpolation for PLL --- ordinary Craig interpolation is
 settled, choice-free, in the artefact (Section 2), while the uniform
 case is where the repaired terminating calculus supplies the height
-bound the published method lacked; the mechanised investigation
-continues.
+bound the published method lacked~\cite{Pitts1992}; the mechanised
+investigation continues, with the Coq/Rocq mechanisations of uniform
+interpolation for intuitionistic and intuitionistic modal
+logics~\cite{FereeVanDerGiessenVanGoolShillito2024,ShillitoVanDerGiessenGoreIemhoff2023}
+as the reference points.

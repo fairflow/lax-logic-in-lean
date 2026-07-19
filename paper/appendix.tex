@@ -1,3 +1,4 @@
+\fvset{fontsize=\scriptsize,xleftmargin=0.3em}  % appendix listings: reference material
 %% Appendices A–E per docs/belief-paper-selection.md §4, distilled from
 %% docs/pll-formalisation-ledger.md Part II and the library sources.
 %% Everything displayed as Lean is verbatim from the artefact at the commit
@@ -22,7 +23,7 @@ inductive PLLFormula where
   | and (a b : PLLFormula)
   | or (a b : PLLFormula)
   | ifThen (antecedant consequent : PLLFormula)
-  | somehow (a : PLLFormula)          -- the lax modality ◯
+  | somehow (a : PLLFormula)   -- the lax modality ◯
 \end{lstlisting}
 
 \noindent \texttt{notPLL}/\texttt{truePLL} are the defined
@@ -34,18 +35,24 @@ membership-based, so weakening, exchange and contraction are admissible
 inductive LaxND : List PLLFormula → PLLFormula → Type
   | iden      {Γ φ}   (h : φ ∈ Γ) : LaxND Γ φ
   | falsoElim {Γ} (φ) (p : LaxND Γ .falsePLL) : LaxND Γ φ
-  | impIntro  {Γ φ ψ} (p : LaxND (φ :: Γ) ψ) : LaxND Γ (.ifThen φ ψ)
-  | impElim   {Γ φ ψ} (p₁ : LaxND Γ (.ifThen φ ψ)) (p₂ : LaxND Γ φ) : LaxND Γ ψ
-  | andIntro  {Γ φ ψ} (p₁ : LaxND Γ φ) (p₂ : LaxND Γ ψ) : LaxND Γ (.and φ ψ)
+  | impIntro  {Γ φ ψ} (p : LaxND (φ :: Γ) ψ) :
+      LaxND Γ (.ifThen φ ψ)
+  | impElim   {Γ φ ψ} (p₁ : LaxND Γ (.ifThen φ ψ))
+      (p₂ : LaxND Γ φ) : LaxND Γ ψ
+  | andIntro  {Γ φ ψ} (p₁ : LaxND Γ φ)
+      (p₂ : LaxND Γ ψ) : LaxND Γ (.and φ ψ)
   | andElim1  {Γ φ ψ} (p : LaxND Γ (.and φ ψ)) : LaxND Γ φ
   | andElim2  {Γ φ ψ} (p : LaxND Γ (.and φ ψ)) : LaxND Γ ψ
   | orIntro1  {Γ φ ψ} (p : LaxND Γ φ) : LaxND Γ (.or φ ψ)
   | orIntro2  {Γ φ ψ} (p : LaxND Γ ψ) : LaxND Γ (.or φ ψ)
   | orElim    {Γ φ ψ χ} (p₀ : LaxND Γ (.or φ ψ))
-      (p₁ : LaxND (φ :: Γ) χ) (p₂ : LaxND (ψ :: Γ) χ) : LaxND Γ χ
-  | laxIntro  {Γ φ}   (p : LaxND Γ φ) : LaxND Γ (.somehow φ)
+      (p₁ : LaxND (φ :: Γ) χ)
+      (p₂ : LaxND (ψ :: Γ) χ) : LaxND Γ χ
+  | laxIntro  {Γ φ}   (p : LaxND Γ φ) :
+      LaxND Γ (.somehow φ)
   | laxElim   {Γ φ ψ} (p₁ : LaxND Γ (.somehow φ))
-      (p₂ : LaxND (φ :: Γ) (.somehow ψ)) : LaxND Γ (.somehow ψ)
+      (p₂ : LaxND (φ :: Γ) (.somehow ψ)) :
+      LaxND Γ (.somehow ψ)
 \end{lstlisting}
 
 \noindent The two lax rules are the parent paper's
@@ -59,8 +66,9 @@ conservativity holds in erasure and classic forms (audits
 theorem conservativity_prop {Γ φ} (p : LaxND Γ φ) :
     IPLND (Γ.map erase) (erase φ)
 
-theorem conservativity_IPL {Γ φ} (hφ : isIPL φ) (hΓ : ∀ ψ ∈ Γ, isIPL ψ)
-    (p : LaxND Γ φ) : IPLND Γ φ
+theorem conservativity_IPL {Γ φ} (hφ : isIPL φ)
+    (hΓ : ∀ ψ ∈ Γ, isIPL ψ) (p : LaxND Γ φ) :
+    IPLND Γ φ
 \end{lstlisting}
 
 \subsection{Sequent calculus, cut elimination, Hilbert system}
@@ -70,35 +78,44 @@ kept in the context):
 
 \begin{lstlisting}
 inductive SCh : Nat → List PLLFormula → PLLFormula → Prop
-  | init  {n Γ a}     (h : PLLFormula.prop a ∈ Γ) : SCh n Γ (.prop a)
-  | botL  {n Γ C}     (h : PLLFormula.falsePLL ∈ Γ) : SCh n Γ C
-  | andR  {n Γ A B}   : SCh n Γ A → SCh n Γ B → SCh (n+1) Γ (A.and B)
-  | andL  {n Γ A B C} (h : A.and B ∈ Γ) : SCh n (A :: B :: Γ) C → SCh (n+1) Γ C
+  | init  {n Γ a}     (h : PLLFormula.prop a ∈ Γ) :
+      SCh n Γ (.prop a)
+  | botL  {n Γ C}     (h : PLLFormula.falsePLL ∈ Γ) :
+      SCh n Γ C
+  | andR  {n Γ A B}   : SCh n Γ A → SCh n Γ B →
+      SCh (n+1) Γ (A.and B)
+  | andL  {n Γ A B C} (h : A.and B ∈ Γ) :
+      SCh n (A :: B :: Γ) C → SCh (n+1) Γ C
   | orR1  {n Γ A B}   : SCh n Γ A → SCh (n+1) Γ (A.or B)
   | orR2  {n Γ A B}   : SCh n Γ B → SCh (n+1) Γ (A.or B)
   | orL   {n Γ A B C} (h : A.or B ∈ Γ) :
       SCh n (A :: Γ) C → SCh n (B :: Γ) C → SCh (n+1) Γ C
-  | impR  {n Γ A B}   : SCh n (A :: Γ) B → SCh (n+1) Γ (A.ifThen B)
+  | impR  {n Γ A B}   : SCh n (A :: Γ) B →
+      SCh (n+1) Γ (A.ifThen B)
   | impL  {n Γ A B C} (h : A.ifThen B ∈ Γ) :
       SCh n Γ A → SCh n (B :: Γ) C → SCh (n+1) Γ C
   | laxR  {n Γ A}     : SCh n Γ A → SCh (n+1) Γ (A.somehow)
   | laxL  {n Γ A B}   (h : A.somehow ∈ Γ) :
       SCh n (A :: Γ) (B.somehow) → SCh (n+1) Γ (B.somehow)
 
-def SC (Γ : List PLLFormula) (C : PLLFormula) : Prop := ∃ n, SCh n Γ C
+def SC (Γ : List PLLFormula) (C : PLLFormula) : Prop :=
+  ∃ n, SCh n Γ C
 \end{lstlisting}
 
 \begin{lstlisting}
-theorem SC.cut {Γ A C} (h₁ : SC Γ A) (h₂ : SC (A :: Γ) C) : SC Γ C
+theorem SC.cut {Γ A C}
+    (h₁ : SC Γ A) (h₂ : SC (A :: Γ) C) : SC Γ C
 
-theorem cutElimination {Γ C} : Nonempty (LaxND Γ C) ↔ SC Γ C
+theorem cutElimination {Γ C} :
+    Nonempty (LaxND Γ C) ↔ SC Γ C
 
 theorem disjunction_property {A B}
     (h : Nonempty (LaxND [] (A.or B))) :
     Nonempty (LaxND [] A) ∨ Nonempty (LaxND [] B)
 
 theorem somehow_reflection {A}
-    (h : Nonempty (LaxND [] (A.somehow))) : Nonempty (LaxND [] A)
+    (h : Nonempty (LaxND [] (A.somehow))) :
+    Nonempty (LaxND [] A)
 \end{lstlisting}
 
 \noindent All audit \texttt{[propext, Quot.sound]}. The Hilbert system
@@ -112,7 +129,7 @@ equivalence with natural deduction.
 structure ConstraintModel where
   W : Type
   Ri : W → W → Prop        -- intuitionistic accessibility
-  Rm : W → W → Prop        -- modal (constraint) accessibility
+  Rm : W → W → Prop        -- constraint accessibility
   F : Set W                -- fallible worlds
   V : String → Set W
   refl_i : ∀ w, Ri w w
@@ -129,11 +146,14 @@ def force (C : ConstraintModel) : C.W → PLLFormula → Prop
   | w, .falsePLL   => w ∈ C.F
   | w, .and φ ψ    => C.force w φ ∧ C.force w ψ
   | w, .or φ ψ     => C.force w φ ∨ C.force w ψ
-  | w, .ifThen φ ψ => ∀ v, C.Ri w v → C.force v φ → C.force v ψ
-  | w, .somehow φ  => ∀ v, C.Ri w v → ∃ u, C.Rm v u ∧ C.force u φ
+  | w, .ifThen φ ψ =>
+      ∀ v, C.Ri w v → C.force v φ → C.force v ψ
+  | w, .somehow φ  =>
+      ∀ v, C.Ri w v → ∃ u, C.Rm v u ∧ C.force u φ
 
 theorem soundness    {Γ φ} (p : LaxND Γ φ) : Γ ⊨- φ
-theorem completeness {Γ φ} (h : Γ ⊨- φ) : Nonempty (LaxND Γ φ)
+theorem completeness {Γ φ} (h : Γ ⊨- φ) :
+    Nonempty (LaxND Γ φ)
 \end{lstlisting}
 
 \noindent \texttt{soundness} audits \texttt{[propext]};
@@ -151,11 +171,14 @@ The terminating calculus \texttt{G4c} (with height-indexed form
 calculus is provably incomplete for PLL:
 
 \begin{lstlisting}
-def Fa : PLLFormula := ((prop "p").somehow).ifThen (prop "r")
+def Fa : PLLFormula :=
+  ((prop "p").somehow).ifThen (prop "r")
 def Ga : PLLFormula := Fa.ifThen (prop "p").somehow
 
-theorem sep_SC     : SC [Ga.somehow, Fa] (prop "r")   -- PLL derives it
-theorem sep_not_G4 : ¬ G4 [Ga.somehow, Fa] (prop "r") -- G4iLL cannot
+theorem sep_SC :                    -- PLL derives it
+  SC [Ga.somehow, Fa] (prop "r")
+theorem sep_not_G4 :                -- G4iLL cannot
+  ¬ G4 [Ga.somehow, Fa] (prop "r")
 \end{lstlisting}
 
 \noindent (Neither contraction nor cut is admissible in the published
@@ -179,10 +202,12 @@ is built on a choice-free finite-set toolkit, so the primary statements
 audit \texttt{[propext, Quot.sound]}:
 
 \begin{lstlisting}
-theorem craig_interpolation' {Γ₁ Γ₂ C} (h : SC (Γ₁ ++ Γ₂) C) :
+theorem craig_interpolation' {Γ₁ Γ₂ C}
+    (h : SC (Γ₁ ++ Γ₂) C) :
     ∃ I : PLLFormula,
       SC Γ₁ I ∧ SC (I :: Γ₂) C ∧
-      I.atoms ⊆ atomsList Γ₁ ∧ I.atoms ⊆ finUnion (atomsList Γ₂) C.atoms
+      I.atoms ⊆ atomsList Γ₁ ∧
+      I.atoms ⊆ finUnion (atomsList Γ₂) C.atoms
 
 theorem craig_implication' {A B} (h : SC [] (A.ifThen B)) :
     ∃ I : PLLFormula,
@@ -190,9 +215,8 @@ theorem craig_implication' {A B} (h : SC [] (A.ifThen B)) :
       I.atoms ⊆ A.atoms ∧ I.atoms ⊆ B.atoms
 \end{lstlisting}
 
-\noindent The Mathlib-phrased forms
-(\texttt{I.atoms \ensuremath{\subseteq} atomsList \ensuremath{\Gamma{}_{1}}
-\ensuremath{\cap} (atomsList \ensuremath{\Gamma{}_{2}} \ensuremath{\cup} C.atoms)}) are
+\noindent The Mathlib-phrased forms, with the shared atoms stated
+through the lattice \ensuremath{\cap} and \ensuremath{\cup}, are
 kept as two-line wrappers, clean‡ by statement vocabulary alone. The
 lax \ensuremath{\bigcirc} contributes exactly one twist to the textbook
 induction: when the principal formula \ensuremath{\bigcirc}A sits in
@@ -232,15 +256,21 @@ def realU (P : Pca) {C} (Ev : Evidence P C) :
   | .prop s, x, w => w ∈ C.F ∨ x ∈ Ev.E s w
   | .falsePLL, _x, w => w ∈ C.F
   | .and φ ψ, x, w =>
-      w ∈ C.F ∨ (realU P Ev φ (P.fst x) w ∧ realU P Ev ψ (P.snd x) w)
+      w ∈ C.F ∨ (realU P Ev φ (P.fst x) w ∧
+                 realU P Ev ψ (P.snd x) w)
   | .or φ ψ, x, w =>
-      w ∈ C.F ∨ ((P.untag x).1 = false ∧ realU P Ev φ (P.untag x).2 w)
-             ∨ ((P.untag x).1 = true ∧ realU P Ev ψ (P.untag x).2 w)
+      w ∈ C.F ∨
+        ((P.untag x).1 = false ∧
+          realU P Ev φ (P.untag x).2 w)
+      ∨ ((P.untag x).1 = true ∧
+          realU P Ev ψ (P.untag x).2 w)
   | .ifThen φ ψ, x, w =>
       ∀ v, C.Ri w v → v ∈ C.F ∨
-        (∀ b, realU P Ev φ b v → ∃ y, P.app x b = some y ∧ realU P Ev ψ y v)
+        (∀ b, realU P Ev φ b v →
+          ∃ y, P.app x b = some y ∧ realU P Ev ψ y v)
   | .somehow φ, x, w =>
-      ∀ v, C.Ri w v → v ∈ C.F ∨ (∃ u, C.Rm v u ∧ realU P Ev φ x u)
+      ∀ v, C.Ri w v → v ∈ C.F ∨
+        (∃ u, C.Rm v u ∧ realU P Ev φ x u)
 \end{lstlisting}
 
 Strategy realisability \texttt{realS} differs at \ensuremath{\bigcirc} alone
@@ -259,19 +289,27 @@ The separations of Theorem~\ref{thm:separations}, as mechanised:
 
 \begin{lstlisting}
 theorem bite_uniform_split :
-    modelOrSplit.force W3.r (somehow ((prop "A").or (prop "B"))) ∧
-    ∀ x : ℕ, ¬ realU natPca (fullEvidence natPca modelOrSplit)
-        (somehow ((prop "A").or (prop "B"))) x W3.r
+    modelOrSplit.force W3.r
+      (somehow ((prop "A").or (prop "B"))) ∧
+    ∀ x : ℕ,
+      ¬ realU natPca (fullEvidence natPca modelOrSplit)
+          (somehow ((prop "A").or (prop "B"))) x W3.r
 
-theorem uniform_dist_valid (P : Pca) {C} (Ev : Evidence P C)
-    (I : P.Carrier) (hI : ∀ b, P.app I b = some b) (φ ψ : PLLFormula) (w : C.W) :
-    realU P Ev ((somehow (φ.or ψ)).ifThen ((somehow φ).or (somehow ψ))) I w
+theorem uniform_dist_valid
+    (P : Pca) {C} (Ev : Evidence P C) (I : P.Carrier)
+    (hI : ∀ b, P.app I b = some b)
+    (φ ψ : PLLFormula) (w : C.W) :
+    realU P Ev
+      ((somehow (φ.or ψ)).ifThen
+        ((somehow φ).or (somehow ψ))) I w
 
-theorem impdist_not_uniform (I : P.Carrier) (hI : ∀ b, P.app I b = some b)
-    (e : P.Carrier) :
+theorem impdist_not_uniform (I : P.Carrier)
+    (hI : ∀ b, P.app I b = some b) (e : P.Carrier) :
     ¬ realU P (EvChain P)
-        (((somehow (prop "A")).ifThen (somehow (prop "B"))).ifThen
-          (somehow ((prop "A").ifThen (prop "B")))) e W3.r
+        (((somehow (prop "A")).ifThen
+            (somehow (prop "B"))).ifThen
+          (somehow ((prop "A").ifThen (prop "B"))))
+        e W3.r
 \end{lstlisting}
 
 \noindent (\texttt{uniform\_dist\_valid} is axiom-free.) The strategy
@@ -290,12 +328,15 @@ abbrev obsM : FinCM :=
   { n := 3, ri := [(0, 1), (0, 2)], rm := [], fall := [],
     val := [(1, "p"), (2, "q"), (1, "t"), (2, "t")] }
 
-theorem realS_fullness_obstruction (P : Pca) (κ : obsC.W → P.Carrier)
-    (htab : ∀ g : obsC.W → P.Carrier, ∃ s, ∀ i, P.app s (κ i) = some (g i)) :
+theorem realS_fullness_obstruction
+    (P : Pca) (κ : obsC.W → P.Carrier)
+    (htab : ∀ g : obsC.W → P.Carrier,
+      ∃ s, ∀ i, P.app s (κ i) = some (g i)) :
     ¬ ∃ Ev : Evidence P obsC,
-      (∀ (a : String) (w : obsC.W), ∀ x ∈ Ev.E a w, w ∈ obsC.V a) ∧
-      (∀ (φ : PLLFormula) (w : obsC.W), obsC.force w φ →
-        ∃ x, x ⊩ˢ[Ev, κ, w] φ)
+      (∀ (a : String) (w : obsC.W),
+        ∀ x ∈ Ev.E a w, w ∈ obsC.V a) ∧
+      (∀ (φ : PLLFormula) (w : obsC.W),
+        obsC.force w φ → ∃ x, x ⊩ˢ[Ev, κ, w] φ)
 \end{lstlisting}
 
 The extraction results cited in Section 7: combinatory completeness for
@@ -313,10 +354,12 @@ Theories are triples; promises are guarded by \ensuremath{\bigcirc}:
 structure FTheory where
   val  : Finset PLLFormula   -- validated (believed)
   fal  : Finset PLLFormula   -- falsified here
-  mfal : Finset PLLFormula   -- promised: falsified at every Rₘ-successor
+  mfal : Finset PLLFormula   -- promised: falsified at
+                             --   every Rₘ-successor
 
--- Consistent ⟨V, F, M⟩ iff for no finite Ds ⊆ F, Ts ⊆ M (jointly
--- nonempty):  V ⊢ ⋁Ds ∨ ◯(⋁Ts)
+-- Consistent ⟨V, F, M⟩ iff for no finite
+-- Ds ⊆ F, Ts ⊆ M (jointly nonempty):
+--   V ⊢ ⋁Ds ∨ ◯(⋁Ts)
 \end{lstlisting}
 
 Consistency of a finite triple collapses to its worst case — one
@@ -326,8 +369,10 @@ derivability question, decided by \texttt{decidablePLL}
 clean‡ wrapper) — and the Lindenbaum construction is a decided fold:
 
 \begin{lstlisting}
-noncomputable def extendStep (T : FTheory) (φ : PLLFormula) : FTheory :=
-  if (T.insVal φ).Cons then T.insVal φ else T.insFal φ
+noncomputable def extendStep
+    (T : FTheory) (φ : PLLFormula) : FTheory :=
+  if (T.insVal φ).Cons
+  then T.insVal φ else T.insFal φ
 
 theorem lindenbaum {cl : Finset PLLFormula} {T : FTheory}
     (hT : T.Cons) (hIn : InCl cl T) :
@@ -340,7 +385,8 @@ the extension dichotomy \texttt{cons\_insVal\_or\_insFal}, and the fold
 never writes to the promises, an equality the truth lemma uses twice.
 
 \begin{lstlisting}
-def canonFin (cl : Finset PLLFormula) : ConstraintModel where
+def canonFin (cl : Finset PLLFormula) :
+    ConstraintModel where
   W  := {T : FTheory // MaxIn cl T}
   Ri T T' := T.1.val ⊆ T'.1.val
   Rm T T' := T.1.val ⊆ T'.1.val ∧ T.1.mfal ⊆ T'.1.mfal
@@ -352,9 +398,11 @@ theorem truth_lemma {cl} (hcl : SubClosed cl) :
       (φ ∈ T.1.val → (canonFin cl).force T φ) ∧
         (φ ∈ T.1.fal → ¬ (canonFin cl).force T φ)
 
-theorem emitter_completeness {Γ : List PLLFormula} {C : PLLFormula}
+theorem emitter_completeness
+    {Γ : List PLLFormula} {C : PLLFormula}
     (h : ¬ Nonempty (LaxND Γ C)) :
-    ∃ (M : FinCM) (w : Nat), FinCM.checkB M w Γ C = true
+    ∃ (M : FinCM) (w : Nat),
+      FinCM.checkB M w Γ C = true
 \end{lstlisting}
 
 \noindent All \texttt{[propext, Quot.sound]}. The three Lindenbaum
@@ -366,8 +414,10 @@ Theorem~\ref{thm:adequacy-fullness}. At \ensuremath{\vee}, fullness computes
 the branch by running the executable forcing of the left disjunct:
 
 \begin{lstlisting}
-fun w => if M.forceB w.1 φ = true then P.tag false (witφ w)
-         else P.tag true (witψ w)
+fun w =>
+  if M.forceB w.1 φ = true
+  then P.tag false (witφ w)
+  else P.tag true (witψ w)
 \end{lstlisting}
 
 \noindent If the test succeeds, the left inductive fullness supplies the
@@ -380,7 +430,8 @@ finite frame:
 fun v => match (List.finRange M.n).find?
     (fun u => M.rmB v.1 u.1 && M.forceB u.1 φ) with
   | some u => P.pair (κ u) (witφ u)
-  | none   => P.pair (κ v) (witφ v)    -- unreachable when obliged
+  | none   => P.pair (κ v) (witφ v)  -- unreachable
+                                     --   when obliged
 \end{lstlisting}
 
 \noindent When \ensuremath{\bigcirc\varphi} is forced, the \ensuremath{\forall\exists}
@@ -400,7 +451,7 @@ reproduced. The audited statements:
 \begin{lstlisting}
 theorem strong_normalisation {Γ φ} (t : Tm Γ φ) : SNt t
 
-def Tm.normalize {Γ φ} (t : Tm Γ φ) : Tm Γ φ          -- total normaliser
+def Tm.normalize {Γ φ} (t : Tm Γ φ) : Tm Γ φ
 theorem Tm.normalize_spec {Γ φ} (t : Tm Γ φ) :
     Steps t t.normalize ∧ Nf t.normalize
 \end{lstlisting}
@@ -433,7 +484,9 @@ any claimed result.
 \noindent Orientation, by the sections of this paper:
 
 \begin{center}
-\small
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{lll}
 result & Lean name & audit \\
 \hline
@@ -451,7 +504,7 @@ open = closed iff EM at a & \texttt{em\_of\_openNucleus\_eq\_...} & clean \\
 infinite closed fragment & \texttt{closed\_lax\_infinite} & clean \\
 context completeness & \texttt{Ctx.thm6}, \texttt{Ctx.corollary10} & clean \\
 doxastic profile & \texttt{BeliefIdealisation}/\texttt{Normality}/\texttt{Falsum} & clean \\
-3-chain enumeration & \texttt{chain3\_card}, \texttt{chain3\_open\_ne\_closed} & clean \\
+3-chain enumeration & \texttt{chain3\_card} (+ separation) & clean \\
 the separations & \texttt{BeliefRealisability.lean} & see file \\
 the obstruction & \texttt{realS\_fullness\_obstruction} & [p,Q] \\
 adequacy + fullness & \texttt{realP\_adequate\_and\_full} & [p,Q] \\
@@ -460,7 +513,7 @@ decided Lindenbaum, truth lemma & \texttt{lindenbaum}, \texttt{truth\_lemma} & [
 emitter completeness & \texttt{emitter\_completeness} & [p,Q] \\
 \textbf{the crown} & \texttt{derivable\_iff\_no\_realP\_refutation} & [p,Q] \\
 idempotence \ensuremath{\ne} isomorphism & \texttt{mu\_eta\_not\_mutually\_inverse} & [propext] \\
-\end{tabular}
+\end{tabular}}
 \end{center}
 
 \medskip

@@ -250,9 +250,17 @@ obstruction, App C canonical model + decoration witnesses, App D term
 calculus, App E artefact guide). **Measured: 14 pp total — main matter
 §1–§10 ends p9 (≈9.3 pp, ≈2.7 pp headroom), App A–E pp10–13,
 references pp13–14; 0 missing glyphs, 0 undefined citations; automatic
-counters reproduce 3.1–3.4, 5.1–5.2, 6.1–6.5, 7.1–7.2.** Remaining
-polish: ~30 overfull Lean lines to reflow; prose-math conversion;
-full-bibliography citation sweep beyond the 24 keys now cited.
+counters reproduce 3.1–3.4, 5.1–5.2, 6.1–6.5, 7.1–7.2.** Polish round
+DONE (2026-07-19 later): reflow complete (1 residual overfull, 1.7pt);
+prose-math conversion (pour-time chains merged into real math, quotes
+curled, "credulist" normalised); citation sweep to 44 cited entries;
+countermodel diagrams inserted (Figs. 1–2, TikZ from PLLDiagram.lean);
+the timing case study (Study 1 of the applications list —
+PLLTiming/PLLTimingAdder, falsePath/skip_beats_topological AXIOM-FREE)
+claimed in §7 with the wider programme deferred to a companion paper.
+Main matter now ends p10 (~9.8pp); App A–E pp11–13 (scriptsize
+listings); references pp14–15. Two-column stays for camera-ready
+(acmart/TAPS constraint); wide material's escape hatch is figure*.
 
 ## 6. Decisions — Matthew ruled 2026-07-18
 

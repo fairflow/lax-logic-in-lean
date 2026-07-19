@@ -20,7 +20,8 @@ TeX Live 2025; LuaLaTeX for Unicode (see the TAPS note at the head of
 | `belief.tex` | acmart wrapper: class options, fonts, listings setup, theorem environments, metadata, TODOs |
 | `abstract.tex` | abstract (from draft rev 2) |
 | `body.tex` | §§1–10, poured from `../docs/belief-paper-draft.md` rev 2 by pandoc + fix-ups (theorem environments, `\cite`s); content edits carry `%% TODO(D…)` markers keyed to the selection doc |
-| `appendix.tex` | Appendices A–E stubs per the selection doc §4 |
+| `appendix.tex` | Appendices A–E in full (listings at `\scriptsize` — reference material) |
+| `figs/` | TikZ countermodel diagrams, copied from the build-regenerated `../docs/figures/*.tikz` with two mechanical patches (`∅`→`\varnothing`, `◯`→`\bigcirc` — raw Unicode fails in math mode); re-copy after regenerating the art |
 | `unicode.tex` | generated listings `literate` table, **currently unused** — kept solely for a possible future pdflatex/TAPS port (where listings + literate is the working combination) |
 | bibliography | `../docs/belief.bib` (119 entries; pruning is a later human step) |
 
