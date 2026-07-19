@@ -1,5 +1,10 @@
 # Belief in Lax Logic
 
+*SUPERSEDED AS WORKING MASTER (2026-07-19): the paper now lives in
+`paper/` (`belief.tex`/`body.tex`/`appendix.tex`), where the merge pass
+(selection doc §2, decisions D1–D9) was applied; edits are not
+back-ported here. This file remains the revision-2 record.*
+
 *Master draft, revision 2 (2026-07-18) — rewritten in the register of
 Fairtlough–Mendler, I&C 137(1), 1997, whose completeness construction
 this paper finitises and whose introduction it deliberately echoes.

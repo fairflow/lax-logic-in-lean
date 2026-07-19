@@ -235,6 +235,25 @@ record; the measured column supersedes them.
 | §10 | 202 | 0.25 | |
 | **total** | | **≈ 12.0** | refs + App A–E outside the limit |
 
+## 6½. MERGE PASS EXECUTED (2026-07-19, in `paper/`)
+
+All rulings below are now applied to the TeX (which is the working
+master; the markdown draft carries a supersession note): Craig +
+conservativity in §2; 3-chain, 𝕊-Boolean and Prop 3.4 in §3; Thm 5.1
+(separations, four parts) + Thm 5.2 (obstruction) in §5; §6.1 ∨/◯ case
+detail moved to App C; taint paragraph moved §6.2→§9; Remarks 6.4/7.1
+trimmed; Prop 7.2 in §7; §8 grown (KD45 baseline, topological evidence
+models, authorization logic, mechanised neighbours); §9 audit-wrapper
+wording + choice-surgery + SN-priority sentences; §10 Craig contrast.
+Appendices A–E written in full (App A base, App B evidence/separations/
+obstruction, App C canonical model + decoration witnesses, App D term
+calculus, App E artefact guide). **Measured: 14 pp total — main matter
+§1–§10 ends p9 (≈9.3 pp, ≈2.7 pp headroom), App A–E pp10–13,
+references pp13–14; 0 missing glyphs, 0 undefined citations; automatic
+counters reproduce 3.1–3.4, 5.1–5.2, 6.1–6.5, 7.1–7.2.** Remaining
+polish: ~30 overfull Lean lines to reflow; prose-math conversion;
+full-bibliography citation sweep beyond the 24 keys now cited.
+
 ## 6. Decisions — Matthew ruled 2026-07-18
 
 - **D1 — promote now: YES. DONE** (see §1; audits pinned, root import added,
@@ -243,9 +262,9 @@ record; the measured column supersedes them.
   **Thm 5.1(i)–(iv)**; the obstruction becomes **Thm 5.2**; doxastic profile
   becomes **Prop 3.4**; μ/η non-isomorphism becomes **Prop 7.2**. To be
   implemented in the draft during the merge pass.
-- **D3 — examples: OPEN** (not yet ruled). 3-chain paragraph is in either
-  way; the 5-element non-linear Heyting algebra + `decide`-grade 4-chain/2×2
-  counts await Matthew's go-ahead before any new mechanisation.
+- **D3 — examples: RULED 2026-07-19 — 3-chain only.** The clean-audit
+  3-chain enumeration is in §3; the `native_decide`-flagged 4-chain/2×2
+  counts and the 5-element Heyting algebra are OUT (no new mechanisation).
 - **D4 — try the scrub: ADOPTED — and DONE (2026-07-18), full success.**
   `PLLCraig.lean` rebuilt on `finUnion` + membership-form lemmas:
   `SCh.maehara`, `SC.maehara'`, `craig_interpolation'`, `craig_implication'`
