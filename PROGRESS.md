@@ -422,3 +422,18 @@ remain the two definability targets).
   residue world of the §0(j) analysis, now machine-checked.  Frame
   theories over the same names provably cannot close the lowT/sideT
   gap; the constraint pool itself must grow.  Fork: BOTH ◯-rows certified-refuted by the same one-world model (§0(m)); prediction confirmed on all three test models.
+
+## 11. 2026-07-19 (evening, Matthew's instruction): the general fails-half PROVED
+
+`LaxLogic/PLLSemUIRes.lean` (library, audited; the collapse lemma at
+[propext] alone): residue model + ResiduePair (the Lemma-7 shape at a
+non-fallible Rₘ-stable world) + the collapse `residue_applyC` (C[x] ↔ x
+at the residue point) + diagram derivations `diag_row1/row2` (via
+completeness) + engine `residue_obstruction` + headlines
+`fails_half_boxp_imp_p` / `fails_half_box_lob`: for EVERY such
+constraint, EVERY IsIPCAll-value of the two frame-changing rows, and
+EVERY n₀-avoiding frame theory of negated atoms, A :: Θ cannot derive
+the translated PLL value.  chain3's §0(m) certificate re-derived as
+corollary `chain3_fails_half`.  The fails-half of the fallibility
+prediction is now a general THEOREM; the holds-half (chain2 direction)
+remains OPEN as a general law.

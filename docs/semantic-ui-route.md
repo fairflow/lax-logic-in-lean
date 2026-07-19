@@ -616,7 +616,8 @@ decorated `{a_u}` makes every `C[x]` equivalent to `x` (the u-pair's
 disjunct-side is false, every other pair's guard is false), so the
 translation collapses to identity there and the tower-∀ survives
 while any ⊥-bounded translated value fails.  Formalising THAT
-one-world argument is a short-lemma route to the general fails-half.
+one-world argument was the short-lemma route to the general
+fails-half — DONE the same evening, see §0(n).
 
 CONSEQUENCE.  Frame theories over the SAME constraint names provably
 cannot close the lowT/sideT gap (a one-world countermodel survives
@@ -625,3 +626,47 @@ must therefore enlarge the CONSTRAINT POOL (variant models' Lemma-7
 constraints — doubled/Löb saturations), not the ambient theory.  This
 is the per-instance finite-support picture arriving from the third
 independent direction.
+
+### (n) 2026-07-19 evening: the general fails-half — PROVED (`LaxLogic/PLLSemUIRes.lean`)
+
+The uniform one-world argument of §0(m) is now a THEOREM, fully
+general in the constraint and the frame theory.  The pieces (all
+audited ≤ [propext, Classical.choice, Quot.sound]; the collapse needs
+only [propext]):
+
+* `residue n₀` — the one-world model: infallible, total relations,
+  exactly `n₀` true.
+* `ResiduePair n₀ bad C` — the Lemma-7 shape at a non-fallible
+  Rₘ-stable world: a pair `(α_{n₀}, ⋁ covers)` with covers named in
+  `bad`, every other pair named in `bad`, `n₀ ∉ bad`.
+* `residue_applyC` — THE COLLAPSE: at the residue point,
+  `C[x] ⊨ ↔ x ⊨` — the translation degenerates to the identity.
+* `diag_row1`/`diag_row2` — the diagram `n₀ ∧ ⋀_{a∈bad} ¬a` DERIVES
+  the translations `(◯p⊃p)^C` and `(◯(◯p⊃p))^C` over all constraint
+  models (forced covers make worlds fallible; fallible worlds force
+  p), via `completeness`.
+* `residue_obstruction` — engine: the diagram transports any
+  `IsIPCAll`-value of the translation to the residue point (spec +
+  `soundness`), which then blocks derivability of anything it
+  refutes.
+
+**Headlines**:
+
+    fails_half_boxp_imp_p :
+      ResiduePair n₀ bad C → p ∉ {n₀} ∪ bad →
+      IsIPCAll p isIPL ((◯p⊃p)^C) A →
+      (Θ = n₀-avoiding negated atoms) →
+      ¬ Nonempty (LaxND (A :: Θ) ⊥)
+
+    fails_half_box_lob : likewise  ¬ (A :: Θ ⊢ (◯⊥)^C)
+
+So for EVERY constraint of the Lemma-7 shape at a non-fallible stable
+world, EVERY IPC ∀p-value of the two frame-changing rows, and EVERY
+fallibility-style frame theory: the value cannot be brought down to
+the translated PLL value.  The §0(m) certified instances are now
+corollaries (`chain3_fails_half` re-derives the chain3 certificate
+from the general theorem).  The "fails" half of the fallibility
+prediction is thereby PROVED in full generality; only its converse
+(commutation when ALL stable worlds are fallible — the chain2
+direction) remains OPEN as a general law, currently verified
+per-instance.
