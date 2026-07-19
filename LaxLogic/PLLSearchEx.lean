@@ -49,6 +49,7 @@ def isDerivable {Γ C} : Decision Γ C → Bool
 -- Every decision is `.derivable` — i.e. carries the theorem
 -- `Nonempty (LaxND [] axiom)` extracted from the proof term.
 #guard hilbert.all fun a => isDerivable (dec a)
+#eval hilbert.all fun a => isDerivable (dec a)
 
 /-! ## 3. Extraction
 
