@@ -341,3 +341,25 @@ remain the two definability targets).
   complete conjecture with a uniform syntactic proof target (see the
   table doc). Oracle warning: failing `search` cost is CHAOTIC in
   fuel (non-monotone); cap weights and order cheap attempts first.
+
+### §8 continued — overnight 2026-07-19 (same branch)
+
+* **The reconstruction reduction (PROVED)**: definability follows if
+  the generator conjunction (∀-side) / disjunction (∃-side)
+  reconstructs M — `isSemAll/isSemEx_of_reconstruction`,
+  `semAll/semEx_definable_of_reconstruction`.
+* **Fixed bases REFUTED, machine-checked, both sides**: ∀-side at the
+  Peirce family — the exhaustive weight-≤7 sweep (2758 formulas) has
+  exactly 8 failures, all `(X⊃p)⊃Y` with X ∈ {◯⊥,◯p,◯◯⊥,◯◯p}; Lean
+  witness `∀p.((◯⊥⊃p)⊃p) = ◯⊥` (`semAll_peirce`, `allRec_fails`).
+  ∃-side at the biconditional `(¬◯⊥⊃p)∧(p⊃¬◯⊥)` (weight 14):
+  `∃p = ⊤` (`semEx_bicond_top`, `exRec_fails`); oracle finds the next
+  escape at the ◯¬◯⊥-biconditional (weight 16).
+* **Repairs oracle-verified everywhere**: ladder-rung substitutions
+  (◯⊥ for ∀; ¬◯⊥/◯¬◯⊥ for ∃) fix every found failure; iterated Löb
+  to depth 4 reconstructs without new frame constructions.
+* **The per-instance support law**: generator pool = substitutions
+  over the closed-fragment rungs occurring in M + lowT + sideT.
+  Converges with the corrected-Cor-10 constraint-transfer analysis:
+  the canonical descriptions must record exactly the ladder rungs of
+  cl(M) — the promise/Θ data.
