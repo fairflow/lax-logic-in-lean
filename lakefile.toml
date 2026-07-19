@@ -69,3 +69,8 @@ root = "wip.semui_lawsweep"
 [[lean_exe]]
 name = "weightrepro"
 root = "wip.semui_repro"
+
+# Frontier-row investigation.
+[[lean_exe]]
+name = "frontrow"
+root = "wip.frontier_row"
