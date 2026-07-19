@@ -487,3 +487,23 @@ construction descending to ◯⊥) is now the named mainline target;
 chain4 frame added to Search.defaultFrames + probe battery.  Also:
 PLLSearchEx (Hilbert axioms via PLLSearch, answers→decisions, both
 #guard-verified; WF-recursion kernel-reduction limitation documented).
+
+## 16. 2026-07-20 overnight: split variant MECHANISED — frontier value PROVED
+
+LaxLogic/PLLSemUISplit.lean (sorry-free, audits pinned at
+[propext, Classical.choice, Quot.sound]).  t₃ = the split: duplicate
+the Rᵢ-cluster of z isomorphically strictly above itself (whole
+cluster, not one point — the pointwise m-zigzag forces this in
+non-antisymmetric preorders; on posets = the one-point §0(u) form),
+copies carry internal Rₘ and escape only to strict Rₘ-successors, p
+on copies ∪ strict cone ∪ F.  Projection = total PBisim.  Payoffs:
+semAll_frontier `∀p.(((p⊃◯⊥)⊃p)⊃p) = ◯⊥` (upper half: no ◯⊥ ⇒ some
+future has fallibility-free Rₘ-row ⇒ split there refutes the row);
+boxBot_derives_frontier; poolAll_not_derives_value (pool provably
+below the value it cannot reach); semAll_em_p_via_split (split
+subsumes the doubling on ∀p.(p∨¬p) = ⊥).  Fourth machine-checked
+modal quantifier value; first beyond the whole transform pool.
+OPEN: iterated splits vs the levelled row ◯(◯p⊃p); syntactic splT
+(cluster-anchored ⊃-clauses obstruct a naive formula transform;
+canonical model is a poset — trivial-cluster form may suffice);
+graded law.

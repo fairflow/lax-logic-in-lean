@@ -930,3 +930,61 @@ contributes an ∃-witness condition over w₀'s strict Rₘ-successors).
 Equations sketched in the session log; the mechanisation
 (splitVariant + PBisim + evaluation lemmas + extended criterion +
 `semAll_frontier : ∀p.(((p⊃◯⊥)⊃p)⊃p) = ◯⊥`) is the next work item.
+
+### (v) 2026-07-20 overnight: the split MECHANISED — `∀p.(((p⊃◯⊥)⊃p)⊃p) = ◯⊥` PROVED
+
+`LaxLogic/PLLSemUISplit.lean` — sorry-free, full library green, all
+seven theorems ≤ [propext, Classical.choice, Quot.sound]
+(`#guard_msgs`-pinned for the two flagships).
+
+**One correction to the §0(u) design, forced by the mechanisation.**
+The one-point ⋆ satisfies the pointwise m-zigzag of `ABisim` only when
+the cluster of w₀ is trivial.  In a general preorder the zag at a
+cluster point v ≠ w₀ must match ⋆'s merged constraint row against v's
+own row — impossible when the cluster is Rₘ-inhomogeneous.  The
+mechanised form therefore duplicates the WHOLE Rᵢ-cluster of z
+isomorphically (`SplitW C z := C.W ⊕ {v // v Rᵢ z ∧ z Rᵢ v}`), the
+copies carrying the cluster's internal Rₘ-structure and escaping only
+to strict Rₘ-successors of the world each copy duplicates.  On a
+poset the cluster is {z} and the §0(u) one-point form is recovered
+verbatim.  (A by-product observed en route: cluster collapse is NOT a
+bisimulation for the ∀∃ ◯-clause — ◯ sees inside clusters — so the
+duplication cannot be quotiented away.)
+
+Contents of the new module:
+
+* `splitModel C z`, `splitSet`, `splitVariant C p z` — the split with
+  p on copies ∪ strict cone ∪ F.  All frame conditions PROVED.
+* `splitVariant_pbisim` — the projection is a TOTAL p-bisimulation
+  (each copy is a p-variant of the world it duplicates); the two
+  `by_cases` route an original-side successor to its copy when it
+  stays in the cluster, to itself when it escapes.
+* `splitVariant_not_frontier` — at any z whose Rₘ-row is
+  fallibility-free, `inl z` forces (p⊃◯⊥)⊃p but not p: z's copy ⋆
+  forces p but never ◯⊥ (its constraint row is z's own, shifted off
+  the cluster), so no cluster world can force p⊃◯⊥.
+* `semAll_frontier (p) : IsSemAll p (((p⊃◯⊥)⊃p)⊃p) ◯⊥` — the
+  frontier value.  Lower half: below ◯⊥ every future forces p⊃◯⊥
+  outright.  Upper half: no ◯⊥ at w ⇒ (classically) some future x has
+  a fallibility-free Rₘ-row ⇒ split at x refutes the row at x, and
+  the IsSemAll spec's Rᵢ-guard accepts the future directly.
+* `semAll_frontierRow` — the same at the pinned `frontierRow`;
+  `boxBot_derives_frontier` — ◯⊥ ⊢ the row (previously only a found
+  term); `poolAll_not_derives_value` — the transform pool cannot
+  derive ◯⊥ at this row (compose with the certified countermodel):
+  the split reaches what the pool provably cannot.
+* `semAll_em_p_via_split` — ∀p.(p ∨ ¬p) = ⊥ re-proved via the split:
+  the copy is the generic p-point.  The split subsumes the doubling's
+  value.
+
+**Still OPEN** (next session): (i) whether iterated splits subsume the
+levelled construction too (the ◯(◯p⊃p) row) — single splits do not
+obviously, since a split point with strict Rₘ-successors gives ⋆ a
+◯p⊃p-witness; (ii) the syntactic transform layer `splT` over the
+split (the analogue of lowT/sideT feeding the graded law): the copies
+form an Rᵢ-blob whose ⊃-clauses are anchored at the cluster rather
+than pointwise, so a formula-level transform must absorb the
+cluster/strict sort distinction — note the finite canonical model is
+a poset, where the trivial-cluster form may suffice; (iii) the graded
+reconstruction law itself (downward-closed pivot sets, height =
+◯/⊃-alternation conjecture).
