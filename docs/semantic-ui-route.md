@@ -150,6 +150,92 @@ closed ξ ⊢ M (dually for ∃) — a purely syntactic statement over the
 RN lattice.  Oracle pathology recorded in the table doc: failing
 `search` cost is chaotic (non-monotone in fuel); successes instant.
 
+**(h) The reconstruction reduction (2026-07-19, overnight session;
+PROVED in `wip/semantic_ui.lean`).**  Writing `M[χ]` for the
+substitution `substP p χ M`, define the p-free candidates
+
+    allCand p M  :=  M[⊥] ∧ M[⊤] ∧ lowT p M ∧ sideT p M
+    exCand  p M  :=  M[⊥] ∨ M[⊤] ∨ M[◯⊥] ∨ lowT p M ∨ sideT p M
+
+Because each conjunct/disjunct is a generator instance, one direction
+of each spec holds by construction, and (`isSemAll_of_reconstruction`,
+`isSemEx_of_reconstruction`, `semAll/semEx_definable_of_reconstruction`)
+**definability reduces to two sequent families**, the *reconstruction
+sequents*:
+
+    (∀-rec)   M[⊥], M[⊤], lowT p M, sideT p M  ⊢  M
+    (∃-rec)   M  ⊢  M[⊥] ∨ M[⊤] ∨ M[◯⊥] ∨ lowT p M ∨ sideT p M
+
+If (∀-rec) holds for M then `allCand p M` IS the ∀p-value of M; dually
+for (∃-rec).  Both families are single derivability statements per
+instance — decidable, and oracle-testable.
+
+Status of the families, settled the same night, both ways:
+
+**(i) The FIXED bases are REFUTED — machine-checked — and the repairs
+identify the per-instance law.**
+
+*∃-side* (`exRec_fails`, `exCand_not_value`): for the biconditional
+
+    bicond p := (¬◯⊥ ⊃ p) ∧ (p ⊃ ¬◯⊥)          (weight 14)
+
+decorating p by the ¬◯⊥-truth set forces `bicond p` everywhere, so
+`∃p.(bicond p) = ⊤` (`semEx_bicond_top`, certified by the substitution
+`p := ¬◯⊥`) — but on the four-world model w₀ < v₁, w₀ < v₂ < f
+(Rₘ = id ∪ {v₂→f}, F = {f}, V(p) = {v₁,f}) all five `exCand` disjuncts
+fail at the root while `bicond p` holds.  The oracle independently
+confirms this failure and finds the next at `bicond` over ◯¬◯⊥
+(weight 16); adding the corresponding ladder substitutions repairs
+both.
+
+*∀-side* (`allRec_fails`, `allCand_not_value`): the exhaustive sweep
+(`wip/semui_sweep.lean`, ALL 2758 raw one-variable formulas of weight
+≤ 7) found exactly 8 failures — all of the **Peirce/stability family**
+
+    (X ⊃ p) ⊃ Y      with  X ∈ {◯⊥, ◯p, ◯◯⊥, ◯◯p},  Y ∈ {p, ◯p}
+
+(plus ◯-prefixed variants).  Machine-checked witness:
+`peirce p := (◯⊥ ⊃ p) ⊃ p` on the three-world chain a < b < f with
+p decorated by the ◯⊥-truth set: the root forces all four `allCand`
+generators but not `peirce p`.  The value exists:
+`∀p.((◯⊥⊃p)⊃p) = ◯⊥` (`semAll_peirce`), certified by `p := ◯⊥` —
+absent from the four-generator basis.  Adding `M[◯⊥]` to the ∀-pool
+repairs ALL EIGHT sweep failures (oracle, instant).
+
+*Deep alternation does NOT grow the frame-changing basis*: iterated
+Löb formulas to depth 4, the gap shape `◯(¬◯p ⊃ ◯p)`, and `◯(¬p ∨ ◯p)`
+all reconstruct from the existing generators — the escapes are always
+ladder-rung SUBSTITUTIONS, never new levelled models (up to the depths
+probed).
+
+**The per-instance support law (the corrected conjecture).**  For every
+one-variable M, the generator pool
+
+    { M[χ] : χ a closed-fragment rung occurring (as a class) in M }
+      ∪ { lowT p M, sideT p M }
+
+reconstructs M on both sides — verified on: the full weight-≤5 value
+table, all 2758 weight-≤7 formulas (∀-side with the ◯⊥-rung; ∃-side
+as is), the Peirce-8, the bicond family through weight 16, and the
+depth-3/4 battery.  Definability at one variable thus reduces (by the
+PROVED reduction) to this per-instance reconstruction — a finite-
+support statement of exactly the shape of route (c)'s corrected
+Corollary-10 analysis: the two routes have converged on the same
+per-instance finite object.
+
+A *naive* structural induction on M does not prove the reconstruction:
+in the ⊃-case, splitting a hypothesis `A` by (∃-rec for A) yields,
+say, `A[⊥]` at the world, and the transform conjunct `A[⊥] ⊃ B[⊥]`
+then gives only `B[⊥]` — reassembling `B` needs all of B's
+generators, to which the case gives no access.  The missing
+ingredient is a JOINT statement tracking which canonical decoration
+the world inhabits across all subformulas simultaneously — precisely
+what canonical-model descriptions provide.  So the intended uniform
+proof is the de Jongh-style induction over the finite canonical model
+of cl(M), with the generator family as its computational shadow — and
+the refutations above say the descriptions must record exactly the
+ladder rungs of cl(M), i.e. the promise/Θ data.
+
 ## 1. What was proved today, and what it compresses the problem to
 
 Ghilardi's semantic method characterises the Pitts quantifiers by

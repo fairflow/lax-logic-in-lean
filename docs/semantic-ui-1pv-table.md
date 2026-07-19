@@ -102,3 +102,28 @@ level-by-level over the RN lattice, whose proof would close the ∀-side
 (dually for ∃).  The tower picture (2-level, 3-level, …) predicts where
 deeper generators would be needed: ◯/⊃-alternation depth beyond the
 probe's weight cap.
+
+---
+
+## Addendum (overnight session): the reconstruction reduction, its refutation, and the per-instance law
+
+Full statements in `docs/semantic-ui-route.md` §0(h)–(i); Lean anchors
+in `wip/semantic_ui.lean`.  In brief:
+
+1. **Reduction (PROVED)**: definability follows if the generator
+   conjunction/disjunction reconstructs M
+   (`isSemAll_of_reconstruction`, `isSemEx_of_reconstruction`).
+2. **Fixed bases REFUTED (machine-checked)**: the ∀-side four-generator
+   basis fails exactly on the Peirce family — 8 failures in all 2758
+   formulas of weight ≤ 7, witness `(◯⊥⊃p)⊃p` with
+   `∀p.((◯⊥⊃p)⊃p) = ◯⊥` (`semAll_peirce`); the ∃-side five-generator
+   basis first fails at `(¬◯⊥⊃p)∧(p⊃¬◯⊥)` (weight 14) with
+   `∃p.(bicond) = ⊤` (`semEx_bicond_top`).
+3. **Repairs verified (oracle)**: adding the ladder-rung substitutions
+   (`p := ◯⊥` on the ∀-side; `p := ¬◯⊥, ◯¬◯⊥` on the ∃-side) repairs
+   every found failure; deep alternation (iterated Löb to depth 4)
+   never needs new frame constructions.
+4. **The law**: per-instance generator pools — substitutions over the
+   closed-fragment rungs occurring in M, plus `lowT`, `sideT`.  The
+   sweep files: `wip/semui_sweep.lean` (exhaustive ≤ 7),
+   `wip/semui_deep.lean` (targeted depth 3–4).
