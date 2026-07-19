@@ -86,11 +86,11 @@ def main : IO Unit := do
   -- the original probes print spurious "0 ms" for these stages.
   let t0 ← IO.monoMsNow
   let Apl := nf (itpA "p" (pieceClosure Tf) TFUEL 2 [] Tf)
-  let wApl := Apl.weight
+  pl s!"    plain tower w={Apl.weight}"
   let Arel := towerARel Θf Tf 2
-  let wArel := Arel.weight
+  pl s!"    RELATIVE TOWER w={Arel.weight}"
   let t1 ← IO.monoMsNow
-  pl s!"    plain tower w={wApl}, RELATIVE TOWER w={wArel}  ({t1 - t0} ms, forced)"
+  pl s!"    (both towers, IO-forced: {t1 - t0} ms)"
   pl s!"    head of the relative tower: {head (pf Arel) 100} …"
 
   -- (2)+(3) pool: chain3, alphabets a/b/c, the big c-tower and the
@@ -106,17 +106,18 @@ def main : IO Unit := do
     let t2 ← IO.monoMsNow
     let raw := itpA "p" (spaceOf Θpool (nf (subC pc.2 MLob))) TFUEL 2
       Θpool (nf (subC pc.2 MLob))
-    let rawW := raw.weight
+    pl s!"    tower {pc.1}: raw weight {raw.weight}"
     let t3 ← IO.monoMsNow
     let A := nf raw
-    let wA := A.weight
+    pl s!"      nf weight {A.weight}"
     let t4 ← IO.monoMsNow
-    pl s!"    tower {pc.1}: raw weight {rawW} ({t3 - t2} ms construct+force), nf weight {wA} ({t4 - t3} ms nf)"
+    pl s!"      (construct+weigh {t3 - t2} ms, nf+weigh {t4 - t3} ms)"
     As := As ++ [(pc.1, A)]
 
   let t5 ← IO.monoMsNow
   let poolF := nf (bigAnd (As.map (·.2)))
   let wPool := poolF.weight
+  pl s!"    (pool conjunction forced: weight {wPool})"
   let t6 ← IO.monoMsNow
   let target := nf (subC (Cs.getD 0 default).2 gB)
   pl s!"(3) pool conjunction weight {wPool} ({t6 - t5} ms, forced); target (◯⊥)^C_a = {pf target}"

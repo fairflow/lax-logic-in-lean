@@ -833,8 +833,13 @@ TIMING CORRECTION (from the reproduction probe, see §0(l) erratum):
 the probes' "towers built in 0 ms" lines were an instrumentation
 artifact — the compiler inlines used-once pure `let` bindings to
 their first use, moving the construction past the timing brackets.
-Honestly forced: the large towers cost on the order of 10–100 s
-compiled (still versus interpreter runs that never finished); the
-VERIFIED checker really does certify the weight-856k pool sequent in
-< 1 ms with inputs pre-forced (the countermodel has one world, where
-the checker is linear in formula size).
+Honestly forced (IO-use between timestamps — a `let`-bound weight is
+inlined past the bracket too; two instrumentation rounds were needed):
+the fork towers (w 753/1476) really take 8 ms; pool towers a, b take
+2–3 ms (raw 18,209 → nf 560); the ENTIRE cost of the pool run is ONE
+object — the Löb-variant tower c, raw weight 432,814,618, costing
+99.5 s to construct+traverse plus 2.7 s to normalise (nf weight
+855,029; compression 506:1).  The VERIFIED checker certifies the
+weight-856,179 pool sequent in < 1 ms with inputs pre-forced (the
+countermodel has one world, where the checker is linear in formula
+size).  Reproduction: `wip/semui_repro.lean`, `lake exe weightrepro`.
