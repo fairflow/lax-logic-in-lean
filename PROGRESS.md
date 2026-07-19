@@ -437,3 +437,15 @@ the translated PLL value.  chain3's §0(m) certificate re-derived as
 corollary `chain3_fails_half`.  The fails-half of the fallibility
 prediction is now a general THEOREM; the holds-half (chain2 direction)
 remains OPEN as a general law.
+
+## 12. 2026-07-19 (late): the holds-half PROVED — the dichotomy closes
+
+Same file (PLLSemUIRes.lean).  ThetaNamed (all pair-names Θ-negated =
+all stable worlds fallible) → theta_applyC ([propext]): Θ derives
+every C[x] → holds_half_boxp_imp_p (choice-free): every IsIPCAll-value
+A of (◯p⊃p)^C is Θ-equivalent to ⊥ (A,Θ ⊢ p by lower+theta_applyC,
+then substND p:=⊥); holds_half_box_lob: A ≡_Θ (◯⊥)^C (Θ derives the
+value outright and A via greatest at ⋀Θ).  chain2 verdict = corollary
+chain2_holds_half.  With §11's fails-half the Lemma-7 dichotomy is a
+pair of theorems: commutes iff no Θ-avoiding pair-name — the
+fallibility prediction PROVED both ways at the constraint level.

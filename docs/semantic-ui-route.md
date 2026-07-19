@@ -670,3 +670,35 @@ prediction is thereby PROVED in full generality; only its converse
 (commutation when ALL stable worlds are fallible — the chain2
 direction) remains OPEN as a general law, currently verified
 per-instance.
+
+### (o) 2026-07-19 late: the holds-half — PROVED (fully-fallible constraints)
+
+The converse of §0(n), same file.  `ThetaNamed Θ C` = every pair of C
+is named by a Θ-negated atom — the Lemma-7 shape when EVERY Rₘ-stable
+world of the generating model is fallible and Θ carries the
+fallibility axioms (the chain2 situation).  Key lemma `theta_applyC`
+([propext] alone): under `ThetaNamed`, Θ derives EVERY constraint
+application `C[x]` — each guard is Θ-refuted, so the constraint
+content evaporates.  Headlines:
+
+    holds_half_boxp_imp_p ([propext, Quot.sound] — choice-free):
+      ThetaNamed Θ C → (Θ p-free) →
+      IsIPCAll p isIPL ((◯p⊃p)^C) A →
+      A ≡_Θ ⊥        (both directions derivable)
+
+    holds_half_box_lob :  likewise  A ≡_Θ (◯⊥)^C
+
+Proof of the first: the spec's lower bound gives A ⊢ C[p] ⊃ p; Θ
+gives C[p]; so A, Θ ⊢ p — a p-free context deriving the atom p —
+and substituting p := ⊥ through the derivation (`substND`) lands
+A, Θ ⊢ ⊥.  For the Löb row Θ derives the translated value `C[⊥]`
+outright, and derives A itself via the spec's greatest-property at
+the conjunction of Θ.  chain2's §0(m) verdict is corollary
+`chain2_holds_half`.
+
+**The dichotomy is complete for Lemma-7-shaped constraints**: with
+all pair-names Θ-negated, frame-relative commutation HOLDS on both
+frame-changing rows (§0(o)); with some pair at a Θ-avoiding name and
+bad-named covers, it FAILS (§0(n)).  The fallibility prediction of
+§0(j) is now a pair of THEOREMS, generalising every certified
+instance.

@@ -344,5 +344,193 @@ theorem chain3_fails_half {A : PLLFormula}
   fails_half_boxp_imp_p chain3C_residue (by simp) (by simp) hA
     (fun ψ hψ => ⟨"a2", by simp, List.mem_singleton.mp hψ ▸ rfl⟩)
 
+/-! ## The holds-half: fully-fallible (chain2-style) constraints
+
+When EVERY Rₘ-stable world of the generating model is fallible, every
+pair of the Lemma-7 constraint is named by a Θ-negated atom
+(`ThetaNamed`).  Then Θ refutes every guard, so Θ derives EVERY
+constraint application `C[x]` vacuously (`theta_applyC`) — and
+frame-relative commutation HOLDS on both frame-changing rows:
+
+* row `∀p.(◯p⊃p) = ⊥`: the spec's lower bound gives `A ⊢ C[p] ⊃ p`,
+  Θ gives `C[p]`, so `A, Θ ⊢ p` — a p-free context deriving the atom
+  p; substituting `p := ⊥` through the derivation (`substND`) lands
+  `A, Θ ⊢ ⊥` (`holds_half_boxp_imp_p`);
+* row `∀p.◯(◯p⊃p) = ◯⊥`: Θ derives the translated value `C[⊥]`
+  outright, and (via the spec's greatest-property applied to the
+  conjunction of Θ) Θ derives `A` itself — both directions of
+  `A ≡_Θ (◯⊥)^C` (`holds_half_box_lob`).
+
+Together with the fails-half above this is the full dichotomy for
+Lemma-7-shaped constraints: commutation holds when all pair-names are
+Θ-negated, and fails whenever some pair sits at a Θ-avoiding name
+with `bad`-named covers. -/
+
+/-- Every pair of `C` is named by a `Θ`-negated atom. -/
+def ThetaNamed (Θ : List PLLFormula) (C : StdCtx) : Prop :=
+  ∀ kl ∈ C, ∃ a, kl.1 = PLLFormula.prop a ∧ negA a ∈ Θ
+
+/-- Composition (cut through `⊃`). -/
+def compose {φ ψ : PLLFormula} {Δ : List PLLFormula}
+    (d : LaxND [φ] ψ) (e : LaxND Δ φ) : LaxND Δ ψ :=
+  .impElim ((LaxND.impIntro d).rename
+    (fun _ h => absurd h List.not_mem_nil)) e
+
+/-- Under `ThetaNamed`, any context that derives the Θ-negations
+derives every constraint application: each guard is refuted. -/
+theorem theta_applyC {Θ : List PLLFormula} {C : StdCtx}
+    (hC : ThetaNamed Θ C) (x : PLLFormula) {Δ : List PLLFormula}
+    (hsub : ∀ ψ ∈ Θ, Nonempty (LaxND Δ ψ)) :
+    Nonempty (LaxND Δ (applyC C x)) := by
+  induction C with
+  | nil => exact ⟨truePLL_intro Δ⟩
+  | cons hd tl ih =>
+      obtain ⟨K, L⟩ := hd
+      obtain ⟨a, hK, hmem⟩ := hC (K, L) (List.mem_cons_self ..)
+      have hKa : K = PLLFormula.prop a := hK
+      subst hKa
+      obtain ⟨dneg⟩ := hsub _ hmem
+      obtain ⟨dtl⟩ := ih (fun kl h => hC kl (List.mem_cons_of_mem _ h))
+      refine ⟨.andIntro (.impIntro ?_) dtl⟩
+      exact .falsoElim _
+        (.impElim (dneg.weaken _) (.iden (List.mem_cons_self ..)))
+
+/-- Conjunction of a context. -/
+def andAll : List PLLFormula → PLLFormula
+  | [] => truePLL
+  | ψ :: Ψ => ψ.and (andAll Ψ)
+
+theorem andAll_intro (Θ : List PLLFormula) {Δ : List PLLFormula}
+    (h : ∀ ψ ∈ Θ, ψ ∈ Δ) : Nonempty (LaxND Δ (andAll Θ)) := by
+  induction Θ with
+  | nil => exact ⟨truePLL_intro Δ⟩
+  | cons χ Ψ ih =>
+      obtain ⟨d⟩ := ih (fun ψ hψ => h ψ (List.mem_cons_of_mem _ hψ))
+      exact ⟨.andIntro (.iden (h _ (List.mem_cons_self ..))) d⟩
+
+theorem andAll_proj {Θ : List PLLFormula} {ψ : PLLFormula} (h : ψ ∈ Θ) :
+    Nonempty (LaxND [andAll Θ] ψ) := by
+  induction Θ with
+  | nil => exact absurd h List.not_mem_nil
+  | cons χ Ψ ih =>
+      rcases List.mem_cons.mp h with rfl | h
+      · exact ⟨(LaxND.iden (List.mem_singleton.mpr rfl)).andElim1⟩
+      · obtain ⟨d⟩ := ih h
+        exact ⟨compose d
+          ((LaxND.iden (List.mem_singleton.mpr rfl)).andElim2)⟩
+
+theorem andAll_pfree {p : String} {Θ : List PLLFormula}
+    (h : ∀ ψ ∈ Θ, p ∉ ψ.atoms) : p ∉ (andAll Θ).atoms := by
+  induction Θ with
+  | nil => simp [andAll, truePLL]
+  | cons χ Ψ ih =>
+      intro hm
+      rcases (by simpa [andAll] using hm :
+          p ∈ χ.atoms ∨ p ∈ (andAll Ψ).atoms) with hm | hm
+      · exact h χ (List.mem_cons_self ..) hm
+      · exact ih (fun ψ hψ => h ψ (List.mem_cons_of_mem _ hψ)) hm
+
+theorem andAll_isIPL {Θ : List PLLFormula}
+    (h : ∀ ψ ∈ Θ, isIPL ψ) : isIPL (andAll Θ) := by
+  induction Θ with
+  | nil => exact ⟨trivial, trivial⟩
+  | cons χ Ψ ih =>
+      exact ⟨h χ (List.mem_cons_self ..),
+        ih (fun ψ hψ => h ψ (List.mem_cons_of_mem _ hψ))⟩
+
+/-- Substitution `p := ⊥` fixes a p-free context. -/
+theorem map_substP_of_pfree {p : String} {χ : PLLFormula}
+    {L : List PLLFormula} (h : ∀ ψ ∈ L, p ∉ ψ.atoms) :
+    L.map (substP p χ) = L := by
+  induction L with
+  | nil => rfl
+  | cons φ Ψ ih =>
+      simp only [List.map_cons]
+      rw [substP_of_not_mem (h φ (List.mem_cons_self ..)),
+        ih (fun ψ hψ => h ψ (List.mem_cons_of_mem _ hψ))]
+
+/-- **Holds-half, row `∀p.(◯p⊃p) = ⊥`.**  For a fully-fallible
+constraint (every pair Θ-negated), every `IsIPCAll`-value `A` of
+`(◯p⊃p)^C` is Θ-EQUIVALENT to the translated PLL value `⊥`:
+frame-relative commutation holds. -/
+theorem holds_half_boxp_imp_p {p : String} {Θ : List PLLFormula}
+    {C : StdCtx} {A : PLLFormula}
+    (hC : ThetaNamed Θ C) (hΘp : ∀ ψ ∈ Θ, p ∉ ψ.atoms)
+    (hA : IsIPCAll p isIPL
+      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p))) A) :
+    Nonempty (LaxND (A :: Θ) .falsePLL) ∧
+    Nonempty (LaxND (.falsePLL :: Θ) A) := by
+  constructor
+  · obtain ⟨dlow⟩ := hA.lower
+    have dlow' : LaxND (A :: Θ) ((applyC C (.prop p)).ifThen (.prop p)) :=
+      dlow.rename (by
+        intro ψ h
+        rcases List.mem_singleton.mp h with rfl
+        exact List.mem_cons_self ..)
+    obtain ⟨dapp⟩ := theta_applyC hC (.prop p) (Δ := A :: Θ)
+      (fun ψ h => ⟨.iden (List.mem_cons_of_mem _ h)⟩)
+    have dp : LaxND (A :: Θ) (.prop p) := .impElim dlow' dapp
+    have dsub := substND p .falsePLL dp
+    rw [List.map_cons, substP_of_not_mem hA.pfree,
+      map_substP_of_pfree hΘp] at dsub
+    exact ⟨by simpa [substP] using dsub⟩
+  · exact ⟨.falsoElim _ (.iden (List.mem_cons_self ..))⟩
+
+/-- **Holds-half, row `∀p.◯(◯p⊃p) = ◯⊥`** (the Löb/sideways row):
+both directions of `A ≡_Θ (◯⊥)^C` — Θ derives the translated value
+outright, and derives `A` through the spec's greatest-property at the
+conjunction of Θ. -/
+theorem holds_half_box_lob {p : String} {Θ : List PLLFormula}
+    {C : StdCtx} {A : PLLFormula}
+    (hC : ThetaNamed Θ C) (hΘp : ∀ ψ ∈ Θ, p ∉ ψ.atoms)
+    (hΘipl : ∀ ψ ∈ Θ, isIPL ψ)
+    (hA : IsIPCAll p isIPL
+      (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) A) :
+    Nonempty (LaxND (A :: Θ) (subC C PLLFormula.falsePLL.somehow)) ∧
+    Nonempty (LaxND (subC C PLLFormula.falsePLL.somehow :: Θ) A) := by
+  constructor
+  · obtain ⟨d⟩ := theta_applyC hC .falsePLL (Δ := A :: Θ)
+      (fun ψ h => ⟨.iden (List.mem_cons_of_mem _ h)⟩)
+    exact ⟨d⟩
+  · -- [⋀Θ] ⊢ X₂ vacuously, so [⋀Θ] ⊢ A by the spec; recompose over Θ.
+    obtain ⟨dX⟩ := theta_applyC hC
+      ((applyC C (.prop p)).ifThen (.prop p)) (Δ := [andAll Θ])
+      (fun ψ h => andAll_proj h)
+    obtain ⟨dA⟩ := hA.greatest (andAll Θ) (andAll_isIPL hΘipl)
+      (andAll_pfree hΘp) ⟨dX⟩
+    obtain ⟨dand⟩ := andAll_intro Θ
+      (Δ := subC C PLLFormula.falsePLL.somehow :: Θ)
+      (fun ψ h => List.mem_cons_of_mem _ h)
+    exact ⟨compose dA dand⟩
+
+/-! ## The chain2 instance, re-derived from the general lemma
+
+chain2's Lemma-7 constraint `C = [(a1, ⊥)]` (single stable world,
+fallible) with frame theory `Θ = [¬a1]` — the §0(m) holds-instance,
+now a corollary. -/
+
+/-- chain2's constraint. -/
+def chain2C : StdCtx := [(PLLFormula.prop "a1", Ctx.bigOr [])]
+
+theorem chain2C_thetaNamed : ThetaNamed [negA "a1"] chain2C := by
+  intro kl hkl
+  rcases List.mem_cons.mp hkl with rfl | hkl
+  · exact ⟨"a1", rfl, List.mem_cons_self ..⟩
+  · exact absurd hkl List.not_mem_nil
+
+/-- The §0(m) chain2 verdict, generalised: EVERY IPC ∀p-value of
+`(◯p⊃p)^{chain2C}` is `[¬a1]`-equivalent to `⊥`. -/
+theorem chain2_holds_half {A : PLLFormula}
+    (hA : IsIPCAll "p" isIPL
+      (subC chain2C ((PLLFormula.prop "p").somehow.ifThen (.prop "p"))) A) :
+    Nonempty (LaxND [A, negA "a1"] .falsePLL) ∧
+    Nonempty (LaxND [.falsePLL, negA "a1"] A) :=
+  holds_half_boxp_imp_p chain2C_thetaNamed
+    (by
+      intro ψ hψ
+      rcases List.mem_singleton.mp hψ with rfl
+      simp [negA])
+    hA
+
 end SemUI
 end PLLND
