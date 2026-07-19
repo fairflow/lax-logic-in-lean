@@ -139,32 +139,46 @@ def sideT (p : String) : PLLFormula → PLLFormula
 
 /-- Reduced fuel for the *failing* certificate probes (the successful
 certificates we mechanise are re-checked at full fuel anyway). -/
-def CFUEL : Nat := 350
+def CFUEL : Nat := 200
 
 def provC (Γ : List PLLFormula) (C : PLLFormula) : Bool := provF CFUEL Γ C
 
 /-- Pair searches are the expensive tail; off for the fast sweep. -/
 def TRY_PAIRS : Bool := false
 
+/-- Tiny fuel for the big-but-shallow sideT attempts: failing searches
+at weight ~40 are pathologically slow, succeeding ones are instant. -/
+def SFUEL : Nat := 60
+
+/-- Skip failing-prone oracle calls on oversized sequents: per-iteration
+search cost grows steeply with total weight. -/
+def WCAP : Nat := 13
+
 /-- ∀-side: substitution singletons (full fuel), then the lower
 transform alone / with a single, then substitution pairs, then
 lowT + pair (reduced fuel). -/
 def certAllX (p : String) (M ψ : PLLFormula) (pool poolSmall : List PLLFormula) :
     String :=
-  match pool.find? (fun χ => prov [substP p χ M] ψ) with
+  match pool.find? (fun χ =>
+      let i := substP p χ M
+      i.weight + ψ.weight ≤ WCAP && provC [i] ψ) with
   | some χ => s!"CERT-SUBST[{pf χ}]"
   | none =>
   let lw := lowT p M
-  if lw.weight > 60 then "LOW-SKIPPED(weight)"
+  if lw.weight > 20 then "LOW-SKIPPED(weight)"
   else if provC [lw] ψ then "CERT-LOW[]"
-  else match pool.find? (fun χ => provC [lw, substP p χ M] ψ) with
+  else match pool.find? (fun χ =>
+      let i := substP p χ M
+      i.weight ≤ WCAP && provC [lw, i] ψ) with
   | some χ => s!"CERT-LOW[{pf χ}]"
   | none =>
   let sw := sideT p M
   if sw.weight > 100 then
     (if !TRY_PAIRS then "NO-CERT(singles+low;side-skipped)" else "NO-CERT(side-skipped)")
-  else if provC [sw] ψ then "CERT-SIDE[]"
-  else match pool.find? (fun χ => provC [sw, substP p χ M] ψ) with
+  else if provF SFUEL [sw] ψ then "CERT-SIDE[]"
+  else match pool.find? (fun χ =>
+      let i := substP p χ M
+      i.weight ≤ WCAP && provF SFUEL [sw, i] ψ) with
   | some χ => s!"CERT-SIDE[{pf χ}]"
   | none =>
   if !TRY_PAIRS then "NO-CERT(singles+low+side)"
@@ -180,23 +194,30 @@ def certAllX (p : String) (M ψ : PLLFormula) (pool poolSmall : List PLLFormula)
 /-- ∃-side: a single substitution instance, then the lower transform. -/
 def certExX (p : String) (M ψ : PLLFormula) (pool : List PLLFormula) :
     String :=
-  match pool.find? (fun χ => prov [ψ] (substP p χ M)) with
+  match pool.find? (fun χ =>
+      let i := substP p χ M
+      i.weight + ψ.weight ≤ WCAP && provC [ψ] i) with
   | some χ => s!"CERT-SUBST[{pf χ}]"
   | none =>
   let lw := lowT p M
-  if lw.weight > 60 then "LOW-SKIPPED(weight)"
+  if lw.weight > 20 then "LOW-SKIPPED(weight)"
   else if provC [ψ] lw then "CERT-LOW"
   else
   let sw := sideT p M
   if sw.weight > 100 then "NO-CERT(side-skipped)"
-  else if provC [ψ] sw then "CERT-SIDE"
+  else if provF SFUEL [ψ] sw then "CERT-SIDE"
   else "NO-CERT"
 
 /-- Essentiality by separation of two instances. -/
+def equivC (X Y : PLLFormula) : Bool := provC [X] Y && provC [Y] X
+
 def sepWitness (p : String) (M : PLLFormula) (pool : List PLLFormula) :
     Option (PLLFormula × PLLFormula) :=
   (pairsOf pool).find?
-    (fun ab => !(equivO (substP p ab.1 M) (substP p ab.2 M)))
+    (fun ab =>
+      let i₁ := substP p ab.1 M
+      let i₂ := substP p ab.2 M
+      i₁.weight + i₂.weight ≤ 20 && !(equivC i₁ i₂))
 
 /-! ## Main driver -/
 
