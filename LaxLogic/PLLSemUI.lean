@@ -27,9 +27,10 @@ models (matching the library's `soundness`/`completeness`):
   (via `soundness` + `completeness`).
 
 Consequently the whole of uniform interpolation for PLL compresses into
-ONE open statement per quantifier: DEFINABILITY (`semEx_definable`,
-`semAll_definable`) — the existence of a p-free formula meeting the
-spec.  That is where Ghilardi's method must survive the ∀∃ ◯-clause and
+ONE open statement per quantifier: DEFINABILITY (`SemExDefinable`,
+`SemAllDefinable`, stated as `Prop`-level conjectures — this file is
+sorry-free) — the existence of a p-free formula meeting the spec.
+That is where Ghilardi's method must survive the ∀∃ ◯-clause and
 the fallible worlds, and where the finite canonical model
 (`PLLFinComp.lean`, choice-free) is the intended engine: its worlds are
 closure-total triples (Γ, Δ, Θ), finitely many per closure, and the
@@ -37,8 +38,10 @@ candidate interpolant is a disjunction of promise-aware world
 descriptions.  See docs/semantic-ui-route.md for the full plan and the
 relation to the realisability semantics.
 
-Added 2026-07-19 (all PROVED, `#print axioms`-clean; the file's only
-`sorry`s remain the two definability targets):
+Graduated from `wip/semantic_ui.lean` 2026-07-19: everything below is
+PROVED and `#print axioms`-clean (no `sorry` anywhere); the two
+definability targets appear only as the conjecture `Prop`s above.
+Highlights:
 
 * uniqueness of spec-satisfiers (`semEx_unique`, `semAll_unique`);
 * substitution `substP`, the truth-set decoration, and the
@@ -268,15 +271,16 @@ expected difficulty:
 The 1-pv evidence (five-class state spaces, stabilisation far below
 threshold) suggests the finite type structure is very tame. -/
 
-/-- OPEN (Ghilardi step, ∃-side). -/
-theorem semEx_definable (p : String) (φ : PLLFormula) :
-    ∃ ψ, IsSemEx p φ ψ := by
-  sorry
+/-- OPEN (Ghilardi step, ∃-side): the definability CONJECTURE.  Stated
+as a `Prop` so the library carries no `sorry`; a proof would be a term
+of this type.  Everything below that mentions definability proves
+CONDITIONAL statements (reductions) or INSTANCES, never this. -/
+def SemExDefinable : Prop :=
+  ∀ (p : String) (φ : PLLFormula), ∃ ψ, IsSemEx p φ ψ
 
-/-- OPEN (Ghilardi step, ∀-side). -/
-theorem semAll_definable (p : String) (φ : PLLFormula) :
-    ∃ ψ, IsSemAll p φ ψ := by
-  sorry
+/-- OPEN (Ghilardi step, ∀-side): the definability CONJECTURE. -/
+def SemAllDefinable : Prop :=
+  ∀ (p : String) (φ : PLLFormula), ∃ ψ, IsSemAll p φ ψ
 
 /-! ## Base and compositional cases of definability (PROVED)
 

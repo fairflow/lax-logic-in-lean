@@ -491,7 +491,7 @@ candidates rather than silently dropping them.
 
 ## A8 (added 2026-07-18, late). The semantic route to UI — opened, and compressed to one target
 
-`wip/semantic_ui.lean` (compiles; two intended sorries) +
+`LaxLogic/PLLSemUI.lean` (compiles; two intended sorries) +
 `docs/semantic-ui-route.md` (the plan). PROVED today: A-bisimulation for
 constraint models (zigzag for BOTH relations, matching fallibility),
 forcing invariance, and the full Pitts universal-property layer — any

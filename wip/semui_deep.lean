@@ -3,7 +3,7 @@ import LaxLogic.PLLG4Dec
 /-!
 # Deep battery: the reconstruction sequents at ◯/⊃-alternation depth ≥ 3
 
-The reduction (`wip/semantic_ui.lean`): one-variable definability
+The reduction (`LaxLogic/PLLSemUI.lean`): one-variable definability
 follows from the two sequent families
 
     (∀-rec)   M[⊥], M[⊤], lowT p M, sideT p M  ⊢  M

@@ -5,7 +5,7 @@ import LaxLogic.PLLG4Dec
 
 For EVERY raw one-variable formula M up to a weight cap (no semantic
 dedup — raw syntax, thousands of instances), test the two
-reconstruction sequents of `wip/semantic_ui.lean`:
+reconstruction sequents of `LaxLogic/PLLSemUI.lean`:
 
     (∀-rec)   M[⊥], M[⊤], lowT p M, sideT p M  ⊢  M
     (∃-rec)   M  ⊢  M[⊥] ∨ M[⊤] ∨ M[◯⊥] ∨ lowT p M ∨ sideT p M

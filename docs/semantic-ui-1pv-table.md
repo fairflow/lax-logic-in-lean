@@ -5,7 +5,7 @@ sound on `true`; candidate filters at fuel 500, certificate searches
 fuel- and weight-capped — see the probe header).  Every candidate below
 is oracle-SOUND (candA ⊢ M and M ⊢ candE verified), and **every row is
 certified**, i.e. carries derivability facts that the criteria of
-`wip/semantic_ui.lean` convert into a machine-checked
+`LaxLogic/PLLSemUI.lean` convert into a machine-checked
 `IsSemAll`/`IsSemEx` proof.
 
 ## The closed ladder (values live here)
@@ -111,7 +111,7 @@ probe's weight cap.
 ## Addendum (overnight session): the reconstruction reduction, its refutation, and the per-instance law
 
 Full statements in `docs/semantic-ui-route.md` §0(h)–(i); Lean anchors
-in `wip/semantic_ui.lean`.  In brief:
+in `LaxLogic/PLLSemUI.lean`.  In brief:
 
 1. **Reduction (PROVED)**: definability follows if the generator
    conjunction/disjunction reconstructs M

@@ -1,6 +1,6 @@
 # The semantic route to uniform interpolation for PLL
 
-2026-07-18 · companion to `wip/semantic_ui.lean` (compiles; exactly two
+2026-07-18 · companion to `LaxLogic/PLLSemUI.lean` (compiles; exactly two
 `sorry`s = the two named open targets). Status words used precisely:
 PROVED = machine-checked in that file today; OPEN = stated with `sorry`;
 observations without Lean anchors are marked as such.
@@ -11,7 +11,7 @@ definability acquired a two-generator certificate method (substitution
 instances + the lower transform of the doubled model) with a
 computational value table at one variable.**
 
-## 0. Results of 2026-07-19 (all machine-checked in `wip/semantic_ui.lean`)
+## 0. Results of 2026-07-19 (all machine-checked in `LaxLogic/PLLSemUI.lean`)
 
 **(a) The essential fibre of the quantifiers — the conjecture is a
 theorem.**  Call `p` *inessential* in M when M is PLL-equivalent to some
@@ -154,7 +154,7 @@ RN lattice.  Oracle pathology recorded in the table doc: failing
 `search` cost is chaotic (non-monotone in fuel); successes instant.
 
 **(h) The reconstruction reduction (2026-07-19, overnight session;
-PROVED in `wip/semantic_ui.lean`).**  Writing `M[χ]` for the
+PROVED in `LaxLogic/PLLSemUI.lean`).**  Writing `M[χ]` for the
 substitution `substP p χ M`, define the p-free candidates
 
     allCand p M  :=  M[⊥] ∧ M[⊤] ∧ lowT p M ∧ sideT p M
@@ -449,7 +449,7 @@ are now the canonical interface; the two efforts meet there.
 
 | artefact | content |
 |---|---|
-| `wip/semantic_ui.lean` | ABisim, invariance, identity, specs, four adjunction theorems (all PROVED); two definability targets (OPEN) |
+| `LaxLogic/PLLSemUI.lean` | ABisim, invariance, identity, specs, four adjunction theorems (all PROVED); two definability targets (OPEN) |
 | `LaxLogic/PLLFinComp.lean` | the finite canonical model = the intended definability engine |
 | `LaxLogic/PLLCountermodelEmit.lean` + diagrams | the two-sided oracle for testing candidate descriptions |
 | `wip/lattice_cmp.lean`, `wip/slick_probe.lean` | 1-pv computation harnesses for candidate descriptions |

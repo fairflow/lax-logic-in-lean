@@ -313,7 +313,7 @@ untouched. In one line each — details and file pointers in
 The semantic route (task #33) moved past its universal-property layer;
 the mathematics of §1–6 (syntactic route) is untouched. Full statements
 and file anchors in `docs/semantic-ui-route.md` §0; everything below is
-machine-checked in `wip/semantic_ui.lean` (the file's only sorries
+machine-checked in `LaxLogic/PLLSemUI.lean` (the file's only sorries
 remain the two definability targets).
 
 * **The essential-fibre conjecture is PROVED, as an iff.** For p-free ξ:

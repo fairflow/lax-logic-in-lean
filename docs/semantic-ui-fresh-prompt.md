@@ -19,7 +19,7 @@ in `/Users/matthew/Lean/Sources/lax-logic-in-lean` (no worktree).
 2. `docs/semantic-ui-route.md` — the plan, all results so far, the
    hazards, and the three routes (syntactic cascade / semantic
    definability / finite-support constraint transfer).
-3. `wip/semantic_ui.lean` — compiles with EXACTLY two `sorry`s
+3. `LaxLogic/PLLSemUI.lean` — compiles with EXACTLY two `sorry`s
    (`semEx_definable`, `semAll_definable`). Everything else is PROVED:
    A-bisimulation (i- and m-zigzag + fallibility) and forcing
    invariance; the four Pitts adjunction theorems via the choice-free
