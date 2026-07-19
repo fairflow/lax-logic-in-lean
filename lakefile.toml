@@ -33,3 +33,8 @@ root = "wip.oracle2"
 [[lean_exe]]
 name = "o2base"
 root = "wip.oracle2_baseline"
+
+# The constraint-commutation probe (route doc §0(j)), compiled.
+[[lean_exe]]
+name = "ctxprobe"
+root = "wip.semui_ctx_probe"

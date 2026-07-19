@@ -1,6 +1,7 @@
 import LaxLogic.PLLCtxCompleteness
 import LaxLogic.PLLG4UITrunc
 import LaxLogic.PLLG4Dec
+import LaxLogic.PLLG4Term
 
 /-!
 # Probe: the constraint-commutation conjecture (Matthew, 2026-07-19)
@@ -33,12 +34,11 @@ namespace CtxProbe
 
 /-! ## Oracle -/
 
-def FUEL : Nat := 400
-
-def provF (fuel : Nat) (Γ : List PLLFormula) (C : PLLFormula) : Bool :=
-  search (listWeight (C :: Γ)) (listAtoms (C :: Γ)) fuel ∅ Γ C
-
-def prov (Γ : List PLLFormula) (C : PLLFormula) : Bool := provF FUEL Γ C
+/-- Fuel-free oracle (2026-07-19 upgrade): `G4cTm.find` — loop-checked
+term search, fails fast on the shapes that made the fueled `search`
+chaotic.  Sound on `true` (a term exists); `false` is tool-grade. -/
+def prov (Γ : List PLLFormula) (C : PLLFormula) : Bool :=
+  (G4cTm.find Γ C).isSome
 def equivO (X Y : PLLFormula) : Bool := prov [X] Y && prov [Y] X
 
 def pf (F : PLLFormula) : String := F.toString
@@ -178,7 +178,7 @@ def targets : List (String × PLLFormula × PLLFormula × PLLFormula) :=
 
 /-! ## The tower quantifiers, probe-side -/
 
-def WCAP : Nat := 70
+def WCAP : Nat := 120
 
 def TFUEL : Nat := 120
 
@@ -199,7 +199,7 @@ def main : IO Unit := do
       let T := nf (subC C M)
       let vA' := nf (subC C vA)
       let vE' := nf (subC C vE)
-      if T.weight > WCAP || (pieceClosure T).card > 22 then
+      if T.weight > WCAP || (pieceClosure T).card > 30 then
         pl s!"   {tname}: T-SKIPPED (w={T.weight}, |S|={(pieceClosure T).card})"
       else
         let t0 ← IO.monoMsNow

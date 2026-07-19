@@ -1,5 +1,6 @@
 import LaxLogic.PLLCountermodelEmit
 import LaxLogic.PLLG4Dec
+import LaxLogic.PLLG4Term
 import LaxLogic.PLLSemUI
 
 /-!
@@ -23,16 +24,21 @@ policy.  This file packages:
 * `sweep` — enumerate hereditary decorations of the battery frames
   over the sequent's atoms and gate each candidate through the
   VERIFIED checker `FinCM.checkB` (a wrong guess cannot certify);
-* `decide2` — the staged verdict, COUNTERMODELS FIRST (the sweep is
-  O(ms) with the vector evaluator; failing proof search is chaotic):
+* `decide2` — the staged verdict, COUNTERMODELS FIRST and FUEL
+  DEMOTED (v3):
+    0. `nf` both sides (the built simplification measures; scanning
+       and search run on nf-forms, certificates are re-gated against
+       the ORIGINAL sequent);
     1. `sweep` (cheap certified negative);
-    2. `search` at low fuel (cheap positive: successes are
-       near-instant even at weight ~35);
-    3. `search` at high fuel, WEIGHT-GATED (the calibration proxy:
-       deep failing search is only risked on small sequents);
-    4. `CounterEmit.emit`, gated by closure size (complete-flavoured
+    2. `G4cTm.find` (the fuel-free term search — complete positive
+       engine, no hand-tuned fuel; returns a kernel-checkable term);
+    3. `CounterEmit.emit`, gated by closure size (complete-flavoured
        negative, exponential);
-    5. unknown.
+    4. unknown.
+  Residual exposure: an unprovable sequent that escapes the battery
+  makes `find` grind (it terminates, but exponentially) — that is the
+  case `emit` exists for, and the benchmark's job is to show the
+  battery does not miss.
 
 TRUST: `.refuted` verdicts carry a `(FinCM, world)` pair that passed
 `checkB`; `not_provable_of_check` upgrades any such pair to a
@@ -48,6 +54,49 @@ Run: `lake env lean --run wip/oracle2.lean` (benchmark harness in
 open PLLFormula PLLND PLLND.SemUI
 
 namespace Oracle2
+
+/-! ## The normaliser (PLL-equivalences; the built simplification measures)
+
+Heyting ⊥/⊤ laws + `◯⊤ ≡ ⊤` + `◯◯ ≡ ◯` — every rewrite is a PLL
+equivalence, hence valid on all constraint models: a model refutes the
+nf-form iff it refutes the original, and provability transfers both
+ways.  Scanning and searching run on nf-forms (smaller); the verified
+`checkB` gate is applied to the ORIGINAL sequent, so certificates are
+about what was asked. -/
+
+def isTop : PLLFormula → Bool
+  | .ifThen .falsePLL .falsePLL => true
+  | _ => false
+
+def smash : PLLFormula → PLLFormula
+  | .and A B =>
+      if A == .falsePLL || B == .falsePLL then .falsePLL
+      else if isTop A then B else if isTop B then A
+      else if A == B then A
+      else .and A B
+  | .or A B =>
+      if isTop A || isTop B then truePLL
+      else if A == .falsePLL then B else if B == .falsePLL then A
+      else if A == B then A
+      else .or A B
+  | .ifThen A B =>
+      if A == .falsePLL || isTop B then truePLL
+      else if isTop A then B
+      else if A == B then truePLL
+      else .ifThen A B
+  | .somehow A =>
+      if isTop A then truePLL
+      else match A with
+        | .somehow B => .somehow B
+        | _ => .somehow A
+  | F => F
+
+def nf : PLLFormula → PLLFormula
+  | .and A B    => smash (.and (nf A) (nf B))
+  | .or A B     => smash (.or (nf A) (nf B))
+  | .ifThen A B => smash (.ifThen (nf A) (nf B))
+  | .somehow A  => smash (.somehow (nf A))
+  | F => F
 
 /-! ## Frames and hereditary decorations -/
 
@@ -143,17 +192,21 @@ def atomsOf (l : List PLLFormula) : List String :=
   (l.flatMap atomList).eraseDups
 
 /-- Cheap certified negative: scan the battery with the fast vector
-evaluator, gate every hit through the VERIFIED `FinCM.checkB`. -/
-def sweep (Γ : List PLLFormula) (C : PLLFormula) : Option (FinCM × Nat) :=
-  let ats := atomsOf (C :: Γ)
+evaluator ON THE NF-FORMS, gate every hit through the VERIFIED
+`FinCM.checkB` ON THE ORIGINAL sequent (nf is model-equivalence, so
+the same model refutes both; the certificate is about what was
+asked). -/
+def sweep (Γ' : List PLLFormula) (C' : PLLFormula)
+    (Γ : List PLLFormula) (C : PLLFormula) : Option (FinCM × Nat) :=
+  let ats := atomsOf (C' :: Γ')
   frames.findSome? fun f =>
     let adm := admissible f
     if adm.length ^ ats.length > 100000 then none
     else
       (assigns ats adm).findSome? fun asgn =>
         let M := toFinCM f asgn
-        let vΓ := Γ.map (forceV M)
-        let vC := forceV M C
+        let vΓ := Γ'.map (forceV M)
+        let vC := forceV M C'
         (List.range f.n).findSome? fun w =>
           if vΓ.all (fun v => v.getD w false) && !(vC.getD w false) &&
               FinCM.checkB M w Γ C then
@@ -172,22 +225,23 @@ def searchAt (fuel : Nat) (Γ : List PLLFormula) (C : PLLFormula) : Bool :=
 
 def EMIT_CLOSURE_CAP : Nat := 12
 
-/-- Weight above which the deep failing search is not attempted (the
-failing-search cost is chaotic; the calibration proxy for Matthew's
-"10× a known-true time" rule). -/
-def DEEP_WEIGHT_CAP : Nat := 30
-
-def decide2 (s1 s2 : Nat) (Γ : List PLLFormula) (C : PLLFormula) : Verdict :=
-  -- countermodels first: the sweep is O(ms) and failing search is not
-  match sweep Γ C with
+/-- v3 staging, fuel demoted: nf-preprocess; battery countermodels
+first; the fuel-free term search `G4cTm.find` as THE positive engine
+(complete, no hand-tuning — the belief-session tool, previously left
+on the shelf); a single cheap fueled probe only as a pre-step to the
+exponential `emit`, never as the arbiter. -/
+def decide2 (Γ : List PLLFormula) (C : PLLFormula) : Verdict :=
+  let Γ' := Γ.map nf
+  let C' := nf C
+  match sweep Γ' C' Γ C with
   | some (M, w) => .refuted M w
   | none =>
-    if searchAt s1 Γ C then .proved
-    else if listWeight (C :: Γ) ≤ DEEP_WEIGHT_CAP && searchAt s2 Γ C then
-      .proved
-    else if (CounterEmit.closureOf Γ C).length ≤ EMIT_CLOSURE_CAP then
-      match CounterEmit.emit Γ C with
-      | some (M, w) => .refuted M w
+    if (G4cTm.find Γ' C').isSome then .proved
+    else if (CounterEmit.closureOf Γ' C').length ≤ EMIT_CLOSURE_CAP then
+      match CounterEmit.emit Γ' C' with
+      | some (M, w) =>
+          -- emit certified the nf-sequent; re-gate the original
+          if FinCM.checkB M w Γ C then .refuted M w else .unknown
       | none => .unknown
     else .unknown
 
@@ -223,22 +277,31 @@ def cases : List (String × List PLLFormula × PLLFormula × Option Bool) :=
   , ("U5  (◯⊥⊃p)⊃p ⊢ ◯⊥",    [peirceF], gB, some false)
   ]
 
-def main : IO Unit := do
+def main (args : List String) : IO Unit := do
   let out ← IO.getStdout
   let pl (s : String) : IO Unit := do out.putStrLn s; out.flush
-  pl "== oracle2: staged two-sided decision (battery-first) =="
+  let findOnly := args.contains "find"
+  let mode := if findOnly then " [find-only mode]" else ""
+  pl s!"== oracle2 v3: nf → battery → find → emit{mode} =="
   for (name, Γ, C, exp) in cases do
-    let t0 ← IO.monoMsNow
-    let v := decide2 60 400 Γ C
-    let t1 ← IO.monoMsNow
-    let ok := match v, exp with
-      | .proved, some true => "✓"
-      | .refuted _ _, some false => "✓"
-      | .unknown, _ => "?"
-      | _, _ => "✗ MISMATCH"
-    pl s!"{name}: {showVerdict v}  {ok}  ({t1 - t0} ms)"
+    if findOnly then
+      -- raw fuel-free term search, no battery (run timeboxed from outside)
+      let t0 ← IO.monoMsNow
+      let r := (G4cTm.find (Γ.map nf) (nf C)).isSome
+      let t1 ← IO.monoMsNow
+      pl s!"{name}: find={r}  ({t1 - t0} ms)"
+    else
+      let t0 ← IO.monoMsNow
+      let v := decide2 Γ C
+      let t1 ← IO.monoMsNow
+      let ok := match v, exp with
+        | .proved, some true => "✓"
+        | .refuted _ _, some false => "✓"
+        | .unknown, _ => "?"
+        | _, _ => "✗ MISMATCH"
+      pl s!"{name}: {showVerdict v}  {ok}  ({t1 - t0} ms)"
   pl "== done =="
 
 end Oracle2
 
-def main : IO Unit := Oracle2.main
+def main (args : List String) : IO Unit := Oracle2.main args
