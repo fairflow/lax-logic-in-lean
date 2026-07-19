@@ -2441,6 +2441,90 @@ theorem semEx_wem_box (p : String) :
   rw [hL]
   exact .orIntro2 (.laxIntro (.impIntro (.iden (List.mem_cons_self ..))))
 
+/-! ## The Peirce and biconditional families, parametrically
+
+The counterexample analysis generalises to clean value theorems for
+every p-free pivot ξ:
+
+    ∀p.((ξ ⊃ p) ⊃ p) = ξ        ∃p.((ξ ⊃ p) ⊃ p) = ⊤
+    ∀p.((ξ ⊃ p) ∧ (p ⊃ ξ)) = ⊥   ∃p.((ξ ⊃ p) ∧ (p ⊃ ξ)) = ⊤
+
+In each case the certificate is the substitution `p := ξ` — the pivot
+itself, a subformula of the witness.  This makes the per-instance
+support law exact on these families: the ∀p-value of the Peirce
+formula IS its pivot, so the substitution pool must reach ξ; a pool
+element g covers pivot ξ through the ⊥-instance `¬¬ξ` only when ξ is
+¬¬-stable, which explains the sweep inventory — the escaping pivots
+were exactly the ◯-formulas (`¬¬◯⊥ ⊬ ◯⊥`, kernel-checked 2026-07-13),
+while e.g. pivot ¬◯⊥ is covered by `p := ⊥` since `¬¬¬◯⊥ ≡ ¬◯⊥`. -/
+
+/-- **`∀p.((ξ ⊃ p) ⊃ p) = ξ`** for every p-free pivot ξ (generalises
+`semAll_peirce`): a natural essential preimage of every value. -/
+theorem semAll_peirce_family (p : String) {ξ : PLLFormula}
+    (hξ : p ∉ ξ.atoms) :
+    IsSemAll p ((ξ.ifThen (PLLFormula.prop p)).ifThen (PLLFormula.prop p))
+      ξ := by
+  have hsub : substP p ξ ((ξ.ifThen (PLLFormula.prop p)).ifThen
+      (PLLFormula.prop p)) = (ξ.ifThen ξ).ifThen ξ := by
+    simp [substP, substP_of_not_mem hξ]
+  refine isSemAll_of_certificates (χs := [ξ]) hξ ?_ ?_
+  · exact .impIntro (.impElim (.iden (List.mem_cons_self ..))
+      (.iden (by simp)))
+  · rw [List.map_cons, List.map_nil, hsub]
+    exact .impElim (.iden (List.mem_cons_self ..))
+      (.impIntro (.iden (List.mem_cons_self ..)))
+
+/-- `∃p.((ξ ⊃ p) ⊃ p) = ⊤` for every p-free pivot ξ. -/
+theorem semEx_peirce_family (p : String) {ξ : PLLFormula}
+    (hξ : p ∉ ξ.atoms) :
+    IsSemEx p ((ξ.ifThen (PLLFormula.prop p)).ifThen (PLLFormula.prop p))
+      truePLL := by
+  have hsub : substP p truePLL ((ξ.ifThen (PLLFormula.prop p)).ifThen
+      (PLLFormula.prop p)) = (ξ.ifThen truePLL).ifThen truePLL := by
+    simp [substP, substP_of_not_mem hξ]
+  refine isSemEx_of_certificates (χ := truePLL) (by simp [truePLL])
+    (.impIntro (.iden (List.mem_cons_self ..))) ?_
+  rw [hsub]
+  exact .impIntro (.impIntro (.iden (List.mem_cons_self ..)))
+
+/-- `∀p.((ξ ⊃ p) ∧ (p ⊃ ξ)) = ⊥` for every p-free pivot ξ: the ⊥- and
+⊤-instances are jointly contradictory. -/
+theorem semAll_bicond_family (p : String) {ξ : PLLFormula}
+    (hξ : p ∉ ξ.atoms) :
+    IsSemAll p ((ξ.ifThen (PLLFormula.prop p)).and
+      ((PLLFormula.prop p).ifThen ξ)) .falsePLL := by
+  have hsub1 : substP p .falsePLL ((ξ.ifThen (PLLFormula.prop p)).and
+      ((PLLFormula.prop p).ifThen ξ))
+      = (ξ.ifThen .falsePLL).and (PLLFormula.falsePLL.ifThen ξ) := by
+    simp [substP, substP_of_not_mem hξ]
+  have hsub2 : substP p truePLL ((ξ.ifThen (PLLFormula.prop p)).and
+      ((PLLFormula.prop p).ifThen ξ))
+      = (ξ.ifThen truePLL).and (truePLL.ifThen ξ) := by
+    simp [substP, substP_of_not_mem hξ]
+  refine isSemAll_of_certificates (χs := [.falsePLL, truePLL]) (by simp)
+    (.falsoElim _ (.iden (List.mem_cons_self ..))) ?_
+  rw [List.map_cons, List.map_cons, List.map_nil, hsub1, hsub2]
+  exact .impElim (.andElim1 (.iden (List.mem_cons_self ..)))
+    (.impElim
+      (.andElim2 (.iden (List.mem_cons_of_mem _ (List.mem_cons_self ..))))
+      (.impIntro (.iden (List.mem_cons_self ..))))
+
+/-- `∃p.((ξ ⊃ p) ∧ (p ⊃ ξ)) = ⊤` for every p-free pivot ξ (generalises
+`semEx_bicond_top`). -/
+theorem semEx_bicond_family (p : String) {ξ : PLLFormula}
+    (hξ : p ∉ ξ.atoms) :
+    IsSemEx p ((ξ.ifThen (PLLFormula.prop p)).and
+      ((PLLFormula.prop p).ifThen ξ)) truePLL := by
+  have hsub : substP p ξ ((ξ.ifThen (PLLFormula.prop p)).and
+      ((PLLFormula.prop p).ifThen ξ))
+      = (ξ.ifThen ξ).and (ξ.ifThen ξ) := by
+    simp [substP, substP_of_not_mem hξ]
+  refine isSemEx_of_certificates (χ := ξ) (by simp [truePLL])
+    (.impIntro (.iden (List.mem_cons_self ..))) ?_
+  rw [hsub]
+  exact .andIntro (.impIntro (.iden (List.mem_cons_self ..)))
+    (.impIntro (.iden (List.mem_cons_self ..)))
+
 /-! ## Concrete fibre data
 
 The conjecture's data points, now instances of the image theorems.  Two
