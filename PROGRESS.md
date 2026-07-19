@@ -363,3 +363,39 @@ remain the two definability targets).
   Converges with the corrected-Cor-10 constraint-transfer analysis:
   the canonical descriptions must record exactly the ladder rungs of
   cl(M) — the promise/Θ data.
+
+## 9. 2026-07-19 (day session): graduation, the sandwich, the two-sided oracle
+
+* **Graduation**: the theory file is now `LaxLogic/PLLSemUI.lean`
+  (root-registered, sorry-free; definability = `Prop`-level conjectures
+  `SemExDefinable`/`SemAllDefinable`; 27 flagship audits clean).
+* **The constraint–ladder comparison (Matthew's equivalence question),
+  PROVED as the sandwich** (`LaxLogic/PLLSemUICtx.lean`, instantiated
+  with the packaged tower quantifiers in `wip/semui_ctx_equiv.lean`,
+  no sorryAx):
+
+      ξ^C ⊢ᴵᴾᶜ ∀ᴵᴾᶜp.(M^C) ⊢ᴵᴾᶜ (M[p:=χ])^C   (all χ; dually for ∃)
+
+  Bridge lemma `subC_substP`: `(M[p:=χ])^C = (M^C)[p:=χ^C]` for
+  p-free C.  So the constraint route = the substitution fragment of
+  the ladder route, exactly; the frozen-C failure (§0(j) oracle
+  witness ◯p⊃p) is the lowT/sideT gap, now provably so.  A constraint
+  -models theorem = closing that gap with per-M constraint families
+  (OPEN; fallibility prediction is the first test).
+* **The two-sided oracle packaged** (`wip/oracle2.lean`): staged
+  decide2 = cheap search → verified battery sweep (FinCM.checkB) →
+  deep search → gated emit → UNKNOWN.  Benchmarks below.
+* **oracle2 benchmarks** (10 cases: 5 provable incl. weight-34
+  reconstruction rows, 5 refutable incl. the weight-40 Peirce
+  reconstruction failure): 10/10 correct verdicts, EVERY case 0 ms
+  (interpreted); compiled suite 0.02 s CPU total.  Contrast: plain
+  one-sided `search` on `allCand(peirce) ⊢ peirce` @fuel 400 grinds
+  >100 s interpreted AND >120 s native (both killed) — the
+  countermodel stage, not compilation, is what beats the chaotic
+  failing-search cost.  Countermodels arrive minimal (1–3 worlds,
+  verified by `FinCM.checkB`).  Correction to the recorded pathology:
+  bare `¬¬◯⊥ ⊢ ◯⊥` @500 is 0 ms — the recorded minutes-case had a
+  larger antecedent; non-monotonicity itself stands as documented.
+* **Toolchain**: this branch is on v4.31.0 — `lean_exe` builds run
+  fine (~10 s incremental; stale lakefile segfault comment fixed);
+  `lake exe oracle2` is a compiled decision tool.

@@ -499,3 +499,73 @@ binding constraint — chaotic in fuel/budget like the failing-search
 cost; rows beyond weight ~7 translations need the fuel/budget caps of
 the probe, and some still wedge.  All probe verdicts are sound on
 `true`.
+
+### (k) 2026-07-19 afternoon: graduation, and the sandwich lemmas (the constraint–ladder comparison, PROVED)
+
+GRADUATION.  The theory file left `wip`: it is now
+`LaxLogic/PLLSemUI.lean`, registered in the root module, sorry-free —
+the two definability targets are `Prop`-level CONJECTURES
+(`SemExDefinable`, `SemAllDefinable`), everything else PROVED (27
+flagship theorems audited ≤ [propext, Classical.choice, Quot.sound]).
+Per the meta-tactic: no sorried statement survives in the library;
+conjectures are stated, not asserted.
+
+THE EQUIVALENCE QUESTION (Matthew): are the two candidate
+constructions of ∀p M — (A) constraint models C[_] built from cl(M)
+(the TYPES-paper route), (B) ladder-level generator instances from
+cl(M) — equivalent?  ANSWER, machine-checked in
+`LaxLogic/PLLSemUICtx.lean` + `wip/semui_ctx_equiv.lean`:
+
+* NOT equivalent for a single frozen C — the §0(j) oracle witness
+  stands (M = ◯p⊃p over chain2: IPC value a1, translated PLL value ⊥);
+* but PROVABLY equivalent ON THE SUBSTITUTION FRAGMENT, and every
+  constraint-route value is SANDWICHED.  With ξ^C := subC C ξ the
+  TYPES translation (each ◯ψ ↦ C[ψ^C]):
+
+      ξ^C  ⊢ᴵᴾᶜ  ∀ᴵᴾᶜp.(M^C)  ⊢ᴵᴾᶜ  (M[p := χ])^C   (every χ)
+
+  for every IPL p-free standard constraint C, where ξ is the semantic
+  ∀p-value (IsSemAll) and ∀ᴵᴾᶜp is ANY Pitts-style IPC ∀-interpolant
+  of the translation (abstract spec `IsIPCAll`; instantiated by the
+  packaged tower quantifier `forallP` via the box-free crown
+  `uniform_interpolation_IPC`, no sorryAx).  Dually for ∃
+  (`IsIPCEx`/`existsP`, inequalities reversed).
+
+The three lemmas behind it (all library, audited):
+
+* `substND` — LaxND is closed under atom substitution
+  (derivation-level, structural);
+* `subC_substP` — THE BRIDGE: `(M[p:=χ])^C = (M^C)[p := χ^C]` for
+  p-free C — the ladder's substitution instances ARE IPC instances of
+  the translation;
+* `ctx_sandwich_all`/`ctx_sandwich_ex` — the displayed sandwich
+  (components `ctxAll_ge_value`, `ctxAll_le_instance` + duals).
+
+CONSEQUENCE.  The gap between the two sandwich bounds is exactly the
+frame-changing content of the ladder route (`lowT`/`sideT`): the
+constraint route computes the substitution-reachable part of ∀p, on
+the nose.  A full "theorem via constraint models" now has a precise
+form: find, per M, a FAMILY of constraints (canonical + variant
+saturations) whose joint value is exact — the sandwich reduces this to
+closing the lowT/sideT gap on the constraint side.  OPEN, with the
+§0(j) fallibility prediction as the first test.
+
+### (l) 2026-07-19 afternoon: the two-sided oracle, packaged (`wip/oracle2.lean`)
+
+Matthew's resource point — failing search must exhaust all routes, so
+try cheap countermodels first; tools may be fallible because their
+accepted outputs are verified — is now the packaged discipline.
+`decide2` stages: low-fuel `search` (cheap positive) → battery sweep
+(≤4-world frames × hereditary decorations, every candidate gated by
+the VERIFIED `FinCM.checkB` — a wrong guess cannot certify) →
+high-fuel `search` → `CounterEmit.emit` gated by closure size →
+honest UNKNOWN.  `.refuted` verdicts upgrade to machine-checked
+`¬ Nonempty (LaxND Γ C)` via `not_provable_of_check` by `decide` when
+paper-grade certificates are wanted.  Benchmarks (numbers in
+PROGRESS.md §9): 10/10 correct at 0 ms each, including the weight-40
+Peirce reconstruction failure on which plain one-sided `search`
+grinds >100 s interpreted and >120 s NATIVE — the countermodel stage,
+not compilation, beats the chaotic failing cost.  The compiled route
+is nonetheless live: this branch is on v4.31.0, `lake exe oracle2`
+builds in ~10 s and runs the suite in 0.02 s CPU (the lakefile's
+laxrun-segfault comment was stale; fixed).
