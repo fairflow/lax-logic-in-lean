@@ -255,9 +255,16 @@ DONE (2026-07-19 later): reflow complete (1 residual overfull, 1.7pt);
 prose-math conversion (pour-time chains merged into real math, quotes
 curled, "credulist" normalised); citation sweep to 44 cited entries;
 countermodel diagrams inserted (Figs. 1–2, TikZ from PLLDiagram.lean);
-the timing case study (Study 1 of the applications list —
-PLLTiming/PLLTimingAdder, falsePath/skip_beats_topological AXIOM-FREE)
-claimed in §7 with the wider programme deferred to a companion paper.
+the timing work (PLLTiming/PLLTimingAdder,
+falsePath/skip_beats_topological AXIOM-FREE) claimed in §7.
+CORRECTION (Matthew, 2026-07-19): that claim overstated — what exists
+is the DELAY-ALGEBRA HALF only; Study 1 as specified (netlists+specs
+formalised in the Route B evidence semantics, components composed
+under a formally combined spec, ◯(out=spec) proved there, evidence
+extracted via O3) is NOT completed — the realiser layer E is designed
+but unimplemented. §7 reworded to claim exactly the half that is
+proved; the applications draft gains Matthew's composition
+requirement + a five-stage design brief for E (Study 1 (c′)).
 Main matter now ends p10 (~9.8pp); App A–E pp11–13 (scriptsize
 listings); references pp14–15. Two-column stays for camera-ready
 (acmart/TAPS constraint); wide material's escape hatch is figure*.
