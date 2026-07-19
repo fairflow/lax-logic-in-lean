@@ -129,13 +129,26 @@ quantifiers.
 one-variable M up to weight 5 (plus named extras), compute the
 candidate ∀p-value (maximum of the closed ξ ⊢ M, over the RN(◯,{})
 ladder truncation — 7 classes at weight ≤ 8) and candidate ∃p-value
-(minimum of the closed ξ with M ⊢ ξ), then search certificates in the
-order substitution-singles, substitution-pairs, lower transform,
-lowT + instances.  Empirical findings are recorded in §0(g) once the
-run completes; rows certified by nothing are the *surgery frontier* —
-the exact places where a further variant construction (beyond doubling)
-is required, i.e. where the general canonical-model descriptions must
-do genuinely new work.
+(minimum of the closed ξ with M ⊢ ξ), then search certificates over
+the generator basis.
+
+**(g) Probe results (run completed 2026-07-19; full table + analysis
+in `docs/semantic-ui-1pv-table.md`): ALL 25 one-variable classes are
+certified on BOTH sides** — the basis {substitution instances, lowT,
+sideT} suffices for the whole table; every candidate is a unique
+maximum/minimum over the 7-class ladder; the values attained are
+{⊥, ◯⊥, ⊤, ¬◯⊥, ◯¬◯⊥}; the probe's values agree with every Lean
+theorem where they overlap.  The doubling is needed exactly at
+`◯p ⊃ p` and `p ∨ ¬p` (∀-side) and — machine-found — at
+`∃p.(¬◯p ∨ ◯p) = ⊤` (∃-side, since ¬◯χ ∨ ◯χ is underivable for
+closed χ); the sideways construction exactly at the ◯-guarded
+schemata `◯(◯p⊃p)`, `◯(p∨¬p)`, `¬◯p∨◯p`.  Definability at one
+variable is therefore an empirically complete conjecture with a
+uniform proof target: for every one-variable M, the generator
+instances {M[p:=⊥], M[p:=⊤], lowT p M, sideT p M} derive the maximum
+closed ξ ⊢ M (dually for ∃) — a purely syntactic statement over the
+RN lattice.  Oracle pathology recorded in the table doc: failing
+`search` cost is chaotic (non-monotone in fuel); successes instant.
 
 ## 1. What was proved today, and what it compresses the problem to
 

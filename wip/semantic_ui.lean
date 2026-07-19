@@ -1807,6 +1807,24 @@ theorem isSemEx_of_certificates_side {p : String} {M ψ : PLLFormula}
       exact hξ ▸ hM')
     exact (force_iff_of_bisim B hAψ hZ).mpr hψ'
 
+/-- **`∃p.(¬◯p ∨ ◯p) = ⊤`** — the first ∃-side value beyond
+substitution instances (machine-found by the probe): no instance
+`¬◯χ ∨ ◯χ` is derivable, but the lower copy of the doubled model
+forces `◯p` outright, so `lowT p (¬◯p ∨ ◯p)` has `◯⊤` as its right
+disjunct. -/
+theorem semEx_wem_box (p : String) :
+    IsSemEx p (((PLLFormula.prop p).somehow.ifThen .falsePLL).or
+      (PLLFormula.prop p).somehow) truePLL := by
+  have hL : lowT p (((PLLFormula.prop p).somehow.ifThen .falsePLL).or
+      (PLLFormula.prop p).somehow)
+      = ((truePLL.somehow.ifThen .falsePLL).and
+          (truePLL.somehow.ifThen .falsePLL)).or truePLL.somehow := by
+    simp [lowT, substP]
+  refine isSemEx_of_certificates_low (by simp [truePLL])
+    (.impIntro (.iden (List.mem_cons_self ..))) ?_
+  rw [hL]
+  exact .orIntro2 (.laxIntro (.impIntro (.iden (List.mem_cons_self ..))))
+
 /-! ## Concrete fibre data
 
 The conjecture's data points, now instances of the image theorems.  Two

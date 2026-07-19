@@ -330,8 +330,14 @@ remain the two definability targets).
   beyond substitution: ∀p.(p∨¬p) = ∀p.(◯p⊃p) = ∀p.(¬¬p⊃p) = ⊥ —
   with a machine-checked proof that substitution certificates alone
   cannot reach the first.
-* **Value-table probe** (`wip/semui_probe.lean`): candidate ∀p/∃p
-  values for every 1-variable class up to weight 5 + extras, over the
-  7-class RN(◯,{}) ladder truncation (weight ≤ 8); certificates found
-  make each row a mechanisable theorem; NO-CERT rows = the surgery
-  frontier for the definability induction.
+* **Value-table probe COMPLETE** (`wip/semui_probe.lean`, table +
+  analysis in `docs/semantic-ui-1pv-table.md`): ALL 25 one-variable
+  classes (weight ≤ 5 + extras) certified on BOTH sides by the
+  three-generator basis; every candidate a unique max/min over the
+  7-class ladder; values attained {⊥, ◯⊥, ⊤, ¬◯⊥, ◯¬◯⊥}; a fourth
+  generator (sideways/Löb) needed exactly at the ◯-guarded classical
+  schemata; first ∃-side beyond-substitution value ∃p.(¬◯p ∨ ◯p) = ⊤
+  (proved: `semEx_wem_box`). Definability at 1 pv = empirically
+  complete conjecture with a uniform syntactic proof target (see the
+  table doc). Oracle warning: failing `search` cost is CHAOTIC in
+  fuel (non-monotone); cap weights and order cheap attempts first.

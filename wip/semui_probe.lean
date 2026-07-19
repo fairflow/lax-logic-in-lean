@@ -154,6 +154,12 @@ def SFUEL : Nat := 60
 search cost grows steeply with total weight. -/
 def WCAP : Nat := 13
 
+/-- Combination premises restricted to the safe low chain: failing
+searches against ¬◯⊥-instance combos have chaotic (non-monotone-in-
+fuel) cost. -/
+def comboPool : List PLLFormula :=
+  [.falsePLL, PLLFormula.falsePLL.somehow, truePLL]
+
 /-- ∀-side: substitution singletons (full fuel), then the lower
 transform alone / with a single, then substitution pairs, then
 lowT + pair (reduced fuel). -/
@@ -165,20 +171,18 @@ def certAllX (p : String) (M ψ : PLLFormula) (pool poolSmall : List PLLFormula)
   | some χ => s!"CERT-SUBST[{pf χ}]"
   | none =>
   let lw := lowT p M
+  let sw := sideT p M
   if lw.weight > 20 then "LOW-SKIPPED(weight)"
   else if provC [lw] ψ then "CERT-LOW[]"
-  else match pool.find? (fun χ =>
+  else if sw.weight ≤ 100 && provF SFUEL [sw] ψ then "CERT-SIDE[]"
+  else match comboPool.find? (fun χ =>
       let i := substP p χ M
       i.weight ≤ WCAP && provC [lw, i] ψ) with
   | some χ => s!"CERT-LOW[{pf χ}]"
   | none =>
-  let sw := sideT p M
-  if sw.weight > 100 then
-    (if !TRY_PAIRS then "NO-CERT(singles+low;side-skipped)" else "NO-CERT(side-skipped)")
-  else if provF SFUEL [sw] ψ then "CERT-SIDE[]"
-  else match pool.find? (fun χ =>
+  match comboPool.find? (fun χ =>
       let i := substP p χ M
-      i.weight ≤ WCAP && provF SFUEL [sw, i] ψ) with
+      sw.weight ≤ 100 && i.weight ≤ WCAP && provF SFUEL [sw, i] ψ) with
   | some χ => s!"CERT-SIDE[{pf χ}]"
   | none =>
   if !TRY_PAIRS then "NO-CERT(singles+low+side)"
