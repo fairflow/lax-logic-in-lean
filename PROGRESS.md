@@ -449,3 +449,13 @@ value outright and A via greatest at ⋀Θ).  chain2 verdict = corollary
 chain2_holds_half.  With §11's fails-half the Lemma-7 dichotomy is a
 pair of theorems: commutes iff no Θ-avoiding pair-name — the
 fallibility prediction PROVED both ways at the constraint level.
+
+## 13. 2026-07-19: the dichotomy lifted to models — c0Of in the library
+
+FinModel tables + c0Of (Lemma-7 recipe, naming parametric) + falAxioms;
+shape lifts c0Of_thetaNamed / c0Of_residuePair (only Rᵢ-reflexivity
+needed); model_dichotomy_boxp_imp_p / model_dichotomy_box_lob: for any
+finite model, injective p-avoiding naming, any IsIPCAll-value A of the
+translated frame-changing row: A ⊢_Θ value ⟺ all Rₘ-stable worlds
+fallible.  decide-pins: c0Of reproduces the probes' chain2C/chain3C.
+The fallibility prediction is a machine-checked iff at model level.

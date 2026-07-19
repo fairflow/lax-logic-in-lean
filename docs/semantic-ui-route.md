@@ -702,3 +702,33 @@ frame-changing rows (§0(o)); with some pair at a Θ-avoiding name and
 bad-named covers, it FAILS (§0(n)).  The fallibility prediction of
 §0(j) is now a pair of THEOREMS, generalising every certified
 instance.
+
+### (p) 2026-07-19: the dichotomy at the MODEL level — PROVED (c0Of lifted)
+
+`LaxLogic/PLLSemUIRes.lean`, final section.  Finite models as Boolean
+tables (`FinModel`: n, ri, rm, fal); the Lemma-7 recipe in the
+library:
+
+    c0Of nm m = one pair (α_u, ⋁{α_v : v a cover of u})
+                per Rₘ-stable world u,  α_w := prop (nm w)
+
+with the naming `nm : Nat → String` a parameter (injectivity assumed
+where needed — the codebase's own freshness pattern); `falAxioms nm m`
+= the fallibility frame theory {¬α_w : w fallible}.  Shape lifts:
+`c0Of_thetaNamed` (all stable worlds fallible ⟹ ThetaNamed) and
+`c0Of_residuePair` (a non-fallible stable world ⟹ ResiduePair at its
+name; needs only Rᵢ-reflexivity, for strictness of covers).  THE
+MODEL-LEVEL DICHOTOMY, one iff per frame-changing row
+(`model_dichotomy_boxp_imp_p`, `model_dichotomy_box_lob`):
+
+    for ANY finite model m (Rᵢ reflexive), injective naming avoiding
+    p, and ANY IsIPCAll-value A of the translated row:
+
+      A ⊢_{falAxioms} translated PLL value
+        ⟺  every Rₘ-stable world of m is fallible
+
+(the converse derivations are the trivial/sandwich directions, so
+the iff captures commutation).  Coherence pins: `c0Of` with the
+probes' naming reproduces `chain2C`/`chain3C` literally (`by decide`).
+The §0(j) prediction is now a machine-checked iff at the level it was
+conjectured.

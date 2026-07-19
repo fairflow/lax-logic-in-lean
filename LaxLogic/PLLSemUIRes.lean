@@ -532,5 +532,224 @@ theorem chain2_holds_half {A : PLLFormula}
       simp [negA])
     hA
 
+/-! ## The model level: Lemma 7's recipe `c0Of`, and the lifted dichotomy
+
+Finite models as Boolean tables (worlds `0..n-1`), the Lemma-7
+constraint `c0Of` — one pair `(α_u, ⋁{α_v : v an immediate strict
+Rᵢ-successor of u})` per Rₘ-stable world `u`, with `α_w` an atom
+naming `w` — and the fallibility frame theory `falAxioms`.  The two
+shape lemmas: with every stable world fallible, `c0Of` is
+`ThetaNamed`; at a non-fallible stable world it carries a
+`ResiduePair`.  Composing with the two halves gives the MODEL-LEVEL
+DICHOTOMY, one iff per frame-changing row:
+
+    commutation relative to the fallibility axioms
+      ⟺  every Rₘ-stable world of the model is fallible.
+
+The naming `nm : Nat → String` is a parameter with an injectivity
+hypothesis where needed (the codebase's own pattern — cf.
+`exists_freshNames`/`nm_inj` in `PLLCtxCompleteness`); the probes'
+naming `i ↦ "a‹i›"` is an instance. -/
+
+/-- A finite model as tables (no frame laws assumed; the lift states
+the ones it uses — only `Rᵢ`-reflexivity, for strictness of covers). -/
+structure FinModel where
+  n : Nat
+  ri : Nat → Nat → Bool
+  rm : Nat → Nat → Bool
+  fal : Nat → Bool
+
+def worldsOf (m : FinModel) : List Nat := List.range m.n
+
+/-- `u` is Rₘ-stable: every Rₘ-successor sees back. -/
+def stableB (m : FinModel) (u : Nat) : Bool :=
+  (worldsOf m).all (fun t => !(m.rm u t) || m.rm t u)
+
+/-- `v` is an immediate strict Rᵢ-successor (cover) of `u`. -/
+def iSuccB (m : FinModel) (u v : Nat) : Bool :=
+  m.ri u v && !(m.ri v u) &&
+    (worldsOf m).all (fun t => !(m.ri u t) || !(m.ri t v) || (m.ri t u || m.ri v t))
+
+/-- **Lemma 7's recipe**: one pair per stable world, guard = the
+world's name, disjunction = the names of its covers. -/
+def c0Of (nm : Nat → String) (m : FinModel) : StdCtx :=
+  ((worldsOf m).filter (stableB m)).map (fun u =>
+    (PLLFormula.prop (nm u),
+      Ctx.bigOr (((worldsOf m).filter (iSuccB m u)).map
+        (fun v => PLLFormula.prop (nm v)))))
+
+/-- The fallibility frame theory: `¬α_w` for every fallible world. -/
+def falAxioms (nm : Nat → String) (m : FinModel) : List PLLFormula :=
+  ((worldsOf m).filter m.fal).map (fun w => negA (nm w))
+
+/-- The names of all worlds other than `u₀`. -/
+def badOf (nm : Nat → String) (m : FinModel) (u₀ : Nat) : List String :=
+  ((worldsOf m).filter (fun v => v != u₀)).map nm
+
+/-- **Shape lift, holds side**: all stable worlds fallible ⟹ every
+pair of `c0Of` is named by a `falAxioms`-negated atom. -/
+theorem c0Of_thetaNamed {nm : Nat → String} {m : FinModel}
+    (h : ∀ u ∈ worldsOf m, stableB m u = true → m.fal u = true) :
+    ThetaNamed (falAxioms nm m) (c0Of nm m) := by
+  intro kl hkl
+  obtain ⟨u, hu, rfl⟩ := List.mem_map.mp hkl
+  have hu' := List.mem_filter.mp hu
+  exact ⟨nm u, rfl,
+    List.mem_map.mpr ⟨u, List.mem_filter.mpr ⟨hu'.1, h u hu'.1 hu'.2⟩, rfl⟩⟩
+
+/-- **Shape lift, fails side**: a non-fallible stable world `u₀` gives
+`c0Of` a residue pair at its name (covers are strict, hence ≠ u₀ under
+Rᵢ-reflexivity; the other pairs are other-named; freshness by
+injectivity of the naming). -/
+theorem c0Of_residuePair {nm : Nat → String} (hnm : Function.Injective nm)
+    {m : FinModel} (hrefl : ∀ w ∈ worldsOf m, m.ri w w = true)
+    {u₀ : Nat} (hu₀ : u₀ ∈ worldsOf m)
+    (hstab : stableB m u₀ = true) :
+    ResiduePair (nm u₀) (badOf nm m u₀) (c0Of nm m) where
+  pair := by
+    refine ⟨((worldsOf m).filter (iSuccB m u₀)).map
+      (fun v => PLLFormula.prop (nm v)),
+      List.mem_map.mpr ⟨u₀, List.mem_filter.mpr ⟨hu₀, hstab⟩, rfl⟩, ?_⟩
+    intro x hx
+    obtain ⟨v, hv, rfl⟩ := List.mem_map.mp hx
+    have hv' := List.mem_filter.mp hv
+    refine ⟨nm v, List.mem_map.mpr ⟨v, List.mem_filter.mpr ⟨hv'.1, ?_⟩, rfl⟩, rfl⟩
+    have hsucc := hv'.2
+    simp only [iSuccB, Bool.and_eq_true, Bool.not_eq_true'] at hsucc
+    refine bne_iff_ne.mpr ?_
+    rintro rfl
+    have hrr := hrefl v hv'.1
+    rw [hsucc.1.2] at hrr
+    exact Bool.false_ne_true hrr
+  named := by
+    intro kl hkl
+    obtain ⟨u, hu, rfl⟩ := List.mem_map.mp hkl
+    have hu' := List.mem_filter.mp hu
+    by_cases hcase : u = u₀
+    · subst hcase; exact Or.inl rfl
+    · exact Or.inr ⟨nm u,
+        List.mem_map.mpr ⟨u, List.mem_filter.mpr ⟨hu'.1, bne_iff_ne.mpr hcase⟩, rfl⟩,
+        rfl⟩
+  fresh := by
+    intro hmem
+    obtain ⟨v, hv, hveq⟩ := List.mem_map.mp hmem
+    have hv' := List.mem_filter.mp hv
+    exact absurd (hnm hveq) (bne_iff_ne.mp hv'.2)
+
+/-- `p` avoiding the naming keeps the fallibility axioms p-free. -/
+theorem falAxioms_pfree {nm : Nat → String} {m : FinModel} {p : String}
+    (hp : ∀ w ∈ worldsOf m, nm w ≠ p) :
+    ∀ ψ ∈ falAxioms nm m, p ∉ ψ.atoms := by
+  intro ψ hψ
+  obtain ⟨w, hw, rfl⟩ := List.mem_map.mp hψ
+  have hw' := List.mem_filter.mp hw
+  intro hmem
+  have hpw : p = nm w := by simpa [negA] using hmem
+  exact hp w hw'.1 hpw.symm
+
+theorem falAxioms_isIPL {nm : Nat → String} {m : FinModel} :
+    ∀ ψ ∈ falAxioms nm m, isIPL ψ := by
+  intro ψ hψ
+  obtain ⟨w, _, rfl⟩ := List.mem_map.mp hψ
+  exact ⟨trivial, trivial⟩
+
+/-- The fallibility axioms avoid the name of a non-fallible world. -/
+theorem falAxioms_avoid {nm : Nat → String} (hnm : Function.Injective nm)
+    {m : FinModel} {u₀ : Nat} (hfal : m.fal u₀ = false) :
+    ∀ ψ ∈ falAxioms nm m, ∃ a, a ≠ nm u₀ ∧ ψ = negA a := by
+  intro ψ hψ
+  obtain ⟨w, hw, rfl⟩ := List.mem_map.mp hψ
+  have hw' := List.mem_filter.mp hw
+  refine ⟨nm w, hnm.ne ?_, rfl⟩
+  rintro rfl
+  rw [hw'.2] at hfal
+  exact Bool.true_eq_false.mp hfal
+
+/-! ### The model-level dichotomy, one iff per frame-changing row -/
+
+/-- **The dichotomy, row `∀p.(◯p⊃p) = ⊥`**: for any finite model `m`
+(with reflexive `Rᵢ`), injective naming avoiding `p`, and ANY
+`IsIPCAll`-value `A` of the translation `(◯p⊃p)^{c0Of m}`:
+
+    A is falAxioms-equivalent to the translated value ⊥
+      ⟺  every Rₘ-stable world of `m` is fallible.
+
+(The ⊥ ⊢ A direction is trivial, so the iff is stated on the
+substantive direction.) -/
+theorem model_dichotomy_boxp_imp_p {nm : Nat → String}
+    (hnm : Function.Injective nm) {m : FinModel}
+    (hrefl : ∀ w ∈ worldsOf m, m.ri w w = true) {p : String}
+    (hp : ∀ w ∈ worldsOf m, nm w ≠ p) {A : PLLFormula}
+    (hA : IsIPCAll p isIPL
+      (subC (c0Of nm m) ((PLLFormula.prop p).somehow.ifThen (.prop p))) A) :
+    Nonempty (LaxND (A :: falAxioms nm m) .falsePLL) ↔
+      ∀ u ∈ worldsOf m, stableB m u = true → m.fal u = true := by
+  constructor
+  · intro hder u₀ hu₀ hstab
+    by_contra hfal'
+    have hfal : m.fal u₀ = false := by
+      cases hff : m.fal u₀ with
+      | true => exact absurd hff hfal'
+      | false => rfl
+    refine fails_half_boxp_imp_p (c0Of_residuePair hnm hrefl hu₀ hstab)
+      (fun hpe => hp u₀ hu₀ hpe.symm) ?_ hA (falAxioms_avoid hnm hfal) hder
+    intro hmem
+    obtain ⟨v, hv, hveq⟩ := List.mem_map.mp hmem
+    exact hp v (List.mem_filter.mp hv).1 hveq
+  · intro hall
+    exact (holds_half_boxp_imp_p (c0Of_thetaNamed hall)
+      (falAxioms_pfree hp) hA).1
+
+/-- **The dichotomy, row `∀p.◯(◯p⊃p) = ◯⊥`** (Löb/sideways row):
+`A` derives the translated value `(◯⊥)^{c0Of m}` relative to the
+fallibility axioms ⟺ every stable world is fallible.  (The converse
+derivation `value ⊢_Θ A` is the sandwich lower bound and holds
+unconditionally.) -/
+theorem model_dichotomy_box_lob {nm : Nat → String}
+    (hnm : Function.Injective nm) {m : FinModel}
+    (hrefl : ∀ w ∈ worldsOf m, m.ri w w = true) {p : String}
+    (hp : ∀ w ∈ worldsOf m, nm w ≠ p) {A : PLLFormula}
+    (hA : IsIPCAll p isIPL
+      (subC (c0Of nm m)
+        ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) A) :
+    Nonempty (LaxND (A :: falAxioms nm m)
+        (subC (c0Of nm m) PLLFormula.falsePLL.somehow)) ↔
+      ∀ u ∈ worldsOf m, stableB m u = true → m.fal u = true := by
+  constructor
+  · intro hder u₀ hu₀ hstab
+    by_contra hfal'
+    have hfal : m.fal u₀ = false := by
+      cases hff : m.fal u₀ with
+      | true => exact absurd hff hfal'
+      | false => rfl
+    refine fails_half_box_lob (c0Of_residuePair hnm hrefl hu₀ hstab)
+      (fun hpe => hp u₀ hu₀ hpe.symm) ?_ hA (falAxioms_avoid hnm hfal) hder
+    intro hmem
+    obtain ⟨v, hv, hveq⟩ := List.mem_map.mp hmem
+    exact hp v (List.mem_filter.mp hv).1 hveq
+  · intro hall
+    exact (holds_half_box_lob (c0Of_thetaNamed hall)
+      (falAxioms_pfree hp) falAxioms_isIPL hA).1
+
+/-! ### Coherence with the probes: chain2 and chain3 pin -/
+
+/-- chain2 as tables. -/
+def mChain2L : FinModel where
+  n := 2
+  ri := fun a b => a.ble b
+  rm := fun a b => a.ble b
+  fal := fun a => a == 1
+
+/-- chain3 as tables (Rₘ rigid except 1 → 2, top fallible). -/
+def mChain3L : FinModel where
+  n := 3
+  ri := fun a b => a.ble b
+  rm := fun a b => a == b || (a == 1 && b == 2)
+  fal := fun a => a == 2
+
+/-- `c0Of` with the probes' naming reproduces the probes' constraints. -/
+example : c0Of (fun i => "a" ++ toString i) mChain2L = chain2C := by decide
+example : c0Of (fun i => "a" ++ toString i) mChain3L = chain3C := by decide
+
 end SemUI
 end PLLND
