@@ -27,11 +27,17 @@ TeX Live 2025; LuaLaTeX for Unicode (see the TAPS note at the head of
 
 ## Provenance and editing discipline
 
-`body.tex` is a *derived pour* of the markdown draft, not yet the master.
-Until Matthew declares the switch-over, substantive prose edits should
-happen in `../docs/belief-paper-draft.md` and be re-poured, or be made in
-both places knowingly; the merge pass (selection doc §2) is expected to
-make `body.tex` the master thereafter.
+`body.tex` is now the **working master** (the merge pass of 2026-07-19
+applied decisions D2–D9 here, and `../docs/belief-paper-draft.md`
+carries a supersession note). Edit the TeX directly; the markdown draft
+is kept only as the revision-2 record.
+
+## Sharing builds
+
+`belief.pdf` is gitignored scratch. When a build is sent for review it
+is copied to a commit-stamped name, `belief-<shortsha>.pdf`, so a stale
+side-panel render can never be mistaken for the current one. These
+stamped copies are also gitignored (`*.pdf`).
 
 Engineering decisions, measured not guessed (2026-07-19):
 
@@ -46,12 +52,9 @@ Engineering decisions, measured not guessed (2026-07-19):
   escaping and Unicode→math substitution, robust in any argument
   position.
 
-Known skeleton limitations, deliberate for now:
+Status of the earlier limitations (2026-07-19, done):
 
-- a few wide Lean blocks overflow the two-column measure and are to be
-  reflowed by hand at the merge pass;
-- prose mathematics is rendered by pour-time Unicode→`\ensuremath`
-  substitution — page-honest but typographically rough; the merge pass
-  converts the load-bearing formulas to real math;
-- citations cover only the inline `[F&M 1997]`-style references plus a
-  handful of obvious ones; the full citation pass is merge-pass work.
+- Lean displays reflowed to the two-column measure (one ~2 pt residual);
+- prose mathematics converted to real math (pour-time `\ensuremath`
+  chains merged);
+- citation sweep complete (70 of 119 entries cited).
