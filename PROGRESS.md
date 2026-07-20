@@ -525,3 +525,17 @@ coverage of RN(◯,{})∖{⊥} for the unconditional collapse.
 splitTower_oneW_forces_lob (AXIOM-FREE) — no split-tower variant of
 oneW refutes the Löb row, sideways Rₘ-creation is essential; basis
 needs both surgeries.
+
+## 18. 2026-07-20: sufficiency PROVED — RN({p}) definable, Pitts values
+
+ofree_semAll_definable / ofree_semEx_definable (PLLSemUIOFree.lean):
+every ◯-free 1-var M has definable semantic quantifiers with values
+in {⊤,⊥} — unconditional (classical em on derivability only).
+Engine: flatten (non-fallible part; ◯-free forcing preserved at
+non-fallible worlds; output flat) + ofreeGraft (fibre flat
+countermodel over arbitrary C; projection = total PBisim; fibre
+forcing = K-forcing at non-fallible fibres).  Both = semantic
+conservativity (Matthew's q_M-atomisation, model-side).  One uniform
+construction covers the whole fragment: surgery proliferation is a
+◯-depth phenomenon.  ⊤/⊥ halves (derivable/inconsistent) hold for
+arbitrary M.

@@ -1056,3 +1056,48 @@ Rₘ-arrow leaving its cluster — the one thing splits never create.
 The transform basis genuinely needs BOTH surgeries (or a common
 generalisation creating sideways constraint arrows: the natural
 candidate for t-omega).
+
+### (x) 2026-07-20: SUFFICIENCY PROVED — RN({p}) definable with Pitts's values, unconditionally
+
+Matthew: "1,758 examples is impressive, but it ain't a proof."  Now it
+is one (`PLLSemUIOFree.lean`, extended; audits pinned):
+
+    ofree_semAll_definable : ∀ M ◯-free with atoms ⊆ {p},
+      ∃ ψ, IsSemAll p M ψ ∧ (ψ = ⊤ ∨ ψ = ⊥)
+    ofree_semEx_definable  : dually for ∃p
+
+Two model operations, both semantic forms of CONSERVATIVITY (the same
+fact as Matthew's q_M-atomisation — lax structure is invisible to
+◯-free formulas — read model-side):
+
+* `flatten C`: restrict to the non-fallible part.  ◯-free forcing at
+  non-fallible worlds is UNCHANGED (fallible futures force
+  everything, so they never constrain an implication) and the result
+  is fallibility-free.  Consequence: any PLL countermodel of a ◯-free
+  M yields a flat (IPC) one — completeness suffices, no separate
+  IPC decision procedure and no proof-theoretic conservativity lemma
+  is consumed.
+* `ofreeGraft C K p`: fibre a flat model K over an ARBITRARY model C —
+  worlds (x, k) above the base cone of x, never returning, Rₘ rigid
+  in the K-coordinate, p read from K's decoration, all else from the
+  base coordinate.  Base-identity ∪ projection is a total PBisim;
+  at a non-fallible fibre the graft forces a ◯-free one-variable θ
+  iff K does (fallible fibres absorbed as in `topExt`).
+
+Sufficiency: underivable M → flatten a countermodel (from
+completeness, classically) → fibre it over any C → at any
+non-fallible w the p-variant world (w, d) refutes M → IsSemAll p M ⊥.
+Dually consistent M → IsSemEx p M ⊤.  Derivable/inconsistent halves
+hold for ARBITRARY M (`semAll_top_of_derivable`,
+`semEx_bot_of_inconsistent`).
+
+STRUCTURAL READING (Matthew's "worth looking deeper" question): within
+the ◯-free fragment ONE uniform construction (the fibred graft)
+covers every row — the per-row surgeries (doubling, levelling,
+split) are a phenomenon of ◯-DEPTH, not of row count.  The graft is
+exactly the amalgamation move (implant an external countermodel as a
+p-variant while preserving the p-free type); the fragment result
+says amalgamation is unobstructed below the first ◯.  The
+obstruction begins where the p-free type is rich (the ladder) and
+Rₘ-rows must be completed — the ∀∃ ◯-clause.  Next decisive probe
+for the climb: the one-◯ two-variable fragment.
