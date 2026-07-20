@@ -752,3 +752,19 @@ layered_of_frag_agree_W ASSEMBLED in PLLSemUIChar: Z α := agreement
 at rank 2α; mono/atoms/fall/iforth/iback/root all proved;
 sorry-footprint EXACTLY the two weak m-clauses (probe: 2324/0).
 Pillar 2 is now: two m-clause character derivations away.
+
+## 32. 2026-07-20 close: the m-clause hunt at scale
+
+mforth_probe extended with 240 pseudorandom frames (4–6 worlds,
+closed random relations, up-closed fallible sets; fingerprints
+precomputed): 746,108 agreeing pairs — NON-fallible forth-m
+violations: 0 (the W-form m-clause is now backed at scale; the pure
+statement of resolution (a) very plausibly TRUE, proof still open);
+fallible-PAIR failures: 22,506 (the machine-checked boundary of
+§30 confirmed en masse).  Ledger at close: pillar 1 PROVED; pillar 2
+= i-clauses PROVED + two probe-backed m-sorries with the ∀∃ analysis
+recorded (§0(gg)); pillar 3 scaffolded to wit_pbisim/wit_force with
+the promise-routed ◯-case as the designed bridge.  Next session:
+wit_force's ◯-case via canonical promises (trace_mforth prototype),
+then wit_pbisim's two-case budget argument, then Thm 5.1 assembly ⇒
+∀p.◯(◯p⊃p) = ◯⊥.

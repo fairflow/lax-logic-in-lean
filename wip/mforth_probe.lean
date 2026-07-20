@@ -130,11 +130,12 @@ def mainLoop : IO Unit := do
   let mut pairs := 0
   let mut cands := 0
   let mut fcands := 0
-  let pts := allCMs.flatMap fun M => (List.range M.n).map fun w => (M, w)
-  for (M, w) in pts do
-    let fw := finger M w
-    for (N, w') in pts do
-      if fw == finger N w' then
+  -- precompute fingerprints once per point
+  let pts := allCMs.flatMap fun M =>
+    (List.range M.n).map fun w => (M, w, finger M w)
+  for (M, w, fw) in pts do
+    for (N, w', fw') in pts do
+      if fw == fw' then
         pairs := pairs + 1
         for u in List.range M.n do
           if M.rmB w u && !M.fallB u then
