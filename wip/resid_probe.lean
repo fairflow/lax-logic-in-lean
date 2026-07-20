@@ -59,36 +59,65 @@ def extraFrames : List Frame :=
    ⟨4, [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)], [], []⟩,
    ⟨4, [(0,1),(0,2),(0,3),(1,3),(2,3)], [(0,1)], [3]⟩]
 
-def allFrames : List Frame := defaultFrames ++ extraFrames
+/-- Transitive closure of a frame's relations (some battery frames —
+the onebox forks — are not closed as listed; the `Frame` contract
+assumes closure). -/
+def closeF (f : Frame) : Frame := Id.run do
+  let mut ri := f.ri
+  let mut rm := f.rm
+  let mut changed := true
+  while changed do
+    changed := false
+    for e in ri do
+      for e' in ri do
+        if e.2 == e'.1 && !(decide ((e.1, e'.2) ∈ ri)) && e.1 != e'.2 then
+          ri := ri ++ [(e.1, e'.2)]
+          changed := true
+    for e in rm do
+      for e' in rm do
+        if e.2 == e'.1 && !(decide ((e.1, e'.2) ∈ rm)) && e.1 != e'.2 then
+          rm := rm ++ [(e.1, e'.2)]
+          changed := true
+  return ⟨f.n, ri, rm, f.fall⟩
+
+def allFrames : List Frame := (defaultFrames ++ extraFrames).map closeF
 
 def memM (m i : Nat) : Bool := (m >>> i) &&& 1 == 1
 
 /-! ## Variants as FinCMs -/
 
-/-- Build the variant: `f` plus `k ≤ 2` new points above `x`.
-`outA`/`outB` are the base `Rᵢ`-exits (⊆ reflexive cone of `x`,
-`outB ⊆ outA`); `mA ⊆ outA`, `mB ⊆ outB ∪ new` the `Rₘ`-exits;
-`pmask` the p-decoration over `f.n + k` worlds.  Point `a := f.n`,
-`b := f.n + 1`. -/
-def mkVariant (f : Frame) (x : Nat) (k : Nat) (outA outB mA mB pmask : Nat) :
-    FinCM := Id.run do
+/-- Build the variant: `f` plus a CHAIN of `k ≤ 3` new points above
+`x` (`x ≤ a ≤ b ≤ c`).  `outs[i]` are the base `Rᵢ`-exits of the i-th
+new point (⊆ reflexive cone of `x`, nested downward for
+transitivity); `ms[i] ⊆ outs[i]` its base `Rₘ`-exits; `mNew` three
+bits for the in-chain `Rₘ`-edges (a→b, a→c, b→c); `pmask` the
+p-decoration over `f.n + k` worlds. -/
+def mkVariant (f : Frame) (x : Nat) (k : Nat) (outs ms : List Nat)
+    (mNew pmask : Nat) : FinCM := Id.run do
   let n := f.n
   let mut ri := f.ri
   let mut rm := f.rm
-  -- entries: from the reflexive down-set of x
+  -- entries: from the reflexive down-set of x, to every new point
   for w in List.range n do
     if w == x || decide ((w, x) ∈ f.ri) then
-      ri := ri ++ [(w, n)]
-      if k ≥ 2 then ri := ri ++ [(w, n+1)]
-  if k ≥ 2 then ri := ri ++ [(n, n+1)]
+      for i in List.range k do
+        ri := ri ++ [(w, n + i)]
+  -- the chain, and in-chain m-edges
+  for i in List.range k do
+    for j in List.range k do
+      if i < j then
+        ri := ri ++ [(n + i, n + j)]
+  if k ≥ 2 && memM mNew 0 then rm := rm ++ [(n, n+1)]
+  if k ≥ 3 && memM mNew 1 then rm := rm ++ [(n, n+2)]
+  if k ≥ 3 && memM mNew 2 then rm := rm ++ [(n+1, n+2)]
   -- exits into the cone of x
-  for y in List.range n do
-    if memM outA y then
-      ri := ri ++ [(n, y)]
-      if memM mA y then rm := rm ++ [(n, y)]
-    if k ≥ 2 && memM outB y then
-      ri := ri ++ [(n+1, y)]
-      if memM mB y then rm := rm ++ [(n+1, y)]
+  for i in List.range k do
+    let o := outs.getD i 0
+    let m := ms.getD i 0
+    for y in List.range n do
+      if memM o y then
+        ri := ri ++ [(n + i, y)]
+        if memM m y then rm := rm ++ [(n + i, y)]
   let val := ((List.range (n + k)).filter (fun w => memM pmask w)).map
     (fun w => (w, "p"))
   return ⟨n + k, ri, rm, f.fall, val⟩
@@ -167,6 +196,17 @@ def bisimOK (B N : FinCM) (x : Nat) : Bool := Id.run do
 so any decoration gives the same verdict). -/
 def baseCM (f : Frame) : FinCM := ⟨f.n, f.ri, f.rm, f.fall, []⟩
 
+/-- Try one gadget shape over all hereditary p-decorations. -/
+def tryShape (B : FinCM) (f : Frame) (x : Nat) (target : PLLFormula)
+    (k : Nat) (outs ms : List Nat) (mNew : Nat) : Option String :=
+  Id.run do
+  let N0 := mkVariant f x k outs ms mNew 0
+  for pm in heredP N0 do
+    let N := mkVariant f x k outs ms mNew pm
+    if !(N.forceB x target) && bisimOK B N x then
+      return some s!"outs={outs} ms={ms} mNew={mNew} pmask={pm}"
+  return none
+
 /-- Search the variant family at `(f, x)` for a kill of `◯φ`.
 Returns `some (k, description)` on success. -/
 def search (f : Frame) (x : Nat) (φ : PLLFormula) : Option (Nat × String) :=
@@ -179,23 +219,29 @@ def search (f : Frame) (x : Nat) (φ : PLLFormula) : Option (Nat × String) :=
       ((List.range f.n).filter (fun w => memM pm w)).map (fun w => (w, "p"))⟩
     if !(N.forceB x target) && bisimOK B N x then
       return some (0, s!"pmask={pm}")
-  -- k = 1, then k = 2
-  for k in [1, 2] do
-    for outA in upClosedSubs f x do
-      for mA in List.range (1 <<< f.n) do
-        if mA &&& outA == mA then
-          let outBs := if k == 1 then [0] else
-            (upClosedSubs f x).filter (fun m => m &&& outA == m)
-          for outB in outBs do
-            let mBs := if k == 1 then [0] else
-              (List.range (1 <<< f.n)).filter (fun m => m &&& outB == m)
-            for mB in mBs do
-              let N0 := mkVariant f x k outA outB mA mB 0
-              for pm in heredP N0 do
-                let N := mkVariant f x k outA outB mA mB pm
-                if !(N.forceB x target) && bisimOK B N x then
-                  return some (k,
-                    s!"outA={outA} mA={mA} outB={outB} mB={mB} pmask={pm}")
+  -- k = 1, 2: nested base exits
+  for outA in upClosedSubs f x do
+    for mA in List.range (1 <<< f.n) do
+      if mA &&& outA == mA then
+        if let some d := tryShape B f x target 1 [outA] [mA] 0 then
+          return some (1, d)
+  for outA in upClosedSubs f x do
+    for mA in List.range (1 <<< f.n) do
+      if mA &&& outA == mA then
+        for outB in (upClosedSubs f x).filter (fun m => m &&& outA == m) do
+          for mB in (List.range (1 <<< f.n)).filter (fun m => m &&& outB == m) do
+            for mNew in [0, 1] do
+              if let some d := tryShape B f x target 2 [outA, outB] [mA, mB] mNew then
+                return some (2, d)
+  -- k = 3: nested exits (outC ⊆ outB ⊆ outA), base m-exits on `a` only
+  for outA in upClosedSubs f x do
+    for outB in (upClosedSubs f x).filter (fun m => m &&& outA == m) do
+      for outC in (upClosedSubs f x).filter (fun m => m &&& outB == m) do
+        for mA in (List.range (1 <<< f.n)).filter (fun m => m &&& outA == m) do
+          for mNew in List.range 8 do
+            if let some d := tryShape B f x target 3 [outA, outB, outC]
+                [mA, 0, 0] mNew then
+              return some (3, d)
   return none
 
 def runRow (label : String) (φ : PLLFormula) : IO Unit := do

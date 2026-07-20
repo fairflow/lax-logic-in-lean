@@ -608,3 +608,27 @@ bridges membership to forcing).  Open centre: the descriptions
 functor and its m-clauses — decidable per closure, oracle-probeable.
 Merged: node-budgeted search (chip; find is partial-with-visited-set,
 not WF — PLLSearchEx note carries stale attribution, flagged).
+
+## 24. 2026-07-20 pm: descriptions functor built and measured — route corrected, gap row probe-discharged
+
+trace C cl c mechanised (PLLSemUITrace.lean, sorry-free): consistency
+by soundness-at-c; clauses atoms/fall/iforth/mforth PROVED (mforth =
+the mfal design validation), kback/mback REFUTED machine-checked.
+Pack clauses positive in R ⇒ largest pack Realises (axiom-free
+union lemma); residue discharges reduce to per-(C,x) triple
+realisation.  Pre-triple sandwich PROVED: residue ⟹
+Cons⟨pfval(x), {◯φ}∪pffal(x), pfmfal(x)⟩ ⟹ canonical candidate
+exists; realised candidate ⟹ residue.  PROBES (desc_probe,
+resid_probe, both compiled): full-canonFin target DEAD (gfp empty on
+all ∀-instances; kill-chain = promise-forgetting extensions + T⊥ on
+F-free rows; rank-stratified dies by round 3, formula-independently)
+— but the residues themselves are TRUE on the whole battery by SMALL
+GADGETS: proved rows at k ≤ 1, and the GAP ROW ∀p.◯(◯p⊃p) at
+k ≤ 2 (47/47: 9 redecorate, 18 one-point, 20 two-point tail with
+in-chain Rm and sideways m-exit — lobTowerBase shape).  Corrected
+ledger: canonical triples CLASSIFY (consistency crux necessary,
+proved), adjunction tails KILL.  Next: mechanise the gap row's
+3-case discharge as a Lob0-style class lemma ⇒ ∀p.◯(◯p⊃p) = ◯⊥.
+Frame hygiene: onebox fork frames not transitively closed as listed;
+probes close on intake (sweeps unaffected — unclosed members cannot
+certify).

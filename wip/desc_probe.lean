@@ -119,6 +119,30 @@ def extraFrames : List Frame :=
 def cfg : Config :=
   { frames := defaultFrames ++ extraFrames, findBudget := some 40000 }
 
+/-- Transitive closure of a frame's relations (some battery frames —
+the onebox forks — are not closed as listed; instance-building needs
+legal models). -/
+def closeF (f : Frame) : Frame := Id.run do
+  let mut ri := f.ri
+  let mut rm := f.rm
+  let mut changed := true
+  while changed do
+    changed := false
+    for e in ri do
+      for e' in ri do
+        if e.2 == e'.1 && !(decide ((e.1, e'.2) ∈ ri)) && e.1 != e'.2 then
+          ri := ri ++ [(e.1, e'.2)]
+          changed := true
+    for e in rm do
+      for e' in rm do
+        if e.2 == e'.1 && !(decide ((e.1, e'.2) ∈ rm)) && e.1 != e'.2 then
+          rm := rm ++ [(e.1, e'.2)]
+          changed := true
+  return ⟨f.n, ri, rm, f.fall⟩
+
+/-- The C-side instance frames, closed. -/
+def instFrames : List Frame := (defaultFrames ++ extraFrames).map closeF
+
 inductive V3 | yes | no | unk
 
 /-- Two-sided, budgeted, certificate-carrying. -/
@@ -317,7 +341,7 @@ def runRow (label : String) (φ ψ : PLLFormula) (isAll : Bool) :
   let dNeed := depthF φ.somehow
   IO.println s!"  required depth d = {dNeed}"
   let mut st : RowStats := {}
-  for f in cfg.frames do
+  for f in instFrames do
     for pm in heredMasks f do
       let cm := mkCM f pm
       let ctx : GfpCtx := ⟨cm, cl, wsA⟩

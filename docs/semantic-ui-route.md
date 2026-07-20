@@ -1375,3 +1375,98 @@ partial def` with a visited-set (NOT well-founded recursion — the
 chip corrected my misstatement; PLLSearchEx.lean's limitation note
 still carries the wrong attribution — Matthew's file, flagged not
 edited).
+
+## §0(ee) The descriptions functor, the realisability gfp, and the probe verdict (2026-07-20 pm)
+
+The "remaining open mathematics" of §0(dd) — the pack for K :=
+`canonFin cl` — was built, measured, and REFUTED as the route; the
+day ends with the route corrected and the gap row's residue
+probe-supported.  Everything below `LaxLogic/PLLSemUITrace.lean`
+(sorry-free, pins standard three; `packRel_realises` axiom-FREE) plus
+two compiled probes (`wip/desc_probe.lean`, `wip/resid_probe.lean`).
+
+**(i) The functor.**  `trace C cl c` := the closure description
+⟨{χ ∈ cl | c ⊩ χ}, {χ ∈ cl | c ⊮ χ}, {χ ∈ cl | row(c) ⊮ χ}⟩, a
+`MaxIn` triple — consistency by `cons_of_countermodel` (soundness
+evaluated at c itself).  Of the six pack clauses the functor satisfies
+exactly the four forth-and-safety ones, each PROVED: `trace_atoms`,
+`trace_fall`, `trace_iforth`, and `trace_mforth` — the last the design
+validation of the `mfal` component (promises propagate along Rₘ by
+transitivity; descriptions are functorial for BOTH relations).  The
+two back clauses FAIL, machine-checked on two-world instances
+(`trace_kback_fails`, `trace_mback_fails`): the canonical model is
+more saturated than an arbitrary base.  The functor is a lax morphism,
+not a bisimulation.
+
+**(ii) The gfp.**  All six pack clauses use R only positively, so
+packs are closed under unions: there is a LARGEST pack,
+`Realises C K p dom` (`packRel_realises`, axiom-free), and pack
+EXISTENCE is absorbed — `boxRowAmalg{All,Ex}_of_realises` reduce each
+residue to one membership per (C, x): a closure triple with ◯φ ∈ fal
+(resp. ∈ val) Realises-related to x.  Necessary condition PROVED
+(`realises_val_iff`): a realised triple's p-free part IS the p-free
+trace — all realisation freedom is p-relevant.
+
+**(iii) The pre-triple sandwich.**  `preTripleAll C cl p x φ` :=
+⟨pfval(x), {◯φ} ∪ pffal(x), pfmfal(x)⟩ (p-free description of x
+seeded with ◯φ falsified; dually `preTripleEx` with ◯φ validated).
+PROVED both ways: the residue at (C,x) forces its consistency
+(`preTriple{All,Ex}_cons_of_residue` — the killing variant's world is
+the countermodel; p-free content crosses the bisimulation, the row
+crosses mback), and consistency yields a closure-maximal extension
+with the p-free part pinned, promises preserved and ◯φ placed
+(`preTriple{All,Ex}_extend`, constructive lindenbaum).  So per
+instance: residue ⟹ Cons(preTriple) ⟹ candidate triples exist;
+candidate realised ⟹ residue.  The gap between the two arrows is
+exactly realisability.
+
+**(iv) The probe verdict on the gap (desc_probe, 9 proved-value rows,
+90 decorated battery instances each, canonical worlds enumerated by
+the budgeted two-sided oracle — consistency is ONE maximal sequent
+per triple by disjOf-monotonicity).**  NO-CAND = 0 everywhere: the
+syntactic crux held at every qualifying instance (matches necessity +
+the proved residues).  But the ∀-side gfp is EMPTY on every instance
+(alive = 0 of 1752–10074 candidates; even the trace itself never
+survives), and the ∃-side survives only on the fallible-dominated
+63–108 of 333 points.  Kill-chain isolated: canonical Rᵢ is
+val-inclusion ONLY, so kback demands realisation of
+promise-FORGETTING extensions (mfal := ∅); those must in turn realise
+⟨cl∖{⊥}, ∅⟩, whose mback demands the exploded triple T⊥ ON THE ROW —
+possible only over fallible row-worlds; over F-free rows everything
+dies, and the death cascades down every kback chain.  The
+rank-stratified reading (synchronous pruning rounds = bounded-rank
+packs) dies by round 3 with a FORMULA-INDEPENDENT profile
+(98/31/0 of 219 across ALL rows): stratification cannot rescue the
+raw canonical target either.  VERDICT: K := full `canonFin cl` is
+dead as the graft target for arbitrary C.  The graft machinery is
+untouched — the correction is the choice of K.
+
+**(v) The route corrected: canonical triples classify, small gadgets
+kill (resid_probe).**  Probing the ∀-residue DIRECTLY per (frame, x)
+— the p-decoration of C enters nowhere, all clauses are p-blind —
+with the gadget family "chain of ≤ 2 points adjoined above x, exits
+into the cone, in-chain and sideways Rₘ, free hereditary
+p-decoration", the largest p-blind bisimulation computed as a gfp:
+FAIL = 0 on all rows.  Calibration: the three discharged rows need
+k ≤ 1.  THE GAP ROW `∀p.◯(◯p⊃p)`: all 47 instances discharged —
+9 by redecoration, 18 by one point, 20 by the two-point tail
+x ≤ a ≤ b with Rₘ a b in-chain and b's sideways m-exit into base
+p-material — exactly the `lobTowerBase` shape already mechanised in
+PLLSemUIAdjoin.  So `BoxRowAmalgAll p (◯p⊃p) ⊥` is probe-supported
+TRUE with a 3-case gadget family, and the law value
+`∀p.◯(◯p⊃p) = ◯⊥` is supported.  (One earlier FAIL was an artefact:
+the onebox fork frames are NOT transitively closed as listed — the
+`Frame` contract assumes closure; both probes now close frames on
+intake.  The sweep results are unaffected — unclosed battery members
+can only fail the verifier, never certify.)
+
+**The corrected ledger for the ◯-step.**  The canonical triples
+remain the CLASSIFIER (finitely many pre-triple classes per closure;
+the consistency crux is the class condition, PROVED necessary), while
+the DISCHARGE is by small adjunction-tail families per class — the
+Lob0Refutes pattern, now with probe-derived shapes for the gap row.
+Next opener: mechanise the gap row's 3-case discharge
+(redecorate / 1-point / 2-point tail) as a Lob0-style class lemma in
+the adjoin framework, deriving `∀p.◯(◯p⊃p) = ◯⊥` via `semAll_box`;
+then extract the general per-class tail-synthesis principle from the
+probe's shape data.
