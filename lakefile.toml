@@ -74,3 +74,8 @@ root = "wip.semui_repro"
 [[lean_exe]]
 name = "frontrow"
 root = "wip.frontier_row"
+
+# ◯-free fragment vs IPC agreement sweep.
+[[lean_exe]]
+name = "ofreesweep"
+root = "wip.ofree_sweep"

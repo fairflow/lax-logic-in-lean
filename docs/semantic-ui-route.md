@@ -988,3 +988,71 @@ cluster/strict sort distinction — note the finite canonical model is
 a poset, where the trivial-cluster form may suffice; (iii) the graded
 reconstruction law itself (downward-closed pivot sets, height =
 ◯/⊃-alternation conjecture).
+
+### (w) 2026-07-20 overnight: the ◯-free fragment AGREES with IPC; iterated splits provably do NOT reach the levelled row
+
+Two questions from Matthew, both answered.
+
+**1. Do the uniform interpolants of the ◯-free fragment RN({p})
+survive the PLL semantic quantifiers?**  YES — agreement with
+Pitts's IPC values, theorem-backed and sweep-certified
+(`LaxLogic/PLLSemUIOFree.lean` + `lake exe ofreesweep`).
+
+For one variable the IPC values are closed and ◯-free: ⊤ (⊢ M) or ⊥
+(⊬ M).  The risk was a ◯-free row acquiring a LADDER value (◯⊥,
+¬¬◯⊥, …) — the quantifier escaping the fragment at the ground floor,
+which would break the variable-by-variable climb (Matthew: "and if it
+fails... so will our semantic approach").
+
+*Necessity half, PROVED (both cones excluded):*
+
+* `topExt C` — fallible top adjoined above everything,
+  constraint-reachable from everywhere; `topExt_force_iff`: ◯-free
+  forcing at original worlds UNCHANGED (the top forces everything, so
+  it never constrains an implication — false for ¬◯⊥, which the top
+  destroys); `topExt_boxBot`: ◯⊥ becomes global.  Hence
+  `no_lower_bound_above_boxBot`: an underivable ◯-free M has NO lower
+  bound in the ◯⊥-cone.
+* `flat_neg_boxBot`: fallibility-free models force ¬◯⊥ globally
+  (IPC countermodels, read with F = ∅, qualify).  Hence
+  `no_lower_bound_above_negBoxBot` (◯-freeness not even needed).
+* Corollaries pin the ∀p-value out of both cones
+  (`semAll_value_not_above_boxBot` / `_negBoxBot`), give the ⊤-half
+  (`semAll_value_of_derivable`), and package the conditional collapse
+  `semAll_value_bot_of_cones`: a value in either cone (or ≡ ⊥) IS ⊥.
+  Dual ∃-side exclusions: `semEx_value_not_derives_negBoxBot` /
+  `_boxBot`.  Remaining OPEN step to the unconditional collapse: the
+  two-cone COVERAGE of RN(◯,{}) ∖ {⊥} (every nonzero closed formula
+  derivable from ◯⊥ or from ¬◯⊥).
+
+*Evidence half, sweep-certified (weight ≤ 8, 1,758 ◯-free rows,
+certified two-sided oracle): ZERO escapes, ZERO unknowns.*  Per row:
+no rung among 7 tested ever derives an underivable M (∀-side), no
+consistent M ever derives a rung (∃-side), the certified ∀-value
+`allCandP` derives ⊥ on every underivable row (670/670 at w8), the
+certified ∃-value `exCandP` is derivable on every consistent row and
+derives ⊥ on every inconsistent one.  Cone coverage holds for all 7
+rungs (section 0).  Note the agreement is not a substitution
+triviality: on p ∨ ¬p the ⊥-collapse goes through `lowT` — the
+frame-changing transforms are needed even to MATCH IPC on ◯-free
+rows.
+
+CONSEQUENCE for the climb: quantifying a variable of a ◯-free formula
+stays in {⊥, ⊤} — the fragment tower does not leak at the base.  The
+next rung of the climb test would be: one ◯, two variables.
+
+**2. Do iterated splits reach the ◯(◯p⊃p) row?**  NO — machine-checked
+(`PLLSemUISplit.lean`, final section, AXIOM-FREE).
+`RmClusterInternal` (every constraint arrow stays inside its
+Rᵢ-cluster) is preserved by `splitVariant` (internal copy arrows
+mirror cluster arrows; an escaping arrow from a copy would contradict
+its own strictness) and by `redecorate`, and cluster-internal
+constraints force ◯A ⊃ A everywhere.  `SplitTower` (closure under
+splits + redecorations) over `oneW` therefore forces ◯(◯p⊃p) at every
+world of every member (`splitTower_oneW_forces_lob`) — while
+`semAll_box_lob`'s value ◯⊥ demands a refuting p-variant at `oneW`'s
+world.  The levelled construction's sideways step 1→2 is exactly an
+Rₘ-arrow leaving its cluster — the one thing splits never create.
+The transform basis genuinely needs BOTH surgeries (or a common
+generalisation creating sideways constraint arrows: the natural
+candidate for t-omega).

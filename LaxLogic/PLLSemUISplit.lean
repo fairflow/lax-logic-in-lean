@@ -47,13 +47,17 @@ construction.
 
 The split also subsumes the doubling on the excluded-middle value:
 `semAll_em_p_via_split` re-proves `∀p.(p ∨ ¬p) = ⊥` with the cluster
-copy as the generic p-point.  Whether iterated splits subsume the
-levelled construction as well (the `◯(◯p ⊃ p)` row) is OPEN, as is the
-syntactic transform layer over the split (the analogue of
-`lowT`/`sideT` feeding the graded reconstruction law): the copies form
-an Rᵢ-blob whose ⊃-clauses are anchored at the cluster rather than
-pointwise, so a formula-level transform needs the cluster/strict sort
-distinction absorbed — next session's problem.
+copy as the generic p-point.  Iterated splits do NOT subsume the
+levelled construction: `splitTower_oneW_forces_lob` (final section)
+shows every member of the split tower over the one-world model forces
+`◯(◯p ⊃ p)` everywhere — splits keep constraint arrows inside
+Rᵢ-clusters, and the levelled construction's sideways step is exactly
+an arrow leaving its cluster.  OPEN: the syntactic transform layer
+over the split (the analogue of `lowT`/`sideT` feeding the graded
+reconstruction law): the copies form an Rᵢ-blob whose ⊃-clauses are
+anchored at the cluster rather than pointwise, so a formula-level
+transform needs the cluster/strict sort distinction absorbed — next
+session's problem.
 -/
 
 open PLLFormula
@@ -380,6 +384,89 @@ theorem semAll_em_p_via_split (p : String) :
         exact True.intro
       exact hnp (.inr ⟨w, C.refl_i w, C.refl_i w⟩) (C.refl_i w) hstar_p
 
+/-! ## Iterated splits do not reach the levelled row
+
+The natural unification hope — that splitting a split (at any points,
+with any redecorations) also subsumes the levelled construction
+`lobVariant` — is REFUTED.  The invariant: splits keep constraint
+arrows inside Rᵢ-clusters, and cluster-internal constraints force
+`◯A ⊃ A` everywhere; so no split-tower variant of the one-world model
+ever refutes `◯(◯p ⊃ p)`, while the value `∀p.◯(◯p⊃p) = ◯⊥`
+(`semAll_box_lob`) demands such a refutation at `oneW`'s (◯⊥-free)
+world.  The levelled construction's sideways constraint step 1 → 2 is
+precisely an `Rₘ`-arrow leaving its cluster — the one thing splits
+never create. -/
+
+/-- Constraint arrows stay inside Rᵢ-clusters: with `sub_mi`, every
+`Rₘ`-successor is a cluster-mate of its source. -/
+def RmClusterInternal (C : ConstraintModel) : Prop :=
+  ∀ {a b : C.W}, C.Rm a b → C.Ri b a
+
+/-- Cluster-internal constraints force `◯A ⊃ A` everywhere: the
+constraint witness is a cluster-mate, and forcing crosses clusters in
+both directions. -/
+theorem boxA_imp_A_of_rmClusterInternal {C : ConstraintModel}
+    (h : RmClusterInternal C) (A : PLLFormula) (w : C.W) :
+    C.force w (A.somehow.ifThen A) := by
+  intro v hv hbox
+  obtain ⟨u, hu, hA⟩ := hbox v (C.refl_i v)
+  exact C.force_hered (h hu) hA
+
+/-- The split preserves cluster-internality: internal copy arrows
+mirror cluster arrows, and an escaping arrow from a copy would have a
+cluster-internal source arrow contradicting its own strictness. -/
+theorem rmClusterInternal_splitModel {C : ConstraintModel} {z : C.W}
+    (h : RmClusterInternal C) : RmClusterInternal (splitModel C z) := by
+  intro a b hab
+  rcases a with x | u <;> rcases b with y | t
+  · exact h hab
+  · exact hab.elim
+  · exact absurd (C.trans_i (h hab.1) u.2.1) hab.2
+  · exact True.intro
+
+/-- Redecoration never touches the frame. -/
+theorem rmClusterInternal_redecorate {M : ConstraintModel} (p : String)
+    (S : Set M.W) (hh : ∀ {w v}, M.Ri w v → w ∈ S → v ∈ S)
+    (hf : ∀ {w}, w ∈ M.F → w ∈ S) (h : RmClusterInternal M) :
+    RmClusterInternal (redecorate M p S hh hf) := h
+
+theorem rmClusterInternal_splitVariant {C : ConstraintModel} (p : String)
+    (z : C.W) (h : RmClusterInternal C) :
+    RmClusterInternal (splitVariant C p z) :=
+  rmClusterInternal_splitModel h
+
+/-- "Iterated splits": the closure of a model under split variants (at
+any world, any atom) and arbitrary redecorations. -/
+inductive SplitTower (C : ConstraintModel) : ConstraintModel → Prop
+  | base : SplitTower C C
+  | split {D : ConstraintModel} (p : String) (z : D.W) :
+      SplitTower C D → SplitTower C (splitVariant D p z)
+  | redec {D : ConstraintModel} (p : String) (S : Set D.W)
+      (hh : ∀ {w v}, D.Ri w v → w ∈ S → v ∈ S)
+      (hf : ∀ {w}, w ∈ D.F → w ∈ S) :
+      SplitTower C D → SplitTower C (redecorate D p S hh hf)
+
+theorem SplitTower.rmClusterInternal {C D : ConstraintModel}
+    (h : RmClusterInternal C) (t : SplitTower C D) :
+    RmClusterInternal D := by
+  induction t with
+  | base => exact h
+  | split p z _ ih => exact rmClusterInternal_splitVariant p z ih
+  | redec p S hh hf _ ih => exact rmClusterInternal_redecorate p S hh hf ih
+
+/-- **Iterated splits do not reach the levelled row**: every member of
+the split tower over the one-world model forces `◯(◯p ⊃ p)` at every
+world — no such variant can refute it, while the upper half of
+`semAll_box_lob` demands a refuting p-variant at `oneW`'s world.  The
+transform basis genuinely needs the levelled construction (or a common
+generalisation that creates sideways constraint arrows). -/
+theorem splitTower_oneW_forces_lob (p : String) {D : ConstraintModel}
+    (t : SplitTower oneW D) (w : D.W) :
+    D.force w ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow := by
+  have hD : RmClusterInternal D := t.rmClusterInternal (fun _ => trivial)
+  intro v hv
+  exact ⟨v, D.refl_m v, boxA_imp_A_of_rmClusterInternal hD (.prop p) v⟩
+
 /-! ## Axiom audit (pinned) -/
 
 /--
@@ -393,6 +480,10 @@ info: 'PLLND.SemUI.poolAll_not_derives_value' depends on axioms: [propext, Class
 -/
 #guard_msgs in
 #print axioms poolAll_not_derives_value
+
+/-- info: 'PLLND.SemUI.splitTower_oneW_forces_lob' does not depend on any axioms -/
+#guard_msgs in
+#print axioms splitTower_oneW_forces_lob
 
 end SemUI
 end PLLND

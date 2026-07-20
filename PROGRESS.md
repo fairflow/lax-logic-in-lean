@@ -507,3 +507,21 @@ OPEN: iterated splits vs the levelled row ◯(◯p⊃p); syntactic splT
 (cluster-anchored ⊃-clauses obstruct a naive formula transform;
 canonical model is a poset — trivial-cluster form may suffice);
 graded law.
+
+## 17. 2026-07-20 overnight: ◯-free fragment AGREES with IPC; split tower ≠ levelled
+
+(1) Matthew's fragment test: PLLSemUIOFree.lean — fallible-top graft
+topExt (◯-free forcing unchanged, ◯⊥ global) + flat models (¬◯⊥
+global) ⇒ BOTH cone exclusions PROVED: underivable ◯-free M has no
+lower bound in cone(◯⊥) ∪ cone(¬◯⊥); ⊤-half + conditional collapse
+semAll_value_bot_of_cones (+ ∃-side duals).  Sweep (ofreesweep,
+w ≤ 8, 1,758 rows): 0 escapes, 0 unknowns — allCandP ⊢ ⊥ on every
+underivable row, exCandP derivable on every consistent row, 7/7 rungs
+two-cone covered.  RN({p}) values stay {⊥,⊤} = Pitts.  FV-climb not
+blocked at the base; next rung: one ◯, two variables.  OPEN: two-cone
+coverage of RN(◯,{})∖{⊥} for the unconditional collapse.
+(2) Iterated splits do NOT reach ◯(◯p⊃p): RmClusterInternal invariant
+(split + redecorate preserve; forces ◯A⊃A globally) ⇒
+splitTower_oneW_forces_lob (AXIOM-FREE) — no split-tower variant of
+oneW refutes the Löb row, sideways Rₘ-creation is essential; basis
+needs both surgeries.
