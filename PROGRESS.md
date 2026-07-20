@@ -583,3 +583,13 @@ compositional (box-commutation on ◯-heads + pointwise laws:
 stock covers everything at this weight.  Harness: refute?-first +
 23-frame battery + gated decide2 + monotone pruning (matrix 16.8s →
 143ms); repeated find-grind lesson → node-budget chip spawned.
+
+## 22. 2026-07-20: residues attacked — promise class discharged, law generates values
+
+PLLSemUIBox extended: Lob0Refutes (level-0/"all promises withheld"
+refutation class) + boxRowAmalgAll_lob0 (∀-residue discharged there,
+value ⊥) + instances (p, p∨¬p, ¬¬p⊃p) ⇒ FIRST LAW-GENERATED VALUES:
+∀p.◯(p∨¬p) = ◯⊥, ∀p.◯(¬¬p⊃p) = ◯⊥ (new), ∀p.◯p = ◯⊥ (re-derived,
+consistency).  ∃-side: boxRowAmalgEx_prop ⇒ ∃p.◯p = ◯⊤.  Honest
+gap: ◯p⊃p not Lob0 (vacuous at promise-free rows) — general residues
+need the canonical-cone graft (second wave).

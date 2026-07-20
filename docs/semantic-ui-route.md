@@ -1283,3 +1283,46 @@ of decoration freedom, not an ordinal.  And the week's constructions
 are a toolkit aimed at the row-completion: `mback_cover` is the
 promise license the syntactic seals lacked, made a dischargeable side
 condition.
+
+### (cc) 2026-07-20: first wave at the residues — the promise class discharged, first LAW-GENERATED values
+
+The attack on the `BoxRowAmalg` residues opens where the machinery
+already speaks the canonical language: the levelled model IS the
+Θ-descriptions in model clothing (its docstring has said so since
+§0(f)); level-0 constraint-rigidity is "a row all of whose promises
+are withheld".  `PLLSemUIBox.lean` (extended; full build green;
+audits pinned):
+
+* `Lob0Refutes p φ` — φ refuted at level 0 of the Löb variant over
+  every non-fallible base: the decoration-refutable class.
+* `boxRowAmalgAll_lob0 : Lob0Refutes p φ → BoxRowAmalgAll p φ ⊥` —
+  the ∀-residue discharged on that class (a fallibility-free row at
+  level 0 has no φ-forcing member, so ◯φ fails at the base; the
+  projection bisimulation anchors it).
+* Instances `lob0_prop`, `lob0_em`, `lob0_nn` — and the law GENERATES
+  values:
+
+      ∀p.◯(p ∨ ¬p) = ◯⊥     (semAll_box_em — NEW)
+      ∀p.◯(¬¬p ⊃ p) = ◯⊥    (semAll_box_nn — NEW)
+      ∀p.◯p = ◯⊥            (semAll_box_p' — re-derived; agrees with
+                              the direct semAll_box_p: consistency)
+
+* ∃-side: `boxRowAmalgEx_prop` (decorate p everywhere) and
+  `semEx_box_p' : ∃p.◯p = ◯⊤` (⊣⊢ the direct value ⊤ of the theory
+  file's semEx_box_p, by uniqueness).
+
+NOT covered, and honestly so: φ = ◯p ⊃ p fails `Lob0Refutes` (a
+level-0 row may lack ◯p entirely, making the row formula vacuous);
+`semAll_box_lob` reached it through the level-1 argument.  The
+SECOND WAVE — the general residues via the finite canonical model —
+needs the canonical-cone graft: adjoin the canonical model's cone
+over a closure triple (Γ, Δ, Θ) above a world realising its p-free
+description, discharge forcing by the truth lemma, and the
+description-matching condition is where Γ/Δ/Θ earn their keep.  That
+is the programme's centre of mass now.
+
+Chip-protocol lesson (Matthew's note): spawn_task sessions report to
+HIM; future chips must carry in-prompt: commit-to-branch, summary
+file, completion signal — or use Agent-tool subagents for work that
+must return here.  The node-budget chip is running; on its completion
+signal I fetch and merge its branch directly.
