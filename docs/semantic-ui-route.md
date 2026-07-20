@@ -1101,3 +1101,45 @@ says amalgamation is unobstructed below the first ◯.  The
 obstruction begins where the p-free type is rich (the ladder) and
 Rₘ-rows must be completed — the ∀∃ ◯-clause.  Next decisive probe
 for the climb: the one-◯ two-variable fragment.
+
+### (y) 2026-07-20 afternoon: the PARAMETRIC POINT-ADJUNCTION — one construction, three surgeries
+
+Matthew's probe, mechanised (`LaxLogic/PLLSemUIAdjoin.lean`, sorry-free;
+`adjoin_pbisim` AXIOM-FREE, `adjoin_reaches_lob` at the standard three).
+
+    adjoin N n₀ U R : one point ⋆ anchored at n₀ —
+      below-⋆ = below-n₀;  above-⋆ = U (up-closed over n₀);
+      constraint row {⋆} ∪ R, R ⊆ U closed under Rₘ;
+      fallibility + all valuations copied from n₀.
+
+`ABisim.comp` (bisimulations compose) + **`adjoin_pbisim`**: any
+p-bisimulation B : PBisim p C N extends along an anchored pair
+(z, n₀) ∈ B.Z to the adjoined model, given five cover conditions
+routing z's relational data through the accumulated Z.  `mback_cover`
+is the PROMISE MECHANISM isolated: ⋆ may constraint-reach any world
+Z-equivalent to a constraint successor of its anchor.  Because Z
+accumulates, adjunctions ITERATE — later points may cite earlier ones
+in U and R.
+
+The three surgery cores, re-derived as instances:
+
+* doubling core (`adjoinAtP_not_em`): strict parameters over a
+  non-fallible trivial-cluster anchor refute p ∨ ¬p;
+* split core (`adjoinAtP_not_frontier`): the SAME instance refutes
+  ((p⊃◯⊥)⊃p)⊃p when the anchor's row is fallibility-free;
+* levelled core (`lobTower_not_lob`): the two-storey tower — ⋆₁ over
+  z with empty row, then ⋆₂ between z and ⋆₁ with row R = {⋆₁}, the
+  sideways promise licensed through the accumulated pair (z, ⋆₁) —
+  refutes ◯(◯p⊃p) at a constraint-rigid anchor.
+  **`adjoin_reaches_lob`**: instantiated over the one-world model —
+  exactly where `splitTower_oneW_forces_lob` proves every split-tower
+  variant forces the row.  The R-parameter is the missing degree of
+  freedom, isolated as one hypothesis.
+
+Reading: the global surgeries are UNIFORMIZATIONS of these cores over
+multiplicities one point cannot carry (fat cluster ⇒ one point per
+cluster-mate; levels ⇒ the two-storey core repeated per world/level).
+"Constructions that keep changing" compresses to ONE construction
+with changing parameters (U, R, iteration depth).  Next climb rung
+unchanged: one ◯, two variables — now with the right tool to test
+whether a single parametric family covers it.

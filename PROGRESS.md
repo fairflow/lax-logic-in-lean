@@ -539,3 +539,17 @@ conservativity (Matthew's q_M-atomisation, model-side).  One uniform
 construction covers the whole fragment: surgery proliferation is a
 ◯-depth phenomenon.  ⊤/⊥ halves (derivable/inconsistent) hold for
 arbitrary M.
+
+## 19. 2026-07-20 afternoon: parametric point-adjunction — surgeries unified
+
+PLLSemUIAdjoin.lean: adjoin N n₀ U R (anchored point; U = cone, R =
+constraint escapes) + ABisim.comp + adjoin_pbisim (AXIOM-FREE): any
+PBisim extends along an anchored pair given five cover conditions; Z
+accumulates so adjunctions iterate; mback_cover = the promise
+mechanism (⋆ may reach any world Z-equivalent to an anchor-successor).
+Cores re-derived: adjoinAtP_not_em (doubling), adjoinAtP_not_frontier
+(split), lobTower_not_lob (levelled, two-storey tower, sideways
+R = {⋆₁}); adjoin_reaches_lob at oneW = exact contrast with
+splitTower_oneW_forces_lob.  Global surgeries = uniformizations over
+cluster/level multiplicities; one construction, changing parameters.
+Merged Matthew's parallel BLL branch (nucleus join + belief paper).
