@@ -15,16 +15,67 @@ rev = "v4.31.0"
 [[lean_lib]]
 name = "LaxLogic"
 
-# `laxrun` builds green, but on THIS toolchain (v4.22.0-rc3 + current Mathlib
-# cache) the resulting binary segfaults at startup: the cache-shipped C IR of
-# (at least) Mathlib.Data.Set.Basic contains a code-generator miscompile —
-# `_init_l_Set_instBoundedOrder___closed__0` allocates `lean_alloc_ctor(0,2,0)`
-# and returns it with both object fields UNINITIALISED (they should be the
-# erased `lean_box(0)`), so `lean_mark_persistent` NULL-derefs in the module
-# initialiser chain.  The interpreter never runs that C, which is why the
-# library and all `#eval`s are unaffected.  Until the toolchain is bumped past
-# the fix, run the CLI through the interpreter: `scripts/laxrun.sh <args>`
-# (= `lake env lean --run Main.lean <args>`).  Full analysis in Main.lean.
+# Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup
+# (cache-shipped C IR miscompile in Mathlib.Data.Set.Basic; full analysis in
+# Main.lean's history).  FIXED by the v4.31.0 toolchain bump (adopted here,
+# 2026-07-19): native executables build and run; `scripts/laxrun.sh` remains
+# as an interpreter fallback.
 [[lean_exe]]
 name = "laxrun"
 root = "Main"
+
+# Shared wip modules that other wip files import (lake resolves imports
+# only against declared targets; exe roots alone don't cover imports).
+[[lean_lib]]
+name = "wipshared"
+globs = ["wip.oracle2", "wip.semui_ctx_core"]
+
+# The two-sided decision tool (countermodel-first; wip/oracle2.lean) and its
+# one-sided baseline, compiled — the native oracle route.
+[[lean_exe]]
+name = "oracle2"
+root = "wip.oracle2_run"
+
+[[lean_exe]]
+name = "o2base"
+root = "wip.oracle2_baseline"
+
+# The constraint-commutation probe (route doc §0(j)), compiled.
+[[lean_exe]]
+name = "ctxprobe"
+root = "wip.semui_ctx_probe"
+
+# The frame-relative fallibility-prediction probe (route doc §0(j)).
+[[lean_exe]]
+name = "ctxrel"
+root = "wip.semui_ctx_rel"
+
+# Certifier: failed commutation rows → checkB-verified countermodels.
+[[lean_exe]]
+name = "ctxcert"
+root = "wip.semui_ctx_cert"
+
+# The constraint-pool experiment (variant saturations).
+[[lean_exe]]
+name = "poolprobe"
+root = "wip.semui_pool"
+
+# The certified reconstruction-law sweep.
+[[lean_exe]]
+name = "lawsweep"
+root = "wip.semui_lawsweep"
+
+# Reproduction of the large-object harness claims.
+[[lean_exe]]
+name = "weightrepro"
+root = "wip.semui_repro"
+
+# Frontier-row investigation.
+[[lean_exe]]
+name = "frontrow"
+root = "wip.frontier_row"
+
+# ◯-free fragment vs IPC agreement sweep.
+[[lean_exe]]
+name = "ofreesweep"
+root = "wip.ofree_sweep"

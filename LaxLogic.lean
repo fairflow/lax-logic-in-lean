@@ -41,6 +41,8 @@ import LaxLogic.PLLG4Set
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLG4Term
 import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLLSearch
+import LaxLogic.PLLSearchEx
 import LaxLogic.PLLDiagram
 import LaxLogic.PLLEvidence
 import LaxLogic.PLLFinComp
@@ -70,3 +72,11 @@ import LaxLogic.BeliefRealisability
 import LaxLogic.PLLConfluentComplete
 import LaxLogic.NucleusJoin
 import LaxLogic.PLLCountermodel
+import LaxLogic.PLLSemUI
+import LaxLogic.PLLSemUICtx
+import LaxLogic.PLLSemUIRes
+import LaxLogic.PLLSemUILaw
+import LaxLogic.PLLSemUISplit
+import LaxLogic.PLLSemUIOFree
+import LaxLogic.PLLSemUIAdjoin
+import LaxLogic.PLLSemUIAmalg

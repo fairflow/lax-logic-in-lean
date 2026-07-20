@@ -488,3 +488,24 @@ candidates rather than silently dropping them.
 3. Then, per Matthew's priorities: (a) bibliography (A6, delegable);
    (b) tooling-potential study + UI revisit at 1–2 pvs (A5/A4);
    (c) the successor project (A3) awaits its moment.
+
+## A8 (added 2026-07-18, late). The semantic route to UI — opened, and compressed to one target
+
+`LaxLogic/PLLSemUI.lean` (compiles; two intended sorries) +
+`docs/semantic-ui-route.md` (the plan). PROVED today: A-bisimulation for
+constraint models (zigzag for BOTH relations, matching fallibility),
+forcing invariance, and the full Pitts universal-property layer — any
+p-free formula meeting the semantic spec `IsSemEx`/`IsSemAll` IS the
+uniform interpolant (`semEx_upper/adjunction`, `semAll_lower/adjunction`,
+via choice-free completeness). UI for PLL is thereby equivalent to
+DEFINABILITY alone (`semEx_definable`/`semAll_definable`, the Ghilardi
+step) — no cascade, no thresholds. Engine: the finite canonical model
+(triples; the Θ-promises are the ◯-part of the world descriptions).
+Hazards: the ∀∃ ◯-clause under amalgamation (S4-shaped risk; full
+heredity is the counter-pressure) and fallible worlds (likely absorbers).
+Start at ONE variable with the computation harnesses + two-sided oracle.
+Realisability connections recorded in the doc: truth is
+bisimulation-invariant, evidence is not (κ-naming); ∀p as p-UNIFORM
+evidence (the ⊩ᵘ/⊩ᵖ axis transposed from futures to atoms — candidate
+new Belief-paper section); the Thm-6 transfer route is blocked by
+Corollary 10 (recorded dead-end with reason).
