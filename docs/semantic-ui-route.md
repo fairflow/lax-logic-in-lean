@@ -1143,3 +1143,53 @@ cluster-mate; levels ⇒ the two-storey core repeated per world/level).
 with changing parameters (U, R, iteration depth).  Next climb rung
 unchanged: one ◯, two variables — now with the right tool to test
 whether a single parametric family covers it.
+
+### (z) 2026-07-20: the AMALGAMATION REDUCTION — the variable-induction skeleton
+
+Matthew's proposal (induction over the propositional variables, base
+case = the RN({p}) proofs, inductive step = the same construction),
+mechanised as a REDUCTION (`LaxLogic/PLLSemUIAmalg.lean`, sorry-free,
+audits pinned).  His "both steps might collapse to one" is exactly
+what happened: ONE construction serves every variable count, and the
+whole induction is displaced into IPC.
+
+New construction: `relGraft` — the graft ALONG A BISIMULATION.  Given
+`B₀ : PBisim p (flatten C) K`, fibre K over C with one world (x, k)
+per B₀-RELATED pair: fibres follow both coordinates upward, re-enter
+the base only at fallible worlds (which force everything, so never
+constrain), p read from K, all other atoms pointwise from the base —
+consistent across the fibre because `B₀.atoms` guarantees agreement
+on every atom ≠ p.  `relGraft_pbisim`: the graft is a p-variant of C.
+`relGraft_force_iff`: a fibre forces a ◯-free θ (ANY atoms) iff K
+does at its K-coordinate.
+
+The reduction theorems:
+
+    FlatAmalgAll p M ψ :  every fallibility-free world refuting ψ has
+      a future with a p-variant (over fallibility-free models)
+      refuting M                       [dually FlatAmalgEx]
+
+    isSemAll_of_flatAmalg : boxFree M → boxFree ψ → p ∉ ψ →
+      [ψ] ⊢ M → FlatAmalgAll p M ψ → IsSemAll p M ψ
+    isSemEx_of_flatAmalgEx : dually with [M] ⊢ ψ
+
+So for ◯-free M in ANY variables: the PLL semantic spec (over full
+constraint models, fallibility and ◯ included) reduces to two
+derivability facts + a purely IPC-side amalgamation property of the
+candidate.  Fallibility and the ◯-machinery are discharged once and
+for all by flatten + relGraft; what remains per variable count is
+IPC's own amalgamation — where Pitts/Ghilardi live.
+
+The loop closes: `flatAmalgAll_bot` discharges the amalgamation for
+the one-variable value ⊥ via the fixed-countermodel graft, and
+`semAll_ofree_bot'` re-derives the RN({p}) theorem through the
+reduction — the base case IS the skeleton at the constant family.
+
+OPEN (the genuine content of the induction): `FlatAmalgAll p M ψ₀`
+for multi-variable ◯-free M with ψ₀ = Pitts's ∀p.M (e.g. the
+mechanised `uniform_interpolation_IPC` value) — the SEMANTIC
+amalgamation property of the IPC interpolant, natural route:
+Ghilardi-style bounded-bisimulation descriptions over the finite
+canonical model.  Note the wip crown cannot be imported into the
+library (olean side-channel); the instantiation belongs in a wip
+probe first.

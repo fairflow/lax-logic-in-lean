@@ -553,3 +553,18 @@ R = {⋆₁}); adjoin_reaches_lob at oneW = exact contrast with
 splitTower_oneW_forces_lob.  Global surgeries = uniformizations over
 cluster/level multiplicities; one construction, changing parameters.
 Merged Matthew's parallel BLL branch (nucleus join + belief paper).
+
+## 20. 2026-07-20: amalgamation reduction — the variable-induction skeleton
+
+PLLSemUIAmalg.lean: relGraft (graft ALONG a bisimulation: fibres =
+B₀-related pairs over flatten C; p from K, other atoms pointwise,
+agreement by B₀.atoms; fallible-base re-entries only) + pbisim +
+force_iff (◯-free, ANY atoms).  Reduction theorems
+isSemAll_of_flatAmalg / isSemEx_of_flatAmalgEx: for ◯-free M in any
+variables, the PLL semantic spec = two derivability facts + a purely
+IPC-side flat amalgamation property (FlatAmalgAll/Ex).  Fallibility +
+◯ discharged once; the variable induction lives inside IPC.
+flatAmalgAll_bot + semAll_ofree_bot': the 1-var case re-derived as an
+instance — "both steps collapse to one".  OPEN: FlatAmalgAll for
+Pitts interpolants at ≥2 variables (Ghilardi descriptions / finite
+canonical model).
