@@ -688,3 +688,19 @@ style) survives the character argument — non-fallible successors
 refute their θ⁻ — so pillar 2's open content is exactly the
 m-clauses: which row-zigzag weakening is agreement-derivable AND
 strong enough for wit_pbisim's budget argument.
+
+## 28. 2026-07-20 night II: forth-m probe clean + the repaired layered form PROVED
+
+wip/mforth_probe.lean: 24 closed frames, 90 systematically generated
+variable-free formulas, 2324 agreeing pointed pairs — forth-m
+candidates = 0 (a violation would have been an a-fortiori
+counterexample to the repaired pillar 2; clean pass = supporting
+evidence).  LayeredBisimE mechanised (PLLSemUILayered §3′): the
+DescPack clause shape — i-zigzags escape at fallible targets,
+m-zigzags may pair fallible witnesses; LayeredBisim.toE embedding;
+**force_iff_of_layeredE PROVED first-try** (every escape absorbs by
+force_of_fallible, mirroring descGraft_force_iff).  PLLSemUIHenkin
+switched to consume LayeredBisimE throughout (WitTriple, witAmalgam,
+claims, assembly) — full library green.  Remaining pillar-2 content:
+characters for the E-form (agreement ⇒ LayeredBisimE, probe-backed);
+then wit_pbisim/wit_force.

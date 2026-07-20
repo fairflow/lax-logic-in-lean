@@ -100,3 +100,8 @@ root = "wip.resid_probe"
 [[lean_exe]]
 name = "rankjoin"
 root = "wip.rank_join"
+
+# forth-m from fragment-agreement probe.
+[[lean_exe]]
+name = "mforthprobe"
+root = "wip.mforth_probe"

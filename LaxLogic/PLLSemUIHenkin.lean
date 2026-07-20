@@ -74,7 +74,7 @@ worlds k′ ≼ k of K both describing Δ, a shadow m′ ≼ m, with the
 layered links k′ Z_{2d+1} m′ and k Z_{2d} m, d the canonical depth of
 Δ. -/
 structure WitTriple (cl : Finset PLLFormula)
-    (B : LayeredBisim (fun a => a ≠ p) K M)
+    (B : LayeredBisimE (fun a => a ≠ p) K M)
     (Δ : (canonFin cl).W) (m : M.W) where
   k' : K.W
   k : K.W
@@ -88,7 +88,7 @@ structure WitTriple (cl : Finset PLLFormula)
 
 /-! ## The amalgam model -/
 
-variable (cl : Finset PLLFormula) (B : LayeredBisim (fun a => a ≠ p) K M)
+variable (cl : Finset PLLFormula) (B : LayeredBisimE (fun a => a ≠ p) K M)
 
 /-- The amalgam: admissible pairs ⟨Δ, m⟩, relations componentwise
 (the canonical side carries the promise-aware `Rₘ`).  Valuation in

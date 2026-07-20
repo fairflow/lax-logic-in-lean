@@ -224,6 +224,137 @@ theorem force_iff_of_bisim_via_layered (B : ABisim A M N)
     (M.force w φ ↔ N.force w' φ) :=
   force_iff_of_layered (LayeredBisim.ofABisim B) le_rfl hA hZ
 
+/-! ## 3′. The WEAKENED layered bisimulation (the repaired form)
+
+The refutation below shows the full zigzags are too strong for PLL;
+the repair is the `DescPack` clause shape: the i-zigzags may escape
+at a fallible target (which forces everything, so constrains
+nothing), the m-zigzags may pair fallible witnesses.  Rank
+preservation goes through unchanged — every escape absorbs by
+`force_of_fallible`, exactly as in `descGraft_force_iff` — and the
+probe (wip/mforth_probe.lean: 2324 agreeing pairs, 0 candidates)
+supports that THIS form is derivable from fragment-agreement. -/
+
+/-- Layered bisimulation with fallibility escapes: the working form
+for PLL. -/
+structure LayeredBisimE (A : String → Prop) (M N : ConstraintModel) where
+  Z : Nat → M.W → N.W → Prop
+  mono : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → Z n w w'
+  atoms : ∀ {n : Nat} {w w'}, Z n w w' → ∀ a, A a → (w ∈ M.V a ↔ w' ∈ N.V a)
+  fall : ∀ {n : Nat} {w w'}, Z n w w' → (w ∈ M.F ↔ w' ∈ N.F)
+  iforth : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {v}, M.Ri w v →
+    (∃ v', N.Ri w' v' ∧ Z n v v') ∨ v ∈ M.F
+  iback : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {v'}, N.Ri w' v' →
+    (∃ v, M.Ri w v ∧ Z n v v') ∨ v' ∈ N.F
+  mforth : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {u}, M.Rm w u →
+    ∃ u', N.Rm w' u' ∧ (Z n u u' ∨ (u ∈ M.F ∧ u' ∈ N.F))
+  mback : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {u'}, N.Rm w' u' →
+    ∃ u, M.Rm w u ∧ (Z n u u' ∨ (u ∈ M.F ∧ u' ∈ N.F))
+
+theorem LayeredBisimE.mono_le (B : LayeredBisimE A M N) :
+    ∀ {m n : Nat}, m ≤ n → ∀ {w w'}, B.Z n w w' → B.Z m w w' := by
+  intro m n h
+  induction h with
+  | refl => exact fun h => h
+  | step _ ih => exact fun h => ih (B.mono h)
+
+/-- The strong form embeds in the weak one. -/
+def LayeredBisim.toE (B : LayeredBisim A M N) : LayeredBisimE A M N where
+  Z := B.Z
+  mono := B.mono
+  atoms := B.atoms
+  fall := B.fall
+  iforth := by
+    intro n w w' h v hv
+    exact .inl (B.iforth h hv)
+  iback := by
+    intro n w w' h v' hv'
+    exact .inl (B.iback h hv')
+  mforth := by
+    intro n w w' h u hu
+    obtain ⟨u', hu', hZ⟩ := B.mforth h hu
+    exact ⟨u', hu', .inl hZ⟩
+  mback := by
+    intro n w w' h u' hu'
+    obtain ⟨u, hu, hZ⟩ := B.mback h hu'
+    exact ⟨u, hu, .inl hZ⟩
+
+/-- **Rank preservation for the weakened form** — every escape
+absorbs by `force_of_fallible`: fallible ⊃-targets force the
+conclusion outright, fallible ◯-row pairs supply their own
+witnesses. -/
+theorem force_iff_of_layeredE (B : LayeredBisimE A M N) :
+    ∀ {φ : PLLFormula} {n : Nat}, crank φ ≤ n →
+    (∀ a ∈ φ.atoms, A a) →
+    ∀ {w : M.W} {w' : N.W}, B.Z n w w' → (M.force w φ ↔ N.force w' φ) := by
+  intro φ
+  induction φ with
+  | prop a =>
+      intro n _ hA w w' hZ
+      simpa [ConstraintModel.force] using B.atoms hZ a (hA a (by simp))
+  | falsePLL =>
+      intro n _ _ w w' hZ
+      simpa [ConstraintModel.force] using B.fall hZ
+  | and φ ψ ihφ ihψ =>
+      intro n hc hA w w' hZ
+      have hc' : max (crank φ) (crank ψ) ≤ n := hc
+      have h1 : ∀ a ∈ φ.atoms, A a := fun a ha => hA a (by simp [ha])
+      have h2 : ∀ a ∈ ψ.atoms, A a := fun a ha => hA a (by simp [ha])
+      simp only [ConstraintModel.force]
+      exact and_congr
+        (ihφ (le_trans (le_max_left _ _) hc') h1 hZ)
+        (ihψ (le_trans (le_max_right _ _) hc') h2 hZ)
+  | or φ ψ ihφ ihψ =>
+      intro n hc hA w w' hZ
+      have hc' : max (crank φ) (crank ψ) ≤ n := hc
+      have h1 : ∀ a ∈ φ.atoms, A a := fun a ha => hA a (by simp [ha])
+      have h2 : ∀ a ∈ ψ.atoms, A a := fun a ha => hA a (by simp [ha])
+      simp only [ConstraintModel.force]
+      exact or_congr
+        (ihφ (le_trans (le_max_left _ _) hc') h1 hZ)
+        (ihψ (le_trans (le_max_right _ _) hc') h2 hZ)
+  | ifThen φ ψ ihφ ihψ =>
+      intro n hc hA w w' hZ
+      have h1 : ∀ a ∈ φ.atoms, A a := fun a ha => hA a (by simp [ha])
+      have h2 : ∀ a ∈ ψ.atoms, A a := fun a ha => hA a (by simp [ha])
+      have hc' : max (crank φ) (crank ψ) + 1 ≤ n := hc
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 1 := ⟨n - 1, by omega⟩
+      have hcφ : crank φ ≤ m := by
+        have h3 := le_max_left (crank φ) (crank ψ); omega
+      have hcψ : crank ψ ≤ m := by
+        have h3 := le_max_right (crank φ) (crank ψ); omega
+      simp only [ConstraintModel.force]
+      constructor
+      · intro hf v' hv' hφ'
+        rcases B.iback hZ hv' with ⟨v, hv, hZv⟩ | hF
+        · exact (ihψ hcψ h2 hZv).mp (hf v hv ((ihφ hcφ h1 hZv).mpr hφ'))
+        · exact N.force_of_fallible hF
+      · intro hf v hv hφv
+        rcases B.iforth hZ hv with ⟨v', hv', hZv⟩ | hF
+        · exact (ihψ hcψ h2 hZv).mpr (hf v' hv' ((ihφ hcφ h1 hZv).mp hφv))
+        · exact M.force_of_fallible hF
+  | somehow φ ihφ =>
+      intro n hc hA w w' hZ
+      have hc' : crank φ + 2 ≤ n := hc
+      obtain ⟨m, rfl⟩ : ∃ m, n = m + 2 := ⟨n - 2, by omega⟩
+      have hcφ : crank φ ≤ m := by omega
+      simp only [ConstraintModel.force]
+      constructor
+      · intro hf v' hv'
+        rcases B.iback hZ hv' with ⟨v, hv, hZv⟩ | hF
+        · obtain ⟨u, hu, hφu⟩ := hf v hv
+          obtain ⟨u', hu', hZu | ⟨-, hu'F⟩⟩ := B.mforth hZv hu
+          · exact ⟨u', hu', (ihφ hcφ hA hZu).mp hφu⟩
+          · exact ⟨u', hu', N.force_of_fallible hu'F⟩
+        · exact ⟨v', N.refl_m v', N.force_of_fallible hF⟩
+      · intro hf v hv
+        rcases B.iforth hZ hv with ⟨v', hv', hZv⟩ | hF
+        · obtain ⟨u', hu', hφu'⟩ := hf v' hv'
+          obtain ⟨u, hu, hZu | ⟨huF, -⟩⟩ := B.mback hZv hu'
+          · exact ⟨u, hu, (ihφ hcφ hA hZu).mpr hφu'⟩
+          · exact ⟨u, hu, M.force_of_fallible huF⟩
+        · exact ⟨v, M.refl_m v, M.force_of_fallible hF⟩
+
 /-! ## 4. The sorried pillars (each a separate target)
 
 The statements below are the PLL forms of the remaining steps of the
