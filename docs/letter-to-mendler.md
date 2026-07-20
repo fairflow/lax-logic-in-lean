@@ -51,18 +51,20 @@ the formalisation and much of the drafting were carried out with large
 large language models (mostly Fable 5, Opus 4.8) operating Lean under a strict regime — nothing
 asserted beyond its machine-checked status, axiom audits recorded per
 theorem, and my job largely to direct, to read statements, and to catch
-its errors (there were several). Two interesting theorems were found
+its errors (there were several). Two useful theorems were found
 by the machine failing to prove the statement we first wrote down and
 the failure being provable.
 
 Whatever you may think of the tools (and I am amazed, almost shocked by how much leverage they have given me), the Lean
-kernel is indifferent to the provenance of its proofs; so I think these results more trustworthy than the hand completed research you and I have done.  But it is interesting that the formalised work revealed no errors in our results.
+kernel is indifferent to the provenance of its proofs; so I think these results at least as trustworthy, maybe more than the hand completed research you and I have done.  But it is interesting that the formalised work revealed no errors in our results.
 
 Where to look, in order: `docs/pll-formalisation-ledger.md` is the
 statement-level index of everything with its axiom audit;
-`docs/belief-paper-draft.md` is the draft of the belief paper; the three files in `docs/annotated/` walk through the central
+`https://github.com/fairflow/lax-logic-in-lean/blob/claude/belief-lax-logic-review-8cf130/paper/belief.pdf` is the latest draft of the belief paper; the three files in `docs/annotated/` walk through the central
 proofs with the Lean interleaved. I would particularly value your eye
 on the consistency formula's ◯-guard in the finitised §4 — your design
 carrying a new proof — and on whether the belief reading convinces you.
+
+all best to you and the family, we're well here on the farm,
 
 Matthew
