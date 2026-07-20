@@ -24,6 +24,15 @@ present leaves the key unchanged and the revisit is caught.  Along any search
 path the context only grows by consing subformula pieces, of which there are
 finitely many, so keys must repeat.
 
+`proveBounded` is the same search with one extra piece of threaded state: a
+global budget of search nodes.  Every node entered (revisits included) costs
+one unit, and a failed branch hands its *remaining* budget to the next
+alternative, so the cap is on the **whole search tree**, not per branch or
+per depth — exactly what tames the exponential grind on sequents that are
+unprovable but missed by the countermodel battery.  Budget exhaustion is an
+honest "unknown": it never asserts anything about the sequent.  See
+`G4cTm.findBounded` for the precise reading of the result.
+
 Trust is factored exactly as it should be: `prove` is *untrusted* code, but
 anything it emits inhabits `G4cTm Γ C`, and
 
@@ -188,6 +197,141 @@ end
 /-- Search a sequent from scratch. -/
 def G4cTm.find (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
   prove [] Γ C
+
+/-! ## The node-budgeted searcher
+
+`proveBounded` mirrors `prove` rule for rule (same rules, same try order —
+**keep the two in sync**), but threads a global node budget through the
+search: state `Nat` is the remaining budget, and failure *preserves* it, so
+sequential alternatives (`<|>`, `firstM`) draw from one shared pool.  One
+unit is spent per `proveBounded` entry, i.e. per visited sequent (loop-check
+revisits included, since the `canon`-key lookup is real work too).
+
+Two honesty notes, both *by construction* rather than as theorems (`partial`
+definitions are opaque to Lean's logic, so no lemma can relate `prove` and
+`proveBounded` — the trust story is unaffected, because any emitted term
+inhabits `G4cTm Γ C` and is checked by the kernel):
+
+* the budget only ever truncates the search, so `none` under an exhausted
+  budget means "not settled within the budget" — never underivability;
+* the budget is inert until it reaches `0`, so a run that finishes with
+  budget to spare made exactly the same rule attempts, in the same order,
+  as the fuel-free `prove`.
+
+Since both searchers are `partial`, neither reduces in the kernel; discovery
+stays evaluation-side (`#eval` / `#guard`), and found terms are pinned and
+kernel-checked as usual.  (A structurally recursive searcher — recursion on
+the budget itself — would additionally reduce in the kernel on small
+budgets, but it would have to share its budget across siblings through an
+explicit work-list machine; that is a different engine, not a variant of
+this one.) -/
+
+/-- The budget-threading monad for `proveBounded`: an `Option` computation
+over a `Nat` state (remaining node budget).  Unfolds to
+`Nat → Option α × Nat`; crucially, failure returns the *remaining* budget,
+so alternation continues from wherever the failed branch left off. -/
+abbrev BudgetM (α : Type) : Type := OptionT (StateM Nat) α
+
+instance {α : Type} : Inhabited (BudgetM α) := ⟨failure⟩
+
+/-- Spend one unit of search budget; fail when the pool is dry.  This is the
+single point where the budget is consumed or checked. -/
+@[inline] def BudgetM.spendNode : BudgetM Unit := do
+  match (← OptionT.lift (get : StateM Nat Nat)) with
+  | 0 => failure
+  | f + 1 => OptionT.lift (set f : StateM Nat Unit)
+
+mutual
+
+/-- Node-budgeted mirror of `prove` (see the section header).  Untrusted
+`partial` code, same as `prove`; success is self-certifying. -/
+partial def proveBounded (V : List (List PLLFormula × PLLFormula))
+    (Γ : List PLLFormula) (C : PLLFormula) : BudgetM (G4cTm Γ C) := do
+  BudgetM.spendNode
+  let key := (canon Γ, C)
+  if key ∈ V then failure
+  else
+    (if h : falsePLL ∈ Γ then pure (G4cTm.botL h) else failure)
+    <|> proveRightBounded (key :: V) Γ C
+    <|> proveLeftBounded (key :: V) Γ C
+
+/-- Right rules, budgeted (mirror of `proveRight`). -/
+partial def proveRightBounded (V : List (List PLLFormula × PLLFormula))
+    (Γ : List PLLFormula) : (C : PLLFormula) → BudgetM (G4cTm Γ C)
+  | .prop a => if h : prop a ∈ Γ then pure (G4cTm.init h) else failure
+  | .falsePLL => failure
+  | .and A B => do
+      let t₁ ← proveBounded V Γ A
+      let t₂ ← proveBounded V Γ B
+      pure (G4cTm.andR t₁ t₂)
+  | .or A B =>
+      (do pure (G4cTm.orR1 (← proveBounded V Γ A)))
+      <|> (do pure (G4cTm.orR2 (← proveBounded V Γ B)))
+  | .ifThen A B => do
+      pure (G4cTm.impR (← proveBounded V (A :: Γ) B))
+  | .somehow A =>
+      (do pure (G4cTm.laxR (← proveBounded V Γ A)))
+      <|> Γ.attach.firstM fun ⟨F, hF⟩ =>
+            match F, hF with
+            | .somehow X, h => do
+                pure (G4cTm.laxL h (← proveBounded V (X :: Γ) (somehow A)))
+            | _, _ => failure
+
+/-- Left rules, budgeted (mirror of `proveLeft`). -/
+partial def proveLeftBounded (V : List (List PLLFormula × PLLFormula))
+    (Γ : List PLLFormula) (C : PLLFormula) : BudgetM (G4cTm Γ C) :=
+  Γ.attach.firstM fun ⟨F, hF⟩ =>
+    match F, hF with
+    | .and A B, h => do
+        pure (G4cTm.andL h (← proveBounded V (A :: B :: Γ) C))
+    | .or A B, h => do
+        let t₁ ← proveBounded V (A :: Γ) C
+        let t₂ ← proveBounded V (B :: Γ) C
+        pure (G4cTm.orL h t₁ t₂)
+    | .ifThen (.prop a) B, h =>
+        if ha : prop a ∈ Γ then do
+          pure (G4cTm.impLProp h ha (← proveBounded V (B :: Γ) C))
+        else failure
+    | .ifThen (.and A B) D, h => do
+        pure (G4cTm.impLAnd h (← proveBounded V (A.ifThen (B.ifThen D) :: Γ) C))
+    | .ifThen (.or A B) D, h => do
+        pure (G4cTm.impLOr h (← proveBounded V (A.ifThen D :: B.ifThen D :: Γ) C))
+    | .ifThen (.ifThen A B) D, h => do
+        let t₁ ← proveBounded V (B.ifThen D :: Γ) (A.ifThen B)
+        let t₂ ← proveBounded V (D :: Γ) C
+        pure (G4cTm.impLImp h t₁ t₂)
+    | .ifThen (.somehow A) B, h =>
+        (do let t₁ ← proveBounded V Γ A
+            let t₂ ← proveBounded V (B :: Γ) C
+            pure (G4cTm.impLLax h t₁ t₂))
+        <|> Γ.attach.firstM fun ⟨X, hXf⟩ =>
+              match X, hXf with
+              | .somehow x, hX => do
+                  let t₁ ← proveBounded V (x :: Γ) (somehow A)
+                  let t₂ ← proveBounded V (B :: Γ) C
+                  pure (G4cTm.impLLaxLax h hX t₁ t₂)
+              | _, _ => failure
+    | _, _ => failure
+
+end
+
+/-- **Node-budget-capped search** from scratch.  Returns the search result
+together with the *remaining* budget.  Reading the pair:
+
+* `(some t, _)`   — proof found; `t` is kernel-checkable exactly as with
+  `find` (a smaller budget can only lose proofs, never invent them);
+* `(none, k + 1)` — the search space was exhausted with budget to spare:
+  the run made the same attempts as the fuel-free `find`, so this is the
+  same (certificate-free, see the trust note) `none` that `find` returns;
+* `(none, 0)`     — the budget ran out (or the search finished exactly as
+  it hit `0` — indistinguishable, so read it conservatively): honest
+  **unknown**, never a negative verdict.
+
+`budget - remaining` is the number of nodes visited — a free profiler for
+tuning budgets in probe sessions. -/
+def G4cTm.findBounded (budget : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
+    Option (G4cTm Γ C) × Nat :=
+  Id.run (StateT.run (OptionT.run (proveBounded [] Γ C)) budget)
 
 /-! ## The bridge: terms certify provability, provability yields terms -/
 
