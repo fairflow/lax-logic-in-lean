@@ -1470,3 +1470,27 @@ Next opener: mechanise the gap row's 3-case discharge
 the adjoin framework, deriving `∀p.◯(◯p⊃p) = ◯⊥` via `semAll_box`;
 then extract the general per-class tail-synthesis principle from the
 probe's shape data.
+
+**§0(ee) addendum — mechanisation design notes for the class lemma
+(same evening).**  (a) The gadget probe decorates no atom but p, so
+its DIRECT-PBisim verdicts are blind to q-flips above x: a tail point
+carries one fixed q-valuation but Z-pairs with many base worlds, so
+for atom-rich C the naked gadgets fail the atoms clause.  This does
+NOT invalidate the route: for single-variable rows the tracked
+alphabet can be dom := ∅ (the discharge's hypothesis
+`∀ q ∈ φ.atoms, q ≠ p → dom q` is vacuous for φ over {p}), and then
+`DescPack`'s atoms clause vacates entirely — mechanise via
+`descGraft` with K := the SMALL ABSTRACT TAIL (2–4 points), where
+fibres read all atoms from the base by construction.  The probe's
+shapes are then the R-relation's picture, valid for ALL C.  (b) The
+remaining K-design care is the m-row fallibility escapes: `mforth`
+from a paired world whose row meets F needs a fallible K-witness
+(`u ∈ F ∧ s ∈ K.F`), but a fallible K-point must stay OFF the kill
+spine's m-rows (it would force ◯p⊃p there).  So K wants a kill spine
+γ ≤ α ≤ β (rigid γ-row; Rm α β; p at β) plus a fallibility park
+reachable by Rm from the PARKING points only, with the pairing
+R c γ/α/β/park chosen by c's position relative to x and its row.
+Next session: extend the gadget probe with a q-decorated battery (to
+watch the atoms clause directly), pin K on paper from the probe
+shapes, then mechanise the pack (fall + four transfer clauses, atoms
+vacuous) — the discharge is `boxRowAmalgAll_of_desc` with dom := ∅.
