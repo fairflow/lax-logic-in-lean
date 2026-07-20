@@ -1193,3 +1193,55 @@ Ghilardi-style bounded-bisimulation descriptions over the finite
 canonical model.  Note the wip crown cannot be imported into the
 library (olean side-channel); the instantiation belongs in a wip
 probe first.
+
+### (aa) 2026-07-20 afternoon: the BOX-COMMUTATION LAW proved (residues isolated) + the one-◯ two-variable sweep CLEAN
+
+**The law** (`LaxLogic/PLLSemUIBox.lean`, sorry-free; `semEx_box` at
+[propext, Quot.sound] — choice-free):
+
+    semAll_box : IsSemAll p φ ψ → BoxRowAmalgAll p φ ψ → IsSemAll p ◯φ ◯ψ
+    semEx_box  : IsSemEx p φ ψ → BoxRowAmalgEx p φ ψ → IsSemEx p ◯φ ◯ψ
+
+Each side has a FREE half proved unconditionally inside the theorem
+(∀-forward: transfer ◯ψ across the bisimulation, each ψ-witness forces
+φ by its own spec at the identity variant; ∃-backward: i-forth the
+future, take the ◯φ-witness, m-back it, conclude by the ∃-spec).  The
+hard halves are isolated as residues with all quantifier machinery
+discharged — pure model surgery:
+
+    BoxRowAmalgAll p φ ψ : a row refuting ψ pointwise amalgamates into
+      ONE p-variant refuting ◯φ at the row's base
+    BoxRowAmalgEx  p φ ψ : pointwise ψ-witnesses in every future row
+      amalgamate into ONE p-variant forcing ◯φ
+
+— exactly the ∀∃-amalgamation where the canonical-model descriptions
+(Θ-promises) must enter.  CONSEQUENCE for the induction: the ◯-clause
+reduces to the residues; ⊃ and ∨ remain the genuinely
+quantificational connectives, the same division of labour as IPC.
+
+**The sweep, definitive at weight ≤ 5** (`lake exe oneboxsweep`; 214
+p-relevant rows over {p,q} with ≤ 1 ◯; p-free rows excluded as known
+fixpoints; 24-element slice; certified two-sided verdicts):
+
+    no-∀-max 0, no-∃-min 0, pool⊬M 0, pool⊬value 0, unknowns 0
+
+Fragment PRESERVED: every ∀/∃-value lies in the one-◯ slice over q.
+Values are COMPOSITIONAL throughout: box-commutation on every ◯-head
+(∀p.◯(p∨q) = ◯q, ∀p.◯(q⊃p) = ◯¬q, …) and pointwise laws elsewhere
+(∀p.(◯p∨q) = ◯⊥∨q, ∀p.(q⊃◯p) = q⊃◯⊥, ∀p.(◯q⊃p) = ¬◯q,
+∀p.(◯p∧q) = ◯⊥∧q-form q∧◯⊥).  ∀-histogram: ⊥ 57, ⊤ 54, q 51, ¬q 18,
+◯⊥ 17, ◯q 6, q∨¬q 2, q∧◯⊥ 2, q∨◯⊥ 2, ¬¬q/¬◯⊥/¬◯q/◯¬q/q⊃◯⊥ 1 each.
+Tower coverage: the CURRENT stock (7 instances + lowT + sideT)
+derives every row and every value — no new adjunction towers demanded
+at this weight (1-var frontier appeared at w8; deeper weights remain
+the true test).  Weight-6 partial: every ◯-row listed conforms to
+box-commutation (incl. ◯(¬q⊃p) → ◯¬¬q, a slice-gap not an escape);
+one w6 bound-cell defeats the current engine (silent find-grind).
+
+Harness lessons (3 grind episodes this session): countermodel-first +
+extended 23-frame battery + weight-gated decide2 + monotone pruning
+(proofs propagate down the slice order, refutations up) took the
+order matrix 16.8 s → 143 ms; residual wall = find on
+unprovable-but-battery-missed cells and a 25-premise PROVABLE pool
+sequent (left-rule thrash).  Feature chip spawned: node-budgeted
+prove? for PLLSearch.

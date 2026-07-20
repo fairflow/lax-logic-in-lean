@@ -568,3 +568,18 @@ flatAmalgAll_bot + semAll_ofree_bot': the 1-var case re-derived as an
 instance — "both steps collapse to one".  OPEN: FlatAmalgAll for
 Pitts interpolants at ≥2 variables (Ghilardi descriptions / finite
 canonical model).
+
+## 21. 2026-07-20: box-commutation law + one-◯ two-variable sweep clean
+
+PLLSemUIBox.lean: semAll_box / semEx_box — IsSem{All,Ex} p φ ψ +
+BoxRowAmalg{All,Ex} ⇒ IsSem{All,Ex} p ◯φ ◯ψ; free halves
+unconditional (semEx_box choice-free); residues = pure ∀∃-amalgamation
+statements (quantifier machinery discharged).  ◯-clause of the
+definability induction reduced to residues; ⊃/∨ remain the hard
+connectives (as in IPC).  Sweep (oneboxsweep, w ≤ 5, 214 p-rows,
+24-slice): 0 anomalies of any kind — fragment preserved, values
+compositional (box-commutation on ◯-heads + pointwise laws:
+∀p.(◯p∨q)=◯⊥∨q, ∀p.(q⊃◯p)=q⊃◯⊥, ∀p.(◯q⊃p)=¬◯q), current transform
+stock covers everything at this weight.  Harness: refute?-first +
+23-frame battery + gated decide2 + monotone pruning (matrix 16.8s →
+143ms); repeated find-grind lesson → node-budget chip spawned.

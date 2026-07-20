@@ -79,3 +79,8 @@ root = "wip.frontier_row"
 [[lean_exe]]
 name = "ofreesweep"
 root = "wip.ofree_sweep"
+
+# One-◯ two-variable fragment: values + tower coverage.
+[[lean_exe]]
+name = "oneboxsweep"
+root = "wip.onebox_sweep"
