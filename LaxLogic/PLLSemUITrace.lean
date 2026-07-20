@@ -516,6 +516,132 @@ theorem realises_val_iff {cl : Finset PLLFormula} (hcl : SubClosed cl)
   rw [← canonFin_force_iff hcl hχcl k]
   exact (realises_force_iff hR hpf hatoms).symm
 
+/-! ## The pre-triple: the syntactic crux isolated
+
+For the ∀-residue at `(C, x)` the canonical refuting triple must carry
+the p-free description of `x` with `◯φ` falsified.  Its seed — the
+**pre-triple** — is
+
+  `⟨ {χ ∈ cl | χ p-free, x ⊩ χ},
+     {◯φ} ∪ {χ ∈ cl | χ p-free, x ⊮ χ},
+     {χ ∈ cl | χ p-free, the whole row of x refutes χ} ⟩`.
+
+Consistency of this triple is a purely syntactic, per-instance
+condition — no choice of `Ds ⊆ fal`, `Ts ⊆ mfal` has `⋁Ds ∨ ◯⋁Ts`
+derivable from the p-free forced part.  Two theorems place it exactly:
+
+* **necessity** (`preTripleAll_cons_of_residue`): if the residue holds
+  at `(C, x)`, the p-variant world killing `◯φ` is itself a
+  countermodel for the triple — p-free formulas transfer through the
+  bisimulation, the row transfers through `mback`;
+* **existence** (`preTripleAll_extend`): from consistency,
+  `lindenbaum` produces a closure-maximal extension with the p-free
+  part pinned, the promises untouched, and `◯φ ∈ fal`.
+
+Realisability of that extension over `x` (`Realises`) is then the
+exact remaining distance to the discharge
+(`boxRowAmalgAll_of_realises`).  Dually for the ∃-side with `◯φ`
+seeded into `val`. -/
+
+/-- The ∀-side pre-triple over `x`: the p-free description of `x`,
+seeded with `◯φ` falsified. -/
+noncomputable def preTripleAll (C : ConstraintModel) (cl : Finset PLLFormula)
+    (p : String) (x : C.W) (φ : PLLFormula) : FTheory :=
+  ⟨cl.filter (fun χ => p ∉ χ.atoms ∧ C.force x χ),
+   insert φ.somehow (cl.filter (fun χ => p ∉ χ.atoms ∧ ¬ C.force x χ)),
+   cl.filter (fun χ => p ∉ χ.atoms ∧ ∀ u, C.Rm x u → ¬ C.force u χ)⟩
+
+/-- The ∃-side pre-triple over `w`: the p-free description of `w`,
+seeded with `◯φ` validated. -/
+noncomputable def preTripleEx (C : ConstraintModel) (cl : Finset PLLFormula)
+    (p : String) (w : C.W) (φ : PLLFormula) : FTheory :=
+  ⟨insert φ.somehow (cl.filter (fun χ => p ∉ χ.atoms ∧ C.force w χ)),
+   cl.filter (fun χ => p ∉ χ.atoms ∧ ¬ C.force w χ),
+   cl.filter (fun χ => p ∉ χ.atoms ∧ ∀ u, C.Rm w u → ¬ C.force u χ)⟩
+
+/-- **The syntactic crux is NECESSARY for the ∀-residue**: a p-variant
+killing `◯φ` over `x` is a countermodel witnessing consistency of the
+pre-triple — evaluate at the variant world; p-free content transfers
+through the bisimulation, the row through `mback`. -/
+theorem preTripleAll_cons_of_residue {p : String} {φ ψ : PLLFormula}
+    (hAm : BoxRowAmalgAll p φ ψ) (cl : Finset PLLFormula)
+    (C : ConstraintModel) (x : C.W)
+    (hrow : ∀ y, C.Rm x y → ¬ C.force y ψ) :
+    (preTripleAll C cl p x φ).Cons := by
+  obtain ⟨N, B, x', hZ, hnb⟩ := hAm C x hrow
+  refine cons_of_countermodel N x' ?_ ?_ ?_
+  · intro χ hχ
+    obtain ⟨-, hpf, hf⟩ := Finset.mem_filter.mp hχ
+    exact (force_iff_of_bisim B (fun a ha he => hpf (he ▸ ha)) hZ).mp hf
+  · intro χ hχ
+    rcases Finset.mem_insert.mp hχ with rfl | hχ
+    · exact hnb
+    · obtain ⟨-, hpf, hf⟩ := Finset.mem_filter.mp hχ
+      exact fun hf' =>
+        hf ((force_iff_of_bisim B (fun a ha he => hpf (he ▸ ha)) hZ).mpr hf')
+  · intro χ hχ u' hu' hf'
+    obtain ⟨-, hpf, hall⟩ := Finset.mem_filter.mp hχ
+    obtain ⟨u, hxu, hZu⟩ := B.mback hZ hu'
+    exact hall u hxu
+      ((force_iff_of_bisim B (fun a ha he => hpf (he ▸ ha)) hZu).mpr hf')
+
+/-- **The syntactic crux is NECESSARY for the ∃-residue** dually: a
+p-variant forcing `◯φ` over `w` witnesses consistency of the ∃-side
+pre-triple. -/
+theorem preTripleEx_cons_of_residue {p : String} {φ ψ : PLLFormula}
+    (hAm : BoxRowAmalgEx p φ ψ) (cl : Finset PLLFormula)
+    (C : ConstraintModel) (w : C.W)
+    (hw : ∀ x, C.Ri w x → ∃ y, C.Rm x y ∧ C.force y ψ) :
+    (preTripleEx C cl p w φ).Cons := by
+  obtain ⟨N, B, w', hZ, hb⟩ := hAm C w hw
+  refine cons_of_countermodel N w' ?_ ?_ ?_
+  · intro χ hχ
+    rcases Finset.mem_insert.mp hχ with rfl | hχ
+    · exact hb
+    · obtain ⟨-, hpf, hf⟩ := Finset.mem_filter.mp hχ
+      exact (force_iff_of_bisim B (fun a ha he => hpf (he ▸ ha)) hZ).mp hf
+  · intro χ hχ
+    obtain ⟨-, hpf, hf⟩ := Finset.mem_filter.mp hχ
+    exact fun hf' =>
+      hf ((force_iff_of_bisim B (fun a ha he => hpf (he ▸ ha)) hZ).mpr hf')
+  · intro χ hχ u' hu' hf'
+    obtain ⟨-, hpf, hall⟩ := Finset.mem_filter.mp hχ
+    obtain ⟨u, hxu, hZu⟩ := B.mback hZ hu'
+    exact hall u hxu
+      ((force_iff_of_bisim B (fun a ha he => hpf (he ▸ ha)) hZu).mpr hf')
+
+/-- **From consistency to the canonical triple**: `lindenbaum` extends
+the consistent ∀-side pre-triple to a closure-maximal triple with
+`◯φ ∈ fal`, the pre-triple below it, and the promises exactly
+preserved. -/
+theorem preTripleAll_extend {C : ConstraintModel} {cl : Finset PLLFormula}
+    {p : String} {x : C.W} {φ : PLLFormula} (hbox : φ.somehow ∈ cl)
+    (hcons : (preTripleAll C cl p x φ).Cons) :
+    ∃ T : (canonFin cl).W,
+      φ.somehow ∈ T.1.fal ∧
+      (preTripleAll C cl p x φ).le T.1 ∧
+      T.1.mfal = (preTripleAll C cl p x φ).mfal := by
+  obtain ⟨T', hle, hM, hmf⟩ := lindenbaum hcons
+    ⟨Finset.filter_subset _ _,
+     insertSubset hbox (Finset.filter_subset _ _),
+     Finset.filter_subset _ _⟩
+  exact ⟨⟨T', hM⟩, hle.2.1 (Finset.mem_insert_self ..), hle, hmf⟩
+
+/-- Dually: the consistent ∃-side pre-triple extends to a
+closure-maximal triple with `◯φ ∈ val`. -/
+theorem preTripleEx_extend {C : ConstraintModel} {cl : Finset PLLFormula}
+    {p : String} {w : C.W} {φ : PLLFormula} (hbox : φ.somehow ∈ cl)
+    (hcons : (preTripleEx C cl p w φ).Cons) :
+    ∃ T : (canonFin cl).W,
+      φ.somehow ∈ T.1.val ∧
+      (preTripleEx C cl p w φ).le T.1 ∧
+      T.1.mfal = (preTripleEx C cl p w φ).mfal := by
+  obtain ⟨T', hle, hM, hmf⟩ := lindenbaum hcons
+    ⟨insertSubset hbox (Finset.filter_subset _ _),
+     Finset.filter_subset _ _,
+     Finset.filter_subset _ _⟩
+  exact ⟨⟨T', hM⟩, hle.1 (Finset.mem_insert_self ..), hle, hmf⟩
+
 /-! ## Axiom audit (pinned) -/
 
 /--
@@ -565,6 +691,30 @@ info: 'PLLND.SemUI.realises_val_iff' depends on axioms: [propext, Classical.choi
 -/
 #guard_msgs in
 #print axioms realises_val_iff
+
+/--
+info: 'PLLND.SemUI.preTripleAll_cons_of_residue' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms preTripleAll_cons_of_residue
+
+/--
+info: 'PLLND.SemUI.preTripleEx_cons_of_residue' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms preTripleEx_cons_of_residue
+
+/--
+info: 'PLLND.SemUI.preTripleAll_extend' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms preTripleAll_extend
+
+/--
+info: 'PLLND.SemUI.preTripleEx_extend' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms preTripleEx_extend
 
 end SemUI
 end PLLND
