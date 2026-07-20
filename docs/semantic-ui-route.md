@@ -1494,3 +1494,38 @@ Next session: extend the gadget probe with a q-decorated battery (to
 watch the atoms clause directly), pin K on paper from the probe
 shapes, then mechanise the pack (fall + four transfer clauses, atoms
 vacuous) — the discharge is `boxRowAmalgAll_of_desc` with dom := ∅.
+
+## §0(ff) The pillar ledger after the Litak–Visser adaptation (2026-07-20 night)
+
+PROVED sorry-free: rank preservation (`force_iff_of_layered`, ◯ costs
+2 under the ∀∃-clause) with the unbounded-invariance consistency
+corollary; fragment finiteness (`frag_reps_exist'`,
+PLLSemUIFrag.lean — Deriv/Interd calculus, DNF over components,
+canonicalisation); the Henkin scaffold (PLLSemUIHenkin.lean —
+canonDepth strict drop, WitTriple, witAmalgam with descGraft-style
+valuation and all frame legality, `amalgamation_assembled` from two
+claims); and the REFUTATION `layered_of_frag_agree_refuted` —
+Litak–Visser Thm 4.7 is false over constraint models (chainF
+conservativity: a fallible top with a trivial row is invisible to
+formulas, but not to the fall zigzag).
+
+The redesign boundary, exactly: (i) pointwise fall at linked pairs is
+agreement-derivable (⊥ has rank 0) — only the ZIGZAG INTO fallible
+successors fails; (ii) escape-iforth (partner or fallible successor,
+DescPack style) survives the character argument, since a non-fallible
+successor refutes its θ⁻; (iii) the consumer inventory of Lemma 5.4:
+its Claim 1 uses the M-to-K zags (iback/mback) — into the CANONICAL
+side, where the response is financed by canonical saturation and
+membership reasoning, not by expressibility; its Claim 2 uses the
+K-to-M forths for both relations.  So the single genuinely open
+clause is FORTH-M FROM AGREEMENT: given rank-agreement of (Δ, m) and
+a canonical row-member of Δ, must m's row contain a rank-lower
+agreeing partner (or a fallible escape)?  Detection arguments keep
+succeeding on candidate counterexamples (a distinctive row-member
+changes ◯-truths), but no character derivation is in hand — status
+OPEN, and probe-able: enumerate finite pointed pairs agreeing on the
+rank-R variable-free representatives (forceB over the frag list),
+then test forth-m directly.  That probe is the recorded next
+computational step; the mechanisation next step is the weakened
+LayeredBisim (escape clauses) with rank preservation re-proved (the
+escapes absorb exactly as in descGraft_force_iff).
