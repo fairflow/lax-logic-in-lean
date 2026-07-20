@@ -78,8 +78,47 @@ def closeF (f : Frame) : Frame := Id.run do
           changed := true
   return ⟨f.n, ri, rm, f.fall⟩
 
+/-- Deterministic pseudo-random frames (LCG): random Rᵢ-edges closed
+transitively, a random Rₘ-subset of them closed transitively (stays
+inside the closed Rᵢ), a random up-closed fallible set. -/
+def lcg (s : Nat) : Nat := (s * 1103515245 + 12345) % 2147483648
+
+def randFrame (seed n : Nat) : Frame := Id.run do
+  let mut s := seed
+  let mut ri : List (Nat × Nat) := []
+  for i in List.range n do
+    for j in List.range n do
+      if i ≠ j then
+        s := lcg s
+        if s % 100 < 30 && i < j then
+          ri := ri ++ [(i, j)]
+  let riC := (closeF ⟨n, ri, [], []⟩).ri
+  let mut rm : List (Nat × Nat) := []
+  for e in riC do
+    s := lcg s
+    if s % 100 < 40 then
+      rm := rm ++ [e]
+  let rmC := (closeF ⟨n, [], rm, []⟩).rm
+  let mut fall : List Nat := []
+  for i in List.range n do
+    s := lcg s
+    if s % 100 < 25 then
+      if !(fall.contains i) then fall := fall ++ [i]
+  -- close fall upward along riC
+  let mut changed := true
+  while changed do
+    changed := false
+    for e in riC do
+      if fall.contains e.1 && !(fall.contains e.2) then
+        fall := fall ++ [e.2]
+        changed := true
+  return ⟨n, riC, rmC, fall⟩
+
+def randFrames : List Frame :=
+  (List.range 240).map fun k => randFrame (k * 7919 + 13) (4 + k % 3)
+
 def allCMs : List FinCM :=
-  ((defaultFrames ++ extraFrames).map closeF).map fun f =>
+  (((defaultFrames ++ extraFrames).map closeF) ++ randFrames).map fun f =>
     ⟨f.n, f.ri, f.rm, f.fall, []⟩
 
 /-- Truth fingerprint of a pointed model on the formula list. -/

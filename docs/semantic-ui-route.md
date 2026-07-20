@@ -1529,3 +1529,32 @@ then test forth-m directly.  That probe is the recorded next
 computational step; the mechanisation next step is the weakened
 LayeredBisim (escape clauses) with rank preservation re-proved (the
 escapes absorb exactly as in descGraft_force_iff).
+
+## §0(gg) Pillar 2: i-clauses proved; the m-clause analysis (2026-07-20 night V)
+
+PROVED (PLLSemUIChar.lean, pins standard three): `agree_iforth` /
+`agree_iback` — the character argument delivers the escape-form
+i-zigzags from fragment-agreement at budget 2α+2; and
+`layered_of_frag_agree_W` is ASSEMBLED with Z α := agreement at rank
+2α, every clause proved except the two weak m-clauses (sorried;
+probe: 2324 agreeing pairs, 0 violations, now under randomised
+extension).
+
+Why the m-clause is the genuinely hard one — the ∀∃ divergence:
+Litak–Visser's Lewis arrow has a PURE-∀ forcing clause, so their
+Thm 4.7 covers the modal zigzag by the same implication-character
+argument as ≼.  PLL's ◯ is ∀∃: the ∃-component makes m-rows
+formula-invisible (no PLL formula quantifies over ONE world's row —
+row-membership is not hereditary), so there is no implication of
+characters whose failure exhibits a row-partner.  Near-miss recorded:
+χ := θ⁺ ∧ (θ⁻ ⊃ ⊥) is a formula, but the row-member u need not force
+θ⁻ ⊃ ⊥ (θ⁻ can hold strictly above u) — intuitionistically there is
+no exact-type formula, only up-set characters.  Note Rₘ ⊆ Rᵢ gives,
+via the PROVED agree_iforth, an i-partner of the row-member; the gap
+is precisely i-partner vs m-partner.  Candidate resolutions: (a) the
+pure statement is true with an Rₘ-specific semantic argument (the
+randomised hunt bears on this); (b) the W-form m-clauses are bypassed
+entirely — the amalgamation consumes m-moves only at canonical-side
+pairs, where the theory coordinate's PROMISES (mfal) finance the row
+witnesses (trace_mforth is the proved prototype).  Route (b) is
+independently needed for the wit_force ◯-case, so it is the default.
