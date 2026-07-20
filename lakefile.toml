@@ -84,3 +84,14 @@ root = "wip.ofree_sweep"
 [[lean_exe]]
 name = "oneboxsweep"
 root = "wip.onebox_sweep"
+
+# Description-realisability probe: canonical triples + the gfp on
+# battery instances.
+[[lean_exe]]
+name = "descprobe"
+root = "wip.desc_probe"
+
+# Direct ∀-residue probe: small-variant search per (frame, x).
+[[lean_exe]]
+name = "residprobe"
+root = "wip.resid_probe"
