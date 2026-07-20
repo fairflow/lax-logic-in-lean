@@ -34,10 +34,14 @@ is kept only as the revision-2 record.
 
 ## Sharing builds
 
-`belief.pdf` is gitignored scratch. When a build is sent for review it
-is copied to a commit-stamped name, `belief-<shortsha>.pdf`, so a stale
-side-panel render can never be mistaken for the current one. These
-stamped copies are also gitignored (`*.pdf`).
+`belief.pdf` is **tracked in git** (a `!belief.pdf` exception to the
+`*.pdf` ignore), so the current build can be shared by a repository
+link — e.g. GitHub renders it in-browser at
+`.../blob/<branch>/paper/belief.pdf`. Rebuild and re-commit it at
+sharing points to keep the link current (no need to commit it on every
+micro-edit — it is a ~370 KB binary blob). The commit-stamped copies
+`belief-<shortsha>.pdf` remain gitignored scratch, used only in chat to
+avoid a stale side-panel render being mistaken for the latest build.
 
 Engineering decisions, measured not guessed (2026-07-19):
 

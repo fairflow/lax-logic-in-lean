@@ -2,6 +2,7 @@
 *.log
 *.out
 *.pdf
+!belief.pdf
 *.bbl
 *.blg
 *.fls

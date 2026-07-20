@@ -283,7 +283,7 @@ Three realisability relations are defined over this equipment. They
 agree at atoms (membership in the evidence set, or fallibility), at
 false (fallibility), at \ensuremath{\wedge} (pairing) and at \ensuremath{\vee} (tagging), and differ only
 at \ensuremath{\supset} and \ensuremath{\bigcirc} --- and there only in \emph{how much the realiser is given about the
-future}. Uniform realisability \ensuremath{\Vdash{}^{\mathrm{u}}} gives it nothing:
+future}. Uniform realisability \ensuremath{\Vdash^{\mathrm{u}}} gives it nothing:
 
 \begin{lstlisting}
 x ⊩ᵘ M ⊃ N at w  iff  for all v ≥ w
@@ -294,7 +294,7 @@ x ⊩ᵘ ◯M at w     iff  for all v ≥ w there is u
 \end{lstlisting}
 
 --- the same element must serve every future and every
-constraint-witness. Strategy realisability \ensuremath{\Vdash{}^{\mathrm{s}}}, relative to an injective
+constraint-witness. Strategy realisability \ensuremath{\Vdash^{\mathrm{s}}}, relative to an injective
 coding \ensuremath{\kappa} of worlds into the carrier, makes \ensuremath{\bigcirc}-evidence a function of the
 presented future:
 
@@ -315,7 +315,7 @@ because the elimination rule\textquotesingle s computational content applies its
 continuation at that name; here the semantics tracks proofs, not merely
 truth.
 
-Presented-strategy realisability \ensuremath{\Vdash{}^{\mathrm{p}}} does the same at
+Presented-strategy realisability \ensuremath{\Vdash^{\mathrm{p}}} does the same at
 implication: the realiser of \ensuremath{M \supset N} receives the pair \ensuremath{\langle\kappa} v, b\ensuremath{\rangle} of the
 presented world and the argument:
 
@@ -338,15 +338,15 @@ at the other --- together with small variants.
 
 \begin{theorem}[the separations; \texttt{BeliefRealisability.lean}]\label{thm:separations}
 (i) (\texttt{bite\_uniform\_split}) At the root of the split
-model \ensuremath{\bigcirc}(\ensuremath{A \vee B}) is truth-forced, but no element \ensuremath{\Vdash{}^{\mathrm{u}}}-realises it.
-(ii) (\texttt{uniform\_dist\_valid}) An identity element \ensuremath{\Vdash{}^{\mathrm{u}}}-realises
+model \ensuremath{\bigcirc}(\ensuremath{A \vee B}) is truth-forced, but no element \ensuremath{\Vdash^{\mathrm{u}}}-realises it.
+(ii) (\texttt{uniform\_dist\_valid}) An identity element \ensuremath{\Vdash^{\mathrm{u}}}-realises
 \ensuremath{\bigcirc}(\ensuremath{A \vee B}) \ensuremath{\supset} (\ensuremath{\bigcirc A \vee \bigcirc B}) at every world of every model --- a
 scheme PLL does not prove (\texttt{not\_provable\_somehow\_or\_dist}).
 (iii) (\texttt{strategy\_realises\_obAB}, \texttt{strategy\_dist\_refuted})
-Under \ensuremath{\Vdash{}^{\mathrm{s}}} a case-splitting strategy realises \ensuremath{\bigcirc}(\ensuremath{A \vee B}) at the
+Under \ensuremath{\Vdash^{\mathrm{s}}} a case-splitting strategy realises \ensuremath{\bigcirc}(\ensuremath{A \vee B}) at the
 root, and the distribution scheme acquires a countermodel.
 (iv) (\texttt{impdist\_not\_uniform})
-(\ensuremath{\bigcirc A \supset \bigcirc B}) \ensuremath{\supset \bigcirc}(\ensuremath{A \supset B}) is not \ensuremath{\Vdash{}^{\mathrm{u}}}-valid.
+(\ensuremath{\bigcirc A \supset \bigcirc B}) \ensuremath{\supset \bigcirc}(\ensuremath{A \supset B}) is not \ensuremath{\Vdash^{\mathrm{u}}}-valid.
 \end{theorem}
 
 Read in order. A formula can be forced without being uniformly realised
@@ -358,14 +358,14 @@ remains open. Strategy evidence supplies a realiser and restores the
 countermodel (iii), and is the first point in the development where
 evidence is literally a program. Uniformity also fails at implication (iv).
 
-The natural question is then whether \ensuremath{\Vdash{}^{\mathrm{s}}} is the completeness-grade
+The natural question is then whether \ensuremath{\Vdash^{\mathrm{s}}} is the completeness-grade
 relation. It is not, and the reason is a theorem.
 
 \begin{theorem}[the obstruction; \texttt{realS\_fullness\_obstruction}, audit
 \texttt{[propext, Quot.sound]}]\label{thm:obstruction}
 There is a three-world constraint model on
 which no evidence assignment whatever is simultaneously atom-adequate
-(evidence only where the atom holds) and full for \ensuremath{\Vdash{}^{\mathrm{s}}} (every forced
+(evidence only where the atom holds) and full for \ensuremath{\Vdash^{\mathrm{s}}} (every forced
 formula has a realiser) --- for every applicative structure able to
 implement finite lookup tables against the world-coding.
 \end{theorem}
@@ -386,7 +386,7 @@ Note the quantifier structure: the evidence assignment is inside the
 negation. This is an obstruction, not a counterexample to one
 decoration. Since adequacy together with fullness is exactly the mutual
 induction any completeness-by-decoration proof must run --- each consumes
-the other at the \ensuremath{\supset}-clause --- completeness of PLL for \ensuremath{\Vdash{}^{\mathrm{s}}} is not provable
+the other at the \ensuremath{\supset}-clause --- completeness of PLL for \ensuremath{\Vdash^{\mathrm{s}}} is not provable
 this way on these frames.
 
 \begin{proof}
@@ -401,7 +401,7 @@ about s records which leaf it is applied to, since a strategy is a function
 of the presented future and carries no world-marks. Now \ensuremath{\bigcirc t \supset} (\ensuremath{p \vee q}) is
 truth-forced at the root (vacuously there, since \ensuremath{\bigcirc t} fails at the root;
 via the local atom at each leaf), so fullness provides a realiser x.
-The \ensuremath{\supset}-clause of \ensuremath{\Vdash{}^{\mathrm{s}}} gives x the argument alone; instantiating it at each
+The \ensuremath{\supset}-clause of \ensuremath{\Vdash^{\mathrm{s}}} gives x the argument alone; instantiating it at each
 leaf with the same argument s, application being a function, both
 instantiations receive the same answer y --- whose tag must be false at
 the p-leaf, since atom-adequacy has emptied the q-evidence there, and
@@ -418,15 +418,15 @@ world-marks is precisely a strategy, and that is the source of the
 obstruction to naive completeness.
 Second, the repair is thereby forced, not chosen: the \ensuremath{\supset}-clause
 must be given the world, exactly as the \ensuremath{\bigcirc}-clause already is, and that
-single change is the definition of \ensuremath{\Vdash{}^{\mathrm{p}}}. The separations survive the
-repair untouched, being stated for \ensuremath{\Vdash{}^{\mathrm{u}}} and \ensuremath{\Vdash{}^{\mathrm{s}}}. This is the section\textquotesingle s conclusion,
+single change is the definition of \ensuremath{\Vdash^{\mathrm{p}}}. The separations survive the
+repair untouched, being stated for \ensuremath{\Vdash^{\mathrm{u}}} and \ensuremath{\Vdash^{\mathrm{s}}}. This is the section\textquotesingle s conclusion,
 and the paper\textquotesingle s central claim: \textbf{what one may assume about how evidence
 meets the future determines which logic of belief one obtains.}
 
 \section{Completeness}\label{6-completeness}
 
 In this section we prove completeness of PLL with respect to
-\ensuremath{\Vdash{}^{\mathrm{p}}}-realisability. The proof has two independent halves --- a decoration
+\ensuremath{\Vdash^{\mathrm{p}}}-realisability. The proof has two independent halves --- a decoration
 theorem, saying that every suitable countermodel refutes in the
 realisability sense, and a countermodel-existence theorem --- and we take
 them in that order. Both halves are effective in a sense made precise
@@ -508,7 +508,7 @@ presented.
 
 From Theorem 6.1 and soundness one obtains at once the \emph{refutation
 lemma} (\texttt{realP\_refutes\_sequent}): every countermodel validated by the verified
-checker is a \ensuremath{\Vdash{}^{\mathrm{p}}}-refutation of its sequent --- hypotheses realised at the
+checker is a \ensuremath{\Vdash^{\mathrm{p}}}-refutation of its sequent --- hypotheses realised at the
 refuting world, conclusion unrealisable. Both table capacities are
 discharged, with nothing assumed, by an explicit algebra of finite
 lookup tables (\texttt{Tbl}, \texttt{tblPca}: base codes, formal pairs and tags, two
@@ -683,7 +683,7 @@ module import graph enforces it.
 \begin{theorem}[\texttt{derivable\_iff\_no\_realP\_refutation}]\label{thm:crown}
 A sequent is derivable in PLL exactly
 when no token-decorated, checker-verified finite model
-\ensuremath{\Vdash{}^{\mathrm{p}}}-realisability-refutes it:
+\ensuremath{\Vdash^{\mathrm{p}}}-realisability-refutes it:
 
 \begin{lstlisting}
 Nonempty (LaxND Γ C) ↔
@@ -853,7 +853,7 @@ abstraction-then-application'', to the polynomial
 (λa. (λg. g · a) · f) · x
 \end{lstlisting}
 
-whose value \ensuremath{\Vdash{}^{\mathrm{u}}}-realises the conclusion wherever the context is
+whose value \ensuremath{\Vdash^{\mathrm{u}}}-realises the conclusion wherever the context is
 realised; the strategy extraction compiles the same derivation to the
 reactive form in which the presented future is fed to the first
 strategy, the named witness it returns is where the second strategy is
@@ -1052,10 +1052,10 @@ normalisation.
 
 We have already said that the formalisation functioned as an
 instrument. It is worth saying how. Three intended theorems failed, and
-their failures were themselves established: a collapse lemma for \ensuremath{\Vdash{}^{\mathrm{s}}}
+their failures were themselves established: a collapse lemma for \ensuremath{\Vdash^{\mathrm{s}}}
 (refuted; the reformulation became the refutation lemma), the claim that \ensuremath{\bigcirc} is
 not a normal modality (refuted; it is normal, every nucleus validating
-K), and the intended completeness of \ensuremath{\Vdash{}^{\mathrm{s}}}, whose failure is
+K), and the intended completeness of \ensuremath{\Vdash^{\mathrm{s}}}, whose failure is
 Theorem~\ref{thm:obstruction} and whose repair is the paper\textquotesingle s central
 definition. A referee may
 reasonably ask what in this paper was found by the human author and
@@ -1139,7 +1139,7 @@ frames the clause is already bare possibility.
 %% Valliappan (bare-∃ clause + forward confluence), now drawn out
 %% technically in §8; completeness itself is ours, mechanised.
 What remains open is the realisability side of the identification:
-whether \ensuremath{\Vdash{}^{\mathrm{u}}}-validity coincides with
+whether \ensuremath{\Vdash^{\mathrm{u}}}-validity coincides with
 validity over confluent constraint models --- that is, whether
 PLL\ensuremath{{}^{\mathrm{u}}} is precisely PLL +
 \ensuremath{\bigcirc}(A \ensuremath{\vee} B) \ensuremath{\supset}
