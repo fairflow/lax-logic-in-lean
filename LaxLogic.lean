@@ -79,3 +79,4 @@ import LaxLogic.PLLSemUIOFree
 import LaxLogic.PLLSemUIAdjoin
 import LaxLogic.PLLSemUIAmalg
 import LaxLogic.PLLSemUIBox
+import LaxLogic.PLLSemUIDesc

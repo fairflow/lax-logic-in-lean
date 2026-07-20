@@ -1326,3 +1326,52 @@ HIM; future chips must carry in-prompt: commit-to-branch, summary
 file, completion signal — or use Agent-tool subagents for work that
 must return here.  The node-budget chip is running; on its completion
 signal I fetch and merge its branch directly.
+
+### (dd) 2026-07-20: SECOND WAVE LANDED — the description graft, complete machine
+
+`LaxLogic/PLLSemUIDesc.lean` (sorry-free, audits pinned, full library
+green) — the canonical-cone graft in its general form, built and
+PROVED in one session-tail:
+
+* `DescPack C K p dom` — the description-realisation relation with
+  bisimulation-style clauses: atom-agreement only on the tracked
+  alphabet `dom` (for `canonFin cl`: the closure — this dissolves the
+  filtration problem: no direct `PBisim C (canonFin cl)` can exist
+  because canonFin forces every out-of-closure atom; on the graft all
+  protected atoms read the BASE coordinate), `fall`, `iforth` (with
+  fallible-base escape), `kback`, `mforth` (pairing fallible base
+  escapes with fallible K-witnesses — the promise-side fallibility
+  cover), `mback` (with fallible escape).
+* `descGraft P` — base ⊎ R-fibres; fibres climb both coordinates
+  (K-side Rᵢ-edges relaxed into fallible K-worlds so fallible-base
+  paths re-enter legally; Rₘ-edges strictly PAIRED — the ◯-case
+  demanded it); fibres exit to the base only at fallible worlds; `p`
+  redecorated from the K-coordinate.
+* `descGraft_pbisim` — the graft is a p-variant (projection; consumes
+  NO agreement clauses).
+* `descGraft_force_iff` — a fibre forces θ iff its K-coordinate does,
+  ◯ INCLUDED.  The two fallibility absorptions carry the ◯-cases: a
+  fallible base witness pairs with a fallible K-witness by `mforth`;
+  an unpaired fallible K-future is itself fallible in the graft by
+  `fall`.
+* `boxRowAmalgAll_of_desc` / `boxRowAmalgEx_of_desc` — **the
+  residues reduce to pack-existence**: per (C, x), a pack into some K
+  and a K-world refuting (resp. forcing) ◯φ paired with x.
+
+With K := `canonFin cl` and the truth lemma, the whole of the ◯-step
+of the definability induction now rests on FINITE COMBINATORICS:
+exhibit a closure triple with ◯φ ∈ fal (resp. ∈ val) realised over
+the given world by a DescPack.  Constructing that pack — the
+descriptions functor c ↦ trace(c) and its m-clauses — is the
+remaining open mathematics, now a decidable-per-closure target the
+oracle can probe row by row.  Subsumption note: ofreeGraft/relGraft
+are morally the box-free flat instances of descGraft; the older files
+stand as the simpler self-contained forms.
+
+Also merged this round: the node-budgeted search from the chip session
+(branch claude/agitated-nobel-443fbd, commit 7e1f1b2): proveBounded /
+findBounded / prove?Bounded + Config.findBudget; find is a `mutual
+partial def` with a visited-set (NOT well-founded recursion — the
+chip corrected my misstatement; PLLSearchEx.lean's limitation note
+still carries the wrong attribution — Matthew's file, flagged not
+edited).

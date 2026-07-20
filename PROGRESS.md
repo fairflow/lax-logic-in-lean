@@ -593,3 +593,18 @@ value ⊥) + instances (p, p∨¬p, ¬¬p⊃p) ⇒ FIRST LAW-GENERATED VALUES:
 consistency).  ∃-side: boxRowAmalgEx_prop ⇒ ∃p.◯p = ◯⊤.  Honest
 gap: ◯p⊃p not Lob0 (vacuous at promise-free rows) — general residues
 need the canonical-cone graft (second wave).
+
+## 23. 2026-07-20: second wave landed — the description graft complete
+
+PLLSemUIDesc.lean: DescPack (realisation relation; atoms only on
+tracked alphabet — filtration problem dissolved by reading protected
+atoms from the base) + descGraft (paired fibres; relaxed Rᵢ into
+fallible K-worlds, strictly paired Rₘ) + descGraft_pbisim +
+descGraft_force_iff (◯ INCLUDED; two fallibility absorptions) +
+boxRowAmalg{All,Ex}_of_desc.  The ◯-step of the definability
+induction now = finite combinatorics: closure triple with ◯φ ∈
+fal/val realised over x by a pack into canonFin cl (truth lemma
+bridges membership to forcing).  Open centre: the descriptions
+functor and its m-clauses — decidable per closure, oracle-probeable.
+Merged: node-budgeted search (chip; find is partial-with-visited-set,
+not WF — PLLSearchEx note carries stale attribution, flagged).
