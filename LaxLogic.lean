@@ -83,4 +83,5 @@ import LaxLogic.PLLSemUIDesc
 import LaxLogic.PLLSemUITrace
 import LaxLogic.PLLSemUILayered
 import LaxLogic.PLLSemUIFrag
+import LaxLogic.PLLSemUIChar
 import LaxLogic.PLLSemUIHenkin

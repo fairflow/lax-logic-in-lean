@@ -704,3 +704,17 @@ switched to consume LayeredBisimE throughout (WitTriple, witAmalgam,
 claims, assembly) — full library green.  Remaining pillar-2 content:
 characters for the E-form (agreement ⇒ LayeredBisimE, probe-backed);
 then wit_pbisim/wit_force.
+
+## 29. 2026-07-20 night III: character LEGO proved
+
+PLLSemUIChar.lean (sorry-free, pins standard three): force_bigAnd_iff
+/ force_bigOr_of_mem (semantic forcing of the finite connectives);
+charPos/charNeg (θ± as classical filters over a representative list);
+force_charPos; not_force_charNeg (non-fallible worlds refute their
+negative character — the fallibility hypothesis is exactly where the
+machine-checked obstruction lives); agree_of_char (character
+transfer: forcing θ⁺ and refuting θ⁻ yields full list agreement).
+Remaining pillar-2 content is now ONE induction: Z α := rank-α
+agreement satisfies the LayeredBisimE clauses (escape-iforth via
+not_force_charNeg at non-fallible targets; forth-m probe-backed),
+with slack bookkeeping for the crank-1 ⊤.
