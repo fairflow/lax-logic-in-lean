@@ -737,3 +737,18 @@ repaired pillar 2 stated as layered_of_frag_agree_W (sorried,
 probe-backed); the amalgamation must bridge E/W inside the amalgam by
 routing its ◯-case through the canonical promise components (mfal) —
 the structural reason F&M theories carry promises.
+
+## 31. 2026-07-20 night V: the i-clauses of the repaired pillar 2 PROVED
+
+agree_iforth / agree_iback PROVED sorry-free (pins standard three):
+the character argument lands for PLL — for a NON-fallible successor
+v, the implication charPos(v) ⊃ charNeg(v) fails at the base world (v
+witnesses it, via sub_mi for the m-case's future use), its complexity
+fits the budget 2α+2 (crank_charPos_le r+1 absorbing the crank-1 ⊤,
+crank_charNeg_le r), agreement transfers the failure across, and the
+failing instance is the partner — full rank-2α agreement through
+frag_reps_exist' + soundness-at-a-point (force_of_deriv).
+layered_of_frag_agree_W ASSEMBLED in PLLSemUIChar: Z α := agreement
+at rank 2α; mono/atoms/fall/iforth/iback/root all proved;
+sorry-footprint EXACTLY the two weak m-clauses (probe: 2324/0).
+Pillar 2 is now: two m-clause character derivations away.

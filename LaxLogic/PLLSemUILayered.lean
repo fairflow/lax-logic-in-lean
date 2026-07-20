@@ -648,20 +648,10 @@ theorem pair_escape_not_from_agreement :
   · exact (B.fall hZ').mp rfl
   · exact hF
 
-/-- **The repaired pillar 2** (OPEN, probe-backed): fragment-agreement
-yields the WEAK form.  The i-clauses follow the character argument
-(`charPos`/`charNeg`/`agree_of_char` in PLLSemUIChar; escape at
-fallible targets, which refute no negative character); the weak
-m-clauses at non-fallible members are the probe-clean content
-(wip/mforth_probe: 2324 agreeing pairs, 0 violations), open for a
-character derivation; fallible members escape freely.  Slack: the
-rank function 2α covers the crank-1 ⊤ and the implication step. -/
-theorem layered_of_frag_agree_W (V : Finset String) (n : Nat)
-    (M N : ConstraintModel) (w : M.W) (w' : N.W)
-    (h : ∀ χ : PLLFormula, crank χ ≤ 2 * n + 2 →
-      (∀ a ∈ χ.atoms, a ∈ V) → (M.force w χ ↔ N.force w' χ)) :
-    ∃ B : LayeredBisimW (fun a => a ∈ V) M N, B.Z n w w' := by
-  sorry
+/- **The repaired pillar 2** lives in `PLLSemUIChar.lean`
+(`layered_of_frag_agree_W`): the i-clauses and all pointwise clauses
+are PROVED there by the character argument; the sorry-footprint is
+exactly the two weak m-clauses (probe-backed). -/
 
 /-! ## 4. The sorried pillars (each a separate target)
 
