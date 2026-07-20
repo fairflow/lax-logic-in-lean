@@ -1245,3 +1245,41 @@ order matrix 16.8 s → 143 ms; residual wall = find on
 unprovable-but-battery-missed cells and a 25-premise PROVABLE pool
 sequent (left-rule thrash).  Feature chip spawned: node-budgeted
 prove? for PLLSearch.
+
+### (bb) 2026-07-20: the correspondence with the syntactic route's blocking lemma
+
+Matthew's question: do the three open amalgamation statements relate
+to `cascade_low_pos_box` (the sole sorry of the v3.1 syntactic
+tower)?  YES — same mountain, two faces; the dictionary:
+
+    syntactic (v3.1 tower)                semantic (this route)
+    ------------------------------------  ------------------------------
+    seals: γ-guards ◯(E⇢A), ◯-goal        the promises Θ / the Rₘ-row
+      disjuncts committed before descent    that must be completed
+    seen-sets cannot cross a seal         bisimulation data must be
+                                            re-established inside the
+                                            Rₘ-successor = BoxRowAmalg
+    burned room cannot fund fresh          p-decoration freedom is a
+      J+1 allotments (budget deficit)       shared resource (the 1-pv
+                                            clash semEx_and_pointwise_
+                                            fails, machine-checked)
+    jump budget b                          bounded-bisimulation rank
+    cascade_main_bf: box-free PROVED       FlatAmalg: IPC-standard
+    dispatcher: residue provably about ◯   reduction: residue = the two
+      (cascade_low_pos_box)                  BoxRowAmalg statements
+
+Differences that matter: the syntactic lemma is QUANTITATIVE
+(stabilisation at the explicit floor defect·(J+2)); the semantic
+residues are qualitative (one amalgamated variant exists, no rank
+ledger) — dropping the ledger is exactly why this route moves.  A
+semantic win would make the floor moot: definability + uniqueness +
+completeness force the syntactic approximants to stabilise up to ⊣⊢
+at SOME per-instance finite budget, re-founding the tower without the
+uniform floor arithmetic.  On dilators: the evidence (b = 2
+stabilisation, five-class state spaces, per-instance finite support,
+the clean fragment tables) says finite-rank description combinatorics
+(Ghilardi), not ordinal machinery — the budget was the shadow price
+of decoration freedom, not an ordinal.  And the week's constructions
+are a toolkit aimed at the row-completion: `mback_cover` is the
+promise license the syntactic seals lacked, made a dischargeable side
+condition.
