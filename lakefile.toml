@@ -95,3 +95,8 @@ root = "wip.desc_probe"
 [[lean_exe]]
 name = "residprobe"
 root = "wip.resid_probe"
+
+# Rank-bounded join test for the gap row.
+[[lean_exe]]
+name = "rankjoin"
+root = "wip.rank_join"

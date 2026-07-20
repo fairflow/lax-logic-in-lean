@@ -632,3 +632,25 @@ proved), adjunction tails KILL.  Next: mechanise the gap row's
 Frame hygiene: onebox fork frames not transitively closed as listed;
 probes close on intake (sweeps unaffected — unclosed members cannot
 certify).
+
+## 25. 2026-07-20 eve: literature sweep + the Litak–Visser skeleton
+
+Three-agent sweep (standard vocabulary): Visser 1996 = our
+construction with the right budget bookkeeping (witnessing triples,
+Henkin-depth-financed layered bisimulation — explains the dead
+canonical-target gfp exactly); Litak–Visser 2404.11969 = semantic UI
+for iSL (coreflection like PLL) — the closest template, §5.1 read in
+full; Iemhoff's published UIP claim = the G4iLL paper whose
+completeness we machine-refuted; algebra side (amalgamation, model
+completion for nuclear Heyting algebras) OPEN in print — our result
+would settle it.  Papers in papers/ (untracked).  NEW FILE
+PLLSemUILayered.lean: crank (◯ costs 2 under the ∀∃-clause),
+LayeredBisim, rank-preservation PROVED (+ consistency corollary
+recovering unbounded invariance), sorried pillars: frag_reps_exist,
+layered_of_frag_agree (characters), amalgamation (Lemma 5.4 PLL-form
+with their proof shape + PLL additions documented).  The official
+interpolant construction reinstated: ∀p.M = join of rank-bounded
+p-free derivers.  Oracle test (wip/rank_join.lean): the join for
+◯(◯p⊃p) certified = ◯⊥, zero unknowns after adding the F-free
+3-chain with rigid bottom row (battery gap — the residue probe's own
+gadget was the missing countermodel frame).
