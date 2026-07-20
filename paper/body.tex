@@ -945,9 +945,18 @@ built from the \emph{same} \ensuremath{2^{k}-1} merge cells;
 re-association alone drops the delay from
 \ensuremath{(2^{k}-1)\cdot\delta} to \ensuremath{k\cdot\delta} --- linear
 to logarithmic in the leaf count, with no extra hardware
-(\texttt{lookahead\_beats\_ripple}). Ripple is the deepest proof of the
-group carry, lookahead a shallow one, and the speed-up is precisely the
-reduction in \ensuremath{\bigcirc}-nesting depth. Under reading (7) these
+(\texttt{lookahead\_beats\_ripple}). That the two networks compute the
+\emph{same} carry is proved, not assumed: the extractor is parametric in
+its value layer, so running the same two proof terms with the carry pair
+in place of the trivial layer returns the same group
+generate/propagate pair, for any associative merge and hence for the
+carry algebra itself (\texttt{balGP\_eq\_linGP},
+\texttt{lookahead\_eq\_ripple\_gp}, with the merge\textquotesingle s
+associativity checked axiom-free); a single evaluation yields both that
+value and the delay. Ripple is the deepest proof of the group carry,
+lookahead a shallow one, and the speed-up is precisely the reduction in
+\ensuremath{\bigcirc}-nesting depth --- a re-association of the proof, not
+a change in what is proved. Under reading (7) these
 are all belief computations: a signal\textquotesingle s delay is the cost
 of discharging the constraint under which its stability is believed,
 and re-associating a proof of equal size into a shallower one is how
