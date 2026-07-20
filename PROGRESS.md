@@ -654,3 +654,22 @@ p-free derivers.  Oracle test (wip/rank_join.lean): the join for
 ◯(◯p⊃p) certified = ◯⊥, zero unknowns after adding the F-free
 3-chain with rigid bottom row (battery gap — the residue probe's own
 gadget was the missing countermodel frame).
+
+## 26. 2026-07-20 night: pillar attack begun — Henkin amalgam scaffold
+
+Pillar 1 (frag_reps_exist) delegated to a worktree agent with the
+full DNF-over-components blueprint (comps recursion, nonempty
+conjunct-lists since truePLL = ⊥→⊥ has crank 1, canonicalisation via
+filter-sublists).  Pillar 3 scaffold LANDED (PLLSemUIHenkin.lean):
+canonDepth := cl.card − val.card with strict drop PROVED; WitTriple
+(Litak–Visser Lemma 5.4 triples, budget 2·depth+1); witAmalgam
+(componentwise relations — canonical side carries promise-aware Rₘ —
+fallibility from the theory coordinate, atoms from the union) with
+ALL frame legality proved; amalgamation_assembled PROVED modulo the
+two claims wit_pbisim (projection is the p-variant bisimulation; the
+two-case budget argument, Henkin-side moves = trace_iforth /
+trace_mforth) and wit_force (pair forces φ ∈ cl iff φ ∈ Δ.val;
+◯-case = i-zigzag + m-zigzag + fallible absorption).  When the claims
+land, the Layered interface `amalgamation` retires in favour of the
+assembled card-budget form.  Pillar 2 (characters, Thm 4.7) queued
+behind the agent's bigAnd/bigOr calculus.
