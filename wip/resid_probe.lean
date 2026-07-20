@@ -244,12 +244,14 @@ def search (f : Frame) (x : Nat) (φ : PLLFormula) : Option (Nat × String) :=
               return some (3, d)
   return none
 
-def runRow (label : String) (φ : PLLFormula) : IO Unit := do
+def runRow (label : String) (φ : PLLFormula) (verbose : Bool := false) :
+    IO Unit := do
   let t0 ← IO.monoMsNow
   let mut pts := 0
   let mut ok0 := 0
   let mut ok1 := 0
   let mut ok2 := 0
+  let mut ok3 := 0
   let mut fails := 0
   for f in allFrames do
     for x in List.range f.n do
@@ -259,20 +261,23 @@ def runRow (label : String) (φ : PLLFormula) : IO Unit := do
       if qual then
         pts := pts + 1
         match search f x φ with
-        | some (0, _) => ok0 := ok0 + 1
-        | some (1, _) => ok1 := ok1 + 1
-        | some (2, _) => ok2 := ok2 + 1
-        | some _ => pure ()
+        | some (k, d) =>
+            if k == 0 then ok0 := ok0 + 1
+            else if k == 1 then ok1 := ok1 + 1
+            else if k == 2 then ok2 := ok2 + 1
+            else ok3 := ok3 + 1
+            if verbose then
+              IO.println s!"  k{k} n={f.n} ri={f.ri} rm={f.rm} fall={f.fall} x={x}: {d}"
         | none =>
             fails := fails + 1
             IO.println s!"  !!FAIL {label}: n={f.n} ri={f.ri} rm={f.rm} fall={f.fall} x={x}"
   let t1 ← IO.monoMsNow
-  IO.println s!"row {label}: pts={pts} k0={ok0} k1={ok1} k2={ok2} FAIL={fails} ({t1-t0} ms)"
+  IO.println s!"row {label}: pts={pts} k0={ok0} k1={ok1} k2={ok2} k3={ok3} FAIL={fails} ({t1-t0} ms)"
 
 def mainLoop : IO Unit := do
   IO.println "=== direct ∀-residue probe (variant search) ==="
   for (label, φ) in rows do
-    runRow label φ
+    runRow label φ (verbose := label == "A ◯p⊃p   ")
   IO.println "=== done ==="
 
 end ResidProbe
