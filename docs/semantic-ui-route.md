@@ -1558,3 +1558,95 @@ entirely — the amalgamation consumes m-moves only at canonical-side
 pairs, where the theory coordinate's PROMISES (mfal) finance the row
 witnesses (trace_mforth is the proved prototype).  Route (b) is
 independently needed for the wit_force ◯-case, so it is the default.
+
+## §0(hh) The Lemma 5.4 mechanics, the canonical LEGO, and the same-trace descent verdict (2026-07-20 late)
+
+Re-read Litak–Visser's proof of Lemma 5.4 line by line (papers/,
+pp. 21–23) and extracted the exact bookkeeping their witnessing
+triples run on.  Their invariant for an amalgam pair ⟨Δ, m⟩ is
+
+  Δ = Th_X(k) = Th_X(k′),  k′ ≼ k,  m′ ≼ m,
+  k′ Z_{2d+1} m′,  k Z_{2d} m        (d = the Henkin depth of Δ),
+
+and the proof balances on two facts.  (1) In the truth lemma (their
+Claim 2) every move that starts on the K-side comes with STRICT theory
+growth: for ⊃ because the refuting world forces the antecedent the
+theory lacked, for their Lewis arrow by choosing the refuting world
+<-maximal, so that it forces the refuted arrow — a trick that needs
+converse well-foundedness (Löb structure) of the modal relation.
+Strict growth drops d, and the spent unprimed link at 2d−1 finances
+the fresh degenerate triple (ℓ, ℓ, s), which needs only 2d′+1 ≤ 2d−1.
+(2) In the bisimulation zag (their Claim 1) the M-side move is GIVEN,
+and the primed pair is a reusable reservoir: links are propositions,
+not resources, so k′ Z_{2d+1} m′ can be spent for every same-theory
+move (producing ℓ ≽ k′ with Z_{2d} ℓ s at exactly the level the new
+triple needs) while itself surviving into the new triple.
+
+Why this does not port to PLL unchanged: Rᵢ is reflexive, Rₘ
+reflexive-transitive, so a world refuting ◯χ can NEVER force it — the
+maximality trick is unavailable and PLL's ◯-case has genuine
+same-theory K-side-first moves, which is the one combination their
+bookkeeping cannot finance (the reservoir only anchors at m′, not at
+the pair's own M-coordinate; every spend of the unprimed link lands
+one level short of a fresh same-depth triple).
+
+What replaces the trick — the canonical LEGO, all PROVED and pinned in
+PLLSemUIHenkin.lean tonight:
+
+* canon_box_dichotomy (the reflexivity rescue, backward direction):
+  if ◯χ ∈ val T then either χ ∈ val T — and T is its own row-witness
+  by reflexivity of the canonical Rₘ, no bisimulation move at all —
+  or the canonical row-witness strictly grows the theory and the
+  depth drop finances the move as in their strict case.  Axioms:
+  [propext, Quot.sound].
+* trace_box_refuter + promise_blocks_row (the promise rescue, forward
+  direction): a world refuting ◯χ has an Rᵢ-successor whose
+  description PROMISES χ (mfal), and a promised formula is validated
+  by NO canonical Rₘ-successor — so the amalgam refutes ◯χ through
+  the promise component of the canonical coordinate alone, with no
+  Rₘ-move in M.  promise_blocks_row is choice-free.
+* imp_unval_cases + traceT_val_ssubset: the ⊃-case split with
+  guaranteed strictness (their ψ-trick, which ports verbatim), and
+  the strict-growth financier at the description level.
+* traceT_mfal_empty_of_fallible, canonTop, rm_canonTop_iff,
+  canonTop_fallible: a fallible row-member erases all promises;
+  the canonical top ⟨cl, ∅, ∅⟩ is consistent outright and fallible;
+  a canonical world reaches the top along Rₘ exactly when it promises
+  nothing.  This is where the fallible escapes of the m-zigzag land.
+
+THE WALL, precisely: the forward ◯-case when the promising successor
+v ≽ᵢ k has the SAME val-trace as k.  The promise pair ⟨trace v, m₂⟩
+keeps depth d, its admissibility wants an unprimed link at 2d, and
+every spend yields 2d−1.  Candidate repair probed tonight: the
+SAME-TRACE NO-DESCENT clause — closure-trace-equality of the i-move
+lets the partner keep the rank (n in, n out, instead of agree_iforth's
+n−1).
+
+VERDICT (wip/samval_probe.lean, two passes, list-agreement surrogate):
+REFUTED.  Variable-free pass (264 models, 746,108 agreeing pairs):
+0 failures, and the nontrivial same-trace moves VANISH as the closure
+grows (109 / 5 / 0 needed over cl = [⊥] / [⊥,◯⊥] / [⊥,◯⊥,¬◯⊥]) — in
+the variable-free world a three-formula closure already pins the full
+90-formula type.  One-atom pass (650 hereditarily-decorated models,
+2,377,307 agreeing pairs): 499 / 44 / 12 failures over cl = [⊥,q] /
+[⊥,q,◯q] / Sub(◯q⊃q)∪{⊥} — the last is the gap row's own adequate
+set.  Decoded failure shape (checked by hand on the first gap-row
+instance): the moved world is a RIGID DEAD-END forcing q ∧ ¬◯⊥
+(crank 3); the partner model has no dead-end above w′; the roots
+agree at rank ≤ 3 because the ABSENCE of a dead-end registers only at
+¬¬◯⊥ (crank 4).  The one-level descent is semantically sharp even
+under closure-trace-equality.  Caveat, as always with the surrogate:
+the generated 70-formula list is truncation-ragged rather than
+rank-uniform, so each failure is a candidate pending a rank-uniform
+check — but the decoded instance's arithmetic (3 vs 4) is exact.
+
+Consequences for the route: (i) the same-theory ◯-forward case cannot
+be financed by level preservation — the repaired invariant at promise
+pairs must live with a degraded link, or handle dead-end successors
+by a dedicated clause (every decoded failure involves one; these are
+the same rigid postponement points the residue-probe decodings found
+in §0(ee)); (ii) the backward direction and all strict cases are now
+fully financed by the LEGO; (iii) nothing tonight touches pillars 1–2:
+the obstruction geography (§§27–30) is confirmed from a new angle —
+rank-descent at i-moves is exactly the fragment-blindness of m-rows
+propagated one level up.

@@ -105,3 +105,8 @@ root = "wip.rank_join"
 [[lean_exe]]
 name = "mforthprobe"
 root = "wip.mforth_probe"
+
+# same-trace no-descent probe (amalgamation same-theory ◯-case).
+[[lean_exe]]
+name = "samvalprobe"
+root = "wip.samval_probe"

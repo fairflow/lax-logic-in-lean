@@ -31,6 +31,73 @@ Budget calibration: depth is measured by missing `val`-cardinality
 Litak–Visser's count of variables/implications/arrows, sound for the
 same reason (every strict theory-extension adds a closure formula to
 `val`).
+
+## Design ledger (from the Lemma 5.4 mechanics, 2026-07-20)
+
+Their induction finances every truth-lemma move by STRICT theory
+growth: the ⊃-case grows the theory because the refuting world forces
+the antecedent the theory lacked (`imp_unval_cases` — this ports
+unchanged), and their Lewis-arrow case grows it by choosing the
+refuting world <-maximal, so it *forces* the refuted arrow — a trick
+that needs the converse well-foundedness of their modal relation.
+PLL's `Rᵢ` is reflexive and `Rₘ` reflexive-transitive, so the
+maximality trick is unavailable: a world refuting `◯χ` can NEVER force
+it, and the ◯-case has genuine same-theory moves.  The witnessing
+triple's primed pair `(k′, m′)` is their reservoir for same-theory
+moves — but it only finances moves whose M-side is GIVEN (the zag of
+their Claim 1); same-theory moves that start on the K-side (which only
+PLL's ◯-case has) would need a fresh unprimed link at level `2d`, and
+spending any link yields only `2d − 1`.
+
+The canonical LEGO below replaces the maximality trick in both
+directions where that is possible tonight:
+
+* backward (`canon_box_dichotomy`): if `◯χ ∈ val` then either
+  `χ ∈ val` — and reflexivity of `Rₘ` makes the pair its own
+  row-witness, no move at all — or the canonical row-witness strictly
+  grows the theory and the depth drop finances the move exactly as in
+  their strict case;
+* forward (`trace_box_refuter` + `promise_blocks_row`): a world
+  refuting `◯χ` has an `Rᵢ`-successor whose description PROMISES `χ`
+  (`χ ∈ mfal`), and promised formulas are refuted along the entire
+  canonical `Rₘ`-row — so the amalgam refutes `◯χ` through the promise
+  component of the canonical coordinate alone, with no `Rₘ`-move in
+  `M`;
+* the fallible escape (`traceT_mfal_empty_of_fallible`, `canonTop`,
+  `rm_canonTop_iff`): a fallible row-member erases all promises, so
+  escape rows land on the canonical top, which is reached along the
+  canonical `Rₘ` precisely from promise-free worlds.
+
+THE REMAINING WALL (open): the forward ◯-case when the promising
+successor `v ≽ᵢ k` has the SAME `val`-trace as `k`.  The promise pair
+`⟨trace v, m₂⟩` then has unchanged depth `d`, its admissibility needs
+an unprimed link at `2d`, and all spends yield `2d − 1`.  The two
+rescues that work elsewhere fail here: reflexivity gives nothing (the
+promise is genuinely new), and the transitivity rescue (`m₂ := m`,
+reusing `k`'s own link for `v`) would need closure-trace-equality to
+imply rank-`2d` fragment-agreement between `v` and `k`, which is false
+in general — the closure is `Sub φ`, the fragment is everything of
+bounded rank.  The candidate missing clause was the SAME-TRACE
+NO-DESCENT property of the concrete agreement relation: if `k` agrees
+with `m` at rank `n`, and `v ≽ᵢ k` has the same closure-description as
+`k`, then some `m₂ ≽ᵢ m` agrees with `v` at rank `n` (not `n − 1`).
+
+PROBE VERDICT (`wip/samval_probe.lean`, 2026-07-20): REFUTED at the
+list-agreement surrogate level.  Variable-free pass: clean (0
+failures; nontrivial same-trace moves vanish as the closure grows:
+109/5/0 over the three closures).  One-atom pass (650 decorated
+models, 2,377,307 agreeing pairs): 499/44/12 failures over the
+closures `[⊥,q]` / `[⊥,q,◯q]` / `Sub(◯q⊃q)∪{⊥}` — the gap row's own
+adequate set included.  Decoded shape: the moved world is a RIGID
+DEAD-END (`q ∧ ¬◯⊥`, crank 3); the partner model has no dead-end
+above `w′`; the roots still agree at low rank because the absence of
+a dead-end registers only one rank higher (`¬¬◯⊥`, crank 4).  So the
+one-level descent of `agree_iforth` is semantically sharp even under
+closure-trace-equality, and the same-theory ◯-forward case cannot be
+financed by level preservation.  The open design question is what
+replaces the unprimed `2d`-link at promise pairs; the decoded failures
+all involve dead-end successors (the rigid postponement points of the
+residue-probe decodings), which may admit a dedicated clause.
 -/
 
 open PLLFormula
@@ -64,6 +131,124 @@ theorem canonDepth_lt {cl : Finset PLLFormula} {T T' : (canonFin cl).W}
     Finset.card_le_card T'.2.2.1.1
   unfold canonDepth
   omega
+
+/-! ## Canonical LEGO for the ◯-case (all PROVED)
+
+The pieces that replace Litak–Visser's strictness tricks in the
+◯-induction, per the design ledger above. -/
+
+/-- **Promises block the canonical row**: a formula promised by a
+canonical world is validated by none of its `Rₘ`-successors — the
+forward ◯-case refutes through the promise component alone. -/
+theorem promise_blocks_row {cl : Finset PLLFormula} {χ : PLLFormula}
+    {Δ Δ₂ : (canonFin cl).W} (hχ : χ ∈ Δ.1.mfal)
+    (hRm : (canonFin cl).Rm Δ Δ₂) : χ ∉ Δ₂.1.val :=
+  fun hv => Δ₂.2.not_mem_fal_of_mem_val hv (Δ₂.2.mfal_sub_fal (hRm.2 hχ))
+
+/-- **The forward refuter promises**: a world refuting `◯χ` has an
+`Rᵢ`-successor whose description promises `χ`. -/
+theorem trace_box_refuter {C : ConstraintModel} {cl : Finset PLLFormula}
+    {χ : PLLFormula} (hχcl : χ ∈ cl) {k : C.W}
+    (h : ¬ C.force k χ.somehow) :
+    ∃ v, C.Ri k v ∧ χ ∈ (traceT C cl v).mfal := by
+  by_contra hc
+  apply h
+  intro v hkv
+  by_contra hno
+  exact hc ⟨v, hkv, mem_traceT_mfal.mpr
+    ⟨hχcl, fun u hu hf => hno ⟨u, hu, hf⟩⟩⟩
+
+/-- **The backward dichotomy (reflexivity rescue)**: a validated `◯χ`
+has a canonical row-witness that either is the world itself (`χ`
+already validated — `Rₘ` is reflexive, so no bisimulation move is
+spent) or strictly grows the theory, so the move is financed by the
+depth drop exactly as in the Litak–Visser strict case.  This replaces
+their <-maximality trick, which needs converse well-foundedness. -/
+theorem canon_box_dichotomy {cl : Finset PLLFormula} (hcl : SubClosed cl)
+    {χ : PLLFormula} (hbox : χ.somehow ∈ cl) (hχ : χ ∈ cl)
+    (T : (canonFin cl).W) (h : χ.somehow ∈ T.1.val) :
+    χ ∈ T.1.val ∨
+      ∃ S : (canonFin cl).W, (canonFin cl).Rm T S ∧ χ ∈ S.1.val ∧
+        canonDepth cl S < canonDepth cl T := by
+  by_cases hself : χ ∈ T.1.val
+  · exact .inl hself
+  · have hf : (canonFin cl).force T χ.somehow :=
+      (FinComp.truth_lemma hcl _ hbox T).1 h
+    obtain ⟨S, hRm, hSχ⟩ := hf T ((canonFin cl).refl_i T)
+    have hSval : χ ∈ S.1.val := (canonFin_force_iff hcl hχ S).mp hSχ
+    refine .inr ⟨S, hRm, hSval, canonDepth_lt hRm.1 ?_⟩
+    intro hEq
+    exact hself (by rw [hEq]; exact hSval)
+
+/-- Validated consequents validate their implications (deductive
+closure by the K-combinator): half of the ⊃-case split. -/
+theorem imp_val_of_val {cl : Finset PLLFormula} {ξ ζ : PLLFormula}
+    (T : (canonFin cl).W) (himp : ξ.ifThen ζ ∈ cl) (hζ : ζ ∈ T.1.val) :
+    ξ.ifThen ζ ∈ T.1.val :=
+  T.2.ded_closed himp
+    (SetDeriv.deduct (SetDeriv.of_mem (Set.mem_insert_of_mem _
+      (Finset.mem_coe.mpr hζ))))
+
+/-- **The ⊃-case split, exhaustive with guaranteed strictness**: an
+unvalidated implication either fails at the world itself (antecedent
+validated, consequent falsified — refute in place, no move) or its
+antecedent is unvalidated, and then any refuting witness forces a
+formula the theory lacks — the strict-growth trick that ports from
+Litak–Visser unchanged. -/
+theorem imp_unval_cases {cl : Finset PLLFormula} (hcl : SubClosed cl)
+    {ξ ζ : PLLFormula} (T : (canonFin cl).W) (himp : ξ.ifThen ζ ∈ cl)
+    (h : ξ.ifThen ζ ∉ T.1.val) :
+    (ξ ∈ T.1.val ∧ ζ ∈ T.1.fal) ∨ ξ ∉ T.1.val := by
+  by_cases hξ : ξ ∈ T.1.val
+  · rcases T.2.2.2 ζ (hcl.imp_right himp) with hv | hf
+    · exact absurd (imp_val_of_val T himp hv) h
+    · exact .inl ⟨hξ, hf⟩
+  · exact .inr hξ
+
+/-- **Strict growth of descriptions**: a witness above `k` forcing a
+tracked formula the description of `k` lacks strictly extends the
+`val`-trace — the depth financier for all forward strict cases. -/
+theorem traceT_val_ssubset {C : ConstraintModel} {cl : Finset PLLFormula}
+    {k v : C.W} (hkv : C.Ri k v) {ξ : PLLFormula} (hξcl : ξ ∈ cl)
+    (hforce : C.force v ξ) (hnew : ξ ∉ (traceT C cl k).val) :
+    (traceT C cl k).val ⊂ (traceT C cl v).val := by
+  refine Finset.ssubset_iff_subset_ne.mpr ⟨?_, ?_⟩
+  · intro φ hφ
+    obtain ⟨hφcl, hf⟩ := mem_traceT_val.mp hφ
+    exact mem_traceT_val.mpr ⟨hφcl, C.force_hered hkv hf⟩
+  · intro hEq
+    exact hnew (by rw [hEq]; exact mem_traceT_val.mpr ⟨hξcl, hforce⟩)
+
+/-- **Fallible row-members erase promises**: descriptions of worlds
+whose row hits the fallible set promise nothing (fallible worlds force
+everything). -/
+theorem traceT_mfal_empty_of_fallible {C : ConstraintModel}
+    {cl : Finset PLLFormula} {k u : C.W} (hu : C.Rm k u) (hF : u ∈ C.F) :
+    (traceT C cl k).mfal = ∅ :=
+  Finset.eq_empty_iff_forall_notMem.mpr fun _χ hχ =>
+    (mem_traceT_mfal.mp hχ).2 u hu (C.force_of_fallible hF)
+
+/-- The canonical top: everything validated, nothing falsified,
+nothing promised.  Consistent outright, fallible once `⊥ ∈ cl`. -/
+def canonTop (cl : Finset PLLFormula) : (canonFin cl).W :=
+  ⟨⟨cl, ∅, ∅⟩, cons_of_empty_falm rfl rfl,
+    ⟨subset_rfl, Finset.empty_subset _, Finset.empty_subset _⟩,
+    fun _φ hφ => .inl hφ⟩
+
+theorem canonTop_fallible {cl : Finset PLLFormula} (hcl : SubClosed cl) :
+    canonTop cl ∈ (canonFin cl).F := hcl.bot
+
+/-- A canonical world reaches the top along `Rₘ` exactly when it
+promises nothing — where the fallible escapes of the m-zigzag land. -/
+theorem rm_canonTop_iff {cl : Finset PLLFormula} (Δ : (canonFin cl).W) :
+    (canonFin cl).Rm Δ (canonTop cl) ↔ Δ.1.mfal = ∅ := by
+  constructor
+  · intro h
+    exact Finset.subset_empty.mp h.2
+  · intro h
+    refine ⟨Δ.2.2.1.1, ?_⟩
+    rw [h]
+    exact Finset.empty_subset _
 
 /-! ## Witnessing triples -/
 
@@ -208,6 +393,48 @@ info: 'PLLND.SemUI.canonDepth_lt' depends on axioms: [propext, Quot.sound]
 -/
 #guard_msgs in
 #print axioms canonDepth_lt
+
+/--
+info: 'PLLND.SemUI.promise_blocks_row' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms promise_blocks_row
+
+/--
+info: 'PLLND.SemUI.trace_box_refuter' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms trace_box_refuter
+
+/--
+info: 'PLLND.SemUI.canon_box_dichotomy' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms canon_box_dichotomy
+
+/--
+info: 'PLLND.SemUI.imp_unval_cases' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms imp_unval_cases
+
+/--
+info: 'PLLND.SemUI.traceT_val_ssubset' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms traceT_val_ssubset
+
+/--
+info: 'PLLND.SemUI.traceT_mfal_empty_of_fallible' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms traceT_mfal_empty_of_fallible
+
+/--
+info: 'PLLND.SemUI.rm_canonTop_iff' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms rm_canonTop_iff
 
 end SemUI
 end PLLND

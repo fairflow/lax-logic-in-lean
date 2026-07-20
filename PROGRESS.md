@@ -768,3 +768,43 @@ the promise-routed ◯-case as the designed bridge.  Next session:
 wit_force's ◯-case via canonical promises (trace_mforth prototype),
 then wit_pbisim's two-case budget argument, then Thm 5.1 assembly ⇒
 ∀p.◯(◯p⊃p) = ◯⊥.
+
+## 33. 2026-07-20 late: Lemma 5.4 mechanics extracted; canonical LEGO PROVED; same-trace no-descent REFUTED
+
+Re-read Litak–Visser pp. 21–23 line by line.  Their proof balances on
+(1) strict theory growth for every K-side-first truth-lemma move (the
+⊃ ψ-trick, which ports; the Lewis-arrow <-maximality trick, which
+needs Löb well-foundedness and does NOT port — PLL's reflexive Rᵢ
+means a ◯χ-refuter can never force ◯χ), and (2) the primed pair as a
+reusable reservoir financing same-theory moves whose M-side is given
+(links are propositions, not resources).  The one combination their
+bookkeeping cannot finance is same-theory + K-side-first — exactly
+PLL's ◯-case.
+
+Canonical LEGO PROVED and pinned in PLLSemUIHenkin.lean (8 lemmas):
+canon_box_dichotomy (validated ◯χ: the world is its own row-witness
+by reflexivity of Rₘ, or the witness strictly grows the theory —
+[propext, Quot.sound]); trace_box_refuter + promise_blocks_row (a
+◯χ-refuting world has a successor promising χ, and promises are
+validated by NO canonical Rₘ-successor — the amalgam refutes ◯χ with
+no Rₘ-move in M; choice-free); imp_unval_cases + traceT_val_ssubset
+(the ⊃-split with guaranteed strictness); traceT_mfal_empty_of_fallible
++ canonTop + rm_canonTop_iff (fallible row-members erase promises;
+escapes land on the canonical top).  Library green, 3001 jobs; only
+wit_pbisim/wit_force remain sorried.
+
+THE WALL, isolated: the forward ◯-case at a same-val-trace successor
+needs an unprimed link at 2d; every spend yields 2d−1.  Candidate
+repair (same-trace no-descent: closure-trace-equal i-moves keep the
+rank) probed in wip/samval_probe.lean, two passes.  Variable-free:
+CLEAN (0 failures; needed cases vanish as the closure grows: 109/5/0).
+One-atom (650 hereditarily-decorated models, 2,377,307 agreeing
+pairs): REFUTED — 499/44/12 failures over [⊥,q] / [⊥,q,◯q] /
+Sub(◯q⊃q)∪{⊥}.  Decoded by hand: the moved world is a rigid dead-end
+(q ∧ ¬◯⊥, crank 3); the partner model lacks dead-ends above w′; the
+roots agree low because dead-end-absence registers only at ¬¬◯⊥
+(crank 4).  The one-level descent of agree_iforth is SHARP under
+closure-trace-equality; every decoded failure involves a dead-end
+successor (the rigid postponement points of §0(ee)).  Open design
+question for next session: the promise-pair invariant with a degraded
+link, or a dedicated dead-end clause.  Route doc §0(hh).
