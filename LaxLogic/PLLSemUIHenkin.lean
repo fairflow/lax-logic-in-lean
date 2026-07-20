@@ -91,15 +91,21 @@ structure WitTriple (cl : Finset PLLFormula)
 variable (cl : Finset PLLFormula) (B : LayeredBisim (fun a => a ≠ p) K M)
 
 /-- The amalgam: admissible pairs ⟨Δ, m⟩, relations componentwise
-(the canonical side carries the promise-aware `Rₘ`), fallibility from
-the theory coordinate, atoms from the union of the coordinates
-(their valuation clause "Δ ⊩ a or m ⊩ a"). -/
+(the canonical side carries the promise-aware `Rₘ`).  Valuation in
+the `descGraft` discipline rather than Litak–Visser's union clause:
+atoms other than `p` and fallibility read the M-COORDINATE (the
+canonical model forces every out-of-closure atom — the filtration
+convention — so a union valuation would break the p-variant claim on
+untracked atoms); `p` reads the theory coordinate, with the
+M-fallibility disjunct restoring fullness on F. -/
 def witAmalgam : ConstraintModel where
   W := {q : (canonFin cl).W × M.W // Nonempty (WitTriple cl B q.1 q.2)}
   Ri := fun a b => (canonFin cl).Ri a.1.1 b.1.1 ∧ M.Ri a.1.2 b.1.2
   Rm := fun a b => (canonFin cl).Rm a.1.1 b.1.1 ∧ M.Rm a.1.2 b.1.2
-  F := fun a => a.1.1 ∈ (canonFin cl).F
-  V := fun x a => a.1.1 ∈ (canonFin cl).V x ∨ a.1.2 ∈ M.V x
+  F := fun a => a.1.2 ∈ M.F
+  V := fun x a =>
+    if x = p then a.1.1 ∈ (canonFin cl).V x ∨ a.1.2 ∈ M.F
+    else a.1.2 ∈ M.V x
   refl_i := fun a => ⟨(canonFin cl).refl_i _, M.refl_i _⟩
   trans_i := fun h₁ h₂ =>
     ⟨(canonFin cl).trans_i h₁.1 h₂.1, M.trans_i h₁.2 h₂.2⟩
@@ -107,13 +113,29 @@ def witAmalgam : ConstraintModel where
   trans_m := fun h₁ h₂ =>
     ⟨(canonFin cl).trans_m h₁.1 h₂.1, M.trans_m h₁.2 h₂.2⟩
   sub_mi := fun h => ⟨(canonFin cl).sub_mi h.1, M.sub_mi h.2⟩
-  hered_F := fun h hF => (canonFin cl).hered_F h.1 hF
+  hered_F := fun h hF => M.hered_F h.2 hF
   hered_V := by
     intro x a b h hv
-    rcases hv with hΔ | hm
-    · exact Or.inl ((canonFin cl).hered_V h.1 hΔ)
-    · exact Or.inr (M.hered_V h.2 hm)
-  full_F := fun hF => Or.inl ((canonFin cl).full_F hF)
+    have hv' : (if x = p then a.1.1 ∈ (canonFin cl).V x ∨ a.1.2 ∈ M.F
+        else a.1.2 ∈ M.V x) := hv
+    show (if x = p then b.1.1 ∈ (canonFin cl).V x ∨ b.1.2 ∈ M.F
+        else b.1.2 ∈ M.V x)
+    by_cases hx : x = p
+    · rw [if_pos hx] at hv' ⊢
+      rcases hv' with hΔ | hm
+      · exact Or.inl ((canonFin cl).hered_V h.1 hΔ)
+      · exact Or.inr (M.hered_F h.2 hm)
+    · rw [if_neg hx] at hv' ⊢
+      exact M.hered_V h.2 hv'
+  full_F := by
+    intro x a hF
+    show (if x = p then a.1.1 ∈ (canonFin cl).V x ∨ a.1.2 ∈ M.F
+        else a.1.2 ∈ M.V x)
+    by_cases hx : x = p
+    · rw [if_pos hx]
+      exact Or.inr hF
+    · rw [if_neg hx]
+      exact M.full_F hF
 
 /-! ## The two claims (the open mathematics) -/
 
