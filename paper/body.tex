@@ -907,7 +907,8 @@ combinational circuits~\cite{Mendler2000} reads a proof as a
 stabilisation bound --- unit: a wire, delay 0; multiplication:
 sequential composition, +; strength: reconvergent merge, max --- and
 the artefact evaluates PLL proof terms in exactly this delay algebra
-(\texttt{PLLTiming.lean}, \texttt{PLLTimingAdder.lean}). The
+(\texttt{PLLTiming.lean}, \texttt{PLLTimingAdder.lean},
+\texttt{PLLTimingRipple.lean}, \texttt{PLLTimingLookahead.lean}). The
 reconvergent-fanout circuit of \cite[\S7]{Mendler2000} is reproduced
 with its false-path result --- on the input class holding a = 1 the
 extracted bound is strictly below the topological longest path,
@@ -915,15 +916,49 @@ because a proof traverses only real logical dependencies --- and a
 four-bit carry-skip adder is certified faster than its topological
 bound (\texttt{falsePath\_beats\_topological},
 \texttt{skip\_beats\_topological}; both with \emph{no
-axioms at all}). Under reading (7) these are belief computations: a
-signal\textquotesingle s delay is the cost of discharging the constraint under
-which its stability is believed. We are explicit about what this is
-and is not: it is the delay-algebra half of the programme\textquotesingle s first
-case study, exercised on small circuits. The study itself --- a family
-of small but non-trivial netlists (a ripple-carry adder, an arbiter, a
-C-element handshake) with their stabilises-to specifications
-formalised \emph{in the evidence semantics}, the components composed
-into a larger netlist under a formally combined specification,
+axioms at all}). These false-path results are one side of a dichotomy the artefact now
+makes precise. Extraction never exceeds the topological longest path;
+the interest is in when it falls strictly below. The carry-ripple
+adder is the tight extreme, and it is now treated at \emph{every}
+width: one reusable carry cell applied \ensuremath{n} times to the
+carry-in --- so that the proof term is literally the cell iterated
+\ensuremath{n} times --- has extracted delay exactly
+\ensuremath{n\cdot\delta}, by induction on the width
+(\texttt{ready\_bound}), and this \emph{equals} the topological path
+(\texttt{ripple\_tight}), a single carry chain having no false path to
+discard. With the carry-skip adder strictly below, the two
+\emph{bracket} the general fact --- proof-term extraction is at most
+topological analysis, with equality exactly when the longest path is
+sensitisable. The same induction exhibits the extracted delay as the
+nesting depth of the carry cell in the proof: critical-path length is
+proof depth.
+
+That identity turns circuit optimisation into proof restructuring, and
+the artefact certifies the paradigm case. A carry-lookahead adder
+produces the same group carry as the ripple by folding the per-bit
+generate/propagate pairs under their associative merge as a
+\emph{balanced tree} rather than a line. Abstracting a pair as one lax
+signal and the merge as a single reusable cell, the balanced fold of
+depth \ensuremath{k} and the ripple-shaped fold of length
+\ensuremath{2^{k}-1} are two proof terms of the \emph{same} sequent
+built from the \emph{same} \ensuremath{2^{k}-1} merge cells;
+re-association alone drops the delay from
+\ensuremath{(2^{k}-1)\cdot\delta} to \ensuremath{k\cdot\delta} --- linear
+to logarithmic in the leaf count, with no extra hardware
+(\texttt{lookahead\_beats\_ripple}). Ripple is the deepest proof of the
+group carry, lookahead a shallow one, and the speed-up is precisely the
+reduction in \ensuremath{\bigcirc}-nesting depth. Under reading (7) these
+are all belief computations: a signal\textquotesingle s delay is the cost
+of discharging the constraint under which its stability is believed,
+and re-associating a proof of equal size into a shallower one is how
+that cost is cut.
+
+We are explicit about what this is and is not: it is the delay-algebra
+half of the programme\textquotesingle s first case study. The study
+itself --- these netlists and others (an arbiter, a C-element
+handshake) with their stabilises-to specifications formalised
+\emph{in the evidence semantics}, the components composed into a larger
+netlist under a formally combined specification,
 \ensuremath{\bigcirc}(out = spec) proved there and its evidence term
 extracted --- requires a realiser layer that is designed but not
 implemented; a staged design brief accompanies the artefact, and the

@@ -54,6 +54,7 @@ import LaxLogic.PLLCraig
 import LaxLogic.PLLTiming
 import LaxLogic.PLLTimingAdder
 import LaxLogic.PLLTimingRipple
+import LaxLogic.PLLTimingLookahead
 import LaxLogic.PLLDemos
 import LaxLogic.PLLExec
 import LaxLogic.PLLCtxCompleteness
