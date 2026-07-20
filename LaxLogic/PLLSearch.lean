@@ -56,6 +56,14 @@ def myCfg : Config :=
 #eval (decide myCfg [] someSequent).toDecision
 ```
 
+Cap the positive stage with a node budget when probing sequents that may
+grind (unprovable but missed by the battery):
+
+```
+#eval (decide {findBudget := some 200000} Γ C).toDecision  -- fast, honest
+#eval prove?Bounded 200000 Γ C                             -- positive engine only
+```
+
 ## Cost profile (honest)
 
 * **Successes are cheap.**  A true sequent is closed by the fuel-free
@@ -68,6 +76,16 @@ def myCfg : Config :=
   intuitionistic fragment.  A false sequent that escapes the battery forces
   `find` to grind through its (finite, exponential) search space before
   failing.
+* **The grind is cappable.**  `Config.findBudget := some b` runs the
+  positive stage under a global budget of `b` visited sequents
+  (`G4cTm.findBounded`); exhaustion degrades the stage to `.unknown`.  The
+  budget is shared across the whole search tree — a failed branch hands its
+  remainder to the next alternative — so it bounds total work, not just
+  depth.  For scale: the gap sequent `◯((◯p→r)→◯p), ◯p→r ⊢ r` visits 825
+  nodes; a 3-premise ◯-implication pool against an unreachable goal already
+  exhausts its full space at 7,256 nodes, and each further premise
+  multiplies that — the multi-minute thrashes observed in probe sessions
+  are this growth at ~25 premises.
 * **The battery is incomplete by design.**  It enumerates hereditary atom
   decorations of a fixed list of small frames (≤ 4 worlds by default) and
   stops any frame whose decoration count exceeds `comboCap`.  It is a
@@ -92,7 +110,10 @@ Untrusted, but harmless:
   verified `FinCM.checkB` before it is returned, so the scan can cause
   **misses**, never a wrong certificate;
 * `G4cTm.find` returning `none` proves *nothing* — it is not a completeness
-  oracle, only a (fuel-free, loop-checked) searcher.
+  oracle, only a (fuel-free, loop-checked) searcher.  Likewise
+  `G4cTm.findBounded`: a budget cutoff (`(none, 0)`) is a mere truncation,
+  and even its search-space-exhausted `none` (budget remaining) proves
+  nothing more than `find`'s.
 
 No component uses `native_decide`; the certificates reduce in the kernel.
 -/
@@ -208,6 +229,12 @@ structure Config where
   /-- Skip the (complete-over-the-closure but exponential) `emit` stage when
   the subformula closure of the sequent is larger than this. -/
   emitClosureCap : Nat := 12
+  /-- Node budget for the positive stage.  `none` (the default) runs the
+  fuel-free `G4cTm.find` unchanged; `some b` caps the searcher at `b` visited
+  sequents (`G4cTm.findBounded`), so a sequent whose search space is too big
+  degrades to `.unknown` instead of grinding.  Budget exhaustion is never
+  evidence of underivability. -/
+  findBudget : Option Nat := none
 
 /-- The standard configuration (all defaults). -/
 def Config.default : Config := {}
@@ -361,7 +388,10 @@ inductive Answer (Γ : List PLLFormula) (C : PLLFormula) where
 
 1. the certified battery sweep (`sweepCert`) — a cheap certified refutation;
 2. the fuel-free backward searcher `G4cTm.find` on the **original** sequent —
-   the positive engine, returning a kernel-checkable proof term for `Γ ⊢ C`;
+   the positive engine, returning a kernel-checkable proof term for `Γ ⊢ C`
+   (capped at `cfg.findBudget` visited nodes when that is set, via
+   `G4cTm.findBounded`; exhaustion degrades this stage to a failed search,
+   never to a negative verdict);
 3. the closure emitter `emitCert`, gated by `emitClosureCap` — a
    complete-over-the-closure but exponential refuter;
 4. `unknown`.
@@ -376,7 +406,9 @@ def decide (cfg : Config := {}) (Γ : List PLLFormula) (C : PLLFormula) :
   match sweepCert cfg Γ' C' Γ C with
   | some ⟨M, w, h⟩ => .refuted M w h
   | none =>
-    match G4cTm.find Γ C with
+    match (match cfg.findBudget with
+           | none => G4cTm.find Γ C
+           | some b => (G4cTm.findBounded b Γ C).1) with
     | some t => .proved t
     | none =>
       if (CounterEmit.closureOf Γ' C').length ≤ cfg.emitClosureCap then
@@ -427,6 +459,18 @@ returning a proof term.  `none` proves nothing (see the trust note above). -/
 def prove? (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
   G4cTm.find Γ C
 
+/-- Positive engine with a **node budget**: `G4cTm.findBounded` capped at
+`budget` visited sequents.  A found term is kernel-checkable exactly as with
+`prove?`; `none` means only "not settled within `budget` nodes" — an honest
+unknown, never a negative verdict.  To tell a genuine search-space
+exhaustion (the same `none` as `prove?`) from a budget cutoff, call
+`G4cTm.findBounded` directly and inspect the remaining budget; the
+difference `budget - remaining` also serves as a node-count profile for
+tuning budgets. -/
+def prove?Bounded (budget : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
+    Option (G4cTm Γ C) :=
+  (G4cTm.findBounded budget Γ C).1
+
 /-- Negative engines only (battery then emit, no proof search): a certified
 countermodel witness, or `none`. -/
 def refute? (cfg : Config := {}) (Γ : List PLLFormula) (C : PLLFormula) :
@@ -456,6 +500,32 @@ are audited: their axiom sets are subsets of
 -- `◯p ⊢ p` is refuted (the modality admits no escape).
 #guard (match decide {} [(PLLFormula.prop "p").somehow] (PLLFormula.prop "p") with
           | .refuted _ _ _ => true | _ => false)
+
+-- The node-budgeted positive engine: 3 nodes are honestly `unknown` on a
+-- provable chain whose search visits 71 nodes; the default `prove?` finds
+-- it, and an adequate budget recovers the same success.
+#guard
+  let Γ : List PLLFormula :=
+    [ (PLLFormula.prop "b").ifThen ((PLLFormula.prop "p").or (.prop "q"))
+    , (PLLFormula.prop "a").ifThen (.prop "b")
+    , PLLFormula.prop "a" ]
+  let C := ((PLLFormula.prop "p").or (.prop "q")).somehow
+  (prove?Bounded 3 Γ C).isNone
+    && (prove? Γ C).isSome
+    && (prove?Bounded 1000 Γ C).isSome
+
+-- The budget threads through `Config`: with it, `decide` degrades the
+-- positive stage to `.unknown` (the sequent is provable, so no countermodel
+-- stage can settle it); without it, `decide` proves it as before.
+#guard
+  let Γ : List PLLFormula :=
+    [ (PLLFormula.prop "b").ifThen ((PLLFormula.prop "p").or (.prop "q"))
+    , (PLLFormula.prop "a").ifThen (.prop "b")
+    , PLLFormula.prop "a" ]
+  let C := ((PLLFormula.prop "p").or (.prop "q")).somehow
+  (match decide {findBudget := some 3} Γ C with
+    | .unknown => true | _ => false)
+    && (match decide {} Γ C with | .proved _ => true | _ => false)
 
 /-- info: 'PLLND.Search.proved_sound' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
