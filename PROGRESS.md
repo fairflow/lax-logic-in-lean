@@ -718,3 +718,22 @@ Remaining pillar-2 content is now ONE induction: Z α := rank-α
 agreement satisfies the LayeredBisimE clauses (escape-iforth via
 not_force_charNeg at non-fallible targets; forth-m probe-backed),
 with slack bookkeeping for the crank-1 ⊤.
+
+## 30. 2026-07-20 night IV: the m-escape geography MACHINE-CHECKED, axiom-free
+
+Probe extension: fallible-PAIR escape fails on 82 of 2324 agreeing
+pairs (non-fallible clause still 0).  Both boundaries now theorems,
+ALL AXIOM-FREE: weak_escape_breaks_force_iff (weak m-escape kills
+rank preservation — chainFM bottom forces ◯⊥ through its fallible
+row-member, oneW cannot); forkF_agree (the fork's bottom agrees with
+the lone point on EVERY formula — unconditional, all atoms) +
+pair_escape_not_from_agreement (yet no pair-escape layered
+bisimulation links them) — incidentally separating logical
+indistinguishability from escape-bisimilarity in PLL outright.
+SETTLED DESIGN: two relations — LayeredBisimE (pair escape, 4.6-valid,
+the OUTPUT format) and NEW LayeredBisimW (weak escape, the INPUT
+format agreement can deliver; force_iff provably fails for it);
+repaired pillar 2 stated as layered_of_frag_agree_W (sorried,
+probe-backed); the amalgamation must bridge E/W inside the amalgam by
+routing its ◯-case through the canonical promise components (mfal) —
+the structural reason F&M theories carry promises.

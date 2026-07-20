@@ -90,23 +90,32 @@ def mainLoop : IO Unit := do
   IO.println s!"=== forth-m from agreement probe: {formulas.length} formulas, {allCMs.length} frames ==="
   let mut pairs := 0
   let mut cands := 0
+  let mut fcands := 0
   let pts := allCMs.flatMap fun M => (List.range M.n).map fun w => (M, w)
   for (M, w) in pts do
     let fw := finger M w
     for (N, w') in pts do
       if fw == finger N w' then
         pairs := pairs + 1
-        -- forth-m: every non-fallible row-member of w must have an
-        -- agreeing row-partner at w'
         for u in List.range M.n do
           if M.rmB w u && !M.fallB u then
+            -- forth-m at a NON-fallible row-member: agreeing partner?
             let fu := finger M u
             let ok := (List.range N.n).any fun s =>
               N.rmB w' s && finger N s == fu
             if !ok then
               cands := cands + 1
               IO.println s!"  !!CANDIDATE: M=(n={M.n} ri={M.ri} rm={M.rm} fall={M.fall}) w={w} u={u}  vs  N=(n={N.n} ri={N.ri} rm={N.rm} fall={N.fall}) w'={w'}"
-  IO.println s!"=== agreeing pairs={pairs} forth-m candidates={cands} ==="
+          if M.rmB w u && M.fallB u then
+            -- the PAIR escape: does the other row even contain a
+            -- fallible member?
+            let ok := (List.range N.n).any fun s =>
+              N.rmB w' s && N.fallB s
+            if !ok then
+              fcands := fcands + 1
+              if fcands ≤ 5 then
+                IO.println s!"  !!FALLIBLE-PAIR FAILS: M=(n={M.n} ri={M.ri} rm={M.rm} fall={M.fall}) w={w} u={u}  vs  N=(n={N.n} ri={N.ri} rm={N.rm} fall={N.fall}) w'={w'}"
+  IO.println s!"=== agreeing pairs={pairs} forth-m candidates={cands} fallible-pair failures={fcands} ==="
 
 end MForthProbe
 

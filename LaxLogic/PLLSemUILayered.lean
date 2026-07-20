@@ -355,6 +355,314 @@ theorem force_iff_of_layeredE (B : LayeredBisimE A M N) :
           · exact ⟨u, hu, M.force_of_fallible huF⟩
         · exact ⟨v, M.refl_m v, M.force_of_fallible hF⟩
 
+/-! ## 3″. The m-escape geography (machine-checked from both sides)
+
+The probe (wip/mforth_probe.lean) reports 0 violations of the
+NON-fallible forth-m clause across 2324 agreeing pairs, but 82
+violations of the fallible-PAIR escape.  Both boundary facts are
+theorems below:
+
+* `weak_escape_breaks_force_iff`: with the weak m-escape (no
+  obligation at a fallible row-member), rank preservation FAILS — a
+  fallible row-member finances ◯⊥ on one side with nothing to match
+  it on the other.  So `LayeredBisimE`'s pair escape is the weakest
+  form supporting `force_iff_of_layeredE`.
+* `pair_escape_not_from_agreement`: the pair escape is NOT derivable
+  from fragment-agreement — the fork with one fallible m-branch
+  agrees with the lone point on every variable-free formula, but the
+  lone point's row has no fallible member.
+
+CONSEQUENCE (the settled design): pillar 2 can only produce the WEAK
+form `LayeredBisimW` below; the amalgamation must therefore not
+consume the link's m-clauses for its ◯-case, routing instead through
+the promise components (`mfal`) of the canonical coordinate — the
+reason Fairtlough–Mendler theories carry promises at all.  The
+E-form stays as the OUTPUT format (what `wit_pbisim` produces), the
+W-form as the INPUT format (what agreement delivers). -/
+
+/-- Layered bisimulation with the WEAK m-escape: no obligation at a
+fallible row-member.  This is the form fragment-agreement can
+deliver; `force_iff` FAILS for it (`weak_escape_breaks_force_iff`). -/
+structure LayeredBisimW (A : String → Prop) (M N : ConstraintModel) where
+  Z : Nat → M.W → N.W → Prop
+  mono : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → Z n w w'
+  atoms : ∀ {n : Nat} {w w'}, Z n w w' → ∀ a, A a → (w ∈ M.V a ↔ w' ∈ N.V a)
+  fall : ∀ {n : Nat} {w w'}, Z n w w' → (w ∈ M.F ↔ w' ∈ N.F)
+  iforth : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {v}, M.Ri w v →
+    (∃ v', N.Ri w' v' ∧ Z n v v') ∨ v ∈ M.F
+  iback : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {v'}, N.Ri w' v' →
+    (∃ v, M.Ri w v ∧ Z n v v') ∨ v' ∈ N.F
+  mforth : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {u}, M.Rm w u →
+    (∃ u', N.Rm w' u' ∧ Z n u u') ∨ u ∈ M.F
+  mback : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {u'}, N.Rm w' u' →
+    (∃ u, M.Rm w u ∧ Z n u u') ∨ u' ∈ N.F
+
+/-- Two-point chain with a fallible top on the FULL constraint
+relation (`Rₘ = Rᵢ`): the bottom forces ◯⊥ through the fallible
+row-member. -/
+def chainFM : ConstraintModel where
+  W := Bool
+  Ri := fun x y => x = y ∨ (x = false ∧ y = true)
+  Rm := fun x y => x = y ∨ (x = false ∧ y = true)
+  F := {x | x = true}
+  V := fun _ => {x | x = true}
+  refl_i := fun _ => .inl rfl
+  trans_i := by
+    intro a b c h₁ h₂
+    rcases h₁ with rfl | ⟨rfl, rfl⟩
+    · exact h₂
+    · rcases h₂ with rfl | ⟨h, -⟩
+      · exact .inr ⟨rfl, rfl⟩
+      · exact absurd h (by decide)
+  refl_m := fun _ => .inl rfl
+  trans_m := by
+    intro a b c h₁ h₂
+    rcases h₁ with rfl | ⟨rfl, rfl⟩
+    · exact h₂
+    · rcases h₂ with rfl | ⟨h, -⟩
+      · exact .inr ⟨rfl, rfl⟩
+      · exact absurd h (by decide)
+  sub_mi := fun h => h
+  hered_F := by
+    intro a b h hF
+    rcases h with rfl | ⟨-, rfl⟩
+    · exact hF
+    · rfl
+  hered_V := by
+    intro x a b h hV
+    rcases h with rfl | ⟨-, rfl⟩
+    · exact hV
+    · rfl
+  full_F := fun hF => hF
+
+/-- **The weak m-escape breaks rank preservation**: the constant
+relation linking the bottom of `chainFM` with the world of `oneW`
+satisfies every `LayeredBisimW` clause, yet ◯⊥ (complexity 2) holds
+at the bottom — the fallible row-member supplies every witness — and
+fails at the lone point. -/
+theorem weak_escape_breaks_force_iff :
+    ∃ (B : LayeredBisimW (fun _ => True) chainFM oneW),
+      B.Z 2 false () ∧
+      chainFM.force false (PLLFormula.falsePLL.somehow) ∧
+      ¬ oneW.force () (PLLFormula.falsePLL.somehow) := by
+  refine ⟨⟨fun _ w w' => w = false, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
+    rfl, ?_, ?_⟩
+  · exact fun h => h
+  · rintro n w w' rfl a -
+    constructor
+    · intro h
+      exact absurd (show false = true from h) (by decide)
+    · intro h
+      exact h.elim
+  · rintro n w w' rfl
+    constructor
+    · intro h
+      exact absurd (show false = true from h) (by decide)
+    · intro h
+      exact h.elim
+  · rintro n w w' rfl v hv
+    rcases hv with rfl | ⟨-, rfl⟩
+    · exact .inl ⟨(), trivial, rfl⟩
+    · exact .inr rfl
+  · rintro n w w' rfl v' -
+    exact .inl ⟨false, .inl rfl, rfl⟩
+  · rintro n w w' rfl u hu
+    rcases hu with rfl | ⟨-, rfl⟩
+    · exact .inl ⟨(), trivial, rfl⟩
+    · exact .inr rfl
+  · rintro n w w' rfl u' -
+    exact .inl ⟨false, .inl rfl, rfl⟩
+  · intro v hv
+    rcases hv with rfl | ⟨-, rfl⟩
+    · exact ⟨true, .inr ⟨rfl, rfl⟩, rfl⟩
+    · exact ⟨true, .inl rfl, rfl⟩
+  · intro h
+    obtain ⟨u, -, hu⟩ := h () trivial
+    exact hu
+
+/-- The fork with one fallible m-branch: bottom `none`, a rigid
+non-fallible top `some false`, a fallible top `some true` reached by
+`Rₘ` from the bottom. -/
+def forkF : ConstraintModel where
+  W := Option Bool
+  Ri := fun x y => x = y ∨ x = none
+  Rm := fun x y => x = y ∨ (x = none ∧ y = some true)
+  F := {x | x = some true}
+  V := fun _ => {x | x = some true}
+  refl_i := fun _ => .inl rfl
+  trans_i := by
+    intro a b c h₁ h₂
+    rcases h₁ with rfl | rfl
+    · exact h₂
+    · exact .inr rfl
+  refl_m := fun _ => .inl rfl
+  trans_m := by
+    intro a b c h₁ h₂
+    rcases h₁ with rfl | ⟨rfl, rfl⟩
+    · exact h₂
+    · rcases h₂ with rfl | ⟨h, -⟩
+      · exact .inr ⟨rfl, rfl⟩
+      · exact absurd h (by decide)
+  sub_mi := by
+    intro a b h
+    rcases h with rfl | ⟨rfl, -⟩
+    · exact .inl rfl
+    · exact .inr rfl
+  hered_F := by
+    intro a b h hF
+    rcases h with rfl | rfl
+    · exact hF
+    · exact absurd (show (none : Option Bool) = some true from hF)
+        (by decide)
+  hered_V := by
+    intro x a b h hV
+    rcases h with rfl | rfl
+    · exact hV
+    · exact absurd (show (none : Option Bool) = some true from hV)
+        (by decide)
+  full_F := fun hF => hF
+
+/-- The rigid top of the fork is indistinguishable from the lone
+point — on EVERY formula (both refute every atom). -/
+theorem forkF_top_agree :
+    ∀ (χ : PLLFormula),
+      (forkF.force (some false) χ ↔ oneW.force () χ) := by
+  intro χ
+  induction χ with
+  | prop a =>
+      constructor
+      · intro h
+        exact absurd (show (some false : Option Bool) = some true from h)
+          (by decide)
+      · intro h
+        exact h.elim
+  | falsePLL =>
+      constructor
+      · intro h
+        exact absurd (show (some false : Option Bool) = some true from h)
+          (by decide)
+      · intro h
+        exact h.elim
+  | and φ ψ ihφ ihψ =>
+      simp only [ConstraintModel.force]
+      exact and_congr ihφ ihψ
+  | or φ ψ ihφ ihψ =>
+      simp only [ConstraintModel.force]
+      exact or_congr ihφ ihψ
+  | ifThen φ ψ ihφ ihψ =>
+      simp only [ConstraintModel.force]
+      constructor
+      · intro h _ _ hφ
+        exact ihψ.mp (h (some false) (.inl rfl) (ihφ.mpr hφ))
+      · intro h v hv hφ
+        rcases hv with rfl | hv
+        · exact ihψ.mpr (h () trivial (ihφ.mp hφ))
+        · exact absurd (show (some false : Option Bool) = none from hv)
+            (by decide)
+  | somehow φ ih =>
+      simp only [ConstraintModel.force]
+      constructor
+      · intro h _ _
+        obtain ⟨u, hu, hφ⟩ := h (some false) (.inl rfl)
+        rcases hu with rfl | ⟨h', -⟩
+        · exact ⟨(), trivial, ih.mp hφ⟩
+        · exact absurd (show (some false : Option Bool) = none from h')
+            (by decide)
+      · intro h v hv
+        obtain ⟨u0, -, hφ⟩ := h () trivial
+        rcases hv with rfl | hv
+        · exact ⟨some false, .inl rfl, ih.mpr hφ⟩
+        · exact absurd (show (some false : Option Bool) = none from hv)
+            (by decide)
+
+/-- **Full agreement of the fork's bottom with the lone point**: the
+fallible m-branch is invisible to every formula — its witnesses come
+free at the bottom's own row, and every other future self-witnesses. -/
+theorem forkF_agree :
+    ∀ (χ : PLLFormula),
+      (forkF.force none χ ↔ oneW.force () χ) := by
+  intro χ
+  induction χ with
+  | prop a =>
+      constructor
+      · intro h
+        exact absurd (show (none : Option Bool) = some true from h)
+          (by decide)
+      · intro h
+        exact h.elim
+  | falsePLL =>
+      constructor
+      · intro h
+        exact absurd (show (none : Option Bool) = some true from h)
+          (by decide)
+      · intro h
+        exact h.elim
+  | and φ ψ ihφ ihψ =>
+      simp only [ConstraintModel.force]
+      exact and_congr ihφ ihψ
+  | or φ ψ ihφ ihψ =>
+      simp only [ConstraintModel.force]
+      exact or_congr ihφ ihψ
+  | ifThen φ ψ ihφ ihψ =>
+      simp only [ConstraintModel.force]
+      constructor
+      · intro h _ _ hφ
+        exact ihψ.mp (h none (.inl rfl) (ihφ.mpr hφ))
+      · intro h v hv hφ
+        match v with
+        | none => exact ihψ.mpr (h () trivial (ihφ.mp hφ))
+        | some false =>
+            exact (forkF_top_agree ψ).mpr
+              (h () trivial ((forkF_top_agree φ).mp hφ))
+        | some true => exact forkF.force_of_fallible rfl
+  | somehow φ ih =>
+      simp only [ConstraintModel.force]
+      constructor
+      · intro h _ _
+        obtain ⟨u, hu, hφ⟩ := h (some false) (.inr rfl)
+        rcases hu with rfl | ⟨h', -⟩
+        · exact ⟨(), trivial, (forkF_top_agree φ).mp hφ⟩
+        · exact absurd (show (some false : Option Bool) = none from h')
+            (by decide)
+      · intro h v hv
+        obtain ⟨u0, -, hφ⟩ := h () trivial
+        match v with
+        | none => exact ⟨some true, .inr ⟨rfl, rfl⟩,
+            forkF.force_of_fallible rfl⟩
+        | some false =>
+            exact ⟨some false, .inl rfl, (forkF_top_agree φ).mpr hφ⟩
+        | some true => exact ⟨some true, .inl rfl,
+            forkF.force_of_fallible rfl⟩
+
+/-- **The pair escape is not derivable from agreement**: the fork's
+bottom agrees with the lone point on EVERY formula, yet any
+`LayeredBisimE` linking them at level 1 dies on `mforth` at the
+fallible m-branch — the lone point's row has no fallible member.
+(With `forkF_agree` this also separates logical indistinguishability
+from escape-bisimilarity in PLL outright.) -/
+theorem pair_escape_not_from_agreement :
+    ¬ ∃ B : LayeredBisimE (fun _ => True) forkF oneW, B.Z 1 none () := by
+  rintro ⟨B, hZ⟩
+  obtain ⟨u', -, hZ' | ⟨-, hF⟩⟩ :=
+    B.mforth hZ (show forkF.Rm none (some true) from .inr ⟨rfl, rfl⟩)
+  · exact (B.fall hZ').mp rfl
+  · exact hF
+
+/-- **The repaired pillar 2** (OPEN, probe-backed): fragment-agreement
+yields the WEAK form.  The i-clauses follow the character argument
+(`charPos`/`charNeg`/`agree_of_char` in PLLSemUIChar; escape at
+fallible targets, which refute no negative character); the weak
+m-clauses at non-fallible members are the probe-clean content
+(wip/mforth_probe: 2324 agreeing pairs, 0 violations), open for a
+character derivation; fallible members escape freely.  Slack: the
+rank function 2α covers the crank-1 ⊤ and the implication step. -/
+theorem layered_of_frag_agree_W (V : Finset String) (n : Nat)
+    (M N : ConstraintModel) (w : M.W) (w' : N.W)
+    (h : ∀ χ : PLLFormula, crank χ ≤ 2 * n + 2 →
+      (∀ a ∈ χ.atoms, a ∈ V) → (M.force w χ ↔ N.force w' χ)) :
+    ∃ B : LayeredBisimW (fun a => a ∈ V) M N, B.Z n w w' := by
+  sorry
+
 /-! ## 4. The sorried pillars (each a separate target)
 
 The statements below are the PLL forms of the remaining steps of the
@@ -564,6 +872,24 @@ info: 'PLLND.SemUI.layered_of_frag_agree_refuted' depends on axioms: [propext, C
 -/
 #guard_msgs in
 #print axioms layered_of_frag_agree_refuted
+
+/--
+info: 'PLLND.SemUI.weak_escape_breaks_force_iff' does not depend on any axioms
+-/
+#guard_msgs in
+#print axioms weak_escape_breaks_force_iff
+
+/--
+info: 'PLLND.SemUI.forkF_agree' does not depend on any axioms
+-/
+#guard_msgs in
+#print axioms forkF_agree
+
+/--
+info: 'PLLND.SemUI.pair_escape_not_from_agreement' does not depend on any axioms
+-/
+#guard_msgs in
+#print axioms pair_escape_not_from_agreement
 
 end SemUI
 end PLLND
