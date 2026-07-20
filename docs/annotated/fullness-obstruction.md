@@ -1,6 +1,6 @@
 # The fullness obstruction: why the ⊃-clause must be presented the future
 
-Source: `wip/belief_realisability.lean`, section `FullnessObstruction`
+Source: `LaxLogic/BeliefRealisability.lean` (promoted from `wip/` 2026-07-18), section `FullnessObstruction`
 (the theorem `realS_fullness_obstruction`); the frame is built with the
 checker machinery of `LaxLogic/PLLCountermodelEmit.lean`. Audit:
 `[propext, Quot.sound]` — no choice. Reading conventions as in

@@ -66,6 +66,9 @@ import LaxLogic.BeliefIdealisation
 import LaxLogic.BeliefFalsum
 import LaxLogic.BeliefOpenClosed
 import LaxLogic.BeliefExamples
+import LaxLogic.BeliefRealisability
+import LaxLogic.PLLConfluentComplete
+import LaxLogic.NucleusJoin
 import LaxLogic.PLLCountermodel
 import LaxLogic.PLLSemUI
 import LaxLogic.PLLSemUICtx

@@ -99,8 +99,42 @@ timing content — a ripple-carry adder, a two-input arbiter/mutex, a C-element
 handshake — and their "stabilises-to" specifications. Formalise the netlist and
 spec in the Route B realisability constraint model in Lean (the frame is exactly
 F&M's, already mechanised as `ConstraintModel` in `PLLKripke.lean`; the new work
-is the realiser layer `E`). Prove `◯(out = spec)` and **extract the evidence term**
-via O3. *Question the study answers:* is the extracted realiser a correct — and,
+is the realiser layer `E`). Then **put these components together in a larger
+netlist, under a specification that combines the component specifications
+formally** (Matthew, 2026-07-19) — parallel composition under the strength `◯S`,
+sequential discharge under `laxElim` — so that the composed proof is the
+composition of the component proofs. Prove `◯(out = spec)` and **extract the
+evidence term** via O3.
+
+**(c′) STATUS (2026-07-19) — NOT completed; small-but-non-trivial is the gap.**
+What the library has is the *delay-algebra half*: `PLLTiming.lean` (Mendler's
+CIRC with the false-path punchline) and `PLLTimingAdder.lean` (ripple and
+carry-skip adders, `skip_beats_topological`), all axiom-free — a genuine
+precursor, exercised on toy-to-small circuits, but **not this study**: the
+netlists and specs are not formalised in the Route B constraint model,
+`◯(out = spec)` is not proved there, and **the realiser layer `E` is NOT
+implemented**. O3 (`extract_sound`/`extractS_sound`, now in the library) removes
+(e)'s precondition. Per Matthew, the unimplemented layer is best presented as a
+**design brief with stages of implementation**:
+
+1. **Waveform worlds.** Instantiate `ConstraintModel` (or finite `FinCM`
+   instances) with observation stages per table (b): worlds = partial stable-net
+   assignments + timing assumptions; `Rᵢ` = settling growth; `Rₘ` = stabilisation
+   discharge under the delay model; `F` = glitch/contradiction states.
+2. **The evidence layer `E`.** Realisers for atoms `net = v`: settling
+   witnesses — a schedule/delay-bound/waveform object; heredity is "a net never
+   un-settles", fullness on `F` is saturation. This is the new engineering.
+3. **Component proofs.** `◯(out = spec)` for each of the three netlists,
+   in the evidence semantics (`⊩ᵖ` for the completeness-grade reading;
+   `⊩ᵘ`/`⊩ˢ` where rigid or reactive evidence suffices).
+4. **Composition.** The larger netlist and the formally combined spec;
+   the composed derivation should be built from the component derivations
+   by `◯S` (parallel) and `laxElim` (sequential), and the extracted
+   evidence should compose accordingly.
+5. **Extraction and cross-check.** O3-extract the evidence terms; validate
+   each witness against an independent event-driven timing simulation;
+   any disagreement is a reportable defect in model or netlist (the
+   study's measurable outcome, per (c)). *Question the study answers:* is the extracted realiser a correct — and,
 for the small cases, minimal — stabilisation schedule? *Success (measurable):* for
 each circuit the extracted witness is a valid settling order, validated against an
 independent gate-delay simulation (e.g. a SPICE or event-driven timing run), for a

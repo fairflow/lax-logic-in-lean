@@ -221,9 +221,10 @@ private def demoLabels : List (String × String) :=
   [("∅", ""), ("∅", "p, ◯p"), ("◯p", ""), ("◯p, p", ""), ("⊥ (fallible)", "")]
 
 /-- The three-world fullness-obstruction frame of
-`wip/belief_realisability.lean` (`0 ≤ 1`, `0 ≤ 2`; `Rₘ` reflexive
-only; `t` at both leaves, `p` only at `1`, `q` only at `2`), pinned
-here as data because `wip/` modules are outside the library build.
+`LaxLogic/BeliefRealisability.lean` (`obsM`: `0 ≤ 1`, `0 ≤ 2`; `Rₘ`
+reflexive only; `t` at both leaves, `p` only at `1`, `q` only at `2`),
+duplicated here as data (this module predates the 2026-07-18 promotion,
+which made `obsM` importable).
 With `Rₘ` reflexive only, both Hasse edges are information steps and
 are drawn dashed — the prototype drew them solid because it derived
 `Rₘ` from inclusion instead of reading the frame. -/

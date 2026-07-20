@@ -3,36 +3,39 @@ import LaxLogic.PLLCountermodelEmit
 import LaxLogic.PLLEvidence
 
 /-!
-# Route B: realisability constraint models for PLL (ladder rungs 1–2, + bite (i))
+# Uniform and strategy realisability: the separations and the obstruction
 
-Implements `docs/route-b-model.md` §§1, 6: a Fairtlough–Mendler constraint frame
-with **evidence at each world** from a partial applicative structure, and the two
-realisability relations
+The `⊩ᵘ`/`⊩ˢ` half of the realisability development (design:
+`docs/route-b-model.md`; the completeness-grade `⊩ᵖ` relation and the
+decoration theorems live in `LaxLogic/PLLEvidence.lean`).  Source of the
+belief paper's §5 and of the extraction results of its §7.
+
+Contents:
 
 * `realU` (`⊩ᵘ`, uniform evidence): evidence for `◯φ` is one fixed element,
-  carried to the constraint-witness;
-* `realS` (`⊩ˢ`, strategy evidence): evidence for `◯φ` is a function which, given
-  (the code of) any information-future `v`, returns evidence for `φ` at some
-  constraint-witness of `v`.
-
-Proved here (rung 2), for both relations:
-
-* heredity — `w Rᵢ v` and `a ⊩_w φ` imply `a ⊩_v φ` (**belief increases along
-  the branching order**; the realiser-level `force_hered`);
-* fallible saturation — at `w ∈ F` every element realises every formula
-  (the realiser-level `force_of_fallible`).
-
-And the first piece of the separation triptych (`route-b-model.md` §5(a)):
-
-* `bite_uniform_split` — in the split model (`modelOrSplit`) with full evidence,
-  the root **truth-forces** `◯(A ∨ B)` yet **no element `⊩ᵘ`-realises it**: a
-  uniform realiser is one tagged pair, and its tag would have to decide disjunct
-  `A` at world `a` and disjunct `B` at world `b`.  (This uses only the pairing
-  structure, so it is stated over the ℕ-pairing instance `natPca`; the argument
-  is application-independent.)
-
-No combinatory laws (`k`, `s`) are assumed yet — they enter at soundness
-(rung 5), where the validity class is genuine PCAs.
+  carried to the constraint-witness; `realS` (`⊩ˢ`, strategy evidence):
+  evidence for `◯φ` is a function which, given (the code of) any
+  information-future `v`, returns evidence for `φ` at some
+  constraint-witness of `v`.  For both: heredity along `Rᵢ` and fallible
+  saturation (`realU_hered`, `realS_hered`, `realU_of_fallible`,
+  `realS_of_fallible`).
+* The four separations: the bite `bite_uniform_split` (truth outruns
+  uniform evidence at `◯(A ∨ B)`); `uniform_dist_valid` (`⊩ᵘ` validates
+  the distribution scheme PLL refutes); `strategy_realises_obAB` /
+  `strategy_dist_refuted` (`⊩ˢ` removes the bite and refutes the scheme);
+  `impdist_not_uniform` (the `⊃`-barrier).
+* The local operator `ob` on hereditary predicates, with its closure laws
+  `ob_infl`, `ob_mono`, `ob_idem` and the meet law `ob_strength`.
+* The double-negation reading: `force_somehow_iff_notnot` (with `Rₘ = Rᵢ`
+  and no fallible worlds, `◯` is forced exactly where `¬¬` is).
+* Combinatory completeness for partial applicative structures with `k`/`s`
+  (`Poly.abs_spec`), and evidence extraction from natural deduction:
+  `extract_sound` (uniform) and `extractS_sound` (strategy).
+* **The fullness obstruction** `realS_fullness_obstruction`: on a
+  three-world frame no evidence assignment is both atom-adequate and full
+  for `⊩ˢ`, for any applicative structure with finite tables against the
+  world-coding — the machine-checked reason the `⊃`-clause of `⊩ᵖ` is
+  presented the evaluation world.
 -/
 
 open PLLFormula
@@ -1195,6 +1198,21 @@ This is why the §6 completeness construction moves to the *presented* clause
 family `⊩ᵖ`, where the `⊃` clause, like the `◯` clause, receives the code of
 the evaluation world. -/
 
+/-! ## The split model fails mutual confluence
+
+`◯(A∨B) ⊃ (◯A∨◯B)` is valid on mutually confluent models
+(`force_somehow_or_dist_of_confluent`, the soundness half of F&M
+Theorem 4.5, `PLLFrames.lean`); the split model that refutes the
+scheme (`not_provable_somehow_or_dist`) is accordingly a confluence
+failure: from the root, the `Rₘ`-step to leaf `a` and the `Rᵢ`-step to
+leaf `b` admit no common closure. -/
+
+theorem modelOrSplit_not_confluent : ¬ MutuallyConfluent modelOrSplit := by
+  intro hc
+  rcases @hc W3.r W3.a W3.b (by decide) (by decide) with ⟨u, hau, hbu⟩
+  revert hau hbu
+  cases u <;> decide
+
 section FullnessObstruction
 
 /-- The three-world obstruction frame, as checker data. -/
@@ -1310,34 +1328,162 @@ end FullnessObstruction
 end BeliefReal
 end PLLND
 
+/-! ### Axiom audit — measured on promotion (2026-07-18) and pinned -/
+
+/-- info: 'PLLND.BeliefReal.realU' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realU
+
+/-- info: 'PLLND.BeliefReal.realS' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realS
+
+/-- info: 'PLLND.BeliefReal.realU_hered' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realU_hered
+
+/-- info: 'PLLND.BeliefReal.realS_hered' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realS_hered
+
+/-- info: 'PLLND.BeliefReal.realU_of_fallible' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realU_of_fallible
+
+/-- info: 'PLLND.BeliefReal.realS_of_fallible' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realS_of_fallible
+
+/--
+info: 'PLLND.BeliefReal.natPca' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.natPca
+
+/-- info: 'PLLND.BeliefReal.fullEvidence' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.fullEvidence
+
+/--
+info: 'PLLND.BeliefReal.bite_uniform_split' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.bite_uniform_split
+
+/-- info: 'PLLND.BeliefReal.obH' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.obH
+
+/-- info: 'PLLND.BeliefReal.ob_infl' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.ob_infl
+
+/-- info: 'PLLND.BeliefReal.ob_mono' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.ob_mono
+
+/-- info: 'PLLND.BeliefReal.ob_idem' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.ob_idem
+
+/-- info: 'PLLND.BeliefReal.ob_strength' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.ob_strength
+
+/-- info: 'PLLND.BeliefReal.realU_somehow_mem' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realU_somehow_mem
+
+/--
+info: 'PLLND.BeliefReal.force_somehow_iff_notnot' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.force_somehow_iff_notnot
+
+/-- info: 'PLLND.BeliefReal.uniform_dist_valid' does not depend on any axioms -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.uniform_dist_valid
+
+/--
+info: 'PLLND.BeliefReal.no_realU_obA_at_root' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.no_realU_obA_at_root
+
+/--
+info: 'PLLND.BeliefReal.id_realises_obA_imp_obB' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.id_realises_obA_imp_obB
+
+/--
+info: 'PLLND.BeliefReal.impdist_not_uniform' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.impdist_not_uniform
+
+/--
+info: 'PLLND.BeliefReal.strategy_realises_obAB' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.strategy_realises_obAB
+
+/--
+info: 'PLLND.BeliefReal.strategy_dist_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.strategy_dist_refuted
+
+/--
+info: 'PLLND.BeliefReal.strategy_realises_obAB_split' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.strategy_realises_obAB_split
+
+/--
+info: 'PLLND.BeliefReal.strategy_dist_refuted_split' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.strategy_dist_refuted_split
+
+/-- info: 'PLLND.BeliefReal.Poly.abs_spec' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.Poly.abs_spec
+
+/-- info: 'PLLND.BeliefReal.extract' depends on axioms: [propext] -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.extract
+
+/--
+info: 'PLLND.BeliefReal.extract_sound' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.extract_sound
+
+/-- info: 'PLLND.BeliefReal.Poly.eval_bump' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.Poly.eval_bump
+
+/-- info: 'PLLND.BeliefReal.extractS' depends on axioms: [propext] -/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.extractS
+
+/--
+info: 'PLLND.BeliefReal.extractS_sound' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.extractS_sound
+
+/--
+info: 'PLLND.BeliefReal.realS_fullness_obstruction' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
 #print axioms PLLND.BeliefReal.realS_fullness_obstruction
+
+-- clean is this statement's floor: it mentions `modelOrSplit`, as do
+-- the Fig. 3 countermodel rows.
+/--
+info: 'PLLND.BeliefReal.modelOrSplit_not_confluent' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.BeliefReal.modelOrSplit_not_confluent

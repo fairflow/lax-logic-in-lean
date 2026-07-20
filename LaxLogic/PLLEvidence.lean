@@ -4,9 +4,9 @@ import LaxLogic.PLLCountermodelEmit
 # Evidence, presented-strategy realisability, and the decoration theorems
 
 The `⊩ᵖ` layer of the Route B programme (design: `docs/route-b-model.md`;
-the in-development uniform/strategy clauses `⊩ᵘ`/`⊩ˢ`, the separation
-triptych, and the machine-checked obstruction that forces the presented
-clause live in `wip/belief_realisability.lean`).
+the uniform/strategy clauses `⊩ᵘ`/`⊩ˢ`, the separation triptych, and the
+machine-checked obstruction that forces the presented clause live in
+`LaxLogic/BeliefRealisability.lean`, which imports this file).
 
 Contents:
 
@@ -17,7 +17,7 @@ Contents:
   `⊃`-clause applies the realiser to the pair of the presented world-code
   and the argument, exactly as the `◯`-clause presents the future to the
   strategy.  The obstruction theorem `realS_fullness_obstruction`
-  (`wip/belief_realisability.lean`) shows this presentation is *necessary*:
+  (`LaxLogic/BeliefRealisability.lean`) shows this presentation is *necessary*:
   without it no evidence assignment on a three-world frame is both
   atom-adequate and full, for any PCA with finite tables;
 * `tokenEvidence`, `realP_adequate_and_full` — over any finite frame
@@ -65,7 +65,7 @@ structure Evidence (P : Pca) (C : ConstraintModel) where
 
 /-! ## `⊩ᵖ` — the presented clause family, and completeness by decoration
 
-The obstruction (`realS_fullness_obstruction`, `wip/belief_realisability.lean`)
+The obstruction (`realS_fullness_obstruction`, `LaxLogic/BeliefRealisability.lean`)
 shows the `⊃`-clause must, like the `◯`-clause, receive
 the code of the evaluation world: strategies exist, carry no world-marks, and
 so an implication realiser fed the same strategy at two incomparable futures
