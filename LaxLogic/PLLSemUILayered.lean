@@ -230,23 +230,27 @@ The statements below are the PLL forms of the remaining steps of the
 Litak–Visser route.  Each is stated so that it can be attacked — or
 refuted by the oracle on instances — independently. -/
 
-/-- **Fragment finiteness up to interderivability** (their Thm 4.5
-analogue; OPEN).  Expected from the finite canonical model over the
-closure of the fragment: a rank-≤ r formula over finitely many atoms
-is determined up to ⊣⊢ by finitary data. -/
-theorem frag_reps_exist (V : Finset String) (r : Nat) :
-    ∃ L : List PLLFormula,
-      (∀ D ∈ L, crank D ≤ r ∧ ∀ a ∈ D.atoms, a ∈ V) ∧
-      ∀ φ : PLLFormula, crank φ ≤ r → (∀ a ∈ φ.atoms, a ∈ V) →
-        ∃ D ∈ L, Nonempty (LaxND [φ] D) ∧ Nonempty (LaxND [D] φ) := by
-  sorry
+/- **Fragment finiteness up to interderivability** (their Thm 4.5
+analogue): PROVED as `frag_reps_exist'` in `PLLSemUIFrag.lean`
+(DNF-over-components construction, sorry-free). -/
 
-/-- **Characters** (their Thm 4.7 analogue; OPEN): agreement on the
-rank-n fragment over a protected finite alphabet conversely yields a
-level-n link.  Their proof: Z at level α := agreement at rank α; the
-zig for Z_{n+1} refutes θ⁺ → θ⁻ at the lower world, where θ⁺/θ⁻ are
-the finite conjunction/disjunction of the rank-n fragment formulas
-held/refuted at the target — this needs `frag_reps_exist`. -/
+/-- **Characters** (their Thm 4.7 analogue; OPEN — and REFUTABLE AS
+STATED, a genuine PLL divergence found 2026-07-20 eve).  Their proof
+takes Z at level α := agreement at rank α; but for PLL the
+fallibility clause of `LayeredBisim` is NOT implied by agreement:
+adding a fallible top with rigid rows to a model is conservative
+(candidate machine-check: the two-point chain a ≤ b, b ∈ F, both
+rows trivial, agrees with the one-point non-fallible model on every
+variable-free formula — no formula expresses "some Rᵢ-successor is
+fallible", the property is not hereditary), yet the fallible
+successor has no partner, so no layered bisimulation with the `fall`
+zigzag exists.  The design question this leaves — THE open pillar-2
+question — is which weakened zigzag clauses (fallibility escapes in
+the DescPack style, or ◯⊥-financed row escapes) are simultaneously
+(a) derivable from fragment-agreement and (b) strong enough for the
+two-case budget argument of the amalgamation (`wit_pbisim`).  The
+statement below is kept as the INTERFACE ONLY; expect its final form
+to weaken `LayeredBisim` or strengthen the hypothesis. -/
 theorem layered_of_frag_agree (V : Finset String) (n : Nat)
     (M N : ConstraintModel) (w : M.W) (w' : N.W)
     (h : ∀ χ : PLLFormula, crank χ ≤ n → (∀ a ∈ χ.atoms, a ∈ V) →
