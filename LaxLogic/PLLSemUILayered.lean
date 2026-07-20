@@ -234,29 +234,141 @@ refuted by the oracle on instances — independently. -/
 analogue): PROVED as `frag_reps_exist'` in `PLLSemUIFrag.lean`
 (DNF-over-components construction, sorry-free). -/
 
-/-- **Characters** (their Thm 4.7 analogue; OPEN — and REFUTABLE AS
-STATED, a genuine PLL divergence found 2026-07-20 eve).  Their proof
-takes Z at level α := agreement at rank α; but for PLL the
-fallibility clause of `LayeredBisim` is NOT implied by agreement:
-adding a fallible top with rigid rows to a model is conservative
-(candidate machine-check: the two-point chain a ≤ b, b ∈ F, both
-rows trivial, agrees with the one-point non-fallible model on every
-variable-free formula — no formula expresses "some Rᵢ-successor is
-fallible", the property is not hereditary), yet the fallible
-successor has no partner, so no layered bisimulation with the `fall`
-zigzag exists.  The design question this leaves — THE open pillar-2
-question — is which weakened zigzag clauses (fallibility escapes in
-the DescPack style, or ◯⊥-financed row escapes) are simultaneously
-(a) derivable from fragment-agreement and (b) strong enough for the
-two-case budget argument of the amalgamation (`wit_pbisim`).  The
-statement below is kept as the INTERFACE ONLY; expect its final form
-to weaken `LayeredBisim` or strengthen the hypothesis. -/
-theorem layered_of_frag_agree (V : Finset String) (n : Nat)
-    (M N : ConstraintModel) (w : M.W) (w' : N.W)
-    (h : ∀ χ : PLLFormula, crank χ ≤ n → (∀ a ∈ χ.atoms, a ∈ V) →
-      (M.force w χ ↔ N.force w' χ)) :
-    ∃ B : LayeredBisim (fun a => a ∈ V) M N, B.Z n w w' := by
-  sorry
+/-! ### Pillar 2: their Theorem 4.7 is REFUTED for PLL as stated
+
+Their proof takes Z at level α := agreement at rank α.  For PLL this
+CANNOT satisfy the `iforth` zigzag of `LayeredBisim`: adding a
+fallible top with a trivial row to a model is conservative — "some
+Rᵢ-successor is fallible" is not a hereditary property, so no formula
+expresses it — yet the fallible successor demands a fallible partner
+through the `fall` clause.  Machine-checked below on the two-point
+chain against `oneW`.  (Litak–Visser never meet this: their frames
+replace fallible worlds by irreflexive dead ends.)
+
+The redesign boundary this fixes precisely: the ESCAPE form of
+`iforth` (partner OR the successor is fallible, as in `DescPack`)
+survives the character argument — a NON-fallible successor `v`
+refutes its θ⁻ (a fallible one forces everything, breaking `v ⊮ θ⁻`),
+so the implication argument still produces a partner exactly when one
+is demanded.  The open pillar-2 question is therefore the m-clauses:
+which row-zigzag weakening is both agreement-derivable and strong
+enough for the two-case budget argument of `wit_pbisim`. -/
+
+/-- Two-point chain with a fallible top and trivial rows: the
+conservative extension that defeats the `fall` zigzag. -/
+def chainF : ConstraintModel where
+  W := Bool
+  Ri := fun x y => x = y ∨ (x = false ∧ y = true)
+  Rm := fun x y => x = y
+  F := {x | x = true}
+  V := fun _ => {x | x = true}
+  refl_i := fun _ => .inl rfl
+  trans_i := by
+    intro a b c h₁ h₂
+    rcases h₁ with rfl | ⟨rfl, rfl⟩
+    · exact h₂
+    · rcases h₂ with rfl | ⟨h, -⟩
+      · exact .inr ⟨rfl, rfl⟩
+      · exact absurd h (by simp)
+  refl_m := fun _ => rfl
+  trans_m := fun h₁ h₂ => h₁.trans h₂
+  sub_mi := fun h => .inl h
+  hered_F := by
+    intro a b h hF
+    rcases h with rfl | ⟨-, rfl⟩
+    · exact hF
+    · rfl
+  hered_V := by
+    intro x a b h hV
+    rcases h with rfl | ⟨-, rfl⟩
+    · exact hV
+    · rfl
+  full_F := fun hF => hF
+
+/-- **Conservativity of the fallible top** at rank ≤ 1: the bottom of
+`chainF` agrees with the world of `oneW` on every variable-free
+formula of complexity ≤ 1 (the fallible top forces everything, so it
+never blocks an implication; ◯ needs complexity 2). -/
+theorem chainF_oneW_agree : ∀ {χ : PLLFormula}, crank χ ≤ 1 →
+    (∀ a ∈ χ.atoms, a ∈ (∅ : Finset String)) →
+    (chainF.force false χ ↔ oneW.force () χ) := by
+  intro χ
+  induction χ with
+  | prop a =>
+      intro _ ha
+      exact absurd (ha a (by simp)) (by simp)
+  | falsePLL =>
+      intro _ _
+      constructor
+      · intro h
+        exact absurd (show false = true from h) (by decide)
+      · intro h
+        exact h.elim
+  | and φ ψ ihφ ihψ =>
+      intro hc ha
+      have hc' : max (crank φ) (crank ψ) ≤ 1 := hc
+      have h1 : ∀ a ∈ φ.atoms, a ∈ (∅ : Finset String) :=
+        fun a h => ha a (by simp [h])
+      have h2 : ∀ a ∈ ψ.atoms, a ∈ (∅ : Finset String) :=
+        fun a h => ha a (by simp [h])
+      simp only [ConstraintModel.force]
+      exact and_congr
+        (ihφ (le_trans (le_max_left _ _) hc') h1)
+        (ihψ (le_trans (le_max_right _ _) hc') h2)
+  | or φ ψ ihφ ihψ =>
+      intro hc ha
+      have hc' : max (crank φ) (crank ψ) ≤ 1 := hc
+      have h1 : ∀ a ∈ φ.atoms, a ∈ (∅ : Finset String) :=
+        fun a h => ha a (by simp [h])
+      have h2 : ∀ a ∈ ψ.atoms, a ∈ (∅ : Finset String) :=
+        fun a h => ha a (by simp [h])
+      simp only [ConstraintModel.force]
+      exact or_congr
+        (ihφ (le_trans (le_max_left _ _) hc') h1)
+        (ihψ (le_trans (le_max_right _ _) hc') h2)
+  | ifThen φ ψ ihφ ihψ =>
+      intro hc ha
+      have hc' : max (crank φ) (crank ψ) + 1 ≤ 1 := hc
+      have hcφ : crank φ ≤ 1 := by
+        have h1 := le_max_left (crank φ) (crank ψ); omega
+      have hcψ : crank ψ ≤ 1 := by
+        have h1 := le_max_right (crank φ) (crank ψ); omega
+      have h1 : ∀ a ∈ φ.atoms, a ∈ (∅ : Finset String) :=
+        fun a h => ha a (by simp [h])
+      have h2 : ∀ a ∈ ψ.atoms, a ∈ (∅ : Finset String) :=
+        fun a h => ha a (by simp [h])
+      simp only [ConstraintModel.force]
+      constructor
+      · intro hf v _ hφ
+        exact (ihψ hcψ h2).mp
+          (hf false (.inl rfl) ((ihφ hcφ h1).mpr hφ))
+      · intro hf v hv hφ
+        cases v with
+        | false =>
+            exact (ihψ hcψ h2).mpr
+              (hf () trivial ((ihφ hcφ h1).mp hφ))
+        | true =>
+            exact chainF.force_of_fallible rfl
+  | somehow φ ih =>
+      intro hc _
+      have hc' : crank φ + 2 ≤ 1 := hc
+      exact absurd hc' (by omega)
+
+/-- **The refutation** (machine-checked): fragment-agreement does NOT
+yield a layered bisimulation for PLL — the pillar-2 statement in the
+Litak–Visser form is false over constraint models. -/
+theorem layered_of_frag_agree_refuted :
+    ¬ (∀ (V : Finset String) (n : Nat) (M N : ConstraintModel)
+        (w : M.W) (w' : N.W),
+      (∀ χ : PLLFormula, crank χ ≤ n → (∀ a ∈ χ.atoms, a ∈ V) →
+        (M.force w χ ↔ N.force w' χ)) →
+      ∃ B : LayeredBisim (fun a => a ∈ V) M N, B.Z n w w') := by
+  intro h
+  obtain ⟨B, hZ⟩ := h ∅ 1 chainF oneW false ()
+    (fun χ hc ha => chainF_oneW_agree hc ha)
+  obtain ⟨v', -, hZ0⟩ :=
+    B.iforth hZ (show chainF.Ri false true from .inr ⟨rfl, rfl⟩)
+  exact (B.fall hZ0).mp rfl
 
 /-- **THE PLL AMALGAMATION LEMMA** (their Lemma 5.4 / Visser's Lemma
 5.1; OPEN — the central open problem of the route, equivalent in
@@ -315,6 +427,12 @@ info: 'PLLND.SemUI.force_iff_of_bisim_via_layered' depends on axioms: [propext, 
 -/
 #guard_msgs in
 #print axioms force_iff_of_bisim_via_layered
+
+/--
+info: 'PLLND.SemUI.layered_of_frag_agree_refuted' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms layered_of_frag_agree_refuted
 
 end SemUI
 end PLLND

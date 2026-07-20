@@ -673,3 +673,18 @@ trace_mforth) and wit_force (pair forces φ ∈ cl iff φ ∈ Δ.val;
 land, the Layered interface `amalgamation` retires in favour of the
 assembled card-budget form.  Pillar 2 (characters, Thm 4.7) queued
 behind the agent's bigAnd/bigOr calculus.
+
+## 27. 2026-07-20 late: pillar 2 obstruction MACHINE-CHECKED
+
+layered_of_frag_agree_refuted PROVED (pins standard three): the
+Litak–Visser Thm 4.7 form is FALSE over constraint models — chainF
+(two-point chain, fallible top, trivial rows) agrees with oneW on
+every variable-free formula of complexity ≤ 1 (chainF_oneW_agree,
+conservativity: the fallible top forces everything so never blocks an
+implication; ◯ needs complexity 2), yet iforth at the fallible top
+demands a fallible partner that oneW lacks.  Redesign boundary fixed
+in the file: escape-iforth (partner OR fallible successor, DescPack
+style) survives the character argument — non-fallible successors
+refute their θ⁻ — so pillar 2's open content is exactly the
+m-clauses: which row-zigzag weakening is agreement-derivable AND
+strong enough for wit_pbisim's budget argument.
