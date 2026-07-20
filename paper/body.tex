@@ -723,6 +723,27 @@ proposal can produce only a failure, never a wrong certificate. In the
 other direction, any certified model refutes in the full realisability
 sense, by the refutation lemma.
 
+That discipline is packaged as a single entry point.
+\texttt{PLLSearch.lean} attempts a sequent \emph{either way} --- a
+certified battery of small frames and the closure emitter for
+refutations, a fuel-free backward searcher over the terminating calculus
+for proofs --- and returns a verdict carrying its own certificate: a
+proof term the typechecker validates, or a finite model the verified
+checker accepts. The third verdict is an explicit \texttt{unknown},
+which asserts nothing. Soundness is therefore structural rather than a
+property of the search code: a wrong internal guess can only degrade a
+verdict to \texttt{unknown}, never manufacture a false one. This is the
+development\textquotesingle s practical engine, and the division of
+labour is deliberate. The decision procedure behind
+Remark~\ref{rem:circle} is constructive and total, but its fuel bounds
+are far too large to run on any but trivial sequents; proof extraction
+and automation therefore use the searcher and keep only its
+certificates. The cost profile is recorded honestly alongside it:
+successes are cheap, the worst case is exponential --- provability is
+already PSPACE-hard for the \ensuremath{\bigcirc}-free fragment --- and
+the frame battery is incomplete by design, a first filter rather than a
+complete refuter.
+
 For \ensuremath{\bigcirc p \vdash} p the emitter produces a five-world model, pinned in the
 artefact as data (\texttt{demoM}), whose worlds read as belief states: a state
 believing exactly \ensuremath{\bigcirc p} (the refuting world); above it a state where the
@@ -956,16 +977,44 @@ associativity checked axiom-free); a single evaluation yields both that
 value and the delay. Ripple is the deepest proof of the group carry,
 lookahead a shallow one, and the speed-up is precisely the reduction in
 \ensuremath{\bigcirc}-nesting depth --- a re-association of the proof, not
-a change in what is proved. Under reading (7) these
+a change in what is proved.
+
+The two remaining circuits of the case-study list are asynchronous, and
+between them they display one law of the modality that holds and one
+that fails. Muller\textquotesingle s \emph{C-element} waits for both of
+its inputs; logically it is the meet law \ensuremath{\bigcirc A \wedge
+\bigcirc B \vdash \bigcirc(A \wedge B)}, which is derivable. Its
+canonical derivation is sequential --- two binds, so the multiplication
+charges \ensuremath{\delta_{a} + \delta_{b}} --- while the element
+realises the same law through the strength, charging
+\ensuremath{\max(\delta_{a}, \delta_{b}) + \delta_{C}}. The element is
+thus a cheaper realisation of a derivable law, and it pays exactly when
+\ensuremath{\delta_{C} < \min(\delta_{a}, \delta_{b})}
+(\texttt{cElem\_beats\_sequential}). An \emph{arbiter} grants one of two
+competing requests. Under contention it believes that some grant occurs,
+\ensuremath{\bigcirc(g_{1} \vee g_{2})}, while believing of neither grant
+that it occurs, since nothing in the inputs determines which way the
+resolution falls; that is exactly the failure of distribution over
+\ensuremath{\vee}, and it is refuted by a three-world model read as the
+arbiter itself (\texttt{arbiter\_no\_distribution}, choice-free). The
+reason is structural: mutual exclusion means the two grant-futures never
+reconverge, so the frame is not mutually confluent
+(\texttt{arbiter\_not\_confluent}), and mutually confluent frames are
+exactly the models of PLL with the distribution scheme
+(\texttt{derivU\_iff\_confluent\_valid}). That the arbiter may not grant
+twice is the circuit-level reason the scheme fails. The model is the
+split model of \cite[Fig.~3]{FairtloughMendler1997} once more, now with
+a reading: contention below, the two resolutions above. Under reading (7) these
 are all belief computations: a signal\textquotesingle s delay is the cost
 of discharging the constraint under which its stability is believed,
 and re-associating a proof of equal size into a shallower one is how
 that cost is cut.
 
 We are explicit about what this is and is not: it is the delay-algebra
-half of the programme\textquotesingle s first case study. The study
-itself --- these netlists and others (an arbiter, a C-element
-handshake) with their stabilises-to specifications formalised
+and proof-theoretic half of the programme\textquotesingle s first case
+study --- extraction and refutation in the constraint semantics, not in
+the evidence semantics of Sections 4--6. The study itself --- these same
+netlists with their stabilises-to specifications formalised
 \emph{in the evidence semantics}, the components composed into a larger
 netlist under a formally combined specification,
 \ensuremath{\bigcirc}(out = spec) proved there and its evidence term
