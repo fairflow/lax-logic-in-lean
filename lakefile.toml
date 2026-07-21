@@ -28,7 +28,8 @@ root = "Main"
 # only against declared targets; exe roots alone don't cover imports).
 [[lean_lib]]
 name = "wipshared"
-globs = ["wip.oracle2", "wip.semui_ctx_core"]
+globs = ["wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
+         "wip.mforth_probe", "wip.confl_core"]
 
 # The two-sided decision tool (countermodel-first; wip/oracle2.lean) and its
 # one-sided baseline, compiled — the native oracle route.
@@ -115,3 +116,16 @@ root = "wip.samval_probe"
 [[lean_exe]]
 name = "v2quant"
 root = "wip.v2quant_probe"
+
+# ui-confluence branch: the refilter driver (same-trace + forth-m
+# passes; unrestricted sanity reproductions and the mutually-confluent
+# restriction) and the backward audit (gadget confluence + the
+# confluence-gated extension oracle).  Both drive the `main`-free
+# shared core `wip.confl_core`.
+[[lean_exe]]
+name = "conflrun"
+root = "wip.confl_run"
+
+[[lean_exe]]
+name = "conflaudit"
+root = "wip.confl_audit"
