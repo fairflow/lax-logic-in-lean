@@ -97,18 +97,185 @@ theorem force_dist_elim {M : ConstraintModel} (hc : MutuallyConfluent M)
   have hor := hd w (M.refl_i w) h
   simpa [ConstraintModel.force] using hor
 
-/-! ## Metatheory (soundness proved for the new rule; the ported bulk
-stated with precise obligations, per the standing licence to assume). -/
+/-! ## Formal soundness, via `G4cf → DerivU → confluent-valid`.
 
-/-- **Soundness for confluent models.**  PORT: induction on `G4hf`; the
-17 `G4h` cases mirror the existing G4c soundness verbatim, and the sole
-new case `distL` is discharged by `force_dist_elim` together with a case
-split on the resulting `◯A ∨ ◯B`.  Stated now; the shared-case bulk is
-the mechanical port. -/
+Only `distL` is genuinely new; the 17 shared rules are the ordinary
+`G4 → ND` translation.  Built interactively, one case at a time. -/
+
+open ConfluentU
+
+/-- Lift a closed `LaxND` theorem into `DerivU` over any context. -/
+private theorem thmU {φ : PLLFormula} (p : LaxND [] φ)
+    {Γ : List PLLFormula} : DerivU Γ φ :=
+  DerivU.rename (fun _ h => by simp at h) (DerivU.of_nd p)
+
+private theorem cutU {Γ : List PLLFormula} {A C : PLLFormula}
+    (h₁ : DerivU Γ A) (h₂ : DerivU (A :: Γ) C) : DerivU Γ C :=
+  DerivU.mp (DerivU.deduction h₂) h₁
+
+private theorem falsoU {Γ : List PLLFormula} {C : PLLFormula}
+    (h : DerivU Γ falsePLL) : DerivU Γ C :=
+  DerivU.mp (thmU (φ := falsePLL.ifThen C)
+    (.impIntro (.falsoElim C (.iden (by simp))))) h
+
+private theorem andIU {Γ : List PLLFormula} {A B : PLLFormula}
+    (h₁ : DerivU Γ A) (h₂ : DerivU Γ B) : DerivU Γ (A.and B) :=
+  DerivU.mp (DerivU.mp (thmU (φ := A.ifThen (B.ifThen (A.and B)))
+    (.impIntro (.impIntro (.andIntro (.iden (by simp)) (.iden (by simp)))))) h₁) h₂
+
+private theorem andE1U {Γ : List PLLFormula} {A B : PLLFormula}
+    (h : DerivU Γ (A.and B)) : DerivU Γ A :=
+  DerivU.mp (thmU (φ := (A.and B).ifThen A)
+    (.impIntro (.andElim1 (ψ := B) (.iden (by simp))))) h
+
+private theorem andE2U {Γ : List PLLFormula} {A B : PLLFormula}
+    (h : DerivU Γ (A.and B)) : DerivU Γ B :=
+  DerivU.mp (thmU (φ := (A.and B).ifThen B)
+    (.impIntro (.andElim2 (φ := A) (.iden (by simp))))) h
+
+private theorem orI1U {Γ : List PLLFormula} {A B : PLLFormula}
+    (h : DerivU Γ A) : DerivU Γ (A.or B) :=
+  DerivU.mp (thmU (φ := A.ifThen (A.or B))
+    (.impIntro (.orIntro1 (.iden (by simp))))) h
+
+private theorem orI2U {Γ : List PLLFormula} {A B : PLLFormula}
+    (h : DerivU Γ B) : DerivU Γ (A.or B) :=
+  DerivU.mp (thmU (φ := B.ifThen (A.or B))
+    (.impIntro (.orIntro2 (.iden (by simp))))) h
+
+private theorem orEU {Γ : List PLLFormula} {A B C : PLLFormula}
+    (h₀ : DerivU Γ (A.or B)) (h₁ : DerivU (A :: Γ) C) (h₂ : DerivU (B :: Γ) C) :
+    DerivU Γ C :=
+  DerivU.mp (DerivU.mp (DerivU.mp
+    (thmU (φ := (A.or B).ifThen ((A.ifThen C).ifThen ((B.ifThen C).ifThen C)))
+      (.impIntro (.impIntro (.impIntro
+      (.orElim (φ := A) (ψ := B) (.iden (by simp))
+        (.impElim (φ := A) (.iden (by simp)) (.iden (by simp)))
+        (.impElim (φ := B) (.iden (by simp)) (.iden (by simp))))))))
+    h₀) (DerivU.deduction h₁)) (DerivU.deduction h₂)
+
+private theorem bindU {Γ : List PLLFormula} {A B : PLLFormula}
+    (h₀ : DerivU Γ (somehow A)) (h₁ : DerivU (A :: Γ) (somehow B)) :
+    DerivU Γ (somehow B) :=
+  DerivU.mp (DerivU.mp
+    (thmU (φ := (somehow A).ifThen ((A.ifThen (somehow B)).ifThen (somehow B)))
+      (.impIntro (.impIntro
+      (.laxElim (φ := A) (.iden (by simp)) (.impElim (φ := A) (.iden (by simp)) (.iden (by simp)))))))
+    h₀) (DerivU.deduction h₁)
+
+/-- Membership transported across a `Perm`-with-principal into `Γ`. -/
+private theorem permMem {Γ Δ : List PLLFormula} {p ψ : PLLFormula}
+    (h : Γ.Perm (p :: Δ)) (hψ : ψ ∈ p :: Δ) : ψ ∈ Γ :=
+  h.symm.subset hψ
+
+/-- **G4cf → DerivU** (the translation; only `distL` is new). -/
+theorem G4cf_to_DerivU {n : Nat} {Γ : List PLLFormula} {C : PLLFormula}
+    (d : G4hf n Γ C) : DerivU Γ C := by
+  induction d with
+  | init h => exact DerivU.hyp h
+  | botL h => exact falsoU (DerivU.hyp h)
+  | andR _ _ ih₁ ih₂ => exact andIU ih₁ ih₂
+  | orR1 _ ih => exact orI1U ih
+  | orR2 _ ih => exact orI2U ih
+  | impR _ ih => exact DerivU.deduction ih
+  | laxR _ ih => exact DerivU.unit ih
+  | andL h _ ih =>
+      have hAB := DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))
+      exact DerivU.mp (DerivU.mp
+        (DerivU.rename (fun ψ hψ => permMem h (List.mem_cons_of_mem _ hψ))
+          (DerivU.deduction (DerivU.deduction ih)))
+        (andE2U hAB)) (andE1U hAB)
+  | orL h _ _ ih₁ ih₂ =>
+      exact orEU (DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl))))
+        (DerivU.rename (fun ψ hψ => by
+          rcases List.mem_cons.mp hψ with rfl | hψ
+          · exact List.mem_cons.mpr (.inl rfl)
+          · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₁)
+        (DerivU.rename (fun ψ hψ => by
+          rcases List.mem_cons.mp hψ with rfl | hψ
+          · exact List.mem_cons.mpr (.inl rfl)
+          · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₂)
+  | laxL h _ ih => exact bindU (DerivU.hyp h) ih
+  | impLProp h ha _ ih =>
+      have hImp := DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))
+      have hA := DerivU.hyp (permMem h (List.mem_cons_of_mem _ ha))
+      exact cutU (DerivU.mp hImp hA) (DerivU.rename (fun ψ hψ => by
+        rcases List.mem_cons.mp hψ with rfl | hψ
+        · exact List.mem_cons.mpr (.inl rfl)
+        · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih)
+  | impLBot h _ ih =>
+      exact DerivU.rename (fun ψ hψ => permMem h (List.mem_cons_of_mem _ hψ)) ih
+  | impLAnd h _ ih =>
+      have hImp := DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))
+      exact cutU
+        (DerivU.deduction (DerivU.deduction
+          (DerivU.mp
+            (DerivU.rename (fun ψ hψ =>
+              List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hψ)) hImp)
+            (andIU (DerivU.hyp (List.mem_cons_of_mem _ (List.mem_cons.mpr (.inl rfl))))
+                   (DerivU.hyp (List.mem_cons.mpr (.inl rfl)))))))
+        (DerivU.rename (fun ψ hψ => by
+          rcases List.mem_cons.mp hψ with rfl | hψ
+          · exact List.mem_cons.mpr (.inl rfl)
+          · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih)
+  | impLOr h _ ih =>
+      have hImp := DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))
+      have hAD := DerivU.deduction (DerivU.mp
+        (DerivU.rename (fun ψ hψ => List.mem_cons_of_mem _ hψ) hImp)
+        (orI1U (DerivU.hyp (List.mem_cons.mpr (.inl rfl)))))
+      have hBD := DerivU.deduction (DerivU.mp
+        (DerivU.rename (fun ψ hψ => List.mem_cons_of_mem _ hψ) hImp)
+        (orI2U (DerivU.hyp (List.mem_cons.mpr (.inl rfl)))))
+      exact DerivU.mp (DerivU.mp
+        (DerivU.rename (fun ψ hψ => permMem h (List.mem_cons_of_mem _ hψ))
+          (DerivU.deduction (DerivU.deduction ih)))
+        hBD) hAD
+  | impLImp h _ _ ih₁ ih₂ =>
+      have hImp := DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))
+      have hBD := DerivU.deduction (DerivU.mp
+        (DerivU.rename (fun ψ hψ => List.mem_cons_of_mem _ hψ) hImp)
+        (DerivU.deduction (DerivU.hyp
+          (List.mem_cons_of_mem _ (List.mem_cons.mpr (.inl rfl))))))
+      have hAB := cutU hBD (DerivU.rename (fun ψ hψ => by
+        rcases List.mem_cons.mp hψ with rfl | hψ
+        · exact List.mem_cons.mpr (.inl rfl)
+        · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₁)
+      exact cutU (DerivU.mp hImp hAB) (DerivU.rename (fun ψ hψ => by
+        rcases List.mem_cons.mp hψ with rfl | hψ
+        · exact List.mem_cons.mpr (.inl rfl)
+        · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₂)
+  | impLLax h _ _ ih₁ ih₂ =>
+      have hImp := DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))
+      exact cutU (DerivU.mp hImp (DerivU.unit ih₁)) (DerivU.rename (fun ψ hψ => by
+        rcases List.mem_cons.mp hψ with rfl | hψ
+        · exact List.mem_cons.mpr (.inl rfl)
+        · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₂)
+  | impLLaxLax h hX _ _ ih₁ ih₂ =>
+      have hImp := DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))
+      have hOA := bindU (DerivU.hyp (permMem h (List.mem_cons_of_mem _ hX))) ih₁
+      exact cutU (DerivU.mp hImp hOA) (DerivU.rename (fun ψ hψ => by
+        rcases List.mem_cons.mp hψ with rfl | hψ
+        · exact List.mem_cons.mpr (.inl rfl)
+        · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₂)
+  | distL h _ _ ih₁ ih₂ =>
+      exact orEU
+        (DerivU.mp (DerivU.dist _ _)
+          (DerivU.hyp (permMem h (List.mem_cons.mpr (.inl rfl)))))
+        (DerivU.rename (fun ψ hψ => by
+          rcases List.mem_cons.mp hψ with rfl | hψ
+          · exact List.mem_cons.mpr (.inl rfl)
+          · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₁)
+        (DerivU.rename (fun ψ hψ => by
+          rcases List.mem_cons.mp hψ with rfl | hψ
+          · exact List.mem_cons.mpr (.inl rfl)
+          · exact List.mem_cons_of_mem _ (permMem h (List.mem_cons_of_mem _ hψ))) ih₂)
+
+/-- **Soundness of G4cf for mutually confluent models** (FORMAL). -/
 theorem G4cf_sound {Γ : List PLLFormula} {C : PLLFormula} (d : G4cf Γ C)
     {M : ConstraintModel} (hc : MutuallyConfluent M) {w : M.W}
     (hΓ : ∀ φ ∈ Γ, M.force w φ) : M.force w C := by
-  sorry
+  obtain ⟨n, d⟩ := d
+  exact derivU_iff_confluent_valid.mp (G4cf_to_DerivU d) M hc w hΓ
 
 /-- **`G4cf` extends `G4c`.**  Every `G4h` rule is a `G4hf` rule, so the
 embedding is a 17-case rename induction (no new mathematics). -/
@@ -139,6 +306,9 @@ branches, the cut formula strictly smaller or the height dropping). -/
 theorem G4cf_cut {Γ : List PLLFormula} {A C : PLLFormula}
     (d₁ : G4cf Γ A) (d₂ : G4cf (A :: Γ) C) : G4cf Γ C := by
   sorry
+
+/-- Audit: soundness is sorry-free (only the standard three axioms). -/
+#print axioms G4cf_sound
 
 end G4Conf
 end PLLND
