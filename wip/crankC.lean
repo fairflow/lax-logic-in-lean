@@ -97,7 +97,46 @@ theorem force_iff_of_layeredC {A : String → Prop} {M N : ConstraintModel}
         exact ⟨u, hu, (ihφ hcφ hA hZu).mpr hφu'⟩
 
 
-/-- Audit: rank preservation under confluence is sorry-free. -/
+/-! ## The parity check — does the witnessing-triple gap dissolve?
+
+The wall (`PLLSemUIHenkin.lean`, `WitTriple` + its analysis, lines 45–99):
+the primed **reservoir** link sits at `2·d + 1`, one level above the base
+link `2·d` (`d = canonDepth`).  A same-`val`-trace ◯-forward move (the
+"promise pair") keeps depth `d`, so it needs a fresh **unprimed** link at
+the base `2·d`.  A `crank`-◯ move is an `Rᵢ`-zigzag THEN an `Rₘ`-zigzag —
+**cost 2** — so spending the reservoir yields `2d + 1 − 2 = 2d − 1`, one
+short of `2d`.  Gap `= cost − surplus = 2 − 1 = 1`.
+
+`crankC` (bare possibility) makes the ◯-move a **single** `Rₘ`-zigzag —
+**cost 1** (`force_iff_of_layeredC`) — and recalibrates the links to
+`d`, `d + 1`.  The reservoir spend now yields `d + 1 − 1 = d`, exactly the
+base.  Gap `= 1 − 1 = 0`: financed.  The essential fact is that financing
+depends only on `cost ≤ surplus`, and the surplus is structurally `1`. -/
+
+/-- **The financing principle.**  A reservoir link at `base + surplus`,
+spent by a move of `cost` levels, meets the required `base` **iff**
+`cost ≤ surplus`.  (Robust to the exact `base`, so it survives whatever
+the precise recalibrated entry budget turns out to be.) -/
+theorem financed_iff {base surplus cost : Nat} (h : cost ≤ base + surplus) :
+    base + surplus - cost ≥ base ↔ cost ≤ surplus := by omega
+
+/-- `crank`'s ◯-move (cost 2) over the surplus-1 reservoir: **UNFINANCED**
+at every positive depth — the `2d − 1 < 2d` wall. -/
+theorem wall_crank (d : Nat) (hd : 1 ≤ d) : ¬ (2 * d + 1 - 2 ≥ 2 * d) := by
+  omega
+
+/-- `crankC`'s bare-possibility ◯-move (cost 1) over the surplus-1
+reservoir: **FINANCED** at every depth — the gap dissolves. -/
+theorem wall_crankC (d : Nat) : d + 1 - 1 ≥ d := by omega
+
+/-- The two verdicts as one statement: with reservoir surplus `1`, a
+same-depth ◯-forward move is financed **iff** the ◯-move costs at most one
+level — i.e. exactly the `crank`-2 → `crankC`-1 recalibration. -/
+theorem parity_verdict {base cost : Nat} (h : cost ≤ base + 1) :
+    base + 1 - cost ≥ base ↔ cost ≤ 1 :=
+  financed_iff h
+
+-- audit: force_iff_of_layeredC is sorry-free
 #print axioms force_iff_of_layeredC
 
 end PLLND
