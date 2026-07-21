@@ -110,3 +110,8 @@ root = "wip.mforth_probe"
 [[lean_exe]]
 name = "samvalprobe"
 root = "wip.samval_probe"
+
+# cross-route probe: rank-bounded quantifiers in the old 1-pv harness.
+[[lean_exe]]
+name = "v2quant"
+root = "wip.v2quant_probe"
