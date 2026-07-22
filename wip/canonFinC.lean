@@ -90,5 +90,65 @@ def canonFinC (cl : Finset PLLFormula) : ConstraintModel where
 #print axioms RmC_trans
 #print axioms canonFinC
 
+/-! ## `obInvW` — the confluent canonical successor  [WIP]
+
+Needs `cl` to be ◯-ADEQUATE: `boxOf φ ∈ cl` for every `φ ∈ cl`.  Finite
+(`Sub ∪ {◯φ : φ ∈ Sub}`), because `boxOf` collapses `◯◯`. -/
+
+/-- ◯-adequacy of the closure. -/
+def OBoxAdeq (cl : Finset PLLFormula) : Prop := ∀ φ ∈ cl, boxOf φ ∈ cl
+
+/-- The `obInv` world's underlying triple: `val = {ψ ∈ cl | boxOf ψ ∈
+val(v)}`, its complement as `fal`, no promises. -/
+def obInvFT (cl : Finset PLLFormula) (v : {T : FTheory // MaxIn cl T}) :
+    FTheory :=
+  ⟨cl.filter (fun ψ => boxOf ψ ∈ v.1.val),
+   cl.filter (fun ψ => boxOf ψ ∉ v.1.val), ∅⟩
+
+theorem obInvFT_val_iff {cl : Finset PLLFormula}
+    {v : {T : FTheory // MaxIn cl T}} {ψ : PLLFormula} :
+    ψ ∈ (obInvFT cl v).val ↔ ψ ∈ cl ∧ boxOf ψ ∈ v.1.val :=
+  Finset.mem_filter
+
+/-- **The heart: consistency of `obInvW`.**  If `val(obInvW v)` derived
+the disjunction of its `fal`, the ◯-of-that (via `laxElim` + the
+distribution) would land a `boxOf`-of-a-`fal`-formula in `val(v)`,
+contradicting `fal`.  OPEN — the interactive target. -/
+theorem obInvFT_cons {cl : Finset PLLFormula} (hcl : SubClosed cl)
+    {v : {T : FTheory // MaxIn cl T}} : (obInvFT cl v).Cons := by
+  sorry
+
+theorem obInvFT_maxIn {cl : Finset PLLFormula} (hcl : SubClosed cl)
+    (v : {T : FTheory // MaxIn cl T}) : MaxIn cl (obInvFT cl v) := by
+  refine ⟨obInvFT_cons hcl,
+    ⟨Finset.filter_subset _ _, Finset.filter_subset _ _,
+      Finset.empty_subset _⟩, ?_⟩
+  intro φ hφ
+  by_cases h : boxOf φ ∈ v.1.val
+  · exact .inl (Finset.mem_filter.mpr ⟨hφ, h⟩)
+  · exact .inr (Finset.mem_filter.mpr ⟨hφ, h⟩)
+
+/-- The `obInv` world. -/
+def obInvW {cl : Finset PLLFormula} (hcl : SubClosed cl)
+    (v : {T : FTheory // MaxIn cl T}) : {T : FTheory // MaxIn cl T} :=
+  ⟨obInvFT cl v, obInvFT_maxIn hcl v⟩
+
+/-- **The confluent row-witness**: `v Rₘ obInvW v`.  The `val`-inclusion
+uses ◯-adequacy + `boxUnit` for non-boxes and `boxOf`-fixity for boxes;
+the `obInv` clause is definitional. -/
+theorem rm_obInvW {cl : Finset PLLFormula} (hcl : SubClosed cl)
+    (hadeq : OBoxAdeq cl) (v : {T : FTheory // MaxIn cl T}) :
+    RmC cl v (obInvW hcl v) := by
+  refine ⟨fun χ hχ => ?_, fun χ _ hχ => (Finset.mem_filter.mp hχ).2⟩
+  have hχcl : χ ∈ cl := v.2.2.1.1 hχ
+  refine Finset.mem_filter.mpr ⟨hχcl, ?_⟩
+  cases χ with
+  | somehow ψ => exact hχ
+  | prop a => exact boxUnit (hadeq _ hχcl) hχ
+  | falsePLL => exact boxUnit (hadeq _ hχcl) hχ
+  | and a b => exact boxUnit (hadeq _ hχcl) hχ
+  | or a b => exact boxUnit (hadeq _ hχcl) hχ
+  | ifThen a b => exact boxUnit (hadeq _ hχcl) hχ
+
 end FinComp
 end PLLND
