@@ -35,6 +35,18 @@ def boxOf : PLLFormula → PLLFormula
 theorem boxOf_idem (χ : PLLFormula) : boxOf (boxOf χ) = boxOf χ := by
   cases χ <;> rfl
 
+/-- The confluent backing: `v`'s closure-decisions come from an infinite
+closed prime `DerivU` theory (a `canonU` world).  Exactly what a
+cl-restriction of a `canonU` world carries; it is what makes `obInv`
+prime, hence what makes the finite model confluent. -/
+def Backed (cl : Finset PLLFormula) (v : FTheory) : Prop :=
+  ∃ T : Set PLLFormula, SClosed T ∧ SPrime T ∧ ∀ φ ∈ cl, (φ ∈ v.val ↔ φ ∈ T)
+
+/-- **Confluent finite worlds**: closure-maximal triples that carry a
+backing.  (The backing is essential — over bare `MaxIn` worlds `obInv` is
+inconsistent and the model is not confluent.) -/
+abbrev WC (cl : Finset PLLFormula) := {v : FTheory // MaxIn cl v ∧ Backed cl v}
+
 /-- The ◯-unit at the canonical level: `χ ∈ val` and `◯χ ∈ cl` give
 `◯χ ∈ val`, by `laxIntro` and deductive closure. -/
 theorem boxUnit {T : {T : FTheory // MaxIn cl T}} {χ : PLLFormula}
@@ -71,21 +83,21 @@ theorem RmC_trans {T U V : {T : FTheory // MaxIn cl T}}
 /-- **The confluent finite canonical model.**  As `canonFin`, but with
 `Rₘ` the collapsed `obInv` relation `RmC`. -/
 def canonFinC (cl : Finset PLLFormula) : ConstraintModel where
-  W := {T : FTheory // MaxIn cl T}
+  W := WC cl
   Ri T T' := T.1.val ⊆ T'.1.val
-  Rm := RmC cl
+  Rm a b := RmC cl ⟨a.1, a.2.1⟩ ⟨b.1, b.2.1⟩
   F := {T | PLLFormula.falsePLL ∈ T.1.val}
   V a := {T | PLLFormula.prop a ∉ cl ∨ PLLFormula.prop a ∈ T.1.val}
   refl_i _ := subset_rfl
   trans_i h h' := h.trans h'
-  refl_m := RmC_refl
-  trans_m := RmC_trans
+  refl_m a := RmC_refl ⟨a.1, a.2.1⟩
+  trans_m h h' := RmC_trans h h'
   sub_mi h := h.1
   hered_F h hw := h hw
   hered_V h hw := hw.imp_right (fun h' => h h')
   full_F {a} {T} hw := by
     by_cases hcl : PLLFormula.prop a ∈ cl
-    · exact .inr (T.2.ded_closed hcl (falso _ (of_mem (Finset.mem_coe.mpr hw))))
+    · exact .inr (T.2.1.ded_closed hcl (falso _ (of_mem (Finset.mem_coe.mpr hw))))
     · exact .inl hcl
 
 -- audit: the confluent Rm + model are sorry-free
@@ -168,12 +180,6 @@ theorem sprime_bigOr {U : Set PLLFormula} (hc : SClosed U) (hp : SPrime U) :
         · obtain ⟨D', hD'mem, hD'U⟩ := ih hrest hDs'
           exact ⟨D', List.mem_cons_of_mem _ hD'mem, hD'U⟩
 
-/-- The confluent backing: `v`'s closure-decisions come from an infinite
-closed prime `DerivU` theory (a `canonU` world).  Exactly what a
-cl-restriction of a `canonU` world carries. -/
-def Backed (cl : Finset PLLFormula) (v : FTheory) : Prop :=
-  ∃ T : Set PLLFormula, SClosed T ∧ SPrime T ∧ ∀ φ ∈ cl, (φ ∈ v.val ↔ φ ∈ T)
-
 /-- **The heart, now TRUE.**  Over a ◯-adequate closure and a backed
 world, the finite obInv successor is consistent — because its `val` is a
 subset of the (prime, by `obInv_prime`) infinite `obInv T`, so any derived
@@ -210,32 +216,12 @@ theorem obInvFT_cons_of_backed {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl)
 -- audit: the backed heart is kernel-clean (pure transfer of obInv_prime)
 #print axioms obInvFT_cons_of_backed
 
-/-- **The heart: consistency of `obInvW`.**  The intended argument: if
-`val(obInvW v)` derived the disjunction of its `fal`, the ◯-of-that (via
-`laxElim` + the DISTRIBUTION) would land a `boxOf`-of-a-`fal`-formula in
-`val(v)`, contradicting `fal`.
-
-**FALSE AS STATED** (`v` ranges over LaxND-`MaxIn` worlds, which do NOT
-validate distribution).  Concrete countermodel, `cl = Cl◯ {a ∨ b} =
-{a∨b, a, b, ◯(a∨b), ◯a, ◯b}`:  `lindenbaum` extends the LaxND-consistent
-triple `⟨{◯(a∨b)}, {◯a, ◯b}, ∅⟩` (consistent because `◯(a∨b) ⊬ ◯a ∨ ◯b`
-in plain PLL) to a `MaxIn cl` world `v` with `◯(a∨b) ∈ val v`,
-`◯a, ◯b ∈ fal v`.  Then `obInvFT cl v` has `a∨b ∈ val` (its box is in
-`val v`) but `a, b ∈ fal` (their boxes are in `fal v`), so
-`val ⊩ a ∨ b = disjOf [a,b] []` with `a,b ∈ fal` — `Cons` fails.
-
-The distribution step (`obInv_prime`, `PLLConfluentComplete`) lives in
-`DerivU`, not `LaxND`.  So the finite confluent worlds must be
-`DerivU`-maximal, not `MaxIn cl`.  This `sorry`, and everything below
-that depends on it, is STRANDED pending the `DerivU` finite canonical
-model (the real work item).  See the closing note / status report. -/
-theorem obInvFT_cons {cl : Finset PLLFormula} (hcl : SubClosed cl)
-    {v : {T : FTheory // MaxIn cl T}} : (obInvFT cl v).Cons := by
-  sorry -- FALSE over LaxND worlds; needs DerivU-maximal worlds (see docstring)
-
-theorem obInvFT_maxIn {cl : Finset PLLFormula} (hcl : SubClosed cl)
-    (v : {T : FTheory // MaxIn cl T}) : MaxIn cl (obInvFT cl v) := by
-  refine ⟨obInvFT_cons hcl,
+/-- Closure-maximality of the obInv successor, over a **backed** world:
+`Cons` is `obInvFT_cons_of_backed`; `InCl`/totality are structural. -/
+theorem obInvFT_maxIn {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl)
+    (v : {T : FTheory // MaxIn cl T}) (hb : Backed cl v.1) :
+    MaxIn cl (obInvFT cl v) := by
+  refine ⟨obInvFT_cons_of_backed hadeq hb,
     ⟨Finset.filter_subset _ _, Finset.filter_subset _ _,
       Finset.empty_subset _⟩, ?_⟩
   intro φ hφ
@@ -243,27 +229,48 @@ theorem obInvFT_maxIn {cl : Finset PLLFormula} (hcl : SubClosed cl)
   · exact .inl (Finset.mem_filter.mpr ⟨hφ, h⟩)
   · exact .inr (Finset.mem_filter.mpr ⟨hφ, h⟩)
 
-/-- The `obInv` world. -/
-def obInvW {cl : Finset PLLFormula} (hcl : SubClosed cl)
-    (v : {T : FTheory // MaxIn cl T}) : {T : FTheory // MaxIn cl T} :=
-  ⟨obInvFT cl v, obInvFT_maxIn hcl v⟩
+/-- The obInv successor is itself backed: by `obInv T` (prime via
+`obInv_prime`), which matches `obInvFT`'s `val` on `cl` (`boxOf_mem_iff`).
+So `obInvW` maps confluent worlds to confluent worlds. -/
+theorem obInvFT_backed {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl)
+    (v : {T : FTheory // MaxIn cl T}) (hb : Backed cl v.1) :
+    Backed cl (obInvFT cl v) := by
+  obtain ⟨T, hTc, hTp, hTmatch⟩ := hb
+  refine ⟨obInv T, obInv_closed hTc, obInv_prime hTc hTp, ?_⟩
+  intro φ hφcl
+  rw [obInvFT_val_iff]
+  constructor
+  · rintro ⟨-, hbv⟩
+    show PLLFormula.somehow φ ∈ T
+    exact (boxOf_mem_iff hTc φ).mp ((hTmatch _ (hadeq _ hφcl)).mp hbv)
+  · intro hoi
+    refine ⟨hφcl, (hTmatch _ (hadeq _ hφcl)).mpr ((boxOf_mem_iff hTc φ).mpr hoi)⟩
 
-/-- **The confluent row-witness**: `v Rₘ obInvW v`.  The `val`-inclusion
-uses ◯-adequacy + `boxUnit` for non-boxes and `boxOf`-fixity for boxes;
-the `obInv` clause is definitional. -/
-theorem rm_obInvW {cl : Finset PLLFormula} (hcl : SubClosed cl)
-    (hadeq : OBoxAdeq cl) (v : {T : FTheory // MaxIn cl T}) :
-    RmC cl v (obInvW hcl v) := by
+/-- **The confluent canonical successor** `obInvW : WC cl → WC cl`. -/
+def obInvW {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl) (w : WC cl) : WC cl :=
+  ⟨obInvFT cl ⟨w.1, w.2.1⟩,
+   obInvFT_maxIn hadeq ⟨w.1, w.2.1⟩ w.2.2,
+   obInvFT_backed hadeq ⟨w.1, w.2.1⟩ w.2.2⟩
+
+/-- **The confluent row-witness**: `w Rₘ obInvW w` in `canonFinC`.  The
+`val`-inclusion uses ◯-adequacy + `boxUnit` for non-boxes and
+`boxOf`-fixity for boxes; the `obInv` clause is definitional. -/
+theorem rm_obInvW {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl) (w : WC cl) :
+    (canonFinC cl).Rm w (obInvW hadeq w) := by
   refine ⟨fun χ hχ => ?_, fun χ _ hχ => (Finset.mem_filter.mp hχ).2⟩
-  have hχcl : χ ∈ cl := v.2.2.1.1 hχ
+  have hχcl : χ ∈ cl := w.2.1.2.1.1 hχ
   refine Finset.mem_filter.mpr ⟨hχcl, ?_⟩
   cases χ with
   | somehow ψ => exact hχ
-  | prop a => exact boxUnit (hadeq _ hχcl) hχ
-  | falsePLL => exact boxUnit (hadeq _ hχcl) hχ
-  | and a b => exact boxUnit (hadeq _ hχcl) hχ
-  | or a b => exact boxUnit (hadeq _ hχcl) hχ
-  | ifThen a b => exact boxUnit (hadeq _ hχcl) hχ
+  | prop a => exact boxUnit (T := ⟨w.1, w.2.1⟩) (hadeq _ hχcl) hχ
+  | falsePLL => exact boxUnit (T := ⟨w.1, w.2.1⟩) (hadeq _ hχcl) hχ
+  | and a b => exact boxUnit (T := ⟨w.1, w.2.1⟩) (hadeq _ hχcl) hχ
+  | or a b => exact boxUnit (T := ⟨w.1, w.2.1⟩) (hadeq _ hχcl) hχ
+  | ifThen a b => exact boxUnit (T := ⟨w.1, w.2.1⟩) (hadeq _ hχcl) hχ
+
+-- audit: the confluent successor is kernel-clean
+#print axioms obInvW
+#print axioms rm_obInvW
 
 end FinComp
 end PLLND
