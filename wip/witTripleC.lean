@@ -63,6 +63,16 @@ def canonDepthC (cl : Finset PLLFormula) (Δ : (canonFinC cl).W) : Nat :=
 theorem canonDepthC_le (cl : Finset PLLFormula) (Δ : (canonFinC cl).W) :
     canonDepthC cl Δ ≤ cl.card := Nat.sub_le _ _
 
+/-- Strict `val`-growth strictly drops the confluent depth. -/
+theorem canonDepthC_lt {cl : Finset PLLFormula} {Δ Δ' : (canonFinC cl).W}
+    (hsub : Δ.1.val ⊆ Δ'.1.val) (hne : Δ.1.val ≠ Δ'.1.val) :
+    canonDepthC cl Δ' < canonDepthC cl Δ := by
+  have hlt : Δ.1.val.card < Δ'.1.val.card :=
+    Finset.card_lt_card (Finset.ssubset_iff_subset_ne.mpr ⟨hsub, hne⟩)
+  have hle : Δ'.1.val.card ≤ cl.card := Finset.card_le_card Δ'.2.1.2.1.1
+  unfold canonDepthC
+  omega
+
 /-- **Recalibrated witnessing triple.**  As `WitTriple`, but the layered
 links sit at `canonDepth` and `canonDepth + 1` (not `2·canonDepth`),
 reflecting `crankC`'s one-level ◯-move. -/
@@ -72,8 +82,8 @@ structure WitTripleC (cl : Finset PLLFormula)
   k' : K.W
   k : K.W
   m' : M.W
-  hΔk : (traceT K cl k) = Δ.1
-  hΔk' : (traceT K cl k') = Δ.1
+  hΔk : (traceT K cl k).val = Δ.1.val
+  hΔk' : (traceT K cl k').val = Δ.1.val
   hik : K.Ri k' k
   him : M.Ri m' m
   hZ' : B.Z (canonDepthC cl Δ + 1) k' m'
@@ -121,6 +131,50 @@ def witAmalgamC : ConstraintModel where
       exact Or.inr hF
     · rw [if_neg hx]
       exact M.full_F hF
+
+/-- **The financed `iforth` maintenance** (the crux of Lemma 5.4): an
+M-move `m → v` is matched by a canonical move `Δ → Δ'` carrying a fresh
+witnessing triple.  Two-case reservoir accounting:
+  • **strict** (the trace grows): `canonDepthC` drops, so the base link at
+    the dropped depth doubles as the reservoir (`mono_le`);
+  • **same trace**: `Δ' = Δ` and the reservoir link `hZ'` is spent as the
+    new primed link — surplus 1 covers the cost-1 same-depth move.
+The `B.iback` move on the primed (reservoir) link supplies the K-partner
+`kv`; persistence (`trace_iforth`) gives `Ri Δ Δ'`.  (Fallible escape
+`v ∈ M.F` still `sorry`.) -/
+theorem witTriple_iforth (hK : MutuallyConfluent K)
+    {Δ : (canonFinC cl).W} {m : M.W} (ht : WitTripleC cl B Δ m)
+    {v : M.W} (hmv : M.Ri m v) :
+    ∃ Δ' : (canonFinC cl).W, (canonFinC cl).Ri Δ Δ' ∧
+      Nonempty (WitTripleC cl B Δ' v) := by
+  have hm'v : M.Ri ht.m' v := M.trans_i ht.him hmv
+  rcases B.iback ht.hZ' hm'v with ⟨kv, hk'kv, hZkv⟩ | hvF
+  · by_cases hsame : (traceT K cl kv).val = Δ.1.val
+    · -- same trace: Δ' = Δ, spend the reservoir link as the new primed link
+      exact ⟨Δ, (canonFinC cl).refl_i Δ,
+        ⟨⟨ht.k', kv, ht.m', hsame, ht.hΔk', hk'kv, hm'v, ht.hZ', hZkv⟩⟩⟩
+    · -- strict: Δ' = traceC kv, the depth drop finances a fresh triple
+      have hRi : Δ.1.val ⊆ (traceC hK cl kv).1.val := by
+        rw [← ht.hΔk']; exact trace_iforth hk'kv
+      have hlt : canonDepthC cl (traceC hK cl kv) < canonDepthC cl Δ :=
+        canonDepthC_lt hRi (fun h => hsame h.symm)
+      exact ⟨traceC hK cl kv, hRi,
+        ⟨⟨kv, kv, v, rfl, rfl, K.refl_i kv, M.refl_i v,
+          B.mono_le (by omega) hZkv, B.mono_le (by omega) hZkv⟩⟩⟩
+  · -- fallible escape: v ∈ M.F
+    sorry
+
+/-- **The financed `mforth` maintenance** (the ◯-move): an M-`Rₘ`-move
+`m → u` is matched by a canonical `Rₘ`-move `Δ → Δ'` (via `obInvW`)
+carrying a witnessing triple.  This is the WALL: the base link sits at
+level `d`, one below what `B.mback` needs; the reservoir `hZ'` (level
+`d+1`, at the predecessors `k' m'`) must finance the single ◯-move. -/
+theorem witTriple_mforth (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
+    {Δ : (canonFinC cl).W} {m : M.W} (ht : WitTripleC cl B Δ m)
+    {u : M.W} (hmu : M.Rm m u) :
+    ∃ Δ' : (canonFinC cl).W, (canonFinC cl).Rm Δ Δ' ∧
+      Nonempty (WitTripleC cl B Δ' u) := by
+  sorry
 
 /-- **Claim 1 (confluent), OPEN — needs the confluent canonical model.** -/
 theorem wit_pbisimC :
