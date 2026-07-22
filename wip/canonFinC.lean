@@ -272,5 +272,222 @@ theorem rm_obInvW {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl) (w : WC cl) :
 #print axioms obInvW
 #print axioms rm_obInvW
 
+/-! ## Confluence, and the `restr` constructor for backed successors -/
+
+/-- **`canonFinC` is mutually confluent** — the confluence square is
+witnessed by `obInvW v` (port of `canonU_confluent`). -/
+theorem canonFinC_confluent {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl) :
+    MutuallyConfluent (canonFinC cl) := by
+  intro x w v hm hi
+  refine ⟨obInvW hadeq v, fun ψ hψ => ?_, rm_obInvW hadeq v⟩
+  have hψcl : ψ ∈ cl := w.2.1.2.1.1 hψ
+  exact Finset.mem_filter.mpr ⟨hψcl, hi (hm.2 ψ (hadeq _ hψcl) hψ)⟩
+
+/-- Consistency of any cl-restriction of a closed prime `DerivU` theory:
+`val ⊆ T`, `mfal = ∅`, `fal ∩ T = ∅`.  (The general form of the heart.) -/
+theorem cons_of_sub_prime {T : Set PLLFormula}
+    (hTc : SClosed T) (hTp : SPrime T) {v : FTheory}
+    (hsub : (↑v.val : Set PLLFormula) ⊆ T) (hmf : v.mfal = ∅)
+    (hfal : ∀ φ ∈ v.fal, φ ∉ T) : v.Cons := by
+  intro Ds Ts hDs hTs hne hder
+  have hTsnil : Ts = [] := by
+    cases Ts with
+    | nil => rfl
+    | cons K Ts =>
+        have hK := hTs K (List.mem_cons_self ..)
+        rw [FTheory.toTheory_mfal, hmf] at hK
+        exact absurd hK (by simp)
+  subst hTsnil
+  rw [disjOf_nil_right, FTheory.toTheory_val] at hder
+  have hne' : Ds ≠ [] := by simpa using hne
+  have hbig : bigOr Ds ∈ T := hTc _ (SDeriv.mono hsub (sderiv_of_setderiv hder))
+  obtain ⟨D, hDmem, hDT⟩ := sprime_bigOr hTc hTp Ds hbig hne'
+  have hDfal : D ∈ v.fal := by
+    have hD := hDs D hDmem
+    rwa [FTheory.toTheory_fal, Finset.mem_coe] at hD
+  exact hfal D hDfal hDT
+
+open Classical in
+/-- The cl-restriction of an infinite theory, as a triple (`mfal = ∅`). -/
+noncomputable def restrFT (cl : Finset PLLFormula) (T : Set PLLFormula) : FTheory :=
+  ⟨cl.filter (· ∈ T), cl.filter (· ∉ T), ∅⟩
+
+open Classical in
+theorem restrFT_val_iff {cl : Finset PLLFormula} {T : Set PLLFormula}
+    {φ : PLLFormula} : φ ∈ (restrFT cl T).val ↔ φ ∈ cl ∧ φ ∈ T := by
+  simp only [restrFT, Finset.mem_filter]
+
+open Classical in
+theorem restr_backed {cl : Finset PLLFormula} {T : Set PLLFormula}
+    (hTc : SClosed T) (hTp : SPrime T) : Backed cl (restrFT cl T) := by
+  refine ⟨T, hTc, hTp, fun φ hφ => ⟨fun h => ?_, fun h => ?_⟩⟩
+  · exact ((restrFT_val_iff (cl := cl) (T := T)).mp h).2
+  · exact (restrFT_val_iff (cl := cl) (T := T)).mpr ⟨hφ, h⟩
+
+open Classical in
+theorem restr_maxIn {cl : Finset PLLFormula} {T : Set PLLFormula}
+    (hTc : SClosed T) (hTp : SPrime T) : MaxIn cl (restrFT cl T) := by
+  refine ⟨cons_of_sub_prime hTc hTp (fun ψ hψ => ?_) rfl (fun ψ hψ => ?_),
+    ⟨Finset.filter_subset _ _, Finset.filter_subset _ _, Finset.empty_subset _⟩,
+    fun φ hφ => ?_⟩
+  · exact (restrFT_val_iff.mp (Finset.mem_coe.mp hψ)).2
+  · exact (Finset.mem_filter.mp hψ).2
+  · by_cases h : φ ∈ T
+    · exact .inl (restrFT_val_iff.mpr ⟨hφ, h⟩)
+    · exact .inr (Finset.mem_filter.mpr ⟨hφ, h⟩)
+
+/-- **Backed world from a closed prime theory** — the cl-restriction as a
+`WC cl`.  This is where `prime_extension` re-enters at the finite level. -/
+noncomputable def restr (cl : Finset PLLFormula) {T : Set PLLFormula}
+    (hTc : SClosed T) (hTp : SPrime T) : WC cl :=
+  ⟨restrFT cl T, restr_maxIn hTc hTp, restr_backed hTc hTp⟩
+
+#print axioms canonFinC_confluent
+#print axioms restr
+
+/-! ## Box/val collapse helpers and the backed ⊃-successor -/
+
+/-- `◯φ ∈ val ⇒ boxOf φ ∈ val` (deductive closure + `◯◯ → ◯`). -/
+theorem boxOf_mem_of_somehow_mem {cl : Finset PLLFormula}
+    {w : {T : FTheory // MaxIn cl T}} {φ : PLLFormula} (hbcl : boxOf φ ∈ cl)
+    (h : PLLFormula.somehow φ ∈ w.1.val) : boxOf φ ∈ w.1.val := by
+  cases φ with
+  | somehow φ' =>
+      simp only [boxOf_somehow]
+      refine w.2.ded_closed (by simpa using hbcl) ?_
+      exact setDeriv_coe_iff.mpr
+        ⟨LaxND.laxElim (.iden (Finset.mem_toList.mpr h)) (.iden (.head _))⟩
+  | prop a => exact h
+  | falsePLL => exact h
+  | and a b => exact h
+  | or a b => exact h
+  | ifThen a b => exact h
+
+/-- `boxOf φ ∈ val ⇒ ◯φ ∈ val` (given `◯φ ∈ cl`; the box case is `boxUnit`
+on the collapsed box). -/
+theorem somehow_mem_of_boxOf_mem {cl : Finset PLLFormula}
+    {w : {T : FTheory // MaxIn cl T}} {φ : PLLFormula}
+    (hφcl : PLLFormula.somehow φ ∈ cl) (h : boxOf φ ∈ w.1.val) :
+    PLLFormula.somehow φ ∈ w.1.val := by
+  cases φ with
+  | somehow φ' => simp only [boxOf_somehow] at h; exact boxUnit hφcl h
+  | prop a => exact h
+  | falsePLL => exact h
+  | and a b => exact h
+  | or a b => exact h
+  | ifThen a b => exact h
+
+/-- **The backed ⊃-successor**: a falsified implication `φ ⊃ ψ ∈ fal w`
+yields a backed `Rᵢ`-successor forcing `φ` and refuting `ψ`.  Built by
+`prime_extension` on `insert φ T` (backing) — *not* the `LaxND`
+`lindenbaum`, which would break backing. -/
+theorem imp_fal_successor {cl : Finset PLLFormula} (w : WC cl)
+    {φ ψ : PLLFormula} (hφ₁ : φ ∈ cl) (hψ₁ : ψ ∈ cl)
+    (hf : φ.ifThen ψ ∈ w.1.fal) :
+    ∃ w' : WC cl, w.1.val ⊆ w'.1.val ∧ φ ∈ w'.1.val ∧ ψ ∈ w'.1.fal := by
+  obtain ⟨T, hTc, hTp, hTmatch⟩ := w.2.2
+  have hφψcl : φ.ifThen ψ ∈ cl := w.2.1.2.1.2.1 hf
+  have hnotval : φ.ifThen ψ ∉ w.1.val := fun hv => w.2.1.not_mem_fal_of_mem_val hv hf
+  have hnotT : φ.ifThen ψ ∉ T := fun hT => hnotval ((hTmatch _ hφψcl).mpr hT)
+  have hnd : ¬ SDeriv (insert φ T) ψ := fun hd => hnotT (hTc _ (SDeriv.deduction hd))
+  obtain ⟨T', hsub', hψ'⟩ := prime_extension hnd
+  refine ⟨restr cl T'.2.1 T'.2.2, fun χ hχ => ?_, ?_, ?_⟩
+  · have hχcl : χ ∈ cl := w.2.1.2.1.1 hχ
+    exact (restrFT_val_iff (cl := cl) (T := T'.1)).mpr
+      ⟨hχcl, hsub' (Set.mem_insert_of_mem _ ((hTmatch _ hχcl).mp hχ))⟩
+  · exact (restrFT_val_iff (cl := cl) (T := T'.1)).mpr ⟨hφ₁, hsub' (Set.mem_insert _ _)⟩
+  · show ψ ∈ (restrFT cl T'.1).fal
+    simp only [restrFT, Finset.mem_filter]
+    exact ⟨hψ₁, hψ'⟩
+
+#print axioms imp_fal_successor
+
+/-! ## The truth lemma for `canonFinC` -/
+
+/-- **Truth lemma** for the confluent finite canonical model: on a
+◯-adequate subformula-closed closure, `val` forces and `fal` refutes.
+The ⊃-backward step uses the backed `imp_fal_successor`; the ◯-case is the
+`obInvW` bare-possibility (confluence). -/
+theorem truth_lemmaC {cl : Finset PLLFormula} (hcl : SubClosed cl)
+    (hadeq : OBoxAdeq cl) :
+    ∀ (φ : PLLFormula), φ ∈ cl → ∀ w : WC cl,
+      (φ ∈ w.1.val → (canonFinC cl).force w φ) ∧
+        (φ ∈ w.1.fal → ¬ (canonFinC cl).force w φ) := by
+  intro φ
+  induction φ with
+  | prop a =>
+      intro hφ w
+      refine ⟨fun h => .inr h, fun h hf => ?_⟩
+      rcases hf with hout | hv
+      · exact hout (w.2.1.2.1.2.1 h)
+      · exact w.2.1.not_fal_deriv h (of_mem (Finset.mem_coe.mpr hv))
+  | falsePLL =>
+      intro hφ w
+      refine ⟨fun h => h, fun h hf => ?_⟩
+      exact w.2.1.not_fal_deriv h (of_mem (Finset.mem_coe.mpr hf))
+  | and φ ψ ihφ ihψ =>
+      intro hφ w
+      have hφ₁ := hcl.and_left hφ
+      have hψ₁ := hcl.and_right hφ
+      constructor
+      · intro h
+        have h₁ : φ ∈ w.1.val := w.2.1.ded_closed hφ₁
+          (map (fun p => .andElim1 p) (of_mem (Finset.mem_coe.mpr h)))
+        have h₂ : ψ ∈ w.1.val := w.2.1.ded_closed hψ₁
+          (map (fun p => .andElim2 p) (of_mem (Finset.mem_coe.mpr h)))
+        exact ⟨(ihφ hφ₁ w).1 h₁, (ihψ hψ₁ w).1 h₂⟩
+      · intro h hf
+        rcases w.2.1.fal_and hcl h with h' | h'
+        · exact (ihφ hφ₁ w).2 h' hf.1
+        · exact (ihψ hψ₁ w).2 h' hf.2
+  | or φ ψ ihφ ihψ =>
+      intro hφ w
+      have hφ₁ := hcl.or_left hφ
+      have hψ₁ := hcl.or_right hφ
+      constructor
+      · intro h
+        rcases w.2.1.or_mem hcl h with h' | h'
+        · exact .inl ((ihφ hφ₁ w).1 h')
+        · exact .inr ((ihψ hψ₁ w).1 h')
+      · intro h hf
+        obtain ⟨h₁, h₂⟩ := w.2.1.fal_or hcl h
+        rcases hf with hf | hf
+        · exact (ihφ hφ₁ w).2 h₁ hf
+        · exact (ihψ hψ₁ w).2 h₂ hf
+  | ifThen φ ψ ihφ ihψ =>
+      intro hφ w
+      have hφ₁ := hcl.imp_left hφ
+      have hψ₁ := hcl.imp_right hφ
+      constructor
+      · intro h w' hle hfφ
+        rcases w'.2.1.imp_mem hcl (hle h) with h'' | h''
+        · exact absurd hfφ ((ihφ hφ₁ w').2 h'')
+        · exact (ihψ hψ₁ w').1 h''
+      · intro h hf
+        obtain ⟨w', hle, hfφ', hffψ'⟩ := imp_fal_successor w hφ₁ hψ₁ h
+        exact (ihψ hψ₁ w').2 hffψ' (hf w' hle ((ihφ hφ₁ w').1 hfφ'))
+  | somehow φ ih =>
+      intro hφ w
+      have hφ₁ : φ ∈ cl := hcl.lax hφ
+      constructor
+      · intro h
+        rw [force_somehow_iff_of_confluent (canonFinC_confluent hadeq)]
+        refine ⟨obInvW hadeq w, rm_obInvW hadeq w, (ih hφ₁ (obInvW hadeq w)).1 ?_⟩
+        exact Finset.mem_filter.mpr
+          ⟨hφ₁, boxOf_mem_of_somehow_mem (w := ⟨w.1, w.2.1⟩) (hadeq _ hφ₁) h⟩
+      · intro h hff
+        rw [force_somehow_iff_of_confluent (canonFinC_confluent hadeq)] at hff
+        obtain ⟨u, hwu, hfu⟩ := hff
+        have hφu : φ ∈ u.1.val := by
+          rcases u.2.1.2.2 φ hφ₁ with hv | hfl
+          · exact hv
+          · exact absurd hfu ((ih hφ₁ u).2 hfl)
+        have hbw : boxOf φ ∈ w.1.val := hwu.2 φ (hadeq _ hφ₁) hφu
+        exact w.2.1.not_fal_deriv h
+          (of_mem (Finset.mem_coe.mpr
+            (somehow_mem_of_boxOf_mem (w := ⟨w.1, w.2.1⟩) hφ hbw)))
+
+#print axioms truth_lemmaC
+
 end FinComp
 end PLLND
