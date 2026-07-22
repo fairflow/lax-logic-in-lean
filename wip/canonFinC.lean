@@ -1,4 +1,5 @@
 import LaxLogic.PLLFinComp
+import LaxLogic.PLLConfluentComplete
 
 /-!
 # `canonFinC` — the confluent finite canonical model (PCLL)  [WIP]
@@ -18,6 +19,7 @@ namespace PLLND
 namespace FinComp
 
 open SetDeriv
+open ConfluentU
 
 variable {cl : Finset PLLFormula}
 
@@ -110,13 +112,126 @@ theorem obInvFT_val_iff {cl : Finset PLLFormula}
     ψ ∈ (obInvFT cl v).val ↔ ψ ∈ cl ∧ boxOf ψ ∈ v.1.val :=
   Finset.mem_filter
 
-/-- **The heart: consistency of `obInvW`.**  If `val(obInvW v)` derived
-the disjunction of its `fal`, the ◯-of-that (via `laxElim` + the
-distribution) would land a `boxOf`-of-a-`fal`-formula in `val(v)`,
-contradicting `fal`.  OPEN — the interactive target. -/
+/-! ## The confluent backing — transferring `obInv_prime` to the finite level
+
+The finite obInv is consistent only over worlds that arise as
+cl-restrictions of `PLLConfluentComplete`'s infinite closed-prime
+`DerivU` theories (`canonU` worlds).  We carry that backing explicitly and
+transfer the two facts we need — `obInv_closed`/`obInv_prime` — verbatim.
+No new Lindenbaum, no new completeness: `DerivU ⊇ LaxND`, so these worlds
+still satisfy the ambient `MaxIn`. -/
+
+/-- `LaxND`-derivability from a set implies `DerivU`-derivability (`SDeriv`). -/
+theorem sderiv_of_setderiv {Γ : Set PLLFormula} {φ : PLLFormula}
+    (h : Γ ⊩ φ) : SDeriv Γ φ := by
+  obtain ⟨L, hL, ⟨p⟩⟩ := h
+  exact ⟨L, hL, DerivU.of_nd p⟩
+
+/-- In a deductively closed (`SClosed`) set the collapsed and raw boxes
+agree: `boxOf ψ ∈ T ↔ ◯ψ ∈ T` (the box case is `◯R`/`◯M`). -/
+theorem boxOf_mem_iff {T : Set PLLFormula} (hc : SClosed T) (ψ : PLLFormula) :
+    boxOf ψ ∈ T ↔ PLLFormula.somehow ψ ∈ T := by
+  cases ψ with
+  | somehow ψ' =>
+      simp only [boxOf_somehow]
+      constructor
+      · intro h; exact hc _ (SDeriv.unit (SDeriv.of_mem h))
+      · intro h
+        -- `◯◯ψ' ⊃ ◯ψ'` inline (the `canonU.trans_m` term)
+        have hM : LaxND ([] : List PLLFormula)
+            ((somehow (somehow ψ')).ifThen (somehow ψ')) :=
+          .impIntro (.laxElim (φ := somehow ψ') (.iden (by simp)) (.iden (by simp)))
+        exact hc _ (SDeriv.mp ⟨[], by simp, DerivU.of_nd hM⟩ (SDeriv.of_mem h))
+  | prop a => exact Iff.rfl
+  | falsePLL => exact Iff.rfl
+  | and a b => exact Iff.rfl
+  | or a b => exact Iff.rfl
+  | ifThen a b => exact Iff.rfl
+
+/-- Primeness over a finite disjunction: a closed prime set containing
+`⋁Ds` (nonempty) contains one of the `Ds` (the `⊥`-tail is absorbed by
+closure). -/
+theorem sprime_bigOr {U : Set PLLFormula} (hc : SClosed U) (hp : SPrime U) :
+    ∀ (Ds : List PLLFormula), bigOr Ds ∈ U → Ds ≠ [] → ∃ D ∈ Ds, D ∈ U := by
+  intro Ds
+  induction Ds with
+  | nil => intro _ hne; exact absurd rfl hne
+  | cons D Ds' ih =>
+      intro h _
+      rcases hp D (bigOr Ds') h with hD | hrest
+      · exact ⟨D, List.mem_cons_self .., hD⟩
+      · by_cases hDs' : Ds' = []
+        · subst hDs'
+          have hDU : D ∈ U := hc D ⟨[PLLFormula.falsePLL], by simpa [bigOr] using hrest,
+            DerivU.of_nd (.falsoElim D (.iden (by simp)))⟩
+          exact ⟨D, List.mem_cons_self .., hDU⟩
+        · obtain ⟨D', hD'mem, hD'U⟩ := ih hrest hDs'
+          exact ⟨D', List.mem_cons_of_mem _ hD'mem, hD'U⟩
+
+/-- The confluent backing: `v`'s closure-decisions come from an infinite
+closed prime `DerivU` theory (a `canonU` world).  Exactly what a
+cl-restriction of a `canonU` world carries. -/
+def Backed (cl : Finset PLLFormula) (v : FTheory) : Prop :=
+  ∃ T : Set PLLFormula, SClosed T ∧ SPrime T ∧ ∀ φ ∈ cl, (φ ∈ v.val ↔ φ ∈ T)
+
+/-- **The heart, now TRUE.**  Over a ◯-adequate closure and a backed
+world, the finite obInv successor is consistent — because its `val` is a
+subset of the (prime, by `obInv_prime`) infinite `obInv T`, so any derived
+disjunction of `fal`-formulas would put a `fal`-formula's box back in
+`val v`.  Pure transfer of `obInv_closed`/`obInv_prime`. -/
+theorem obInvFT_cons_of_backed {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl)
+    {v : {T : FTheory // MaxIn cl T}} (hback : Backed cl v.1) :
+    (obInvFT cl v).Cons := by
+  obtain ⟨T, hTc, hTp, hTmatch⟩ := hback
+  -- `val (obInvFT cl v) ⊆ obInv T`
+  have hsub : (↑(obInvFT cl v).val : Set PLLFormula) ⊆ obInv T := by
+    intro ψ hψ
+    obtain ⟨hψcl, hbv⟩ := obInvFT_val_iff.mp (Finset.mem_coe.mp hψ)
+    show PLLFormula.somehow ψ ∈ T
+    exact (boxOf_mem_iff hTc ψ).mp ((hTmatch _ (hadeq _ hψcl)).mp hbv)
+  intro Ds Ts hDs hTs hne hder
+  have hTsnil : Ts = [] := by
+    cases Ts with
+    | nil => rfl
+    | cons K Ts => exact absurd (hTs K (List.mem_cons_self ..)) (by simp [obInvFT])
+  subst hTsnil
+  rw [disjOf_nil_right, FTheory.toTheory_val] at hder
+  have hne' : Ds ≠ [] := by simpa using hne
+  have hbig : bigOr Ds ∈ obInv T :=
+    obInv_closed hTc (bigOr Ds) (SDeriv.mono hsub (sderiv_of_setderiv hder))
+  obtain ⟨D, hDmem, hDobinv⟩ :=
+    sprime_bigOr (obInv_closed hTc) (obInv_prime hTc hTp) Ds hbig hne'
+  have hDfal := hDs D hDmem
+  simp only [FTheory.toTheory_fal, Finset.mem_coe, obInvFT, Finset.mem_filter] at hDfal
+  obtain ⟨hDcl, hDbv⟩ := hDfal
+  have hbT : boxOf D ∈ T := (boxOf_mem_iff hTc D).mpr hDobinv
+  exact hDbv ((hTmatch _ (hadeq _ hDcl)).mpr hbT)
+
+-- audit: the backed heart is kernel-clean (pure transfer of obInv_prime)
+#print axioms obInvFT_cons_of_backed
+
+/-- **The heart: consistency of `obInvW`.**  The intended argument: if
+`val(obInvW v)` derived the disjunction of its `fal`, the ◯-of-that (via
+`laxElim` + the DISTRIBUTION) would land a `boxOf`-of-a-`fal`-formula in
+`val(v)`, contradicting `fal`.
+
+**FALSE AS STATED** (`v` ranges over LaxND-`MaxIn` worlds, which do NOT
+validate distribution).  Concrete countermodel, `cl = Cl◯ {a ∨ b} =
+{a∨b, a, b, ◯(a∨b), ◯a, ◯b}`:  `lindenbaum` extends the LaxND-consistent
+triple `⟨{◯(a∨b)}, {◯a, ◯b}, ∅⟩` (consistent because `◯(a∨b) ⊬ ◯a ∨ ◯b`
+in plain PLL) to a `MaxIn cl` world `v` with `◯(a∨b) ∈ val v`,
+`◯a, ◯b ∈ fal v`.  Then `obInvFT cl v` has `a∨b ∈ val` (its box is in
+`val v`) but `a, b ∈ fal` (their boxes are in `fal v`), so
+`val ⊩ a ∨ b = disjOf [a,b] []` with `a,b ∈ fal` — `Cons` fails.
+
+The distribution step (`obInv_prime`, `PLLConfluentComplete`) lives in
+`DerivU`, not `LaxND`.  So the finite confluent worlds must be
+`DerivU`-maximal, not `MaxIn cl`.  This `sorry`, and everything below
+that depends on it, is STRANDED pending the `DerivU` finite canonical
+model (the real work item).  See the closing note / status report. -/
 theorem obInvFT_cons {cl : Finset PLLFormula} (hcl : SubClosed cl)
     {v : {T : FTheory // MaxIn cl T}} : (obInvFT cl v).Cons := by
-  sorry
+  sorry -- FALSE over LaxND worlds; needs DerivU-maximal worlds (see docstring)
 
 theorem obInvFT_maxIn {cl : Finset PLLFormula} (hcl : SubClosed cl)
     (v : {T : FTheory // MaxIn cl T}) : MaxIn cl (obInvFT cl v) := by
