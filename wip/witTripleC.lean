@@ -54,7 +54,42 @@ noncomputable def traceC {K : ConstraintModel} (hK : MutuallyConfluent K)
     (cl : Finset PLLFormula) (k : K.W) : (canonFinC cl).W :=
   ⟨traceT K cl k, traceT_maxIn K cl k, trace_backed hK k⟩
 
+/-- **The confluent `trace_mforth`**: a `K`-`Rₘ`-move gives the canonical
+`RmC`-move between traces.  `val` moves by persistence; the `obInv`
+(`boxOf`) clause is bare possibility — `force κ χ` with `k Rₘ κ` yields
+`force k (◯χ)` directly (and `◯◯ → ◯` on boxes via `trans_m`). -/
+theorem traceC_mforth {K : ConstraintModel} (hK : MutuallyConfluent K)
+    {cl : Finset PLLFormula} {k κ : K.W} (h : K.Rm k κ) :
+    (canonFinC cl).Rm (traceC hK cl k) (traceC hK cl κ) := by
+  refine ⟨fun χ hχ => ?_, fun χ hbcl hχ => ?_⟩
+  · obtain ⟨hcl, hf⟩ := mem_traceT_val.mp hχ
+    exact mem_traceT_val.mpr ⟨hcl, K.force_hered (K.sub_mi h) hf⟩
+  · obtain ⟨hcl, hf⟩ := mem_traceT_val.mp hχ
+    refine mem_traceT_val.mpr ⟨hbcl, ?_⟩
+    cases χ with
+    | somehow χ' =>
+        rw [boxOf_somehow, force_somehow_iff_of_confluent hK]
+        rw [force_somehow_iff_of_confluent hK] at hf
+        obtain ⟨w', hw', hfw'⟩ := hf
+        exact ⟨w', K.trans_m h hw', hfw'⟩
+    | prop a =>
+        show K.force k (PLLFormula.somehow (PLLFormula.prop a))
+        rw [force_somehow_iff_of_confluent hK]; exact ⟨κ, h, hf⟩
+    | falsePLL =>
+        show K.force k (PLLFormula.somehow PLLFormula.falsePLL)
+        rw [force_somehow_iff_of_confluent hK]; exact ⟨κ, h, hf⟩
+    | and a b =>
+        show K.force k (PLLFormula.somehow (PLLFormula.and a b))
+        rw [force_somehow_iff_of_confluent hK]; exact ⟨κ, h, hf⟩
+    | or a b =>
+        show K.force k (PLLFormula.somehow (PLLFormula.or a b))
+        rw [force_somehow_iff_of_confluent hK]; exact ⟨κ, h, hf⟩
+    | ifThen a b =>
+        show K.force k (PLLFormula.somehow (PLLFormula.ifThen a b))
+        rw [force_somehow_iff_of_confluent hK]; exact ⟨κ, h, hf⟩
+
 #print axioms trace_backed
+#print axioms traceC_mforth
 
 /-- Depth in the confluent finite model (same formula as `canonDepth`). -/
 def canonDepthC (cl : Finset PLLFormula) (Δ : (canonFinC cl).W) : Nat :=
@@ -174,7 +209,22 @@ theorem witTriple_mforth (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
     {u : M.W} (hmu : M.Rm m u) :
     ∃ Δ' : (canonFinC cl).W, (canonFinC cl).Rm Δ Δ' ∧
       Nonempty (WitTripleC cl B Δ' u) := by
-  sorry
+  rcases Nat.eq_zero_or_pos (canonDepthC cl Δ) with hd0 | hd0
+  · -- canonDepthC Δ = 0 (Δ maximal / improper world): edge case
+    sorry
+  · obtain ⟨d0, hd0'⟩ := Nat.exists_eq_succ_of_ne_zero hd0.ne'
+    -- base-`mback` (bare possibility): the K-partner κ for u, at level d0
+    rcases B.mback (hd0' ▸ ht.hZ) hmu with ⟨κ, hkκ, hZκ | ⟨hκF, huF⟩⟩
+    · -- **the canonical ◯-move `Δ ⟶RmC traceC κ`** — PROVED via `traceC_mforth`
+      refine ⟨traceC hK cl κ, ⟨?_, fun χ hbcl hχ => ?_⟩, ?_⟩
+      · rw [← ht.hΔk]; exact (traceC_mforth hK hkκ).1
+      · rw [← ht.hΔk]; exact (traceC_mforth hK hkκ).2 χ hbcl hχ
+      · -- successor triple at (traceC κ, u): base link `hZκ : B.Z d0 κ u` in
+        -- hand; financing the successor's links (canonDepthC(traceC κ) vs d0)
+        -- is the same-trace / promise-pair residue (the dead-end case).
+        sorry
+    · -- fallible escape κ ∈ K.F, u ∈ M.F
+      sorry
 
 /-- **Claim 1 (confluent), OPEN — needs the confluent canonical model.** -/
 theorem wit_pbisimC :
