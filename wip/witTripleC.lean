@@ -257,6 +257,34 @@ def MforthResidue : Prop :=
     (traceT K cl κ).val = Δ.1.val →
     ∃ Δ' : (canonFinC cl).W, (canonFinC cl).Rm Δ Δ' ∧ WitTripleC cl B Δ' u
 
+/-- **The same-trace-base sufficient condition** for the residue: if, in
+every residue configuration, SOME K-world with the same trace carries a
+level-`2d` link to `u`, then the residue holds — the reflexive canonical
+move answers, with the old reservoir intact.  (The probe's rescue R1;
+this bridge makes its statistic a Lean-checkable target.) -/
+theorem mforthResidue_of_sameTraceBase
+    (h : ∀ (_hK : MutuallyConfluent K)
+      {Δ : (canonFinC cl).W} {k' k kv κ : K.W} {m' m u : M.W},
+      PLLFormula.falsePLL ∉ Δ.1.val →
+      (traceT K cl k).val = Δ.1.val →
+      (traceT K cl k').val = Δ.1.val →
+      M.Ri m' m → M.Rm m u → u ∉ M.F →
+      B.Z (2 * canonDepthC cl Δ + 1) k' m' →
+      B.Z (2 * canonDepthC cl Δ) k m →
+      K.Ri k' kv → B.Z (2 * canonDepthC cl Δ) kv u →
+      (traceT K cl kv).val ≠ Δ.1.val →
+      K.Rm k κ → B.Z (2 * canonDepthC cl Δ - 1) κ u →
+      (traceT K cl κ).val = Δ.1.val →
+      ∃ kb : K.W, (traceT K cl kb).val = Δ.1.val ∧
+        B.Z (2 * canonDepthC cl Δ) kb u) :
+    MforthResidue cl B := by
+  intro hK Δ k' k kv κ m' m u hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+    hsame hkκ hZκ hκsame
+  obtain ⟨kb, hΔkb, hZkb⟩ := h hK hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+    hsame hkκ hZκ hκsame
+  exact ⟨Δ, (canonFinC cl).refl_m Δ,
+    .proper k' kb m' hΔkb hΔk' (M.trans_i him (M.sub_mi hmu)) hZ' hZkb⟩
+
 /-! ## The step lemmas -/
 
 /-- **The financed `iforth` maintenance**: an M-move `m ⟶Rᵢ v` is matched
