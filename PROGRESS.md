@@ -849,3 +849,42 @@ for PCLL now rests on exactly TWO open obligations, both
 m-clause-shaped: pillar 2's agreement-side m-clauses and this
 residue.  Cross-route: v2quant re-running with the §33 battery/budget
 fixes (second worktree agent); X9 match test pending.
+
+## 35. 2026-07-25 later: probe verdicts land — the residue never arises on the battery; THE X9 CROSS-ROUTE MATCH IS CERTIFIED
+
+**b.ii probe** (wip/bii_probe.lean, exe biiprobe; battery 825 one-atom
+models, 531 confluent as K, 438,075 confluent pairs, six ◯-adequate
+closures; negative control PASSED — the §33 refuted clause fails ~50k
+times per closure in the same approximants): **0 residue
+configurations**.  Funnel: 13,204 candidates reach a grown
+iback-partner; at every one the mback-partner set is nonempty and
+consists ENTIRELY of grown-trace worlds — growth propagates, b.i
+always applies.  Counterfactual rescues: R1 (same-trace) 0/13,204, R2
+(grown, RmC-financed) 13,204/13,204 — the load-bearing repair is
+growth-shaped.  Low-depth impossibility decoded paper-level (d ≤ 2
+shut; open region d ≥ 3 with a crank-2d distinguisher, beyond the
+battery's stabilisation depth).  Lean: mforthResidue_of_config_absurd
+pins the vacuity route; MforthResidue weakened to carry SubClosed cl
+(verifier finding).
+
+**v2quant completion** (wip/v2quant_probe.lean + out3; 24-frame sweep
+battery incl. the F-free 3-chain + resid-probe gadgets, scan at
+findBudget 2000 with skip-counting, match tests at 40000): every
+pending row stabilises at r ≤ 4 against budgets 5–11.  **THE X9 MATCH
+TEST PASSES, proof-certified in BOTH directions**:
+∀p(¬◯⊥⊃◯p) ≡ ◯(¬◯⊥⊃◯¬¬◯⊥) ≡ ¬◯⊥⊃◯⊥ (one RN(◯,{}) class, ¬¬◯⊥) —
+the syntactic H2 stabilisation and the semantic rank-descent compute
+the same object; per the §33 ledger, one proof now pays three debts.
+Also certified: ∀p(gap row) ≡ ◯⊥, ∀p(◯p) ≡ ◯⊥.  ONE undecided cell in
+the whole experiment: D₆ = ◯¬◯⊥⊃(◯⊥∨¬◯⊥) vs ◯(◯p⊃p) (the recorded
+staller; killed at 2000 and 40000 nodes) — if D₆ ⊢ ◯(◯p⊃p) the
+gap-row join would climb at r=6.
+
+**Verification fan-out** (4 adversarial agents): could not refute the
+closure claim.  Quote discipline: "the amalgamation THEOREMS are
+sorry-free and axiom-clean" (the import chain retains the sorried
+general wit_pbisim/wit_force, provably not depended on).  Recorded
+gaps: entry budget 2·cl.card+1 coarser than 2·nu+1 (interpolant rank
+recalibrates); E-form input not agreement-derivable in general — BUT
+the no-go counterexample (forkF) is NOT mutually confluent, so over
+confluent models E-form delivery is OPEN, a new pillar-2 opening.
