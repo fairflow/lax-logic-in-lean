@@ -129,3 +129,8 @@ root = "wip.confl_run"
 [[lean_exe]]
 name = "conflaudit"
 root = "wip.confl_audit"
+
+# b.ii configuration probe (amalgamation ◯-case residue; R1/R2 resolution).
+[[lean_exe]]
+name = "biiprobe"
+root = "wip.bii_probe"
