@@ -1650,3 +1650,121 @@ fully financed by the LEGO; (iii) nothing tonight touches pillars 1–2:
 the obstruction geography (§§27–30) is confirmed from a new angle —
 rank-descent at i-moves is exactly the fragment-blindness of m-rows
 propagated one level up.
+
+## §0(ii) The confluent amalgamation CLOSED modulo one Prop; the wall dissolves (2026-07-25)
+
+Session verdict up front: **Lemma 5.4 for PCLL is now machine-checked
+end to end, conditional on a single displayed Prop** —
+`wip/witTripleC.lean` (branch ui-confluence, b10d274 + the R1 bridge)
+is sorry-free, `#guard_msgs`-pinned at
+`[propext, Classical.choice, Quot.sound]` throughout:
+`witTriple_iforth`, `witTriple_mforth`, `wit_pbisimC` (Claim 1),
+`wit_forceC` (Claim 2, the full truth lemma), and
+`amalgamation_assembledC` all hold with the one open obligation
+`MforthResidue` taken as a hypothesis.  The two claims that stood as
+"the open mathematics" since §0(hh) are gone as separate problems.
+
+### The two discoveries that closed it
+
+**1. Same-trace ◯-moves are matched reflexively.**  `RmC` is reflexive
+(`RmC_refl`), so an M-side move `m ⟶Rₘ u` whose canonical theory does
+not grow is answered by `Δ′ = Δ` — no canonical motion at all.  The
+base link for the new pair `(Δ, u)` is regenerated from the reservoir
+by `B.iback` along `Rᵢ m′ u` (using `Rₘ ⊆ Rᵢ` and `Rᵢ m′ m`), which
+costs exactly the reservoir's surplus of 1.  §0(hh)'s wall — "the
+same-theory ◯-move needs an unprimed 2d-link and every spend yields
+2d−1" — assumed the ◯-move must be consumed by `B.mback`.  It need
+not be: over confluent models the ◯-move that goes nowhere
+canonically is an i-move in disguise.  Dually, same-theory K-side
+◯-moves never arise at all: a K-side ◯-move is taken only towards a
+witness for a formula the theory lacks (else the world is its own
+row-witness by reflexivity), so its trace strictly grows and the
+depth drop finances everything.  The "unfinanceable combination"
+(same-theory + ◯) of §0(hh) is therefore EMPTY on both sides — except
+for the residue configuration below.
+
+**2. The truth lemma's ◯-forward direction is definitional.**
+`RmC Δ Δ₂` contains the anticipation clause
+`∀χ, boxOf χ ∈ cl → χ ∈ val Δ₂ → boxOf χ ∈ val Δ`.  So if an amalgam
+world has an Rₘ-successor forcing ψ, then (by induction) ψ ∈ val Δ₂,
+and `◯ψ ∈ val Δ` falls out of the relation itself — no promise
+component, no `mfal`, no canonical truth lemma even.  The ◯-backward
+direction is bare possibility in K (the witness κ with `force κ ψ`)
+pushed through `B.mforth`, financed by strict growth since the
+interesting case has ψ ∉ val; the fallible escapes land on the `top`
+triples.  The ⊃-backward direction is the K-side refuter pushed
+through `B.iforth` (its escape is impossible: a fallible refuter
+would force the consequent), likewise strictly financed.
+
+### The definitions assessment (requested)
+
+* **Budgets (2d, 2d+1) restored.**  The `crankC` recalibration to
+  (d, d+1) was a MISCALIBRATION, now revoked: the slope 2 pays for
+  re-financing BOTH links of a triple out of one one-level spend, and
+  has nothing to do with ◯ costing 2 in `crank`.  The ledger closes
+  exactly at slope 2: a strict descent hands `Z (2d−1)` and the
+  reflexive successor triple needs `2d′+1 ≤ 2(d−1)+1 = 2d−1`.  Slope
+  1 fails the strict ◯-case by one level — the derivation is forced,
+  not chosen.
+* **`hik` (K-side edge `k′ ≼ᵢ k`) dropped** — consumed by nothing.
+* **`hM` (confluence of M) dropped** — only K, the model being
+  realised, need be confluent.  M is arbitrary.
+* **Triples are an inductive with a `top` constructor** (`⊥ ∈ val Δ`
+  and `m ∈ M.F`): every fallible escape of every clause lands there,
+  and all maintenance and both truth-lemma directions are trivial
+  there.  `canonTopC` (backed by the full theory) is `Rᵢ`-reachable
+  from every world; the `Rₘ`-escapes reach top-val worlds as traces
+  of fallible K-partners (`fall` at the spent link supplies them).
+* **Trace links are val-equalities** (not FTheory equalities) — the
+  `fal`/`mfal` components of traces are dead weight for the
+  amalgamation.  More: **the whole promise component `mfal` is dead
+  in the confluent route.**  Bare possibility replaces promise
+  bookkeeping; the §0(hh) canonical LEGO (promise_blocks_row,
+  trace_box_refuter, rm_canonTop_iff) belongs to the non-confluent
+  `canonFin` route and is not consumed here.
+* **What stays**: `LayeredBisimE` stays as the INPUT format — and the
+  consumption inventory is now exact: `iback` (both step lemmas),
+  `mback` (strict ◯-case), `iforth` (⊃-backward), `mforth`
+  (◯-backward), `atoms`, `fall`, `mono`.  NOTE this consumes the
+  E-form m-clauses, so pillar 2 still owes them from agreement (the
+  two sorries of `layered_of_frag_agree_W`); the §3″ hope of
+  bypassing the m-clauses through promises is NOT what happened —
+  bare possibility made the consumption sites financeable instead.
+  `crankC`'s role is confined to pillar 2.
+
+### The residue (the single open Prop)
+
+`MforthResidue`: at a proper triple for `(Δ, m)` with `⊥ ∉ val Δ`
+(so `d ≥ 1`), an M-move `m ⟶Rₘ u` with `u` infallible, where BOTH
+spends degenerate:
+
+* the reservoir's `iback`-partner `kv` (`Rᵢ k′ kv`, level `2d`)
+  strictly grows the trace — right level, wrong trace;
+* the base's `mback`-partner `κ` (`Rₘ k κ`, level `2d−1`) keeps the
+  trace — right trace, one level short.
+
+Wanted: some canonical `RmC`-successor of `Δ` carrying a triple for
+`u`.  Answering `Δ` needs a same-trace level-2d base (κ is one
+short); answering `trace kv` needs `RmC Δ (trace kv)`, whose
+anticipation clause fails for the unanticipated growth; answering
+`trace κ` is answering `Δ`.  All in-hand moves are exhausted — this
+is the sharp remnant of the §0(hh) wall, now confined to the case
+"M-side-first ◯-move whose two partners disagree about growth".
+`mforthResidue_of_sameTraceBase` (PROVED) pins the natural rescue: a
+same-trace level-2d partner for `u` in every such configuration
+discharges the residue.  A structural probe of exactly this
+configuration over the gadget battery is in flight
+(`wip/bii_probe.lean`, worktree agent), with the old `samval_probe`
+failures as the negative control.
+
+### Status of the route after tonight
+
+Pillar 1 PROVED.  Pillar 2: i-clauses PROVED; E-form m-clauses OPEN
+(probe-backed at scale, 746k pairs, 0 violations).  Pillar 3
+(amalgamation): CLOSED modulo `MforthResidue`.  So semantic UI for
+PCLL now rests on exactly TWO open obligations, both m-clause-shaped:
+the agreement-side m-clauses (pillar 2) and the residue (pillar 3) —
+plus the Thm 5.1 assembly, which is bookkeeping once those fall.
+The cross-route experiment (v2quant: whether the syntactic H2
+stabilisation computes the same objects) is re-running with the
+recorded battery/budget fixes in a second worktree agent.
