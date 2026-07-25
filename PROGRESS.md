@@ -954,3 +954,33 @@ wip/v2quant_probe.lean.  Bonus: the gap row's crank≤5 ∃-side skip
 `◯(◯p⊃p) ⊢ (◯¬◯⊥) ∨ ¬¬◯⊥` is also REFUTED (4-fork frame, pinned in
 the same file); the two D₆-family ∃-cells remain OPEN and touch only
 the ∃-meet, whose value ⊤ is unchanged.
+
+## 37. 2026-07-26 night: corrected probe verdict — 0/36.6M failures; the open zone is exactly the strictly-descending regime
+
+Corrected b.ii probe (wip/bii_p_probe.lean, p-containing closures, p
+UNPROTECTED, exhaustive conclusion search; 1603 models, 1,739,255
+pairs, 56 s): control PASSES (finds the chainP instance; note the
+growth there is {p}, not {p,◯p} — ◯p ∈ val Δ already, by pointwise
+χ⊃◯χ, which is precisely the anticipation the resolution uses).
+**36,588,835 configurations, 0 failures.**  Growth composition: 100%
+pure-p-laden, 0 protected members at ANY crank (the boundary theorem
+is empirically loose: protected growth never occurs at all in the
+fixpoint regime, since a fixpoint E-link over both-confluent models
+transfers every protected formula).  Resolution: EVERY config
+resolves by a SAME-TRACE answer — the battery's Z-hierarchies
+stabilise by level 3, so the level-(2d−1) link at κ already holds at
+2d (fixpoint collapse) and κ is its own rescue; grown answers exist
+at exactly the ~4% whose growth is ◯-anticipated; grown-ONLY 0.
+Also: empirical crankC-rankedness clean on confluent×confluent pairs
+only (33k–72k violations with M non-confluent — crankC transfer
+needs both models confluent, as force_iff_of_layeredC says).
+
+Lean: `mforthResidue_of_stabilised` PROVED (+audit) — pointwise
+level-collapse at the mback-partner's link discharges the residue;
+the machine-checked name of the fixpoint-regime rescue.  MforthResidue
+remains OPEN, unrefuted, with the danger zone now pinned exactly:
+links strictly below the Z-stabilisation level at small canonical
+depth = long strictly-descending bisimulation hierarchies = the
+◯⊃-alternation towers of the cross-route experiment (X9/D₆
+territory).  Small batteries cannot reach it (Z stabilises too fast);
+the syntactic route reaches it as the D₆ cell.
