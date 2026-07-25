@@ -931,7 +931,7 @@ b.ii-from-degraded — degradation alone cannot serve the unbounded
 bisimulation game; it becomes viable only combined with growth
 propagation or an anticipation lemma.
 
-## 36. 2026-07-25 latest: the last v2quant cell decided — D₆ ⊬ ◯(◯q⊃q); the gap row is fully certified at ◯⊥
+## 37. 2026-07-25 latest: the last v2quant cell decided — D₆ ⊬ ◯(◯q⊃q); the gap row is fully certified at ◯⊥
 
 The §35 undecided cell is REFUTED: `◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥) ⊢ ◯(◯q⊃q)` is
 underivable in plain LaxND, countermodel-certified in the kernel
