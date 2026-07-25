@@ -808,3 +808,44 @@ closure-trace-equality; every decoded failure involves a dead-end
 successor (the rigid postponement points of §0(ee)).  Open design
 question for next session: the promise-pair invariant with a degraded
 link, or a dedicated dead-end clause.  Route doc §0(hh).
+
+## 34. 2026-07-25: the confluent amalgamation CLOSED modulo ONE Prop — the same-theory wall dissolves
+
+`wip/witTripleC.lean` (ui-confluence, b10d274+) is sorry-free with
+`#guard_msgs`-pinned audits: `witTriple_iforth`, `witTriple_mforth`,
+`wit_pbisimC` (Claim 1), `wit_forceC` (Claim 2 — the full truth
+lemma), `amalgamation_assembledC` — all conditional on the single
+displayed Prop `MforthResidue`.  The two bare sorries that were "the
+open mathematics" of Lemma 5.4 are gone as separate problems.
+
+The two mechanisms: (1) same-trace ◯-moves are matched REFLEXIVELY
+(`RmC_refl`) with the base regenerated from the reservoir by
+`B.iback` along `Rₘ ⊆ Rᵢ` — §33's wall assumed the ◯-move must be
+consumed by `mback`, and it need not be; K-side same-theory ◯-moves
+never arise (the witness's trace strictly grows or the world is its
+own row-witness).  (2) The truth lemma's ◯-forward direction is
+DEFINITIONAL through `RmC`'s anticipation clause (`χ ∈ val Δ₂ →
+boxOf χ ∈ val Δ`); ◯-backward is bare possibility in K + `B.mforth`,
+strictly financed; ⊃-backward is the K-refuter + `B.iforth`.  No
+transfer, no promise component: `mfal` is dead weight in the
+confluent route.
+
+Definitions: budgets restored to (2d, 2d+1) — the (d, d+1) `crankC`
+recalibration was a MISCALIBRATION (slope 2 refinances two links per
+one-level spend; forced, not chosen); `hik` dropped (consumed by
+nothing); confluence of M dropped (only K need be confluent); triples
+now an inductive with a `top` constructor absorbing every fallible
+escape.  Consumption inventory exact: all four E-clauses + atoms +
+fall + mono — so pillar 2 still owes the E-form m-clauses.
+
+The residue: an M-side ◯-move at an infallible target where the
+reservoir's iback-partner grows the trace (right level 2d, wrong
+trace) while the base's mback-partner keeps it (right trace, level
+2d−1, one short).  `mforthResidue_of_sameTraceBase` (PROVED) reduces
+it to same-trace-partner existence; a structural probe of the exact
+configuration is in flight (bii_probe worktree agent), old
+samval-failures as negative control.  Route doc §0(ii).  Semantic UI
+for PCLL now rests on exactly TWO open obligations, both
+m-clause-shaped: pillar 2's agreement-side m-clauses and this
+residue.  Cross-route: v2quant re-running with the §33 battery/budget
+fixes (second worktree agent); X9 match test pending.
