@@ -245,6 +245,7 @@ takes this Prop as a hypothesis. -/
 def MforthResidue : Prop :=
   ∀ (_hK : MutuallyConfluent K)
     {Δ : (canonFinC cl).W} {k' k kv κ : K.W} {m' m u : M.W},
+    SubClosed cl →
     PLLFormula.falsePLL ∉ Δ.1.val →
     (traceT K cl k).val = Δ.1.val →
     (traceT K cl k').val = Δ.1.val →
@@ -278,7 +279,7 @@ theorem mforthResidue_of_sameTraceBase
       ∃ kb : K.W, (traceT K cl kb).val = Δ.1.val ∧
         B.Z (2 * canonDepthC cl Δ) kb u) :
     MforthResidue cl B := by
-  intro hK Δ k' k kv κ m' m u hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
     hsame hkκ hZκ hκsame
   obtain ⟨kb, hΔkb, hZkb⟩ := h hK hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
     hsame hkκ hZκ hκsame
@@ -310,12 +311,38 @@ theorem mforthResidue_of_grownBase
         B.Z (2 * canonDepthC cl (⟨traceT K cl kb, traceT_maxIn K cl kb,
           trace_backed _hK kb⟩ : (canonFinC cl).W) + 1) kb u) :
     MforthResidue cl B := by
-  intro hK Δ k' k kv κ m' m u hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
     hsame hkκ hZκ hκsame
   obtain ⟨kb, hsub, hant, hZkb⟩ := h hK hbot hΔk hΔk' him hmu huF hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
   exact ⟨traceC hK cl kb, ⟨hsub, hant⟩,
     .proper kb kb u rfl rfl (M.refl_i u) hZkb (B.mono (B.mono_le le_rfl hZkb))⟩
+
+/-- **The vacuity route** to the residue (what the structural probe
+supports: 0 configurations over 438,075 confluent pairs, with growth
+PROPAGATING — whenever the reservoir's `iback`-partner grows, every
+`mback`-partner of the base grows too): if the configuration is
+impossible, the residue holds outright. -/
+theorem mforthResidue_of_config_absurd
+    (h : ∀ (_hK : MutuallyConfluent K)
+      {Δ : (canonFinC cl).W} {k' k kv κ : K.W} {m' m u : M.W},
+      SubClosed cl →
+      PLLFormula.falsePLL ∉ Δ.1.val →
+      (traceT K cl k).val = Δ.1.val →
+      (traceT K cl k').val = Δ.1.val →
+      M.Ri m' m → M.Rm m u → u ∉ M.F →
+      B.Z (2 * canonDepthC cl Δ + 1) k' m' →
+      B.Z (2 * canonDepthC cl Δ) k m →
+      K.Ri k' kv → B.Z (2 * canonDepthC cl Δ) kv u →
+      (traceT K cl kv).val ≠ Δ.1.val →
+      K.Rm k κ → B.Z (2 * canonDepthC cl Δ - 1) κ u →
+      (traceT K cl κ).val = Δ.1.val →
+      False) :
+    MforthResidue cl B := by
+  intro hK Δ k' k kv κ m' m u hcl hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+    hsame hkκ hZκ hκsame
+  exact absurd hκsame (fun hκ => h hK hcl hbot hΔk hΔk' him hmu huF hZ' hZ
+    hk'kv hZkv hsame hkκ hZκ hκ)
 
 /-! ## The step lemmas -/
 
@@ -414,7 +441,7 @@ theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
               · exact htopκ κ hkκ ((B.fall hZκ).mpr huF) huF
               · by_cases hκsame : (traceT K cl κ).val = Δ.1.val
                 · -- THE RESIDUE: both partners degenerate
-                  exact hres hK hbot hΔk hΔk' him hmu huF hZ' hZ
+                  exact hres hK hcl hbot hΔk hΔk' him hmu huF hZ' hZ
                     hk'kv hZkv hsame hkκ hZκ hκsame
                 · -- strict growth via the mback-partner
                   have hsub : Δ.1.val ⊆ (traceC hK cl κ).1.val := by
