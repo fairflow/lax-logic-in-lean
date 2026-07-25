@@ -285,6 +285,38 @@ theorem mforthResidue_of_sameTraceBase
   exact ⟨Δ, (canonFinC cl).refl_m Δ,
     .proper k' kb m' hΔkb hΔk' (M.trans_i him (M.sub_mi hmu)) hZ' hZkb⟩
 
+/-- **The grown-base sufficient condition** for the residue (the probe's
+rescue R2): a K-world `kb` whose trace strictly grows, carrying links at
+`2·d(kb)` and `2·d(kb)+1` to `u`, and whose growth is ◯-ANTICIPATED at `Δ`
+(every tracked formula it forces has its collapsed box in `val Δ`),
+discharges the residue — `traceC kb` answers, with `(kb, u)` serving as
+both base and its own reservoir. -/
+theorem mforthResidue_of_grownBase
+    (h : ∀ (_hK : MutuallyConfluent K)
+      {Δ : (canonFinC cl).W} {k' k kv κ : K.W} {m' m u : M.W},
+      PLLFormula.falsePLL ∉ Δ.1.val →
+      (traceT K cl k).val = Δ.1.val →
+      (traceT K cl k').val = Δ.1.val →
+      M.Ri m' m → M.Rm m u → u ∉ M.F →
+      B.Z (2 * canonDepthC cl Δ + 1) k' m' →
+      B.Z (2 * canonDepthC cl Δ) k m →
+      K.Ri k' kv → B.Z (2 * canonDepthC cl Δ) kv u →
+      (traceT K cl kv).val ≠ Δ.1.val →
+      K.Rm k κ → B.Z (2 * canonDepthC cl Δ - 1) κ u →
+      (traceT K cl κ).val = Δ.1.val →
+      ∃ kb : K.W, Δ.1.val ⊆ (traceT K cl kb).val ∧
+        (∀ χ : PLLFormula, boxOf χ ∈ cl → χ ∈ (traceT K cl kb).val →
+          boxOf χ ∈ Δ.1.val) ∧
+        B.Z (2 * canonDepthC cl (⟨traceT K cl kb, traceT_maxIn K cl kb,
+          trace_backed _hK kb⟩ : (canonFinC cl).W) + 1) kb u) :
+    MforthResidue cl B := by
+  intro hK Δ k' k kv κ m' m u hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+    hsame hkκ hZκ hκsame
+  obtain ⟨kb, hsub, hant, hZkb⟩ := h hK hbot hΔk hΔk' him hmu huF hZ' hZ
+    hk'kv hZkv hsame hkκ hZκ hκsame
+  exact ⟨traceC hK cl kb, ⟨hsub, hant⟩,
+    .proper kb kb u rfl rfl (M.refl_i u) hZkb (B.mono (B.mono_le le_rfl hZkb))⟩
+
 /-! ## The step lemmas -/
 
 /-- **The financed `iforth` maintenance**: an M-move `m ⟶Rᵢ v` is matched
