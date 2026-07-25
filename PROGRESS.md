@@ -930,3 +930,27 @@ after a mismatch) closes the first mismatch but regresses at
 b.ii-from-degraded — degradation alone cannot serve the unbounded
 bisimulation game; it becomes viable only combined with growth
 propagation or an anticipation lemma.
+
+## 36. 2026-07-25 latest: the last v2quant cell decided — D₆ ⊬ ◯(◯q⊃q); the gap row is fully certified at ◯⊥
+
+The §35 undecided cell is REFUTED: `◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥) ⊢ ◯(◯q⊃q)` is
+underivable in plain LaxND, countermodel-certified in the kernel
+(wip/d6_gap_cell.lean; all pinned theorems axiom-clean, `[propext,
+Quot.sound]`).  The countermodel is `defaultFrames` item 6 decorated
+p@{2} — the 3-chain with rigid first Rₘ-step and fallible top — and a
+fallible-free twin (chain3F, p@{2}) certifies too, since every
+fallible-free model forces D₆ everywhere.  Consequence: the gap-row
+∀-join does NOT climb at r=6; all 15 dictionary classes are
+certificate-decided on that row's ∀-side, so the rank-bounded
+`∀p.◯(◯p⊃p)` = ◯⊥ from r=2 through r=9, matching the §35 match test
+(≡ ◯⊥ proved both ways).  No anomaly against the rank-2 stabilisation
+pattern remains anywhere in the experiment's ∀-tables.
+
+Post-mortem: the recorded 6-hour/10-minute grinds were the ∃-side call
+`◯(◯p⊃p) ⊢ D₆` (no battery frame refutes it), misattributed to the
+∀-side, which the battery had refuted all along; the forced skip then
+swallowed both sides.  Correction noted at `skipCells` in
+wip/v2quant_probe.lean.  Bonus: the gap row's crank≤5 ∃-side skip
+`◯(◯p⊃p) ⊢ (◯¬◯⊥) ∨ ¬¬◯⊥` is also REFUTED (4-fork frame, pinned in
+the same file); the two D₆-family ∃-cells remain OPEN and touch only
+the ∃-meet, whose value ⊤ is unchanged.

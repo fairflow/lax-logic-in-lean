@@ -132,7 +132,16 @@ def cfgFinal : Search.Config := { frames := scanFrames, findBudget := some 40000
 10-minute kill rule made concrete.  Seed: the recorded gap-row r=6
 stall cell, `D₆ = ◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥) ⊢ ◯(◯p⊃p)`, which still ground
 past 10 minutes at findBudget 2000 (its per-node cost is the problem,
-not the node count).  Both sides of the cell are skipped. -/
+not the node count).  Both sides of the cell are skipped.
+
+CORRECTION (2026-07-25, post-run): the grind was misattributed.  The
+∀-side `D₆ ⊢ ◯(◯p⊃p)` is sweep-REFUTED at 0ms — the witness is
+`defaultFrames` item 6 decorated p@{2}, so it was refutable even
+before the battery was widened; `scanRow` computes both sides between
+its two prints, and the hang sat in the ∃-side `◯(◯p⊃p) ⊢ D₆` (no
+battery frame refutes it; sweep none).  The cell's verdicts: ∀-side
+UNDERIVABLE, pinned axiom-clean in wip/d6_gap_cell.lean (so the
+gap-row ∀-join stays ◯⊥ through r=9, no climb at r=6); ∃-side OPEN. -/
 def skipCells : List (Nat × Nat) := [(3, 8)]
 
 inductive V2 | proved | refuted | unknown
