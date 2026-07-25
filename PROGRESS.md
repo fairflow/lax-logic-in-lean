@@ -955,7 +955,7 @@ wip/v2quant_probe.lean.  Bonus: the gap row's crank≤5 ∃-side skip
 the same file); the two D₆-family ∃-cells remain OPEN and touch only
 the ∃-meet, whose value ⊤ is unchanged.
 
-## 37. 2026-07-26 night: corrected probe verdict — 0/36.6M failures; the open zone is exactly the strictly-descending regime
+## 38. 2026-07-26 night: corrected probe verdict — 0/36.6M failures; the open zone is exactly the strictly-descending regime
 
 Corrected b.ii probe (wip/bii_p_probe.lean, p-containing closures, p
 UNPROTECTED, exhaustive conclusion search; 1603 models, 1,739,255
