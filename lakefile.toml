@@ -134,3 +134,8 @@ root = "wip.confl_audit"
 [[lean_exe]]
 name = "biiprobe"
 root = "wip.bii_probe"
+
+# b.ii probe, corrected: p-containing closures, p unprotected, full conclusion test.
+[[lean_exe]]
+name = "biipprobe"
+root = "wip.bii_p_probe"

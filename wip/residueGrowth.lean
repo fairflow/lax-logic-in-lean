@@ -21,15 +21,17 @@ Branch `ui-confluence`.  Three results about `MforthResidue`:
 2. `residue_config_satisfiable` (PROVED): the residue configuration IS
    satisfiable — a two-point confluent chain with the quantified atom
    `p` at the top, the full link family, and the ◯-adequate closure
-   `{⊥, p, ◯⊥, ◯p}` realise every hypothesis, with growth `{p, ◯p}`
-   (pure p-ladenness, invisible to the atoms clause).  Consequence: the
+   `{⊥, p, ◯⊥, ◯p}` realise every hypothesis, with growth `{p}`
+   (pure p-ladenness, invisible to the atoms clause; `◯p` is already in
+   `val Δ` — reflexive `Rₘ` validates `χ ⊃ ◯χ` pointwise — which is
+   exactly the anticipation the resolution uses).  Consequence: the
    vacuity route (`mforthResidue_of_config_absurd`) is DEAD in general —
    the earlier probe's "0 configurations" was an artifact of its
    closures containing no `p`.
 
 3. `residue_config_example_resolves` (PROVED): in that same instance the
-   residue's CONCLUSION also holds (the grown answer, with the growth
-   ◯-anticipated).  So the construction does not refute `MforthResidue`;
+   residue's CONCLUSION also holds (the grown answer; the p-growth was
+   promised: `◯p ∈ val Δ`).  So the construction does not refute `MforthResidue`;
    it shows the Prop is contentful, and locates the open question at:
    p-laden or boundary-crank growth whose ◯-anticipation fails.
 -/
@@ -310,6 +312,32 @@ theorem residue_config_example_resolves :
         simp [clP] at hχcl
   · exact .proper true true true rfl rfl (chainP.refl_i true) trivial trivial
 
+
+/-- **The fixpoint-regime rescue**: if the level hierarchy has collapsed
+by `2d−1` at the `mback`-partner's link (true throughout the
+greatest-fixpoint regime — on the corrected probe's battery this held at
+every one of 36,588,835 configurations), then the residue holds
+outright: `κ` itself is the same-trace base, and the old reservoir
+persists.  The genuinely open zone is therefore exactly the
+STRICTLY-DESCENDING regime: links below the stabilisation level of the
+Z-hierarchy, with small canonical depth — the alternation-tower
+territory of the cross-route experiment. -/
+theorem mforthResidue_of_stabilised (cl : Finset PLLFormula)
+    (B : LayeredBisimE (fun a => a ≠ p) K M)
+    (h : ∀ {Δ : (canonFinC cl).W} {κ : K.W} {u : M.W},
+      B.Z (2 * canonDepthC cl Δ - 1) κ u →
+      B.Z (2 * canonDepthC cl Δ) κ u) :
+    MforthResidue cl B := by
+  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' him hmu huF hZ' hZ
+    hk'kv hZkv hsame hkκ hZκ hκsame
+  exact ⟨Δ, (canonFinC cl).refl_m Δ,
+    .proper k' κ m' hκsame hΔk' (M.trans_i him (M.sub_mi hmu)) hZ' (h hZκ)⟩
+
+/--
+info: 'PLLND.SemUI.mforthResidue_of_stabilised' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms mforthResidue_of_stabilised
 
 /-! ## Axiom audit -/
 
