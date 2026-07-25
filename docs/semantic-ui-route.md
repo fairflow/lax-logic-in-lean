@@ -1768,3 +1768,45 @@ plus the Thm 5.1 assembly, which is bookkeeping once those fall.
 The cross-route experiment (v2quant: whether the syntactic H2
 stabilisation computes the same objects) is re-running with the
 recorded battery/budget fixes in a second worktree agent.
+
+### §0(ii) addendum — the probe and verification verdicts (same day, later)
+
+**The b.ii probe returned** (`wip/bii_probe.lean`, worktree agent,
+committed d8602d8 on its worktree branch; battery 825 one-atom models,
+531 confluent as K, 438,075 confluent pairs, six ◯-adequate closures;
+negative control PASSED — the §0(hh) refuted no-descent clause fails
+~50k times per closure in the same approximants, so traces and
+approximants are computed compatibly):
+
+* **0 residue configurations.**  The b.ii hypothesis set never
+  materialises.  Funnel decode: 13,204 candidates reach a grown
+  `iback`-partner; at every one of them the `mback`-partner set is
+  nonempty and consists ENTIRELY of grown-trace worlds — growth
+  propagates, so the strict case (b.i) always applies.  The
+  counterfactual rescue statistic: the same-trace rescue R1 was
+  available 0/13,204 times, the grown rescue R2 13,204/13,204 —
+  the load-bearing repair is growth-shaped, not same-trace-shaped.
+* **Low-depth impossibility decoded** (paper-level, NOT yet
+  machine-checked): d = 1 configurations are impossible outright;
+  d = 2 is blocked for subformula-closed cl by the pointwise laws
+  φ→◯φ, ψ→(φ⊃ψ); the first not-obviously-blocked shape is d ≥ 3 with
+  a crank-2d distinguisher — beyond the battery's stabilisation depth,
+  so the region stays OPEN, but the residue provably cannot arise in
+  the low-d regimes these closures admit.
+* Consequence in Lean: `mforthResidue_of_config_absurd` (PROVED) pins
+  the vacuity route; the residue also now carries `SubClosed cl`
+  (verifier finding: it was strictly stronger than its consumption
+  site).
+
+**The adversarial verification fan-out (4 agents) could not refute**
+the closure claim.  Scoping to quote: *the amalgamation theorems are
+sorry-free and axiom-clean* — the import chain still contains the
+sorried general `amalgamation`/`wit_pbisim`/`wit_force`, on which the
+audits prove no dependence.  Two recorded hypothesis-side gaps: the
+entry budget `2·cl.card+1` is coarser than the target's `2·nu X+1`
+(and `OBoxAdeq` inflates `cl`), so the interpolant rank recalibrates;
+and the input is an E-form link, which `pair_escape_not_from_agreement`
+shows is NOT agreement-derivable — **but that counterexample (forkF)
+is not mutually confluent**, so over confluent models the E-form
+delivery question is OPEN, not refuted: a genuine new opening for
+pillar 2 in the PCLL setting.
