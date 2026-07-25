@@ -888,3 +888,45 @@ gaps: entry budget 2·cl.card+1 coarser than 2·nu+1 (interpolant rank
 recalibrates); E-form input not agreement-derivable in general — BUT
 the no-go counterexample (forkF) is NOT mutually confluent, so over
 confluent models E-form delivery is OPEN, a new pillar-2 opening.
+
+## 36. 2026-07-25 afternoon: growth propagation SPLIT — boundary theorem proved; the configuration is satisfiable (vacuity route dead)
+
+wip/residueGrowth.lean (913b4d3), three theorems, #guard_msgs-pinned
+[propext, Classical.choice, Quot.sound]:
+
+* `residue_growth_boundary` PROVED: over a `Ranked` link (level-n
+  links transfer p-free formulas of crankC ≤ n — definitional for
+  agreement-built links), every p-FREE formula in a residue
+  configuration's growth tr(kv)∖val Δ has crankC ≥ 2d.  Sub-boundary
+  protected growth crosses to u (level 2d) and back to κ (level
+  2d−1), contradicting tr(κ) = val Δ.  So the residue's
+  distinguishing formulas are p-laden or boundary-crank — the
+  machine-checked location of the S4/K4-style failure mechanism
+  (bisimulation rank outrunning interpolant rank), and of the samval
+  sharpness decode.
+
+* `residue_config_satisfiable` PROVED: the b.ii configuration IS
+  satisfiable — chainP (2-point confluent chain, p at top, no
+  fallibles, Rm = Ri) with the FULL link family (a lawful
+  LayeredBisimE off p: atoms clause only sees protected atoms) and
+  the ◯-adequate closure {⊥,p,◯⊥,◯p}; growth {p,◯p} is PURE-p,
+  invisible to the atoms clause.  CORRECTION of §35: the first
+  probe's "0 configurations" was an artifact — its closures contained
+  no p.  The vacuity route (mforthResidue_of_config_absurd) is dead
+  as a general strategy.
+
+* `residue_config_example_resolves` PROVED: in that instance the
+  conclusion holds — the growth is ◯-ANTICIPATED (◯p ∈ val Δ), so
+  the grown answer works with (kv,u) as its own base and reservoir.
+  MforthResidue is therefore CONTENTFUL and OPEN exactly at: growth
+  whose ◯-anticipation fails.
+
+Corrected probe IN FLIGHT (bii_p_probe worktree agent): p-containing
+closures, p UNPROTECTED in the approximants, two-atom decorations,
+full conclusion search at every configuration; failures would be
+counterexamples to MforthResidue forcing a triple redesign.  Also
+explored and recorded here: the degraded-triple calculus (base 2d−1
+after a mismatch) closes the first mismatch but regresses at
+b.ii-from-degraded — degradation alone cannot serve the unbounded
+bisimulation game; it becomes viable only combined with growth
+propagation or an anticipation lemma.
