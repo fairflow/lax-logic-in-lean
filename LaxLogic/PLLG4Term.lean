@@ -125,83 +125,140 @@ termination are unchanged, the search space only shrinks. -/
 def ckey (Γ : List PLLFormula) (C : PLLFormula) : List PLLFormula × PLLFormula :=
   ((canon Γ).mergeSort (fun a b => compare (hash a) (hash b) |>.isLE), C)
 
+/-- The failure memo: canonical sequent keys already found underivable.  Keyed
+by `ckey` (homogeneous, so no dependent proof term is ever stored); a hit prunes
+the whole subtree. -/
+abbrev FailMemo := Std.HashMap (List PLLFormula × PLLFormula) Bool
+
+/-- First `some` in a short-circuiting monadic scan, threading the memo. -/
+partial def firstSomeM {α β : Type} (xs : List α)
+    (f : α → StateM FailMemo (Option β)) : StateM FailMemo (Option β) := do
+  match xs with
+  | [] => return none
+  | x :: rest => match ← f x with
+    | some b => return (some b)
+    | none => firstSomeM rest f
+
 mutual
 
-/-- **Fuel-free backward proof search** for G4iLL″, emitting the proof term.
-Untrusted `partial` code; terminates by the visited-set loop check (see the
-file header).  Success is self-certifying: the result inhabits `G4cTm Γ C`. -/
-partial def prove (V : List (List PLLFormula × PLLFormula))
-    (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
+/-- **Fuel-free backward proof search** for G4iLL″ with a global failure memo
+(UI-track optimisation `g4ill_probe.g4bM`, retargeted to G4c and specialised to
+caching failures).  `V` is the path-local ancestor set (functional, so it
+backtracks) driving the loop check; the `StateM` cache records canonical keys
+already found underivable, so a failing subgoal reached on many branches is
+searched only once.
+
+Untrusted `partial` code; success is self-certifying (the result inhabits
+`G4cTm Γ C`).  Caching failures needs **no taint logic**: the loop check is
+complete, so a `none` verdict is unconditional (independent of `V`), and
+provability depends only on the sequent, which `ckey` identifies up to order and
+contraction.  Successes are not cached — they carry a dependent term, and
+returning on the first success already makes them cheap. -/
+partial def proveM (V : List (List PLLFormula × PLLFormula))
+    (Γ : List PLLFormula) (C : PLLFormula) : StateM FailMemo (Option (G4cTm Γ C)) := do
   let key := ckey Γ C
-  if key ∈ V then none
-  else
-    (if h : falsePLL ∈ Γ then some (G4cTm.botL h) else none)
-    <|> proveRight (key :: V) Γ C
-    <|> proveLeft (key :: V) Γ C
+  if key ∈ V then return none
+  if (← get).contains key then return none
+  if h : falsePLL ∈ Γ then return some (G4cTm.botL h)
+  match ← proveRightM (key :: V) Γ C with
+  | some t => return some t
+  | none =>
+    match ← proveLeftM (key :: V) Γ C with
+    | some t => return some t
+    | none => modify (·.insert key false); return none
 
 /-- Right rules (with `init` folded into the atom case). -/
-partial def proveRight (V : List (List PLLFormula × PLLFormula))
-    (Γ : List PLLFormula) : (C : PLLFormula) → Option (G4cTm Γ C)
-  | .prop a => if h : prop a ∈ Γ then some (G4cTm.init h) else none
-  | .falsePLL => none
+partial def proveRightM (V : List (List PLLFormula × PLLFormula))
+    (Γ : List PLLFormula) : (C : PLLFormula) → StateM FailMemo (Option (G4cTm Γ C))
+  | .prop a => pure (if h : prop a ∈ Γ then some (G4cTm.init h) else none)
+  | .falsePLL => pure none
   | .and A B => do
-      let t₁ ← prove V Γ A
-      let t₂ ← prove V Γ B
-      some (G4cTm.andR t₁ t₂)
-  | .or A B =>
-      (do some (G4cTm.orR1 (← prove V Γ A)))
-      <|> (do some (G4cTm.orR2 (← prove V Γ B)))
+      match ← proveM V Γ A with
+      | none => return none
+      | some t₁ => match ← proveM V Γ B with
+        | none => return none
+        | some t₂ => return some (G4cTm.andR t₁ t₂)
+  | .or A B => do
+      match ← proveM V Γ A with
+      | some t => return some (G4cTm.orR1 t)
+      | none => match ← proveM V Γ B with
+        | some t => return some (G4cTm.orR2 t)
+        | none => return none
   | .ifThen A B => do
-      some (G4cTm.impR (← prove V (A :: Γ) B))
-  | .somehow A =>
-      (do some (G4cTm.laxR (← prove V Γ A)))
-      <|> Γ.attach.findSome? fun ⟨F, hF⟩ =>
-            match F, hF with
-            | .somehow X, h => do
-                some (G4cTm.laxL h (← prove V (X :: Γ) (somehow A)))
-            | _, _ => none
+      match ← proveM V (A :: Γ) B with
+      | some t => return some (G4cTm.impR t)
+      | none => return none
+  | .somehow A => do
+      match ← proveM V Γ A with
+      | some t => return some (G4cTm.laxR t)
+      | none => firstSomeM Γ.attach (fun ⟨F, hF⟩ =>
+          match F, hF with
+          | .somehow X, h => do
+              match ← proveM V (X :: Γ) (somehow A) with
+              | some t => return some (G4cTm.laxL h t)
+              | none => return none
+          | _, _ => pure none)
 
 /-- Left rules, tried on each context formula in turn. -/
-partial def proveLeft (V : List (List PLLFormula × PLLFormula))
-    (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
-  Γ.attach.findSome? fun ⟨F, hF⟩ =>
+partial def proveLeftM (V : List (List PLLFormula × PLLFormula))
+    (Γ : List PLLFormula) (C : PLLFormula) : StateM FailMemo (Option (G4cTm Γ C)) :=
+  firstSomeM Γ.attach (fun ⟨F, hF⟩ =>
     match F, hF with
     | .and A B, h => do
-        some (G4cTm.andL h (← prove V (A :: B :: Γ) C))
+        match ← proveM V (A :: B :: Γ) C with
+        | some t => return some (G4cTm.andL h t)
+        | none => return none
     | .or A B, h => do
-        let t₁ ← prove V (A :: Γ) C
-        let t₂ ← prove V (B :: Γ) C
-        some (G4cTm.orL h t₁ t₂)
-    | .ifThen (.prop a) B, h =>
-        if ha : prop a ∈ Γ then do
-          some (G4cTm.impLProp h ha (← prove V (B :: Γ) C))
-        else none
+        match ← proveM V (A :: Γ) C with
+        | none => return none
+        | some t₁ => match ← proveM V (B :: Γ) C with
+          | none => return none
+          | some t₂ => return some (G4cTm.orL h t₁ t₂)
+    | .ifThen (.prop a) B, h => do
+        if ha : prop a ∈ Γ then
+          match ← proveM V (B :: Γ) C with
+          | some t => return some (G4cTm.impLProp h ha t)
+          | none => return none
+        else return none
     | .ifThen (.and A B) D, h => do
-        some (G4cTm.impLAnd h (← prove V (A.ifThen (B.ifThen D) :: Γ) C))
+        match ← proveM V (A.ifThen (B.ifThen D) :: Γ) C with
+        | some t => return some (G4cTm.impLAnd h t)
+        | none => return none
     | .ifThen (.or A B) D, h => do
-        some (G4cTm.impLOr h (← prove V (A.ifThen D :: B.ifThen D :: Γ) C))
+        match ← proveM V (A.ifThen D :: B.ifThen D :: Γ) C with
+        | some t => return some (G4cTm.impLOr h t)
+        | none => return none
     | .ifThen (.ifThen A B) D, h => do
-        let t₁ ← prove V (B.ifThen D :: Γ) (A.ifThen B)
-        let t₂ ← prove V (D :: Γ) C
-        some (G4cTm.impLImp h t₁ t₂)
-    | .ifThen (.somehow A) B, h =>
-        (do let t₁ ← prove V Γ A
-            let t₂ ← prove V (B :: Γ) C
-            some (G4cTm.impLLax h t₁ t₂))
-        <|> Γ.attach.findSome? fun ⟨X, hXf⟩ =>
-              match X, hXf with
-              | .somehow x, hX => do
-                  let t₁ ← prove V (x :: Γ) (somehow A)
-                  let t₂ ← prove V (B :: Γ) C
-                  some (G4cTm.impLLaxLax h hX t₁ t₂)
-              | _, _ => none
-    | _, _ => none
+        match ← proveM V (B.ifThen D :: Γ) (A.ifThen B) with
+        | none => return none
+        | some t₁ => match ← proveM V (D :: Γ) C with
+          | none => return none
+          | some t₂ => return some (G4cTm.impLImp h t₁ t₂)
+    | .ifThen (.somehow A) B, h => do
+        let b1 ← (do
+          match ← proveM V Γ A with
+          | none => return (none : Option (G4cTm Γ C))
+          | some t₁ => match ← proveM V (B :: Γ) C with
+            | none => return none
+            | some t₂ => return some (G4cTm.impLLax h t₁ t₂))
+        match b1 with
+        | some t => return some t
+        | none => firstSomeM Γ.attach (fun ⟨X, hXf⟩ =>
+            match X, hXf with
+            | .somehow x, hX => do
+                match ← proveM V (x :: Γ) (somehow A) with
+                | none => return none
+                | some t₁ => match ← proveM V (B :: Γ) C with
+                  | none => return none
+                  | some t₂ => return some (G4cTm.impLLaxLax h hX t₁ t₂)
+            | _, _ => pure none)
+    | _, _ => pure none)
 
 end
 
-/-- Search a sequent from scratch. -/
+/-- Search a sequent from scratch (with a fresh failure memo). -/
 def G4cTm.find (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
-  prove [] Γ C
+  (proveM [] Γ C).run' ∅
 
 /-! ## The bridge: terms certify provability, provability yields terms -/
 
