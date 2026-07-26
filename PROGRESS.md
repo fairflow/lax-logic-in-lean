@@ -1206,3 +1206,29 @@ cells), wip/rnDict2.lean (726/784 cells certified),
 wip/rnDictRefute2.lean (58 witness theorems), wip/rnSpawnColl.lean
 (8 spawned collapses), wip/rnDict2Report.md (the class map), run
 outputs wip/gen2logs/ + wip/xsep_*.txt + wip/gaprow_*.txt.
+
+## 44. 2026-07-26 night: the mforth choice-freedom refactor — the input link is LayeredBisimWit
+
+fc9ab18, whole chain green, audits unchanged.  The consumption audit
+(§34's inventory) showed the E-form's mforth spent at ONE site — the
+truth lemma's ◯-backward — where the K-side witness is chosen, not
+given.  The input format is now `LayeredBisimWit`: mforth replaced by
+the witness clause
+
+  mwit : Z (n+1) k m → (∃ κ, Rm k κ ∧ force κ ψ) →
+    ∃ κ u', Rm k κ ∧ force κ ψ ∧ Rm m u' ∧ (Z n κ u' ∨ pair-fallible)
+
+(the ◯-obligation for SOME row-witness of the formula in play; the
+prover picks).  `LayeredBisimE.toWit` embeds the old format — strictly
+one-way, so pillar 2's debt is strictly weakened; the weakened Props
+are `VfMwit`/`BandMwit` with `…_of_…forth` bridges.  Adversarial
+clauses (iback, mback) unchanged; wit_pbisimC's OUTPUT is still a full
+unbounded PBisim.  What this buys the negative half: the maximal-type
+ascent arguments now have their proper home (the samval-decoded
+unmatchable row-members — the dead-end partners no formula can force a
+match for — no longer refute the obligation, since the prover may
+choose a matchable witness).  What it does not buy: the crank
+treadmill (matching at rank R needs characters boxed at R+3) stands;
+the remaining depth is per-instance stabilisation, as §43 concluded.
+Concurrent: the mapping session continues landing separation-scan
+artifacts on this branch (be0ca34).
