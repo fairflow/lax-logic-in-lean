@@ -1232,3 +1232,33 @@ treadmill (matching at rank R needs characters boxed at R+3) stands;
 the remaining depth is per-instance stabilisation, as §43 concluded.
 Concurrent: the mapping session continues landing separation-scan
 artifacts on this branch (be0ca34).
+
+## 45. 2026-07-27: THE MAXIMAL-TYPE ASCENT — the witness-form m-clause PROVED under the band
+
+wip/bandM.lean (d164be5), sorry-free, pinned:
+
+  bandMwit_of_collapse : 1 ≤ R → BandCollapse R (2R+2) →
+    MutuallyConfluent K → MutuallyConfluent M → BandMwit R K M
+
+No fallible escape is consumed.  Engine (the ascent): a ψ-witness κ in
+k's row boxes its rank-R positive character across the link — the band
+collapse pulls ◯charPos (crank R+3) back under rank R, defeating the
+crank treadmill — and bare possibility in M realises it at u′.  Exact
+type match ⇒ rank-R agreement, done.  Overshoot at a representative D₀
+⇒ the backward transfer returns κ′ ∈ row(k) covering u′'s type, and
+the confluence square over (Rₘ k κ, Rᵢ k κ′) yields y ∈ row(k) that
+keeps ψ (persistence along Rᵢ κ y) and swallows κ′'s type (persistence
+along Rₘ κ′ y) — a ψ-witness with strictly larger type.  Finitely many
+representatives ⇒ termination.  Supporting lemmas:
+band_row_char_partner/_rev, private countP arithmetic.
+
+New capstone `restricted_amalgamation_oneVar_band'`: the banded
+one-variable amalgamation from BandCollapse R (2R+2) + BandMback ONLY.
+LEDGER after tonight: the forth-side m-obligation is PAID (under the
+band); remaining = the plateau itself (empirically unsupported at
+accessible ranks, §43) and BandMback (adversarial; dead-end gap).
+Matthew's observation recorded: mwit + ascent is a reducibility-
+candidates-style move (System F SN) — quantify over observations
+rather than raw moves, then saturate witnesses; kinship with the
+repo's own ⊤⊤-lifting SN proof (biorthogonal closure) noted in the
+session log.
