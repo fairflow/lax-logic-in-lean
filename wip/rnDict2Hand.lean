@@ -462,6 +462,100 @@ theorem hand_cOr_7_14 : Interd (q7.or q14) q14 := by
     · exact Deriv.iden (.head _)
   · exact Deriv.orIntro2 (Deriv.iden (.head _))
 
+/-- `q9 ⊢ q12 = ◯q7` in any context. -/
+theorem d_q9_to_q12 {Γ : List PLLFormula} (h : Deriv Γ q9) :
+    Deriv Γ q12 := by
+  refine Deriv.orElim h ?c5 ?c6
+  · exact dSomehowElim (Deriv.iden (.head _))
+      (dSomehowIntro (Deriv.orIntro1 (Deriv.iden (.head _))))
+  · exact dSomehowIntro (Deriv.orIntro2 (Deriv.iden (.head _)))
+
+theorem hand_cImp_10_14 : Interd (q10.ifThen q14) q14 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h14 : Deriv [q10, q10.ifThen q14] q14 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+        (Deriv.iden (.head _))
+    exact Deriv.impElim h14 (Deriv.iden (.head _))
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
+theorem hand_cImp_11_8 : Interd (q11.ifThen q8) q8 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h11 : Deriv [q5, q11.ifThen q8] q11 :=
+      Deriv.orIntro2 (d_q5_q10 (Deriv.iden (.head _)))
+    have h8 : Deriv [q5, q11.ifThen q8] q8 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _))) h11
+    exact Deriv.impElim h8 (Deriv.iden (.head _))
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
+theorem hand_cImp_12_15 : Interd (q12.ifThen w2) w2 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h15 : Deriv [q9, q12.ifThen w2] w2 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+        (d_q9_to_q12 (Deriv.iden (.head _)))
+    exact Deriv.impElim h15 (Deriv.iden (.head _))
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
+theorem hand_cImp_14_5 : Interd (q14.ifThen q5) q10 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h14 : Deriv [q6, q14.ifThen q5] q14 := by
+      refine Deriv.impIntro ?_
+      exact box_of_bb
+        (Deriv.impElim (Deriv.iden (.head _))
+          (Deriv.iden (.tail _ (.head _)))) q3
+    have h5 : Deriv [q6, q14.ifThen q5] q5 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _))) h14
+    refine dSomehowElim h5 ?_
+    exact Deriv.falsoElim _
+      (Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+        (Deriv.iden (.head _)))
+  · exact Deriv.impIntro
+      (Deriv.impElim (Deriv.iden (.head _))
+        (Deriv.iden (.tail _ (.head _))))
+
+theorem hand_cImp_8_15 : Interd (q8.ifThen w2) q10 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h15 : Deriv [q6, q8.ifThen w2] w2 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _))) d_q6_q8.toHead
+    have hq4 : Deriv [q6, q8.ifThen w2] q4 :=
+      Deriv.impElim h15 (Deriv.orIntro2 (Deriv.iden (.head _)))
+    refine Deriv.orElim hq4 ?c2 ?c3
+    · exact Deriv.iden (.head _)
+    · exact Deriv.falsoElim _
+        (Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+          (Deriv.iden (.head _)))
+  · refine Deriv.impIntro (Deriv.impIntro ?_)
+    refine Deriv.orElim (Deriv.iden (.head _)) ?c5 ?c6
+    · exact Deriv.impElim
+        (Deriv.iden (.tail _ (.tail _ (.head _))))
+        (Deriv.iden (.head _))
+    · exact Deriv.orIntro1
+        (Deriv.impElim
+          (Deriv.iden (.tail _ (.tail _ (.tail _ (.head _)))))
+          (Deriv.iden (.head _)))
+
+theorem hand_cImp_9_15 : Interd (q9.ifThen w2) w2 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h15 : Deriv [q9, q9.ifThen w2] w2 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+        (Deriv.iden (.head _))
+    exact Deriv.impElim h15 (Deriv.iden (.head _))
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
+theorem hand_cImp_8_10 : Interd (q8.ifThen q10) q10 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h8 : Deriv [q6, q8.ifThen q10] q8 := d_q6_q8.toHead
+    have h10 : Deriv [q6, q8.ifThen q10] q10 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _))) h8
+    exact Deriv.impElim h10 (Deriv.iden (.head _))
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
 end RND
 end SemUI
 end PLLND
