@@ -1067,3 +1067,33 @@ rank-relative form (per-rank finiteness = frag_reps_exist', PROVED):
 IPC's precedent says UI can hold over an infinite one-variable
 fragment (Pitts over the Rieger–Nishimura lattice) — global collapse
 was a shortcut, not a necessity.
+
+## 41. 2026-07-26: the RANK-RELATIVE stabilisation lemma — band collapse; the open core is a plateau
+
+wip/bandStabilise.lean (9dcda2c), sorry-free, pinned.  The finite
+dictionary was certification apparatus only; the chain needs one Prop:
+`BandCollapse R E` (every variable-free formula of crank ≤ E
+interderivable with one of crank ≤ R), with E = 2R+2 dictated by the
+character budget.  PROVED: band_agree_stab (CHOICE-FREE
+[propext, Quot.sound]); bandB (constant family Z n := bandAgree R, a
+lawful LayeredBisimE between p-pure models — i-clauses upgrade across
+the band then spend agree_iforth/iback); bandB_mforthResidue (residue
+paid); restricted_amalgamation_oneVar_band (one-variable amalgamation
+at entry rank R from BandCollapse R (2R+2) + BandMforth/BandMback);
+bandCollapse_of_dict (the global constant-link theorem is the E-free
+special case — "reinstated-if-closed" made precise).  OPEN CORE now:
+exhibit ONE R with BandCollapse R (2R+2) — a PLATEAU of the
+variable-free class-count function n(r) on [R, 2R+2].  Strictly weaker
+than fragment finiteness: n may resume growing above the band; failure
+for ALL R requires new classes at doubling density FOREVER (every
+window [R, 2R+2] hits a new class) — the S4 signature.  Observed so
+far: new classes at essentially every crank ≤ 7-8 (incl. the §40
+witnesses at 6-7); the dictionary-mapping session's class-count curve
+is exactly the data that locates or excludes a plateau.  Terminology
+correction for §40's prose: the lattice whose size the literature
+leaves open is RN(◯,{}) (variable-free PLL; ◯⊥ is not a free
+generator); RN({p}) — Rieger–Nishimura proper — is classically
+infinite (Rieger 1949, Nishimura 1960), and with ◯-free conservativity
+the one-VARIABLE PLL fragment is infinite too; neither settles
+RN(◯,{}).  Note the compatibility: the Curry-problem thread wants
+RN(◯,{}) infinite, UI wants a plateau — both can hold.
