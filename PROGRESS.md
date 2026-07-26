@@ -1120,3 +1120,42 @@ overstated — the four ∀k-refutations are fully pinned, but pairwise
 distinctness of the 15 representatives (and of the 4 witnesses) is
 probe-certified only, not yet Lean-pinned; the mapping session should
 pin the separations.
+
+## 43. 2026-07-26 evening: the two quotients computed — RN ≥ 16 PINNED, RNC first map; no plateau in sight; the gap row survives everything
+
+Two independent certification streams landed and consolidate here.
+
+**PLL (the dictionary-mapping session; wip/rnDict2Report.md, artifacts
+rnSep/rnSepColl/rnDict2Hand/rnDict2/rnDictRefute2):** the four §40
+witnesses are ONE class, q15 := q9⊃q4, kernel-pinned (two of the three
+fusions AXIOM-FREE; the searcher could not find them — hand Deriv
+terms; gap patterns catalogued).  The 15 base classes are NOW pairwise
+distinct CERTIFIED (165 pinned countermodels; {q1,q11,q13} and
+{q9,q12,q14} need 5 worlds — the ≤4-world battery cannot see them;
+exhaustive ROOTED 5-world completeness by generated-submodel
+reduction).  Aggregate `rep16_pairwise_distinct` [propext, Quot.sound]:
+**RN(◯,{}) ≥ 16, fully pinned** (the §42 precision debt is paid).
+The 16-class closure round FAILS massively: ~40 cells match no class
+(⊃-block dominates; three pinned 6-WORLD models were needed — some
+refutations invisible at ≤5 worlds); ∧-family spawns all-distinct.
+Class count rises through every observed crank window: **no plateau
+visible; BandCollapse unsupported below crank ~8.**
+**THE GAP ROW SURVIVES THE FULL ENLARGEMENT**: among all 16 reps and
+all 41 spawned-class witnesses, only ⊥ and ◯⊥ derive ◯(◯p⊃p) (pinned
+countermodels for every other candidate) ⇒ ∀p.◯(◯p⊃p) = ◯⊥ stands
+over everything now known.
+
+**PCLL (the RNC probe, §consolidated 4f0cb6d):** distribution merges
+q9 ≡ q12 and fuses the witness class (distF q3 q6 exactly), 19 → 15;
+new reusable certificate theorem not_derivU_of_checkConf (confluent
+countermodel ⇒ PCLL-underivability); but the RNC closure sweep spawns
+26 new-class cells — **the tower continues past distribution**.  Sole
+open matrix cell [q14] ⊢ q13 in both logics.
+
+**Synthesis:** fragment-infinitude now the working picture for BOTH
+quotients; the plateau (constant/band link) route is empirically dead
+at accessible ranks; the PER-INSTANCE route is simultaneously
+STRENGTHENED (the gap-row value certified against the entire
+enlargement — B1 + per-instance-B2 evidence at its strongest).  Route
+forward: the mforth choice-freedom refactor + the per-instance residue
+treatment, over whichever of PLL/PCLL the Thm 5.1 assembly targets.
