@@ -1623,6 +1623,24 @@ def refute2Main (cells : List String) : IO Unit := do
     stdout.putStrLn x
   stdout.flush
 
+/-- Formula size (nodes). -/
+def sz' : PLLFormula → Nat
+  | .and a b => sz' a + sz' b + 1
+  | .or a b => sz' a + sz' b + 1
+  | .ifThen a b => sz' a + sz' b + 1
+  | .somehow a => sz' a + 1
+  | _ => 1
+
+/-- Crank data for the band/plateau analysis (PROGRESS §41): the
+crank of every representative and of the given cells' combinations. -/
+def cranksMain (cells : List String) : IO Unit := do
+  for i in List.range NREPS do
+    IO.println s!"crank q{i} = {crank (rN i)}  (sz {sz' (rN i)})"
+  for c in cells do
+    match parseCell2 c with
+    | some (n, X) => IO.println s!"crank {n} = {crank X}  (sz {sz' X})"
+    | none => IO.eprintln s!"bad cell name {c}"
+
 /-- Raw bounded-search probe between two cells' combinations:
 distinguishes BUDGET-OUT from search-space exhaustion. -/
 def probeBMain (bud : Nat) (ca cb : String) : IO Unit := do
@@ -1695,6 +1713,30 @@ def gaprowMain (bud : Nat) (idxs : List Nat) : IO Unit := do
       IO.println s!"  [q{i}] ⊢ ◯⊥: {v2}"
     (← IO.getStdout).flush
 
+/-- Gap-row membership for named cells' combinations (spawned
+classes): `[X] ⊢ ◯(◯p⊃p)`, then `[X] ⊢ ◯⊥` on a proof. -/
+def gaprowCMain (bud : Nat) (cells : List String) : IO Unit := do
+  for c in cells do
+    match parseCell2 c with
+    | none => IO.eprintln s!"bad cell name {c}"
+    | some (n, D) =>
+      let t0 ← IO.monoMsNow
+      let v :=
+        match Search.decide cfgD [D] gapRow with
+        | .refuted M w _ => s!"REFUTED(cfgD) {fmtCM M} @ {w}"
+        | .proved _ => "proved"
+        | .unknown =>
+          match Search.decide cfgBig [D] gapRow with
+          | .refuted M w _ => s!"REFUTED(big4) {fmtCM M} @ {w}"
+          | .proved _ => "proved"
+          | .unknown =>
+            match (G4cTm.findBounded bud [D] gapRow).1 with
+            | some _ => "proved"
+            | none => "unknown"
+      let t1 ← IO.monoMsNow
+      IO.println s!"[{n}] ⊢ ◯(◯p⊃p): {v} ({t1-t0}ms)"
+      (← IO.getStdout).flush
+
 /-- Pairwise escalated comparison of the named cells' combinations
 (for classifying spawned classes among themselves). -/
 def xsepMain (bud : Nat) (cells : List String) : IO Unit := do
@@ -1739,5 +1781,7 @@ def main : List String → IO Unit
       RNGen.gaprowMain bud.toNat!
         (if idxs.isEmpty then List.range RNGen.NREPS else idxs.map (·.toNat!))
   | ["probeb", bud, ca, cb] => RNGen.probeBMain bud.toNat! ca cb
+  | "cranks" :: cells => RNGen.cranksMain cells
+  | "gaprowc" :: bud :: cells => RNGen.gaprowCMain bud.toNat! cells
   | ["provf", fuel, ca, cb] => RNGen.provfMain fuel.toNat! ca cb
   | _ => IO.eprintln "usage: rnDictGen [diag|oracle|refute|ent|stages|battinfo|sep|sepemit|pending2|cells2|assemble2|refute2|xsep ...]"
