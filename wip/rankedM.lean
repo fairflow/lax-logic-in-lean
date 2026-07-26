@@ -25,10 +25,13 @@ else.  Hence:
    agreement at rank `rslope n` (`rslope 0 = 0`,
    `rslope (n+1) = 2·rslope n + 3` — one halving for the i-clauses,
    `+3` for the m-clauses, both covered) is a lawful
-   `LayeredBisimWit` off `p` between p-pure mutually confluent models,
-   and satisfies `MWitM` — EVERY clause of the witness pipeline's
-   input, from pure rank-bounded agreement.  PILLAR 2 IS CLOSED in the
-   ranked setting: no band, no dictionary, no fragment finiteness.
+   `LayeredBisimWit` off `p` between one-variable (`POnly` — the
+   CORRECTED purity: `V a ⊆ F` off `p`; the stricter `PPure` secretly
+   forces infallibility, wip/bandRefute.lean) mutually confluent
+   models, and satisfies `MWitM` — EVERY clause of the witness
+   pipeline's input, from pure rank-bounded agreement.  PILLAR 2 IS
+   CLOSED in the ranked setting: no band, no dictionary, no fragment
+   finiteness.
 
 4. `restricted_amalgamation_oneVar_ranked` (PROVED modulo
    `MwitResidue`): the one-variable amalgamation from root agreement
@@ -207,6 +210,20 @@ theorem bandMwit_of_collapse' {R : Nat} (hR : 1 ≤ R)
 
 /-! ## 2. The ranked layered link: pillar 2, closed -/
 
+/-- **The corrected one-variable purity**: off `p`, atoms carry only
+the decoration `full_F` mandates (`V a ⊆ F`).  The stricter `PPure`
+(`V a = ∅` off `p`) secretly forces infallibility
+(`ppure_ffree`, wip/bandRefute.lean) and so trivialised the p-pure
+statements; under `POnly`, fallible one-variable models are genuinely
+in scope, and the atoms clause reduces to the fallibility clause. -/
+def POnly (p : String) (C : ConstraintModel) : Prop :=
+  ∀ a, a ≠ p → ∀ w : C.W, w ∈ C.V a → w ∈ C.F
+
+/-- The old purity implies the corrected one (vacuously off `p`). -/
+theorem POnly.of_pPure {C : ConstraintModel} (h : PPure p C) :
+    POnly p C :=
+  fun a ha w hw => absurd hw (h a ha w)
+
 /-- The rank slope: one halving for the i-clauses (`2α + 2`), a `+3`
 for the m-clauses — `2·s + 3` covers both. -/
 def rslope : Nat → Nat
@@ -219,12 +236,14 @@ theorem rslope_le_succ (n : Nat) : rslope n ≤ rslope (n + 1) := by
   rw [rslope_succ]
   omega
 
-/-- **The ranked witness link — pillar 2 is CLOSED**: between p-pure
-mutually confluent models, `Z n := ` variable-free agreement at rank
-`rslope n` is a lawful `LayeredBisimWit` off `p`, from NOTHING but the
-agreement itself: atoms by purity, `fall` at rank 0, the i-clauses by
-the character argument, the m-witness clause by the ranked ascent. -/
-def rankedB (hPK : PPure p K) (hPM : PPure p M)
+/-- **The ranked witness link — pillar 2 is CLOSED**: between
+one-variable (`POnly`) mutually confluent models, `Z n := `
+variable-free agreement at rank `rslope n` is a lawful
+`LayeredBisimWit` off `p`, from NOTHING but the agreement itself:
+atoms by the corrected purity through the fallibility clause (rank 0),
+the i-clauses by the character argument, the m-witness clause by the
+ranked ascent. -/
+def rankedB (hPK : POnly p K) (hPM : POnly p M)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M) :
     LayeredBisimWit (fun a => a ≠ p) K M where
   Z := fun n k m => bandAgree (rslope n) K M k m
@@ -232,8 +251,14 @@ def rankedB (hPK : PPure p K) (hPM : PPure p M)
     intro n k m h
     exact bandAgree_mono (rslope_le_succ n) h
   atoms := by
-    intro n k m _ a ha
-    exact iff_of_false (hPK a ha k) (hPM a ha m)
+    intro n k m hZ a ha
+    have hfall : k ∈ K.F ↔ m ∈ M.F :=
+      hZ PLLFormula.falsePLL atoms_false (Nat.zero_le _)
+    constructor
+    · intro hv
+      exact M.full_F (hfall.mp (hPK a ha k hv))
+    · intro hv
+      exact K.full_F (hfall.mpr (hPM a ha m hv))
   fall := by
     intro n k m hZ
     exact hZ PLLFormula.falsePLL atoms_false (Nat.zero_le _)
@@ -277,7 +302,7 @@ def rankedB (hPK : PPure p K) (hPM : PPure p M)
 /-- The ranked link satisfies the M-side witness clause — the mirror
 ascent.  With this, EVERY input obligation of the witness pipeline is
 paid from rank-bounded agreement alone. -/
-theorem rankedB_mwitM (hPK : PPure p K) (hPM : PPure p M)
+theorem rankedB_mwitM (hPK : POnly p K) (hPM : POnly p M)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M) :
     (rankedB hPK hPM hK hM).MWitM := by
   intro n k m hZ ψ hex
@@ -288,18 +313,19 @@ theorem rankedB_mwitM (hPK : PPure p K) (hPM : PPure p M)
 
 /-! ## 3. The amalgamation from rank-bounded agreement alone -/
 
-/-- **The one-variable amalgamation, ranked form**: for p-pure
-mutually confluent `K` and `M` whose roots agree on variable-free
-formulas up to the FIXED rank `rslope (2·cl.card + 1)` — determined by
-the closure, tower-exponential in its size — the full witness-form
-p-variant conclusion, modulo the ONE open Prop `MwitResidue` of the
-ranked link.  No band, no dictionary, no fragment finiteness: after
-the ranked ascent, the residue is the entire unproved content of the
+/-- **The one-variable amalgamation, ranked form**: for one-variable
+(`POnly`, fallible worlds genuinely in scope) mutually confluent `K`
+and `M` whose roots agree on variable-free formulas up to the FIXED
+rank `rslope (2·cl.card + 1)` — determined by the closure,
+tower-exponential in its size — the full witness-form p-variant
+conclusion, modulo the ONE open Prop `MwitResidue` of the ranked
+link.  No band, no dictionary, no fragment finiteness: after the
+ranked ascent, the residue is the entire unproved content of the
 route. -/
 theorem restricted_amalgamation_oneVar_ranked (cl : Finset PLLFormula)
     (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M)
+    (hPK : POnly p K) (hPM : POnly p M)
     (hres : MwitResidue cl (rankedB hPK hPM hK hM))
     (k₀ : K.W) (m₀ : M.W)
     (hagree : bandAgree (rslope (2 * cl.card + 1)) K M k₀ m₀) :
