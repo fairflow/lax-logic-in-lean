@@ -120,6 +120,20 @@ def canon : List PLLFormula → List PLLFormula
   | [] => []
   | A :: Γ => if A ∈ Γ then canon Γ else A :: canon Γ
 
+-- Structural hash, for order-canonical loop keys.
+deriving instance Hashable for PLLFormula
+
+/-- **Order-canonical loop key** (UI-track optimisation, `g4ill_probe.hkey`).
+`canon` already removes duplicates (contraction is admissible in G4iLL″);
+sorting the deduplicated context by `hash` makes the key insensitive to the
+*order* of hypotheses too, so sequents reached by the same rules in a different
+order share a key and the visited-set check catches the revisit.  The key is the
+canonical multiset itself, compared structurally, so a hash collision can only
+*miss* a cut (a little extra search), never make a wrong one: soundness and
+termination are unchanged, the search space only shrinks. -/
+def ckey (Γ : List PLLFormula) (C : PLLFormula) : List PLLFormula × PLLFormula :=
+  ((canon Γ).mergeSort (fun a b => compare (hash a) (hash b) |>.isLE), C)
+
 mutual
 
 /-- **Fuel-free backward proof search** for G4iLL″, emitting the proof term.
@@ -127,7 +141,7 @@ Untrusted `partial` code; terminates by the visited-set loop check (see the
 file header).  Success is self-certifying: the result inhabits `G4cTm Γ C`. -/
 partial def prove (V : List (List PLLFormula × PLLFormula))
     (Γ : List PLLFormula) (C : PLLFormula) : Option (G4cTm Γ C) :=
-  let key := (canon Γ, C)
+  let key := ckey Γ C
   if key ∈ V then none
   else
     (if h : falsePLL ∈ Γ then some (G4cTm.botL h) else none)
