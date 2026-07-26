@@ -984,3 +984,41 @@ depth = long strictly-descending bisimulation hierarchies = the
 ◯⊃-alternation towers of the cross-route experiment (X9/D₆
 territory).  Small batteries cannot reach it (Z stabilises too fast);
 the syntactic route reaches it as the D₆ cell.
+
+## 39. 2026-07-26: THE STABILISATION LEMMA mechanised — the residue is PAID in the one-variable setting
+
+wip/stabilise.lean (68996ab), sorry-free, #guard_msgs-pinned, every
+theorem conditional only on `D : RNDict` (the certified variable-free
+dictionary interface; instantiation from the v2quant closure tables in
+flight as wip/rnDict.lean).  The cross-route plan as a theorem chain:
+
+* `RNDict`: finitely many variable-free reps + crank bound + certified
+  connective-closure tables up to `Interd` (PLLSemUIFrag's calculus).
+* `dict_collapse` PROVED: structural induction with the Interd
+  congruences — EVERY variable-free formula is interderivable with a
+  rep.  The finite closure certificate decides the WHOLE fragment;
+  this resolves the 2026-07-13 objection ("finitely many probes cannot
+  settle the fragment's infinitude"): closure under the generating
+  connectives can, and the probe's round-6 fixpoint was exactly that.
+* `dict_agree_stab` PROVED — THE STABILISATION LEMMA: variable-free
+  agreement at rank crankBound is agreement at every rank.
+* `vfB` PROVED (m-clauses as hypotheses VfMforth/VfMback): the
+  CONSTANT family Z n := vfAgree is a lawful LayeredBisimE between
+  p-pure models; i-clauses = agree_iforth/agree_iback at alphabet ∅,
+  the 2α+2 character budget ABSORBED by stabilisation; atoms by
+  p-purity; fall at rank 0.
+* `vfB_mforthResidue` PROVED: constant family ⇒ level-collapse
+  hypothesis is `id` ⇒ MforthResidue holds.  THE RESIDUE IS PAID.
+* `restricted_amalgamation_oneVar` PROVED: for p-pure confluent K and
+  p-pure M, root agreement at rank crankBound (fixed, closure-
+  independent!) yields the full p-variant conclusion — no residue
+  hypothesis, entry budget crankBound instead of 2·cl.card+1.
+
+Status of one-variable PCLL semantic UI after this: pillar 3 fully
+paid; the ONLY remaining obligation is VfMforth/VfMback — the two
+m-clauses of pillar 2 for the constant variable-free-agreement link —
+plus the Thm 5.1 wrapper.  Note the contrast with IPC: the one-variable
+p-free fragment there is the (infinite) Rieger–Nishimura lattice, so
+no constant-link shortcut exists; PLL's variable-free fragment is
+FINITE (the ◯⊥-ladder stabilises) — the modality is what makes the
+restricted case easier, not harder.
