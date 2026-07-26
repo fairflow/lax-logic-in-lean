@@ -154,8 +154,22 @@ theorem restricted_amalgamation_oneVar_wit_dict (cl : Finset PLLFormula)
 
 /-! ## Axiom audit -/
 
+/--
+info: 'PLLND.SemUI.bandMwitM_of_collapse' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms bandMwitM_of_collapse
+
+/--
+info: 'PLLND.SemUI.restricted_amalgamation_oneVar_wit' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms restricted_amalgamation_oneVar_wit
+
+/--
+info: 'PLLND.SemUI.restricted_amalgamation_oneVar_wit_dict' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms restricted_amalgamation_oneVar_wit_dict
 
 end SemUI

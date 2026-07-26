@@ -400,11 +400,40 @@ theorem amalgamation_assembledW (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
 
 /-! ## Axiom audit -/
 
+/--
+info: 'PLLND.SemUI.force_iff_of_witOut' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms force_iff_of_witOut
+
+/--
+info: 'PLLND.SemUI.mwitResidue_of_mforthResidue' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms mwitResidue_of_mforthResidue
+
+/--
+info: 'PLLND.SemUI.mwitResidue_of_stabilised' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms mwitResidue_of_stabilised
+
+/--
+info: 'PLLND.SemUI.witTriple_mwit' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms witTriple_mwit
+
+/--
+info: 'PLLND.SemUI.wit_pbisimW' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms wit_pbisimW
+
+/--
+info: 'PLLND.SemUI.amalgamation_assembledW' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
 #print axioms amalgamation_assembledW
 
 end SemUI
