@@ -832,7 +832,8 @@ def cfg5 : Search.Config :=
 def extraCMs : List FinCM :=
   [⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(1, 4), (3, 4)], [4], []⟩,
    ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(0, 2), (1, 4), (3, 4)], [4], []⟩,
-   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(3, 4)], [4], []⟩]
+   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(3, 4)], [4], []⟩,
+   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4), (2, 3)], [(1, 3), (2, 3)], [3], []⟩]
 
 /-- Check the pinned extra models directly (verified checker only). -/
 def extraCM? (Γ : List PLLFormula) (C : PLLFormula) : Option (FinCM × Nat) :=
@@ -1420,7 +1421,12 @@ def overrides : List (String × Nat × String) := [
   ("cImp_14_8", 8, "theorem cImp_14_8 : Interd (q14.ifThen q8) q8 := hand_cImp_14_8"),
   ("cBox_14", 14, "theorem cBox_14 : Interd q14.somehow q14 := hand_cBox_14"),
   ("cImp_11_15", 15, "theorem cImp_11_15 : Interd (q11.ifThen q15) q15 := hand_cImp_11_15"),
-  ("cImp_13_15", 15, "theorem cImp_13_15 : Interd (q13.ifThen q15) q15 := hand_cImp_13_15")]
+  ("cImp_13_15", 15, "theorem cImp_13_15 : Interd (q13.ifThen q15) q15 := hand_cImp_13_15"),
+  ("cOr_9_13", 13, "theorem cOr_9_13 : Interd (q9.or q13) q13 := hand_cOr_9_13"),
+  ("cImp_12_8", 8, "theorem cImp_12_8 : Interd (q12.ifThen q8) q8 := hand_cImp_12_8"),
+  ("cImp_10_12", 14, "theorem cImp_10_12 : Interd (q10.ifThen q12) q14 := hand_cImp_10_12"),
+  ("cImp_11_9", 14, "theorem cImp_11_9 : Interd (q11.ifThen q9) q14 := hand_cImp_11_9"),
+  ("cImp_11_4", 4, "theorem cImp_11_4 : Interd (q11.ifThen q4) q4 := hand_cImp_11_4")]
 
 /-- Read a persisted cell file. -/
 def readCell (name : String) : IO (Option Cell) := do

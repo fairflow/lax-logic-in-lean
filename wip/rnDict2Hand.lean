@@ -610,6 +610,89 @@ theorem hand_cImp_13_15 : Interd (q13.ifThen w2) w2 := by
     exact Deriv.impElim h15 (Deriv.iden (.head _))
   · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
 
+/-- `q5 = ◯q3 ⊢ q12 = ◯q7` in any context (◯-monotone injection). -/
+theorem d_q5_to_q12 {Γ : List PLLFormula} (h : Deriv Γ q5) :
+    Deriv Γ q12 :=
+  dSomehowElim h (dSomehowIntro (Deriv.orIntro1 (Deriv.iden (.head _))))
+
+theorem hand_cOr_9_13 : Interd (q9.or q13) q13 :=
+  ⟨Deriv.orElim (Deriv.iden (.head _))
+     d_q9_q13.toHead
+     (Deriv.iden (.head _)),
+   Deriv.orIntro2 (Deriv.iden (.head _))⟩
+
+theorem hand_cImp_12_8 : Interd (q12.ifThen q8) q8 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h12 : Deriv [q5, q12.ifThen q8] q12 :=
+      d_q5_to_q12 (Deriv.iden (.head _))
+    have h8 : Deriv [q5, q12.ifThen q8] q8 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _))) h12
+    exact Deriv.impElim h8 (Deriv.iden (.head _))
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
+theorem hand_cImp_10_12 : Interd (q10.ifThen q12) q14 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h12 : Deriv [q10, q10.ifThen q12] q12 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+        (Deriv.iden (.head _))
+    refine dSomehowElim h12 ?_
+    refine Deriv.orElim (Deriv.iden (.head _)) ?a3 ?a6
+    case a3 => exact dSomehowIntro (Deriv.iden (.head _))
+    case a6 =>
+      exact box_of_bb
+        (Deriv.impElim (Deriv.iden (.tail _ (.tail _ (.head _))))
+          (Deriv.iden (.head _))) q3
+  · refine Deriv.impIntro ?_
+    exact d_q5_to_q12
+      (Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+        (Deriv.iden (.head _)))
+
+theorem hand_cImp_11_9 : Interd (q11.ifThen q9) q14 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h9 : Deriv [q10, q11.ifThen q9] q9 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+        (Deriv.orIntro2 (Deriv.iden (.head _)))
+    refine Deriv.orElim h9 ?a5 ?a6
+    case a5 => exact Deriv.iden (.head _)
+    case a6 =>
+      exact box_of_bb
+        (Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+          (Deriv.iden (.head _))) q3
+  · refine Deriv.impIntro ?_
+    refine Deriv.orElim (Deriv.iden (.head _)) ?b6 ?b10
+    case b6 => exact Deriv.orIntro2 (Deriv.iden (.head _))
+    case b10 =>
+      exact Deriv.orIntro1
+        (Deriv.impElim (Deriv.iden (.tail _ (.tail _ (.head _))))
+          (Deriv.iden (.head _)))
+
+theorem hand_cImp_11_4 : Interd (q11.ifThen q4) q4 := by
+  constructor
+  · -- derive q10 internally from the q6-arm of the hypothesis, then apply
+    have h6_4 : Deriv [q11.ifThen q4] (q6.ifThen q4) :=
+      Deriv.impIntro
+        (Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+          (Deriv.orIntro1 (Deriv.iden (.head _))))
+    have d10 : Deriv [q11.ifThen q4] q10 := by
+      refine Deriv.impIntro ?_
+      have hq4 : Deriv [q6, q11.ifThen q4] q4 :=
+        Deriv.impElim h6_4.wk1 (Deriv.iden (.head _))
+      refine Deriv.orElim hq4 ?x2 ?x3
+      case x2 => exact Deriv.iden (.head _)
+      case x3 =>
+        exact Deriv.falsoElim _
+          (Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+            (Deriv.iden (.head _)))
+    exact Deriv.impElim
+      (Deriv.impIntro
+        (Deriv.impElim (Deriv.iden (.tail _ (.head _)))
+          (Deriv.orIntro2 (Deriv.iden (.head _)))))
+      d10
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
 end RND
 end SemUI
 end PLLND
