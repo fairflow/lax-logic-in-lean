@@ -827,14 +827,29 @@ def battery5 : List Search.Frame := rootedFramesOf 5
 def cfg5 : Search.Config :=
   { frames := battery5, findBudget := some 1, emitClosureCap := 0 }
 
-/-- `findCM` extended by the rooted 5-world battery. -/
+/-- Extra pinned countermodels beyond the exhaustive ≤5-world sweep
+(discovered by the bounded rooted 6-world hunt `ref6`). -/
+def extraCMs : List FinCM :=
+  [⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(1, 4), (3, 4)], [4], []⟩,
+   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(0, 2), (1, 4), (3, 4)], [4], []⟩,
+   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(3, 4)], [4], []⟩]
+
+/-- Check the pinned extra models directly (verified checker only). -/
+def extraCM? (Γ : List PLLFormula) (C : PLLFormula) : Option (FinCM × Nat) :=
+  (extraCMs.filterMap fun M =>
+    ((List.range M.n).filter fun w => FinCM.checkB M w Γ C).head?.map
+      fun w => (M, w)).head?
+
+/-- `findCM` extended by the rooted 5-world battery, then the pinned
+extra models (each hit gated by the verified checker). -/
 def findCM5 (Γ : List PLLFormula) (C : PLLFormula) : Option (FinCM × Nat) :=
   match findCM Γ C with
   | some r => some r
   | none =>
     match Search.decide cfg5 Γ C with
     | .refuted M w _ => some (M, w)
-    | _ => none
+    | _ =>
+      extraCM? Γ C
 
 /-- Print a formula naming all `reps19` members: `q0`–`q18` (for
 `rnDict2.lean`, where the witnesses are `q15`–`q18`). -/
@@ -944,9 +959,12 @@ def side5 (pp : PLLFormula → String) (bud : Nat) (mids : List PLLFormula)
     | .refuted M w _ => .refuted M w
     | .proved t => .proved s!"(ofG4 {emitTmP pp t})"
     | .unknown =>
-      match chainVia pp bud mids 3 P Q with
-      | some e => .proved e
-      | none => .unknown
+      match extraCM? [P] Q with
+      | some (M, w) => .refuted M w
+      | none =>
+        match chainVia pp bud mids 3 P Q with
+        | some e => .proved e
+        | none => .unknown
 
 def battInfo : IO Unit := do
   IO.println s!"bigBattery: {bigBattery.length} frames"
@@ -1713,6 +1731,49 @@ def gaprowMain (bud : Nat) (idxs : List Nat) : IO Unit := do
       IO.println s!"  [q{i}] ⊢ ◯⊥: {v2}"
     (← IO.getStdout).flush
 
+/-- Streaming bounded rooted 6-world refuter for `[A] ⊢ B` (`A`, `B`
+given as cell names; `A = "top"` for the empty context).  Enumerates
+rooted 6-world frames — root 0 below all, any strict poset on
+`{1..5}`, `rm ⊆ ri` with `|rm| ≤ rmMax` transitive, `fall` up-closed
+with `|fall| ≤ fallMax` — testing world 0 with the fast vector scan
+and gating hits through the verified `FinCM.checkB`.  NOT exhaustive
+at 6 worlds (the rm/fall caps are real); a hit is still a pinned
+certificate. -/
+def ref6Main (rmMax fallMax : Nat) (ca cb : String) : IO Unit := do
+  let Γ : List PLLFormula ←
+    if ca == "top" then pure []
+    else match parseCell2 ca with
+      | some (_, A) => pure [A]
+      | none => do IO.eprintln s!"bad cell name {ca}"; return
+  match parseCell2 cb with
+  | none => IO.eprintln s!"bad cell name {cb}"
+  | some (_, B) =>
+    let n := 6
+    let base := (List.range n).filterMap fun v =>
+      if v == 0 then none else some (0, v)
+    let pool := (offdiag n).filter fun e => e.1 != 0 && e.2 != 0
+    let mut tested : Nat := 0
+    let t0 ← IO.monoMsNow
+    for e in pool.sublists do
+      if transB e then
+        let ri := base ++ e
+        for rm in ri.sublists do
+          if rm.length ≤ rmMax && transB rm then
+            for fall in (List.range n).sublists do
+              if fall.length ≤ fallMax && upclB n ri fall then
+                let f : Search.Frame := ⟨n, ri, rm, fall⟩
+                let M := Search.toFinCM f []
+                let vΓ := Γ.map (Search.forceV M)
+                let vB := Search.forceV M B
+                tested := tested + 1
+                if vΓ.all (fun v => v.getD 0 false) && !(vB.getD 0 false) then
+                  if FinCM.checkB M 0 Γ B then
+                    let t1 ← IO.monoMsNow
+                    IO.println s!"REFUTED [{ca}]⊢{cb}: {fmtCM M} @ 0  ({tested} frames, {t1-t0}ms)"
+                    return
+    let t1 ← IO.monoMsNow
+    IO.println s!"no refutation: [{ca}]⊢{cb} unrefuted on {tested} rooted 6-world frames (rm ≤ {rmMax}, fall ≤ {fallMax}) ({t1-t0}ms)"
+
 /-- Gap-row membership for named cells' combinations (spawned
 classes): `[X] ⊢ ◯(◯p⊃p)`, then `[X] ⊢ ◯⊥` on a proof. -/
 def gaprowCMain (bud : Nat) (cells : List String) : IO Unit := do
@@ -1783,5 +1844,7 @@ def main : List String → IO Unit
   | ["probeb", bud, ca, cb] => RNGen.probeBMain bud.toNat! ca cb
   | "cranks" :: cells => RNGen.cranksMain cells
   | "gaprowc" :: bud :: cells => RNGen.gaprowCMain bud.toNat! cells
+  | ["ref6", rmMax, fallMax, ca, cb] =>
+      RNGen.ref6Main rmMax.toNat! fallMax.toNat! ca cb
   | ["provf", fuel, ca, cb] => RNGen.provfMain fuel.toNat! ca cb
   | _ => IO.eprintln "usage: rnDictGen [diag|oracle|refute|ent|stages|battinfo|sep|sepemit|pending2|cells2|assemble2|refute2|xsep ...]"
