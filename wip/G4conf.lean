@@ -307,7 +307,7 @@ theorem G4cf_cut {Γ : List PLLFormula} {A C : PLLFormula}
     (d₁ : G4cf Γ A) (d₂ : G4cf (A :: Γ) C) : G4cf Γ C := by
   sorry
 
-/-- Audit: soundness is sorry-free (only the standard three axioms). -/
+-- Audit: soundness is sorry-free (only the standard three axioms).
 #print axioms G4cf_sound
 
 end G4Conf
