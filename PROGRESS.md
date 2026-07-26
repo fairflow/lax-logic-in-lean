@@ -1022,3 +1022,48 @@ p-free fragment there is the (infinite) Rieger–Nishimura lattice, so
 no constant-link shortcut exists; PLL's variable-free fragment is
 FINITE (the ◯⊥-ladder stabilises) — the modality is what makes the
 restricted case easier, not harder.
+
+## 40. 2026-07-26: the 15-class closure is REFUTED — the dictionary premise falls, the stabilisation chain stands
+
+The rnDict instantiation agent's verdict, consolidated (d37f9c0):
+**the RN(◯,{}) dictionary is NOT connective-closed at 15 classes.**
+wip/rnDictRefute.lean proves, axiom-clean [propext, Quot.sound] and
+#guard_msgs-pinned:
+
+  refute_cAnd_8_10  : ∀ k : Fin 15, ¬ Interd (q8.and q10)     (rep15 k)
+  refute_cImp_9_4   : ∀ k : Fin 15, ¬ Interd (q9.ifThen q4)   (rep15 k)
+  refute_cImp_12_4  : ∀ k : Fin 15, ¬ Interd (q12.ifThen q4)  (rep15 k)
+  refute_cImp_14_4  : ∀ k : Fin 15, ¬ Interd (q14.ifThen q4)  (rep15 k)
+
+each candidate eliminated by a checkB-certified countermodel (the
+refuting battery COMPLETE for variable-free refutation at ≤ 4 worlds).
+All four witnesses are X9-tower combinations of size 20–23 — beyond
+v2quant's SZMAX = 16 candidate cap.  "Closure at round 6" was closure
+of the size-≤16 QUOTIENT.  Kernel-checked consequence: RN(◯,{}) has
+**≥ 16 classes** (≥ 19 if the four witnesses are pairwise distinct —
+not yet pinned).  rnDict15 is UNCOMPLETABLE as an instantiation; its
+603/690 certified cells (236 emitted G4cTm terms via rnDictGen, 367
+generic Interd laws, rnDictBase) are kept as raw material for the
+enlarged dictionary.  83 further cells OPEN (unprovable by both
+searchers, unrefuted at ≤ 4 worlds; per-cell candidate shortlists
+recorded — ⊤-vs-tower ambiguities needing ≥ 5-world countermodels or
+deeper proofs).
+
+CONSEQUENCES.  (1) The variable-free fragment-finiteness question is
+REOPENED, now leaning infinite (the tower splits past every cap so
+far) — supporting the Curry-problem thread's RN(◯,{})-infinite
+direction, and giving the nucleus/assembly thread its first
+kernel-checked lower bound on the RN(◯,{}) size.  (2) The
+stabilisation chain (wip/stabilise.lean) is UNTOUCHED and now carries
+the question precisely: by dict_collapse, an RNDict exists iff the
+fragment is finite; restricted_amalgamation_oneVar is blocked pending
+that.  (3) The v2quant r-tables were computed over the truncated
+quotient: every certified derivability (incl. the X9 match and
+D₆ ⊬ gap row) STANDS, but the "join" columns are joins over the
+15-class scan — computed join ⊢ true join; per-row values could rise
+if a new class derives a row.  Re-audit needed over the enlarged
+dictionary.  (4) The correct fallback for one-variable UI is the
+rank-relative form (per-rank finiteness = frag_reps_exist', PROVED):
+IPC's precedent says UI can hold over an infinite one-variable
+fragment (Pitts over the Rieger–Nishimura lattice) — global collapse
+was a shortcut, not a necessity.
