@@ -1262,3 +1262,47 @@ candidates-style move (System F SN) — quantify over observations
 rather than raw moves, then saturate witnesses; kinship with the
 repo's own ⊤⊤-lifting SN proof (biorthogonal closure) noted in the
 session log.
+
+## 46. 2026-07-27: Matthew's BandCollapse objection — correction of record; RN(PCLL,◯,{}) presented
+
+**The correction.**  Matthew challenged `BandCollapse R (2R+2)`
+("iterate it and everything collapses to crank 0 — absurd").  The
+specific reductio fails — the band is anchored at R and gives no
+descent below R — but the substance of the objection is RIGHT and the
+§41/§45 record was WRONG on the key point: one band bootstraps
+UPWARD.  By exactly the dict_collapse rebuild induction (collapse the
+subformulas to rank ≤ R, reassemble with one connective: crank ≤ R+2
+≤ 2R+2, collapse again), `BandCollapse R (2R+2)` implies collapse of
+the WHOLE variable-free fragment to rank ≤ R.  So the band hypothesis
+is EQUIVALENT to fragment finiteness (with a rank-R representative
+bound) — NOT "strictly weaker: growth may resume above the band", and
+the "failure needs doubling-density growth forever" characterisation
+is retracted.  Consequences: (a) the ascent theorem
+bandMwit_of_collapse and the banded amalgamation are conditional on
+fragment finiteness, no less; (b) the plateau question and the
+fragment-finiteness question are ONE question; (c) the injectivity
+delegation (agent in flight: h : RN({p}) → RN(L,◯,{}) under p ↦ ◯⊥,
+faithfulness for L ∈ {PLL, PCLL} via the fallible-top U-transfer
+construction) would settle it NEGATIVELY for both logics, killing the
+band route and crowning the per-instance ascent (the ascent proof
+only uses finiteness + transferability of the TEST LIST, so it
+relativises to finite test sets — the per-instance form is the
+surviving shape).
+
+**Class-count confirmations** (Matthew's notation RN(L,◯,{}) with the
+logic as argument, ADOPTED): RN(PLL,◯,{}) ≥ 16, fully kernel-pinned
+(rep16_pairwise_distinct).  RN(PCLL,◯,{}): the 19 candidates fall
+into 15 classes — the 15 PLL base reps collapse to 14 (sole merge
+q9 ≡ q12, via the single instance distF q3 q6), plus the fused
+witness class w = q8∧q10 ≡ q9⊃q4 ≡ q12⊃q4 ≡ q14⊃q4 distinct from all
+14.  Certification status: all separations pinned per-pair
+(wip/rncCert.lean, confluent countermodels, [propext, Quot.sound]);
+merges pinned (rncCertPos/rnSepColl — the witness fusions are
+PLL-level, two of three axiom-free, hence PCLL); an AGGREGATE
+pairwise-distinctness theorem for the 15 (analogue of
+rep16_pairwise_distinct) is one decide-glue file away and not yet
+written.  The raw probe matrix's "18 classes" line predates the
+hand-certificate fusion layer.  Sole unknown cell of the 15×15
+PCLL matrix: q14 ⊢ q13.  Hasse structure extracted and drawn
+(session diagram): heights 0..6, q9* the only distribution-merge,
+w incomparable to ◯¬◯⊥, covers as certified.
