@@ -1306,3 +1306,117 @@ hand-certificate fusion layer.  Sole unknown cell of the 15×15
 PCLL matrix: q14 ⊢ q13.  Hasse structure extracted and drawn
 (session diagram): heights 0..6, q9* the only distribution-merge,
 w incomparable to ◯¬◯⊥, covers as certified.
+
+## §47 (2026-07-27) — The witness-form OUTPUT: force_iff_of_witOut, the re-typed projection, BandMback leaves the ledger
+
+The candidates-lens conclusion of §46's session made Lean.  The
+specification consumes exactly one property of the output p-variant
+link — preservation of p-free formulas — and that property survives
+weakening BOTH ◯-directions of the output to witness form, over a
+confluent base.
+
+**New structures** (wip/witTripleC.lean refactor + wip/witOut.lean,
+all sorry-free, [propext, Classical.choice, Quot.sound] throughout):
+
+* The input `LayeredBisimWit` loses its adversarial `mback` FIELD —
+  demoted to the optional side condition `MBack`, consumed at exactly
+  one site (`witTriple_mforth`); the refactor compiling IS the
+  consumption audit.  New M-side WITNESS clause `MWitM` (the adversary
+  picks the formula, not the world), strictly weaker (`mwitM_of_mback`).
+* `ABisimWit`/`PBisimWit`: the unbounded witness-form output link.
+  `force_iff_of_witOut` — THE LINCHPIN: a witness-form link between a
+  MUTUALLY CONFLUENT base and an ARBITRARY variant transfers every
+  protected formula at every rank.  ◯-forward extracts the base-row
+  witness from the ∀∃ clause directly and pushes it through `mwit`;
+  ◯-backward pulls the reflexive-successor witness through `mback` and
+  rebuilds ∀∃ by bare possibility — the single use of confluence.
+* `MwitResidue`: the witness-form residue, strictly weaker than
+  `MforthResidue` on both sides (extra hypotheses: the partners come
+  from the witness clause with a forcing fact riding along; weaker
+  conclusion: ANY row-witness may answer).  Bridges:
+  `mwitResidue_of_mforthResidue`, `mwitResidue_of_stabilised`.
+* `witTriple_mwit` / `wit_pbisimW` / `amalgamation_assembledW`: the
+  ◯-maintenance, projection, and assembly in witness form — no
+  adversarial clause consumed anywhere; the assembly delivers closure
+  agreement AND (over a confluent base) full p-free transfer at the
+  root.
+
+**The banded cascade** (wip/bandW.lean): `BandMwitM` discharged by the
+MIRRORED maximal-type ascent (bandAgree is symmetric), so
+`restricted_amalgamation_oneVar_wit` needs the band collapse and
+NOTHING else — `BandMback`, the last unproved m-obligation of the §45
+route, left the ledger.
+
+## §48 (2026-07-27) — THE RANKED ASCENT: pillar 2 closes with no band and no finiteness
+
+The decisive observation, minutes after §47: the ascent's finiteness
+input is `frag_reps_exist'` — PER-RANK finiteness (pillar 1) — not
+fragment finiteness.  The band entered §45's proof at exactly one
+point: lifting link agreement to the boxed-character rank.  Supplying
+that rank directly (wip/rankedM.lean, all sorry-free):
+
+* `rankedMwit`: over mutually confluent models, variable-free
+  agreement at rank α+3 answers every K-row ψ-witness by one whose
+  M-partner agrees at rank α — NO escape, rank spend +3 (cheaper than
+  the i-clauses' 2α+2 halving).  `rankedMwitM` by symmetry;
+  `bandMwit_of_collapse'` refactors §45's ascent as stabilisation
+  feeding the ranked clause.
+* `rankedB`: Z n := agreement at rank `rslope n`
+  (rslope(n+1) = 2·rslope n + 3) is a lawful `LayeredBisimWit` off p
+  between one-variable mutually confluent models, plus `MWitM` —
+  EVERY input clause of the witness pipeline from pure rank-bounded
+  agreement.  **PILLAR 2 IS CLOSED in the ranked setting.**
+* `restricted_amalgamation_oneVar_ranked`: the one-variable
+  amalgamation from root agreement at the FIXED rank
+  rslope(2·|cl|+1) (tower-exponential in the closure, but determined
+  by it), modulo the ONE open Prop `MwitResidue` of the ranked link.
+  The residue — whose geography §§40-42 already mapped
+  (`residue_growth_boundary`: genuine configurations are p-laden or
+  boundary-crank; the S4/K4 UI-killer mechanism) — is now the ENTIRE
+  unproved content of the route.
+
+## §49 (2026-07-27) — Fragment infinitude LANDS: the band is REFUTED, the dictionary impossible, the purity corrected
+
+The injectivity delegation returned stronger than commissioned
+(wip/rnEmbed.lean, cherry-picked; 1069 lines, 15 pinned audits): the
+full Rieger–Nishimura ladder embeds under p ↦ ◯⊥ into BOTH quotients,
+pairwise distinct at EVERY index — over the single infinite RN frame
+on ℕ with closed-form rung truth sets, no decide budget.  Kernel-checked:
+`varfree_no_finite_cover_pll/_pcll` (**both variable-free fragments
+are INFINITE** — §46's "likely" upgraded to theorem, Nishimura not
+consumed), `rank_escape_pll/_pcll` (every rank is escaped),
+`rnSub_derivU_iff_deriv` (PCLL conservative over PLL on the embedded
+ladder; image order = truth-set containment in both logics),
+`crank_rnP_emb` (two fresh rungs per crank forever).
+
+Consequences, mechanised the same night (wip/bandRefute.lean):
+
+* `global_collapse_of_band` — §46's rebuild induction in Lean: one
+  band `BandCollapse R E`, `E ≥ R+2`, bootstraps to global collapse
+  at rank R.
+* `bandCollapse_refuted` — **BandCollapse R E is FALSE for every R
+  and every E ≥ R+2** (in particular the character width 2R+2).  The
+  band route of §§43-45 and §47 is closed NEGATIVELY: those theorems
+  keep their (true) conditional content with antecedents now known
+  unsatisfiable.  The ranked route (§48), which never used the band,
+  is the survivor — built hours before its rival died.
+* `rnDict_false` — the `RNDict` interface is UNINSTANTIABLE; the
+  dictionary-closure certification program (603/690 cells) cannot
+  complete.  No further effort there.
+* `ppure_ffree` (axiom-free) + `ppure_oneVar_trivial` — formulation
+  audit: `full_F` forces `PPure` models infallible, so the p-pure
+  one-variable amalgamation was UNCONDITIONALLY true
+  (`infallible_amalgamation`), i.e. the p-pure hypotheses trivialised
+  those statements.  Corrected purity `POnly` (V a ⊆ F off p) adopted
+  by the ranked chain — fallible one-variable models genuinely in
+  scope.
+
+**The route, after tonight**: everything unconditional except ONE
+displayed Prop — `MwitResidue` for the ranked link at slope
+2s+3 — consumed at one site, bridged from stabilisation and from the
+old residue, boundary-mapped, probe-populated.  Next: (i) decide
+MwitResidue for ranked links (the boundary theorem constrains genuine
+configurations to p-laden/boundary-crank growth whose ◯-anticipation
+fails; the §42 probe battery re-aimed at the witness form); (ii) the
+spec layer over PBisimWit (IsSemExW) and the PCLL UI statement it
+feeds.
