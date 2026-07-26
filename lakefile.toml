@@ -29,8 +29,8 @@ root = "Main"
 [[lean_lib]]
 name = "wipshared"
 globs = ["wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
-         "wip.mforth_probe", "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rnDictRefute", "wip.bandStabilise", "wip.bandM",
-         "wip.rnSep", "wip.rnSepColl", "wip.rnDict2Hand"]
+         "wip.mforth_probe", "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rnDictRefute", "wip.bandStabilise", "wip.bandM", "wip.rnc_probe", "wip.rncCert", "wip.rncCertPos",
+         "wip.rnSep", "wip.rnSepColl", "wip.rnDict2Hand", "wip.rnDict2", "wip.rnDictRefute2"]
 
 # The two-sided decision tool (countermodel-first; wip/oracle2.lean) and its
 # one-sided baseline, compiled — the native oracle route.
@@ -145,3 +145,8 @@ root = "wip.bii_p_probe"
 [[lean_exe]]
 name = "rnDictGen"
 root = "wip.rnDictGen"
+
+# RNC probe: PCLL quotient of the variable-free dictionary (confluent refutations).
+[[lean_exe]]
+name = "rncprobe"
+root = "wip.rnc_probe"
