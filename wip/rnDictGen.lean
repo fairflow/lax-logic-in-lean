@@ -1417,7 +1417,10 @@ def overrides : List (String × Nat × String) := [
   ("cImp_9_15", 15, "theorem cImp_9_15 : Interd (q9.ifThen q15) q15 := hand_cImp_9_15"),
   ("cImp_14_15", 15, "theorem cImp_14_15 : Interd (q14.ifThen q15) q15 := hand_cImp_14_15"),
   ("cImp_14_4", 15, "theorem cImp_14_4 : Interd (q14.ifThen q4) q15 := coll_w2_w4.symm"),
-  ("cImp_14_8", 8, "theorem cImp_14_8 : Interd (q14.ifThen q8) q8 := hand_cImp_14_8")]
+  ("cImp_14_8", 8, "theorem cImp_14_8 : Interd (q14.ifThen q8) q8 := hand_cImp_14_8"),
+  ("cBox_14", 14, "theorem cBox_14 : Interd q14.somehow q14 := hand_cBox_14"),
+  ("cImp_11_15", 15, "theorem cImp_11_15 : Interd (q11.ifThen q15) q15 := hand_cImp_11_15"),
+  ("cImp_13_15", 15, "theorem cImp_13_15 : Interd (q13.ifThen q15) q15 := hand_cImp_13_15")]
 
 /-- Read a persisted cell file. -/
 def readCell (name : String) : IO (Option Cell) := do
