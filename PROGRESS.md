@@ -1159,3 +1159,50 @@ STRENGTHENED (the gap-row value certified against the entire
 enlargement — B1 + per-instance-B2 evidence at its strongest).  Route
 forward: the mforth choice-freedom refactor + the per-instance residue
 treatment, over whichever of PLL/PCLL the Thm 5.1 assembly targets.
+
+## 44. 2026-07-26 night: the 16-round is FULLY DECIDED — 58 spawned witnesses, exact families, RN(◯,{}) ≥ 25
+
+Completion of the dictionary-mapping session (§43 reported it in
+flight).  Every one of the 140 searched cells of the 16-class closure
+round is now DECIDED — zero open cells:
+
+  82 LANDED (19 searcher + 63 hand certificates — wip/rnDict2Hand.lean,
+     the searcher-gap catalogue: ofImpTop order facts, ex falso inside
+     ◯, ◯-intro under orElim, collapse-lemma cuts);
+  58 NEW-CLASS witnesses (6 ∧, 15 ∨, 35 ⊃, 2 ◯), each with every
+     candidate countermodel-eliminated; witness theorems over Fin 16
+     in wip/rnDictRefute2.lean; wip/rnDict2.lean emits the partial
+     rnDict16 : RNDict with exactly these 58 sorried cells.
+
+FIVE pinned 6-world countermodels (extraCMs) decide candidates
+invisible at ≤5 worlds — among them [q14] ⊬ q13 (§43's "sole open
+matrix cell", now closed), ⊬ q8∨q10, [q13] ⊬ q5∨q8, [q13] ⊬ q8∨q12.
+
+The spawned classes classify EXACTLY within the scanned families
+(wip/xsep_*.txt + the 8 hand collapse certificates of
+wip/rnSpawnColl.lean — ALL eight previously-open spawned pairs are
+COLLAPSES, e.g. q8∨q10 ≡ q8∨q11 and the cross-shape q10⊃q4 ≡ q11⊃q7,
+two pinned AXIOM-FREE):
+
+  ∧-family: exactly 6 classes;  ∨-family: exactly 9;
+  ⊃-family (scanned subset of 12): exactly 8;  ◯-column: 2;
+  25 further ⊃-witnesses and all cross-family pairs unscanned.
+
+CLASS-COUNT: rep16_pairwise_distinct pins ≥ 16 in the kernel; the
+∨-family clique (9 spawned classes pairwise distinct and distinct
+from all 16) lifts the certified count to **RN(◯,{}) ≥ 25**
+(checkB-gated run-log countermodels, kernel-pinnable on demand); with
+58 witnesses outstanding the true count is plausibly 40+.  The
+class-count curve rises through every crank window observed (spawned
+reps at crank 6–9) — the §41 plateau remains without support, and the
+Curry-problem thread's RN(◯,{})-infinite direction strengthens again.
+
+The gap-row audit of §43 stands unchanged over the completed round:
+only ⊥ and ◯⊥ derive ◯(◯p⊃p); ∀p.◯(◯p⊃p) = ◯⊥.
+
+Deliverables: wip/rnSep.lean (165 sep certificates), wip/rnSepColl.lean
+(witness collapse + rep16 aggregate), wip/rnDict2Hand.lean (63 hand
+cells), wip/rnDict2.lean (726/784 cells certified), 
+wip/rnDictRefute2.lean (58 witness theorems), wip/rnSpawnColl.lean
+(8 spawned collapses), wip/rnDict2Report.md (the class map), run
+outputs wip/gen2logs/ + wip/xsep_*.txt + wip/gaprow_*.txt.
