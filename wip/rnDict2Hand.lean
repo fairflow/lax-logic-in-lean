@@ -556,6 +556,16 @@ theorem hand_cImp_8_10 : Interd (q8.ifThen q10) q10 := by
     exact Deriv.impElim h10 (Deriv.iden (.head _))
   · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
 
+theorem hand_cImp_14_15 : Interd (q14.ifThen w2) w2 := by
+  constructor
+  · refine Deriv.impIntro ?_
+    have h14 : Deriv [q9, q14.ifThen w2] q14 :=
+      Deriv.cutHead (Deriv.iden (.head _)) (ofImpTop cImp_9_14)
+    have h15 : Deriv [q9, q14.ifThen w2] w2 :=
+      Deriv.impElim (Deriv.iden (.tail _ (.head _))) h14
+    exact Deriv.impElim h15 (Deriv.iden (.head _))
+  · exact Deriv.impIntro (Deriv.iden (.tail _ (.head _)))
+
 end RND
 end SemUI
 end PLLND
