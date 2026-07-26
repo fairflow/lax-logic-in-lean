@@ -833,7 +833,8 @@ def extraCMs : List FinCM :=
   [⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(1, 4), (3, 4)], [4], []⟩,
    ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(0, 2), (1, 4), (3, 4)], [4], []⟩,
    ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (3, 4)], [(3, 4)], [4], []⟩,
-   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4), (2, 3)], [(1, 3), (2, 3)], [3], []⟩]
+   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 2), (1, 3), (1, 4), (2, 3)], [(1, 3), (2, 3)], [3], []⟩,
+   ⟨6, [(0, 1), (0, 2), (0, 3), (0, 4), (0, 5), (1, 3), (1, 4), (1, 5), (2, 3), (2, 4), (2, 5), (3, 4)], [(0, 2), (1, 4), (3, 4)], [4], []⟩]
 
 /-- Check the pinned extra models directly (verified checker only). -/
 def extraCM? (Γ : List PLLFormula) (C : PLLFormula) : Option (FinCM × Nat) :=
@@ -1442,7 +1443,7 @@ def readCell (name : String) : IO (Option Cell) := do
                 thm := if thmTxt.trim.isEmpty then none else some thmTxt }
 
 def header2 : String :=
-s!"import wip.rnSepColl
+s!"import wip.rnDict2Hand
 
 /-!
 # The enlarged RN(◯,{"{}"}) dictionary round: {NREPS} representatives

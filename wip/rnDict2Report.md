@@ -48,16 +48,16 @@ Escalated decision stages per side: bounded direct search (20k),
 standard battery, exhaustive ≤4-world battery, exhaustive rooted
 5-world battery, pinned 6-world extra models, budgeted search with
 cut-chains through all 16 representatives — plus a HAND-certificate
-layer (`wip/rnDict2Hand.lean`, 54 cells) for the searcher-gap cells.
+layer (`wip/rnDict2Hand.lean`, 63 cells) for the searcher-gap cells.
 
 Outcome (see §4 for exact counts):
 
 - **Landed cells**: certified `Interd` collapses onto representatives
-  (searcher certificates + 54 hand certificates).  Notable landings:
+  (searcher certificates + 63 hand certificates).  Notable landings:
   `q9 ∧ q15 ≡ q4` (modus ponens collapses the pair), `q10 ∧ q14 ≡ q5`,
   `q5 ∨ q8 ≡ ⋯` (no — new class, see below), `q14 ⊃ q5 ≡ q10`,
   `q8 ⊃ q15 ≡ q10`, `q12 ⊃ q15 ≡ q15`.
-- **The closure FAILS, massively**: ~40 cells match NO class of the
+- **The closure FAILS, massively**: 58 cells match NO class of the
   16, each certified by countermodels eliminating every candidate
   (witness theorems over `Fin 16` in `wip/rnDictRefute2.lean`).
   The ⊃-block dominates: `q8⊃q4, q8⊃q5, q8⊃q7, q8⊃q9, q8⊃q12,
@@ -74,7 +74,7 @@ Outcome (see §4 for exact counts):
   `⊬ q10∨q13`, `⊬ q10∨q14`, `⊬ q11∨q13`, `⊬ q11∨q14`,
   `[q14] ⊬ q13`, `[q13] ⊬ q5∨q8`, and the A-sides of
   `q10⊃q13, q14⊃q9, q14⊃q11, q8⊃q11` — refutations INVISIBLE at ≤5
-  worlds, witnessed by three pinned 6-world models (`extraCMs`).
+  worlds, witnessed by five pinned 6-world models (`extraCMs`).
 
 ### Spawned-class distinctness (partial)
 
@@ -108,10 +108,37 @@ v2quant ∀-side membership `[D] ⊢ ◯(◯p⊃p)` over the ENLARGED set:
 Hence `∀p.◯(◯p⊃p) = ⊥ ∨ ◯⊥ ≡ ◯⊥` — **the recorded value stands**
 over the full enlargement.
 
-## 4. Exact counts
+## 4. Exact counts (final)
 
-(TO FILL AT ASSEMBLY: landed/new/open counts, rnDict16 partial
-status, final class lower bound.)
+The 16-class closure round: 784 cells = 644 generic/mirror/referenced
++ 140 searched.  ALL 140 SEARCHED CELLS ARE DECIDED (zero open):
+
+- **82 landed** with kernel-checked `Interd` certificates: 19 by the
+  escalated searcher, **63 by hand** (`wip/rnDict2Hand.lean` — the
+  searcher-gap catalogue);
+- **58 are NEW-CLASS witnesses** (all 16 candidates
+  countermodel-eliminated; witness theorems in
+  `wip/rnDictRefute2.lean`): 6 ∧-cells, 15 ∨-cells, 35 ⊃-cells,
+  2 ◯-cells.  `rnDict16 : RNDict` is emitted PARTIAL with exactly
+  these 58 sorried cells — the closure-failure frontier.
+- Five pinned 6-world countermodels (`extraCMs`) decide candidates
+  invisible at ≤5 worlds, including `[q14] ⊬ q13` (also §43's "sole
+  open matrix cell" — now decided) and `⊬ q8∨q10` etc.
+
+Spawned-class classification: the three family scans (33 of the 58
+witnesses) are COMPLETE after the 8 hand collapse certificates of
+`wip/rnSpawnColl.lean` (`q8∨q10 ≡ q8∨q11`, `q10⊃q4 ≡ q11⊃q7`, …):
+
+- ∧-family: exactly 6 classes; ∨-family: exactly 9; ⊃-family
+  (scanned subset): exactly 8; ◯-column: 2 (cross-family and the 25
+  unscanned ⊃-cells pending — next round's input).
+
+**Class-count bounds**: kernel-pinned `rep16_pairwise_distinct` gives
+≥ 16; the ∨-family clique (9 pairwise-distinct spawned classes, each
+distinct from all 16 by `rnDictRefute2`) lifts the certified count to
+**RN(◯,{}) ≥ 25** (family verdicts are checkB-gated run-log
+countermodels, kernel-pinnable on demand).  With all 58 witnesses and
+cross-family classification the true count is plausibly 40+.
 
 ## 5. Methodological note
 
