@@ -1097,3 +1097,26 @@ infinite (Rieger 1949, Nishimura 1960), and with ◯-free conservativity
 the one-VARIABLE PLL fragment is infinite too; neither settles
 RN(◯,{}).  Note the compatibility: the Curry-problem thread wants
 RN(◯,{}) infinite, UI wants a plateau — both can hold.
+
+## 42. 2026-07-26: the infallible collapse formalised; the m-clause positive half proved
+
+wip/bandM.lean (sorry-free, pinned).  Matthew's observation — PLL+¬◯⊥
+is complete for infallible constraint models, where ◯⊥ ≡ ⊥ and
+RN(◯,{}) collapses to {⊥,⊤} — is now a theorem pair:
+`infallible_amalgamation` (between p-pure INFALLIBLE models, K
+confluent, the total link is a lawful LayeredBisimE — all eight
+clauses trivial, m-clauses included — and the one-variable
+amalgamation holds with NO agreement hypothesis; the first
+UNCONDITIONAL instance of the whole amalgamation tower and a
+constructive non-vacuity certificate), and `band_mforth_positive`
+(general fallible case: the POSITIVE half of the banded m-forth
+clause via charPos + bare possibility on both sides + band transfer
+at α+3 ≤ R; the NEGATIVE half — no overshoot — is the isolated
+remainder).  Reading: the m-clause difficulty, like the tower itself,
+is EXACTLY fallibility-grading; over ¬◯⊥ everything trivialises, so
+any PLL-UI proof factors its hard content through the fallibility
+dimension.  PRECISION note on §40: "≥ 16 classes kernel-checked"
+overstated — the four ∀k-refutations are fully pinned, but pairwise
+distinctness of the 15 representatives (and of the 4 witnesses) is
+probe-certified only, not yet Lean-pinned; the mapping session should
+pin the separations.
