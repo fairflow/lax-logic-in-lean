@@ -51,7 +51,7 @@ variable {p : String} {K M : ConstraintModel}
 /-- A layered link is **ranked** when level-`n` links transfer p-free
 formulas of `crankC ≤ n`.  For the link fragment-agreement constructs
 (`Z n :=` agreement at rank `n`), this is definitional. -/
-def Ranked (p : String) (B : LayeredBisimE (fun a => a ≠ p) K M) : Prop :=
+def Ranked (p : String) (B : LayeredBisimWit (fun a => a ≠ p) K M) : Prop :=
   ∀ {n : Nat} {φ : PLLFormula} {k : K.W} {m : M.W},
     B.Z n k m → crankC φ ≤ n → (∀ a ∈ φ.atoms, a ≠ p) →
     (K.force k φ ↔ M.force m φ)
@@ -65,7 +65,7 @@ back to the `mback`-partner `κ` (level `2d−1`), contradicting
 genuine residue configuration distinguishes its partners only by
 p-laden or boundary-crank formulas. -/
 theorem residue_growth_boundary {cl : Finset PLLFormula}
-    {B : LayeredBisimE (fun a => a ≠ p) K M} (hR : Ranked p B)
+    {B : LayeredBisimWit (fun a => a ≠ p) K M} (hR : Ranked p B)
     {Δ : (canonFinC cl).W} {kv κ : K.W} {u : M.W}
     (hZkv : B.Z (2 * canonDepthC cl Δ) kv u)
     (hZκ : B.Z (2 * canonDepthC cl Δ - 1) κ u)
@@ -226,7 +226,7 @@ link family and the closure `{⊥, p, ◯⊥, ◯p}`.  The growth is
 configuration cannot be refuted abstractly, and the vacuity route to
 the residue is closed. -/
 theorem residue_config_satisfiable :
-    ∃ (K M : ConstraintModel) (B : LayeredBisimE (fun a => a ≠ "p") K M)
+    ∃ (K M : ConstraintModel) (B : LayeredBisimWit (fun a => a ≠ "p") K M)
       (cl : Finset PLLFormula) (_hK : MutuallyConfluent K)
       (Δ : (canonFinC cl).W) (k' k kv κ : K.W) (m' m u : M.W),
       SubClosed cl ∧
@@ -240,7 +240,7 @@ theorem residue_config_satisfiable :
       (traceT K cl kv).val ≠ Δ.1.val ∧
       K.Rm k κ ∧ B.Z (2 * canonDepthC cl Δ - 1) κ u ∧
       (traceT K cl κ).val = Δ.1.val := by
-  refine ⟨chainP, chainP, fullE, clP, chainP_confluent,
+  refine ⟨chainP, chainP, fullE.toWit, clP, chainP_confluent,
     traceC chainP_confluent clP false, false, false, true, false,
     false, false, true,
     clP_subClosed, ?_, rfl, rfl, .inl rfl, .inr ⟨rfl, rfl⟩, ?_,
@@ -264,7 +264,7 @@ refute `MforthResidue`; it locates the open content at growth whose
 theorem residue_config_example_resolves :
     ∃ Δ' : (canonFinC clP).W,
       (canonFinC clP).Rm (traceC chainP_confluent clP false) Δ' ∧
-      WitTripleC clP fullE Δ' true := by
+      WitTripleC clP fullE.toWit Δ' true := by
   refine ⟨traceC chainP_confluent clP true, ⟨?_, ?_⟩, ?_⟩
   · -- persistence: trace false ⊆ trace true
     intro φ hφ
@@ -323,7 +323,7 @@ STRICTLY-DESCENDING regime: links below the stabilisation level of the
 Z-hierarchy, with small canonical depth — the alternation-tower
 territory of the cross-route experiment. -/
 theorem mforthResidue_of_stabilised (cl : Finset PLLFormula)
-    (B : LayeredBisimE (fun a => a ≠ p) K M)
+    (B : LayeredBisimWit (fun a => a ≠ p) K M)
     (h : ∀ {Δ : (canonFinC cl).W} {κ : K.W} {u : M.W},
       B.Z (2 * canonDepthC cl Δ - 1) κ u →
       B.Z (2 * canonDepthC cl Δ) κ u) :

@@ -92,6 +92,21 @@ def BandMforth (R : Nat) (K M : ConstraintModel) : Prop :=
   ∀ {k : K.W} {m : M.W}, bandAgree R K M k m → ∀ {u : K.W}, K.Rm k u →
     ∃ u', M.Rm m u' ∧ (bandAgree R K M u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
 
+/-- The WITNESS form of the banded m-forth obligation — all the
+amalgamation consumes; strictly weaker than `BandMforth`. -/
+def BandMwit (R : Nat) (K M : ConstraintModel) : Prop :=
+  ∀ {k : K.W} {m : M.W}, bandAgree R K M k m → ∀ {ψ : PLLFormula},
+    (∃ κ, K.Rm k κ ∧ K.force κ ψ) →
+      ∃ κ u', K.Rm k κ ∧ K.force κ ψ ∧ M.Rm m u' ∧
+        (bandAgree R K M κ u' ∨ (κ ∈ K.F ∧ u' ∈ M.F))
+
+theorem bandMwit_of_bandMforth {R : Nat} {K M : ConstraintModel}
+    (h : BandMforth R K M) : BandMwit R K M := by
+  intro k m hZ ψ hex
+  obtain ⟨κ, hkκ, hκψ⟩ := hex
+  obtain ⟨u', hmu', hres⟩ := h hZ hkκ
+  exact ⟨κ, u', hkκ, hκψ, hmu', hres⟩
+
 def BandMback (R : Nat) (K M : ConstraintModel) : Prop :=
   ∀ {k : K.W} {m : M.W}, bandAgree R K M k m → ∀ {u' : M.W}, M.Rm m u' →
     ∃ u, K.Rm k u ∧ (bandAgree R K M u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
@@ -103,8 +118,8 @@ at width `2R+2`.  The i-clauses upgrade their input across the band
 `α := R`; the partner returns at rank `2R ≥ R`. -/
 def bandB (R : Nat) (hband : BandCollapse R (2 * R + 2))
     (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : BandMforth R K M) (hmb : BandMback R K M) :
-    LayeredBisimE (fun a => a ≠ p) K M where
+    (hmf : BandMwit R K M) (hmb : BandMback R K M) :
+    LayeredBisimWit (fun a => a ≠ p) K M where
   Z := fun _ k m => bandAgree R K M k m
   mono := fun h => h
   atoms := by
@@ -143,9 +158,9 @@ def bandB (R : Nat) (hband : BandCollapse R (2 * R + 2))
       exact hagr ρ (le_trans hcr (by omega)) (fun a ha => by
         rw [hρ] at ha
         exact ha)
-  mforth := by
-    intro n k m hZ u hu
-    exact hmf hZ hu
+  mwit := by
+    intro n k m hZ ψ hex
+    exact hmf hZ hex
   mback := by
     intro n k m hZ u' hu'
     exact hmb hZ hu'
@@ -156,7 +171,7 @@ def bandB (R : Nat) (hband : BandCollapse R (2 * R + 2))
 theorem bandB_mforthResidue (cl : Finset PLLFormula) (R : Nat)
     (hband : BandCollapse R (2 * R + 2))
     (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : BandMforth R K M) (hmb : BandMback R K M) :
+    (hmf : BandMwit R K M) (hmb : BandMback R K M) :
     MforthResidue cl (bandB R hband hPK hPM hmf hmb) :=
   mforthResidue_of_stabilised cl (bandB R hband hPK hPM hmf hmb)
     (fun h => h)
@@ -170,7 +185,7 @@ theorem restricted_amalgamation_oneVar_band (cl : Finset PLLFormula)
     (R : Nat) (hband : BandCollapse R (2 * R + 2))
     (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
     (hK : MutuallyConfluent K) (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : BandMforth R K M) (hmb : BandMback R K M)
+    (hmf : BandMwit R K M) (hmb : BandMback R K M)
     (k₀ : K.W) (m₀ : M.W)
     (hagree : bandAgree R K M k₀ m₀) :
     ∃ (N : ConstraintModel) (C : PBisim p M N) (n₀ : N.W),

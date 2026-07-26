@@ -35,8 +35,11 @@ as a hypothesis.
   clause says every validated formula of an `Rₘ`-successor is
   ◯-anticipated at the source, so an amalgam row-witness for `ψ` puts
   `◯ψ` in `val` outright.  The ◯-backward direction uses bare possibility
-  in `K` plus `B.mforth` (financed by strict growth), never a transfer.
-  Only `K` need be confluent; `M` is arbitrary.
+  in `K` plus the WITNESS-form m-clause `B.mwit` (financed by strict
+  growth), never a transfer.  Only `K` need be confluent; `M` is
+  arbitrary.  (2026-07-26: the input format is `LayeredBisimWit` — the
+  E-form with `mforth` weakened to choice-freedom, which is all the
+  development ever consumed.)
 
 ## The residue
 
@@ -158,6 +161,61 @@ theorem ri_canonTopC {cl : Finset PLLFormula} (Δ : (canonFinC cl).W) :
     (canonFinC cl).Ri Δ (canonTopC cl) :=
   fun _χ hχ => Δ.2.1.2.1.1 hχ
 
+/-! ## The witness form of the layered link -/
+
+/-- **The witness form** — `LayeredBisimE` with the `mforth` clause
+weakened to CHOICE-FREEDOM: the K-side ◯-obligation is demanded only
+for SOME row-witness of a given formula, not for every row-move.  This
+is exactly what the development consumes: the E-form's `mforth` was
+spent at a single site (the ◯-backward direction of the truth lemma),
+where the K-side witness is ours to choose.  The adversarial clauses
+(`iback`, `mback`) are unchanged — the amalgam must answer every
+M-side move — and the OUTPUT of the construction (`wit_pbisimC`)
+remains a full unbounded bisimulation.  Every `LayeredBisimE` is a
+`LayeredBisimWit` (`LayeredBisimE.toWit`); the converse fails, so the
+pillar-2 obligation is strictly weakened. -/
+structure LayeredBisimWit (A : String → Prop) (K M : ConstraintModel) where
+  Z : Nat → K.W → M.W → Prop
+  mono : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → Z n w w'
+  atoms : ∀ {n : Nat} {w w'}, Z n w w' → ∀ a, A a → (w ∈ K.V a ↔ w' ∈ M.V a)
+  fall : ∀ {n : Nat} {w w'}, Z n w w' → (w ∈ K.F ↔ w' ∈ M.F)
+  iforth : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {v}, K.Ri w v →
+    (∃ v', M.Ri w' v' ∧ Z n v v') ∨ v ∈ K.F
+  iback : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {v'}, M.Ri w' v' →
+    (∃ v, K.Ri w v ∧ Z n v v') ∨ v' ∈ M.F
+  mwit : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {ψ : PLLFormula},
+    (∃ κ, K.Rm w κ ∧ K.force κ ψ) →
+      ∃ κ u', K.Rm w κ ∧ K.force κ ψ ∧ M.Rm w' u' ∧
+        (Z n κ u' ∨ (κ ∈ K.F ∧ u' ∈ M.F))
+  mback : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {u'}, M.Rm w' u' →
+    ∃ u, K.Rm w u ∧ (Z n u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
+
+theorem LayeredBisimWit.mono_le {A : String → Prop}
+    (B : LayeredBisimWit A K M) :
+    ∀ {m n : Nat}, m ≤ n → ∀ {w w'}, B.Z n w w' → B.Z m w w' := by
+  intro m n h
+  induction h with
+  | refl => exact fun h => h
+  | step _ ih => exact fun h => ih (B.mono h)
+
+/-- Every E-form link is a witness-form link: apply `mforth` to the
+given witness. -/
+def _root_.PLLND.SemUI.LayeredBisimE.toWit {A : String → Prop}
+    {K M : ConstraintModel} (B : LayeredBisimE A K M) :
+    LayeredBisimWit A K M where
+  Z := B.Z
+  mono := B.mono
+  atoms := B.atoms
+  fall := B.fall
+  iforth := B.iforth
+  iback := B.iback
+  mwit := by
+    intro n w w' hZ ψ h
+    obtain ⟨κ, hkκ, hκψ⟩ := h
+    obtain ⟨u', hu', hres⟩ := B.mforth hZ hkκ
+    exact ⟨κ, u', hkκ, hκψ, hu', hres⟩
+  mback := B.mback
+
 /-! ## The witnessing triple -/
 
 /-- **Witnessing triple** over the confluent canonical model.  `proper`:
@@ -168,7 +226,7 @@ with a fallible M-world — where every fallible escape lands, and where all
 maintenance is trivial.  (The K-side edge `k′ ≼ᵢ k` of the classical form
 is consumed by nothing and is dropped.) -/
 inductive WitTripleC (cl : Finset PLLFormula)
-    (B : LayeredBisimE (fun a => a ≠ p) K M) :
+    (B : LayeredBisimWit (fun a => a ≠ p) K M) :
     (canonFinC cl).W → M.W → Prop where
   | proper {Δ : (canonFinC cl).W} {m : M.W} (k' k : K.W) (m' : M.W)
       (hΔk : (traceT K cl k).val = Δ.1.val)
@@ -181,7 +239,7 @@ inductive WitTripleC (cl : Finset PLLFormula)
       (hbot : PLLFormula.falsePLL ∈ Δ.1.val) (hmF : m ∈ M.F) :
       WitTripleC cl B Δ m
 
-variable (cl : Finset PLLFormula) (B : LayeredBisimE (fun a => a ≠ p) K M)
+variable (cl : Finset PLLFormula) (B : LayeredBisimWit (fun a => a ≠ p) K M)
 
 /-! ## The amalgam -/
 
@@ -728,7 +786,11 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
                     rw [hΔk₁]; exact hval₁
                   exact (mem_traceT_val.mp this).2
                 rw [force_somehow_iff_of_confluent hK] at hfk₁
-                obtain ⟨κ, hk₁κ, hκψ⟩ := hfk₁
+                have hZbase₁ : B.Z (2 * canonDepthC cl Δ₁ - 1 + 1) k₁ m₁ := by
+                  have : 2 * canonDepthC cl Δ₁ - 1 + 1 = 2 * canonDepthC cl Δ₁ := by
+                    omega
+                  rw [this]; exact hZ₁
+                obtain ⟨κ, u', hk₁κ, hκψ, hm₁u', hresκ⟩ := B.mwit hZbase₁ hfk₁
                 have hRmΔ₁ : (canonFinC cl).Rm Δ₁ (traceC hK cl κ) := by
                   have hh := traceC_mforth (cl := cl) hK hk₁κ
                   refine ⟨?_, ?_⟩
@@ -751,11 +813,7 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
                     exact mem_traceT_val.mpr ⟨hψ₁, hκψ⟩)
                 have hlt : canonDepthC cl (traceC hK cl κ) < canonDepthC cl Δ₁ :=
                   canonDepthC_lt hsub hne
-                have hZbase₁ : B.Z (2 * canonDepthC cl Δ₁ - 1 + 1) k₁ m₁ := by
-                  have : 2 * canonDepthC cl Δ₁ - 1 + 1 = 2 * canonDepthC cl Δ₁ := by
-                    omega
-                  rw [this]; exact hZ₁
-                rcases B.mforth hZbase₁ hk₁κ with ⟨u', hm₁u', hZκ | ⟨hκF, hu'F⟩⟩
+                rcases hresκ with hZκ | ⟨hκF, hu'F⟩
                 · have htrip₂ : WitTripleC cl B (traceC hK cl κ) u' :=
                     .proper κ κ u' rfl rfl (M.refl_i u')
                       (B.mono_le (by omega) hZκ) (B.mono_le (by omega) hZκ)

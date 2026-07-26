@@ -53,7 +53,7 @@ answer every move reflexively.  The m-clause difficulty is a
 fallibility phenomenon. -/
 def totalB (hPK : PPure p K) (hPM : PPure p M)
     (hFK : FFree K) (hFM : FFree M) :
-    LayeredBisimE (fun a => a ≠ p) K M where
+    LayeredBisimWit (fun a => a ≠ p) K M where
   Z := fun _ _ _ => True
   mono := fun _ => trivial
   atoms := by
@@ -68,9 +68,10 @@ def totalB (hPK : PPure p K) (hPM : PPure p M)
   iback := by
     intro n k m _ v' _
     exact .inl ⟨k, K.refl_i k, trivial⟩
-  mforth := by
-    intro n k m _ u _
-    exact ⟨m, M.refl_m m, .inl trivial⟩
+  mwit := by
+    intro n k m _ ψ hex
+    obtain ⟨κ, hkκ, hκψ⟩ := hex
+    exact ⟨κ, m, hkκ, hκψ, M.refl_m m, .inl trivial⟩
   mback := by
     intro n k m _ u' _
     exact ⟨k, K.refl_m k, .inl trivial⟩

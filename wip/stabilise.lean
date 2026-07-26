@@ -38,8 +38,8 @@ discharges the residue.  The chain:
 6. `restricted_amalgamation_oneVar` (PROVED): the full amalgamation for
    p-pure confluent `K`, at entry rank `D.crankBound` (not
    `2·cl.card+1`!), with no residue hypothesis.  What remains of the
-   whole route in this setting is exactly `VfMforth`/`VfMback` — the
-   two m-clauses of pillar 2, nothing else.
+   whole route in this setting is exactly `VfMwit`/`VfMback` — the
+   witness-form m-clause and the adversarial m-back, nothing else.
 -/
 
 open PLLFormula
@@ -166,6 +166,23 @@ def VfMforth (K M : ConstraintModel) : Prop :=
   ∀ {k : K.W} {m : M.W}, vfAgree K M k m → ∀ {u : K.W}, K.Rm k u →
     ∃ u', M.Rm m u' ∧ (vfAgree K M u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
 
+/-- The WITNESS form of the constant-link m-forth obligation: only some
+row-witness of a given formula needs an answered partner.  Strictly
+weaker than `VfMforth` (`vfMwit_of_vfMforth`); this is all the
+amalgamation consumes. -/
+def VfMwit (K M : ConstraintModel) : Prop :=
+  ∀ {k : K.W} {m : M.W}, vfAgree K M k m → ∀ {ψ : PLLFormula},
+    (∃ κ, K.Rm k κ ∧ K.force κ ψ) →
+      ∃ κ u', K.Rm k κ ∧ K.force κ ψ ∧ M.Rm m u' ∧
+        (vfAgree K M κ u' ∨ (κ ∈ K.F ∧ u' ∈ M.F))
+
+theorem vfMwit_of_vfMforth {K M : ConstraintModel} (h : VfMforth K M) :
+    VfMwit K M := by
+  intro k m hZ ψ hex
+  obtain ⟨κ, hkκ, hκψ⟩ := hex
+  obtain ⟨u', hmu', hres⟩ := h hZ hkκ
+  exact ⟨κ, u', hkκ, hκψ, hmu', hres⟩
+
 def VfMback (K M : ConstraintModel) : Prop :=
   ∀ {k : K.W} {m : M.W}, vfAgree K M k m → ∀ {u' : M.W}, M.Rm m u' →
     ∃ u, K.Rm k u ∧ (vfAgree K M u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
@@ -176,8 +193,8 @@ at rank 0, the i-clauses by the character argument at alphabet ∅ with
 its `2α+2` budget absorbed by stabilisation; the m-clauses are the
 hypotheses. -/
 def vfB (D : RNDict) (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : VfMforth K M) (hmb : VfMback K M) :
-    LayeredBisimE (fun a => a ≠ p) K M where
+    (hmf : VfMwit K M) (hmb : VfMback K M) :
+    LayeredBisimWit (fun a => a ≠ p) K M where
   Z := fun _ k m => vfAgree K M k m
   mono := fun h => h
   atoms := by
@@ -210,9 +227,9 @@ def vfB (D : RNDict) (hPK : PPure p K) (hPM : PPure p M)
       exact hagr ρ (le_trans hcr (by omega)) (fun a ha => by
         rw [hρ] at ha
         exact ha)
-  mforth := by
-    intro n k m hZ u hu
-    exact hmf hZ hu
+  mwit := by
+    intro n k m hZ ψ hex
+    exact hmf hZ hex
   mback := by
     intro n k m hZ u' hu'
     exact hmb hZ hu'
@@ -224,7 +241,7 @@ definitionally: **`MforthResidue` holds for `vfB`.**  The stabilisation
 lemma has paid the residue. -/
 theorem vfB_mforthResidue (cl : Finset PLLFormula) (D : RNDict)
     (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : VfMforth K M) (hmb : VfMback K M) :
+    (hmf : VfMwit K M) (hmb : VfMback K M) :
     MforthResidue cl (vfB D hPK hPM hmf hmb) :=
   mforthResidue_of_stabilised cl (vfB D hPK hPM hmf hmb) (fun h => h)
 
@@ -239,7 +256,7 @@ hypothesis.  Everything that remains of the route here is
 theorem restricted_amalgamation_oneVar (cl : Finset PLLFormula)
     (D : RNDict) (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
     (hK : MutuallyConfluent K) (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : VfMforth K M) (hmb : VfMback K M)
+    (hmf : VfMwit K M) (hmb : VfMback K M)
     (k₀ : K.W) (m₀ : M.W)
     (hagree : ∀ ρ : PLLFormula, ρ.atoms = ∅ → crank ρ ≤ D.crankBound →
       (K.force k₀ ρ ↔ M.force m₀ ρ)) :
