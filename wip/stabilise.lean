@@ -193,7 +193,7 @@ at rank 0, the i-clauses by the character argument at alphabet ∅ with
 its `2α+2` budget absorbed by stabilisation; the m-clauses are the
 hypotheses. -/
 def vfB (D : RNDict) (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : VfMwit K M) (hmb : VfMback K M) :
+    (hmf : VfMwit K M) :
     LayeredBisimWit (fun a => a ≠ p) K M where
   Z := fun _ k m => vfAgree K M k m
   mono := fun h => h
@@ -230,9 +230,13 @@ def vfB (D : RNDict) (hPK : PPure p K) (hPM : PPure p M)
   mwit := by
     intro n k m hZ ψ hex
     exact hmf hZ hex
-  mback := by
-    intro n k m hZ u' hu'
-    exact hmb hZ hu'
+
+/-- The adversarial side condition, from `VfMback`. -/
+theorem vfB_mback (D : RNDict) (hPK : PPure p K) (hPM : PPure p M)
+    (hmf : VfMwit K M) (hmb : VfMback K M) :
+    (vfB D hPK hPM hmf).MBack := by
+  intro n k m hZ u' hu'
+  exact hmb hZ hu'
 
 /-! ## 5. The residue is discharged for the constant family -/
 
@@ -241,9 +245,9 @@ definitionally: **`MforthResidue` holds for `vfB`.**  The stabilisation
 lemma has paid the residue. -/
 theorem vfB_mforthResidue (cl : Finset PLLFormula) (D : RNDict)
     (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : VfMwit K M) (hmb : VfMback K M) :
-    MforthResidue cl (vfB D hPK hPM hmf hmb) :=
-  mforthResidue_of_stabilised cl (vfB D hPK hPM hmf hmb) (fun h => h)
+    (hmf : VfMwit K M) :
+    MforthResidue cl (vfB D hPK hPM hmf) :=
+  mforthResidue_of_stabilised cl (vfB D hPK hPM hmf) (fun h => h)
 
 /-! ## 6. The one-variable amalgamation, residue-free -/
 
@@ -262,8 +266,9 @@ theorem restricted_amalgamation_oneVar (cl : Finset PLLFormula)
       (K.force k₀ ρ ↔ M.force m₀ ρ)) :
     ∃ (N : ConstraintModel) (C : PBisim p M N) (n₀ : N.W),
       C.Z m₀ n₀ ∧ ∀ φ ∈ cl, (N.force n₀ φ ↔ K.force k₀ φ) :=
-  amalgamation_assembledC cl (vfB D hPK hPM hmf hmb) hcl hadeq hK
-    (vfB_mforthResidue cl D hPK hPM hmf hmb) k₀ m₀
+  amalgamation_assembledC cl (vfB D hPK hPM hmf) hcl hadeq hK
+    (vfB_mback D hPK hPM hmf hmb)
+    (vfB_mforthResidue cl D hPK hPM hmf) k₀ m₀
     (dict_agree_stab D hagree)
 
 /-! ## Axiom audit -/

@@ -118,7 +118,7 @@ at width `2R+2`.  The i-clauses upgrade their input across the band
 `α := R`; the partner returns at rank `2R ≥ R`. -/
 def bandB (R : Nat) (hband : BandCollapse R (2 * R + 2))
     (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : BandMwit R K M) (hmb : BandMback R K M) :
+    (hmf : BandMwit R K M) :
     LayeredBisimWit (fun a => a ≠ p) K M where
   Z := fun _ k m => bandAgree R K M k m
   mono := fun h => h
@@ -161,9 +161,14 @@ def bandB (R : Nat) (hband : BandCollapse R (2 * R + 2))
   mwit := by
     intro n k m hZ ψ hex
     exact hmf hZ hex
-  mback := by
-    intro n k m hZ u' hu'
-    exact hmb hZ hu'
+
+/-- The adversarial side condition, from `BandMback`. -/
+theorem bandB_mback (R : Nat) (hband : BandCollapse R (2 * R + 2))
+    (hPK : PPure p K) (hPM : PPure p M)
+    (hmf : BandMwit R K M) (hmb : BandMback R K M) :
+    (bandB R hband hPK hPM hmf).MBack := by
+  intro n k m hZ u' hu'
+  exact hmb hZ hu'
 
 /-! ## 3. The residue is paid; the banded amalgamation -/
 
@@ -171,9 +176,9 @@ def bandB (R : Nat) (hband : BandCollapse R (2 * R + 2))
 theorem bandB_mforthResidue (cl : Finset PLLFormula) (R : Nat)
     (hband : BandCollapse R (2 * R + 2))
     (hPK : PPure p K) (hPM : PPure p M)
-    (hmf : BandMwit R K M) (hmb : BandMback R K M) :
-    MforthResidue cl (bandB R hband hPK hPM hmf hmb) :=
-  mforthResidue_of_stabilised cl (bandB R hband hPK hPM hmf hmb)
+    (hmf : BandMwit R K M) :
+    MforthResidue cl (bandB R hband hPK hPM hmf) :=
+  mforthResidue_of_stabilised cl (bandB R hband hPK hPM hmf)
     (fun h => h)
 
 /-- **The one-variable amalgamation, rank-relative form**: from a band
@@ -190,8 +195,9 @@ theorem restricted_amalgamation_oneVar_band (cl : Finset PLLFormula)
     (hagree : bandAgree R K M k₀ m₀) :
     ∃ (N : ConstraintModel) (C : PBisim p M N) (n₀ : N.W),
       C.Z m₀ n₀ ∧ ∀ φ ∈ cl, (N.force n₀ φ ↔ K.force k₀ φ) :=
-  amalgamation_assembledC cl (bandB R hband hPK hPM hmf hmb) hcl hadeq hK
-    (bandB_mforthResidue cl R hband hPK hPM hmf hmb) k₀ m₀ hagree
+  amalgamation_assembledC cl (bandB R hband hPK hPM hmf) hcl hadeq hK
+    (bandB_mback R hband hPK hPM hmf hmb)
+    (bandB_mforthResidue cl R hband hPK hPM hmf) k₀ m₀ hagree
 
 /-! ## Axiom audit -/
 

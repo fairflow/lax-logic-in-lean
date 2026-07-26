@@ -168,12 +168,17 @@ weakened to CHOICE-FREEDOM: the K-side ◯-obligation is demanded only
 for SOME row-witness of a given formula, not for every row-move.  This
 is exactly what the development consumes: the E-form's `mforth` was
 spent at a single site (the ◯-backward direction of the truth lemma),
-where the K-side witness is ours to choose.  The adversarial clauses
-(`iback`, `mback`) are unchanged — the amalgam must answer every
-M-side move — and the OUTPUT of the construction (`wit_pbisimC`)
-remains a full unbounded bisimulation.  Every `LayeredBisimE` is a
-`LayeredBisimWit` (`LayeredBisimE.toWit`); the converse fails, so the
-pillar-2 obligation is strictly weakened. -/
+where the K-side witness is ours to choose.  The adversarial `iback`
+is unchanged — the amalgam must answer every M-side i-move.  The
+adversarial `mback` (2026-07-26, witness-form OUTPUT refactor) is NO
+LONGER A FIELD: the only consumer was the adversarial ◯-maintenance
+`witTriple_mforth`, which now takes it as the optional side condition
+`LayeredBisimWit.MBack`; the witness-form maintenance
+(`witTriple_mwit`, wip/witOut.lean) instead consumes the strictly
+weaker M-side witness clause `MWitM`.  Every `LayeredBisimE` is a
+`LayeredBisimWit` (`LayeredBisimE.toWit`, with `toWit_mback` restoring
+the side condition); the converse fails, so the pillar-2 obligation is
+strictly weakened. -/
 structure LayeredBisimWit (A : String → Prop) (K M : ConstraintModel) where
   Z : Nat → K.W → M.W → Prop
   mono : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → Z n w w'
@@ -187,8 +192,6 @@ structure LayeredBisimWit (A : String → Prop) (K M : ConstraintModel) where
     (∃ κ, K.Rm w κ ∧ K.force κ ψ) →
       ∃ κ u', K.Rm w κ ∧ K.force κ ψ ∧ M.Rm w' u' ∧
         (Z n κ u' ∨ (κ ∈ K.F ∧ u' ∈ M.F))
-  mback : ∀ {n : Nat} {w w'}, Z (n + 1) w w' → ∀ {u'}, M.Rm w' u' →
-    ∃ u, K.Rm w u ∧ (Z n u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
 
 theorem LayeredBisimWit.mono_le {A : String → Prop}
     (B : LayeredBisimWit A K M) :
@@ -197,6 +200,39 @@ theorem LayeredBisimWit.mono_le {A : String → Prop}
   induction h with
   | refl => exact fun h => h
   | step _ ih => exact fun h => ih (B.mono h)
+
+/-- **The adversarial M-side ◯-clause**, demoted from a structure field
+to an optional side condition (2026-07-26): the development consumes it
+at exactly one site — the adversarial ◯-maintenance `witTriple_mforth`
+— and the witness-form maintenance (`witTriple_mwit`) replaces it by
+the strictly weaker `MWitM` below. -/
+def LayeredBisimWit.MBack {A : String → Prop}
+    (B : LayeredBisimWit A K M) : Prop :=
+  ∀ {n : Nat} {w : K.W} {w' : M.W}, B.Z (n + 1) w w' →
+    ∀ {u' : M.W}, M.Rm w' u' →
+      ∃ u, K.Rm w u ∧ (B.Z n u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
+
+/-- **The M-side WITNESS ◯-clause**: an M-row witness for `ψ` is
+answered by SOME M-row witness for `ψ` with a K-side `Rₘ`-partner —
+the mirror image of `mwit`, and all the witness-form output ever
+demands of the M side.  Strictly weaker than `MBack`
+(`mwitM_of_mback`): the adversary no longer chooses the world, only
+the formula. -/
+def LayeredBisimWit.MWitM {A : String → Prop}
+    (B : LayeredBisimWit A K M) : Prop :=
+  ∀ {n : Nat} {w : K.W} {w' : M.W}, B.Z (n + 1) w w' →
+    ∀ {ψ : PLLFormula}, (∃ u', M.Rm w' u' ∧ M.force u' ψ) →
+      ∃ u' u, M.Rm w' u' ∧ M.force u' ψ ∧ K.Rm w u ∧
+        (B.Z n u u' ∨ (u ∈ K.F ∧ u' ∈ M.F))
+
+/-- Answering the given witness adversarially discharges the witness
+clause: `MBack ⇒ MWitM`. -/
+theorem LayeredBisimWit.mwitM_of_mback {A : String → Prop}
+    {B : LayeredBisimWit A K M} (h : B.MBack) : B.MWitM := by
+  intro n w w' hZ ψ hex
+  obtain ⟨u', hu', hψ⟩ := hex
+  obtain ⟨u, hu, hres⟩ := h hZ hu'
+  exact ⟨u', u, hu', hψ, hu, hres⟩
 
 /-- Every E-form link is a witness-form link: apply `mforth` to the
 given witness. -/
@@ -214,7 +250,12 @@ def _root_.PLLND.SemUI.LayeredBisimE.toWit {A : String → Prop}
     obtain ⟨κ, hkκ, hκψ⟩ := h
     obtain ⟨u', hu', hres⟩ := B.mforth hZ hkκ
     exact ⟨κ, u', hkκ, hκψ, hu', hres⟩
-  mback := B.mback
+
+/-- The E-form's `mback` restores the adversarial side condition. -/
+theorem _root_.PLLND.SemUI.LayeredBisimE.toWit_mback {A : String → Prop}
+    {K M : ConstraintModel} (B : LayeredBisimE A K M) : B.toWit.MBack := by
+  intro n w w' hZ u' hu'
+  exact B.mback hZ hu'
 
 /-! ## The witnessing triple -/
 
@@ -445,9 +486,10 @@ answer is `Δ` itself with the base regenerated — the previously
 (`mback`-partner grows the trace): `Δ′ = traceC κ` by `traceC_mforth`,
 `Z (2d−1)` finances the reflexive successor since `2d′+1 ≤ 2d−1`.
 Fallible: `fall` at the spent link + `traceC` of the fallible partner.
-The one remaining configuration is `MforthResidue`. -/
+The one remaining configuration is `MforthResidue`.  (Takes the
+adversarial side condition `MBack` — the only site consuming it.) -/
 theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
-    (hres : MforthResidue cl B)
+    (hmb : B.MBack) (hres : MforthResidue cl B)
     {Δ : (canonFinC cl).W} {m : M.W} (ht : WitTripleC cl B Δ m)
     {u : M.W} (hmu : M.Rm m u) :
     ∃ Δ' : (canonFinC cl).W, (canonFinC cl).Rm Δ Δ' ∧ WitTripleC cl B Δ' u := by
@@ -494,7 +536,7 @@ theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
             exact ⟨Δ, (canonFinC cl).refl_m Δ,
               .proper k' kv m' hsame hΔk' hm'u hZ' hZkv⟩
           · -- the iback-partner grew: spend the base on mback
-            rcases B.mback hZbase hmu with ⟨κ, hkκ, hZκ | ⟨hκF, huF⟩⟩
+            rcases hmb hZbase hmu with ⟨κ, hkκ, hZκ | ⟨hκF, huF⟩⟩
             · by_cases huF : u ∈ M.F
               · exact htopκ κ hkκ ((B.fall hZκ).mpr huF) huF
               · by_cases hκsame : (traceT K cl κ).val = Δ.1.val
@@ -515,7 +557,7 @@ theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
                       (B.mono_le (by omega) hZκ) (B.mono_le (by omega) hZκ)⟩
             · exact htopκ κ hkκ hκF huF
         · -- iback escape (u fallible): mback supplies the fallible K-partner
-          rcases B.mback hZbase hmu with ⟨κ, hkκ, hZκ | ⟨hκF, _⟩⟩
+          rcases hmb hZbase hmu with ⟨κ, hkκ, hZκ | ⟨hκF, _⟩⟩
           · exact htopκ κ hkκ ((B.fall hZκ).mpr huF) huF
           · exact htopκ κ hkκ hκF huF
 
@@ -525,7 +567,7 @@ theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
 M-to-amalgam zigzags are the step lemmas; the amalgam-to-M directions are
 projections; atoms off `p` and fallibility are definitional. -/
 theorem wit_pbisimC (hcl : SubClosed cl) (hK : MutuallyConfluent K)
-    (hres : MforthResidue cl B) :
+    (hmb : B.MBack) (hres : MforthResidue cl B) :
     ∃ C : PBisim p M (witAmalgamC cl B),
       ∀ (q : (witAmalgamC cl B).W), C.Z q.1.2 q := by
   refine ⟨⟨fun m q => q.1.2 = m, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun _ => rfl⟩
@@ -546,7 +588,7 @@ theorem wit_pbisimC (hcl : SubClosed cl) (hK : MutuallyConfluent K)
     exact ⟨q'.1.2, hq'.2, rfl⟩
   · -- mforth: the ◯-move, matched through the triple
     rintro m q rfl u hmu
-    obtain ⟨Δ', hRm, htrip⟩ := witTriple_mforth cl B hcl hK hres q.2 hmu
+    obtain ⟨Δ', hRm, htrip⟩ := witTriple_mforth cl B hcl hK hmb hres q.2 hmu
     exact ⟨⟨(Δ', u), htrip⟩, ⟨hRm, hmu⟩, rfl⟩
   · -- mback: projection
     rintro m q rfl q' hq'
@@ -570,7 +612,7 @@ clause; ◯-backward is bare possibility in `K` + `B.mforth`, financed by
 strict growth; ⊃-backward is the K-side refuter + `B.iforth`, financed by
 strict growth.  Only `K` need be confluent. -/
 theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
-    (hK : MutuallyConfluent K) (hres : MforthResidue cl B) :
+    (hK : MutuallyConfluent K) :
     ∀ (φ : PLLFormula), φ ∈ cl → ∀ (q : (witAmalgamC cl B).W),
       ((witAmalgamC cl B).force q φ ↔ φ ∈ q.1.1.1.val) := by
   intro φ
@@ -832,7 +874,7 @@ from a layered link of budget `2·cl.card + 1` between `k₀` and `m₀`, a
 p-variant of `M` whose distinguished world agrees with `k₀` on the whole
 closure.  Only `K` need be confluent. -/
 theorem amalgamation_assembledC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
-    (hK : MutuallyConfluent K) (hres : MforthResidue cl B)
+    (hK : MutuallyConfluent K) (hmb : B.MBack) (hres : MforthResidue cl B)
     (k₀ : K.W) (m₀ : M.W)
     (hB : B.Z (2 * cl.card + 1) k₀ m₀) :
     ∃ (N : ConstraintModel) (C : PBisim p M N) (n₀ : N.W),
@@ -843,11 +885,11 @@ theorem amalgamation_assembledC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
   have htrip : WitTripleC cl B Δ₀ m₀ :=
     .proper k₀ k₀ m₀ rfl rfl (M.refl_i m₀)
       (B.mono_le (by omega) hB) (B.mono_le (by omega) hB)
-  obtain ⟨C, hC⟩ := wit_pbisimC cl B hcl hK hres
+  obtain ⟨C, hC⟩ := wit_pbisimC cl B hcl hK hmb hres
   refine ⟨witAmalgamC cl B, C, ⟨(Δ₀, m₀), htrip⟩,
     hC ⟨(Δ₀, m₀), htrip⟩, ?_⟩
   intro φ hφ
-  rw [wit_forceC cl B hcl hadeq hK hres φ hφ ⟨(Δ₀, m₀), htrip⟩]
+  rw [wit_forceC cl B hcl hadeq hK φ hφ ⟨(Δ₀, m₀), htrip⟩]
   constructor
   · intro h
     exact (mem_traceT_val.mp h).2

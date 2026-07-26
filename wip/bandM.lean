@@ -72,9 +72,13 @@ def totalB (hPK : PPure p K) (hPM : PPure p M)
     intro n k m _ ψ hex
     obtain ⟨κ, hkκ, hκψ⟩ := hex
     exact ⟨κ, m, hkκ, hκψ, M.refl_m m, .inl trivial⟩
-  mback := by
-    intro n k m _ u' _
-    exact ⟨k, K.refl_m k, .inl trivial⟩
+
+/-- The adversarial side condition holds trivially for the total link. -/
+theorem totalB_mback (hPK : PPure p K) (hPM : PPure p M)
+    (hFK : FFree K) (hFM : FFree M) :
+    (totalB hPK hPM hFK hFM).MBack := by
+  intro n k m _ u' _
+  exact ⟨k, K.refl_m k, .inl trivial⟩
 
 /-- **The unconditional infallible amalgamation**: between p-pure
 infallible models (K mutually confluent), the full p-variant conclusion
@@ -87,6 +91,7 @@ theorem infallible_amalgamation (cl : Finset PLLFormula)
     ∃ (N : ConstraintModel) (C : PBisim p M N) (n₀ : N.W),
       C.Z m₀ n₀ ∧ ∀ φ ∈ cl, (N.force n₀ φ ↔ K.force k₀ φ) :=
   amalgamation_assembledC cl (totalB hPK hPM hFK hFM) hcl hadeq hK
+    (totalB_mback hPK hPM hFK hFM)
     (mforthResidue_of_stabilised cl (totalB hPK hPM hFK hFM) (fun h => h))
     k₀ m₀ trivial
 
@@ -155,7 +160,7 @@ confluence square — persistence keeps ψ, and the lifted witness's
 type strictly grows.  Types live in a finite list, so the ascent
 terminates at a ψ-witness whose type is exactly matched. -/
 
-private theorem countP_le_of_imp {l : List PLLFormula}
+theorem countP_le_of_imp {l : List PLLFormula}
     {pq qq : PLLFormula → Bool}
     (h : ∀ a ∈ l, pq a = true → qq a = true) :
     l.countP pq ≤ l.countP qq := by
@@ -170,7 +175,7 @@ private theorem countP_le_of_imp {l : List PLLFormula}
       · by_cases hqb : qq b = true <;>
           simp [List.countP_cons, hpb, hqb] <;> omega
 
-private theorem countP_lt_of_witness {l : List PLLFormula}
+theorem countP_lt_of_witness {l : List PLLFormula}
     {pq qq : PLLFormula → Bool}
     (h : ∀ a ∈ l, pq a = true → qq a = true) {a₀ : PLLFormula}
     (ha₀ : a₀ ∈ l) (hq : qq a₀ = true) (hp : ¬ pq a₀ = true) :
@@ -189,14 +194,14 @@ private theorem countP_lt_of_witness {l : List PLLFormula}
         · by_cases hqb : qq b = true <;>
             simp [List.countP_cons, hpb, hqb] <;> omega
 
-private theorem countP_le_length' {l : List PLLFormula}
+theorem countP_le_length' {l : List PLLFormula}
     {pq : PLLFormula → Bool} : l.countP pq ≤ l.length := by
   induction l with
   | nil => simp
   | cons b l ih =>
       by_cases hpb : pq b = true <;> simp [List.countP_cons, hpb] <;> omega
 
-private theorem all_of_countP_ge {l : List PLLFormula}
+theorem all_of_countP_ge {l : List PLLFormula}
     {pq : PLLFormula → Bool} (h : l.length ≤ l.countP pq) :
     ∀ a ∈ l, pq a = true := by
   induction l with
