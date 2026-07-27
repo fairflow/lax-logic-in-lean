@@ -11,10 +11,16 @@ This file sets up the extension of PCLL (PLL plus the distribution scheme
 and proves, sorry-free:
 
 1. **The system** (`DerivUNoFall`).  `DerivUNoFall Γ φ := DerivU (nobot :: Γ) φ`.
-   Adding a single *formula* (not a scheme) as an axiom is the same as adding
-   it as a persistent hypothesis: every `LaxND` rule carries its context
-   unchanged, the deduction theorem holds (`DerivU.deduction`), and there is
-   no necessitation-style rule that could tell the two readings apart.
+   Adding the single closed formula `¬◯⊥` as an axiom is the same as adding
+   it as a persistent hypothesis: no rule of the calculus *restricts* its
+   context (every premise context extends the conclusion's, so a hypothesis
+   persists to every node of a derivation), and weakening, exchange and
+   contraction are admissible via the membership-based `LaxND.rename`.  Two
+   points carry the identification: there is no empty-context
+   (necessitation-style) rule — the unit `laxIntro` applies under hypotheses
+   — and `nobot` is variable-free, so the single-formula and scheme readings
+   of the extension coincide (for an axiom with variables the hypothesis form
+   would be strictly weaker than the substitution-closed extension).
 
 2. **The variable-free collapse** (`varfree_dichotomy`): every variable-free
    formula is derivable or inconsistent — the variable-free fragment is
@@ -124,7 +130,8 @@ end DerivUNoFall
 
 /-! ## 2. The variable-free collapse -/
 
-/-- Variable-free: no propositional constant occurs. -/
+/-- Variable-free: no propositional variable (`prop`) occurs.  The constant
+`⊥` — and hence `⊤` and negation — is allowed. -/
 def VarFree : PLLFormula → Prop
   | .prop _ => False
   | .falsePLL => True
@@ -222,39 +229,54 @@ theorem varfree_dichotomy : ∀ {A : PLLFormula}, VarFree A →
 
 /-! ## 3. Uniform interpolation into the variable-free fragment -/
 
-/-- **∃-side uniform interpolation, variable-free target**: every `φ` has a
-strongest variable-free consequence `E` — namely `⊤` if `φ` is consistent and
-`⊥` if not.  For one-variable `φ` this is the uniform interpolant `∃p.φ` of
-the one-variable language. -/
+/-- **∃-side uniform interpolation, variable-free target** (the Pitts
+specification, biconditional form): every `φ` has a variable-free consequence
+`E` — namely `⊤` if `φ` is consistent and `⊥` if not — such that for every
+variable-free `ψ`, `φ ⊢ ψ` iff `E ⊢ ψ`.  For one-variable `φ` this is the
+uniform interpolant `∃p.φ` of the one-variable language (whose `p`-free
+formulas are exactly the variable-free ones). -/
 theorem exUI (φ : PLLFormula) :
     ∃ E, VarFree E ∧ DerivUNoFall [φ] E ∧
-      ∀ ψ, VarFree ψ → DerivUNoFall [φ] ψ → DerivUNoFall [E] ψ := by
+      ∀ ψ, VarFree ψ → (DerivUNoFall [φ] ψ ↔ DerivUNoFall [E] ψ) := by
   by_cases hc : DerivUNoFall [φ] falsePLL
-  · exact ⟨falsePLL, trivial, hc,
-      fun ψ _ _ => DerivUNoFall.exfalso (DerivUNoFall.hyp (by simp)) ψ⟩
+  · refine ⟨falsePLL, trivial, hc, fun ψ _ => ⟨?_, ?_⟩⟩
+    · exact fun _ => DerivUNoFall.exfalso (DerivUNoFall.hyp (by simp)) ψ
+    · exact fun h => hc.cut (h.rename (by simp))
   · refine ⟨truePLL, varFree_truePLL,
       DerivUNoFall.of_nd (.impIntro (.iden (by simp))), ?_⟩
-    intro ψ hψ hd
-    rcases varfree_dichotomy hψ with h | h
-    · exact h.rename (by simp)
-    · exact absurd (bot_of h hd) hc
+    intro ψ hψ
+    constructor
+    · intro hd
+      rcases varfree_dichotomy hψ with h | h
+      · exact h.rename (by simp)
+      · exact absurd (bot_of h hd) hc
+    · intro h
+      have hτ : DerivUNoFall [φ] truePLL :=
+        DerivUNoFall.of_nd (.impIntro (.iden (by simp)))
+      exact hτ.cut (h.rename (by simp))
 
-/-- **∀-side uniform interpolation, variable-free target**: every `φ` has a
-weakest variable-free antecedent `A` — namely `⊤` if `φ` is derivable and `⊥`
-if not.  For one-variable `φ` this is the uniform interpolant `∀p.φ` of the
-one-variable language. -/
+/-- **∀-side uniform interpolation, variable-free target** (the Pitts
+specification, biconditional form): every `φ` has a variable-free antecedent
+`A` — namely `⊤` if `φ` is derivable and `⊥` if not — such that for every
+variable-free `ψ`, `ψ ⊢ φ` iff `ψ ⊢ A`.  For one-variable `φ` this is the
+uniform interpolant `∀p.φ` of the one-variable language. -/
 theorem allUI (φ : PLLFormula) :
     ∃ A, VarFree A ∧ DerivUNoFall [A] φ ∧
-      ∀ ψ, VarFree ψ → DerivUNoFall [ψ] φ → DerivUNoFall [ψ] A := by
+      ∀ ψ, VarFree ψ → (DerivUNoFall [ψ] φ ↔ DerivUNoFall [ψ] A) := by
   by_cases hd : DerivUNoFall [] φ
-  · exact ⟨truePLL, varFree_truePLL, hd.rename (by simp),
-      fun ψ _ _ => DerivUNoFall.of_nd (.impIntro (.iden (by simp)))⟩
+  · refine ⟨truePLL, varFree_truePLL, hd.rename (by simp), fun ψ _ => ⟨?_, ?_⟩⟩
+    · exact fun _ => DerivUNoFall.of_nd (.impIntro (.iden (by simp)))
+    · exact fun _ => hd.rename (by simp)
   · refine ⟨falsePLL, trivial,
       DerivUNoFall.exfalso (DerivUNoFall.hyp (by simp)) φ, ?_⟩
-    intro ψ hψ hdψ
-    rcases varfree_dichotomy hψ with h | h
-    · exact absurd (h.cut hdψ) hd
-    · exact h
+    intro ψ hψ
+    constructor
+    · intro hdψ
+      rcases varfree_dichotomy hψ with h | h
+      · exact absurd (h.cut hdψ) hd
+      · exact h
+    · intro h
+      exact DerivUNoFall.exfalso h φ
 
 /-! ## 4. Semantics: infallible confluent models -/
 
