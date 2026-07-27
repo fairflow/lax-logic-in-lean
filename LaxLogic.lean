@@ -44,6 +44,7 @@ import LaxLogic.PLLCountermodelEmit
 import LaxLogic.PLLSearch
 import LaxLogic.PLLSearchEx
 import LaxLogic.PLLSearchConf
+import LaxLogic.PLLSearchCmd
 import LaxLogic.PLLDiagram
 import LaxLogic.PLLEvidence
 import LaxLogic.PLLFinComp
