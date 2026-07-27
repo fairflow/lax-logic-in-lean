@@ -141,6 +141,12 @@ Three commands cover the everyday use of the toolkit.  Each takes a sequent
 and prints a block: the sequent in the usual notation, the verdict, the
 evidence, and Lean source for the theorem that records the finding.
 
+`LaxLogic/PLLSearchDemo.lean` is a runnable companion to §§2–6 of this
+document: open it in VS Code and step through it, and the info view shows each
+output as you go.  There every example is wrapped in `#guard_msgs`, so what is
+*typed* and what is *printed* are separated mechanically, and the build checks
+that the printed text is still what the toolkit produces.
+
 ### Setup
 
 ```
