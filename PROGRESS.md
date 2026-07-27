@@ -1596,3 +1596,27 @@ EXERCISED empirically.  wip/mwit_deep.lean extended: non-row-rigid
 lifted ladders (dense base Rₘ-chains), dense random frames, and a
 u' ≠ m split in every verdict column — the first probe aimed at
 RankGapGrow itself.
+
+## §55 (2026-07-27) — The grow-case hunt: 4.2M non-rigid configurations, 1.8M in the descending window — all clean
+
+wip/mwit_grow_out.txt (the §54-extended battery: 294 models, 174
+confluent; non-row-rigid lifted ladders with dense base Rₘ-chains +
+dense random frames).  Mode Rdeep (the exact ranked link): 6.9M/7.2M
+configurations per closure with the LIVE window now MASSIVELY
+occupied (5.33M live configs, cl1); the NON-RIGID class (u' ≠ m — the
+only class where a RankGapGrow countermodel can live) holds 1,961,316
+configurations per closure, 1,833,552 of them LIVE (cl1), carrying
+16.0M/18.6M instances — GIVEN = 100%, OTHER = 0, FAIL = 0.  Gdeep
+adds 2.24M non-rigid configurations per closure, likewise clean.
+Every pair's ranked chain still descending at level 5 (pool ceiling).
+
+READING: the first probe evidence in RankGapGrow's own territory —
+non-reflexive witnesses, genuinely descending chains — and pointwise
+promotion KEEPS HOLDING there (every given witness had a same-trace
+full-rank partner).  Caveat kept distinct: u' ≠ m does not yet verify
+RankGapGrow's FULL hypothesis (that every ψ-witness vf-grows m's
+rank-rslope(2d) theory); a refinement flagging exactly the all-grow
+configurations (computable against the rung pool) is the designed
+next probe.  Balance of evidence: RankGap plausibly true outright;
+the window (§54) remains the sole theoretical obstruction, now with
+~230M clean instances around it.
