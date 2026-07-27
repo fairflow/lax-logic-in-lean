@@ -298,19 +298,25 @@ explicit work-list machine; that is a different engine, not a variant of
 this one.) -/
 
 /-- The budget-threading monad for `proveBounded`: an `Option` computation
-over a `Nat` state (remaining node budget).  Unfolds to
-`Nat → Option α × Nat`; crucially, failure returns the *remaining* budget,
-so alternation continues from wherever the failed branch left off. -/
-abbrev BudgetM (α : Type) : Type := OptionT (StateM Nat) α
+over a state of remaining node budget PLUS the global failure memo — the
+full UI-track composition (budget × memo × canonical key, the `g4bM`
+shape).  Failure returns the *remaining* state, so alternation continues
+from wherever the failed branch left off and cached failures accumulate
+across branches. -/
+abbrev BudgetM (α : Type) : Type := OptionT (StateM (Nat × FailMemo)) α
 
 instance {α : Type} : Inhabited (BudgetM α) := ⟨failure⟩
 
 /-- Spend one unit of search budget; fail when the pool is dry.  This is the
-single point where the budget is consumed or checked. -/
+single point where the budget is consumed or checked.  Exhaustion is
+STICKY — failing at `0` leaves the pool at `0` and nothing refills it — so
+a subgoal failure observed with budget still remaining provably involved no
+truncation anywhere inside it. -/
 @[inline] def BudgetM.spendNode : BudgetM Unit := do
-  match (← OptionT.lift (get : StateM Nat Nat)) with
+  match (← OptionT.lift (get : StateM (Nat × FailMemo) (Nat × FailMemo))).1 with
   | 0 => failure
-  | f + 1 => OptionT.lift (set f : StateM Nat Unit)
+  | f + 1 =>
+      OptionT.lift (modify (fun s => (f, s.2)) : StateM (Nat × FailMemo) Unit)
 
 mutual
 
@@ -319,12 +325,27 @@ mutual
 partial def proveBounded (V : List (List PLLFormula × PLLFormula))
     (Γ : List PLLFormula) (C : PLLFormula) : BudgetM (G4cTm Γ C) := do
   BudgetM.spendNode
-  let key := (canon Γ, C)
+  let key := ckey Γ C
   if key ∈ V then failure
+  else if (← OptionT.lift
+      (get : StateM (Nat × FailMemo) (Nat × FailMemo))).2.contains key then
+    failure
   else
-    (if h : falsePLL ∈ Γ then pure (G4cTm.botL h) else failure)
-    <|> proveRightBounded (key :: V) Γ C
-    <|> proveLeftBounded (key :: V) Γ C
+    let r ← OptionT.lift (OptionT.run (
+      (if h : falsePLL ∈ Γ then pure (G4cTm.botL h) else failure)
+      <|> proveRightBounded (key :: V) Γ C
+      <|> proveLeftBounded (key :: V) Γ C))
+    match r with
+    | some t => pure t
+    | none => do
+        -- budget remaining ⟹ the failure was truncation-free (sticky
+        -- exhaustion): the verdict is unconditional, cache it.  A `none`
+        -- at exhausted budget is a mere truncation and is NOT cached.
+        let s ← OptionT.lift (get : StateM (Nat × FailMemo) (Nat × FailMemo))
+        if s.1 > 0 then
+          OptionT.lift
+            (set (s.1, s.2.insert key false) : StateM (Nat × FailMemo) Unit)
+        failure
 
 /-- Right rules, budgeted (mirror of `proveRight`). -/
 partial def proveRightBounded (V : List (List PLLFormula × PLLFormula))
@@ -402,7 +423,10 @@ together with the *remaining* budget.  Reading the pair:
 tuning budgets in probe sessions. -/
 def G4cTm.findBounded (budget : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
     Option (G4cTm Γ C) × Nat :=
-  Id.run (StateT.run (OptionT.run (proveBounded [] Γ C)) budget)
+  let (r, s) :=
+    Id.run (StateT.run (OptionT.run (proveBounded [] Γ C))
+      (budget, (∅ : FailMemo)))
+  (r, s.1)
 
 /-! ## The bridge: terms certify provability, provability yields terms -/
 

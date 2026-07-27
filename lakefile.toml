@@ -28,7 +28,10 @@ root = "Main"
 # only against declared targets; exe roots alone don't cover imports).
 [[lean_lib]]
 name = "wipshared"
-globs = ["wip.oracle2", "wip.semui_ctx_core"]
+globs = ["wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
+         "wip.mforth_probe", "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rnDictRefute", "wip.bandStabilise", "wip.bandM", "wip.rnc_probe", "wip.rncCert", "wip.rncCertPos",
+         "wip.rnSep", "wip.rnSepColl", "wip.rnDict2Hand", "wip.rnDict2", "wip.rnDictRefute2", "wip.rnSpawnColl",
+         "wip.witOut", "wip.bandW", "wip.rankedM", "wip.rnEmbed", "wip.bandRefute", "wip.semSpecW"]
 
 # The two-sided decision tool (countermodel-first; wip/oracle2.lean) and its
 # one-sided baseline, compiled — the native oracle route.
@@ -115,3 +118,41 @@ root = "wip.samval_probe"
 [[lean_exe]]
 name = "v2quant"
 root = "wip.v2quant_probe"
+
+# ui-confluence branch: the refilter driver (same-trace + forth-m
+# passes; unrestricted sanity reproductions and the mutually-confluent
+# restriction) and the backward audit (gadget confluence + the
+# confluence-gated extension oracle).  Both drive the `main`-free
+# shared core `wip.confl_core`.
+[[lean_exe]]
+name = "conflrun"
+root = "wip.confl_run"
+
+[[lean_exe]]
+name = "conflaudit"
+root = "wip.confl_audit"
+
+# b.ii configuration probe (amalgamation ◯-case residue; R1/R2 resolution).
+[[lean_exe]]
+name = "biiprobe"
+root = "wip.bii_probe"
+
+# b.ii probe, corrected: p-containing closures, p unprotected, full conclusion test.
+[[lean_exe]]
+name = "biipprobe"
+root = "wip.bii_p_probe"
+
+# RN dictionary certificate generator (discover-then-pin).
+[[lean_exe]]
+name = "rnDictGen"
+root = "wip.rnDictGen"
+
+# RNC probe: PCLL quotient of the variable-free dictionary (confluent refutations).
+[[lean_exe]]
+name = "rncprobe"
+root = "wip.rnc_probe"
+
+# MwitResidue probe: witness-form residue (modes G/R), re-aim of biipprobe.
+[[lean_exe]]
+name = "mwitprobe"
+root = "wip.mwit_probe"

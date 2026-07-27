@@ -34,6 +34,18 @@ tower walk), plus oracle match tests.  Caveats: the oracle is
 sound-on-true only; min-seen crank over-estimates true class crank,
 so a class can enter the join late; the dictionary is truncated.
 
+REVISION (2026-07-25, after the gap-row r=6 stall): one scan call
+`entT D ◯(◯p⊃p)` was neither sweep-refutable on `defaultFrames` nor
+quickly provable, so `G4cTm.findBounded` ground the full 40000-node
+budget for hours.  Fixes: (i) the sweep battery is widened by the
+F-free 3-chain and the gadget frames of wip/resid_probe.lean (a known
+battery gap), transitively closed on intake per the `Frame` contract;
+(ii) the SCAN path (per-class disjunct/conjunct tests) runs at
+`findBudget := some 2000` and treats `unknown` as SKIP-this-disjunct,
+with skips counted and reported; (iii) `findBudget := some 40000` is
+kept ONLY for the final match tests; (iv) each dictionary class is
+decided once per row and side (memoised), not once per rank.
+
 Run: `lake build v2quant && .lake/build/bin/v2quant`.
 -/
 
@@ -51,37 +63,110 @@ def provF (fuel : Nat) (Γ : List PLLFormula) (C : PLLFormula) : Bool :=
 def entails (X Y : PLLFormula) : Bool := provF 4000 [X] Y
 def equivO (X Y : PLLFormula) : Bool := entails X Y && entails Y X
 
+/-! ## Extended sweep battery (the recorded battery-gap fix)
+
+`Search.decide` runs the certified frame sweep BEFORE the bounded
+positive searcher, so every extra refuting frame short-circuits a
+potentially grinding `findBounded` call.  The battery here is
+`defaultFrames` plus the F-free 3-chain plus the twelve gadget frames
+of wip/resid_probe.lean.  The `Frame` contract assumes the relation
+lists transitively closed, so we close on intake. -/
+
+/-- Transitive closure of a frame's relations (as in
+wip/resid_probe.lean). -/
+def closeF (f : Search.Frame) : Search.Frame := Id.run do
+  let mut ri := f.ri
+  let mut rm := f.rm
+  let mut changed := true
+  while changed do
+    changed := false
+    for e in ri do
+      for e' in ri do
+        if e.2 == e'.1 && !(decide ((e.1, e'.2) ∈ ri)) && e.1 != e'.2 then
+          ri := ri ++ [(e.1, e'.2)]
+          changed := true
+    for e in rm do
+      for e' in rm do
+        if e.2 == e'.1 && !(decide ((e.1, e'.2) ∈ rm)) && e.1 != e'.2 then
+          rm := rm ++ [(e.1, e'.2)]
+          changed := true
+  return ⟨f.n, ri, rm, f.fall⟩
+
+/-- The F-free 3-chain: `defaultFrames` item 6 without the fallible
+top. -/
+def chain3F : Search.Frame := ⟨3, [(0,1),(1,2),(0,2)], [(1,2)], []⟩
+
+/-- The gadget frames from wip/resid_probe.lean (`extraFrames` there):
+the 5-chains, the forks, the diamonds, the 4-chains with sparse `Rₘ`. -/
+def residFrames : List Search.Frame :=
+  [⟨5, [(0,1),(0,2),(0,3),(0,4),(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)], [], [4]⟩,
+   ⟨5, [(0,1),(0,2),(0,3),(0,4),(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)], [(3,4)], [4]⟩,
+   ⟨5, [(0,1),(0,2),(0,3),(0,4),(1,2),(1,3),(1,4),(2,3),(2,4),(3,4)], [], []⟩,
+   ⟨3, [(0,1),(0,2)], [], []⟩,
+   ⟨3, [(0,1),(0,2)], [], [2]⟩,
+   ⟨3, [(0,1),(0,2)], [(0,2)], [2]⟩,
+   ⟨4, [(0,1),(0,2),(1,3),(2,3)], [], [3]⟩,
+   ⟨4, [(0,1),(0,2),(1,3),(2,3)], [(1,3),(2,3)], [3]⟩,
+   ⟨4, [(0,1),(0,2),(1,3),(2,3)], [], []⟩,
+   ⟨4, [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)], [], [3]⟩,
+   ⟨4, [(0,1),(0,2),(0,3),(1,2),(1,3),(2,3)], [], []⟩,
+   ⟨4, [(0,1),(0,2),(0,3),(1,3),(2,3)], [(0,1)], [3]⟩]
+
+def scanFrames : List Search.Frame :=
+  (Search.defaultFrames ++ [chain3F] ++ residFrames).map closeF
+
 /-! ## Two-sided escalation (PLLSearch's countermodel-first oracle)
 
 `search`'s `true` is sound at any fuel, so only FALSE verdicts need
 escalation: `dec2` answers with a proof certificate, a countermodel
-certificate, or an honest unknown. -/
+certificate, or an honest unknown.  Two budgets: `cfgScan` for the
+per-class disjunct/conjunct tests and the climb comparisons (unknown =
+skip, counted), `cfgFinal` only for the final match tests. -/
 
-def cfg2 : Search.Config := { findBudget := some 40000 }
+def cfgScan : Search.Config :=
+  { frames := scanFrames, findBudget := some 2000, emitClosureCap := 0 }
+def cfgFinal : Search.Config := { frames := scanFrames, findBudget := some 40000 }
+
+/-- Scan cells forced to `unknown` WITHOUT calling the oracle, as
+`(battery row index, dictionary class index)` pairs — the per-cell
+10-minute kill rule made concrete.  Seed: the recorded gap-row r=6
+stall cell, `D₆ = ◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥) ⊢ ◯(◯p⊃p)`, which still ground
+past 10 minutes at findBudget 2000 (its per-node cost is the problem,
+not the node count).  Both sides of the cell are skipped.
+
+CORRECTION (2026-07-25, post-run): the grind was misattributed.  The
+∀-side `D₆ ⊢ ◯(◯p⊃p)` is sweep-REFUTED at 0ms — the witness is
+`defaultFrames` item 6 decorated p@{2}, so it was refutable even
+before the battery was widened; `scanRow` computes both sides between
+its two prints, and the hang sat in the ∃-side `◯(◯p⊃p) ⊢ D₆` (no
+battery frame refutes it; sweep none).  The cell's verdicts: ∀-side
+UNDERIVABLE, pinned axiom-clean in wip/d6_gap_cell.lean (so the
+gap-row ∀-join stays ◯⊥ through r=9, no climb at r=6); ∃-side OPEN. -/
+def skipCells : List (Nat × Nat) := [(3, 8)]
 
 inductive V2 | proved | refuted | unknown
 deriving Repr, DecidableEq
 
-def dec2 (Γ : List PLLFormula) (C : PLLFormula) : V2 :=
-  match Search.decide cfg2 Γ C with
+def dec2 (cfg : Search.Config) (Γ : List PLLFormula) (C : PLLFormula) : V2 :=
+  match Search.decide cfg Γ C with
   | .proved _ => .proved
   | .refuted _ _ _ => .refuted
   | .unknown => .unknown
 
-/-- Two-sided entailment verdict as a string tag. -/
-def tag2 (X Y : PLLFormula) : String :=
-  match dec2 [X] Y with
+def vtag : V2 → String
   | .proved => "proved"
   | .refuted => "REFUTED(countermodel)"
   | .unknown => "unknown"
 
-/-- Two-sided PRIMARY entailment test: `true` only on a proof
-certificate.  The countermodel sweep short-circuits the failing cases
-that eat hand-fuel, so this is also the FAST path. -/
-def entT (X Y : PLLFormula) : Bool :=
-  match dec2 [X] Y with
-  | .proved => true
-  | _ => false
+/-- Two-sided entailment verdict tag at the FINAL budget (match tests
+only). -/
+def tag2 (X Y : PLLFormula) : String := vtag (dec2 cfgFinal [X] Y)
+
+/-- Two-sided entailment verdict tag at the scan budget. -/
+def tagS (X Y : PLLFormula) : String := vtag (dec2 cfgScan [X] Y)
+
+/-- Scan-budget entailment: `true` only on a proof certificate. -/
+def entS (X Y : PLLFormula) : Bool := dec2 cfgScan [X] Y == .proved
 
 def isTop (X : PLLFormula) : Bool := decide (X = truePLL)
 def isBot (X : PLLFormula) : Bool := decide (X = falsePLL)
@@ -189,14 +274,6 @@ def meetOf : List PLLFormula → PLLFormula
   | [D] => D
   | D :: l => D.and (meetOf l)
 
-def allQ (dict : List (PLLFormula × Nat)) (r : Nat) (φ : PLLFormula) :
-    PLLFormula :=
-  nf (joinOf ((dict.filter fun (D, c) => c ≤ r && entT D φ).map (·.1)))
-
-def exQ (dict : List (PLLFormula × Nat)) (r : Nat) (φ : PLLFormula) :
-    PLLFormula :=
-  nf (meetOf ((dict.filter fun (D, c) => c ≤ r && entT φ D).map (·.1)))
-
 /-! ## Budget count ν (generator subformulas, their n_X) -/
 
 def subs : PLLFormula → List PLLFormula
@@ -232,50 +309,137 @@ def battery : List (String × PLLFormula) :=
 
 def pf (F : PLLFormula) : String := toString F
 
+/-! ## Per-row memoised scan and table
+
+Each dictionary class is decided ONCE per row and side (∀-side
+`D ⊢ φ`, ∃-side `φ ⊢ D`) at the scan budget; the r-table is then a
+crank filter over the memoised verdicts, so the previous per-rank
+re-decides (the r=6 stall path) are gone.  `unknown` verdicts are
+SKIPPED as disjuncts/conjuncts and counted. -/
+
+/-- One row's scan: `(class, crank, ∀-side verdict, ∃-side verdict)`,
+with live progress lines (each class printed before its decide, so a
+grinding cell is identifiable from the log).  Cells in `skipCells` are
+forced to `unknown` on both sides without calling the oracle. -/
+def scanRow (rowIdx : Nat) (dict : List (PLLFormula × Nat)) (φ : PLLFormula) :
+    IO (List (PLLFormula × Nat × V2 × V2)) := do
+  let mut out := []
+  let mut i := 0
+  for (D, c) in dict do
+    if skipCells.contains (rowIdx, i) then
+      IO.println s!"    [scan] crank≤{c}  D = {pf D}"
+      IO.println s!"      FORCED SKIP (10-min kill rule): both sides unknown"
+      flush
+      out := out ++ [(D, c, V2.unknown, V2.unknown)]
+    else
+      IO.println s!"    [scan] crank≤{c}  D = {pf D}"
+      flush
+      let t0 ← IO.monoMsNow
+      let vA := dec2 cfgScan [D] φ
+      let t1 ← IO.monoMsNow
+      let vE := dec2 cfgScan [φ] D
+      let t2 ← IO.monoMsNow
+      IO.println s!"      ∀-side D⊢φ: {vtag vA} ({t1-t0}ms)   ∃-side φ⊢D: {vtag vE} ({t2-t1}ms)"
+      flush
+      out := out ++ [(D, c, vA, vE)]
+    i := i + 1
+  return out
+
+/-- Print one battery row's r-table from its memoised scan; returns
+`(∀-join at RMAX, ∃-meet at RMAX, ∀-side skips, ∃-side skips)`. -/
+def printRow (rowIdx : Nat) (name : String) (φ : PLLFormula)
+    (dict : List (PLLFormula × Nat)) :
+    IO (PLLFormula × PLLFormula × Nat × Nat) := do
+  let v := nu φ
+  IO.println s!"--- {name}   (ν = {v}, 2ν+1 = {2*v+1}) ---"
+  flush
+  let scan ← scanRow rowIdx dict φ
+  let skA := (scan.filter fun (_, _, vA, _) => vA == .unknown).length
+  let skE := (scan.filter fun (_, _, _, vE) => vE == .unknown).length
+  if skA + skE > 0 then
+    IO.println s!"  [SKIPS] ∀-side unknown disjuncts skipped: {skA}, ∃-side: {skE}"
+  let mut prevA : Option PLLFormula := none
+  let mut prevE : Option PLLFormula := none
+  let mut lastA := falsePLL
+  let mut lastE := truePLL
+  for r in List.range (RMAX + 1) do
+    let A := nf (joinOf ((scan.filter fun (_, c, vA, _) =>
+      c ≤ r && vA == .proved).map (·.1)))
+    let E := nf (meetOf ((scan.filter fun (_, c, _, vE) =>
+      c ≤ r && vE == .proved).map (·.1)))
+    -- syntactic-identity shortcut first (the join only changes when a
+    -- class enters); oracle climbs at the scan budget otherwise
+    let sameA := match prevA with
+      | some P =>
+          if P == A then " (=)"
+          else if entS P A && entS A P then " (=)"
+          else s!" (CLIMB: new⊢old {tagS A P}, old⊢new {tagS P A})"
+      | none => ""
+    let sameE := match prevE with
+      | some P =>
+          if P == E then " (=)"
+          else if entS P E && entS E P then " (=)"
+          else s!" (CLIMB: new⊢old {tagS E P}, old⊢new {tagS P E})"
+      | none => ""
+    let enter := (scan.filter fun (_, c, vA, _) =>
+      c == r && vA == .proved).map (fun (D, _, _, _) => pf D)
+    IO.println s!"  r={r}: ∀={pf A}{sameA}  ∃={pf E}{sameE}  enters:{enter}"
+    flush
+    prevA := some A
+    prevE := some E
+    lastA := A
+    lastE := E
+  -- name the stabilised values against the dictionary (scan budget)
+  match dict.find? (fun (D, _) => entS lastA D && entS D lastA) with
+  | some (D, c) => IO.println s!"  ∀-value class at r={RMAX}: {pf D} (crank≤{c})"
+  | none => IO.println s!"  ∀-value at r={RMAX}: no dictionary class matched at scan budget"
+  match dict.find? (fun (D, _) => entS lastE D && entS D lastE) with
+  | some (D, c) => IO.println s!"  ∃-value class at r={RMAX}: {pf D} (crank≤{c})"
+  | none => IO.println s!"  ∃-value at r={RMAX}: no dictionary class matched at scan budget"
+  flush
+  return (lastA, lastE, skA, skE)
+
 def mainLoop : IO Unit := do
   IO.println "=== cross-route probe: rank-bounded ∀p/∃p on the old harness ==="
+  IO.println s!"(rev 2026-07-25: sweep battery {scanFrames.length} frames; scan findBudget 2000, unknown=skip; final match tests findBudget 40000)"
   flush
   let dict ← mkDictIO
   IO.println s!"dictionary: {dict.length} classes (crank ≤ {RMAX}, {ROUNDS} rounds)"
   for (D, c) in dict do
     IO.println s!"  class crank≤{c}: {pf D}"
   flush
+  let mut aRMAX : List (String × PLLFormula) := []
+  let mut skTotA := 0
+  let mut skTotE := 0
+  let mut ri := 0
   for (name, φ) in battery do
-    let v := nu φ
-    IO.println s!"--- {name}   (ν = {v}, 2ν+1 = {2*v+1}) ---"
-    let mut prevA : Option PLLFormula := none
-    let mut prevE : Option PLLFormula := none
-    for r in List.range (RMAX + 1) do
-      let A := allQ dict r φ
-      let E := exQ dict r φ
-      -- one-sided `true` is sound; escalate FALSE to the two-sided oracle
-      let sameA := match prevA with
-        | some P =>
-            if entT P A && entT A P then " (=)"
-            else s!" (CLIMB: new⊢old {tag2 A P}, old⊢new {tag2 P A})"
-        | none => ""
-      let sameE := match prevE with
-        | some P =>
-            if entT P E && entT E P then " (=)"
-            else s!" (CLIMB: new⊢old {tag2 E P}, old⊢new {tag2 P E})"
-        | none => ""
-      let enter := (dict.filter fun (D, c) =>
-        c == r && entT D φ).map (fun (D, _) => pf D)
-      IO.println s!"  r={r}: ∀={pf A}{sameA}  ∃={pf E}{sameE}  enters:{enter}"
-      flush
-      prevA := some A
-      prevE := some E
+    let (A, _, skA, skE) ← printRow ri name φ dict
+    aRMAX := aRMAX ++ [(name, A)]
+    skTotA := skTotA + skA
+    skTotE := skTotE + skE
+    ri := ri + 1
+  IO.println s!"[SKIP TOTALS] ∀-side: {skTotA}, ∃-side: {skTotE}"
+  flush
   -- match tests against the old frozen values and the known laws
-  let x9 := nbb.ifThen op.somehow
-  let aX9 := allQ dict RMAX x9
-  IO.println "=== match tests (two-sided verdicts) ==="
+  -- (final budget 40000; the ∀-joins are the memoised r=RMAX values)
+  let getA (n : String) : PLLFormula :=
+    match aRMAX.find? (fun (m, _) => m == n) with
+    | some (_, A) => A
+    | none => falsePLL
+  let aX9 := getA "¬◯⊥⊃◯p [X9]"
+  IO.println "=== match tests (two-sided verdicts, findBudget 40000) ==="
+  flush
   IO.println s!"∀p(X9) ⊢ old A-value ◯(¬◯⊥⊃◯¬¬◯⊥): {tag2 aX9 a9};  converse: {tag2 a9 aX9}"
+  flush
   IO.println s!"∀p(X9) ⊢ ¬◯⊥⊃◯⊥: {tag2 aX9 (nbb.ifThen bb)};  converse: {tag2 (nbb.ifThen bb) aX9}"
-  let aGap := allQ dict RMAX ((op.somehow.ifThen op).somehow)
+  flush
+  let aGap := getA "◯(◯p⊃p) [GAP ROW]"
   IO.println s!"∀p(GAP ROW) ⊢ ◯⊥: {tag2 aGap bb};  converse: {tag2 bb aGap}"
-  let aBox := allQ dict RMAX op.somehow
+  flush
+  let aBox := getA "◯p"
   IO.println s!"∀p(◯p) ⊢ ◯⊥: {tag2 aBox bb};  converse: {tag2 bb aBox}"
-  let aTnd := allQ dict RMAX (op.or (op.ifThen falsePLL))
+  flush
+  let aTnd := getA "p∨¬p"
   IO.println s!"∀p(p∨¬p) ⊢ ⊥: {tag2 aTnd falsePLL}"
   IO.println "=== done ==="
 

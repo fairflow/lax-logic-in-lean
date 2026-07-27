@@ -808,3 +808,666 @@ closure-trace-equality; every decoded failure involves a dead-end
 successor (the rigid postponement points of §0(ee)).  Open design
 question for next session: the promise-pair invariant with a degraded
 link, or a dedicated dead-end clause.  Route doc §0(hh).
+
+## 34. 2026-07-25: the confluent amalgamation CLOSED modulo ONE Prop — the same-theory wall dissolves
+
+`wip/witTripleC.lean` (ui-confluence, b10d274+) is sorry-free with
+`#guard_msgs`-pinned audits: `witTriple_iforth`, `witTriple_mforth`,
+`wit_pbisimC` (Claim 1), `wit_forceC` (Claim 2 — the full truth
+lemma), `amalgamation_assembledC` — all conditional on the single
+displayed Prop `MforthResidue`.  The two bare sorries that were "the
+open mathematics" of Lemma 5.4 are gone as separate problems.
+
+The two mechanisms: (1) same-trace ◯-moves are matched REFLEXIVELY
+(`RmC_refl`) with the base regenerated from the reservoir by
+`B.iback` along `Rₘ ⊆ Rᵢ` — §33's wall assumed the ◯-move must be
+consumed by `mback`, and it need not be; K-side same-theory ◯-moves
+never arise (the witness's trace strictly grows or the world is its
+own row-witness).  (2) The truth lemma's ◯-forward direction is
+DEFINITIONAL through `RmC`'s anticipation clause (`χ ∈ val Δ₂ →
+boxOf χ ∈ val Δ`); ◯-backward is bare possibility in K + `B.mforth`,
+strictly financed; ⊃-backward is the K-refuter + `B.iforth`.  No
+transfer, no promise component: `mfal` is dead weight in the
+confluent route.
+
+Definitions: budgets restored to (2d, 2d+1) — the (d, d+1) `crankC`
+recalibration was a MISCALIBRATION (slope 2 refinances two links per
+one-level spend; forced, not chosen); `hik` dropped (consumed by
+nothing); confluence of M dropped (only K need be confluent); triples
+now an inductive with a `top` constructor absorbing every fallible
+escape.  Consumption inventory exact: all four E-clauses + atoms +
+fall + mono — so pillar 2 still owes the E-form m-clauses.
+
+The residue: an M-side ◯-move at an infallible target where the
+reservoir's iback-partner grows the trace (right level 2d, wrong
+trace) while the base's mback-partner keeps it (right trace, level
+2d−1, one short).  `mforthResidue_of_sameTraceBase` (PROVED) reduces
+it to same-trace-partner existence; a structural probe of the exact
+configuration is in flight (bii_probe worktree agent), old
+samval-failures as negative control.  Route doc §0(ii).  Semantic UI
+for PCLL now rests on exactly TWO open obligations, both
+m-clause-shaped: pillar 2's agreement-side m-clauses and this
+residue.  Cross-route: v2quant re-running with the §33 battery/budget
+fixes (second worktree agent); X9 match test pending.
+
+## 35. 2026-07-25 later: probe verdicts land — the residue never arises on the battery; THE X9 CROSS-ROUTE MATCH IS CERTIFIED
+
+**b.ii probe** (wip/bii_probe.lean, exe biiprobe; battery 825 one-atom
+models, 531 confluent as K, 438,075 confluent pairs, six ◯-adequate
+closures; negative control PASSED — the §33 refuted clause fails ~50k
+times per closure in the same approximants): **0 residue
+configurations**.  Funnel: 13,204 candidates reach a grown
+iback-partner; at every one the mback-partner set is nonempty and
+consists ENTIRELY of grown-trace worlds — growth propagates, b.i
+always applies.  Counterfactual rescues: R1 (same-trace) 0/13,204, R2
+(grown, RmC-financed) 13,204/13,204 — the load-bearing repair is
+growth-shaped.  Low-depth impossibility decoded paper-level (d ≤ 2
+shut; open region d ≥ 3 with a crank-2d distinguisher, beyond the
+battery's stabilisation depth).  Lean: mforthResidue_of_config_absurd
+pins the vacuity route; MforthResidue weakened to carry SubClosed cl
+(verifier finding).
+
+**v2quant completion** (wip/v2quant_probe.lean + out3; 24-frame sweep
+battery incl. the F-free 3-chain + resid-probe gadgets, scan at
+findBudget 2000 with skip-counting, match tests at 40000): every
+pending row stabilises at r ≤ 4 against budgets 5–11.  **THE X9 MATCH
+TEST PASSES, proof-certified in BOTH directions**:
+∀p(¬◯⊥⊃◯p) ≡ ◯(¬◯⊥⊃◯¬¬◯⊥) ≡ ¬◯⊥⊃◯⊥ (one RN(◯,{}) class, ¬¬◯⊥) —
+the syntactic H2 stabilisation and the semantic rank-descent compute
+the same object; per the §33 ledger, one proof now pays three debts.
+Also certified: ∀p(gap row) ≡ ◯⊥, ∀p(◯p) ≡ ◯⊥.  ONE undecided cell in
+the whole experiment: D₆ = ◯¬◯⊥⊃(◯⊥∨¬◯⊥) vs ◯(◯p⊃p) (the recorded
+staller; killed at 2000 and 40000 nodes) — if D₆ ⊢ ◯(◯p⊃p) the
+gap-row join would climb at r=6.
+
+**Verification fan-out** (4 adversarial agents): could not refute the
+closure claim.  Quote discipline: "the amalgamation THEOREMS are
+sorry-free and axiom-clean" (the import chain retains the sorried
+general wit_pbisim/wit_force, provably not depended on).  Recorded
+gaps: entry budget 2·cl.card+1 coarser than 2·nu+1 (interpolant rank
+recalibrates); E-form input not agreement-derivable in general — BUT
+the no-go counterexample (forkF) is NOT mutually confluent, so over
+confluent models E-form delivery is OPEN, a new pillar-2 opening.
+
+## 36. 2026-07-25 afternoon: growth propagation SPLIT — boundary theorem proved; the configuration is satisfiable (vacuity route dead)
+
+wip/residueGrowth.lean (913b4d3), three theorems, #guard_msgs-pinned
+[propext, Classical.choice, Quot.sound]:
+
+* `residue_growth_boundary` PROVED: over a `Ranked` link (level-n
+  links transfer p-free formulas of crankC ≤ n — definitional for
+  agreement-built links), every p-FREE formula in a residue
+  configuration's growth tr(kv)∖val Δ has crankC ≥ 2d.  Sub-boundary
+  protected growth crosses to u (level 2d) and back to κ (level
+  2d−1), contradicting tr(κ) = val Δ.  So the residue's
+  distinguishing formulas are p-laden or boundary-crank — the
+  machine-checked location of the S4/K4-style failure mechanism
+  (bisimulation rank outrunning interpolant rank), and of the samval
+  sharpness decode.
+
+* `residue_config_satisfiable` PROVED: the b.ii configuration IS
+  satisfiable — chainP (2-point confluent chain, p at top, no
+  fallibles, Rm = Ri) with the FULL link family (a lawful
+  LayeredBisimE off p: atoms clause only sees protected atoms) and
+  the ◯-adequate closure {⊥,p,◯⊥,◯p}; growth {p,◯p} is PURE-p,
+  invisible to the atoms clause.  CORRECTION of §35: the first
+  probe's "0 configurations" was an artifact — its closures contained
+  no p.  The vacuity route (mforthResidue_of_config_absurd) is dead
+  as a general strategy.
+
+* `residue_config_example_resolves` PROVED: in that instance the
+  conclusion holds — the growth is ◯-ANTICIPATED (◯p ∈ val Δ), so
+  the grown answer works with (kv,u) as its own base and reservoir.
+  MforthResidue is therefore CONTENTFUL and OPEN exactly at: growth
+  whose ◯-anticipation fails.
+
+Corrected probe IN FLIGHT (bii_p_probe worktree agent): p-containing
+closures, p UNPROTECTED in the approximants, two-atom decorations,
+full conclusion search at every configuration; failures would be
+counterexamples to MforthResidue forcing a triple redesign.  Also
+explored and recorded here: the degraded-triple calculus (base 2d−1
+after a mismatch) closes the first mismatch but regresses at
+b.ii-from-degraded — degradation alone cannot serve the unbounded
+bisimulation game; it becomes viable only combined with growth
+propagation or an anticipation lemma.
+
+## 37. 2026-07-25 latest: the last v2quant cell decided — D₆ ⊬ ◯(◯q⊃q); the gap row is fully certified at ◯⊥
+
+The §35 undecided cell is REFUTED: `◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥) ⊢ ◯(◯q⊃q)` is
+underivable in plain LaxND, countermodel-certified in the kernel
+(wip/d6_gap_cell.lean; all pinned theorems axiom-clean, `[propext,
+Quot.sound]`).  The countermodel is `defaultFrames` item 6 decorated
+p@{2} — the 3-chain with rigid first Rₘ-step and fallible top — and a
+fallible-free twin (chain3F, p@{2}) certifies too, since every
+fallible-free model forces D₆ everywhere.  Consequence: the gap-row
+∀-join does NOT climb at r=6; all 15 dictionary classes are
+certificate-decided on that row's ∀-side, so the rank-bounded
+`∀p.◯(◯p⊃p)` = ◯⊥ from r=2 through r=9, matching the §35 match test
+(≡ ◯⊥ proved both ways).  No anomaly against the rank-2 stabilisation
+pattern remains anywhere in the experiment's ∀-tables.
+
+Post-mortem: the recorded 6-hour/10-minute grinds were the ∃-side call
+`◯(◯p⊃p) ⊢ D₆` (no battery frame refutes it), misattributed to the
+∀-side, which the battery had refuted all along; the forced skip then
+swallowed both sides.  Correction noted at `skipCells` in
+wip/v2quant_probe.lean.  Bonus: the gap row's crank≤5 ∃-side skip
+`◯(◯p⊃p) ⊢ (◯¬◯⊥) ∨ ¬¬◯⊥` is also REFUTED (4-fork frame, pinned in
+the same file); the two D₆-family ∃-cells remain OPEN and touch only
+the ∃-meet, whose value ⊤ is unchanged.
+
+## 38. 2026-07-26 night: corrected probe verdict — 0/36.6M failures; the open zone is exactly the strictly-descending regime
+
+Corrected b.ii probe (wip/bii_p_probe.lean, p-containing closures, p
+UNPROTECTED, exhaustive conclusion search; 1603 models, 1,739,255
+pairs, 56 s): control PASSES (finds the chainP instance; note the
+growth there is {p}, not {p,◯p} — ◯p ∈ val Δ already, by pointwise
+χ⊃◯χ, which is precisely the anticipation the resolution uses).
+**36,588,835 configurations, 0 failures.**  Growth composition: 100%
+pure-p-laden, 0 protected members at ANY crank (the boundary theorem
+is empirically loose: protected growth never occurs at all in the
+fixpoint regime, since a fixpoint E-link over both-confluent models
+transfers every protected formula).  Resolution: EVERY config
+resolves by a SAME-TRACE answer — the battery's Z-hierarchies
+stabilise by level 3, so the level-(2d−1) link at κ already holds at
+2d (fixpoint collapse) and κ is its own rescue; grown answers exist
+at exactly the ~4% whose growth is ◯-anticipated; grown-ONLY 0.
+Also: empirical crankC-rankedness clean on confluent×confluent pairs
+only (33k–72k violations with M non-confluent — crankC transfer
+needs both models confluent, as force_iff_of_layeredC says).
+
+Lean: `mforthResidue_of_stabilised` PROVED (+audit) — pointwise
+level-collapse at the mback-partner's link discharges the residue;
+the machine-checked name of the fixpoint-regime rescue.  MforthResidue
+remains OPEN, unrefuted, with the danger zone now pinned exactly:
+links strictly below the Z-stabilisation level at small canonical
+depth = long strictly-descending bisimulation hierarchies = the
+◯⊃-alternation towers of the cross-route experiment (X9/D₆
+territory).  Small batteries cannot reach it (Z stabilises too fast);
+the syntactic route reaches it as the D₆ cell.
+
+## 39. 2026-07-26: THE STABILISATION LEMMA mechanised — the residue is PAID in the one-variable setting
+
+wip/stabilise.lean (68996ab), sorry-free, #guard_msgs-pinned, every
+theorem conditional only on `D : RNDict` (the certified variable-free
+dictionary interface; instantiation from the v2quant closure tables in
+flight as wip/rnDict.lean).  The cross-route plan as a theorem chain:
+
+* `RNDict`: finitely many variable-free reps + crank bound + certified
+  connective-closure tables up to `Interd` (PLLSemUIFrag's calculus).
+* `dict_collapse` PROVED: structural induction with the Interd
+  congruences — EVERY variable-free formula is interderivable with a
+  rep.  The finite closure certificate decides the WHOLE fragment;
+  this resolves the 2026-07-13 objection ("finitely many probes cannot
+  settle the fragment's infinitude"): closure under the generating
+  connectives can, and the probe's round-6 fixpoint was exactly that.
+* `dict_agree_stab` PROVED — THE STABILISATION LEMMA: variable-free
+  agreement at rank crankBound is agreement at every rank.
+* `vfB` PROVED (m-clauses as hypotheses VfMforth/VfMback): the
+  CONSTANT family Z n := vfAgree is a lawful LayeredBisimE between
+  p-pure models; i-clauses = agree_iforth/agree_iback at alphabet ∅,
+  the 2α+2 character budget ABSORBED by stabilisation; atoms by
+  p-purity; fall at rank 0.
+* `vfB_mforthResidue` PROVED: constant family ⇒ level-collapse
+  hypothesis is `id` ⇒ MforthResidue holds.  THE RESIDUE IS PAID.
+* `restricted_amalgamation_oneVar` PROVED: for p-pure confluent K and
+  p-pure M, root agreement at rank crankBound (fixed, closure-
+  independent!) yields the full p-variant conclusion — no residue
+  hypothesis, entry budget crankBound instead of 2·cl.card+1.
+
+Status of one-variable PCLL semantic UI after this: pillar 3 fully
+paid; the ONLY remaining obligation is VfMforth/VfMback — the two
+m-clauses of pillar 2 for the constant variable-free-agreement link —
+plus the Thm 5.1 wrapper.  Note the contrast with IPC: the one-variable
+p-free fragment there is the (infinite) Rieger–Nishimura lattice, so
+no constant-link shortcut exists; PLL's variable-free fragment is
+FINITE (the ◯⊥-ladder stabilises) — the modality is what makes the
+restricted case easier, not harder.
+
+## 40. 2026-07-26: the 15-class closure is REFUTED — the dictionary premise falls, the stabilisation chain stands
+
+The rnDict instantiation agent's verdict, consolidated (d37f9c0):
+**the RN(◯,{}) dictionary is NOT connective-closed at 15 classes.**
+wip/rnDictRefute.lean proves, axiom-clean [propext, Quot.sound] and
+#guard_msgs-pinned:
+
+  refute_cAnd_8_10  : ∀ k : Fin 15, ¬ Interd (q8.and q10)     (rep15 k)
+  refute_cImp_9_4   : ∀ k : Fin 15, ¬ Interd (q9.ifThen q4)   (rep15 k)
+  refute_cImp_12_4  : ∀ k : Fin 15, ¬ Interd (q12.ifThen q4)  (rep15 k)
+  refute_cImp_14_4  : ∀ k : Fin 15, ¬ Interd (q14.ifThen q4)  (rep15 k)
+
+each candidate eliminated by a checkB-certified countermodel (the
+refuting battery COMPLETE for variable-free refutation at ≤ 4 worlds).
+All four witnesses are X9-tower combinations of size 20–23 — beyond
+v2quant's SZMAX = 16 candidate cap.  "Closure at round 6" was closure
+of the size-≤16 QUOTIENT.  Kernel-checked consequence: RN(◯,{}) has
+**≥ 16 classes** (≥ 19 if the four witnesses are pairwise distinct —
+not yet pinned).  rnDict15 is UNCOMPLETABLE as an instantiation; its
+603/690 certified cells (236 emitted G4cTm terms via rnDictGen, 367
+generic Interd laws, rnDictBase) are kept as raw material for the
+enlarged dictionary.  83 further cells OPEN (unprovable by both
+searchers, unrefuted at ≤ 4 worlds; per-cell candidate shortlists
+recorded — ⊤-vs-tower ambiguities needing ≥ 5-world countermodels or
+deeper proofs).
+
+CONSEQUENCES.  (1) The variable-free fragment-finiteness question is
+REOPENED, now leaning infinite (the tower splits past every cap so
+far) — supporting the Curry-problem thread's RN(◯,{})-infinite
+direction, and giving the nucleus/assembly thread its first
+kernel-checked lower bound on the RN(◯,{}) size.  (2) The
+stabilisation chain (wip/stabilise.lean) is UNTOUCHED and now carries
+the question precisely: by dict_collapse, an RNDict exists iff the
+fragment is finite; restricted_amalgamation_oneVar is blocked pending
+that.  (3) The v2quant r-tables were computed over the truncated
+quotient: every certified derivability (incl. the X9 match and
+D₆ ⊬ gap row) STANDS, but the "join" columns are joins over the
+15-class scan — computed join ⊢ true join; per-row values could rise
+if a new class derives a row.  Re-audit needed over the enlarged
+dictionary.  (4) The correct fallback for one-variable UI is the
+rank-relative form (per-rank finiteness = frag_reps_exist', PROVED):
+IPC's precedent says UI can hold over an infinite one-variable
+fragment (Pitts over the Rieger–Nishimura lattice) — global collapse
+was a shortcut, not a necessity.
+
+## 41. 2026-07-26: the RANK-RELATIVE stabilisation lemma — band collapse; the open core is a plateau
+
+wip/bandStabilise.lean (9dcda2c), sorry-free, pinned.  The finite
+dictionary was certification apparatus only; the chain needs one Prop:
+`BandCollapse R E` (every variable-free formula of crank ≤ E
+interderivable with one of crank ≤ R), with E = 2R+2 dictated by the
+character budget.  PROVED: band_agree_stab (CHOICE-FREE
+[propext, Quot.sound]); bandB (constant family Z n := bandAgree R, a
+lawful LayeredBisimE between p-pure models — i-clauses upgrade across
+the band then spend agree_iforth/iback); bandB_mforthResidue (residue
+paid); restricted_amalgamation_oneVar_band (one-variable amalgamation
+at entry rank R from BandCollapse R (2R+2) + BandMforth/BandMback);
+bandCollapse_of_dict (the global constant-link theorem is the E-free
+special case — "reinstated-if-closed" made precise).  OPEN CORE now:
+exhibit ONE R with BandCollapse R (2R+2) — a PLATEAU of the
+variable-free class-count function n(r) on [R, 2R+2].  Strictly weaker
+than fragment finiteness: n may resume growing above the band; failure
+for ALL R requires new classes at doubling density FOREVER (every
+window [R, 2R+2] hits a new class) — the S4 signature.  Observed so
+far: new classes at essentially every crank ≤ 7-8 (incl. the §40
+witnesses at 6-7); the dictionary-mapping session's class-count curve
+is exactly the data that locates or excludes a plateau.  Terminology
+correction for §40's prose: the lattice whose size the literature
+leaves open is RN(◯,{}) (variable-free PLL; ◯⊥ is not a free
+generator); RN({p}) — Rieger–Nishimura proper — is classically
+infinite (Rieger 1949, Nishimura 1960), and with ◯-free conservativity
+the one-VARIABLE PLL fragment is infinite too; neither settles
+RN(◯,{}).  Note the compatibility: the Curry-problem thread wants
+RN(◯,{}) infinite, UI wants a plateau — both can hold.
+
+## 42. 2026-07-26: the infallible collapse formalised; the m-clause positive half proved
+
+wip/bandM.lean (sorry-free, pinned).  Matthew's observation — PLL+¬◯⊥
+is complete for infallible constraint models, where ◯⊥ ≡ ⊥ and
+RN(◯,{}) collapses to {⊥,⊤} — is now a theorem pair:
+`infallible_amalgamation` (between p-pure INFALLIBLE models, K
+confluent, the total link is a lawful LayeredBisimE — all eight
+clauses trivial, m-clauses included — and the one-variable
+amalgamation holds with NO agreement hypothesis; the first
+UNCONDITIONAL instance of the whole amalgamation tower and a
+constructive non-vacuity certificate), and `band_mforth_positive`
+(general fallible case: the POSITIVE half of the banded m-forth
+clause via charPos + bare possibility on both sides + band transfer
+at α+3 ≤ R; the NEGATIVE half — no overshoot — is the isolated
+remainder).  Reading: the m-clause difficulty, like the tower itself,
+is EXACTLY fallibility-grading; over ¬◯⊥ everything trivialises, so
+any PLL-UI proof factors its hard content through the fallibility
+dimension.  PRECISION note on §40: "≥ 16 classes kernel-checked"
+overstated — the four ∀k-refutations are fully pinned, but pairwise
+distinctness of the 15 representatives (and of the 4 witnesses) is
+probe-certified only, not yet Lean-pinned; the mapping session should
+pin the separations.
+
+## 43. 2026-07-26 evening: the two quotients computed — RN ≥ 16 PINNED, RNC first map; no plateau in sight; the gap row survives everything
+
+Two independent certification streams landed and consolidate here.
+
+**PLL (the dictionary-mapping session; wip/rnDict2Report.md, artifacts
+rnSep/rnSepColl/rnDict2Hand/rnDict2/rnDictRefute2):** the four §40
+witnesses are ONE class, q15 := q9⊃q4, kernel-pinned (two of the three
+fusions AXIOM-FREE; the searcher could not find them — hand Deriv
+terms; gap patterns catalogued).  The 15 base classes are NOW pairwise
+distinct CERTIFIED (165 pinned countermodels; {q1,q11,q13} and
+{q9,q12,q14} need 5 worlds — the ≤4-world battery cannot see them;
+exhaustive ROOTED 5-world completeness by generated-submodel
+reduction).  Aggregate `rep16_pairwise_distinct` [propext, Quot.sound]:
+**RN(◯,{}) ≥ 16, fully pinned** (the §42 precision debt is paid).
+The 16-class closure round FAILS massively: ~40 cells match no class
+(⊃-block dominates; three pinned 6-WORLD models were needed — some
+refutations invisible at ≤5 worlds); ∧-family spawns all-distinct.
+Class count rises through every observed crank window: **no plateau
+visible; BandCollapse unsupported below crank ~8.**
+**THE GAP ROW SURVIVES THE FULL ENLARGEMENT**: among all 16 reps and
+all 41 spawned-class witnesses, only ⊥ and ◯⊥ derive ◯(◯p⊃p) (pinned
+countermodels for every other candidate) ⇒ ∀p.◯(◯p⊃p) = ◯⊥ stands
+over everything now known.
+
+**PCLL (the RNC probe, §consolidated 4f0cb6d):** distribution merges
+q9 ≡ q12 and fuses the witness class (distF q3 q6 exactly), 19 → 15;
+new reusable certificate theorem not_derivU_of_checkConf (confluent
+countermodel ⇒ PCLL-underivability); but the RNC closure sweep spawns
+26 new-class cells — **the tower continues past distribution**.  Sole
+open matrix cell [q14] ⊢ q13 in both logics.
+
+**Synthesis:** fragment-infinitude now the working picture for BOTH
+quotients; the plateau (constant/band link) route is empirically dead
+at accessible ranks; the PER-INSTANCE route is simultaneously
+STRENGTHENED (the gap-row value certified against the entire
+enlargement — B1 + per-instance-B2 evidence at its strongest).  Route
+forward: the mforth choice-freedom refactor + the per-instance residue
+treatment, over whichever of PLL/PCLL the Thm 5.1 assembly targets.
+
+## 44. 2026-07-26 night: the 16-round is FULLY DECIDED — 58 spawned witnesses, exact families, RN(◯,{}) ≥ 25
+
+Completion of the dictionary-mapping session (§43 reported it in
+flight).  Every one of the 140 searched cells of the 16-class closure
+round is now DECIDED — zero open cells:
+
+  82 LANDED (19 searcher + 63 hand certificates — wip/rnDict2Hand.lean,
+     the searcher-gap catalogue: ofImpTop order facts, ex falso inside
+     ◯, ◯-intro under orElim, collapse-lemma cuts);
+  58 NEW-CLASS witnesses (6 ∧, 15 ∨, 35 ⊃, 2 ◯), each with every
+     candidate countermodel-eliminated; witness theorems over Fin 16
+     in wip/rnDictRefute2.lean; wip/rnDict2.lean emits the partial
+     rnDict16 : RNDict with exactly these 58 sorried cells.
+
+FIVE pinned 6-world countermodels (extraCMs) decide candidates
+invisible at ≤5 worlds — among them [q14] ⊬ q13 (§43's "sole open
+matrix cell", now closed), ⊬ q8∨q10, [q13] ⊬ q5∨q8, [q13] ⊬ q8∨q12.
+
+The spawned classes classify EXACTLY within the scanned families
+(wip/xsep_*.txt + the 8 hand collapse certificates of
+wip/rnSpawnColl.lean — ALL eight previously-open spawned pairs are
+COLLAPSES, e.g. q8∨q10 ≡ q8∨q11 and the cross-shape q10⊃q4 ≡ q11⊃q7,
+two pinned AXIOM-FREE):
+
+  ∧-family: exactly 6 classes;  ∨-family: exactly 9;
+  ⊃-family (scanned subset of 12): exactly 8;  ◯-column: 2;
+  25 further ⊃-witnesses and all cross-family pairs unscanned.
+
+CLASS-COUNT: rep16_pairwise_distinct pins ≥ 16 in the kernel; the
+∨-family clique (9 spawned classes pairwise distinct and distinct
+from all 16) lifts the certified count to **RN(◯,{}) ≥ 25**
+(checkB-gated run-log countermodels, kernel-pinnable on demand); with
+58 witnesses outstanding the true count is plausibly 40+.  The
+class-count curve rises through every crank window observed (spawned
+reps at crank 6–9) — the §41 plateau remains without support, and the
+Curry-problem thread's RN(◯,{})-infinite direction strengthens again.
+
+The gap-row audit of §43 stands unchanged over the completed round:
+only ⊥ and ◯⊥ derive ◯(◯p⊃p); ∀p.◯(◯p⊃p) = ◯⊥.
+
+Deliverables: wip/rnSep.lean (165 sep certificates), wip/rnSepColl.lean
+(witness collapse + rep16 aggregate), wip/rnDict2Hand.lean (63 hand
+cells), wip/rnDict2.lean (726/784 cells certified), 
+wip/rnDictRefute2.lean (58 witness theorems), wip/rnSpawnColl.lean
+(8 spawned collapses), wip/rnDict2Report.md (the class map), run
+outputs wip/gen2logs/ + wip/xsep_*.txt + wip/gaprow_*.txt.
+
+## 44. 2026-07-26 night: the mforth choice-freedom refactor — the input link is LayeredBisimWit
+
+fc9ab18, whole chain green, audits unchanged.  The consumption audit
+(§34's inventory) showed the E-form's mforth spent at ONE site — the
+truth lemma's ◯-backward — where the K-side witness is chosen, not
+given.  The input format is now `LayeredBisimWit`: mforth replaced by
+the witness clause
+
+  mwit : Z (n+1) k m → (∃ κ, Rm k κ ∧ force κ ψ) →
+    ∃ κ u', Rm k κ ∧ force κ ψ ∧ Rm m u' ∧ (Z n κ u' ∨ pair-fallible)
+
+(the ◯-obligation for SOME row-witness of the formula in play; the
+prover picks).  `LayeredBisimE.toWit` embeds the old format — strictly
+one-way, so pillar 2's debt is strictly weakened; the weakened Props
+are `VfMwit`/`BandMwit` with `…_of_…forth` bridges.  Adversarial
+clauses (iback, mback) unchanged; wit_pbisimC's OUTPUT is still a full
+unbounded PBisim.  What this buys the negative half: the maximal-type
+ascent arguments now have their proper home (the samval-decoded
+unmatchable row-members — the dead-end partners no formula can force a
+match for — no longer refute the obligation, since the prover may
+choose a matchable witness).  What it does not buy: the crank
+treadmill (matching at rank R needs characters boxed at R+3) stands;
+the remaining depth is per-instance stabilisation, as §43 concluded.
+Concurrent: the mapping session continues landing separation-scan
+artifacts on this branch (be0ca34).
+
+## 45. 2026-07-27: THE MAXIMAL-TYPE ASCENT — the witness-form m-clause PROVED under the band
+
+wip/bandM.lean (d164be5), sorry-free, pinned:
+
+  bandMwit_of_collapse : 1 ≤ R → BandCollapse R (2R+2) →
+    MutuallyConfluent K → MutuallyConfluent M → BandMwit R K M
+
+No fallible escape is consumed.  Engine (the ascent): a ψ-witness κ in
+k's row boxes its rank-R positive character across the link — the band
+collapse pulls ◯charPos (crank R+3) back under rank R, defeating the
+crank treadmill — and bare possibility in M realises it at u′.  Exact
+type match ⇒ rank-R agreement, done.  Overshoot at a representative D₀
+⇒ the backward transfer returns κ′ ∈ row(k) covering u′'s type, and
+the confluence square over (Rₘ k κ, Rᵢ k κ′) yields y ∈ row(k) that
+keeps ψ (persistence along Rᵢ κ y) and swallows κ′'s type (persistence
+along Rₘ κ′ y) — a ψ-witness with strictly larger type.  Finitely many
+representatives ⇒ termination.  Supporting lemmas:
+band_row_char_partner/_rev, private countP arithmetic.
+
+New capstone `restricted_amalgamation_oneVar_band'`: the banded
+one-variable amalgamation from BandCollapse R (2R+2) + BandMback ONLY.
+LEDGER after tonight: the forth-side m-obligation is PAID (under the
+band); remaining = the plateau itself (empirically unsupported at
+accessible ranks, §43) and BandMback (adversarial; dead-end gap).
+Matthew's observation recorded: mwit + ascent is a reducibility-
+candidates-style move (System F SN) — quantify over observations
+rather than raw moves, then saturate witnesses; kinship with the
+repo's own ⊤⊤-lifting SN proof (biorthogonal closure) noted in the
+session log.
+
+## 46. 2026-07-27: Matthew's BandCollapse objection — correction of record; RN(PCLL,◯,{}) presented
+
+**The correction.**  Matthew challenged `BandCollapse R (2R+2)`
+("iterate it and everything collapses to crank 0 — absurd").  The
+specific reductio fails — the band is anchored at R and gives no
+descent below R — but the substance of the objection is RIGHT and the
+§41/§45 record was WRONG on the key point: one band bootstraps
+UPWARD.  By exactly the dict_collapse rebuild induction (collapse the
+subformulas to rank ≤ R, reassemble with one connective: crank ≤ R+2
+≤ 2R+2, collapse again), `BandCollapse R (2R+2)` implies collapse of
+the WHOLE variable-free fragment to rank ≤ R.  So the band hypothesis
+is EQUIVALENT to fragment finiteness (with a rank-R representative
+bound) — NOT "strictly weaker: growth may resume above the band", and
+the "failure needs doubling-density growth forever" characterisation
+is retracted.  Consequences: (a) the ascent theorem
+bandMwit_of_collapse and the banded amalgamation are conditional on
+fragment finiteness, no less; (b) the plateau question and the
+fragment-finiteness question are ONE question; (c) the injectivity
+delegation (agent in flight: h : RN({p}) → RN(L,◯,{}) under p ↦ ◯⊥,
+faithfulness for L ∈ {PLL, PCLL} via the fallible-top U-transfer
+construction) would settle it NEGATIVELY for both logics, killing the
+band route and crowning the per-instance ascent (the ascent proof
+only uses finiteness + transferability of the TEST LIST, so it
+relativises to finite test sets — the per-instance form is the
+surviving shape).
+
+**Class-count confirmations** (Matthew's notation RN(L,◯,{}) with the
+logic as argument, ADOPTED): RN(PLL,◯,{}) ≥ 16, fully kernel-pinned
+(rep16_pairwise_distinct).  RN(PCLL,◯,{}): the 19 candidates fall
+into 15 classes — the 15 PLL base reps collapse to 14 (sole merge
+q9 ≡ q12, via the single instance distF q3 q6), plus the fused
+witness class w = q8∧q10 ≡ q9⊃q4 ≡ q12⊃q4 ≡ q14⊃q4 distinct from all
+14.  Certification status: all separations pinned per-pair
+(wip/rncCert.lean, confluent countermodels, [propext, Quot.sound]);
+merges pinned (rncCertPos/rnSepColl — the witness fusions are
+PLL-level, two of three axiom-free, hence PCLL); an AGGREGATE
+pairwise-distinctness theorem for the 15 (analogue of
+rep16_pairwise_distinct) is one decide-glue file away and not yet
+written.  The raw probe matrix's "18 classes" line predates the
+hand-certificate fusion layer.  Sole unknown cell of the 15×15
+PCLL matrix: q14 ⊢ q13.  Hasse structure extracted and drawn
+(session diagram): heights 0..6, q9* the only distribution-merge,
+w incomparable to ◯¬◯⊥, covers as certified.
+
+## §47 (2026-07-27) — The witness-form OUTPUT: force_iff_of_witOut, the re-typed projection, BandMback leaves the ledger
+
+The candidates-lens conclusion of §46's session made Lean.  The
+specification consumes exactly one property of the output p-variant
+link — preservation of p-free formulas — and that property survives
+weakening BOTH ◯-directions of the output to witness form, over a
+confluent base.
+
+**New structures** (wip/witTripleC.lean refactor + wip/witOut.lean,
+all sorry-free, [propext, Classical.choice, Quot.sound] throughout):
+
+* The input `LayeredBisimWit` loses its adversarial `mback` FIELD —
+  demoted to the optional side condition `MBack`, consumed at exactly
+  one site (`witTriple_mforth`); the refactor compiling IS the
+  consumption audit.  New M-side WITNESS clause `MWitM` (the adversary
+  picks the formula, not the world), strictly weaker (`mwitM_of_mback`).
+* `ABisimWit`/`PBisimWit`: the unbounded witness-form output link.
+  `force_iff_of_witOut` — THE LINCHPIN: a witness-form link between a
+  MUTUALLY CONFLUENT base and an ARBITRARY variant transfers every
+  protected formula at every rank.  ◯-forward extracts the base-row
+  witness from the ∀∃ clause directly and pushes it through `mwit`;
+  ◯-backward pulls the reflexive-successor witness through `mback` and
+  rebuilds ∀∃ by bare possibility — the single use of confluence.
+* `MwitResidue`: the witness-form residue, strictly weaker than
+  `MforthResidue` on both sides (extra hypotheses: the partners come
+  from the witness clause with a forcing fact riding along; weaker
+  conclusion: ANY row-witness may answer).  Bridges:
+  `mwitResidue_of_mforthResidue`, `mwitResidue_of_stabilised`.
+* `witTriple_mwit` / `wit_pbisimW` / `amalgamation_assembledW`: the
+  ◯-maintenance, projection, and assembly in witness form — no
+  adversarial clause consumed anywhere; the assembly delivers closure
+  agreement AND (over a confluent base) full p-free transfer at the
+  root.
+
+**The banded cascade** (wip/bandW.lean): `BandMwitM` discharged by the
+MIRRORED maximal-type ascent (bandAgree is symmetric), so
+`restricted_amalgamation_oneVar_wit` needs the band collapse and
+NOTHING else — `BandMback`, the last unproved m-obligation of the §45
+route, left the ledger.
+
+## §48 (2026-07-27) — THE RANKED ASCENT: pillar 2 closes with no band and no finiteness
+
+The decisive observation, minutes after §47: the ascent's finiteness
+input is `frag_reps_exist'` — PER-RANK finiteness (pillar 1) — not
+fragment finiteness.  The band entered §45's proof at exactly one
+point: lifting link agreement to the boxed-character rank.  Supplying
+that rank directly (wip/rankedM.lean, all sorry-free):
+
+* `rankedMwit`: over mutually confluent models, variable-free
+  agreement at rank α+3 answers every K-row ψ-witness by one whose
+  M-partner agrees at rank α — NO escape, rank spend +3 (cheaper than
+  the i-clauses' 2α+2 halving).  `rankedMwitM` by symmetry;
+  `bandMwit_of_collapse'` refactors §45's ascent as stabilisation
+  feeding the ranked clause.
+* `rankedB`: Z n := agreement at rank `rslope n`
+  (rslope(n+1) = 2·rslope n + 3) is a lawful `LayeredBisimWit` off p
+  between one-variable mutually confluent models, plus `MWitM` —
+  EVERY input clause of the witness pipeline from pure rank-bounded
+  agreement.  **PILLAR 2 IS CLOSED in the ranked setting.**
+* `restricted_amalgamation_oneVar_ranked`: the one-variable
+  amalgamation from root agreement at the FIXED rank
+  rslope(2·|cl|+1) (tower-exponential in the closure, but determined
+  by it), modulo the ONE open Prop `MwitResidue` of the ranked link.
+  The residue — whose geography §§40-42 already mapped
+  (`residue_growth_boundary`: genuine configurations are p-laden or
+  boundary-crank; the S4/K4 UI-killer mechanism) — is now the ENTIRE
+  unproved content of the route.
+
+## §49 (2026-07-27) — Fragment infinitude LANDS: the band is REFUTED, the dictionary impossible, the purity corrected
+
+The injectivity delegation returned stronger than commissioned
+(wip/rnEmbed.lean, cherry-picked; 1069 lines, 15 pinned audits): the
+full Rieger–Nishimura ladder embeds under p ↦ ◯⊥ into BOTH quotients,
+pairwise distinct at EVERY index — over the single infinite RN frame
+on ℕ with closed-form rung truth sets, no decide budget.  Kernel-checked:
+`varfree_no_finite_cover_pll/_pcll` (**both variable-free fragments
+are INFINITE** — §46's "likely" upgraded to theorem, Nishimura not
+consumed), `rank_escape_pll/_pcll` (every rank is escaped),
+`rnSub_derivU_iff_deriv` (PCLL conservative over PLL on the embedded
+ladder; image order = truth-set containment in both logics),
+`crank_rnP_emb` (two fresh rungs per crank forever).
+
+Consequences, mechanised the same night (wip/bandRefute.lean):
+
+* `global_collapse_of_band` — §46's rebuild induction in Lean: one
+  band `BandCollapse R E`, `E ≥ R+2`, bootstraps to global collapse
+  at rank R.
+* `bandCollapse_refuted` — **BandCollapse R E is FALSE for every R
+  and every E ≥ R+2** (in particular the character width 2R+2).  The
+  band route of §§43-45 and §47 is closed NEGATIVELY: those theorems
+  keep their (true) conditional content with antecedents now known
+  unsatisfiable.  The ranked route (§48), which never used the band,
+  is the survivor — built hours before its rival died.
+* `rnDict_false` — the `RNDict` interface is UNINSTANTIABLE; the
+  dictionary-closure certification program (603/690 cells) cannot
+  complete.  No further effort there.
+* `ppure_ffree` (axiom-free) + `ppure_oneVar_trivial` — formulation
+  audit: `full_F` forces `PPure` models infallible, so the p-pure
+  one-variable amalgamation was UNCONDITIONALLY true
+  (`infallible_amalgamation`), i.e. the p-pure hypotheses trivialised
+  those statements.  Corrected purity `POnly` (V a ⊆ F off p) adopted
+  by the ranked chain — fallible one-variable models genuinely in
+  scope.
+
+**The route, after tonight**: everything unconditional except ONE
+displayed Prop — `MwitResidue` for the ranked link at slope
+2s+3 — consumed at one site, bridged from stabilisation and from the
+old residue, boundary-mapped, probe-populated.  Next: (i) decide
+MwitResidue for ranked links (the boundary theorem constrains genuine
+configurations to p-laden/boundary-crank growth whose ◯-anticipation
+fails; the §42 probe battery re-aimed at the witness form); (ii) the
+spec layer over PBisimWit (IsSemExW) and the PCLL UI statement it
+feeds.
+
+## §50 (2026-07-27) — The residue probe re-aimed at MwitResidue: clean at ~330M instances, and the open zone pinned to large models
+
+wip/mwit_probe.lean (exe mwitprobe; output wip/mwit_out.txt; control =
+the hand instance of residue_config_satisfiable, PASS).  The certified
+b.ii funnel enriched by a ψ-loop and the witness-freedom verdict
+(GIVEN / OTHER / FAIL per (configuration, ψ)), answer search extended
+by the canonical-top answer, run over TWO link families:
+
+* **mode R** — the RANKED family Z n := variable-free agreement at
+  rank rslope n over a ◯⊥-alternation pool, POnly-corrected
+  decorations, both models confluent — the exact link of the open
+  Prop MwitResidue cl (rankedB …): 131,044 pairs, 4,314,267
+  configurations per closure, 30–39M instances per closure —
+  **GIVEN = 100%, OTHER = 0, FAIL = 0**; every pair's chain stabilises
+  by level 2, live window EMPTY.
+* **mode G** — the largest lawful layered family (hard mode,
+  p unprotected), reproducing the §38 scan scale: 1,739,255 pairs,
+  ~12.2M configurations per closure (×3 ≈ the old 36.5M), 85–109M
+  instances per closure — **GIVEN = 100%, OTHER = 0, FAIL = 0**;
+  stabilisation by level ≤ 3, live window EMPTY, 0 monotonicity
+  violations.
+
+READING (three facts, kept distinct): (1) MwitResidue is UNREFUTED at
+~330M instances across both families — no counterexample candidate
+exists at ≤7 worlds.  (2) The witness freedom was NEVER exercised
+(OTHER = 0): at battery scale every configuration already resolves at
+the given witness, so the probe shows the re-typing SAFE but not yet
+NECESSARY — its value remains the strictly weaker Prop and the
+BandMback elimination, plus whatever the large-model regime holds.
+(3) The live window is empty in both modes: every reachable
+configuration sits at stabilised link levels, where
+mwitResidue_of_stabilised is a THEOREM — so the entire open content
+of MwitResidue is confined to the strictly-descending regime, which
+(by the ladder-needs-depth fact of wip/rnEmbed.lean: rung k needs
+~k/2 worlds) requires models beyond any small battery.  The open Prop
+stays OPEN with its geography sharpened: genuinely dangerous
+configurations need LARGE confluent models whose variable-free
+agreement chain still descends at the financed levels — the infinite
+alternation-tower territory, exactly where a UI counterexample would
+have to live.
+
+Also this session: the parallel track's searcher optimisations merged
+(cherry-picks 294251b/5413696 = order-canonical ckey + global failure
+memo for the plain searcher, authorship preserved) and COMPOSED into
+the bounded searcher (budget × memo × key; failures cached only with
+budget remaining — sound because exhaustion is sticky); findBounded's
+public signature unchanged; verified by the in-tree #guard gates plus
+a 1100-sequent cross-check (0 mismatches).  Merge guidance recorded:
+belief branch → main first, then ui-confluence, resolving
+PLLG4Term.lean to the combined version; never rebase ui-confluence.
