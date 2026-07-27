@@ -46,6 +46,8 @@ import LaxLogic.PLLSearchEx
 import LaxLogic.PLLSearchConf
 import LaxLogic.PLLSearchCmd
 import LaxLogic.PLLSearchDemo
+import LaxLogic.PLLNoFall
+import LaxLogic.PLLSearchNoFall
 import LaxLogic.PLLDiagram
 import LaxLogic.PLLEvidence
 import LaxLogic.PLLFinComp
