@@ -394,6 +394,8 @@ def rmCB (ci : ClInfo) (Δ T : Nat) : Bool :=
 
 structure Ans where
   found : Bool := false
+  kb : Nat := 0
+  T : Nat := 0
   deriving Inhabited
 
 def resolveAt (K M : PM) (zd : ZData) (ci : ClInfo) (tk : Array Nat)
@@ -407,13 +409,13 @@ def resolveAt (K M : PM) (zd : ZData) (ci : ClInfo) (tk : Array Nat)
       let dT := clSize - popC clSize T
       if zAt zd (2 * dT) kb u then
         if zAt zd (2 * dT + 1) kb u then
-          return ⟨true⟩
+          return ⟨true, kb, T⟩
         else
           for kr in List.range nK do
             if tk[kr]! == T then
               for mr in List.range nM do
                 if M.cm.riB mr u && zAt zd (2 * dT + 1) kr mr then
-                  return ⟨true⟩
+                  return ⟨true, kb, T⟩
   return {}
 
 structure PStats where
@@ -433,12 +435,24 @@ structure PStats where
   instNRGiven : Nat := 0
   instNROther : Nat := 0
   instNRFail : Nat := 0
+  agAll : Nat := 0          -- (config,ψ) instances with the ALL-GROW flag
+  agLive : Nat := 0
+  agGiven : Nat := 0
+  agOther : Nat := 0
+  agFail : Nat := 0
+  agKbK : Nat := 0          -- winning kb classification (GIVEN answers)
+  agKbKp : Nat := 0
+  agKbKappa : Nat := 0
+  agKbKv : Nat := 0
+  agKbOther : Nat := 0
+  agTGrown : Nat := 0       -- winning answer used a grown trace
   deriving Inhabited
 
 def dumpModel (tag : String) (P : PM) : IO Unit := do
   IO.println s!"    {tag}: n={P.cm.n} ri={P.cm.ri} rm={P.cm.rm} fall={P.cm.fall} val={P.cm.val} (frame #{P.fi})"
 
 def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
+    (rdOf : Nat → Array (Nat × Nat))
     (zfun : Nat → Nat → ZData) : IO Unit := do
   let t0 ← IO.monoMsNow
   let nMod := ms.size
@@ -455,6 +469,7 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
   let mut stabHist : Array Nat := Array.replicate 40 0
   let mut failDumps : Array Nat := Array.replicate cis.size 0
   let mut liveDumped : Array Bool := Array.replicate cis.size false
+  let mut agDumped : Array Bool := Array.replicate cis.size false
   let mut pairsDone := 0
   for iK in List.range nMod do
     if confl[iK]! then
@@ -463,6 +478,7 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
       for iM in List.range nMod do
         if !needMConf || confl[iM]! then
           let M := ms[iM]!
+          let rdM := rdOf iM
           let zd := zfun iK iM
           pairsDone := pairsDone + 1
           let stab := zd.levels.size - 1
@@ -523,14 +539,49 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
                                             let a := resolveAt K M zd ci tk Δ u
                                             memo := memo.set! (Δ * nM + u) (some a)
                                             pure a
+                                      let r2 := rslope (2 * d)
+                                      -- pool-agreement of m with a row world at crank ≤ r2
+                                      let stableW : Nat → Bool := fun u2 =>
+                                        (List.range rdM.size).all fun i =>
+                                          ((rdM[i]!).2 > r2) ||
+                                          (((rdM[i]!).1 >>> m) &&& 1 ==
+                                            ((rdM[i]!).1 >>> u2) &&& 1)
                                       for j in List.range pool.size do
                                         if (ψtt[j]! >>> u) &&& 1 == 1 then
+                                          -- ALL-GROW: every ψ-witness in m's row
+                                          -- pool-visibly grows m's vf theory at r2
+                                          let allGrow := (M.rmS[m]!).all fun u2 =>
+                                            ((ψtt[j]! >>> u2) &&& 1 == 0) ||
+                                            !(stableW u2)
+                                          if allGrow then
+                                            s := { s with agAll := s.agAll + 1 }
+                                            if live then
+                                              s := { s with agLive := s.agLive + 1 }
+                                              if !agDumped[ic]! then
+                                                agDumped := agDumped.set! ic true
+                                                IO.println s!"  ALL-GROW LIVE instance [{tag}/{(cis[ic]!).1}]: ψ={pf (pool[j]!).1} d={d} stab={stab} u'={u} m={m}"
+                                                dumpModel "K" K
+                                                dumpModel "M" M
                                           s := { s with instAll := s.instAll + 1 }
                                           if nr then
                                             s := { s with instNRAll := s.instNRAll + 1 }
                                           if live then
                                             s := { s with instLiveAll := s.instLiveAll + 1 }
                                           if aGiven.found then
+                                            if allGrow then
+                                              s := { s with agGiven := s.agGiven + 1 }
+                                              if aGiven.T != Δ then
+                                                s := { s with agTGrown := s.agTGrown + 1 }
+                                              else if aGiven.kb == k then
+                                                s := { s with agKbK := s.agKbK + 1 }
+                                              else if aGiven.kb == k' then
+                                                s := { s with agKbKp := s.agKbKp + 1 }
+                                              else if aGiven.kb == κ then
+                                                s := { s with agKbKappa := s.agKbKappa + 1 }
+                                              else if aGiven.kb == kv then
+                                                s := { s with agKbKv := s.agKbKv + 1 }
+                                              else
+                                                s := { s with agKbOther := s.agKbOther + 1 }
                                             s := { s with instGiven := s.instGiven + 1 }
                                             if nr then
                                               s := { s with instNRGiven := s.instNRGiven + 1 }
@@ -550,6 +601,8 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
                                                 if a2.found || (topOK && M.fallA[u2]!) then
                                                   other := true
                                             if other then
+                                              if allGrow then
+                                                s := { s with agOther := s.agOther + 1 }
                                               s := { s with instOther := s.instOther + 1 }
                                               if nr then
                                                 s := { s with instNROther := s.instNROther + 1 }
@@ -557,6 +610,8 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
                                                 s := { s with instLiveOther := s.instLiveOther + 1 }
                                             else
                                               s := { s with instFail := s.instFail + 1 }
+                                              if allGrow then
+                                                s := { s with agFail := s.agFail + 1 }
                                               if nr then
                                                 s := { s with instNRFail := s.instNRFail + 1 }
                                               if live then
@@ -584,6 +639,8 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
     IO.println s!"    configs={s.configs} (LIVE: {s.cfgLive}) | instances={s.instAll} GIVEN={s.instGiven} OTHER={s.instOther} FAIL={s.instFail}"
     IO.println s!"    LIVE-window instances={s.instLiveAll} GIVEN={s.instLiveGiven} OTHER={s.instLiveOther} FAIL={s.instLiveFail}"
     IO.println s!"    NON-RIGID (u' ≠ m): configs={s.cfgNR} (live {s.cfgNRLive}) | instances={s.instNRAll} GIVEN={s.instNRGiven} OTHER={s.instNROther} FAIL={s.instNRFail}"
+    IO.println s!"    ALL-GROW instances={s.agAll} (live {s.agLive}) | GIVEN={s.agGiven} OTHER={s.agOther} FAIL={s.agFail}"
+    IO.println s!"    ALL-GROW winning answers: same-trace kb=k:{s.agKbK} kb=k':{s.agKbKp} kb=κ:{s.agKbKappa} kb=kv:{s.agKbKv} kb=other:{s.agKbOther} | grown-T:{s.agTGrown}"
   IO.println s!"=== MODE {tag} done in {t1 - t0} ms ==="
   (← IO.getStdout).flush
 
@@ -594,8 +651,10 @@ def mainLoop : IO Unit := do
   let rd : Array (Array (Nat × Nat)) := ms.map fun P => rungData P RUNGS
   let maxC := (rd[0]!).foldl (fun a c => max a c.2) 0
   IO.println s!"models={ms.size}; rung pool: {RUNGS} rungs, max crank {maxC}; rslope levels 0,3,9,21,45,…"
-  runScan "Rdeep" ms true (fun iK iM => zRanked ms[iK]! ms[iM]! rd[iK]! rd[iM]!)
-  runScan "Gdeep" ms false (fun iK iM => zGfp ms[iK]! ms[iM]!)
+  runScan "Rdeep" ms true (fun i => rd[i]!)
+    (fun iK iM => zRanked ms[iK]! ms[iM]! rd[iK]! rd[iM]!)
+  runScan "Gdeep" ms false (fun i => rd[i]!)
+    (fun iK iM => zGfp ms[iK]! ms[iM]!)
 
 end MwitDeep
 
