@@ -161,3 +161,8 @@ root = "wip.mwit_probe"
 [[lean_exe]]
 name = "mwitdeep"
 root = "wip.mwit_deep"
+
+# Config-completion probe: which hypothesis protects kvInvisible.
+[[lean_exe]]
+name = "mwitcomplete"
+root = "wip.mwit_complete"
