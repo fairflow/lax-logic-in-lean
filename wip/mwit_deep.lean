@@ -130,6 +130,38 @@ def rnFrame (n : Nat) (rmE : List (Nat × Nat)) (fall : List Nat) : Frame :=
 def chainFrame (n : Nat) (rmE : List (Nat × Nat)) (fall : List Nat) : Frame :=
   closeF ⟨n, (List.range (n - 1)).map (fun i => (i, i + 1)), rmE, fall⟩
 
+def lcg (s : Nat) : Nat := (s * 1103515245 + 12345) % 2147483648
+
+def randFrame (seed n : Nat) : Frame := Id.run do
+  let mut s := seed
+  let mut ri : List (Nat × Nat) := []
+  for i in List.range n do
+    for j in List.range n do
+      if i ≠ j then
+        s := lcg s
+        if s % 100 < 30 && i < j then
+          ri := ri ++ [(i, j)]
+  let riC := (closeF ⟨n, ri, [], []⟩).ri
+  let mut rm : List (Nat × Nat) := []
+  for e in riC do
+    s := lcg s
+    if s % 100 < 45 then
+      rm := rm ++ [e]
+  let rmC := (closeF ⟨n, [], rm, []⟩).rm
+  let mut fall : List Nat := []
+  for i in List.range n do
+    s := lcg s
+    if s % 100 < 25 then
+      if !(fall.contains i) then fall := fall ++ [i]
+  let mut changed := true
+  while changed do
+    changed := false
+    for e in riC do
+      if fall.contains e.1 && !(fall.contains e.2) then
+        fall := fall ++ [e.2]
+        changed := true
+  return ⟨n, riC, rmC, fall⟩
+
 def deepFrames : List Frame := Id.run do
   let mut out : List Frame := []
   for j in [8, 10, 12] do
@@ -139,11 +171,21 @@ def deepFrames : List Frame := Id.run do
     out := out ++ [liftedLadder j [0] (((List.range j).filter (· ≥ 2)).map
       fun w => (w, w - 2))]
     out := out ++ [liftedLadder j [0, 1] ([(2, 0), (3, 1), (4, 2)])]
+    -- NON-ROW-RIGID variants: dense base Rₘ-chains (all drops by ≥ 2,
+    -- inside Rᵢ), so infallible rows are genuinely non-reflexive —
+    -- the battery class in which RankGapGrow's grow case can occur
+    out := out ++ [liftedLadder j [0] (((List.range j).filter (· ≥ 2)).map
+      fun w => (w, w - 2))]
+    out := out ++ [liftedLadder j [0, 1, 2] (((List.range j).filter (· ≥ 3)).map
+      fun w => (w, w - 3))]
   out := out ++
     [rnFrame 8 [] [0], rnFrame 8 [(2,0),(3,1),(4,2),(5,3)] [0],
      rnFrame 10 [] [0], rnFrame 10 [(2,0),(4,2),(6,4),(8,6)] [0],
      chainFrame 9 [(0,1),(2,3),(4,5),(6,7)] [8],
      chainFrame 9 [] [8]]
+  -- random dense-Rₘ frames (7 worlds): confluence-filtered at scan time
+  for k in List.range 16 do
+    out := out ++ [randFrame (k * 104729 + 7) 7]
   return out
 
 def upSets (f : Frame) : List (List Nat) := Id.run do
@@ -385,6 +427,12 @@ structure PStats where
   instLiveGiven : Nat := 0
   instLiveOther : Nat := 0
   instLiveFail : Nat := 0
+  cfgNR : Nat := 0          -- configs with a NON-REFLEXIVE witness (u' ≠ m)
+  cfgNRLive : Nat := 0
+  instNRAll : Nat := 0
+  instNRGiven : Nat := 0
+  instNROther : Nat := 0
+  instNRFail : Nat := 0
   deriving Inhabited
 
 def dumpModel (tag : String) (P : PM) : IO Unit := do
@@ -454,9 +502,14 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
                                     if zAt zd (2 * d - 1) κ u && tk[κ]! == Δ then
                                       let mut s := stats[ic]!
                                       s := { s with configs := s.configs + 1 }
+                                      let nr := decide (u ≠ m)
+                                      if nr then
+                                        s := { s with cfgNR := s.cfgNR + 1 }
                                       let live := decide (2 * d - 1 < stab)
                                       if live then
                                         s := { s with cfgLive := s.cfgLive + 1 }
+                                        if nr then
+                                          s := { s with cfgNRLive := s.cfgNRLive + 1 }
                                         if !liveDumped[ic]! then
                                           liveDumped := liveDumped.set! ic true
                                           IO.println s!"  LIVE CONFIG reached [{tag}/{(cis[ic]!).1}]: d={d} stab={stab}"
@@ -473,10 +526,14 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
                                       for j in List.range pool.size do
                                         if (ψtt[j]! >>> u) &&& 1 == 1 then
                                           s := { s with instAll := s.instAll + 1 }
+                                          if nr then
+                                            s := { s with instNRAll := s.instNRAll + 1 }
                                           if live then
                                             s := { s with instLiveAll := s.instLiveAll + 1 }
                                           if aGiven.found then
                                             s := { s with instGiven := s.instGiven + 1 }
+                                            if nr then
+                                              s := { s with instNRGiven := s.instNRGiven + 1 }
                                             if live then
                                               s := { s with instLiveGiven := s.instLiveGiven + 1 }
                                           else
@@ -494,10 +551,14 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
                                                   other := true
                                             if other then
                                               s := { s with instOther := s.instOther + 1 }
+                                              if nr then
+                                                s := { s with instNROther := s.instNROther + 1 }
                                               if live then
                                                 s := { s with instLiveOther := s.instLiveOther + 1 }
                                             else
                                               s := { s with instFail := s.instFail + 1 }
+                                              if nr then
+                                                s := { s with instNRFail := s.instNRFail + 1 }
                                               if live then
                                                 s := { s with instLiveFail := s.instLiveFail + 1 }
                                               if failDumps[ic]! < 10 then
@@ -522,6 +583,7 @@ def runScan (tag : String) (ms : Array PM) (needMConf : Bool)
     IO.println s!"  {(cis[ic]!).1}:"
     IO.println s!"    configs={s.configs} (LIVE: {s.cfgLive}) | instances={s.instAll} GIVEN={s.instGiven} OTHER={s.instOther} FAIL={s.instFail}"
     IO.println s!"    LIVE-window instances={s.instLiveAll} GIVEN={s.instLiveGiven} OTHER={s.instLiveOther} FAIL={s.instLiveFail}"
+    IO.println s!"    NON-RIGID (u' ≠ m): configs={s.cfgNR} (live {s.cfgNRLive}) | instances={s.instNRAll} GIVEN={s.instNRGiven} OTHER={s.instNROther} FAIL={s.instNRFail}"
   IO.println s!"=== MODE {tag} done in {t1 - t0} ms ==="
   (← IO.getStdout).flush
 

@@ -1565,3 +1565,34 @@ at every rank α ≤ rslope(2d+1) − 3.  Both rows saturate over
 row(k')'s types.  The single missing ingredient for an exact-type
 match — now the entire distance between RankGapGrow and closure — is
 the BACKWARD leg: reflecting row(m)-types into row(k').
+
+## §54 (2026-07-27) — The backward leg: all routes converge on ONE window; residue_window PROVED; the grow case exposed as empirically untested
+
+The backward-leg attempt (reflect row(m)-types into row(k')) reduces,
+on every route tried, to the SAME obstruction — the rank window
+(rslope(2d−1), rslope(2d)]:
+
+* the (k,m)-link reflection is capped at rslope(2d)−3 (◯ξ costs +3);
+* the reservoir reflection needs a box at m', i.e. a row(m')-witness
+  the configuration lacks (and k' ⊨ ◯ξ ⟺ m' ⊨ ◯ξ across the link, so
+  producing one is circular);
+* CLOSURE ENLARGEMENT (add low-rank vf representatives to cl so that
+  vf-growth becomes trace-visible and the grown case fires) fails
+  twice: the bootstrap diverges (the needed rank rslope(2·|cl|) grows
+  faster in |cl| than any finite representative stock, fragment
+  infinite), AND residue_window (NEW, PROVED, wip/rankGapPoint.lean)
+  shows the witness's cl-visible vf-growth at window-floor rank is
+  EMPTY in every residue configuration — the κ-partner forces it and
+  its trace keeps Δ;
+* re-sloping the triple cannot help: any base-spend answer needs
+  b − 1 ≥ b.
+
+So RankGapGrow either has a countermodel or needs machinery not in
+the toolbox; scale-invariance of the window across all routes is
+itself evidence the question is sharp.  A countermodel must have
+NON-ROW-RIGID M-rows (else rankGap_of_rowRigid applies) — and the §51
+deep battery was entirely row-rigid, so THE GROW CASE HAS NEVER BEEN
+EXERCISED empirically.  wip/mwit_deep.lean extended: non-row-rigid
+lifted ladders (dense base Rₘ-chains), dense random frames, and a
+u' ≠ m split in every verdict column — the first probe aimed at
+RankGapGrow itself.

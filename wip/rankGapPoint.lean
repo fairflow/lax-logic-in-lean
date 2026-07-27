@@ -222,6 +222,40 @@ theorem mwitResidue_ranked_of_rowRigid (hPK : POnly p K) (hPM : POnly p M)
     MwitResidue cl (rankedB hPK hPM hK hM) :=
   mwitResidue_ranked_of_gap hPK hPM hK hM cl (rankGap_of_rowRigid cl hrr)
 
+/-- **The window fact** (the cl-side mirror of
+`residue_growth_boundary`, at the ranked slope): in a residue
+configuration, the witness's cl-VISIBLE variable-free growth at
+window-floor rank is EMPTY — every variable-free `D ∈ cl` of crank
+`≤ rslope (2d − 1)` forced by `u'` already lies in `Δ.val` (the
+κ-partner forces it too and its trace keeps `Δ`).  Consequences:
+(a) any witness growth that could finance a GROWN answer through a
+closure enlarged with low-rank representatives is already absent —
+the enlargement bootstrap also fails for a second reason: the rank it
+needs (`rslope (2·|cl|)`) grows faster in `|cl|` than any finite
+representative stock can close (the fragment is infinite, two fresh
+classes per crank); (b) with `rankGap_of_grow`, EVERY attack now
+reduces to the single window `(rslope (2d−1), rslope (2d)]`: the
+backward reflection is capped at `rslope (2d) − 3` by the base link,
+witness growth below the window is contradictory (this lemma), and a
+base-spend same-trace answer would need `b − 1 ≥ b`.  The window is
+scale-invariant across all routes — either it is uncrossable and
+`RankGapGrow` has a countermodel (necessarily with NON-ROW-RIGID
+`M`-rows and deep variable-free structure: note the §51 battery was
+row-rigid, so the grow case is EMPTY there and untested), or crossing
+it needs machinery not yet in the toolbox. -/
+theorem residue_window {cl : Finset PLLFormula}
+    {Δ : (canonFinC cl).W} {k κ : K.W} {m u' : M.W}
+    (hΔk : (traceT K cl k).val = Δ.1.val)
+    (hZκ : bandAgree (rslope (2 * canonDepthC cl Δ - 1)) K M κ u')
+    (hκsame : (traceT K cl κ).val = Δ.1.val)
+    {D : PLLFormula} (hDcl : D ∈ cl) (hDa : D.atoms = ∅)
+    (hDc : crank D ≤ rslope (2 * canonDepthC cl Δ - 1))
+    (hu'D : M.force u' D) : D ∈ Δ.1.val := by
+  have hκD : K.force κ D := (hZκ D hDa hDc).mpr hu'D
+  have : D ∈ (traceT K cl κ).val := mem_traceT_val.mpr ⟨hDcl, hκD⟩
+  rw [hκsame] at this
+  exact this
+
 /-! ## 3. The case split: the open Prop shrinks to the grow case -/
 
 /-- **The residual open Prop**: the configurations in which EVERY
@@ -304,6 +338,12 @@ info: 'PLLND.SemUI.mwitResidue_ranked_of_rowRigid' depends on axioms: [propext, 
 -/
 #guard_msgs in
 #print axioms mwitResidue_ranked_of_rowRigid
+
+/--
+info: 'PLLND.SemUI.residue_window' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms residue_window
 
 /--
 info: 'PLLND.SemUI.rankGap_of_grow' depends on axioms: [propext, Classical.choice, Quot.sound]
