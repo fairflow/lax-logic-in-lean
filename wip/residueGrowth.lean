@@ -233,6 +233,7 @@ theorem residue_config_satisfiable :
       PLLFormula.falsePLL ∉ Δ.1.val ∧
       (traceT K cl k).val = Δ.1.val ∧
       (traceT K cl k').val = Δ.1.val ∧
+      K.Ri k' k ∧
       M.Ri m' m ∧ M.Rm m u ∧ u ∉ M.F ∧
       B.Z (2 * canonDepthC cl Δ + 1) k' m' ∧
       B.Z (2 * canonDepthC cl Δ) k m ∧
@@ -243,7 +244,7 @@ theorem residue_config_satisfiable :
   refine ⟨chainP, chainP, fullE.toWit, clP, chainP_confluent,
     traceC chainP_confluent clP false, false, false, true, false,
     false, false, true,
-    clP_subClosed, ?_, rfl, rfl, .inl rfl, .inr ⟨rfl, rfl⟩, ?_,
+    clP_subClosed, ?_, rfl, rfl, .inl rfl, .inl rfl, .inr ⟨rfl, rfl⟩, ?_,
     trivial, trivial, .inr ⟨rfl, rfl⟩, trivial, ?_, .inl rfl, trivial, rfl⟩
   · intro h
     exact (mem_traceT_val.mp h).2.elim
@@ -311,6 +312,7 @@ theorem residue_config_example_resolves :
     | ifThen a b =>
         simp [clP] at hχcl
   · exact .proper true true true rfl rfl (chainP.refl_i true) trivial trivial
+      (chainP.refl_i true)
 
 
 /-- **The fixpoint-regime rescue**: if the level hierarchy has collapsed
@@ -328,10 +330,11 @@ theorem mforthResidue_of_stabilised (cl : Finset PLLFormula)
       B.Z (2 * canonDepthC cl Δ - 1) κ u →
       B.Z (2 * canonDepthC cl Δ) κ u) :
     MforthResidue cl B := by
-  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' him hmu huF hZ' hZ
+  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' hik him hmu huF hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
   exact ⟨Δ, (canonFinC cl).refl_m Δ,
-    .proper k' κ m' hκsame hΔk' (M.trans_i him (M.sub_mi hmu)) hZ' (h hZκ)⟩
+    .proper k' κ m' hκsame hΔk' (M.trans_i him (M.sub_mi hmu)) hZ' (h hZκ)
+      (K.trans_i hik (K.sub_mi hkκ))⟩
 
 /--
 info: 'PLLND.SemUI.mforthResidue_of_stabilised' depends on axioms: [propext, Classical.choice, Quot.sound]

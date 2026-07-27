@@ -7,21 +7,28 @@ Branch `ui-confluence`.  Four results toward the open Prop, driven by
 the deep-probe finding (PROGRESS §51: the descending window is clean,
 with full-rank same-trace partners existing POINTWISE).
 
-## 1. The ∀∃-descent — a genuinely new transfer move
+## 1. The square descent — a genuinely new transfer move
 
 Every previous transfer moved formulas ACROSS a link and produced
 witnesses in the row of the link's own world; the residue needs
 witnesses in the row of `m`, one i-step BELOW the reservoir.  The
 move: a box forced at the reservoir's K-side world `k'` (bare
-possibility over `k'`'s row — costing nothing but K-confluence)
-crosses the reservoir link at its FULL rank `rslope (2d+1) = 2·rslope
-(2d) + 3`, and the `∀∃` clause of ◯ at `m'` then EVALUATES DOWNWARD
-at the i-successor `m` — yielding a witness INSIDE `m`'s row.
+possibility over `k'`'s row) crosses the reservoir link at its FULL
+rank `rslope (2d+1) = 2·rslope (2d) + 3`; bare possibility in `M`
+realises it in `row(m')`; and the confluence square over
+(`Rₘ m' u₀`, `Rᵢ m' m`) pushes the witness DOWN into `row(m)`,
+persistence carrying the character.  "Descent" = push-down of a
+row-witness along `Rᵢ` through a confluence square — CONFLUENCE-
+NATIVE, consuming no ∀-half of ◯'s `∀∃` clause (the register note on
+`reservoir_row_cover` records why that matters).
 `reservoir_row_cover`: every world of `row(k')` has its positive
 rank-α character realised by a member of `row(m)`, for α up to
 `rslope (2d+1) − 3` — far ABOVE the missing window.
 `reservoir_row_cover_witness` merges the covering witness with the
-ψ-witness by the confluence square in `M` (persistence keeps both).
+ψ-witness by a second square (persistence keeps both).
+`row_push_down`: the K-side mirror enabled by the reinstated triple
+edge `k' Rᵢ k` — `row(k')`-witnesses push into `row(k)` with NO link
+crossing at all (all ranks at once, pure persistence).
 
 ## 2. What is now PROVED
 
@@ -48,11 +55,19 @@ M-row mirror of `residue_growth_boundary`'s wall).  Meanwhile §1
 covers `row(k')`-types at ranks far above the window, but its output
 cannot be reflected back (the backward leg would need a box at `m'`,
 and boxes at `m'` need witnesses in `row(m')`, which the
-configuration does not supply).  The designed next step: reinstate
-the dropped K-side edge `k' Rᵢ k` in `WitTripleC` (checkably
-maintainable through every constructor in use) — then boxes at `k'`
-also evaluate downward INTO `row(k)`, giving the two-sided saturation
-the maximal-type ascent needs to terminate at an exact match.
+configuration does not supply).  2026-07-27 afternoon: the K-side
+edge `k' Rᵢ k` IS REINSTATED in `WitTripleC` (threaded through every
+constructor, residue Prop and bridge; whole tree green), and the
+two-sided saturation is packaged as `config_two_sided_saturation`:
+over a residue configuration, every world of `row(k')` is pushed into
+`row(k)` (K-side square) AND covered inside `row(m)` by a ψ-carrying
+witness (reservoir crossing + M-side squares), at every rank up to
+`rslope (2d+1) − 3`.  What is still missing for an exact-type match —
+and hence all that now stands between `RankGapGrow` and closure — is
+the BACKWARD leg: reflecting `row(m)`-types into `row(k')`.  Probe
+note: the configuration funnels of wip/mwit_probe.lean and
+wip/mwit_deep.lean do not test `k' Rᵢ k`, so their clean verdicts
+cover a SUPERSET of the reinstated configurations a fortiori.
 -/
 
 open PLLFormula
@@ -75,12 +90,25 @@ theorem bandAgree_trans_mid {r : Nat} {k : K.W} {m u : M.W}
 
 /-! ## 1. The ∀∃-descent -/
 
-/-- **The ∀∃-descent**: a positive character boxed at the reservoir's
-K-side world crosses the reservoir link and evaluates, through the
-`∀∃` clause of ◯, at the i-successor `m` — realising every
-`row(k')`-type inside `row(m)`.  Only `K` need be confluent. -/
+/-- **The square descent** (the row push-down): a positive character
+boxed at the reservoir's K-side world crosses the reservoir link at
+its full rank, BARE POSSIBILITY in `M` realises it in `row(m')`, and
+the confluence square over (`Rₘ m' u₀`, `Rᵢ m' m`) pushes the witness
+down into `row(m)`, persistence carrying the character — realising
+every `row(k')`-type inside `row(m)`.
+
+REGISTER NOTE (Matthew's design constraint, 2026-07-27): the same
+conclusion follows in one step from the raw ∀-half of ◯'s `∀∃` clause
+applied at the successor `m` — but that clause is exactly the
+adversarial quantifier the PCLL/confluent programme exists to avoid
+(it is the UI-killing mechanism of S4/iK4), and a proof consuming it
+irreducibly would hold over the WRONG model class.  This proof
+consumes only bare possibility, one confluence square, and
+persistence — confluence-native, like every other transfer in the
+route.  "Descent" means, precisely: push-down of a row-witness along
+`Rᵢ` through a confluence square. -/
 theorem reservoir_row_cover {α β : Nat} (hαβ : α + 3 ≤ β)
-    (hK : MutuallyConfluent K)
+    (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
     {k' : K.W} {m' m : M.W}
     (hZ' : bandAgree β K M k' m') (him : M.Ri m' m)
     {L : List PLLFormula}
@@ -104,11 +132,15 @@ theorem reservoir_row_cover {α β : Nat} (hαβ : α + 3 ≤ β)
       exact hχa
     · show crank χ + 2 ≤ β
       omega
-  -- the ∀∃ clause of ◯ at the i-successor m: a witness IN m's row
-  obtain ⟨y, hmy, hyχ⟩ := hm'box m him
+  -- bare possibility in M: a χ-witness in m''s row
+  rw [force_somehow_iff_of_confluent hM] at hm'box
+  obtain ⟨u₀, hm'u₀, hu₀χ⟩ := hm'box
+  -- the confluence square pushes it down into m's row
+  obtain ⟨y, hu₀y, hmy⟩ := hM hm'u₀ him
   refine ⟨y, hmy, fun D hD hxD => ?_⟩
-  exact (force_bigAnd_iff M y _).mp hyχ D
-    (List.mem_filter.mpr ⟨hD, decide_eq_true hxD⟩)
+  exact M.force_hered hu₀y
+    ((force_bigAnd_iff M u₀ _).mp hu₀χ D
+      (List.mem_filter.mpr ⟨hD, decide_eq_true hxD⟩))
 
 /-- The ∀∃-descent, merged with the ψ-witness by the confluence square
 in `M`: the covering row-member can be taken to force ψ as well
@@ -123,11 +155,46 @@ theorem reservoir_row_cover_witness {α β : Nat} (hαβ : α + 3 ≤ β)
     {x : K.W} (hx : K.Rm k' x) :
     ∃ y : M.W, M.Rm m y ∧ M.force y ψ ∧
       ∀ D ∈ L, K.force x D → M.force y D := by
-  obtain ⟨y0, hmy0, hcov⟩ := reservoir_row_cover hαβ hK hZ' him hL hx
+  obtain ⟨y0, hmy0, hcov⟩ := reservoir_row_cover hαβ hK hM hZ' him hL hx
   obtain ⟨y, hy0y, hu'y⟩ := hM hmy0 (M.sub_mi hmu')
   exact ⟨y, M.trans_m hmu' hu'y,
     M.force_hered (M.sub_mi hu'y) hψ,
     fun D hD hxD => M.force_hered hy0y (hcov D hD hxD)⟩
+
+/-- **The K-side push-down**: with the reinstated triple edge
+`k' Rᵢ k`, every `row(k')`-witness pushes into `row(k)` by one
+confluence square — no link crossing, no rank cap, pure persistence
+along `Rᵢ x z`. -/
+theorem row_push_down {C : ConstraintModel} (hC : MutuallyConfluent C)
+    {k' k x : C.W} (hik : C.Ri k' k) (hx : C.Rm k' x) :
+    ∃ z : C.W, C.Rm k z ∧ C.Ri x z := by
+  obtain ⟨z, hxz, hkz⟩ := hC hx hik
+  exact ⟨z, hkz, hxz⟩
+
+/-- **The two-sided saturation** (enabled by the reinstated edge): in
+a ranked residue configuration, every world of `row(k')` is
+simultaneously pushed into `row(k)` by the K-side square AND covered
+inside `row(m)` by a ψ-carrying witness, at every rank
+`α ≤ rslope (2d+1) − 3`.  Both rows saturate over `row(k')`'s types —
+the geometry the maximal-type ascent needs; the missing exact-match
+ingredient (the backward leg) is now the entire content of
+`RankGapGrow`. -/
+theorem config_two_sided_saturation {α : Nat}
+    (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
+    {cl : Finset PLLFormula} {Δ : (canonFinC cl).W}
+    {k' k : K.W} {m' m u' : M.W} {ψ : PLLFormula}
+    (hik : K.Ri k' k) (him : M.Ri m' m)
+    (hmu' : M.Rm m u') (hψ : M.force u' ψ)
+    (hαβ : α + 3 ≤ rslope (2 * canonDepthC cl Δ + 1))
+    (hZ' : bandAgree (rslope (2 * canonDepthC cl Δ + 1)) K M k' m')
+    {L : List PLLFormula}
+    (hL : ∀ D ∈ L, crank D ≤ α ∧ ∀ a ∈ D.atoms, a ∈ (∅ : Finset String))
+    {x : K.W} (hx : K.Rm k' x) :
+    (∃ z : K.W, K.Rm k z ∧ K.Ri x z) ∧
+    (∃ y : M.W, M.Rm m y ∧ M.force y ψ ∧
+      ∀ D ∈ L, K.force x D → M.force y D) :=
+  ⟨row_push_down hK hik hx,
+   reservoir_row_cover_witness hαβ hK hM hZ' him hmu' hψ hL hx⟩
 
 /-! ## 2. Proved cases of `RankGap` -/
 
@@ -142,11 +209,11 @@ a theorem: the given witness IS `m`, and `kb := k` closes by the base
 link. -/
 theorem rankGap_of_rowRigid (cl : Finset PLLFormula) (hrr : RowRigid M) :
     RankGap K M cl := by
-  intro Δ k' k kv κ m' m u' ψ _hbot hΔk _hΔk' _him hmu' hψ hu'F _hZ' hZ
+  intro Δ k' k kv κ m' m u' ψ _hbot hΔk _hΔk' hik _him hmu' hψ hu'F _hZ' hZ
     _hk'kv _hZkv _hsame _hkκ _hZκ _hκsame
   have hum : u' = m := hrr hmu' hu'F
   subst hum
-  exact ⟨k, u', hΔk, hmu', hψ, hZ⟩
+  exact ⟨k, u', hΔk, hik, hmu', hψ, hZ⟩
 
 /-- `MwitResidue` for the ranked link over a row-rigid base — PROVED. -/
 theorem mwitResidue_ranked_of_rowRigid (hPK : POnly p K) (hPM : POnly p M)
@@ -167,6 +234,7 @@ def RankGapGrow (K M : ConstraintModel) (cl : Finset PLLFormula) : Prop :=
     PLLFormula.falsePLL ∉ Δ.1.val →
     (traceT K cl k).val = Δ.1.val →
     (traceT K cl k').val = Δ.1.val →
+    K.Ri k' k →
     M.Ri m' m → M.Rm m u' → M.force u' ψ → u' ∉ M.F →
     bandAgree (rslope (2 * canonDepthC cl Δ + 1)) K M k' m' →
     bandAgree (rslope (2 * canonDepthC cl Δ)) K M k m →
@@ -179,7 +247,8 @@ def RankGapGrow (K M : ConstraintModel) (cl : Finset PLLFormula) : Prop :=
     (∀ u'' : M.W, M.Rm m u'' → M.force u'' ψ →
       bandAgree (rslope (2 * canonDepthC cl Δ)) M M m u'' → False) →
     ∃ (kb : K.W) (u'' : M.W),
-      (traceT K cl kb).val = Δ.1.val ∧ M.Rm m u'' ∧ M.force u'' ψ ∧
+      (traceT K cl kb).val = Δ.1.val ∧ K.Ri k' kb ∧
+      M.Rm m u'' ∧ M.force u'' ψ ∧
       bandAgree (rslope (2 * canonDepthC cl Δ)) K M kb u''
 
 /-- **The case split**: a handler for the grow case yields the full
@@ -187,13 +256,13 @@ gap — in the stable case some witness adds nothing at rank
 `rslope (2d)` and `kb := k` closes through the base link. -/
 theorem rankGap_of_grow (cl : Finset PLLFormula)
     (h : RankGapGrow K M cl) : RankGap K M cl := by
-  intro Δ k' k kv κ m' m u' ψ hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ
+  intro Δ k' k kv κ m' m u' ψ hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
   by_cases hstab : ∃ u'' : M.W, M.Rm m u'' ∧ M.force u'' ψ ∧
       bandAgree (rslope (2 * canonDepthC cl Δ)) M M m u''
   · obtain ⟨u'', h1, h2, h3⟩ := hstab
-    exact ⟨k, u'', hΔk, h1, h2, bandAgree_trans_mid hZ h3⟩
-  · exact h hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ
+    exact ⟨k, u'', hΔk, hik, h1, h2, bandAgree_trans_mid hZ h3⟩
+  · exact h hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ
       hκsame (fun u'' h1 h2 h3 => hstab ⟨u'', h1, h2, h3⟩)
 
 /-- The end-to-end summary: the grow case is all that separates the
@@ -217,6 +286,12 @@ info: 'PLLND.SemUI.reservoir_row_cover_witness' depends on axioms: [propext, Cla
 -/
 #guard_msgs in
 #print axioms reservoir_row_cover_witness
+
+/--
+info: 'PLLND.SemUI.config_two_sided_saturation' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms config_two_sided_saturation
 
 /--
 info: 'PLLND.SemUI.rankGap_of_rowRigid' depends on axioms: [propext, Classical.choice, Quot.sound]

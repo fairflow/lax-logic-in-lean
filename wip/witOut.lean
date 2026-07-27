@@ -212,6 +212,7 @@ def MwitResidue : Prop :=
     PLLFormula.falsePLL ∉ Δ.1.val →
     (traceT K cl k).val = Δ.1.val →
     (traceT K cl k').val = Δ.1.val →
+    K.Ri k' k →
     M.Ri m' m → M.Rm m u' → M.force u' ψ → u' ∉ M.F →
     B.Z (2 * canonDepthC cl Δ + 1) k' m' →
     B.Z (2 * canonDepthC cl Δ) k m →
@@ -226,9 +227,9 @@ def MwitResidue : Prop :=
 adversarially.  The witness-form pipeline is never harder. -/
 theorem mwitResidue_of_mforthResidue (h : MforthResidue cl B) :
     MwitResidue cl B := by
-  intro hK Δ k' k kv κ m' m u' ψ hcl hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ
+  intro hK Δ k' k kv κ m' m u' ψ hcl hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
-  obtain ⟨Δ', hRm, htrip⟩ := h hK hcl hbot hΔk hΔk' him hmu' hu'F hZ' hZ
+  obtain ⟨Δ', hRm, htrip⟩ := h hK hcl hbot hΔk hΔk' hik him hmu' hu'F hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
   exact ⟨u', Δ', hmu', hψ, hRm, htrip⟩
 
@@ -240,10 +241,11 @@ theorem mwitResidue_of_stabilised
       B.Z (2 * canonDepthC cl Δ - 1) κ u →
       B.Z (2 * canonDepthC cl Δ) κ u) :
     MwitResidue cl B := by
-  intro hK Δ k' k kv κ m' m u' ψ _hcl hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ
+  intro hK Δ k' k kv κ m' m u' ψ _hcl hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
   exact ⟨u', Δ, hmu', hψ, (canonFinC cl).refl_m Δ,
-    .proper k' κ m' hκsame hΔk' (M.trans_i him (M.sub_mi hmu')) hZ' (h hZκ)⟩
+    .proper k' κ m' hκsame hΔk' (M.trans_i him (M.sub_mi hmu')) hZ' (h hZκ)
+      (K.trans_i hik (K.sub_mi hkκ))⟩
 
 /-- **The witness-form ◯-maintenance**: an M-row witness for `ψ` is
 answered by SOME M-row witness for `ψ` carried by a canonical
@@ -265,7 +267,7 @@ theorem witTriple_mwit (hcl : SubClosed cl) (hK : MutuallyConfluent K)
   | top hbot hmF =>
       exact ⟨u, Δ, hmu, huψ, (canonFinC cl).refl_m Δ,
         .top hbot (M.hered_F (M.sub_mi hmu) hmF)⟩
-  | proper k' k m' hΔk hΔk' him hZ' hZ =>
+  | proper k' k m' hΔk hΔk' him hZ' hZ hik =>
       by_cases hbot : PLLFormula.falsePLL ∈ Δ.1.val
       · -- the top-val proper triple is secretly fallible on both sides
         have hkF : k ∈ K.F := by
@@ -308,9 +310,9 @@ theorem witTriple_mwit (hcl : SubClosed cl) (hK : MutuallyConfluent K)
               · by_cases hsame : (traceT K cl kv).val = Δ.1.val
                 · -- CASE A: same-trace regeneration answers reflexively
                   exact ⟨u₁, Δ, hmu₁, hu₁ψ, (canonFinC cl).refl_m Δ,
-                    .proper k' kv m' hsame hΔk' hm'u₁ hZ' hZkv⟩
+                    .proper k' kv m' hsame hΔk' hm'u₁ hZ' hZkv hk'kv⟩
                 · -- THE WITNESS RESIDUE
-                  exact hres hK hcl hbot hΔk hΔk' him hmu₁ hu₁ψ hu₁F hZ' hZ
+                  exact hres hK hcl hbot hΔk hΔk' hik him hmu₁ hu₁ψ hu₁F hZ' hZ
                     hk'kv hZkv hsame hkκ hZκ hκsame
               · exact absurd hu₁F' hu₁F
           · -- the K-partner grows: the depth drop finances a fresh triple
@@ -324,7 +326,8 @@ theorem witTriple_mwit (hcl : SubClosed cl) (hK : MutuallyConfluent K)
               canonDepthC_lt hsub (fun h => hκsame h.symm)
             exact ⟨u₁, traceC hK cl κ, hmu₁, hu₁ψ, hRmκ κ hkκ,
               .proper κ κ u₁ rfl rfl (M.refl_i u₁)
-                (B.mono_le (by omega) hZκ) (B.mono_le (by omega) hZκ)⟩
+                (B.mono_le (by omega) hZκ) (B.mono_le (by omega) hZκ)
+                (K.refl_i κ)⟩
         · -- the clause escaped: fallible pair, top at the partner's trace
           exact ⟨u₁, traceC hK cl κ, hmu₁, hu₁ψ, hRmκ κ hkκ,
             .top (mem_traceT_val.mpr
@@ -384,7 +387,7 @@ theorem amalgamation_assembledW (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
   have hd₀ := canonDepthC_le cl Δ₀
   have htrip : WitTripleC cl B Δ₀ m₀ :=
     .proper k₀ k₀ m₀ rfl rfl (M.refl_i m₀)
-      (B.mono_le (by omega) hB) (B.mono_le (by omega) hB)
+      (B.mono_le (by omega) hB) (B.mono_le (by omega) hB) (K.refl_i k₀)
   obtain ⟨C, hC⟩ := wit_pbisimW cl B hcl hK hmw hres
   refine ⟨witAmalgamC cl B, C, ⟨(Δ₀, m₀), htrip⟩,
     hC ⟨(Δ₀, m₀), htrip⟩, ?_, ?_⟩

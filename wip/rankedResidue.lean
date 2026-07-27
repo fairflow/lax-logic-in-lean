@@ -101,6 +101,7 @@ def RankGap (K M : ConstraintModel) (cl : Finset PLLFormula) : Prop :=
     PLLFormula.falsePLL ∉ Δ.1.val →
     (traceT K cl k).val = Δ.1.val →
     (traceT K cl k').val = Δ.1.val →
+    K.Ri k' k →
     M.Ri m' m → M.Rm m u' → M.force u' ψ → u' ∉ M.F →
     bandAgree (rslope (2 * canonDepthC cl Δ + 1)) K M k' m' →
     bandAgree (rslope (2 * canonDepthC cl Δ)) K M k m →
@@ -111,7 +112,8 @@ def RankGap (K M : ConstraintModel) (cl : Finset PLLFormula) : Prop :=
     bandAgree (rslope (2 * canonDepthC cl Δ - 1)) K M κ u' →
     (traceT K cl κ).val = Δ.1.val →
     ∃ (kb : K.W) (u'' : M.W),
-      (traceT K cl kb).val = Δ.1.val ∧ M.Rm m u'' ∧ M.force u'' ψ ∧
+      (traceT K cl kb).val = Δ.1.val ∧ K.Ri k' kb ∧
+      M.Rm m u'' ∧ M.force u'' ψ ∧
       bandAgree (rslope (2 * canonDepthC cl Δ)) K M kb u''
 
 /-- **The bridge**: the gap pays the residue — the reflexive canonical
@@ -120,12 +122,12 @@ theorem mwitResidue_ranked_of_gap (hPK : POnly p K) (hPM : POnly p M)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
     (cl : Finset PLLFormula) (hgap : RankGap K M cl) :
     MwitResidue cl (rankedB hPK hPM hK hM) := by
-  intro _hK' Δ k' k kv κ m' m u' ψ _hcl hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ
+  intro _hK' Δ k' k kv κ m' m u' ψ _hcl hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
-  obtain ⟨kb, u'', hkb, hmu'', hψ'', hagr⟩ :=
-    hgap hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ hκsame
+  obtain ⟨kb, u'', hkb, hikb, hmu'', hψ'', hagr⟩ :=
+    hgap hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ hκsame
   exact ⟨u'', Δ, hmu'', hψ'', (canonFinC cl).refl_m Δ,
-    .proper k' kb m' hkb hΔk' (M.trans_i him (M.sub_mi hmu'')) hZ' hagr⟩
+    .proper k' kb m' hkb hΔk' (M.trans_i him (M.sub_mi hmu'')) hZ' hagr hikb⟩
 
 /-- **The promotion bridge** — the regime of all probe evidence:
 pointwise promotion of the κ-partner across the missing rank window
@@ -135,9 +137,9 @@ theorem rankGap_of_promotion (cl : Finset PLLFormula)
       bandAgree (rslope (2 * canonDepthC cl Δ - 1)) K M κ u →
       bandAgree (rslope (2 * canonDepthC cl Δ)) K M κ u) :
     RankGap K M cl := by
-  intro Δ k' k kv κ m' m u' ψ _hbot _hΔk _hΔk' _him hmu' hψ _hu'F _hZ' _hZ
-    _hk'kv _hZkv _hsame _hkκ hZκ hκsame
-  exact ⟨κ, u', hκsame, hmu', hψ, h hZκ⟩
+  intro Δ k' k kv κ m' m u' ψ _hbot _hΔk _hΔk' hik _him hmu' hψ _hu'F _hZ' _hZ
+    _hk'kv _hZkv _hsame hkκ hZκ hκsame
+  exact ⟨κ, u', hκsame, K.trans_i hik (K.sub_mi hkκ), hmu', hψ, h hZκ⟩
 
 /-! ## Axiom audit -/
 

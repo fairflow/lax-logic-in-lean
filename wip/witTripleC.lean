@@ -20,8 +20,9 @@ as a hypothesis.
   hands `Z (2d−1)`, and the successor needs `2d′+1 ≤ 2(d−1)+1 = 2d−1`.)
 * **Triples are an inductive with a `top` constructor**: fallible escapes
   land on canonical worlds validating `⊥` paired with fallible M-worlds.
-  Every step lemma and the truth lemma are trivial there.  The K-side edge
-  `hik` of the old structure was consumed by nothing and is dropped.
+  Every step lemma and the truth lemma are trivial there.  (2026-07-27:
+  the classical K-side edge `hik : k' Rᵢ k` is reinstated — see the
+  constructor docstring.)
 * **Same-trace ◯-moves are matched REFLEXIVELY**: `RmC` is reflexive, so an
   M-move `m ⟶Rₘ u` whose canonical theory does not grow is answered by
   `Δ′ = Δ`; the base link for `(·, u)` is regenerated from the reservoir by
@@ -264,8 +265,10 @@ worlds `k′, k` of `K` tracing (on `val`) to `Δ`, a shadow `m′ ≼ᵢ m`, wi
 the reservoir link `k′ Z_{2d+1} m′` and the base link `k Z_{2d} m`
 (`d = canonDepthC Δ`).  `top`: a canonical world validating `⊥` paired
 with a fallible M-world — where every fallible escape lands, and where all
-maintenance is trivial.  (The K-side edge `k′ ≼ᵢ k` of the classical form
-is consumed by nothing and is dropped.) -/
+maintenance is trivial.  (2026-07-27: the classical K-side edge
+`k′ ≼ᵢ k` is REINSTATED as `hik` — maintainable through every
+constructor in use, and it enables the square-descent saturation of
+wip/rankGapPoint.lean: boxes at `k'` push row-witnesses into `row(k)`.) -/
 inductive WitTripleC (cl : Finset PLLFormula)
     (B : LayeredBisimWit (fun a => a ≠ p) K M) :
     (canonFinC cl).W → M.W → Prop where
@@ -274,7 +277,8 @@ inductive WitTripleC (cl : Finset PLLFormula)
       (hΔk' : (traceT K cl k').val = Δ.1.val)
       (him : M.Ri m' m)
       (hZ' : B.Z (2 * canonDepthC cl Δ + 1) k' m')
-      (hZ : B.Z (2 * canonDepthC cl Δ) k m) :
+      (hZ : B.Z (2 * canonDepthC cl Δ) k m)
+      (hik : K.Ri k' k) :
       WitTripleC cl B Δ m
   | top {Δ : (canonFinC cl).W} {m : M.W}
       (hbot : PLLFormula.falsePLL ∈ Δ.1.val) (hmF : m ∈ M.F) :
@@ -348,6 +352,7 @@ def MforthResidue : Prop :=
     PLLFormula.falsePLL ∉ Δ.1.val →
     (traceT K cl k).val = Δ.1.val →
     (traceT K cl k').val = Δ.1.val →
+    K.Ri k' k →
     M.Ri m' m → M.Rm m u → u ∉ M.F →
     B.Z (2 * canonDepthC cl Δ + 1) k' m' →
     B.Z (2 * canonDepthC cl Δ) k m →
@@ -368,6 +373,7 @@ theorem mforthResidue_of_sameTraceBase
       PLLFormula.falsePLL ∉ Δ.1.val →
       (traceT K cl k).val = Δ.1.val →
       (traceT K cl k').val = Δ.1.val →
+      K.Ri k' k →
       M.Ri m' m → M.Rm m u → u ∉ M.F →
       B.Z (2 * canonDepthC cl Δ + 1) k' m' →
       B.Z (2 * canonDepthC cl Δ) k m →
@@ -375,15 +381,15 @@ theorem mforthResidue_of_sameTraceBase
       (traceT K cl kv).val ≠ Δ.1.val →
       K.Rm k κ → B.Z (2 * canonDepthC cl Δ - 1) κ u →
       (traceT K cl κ).val = Δ.1.val →
-      ∃ kb : K.W, (traceT K cl kb).val = Δ.1.val ∧
+      ∃ kb : K.W, (traceT K cl kb).val = Δ.1.val ∧ K.Ri k' kb ∧
         B.Z (2 * canonDepthC cl Δ) kb u) :
     MforthResidue cl B := by
-  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' hik him hmu huF hZ' hZ hk'kv hZkv
     hsame hkκ hZκ hκsame
-  obtain ⟨kb, hΔkb, hZkb⟩ := h hK hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+  obtain ⟨kb, hΔkb, hikb, hZkb⟩ := h hK hbot hΔk hΔk' hik him hmu huF hZ' hZ hk'kv hZkv
     hsame hkκ hZκ hκsame
   exact ⟨Δ, (canonFinC cl).refl_m Δ,
-    .proper k' kb m' hΔkb hΔk' (M.trans_i him (M.sub_mi hmu)) hZ' hZkb⟩
+    .proper k' kb m' hΔkb hΔk' (M.trans_i him (M.sub_mi hmu)) hZ' hZkb hikb⟩
 
 /-- **The grown-base sufficient condition** for the residue (the probe's
 rescue R2): a K-world `kb` whose trace strictly grows, carrying links at
@@ -397,6 +403,7 @@ theorem mforthResidue_of_grownBase
       PLLFormula.falsePLL ∉ Δ.1.val →
       (traceT K cl k).val = Δ.1.val →
       (traceT K cl k').val = Δ.1.val →
+      K.Ri k' k →
       M.Ri m' m → M.Rm m u → u ∉ M.F →
       B.Z (2 * canonDepthC cl Δ + 1) k' m' →
       B.Z (2 * canonDepthC cl Δ) k m →
@@ -410,12 +417,13 @@ theorem mforthResidue_of_grownBase
         B.Z (2 * canonDepthC cl (⟨traceT K cl kb, traceT_maxIn K cl kb,
           trace_backed _hK kb⟩ : (canonFinC cl).W) + 1) kb u) :
     MforthResidue cl B := by
-  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+  intro hK Δ k' k kv κ m' m u _hcl hbot hΔk hΔk' hik him hmu huF hZ' hZ hk'kv hZkv
     hsame hkκ hZκ hκsame
-  obtain ⟨kb, hsub, hant, hZkb⟩ := h hK hbot hΔk hΔk' him hmu huF hZ' hZ
+  obtain ⟨kb, hsub, hant, hZkb⟩ := h hK hbot hΔk hΔk' hik him hmu huF hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκsame
   exact ⟨traceC hK cl kb, ⟨hsub, hant⟩,
-    .proper kb kb u rfl rfl (M.refl_i u) hZkb (B.mono (B.mono_le le_rfl hZkb))⟩
+    .proper kb kb u rfl rfl (M.refl_i u) hZkb (B.mono (B.mono_le le_rfl hZkb))
+      (K.refl_i kb)⟩
 
 /-- **The vacuity route** to the residue (what the structural probe
 supports: 0 configurations over 438,075 confluent pairs, with growth
@@ -429,6 +437,7 @@ theorem mforthResidue_of_config_absurd
       PLLFormula.falsePLL ∉ Δ.1.val →
       (traceT K cl k).val = Δ.1.val →
       (traceT K cl k').val = Δ.1.val →
+      K.Ri k' k →
       M.Ri m' m → M.Rm m u → u ∉ M.F →
       B.Z (2 * canonDepthC cl Δ + 1) k' m' →
       B.Z (2 * canonDepthC cl Δ) k m →
@@ -438,9 +447,9 @@ theorem mforthResidue_of_config_absurd
       (traceT K cl κ).val = Δ.1.val →
       False) :
     MforthResidue cl B := by
-  intro hK Δ k' k kv κ m' m u hcl hbot hΔk hΔk' him hmu huF hZ' hZ hk'kv hZkv
+  intro hK Δ k' k kv κ m' m u hcl hbot hΔk hΔk' hik him hmu huF hZ' hZ hk'kv hZkv
     hsame hkκ hZκ hκsame
-  exact absurd hκsame (fun hκ => h hK hcl hbot hΔk hΔk' him hmu huF hZ' hZ
+  exact absurd hκsame (fun hκ => h hK hcl hbot hΔk hΔk' hik him hmu huF hZ' hZ
     hk'kv hZkv hsame hkκ hZκ hκ)
 
 /-! ## The step lemmas -/
@@ -457,13 +466,13 @@ theorem witTriple_iforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
   cases ht with
   | top hbot hmF =>
       exact ⟨Δ, (canonFinC cl).refl_i Δ, .top hbot (M.hered_F hmv hmF)⟩
-  | proper k' k m' hΔk hΔk' him hZ' hZ =>
+  | proper k' k m' hΔk hΔk' him hZ' hZ hik =>
       have hm'v : M.Ri m' v := M.trans_i him hmv
       rcases B.iback hZ' hm'v with ⟨kv, hk'kv, hZkv⟩ | hvF
       · by_cases hsame : (traceT K cl kv).val = Δ.1.val
         · -- same trace: reflexive canonical move, base regenerated
           exact ⟨Δ, (canonFinC cl).refl_i Δ,
-            .proper k' kv m' hsame hΔk' hm'v hZ' hZkv⟩
+            .proper k' kv m' hsame hΔk' hm'v hZ' hZkv hk'kv⟩
         · -- strict: Δ' = traceC kv, financed by the depth drop
           have hRi : Δ.1.val ⊆ (traceC hK cl kv).1.val := by
             intro φ hφ
@@ -474,7 +483,8 @@ theorem witTriple_iforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
             canonDepthC_lt hRi (fun h => hsame h.symm)
           exact ⟨traceC hK cl kv, hRi,
             .proper kv kv v rfl rfl (M.refl_i v)
-              (B.mono_le (by omega) hZkv) (B.mono_le (by omega) hZkv)⟩
+              (B.mono_le (by omega) hZkv) (B.mono_le (by omega) hZkv)
+              (K.refl_i kv)⟩
       · -- fallible escape: the canonical top
         exact ⟨canonTopC cl, ri_canonTopC Δ, .top hcl.bot hvF⟩
 
@@ -496,7 +506,7 @@ theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
   cases ht with
   | top hbot hmF =>
       exact ⟨Δ, (canonFinC cl).refl_m Δ, .top hbot (M.hered_F (M.sub_mi hmu) hmF)⟩
-  | proper k' k m' hΔk hΔk' him hZ' hZ =>
+  | proper k' k m' hΔk hΔk' him hZ' hZ hik =>
       by_cases hbot : PLLFormula.falsePLL ∈ Δ.1.val
       · -- the top-val proper triple is secretly fallible on both sides
         have hkF : k ∈ K.F := by
@@ -534,14 +544,14 @@ theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
         · by_cases hsame : (traceT K cl kv).val = Δ.1.val
           · -- CASE A: same-trace ◯-move, matched reflexively
             exact ⟨Δ, (canonFinC cl).refl_m Δ,
-              .proper k' kv m' hsame hΔk' hm'u hZ' hZkv⟩
+              .proper k' kv m' hsame hΔk' hm'u hZ' hZkv hk'kv⟩
           · -- the iback-partner grew: spend the base on mback
             rcases hmb hZbase hmu with ⟨κ, hkκ, hZκ | ⟨hκF, huF⟩⟩
             · by_cases huF : u ∈ M.F
               · exact htopκ κ hkκ ((B.fall hZκ).mpr huF) huF
               · by_cases hκsame : (traceT K cl κ).val = Δ.1.val
                 · -- THE RESIDUE: both partners degenerate
-                  exact hres hK hcl hbot hΔk hΔk' him hmu huF hZ' hZ
+                  exact hres hK hcl hbot hΔk hΔk' hik him hmu huF hZ' hZ
                     hk'kv hZkv hsame hkκ hZκ hκsame
                 · -- strict growth via the mback-partner
                   have hsub : Δ.1.val ⊆ (traceC hK cl κ).1.val := by
@@ -554,7 +564,8 @@ theorem witTriple_mforth (hcl : SubClosed cl) (hK : MutuallyConfluent K)
                     canonDepthC_lt hsub (fun h => hκsame h.symm)
                   exact ⟨traceC hK cl κ, hRmκ κ hkκ,
                     .proper κ κ u rfl rfl (M.refl_i u)
-                      (B.mono_le (by omega) hZκ) (B.mono_le (by omega) hZκ)⟩
+                      (B.mono_le (by omega) hZκ) (B.mono_le (by omega) hZκ)
+                      (K.refl_i κ)⟩
             · exact htopκ κ hkκ hκF huF
         · -- iback escape (u fallible): mback supplies the fallible K-partner
           rcases hmb hZbase hmu with ⟨κ, hkκ, hZκ | ⟨hκF, _⟩⟩
@@ -625,7 +636,7 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
           obtain ⟨hf, hm⟩ :=
             wit_force_top cl B ⟨(Δ, m), .top hbot hmF⟩ hbot hmF hφ
           exact ⟨fun _ => hm, fun _ => hf⟩
-      | proper k' k m' hΔk hΔk' him hZ' hZ =>
+      | proper k' k m' hΔk hΔk' him hZ' hZ hik =>
           have hmem : PLLFormula.prop a ∈ Δ.1.val ↔ k ∈ K.V a := by
             rw [← hΔk, mem_traceT_val]
             exact ⟨fun h => h.2, fun h => ⟨hφ, h⟩⟩
@@ -668,7 +679,7 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
       obtain ⟨⟨Δ, m⟩, htrip⟩ := q
       cases htrip with
       | top hbot hmF => exact ⟨fun _ => hbot, fun _ => hmF⟩
-      | proper k' k m' hΔk hΔk' him hZ' hZ =>
+      | proper k' k m' hΔk hΔk' him hZ' hZ hik =>
           constructor
           · intro hf
             have hkF : k ∈ K.F := (B.fall hZ).mpr hf
@@ -726,7 +737,7 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
         cases htrip with
         | top hbot hmF =>
             exact hnv (wit_force_top cl B ⟨(Δ, m), .top hbot hmF⟩ hbot hmF hφ).2
-        | proper k' k m' hΔk hΔk' him hZ' hZ =>
+        | proper k' k m' hΔk hΔk' him hZ' hZ hik =>
             by_cases hbot : PLLFormula.falsePLL ∈ Δ.1.val
             · exact hnv (Δ.2.1.ded_closed hφ (falso _
                 (SetDeriv.of_mem (Finset.mem_coe.mpr hbot))))
@@ -736,7 +747,7 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
                 have hB : ψ ∉ Δ.1.val := fun hψv => hnv
                   (Δ.2.1.ded_closed hφ (SetDeriv.deduct (SetDeriv.of_mem
                     (Set.mem_insert_of_mem _ (Finset.mem_coe.mpr hψv)))))
-                have := hf ⟨(Δ, m), .proper k' k m' hΔk hΔk' him hZ' hZ⟩
+                have := hf ⟨(Δ, m), .proper k' k m' hΔk hΔk' him hZ' hZ hik⟩
                   ((witAmalgamC cl B).refl_i _)
                   ((ihφ hφ₁ _).mpr hA)
                 exact hB ((ihψ hψ₁ _).mp this)
@@ -772,6 +783,7 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
                   have htrip₁ : WitTripleC cl B (traceC hK cl k₁) v :=
                     .proper k₁ k₁ v rfl rfl (M.refl_i v)
                       (B.mono_le (by omega) hZ₁) (B.mono_le (by omega) hZ₁)
+                      (K.refl_i k₁)
                   have hforceψ := hf ⟨(traceC hK cl k₁, v), htrip₁⟩
                     ⟨hsub, hmv⟩
                     ((ihφ hφ₁ _).mpr (mem_traceT_val.mpr ⟨hφ₁, hφk₁⟩))
@@ -806,20 +818,20 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
             exact ⟨⟨(Δ₁, m₁), .top hbot hmF⟩,
               (witAmalgamC cl B).refl_m _,
               (witAmalgamC cl B).force_of_fallible hmF⟩
-        | proper k₁' k₁ m₁' hΔk₁ hΔk₁' him₁ hZ'₁ hZ₁ =>
+        | proper k₁' k₁ m₁' hΔk₁ hΔk₁' him₁ hZ'₁ hZ₁ hik₁ =>
             by_cases hbot₁ : PLLFormula.falsePLL ∈ Δ₁.1.val
             · have hkF : k₁ ∈ K.F := by
                 have hm : PLLFormula.falsePLL ∈ (traceT K cl k₁).val := by
                   rw [hΔk₁]; exact hbot₁
                 exact (mem_traceT_val.mp hm).2
               have hmF : m₁ ∈ M.F := (B.fall hZ₁).mp hkF
-              exact ⟨⟨(Δ₁, m₁), .proper k₁' k₁ m₁' hΔk₁ hΔk₁' him₁ hZ'₁ hZ₁⟩,
+              exact ⟨⟨(Δ₁, m₁), .proper k₁' k₁ m₁' hΔk₁ hΔk₁' him₁ hZ'₁ hZ₁ hik₁⟩,
                 (witAmalgamC cl B).refl_m _,
                 (witAmalgamC cl B).force_of_fallible hmF⟩
             · have hd₁ : 1 ≤ canonDepthC cl Δ₁ := canonDepthC_pos hcl hbot₁
               by_cases hψΔ₁ : ψ ∈ Δ₁.1.val
               · -- the world is its own row-witness
-                exact ⟨⟨(Δ₁, m₁), .proper k₁' k₁ m₁' hΔk₁ hΔk₁' him₁ hZ'₁ hZ₁⟩,
+                exact ⟨⟨(Δ₁, m₁), .proper k₁' k₁ m₁' hΔk₁ hΔk₁' him₁ hZ'₁ hZ₁ hik₁⟩,
                   (witAmalgamC cl B).refl_m _,
                   (ihψ hψ₁ _).mpr hψΔ₁⟩
               · -- bare possibility in K supplies a strictly growing witness
@@ -859,6 +871,7 @@ theorem wit_forceC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
                 · have htrip₂ : WitTripleC cl B (traceC hK cl κ) u' :=
                     .proper κ κ u' rfl rfl (M.refl_i u')
                       (B.mono_le (by omega) hZκ) (B.mono_le (by omega) hZκ)
+                      (K.refl_i κ)
                   exact ⟨⟨(traceC hK cl κ, u'), htrip₂⟩, ⟨hRmΔ₁, hm₁u'⟩,
                     (ihψ hψ₁ _).mpr (mem_traceT_val.mpr ⟨hψ₁, hκψ⟩)⟩
                 · exact ⟨⟨(traceC hK cl κ, u'),
@@ -884,7 +897,7 @@ theorem amalgamation_assembledC (hcl : SubClosed cl) (hadeq : OBoxAdeq cl)
   have hd₀ := canonDepthC_le cl Δ₀
   have htrip : WitTripleC cl B Δ₀ m₀ :=
     .proper k₀ k₀ m₀ rfl rfl (M.refl_i m₀)
-      (B.mono_le (by omega) hB) (B.mono_le (by omega) hB)
+      (B.mono_le (by omega) hB) (B.mono_le (by omega) hB) (K.refl_i k₀)
   obtain ⟨C, hC⟩ := wit_pbisimC cl B hcl hK hmb hres
   refine ⟨witAmalgamC cl B, C, ⟨(Δ₀, m₀), htrip⟩,
     hC ⟨(Δ₀, m₀), htrip⟩, ?_⟩

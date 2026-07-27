@@ -1531,3 +1531,37 @@ wip/rankGapPoint.lean, all sorry-free, guards pinned:
   use) — then boxes at k' also evaluate downward into row(k), giving
   the two-sided saturation the maximal-type ascent needs to terminate
   at an exact match in the grow case.
+
+## §53 (2026-07-27) — hik REINSTATED; the square descent made confluence-native; the two-sided saturation packaged
+
+Register point first (Matthew's design constraint): the §52 "∀∃-descent"
+as first proved consumed the raw ∀-half of ◯'s ∀∃ clause — the exact
+adversarial quantifier the PCLL/confluent programme exists to avoid
+(the S4/iK4 UI-killing mechanism), and a proof consuming it
+irreducibly would hold over the WRONG model class.  Matthew right in
+principle; the move itself innocent: over the confluent class the same
+conclusion follows from bare possibility + one confluence square +
+persistence.  reservoir_row_cover REPROVED in that register (hM added;
+register note in the docstring); "descent" now means precisely:
+push-down of a row-witness along Rᵢ through a confluence square.
+
+The classical K-side edge hik : k' Rᵢ k is REINSTATED in WitTripleC —
+threaded through the constructor, every construction site
+(witTriple_iforth/mforth/mwit, wit_forceC, both assemblies), both
+residue Props (MforthResidue, MwitResidue), all bridges
+(sameTraceBase's sufficient condition now supplies K.Ri k' kb;
+stabilised bridges derive the edge by trans_i hik ∘ sub_mi), the
+config-satisfiability witness, RankGap/RankGapGrow (hypothesis + the
+K.Ri k' kb conjunct in the conclusion) and their proofs.  Whole tree
+green, every #guard_msgs audit passing.  Probe note: the §50/§51
+funnels do not test k' Rᵢ k, so their clean verdicts cover a SUPERSET
+of the reinstated configurations a fortiori.
+
+NEW: row_push_down (K-side square: row(k') pushes into row(k), no
+link crossing, all ranks) and config_two_sided_saturation — in a
+residue configuration, every world of row(k') is simultaneously
+pushed into row(k) AND covered inside row(m) by a ψ-carrying witness,
+at every rank α ≤ rslope(2d+1) − 3.  Both rows saturate over
+row(k')'s types.  The single missing ingredient for an exact-type
+match — now the entire distance between RankGapGrow and closure — is
+the BACKWARD leg: reflecting row(m)-types into row(k').
