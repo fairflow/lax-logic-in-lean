@@ -359,6 +359,64 @@ theorem rankGap_of_stableWitness (cl : Finset PLLFormula)
     h hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ hκsame
   exact ⟨k, u'', hΔk, hik, h1, h2, bandAgree_trans_mid hZ h3⟩
 
+/-- **The forced inclusion**: in a residue configuration everything
+`k` forces at full rank transfers to `kv` — persistence in `M` along
+`Rₘ m u'` (so `type u' ⊇ type m`), transported through the two
+full-rank links.  Half of the given witness's stability is free. -/
+theorem internal_inclusion {r : Nat} {k kv : K.W} {m u' : M.W}
+    (hZ : bandAgree r K M k m) (hZkv : bandAgree r K M kv u')
+    (hmu' : M.Rm m u') :
+    ∀ ρ : PLLFormula, ρ.atoms = ∅ → crank ρ ≤ r →
+      K.force k ρ → K.force kv ρ := by
+  intro ρ hρ hc hk
+  exact (hZkv ρ hρ hc).mpr
+    (M.force_hered (M.sub_mi hmu') ((hZ ρ hρ hc).mp hk))
+
+/-- **The given witness's stability is K-internal**: `u'` adds nothing
+to `m` at rank `r` iff `kv` adds nothing to `k` — the M side drops
+out entirely, and `internal_inclusion` already forces one direction.
+The minimal-type construction thereby reduces to THE GROWN PARTNER'S
+VARIABLE-FREE INVISIBILITY: `kv`'s vf theory at rank `rslope (2d)`
+equals `k`'s, its cl-trace growth being vf-invisible (p-laden).
+Probe support: 258M/258M instances; a countermodel needs a
+same-cl-trace, vf-differing K-pair COMPLETING to a full configuration
+— the config-completion probe is the designed falsifier. -/
+theorem stable_given_iff_internal {r : Nat} {k kv : K.W} {m u' : M.W}
+    (hZ : bandAgree r K M k m) (hZkv : bandAgree r K M kv u') :
+    bandAgree r M M m u' ↔ bandAgree r K K k kv :=
+  ⟨fun h ρ hρ hc =>
+    ((hZ ρ hρ hc).trans (h ρ hρ hc)).trans (hZkv ρ hρ hc).symm,
+   fun h ρ hρ hc =>
+    ((hZ ρ hρ hc).symm.trans (h ρ hρ hc)).trans (hZkv ρ hρ hc)⟩
+
+/-- **`StableWitness` from the grown partner's invisibility**: if in
+every configuration `kv` vf-agrees with `k` at full rank, the GIVEN
+witness is stable and the whole chain closes. -/
+theorem stableWitness_of_kvInvisible (cl : Finset PLLFormula)
+    (h : ∀ {Δ : (canonFinC cl).W} {k' k kv κ : K.W} {m' m u' : M.W}
+      {ψ : PLLFormula},
+      PLLFormula.falsePLL ∉ Δ.1.val →
+      (traceT K cl k).val = Δ.1.val →
+      (traceT K cl k').val = Δ.1.val →
+      K.Ri k' k →
+      M.Ri m' m → M.Rm m u' → M.force u' ψ → u' ∉ M.F →
+      bandAgree (rslope (2 * canonDepthC cl Δ + 1)) K M k' m' →
+      bandAgree (rslope (2 * canonDepthC cl Δ)) K M k m →
+      K.Ri k' kv →
+      bandAgree (rslope (2 * canonDepthC cl Δ)) K M kv u' →
+      (traceT K cl kv).val ≠ Δ.1.val →
+      K.Rm k κ →
+      bandAgree (rslope (2 * canonDepthC cl Δ - 1)) K M κ u' →
+      (traceT K cl κ).val = Δ.1.val →
+      bandAgree (rslope (2 * canonDepthC cl Δ)) K K k kv) :
+    StableWitness K M cl := by
+  intro Δ k' k kv κ m' m u' ψ hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ
+    hk'kv hZkv hsame hkκ hZκ hκsame
+  exact ⟨u', hmu', hψ,
+    (stable_given_iff_internal hZ hZkv).mpr
+      (h hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ
+        hZκ hκsame)⟩
+
 /-- The end-to-end summary: the grow case is all that separates the
 ranked link from a residue-free amalgamation. -/
 theorem mwitResidue_ranked_of_grow (hPK : POnly p K) (hPM : POnly p M)
@@ -422,6 +480,18 @@ info: 'PLLND.SemUI.rankGap_of_stableWitness' depends on axioms: [propext, Classi
 -/
 #guard_msgs in
 #print axioms rankGap_of_stableWitness
+
+/--
+info: 'PLLND.SemUI.stable_given_iff_internal' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms stable_given_iff_internal
+
+/--
+info: 'PLLND.SemUI.stableWitness_of_kvInvisible' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms stableWitness_of_kvInvisible
 
 /--
 info: 'PLLND.SemUI.mwitResidue_ranked_of_grow' depends on axioms: [propext, Classical.choice, Quot.sound]

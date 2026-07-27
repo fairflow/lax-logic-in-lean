@@ -1655,3 +1655,32 @@ which residue_window supports for the cl-visible part), or hunt its
 countermodel with a battery whose M-rows force GENUINE vf growth on
 every witness (rows into strictly-higher ladder rungs — the current
 batteries' rows aim at the fallible top or descend).
+
+## §57 (2026-07-27 night) — The minimal-type construction collapses to ONE K-internal inclusion: the grown partner's vf-invisibility
+
+The construction went further than a minimality argument.  The given
+witness u' always satisfies type u' ⊇ type m (Rₘ ⊆ Rᵢ persistence),
+so a MINIMAL witness adds nothing iff u'-style witnesses reach type m
+— and for u' itself the question is settled by the links:
+
+* internal_inclusion (PROVED): type_{r₂}(k) ⊆ type_{r₂}(kv) in every
+  configuration — half of stability is free.
+* stable_given_iff_internal (PROVED, [propext, Quot.sound]): the
+  given witness is stable at rank r ⟺ kv vf-agrees with k at rank r.
+  THE M SIDE DROPS OUT of StableWitness-via-u'.
+* stableWitness_of_kvInvisible (PROVED): if in every configuration
+  the grown iback-partner's variable-free theory at rank rslope(2d)
+  equals the base's — its cl-trace growth being vf-INVISIBLE
+  (p-laden) — then StableWitness holds and the entire chain
+  MwitResidue(ranked) ⟸ RankGap ⟸ StableWitness closes.
+
+THE OPEN KERNEL, in its sharpest form yet: kv's growth over k is
+vf-invisible at rank rslope(2d).  Kernel-checked support: the
+all-grow flag's 0/258M (which, unpacked, says exactly that u' never
+pool-grew m — equivalently kv never pool-grew k); residue_window
+covers the cl-visible part at rank ≤ rslope(2d−1).  Falsifier design
+(next): the CONFIG-COMPLETION probe — enumerate same-cl-trace,
+vf-differing K-pairs (they exist on p-decorated ladders: cl-trace
+bands are height-intervals, rungs refine them) and test whether ANY
+completes to a full configuration; whichever hypothesis blocks
+completion is the proof's missing ingredient.
