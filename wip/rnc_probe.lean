@@ -1,5 +1,6 @@
 import LaxLogic.PLLSearch
 import LaxLogic.PLLConfluentComplete
+import LaxLogic.PLLSearchConf
 
 /-!
 # RNC(◯,{}) probe: the PCLL quotient of the variable-free dictionary
@@ -72,75 +73,23 @@ def cnames : Array String := (candL.map (·.1)).toArray
 
 /-! ## PCLL certificates
 
-The refutation side: mutual confluence of a `FinCM`, computably, and
-the certificate theorem gluing `FinCM.checkB` to `derivU_sound`. -/
+The refutation side (mutual confluence of a `FinCM`, computably, and the
+certificate theorem gluing `FinCM.checkB` to `derivU_sound`) and the
+positive bridge used to live here.  They have been **promoted into the
+library** as `LaxLogic/PLLSearchConf.lean`, in the *same* namespace
+`PLLND.RNC` and with the same statements, so a PCLL user need not
+`import wip.…` any more.
 
-/-- Mutual confluence of a `FinCM` (on the reflexive closures, matching
-`toModel`): `Rₘ x w → Rᵢ x v → ∃ u, Rᵢ w u ∧ Rₘ v u`. -/
-def confB (M : FinCM) : Bool :=
-  (List.range M.n).all fun x => (List.range M.n).all fun w =>
-    (List.range M.n).all fun v =>
-      !(M.rmB x w) || !(M.riB x v) ||
-        ((List.range M.n).any fun u => M.riB w u && M.rmB v u)
+The names re-exported by that import, and used unchanged below and in
+`wip/rncCert.lean` / `wip/rncCertPos.lean`:
 
-theorem mutuallyConfluent_of_confB {M : FinCM} (hwf : M.WellFormed)
-    (h : confB M = true) : MutuallyConfluent (M.toModel hwf) := by
-  unfold MutuallyConfluent
-  intro x w v hm hi
-  simp only [confB, List.all_eq_true, List.mem_range] at h
-  have hx := h x.1 x.2 w.1 w.2 v.1 v.2
-  have hm' : M.rmB x.1 w.1 = true := hm
-  have hi' : M.riB x.1 v.1 = true := hi
-  rw [hm', hi'] at hx
-  simp only [Bool.not_true, Bool.false_or, List.any_eq_true,
-    List.mem_range] at hx
-  obtain ⟨u, hu, hb⟩ := hx
-  rw [Bool.and_eq_true] at hb
-  exact ⟨⟨u, hu⟩, hb.1, hb.2⟩
+* `confB : FinCM → Bool`, `mutuallyConfluent_of_confB`;
+* `not_derivU_of_checkConf` — the negative certificate theorem;
+* `derivU_of_proved`, `derivU_of_proved'` — the positive bridge.
 
-/-- **The PCLL refutation certificate theorem**: a checked finite
-countermodel that is mutually confluent refutes `DerivU` (PLL + the
-distribution scheme), not merely `LaxND`. -/
-theorem not_derivU_of_checkConf {M : FinCM} {w : Nat}
-    {Γ : List PLLFormula} {C : PLLFormula}
-    (hcf : confB M = true) (h : FinCM.checkB M w Γ C = true) :
-    ¬ ConfluentU.DerivU Γ C := by
-  simp only [FinCM.checkB, Bool.and_eq_true, decide_eq_true_eq,
-    List.all_eq_true, Bool.not_eq_true'] at h
-  obtain ⟨⟨⟨hwb, hlt⟩, hΓ⟩, hC⟩ := h
-  have hwf := FinCM.wellFormed_of_wellB hwb
-  intro hd
-  have hval := ConfluentU.derivU_sound hd
-    (mutuallyConfluent_of_confB hwf hcf) ⟨w, hlt⟩
-    (fun ψ hψ => (M.force_iff hwf ψ ⟨w, hlt⟩).mpr (hΓ ψ hψ))
-  rw [M.force_iff hwf C ⟨w, hlt⟩, hC] at hval
-  exact Bool.false_ne_true hval
-
-/-- The positive bridge: a PLL proof from a list of distribution
-instances is a `DerivU` certificate, whatever the instances were. -/
-theorem derivU_of_proved {Γ : List PLLFormula} {C : PLLFormula}
-    (ps : List (PLLFormula × PLLFormula))
-    (h : Nonempty (LaxND ((ps.map fun p => ConfluentU.distF p.1 p.2) ++ Γ) C)) :
-    ConfluentU.DerivU Γ C := by
-  refine ⟨ps.map fun p => ConfluentU.distF p.1 p.2, ?_, h⟩
-  intro θ hθ
-  obtain ⟨p, _, rfl⟩ := List.mem_map.mp hθ
-  exact ⟨p.1, p.2, rfl⟩
-
-/-- Variant of `derivU_of_proved` matching the probe's premise order
-(`X` before the instances). -/
-theorem derivU_of_proved' (ps : List (PLLFormula × PLLFormula))
-    {X C : PLLFormula}
-    (h : Nonempty (LaxND (X :: ps.map fun p => ConfluentU.distF p.1 p.2) C)) :
-    ConfluentU.DerivU [X] C := by
-  obtain ⟨p⟩ := h
-  refine ⟨ps.map fun p => ConfluentU.distF p.1 p.2, ?_, ⟨p.rename ?_⟩⟩
-  · intro θ hθ
-    obtain ⟨q, _, rfl⟩ := List.mem_map.mp hθ
-    exact ⟨q.1, q.2, rfl⟩
-  · intro ψ hmem
-    simp only [List.mem_cons, List.mem_append, List.mem_singleton] at hmem ⊢
-    tauto
+New there, and worth preferring over the hand-rolled battery below:
+`refuteConf?` (confluence-filtered countermodel search) and
+`WitnessConf.snippet` (paste-ready pinned theorem). -/
 
 /-! ## The confluent battery: ALL well-formed confluent frames on ≤ 4
 worlds (strict-poset `Rᵢ`, transitive `Rₘ ⊆ Rᵢ`, up-closed fallible
