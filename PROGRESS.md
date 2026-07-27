@@ -1620,3 +1620,38 @@ configurations (computable against the rung pool) is the designed
 next probe.  Balance of evidence: RankGap plausibly true outright;
 the window (§54) remains the sole theoretical obstruction, now with
 ~230M clean instances around it.
+
+## §56 (2026-07-27 night) — The all-grow flag NEVER FIRES: RankGapGrow's hypothesis empirically unsatisfiable; the open Prop becomes StableWitness
+
+wip/mwit_ag_out.txt: across 31M configurations / 258M (config,ψ)
+instances (both modes, both closures, including 4.2M non-rigid
+configurations and 5.3M live ones), the ALL-GROW flag fired ZERO
+times — every residue configuration contained a pool-stable ψ-witness
+(one adding nothing to m's variable-free theory at rank rslope(2d)).
+The winning-answer classification never ran for lack of subjects.
+
+The promotion theorem, adjudicated: promotion_iff_internal (PROVED,
+[propext, Quot.sound]) shows that with the kv-partner at full rank,
+window promotion of ANY K-world's link is a K-INTERNAL question —
+full-rank agreement with the grown kv — so "pointwise promotion at κ"
+is refutable in isolation (ladder worlds agree to rslope(2d−1) but
+not rslope(2d) at every depth) and is DEAD as a theorem target.  The
+data instead singles out:
+
+  StableWitness (NEW, the open Prop's working form): in every residue
+  configuration, SOME ψ-witness in m's row adds nothing to m's
+  variable-free theory at rank rslope(2d).  M-INTERNAL — no K-side
+  vocabulary in the conclusion.  rankGap_of_stableWitness (PROVED):
+  StableWitness ⟹ RankGap (kb := k through the base link).
+
+Ledger after tonight: MwitResidue(ranked) ⟸ RankGap ⟸ StableWitness,
+all bridges PROVED; StableWitness OPEN, supported at 258M/258M
+instances, confined by residue_window to failures whose witness
+growth lives strictly inside the rank window; RowRigid bases PROVED
+outright.  Next: either prove StableWitness (an M-internal minimal-
+witness construction — e.g. a ≤-minimal-type ψ-witness in the finite
+row, needing that minimal witnesses add nothing at rank rslope(2d),
+which residue_window supports for the cl-visible part), or hunt its
+countermodel with a battery whose M-rows force GENUINE vf growth on
+every witness (rows into strictly-higher ladder rungs — the current
+batteries' rows aim at the fallible top or descend).

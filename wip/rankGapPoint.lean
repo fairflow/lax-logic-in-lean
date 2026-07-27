@@ -323,6 +323,42 @@ theorem rankGap_of_grow (cl : Finset PLLFormula)
   · exact h hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ
       hκsame (fun u'' h1 h2 h3 => hstab ⟨u'', h1, h2, h3⟩)
 
+/-- **The stable-witness Prop** — the form the all-grow probe singles
+out (2026-07-27 evening: its negation-shaped hypothesis fired on ZERO
+of 258M instances across 31M configurations): in every residue
+configuration, SOME ψ-witness in `m`'s row adds nothing to `m`'s
+variable-free theory at rank `rslope (2d)`.  M-INTERNAL: no K-side
+vocabulary in the conclusion. -/
+def StableWitness (K M : ConstraintModel) (cl : Finset PLLFormula) : Prop :=
+  ∀ {Δ : (canonFinC cl).W} {k' k kv κ : K.W} {m' m u' : M.W}
+    {ψ : PLLFormula},
+    PLLFormula.falsePLL ∉ Δ.1.val →
+    (traceT K cl k).val = Δ.1.val →
+    (traceT K cl k').val = Δ.1.val →
+    K.Ri k' k →
+    M.Ri m' m → M.Rm m u' → M.force u' ψ → u' ∉ M.F →
+    bandAgree (rslope (2 * canonDepthC cl Δ + 1)) K M k' m' →
+    bandAgree (rslope (2 * canonDepthC cl Δ)) K M k m →
+    K.Ri k' kv →
+    bandAgree (rslope (2 * canonDepthC cl Δ)) K M kv u' →
+    (traceT K cl kv).val ≠ Δ.1.val →
+    K.Rm k κ →
+    bandAgree (rslope (2 * canonDepthC cl Δ - 1)) K M κ u' →
+    (traceT K cl κ).val = Δ.1.val →
+    ∃ u'' : M.W, M.Rm m u'' ∧ M.force u'' ψ ∧
+      bandAgree (rslope (2 * canonDepthC cl Δ)) M M m u''
+
+/-- **`RankGap` from the stable witness**: `kb := k` closes by
+transitivity through the base link — the positive branch of the case
+split, now fed by the empirically universal Prop. -/
+theorem rankGap_of_stableWitness (cl : Finset PLLFormula)
+    (h : StableWitness K M cl) : RankGap K M cl := by
+  intro Δ k' k kv κ m' m u' ψ hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ
+    hk'kv hZkv hsame hkκ hZκ hκsame
+  obtain ⟨u'', h1, h2, h3⟩ :=
+    h hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ hκsame
+  exact ⟨k, u'', hΔk, hik, h1, h2, bandAgree_trans_mid hZ h3⟩
+
 /-- The end-to-end summary: the grow case is all that separates the
 ranked link from a residue-free amalgamation. -/
 theorem mwitResidue_ranked_of_grow (hPK : POnly p K) (hPM : POnly p M)
@@ -380,6 +416,12 @@ info: 'PLLND.SemUI.rankGap_of_grow' depends on axioms: [propext, Classical.choic
 -/
 #guard_msgs in
 #print axioms rankGap_of_grow
+
+/--
+info: 'PLLND.SemUI.rankGap_of_stableWitness' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms rankGap_of_stableWitness
 
 /--
 info: 'PLLND.SemUI.mwitResidue_ranked_of_grow' depends on axioms: [propext, Classical.choice, Quot.sound]
