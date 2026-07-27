@@ -1420,3 +1420,54 @@ configurations to p-laden/boundary-crank growth whose ◯-anticipation
 fails; the §42 probe battery re-aimed at the witness form); (ii) the
 spec layer over PBisimWit (IsSemExW) and the PCLL UI statement it
 feeds.
+
+## §50 (2026-07-27) — The residue probe re-aimed at MwitResidue: clean at ~330M instances, and the open zone pinned to large models
+
+wip/mwit_probe.lean (exe mwitprobe; output wip/mwit_out.txt; control =
+the hand instance of residue_config_satisfiable, PASS).  The certified
+b.ii funnel enriched by a ψ-loop and the witness-freedom verdict
+(GIVEN / OTHER / FAIL per (configuration, ψ)), answer search extended
+by the canonical-top answer, run over TWO link families:
+
+* **mode R** — the RANKED family Z n := variable-free agreement at
+  rank rslope n over a ◯⊥-alternation pool, POnly-corrected
+  decorations, both models confluent — the exact link of the open
+  Prop MwitResidue cl (rankedB …): 131,044 pairs, 4,314,267
+  configurations per closure, 30–39M instances per closure —
+  **GIVEN = 100%, OTHER = 0, FAIL = 0**; every pair's chain stabilises
+  by level 2, live window EMPTY.
+* **mode G** — the largest lawful layered family (hard mode,
+  p unprotected), reproducing the §38 scan scale: 1,739,255 pairs,
+  ~12.2M configurations per closure (×3 ≈ the old 36.5M), 85–109M
+  instances per closure — **GIVEN = 100%, OTHER = 0, FAIL = 0**;
+  stabilisation by level ≤ 3, live window EMPTY, 0 monotonicity
+  violations.
+
+READING (three facts, kept distinct): (1) MwitResidue is UNREFUTED at
+~330M instances across both families — no counterexample candidate
+exists at ≤7 worlds.  (2) The witness freedom was NEVER exercised
+(OTHER = 0): at battery scale every configuration already resolves at
+the given witness, so the probe shows the re-typing SAFE but not yet
+NECESSARY — its value remains the strictly weaker Prop and the
+BandMback elimination, plus whatever the large-model regime holds.
+(3) The live window is empty in both modes: every reachable
+configuration sits at stabilised link levels, where
+mwitResidue_of_stabilised is a THEOREM — so the entire open content
+of MwitResidue is confined to the strictly-descending regime, which
+(by the ladder-needs-depth fact of wip/rnEmbed.lean: rung k needs
+~k/2 worlds) requires models beyond any small battery.  The open Prop
+stays OPEN with its geography sharpened: genuinely dangerous
+configurations need LARGE confluent models whose variable-free
+agreement chain still descends at the financed levels — the infinite
+alternation-tower territory, exactly where a UI counterexample would
+have to live.
+
+Also this session: the parallel track's searcher optimisations merged
+(cherry-picks 294251b/5413696 = order-canonical ckey + global failure
+memo for the plain searcher, authorship preserved) and COMPOSED into
+the bounded searcher (budget × memo × key; failures cached only with
+budget remaining — sound because exhaustion is sticky); findBounded's
+public signature unchanged; verified by the in-tree #guard gates plus
+a 1100-sequent cross-check (0 mismatches).  Merge guidance recorded:
+belief branch → main first, then ui-confluence, resolving
+PLLG4Term.lean to the combined version; never rebase ui-confluence.

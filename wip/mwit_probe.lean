@@ -117,10 +117,16 @@ def crank2 : PLLFormula → Nat
 
 /-! ## The ψ pool and the variable-free (ranked-link) pool
 
-`rnP k` = the k-th Rieger–Nishimura rung under `p ↦ ◯⊥` (the
-kernel-checked pairwise-distinct family of wip/rnEmbed.lean):
-rn 0 = ⊥, rn 1 = ◯⊥, rn 2 = ¬◯⊥, rn (2k+3) = rn (2k+1) ∨ rn (2k+2),
-rn (2k+4) = rn (2k+3) ⊃ rn (2k+1). -/
+`rnP k`: a ladder-LIKE alternation family over ◯⊥ — rn 0 = ⊥,
+rn 1 = ◯⊥, rn 2 = ¬◯⊥, rn (2k+3) = rn (2k+1) ∨ rn (2k+2),
+rn (2k+4) = rn (2k+2) ⊃ rn (2k).  (Labelling note, post-run: the even
+recursion differs from Nishimura's rn (2k+4) = rn (2k+3) ⊃ rn (2k+1)
+from index 6 on — rn 4 = ¬¬◯⊥ agrees — so this is an alternation POOL
+climbing in crank, not the exact rung enumeration of
+wip/rnEmbed.lean.  As an agreement test set for the ranked link this
+is equally sound: any variable-free pool under-approximates full
+variable-free agreement, which is the recorded truncation caveat; the
+run output prints the exact formulas used.) -/
 def rnP : Nat → PLLFormula
   | 0 => .falsePLL
   | 1 => .somehow .falsePLL
