@@ -55,6 +55,9 @@ import LaxLogic.PLLG4UITrunc
 import LaxLogic.PLLCraig
 import LaxLogic.PLLTiming
 import LaxLogic.PLLTimingAdder
+import LaxLogic.PLLTimingRipple
+import LaxLogic.PLLTimingLookahead
+import LaxLogic.PLLAsync
 import LaxLogic.PLLDemos
 import LaxLogic.PLLExec
 import LaxLogic.PLLCtxCompleteness
