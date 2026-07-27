@@ -3,6 +3,11 @@
 *Companion to `LaxLogic/PLLDemos.lean`. Every verdict quoted here is pinned
 in that file by `#guard_msgs`, so it is re-checked on every build.*
 
+*Note: the `find` discussed below is the older **fuelled** search of
+`PLLG4Dec.lean`. For the current tooling — the fuel-free searcher
+`G4cTm.find`, the certified countermodel search, and the two-sided
+procedure `Search.decide` — see [`search-manual.md`](search-manual.md).*
+
 This development mechanises Fairtlough–Mendler Propositional Lax Logic. Two
 of its results are not just theorems but **algorithms** — a decision
 procedure and a normaliser — and both are ordinary Lean `def`s that run
