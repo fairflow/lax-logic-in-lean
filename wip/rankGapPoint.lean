@@ -88,6 +88,30 @@ theorem bandAgree_trans_mid {r : Nat} {k : K.W} {m u : M.W}
     bandAgree r K M k u :=
   fun ρ hρ hc => (h1 ρ hρ hc).trans (h2 ρ hρ hc)
 
+/-- Agreement composes through a shared M-witness into K-INTERNAL
+agreement. -/
+theorem bandAgree_internal {r : Nat} {x y : K.W} {u : M.W}
+    (h1 : bandAgree r K M x u) (h2 : bandAgree r K M y u) :
+    bandAgree r K K x y :=
+  fun ρ hρ hc => (h1 ρ hρ hc).trans (h2 ρ hρ hc).symm
+
+/-- **The promotion reduction**: with the kv-partner at full rank
+(`hZkv`), promotion of any K-world's link to `u'` across the window
+is EXACTLY a K-internal question — its full-rank agreement with the
+grown `kv`.  The M side drops out.  Consequence for the theorem
+hunt: "pointwise promotion AT κ" would assert that the same-trace
+mwitM-partner and the grown iback-partner agree at full rank INSIDE
+`K` — refutable in isolation on ladder models (worlds agreeing to
+rank `rslope (2d−1)` but not `rslope (2d)` exist at every depth,
+fragment infinitude), so the honest theorem target is `RankGap`'s
+existential form: SOME same-trace `kb` at full rank, guided by the
+all-grow probe's winning-answer distribution. -/
+theorem promotion_iff_internal {r : Nat} {κ kv : K.W} {u' : M.W}
+    (hZkv : bandAgree r K M kv u') :
+    bandAgree r K M κ u' ↔ bandAgree r K K κ kv :=
+  ⟨fun h => bandAgree_internal h hZkv,
+   fun h ρ hρ hc => (h ρ hρ hc).trans (hZkv ρ hρ hc)⟩
+
 /-! ## 1. The ∀∃-descent -/
 
 /-- **The square descent** (the row push-down): a positive character
@@ -338,6 +362,12 @@ info: 'PLLND.SemUI.mwitResidue_ranked_of_rowRigid' depends on axioms: [propext, 
 -/
 #guard_msgs in
 #print axioms mwitResidue_ranked_of_rowRigid
+
+/--
+info: 'PLLND.SemUI.promotion_iff_internal' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms promotion_iff_internal
 
 /--
 info: 'PLLND.SemUI.residue_window' depends on axioms: [propext, Classical.choice, Quot.sound]
