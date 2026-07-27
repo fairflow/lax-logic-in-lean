@@ -1471,3 +1471,30 @@ public signature unchanged; verified by the in-tree #guard gates plus
 a 1100-sequent cross-check (0 mismatches).  Merge guidance recorded:
 belief branch → main first, then ui-confluence, resolving
 PLLG4Term.lean to the combined version; never rebase ui-confluence.
+
+## §51 (2026-07-27) — The deep probe REACHES the descending regime: RankGap verified at 1.17M live instances
+
+wip/mwit_deep.lean (exe mwitdeep; output wip/mwit_deep_out.txt).  On
+the lifted ladder truncations (8/10/12 base worlds + fallible top) the
+ranked chain is STILL DESCENDING at level 5 on every one of 17,424
+confluent pairs (stab histogram: 5×17,424 — the rung-pool ceiling,
+genuine descent through rslope 4 = 45).  For the first time the LIVE
+window is occupied: 140,616 configurations with 2d−1 < stab (cl1;
+first dump: d=2, stab=5 on the 8-world lifted ladder), carrying
+1,174,068 (config,ψ) instances — GIVEN = 100%, OTHER = 0, FAIL = 0.
+Total across modes: ~51M further instances, all clean.  (Gdeep: gfp
+chains now stabilise as late as level 11 on the deep frames; its
+configurations still all sit at stabilised levels.)
+
+READING: RankGap now has direct evidence INSIDE the descending regime
+— the previously untouched zone.  The live configurations resolve at
+the given witness, meaning full-rank same-trace partners exist
+pointwise even while the global agreement chain descends.  Open
+remainder, sharpened once more: deeper d (live configs so far have
+d=2), heterogeneous pairs, and the true infinite-model limit.  The
+balance of evidence has shifted from "confined to stabilisation" to
+"RankGap plausibly TRUE in general" — the proof attempt should target
+a pointwise full-rank partner construction at residue configurations
+(the ladder models suggest the same-trace κ-partner itself carries
+full-rank agreement there), with the §50 boundary machinery
+(pOnly_V_eq_F + residue_growth_boundary) as the tool.
