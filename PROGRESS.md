@@ -1718,3 +1718,74 @@ infallible row-witness over a rank-rslope(2d)-agreeing base cannot
 realise a vf-visibly grown type (this would close kvInvisible, hence
 StableWitness, hence RankGap, hence the ranked MwitResidue — the
 entire route).  The wall, if it is one, now has exactly one brick.
+
+## §59 (2026-07-27 late) — Witness-realisability FALSE as a row-fact; the ranked route retired; the synthesis
+
+The §58(ii) abstract lemma is dead before being stated: the canonical
+model canonU itself contains infallible vf-VISIBLE row-risers.  Take a
+prime theory T of the q5-class (◯¬◯⊥ ∈ T, ¬◯⊥ ∉ T, proper): obInv T
+is a proper theory containing ¬◯⊥ — an infallible row-successor whose
+variable-free type strictly grows, exactly what witness-realisability
+must forbid.  The probes never saw it because (hand-check,
+scratchpad/handcheck.lean) the aligned battery frames were silently
+NON-CONFLUENT — the stride/parity split breaks the squares, and
+mutConf filtered the whole class out.  Verdict on the §58 fork: the
+hand-aligned countermodel is the LIVE branch (q5→q3 riser, D = ¬◯⊥,
+crank 3, d = 2, links r₁ = 21 / r₂ = 45), and the lemma branch is
+CLOSED.
+
+Stepping back (the wood): every uniformly-quantified clause this route
+posed was refuted by the ◯⊥-ladder — bandCollapse (E ≥ R+2),
+rnDict_false, and now the residue's realisability core; every
+formula-local, per-instance statement was PROVED or held at 100% over
+~330M instances.  Fragment infinitude (rnEmbed, kernel-checked) is not
+a nuisance in the bookkeeping, it IS the obstruction: no rank bound
+uniform in the closure can survive, so the residue must be quantified
+per interpolation instance (rank a function of φ), or the target logic
+must lose the ladder.  Both moves now proceed in parallel; the second
+is §60.
+
+## §60 (2026-07-27 late) — PCLL+¬◯⊥ (the infallible system): variable-free collapse, 1-variable UI, sound+complete semantics, search commands — ALL PROVED
+
+New library modules LaxLogic/PLLNoFall.lean, PLLSearchNoFall.lean
+(imported from LaxLogic.lean; manual §6; demo §6 pinned).  The system:
+DerivUNoFall Γ φ := DerivU (¬◯⊥ :: Γ) φ — axiom = persistent
+hypothesis, legitimate because every rule carries its context and the
+deduction theorem holds.  Results, all sorry-free and guard-pinned
+clean-classical:
+
+  varfree_dichotomy   every variable-free A: ⊢ A or A ⊢ ⊥.  The
+                      ◯⊥-ladder collapses to {⊥,⊤}; the axiom is used
+                      ONCE (◯-case: ◯A ⊢ ◯⊥ ⊢ ⊥); distribution is
+                      never used, so PLL+¬◯⊥ inherits the proof.
+  exUI / allUI        strongest variable-free consequence and weakest
+                      variable-free antecedent exist for EVERY φ
+                      (⊤/⊥ by consistency resp. derivability) — for
+                      1-variable φ these are ∃p.φ / ∀p.φ of the
+                      1-variable language.  UI(1pv) for PCLL+¬◯⊥ is
+                      SETTLED (positively, and trivially — the right
+                      kind of trivial: the ladder was the problem).
+  consistent          [propext] only, one-world infallible model.
+  derivUNoFall_iff_infallible_valid
+                      sound and COMPLETE for mutually confluent
+                      infallible models — canonU relativised to the
+                      proper primes containing ¬◯⊥ (obInv preserves
+                      both properties: unit gives ◯¬◯⊥, and ◯⊥ + ¬◯⊥
+                      is inconsistent; prime_extension re-used as-is,
+                      properness free from avoiding a formula).  The
+                      "take as read" model theory is now a theorem.
+  pcll_not_nobot      the extension is proper (0 ⊳ fallible 1, pinned
+                      by decide).
+
+Search: infB (no fallible worlds) joins confB as the battery filter;
+#searchNF / #refuteNF mirror #search / #refuteConf; certificate
+theorems not_derivUNoFall_of_check ([propext, Quot.sound], checked
+context is Γ alone — infallible models force the axiom) and
+derivUNoFall_of_nd ([propext]).  Showcase guard: ◯⊥ ⊢ ⊥ is
+PLL-REFUTED and NF-PROVED.
+
+Scope kept precise: exUI/allUI interpolate against VARIABLE-FREE ψ
+(the 1-variable language's p-free formulas).  Against p-free ψ over
+additional variables the property is not asserted — that is the
+≥2-variable theatre, where the 1-variable fragment (still infinite:
+the Rieger–Nishimura lattice survives ¬◯⊥) becomes the target.
