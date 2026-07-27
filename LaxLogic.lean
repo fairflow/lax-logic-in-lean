@@ -43,6 +43,8 @@ import LaxLogic.PLLG4Term
 import LaxLogic.PLLCountermodelEmit
 import LaxLogic.PLLSearch
 import LaxLogic.PLLSearchEx
+import LaxLogic.PLLSearchConf
+import LaxLogic.PLLSearchCmd
 import LaxLogic.PLLDiagram
 import LaxLogic.PLLEvidence
 import LaxLogic.PLLFinComp
@@ -55,6 +57,9 @@ import LaxLogic.PLLG4UITrunc
 import LaxLogic.PLLCraig
 import LaxLogic.PLLTiming
 import LaxLogic.PLLTimingAdder
+import LaxLogic.PLLTimingRipple
+import LaxLogic.PLLTimingLookahead
+import LaxLogic.PLLAsync
 import LaxLogic.PLLDemos
 import LaxLogic.PLLExec
 import LaxLogic.PLLCtxCompleteness
