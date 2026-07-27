@@ -1684,3 +1684,37 @@ vf-differing K-pairs (they exist on p-decorated ladders: cl-trace
 bands are height-intervals, rungs refine them) and test whether ANY
 completes to a full configuration; whichever hypothesis blocks
 completion is the proof's missing ingredient.
+
+## §58 (2026-07-27 night) — Config-completion verdict: 0/7,362 complete; the WITNESS LINK does the protecting
+
+wip/mwit_complete_out.txt (264 models, 162 confluent, 81 s):
+
+  cl1: pairs 4,043; vf-VISIBLE 3,621 (kv-adds 3,564, kv-drops 0,
+       mixed 57); blocking S0=190 S1=0 S2=0 S3=3,431 S4=0; COMPLETED 0.
+  cl3: pairs 4,202; vf-VISIBLE 3,741 (3,705/0/36);
+       blocking S0=184 S1=0 S2=0 S3=3,557 S4=0; COMPLETED 0.
+
+Three readings.  (1) kvInvisible survives its direct assault: not one
+visible pair completes to a configuration.  (2) internal_inclusion's
+prediction confirmed exactly: kv-drops pairs are ABSENT even as
+candidates (0/7,362 — persistence up Rᵢ from the common k' forbids
+dropping).  (3) The protection is concentrated in ONE hypothesis: S3
+— the witness link.  For 95% of visible pairs, k' exists, the
+reservoir partner m' exists, the base partner m exists — and then NO
+infallible u' in m's row realises kv's grown vf-type at rank
+rslope(2d).  The reservoir and base stages never block (S1 = S2 = 0).
+
+THE MECHANISM, named: witness-realisability.  A completing u' must
+realise kv's exact pool-type inside the ◯-row of a base-type
+realiser; on the batteries, grown types live at fixed ladder heights,
+rows step by fixed strides, and the band/stride/type alignment never
+occurs.  The two decisive next moves, in priority order:
+(i) the HAND-ALIGNED countermodel attempt — engineer U, the
+p-decoration and the Rₘ-stride so band boundary, vf-difference and
+row-step coincide (if it completes, kvInvisible is dead and the
+StableWitness/RankGap conclusions get their first genuine test);
+(ii) the witness-realisability lemma — prove abstractly that an
+infallible row-witness over a rank-rslope(2d)-agreeing base cannot
+realise a vf-visibly grown type (this would close kvInvisible, hence
+StableWitness, hence RankGap, hence the ranked MwitResidue — the
+entire route).  The wall, if it is one, now has exactly one brick.
