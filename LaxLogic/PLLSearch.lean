@@ -836,7 +836,7 @@ def renderCM (M : FinCM) (w? : Option Nat := none) : String :=
   let wCov := padTo covS
   let wRm := padTo rmS
   let pad (s : String) (k : Nat) : String :=
-    s ++ String.mk (List.replicate (k - s.length) ' ')
+    s ++ String.ofList (List.replicate (k - s.length) ' ')
   let line (i : Nat) : String :=
     let ats :=
       if M.fall.contains i then "⊥ (fallible)"
