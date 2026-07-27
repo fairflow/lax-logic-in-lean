@@ -1,4 +1,5 @@
 import LaxLogic.PLLSearchCmd
+import LaxLogic.PLLSearchNoFall
 
 /-!
 # A runnable companion to `docs/search-manual.md`
@@ -30,7 +31,7 @@ fails the build if they differ.  So in this file:
 One command is left unguarded, at §5.4, because its output is a twenty-world
 model; it is marked there.
 
-The sections follow §§2–6 of `docs/search-manual.md`, which explains what the
+The sections follow §§2–7 of `docs/search-manual.md`, which explains what the
 commands do and defines the vocabulary (certificate, witness, node budget,
 discover-then-pin, mutual confluence).  This file does not repeat any of that;
 it shows the same examples running.
@@ -478,7 +479,153 @@ command enforces.
 -- pinning theorem.
 #refute [premise] ⊢ goal
 
-/-! ## 6. Command-line tools (manual §6)
+/-! ## 6. PCLL + ¬◯⊥ (manual §6)
+
+The infallible system `NoFall.DerivUNoFall` — PCLL plus the single axiom
+`¬◯⊥` — has its own command pair, from `LaxLogic/PLLSearchNoFall.lean`
+(imported at the top of this file):
+
+```
+import LaxLogic.PLLSearchNoFall
+```
+
+`#searchNF` accepts a countermodel only if it is mutually confluent **and**
+has no fallible worlds, and runs the proof searcher over the axiom as an
+extra hypothesis; `#refuteNF` runs the countermodel engines alone, with the
+same double filter. -/
+
+/-! ### 6.1 The collapse showcase: `◯⊥ ⊢ ⊥`
+
+PLL refutes this sequent — a fallible top forces `◯⊥` without `⊥` (see §6.4)
+— but the infallible system proves it. -/
+
+/--
+info: sequent  ◯False ⊢ False  (PCLL+¬◯⊥)
+verdict  PROVED   (→L◯◯ ⊥L ⊥L)
+
+proof term (G4iLL″, over the axiom `¬◯⊥` as hypothesis):
+  (→L◯◯ ⊥L ⊥L)
+
+pin it:
+theorem found_nofall :
+    PLLND.NoFall.DerivUNoFall [(PLLFormula.falsePLL.somehow)] PLLFormula.falsePLL :=
+  PLLND.NoFall.derivUNoFall_of_nd (PLLND.Search.proved_sound
+    (.impLLaxLax (A := PLLFormula.falsePLL) (B := PLLFormula.falsePLL) (X := PLLFormula.falsePLL) (by decide) (by decide) (.botL (by decide)) (.botL (by decide))))
+
+#print axioms found_nofall
+-/
+#guard_msgs in
+#searchNF [(falsePLL).somehow] ⊢ falsePLL
+
+/-! ### 6.2 Pinning what §6.1 found
+
+The paste, `found_nofall` renamed. -/
+
+theorem nofall_obot_bot :
+    PLLND.NoFall.DerivUNoFall [(PLLFormula.falsePLL.somehow)] PLLFormula.falsePLL :=
+  PLLND.NoFall.derivUNoFall_of_nd (PLLND.Search.proved_sound
+    (.impLLaxLax (A := PLLFormula.falsePLL) (B := PLLFormula.falsePLL) (X := PLLFormula.falsePLL) (by decide) (by decide) (.botL (by decide)) (.botL (by decide))))
+
+/-- info: 'PLLND.SearchDemo.nofall_obot_bot' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms nofall_obot_bot
+
+/-! ### 6.3 `#refuteNF` on an underivable sequent
+
+`◯p ⊢ p` still fails without fallible worlds; the returned model is
+infallible by construction. -/
+
+/--
+info: sequent  ◯p ⊢ p  (PCLL+¬◯⊥)
+verdict  REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 0 (confluent, infallible)
+
+countermodel:
+2 worlds, refuting world 0
+  *w0  ⊑> {1}  ⊳ {1}  ⊩ —
+   w1  ⊑> {}   ⊳ {}   ⊩ p
+
+pin it:
+theorem underivable_nofall :
+    ¬ PLLND.NoFall.DerivUNoFall [((PLLFormula.prop "p").somehow)] (PLLFormula.prop "p") :=
+  PLLND.NoFall.not_derivUNoFall_of_check
+    (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide) (by decide) (by decide)
+
+#print axioms underivable_nofall
+-/
+#guard_msgs in
+#refuteNF [(prop "p").somehow] ⊢ prop "p"
+
+theorem nofall_not_obp_p :
+    ¬ PLLND.NoFall.DerivUNoFall [((PLLFormula.prop "p").somehow)] (PLLFormula.prop "p") :=
+  PLLND.NoFall.not_derivUNoFall_of_check
+    (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide) (by decide) (by decide)
+
+/-- info: 'PLLND.SearchDemo.nofall_not_obp_p' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms nofall_not_obp_p
+
+/-! ### 6.4 The trap, again
+
+`#refute` happily refutes `◯⊥ ⊢ ⊥` — with a **fallible** model, unusable
+against `DerivUNoFall`.  `#refuteNF` must decline: §6.1 proved the sequent,
+so no confluent infallible countermodel exists at all. -/
+
+/--
+info: sequent  ◯False ⊢ False
+verdict  REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 1
+
+countermodel:
+2 worlds, refuting world 0; fallible {1}
+  *w0  ⊑> {1}  ⊳ {1}  ⊩ —
+   w1  ⊑> {}   ⊳ {}   ⊩ ⊥ (fallible)
+
+pin it:
+theorem underivable :
+    ¬ Nonempty (LaxND [(PLLFormula.falsePLL.somehow)] PLLFormula.falsePLL) :=
+  FinCM.not_provable_of_check
+    (M := ⟨2, [(0, 1)], [(0, 1)], [1], []⟩) (w := 0) (by decide)
+
+#print axioms underivable
+-/
+#guard_msgs in
+#refute [(falsePLL).somehow] ⊢ falsePLL
+
+/--
+info: sequent  ◯False ⊢ False  (PCLL+¬◯⊥)
+verdict  NO CONFLUENT INFALLIBLE COUNTERMODEL FOUND
+
+This asserts nothing.  A countermodel found by #refute or #refuteConf is NOT
+usable here unless it also has no fallible worlds — that is exactly what this
+command enforces.
+-/
+#guard_msgs in
+#refuteNF [(falsePLL).somehow] ⊢ falsePLL
+
+/-! ### 6.5 The axiom, and properness
+
+`⊢ ¬◯⊥` is derivable in the extension (trivially — it is the hypothesis) and
+**not** derivable in PCLL: `PLLND.NoFall.pcll_not_nobot` pins the two-world
+countermodel `0 ⊳ 1` with `1` fallible.  The extension is proper. -/
+
+/--
+info: sequent  ⊢ (◯False) ⊃ False  (PCLL+¬◯⊥)
+verdict  PROVED   (→R (→L◯◯ ⊥L ⊥L))
+
+proof term (G4iLL″, over the axiom `¬◯⊥` as hypothesis):
+  (→R (→L◯◯ ⊥L ⊥L))
+
+pin it:
+theorem found_nofall :
+    PLLND.NoFall.DerivUNoFall [] ((PLLFormula.falsePLL.somehow).ifThen PLLFormula.falsePLL) :=
+  PLLND.NoFall.derivUNoFall_of_nd (PLLND.Search.proved_sound
+    (.impR (.impLLaxLax (A := PLLFormula.falsePLL) (B := PLLFormula.falsePLL) (X := PLLFormula.falsePLL) (by decide) (by decide) (.botL (by decide)) (.botL (by decide)))))
+
+#print axioms found_nofall
+-/
+#guard_msgs in
+#searchNF [] ⊢ NoFall.nobot
+
+/-! ## 7. Command-line tools (manual §7)
 
 Nothing to run inside a Lean file; these are shell commands, listed here so
 the tour is complete.

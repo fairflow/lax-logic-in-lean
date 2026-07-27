@@ -13,7 +13,8 @@ describe the functions behind the commands, for use inside programs.
 
 Modules: `LaxLogic/PLLSearchCmd.lean` (the commands),
 `LaxLogic/PLLSearch.lean` (the staged procedure and the API),
-`LaxLogic/PLLSearchConf.lean` (PCLL), `LaxLogic/PLLG4Term.lean` (the proof
+`LaxLogic/PLLSearchConf.lean` (PCLL),
+`LaxLogic/PLLSearchNoFall.lean` (PCLL + `¬◯⊥`), `LaxLogic/PLLG4Term.lean` (the proof
 searcher), `LaxLogic/PLLCountermodelEmit.lean` (the verified countermodel
 checker), `LaxLogic/PLLSearchEx.lean` (worked examples).
 
@@ -31,6 +32,10 @@ propositional logic with a modality `◯` satisfying `A ⊃ ◯A`, `◯◯A ⊃ 
 `LaxND Γ C`.
 
 **PCLL.**  PLL plus the distribution scheme `◯(A ∨ B) ⊃ (◯A ∨ ◯B)`.  See §5.
+
+**PCLL + `¬◯⊥`.**  PCLL plus the single axiom `¬◯⊥` — the *infallible*
+system: it is sound and complete for confluent models with no fallible
+worlds.  See §6.
 
 **Sequent.**  A pair of a hypothesis list `Γ : List PLLFormula` and a
 conclusion `C : PLLFormula`, written `Γ ⊢ C`.
@@ -141,7 +146,7 @@ Three commands cover the everyday use of the toolkit.  Each takes a sequent
 and prints a block: the sequent in the usual notation, the verdict, the
 evidence, and Lean source for the theorem that records the finding.
 
-`LaxLogic/PLLSearchDemo.lean` is a runnable companion to §§2–6 of this
+`LaxLogic/PLLSearchDemo.lean` is a runnable companion to §§2–7 of this
 document: open it in VS Code and step through it, and the info view shows each
 output as you go.  There every example is wrapped in `#guard_msgs`, so what is
 *typed* and what is *printed* are separated mechanically, and the build checks
@@ -641,7 +646,66 @@ holds the RNC(◯,{}) matrix.  Those files need `lake build wipshared` first.
 
 ---
 
-## 6. Command-line tools
+## 6. PCLL + `¬◯⊥`
+
+Adding to PCLL the single axiom `¬◯⊥` gives the *infallible* system, in
+`LaxLogic/PLLNoFall.lean`, namespace `PLLND.NoFall`:
+
+```
+DerivUNoFall Γ φ  :=  DerivU (¬◯⊥ :: Γ) φ
+```
+
+Adding one formula (not a scheme) as an axiom is the same as adding it as a
+persistent hypothesis, because every rule of the calculus carries its context
+unchanged; the formula is `NoFall.nobot`.  The system is sound and complete
+for mutually confluent models **with no fallible worlds**
+(`derivUNoFall_iff_infallible_valid`) — hence the Lean name.  It is a proper
+extension of PCLL (`pcll_not_nobot`), and it collapses the variable-free
+fragment: every variable-free formula is derivable or inconsistent
+(`varfree_dichotomy`), whereas PLL and PCLL have infinitely many
+non-interderivable variable-free formulas.
+
+### `#searchNF` and `#refuteNF`
+
+The command pair of `LaxLogic/PLLSearchNoFall.lean` works like `#search` and
+`#refuteConf`:
+
+* `#searchNF Γ ⊢ C` tries a countermodel first — accepted only if mutually
+  confluent **and** infallible (`RNC.confB` and `NoFall.infB`) — then runs
+  the proof searcher on the extended context `¬◯⊥ :: Γ`;
+* `#refuteNF Γ ⊢ C` runs only the countermodel engines, with the same double
+  filter.
+
+The showcase of the difference: `◯⊥ ⊢ ⊥` is PLL-refutable (a fallible top
+forces `◯⊥` without `⊥`), but the infallible system proves it.
+
+```lean
+#refute   [(falsePLL).somehow] ⊢ falsePLL   -- REFUTED, by a fallible model
+#searchNF [(falsePLL).somehow] ⊢ falsePLL   -- PROVED
+```
+
+The trap of §5 has an exact analogue, and the same resolution: a countermodel
+found by `#refute` or `#refuteConf` refutes `DerivUNoFall` only if it also
+has no fallible worlds, which is what `#refuteNF` enforces by construction.
+
+### Pinning
+
+The printed snippets use two certificate theorems:
+
+* positive — `NoFall.derivUNoFall_of_nd`, applied to a PLL proof term over
+  `¬◯⊥ :: Γ`.  As with PCLL, the searcher does not use the distribution
+  scheme on its own; add `ConfluentU.distF` instances to the context and pin
+  through `derivUNoFall_of_proved` when distribution is needed.
+* negative — `NoFall.not_derivUNoFall_of_check`, with three `by decide` side
+  conditions (confluence, infallibility, the checked sequent).  Note the
+  checked context is `Γ` itself: the axiom needs no checking, because every
+  infallible model forces `¬◯⊥` everywhere (`NoFall.force_nobot`).
+
+`LaxLogic/PLLSearchDemo.lean` §6 runs all of this with pinned outputs.
+
+---
+
+## 7. Command-line tools
 
 The `lakefile.toml` declares a number of `lean_exe` targets, most of them
 one-off probes.  Two are representative.
@@ -669,7 +733,7 @@ instances rather than the searcher described here.
 
 ---
 
-## 7. Failure modes
+## 8. Failure modes
 
 - **`UNKNOWN` and you want to know why.**  Use `verdictWhy` or `settleWhy`
   rather than `verdict` or `settle`: the `Reason` names the parameter
