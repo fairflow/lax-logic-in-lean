@@ -156,3 +156,8 @@ root = "wip.rnc_probe"
 [[lean_exe]]
 name = "mwitprobe"
 root = "wip.mwit_probe"
+
+# Deep-model MwitResidue/RankGap probe: lifted ladder truncations.
+[[lean_exe]]
+name = "mwitdeep"
+root = "wip.mwit_deep"
