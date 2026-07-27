@@ -151,3 +151,8 @@ root = "wip.rnDictGen"
 [[lean_exe]]
 name = "rncprobe"
 root = "wip.rnc_probe"
+
+# MwitResidue probe: witness-form residue (modes G/R), re-aim of biipprobe.
+[[lean_exe]]
+name = "mwitprobe"
+root = "wip.mwit_probe"
