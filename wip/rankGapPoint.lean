@@ -1,0 +1,246 @@
+import wip.rankedResidue
+
+/-!
+# The pointwise attack on `RankGap`
+
+Branch `ui-confluence`.  Four results toward the open Prop, driven by
+the deep-probe finding (PROGRESS §51: the descending window is clean,
+with full-rank same-trace partners existing POINTWISE).
+
+## 1. The ∀∃-descent — a genuinely new transfer move
+
+Every previous transfer moved formulas ACROSS a link and produced
+witnesses in the row of the link's own world; the residue needs
+witnesses in the row of `m`, one i-step BELOW the reservoir.  The
+move: a box forced at the reservoir's K-side world `k'` (bare
+possibility over `k'`'s row — costing nothing but K-confluence)
+crosses the reservoir link at its FULL rank `rslope (2d+1) = 2·rslope
+(2d) + 3`, and the `∀∃` clause of ◯ at `m'` then EVALUATES DOWNWARD
+at the i-successor `m` — yielding a witness INSIDE `m`'s row.
+`reservoir_row_cover`: every world of `row(k')` has its positive
+rank-α character realised by a member of `row(m)`, for α up to
+`rslope (2d+1) − 3` — far ABOVE the missing window.
+`reservoir_row_cover_witness` merges the covering witness with the
+ψ-witness by the confluence square in `M` (persistence keeps both).
+
+## 2. What is now PROVED
+
+* `rankGap_of_rowRigid`: over a ROW-RIGID base (every infallible
+  ◯-move is reflexive — e.g. every lifted ladder of the deep battery),
+  `RankGap` holds outright: the witness is `m` itself and `kb := k`
+  closes by the base link.  With the bridge, `MwitResidue` for the
+  ranked link is PROVED over row-rigid bases — the entire live-window
+  evidence class of PROGRESS §51 is now theorem, not observation.
+* `rankGap_of_witnessTypeStable` / the case split `rankGap_of_grow`:
+  if SOME ψ-witness in `m`'s row adds nothing to `m`'s variable-free
+  rank-`rslope (2d)` theory, `kb := k` closes by transitivity through
+  the base link.  Hence the open Prop shrinks to `RankGapGrow` — the
+  configurations in which EVERY ψ-witness strictly grows the
+  rank-`rslope (2d)` variable-free theory of `m`.
+
+## 3. The sharpened geography of `RankGapGrow`
+
+In the grow case, each witness `u''` forces some variable-free rep
+`D₀` with `m ⊬ D₀`; bare possibility in `M` puts `◯D₀` at `m`, and
+`crank (◯D₀) ≤ rslope (2d) + 2` — one to two connectives ABOVE the
+base link's rank, so the growth is exactly RANKED-INVISIBLE (the
+M-row mirror of `residue_growth_boundary`'s wall).  Meanwhile §1
+covers `row(k')`-types at ranks far above the window, but its output
+cannot be reflected back (the backward leg would need a box at `m'`,
+and boxes at `m'` need witnesses in `row(m')`, which the
+configuration does not supply).  The designed next step: reinstate
+the dropped K-side edge `k' Rᵢ k` in `WitTripleC` (checkably
+maintainable through every constructor in use) — then boxes at `k'`
+also evaluate downward INTO `row(k)`, giving the two-sided saturation
+the maximal-type ascent needs to terminate at an exact match.
+-/
+
+open PLLFormula
+
+namespace PLLND
+namespace SemUI
+
+open FinComp
+open ConfluentU
+
+variable {p : String} {K M : ConstraintModel}
+
+/-! ## 0. Agreement composes through a middle world -/
+
+/-- Cross-model transitivity of band agreement through a world of `M`. -/
+theorem bandAgree_trans_mid {r : Nat} {k : K.W} {m u : M.W}
+    (h1 : bandAgree r K M k m) (h2 : bandAgree r M M m u) :
+    bandAgree r K M k u :=
+  fun ρ hρ hc => (h1 ρ hρ hc).trans (h2 ρ hρ hc)
+
+/-! ## 1. The ∀∃-descent -/
+
+/-- **The ∀∃-descent**: a positive character boxed at the reservoir's
+K-side world crosses the reservoir link and evaluates, through the
+`∀∃` clause of ◯, at the i-successor `m` — realising every
+`row(k')`-type inside `row(m)`.  Only `K` need be confluent. -/
+theorem reservoir_row_cover {α β : Nat} (hαβ : α + 3 ≤ β)
+    (hK : MutuallyConfluent K)
+    {k' : K.W} {m' m : M.W}
+    (hZ' : bandAgree β K M k' m') (him : M.Ri m' m)
+    {L : List PLLFormula}
+    (hL : ∀ D ∈ L, crank D ≤ α ∧ ∀ a ∈ D.atoms, a ∈ (∅ : Finset String))
+    {x : K.W} (hx : K.Rm k' x) :
+    ∃ y : M.W, M.Rm m y ∧ ∀ D ∈ L, K.force x D → M.force y D := by
+  classical
+  set χ : PLLFormula := charPos K x L with hχdef
+  have hχa : χ.atoms = ∅ :=
+    Finset.eq_empty_iff_forall_notMem.mpr (fun a ha =>
+      Finset.notMem_empty a
+        (atoms_charPos (fun D hD => (hL D hD).2) a ha))
+  have hχc : crank χ ≤ α + 1 :=
+    crank_charPos_le (fun D hD => (hL D hD).1)
+  have hk'box : K.force k' (PLLFormula.somehow χ) := by
+    rw [force_somehow_iff_of_confluent hK]
+    exact ⟨x, hx, force_charPos K x L⟩
+  have hm'box : M.force m' (PLLFormula.somehow χ) := by
+    refine (hZ' (PLLFormula.somehow χ) ?_ ?_).mp hk'box
+    · show χ.atoms = ∅
+      exact hχa
+    · show crank χ + 2 ≤ β
+      omega
+  -- the ∀∃ clause of ◯ at the i-successor m: a witness IN m's row
+  obtain ⟨y, hmy, hyχ⟩ := hm'box m him
+  refine ⟨y, hmy, fun D hD hxD => ?_⟩
+  exact (force_bigAnd_iff M y _).mp hyχ D
+    (List.mem_filter.mpr ⟨hD, decide_eq_true hxD⟩)
+
+/-- The ∀∃-descent, merged with the ψ-witness by the confluence square
+in `M`: the covering row-member can be taken to force ψ as well
+(persistence keeps both along the square). -/
+theorem reservoir_row_cover_witness {α β : Nat} (hαβ : α + 3 ≤ β)
+    (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
+    {k' : K.W} {m' m u' : M.W} {ψ : PLLFormula}
+    (hZ' : bandAgree β K M k' m') (him : M.Ri m' m)
+    (hmu' : M.Rm m u') (hψ : M.force u' ψ)
+    {L : List PLLFormula}
+    (hL : ∀ D ∈ L, crank D ≤ α ∧ ∀ a ∈ D.atoms, a ∈ (∅ : Finset String))
+    {x : K.W} (hx : K.Rm k' x) :
+    ∃ y : M.W, M.Rm m y ∧ M.force y ψ ∧
+      ∀ D ∈ L, K.force x D → M.force y D := by
+  obtain ⟨y0, hmy0, hcov⟩ := reservoir_row_cover hαβ hK hZ' him hL hx
+  obtain ⟨y, hy0y, hu'y⟩ := hM hmy0 (M.sub_mi hmu')
+  exact ⟨y, M.trans_m hmu' hu'y,
+    M.force_hered (M.sub_mi hu'y) hψ,
+    fun D hD hxD => M.force_hered hy0y (hcov D hD hxD)⟩
+
+/-! ## 2. Proved cases of `RankGap` -/
+
+/-- A base is **row-rigid** when every infallible ◯-move is reflexive
+(the lifted ladders of the deep battery are; so is every model whose
+`Rₘ` is the identity plus fallible promotions). -/
+def RowRigid (M : ConstraintModel) : Prop :=
+  ∀ ⦃w u : M.W⦄, M.Rm w u → u ∉ M.F → u = w
+
+/-- **`RankGap` over a row-rigid base** — the deep-probe live class as
+a theorem: the given witness IS `m`, and `kb := k` closes by the base
+link. -/
+theorem rankGap_of_rowRigid (cl : Finset PLLFormula) (hrr : RowRigid M) :
+    RankGap K M cl := by
+  intro Δ k' k kv κ m' m u' ψ _hbot hΔk _hΔk' _him hmu' hψ hu'F _hZ' hZ
+    _hk'kv _hZkv _hsame _hkκ _hZκ _hκsame
+  have hum : u' = m := hrr hmu' hu'F
+  subst hum
+  exact ⟨k, u', hΔk, hmu', hψ, hZ⟩
+
+/-- `MwitResidue` for the ranked link over a row-rigid base — PROVED. -/
+theorem mwitResidue_ranked_of_rowRigid (hPK : POnly p K) (hPM : POnly p M)
+    (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
+    (cl : Finset PLLFormula) (hrr : RowRigid M) :
+    MwitResidue cl (rankedB hPK hPM hK hM) :=
+  mwitResidue_ranked_of_gap hPK hPM hK hM cl (rankGap_of_rowRigid cl hrr)
+
+/-! ## 3. The case split: the open Prop shrinks to the grow case -/
+
+/-- **The residual open Prop**: the configurations in which EVERY
+ψ-witness in `m`'s row strictly grows `m`'s variable-free theory at
+rank `rslope (2d)`.  (If some witness adds nothing, `kb := k` closes
+by transitivity through the base link — `rankGap_of_grow`.) -/
+def RankGapGrow (K M : ConstraintModel) (cl : Finset PLLFormula) : Prop :=
+  ∀ {Δ : (canonFinC cl).W} {k' k kv κ : K.W} {m' m u' : M.W}
+    {ψ : PLLFormula},
+    PLLFormula.falsePLL ∉ Δ.1.val →
+    (traceT K cl k).val = Δ.1.val →
+    (traceT K cl k').val = Δ.1.val →
+    M.Ri m' m → M.Rm m u' → M.force u' ψ → u' ∉ M.F →
+    bandAgree (rslope (2 * canonDepthC cl Δ + 1)) K M k' m' →
+    bandAgree (rslope (2 * canonDepthC cl Δ)) K M k m →
+    K.Ri k' kv →
+    bandAgree (rslope (2 * canonDepthC cl Δ)) K M kv u' →
+    (traceT K cl kv).val ≠ Δ.1.val →
+    K.Rm k κ →
+    bandAgree (rslope (2 * canonDepthC cl Δ - 1)) K M κ u' →
+    (traceT K cl κ).val = Δ.1.val →
+    (∀ u'' : M.W, M.Rm m u'' → M.force u'' ψ →
+      bandAgree (rslope (2 * canonDepthC cl Δ)) M M m u'' → False) →
+    ∃ (kb : K.W) (u'' : M.W),
+      (traceT K cl kb).val = Δ.1.val ∧ M.Rm m u'' ∧ M.force u'' ψ ∧
+      bandAgree (rslope (2 * canonDepthC cl Δ)) K M kb u''
+
+/-- **The case split**: a handler for the grow case yields the full
+gap — in the stable case some witness adds nothing at rank
+`rslope (2d)` and `kb := k` closes through the base link. -/
+theorem rankGap_of_grow (cl : Finset PLLFormula)
+    (h : RankGapGrow K M cl) : RankGap K M cl := by
+  intro Δ k' k kv κ m' m u' ψ hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ
+    hk'kv hZkv hsame hkκ hZκ hκsame
+  by_cases hstab : ∃ u'' : M.W, M.Rm m u'' ∧ M.force u'' ψ ∧
+      bandAgree (rslope (2 * canonDepthC cl Δ)) M M m u''
+  · obtain ⟨u'', h1, h2, h3⟩ := hstab
+    exact ⟨k, u'', hΔk, h1, h2, bandAgree_trans_mid hZ h3⟩
+  · exact h hbot hΔk hΔk' him hmu' hψ hu'F hZ' hZ hk'kv hZkv hsame hkκ hZκ
+      hκsame (fun u'' h1 h2 h3 => hstab ⟨u'', h1, h2, h3⟩)
+
+/-- The end-to-end summary: the grow case is all that separates the
+ranked link from a residue-free amalgamation. -/
+theorem mwitResidue_ranked_of_grow (hPK : POnly p K) (hPM : POnly p M)
+    (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
+    (cl : Finset PLLFormula) (h : RankGapGrow K M cl) :
+    MwitResidue cl (rankedB hPK hPM hK hM) :=
+  mwitResidue_ranked_of_gap hPK hPM hK hM cl (rankGap_of_grow cl h)
+
+/-! ## Axiom audit -/
+
+/--
+info: 'PLLND.SemUI.reservoir_row_cover' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms reservoir_row_cover
+
+/--
+info: 'PLLND.SemUI.reservoir_row_cover_witness' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms reservoir_row_cover_witness
+
+/--
+info: 'PLLND.SemUI.rankGap_of_rowRigid' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms rankGap_of_rowRigid
+
+/--
+info: 'PLLND.SemUI.mwitResidue_ranked_of_rowRigid' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms mwitResidue_ranked_of_rowRigid
+
+/--
+info: 'PLLND.SemUI.rankGap_of_grow' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms rankGap_of_grow
+
+/--
+info: 'PLLND.SemUI.mwitResidue_ranked_of_grow' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms mwitResidue_ranked_of_grow
+
+end SemUI
+end PLLND

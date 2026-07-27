@@ -1498,3 +1498,36 @@ a pointwise full-rank partner construction at residue configurations
 (the ladder models suggest the same-trace κ-partner itself carries
 full-rank agreement there), with the §50 boundary machinery
 (pOnly_V_eq_F + residue_growth_boundary) as the tool.
+
+## §52 (2026-07-27) — The pointwise attack: the ∀∃-descent, the row-rigid theorem, and the open Prop shrinks to RankGapGrow
+
+wip/rankGapPoint.lean, all sorry-free, guards pinned:
+
+* **The ∀∃-descent** (reservoir_row_cover / _witness) — a genuinely
+  new transfer move: a positive character boxed at the reservoir's
+  K-side world (bare possibility, K confluent) crosses the reservoir
+  at its FULL rank rslope(2d+1) = 2·rslope(2d)+3, and the ∀∃ clause
+  of ◯ at m' EVALUATES DOWNWARD at the i-successor m — realising
+  every row(k')-type inside row(m), at ranks far ABOVE the missing
+  window; the confluence square in M merges the cover with the
+  ψ-witness.  First transfer in the whole development that lands
+  inside m's row.
+* **rankGap_of_rowRigid + mwitResidue_ranked_of_rowRigid**: over
+  row-rigid bases (every infallible ◯-move reflexive — all lifted
+  ladders of §51's battery), RankGap and hence the ranked MwitResidue
+  are PROVED outright (the witness is m itself; kb := k closes by the
+  base link).  The entire §51 live-window evidence class is now
+  theorem.
+* **rankGap_of_grow**: the case split — if SOME ψ-witness adds
+  nothing to m's vf-theory at rank rslope(2d), kb := k closes by
+  transitivity (bandAgree_trans_mid).  THE OPEN PROP SHRINKS TO
+  RankGapGrow: configurations where EVERY ψ-witness strictly grows
+  m's rank-rslope(2d) vf-theory.  Its geography: each witness's
+  growth rep D₀ gives m ⊨ ◯D₀ at crank ≤ rslope(2d)+2 — one to two
+  connectives above the base link, ranked-invisible (the M-row mirror
+  of residue_growth_boundary).
+* Designed next step recorded: reinstate the dropped K-side edge
+  k' Rᵢ k in WitTripleC (maintainable through every constructor in
+  use) — then boxes at k' also evaluate downward into row(k), giving
+  the two-sided saturation the maximal-type ascent needs to terminate
+  at an exact match in the grow case.
