@@ -47,6 +47,8 @@ import LaxLogic.PLLSearchConf
 import LaxLogic.PLLSearchCmd
 import LaxLogic.PLLSearchDemo
 import LaxLogic.PLLNoFall
+import LaxLogic.PLLNoFallNF
+import LaxLogic.PLLNoFallSep
 import LaxLogic.PLLSearchNoFall
 import LaxLogic.PLLDiagram
 import LaxLogic.PLLEvidence
