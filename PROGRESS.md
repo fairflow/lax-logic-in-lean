@@ -2526,3 +2526,66 @@ the build's inner loop is the others-descent with: growth (defect),
 box-growth ◯χ (defect, box_remap_free), goal-γ (unbox, weight),
 clause-γ (budget tier + box_remap_free; floor by T2), jump family
 (pigeonhole as in bf), decomposition (weight), atoms (starve/init).
+
+## §78 (2026-07-28) — THE BUILD LANDS: wip/cascadeBox.lean — the others-descent ASSEMBLED sorry-free; the open content is exactly THREE interface Props (four stubs)
+
+The §§71–77 design is now a compiled file (wip/cascadeBox.lean, 1,643
+lines, four granular commits).  Structure and status:
+
+* `desc_of_oth` — the §77 two-branch wrapper PROVED: source-trunc
+  commits the TARGET truncation (present since the target others-table
+  of a ◯-goal at budget ≥ 1 is nonempty by its goal clause — rfl),
+  opens the source box with the guard fired from the ambient by
+  downward monotonicity, and finishes by the inner others-descent;
+  undecorated disjuncts route through the others-descent directly.
+* `oth_descent` — THE ASSEMBLY, SORRY-FREE, pinned
+  [propext, Classical.choice, Quot.sound]: (defect strong, budget
+  strong, fuel structural) lexicographic induction.  Fuel-0 base
+  closes outright (fuel-0 components are literally ⊥/⊤: explosion,
+  guard-fire into ⊥, box_absurd against a committed ◯-target).  Step
+  mechanisms, all landed as designed: decomposition and present-⊃
+  goals by the fuel tier through the wrapper; growth arms by the
+  defect tier with the ambient re-supplied from its own matching
+  conjunct; goal-γ by same-budget box_remap_free with the value slot
+  descending at the unboxed goal (hsome pays the S-membership); the
+  ◯χ-env arm and the ◯x-driven γ-pairs by OPENING THE AMBIENT'S OWN
+  BARE ◯-CONJUNCT against the committed target box, then
+  box_remap_free with the defect tier at the grown context (no ascent
+  anywhere — §74's box-growth, mechanised); gated γ/jump pairs at
+  c ≥ 2 by the budget tier, their second components defect-financed
+  with the grown ambient unlocked by firing the ambient's own clause
+  conjunct with the FREE-direction fuel lift of the in-context first
+  component (imp_fuel_lift / box_fuel_lift — new glue).
+* `cascade_box` — the kernel entry in cascade_low_pos_box's shape
+  (piece-closed S, goal/context in S, 1 ≤ c), sorry-free conditional
+  on the three interfaces; `cascade_box_unconditional` consumes the
+  stubs, taint pinned by guard to exactly [.., sorryAx, ..].
+
+THE OPEN CONTENT (three Props, stubs clearly marked OPEN at EOF):
+  1. AmbGuardAscent — the fresh-antecedent equality law (§66):
+     E@(c+1)(Γ), E@c(X::Γ) ⊢ E@(c+1)(X::Γ) at a fresh space piece X.
+     Consumed by ∨-growth, fresh-⊃-goal, fresh-jump first components
+     — at EVERY budget: the build has no E-half, and the bf clone's
+     E-ascent was room-funded, which the seal recursion breaks.  This
+     surfaced as a BUILD finding: the growth mechanisms close without
+     any ascent only for the ∧/atom-⊃/⊃∧/⊃∨/◯-arms; the three
+     PAIRED-implication arms need exactly this law.
+  2. GammaPairFloorA / GammaPairFloorBox — the §73 stuck shape at
+     kernel(1) (gated γ-pair, target components at budget 0), stated
+     branch-level with the defect-tier IH as a slot (the resource
+     §73(i)'s target-growth commutation would consume).
+  3. JumpPairFloor — the jump-family instance of the same floor
+     (the seen-set pigeonhole cannot cross this build's boxed
+     branches, as recorded since the July session).
+Battery status of all three: true on every probed instance (§66 exact;
+§76 zero failures incl. growth-live).  Next actions, in order: (a)
+prove AmbGuardAscent as a fourth induction component (one-step ascent
+at strictly smaller defect; its gated arms take the budget tier; its
+floor lands in the same §73 shape — so (b) likely gates it); (b) the
+§73 adjudication proper at the floor stubs, growth-first (at
+growth-dead states the source pair components starve and dispatch —
+itpA_starve_floor + box_absurd — so only growth-live states carry
+content, exactly §73's residue).  On completion: wire
+cascade_low_pos_box := cascade_box's entry (the ∀S form keeps the
+piece-closure hypotheses; the adequacy consumer has them), rebuild
+final.lean, re-audit the crown.
