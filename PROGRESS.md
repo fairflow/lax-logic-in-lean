@@ -2376,3 +2376,41 @@ BUILD: wip/cascadeBox.lean — cascade_main_bf's skeleton with
 starve lemmas as the floor bases; no seen-sets, no continuations.
 On completion, replace cascade_low_pos_box's sorry with the new
 theorem, rebuild the tower (final.lean), and re-audit the crown.
+
+## §73 (2026-07-28) — Third hand-execution: floor_absurd identified; the frontier is ONE branch shape
+
+Grinding the budget-1 layer by hand once more:
+
+* **floor_absurd** (new provable target): with an ambient existential
+  table in context, every budget-0 universal value at a ◯-goal is
+  refutable —  [E@y(Γ)], A@0(Γ,◯D)-value ⊢ ⊥ — by defect strong
+  induction: gated arms are dead at 0; ∧-growth disjuncts recurse at
+  the grown context; ∨-growth pair-disjuncts fire against the
+  ambient's own ∨-conjunct (orElim, then each implication fires on
+  its branch); atom-⊃ and ⊃-family analogously.  This generalises T2
+  from literal starvation to derivable absurdity and dispatches every
+  branch whose SOURCE inner sits at budget 0.
+* **The self-loop trunc-escape confirmed again** at head = goal.
+* **THE ONE STUCK SHAPE**: kernel(1), clause-γ source branch, head
+  ◯A₁ ≠ goal g, growth-live Γ.  The pair target's boxed component
+  ◯(E@0 ⇢ A@0) is underivable (A@0 is refutable, not derivable); the
+  trunc-escape's inner others@1(Γ, g) is not directly reachable from
+  the pair (component-1 is at the wrong head; component-2 lives at
+  the grown context).  The zoo says the statement is TRUE there
+  (S = {◯p⊃r, r}, head ◯p, goal ◯r, c = 1 probed), so a route
+  exists; candidates to adjudicate IN LEAN when the build reaches
+  this branch: (i) at budget 1 with growth live, commute the GROWTH
+  disjuncts of the TARGET first (derive others@1's growth disjunct
+  outright from the pair via the grown-context kernel at smaller
+  defect — the growth disjunct's implication-pair may absorb the
+  head-mismatch since its consequent slot is at the grown context
+  where the clause is dead); (ii) the fresh-antecedent equality law
+  (battery-exact) at the guard.  This branch is the entire remaining
+  mathematical uncertainty of the kernel.
+
+ORDER OF BUILD (wip/cascadeBox.lean): 1. floor_absurd + the
+generalised dispatch gamma_seal_absurd; 2. the skeleton clone with
+(defect, budget, fuel, weight)-lex; 3. the stuck shape adjudicated in
+place — if (i) closes it, the kernel falls; if not, the shape is a
+sharply-stated sub-lemma for Matthew, with the zoo already vouching
+for its truth.
