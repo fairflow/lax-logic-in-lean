@@ -251,4 +251,85 @@ private theorem desc_zero (p : String) (S : Finset PLLFormula)
   simp only [itpA] at hhead
   exact G4c.cut hhead (G4c.botL (.head _))
 
+/-! ### The two-branch wrapper (§77)
+
+The full-table descent from the others-descent.  Truncations pair
+across the descent: the source truncation disjunct commits the
+*target* truncation `◯(itpE@(c−1) ⇢ ⋁ others@c)` — a `◯`-goal — and
+opens the source box against it, the guard fired from the ambient by
+downward monotonicity; the residual obligation inside is exactly the
+others-descent, which also absorbs every undecorated source disjunct
+directly.  No truncation strip is ever performed (§77's correction:
+the strip's conclusion is not `◯`-shaped, so `laxL` could never open
+the source box for it). -/
+
+/-- The full-table descent at head fuel `F + 1`, target fuel `fl + 1`,
+budgets `c + 1 → c`, from the others-descent at inner fuels `(F, fl)`
+(supplied context-polymorphically). -/
+private theorem desc_of_oth (p : String) (S : Finset PLLFormula)
+    {F fl c : Nat} {Γ : List PLLFormula} {g : PLLFormula}
+    (hF : F ≤ fl) (hc : 1 ≤ c)
+    (hoth : ∀ (Δ' : List PLLFormula),
+      G4c Δ' (itpE p S (fl + 1) (c + 1) Γ) →
+      G4c Δ' (orAll (itpAoth p S F (c + 1) Γ g)) →
+      G4c Δ' (orAll (itpAoth p S fl c Γ g)))
+    {Δ : List PLLFormula}
+    (hamb : G4c Δ (itpE p S (fl + 1) (c + 1) Γ))
+    (hhead : G4c Δ (itpA p S (F + 1) (c + 1) Γ g)) :
+    G4c Δ (itpA p S (fl + 1) c Γ g) := by
+  obtain ⟨c'', rfl⟩ : ∃ c'', c = c'' + 1 := ⟨c - 1, by omega⟩
+  rw [itpA_succ] at hhead ⊢
+  refine G4c.cut hhead (G4c.orAll_elim ?_)
+  intro φ hφ
+  cases g with
+  | somehow D =>
+      simp only [itpAfull] at hφ ⊢
+      rcases List.mem_append.mp hφ with hφ | hφ
+      · -- undecorated source disjunct: through the others-descent,
+        -- then inject the target others-table into the full table
+        refine consume₁ (hoth (φ :: Δ) (hamb.weaken φ)
+          (G4c.orAll_intro hφ (G4c.identity_mem (.head _)))) ?_
+        exact orAll_map (fun ψ h => ⟨ψ, List.mem_append.mpr (Or.inl h),
+          G4c.iden (.head _)⟩)
+      · -- the truncation disjunct: commit the target truncation, open
+        -- the source box inside it, finish by the others-descent
+        by_cases h1 : (itpAoth p S F (c'' + 2) Γ (D.somehow)).isEmpty = true
+        · rw [if_pos h1] at hφ; cases hφ
+        · rw [if_neg h1] at hφ
+          rcases List.mem_singleton.mp hφ with rfl
+          refine G4c.orAll_intro
+            (φ := ((itpE p S fl c'' Γ).ifThen
+              (orAll (itpAoth p S fl (c'' + 1) Γ (D.somehow)))).somehow)
+            (List.mem_append.mpr (Or.inr ?_)) ?_
+          · rw [if_neg (by
+              rw [itpAoth_obGoal_isEmpty]; exact Bool.false_ne_true)]
+            exact .head _
+          · refine box_open (W := (itpE p S fl c'' Γ).ifThen
+                (orAll (itpAoth p S fl (c'' + 1) Γ (D.somehow))))
+              (G4c.identity_mem (.head _))
+              (amb_down (hamb.weaken _) (by omega) (by omega)) ?_
+            refine G4c.laxR (G4c.impR ?_)
+            refine hoth _ ?_ (G4c.identity_mem (.tail _ (.head _)))
+            exact ((hamb.weaken _).weaken _).weaken _
+  | prop q =>
+      simp only [itpAfull] at hφ ⊢
+      exact hoth (φ :: Δ) (hamb.weaken φ)
+        (G4c.orAll_intro hφ (G4c.identity_mem (.head _)))
+  | falsePLL =>
+      simp only [itpAfull] at hφ ⊢
+      exact hoth (φ :: Δ) (hamb.weaken φ)
+        (G4c.orAll_intro hφ (G4c.identity_mem (.head _)))
+  | and C₁ C₂ =>
+      simp only [itpAfull] at hφ ⊢
+      exact hoth (φ :: Δ) (hamb.weaken φ)
+        (G4c.orAll_intro hφ (G4c.identity_mem (.head _)))
+  | or C₁ C₂ =>
+      simp only [itpAfull] at hφ ⊢
+      exact hoth (φ :: Δ) (hamb.weaken φ)
+        (G4c.orAll_intro hφ (G4c.identity_mem (.head _)))
+  | ifThen C₁ C₂ =>
+      simp only [itpAfull] at hφ ⊢
+      exact hoth (φ :: Δ) (hamb.weaken φ)
+        (G4c.orAll_intro hφ (G4c.identity_mem (.head _)))
+
 end PLLND
