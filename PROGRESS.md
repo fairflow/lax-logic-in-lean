@@ -1940,3 +1940,61 @@ implication: its ι-clauses take S₁ = (X :: Γ ⇒ ◯A) with the
 implication still inside — check rank/space side conditions); (3) the
 six properties per rule, her Lemmas 3–6 adapted; (4) assemble
 UI(PILL); then the m-chain for PICLL.
+
+## §64 (2026-07-28) — The interpolant recursion design for G4iLL″: fuel-indexed over the finite sequent space
+
+G4s recon (PLLG4Set): fully cumulative Finset contexts, every rule
+inserts-and-keeps, G4c.iff_setFin, decider G4sh.dec structural on
+height.  Working Iemhoff's assignment against it:
+
+THE PRECISE BREAKAGE of her static order: within a FIXED context the
+backward rule graph of the keeping-form calculus can revisit sequents
+(a laxL whose opening is already present is a literal self-loop;
+impLImp/impLLaxLax instances whose insertions are present jump the
+goal to an antecedent of a context member, and goal chains can cycle).
+So no static rank ≺ exists with all premises below their conclusions,
+and her rewrite ⟶ would diverge.  What remains true: G4sh premises
+sit at strictly smaller HEIGHT, and a minimal-height derivation never
+repeats a sequent along a branch (a repeat is a removable detour), so
+every minimal derivation has branch length ≤ |seqEnumF|.
+
+THE DESIGN, replacing the static rank: FUEL-INDEXED interpolants
+
+  I∀, I∃ : Nat → Seq → Formula
+  I(0, S)     := neutral (⊥ for the ∀-disjunction, ⊤ for ∃)
+  I(n+1, S)   := Iemhoff's per-rule combination (her §6.6 table with
+                 the keeping-form premise shapes) applied to
+                 I(n, premise)s, over all rule instances with
+                 conclusion S, plus the atom clauses
+
+with ∀pS := I∀(N, S), ∃pS := I∃(N, S) at N := |seqEnumF| + 1.  The
+big disjunctions/conjunctions are finite because instances-with-
+conclusion-S range over the finite context and subformula data ✓.
+The three interpolant properties are then proved by induction on
+minimal derivation height, which is ≤ N along every branch, matching
+the fuel: her six per-rule inductive properties (Lemmas 3–6) become
+lemmas about I(n+1, S) vs I(n, ·) with the derivability hypotheses at
+minimal height.  The self-loop/cycle instances contribute neutral
+elements at fuel 0 and are harmless precisely because minimal
+derivations never use them (the detour-removal lemma is the new
+plumbing obligation, alongside fuel-monotonicity of the properties —
+NOT of the formulas: no I(n) ≡ I(n+1) stability needed if the
+properties are proved directly at fuel N).
+
+Candidate simplification to examine first: can laxL consume its box
+(≪-style) with only impLLaxLax in keeping form, preserving
+completeness?  The gap analysis blamed only L◯→'s consumed
+implication; if consuming-laxL + repaired-L◯→ is still complete, the
+cycle sources shrink (though impLLaxLax premise-1 goal-jump remains,
+so the fuel design is needed regardless).
+
+NEXT SESSION (stage 3 build order): (1) Seq/space plumbing: reuse
+seqEnumF; instance enumeration per conclusion; (2) I∀/I∃ by fuel
+recursion (computable, so the searcher can TEST the interpolant
+properties on concrete sequents before any proof — cheap sanity per
+Matthew's probe discipline, since a failed property here would be a
+counterexample, not a probe); (3) detour-removal + minimal-height
+lemmas; (4) the six properties per rule (12 core rules from her G3ip
+lemmas + 4 lax rules from Lemmas 3–6, keeping-form-adjusted); (5)
+assemble (∀l), (∃r), (∀∃) and UI for PLL — with UI for PILL as the
+nobot-context instance (nobot variable-free: p-freeness untouched).
