@@ -1885,3 +1885,58 @@ for the PICLL version — THEN build the m-chain (def/perm/weaken/inv/
 ctr/cut/comp, patterned on PLLG4H*) and port the computation.  The
 PICLL-first order at the calculus stage would mean building the ~2.5k
 line m-chain before any UI content exists to test it against.
+
+## §63 (2026-07-28) — Iemhoff's interpolant assignment transcribed; the adaptation obstacle identified: G4iLL″ is not ≪-reductive, so the recursion must run on the cumulative-set formulation
+
+Fetched and read Iemhoff, Proof Theory for Lax Logic (arXiv:2209.08976;
+PDF in the session scratchpad).  Her G4iLL (Fig. 2.3) = G4ip + R◯, L◯,
+R◯→, L◯→ — all four in CONSUMING form (L◯: Γ,ψ ⇒ ◯φ / Γ,◯ψ ⇒ ◯φ
+replaces the box by its opening; L◯→ premise 1 = Γ,◯χ ⇒ ◯φ drops both
+ψ and the implication).  The repo's repair keeps the box (membership)
+and keeps the implication in premise 1 — the gap sequent showed the
+consuming forms incomplete.
+
+Her UI method (§§6.3–6.7), the shape to adapt:
+  * interpolant assignment ι: to每 rule instance R with conclusion S,
+    p-free-of-lower-rank formulas ι∃ᵖRS, ι∀ᵖRS; to non-principal
+    occurrences ι∃ᵖR̄S, ι∀ᵖR̄S; ∀pS ↦ ∀⁺ ∨ ∀⁻ ∨ ∀ᵃᵗ, ∃pS ↦ ∃⁺ ∧ ∃⁻ ∧ ∃ᵃᵗ
+    (∀ᵃᵗ/∃ᵃᵗ the atom clauses); rewrite relation ⟶ confluent + SN by
+    reductivity (her Lemma 2 ← Iemhoff 2019b Lemma 3).
+  * three interpolant properties (∀l), (∃r), (∀∃) over p-partitions
+    (Sʳ, Sⁱ); six inductive properties per rule (IPP/IPN × ∀/∃, DPP,
+    DPN) with the induction along ≺; Theorem 5: balanced calculus +
+    sound assignment ⟹ UI.
+  * the standard assignment for the ◯-rules (her §6.6):
+      R◯, L◯:  ι∃ = ◯∃pS₁, ι∀ = ◯∀pS₁; non-principal ⊤/⊥.
+      R◯→:     ι∃ = ∃pS₁ ∧ (∀pS₁ → ∃pS₂); ι∀ = ∀pS₁ ∧ ∀pS₂;
+               non-principal ∃ = ⊤ or ∃p(Sᵃ ⇒); ∀ = ⊥.
+      L◯→:     ι∃ = ◯∃pS₁ ∧ (◯∀pS₁ → ∃pS₂); ι∀ = ◯∀pS₁ ∧ ∀pS₂;
+               non-principal via Sᵞ: for γ = ◯α→β ∈ Sᵃ,
+               Sᵞ⁰ = (Sᵃ\{γ} ⇒ ◯α), Sᵞ¹ = (Sᵃ\{γ}, β ⇒ Sˢ);
+               ∃-side ⋀ over boxed members and such γ; ∀-side
+               ⋁ ◯∀pSᵞ⁰ ∧ ∀pSᵞ¹.
+    Soundness = her Lemmas 3–6 (templates for ours).
+
+THE OBSTACLE (found by checking her side conditions against G4iLL″):
+her whole recursion lives on the reductive order ≺ built from the
+Dershowitz–Manna weight order ≪, and rule premises must be ≪-BELOW
+their conclusions.  The repo's REPAIRED rules are not: laxL and L◯→″
+keep their principals (membership) and add the opening, so the premise
+multiset properly grows — G4iLL″ terminates by the finite-space
+loop-check (G4s, the cumulative set calculus of PLLG4Set/PLLG4Dec),
+not by ≪-descent.  Consequently the interpolant recursion for PILL
+must run on the CUMULATIVE-SET formulation: sequents = (set context,
+goal) inside the finite closure space; the measure = the decider's own
+(remaining-space, …) order; the lower-rank side conditions of the
+assignment become later-in-that-well-order conditions.  This is the
+principled divergence from Iemhoff — the same spot as the
+completeness repair, as expected.
+
+NEXT (stage 3 concrete): (1) recon PLLG4Set's G4s rules + the exact
+decreasing measure of G4sh.dec; (2) define the interpolant pair over
+G4s-space by well-founded recursion on that measure, clauses = her
+table with the keeping-form adjustments (premise-1 of L◯→″ keeps the
+implication: its ι-clauses take S₁ = (X :: Γ ⇒ ◯A) with the
+implication still inside — check rank/space side conditions); (3) the
+six properties per rule, her Lemmas 3–6 adapted; (4) assemble
+UI(PILL); then the m-chain for PICLL.
