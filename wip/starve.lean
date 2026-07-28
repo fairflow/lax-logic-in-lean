@@ -77,3 +77,42 @@ end PLLND
 /-- info: 'PLLND.itpA_starve_floor' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.itpA_starve_floor
+
+/-! ## The starved-seal engine, and starvation beyond the floor -/
+
+namespace PLLND
+
+/-- Cons-weakening at `G4c`. -/
+private theorem wk {Γ : List PLLFormula} {C : PLLFormula} (ψ : PLLFormula)
+    (d : G4c Γ C) : G4c (ψ :: Γ) C := by
+  obtain ⟨n, h⟩ := d; exact ⟨n, h.weaken ψ⟩
+
+/-- **A starved seal closes.**  A boxed guarded implication whose value
+slot is `⊥`, together with a derivable guard, yields *any* `◯`-conclusion:
+open the box, fire the guard, explode.  This is the engine that dispatches
+every sealed branch whose inner partner is starved. -/
+theorem box_absurd {Δ : List PLLFormula} {X : PLLFormula} (W : PLLFormula)
+    (dBox : G4c Δ ((X.ifThen falsePLL).somehow)) (dX : G4c Δ X) :
+    G4c Δ W.somehow := by
+  refine G4c.cut dBox (G4c.laxL (.head _) ?_)
+  refine G4c.cut (wk _ (wk _ dX)) ?_
+  exact G4c.cut (G4c.mp X falsePLL _) (G4c.botL (.head _))
+
+/-- The eliminated atom's goal clause is empty at **every** budget. -/
+theorem itpAgoal_elimAtom (p : String) (S : Finset PLLFormula) (f b : Nat)
+    (Γ : List PLLFormula) : itpAgoal p S f b Γ (prop p) = [] := by
+  simp [itpAgoal]
+
+/-- **Eliminated-atom starvation, all budgets**: with an empty environment
+table the universal quantifier at the eliminated atom collapses to `⊥` at
+any budget, not only the floor. -/
+theorem itpA_starve_elimAtom (p : String) (S : Finset PLLFormula) (f b : Nat)
+    (Γ : List PLLFormula) (h : itpAenv p S f b Γ (prop p) = []) :
+    itpA p S (f + 1) b Γ (prop p) = falsePLL := by
+  rw [itpA_succ]
+  show orAll (itpAgoal p S f b Γ (prop p) ++ itpAenv p S f b Γ (prop p)) =
+    falsePLL
+  rw [itpAgoal_elimAtom, h]
+  rfl
+
+end PLLND

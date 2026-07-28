@@ -2149,3 +2149,52 @@ complete single-succedent calculus; the repair must carry ◯-disjunctions
 across implication eliminations (multi-succedent ◯-rule, or an
 elimination rule internalising the case split).  The PLL tower (§65) is
 untouched: it never used distL, and PLL never derives such sequents.
+
+## §68 (2026-07-28) — Seal analysis with fresh eyes: the E-ascent is avoidable at seals; box_absurd (the starved-seal engine) PROVED; the candidate landing measure
+
+Reading the four seal call sites (absorb_base 2605/2634/3142/3361)
+and the guarded/consumed campaign record produced three observations,
+the first two banked as theorems, the third as the design to build:
+
+1. **The E-ascent is NOT needed inside a seal.**  The recorded failure
+   ("the E-mate genuinely fails low", zoo-refuted at c = 1) closes off
+   the mutual-pair scheme — but inside a seal the entire outer context
+   crosses the box (laxL retains contexts), so the outer ambient
+   E@(c+1) is available INSIDE, and firing the opened source guard
+   needs only the DOWNWARD E@(c+1) ⊢ E@c (budget monotonicity), never
+   the ascent.  The seal's residual obligation is then the pair
+   descent one budget down at the same Γ — the same statement with
+   c − 1 — plus room bookkeeping.  So the low-band knot is purely the
+   TERMINATION of same-Γ seal chains, not the E-mate.
+
+2. **Starved seals close** (wip/starve.lean, PROVED, first-compile):
+   box_absurd — a boxed guarded implication whose value slot is ⊥,
+   with a derivable guard, yields ANY ◯-conclusion (open, fire,
+   explode).  Plus itpA_starve_elimAtom: the eliminated atom's goal
+   clause is empty at EVERY budget, so its table collapses to literal
+   ⊥ whenever the environment table is empty — starvation is not only
+   a floor phenomenon.  Together: any seal whose inner partner
+   starves is dispatched outright.
+
+3. **The candidate landing measure** (to formalise next): strengthen
+   the descent statement so seals recurse into IT rather than around
+   it, with the lexicographic measure
+       (defect S Γ, budget, unvisited jump goals, goal weight):
+   growth moves drop defect (defect_lt_of_mem) and reset everything;
+   seal moves drop budget at fixed defect (same Γ) and reset the rest;
+   fresh jump moves drop the unvisited count; repeat jumps must close
+   by splice from the in-context recorded value (the one step whose
+   DIRECTION must be checked against cascade_main's actual splice —
+   itp_budget_mono_le's orientation decides whether the splice works
+   below the pigeonhole band or needs the starvation classification to
+   discharge the low-budget repeats); decomposition drops weight.
+   The room hypothesis defect·(J+2) ≤ c funds exactly J+2 seal-burns
+   per defect level, which the measure consumes as budget-drops at
+   fixed defect — the arithmetic to verify is that goal repeats within
+   a fixed (defect, Γ) band arrive within J+2 burns (the pigeonhole
+   the prior session ran OUTSIDE seals, now run inside the recursion).
+
+NEXT ACTIONS: read cascade_main's splice case (the exact direction of
+itp_budget_mono_le at repeats) and the four call sites' room
+arithmetic; then draft the strengthened statement and run its measure
+against each of the 10 move classes on paper before any Lean.
