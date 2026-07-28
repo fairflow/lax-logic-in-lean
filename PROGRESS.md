@@ -1998,3 +1998,84 @@ lemmas; (4) the six properties per rule (12 core rules from her G3ip
 lemmas + 4 lax rules from Lemmas 3–6, keeping-form-adjusted); (5)
 assemble (∀l), (∃r), (∀∃) and UI for PLL — with UI for PILL as the
 nobot-context instance (nobot variable-free: p-freeness untouched).
+
+## §65 (2026-07-28) — THE RECORD CORRECTED: the syntactic tower already exists (July 8–11), assembled to the crown with ONE open kernel; §64's "fresh design" re-derived its architecture
+
+Matthew: "the syntactic route was tried in a different session, which
+ended a week ago."  Confirmed, and the trace IS in the repo — in wip/,
+outside the lakefile globs and outside PROGRESS.md (which postdates
+it), which is how the §61–64 survey missed it.  My memory thread
+recorded only its endpoint ("UI proof effort STOPPED 2026-07-12,
+budget stop" and the descent-probe redirect) without the tower itself
+— a memory failure, now fixed.
+
+The tower (commits ≤ b32ee91, 2026-07-11, all ancestors of HEAD):
+
+  LaxLogic/PLLG4UITrunc.lean  base: weight/atoms, G4c/G4s/G4sh + cut,
+                              defect/mu measures, the TRUNCATED
+                              QUANTIFIER TABLES itpE/itpA (fuel- and
+                              budget-indexed), itp_pfree, itp_sound.
+                              Axiom-clean.
+  wip/absorb_base.lean        kcap budget + absorption/stabilisation
+                              ladder (itp_stab_le); THE open kernel
+                              cascade_low_pos (sorry) — the only
+                              sorryAx entry.
+  wip/adequacy.lean           PieceClosed spaces; Pitts (iv)
+                              itp_adequate (sorry-free in itself).
+  wip/indiff.lean             FUEL INDIFFERENCE proved: above mu the
+                              quantifiers are syntactically equal
+                              across fuels.  (The §64 worry about
+                              cross-fuel mismatch was solved here.)
+  wip/spaceindiff.lean        space indifference proved.
+  wip/packaging.lean          existsP/forallP; Pitts (i)–(iii)
+                              outright; (iv)+factorisation modulo
+                              hFI/hSI.
+  wip/final.lean              discharges hFI/hSI; the crown
+                              uniform_interpolation_PLL, pinned:
+                              [propext, sorryAx, Classical.choice,
+                              Quot.sound], sorryAx via exactly
+                              cascade_low_pos.
+
+  95480dc: the box-free instance cascade_low_pos_boxfree PROVED ⟹
+  **uniform interpolation for IPC, sorry-free**, inside this repo.
+
+THE OPEN KERNEL, precisely (absorb_base.lean:2259,
+cascade_low_pos_box): a low-BUDGET descent for the ◯-involving case —
+from G4c Δ (itpE p S fuel (c+1) Γ) and G4c Δ (itpA p S fh (c+1) Γ g)
+(fh ≤ fuel, 1 ≤ defect S Γ, defect·(|jumpGoals|+2) ≤ c) conclude
+G4c Δ (itpA p S fuel c Γ g).  Its docstring records: zoo-tested TRUE
+at every probed instance; the known decompositions all fail (chains
+hit the (◯-goal, 0) false point; the E-mate fails at 1; continuations
+cannot cross seals); the semantics' mechanism at c = 1 is syntactic
+starvation (b-gated tables at saturated contexts collapse to ⊥); the
+proposed proof plan = starvation-collapse lemmas + a (defect, budget)-
+lex landing map meeting the pigeonhole band from below —
+"cascade_main-scale work, not attempted".
+
+THE UNIFIED HISTORY, now visible: the tower stalled on
+cascade_low_pos (budget stop 2026-07-12) → its 1-variable case was
+proved TRUE (3322f22) and "reduced to a single semantic-stabilisation
+descent" → that descent became the SEMANTIC campaign (semui files,
+layered/ranked pipeline) → which died at witness-realisability
+(§59).  One wall, two clothings: the ◯-case descent.  Matthew's
+skepticism was exactly right in shape; what he remembered as "the
+syntactic route led nowhere" is more precisely "the syntactic route
+reached ONE lemma, whose semantic reformulation then also stalled".
+
+REVISED PLAN (supersedes §64's from-scratch build): resurrect the
+tower (verify it compiles on v4.31; wire the build), then attack
+cascade_low_pos_box ON it, in order:
+  (1) the docstring's own plan (starvation-collapse + (defect,budget)-
+      lex landing map) — the prior session's named next step, never
+      attempted;
+  (2) the post-July-12 assets against it: the ◯-normalisation engine
+      (obAnd/obOb + PLL-valid laws thin the ◯-case combinatorics),
+      canonN-style completeness thinking, and the PILL reading (nobot
+      in Γ: does infallibility shrink the starvation analysis? —
+      Matthew's original hope, now with a precise target);
+  (3) only if (1)+(2) fail: the consuming-laxL redesign / Iemhoff-
+      faithful sequent order, checking completeness of consuming-laxL
+      + repaired-L◯→ first.
+The probe discipline: cascade_low_pos_box is zoo-TRUE, so this is
+proof work, not probing; probes only if a sub-lemma of (1) looks
+unsatisfiable.
