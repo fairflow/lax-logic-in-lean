@@ -2285,3 +2285,57 @@ entry pairs components at b−1 (site 3142: cascade_low at c', goal
   chained-d2, S = {◯p⊃r, r, ◯r⊃s, s}) through the tables at c = 2, 1
   and read off WHICH candidate actually closes it in the zoo — the
   battery says something closes it; the table trace will show what.
+
+## §71 (2026-07-28) — THE TRACE DECIDES: every kernel branch has a designated closing mechanism; the build plan
+
+Computed the chained-d2 configuration's actual tables (scratch
+trace2cycle: S = {◯p⊃r, r, ◯r⊃s, s}, Γ = [◯p⊃r], budgets 0–3):
+
+  A(◯p)@0 = A(◯r)@0 = [] (⊥), E@0 = [] (⊤);
+  A(◯p)@b = [goal-γ ◯, clause-γ ∧, clause-γ ∧, trunc ◯] for all b ≥ 1;
+  at the grown context r :: Γ: A(◯p) = [goal-γ, trunc] — the clause-γ
+  family DIES after its consequent lands (guard `B ∈ Γ`).
+
+Three corrections to §70, upgrading fears to mechanisms:
+
+1. **Clause-γ second components are growth-financed**: the ∧-pair's
+   continuation component lives at B :: Γ where the firing clause is
+   dead — each burn permanently grows Γ and pays DEFECT (B ∈ S).  The
+   feared same-Γ head cycle across DIFFERENT clauses does not exist:
+   consequent-landing kills the clause.
+2. **The true burner is the self-loop**: the clause-γ boxed component
+   references its own head one budget down at the same Γ
+   (◯(E@(b−1) ⇢ A@(b−1)(Γ, ◯A₁)) inside A(Γ, ◯A₁)'s own table via
+   the clause ◯A₁⊃B).  This chain is structurally decreasing in the
+   budget alone and BOTTOMS AT FLOOR STARVATION: at budget 1 the
+   source's component is ◯(E@0 ⇢ A@0) with A@0 = ⊥ literally — and
+   gamma_seal_starved (T2, PROVED) dispatches the branch.  No
+   pigeonhole, no seen-set, no room consumption beyond the budget
+   itself: the recursion is plain downward induction on c.
+3. **First components at atom goals** either hit the eliminated atom
+   (itpA_starve_elimAtom ⟹ starved ⟹ their pair disjunct is
+   ⊥-conjuncted, handled by orAll-elim's absurdity) or decompose by
+   weight.
+
+CLOSING-MECHANISM TABLE (kernel(c) branch → mechanism):
+  goal decomposition   → weight ↓ (fuel induction as in the bf clone)
+  growth disjuncts     → defect ↓ (strong induction, room resets)
+  jump first-components→ atom/starve or weight ↓
+  clause-γ seal        → budget ↓ structural; base = T2 at the floor
+  goal-γ seal          → same budget, weight ↓ (unboxing)
+  trunc seal           → same budget, one-level table strip (inner
+                         induction on the disjunct list)
+  fresh-antecedent     → piece-closed S: dead (goal-membership
+                         invariant); ∀S form: the residual hbox case
+  starved source       → T2 outright
+
+BUILD PLAN: clone cascade_main_bf's skeleton (929–2071, the shifted
+ledger) for the ◯-involving case with the (defect, budget, fuel,
+weight)-lex replacing the pigeonhole: no seen-sets, no continuations —
+the seals recurse structurally on the budget with T2 as the base.
+Estimated at bf-scale (~1,100 lines).  The unknowns left are
+detail-level (the trunc strip's bookkeeping; the exact orAll plumbing
+at ∧-pair branches; the ∀S fresh-antecedent case, which may keep a
+piece-closure hypothesis — acceptable: thread PieceClosed through, the
+consumer has it).  If this build closes, cascade_low_pos_box falls,
+and with it the crown's sorryAx — uniform_interpolation_PLL complete.
