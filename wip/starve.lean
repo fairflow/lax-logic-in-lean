@@ -116,3 +116,40 @@ theorem itpA_starve_elimAtom (p : String) (S : Finset PLLFormula) (f b : Nat)
   rfl
 
 end PLLND
+
+/-! ## T2: the starvation dispatch, table-keyed -/
+
+namespace PLLND
+
+/-- Extend a singleton-context derivation by an arbitrary tail. -/
+private theorem wkctx {Δ : List PLLFormula} {A C : PLLFormula}
+    (d : G4c [A] C) : G4c (A :: Δ) C := by
+  induction Δ with
+  | nil => exact d
+  | cons ψ Δ ih =>
+      obtain ⟨n, h⟩ := ih
+      exact ⟨n, (h.weaken ψ).perm (List.Perm.swap A ψ Δ)⟩
+
+/-- **A starved γ-seal dispatches**: a source disjunct
+`◯(E@x ⇢ A@x(Γ, gs))` whose value slot is starved (`A@x(Γ, gs) = ⊥`),
+under an ambient existential table at any budget `y ≥ x`, yields *any*
+`◯`-conclusion — fire the guard by downward budget monotonicity and
+explode.  With `itpA_starve_floor` / `itpA_starve_elimAtom` this closes
+every sealed branch of the low-band descent whose source partner is
+starved. -/
+theorem gamma_seal_starved (p : String) (S : Finset PLLFormula)
+    (f x y : Nat) (Γ : List PLLFormula) (gs : PLLFormula)
+    {Δ : List PLLFormula} (W : PLLFormula) (hxy : x ≤ y)
+    (hstarve : itpA p S f x Γ gs = falsePLL)
+    (hamb : G4c Δ (itpE p S f y Γ))
+    (dBox : G4c Δ (((itpE p S f x Γ).ifThen (itpA p S f x Γ gs)).somehow)) :
+    G4c Δ W.somehow := by
+  rw [hstarve] at dBox
+  exact box_absurd W dBox
+    (G4c.cut hamb (wkctx ((itp_budget_mono_le p S hxy f).1 Γ)))
+
+end PLLND
+
+/-- info: 'PLLND.gamma_seal_starved' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.gamma_seal_starved
