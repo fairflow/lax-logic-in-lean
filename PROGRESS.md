@@ -2249,3 +2249,39 @@ descent at non-starving cycling states — a finitely-generated family
 per (S, Γ) — to be attacked by per-shape stabilisation (the state
 graph at fixed Γ is finite; the conjecture is that within one full
 γ-head cycle every branch either starves, unboxes, or grows).
+
+## §70 (2026-07-28) — Call-site verification corrects the state graph: only clause-γ seals burn budget
+
+Reading the four cascade_low call sites in cascade_main against the
+clause tables corrects §69: the goal-γ disjunct of table@b is
+◯(E@(b−1) ⇢ A@b(Γ, D)) — the VALUE component stays at budget b (only
+the guard drops), so the goal-γ seal recurses at the SAME budget with
+the goal UNBOXED (weight strictly ↓; call site 2634: cascade_low at
+c'+1, goal D).  Likewise the truncation seal's inner sits at budget b
+(site 3361, same budget), and the fresh-antecedent seal (2605) keeps
+the budget.  ONLY the clause-γ (jump-family) seal burns: its table
+entry pairs components at b−1 (site 3142: cascade_low at c', goal
+◯A₁).  Consequences:
+
+* The budget-burning moves and the goal-cycling moves COINCIDE
+  (clause-γ jumps into the finite γ-head set) — the open residue is
+  exactly: chains of clause-γ jumps at fixed Γ, one budget per jump,
+  goals in the finite head set; everything else terminates by weight
+  (goal-γ, decomposition), defect (growth), or dispatches by
+  starvation (T2, gamma_seal_starved).
+* Room arithmetic: the ledger funds J+2 burns per defect level, and a
+  clause-γ chain repeats a head within J+1 jumps — the pigeonhole
+  DOES arrive within the funded window; what fails at a repeat is
+  only the closing step (values lift UP, the slot points DOWN).  So
+  the entire kernel now rests on the single question: WHAT CLOSES A
+  CLAUSE-γ HEAD REPEAT AT FIXED Γ.  Candidates, in order: (a) the
+  trunc disjunct of the repeat target (re-enter the table one level
+  in, where the first visit's value is spliceable by A-upward mono);
+  (b) starvation of the repeat target's own γ-clause (the pair
+  E-component at the floor guard may starve the b-gated families
+  within J steps of the floor); (c) the fresh-antecedent equality
+  law (battery-exact, unproven) applied at the repeat guard.
+  Next action: hand-execute the ◯p ⇄ ◯r 2-cycle (the zoo's
+  chained-d2, S = {◯p⊃r, r, ◯r⊃s, s}) through the tables at c = 2, 1
+  and read off WHICH candidate actually closes it in the zoo — the
+  battery says something closes it; the table trace will show what.
