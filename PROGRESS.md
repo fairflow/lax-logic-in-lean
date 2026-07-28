@@ -2504,3 +2504,25 @@ branch-mechanism lemmas standalone, then assemble the clone:
      in context ⟹ ◯(E′ ⇢ A′)) — closes the ◯χ box-growth branches and
      the clause-γ seal plumbing in one shape;
   3. the trunc-strip lemma; 4. the assembled clone per §75.
+
+## §77 (2026-07-28) — Fifth correction: no truncation strip at non-◯ goals; truncations PAIR across the descent; the inner statement is the others-descent
+
+Writing trunc_strip exposed its impossibility: unwrapping the source's
+truncation box needs a ◯-conclusion for laxL, and the strip's
+conclusion orAll(others) is not ◯-shaped — the seal restriction, one
+level in.  The correct organisation, verified by hand at the elim:
+the descent pairs trunc-to-trunc — the source-trunc branch commits the
+TARGET truncation ◯(E@(c−1) ⇢ others@c) (a ◯-goal), opens the source
+box inside it, and the residual obligation is the OTHERS-DESCENT
+  [E-ambient, others@(c+1)-value] ⊢ orAll(others@c)
+with no truncation on either side.  Consequences: (a) trunc_strip is
+STRUCK; (b) the clone's inner statement is the others-descent (strip-
+free tables both sides), with the full-table kernel as a two-branch
+wrapper (trunc↦trunc, others↦others); (c) box_open (public box_fire)
+PROVED and landed — the guard-fire step for every ◯-goal branch.
+
+Five hand-caught corrections now (§§72, 74, 77 design; §71 upgrades);
+the build's inner loop is the others-descent with: growth (defect),
+box-growth ◯χ (defect, box_remap_free), goal-γ (unbox, weight),
+clause-γ (budget tier + box_remap_free; floor by T2), jump family
+(pigeonhole as in bf), decomposition (weight), atoms (starve/init).

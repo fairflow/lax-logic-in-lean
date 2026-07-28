@@ -194,3 +194,25 @@ end PLLND
 /-- info: 'PLLND.box_remap_free' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.box_remap_free
+
+/-! ## Public box opening -/
+
+namespace PLLND
+
+/-- Open a derivable boxed guarded implication against a `◯`-goal: fire the
+guard and continue with the value in context (`absorb_base`'s private
+`box_fire`, replicated public). -/
+theorem box_open {Δ : List PLLFormula} {X Y W : PLLFormula}
+    (dBox : G4c Δ ((X.ifThen Y).somehow)) (dX : G4c Δ X)
+    (k : G4c (Y :: Δ) W.somehow) : G4c Δ W.somehow := by
+  refine G4c.cut dBox (G4c.laxL (.head _) ?_)
+  have dX' : G4c ((X.ifThen Y) :: (X.ifThen Y).somehow :: Δ) X :=
+    wksub (by intro ψ h; simp only [List.mem_cons] at h ⊢; tauto) dX
+  refine G4c.cut (G4c.cut dX' (G4c.mp X Y ((X.ifThen Y).somehow :: Δ))) ?_
+  exact wksub (by intro ψ h; simp only [List.mem_cons] at h ⊢; tauto) k
+
+end PLLND
+
+/-- info: 'PLLND.box_open' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.box_open
