@@ -1789,3 +1789,59 @@ Scope kept precise: exUI/allUI interpolate against VARIABLE-FREE ψ
 additional variables the property is not asserted — that is the
 ≥2-variable theatre, where the 1-variable fragment (still infinite:
 the Rieger–Nishimura lattice survives ¬◯⊥) becomes the target.
+
+## §61 (2026-07-28) — UI for PCLL+¬◯⊥, stage 1: the ◯-normalisation engine, the IPC calibration, and the divergence separator
+
+Matthew's directive: prove UI completely for PCLL+¬◯⊥, then adapt to
+PLL+¬◯⊥; probe only when stuck.  Route chosen: SYNTACTIC (Pitts-style
+computation over a terminating calculus).  The semantic
+bisimulation-quantifier route would re-meet the fragment-infinitude
+wall one variable up (the 1-variable target fragment of the ≥2-variable
+problem is Rieger–Nishimura-infinite even under ¬◯⊥); the syntactic
+technology is exactly what handles infinite target fragments (IPC).
+
+Landed tonight (LaxLogic/PLLNoFallNF.lean, PLLNoFallSep.lean; all
+guard-pinned, [propext, Quot.sound] or clean-classical):
+
+  * EquivNF congruence kit; the lattice-homomorphism laws: ◯ commutes
+    with ∧ (strong monad), ∨ (distribution — its single use), ⊥ (the
+    axiom), and is idempotent.
+  * nf : every formula is interderivable (nf_equiv) with a ◯-NORMAL
+    form — ◯ only on atoms and implications (nf_normal); derivability
+    invariant under normalisation (nf_iff).  The calculus and the
+    interpolant computation need only speak normal forms; the ◯∨/◯⊥
+    cases are compiled away.
+  * derivUNoFall_iff_IPLND: the ◯-free fragment of PCLL+¬◯⊥ is EXACTLY
+    IPC (erasure kills the axiom and the distribution instances;
+    IPLND embeds back).  Calibration: full UI here CONTAINS Pitts'
+    theorem for IPC; nothing cheaper closes it.
+  * THE SEPARATOR (sep_derivable / sep_not_pll_nofall, both by decide):
+    ◯(a⊃(b∨c)), ◯a ⊢ ◯b∨◯c is ◯-normal, PCLL+¬◯⊥-derivable, and NOT
+    PLL+¬◯⊥-derivable (five-world infallible ∀∃-countermodel,
+    necessarily non-confluent).  So distribution is NOT admissible
+    from ¬◯⊥ even on normal forms: the PCLL+¬◯⊥ calculus needs a
+    distribution-aware ◯-rule (laxL with conclusions in the
+    ∨-closure of ◯-formulas and ⊥ — sound by confluence + Rm ⊆ Ri,
+    derives distribution, and its ⊥-case carries the density power),
+    while PLL+¬◯⊥ keeps G4iLL″'s laxL.  The two Pitts computations
+    will differ exactly there.
+
+LITERATURE (checked tonight): Iemhoff, Proof Theory for Lax Logic
+(arXiv:2209.08976) claims UI for PLL via G4iLL; its completeness
+(Corollary 1, via Thm 1 of arXiv:2011.11847) is REFUTED
+machine-checked in this repo (PLLG4Gap.lean: ◯G', F' ⇒ r with
+F' = ◯p⊃r, G' = F'⊃◯p — Howe duplication straddling the box-opening).
+So the published UI-for-PLL proof has a gap at its completeness step,
+and this programme would repair a published result, not merely fill a
+silence.
+
+NEXT (stage 2): the calculus.  For PCLL+¬◯⊥: G4iLL″ with the widened
+laxL/impLLaxLax conclusions (◯-disjunctive targets incl. ⊥), stated on
+◯-normal sequents; prove sound for DerivUNoFall and complete (target:
+via the canonN semantics or by adapting the G4c equiv_nd chain);
+establish the termination order.  For PLL+¬◯⊥: G4iLL″ + nobot as
+persistent hypothesis (complete by equiv_nd already — only the
+◯⊥-absurdity needs building in or keeping as the hypothesis).  Then
+stage 3: the Pitts computation by induction on the termination order,
+following the mechanised-UI blueprint (Férée–van der Giessen–van
+Gool–Shillito's Coq development for IPC/K/GL).
