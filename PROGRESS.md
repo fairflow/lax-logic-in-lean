@@ -2444,3 +2444,35 @@ has a live ◯χ-member, and it is STRUCK as a target.  Correspondingly:
 The lesson logged: every base lemma gets a hand-execution against ALL
 table arms before Lean effort — two design corrections (§72, §74)
 have each been caught this way at zero proof cost.
+
+## §75 (2026-07-28) — The mining instrument, and the ◯-clone's skeleton delta
+
+MINING: the stuck shape is adjudicable by derivation-mining — the
+kernel instance at a concrete configuration is a sequent of computable
+formulas, and the G4c searcher (complete for the calculus) either
+finds its derivation (revealing the route for the build) or exhausts
+(suspicion of falsity → probe-licensed).  Two configurations queued:
+A (zoo-covered, growth-dead: S = {◯p⊃r, r}, Γ = [◯p⊃r], goal ◯r,
+c: 2→1, fuel 2) and B (growth-LIVE: add u∨v to S and Γ — possibly
+OUTSIDE the zoo's coverage, so B doubles as a falsity check on the
+stuck shape).  Background run in progress (findBounded 300k).
+
+THE ◯-CLONE DELTA against cascade_main_bf's skeleton (read at 929–):
+the bf clone already carries the shifted ledger (≤ c + (J+2)), the
+piece-closure hypotheses (hand/hor/himp), and — decisively — the
+goal/context S-membership invariants (hgS, hΓS), which is exactly
+what kills the fresh-antecedent seal.  The ◯-clone (cascade_main_box):
+  * hypotheses: piece-closure extended by ◯-pieces (hsome : ◯A ∈ S →
+    A ∈ S); NO box-freeness;
+  * induction: (defect strong, BUDGET strong, fuel) — the added budget
+    tier funds the clause-γ seal recursion (c → c−1) structurally;
+  * seal branches: clause-γ → budget-tier recursion, T2 +
+    trunc-escape at the floor; goal-γ → same-budget unbox (weight,
+    inner fuel induction); trunc → strip induction on the disjunct
+    list; ◯χ-env → box-growth (defect tier + free-direction remaps);
+    fresh-antecedent → dead by hgS/hΓS;
+  * everything else verbatim from the bf clone (growth, jump
+    pigeonhole, decomposition, the hambL lowered-ambient helper).
+On completion: cascade_low_pos_box for piece-closed S := the clone's
+entry; the ∀S residue keeps the hbox split (consumer unaffected);
+rebuild the tower; re-audit the crown.
