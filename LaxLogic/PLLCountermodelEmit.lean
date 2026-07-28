@@ -367,10 +367,35 @@ partial def build (Γ : List PLLFormula) (C : PLLFormula) :
 /-- **The countermodel emitter.**  Returns a finite model and a refuting
 world for underivable sequents — every candidate is validated by the
 *verified* `checkB` before being returned, so a wrong guess can only yield
-`none`, never a wrong certificate. -/
-partial def emit (Γ : List PLLFormula) (C : PLLFormula) :
+`none`, never a wrong certificate.
+
+The first thing it does is *run proof search*: `build` is exponential in
+the closure, so it is worth a search to avoid building the model of a
+provable sequent.  Two parameters control that search, and both exist to
+stop this stage from being the unbounded one.
+
+* `budget` caps it at that many visited sequents.  A **cutoff** returns
+  `none`: the sequent might be provable, and building the model of a
+  sequent that might be provable is exactly the work the budget was set to
+  avoid.  So under a budget this emitter answers only about sequents whose
+  search space it could exhaust — which is what `Search.Config.findBudget`
+  promises everywhere else.
+* `precheck := false` skips the search altogether.  Pass it when the
+  caller has *already* run a search to exhaustion and found nothing, as
+  `Search.settleWhy` has by the time it reaches this stage; the saving is
+  one whole search on the expensive case. -/
+partial def emit (Γ : List PLLFormula) (C : PLLFormula)
+    (budget : Option Nat := none) (precheck : Bool := true) :
     Option (FinCM × Nat) :=
-  if (G4cTm.find Γ C).isSome then none
+  let stop :=
+    if !precheck then false
+    else match budget with
+      | none   => (G4cTm.find Γ C).isSome
+      | some b => match G4cTm.findBounded b Γ C with
+        | (some _, _) => true   -- provable: no countermodel exists
+        | (none, 0)   => true   -- cut off: refuse to pay for `build`
+        | (none, _)   => false  -- space exhausted, nothing found
+  if stop then none
   else
     let (M, _) := build Γ C
     (List.range M.n).findSome? fun w =>
@@ -395,16 +420,23 @@ def restrict (M : FinCM) (keep : List Nat) : FinCM :=
 /-- **Greedy countermodel minimisation**: repeatedly remove any single
 world whose removal leaves the checker satisfied, until none can go.
 Untrusted, checker-gated at every step — the result is certified by the
-same `checkB` as the input. -/
+same `checkB` as the input.
+
+`accept` is an extra property the intermediate models must keep, the same
+untrusted pre-filter as `Search.Config.accept`.  It matters when the
+property is *not* inherited by submodels: mutual confluence (`RNC.confB`)
+is the case in hand — deleting a world can destroy it — so a PCLL search
+must pass `confB` here, or minimisation would hand back a model that no
+longer refutes PCLL.  The default keeps every model. -/
 partial def minimise (M : FinCM) (w : Nat) (Γ : List PLLFormula)
-    (C : PLLFormula) : FinCM × Nat :=
+    (C : PLLFormula) (accept : FinCM → Bool := fun _ => true) : FinCM × Nat :=
   let step := (List.range M.n).filter (· ≠ w) |>.findSome? fun j =>
     let keep := (List.range M.n).filter (· ≠ j)
     let M' := restrict M keep
     let w' := keep.idxOf w
-    if FinCM.checkB M' w' Γ C then some (M', w') else none
+    if accept M' && FinCM.checkB M' w' Γ C then some (M', w') else none
   match step with
-  | some (M', w') => minimise M' w' Γ C
+  | some (M', w') => minimise M' w' Γ C accept
   | none => (M, w)
 
 /-- One sweep of checker-gated attribute deletions: each fallible flag,
@@ -413,9 +445,9 @@ removed if `checkB` still certifies the sequent afterwards.  Deleting a
 relation pair can break transitivity or `Rₘ ⊆ Rᵢ`; the `wellB` conjunct
 of `checkB` rejects exactly those edits, so gating on the full check
 suffices. -/
-def cleanStep (M : FinCM) (w : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
-    FinCM :=
-  let ok : FinCM → Bool := (FinCM.checkB · w Γ C)
+def cleanStep (M : FinCM) (w : Nat) (Γ : List PLLFormula) (C : PLLFormula)
+    (accept : FinCM → Bool := fun _ => true) : FinCM :=
+  let ok : FinCM → Bool := fun M' => accept M' && FinCM.checkB M' w Γ C
   let M₁ := M.fall.foldl (init := M) fun acc i =>
     let cand := { acc with fall := acc.fall.erase i }
     if ok cand then cand else acc
@@ -443,9 +475,29 @@ unchanged.  Untrusted and greedy, like `minimise`: every step is gated by
 the verified `checkB`, so a wrong edit can only be rejected, never
 mis-certify. -/
 partial def clean (M : FinCM) (w : Nat) (Γ : List PLLFormula)
-    (C : PLLFormula) : FinCM × Nat :=
-  let M' := cleanStep M w Γ C
-  if M' = M then (M, w) else clean M' w Γ C
+    (C : PLLFormula) (accept : FinCM → Bool := fun _ => true) : FinCM × Nat :=
+  let M' := cleanStep M w Γ C accept
+  if M' = M then (M, w) else clean M' w Γ C accept
+
+/-- **The countermodel simplifier**: `minimise` and `clean` run
+alternately to a joint fixpoint.
+
+Neither pass subsumes the other, and each can re-enable the other:
+deleting a world can leave a relation pair with nothing to do, and
+deleting a relation pair can leave a world unreachable, so a single
+`minimise`-then-`clean` is not in general a fixpoint of either.  The loop
+terminates because every round that changes anything deletes at least one
+world, pair or flag.
+
+`accept` is threaded through both passes; see `minimise`.  Untrusted and
+greedy like its two components: every intermediate model is gated by the
+verified `FinCM.checkB`, so the result is certified exactly as the input
+was, and a wrong edit can only be rejected. -/
+partial def simplify (M : FinCM) (w : Nat) (Γ : List PLLFormula)
+    (C : PLLFormula) (accept : FinCM → Bool := fun _ => true) : FinCM × Nat :=
+  let (M₁, w₁) := minimise M w Γ C accept
+  let (M₂, w₂) := clean M₁ w₁ Γ C accept
+  if M₂ = M && w₂ = w then (M₂, w₂) else simplify M₂ w₂ Γ C accept
 
 /-- Semantic profile of a world: which of the given formulas it forces —
 for reading minimised models, whose belief-set provenance is gone. -/
@@ -462,7 +514,12 @@ partial def emitMin (Γ : List PLLFormula) (C : PLLFormula) :
 /-- Emit, minimise, then clean: the systematic countermodel cut down by
 checker-gated world deletion, then stripped of vestigial attributes by
 checker-gated edits.  The result is certified by the same `checkB` as
-every intermediate model. -/
+every intermediate model.
+
+One pass of each, in that order — `simplify` is the version that alternates
+the two to a fixpoint, and is what `Search.Config.simplify` runs.  The two
+agree on every model in this file; they can differ when a cleaned edge
+leaves a world with nothing to do. -/
 partial def emitMinClean (Γ : List PLLFormula) (C : PLLFormula) :
     Option (FinCM × Nat) :=
   (emit Γ C).map fun (M, w) =>

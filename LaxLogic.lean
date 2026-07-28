@@ -45,8 +45,10 @@ import LaxLogic.PLLSearch
 import LaxLogic.PLLSearchEx
 import LaxLogic.PLLSearchConf
 import LaxLogic.PLLSearchCmd
-import LaxLogic.PLLSearchDemo
 import LaxLogic.PLLDiagram
+import LaxLogic.PLLDiagramCmd
+import LaxLogic.GuardMsgsShow
+import LaxLogic.PLLSearchDemo
 import LaxLogic.PLLEvidence
 import LaxLogic.PLLFinComp
 import LaxLogic.PLLRealCompleteness

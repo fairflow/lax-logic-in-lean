@@ -197,6 +197,58 @@ def toSvg (M : FinCM) (pos : Nat → Int × Int) (labels : Nat → String × Str
       :: (hasseRi M).map edge ++ (riEquiv M).map eqLink ++ idx.flatMap node
       ++ ["</svg>"])
 
+/-! ## One-call rendering
+
+`toTikz` and `toSvg` take a layout, a labelling and a canvas size, because
+the committed figures below are curated.  A countermodel that has just come
+back from a search has no curation to offer, and asking for five arguments
+is the reason a search result never gets drawn.  The three functions here
+take the model and nothing else: layout from `autoPos`, labels read off the
+valuation, canvas size from the extent of the layout.
+
+The picture is the same one `Search.renderCM` prints in text — same
+transitive reduction, same `Rₘ` arrows, same fallible marking — so the two
+never disagree; this one is legible at twenty worlds, where the text form
+is a wall. -/
+
+/-- Labels read off the model itself: the atoms a world forces, `∅` when it
+forces none, `⊥ (fallible)` for a fallible world.  No promise labels — a
+model that has been through the simplifier has no belief-set provenance
+left, and its worlds mean whatever the valuation says they mean. -/
+def labelsOfVal (M : FinCM) : Nat → String × String := fun i =>
+  if M.fallB i then ("⊥ (fallible)", "")
+  else
+    let ats := (M.val.filterMap fun p =>
+      if p.1 = i then some p.2 else none).eraseDups
+    (if ats.isEmpty then "∅" else String.intercalate ", " ats, "")
+
+/-- Canvas big enough for `autoPos`: the extent of the layout plus room for
+the node radius and the label under the lowest row. -/
+def autoSize (M : FinCM) : Nat × Nat :=
+  let idx := List.range M.n
+  let mx := idx.foldl (fun a i => max a (autoPos M i).1) 0
+  let my := idx.foldl (fun a i => max a (autoPos M i).2) 0
+  ((mx + 120).toNat, (my + 120).toNat)
+
+/-- **A model as an SVG**, laid out automatically and labelled from the
+valuation.  `w?` rings the refuting world. -/
+def svgOf (M : FinCM) (w? : Option Nat := none) : String :=
+  let (width, height) := autoSize M
+  toSvg M (autoPos M) (labelsOfVal M) w? width height
+
+/-- **A model as a TikZ picture**, laid out automatically and labelled from
+the valuation — the same drawing as `svgOf`, for a paper. -/
+def tikzOf (M : FinCM) (w? : Option Nat := none) : String :=
+  toTikz M (autoPos M) (labelsOfVal M) w?
+
+/-- Write `svgOf M w?` to `path`, creating the directory if need be.  VS
+Code previews an `.svg` on opening it, so this is the shortest route from a
+countermodel to a picture of it. -/
+def writeSvg (path : System.FilePath) (M : FinCM) (w? : Option Nat := none) :
+    IO Unit := do
+  if let some dir := path.parent then IO.FS.createDirAll dir
+  IO.FS.writeFile path (svgOf M w?)
+
 /-! ## The committed figures
 
 Curated positions and labels for the three paper figures.  Positions
