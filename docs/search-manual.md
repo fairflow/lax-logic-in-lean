@@ -7,15 +7,32 @@ propositional lax logic, and turning the answer into a Lean theorem.  Every
 Lean snippet below was compiled against the tree this file sits in, and every
 output shown is that compilation's own.
 
-The quickest route is §2, three commands that take a sequent and print a
-verdict, the evidence for it, and a paste-ready theorem recording it.  §§3–5
+The quickest route is §2, four commands that take a sequent and print a
+verdict, the evidence for it, and a paste-ready theorem recording it.  §§3–6
 describe the functions behind the commands, for use inside programs.
 
 Modules: `LaxLogic/PLLSearchCmd.lean` (the commands),
 `LaxLogic/PLLSearch.lean` (the staged procedure and the API),
 `LaxLogic/PLLSearchConf.lean` (PCLL), `LaxLogic/PLLG4Term.lean` (the proof
 searcher), `LaxLogic/PLLCountermodelEmit.lean` (the verified countermodel
-checker), `LaxLogic/PLLSearchEx.lean` (worked examples).
+checker and the simplifier), `LaxLogic/PLLDiagram.lean` +
+`LaxLogic/PLLDiagramCmd.lean` (pictures),
+`LaxLogic/PLLSearchEx.lean` (worked examples).
+
+## 0. Which command do I want?
+
+| you want | in PLL | in PCLL |
+|---|---|---|
+| a verdict either way | `#search Γ ⊢ C` | see §5 |
+| a countermodel | `#refute Γ ⊢ C` | **`#refuteConf Γ ⊢ C`** |
+| a proof | `#search Γ ⊢ C` | §5.1: add `distF` instances, then `#search` |
+| a picture of a countermodel | `#draw Γ ⊢ C to "f.svg"` | `#draw … with (RNC.confluentConfig)` |
+
+The one trap worth stating twice: **a countermodel found by `#refute` refutes
+PCLL only if it is mutually confluent**, and most of the interesting ones are
+not.  Every refutation report says which case it is in, on its `scope` line.
+Use `#refuteConf` whenever the claim is about PCLL — it filters by confluence
+during the search, so it cannot hand you an unusable model.
 
 ---
 
@@ -105,6 +122,17 @@ it builds a candidate model out of the prime deductively-closed subsets of
 the subformula closure of the sequent.  It is complete over that closure but
 exponential, so it is run only when the closure is small.
 
+**Simplification.**  Deleting from a countermodel — worlds, relation pairs,
+valuation pairs, fallible flags — for as long as the verified checker still
+certifies what is left (`CounterEmit.simplify`).  Both stages above propose
+models far larger than the refutation needs, so this is on by default
+(`Config.simplify`); §3 has the details.
+
+**Scope of a countermodel.**  Which logic it refutes.  Every finite
+countermodel refutes PLL; it refutes PCLL as well exactly when it is
+mutually confluent (§5).  The `scope` line of a refutation report states
+which of the two, having tested `RNC.confB` on the model returned.
+
 **Trust.**  Three theorems, and nothing else, are kernel-checked guarantees:
 
 1. `PLLND.Search.proved_sound : G4cTm Γ C → Nonempty (LaxND Γ C)`;
@@ -114,12 +142,12 @@ exponential, so it is run only when the closure is small.
 
 Everything that *produces* a certificate is untrusted: the backward searcher,
 the fast vector evaluator that screens candidate models, the frame decoration
-enumeration, the emitter, the `Config.accept` filter, the renderers and the
-snippet emitters.  Each is `partial` or heuristic, and every candidate it
-proposes passes through `checkB` or through Lean's typechecker before it is
-returned.  A bug in the search can therefore lose answers; it cannot
-manufacture one.  No component uses `native_decide`, so a pinned certificate
-audits as `[propext, Quot.sound]`.
+enumeration, the emitter, the simplifier, the `Config.accept` filter, the
+renderers and the snippet emitters.  Each is `partial` or heuristic, and
+every candidate it proposes passes through `checkB` or through Lean's
+typechecker before it is returned.  A bug in the search can therefore lose
+answers; it cannot manufacture one.  No component uses `native_decide`, so a
+pinned certificate audits as `[propext, Quot.sound]`.
 
 Two consequences worth stating plainly.
 
@@ -135,17 +163,22 @@ Two consequences worth stating plainly.
 
 ---
 
-## 2. Asking about a sequent: `#search`, `#refute`, `#refuteConf`
+## 2. Asking about a sequent: `#search`, `#refute`, `#refuteConf`, `#draw`
 
-Three commands cover the everyday use of the toolkit.  Each takes a sequent
+Four commands cover the everyday use of the toolkit.  Each takes a sequent
 and prints a block: the sequent in the usual notation, the verdict, the
 evidence, and Lean source for the theorem that records the finding.
 
-`LaxLogic/PLLSearchDemo.lean` is a runnable companion to §§2–6 of this
-document: open it in VS Code and step through it, and the info view shows each
-output as you go.  There every example is wrapped in `#guard_msgs`, so what is
-*typed* and what is *printed* are separated mechanically, and the build checks
-that the printed text is still what the toolkit produces.
+`LaxLogic/PLLSearchDemo.lean` is a runnable companion to §§2–7 of this
+document: open it in VS Code, put the cursor on a command, and the info view
+shows that command's output.  Every example there is wrapped in
+`#guard_msgs_show`, which checks the output against the docstring above it
+*and* leaves it on screen — so what is *typed* and what is *printed* are
+separated mechanically, the build fails if the printed text drifts, and the
+file can still be stepped through.  (Plain `#guard_msgs` deletes the messages
+it checks, which makes a file of `#guard_msgs`-wrapped commands show nothing
+at all in the info view.  `LaxLogic/GuardMsgsShow.lean` is the fifteen-line
+module that fixes that.)
 
 ### Setup
 
@@ -160,6 +193,9 @@ A file of your own needs two lines:
 import LaxLogic.PLLSearchCmd
 open PLLFormula PLLND PLLND.Search
 ```
+
+Import `LaxLogic.PLLDiagramCmd` instead of `LaxLogic.PLLSearchCmd` to get
+`#draw` (§6) as well; it re-exports everything above.
 
 `PLLFormula` has a `Repr` instance printing `⊃`, `∧`, `∨`, `◯`, so formulas
 display in the usual notation.  Each command elaborates to an `#eval`, so its
@@ -212,18 +248,20 @@ def escSeq : PLLFormula := ((prop "p").somehow).ifThen (prop "p")
 
 ```
 sequent  ⊢ (◯p) ⊃ p
-verdict  REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 1
+verdict  REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 0
+scope    PLL and PCLL: the model is mutually confluent, so it also
+         refutes ConfluentU.DerivU (RNC.not_derivU_of_checkConf)
 
 countermodel:
-2 worlds, refuting world 0; fallible {1}
+2 worlds, refuting world 0
   *w0  ⊑> {1}  ⊳ {1}  ⊩ —
-   w1  ⊑> {}   ⊳ {}   ⊩ ⊥ (fallible)
+   w1  ⊑> {}   ⊳ {}   ⊩ p
 
 pin it:
 theorem underivable :
     ¬ Nonempty (LaxND [] (((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p"))) :=
   FinCM.not_provable_of_check
-    (M := ⟨2, [(0, 1)], [(0, 1)], [1], [(1, "p")]⟩) (w := 0) (by decide)
+    (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide)
 
 #print axioms underivable
 ```
@@ -231,6 +269,28 @@ theorem underivable :
 When nothing is found the command prints `NO COUNTERMODEL FOUND`.  That is an
 absence of information rather than a claim: both negative engines are
 incomplete, so the sequent may well be underivable all the same.
+
+### The scope line
+
+Between the verdict and the model, every refutation report says how far the
+model reaches:
+
+```
+scope    PLL and PCLL: the model is mutually confluent, so it also
+         refutes ConfluentU.DerivU (RNC.not_derivU_of_checkConf)
+```
+
+or
+
+```
+scope    PLL only: the model is NOT mutually confluent, so it refutes
+         LaxND and says nothing about PCLL — use #refuteConf there
+```
+
+This is `RNC.confB` run on the model that was returned, not a guess.  The
+distinction is invisible in the picture and costs nothing to state, and using
+a non-confluent model against a PCLL claim is simply a wrong proof; §5 is the
+long version.
 
 ### Reading the model picture
 
@@ -243,9 +303,15 @@ One line per world:
 - `⊩` lists the atoms forced there, `—` if none, or `⊥ (fallible)` for a
   fallible world, which forces everything.
 
-So the model above has a root `w0` forcing no atom, above it a fallible world
-`w1`, and `Rₘ` carrying `w0` to `w1`.  Every `Rᵢ`-successor of `w0` sees a
-fallible world, so `w0 ⊩ ◯p`; but `w0 ⊮ p`.
+So the model above has a root `w0` forcing no atom, above it a world `w1`
+forcing `p`, and `Rₘ` carrying `w0` to `w1`.  The two `Rᵢ`-successors of `w0`
+are `w0` and `w1`, and each reaches `w1` by `Rₘ`, where `p` holds — so
+`w0 ⊩ ◯p`; but `w0 ⊮ p`.
+
+What is printed is the *simplified* model (§3): the battery's own proposal
+here had a fallible ceiling instead of a `p`-world, and a fallible world
+forces everything, which is a distracting thing to have to reason past when a
+single atom does the job.
 
 ### `#refuteConf Γ ⊢ C`
 
@@ -260,18 +326,20 @@ confluent models and prints a theorem about PCLL derivability
 
 ```
 sequent  ◯p ⊢ p  (PCLL)
-verdict  REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 1 (mutually confluent)
+verdict  REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 0
+scope    PLL and PCLL: the model is mutually confluent, so it also
+         refutes ConfluentU.DerivU (RNC.not_derivU_of_checkConf)
 
 countermodel:
-2 worlds, refuting world 0; fallible {1}
+2 worlds, refuting world 0
   *w0  ⊑> {1}  ⊳ {1}  ⊩ —
-   w1  ⊑> {}   ⊳ {}   ⊩ ⊥ (fallible)
+   w1  ⊑> {}   ⊳ {}   ⊩ p
 
 pin it:
 theorem underivable_pcll :
     ¬ ConfluentU.DerivU [((PLLFormula.prop "p").somehow)] (PLLFormula.prop "p") :=
   PLLND.RNC.not_derivU_of_checkConf
-    (M := ⟨2, [(0, 1)], [(0, 1)], [1], [(1, "p")]⟩) (w := 0) (by decide) (by decide)
+    (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide) (by decide)
 
 #print axioms underivable_pcll
 ```
@@ -296,7 +364,7 @@ theorem unit_derivable :
 theorem esc_underivable :
     ¬ Nonempty (LaxND [] (((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p"))) :=
   FinCM.not_provable_of_check
-    (M := ⟨2, [(0, 1)], [(0, 1)], [1], [(1, "p")]⟩) (w := 0) (by decide)
+    (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide)
 
 #print axioms esc_underivable
 -- 'esc_underivable' depends on axioms: [propext, Quot.sound]
@@ -337,6 +405,9 @@ directly, most often to sweep a family of sequents.
    `cfg.emitClosureCap`;
 4. `.unknown`.
 
+A countermodel from stage 1 or 3 is simplified before it is returned, unless
+`cfg.simplify` is `false`.
+
 `Search.settleWhy` is the same procedure returning `Verdict Γ C`, whose
 `.unknown` carries the reason.
 
@@ -354,7 +425,7 @@ configuration; a non-default one goes in by name.
 
 ```lean
 #eval (verdict [] escSeq).summary
--- "REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 1"
+-- "REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 0"
 
 #eval (match settle {} [] escSeq with
        | .proved _      => "PROVED"
@@ -363,15 +434,21 @@ configuration; a non-default one goes in by name.
 -- "REFUTED"
 
 #eval (verdict [] escSeq (cfg := { findBudget := none })).summary
--- "REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 1"
+-- "REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 0"
 ```
 
-The two orders differ in one default.  The sequent-first wrappers and the
-three commands use `Search.budgetedConfig`, which sets
+The two orders differ in one default.  The sequent-first wrappers and all
+four commands use `Search.budgetedConfig`, which sets
 `findBudget := some 200000`; `settle {} Γ C` runs with no budget at all.
+Both orders simplify, since `Config.simplify` defaults to `true` either way.
 
 `Search.countermodel Γ C` and `Search.refute? cfg Γ C` are the two orders of
-the negative engines alone, returning `Option (Witness Γ C)`.
+the negative engines alone, returning `Option (Witness Γ C)`.  "Negative
+engines alone" describes the function, not its second stage: the closure
+emitter begins by running proof search itself, because building an
+exponential model for a provable sequent is worse than searching for the
+proof.  That search obeys `cfg.findBudget` like any other, and a budget
+cutoff makes the emitter decline rather than build (`CounterEmit.emit`).
 `Search.proof Γ C` and `Search.prove? Γ C` are the positive engine alone
 (§4).  `Search.decide` is an alias for `settle`; under `open PLLND.Search` it
 shadows `Decidable.decide`, so prefer `settle`.
@@ -400,7 +477,7 @@ the emitter all ran to completion and none produced a certificate.  Widen
 
 ### Configuration
 
-`Config` has five fields, all with defaults, so `({} : Config)` is the
+`Config` has six fields, all with defaults, so `({} : Config)` is the
 standard search.
 
 | field | default | effect |
@@ -410,6 +487,7 @@ standard search.
 | `emitClosureCap` | `12` | skip the emitter above this closure size |
 | `findBudget` | `none` | cap on sequents visited by proof search |
 | `accept` | accept all | extra test on candidate models, before `checkB` |
+| `simplify` | `true` | cut a countermodel down before returning it |
 
 To widen the battery, prepend your own frames to `defaultFrames`.  A `Frame`
 is `⟨n, ri, rm, fall⟩`: the number of worlds, the strict part of `Rᵢ`
@@ -421,9 +499,15 @@ def myCfg : Search.Config :=
                   [(0,1)], [4]⟩ :: defaultFrames }
 ```
 
+A wider battery changes which sequents get an answer, not usually what the
+answer looks like: a hit on a five-world frame is simplified back down to the
+worlds the refutation uses, often the same two a default frame would have
+given.  Pass `simplify := false` to see which frame actually fired.
+
 `Config.accept : FinCM → Bool` is an untrusted pre-filter on candidate
-models, applied before the verified gate in both refutation stages.  PCLL
-sets it to `RNC.confB` (§5).
+models, applied before the verified gate in both refutation stages, and on
+each intermediate model inside the simplifier.  PCLL sets it to `RNC.confB`
+(§5).
 
 ### Budgets and cost
 
@@ -451,6 +535,56 @@ default budget of 200000 nodes bounds a grinding search at roughly 10 to 30
 seconds.  Lower it for sweeps; set `findBudget := none` when you are willing
 to wait for a sequent that may take minutes.
 
+### Simplifying the model
+
+Neither proposer aims for a small model.  The battery decorates whichever
+fixed frame fits first, so it returns all of that frame; the closure emitter
+builds one world per prime deductively-closed subset of the subformula
+closure, so a two-atom sequent gets twenty worlds and two hundred `Rᵢ` pairs.
+What the refutation *uses* is usually a handful of worlds.
+
+`Config.simplify` (on by default) closes that gap.  `CounterEmit.simplify`
+alternates two greedy passes to a joint fixpoint:
+
+- `minimise` deletes a world whenever the model without it still checks;
+- `clean` deletes a fallible flag, a valuation pair or a non-reflexive
+  relation pair whenever the model without it still checks.
+
+Every deletion is gated by the *verified* `FinCM.checkB` on the original
+sequent, so the result is a certificate exactly as the input was — the
+simplifier is untrusted like everything else that proposes, and its output is
+re-checked rather than believed.  Deletions are also gated by
+`Config.accept`, which is what keeps a confluence-filtered PCLL search
+confluent: mutual confluence is *not* inherited by submodels, so a simplifier
+blind to it could quietly hand back a model that no longer refutes PCLL.
+
+The effect on the `∨`-distribution countermodel, which is the standard
+example because it is the one people read:
+
+```lean
+#eval (countermodel [premise] goal { simplify := false }).map (·.summary)
+-- some "20 worlds, refuting world 4, |Rᵢ| = 198, |Rₘ| = 101, fallible 1"
+
+#eval IO.println ((countermodel [premise] goal).map (·.render) |>.getD "")
+-- 3 worlds, refuting world 0
+--   *w0  ⊑> {1,2}  ⊳ {2}  ⊩ —
+--    w1  ⊑> {}     ⊳ {}   ⊩ p
+--    w2  ⊑> {}     ⊳ {}   ⊩ q
+```
+
+The three-world model is Fairtlough–Mendler Fig. 3, recovered by deletion:
+the root sees a `p`-world along `Rᵢ` and reaches a `q`-world along `Rₘ`, so it
+forces `◯(p ∨ q)` and neither `◯p` nor `◯q`.  The pinning snippet shrinks with
+the model — from several thousand characters of pair lists to one line — which
+matters, because that snippet is what gets pasted into a file and kept.
+
+Cost is a few hundred `checkB` calls on models of this size, under a
+millisecond.  Set `simplify := false` to see what a stage actually proposed:
+useful when the question is about the *search*, not about the sequent.
+
+`CounterEmit.minimise`, `clean` and `simplify` are also callable directly on
+a `FinCM`, and `Witness.simplify` on a witness.
+
 ### Rendering a model
 
 `Search.renderCM M w?` produces the picture described in §2;
@@ -459,16 +593,16 @@ to wait for a sequent that may take minutes.
 
 ```lean
 #eval (countermodel [] escSeq).map (·.summary)
--- some "2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 1"
+-- some "2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 0"
 
 #eval IO.println ((countermodel [] escSeq).map (·.render) |>.getD "")
--- 2 worlds, refuting world 0; fallible {1}
+-- 2 worlds, refuting world 0
 --   *w0  ⊑> {1}  ⊳ {1}  ⊩ —
---    w1  ⊑> {}   ⊳ {}   ⊩ ⊥ (fallible)
+--    w1  ⊑> {}   ⊳ {}   ⊩ p
 ```
 
-The renderer earns its keep on emitted models, which reach twenty worlds:
-`repr` on such a `FinCM` prints several screens of raw pair lists.
+The renderer earns its keep on unsimplified models, which reach twenty
+worlds: `repr` on such a `FinCM` prints several screens of raw pair lists.
 
 `Witness.snippet name wit` returns the pinning theorem as a string, which is
 what `#refute` prints:
@@ -480,11 +614,7 @@ what `#refute` prints:
 Its parts are available separately: `Search.srcOf` renders a formula as Lean
 source, `srcOfCtx` a hypothesis list, `srcOfCM` a `FinCM`.
 
-For a picture rather than text, `LaxLogic/PLLDiagram.lean` exports a `FinCM`
-to TikZ or SVG (`Diagram.toTikz`, `Diagram.toSvg`, with `Diagram.autoPos` for
-an automatic layout), over the same transitive reduction.  It is a separate
-module because it does file IO at import time; the two agree on the edges
-they draw.
+For a picture rather than text, see §6.
 
 ---
 
@@ -588,8 +718,7 @@ def goal    : PLLFormula := ((prop "p").somehow).or ((prop "q").somehow)
 def inst    : PLLFormula := ConfluentU.distF (prop "p") (prop "q")
 
 #eval (proof [inst, premise] goal).map (·.pretty)
--- some "(→L◯◯ (◯R (∨L (∨R₁ init) (∨R₂ init)))
---             (∨L (∨R₁ (◯L (◯R init))) (∨R₂ (◯L (◯R init)))))"
+-- some "(→L◯◯ (◯R (∨L (∨R₁ init) (∨R₂ init))) (∨L (∨R₁ (◯L (◯R init))) (∨R₂ (◯L (◯R init)))))"
 ```
 
 Pin the PLL half from the snippet that `#search [inst, premise] ⊢ goal`
@@ -626,6 +755,19 @@ it, and they return a `RNC.WitnessConf Γ C`, which carries both facts.
 `RNC.refutedU_sound` turns such a witness into `¬ ConfluentU.DerivU Γ C` in
 one application, and `WitnessConf.snippet` writes the pinned theorem.
 
+Setting `accept` also protects the *simplifier*, which matters more than it
+looks.  Mutual confluence is not inherited by submodels — deleting a world
+can destroy it — so a simplifier that gated only on `checkB` could take a
+confluent model in and hand a non-confluent one back, still certified against
+PLL and now useless against PCLL.  `Config.accept` is threaded through every
+deletion, so a witness from `refuteConf?` is confluent after simplification
+because each intermediate model was.  The same argument applies to any other
+property you filter by, which is why `accept` is the mechanism rather than a
+post-hoc test.
+
+When the answer is about PLL only, nothing needs checking by hand either: a
+report from `#refute` or `#search` names its scope explicitly (§2).
+
 The distribution axiom itself illustrates the difference.  PLL refutes
 `◯(p ∨ q) ⊢ ◯p ∨ ◯q` and PCLL proves it, so every PLL countermodel to it must
 be non-confluent, and the confluence-filtered search correctly finds none.
@@ -641,7 +783,69 @@ holds the RNC(◯,{}) matrix.  Those files need `lake build wipshared` first.
 
 ---
 
-## 6. Command-line tools
+## 6. Pictures
+
+The text picture of §2 stops being a picture at about six worlds.
+`LaxLogic/PLLDiagram.lean` draws a `FinCM` properly — as SVG for the screen,
+as TikZ for a paper — and `LaxLogic/PLLDiagramCmd.lean` wires it to the
+search as one command:
+
+```lean
+import LaxLogic.PLLDiagramCmd
+open PLLFormula PLLND PLLND.Search
+
+#draw [premise] ⊢ goal to "docs/figures/demo-ordist.svg"
+```
+
+```
+sequent  ◯(p ∨ q) ⊢ (◯p) ∨ (◯q)
+verdict  REFUTED  3 worlds, refuting world 0, |Rᵢ| = 5, |Rₘ| = 4, fallible 0
+scope    PLL only: the model is NOT mutually confluent, so it refutes
+         LaxND and says nothing about PCLL — use #refuteConf there
+drawing  docs/figures/demo-ordist.svg
+```
+
+`#draw` runs the same search as `#refute` — same staging, same
+simplification, same certificate, same scope line — and writes the model it
+found.  Open the file in VS Code and it previews as an image.  Paths are
+relative to the package root, where `lake build` elaborates.  A configuration
+goes after `with`, as for the other commands; `with (RNC.confluentConfig)`
+draws only mutually confluent models.
+
+The drawing conventions:
+
+- a **circle** per world, labelled with the atoms it forces (`∅` for none);
+- a **solid arrow** for a cover step that is also in `Rₘ` (a constraint
+  step), a **dashed grey arrow** for one that is `Rᵢ`-only (an information
+  step, along which promises lapse);
+- a **thin plain line** joining `Rᵢ`-equivalent worlds;
+- a **dark disc** for a fallible world, and a **red ring** on the refuting
+  world.
+
+Same transitive reduction and same `Rₘ` reading as `renderCM`, so the picture
+and the text never disagree.
+
+Below the command are the pieces, for a figure that wants curating:
+
+| function | gives |
+|---|---|
+| `Diagram.svgOf M w?` | SVG string, automatic layout, labels from the valuation |
+| `Diagram.tikzOf M w?` | the same drawing as TikZ, for a paper |
+| `Diagram.writeSvg path M w?` | `svgOf`, written to a file |
+| `Diagram.toSvg M pos labels refut w h` | full control: your own layout, labels and canvas |
+| `Diagram.toTikz M pos labels refut` | the same, in TikZ |
+| `Diagram.autoPos M` | the layered layout `svgOf` uses, as a `Nat → Int × Int` |
+
+The committed paper figures (`docs/figures/demoM`, `obsM`, `ordist20`,
+`ordist3clean`) are curated in exactly that way, by `Diagram.regen` at the
+foot of `PLLDiagram.lean`; `#eval regen` rewrites them when the module is
+elaborated.  `#draw` writes its file at elaboration time too, and both are
+deterministic, so a drawing committed under `docs/figures/` stays
+byte-identical across rebuilds.
+
+---
+
+## 7. Command-line tools
 
 The `lakefile.toml` declares a number of `lean_exe` targets, most of them
 one-off probes.  Two are representative.
@@ -652,7 +856,10 @@ lake build oracle2 && lake exe oracle2
 
 runs a fixed ten-sequent benchmark through the staged procedure and prints,
 per sequent, the verdict, a summary of any countermodel, and the time.  It is
-a smoke test that the toolchain and the staging are healthy.
+a smoke test that the toolchain and the staging are healthy.  Its staging is
+its own copy (`wip/oracle2.lean`), so the models it prints are the stages'
+raw proposals: it does not go through `Config.simplify`, and a model there
+will often be bigger than the same sequent's model here.
 
 ```
 lake build rncprobe && lake exe rncprobe
@@ -669,7 +876,7 @@ instances rather than the searcher described here.
 
 ---
 
-## 7. Failure modes
+## 8. Failure modes
 
 - **`UNKNOWN` and you want to know why.**  Use `verdictWhy` or `settleWhy`
   rather than `verdict` or `settle`: the `Reason` names the parameter
@@ -692,6 +899,21 @@ instances rather than the searcher described here.
   against the wrong sequent, or a relation list is not transitively closed:
   `checkB` includes the well-formedness check.
 - **A PCLL claim resting on a PLL countermodel.**  Use `RNC.refuteConf?` or
-  `#refuteConf`, not `refute?`; see §5.
+  `#refuteConf`, not `refute?`; see §5.  The `scope` line of a `#refute`
+  report says outright when what it found is no use for PCLL, so the way into
+  this mistake is to read past it.
 - **`PLLND.Search.decide` shadowing `Decidable.decide`.**  Use `settle`, the
   same function under its other name.
+- **A model that looks too small, or a world you expected and cannot find.**
+  Simplification deleted it: nothing survives that the refutation does not
+  use, and a world carrying an unused promise is exactly the kind of thing
+  that goes.  Re-run with `simplify := false` to see the stage's own
+  proposal — for the *provenance* of a world (which belief set it came from)
+  the raw emitted model is the one to look at, since simplification discards
+  that history.  `CounterEmit.describe Γ C` prints it.
+- **A file of `#guard_msgs`-wrapped commands showing nothing in the info
+  view.**  Expected: `#guard_msgs` deletes the messages it has checked, so
+  the only output left in such a file is that of the commands not wrapped —
+  which is why the info view seems to jump to the end of the file and show
+  one stale-looking block.  Use `#guard_msgs_show`
+  (`LaxLogic/GuardMsgsShow.lean`), which checks *and* displays.
