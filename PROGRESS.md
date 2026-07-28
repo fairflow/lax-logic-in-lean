@@ -2476,3 +2476,31 @@ what kills the fresh-antecedent seal.  The ◯-clone (cascade_main_box):
 On completion: cascade_low_pos_box for piece-closed S := the clone's
 entry; the ∀S residue keeps the hbox split (consumer unaffected);
 rebuild the tower; re-audit the crown.
+
+## §76 (2026-07-28) — Adjudication: mining infeasible (as the prior session warned), semantic zoo extended to growth-live — ZERO failures; build is GO
+
+Config A's derivation-mining exhausted its 300k-node budget with no
+verdict (weights 113/397/170) — consistent with the prior session's
+HANDOFF warning that direct proof search on kernel instances is
+infeasible and the zoo is the effective adjudicator.  So the zoo it
+is: rebuilt the 7-algebra nucleus harness (v3probe2's AlgModel) over
+the REAL itpE/itpA tables and checked the kernel entailment
+  E@(c+1) ∧ A@(c+1)(Γ, ◯r)  ≤  A@c(Γ, ◯r)
+pointwise over every algebra and valuation:
+  config A (zoo-covered, growth-dead), c: 2→1:      0 failures
+  config B (growth-LIVE, u∨v ∈ Γ — NEW coverage), c: 2→1: 0 failures
+  config B, c: 3→2:                                  0 failures
+The §73 stuck shape is zoo-true including the growth-live band the
+original battery never probed.  No falsity suspicion remains anywhere
+in the kernel; under the probe rule this closes the licensed probe and
+returns the campaign to proof work.
+
+BUILD ORDER (mandate-compliant, no sorried scaffolding): land the
+branch-mechanism lemmas standalone, then assemble the clone:
+  1. wksub — general subset-weakening for G4c (replicate absorb_base's
+     private weaken_sub through the set calculus);
+  2. box_remap_free — the free-directions box remap
+     (dBox : ◯(E ⇢ A), guard conversion in context, value conversion
+     in context ⟹ ◯(E′ ⇢ A′)) — closes the ◯χ box-growth branches and
+     the clause-γ seal plumbing in one shape;
+  3. the trunc-strip lemma; 4. the assembled clone per §75.
