@@ -2339,3 +2339,40 @@ at ∧-pair branches; the ∀S fresh-antecedent case, which may keep a
 piece-closure hypothesis — acceptable: thread PieceClosed through, the
 consumer has it).  If this build closes, cascade_low_pos_box falls,
 and with it the crown's sorryAx — uniform_interpolation_PLL complete.
+
+## §72 (2026-07-28) — Second hand-execution: the budget-1 trunc-escape and the growth-first ordering
+
+Re-running the §71 design by hand through the tables surfaced two
+load-bearing details:
+
+1. **The budget-1 escape is the truncation target.**  At kernel(1) on
+   the self-loop head, the clause-γ target's boxed component is
+   ◯(E@0 ⇢ A@0) with A@0 starved — underivable, so that target must
+   NOT be chosen.  The branch closes by choosing the truncation
+   disjunct of the target table instead: ◯(E@0 ⇢ orAll(others@1)) —
+   its inner is obtained from the source value by orAll-elim, where
+   the source's own truncation disjunct unwraps by box_fire with the
+   guard E@0 supplied by ambient downward monotonicity (E@2 → E@0),
+   and the remaining source disjuncts map to their others@1
+   counterparts (goal-γ by unboxing/weight; clause-γ by the grown
+   second component/defect; growth by defect).
+2. **Growth-first ordering.**  At unsaturated contexts with ungated
+   members (∧/∨/atom-⊃), A@0 is NOT starved (growth clauses are
+   never gated), so the floor-starvation base only exists at
+   growth-exhausted states.  The induction must therefore run the
+   defect strong induction OUTERMOST — growth branches discharge
+   first, at every budget including 0 — and the γ/seal analysis runs
+   only at growth-exhausted residues, where env@0 is gated-only,
+   A@0(·, ◯-goal) = ⊥ literally, and T2 fires.  This matches the
+   bf-clone's shifted-ledger skeleton exactly; the ◯-case adds the
+   trunc-escape at 1 and T2 at 0.
+
+kernel(0) remains false (the zoo's point) and is never needed: every
+branch that would descend to it is closed at 1 by the trunc-escape or
+dispatched by T2 before the descent.
+
+BUILD: wip/cascadeBox.lean — cascade_main_bf's skeleton with
+(defect, budget, fuel, weight)-lex; T2 (gamma_seal_starved) and the
+starve lemmas as the floor bases; no seen-sets, no continuations.
+On completion, replace cascade_low_pos_box's sorry with the new
+theorem, rebuild the tower (final.lean), and re-audit the crown.
