@@ -2414,3 +2414,33 @@ generalised dispatch gamma_seal_absurd; 2. the skeleton clone with
 place — if (i) closes it, the kernel falls; if not, the shape is a
 sharply-stated sub-lemma for Matthew, with the zoo already vouching
 for its truth.
+
+## §74 (2026-07-28) — Correction: floor_absurd is FALSE as stated; the ◯χ-env branches are box-growth; the build adjudicates the stuck shape directly
+
+Fourth hand-pass, working the would-be floor_absurd through every
+env@0 arm: the ∧/∨/atom-⊃/⊃∧/⊃∨/⊃⊃/◯⊃-filterMap arms all refute
+against the ambient (each has a matching ambient conjunct to fire,
+with only FREE-direction monotonicities needed — a viable family of
+lemmas if ever wanted).  But the ◯χ-env arm of a ◯-goal contributes
+the BARE box disjunct ◯(E@0(χ::Γ) ⇢ A@0(χ::Γ, ◯D)) — and a box is
+never refutable in PLL (⊥ is not a ◯-goal, laxL cannot open it; the
+fallible-top semantics agrees).  So floor_absurd is false whenever Γ
+has a live ◯χ-member, and it is STRUCK as a target.  Correspondingly:
+
+* The ◯χ-env branches of the descent close as BOX-GROWTH: source
+  ◯(E@c(χ::Γ) ⇢ A@c(χ::Γ,◯D)) maps to target
+  ◯(E@(c−1)(χ::Γ) ⇢ A@(c−1)(χ::Γ,◯D)) inside the box by the free
+  directions (guard: E downward mono; value: the kernel at the
+  χ-GROWN context — defect ↓, strong induction).  No absurdity
+  needed, no budget burned.
+* A@0-valued SOURCES never arise in the descent (table@(c+1)'s gated
+  components sit at c ≥ 1 whenever the kernel is invoked with c ≥ 1),
+  so nothing needed floor_absurd after all; T2 (literal starvation)
+  remains the floor base where it applies.
+* The §73 stuck shape (kernel(1), clause-γ, head ≠ goal, growth-live)
+  stands as the single open branch, to be adjudicated in the build
+  with candidates (i)/(ii) of §73.
+
+The lesson logged: every base lemma gets a hand-execution against ALL
+table arms before Lean effort — two design corrections (§72, §74)
+have each been caught this way at zero proof cost.
