@@ -1897,7 +1897,7 @@ and keeps the implication in premise 1 — the gap sequent showed the
 consuming forms incomplete.
 
 Her UI method (§§6.3–6.7), the shape to adapt:
-  * interpolant assignment ι: to每 rule instance R with conclusion S,
+  * interpolant assignment ι: to each rule instance R with conclusion S,
     p-free-of-lower-rank formulas ι∃ᵖRS, ι∀ᵖRS; to non-principal
     occurrences ι∃ᵖR̄S, ι∀ᵖR̄S; ∀pS ↦ ∀⁺ ∨ ∀⁻ ∨ ∀ᵃᵗ, ∃pS ↦ ∃⁺ ∧ ∃⁻ ∧ ∃ᵃᵗ
     (∀ᵃᵗ/∃ᵃᵗ the atom clauses); rewrite relation ⟶ confluent + SN by
