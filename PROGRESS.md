@@ -2198,3 +2198,54 @@ NEXT ACTIONS: read cascade_main's splice case (the exact direction of
 itp_budget_mono_le at repeats) and the four call sites' room
 arithmetic; then draft the strengthened statement and run its measure
 against each of the 10 move classes on paper before any Lean.
+
+## §69 (2026-07-28) — The kernel's state graph mapped; the two reduction targets T1/T2
+
+Monotonicity directions CONFIRMED in the tower: itp_budget_mono_le is
+the free pair (E downward: [E@b] ⊢ E@b' for b' ≤ b; A upward:
+[A@b'] ⊢ A@b), proved outright; itp_stab_le is the hard pair (E-ascent
++ A-descent), proved only above kcap via the cascade.  cascade_main's
+continuations take g'-values at the entry budget and any superset
+context; its E-half carries room J+3+defect·(J+2) ≤ c — consistent
+with the zoo's bare-ascent refutation at c = 1.
+
+THE SEAL STATE GRAPH (same Γ, kernel(c) := [E@(c+1), A@(c+1)(Γ,g)] ⊢
+A@c(Γ,g), all moves verified against the clause tables):
+  * goal-γ seal (g = ◯D): commit target ◯(E@(c-1) ⇢ A@(c-1)(Γ,D));
+    inside: fire the source guard with E@c from the ambient by
+    DOWNWARD mono (no ascent!), then kernel(c-1) at goal D — the
+    goal UNBOXES: weight strictly drops.
+  * clause-γ seal (env ◯⊃-family member ◯A₁⊃B): inner goal ◯A₁ —
+    weight resets, but heads range over the FIXED finite γ-head set;
+    cycles possible (the zoo's chained-d2 IS the 2-cycle
+    ◯p ⇄ ◯r via ◯p⊃r, ◯r⊃s) — budget burns along the cycle.
+  * truncation seal: same state, budget ↓.
+  * fresh-antecedent seal: outside-S piece; dead for piece-closed S
+    (the consumer's case).
+  * non-seal moves: growth (defect ↓, room replenishes by J+2),
+    decomposition (weight ↓), jump family (cascade_main's own
+    pigeonhole, unsealed).
+Termination resources: unboxing (weight), defect drops, SOURCE-side
+starvation (box_absurd dispatches any branch whose source inner value
+is ⊥ — with the guard from ambient downward mono), and the open
+residue: non-starving γ-head cycles above the floor, where repeats
+yield nothing (values lift UP, obligations point DOWN) — the
+one-step budget stabilisation at low budget, once more.
+
+REDUCTION TARGETS (bounded, plausibly provable now):
+  T1 (seal one-step reduction): IF kernel(c−1) holds for all goals at
+     this Γ THEN the four sealed branches of kernel(c) close — the
+     plumbing is: orAll-intro the corresponding target disjunct, laxR
+     wait laxL-commit on the source box, fire the guard by ambient
+     downward mono (itp_budget_mono_le.1), impR, invoke kernel(c−1).
+     Lands kernel = downward induction on c with a single base at the
+     band floor, replacing "all c in the band" by "the floor c₀".
+  T2 (starvation dispatch): integrate box_absurd + the starve
+     classification: every sealed branch whose source inner table is
+     empty closes outright; with itpA_starve_floor / _elimAtom this
+     kills the x = 0-adjacent layer and every saturated-state branch.
+After T1+T2 the open content is exactly: the floor instance of the
+descent at non-starving cycling states — a finitely-generated family
+per (S, Γ) — to be attacked by per-shape stabilisation (the state
+graph at fixed Γ is finite; the conjecture is that within one full
+γ-head cycle every branch either starves, unboxes, or grows).
