@@ -153,3 +153,44 @@ end PLLND
 /-- info: 'PLLND.gamma_seal_starved' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.gamma_seal_starved
+
+/-! ## The free-directions box remap -/
+
+namespace PLLND
+
+/-- General subset weakening for `G4c` (through the set calculus, as
+`absorb_base`'s private `weaken_sub`). -/
+theorem wksub {Γ Γ' : List PLLFormula} {C : PLLFormula}
+    (h : ∀ ψ ∈ Γ, ψ ∈ Γ') (d : G4c Γ C) : G4c Γ' C := by
+  rw [G4c.iff_set] at d ⊢
+  refine d.weaken_subset ?_
+  intro y hy
+  rw [List.mem_toFinset] at hy ⊢
+  exact h y hy
+
+/-- **The free-directions box remap**: from a boxed guarded implication, a
+guard conversion, and a value conversion — both as derivations in the
+extended context — the remapped box follows.  One plumbing shape for the
+`◯χ` box-growth branches and the clause-γ seal step: the conversions are
+instantiated with downward existential monotonicity (guard) and the
+recursive descent (value). -/
+theorem box_remap_free {Δ : List PLLFormula} {E E' A A' : PLLFormula}
+    (dBox : G4c Δ ((E.ifThen A).somehow))
+    (dE : G4c (E' :: Δ) E)
+    (dA : G4c (A :: E' :: Δ) A') :
+    G4c Δ ((E'.ifThen A').somehow) := by
+  refine G4c.cut dBox (G4c.laxL (.head _) ?_)
+  refine G4c.laxR (G4c.impR ?_)
+  have dE' : G4c (E' :: (E.ifThen A) :: (E.ifThen A).somehow :: Δ) E :=
+    wksub (by intro ψ h; simp only [List.mem_cons] at h ⊢; tauto) dE
+  have dmp : G4c (E :: E' :: (E.ifThen A) :: (E.ifThen A).somehow :: Δ) A :=
+    wksub (by intro ψ h; simp only [List.mem_cons] at h ⊢; tauto)
+      (G4c.mp E A (E' :: (E.ifThen A).somehow :: Δ))
+  refine G4c.cut (G4c.cut dE' dmp) ?_
+  exact wksub (by intro ψ h; simp only [List.mem_cons] at h ⊢; tauto) dA
+
+end PLLND
+
+/-- info: 'PLLND.box_remap_free' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.box_remap_free
