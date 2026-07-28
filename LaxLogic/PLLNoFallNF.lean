@@ -364,3 +364,74 @@ end PLLND
 /-- info: 'PLLND.NoFall.derivUNoFall_iff_IPLND' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.NoFall.derivUNoFall_iff_IPLND
+
+/-! ## 6. The uniform-interpolation specification layer
+
+The target of the programme, stated once, with the one-variable theorems of
+`PLLNoFall.lean` repackaged as its base instances.  `IsExUIOn T φ E` is the
+∃-side Pitts specification with the test class abstracted: for the full
+theorem `T = PFree p` (all `p`-free formulas); the proved one-variable case
+is the instance `T = VarFree`, which on the one-variable language coincides
+with `PFree p`. -/
+
+namespace PLLND.NoFall
+
+/-- `p` does not occur. -/
+def PFree (p : String) : PLLFormula → Prop
+  | .prop a => a ≠ p
+  | .falsePLL => True
+  | .and A B => PFree p A ∧ PFree p B
+  | .or A B => PFree p A ∧ PFree p B
+  | .ifThen A B => PFree p A ∧ PFree p B
+  | .somehow A => PFree p A
+
+theorem PFree.of_varFree {p : String} {A : PLLFormula} (h : VarFree A) :
+    PFree p A := by
+  induction A with
+  | prop a => exact h.elim
+  | falsePLL => exact trivial
+  | and A B ihA ihB => exact ⟨ihA h.1, ihB h.2⟩
+  | or A B ihA ihB => exact ⟨ihA h.1, ihB h.2⟩
+  | ifThen A B ihA ihB => exact ⟨ihA h.1, ihB h.2⟩
+  | somehow A ih => exact ih h
+
+/-- The ∃-side uniform-interpolation specification over a test class `T`:
+`E` is in `T`, is a consequence of `φ`, and for every `ψ ∈ T`,
+`φ ⊢ ψ` iff `E ⊢ ψ`. -/
+def IsExUIOn (T : PLLFormula → Prop) (φ E : PLLFormula) : Prop :=
+  T E ∧ DerivUNoFall [φ] E ∧
+    ∀ ψ, T ψ → (DerivUNoFall [φ] ψ ↔ DerivUNoFall [E] ψ)
+
+/-- The ∀-side specification over a test class `T`. -/
+def IsAllUIOn (T : PLLFormula → Prop) (φ A : PLLFormula) : Prop :=
+  T A ∧ DerivUNoFall [A] φ ∧
+    ∀ ψ, T ψ → (DerivUNoFall [ψ] φ ↔ DerivUNoFall [ψ] A)
+
+/-- The one-variable theorem, repackaged: every `φ` has a variable-free
+∃-interpolant. -/
+theorem exUI_varFree (φ : PLLFormula) : ∃ E, IsExUIOn VarFree φ E :=
+  exUI φ
+
+/-- The one-variable theorem, repackaged: every `φ` has a variable-free
+∀-interpolant. -/
+theorem allUI_varFree (φ : PLLFormula) : ∃ A, IsAllUIOn VarFree φ A :=
+  allUI φ
+
+/-- Interpolants for a given test class are unique up to
+interderivability. -/
+theorem IsExUIOn.unique {T : PLLFormula → Prop} {φ E E' : PLLFormula}
+    (h : IsExUIOn T φ E) (h' : IsExUIOn T φ E') : EquivNF E E' :=
+  ⟨(h.2.2 E' h'.1).mp h'.2.1, (h'.2.2 E h.1).mp h.2.1⟩
+
+theorem IsAllUIOn.unique {T : PLLFormula → Prop} {φ A A' : PLLFormula}
+    (h : IsAllUIOn T φ A) (h' : IsAllUIOn T φ A') : EquivNF A A' :=
+  ⟨(h'.2.2 A h.1).mp h.2.1, (h.2.2 A' h'.1).mp h'.2.1⟩
+
+/-- **The open target of the programme** (stated, not asserted): uniform
+interpolation for PCLL + `¬◯⊥` in full — every variable eliminable against
+all `p`-free formulas. -/
+def UniformInterpolation : Prop :=
+  ∀ (p : String) (φ : PLLFormula),
+    (∃ E, IsExUIOn (PFree p) φ E) ∧ (∃ A, IsAllUIOn (PFree p) φ A)
+
+end PLLND.NoFall
