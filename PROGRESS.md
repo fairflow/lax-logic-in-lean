@@ -1845,3 +1845,43 @@ persistent hypothesis (complete by equiv_nd already — only the
 stage 3: the Pitts computation by induction on the termination order,
 following the mechanised-UI blueprint (Férée–van der Giessen–van
 Gool–Shillito's Coq development for IPC/K/GL).
+
+## §62 (2026-07-28) — Stage 2 design fork resolved: the PICLL calculus must be multi-succedent; PILL needs no new calculus
+
+Working the cut cases of the planned single-succedent calculus (G4iLL″
+with laxL conclusions widened to disjunctions of ◯-formulas and ⊥) BEFORE
+building it exposed a genuine incompleteness: cut on a laxL-produced
+disjunction cannot be pushed below the widened rule (its goal restriction
+blocks the left commutation), and the obstruction is realised by a
+concrete sequent, now PINNED (PLLNoFallSep.lean):
+
+  ◯(a⊃(b∨c)), ◯a, ◯b⊃p, ◯c⊃p ⊢ p
+    PICLL-derivable (cutNeed_derivable — through ◯b∨◯c, i.e. a cut)
+    PILL-underivable (cutNeed_not_pll — p-decorated five-world model).
+
+In any cut-free single-succedent derivation the goal must commit to ◯b
+or ◯c before the box opens, and the b∨c case split happens inside the
+box: the other branch strands.  Conclusion: the PICLL calculus carries a
+MULTI-SUCCEDENT ◯-rule — from Γ, X ⊢ ◯B₁,…,◯Bₖ infer
+Γ, ◯X ⊢ ◯B₁,…,◯Bₖ, Δ (k = 0 gives the density power; the ◯-succedent
+travels through implication eliminations together) — over an m-G4ip
+core (invertible ∨R with both disjuncts in the succedent; ⊃R and the
+implication-proving premises single-succedent).  Open design points,
+deliberately not baked in tonight: whether the LaxLax repair (Howe
+duplication) is still required in m-form, and the exact premise shapes
+of the ⊃◯-left rules; both need the g4p-ladder analysis re-run against
+the m-format.
+
+PILL, by contrast, needs NO new calculus: no distribution, so G4iLL″ +
+¬◯⊥ as permanently inhabited context is complete (equiv_nd), has
+admissible cut (SelfAbsorb chain), and a terminating decider (G4sh.dec)
+— and nobot is variable-free, so the inhabited context never interferes
+with p-freeness in an interpolant computation.
+
+SEQUENCING RECOMMENDATION (within Matthew's "up to you" licence on the
+calculus handling): run the Pitts computation FIRST for PILL on the
+existing complete machinery — every interpolant clause is a template
+for the PICLL version — THEN build the m-chain (def/perm/weaken/inv/
+ctr/cut/comp, patterned on PLLG4H*) and port the computation.  The
+PICLL-first order at the calculus stage would mean building the ~2.5k
+line m-chain before any UI content exists to test it against.
