@@ -2646,3 +2646,39 @@ ledger of cascade_main_bf), reusing the surviving mechanisms; the open
 question returns to its sharpest form — whether the seen-set pigeonhole
 can be carried across box introductions, now equipped with box_remap_free
 and the trunc-pairing reformulation, which the July session lacked.
+
+## §80 (2026-07-28, Opus) — The falsity boundary located exactly: budget 1, goals with a ⊃◯ ANTECEDENT; everything else survives
+
+Systematic probing of the two refutations' neighbourhood (four spaces,
+fuels 4–7, budgets 1–3, ⊃◯-clauses, shared consequents, growth-live
+contexts, jump families) locates the boundary precisely:
+
+  * **c ≥ 2: no failure anywhere probed.**  Every configuration that
+    fails at budget 1 is clean at budget 2 and 3, at every fuel.
+  * **c = 1: fails exactly when the goal is an implication whose
+    ANTECEDENT is a ⊃◯-clause** (goal `(◯r⊃s)⊃t`: 3–9 failures).
+    Contrast, same space and budget: goal `◯r⊃s` — a ⊃◯-clause as the
+    goal itself, which is what jump branches generate — 0 failures;
+    goals `r`, `◯r`, `◯s`, `t` — 0 failures; and the doubly-nested
+    `((◯r⊃s)⊃t)⊃u`, whose antecedent is a ⊃⊃-clause — 0 failures.
+    So the requirement does NOT grow with nesting depth.
+  * **Raising the ambient does not help**: at the failing goal the
+    descent fails identically with ambient at budgets 2, 3, 4, 5.  The
+    obstruction is intrinsic to the target table, not a financing gap.
+
+MECHANISM: the goal clause of `C₁ ⊃ C₂` is guarded by `E@c(C₁::Γ)`.
+When `C₁` is a ⊃◯-clause, growing the context by it introduces a fresh
+budget-gated conjunct in the existential table; at budget 1 that
+conjunct's pair components sit at budget 0, where they are strictly
+weaker than the source's at budget 1 — and the ambient at the ungrown
+context, at any budget, says nothing about a clause it does not contain.
+
+CONSEQUENCE FOR THE REBUILD: the corrected target is the descent at
+`2 ≤ c` (uniform, no room), plus the budget-1 case restricted to goals
+that are not ⊃◯-antecedent implications.  The recursion's own sub-goals
+are safe at budget 1 — γ-heads are `A`/`◯A`, jump goals are `A⊃B` in
+GOAL position — so the ledger's remaining job is only to keep
+⊃◯-antecedent goals away from budget 1, which is a far weaker demand
+than the defect·(J+2) tower.  This is the sharpest form the low-budget
+question has taken; it replaces "prove the kernel" by "prove the
+descent for c ≥ 2, and for c = 1 at safe goals".
