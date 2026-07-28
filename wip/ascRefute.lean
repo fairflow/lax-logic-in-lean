@@ -80,6 +80,68 @@ theorem not_ambGuardAscent : ¬ AmbGuardAscent "p" Sr := by
     (h 3 1 Gr Xr [ambr] (by decide) (by decide) (by decide)
       (G4c.identity_mem (List.mem_cons_self ..)))
 
+/-! ## 2. The room-free descent itself is false
+
+The build's target statement drops the room hypothesis
+`defect S Γ * (|jumpGoals S| + 2) ≤ c` that the tower's kernel carries,
+keeping only `1 ≤ c`.  That is too strong: the descent fails at budget `1`
+whenever the goal's antecedent is a `⊃◯`-clause, because the antecedent
+introduces a budget-gated conjunct at the grown context which the ambient at
+the ungrown context cannot finance — the same mechanism as §1, now reaching
+the descent itself.
+
+The tower's kernel `cascade_low_pos_box` is **not** touched: with
+`1 ≤ defect S Γ` its room hypothesis forces `2 ≤ defect · (|jumpGoals| + 2) ≤ c`,
+so its budget-`1` instances are vacuous.  What is refuted is the room-free
+reformulation. -/
+
+/-- The space of the second refutation: piece-closed, with a goal whose
+antecedent is the `⊃◯`-clause `◯r ⊃ s`. -/
+def Sk : Finset PLLFormula :=
+  {((prop "p").somehow).ifThen (prop "r"), (prop "p").somehow, prop "p",
+   prop "r", (((prop "r").somehow).ifThen (prop "s")).ifThen (prop "t"),
+   ((prop "r").somehow).ifThen (prop "s"), (prop "r").somehow, prop "s",
+   prop "t"}
+
+def Gk : List PLLFormula := [((prop "p").somehow).ifThen (prop "r")]
+
+def gk : PLLFormula := (((prop "r").somehow).ifThen (prop "s")).ifThen (prop "t")
+
+def ambk : PLLFormula := itpE "p" Sk 4 2 Gk
+def srck : PLLFormula := itpA "p" Sk 4 2 Gk gk
+def tgtk : PLLFormula := itpA "p" Sk 4 1 Gk gk
+
+/-- The refuting model: two worlds `0 ⊑ 1`, `0 ⊳ 1`, infallible, with
+`r`, `s`, `t` forced exactly at world `1`. -/
+def Mk : FinCM := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "r"), (1, "s"), (1, "t")]⟩
+
+theorem check_fails_k : FinCM.checkB Mk 0 [srck, ambk] tgtk = true := by decide
+
+/-- **The descent fails at budget 1 on this instance.** -/
+theorem not_derivable_k : ¬ G4c [srck, ambk] tgtk := fun h =>
+  FinCM.not_provable_of_check check_fails_k (G4c.equiv_nd.mp h)
+
+/-- The room-free descent, as a proposition: the universally quantified
+form of `cascade_box`'s conclusion, with `1 ≤ c` as the only budget
+hypothesis. -/
+def RoomFreeDescent (p : String) (S : Finset PLLFormula) : Prop :=
+  ∀ (fuel c : Nat) (Γ : List PLLFormula) (g : PLLFormula)
+    (Δ : List PLLFormula),
+    1 ≤ c → G4c Δ (itpE p S fuel (c + 1) Γ) →
+    G4c Δ (itpA p S fuel (c + 1) Γ g) →
+    G4c Δ (itpA p S fuel c Γ g)
+
+/-- **The room-free descent is false.**  Hence no proof of the four
+interface propositions of `wip/cascadeBox.lean` can exist: `cascade_box`
+derives exactly this conclusion from them, at an instance whose
+piece-closure side conditions `Sk` satisfies. -/
+theorem not_roomFreeDescent : ¬ RoomFreeDescent "p" Sk := by
+  intro h
+  exact not_derivable_k
+    (h 4 1 Gk gk [srck, ambk] (Nat.le_refl _)
+      (G4c.identity_mem (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+      (G4c.identity_mem (List.mem_cons_self ..)))
+
 end AscRefute
 end PLLND
 
@@ -88,3 +150,7 @@ end PLLND
 /-- info: 'PLLND.AscRefute.not_ambGuardAscent' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.AscRefute.not_ambGuardAscent
+
+/-- info: 'PLLND.AscRefute.not_roomFreeDescent' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.AscRefute.not_roomFreeDescent

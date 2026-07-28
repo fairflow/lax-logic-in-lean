@@ -2589,3 +2589,60 @@ content, exactly §73's residue).  On completion: wire
 cascade_low_pos_box := cascade_box's entry (the ∀S form keeps the
 piece-closure hypotheses; the adequacy consumer has them), rebuild
 final.lean, re-audit the crown.
+
+## §79 (2026-07-28, Opus) — Recovery + TWO KERNEL-CHECKED REFUTATIONS: the room-free reformulation is false; the tower's kernel survives; §71's "no room needed" is withdrawn
+
+RECOVERY (Fable's session ended at its model limit): the others-descent
+build is merged into ui-confluence (b0a1e81), wired into wipshared, and
+compiles in the main tree — 4 sorries, all the marked interface stubs,
+every #guard_msgs audit passing, oth_descent and cascade_box carrying
+[propext, Classical.choice, Quot.sound] with NO sorryAx.
+
+Then the interfaces were adjudicated — never done before — with two
+refutations, both certified (wip/ascRefute.lean, [propext, Quot.sound],
+choice-free, two-world infallible countermodels found by the battery):
+
+1. **AmbGuardAscent is FALSE** (not_ambGuardAscent).  With
+   S = {◯p⊃r, r, ◯r⊃s, s}, Γ = [◯p⊃r], fresh piece X = ◯r⊃s, budget 1:
+   the ambient at Γ cannot finance the one-step existential ascent at
+   X::Γ.  MECHANISM: a fresh piece of shape ◯A⊃B introduces a NEW
+   budget-gated conjunct at the grown context; raising it from budget c
+   to c+1 requires descending the universal table from c to c−1 — the
+   kernel itself, one budget lower.  Stable at fuels 3,4,5; clean at
+   budget ≥ 2.  CORRECTION TO THE RECORD: the July session's Z5 verdict
+   ("the fresh-antecedent seal's law is semantically FREE, EQUALITY on
+   the zoo at every probed instance") is WRONG — its probe family
+   (C₁ ∈ {u, u⊃r, ◯u}) contains no ⊃◯-shaped piece, which is exactly
+   where the law fails.
+2. **The room-free descent is FALSE** (not_roomFreeDescent).  Same
+   mechanism reaching the descent itself: with a goal whose antecedent
+   is a ⊃◯-clause (g = (◯r⊃s)⊃t), the descent fails at budget 1.
+   Fuel-stable (4,5,6 identical), clean at budget ≥ 2.
+
+WHAT THIS DOES AND DOES NOT TOUCH:
+* The tower's kernel `cascade_low_pos_box` is NOT refuted.  It carries
+  the room hypothesis defect·(J+2) ≤ c, and both refuting instances need
+  room 56 resp. 12 against budget 1 — vacuous there.  Indeed with
+  1 ≤ defect the hypothesis forces c ≥ J+2 ≥ 2, so the kernel never
+  operates at budget 1 with positive defect.
+* `oth_descent`/`cascade_box` survive as CONDITIONAL theorems, but their
+  four interfaces are jointly unsatisfiable, so they can never be
+  discharged; `cascade_box_unconditional` must not be quoted as evidence.
+* §71's central design conclusion — "no pigeonhole, no seen-set, no room
+  consumption beyond the budget itself: the recursion is plain downward
+  induction on c" — is WITHDRAWN.  The room ledger is load-bearing, and
+  the two refutations are exactly the price of dropping it.
+
+WHAT SURVIVES AND IS REUSABLE: the proved toolkit (wip/starve.lean:
+floor starvation, box_absurd, gamma_seal_starved, wksub, box_open,
+box_remap_free) and, from wip/cascadeBox.lean, the trunc-pairing wrapper
+desc_of_oth, the fuel-0 base, and the branch mechanisms for growth,
+box-growth (◯χ), goal-γ unboxing and decomposition — none of which used
+the false interfaces.  Only the three implication-textured arms
+(∨-growth, fresh-⊃-goal, jump/γ pairs) consumed them.
+
+NEXT: rebuild the ◯-clone WITH the room hypothesis threaded (the shifted
+ledger of cascade_main_bf), reusing the surviving mechanisms; the open
+question returns to its sharpest form — whether the seen-set pigeonhole
+can be carried across box introductions, now equipped with box_remap_free
+and the trunc-pairing reformulation, which the July session lacked.
