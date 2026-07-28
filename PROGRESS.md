@@ -2079,3 +2079,36 @@ cascade_low_pos_box ON it, in order:
 The probe discipline: cascade_low_pos_box is zoo-TRUE, so this is
 proof work, not probing; probes only if a sub-lemma of (1) looks
 unsatisfiable.
+
+## §66 (2026-07-28) — The kernel campaign opens: floor starvation pinned as theorems (wip/starve.lean)
+
+Translating the tower's vocabulary to standard language as mandated:
+the "zoo" = the exhaustive finite nucleus-model battery
+(wip/refute4.lean, 34 pairs); a "seal" = one of the four branch shapes
+whose box/⊃-introduction blocks the descent's continuations;
+"starvation" = a quantifier table's clause list becoming empty, so the
+table is literally ⊥ (orAll [] = ⊥).
+
+First bricks PROVED ([propext, Quot.sound], first-compile): at budget
+0 a ◯-shaped goal's table loses its goal clause and truncation
+disjunct (itpAgoal_obGoal_floor, itpAfull_obGoal_floor), so it
+normalises to its environment clauses alone (itpA_obGoal_floor), and
+an empty environment table collapses it to ⊥ literally
+(itpA_starve_floor) — the battery's unique false point of the bare
+low-band descent, now a theorem boundary.
+
+Campaign continuation (the kernel's own unattempted plan, now with
+its base): (1) classify starved states ABOVE the floor — which
+(Γ, goal, b) have empty tables at b ≥ 1 (the b-gated families vanish;
+environment guards are decidable memberships); (2) the
+(defect, budget)-lexicographic landing map for the c = 1 base meeting
+the pigeonhole band from below; (3) lift the battery's proved-free
+laws: the fresh-antecedent equality E@(c+1)(Γ) ⊓ E@c(C₁::Γ) =
+E@(c+1)(C₁::Γ) (exact on every battery instance) and the
+piece-closed-S goal-membership invariant (kills the fresh-antecedent
+seal for the adequacy consumer's closed spaces — recorded by the
+prior session as usable for the CONSUMER'S instance even though the
+∀S interface keeps the seal).  The mutual-pair scheme stays dead
+below budget 2 (the existential ascent E@c ⊢ E@(c+1) is
+countermodel-refuted at c = 1), so the landing map must be
+single-sided — that is the mathematical heart of what remains.
