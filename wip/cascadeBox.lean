@@ -1520,4 +1520,124 @@ theorem oth_descent (p : String) (S : Finset PLLFormula)
                       | ifThen _ _ => cases heq
                   next => cases hin
 
+/-! ### The full-table kernel entry
+
+The shape `cascade_low_pos_box` (wip/absorb_base.lean:2259) needs, for
+a piece-closed space with goal and context inside it — modulo the
+three open interfaces, which are its entire remaining content. -/
+
+/-- The ◯-involving pair descent, one budget down, for a piece-closed
+space with goal and context inside `S` — conditional on the three open
+interfaces.  Sorry-free; the induction is `oth_descent`'s. -/
+theorem cascade_box (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
+    (hasc : AmbGuardAscent p S)
+    (hgfA : GammaPairFloorA p S)
+    (hgfB : GammaPairFloorBox p S)
+    (hjf : JumpPairFloor p S)
+    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
+    (Δ : List PLLFormula)
+    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S) (hc : 1 ≤ c)
+    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
+    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
+    (hfh : fh ≤ fuel) :
+    G4c Δ (itpA p S fuel c Γ g) := by
+  cases fh with
+  | zero => exact desc_zero p S hhead
+  | succ F =>
+      obtain ⟨fl, rfl⟩ : ∃ fl, fuel = fl + 1 := ⟨fuel - 1, by omega⟩
+      exact desc_of_oth p S (by omega) hc
+        (fun Δ' a b => oth_descent p S hand hor himp hsome hasc hgfA
+          hgfB hjf (defect S Γ) c hc F Γ fl g Δ' (Nat.le_refl _) hgS hΓS
+          (by omega) a b)
+        hamb hhead
+
 end PLLND
+
+/-! ### Axiom audit (the sorry-free spine) -/
+
+/-- info: 'PLLND.oth_descent' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.oth_descent
+
+/-- info: 'PLLND.cascade_box' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.cascade_box
+
+/-! ## The open branches — stubs
+
+Everything above this section is sorry-free.  The three interfaces
+below are the ENTIRE remaining content of the ◯-involving low-budget
+descent; each is marked OPEN, with its status:
+
+* `ambGuardAscent_open` — the fresh-antecedent equality law
+  (§66/§73(ii)): exact on every instance of the countermodel battery,
+  never proved syntactically.  Candidate route: a fourth component of
+  the lexicographic induction (the one-step existential ascent at
+  strictly smaller defect, gated arms by the budget tier) — its own
+  floor lands in the same §73 shape as the pair floors below.
+
+* `gammaPairFloorA_open` / `gammaPairFloorBox_open` — the §73 stuck
+  shape: target budget `1`, gated γ-pair, head possibly distinct from
+  the goal, growth-live context.  Battery-true including the
+  growth-live band (§76: zero failures at configs A/B).  Candidate
+  route (§73(i)): commute the growth disjuncts of the target first —
+  the interface's defect-tier slot supplies exactly that resource; at
+  growth-dead states the source components starve
+  (`itpA_starve_floor`) and the branch dispatches by explosion or
+  `box_absurd`, so only growth-live states carry content.
+
+* `jumpPairFloor_open` — the jump-family instance of the same floor
+  (the alternative is to re-run `cascade_main_bf`'s pigeonhole with
+  seen-sets, which cannot cross the boxed branches of this build).
+-/
+
+namespace PLLND
+
+/-- **OPEN** (stub): the fresh-antecedent equality law.  Battery-exact
+(§66), unproven. -/
+theorem ambGuardAscent_open (p : String) (S : Finset PLLFormula) :
+    AmbGuardAscent p S := sorry
+
+/-- **OPEN** (stub): the plain gated γ-pair at the budget floor (§73). -/
+theorem gammaPairFloorA_open (p : String) (S : Finset PLLFormula) :
+    GammaPairFloorA p S := sorry
+
+/-- **OPEN** (stub): the boxed gated γ-pair at the budget floor — THE
+§73 stuck shape. -/
+theorem gammaPairFloorBox_open (p : String) (S : Finset PLLFormula) :
+    GammaPairFloorBox p S := sorry
+
+/-- **OPEN** (stub): the gated jump-family pair at the budget floor. -/
+theorem jumpPairFloor_open (p : String) (S : Finset PLLFormula) :
+    JumpPairFloor p S := sorry
+
+/-- The unconditional kernel — sorry-tainted exactly through the four
+stubs above; every step of the descent itself is machine-checked. -/
+theorem cascade_box_unconditional (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
+    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
+    (Δ : List PLLFormula)
+    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S) (hc : 1 ≤ c)
+    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
+    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
+    (hfh : fh ≤ fuel) :
+    G4c Δ (itpA p S fuel c Γ g) :=
+  cascade_box p S hand hor himp hsome
+    (ambGuardAscent_open p S) (gammaPairFloorA_open p S)
+    (gammaPairFloorBox_open p S) (jumpPairFloor_open p S)
+    fh Γ fuel c g Δ hgS hΓS hc hamb hhead hfh
+
+end PLLND
+
+/-! ### Axiom audit (the stubs' taint, confined) -/
+
+/-- info: 'PLLND.cascade_box_unconditional' depends on axioms: [propext, sorryAx, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.cascade_box_unconditional
