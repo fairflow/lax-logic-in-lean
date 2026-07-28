@@ -2112,3 +2112,40 @@ prior session as usable for the CONSUMER'S instance even though the
 below budget 2 (the existential ascent E@c ⊢ E@(c+1) is
 countermodel-refuted at c = 1), so the landing map must be
 single-sided — that is the mathematical heart of what remains.
+
+## §67 (2026-07-28) — Matthew's check executed: wip/G4conf.lean's assumed metatheory REFUTED kernel-checked; the inconsistency unwound
+
+The rule added to G4c for confluence exists: wip/G4conf.lean (branch
+ui-confluence, design docs/confluent-ui-plan.md) defines G4cf = the 17
+G4iLL″ rules + distL (analytic left rule: from ◯(A∨B) ∈ Γ branch to
+◯A resp. ◯B), with soundness PROVED and — under stated licence — four
+sorried claims: G4c ⊆ G4cf (true, routine), distF derivable (true,
+routine), completeness for confluent validity, and cut admissibility.
+
+VERDICT of the check (wip/g4confGap.lean, all [propext, Quot.sound],
+first-compile): **completeness-without-cut is FALSE and hence cut is
+NOT admissible** (granted the two routine lemmas).  Witness = the §62
+cut-necessity sequent ◯(a⊃(b∨c)), ◯a, ◯b⊃p, ◯c⊃p ⊢ p:
+  * derivU_gapSeq — PCLL derives it (pinned searcher term through the
+    cut formula ◯b∨◯c); confluent-valid by derivU_sound;
+  * g4hf_to_g4h — on sequents with no subformula of shape ◯(A∨B)
+    (invariant NoObOr, preserved by all 18 rules; distL can never
+    fire), G4cf collapses to G4c;
+  * pll_not_gapSeq — PLL refutes the sequent (five-world ∀∃
+    countermodel, decide);
+  * g4cf_not_gapSeq, g4cf_complete_refuted — the conclusions.
+G4conf.lean's two false statements are REMOVED and replaced by an
+adjudication block; the two true sorried lemmas remain, annotated.
+No Lean file imported the false claims (blast radius: two docs).
+
+THE UNWOUND ACCOUNT (correcting §§62–65's narrative and yesterday's
+"nothing exists for PCLL"): a single-succedent confluence-extended
+calculus DID exist in the repo, with its completeness and cut assumed.
+The §62 stranding analysis, found independently this session, is
+precisely the refuter of those assumptions — the two threads now agree,
+adjudicated by the kernel: for the distributing systems (PCLL, PICLL),
+an analytic hypothesis-keyed distribution rule cannot give a cut-free
+complete single-succedent calculus; the repair must carry ◯-disjunctions
+across implication eliminations (multi-succedent ◯-rule, or an
+elimination rule internalising the case split).  The PLL tower (§65) is
+untouched: it never used distL, and PLL never derives such sequents.

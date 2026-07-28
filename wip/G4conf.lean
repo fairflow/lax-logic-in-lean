@@ -16,10 +16,11 @@ collapses to bare possibility `w ⊩ ◯φ ↔ ∃u, Rₘ w u ∧ u ⊩ φ`.
 The 17 `G4h` rules are copied verbatim (a `G4h → G4hf` rename); `distL`
 is the one new rule.  Every ported metatheorem gets exactly one new case.
 
-Proved here: `force_dist_elim` (the semantic core of `distL`-soundness).
-Stated with precise port-comments (Matthew's licence to assume the
-heavier metatheory for now): full soundness, completeness via `DerivU`,
-cut admissibility, and the `G4c ⊆ G4cf` embedding.
+Proved here: `force_dist_elim` (the semantic core of `distL`-soundness)
+and full soundness via `DerivU`.  The heavier metatheory that was
+assumed under licence — completeness without cut, and cut
+admissibility — is REFUTED (2026-07-28): see the adjudication block
+before the (removed) statements, and `wip/g4confGap.lean`.
 -/
 
 open PLLFormula
@@ -290,22 +291,31 @@ theorem G4cf_distF (A B : PLLFormula) :
     G4cf [] ((somehow (A.or B)).ifThen ((somehow A).or (somehow B))) := by
   sorry
 
-/-- **Completeness for confluent models**, via `DerivU`
-(`derivU_iff_confluent_valid`, `PLLConfluentComplete.lean`): `G4cf` and
-`DerivU` derive the same sequents (`G4cf_of_G4c` + `G4cf_distF` one way;
-soundness the other), and `DerivU` is complete for the confluent class. -/
-theorem G4cf_complete {Γ : List PLLFormula} {C : PLLFormula}
-    (hv : ∀ (M : ConstraintModel), MutuallyConfluent M → ∀ w : M.W,
-      (∀ φ ∈ Γ, M.force w φ) → M.force w C) : G4cf Γ C := by
-  sorry
+/-! ## The assumed metatheory, ADJUDICATED (2026-07-28)
 
-/-- **Cut admissibility for `G4cf`.**  ASSUMED (Matthew's licence).
-Later: port `PLLG4HCut` — the 17 shared cases verbatim, plus the
-`distL`/cut interaction (standard: cut permutes above `distL` into both
-branches, the cut formula strictly smaller or the height dropping). -/
-theorem G4cf_cut {Γ : List PLLFormula} {A C : PLLFormula}
-    (d₁ : G4cf Γ A) (d₂ : G4cf (A :: Γ) C) : G4cf Γ C := by
-  sorry
+The two heavier claims that were stated here under licence —
+completeness for confluent validity, and cut admissibility — are
+**FALSE**, kernel-checked in `wip/g4confGap.lean`:
+
+* `G4ConfGap.g4cf_complete_refuted` refutes the completeness claim
+  outright, witnessed by the cut-necessity sequent
+  `◯(a⊃(b∨c)), ◯a, ◯b⊃p, ◯c⊃p ⊢ p` — PCLL-derivable (through the cut
+  formula `◯b ∨ ◯c`), confluent-valid, but not `G4cf`-derivable: no
+  formula with a subformula of shape `◯(A∨B)` occurs in its backward
+  cone, so `distL` never fires and `G4cf` collapses to `G4c` there
+  (`G4ConfGap.g4hf_to_g4h`), and PLL refutes the sequent.
+* Consequently cut admissibility fails too, granted the two routine
+  true lemmas below: with cut, `G4cf` derives the sequent (compose the
+  distribution instance), without it it does not.
+
+The analytic `distL` is too weak: the confluence content can sit under
+an implication inside a box, out of reach of a left rule keyed to
+`◯(A∨B)`-hypotheses.  A cut-free calculus for the distributing systems
+needs a `◯`-rule that carries a disjunction of `◯`-formulas across
+implication eliminations (multi-succedent, or an internalised case
+split) — see PROGRESS §§62, 67.  The two statements formerly here
+(`G4cf_complete`, `G4cf_cut`) are removed so no proof effort can be
+spent on them. -/
 
 -- Audit: soundness is sorry-free (only the standard three axioms).
 #print axioms G4cf_sound
