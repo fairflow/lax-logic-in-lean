@@ -2826,3 +2826,34 @@ Repaired mechanically, in two orders:
 are choice-free.  The rebuild proceeds against `Descends p need` with
 `need` open — `2 ≤ c` is recorded as the currently-best-supported
 instantiation, not as the statement.
+
+### §81 addendum — the skipped cells filled in; the two gates behave differently
+
+`WEIGHT_CAP` had forced `c ≥ 2` to be skipped on the larger chains,
+which is exactly where the question lives.  Re-run battery-only (the
+positive stage cut to a token spot-check, so the polynomial model check
+can reach weight-148,000 targets):
+
+| family | \|S\| | defect | \|jumpGoals\| | PRODUCT law | certified failures | clean from |
+|---|---|---|---|---|---|---|
+| chain2 | 10 | 9 | 5 | 63 | c ≤ 1 | c = 2 |
+| chain3 | 13 | 12 | 7 | 108 | c ≤ 1 | c = 2 |
+| chain4 | 16 | 15 | 9 | 165 | c ≤ 1 | c = 2 |
+
+The failure boundary is **fixed at c ≤ 1** while the space triples, the
+defect goes 9 → 15, `|jumpGoals|` goes 5 → 9 and the assumed law goes
+63 → 165.  Nothing in the measurement grows.  (Failures certified;
+clean cells battery-clean.)
+
+**The two gates are not alike.**  With its guard repaired — `B ⊃ D` put
+into the context, which `gateLive` now confirms — the `⊃⊃` family fails
+at `c = 0` and is clean from `c = 1` up: threshold **1**, against the
+`◯⊃` gate's **2**.  Before the repair the same family showed no failure
+at any budget, purely because its gate was dead.  So the extra budget
+level is specifically the cost of the `◯A ⊃ B` clause, whose gated
+sub-branch emits *two* paired conjuncts (the `◯`-guarded one included)
+where the `⊃⊃` clause emits one.
+
+`chainII2`'s gate is still dead (`gateLive = false`: the repair supplied
+the last link's guard, not the first), so that row remains
+uninformative and is not counted above.
