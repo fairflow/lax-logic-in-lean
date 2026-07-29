@@ -3489,3 +3489,64 @@ an `Expr`.  It would convert every "PROVED by search" in this development from
 *evidence* into *theorem*, which the machine-checked mandate wants; it is the
 single highest-value piece of tooling still missing.  Recorded as an
 opportunity, with the mechanism identified.
+
+## §89 — `#pinsrc`: search-found proofs become theorems (30 July)
+
+`LaxLogic/PLLSearchPin.lean` (new, in the library), `wip/jumpPinned.lean`,
+`wip/pinnedFacts.lean` (new).  All sorry-free.
+
+### The gap this closes
+
+The refutation side of the oracle has always produced *theorems*: a countermodel
+is data, `FinCM.checkB M w Γ C = true` is a cheap kernel computation, and
+`FinCM.not_provable_of_check` turns it into `¬ G4c Γ C`.  Every refutation in
+this development is pinned that way.
+
+The positive side did not, for a purely mechanical reason.  `Verdict.proved`
+carries a **typed** term `t : G4cTm Γ C` — so Lean's typechecker has already
+checked a derivation the moment the searcher builds one — but there was no way
+to get `t` into a source file, and running the searcher in the kernel is
+infeasible (it is deliberately kernel-opaque).  So every "PROVED by search" in
+§§84–87 was *evidence*, which under the machine-checked mandate is not a
+theorem.
+
+### How
+
+`#pinsrc Γ ⊢ C [with cfg]` prints `t` as pasteable Lean source.  The emitter
+prints **no formulas at all**: every index is recovered by unification — `Γ` and
+`C` from the type ascription, and each side formula from the *membership proof*,
+emitted structurally as a `.tail _ (… (.head _))` chain at a computed position
+in `Γ`.  So the output is proportional to the **derivation**, not to the
+quantifier tables in the sequent, which here have weight in the hundreds.  The
+chain is computed from the member's position rather than by recursion on the
+membership proof, because `List.Mem` is `Prop`-valued and a `String`-valued
+function cannot eliminate it.
+
+Documented as `docs/search-manual.md` §10.  This completes the
+"discover-then-pin" pipeline: probe → `#pinsrc` → generated source → kernel,
+with nothing about the search trusted at the end.  For the two large terms the
+generated source was written straight to a file rather than transcribed, so no
+step is manual.
+
+### Five facts promoted from evidence to theorem
+
+| fact | nodes | Lean name |
+|---|---|---|
+| descent to budget `0` at the atom jump goal `p` | 7 | `JumpPinned.desc_zero_atom_p` |
+| descent to budget `0` at the atom jump goal `r` | 12 | `JumpPinned.desc_zero_atom_r` |
+| `A@1(Γ,◯p) ⊢ ◯⊥` (the collapse of §86) | 57 | `JumpPinned.boxbot_collapse` |
+| descent to budget `0` at a `⊃`-shaped jump goal | 349 | `PinnedFacts.desc_zero_imp_jump` |
+| `GammaPairFloorA` at one instance (the control of §87) | 104 | `PinnedFacts.gammaPairFloorA_instance` |
+
+### What they settle
+
+The budget tier of the descent is entered only at jump goals (§85).  Its base
+case at budget `0` is now **proved** at both non-boxed jump-goal shapes — atom
+and `⊃` — and **certified false** at the boxed shape.  So the boxed shape is not
+merely the hardest case; it is the *only* one, and the localisation of §§86–87
+rests on theorems rather than on how hard a search was pushed.
+
+`gammaPairFloorA_instance` matters for the same reason: it is the control for
+§87.  The plain γ-branch goes through where the boxed one has no uniform route,
+so that distinction is a fact about the two branches and not about search
+budgets.
