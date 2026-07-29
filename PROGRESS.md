@@ -3255,3 +3255,85 @@ Both are at target budget `1`, and both are environment-clause branches:
 That is a sharper statement of the residue than "four jointly unsatisfiable
 interfaces": the four are unsatisfiable because two of them are, and the
 other two look reachable.
+
+## §86 — the three gated environment components close above the floor; the residue is ONE branch at ONE budget (30 July)
+
+`wip/envDesc.lean` (new), `wip/sealprobe.lean`, `wip/sealprobe2.lean` (new
+exes).  Lean content sorry-free and axiom-pinned.
+
+### The three gated environment first components
+
+§85 showed the goal side of the descent never reaches budget `0`, so the
+whole low-budget difficulty is in the two budget-gated *environment* clauses.
+Each contributes disjuncts (first component) ∧ (second component), the second
+at the grown context and the same budget (defect tier), the first at the same
+context one budget lower.  Three first components in all, and `wip/envDesc.lean`
+proves **all three** close at target budget `c + 1` from the descent at the
+corresponding jump goal at target budget `c`:
+
+| clause | target first component at budget `c+1` | lemma |
+|---|---|---|
+| jump | `E@c(Γ) ⇢ A@c(Γ, A⊃B)` | `jump_of_desc` |
+| γ, plain | `A@c(Γ, A)` | `gamma_plain_of_desc` |
+| γ, boxed | `◯( E@c(Γ) ⇢ A@c(Γ, ◯A) )` | `gamma_boxed_of_desc` |
+
+bundled as `gated_env_first`.  The mechanism is the same one that settled the
+goal side, and it is worth stating plainly:
+
+> the ambient sits at budget `c + 2`, i.e. **two** above the component's
+> budget, so downward existential monotonicity alone supplies the guard
+> `E@(c+1)(Γ)` needed to fire the source.
+
+So no *ascent* is consumed — the refuted `AmbGuardAscent` does not appear in
+any of the three.  What is consumed is the descent at a jump goal at target
+budget `c`, needing `c ≥ 1`.  In particular **the boxed γ-component — the
+"γ-seal" that `wip/absorb_base.lean`'s residue analysis lists as unreachable
+by the continuation machinery — is reachable at every target budget `≥ 2`**,
+by `box_remap_free` with the guard taken from the ambient and the value from
+the descent one budget down.
+
+### So the residue is one branch at one budget
+
+Target budget `1`.  There the value conversion is the descent to budget `0` at
+a boxed goal, and that is certified false.  Everything else in the descent
+above budget `1` is either proved here, proved in `wip/goalDesc.lean`, or is
+the defect tier.
+
+### The floor case, and an honest caveat about the `◯⊥` route
+
+At the floor the boxed target component is `◯(E@0(Γ) ⇢ A@0(Γ,◯A))`, and at
+budget `0` a `◯`-goal's table is its environment table alone
+(`itpA_obGoal_floor`), which can be **starved** — literally `⊥`.  When it is,
+the component is `◯(E@0(Γ) ⇢ ⊥)` and **any derivation of `◯⊥` gives it**:
+`boxed_target_of_starved` / `boxed_target_of_env_nil` (sorry-free).  No
+descent and no ascent.
+
+On the probed configuration that demand is met.  `wip/sealprobe2.lean`
+reports, for `Γ = [◯p ⊃ r]`:
+
+    A@0(Γ,◯p) = ⊥ ,  A@0(Γ,p) = ⊥ ,  E@0(Γ) = ⊤
+    A@1(Γ,◯p)  ⊢  ◯⊥          PROVED
+
+so the boxed branch *is* derivable there, by a route proof search does not
+find (`wip/sealprobe.lean` returns `~` on the whole obligation at
+`findBudget` 200 000, while the control `GammaPairFloorA` comes out `PROVED`
+at every atom and boxed goal `C`).
+
+**But the route is specific to the probe family, and this must not be
+oversold.**  It works because the γ-clause of that family is `◯p ⊃ r`, whose
+head is the *eliminated variable* `p` — and the goal clause of `p` is empty at
+every budget, which is what forces the collapse to `◯⊥`.  With a γ-head
+`A ≠ p` the collapse fails: `A@0(Γ,A)` then contains the disjunct `A` itself,
+so it is not starved, and `A@1(Γ,◯A)` is satisfiable in an infallible model
+while the target component `◯⊥` is not.  A general `A@b(Γ,◯D) ⊢ ◯⊥` is false
+outright (take `Γ = []`, `D = ⊤`).
+
+### Next
+
+The analysis above predicts a **countermodel** to `GammaPairFloorBox` at a
+configuration whose γ-head is not the eliminated variable: `Γ = [◯r ⊃ s]`,
+`A = r`, with `r` false at the root and true at a `⊳`-successor, in an
+infallible model.  If that lands, the interface is *individually* false, not
+merely part of an unsatisfiable four, and the branch has to be re-cut rather
+than proved.  That is the next probe, and it is the right order of work:
+refute before attempting.
