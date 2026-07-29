@@ -978,3 +978,55 @@ instances rather than the searcher described here.
   which is why the info view seems to jump to the end of the file and show
   one stale-looking block.  Use `#guard_msgs_show`
   (`LaxLogic/GuardMsgsShow.lean`), which checks *and* displays.
+
+---
+
+## 10. Pinning a found proof: `#pinsrc`
+
+The refutation side of this tool has always produced *theorems*: a countermodel
+is data, `FinCM.checkB M w Γ C = true` is a cheap kernel computation, and
+`FinCM.not_provable_of_check` turns it into `¬ G4c Γ C`.  Every refutation in
+this development is pinned that way.
+
+The positive side did not, and the reason was purely mechanical.
+`Verdict.proved` carries a **typed** term `t : G4cTm Γ C` — so Lean's
+typechecker has already checked a derivation the moment the searcher builds one
+— but there was no way to get `t` into a source file.  Running the searcher
+inside the kernel is not an option: it is deliberately kernel-opaque.
+
+`LaxLogic/PLLSearchPin.lean` supplies the missing step.
+
+    #pinsrc Γ ⊢ C
+    #pinsrc Γ ⊢ C with cfg
+
+prints, on success,
+
+    PROVED  (n nodes, rule tree …)
+    paste as the proof term:
+    (.impR (.laxR (.init (.head _))))
+
+and on failure the same `Reason` diagnostics as `#search`.  Paste the term as
+
+    theorem my_fact : G4c Γ C := (<term> : G4cTm Γ C).toG4c
+
+and the kernel re-elaborates and re-checks it from scratch.  Nothing about the
+search is trusted.
+
+**Why the output is short.**  The emitter prints **no formulas at all**.  Every
+index is recovered by unification: the conclusion's `Γ` and `C` come from the
+ascription, and each side formula is pinned down by the *membership proof*,
+emitted structurally as a `.tail _ (… (.head _))` chain pointing at a position
+in `Γ`.  Unifying (say) `A.and B` with the formula at that position determines
+`A` and `B`.  So the emitted term is proportional to the **derivation**, not to
+the formulas in the sequent — which matters here, because the sequents this
+development cares about have quantifier tables in them, formulas of weight in
+the hundreds.
+
+The chain is computed from the member's position in `Γ` rather than by recursion
+on the membership proof: `List.Mem` is `Prop`-valued, so a `String`-valued
+function cannot eliminate it.
+
+**Worked examples** are in `wip/jumpPinned.lean`, which pins three facts that
+`wip/jumpprobe.lean` and `wip/sealprobe2.lean` had only as probe output: the
+descent to budget `0` at two atom jump goals, and the `◯⊥` collapse at a boxed
+one (57 nodes).

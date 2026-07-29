@@ -45,6 +45,7 @@ import LaxLogic.PLLSearch
 import LaxLogic.PLLSearchEx
 import LaxLogic.PLLSearchConf
 import LaxLogic.PLLSearchCmd
+import LaxLogic.PLLSearchPin
 import LaxLogic.PLLNoFall
 import LaxLogic.PLLNoFallNF
 import LaxLogic.PLLNoFallSep
