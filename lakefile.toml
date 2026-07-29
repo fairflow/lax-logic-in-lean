@@ -227,3 +227,8 @@ root = "wip.sealprobe7"
 [[lean_exe]]
 name = "sealprobe8"
 root = "wip.sealprobe8"
+
+# The boxed goal with a ◯χ in the context: is the extra env family the route?
+[[lean_exe]]
+name = "sealprobe9"
+root = "wip.sealprobe9"

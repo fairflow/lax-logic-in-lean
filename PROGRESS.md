@@ -3803,3 +3803,65 @@ found in the context.  Emitted source is meant to be *pasted into a file*, so a
 fallback that elaborates to `sorry` could turn a broken emission into a silently
 unsound theorem.  It now emits an unknown identifier, which fails loudly at
 elaboration.
+
+## §93 — the boxed floor branch needs genuine recursion, not one application of the defect tier (30 July)
+
+`wip/sealprobe9.lean` (new exe).  A measurement, with a consequence worth
+stating carefully.
+
+### The extra family at a boxed goal does not help
+
+At a boxed goal the universal table has one environment clause family that exists
+at no other goal shape: for each `◯χ ∈ Γ` with `χ ∈ S ∖ Γ`,
+
+    ◯( E@b(χ::Γ) ⇢ A@b(χ::Γ, C) )
+
+Every configuration probed in §92 had **no** `◯χ` in the context, so that family
+was empty — an obvious suspect for the missing route.  With `◯w` added to the
+context the family is live and the target grows from 3 disjuncts to 5.  The route
+table is unchanged: **every case still reaches NOTHING**, and the whole
+obligation is still `~`.  The control row (same space, `◯w` removed from the
+context) reproduces §92 exactly.
+
+So across three configurations, two spaces and both with and without a boxed
+context member, no case of the analysis reaches any target disjunct at a boxed
+goal — while at atom and `⊃`-shaped goals every case reaches the goal clause in
+under ten nodes.
+
+### What that does and does not establish
+
+It does **not** refute `GammaPairFloorBox`.  That interface carries the defect
+tier as a *Lean-level* hypothesis (the descent at every strictly smaller defect),
+and a countermodel to a sequent says nothing about a hypothesis that may simply
+be false in that model.
+
+What it does establish is sharper than a refutation would be, and is about proof
+*shape*:
+
+> the boxed floor branch cannot be closed by reaching a target disjunct from the
+> ambient, the source's boxed component and the second component alone.  Any
+> proof must apply the defect tier **again**, at a further-grown context — i.e.
+> the case analysis has to recurse.
+
+The material handed to the oracle is everything the branch has except Lean-level
+recursion: the second component was supplied *already descended*, and from it the
+budget-2 form and all of its disjuncts follow by monotonicity.  So the negative
+result is not a budget artefact of what was offered.
+
+### Contrast with the two closed shapes
+
+At an atom goal one application suffices, because `prop q` is a disjunct of the
+target at **every** context (§91).  At a `⊃`-shaped goal the searcher finds an
+8-node route at two configurations (§92) — and it should be said plainly that
+this is *not* yet a general lemma, and the pinned derivation is
+configuration-specific: it reaches `prop s` from the introduced guard by firing
+the γ-clause, which works because the goal's consequent happens to be the
+γ-clause's consequent.
+
+So the standing summary is:
+
+| goal shape | status |
+|---|---|
+| atom | **proved in general** (∨-free space) |
+| `A ⊃ B` | proved at two configurations; general lemma OPEN |
+| `◯A` | OPEN, and now known to need a recursive case analysis |
