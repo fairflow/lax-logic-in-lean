@@ -2947,3 +2947,79 @@ of them.
 `OthDescends` is the whole remaining content.  Its branches will deposit
 further laws; the budget is the supremum of those and of the measured
 lower bounds, computed when the last branch lands.
+
+## §83 — the budget tier of the descent has no base case (30 July)
+
+`wip/floorRefute.lean`, PROVED sorry-free, `[propext, Quot.sound]`.
+
+### The descent to budget `0` is FALSE
+
+    not_floorDescent : ¬ FloorDescent "p" Sz
+
+at the piece-closed configuration
+
+    Sz = {◯(⊥⊃⊥), ⊥⊃⊥, ⊥},   Γ = [],   g = ◯(⊥⊃⊥) ∈ Sz,
+
+where `FloorDescent p S` is the descent at target budget `0` carrying every
+side condition the `oth_descent` interfaces carry (goal in the space,
+context inside the space, head fuel below target fuel) — so refuting it
+refutes every weakening.
+
+The refutation needs **no countermodel search**.  The target table is
+*literally* `⊥`: at the empty context the environment table is empty, and at
+budget `0` both the `◯`-goal clause and the truncation disjunct are gated
+off, so `itpA_starve_floor` (already in `wip/starve.lean`) applies.  The only
+semantic input is that the two hypotheses are jointly consistent, which the
+one-world model settles.
+
+### Why this closes off the `cascadeBox` architecture
+
+`oth_descent` is a three-tier induction: strong on the defect, strong on the
+budget `c` (carrying `1 ≤ c`), structural on the source fuel.  Its three
+floor interfaces (`GammaPairFloorA`, `GammaPairFloorBox`, `JumpPairFloor`)
+exist because the *budget* tier has no recursive call at `c = 1`: a
+budget-gated environment clause of the target table at budget `c` puts its
+first component at `c − 1`, so that branch needs the descent at `(c → c−1)`,
+which at `c = 1` is the descent to budget `0`.
+
+Both bottom rungs are now refuted — target budget `0` here, target budget
+`1` in `wip/ascRefute.lean` §2.  So **raising the floor does not supply a
+base case**: a floor at `n` needs the descent at `n − 1`, and the
+obstruction is the shape of the gated clause, not the numeral.  The
+recursion must terminate on another measure — context growth (defect), or
+the pigeonhole over `jumpGoals S` that `cascade_main` already implements.
+
+This does not touch `Descends need` (`wip/descent2.lean`), which is the
+target either way; it says the *proof* has to come from the defect side.
+`descends_of_othDescends` remains valid and reusable, but `OthDescends`
+should not be attacked by a budget induction.
+
+### A second lower bound, and candidate B dead twice over
+
+The same configuration is an instance of `Descends` at target budget `0`,
+forcing
+
+    gate_free_lower_bound : Descends "p" need → 1 ≤ need Sz [] gz
+
+at a space whose **gated-piece count is zero** (`gateCount_Sz : gateCount Sz
+= 0`).  So the gate-count law `needGate` is refuted by data
+(`needGate_excluded`), not only by the proof obligation `NeedFloor1`
+(`needGate_not_floor1` of §82).  The §82 elimination used the empty space and
+could be dismissed as degenerate; `Sz` is piece-closed with a genuine
+`◯`-goal.
+
+Surviving candidates: `needConst2` (constant `2`) and `needProduct`
+(`defect S Γ · (|jumpGoals S| + 2)`, the law the tower assumes).  Note
+`needProduct Sz [] gz = 3 · 2 = 6 ≥ 1`, so it survives; `needConst2` gives
+`2 ≥ 1`.
+
+### Next
+
+Build the starvation classification the residue's own failure analysis names
+as step one — which `(Γ, g, b)` starve — and from it a
+`(defect, budget)`-lexicographic landing map.  `wip/starve.lean` has four
+bricks; the classification needs the *general* collapse lemmas (not just the
+`◯`-goal floor) and the dual statement for `itpE`.
+
+A running record of this away-run, written for a reader who was not present,
+is at `docs/away-run-report.md`.
