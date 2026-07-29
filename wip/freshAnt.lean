@@ -51,6 +51,22 @@ def S2 : Finset PLLFormula :=
 
 def G2 : List PLLFormula := [gam "r" "s", gam "u" "v"]
 
+
+/-! ### The deciding cell: consequent unrelated to the context
+
+At `C = r ⊃ z` the goal's consequent occurs nowhere in the context, and
+`wip/sealprobe10.lean` shows every target disjunct **other** than the goal clause
+is *refuted* there.  So the goal clause is the only candidate, which makes this the
+cell that decides whether a general lemma can exist.  `wip/sealprobe11.lean` proves
+it at `findBudget` 200 000, 2 000 000 and `none` (exhaustive) — 56 nodes — while
+the ∃-ascent instance the natural route would need is still undecided at 200 000.
+
+`goalClause0` is that goal clause, `E@1(r::Γ) ⇢ A@1(r::Γ, z)`. -/
+
+/-- The target's goal clause for `r ⊃ z` at `Γ`. -/
+def goalClause0 : PLLFormula :=
+  (itpAoth "p" S1 3 1 G1 ((prop "r").ifThen (prop "z"))).getD 0 falsePLL
+
 /-- The fresh-antecedent goal branch at target budget `1`, pinned by `#pinsrc` (9 nodes).  It uses **no** existential ascent. -/
 theorem fresh_ant_S1 :
     G4c [itpE "p" S1 4 2 G1, (itpE "p" S1 3 2 ((prop "r") :: G1)).ifThen (itpA "p" S1 3 2 ((prop "r") :: G1) (prop "s"))]
@@ -67,6 +83,24 @@ theorem fresh_ant_S2 :
     G4cTm [itpE "p" S2 4 2 G2, (itpE "p" S2 3 2 ((prop "r") :: G2)).ifThen (itpA "p" S2 3 2 ((prop "r") :: G2) (prop "s"))]
       (orAll (itpAoth "p" S2 3 1 G2 ((prop "r").ifThen (prop "s"))))).toG4c
 
+/-- The fresh-antecedent goal branch reaching the target's own goal clause, at the cell whose consequent is unrelated to the context.  Pinned by `#pinsrc` (56 nodes).  Uses **no** existential ascent. -/
+theorem fresh_ant_unrelated_goalclause :
+    G4c [itpE "p" S1 4 2 G1, (itpE "p" S1 3 2 ((prop "r") :: G1)).ifThen (itpA "p" S1 3 2 ((prop "r") :: G1) (prop "z"))]
+      (goalClause0) :=
+  (((.impR (.orR1 (.andL (.head _) (.andL (.tail _ (.head _)) (.impLOr (.head _) (.impLProp (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.andL (.head _) (.andL (.tail _ (.head _)) (.andL (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))) (.andL (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))) (.impLOr (.head _) (.impLProp (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))) (.impLOr (.tail _ (.tail _ (.head _))) (.impLAnd (.head _) (.impLOr (.head _) (.impLProp (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))) (.impLOr (.head _) (.impLOr (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))) (.impLAnd (.head _) (.andL (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))) (.impLAnd (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))))))))))))))))))))) (.impLProp (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))))))))))))))))))) (.impLAnd (.head _) (.impLImp (.head _) (.impR (.andR (.init (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))))))))))))))))) (.andR (.init (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))))))))))))))) (.impR (.botL (.head _)))))) (.impLAnd (.head _) (.impLImp (.head _) (.impR (.andR (.init (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))))))))))))))))))) (.andR (.init (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))))))))))))))))))))))))) (.impR (.botL (.head _)))))) (.impLImp (.head _) (.impR (.botL (.head _))) (.orL (.head _) (.init (.head _)) (.orL (.head _) (.andL (.head _) (.orL (.tail _ (.head _)) (.init (.head _)) (.botL (.head _)))) (.orL (.head _) (.andL (.head _) (.orL (.tail _ (.head _)) (.init (.head _)) (.botL (.head _)))) (.botL (.head _))))))))))))))))))))))))))))))))) :
+    G4cTm [itpE "p" S1 4 2 G1, (itpE "p" S1 3 2 ((prop "r") :: G1)).ifThen (itpA "p" S1 3 2 ((prop "r") :: G1) (prop "z"))]
+      (goalClause0)).toG4c
+
+
+/-- **The whole target follows**, since the goal clause is its first disjunct. -/
+theorem fresh_ant_unrelated_S1 :
+    G4c [itpE "p" S1 4 2 G1,
+         (itpE "p" S1 3 2 ((prop "r") :: G1)).ifThen
+           (itpA "p" S1 3 2 ((prop "r") :: G1) (prop "z"))]
+      (orAll (itpAoth "p" S1 3 1 G1 ((prop "r").ifThen (prop "z")))) := by
+  refine G4c.orAll_intro (φ := goalClause0) ?_ fresh_ant_unrelated_goalclause
+  show goalClause0 ∈ itpAoth "p" S1 3 1 G1 ((prop "r").ifThen (prop "z"))
+  decide
 
 end FreshAnt
 end PLLND
@@ -80,3 +114,9 @@ end PLLND
 /-- info: 'PLLND.FreshAnt.fresh_ant_S2' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.FreshAnt.fresh_ant_S2
+
+/--
+info: 'PLLND.FreshAnt.fresh_ant_unrelated_S1' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.FreshAnt.fresh_ant_unrelated_S1
