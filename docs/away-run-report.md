@@ -311,3 +311,57 @@ three times.
    refuting models of `wip/sealRefute.lean` say what the cases must
    distinguish; turning that into a *decidable syntactic* case split is the
    open problem.
+
+## 10. Result 6 (30 July, ~09:00) — the residual branch, closed at one configuration
+
+Full detail in PROGRESS §§89–90.
+
+Two things landed.
+
+**`#pinsrc`** (`LaxLogic/PLLSearchPin.lean`, documented as `docs/search-manual.md`
+§10).  The oracle's refutations were always theorems; its *proofs* were only
+probe output, because `Verdict.proved` carries a typed `G4cTm` that had no way
+into a source file.  `#pinsrc` prints it as Lean source, emitting **no
+formulas** — every index is recovered by unification, each side formula from a
+membership chain at a computed position in `Γ` — so the output is proportional to
+the derivation, not to the tables.  Five facts are now theorems instead of
+evidence, including the descent to budget `0` at both non-boxed jump-goal shapes.
+That makes the localisation of §§86–87 rest on theorems rather than on how hard a
+search was pushed.
+
+**The residual branch closed at one configuration.**  §87 refuted every uniform
+route.  The case analysis that must replace one was available for nothing, and
+the earlier survey missed it because it looked at the source's *first* component
+and at the target's disjuncts: the branch's **second** hypothesis is itself a
+disjunction, so `orAll_elim` on it is a case analysis with one case per disjunct
+of the grown-context table, and different cases may reach different target
+disjuncts. `EnvDesc.branch_of_cases` is that reduction, and
+
+    BoxedBranchS1.boxed_branch : G4c [amb, box, snd] (orAll (itpAoth …))
+
+closes the branch at `S = {◯r ⊃ s, ◯r, r, s, z}`, `Γ = [◯r ⊃ s]`, `A = r`,
+`B = s`, `C = z` — γ-head an ordinary atom, so §87's refutations bite and §86's
+`◯⊥` collapse is unavailable.  **The branch that was the residue closes in the
+case its refutations single out.**
+
+And the split is not a formality: on that configuration the whole obligation is
+search-truncated at 40 000 nodes, every uniform route is refuted, and the single
+case is proved in **two**.
+
+**What remains for the general lemma.**  A route per disjunct shape of the
+grown-context table.  On a configuration whose *grown* context still has a live
+clause there are three cases; the first (the goal clause) is proved, the second
+is undecided at 40 000 nodes.  The natural continuation is that the analysis
+**recurses**: each case either forces `C`'s goal clause or hands back a second
+component at a strictly larger context, so the recursion is on the defect and
+bottoms out when the context saturates and the environment table empties.  That
+works cleanly for atom goals over `∨`-free contexts; the `∨` environment clause
+produces a conjunction of *implications*, whose consequents cannot be extracted
+without their guards, and is the next thing to settle.
+
+**Resume here:** push the undecided second case of the two-γ-clause
+configuration (`wip/sealprobe6.lean`, `S2`, case 1, weight 8) at a much larger
+`findBudget`, and if it is provable, pin it and read off the route.  Then
+enumerate the disjunct shapes of `itpAfull p S F 1 (B::Γ) C` and assign a route
+to each, which is a finite obligation of the same kind as the goal-side table of
+§85.
