@@ -3717,3 +3717,11 @@ goal shape's goal clause mentions the context (`◯D` gives
 context — which is unsound, since a table at a larger context has *more*
 disjuncts and is therefore weaker.  So extending past atoms is not a matter of
 pushing the same argument harder.
+
+### Dating note for §§83–91
+
+These entries were written in one continuous session beginning at 22:11 BST on
+29 July 2026.  The "(30 July)" dates on them are approximate — the wall-clock
+times were estimated while working and the early ones drifted by several hours.
+The order of the entries is correct and nothing in their content depends on the
+times.

@@ -7,6 +7,14 @@ be read by someone who was not present.
 
 Latest revision: see the dated sections; newest last.
 
+**A note on the timestamps below.**  The section headings carry wall-clock
+guesses made while working, and the early ones drifted: the run began at
+**22:11 BST on 29 July** and the sections labelled "30 July, ~00:00" through
+"~09:00" were in fact all written between 22:30 on 29 July and 00:00 on 30 July.
+The *order* is right and the content is unaffected; only the clock times are
+approximate.  The same caveat applies to the "(30 July)" dates on PROGRESS
+§§83-91.
+
 ---
 
 ## 0. Where the work is
