@@ -235,6 +235,131 @@ theorem needGate_not_floor1 : ¬ NeedFloor1 needGate := by
   have h0 := h ∅ [] (prop "a")
   simp [needGate, gateCount] at h0
 
+/-- **Candidate C fails the first law too.**  On a *saturated* context
+(`S ⊆ Γ`, so `defect S Γ = 0`) the product asks for nothing.  That band is
+separately settled by `cascade_zero` in `wip/absorb_base.lean` — every
+space-guarded clause is dead there — so the failure is not fatal to the
+tower; but it does mean `needProduct` cannot be fed to
+`descends_of_othDescends` as it stands. -/
+theorem needProduct_not_floor1 : ¬ NeedFloor1 needProduct := by
+  intro h
+  have h0 := h ∅ [] (prop "a")
+  simp [needProduct, defect] at h0
+
+/-! ## 5. The ledger law: what the caller actually funds
+
+The two screens above are necessary conditions coming from *below*
+(refutations) and from the *proof* (`NeedFloor1`).  There is a third
+constraint, from **above**: the room requirement must be something the
+caller can pay.
+
+The caller is the tower's stabilisation entry
+(`cascade_entry`/`itp_stab_aux` in `wip/absorb_base.lean`), which runs
+under `kcap S < c + 2` where
+
+    kcap S = (2·|S| + 4)·(|S| + 2).
+
+`kcap_room` (reproved here, since `wip/absorb_base.lean` is not a lake
+library target) turns that entry condition into the ledger
+
+    |jumpGoals S| + 1 + defect S Γ · (|jumpGoals S| + 2)  ≤  c,
+
+*at every context* `Γ`.  So the ledger is the pointwise maximum the caller
+funds, and any `need` below it is affordable.  Unlike `needProduct` it has
+a floor of one built in, so it is the strongest candidate that can be fed
+to `descends_of_othDescends` unmodified. -/
+
+/-- Candidate D: **the ledger law** — exactly what `kcap_room` funds. -/
+def needKcap : Need := fun S Γ _ =>
+  (jumpGoalsOf S).card + 1 + defect S Γ * ((jumpGoalsOf S).card + 2)
+
+/-- The jump-goal count is at most twice the size of the space. -/
+theorem jumpGoalsOf_card_le (S : Finset PLLFormula) :
+    (jumpGoalsOf S).card ≤ 2 * S.card := by
+  refine le_trans (Finset.card_biUnion_le) ?_
+  rw [two_mul]
+  refine le_trans (Finset.sum_le_sum (g := fun _ => 2) ?_) ?_
+  · intro F _
+    match F with
+    | .ifThen (.ifThen A B) _ => simp
+    | .ifThen (.somehow A) _ => exact Finset.card_insert_le _ _
+    | .prop _ => simp
+    | .falsePLL => simp
+    | .and _ _ => simp
+    | .or _ _ => simp
+    | .somehow _ => simp
+    | .ifThen (.prop _) _ => simp
+    | .ifThen .falsePLL _ => simp
+    | .ifThen (.and _ _) _ => simp
+    | .ifThen (.or _ _) _ => simp
+  · simp only [Finset.sum_const, smul_eq_mul]
+    omega
+
+/-- The jump-state threshold of the tower. -/
+def kcapOf (S : Finset PLLFormula) : Nat := (2 * S.card + 4) * (S.card + 2)
+
+/-- **The ledger is funded** (`kcap_room` of `wip/absorb_base.lean`): the
+tower's entry condition pays the ledger at every context. -/
+theorem needKcap_funded {S : Finset PLLFormula} {c : Nat}
+    (hb : kcapOf S < c + 2) (Γ : List PLLFormula) (g : PLLFormula) :
+    needKcap S Γ g ≤ c := by
+  have hJ : (jumpGoalsOf S).card ≤ 2 * S.card := jumpGoalsOf_card_le S
+  have hd : defect S Γ ≤ S.card :=
+    Finset.card_le_card (Finset.sdiff_subset)
+  have h1 : defect S Γ * ((jumpGoalsOf S).card + 2) ≤
+      S.card * (2 * S.card + 2) :=
+    Nat.mul_le_mul hd (by omega)
+  have h2 : (2 * S.card + 4) * (S.card + 2) =
+      S.card * (2 * S.card + 2) + (6 * S.card + 8) := by
+    ring
+  simp only [kcapOf] at hb
+  simp only [needKcap]
+  omega
+
+/-- **The ledger law satisfies the first extracted law**, unlike the gate
+count and the bare product: the `+1` is unconditional. -/
+theorem needKcap_floor1 : NeedFloor1 needKcap := by
+  intro S Γ g
+  simp only [needKcap]
+  omega
+
+/-- The ledger law survives the refutation screen at the `wip/ascRefute.lean`
+configuration, with room to spare. -/
+theorem needKcap_survives : ¬ (needKcap Sk Gk gk ≤ 1) := by decide
+
+/-! ### The reduction that would close the tower's `sorry`
+
+`cascade_low_pos_box` is `wip/absorb_base.lean`'s single `sorry`, and the
+only source of `sorryAx` in `uniform_interpolation_PLL`.  Stated as a
+`Prop` here (it is `private` there, and that file is not importable), it is
+the descent under the tower's own room hypothesis. -/
+
+/-- The tower's holdout, as a proposition: the descent at every
+ledger-funded configuration. -/
+def LedgerDescent (p : String) (S : Finset PLLFormula) : Prop :=
+  ∀ (fuel fh c : Nat) (Γ : List PLLFormula) (g : PLLFormula)
+    (Δ : List PLLFormula),
+    kcapOf S < c + 2 → fh ≤ fuel →
+    G4c Δ (itpE p S fuel (c + 1) Γ) →
+    G4c Δ (itpA p S fh (c + 1) Γ g) →
+    G4c Δ (itpA p S fuel c Γ g)
+
+/-- **Proving the parametric descent with the ledger law closes the
+tower's holdout.**  Machine-checked reduction: `Descends p needKcap` gives
+the descent at every configuration the tower's entry condition funds, which
+is every configuration `cascade_low_pos_box` is ever applied at. -/
+theorem ledgerDescent_of_descends (p : String) (S : Finset PLLFormula)
+    (h : Descends p needKcap) : LedgerDescent p S :=
+  fun fuel fh c Γ g Δ hb hfh hamb hhead =>
+    h S fuel fh c Γ g Δ (needKcap_funded hb Γ g) hfh hamb hhead
+
+/-- The same reduction routed through the others-descent: the whole
+remaining content of the rebuild, in one statement. -/
+theorem ledgerDescent_of_othDescends (p : String) (S : Finset PLLFormula)
+    (h : OthDescends p needKcap) : LedgerDescent p S :=
+  ledgerDescent_of_descends p S
+    (descends_of_othDescends p needKcap needKcap_floor1 h)
+
 end Descent2
 end PLLND
 
@@ -259,3 +384,27 @@ info: 'PLLND.Descent2.needGate_not_floor1' depends on axioms: [propext, Classica
 -/
 #guard_msgs in
 #print axioms PLLND.Descent2.needGate_not_floor1
+
+/--
+info: 'PLLND.Descent2.needKcap_funded' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.Descent2.needKcap_funded
+
+/--
+info: 'PLLND.Descent2.needKcap_floor1' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.Descent2.needKcap_floor1
+
+/--
+info: 'PLLND.Descent2.needProduct_not_floor1' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.Descent2.needProduct_not_floor1
+
+/--
+info: 'PLLND.Descent2.ledgerDescent_of_othDescends' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.Descent2.ledgerDescent_of_othDescends

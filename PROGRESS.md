@@ -3023,3 +3023,116 @@ bricks; the classification needs the *general* collapse lemmas (not just the
 
 A running record of this away-run, written for a reader who was not present,
 is at `docs/away-run-report.md`.
+
+## §84 — the budget boundary does NOT climb with the space; the ledger law and the reduction that closes the tower (30 July)
+
+Two things landed: a measurement that settles the shape of the budget law,
+and the machine-checked reduction from the parametric descent to the
+tower's holdout.
+
+### The measurement (`wip/ascprobe.lean`, output `wip/ascprobe_out.txt`)
+
+The question a constant budget law lives or dies by: **does the failure
+boundary move as the space grows?**  `wip/budgetfit.lean` answered it for
+the descent at one goal shape (flat at `2` for chains of length 2, 3, 4).
+This probe extends it in the two directions the rebuild needs.
+
+**The ambient-relative existential ascent** (`AmbGuardAscent`), never
+probed before, at every position `X` along the chain:
+
+| family | \|S\| | position `k` | live gates in `X::Γ` | defect | boundary |
+|---|---|---|---|---|---|
+| chain2 | 10 | 0 | — | 9 | 1 |
+| chain2 | 10 | 1 | 2 | 8 | **2** |
+| chain3 | 13 | 0 | — | 12 | 1 |
+| chain3 | 13 | 1 | 2 | 11 | **2** |
+| chain3 | 13 | 2 | 3 | 10 | **2** |
+| chain4 | 16 | 0 | — | 15 | 1 |
+| chain4 | 16 | 1 | 2 | 14 | **2** |
+| chain4 | 16 | 2 | 3 | 13 | **2** |
+| chain4 | 16 | 3 | 4 | 12 | 1 |
+
+"Boundary `k`" = one past the last `checkB`-certified failure.  Every
+certified failure is at `c ∈ {0, 1}`; there is **not one certified failure
+at `c ≥ 2`** anywhere in the sweep, including at four live gates and
+defect 15.  On the `⊃⊃`-gated chain the boundary is 1 (and one row shows no
+certified failure at all).  So the ascent's boundary is flat at `≤ 2` and
+does not track `|S|`, the defect, or the number of gates.
+
+**The descent at jump goals** — the goals a budget-gated clause puts in
+first-component position, i.e. exactly the goals the recursion enters:
+
+| goal shape | example | verdict row (c = 0,1,2,3) | boundary |
+|---|---|---|---|
+| atom | `p`, `r`, `s` | `P P P P` | 0 |
+| boxed atom | `◯p`, `◯r`, `◯s` | `R! ~ ~ ~` | 1 |
+| `⊃◯`-implication | `◯r ⊃ s` | `~ ~ ~ ~` | 0 |
+
+At **atom** goals the descent is *proved by search at every budget,
+including `0`*.  At **boxed** goals it fails at `0` and only at `0` — which
+is precisely `itpA_starve_floor` (§83): at budget `0` a `◯`-goal's table is
+its environment table alone, and it can be empty.  Identical for chain2 and
+chain3.
+
+**Reading.**  The data is consistent with a *constant* law `need = 2`, and
+inconsistent with any law that tracks the size of the space: the assumed
+product would predict boundaries 63, 108, 165 for chain2/3/4 and the
+measurement is flat.  It also refines the law by **goal shape**: 0 at
+atoms, 1 at boxed goals, 2 in general.  `Need` is already a function of
+`g`, so a shape-sensitive law is expressible.
+
+### The ledger law, and the third constraint on `need`
+
+The two screens so far constrain `need` from below (refutations) and from
+the proof (`NeedFloor1`).  There is a third, from **above**: the caller has
+to be able to pay.  The caller is the tower's stabilisation entry, running
+under `kcap S < c + 2`, and `kcap_room` turns that into
+
+    |jumpGoals S| + 1 + defect S Γ · (|jumpGoals S| + 2)  ≤  c
+
+at every context.  In `wip/descent2.lean` §5 (with `kcap_room` reproved,
+since `wip/absorb_base.lean` is not a lake library target):
+
+* `needKcap` — the ledger law, and `needKcap_funded` : it is exactly what
+  the entry condition pays;
+* `needKcap_floor1` : it satisfies the first extracted law (the `+1` is
+  unconditional), so it can be fed to `descends_of_othDescends` as it
+  stands;
+* `needProduct_not_floor1` : the tower's *bare product* cannot — at a
+  saturated context (`defect = 0`) it asks for nothing.  That band is
+  separately settled by `cascade_zero`, so this is a bookkeeping fact, not
+  a refutation of the tower.
+
+Scale at the `wip/ascRefute.lean` configuration: `needKcap = 62`,
+`needProduct = 56`, `kcap = 242`, against a certified requirement of `2`.
+So the ledger over-estimates by a factor of about 30 — affordable, but the
+measurement says a constant would do.
+
+### The reduction
+
+    LedgerDescent p S  -- the descent at every ledger-funded configuration
+                       -- (= cascade_low_pos_box's statement, restated)
+
+    ledgerDescent_of_descends    : Descends p needKcap   → LedgerDescent p S
+    ledgerDescent_of_othDescends : OthDescends p needKcap → LedgerDescent p S
+
+PROVED, sorry-free, `[propext, Classical.choice, Quot.sound]`.  So the
+whole remaining content of the tower is now **one statement**:
+`OthDescends p needKcap`.  That is the first time the holdout has been
+reduced to a single named proposition with a funded budget law.
+
+### Next
+
+The structural analysis, now backed by the measurement, isolates one
+statement that everything else waits on: the **ambient-relative
+existential ascent at budget `≥ 2`**.  It is consumed by three growth
+branches of the others-descent; it is false at `c = 1` (`wip/ascRefute.lean`
+§1) and has no certified failure at `c ≥ 2`.  Its own recursion needs the
+descent at *jump goals* at target budget `c − 1 ≥ 1`, and the measurement
+says that holds (boundary 1).  So the next target is the conditional
+theorem
+
+    JumpDescent p S  →  AmbGuardAscent (restricted to 2 ≤ c),
+
+with `JumpDescent` named as an explicit hypothesis rather than assumed
+silently.

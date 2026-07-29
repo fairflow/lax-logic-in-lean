@@ -173,3 +173,9 @@ root = "wip.mwit_complete"
 [[lean_exe]]
 name = "budgetfit"
 root = "wip.budgetfit"
+
+# Boundary-movement probe: does the budget wall climb with the size of the
+# space?  The ascent at every chain position, and the descent at jump goals.
+[[lean_exe]]
+name = "ascprobe"
+root = "wip.ascprobe"
