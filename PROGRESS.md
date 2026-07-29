@@ -3887,3 +3887,52 @@ So the accurate statement is: **the descent is reduced to two branches, both at
 target budget `1`.**  That is still a large advance on the position at the start
 of the session — four jointly unsatisfiable interfaces with no localisation, and
 a budget law guessed and refuted three times — but it is two branches, not one.
+
+## §94 — the fresh-antecedent branch does not have to go through the ascent (30 July)
+
+`wip/sealprobe10.lean`, `wip/sealprobe11.lean` (new exes), `wip/freshAnt.lean`
+(new, sorry-free).
+
+The second residual branch (§93 addendum) is the descent's goal-side clause for
+`C = C₁ ⊃ C₂` with `C₁ ∉ Γ`.  The obvious route introduces the target's guard and
+fires the source, needing `E@2(C₁::Γ)` from `E@1(C₁::Γ)` and the ambient at the
+*ungrown* context — the ∃-ascent, refuted at budget `1`.  That is why the branch
+has been open since July.
+
+Examined disjunct by disjunct for the first time:
+
+| configuration | whole target | goal clause (disjunct 0) | other disjuncts | ascent instance |
+|---|---|---|---|---|
+| `C = r ⊃ s`, `S1` | **PROVED**, 9 | **PROVED**, 8 | REFUTED | `~` |
+| `C = r ⊃ s`, `S2` | **PROVED**, 9 | **PROVED**, 8 | REFUTED | `~` |
+| `C = r ⊃ z`, `S1` | `~` | `~` | REFUTED | `~` |
+| `C = r ⊃ z`, `S2` | `~` | `~` | REFUTED | `~` |
+
+So at `C = r ⊃ s` **the branch closes in nine nodes while the ascent it was
+thought to need is itself undecided by the same search.**  Pinned as
+`FreshAnt.fresh_ant_S1`, `fresh_ant_S2` (sorry-free, `[propext, Quot.sound]`).
+
+### What this changes
+
+The second residual branch is **not known to depend on the refuted ascent**, and
+sometimes demonstrably does not.  That is a change in the shape of the problem:
+`not_ambGuardAscent` refutes a statement the branch *can* be routed through, not
+one it *must* be.
+
+### What it does not settle
+
+The route found uses the link between the goal's consequent and the γ-clause's
+consequent (`C₂ = s` is the consequent of `◯r ⊃ s`).  At `C = r ⊃ z`, with an
+unrelated consequent, the goal clause is undecided and every other target disjunct
+is **refuted** — so that cell is the one that decides whether a general lemma
+exists, and `wip/sealprobe11.lean` pushes it at `findBudget` 200 000, 2 000 000
+and `none`.
+
+### Standing summary of the two residual branches
+
+| branch | budget | status |
+|---|---|---|
+| floor, atom jump goal | 1 | **proved in general** (∨-free space) |
+| floor, `⊃`-shaped jump goal | 1 | proved at two configurations |
+| floor, **boxed** jump goal | 1 | OPEN; needs a *recursive* case analysis (§93) |
+| fresh-antecedent goal | 1 | proved at two configurations, **without** the ascent; general lemma OPEN |
