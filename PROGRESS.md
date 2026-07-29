@@ -3623,3 +3623,60 @@ analysis over the clause table one level down.
 
 That is now a *finite, enumerable* obligation of exactly the same kind as the
 goal-side table of §85 — which is the first time the residue has had that shape.
+
+## §91 — the universal table at an atom goal forces the atom (30 July)
+
+`wip/atomForce.lean` (new), PROVED sorry-free,
+`[propext, Classical.choice, Quot.sound]`.
+
+    itpA_atom_forces :
+      (∀ A B, A.or B ∉ S) → q ≠ p → (∀ Y ∈ Γ, Y ∈ S) →
+      G4c [itpA p S f b Γ (prop q)] (prop q)
+
+**at every fuel and every budget** — the budget plays no role, which is what
+makes it usable at the floor where the descent itself fails.
+
+### Where it came from
+
+§90 closes the residual branch at one configuration by case analysis on the
+second component, and every case closes the *same* way: the case's second
+conjunct is a universal table at a **larger** context with the same goal, and at
+the larger context it collapses to the goal clause.  Direct inspection of the
+two-γ-clause configuration shows the three cases are
+
+    z ,      (u ∨ ⊥) ∧ (z ∨ ⊥) ,      ◯((s ∧ ⊤) ⊃ ⊥) ∧ (z ∨ ⊥)
+
+and each contains `z ∨ ⊥`.  Reading the environment clause table at an **atom**
+goal `q ≠ p`, that is no accident: every clause either produces nothing or
+produces a disjunct with a conjunct
+
+    itpA p S f b Γ' (prop q)      at `Γ'` of strictly smaller defect,
+
+with exactly one exception — the `∨`-clause, whose disjunct is a *conjunction of
+implications* whose consequents cannot be extracted without their guards.  So
+over contexts with no `∨`-shaped member the table collapses, by strong induction
+on the defect.
+
+The proof is that induction, over all ten environment clause shapes and every
+guard branch, with `defect_lt_of_witness` supplying the decrease from a single
+fresh `S`-member.
+
+### What it settles
+
+This is **the first general statement about the residue** — not a configuration,
+not a measurement.  It is the engine of the case analysis of §90: in each case
+the second conjunct is a table at a larger context, and this lemma turns it into
+the atom, which is the target table's own goal clause.  So
+
+> at an **atom** goal over a `∨`-free space, the residual branch closes
+> uniformly in the configuration.
+
+The two restrictions are exactly visible in the statement and both are real:
+
+* **atom goal.**  At a compound goal the target's goal clause differs from the
+  grown context's, so the case's conjunct no longer lands where it is needed.
+* **`∨`-free.**  The `∨` environment clause is the one shape whose disjunct is a
+  conjunction of implications.  Lifting this is the next question; note it is a
+  restriction on the *space*, and the `∨`-clause is also the one place the
+  descent's own analysis needs the existential ascent (§85's fresh-antecedent
+  row), so the two open ends may be the same one.
