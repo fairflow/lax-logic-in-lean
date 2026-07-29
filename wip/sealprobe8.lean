@@ -2,6 +2,7 @@ import LaxLogic.PLLG4UITrunc
 import LaxLogic.PLLSearch
 import LaxLogic.PLLSearchNoFall
 import LaxLogic.PLLSearchConf
+import LaxLogic.PLLSearchPin
 
 /-!
 # Is the floor branch at a boxed goal TRUE?  Exhaustive stages at small fuel

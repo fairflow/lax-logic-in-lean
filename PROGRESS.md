@@ -3786,3 +3786,20 @@ pinned terms are there to be read.  At a boxed goal the goal clause is
 
 which mentions the context **under a `◯`**, so neither move applies: the guard
 `E@(b−1)(Γ)` has to be produced inside the box, and at the floor `b − 1 = 0`.
+
+### §92 addendum — integrity check, and one hazard removed
+
+Every file added in this session is **sorry-free**: `wip/floorRefute.lean`,
+`wip/goalDesc.lean`, `wip/envDesc.lean`, `wip/sealRefute.lean`,
+`wip/jumpPinned.lean`, `wip/pinnedFacts.lean`, `wip/boxedBranchS1.lean`,
+`wip/atomForce.lean`, `wip/floorImp.lean`, `LaxLogic/PLLSearchPin.lean`, plus the
+additions to `wip/descent2.lean`.  `lake build LaxLogic wipshared` is clean and
+reports `sorry` only in the files that carried one before this session.  Every
+`#guard_msgs` axiom audit in the new files passes as written.
+
+One hazard removed.  `#pinsrc`'s emitter had a fallback string containing the
+word `sorry`, for the impossible case of a membership proof whose subject is not
+found in the context.  Emitted source is meant to be *pasted into a file*, so a
+fallback that elaborates to `sorry` could turn a broken emission into a silently
+unsound theorem.  It now emits an unknown identifier, which fails loudly at
+elaboration.

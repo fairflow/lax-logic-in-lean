@@ -66,11 +66,16 @@ def memChain : Nat → String
 def posOf (Γ : List PLLFormula) (φ : PLLFormula) : Nat :=
   Γ.findIdx (fun ψ => decide (ψ = φ))
 
-/-- The membership chain for `φ ∈ Γ`, or a visible marker if `φ` is somehow
-absent (which cannot happen when the argument came from a real derivation). -/
+/-- The membership chain for `φ ∈ Γ`, or a marker if `φ` is somehow absent
+(which cannot happen when the argument came from a real derivation).
+
+The marker is a deliberately **unknown identifier** rather than `sorry`: emitted
+source is meant to be pasted into a file, and a fallback that elaborated to
+`sorry` could turn a broken emission into a silently unsound theorem.  An
+unknown identifier fails loudly at elaboration. -/
 def memSrc (Γ : List PLLFormula) (φ : PLLFormula) : String :=
   let k := posOf Γ φ
-  if k < Γ.length then memChain k else "(sorry /- MEMBER NOT FOUND -/)"
+  if k < Γ.length then memChain k else "MEMBER_NOT_FOUND_IN_CONTEXT"
 
 /-- **A proof term as Lean source.**  Emits constructor names and membership
 chains only; every formula index is recovered by unification against the
