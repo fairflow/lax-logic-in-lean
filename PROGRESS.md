@@ -2857,3 +2857,29 @@ where the `⊃⊃` clause emits one.
 `chainII2`'s gate is still dead (`gateLive = false`: the repair supplied
 the last link's guard, not the first), so that row remains
 uninformative and is not counted above.
+
+### §81 addendum 2 — scope of the two refutations: NOT PLL-only
+
+Prompted by the discovery-toolkit session's PLL/PCLL scope line (branch
+`discovery-toolkit`, PR fairflow#11, unmerged): a countermodel to a
+`G4c` sequent refutes PLL, and refutes PCLL only if it is mutually
+confluent.  `RNC.confB` is already available here, so the question can
+be settled without merging anything.
+
+Both refuting models of §79 are **mutually confluent and infallible**
+(`Mr_confluent`, `Mr_infallible`, `Mk_confluent`, `Mk_infallible` in
+`wip/ascRefute.lean`, all by `decide`, `[propext, Quot.sound]` or
+axiom-free).  They were built by hand for the PLL statements, so this
+was not designed in.
+
+Consequence: `AmbGuardAscent` and the room-free descent are false over
+the mutually confluent infallible models too.  **The budget wall is not
+an artefact of fallible worlds, nor of the missing distribution scheme**
+— it survives into PCLL, PILL and PICLL alike.  That also means the
+budget question cannot be dodged by moving to the infallible system,
+which had been one of the standing hopes.
+
+Nothing else in the toolkit branch bears on §81's numbers:
+`wip/budgetfit.lean` reads only the verdict constructor and pins no
+model shape, so the new simplifier (which shrinks returned models,
+`checkB`-gated at every deletion) cannot move any cell of the tables.

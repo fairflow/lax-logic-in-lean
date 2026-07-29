@@ -1,5 +1,6 @@
 import wip.cascadeBox
 import LaxLogic.PLLSearchCmd
+import LaxLogic.PLLSearchNoFall
 
 /-!
 # `AmbGuardAscent` is FALSE — the interface refuted, kernel-checked
@@ -141,6 +142,26 @@ theorem not_roomFreeDescent : ¬ RoomFreeDescent "p" Sk := by
     (h 4 1 Gk gk [srck, ambk] (Nat.le_refl _)
       (G4c.identity_mem (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
       (G4c.identity_mem (List.mem_cons_self ..)))
+
+/-! ## 3. Scope of the two refutations
+
+A countermodel to a `G4c` sequent refutes **PLL**, and refutes PCLL only
+if it is mutually confluent — a distinction worth recording rather than
+leaving implicit, since a model that merely *happens* to be confluent
+carries strictly more than a PLL-only one.  Both models here were built
+by hand for the PLL statements (`G4c` is the calculus for plain PLL,
+`equiv_nd`), and both turn out to be mutually confluent and infallible.
+
+So neither refutation is PLL-only: `AmbGuardAscent` and the room-free
+descent are false over the mutually confluent infallible models too, and
+the failure survives adding the distribution scheme and `¬◯⊥`.  The
+budget wall is not an artefact of fallible worlds or of the missing
+distribution axiom. -/
+
+theorem Mr_confluent : RNC.confB Mr = true := by decide
+theorem Mr_infallible : NoFall.infB Mr = true := by decide
+theorem Mk_confluent : RNC.confB Mk = true := by decide
+theorem Mk_infallible : NoFall.infB Mk = true := by decide
 
 end AscRefute
 end PLLND
