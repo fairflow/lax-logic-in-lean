@@ -3430,3 +3430,62 @@ base case, where the tier is entered, the goal side, the environment side, what
 is left, and the budget law as a parameter.  Every claim is either a definition,
 a named sorry-free Lean theorem, or explicitly labelled OPEN or a measurement.
 This discharges part of the exposition debt recorded in memory.
+
+## §88 — shortcuts checked and rejected (30 July)
+
+Recorded so they are not retried.  Each was examined far enough to settle it.
+
+**1. Completeness for the constraint semantics.**  `consequence_iff_derivable`
+(`LaxLogic/PLLCompleteness.lean:634`) is full soundness *and* completeness for
+the Fairtlough–Mendler constraint semantics, sorry-free, over list contexts.
+With `G4c.equiv_nd` this lets any sequent about the tables be proved
+semantically — attractive, because the descent's known obstruction is
+proof-engineering (continuations cannot cross a `◯`-introduction) and semantics
+has no continuations.
+
+REJECTED.  Semantically the descent says a monotone iteration has reached its
+fixed point by step `c`.  The iteration is over *hereditary sets of worlds*,
+because the recursive references sit under `⊃` and `◯` and so are evaluated at
+other worlds; a monotone iteration in that lattice has no finite bound.  The
+syntactic pigeonhole works precisely because it counts *goals*, and goals live
+in the finite set `jumpGoals S`.  Completeness remains a genuine escape hatch
+for individual sequents, and it is what makes the countermodel oracle sound; it
+is not a route to the general statement.
+
+**2. Raising the budget floor.**  Refuted at `n − 1 ∈ {0, 1}` (§83), and the
+obstruction is the shape of the gated clause rather than the numeral, so no
+constant floor works.  `oth_descent`'s architecture (`wip/cascadeBox.lean`)
+cannot be repaired this way.
+
+**3. `itpE` budget-independence for gate-free spaces.**  Every budget-gated
+clause of `itpE` carries an `∈ S` side condition on a *gated-shaped* driving
+formula, so a space with no `(A⊃B)⊃D` and no `◯A⊃B` kills all of them.  One
+might hope `itpE p S f b Γ` is then independent of `b`, which would make the
+∃-ascent free and extend the proved region from box-free to gate-free spaces —
+strictly larger, since a gate-free space may contain `◯A` and `A⊃B`.
+
+REJECTED.  `itpE`'s *ungated* clauses reference `itpA` (rows 7b and 8b of the
+clause table: `(E@b(B⊃D::Γ) ⇢ A@b(B⊃D::Γ, A⊃B)) ⇢ E@b(D::Γ)` and its γ
+analogue), and `itpA` is budget-dependent for **every** space, because its
+`◯`-goal clause, its truncation disjunct and its present-antecedent `⊃`-goal
+clause are gated with no `∈ S` condition at all.  So the two tables are
+mutually budget-dependent always, and the ∃-ascent is genuinely needed.
+
+This also explains a fact that would otherwise look inconsistent:
+`gate_free_lower_bound` (§83) shows the descent *fails* at budget `0` on the
+gate-free space `{◯(⊥⊃⊥), ⊥⊃⊥, ⊥}`.  The failure comes from the goal side, not
+the space.
+
+**4. Pinning search-found proofs as theorems.**  `Verdict.proved` carries a
+*typed* term `G4cTm Γ C`, and `G4cTm.toG4c` turns it into `G4c Γ C`, so a
+found proof is already checked by Lean's typechecker at the moment it is built.
+What is missing is a way to get that term into a *source file*: `#search` and
+`#refute` are reporting macros, and running the searcher inside the kernel
+(`decide`) is infeasible — the searcher is deliberately kernel-opaque.
+
+NOT REJECTED, but not attempted: this needs a term-elaborating command that
+runs the searcher at elaboration time and reflects the resulting `G4cTm` into
+an `Expr`.  It would convert every "PROVED by search" in this development from
+*evidence* into *theorem*, which the machine-checked mandate wants; it is the
+single highest-value piece of tooling still missing.  Recorded as an
+opportunity, with the mechanism identified.

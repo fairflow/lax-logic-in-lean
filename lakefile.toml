@@ -207,3 +207,8 @@ root = "wip.sealprobe3"
 [[lean_exe]]
 name = "sealprobe4"
 root = "wip.sealprobe4"
+
+# Is the boxed γ-branch obligation itself true?  Small fuel, complete stages.
+[[lean_exe]]
+name = "sealprobe5"
+root = "wip.sealprobe5"
