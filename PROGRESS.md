@@ -3936,3 +3936,54 @@ and `none`.
 | floor, `⊃`-shaped jump goal | 1 | proved at two configurations |
 | floor, **boxed** jump goal | 1 | OPEN; needs a *recursive* case analysis (§93) |
 | fresh-antecedent goal | 1 | proved at two configurations, **without** the ascent; general lemma OPEN |
+
+## §95 — the fresh-antecedent branch closes at the DECIDING cell, still without the ascent (30 July)
+
+`wip/sealprobe11.lean`.
+
+§94 found the branch closing in 9 nodes at `C = r ⊃ s`, and flagged the honest
+caveat: the route used the link between the goal's consequent and the γ-clause's
+consequent, so `C = r ⊃ z` — consequent unrelated to anything in the context —
+was the cell that would decide whether a general lemma exists.  There every
+non-goal target disjunct is *refuted*, so the goal clause was the only candidate,
+and it was undecided at `findBudget` 20 000.
+
+Pushed:
+
+| cell | verdict |
+|---|---|
+| `C = r ⊃ z`, goal clause, `findBudget` 200 000 | **PROVED, 56 nodes** |
+| `C = r ⊃ z`, goal clause, `findBudget` 2 000 000 | **PROVED, 56 nodes** |
+| `C = r ⊃ z`, goal clause, `findBudget := none` (exhaustive) | **PROVED, 56 nodes** |
+| the ∃-ascent instance `E@1(r::Γ) + ambient ⊢ E@2(r::Γ)` | `~` at 200 000 (26 s) |
+
+So at the configuration designed to be the hard one, **the fresh-antecedent goal
+branch closes without the existential ascent** — and the ascent instance the
+"natural" route would have needed is *still* undecided by a search a hundred
+times larger than the one that found the branch's proof.
+
+### What this means
+
+`not_ambGuardAscent` refutes a statement the branch **can** be routed through, not
+one it **must** be.  The second residual branch is therefore not known to depend
+on anything refuted, and at every cell probed so far it closes.  That is a
+different position from "open since July because the ascent is false": the
+obstruction there was an artefact of the route chosen in `wip/cascadeBox.lean`, not
+of the branch.
+
+The 56-node derivation is long enough to be worth reading rather than guessed at
+— it goes through `impLOr`, `impLProp` and `impLAnd` on the introduced guard,
+i.e. it takes apart the *existential table at the grown context* rather than
+trying to strengthen it.  That is precisely the move the ascent was standing in
+for, done by cases instead.
+
+### Standing summary
+
+| branch | budget | status |
+|---|---|---|
+| floor, atom jump goal | 1 | **proved in general** (∨-free space) |
+| floor, `⊃`-shaped jump goal | 1 | proved at two configurations |
+| floor, **boxed** jump goal | 1 | OPEN; needs a recursive case analysis (§93) |
+| fresh-antecedent goal | 1 | proved at **three** configurations including the deciding one, **without** the ascent; general lemma OPEN |
+
+So the one branch with no positive evidence anywhere is the boxed floor branch.

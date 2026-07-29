@@ -10,3 +10,7 @@ goal clause of `r ⊃ z` at Γ has weight 70
 
 the ascent instance the natural route would need:
    E@2(r::Γ) from E@1(r::Γ) + ambient  [200k]: ~ (cut at 200000)  (25577 ms)
+   E@2(r::Γ) from E@1(r::Γ) + ambient  [2M]: ~ (cut at 2000000)  (343625 ms)
+
+== done ==
+EXIT=0
