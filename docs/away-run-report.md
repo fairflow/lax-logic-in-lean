@@ -237,3 +237,77 @@ A `PROVED` there is a blueprint for the Lean proof; a `REFUTED!` says the
 interface is individually false and the branch needs the full recursive
 hypothesis rather than the pre-applied form.  Output goes to
 `wip/sealprobe_out.txt`.
+
+## 8. Result 5 (30 July, ~06:00) — no uniform route closes the last branch
+
+Full detail in PROGRESS §87; the standing technical statement is
+`docs/descent-problem.md`.
+
+§86 reduced the descent to one branch at one budget: the **boxed γ-disjunct of
+the environment table at target budget 1**.  At that point the target table
+offers exactly three kinds of disjunct, and the branch's third hypothesis is
+already the second conjunct of two of them, so the branch closes iff one of
+
+    (a)  A@0(Γ, A)                      (b)  ◯( E@0(Γ) ⇢ A@0(Γ, ◯A) )
+    (c)  the goal clause of C
+
+is derivable from the three hypotheses.  That is a finite question about three
+*small* sequents rather than one large one — and the oracle answers it.
+
+**All three are individually false** (`wip/sealRefute.lean`, sorry-free), at a
+configuration whose γ-head is an ordinary atom rather than the eliminated
+variable, with both refuting models **infallible and mutually confluent** — so
+the refutations reach PCLL, PILL and PICLL:
+
+    not_route_a ,  not_route_b ,  not_route_bot
+    not_uniformRouteA ,  not_uniformRouteB
+
+So the branch **cannot be closed by a uniform route; it needs a case analysis
+over the target's disjuncts.**  This is the explanation of the July record:
+every mechanism surveyed there — remap, seal-crossing, collapse — is a uniform
+route, and each therefore had to fail.  It also explains why no countermodel to
+the branch obligation *itself* has been found in any probed configuration: in
+each of the three refuting models a **different** route succeeds, so the
+obligation is plausibly true while every one-move proof of it is impossible.
+
+One caveat, stated because it bounds the result: the three hypotheses used are
+the ambient, the source's boxed component, and the defect tier's contribution
+*pre-applied* as `A@1(B::Γ,C)`.  The real interface hands over the recursive
+hypothesis rather than one instance of it.  The enumeration of *which target
+disjunct* is complete either way (it is read off the clause table); what the
+pre-applied form bounds is the *material* available to reach it.
+
+## 9. Where the whole problem now stands
+
+Combining the run's measurements, the financing of the descent's recursion is
+complete except at one point:
+
+| what the recursion needs | budget | status |
+|---|---|---|
+| goal-side branches | any | **proved** (`wip/goalDesc.lean`), never reach budget 0 |
+| the three gated environment first components | target ≥ 2 | **proved** (`wip/envDesc.lean`) |
+| descent at **atom** jump goals | 0 | **proved by search** (`wip/jumpprobe.lean`) |
+| descent at **`⊃`-shaped** jump goals | 0 | **proved by search** (chainII1) |
+| descent at **boxed** jump goals | 0 | **certified false** |
+| the ∃-ascent at a fresh antecedent | ≥ 2 | no certified failure in any probed configuration |
+| the ∃-ascent at a fresh antecedent | 1 | **certified false** |
+
+So **everything reduces to budget-1 phenomena**, and exactly two branches
+remain there: the boxed γ-disjunct (uniform routes all refuted, obligation
+plausibly true) and the fresh-antecedent ascent (refuted in its uniform form).
+
+That is a considerably sharper position than the run began in, where the
+statement of record was "four jointly unsatisfiable interfaces" with no
+localisation and a budget law that had been guessed three times and refuted
+three times.
+
+**Resume here:** two options, in order of expected value.
+1. Prove the ∃-ascent at budget `≥ 2`, conditional on the jump-goal descents.
+   That would let the descent be assembled above budget 1, making "budget 1 is
+   the entire residue" a theorem rather than an analysis.  Mechanical but
+   large: the existential clause table has eleven shapes, of which nine are
+   ungated and reduce to the defect tier.
+2. Build the case analysis for the boxed γ-branch at budget 1.  The three
+   refuting models of `wip/sealRefute.lean` say what the cases must
+   distinguish; turning that into a *decidable syntactic* case split is the
+   open problem.
