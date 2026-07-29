@@ -3136,3 +3136,122 @@ theorem
 
 with `JumpDescent` named as an explicit hypothesis rather than assumed
 silently.
+
+## §85 — the goal side of the descent closes; the low-budget difficulty is entirely in the environment clauses (30 July)
+
+`wip/goalDesc.lean` (new), `wip/descent2.lean` §6, `wip/jumpprobe.lean`
+(new exe).  All sorry-free and axiom-pinned.
+
+### A structural fact about the clause tables
+
+An exhaustive transcription of `itpE`/`itpA` (`LaxLogic/PLLG4UITrunc.lean`,
+all seven `match b with` sites) establishes:
+
+> **every budget-decrementing recursive reference sits at the same context,
+> and every context-growing reference sits at the same budget.**
+
+The one apparent exception is the `C₁ ∈ Γ` branch of the `⊃`-goal clause,
+whose reference is at `C₁ :: Γ` — a formula already in `Γ`, so the defect is
+unchanged (`defect_cons_eq`).
+
+Two consequences.
+
+**(i) The recursion is well-founded on the lexicographic pair `(defect,
+budget)`, with no pigeonhole argument.**  Each recursive call either drops
+the defect at fixed budget or drops the budget at fixed defect.  So what the
+seen-set/pigeonhole machinery of `cascade_main` is for is *not* termination —
+it is the fact that the budget's base case is **false** (§83).  A proof must
+show the low-budget instances actually reached are harmless; it does not
+need to show the recursion stops.
+
+**(ii) The budget tier is entered only at *jump goals*, and only one step.**
+The only universal components at budget `b−1` anywhere in the tables are
+`A@b'(Γ,A)`, `A@b'(Γ,A⊃B)` and `A@b'(Γ,◯A)`, from the two gated
+*environment* clauses.  Every other `b'`-reference is existential.
+
+### The goal side: six of seven families close
+
+`wip/goalDesc.lean` states each goal family's requirement separately, with
+the fuel and budget bookkeeping exposed:
+
+| goal `g` | gated | mechanism | status |
+|---|---|---|---|
+| `prop q` | no | the source disjunct *is* the target disjunct | closed |
+| `⊥` | no | no goal clause exists | vacuous |
+| `C₁ ∧ C₂` | no | descent at `C₁`, `C₂` | closed |
+| `C₁ ∨ C₂` | no | descent at `C₁` or `C₂` | closed |
+| `C₁ ⊃ C₂`, `C₁ ∈ Γ` | yes | ambient ⇒ guard (`itp_congr`), descent at `C₂` | closed |
+| `◯D` | yes | `box_open`, ambient ⇒ guard, descent at `D` | closed |
+| `C₁ ⊃ C₂`, `C₁ ∉ Γ` | no | the ascent at a fresh antecedent | `FreshAntAscent` |
+
+The two gated rows are the informative ones.  Both look as if they need the
+descent one budget lower — at `c = 1` the refuted descent to budget `0`.
+They do not: **a gated goal clause demotes only its existential component**
+to `b−1`, keeping the universal one at `b`.  The demoted existential is then
+supplied by the *ambient* at budget `c+1` through downward existential
+monotonicity, which is free and unconditional (`ambE`, composing
+`itp_fuel_mono`, `itp_budget_mono_le`, `itp_congr`).
+
+So **no goal branch touches the budget-`0` base case at all**, and the whole
+low-budget difficulty of the descent lives in the environment clauses.
+
+Attribution: these six branches are already discharged inside `oth_descent`
+(the `itpAgoal` half of its case analysis), and none of them consumes that
+file's four interfaces.  What `wip/goalDesc.lean` adds is the public,
+per-branch, standalone form — which is what makes the requirement table
+above checkable rather than a reading of a thousand-line induction.
+
+### The floor law was too strong; refined by goal shape
+
+`desc_of_oth` carries `1 ≤ c`, and §82 extracted `NeedFloor1 need := ∀ S Γ g,
+1 ≤ need S Γ g` from it.  That hypothesis is used in exactly one place: the
+**truncation** disjunct, which `itpAfull` appends only for a `◯`-shaped goal.
+`GoalDesc.desc_of_oth_nonbox` proves the wrapper for every other goal with
+no budget hypothesis at all, so the law weakens to
+
+    NeedBoxFloor1 need := ∀ S Γ D, 1 ≤ need S Γ (◯D)
+
+and `descends_of_othDescends_shape` re-proves the rebuild's top level under
+the weaker law.  This is not cosmetic: `NeedFloor1` forbids any law that
+asks for `0` anywhere, and the measurement says the requirement is `0` at
+atom goals.
+
+### The measured law is a function of the goal shape
+
+`wip/jumpprobe.lean` runs the **positive** side hard (proof search at
+`findBudget` 20 000 and 200 000) on the cells that decide the recursion:
+
+| jump-goal shape | budget `0` | budget `1` |
+|---|---|---|
+| atom `aᵢ` | **PROVED** (both budgets, chain2 and chain3) | **PROVED** |
+| boxed atom `◯aᵢ` | **REFUTED** (certified) | inconclusive (200 000 exhausted) |
+| `⊃`-shaped | inconclusive | inconclusive |
+
+So `needShape` — `0` at atoms and `⊥`, `1` at boxed goals, `2` elsewhere —
+is the law the data points to.  It satisfies `NeedBoxFloor1` exactly
+(`needShape_boxFloor1`), fails `NeedFloor1` (`needShape_not_floor1`), and
+survives both certified lower bounds with nothing to spare: `2` at the
+`wip/ascRefute.lean` configuration (goal `(◯r ⊃ s) ⊃ t`, an implication) and
+`1` at the `wip/floorRefute.lean` configuration (goal `◯(⊥⊃⊥)`, boxed).
+
+### What remains, now precisely two things
+
+Both are at target budget `1`, and both are environment-clause branches:
+
+1. **The γ-clause's boxed disjunct** — the target needs
+   `◯(E@0(Γ) ⊃ A@0(Γ,◯A))`, i.e. the descent to budget `0` at a *boxed*
+   jump goal, which is certified false as a plain statement.  It must be
+   routed through a different target disjunct.  This is
+   `GammaPairFloorBox`, the §73 stuck shape, and it is the one branch for
+   which no mechanism is known.
+2. **The ascent at a fresh antecedent, at budget `1`** — refuted
+   (`wip/ascRefute.lean` §1), so the fresh-antecedent goal branch has no
+   route at `c = 1` either, and needs its own floor treatment.
+
+`GammaPairFloorA` and `JumpPairFloor` (the atom and `⊃` jump goals at budget
+`0`) are *not* in this list: the atom case is now proved by search at budget
+`0`, so it is plausibly closable, and the `⊃` case is open but unrefuted.
+
+That is a sharper statement of the residue than "four jointly unsatisfiable
+interfaces": the four are unsatisfiable because two of them are, and the
+other two look reachable.

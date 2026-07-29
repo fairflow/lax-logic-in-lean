@@ -152,6 +152,15 @@ theorem needGate_excluded : ¬ Descends "p" needGate := by
   rw [show needGate Sz [] gz = gateCount Sz from rfl, gateCount_Sz] at h1
   omega
 
+/-- **The goal-shape law survives this screen too.**  The goal here is
+boxed, so `needShape` asks for `1` — exactly the certified lower bound at
+this configuration, with nothing to spare. -/
+theorem needShape_survives_z : ¬ (needShape Sz [] gz ≤ 0) := by decide
+
+/-- The ledger law survives it as well, with room to spare
+(`|jumpGoals Sz| = 0`, `defect Sz [] = 3`, so it asks for `1 + 3·2 = 7`). -/
+theorem needKcap_survives_z : ¬ (needKcap Sz [] gz ≤ 0) := by decide
+
 end FloorRefute
 end PLLND
 

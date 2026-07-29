@@ -1,4 +1,5 @@
 import wip.ascRefute
+import wip.goalDesc
 
 /-!
 # The low-band descent with the budget left OPEN
@@ -360,6 +361,80 @@ theorem ledgerDescent_of_othDescends (p : String) (S : Finset PLLFormula)
   ledgerDescent_of_descends p S
     (descends_of_othDescends p needKcap needKcap_floor1 h)
 
+/-! ## 6. The floor law, refined by goal shape
+
+§3's first extracted law was `NeedFloor1 need := ∀ S Γ g, 1 ≤ need S Γ g`,
+read off `desc_of_oth`.  It is stronger than it needs to be.  `desc_of_oth`
+uses `1 ≤ c` in exactly one place — the **truncation** disjunct, which
+`itpAfull` appends only for a `◯`-shaped goal.  Splitting the wrapper by
+goal shape (`GoalDesc.desc_of_oth_nonbox`) therefore weakens the law to a
+floor on boxed goals alone.
+
+This matters because the measurement (`wip/ascprobe.lean`, PROGRESS §84)
+says the requirement genuinely **varies with the shape of the goal**: `0` at
+atom goals (the descent is proved there by search even at budget `0`), `1`
+at boxed goals (certified failure at `0` and only at `0`), `2` in general.
+A law of that shape is inexpressible under `NeedFloor1` and admissible
+under the refinement. -/
+
+/-- The first law, refined: a budget floor of one **at boxed goals**, which
+is all the truncation-pairing wrapper actually needs. -/
+def NeedBoxFloor1 (need : Need) : Prop :=
+  ∀ (S : Finset PLLFormula) (Γ : List PLLFormula) (D : PLLFormula),
+    1 ≤ need S Γ D.somehow
+
+/-- **The rebuild's top level, with the floor law refined.**  Same reduction
+as `descends_of_othDescends`, but the budget floor is now demanded only where
+the truncation disjunct exists. -/
+theorem descends_of_othDescends_shape (p : String) (need : Need)
+    (hfloor : NeedBoxFloor1 need) (h : OthDescends p need) :
+    Descends p need := by
+  intro S fuel fh c Γ g Δ hneed hfh hamb hhead
+  cases fh with
+  | zero => exact desc_zero p S hhead
+  | succ F =>
+      cases fuel with
+      | zero => exact absurd hfh (by omega)
+      | succ fl =>
+          have hF : F ≤ fl := by omega
+          by_cases hbox : ∃ D : PLLFormula, g = D.somehow
+          · obtain ⟨D, rfl⟩ := hbox
+            have hc : 1 ≤ c := le_trans (hfloor S Γ D) hneed
+            exact desc_of_oth p S hF hc
+              (fun _ hamb' hoth' => h S F fl c Γ _ _ hneed hF hamb' hoth')
+              hamb hhead
+          · exact GoalDesc.desc_of_oth_nonbox p S
+              (fun D hD => hbox ⟨D, hD⟩)
+              (fun _ hamb' hoth' => h S F fl c Γ g _ hneed hF hamb' hoth')
+              hamb hhead
+
+/-- Candidate E: **the goal-shape law** — the one the measurement points to.
+`0` at atoms and `⊥`, `1` at boxed goals, `2` elsewhere. -/
+def needShape : Need := fun _ _ g =>
+  match g with
+  | .prop _ => 0
+  | .falsePLL => 0
+  | .somehow _ => 1
+  | _ => 2
+
+/-- **The goal-shape law satisfies the refined floor**, exactly. -/
+theorem needShape_boxFloor1 : NeedBoxFloor1 needShape :=
+  fun _ _ _ => Nat.le_refl 1
+
+/-- It does *not* satisfy the unrefined floor: at an atom goal it asks for
+nothing.  So the refinement of §6 is not cosmetic — it is what admits this
+candidate at all. -/
+theorem needShape_not_floor1 : ¬ NeedFloor1 needShape := by
+  intro h
+  have h0 := h ∅ [] (prop "a")
+  simp only [needShape] at h0
+  omega
+
+/-- The goal-shape law survives the `wip/ascRefute.lean` screen: the refuting
+goal `(◯r ⊃ s) ⊃ t` is an implication, so the law asks for `2` there — and
+`2` is exactly the certified lower bound. -/
+theorem needShape_survives : ¬ (needShape Sk Gk gk ≤ 1) := by decide
+
 end Descent2
 end PLLND
 
@@ -408,3 +483,13 @@ info: 'PLLND.Descent2.ledgerDescent_of_othDescends' depends on axioms: [propext,
 -/
 #guard_msgs in
 #print axioms PLLND.Descent2.ledgerDescent_of_othDescends
+
+/--
+info: 'PLLND.Descent2.descends_of_othDescends_shape' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.Descent2.descends_of_othDescends_shape
+
+/-- info: 'PLLND.Descent2.needShape_boxFloor1' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.Descent2.needShape_boxFloor1
