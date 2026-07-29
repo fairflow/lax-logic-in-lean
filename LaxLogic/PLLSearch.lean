@@ -325,6 +325,22 @@ structure Config where
   Untrusted like the rest of the proposer: narrowing it can only cause
   misses, never a wrong certificate. -/
   accept : FinCM → Bool := fun _ => true
+  /-- Run a countermodel through `CounterEmit.simplify` before returning it
+  (the default).  Both refutation stages propose models that are larger than
+  the refutation needs — the battery decorates a fixed frame, and the closure
+  emitter builds one world per prime closed subset of the closure, so twenty
+  worlds for a two-atom sequent is routine.  Simplification deletes worlds,
+  edges, valuation pairs and fallible flags for as long as the *verified*
+  `FinCM.checkB` keeps certifying the result, so what comes back is the same
+  refutation with nothing in it that the refutation does not use.
+
+  The cost is a few hundred `checkB` calls on models this size, under a
+  millisecond; set it to `false` if you want the raw proposal (to see what a
+  stage actually produced) rather than the presentable one.
+
+  Simplification is gated by `accept` as well as by `checkB`, so a
+  confluence-filtered search (`RNC.refuteConf?`) stays confluent. -/
+  simplify : Bool := true
 
 /-- The standard configuration (all defaults). -/
 def Config.default : Config := {}
@@ -438,6 +454,29 @@ proof that the verified checker accepts it for the original sequent. -/
 abbrev Witness (Γ : List PLLFormula) (C : PLLFormula) : Type :=
   (M : FinCM) × (w : Nat) ×' (FinCM.checkB M w Γ C = true)
 
+/-- **Simplify a witness**: run `CounterEmit.simplify` on its model and
+re-derive the certificate for the smaller one.
+
+The simplifier is untrusted, so the result is not assumed to check: the
+proof `h` is obtained afresh by a dependent `if`, and a model that
+somehow failed to check would leave the original witness untouched.  A
+simplified witness is therefore exactly as trustworthy as an unsimplified
+one — the certificate is a fact about the model that is returned.
+
+`accept` is threaded into the simplifier (see `CounterEmit.minimise`), so
+a search that is filtering candidates by some property keeps it. -/
+def Witness.simplify {Γ : List PLLFormula} {C : PLLFormula}
+    (accept : FinCM → Bool := fun _ => true) (wit : Witness Γ C) :
+    Witness Γ C :=
+  let (M, w) := CounterEmit.simplify wit.1 wit.2.1 Γ C accept
+  if h : FinCM.checkB M w Γ C = true then ⟨M, w, h⟩ else wit
+
+/-- `Witness.simplify` under a `Config`: a no-op when `cfg.simplify` is
+`false`. -/
+def simplifyWith {Γ : List PLLFormula} {C : PLLFormula} (cfg : Config)
+    (wit : Witness Γ C) : Witness Γ C :=
+  if cfg.simplify then wit.simplify cfg.accept else wit
+
 /-- Scan the battery for a certified countermodel.  Candidates are picked by
 the fast scan on the normalised forms `Γ'`, `C'`, filtered by `cfg.accept`
 (the identity filter by default); each candidate is gated by the verified
@@ -471,11 +510,17 @@ verified checker on the original `Γ`, `C`, returning a certified witness.
 
 The trailing `accept` argument is the same untrusted pre-filter as
 `Config.accept`; it defaults to the identity filter, so every existing call
-site keeps its behaviour. -/
+site keeps its behaviour.  `budget` and `precheck` control the proof search
+`emit` runs first (see `CounterEmit.emit`): `budget` is `Config.findBudget`
+at both call sites here, so a `#refute` that reaches this stage is bounded
+like a `#search`, and `settleWhy` passes `precheck := false` because its own
+positive stage has just searched the same sequent to exhaustion. -/
 def emitCert (Γ' : List PLLFormula) (C' : PLLFormula)
     (Γ : List PLLFormula) (C : PLLFormula)
-    (accept : FinCM → Bool := fun _ => true) : Option (Witness Γ C) :=
-  match CounterEmit.emit Γ' C' with
+    (accept : FinCM → Bool := fun _ => true)
+    (budget : Option Nat := none) (precheck : Bool := true) :
+    Option (Witness Γ C) :=
+  match CounterEmit.emit Γ' C' budget precheck with
   | some (M, w) =>
       if !(accept M) then none
       else if h : FinCM.checkB M w Γ C = true then some ⟨M, w, h⟩ else none
@@ -576,7 +621,7 @@ def settleWhy (cfg : Config := {}) (Γ : List PLLFormula) (C : PLLFormula) :
     Verdict Γ C :=
   let Γ' := Γ.map nf
   let C' := nf C
-  match sweepCert cfg Γ' C' Γ C with
+  match (sweepCert cfg Γ' C' Γ C).map (simplifyWith cfg) with
   | some ⟨M, w, h⟩ => .refuted M w h
   | none =>
     let (res, cutoff) :=
@@ -590,7 +635,13 @@ def settleWhy (cfg : Config := {}) (Γ : List PLLFormula) (C : PLLFormula) :
     | none =>
       let cloLen := (CounterEmit.closureOf Γ' C').length
       if cloLen ≤ cfg.emitClosureCap then
-        match emitCert Γ' C' Γ C cfg.accept with
+        -- `cutoff = none` means stage 2 exhausted the search space without
+        -- finding a proof, so the emitter's own provability pre-check would
+        -- repeat that work to the same end: skip it.  After a cutoff the
+        -- pre-check is kept (the normalised sequent may be small enough to
+        -- settle within the same budget) and the budget goes with it.
+        match (emitCert Γ' C' Γ C cfg.accept cfg.findBudget
+                cutoff.isSome).map (simplifyWith cfg) with
         | some ⟨M, w, h⟩ => .refuted M w h
         | none =>
           match cutoff with
@@ -688,16 +739,21 @@ def prove?Bounded (budget : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
     Option (G4cTm Γ C) :=
   (G4cTm.findBounded budget Γ C).1
 
-/-- Negative engines only (battery then emit, no proof search): a certified
-countermodel witness, or `none`. -/
+/-- Negative engines only (battery, then the closure emitter): a certified
+countermodel witness, or `none`.
+
+"No proof search" is true of this function but not of its second stage:
+`CounterEmit.emit` runs a search of its own, to avoid building an
+exponential model for a provable sequent.  `cfg.findBudget` is passed down
+to cap it. -/
 def refute? (cfg : Config := {}) (Γ : List PLLFormula) (C : PLLFormula) :
     Option (Witness Γ C) :=
   let Γ' := Γ.map nf
   let C' := nf C
-  (sweepCert cfg Γ' C' Γ C).orElse fun _ =>
+  ((sweepCert cfg Γ' C' Γ C).orElse fun _ =>
     if (CounterEmit.closureOf Γ' C').length ≤ cfg.emitClosureCap then
-      emitCert Γ' C' Γ C cfg.accept
-    else none
+      emitCert Γ' C' Γ C cfg.accept cfg.findBudget
+    else none).map (simplifyWith cfg)
 
 /-! ## 10. Sequent-first wrappers
 

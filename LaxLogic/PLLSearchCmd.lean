@@ -22,9 +22,12 @@ Each command prints, in one block:
 * the sequent, in the usual notation;
 * the verdict — `PROVED`, `REFUTED` or `UNKNOWN`, the last one carrying the
   reason (which knob to turn) rather than just the word;
+* for a refutation, a **scope** line: whether the model is mutually
+  confluent, and so whether it refutes PCLL as well as PLL (`scopeLines`);
 * the evidence: the G4iLL″ rule tree, or the countermodel in the compact
   `renderCM` form (worlds, cover edges of `Rᵢ`, `Rₘ` successors, forced
-  atoms), rather than a raw `FinCM` record;
+  atoms), rather than a raw `FinCM` record — simplified, by default, to the
+  worlds and edges the refutation actually uses (`Config.simplify`);
 * the **pinning snippet**: paste-ready Lean source for the theorem that
   records the finding, `#print axioms` line included.
 
@@ -55,6 +58,26 @@ def seqStr (Γ : List PLLFormula) (C : PLLFormula) : String :=
    else String.intercalate ", " (Γ.map fun F => s!"{repr F}") ++ " ") ++
   s!"⊢ {repr C}"
 
+/-- **How far a countermodel reaches**: the `scope` line of a refutation
+report.
+
+A finite countermodel refutes `LaxND` (PLL) always, and `ConfluentU.DerivU`
+(PCLL, PLL + `◯(A ∨ B) ⊃ ◯A ∨ ◯B`) only when it is mutually confluent.  The
+distinction is invisible in the model picture and easy to forget, and using a
+non-confluent model against a PCLL claim is simply a wrong proof — so every
+refutation report states which of the two it has, and names the command to
+use when the answer is the narrow one.
+
+`RNC.confB` is the same Boolean test `#refuteConf` filters by, so this line
+is a fact about the model returned, not a guess. -/
+def scopeLines (M : FinCM) : List String :=
+  if RNC.confB M then
+    [ "scope    PLL and PCLL: the model is mutually confluent, so it also",
+      "         refutes ConfluentU.DerivU (RNC.not_derivU_of_checkConf)" ]
+  else
+    [ "scope    PLL only: the model is NOT mutually confluent, so it refutes",
+      "         LaxND and says nothing about PCLL — use #refuteConf there" ]
+
 /-- The block printed by `#search`: sequent, verdict, evidence, pinning
 snippet. -/
 def searchReport (cfg : Config) (Γ : List PLLFormula) (C : PLLFormula)
@@ -66,6 +89,7 @@ def searchReport (cfg : Config) (Γ : List PLLFormula) (C : PLLFormula)
         [ "", "proof term (G4iLL″):", s!"  {t.pretty}",
           "", "pin it:", t.snippet name ]
     | .refuted M w h =>
+        scopeLines M ++
         [ "", "countermodel:", renderCM M (some w),
           "", "pin it:", Witness.snippet (Γ := Γ) (C := C) name ⟨M, w, h⟩ ]
     | .unknown _ =>
@@ -81,10 +105,11 @@ def refuteReport (cfg : Config) (Γ : List PLLFormula) (C : PLLFormula)
   match countermodel Γ C cfg with
   | some wit =>
       String.intercalate "\n"
-        [ s!"sequent  {seqStr Γ C}",
-          s!"verdict  REFUTED  {summaryCM wit.1 wit.2.1}",
-          "", "countermodel:", renderCM wit.1 (some wit.2.1),
-          "", "pin it:", wit.snippet name ]
+        ([ s!"sequent  {seqStr Γ C}",
+           s!"verdict  REFUTED  {summaryCM wit.1 wit.2.1}" ] ++
+         scopeLines wit.1 ++
+         [ "", "countermodel:", renderCM wit.1 (some wit.2.1),
+           "", "pin it:", wit.snippet name ])
   | none =>
       String.intercalate "\n"
         [ s!"sequent  {seqStr Γ C}",
@@ -107,11 +132,11 @@ def refuteConfReport (cfg : Search.Config) (Γ : List PLLFormula)
   match refuteConf? cfg Γ C with
   | some wit =>
       String.intercalate "\n"
-        [ s!"sequent  {Search.seqStr Γ C}  (PCLL)",
-          s!"verdict  REFUTED  {Search.summaryCM wit.1 wit.2.1} \
-(mutually confluent)",
-          "", "countermodel:", Search.renderCM wit.1 (some wit.2.1),
-          "", "pin it:", wit.snippet name ]
+        ([ s!"sequent  {Search.seqStr Γ C}  (PCLL)",
+           s!"verdict  REFUTED  {Search.summaryCM wit.1 wit.2.1}" ] ++
+         Search.scopeLines wit.1 ++
+         [ "", "countermodel:", Search.renderCM wit.1 (some wit.2.1),
+           "", "pin it:", wit.snippet name ])
   | none =>
       String.intercalate "\n"
         [ s!"sequent  {Search.seqStr Γ C}  (PCLL)",
@@ -151,12 +176,21 @@ private def has (s sub : String) : Bool := (s.splitOn sub).length > 1
   has r "REFUTED" && has r "fallible"
 
 -- The PCLL trap, as a test: the distribution axiom is PLL-refutable but has
--- no *confluent* countermodel, so `#refuteConf` must decline it.
+-- no *confluent* countermodel, so `#refuteConf` must decline it — and the
+-- `#refute` report on the same sequent must say, in the scope line, that
+-- what it found is good for PLL only.
 #guard
   let Γ := [((PLLFormula.prop "p").or (PLLFormula.prop "q")).somehow]
   let C := ((PLLFormula.prop "p").somehow).or ((PLLFormula.prop "q").somehow)
   has (RNC.refuteConfReport budgetedConfig Γ C) "NO CONFLUENT COUNTERMODEL"
     && has (refuteReport budgetedConfig Γ C) "REFUTED"
+    && has (refuteReport budgetedConfig Γ C) "PLL only"
+
+-- …and the scope line is not stuck on that answer: `◯p ⊢ p` is refuted by a
+-- confluent model, and the report says so.
+#guard
+  has (refuteReport budgetedConfig [(PLLFormula.prop "p").somehow]
+    (PLLFormula.prop "p")) "PLL and PCLL"
 
 end PLLND.Search
 
