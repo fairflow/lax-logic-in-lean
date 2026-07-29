@@ -7,3 +7,6 @@ S1 (one live γ-clause)  fuel 4: second component has 1 disjunct(s), goal weight
    whole obligation                : ~40000
    case 0 (weight 1) : PROVED
 S2 (two live γ-clauses)  fuel 3: second component has 3 disjunct(s), goal weight 141
+   whole obligation                : ~40000
+   case 0 (weight 1) : PROVED
+   case 1 (weight 8) : ~40000

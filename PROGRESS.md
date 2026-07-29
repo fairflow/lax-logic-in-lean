@@ -3550,3 +3550,76 @@ rests on theorems rather than on how hard a search was pushed.
 §87.  The plain γ-branch goes through where the boxed one has no uniform route,
 so that distinction is a fact about the two branches and not about search
 budgets.
+
+## §90 — the boxed γ-branch CLOSED at one configuration, by case analysis (30 July)
+
+`wip/envDesc.lean` §6 (`branch_of_cases`), `wip/boxedBranchS1.lean` (new),
+`wip/sealprobe6.lean` (new exe).  All sorry-free.
+
+### The mechanism the earlier survey missed
+
+§87 refuted every uniform route.  The case analysis that must replace one is
+available for nothing, and the reason it was overlooked is that the survey
+looked at the source's *first* component and at the target's disjuncts.  The
+branch's **second** hypothesis is itself a disjunction:
+
+    A@1(B::Γ, C)  =  orAll (itpAfull p S F 1 (B::Γ) C)
+
+so `orAll_elim` on it is a case analysis with one case per disjunct of the
+grown-context table, and different cases may reach *different* target disjuncts
+— which is precisely what §87 says the branch must do.
+
+    branch_of_cases        : (∀ ψ ∈ itpAfull p S F 1 (B::Γ) C,
+                                G4c (ψ :: Δ) (orAll (itpAoth p S fl 1 Γ C)))
+                             → G4c Δ (itpA p S (F+1) 1 (B::Γ) C)
+                             → G4c Δ (orAll (itpAoth p S fl 1 Γ C))
+
+PROVED, sorry-free, `[propext, Quot.sound]`, together with a non-boxed-goal
+variant.
+
+### It is not a formality
+
+`wip/sealprobe6.lean` asks the oracle for the whole obligation and for each case
+separately, on the configuration
+
+    S = {◯r ⊃ s, ◯r, r, s, z},  Γ = [◯r ⊃ s],  A = r,  B = s,  C = z
+
+— γ-head an ordinary atom, so §87's refutations bite and §86's `◯⊥` collapse is
+unavailable.  The result:
+
+| what is asked | verdict |
+|---|---|
+| the whole obligation | `~` (search truncated at `findBudget` 40 000) |
+| each of routes (a), (b), (b′) | **REFUTED** (§87) |
+| the single case of the analysis | **PROVED**, 2 nodes |
+
+So the case split turns an obligation that resists both proof search and every
+one-move argument into one the searcher closes in two nodes.  That is a fair
+diagnosis of the July survey's failure: it was looking for a uniform route, and
+there is none.
+
+### The branch, closed
+
+`wip/boxedBranchS1.lean`:
+
+    boxed_branch : G4c [amb, box, snd] (orAll (itpAoth "p" S1 3 1 G1 (prop "z")))
+
+PROVED, sorry-free, `[propext, Quot.sound]`, by `branch_of_cases` with the
+single case discharged by a `#pinsrc`-generated derivation (route (c): inject
+the target's own goal clause for `z`, close by `init`).
+
+**The residual branch of the descent is therefore closed at the configuration
+its refutations single out.**
+
+### What is not shown
+
+One configuration is not the lemma.  The second component has a single disjunct
+here because every environment clause of `s :: Γ` is guard-dead once `s` is in
+the context.  A configuration whose *grown* context still has a live clause
+gives several cases, each needing its own route — that is the two-γ-clause space
+`S2`, which `wip/sealprobe6.lean` also runs.  The general lemma needs a route
+assigned to each disjunct shape of `itpAfull p S F 1 (B::Γ) C`, i.e. a case
+analysis over the clause table one level down.
+
+That is now a *finite, enumerable* obligation of exactly the same kind as the
+goal-side table of §85 — which is the first time the residue has had that shape.
