@@ -2682,3 +2682,147 @@ GOAL position — so the ledger's remaining job is only to keep
 than the defect·(J+2) tower.  This is the sharpest form the low-budget
 question has taken; it replaces "prove the kernel" by "prove the
 descent for c ≥ 2, and for c = 1 at safe goals".
+
+## §81 (2026-07-29, Opus) — Matthew's correction: the budget must be MEASURED, not guessed; extraction instruments landed (wip/budgetfit.lean, wip/descent2.lean)
+
+Matthew's three points, and what was done about each.
+
+### (1) "How do you know your budgeting is accurate?"
+
+Answer: I did not.  Three statements of the same lemma have carried
+three different budget hypotheses, each chosen by hand and then defended
+by probing around its edges:
+
+| statement | budget hypothesis | how it was chosen |
+|---|---|---|
+| `cascade_low_pos_box` | `defect S Γ * (\|jumpGoals S\| + 2) ≤ c` | pigeonhole over-estimate: `J+1` jumps before a γ-head repeats, `+1` slack, once per defect level |
+| `RoomFreeDescent` | `1 ≤ c` | conjectured from a probe family that could not see the budget (see (3)) |
+| "the corrected target" | `2 ≤ c` | read off the boundary sweep of §80 — still a guess |
+
+Matthew's proposal — keep the budget flexible until the required
+function is discovered — is the constraint-extraction discipline the
+repo already implements for timing (`LaxLogic/PLLConstraints.lean`,
+after Mendler's *proofs-as-delays*: `◯` as a writer monad over the
+delay algebra `(ℕ, 0, +, max)`, the constraint computed by the kernel
+from the proof term rather than supplied to it).  Adopted, in two
+halves.
+
+**Half A — the budget as a parameter (`wip/descent2.lean`).**
+`Need := Finset PLLFormula → List PLLFormula → PLLFormula → Nat` is
+abstract; `Descends p need` is the target; the proof's branches will
+deposit the laws `need` must satisfy instead of consuming an assumed
+inequality.  Two things are already machine-checked, both
+`[propext, Quot.sound]` (choice-free):
+
+* `refutation_lower_bound` — **any** `need` supporting the descent has
+  `2 ≤ need Sk Gk gk`.  This turns the §79 countermodel from a fact
+  about one bespoke `Prop` into a constraint on the unknown function.
+* `candidate_excluded` — the screen.  A proposed law is now tested by
+  the kernel before any effort is spent on it: `needConst2` and
+  `needGate` survive (`needConst2_survives`, `needGate_survives`,
+  both by `decide`).
+
+The arithmetic is worth recording plainly: at the refuting
+configuration the tower's assumed law evaluates to
+`needProduct Sk Gk gk = 56`, against a certified requirement of `2`.
+The slack is not free — `kcap S = (2\|S\|+4)(\|S\|+2)` is what the
+*caller* must climb to (`kcap_room`), i.e. 242 for that 9-piece space.
+An over-estimated budget makes the lemma easier to state and the
+stabilisation ladder harder to pay for.
+
+**Half B — measurement (`wip/budgetfit.lean`, exe `budgetfit`).**
+Threshold measurement over families of budget-gated pieces of growing
+length, countermodel-first (the battery is a polynomial model check and
+its hits are `checkB`-certified; proof search on these sequents is the
+expensive half and runs only as a spot-check).
+
+Measured, goal = the ⊃◯-antecedent implication, two fuels each,
+identical at both:
+
+| family | \|S\| | defect | \|jumpGoals\| | gated pieces | PRODUCT law | certified failures | threshold |
+|---|---|---|---|---|---|---|---|
+| chain1 | 7 | 6 | 3 | 2 | 30 | c ≤ 0 | 1 |
+| chain2 | 10 | 9 | 5 | 3 | 63 | c ≤ 1 | 2 |
+| chain3 | 13 | 12 | 7 | 4 | 108 | c ≤ 1 | 2 |
+
+chain1 is the degenerate control: its goal's antecedent is already the
+context formula, and it does not reproduce the failure — the failure
+needs the antecedent to be a gated piece **not yet in Γ**.
+
+The reading: the certified failure region is `c ≤ 1` and **does not
+grow** with defect (6→12), with `\|jumpGoals\|` (3→7), with the gate
+count (2→4), or with the product law (30→108).  `need = 2` is
+consistent with every measurement; the product law sits two orders of
+magnitude above the only certified lower bound.  Stated carefully: the
+failures are certified, the clean cells are battery-clean (evidence,
+not proof), so what is established is that **no probed growth of the
+space moves the failure boundary**.
+
+Safe goals, same families: an atom goal is derivable at *every* budget
+including `c = 0`; a `◯` goal fails only at `c = 0`.  Consistent with
+§80's boundary.
+
+### (2) Which system — headline, and the jargon retired
+
+`G4c` (= `∃n, G4h n`, `LaxLogic/PLLG4H.lean:97`) is the repaired
+G4iLL″ for **plain PLL**, proved equivalent to natural deduction
+(`equiv_nd`, `LaxLogic/PLLG4HComp.lean:109`).  So:
+
+* **Route 1, syntactic tower → UI for PLL.**  Crown
+  `uniform_interpolation_PLL` (`wip/final.lean:173`), general in `φ`,
+  `C`, one eliminated variable.  Assembled; every layer axiom-clean;
+  exactly one `sorry`, `cascade_low_pos_box`.  *This is where the
+  rebuild is.*
+* **Route 2, semantic → UI for PCLL** (`DerivU` = PLL + distribution;
+  `MutuallyConfluent` models).  Pillar 1 proved; pillar 2 down to the
+  m-clauses; witness-realisability refuted (§59).
+* **Route 3, PICLL = PCLL + ¬◯⊥.**  Variable-free collapse, 1-variable
+  UI, sound+complete infallible semantics, ◯-normal form, the
+  IPC calibration and the distribution separator — all proved (§§60–61).
+
+Internal vocabulary replaced by what it names:
+
+| retired | means |
+|---|---|
+| growth branch | context-extension clause: `Γ` absorbs a space formula, `defect` strictly drops |
+| box-growth | context extension *under* `◯` (the `◯χ ∈ Γ` clause, recursing at `χ :: Γ` inside `◯(−)`) |
+| goal-γ | goal-decomposition clause: the disjunct generated by the shape of the goal `C` (`itpAgoal`) rather than by a context formula |
+| decomposition | the same family, for `∧`/`∨`/`⊃` goals |
+| seal | boxed-implication branch: the clause emits `◯(E ⇢ A)`, so the continuation is inside a box |
+| starvation | empty clause list, so the table is literally `⊥` (`orAll [] = falsePLL`) |
+| fresh-antecedent law | `E@(c+1)(Γ) ⊓ E@c(X::Γ) = E@(c+1)(X::Γ)` for `X ∈ S \ Γ`; `⊒` is free, `⊑` is `AmbGuardAscent` — **refuted** (§79) |
+
+### (3) How the probe family is chosen — the process, and its repair
+
+What went wrong is diagnosable and was diagnosed: the July family was
+chosen by analogy with the *property under test* (freshness), not with
+the *resource the law is about* (the budget).  `itpE`/`itpA` read `b` at
+exactly two clause branches, driven by a formula of shape `(A⊃B)⊃D` or
+`◯A⊃B`.  The family `{u, u⊃r, ◯u}` contains neither, so every instance
+of it had the same value at every budget, and "equality on every probed
+instance" was vacuous.
+
+Repaired mechanically, in two orders:
+
+* **Shape coverage** (`coverTags`, `missingTags`, `budgetBlind`).  The
+  eleven clause branches are enumerated from the definition's case
+  split; a family is *budget-blind* when it reaches neither gated
+  branch.  Run on the July family: `BUDGET-BLIND = true`, misses
+  8 of 11 branches.  Rule adopted: no claim about a budget law is
+  recorded from a budget-blind family, and the coverage report is
+  printed before the sweep.
+* **Guard reachability** (`gateLive`).  Shape coverage is necessary, not
+  sufficient: each gated branch also carries guard conditions, and the
+  tables iterate over the **context**, not the space.  The `⊃⊃` family
+  of §4 covers the shape and shows no failure at any budget — because
+  its gate is never reached (`(A⊃B)⊃D` needs `B⊃D ∈ Γ`, which the
+  family does not supply).  A dead gate is as uninformative as a blind
+  family and much harder to spot by eye, so `gateLive` reports it per
+  context formula.
+
+### Status
+
+`wip/descent2.lean` and `wip/budgetfit.lean` build; the descent2 audits
+are choice-free.  The rebuild proceeds against `Descends p need` with
+`need` open — `2 ≤ c` is recorded as the currently-best-supported
+instantiation, not as the statement.
