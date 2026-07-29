@@ -3337,3 +3337,96 @@ infallible model.  If that lands, the interface is *individually* false, not
 merely part of an unsatisfiable four, and the branch has to be re-cut rather
 than proved.  That is the next probe, and it is the right order of work:
 refute before attempting.
+
+## §87 — NO UNIFORM ROUTE closes the boxed γ-branch at the floor (30 July)
+
+`wip/sealRefute.lean` (new), `wip/sealprobe3.lean`, `wip/sealprobe4.lean` (new
+exes), `docs/descent-problem.md` (new).  Lean content sorry-free,
+`[propext, Quot.sound]`.
+
+### The question, made finite
+
+§86 left one branch at one budget.  At target budget `1` the target table
+offers exactly three kinds of disjunct, and the branch's third hypothesis
+`A@1(B::Γ,C)` is already the second conjunct of two of them.  So the branch
+closes **iff one of**
+
+    (a)  A@0(Γ, A)                      the plain γ-disjunct's first component
+    (b)  ◯( E@0(Γ) ⇢ A@0(Γ, ◯A) )       the boxed one
+    (c)  the goal clause of `C`
+
+is derivable from `E@2(Γ)`, `◯(E@1(Γ) ⇢ A@1(Γ,◯A))`, `A@1(B::Γ,C)`.  That is a
+finite question about three small sequents rather than one large one, and the
+oracle can answer it.
+
+### The answer: each route is individually FALSE
+
+At the configuration
+
+    S = {◯r ⊃ s, ◯r, r, s, p, z},  Γ = [◯r ⊃ s],  A = r,  B = s,  C = z
+
+— a γ-head that is an **ordinary atom**, not the eliminated variable — all
+three fail, kernel-checked:
+
+| route | Lean name | refuting model |
+|---|---|---|
+| (a) `⊢ A@0(Γ,r)` | `not_route_a` | `0 ⊑ 1`, `0 ⊳ 1`, `r` at `1` only |
+| (b) `⊢ ◯(E@0(Γ) ⇢ A@0(Γ,◯r))` | `not_route_b` | one reflexive world, all atoms forced |
+| (b′) `⊢ ◯⊥` | `not_route_bot` | the same |
+
+and both models are **infallible and mutually confluent**
+(`Ma_infallible`/`Ma_confluent`, `Mb_infallible`/`Mb_confluent`), so the
+refutations hold over PCLL, PILL and PICLL too.  Route (c) is `⊢ z`, which
+fails in any model where `z` is false.
+
+As universal statements: `not_uniformRouteA`, `not_uniformRouteB`.
+
+### What this means
+
+> **The branch cannot be closed by a uniform route.  It requires a case
+> analysis over the target's disjuncts.**
+
+This is why every mechanism surveyed in `wip/absorb_base.lean`'s residue
+analysis failed — each of them is a *uniform* route (a single remap, a single
+seal-crossing, a single collapse).  It also explains why no countermodel to the
+branch obligation *itself* has been found in any probed configuration: in each
+of the three refuting models a **different** route succeeds.  The obligation is
+plausibly true; what is false is every attempt to prove it in one move.
+
+It also retires the `◯⊥` collapse of §86 as a general mechanism.  That route
+works on the chain families of `wip/budgetfit.lean` only because their γ-head
+is the eliminated variable `p`, whose goal clause is empty at every budget, so
+`A@0(Γ,p) = ⊥` and the component *is* `◯⊥`.  With an ordinary head
+`A@0(Γ,r) = r ∨ ⊥` — satisfiable, not derivable — and `not_route_bot` closes
+the collapse off.
+
+### The shape of the missing proof
+
+A case analysis, and the cases have to be read off the *model*, not the syntax
+— which in a syntactic proof means splitting on a decidable syntactic condition
+that implies the right route.  The three refuting models suggest what the
+conditions are:
+
+* route (a) is available when the plain component's own goal clause is
+  derivable, i.e. when `A` is an atom forced by the hypotheses;
+* route (b) is available when the boxed component starves and `◯⊥` follows —
+  the `p`-headed case, `boxed_target_of_starved` (§86);
+* route (c) is available when the second hypothesis `A@1(B::Γ,C)` collapses to
+  `C`'s goal clause, which happens exactly when every environment clause of
+  `B::Γ` is guard-dead (`wip/sealprobe3.lean` shows this is what makes the
+  one-γ-clause families uninformative).
+
+So the missing lemma is a **three-way starvation/liveness classification of
+the pair (Γ, B::Γ)**, with one route per case.  That is the same
+classification `wip/starve.lean` was begun for, and §87 fixes both its shape
+(three cases) and its purpose (choosing a target disjunct, not crossing a
+seal).
+
+### Also landed
+
+`docs/descent-problem.md` — a self-contained statement of the whole descent
+problem: what it is for, the two termination measures, why the budget has no
+base case, where the tier is entered, the goal side, the environment side, what
+is left, and the budget law as a parameter.  Every claim is either a definition,
+a named sorry-free Lean theorem, or explicitly labelled OPEN or a measurement.
+This discharges part of the exposition debt recorded in memory.
