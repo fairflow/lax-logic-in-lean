@@ -242,3 +242,8 @@ root = "wip.sealprobe10"
 [[lean_exe]]
 name = "sealprobe11"
 root = "wip.sealprobe11"
+
+# The boxed floor branch at a search budget that can actually find it.
+[[lean_exe]]
+name = "sealprobe12"
+root = "wip.sealprobe12"

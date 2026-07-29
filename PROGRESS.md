@@ -3987,3 +3987,36 @@ for, done by cases instead.
 | fresh-antecedent goal | 1 | proved at **three** configurations including the deciding one, **without** the ascent; general lemma OPEN |
 
 So the one branch with no positive evidence anywhere is the boxed floor branch.
+
+## §96 — a methodological correction to §§92–93
+
+§92's route table and §93's conclusion both rested on cells reading `~` at
+`findBudget` **20 000**.  §95 then showed the fresh-antecedent branch needs
+**200 000** nodes to turn up a derivation that is only 56 nodes long — the proof
+is short, the search space is wide.
+
+So the boxed row of §92's table, and §93's inference from it, are **not
+established**.  Specifically:
+
+* §92 said "no case reaches any target disjunct" at a boxed goal.  What was
+  observed is "no case reaches any target disjunct *within 20 000 nodes*", and
+  `Reason.budgetExhausted` asserts nothing at all — the file's own documentation
+  says so.
+* §93 concluded that any proof of the boxed branch "must apply the defect tier
+  again, at a further-grown context".  That inference used the same cells and
+  therefore does not stand either.  Its stated reason — that the material offered
+  was everything except Lean-level recursion — was sound, but it is only relevant
+  once the search has actually been given enough budget to look.
+
+`wip/sealprobe12.lean` re-runs every boxed cell at 200 000 and 2 000 000, per case
+and per target disjunct, at both configurations.
+
+What is *not* affected: everything proved (§§85, 86, 90, 91, 94), everything
+refuted (§§83, 87 — refutations are `checkB`-certified and budget-independent),
+and the measurements whose content is a *certified failure* rather than an absence
+(§84).  The affected claims are exactly those that read a `~` as information.
+
+This is worth recording as a discipline and not only as a fix: the probe harness
+prints `~` with the reason attached precisely so that this mistake is visible, and
+I made it anyway by comparing a `~` row against `PROVED` rows found at the same
+budget.  A `~` may only ever be compared with another `~`.
