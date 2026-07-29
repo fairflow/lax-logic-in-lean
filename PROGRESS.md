@@ -3865,3 +3865,25 @@ So the standing summary is:
 | atom | **proved in general** (∨-free space) |
 | `A ⊃ B` | proved at two configurations; general lemma OPEN |
 | `◯A` | OPEN, and now known to need a recursive case analysis |
+
+### §93 addendum — correction: the residue is TWO branches, not one
+
+§92's headline ("the residue is one goal shape") understated it, and the
+consolidated table in `docs/away-run-report.md` has been corrected.  At target
+budget `1` there are **two** open branches:
+
+1. the **floor branch at a boxed jump goal** — the one this session narrowed
+   (§§86-93);
+2. the **fresh-antecedent goal branch** — its target clause is
+   `E@1(C₁::Γ) ⇢ A@1(C₁::Γ,C₂)`, and firing the source's requires the ∃-ascent at
+   budget `1` at the grown context, which is precisely what `not_ambGuardAscent`
+   refutes.  This has been open since July and is untouched by this session.
+
+Above budget `1` neither arises: the gated environment components have the ambient
+two budgets up (§86), and the ascent has no certified failure at `c ≥ 2` in any
+probed configuration (§84).
+
+So the accurate statement is: **the descent is reduced to two branches, both at
+target budget `1`.**  That is still a large advance on the position at the start
+of the session — four jointly unsatisfiable interfaces with no localisation, and
+a budget law guessed and refuted three times — but it is two branches, not one.

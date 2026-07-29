@@ -401,12 +401,13 @@ context, so it cannot be dodged.
 | part of the descent | budget | status |
 |---|---|---|
 | goal side, six of seven families | any | **PROVED** `wip/goalDesc.lean` — and none of them ever reaches budget `0` |
-| goal side, fresh-antecedent family | any | reduces to the ∃-ascent (`FreshAntAscent`) |
+| goal side, fresh-antecedent family | ≥ 2 | reduces to the ∃-ascent, which has no certified failure there |
+| goal side, fresh-antecedent family | 1 | **OPEN** — needs the ∃-ascent at budget `1`, which is REFUTED |
 | truncation disjunct | any | **PROVED** `desc_of_oth`; and no budget floor needed at non-boxed goals (`desc_of_oth_nonbox`) |
 | three gated environment components | target ≥ 2 | **PROVED** `wip/envDesc.lean` (`gated_env_first`) |
 | floor, **atom** jump goal | 1 | **PROVED, general** `AtomForce.floor_branch_atom` (∨-free space) |
 | floor, **`⊃`-shaped** jump goal | 1 | **PROVED at two configurations** `wip/floorImp.lean` |
-| floor, **boxed** jump goal | 1 | **OPEN — the whole residue** |
+| floor, **boxed** jump goal | 1 | **OPEN** — one of the two residual branches |
 | descent at budget `0` | 0 | **REFUTED** `not_floorDescent` |
 | descent at budget `1`, general goal | 1 | **REFUTED** `not_roomFreeDescent` |
 | ∃-ascent at budget `1` | 1 | **REFUTED** `not_ambGuardAscent` |
@@ -414,8 +415,25 @@ context, so it cannot be dodged.
 All three refutations hold in **infallible, mutually confluent** models, so they
 reach PCLL, PILL and PICLL as well as plain PLL.
 
-> **The residue of uniform interpolation for PLL is the descent at target budget
-> `1` at a boxed goal.**  One statement, one goal shape.
+**The residue, stated exactly.**  Everything is accounted for except *two*
+things, both at target budget `1`:
+
+1. the **floor branch at a boxed jump goal** — no case of the analysis reaches
+   any target disjunct, across three configurations, and §93 shows any proof must
+   recurse rather than apply the defect tier once;
+2. the **fresh-antecedent goal branch** — its target clause is
+   `E@1(C₁::Γ) ⇢ A@1(C₁::Γ,C₂)`, and firing the source's needs the ∃-ascent at
+   budget `1` at the grown context, which is exactly what `not_ambGuardAscent`
+   refutes.
+
+(1) is the one this session narrowed; (2) has been open since July and is
+untouched here.  Above budget `1` neither arises: the gated components have the
+ambient two budgets up (§86), and the ascent has no certified failure at
+`c ≥ 2` in any probed configuration.
+
+So the accurate headline is: **the descent is reduced to two branches, both at
+target budget `1`** — where before this session it was four jointly unsatisfiable
+interfaces with no localisation.
 
 ## The five structural facts that got it there
 
