@@ -244,7 +244,7 @@ private theorem defect_lt_of_mem {S : Finset PLLFormula}
 /-! ### The head-fuel floor of the descent -/
 
 /-- At head fuel `0` the descent is vacuous: the source table is `⊥`. -/
-private theorem desc_zero (p : String) (S : Finset PLLFormula)
+theorem desc_zero (p : String) (S : Finset PLLFormula)
     {fuel c : Nat} {Γ Δ : List PLLFormula} {g : PLLFormula}
     (hhead : G4c Δ (itpA p S 0 (c + 1) Γ g)) :
     G4c Δ (itpA p S fuel c Γ g) := by
@@ -266,7 +266,7 @@ the source box for it). -/
 /-- The full-table descent at head fuel `F + 1`, target fuel `fl + 1`,
 budgets `c + 1 → c`, from the others-descent at inner fuels `(F, fl)`
 (supplied context-polymorphically). -/
-private theorem desc_of_oth (p : String) (S : Finset PLLFormula)
+theorem desc_of_oth (p : String) (S : Finset PLLFormula)
     {F fl c : Nat} {Γ : List PLLFormula} {g : PLLFormula}
     (hF : F ≤ fl) (hc : 1 ≤ c)
     (hoth : ∀ (Δ' : List PLLFormula),

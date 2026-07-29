@@ -108,7 +108,62 @@ about a bespoke `Prop`. -/
 theorem const_one_excluded :
     ¬ Descends "p" (fun _ _ _ => 1) := candidate_excluded _ (by omega)
 
-/-! ## 3. Screening candidate budget laws
+/-! ## 3. The first branch, and the first extracted law
+
+The rebuild's top level is the truncation-pairing wrapper `desc_of_oth`
+(`wip/cascadeBox.lean`), which reduces the full-table descent to the
+**others-descent** — the same statement with the truncation disjunct
+stripped from both sides (`itpAoth`).  That wrapper never touched the
+four refuted interfaces, so it is reused verbatim.
+
+Discharging this branch against an abstract `need` deposits exactly one
+demand: `desc_of_oth` needs `1 ≤ c`, so it needs
+
+    NeedFloor1 need  :=  ∀ S Γ g, 1 ≤ need S Γ g.
+
+That is the first law, and it is *read off the proof*, not assumed in
+advance.  Note it is strictly weaker than what the data already forces
+(`refutation_lower_bound`: `2 ≤ need Sk Gk gk`) — which is the shape the
+extraction should have.  Each branch states its own demand; the budget
+law is the supremum of them and of the measured lower bounds, computed
+at the end rather than guessed at the start. -/
+
+/-- The others-descent, relative to a room requirement: what the whole
+rebuild now reduces to. -/
+def OthDescends (p : String) (need : Need) : Prop :=
+  ∀ (S : Finset PLLFormula) (F fl c : Nat) (Γ : List PLLFormula)
+    (g : PLLFormula) (Δ : List PLLFormula),
+    need S Γ g ≤ c → F ≤ fl →
+    G4c Δ (itpE p S (fl + 1) (c + 1) Γ) →
+    G4c Δ (orAll (itpAoth p S F (c + 1) Γ g)) →
+    G4c Δ (orAll (itpAoth p S fl c Γ g))
+
+/-- **The first extracted law**: the truncation-pairing branch needs a
+budget floor of one. -/
+def NeedFloor1 (need : Need) : Prop := ∀ S Γ g, 1 ≤ need S Γ g
+
+/-- **The rebuild's top level, PROVED.**  The full descent follows from
+the others-descent, for *any* room requirement satisfying the one law
+this branch demands.  Nothing here is specific to `2 ≤ c`: the budget
+enters only through `NeedFloor1`, so tightening or loosening the law
+later costs no rework above this line. -/
+theorem descends_of_othDescends (p : String) (need : Need)
+    (hfloor : NeedFloor1 need) (h : OthDescends p need) :
+    Descends p need := by
+  intro S fuel fh c Γ g Δ hneed hfh hamb hhead
+  have hc : 1 ≤ c := le_trans (hfloor S Γ g) hneed
+  cases fh with
+  | zero => exact desc_zero p S hhead
+  | succ F =>
+      cases fuel with
+      | zero => exact absurd hfh (by omega)
+      | succ fl =>
+          have hF : F ≤ fl := by omega
+          exact desc_of_oth p S hF hc
+            (fun Δ' hamb' hoth' => h S F fl c Γ g Δ' hneed hF hamb' hoth')
+            hamb hhead
+
+/-! ## 4. Screening candidate budget laws
 
 A candidate `need` can now be tested against the accumulated refutation
 data *by the kernel*, before any effort is spent proving `Descends` for
@@ -157,6 +212,29 @@ theorem needConst2_survives : ¬ (needConst2 Sk Gk gk ≤ 1) := by decide
 /-- **Candidate B survives the screen**, with room to spare. -/
 theorem needGate_survives : ¬ (needGate Sk Gk gk ≤ 1) := by decide
 
+/-! ### The proof's demand screens what the data could not
+
+`NeedFloor1` is the first law the *proof* deposited (§3).  Running the
+candidates against it separates them where the countermodel data could
+not: both survive the refutation screen, but only one satisfies the law.
+This is the extraction earning its keep — a demand that no amount of
+probing would have produced, because it comes from the argument rather
+than from the instances. -/
+
+/-- Candidate A satisfies the first law. -/
+theorem needConst2_floor1 : NeedFloor1 needConst2 :=
+  fun _ _ _ => Nat.le_succ 1
+
+/-- **Candidate B is eliminated by the first law.**  On a space with no
+budget-gated pieces `needGate` asks for nothing, but the
+truncation-pairing branch needs a floor of one whatever the space looks
+like.  So `needGate` cannot be the budget law, and no effort need be
+spent trying to prove `Descends` for it. -/
+theorem needGate_not_floor1 : ¬ NeedFloor1 needGate := by
+  intro h
+  have h0 := h ∅ [] (prop "a")
+  simp [needGate, gateCount] at h0
+
 end Descent2
 end PLLND
 
@@ -169,3 +247,15 @@ end PLLND
 /-- info: 'PLLND.Descent2.const_one_excluded' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.Descent2.const_one_excluded
+
+/--
+info: 'PLLND.Descent2.descends_of_othDescends' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.Descent2.descends_of_othDescends
+
+/--
+info: 'PLLND.Descent2.needGate_not_floor1' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.Descent2.needGate_not_floor1

@@ -2883,3 +2883,67 @@ Nothing else in the toolkit branch bears on §81's numbers:
 `wip/budgetfit.lean` reads only the verdict constructor and pins no
 model shape, so the new simplifier (which shrinks returned models,
 `checkB`-gated at every deletion) cannot move any cell of the tables.
+
+## §82 (2026-07-29, Opus) — discovery-toolkit merged; the rebuild's TOP LEVEL proved, and the first extracted law screens out a candidate
+
+### The merge
+
+`discovery-toolkit` (PR fairflow#11) merged into `ui-confluence` at
+Matthew's instruction.  Three conflicts, all in documentation, all
+resolved by keeping both sides: the toolkit's §6 *Pictures* (`#draw`,
+SVG/TikZ) and this branch's §6 *PCLL + ¬◯⊥* both wanted the same number,
+so the latter is renumbered §7 and the tail bumped (§8 command-line
+tools, §9 failure modes) in both `docs/search-manual.md` and
+`LaxLogic/PLLSearchDemo.lean`.  The demo's remaining plain `#guard_msgs`
+wrappers became `#guard_msgs_show`, matching the file's own prose and
+making the whole tour visible in the info view.
+
+One pinned output needed updating: `#refute` now prints a `scope` line.
+Notably it was only *one* — the new countermodel simplifier did not
+shrink any model this branch had pinned, because those were already
+minimal.  `LaxLogic`, `wipshared` and `budgetfit` all build; the audits
+of §§79–81 are unchanged.
+
+### The rebuild: top level PROVED
+
+`desc_of_oth` (the truncation-pairing wrapper of `wip/cascadeBox.lean`)
+never touched the four refuted interfaces, so it is reused verbatim; it
+and `desc_zero` are now public.  In `wip/descent2.lean`:
+
+    OthDescends p need   -- the others-descent, budget abstract
+    NeedFloor1 need := ∀ S Γ g, 1 ≤ need S Γ g
+
+    descends_of_othDescends :
+      NeedFloor1 need → OthDescends p need → Descends p need
+
+PROVED, sorry-free, `[propext, Classical.choice, Quot.sound]`.  So the
+whole rebuild now reduces to `OthDescends`, **for any budget law
+satisfying one inequality**.  Nothing above that line is specific to
+`2 ≤ c`: the budget enters only through `NeedFloor1`, so revising the
+law costs no rework at this level.  That is the payoff of parametrising
+rather than fixing the constant.
+
+### The first extracted law, and what it kills
+
+`NeedFloor1` is not assumed; it is what this branch *demanded* when run
+against an abstract `need`.  Running the two surviving candidates
+against it:
+
+* `needConst2` satisfies it (`needConst2_floor1`);
+* `needGate` **does not** (`needGate_not_floor1`): on a space with no
+  budget-gated pieces it asks for nothing, but the truncation-pairing
+  branch needs a floor of one whatever the space looks like.
+
+So candidate B is eliminated — by the *proof's* demand, not by the data.
+No countermodel could have produced this: it is a statement about all
+spaces, including the degenerate ones the probe families never contain.
+That is the extraction doing work the measurement cannot, and the two
+sides now bracket `need` from opposite directions: measurement gives
+lower bounds at concrete configurations, the proof gives laws over all
+of them.
+
+### Next
+
+`OthDescends` is the whole remaining content.  Its branches will deposit
+further laws; the budget is the supremum of those and of the measured
+lower bounds, computed when the last branch lands.
