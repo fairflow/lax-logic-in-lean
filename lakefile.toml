@@ -222,3 +222,8 @@ root = "wip.sealprobe6"
 [[lean_exe]]
 name = "sealprobe7"
 root = "wip.sealprobe7"
+
+# Is the floor branch at a boxed goal true?  Exhaustive stages at small fuel.
+[[lean_exe]]
+name = "sealprobe8"
+root = "wip.sealprobe8"

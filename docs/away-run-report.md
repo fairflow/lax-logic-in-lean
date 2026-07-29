@@ -373,3 +373,108 @@ configuration (`wip/sealprobe6.lean`, `S2`, case 1, weight 8) at a much larger
 enumerate the disjunct shapes of `itpAfull p S F 1 (B::Γ) C` and assign a route
 to each, which is a finite obligation of the same kind as the goal-side table of
 §85.
+
+---
+
+# CONSOLIDATED STATE — read this section first
+
+*Supersedes the running commentary above.  Everything here is either a
+sorry-free Lean theorem, named, or explicitly labelled REFUTED, OPEN or a
+measurement.*
+
+## The one open lemma
+
+`uniform_interpolation_IPC` is **proved** (sorry-free).
+`uniform_interpolation_PLL` carries `sorryAx` through exactly one lemma:
+`cascade_low_pos_box` (`wip/absorb_base.lean:2273`), the **descent**
+
+    Δ ⊢ itpE p S fuel (c+1) Γ ,  Δ ⊢ itpA p S fh (c+1) Γ g
+    ─────────────────────────────────────────────────────────
+    Δ ⊢ itpA p S fuel c Γ g                        (fh ≤ fuel)
+
+— "lowering the budget by one is harmless, financed by the existential table at
+the higher budget".  It is what makes the interpolant independent of the ambient
+context, so it cannot be dodged.
+
+## Where the descent stands after this run
+
+| part of the descent | budget | status |
+|---|---|---|
+| goal side, six of seven families | any | **PROVED** `wip/goalDesc.lean` — and none of them ever reaches budget `0` |
+| goal side, fresh-antecedent family | any | reduces to the ∃-ascent (`FreshAntAscent`) |
+| truncation disjunct | any | **PROVED** `desc_of_oth`; and no budget floor needed at non-boxed goals (`desc_of_oth_nonbox`) |
+| three gated environment components | target ≥ 2 | **PROVED** `wip/envDesc.lean` (`gated_env_first`) |
+| floor, **atom** jump goal | 1 | **PROVED, general** `AtomForce.floor_branch_atom` (∨-free space) |
+| floor, **`⊃`-shaped** jump goal | 1 | **PROVED at two configurations** `wip/floorImp.lean` |
+| floor, **boxed** jump goal | 1 | **OPEN — the whole residue** |
+| descent at budget `0` | 0 | **REFUTED** `not_floorDescent` |
+| descent at budget `1`, general goal | 1 | **REFUTED** `not_roomFreeDescent` |
+| ∃-ascent at budget `1` | 1 | **REFUTED** `not_ambGuardAscent` |
+
+All three refutations hold in **infallible, mutually confluent** models, so they
+reach PCLL, PILL and PICLL as well as plain PLL.
+
+> **The residue of uniform interpolation for PLL is the descent at target budget
+> `1` at a boxed goal.**  One statement, one goal shape.
+
+## The five structural facts that got it there
+
+1. **The recursion terminates for free.**  Every budget-decrementing reference in
+   the clause tables sits at the *same* context; every context-growing reference
+   sits at the *same* budget.  So the lexicographic pair `(defect, budget)`
+   decreases at every recursive call, and no pigeonhole argument is needed for
+   termination.  What the seen-set machinery of `cascade_main` is really for is
+   that the budget's **base case is false**.
+2. **The budget tier is entered only at jump goals**, one step at a time — the
+   only universal components at budget `b−1` anywhere are `A@b'(Γ,A)`,
+   `A@b'(Γ,A⊃B)`, `A@b'(Γ,◯A)`.
+3. **A gated *goal* clause demotes only its existential component.**  The
+   ambient at budget `c+1` supplies that free by downward monotonicity, so no
+   goal branch ever reaches budget `0`, and the entire low-budget difficulty is
+   in the environment clauses.
+4. **No uniform route closes the floor branch.**  All three target disjuncts it
+   could aim at are individually underivable (`wip/sealRefute.lean`).  The case
+   analysis that must replace one is free: the branch's *second* hypothesis is
+   itself a disjunction (`EnvDesc.branch_of_cases`).  The July survey missed it
+   because it looked at the *first* component.
+5. **At an atom goal the table forces the atom** (`itpA_atom_forces`), because
+   `prop q` is a disjunct of the target at *every* context.  That closes the
+   floor branch at atom goals uniformly.  At a boxed goal the goal clause is
+   `◯(E@(b−1)(Γ) ⇢ A@b(Γ,D))` — the context appears *under a `◯`* — so neither
+   the atom move nor the `⊃` move applies.
+
+## The budget law, settled as far as it can be
+
+The requirement is a parameter `need`, not a guess (three guesses were refuted in
+July).  Certified: `need ≥ 2` at the `ascRefute` configuration; `need ≥ 1` at a
+configuration with **no** gated pieces.  Measured: the failure boundary is **flat
+at ≤ 2** across chains of length 2, 3, 4, four live gates, defect 15 — the
+assumed product law would predict 63, 108, 165.  The floor law `NeedFloor1` was
+too strong and is refined to boxed goals only (`NeedBoxFloor1`).  And
+
+    ledgerDescent_of_othDescends : OthDescends p needKcap → LedgerDescent p S
+
+reduces the tower's holdout to **one named proposition**, with `needKcap` exactly
+what the tower's entry condition pays (`needKcap_funded`).
+
+## New tooling, reusable
+
+`#pinsrc` (`LaxLogic/PLLSearchPin.lean`, manual §10) turns a search-found proof
+into a kernel-checked theorem, printing the derivation with **no formulas** in it.
+Seven facts in this run moved from probe output to theorem because of it.  This
+completes the "discover-then-pin" pipeline: probe → `#pinsrc` → generated source
+→ kernel, with nothing about the search trusted at the end.
+
+## Dead ends, so they are not retried
+
+* **Completeness for the constraint semantics** is available and sorry-free
+  (`consequence_iff_derivable`) but does **not** shortcut the descent: the
+  semantic iteration is over hereditary sets of *worlds* and has no finite bound,
+  whereas the syntactic pigeonhole counts goals in the finite `jumpGoals S`.
+* **Raising the budget floor** cannot give the budget tier a base case — both
+  bottom rungs are refuted and the obstruction is the clause shape, not the
+  numeral.  `oth_descent`'s architecture is not repairable this way.
+* **`itpE` budget-independence for gate-free spaces** is false: `itpE`'s ungated
+  clauses reference `itpA`, whose goal-side gating carries no `∈ S` condition.
+* **The `◯⊥` collapse** closes the floor branch only when the γ-head is the
+  *eliminated variable*; `not_route_bot` closes it off in general.
