@@ -3725,3 +3725,64 @@ These entries were written in one continuous session beginning at 22:11 BST on
 times were estimated while working and the early ones drifted by several hours.
 The order of the entries is correct and nothing in their content depends on the
 times.
+
+## §92 — the residue is ONE goal shape: the boxed jump goal (30 July)
+
+`wip/sealprobe7.lean` (new exe), `wip/floorImp.lean` (new).  Lean content
+sorry-free.
+
+### The route table
+
+The budget tier of the descent is entered only at jump goals, of three shapes
+(§85).  `wip/sealprobe7.lean` asks the oracle, for each shape and for **each
+case** of the §90 analysis, which disjunct of the target table that case can
+reach:
+
+| goal shape | whole obligation | route the cases take |
+|---|---|---|
+| atom | **proved in general** (`AtomForce.floor_branch_atom`, §91) | the goal clause |
+| `A ⊃ B` | **PROVED**, 9 nodes, both configurations | the goal clause (disjunct 0), 8 nodes |
+| `◯A` | `~` | **no case reaches any target disjunct** |
+
+Two configurations were run: one live γ-clause (`S1`) and two (`S2`, where the
+grown context still has a live clause so the analysis genuinely branches — 4
+cases at the boxed goal, 3 at the `⊃`-shaped one).
+
+`wip/floorImp.lean` pins the two `⊃`-shaped instances, so the middle row is a
+theorem: `floor_branch_imp_S1`, `floor_branch_imp_S2`, sorry-free,
+`[propext, Quot.sound]`.
+
+### So the residue is one goal shape
+
+Every other part of the descent is now accounted for:
+
+* the **goal side**: six of seven families proved, none reaching budget `0`
+  (§85); the seventh reduces to the ∃-ascent;
+* the **gated environment components at target budget ≥ 2**: proved (§86);
+* the **floor at an atom jump goal**: proved in general (§91);
+* the **floor at a `⊃`-shaped jump goal**: proved at two configurations, by the
+  same route as atoms (§92);
+* the **floor at a boxed jump goal**: OPEN, and no case of the analysis reaches
+  any target disjunct.
+
+> **The residue of uniform interpolation for PLL is the descent at target budget
+> `1` at a boxed goal.**
+
+That is a single statement about a single goal shape, and it is where every
+thread of this session converges: the certified failure at budget `0`
+(`wip/ascprobe.lean`), the three refuted uniform routes (§87), the `◯⊥` collapse
+that works only for a `p`-headed γ-clause (§86), and now the empty row of the
+route table.
+
+### Why the boxed shape resists, precisely
+
+At an atom goal the route works because `prop q` is a disjunct of the target
+table at **every** context, so a fact proved at the grown context lands where it
+is needed (§91).  At a `⊃`-shaped goal the goal clause does mention the context,
+but the searcher still finds an 8-node derivation — worth understanding, and the
+pinned terms are there to be read.  At a boxed goal the goal clause is
+
+    ◯( E@(b−1)(Γ) ⇢ A@b(Γ, D) )
+
+which mentions the context **under a `◯`**, so neither move applies: the guard
+`E@(b−1)(Γ)` has to be produced inside the box, and at the floor `b − 1 = 0`.
