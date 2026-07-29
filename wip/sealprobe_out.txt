@@ -1,0 +1,12 @@
+== the blocked branch obligations, as sequents ==
+
+chain2: Γ = [(◯p) ⊃ r], γ-clause ◯p ⊃ r
+  C = z = z
+    BOXED (GammaPairFloorBox)  find=20000 emitCap=0: ~ (search budget 20000 exhausted)  (goal weight 22, 1286 ms)
+    BOXED (GammaPairFloorBox)  find=200000 emitCap=0: ~ (search budget 200000 exhausted)  (goal weight 22, 18416 ms)
+    BOXED (GammaPairFloorBox)  find=200000 emitCap=14: ~ (search budget 200000 exhausted)  (goal weight 22, 18269 ms)
+    PLAIN (GammaPairFloorA, control)  find=20000 emitCap=0: PROVED  (goal weight 22, 82 ms)
+    PLAIN (GammaPairFloorA, control)  find=200000 emitCap=0: PROVED  (goal weight 22, 83 ms)
+    PLAIN (GammaPairFloorA, control)  find=200000 emitCap=14: PROVED  (goal weight 22, 83 ms)
+  C = a2 = s
+    BOXED (GammaPairFloorBox)  find=20000 emitCap=0: ~ (search budget 20000 exhausted)  (goal weight 22, 1365 ms)

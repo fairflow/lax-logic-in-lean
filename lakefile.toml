@@ -185,3 +185,9 @@ root = "wip.ascprobe"
 [[lean_exe]]
 name = "jumpprobe"
 root = "wip.jumpprobe"
+
+# The two blocked branch obligations of the descent, handed to the oracle as
+# ordinary sequents (PROGRESS §85's residue).
+[[lean_exe]]
+name = "sealprobe"
+root = "wip.sealprobe"

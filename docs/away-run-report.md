@@ -146,3 +146,94 @@ with a genuine `◯`-goal.
 `cascade_low_pos_box`'s own failure analysis names as step one — which
 `(Γ, g, b)` starve — and from it a `(defect, budget)`-lexicographic landing
 map for the residue.  `wip/starve.lean` has the first four bricks.
+
+---
+
+## 5. Result 2 (30 July, ~01:00) — completeness is available, and does not shortcut this
+
+Worth recording so a later session does not spend days on it.
+
+`LaxLogic/PLLCompleteness.lean` proves `consequence_iff_derivable : Γ ⊨- φ ↔
+Nonempty (LaxND Γ φ)` — full soundness **and** completeness for the
+Fairtlough–Mendler constraint semantics, sorry-free, over `Γ` a list.  With
+`G4c.equiv_nd` this means *any* sequent about the quantifier tables could in
+principle be proved semantically instead of by building a derivation.  That
+is attractive because the descent's known obstruction is a proof-engineering
+one (continuations cannot cross a `◯`-introduction), and semantics has no
+continuations.
+
+It does not work, for a reason worth stating.  Semantically, the descent says
+a monotone iteration has reached its fixed point by step `c`.  The iteration
+is over *hereditary* sets of worlds, and the recursive references in the
+tables sit under `⊃` and `◯`, so they are evaluated at other worlds: the
+state is a function on worlds, not a finite vector, and a monotone iteration
+in that lattice has no finite bound.  The syntactic pigeonhole works because
+it counts *goals* visited in a derivation, and goals live in the finite set
+`jumpGoals S`.  So completeness is a genuine escape hatch for individual
+sequents but not for the general statement.
+
+## 6. Result 3 (30 July, ~02:00) — the boundary does not climb; one statement left
+
+Full detail in PROGRESS §84.  Headline: `wip/ascprobe.lean` measures the
+*ambient-relative existential ascent* (never probed before) at every position
+along `◯`-gated chains of length 2, 3, 4, and the descent at *jump goals*.
+Every `checkB`-certified failure is at budget `0` or `1`; there is not one
+certified failure at budget `≥ 2` anywhere, up to four live gates and defect
+15.  The assumed product law would predict boundaries 63, 108, 165 for those
+three chains; the measurement is flat.  So the room requirement is not a size
+measure.
+
+Also landed: `needKcap`, the **ledger law** — exactly what the tower's entry
+condition `kcap S < c + 2` pays, with `kcap_room` reproved locally — and
+
+    ledgerDescent_of_othDescends : OthDescends p needKcap → LedgerDescent p S
+
+where `LedgerDescent` is `cascade_low_pos_box`'s statement.  The tower's
+holdout is now **one named proposition**.
+
+## 7. Result 4 (30 July, ~03:00) — the goal side closes; the residue is two branches
+
+Full detail in PROGRESS §85.
+
+An exhaustive transcription of the clause tables gives a structural fact:
+**every budget-decrementing reference sits at the same context, and every
+context-growing reference sits at the same budget.**  So the recursion is
+well-founded on the lexicographic pair `(defect, budget)` with no pigeonhole
+at all — the seen-set machinery of `cascade_main` is there to avoid the
+*false* budget-`0` base case, not to make the recursion stop.  And the budget
+tier is entered only at **jump goals**, one step at a time.
+
+`wip/goalDesc.lean` then settles the goal side: six of the seven goal
+families close, because a budget-gated *goal* clause demotes only its
+existential component, and the ambient supplies that free by downward
+monotonicity.  No goal branch ever touches budget `0`.  The seventh — the
+fresh antecedent — needs the ascent, isolated as `FreshAntAscent`.
+
+Consequently the entire low-budget difficulty lives in the **environment**
+clauses, and precisely two branches remain, both at target budget `1`:
+
+1. the γ-clause's **boxed** disjunct, which would need the descent to budget
+   `0` at a boxed goal — certified false as a plain statement, so it must be
+   routed through a different target disjunct;
+2. the **fresh-antecedent ascent at budget `1`** — refuted, so that branch
+   needs its own floor treatment.
+
+The other two of `oth_descent`'s four interfaces now look reachable: the atom
+jump goal at budget `0` is *proved by search* (`wip/jumpprobe.lean`, at
+`findBudget` up to 200 000, for chain2 and chain3), and the `⊃` case is open
+but unrefuted.
+
+Also: the floor law `NeedFloor1` was too strong.  It is used only for the
+truncation disjunct, which exists only at `◯`-goals, so
+`GoalDesc.desc_of_oth_nonbox` weakens it to `NeedBoxFloor1` — a floor at
+boxed goals only.  That is what admits `needShape`, the goal-shape law the
+measurement points to (`0` at atoms, `1` at boxed goals, `2` elsewhere),
+which survives both certified lower bounds exactly.
+
+**Resume here:** `wip/sealprobe.lean` hands the two blocked branch
+obligations to the two-sided oracle as ordinary sequents (with the defect
+tier's contribution pre-applied), for chain2 and chain3 and four goal shapes.
+A `PROVED` there is a blueprint for the Lean proof; a `REFUTED!` says the
+interface is individually false and the branch needs the full recursive
+hypothesis rather than the pre-applied form.  Output goes to
+`wip/sealprobe_out.txt`.
