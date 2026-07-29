@@ -267,6 +267,67 @@ So the branch is plausibly **true** and the obstruction is proof-theoretic.
 
 ---
 
+## 6a. Update (later the same session): the floor, branch by branch
+
+§6 above describes the position as of the middle of the session.  What followed
+changed it, and this section supersedes §6's "exactly one branch" framing.
+
+**The case analysis.**  No *uniform* route closes a floor branch — each of the
+three target disjuncts it could aim at is individually underivable
+(`wip/sealRefute.lean`, `not_uniformRouteA/B`, in infallible mutually confluent
+models).  The replacement is a case analysis that costs nothing: the branch's
+**second** hypothesis is itself a disjunction, so `orAll_elim` on it gives one case
+per disjunct of the grown-context table, and different cases may reach different
+target disjuncts.
+
+    EnvDesc.branch_of_cases        -- sorry-free
+    EnvDesc.branch_of_cases_nonbox
+
+The earlier survey missed this because it looked at the source's *first*
+component and at the target's disjuncts, never at the second.
+
+**Atom goals, in general.**  At an atom goal `q ≠ p` over a `∨`-free space the
+universal table *forces the atom*:
+
+    AtomForce.itpA_atom_forces :
+      (∀ A B, A.or B ∉ S) → q ≠ p → (∀ Y ∈ Γ, Y ∈ S) →
+      G4c [itpA p S f b Γ (prop q)] (prop q)
+
+at every fuel and every budget, by strong induction on the defect over all ten
+environment clause shapes.  Every clause either produces nothing or produces a
+disjunct with a conjunct `itpA p S f b Γ' (prop q)` at strictly smaller defect —
+the sole exception being the `∨`-clause, whose disjunct is a conjunction of
+*implications*.  Hence `AtomForce.floor_branch_atom`: **all three floor branches
+close at an atom goal**, using neither the ambient nor the first component.
+
+Atoms are special, not merely easier: `prop q` is a disjunct of the target at
+*every* context, so a fact proved at the grown context lands where it is needed.
+Every other goal shape's goal clause mentions the context.
+
+**Instances closed.**  `BoxedBranchS1.boxed_branch` — the boxed floor branch at a
+configuration whose γ-head is an ordinary atom, so the refutations bite and the
+`◯⊥` collapse is unavailable.  `FloorImp.floor_branch_imp_S1/S2` — the
+`⊃`-shaped floor branch.  `FreshAnt.*` — the fresh-antecedent goal branch,
+including at a cell with the goal's consequent unrelated to the context, under
+**exhaustive** search, and **without the existential ascent** that route was
+thought to require.  All sorry-free, all `#pinsrc`-generated and re-checked.
+
+**A methodological correction.**  An intermediate claim that no case reaches any
+target disjunct at a boxed goal rested on cells run at `findBudget` 20 000 — and a
+`~` at a bounded budget asserts nothing.  The fresh-antecedent branch needed
+200 000 nodes to yield a 56-node derivation, so that comparison was invalid;
+`wip/sealprobe12.lean` re-runs the boxed cells at 200 000 and 2 000 000.  A `~`
+may only be compared with another `~`.
+
+**Status of the two branches at budget `1`.**
+
+| branch | status |
+|---|---|
+| floor, atom jump goal | **proved in general** (`∨`-free space) |
+| floor, `⊃`-shaped jump goal | proved at two configurations |
+| floor, boxed jump goal | OPEN; being re-measured at adequate budget |
+| fresh-antecedent goal | proved at three configurations, without the ascent; general lemma OPEN |
+
 ## 7. The budget law, as a parameter
 
 Three fixed budget laws were assumed and refuted in July.  The statement now

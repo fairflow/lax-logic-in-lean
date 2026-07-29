@@ -2,3 +2,5 @@
 
 S1, C = ◯s: 2 case(s), 3 target disjunct(s)
    whole obligation [200000]: ~
+   ⊢ goal clause    [200000]: ~
+   case 0 [200000] reaches: NOTHING
