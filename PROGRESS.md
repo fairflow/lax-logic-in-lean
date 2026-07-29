@@ -4020,3 +4020,72 @@ This is worth recording as a discipline and not only as a fix: the probe harness
 prints `~` with the reason attached precisely so that this mistake is visible, and
 I made it anyway by comparing a `~` row against `PROVED` rows found at the same
 budget.  A `~` may only ever be compared with another `~`.
+
+## §97 — the boxed floor branch CLOSED at the exemplar configuration (30 July)
+
+`wip/boxedS1b.lean` (new), PROVED sorry-free,
+`[propext, Classical.choice, Quot.sound]`.
+
+`wip/sealprobe12.lean` leaves every boxed-goal cell `~` even at `findBudget`
+2 000 000.  Per §96 that is not evidence.  A hand computation on the smallest
+configuration said the branch should close, by a route proof search is badly
+placed to find — and it does.
+
+### The route
+
+Configuration as in `wip/sealRefute.lean` (γ-head an ordinary atom, so that
+file's refutations bite and §86's `◯⊥` collapse is unavailable):
+
+    S = {◯r ⊃ s, ◯r, r, s, z},  Γ = [◯r ⊃ s],  A = r,  B = s,  C = ◯s
+
+The **ambient** `E@2(Γ)` is a conjunction, and one of its conjuncts is
+
+    ◯( E@1(Γ) ⇢ A@1(Γ,◯r) )  ⇢  E@2(s::Γ)
+
+whose antecedent is *the branch's own boxed component*.  Fire it: the grown
+existential table `E@2(s::Γ)` follows, and its **atom** conjuncts include `s`,
+because `s` is now in the context.  From `s`, the target's goal clause
+`◯(E@0(Γ) ⇢ A@1(Γ,s))` follows by `laxR`, `impR`, and injecting `s` as the goal
+clause of the atom `s` inside `A@1(Γ,s)`.
+
+    s_of_amb_box    : G4c [amb, box] (prop "s")
+    boxed_branch_b  : G4c [amb, box] (orAll (itpAoth "p" S1 3 1 G1 (◯s)))
+
+So the branch closes using **only the ambient and the boxed component**.  The
+second component is not needed; neither is a descent, an ascent, or a case
+analysis.
+
+### Why this was invisible
+
+The decisive step is a *projection out of the ambient*, and the ambient at this
+configuration is a conjunction of weight ≈ 490.  Proof search has to guess which
+conjunct to project and then fire it against another hypothesis; it does not, even
+at two million nodes.  And the earlier route taxonomy (§87) enumerated what the
+branch could aim *at* without noticing that the ambient's γ-conjunct has the
+branch's own hypothesis as its *antecedent* — the ambient is not just a source of
+weaker tables by monotonicity, it is a source of **implications whose antecedents
+the branch already has**.
+
+That is a mechanism worth naming, because §86's `gated_env_first` uses the ambient
+only through downward monotonicity, and this is a second, stronger use of it.
+
+### Status of the residue
+
+Every branch now has positive evidence:
+
+| branch | budget | status |
+|---|---|---|
+| floor, atom jump goal | 1 | **proved in general** (`∨`-free space) |
+| floor, `⊃`-shaped jump goal | 1 | proved at two configurations |
+| floor, **boxed** jump goal | 1 | **proved at the exemplar configuration** (§97) |
+| fresh-antecedent goal | 1 | proved at three configurations, incl. the deciding one |
+
+§§92–93's negative framing is now fully retracted: it rested on `~` cells at a
+budget ten to a hundred times too small (§96), and the branch it declared
+unreachable is derivable.
+
+What remains is **generality**: each of the last three rows is a finite set of
+configurations, and the general lemmas are open.  The atom row is the only one
+proved uniformly in the configuration, and its route (`itpA_atom_forces`) is also
+the only one whose mechanism does not depend on a coincidence between the goal and
+the context — which is a fair statement of where the remaining mathematics is.
