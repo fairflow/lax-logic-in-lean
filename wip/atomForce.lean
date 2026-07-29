@@ -306,6 +306,51 @@ theorem itpA_atom_forces (p : String) (S : Finset PLLFormula)
     G4c [itpA p S f b Γ (prop q)] (prop q) :=
   atom_forces_aux p S hOr q hq (defect S Γ) f b Γ (Nat.le_refl _) hΓS
 
+/-! ## 3. The floor branches at an atom goal
+
+The three floor branches of the descent — the plain γ-pair, the boxed γ-pair
+and the jump-pair (`GammaPairFloorA`, `GammaPairFloorBox`, `JumpPairFloor` of
+`wip/cascadeBox.lean`) — all carry the *same* kind of second component: a
+universal table at the grown context with the branch's own goal.  At an atom
+goal §2 turns that into the atom, and the atom is the target table's own goal
+clause.  So all three close at once, and neither the ambient nor the branch's
+first component is needed at all. -/
+
+/-- **The floor branch closes at an atom goal**, over a `∨`-free space: the
+second component alone reaches the target table.  This covers all three floor
+interfaces uniformly, since they differ only in their first component. -/
+theorem floor_branch_atom (p : String) (S : Finset PLLFormula)
+    (hOr : ∀ A B : PLLFormula, A.or B ∉ S) {q : String} (hq : q ≠ p)
+    {F fl b : Nat} {Γ Δ : List PLLFormula} {B : PLLFormula}
+    (hBS : B ∈ S) (hΓS : ∀ Y ∈ Γ, Y ∈ S)
+    (hsnd : G4c Δ (itpA p S F b (B :: Γ) (prop q))) :
+    G4c Δ (orAll (itpAoth p S fl b Γ (prop q))) := by
+  have hBΓS : ∀ Y ∈ B :: Γ, Y ∈ S := by
+    intro Y hY
+    rcases List.mem_cons.mp hY with rfl | hY
+    · exact hBS
+    · exact hΓS Y hY
+  have hq' : G4c Δ (prop q) :=
+    consume₁ hsnd (itpA_atom_forces p S hOr hq F b (B :: Γ) hBΓS)
+  refine G4c.orAll_intro (φ := prop q) ?_ hq'
+  simp only [itpAoth, itpAgoal]
+  refine List.mem_append.mpr (Or.inl ?_)
+  rw [if_neg hq]
+  exact .head _
+
+/-- The same conclusion from the *full* table rather than the others-table, for
+callers that have the truncation-carrying form. -/
+theorem floor_branch_atom_full (p : String) (S : Finset PLLFormula)
+    (hOr : ∀ A B : PLLFormula, A.or B ∉ S) {q : String} (hq : q ≠ p)
+    {F fl b : Nat} {Γ Δ : List PLLFormula} {B : PLLFormula}
+    (hBS : B ∈ S) (hΓS : ∀ Y ∈ Γ, Y ∈ S)
+    (hsnd : G4c Δ (itpA p S F b (B :: Γ) (prop q))) :
+    G4c Δ (itpA p S (fl + 1) b Γ (prop q)) := by
+  rw [itpA_succ]
+  refine consume₁ (floor_branch_atom p S hOr hq (fl := fl) hBS hΓS hsnd) ?_
+  simp only [itpAfull]
+  exact orAll_map (fun ψ h => ⟨ψ, h, G4c.iden (.head _)⟩)
+
 end AtomForce
 end PLLND
 
@@ -322,3 +367,9 @@ info: 'PLLND.AtomForce.defect_lt_of_witness' depends on axioms: [propext, Classi
 -/
 #guard_msgs in
 #print axioms PLLND.AtomForce.defect_lt_of_witness
+
+/--
+info: 'PLLND.AtomForce.floor_branch_atom' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.AtomForce.floor_branch_atom

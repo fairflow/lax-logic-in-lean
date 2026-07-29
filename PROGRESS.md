@@ -3680,3 +3680,40 @@ The two restrictions are exactly visible in the statement and both are real:
   restriction on the *space*, and the `∨`-clause is also the one place the
   descent's own analysis needs the existential ascent (§85's fresh-antecedent
   row), so the two open ends may be the same one.
+
+### §91 addendum — all three floor branches close at an atom goal
+
+`floor_branch_atom`, `floor_branch_atom_full` (`wip/atomForce.lean` §3), PROVED
+sorry-free.
+
+The three floor branches — plain γ-pair, boxed γ-pair, jump-pair — differ only
+in their **first** component.  Their second components are all of the same kind:
+a universal table at the grown context with the branch's own goal.  At an atom
+goal §2 turns that into the atom, and the atom is the target table's own goal
+clause.  So all three close at once, and **neither the ambient nor the first
+component is used at all**:
+
+    floor_branch_atom :
+      (∀ A B, A.or B ∉ S) → q ≠ p → B ∈ S → (∀ Y ∈ Γ, Y ∈ S) →
+      G4c Δ (itpA p S F b (B :: Γ) (prop q)) →
+      G4c Δ (orAll (itpAoth p S fl b Γ (prop q)))
+
+at every fuel and every budget, in particular at the floor.
+
+**What this does to the residue.**  The budget tier is entered only at jump
+goals (§85), and jump goals have three shapes: `A`, `◯A` and `A ⊃ B`.  The atom
+shape is now closed *uniformly in the configuration* — §89 had it pinned at one
+configuration; it is now a theorem.  So the residue narrows again:
+
+> the floor branches at **boxed** and at **`⊃`-shaped** jump goals, over spaces
+> that may contain `∨`.
+
+**Why atoms are genuinely special, and not just easier.**  The route works
+because `prop q` is a disjunct of the target table at *every* context, so a
+statement proved at the grown context lands where it is needed.  Every other
+goal shape's goal clause mentions the context (`◯D` gives
+`◯(E@(b−1)(Γ) ⇢ A@b(Γ,D))`, an implication goal gives
+`E@b(C₁::Γ) ⇢ A@b(C₁::Γ,C₂)`), so the same move would require shrinking a
+context — which is unsound, since a table at a larger context has *more*
+disjuncts and is therefore weaker.  So extending past atoms is not a matter of
+pushing the same argument harder.

@@ -53,3 +53,7 @@ S3: two live, the second p-headed   defect = 7
       (b') ⊢ ◯(E@0(Γ)⇢A@0(Γ,◯r)): REFUTED!  n=1 ri=[] rm=[] fall=[] val=[(0, r), (0, s)] at 0  [inf=true, conf=true]  (0 ms)
       (c) ⊢ goal clause of C  : ~ (budget 100000)  (84961 ms)
       WHOLE obligation        : ~ (budget 100000)  (85385 ms)
+      WHOLE, inf+conf filter  : ~ (budget 100000)  (84272 ms)
+
+== done ==
+EXIT=0
