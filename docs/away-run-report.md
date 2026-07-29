@@ -402,7 +402,7 @@ context, so it cannot be dodged.
 |---|---|---|
 | goal side, six of seven families | any | **PROVED** `wip/goalDesc.lean` — and none of them ever reaches budget `0` |
 | goal side, fresh-antecedent family | ≥ 2 | reduces to the ∃-ascent, which has no certified failure there |
-| goal side, fresh-antecedent family | 1 | **OPEN** — needs the ∃-ascent at budget `1`, which is REFUTED |
+| goal side, fresh-antecedent family | 1 | proved at three configurations **without** the ascent (§§94-95); general lemma OPEN |
 | truncation disjunct | any | **PROVED** `desc_of_oth`; and no budget floor needed at non-boxed goals (`desc_of_oth_nonbox`) |
 | three gated environment components | target ≥ 2 | **PROVED** `wip/envDesc.lean` (`gated_env_first`) |
 | floor, **atom** jump goal | 1 | **PROVED, general** `AtomForce.floor_branch_atom` (∨-free space) |
@@ -426,8 +426,23 @@ things, both at target budget `1`:
    budget `1` at the grown context, which is exactly what `not_ambGuardAscent`
    refutes.
 
-(1) is the one this session narrowed; (2) has been open since July and is
-untouched here.  Above budget `1` neither arises: the gated components have the
+**(2) has since been overtaken.**  Examined disjunct by disjunct for the first
+time, the fresh-antecedent branch turns out to close **without the ascent at
+all**: 9 nodes at two configurations, and 56 nodes at the deliberately hard cell
+`C = r ⊃ z` — where the goal's consequent is unrelated to anything in the context
+and every other target disjunct is *refuted* — under **exhaustive** search, while
+the ascent instance the "natural" route would need is still undecided at a
+hundred times the budget.  The 56-node derivation takes the introduced guard
+*apart* by cases rather than trying to strengthen it, which is exactly what the
+ascent was standing in for.
+
+So `not_ambGuardAscent` refutes a statement that branch **can** be routed
+through, not one it **must** be: the July obstruction there was an artefact of
+`wip/cascadeBox.lean`'s chosen route.  Pinned instances: `FreshAnt.fresh_ant_S1`,
+`fresh_ant_S2` and the unrelated-consequent cells.
+
+That leaves **(1)**, the boxed floor branch, as the only branch with no positive
+evidence at any probed configuration.  Above budget `1` neither arises: the gated components have the
 ambient two budgets up (§86), and the ascent has no certified failure at
 `c ≥ 2` in any probed configuration.
 
