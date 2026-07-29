@@ -215,6 +215,62 @@ theorem boxed_target_of_env_nil (p : String) (S : Finset PLLFormula)
       (itpA p S (f + 1) 0 Γ A.somehow)).somehow) :=
   boxed_target_of_starved p S (itpA_starve_floor p S f Γ A henv) hbot
 
+/-! ## 6. The case analysis, formalised
+
+`wip/sealRefute.lean` shows the boxed γ-branch at target budget `1` has no
+uniform route: each of the three target disjuncts it could aim at is
+individually underivable from the branch's hypotheses.  So the branch needs a
+case analysis — and there is one available for free that the earlier survey did
+not use, because it looked at the source's *first* component and at the target's
+disjuncts rather than at the source's *second*.
+
+The second hypothesis is **itself a disjunction**:
+
+    A@1(B::Γ, C)  =  orAll (itpAfull p S F 1 (B::Γ) C)
+
+so `orAll_elim` on it is a case analysis with one case per disjunct of the
+grown-context table.  The two refuting models of §87 are consistent with this
+reading: in each, which route succeeds is determined by which disjunct of the
+second component holds.
+
+The lemma below is that reduction, and it is agnostic about the routes: it says
+the branch follows from *any* assignment of a derivation to each disjunct.  It
+is stated for the whole branch obligation (not just the boxed disjunct), because
+once the case analysis is in place the branch may reach any target disjunct it
+likes, differently in different cases — which is exactly what §87 says it must
+do. -/
+
+/-- **The branch obligation, reduced to one case per disjunct of the second
+component.**  No route is fixed: each case may reach a different target
+disjunct. -/
+theorem branch_of_cases (p : String) (S : Finset PLLFormula)
+    {F fl : Nat} {Γ Δ : List PLLFormula} {B C : PLLFormula}
+    (hcase : ∀ ψ ∈ itpAfull p S F 1 (B :: Γ) C,
+      G4c (ψ :: Δ) (orAll (itpAoth p S fl 1 Γ C)))
+    (hsnd : G4c Δ (itpA p S (F + 1) 1 (B :: Γ) C)) :
+    G4c Δ (orAll (itpAoth p S fl 1 Γ C)) := by
+  rw [itpA_succ] at hsnd
+  exact G4c.cut hsnd (G4c.orAll_elim hcase)
+
+/-- The same for a non-boxed goal, where the grown-context table has no
+truncation disjunct so the cases are exactly `itpAoth`'s. -/
+theorem branch_of_cases_nonbox (p : String) (S : Finset PLLFormula)
+    {F fl : Nat} {Γ Δ : List PLLFormula} {B C : PLLFormula}
+    (hC : ∀ D : PLLFormula, C ≠ D.somehow)
+    (hcase : ∀ ψ ∈ itpAoth p S F 1 (B :: Γ) C,
+      G4c (ψ :: Δ) (orAll (itpAoth p S fl 1 Γ C)))
+    (hsnd : G4c Δ (itpA p S (F + 1) 1 (B :: Γ) C)) :
+    G4c Δ (orAll (itpAoth p S fl 1 Γ C)) := by
+  refine branch_of_cases p S ?_ hsnd
+  intro ψ hψ
+  cases C with
+  | somehow D => exact absurd rfl (hC D)
+  | prop q => simp only [itpAfull] at hψ; exact hcase ψ hψ
+  | falsePLL => simp only [itpAfull] at hψ; exact hcase ψ hψ
+  | and C₁ C₂ => simp only [itpAfull] at hψ; exact hcase ψ hψ
+  | or C₁ C₂ => simp only [itpAfull] at hψ; exact hcase ψ hψ
+  | ifThen C₁ C₂ => simp only [itpAfull] at hψ; exact hcase ψ hψ
+
 end EnvDesc
 end PLLND
 
@@ -243,3 +299,15 @@ info: 'PLLND.EnvDesc.boxed_target_of_env_nil' depends on axioms: [propext, Quot.
 -/
 #guard_msgs in
 #print axioms PLLND.EnvDesc.boxed_target_of_env_nil
+
+/--
+info: 'PLLND.EnvDesc.branch_of_cases' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.EnvDesc.branch_of_cases
+
+/--
+info: 'PLLND.EnvDesc.branch_of_cases_nonbox' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.EnvDesc.branch_of_cases_nonbox

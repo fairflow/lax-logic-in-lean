@@ -212,3 +212,8 @@ root = "wip.sealprobe4"
 [[lean_exe]]
 name = "sealprobe5"
 root = "wip.sealprobe5"
+
+# Case-splitting the boxed γ-branch on its second component.
+[[lean_exe]]
+name = "sealprobe6"
+root = "wip.sealprobe6"

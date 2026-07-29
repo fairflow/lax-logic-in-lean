@@ -33,3 +33,4 @@ S2: two live γ-clauses (◯u ⊃ v survives in s::Γ)   defect = 8
       (a) ⊢ A@0(Γ,r)          : REFUTED!  n=2 ri=[(0, 1)] rm=[(0, 1)] fall=[] val=[(1, r), (0, s), (1, s)] at 0  [inf=true, conf=true]  (16 ms)
       (b) ⊢ ◯⊥                : REFUTED!  n=1 ri=[] rm=[] fall=[] val=[(0, r), (0, s)] at 0  [inf=true, conf=true]  (2 ms)
       (b') ⊢ ◯(E@0(Γ)⇢A@0(Γ,◯r)): REFUTED!  n=1 ri=[] rm=[] fall=[] val=[(0, r), (0, s)] at 0  [inf=true, conf=true]  (1 ms)
+      (c) ⊢ goal clause of C  : ~ (budget 100000)  (309768 ms)
