@@ -493,3 +493,67 @@ nothing about the search trusted at the end.
   clauses reference `itpA`, whose goal-side gating carries no `∈ S` condition.
 * **The `◯⊥` collapse** closes a floor branch only when the γ-head is the eliminated
   variable.
+
+---
+
+# SESSION LEDGER
+
+39 commits, 48 files, ~6 500 lines added.  `lake build LaxLogic wipshared` is clean and
+reports `sorry` only in files that carried one before the session.  Every new file is
+sorry-free and every `#guard_msgs` axiom audit passes as written.
+
+## New Lean, by file
+
+| file | contents |
+|---|---|
+| `LaxLogic/PLLSearchPin.lean` | `#pinsrc` — turns a search-found proof into a kernel-checked theorem |
+| `wip/floorRefute.lean` | the descent at budget `0` is **false**; a second lower bound on the budget law |
+| `wip/goalDesc.lean` | the goal side of the descent, six of seven families; `desc_of_oth_nonbox` |
+| `wip/envDesc.lean` | the three gated environment components above the floor; `branch_of_cases`; **`grownAmb_of_box` / `grownAmb_of_plain`** |
+| `wip/sealRefute.lean` | all three *uniform* routes for a floor branch are **false**, in infallible mutually confluent models |
+| `wip/atomForce.lean` | **`itpA_atom_forces`**, `floor_branch_atom`, **`boxGoal_remap`** |
+| `wip/boxSnd.lean` | the five shape-by-shape grown-ambient lemmas; `tgtClause_fuel_lift`; **`boxSnd_reaches`** |
+| `wip/jumpPinned.lean`, `wip/pinnedFacts.lean` | five facts promoted from probe output to theorem |
+| `wip/boxedS1b.lean`, `wip/boxedOnPath.lean`, `wip/floorImp.lean`, `wip/freshAnt.lean` | closed instances of all four branch shapes |
+| `wip/descent2.lean` (extended) | `needKcap` + `needKcap_funded`; `NeedBoxFloor1`; **`ledgerDescent_of_othDescends`** |
+
+Probe executables added: `ascprobe`, `jumpprobe`, `sealprobe`…`sealprobe13` — thirteen
+in all, with their outputs committed next to them.
+
+## Documentation
+
+* `docs/descent-problem.md` — the standing technical statement, every claim cited to a
+  Lean name (§§6a, 6b bring it to the end of the session).
+* `docs/search-manual.md` §10 — `#pinsrc`.
+* `PROGRESS.md` §§83–105 — the narrative, including §96 and §99, the two corrections.
+* `docs/away-run-report.md` — this file; read **CONSOLIDATED STATE** first.
+
+## Where to pick up
+
+In order of expected value:
+
+1. **Discharge `boxSnd_reaches`'s four obligations** (`ImpCase`, `BoxCtxCase`,
+   `TruncCase`, `ZeroFuelCase`).  All four are case analyses over a finite clause table
+   with every mathematical ingredient already proved; none is refuted.  Two attempts at
+   `ZeroFuelCase` failed on *tactic* mechanics, and PROGRESS §105's addendum records
+   exactly how — the `.prop` guard must be killed by `simp` before the case split, and
+   `first` alternatives must be ordered so only-succeed-if-applicable ones come first
+   with a *tactic* catch-all.  Writing one small lemma per shape (as `wip/boxSnd.lean`'s
+   `grown_*` do — those compiled first try) is the pattern that works.
+2. **Generalise the `⊃`-shaped floor branch and the fresh-antecedent branch**, each
+   currently a finite set of closed instances.  For the latter, note the pinned 56-node
+   derivation takes the introduced guard *apart* by cases rather than strengthening it —
+   that is what to generalise.
+3. **The `∨`-free restriction** on `itpA_atom_forces`.  The `∨` environment clause is
+   the one shape whose disjunct is a conjunction of *implications*, so the induction
+   cannot project through it.  Whether the ambient can fire those implications the way
+   §98 fires the γ-conjunct is the natural question, and it has not been looked at.
+
+## One methodological note worth carrying forward
+
+Three of this session's results were obtained by the same move: **find the smallest
+hypothesis set that makes a cell searchable, pin that with `#pinsrc`, and compose the
+rest in Lean.**  Adding *derivable* hypotheses cannot change derivability but does widen
+the search — `[amb, box, snd, s] ⊢ target` is not found at 200 000 nodes while
+`[snd, s] ⊢ target` is found in 36.  So the searcher is best used on minimal cells, not
+on the obligation as stated.
