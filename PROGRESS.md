@@ -4621,3 +4621,36 @@ hand) that is a mechanical exercise.
 
 Every mathematical ingredient of the boxed row is now proved.  What is left is one
 routing exercise, one boxed pairing, and one question about the truncation's measure.
+
+## §111 — a design point for `BoxCtxCase`: its recursion must be context-polymorphic
+
+Attempting `BoxCtxCase` surfaced one more thing about its statement, recorded here rather
+than half-implemented.
+
+The `◯χ` case does its work **inside two boxes**: the grown ambient arrives boxed
+(`grown_box`, §104) and the disjunct is boxed, so both are opened by `laxL` — legitimate,
+since the conclusion `tgtClause` is itself `◯`-shaped — and the recursion is then applied
+at a context *larger* than `Δ`.
+
+So `BoxCtxCase`'s recursion hypothesis must quantify over the context:
+
+    ∀ (Δ' : List PLLFormula) (Γ'' : List PLLFormula) (w : PLLFormula), …
+      G4c Δ' (itpE …) → G4c Δ' (itpA …) → G4c Δ' (tgtClause …)
+
+as `boxGoal_remap` and §98's lemmas already do.  `boxSnd_reaches` can supply that: its
+`ihd` is context-polymorphic, and the fixed-`Δ` `step` it currently builds is a
+specialisation of it.  `ImpCase` does *not* need this — its shapes never enter a box — so
+the two obligations differ in this respect as well as in §108's.
+
+The sketch of the proof, for whoever picks it up:
+
+1. `G4c.cut` the boxed grown ambient in and `laxL` it, putting `E@(c+2)(χ::Γ')` in the
+   context at the `⊳`-successor;
+2. `box_open` the disjunct, firing its guard `E@(c+1)(χ::Γ')` from that by downward
+   budget monotonicity (`ambE`);
+3. apply the context-polymorphic recursion at `χ::Γ'`, whose defect is strictly smaller
+   because `χ ∈ S ∖ Γ'`;
+4. `tgtClause_fuel_lift`.
+
+Every step is a lemma that exists.  What stopped this pass was the statement, not the
+proof.
