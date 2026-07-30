@@ -4314,3 +4314,49 @@ projection for ungated clauses and by firing for gated ones).
 
 §101's refutation does not touch this: what it refutes is the cheaper route that uses
 only the atom `prop s` and no grown ambient.
+
+## §103 — the traversal must be shape by shape: a uniform "grown ambient" hypothesis is the ascent
+
+An attempt at the §102 traversal was drafted and discarded, for a reason worth
+recording.
+
+The natural abstraction is to assume, once and for all,
+
+    G4c Δ (itpE p S f (c+2) Γ')  →  Γ' ⊆ Γ''  →  G4c Δ (itpE p S f (c+2) Γ'')
+
+— "the ambient at any larger context follows from the ambient".  That is **the
+existential ascent**, in its pure context-growth form: `itpE` at a larger context has
+strictly more conjuncts, so it is the *stronger* formula, and this is the hard
+direction.  It is the statement `AmbGuardAscent` was about, and it must not be assumed
+— using it would smuggle the refuted hypothesis back in under another name.
+
+### What the structure actually gives, shape by shape
+
+The grown ambient *is* available at each level, but differently per shape, and the
+pattern is a structural match worth naming:
+
+| context formula `F ∈ Γ'` | `itpA`'s disjunct grows to | how the ambient arrives |
+|---|---|---|
+| `A ∧ B` | `A::B::Γ'` | `itpE`'s clause for `F` **is** `E@(c+2)(A::B::Γ')` — project |
+| `(prop q') ⊃ B` | `B::Γ'` | `itpE`'s clause is `E@(c+2)(B::Γ')`, or `prop q' ⇢ E@(c+2)(B::Γ')` — and in the latter case `itpA`'s own disjunct supplies `prop q'` as a conjunct |
+| `(A ∧ B) ⊃ D`, `(A ∨ B) ⊃ D` | curried / split | project |
+| `◯A ⊃ B` (gated) | `B::Γ'` | **fire** the ambient's γ-conjunct with the disjunct's first component — §98 |
+| `(A⊃B) ⊃ D` (gated) | `D::Γ'` | same, with the jump conjunct |
+| `◯χ` | `χ::Γ'` | `itpE`'s clause is `◯E@(c+2)(χ::Γ')` — **boxed**, and `itpA`'s disjunct for `◯χ` is boxed too, so the two pair up under `laxL` |
+
+So in every shape the ambient arrives in exactly the form the disjunct can use —
+unboxed where the disjunct is unboxed, boxed where it is boxed, and with the extra
+antecedent supplied where `itpE` demands one.  That is not a coincidence: both tables
+are generated from the same clause analysis of `F`, so their guards and their modal
+depth agree by construction.
+
+### The remaining obligation, stated exactly
+
+> Traverse `itpAfull p S f (c+1) Γ' (◯q)` and, in each case, either apply
+> `AtomForce.boxGoal_remap` (the goal clause) or obtain the grown ambient by the
+> table above and recurse at strictly smaller defect.
+
+Everything it needs is proved: `boxGoal_remap` (§102), `grownAmb_of_box` and
+`grownAmb_of_plain` (§98), `itpA_atom_forces` (§91), `defect_lt_of_witness`.  What is
+left is the case work — the same shape of task as §91's induction, which took ten
+shapes and every guard branch.
