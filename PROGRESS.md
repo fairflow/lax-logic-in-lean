@@ -4590,3 +4590,34 @@ the form the corresponding `itpA` disjunct can use** —
 
 and in each case what fires it is something the branch already has.  That is the whole
 content of §98's observation, now checked at every shape.
+
+## §110 — `ImpCase`'s six shapes, proved as lemmas (30 July)
+
+`wip/boxSnd.lean`.  Six lemmas, PROVED sorry-free, all first try.
+
+    impAnd_case, impOr_case, impAtom_pres_case, impAtom_fresh_case,
+    gammaBox_case, gammaPlain_case
+
+Each is three lines, because §§98, 104, 107 and 109 already did the work: take the grown
+ambient from the table of §109, feed it and the disjunct to the recursion, lift the fuel
+(§105).  `Step` abbreviates the recursion exactly as `boxSnd_reaches` passes it.
+
+So `ImpCase` is now **pure membership bookkeeping** over proved lemmas — the clause
+guards have to be unpacked and routed to the right one of the six, and nothing else.  With
+§106's counting lesson (split from the clause table with the *actual* budget expression in
+hand) that is a mechanical exercise.
+
+### Where the boxed row stands
+
+| piece | status |
+|---|---|
+| the traversal | **PROVED** (`boxSnd_reaches`) |
+| its goal-clause case | **PROVED** (`boxGoal_remap`) |
+| its `∧` case | **PROVED** (in the traversal) |
+| its fuel-`0` floor | **PROVED** (`zeroFuelCase`) |
+| the six `⊃`-headed shapes | **PROVED** as lemmas; `ImpCase` = routing them |
+| `BoxCtxCase` (`◯χ`) | open; ambient available boxed (`grown_box`), pairs under `laxL` |
+| `TruncCase` | open, and the one whose *shape* is unsettled (§108) |
+
+Every mathematical ingredient of the boxed row is now proved.  What is left is one
+routing exercise, one boxed pairing, and one question about the truncation's measure.

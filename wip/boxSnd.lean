@@ -592,6 +592,153 @@ theorem grownAmb_of_plain_shifted (p : String) (S : Finset PLLFormula)
     G4c Δ (itpE p S f (c + 2) (B :: Γ)) :=
   grownAmb_of_plain p S hmem hS hB hBS hamb (shift_plain p S hval)
 
+/-! ## `ImpCase`'s five shapes, as lemmas
+
+`ImpCase` is an assembly of five cases plus the membership bookkeeping.  The five cases
+are the mathematical content and are recorded here; each is three lines, because §§98,
+104, 107 and 109 have already done the work.
+
+`Step` abbreviates the recursion `boxSnd_reaches` supplies. -/
+
+/-- The recursion hypothesis, as the traversal passes it. -/
+abbrev Step (p : String) (S : Finset PLLFormula) (q : String) (f c : Nat)
+    (Γ Γ' Δ : List PLLFormula) : Prop :=
+  ∀ (Γ'' : List PLLFormula) (w : PLLFormula),
+    (∀ y ∈ Γ', y ∈ Γ'') → (∀ y ∈ Γ'', y ∈ S) →
+    w ∈ S → w ∈ Γ'' → w ∉ Γ' →
+    G4c Δ (itpE p S (f + 1) (c + 2) Γ'') →
+    G4c Δ (itpA p S (f + 1) (c + 1) Γ'' ((prop q).somehow)) →
+    G4c Δ (tgtClause p S f c Γ q)
+
+/-- `(A₁ ∧ B₁) ⊃ D`: the ambient's clause is the grown ambient at the curried context. -/
+theorem impAnd_case (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Γ' Δ : List PLLFormula} {A₁ B₁ D : PLLFormula} {q : String}
+    (hF : (A₁.and B₁).ifThen D ∈ Γ')
+    (h1 : A₁.ifThen (B₁.ifThen D) ∉ Γ') (h2 : A₁.ifThen (B₁.ifThen D) ∈ S)
+    (hΓ'S : ∀ Y ∈ Γ', Y ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 2) (c + 2) Γ'))
+    (hd : G4c Δ (itpA p S (f + 1) (c + 1)
+      (A₁.ifThen (B₁.ifThen D) :: Γ') ((prop q).somehow)))
+    (step : Step p S q f c Γ Γ' Δ) :
+    G4c Δ (tgtClause p S (f + 1) c Γ q) :=
+  tgtClause_fuel_lift p S
+    (step (A₁.ifThen (B₁.ifThen D) :: Γ') (A₁.ifThen (B₁.ifThen D))
+      (fun y hy => .tail _ hy)
+      (by
+        intro y hy
+        rcases List.mem_cons.mp hy with rfl | hy
+        · exact h2
+        · exact hΓ'S y hy)
+      h2 (.head _) h1 (grown_impAnd p S hF h1 h2 hamb) hd)
+
+/-- `(A₁ ∨ B₁) ⊃ D`: likewise at the split context. -/
+theorem impOr_case (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Γ' Δ : List PLLFormula} {A₁ B₁ D : PLLFormula} {q : String}
+    (hF : (A₁.or B₁).ifThen D ∈ Γ')
+    (h1 : ¬(A₁.ifThen D ∈ Γ' ∧ B₁.ifThen D ∈ Γ'))
+    (h2 : (A₁.ifThen D ∈ Γ' ∨ A₁.ifThen D ∈ S) ∧
+      (B₁.ifThen D ∈ Γ' ∨ B₁.ifThen D ∈ S))
+    (hΓ'S : ∀ Y ∈ Γ', Y ∈ S)
+    (hADΓ : A₁.ifThen D ∉ Γ') (hADS : A₁.ifThen D ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 2) (c + 2) Γ'))
+    (hd : G4c Δ (itpA p S (f + 1) (c + 1)
+      (A₁.ifThen D :: B₁.ifThen D :: Γ') ((prop q).somehow)))
+    (step : Step p S q f c Γ Γ' Δ) :
+    G4c Δ (tgtClause p S (f + 1) c Γ q) :=
+  tgtClause_fuel_lift p S
+    (step (A₁.ifThen D :: B₁.ifThen D :: Γ') (A₁.ifThen D)
+      (fun y hy => .tail _ (.tail _ hy))
+      (by
+        intro y hy
+        rcases List.mem_cons.mp hy with rfl | hy
+        · exact hADS
+        rcases List.mem_cons.mp hy with rfl | hy
+        · exact (h2.2.elim (fun h => hΓ'S _ h) id)
+        · exact hΓ'S y hy)
+      hADS (.head _) hADΓ (grown_impOr p S hF h1 h2 hamb) hd)
+
+/-- `(prop q') ⊃ B` with the atom **present**: the ambient's clause is the grown
+ambient. -/
+theorem impAtom_pres_case (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Γ' Δ : List PLLFormula} {q' : String} {B : PLLFormula} {q : String}
+    (hF : (prop q').ifThen B ∈ Γ') (h1 : B ∉ Γ') (h2 : B ∈ S)
+    (h3 : (prop q' : PLLFormula) ∈ Γ') (hΓ'S : ∀ Y ∈ Γ', Y ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 2) (c + 2) Γ'))
+    (hd : G4c Δ (itpA p S (f + 1) (c + 1) (B :: Γ') ((prop q).somehow)))
+    (step : Step p S q f c Γ Γ' Δ) :
+    G4c Δ (tgtClause p S (f + 1) c Γ q) :=
+  tgtClause_fuel_lift p S
+    (step (B :: Γ') B (fun y hy => .tail _ hy)
+      (by
+        intro y hy
+        rcases List.mem_cons.mp hy with rfl | hy
+        · exact h2
+        · exact hΓ'S y hy)
+      h2 (.head _) h1 (grown_impAtom_pres p S hF h1 h2 h3 hamb) hd)
+
+/-- `(prop q') ⊃ B` with the atom **fresh**: the ambient's clause is an implication, and
+the disjunct's own `prop q'` conjunct fires it (§109). -/
+theorem impAtom_fresh_case (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Γ' Δ : List PLLFormula} {q' : String} {B : PLLFormula} {q : String}
+    (hF : (prop q').ifThen B ∈ Γ') (h1 : B ∉ Γ') (h2 : B ∈ S)
+    (h3 : (prop q' : PLLFormula) ∉ Γ') (h4 : ¬(q' = p))
+    (hΓ'S : ∀ Y ∈ Γ', Y ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 2) (c + 2) Γ'))
+    (hq' : G4c Δ (prop q'))
+    (hd : G4c Δ (itpA p S (f + 1) (c + 1) (B :: Γ') ((prop q).somehow)))
+    (step : Step p S q f c Γ Γ' Δ) :
+    G4c Δ (tgtClause p S (f + 1) c Γ q) :=
+  tgtClause_fuel_lift p S
+    (step (B :: Γ') B (fun y hy => .tail _ hy)
+      (by
+        intro y hy
+        rcases List.mem_cons.mp hy with rfl | hy
+        · exact h2
+        · exact hΓ'S y hy)
+      h2 (.head _) h1 (grown_impAtom_fresh p S hF h1 h2 h3 h4 hamb hq') hd)
+
+/-- `◯A ⊃ B`, the γ-clause, **boxed** disjunct: the ambient is fired with the disjunct's
+own boxed first component after the free budget shift (§§98, 107). -/
+theorem gammaBox_case (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Γ' Δ : List PLLFormula} {A B : PLLFormula} {q : String}
+    (hF : A.somehow.ifThen B ∈ Γ') (hS : A.somehow.ifThen B ∈ S)
+    (h1 : B ∉ Γ') (h2 : B ∈ S) (hΓ'S : ∀ Y ∈ Γ', Y ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 2) (c + 2) Γ'))
+    (hbox : G4c Δ (((itpE p S (f + 1) c Γ').ifThen
+      (itpA p S (f + 1) c Γ' A.somehow)).somehow))
+    (hd : G4c Δ (itpA p S (f + 1) (c + 1) (B :: Γ') ((prop q).somehow)))
+    (step : Step p S q f c Γ Γ' Δ) :
+    G4c Δ (tgtClause p S (f + 1) c Γ q) :=
+  tgtClause_fuel_lift p S
+    (step (B :: Γ') B (fun y hy => .tail _ hy)
+      (by
+        intro y hy
+        rcases List.mem_cons.mp hy with rfl | hy
+        · exact h2
+        · exact hΓ'S y hy)
+      h2 (.head _) h1
+      (grownAmb_of_box_shifted p S hF hS h1 h2 hamb hbox) hd)
+
+/-- `◯A ⊃ B`, **plain** disjunct: likewise with the plain first component. -/
+theorem gammaPlain_case (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Γ' Δ : List PLLFormula} {A B : PLLFormula} {q : String}
+    (hF : A.somehow.ifThen B ∈ Γ') (hS : A.somehow.ifThen B ∈ S)
+    (h1 : B ∉ Γ') (h2 : B ∈ S) (hΓ'S : ∀ Y ∈ Γ', Y ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 2) (c + 2) Γ'))
+    (hval : G4c Δ (itpA p S (f + 1) c Γ' A))
+    (hd : G4c Δ (itpA p S (f + 1) (c + 1) (B :: Γ') ((prop q).somehow)))
+    (step : Step p S q f c Γ Γ' Δ) :
+    G4c Δ (tgtClause p S (f + 1) c Γ q) :=
+  tgtClause_fuel_lift p S
+    (step (B :: Γ') B (fun y hy => .tail _ hy)
+      (by
+        intro y hy
+        rcases List.mem_cons.mp hy with rfl | hy
+        · exact h2
+        · exact hΓ'S y hy)
+      h2 (.head _) h1
+      (grownAmb_of_plain_shifted p S hF hS h1 h2 hamb hval) hd)
+
 end BoxSnd
 end PLLND
 
