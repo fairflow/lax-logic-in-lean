@@ -557,3 +557,47 @@ rest in Lean.**  Adding *derivable* hypotheses cannot change derivability but do
 the search — `[amb, box, snd, s] ⊢ target` is not found at 200 000 nodes while
 `[snd, s] ⊢ target` is found in 36.  So the searcher is best used on minimal cells, not
 on the obligation as stated.
+
+---
+
+# LEDGER UPDATE (§§106–109)
+
+Four more results after the ledger above was written, all in `wip/boxSnd.lean`, all
+sorry-free.
+
+* **`zeroFuelCase` discharged** — `boxSnd_reaches` needs **three** hypotheses, not four.
+* **`shift_imp` / `shift_box` / `shift_plain`** — a gated disjunct carries its first
+  component one budget below what the ambient's conjunct demands, and the shift is free
+  (up on the universal side, down on the existential).  Composed with §98:
+  `grownAmb_of_box_shifted`, `grownAmb_of_plain_shifted`.
+* **`grown_impAtom_fresh`** — the last row of the grown-ambient table.  Every context
+  shape now has its grown ambient in the form its own `itpA` disjunct can use, and in
+  every case what fires it is something the branch already has.
+* **A correction (§108).**  `ImpCase` and `BoxCtxCase` were stated in §105 with no
+  recursion and were therefore *unprovable*, not merely hard — both are steps of the
+  defect recursion.  Both now carry it.  And this isolated a real structural difference:
+  `TruncCase` is **not** a step of the defect recursion (its body is `⋁ others` at the
+  *same* context), so it needs either its own measure or the pairing move `desc_of_oth`
+  uses for the truncation.  That is the only remaining obligation whose *shape* is
+  unsettled.
+
+## Two tactic lessons, recorded because they cost real time
+
+* **Count the splits with the actual budget expression in hand.**  When the budget is a
+  literal successor (`c+1`), `split` does *not* branch on a gated clause's
+  `match b with | 0 | b'+1` — it reduces.  So a gated shape has **one fewer** `split`
+  than the same shape has when the budget is a variable.  A miscount surfaces as a type
+  mismatch deep inside a `rcases`, which is what made two attempts look like tactic
+  problems when they were arithmetic.
+* `first | t₁ | t₂` does not reliably skip an alternative whose *elaboration* fails.
+  Order alternatives so the only-succeed-if-applicable ones come first, and make the
+  catch-all a tactic (`cases h`) rather than a term (`h.elim`).
+
+## Standing status
+
+| branch, target budget `1` | status |
+|---|---|
+| floor, atom jump goal | **PROVED, general** (`∨`-free space) |
+| floor, `⊃`-shaped jump goal | proved at two configurations |
+| floor, boxed jump goal `◯A` | general theorem modulo **three** obligations, two of them ordinary case analyses with every ingredient proved, one (`TruncCase`) needing a measure or a pairing move; one closed on-path instance |
+| fresh-antecedent goal | proved at three configurations incl. the deciding one |
