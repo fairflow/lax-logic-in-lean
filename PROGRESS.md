@@ -4442,3 +4442,27 @@ every mathematical ingredient already proved (`boxGoal_remap`, the six grown-amb
 lemmas, `itpA_atom_forces`, `defect_lt_of_witness`, `tgtClause_fuel_lift`).  None of
 them is a statement that anything refutes — `ImpCase` in particular does *not* need the
 ascent, because §98 fires the ambient instead.
+
+### §105 addendum — `ZeroFuelCase` attempted and deferred
+
+`ZeroFuelCase` is the easiest of the four obligations and is clearly true: at fuel `0`
+every recursive component is `itpE p S 0 … = ⊤` or `itpA p S 0 … = ⊥`, so each
+environment disjunct either *is* `⊥`, or is a conjunction with a `⊥` component, or is a
+boxed guarded implication with value `⊥` and guard `⊤` — and that last shape yields any
+`◯`-conclusion by `box_absurd`.
+
+Two attempts at a uniform tactic for it were discarded.  The obstacles are both
+mechanical and worth recording, since they will recur in the other three:
+
+* the `.prop q'` environment clause is guarded by `q' = p ∧ ◯q = prop p`, and the
+  second conjunct is false by constructor disjointness — but `split` treats it as an
+  opaque decidable proposition and produces the impossible branch anyway, so it has to
+  be killed by `simp` before the case split rather than after;
+* `first | tac₁ | tac₂` does **not** reliably skip an alternative whose *elaboration*
+  fails (as opposed to whose tactic fails), so `exact hin.elim` in a chain reports an
+  error even when a later alternative would have applied.  Alternatives have to be
+  ordered so the ones that can only succeed come first, and the catch-all has to be a
+  tactic (`cases hin`) rather than a term.
+
+Neither is mathematical.  `wip/boxSnd.lean` is left with the four obligations as
+committed; `boxSnd_reaches` and the six grown-ambient lemmas are unaffected.
