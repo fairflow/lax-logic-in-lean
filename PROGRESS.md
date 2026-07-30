@@ -4466,3 +4466,42 @@ mechanical and worth recording, since they will recur in the other three:
 
 Neither is mathematical.  `wip/boxSnd.lean` is left with the four obligations as
 committed; `boxSnd_reaches` and the six grown-ambient lemmas are unaffected.
+
+## §106 — `ZeroFuelCase` discharged; three obligations left (30 July)
+
+`wip/boxSnd.lean`.  PROVED sorry-free, `[propext, Classical.choice, Quot.sound]`.
+
+    zeroFuelCase : q ≠ p → ZeroFuelCase p S q
+
+so `boxSnd_reaches` now needs three hypotheses, not four.
+
+### The counting point that cost two attempts
+
+§105's addendum recorded the tactic obstacles; the real one turned out to be arithmetic.
+In `zeroFuelCase` the budget is `c + 1`, a **literal successor**, so `split` does *not*
+branch on a gated clause's `match b with | 0 => … | b'+1 => …` — it reduces.  A gated
+shape therefore has **one fewer `split`** than the same shape has when the budget is a
+variable, which is the case in `AtomForce.atom_forces_aux`, where `b` is universally
+quantified and the pattern that works there is `repeat' split`.
+
+Getting that count wrong produces errors that read as type mismatches deep inside a
+`rcases`, which is why two attempts at a "uniform" tactic went nowhere: the uniform
+tactic was papering over a miscount.  Written shape by shape with the counts right, the
+proof is routine — ten shapes, each three to eight lines, with four closers:
+
+    byBot     ⊥ in hand closes anything
+    byBotR    a conjunction with ⊥ on the right
+    byImpBot  a conjunction whose left component is ⊤ ⇢ ⊥
+    box_absurd  the boxed ◯(⊤ ⇢ ⊥)
+
+This is worth recording as a general lesson for the three remaining obligations: **count
+the splits from the clause table with the actual budget expression in hand**, not from
+the shape of the table in the abstract.
+
+### Remaining
+
+| obligation | what it is |
+|---|---|
+| `ImpCase` | the five `⊃`-headed environment families; grown ambients proved (§§98, 104), guard bookkeeping left |
+| `BoxCtxCase` | the `◯χ` family, ambient and disjunct both boxed, pair under `laxL` |
+| `TruncCase` | the truncation disjunct, open by `laxL`, handle one level in |

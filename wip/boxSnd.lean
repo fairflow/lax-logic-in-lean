@@ -307,6 +307,179 @@ theorem boxSnd_reaches (p : String) (S : Finset PLLFormula)
       rcases List.mem_singleton.mp htr with rfl
       exact htc f c Γ Γ' _ hΓ'S hA hφd
 
+/-! ## Discharging the fuel-`0` floor
+
+At fuel `0` every recursive component is `itpE p S 0 … = ⊤` or `itpA p S 0 … = ⊥`, so
+each environment disjunct is `⊥`, a conjunction with a `⊥` component, a conjunction
+whose first component is `⊤ ⇢ ⊥`, or the boxed `◯(⊤ ⇢ ⊥)` — and the last yields any
+`◯`-conclusion by `box_absurd`.
+
+Written shape by shape.  One counting point, which cost two failed attempts (PROGRESS
+§105 addendum): the budget here is `c + 1`, a **literal successor**, so `split` does not
+branch on the `match b with | 0 | b'+1` of a gated clause — it reduces.  A gated shape
+therefore has one fewer `split` than the same shape has when the budget is a variable
+(as in `AtomForce.atom_forces_aux`, where `b` is universally quantified). -/
+
+private theorem byBot {Δ : List PLLFormula} {W : PLLFormula}
+    (hd : G4c Δ falsePLL) : G4c Δ W :=
+  G4c.cut hd (G4c.botL (.head _))
+
+private theorem byBotR {Δ : List PLLFormula} {X W : PLLFormula}
+    (hd : G4c Δ (X.and falsePLL)) : G4c Δ W :=
+  byBot (projAnd₂ hd)
+
+private theorem byImpBot {Δ : List PLLFormula} {Y W : PLLFormula}
+    (hd : G4c Δ ((truePLL.ifThen falsePLL).and Y)) : G4c Δ W :=
+  byBot (fire (projAnd₁ hd) (G4c.truePLL_intro _))
+
+theorem zeroFuelCase (p : String) (S : Finset PLLFormula) {q : String}
+    (hq : q ≠ p) : ZeroFuelCase p S q := by
+  intro c Γ Γ' Δ φ hφ hd
+  simp only [itpAenv] at hφ
+  obtain ⟨F, hFΓ', hin⟩ := List.mem_flatMap.mp hφ
+  cases F with
+  | prop q' =>
+      simp only at hin
+      split at hin
+      next hc =>
+          exfalso
+          have h2 : (prop q : PLLFormula).somehow = prop p := hc.2
+          exact absurd h2 (by simp)
+      next => cases hin
+  | falsePLL => cases hin
+  | and A B =>
+      simp only at hin
+      split at hin
+      next => cases hin
+      next =>
+          split at hin
+          next =>
+              rcases List.mem_singleton.mp hin with rfl
+              simp only [itpA] at hd
+              exact byBot hd
+          next => cases hin
+  | or A B =>
+      simp only at hin
+      split at hin
+      next => cases hin
+      next =>
+          split at hin
+          next =>
+              rcases List.mem_singleton.mp hin with rfl
+              simp only [itpA, itpE] at hd
+              exact byImpBot hd
+          next => cases hin
+  | somehow χ =>
+      simp only at hin
+      split at hin
+      next => cases hin
+      next =>
+          rcases List.mem_singleton.mp hin with rfl
+          simp only [itpA, itpE] at hd
+          exact box_absurd _ hd (G4c.truePLL_intro _)
+  | ifThen A D =>
+      cases A with
+      | falsePLL => cases hin
+      | prop q' =>
+          simp only at hin
+          split at hin
+          next => cases hin
+          next =>
+              split at hin
+              next =>
+                  split at hin
+                  next =>
+                      rcases List.mem_singleton.mp hin with rfl
+                      simp only [itpA] at hd
+                      exact byBot hd
+                  next =>
+                      split at hin
+                      next => cases hin
+                      next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          simp only [itpA] at hd
+                          exact byBotR hd
+              next => cases hin
+      | and A₁ B₁ =>
+          simp only at hin
+          split at hin
+          next => cases hin
+          next =>
+              split at hin
+              next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  simp only [itpA] at hd
+                  exact byBot hd
+              next => cases hin
+      | or A₁ B₁ =>
+          simp only at hin
+          split at hin
+          next => cases hin
+          next =>
+              split at hin
+              next =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  simp only [itpA] at hd
+                  exact byBot hd
+              next => cases hin
+      | ifThen A₁ B₁ =>
+          simp only at hin
+          split at hin
+          next => cases hin
+          next =>
+              split at hin
+              next =>
+                  split at hin
+                  next =>
+                      split at hin
+                      next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          simp only [itpA] at hd
+                          exact byBotR hd
+                      next => cases hin
+                  next =>
+                      split at hin
+                      next =>
+                          rcases List.mem_singleton.mp hin with rfl
+                          simp only [itpA] at hd
+                          exact byBotR hd
+                      next => cases hin
+              next => cases hin
+      | somehow A₁ =>
+          simp only at hin
+          split at hin
+          next => cases hin
+          next =>
+              split at hin
+              next =>
+                rcases List.mem_append.mp hin with hL | hR
+                · split at hL
+                  next =>
+                      rcases List.mem_cons.mp hL with rfl | hL'
+                      · simp only [itpA] at hd
+                        exact byBotR hd
+                      · rcases List.mem_singleton.mp hL' with rfl
+                        simp only [itpA] at hd
+                        exact byBotR hd
+                  next => cases hL
+                · obtain ⟨X, hX, hXin⟩ := List.mem_filterMap.mp hR
+                  cases X with
+                  | somehow x =>
+                      simp only at hXin
+                      split at hXin
+                      next => cases hXin
+                      next =>
+                          injection hXin with hXe
+                          subst hXe
+                          simp only [itpA] at hd
+                          exact byBotR hd
+                  | prop _ => cases hXin
+                  | falsePLL => cases hXin
+                  | and _ _ => cases hXin
+                  | or _ _ => cases hXin
+                  | ifThen _ _ => cases hXin
+              next => cases hin
+
 end BoxSnd
 end PLLND
 
@@ -325,3 +498,9 @@ info: 'PLLND.BoxSnd.boxSnd_reaches' depends on axioms: [propext, Classical.choic
 -/
 #guard_msgs in
 #print axioms PLLND.BoxSnd.boxSnd_reaches
+
+/--
+info: 'PLLND.BoxSnd.zeroFuelCase' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.BoxSnd.zeroFuelCase
