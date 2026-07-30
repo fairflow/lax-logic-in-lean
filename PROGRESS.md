@@ -4360,3 +4360,39 @@ Everything it needs is proved: `boxGoal_remap` (§102), `grownAmb_of_box` and
 `grownAmb_of_plain` (§98), `itpA_atom_forces` (§91), `defect_lt_of_witness`.  What is
 left is the case work — the same shape of task as §91's induction, which took ten
 shapes and every guard branch.
+
+## §104 — §103's table, proved: the grown ambient arrives shape by shape (30 July)
+
+`wip/boxSnd.lean` (new).  Five lemmas, PROVED sorry-free, `[propext, Quot.sound]`.
+
+§103 tabulated how the grown ambient arrives at each context shape, and warned that
+the uniform version of that statement is the refuted ascent.  The table is now
+theorems:
+
+| lemma | shape | grows to | form |
+|---|---|---|---|
+| `grown_and` | `A ∧ B` | `A::B::Γ'` | the ambient's clause **is** the grown ambient |
+| `grown_impAtom_pres` | `(prop q') ⊃ B`, `prop q' ∈ Γ'` | `B::Γ'` | ditto |
+| `grown_impAnd` | `(A ∧ B) ⊃ D` | `A⊃(B⊃D) :: Γ'` | ditto (curried) |
+| `grown_impOr` | `(A ∨ B) ⊃ D` | `A⊃D :: B⊃D :: Γ'` | ditto (split) |
+| `grown_box` | `◯χ` | `χ::Γ'` | the grown ambient **under a `◯`** |
+
+Each is a projection out of `itpEcls` — `itpE_succ`, then `andAll_elim` at the clause
+for that context formula, with the guards discharged from the same hypotheses the
+`itpA` disjunct carries.  Together with §98's two firing lemmas for the gated shapes,
+every context shape now has its grown ambient available in the exact form the
+corresponding `itpA` disjunct can use.
+
+The last row is the one worth noticing: for `◯χ` the ambient arrives **boxed**, and
+`itpA`'s disjunct for `◯χ` is boxed too, so the two pair under `laxL`.  That is not a
+coincidence — both tables are generated from the same clause analysis of the context
+formula, so their guards and their modal depth agree by construction.
+
+### What is left
+
+The assembly: the defect induction over `itpAfull p S f (c+1) Γ' (◯q)`, using
+`boxGoal_remap` at the goal clause and these six lemmas (five here, plus §98) at the
+environment clauses, with the truncation disjunct handled by `laxL`.  Every ingredient
+is now a named, proved lemma; what remains is the case analysis that puts them
+together, and the arithmetic of the fuel (the disjuncts sit one fuel down, so the
+induction must quantify over the fuel inside the defect recursion, as §91's does).
