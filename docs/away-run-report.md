@@ -601,3 +601,43 @@ sorry-free.
 | floor, `⊃`-shaped jump goal | proved at two configurations |
 | floor, boxed jump goal `◯A` | general theorem modulo **three** obligations, two of them ordinary case analyses with every ingredient proved, one (`TruncCase`) needing a measure or a pairing move; one closed on-path instance |
 | fresh-antecedent goal | proved at three configurations incl. the deciding one |
+
+---
+
+# FINAL STATUS (§§110–112)
+
+`zeroFuelCase` and `boxCtxCase` are **discharged**, and `ImpCase`'s six shapes are proved
+as lemmas.  So `BoxSnd.boxSnd_reaches` — the general boxed-goal traversal — now rests on
+**two** hypotheses:
+
+* **`ImpCase`** — pure *routing*: unpack the clause guards and dispatch to one of the six
+  lemmas (`impAnd_case`, `impOr_case`, `impAtom_pres_case`, `impAtom_fresh_case`,
+  `gammaBox_case`, `gammaPlain_case`).  No mathematics left.
+* **`TruncCase`** — the one open *question*.  The truncation disjunct's body is
+  `⋁ others` at the **same** context, so it is not a step of the defect recursion and
+  needs either its own measure or the pairing move `desc_of_oth` uses for the truncation
+  in the full-table descent.
+
+Everything else in the boxed row is proved: the traversal, its goal-clause case
+(`boxGoal_remap`), its `∧` case, its fuel-`0` floor, the complete grown-ambient table
+(seven shapes), the three free budget shifts, and `tgtClause_fuel_lift`.
+
+## The most useful thing this session learned about *how* to work on this
+
+Three obligations in a row turned out to be **statement** problems, not proof problems: a
+miscounted `split` (§106), a missing context quantifier (§111), a missing recursion
+hypothesis (§108).  Each looked like a hard proof until the statement was right, and then
+went through in a few lines or first try.  Before hunting for a measure for `TruncCase`,
+check that what is being asked for is what the traversal can supply.
+
+The same lesson in the measurement register: a `~` from the oracle at a bounded budget
+asserts nothing, and comparing one against a `PROVED` found at the same budget produced
+§92's wrong conclusion (§96 retracts it).  And `[amb, box, snd, s] ⊢ target` is not found
+at 200 000 nodes while `[snd, s] ⊢ target` is found in 36 — so pin the *minimal* searchable
+cell and compose the rest in Lean.
+
+## State of the tree
+
+`lake build LaxLogic wipshared` clean; **zero** `sorry` in all fourteen files this session
+created or extended; every `#guard_msgs` axiom audit passes as written; working tree clean;
+everything pushed to `origin/ui-confluence`.
