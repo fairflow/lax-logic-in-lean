@@ -4654,3 +4654,36 @@ The sketch of the proof, for whoever picks it up:
 
 Every step is a lemma that exists.  What stopped this pass was the statement, not the
 proof.
+
+## §112 — `BoxCtxCase` discharged: two obligations left (30 July)
+
+`wip/boxSnd.lean`.  PROVED sorry-free, first try once the statement was right.
+
+    boxCtxCase : BoxCtxCase p S q
+
+§111 diagnosed the statement: the `◯χ` family works inside two boxes, so its recursion
+hypothesis has to be context-polymorphic.  With that corrected the proof is the four steps
+sketched there, and it went through unchanged:
+
+1. open the boxed grown ambient (`grown_box`, then `laxL` — legitimate, the conclusion is
+   `◯`-shaped);
+2. open the disjunct with `box_open`, firing its guard from the grown ambient by downward
+   budget monotonicity;
+3. recurse at `χ :: Γ'`, of strictly smaller defect because `χ ∈ S ∖ Γ'`;
+4. `tgtClause_fuel_lift`.
+
+**So `boxSnd_reaches` now needs two hypotheses**, and they are of very different kinds:
+
+| obligation | kind |
+|---|---|
+| `ImpCase` | **routing**: unpack the clause guards and dispatch to one of the six lemmas of §110.  No mathematics left. |
+| `TruncCase` | the one open *question*: the truncation's body is `⋁ others` at the same context, so it is not a step of the defect recursion and needs either its own measure or `desc_of_oth`'s pairing move (§108). |
+
+### The pattern of the last few sections, worth naming
+
+Three obligations in a row (§106 `ZeroFuelCase`, §111–112 `BoxCtxCase`, and §108's
+correction to `ImpCase`) turned out to be **statement** problems, not proof problems: a
+miscounted `split`, a missing context quantifier, a missing recursion hypothesis.  Each
+looked like a hard proof until the statement was right, and then went through in a few
+lines or first try.  That is worth remembering for `TruncCase`: before looking for a
+measure, check that what is being asked for is what the traversal can supply.

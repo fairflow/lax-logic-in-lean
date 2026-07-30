@@ -168,12 +168,12 @@ def BoxCtxCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
     G4c Δ (((itpE p S (f + 1) (c + 1) (χ :: Γ')).ifThen
       (itpA p S (f + 1) (c + 1) (χ :: Γ') ((prop q).somehow))).somehow) →
     -- the recursion, at strictly smaller defect and one fuel down
-    (∀ (Γ'' : List PLLFormula) (w : PLLFormula),
+    (∀ (Δ' : List PLLFormula) (Γ'' : List PLLFormula) (w : PLLFormula),
       (∀ y ∈ Γ', y ∈ Γ'') → (∀ y ∈ Γ'', y ∈ S) →
       w ∈ S → w ∈ Γ'' → w ∉ Γ' →
-      G4c Δ (itpE p S (f + 1) (c + 2) Γ'') →
-      G4c Δ (itpA p S (f + 1) (c + 1) Γ'' ((prop q).somehow)) →
-      G4c Δ (tgtClause p S f c Γ q)) →
+      G4c Δ' (itpE p S (f + 1) (c + 2) Γ'') →
+      G4c Δ' (itpA p S (f + 1) (c + 1) Γ'' ((prop q).somehow)) →
+      G4c Δ' (tgtClause p S f c Γ q)) →
     G4c Δ (tgtClause p S (f + 1) c Γ q)
 
 /-- The truncation disjunct of the traversal. -/
@@ -305,9 +305,15 @@ theorem boxSnd_reaches (p : String) (S : Finset PLLFormula)
               next => cases hin
               next hcond =>
                 rcases List.mem_singleton.mp hin with rfl
-                exact hbc f' c Γ Γ' _ χ hFΓ' (hsome hFS)
+                refine hbc f' c Γ Γ' _ χ hFΓ' (hsome hFS)
                   (fun h => hcond (Or.inl h)) hΓ'S
-                  (grown_box p S hFΓ' hcond hA) hφd step
+                  (grown_box p S hFΓ' hcond hA) hφd ?_
+                intro Δ' Γ'' w hsub hΓ''S hwS hwΓ'' hwΓ' hg'' hs''
+                exact ihd (defect S Γ'')
+                  (by
+                    have := defect_lt_of_witness hsub hwS hwΓ'' hwΓ'
+                    omega)
+                  f' c Γ Γ'' Δ' (Nat.le_refl _) hΓ''S hg'' hs''
           | and A B =>
               simp only at hin
               split at hin
@@ -738,6 +744,34 @@ theorem gammaPlain_case (p : String) (S : Finset PLLFormula) {f c : Nat}
         · exact hΓ'S y hy)
       h2 (.head _) h1
       (grownAmb_of_plain_shifted p S hF hS h1 h2 hamb hval) hd)
+
+/-! ## Discharging `BoxCtxCase`
+
+The `◯χ` family does its work inside two boxes: the grown ambient arrives boxed
+(`grown_box`) and the disjunct is boxed.  Both are opened — legitimate, because the
+conclusion `tgtClause` is itself `◯`-shaped — and the recursion is applied at the
+`⊳`-successor, which is why its hypothesis has to be context-polymorphic (§111). -/
+
+theorem boxCtxCase (p : String) (S : Finset PLLFormula) (q : String) :
+    BoxCtxCase p S q := by
+  intro f c Γ Γ' Δ χ hχΓ' hχS hχfresh hΓ'S hgb hdb step
+  -- open the boxed grown ambient
+  refine G4c.cut hgb (G4c.laxL (.head _) ?_)
+  -- open the disjunct, firing its guard from the grown ambient by budget monotonicity
+  refine box_open (wksub (fun ψ h => .tail _ (.tail _ h)) hdb)
+    (ambE p S (Nat.le_refl _) (Nat.le_succ _) rfl
+      (G4c.identity_mem (.head _))) ?_
+  -- recurse at `χ :: Γ'`, of strictly smaller defect, then lift the fuel
+  refine tgtClause_fuel_lift p S ?_
+  exact step _ (χ :: Γ') χ (fun y hy => .tail _ hy)
+    (by
+      intro y hy
+      rcases List.mem_cons.mp hy with rfl | hy
+      · exact hχS
+      · exact hΓ'S y hy)
+    hχS (.head _) hχfresh
+    (G4c.identity_mem (.tail _ (.head _)))
+    (G4c.identity_mem (.head _))
 
 end BoxSnd
 end PLLND
