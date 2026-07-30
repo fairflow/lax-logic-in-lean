@@ -351,6 +351,59 @@ theorem floor_branch_atom_full (p : String) (S : Finset PLLFormula)
   simp only [itpAfull]
   exact orAll_map (fun ψ h => ⟨ψ, h, G4c.iden (.head _)⟩)
 
+/-! ## 4. The boxed goal clause remaps from a grown context
+
+§3 closes the floor branches at an atom goal.  The remaining shape is the boxed
+jump goal `◯a`, and PROGRESS §100 closes one on-path instance of it by a route whose
+heart is this lemma.
+
+The target's goal clause at `Γ` for the boxed goal `◯a` is
+
+    ◯( E@c(Γ) ⇢ A@(c+1)(Γ, a) )
+
+and the material available is the *same clause at a grown context* `Γ'` — because
+that is what the source's second component supplies — together with the **grown
+ambient** `E@(c+2)(Γ')`, which §7 of `wip/envDesc.lean` obtains from the ambient and
+the branch's own first component.
+
+`box_remap_free` reduces the remap to two conversions inside the box:
+
+* the **guard**, `E@c(Γ') ` from the grown ambient by downward budget monotonicity —
+  free;
+* the **value**, `A@(c+1)(Γ', a) ⊢ A@(c+1)(Γ, a)`, which looks like context
+  *shrinking* and would be unsound in general.  At an **atom** goal it is not:
+  §2 turns the left side into `a` itself, and `a` is the goal clause of the right
+  side at *every* context.
+
+So the one step that would have needed shrinking is exactly the step §2 licenses. -/
+
+/-- **The boxed goal clause remaps from a grown context**, at an atom goal, over a
+`∨`-free space, given the grown ambient. -/
+theorem boxGoal_remap (p : String) (S : Finset PLLFormula)
+    (hOr : ∀ A B : PLLFormula, A.or B ∉ S) {q : String} (hq : q ≠ p)
+    {f c : Nat} {Γ Γ' Δ : List PLLFormula}
+    (hΓ'S : ∀ Y ∈ Γ', Y ∈ S)
+    (hgrown : G4c Δ (itpE p S f (c + 2) Γ'))
+    (hbox : G4c Δ (((itpE p S f c Γ').ifThen
+      (itpA p S f (c + 1) Γ' (prop q))).somehow)) :
+    G4c Δ (((itpE p S f c Γ).ifThen
+      (itpA p S (f + 1) (c + 1) Γ (prop q))).somehow) := by
+  refine box_remap_free hbox ?_ ?_
+  · -- the guard: the grown ambient is two budgets up
+    exact ambE p S (Nat.le_refl _) (by omega) rfl (hgrown.weaken _)
+  · -- the value: §2 turns the grown table into the atom, which is the goal
+    -- clause of the target table at Γ
+    have hatom : G4c (itpA p S f (c + 1) Γ' (prop q) ::
+        itpE p S f c Γ :: Δ) (prop q) :=
+      consume₁ (G4c.identity_mem (.head _))
+        (itpA_atom_forces p S hOr hq f (c + 1) Γ' hΓ'S)
+    rw [itpA_succ]
+    refine G4c.orAll_intro (φ := prop q) ?_ hatom
+    simp only [itpAfull, itpAoth, itpAgoal]
+    refine List.mem_append.mpr (Or.inl ?_)
+    rw [if_neg hq]
+    exact .head _
+
 end AtomForce
 end PLLND
 
@@ -373,3 +426,9 @@ info: 'PLLND.AtomForce.floor_branch_atom' depends on axioms: [propext, Classical
 -/
 #guard_msgs in
 #print axioms PLLND.AtomForce.floor_branch_atom
+
+/--
+info: 'PLLND.AtomForce.boxGoal_remap' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.AtomForce.boxGoal_remap

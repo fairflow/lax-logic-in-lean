@@ -4274,3 +4274,43 @@ atom alone can drive.  With a second γ-clause alive that collapse does not happ
 | floor, `⊃`-shaped jump goal | proved at two configurations |
 | floor, boxed jump goal `◯A` | proved at one on-path configuration; general OPEN, route configuration-dependent |
 | fresh-antecedent goal | proved at three configurations incl. the deciding one |
+
+## §102 — the boxed goal clause remaps from a grown context (30 July)
+
+`wip/atomForce.lean` §4.  PROVED sorry-free, general,
+`[propext, Classical.choice, Quot.sound]`.
+
+    boxGoal_remap :
+      (∀ A B, A.or B ∉ S) → q ≠ p → (∀ Y ∈ Γ', Y ∈ S) →
+      G4c Δ (itpE p S f (c+2) Γ')                                   -- grown ambient
+      → G4c Δ ◯( E@c(Γ') ⇢ A@(c+1)(Γ', q) )                         -- clause at Γ'
+      → G4c Δ ◯( E@c(Γ)  ⇢ A@(c+1)(Γ,  q) )                         -- clause at Γ
+
+This is the heart of §100's route, extracted and proved for **arbitrary** `Γ`, `Γ'`.
+
+`box_remap_free` reduces the remap to two conversions inside the box:
+
+* the **guard** `E@c(Γ')`, which the grown ambient supplies by downward budget
+  monotonicity — free, and the grown ambient itself comes from the ambient and the
+  branch's own first component by §98;
+* the **value** `A@(c+1)(Γ',q) ⊢ A@(c+1)(Γ,q)`, which is context *shrinking* and
+  would be unsound in general — a table at a larger context has more disjuncts and
+  is weaker.
+
+The point is that at an **atom** goal it is not unsound: §91's `itpA_atom_forces`
+turns the left side into `q` itself, and `q` is the goal clause of the right side at
+*every* context.  So **the one step that appeared to need shrinking is exactly the
+step the atom-forcing lemma licenses**, and there is no `Γ ⊆ Γ'` hypothesis at all —
+the two contexts are unrelated.
+
+### What is left for the boxed row
+
+With `boxGoal_remap` and §98's `grownAmb_of_box`/`grownAmb_of_plain`, the boxed
+branch reduces to: **reach the goal-clause disjunct of the second component at some
+grown context.**  That is a traversal of the environment clause table one level down
+— the same shape of work as §91's induction, and with the same two ingredients
+available at every level (§98 supplies the grown ambient at each grown context, by
+projection for ungated clauses and by firing for gated ones).
+
+§101's refutation does not touch this: what it refutes is the cheaper route that uses
+only the atom `prop s` and no grown ambient.
