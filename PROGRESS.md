@@ -4396,3 +4396,49 @@ environment clauses, with the truncation disjunct handled by `laxL`.  Every ingr
 is now a named, proved lemma; what remains is the case analysis that puts them
 together, and the arithmetic of the fuel (the disjuncts sit one fuel down, so the
 induction must quantify over the fuel inside the defect recursion, as §91's does).
+
+## §105 — the boxed traversal assembled: four scoped obligations left (30 July)
+
+`wip/boxSnd.lean`.  PROVED sorry-free, `[propext, Classical.choice, Quot.sound]`.
+
+    boxSnd_reaches :
+      (∨-free S) → q ≠ p → (S closed under ◯-subformula) →
+      BoxCtxCase p S q → TruncCase p S q → ImpCase p S q → ZeroFuelCase p S q →
+      ∀ d f c Γ Γ' Δ, defect S Γ' ≤ d → (Γ' ⊆ S) →
+        ambient at Γ' → second component at Γ' → tgtClause p S f c Γ q
+
+The recursion is on the **defect**, and what it proves outright is:
+
+* **the goal clause** — by `boxGoal_remap` (§102), the mathematically substantive
+  case, and the one that needed the atom-forcing lemma to license a context shrink;
+* the **`∧`** environment family — by `grown_and` (§104) and the recursion;
+* the vacuous families `prop q'`, `⊥`, and `∨` (the last excluded by `∨`-freeness).
+
+The four hypotheses carry the remaining case work, each precisely scoped:
+
+| obligation | what it is |
+|---|---|
+| `ImpCase` | the five `⊃`-headed environment families; their grown ambients are `grown_impAtom_pres`, `grown_impAnd`, `grown_impOr` and §98's two firing lemmas, so what is left is guard bookkeeping |
+| `BoxCtxCase` | the `◯χ ∈ Γ'` family, where ambient and disjunct are *both* boxed and must be paired under `laxL` |
+| `TruncCase` | the truncation disjunct, to be opened by `laxL` (legitimate — the conclusion is `◯`-shaped) and handled one level in |
+| `ZeroFuelCase` | the fuel-`0` floor, where every component is `⊤` or `⊥` |
+
+### One lemma worth noting on its own
+
+    tgtClause_fuel_lift : tgtClause p S f c Γ q ⊢ tgtClause p S (f+1) c Γ q
+
+The recursion returns the target one fuel down, so it has to be lifted — and both
+conversions inside the box are **free, in opposite directions**: the guard converts
+*down* in the fuel (`fuelE_le`, existential tables weaken as the fuel drops) and the
+value converts *up* (`itp_fuel_mono`, universal tables weaken as the fuel rises).
+That the two free directions are exactly the two needed is the same kind of structural
+coincidence as §104's boxed/boxed pairing, and for the same reason.
+
+### Where this leaves the boxed row
+
+Before: one closed on-path instance and no general statement.  Now: a general theorem
+whose hypotheses are four *case-analysis* obligations over a finite clause table, with
+every mathematical ingredient already proved (`boxGoal_remap`, the six grown-ambient
+lemmas, `itpA_atom_forces`, `defect_lt_of_witness`, `tgtClause_fuel_lift`).  None of
+them is a statement that anything refutes — `ImpCase` in particular does *not* need the
+ascent, because §98 fires the ambient instead.

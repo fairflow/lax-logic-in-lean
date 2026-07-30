@@ -126,19 +126,202 @@ theorem grown_box (p : String) (S : Finset PLLFormula) {f c : Nat}
   simp only [if_neg h1]
   exact List.mem_singleton.mpr rfl
 
+/-! ## The two boxed cases, named
+
+Two disjunct families are boxed on both sides, so closing them means pairing two
+`laxL`s and working at the `⊳`-successor.  They are stated here as named
+propositions so that the traversal below is sorry-free and the remaining obligations
+are explicit and small.
+
+* `BoxCtxCase` — the `◯χ ∈ Γ'` environment family.  Its disjunct is
+  `◯( E@(c+1)(χ::Γ') ⇢ A@(c+1)(χ::Γ', ◯q) )` and `grown_box` supplies
+  `◯ E@(c+2)(χ::Γ')`: both boxed, to be paired.
+* `TruncCase` — the truncation disjunct `◯( E@c(Γ') ⇢ ⋁ others )`, to be opened by
+  `laxL` (legitimate, since the conclusion is `◯`-shaped) and then handled by the
+  same case analysis one level in. -/
+
+/-- The `◯χ` environment family of the traversal. -/
+def BoxCtxCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
+  ∀ (f c : Nat) (Γ Γ' Δ : List PLLFormula) (χ : PLLFormula),
+    χ.somehow ∈ Γ' → χ ∈ S → χ ∉ Γ' → (∀ Y ∈ Γ', Y ∈ S) →
+    G4c Δ ((itpE p S f (c + 2) (χ :: Γ')).somehow) →
+    G4c Δ (((itpE p S f (c + 1) (χ :: Γ')).ifThen
+      (itpA p S f (c + 1) (χ :: Γ') ((prop q).somehow))).somehow) →
+    G4c Δ (tgtClause p S f c Γ q)
+
+/-- The truncation disjunct of the traversal. -/
+def TruncCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
+  ∀ (f c : Nat) (Γ Γ' Δ : List PLLFormula),
+    (∀ Y ∈ Γ', Y ∈ S) →
+    G4c Δ (itpE p S (f + 1) (c + 2) Γ') →
+    G4c Δ (((itpE p S f c Γ').ifThen
+      (orAll (itpAoth p S f (c + 1) Γ' ((prop q).somehow)))).somehow) →
+    G4c Δ (tgtClause p S f c Γ q)
+
+/-- The `⊃`-headed environment families (`(prop q')⊃B`, `(A∧B)⊃D`, `(A∨B)⊃D`,
+`(A⊃B)⊃D`, `◯A⊃B`).  Their grown ambients are `grown_impAtom_pres`, `grown_impAnd`,
+`grown_impOr` and — for the two gated ones — `EnvDesc.grownAmb_of_plain` and
+`grownAmb_of_box`; what remains is the guard bookkeeping. -/
+def ImpCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
+  ∀ (f c : Nat) (Γ Γ' Δ : List PLLFormula) (A D : PLLFormula) (φ : PLLFormula),
+    A.ifThen D ∈ Γ' → (∀ Y ∈ Γ', Y ∈ S) →
+    φ ∈ itpAenv p S f (c + 1) Γ' ((prop q).somehow) →
+    G4c Δ (itpE p S (f + 1) (c + 2) Γ') → G4c Δ φ →
+    G4c Δ (tgtClause p S f c Γ q)
+
+/-- The fuel-`0` floor of the traversal: every component of every disjunct is `⊤` or
+`⊥`, so each disjunct either explodes or is absurd. -/
+def ZeroFuelCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
+  ∀ (c : Nat) (Γ Γ' Δ : List PLLFormula) (φ : PLLFormula),
+    φ ∈ itpAenv p S 0 (c + 1) Γ' ((prop q).somehow) →
+    G4c Δ φ → G4c Δ (tgtClause p S 0 c Γ q)
+
+/-- **The target lifts in the fuel**, both conversions free: the guard converts
+*down* (`fuelE_le`) and the value converts *up* (`itp_fuel_mono`), which is exactly
+the direction each is free in. -/
+theorem tgtClause_fuel_lift (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Δ : List PLLFormula} {q : String}
+    (d : G4c Δ (tgtClause p S f c Γ q)) :
+    G4c Δ (tgtClause p S (f + 1) c Γ q) := by
+  refine box_remap_free d ?_ ?_
+  · exact consume₁ (G4c.identity_mem (.head _)) (fuelE_le p S (Nat.le_succ f) c Γ)
+  · exact consume₁ (G4c.identity_mem (.head _))
+      ((itp_fuel_mono p S (f + 1)).2 (c + 1) Γ (prop q))
+
+/-! ## The traversal -/
+
+set_option maxHeartbeats 1000000 in
+/-- **The traversal.**  From the ambient and the second component at a grown context
+`Γ'`, reach the boxed goal clause at `Γ`.  Recursion on the defect.
+
+Proved outright: the **goal clause** (by `boxGoal_remap`, the mathematically
+substantive case), the `∧` environment family (by `grown_and` and the recursion), and
+the vacuous families (`prop`, `⊥`, `∨` — the last excluded by `∨`-freeness).  The four
+named hypotheses carry the remaining case work. -/
+theorem boxSnd_reaches (p : String) (S : Finset PLLFormula)
+    (hOr : ∀ A B : PLLFormula, A.or B ∉ S) {q : String} (hq : q ≠ p)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
+    (hbc : BoxCtxCase p S q) (htc : TruncCase p S q)
+    (hic : ImpCase p S q) (hzc : ZeroFuelCase p S q) :
+    ∀ (d : Nat) (f c : Nat) (Γ Γ' Δ : List PLLFormula),
+      defect S Γ' ≤ d → (∀ Y ∈ Γ', Y ∈ S) →
+      G4c Δ (itpE p S (f + 1) (c + 2) Γ') →
+      G4c Δ (itpA p S (f + 1) (c + 1) Γ' ((prop q).somehow)) →
+      G4c Δ (tgtClause p S f c Γ q) := by
+  intro d
+  induction d using Nat.strong_induction_on with
+  | _ d ihd =>
+  intro f c Γ Γ' Δ hd hΓ'S hamb hsnd
+  rw [itpA_succ] at hsnd
+  refine G4c.cut hsnd (G4c.orAll_elim ?_)
+  intro φ hφ
+  have hA : G4c (φ :: Δ) (itpE p S (f + 1) (c + 2) Γ') := hamb.weaken φ
+  have hφd : G4c (φ :: Δ) φ := G4c.identity_mem (.head _)
+  simp only [itpAfull] at hφ
+  rcases List.mem_append.mp hφ with hoth | htr
+  · simp only [itpAoth] at hoth
+    rcases List.mem_append.mp hoth with hgoal | henv
+    · -- THE GOAL CLAUSE — the substantive case
+      simp only [itpAgoal] at hgoal
+      rcases List.mem_singleton.mp hgoal with rfl
+      exact boxGoal_remap p S hOr hq hΓ'S
+        (ambE p S (Nat.le_succ _) (Nat.le_refl _) rfl hA) hφd
+    · cases f with
+      | zero => exact hzc c Γ Γ' _ φ henv hφd
+      | succ f' =>
+          have step : ∀ (Γ'' : List PLLFormula) (w : PLLFormula),
+              (∀ y ∈ Γ', y ∈ Γ'') → (∀ y ∈ Γ'', y ∈ S) →
+              w ∈ S → w ∈ Γ'' → w ∉ Γ' →
+              G4c (φ :: Δ) (itpE p S (f' + 1) (c + 2) Γ'') →
+              G4c (φ :: Δ) (itpA p S (f' + 1) (c + 1) Γ'' ((prop q).somehow)) →
+              G4c (φ :: Δ) (tgtClause p S f' c Γ q) := by
+            intro Γ'' w hsub hΓ''S hwS hwΓ'' hwΓ' hg'' hs''
+            exact ihd (defect S Γ'')
+              (by
+                have := defect_lt_of_witness hsub hwS hwΓ'' hwΓ'
+                omega)
+              f' c Γ Γ'' (φ :: Δ) (Nat.le_refl _) hΓ''S hg'' hs''
+          simp only [itpAenv] at henv
+          obtain ⟨F, hFΓ', hin⟩ := List.mem_flatMap.mp henv
+          have hFS : F ∈ S := hΓ'S F hFΓ'
+          cases F with
+          | prop q' =>
+              simp only at hin
+              split at hin
+              next hc =>
+                exfalso
+                have h2 : (prop q : PLLFormula).somehow = prop p := hc.2
+                exact absurd h2 (by simp)
+              next => cases hin
+          | falsePLL => cases hin
+          | or A B => exact absurd hFS (hOr A B)
+          | ifThen A D =>
+              exact hic (f' + 1) c Γ Γ' _ A D φ hFΓ' hΓ'S henv hA hφd
+          | somehow χ =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next hcond =>
+                rcases List.mem_singleton.mp hin with rfl
+                exact hbc (f' + 1) c Γ Γ' _ χ hFΓ' (hsome hFS)
+                  (fun h => hcond (Or.inl h)) hΓ'S
+                  (grown_box p S hFΓ' hcond hA) hφd
+          | and A B =>
+              simp only at hin
+              split at hin
+              next => cases hin
+              next h1 =>
+                split at hin
+                next h2 =>
+                  rcases List.mem_singleton.mp hin with rfl
+                  by_cases hAin : A ∈ Γ'
+                  · have hB : B ∉ Γ' := fun hB => h1 ⟨hAin, hB⟩
+                    have hBS : B ∈ S := h2.2.resolve_left hB
+                    exact step (A :: B :: Γ') B
+                      (fun y hy => .tail _ (.tail _ hy))
+                      (by
+                        intro y hy
+                        rcases List.mem_cons.mp hy with rfl | hy
+                        · exact hΓ'S _ hAin
+                        rcases List.mem_cons.mp hy with rfl | hy
+                        · exact hBS
+                        · exact hΓ'S y hy)
+                      hBS (.tail _ (.head _)) hB
+                      (grown_and p S hFΓ' h1 h2 hA) hφd |> tgtClause_fuel_lift p S
+                  · have hAS : A ∈ S := h2.1.resolve_left hAin
+                    exact step (A :: B :: Γ') A
+                      (fun y hy => .tail _ (.tail _ hy))
+                      (by
+                        intro y hy
+                        rcases List.mem_cons.mp hy with rfl | hy
+                        · exact hAS
+                        rcases List.mem_cons.mp hy with rfl | hy
+                        · exact (h2.2.elim (fun h => hΓ'S _ h) id)
+                        · exact hΓ'S y hy)
+                      hAS (.head _) hAin
+                      (grown_and p S hFΓ' h1 h2 hA) hφd |> tgtClause_fuel_lift p S
+                next => cases hin
+  · by_cases he : (itpAoth p S f (c + 1) Γ' ((prop q).somehow)).isEmpty = true
+    · rw [if_pos he] at htr; cases htr
+    · rw [if_neg he] at htr
+      rcases List.mem_singleton.mp htr with rfl
+      exact htc f c Γ Γ' _ hΓ'S hA hφd
+
 end BoxSnd
 end PLLND
 
 /-! ### Axiom audit -/
 
-/--
-info: 'PLLND.BoxSnd.grown_and' depends on axioms: [propext, Quot.sound]
--/
+/-- info: 'PLLND.BoxSnd.grown_and' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.BoxSnd.grown_and
 
-/--
-info: 'PLLND.BoxSnd.grown_box' depends on axioms: [propext, Quot.sound]
--/
+/-- info: 'PLLND.BoxSnd.grown_box' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.BoxSnd.grown_box
+
+/--
+info: 'PLLND.BoxSnd.boxSnd_reaches' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.BoxSnd.boxSnd_reaches
