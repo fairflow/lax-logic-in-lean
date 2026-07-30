@@ -4133,3 +4133,43 @@ the machinery §93 supposed would be needed.
 The restriction is that the growth is by `B`, the γ-clause's own consequent.  The
 fresh-antecedent branch grows by `C₁` instead, so this does not serve it directly —
 but §§94–95 show that branch closing by a different route anyway.
+
+## §99 — correction to §97: `◯B` is not a jump goal
+
+`BoxedS1b.boxed_branch_b` (§97) is a true, sorry-free theorem and a genuine
+instance of `GammaPairFloorBox`'s statement, which quantifies over all `g ∈ S`.
+But it is at `C = ◯s`, and `s` is the γ-clause's **consequent** `B`, so `C = ◯B`.
+
+The budget tier of the descent is entered only at **jump goals** (§85), and for a
+space whose γ-clause is `◯A ⊃ B` the jump goals are
+
+    A   and   ◯A          — *not*  ◯B.
+
+So `C = ◯B` is not a goal the descent's recursion ever reaches, and §97 does not
+close an instance the residue consists of.  Every earlier boxed-goal probe
+(§§92, 93, 96) used the same `C = ◯s` and inherits the same objection: they were
+measuring a configuration off the recursion's path.
+
+Nor is §97's *route* available at the goals that are on it.  It works because the
+grown ambient `E@2(B::Γ)` has `prop B` among its atom conjuncts — `B` is in the
+context after growth — and at `C = ◯B` the target's goal clause reduces to `◯B`,
+which follows from `B` by `laxR`.  At `C = ◯A` the target's goal clause needs
+`A@1(Γ,A)`, whose goal clause is `prop A`, and the grown ambient supplies `prop B`,
+not `prop A`.
+
+`wip/sealprobe13.lean` re-runs the boxed cells at `C = ◯r`, the actual boxed jump
+goal, with and without the grown ambient supplied as a hint (it is *derivable* from
+the ambient and the boxed component by §98's `grownAmb_of_box`, so supplying it
+cannot change derivability — only what the searcher finds).
+
+### What survives §97 and §98
+
+* `grownAmb_of_box`, `grownAmb_of_plain` (§98) are **general** and unaffected: the
+  ambient plus either γ first component yields the grown ambient, at every budget
+  and configuration.  That is the substantive discovery, and it stands.
+* `s_of_amb_box` and `boxed_branch_b` (§97) are true instances, and they are the
+  worked example that led to §98.  They are not instances of the residue.
+
+So the honest statement of the boxed row is: **open at the goals the recursion
+reaches**, with a general new resource (§98) in hand and the route at `◯B`
+understood.

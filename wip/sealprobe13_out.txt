@@ -1,0 +1,8 @@
+== boxed floor branch at C = ◯r, the actual boxed jump goal ==
+
+C = ◯r  (the jump goal): 3 target disjunct(s), weights [29, 40, 43]
+   whole, no hint   [20000]: ~
+   whole, +grownAmb [20000]: ~
+   disjunct 0 (weight 29) +grownAmb [20000]: ~
+   disjunct 1 (weight 40) +grownAmb [20000]: REFUTED
+   disjunct 2 (weight 43) +grownAmb [20000]: REFUTED

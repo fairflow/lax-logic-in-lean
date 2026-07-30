@@ -247,3 +247,8 @@ root = "wip.sealprobe11"
 [[lean_exe]]
 name = "sealprobe12"
 root = "wip.sealprobe12"
+
+# The boxed floor branch at C = ◯A, the goal the descent actually reaches.
+[[lean_exe]]
+name = "sealprobe13"
+root = "wip.sealprobe13"

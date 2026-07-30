@@ -10,3 +10,4 @@ S1, C = ◯s: 2 case(s), 3 target disjunct(s)
    case 0 [2000000] reaches: NOTHING
    case 1 [2000000] reaches: NOTHING
 S2, C = ◯s: 4 case(s), 5 target disjunct(s)
+   whole obligation [200000]: ~
