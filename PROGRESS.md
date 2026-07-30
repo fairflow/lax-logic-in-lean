@@ -4563,3 +4563,30 @@ the only one of the three obligations whose shape is not yet settled.
 `set_option maxHeartbeats` had to go from 1 000 000 to 4 000 000 for `boxSnd_reaches`
 once the obligations carried their recursion hypotheses — the statement's elaboration,
 not the proof, is what costs.
+
+## §109 — the grown-ambient table completed (30 July)
+
+`wip/boxSnd.lean`: `grown_impAtom_fresh`, PROVED sorry-free, first try.
+
+§103 tabulated six ways the grown ambient arrives; §104 proved five and §98 the two
+gated ones.  The missing row was `(prop q') ⊃ B ∈ Γ'` with `prop q' ∉ Γ'` and `q' ≠ p`,
+where the ambient's clause is not the grown ambient but an **implication**
+
+    prop q'  ⇢  E@(c+2)(B::Γ')
+
+— and the `itpA` disjunct for the same context formula is `prop q' ∧ A@b(B::Γ',C)`, so it
+supplies the antecedent.  That is the one row of the table where the two tables' guards
+genuinely differ (`itpE` demands the atom, `itpA` carries it), and it closes by firing.
+
+So the table is complete: **every context shape now has its grown ambient available in
+the form the corresponding `itpA` disjunct can use** —
+
+| arrives as | shapes |
+|---|---|
+| the grown ambient outright | `A ∧ B`; `(prop q')⊃B` with the atom present; `(A∧B)⊃D`; `(A∨B)⊃D` |
+| an implication the disjunct's own conjunct fires | `(prop q')⊃B` with the atom fresh |
+| an implication the disjunct's own **first component** fires (after a free budget shift) | `◯A⊃B`, `(A⊃B)⊃D` |
+| **boxed**, pairing with a boxed disjunct | `◯χ` |
+
+and in each case what fires it is something the branch already has.  That is the whole
+content of §98's observation, now checked at every shape.

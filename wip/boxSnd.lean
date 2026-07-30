@@ -77,6 +77,26 @@ theorem grown_impAtom_pres (p : String) (S : Finset PLLFormula) {f c : Nat}
   simp only [if_neg h1, if_pos h2, if_pos h3]
   exact List.mem_singleton.mpr rfl
 
+/-- `(prop q') ⊃ B ∈ Γ'` with `prop q' ∉ Γ'` and `q' ≠ p`: here the ambient's clause is
+`prop q' ⇢ E@(c+2)(B::Γ')`, an **implication** — and the `itpA` disjunct for the same
+context formula is `prop q' ∧ A@b(B::Γ', C)`, so it supplies the antecedent.  This is the
+row of §103's table where the two tables' guards differ and the disjunct makes up the
+difference. -/
+theorem grown_impAtom_fresh (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ' Δ : List PLLFormula} {q' : String} {B : PLLFormula}
+    (hF : (prop q').ifThen B ∈ Γ') (h1 : B ∉ Γ') (h2 : B ∈ S)
+    (h3 : (prop q' : PLLFormula) ∉ Γ') (h4 : ¬(q' = p))
+    (hamb : G4c Δ (itpE p S (f + 1) (c + 2) Γ'))
+    (hq' : G4c Δ (prop q')) :
+    G4c Δ (itpE p S f (c + 2) (B :: Γ')) := by
+  rw [itpE_succ] at hamb
+  refine fire (projAll hamb ?_) hq'
+  unfold itpEcls
+  refine List.mem_append.mpr (Or.inr ?_)
+  refine List.mem_flatMap.mpr ⟨(prop q').ifThen B, hF, ?_⟩
+  simp only [if_neg h1, if_pos h2, if_neg h3, if_neg h4]
+  exact List.mem_singleton.mpr rfl
+
 /-- `(A ∧ B) ⊃ D ∈ Γ'`: the ambient's clause is the grown ambient at the curried
 context. -/
 theorem grown_impAnd (p : String) (S : Finset PLLFormula) {f c : Nat}
