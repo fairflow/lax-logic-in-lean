@@ -4089,3 +4089,47 @@ configurations, and the general lemmas are open.  The atom row is the only one
 proved uniformly in the configuration, and its route (`itpA_atom_forces`) is also
 the only one whose mechanism does not depend on a coincidence between the goal and
 the context — which is a fair statement of where the remaining mathematics is.
+
+## §98 — the ambient fires the boxed component: the grown ambient, in general (30 July)
+
+`wip/envDesc.lean` §7.  PROVED sorry-free,
+`[propext, Classical.choice, Quot.sound]`.
+
+§97's key step generalises, and this is it stated once and for all.
+
+The ambient `E@(c+2)(Γ)` is a **conjunction**, and for a γ-clause
+`◯A ⊃ B ∈ Γ ∩ S` with `B ∈ S ∖ Γ` two of its conjuncts are
+
+    A@(c+1)(Γ,A)                      ⇢  E@(c+2)(B::Γ)
+    ◯( E@(c+1)(Γ) ⇢ A@(c+1)(Γ,◯A) )   ⇢  E@(c+2)(B::Γ)
+
+and the antecedents are **exactly the two first components of the source's
+γ-disjuncts** — the plain one and the boxed one.  So:
+
+    grownAmb_of_box   : ambient + boxed first component  ⊢  E@(c+2)(B::Γ)
+    grownAmb_of_plain : ambient + plain first component  ⊢  E@(c+2)(B::Γ)
+
+### Why this matters
+
+`E@(c+2)(B::Γ)` is the **grown ambient**.  It is precisely the object
+`AmbGuardAscent` was introduced to produce, and it is obtained here with no
+ascent, no descent, no case analysis and nothing refuted — the γ-branch had it all
+along, sitting in its own hypotheses.
+
+This is a second and stronger use of the ambient than §4's.  There
+(`gated_env_first`) the ambient supplies *weaker tables by downward
+monotonicity*.  Here it supplies *implications whose antecedents the branch
+already has*.  The July route survey missed it because it asked what the branch
+could aim **at**, and never asked what the ambient could be fired **with**.
+
+### What it unlocks
+
+The defect tier's hypothesis at a grown context needs the ambient there.  With
+`grownAmb_of_box`/`grownAmb_of_plain` the γ-branch can now apply the defect tier at
+`B::Γ` properly, rather than being handed a pre-descended second component.  That
+is the "genuine recursion" §93 was reaching for, and it is available without any of
+the machinery §93 supposed would be needed.
+
+The restriction is that the growth is by `B`, the γ-clause's own consequent.  The
+fresh-antecedent branch grows by `C₁` instead, so this does not serve it directly —
+but §§94–95 show that branch closing by a different route anyway.

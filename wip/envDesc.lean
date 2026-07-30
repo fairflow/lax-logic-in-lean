@@ -271,6 +271,77 @@ theorem branch_of_cases_nonbox (p : String) (S : Finset PLLFormula)
   | or C₁ C₂ => simp only [itpAfull] at hψ; exact hcase ψ hψ
   | ifThen C₁ C₂ => simp only [itpAfull] at hψ; exact hcase ψ hψ
 
+/-! ## 7. The ambient fires the boxed component — the grown ambient, for free
+
+`wip/boxedS1b.lean` closes the boxed floor branch at one configuration by a step
+that generalises, and this is it.
+
+The ambient `E@(c+2)(Γ)` is a **conjunction**, and for a γ-clause
+`◯A ⊃ B ∈ Γ ∩ S` with `B ∈ S ∖ Γ` two of its conjuncts are
+
+    A@(c+1)(Γ,A)                        ⇢  E@(c+2)(B::Γ)
+    ◯( E@(c+1)(Γ) ⇢ A@(c+1)(Γ,◯A) )     ⇢  E@(c+2)(B::Γ)
+
+and the antecedent of the second is **exactly the branch's own boxed first
+component**.  Firing it yields the existential table at the *grown* context.
+
+That is worth stating on its own, because it is a second and stronger use of the
+ambient than §4's: there the ambient supplies weaker tables by downward
+monotonicity, here it supplies *implications whose antecedents the branch already
+has*.  And what it yields is precisely the object `AmbGuardAscent` was introduced
+to produce — the grown ambient — at the one context the γ-branch needs it, with
+no ascent and nothing refuted. -/
+
+/-- The ambient's γ-conjunct whose antecedent is the boxed component. -/
+theorem amb_gamma_mem (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ : List PLLFormula} {A B : PLLFormula}
+    (hmem : A.somehow.ifThen B ∈ Γ) (hS : A.somehow.ifThen B ∈ S)
+    (hB : B ∉ Γ) (hBS : B ∈ S) :
+    ((((itpE p S f (c + 1) Γ).ifThen
+        (itpA p S f (c + 1) Γ A.somehow)).somehow).ifThen
+      (itpE p S f (c + 2) (B :: Γ))) ∈ itpEcls p S f (c + 2) Γ := by
+  unfold itpEcls
+  refine List.mem_append.mpr (Or.inr ?_)
+  refine List.mem_flatMap.mpr ⟨A.somehow.ifThen B, hmem, ?_⟩
+  simp only [if_neg hB, if_pos hBS, if_pos hS]
+  exact List.mem_append.mpr
+    (Or.inl (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+
+
+/-- **The ambient fires the boxed component, giving the grown ambient.**  No
+ascent, no descent, no case analysis. -/
+theorem grownAmb_of_box (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Δ : List PLLFormula} {A B : PLLFormula}
+    (hmem : A.somehow.ifThen B ∈ Γ) (hS : A.somehow.ifThen B ∈ S)
+    (hB : B ∉ Γ) (hBS : B ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 1) (c + 2) Γ))
+    (hbox : G4c Δ ((((itpE p S f (c + 1) Γ).ifThen
+      (itpA p S f (c + 1) Γ A.somehow)).somehow))) :
+    G4c Δ (itpE p S f (c + 2) (B :: Γ)) := by
+  rw [itpE_succ] at hamb
+  exact fire (G4c.cut hamb
+    (G4c.andAll_elim (amb_gamma_mem p S hmem hS hB hBS)
+      (G4c.identity_mem (.head _)))) hbox
+
+/-- The same for the *plain* first component, whose antecedent is the other
+γ-conjunct.  Stated for symmetry: the two γ-disjuncts of the source both hand
+the ambient something it can fire. -/
+theorem grownAmb_of_plain (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Δ : List PLLFormula} {A B : PLLFormula}
+    (hmem : A.somehow.ifThen B ∈ Γ) (hS : A.somehow.ifThen B ∈ S)
+    (hB : B ∉ Γ) (hBS : B ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 1) (c + 2) Γ))
+    (hval : G4c Δ (itpA p S f (c + 1) Γ A)) :
+    G4c Δ (itpE p S f (c + 2) (B :: Γ)) := by
+  rw [itpE_succ] at hamb
+  refine fire (G4c.cut hamb (G4c.andAll_elim ?_ (G4c.identity_mem (.head _))))
+    hval
+  unfold itpEcls
+  refine List.mem_append.mpr (Or.inr ?_)
+  refine List.mem_flatMap.mpr ⟨A.somehow.ifThen B, hmem, ?_⟩
+  simp only [if_neg hB, if_pos hBS, if_pos hS]
+  exact List.mem_append.mpr (Or.inl (List.mem_cons_self ..))
+
 end EnvDesc
 end PLLND
 
@@ -311,3 +382,15 @@ info: 'PLLND.EnvDesc.branch_of_cases_nonbox' depends on axioms: [propext, Quot.s
 -/
 #guard_msgs in
 #print axioms PLLND.EnvDesc.branch_of_cases_nonbox
+
+/--
+info: 'PLLND.EnvDesc.grownAmb_of_box' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.EnvDesc.grownAmb_of_box
+
+/--
+info: 'PLLND.EnvDesc.grownAmb_of_plain' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.EnvDesc.grownAmb_of_plain
