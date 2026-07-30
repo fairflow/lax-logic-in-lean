@@ -4533,3 +4533,33 @@ Composed with §98:
                               ⊢  the grown ambient at `B::Γ`
 
 so the gated shapes of `ImpCase` are now one recursion step away.
+
+## §108 — correction: two of the three obligations were stated too strong (30 July)
+
+`wip/boxSnd.lean`.  Still sorry-free; `boxSnd_reaches` unchanged in content.
+
+`ImpCase` and `BoxCtxCase` as stated in §105 gave the prover the ambient, the disjunct
+and the side conditions — and **no recursion**.  Both are steps of the defect recursion
+(the `⊃`-headed families grow the context by `D`, the `◯χ` family by `χ`), so neither is
+provable without it: they were unprovable as written, not merely hard.  Both now carry the
+recursion hypothesis explicitly, at strictly smaller defect and one fuel down, exactly as
+`boxSnd_reaches` supplies it.
+
+That leaves the three obligations honest, and it isolates a structural difference worth
+recording:
+
+> `TruncCase` is **not** a step of the defect recursion.  The truncation disjunct's body
+> is `⋁ others` at the *same* `Γ'`, so it is not smaller in defect and cannot be handed
+> the recursion.
+
+So the truncation needs either its own measure, or the **pairing** move `desc_of_oth`
+uses for the truncation in the full-table descent — where the source truncation *commits*
+the target truncation and the source box is opened against it, so the two truncations
+cancel rather than one being consumed.  Which of the two applies here is open, and it is
+the only one of the three obligations whose shape is not yet settled.
+
+### Also from this pass
+
+`set_option maxHeartbeats` had to go from 1 000 000 to 4 000 000 for `boxSnd_reaches`
+once the obligations carried their recursion hypotheses — the statement's elaboration,
+not the proof, is what costs.

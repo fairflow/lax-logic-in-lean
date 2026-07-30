@@ -144,10 +144,17 @@ are explicit and small.
 def BoxCtxCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
   ∀ (f c : Nat) (Γ Γ' Δ : List PLLFormula) (χ : PLLFormula),
     χ.somehow ∈ Γ' → χ ∈ S → χ ∉ Γ' → (∀ Y ∈ Γ', Y ∈ S) →
-    G4c Δ ((itpE p S f (c + 2) (χ :: Γ')).somehow) →
-    G4c Δ (((itpE p S f (c + 1) (χ :: Γ')).ifThen
-      (itpA p S f (c + 1) (χ :: Γ') ((prop q).somehow))).somehow) →
-    G4c Δ (tgtClause p S f c Γ q)
+    G4c Δ ((itpE p S (f + 1) (c + 2) (χ :: Γ')).somehow) →
+    G4c Δ (((itpE p S (f + 1) (c + 1) (χ :: Γ')).ifThen
+      (itpA p S (f + 1) (c + 1) (χ :: Γ') ((prop q).somehow))).somehow) →
+    -- the recursion, at strictly smaller defect and one fuel down
+    (∀ (Γ'' : List PLLFormula) (w : PLLFormula),
+      (∀ y ∈ Γ', y ∈ Γ'') → (∀ y ∈ Γ'', y ∈ S) →
+      w ∈ S → w ∈ Γ'' → w ∉ Γ' →
+      G4c Δ (itpE p S (f + 1) (c + 2) Γ'') →
+      G4c Δ (itpA p S (f + 1) (c + 1) Γ'' ((prop q).somehow)) →
+      G4c Δ (tgtClause p S f c Γ q)) →
+    G4c Δ (tgtClause p S (f + 1) c Γ q)
 
 /-- The truncation disjunct of the traversal. -/
 def TruncCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
@@ -158,6 +165,14 @@ def TruncCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
       (orAll (itpAoth p S f (c + 1) Γ' ((prop q).somehow)))).somehow) →
     G4c Δ (tgtClause p S f c Γ q)
 
+/-! `TruncCase` is the one obligation of the four that is *not* a step of the defect
+recursion, and it is worth saying why.  The truncation disjunct's body is `⋁ others` at
+the **same** `Γ'`, so it is not smaller in defect and cannot be handed the recursion the
+way `ImpCase` and `BoxCtxCase` are.  Either it needs its own measure, or it needs the
+*pairing* move `desc_of_oth` uses for the truncation in the full-table descent (the
+source truncation commits the target truncation and the source box is opened against it).
+Which of the two is right is open. -/
+
 /-- The `⊃`-headed environment families (`(prop q')⊃B`, `(A∧B)⊃D`, `(A∨B)⊃D`,
 `(A⊃B)⊃D`, `◯A⊃B`).  Their grown ambients are `grown_impAtom_pres`, `grown_impAnd`,
 `grown_impOr` and — for the two gated ones — `EnvDesc.grownAmb_of_plain` and
@@ -165,9 +180,16 @@ def TruncCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
 def ImpCase (p : String) (S : Finset PLLFormula) (q : String) : Prop :=
   ∀ (f c : Nat) (Γ Γ' Δ : List PLLFormula) (A D : PLLFormula) (φ : PLLFormula),
     A.ifThen D ∈ Γ' → (∀ Y ∈ Γ', Y ∈ S) →
-    φ ∈ itpAenv p S f (c + 1) Γ' ((prop q).somehow) →
-    G4c Δ (itpE p S (f + 1) (c + 2) Γ') → G4c Δ φ →
-    G4c Δ (tgtClause p S f c Γ q)
+    φ ∈ itpAenv p S (f + 1) (c + 1) Γ' ((prop q).somehow) →
+    G4c Δ (itpE p S (f + 2) (c + 2) Γ') → G4c Δ φ →
+    -- the recursion, at strictly smaller defect and one fuel down
+    (∀ (Γ'' : List PLLFormula) (w : PLLFormula),
+      (∀ y ∈ Γ', y ∈ Γ'') → (∀ y ∈ Γ'', y ∈ S) →
+      w ∈ S → w ∈ Γ'' → w ∉ Γ' →
+      G4c Δ (itpE p S (f + 1) (c + 2) Γ'') →
+      G4c Δ (itpA p S (f + 1) (c + 1) Γ'' ((prop q).somehow)) →
+      G4c Δ (tgtClause p S f c Γ q)) →
+    G4c Δ (tgtClause p S (f + 1) c Γ q)
 
 /-- The fuel-`0` floor of the traversal: every component of every disjunct is `⊤` or
 `⊥`, so each disjunct either explodes or is absurd. -/
@@ -190,7 +212,7 @@ theorem tgtClause_fuel_lift (p : String) (S : Finset PLLFormula) {f c : Nat}
 
 /-! ## The traversal -/
 
-set_option maxHeartbeats 1000000 in
+set_option maxHeartbeats 4000000 in
 /-- **The traversal.**  From the ambient and the second component at a grown context
 `Γ'`, reach the boxed goal clause at `Γ`.  Recursion on the defect.
 
@@ -256,16 +278,16 @@ theorem boxSnd_reaches (p : String) (S : Finset PLLFormula)
           | falsePLL => cases hin
           | or A B => exact absurd hFS (hOr A B)
           | ifThen A D =>
-              exact hic (f' + 1) c Γ Γ' _ A D φ hFΓ' hΓ'S henv hA hφd
+              exact hic f' c Γ Γ' _ A D φ hFΓ' hΓ'S henv hA hφd step
           | somehow χ =>
               simp only at hin
               split at hin
               next => cases hin
               next hcond =>
                 rcases List.mem_singleton.mp hin with rfl
-                exact hbc (f' + 1) c Γ Γ' _ χ hFΓ' (hsome hFS)
+                exact hbc f' c Γ Γ' _ χ hFΓ' (hsome hFS)
                   (fun h => hcond (Or.inl h)) hΓ'S
-                  (grown_box p S hFΓ' hcond hA) hφd
+                  (grown_box p S hFΓ' hcond hA) hφd step
           | and A B =>
               simp only at hin
               split at hin
