@@ -4173,3 +4173,57 @@ cannot change derivability — only what the searcher finds).
 So the honest statement of the boxed row is: **open at the goals the recursion
 reaches**, with a general new resource (§98) in hand and the route at `◯B`
 understood.
+
+## §100 — the boxed floor branch closed at the goal the descent actually reaches (30 July)
+
+`wip/boxedOnPath.lean` (new), PROVED sorry-free,
+`[propext, Classical.choice, Quot.sound]`.
+
+§99 pointed out that §97's instance was at `C = ◯B`, off the recursion's path.
+This closes the branch at `C = ◯A` — the actual boxed jump goal.
+
+### The route, and how it was found
+
+At `C = ◯r` the target has three disjuncts and two are **refuted**
+(`wip/sealprobe13.lean`), so the goal clause `◯(E@0(Γ) ⇢ A@1(Γ,r))` is the only
+candidate.  The decisive measurement:
+
+| sequent | verdict |
+|---|---|
+| `[snd, s] ⊢ ⋁ itpAoth …` | **PROVED, 36 nodes** |
+| `[snd] ⊢ ⋁ itpAoth …` (no `s`) | **REFUTED** |
+| `[amb, box, snd, s] ⊢ ⋁ itpAoth …` | `~` at 200 000 |
+
+So `prop s` is exactly the missing ingredient — and `prop s` is derivable from the
+ambient and the boxed component alone, which is §98's discovery specialised
+(`BoxedS1b.s_of_amb_box`).  `boxed_onpath` composes the two.
+
+Semantically: `snd = A@1(s::Γ,◯r)` yields, under `◯`, the implication
+`E@0(s::Γ) ⇢ A@1(s::Γ,r)`, whose antecedent contains the atom `s`; the grown
+ambient supplies `s`; so `A@1(s::Γ,r)` — which is `r` — follows at the
+`⊳`-successor, and that is the target's goal clause.
+
+### A note on the searcher, worth keeping
+
+`[amb, box, snd, s] ⊢ target` is **not** found at 200 000 nodes while
+`[snd, s] ⊢ target` is found in 36.  Adding *derivable* hypotheses cannot change
+derivability, but it widens the search.  So the productive pattern is: find the
+minimal hypothesis set that makes a cell searchable, pin that, and compose the
+rest in Lean.  Three of this session's results were obtained that way.
+
+### Where the descent now stands
+
+All four branch shapes have a **closed on-path instance**:
+
+| branch, at target budget `1` | status |
+|---|---|
+| floor, atom jump goal | **proved in general** (`∨`-free space) |
+| floor, `⊃`-shaped jump goal | proved at two configurations |
+| floor, **boxed** jump goal `◯A` | **proved at an on-path configuration** (§100) |
+| fresh-antecedent goal | proved at three configurations incl. the deciding one |
+
+and nothing in the descent is now known to be blocked.  What remains is
+**generality**: one row is uniform in the configuration, three are finite sets of
+instances.  That is a research problem of an ordinary kind — find the general
+lemma each route is an instance of — rather than an obstruction with refutations
+across it, which is what the session began with.
