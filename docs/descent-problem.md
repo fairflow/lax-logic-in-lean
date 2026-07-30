@@ -328,6 +328,64 @@ may only be compared with another `~`.
 | floor, boxed jump goal | OPEN; being re-measured at adequate budget |
 | fresh-antecedent goal | proved at three configurations, without the ascent; general lemma OPEN |
 
+## 6b. Update (§§97–105): the residue is no longer blocked anywhere
+
+**The substantive discovery.**  The ambient `E@(c+2)(Γ)` is a *conjunction*, and for a
+γ-clause `◯A ⊃ B ∈ Γ ∩ S` two of its conjuncts are
+
+    A@(c+1)(Γ,A)                      ⇢  E@(c+2)(B::Γ)
+    ◯( E@(c+1)(Γ) ⇢ A@(c+1)(Γ,◯A) )   ⇢  E@(c+2)(B::Γ)
+
+whose antecedents are **exactly the two first components of the source's γ-disjuncts**.
+So the branch can *fire* the ambient and obtain the **grown ambient** — precisely what
+`AmbGuardAscent` was introduced to produce, with no ascent and nothing refuted
+(`EnvDesc.grownAmb_of_box`, `grownAmb_of_plain`, sorry-free, general).  §5 above uses
+the ambient only for weaker tables by downward monotonicity; this is the stronger use,
+and the July survey missed it by asking what the branch could aim *at* and never what
+the ambient could be fired *with*.
+
+**The remap.**  `AtomForce.boxGoal_remap` (general): given the grown ambient, the boxed
+goal clause at *any* `Γ'` remaps to the one at *any* `Γ`.  The value conversion is
+context shrinking — unsound in general — and at an atom goal `itpA_atom_forces`
+licenses it, because `prop q` is a disjunct of the target at every context.
+
+**The grown ambient, shape by shape** (`wip/boxSnd.lean`, five lemmas, sorry-free):
+`grown_and`, `grown_impAtom_pres`, `grown_impAnd`, `grown_impOr`, `grown_box`.  With
+the two firing lemmas this covers every context shape, and the form always matches what
+the corresponding `itpA` disjunct can use — unboxed where it is unboxed, **boxed** for
+`◯χ` where the disjunct is boxed too.  Both tables come from the same clause analysis
+of the context formula, so their guards and modal depth agree by construction.
+
+*Do not* replace these by a uniform "ambient at any larger context follows from the
+ambient": that is the existential ascent in pure context-growth form, and it is
+refuted.
+
+**The assembly.**  `BoxSnd.boxSnd_reaches` (sorry-free): the defect recursion over
+`itpAfull p S f (c+1) Γ' (◯q)`, proving outright the goal clause (via `boxGoal_remap`),
+the `∧` family, and the vacuous families, with four named obligations left —
+`ImpCase` (the five `⊃`-headed families; grown ambients proved, guard bookkeeping
+left), `BoxCtxCase` (`◯χ`, both sides boxed, pair under `laxL`), `TruncCase`
+(open by `laxL`, legitimate since the conclusion is `◯`-shaped), `ZeroFuelCase`
+(the fuel-`0` floor).  Also `tgtClause_fuel_lift`, whose two conversions are free in
+opposite directions.
+
+**Closed on-path instances**, sorry-free: `FloorImp.*` (`⊃`-shaped floor branch),
+`FreshAnt.*` (fresh-antecedent branch, including the deciding cell, **without** the
+ascent), `BoxedOnPath.boxed_onpath` (boxed floor branch at `C = ◯A`, the goal the
+recursion reaches).
+
+**Status.**
+
+| branch, target budget `1` | status |
+|---|---|
+| floor, atom jump goal | **PROVED, general** (`∨`-free space) |
+| floor, `⊃`-shaped jump goal | proved at two configurations |
+| floor, boxed jump goal `◯A` | general theorem modulo four scoped case obligations; one closed on-path instance |
+| fresh-antecedent goal | proved at three configurations incl. the deciding one |
+
+Nothing in the descent is now known to be blocked.  What remains is generality and case
+work, not an obstruction with refutations across it.
+
 ## 7. The budget law, as a parameter
 
 Three fixed budget laws were assumed and refuted in July.  The statement now
