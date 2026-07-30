@@ -378,136 +378,118 @@ to each, which is a finite obligation of the same kind as the goal-side table of
 
 # CONSOLIDATED STATE — read this section first
 
-*Supersedes the running commentary above.  Everything here is either a
-sorry-free Lean theorem, named, or explicitly labelled REFUTED, OPEN or a
-measurement.*
+*Rewritten after §99.  Supersedes everything above, including an earlier version
+of this section.  Every claim below is either a sorry-free Lean theorem, named, or
+explicitly labelled REFUTED, OPEN or a measurement.*
 
-## The one open lemma
+## 1. The one open lemma
 
-`uniform_interpolation_IPC` is **proved** (sorry-free).
+`uniform_interpolation_IPC` is **proved**, sorry-free.
 `uniform_interpolation_PLL` carries `sorryAx` through exactly one lemma:
-`cascade_low_pos_box` (`wip/absorb_base.lean:2273`), the **descent**
+`cascade_low_pos_box` (`wip/absorb_base.lean:2273`), the **descent** —
 
     Δ ⊢ itpE p S fuel (c+1) Γ ,  Δ ⊢ itpA p S fh (c+1) Γ g
     ─────────────────────────────────────────────────────────
     Δ ⊢ itpA p S fuel c Γ g                        (fh ≤ fuel)
 
-— "lowering the budget by one is harmless, financed by the existential table at
-the higher budget".  It is what makes the interpolant independent of the ambient
+"lowering the budget by one is harmless, financed by the existential table at the
+higher budget".  It is what makes the interpolant independent of the ambient
 context, so it cannot be dodged.
 
-## Where the descent stands after this run
+## 2. What is settled
 
-| part of the descent | budget | status |
-|---|---|---|
-| goal side, six of seven families | any | **PROVED** `wip/goalDesc.lean` — and none of them ever reaches budget `0` |
-| goal side, fresh-antecedent family | ≥ 2 | reduces to the ∃-ascent, which has no certified failure there |
-| goal side, fresh-antecedent family | 1 | proved at three configurations **without** the ascent (§§94-95); general lemma OPEN |
-| truncation disjunct | any | **PROVED** `desc_of_oth`; and no budget floor needed at non-boxed goals (`desc_of_oth_nonbox`) |
-| three gated environment components | target ≥ 2 | **PROVED** `wip/envDesc.lean` (`gated_env_first`) |
-| floor, **atom** jump goal | 1 | **PROVED, general** `AtomForce.floor_branch_atom` (∨-free space) |
-| floor, **`⊃`-shaped** jump goal | 1 | **PROVED at two configurations** `wip/floorImp.lean` |
-| floor, **boxed** jump goal | 1 | **OPEN** — one of the two residual branches |
-| descent at budget `0` | 0 | **REFUTED** `not_floorDescent` |
-| descent at budget `1`, general goal | 1 | **REFUTED** `not_roomFreeDescent` |
-| ∃-ascent at budget `1` | 1 | **REFUTED** `not_ambGuardAscent` |
+**Refuted** (all in infallible, mutually confluent models, so they reach PCLL,
+PILL and PICLL too):
 
-All three refutations hold in **infallible, mutually confluent** models, so they
-reach PCLL, PILL and PICLL as well as plain PLL.
+| statement | name |
+|---|---|
+| the descent at target budget `0` | `not_floorDescent` |
+| the descent at target budget `1`, general goal | `not_roomFreeDescent` |
+| the ∃-ascent at budget `1` | `not_ambGuardAscent` |
+| each of the three *uniform* routes for a floor branch | `not_uniformRouteA/B`, `not_route_bot` |
 
-**The residue, stated exactly.**  Everything is accounted for except *two*
-things, both at target budget `1`:
+**Proved** (sorry-free):
 
-1. the **floor branch at a boxed jump goal** — no case of the analysis reaches
-   any target disjunct, across three configurations, and §93 shows any proof must
-   recurse rather than apply the defect tier once;
-2. the **fresh-antecedent goal branch** — its target clause is
-   `E@1(C₁::Γ) ⇢ A@1(C₁::Γ,C₂)`, and firing the source's needs the ∃-ascent at
-   budget `1` at the grown context, which is exactly what `not_ambGuardAscent`
-   refutes.
+| result | name |
+|---|---|
+| goal side, six of seven families; none reaches budget `0` | `wip/goalDesc.lean` |
+| the truncation wrapper needs no budget floor at non-boxed goals | `desc_of_oth_nonbox` |
+| the three gated environment components at target budget ≥ 2 | `gated_env_first` |
+| the case analysis on the second component | `branch_of_cases` |
+| **the table at an atom goal forces the atom** (`∨`-free space) | `itpA_atom_forces` |
+| hence all three floor branches close at an atom goal, in general | `floor_branch_atom` |
+| **the ambient plus either γ first component yields the grown ambient** | `grownAmb_of_box`, `grownAmb_of_plain` |
+| the reduction of the tower's holdout to one proposition | `ledgerDescent_of_othDescends` |
+| instances: `⊃`-shaped floor branch; fresh-antecedent branch (incl. the deciding cell, without the ascent); boxed branch at `C = ◯B` | `wip/floorImp.lean`, `wip/freshAnt.lean`, `wip/boxedS1b.lean` |
 
-**(2) has since been overtaken.**  Examined disjunct by disjunct for the first
-time, the fresh-antecedent branch turns out to close **without the ascent at
-all**: 9 nodes at two configurations, and 56 nodes at the deliberately hard cell
-`C = r ⊃ z` — where the goal's consequent is unrelated to anything in the context
-and every other target disjunct is *refuted* — under **exhaustive** search, while
-the ascent instance the "natural" route would need is still undecided at a
-hundred times the budget.  The 56-node derivation takes the introduced guard
-*apart* by cases rather than trying to strengthen it, which is exactly what the
-ascent was standing in for.
+## 3. What is open
 
-So `not_ambGuardAscent` refutes a statement that branch **can** be routed
-through, not one it **must** be: the July obstruction there was an artefact of
-`wip/cascadeBox.lean`'s chosen route.  Pinned instances: `FreshAnt.fresh_ant_S1`,
-`fresh_ant_S2` and the unrelated-consequent cells.
+The budget tier of the descent is entered only at **jump goals**, one step at a
+time, and jump goals have three shapes: `A`, `◯A`, `A ⊃ B`.  So the descent
+reduces to the floor branches at those, plus the goal-side fresh-antecedent
+family.  Status:
 
-That leaves **(1)**, the boxed floor branch, as the only branch with no positive
-evidence at any probed configuration.  Above budget `1` neither arises: the gated components have the
-ambient two budgets up (§86), and the ascent has no certified failure at
-`c ≥ 2` in any probed configuration.
+| branch, at target budget `1` | status |
+|---|---|
+| floor, **atom** jump goal | **PROVED, general** (`∨`-free space) |
+| floor, **`⊃`-shaped** jump goal | proved at two configurations; general lemma OPEN |
+| floor, **boxed** jump goal `◯A` | **OPEN**; goal clause is the only surviving target disjunct (the other two are refuted) |
+| fresh-antecedent goal clause | proved at three configurations incl. the deciding one, without the ascent; general lemma OPEN |
 
-So the accurate headline is: **the descent is reduced to two branches, both at
-target budget `1`** — where before this session it was four jointly unsatisfiable
-interfaces with no localisation.
+Above budget `1` none of these arises: the gated components have the ambient two
+budgets up, and the ∃-ascent has no certified failure at `c ≥ 2` in any probed
+configuration.
 
-## The five structural facts that got it there
+## 4. The two substantive discoveries
 
-1. **The recursion terminates for free.**  Every budget-decrementing reference in
-   the clause tables sits at the *same* context; every context-growing reference
-   sits at the *same* budget.  So the lexicographic pair `(defect, budget)`
-   decreases at every recursive call, and no pigeonhole argument is needed for
-   termination.  What the seen-set machinery of `cascade_main` is really for is
-   that the budget's **base case is false**.
-2. **The budget tier is entered only at jump goals**, one step at a time — the
-   only universal components at budget `b−1` anywhere are `A@b'(Γ,A)`,
-   `A@b'(Γ,A⊃B)`, `A@b'(Γ,◯A)`.
-3. **A gated *goal* clause demotes only its existential component.**  The
-   ambient at budget `c+1` supplies that free by downward monotonicity, so no
-   goal branch ever reaches budget `0`, and the entire low-budget difficulty is
-   in the environment clauses.
-4. **No uniform route closes the floor branch.**  All three target disjuncts it
-   could aim at are individually underivable (`wip/sealRefute.lean`).  The case
-   analysis that must replace one is free: the branch's *second* hypothesis is
-   itself a disjunction (`EnvDesc.branch_of_cases`).  The July survey missed it
-   because it looked at the *first* component.
-5. **At an atom goal the table forces the atom** (`itpA_atom_forces`), because
-   `prop q` is a disjunct of the target at *every* context.  That closes the
-   floor branch at atom goals uniformly.  At a boxed goal the goal clause is
-   `◯(E@(b−1)(Γ) ⇢ A@b(Γ,D))` — the context appears *under a `◯`* — so neither
-   the atom move nor the `⊃` move applies.
+**(a) At an atom goal the table forces the atom.**  For `q ≠ p` over a `∨`-free
+space, `itpA p S f b Γ (prop q) ⊢ prop q`, at every fuel and budget, by strong
+induction on the defect over all ten environment clause shapes.  Atoms are special
+rather than merely easier: `prop q` is a disjunct of the target at *every* context,
+so a fact proved at a grown context lands where it is needed.  Every other goal
+shape's goal clause mentions the context.
 
-## The budget law, settled as far as it can be
+**(b) The ambient supplies implications whose antecedents the branch already has.**
+The ambient `E@(c+2)(Γ)` is a conjunction, and for a γ-clause `◯A ⊃ B ∈ Γ ∩ S` two
+of its conjuncts are `A@(c+1)(Γ,A) ⇢ E@(c+2)(B::Γ)` and
+`◯(E@(c+1)(Γ) ⇢ A@(c+1)(Γ,◯A)) ⇢ E@(c+2)(B::Γ)` — whose antecedents are exactly the
+two first components of the source's γ-disjuncts.  So the branch can *fire* the
+ambient and obtain the **grown ambient**, which is precisely what
+`AmbGuardAscent` was introduced to produce, with no ascent and nothing refuted.
+The July survey missed this because it asked what the branch could aim **at**, never
+what the ambient could be fired **with**.
 
-The requirement is a parameter `need`, not a guess (three guesses were refuted in
-July).  Certified: `need ≥ 2` at the `ascRefute` configuration; `need ≥ 1` at a
-configuration with **no** gated pieces.  Measured: the failure boundary is **flat
-at ≤ 2** across chains of length 2, 3, 4, four live gates, defect 15 — the
-assumed product law would predict 63, 108, 165.  The floor law `NeedFloor1` was
-too strong and is refined to boxed goals only (`NeedBoxFloor1`).  And
+## 5. Two mistakes made and corrected in this session
 
-    ledgerDescent_of_othDescends : OthDescends p needKcap → LedgerDescent p S
+Recorded because they bear on how the evidence should be read.
 
-reduces the tower's holdout to **one named proposition**, with `needKcap` exactly
-what the tower's entry condition pays (`needKcap_funded`).
+* **§96.**  §§92–93 concluded that at a boxed goal no case reaches any target
+  disjunct, from cells run at `findBudget` 20 000.  A `~` at a bounded budget
+  asserts nothing, and the fresh-antecedent branch later needed 200 000 nodes to
+  yield a 56-node proof.  Rule: a `~` may be compared only with another `~`.
+* **§99.**  §97 closed the boxed branch at `C = ◯s`, i.e. `◯B` where `B` is the
+  γ-clause's consequent.  The recursion only ever reaches `A` and `◯A`, so that
+  instance is off the path.  The theorem is true and was the worked example that
+  produced discovery (b); it is not an instance of the residue.
 
-## New tooling, reusable
+## 6. New tooling
 
 `#pinsrc` (`LaxLogic/PLLSearchPin.lean`, manual §10) turns a search-found proof
-into a kernel-checked theorem, printing the derivation with **no formulas** in it.
-Seven facts in this run moved from probe output to theorem because of it.  This
-completes the "discover-then-pin" pipeline: probe → `#pinsrc` → generated source
-→ kernel, with nothing about the search trusted at the end.
+into a kernel-checked theorem, printing the derivation with **no formulas** in it,
+so the output is proportional to the derivation and not to the tables.  Seven facts
+in this session moved from probe output to theorem.  This completes the
+discover-then-pin pipeline: probe → `#pinsrc` → generated source → kernel, with
+nothing about the search trusted at the end.
 
-## Dead ends, so they are not retried
+## 7. Dead ends, so they are not retried
 
-* **Completeness for the constraint semantics** is available and sorry-free
-  (`consequence_iff_derivable`) but does **not** shortcut the descent: the
-  semantic iteration is over hereditary sets of *worlds* and has no finite bound,
-  whereas the syntactic pigeonhole counts goals in the finite `jumpGoals S`.
-* **Raising the budget floor** cannot give the budget tier a base case — both
-  bottom rungs are refuted and the obstruction is the clause shape, not the
-  numeral.  `oth_descent`'s architecture is not repairable this way.
+* **Completeness for the constraint semantics** is available and sorry-free but does
+  not shortcut the descent: the semantic iteration is over hereditary sets of
+  *worlds* and has no finite bound, whereas the syntactic pigeonhole counts goals in
+  the finite `jumpGoals S`.
+* **Raising the budget floor** cannot give the budget tier a base case; both bottom
+  rungs are refuted and the obstruction is the clause shape, not the numeral.
 * **`itpE` budget-independence for gate-free spaces** is false: `itpE`'s ungated
   clauses reference `itpA`, whose goal-side gating carries no `∈ S` condition.
-* **The `◯⊥` collapse** closes the floor branch only when the γ-head is the
-  *eliminated variable*; `not_route_bot` closes it off in general.
+* **The `◯⊥` collapse** closes a floor branch only when the γ-head is the eliminated
+  variable.
