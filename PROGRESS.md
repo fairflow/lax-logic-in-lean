@@ -4227,3 +4227,50 @@ and nothing in the descent is now known to be blocked.  What remains is
 instances.  That is a research problem of an ordinary kind — find the general
 lemma each route is an instance of — rather than an obstruction with refutations
 across it, which is what the session began with.
+
+## §101 — §100's route is configuration-dependent: it does not extend to the branching space
+
+A measurement, and a `REFUTED` rather than a `~`, so it is budget-independent.
+
+§100 closes the boxed floor branch at `C = ◯r` on the one-γ-clause space `S1` by
+supplying `prop s` — which the ambient and the boxed component yield (§98).  The
+obvious generalisation is "atomic γ-head over a `∨`-free space", and the plan was an
+induction on the defect, with `grownAmb_of_box` supplying the grown ambient at each
+level and `itpA_atom_forces` doing the value conversion.
+
+That plan is **not** available as stated.  On the two-γ-clause space `S2` — where the
+grown context `s::Γ` still has a live γ-clause, so the analysis genuinely branches:
+
+| sequent | verdict |
+|---|---|
+| `[snd, s] ⊢ ⋁ itpAoth "p" S2 3 1 G2 (◯r)` | **REFUTED** |
+| `[snd] ⊢ same` | **REFUTED** |
+| `[grownAmb, snd] ⊢ same` | `~` |
+| `[grownAmb, snd] ⊢ its goal clause` | `~` |
+
+So at `S1` the single atom `prop s` suffices and at `S2` it provably does not.  The
+route of §100 uses the fact that at `S1` the grown context `s::Γ` is *saturated* —
+every environment clause there is guard-dead — so `snd` collapses to something the
+atom alone can drive.  With a second γ-clause alive that collapse does not happen.
+
+### What this does and does not change
+
+* §100 stands: `boxed_onpath` is a true, sorry-free theorem, and it is an on-path
+  instance.  It is *one* instance.
+* The **general** boxed row is open, and now known to be genuinely
+  configuration-dependent rather than one uniform argument away.
+* §98's `grownAmb_of_box`/`grownAmb_of_plain` are unaffected — they are general, and
+  the `~` rows above say the search cannot decide the cell they feed, not that the
+  cell is false.
+* The proposed induction is not refuted either: it would supply the *grown ambient at
+  each level*, which the `[snd, s]` row does not have.  What is refuted is the
+  cheaper version of the route that uses only the atom.
+
+### Standing summary, accurate
+
+| branch, target budget `1` | status |
+|---|---|
+| floor, atom jump goal | **PROVED, general** (`∨`-free space) |
+| floor, `⊃`-shaped jump goal | proved at two configurations |
+| floor, boxed jump goal `◯A` | proved at one on-path configuration; general OPEN, route configuration-dependent |
+| fresh-antecedent goal | proved at three configurations incl. the deciding one |
