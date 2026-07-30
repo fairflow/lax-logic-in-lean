@@ -480,6 +480,76 @@ theorem zeroFuelCase (p : String) (S : Finset PLLFormula) {q : String}
                   | ifThen _ _ => cases hXin
               next => cases hin
 
+/-! ## Budget shift: the source's first components lift to what the ambient demands
+
+A gated environment disjunct of `itpA p S f (c+1) Γ'` has its first component at budget
+**`c`**, while the corresponding conjunct of the ambient `E@(c+2)(Γ')` has its antecedent
+at budget **`c+1`**.  So firing the ambient with the disjunct's own first component — the
+move of §98 — needs a one-step budget shift first.
+
+It is free, and for the same reason `tgtClause_fuel_lift` is free: the shift is *up* on
+the universal side, where tables weaken, and *down* on the existential side, where they
+also weaken.  Both directions of `itp_budget_mono` point the right way. -/
+
+/-- The jump clause's first component lifts one budget. -/
+theorem shift_imp (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Δ : List PLLFormula} {X : PLLFormula}
+    (hd : G4c Δ ((itpE p S f c Γ).ifThen (itpA p S f c Γ X))) :
+    G4c Δ ((itpE p S f (c + 1) Γ).ifThen (itpA p S f (c + 1) Γ X)) := by
+  refine G4c.impR ?_
+  refine consume₁ (fire (hd.weaken _) ?_)
+    ((itp_budget_mono p S f).2 c Γ X)
+  exact consume₁ (G4c.identity_mem (.head _))
+    ((itp_budget_mono p S f).1 c Γ)
+
+/-- The γ-clause's **boxed** first component lifts one budget. -/
+theorem shift_box (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Δ : List PLLFormula} {X : PLLFormula}
+    (hd : G4c Δ (((itpE p S f c Γ).ifThen (itpA p S f c Γ X)).somehow)) :
+    G4c Δ (((itpE p S f (c + 1) Γ).ifThen
+      (itpA p S f (c + 1) Γ X)).somehow) := by
+  refine box_remap_free hd ?_ ?_
+  · exact consume₁ (G4c.identity_mem (.head _))
+      ((itp_budget_mono p S f).1 c Γ)
+  · exact consume₁ (G4c.identity_mem (.head _))
+      ((itp_budget_mono p S f).2 c Γ X)
+
+/-- The γ-clause's **plain** first component lifts one budget — this one is
+`itp_budget_mono` outright, recorded here so the three shifts read together. -/
+theorem shift_plain (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Δ : List PLLFormula} {X : PLLFormula}
+    (hd : G4c Δ (itpA p S f c Γ X)) :
+    G4c Δ (itpA p S f (c + 1) Γ X) :=
+  consume₁ hd ((itp_budget_mono p S f).2 c Γ X)
+
+/-! ## The gated environment shapes, wired up
+
+With the shifts in place, §98's two firing lemmas apply to the disjunct's own first
+component, so the gated shapes of `ImpCase` reduce to the recursion.  Stated as the
+two composites the traversal will call. -/
+
+/-- γ-clause, boxed disjunct: the grown ambient from the ambient and the disjunct's own
+boxed first component, at the budget the disjunct actually carries. -/
+theorem grownAmb_of_box_shifted (p : String) (S : Finset PLLFormula) {f c : Nat}
+    {Γ Δ : List PLLFormula} {A B : PLLFormula}
+    (hmem : A.somehow.ifThen B ∈ Γ) (hS : A.somehow.ifThen B ∈ S)
+    (hB : B ∉ Γ) (hBS : B ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 1) (c + 2) Γ))
+    (hbox : G4c Δ (((itpE p S f c Γ).ifThen
+      (itpA p S f c Γ A.somehow)).somehow)) :
+    G4c Δ (itpE p S f (c + 2) (B :: Γ)) :=
+  grownAmb_of_box p S hmem hS hB hBS hamb (shift_box p S hbox)
+
+/-- γ-clause, plain disjunct: likewise. -/
+theorem grownAmb_of_plain_shifted (p : String) (S : Finset PLLFormula)
+    {f c : Nat} {Γ Δ : List PLLFormula} {A B : PLLFormula}
+    (hmem : A.somehow.ifThen B ∈ Γ) (hS : A.somehow.ifThen B ∈ S)
+    (hB : B ∉ Γ) (hBS : B ∈ S)
+    (hamb : G4c Δ (itpE p S (f + 1) (c + 2) Γ))
+    (hval : G4c Δ (itpA p S f c Γ A)) :
+    G4c Δ (itpE p S f (c + 2) (B :: Γ)) :=
+  grownAmb_of_plain p S hmem hS hB hBS hamb (shift_plain p S hval)
+
 end BoxSnd
 end PLLND
 
@@ -504,3 +574,15 @@ info: 'PLLND.BoxSnd.zeroFuelCase' depends on axioms: [propext, Classical.choice,
 -/
 #guard_msgs in
 #print axioms PLLND.BoxSnd.zeroFuelCase
+
+/--
+info: 'PLLND.BoxSnd.shift_box' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.BoxSnd.shift_box
+
+/--
+info: 'PLLND.BoxSnd.grownAmb_of_box_shifted' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms PLLND.BoxSnd.grownAmb_of_box_shifted

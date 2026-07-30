@@ -4505,3 +4505,31 @@ the shape of the table in the abstract.
 | `ImpCase` | the five `⊃`-headed environment families; grown ambients proved (§§98, 104), guard bookkeeping left |
 | `BoxCtxCase` | the `◯χ` family, ambient and disjunct both boxed, pair under `laxL` |
 | `TruncCase` | the truncation disjunct, open by `laxL`, handle one level in |
+
+## §107 — budget shift: the source's first components lift to what the ambient demands (30 July)
+
+`wip/boxSnd.lean`.  Five lemmas, PROVED sorry-free, all first try.
+
+A gated environment disjunct of `itpA p S f (c+1) Γ'` carries its first component at
+budget **`c`**, while the matching conjunct of the ambient `E@(c+2)(Γ')` has its
+antecedent at budget **`c+1`**.  So §98's move — firing the ambient with the disjunct's
+own first component — needs a one-step budget shift, and the shift is **free**:
+
+    shift_imp   : E@c(Γ) ⇢ A@c(Γ,X)      ⊢  E@(c+1)(Γ) ⇢ A@(c+1)(Γ,X)
+    shift_box   : ◯(E@c(Γ) ⇢ A@c(Γ,X))   ⊢  ◯(E@(c+1)(Γ) ⇢ A@(c+1)(Γ,X))
+    shift_plain : A@c(Γ,X)               ⊢  A@(c+1)(Γ,X)
+
+free for the same reason `tgtClause_fuel_lift` is: the shift is *up* on the universal
+side and *down* on the existential side, and both directions of `itp_budget_mono` point
+that way.  This is the third time in the session that the two conversions a
+`box_remap_free` needs turn out to be exactly the two free directions (§§104, 105, 107) —
+the tables are built so that the guard and the value weaken oppositely, and every remap
+of this kind rides that.
+
+Composed with §98:
+
+    grownAmb_of_box_shifted   : ambient + the disjunct's own boxed first component
+    grownAmb_of_plain_shifted : ambient + the disjunct's own plain first component
+                              ⊢  the grown ambient at `B::Γ`
+
+so the gated shapes of `ImpCase` are now one recursion step away.
