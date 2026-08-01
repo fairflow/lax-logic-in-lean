@@ -1,0 +1,497 @@
+<title>RN(◯,{}) — the ladder and the dictionary</title>
+
+<style>
+  :root {
+    --ink:        #13181a;
+    --ink-soft:   #55625c;
+    --paper:      #f4f7f4;
+    --panel:      #ffffff;
+    --rule:       #ccd7cf;
+    --green:      #2c7a4b;
+    --green-fill: #dcefe2;
+    --green-text: #245f3b;
+    --slate:      #64717c;
+    --slate-fill: #e7ebee;
+    --rust:       #b0530a;
+    --rust-fill:  #fbeadb;
+    --shadow:     0 1px 2px rgba(19,24,26,.06), 0 8px 24px rgba(19,24,26,.05);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans:  ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+    --mono:  ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e4eae5; --ink-soft: #94a49b; --paper: #101513; --panel: #171d1a;
+      --rule: #2e3a34; --green: #55ab74; --green-fill: #17301f; --green-text: #7cc796;
+      --slate: #8797a3; --slate-fill: #1d2429; --rust: #d9822b; --rust-fill: #2b1d10;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #e4eae5; --ink-soft: #94a49b; --paper: #101513; --panel: #171d1a;
+    --rule: #2e3a34; --green: #55ab74; --green-fill: #17301f; --green-text: #7cc796;
+    --slate: #8797a3; --slate-fill: #1d2429; --rust: #d9822b; --rust-fill: #2b1d10;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+  :root[data-theme="light"] {
+    --ink: #13181a; --ink-soft: #55625c; --paper: #f4f7f4; --panel: #ffffff;
+    --rule: #ccd7cf; --green: #2c7a4b; --green-fill: #dcefe2; --green-text: #245f3b;
+    --slate: #64717c; --slate-fill: #e7ebee; --rust: #b0530a; --rust-fill: #fbeadb;
+    --shadow: 0 1px 2px rgba(19,24,26,.06), 0 8px 24px rgba(19,24,26,.05);
+  }
+
+  body { margin:0; background: var(--paper); color: var(--ink);
+         font-family: var(--sans); font-size: 15px; line-height: 1.55; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 28px 20px 56px; }
+
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 18px; margin-bottom: 22px; }
+  h1 { font-family: var(--serif); font-weight: 600; font-size: 30px; line-height: 1.2;
+       margin: 0 0 6px; letter-spacing: -.01em; text-wrap: balance; }
+  .sub { color: var(--ink-soft); max-width: 66ch; margin: 0; }
+  .eyebrow { font-size: 11px; letter-spacing: .13em; text-transform: uppercase;
+             color: var(--green); font-weight: 600; margin: 0 0 8px; }
+
+  .tabs { display:flex; gap:4px; margin: 20px 0 18px; border-bottom: 1px solid var(--rule); }
+  .tab { appearance:none; background:none; border:0; border-bottom: 2px solid transparent;
+         font-family: var(--sans); font-size: 14px; color: var(--ink-soft);
+         padding: 9px 14px; cursor:pointer; margin-bottom:-1px; }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--green); font-weight:600; }
+  .tab:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius:4px; }
+
+  .cols { display:grid; grid-template-columns: 280px minmax(0,1fr); gap: 22px; align-items:start; }
+  @media (max-width: 860px) { .cols { grid-template-columns: minmax(0,1fr); } }
+
+  .rail { display:flex; flex-direction:column; gap: 16px; position:sticky; top: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 10px;
+          padding: 14px 16px; box-shadow: var(--shadow); }
+  .card h2 { font-family: var(--sans); font-size: 11px; letter-spacing: .11em;
+             text-transform: uppercase; color: var(--ink-soft); margin: 0 0 10px; font-weight: 600; }
+
+  label.ctl { display:block; font-size: 13px; color: var(--ink-soft); margin-bottom: 6px; }
+  input[type=range] { width: 100%; accent-color: var(--green); }
+  .nval { font-family: var(--mono); font-variant-numeric: tabular-nums;
+          font-size: 20px; color: var(--ink); font-weight: 600; }
+  .presets { display:flex; gap:6px; flex-wrap:wrap; margin-top:10px; }
+  .chip { appearance:none; font-family: var(--mono); font-size:12px; cursor:pointer;
+          background: var(--paper); color: var(--ink-soft);
+          border:1px solid var(--rule); border-radius: 999px; padding: 3px 10px; }
+  .chip:hover { border-color: var(--green); color: var(--green); }
+  .chip:focus-visible { outline: 2px solid var(--green); outline-offset:1px; }
+
+  .legend { display:flex; flex-direction:column; gap: 8px; font-size: 13px; }
+  .lrow { display:flex; gap:9px; align-items:flex-start; }
+  .sw { width:15px; height:15px; border-radius:4px; flex:none; margin-top:2px; }
+  .sw.g { background: var(--green-fill); border:1.5px solid var(--green); }
+  .sw.o { background: var(--slate-fill); border:1.5px solid var(--slate); }
+  .swl { width:22px; flex:none; margin-top:9px; border-top:1.6px solid var(--slate); }
+  .swl.d { border-top-style: dashed; }
+  .swl.x { border-top:2.4px solid var(--rust); }
+
+  .stats { display:grid; grid-template-columns: 1fr auto; gap: 3px 10px; font-size: 13px; }
+  .stats dt { color: var(--ink-soft); }
+  .stats dd { margin:0; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+  .check { font-size: 12.5px; padding: 8px 10px; border-radius: 7px; line-height:1.45;
+           background: var(--green-fill); color: var(--green-text); border:1px solid var(--green); }
+  .check.bad { background: var(--rust-fill); color: var(--rust); border-color: var(--rust); }
+
+  .stage { background: var(--panel); border:1px solid var(--rule); border-radius: 10px;
+           box-shadow: var(--shadow); overflow: auto; max-height: 74vh; }
+  .stage svg { display:block; }
+
+  .readout { margin-top: 12px; font-family: var(--serif); font-size: 15px;
+             min-height: 3.1em; color: var(--ink); }
+  .readout .muted { font-family: var(--sans); font-size:13px; color: var(--ink-soft); }
+  .fml { font-family: var(--serif); }
+
+  .node { cursor: pointer; }
+  .node rect { transition: filter .12s ease; }
+  .node:hover rect { filter: brightness(.97); }
+  :root[data-theme="dark"] .node:hover rect,
+  .node:hover rect { filter: brightness(1.06); }
+
+  .note { font-size: 13.5px; color: var(--ink-soft); max-width: 68ch; margin: 18px 0 0; }
+  .note code { font-family: var(--mono); font-size: 12.5px;
+               background: var(--slate-fill); padding: 1px 5px; border-radius: 4px; }
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+             overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+<h2 class="sr-only">Interactive Hasse diagrams for the Rieger–Nishimura ladder embedded in the variable-free fragment of propositional lax logic, and for the fifteen known classes of that fragment.</h2>
+
+<header>
+  <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
+  <h1>RN(◯,{}) — the ladder and the dictionary</h1>
+  <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
+  <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
+  The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
+  where the ladder is only part of the picture.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" id="tab-ladder" role="tab" aria-selected="true" aria-controls="p-ladder">Ladder — image of h</button>
+  <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — 15 classes</button>
+</div>
+
+<!-- ───────────────────────── LADDER ───────────────────────── -->
+<section id="p-ladder" role="tabpanel" aria-labelledby="tab-ladder">
+  <div class="cols">
+    <div class="rail">
+      <div class="card">
+        <h2>Rungs shown</h2>
+        <div class="nval" id="nval">9</div>
+        <label class="ctl" for="nrange">rn 0 … rn N</label>
+        <input type="range" id="nrange" min="3" max="201" step="1" value="9"/>
+        <div class="presets">
+          <button class="chip" data-n="9">9</button>
+          <button class="chip" data-n="21">21</button>
+          <button class="chip" data-n="51">51</button>
+          <button class="chip" data-n="101">101</button>
+          <button class="chip" data-n="201">201</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Computed</h2>
+        <dl class="stats">
+          <dt>elements</dt><dd id="s-n">9</dd>
+          <dt>covers</dt><dd id="s-cov">11</dd>
+          <dt>comparable pairs</dt><dd id="s-cmp">–</dd>
+          <dt>widest antichain</dt><dd id="s-w">–</dd>
+          <dt>compute time</dt><dd id="s-ms">–</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>Self-check</h2>
+        <div class="check" id="selfcheck">…</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stage" id="stage-ladder"></div>
+      <p class="readout" id="read-ladder"><span class="muted">Click any rung for its truth set.</span></p>
+    </div>
+  </div>
+
+  <p class="note">Everything here is recomputed in the page from the same arithmetic the Lean
+  proof uses — <code>rn 0 = ∅</code>, <code>rn(2k+1) = {w ≤ k}</code>,
+  <code>rn(2k+2) = {w &lt; k} ∪ {k+1}</code>, and <code>rn i ⊢ rn j</code> iff truth-set inclusion
+  (<code>rnSub_order</code>). Nothing is read from a stored table, so any N is as trustworthy as N = 9.</p>
+</section>
+
+<!-- ─────────────────────── DICTIONARY ─────────────────────── -->
+<section id="p-dict" role="tabpanel" aria-labelledby="tab-dict" hidden>
+  <div class="cols">
+    <div class="rail">
+      <div class="card">
+        <h2>Legend</h2>
+        <div class="legend">
+          <div class="lrow"><span class="sw g"></span><span>In the image of <span class="fml">h : p ↦ ◯⊥</span> — certified interderivable with a rung</span></div>
+          <div class="lrow"><span class="sw o"></span><span>Outside it</span></div>
+          <div class="lrow"><span class="swl"></span><span>Certified cover</span></div>
+          <div class="lrow"><span class="swl d"></span><span>Cover status depends on an unsettled cell</span></div>
+          <div class="lrow"><span class="swl x"></span><span>Where distribution fails</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>State of the order</h2>
+        <dl class="stats">
+          <dt>classes</dt><dd>15</dd>
+          <dt>order cells</dt><dd>225</dd>
+          <dt>settled</dt><dd id="d-set">211</dd>
+          <dt>unsettled</dt><dd id="d-unk">14</dd>
+          <dt>in image of h</dt><dd>8</dd>
+        </dl>
+      </div>
+      <div class="card">
+        <h2>◯ leaves the image</h2>
+        <div class="legend" style="font-family:var(--serif)">
+          <div>◯(rung 2) = ◯(rung 3) = q5</div>
+          <div>◯(rung 5) = q12</div>
+          <div style="color:var(--ink-soft);font-family:var(--sans);font-size:12.5px">
+            but ◯(rung 4) = rung 4 and ◯(rung 6) = rung 6 — fixed points.</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="stage" id="stage-dict"></div>
+      <p class="readout" id="read-dict"><span class="muted">Click any class for its formula and rung.</span></p>
+    </div>
+  </div>
+
+  <p class="note">The unsettled cells cluster on q8, q11 and q13 — the same classes the dictionary's
+  open cells involve. The orange edge is <span class="fml">q9 &lt; q12</span>: since
+  <span class="fml">◯(rung 3 ∨ rung 4) = q12</span> while
+  <span class="fml">◯rung 3 ∨ ◯rung 4 = q9</span>, that strict gap <em>is</em> the failure of
+  distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
+</section>
+</div>
+
+<script>
+"use strict";
+
+/* ── the certified arithmetic, transcribed from wip/ladder8.lean ── */
+function rungMem(n, w) {
+  if (n === 0) return false;
+  if (n % 2 === 1) return w <= (n - 1) / 2;
+  return (w + 1 <= (n - 2) / 2) || (w === (n - 2) / 2 + 1);
+}
+function truthSet(n) {
+  const s = [];
+  for (let w = 0; w <= n; w++) if (rungMem(n, w)) s.push(w);
+  return s;
+}
+
+function buildOrder(N) {
+  const sets = [], le = [];
+  for (let i = 0; i <= N; i++) sets.push(truthSet(i));
+  for (let i = 0; i <= N; i++) {
+    const row = new Uint8Array(N + 1);
+    const si = sets[i];
+    for (let j = 0; j <= N; j++) {
+      let ok = 1;
+      for (let k = 0; k < si.length; k++) if (!rungMem(j, si[k])) { ok = 0; break; }
+      row[j] = ok;
+    }
+    le.push(row);
+  }
+  return { sets, le };
+}
+
+function covers(N, le) {
+  const out = [];
+  for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++) {
+    if (i === j || !le[i][j] || le[j][i]) continue;
+    let mid = false;
+    for (let m = 0; m <= N; m++) {
+      if (m === i || m === j) continue;
+      if (le[i][m] && !le[m][i] && le[m][j] && !le[j][m]) { mid = true; break; }
+    }
+    if (!mid) out.push([i, j]);
+  }
+  return out;
+}
+
+function widestAntichain(N, le) {
+  /* the ladder's antichains are small; greedy over levels is exact enough to
+     report, so we brute-force maximal antichains among consecutive indices */
+  let best = 1;
+  for (let i = 0; i <= N; i++) {
+    let run = [i];
+    for (let j = i + 1; j <= N; j++) {
+      if (run.every(x => !le[x][j] && !le[j][x])) run.push(j);
+    }
+    if (run.length > best) best = run.length;
+  }
+  return best;
+}
+
+const CERTIFIED_COVERS_9 =
+  "0-1,0-2,1-3,1-4,2-3,3-5,3-6,4-5,5-7,5-8,6-7";
+
+const SVGNS = "http://www.w3.org/2000/svg";
+function el(tag, attrs, text) {
+  const e = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+/* ── ladder rendering ── */
+function renderLadder(N) {
+  const t0 = performance.now();
+  const { sets, le } = buildOrder(N);
+  const cov = covers(N, le);
+  const ms = Math.round(performance.now() - t0);
+
+  let cmp = 0;
+  for (let i = 0; i <= N; i++) for (let j = 0; j <= N; j++)
+    if (i !== j && le[i][j]) cmp++;
+
+  document.getElementById("s-n").textContent = N + 1;
+  document.getElementById("s-cov").textContent = cov.length;
+  document.getElementById("s-cmp").textContent = cmp;
+  document.getElementById("s-w").textContent = widestAntichain(N, le);
+  document.getElementById("s-ms").textContent = ms + " ms";
+
+  /* self-check against the Lean theorem covers9_eq */
+  const c9 = covers(8, buildOrder(8).le).map(c => c[0] + "-" + c[1]).sort().join(",");
+  const box = document.getElementById("selfcheck");
+  if (c9 === CERTIFIED_COVERS_9.split(",").sort().join(",")) {
+    box.className = "check";
+    box.innerHTML = "The eleven covers computed here for rn 0…8 match <strong>covers9_eq</strong>, "
+      + "the Lean theorem proved by <code>decide</code>.";
+  } else {
+    box.className = "check bad";
+    box.textContent = "MISMATCH with covers9_eq — the page and the proof disagree. Do not trust this drawing.";
+  }
+
+  /* layout: odd rungs left column, even rungs right, rn0 centred at the foot */
+  const COLL = 120, COLR = 300, VS = 54, TOP = 34;
+  const levels = Math.floor((N - 1) / 2) + 1;
+  const H = TOP + levels * VS + 70;
+  const W = 420;
+  const pos = {};
+  pos[0] = [(COLL + COLR) / 2, H - 34];
+  for (let n = 1; n <= N; n++) {
+    const k = n % 2 === 1 ? (n - 1) / 2 : (n - 2) / 2;
+    const y = H - 34 - (k + 1) * VS;
+    pos[n] = [n % 2 === 1 ? COLL : COLR, y];
+  }
+
+  const svg = el("svg", {
+    viewBox: `0 0 ${W} ${H}`, width: W, height: H,
+    role: "img", "aria-label": `Hasse diagram of Rieger-Nishimura rungs 0 to ${N}`
+  });
+
+  const gE = el("g", {});
+  for (const [i, j] of cov) {
+    const [x1, y1] = pos[i], [x2, y2] = pos[j];
+    gE.appendChild(el("line", {
+      x1, y1, x2, y2, stroke: "var(--rule)", "stroke-width": 1.5
+    }));
+  }
+  svg.appendChild(gE);
+
+  const showFml = N <= 9;
+  for (let n = 0; n <= N; n++) {
+    const [cx, cy] = pos[n];
+    const g = el("g", { class: "node", tabindex: "0",
+      "aria-label": `rung ${n}, truth set ${sets[n].join(" ") || "empty"}` });
+    const w = 54, h = 26;
+    g.appendChild(el("rect", {
+      x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: 6,
+      fill: "var(--green-fill)", stroke: "var(--green)", "stroke-width": 1.4
+    }));
+    const label = el("text", {
+      x: cx, y: cy + 4, "text-anchor": "middle",
+      "font-family": "var(--mono)", "font-size": "12.5",
+      fill: "var(--green-text)"
+    }, "rn " + n);
+    g.appendChild(label);
+    const show = () => {
+      const s = sets[n];
+      document.getElementById("read-ladder").innerHTML =
+        `<strong>rn ${n}</strong> &nbsp; truth set { ${s.join(", ") || "∅"} }`
+        + (showFml && DICT_OF_RUNG[n] !== undefined
+            ? ` &nbsp;·&nbsp; = ${DICT[DICT_OF_RUNG[n]].f} <span class="muted">(q${DICT_OF_RUNG[n]})</span>`
+            : "")
+        + `<br><span class="muted">${n === 0 ? "the bottom of the lattice"
+            : n % 2 === 1 ? "odd rung — a join; two upper covers"
+                          : "even rung — an implication; one upper cover"}</span>`;
+    };
+    g.addEventListener("click", show);
+    g.addEventListener("focus", show);
+    svg.appendChild(g);
+  }
+
+  const stage = document.getElementById("stage-ladder");
+  stage.replaceChildren(svg);
+  stage.scrollTop = stage.scrollHeight;
+}
+
+/* ── dictionary data ── */
+const DICT = [
+  { f: "⊥",                          x: 380, y: 670, w: 60  },
+  { f: "⊤",                          x: 380, y: 54,  w: 60  },
+  { f: "◯⊥",                         x: 285, y: 582, w: 70  },
+  { f: "¬◯⊥",                        x: 490, y: 582, w: 80  },
+  { f: "◯⊥ ∨ ¬◯⊥",                   x: 295, y: 494, w: 130 },
+  { f: "◯¬◯⊥",                       x: 150, y: 406, w: 90  },
+  { f: "¬¬◯⊥",                       x: 500, y: 494, w: 86  },
+  { f: "¬◯⊥ ∨ ¬¬◯⊥",                 x: 405, y: 406, w: 150 },
+  { f: "◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)",          x: 620, y: 318, w: 196 },
+  { f: "◯¬◯⊥ ∨ ¬¬◯⊥",                x: 315, y: 318, w: 150 },
+  { f: "¬¬◯⊥ ⊃ ◯⊥",                  x: 105, y: 318, w: 126 },
+  { f: "¬¬◯⊥ ∨ (¬¬◯⊥ ⊃ ◯⊥)",         x: 195, y: 230, w: 210 },
+  { f: "◯(¬◯⊥ ∨ ¬¬◯⊥)",              x: 445, y: 230, w: 166 },
+  { f: "◯(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥))",       x: 610, y: 142, w: 230 },
+  { f: "(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥",         x: 330, y: 142, w: 190 }
+];
+const RUNG_OF_DICT = { 0:0, 2:1, 3:2, 4:3, 6:4, 7:5, 10:6, 11:7 };
+const DICT_OF_RUNG = { 0:0, 1:2, 2:3, 3:4, 4:6, 5:7, 6:10, 7:11 };
+
+/* [from, to, style] — "s" certified cover, "d" cover depends on an open cell, "x" distribution failure */
+const DICT_EDGES = [
+  [0,2,"s"],[0,3,"s"],[2,4,"s"],[2,6,"s"],[3,4,"s"],[4,5,"s"],[4,7,"d"],
+  [6,7,"s"],[5,9,"d"],[5,10,"s"],[7,9,"s"],[7,8,"d"],[9,11,"d"],[9,12,"x"],
+  [10,11,"d"],[8,13,"d"],[11,1,"d"],[12,14,"s"],[12,13,"d"],[14,1,"d"],[13,1,"d"]
+];
+
+function renderDict() {
+  const svg = el("svg", {
+    viewBox: "0 0 780 700", width: 780, height: 700,
+    role: "img", "aria-label": "Hasse diagram of the fifteen variable-free classes"
+  });
+  const gE = el("g", {});
+  for (const [i, j, st] of DICT_EDGES) {
+    const a = DICT[i], b = DICT[j];
+    const attrs = { x1: a.x, y1: a.y, x2: b.x, y2: b.y, fill: "none" };
+    if (st === "x") { attrs.stroke = "var(--rust)"; attrs["stroke-width"] = 2.4; }
+    else { attrs.stroke = "var(--rule)"; attrs["stroke-width"] = 1.5;
+           if (st === "d") attrs["stroke-dasharray"] = "4 3"; }
+    gE.appendChild(el("line", attrs));
+  }
+  svg.appendChild(gE);
+
+  DICT.forEach((d, i) => {
+    const inImg = RUNG_OF_DICT[i] !== undefined;
+    const g = el("g", { class: "node", tabindex: "0",
+      "aria-label": `class q${i}, ${d.f}${inImg ? `, rung ${RUNG_OF_DICT[i]}` : ", outside the image"}` });
+    g.appendChild(el("rect", {
+      x: d.x - d.w / 2, y: d.y - 19, width: d.w, height: 38, rx: 6,
+      fill: inImg ? "var(--green-fill)" : "var(--slate-fill)",
+      stroke: inImg ? "var(--green)" : "var(--slate)", "stroke-width": inImg ? 1.4 : 1.2
+    }));
+    g.appendChild(el("text", {
+      x: d.x, y: d.y - 4, "text-anchor": "middle",
+      "font-family": "var(--serif)", "font-size": "12", fill: "var(--ink)"
+    }, d.f));
+    g.appendChild(el("text", {
+      x: d.x, y: d.y + 11, "text-anchor": "middle",
+      "font-family": "var(--mono)", "font-size": "9",
+      fill: inImg ? "var(--green-text)" : "var(--ink-soft)"
+    }, inImg ? `q${i} · rung ${RUNG_OF_DICT[i]}` : `q${i}`));
+    const show = () => {
+      document.getElementById("read-dict").innerHTML =
+        `<strong>q${i}</strong> &nbsp; ${d.f}<br><span class="muted">`
+        + (inImg
+            ? `rung ${RUNG_OF_DICT[i]} of the ladder — in the image of h`
+            : `outside the image of h (not one of rungs 0–7)`)
+        + `</span>`;
+    };
+    g.addEventListener("click", show);
+    g.addEventListener("focus", show);
+    svg.appendChild(g);
+  });
+
+  document.getElementById("stage-dict").replaceChildren(svg);
+}
+
+/* ── wiring ── */
+const range = document.getElementById("nrange");
+range.addEventListener("input", () => {
+  document.getElementById("nval").textContent = range.value;
+  renderLadder(parseInt(range.value, 10));
+});
+document.querySelectorAll(".chip").forEach(c =>
+  c.addEventListener("click", () => {
+    range.value = c.dataset.n;
+    range.dispatchEvent(new Event("input"));
+  }));
+
+const tabs = [["tab-ladder", "p-ladder"], ["tab-dict", "p-dict"]];
+tabs.forEach(([tid, pid]) =>
+  document.getElementById(tid).addEventListener("click", () => {
+    tabs.forEach(([t, p]) => {
+      const on = t === tid;
+      document.getElementById(t).setAttribute("aria-selected", on ? "true" : "false");
+      document.getElementById(p).hidden = !on;
+    });
+  }));
+
+renderLadder(9);
+renderDict();
+</script>
