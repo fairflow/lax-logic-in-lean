@@ -598,7 +598,7 @@ PLL refutes this sequent — a fallible top forces `◯⊥` without `⊥` (see �
 — but the infallible system proves it. -/
 
 /--
-info: sequent  ◯False ⊢ False  (PCLL+¬◯⊥)
+info: sequent  ◯⊥ ⊢ ⊥  (PCLL+¬◯⊥)
 verdict  PROVED   (→L◯◯ ⊥L ⊥L)
 
 proof term (G4iLL″, over the axiom `¬◯⊥` as hypothesis):
@@ -669,7 +669,7 @@ against `DerivUNoFall`.  `#refuteNF` must decline: §7.1 proved the sequent,
 so no confluent infallible countermodel exists at all. -/
 
 /--
-info: sequent  ◯False ⊢ False
+info: sequent  ◯⊥ ⊢ ⊥
 verdict  REFUTED  2 worlds, refuting world 0, |Rᵢ| = 1, |Rₘ| = 1, fallible 1
 scope    PLL and PCLL: the model is mutually confluent, so it also
          refutes ConfluentU.DerivU (RNC.not_derivU_of_checkConf)
@@ -691,7 +691,7 @@ theorem underivable :
 #refute [(falsePLL).somehow] ⊢ falsePLL
 
 /--
-info: sequent  ◯False ⊢ False  (PCLL+¬◯⊥)
+info: sequent  ◯⊥ ⊢ ⊥  (PCLL+¬◯⊥)
 verdict  NO CONFLUENT INFALLIBLE COUNTERMODEL FOUND
 
 This asserts nothing.  A countermodel found by #refute or #refuteConf is NOT
@@ -708,7 +708,7 @@ command enforces.
 countermodel `0 ⊳ 1` with `1` fallible.  The extension is proper. -/
 
 /--
-info: sequent  ⊢ (◯False) ⊃ False  (PCLL+¬◯⊥)
+info: sequent  ⊢ (◯⊥) ⊃ ⊥  (PCLL+¬◯⊥)
 verdict  PROVED   (→R (→L◯◯ ⊥L ⊥L))
 
 proof term (G4iLL″, over the axiom `¬◯⊥` as hypothesis):
