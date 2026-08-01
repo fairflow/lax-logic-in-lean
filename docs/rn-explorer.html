@@ -83,6 +83,19 @@
   .sw { width:15px; height:15px; border-radius:4px; flex:none; margin-top:2px; }
   .sw.g { background: var(--green-fill); border:1.5px solid var(--green); }
   .sw.o { background: var(--slate-fill); border:1.5px solid var(--slate); }
+  .sw.p { background: var(--rust-fill); border:1.5px solid var(--rust); }
+  .sw.u { background: transparent; border:1.5px dashed var(--slate); }
+  .chip[aria-pressed="true"] { background: var(--green-fill); color: var(--green-text);
+                               border-color: var(--green); font-weight:600; }
+  table.grid { border-collapse: collapse; font-family: var(--mono); font-size: 11px;
+               font-variant-numeric: tabular-nums; margin: 10px; }
+  table.grid th { color: var(--ink-soft); font-weight:600; padding: 3px 6px; }
+  table.grid td { text-align:center; padding: 3px 5px; border:1px solid var(--rule);
+                  cursor: pointer; min-width: 30px; }
+  td.cert { background: var(--green-fill); color: var(--green-text); }
+  td.pcll { background: var(--rust-fill); color: var(--rust); font-weight:700; }
+  td.open { background: transparent; color: var(--ink-soft); }
+  td.none { background: var(--slate-fill); color: transparent; cursor: default; }
   .swl { width:22px; flex:none; margin-top:9px; border-top:1.6px solid var(--slate); }
   .swl.d { border-top-style: dashed; }
   .swl.x { border-top:2.4px solid var(--rust); }
@@ -133,6 +146,7 @@
 <div class="tabs" role="tablist">
   <button class="tab" id="tab-ladder" role="tab" aria-selected="true" aria-controls="p-ladder">Ladder — image of h</button>
   <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — 15 classes</button>
+  <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — 347 cells</button>
 </div>
 
 <!-- ───────────────────────── LADDER ───────────────────────── -->
@@ -160,7 +174,16 @@
           <dt>comparable pairs</dt><dd id="s-cmp">–</dd>
           <dt>widest antichain</dt><dd id="s-w">–</dd>
           <dt>compute time</dt><dd id="s-ms">–</dd>
+          <dt>named in dictionary</dt><dd id="s-in">8</dd>
+          <dt>beyond it</dt><dd id="s-out">1</dd>
         </dl>
+      </div>
+      <div class="card">
+        <h2>Key</h2>
+        <div class="legend">
+          <div class="lrow"><span class="sw g"></span><span>rung 0–7 — also a dictionary class</span></div>
+          <div class="lrow"><span class="sw u" style="border-color:var(--green)"></span><span>rung 8 and up — certified distinct, but outside the dictionary</span></div>
+        </div>
       </div>
       <div class="card">
         <h2>Self-check</h2>
@@ -226,6 +249,47 @@
   <span class="fml">◯(rung 3 ∨ rung 4) = q12</span> while
   <span class="fml">◯rung 3 ∨ ◯rung 4 = q9</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
+</section>
+
+<!-- ───────────────────────── TABLES ───────────────────────── -->
+<section id="p-tab" role="tabpanel" aria-labelledby="tab-tab" hidden>
+  <div class="cols">
+    <div class="rail">
+      <div class="card">
+        <h2>Connective</h2>
+        <div class="presets" id="opbtns">
+          <button class="chip opb" data-op="0" aria-pressed="true">∧</button>
+          <button class="chip opb" data-op="1" aria-pressed="false">∨</button>
+          <button class="chip opb" data-op="2" aria-pressed="false">⊃</button>
+          <button class="chip opb" data-op="3" aria-pressed="false">◯</button>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Status of the table</h2>
+        <div class="legend">
+          <div class="lrow"><span class="sw g"></span><span><strong id="t-cert">345</strong> certified — a kernel-checked <span class="fml">InterdU</span> in <code>rncCells.lean</code></span></div>
+          <div class="lrow"><span class="sw p"></span><span><strong>2</strong> hold in PCLL only — no PLL proof exists, and one of them is refuted in PLL</span></div>
+          <div class="lrow"><span class="sw u"></span><span><strong>107</strong> open — the probe could not settle them either way</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Reading it</h2>
+        <p style="font-size:13px;margin:0;color:var(--ink-soft)">
+        Row <span class="fml">i</span>, column <span class="fml">j</span> gives the class of
+        <span class="fml">q<sub>i</sub> ∘ q<sub>j</sub></span>. The quotient has 15 representatives:
+        <span class="fml">q12</span> is absent because PCLL identifies it with
+        <span class="fml">q9</span> — which is exactly the distribution collapse.</p>
+      </div>
+    </div>
+    <div>
+      <div class="stage" id="stage-tab"></div>
+      <p class="readout" id="read-tab"><span class="muted">Click a cell for the equation it records.</span></p>
+    </div>
+  </div>
+  <p class="note">These 347 cells were probe output until they were re-derived and pinned: each
+  certified cell is now a proof term the kernel checks. The two PCLL-only cells are
+  <span class="fml">◯q7 ≡ q9</span> and <span class="fml">◯q9 ≡ q9</span> — the harvester found
+  them by failing, without being told where to look.</p>
 </section>
 </div>
 
@@ -315,6 +379,8 @@ function renderLadder(N) {
   document.getElementById("s-cmp").textContent = cmp;
   document.getElementById("s-w").textContent = widestAntichain(N, le);
   document.getElementById("s-ms").textContent = ms + " ms";
+  document.getElementById("s-in").textContent = Math.min(N + 1, 8);
+  document.getElementById("s-out").textContent = Math.max(0, N - 7);
 
   /* self-check against the Lean theorem covers9_eq */
   const c9 = covers(8, buildOrder(8).le).map(c => c[0] + "-" + c[1]).sort().join(",");
@@ -363,7 +429,9 @@ function renderLadder(N) {
     const w = 54, h = 26;
     g.appendChild(el("rect", {
       x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: 6,
-      fill: "var(--green-fill)", stroke: "var(--green)", "stroke-width": 1.4
+      fill: n <= 7 ? "var(--green-fill)" : "none",
+      stroke: "var(--green)", "stroke-width": n <= 7 ? 1.4 : 1.2,
+      "stroke-dasharray": n <= 7 ? "" : "3 2"
     }));
     const label = el("text", {
       x: cx, y: cy + 4, "text-anchor": "middle",
@@ -380,7 +448,9 @@ function renderLadder(N) {
             : "")
         + `<br><span class="muted">${n === 0 ? "the bottom of the lattice"
             : n % 2 === 1 ? "odd rung — a join; two upper covers"
-                          : "even rung — an implication; one upper cover"}</span>`;
+                          : "even rung — an implication; one upper cover"}`
+        + (n > 7 ? " · <strong>beyond the dictionary</strong> — no dictionary class names it"
+                 : " · in the dictionary") + `</span>`;
     };
     g.addEventListener("click", show);
     g.addEventListener("focus", show);
@@ -482,7 +552,7 @@ document.querySelectorAll(".chip").forEach(c =>
     range.dispatchEvent(new Event("input"));
   }));
 
-const tabs = [["tab-ladder", "p-ladder"], ["tab-dict", "p-dict"]];
+const tabs = [["tab-ladder","p-ladder"],["tab-dict","p-dict"],["tab-tab","p-tab"]];
 tabs.forEach(([tid, pid]) =>
   document.getElementById(tid).addEventListener("click", () => {
     tabs.forEach(([t, p]) => {
@@ -492,6 +562,54 @@ tabs.forEach(([tid, pid]) =>
     });
   }));
 
+
+/* ── PCLL operation tables, harvested from wip/rnc_c_out.txt ──
+   cells: [op, i, j, k, pcllOnly]   open: [op, i, j]
+   op 0 ∧, 1 ∨, 2 ⊃, 3 ◯ (j unused)                                   */
+const RNC = {"cells":[[0,0,0,0,0],[1,0,0,0,0],[2,0,0,1,0],[0,0,1,0,0],[1,0,1,1,0],[2,0,1,1,0],[0,0,2,0,0],[1,0,2,2,0],[2,0,2,1,0],[0,0,3,0,0],[1,0,3,3,0],[2,0,3,1,0],[0,0,4,0,0],[1,0,4,4,0],[2,0,4,1,0],[0,0,5,0,0],[1,0,5,5,0],[2,0,5,1,0],[0,0,6,0,0],[1,0,6,6,0],[2,0,6,1,0],[0,0,7,0,0],[1,0,7,7,0],[2,0,7,1,0],[0,0,8,0,0],[1,0,8,8,0],[2,0,8,1,0],[0,0,9,0,0],[1,0,9,9,0],[2,0,9,1,0],[0,0,10,0,0],[1,0,10,10,0],[2,0,10,1,0],[0,0,11,0,0],[1,0,11,11,0],[2,0,11,1,0],[0,0,13,0,0],[2,0,13,1,0],[0,0,14,0,0],[2,0,14,1,0],[0,0,15,0,0],[2,0,15,1,0],[2,1,0,0,0],[0,1,1,1,0],[1,1,1,1,0],[2,1,1,1,0],[0,1,2,2,0],[1,1,2,1,0],[2,1,2,2,0],[0,1,3,3,0],[1,1,3,1,0],[2,1,3,3,0],[0,1,4,4,0],[1,1,4,1,0],[2,1,4,4,0],[0,1,5,5,0],[1,1,5,1,0],[2,1,5,5,0],[0,1,6,6,0],[1,1,6,1,0],[2,1,6,6,0],[0,1,7,7,0],[1,1,7,1,0],[2,1,7,7,0],[0,1,8,8,0],[1,1,8,1,0],[2,1,8,8,0],[0,1,9,9,0],[1,1,9,1,0],[2,1,9,9,0],[0,1,10,10,0],[1,1,10,1,0],[2,1,10,10,0],[0,1,11,11,0],[1,1,11,1,0],[2,1,11,11,0],[1,1,13,1,0],[1,1,14,1,0],[1,1,15,1,0],[2,2,0,3,0],[2,2,1,1,0],[0,2,2,2,0],[1,2,2,2,0],[2,2,2,1,0],[0,2,3,0,0],[1,2,3,4,0],[2,2,3,3,0],[0,2,4,2,0],[1,2,4,4,0],[2,2,4,1,0],[0,2,5,2,0],[1,2,5,5,0],[2,2,5,1,0],[0,2,6,2,0],[1,2,6,6,0],[2,2,6,1,0],[0,2,7,2,0],[1,2,7,7,0],[2,2,7,1,0],[0,2,8,2,0],[1,2,8,8,0],[2,2,8,1,0],[0,2,9,2,0],[1,2,9,9,0],[2,2,9,1,0],[0,2,10,2,0],[1,2,10,10,0],[2,2,10,1,0],[0,2,11,2,0],[1,2,11,11,0],[2,2,11,1,0],[0,2,13,2,0],[2,2,13,1,0],[0,2,14,2,0],[2,2,14,1,0],[0,2,15,2,0],[2,2,15,1,0],[2,3,0,6,0],[2,3,1,1,0],[2,3,2,6,0],[0,3,3,3,0],[1,3,3,3,0],[2,3,3,1,0],[0,3,4,3,0],[1,3,4,4,0],[2,3,4,1,0],[0,3,5,3,0],[1,3,5,5,0],[2,3,5,1,0],[0,3,6,0,0],[1,3,6,7,0],[2,3,6,6,0],[0,3,7,3,0],[1,3,7,7,0],[2,3,7,1,0],[0,3,8,3,0],[1,3,8,8,0],[2,3,8,1,0],[0,3,9,3,0],[1,3,9,9,0],[2,3,9,1,0],[0,3,10,3,0],[1,3,10,10,0],[2,3,10,1,0],[0,3,11,3,0],[1,3,11,11,0],[2,3,11,1,0],[0,3,13,3,0],[2,3,13,1,0],[0,3,14,3,0],[2,3,14,1,0],[0,3,15,3,0],[2,3,15,1,0],[2,4,0,0,0],[2,4,1,1,0],[2,4,2,6,0],[2,4,3,3,0],[0,4,4,4,0],[1,4,4,4,0],[2,4,4,1,0],[0,4,5,4,0],[1,4,5,5,0],[2,4,5,1,0],[0,4,6,2,0],[1,4,6,7,0],[2,4,6,6,0],[0,4,7,4,0],[1,4,7,7,0],[2,4,7,1,0],[0,4,8,4,0],[1,4,8,8,0],[2,4,8,1,0],[0,4,9,4,0],[1,4,9,9,0],[2,4,9,1,0],[0,4,10,4,0],[1,4,10,10,0],[2,4,10,1,0],[0,4,11,4,0],[1,4,11,11,0],[2,4,11,1,0],[0,4,13,4,0],[2,4,13,1,0],[0,4,14,4,0],[2,4,14,1,0],[0,4,15,4,0],[2,4,15,1,0],[2,5,0,0,0],[2,5,1,1,0],[2,5,2,6,0],[2,5,3,3,0],[2,5,4,8,0],[0,5,5,5,0],[1,5,5,5,0],[2,5,5,1,0],[0,5,6,2,0],[1,5,6,9,0],[2,5,6,6,0],[0,5,7,4,0],[1,5,7,9,0],[2,5,7,8,0],[0,5,8,4,0],[0,5,9,5,0],[1,5,9,9,0],[2,5,9,1,0],[0,5,10,5,0],[1,5,10,10,0],[2,5,10,1,0],[0,5,11,5,0],[1,5,11,11,0],[2,5,11,1,0],[0,5,13,5,0],[2,5,13,1,0],[0,5,14,5,0],[2,5,14,1,0],[2,6,0,3,0],[2,6,1,1,0],[2,6,2,10,0],[2,6,3,3,0],[2,6,4,10,0],[2,6,5,10,0],[0,6,6,6,0],[1,6,6,6,0],[2,6,6,1,0],[0,6,7,6,0],[1,6,7,7,0],[2,6,7,1,0],[0,6,8,6,0],[2,6,8,1,0],[0,6,9,6,0],[1,6,9,9,0],[2,6,9,1,0],[0,6,10,2,0],[1,6,10,11,0],[2,6,10,10,0],[0,6,11,6,0],[1,6,11,11,0],[2,6,11,1,0],[0,6,13,6,0],[2,6,13,1,0],[0,6,14,6,0],[2,6,14,1,0],[0,6,15,2,0],[2,7,0,0,0],[2,7,1,1,0],[2,7,2,2,0],[2,7,3,3,0],[2,7,4,10,0],[2,7,5,10,0],[2,7,6,6,0],[0,7,7,7,0],[1,7,7,7,0],[2,7,7,1,0],[0,7,8,7,0],[2,7,8,1,0],[0,7,9,7,0],[1,7,9,9,0],[2,7,9,1,0],[0,7,10,4,0],[1,7,10,11,0],[2,7,10,10,0],[0,7,11,7,0],[1,7,11,11,0],[2,7,11,1,0],[0,7,13,7,0],[2,7,13,1,0],[0,7,14,7,0],[2,7,14,1,0],[2,8,0,0,0],[2,8,1,1,0],[2,8,2,2,0],[2,8,3,3,0],[2,8,6,6,0],[0,8,8,8,0],[1,8,8,8,0],[2,8,8,1,0],[0,8,9,7,0],[0,8,10,15,0],[0,8,13,8,0],[2,8,13,1,0],[2,9,0,0,0],[2,9,1,1,0],[2,9,2,2,0],[2,9,3,3,0],[2,9,5,10,0],[2,9,6,6,0],[0,9,9,9,0],[1,9,9,9,0],[2,9,9,1,0],[0,9,10,5,0],[1,9,10,11,0],[2,9,10,10,0],[0,9,11,9,0],[2,9,11,1,0],[0,9,13,9,0],[2,9,13,1,0],[0,9,14,9,0],[2,9,14,1,0],[2,10,0,0,0],[2,10,1,1,0],[2,10,2,6,0],[2,10,3,3,0],[2,10,6,6,0],[0,10,10,10,0],[1,10,10,10,0],[2,10,10,1,0],[0,10,11,10,0],[1,10,11,11,0],[2,10,11,1,0],[2,11,0,0,0],[2,11,1,1,0],[2,11,2,2,0],[2,11,3,3,0],[2,11,6,6,0],[0,11,11,11,0],[1,11,11,11,0],[2,11,11,1,0],[2,13,0,0,0],[2,13,1,1,0],[2,13,2,2,0],[2,13,3,3,0],[2,13,6,6,0],[2,13,13,1,0],[2,14,0,0,0],[2,14,1,1,0],[2,14,2,2,0],[2,14,3,3,0],[2,14,6,6,0],[2,15,0,0,0],[2,15,1,1,0],[2,15,2,6,0],[2,15,3,3,0],[2,15,6,6,0],[2,15,10,1,0],[2,15,11,1,0],[2,15,15,1,0],[3,0,0,2,0],[3,1,0,1,0],[3,2,0,2,0],[3,3,0,5,0],[3,4,0,5,0],[3,5,0,5,0],[3,6,0,6,0],[3,7,0,9,1],[3,8,0,13,0],[3,9,0,9,1],[3,10,0,10,0]],"open":[[1,0,13],[1,0,14],[1,0,15],[0,1,13],[2,1,13],[0,1,14],[2,1,14],[0,1,15],[2,1,15],[1,2,13],[1,2,14],[1,2,15],[1,3,13],[1,3,14],[1,3,15],[1,4,13],[1,4,14],[1,4,15],[1,5,8],[2,5,8],[1,5,13],[1,5,14],[0,5,15],[2,5,15],[1,6,8],[1,6,13],[1,6,14],[2,6,15],[1,7,8],[1,7,13],[1,7,14],[0,7,15],[2,7,15],[1,8,9],[1,8,10],[2,8,10],[1,8,11],[2,8,11],[1,8,13],[1,8,14],[0,8,15],[1,8,15],[2,8,15],[2,9,4],[2,9,7],[2,9,8],[1,9,11],[1,9,13],[1,9,14],[0,9,15],[2,9,15],[2,10,5],[2,10,8],[2,10,9],[1,10,13],[2,10,13],[0,10,14],[1,10,14],[2,10,14],[0,10,15],[1,10,15],[2,10,15],[2,11,4],[2,11,5],[2,11,8],[2,11,9],[2,11,10],[1,11,13],[2,11,13],[0,11,14],[1,11,14],[2,11,14],[0,11,15],[1,11,15],[2,11,15],[2,13,4],[2,13,7],[2,13,8],[2,13,10],[2,13,11],[0,13,13],[1,13,13],[0,13,14],[1,13,14],[0,13,15],[1,13,15],[2,13,15],[2,14,4],[2,14,5],[2,14,8],[2,14,9],[2,14,10],[2,14,11],[2,14,13],[0,14,14],[1,14,14],[2,14,14],[0,14,15],[1,14,15],[2,14,15],[2,15,8],[2,15,13],[0,15,15],[1,15,15],[3,11,0],[3,13,0],[3,14,0]]};
+const REPS = [0,1,2,3,4,5,6,7,8,9,10,11,13,14,15];
+const RNAME = i => i === 15 ? "w15" : "q" + i;
+const OPSYM = ["∧","∨","⊃","◯"];
+const CELLMAP = {}; RNC.cells.forEach(c => CELLMAP[c[0]+","+c[1]+","+c[2]] = c);
+const OPENSET = new Set(RNC.open.map(c => c[0]+","+c[1]+","+c[2]));
+
+function renderTable(op) {
+  const t = document.createElement("table");
+  t.className = "grid";
+  const cols = op === 3 ? [0] : REPS;
+  const hr = t.insertRow();
+  hr.appendChild(document.createElement("th"));
+  if (op !== 3) cols.forEach(j => { const th=document.createElement("th"); th.textContent=RNAME(j); hr.appendChild(th); });
+  else { const th=document.createElement("th"); th.textContent="◯ of it"; hr.appendChild(th); }
+  REPS.forEach(i => {
+    const tr = t.insertRow();
+    const th = document.createElement("th"); th.textContent = RNAME(i); tr.appendChild(th);
+    cols.forEach(j => {
+      const key = op+","+i+","+(op===3?0:j);
+      const c = CELLMAP[key];
+      const td = tr.insertCell();
+      if (c) { td.className = c[4] ? "pcll" : "cert"; td.textContent = RNAME(c[3]); }
+      else if (OPENSET.has(key)) { td.className = "open"; td.textContent = "?"; }
+      else { td.className = "none"; td.textContent = "·"; }
+      if (c || OPENSET.has(key)) td.addEventListener("click", () => {
+        const lhs = op===3 ? `◯${RNAME(i)}` : `${RNAME(i)} ${OPSYM[op]} ${RNAME(j)}`;
+        document.getElementById("read-tab").innerHTML = c
+          ? `<strong>${lhs} ≡ ${RNAME(c[3])}</strong><br><span class="muted">`
+            + (c[4] ? "holds in PCLL only — no PLL proof; this is where distribution does the work"
+                    : "certified: <code>InterdU</code> in wip/rncCells.lean, kernel-checked")
+            + "</span>"
+          : `<strong>${lhs} ≡ ?</strong><br><span class="muted">open — the probe settled neither direction</span>`;
+      });
+    });
+  });
+  document.getElementById("stage-tab").replaceChildren(t);
+}
+document.querySelectorAll(".opb").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll(".opb").forEach(x => x.setAttribute("aria-pressed", x === b ? "true" : "false"));
+  renderTable(parseInt(b.dataset.op, 10));
+}));
+
 renderLadder(9);
 renderDict();
+renderTable(0);
 </script>

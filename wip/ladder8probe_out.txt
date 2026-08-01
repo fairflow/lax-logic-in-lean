@@ -31,3 +31,9 @@ rnSub 8 = ((((◯False) ∨ ((◯False) ⊃ False)) ∨ (((◯False) ∨ ((◯Fa
   i=5: n  n  n  n  n  Y  n  Y  Y  
   i=6: n  n  n  n  n  n  Y  Y  n  
   i=7: n  n  n  n  n  n  n  Y  n  
+  i=8: n  n  n  n  n  ?* n  ?* ?* 
+  disagreements: 3
+
+-- (2) THE BOX COLUMN: box(rnSub n), matched against rungs then dict --
+  box(rnSub 0) : rung 1 | dict q2
+  box(rnSub 1) : rung 1 | dict q2
