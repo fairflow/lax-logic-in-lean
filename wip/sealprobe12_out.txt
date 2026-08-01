@@ -21,3 +21,7 @@ S2, C = ◯s: 4 case(s), 5 target disjunct(s)
    case 0 [2000000] reaches: NOTHING
    case 1 [2000000] reaches: NOTHING
    case 2 [2000000] reaches: NOTHING
+   case 3 [2000000] reaches: NOTHING
+
+== done ==
+EXIT=0
