@@ -12,3 +12,4 @@
 
 -- now rungs 8..13 against every dictionary class --
   rung 8 (weight 28): NEW — matches none of the 15
+  rung 9 (weight 45): NEW — matches none of the 15

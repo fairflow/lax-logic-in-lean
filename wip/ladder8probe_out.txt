@@ -37,3 +37,4 @@ rnSub 8 = ((((◯False) ∨ ((◯False) ⊃ False)) ∨ (((◯False) ∨ ((◯Fa
 -- (2) THE BOX COLUMN: box(rnSub n), matched against rungs then dict --
   box(rnSub 0) : rung 1 | dict q2
   box(rnSub 1) : rung 1 | dict q2
+  box(rnSub 2) : rung none | dict q5

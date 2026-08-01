@@ -287,3 +287,8 @@ root = "wip.rungnew"
 [[lean_exe]]
 name = "rncHarvest"
 root = "wip.rncHarvest"
+
+# Cross-relate rungs 8-13 with the seven off-ladder dictionary classes.
+[[lean_exe]]
+name = "rungcross"
+root = "wip.rungcross"
