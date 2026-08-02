@@ -118,3 +118,29 @@ Everything below is to be sorry-free with pinned axiom audits;
 searcher output, if any is used, enters only as kernel-checked pinned
 terms.  PROVED / REFUTED / OPEN kept distinct throughout; the
 conjecture above stays labelled OPEN until the second lift is built.
+
+---
+
+## Postscript, same evening: both parts landed
+
+`wip/chainStrict.lean` (the main theorem) and `wip/chainOff.lean` (the
+second lift) both compiled on first attempt, sorry-free, audits
+pinned.  The second lift needed one design change from the sketch: the
+edge sits at `k+3 ⇝ 0` rather than `k+1 ⇝ 0`, which removes all side
+conditions on `k` (the `force_oBot` witness is world `1`, present as
+soon as the edge world is ≥ 3).  The off-image argument simplified
+further than planned: no `q5`-style squeeze is needed — on the plain
+abyss lift `chainF k` wears the truth set `[0,k]`, so an
+identification with any rung forces `n = 2k+1` via `rnSub_deriv_iff`
+and `rn_pairwise_pll`, and that one identification is what
+`box_not_fix` refutes.  Result:
+
+    complement_infinite : for every k ≥ 2, chainF k is interderivable
+    with no rung and not with ⊤; the chainF k are pairwise distinct.
+
+So RN(◯,{}) ∖ im h is infinite, modulo the standing caveat that the
+classical classification of the one-variable fragment (im h = rungs
+∪ {⊤}) is not yet mechanised.  Mechanising that classification is now
+the single remaining gap between "interderivable with no rung and not
+⊤" and "off the image" simpliciter, for everything: `q5`, `◯q11`, and
+the whole chain.
