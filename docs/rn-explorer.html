@@ -179,6 +179,16 @@
         </dl>
       </div>
       <div class="card">
+        <h2>Minimal forms</h2>
+        <p style="font-size:13px;margin:0 0 8px;color:var(--ink-soft)">Found by enumerating
+        ◯-free formulas by truth set. The recursion is shorter than the textbook one —</p>
+        <div class="fml" style="font-size:13px;line-height:1.7">
+          t(2k+4) = t(2k+2) ⊃ t(2k−1)<br>t(2k+3) = t(2k) ∨ t(2k+2)
+        </div>
+        <p style="font-size:13px;margin:8px 0 0;color:var(--ink-soft)">— because it never
+        re-expands the large odd rung. Rungs 8–13 come out 2–4× smaller. Click a rung.</p>
+      </div>
+      <div class="card">
         <h2>Key</h2>
         <div class="legend">
           <div class="lrow"><span class="sw g"></span><span>rung 0–7 — also a dictionary class</span></div>
@@ -200,7 +210,10 @@
   <p class="note">Everything here is recomputed in the page from the same arithmetic the Lean
   proof uses — <code>rn 0 = ∅</code>, <code>rn(2k+1) = {w ≤ k}</code>,
   <code>rn(2k+2) = {w &lt; k} ∪ {k+1}</code>, and <code>rn i ⊢ rn j</code> iff truth-set inclusion
-  (<code>rnSub_order</code>). Nothing is read from a stored table, so any N is as trustworthy as N = 9.</p>
+  (<code>rnSub_order</code>). Nothing is read from a stored table, so any N is as trustworthy as N = 9.
+  The minimal forms and the pinned cross-relations shown when you click a rung come from
+  <code>wip/rungPinned.lean</code> — 14 kernel-checked theorems, proof terms one way and
+  checked finite countermodels the other.</p>
 </section>
 
 <!-- ─────────────────────── DICTIONARY ─────────────────────── -->
@@ -441,8 +454,25 @@ function renderLadder(N) {
     g.appendChild(label);
     const show = () => {
       const s = sets[n];
+      const m = TMIN[n];
+      const p = PINNED[n];
+      let extra = "";
+      if (m) {
+        extra = `<br><span class="muted">minimal form &nbsp;</span>`
+          + `<span class="fml">${m[1] || m[0]}</span>`
+          + `<span class="muted"> &nbsp;weight ${m[2]}`
+          + (m[3] > m[2] ? ` — textbook form is ${m[3]}` : "") + `</span>`;
+      }
+      if (p) {
+        const bits = [];
+        if (p.below) bits.push(p.below.join(", ") + " strictly below");
+        if (p.above) bits.push("strictly below " + p.above.join(", "));
+        if (p.nle) bits.push("not below " + p.nle.join(", "));
+        if (p.open) bits.push("open against " + p.open.join(", "));
+        extra += `<br><span class="muted">pinned: ${bits.join(" · ")}</span>`;
+      }
       document.getElementById("read-ladder").innerHTML =
-        `<strong>rn ${n}</strong> &nbsp; truth set { ${s.join(", ") || "∅"} }`
+        `<strong>rn ${n}</strong> &nbsp; truth set { ${s.join(", ") || "∅"} }` + extra
         + (showFml && DICT_OF_RUNG[n] !== undefined
             ? ` &nbsp;·&nbsp; = ${DICT[DICT_OF_RUNG[n]].f} <span class="muted">(q${DICT_OF_RUNG[n]})</span>`
             : "")
@@ -562,6 +592,29 @@ tabs.forEach(([tid, pid]) =>
     });
   }));
 
+
+
+/* ── minimal representatives, from wip/rungPinned.lean ──
+   [compact form, full expansion or null, weight, textbook weight]      */
+const TMIN = {
+  0:["⊥",null,1,1], 1:["◯⊥",null,1,1], 2:["¬◯⊥",null,3,3],
+  3:["t1 ∨ t2","◯⊥ ∨ ¬◯⊥",5,5],
+  4:["t2 ⊃ t1","¬◯⊥ ⊃ ◯⊥",5,5],
+  5:["t2 ∨ t4","¬◯⊥ ∨ (¬◯⊥ ⊃ ◯⊥)",9,9],
+  6:["t4 ⊃ t1","(¬◯⊥ ⊃ ◯⊥) ⊃ ◯⊥",7,7],
+  7:["t4 ∨ t6","(¬◯⊥ ⊃ ◯⊥) ∨ ((¬◯⊥ ⊃ ◯⊥) ⊃ ◯⊥)",13,16],
+  8:["t6 ⊃ t3","((¬◯⊥ ⊃ ◯⊥) ⊃ ◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)",13,28],
+  9:["t6 ∨ t8",null,21,45],
+  10:["t8 ⊃ t5",null,23,62],
+  11:["t8 ∨ t10",null,37,108],
+  12:["t10 ⊃ t7",null,37,154],
+  13:["t10 ∨ t12",null,61,263]
+};
+/* pinned cross-relations (wip/rungPinned.lean) */
+const PINNED = {
+  8: {above:["q1","q8","q13","q14"], nle:["q5"], open:["q9","q12"]},
+  9: {above:["q1"], below:["q5","q9"], nle:["q12"], open:["q8","q13","q14"]}
+};
 
 /* ── PCLL operation tables, harvested from wip/rnc_c_out.txt ──
    cells: [op, i, j, k, pcllOnly]   open: [op, i, j]
