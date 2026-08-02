@@ -9,3 +9,5 @@ Is  box(rnSub 4 v rnSub 3) -> (box rnSub 4 v box rnSub 3)  PLL-derivable?
   box(rnSub 0) = rung 1 | dict q2
   box(rnSub 1) = rung 1 | dict q2
   box(rnSub 2) = rung - | dict q5
+  box(rnSub 3) = rung - | dict q5
+  box(rnSub 4) = rung 4 | dict q6

@@ -19,3 +19,7 @@
    rung 9 |- q8: ?    q8 |- rung 9: ?   (93881 ms)
    rung 9 |- q9: n[4w,conf]    q9 |- rung 9: Y(20)  class < rung   (1 ms)
    rung 9 |- q12: n[4w,conf]    q12 |- rung 9: ?   (5273 ms)
+   rung 9 |- q13: ?    q13 |- rung 9: ?   (8129642 ms)
+   rung 9 |- q14: n[4w,conf]    q14 |- rung 9: ?   (52644 ms)
+
+-- rung 10  (weight 62) --
