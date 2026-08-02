@@ -257,10 +257,16 @@
     </div>
   </div>
 
-  <p class="note">Twelve of the fourteen cells that the four-world battery left open were closed
-  by the exhaustive rooted <strong>five</strong>-world battery (<code>wip/fiveWorld.lean</code>,
-  20 kernel-checked certificates). Only <span class="fml">q12 ⊢ q11</span> and
-  <span class="fml">q14 ⊢ q13</span> remain, and 18 of the 21 covers are now certified. The orange edge is <span class="fml">q9 &lt; q12</span>: since
+  <p class="note">The order is now settled in 224 of 225 cells — the last open cell is
+  <span class="fml">q14 ⊢ q13</span>. <span class="fml">q12 ⊢ q11</span> fell to the
+  non-confluent five-world battery, which also produced the biggest structural news:
+  <span class="fml">◯q11</span> is a <strong>new class</strong> (<code>cBox11_settled</code>),
+  strictly above rung 7, so the dictionary is not closed under ◯. Beyond it stretches an
+  infinite strictly ascending chain — the boxed odd rungs
+  <span class="fml">◯rn₃ &lt; ◯rn₅ &lt; ◯rn₇ &lt; …</span>, strict at every step
+  (<code>chain_step_strict</code>), pairwise distinct, and from the third term on
+  interderivable with no rung and not with ⊤ (<code>complement_infinite</code>):
+  the complement of the ladder image is <strong>infinite</strong>. The orange edge is <span class="fml">q9 &lt; q12</span>: since
   <span class="fml">◯(rung 3 ∨ rung 4) = q12</span> while
   <span class="fml">◯rung 3 ∨ ◯rung 4 = q9</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
