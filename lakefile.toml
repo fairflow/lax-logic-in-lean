@@ -302,3 +302,8 @@ root = "wip.rungPin"
 [[lean_exe]]
 name = "five"
 root = "wip.five"
+
+# Which (◯⊥, ◯¬◯⊥) valuations are realisable?
+[[lean_exe]]
+name = "twogen"
+root = "wip.twogen"
