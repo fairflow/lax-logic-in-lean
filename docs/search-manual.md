@@ -1030,3 +1030,34 @@ function cannot eliminate it.
 `wip/jumpprobe.lean` and `wip/sealprobe2.lean` had only as probe output: the
 descent to budget `0` at two atom jump goals, and the `◯⊥` collapse at a boxed
 one (57 nodes).
+
+
+## 11. Running probes under a wall-clock cap
+
+`Config.findBudget` bounds a *single* search. Nothing bounds a *run*. A probe
+with 84 cells of which 40 never close sits at 100% CPU until killed by hand.
+Between 2026-07-30 and 2026-08-02 two probes from an abandoned line of work ran
+for three days that way, alongside six others.
+
+So probes are launched through the wrapper, never directly:
+
+```bash
+scripts/probe <seconds> <exe-name> > wip/<exe>_out.txt
+```
+
+It runs the executable, arms a killer at the cap, and returns. Partial output is
+the normal outcome and is fine — every probe flushes after each line, so whatever
+reached the file is intact and usable. The wrapper appends a line saying the cap
+was hit, so a truncated run is never mistaken for a completed one.
+
+Choosing the cap: a probe whose cells mostly close wants 60–300s; a sweep over a
+space where most cells are expected to resist wants 300–900s and should be read
+as a sample, not a survey. Anything that would need longer than that is asking
+the wrong question — the productive move has always been a smaller cell (see the
+`#pinsrc` discipline in §10) rather than a bigger budget.
+
+Before ending a working session, check nothing survived:
+
+```bash
+ps -eo pid,etime,args | grep '.lake/build/bin/' | grep -v grep
+```
