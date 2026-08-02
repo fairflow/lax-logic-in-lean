@@ -226,7 +226,7 @@
           <div class="lrow"><span class="sw g"></span><span>In the image of <span class="fml">h : p ↦ ◯⊥</span> — certified interderivable with a rung</span></div>
           <div class="lrow"><span class="sw o"></span><span>Outside it</span></div>
           <div class="lrow"><span class="swl"></span><span>Certified cover</span></div>
-          <div class="lrow"><span class="swl d"></span><span>Cover status depends on an unsettled cell</span></div>
+          <div class="lrow"><span class="swl d"></span><span>Relation certified; whether anything sits strictly between depends on one of the 2 remaining open cells</span></div>
           <div class="lrow"><span class="swl x"></span><span>Where distribution fails</span></div>
         </div>
       </div>
@@ -235,8 +235,8 @@
         <dl class="stats">
           <dt>classes</dt><dd>15</dd>
           <dt>order cells</dt><dd>225</dd>
-          <dt>settled</dt><dd id="d-set">211</dd>
-          <dt>unsettled</dt><dd id="d-unk">14</dd>
+          <dt>settled</dt><dd id="d-set">223</dd>
+          <dt>unsettled</dt><dd id="d-unk">2</dd>
           <dt>in image of h</dt><dd>8</dd>
         </dl>
       </div>
@@ -257,8 +257,10 @@
     </div>
   </div>
 
-  <p class="note">The unsettled cells cluster on q8, q11 and q13 — the same classes the dictionary's
-  open cells involve. The orange edge is <span class="fml">q9 &lt; q12</span>: since
+  <p class="note">Twelve of the fourteen cells that the four-world battery left open were closed
+  by the exhaustive rooted <strong>five</strong>-world battery (<code>wip/fiveWorld.lean</code>,
+  20 kernel-checked certificates). Only <span class="fml">q12 ⊢ q11</span> and
+  <span class="fml">q14 ⊢ q13</span> remain, and 18 of the 21 covers are now certified. The orange edge is <span class="fml">q9 &lt; q12</span>: since
   <span class="fml">◯(rung 3 ∨ rung 4) = q12</span> while
   <span class="fml">◯rung 3 ∨ ◯rung 4 = q9</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
@@ -515,9 +517,9 @@ const DICT_OF_RUNG = { 0:0, 1:2, 2:3, 3:4, 4:6, 5:7, 6:10, 7:11 };
 
 /* [from, to, style] — "s" certified cover, "d" cover depends on an open cell, "x" distribution failure */
 const DICT_EDGES = [
-  [0,2,"s"],[0,3,"s"],[2,4,"s"],[2,6,"s"],[3,4,"s"],[4,5,"s"],[4,7,"d"],
-  [6,7,"s"],[5,9,"d"],[5,10,"s"],[7,9,"s"],[7,8,"d"],[9,11,"d"],[9,12,"x"],
-  [10,11,"d"],[8,13,"d"],[11,1,"d"],[12,14,"s"],[12,13,"d"],[14,1,"d"],[13,1,"d"]
+  [0,2,"s"],[0,3,"s"],[2,4,"s"],[2,6,"s"],[3,4,"s"],[4,5,"s"],[4,7,"s"],
+  [6,7,"s"],[5,9,"s"],[5,10,"s"],[7,9,"s"],[7,8,"s"],[9,11,"d"],[9,12,"x"],
+  [10,11,"s"],[8,13,"s"],[11,1,"s"],[12,14,"s"],[12,13,"d"],[14,1,"d"],[13,1,"s"]
 ];
 
 function renderDict() {
