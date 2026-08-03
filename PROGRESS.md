@@ -4786,3 +4786,24 @@ level 2 (chain_not_le_even, odd_not_le_gap, even_not_le_gap,
 chain_not_le_odd).  En-masse programme per Matthew's directive: strict
 families replace piecemeal cells; covering (⋖) statements stay relative
 to the known inventory.
+
+---
+
+## §37 (2026-08-03) — new seeds: two identities and a fourth family (all PLL)
+
+`wip/seeds.lean`.  Three candidate seeds settled, one left open:
+
+1. **◯(s k) ≡ c (k+1)** (`box_sC`): boxing the s-chain folds it into the
+   c-chain one level up.  Consequence `boxq9_q12`: the PLL value of the
+   OPEN table cell ◯q9 is **q12** — while PCLL collapses ◯q9 to q9
+   (the harvested cell), so this is a sharp PLL/PCLL divergence point.
+2. **c k ∧ g k ≡ t(2k+1)** (`chain_meet_gap`, axiom-free): chain and gap
+   are complementary over the anchor rung — the comb closes.  Also
+   c k ⊢ ◯g k (`chain_le_bg`).
+3. **w15 seeds a family with the EVEN-RUNG order type**:
+   wC k := g k ∧ t(2k+4) (wC 1 ≡ w15); pairwise distinct, off the image
+   (`wC_off_image`), ordered exactly like the even rungs — wC j ⊢ wC k
+   iff j = k or j+2 ≤ k (`wC_le`/`wC_strict`/`wC_succ_not_le`): a THIRD
+   order type among the families (neither chain nor antichain).
+4. OPEN: second-order gaps ◯g k ⊃ g k — same truth set as g k on every
+   model in the edged-lift family; separating them needs a new model.
