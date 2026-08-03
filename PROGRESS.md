@@ -4862,3 +4862,29 @@ every chainF k (dually entailing every gap k) with no variable-free
 formula interpolating between the family and φ.  That witness question
 is exactly where the syntactic UI hunt stalled from the other side;
 both outcomes are live, and the schemas record what each would need.
+
+---
+
+## §40 (2026-08-03) — the witness hunt: near-witness, collapse lever, im h closed (all PLL)
+
+`wip/witness.lean`.  Toward constructing-or-refuting the UI witness:
+
+* **L climbs and has width**: t5 ∈ L (t5_in_L, via the level-1 accident
+  q7 ⊢ q8) and w15 ∈ L (w15_below_all_gaps — the k = 2 case descends
+  inside the box through t6 = t5 ⊃ t3); t3 < w15 strictly
+  (t3_le_w15, w15_not_le_t3); t5 and w15 incomparable, t6, t7 ∉ L.
+* **phi1 := ◯p ⊃ ◯(p ∧ t3)** is a NEAR-witness: c 1 ⊢ phi1
+  (c1_le_phi1) but c 2 ⊬ phi1 (c2_not_le_phi1, on the new model cmP =
+  plain lift with all atoms true everywhere; cmP_agree transfers
+  atom-free forcing).  Yet phi1 satisfies the OTHER schema hypothesis:
+  bound_collapse (the substND lever at p ↦ ⊤): any variable-free
+  χ ⊢ phi1 entails c 1, so no variable-free bound of the c-chain
+  entails phi1 (phi1_hU) — else c 2 ⊢ c 1.
+* **Within im h the ∀-side closes**: inimage_chain_bound_top — any
+  image class bounding the whole c-chain is ⊤ (classification +
+  rung_cofinal).  A witness-blocker must therefore be OFF-IMAGE
+  variable-free; every known off-image family is already excluded.
+
+Status: witness OPEN, reduced to (a) a one-variable bound of the
+rung-chain beyond theorems (the bind mechanism's regress), vs (b) the
+full off-image version of "only ⊤ bounds the chain".
