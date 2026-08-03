@@ -105,3 +105,34 @@ question).
 
 Either outcome of (a) is progress: a witness kills UI; a refutation
 redirects the attack with the search space halved.
+
+---
+
+## Postscript, same day: the fork is RESOLVED — the ∀-side is dead
+
+`wip/rungbound.lean` (delegated probe, verified and landed).  Branch
+(a) is refuted in maximal generality: **any φ whatsoever** (any
+variables, any ◯-depth) entailed by every substituted odd rung is a
+PLL theorem (`chain_bound_is_theorem`), hence likewise for the c-chain
+(`c_chain_bound_is_theorem`), hence `no_pre_interp_schema` has
+CONTRADICTORY hypotheses (`pre_interp_schema_vacuous`): **no formula
+can ever instantiate the ∀-side obstruction.**  The mechanism: in a
+FINITE constraint model every world forces a substituted odd rung of
+rank ≤ twice its Rᵢ-depth (`rank_bound` — a pure ∨/⊃ induction, ◯⊥
+treated as an opaque hereditary atom), and PLL's finite model property
+(`LaxLogic/PLLFiniteModel.lean`, already in the repo) converts
+finite-model validity into derivability.  A countermodel to a
+chain-bound would need a world of infinite Rᵢ-depth — the limit point
+of the Rieger–Nishimura Esakia space — which FMP says a non-theorem
+never requires.
+
+Consequences: C1 is proved (only ⊤ bounds the c-chain — for ALL of
+RN(◯,{}) and beyond); the earlier "no completeness → no semantic
+route" reasoning was WRONG (FMP is completeness enough, and was
+already mechanised); `phi1` and the whole `◯p ⊃ ◯(p ∧ Y)` family are
+dead as ∀-witnesses.  **The entire UI attack now lives on the ∃-side**:
+the descending engine `Gmeet`, the landing ideal `L`, and the question
+whether some φ's consequence filter meets the descent floorlessly.
+Note the asymmetry that saves the ∃-side: the rank argument bounds
+worlds FROM BELOW by rungs (joins upward); it says nothing about
+common lower bounds of the gap antichain, where the descent lives.

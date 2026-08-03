@@ -4888,3 +4888,19 @@ both outcomes are live, and the schemas record what each would need.
 Status: witness OPEN, reduced to (a) a one-variable bound of the
 rung-chain beyond theorems (the bind mechanism's regress), vs (b) the
 full off-image version of "only ⊤ bounds the chain".
+
+---
+
+## §41 (2026-08-03) — the rung chain has NO nontrivial bound: the ∀-side of the UI attack is CLOSED (delegated probe, verified, landed)
+
+`wip/rungbound.lean`.  For EVERY φ: (∀k, rnSub(2k+1) ⊢ φ) → ⊢ φ
+(chain_bound_is_theorem; likewise c_chain_bound_is_theorem), so
+pre_interp_schema_vacuous: the ∀-side obstruction schema can never be
+instantiated.  Ingredients: rank_bound (finite model ⇒ every world
+forces an odd rung of rank ≤ 2·|up-set|; pure ∨/⊃ induction with the
+vacuous-implication trick at clusters) + the repo's OWN finite model
+property (PLLFiniteModel.lean) — which also proves C1 outright and
+refutes the earlier claim that no semantic route to derivability
+existed.  Corroborated by a kernel-checked 6-world rank computation
+and a 690-model scan.  Audits pinned, sorry-free.  All weight now on
+the ∃-side (Gmeet descent + landing ideal L).
