@@ -4752,3 +4752,37 @@ whether q9/q13/q14/w15 seed further families of the same kind.
 Debug note: omega silently dropped equations at type `ladder.W` (defeq ℕ
 but syntactically a projection) — same family of quirk as §34's `→ False`
 finding; fix is a `∀ y : Nat` annotation in the statement.
+
+---
+
+## §36 (2026-08-03) — q9, q13, q14 each seed an infinite family; the gap antichain matches nothing known; the connectivity map; the t-notation
+
+All PLL (`Deriv`/`Interd` = LaxND throughout; no PCLL notion appears in
+§§34–36).  `wip/families.lean` + `wip/connect.lean`.
+
+**New canonical notation** (Lean bridges pinned; old name in brackets):
+t n = class of rung n [q0=t0, q2=t1, q3=t2, q4=t3, q6=t4, q7=t5, q10=t6,
+q11=t7]; ⊤ [q1]; c k = ◯t(2k+1) [q5=c1, q12=c2, ◯q11=c3] — chain;
+g k = c k ⊃ t(2k+1) [q8=g1] — antichain; s k = c k ∨ t(2k+2) [q9=s1] —
+chain (sC_le/sC_strict); r k = t(2k+4) ⊃ c k [q14=r1] — antichain
+(rC_incomparable, ALL j ≠ k ≥ 1); ◯g k [q13=◯g1] — antichain
+(bg_incomparable).  w15 = g1 ∧ t6 (w15_form).
+
+**The probes**: s-family strict chain, off-image, not a chain-class
+(sC_off_image, sC_not_chain — the plain truth sets of sC k and
+chainF (k+1) agree, so the edge separates); r-family and ◯g-family
+antichains, off-image (rC_off_image, bg_off_image, bg_not_chain).
+
+**The gap antichain is new**: gap_not_q9/q13/q14/w15 close the last
+possible coincidences (with gap_not_rung/top/chain and gap 1 ≡ q8, no
+known class matches any gap k).
+
+**Connectivity** (connect.lean): t(2k+1) ⊢ g k (weakening) and
+g k ⊢ ◯g k, c k ⊢ s k, s j ⊢ c k (j<k), t(2k+3) ⊢ s k — all en masse;
+c k and g k incomparable at every level; and the dictionary's low-level
+arrows are LEVEL-1 ACCIDENTS: q5 ⊢ q10, q7 ⊢ q8, q6 ⊢ q8 are true
+(d_q7_q8, d_q6_q8 derived; q5⊢q10 pinned) but their schemas die from
+level 2 (chain_not_le_even, odd_not_le_gap, even_not_le_gap,
+chain_not_le_odd).  En-masse programme per Matthew's directive: strict
+families replace piecemeal cells; covering (⋖) statements stay relative
+to the known inventory.
