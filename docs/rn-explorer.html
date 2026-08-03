@@ -145,7 +145,7 @@
 
 <div class="tabs" role="tablist">
   <button class="tab" id="tab-ladder" role="tab" aria-selected="true" aria-controls="p-ladder">Ladder — image of h</button>
-  <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — 15 classes</button>
+  <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — 15 classes + the ◯-chain</button>
   <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — 347 cells</button>
 </div>
 
@@ -228,16 +228,18 @@
           <div class="lrow"><span class="swl"></span><span>Certified cover</span></div>
           <div class="lrow"><span class="swl d"></span><span>Relation certified; whether anything sits strictly between depends on one of the 2 remaining open cells</span></div>
           <div class="lrow"><span class="swl x"></span><span>Where distribution fails</span></div>
+          <div class="lrow"><span class="swl" style="border-top:2px dashed var(--green)"></span><span>The ◯-chain: infinitely many further classes, strict at every step, all below ⊤ — not covers</span></div>
         </div>
       </div>
       <div class="card">
         <h2>State of the order</h2>
         <dl class="stats">
-          <dt>classes</dt><dd>15</dd>
+          <dt>classes</dt><dd>15 + ∞ (chain)</dd>
           <dt>order cells</dt><dd>225</dd>
           <dt>settled</dt><dd id="d-set">223</dd>
           <dt>unsettled</dt><dd id="d-unk">2</dd>
           <dt>in image of h</dt><dd>8</dd>
+          <dt>im h</dt><dd>= rungs ∪ {⊤} ✓</dd>
         </dl>
       </div>
       <div class="card">
@@ -248,6 +250,17 @@
           <div style="color:var(--ink-soft);font-family:var(--sans);font-size:12.5px">
             but ◯(rung 4) = rung 4 and ◯(rung 6) = rung 6 — fixed points.</div>
         </div>
+      </div>
+      <div class="card">
+        <h2>The classification, proved</h2>
+        <div style="color:var(--ink-soft);font-size:12.5px">
+          Every ◯-free one-variable formula is, after <span class="fml">p ↦ ◯⊥</span>,
+          interderivable with a rung or with ⊤
+          (<code>image_classification</code>, sorry-free). So "off the rungs and
+          not ⊤" now literally means <strong>outside im h</strong> — the caveat
+          on q5, ◯q11 and the chain is gone, and it also decides cells:
+          <span class="fml">q10 ⊬ q6</span> falls out with no countermodel
+          (<code>q10_not_q6</code>).</div>
       </div>
     </div>
 
@@ -264,9 +277,11 @@
   strictly above rung 7, so the dictionary is not closed under ◯. Beyond it stretches an
   infinite strictly ascending chain — the boxed odd rungs
   <span class="fml">◯rn₃ &lt; ◯rn₅ &lt; ◯rn₇ &lt; …</span>, strict at every step
-  (<code>chain_step_strict</code>), pairwise distinct, and from the third term on
-  interderivable with no rung and not with ⊤ (<code>complement_infinite</code>):
-  the complement of the ladder image is <strong>infinite</strong>. The orange edge is <span class="fml">q9 &lt; q12</span>: since
+  (<code>chain_step_strict</code>), pairwise distinct — now drawn at the right edge of
+  the diagram. Since the classification <span class="fml">im h = rungs ∪ {⊤}</span> is
+  mechanised (<code>image_classification</code>), every one of them is off the image
+  outright: the complement of the ladder image is <strong>infinite, with no caveat</strong>
+  (<code>complement_infinite_final</code>). The orange edge is <span class="fml">q9 &lt; q12</span>: since
   <span class="fml">◯(rung 3 ∨ rung 4) = q12</span> while
   <span class="fml">◯rung 3 ∨ ◯rung 4 = q9</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
@@ -516,7 +531,16 @@ const DICT = [
   { f: "¬¬◯⊥ ∨ (¬¬◯⊥ ⊃ ◯⊥)",         x: 195, y: 230, w: 210 },
   { f: "◯(¬◯⊥ ∨ ¬¬◯⊥)",              x: 445, y: 230, w: 166 },
   { f: "◯(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥))",       x: 610, y: 142, w: 230 },
-  { f: "(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥",         x: 330, y: 142, w: 190 }
+  { f: "(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥",         x: 330, y: 142, w: 190 },
+  /* the ◯-chain of boxed odd rungs, mechanised in chainStrict/chainOff/rnClassify:
+     chainF k = ◯(rung(2k+1)[p := ◯⊥]); chainF 1 ≡ q5, chainF 2 ≡ q12,
+     chainF 3 ≡ ◯q11, and beyond the dictionary it never stops. */
+  { f: "◯q11", tag: "chainF 3",  x: 880, y: 230, w: 70,
+    desc: "= ◯(rung 7) — the 16th class (cBox11_settled); off the image (boxq11_off_image)" },
+  { f: "◯rn₉", tag: "chainF 4",  x: 880, y: 156, w: 70,
+    desc: "= ◯(rung 9) — strictly above chainF 3 (chain_lt_strict); off the image (chain_off_image)" },
+  { f: "◯rn₂ₖ₊₁  ⋮", tag: "all k ≥ 2", x: 880, y: 92, w: 96,
+    desc: "the whole chain: pairwise distinct (chain_pairwise), every one off the image — RN(◯,{}) ∖ im h is infinite (complement_infinite_final)" }
 ];
 const RUNG_OF_DICT = { 0:0, 2:1, 3:2, 4:3, 6:4, 7:5, 10:6, 11:7 };
 const DICT_OF_RUNG = { 0:0, 1:2, 2:3, 3:4, 4:6, 5:7, 6:10, 7:11 };
@@ -525,19 +549,24 @@ const DICT_OF_RUNG = { 0:0, 1:2, 2:3, 3:4, 4:6, 5:7, 6:10, 7:11 };
 const DICT_EDGES = [
   [0,2,"s"],[0,3,"s"],[2,4,"s"],[2,6,"s"],[3,4,"s"],[4,5,"s"],[4,7,"s"],
   [6,7,"s"],[5,9,"s"],[5,10,"s"],[7,9,"s"],[7,8,"s"],[9,11,"d"],[9,12,"x"],
-  [10,11,"s"],[8,13,"s"],[11,1,"s"],[12,14,"s"],[12,13,"d"],[14,1,"d"],[13,1,"s"]
+  [10,11,"s"],[8,13,"s"],[11,1,"s"],[12,14,"s"],[12,13,"d"],[14,1,"d"],[13,1,"s"],
+  /* the ◯-chain: every step proved strict (chain_step_strict / chain_lt_strict) */
+  [12,15,"s"],[15,16,"s"],[16,17,"s"],[17,1,"c"]
 ];
 
 function renderDict() {
   const svg = el("svg", {
-    viewBox: "0 0 780 700", width: 780, height: 700,
-    role: "img", "aria-label": "Hasse diagram of the fifteen variable-free classes"
+    viewBox: "0 0 960 700", width: 960, height: 700,
+    role: "img",
+    "aria-label": "Hasse diagram of the fifteen variable-free classes, with the infinite chain of boxed odd rungs beyond them"
   });
   const gE = el("g", {});
   for (const [i, j, st] of DICT_EDGES) {
     const a = DICT[i], b = DICT[j];
     const attrs = { x1: a.x, y1: a.y, x2: b.x, y2: b.y, fill: "none" };
     if (st === "x") { attrs.stroke = "var(--rust)"; attrs["stroke-width"] = 2.4; }
+    else if (st === "c") { attrs.stroke = "var(--green)"; attrs["stroke-width"] = 1.6;
+                           attrs["stroke-dasharray"] = "1.5 4"; }
     else { attrs.stroke = "var(--rule)"; attrs["stroke-width"] = 1.5;
            if (st === "d") attrs["stroke-dasharray"] = "4 3"; }
     gE.appendChild(el("line", attrs));
@@ -561,13 +590,13 @@ function renderDict() {
       x: d.x, y: d.y + 11, "text-anchor": "middle",
       "font-family": "var(--mono)", "font-size": "9",
       fill: inImg ? "var(--green-text)" : "var(--ink-soft)"
-    }, inImg ? `q${i} · rung ${RUNG_OF_DICT[i]}` : `q${i}`));
+    }, inImg ? `q${i} · rung ${RUNG_OF_DICT[i]}` : (d.tag ?? `q${i}`)));
     const show = () => {
       document.getElementById("read-dict").innerHTML =
-        `<strong>q${i}</strong> &nbsp; ${d.f}<br><span class="muted">`
-        + (inImg
+        `<strong>${d.tag ?? `q${i}`}</strong> &nbsp; ${d.f}<br><span class="muted">`
+        + (d.desc ?? (inImg
             ? `rung ${RUNG_OF_DICT[i]} of the ladder — in the image of h`
-            : `outside the image of h (not one of rungs 0–7)`)
+            : `outside the image of h — and by the mechanised classification (image_classification), every class is a rung or ⊤ or off the image outright`))
         + `</span>`;
     };
     g.addEventListener("click", show);
