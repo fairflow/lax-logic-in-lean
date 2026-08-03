@@ -4833,3 +4833,32 @@ eleven ∀φ unit-law lemmas (top_and_interd … bot_imp_interd) close
 every ⊤/⊥-row cell of the operation tables for every present and
 future class (negation cells φ ⊃ ⊥ deliberately excluded — genuine
 content).  The v9 explorer fills these cells algebraically.
+
+---
+
+## §39 (2026-08-03) — the UI-obstruction hypothesis, tested (all PLL)
+
+`wip/uiObstruct.lean`.  Matthew's hypothesis: the rich structure of
+RN(◯,{}) (in particular an infinite antichain) may point at semantic
+obstructions to uniform interpolation.  The bridge: ∃p.φ for
+one-variable φ must be the LEAST variable-free consequence of φ — an
+element of RN(◯,{}); the consequence set is a filter, so ∃p.φ exists
+iff the filter is principal; dually for ∀p.φ and the antecedent ideal.
+This is the Ghilardi–Zawadowski mechanism for UI failure in S4-like
+logics.
+
+STRUCTURALLY CONFIRMED — both engines exist:
+* t3_below_gap: the gap antichain has common floor t3, so the antichain
+  alone does NOT obstruct (finite meets exist); but
+* Gmeet_strict / Gmeet_desc_strict: the partial meets g1 ∧ … ∧ g(n+1)
+  descend STRICTLY FOREVER — the first infinite strictly descending
+  chain proved in RN(◯,{});
+* the c-chain provides the ascending engine, and chain_cofinal_not_rung
+  plus the family lemmas show no known class but ⊤ bounds it.
+
+REDUCTION: no_post_interp_schema / no_pre_interp_schema (axiom-free!):
+UI fails iff a single witness exists — a one-variable φ entailed by
+every chainF k (dually entailing every gap k) with no variable-free
+formula interpolating between the family and φ.  That witness question
+is exactly where the syntactic UI hunt stalled from the other side;
+both outcomes are live, and the schemas record what each would need.
