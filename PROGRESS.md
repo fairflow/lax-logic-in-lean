@@ -4687,3 +4687,33 @@ miscounted `split`, a missing context quantifier, a missing recursion hypothesis
 looked like a hard proof until the statement was right, and then went through in a few
 lines or first try.  That is worth remembering for `TruncCase`: before looking for a
 measure, check that what is being asked for is what the traversal can supply.
+
+---
+
+## §34 (2026-08-03) — the RN classification is mechanised: im h = rungs ∪ {⊤}, and the complement is infinite with no caveat
+
+`wip/rnClassify.lean` (with `wip/rnClass.lean` from yesterday) completes all five
+stages of `docs/rn-classification-plan.md`.  The theorem, in full:
+
+    image_classification : for every ◯-free formula A whose only variable is p,
+        (∃ n, Interd (A[p := ◯⊥]) (rnSub n))  or  Interd (A[p := ◯⊥]) ⊤.
+
+Method: classify semantically (`cls : PLLFormula → UpCode` computes the ladder
+truth set of A by structural recursion through three fully-tabulated Heyting
+operations on up-set codes), then *derive* each table row (`meet_interd`,
+`join_interd`, `imp_interd`: 48 rows, each hard side a ≤ 4-step modus-ponens
+composition through the Rieger–Nishimura recursion, each easy side rung order
+through the decision procedure `rnSub_order`), then glue by the congruence
+lemmas in the structural induction `rn_classification`.
+
+Consequences, all now UNCONDITIONAL (the standing caveat of §33 is gone):
+`q5 ∉ im h` (`q5_off_image`), `◯q11 ∉ im h` (`boxq11_off_image`),
+`chainF k ∉ im h` for every k ≥ 2 (`chain_off_image`), and
+`complement_infinite_final`: **RN(◯,{}) ∖ im h is infinite** — the boxed odd
+rungs are pairwise distinct and all off the image.  Everything sorry-free,
+audits pinned at `[propext, Classical.choice, Quot.sound]`.
+
+Bonus: `Interd q11 (rnSub 7)` is now an *instance* of the classification
+(`cls (¬¬p ∨ (¬¬p ⊃ p)) = odd 3` by `decide`), identifying `◯q11 ≡ chainF 3`
+without a hand derivation — the classification doubles as a decision procedure
+for interderivability on the whole ◯-free one-variable fragment.

@@ -88,3 +88,40 @@ Risk ledger: the imp-table arithmetic is the fiddly part (the gap in
 derivations are short but must be written longhand.  If a session
 boundary interrupts, resume from the stage list — each stage compiles
 and pushes independently.
+
+---
+
+## Postscript, 2026-08-03: all five stages landed
+
+Stages 2–3 in `wip/rnClass.lean`, stages 4–5 in `wip/rnClassify.lean`;
+sorry-free, axiom audits pinned at `[propext, Classical.choice,
+Quot.sound]` throughout.  The final statements:
+
+    rn_classification : boxFree A → onlyP A →
+        Interd (embed A) (toS (cls A))
+    image_classification : boxFree A → onlyP A →
+        (∃ n, Interd (embed A) (rnSub n)) ∨ Interd (embed A) q1
+
+and the caveat dischargers, now unconditional:
+
+    q5_off_image              : ¬ InImage q5
+    boxq11_off_image          : ¬ InImage (q11.somehow)
+    chain_off_image  (k ≥ 2)  : ¬ InImage (chainF k)
+    complement_infinite_final : the chainF k (k ≥ 2) are pairwise
+                                distinct and all off the image
+
+where `InImage X := ∃ A, boxFree A ∧ onlyP A ∧ Interd X (embed A)`.
+
+Two deviations from the plan as written.  (1) The codes kept `bot /
+odd a / even a / top` rather than `rung n | top`; the parity split is
+what the tables case on, so it is the right normal form.  (2) The
+implication table needed one more row than the sketch (`E_a ⊃ O_b`
+splits four ways, not three); the ℕ-truncated recursion equation
+`rnSub (2a+2) = rnSub (2a+1) ⊃ rnSub (2a−1)` (valid at `a = 0` as
+`¬◯⊥ = ◯⊥ ⊃ ⊥`) let every degenerate case share the general
+derivation, exactly as hoped.
+
+A dividend: `Interd q11 (rnSub 7)` (hence `◯q11 ≡ chainF 3`) fell out
+as an *instance* of `rn_classification` at `A = ¬¬p ∨ (¬¬p ⊃ p)`, with
+`cls A = odd 3` computed by `decide` — the classification is already
+paying for itself as a decision procedure for the ◯-free fragment.

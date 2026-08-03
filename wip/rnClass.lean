@@ -343,5 +343,15 @@ theorem sat_cls : ∀ {A : PLLFormula}, boxFree A = true →
       simp only [boxFree] at h
       exact Bool.noConfusion h
 
+/-! ## Axiom audits — sorry-free throughout -/
+
+/-- info: 'PLLND.RNEmbed.UpCode.memC_imp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms UpCode.memC_imp
+
+/-- info: 'PLLND.RNEmbed.sat_cls' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms sat_cls
+
 end RNEmbed
 end PLLND
