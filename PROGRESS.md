@@ -4807,3 +4807,29 @@ to the known inventory.
    order type among the families (neither chain nor antichain).
 4. OPEN: second-order gaps ◯g k ⊃ g k — same truth set as g k on every
    model in the edged-lift family; separating them needs a new model.
+
+---
+
+## §38 (2026-08-03) — the second-order gap COLLAPSES (en masse); the co-gaps are new; unit rows closed
+
+`wip/gap2.lean`, all PLL.  The "new model construction" hunt for
+◯g k ⊃ g k ended in a theorem instead: on ANY lift of the ladder
+skeleton a world forcing ◯t(2k+1) automatically forces ◯g k (each
+box-witness lands in [0,k] ∪ F, and both force g k) — and that
+blindness syntactifies into the derivation:
+
+    imp_gap_collapse : c k ⊢ X  →  (X ⊃ g k) ≡ g k        [propext only]
+    gap2_collapse    : (◯g k ⊃ g k) ≡ g k
+    c_imp_gap        : (c k ⊃ g k) ≡ g k
+
+The DUAL does not collapse: dC k := g k ⊃ c k is strictly above c k
+(dC_not_le_chain, via cmE (k−2) at world k+3 where every cone point
+either fails g k or sits low enough to force c k), matches no rung,
+is off the image (dC_off_image) — a NEW family, order structure open.
+Also chain_le_rC (c k ⊢ r k).
+
+Unit rows: Matthew's ⊤ ∧ φ ≡ φ observation implemented en masse —
+eleven ∀φ unit-law lemmas (top_and_interd … bot_imp_interd) close
+every ⊤/⊥-row cell of the operation tables for every present and
+future class (negation cells φ ⊃ ⊥ deliberately excluded — genuine
+content).  The v9 explorer fills these cells algebraically.
