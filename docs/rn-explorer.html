@@ -20,6 +20,8 @@
     --anti:       #a8752c;
     --anti-fill:  #f8efdc;
     --anti-text:  #825516;
+    --zig:        #7a5b8f;
+    --zig-fill:   #efe7f4;
     --shadow:     0 1px 2px rgba(19,24,26,.06), 0 8px 24px rgba(19,24,26,.05);
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
     --sans:  ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -32,6 +34,7 @@
       --slate: #8797a3; --slate-fill: #1d2429; --rust: #d9822b; --rust-fill: #2b1d10;
       --chain: #7fa6c8; --chain-fill: #16222c; --chain-text: #a0c3de;
       --anti: #d2a24c; --anti-fill: #2a2112; --anti-text: #e2ba6a;
+      --zig: #a98cc0; --zig-fill: #241a2b;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
     }
   }
@@ -41,6 +44,7 @@
     --slate: #8797a3; --slate-fill: #1d2429; --rust: #d9822b; --rust-fill: #2b1d10;
     --chain: #7fa6c8; --chain-fill: #16222c; --chain-text: #a0c3de;
     --anti: #d2a24c; --anti-fill: #2a2112; --anti-text: #e2ba6a;
+    --zig: #a98cc0; --zig-fill: #241a2b;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
   }
   :root[data-theme="light"] {
@@ -49,6 +53,7 @@
     --slate: #64717c; --slate-fill: #e7ebee; --rust: #b0530a; --rust-fill: #fbeadb;
     --chain: #4a6b8a; --chain-fill: #e3ebf3; --chain-text: #35526c;
     --anti: #a8752c; --anti-fill: #f8efdc; --anti-text: #825516;
+    --zig: #7a5b8f; --zig-fill: #efe7f4;
     --shadow: 0 1px 2px rgba(19,24,26,.06), 0 8px 24px rgba(19,24,26,.05);
   }
 
@@ -99,6 +104,12 @@
   .sw.u { background: transparent; border:1.5px dashed var(--slate); }
   .sw.c { background: var(--chain-fill); border:1.5px solid var(--chain); }
   .sw.a { background: var(--anti-fill);  border:1.5px solid var(--anti); }
+  .sw.z { background: var(--zig-fill);   border:1.5px solid var(--zig); }
+  .sw.br { background: none; border:0; border-left: 2px solid var(--anti);
+           border-radius:0; width: 7px; }
+  .jglyph { display:inline-block; width:15px; height:15px; flex:none; margin-top:2px;
+            border:1.2px solid var(--ink-soft); border-radius:50%; background: var(--panel);
+            text-align:center; line-height:13px; font-size:10px; color: var(--ink); }
   .chip[aria-pressed="true"] { background: var(--green-fill); color: var(--green-text);
                                border-color: var(--green); font-weight:600; }
   table.grid { border-collapse: collapse; font-family: var(--mono); font-size: 11px;
@@ -151,7 +162,7 @@
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
-  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v8 · 2026-08-03</p>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v9 · 2026-08-03</p>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
   The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
@@ -161,6 +172,7 @@
 <div class="tabs" role="tablist">
   <button class="tab" id="tab-ladder" role="tab" aria-selected="true" aria-controls="p-ladder">Ladder — image of h</button>
   <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — 15 classes + the ◯-chain</button>
+  <button class="tab" id="tab-fam" role="tab" aria-selected="false" aria-controls="p-fam">Families — the combs</button>
   <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — 347 cells</button>
 </div>
 
@@ -173,13 +185,17 @@ named by a family letter carrying a level index <span class="fml">k ≥ 1</span>
 <span class="fml">g k = c k ⊃ t(2k+1)</span> (antichain),
 <span class="fml">s k = c k ∨ t(2k+2)</span> (chain),
 <span class="fml">r k = t(2k+4) ⊃ c k</span> (antichain),
-<span class="fml">◯g k</span> (antichain); and the sixteenth class the operation tables
-discovered is the meet <span class="fml">g1 ∧ t6</span>.
+<span class="fml">◯g k</span> (antichain),
+<span class="fml">w k = g k ∧ t(2k+4)</span> (zigzag; <span class="fml">w1</span> was
+<span class="fml">w15</span>); and the sixteenth class the operation tables
+discovered is the meet <span class="fml">g1 ∧ t6</span> — which is exactly
+<span class="fml">w1</span>.
 Old names are shown as "was qN" throughout; the Lean source keeps the old q-names, bridged by
 theorems <code>sC_one_q9</code>, <code>rC_one_q14</code>, <code>bg_one_q13</code>,
 <code>gap_one_q8</code>, <code>chainF_one_q5</code>, <code>q10_rn6</code>,
 <code>q6_rn4</code>, <code>q11_rn7</code>.
-Version shown top: if it reads lower than the version you were told, force-reload (⇧+reload).</p>
+Version shown top: if it reads lower than the version you were told, force-reload (⇧+reload).
+New tab: <strong>Families — the picture of everything proved.</strong></p>
 
 <!-- ───────────────────────── LADDER ───────────────────────── -->
 <section id="p-ladder" role="tabpanel" aria-labelledby="tab-ladder">
@@ -342,6 +358,95 @@ Version shown top: if it reads lower than the version you were told, force-reloa
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
 </section>
 
+<!-- ──────────────────────── FAMILIES ──────────────────────── -->
+<section id="p-fam" role="tabpanel" aria-labelledby="tab-fam" hidden>
+  <div class="cols">
+    <div class="rail">
+      <div class="card">
+        <h2>Legend</h2>
+        <div class="legend">
+          <div class="lrow"><span class="sw g"></span><span><span class="fml">t n</span> — a ladder rung,
+            in <span class="fml">im h</span>. Odd rungs make the spine; even rungs hang to its left.</span></div>
+          <div class="lrow"><span class="sw c"></span><span>Chain families <span class="fml">c k</span>,
+            <span class="fml">s k</span> — totally ordered, strict at every step</span></div>
+          <div class="lrow"><span class="sw a"></span><span>Antichain families <span class="fml">g k</span>,
+            <span class="fml">r k</span>, <span class="fml">◯g k</span> — pairwise incomparable</span></div>
+          <div class="lrow"><span class="sw z"></span><span>Zigzag family <span class="fml">w k</span> —
+            comparable only two levels apart</span></div>
+          <div class="lrow"><span class="sw o"></span><span><span class="fml">⊤</span> — above everything drawn</span></div>
+          <div class="lrow"><span class="swl" style="border-top:1.6px solid var(--ink-soft)"></span><span>Solid — a proved strict <span class="fml">≤</span></span></div>
+          <div class="lrow"><span class="swl" style="border-top:1.8px dashed var(--chain)"></span><span>Dashed blue — a proved <span class="fml">≤</span> crossing families</span></div>
+          <div class="lrow"><span class="swl" style="border-top:2px dashed var(--rust)"></span><span>Dashed rust, arrowhead, <span class="fml">◯</span> at the midpoint — applying the box</span></div>
+          <div class="lrow"><span class="swl" style="border-top:2px dotted var(--slate)"></span><span>Dotted grey — a <strong>level-1 accident</strong>: true for k = 1, provably false from k = 2</span></div>
+          <div class="lrow"><span class="sw br"></span><span>Amber bracket — that whole column is an antichain
+            (<span class="fml">pairwise ⊬</span>): the missing edges are deliberate</span></div>
+          <div class="lrow"><span class="jglyph">∧</span><span>A small <span class="fml">∧</span>/<span class="fml">∨</span>
+            circle on a node = that node <strong>is</strong> the meet/join of the two nodes its thin curves
+            come from — a proved identity, not just an inequality</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Fold-back laws</h2>
+        <div class="fml" style="font-size:13.5px;line-height:1.8">
+          ◯s k = c (k+1)
+            <span style="font-family:var(--mono);font-size:10.5px;color:var(--ink-soft)">box_sC</span><br>
+          c k ∧ g k = t(2k+1)
+            <span style="font-family:var(--mono);font-size:10.5px;color:var(--ink-soft)">chain_meet_gap</span><br>
+          (X ⊃ g k) = g k &nbsp;for any X ≥ c k
+            <span style="font-family:var(--mono);font-size:10.5px;color:var(--ink-soft)">imp_gap_collapse</span><br>
+          ◯t4 = t4, &nbsp;◯t6 = t6
+        </div>
+        <p style="font-size:12.5px;margin:9px 0 0;color:var(--ink-soft)">In particular
+        <span class="fml">◯g k ⊃ g k = g k</span>: the second-order gap collapses
+        (<span style="font-family:var(--mono);font-size:11px">gap2_collapse</span>). The first law is the
+        one to look at in the picture — <span class="fml">◯</span> applied to
+        <span class="fml">s k</span> does not stay at level k, it lands on the chain
+        <em>one level up</em>.</p>
+      </div>
+      <div class="card">
+        <h2>Level-1 accidents</h2>
+        <p style="font-size:13px;margin:0;color:var(--ink-soft)">
+        <span class="fml">t5 ⊢ g1</span>, <span class="fml">t4 ⊢ g1</span> and
+        <span class="fml">c1 ⊢ t6</span> hold at level 1 and <strong>provably fail</strong> from level 2
+        (<span style="font-family:var(--mono);font-size:11px">odd_not_le_gap</span>,
+        <span style="font-family:var(--mono);font-size:11px">even_not_le_gap</span>,
+        <span style="font-family:var(--mono);font-size:11px">chain_not_le_even</span>). They are the dotted
+        grey edges: level 1 is not a typical level, and reading the general shape off it is exactly the
+        mistake these three theorems close.</p>
+      </div>
+      <div class="card">
+        <h2>Open</h2>
+        <p style="font-size:13px;margin:0;color:var(--ink-soft)">
+        The co-gaps <span class="fml">g k ⊃ c k</span>: strictly above <span class="fml">c k</span>
+        (<span style="font-family:var(--mono);font-size:11px">dC_not_le_chain</span>), off the image —
+        their order structure with each other is open. Also open:
+        <span class="fml">r k</span> against <span class="fml">w k</span>, and everything at the levels
+        this picture does not show.</p>
+      </div>
+    </div>
+
+    <div>
+      <div class="stage" id="stage-fam"></div>
+      <p class="readout" id="read-fam"><span class="muted">Click any node for its formula in
+      <span class="fml">t</span>-notation, its family, its old q-name and the Lean theorems that
+      pin it.</span></p>
+    </div>
+  </div>
+
+  <p class="note">One picture of the whole known structure. The green spine is the ladder — the odd rungs
+  <span class="fml">t1, t3, t5, t7, t9</span> in a chain, the even rungs hanging left. Off each odd rung
+  <span class="fml">t(2k+1)</span> hangs a <strong>comb</strong>: the six families, all of them defined
+  from that rung, all of them repeating verbatim at every level k ≥ 1. What the picture is for is the
+  contrast between the two kinds of column — the blue columns
+  (<span class="fml">c</span>, <span class="fml">s</span>) are joined bottom to top because they are chains,
+  the amber columns (<span class="fml">g</span>, <span class="fml">r</span>, <span class="fml">◯g</span>)
+  carry a bracket instead of edges because they are antichains, and the violet
+  <span class="fml">w</span> column is neither: it skips a level
+  (<span class="fml">w1 ≤ w3</span> but <span class="fml">w1 ⊬ w2</span>). Everything drawn solid,
+  dashed or dotted here is machine-checked; the only thing that is not is what the "Open" card says
+  is not.</p>
+</section>
+
 <!-- ───────────────────────── TABLES ───────────────────────── -->
 <section id="p-tab" role="tabpanel" aria-labelledby="tab-tab" hidden>
   <div class="cols">
@@ -360,7 +465,8 @@ Version shown top: if it reads lower than the version you were told, force-reloa
         <div class="legend">
           <div class="lrow"><span class="sw g"></span><span><strong id="t-cert">345</strong> certified — a kernel-checked <span class="fml">InterdU</span> in <code>rncCells.lean</code></span></div>
           <div class="lrow"><span class="sw p"></span><span><strong>2</strong> hold in PCLL only — no PLL proof exists, and one of them is refuted in PLL</span></div>
-          <div class="lrow"><span class="sw u"></span><span><strong>107</strong> open — the probe could not settle them either way</span></div>
+          <div class="lrow"><span class="sw g"></span><span id="t-unitline"></span></div>
+          <div class="lrow"><span class="sw u"></span><span id="t-openline"><strong>107</strong> open — the probe could not settle them either way</span></div>
         </div>
       </div>
       <div class="card">
@@ -713,6 +819,295 @@ function renderDict() {
   document.getElementById("stage-dict").replaceChildren(svg);
 }
 
+/* ─────────────────── families: the combs ───────────────────
+   One record per drawn class. The spine is the ladder; off each odd rung
+   t(2k+1) hangs the comb of the six families, identical at every level
+   k = 1, 2, 3. Colour = family kind, not level.                         */
+const FAM_ACC = {
+  t:     ["var(--green-fill)", "var(--green)", "var(--green-text)", 1.4],
+  top:   ["var(--slate-fill)", "var(--slate)", "var(--ink-soft)",   1.2],
+  chain: ["var(--chain-fill)", "var(--chain)", "var(--chain-text)", 1.4],
+  anti:  ["var(--anti-fill)",  "var(--anti)",  "var(--anti-text)",  1.4],
+  zig:   ["var(--zig-fill)",   "var(--zig)",   "var(--zig)",        1.4]
+};
+const GRP_KIND = {
+  t:   "im h — a ladder rung",
+  top: "the top class — above everything drawn",
+  c:   "chain family · c k = ◯t(2k+1) — totally ordered, strict at every step",
+  s:   "chain family · s k = c k ∨ t(2k+2) — a chain, and ◯s k = c (k+1)",
+  g:   "antichain family · g k = c k ⊃ t(2k+1) — pairwise incomparable",
+  r:   "antichain family · r k = t(2k+4) ⊃ c k — pairwise incomparable",
+  bg:  "antichain family · ◯g k — pairwise incomparable",
+  w:   "zigzag family · w k = g k ∧ t(2k+4) — w j ≤ w k iff k ≥ j+2"
+};
+const GRP_THM = {
+  t:   "rnSub_order, image_classification",
+  top: "image_classification",
+  c:   "chain_lt_strict, chain_step_strict",
+  s:   "sC_strict, box_sC",
+  g:   "gap_incomparable, width_infinite",
+  r:   "rC_incomparable",
+  bg:  "bg_incomparable",
+  w:   "wC_le, wC_strict, wC_succ_not_le"
+};
+const FAMN = [], FAMBY = {};
+(function buildFamilies() {
+  const add = o => {
+    o.kind = o.kind || GRP_KIND[o.grp];
+    o.thm  = GRP_THM[o.grp];
+    o.sub  = o.sub === undefined ? o.form : o.sub;
+    FAMN.push(o); FAMBY[o.id] = o;
+  };
+  /* the spine: odd rungs at x 340, even rungs hanging left at x 250 */
+  [ /* id     x    y   w   h  minimal form  was */
+    ["t0" , 340, 735, 52, 26, "⊥",        "q0" ],
+    ["t1" , 340, 680, 58, 28, "◯⊥",       "q2" ],
+    ["t2" , 250, 640, 52, 26, "¬◯⊥",      "q3" ],
+    ["t3" , 340, 590, 58, 28, "t1 ∨ t2",  "q4" ],
+    ["t4" , 250, 520, 52, 26, "t2 ⊃ t1",  "q6" ],
+    ["t5" , 340, 430, 58, 28, "t2 ∨ t4",  "q7" ],
+    ["t6" , 250, 355, 52, 26, "t4 ⊃ t1",  "q10"],
+    ["t7" , 340, 270, 58, 28, "t4 ∨ t6",  "q11"],
+    ["t8" , 250, 195, 52, 26, "t6 ⊃ t3",  ""   ],
+    ["t9" , 340, 110, 58, 28, "t6 ∨ t8",  ""   ],
+    ["t10", 250,  58, 52, 26, "t8 ⊃ t5",  ""   ]
+  ].forEach(([id, x, y, w, h, form, old]) => {
+    const n = +id.slice(1);
+    add({ id, name: id, x, y, w, h, fam: "t", grp: "t", form, old,
+          kind: "im h — ladder rung " + n
+                + (n === 0 ? " (the bottom, ⊥)"
+                   : n % 2 ? " (a join — two upper covers)"
+                           : " (an implication — one upper cover)")
+                + (n === 4 || n === 6 ? " · ◯-fixed: ◯t" + n + " = t" + n : "") });
+  });
+  add({ id: "top", name: "⊤", x: 340, y: 32, w: 48, h: 26,
+        fam: "top", grp: "top", form: "⊤", sub: "", old: "q1" });
+  /* the three combs */
+  for (let k = 1; k <= 3; k++) {
+    const ay = 750 - 160 * k, o = 2 * k + 1;
+    add({ id: "c" + k, name: "c" + k, x: 520, y: ay -  58, w: 60, h: 30,
+          fam: "chain", grp: "c", form: "◯t" + o,
+          old: ({ 1: "q5", 2: "q12", 3: "◯q11" })[k] });
+    add({ id: "g" + k, name: "g" + k, x: 700, y: ay -  58, w: 60, h: 30,
+          fam: "anti",  grp: "g", form: "◯t" + o + " ⊃ t" + o,
+          old: k === 1 ? "q8" : "" });
+    add({ id: "s" + k, name: "s" + k, x: 600, y: ay - 122, w: 60, h: 30,
+          fam: "chain", grp: "s", form: "◯t" + o + " ∨ t" + (o + 1),
+          old: k === 1 ? "q9" : "" });
+    add({ id: "r" + k, name: "r" + k, x: 420, y: ay - 146, w: 60, h: 30,
+          fam: "anti",  grp: "r", form: "t" + (o + 3) + " ⊃ ◯t" + o,
+          old: k === 1 ? "q14" : "" });
+    add({ id: "bg" + k, name: "◯g" + k, x: 890, y: ay - 160, w: 66, h: 30,
+          fam: "anti",  grp: "bg", form: "◯(◯t" + o + " ⊃ t" + o + ")",
+          old: k === 1 ? "q13" : "" });
+    add({ id: "w" + k, name: "w" + k, x: 800, y: ay -  14, w: 60, h: 30,
+          fam: "zig",   grp: "w", form: "g" + k + " ∧ t" + (o + 3),
+          sub: "g" + k + " ∧ t" + (o + 3),
+          exp: "(◯t" + o + " ⊃ t" + o + ") ∧ t" + (o + 3),
+          old: k === 1 ? "w15" : "" });
+  }
+})();
+
+/* does (x,y) land in a node box we are not allowed to cross? */
+function famHit(x, y, skip) {
+  for (const n of FAMN) {
+    if (skip.indexOf(n.id) >= 0) continue;
+    if (Math.abs(x - n.x) <= n.w / 2 + 4 && Math.abs(y - n.y) <= n.h / 2 + 4) return true;
+  }
+  return false;
+}
+/* a quadratic curve a → b that misses every node box: try increasing
+   perpendicular bows and keep the first clean one (deterministic)      */
+function famCurve(a, b, skip, offsets) {
+  const cand = offsets ||
+    [0, 20, -20, 34, -34, 52, -52, 72, -72, 95, -95, 125, -125, 160, -160, 200, -200];
+  const dx = b.x - a.x, dy = b.y - a.y, L = Math.hypot(dx, dy) || 1;
+  let best = null;
+  for (const off of cand) {
+    const cx = (a.x + b.x) / 2 - dy / L * off, cy = (a.y + b.y) / 2 + dx / L * off;
+    let bad = 0;
+    for (let i = 1; i < 25; i++) {
+      const t = i / 25, u = 1 - t;
+      if (famHit(u * u * a.x + 2 * u * t * cx + t * t * b.x,
+                 u * u * a.y + 2 * u * t * cy + t * t * b.y, skip)) bad++;
+    }
+    if (bad === 0) return { cx, cy, bad: 0 };
+    if (!best || bad < best.bad) best = { cx, cy, bad };
+  }
+  return best;
+}
+/* where a ray aimed at n's centre crosses n's (padded) box */
+function famEdgePt(n, fx, fy, pad) {
+  const dx = n.x - fx, dy = n.y - fy;
+  if (!dx && !dy) return { x: n.x, y: n.y };
+  const s = Math.min(dx ? (n.w / 2 + pad) / Math.abs(dx) : Infinity,
+                     dy ? (n.h / 2 + pad) / Math.abs(dy) : Infinity);
+  return { x: n.x - dx * s, y: n.y - dy * s };
+}
+const fam1 = v => Math.round(v * 10) / 10;
+const famQ = (a, c, b) =>
+  `M ${fam1(a.x)} ${fam1(a.y)} Q ${fam1(c.cx)} ${fam1(c.cy)} ${fam1(b.x)} ${fam1(b.y)}`;
+
+function renderFamilies() {
+  const N = id => FAMBY[id];
+  const svg = el("svg", {
+    viewBox: "0 0 1000 760", width: 1000, height: 760, role: "img",
+    "aria-label": "The ladder spine of odd rungs t1 to t9 with even rungs to its left, and at each of "
+      + "the odd rungs t3, t5, t7 a comb of the six families c, g, s, r, box-g and w, with meet and "
+      + "join junctions, box arrows and the level-1 accidents"
+  });
+  const defs = el("defs", {});
+  const mk = el("marker", { id: "famBoxArrow", viewBox: "0 0 10 10", refX: "8.6", refY: "5",
+                            markerWidth: "6", markerHeight: "6", orient: "auto" });
+  mk.appendChild(el("path", { d: "M 0 1.4 L 9 5 L 0 8.6 z", fill: "var(--rust)" }));
+  defs.appendChild(mk);
+  svg.appendChild(defs);
+
+  const gE = el("g", {}), gB = el("g", {}), gJ = el("g", {}),
+        gR = el("g", {}), gN = el("g", {}), gT = el("g", {});
+  const seg = (a, b, at) =>
+    el("line", Object.assign({ x1: a.x, y1: a.y, x2: b.x, y2: b.y }, at));
+
+  /* ── the ladder itself ── */
+  [["t0","t1"],["t0","t2"],["t1","t3"],["t2","t3"],["t1","t4"],["t3","t5"],
+   ["t4","t5"],["t3","t6"],["t5","t7"],["t6","t7"],["t5","t8"],["t7","t9"],
+   ["t8","t9"],["t7","t10"]].forEach(([i, j]) =>
+    gE.appendChild(seg(N(i), N(j), { stroke: "var(--green)", "stroke-width": 1.7 })));
+  ["t9","t10"].forEach(i => gE.appendChild(seg(N(i), N("top"),
+    { stroke: "var(--slate)", "stroke-width": 1.2, "stroke-dasharray": "2 4" })));
+
+  /* ── the combs: every edge here is a proved strict ≤ ── */
+  for (let k = 1; k <= 3; k++) {
+    const a = "t" + (2 * k + 1);
+    [[a, "c" + k], [a, "g" + k], ["c" + k, "s" + k],
+     ["c" + k, "bg" + k], ["g" + k, "bg" + k], ["c" + k, "r" + k]]
+      .forEach(([i, j]) => gE.appendChild(seg(N(i), N(j),
+        { stroke: "var(--ink-soft)", "stroke-width": 1.3, opacity: ".75" })));
+  }
+  /* the two chain rails, and the proved crossings s k < c (k+1) */
+  [["c1","c2"],["c2","c3"],["s1","s2"],["s2","s3"]].forEach(([i, j]) =>
+    gE.appendChild(seg(N(i), N(j), { stroke: "var(--chain)", "stroke-width": 1.8 })));
+  [["s1","c2"],["s2","c3"]].forEach(([i, j]) =>
+    gE.appendChild(seg(N(i), N(j), { stroke: "var(--chain)", "stroke-width": 1.6,
+                                     "stroke-dasharray": "5 3" })));
+  /* the zigzag rail: w1 ≤ w3 only — it has to step over w2 */
+  const wc = famCurve(N("w1"), N("w3"), ["w1", "w3"],
+                      [-72, -95, -125, -160, 72, 95, 125]);
+  gE.appendChild(el("path", { d: famQ(N("w1"), wc, N("w3")), fill: "none",
+    stroke: "var(--zig)", "stroke-width": 1.8 }));
+  /* the three level-1 accidents */
+  [["t5","g1"],["t4","g1"],["c1","t6"]].forEach(([i, j]) => {
+    const c = famCurve(N(i), N(j), [i, j]);
+    const p0 = famEdgePt(N(i), c.cx, c.cy, 2), p1 = famEdgePt(N(j), c.cx, c.cy, 2);
+    gE.appendChild(el("path", { d: famQ(p0, c, p1), fill: "none",
+      stroke: "var(--slate)", "stroke-width": 1.4, "stroke-dasharray": "2 3" }));
+  });
+  svg.appendChild(gE);
+
+  /* ── ◯-arrows: applying the box ── */
+  [["t3","c1"],["t5","c2"],["t7","c3"],["s1","c2"],["s2","c3"],
+   ["g1","bg1"],["g2","bg2"],["g3","bg3"]].forEach(([i, j]) => {
+    const c = famCurve(N(i), N(j), [i, j], [28, -28, 44, -44, 64, -64, 88, -88, 120, -120]);
+    const p0 = famEdgePt(N(i), c.cx, c.cy, 3), p1 = famEdgePt(N(j), c.cx, c.cy, 8);
+    gB.appendChild(el("path", { d: famQ(p0, c, p1), fill: "none",
+      stroke: "var(--rust)", "stroke-width": 1.6, "stroke-dasharray": "5 3",
+      "marker-end": "url(#famBoxArrow)" }));
+    const mx = .25 * p0.x + .5 * c.cx + .25 * p1.x,
+          my = .25 * p0.y + .5 * c.cy + .25 * p1.y;
+    gT.appendChild(el("circle", { cx: fam1(mx), cy: fam1(my), r: 7.5, fill: "var(--panel)" }));
+    gT.appendChild(el("text", { x: fam1(mx), y: fam1(my + 3.2), "text-anchor": "middle",
+      "font-family": "var(--serif)", "font-size": "10", fill: "var(--rust)" }, "◯"));
+  });
+  svg.appendChild(gB);
+
+  /* ── meet and join junctions: the glyph sits ON the result node ── */
+  const JUNC = [];
+  for (let k = 1; k <= 3; k++) {
+    JUNC.push(["∧", "t" + (2 * k + 1), "up",   ["c" + k, "g" + k]]);
+    JUNC.push(["∨", "s" + k,           "down", ["c" + k, "t" + (2 * k + 2)]]);
+    JUNC.push(["∧", "w" + k,           "up",   ["g" + k, "t" + (2 * k + 4)]]);
+  }
+  const JOFF = [22, -22, 36, -36, 54, -54, 75, -75, 100, -100, 140, -140, 190, -190];
+  JUNC.forEach(([sym, id, side, ops]) => {
+    /* the glyph rides on the border: tangent to it, so it covers no label, and
+       nudged off centre so the edge through the node's centre line survives */
+    const n = N(id), j = { x: n.x + 15,
+                           y: n.y + (side === "up" ? -1 : 1) * (n.h / 2 + 6) };
+    ops.forEach(o => {
+      const c = famCurve(N(o), j, [o, id], JOFF);
+      const p0 = famEdgePt(N(o), c.cx, c.cy, 1);
+      gJ.appendChild(el("path", { d: famQ(p0, c, j), fill: "none",
+        stroke: "var(--ink-soft)", "stroke-width": 1, opacity: ".5" }));
+    });
+    gT.appendChild(el("circle", { cx: j.x, cy: j.y, r: 7, fill: "var(--panel)",
+      stroke: "var(--ink-soft)", "stroke-width": 1.1 }));
+    gT.appendChild(el("text", { x: j.x, y: j.y + 3.3, "text-anchor": "middle",
+      "font-family": "var(--serif)", "font-size": "10", fill: "var(--ink)" }, sym));
+  });
+  svg.appendChild(gJ);
+
+  /* ── the antichain brackets: absence of edges, made deliberate ── */
+  [[466, "r",  "pairwise ⊬", null],
+   [740, "g",  "pairwise ⊬", 250],
+   [940, "bg", "pairwise ⊬", 180],
+   [848, "w",  "zigzag: wj ≤ wk iff k ≥ j+2", 520]].forEach(([x, grp, label, ly]) => {
+    const ys = [1, 2, 3].map(k => N(grp + k).y);
+    const y0 = Math.min.apply(null, ys) - 20, y1 = Math.max.apply(null, ys) + 20;
+    const col = grp === "w" ? "var(--zig)" : "var(--anti)";
+    gR.appendChild(el("path", {
+      d: `M ${x - 5} ${y0} L ${x} ${y0} L ${x} ${y1} L ${x - 5} ${y1}`,
+      fill: "none", stroke: col, "stroke-width": 1.1 }));
+    const my = ly === null ? (y0 + y1) / 2 : ly;
+    gR.appendChild(el("text", { x: x + 11, y: my, "text-anchor": "middle",
+      "font-family": "var(--sans)", "font-size": "8.5", fill: col,
+      transform: `rotate(-90 ${x + 11} ${my})` }, label));
+  });
+  svg.appendChild(gR);
+
+  /* ── the nodes ── */
+  FAMN.forEach(n => {
+    const A = FAM_ACC[n.fam];
+    const g = el("g", { class: "node", tabindex: "0",
+      "aria-label": `${n.name}, ${n.form}, ${n.kind}${n.old ? ", was " + n.old : ""}` });
+    g.appendChild(el("rect", { x: n.x - n.w / 2, y: n.y - n.h / 2, width: n.w, height: n.h,
+      rx: 6, fill: A[0], stroke: A[1], "stroke-width": A[3] }));
+    g.appendChild(el("text", { x: n.x, y: n.sub ? n.y - 1 : n.y + 4, "text-anchor": "middle",
+      "font-family": "var(--mono)", "font-size": "11.5", fill: A[2] }, n.name));
+    if (n.sub) g.appendChild(el("text", { x: n.x, y: n.y + 9.5, "text-anchor": "middle",
+      "font-family": "var(--serif)", "font-size": "8", fill: A[2] }, n.sub));
+    const show = () => {
+      document.getElementById("read-fam").innerHTML =
+        `<strong>${n.name}</strong> &nbsp; <span class="fml">${n.form}</span>`
+        + (n.exp ? ` <span class="muted">= ${n.exp}</span>` : "")
+        + `<br><span class="muted">${n.kind}</span>`
+        + `<br><span class="muted">`
+        + (n.old ? `was ${n.old}` : "no old q-name — beyond the dictionary")
+        + ` &nbsp;·&nbsp; Lean: <span style="font-family:var(--mono);font-size:12px">`
+        + `${n.thm}</span></span>`;
+    };
+    g.addEventListener("click", show);
+    g.addEventListener("focus", show);
+    gN.appendChild(g);
+  });
+  /* ◯-fixed badges, level captions, and the note by ⊤ */
+  ["t4", "t6"].forEach(id => {
+    const n = N(id);
+    gN.appendChild(el("text", { x: n.x - n.w / 2 - 6, y: n.y + 3, "text-anchor": "end",
+      "font-family": "var(--sans)", "font-size": "8.5", fill: "var(--rust)" }, "◯-fixed"));
+  });
+  for (let k = 1; k <= 3; k++)
+    gN.appendChild(el("text", { x: 200, y: 750 - 160 * k + 4, "text-anchor": "end",
+      "font-family": "var(--sans)", "font-size": "9.5", fill: "var(--ink-soft)" },
+      "level k = " + k));
+  gN.appendChild(el("text", { x: 386, y: 30, "font-family": "var(--sans)",
+    "font-size": "9.5", fill: "var(--ink-soft)" },
+    "⊤ — above everything drawn; below it the ladder never stops"));
+  svg.appendChild(gN);
+  svg.appendChild(gT);   /* junction glyphs and ◯ marks ride on top of the boxes */
+
+  document.getElementById("stage-fam").replaceChildren(svg);
+}
+
 /* ── wiring ── */
 const range = document.getElementById("nrange");
 range.addEventListener("input", () => {
@@ -725,7 +1120,8 @@ document.querySelectorAll(".chip").forEach(c =>
     range.dispatchEvent(new Event("input"));
   }));
 
-const tabs = [["tab-ladder","p-ladder"],["tab-dict","p-dict"],["tab-tab","p-tab"]];
+const tabs = [["tab-ladder","p-ladder"],["tab-dict","p-dict"],
+              ["tab-fam","p-fam"],["tab-tab","p-tab"]];
 tabs.forEach(([tid, pid]) =>
   document.getElementById(tid).addEventListener("click", () => {
     tabs.forEach(([t, p]) => {
@@ -779,6 +1175,34 @@ const OPSYM = ["∧","∨","⊃","◯"];
 const CELLMAP = {}; RNC.cells.forEach(c => CELLMAP[c[0]+","+c[1]+","+c[2]] = c);
 const OPENSET = new Set(RNC.open.map(c => c[0]+","+c[1]+","+c[2]));
 
+/* ── unit laws ──
+   ⊤ and ⊥ decide their whole row and column for every class whatever, so
+   those cells were never really open. Index 0 is ⊥ (labelled t0), 1 is ⊤.
+   x ⊃ ⊥ is deliberately NOT covered: those are genuine negations.        */
+function unitLaw(op, i, j) {
+  if (op === 3) return null;                       /* ◯ takes no second argument */
+  if (op === 0) {                                  /* ∧ */
+    if (i === 1) return j;                         /* ⊤ ∧ x = x */
+    if (j === 1) return i;                         /* x ∧ ⊤ = x */
+    if (i === 0 || j === 0) return 0;              /* ⊥ ∧ x = x ∧ ⊥ = ⊥ */
+  } else if (op === 1) {                           /* ∨ */
+    if (i === 1 || j === 1) return 1;              /* ⊤ ∨ x = x ∨ ⊤ = ⊤ */
+    if (i === 0) return j;                         /* ⊥ ∨ x = x */
+    if (j === 0) return i;                         /* x ∨ ⊥ = x */
+  } else {                                         /* ⊃ */
+    if (i === 1) return j;                         /* ⊤ ⊃ x = x */
+    if (j === 1) return 1;                         /* x ⊃ ⊤ = ⊤ */
+    if (i === 0) return 1;                         /* ⊥ ⊃ x = ⊤ */
+  }
+  return null;
+}
+const UNIT_CLOSED = RNC.open.filter(c => unitLaw(c[0], c[1], c[2]) !== null).length;
+/* how many drawn cells the unit laws decide that carry no Lean certificate */
+let UNIT_CELLS = 0;
+[0, 1, 2].forEach(op => REPS.forEach(i => REPS.forEach(j => {
+  if (!CELLMAP[op + "," + i + "," + j] && unitLaw(op, i, j) !== null) UNIT_CELLS++;
+})));
+
 function renderTable(op) {
   const t = document.createElement("table");
   t.className = "grid";
@@ -798,17 +1222,21 @@ function renderTable(op) {
     const th = document.createElement("th"); th.textContent = RNAME(i);
     th.style.cursor="pointer"; th.addEventListener("click", () => showForm(i)); tr.appendChild(th);
     cols.forEach(j => {
-      const key = op+","+i+","+(op===3?0:j);
+      const jj = op===3 ? 0 : j;
+      const key = op+","+i+","+jj;
       const c = CELLMAP[key];
+      const u = c ? null : unitLaw(op, i, jj);
       const td = tr.insertCell();
       if (c) { td.className = c[4] ? "pcll" : "cert"; td.textContent = RNAME(c[3]); }
+      else if (u !== null) { td.className = "cert"; td.textContent = RNAME(u); }
       else if (OPENSET.has(key)) { td.className = "open"; td.textContent = "?"; }
       else { td.className = "none"; td.textContent = "·"; }
-      if (c || OPENSET.has(key)) td.addEventListener("click", () => {
+      if (c || u !== null || OPENSET.has(key)) td.addEventListener("click", () => {
         const lhs = op===3 ? `◯${RNAME(i)}` : `${RNAME(i)} ${OPSYM[op]} ${RNAME(j)}`;
         const oldLhs = op===3 ? `◯${OLDNAME(i)}` : `${OLDNAME(i)} ${OPSYM[op]} ${OLDNAME(j)}`;
+        const res = c ? c[3] : u;
         const parts = op===3 ? [i] : [i, j];
-        if (c && !parts.includes(c[3])) parts.push(c[3]);
+        if (res !== null && !parts.includes(res)) parts.push(res);
         const forms = parts.map(n =>
           `<span class="fml">${RNAME(n)}</span> = ${QFORM(n)}`).join(" &nbsp;·&nbsp; ");
         document.getElementById("read-tab").innerHTML = (c
@@ -816,10 +1244,15 @@ function renderTable(op) {
             + (c[4] ? "holds in PCLL only — no PLL proof; this is where distribution does the work"
                     : "certified: <code>InterdU</code> in wip/rncCells.lean, kernel-checked")
             + "</span>"
+          : u !== null
+          ? `<strong>${lhs} ≡ ${RNAME(u)}</strong><br><span class="muted">`
+            + "by unit law (⊤ ∧ φ ≡ φ etc.) — holds for every class; Lean: "
+            + "<code>top_and_interd</code> / <code>bot_or_interd</code> family in wip/gap2.lean"
+            + "</span>"
           : `<strong>${lhs} ≡ ?</strong><br><span class="muted">open — the probe settled neither direction</span>`)
           + `<br><span style="font-size:12px">${forms}</span>`
           + `<br><span class="muted" style="font-size:12px">was: ${oldLhs} ≡ `
-          + (c ? `${OLDNAME(c[3])} &nbsp;·&nbsp; ${KINDOF(c[3])}` : "?")
+          + (res !== null ? `${OLDNAME(res)} &nbsp;·&nbsp; ${KINDOF(res)}` : "?")
           + `</span>`;
       });
     });
@@ -831,7 +1264,18 @@ document.querySelectorAll(".opb").forEach(b => b.addEventListener("click", () =>
   renderTable(parseInt(b.dataset.op, 10));
 }));
 
+/* the ⊤ and ⊥ rows and columns are no longer shown as open: the unit laws
+   settle them for every class, so the honest open count is lower           */
+document.getElementById("t-openline").innerHTML =
+  `<strong>${RNC.open.length - UNIT_CLOSED}</strong> open (the ⊤/⊥ rows are closed by unit `
+  + `laws) — the probe could not settle these either way`;
+document.getElementById("t-unitline").innerHTML =
+  `<strong>${UNIT_CELLS}</strong> more by <strong>unit law</strong> — the ⊤ and ⊥ row and column, `
+  + `where ⊤ ∧ φ ≡ φ and its siblings decide the cell for every class whatever. Same green, but the `
+  + `readout says which it is.`;
+
 renderLadder(9);
 renderDict();
+renderFamilies();
 renderTable(0);
 </script>
