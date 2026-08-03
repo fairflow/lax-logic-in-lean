@@ -14,6 +14,12 @@
     --slate-fill: #e7ebee;
     --rust:       #b0530a;
     --rust-fill:  #fbeadb;
+    --chain:      #4a6b8a;
+    --chain-fill: #e3ebf3;
+    --chain-text: #35526c;
+    --anti:       #a8752c;
+    --anti-fill:  #f8efdc;
+    --anti-text:  #825516;
     --shadow:     0 1px 2px rgba(19,24,26,.06), 0 8px 24px rgba(19,24,26,.05);
     --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
     --sans:  ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
@@ -24,6 +30,8 @@
       --ink: #e4eae5; --ink-soft: #94a49b; --paper: #101513; --panel: #171d1a;
       --rule: #2e3a34; --green: #55ab74; --green-fill: #17301f; --green-text: #7cc796;
       --slate: #8797a3; --slate-fill: #1d2429; --rust: #d9822b; --rust-fill: #2b1d10;
+      --chain: #7fa6c8; --chain-fill: #16222c; --chain-text: #a0c3de;
+      --anti: #d2a24c; --anti-fill: #2a2112; --anti-text: #e2ba6a;
       --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
     }
   }
@@ -31,12 +39,16 @@
     --ink: #e4eae5; --ink-soft: #94a49b; --paper: #101513; --panel: #171d1a;
     --rule: #2e3a34; --green: #55ab74; --green-fill: #17301f; --green-text: #7cc796;
     --slate: #8797a3; --slate-fill: #1d2429; --rust: #d9822b; --rust-fill: #2b1d10;
+    --chain: #7fa6c8; --chain-fill: #16222c; --chain-text: #a0c3de;
+    --anti: #d2a24c; --anti-fill: #2a2112; --anti-text: #e2ba6a;
     --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
   }
   :root[data-theme="light"] {
     --ink: #13181a; --ink-soft: #55625c; --paper: #f4f7f4; --panel: #ffffff;
     --rule: #ccd7cf; --green: #2c7a4b; --green-fill: #dcefe2; --green-text: #245f3b;
     --slate: #64717c; --slate-fill: #e7ebee; --rust: #b0530a; --rust-fill: #fbeadb;
+    --chain: #4a6b8a; --chain-fill: #e3ebf3; --chain-text: #35526c;
+    --anti: #a8752c; --anti-fill: #f8efdc; --anti-text: #825516;
     --shadow: 0 1px 2px rgba(19,24,26,.06), 0 8px 24px rgba(19,24,26,.05);
   }
 
@@ -85,6 +97,8 @@
   .sw.o { background: var(--slate-fill); border:1.5px solid var(--slate); }
   .sw.p { background: var(--rust-fill); border:1.5px solid var(--rust); }
   .sw.u { background: transparent; border:1.5px dashed var(--slate); }
+  .sw.c { background: var(--chain-fill); border:1.5px solid var(--chain); }
+  .sw.a { background: var(--anti-fill);  border:1.5px solid var(--anti); }
   .chip[aria-pressed="true"] { background: var(--green-fill); color: var(--green-text);
                                border-color: var(--green); font-weight:600; }
   table.grid { border-collapse: collapse; font-family: var(--mono); font-size: 11px;
@@ -137,6 +151,7 @@
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v8 · 2026-08-03</p>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
   The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
@@ -149,12 +164,22 @@
   <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — 347 cells</button>
 </div>
 
-<p class="note" style="margin:-6px 0 14px;font-size:12.5px">Labels across the tabs:
-<span class="fml">rn n</span> = the ladder rungs (Rieger–Nishimura numbering);
-<span class="fml">q0 … q14</span> = the dictionary's class representatives (a different
-numbering — the "· rung N" tag on a green node gives the correspondence);
-<span class="fml">w15 = q8 ∧ q10</span> = the sixteenth class the operation tables discovered;
-<span class="fml">t(n)</span> = the minimal representative of <span class="fml">rn n</span>.</p>
+<p class="note" style="margin:-6px 0 14px;font-size:12.5px">Labels across the tabs: all three
+tabs now use <strong>one</strong> numbering. <span class="fml">t n</span> = the class of ladder
+rung <span class="fml">n</span>, whose minimal representative formula is
+<span class="fml">t(n)</span>; <span class="fml">⊤</span> = the top class. Everything else is
+named by a family letter carrying a level index <span class="fml">k ≥ 1</span>:
+<span class="fml">c k = ◯t(2k+1)</span> (chain),
+<span class="fml">g k = c k ⊃ t(2k+1)</span> (antichain),
+<span class="fml">s k = c k ∨ t(2k+2)</span> (chain),
+<span class="fml">r k = t(2k+4) ⊃ c k</span> (antichain),
+<span class="fml">◯g k</span> (antichain); and the sixteenth class the operation tables
+discovered is the meet <span class="fml">g1 ∧ t6</span>.
+Old names are shown as "was qN" throughout; the Lean source keeps the old q-names, bridged by
+theorems <code>sC_one_q9</code>, <code>rC_one_q14</code>, <code>bg_one_q13</code>,
+<code>gap_one_q8</code>, <code>chainF_one_q5</code>, <code>q10_rn6</code>,
+<code>q6_rn4</code>, <code>q11_rn7</code>.
+Version shown top: if it reads lower than the version you were told, force-reload (⇧+reload).</p>
 
 <!-- ───────────────────────── LADDER ───────────────────────── -->
 <section id="p-ladder" role="tabpanel" aria-labelledby="tab-ladder">
@@ -163,7 +188,7 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
       <div class="card">
         <h2>Rungs shown</h2>
         <div class="nval" id="nval">9</div>
-        <label class="ctl" for="nrange">rn 0 … rn N</label>
+        <label class="ctl" for="nrange">t 0 … t N</label>
         <input type="range" id="nrange" min="3" max="201" step="1" value="9"/>
         <div class="presets">
           <button class="chip" data-n="9">9</button>
@@ -188,24 +213,27 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
       <div class="card">
         <h2>Minimal forms</h2>
         <p style="font-size:13px;margin:0 0 8px;color:var(--ink-soft)">Found by enumerating
-        ◯-free formulas by truth set. Writing <span class="fml">t(n)</span> for the smallest
-        known representative of the class of <span class="fml">rn n</span> — same class,
-        smaller formula — the minimal recursion, valid from <span class="fml">k ≥ 1</span>
-        over the base <span class="fml">t1 = ◯⊥</span>, <span class="fml">t2 = ¬◯⊥</span>,
-        <span class="fml">t3 = t1 ∨ t2</span>, <span class="fml">t4 = t2 ⊃ t1</span>, is —</p>
+        ◯-free formulas by truth set. The nodes themselves are labeled
+        <span class="fml">t n</span>, and <span class="fml">t(n)</span> is the smallest known
+        representative of that class — same class, smaller formula. The minimal recursion,
+        valid from <span class="fml">k ≥ 1</span> over the base
+        <span class="fml">t(1) = ◯⊥</span>, <span class="fml">t(2) = ¬◯⊥</span>,
+        <span class="fml">t(3) = t(1) ∨ t(2)</span>, <span class="fml">t(4) = t(2) ⊃ t(1)</span>, is —</p>
         <div class="fml" style="font-size:13px;line-height:1.7">
           t(2k+4) = t(2k+2) ⊃ t(2k−1)<br>t(2k+3) = t(2k) ∨ t(2k+2)
         </div>
         <p style="font-size:13px;margin:8px 0 0;color:var(--ink-soft)">— it never re-expands
         the large odd rung, where the textbook recursion
-        <span class="fml">rn(2k+4) = rn(2k+3) ⊃ rn(2k+1)</span> does. Rungs 8–13 come out
-        2–4× smaller. Click a rung.</p>
+        <span class="fml">rn(2k+4) = rn(2k+3) ⊃ rn(2k+1)</span> does; both weights, minimal
+        and textbook, appear in the readout when you click a node.
+        <span class="fml">t 8</span>–<span class="fml">t 13</span> come out 2–4× smaller.
+        Click a node.</p>
       </div>
       <div class="card">
         <h2>Key</h2>
         <div class="legend">
-          <div class="lrow"><span class="sw g"></span><span>rung 0–7 — also a dictionary class</span></div>
-          <div class="lrow"><span class="sw u" style="border-color:var(--green)"></span><span>rung 8 and up — certified distinct, but outside the dictionary</span></div>
+          <div class="lrow"><span class="sw g"></span><span><span class="fml">t 0</span> – <span class="fml">t 7</span> — also a dictionary class</span></div>
+          <div class="lrow"><span class="sw u" style="border-color:var(--green)"></span><span><span class="fml">t 8</span> and up — certified distinct, but outside the dictionary</span></div>
         </div>
       </div>
       <div class="card">
@@ -216,7 +244,7 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
 
     <div>
       <div class="stage" id="stage-ladder"></div>
-      <p class="readout" id="read-ladder"><span class="muted">Click any rung for its truth set.</span></p>
+      <p class="readout" id="read-ladder"><span class="muted">Click any node (<span class="fml">t n</span>) for its truth set.</span></p>
     </div>
   </div>
 
@@ -224,7 +252,7 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
   proof uses — <code>rn 0 = ∅</code>, <code>rn(2k+1) = {w ≤ k}</code>,
   <code>rn(2k+2) = {w &lt; k} ∪ {k+1}</code>, and <code>rn i ⊢ rn j</code> iff truth-set inclusion
   (<code>rnSub_order</code>). Nothing is read from a stored table, so any N is as trustworthy as N = 9.
-  The minimal forms and the pinned cross-relations shown when you click a rung come from
+  The minimal forms and the pinned cross-relations shown when you click a node come from
   <code>wip/rungPinned.lean</code> — 14 kernel-checked theorems, proof terms one way and
   checked finite countermodels the other.</p>
 </section>
@@ -236,8 +264,10 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
       <div class="card">
         <h2>Legend</h2>
         <div class="legend">
-          <div class="lrow"><span class="sw g"></span><span>In the image of <span class="fml">h : p ↦ ◯⊥</span> — certified interderivable with a rung</span></div>
-          <div class="lrow"><span class="sw o"></span><span>Outside it</span></div>
+          <div class="lrow"><span class="sw g"></span><span>In the image of <span class="fml">h : p ↦ ◯⊥</span> — certified interderivable with a rung: the <span class="fml">t n</span> nodes</span></div>
+          <div class="lrow"><span class="sw c"></span><span>Chain family — infinitely many, totally ordered: <span class="fml">c k</span>, <span class="fml">s k</span></span></div>
+          <div class="lrow"><span class="sw a"></span><span>Antichain family — infinitely many, pairwise incomparable: <span class="fml">g k</span>, <span class="fml">r k</span>, <span class="fml">◯g k</span></span></div>
+          <div class="lrow"><span class="sw o"></span><span>Outside the rungs — the top class <span class="fml">⊤</span></span></div>
           <div class="lrow"><span class="swl"></span><span>Certified cover</span></div>
           <div class="lrow"><span class="swl d"></span><span>Relation certified; whether anything sits strictly between depends on one of the 2 remaining open cells</span></div>
           <div class="lrow"><span class="swl x"></span><span>Where distribution fails</span></div>
@@ -259,10 +289,10 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
       <div class="card">
         <h2>◯ leaves the image</h2>
         <div class="legend" style="font-family:var(--serif)">
-          <div>◯(rung 2) = ◯(rung 3) = q5</div>
-          <div>◯(rung 5) = q12</div>
+          <div>◯t2 = ◯t3 = c1 <span style="color:var(--ink-soft);font-family:var(--sans);font-size:12px">(was q5)</span></div>
+          <div>◯t5 = c2 <span style="color:var(--ink-soft);font-family:var(--sans);font-size:12px">(was q12)</span></div>
           <div style="color:var(--ink-soft);font-family:var(--sans);font-size:12.5px">
-            but ◯(rung 4) = rung 4 and ◯(rung 6) = rung 6 — fixed points.</div>
+            but ◯t4 = t4 and ◯t6 = t6 — fixed points.</div>
         </div>
       </div>
       <div class="card">
@@ -272,38 +302,43 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
           interderivable with a rung or with ⊤
           (<code>image_classification</code>, sorry-free). So "off the rungs and
           not ⊤" now literally means <strong>outside im h</strong> — the caveat
-          on q5, ◯q11 and the chain is gone, and it also decides cells:
-          <span class="fml">q10 ⊬ q6</span> falls out with no countermodel
+          on <span class="fml">c1</span> (was q5), <span class="fml">c3 = ◯t7</span>
+          (was ◯q11) and the chain is gone, and it also decides cells:
+          <span class="fml">t6 ⊬ t4</span> (was <span class="fml">q10 ⊬ q6</span>)
+          falls out with no countermodel
           (<code>q10_not_q6</code>).</div>
       </div>
     </div>
 
     <div>
       <div class="stage" id="stage-dict"></div>
-      <p class="readout" id="read-dict"><span class="muted">Click any class for its formula and rung.</span></p>
+      <p class="readout" id="read-dict"><span class="muted">Click any class for its formula, kind and rung.</span></p>
     </div>
   </div>
 
   <p class="note">The order is now settled in 224 of 225 cells — the last open cell is
-  <span class="fml">q14 ⊢ q13</span>. <span class="fml">q12 ⊢ q11</span> fell to the
+  <span class="fml">r1 ⊢ ◯g1</span> (was <span class="fml">q14 ⊢ q13</span>).
+  <span class="fml">c2 ⊢ t7</span> (was <span class="fml">q12 ⊢ q11</span>) fell to the
   non-confluent five-world battery, which also produced the biggest structural news:
-  <span class="fml">◯q11</span> is a <strong>new class</strong> (<code>cBox11_settled</code>),
-  strictly above rung 7, so the dictionary is not closed under ◯. Beyond it stretches an
-  infinite strictly ascending chain — the boxed odd rungs
-  <span class="fml">◯rn₃ &lt; ◯rn₅ &lt; ◯rn₇ &lt; …</span>, strict at every step
+  <span class="fml">c3 (= ◯t7)</span> is a <strong>new class</strong> (<code>cBox11_settled</code>),
+  strictly above <span class="fml">t7</span>, so the dictionary is not closed under ◯. Beyond it
+  stretches an infinite strictly ascending chain — the boxed odd rungs
+  <span class="fml">c1 = ◯t3 &lt; c2 = ◯t5 &lt; c3 = ◯t7 &lt; …</span>, strict at every step
   (<code>chain_step_strict</code>), pairwise distinct — now drawn at the right edge of
   the diagram. Since the classification <span class="fml">im h = rungs ∪ {⊤}</span> is
   mechanised (<code>image_classification</code>), every one of them is off the image
   outright: the complement of the ladder image is <strong>infinite, with no caveat</strong>
   (<code>complement_infinite_final</code>). The width question is settled too: the collapse
-  statements <span class="fml">gap k = ◯rn₂ₖ₊₁ ⊃ rn₂ₖ₊₁</span> — level-k generalisations of
-  <span class="fml">q8</span> (<code>gap_one_q8</code>) — are pairwise incomparable for k ≥ 2
+  statements <span class="fml">g k = c k ⊃ t(2k+1)</span> — level-k generalisations of
+  <span class="fml">g1</span> (was <span class="fml">q8</span>, <code>gap_one_q8</code>) — are
+  pairwise incomparable for k ≥ 2
   (<code>width_infinite</code>), so RN(◯,{}) holds an infinite <em>antichain</em> alongside the
-  infinite chain: its width is <strong>unbounded</strong>, and each <span class="fml">gap k</span>
+  infinite chain: its width is <strong>unbounded</strong>, and each <span class="fml">g k</span>
   is a further new class, off the image and off the chain
-  (<code>gap_off_image</code>, <code>gap_not_chain</code>). The orange edge is <span class="fml">q9 &lt; q12</span>: since
-  <span class="fml">◯(rung 3 ∨ rung 4) = q12</span> while
-  <span class="fml">◯rung 3 ∨ ◯rung 4 = q9</span>, that strict gap <em>is</em> the failure of
+  (<code>gap_off_image</code>, <code>gap_not_chain</code>). The orange edge is
+  <span class="fml">s1 &lt; c2</span> (was <span class="fml">q9 &lt; q12</span>): since
+  <span class="fml">◯(t3 ∨ t4) = c2</span> while
+  <span class="fml">◯t3 ∨ ◯t4 = s1</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
 </section>
 
@@ -331,13 +366,17 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
       <div class="card">
         <h2>Reading it</h2>
         <p style="font-size:13px;margin:0;color:var(--ink-soft)">
-        Row <span class="fml">i</span>, column <span class="fml">j</span> gives the class of
-        <span class="fml">q<sub>i</sub> ∘ q<sub>j</sub></span>. The quotient has 15 representatives:
-        <span class="fml">q12</span> is absent because PCLL identifies it with
-        <span class="fml">q9</span> — which is exactly the distribution collapse. The extra
-        header <span class="fml">w15</span> is <span class="fml">q8 ∧ q10</span>: a
+        A row and a column give the class of <span class="fml">row ∘ column</span>. The
+        representatives are labeled <span class="fml">t</span>/<span class="fml">c</span>/<span
+        class="fml">g</span>/<span class="fml">s</span>/<span class="fml">r</span> exactly as in
+        the glossary at the top. The quotient has 15 of them:
+        <span class="fml">c2</span> (was <span class="fml">q12</span>) is absent because PCLL
+        identifies it with <span class="fml">s1</span> (was <span class="fml">q9</span>) — which
+        is exactly the distribution collapse. The extra header
+        <span class="fml">g1∧t6</span> (was <span class="fml">w15</span>) is a
         <em>sixteenth</em> class the harvest itself discovered — that meet lands outside the
-        fifteen (<code>def w15 : PLLFormula := q8.and q10</code>, wip/rncCells.lean). Click
+        fifteen (<code>def w15 : PLLFormula := q8.and q10</code>, wip/rncCells.lean). The Lean
+        certificates in <code>wip/rncCells.lean</code> use the old q-names. Click
         any header or cell for the full formulas.</p>
       </div>
     </div>
@@ -348,7 +387,8 @@ numbering — the "· rung N" tag on a green node gives the correspondence);
   </div>
   <p class="note">These 347 cells were probe output until they were re-derived and pinned: each
   certified cell is now a proof term the kernel checks. The two PCLL-only cells are
-  <span class="fml">◯q7 ≡ q9</span> and <span class="fml">◯q9 ≡ q9</span> — the harvester found
+  <span class="fml">◯t5 ≡ s1</span> (was <span class="fml">◯q7 ≡ q9</span>) and
+  <span class="fml">◯s1 ≡ s1</span> (was <span class="fml">◯q9 ≡ q9</span>) — the harvester found
   them by failing, without being told where to look.</p>
 </section>
 </div>
@@ -447,14 +487,14 @@ function renderLadder(N) {
   const box = document.getElementById("selfcheck");
   if (c9 === CERTIFIED_COVERS_9.split(",").sort().join(",")) {
     box.className = "check";
-    box.innerHTML = "The eleven covers computed here for rn 0…8 match <strong>covers9_eq</strong>, "
+    box.innerHTML = "The eleven covers computed here for t 0…t 8 match <strong>covers9_eq</strong>, "
       + "the Lean theorem proved by <code>decide</code>.";
   } else {
     box.className = "check bad";
     box.textContent = "MISMATCH with covers9_eq — the page and the proof disagree. Do not trust this drawing.";
   }
 
-  /* layout: odd rungs left column, even rungs right, rn0 centred at the foot */
+  /* layout: odd rungs left column, even rungs right, t 0 centred at the foot */
   const COLL = 120, COLR = 300, VS = 54, TOP = 34;
   const levels = Math.floor((N - 1) / 2) + 1;
   const H = TOP + levels * VS + 70;
@@ -469,7 +509,8 @@ function renderLadder(N) {
 
   const svg = el("svg", {
     viewBox: `0 0 ${W} ${H}`, width: W, height: H,
-    role: "img", "aria-label": `Hasse diagram of Rieger-Nishimura rungs 0 to ${N}`
+    role: "img",
+    "aria-label": `Hasse diagram of the ladder classes t 0 to t ${N} (Rieger-Nishimura rungs 0 to ${N})`
   });
 
   const gE = el("g", {});
@@ -485,7 +526,7 @@ function renderLadder(N) {
   for (let n = 0; n <= N; n++) {
     const [cx, cy] = pos[n];
     const g = el("g", { class: "node", tabindex: "0",
-      "aria-label": `rung ${n}, truth set ${sets[n].join(" ") || "empty"}` });
+      "aria-label": `t ${n} — rung ${n}, textbook form rn ${n}, truth set ${sets[n].join(" ") || "empty"}` });
     const w = 54, h = 26;
     g.appendChild(el("rect", {
       x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: 6,
@@ -497,7 +538,7 @@ function renderLadder(N) {
       x: cx, y: cy + 4, "text-anchor": "middle",
       "font-family": "var(--mono)", "font-size": "12.5",
       fill: "var(--green-text)"
-    }, "rn " + n);
+    }, "t " + n);
     g.appendChild(label);
     const show = () => {
       const s = sets[n];
@@ -519,9 +560,10 @@ function renderLadder(N) {
         extra += `<br><span class="muted">pinned: ${bits.join(" · ")}</span>`;
       }
       document.getElementById("read-ladder").innerHTML =
-        `<strong>rn ${n}</strong> &nbsp; truth set { ${s.join(", ") || "∅"} }` + extra
+        `<strong>t ${n}</strong> &nbsp; truth set { ${s.join(", ") || "∅"} }`
+        + `<span class="muted"> &nbsp;·&nbsp; textbook form rn ${n}</span>` + extra
         + (showFml && DICT_OF_RUNG[n] !== undefined
-            ? ` &nbsp;·&nbsp; = ${DICT[DICT_OF_RUNG[n]].f} <span class="muted">(q${DICT_OF_RUNG[n]})</span>`
+            ? ` &nbsp;·&nbsp; = ${DICT[DICT_OF_RUNG[n]].f} <span class="muted">(dictionary node, was q${DICT_OF_RUNG[n]})</span>`
             : "")
         + `<br><span class="muted">${n === 0 ? "the bottom of the lattice"
             : n % 2 === 1 ? "odd rung — a join; two upper covers"
@@ -540,6 +582,22 @@ function renderLadder(N) {
 }
 
 /* ── dictionary data ── */
+
+/* the uniform naming, aligned with the DICT indices below: t n for the class of
+   rung n, ⊤ for the top, family letters for everything else. The old q-names are
+   kept as "was qN" in every readout — the Lean source still uses them.           */
+const NEWNAME = ["t0","⊤","t1","t2","t3","c1","t4","t5","g1","s1","t6","t7","c2","◯g1","r1",
+                 "c3","c4","ck ⋮"];
+/* what kind of thing each class is — shown as a sub-line on the node, and used
+   for the colour accent (im h = green, chain = --chain, antichain = --anti)      */
+const KIND = [
+  "im h · ⊥", "⊤", "im h · atom", "im h · negation", "im h · join",
+  "chain c · box", "im h · implication", "im h · join",
+  "antichain g · implication", "chain s · join", "im h · implication",
+  "im h · join", "chain c · box", "antichain ◯g · box", "antichain r · implication",
+  "chain c · box", "chain c · box", "chain c · box"
+];
+
 const DICT = [
   { f: "⊥",                          x: 380, y: 670, w: 60  },
   { f: "⊤",                          x: 380, y: 54,  w: 60  },
@@ -557,14 +615,14 @@ const DICT = [
   { f: "◯(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥))",       x: 610, y: 142, w: 230 },
   { f: "(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥",         x: 330, y: 142, w: 190 },
   /* the ◯-chain of boxed odd rungs, mechanised in chainStrict/chainOff/rnClassify:
-     chainF k = ◯(rung(2k+1)[p := ◯⊥]); chainF 1 ≡ q5, chainF 2 ≡ q12,
-     chainF 3 ≡ ◯q11, and beyond the dictionary it never stops. */
-  { f: "◯q11", tag: "chainF 3",  x: 880, y: 230, w: 70,
-    desc: "= ◯(rung 7) — the 16th class (cBox11_settled); off the image (boxq11_off_image)" },
-  { f: "◯rn₉", tag: "chainF 4",  x: 880, y: 156, w: 70,
-    desc: "= ◯(rung 9) — strictly above chainF 3 (chain_lt_strict); off the image (chain_off_image)" },
-  { f: "◯rn₂ₖ₊₁  ⋮", tag: "all k ≥ 2", x: 880, y: 92, w: 96,
-    desc: "the whole chain: pairwise distinct (chain_pairwise), every one off the image — RN(◯,{}) ∖ im h is infinite (complement_infinite_final)" }
+     c k = ◯t(2k+1); c1 (was q5), c2 (was q12), c3 (was ◯q11), and beyond the
+     dictionary it never stops. */
+  { f: "◯t7", tag: "c3",  x: 880, y: 230, w: 70,
+    desc: "c3 = ◯t7 = ◯(rung 7) — the 16th class (cBox11_settled); off the image (boxq11_off_image)" },
+  { f: "◯t9", tag: "c4",  x: 880, y: 156, w: 70,
+    desc: "c4 = ◯t9 = ◯(rung 9) — strictly above c3 (chain_lt_strict); off the image (chain_off_image)" },
+  { f: "◯t(2k+1)  ⋮", tag: "ck ⋮ (all k)", x: 880, y: 92, w: 96,
+    desc: "the whole chain c k: pairwise distinct (chain_pairwise), every one off the image — RN(◯,{}) ∖ im h is infinite (complement_infinite_final)" }
 ];
 const RUNG_OF_DICT = { 0:0, 2:1, 3:2, 4:3, 6:4, 7:5, 10:6, 11:7 };
 const DICT_OF_RUNG = { 0:0, 1:2, 2:3, 3:4, 4:6, 5:7, 6:10, 7:11 };
@@ -599,26 +657,49 @@ function renderDict() {
 
   DICT.forEach((d, i) => {
     const inImg = RUNG_OF_DICT[i] !== undefined;
+    const name = NEWNAME[i];
+    const kind = KIND[i];
+    /* family accent: im h stays green, ⊤ stays slate, the two new families get
+       their own colour as well as their own kind word */
+    const fam = inImg ? "im"
+              : i === 1 ? "top"
+              : kind.startsWith("chain") ? "chain" : "anti";
+    const ACC = {
+      im:    ["var(--green-fill)", "var(--green)", "var(--green-text)", 1.4],
+      top:   ["var(--slate-fill)", "var(--slate)", "var(--ink-soft)",   1.2],
+      chain: ["var(--chain-fill)", "var(--chain)", "var(--chain-text)", 1.4],
+      anti:  ["var(--anti-fill)",  "var(--anti)",  "var(--anti-text)",  1.4]
+    }[fam];
+    const was = i <= 14 ? `was q${i}` : "";
+    const sub = i <= 14
+      ? (inImg ? `${name} · rung ${RUNG_OF_DICT[i]} · ${was}` : `${name} · ${was}`)
+      : (d.tag ?? name);
     const g = el("g", { class: "node", tabindex: "0",
-      "aria-label": `class q${i}, ${d.f}${inImg ? `, rung ${RUNG_OF_DICT[i]}` : ", outside the image"}` });
+      "aria-label": `class ${name}${was ? `, ${was}` : ""}, ${kind}, ${d.f}`
+        + `${inImg ? `, rung ${RUNG_OF_DICT[i]}` : ", outside the image"}` });
     g.appendChild(el("rect", {
-      x: d.x - d.w / 2, y: d.y - 19, width: d.w, height: 38, rx: 6,
-      fill: inImg ? "var(--green-fill)" : "var(--slate-fill)",
-      stroke: inImg ? "var(--green)" : "var(--slate)", "stroke-width": inImg ? 1.4 : 1.2
+      x: d.x - d.w / 2, y: d.y - 22, width: d.w, height: 46, rx: 6,
+      fill: ACC[0], stroke: ACC[1], "stroke-width": ACC[3]
     }));
     g.appendChild(el("text", {
-      x: d.x, y: d.y - 4, "text-anchor": "middle",
+      x: d.x, y: d.y - 7, "text-anchor": "middle",
       "font-family": "var(--serif)",
       "font-size": d.w >= 190 ? "10.5" : "12", fill: "var(--ink)"
     }, d.f));
     g.appendChild(el("text", {
-      x: d.x, y: d.y + 11, "text-anchor": "middle",
+      x: d.x, y: d.y + 6, "text-anchor": "middle",
       "font-family": "var(--mono)", "font-size": "9",
-      fill: inImg ? "var(--green-text)" : "var(--ink-soft)"
-    }, inImg ? `q${i} · rung ${RUNG_OF_DICT[i]}` : (d.tag ?? `q${i}`)));
+      fill: ACC[2]
+    }, sub));
+    g.appendChild(el("text", {
+      x: d.x, y: d.y + 17, "text-anchor": "middle",
+      "font-family": "var(--sans)", "font-size": "8", fill: ACC[2]
+    }, kind));
     const show = () => {
       document.getElementById("read-dict").innerHTML =
-        `<strong>${d.tag ?? `q${i}`}</strong> &nbsp; ${d.f}<br><span class="muted">`
+        `<strong>${d.tag ?? name}</strong> &nbsp; ${d.f}`
+        + ` <span class="muted">— ${kind}</span><br><span class="muted">`
+        + (was ? `${was} — ` : "")
         + (d.desc ?? (inImg
             ? `rung ${RUNG_OF_DICT[i]} of the ladder — in the image of h`
             : `outside the image of h — and by the mechanised classification (image_classification), every class is a rung or ⊤ or off the image outright`))
@@ -672,10 +753,12 @@ const TMIN = {
   12:["t10 ⊃ t7",null,37,154],
   13:["t10 ∨ t12",null,61,263]
 };
-/* pinned cross-relations (wip/rungPinned.lean) */
+/* pinned cross-relations (wip/rungPinned.lean) — displayed in the new naming;
+   the Lean statements there are phrased with the old q-names
+   (q1 = ⊤, q5 = c1, q8 = g1, q9 = s1, q12 = c2, q13 = ◯g1, q14 = r1)            */
 const PINNED = {
-  8: {above:["q1","q8","q13","q14"], nle:["q5"], open:["q9","q12"]},
-  9: {above:["q1"], below:["q5","q9"], nle:["q12"], open:["q8","q13","q14"]}
+  8: {above:["⊤","g1","◯g1","r1"], nle:["c1"], open:["s1","c2"]},
+  9: {above:["⊤"], below:["c1","s1"], nle:["c2"], open:["g1","◯g1","r1"]}
 };
 
 /* ── PCLL operation tables, harvested from wip/rnc_c_out.txt ──
@@ -683,7 +766,11 @@ const PINNED = {
    op 0 ∧, 1 ∨, 2 ⊃, 3 ◯ (j unused)                                   */
 const RNC = {"cells":[[0,0,0,0,0],[1,0,0,0,0],[2,0,0,1,0],[0,0,1,0,0],[1,0,1,1,0],[2,0,1,1,0],[0,0,2,0,0],[1,0,2,2,0],[2,0,2,1,0],[0,0,3,0,0],[1,0,3,3,0],[2,0,3,1,0],[0,0,4,0,0],[1,0,4,4,0],[2,0,4,1,0],[0,0,5,0,0],[1,0,5,5,0],[2,0,5,1,0],[0,0,6,0,0],[1,0,6,6,0],[2,0,6,1,0],[0,0,7,0,0],[1,0,7,7,0],[2,0,7,1,0],[0,0,8,0,0],[1,0,8,8,0],[2,0,8,1,0],[0,0,9,0,0],[1,0,9,9,0],[2,0,9,1,0],[0,0,10,0,0],[1,0,10,10,0],[2,0,10,1,0],[0,0,11,0,0],[1,0,11,11,0],[2,0,11,1,0],[0,0,13,0,0],[2,0,13,1,0],[0,0,14,0,0],[2,0,14,1,0],[0,0,15,0,0],[2,0,15,1,0],[2,1,0,0,0],[0,1,1,1,0],[1,1,1,1,0],[2,1,1,1,0],[0,1,2,2,0],[1,1,2,1,0],[2,1,2,2,0],[0,1,3,3,0],[1,1,3,1,0],[2,1,3,3,0],[0,1,4,4,0],[1,1,4,1,0],[2,1,4,4,0],[0,1,5,5,0],[1,1,5,1,0],[2,1,5,5,0],[0,1,6,6,0],[1,1,6,1,0],[2,1,6,6,0],[0,1,7,7,0],[1,1,7,1,0],[2,1,7,7,0],[0,1,8,8,0],[1,1,8,1,0],[2,1,8,8,0],[0,1,9,9,0],[1,1,9,1,0],[2,1,9,9,0],[0,1,10,10,0],[1,1,10,1,0],[2,1,10,10,0],[0,1,11,11,0],[1,1,11,1,0],[2,1,11,11,0],[1,1,13,1,0],[1,1,14,1,0],[1,1,15,1,0],[2,2,0,3,0],[2,2,1,1,0],[0,2,2,2,0],[1,2,2,2,0],[2,2,2,1,0],[0,2,3,0,0],[1,2,3,4,0],[2,2,3,3,0],[0,2,4,2,0],[1,2,4,4,0],[2,2,4,1,0],[0,2,5,2,0],[1,2,5,5,0],[2,2,5,1,0],[0,2,6,2,0],[1,2,6,6,0],[2,2,6,1,0],[0,2,7,2,0],[1,2,7,7,0],[2,2,7,1,0],[0,2,8,2,0],[1,2,8,8,0],[2,2,8,1,0],[0,2,9,2,0],[1,2,9,9,0],[2,2,9,1,0],[0,2,10,2,0],[1,2,10,10,0],[2,2,10,1,0],[0,2,11,2,0],[1,2,11,11,0],[2,2,11,1,0],[0,2,13,2,0],[2,2,13,1,0],[0,2,14,2,0],[2,2,14,1,0],[0,2,15,2,0],[2,2,15,1,0],[2,3,0,6,0],[2,3,1,1,0],[2,3,2,6,0],[0,3,3,3,0],[1,3,3,3,0],[2,3,3,1,0],[0,3,4,3,0],[1,3,4,4,0],[2,3,4,1,0],[0,3,5,3,0],[1,3,5,5,0],[2,3,5,1,0],[0,3,6,0,0],[1,3,6,7,0],[2,3,6,6,0],[0,3,7,3,0],[1,3,7,7,0],[2,3,7,1,0],[0,3,8,3,0],[1,3,8,8,0],[2,3,8,1,0],[0,3,9,3,0],[1,3,9,9,0],[2,3,9,1,0],[0,3,10,3,0],[1,3,10,10,0],[2,3,10,1,0],[0,3,11,3,0],[1,3,11,11,0],[2,3,11,1,0],[0,3,13,3,0],[2,3,13,1,0],[0,3,14,3,0],[2,3,14,1,0],[0,3,15,3,0],[2,3,15,1,0],[2,4,0,0,0],[2,4,1,1,0],[2,4,2,6,0],[2,4,3,3,0],[0,4,4,4,0],[1,4,4,4,0],[2,4,4,1,0],[0,4,5,4,0],[1,4,5,5,0],[2,4,5,1,0],[0,4,6,2,0],[1,4,6,7,0],[2,4,6,6,0],[0,4,7,4,0],[1,4,7,7,0],[2,4,7,1,0],[0,4,8,4,0],[1,4,8,8,0],[2,4,8,1,0],[0,4,9,4,0],[1,4,9,9,0],[2,4,9,1,0],[0,4,10,4,0],[1,4,10,10,0],[2,4,10,1,0],[0,4,11,4,0],[1,4,11,11,0],[2,4,11,1,0],[0,4,13,4,0],[2,4,13,1,0],[0,4,14,4,0],[2,4,14,1,0],[0,4,15,4,0],[2,4,15,1,0],[2,5,0,0,0],[2,5,1,1,0],[2,5,2,6,0],[2,5,3,3,0],[2,5,4,8,0],[0,5,5,5,0],[1,5,5,5,0],[2,5,5,1,0],[0,5,6,2,0],[1,5,6,9,0],[2,5,6,6,0],[0,5,7,4,0],[1,5,7,9,0],[2,5,7,8,0],[0,5,8,4,0],[0,5,9,5,0],[1,5,9,9,0],[2,5,9,1,0],[0,5,10,5,0],[1,5,10,10,0],[2,5,10,1,0],[0,5,11,5,0],[1,5,11,11,0],[2,5,11,1,0],[0,5,13,5,0],[2,5,13,1,0],[0,5,14,5,0],[2,5,14,1,0],[2,6,0,3,0],[2,6,1,1,0],[2,6,2,10,0],[2,6,3,3,0],[2,6,4,10,0],[2,6,5,10,0],[0,6,6,6,0],[1,6,6,6,0],[2,6,6,1,0],[0,6,7,6,0],[1,6,7,7,0],[2,6,7,1,0],[0,6,8,6,0],[2,6,8,1,0],[0,6,9,6,0],[1,6,9,9,0],[2,6,9,1,0],[0,6,10,2,0],[1,6,10,11,0],[2,6,10,10,0],[0,6,11,6,0],[1,6,11,11,0],[2,6,11,1,0],[0,6,13,6,0],[2,6,13,1,0],[0,6,14,6,0],[2,6,14,1,0],[0,6,15,2,0],[2,7,0,0,0],[2,7,1,1,0],[2,7,2,2,0],[2,7,3,3,0],[2,7,4,10,0],[2,7,5,10,0],[2,7,6,6,0],[0,7,7,7,0],[1,7,7,7,0],[2,7,7,1,0],[0,7,8,7,0],[2,7,8,1,0],[0,7,9,7,0],[1,7,9,9,0],[2,7,9,1,0],[0,7,10,4,0],[1,7,10,11,0],[2,7,10,10,0],[0,7,11,7,0],[1,7,11,11,0],[2,7,11,1,0],[0,7,13,7,0],[2,7,13,1,0],[0,7,14,7,0],[2,7,14,1,0],[2,8,0,0,0],[2,8,1,1,0],[2,8,2,2,0],[2,8,3,3,0],[2,8,6,6,0],[0,8,8,8,0],[1,8,8,8,0],[2,8,8,1,0],[0,8,9,7,0],[0,8,10,15,0],[0,8,13,8,0],[2,8,13,1,0],[2,9,0,0,0],[2,9,1,1,0],[2,9,2,2,0],[2,9,3,3,0],[2,9,5,10,0],[2,9,6,6,0],[0,9,9,9,0],[1,9,9,9,0],[2,9,9,1,0],[0,9,10,5,0],[1,9,10,11,0],[2,9,10,10,0],[0,9,11,9,0],[2,9,11,1,0],[0,9,13,9,0],[2,9,13,1,0],[0,9,14,9,0],[2,9,14,1,0],[2,10,0,0,0],[2,10,1,1,0],[2,10,2,6,0],[2,10,3,3,0],[2,10,6,6,0],[0,10,10,10,0],[1,10,10,10,0],[2,10,10,1,0],[0,10,11,10,0],[1,10,11,11,0],[2,10,11,1,0],[2,11,0,0,0],[2,11,1,1,0],[2,11,2,2,0],[2,11,3,3,0],[2,11,6,6,0],[0,11,11,11,0],[1,11,11,11,0],[2,11,11,1,0],[2,13,0,0,0],[2,13,1,1,0],[2,13,2,2,0],[2,13,3,3,0],[2,13,6,6,0],[2,13,13,1,0],[2,14,0,0,0],[2,14,1,1,0],[2,14,2,2,0],[2,14,3,3,0],[2,14,6,6,0],[2,15,0,0,0],[2,15,1,1,0],[2,15,2,6,0],[2,15,3,3,0],[2,15,6,6,0],[2,15,10,1,0],[2,15,11,1,0],[2,15,15,1,0],[3,0,0,2,0],[3,1,0,1,0],[3,2,0,2,0],[3,3,0,5,0],[3,4,0,5,0],[3,5,0,5,0],[3,6,0,6,0],[3,7,0,9,1],[3,8,0,13,0],[3,9,0,9,1],[3,10,0,10,0]],"open":[[1,0,13],[1,0,14],[1,0,15],[0,1,13],[2,1,13],[0,1,14],[2,1,14],[0,1,15],[2,1,15],[1,2,13],[1,2,14],[1,2,15],[1,3,13],[1,3,14],[1,3,15],[1,4,13],[1,4,14],[1,4,15],[1,5,8],[2,5,8],[1,5,13],[1,5,14],[0,5,15],[2,5,15],[1,6,8],[1,6,13],[1,6,14],[2,6,15],[1,7,8],[1,7,13],[1,7,14],[0,7,15],[2,7,15],[1,8,9],[1,8,10],[2,8,10],[1,8,11],[2,8,11],[1,8,13],[1,8,14],[0,8,15],[1,8,15],[2,8,15],[2,9,4],[2,9,7],[2,9,8],[1,9,11],[1,9,13],[1,9,14],[0,9,15],[2,9,15],[2,10,5],[2,10,8],[2,10,9],[1,10,13],[2,10,13],[0,10,14],[1,10,14],[2,10,14],[0,10,15],[1,10,15],[2,10,15],[2,11,4],[2,11,5],[2,11,8],[2,11,9],[2,11,10],[1,11,13],[2,11,13],[0,11,14],[1,11,14],[2,11,14],[0,11,15],[1,11,15],[2,11,15],[2,13,4],[2,13,7],[2,13,8],[2,13,10],[2,13,11],[0,13,13],[1,13,13],[0,13,14],[1,13,14],[0,13,15],[1,13,15],[2,13,15],[2,14,4],[2,14,5],[2,14,8],[2,14,9],[2,14,10],[2,14,11],[2,14,13],[0,14,14],[1,14,14],[2,14,14],[0,14,15],[1,14,15],[2,14,15],[2,15,8],[2,15,13],[0,15,15],[1,15,15],[3,11,0],[3,13,0],[3,14,0]]};
 const REPS = [0,1,2,3,4,5,6,7,8,9,10,11,13,14,15];
-const RNAME = i => i === 15 ? "w15" : "q" + i;
+/* table index 15 is the harvested meet w15 = q8 ∧ q10 = g1 ∧ t6 — not the DICT
+   node 15 (which is the chain class c3), so it is named separately here          */
+const RNAME  = i => i === 15 ? "g1∧t6" : NEWNAME[i];
+const OLDNAME = i => i === 15 ? "w15" : "q" + i;
+const KINDOF  = i => i === 15 ? "meet g1 ∧ t6" : KIND[i];
 /* full formula of class i — the dictionary's own strings, plus w15 = q8 ∧ q10 */
 const QFORM = i => i === 15
   ? "(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ∧ (¬¬◯⊥ ⊃ ◯⊥)"
@@ -698,7 +785,8 @@ function renderTable(op) {
   const cols = op === 3 ? [0] : REPS;
   const showForm = n => {
     document.getElementById("read-tab").innerHTML =
-      `<strong>${RNAME(n)}</strong> &nbsp; ${QFORM(n)}`;
+      `<strong>${RNAME(n)}</strong> &nbsp; ${QFORM(n)}`
+      + `<br><span class="muted">was ${OLDNAME(n)} &nbsp;·&nbsp; ${KINDOF(n)}</span>`;
   };
   const hr = t.insertRow();
   hr.appendChild(document.createElement("th"));
@@ -718,6 +806,7 @@ function renderTable(op) {
       else { td.className = "none"; td.textContent = "·"; }
       if (c || OPENSET.has(key)) td.addEventListener("click", () => {
         const lhs = op===3 ? `◯${RNAME(i)}` : `${RNAME(i)} ${OPSYM[op]} ${RNAME(j)}`;
+        const oldLhs = op===3 ? `◯${OLDNAME(i)}` : `${OLDNAME(i)} ${OPSYM[op]} ${OLDNAME(j)}`;
         const parts = op===3 ? [i] : [i, j];
         if (c && !parts.includes(c[3])) parts.push(c[3]);
         const forms = parts.map(n =>
@@ -728,7 +817,10 @@ function renderTable(op) {
                     : "certified: <code>InterdU</code> in wip/rncCells.lean, kernel-checked")
             + "</span>"
           : `<strong>${lhs} ≡ ?</strong><br><span class="muted">open — the probe settled neither direction</span>`)
-          + `<br><span style="font-size:12px">${forms}</span>`;
+          + `<br><span style="font-size:12px">${forms}</span>`
+          + `<br><span class="muted" style="font-size:12px">was: ${oldLhs} ≡ `
+          + (c ? `${OLDNAME(c[3])} &nbsp;·&nbsp; ${KINDOF(c[3])}` : "?")
+          + `</span>`;
       });
     });
   });
