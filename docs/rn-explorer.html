@@ -240,6 +240,7 @@
           <dt>unsettled</dt><dd id="d-unk">2</dd>
           <dt>in image of h</dt><dd>8</dd>
           <dt>im h</dt><dd>= rungs ∪ {⊤} ✓</dd>
+          <dt>width</dt><dd>∞ (gap family) ✓</dd>
         </dl>
       </div>
       <div class="card">
@@ -281,7 +282,13 @@
   the diagram. Since the classification <span class="fml">im h = rungs ∪ {⊤}</span> is
   mechanised (<code>image_classification</code>), every one of them is off the image
   outright: the complement of the ladder image is <strong>infinite, with no caveat</strong>
-  (<code>complement_infinite_final</code>). The orange edge is <span class="fml">q9 &lt; q12</span>: since
+  (<code>complement_infinite_final</code>). The width question is settled too: the collapse
+  statements <span class="fml">gap k = ◯rn₂ₖ₊₁ ⊃ rn₂ₖ₊₁</span> — level-k generalisations of
+  <span class="fml">q8</span> (<code>gap_one_q8</code>) — are pairwise incomparable for k ≥ 2
+  (<code>width_infinite</code>), so RN(◯,{}) holds an infinite <em>antichain</em> alongside the
+  infinite chain: its width is <strong>unbounded</strong>, and each <span class="fml">gap k</span>
+  is a further new class, off the image and off the chain
+  (<code>gap_off_image</code>, <code>gap_not_chain</code>). The orange edge is <span class="fml">q9 &lt; q12</span>: since
   <span class="fml">◯(rung 3 ∨ rung 4) = q12</span> while
   <span class="fml">◯rung 3 ∨ ◯rung 4 = q9</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>

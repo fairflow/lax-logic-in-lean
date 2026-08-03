@@ -4717,3 +4717,38 @@ Bonus: `Interd q11 (rnSub 7)` is now an *instance* of the classification
 (`cls (¬¬p ∨ (¬¬p ⊃ p)) = odd 3` by `decide`), identifying `◯q11 ≡ chainF 3`
 without a hand derivation — the classification doubles as a decision procedure
 for interderivability on the whole ◯-free one-variable fragment.
+
+---
+
+## §35 (2026-08-03) — RN(◯,{}) has UNBOUNDED WIDTH: the collapse statements form an infinite antichain
+
+`wip/gapWidth.lean`.  The family, generalising the dictionary class `q8`
+level by level:
+
+    gap k := ◯(rnSub (2k+1)) ⊃ rnSub (2k+1)          gap 1 ≡ q8 (gap_one_q8)
+
+**width_infinite**: the `gap k` for `k ≥ 2` are pairwise non-interderivable
+(indeed pairwise ⊬-incomparable, `gap_incomparable`) — an ℕ-indexed
+antichain, so the width question is settled: INFINITE, not bounded.
+
+One new semantic computation only: on the edged lift `cmE m` (the §34-era
+model with the single extra constraint edge `(m+3) ⇝ 0`),
+
+    T(chainF k) = [0,k] ∪ { m+3  if m+1 ≤ k }        (cmE_chainF)
+
+so `gap k` fails in `cmE m` exactly when `k ∈ {m+1, m+2}` and holds at
+every world otherwise; choosing the edge level per pair (m = k−2 when
+j = k+1, else m = k−1) refutes `gap j ⊢ gap k` by soundness.
+
+The new classes are genuinely new: off im h (`gap_off_image`, via the
+mechanised classification), distinct from every chain class
+(`gap_not_chain` — on the plain lift `gap k` is forced everywhere while
+chains/rungs have bounded truth sets), and pairwise distinct.  Picture of
+RN(◯,{}) so far: im h ≅ RN({p}) ∪ {⊤} (8 drawn classes + ⊤), an infinite
+strictly ascending chain of boxed odd rungs sprouting at q5/q12/◯q11, and
+an infinite antichain of their collapse statements sprouting at q8.  Open:
+whether q9/q13/q14/w15 seed further families of the same kind.
+
+Debug note: omega silently dropped equations at type `ladder.W` (defeq ℕ
+but syntactically a projection) — same family of quirk as §34's `→ False`
+finding; fix is a `∀ y : Nat` annotation in the statement.
