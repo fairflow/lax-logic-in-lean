@@ -276,13 +276,50 @@ def placeMode (bmax fb cap : Nat) : IO Unit := do
         run1 cap fb s!"T |- {nm}" [T] w
         run1 cap fb s!"{nm} |- T" [w] T
 
+/-! ## The `φ♠` circle
+
+`§53` proved `IsPostInterp φ♠ ψ♣` with `ψ♣ = ¬¬◯⊥ ⊃ ◯⊥`.  `§54` computed the
+tower's `b = 1` answer `T♠1` and certified facts *about* it.  The remaining
+check is the direct one: is `nf^* T♠1` interderivable with `ψ♣`?
+
+The two directions are run separately (`dir = 1` / `dir = 2`) so that a
+generous `findBudget` can be spent on one of them at a time; `dir = 0` runs
+both.  The iteration count `k` of `nf` to its fixpoint is reported, because
+the Lean-side cut needs it (`nfIter_interd k`). -/
+
+partial def nfCount (n : Nat) (φ : PLLFormula) : Nat × PLLFormula :=
+  let ψ := nf φ
+  if ψ == φ then (n, φ) else nfCount (n + 1) ψ
+
+def circleMode (b fb dir : Nat) : IO Unit := do
+  hdr "phiSpade circle: Interd (nf^k T b) psiClub"
+  let T := eTower phiSpade b
+  let (k, N) := nfCount 0 T
+  say s!"b={b}  sz T = {sz T}  ->  nf^{k} T, sz = {sz N}"
+  if sz N ≤ 800 then say s!"  nf^k T = {repr N}"
+  say s!"  psiClub sz = {sz psiClub}, findBudget = {fb}"
+  if dir == 0 || dir == 1 then do
+    let t0 ← IO.monoMsNow
+    let (v, cm) := decideSeq fb [N] psiClub
+    let t1 ← IO.monoMsNow
+    say s!"  FORWARD   nf^k T{b} |- psiClub : {v}   [{t1 - t0} ms]"
+    if cm != "" then say ("    countermodel:\n" ++ cm)
+  if dir == 0 || dir == 2 then do
+    let t0 ← IO.monoMsNow
+    let (v, cm) := decideSeq fb [psiClub] N
+    let t1 ← IO.monoMsNow
+    say s!"  BACKWARD  psiClub |- nf^k T{b} : {v}   [{t1 - t0} ms]"
+    if cm != "" then say ("    countermodel:\n" ++ cm)
+
 def main (args : List String) : IO Unit := do
   let mode := args.getD 0 "sizes"
   let bmax := (args.getD 1 "2").toNat!
   let fb   := (args.getD 2 "200000").toNat!
   let cap  := (args.getD 3 "40000").toNat!
-  say s!"towertest mode={mode} bmax={bmax} findBudget={fb} sizeCap={cap}"
+  let dir  := (args.getD 4 "0").toNat!
+  say s!"towertest mode={mode} bmax={bmax} findBudget={fb} sizeCap={cap} dir={dir}"
   match mode with
+  | "circle" => circleMode bmax fb dir
   | "sizes" => sizesMode bmax
   | "agree" => agreeMode bmax fb cap
   | "spade" => spadeMode bmax fb cap

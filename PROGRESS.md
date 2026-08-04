@@ -5549,3 +5549,86 @@ equations; (e) postui's import closure reaches rnc_probe's root-level
 main — battery re-declared in towerkit, all nine rfl-checked
 (phiStar_eq etc., axiom-free).  RECOMMENDATION: redirect to the
 assault on cascade_low_pos_box with the ladder as regression suite.
+
+---
+
+## §55 (2026-08-04) — Hardening the tower test: `nf_interd` PROVED, the `atomFree` gap reduced to one containment, the φ♠ circle UNDECIDED-AT-BUDGET
+
+Branch `probe/towerharden` off `7f1fdc7`.  Three named §54 follow-ups
+attacked; two closed, one reduced.
+
+**(b) `nf_interd` — CLOSED.**  `wip/nfcorrect.lean`.
+`PLLND.Search.nf` (`LaxLogic/PLLSearch.lean` §0) is what makes the
+tower's outputs legible — on φ♠ at `b = 1` it takes 88 202 nodes to
+391 — and every `nf`-level verdict of §54 was, until now, a claim about
+a formula the library said nothing about.  Now:
+`smash_interd : ∀ φ, Interd φ (smash φ)` (ten branches: the ⊥/⊤
+absorptions, idempotence at ∧/∨, `A ⊃ A ≡ ⊤`, and the two lax laws
+`◯⊤ ≡ ⊤`, `◯◯B ≡ ◯B`), then `nf_interd : ∀ φ, Interd φ (nf φ)` by the
+four `Interd` congruence rules of `LaxLogic/PLLSemUIFrag.lean`, then
+`nfIter_interd : ∀ n φ, Interd φ (nfIter n φ)` for the fixpoint
+iteration consumers actually run.  All three `[propext]` — no choice, no
+`Quot.sound`, no `sorryAx`.  The transfer rules
+(`deriv_/interd_/g4c_of_nf`, `_to_nf`, and the `_nfIter` forms) cut an
+`nf`-level certificate down to the original **without evaluating
+anything**: the certificate is an object about the *term* `nf T`.
+`wip/towercircle.lean` applies this to the tower's row lemmas —
+`eRow_settled_nf` / `aRow_settled_nf` (+ `_nfIter`) are §54's
+`eRow_settled` / `aRow_settled` with the certificate moved to the normal
+form, `itp_budget_mono_le` transfer to the prescribed budget intact.  So
+§54's nf-mediated rows (φ★'s agreement, the φ♠ prediction facts) are now
+raw-table facts modulo their search certificates.
+
+**(c) the atoms lemma — REDUCED, not closed.**  `wip/toweratoms.lean`.
+The wanted statement is `atoms (itpE p S f b Γ) ⊆ atoms Γ`; its proof is
+the ≈500-line induction mirroring `itp_pfree`
+(`LaxLogic/PLLG4UITrunc.lean`:1961) clause for clause, which did not fit
+this session's budget.  What is closed instead is everything on either
+side of it: `atomFree_iff` (the bridge between the `Bool` predicate
+`atomFree` and the `Finset String` `atoms`, which the library also
+lacked — PROVED), the containment named `ItpAtomsBounded` in the
+pointwise form the induction will produce (**stated, OPEN, never
+claimed — no sorry**), and the reduction
+`atomFree_eTower_of_bounded` / `atomFree_aTower_of_bounded`: with
+`itp_pfree` killing `p` and `ItpAtomsBounded` killing everything else,
+`atomFree (eTower φ b) = true` for every subject whose only atom is `p`
+— i.e. every row of the battery.  `phiSpade_atoms` PROVED;
+`spade_circle_of_bounded` then closes the φ♠ circle at every budget
+above `b` from `ItpAtomsBounded` plus the FORWARD certificate alone.
+Useful structural observation, and the reason `S` does not appear in
+`ItpAtomsBounded`'s hypothesis: `itpE`/`itpA` use the space `S` only in
+membership *tests* — it never contributes a formula to the output — and
+the recursive calls only ever extend `Γ` by *subformulas* of its own
+members.  That is exactly the invariant the induction needs.
+
+**(the φ♠ circle) — UNDECIDED AT BUDGET 2·10⁷ per direction.**
+`wip/towertest.lean` gained a `circle` mode: `nf` iterated with the pass
+count reported, and the two directions of `Interd (nf^k T♠b) ψ♣` run
+separately so a generous `findBudget` can go to one at a time.
+Measured: `nf` reaches its fixpoint in **one pass** (`k = 1`), and
+`T♠1` is 88 202 nodes against `nf T♠1`'s 391.  `nf T♠1` is visibly
+variable-free, of `◯`-depth 1, built entirely from `◯⊥` and `¬◯⊥` —
+consistent with `ψ♣`, and its outermost antecedent
+`((¬◯⊥ ∨ ◯⊥) ⊃ (¬¬◯⊥ ∧ ¬◯⊥)) ⊃ (¬◯⊥ ∨ ◯⊥)` is `⊣⊢ ⊤`.  Both
+directions REMAIN UNDECIDED, and the two runs failed differently.  At
+`findBudget` 2·10⁵ both returned a verdict — UNDECIDED with the
+**positive stage truncated** (node budget exhausted: 27.8 s forward,
+9.1 s backward).  At `findBudget` 2·10⁷ neither returned at all: both
+were killed by `scripts/probe`'s 1000 s wall-clock cap (rc = 143) with
+no verdict line emitted.  In no run was a countermodel produced —
+`settle` is countermodel-first, so the refutation stage completed and
+found nothing, twice — so there is **no evidence against the circle**;
+what there is, is a search-capacity wall.  Recorded as
+UNDECIDED-AT-BUDGET, with the two Lean-side composites already in place
+so a later certificate closes it in one line: `spade_circle`
+(both certificates, no side condition at all) and `spade_circle_up`
+(forward certificate + atom-freeness, transferred to every budget above
+`b`, the prescribed `579` included).
+
+**Reading.**  The `nf` gap was the load-bearing one and it is gone.  The
+φ♠ circle is now purely a *search-capacity* question about one
+391-node variable-free sequent — a much better shaped problem than
+before, and one the RN(◯,{}) dictionary machinery (§§43–47) may settle
+without search at all: classify `nf T♠1` in the 15-class dictionary and
+compare with `ψ♣`'s class.  That is the recommended next move on this
+thread, ahead of re-running the search wider.
