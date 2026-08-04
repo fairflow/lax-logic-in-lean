@@ -1569,9 +1569,40 @@ end PLLND
 
 /-! ## The open branches — stubs
 
-Everything above this section is sorry-free.  The three interfaces
-below are the ENTIRE remaining content of the ◯-involving low-budget
-descent; each is marked OPEN, with its status:
+**STOP (2026-08-04, PROGRESS §58).  The four interfaces below are
+JOINTLY UNSATISFIABLE, and the residue programme built on them is off
+the critical path.**  `cascade_box`'s conclusion is the *room-free*
+descent, and that is refuted:
+`PLLND.AscRefute.not_roomFreeDescent` (`wip/ascRefute.lean`) kills it at
+`Sk = {◯p⊃r, ◯p, p, r, (◯r⊃s)⊃t, ◯r⊃s, ◯r, s, t}`, `Γ = [◯p⊃r]`,
+`g = (◯r⊃s)⊃t`, `fuel = 4`, `c = 1`; and `wip/reparamRefute.lean` checks
+by `decide` that `Sk` satisfies *every* side condition `cascade_box`
+carries (`hand`, `hor`, `himp`, `hsome`, `g ∈ S`, `Γ ⊆ S`, `1 ≤ c`).  So
+`cascade_box` applies there, its conclusion is false there, and the four
+hypotheses cannot all hold.  `ambGuardAscent_open` is separately refuted
+(`AscRefute.not_ambGuardAscent`).
+
+Consequently: **do not** grind the "six goal shapes × three floor
+interfaces" residue of PROGRESS §57.  It is a residue of a refuted
+statement.  What the tower's kernel `cascade_low_pos_box`
+(`wip/absorb_base.lean`) actually asks for carries the defect-tower room
+`defect S Γ · (|jumpGoals S| + 2) ≤ c` with `1 ≤ defect S Γ`, which
+forces `|jumpGoals S| + 2 ≤ c`, hence `2 ≤ c`
+(`ReparamRefute.room_ge_jump`, `ReparamRefute.room_two`) — the kernel's
+band never contains the budget floor `c = 1` where `AmbGuardAscent` fails
+and where all three pair-floor interfaces are stated.  The viable ◯-band
+route is a **ledger-carrying** build: `cascade_main`'s pigeonhole over
+jump goals, extended to the ◯-clauses, so that every recursive call stays
+inside the room.  `wip/floorRefute.lean` reached the same conclusion from
+the other side (the budget tier has no base case at all).
+
+What survives unconditionally and is reusable by such a build: everything
+above this section, plus `wip/boxSndTight.lean`'s `boxSnd_tight`,
+`boxGoal_remap_free`, `floorBox_of_grownAmb`, `floorAny_atom` and the
+three `*_boxedAtom` instances — those are proved theorems about the
+tables, not about the refuted descent.
+
+Historical status of each interface, as recorded before the refutation:
 
 * `ambGuardAscent_open` — the fresh-antecedent equality law
   (§66/§73(ii)): exact on every instance of the countermodel battery,

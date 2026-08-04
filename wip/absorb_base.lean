@@ -2093,15 +2093,121 @@ private theorem cascade_low_pos_boxfree (p : String) (S : Finset PLLFormula)
     rcases Finset.mem_singleton.mp hg' with rfl
     exact hval
 
-/-- HOLDOUT — the one remaining `sorry` of the cascade development,
-now restricted to the ◯-involving band: by the dispatcher below it
-carries, besides `1 ≤ defect S Γ`, the negation `hbox` — some member
-of `S` mentions `◯`, or `S` is not subformula-closed, or the goal or
-context escapes `S`.  In the complementary (box-free, closed,
-covered) instance the descent is a THEOREM (`cascade_low_pos_boxfree`
-via `cascade_main_bf`): there are no ◯-clauses, hence no sealed
-positions, and the shifted ledger runs the full pigeonhole machine
-from this statement's own room.
+/-! #### THE RE-PARAMETERISATION (2026-08-04, PROGRESS §58)
+
+**Statement change, authorised by Matthew, recorded here in full.**
+
+`cascade_low_pos_box` used to read
+
+```
+private theorem cascade_low_pos_box (p : String) (S : Finset PLLFormula)
+    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
+    (Δ : List PLLFormula)
+    (hbox : ¬ ((∀ F ∈ S, boxFree F) ∧
+      (∀ A B : PLLFormula, A.and B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      (∀ A B : PLLFormula, A.or B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      (∀ A B : PLLFormula, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S) ∧
+      g ∈ S ∧ (∀ F ∈ Γ, F ∈ S)))
+    (hd1 : 1 ≤ defect S Γ)
+    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
+    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
+    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
+    (hfh : fh ≤ fuel) :
+    G4c Δ (itpA p S fuel c Γ g)
+```
+
+i.e. it quantified over an ARBITRARY space and carried the *negation*
+of "box-free and piece-closed and covered" — the complement of
+`cascade_low_pos_boxfree`'s band.  That is unusable: the ◯-involving
+descent that would discharge it (`wip/cascadeBox.lean`'s `cascade_box`,
+and every lemma PROGRESS §57 built for it) needs piece-closure
+(`hand`/`hor`/`himp`/`hsome`) and coverage (`g ∈ S`, `Γ ⊆ S`) — for a
+non-closed or uncovered space there is no route at all.  The `hbox`
+disjunct existed only to complement the box-free band, not because any
+consumer wanted arbitrary `S`.
+
+It now reads (see the declaration below): **piece-closure + coverage**,
+ADDED to the room hypotheses `hd1`/`hroom`, which are KEPT.  Only
+`hbox` is gone.
+
+**Why `hroom` is kept — and why `cascade_box`'s room-free form must not
+be copied here (2026-08-04, this round's decisive finding).**  The first
+draft of this re-parameterisation dropped `hd1` and `hroom` as well, to
+make the statement verbatim `PLLND.cascade_box` (`wip/cascadeBox.lean`:
+1532).  That statement is **FALSE**, and the repo already contains the
+machine-checked refutation: `PLLND.AscRefute.not_roomFreeDescent`
+(`wip/ascRefute.lean`, axioms `[propext, Quot.sound]`) refutes
+
+    RoomFreeDescent p S :=
+      ∀ fuel c Γ g Δ, 1 ≤ c → G4c Δ (itpE p S fuel (c+1) Γ) →
+        G4c Δ (itpA p S fuel (c+1) Γ g) → G4c Δ (itpA p S fuel c Γ g)
+
+at `p = "p"` and the space
+
+    Sk = {◯p⊃r, ◯p, p, r, (◯r⊃s)⊃t, ◯r⊃s, ◯r, s, t}
+
+with `Γ = [◯p⊃r]`, `g = (◯r⊃s)⊃t`, `fuel = 4`, `c = 1`.  `Sk` **is**
+piece-closed for `hand`/`hor`/`himp`/`hsome` and **does** cover that
+`Γ` and `g` (`wip/reparamRefute.lean` checks all six by `decide`), so
+closure and coverage do not exclude the counterexample — only the room
+does: `defect Sk Γ = 8`, so `hroom` demands
+`8 · (|jumpGoals Sk| + 2) ≤ c = 1`, which is false.  See
+`wip/reparamRefute.lean` for the refutation of the room-free
+re-parameterisation stated in this file's own idiom.
+
+**Why the consumers can pay.**  Determined from the call sites, not
+from guesswork.  `cascade_low_pos_box` is consumed at exactly one
+place, `cascade_low_pos` below; the chain upwards is
+
+    cascade_low_pos → cascade_low → cascade_main → cascade_entry
+      → cascade_impLImp / cascade_jump / cascade_gamma
+      → cascade_impLImp_ant / cascade_gamma_box
+      → itp_stab_aux → itp_stab → itp_stab_le
+      → wip/packaging.lean: existsP_adequate, forallP_adequate
+
+and at the two *final* consumers the space is `pieceClosure φ` resp.
+`pieceClosure C`, which is `PieceClosed` (`hPC.and_mem`, `hPC.or_mem`,
+`hPC.imp_mem`, `hPC.box_mem`) and covers its own context and goal
+(`self_mem_pieceClosure`; the `∀`-side packages at `Γ = []`).  Those
+are exactly the arguments the *box-free* mirror `itp_stab_le_bf`
+already receives at the same two sites (`wip/packaging.lean`:958,
+1070).  So closure and coverage are threaded down the chain — closure
+as four top-level parameters (`S` is fixed, so this costs nothing
+inside), coverage as the two invariants `g ∈ S` and `Γ ⊆ S`, exactly
+as the sorry-free box-free spine `cascade_main_bf` already threads
+them.
+
+**Consumers adjusted**: `cascade_low_pos`, `cascade_low`,
+`cascade_main`, `cascade_entry`, `cascade_impLImp`, `cascade_jump`,
+`cascade_gamma`, `cascade_impLImp_ant`, `cascade_gamma_box`,
+`itp_stab_aux`, `itp_stab`, `itp_stab_le` (all in this file) and
+`existsP_adequate` / `forallP_adequate` (`wip/packaging.lean`).
+`cascade_low_pos_boxfree`, `cascade_main_bf` and the whole box-free
+tier are UNCHANGED — they already carried closure and coverage.
+`cascade_zero` is unchanged (it needs neither). -/
+
+/-- HOLDOUT — the one remaining `sorry` of the cascade development.
+Since the re-parameterisation it is the ◯-involving low-budget pair
+descent over a **piece-closed** space with goal and context inside it,
+**at the defect-tower room** `defect S Γ · (|jumpGoals S| + 2) ≤ c`
+with `1 ≤ defect S Γ`.  It is `wip/cascadeBox.lean`'s `cascade_box`
+with that room hypothesis restored — the room-free form is refuted
+(`AscRefute.not_roomFreeDescent`), so `cascade_box` cannot be used to
+discharge this, and the ◯-band apparatus must be re-run with the room
+threaded through.
+
+The box-free instance remains a THEOREM by an independent route
+(`cascade_low_pos_boxfree` via `cascade_main_bf`), and the dispatcher
+below still prefers it, so the box-free tier never touches this
+`sorry`.
+
+The historical analysis that follows was written for the OLD
+statement (arbitrary `S`, `hbox`, `hd1`, `hroom`); it is retained
+because the four sealed positions and their failure analysis are
+unchanged by the re-parameterisation — what changes is that the space
+is now closed and covered, which is precisely what kills the fourth
+(fresh-antecedent) seal, as the "Two structural leads" note below
+already recorded.
 
 Stage-3 note (fuel-indifference, `wip/indiff.lean`): re-leveling
 fuels above `mu` is an `Eq` in the FUEL dimension; the seal deficit
@@ -2257,13 +2363,13 @@ identified structural reason, and the obstruction is now sharper:
   the pigeonhole band from below — cascade_main-scale work, not
   attempted here. -/
 private theorem cascade_low_pos_box (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
     (Δ : List PLLFormula)
-    (hbox : ¬ ((∀ F ∈ S, boxFree F) ∧
-      (∀ A B : PLLFormula, A.and B ∈ S → A ∈ S ∧ B ∈ S) ∧
-      (∀ A B : PLLFormula, A.or B ∈ S → A ∈ S ∧ B ∈ S) ∧
-      (∀ A B : PLLFormula, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S) ∧
-      g ∈ S ∧ (∀ F ∈ Γ, F ∈ S)))
+    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S) (hc : 1 ≤ c)
     (hd1 : 1 ≤ defect S Γ)
     (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
     (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
@@ -2272,12 +2378,18 @@ private theorem cascade_low_pos_box (p : String) (S : Finset PLLFormula)
     G4c Δ (itpA p S fuel c Γ g) := by
   sorry
 
-/-- The open-band descent, dispatched: the box-free/closed/covered
-instance is settled by `cascade_low_pos_boxfree`; the rest is the
-◯-involving (or space-uncovered) holdout `cascade_low_pos_box`. -/
+/-- The open-band descent, dispatched: the box-free instance is
+settled by `cascade_low_pos_boxfree` (which, with closure and coverage
+now in scope, needs only `hSbf`); the rest is the ◯-involving holdout
+`cascade_low_pos_box`. -/
 private theorem cascade_low_pos (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
     (Δ : List PLLFormula)
+    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S)
     (hd1 : 1 ≤ defect S Γ)
     (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
     (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
@@ -2289,23 +2401,22 @@ private theorem cascade_low_pos (p : String) (S : Finset PLLFormula)
         defect S Γ * ((jumpGoals S).card + 2) :=
       Nat.mul_le_mul_right _ hd1
     omega
-  by_cases hbf : (∀ F ∈ S, boxFree F) ∧
-      (∀ A B : PLLFormula, A.and B ∈ S → A ∈ S ∧ B ∈ S) ∧
-      (∀ A B : PLLFormula, A.or B ∈ S → A ∈ S ∧ B ∈ S) ∧
-      (∀ A B : PLLFormula, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S) ∧
-      g ∈ S ∧ (∀ F ∈ Γ, F ∈ S)
-  · exact cascade_low_pos_boxfree p S hbf.1
-      (fun {A B} => hbf.2.1 A B) (fun {A B} => hbf.2.2.1 A B)
-      (fun {A B} => hbf.2.2.2.1 A B) fh Γ fuel c g Δ
-      hbf.2.2.2.2.1 hbf.2.2.2.2.2 hroom hc hamb hhead hfh
-  · exact cascade_low_pos_box p S fh Γ fuel c g Δ hbf hd1 hroom
-      hamb hhead hfh
+  by_cases hbf : ∀ F ∈ S, boxFree F
+  · exact cascade_low_pos_boxfree p S hbf hand hor himp fh Γ fuel c g Δ
+      hgS hΓS hroom hc hamb hhead hfh
+  · exact cascade_low_pos_box p S hand hor himp hsome fh Γ fuel c g Δ
+      hgS hΓS hc hd1 hroom hamb hhead hfh
 
 /-- The sealed-site descent: saturated contexts settle by the
 zero tier, the rest is the holdout. -/
 private theorem cascade_low (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
     (Δ : List PLLFormula)
+    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S)
     (hc : 1 ≤ c) (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
     (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
     (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
@@ -2314,14 +2425,24 @@ private theorem cascade_low (p : String) (S : Finset PLLFormula)
   by_cases hd0 : defect S Γ = 0
   · exact cascade_zero p S fh Γ (sat_of_defect_zero hd0) fuel c g Δ hc
       hamb hhead hfh
-  · exact cascade_low_pos p S fh Γ fuel c g Δ (by omega) hroom hamb
-      hhead hfh
+  · exact cascade_low_pos p S hand hor himp hsome fh Γ fuel c g Δ hgS hΓS
+      (by omega) hroom hamb hhead hfh
 
-private theorem cascade_main (p : String) (S : Finset PLLFormula) :
+/-- The generalized cascade, RE-PARAMETERISED (2026-08-04): four
+piece-closure hypotheses on the fixed space `S` (free — `S` never
+changes inside), and the two coverage invariants `g ∈ S`, `Γ ⊆ S`
+threaded through every recursion, exactly as the box-free spine
+`cascade_main_bf` above already does.  The ledger is unchanged (the
+unshifted `(J∖seen)+1+defect·(J+2) ≤ c`). -/
+private theorem cascade_main (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S) :
     ∀ (d fh : Nat),
     (∀ (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
        (seen : Finset PLLFormula) (Δ : List PLLFormula) (R : PLLFormula),
-     defect S Γ ≤ d → g ∈ seen →
+     defect S Γ ≤ d → g ∈ S → (∀ X ∈ Γ, X ∈ S) → g ∈ seen →
      ((jumpGoals S \ seen).card + 1 +
        defect S Γ * ((jumpGoals S).card + 2) ≤ c) →
      (∀ g' ∈ seen, ∀ Δ', (∀ ψ ∈ Δ, ψ ∈ Δ') →
@@ -2331,7 +2452,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
      fh ≤ fuel →
      G4c Δ R) ∧
     (∀ (Γ : List PLLFormula) (c : Nat) (Δ : List PLLFormula),
-     defect S Γ ≤ d →
+     defect S Γ ≤ d → (∀ X ∈ Γ, X ∈ S) →
      ((jumpGoals S).card + 3 +
        defect S Γ * ((jumpGoals S).card + 2) ≤ c) →
      G4c Δ (itpE p S fh c Γ) →
@@ -2343,17 +2464,25 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
   induction fh with
   | zero =>
       constructor
-      · intro Γ fuel c g seen Δ R hd hg hroom hcls hamb hhead hfh
+      · intro Γ fuel c g seen Δ R hd hgS hΓS hg hroom hcls hamb hhead hfh
         simp only [itpA] at hhead
         exact G4c.cut hhead (G4c.botL (.head _))
-      · intro Γ c Δ hd hroom hsrc
+      · intro Γ c Δ hd hΓS hroom hsrc
         simp only [itpE]
         exact G4c.truePLL_intro _
   | succ F ihf =>
       obtain ⟨ihfA, ihfE⟩ := ihf
       constructor
       · -- A-half: the descent cascade
-        intro Γ fuel c g seen Δ R hd hg hroom hcls hamb hhead hfh
+        intro Γ fuel c g seen Δ R hd hgS hΓS hg hroom hcls hamb hhead hfh
+        have hSor : ∀ {X : PLLFormula}, X ∈ Γ ∨ X ∈ S → X ∈ S :=
+          fun h => h.elim (fun h' => hΓS _ h') id
+        have hScons : ∀ {X : PLLFormula}, X ∈ S →
+            ∀ F' ∈ X :: Γ, F' ∈ S := by
+          intro X hX F' hF'
+          rcases List.mem_cons.mp hF' with rfl | hF'
+          · exact hX
+          · exact hΓS _ hF'
         obtain ⟨c', rfl⟩ : ∃ c', c = c' + 1 := ⟨c - 1, by omega⟩
         obtain ⟨fl, rfl⟩ : ∃ fl, fuel = fl + 1 := ⟨fuel - 1, by omega⟩
         rw [itpA_succ p S F (c' + 2) Γ g] at hhead
@@ -2408,14 +2537,16 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
         -- grown-context full descent: the strong induction on defect
         have hgrown : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
             ∀ (fw c₂ : Nat) (h : PLLFormula) (Δ' : List PLLFormula),
+            h ∈ S → (∀ X ∈ Γ', X ∈ S) →
             ((jumpGoals S).card + 1 +
               defect S Γ' * ((jumpGoals S).card + 2) ≤ c₂) →
             G4c Δ' (itpE p S fw (c₂ + 1) Γ') →
             G4c Δ' (itpA p S fw (c₂ + 1) Γ' h) →
             G4c Δ' (itpA p S fw c₂ Γ' h) := by
-          intro Γ' hlt fw c₂ h Δ' hroom' hamb' hhead'
+          intro Γ' hlt fw c₂ h Δ' hgS' hΓS' hroom' hamb' hhead'
           refine (ihd (defect S Γ') (lt_of_lt_of_le hlt hd) fw).1 Γ' fw c₂ h
-            {h} Δ' _ (Nat.le_refl _) (Finset.mem_singleton_self h) ?_ ?_
+            {h} Δ' _ (Nat.le_refl _) hgS' hΓS'
+            (Finset.mem_singleton_self h) ?_ ?_
             hamb' hhead' (Nat.le_refl _)
           · exact le_trans (Nat.add_le_add_right (Nat.add_le_add_right
               (Finset.card_le_card Finset.sdiff_subset) 1) _) hroom'
@@ -2450,19 +2581,21 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
         -- source, and the value descends by the defect induction
         have himpX : ∀ (X h : PLLFormula) (Δ' : List PLLFormula),
             defect S (X :: Γ) < defect S Γ →
+            h ∈ S → X ∈ S →
             G4c Δ' ((itpE p S F (c' + 2) (X :: Γ)).ifThen
               (itpA p S F (c' + 2) (X :: Γ) h)) →
             G4c Δ' ((itpE p S fl (c' + 1) (X :: Γ)).ifThen
               (itpA p S fl (c' + 1) (X :: Γ) h)) := by
-          intro X h Δ' hlt dJ
+          intro X h Δ' hlt hgS' hXS dJ
+          have hΓS' : ∀ F' ∈ X :: Γ, F' ∈ S := hScons hXS
           refine G4c.impR ?_
           have hE2 : G4c (itpE p S fl (c' + 1) (X :: Γ) :: Δ')
               (itpE p S fl (c' + 2) (X :: Γ)) :=
             (ihd (defect S (X :: Γ)) (lt_of_lt_of_le hlt hd) fl).2 (X :: Γ)
-              (c' + 1) _ (Nat.le_refl _) (hroomE (X :: Γ) hlt)
+              (c' + 1) _ (Nat.le_refl _) hΓS' (hroomE (X :: Γ) hlt)
               (G4c.identity_mem (.head _))
-          refine hgrown (X :: Γ) hlt fl (c' + 1) h _ (hroomG (X :: Γ) hlt)
-            hE2 ?_
+          refine hgrown (X :: Γ) hlt fl (c' + 1) h _ hgS' hΓS'
+            (hroomG (X :: Γ) hlt) hE2 ?_
           refine val_lift (b := c' + 2) ?_ hF (Nat.le_refl _)
           exact fire (dJ.weaken _) (consume₁ hE2
             ((itp_fuel_mono_le p S hF).1 _ _))
@@ -2488,6 +2621,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
               refine G4c.andL (List.Perm.refl _) ?_
               -- V₁ :: V₂ :: Δ ⊢ R, CPS-chained through both components
               refine ihfA Γ fl (c' + 1) C₁ (insert C₁ seen) _ R hd
+                (hand hgS).1 hΓS
                 (Finset.mem_insert_self _ _) (hroomI C₁) ?_
                 (((hambL fl (c' + 2) (Nat.le_succ _)
                   (Nat.le_refl _)).weaken _).weaken _)
@@ -2496,6 +2630,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
               rcases Finset.mem_insert.mp hg' with rfl | hg'
               · -- C₁ landed: chain into C₂
                 refine ihfA Γ fl (c' + 1) C₂ (insert C₂ seen) Δ' R hd
+                  (hand hgS).2 hΓS
                   (Finset.mem_insert_self _ _) (hroomI C₂) ?_
                   (weaken_sub (fun ψ h => hs' ψ (.tail _ (.tail _ h)))
                     (hambL fl (c' + 2) (Nat.le_succ _) (Nat.le_refl _)))
@@ -2516,6 +2651,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
               simp only [itpAgoal] at hφ
               rcases List.mem_cons.mp hφ with rfl | hφ'
               · refine ihfA Γ fl (c' + 1) C₁ (insert C₁ seen) _ R hd
+                  (hor hgS).1 hΓS
                   (Finset.mem_insert_self _ _) (hroomI C₁) ?_
                   ((hambL fl (c' + 2) (Nat.le_succ _)
                     (Nat.le_refl _)).weaken _)
@@ -2528,6 +2664,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                 · exact hclsR _ (fun ψ h => .tail _ h) g' hg' Δ' hs' val
               · rcases List.mem_singleton.mp hφ' with rfl
                 refine ihfA Γ fl (c' + 1) C₂ (insert C₂ seen) _ R hd
+                  (hor hgS).2 hΓS
                   (Finset.mem_insert_self _ _) (hroomI C₂) ?_
                   ((hambL fl (c' + 2) (Nat.le_succ _)
                     (Nat.le_refl _)).weaken _)
@@ -2549,8 +2686,10 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                   exact Finset.insert_eq_self.mpr (List.mem_toFinset.mpr hpres)
                 have hdef : defect S (C₁ :: Γ) = defect S Γ :=
                   defect_cons_eq hpres
+                have hΓS' : ∀ F' ∈ C₁ :: Γ, F' ∈ S := hScons (himp hgS).1
                 refine ihfA (C₁ :: Γ) fl (c' + 1) C₂ (insert C₂ seen) _ R
-                  (by rw [hdef]; exact hd) (Finset.mem_insert_self _ _)
+                  (by rw [hdef]; exact hd) (himp hgS).2 hΓS'
+                  (Finset.mem_insert_self _ _)
                   (by rw [hdef]; exact hroomI C₂) ?_
                   ((amb_congr (hambL fl (c' + 2) (Nat.le_succ _)
                     (Nat.le_refl _)) hpres).weaken _)
@@ -2569,13 +2708,19 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                     (consume₁ val ((itp_congr p S fl).2 (c' + 1)
                       (C₁ :: Γ) Γ g' hset))
               next hpres =>
-                -- fresh antecedent
+                -- fresh antecedent.  RE-PARAMETERISATION (§58): with `S`
+                -- piece-closed and `g ∈ S`, the antecedent `C₁` is in `S`
+                -- outright, so the fourth sealed position (the fresh piece
+                -- that does not pay) is DEAD CODE — exactly as the
+                -- "Two structural leads" note predicted, and exactly as
+                -- `cascade_main_bf` already had it.
                 rcases List.mem_singleton.mp hφ with rfl
-                by_cases hC₁S : C₁ ∈ S
+                have hC₁S : C₁ ∈ S := (himp hgS).1
                 · -- the new piece pays: guard ascent by the E-half,
                   -- component descent by the defect induction
                   have hlt : defect S (C₁ :: Γ) < defect S Γ :=
                     defect_cons_lt hC₁S hpres
+                  have hΓS' : ∀ F' ∈ C₁ :: Γ, F' ∈ S := hScons hC₁S
                   refine hfinT _ (fun χ h => .tail _ h)
                     ((itpE p S fl (c' + 1) (C₁ :: Γ)).ifThen
                       (itpA p S fl (c' + 1) (C₁ :: Γ) C₂)) ?_ (G4c.impR ?_)
@@ -2589,7 +2734,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                         (itpE p S fl (c' + 2) (C₁ :: Γ)) :=
                       (ihd (defect S (C₁ :: Γ))
                           (lt_of_lt_of_le hlt hd) fl).2 (C₁ :: Γ) (c' + 1) _
-                        (Nat.le_refl _) (hroomE _ hlt)
+                        (Nat.le_refl _) hΓS' (hroomE _ hlt)
                         (G4c.identity_mem (.head _))
                     have hV : G4c (itpE p S fl (c' + 1) (C₁ :: Γ) ::
                         (itpE p S F (c' + 2) (C₁ :: Γ)).ifThen
@@ -2598,23 +2743,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                       fire (G4c.identity_mem (.tail _ (.head _)))
                         (consume₁ hE2 ((itp_fuel_mono_le p S hF).1 _ _))
                     exact hgrown (C₁ :: Γ) hlt fl (c' + 1) C₂ _
+                      (himp hgS).2 hΓS'
                       (hroomG _ hlt) hE2 (val_lift hV hF (Nat.le_refl _))
-                · -- the new piece does not pay: sealed; rebuild the full
-                  -- head from this disjunct and descend whole
-                  refine hcls _ hg _ (fun χ h => .tail _ h) ?_
-                  refine cascade_low p S (F + 1) Γ (fl + 1) (c' + 1) _ _
-                    (by omega) hroomW
-                    ((hambL (fl + 1) (c' + 2) (Nat.le_refl _)
-                      (Nat.le_refl _)).weaken _) ?_ hfh
-                  rw [itpA_succ]
-                  refine G4c.orAll_intro
-                    (l := itpAfull p S F (c' + 2) Γ (C₁.ifThen C₂)) ?_
-                    (G4c.identity_mem (.head _))
-                  refine mem_itpAfull_of_oth ?_
-                  simp only [itpAoth, itpAgoal]
-                  refine List.mem_append.mpr (Or.inl ?_)
-                  rw [if_neg hpres]
-                  exact .head _
           | somehow D =>
               -- the ◯-goal disjunct: sealed box crossing
               simp only [itpAgoal] at hφ
@@ -2631,7 +2761,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                   ((hambL F (c' + 1) (le_trans hF (Nat.le_succ _))
                     (Nat.le_succ _)).weaken _) ?_
                 refine G4c.laxR (G4c.impR ?_)
-                exact cascade_low p S F Γ fl (c' + 1) D _ (by omega) hroomW
+                exact cascade_low p S hand hor himp hsome F Γ fl (c' + 1) D _
+                  (hsome hgS) hΓS (by omega) hroomW
                   (weaken_sub (fun ψ h => .tail _ (.tail _ (.tail _ h)))
                     (hambL fl (c' + 2) (Nat.le_succ _) (Nat.le_refl _)))
                   (G4c.identity_mem (.tail _ (.head _))) hF
@@ -2687,7 +2818,12 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                     simp only
                     rw [if_neg h1, if_pos h2]
                     exact .head _
-                  · refine hgrown (A :: B :: Γ) hlt fl (c' + 1) g _
+                  · refine hgrown (A :: B :: Γ) hlt fl (c' + 1) g _ hgS
+                      (by
+                        intro F' hF'
+                        rcases List.mem_cons.mp hF' with rfl | hF'
+                        · exact hSor h2.1
+                        · exact hScons (hSor h2.2) _ hF')
                       (hroomG _ hlt) ?_
                       (val_lift (G4c.identity_mem (.head _)) hF
                         (Nat.le_refl _))
@@ -2724,10 +2860,10 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                     simp only
                     rw [if_neg h1, if_pos h2]
                     exact .head _
-                  · exact (himpX A g _ (defect_cons_lt h2.1 hA)
+                  · exact (himpX A g _ (defect_cons_lt h2.1 hA) hgS h2.1
                       (G4c.identity_mem (.head _))).perm
                       (List.Perm.refl _)
-                  · exact himpX B g _ (defect_cons_lt h2.2 hB)
+                  · exact himpX B g _ (defect_cons_lt h2.2 hB) hgS h2.2
                       (G4c.identity_mem (.tail _ (.head _)))
                 next => cases hin
           | ifThen A' B =>
@@ -2755,7 +2891,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                           rw [if_neg hBΓ, if_pos hBS, if_pos hq]
                           exact .head _
                         · refine hgrown (B :: Γ) (defect_cons_lt hBS hBΓ)
-                            fl (c' + 1) g _
+                            fl (c' + 1) g _ hgS (hScons hBS)
                             (hroomG _ (defect_cons_lt hBS hBΓ)) ?_
                             (val_lift (G4c.identity_mem (.head _)) hF
                               (Nat.le_refl _))
@@ -2788,7 +2924,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                           · refine G4c.andL (List.Perm.refl _)
                               (G4c.andR (G4c.init (.head _)) ?_)
                             refine hgrown (B :: Γ) (defect_cons_lt hBS hBΓ)
-                              fl (c' + 1) g _
+                              fl (c' + 1) g _ hgS (hScons hBS)
                               (hroomG _ (defect_cons_lt hBS hBΓ)) ?_
                               (val_lift (G4c.identity_mem
                                 (.tail _ (.head _))) hF (Nat.le_refl _))
@@ -2826,7 +2962,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                         rw [if_neg h1, if_pos h2]
                         exact .head _
                       · refine hgrown _ (defect_cons_lt h2 h1) fl (c' + 1)
-                          g _ (hroomG _ (defect_cons_lt h2 h1)) ?_
+                          g _ hgS (hScons h2)
+                          (hroomG _ (defect_cons_lt h2 h1)) ?_
                           (val_lift (G4c.identity_mem (.head _)) hF
                             (Nat.le_refl _))
                         refine projE (l := itpEcls p S fl (c' + 2) Γ)
@@ -2872,7 +3009,13 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                         simp only
                         rw [if_neg h1, if_pos h2]
                         exact .head _
-                      · refine hgrown _ hlt fl (c' + 1) g _ (hroomG _ hlt) ?_
+                      · refine hgrown _ hlt fl (c' + 1) g _ hgS
+                          (by
+                            intro F' hF'
+                            rcases List.mem_cons.mp hF' with rfl | hF'
+                            · exact hSor h2.1
+                            · exact hScons (hSor h2.2) _ hF')
+                          (hroomG _ hlt) ?_
                           (val_lift (G4c.identity_mem (.head _)) hF
                             (Nat.le_refl _))
                         refine projE (l := itpEcls p S fl (c' + 2) Γ)
@@ -2922,6 +3065,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                           · -- fresh jump goal: descend
                             refine ihfA Γ fl c' (A₁.ifThen B₁)
                               (insert (A₁.ifThen B₁) seen) _ R hd
+                              (himp hABS).1 hΓS
                               (Finset.mem_insert_self _ _)
                               (hroomJ _ hgJ hseen) ?_
                               (weaken_sub (fun ψ h => .tail _ (.tail _ h))
@@ -2954,6 +3098,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                 -- unlocked by firing the packaged jump conjunct
                                 refine hgrown (B :: Γ)
                                   (defect_cons_lt hDS hDΓ) fl (c' + 1) g Δ'
+                                  hgS (hScons hDS)
                                   (hroomG _ (defect_cons_lt hDS hDΓ)) ?_
                                   (val_lift (G4c.identity_mem
                                     (A := itpA p S F (c' + 2) (B :: Γ) g)
@@ -3006,9 +3151,11 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                             exact .head _
                           · exact himpX (B₁.ifThen B) (A₁.ifThen B₁) _
                               (defect_cons_lt hBDS hBD)
+                              (himp (hΓS _ hF'Γ)).1 hBDS
                               (G4c.identity_mem (.head _))
                           · refine hgrown (B :: Γ)
                               (defect_cons_lt hDS hDΓ) fl (c' + 1) g _
+                              hgS (hScons hDS)
                               (hroomG _ (defect_cons_lt hDS hDΓ)) ?_
                               (val_lift (G4c.identity_mem
                                 (.tail _ (.head _))) hF (Nat.le_refl _))
@@ -3058,6 +3205,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                   (le_trans hF (Nat.le_succ _))
                                   (Nat.le_refl _))
                             · refine ihfA Γ fl c' A₁ (insert A₁ seen) _ R hd
+                                (hsome (himp hAS).1) hΓS
                                 (Finset.mem_insert_self _ _)
                                 (hroomJ _ hgJ hseen) ?_
                                 (weaken_sub (fun ψ h => .tail _ (.tail _ h))
@@ -3083,6 +3231,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                     (Or.inl (.head _))
                                 · refine hgrown (B :: Γ)
                                     (defect_cons_lt hBS hBΓ) fl (c' + 1) g Δ'
+                                    hgS (hScons hBS)
                                     (hroomG _ (defect_cons_lt hBS hBΓ)) ?_
                                     (val_lift (G4c.identity_mem
                                       (A := itpA p S F (c' + 2) (B :: Γ) g)
@@ -3139,7 +3288,9 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                     (le_trans hF (Nat.le_succ _))
                                     (Nat.le_succ _))) ?_
                               refine G4c.laxR (G4c.impR ?_)
-                              exact cascade_low p S F Γ fl c' A₁.somehow _
+                              exact cascade_low p S hand hor himp hsome F Γ
+                                fl c' A₁.somehow _
+                                (himp (hΓS _ hF'Γ)).1 hΓS
                                 (by
                                   have hd1 : 1 ≤ defect S Γ :=
                                     Finset.card_pos.mpr ⟨B,
@@ -3159,6 +3310,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                             · -- second component: fire the γ-head conjunct
                               refine hgrown (B :: Γ)
                                 (defect_cons_lt hBS hBΓ) fl (c' + 1) g _
+                                hgS (hScons hBS)
                                 (hroomG _ (defect_cons_lt hBS hBΓ)) ?_
                                 (val_lift (G4c.identity_mem
                                   (.tail _ (.head _))) hF (Nat.le_refl _))
@@ -3245,6 +3397,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                   refine hgrown (x :: Γ)
                                     (defect_cons_lt hxS hxΓ) fl (c' + 1)
                                     A₁.somehow _
+                                    (himp (hΓS _ hF'Γ)).1 (hScons hxS)
                                     (hroomG _ (defect_cons_lt hxS hxΓ)) ?_
                                     (val_lift (G4c.identity_mem
                                       (.tail _ (.head _))) hF
@@ -3254,6 +3407,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                               · -- second: fire the γ-context conjunct
                                 refine hgrown (B :: Γ)
                                   (defect_cons_lt hBS hBΓ) fl (c' + 1) g _
+                                  hgS (hScons hBS)
                                   (hroomG _ (defect_cons_lt hBS hBΓ)) ?_
                                   (val_lift (G4c.identity_mem
                                     (.tail _ (.head _))) hF (Nat.le_refl _))
@@ -3332,6 +3486,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                         refine G4c.laxR (G4c.impR ?_)
                         refine hgrown (χ :: Γ) (defect_cons_lt hχS hχΓ)
                           fl (c' + 1) (D.somehow) _
+                          hgS (hScons hχS)
                           (hroomG _ (defect_cons_lt hχS hχΓ)) ?_
                           (val_lift (G4c.identity_mem (.tail _ (.head _)))
                             hF (Nat.le_refl _))
@@ -3358,7 +3513,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
             · -- the truncation disjunct: sealed box crossing; rebuild
               -- the full head from this disjunct and descend whole
               refine hcls _ hg _ (fun χ h => .tail _ h) ?_
-              refine cascade_low p S (F + 1) Γ (fl + 1) (c' + 1) _ _
+              refine cascade_low p S hand hor himp hsome (F + 1) Γ (fl + 1)
+                (c' + 1) _ _ hgS hΓS
                 (by omega) hroomW
                 ((hambL (fl + 1) (c' + 2) (Nat.le_refl _)
                   (Nat.le_refl _)).weaken _) ?_ hfh
@@ -3373,7 +3529,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
         | or C₁ C₂ => exact hOTH φ hφ
         | ifThen C₁ C₂ => exact hOTH φ hφ
       · -- E-half: the one-step ascent
-        intro Γ c Δ hd hroom hsrc
+        intro Γ c Δ hd hΓS hroom hsrc
         obtain ⟨c'', rfl⟩ : ∃ c'', c = c'' + 1 := ⟨c - 1, by omega⟩
         rw [itpE_succ p S F (c'' + 2) Γ]
         refine G4c.andAll_intro ?_
@@ -3383,6 +3539,14 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
           fun b' hb' => consume₁ (consume₁ hsrc
             ((itp_fuel_mono p S F).1 _ Γ))
             ((itp_budget_mono_le p S hb' F).1 Γ)
+        have hSor : ∀ {X : PLLFormula}, X ∈ Γ ∨ X ∈ S → X ∈ S :=
+          fun h => h.elim (fun h' => hΓS _ h') id
+        have hScons : ∀ {X : PLLFormula}, X ∈ S →
+            ∀ F' ∈ X :: Γ, F' ∈ S := by
+          intro X hX F' hF'
+          rcases List.mem_cons.mp hF' with rfl | hF'
+          · exact hX
+          · exact hΓS _ hF'
         -- entry room for same-context A-descents
         have hroomA : ∀ (x : PLLFormula), (jumpGoals S \ {x}).card + 1 +
             defect S Γ * ((jumpGoals S).card + 2) ≤ c'' := by
@@ -3392,10 +3556,12 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
           omega
         -- one-step ascent at a defect-paying grown context
         have hEg : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
+            (∀ X ∈ Γ', X ∈ S) →
             ∀ (Δ' : List PLLFormula), G4c Δ' (itpE p S F (c'' + 1) Γ') →
             G4c Δ' (itpE p S F (c'' + 2) Γ') := by
-          intro Γ' hlt Δ' hsrc'
-          refine ihfE Γ' (c'' + 1) Δ' (le_trans (le_of_lt hlt) hd) ?_ hsrc'
+          intro Γ' hlt hΓS' Δ' hsrc'
+          refine ihfE Γ' (c'' + 1) Δ' (le_trans (le_of_lt hlt) hd) hΓS'
+            ?_ hsrc'
           have hexp : (defect S Γ' + 1) * ((jumpGoals S).card + 2) =
               defect S Γ' * ((jumpGoals S).card + 2) +
               ((jumpGoals S).card + 2) := by ring
@@ -3405,25 +3571,29 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
           omega
         -- entry-shaped same-context A-descent
         have hAd : ∀ (β : Nat) (h : PLLFormula) (Δ' : List PLLFormula),
+            h ∈ S →
             (jumpGoals S \ {h}).card + 1 +
               defect S Γ * ((jumpGoals S).card + 2) ≤ β →
             G4c Δ' (itpE p S F (β + 1) Γ) →
             G4c Δ' (itpA p S F (β + 1) Γ h) →
             G4c Δ' (itpA p S F β Γ h) := by
-          intro β h Δ' hr hamb' hhead'
-          refine ihfA Γ F β h {h} Δ' _ hd (Finset.mem_singleton_self h) hr
+          intro β h Δ' hgS' hr hamb' hhead'
+          refine ihfA Γ F β h {h} Δ' _ hd hgS' hΓS
+            (Finset.mem_singleton_self h) hr
             ?_ hamb' hhead' (Nat.le_refl _)
           intro g' hg' Δ'' _ hval
           rcases Finset.mem_singleton.mp hg' with rfl
           exact hval
         -- entry-shaped A-descent at a defect-paying grown context
         have hAg : ∀ (Γ' : List PLLFormula), defect S Γ' < defect S Γ →
-            ∀ (β : Nat) (h : PLLFormula) (Δ' : List PLLFormula), c'' ≤ β →
+            ∀ (β : Nat) (h : PLLFormula) (Δ' : List PLLFormula),
+            h ∈ S → (∀ X ∈ Γ', X ∈ S) → c'' ≤ β →
             G4c Δ' (itpE p S F (β + 1) Γ') →
             G4c Δ' (itpA p S F (β + 1) Γ' h) →
             G4c Δ' (itpA p S F β Γ' h) := by
-          intro Γ' hlt β h Δ' hβ hamb' hhead'
+          intro Γ' hlt β h Δ' hgS' hΓS' hβ hamb' hhead'
           refine ihfA Γ' F β h {h} Δ' _ (le_trans (le_of_lt hlt) hd)
+            hgS' hΓS'
             (Finset.mem_singleton_self h) ?_ ?_ hamb' hhead' (Nat.le_refl _)
           · have hc := Finset.card_le_card
               (Finset.sdiff_subset (s := jumpGoals S) (t := {h}))
@@ -3494,7 +3664,12 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                         (by intro y hy; simp only [List.toFinset_cons,
                           Finset.mem_insert]; exact Or.inr (Or.inr hy))
                         (h2.1.resolve_left hA) hA (.head _)
-                  refine hEg _ hlt Δ (projE
+                  refine hEg _ hlt
+                    (by
+                      intro F' hF'
+                      rcases List.mem_cons.mp hF' with rfl | hF'
+                      · exact hSor h2.1
+                      · exact hScons (hSor h2.2) _ hF') Δ (projE
                     (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
                   simp only [itpEcls]
                   refine List.mem_append.mpr (Or.inr
@@ -3516,9 +3691,9 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                   refine consume₁ (projE
                     (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
                     (or_mono
-                      (hEg _ (defect_cons_lt h2.1 hA) _
+                      (hEg _ (defect_cons_lt h2.1 hA) (hScons h2.1) _
                         (G4c.identity_mem (.head _)))
-                      (hEg _ (defect_cons_lt h2.2 hB) _
+                      (hEg _ (defect_cons_lt h2.2 hB) (hScons h2.2) _
                         (G4c.identity_mem (.head _))))
                   simp only [itpEcls]
                   refine List.mem_append.mpr (Or.inr
@@ -3539,7 +3714,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                   exact hg2 (Or.inr h)
                 refine consume₁ (projE
                   (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
-                  (box_mono (hEg _ (defect_cons_lt hχS hχΓ) _
+                  (box_mono (hEg _ (defect_cons_lt hχS hχΓ) (hScons hχS) _
                     (G4c.identity_mem (.head _))))
                 simp only [itpEcls]
                 refine List.mem_append.mpr (Or.inr
@@ -3559,7 +3734,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                       split at hin
                       next hq =>
                         rcases List.mem_singleton.mp hin with rfl
-                        refine hEg _ (defect_cons_lt hBS hBΓ) Δ (projE
+                        refine hEg _ (defect_cons_lt hBS hBΓ) (hScons hBS) Δ
+                          (projE
                           (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
                         simp only [itpEcls]
                         refine List.mem_append.mpr (Or.inr
@@ -3575,7 +3751,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                           refine consume₁ (projE
                             (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
                             (imp_mono (G4c.init (.head _))
-                              (hEg _ (defect_cons_lt hBS hBΓ) _
+                              (hEg _ (defect_cons_lt hBS hBΓ) (hScons hBS) _
                                 (G4c.identity_mem (.head _))))
                           simp only [itpEcls]
                           refine List.mem_append.mpr (Or.inr
@@ -3594,7 +3770,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                     split at hin
                     next h2 =>
                       rcases List.mem_singleton.mp hin with rfl
-                      refine hEg _ (defect_cons_lt h2 h1) Δ (projE
+                      refine hEg _ (defect_cons_lt h2 h1) (hScons h2) Δ (projE
                         (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
                       simp only [itpEcls]
                       refine List.mem_append.mpr (Or.inr
@@ -3626,7 +3802,12 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                             (by intro y hy; simp only [List.toFinset_cons,
                               Finset.mem_insert]; exact Or.inr (Or.inr hy))
                             (h2.1.resolve_left hA) hA (.head _)
-                      refine hEg _ hlt Δ (projE
+                      refine hEg _ hlt
+                        (by
+                          intro F' hF'
+                          rcases List.mem_cons.mp hF' with rfl | hF'
+                          · exact hSor h2.1
+                          · exact hScons (hSor h2.2) _ hF') Δ (projE
                         (l := itpEcls p S F (c'' + 1) Γ) hsrc ?_)
                       simp only [itpEcls]
                       refine List.mem_append.mpr (Or.inr
@@ -3656,7 +3837,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                               ((itpE p S F c'' Γ).ifThen
                                 (itpA p S F c'' Γ (A₁.ifThen B₁))) := by
                             refine G4c.impR ?_
-                            refine hAd c'' (A₁.ifThen B₁) _ (hroomA _)
+                            refine hAd c'' (A₁.ifThen B₁) _ (himp hABS).1
+                              (hroomA _)
                               (weaken_sub (fun ψ h => .tail _ (.tail _ h))
                                 (hsrcF (c'' + 1) (Nat.le_refl _))) ?_
                             exact fire (G4c.identity_mem (.tail _ (.head _)))
@@ -3665,7 +3847,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                           refine consume₁ (fire (projE
                             (l := itpEcls p S F (c'' + 1) Γ)
                             (hsrc.weaken _) ?_) hJs)
-                            (hEg (B :: Γ) (defect_cons_lt hDS hDG) _
+                            (hEg (B :: Γ) (defect_cons_lt hDS hDG)
+                              (hScons hDS) _
                               (G4c.identity_mem (.head _)))
                           simp only [itpEcls]
                           refine List.mem_append.mpr (Or.inr
@@ -3699,17 +3882,20 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                   (A₁.ifThen B₁)) :: Δ)
                                 (itpE p S F (c'' + 2)
                                   (B₁.ifThen B :: Γ)) :=
-                              hEg _ (defect_cons_lt hBDS hBD) _
+                              hEg _ (defect_cons_lt hBDS hBD) (hScons hBDS) _
                                 (G4c.identity_mem (.head _))
                             refine hAg _ (defect_cons_lt hBDS hBD)
-                              (c'' + 1) (A₁.ifThen B₁) _ (Nat.le_succ _)
+                              (c'' + 1) (A₁.ifThen B₁) _
+                              (himp (hΓS _ hF'Γ)).1 (hScons hBDS)
+                              (Nat.le_succ _)
                               hE2 ?_
                             exact fire (G4c.identity_mem
                               (.tail _ (.head _))) hE2
                           refine consume₁ (fire (projE
                             (l := itpEcls p S F (c'' + 1) Γ)
                             (hsrc.weaken _) ?_) hJs)
-                            (hEg (B :: Γ) (defect_cons_lt hDS hDG) _
+                            (hEg (B :: Γ) (defect_cons_lt hDS hDG)
+                              (hScons hDS) _
                               (G4c.identity_mem (.head _)))
                           simp only [itpEcls]
                           refine List.mem_append.mpr (Or.inr
@@ -3736,13 +3922,14 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                             refine G4c.impR ?_
                             have hAs : G4c (itpA p S F (c'' + 1) Γ A₁ :: Δ)
                                 (itpA p S F c'' Γ A₁) :=
-                              hAd c'' A₁ _ (hroomA _)
+                              hAd c'' A₁ _ (hsome (himp hAS).1) (hroomA _)
                                 ((hsrcF (c'' + 1) (Nat.le_refl _)).weaken _)
                                 (G4c.identity_mem (.head _))
                             refine consume₁ (fire (projE
                               (l := itpEcls p S F (c'' + 1) Γ)
                               (hsrc.weaken _) ?_) hAs)
-                              (hEg (B :: Γ) (defect_cons_lt hBS hBG) _
+                              (hEg (B :: Γ) (defect_cons_lt hBS hBG)
+                                (hScons hBS) _
                                 (G4c.identity_mem (.head _)))
                             simp only [itpEcls]
                             refine List.mem_append.mpr (Or.inr
@@ -3766,7 +3953,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                 ((hsrcF (c'' + 1) (Nat.le_refl _)).weaken _)
                                 ?_
                               refine G4c.laxR (G4c.impR ?_)
-                              refine hAd c'' A₁.somehow _ (hroomA _)
+                              refine hAd c'' A₁.somehow _ (himp hAS).1
+                                (hroomA _)
                                 (weaken_sub (fun ψ h =>
                                   .tail _ (.tail _ (.tail _ h)))
                                   (hsrcF (c'' + 1) (Nat.le_refl _)))
@@ -3774,7 +3962,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                             refine consume₁ (fire (projE
                               (l := itpEcls p S F (c'' + 1) Γ)
                               (hsrc.weaken _) ?_) hGs)
-                              (hEg (B :: Γ) (defect_cons_lt hBS hBG) _
+                              (hEg (B :: Γ) (defect_cons_lt hBS hBG)
+                                (hScons hBS) _
                                 (G4c.identity_mem (.head _)))
                             simp only [itpEcls]
                             refine List.mem_append.mpr (Or.inr
@@ -3829,7 +4018,8 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                         (itpA p S F (c'' + 2) (x :: Γ)
                                           A₁.somehow)).somehow) :: Δ)
                                       (itpE p S F (c'' + 2) (x :: Γ)) :=
-                                    hEg _ (defect_cons_lt hxS hxΓ) _
+                                    hEg _ (defect_cons_lt hxS hxΓ)
+                                      (hScons hxS) _
                                       (G4c.identity_mem (.head _))
                                   refine box_fire
                                     (X := itpE p S F (c'' + 2) (x :: Γ))
@@ -3841,15 +4031,19 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
                                   refine G4c.laxR (G4c.impR ?_)
                                   refine hAg (x :: Γ)
                                     (defect_cons_lt hxS hxΓ) (c'' + 1)
-                                    A₁.somehow _ (Nat.le_succ _) ?_
+                                    A₁.somehow _ (himp (hΓS _ hF'Γ)).1
+                                    (hScons hxS)
+                                    (Nat.le_succ _) ?_
                                     (G4c.identity_mem (.tail _ (.head _)))
-                                  exact hEg _ (defect_cons_lt hxS hxΓ) _
+                                  exact hEg _ (defect_cons_lt hxS hxΓ)
+                                    (hScons hxS) _
                                     (G4c.identity_mem
                                       (.tail _ (.tail _ (.head _))))
                               refine consume₁ (fire (projE
                                 (l := itpEcls p S F (c'' + 1) Γ)
                                 (hsrc.weaken _) ?_) hGs)
-                                (hEg (B :: Γ) (defect_cons_lt hBS hBG) _
+                                (hEg (B :: Γ) (defect_cons_lt hBS hBG)
+                                  (hScons hBS) _
                                   (G4c.identity_mem (.head _)))
                               simp only [itpEcls]
                               refine List.mem_append.mpr (Or.inr
@@ -3872,13 +4066,19 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula) :
 /-- Entry point: the single-goal pair descent for a jump goal of the
 space, from the generalized cascade at a singleton seen-set. -/
 private theorem cascade_entry (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
-    (g : PLLFormula) (hg : g ∈ jumpGoals S) :
+    (hΓS : ∀ X ∈ Γ, X ∈ S)
+    (g : PLLFormula) (hgS : g ∈ S) (hg : g ∈ jumpGoals S) :
     G4c [itpA p S fuel (c + 1) Γ g, itpE p S (fuel + 1) (c + 1) Γ]
       (itpA p S fuel c Γ g) := by
   have hroom := kcap_room hb Γ
-  refine (cascade_main p S (defect S Γ) fuel).1 Γ fuel c g {g} _ _
-    (Nat.le_refl _) (Finset.mem_singleton_self g) ?_ ?_
+  refine (cascade_main p S hand hor himp hsome (defect S Γ) fuel).1
+    Γ fuel c g {g} _ _
+    (Nat.le_refl _) hgS hΓS (Finset.mem_singleton_self g) ?_ ?_
     (consume₁ (G4c.identity_mem (.tail _ (.head _)))
       ((itp_fuel_mono p S fuel).1 (c + 1) Γ))
     (G4c.identity_mem (.head _)) (Nat.le_refl _)
@@ -3892,39 +4092,57 @@ set_option linter.unusedVariables false in
 /-- Cascade, `impLImp`-at-present-piece shape: the guarded-implication
 first component descends one budget. -/
 private theorem cascade_impLImp (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
+    (hΓS : ∀ X ∈ Γ, X ∈ S)
     (A₁ B₁ D : PLLFormula)
     (hFΓ : (A₁.ifThen B₁).ifThen D ∈ Γ) (hDΓ : D ∉ Γ) (hDS : D ∈ S)
     (hBD : B₁.ifThen D ∈ Γ) (hABD : (A₁.ifThen B₁).ifThen D ∈ S) :
     G4c [itpA p S fuel (c + 1) Γ (A₁.ifThen B₁),
          itpE p S (fuel + 1) (c + 1) Γ]
       (itpA p S fuel c Γ (A₁.ifThen B₁)) :=
-  cascade_entry p S fuel c hb Γ _ (mem_jumpGoals_imp hABD)
+  cascade_entry p S hand hor himp hsome fuel c hb Γ hΓS _ (himp hABD).1
+    (mem_jumpGoals_imp hABD)
 
 set_option linter.unusedVariables false in
 /-- Cascade, `impLLax`-jump shape: the bare A-value first component
 descends one budget. -/
 private theorem cascade_jump (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
+    (hΓS : ∀ X ∈ Γ, X ∈ S)
     (A B : PLLFormula)
     (hFΓ : A.somehow.ifThen B ∈ Γ) (hBΓ : B ∉ Γ) (hBS : B ∈ S)
     (hAS : A.somehow.ifThen B ∈ S) :
     G4c [itpA p S fuel (c + 1) Γ A, itpE p S (fuel + 1) (c + 1) Γ]
       (itpA p S fuel c Γ A) :=
-  cascade_entry p S fuel c hb Γ _ (mem_jumpGoals_jump hAS)
+  cascade_entry p S hand hor himp hsome fuel c hb Γ hΓS _
+    (hsome (himp hAS).1) (mem_jumpGoals_jump hAS)
 
 set_option linter.unusedVariables false in
 /-- Cascade, `impLLax`-γ-head shape: the ◯-goal A-value inside the
 boxed guard descends one budget (the landing after the laxL/laxR
 re-crossing of `cascade_gamma_box`). -/
 private theorem cascade_gamma (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
+    (hΓS : ∀ X ∈ Γ, X ∈ S)
     (A B : PLLFormula)
     (hFΓ : A.somehow.ifThen B ∈ Γ) (hBΓ : B ∉ Γ) (hBS : B ∈ S)
     (hAS : A.somehow.ifThen B ∈ S) :
     G4c [itpA p S fuel (c + 1) Γ A.somehow, itpE p S (fuel + 1) (c + 1) Γ]
       (itpA p S fuel c Γ A.somehow) :=
-  cascade_entry p S fuel c hb Γ _ (mem_jumpGoals_gamma hAS)
+  cascade_entry p S hand hor himp hsome fuel c hb Γ hΓS _ (himp hAS).1
+    (mem_jumpGoals_gamma hAS)
 
 /-! ### Derived cascade consumers
 
@@ -3937,7 +4155,12 @@ stepped down from the `b`-level hypothesis by `itp_budget_mono_le`). -/
 target-side guard implication and the packaged ambient, the
 source-side guard implication one budget down. -/
 private theorem cascade_impLImp_ant (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
+    (hΓS : ∀ X ∈ Γ, X ∈ S)
     (A₁ B₁ D : PLLFormula)
     (hFΓ : (A₁.ifThen B₁).ifThen D ∈ Γ) (hDΓ : D ∉ Γ) (hDS : D ∈ S)
     (hBD : B₁.ifThen D ∈ Γ) (hABD : (A₁.ifThen B₁).ifThen D ∈ S)
@@ -3953,13 +4176,19 @@ private theorem cascade_impLImp_ant (p : String) (S : Finset PLLFormula)
       (itpA p S fuel (c + 1) Γ (A₁.ifThen B₁)) :=
     fire (dJ.weaken _) (consume₁ dE' ((itp_fuel_mono p S fuel).1 (c + 1) Γ))
   exact consume₂ dA1 dE'
-    (cascade_impLImp p S fuel c hb Γ A₁ B₁ D hFΓ hDΓ hDS hBD hABD)
+    (cascade_impLImp p S hand hor himp hsome fuel c hb Γ hΓS A₁ B₁ D
+      hFΓ hDΓ hDS hBD hABD)
 
 /-- Boxed-guard descent for the gated `impLLax` γ-head component:
 laxL opens the target-side box, the guard fires against the ambient,
 laxR/impR re-cross, and the landing is the γ cascade. -/
 private theorem cascade_gamma_box (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     (fuel c : Nat) (hb : kcap S < c + 2) (Γ : List PLLFormula)
+    (hΓS : ∀ X ∈ Γ, X ∈ S)
     (A B : PLLFormula)
     (hFΓ : A.somehow.ifThen B ∈ Γ) (hBΓ : B ∉ Γ) (hBS : B ∈ S)
     (hAS : A.somehow.ifThen B ∈ S) {Δ : List PLLFormula}
@@ -3972,7 +4201,8 @@ private theorem cascade_gamma_box (p : String) (S : Finset PLLFormula)
   refine G4c.laxR (G4c.impR ?_)
   refine consume₂ (G4c.identity_mem (.tail _ (.head _)))
     (weaken_sub (fun ψ hψ => .tail _ (.tail _ hψ)) dE)
-    (cascade_gamma p S fuel c hb Γ A B hFΓ hBΓ hBS hAS)
+    (cascade_gamma p S hand hor himp hsome fuel c hb Γ hΓS A B
+      hFΓ hBΓ hBS hAS)
 
 /-! ### The stabilization core, successor form
 
@@ -3980,32 +4210,59 @@ private theorem cascade_gamma_box (p : String) (S : Finset PLLFormula)
 successor and the gated clause tables reduce definitionally. -/
 
 set_option maxHeartbeats 4000000 in
-private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
+/-- RE-PARAMETERISED (2026-08-04, §58): piece-closure on `S` and the
+context/goal coverage invariants, exactly as the box-free mirror
+`itp_stab_aux_bf` below already carries them. -/
+private theorem itp_stab_aux (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S) :
     ∀ (fuel : Nat), ∀ (c : Nat), kcap S < c + 2 →
-    (∀ Γ, G4c [itpE p S fuel (c + 1) Γ] (itpE p S fuel (c + 2) Γ)) ∧
-    (∀ Γ C, G4c [itpE p S fuel (c + 2) Γ, itpA p S fuel (c + 2) Γ C]
+    (∀ Γ, (∀ X ∈ Γ, X ∈ S) →
+      G4c [itpE p S fuel (c + 1) Γ] (itpE p S fuel (c + 2) Γ)) ∧
+    (∀ Γ C, (∀ X ∈ Γ, X ∈ S) → C ∈ S →
+      G4c [itpE p S fuel (c + 2) Γ, itpA p S fuel (c + 2) Γ C]
       (itpA p S fuel (c + 1) Γ C)) := by
   intro fuel
   induction fuel with
   | zero =>
       intro c hb
       constructor
-      · intro Γ
+      · intro Γ _
         simp only [itpE]
         exact G4c.truePLL_intro _
-      · intro Γ C
+      · intro Γ C _ _
         simp only [itpA]
         exact G4c.botL (.tail _ (.head _))
   | succ fuel ih =>
       intro c hb
-      have ihE : ∀ Γ', G4c [itpE p S fuel (c + 1) Γ']
-          (itpE p S fuel (c + 2) Γ') := fun Γ' => (ih c hb).1 Γ'
-      have ihA : ∀ Γ' C', G4c [itpE p S fuel (c + 2) Γ',
+      have ihE : ∀ Γ', (∀ X ∈ Γ', X ∈ S) →
+          G4c [itpE p S fuel (c + 1) Γ']
+          (itpE p S fuel (c + 2) Γ') := fun Γ' h => (ih c hb).1 Γ' h
+      have ihA : ∀ Γ' C', (∀ X ∈ Γ', X ∈ S) → C' ∈ S →
+          G4c [itpE p S fuel (c + 2) Γ',
           itpA p S fuel (c + 2) Γ' C'] (itpA p S fuel (c + 1) Γ' C') :=
-        fun Γ' C' => (ih c hb).2 Γ' C'
+        fun Γ' C' h h' => (ih c hb).2 Γ' C' h h'
       constructor
       · -- E-half: [E@(fuel+1)@(c+1)] ⊢ E@(fuel+1)@(c+2)
-        intro Γ
+        intro Γ hΓS
+        have hSor : ∀ {X : PLLFormula}, X ∈ Γ ∨ X ∈ S → X ∈ S :=
+          fun h => h.elim (fun h' => hΓS _ h') id
+        have hScons : ∀ {X : PLLFormula}, X ∈ S →
+            ∀ Z ∈ X :: Γ, Z ∈ S := by
+          intro X hX Z hZ
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact hX
+          · exact hΓS _ hZ
+        have hScons₂ : ∀ {X Y : PLLFormula}, X ∈ S → Y ∈ S →
+            ∀ Z ∈ X :: Y :: Γ, Z ∈ S := by
+          intro X Y hX hY Z hZ
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact hX
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact hY
+          · exact hΓS _ hZ
         rw [itpE_succ p S fuel (c + 2) Γ]
         refine G4c.andAll_intro ?_
         intro φ hφ
@@ -4059,7 +4316,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                 next h2 =>
                   rcases List.mem_singleton.mp hin with rfl
                   refine consume₁ (projE (l := itpEcls p S fuel (c + 1) Γ)
-                    (G4c.identity_mem (.head _)) ?_) (ihE (A :: B :: Γ))
+                    (G4c.identity_mem (.head _)) ?_) (ihE (A :: B :: Γ) (hScons₂ (hSor h2.1) (hSor h2.2)))
                   simp only [itpEcls]
                   refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                     ⟨A.and B, hFΓ, ?_⟩))
@@ -4077,7 +4334,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                   rcases List.mem_singleton.mp hin with rfl
                   refine consume₁ (projE (l := itpEcls p S fuel (c + 1) Γ)
                     (G4c.identity_mem (.head _)) ?_)
-                    (or_mono (ihE (A :: Γ)) (ihE (B :: Γ)))
+                    (or_mono (ihE (A :: Γ) (hScons h2.1)) (ihE (B :: Γ) (hScons h2.2)))
                   simp only [itpEcls]
                   refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                     ⟨A.or B, hFΓ, ?_⟩))
@@ -4092,7 +4349,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
               next hg =>
                 rcases List.mem_singleton.mp hin with rfl
                 refine consume₁ (projE (l := itpEcls p S fuel (c + 1) Γ)
-                  (G4c.identity_mem (.head _)) ?_) (box_mono (ihE (χ :: Γ)))
+                  (G4c.identity_mem (.head _)) ?_) (box_mono (ihE (χ :: Γ) (hScons (hsome (hΓS _ hFΓ)))))
                 simp only [itpEcls]
                 refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                   ⟨χ.somehow, hFΓ, ?_⟩))
@@ -4113,7 +4370,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                         rcases List.mem_singleton.mp hin with rfl
                         refine consume₁ (projE
                           (l := itpEcls p S fuel (c + 1) Γ)
-                          (G4c.identity_mem (.head _)) ?_) (ihE (B :: Γ))
+                          (G4c.identity_mem (.head _)) ?_) (ihE (B :: Γ) (hScons hBS))
                         simp only [itpEcls]
                         refine List.mem_append.mpr (Or.inr
                           (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
@@ -4128,7 +4385,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                           refine consume₁ (projE
                             (l := itpEcls p S fuel (c + 1) Γ)
                             (G4c.identity_mem (.head _)) ?_)
-                            (imp_mono (G4c.init (.head _)) (ihE (B :: Γ)))
+                            (imp_mono (G4c.init (.head _)) (ihE (B :: Γ) (hScons hBS)))
                           simp only [itpEcls]
                           refine List.mem_append.mpr (Or.inr
                             (List.mem_flatMap.mpr
@@ -4149,7 +4406,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                       refine consume₁ (projE
                         (l := itpEcls p S fuel (c + 1) Γ)
                         (G4c.identity_mem (.head _)) ?_)
-                        (ihE (A₁.ifThen (B₁.ifThen B) :: Γ))
+                        (ihE (A₁.ifThen (B₁.ifThen B) :: Γ) (hScons h2))
                       simp only [itpEcls]
                       refine List.mem_append.mpr (Or.inr
                         (List.mem_flatMap.mpr ⟨(A₁.and B₁).ifThen B, hFΓ, ?_⟩))
@@ -4168,7 +4425,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                       refine consume₁ (projE
                         (l := itpEcls p S fuel (c + 1) Γ)
                         (G4c.identity_mem (.head _)) ?_)
-                        (ihE (A₁.ifThen B :: B₁.ifThen B :: Γ))
+                        (ihE (A₁.ifThen B :: B₁.ifThen B :: Γ) (hScons₂ (hSor h2.1) (hSor h2.2)))
                       simp only [itpEcls]
                       refine List.mem_append.mpr (Or.inr
                         (List.mem_flatMap.mpr ⟨(A₁.or B₁).ifThen B, hFΓ, ?_⟩))
@@ -4194,11 +4451,11 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                           refine consume₁ (fire (projE
                               (l := itpEcls p S fuel (c + 1) Γ)
                               (G4c.identity_mem (.tail _ (.head _))) ?_)
-                              (cascade_impLImp_ant p S fuel c hb Γ A₁ B₁ B
+                              (cascade_impLImp_ant p S hand hor himp hsome fuel c hb Γ hΓS A₁ B₁ B
                                 hFΓ hDΓ hDS hBD hABD
                                 (G4c.identity_mem (.head _))
                                 (G4c.identity_mem (.tail _ (.head _)))))
-                            (ihE (B :: Γ))
+                            (ihE (B :: Γ) (hScons hDS))
                           simp only [itpEcls]
                           refine List.mem_append.mpr (Or.inr
                             (List.mem_flatMap.mpr
@@ -4221,7 +4478,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                                 (A₁.ifThen B₁)))
                             (projE (l := itpEcls p S fuel (c + 1) Γ)
                               (G4c.identity_mem (.tail _ (.head _))) ?_) ?_)
-                            (ihE (B :: Γ))
+                            (ihE (B :: Γ) (hScons hDS))
                           · simp only [itpEcls]
                             refine List.mem_append.mpr (Or.inr
                               (List.mem_flatMap.mpr
@@ -4234,11 +4491,11 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                             refine G4c.impR ?_
                             refine consume₂ (consume₁
                                 (G4c.identity_mem (.head _))
-                                (ihE (B₁.ifThen B :: Γ))) ?_
-                              (ihA (B₁.ifThen B :: Γ) (A₁.ifThen B₁))
+                                (ihE (B₁.ifThen B :: Γ) (hScons hBDS))) ?_
+                              (ihA (B₁.ifThen B :: Γ) (A₁.ifThen B₁) (hScons hBDS) (himp (hΓS _ hFΓ)).1)
                             exact fire (G4c.identity_mem (.tail _ (.head _)))
                               (consume₁ (G4c.identity_mem (.head _))
-                                (ihE (B₁.ifThen B :: Γ)))
+                                (ihE (B₁.ifThen B :: Γ) (hScons hBDS)))
                         next => cases hin
                     next => cases hin
               | somehow A₁ =>
@@ -4261,9 +4518,9 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                                 (G4c.identity_mem (.tail _ (.head _))) ?_)
                                 (consume₂ (G4c.identity_mem (.head _))
                                   (G4c.identity_mem (.tail _ (.head _)))
-                                  (cascade_jump p S fuel c hb Γ A₁ B
+                                  (cascade_jump p S hand hor himp hsome fuel c hb Γ hΓS A₁ B
                                     hFΓ hBΓ hBS hAS)))
-                              (ihE (B :: Γ))
+                              (ihE (B :: Γ) (hScons hBS))
                             simp only [itpEcls]
                             refine List.mem_append.mpr (Or.inr
                               (List.mem_flatMap.mpr
@@ -4278,11 +4535,11 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                             refine consume₁ (fire (projE
                                 (l := itpEcls p S fuel (c + 1) Γ)
                                 (G4c.identity_mem (.tail _ (.head _))) ?_)
-                                (cascade_gamma_box p S fuel c hb Γ A₁ B
+                                (cascade_gamma_box p S hand hor himp hsome fuel c hb Γ hΓS A₁ B
                                   hFΓ hBΓ hBS hAS
                                   (G4c.identity_mem (.head _))
                                   (G4c.identity_mem (.tail _ (.head _)))))
-                              (ihE (B :: Γ))
+                              (ihE (B :: Γ) (hScons hBS))
                             simp only [itpEcls]
                             refine List.mem_append.mpr (Or.inr
                               (List.mem_flatMap.mpr
@@ -4313,7 +4570,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                                 (projE (l := itpEcls p S fuel (c + 1) Γ)
                                   (G4c.identity_mem (.tail _ (.head _))) ?_)
                                   ?_)
-                                (ihE (B :: Γ))
+                                (ihE (B :: Γ) (hScons hBS))
                               · simp only [itpEcls]
                                 refine List.mem_append.mpr (Or.inr
                                   (List.mem_flatMap.mpr
@@ -4345,13 +4602,13 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                                     (G4c.identity_mem
                                       (.tail _ (.tail _ (.head _))))
                                     (consume₁ (G4c.identity_mem (.head _))
-                                      (ihE (x :: Γ))) ?_
+                                      (ihE (x :: Γ) (hScons (hsome (hΓS _ hXΓ))))) ?_
                                   refine G4c.laxR (G4c.impR ?_)
                                   exact consume₂ (consume₁
                                       (G4c.identity_mem (.head _))
-                                      (ihE (x :: Γ)))
+                                      (ihE (x :: Γ) (hScons (hsome (hΓS _ hXΓ)))))
                                     (G4c.identity_mem (.tail _ (.head _)))
-                                    (ihA (x :: Γ) A₁.somehow)
+                                    (ihA (x :: Γ) A₁.somehow (hScons (hsome (hΓS _ hXΓ))) (himp (hΓS _ hFΓ)).1)
                         | prop _ => cases heq
                         | falsePLL => cases heq
                         | and _ _ => cases heq
@@ -4359,7 +4616,23 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                         | ifThen _ _ => cases heq
                     next => cases hin
       · -- A-half: [E@(fuel+1)@(c+2), A@(fuel+1)@(c+2)] ⊢ A@(fuel+1)@(c+1)
-        intro Γ C
+        intro Γ C hΓS hCS
+        have hSor : ∀ {X : PLLFormula}, X ∈ Γ ∨ X ∈ S → X ∈ S :=
+          fun h => h.elim (fun h' => hΓS _ h') id
+        have hScons : ∀ {X : PLLFormula}, X ∈ S →
+            ∀ Z ∈ X :: Γ, Z ∈ S := by
+          intro X hX Z hZ
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact hX
+          · exact hΓS _ hZ
+        have hScons₂ : ∀ {X Y : PLLFormula}, X ∈ S → Y ∈ S →
+            ∀ Z ∈ X :: Y :: Γ, Z ∈ S := by
+          intro X Y hX hY Z hZ
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact hX
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact hY
+          · exact hΓS _ hZ
         rw [itpA_succ p S fuel (c + 2) Γ C, itpA_succ p S fuel (c + 1) Γ C]
         -- the goal-directed disjuncts, mapped under the ambient
         have hGOAL : ∀ φ ∈ itpAgoal p S fuel (c + 2) Γ C,
@@ -4386,20 +4659,20 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                 (itpA p S fuel (c + 1) Γ C₂), .head _, ?_⟩
               refine G4c.andL (List.Perm.refl _) (G4c.andR ?_ ?_)
               · exact consume₂ (amb_step (.tail _ (.tail _ (.head _)))
-                  (Nat.le_refl _)) (G4c.identity_mem (.head _)) (ihA Γ C₁)
+                  (Nat.le_refl _)) (G4c.identity_mem (.head _)) (ihA Γ C₁ hΓS (hand hCS).1)
               · exact consume₂ (amb_step (.tail _ (.tail _ (.head _)))
                   (Nat.le_refl _)) (G4c.identity_mem (.tail _ (.head _)))
-                  (ihA Γ C₂)
+                  (ihA Γ C₂ hΓS (hand hCS).2)
           | or C₁ C₂ =>
               simp only [itpAgoal] at hφ ⊢
               rcases List.mem_cons.mp hφ with rfl | hφ'
               · refine ⟨itpA p S fuel (c + 1) Γ C₁, .head _, ?_⟩
                 exact consume₂ (amb_step (.tail _ (.head _)) (Nat.le_refl _))
-                  (G4c.identity_mem (.head _)) (ihA Γ C₁)
+                  (G4c.identity_mem (.head _)) (ihA Γ C₁ hΓS (hor hCS).1)
               · rcases List.mem_singleton.mp hφ' with rfl
                 refine ⟨itpA p S fuel (c + 1) Γ C₂, .tail _ (.head _), ?_⟩
                 exact consume₂ (amb_step (.tail _ (.head _)) (Nat.le_refl _))
-                  (G4c.identity_mem (.head _)) (ihA Γ C₂)
+                  (G4c.identity_mem (.head _)) (ihA Γ C₂ hΓS (hor hCS).2)
           | ifThen C₁ C₂ =>
               simp only [itpAgoal] at hφ ⊢
               split at hφ
@@ -4414,7 +4687,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                   -- [E@c(C₁::Γ), φ, Eamb]
                   refine consume₂ (amb_congr (amb_step
                       (.tail _ (.tail _ (.head _))) (Nat.le_refl _)) hpres) ?_
-                    (ihA (C₁ :: Γ) C₂)
+                    (ihA (C₁ :: Γ) C₂ (hScons (himp hCS).1) (himp hCS).2)
                   refine fire (G4c.identity_mem (.tail _ (.head _))) ?_
                   exact consume₁ (amb_congr (amb_step
                       (.tail _ (.tail _ (.head _))) (Nat.le_refl _)) hpres)
@@ -4429,9 +4702,9 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                 · refine G4c.impR ?_
                   -- [E@(c+1)(C₁::Γ), φ, Eamb]
                   refine consume₂ (consume₁ (G4c.identity_mem (.head _))
-                      (ihE (C₁ :: Γ))) ?_ (ihA (C₁ :: Γ) C₂)
+                      (ihE (C₁ :: Γ) (hScons (himp hCS).1))) ?_ (ihA (C₁ :: Γ) C₂ (hScons (himp hCS).1) (himp hCS).2)
                   exact fire (G4c.identity_mem (.tail _ (.head _)))
-                    (consume₁ (G4c.identity_mem (.head _)) (ihE (C₁ :: Γ)))
+                    (consume₁ (G4c.identity_mem (.head _)) (ihE (C₁ :: Γ) (hScons (himp hCS).1)))
           | somehow D =>
               simp only [itpAgoal] at hφ ⊢
               rcases List.mem_singleton.mp hφ with rfl
@@ -4442,7 +4715,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
               refine G4c.laxR (G4c.impR ?_)
               exact consume₂ (amb_step (.tail _ (.tail _ (.tail _ (.head _))))
                   (Nat.le_refl _))
-                (G4c.identity_mem (.tail _ (.head _))) (ihA Γ D)
+                (G4c.identity_mem (.tail _ (.head _))) (ihA Γ D hΓS (hsome hCS))
         -- the context-directed disjuncts, mapped under the ambient
         have hENV : ∀ φ ∈ itpAenv p S fuel (c + 2) Γ C,
             ∃ ψ ∈ itpAenv p S fuel (c + 1) Γ C,
@@ -4480,7 +4753,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                     exact .head _
                   · refine consume₂ (projE (l := itpEcls p S fuel (c + 2) Γ)
                       (G4c.identity_mem (.tail _ (.head _))) ?_)
-                      (G4c.identity_mem (.head _)) (ihA (A :: B :: Γ) C)
+                      (G4c.identity_mem (.head _)) (ihA (A :: B :: Γ) C (hScons₂ (hSor h2.1) (hSor h2.2)) hCS)
                     simp only [itpEcls]
                     refine List.mem_append.mpr (Or.inr (List.mem_flatMap.mpr
                       ⟨A.and B, hFΓ, ?_⟩))
@@ -4509,16 +4782,16 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                     · refine G4c.impR ?_
                       -- [E@(c+1)(A::Γ), φ₁, φ₂, Eamb]
                       refine consume₂ (consume₁ (G4c.identity_mem (.head _))
-                          (ihE (A :: Γ))) ?_ (ihA (A :: Γ) C)
+                          (ihE (A :: Γ) (hScons h2.1))) ?_ (ihA (A :: Γ) C (hScons h2.1) hCS)
                       exact fire (G4c.identity_mem (.tail _ (.head _)))
-                        (consume₁ (G4c.identity_mem (.head _)) (ihE (A :: Γ)))
+                        (consume₁ (G4c.identity_mem (.head _)) (ihE (A :: Γ) (hScons h2.1)))
                     · refine G4c.impR ?_
                       -- [E@(c+1)(B::Γ), φ₁, φ₂, Eamb]
                       refine consume₂ (consume₁ (G4c.identity_mem (.head _))
-                          (ihE (B :: Γ))) ?_ (ihA (B :: Γ) C)
+                          (ihE (B :: Γ) (hScons h2.2))) ?_ (ihA (B :: Γ) C (hScons h2.2) hCS)
                       exact fire (G4c.identity_mem
                           (.tail _ (.tail _ (.head _))))
-                        (consume₁ (G4c.identity_mem (.head _)) (ihE (B :: Γ)))
+                        (consume₁ (G4c.identity_mem (.head _)) (ihE (B :: Γ) (hScons h2.2)))
                 next => cases hin
           | somehow χ =>
               simp only at hin
@@ -4561,7 +4834,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                         exact consume₂
                           (G4c.identity_mem (.tail _ (.tail _ (.head _))))
                           (G4c.identity_mem (.tail _ (.head _)))
-                          (ihA (χ :: Γ) D.somehow)
+                          (ihA (χ :: Γ) D.somehow (hScons (hsome (hΓS _ hFΓ))) hCS)
               | prop q => cases hin
               | falsePLL => cases hin
               | and C₁ C₂ => cases hin
@@ -4589,7 +4862,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                         · refine consume₂
                             (projE (l := itpEcls p S fuel (c + 2) Γ)
                               (G4c.identity_mem (.tail _ (.head _))) ?_)
-                            (G4c.identity_mem (.head _)) (ihA (B :: Γ) C)
+                            (G4c.identity_mem (.head _)) (ihA (B :: Γ) C (hScons hBS) hCS)
                           simp only [itpEcls]
                           refine List.mem_append.mpr (Or.inr
                             (List.mem_flatMap.mpr ⟨(prop q).ifThen B, hFΓ, ?_⟩))
@@ -4614,7 +4887,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                             -- [prop q, K, Eamb] ⊢ A@(c+1)(B::Γ)C
                             refine consume₂ ?_
                               (G4c.identity_mem (.tail _ (.head _)))
-                              (ihA (B :: Γ) C)
+                              (ihA (B :: Γ) C (hScons hBS) hCS)
                             refine fire
                               (projE (l := itpEcls p S fuel (c + 2) Γ)
                                 (G4c.identity_mem
@@ -4649,7 +4922,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                           (projE (l := itpEcls p S fuel (c + 2) Γ)
                             (G4c.identity_mem (.tail _ (.head _))) ?_)
                           (G4c.identity_mem (.head _))
-                          (ihA (A₁.ifThen (B₁.ifThen B) :: Γ) C)
+                          (ihA (A₁.ifThen (B₁.ifThen B) :: Γ) C (hScons h2) hCS)
                         simp only [itpEcls]
                         refine List.mem_append.mpr (Or.inr
                           (List.mem_flatMap.mpr ⟨(A₁.and B₁).ifThen B, hFΓ, ?_⟩))
@@ -4677,7 +4950,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                           (projE (l := itpEcls p S fuel (c + 2) Γ)
                             (G4c.identity_mem (.tail _ (.head _))) ?_)
                           (G4c.identity_mem (.head _))
-                          (ihA (A₁.ifThen B :: B₁.ifThen B :: Γ) C)
+                          (ihA (A₁.ifThen B :: B₁.ifThen B :: Γ) C (hScons₂ (hSor h2.1) (hSor h2.2)) hCS)
                         simp only [itpEcls]
                         refine List.mem_append.mpr (Or.inr
                           (List.mem_flatMap.mpr ⟨(A₁.or B₁).ifThen B, hFΓ, ?_⟩))
@@ -4712,7 +4985,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                           · refine G4c.andL (List.Perm.refl _)
                               (G4c.andR ?_ ?_)
                             · -- [J, K, Eamb] ⊢ E@c ⇢ A@c(A₁⇢B₁)
-                              exact cascade_impLImp_ant p S fuel c hb Γ
+                              exact cascade_impLImp_ant p S hand hor himp hsome fuel c hb Γ hΓS
                                 A₁ B₁ B hFΓ hDΓ hDS hBD hABD
                                 (G4c.identity_mem (.head _))
                                 (amb_pack_step (.tail _ (.tail _ (.head _)))
@@ -4720,7 +4993,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                             · -- [J, K, Eamb] ⊢ A@(c+1)(B::Γ)C
                               refine consume₂ ?_
                                 (G4c.identity_mem (.tail _ (.head _)))
-                                (ihA (B :: Γ) C)
+                                (ihA (B :: Γ) C (hScons hDS) hCS)
                               refine fire
                                 (projE (l := itpEcls p S fuel (c + 2) Γ)
                                   (G4c.identity_mem
@@ -4758,16 +5031,16 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                               refine G4c.impR ?_
                               refine consume₂ (consume₁
                                   (G4c.identity_mem (.head _))
-                                  (ihE (B₁.ifThen B :: Γ))) ?_
-                                (ihA (B₁.ifThen B :: Γ) (A₁.ifThen B₁))
+                                  (ihE (B₁.ifThen B :: Γ) (hScons hBDS))) ?_
+                                (ihA (B₁.ifThen B :: Γ) (A₁.ifThen B₁) (hScons hBDS) (himp (hΓS _ hFΓ)).1)
                               exact fire
                                 (G4c.identity_mem (.tail _ (.head _)))
                                 (consume₁ (G4c.identity_mem (.head _))
-                                  (ihE (B₁.ifThen B :: Γ)))
+                                  (ihE (B₁.ifThen B :: Γ) (hScons hBDS)))
                             · -- second: identity-fire of the ambient's conjunct
                               refine consume₂ ?_
                                 (G4c.identity_mem (.tail _ (.head _)))
-                                (ihA (B :: Γ) C)
+                                (ihA (B :: Γ) C (hScons hDS) hCS)
                               refine fire
                                 (projE (l := itpEcls p S fuel (c + 2) Γ)
                                   (G4c.identity_mem
@@ -4811,12 +5084,12 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                                   (amb_pack_step
                                     (.tail _ (.tail _ (.head _)))
                                     (Nat.le_succ _))
-                                  (cascade_jump p S fuel c hb Γ A₁ B
+                                  (cascade_jump p S hand hor himp hsome fuel c hb Γ hΓS A₁ B
                                     hFΓ hBΓ hBS hAS)
                               · -- second: fire the ambient's jump conjunct
                                 refine consume₂ ?_
                                   (G4c.identity_mem (.tail _ (.head _)))
-                                  (ihA (B :: Γ) C)
+                                  (ihA (B :: Γ) C (hScons hBS) hCS)
                                 refine fire
                                   (projE (l := itpEcls p S fuel (c + 2) Γ)
                                     (G4c.identity_mem
@@ -4845,7 +5118,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                             · refine G4c.andL (List.Perm.refl _)
                                 (G4c.andR ?_ ?_)
                               · -- [G, K, Eamb] ⊢ ◯(E@c ⇢ A@c ◯A₁)
-                                exact cascade_gamma_box p S fuel c hb Γ A₁ B
+                                exact cascade_gamma_box p S hand hor himp hsome fuel c hb Γ hΓS A₁ B
                                   hFΓ hBΓ hBS hAS
                                   (G4c.identity_mem (.head _))
                                   (amb_pack_step
@@ -4854,7 +5127,7 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                               · -- second: fire the ambient's γ-head conjunct
                                 refine consume₂ ?_
                                   (G4c.identity_mem (.tail _ (.head _)))
-                                  (ihA (B :: Γ) C)
+                                  (ihA (B :: Γ) C (hScons hBS) hCS)
                                 refine fire
                                   (projE (l := itpEcls p S fuel (c + 2) Γ)
                                     (G4c.identity_mem
@@ -4926,12 +5199,12 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
                                       (G4c.identity_mem
                                         (.tail _ (.tail _ (.head _))))
                                       (G4c.identity_mem (.tail _ (.head _)))
-                                      (ihA (x :: Γ) A₁.somehow)
+                                      (ihA (x :: Γ) A₁.somehow (hScons (hsome (hΓS _ hXΓ))) (himp (hΓS _ hFΓ)).1)
                                 · -- second: fire the ambient's γ-context
                                   -- conjunct with the first component
                                   refine consume₂ ?_
                                     (G4c.identity_mem (.tail _ (.head _)))
-                                    (ihA (B :: Γ) C)
+                                    (ihA (B :: Γ) C (hScons hBS) hCS)
                                   refine fire
                                     (projE (l := itpEcls p S fuel (c + 2) Γ)
                                       (G4c.identity_mem
@@ -4973,45 +5246,59 @@ private theorem itp_stab_aux (p : String) (S : Finset PLLFormula) :
 
 /-- Ambient-relative budget stabilization, the crux of uniformity.
 `b` ranges one past the threshold so that both `b` and `b-1` carry
-every jump clause. -/
-theorem itp_stab (p : String) (S : Finset PLLFormula) : ∀ (fuel : Nat)
+every jump clause.  RE-PARAMETERISED (2026-08-04, §58): closure +
+coverage, as `itp_stab_bf`. -/
+theorem itp_stab (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S) : ∀ (fuel : Nat)
     (b : Nat), kcap S < b →
-    (∀ Γ, G4c [itpE p S fuel (b - 1) Γ] (itpE p S fuel b Γ)) ∧
-    (∀ Γ C, G4c [itpE p S fuel b Γ, itpA p S fuel b Γ C]
+    (∀ Γ, (∀ X ∈ Γ, X ∈ S) →
+      G4c [itpE p S fuel (b - 1) Γ] (itpE p S fuel b Γ)) ∧
+    (∀ Γ C, (∀ X ∈ Γ, X ∈ S) → C ∈ S →
+      G4c [itpE p S fuel b Γ, itpA p S fuel b Γ C]
       (itpA p S fuel (b - 1) Γ C)) := by
   intro fuel b hb
   obtain ⟨c, rfl⟩ : ∃ c, b = c + 2 :=
     ⟨b - 2, by have := kcap_ge (S := S); omega⟩
-  exact itp_stab_aux p S fuel c hb
+  exact itp_stab_aux p S hand hor himp hsome fuel c hb
 
 /-- Consumption form for the adequacy landing: under the theorem's own
 ambient `E`, the packaged-budget value feeds any lower slot above the
-threshold. -/
+threshold.  RE-PARAMETERISED (2026-08-04, §58). -/
 theorem itp_stab_le (p : String) (S : Finset PLLFormula)
+    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
+    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
+    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
+    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
     {fuel b b' : Nat} (hk : kcap S < b') (hle : b' ≤ b) :
-    (∀ Γ, G4c [itpE p S fuel b' Γ] (itpE p S fuel b Γ)) ∧
-    (∀ Γ C, G4c [itpE p S fuel b Γ, itpA p S fuel b Γ C]
+    (∀ Γ, (∀ X ∈ Γ, X ∈ S) →
+      G4c [itpE p S fuel b' Γ] (itpE p S fuel b Γ)) ∧
+    (∀ Γ C, (∀ X ∈ Γ, X ∈ S) → C ∈ S →
+      G4c [itpE p S fuel b Γ, itpA p S fuel b Γ C]
       (itpA p S fuel b' Γ C)) := by
   induction hle with
   | refl =>
-      exact ⟨fun Γ => G4c.iden (.head _),
-        fun Γ C => G4c.identity_mem (.tail _ (.head _))⟩
+      exact ⟨fun Γ _ => G4c.iden (.head _),
+        fun Γ C _ _ => G4c.identity_mem (.tail _ (.head _))⟩
   | @step m hm ih =>
       obtain ⟨ihE, ihA⟩ := ih
       have hm' : b' ≤ m := hm
       have hkm : kcap S < m + 1 := by omega
       constructor
-      · intro Γ
-        refine consume₁ (ihE Γ) ?_
-        exact (itp_stab p S fuel (m + 1) hkm).1 Γ
-      · intro Γ C
+      · intro Γ hΓS
+        refine consume₁ (ihE Γ hΓS) ?_
+        exact (itp_stab p S hand hor himp hsome fuel (m + 1) hkm).1 Γ hΓS
+      · intro Γ C hΓS hCS
         have d1 : G4c [itpE p S fuel (m + 1) Γ, itpA p S fuel (m + 1) Γ C]
-            (itpA p S fuel m Γ C) := (itp_stab p S fuel (m + 1) hkm).2 Γ C
+            (itpA p S fuel m Γ C) :=
+          (itp_stab p S hand hor himp hsome fuel (m + 1) hkm).2 Γ C hΓS hCS
         have d2 : G4c [itpE p S fuel (m + 1) Γ, itpA p S fuel (m + 1) Γ C]
             (itpE p S fuel m Γ) :=
           consume₁ (G4c.identity_mem (.head _))
             ((itp_budget_mono p S fuel).1 m Γ)
-        exact consume₂ d2 d1 (ihA Γ C)
+        exact consume₂ d2 d1 (ihA Γ C hΓS hCS)
 
 /-! ### The box-free stabilization tier (FACT #1)
 

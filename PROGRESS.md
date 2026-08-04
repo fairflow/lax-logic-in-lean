@@ -5690,3 +5690,152 @@ c = 0, below the guard; structural defect-1 argument matches the
 measured constant boundary), and the one real miscalibration was in
 the apparatus one level up, with a local, simplifying fix.  The wall
 is now a finite list.
+
+---
+
+## §58 (2026-08-04) — Round 2: the re-parameterisation LANDED, and the §57 apparatus REFUTED — the ◯-band target was the room-free descent
+
+wip/absorb_base.lean (re-parameterised), wip/adequacy.lean,
+wip/packaging.lean (consumers adjusted), wip/reparamRefute.lean (new),
+wip/cascadeBox.lean (stub section re-headed).  The crown was NOT
+reached, and the reason is now a machine-checked negative.
+
+**(a) THE RE-PARAMETERISATION — DONE (Matthew-authorised statement
+change).**  `cascade_low_pos_box`'s old `hbox` disjunction over an
+ARBITRARY space is gone.  It now carries piece-closure
+(`hand`/`hor`/`himp`/`hsome`) and coverage (`g ∈ S`, `∀ X ∈ Γ, X ∈ S`)
+**in addition to** the room hypotheses `1 ≤ defect S Γ` and
+`defect S Γ · (|jumpGoals S| + 2) ≤ c`, which are KEPT.
+
+Old statement:
+
+    private theorem cascade_low_pos_box (p) (S) (fh Γ fuel c g Δ)
+        (hbox : ¬ ((∀ F ∈ S, boxFree F) ∧ and/or/imp-closure ∧
+                   g ∈ S ∧ (∀ F ∈ Γ, F ∈ S)))
+        (hd1 : 1 ≤ defect S Γ)
+        (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
+        (hamb : G4c Δ (itpE p S fuel (c+1) Γ))
+        (hhead : G4c Δ (itpA p S fh (c+1) Γ g)) (hfh : fh ≤ fuel) :
+        G4c Δ (itpA p S fuel c Γ g)
+
+New statement:
+
+    private theorem cascade_low_pos_box (p) (S)
+        (hand) (hor) (himp) (hsome)          -- piece-closure of S
+        (fh Γ fuel c g Δ)
+        (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S) (hc : 1 ≤ c)
+        (hd1 : 1 ≤ defect S Γ)
+        (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
+        (hamb) (hhead) (hfh) : G4c Δ (itpA p S fuel c Γ g)
+
+Determined from the CALL SITES, not from guesswork: the single consumer
+is `cascade_low_pos`, and the chain up is `cascade_low` → `cascade_main`
+→ `cascade_entry` → `cascade_impLImp`/`_jump`/`_gamma` →
+`cascade_impLImp_ant`/`cascade_gamma_box` → `itp_stab_aux` → `itp_stab`
+→ `itp_stab_le` → `existsP_adequate`/`forallP_adequate`.  At the two
+final consumers the space is `pieceClosure φ` resp. `pieceClosure C`,
+which is `PieceClosed` and covers its own context and goal — exactly the
+arguments the box-free mirror `itp_stab_le_bf` already receives at the
+same two sites.  Closure went in as four top-level parameters (`S` never
+changes inside, so it is free); coverage was threaded through every
+recursion of `cascade_main` and `itp_stab_aux`, mirroring the sorry-free
+box-free spine `cascade_main_bf` clause for clause.  `stab_lower` in
+adequacy and its four sites took `hPC`/`hΓS`/`hCS` the way
+`stab_lower_bf` already did.
+
+BONUS, and it is structural: the FOURTH sealed position — the fresh goal
+antecedent outside `S` — is now DEAD CODE (`(himp hgS).1` puts it in
+`S`), exactly as the "Two structural leads" note predicted in July.
+`cascade_main`'s sealed sites drop from four to THREE (the goal-γ
+disjunct, the clause-γ-head component, the truncation disjunct).
+
+Also simplified: `itp_stab_aux`/`itp_stab`/`itp_stab_le` need only
+`hand`/`hor`/`himp`/`hsome`, not the `himpAnd`/`himpOr`/`himpImp` the
+box-free mirror carries.
+
+**(b) THE DECISIVE FINDING — the §57 apparatus is aimed at a REFUTED
+statement.**  The obvious next step was to make the holdout verbatim
+`cascade_box` (`wip/cascadeBox.lean`:1532), i.e. to drop `hd1`/`hroom`
+and keep only `1 ≤ c`.  That was drafted, compiled, and then caught:
+**the room-free form is FALSE**, and the repo already contained the
+refutation.  `AscRefute.not_roomFreeDescent` (`wip/ascRefute.lean`,
+axioms `[propext, Quot.sound]`) kills it at
+
+    Sk = {◯p⊃r, ◯p, p, r, (◯r⊃s)⊃t, ◯r⊃s, ◯r, s, t}
+    Γ = [◯p⊃r],  g = (◯r⊃s)⊃t,  fuel = 4,  c = 1
+
+`wip/reparamRefute.lean` (new, sorry-free, pinned) closes the remaining
+gap in that argument.  `AscRefute`'s statement is *bare* — no closure or
+coverage side conditions — so one could have hoped closure and coverage
+excluded the counterexample.  They do not:
+
+* `sk_and`, `sk_or`, `sk_imp`, `sk_some`, `sk_cover`, `sk_goal` —
+  `Sk` satisfies EVERY closure and coverage condition, checked in Lean;
+* `not_reparamKernelRoomFree` — the kernel stated in absorb_base's own
+  idiom (inner head fuel `fh`, both premises, `fh ≤ fuel`) with closure
+  and coverage but WITHOUT the room is FALSE
+  [propext, Classical.choice, Quot.sound];
+* `defect_Sk_Gk : defect Sk Gk = 8`, `room_fails` — only `hroom`
+  excludes the counterexample;
+* `room_ge_jump` / `room_two` — `hd1` + `hroom` force
+  `|jumpGoals S| + 2 ≤ c`, hence **`2 ≤ c`**.
+
+**Consequences, and they are sharp.**
+
+1. `cascade_box` derives the room-free conclusion from its four open
+   interfaces at a space satisfying all its side conditions, and that
+   conclusion is false there.  So `AmbGuardAscent`, `GammaPairFloorA`,
+   `GammaPairFloorBox`, `JumpPairFloor` are **jointly unsatisfiable at
+   `Sk`**.  One is already refuted outright
+   (`AscRefute.not_ambGuardAscent`).
+2. Therefore NO repair of `oth_descent`'s ascent sites — however clever,
+   and whatever `wip/freshAnt.lean` finds at particular cells — can
+   yield the room-free descent.  `AmbGuardAscent` is not merely "off the
+   critical path": the whole path is refuted.
+3. The §57 residue — "six goal shapes × three floor interfaces over
+   ∨-free spaces" — is a residue of a refuted statement.  **Do not grind
+   it.**  The three pair-floor interfaces are stated at target budget
+   `1`; the kernel's own band never reaches `c = 1` (`room_two`).  They
+   arise only from a budget-descending recursion that pays no ledger,
+   which is exactly what `oth_descent` runs.
+4. `wip/floorRefute.lean` reached the same conclusion from the other
+   side in July: the descent to budget `0` is false too, so the budget
+   tier has no base case at any floor, and the recursion must terminate
+   on the pigeonhole, not on the budget.  §58 and floorRefute now agree.
+
+**What survives and is reusable.**  Everything above `cascadeBox`'s stub
+section; `wip/boxSndTight.lean`'s `boxSnd_tight`, `boxGoal_remap_free`,
+`floorBox_of_grownAmb`, `floorAny_atom` and the three `*_boxedAtom`
+instances — all unconditional theorems about the tables, not about the
+refuted descent; and the whole re-parameterised spine, which now hands a
+◯-band build exactly the closure and coverage it needs, at the room.
+
+**THE ROUTE, restated.**  The only viable ◯-band build is
+**ledger-carrying**: `cascade_main`'s pigeonhole over jump goals,
+extended to the ◯-clauses, so that every recursive call stays inside
+`defect S Γ · (|jumpGoals S| + 2) ≤ c`.  That is `cascade_main`-scale
+work (the July docstring said as much) and it was not attempted here.
+`cascade_main_bf` remains the template; the re-parameterisation has now
+made the non-bf spine carry the same invariants, so the two spines
+differ only in the ◯-clauses.
+
+**Build state.**  Full standalone stack rebuilds
+(absorb_base → adequacy → packaging → indiff → spaceindiff → final),
+`wip/absorb_base.lean` has exactly ONE `sorry` (the holdout), every
+`#guard_msgs` pin passes, and the crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+Regression: `lake exe towertest sizes 2` reproduces the twelve-row table;
+no table definition changed (zero files touched under `LaxLogic/`,
+`wip/towerkit.lean`, `wip/towertest.lean`).
+
+**Method note for the next round.**  §57's lesson was "check the
+statement against the CONSUMER, not only the traversal".  §58 adds:
+**check the statement against the repo's own refutations before
+adopting it.**  The room-free re-parameterisation was drafted, compiled
+cleanly, and passed the whole stack — a false statement can do all
+three, because it is a `sorry`.  What caught it was reading
+`wip/ascRefute.lean` while recomputing the obligation set, which the
+round's brief explicitly asked for.
