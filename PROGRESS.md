@@ -5150,3 +5150,38 @@ semantic equivalence, not a sample.  Verdict: n ≤ 3 none; n = 4 four
 hits (φ★ and one variant); n = 5, 2 548 hits over 69 834 (model, U)
 pairs, max closure 164 (no cap hit).  The phenomenon is generic, not an
 accident of one model.
+
+---
+
+## §49 (2026-08-04) — ∃p.φ★ = ¬¬◯⊥ PROVED; the STRETCH method; MixedCoverConj is the new live reduction (delegated, verified, landed)
+
+wip/phistar.lean (737 lines, sorry-free, pinned).  VERDICT (A):
+postInterp_phiStar : IsPostInterp phiStar (¬¬◯⊥) — F(φ★) is
+PRINCIPAL; φ★ is NOT a UI counterexample; route (B) closed at φ★
+with no family table needed.  Non-triviality pinned (value neither ⊥
+nor ⊤).  THE CONSTRUCTION: `stretch C` = GUARDED doubling on
+C.W ⊕ C.W — upper copy of x reachable from inl x exactly when
+x ⊩ ◯⊥ (the guard is the entire content; unguarded dbl destroys
+φ★'s first conjunct); V(p) = upper layer ∪ F, so on the ground
+layer ¬p means ¬◯⊥.  Driving lemmas: stretch_transfer (variable-free
+formulas cannot see the split, [propext]) and stretch_force_phiStar
+(u ⊩ ¬¬◯⊥ ⇒ inl u ⊩ φ★); minimality by countermodel_of_not_deriv +
+soundness through the stretch.  GENERALISATION: the stretch is a
+TRANSLATION — tr : PLLFormula → PLLFormula × PLLFormula with
+Lo p = ⊥, Up p = ⊤, Lo(A⊃B) = (Lo A ⊃ Lo B) ∧ (◯⊥ ⊃ (Up A ⊃ Up B)),
+Lo ◯A = ◯(Lo A) ∧ (◯⊥ ⊃ ◯(Up A)); stretch_tr (axiom-free) computes
+forcing on both layers; stretch_below: every variable-free
+consequence of φ follows from Lo φ — a NON-SUBSTITUTIONAL lower
+bound on F(φ), parallel to inst_below; postInterp_of_stretch (no
+one-variable hypothesis needed).  stretch_beats_cover: φ★ has a
+stretch cover but no substitution cover.  STATUS BOARD: CoverConj
+REFUTED (φ★); MeetCoverConj REFUTED (p ∨ ¬p); StretchCoverConj
+REFUTED (at p: Lo p = ⊥); **MixedCoverConj OPEN** — φ ⊢ Lo φ ∨
+⋁ instances — survives all three refutations
+(hasMixedCover_phiStar, hasMixedCover_pv) and is now the live
+reduction of last-variable ∃p (postUI_of_mixedCoverConj).  Next
+probes named: stretches along ‖◯χ‖ for arbitrary variable-free χ
+(a family of lower bounds Lo_χ), n-fold stretches (an ascending
+tower); a MixedCoverConj counterexample must defeat every member.
+∀-side untouched (no co-stretch by symmetry: the guard uses ◯⊥
+essentially).
