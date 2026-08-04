@@ -136,3 +136,67 @@ whether some φ's consequence filter meets the descent floorlessly.
 Note the asymmetry that saves the ∃-side: the rank argument bounds
 worlds FROM BELOW by rungs (joins upward); it says nothing about
 common lower bounds of the gap antichain, where the descent lives.
+
+---
+
+## The ∃-side hunt (2026-08-04): reformulation, constraints, probes
+
+All PLL.  Witness conditions (`no_post_interp_schema`):
+
+* `hg`: ∀ k ≥ 1, φ ⊢ g k.  Unfolding g k = c k ⊃ t(2k+1):
+  `[φ, ◯t(2k+1)] ⊢ t(2k+1)` — the witness is a UNIFORM MONAD-ESCAPE
+  along the odd rungs.
+* `hL`: no variable-free χ ∈ L is a consequence of φ.
+
+**Why the ∀-side killer does not dualise.**  The mirror of
+`chain_bound_is_theorem` would be ATTAINMENT of the gap meet: a fixed
+variable-free χ₀ ∈ L forced at every finite-model world that forces
+all the gaps.  Given attainment, FMP would turn hg into φ ⊢ χ₀,
+contradicting hL — the exact mirror of `pre_interp_schema_vacuous`.
+But on the plain ladder EVERY world forces EVERY gap
+(`plain_forces_gap`, pinned), while every known member of L
+(t1 = ◯⊥, t2, t3, t4, t5, w15) fails at all sufficiently deep plain
+worlds (bounded trace, rung machinery).  So attainment already fails
+at every known candidate χ₀; the sole loophole is an unknown
+LADDER-VALID member of L.  Root cause of the asymmetry: every finite
+world has finite rank and so sits ABOVE some rung (⊔ c k = ⊤ is a
+formula), but the deep ladder worlds approximate ⊓ g k from above
+forever without any formula landing on it — conjecturally ⊓ g k
+exists only as the limit point of the completed (Esakia/assembly)
+algebra, not as a formula.  UI for the right φ would manufacture that
+formula; that is the shape of the refutation.
+
+**Constraints on any witness** (compositions of pinned lemmas; the
+composites are being pinned by the delegated probes):
+
+1. *No rung may be entailed.*  If φ ⊢ t(2K+1) then
+   χ* := g 1 ∧ … ∧ g (K−1) ∧ t(2K+1) is a variable-free consequence
+   of φ lying in L (odd rungs ascend from t3 by `rungD`;
+   `rung_le_gap`; hg supplies the low gaps) — hL dies.  Even rungs:
+   same via the w15 mechanism (t6 = t5 ⊃ t3 descends inside the box;
+   general even-rung version CONJECTURED, proved for t6).  Since
+   t1 = ◯⊥ and t2 are rungs, φ ⊬ ◯⊥ and φ ⊬ t2 as well.
+2. *The witness must dodge its own instances.*  If hg holds then
+   every variable-free instance φ[p↦ψ] lands in L
+   (`Deriv.substP'`; gaps are variable-free), so hL forces
+   φ ⊬ φ[p↦ψ] for EVERY variable-free ψ.  In particular p cannot
+   occur only positively (else φ ⊢ φ[p↦⊤]).
+
+**Probes launched** (both delegated, background):
+
+* *Floor probe*: prove every χ ∈ L has bounded plain-ladder trace,
+  via an edge-stability lemma — a fixed variable-free formula's value
+  at world m+3 agrees between `ladder.cm` and `cmE m` once m exceeds
+  a bound depending on the formula (the models differ only in the lax
+  edges (m+3)⇝0, (m+3)⇝none; the gap g k flips exactly in the window
+  m ∈ {k−2, k−1}).  Corollary: the gap meet is attained at NO
+  variable-free formula, so the ∃-side cannot be closed the way the
+  ∀-side was.  A refutation (a ladder-valid floor) would be equally
+  decisive the other way.
+* *Witness sweep*: bounded enumeration of one-variable φ with the
+  filters above (p non-positive; countermodels against rnSub 1..9,
+  w15 and its family, own ⊤/◯⊥/t3-instances; certificates for
+  g 1..g 3), PLLSearch two-sided verdicts.  An EMPTY sweep at depth
+  is evidence for a collapse theorem ("every one-variable formula
+  below all gaps entails a rung") — a positive-UI signal at this
+  antichain.

@@ -4904,3 +4904,24 @@ refutes the earlier claim that no semantic route to derivability
 existed.  Corroborated by a kernel-checked 6-world rank computation
 and a 690-model scan.  Audits pinned, sorry-free.  All weight now on
 the ∃-side (Gmeet descent + landing ideal L).
+
+---
+
+## §42 (2026-08-04) — the ∃-side hunt opened: monad-escape reformulation, witness constraints, two probes launched
+
+ui-attack.md new section.  hg unfolds to [φ, ◯t(2k+1)] ⊢ t(2k+1): the
+witness is a uniform monad-escape along the odd rungs.  Derived
+constraints (composites of pinned lemmas, being pinned): the witness
+may entail NO rung (φ ⊢ t(2K+1) puts χ* = g1 ∧ … ∧ g(K−1) ∧ t(2K+1)
+into F(φ) ∩ L; even rungs via the w15 mechanism, general version
+conjectured) and must dodge every variable-free instance of itself
+(Deriv.substP' puts each φ[p↦ψ] into L; hence p occurs
+non-positively).  The ∀-side killer does NOT dualise: the mirror kill
+needs the gap meet ATTAINED at a variable-free χ₀ forced at every
+all-gaps world, but plain_forces_gap + bounded traces of t1..t5, w15
+refute attainment at every known member of L; sole loophole = an
+unknown ladder-valid member of L.  Probes (delegated, background):
+(1) floor probe — edge-stability ⇒ every χ ∈ L has bounded ladder
+trace ⇒ meet unattained (or the refuting floor); (2) witness sweep —
+bounded one-variable enumeration under the constraint filters,
+PLLSearch two-sided verdicts.
