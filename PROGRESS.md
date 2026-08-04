@@ -5839,3 +5839,159 @@ cleanly, and passed the whole stack — a false statement can do all
 three, because it is a `sorry`.  What caught it was reading
 `wip/ascRefute.lean` while recomputing the obligation set, which the
 round's brief explicitly asked for.
+
+---
+
+## §59 (2026-08-04) — Round 3: the ledger route is REFUTED at the seam, and the `◯`-goal positions turn out to need no ledger at all
+
+`wip/sealLedger.lean` (new, sorry-free, pinned), `wip/seal2Free.lean`
+(new, sorry-free, pinned).  `wip/absorb_base.lean` and everything below
+it are **untouched**; the standalone stack rebuilds and the crown is
+unchanged.  The round's brief was "extend `cascade_main`'s pigeonhole
+over jump goals through the `◯`-clauses, so that every budget-consuming
+recursive call is financed by the ledger".  That route is now a
+machine-checked dead end, and the reason points at the replacement.
+
+**(a) The MEASURE was never the obstruction — settled.**  With the
+goal-size measure `gsize` and the lex triple
+`(c, defect S Γ, gsize g)`, two of `cascade_main`'s three surviving
+sealed sites strictly decrease it:
+
+* the **goal-γ disjunct** (`absorb_base`:2748) descends from goal `◯D`
+  to goal `D` at the *same* budget and the *same* context —
+  `seal1_lexLt`;
+* the **clause-γ-head component** (:3261) descends from budget `c'+1` to
+  `c'` — `seal2_lexLt`.
+
+The **truncation disjunct** (:3513) moves nothing at all: it restarts at
+the caller's own budget, context, goal *and* fuel (`fh = F+1`,
+`fuel = fl+1`) — `seal3_not_lexLt`.  So a
+`(budget, defect, goal-size)`-lex induction over the holdout would
+discharge two of the three sites outright.  That question has been open
+since the July docstring asked for "a `(defect, budget)`-lex landing
+map"; it is answered, and it is not what blocks the build.
+
+**(b) THE ROUND'S RESULT — no ledger can cross the γ-head seal.**  The
+holdout hands `cascade_main` nothing but its own room
+`defect S Γ · (|jumpGoals S| + 2) ≤ c`, so any ledger must be
+*derivable* from the room at the entry budget.  The clause-γ-head seal
+hands the holdout back its own room **one budget lower**, so any ledger
+must *imply* the room at `c` from itself at `c + 1`.  Composed, the two
+demands lift a budget hypothesis across a budget drop:
+
+    theorem no_ledger_survives_gamma_seal
+        {Room' : Finset PLLFormula → List PLLFormula → Nat → Prop}
+        {L : Finset PLLFormula → List PLLFormula → Finset PLLFormula → Nat → Prop}
+        {S Γ g c}
+        (hhi : Room' S Γ (c + 1)) (hlo : ¬ Room' S Γ c)
+        (hentry : ∀ S' Γ' g' c', Room' S' Γ' c' → L S' Γ' {g'} c')
+        (hseal  : ∀ S' Γ' seen' c', L S' Γ' seen' (c' + 1) → Room' S' Γ' c') :
+        False :=
+      hlo (hseal S Γ {g} c (hentry S Γ g (c + 1) hhi))
+
+No arithmetic, no assumption on the shape of either predicate, axioms
+`[propext, Quot.sound]`.  It applies as soon as the room is
+budget-sensitive at **one** instance, and §5 of the file exhibits one
+inside the re-parameterised kernel's own band: `Sγ` = the piece-closure
+of a single γ-clause `◯a ⊃ b`, `Γγ` everything but its consequent, so
+`defect = 1` (`hd1` holds), `|jumpGoals Sγ| = 2`, room `4 ≤ c` — true at
+`4`, false at `3`.  A budget-*insensitive* room is no escape either: it
+is a `c`-free side condition, and the `c`-free kernel is already refuted
+(`ReparamRefute.not_reparamKernelRoomFree`).
+
+**Corollaries that diagnose the existing file exactly.**  The two
+ledgers actually in `absorb_base` sit on opposite horns, each provably:
+
+* `cascade_main`'s unshifted ledger meets **both** seal demands
+  (`ledger0_seal1`, `ledger0_seal2`, proved in general) and **fails** the
+  entry demand (`ledger0_entry_fails`) — which is why `cascade_main` is
+  entered from `kcap_room`'s full allotment at the top and never from the
+  holdout;
+* `cascade_main_bf`'s shifted ledger meets the **entry** demand
+  (`ledgerS_entry`, proved in general) and **fails** both seal demands
+  (`ledgerS_seal1_fails`, `ledgerS_seal2_fails`) — which costs it
+  nothing, because over a box-free space every sealed site is dead code.
+
+And no constant in between exists: `shift_dilemma` bounds any shift below
+by `|jumpGoals S| + 1` (entry) and above by `0` (γ-head seal) at one and
+the same instance.  This is the precise, general form of the July
+docstring's "short by `J+1` for every `X`".
+
+**(c) THE ESCAPE, and it is already half-built.**  All three sealed
+sites are `◯`-goal positions — site 1 and site 3 have enclosing goal
+`◯D`, site 2's sealed obligation has goal `◯A₁`.  And PROGRESS §57's
+`boxSnd_tight` (`wip/boxSndTight.lean`:147) says the `◯`-goal pair
+descent is **budget-free**: it reaches the boxed goal clause at an
+*arbitrary* target budget from a matched-budget source.
+`wip/seal2Free.lean` carries that the last step, from the clause to the
+target **value**:
+
+    theorem gammaHead_budget_free (p) (S)
+        (hOr : ∀ A B, A.or B ∉ S) {q} (hq : q ≠ p)
+        (hsome : ∀ {A}, A.somehow ∈ S → A ∈ S)
+        (f e c : Nat) (Γ Δ) (hΓS : ∀ Y ∈ Γ, Y ∈ S)
+        (hamb : G4c Δ (itpE p S (f + 1) (e + 2) Γ))
+        (hsrc : G4c Δ (itpA p S (f + 1) (e + 2) Γ ((prop q).somehow))) :
+        G4c Δ (itpA p S (f + 2) (c + 1) Γ ((prop q).somehow))
+
+`c` is universally quantified; **no room, no ledger, no defect bound**
+appears (pinned by `#guard_msgs` on the `#check`).  The proof is
+`boxSnd_tight` plus one free fuel conversion of the guard
+(`fuelE_le`) and one `orAll` introduction — three lines.
+
+So the ledger route was trying to finance something that does not need
+financing.  **The design for round 4**: route every `◯`-goal position
+through the boxSnd traversal, whose target budget is free, and keep the
+seen-set ledger only for the non-`◯` goals, where it already works.
+
+**Calibration to check first (the §57 lesson, applied in advance).**
+`boxSnd_tight` consumes both premises at fuel `f+1` and concludes at
+`f+2`, while `cascade_main`'s sealed sites hold the source at fuel `F`
+and want the target at `fl` with only `F ≤ fl` — so at `F = fl` the
+traversal lands one fuel level above the consumer.  Either the holdout's
+`fh ≤ fuel` must be tightened to `fh < fuel` at its call sites, or the
+traversal must be re-run one level down.  Check this against the
+CONSUMER before building, exactly as §57 had to.
+
+**Scope of (c).**  `∨`-free `S`, `◯`-subformula-closed `S`, `q ≠ p`, and
+the goal body atomic.  Generalising the body from `prop q` to an
+arbitrary `D ∈ S` is `boxGoal_remap`'s own case, not a new ledger, and it
+is round 4's first target.
+
+**Build state.**  `wip/absorb_base.lean` still has exactly ONE `sorry`
+(the holdout, :2379); the standalone stack rebuilds
+(absorb_base → adequacy → packaging → indiff → spaceindiff → final);
+every `#guard_msgs` pin passes; the crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+Regression: `lake exe towertest sizes 2` reproduces the twelve-row table
+byte-identical; no table definition changed (zero files touched under
+`LaxLogic/`, `wip/towerkit.lean`, `wip/towertest.lean`).
+
+**Method note.**  §57 said "check the statement against the CONSUMER";
+§58 added "check it against the repo's own refutations".  §59 adds the
+cheapest of the three: **check the FINANCING before the proof.**  The
+entry/seal dilemma is four lines of Lean and it rules out the whole
+1500-line build the round was scoped for.
+
+**Amendment (same session) — the atom restriction in (c) is NOT plumbing.**
+`boxSnd_tight`'s substantive case is `boxGoal_remap`
+(`wip/atomForce.lean`:382), and its value step is
+`A@(c+1)(Γ', D) ⊢ A@(c+1)(Γ, D)` with `Γ ⊆ Γ'` — context *shrinking*,
+which is unsound in general.  At `D = prop q` it is licensed by
+`itpA_atom_forces` (the grown table forces the atom, and the atom is the
+goal clause of the target table at *every* context); at a general body
+there is no such licence.  So generalising the body is a genuine
+mathematical step, not a re-statement.  Two ways round it are visible
+and neither has been tried:
+
+1. keep the traversal's target context in step with its source context
+   (the shrinking step is only needed because the boxSnd recursion grows
+   `Γ'` while the target `Γ` stays fixed) — at all three sealed sites the
+   context does *not* grow, so a same-context traversal may suffice;
+2. replace the goal-clause case by the holdout at the lex-smaller state
+   `(c, defect S Γ, gsize D)`, which §59(a) shows is available for sites
+   1 and 2 — but not for the truncation, which is why 1. is the one to
+   try first.
