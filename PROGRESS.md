@@ -5462,3 +5462,54 @@ guard ⊤ with δ₁ = ‖p‖ itself, which is exactly the undefinable
 valuation one is trying to eliminate.  φ♠'s own ∃p is OPEN
 (PostInterpPhiSpadeExists); as at φ★, φ♦, φ♣ the refutation is of the
 METHOD, and uniform interpolation is untouched.
+
+---
+
+## §53 (2026-08-04) — ∃p.φ♠ = ¬¬◯⊥ ⊃ ◯⊥ PROVED by the SERIES gluing; THE GLUE SCHEME unifies every construction; the two endgames are formal (delegated, verified, landed)
+
+wip/phispade.lean (1404 lines, 84 declarations, sorry-free, pinned).
+∃p.φ♠ = ψ♣ = ¬¬◯⊥ ⊃ ◯⊥ (postInterp_phiSpade — same value as φ♣;
+postInterp_phiSpade_eq_phiClub).  Forcing condition: (α) ◯⊥-worlds
+force p (identical to φ♣); (β) above every GAP world, a ¬◯⊥-world
+where p is UNDECIDED — p must CHANGE along an Rᵢ-edge inside the
+guard region, which no parallel gluing with variable-free copy
+valuations can reproduce.  THE SERIES GLUING sfork C χ δ₁ δ₂ =
+guarded-stretch FRAME (up-polarity cross guard on the target, one
+direction) + parameterised-fork FREE VALUATIONS; only side condition
+δ₁ ⊢ δ₂ (hered_V on the cross edge); (⊥,⊤) recovers gstretch
+exactly.  φ♠'s member: (χ,δ₁,δ₂) = (¬◯⊥, ◯⊥, ⊤) — the cross edge's
+guard is exactly what the ψ♣-witness supplies, putting the p-world
+directly ABOVE the ¬p-world in one chain.  series_needs_free_valuations
+localises the advance (fixed-(⊥,⊤) series and all dn/dn forks fail at
+C♠'s root for every parameter).  Substitution bracket: all four
+instances ⊣⊢ gapGuard or ¬◯⊥, strictly below ψ♣.  THE META-OBJECT
+glue C cl cr d₁ d₂: two copies, independent Cross condition per
+direction (off | up χ = guard on TARGET, up-closed | dn χ = guard on
+SOURCE, down-closed), layer-preserving Rₘ, free variable-free copy
+valuations.  Frame legality FREE at all nine polarity pairs
+(crossRel_le/right/left uniform in polarity); the ONLY condition is
+CrossHered per direction, with the model-independent sufficient form
+OkCross: up-edges need INCLUSION δ_s ⊢ δ_t, dn-edges need VACUITY
+δ_s ⊢ χ — the uniform explanation of the fork's and series' seemingly
+unrelated side conditions.  glue_transfer needs NO conditions
+[propext].  Translation trGl/GLo/GUp: guard-as-implication (up),
+guard-as-disjunct (dn), per direction (force_cross_forall/box,
+force_guardImp; classicality enters only at dn).  glue_below +
+postInterp_of_glue + HasGlueMixedCover + refutation tool.
+IDENTIFICATIONS (rfl per node): GLo off off θ θ = inst θ (substitution
+IS the glue!); GLo (up χ) off ⊥ ⊤ = LoG χ (guarded stretch);
+GLo (dn χ) (dn χ) δ₁ δ₂ = FLo (fork); series = up/off free.
+glue_strictly_beats_paramForkMixed.  ENDGAMES: GlueMixedConj;
+GlueCompleteConj dict (parameters bounded by a φ-dictionary — the
+uniformity question); GlueDiagonal; glueMixedConj_iff_no_diagonal;
+postUI_of_glueMixedConj.  EVIDENCE reading: four defeaters, four
+positive resolutions; every cover coordinate ever needed lies in the
+◯-depth ≤ 1 dictionary {⊥, ◯⊥, ¬◯⊥, ◯⊥ ∨ ¬◯⊥, ⊤}; each ladder step
+needed a new POLARITY SHAPE, never a new parameter — and the shapes
+are now enumerated (nine, all legal).  OPEN: SeriesSuffices (is dn/dn
+subsumed by series-with-free-valuations?); GlueCompleteConj for a
+concrete dict; cross-Rₘ (translations worked out on paper, both
+polarities expressible, deliberately not mechanised — φ♠ did not
+need it).  sorryAx-injection fired again (implicit Prop args of a
+reducible model) and was caught by the pins; fix = per-member
+wrapper lemmas.
