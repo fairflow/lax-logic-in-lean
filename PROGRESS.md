@@ -5319,3 +5319,146 @@ stated is expected FALSE at φ♣ (unpinned; Python-verified), and the
 corrected frontier = join of substitution + guarded stretch +
 parameterised fork.  sorryAx-injection trap hit again and caught by
 the pins (three missing .1s in an 8-case rintro).
+
+## §52 (2026-08-04) — φ♣ PINNED and BranchMixedConj REFUTED; ∃p.φ♣ = ¬¬◯⊥ ⊃ ◯⊥ PROVED by the PARAMETERISED fork (the interpolant is NOT ¬¬◯⊥); then φ♠ REFUTES the corrected frontier too (delegated, verified, landed)
+
+wip/paramfork.lean (2125 lines, sorry-free, 44 #guard_msgs pins) +
+wip/pforkprobe.lean.  Branch probe/paramfork off ui-confluence.
+
+(1) φ♣ PINNED.  C♣ : W = Fin 5, Rc x y := x = 0 ∨ x = y ∨ (x = 1 ∧
+y = 2), Rmc x y := x = y ∨ (x = 1 ∧ y = 2), F = {2}, V(p) = {1,2,3}.
+φ♣ = ((p ⊃ ◯⊥) ∨ (¬p ⊃ ◯⊥)) ⊃ (¬◯⊥ ∨ (◯⊥ ∧ p)).  Root forces φ♣
+(Cclub_force_phiClub): at 1, 2 the consequent's second disjunct, at
+3, 4 the first, at the root the ANTECEDENT fails (3 is a p-world
+outside ‖◯⊥‖, 4 a ¬p-world outside it).  UNDEFINABILITY: the
+transposition 3 ↔ 4 is a frame automorphism (Cclub_swap), and that
+alone is enough — no classification of D(C♣) is needed anywhere.
+CORRECTION to §51: D(C♣)'s element {1,2,3,4} is ◯⊥ ∨ ¬◯⊥, NOT ¬¬◯⊥;
+in C♣ one has ¬¬◯⊥ ≡ ◯⊥ ≡ {1,2} (Cclub_nnOBot_iff).  Every guarded
+stretch fails UNIFORMLY in the guard, at inl 1 (there ◯⊥ holds, so
+p ⊃ ◯⊥ is vacuous, while p on the ground layer means "fallible" and
+1 ∉ F) — simpler than mixedfail's three-way split.  Every (χ,⊥)-fork
+fails by a two-case split on the root: 0 ⊮ χ gives the cross edge
+inl 0 ⇝ inr 1 and inr 1 refutes; 0 ⊩ χ makes χ universal, p ≡ ⊤ on
+the inl copy, and inl 0 itself refutes.  Every variable-free instance
+fails: if 3 ⊩ θ then 4 ⊩ θ and ‖¬θ‖ ⊆ ‖◯⊥‖, so ¬θ ⊃ ◯⊥ holds at the
+root; if 3 ⊮ θ then ‖θ‖ ⊆ ‖◯⊥‖ and θ ⊃ ◯⊥ holds.  Fed to
+not_hasBranchMixedCover_of_model: phiClub_no_branchMixedCover,
+branchMixedConj_false.
+
+(2) THE PARAMETERISED FORK.  fork C χ δ₁ δ₂ h₁ h₂ = the bstretch frame
+(bRi C χ, stRm C, stF C) with V(a) = ‖δ₁‖ on inl, ‖δ₂‖ on inr.  The
+ONLY condition is δ₁ ⊢ χ and δ₂ ⊢ χ (pointwise h₁, h₂), and it is used
+exactly once: hered_V on a cross edge inl x ⇝ inr y needs x ⊩ δ₁ →
+y ⊩ δ₂, and the edge exists only when x ⊮ χ, so x ⊩ δ₁ ⊢ χ is already
+absurd — the obligation is VACUOUS, not discharged.  full_F is free
+(fallible worlds force everything).  fork C χ χ ⊥ = bstretch C χ by
+rfl (fork_eq_bstretch), and trF χ χ ⊥ = trB χ (trF_eq_trB).  Transfer
+comes free: fork and bstretch share W, Rᵢ, Rₘ, F and differ only in V,
+so they agree on every variable-free formula (fork_force_eq, [propext])
+and fork_transfer follows from bstretch_transfer.  Translations
+FLo/FUp = BLo/BUp with the atom clause freed (FLo p = δ₁, FUp p = δ₂);
+fork_tr, fork_below/_below_up, postInterp_of_fork, FLo_iff_fork.
+
+(3) ∃p.φ♣ = ¬¬◯⊥ ⊃ ◯⊥ PROVED.  UPPER BOUND: φ♣ ⊬ ¬¬◯⊥ (assume ¬◯⊥
+and the consequent's FIRST disjunct fires — phiClub_not_nnbox), but
+φ♣ ⊢ ¬¬◯⊥ ⊃ ◯⊥ (phiClub_psi): at v ⊩ ¬¬◯⊥ with v ⊮ ◯⊥ one gets
+v ⊮ ¬◯⊥, so v is a GAP world, the consequent fails and the antecedent
+must fail; its second disjunct gives z ⊒ v with z ⊩ ¬p and z ⊮ ◯⊥;
+clause (α) (every ◯⊥-world of the cone forces p, phiClub_alpha) turns
+z ⊩ ¬p into z ⊩ ¬◯⊥, and ¬¬◯⊥ at v then makes z fallible — hence
+z ⊩ ◯⊥, contradiction.  MINIMALITY by the fork at
+(χ, δ₁, δ₂) = (◯⊥ ∨ ¬◯⊥, ◯⊥ ∨ ¬◯⊥, ◯⊥): the guard's complement IS the
+gap region, so the two copies are glued exactly where clause (β) has
+work to do; at a gap world x the hypothesis produces a non-fallible
+¬◯⊥-world y ⊒ x, and BOTH copies of y are above every copy of x (the
+cross edges exist because x ⊮ χ) — inl y is a p-world outside ‖◯⊥‖
+(y ⊩ ¬◯⊥ ⊢ δ₁) and inr y is a ¬p-world outside ‖◯⊥‖ (its only
+successors are inr z, since y ⊩ χ kills its cross edges, and
+inr z ⊩ p means z ⊩ ◯⊥ hence z fallible).  δᵢ ⊇ ‖◯⊥‖ is clause (α).
+postInterp_phiClub : IsPostInterp phiClub ((¬¬◯⊥) ⊃ ◯⊥).  VERDICT: the
+value found at φ★ and φ♦ is NOT a universal attractor.  Instance
+bracket: φ♣[p := ⊤] ⊣⊢ ◯⊥ ∨ ¬◯⊥, φ♣[p := ⊥] ⊣⊢ ¬◯⊥, and
+◯⊥ ∨ ¬◯⊥ ⊢ ¬¬◯⊥ ⊃ ◯⊥ STRICTLY (psiClub_not_gapGuard, at C♣'s root) —
+so no substitution join can reach it.
+
+(4) INCOMPARABILITY SURVIVES PARAMETERISATION.  not_hasForkCover_
+phiStar: φ★ has NO parameterised fork cover at any admissible triple.
+At M3's root (which forces ¬¬◯⊥ = ∃p.φ★), three cases on the copy
+valuations at world 1: 1 ⊮ δ₁ makes inl 1 a non-fallible ¬p-world
+(the cross edge that could supply a p-world above it exists only when
+1 ⊮ χ, which δ₂ ⊢ χ forbids), killing ¬¬p; 1 ⊩ δ₁ with 0 ⊩ χ leaves
+inl 0 with no cross edges, so ◯⊥ ⊃ p holds there and the first
+conjunct forces ◯⊥; 1 ⊩ δ₁ with 0 ⊮ χ splits on 1 ⊩ δ₂ into the same
+two shapes.  Hence paramFork_stretch_incomparable — the corrected join
+genuinely needs LoG as well as FLo.
+
+(5) THE CORRECTED FRONTIER.  ParamForkMixedConj = every 1-pv φ is
+covered by finitely many LoG χ φ, finitely many FLo χ δ₁ δ₂ φ (over
+variable-free triples with δᵢ ⊢ χ) and finitely many instances;
+postInterp_of_paramForkMixed, postUI_of_paramForkMixedConj,
+not_hasParamForkMixedCover_of_model, and the embedding
+hasParamForkMixedCover_of_branchMixed (via (χ, χ, ⊥)).  p, φ★, φ♦, φ♣
+are all covered, each by a different member.  §13 states the POINTWISE
+form SemParamForkMixed (what the probe tests) with
+semParamForkMixed_of_cover; §14 records that the bridge from pointwise
+to a single finite cover sticks at UNIFORMITY ACROSS MODELS — D(C) is
+finite per finite C but unbounded over all C, so what is needed is a
+bound on the size of the required triples in terms of φ (all three
+defeaters are covered by a SINGLE member built from ◯⊥ and ¬◯⊥, which
+is evidence, not proof).  Both are Prop-valued statements only.
+
+(6) PROBE (pforkprobe, two-phase: coverprobe subalgebra search on the
+VALUATION coordinates only, then every guard tested in the explicitly
+built stretch frame and every admissible triple in the explicitly built
+fork frame — exact, no compositional arithmetic to trust; carrying even
+one (LoG,UpG) pair per guard inside the subalgebra made the n = 5 sweep
+intractable, which is why branchprobe's guarded mode never finished).
+mode=verify, n ≤ 4: 5410 admissible triples, 0 constraint-model law
+failures; 3474 inadmissible triples DO break a law (δᵢ ⊢ χ is not
+decorative); 0 degenerate mismatches ((χ,χ,⊥) reproduces branchdia's
+fork on the whole battery).  mode=run, EXHAUSTIVE n ≤ 5, 0 capped, 0
+skipped at the phase-B budget:
+
+  n=2:     4 models,     2 pairs,    0 cover-hit,   0 sep,   0 FULL-JOIN
+  n=3:    37 models,    40 pairs,    0 cover-hit,   0 sep,   0 FULL-JOIN
+  n=4:   726 models,  1232 pairs,    4 cover-hit,   6 sep,   0 FULL-JOIN
+  n=5: 28639 models, 69834 pairs, 2548 cover-hit, 6294 sep, 564 FULL-JOIN
+       (5604 of the 6294 separators killed by a stretch or a fork;
+        max closure 185, max triples 119, 325 s)
+
+The 2548 cover-hit pairs at n = 5 reproduce coverprobe's 2548 exactly.
+n ≤ 4 is a CLEAN SWEEP; n = 5 is not.
+
+(7) REFUTED: ParamForkMixedConj — the defeater φ♠.  Commonest of the
+564 hits (235 of them, 3 distinct formulas in all):
+
+  C♠ : W = {0,1,2,3,4}, 0 ⊑ all, 1 ⊑ 4, 2 ⊑ 3, 3 and 4 maximal,
+       Rₘ = id ∪ {(1,4)}, F = {4}, V(p) = {1,3,4}
+  φ♠ = (¬◯⊥ ⊃ (¬p ∨ p)) ⊃ (¬◯⊥ ∨ (◯⊥ ∧ p))
+
+D(C♠) = {⊥={4}, ◯⊥={1,4}, ¬◯⊥={2,3,4}, ◯⊥∨¬◯⊥={1,2,3,4}, ⊤}; ‖p‖ is
+undefinable because worlds 2 and 3 satisfy the same variable-free
+formulas — and this time NOT by an automorphism (2 ⊑ 3, 3 ⋢ 2) but by
+the D-classification itself, got by `decide` from a five-row table
+(spTbl, sp_bot/sp_and/sp_or/sp_imp/sp_box, Cspade_defs, Cspade_agree23).
+Root forces φ♠; every instance fails at the root (the ¬◯⊥-worlds are
+2, 3 and the fallible 4, and a variable-free θ is DECIDED at 2, 3);
+every guarded stretch fails UNIFORMLY at inl 1 (1 ⊩ ¬¬◯⊥ makes the
+antecedent vacuous there, while the consequent needs ¬◯⊥ — false at 1 —
+or p, which on the ground layer means "fallible"); every PARAMETERISED
+fork fails UNIFORMLY at inl 0 (consequent fails outright; the antecedent
+holds because p is decided at every copy of 2 and 3, both copy
+valuations being variable-free and hence blind to 2 vs 3 — and a
+p-world on the other copy above inl 2 would need 3 ⊩ δ₂ with 2 ⊮ χ,
+which 3 ⊩ δ₂ ↔ 2 ⊩ δ₂ ⊢ χ forbids: the δᵢ ⊢ χ condition closes the
+last gap).  phiSpade_no_paramForkMixedCover, paramForkMixedConj_false,
+and semParamForkConj_false — even the POINTWISE form fails, so the §14
+bridge question does not arise for this family.  Independently
+re-verified from scratch in Python, including k = 3, 4 copies (0
+k-forks rescue φ♠); with ARBITRARY up-set copy valuations, dropping
+BOTH definability and δᵢ ⊢ χ, 43 choices do rescue it — the first being
+guard ⊤ with δ₁ = ‖p‖ itself, which is exactly the undefinable
+valuation one is trying to eliminate.  φ♠'s own ∃p is OPEN
+(PostInterpPhiSpadeExists); as at φ★, φ♦, φ♣ the refutation is of the
+METHOD, and uniform interpolation is untouched.
