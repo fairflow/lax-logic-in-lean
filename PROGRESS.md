@@ -5632,3 +5632,61 @@ before, and one the RN(◯,{}) dictionary machinery (§§43–47) may settle
 without search at all: classify `nf T♠1` in the 15-class dictionary and
 compare with `ψ♣`'s class.  That is the recommended next move on this
 thread, ahead of re-running the search wider.
+
+---
+
+## §57 (2026-08-04) — PROVE prong: TruncCase DISCHARGED, ImpCase retired and replaced, and the budget miscalibration FOUND — in the apparatus, not the kernel (delegated, verified, landed)
+
+wip/boxSnd.lean (rebuilt, sorry-free), wip/boxSndTight.lean (new),
+wip/floorGoals.lean (new).  The crown was NOT reached; the reasons
+are now exact and every one is a STATEMENT matter.
+
+DISCHARGED: TruncCase — needed NO measure and NO pairing: the
+truncation body is ⋁ others, so box_open against the ◯-target with
+the guard fired from the ambient (fuel and budget both free) lands on
+the traversal's own disjunct analysis once that analysis is HOISTED
+(othersOne/othersAll); three lines after the restatement.  RETIRED:
+ImpCase — unprovable as stated (whole-table membership loses which
+F ∈ Γ' produced φ); routing moved into the traversal; §110's
+six-shape count corrected to NINE (jump family contributes 2, γ
+family 2 + one continuation per boxed member; impOr's fresh witness
+needed the symmetric branch); nine new lemmas, all first try.
+boxSnd_reaches now sorry-free, signature pinned.
+
+THE DECISIVE FINDING (Matthew's predicted failure mode, located):
+boxSnd_reaches ran at ambient budget = source + 1, but its consumer
+GammaPairFloorBox supplies ambient = source — §§92-112 were built at
+budgets the interface never supplies.  The FIX IS LOCAL AND SIMPLER:
+boxSndTight decouples the budgets (ambient and source at e+2, target
+arbitrary c) and compiled FIRST TRY — at matched budgets the §107
+shifts are not needed at all, and the target budget rides free
+because the only target-producing clause is the goal clause, where
+itpA_atom_forces holds at every budget.  First instances of all
+three floor interfaces landed (gammaPairFloorBox/A_boxedAtom,
+jumpPairFloor_boxedAtom, floorBox_of_grownAmb, floorAny_atom —
+budgets independent); over ∨-free spaces the residue of ALL THREE
+floor interfaces is exactly SIX goal shapes (p, ⊥, ∧, ⊃, ◯p, ◯D
+non-atom; ∨ vacuous by g ∈ S).
+
+TWO BLOCKERS TO THE CROWN, both named: (a) cascade_low_pos_box's
+statement carries hbox over ARBITRARY S while the entire cascade
+apparatus needs piece-closure + coverage — the non-closed bands have
+no route; required: a cascade_main re-parameterisation threading
+closure/coverage exactly as cascade_main_bf already does box-free.
+STATEMENT CHANGE FLAGGED, NOT MADE.  (b) the floor-interface residue
+(six shapes × three interfaces) + AmbGuardAscent (untouched, no
+partial).  NO suspicion the lemma is false — every branch attacked
+closed, several first try.  Regression: tables byte-identical
+(nothing imports the changed files); towertest sizes reproduced
+exactly.  Method: SIX consecutive obligations were statement
+problems; check statements against the CONSUMER, not only the
+traversal.  New traps recorded: `split at h` silently resolving
+guards from context (use by_cases + simp only if_pos/if_neg);
+Option.noConfusion vs cases.
+
+COMBINED VERDICT WITH §56: the two prongs AGREE — the kernel lemma
+survives its first room-satisfying gate-live attack (all failures at
+c = 0, below the guard; structural defect-1 argument matches the
+measured constant boundary), and the one real miscalibration was in
+the apparatus one level up, with a local, simplifying fix.  The wall
+is now a finite list.
