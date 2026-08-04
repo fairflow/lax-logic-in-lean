@@ -5513,3 +5513,39 @@ polarities expressible, deliberately not mechanised — φ♠ did not
 need it).  sorryAx-injection fired again (implicit Prop args of a
 reducible model) and was caught by the pins; fix = per-member
 wrapper lemmas.
+
+---
+
+## §54 (2026-08-04) — TOWER vs LADDER: the syntactic scheme passes every test vector; ZERO disagreements (delegated, verified, landed)
+
+wip/towerkit.lean + towertest (exe) + towerpin.lean + towerpack.lean
+(unregistered: root-level tower imports, LEAN_PATH-built).  The July
+tower's COMPUTABLE quantifier tables (itpE/itpA, PLLG4UITrunc.lean —
+definitions verified sorry-free; sorryAx enters only via adequacy
+through cascade_low_pos_box) were run on the ladder's pinned battery
+and certified against the proved values.  RESULT: 12 rows, 8 fully
+certified AGREES (∃p of p/◯p/◯p⊃p/exLadder/phiMix; ∀p of p/◯p/wemP),
+φ★ AGREES on the nf-normalised output, 3 UNDECIDED-AT-BUDGET (positive
+search truncations only — never refutations), ZERO DISAGREEMENTS.
+The tower computes ⊤, rnSub 3, ¬¬◯⊥, ◯⊥, ⊥ ON THE NOSE at budgets
+0–1; sub-threshold budgets err exactly as the budget-gating predicts
+(∃-side too weak, ∀-side too strong) and itp_budget_mono_le
+(axiom-clean) transfers certified verdicts UP to the prescribed
+budget (eRow_settled/aRow_settled pinned) — essential because the
+prescribed-budget output is astronomically large (~10^b nodes; the
+prescribed budget for φ★ is 339).  BLIND PREDICTION: on φ♠ (open at
+the agent's base commit) the tower's b=1 output certifies
+¬¬◯⊥ ⊬ ∃p.φ♠ — CONSISTENT with ∃p.φ♠ = ψ♣ proved independently in
+§53 (¬¬◯⊥ ⊬ ψ♣ ✓); the full Interd(nf T♠1, ψ♣) check is the natural
+follow-up.  This is the July campaign's first test-vector evidence
+ever, and it points the same way as the open lemma: THE TOWER'S
+RECURSION COMPUTES THE RIGHT FUNCTION.  Named follow-ups: (b) nf
+correctness lemma ∀φ, Interd φ (nf φ) (~100-line induction; congruence
+lemmas exist) — hardens the nf-level verdicts to kernel grade; (c)
+atoms(itpE …) ⊆ atoms S ∪ atoms Γ (easy induction the library lacks);
+(d) kernel evaluation blocked by pieceClosure's WellFounded.fix —
+route: pin pieceClosure = literal Finset by simp with the unfolding
+equations; (e) postui's import closure reaches rnc_probe's root-level
+main — battery re-declared in towerkit, all nine rfl-checked
+(phiStar_eq etc., axiom-free).  RECOMMENDATION: redirect to the
+assault on cascade_low_pos_box with the ladder as regression suite.
