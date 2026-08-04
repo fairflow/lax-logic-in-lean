@@ -5033,3 +5033,25 @@ index CANNOT be bounded uniformly in `φ` (else `Wit M`, forced at
 plain-ladder world `M+3`, would entail a rung of index ≤ M), so the
 exponential dependence on `|Sub φ|` is forced by `gap_no_glb`, not an
 artefact.
+
+---
+
+## §46 (2026-08-04) — the GZ shape formalised family-generally; the analogy's exact verdict pinned
+
+wip/gzSchema.lean.  no_post_interp_schema_family /
+no_pre_interp_schema_family: the Ghilardi–Zawadowski obstruction
+shape for an ARBITRARY ℕ-indexed variable-free family D (axiom-free;
+the schema needs no order structure on D — chains/antichains only
+make hL plausible, never run the argument).  gap_family_instance:
+the campaign's schema is the D = gap (k+1) instance.
+gz_gap_uninhabited / gz_chain_uninhabited: at the gap family and the
+c-chain the schemas' hypotheses are jointly contradictory (collapse,
+rungbound restated in family indexing).  Verdict on the 2026-08-03
+"same conditions as GZ" observation: TRUE at the ambient level
+(descent, floorlessness, width — all pinned), REFUTED at the filter
+level (no instance can fire at these families).  Literature anchor
+recorded in the docstring: the S4 witness B = p₁ ∧ □(p₁→◇p₂) ∧
+□(p₂→◇p₁) ∧ □(p₁→q) ∧ □(p₂→¬q) (GZ 1995; Bílková thesis §3.1) lives
+on a two-element cluster realising infinite q-alternation in a
+finite model — the structural device intuitionistic heredity forbids,
+which is why collapse holds in PLL and fails in S4.
