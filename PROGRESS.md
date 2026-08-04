@@ -4925,3 +4925,29 @@ unknown ladder-valid member of L.  Probes (delegated, background):
 trace ⇒ meet unattained (or the refuting floor); (2) witness sweep —
 bounded one-variable enumeration under the constraint filters,
 PLLSearch two-sided verdicts.
+
+---
+
+## §43 (2026-08-04) — the floor probe landed: THE GAP MEET DOES NOT EXIST (delegated, verified, landed)
+
+wip/floor.lean.  Edge-stability machinery (cmE_agree_below: the edged
+lift differs from plain only in the lax edges leaving m+3, so they
+agree at all y ≤ m+2; plain_trace_dichotomy: every formula's ladder
+trace is everything or bounded; edge_stability: past a
+formula-dependent bound the two lifts agree AT the edge world — the
+◯-clauses differ by one conjunct, killed by the dichotomy) gives
+L_bounded: ANY χ entailing every gap has bounded plain trace — no
+atomFree hypothesis, so it covers one-variable formulas too.
+Corollaries: no_ladder_valid_lower_bound, gap_meet_not_attained,
+no_lower_bound_above_odd_rungs — the FMP mirror of the ∀-side kill is
+PROVED impossible.  New derivation lemmas: even_rung_gap (exact
+threshold t(2a+2) ⊢ g k for k ≥ a+1), wC_gap_step (generalised w15
+box-descent g(j+1) ∧ t(2j+6) ⊢ g(j+2)).  Headline: Wit b :=
+Gmeet b ∧ t(2b+6) ∈ L with trace ∋ b+3, so a glb would have unbounded
+trace: gap_no_glb / L_no_greatest — {g k} has NO greatest lower bound
+among ALL formulas and L has no greatest element.  Gmeet provably has
+no floor.  Not yet a UI refutation: the witness (F(φ) ∩ L = ∅) is
+still OPEN, and L_bounded warns that hL countermodels cannot come from
+the plain ladder (a witness also dies deep there) — edge models with
+tuned valuations are the natural family.  Audits pinned, sorry-free,
+all PLL.

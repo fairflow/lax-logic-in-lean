@@ -200,3 +200,51 @@ composites are being pinned by the delegated probes):
   is evidence for a collapse theorem ("every one-variable formula
   below all gaps entails a rung") — a positive-UI signal at this
   antichain.
+
+---
+
+## Postscript, same day: the floor probe landed — **the gap meet does not exist**
+
+`wip/floor.lean` (delegated probe, verified, landed).  The conjecture
+is PROVED and strengthened.  Mechanism: *below-edge agreement*
+(`cmE_agree_below`: the edged lift differs from the plain lift only in
+the lax edges leaving world m+3, so the two models agree at every world
+y ≤ m+2), *trace dichotomy* (`plain_trace_dichotomy`: by heredity every
+formula's plain-ladder truth set is everything or bounded), and *edge
+stability* (`edge_stability`: for m past a formula-dependent bound, the
+edged and plain lifts agree on the formula AT the edge world m+3 — the
+◯-clauses differ by exactly one conjunct, killed by the dichotomy).
+Hence:
+
+* `L_bounded` — any χ entailing every gap has bounded plain trace.
+  **No `atomFree` hypothesis**: both lifts read atoms as the fallible
+  singleton, so this covers one-variable formulas too.
+* `no_ladder_valid_lower_bound`, `gap_meet_not_attained`,
+  `no_lower_bound_above_odd_rungs` — the meet is attained nowhere; the
+  mirror of the ∀-side kill is now PROVED impossible, not merely
+  evidenced.
+* `even_rung_gap` — the exact rung-order threshold t(2a+2) ⊢ g k for
+  k ≥ a+1; `wC_gap_step` — the generalised w15 box-descent
+  g (j+1) ∧ t(2j+6) ⊢ g (j+2) at every level.
+* `Wit b := (g 1 ∧ … ∧ g (b+1)) ∧ t(2b+6)` ∈ L with plain trace
+  containing b+3 (`Wit_below_all_gaps`, `Wit_force_high`) — members of
+  L with unboundedly large traces.  A glb would sit above every Wit b,
+  forcing an unbounded trace, contradicting `L_bounded`:
+
+**`gap_no_glb` / `L_no_greatest`: the family {g k : k ≥ 1} has NO
+greatest lower bound in PLL — among ALL formulas, one-variable
+included — and the landing ideal L has no greatest element.**  The
+descending chain `Gmeet` provably has no floor; the infinite meet
+⋀ g k exists only in the completed algebra, exactly the
+Ghilardi–Zawadowski-shaped structure the ∃-side needs.
+
+What this does and does not settle.  It settles: the ∃-side door
+cannot be slammed the way the ∀-side was; the non-existence of the
+meet — the structural fact a witness would exploit — is a theorem.  It
+does NOT yet refute UI: `no_post_interp_schema` still needs one φ with
+F(φ) ∩ L = ∅.  And `L_bounded`'s generality cuts both ways: a
+candidate witness φ (entailing all gaps) ALSO has bounded plain trace,
+so the plain ladder can never separate φ from members of L — the hL
+countermodels must come from other model families (the edge models
+with tuned valuations of p are the natural candidates).  The witness
+sweep is running.
