@@ -248,3 +248,57 @@ so the plain ladder can never separate φ from members of L — the hL
 countermodels must come from other model families (the edge models
 with tuned valuations of p are the natural candidates).  The witness
 sweep is running.
+
+---
+
+## Postscript 3, same day: the witness sweep is EMPTY — and the filters are now theorems
+
+`wip/wlanding.lean` + probe harnesses `wip/wsweep.lean`/`wip/wscout.lean`
+(delegated sweep, verified, landed).  All PLL.
+
+**Filters promoted to theorems** (sorry-free, pinned):
+
+* `rung_kills` / `rung_blocks_schema`: if φ entails every gap AND any
+  single rung `rnSub m` (odd or even), then φ entails the variable-free
+  `Ufam m := Gmeet m ∧ rnSub m ∈ L` — hL dies.  The no-rung constraint
+  is exact, for every rung index.
+* `inst_in_L` / `no_theorem_instance` / `self_instance_kills`: every
+  variable-free instance φ[p↦χ] of a gap-entailing φ lies in L; none
+  can be a theorem; entailing one's own instance kills hL.
+* New low family in L: `Vf n := Gmeet n ∧ rnSub (2n+4)` (no
+  box-descent needed; `Vf 0 = g1 ∧ t4` is lower than w15 where it
+  matters).
+
+**Sweep results.**  Exhaustive size ≤ 8 over {⊥, p, ∧, ∨, ⊃, ◯}:
+26,032 formulas — 15,584 killed by polarity, 7,795 by `φ ⊬ g 1`
+(search-space exhausted), and ALL 2,653 remaining entail a rung
+(least entailed: ◯⊥ 2070, t2 503, t3 6, t4 74).  Zero survivors, zero
+near-misses.  Structured clause-pool sweep (9,537 candidates over 120
+rung/gap/collapse/link clauses): zero certified survivors; the only
+shapes proving g 1 AND g 2 while dodging rungs and self-instances are
+`X ∧ g 2` where the p-clause contributes nothing.  34 hand designs:
+every one that survives g 1 + the rung dodge is killed by the
+SELF-INSTANCE filter (φ ⊢ φ[p↦t3] or φ ⊢ φ[p↦◯⊥]).  Unswept: 2,573
+pool candidates undecided at budget 8000; sizes ≥ 9.
+
+**Frontier fact, pinned by hand** (`gap_two_le_one`): `g 2 ⊢ g 1` —
+discovered by the sweep.  So the gap family is an antichain only from
+k = 2, with g 1 < g 2 strictly (`gap_one_not_le_two`).  `g k ⊢ g 1`
+for k ≥ 3 is OPEN.
+
+**The collapse conjecture** (UNPROVED — the designated next target).
+For a world v of a finite model let ρ(v) = min{k : v ⊩ t(2k+1)}
+(finite, by `rank_bound`) and β(v) = min{k : v ⊩ ◯t(2k+1)}; always
+β ≤ ρ.  Then hg (φ ⊢ every gap) says exactly: hereditarily above every
+φ-world, ρ = β — the ◯-escape never lowers the rung rank.  CONJECTURE:
+any one-variable φ enforcing ρ = β hereditarily must bound ρ, i.e.
+must entail some rung — whereupon `rung_kills` finishes it and NO
+one-variable φ can instantiate `no_post_interp_schema` at the gap
+antichain: the ∃-side would join the ∀-side as vacuous.  The sweep
+data points this way.  Note the tension this would resolve AGAINST
+refutation: `gap_no_glb` stands (the meet does not exist), but the
+schema needs a φ pressed against the non-existent meet, and rung-free
+gap-entailment may be unreachable for one-variable formulas.  Being
+probed by delegation (prove: edge-surgery/limit transport of
+`rank_bound` + `edge_stability` to arbitrary finite models; refute:
+candidates beyond the sweep's bound).

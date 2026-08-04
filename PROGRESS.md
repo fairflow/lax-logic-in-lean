@@ -4951,3 +4951,30 @@ still OPEN, and L_bounded warns that hL countermodels cannot come from
 the plain ladder (a witness also dies deep there) — edge models with
 tuned valuations are the natural family.  Audits pinned, sorry-free,
 all PLL.
+
+---
+
+## §44 (2026-08-04) — witness sweep EMPTY; the filters are now theorems; the collapse conjecture (delegated sweep, verified, landed)
+
+wip/wlanding.lean + harnesses wip/wsweep.lean, wip/wscout.lean (exes
+wsweep/wscout).  Zero survivors, zero certified near-misses.  Filters
+as theorems: rung_kills/rung_blocks_schema (a gap-entailing φ that
+entails ANY rung entails Ufam m = Gmeet m ∧ rnSub m ∈ L: hL dies —
+the no-rung constraint exact at every index); inst_in_L /
+no_theorem_instance / self_instance_kills (every variable-free
+instance of a candidate lies in L; entailing one's own instance is
+fatal — the filter that killed every hand design); Vf n = Gmeet n ∧
+t(2n+4), a lower no-descent family in L.  Sweep: size ≤ 8 exhaustive
+(26,032): all 2,653 g1-entailers entail a rung (◯⊥ 2070 / t2 503 /
+t3 6 / t4 74); clause-pool (9,537 over 120 clauses): only gap2-carried
+shapes reach g1∧g2, p contributing nothing; 34 hand designs all die at
+the self-instance filter.  Frontier fact pinned by hand:
+gap_two_le_one — g 2 ⊢ g 1 (so the antichain starts at k = 2; g1 < g2
+strict via gap_one_not_le_two; g k ⊢ g 1 for k ≥ 3 OPEN).  NEXT
+TARGET, the collapse conjecture (OPEN): with ρ(v) = min rung rank,
+β(v) = min ◯-rung rank (β ≤ ρ), hg says ρ = β hereditarily above
+φ-worlds; conjecture: one-variable φ enforcing this must entail a
+rung — then rung_kills makes the ∃-side schema VACUOUS at 1 pv, both
+sides of the UI attack close, and the strongest known obstruction is
+neutralised (gap_no_glb still standing as pure structure).  Delegated
+probe launched.
