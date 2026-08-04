@@ -5274,3 +5274,48 @@ guards).  Note the escalation pattern: p ∨ ¬p killed meet covers; φ★
 relativisation on a branching frame) killed mixed + guarded.  Whether
 this ladder of defeaters terminates in a construction or climbs
 forever is now the sharpest form of the last-variable UI question.
+
+---
+
+## §51 (2026-08-04) — ∃p.φ♦ = ¬¬◯⊥ PROVED by the FORK; fork ⊥ stretch INCOMPARABLE; φ♣ moves the frontier to the PARAMETERISED fork (delegated, verified, landed)
+
+wip/branchdia.lean (1034 lines, sorry-free, pinned) + branchprobe.
+VERDICT (A): postInterp_phiDia : IsPostInterp phiDia (¬¬◯⊥) — UI does
+NOT fail at φ♦; the escalation p∨¬p → φ★ → φ♦ refutes METHODS only.
+The brief's 3-layer branching stretch was WRONG (any construction
+leaving the ◯⊥-region on the ground layer with p-copies above fails
+condition (α)); the right shape is the FORK bstretch C χ: TWO copies
+of C glued below the guard region and separated ON it — cross edges
+inl x ⇝ inr y guarded by ¬(x ⊩ χ), legitimate because the COMPLEMENT
+of a truth set is down-closed (not_force_of_Ri), exactly what trans_i
+needs; V(p) = ‖χ‖ on inl, F on inr.  At χ = ◯⊥, bstretch M3 IS M♦
+(copy-swap = frame automorphism ⇒ undefinable valuation): the
+defeater was the construction in disguise, again.  Forcing condition
+read off φ♦: ◯⊥-worlds must DECIDE p (α); non-◯⊥-worlds must kill
+the antecedent two-sidedly (β) — the two copies of one oBot_witness
+world are exactly (β)'s two witnesses.  bstretch_transfer [propext];
+bstretch_force_phiDia; phiDia_minimal; postInterp_phiDia.  General
+method: translation pair BLo/BUp with the guard as a DISJUNCT
+(BLo(A⊃B) = (BLo A ⊃ BLo B) ∧ (χ ∨ (BUp A ⊃ BUp B)), mutually
+recursive symmetric; bstretch_tr carries Classical.choice — the χ ∨ …
+step needs case analysis, unlike gstretch_tr); lower bounds
+bstretch_below/_below_up; postInterp_of_branch; hasBranchCover_phiDia;
+interd_BLo_phiDia.  INCOMPARABILITY (branch_stretch_incomparable):
+φ★ has stretch-not-branch (the fork's ¬p-copy kills ¬¬p:
+bstretch_M3_not_phiStar), φ♦ has branch-not-guardedMixed — the
+successor conjecture must JOIN all three families (BranchMixedConj +
+postUI_of_branchMixedConj + refutation tool landed).  Instance bound
+pinned: both Boolean instances of φ♦ ⊣⊢ ◯⊥, strictly below ¬¬◯⊥.
+PROBE (branchprobe, fork arithmetic verified 0 mismatches over all
+n ≤ 4): branch coordinate kills every n ≤ 4 defeater of the guarded
+family; n = 5 partial (1500 s) found ONE hit φ♣ = ((p ⊃ ◯⊥) ∨
+(¬p ⊃ ◯⊥)) ⊃ (¬◯⊥ ∨ (◯⊥ ∧ p)) in C♣ (5 worlds, D = 5 truth sets) —
+defeats LoG AND BLo at every guard (independent from-scratch Python
+re-check) BUT is rescued by the PARAMETERISED fork
+fork C χ δ₁ δ₂ (free copy-valuations δᵢ ⊢ χ; bstretch = fork χ χ ⊥):
+forced at χ = ¬¬◯⊥, {δ₁,δ₂} = {◯⊥, ¬¬◯⊥}; k = 3,4 copies add
+NOTHING beyond free valuations at k = 2.  So BranchMixedConj as
+stated is expected FALSE at φ♣ (unpinned; Python-verified), and the
+corrected frontier = join of substitution + guarded stretch +
+parameterised fork.  sorryAx-injection trap hit again and caught by
+the pins (three missing .1s in an 8-case rintro).
