@@ -5185,3 +5185,92 @@ probes named: stretches along ‖◯χ‖ for arbitrary variable-free χ
 tower); a MixedCoverConj counterexample must defeat every member.
 ∀-side untouched (no co-stretch by symmetry: the guard uses ◯⊥
 essentially).
+
+## §50 (2026-08-04) — REFUTED: MixedCoverConj, and GuardedMixedConj with it — φ♦ in the DIAMOND (delegated, verified, landed)
+
+wip/mixedprobe.lean (probe), wip/guardstretch.lean, wip/mixedfail.lean
+(both sorry-free, pinned).  VERDICT: **mixedCoverConj_false** and
+**guardedMixedConj_false**.  §49's live reduction is dead, and so is
+its own weakening.
+
+THE COUNTEREXAMPLE.  φ♦ = ((◯⊥ ⊃ p) ∨ ◯⊥ ∨ ¬p) ⊃ ((◯⊥ ∧ p) ∨ (◯⊥ ∧ ¬p))
+in the DIAMOND model M♦: 0 ⊑ 1, 2 ⊑ 3 with 1, 2 incomparable,
+Rₘ = id ∪ {(x,3) : x ≠ 0}, F = {3}, V(p) = {1,3}.  ‖◯⊥‖ = {1,2,3};
+the transposition 1 ↔ 2 is a frame automorphism (Md_swap), so the
+variable-free truth sets are exactly {⊥, ◯⊥, ⊤} and ‖p‖ = {1,3} is
+undefinable.  Root ⊩ φ♦ (above the root the consequent is ◯⊥ ∧ (p ∨ ¬p),
+true at 1 by p, at 2 by ¬p, at 3 by fallibility); the antecedent fails
+at the root, which is what makes every substitution instance fail
+there (Md_inst_fails): θ true at 1 iff true at 2, so either θ ⊇ ‖◯⊥‖
+(then ◯⊥ ⊃ θ holds at the root) or θ lives on the fallible world alone
+(then ¬θ holds at the root) — and the consequent always needs ◯⊥,
+which fails at the root.  So φ♦ is the ∃-side twin of postui's
+p ∨ ¬p, relativised to the ◯⊥-region.
+
+WHY NO STRETCH RESCUES IT.  Md_gstretch_fails: for EVERY guard χ
+(variable-free or not) φ♦ fails at inl(root) of gstretch M♦ χ — three
+cases: 1 ⊩ χ (the attached upper copy inr 1 forces p and is not
+fallible, so ¬p fails at inl 1 while p fails there too: the consequent
+dies where ◯⊥ holds), 2 ⊩ χ (same at inl 2), and 1, 2 ⊮ χ (the upper
+layer sits only over the fallible 3, so ¬p holds at inl 0 while ◯⊥
+does not).  Through gstretch_tr this says: every guarded lower bound
+LoG χ φ♦ fails at the root of M♦.
+
+THE GENERALISED GUARDS (wip/guardstretch.lean, the §49 "next probe"
+discharged).  gstretch C χ = the stretch with the upper layer attached
+over ‖χ‖ — a constraint model for ANY χ (the only property used is
+that a truth set is Rᵢ-upward closed).  trG χ = (LoG χ, UpG χ) is tr
+with ◯⊥ replaced by χ; gstretch_transfer (axiom [propext]),
+gstretch_tr (axiom-free), gstretch_below: LoG χ φ ⊢ ψ for every
+variable-free ψ with φ ⊢ ψ — a FAMILY of non-substitutional lower
+bounds on F(φ), one per guard.  gstretch C ◯⊥ = stretch C and
+LoG ◯⊥ = Lo, so §49's bound is the ◯⊥ member; the guards are not
+cosmetic (not_hasGuardedCover_top_phiStar: LoG ⊤ φ★ ⊢ ◯⊥, so the ⊤
+guard overshoots at φ★, where the ◯⊥ guard succeeds).
+postInterp_of_guardedMixed / postUI_of_guardedMixedConj give the
+weaker reduction — refuted above.  Semantic tools added:
+hasMixedCover_iff_semMixed, not_hasMixedCover_of_model,
+not_hasGuardedMixedCover_of_model.
+
+THE SEARCH (wip/mixedprobe.lean, coverprobe extended with (‖LoG χ‖,
+‖UpG χ‖) coordinates per guard; every hit cross-checked against an
+explicitly built stretch frame).  mode=mixed (guard ◯⊥): n = 2: 4
+models / 2 undefinable pairs / 0 hits; n = 3: 37 / 40 / 0; n = 4:
+726 / 1232 / 4 cover-hit pairs of which 2 are MIXED hits (the two
+symmetric valuations of the diamond) — closure never capped, max 62.
+mode=guarded (all three guards of D(M♦)): same 2 hits at n = 4, Lo
+coordinates {1,2,3}, {3}, {3} for guards ⊥, ⊤, ◯⊥ — none containing
+the root.  n = 5 (cap 40000, ran to completion in 712 s): 28639 models,
+69834 undefinable (model,U) pairs, 0 capped, 2548 cover-hit pairs
+(reproducing coverprobe's 2548 exactly) of which 2280 are MIXED hits —
+the stretch bound rescues only 268 of the 2548 cover failures.  11
+distinct minimal separating formulas; the commonest is
+(¬◯⊥ ⊃ (¬p ∨ p)) ⊃ (¬◯⊥ ∨ ◯⊥) (564 pairs), then
+((p ⊃ ◯⊥) ∨ ◯p) ⊃ (¬◯⊥ ∨ ◯⊥) (528).  The phenomenon is generic, as it
+was for covers.
+
+STATUS.  Both reductions of last-variable ∃p by cover-style methods
+are now dead: CoverConj, StretchCoverConj, MixedCoverConj,
+GuardedMixedConj all REFUTED, MeetCoverConj REFUTED on the ∀-side.
+UI itself is untouched.  The new live question is the φ★-analogue for
+φ♦: PostInterpPhiDiaExists — does ∃p.φ♦ exist at all?  In M♦ only ⊤
+survives as a candidate (the variable-free truth sets containing the
+root are just ⊤), and postInterpPhiDiaIsTop_iff reduces that to "every
+variable-free consequence of φ♦ is a theorem".  A positive answer needs
+a construction that is neither substitutional nor a guarded stretch.
+
+Addendum (scheduler, same day): the §50 remark "⊤ is the only
+candidate M♦ permits" was WRONG as an inference — M♦ only shows any
+interpolant is ⊤-valued ON M♦, and ¬¬◯⊥ also has full truth set there.
+Pinned in the mixedfail addendum: phiDia_nnbox (φ♦ ⊢ ¬¬◯⊥, axiom-free,
+same two-line mechanism as phiStar_nnbox) and
+postInterpPhiDiaIsTop_false (⊤ is EXCLUDED as ∃p.φ♦).  The successor
+question is exactly the φ★-shape question one construction further
+out: **∃p.φ♦ =? ¬¬◯⊥**, now beyond every guarded two-layer stretch —
+the same conjectured VALUE as φ★, needing a construction the guarded
+family provably cannot supply (Md_gstretch_fails quantifies over ALL
+guards).  Note the escalation pattern: p ∨ ¬p killed meet covers; φ★
+(its ◯⊥-relativisation) killed substitution covers; φ♦ (the ∨-form
+relativisation on a branching frame) killed mixed + guarded.  Whether
+this ladder of defeaters terminates in a construction or climbs
+forever is now the sharpest form of the last-variable UI question.
