@@ -286,7 +286,8 @@ discovered by the sweep.  So the gap family is an antichain only from
 k = 2, with g 1 < g 2 strictly (`gap_one_not_le_two`).  `g k ⊢ g 1`
 for k ≥ 3 is OPEN.
 
-**The collapse conjecture** (UNPROVED — the designated next target).
+**The collapse conjecture** (UNPROVED at the time of writing;
+PROVED the same day — see Postscript 4).
 For a world v of a finite model let ρ(v) = min{k : v ⊩ t(2k+1)}
 (finite, by `rank_bound`) and β(v) = min{k : v ⊩ ◯t(2k+1)}; always
 β ≤ ρ.  Then hg (φ ⊢ every gap) says exactly: hereditarily above every
@@ -302,3 +303,53 @@ gap-entailment may be unreachable for one-variable formulas.  Being
 probed by delegation (prove: edge-surgery/limit transport of
 `rank_bound` + `edge_stability` to arbitrary finite models; refute:
 candidates beyond the sweep's bound).
+
+---
+
+## Postscript 4, same day: the COLLAPSE THEOREM — the ∃-side closes; the attack at the gap antichain is over
+
+`wip/collapse.lean` (delegated probe, verified, landed).  All PLL,
+sorry-free, `[propext, Classical.choice, Quot.sound]`.
+
+    collapse : (∀ k ≥ 1, φ ⊢ g k) → ∃ m, φ ⊢ t m          -- ANY φ
+    post_interp_schema_vacuous : hg → ¬ hL
+    L_eq_union_Ufam : (∀ k ≥ 1, φ ⊢ g k) ↔ ∃ m, φ ⊢ U m
+
+Every gap-entailing formula — one variable, many, arbitrary — entails
+a rung, hence (rung_kills) a variable-free member of L: the two
+hypotheses of `no_post_interp_schema` are jointly contradictory,
+exactly as `pre_interp_schema_vacuous` closed the ∀-side.  The third
+theorem is a structure result worth keeping: **the landing ideal is
+the union of the principal ideals of the rung companions U m** — below
+all the gaps ⟺ below some single U m.
+
+Proof in four moves (details in the file and PROGRESS §45): rank
+ρ w = min{k : w ⊩ t(2k+1)} in finite models; rank descent (ρ drops by
+2 along Rᵢ, read off the even-rung recursion); EDGE SURGERY — the
+general form of the cmE construction: adding lax edges toward lower
+rank along a co-type-respecting descent map is invisible to a fixed
+subformula-closed set (hence to the rungs, via ⊥) but makes
+gap (ρu−1) FAIL at a φ-world, contradicting hg; so above every
+φ-world sits a RIGID world of the same rank, and a pigeonhole on
+co-types (2^|Sub φ| of them) bounds ρ at φ-worlds by 2·2^|Sub φ| + 2;
+FMP converts the bound into φ ⊢ t m with m explicit.  Cross-check
+`collapse_bound_not_uniform`: no uniform rung index can work (Wit M
+forces the index above M) — the exponential dependence on |Sub φ| is
+FORCED by gap_no_glb, a genuine consistency check between the two
+results.
+
+**Where this leaves the campaign.**  The UI-failure attack via the gap
+antichain is closed BOTH ways, by parallel mechanisms: the ∀-side by
+rank_bound + FMP (nothing sits strictly between the c-chain and ⊤),
+the ∃-side by collapse + rung_kills (nothing sits between the gaps
+and L without falling into L).  What stands as pure structure:
+infinite width (gap_incomparable), the floorless descent
+(Gmeet_desc_strict + gap_no_glb), L = ⋃ ↓U m, g1 < g2.  UI for PLL
+itself remains OPEN — neither refuted (this attack is dead) nor
+proved — but the strongest known obstruction is neutralised, and the
+collapse machinery (surgery + rigidity + co-type pigeonhole) reads
+like the germ of a POSITIVE method: it computes, for gap-entailing φ,
+a variable-free consequence below all gaps — a step toward
+constructing ∃p.φ outright.  Whether to pivot the campaign from
+refuting UI to proving it (reconnecting with the dormant syntactic
+tower) is the next strategic decision.

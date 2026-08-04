@@ -4978,3 +4978,58 @@ rung — then rung_kills makes the ∃-side schema VACUOUS at 1 pv, both
 sides of the UI attack close, and the strongest known obstruction is
 neutralised (gap_no_glb still standing as pure structure).  Delegated
 probe launched.
+
+---
+
+## §45 (2026-08-04) — the COLLAPSE THEOREM is PROVED: the ∃-side of the UI attack closes
+
+wip/collapse.lean (new, sorry-free, `[propext, Classical.choice,
+Quot.sound]` throughout).  The §44 target is now a theorem, and with no
+one-variable hypothesis:
+
+    collapse : (∀ k, 1 ≤ k → Deriv [φ] (gap k)) → ∃ m, Deriv [φ] (rnSub m)
+
+Composed with the pinned rung filter this gives the headline
+
+    post_interp_schema_vacuous :
+      (∀ k, 1 ≤ k → Deriv [φ] (gap k)) →
+      ¬ (∀ ψ, atomFree ψ = true →
+           (∀ k, 1 ≤ k → Deriv [ψ] (gap k)) → ¬ Deriv [φ] ψ)
+
+— the ∃-side obstruction schema `no_post_interp_schema` has jointly
+contradictory hypotheses at the gap antichain, exactly as
+`pre_interp_schema_vacuous` (wip/rungbound.lean) killed the ∀-side.
+Also `L_eq_union_Ufam`: `φ ⊢ g k (k ≥ 1) ↔ ∃ m, φ ⊢ U m`, i.e. the
+landing ideal is the union of the principal ideals of the variable-free
+rung companions.  Both UI obstruction routes through this antichain are
+now closed; `gap_no_glb` still stands as pure order structure.
+
+The proof is semantic, in four moves.  RANK: in a finite model
+`ρ w = min {k : w ⊩ t(2k+1)}` exists (`exists_rung_of_finite`), is
+antitone, and `ρ w ≤ k ↔ w ⊩ t(2k+1)`.  RANK DESCENT (`rho_descent`):
+`ρ u = n ≥ 2` gives `v ≥ᵢ u` with `ρ v = n−2` (read off
+`t(2n−2) = t(2n−3) ⊃ t(2n−5)`).  EDGE SURGERY (`surgery`,
+`surg_cotype`, `surg_force`, `surg_rung`): with the co-type
+`S v = {B ∈ Φ : some Rₘ-successor of v forces B}` for a
+subformula-closed `Φ ∋ ⊥, φ`, a *descent map* `x` (for all `v ≥ᵢ u`:
+`v Rᵢ x v`, `S (x v) ⊆ S v`, `ρ (x v) < ρ u`) lets one add the
+`Rₘ`-edges `{(z,y) : ∃ v ≥ᵢ u, z Rₘ v ∧ x v Rₘ y}` — the co-type
+condition makes them invisible to every `Φ`-formula and (via `⊥ ∈ Φ`)
+to `◯⊥`, hence to every rung — while `u` now `Rₘ`-sees rank
+`< ρ u`, so `gap (ρu−1)` FAILS at `u` though `u ⊩ φ`: contradiction
+with hg.  PIGEONHOLE: hence above every `φ`-world of rank ≥ 2 sits a
+*rigid* world of the same rank (`exists_rigid`); iterating rank descent
+and rigidity builds `T+1` rigid worlds `g 0 ≤ᵢ … ≤ᵢ g T` with
+`ρ(g a) + 2a = ρ w` (`rigid_chain`), and with `T = 2^|Φ|` two share a
+co-type — contradicting rigidity of the lower-indexed one.  So
+`ρ w < 2·2^|Φ| + 2` at every `φ`-world (`rho_bounded`), and the FMP
+plus deduction (`countermodel_of_not_deriv`) turns that into the
+derivability.
+
+The `cmE` edge model of wip/gapWidth.lean is exactly an instance of the
+surgery (edge `(m+3) ⇝ 0`), which is why `gap_fails` reads like the
+general mechanism.  Cross-check `collapse_bound_not_uniform`: the rung
+index CANNOT be bounded uniformly in `φ` (else `Wit M`, forced at
+plain-ladder world `M+3`, would entail a rung of index ≤ M), so the
+exponential dependence on `|Sub φ|` is forced by `gap_no_glb`, not an
+artefact.
