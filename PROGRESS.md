@@ -5055,3 +5055,39 @@ recorded in the docstring: the S4 witness B = p₁ ∧ □(p₁→◇p₂) ∧
 on a two-element cluster realising infinite q-alternation in a
 finite model — the structural device intuitionistic heredity forbids,
 which is why collapse holds in PLL and fails in S4.
+
+---
+
+## §47 (2026-08-04) — THE PIVOT: proving last-variable UI; substitution covers; ◯-free ∃p PROVED (delegated, verified, landed)
+
+wip/postui.lean (1607 lines, sorry-free, pinned).  Method =
+SUBSTITUTION COVERS: inst θ φ := φ[p := θ]; inst_below / inst_above
+([propext, Quot.sound]) put every variable-free instance below F(φ)
+and above I(φ), so ∃p exists whenever φ ⊢ ⋁ instances over a finite
+variable-free pool S (HasCover; postInterp_of_cover), and ∀p whenever
+⋀ instances ⊢ φ (HasMeetCover; preInterp_of_cover).  CoverConj :=
+every 1-pv φ has a cover — THE remaining gap to last-variable ∃p.
+PROVED subclasses: polarity-pure (subst_mono; UI_of_pure — both
+quantifiers, θ ∈ {⊤,⊥}); THE ◯-FREE 1-pv FRAGMENT, ∃-side
+(postInterp_of_boxFree — one-element cover; ingredients:
+force_inst_congr (axiom-free, fully general: p ↔ θ interchange above
+m transfers to A ↔ A[p:=θ], ◯-clause stays in the cone since
+Rₘ ⊆ Rᵢ), evalCl two-valuedness, non-fallible-witness case split).
+Calculus: post/preInterp_self/_unique/_congr, postInterp_or/andClosed,
+preInterp_and/impClosed.  Pinned instances: ∃p.p = ⊤, ∀p.p = ⊥,
+∃p.◯p = ⊤, **∀p.◯p = ◯⊥** (July's stabilisation probe now a theorem),
+∃p.(◯p ⊃ p) = ⊤, **∃p.(p ∧ (p ⊃ t3)) = t3** (a genuine rung),
+**∃p.((p ⊃ ◯⊥) ∧ ¬¬p) = ¬¬◯⊥** (mixed polarity, cover θ = ◯⊥).
+REFUTED: the Boolean pool {⊤,⊥} does not suffice
+(phiMix_no_boolean_cover, model M3); **MeetCoverConj FALSE**
+(wemP_no_meetCover at p ∨ ¬p: two-world model N whose worlds the
+variable-free fragment cannot separate, N_uniform) — yet
+**∀p.(p ∨ ¬p) = ⊥ EXISTS** (preInterp_wemP) via the DOUBLING
+construction dbl C (W × Fin 2; dbl_transfer: variable-free formulas
+cannot see the second coordinate), so the ∀-side method is strictly
+one-directional while UI itself stands untouched.  OPEN: CoverConj;
+sticking point named exactly — the ◯-free proof upgrades "instance
+forced at a non-fallible world ≥ᵢ w" to "provable" by two-valuedness,
+unavailable in RN(◯,{}); the general cover needs the instance forced
+AT w, where the collapse machinery (co-type pigeonhole, rho_bounded,
+surgery) is the designated tool, with force_inst_congr as interface.
