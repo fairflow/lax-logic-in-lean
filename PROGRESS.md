@@ -6190,3 +6190,263 @@ before the proof".  §60 adds the cheapest structural check of all:
 tower needs; it is consumed from three places, all of one shape, and
 that fact — three lines of `grep` — is what turns a 1500-line ledger
 rebuild into a single room-free statement.
+
+## §61 (2026-08-05) — Round 5: the `◯`-goal descent's own γ-row is the residue, no budget-sensitive hypothesis can finance it, and the statement's own regime probes clean
+
+`wip/round5probe.lean`, `wip/round5probe2.lean`, `wip/round5core.lean`
+(all new, all sorry-free, all pinned).  `wip/absorb_base.lean` and
+everything below it are **untouched**: the one `sorry` is still
+`cascade_boxgoal_pos`, exactly as round 4 left it.  The round's brief
+was to prove it — the direct-form clone of `cascade_main`'s A-half —
+and carried a hard constraint: STOP if the build ever needs a
+seal-style demand (a hypothesis handed back one budget lower), because
+`no_ledger_survives_gamma_seal` refutes that route.  The build reaches
+that demand, from every design, at one and the same place; this round
+pins the place, refutes every financing of it, finances everything
+else, and screens the statement's own regime for the first time.
+
+**(a) WHERE THE DEMAND ARISES — the γ-row self-recursion.**  Unfold
+`cascade_boxgoal_pos`'s source `A@(fs, b+1)(Γ, ◯D)` one level.  For a
+live γ-clause `◯A₁ ⊃ B₀ ∈ Γ` (`B₀ ∈ S ∖ Γ`) the γ-row contributes
+
+    ( ◯( E@(b)(Γ) ⊃ A@(b)(Γ, ◯A₁) ) ) ∧ A@(b+1)(B₀::Γ, ◯D)
+
+and, at a context with no bare `◯`-member (the general case: the
+γ-context and `somehow`-χ rows need some `◯x ∈ Γ`), every disjunct of
+the target `A@(ft, b)(Γ, ◯D)` that can absorb it pairs the grown
+second component with a first component one budget down:
+
+    ( ◯( E@(b-1)(Γ) ⊃ A@(b-1)(Γ, ◯A₁) ) ) ∧ A@(b)(B₀::Γ, ◯D)
+
+(the truncation disjunct only re-enters the same analysis one box in).
+Producing that component from the held one is the `◯`-goal descent
+`b → b-1` at the SAME context and defect — an instance of
+`cascade_boxgoal_pos` itself, one budget below its own room.  The
+recursion is self-similar: the `◯`-goal table's γ-rows are the
+recursion, each step dropping the budget by one, capped only by fuel.
+
+**(b) WHY NO DESIGN ESCAPES — the two horns, and the repeat
+asymmetry.**  The two workable traversal designs sit on opposite horns:
+
+* **fire** (`boxSnd_tight`'s fixed-target design): every gated row is
+  absorbed by firing the ambient's matching conjunct — at the tight
+  budgets (`cascade_boxgoal_pos`'s ambient IS at the source's budget)
+  the match is exact, room-free, defect-recursive.  Nothing lands
+  except the source's goal row, and its landing is the context-SHRINK
+  `A@(b+1)(Γ', D) ⊢ A@(b)(Γ, D)`, `Γ ⊆ Γ'` — licensed only by
+  `itpA_atom_forces` at atomic bodies (§59's amendment), unsound in
+  general.
+* **map** (`cascade_zero`/`cascade_main`-style per-disjunct mapping):
+  every row lands same-context; the jump rows are financed (see (d));
+  the γ-row lands only through the boxed head one budget down — the
+  demand of (a).
+
+And the pigeonhole cannot rescue the map horn in direct form: a
+continuation-form repeat lifts a deep low-budget value UP into a
+pending high-budget slot (`itp_budget_mono_le`, the easy direction);
+a direct-form repeat would need a value DOWN at a budget below
+everything held, and there is no downward monotonicity.  This is the
+precise content of July's "the target chain above a splice cannot be
+rebuilt after the fact", and it is design-independent — which is also
+why no statement renegotiation within the ledger family (seen-sets,
+shifts) helps, and why no statement change is flagged this round.
+
+**(c) THE REFUTATION — no side-condition family finances the
+self-recursion** (`wip/round5core.lean`, pinned):
+
+    theorem no_self_financed_crossing
+        {Φ : Finset PLLFormula → List PLLFormula → Nat → Prop}
+        (hsupply : ∀ S Γ c, 1 ≤ defect S Γ → Room S Γ c → Φ S Γ c)
+        (hcross  : ∀ S Γ c, Φ S Γ (c + 1) → Φ S Γ c)
+        (hneed   : ∀ S Γ c, Φ S Γ c → Room S Γ c) : False
+
+with `room_not_descending` the `Φ := Room` instance, both at round 3's
+`Sγ` (piece-closed, `◯a ∈ Sγ`, `defect = 1` — every hypothesis of the
+statement is satisfiable there).  Round 3 refuted ledgers threaded
+through `cascade_main`'s seals; this refutes every financing of the
+round-4 architecture's OWN self-recursion: §60(e)'s "the architecture
+makes only the entry demand" is true of the three call SITES and false
+of the proof obligation inside `cascade_boxgoal_pos`.  Consequently
+any proof must either
+
+1. close the γ-row self-recursion with NO budget-sensitive hypothesis
+   on the recursion path — i.e. prove the room-free descent
+   (`Round4.BoxDesc`) there, as the atomic proof does by forcing; or
+2. not recurse at the γ-row at all (a forcing-style direct production
+   of the boxed component).
+
+**(d) THE POSITIVE — the entry band is exactly two deep, so the jump
+rows are NOT the obstruction** (`wip/round5core.lean`, pinned):
+
+    theorem ledgerS_entry_two_below :
+        x ∈ jumpGoals S → Room S Γ (c + 2) → LedgerS S Γ {x} c
+
+and at `Sγ` the entry at `c = 1` — three below the room — fails
+(`ledgerS_entry_dies_at_sγ`).  So the same-context CPS descents the
+jump-row landings need can be ENTERED from the statement's bare room
+down to two budget levels below it.  §60(d) flagged the jump clause as
+the one case needing the pigeonhole; it is financed.  The residue is
+the γ-row, not the jump row.
+
+**(e) THE PROBES — the statement's own regime, screened for the first
+time.**  Round 4's screens ran the `gam` family at budgets `1..3`;
+that family's room is `4`, so every screened cell sat BELOW the floor,
+in the room-free regime.  `wip/round5probe.lean` screens the floor
+`b = 4` and slack-one `b = 5` at fuels `3` and `4` (deep enough for
+two/three nested γ-row unfoldings), plus the γ-head crossing itself
+(source component and ambient to the component one budget down, no
+room in the sequent); `wip/round5probe2.lean` adds the
+fresh-`⊃`-antecedent corner (body `x ⊃ y`, `x ∉ Γ`, `defect = 2`,
+floor `b = 8`) — the one configuration where the guard-ascent step
+inside the landing is room-priced.  Verdicts, verbatim:
+
+    MAIN  ATOM/IMP/AND/BOX (gam, d=1, room=4):  P at (3,3,4) (4,4,4) (3,3,5) (4,4,5)
+    GHEAD ATOM/IMP/AND/BOX (gam):               P at (3,3,4) (4,4,4) (3,3,5)
+    MAIN  fresh-x (d=2, room=8):                P at (3,3,8) (4,4,8) (3,3,9) (3,3,4)
+    GHEAD fresh-x:                              P at (3,3,8) (4,4,8) (3,3,4) (3,3,2)
+    MAIN/GHEAD pres-x control (d=1, room=4):    P at (3,3,4) (4,4,4)
+
+Zero refutations anywhere — including the crossing rows with no room
+at all, and including cells well BELOW the floor.  Together with
+`boxDesc_atom_all` (atomic case, room-free, PROVED) and
+`Round4Probe3.box_is_load_bearing`, the machine evidence now points at
+alternative 1 of (c): the room-free `◯`-goal descent is the true
+statement, and `cascade_boxgoal_pos`'s room is dead weight its own
+proof cannot even use.  (The small probe spaces close through
+saturation-adjacent accidents — one growth step saturates, atoms
+force — so the probes support but cannot decide the general case:
+`AscRefute`'s `Sk` needed defect `8` to refute the unboxed form.)
+
+**(f) ROUTE FOR ROUND 6 (OPEN, design sketch, not attempted).**  The
+truncation-tower: conclude the target through its truncation row
+(`laxR`, `impR` are free), so the budget descent becomes GUARD
+accumulation — and under the accumulated guard the source's goal row
+remaps with the guard budgets matching on the nose, turning the γ-row
+self-recursion `◯A₁ at b-1` into the goal-size recursion `A₁ at the
+landing` (alternative 1 of (c), room-free on the recursion path).  Its
+residues, in order: (i) the fresh-`⊃`-antecedent guard ascent — 
+financed from the bare room iff the E-half's room constant tightens
+from `|jumpGoals S| + 3` to `|jumpGoals S| + 2`; the E-half's internal
+arithmetic has slack `1` at its entry demand (`hroomA`), so the
+tightening looks mechanical, but this is hand-checked only — OPEN;
+(ii) ambient-carrying atom forcing over `∨`-spaces
+(`itpA_atom_forces` assumes `∨`-freeness; the or-rows should split
+against the ambient's or-conjunct, defect-recursively).
+
+**Build state.**  `wip/absorb_base.lean` untouched, exactly ONE
+`sorry` (`cascade_boxgoal_pos`); the standalone stack rebuilds
+(absorb_base → adequacy → packaging → indiff → spaceindiff → final and
+sealLedger → round4Comp → round4Free → round4probe → round4probe2 →
+round4probe3, plus round5probe, round5probe2, round5core); every
+`#guard_msgs` pin passes; the crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+Regression: `lake exe towertest sizes 2` reproduces the twelve-row
+table byte-identical; zero files touched under `LaxLogic/`,
+`wip/towerkit.lean`, `wip/towertest.lean`.
+
+**Method note.**  §57 "check the statement against the CONSUMER"; §58
+"against the repo's refutations"; §59 "check the FINANCING before the
+proof"; §60 "count the consumers".  §61 closes the circle: **check the
+financing of the RECURSION, not only of the entry.**  An architecture
+can make only the entry demand at its call sites and still make a seal
+demand inside its own proof — the round-4 composition was sound about
+the sites and silent about the self-call, and the four-line
+`no_self_financed_crossing` would have caught it before any build was
+scoped.
+
+## §62 (2026-08-05) — Round 5, refute prong: the box-goal descent is SCREEN-CLEAN at and above its own room floor; every decide-feasible budget-active cell PROVED except three named ones
+
+`wip/round5refute.lean` (kernel-pin schema + harness + families),
+`wip/round5refute_bdefs.lean` (tower instance defs), stage/battery
+runners `wip/round5refute_s1`–`_s4`, `_b`–`_g`, and the durable
+cell-by-cell transcript `wip/round5refute_out.txt`.  Run concurrently
+with §61's prove prong, in a separate detached worktree at `ea3a755`;
+no existing file touched.
+
+**Headline.**  `cascade_boxgoal_pos` is NOT refuted.  ~210 distinct
+admissible cells were run — every cell machine-checked for
+admissibility before counting: `S` piece-closed including `◯`,
+`◯D ∈ S`, `Γ ⊆ S`, `defect ≥ 1`, `fs ≤ ft`, and the room
+`defect·(J+2) ≤ b`; sub-room cells were never counted, since every
+certified July failure sat ~30× below the room and refutes nothing
+about this statement.  Aggregate: 176 `P` (searcher-proved), 68 `~`
+(undecided at node budget), 128 size-SKIPs, **0 refutations**.  The
+screen is live-fire calibrated: the harness reproduces round 4's
+unboxed control (`CALIB(unboxed r4p3): R! as expected`), so a silent
+screen is not a broken screen.  The pin schema
+(`Round5Refute.BoxGoalPos`, `not_boxGoalPos_of_check`, pattern of
+`RoomPin.not_roomDescent_of_check`) compiled ready for immediate use
+had anything fired; nothing did.
+
+**Structural finding A — the `J = 0` room band is budget-blind.**
+With no jump-shaped member of `S`, no clause of the tables reads the
+budget: `A@(ft, b+1) = A@(ft, b)` syntactically (`act = false` on
+every such cell).  There the statement's budget-descent content is an
+identity and only its fuel-gap content is live; every `act = false`
+cell with `fs = ft` is true outright, so their `~`s are searcher
+weakness, not open mathematics.
+
+**Structural finding B — the active band, affirmatively proved.**
+Budget-activity requires a live gate and fuel above the budget, which
+confines decide-feasible active cells to defect 1, room 3–5.  All 42
+active cells that fit were `P` except three:
+
+* room 3, jump body `D = (a⊃b)⊃c` (four `S`-variants): 19 active
+  cells, budgets 3–4, fuels 1..7 including gaps (1,6), (2,7) — all
+  `P` (deepest: (7,7) at b=4, 50k nodes);
+* room 4, `J = 2` `⊃◯`-gate band at the consuming sites' own shape
+  (`D = a` and `D = a⊃b`): 9 active cells — all `P` (up to 424k
+  nodes);
+* room 3, nested-box jump body `D = ◯((a⊃b)⊃c)`: 11 active cells —
+  8 `P`, **3 residual `~`**: `(fs,ft) = (5,5), (4,5), (1,5)` at
+  `b = 3`.  No countermodel over the widened battery (5-world chains,
+  rigid chains, forks + defaults); unproved at 30000 search nodes
+  ((5,5): 403 s).  OPEN-at-budget.  Their `b = 4` neighbours and both
+  fuel-gapped `b = 3` siblings are all `P`.
+
+The fuel-gap dimension (`fs = 1, 2` against `ft` up to 7) screened
+clean throughout.  The July family was screened **at its own room for
+the first time** (`Skb = insert ◯gk Sk`, `D = gk`): `P` at `b = 7/8`
+saturated variants; the remaining July cells are budget-blind at
+truncating fuels.  The configuration that generated every July
+refutation does not touch the box-goal statement in its own band.
+
+**What the clean screen does NOT rule out.**  It is not a proof; the
+three residual nested-box cells are genuinely undecided; and the
+size-infeasible regions — dense gate towers at active fuels (0.9–17M
+nodes), all defect ≥ 2 active bands (room ≥ 6 forces fuel ≥ 7), July
+rows at `ft ≥ 5` — were screened not at all or only at truncating
+fuels.  Any refutation living only there is invisible to this method
+(and would also be beyond `decide +kernel` to pin).  Mitigation, not
+proof: every refutation in the repository's history appeared at the
+smallest instances of its family, and the cascade's own recursion
+drives defect down toward the screened defect-1 floor.  Battery
+limits: frames ≤ 5 worlds, closure emitter off.
+
+**Caveats for the record.**  `_d`/`_e` originally used a leading-comma
+field layout inside a `with`-update, which Lean rejects at parse and
+recovers by dropping the field; their recorded runs therefore used the
+default adaptive fuel grid (a superset of the intended cells; headers
+and admissibility all correct).  Sources since corrected to match what
+ran.  Lean trap worth keeping: leading-comma field layout is fine in
+plain structure literals, invalid in `with`-updates.  Battery B (dense
+towers) and the `i53` tail were deliberately killed after every cell
+proved size-infeasible; `i15`/`i53` fuel bounds in `round5refute.lean`
+post-date the recorded run.  The stage runners are committed as
+recorded artifacts with `round5refute_out.txt` as the durable
+transcript; re-executing them re-runs multi-minute batteries.
+
+**Round-5 verdict, both prongs.**  The refute prong finds nothing
+false and affirmatively proves every feasible budget-active cell
+except three named ones; the prove prong (§61) locates the precise
+obstruction (the γ-row self-recursion's seal-style demand,
+`no_self_financed_crossing`) and certifies the way forward
+(`boxgoal_pos_of_boxDesc`: the room-free `BoxDesc` suffices).
+`cascade_boxgoal_pos` remains OPEN — supported by the strongest
+positive screen this family has had, blocked by a machine-checked
+financing obstruction, with the truncation-tower design of §61(f) as
+the concrete round-6 attack and the three `JB2` cells at `b = 3` as
+the sharpest place to aim any further doubt.
