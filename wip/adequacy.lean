@@ -1652,8 +1652,9 @@ theorem itp_adequate (p : String) (S : Finset PLLFormula)
                     tauto)
 
 /-- The file itself is sorry-free; the `sorryAx` below is inherited
-from `absorb_base`'s single quarantined holdout (`cascade_low_pos`,
-feeding `itp_stab`), and disappears when that lands. -/
+from `absorb_base`'s single quarantined holdout — since round 4
+(PROGRESS §60) that is `cascade_boxgoal_pos`, the `◯`-goal descent,
+feeding `itp_stab` — and disappears when that lands. -/
 theorem itp_adequate_axiom_note : True := trivial
 
 /--

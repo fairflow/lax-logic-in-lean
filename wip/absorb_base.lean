@@ -2186,254 +2186,136 @@ them.
 tier are UNCHANGED — they already carried closure and coverage.
 `cascade_zero` is unchanged (it needs neither). -/
 
-/-- HOLDOUT — the one remaining `sorry` of the cascade development.
-Since the re-parameterisation it is the ◯-involving low-budget pair
-descent over a **piece-closed** space with goal and context inside it,
-**at the defect-tower room** `defect S Γ · (|jumpGoals S| + 2) ≤ c`
-with `1 ≤ defect S Γ`.  It is `wip/cascadeBox.lean`'s `cascade_box`
-with that room hypothesis restored — the room-free form is refuted
-(`AscRefute.not_roomFreeDescent`), so `cascade_box` cannot be used to
-discharge this, and the ◯-band apparatus must be re-run with the room
-threaded through.
+/-! #### ROUND 4 (2026-08-05, PROGRESS §60) — the old holdout DELETED
 
-The box-free instance remains a THEOREM by an independent route
-(`cascade_low_pos_boxfree` via `cascade_main_bf`), and the dispatcher
-below still prefers it, so the box-free tier never touches this
-`sorry`.
+`cascade_low_pos_box`, `cascade_low_pos` and `cascade_low` stood here.
+They are gone, together with the four-sealed-position failure analysis
+their docstring carried (retained in the repository history and in
+PROGRESS §§56–59).  The reason is not that anything was proved about
+them: it is that they had exactly three consumers, all inside
+`cascade_main`'s A-half, and all three were `◯`-goal positions.  The
+A-half now splits on the goal shape at its head, which makes two of the
+three unreachable and turns the third into an instance of the narrower
+`cascade_boxgoal` below.
 
-The historical analysis that follows was written for the OLD
-statement (arbitrary `S`, `hbox`, `hd1`, `hroom`); it is retained
-because the four sealed positions and their failure analysis are
-unchanged by the re-parameterisation — what changes is that the space
-is now closed and covered, which is precisely what kills the fourth
-(fresh-antecedent) seal, as the "Two structural leads" note below
-already recorded.
+The chain `cascade_low_pos → cascade_low → cascade_main → cascade_entry`
+recorded in the note above is therefore obsolete; the chain is now
+`cascade_boxgoal → cascade_main → cascade_entry`.
 
-Stage-3 note (fuel-indifference, `wip/indiff.lean`): re-leveling
-fuels above `mu` is an `Eq` in the FUEL dimension; the seal deficit
-is in the BUDGET dimension (the seen-discounted room), which
-indifference cannot touch — and removing the fuel descent removes the
-only decreasing measure the seal-nesting had, so it does not re-fund
-the ◯-band either.
+`cascade_low_pos_boxfree` (above) and the whole box-free tier are
+UNCHANGED — they never went through `cascade_low`.  `cascade_zero` is
+unchanged and is now consumed by `cascade_boxgoal` itself, which is why
+the round-4 obligation may drop `1 ≤ defect S Γ` while the `sorry` keeps
+it.
 
-The ambient-relative pair descent at *burned* room: only the defect
-tower (`defect·(J+2) ≤ c`, `J = |jumpGoals S|`) survives at the call
-sites, not the fresh-chain allotment `J+1+defect·(J+2) ≤ c` that
-`cascade_main`'s pigeonhole machinery needs at entry.
+`wip/round4Comp.lean`'s `boxDescR_pos_of_holdout` certifies that the
+replacement is a WEAKENING: the round-4 obligation follows from the
+deleted holdout, so nothing stronger has been assumed. -/
 
-Consumed from exactly four *sealed* positions inside `cascade_main`'s
-A-half, all of shape "the target disjunct must be introduced before
-the inner descent runs", so the sequent's conclusion becomes the inner
-*value* rather than the fixed outer `R`, and the seen-set
-continuations (which conclude `R`) cannot cross:
+/-- HOLDOUT (round 4, 2026-08-05) — the one remaining `sorry` of the
+cascade development, **narrowed**.
 
-* the goal-γ disjunct `◯(E ⇢ A(Γ, D))` (laxL demands a ◯-goal — the
-  target box must be committed first);
-* the clause-γ-head component `◯(E ⇢ A(Γ, ◯A₁))` (same seal);
-* the truncation disjunct (same seal, whole-head rebuild);
-* the fresh-antecedent goal implication with the new piece outside
-  `S` (the impR seals; the defect does not pay).
+This replaces `cascade_low_pos_box` above.  The replacement is not a
+new idea about the mathematics; it is the consequence of counting the
+old holdout's consumers.  `cascade_low_pos_box` was consumed from
+exactly three places in the entire development — the three
+`cascade_low` calls inside `cascade_main`'s A-half — and all three are
+`◯`-goal positions:
 
-What was tried (2026-07-11, this session): (a) inheriting the
-seen-set across the seal — semantically impossible: continuations
-conclude `R`, the sealed obligation is a value, and no g′-value
-derives a differently-goaled value; (b) splicing the sealed repeat
-into the inner root's own jump disjunct — fails on the second
-component (needs the inner goal at a grown context, unavailable);
-(c) charging the ledger more per burn — fails because seal-crossing
-resets are fuel-indexed, not S-indexed, so no Γ-computable `kcap`
-covers chains-of-seals; (d) box-proof continuation interfaces —
-circular.  The residual mathematical content: chains restarted inside
-a seal revisit jump goals whose pending slots are outside the box, so
-the pigeonhole cannot close them; empirically budgets stabilise at
-`b ≈ 2–3` regardless (probe battery, `wip/v3probe*.lean`), so this
-statement is believed true — it is exactly the one-step budget
-stabilisation at low budget, the open frontier of the development.
+* the **goal-γ disjunct** (old :2764): its own goal is the body `D`,
+  but it is reached only inside the `g = ◯D` arm, and that whole arm is
+  now closed *before* the head is unfolded (the `by_cases hbox` at the
+  head of the A-half), so the site is unreachable;
+* the **clause-γ-head component** (old :3291): goal `◯A₁` with
+  `◯A₁ ∈ S`, target budget `c'`, source budget `c' + 1` — an instance
+  of this lemma;
+* the **truncation disjunct** (old :3516): inside
+  `cases g with | somehow D`, so also unreachable from the `hbox`
+  split.
 
-Direct semantic adjudication of THIS statement (2026-07-11, session
-scratchpad, `v3probe2`'s 7-algebra zoo on the real `itpA`/`itpE`):
-zero counterexample points on two adversarial defect-1 configurations
-— `S = {◯p⊃r, r}`, `Γ = [◯p⊃r]` (J = 2), and the shared-consequent
-pair `S = {◯p⊃r, ◯p₂⊃r, r}` (J = 4, the shape whose live-jump-goal
-count exceeds every defect bound, i.e. the worst case for any
-defect-indexed ledger) — across goal shapes `p`, `◯p`, `p⊃r`, `◯r`,
-`◯(◯p∧r)`, `◯r⊃p` and eliminated atoms absent/live/consequent, at
-budgets both in the open band and far below the floor (`c = 1, 2`).
-A refutation would have voided the design; none was found.  (The
-kernel decider was also pointed at the smallest instance and killed
-at a 20-minute cap — its search space is infeasible even there, as
-`HANDOFF.md` warns; the zoo is the effective adjudicator.)
-The `defect S Γ = 0` band is settled (`cascade_zero` above: every
-space-guarded clause is dead and the plain fuel induction closes), so
-this statement now carries `1 ≤ defect S Γ` — the open band only.
+So the general-goal pair descent was never needed: only its `◯`-goal
+restriction was.  The abstract composition is type-checked in
+`wip/round4Comp.lean` (`BoxDescR`, `boxDescR_discharges_the_seals`),
+and the atomic instance is PROVED, room-free and at exactly this
+lemma's fuel calibration, in `wip/round4Free.lean`
+(`boxDesc_atom_all`); `wip/seal2Free.lean`'s `gammaHead_budget_free`
+is its predecessor.
 
-Two structural leads adjudicated 2026-07-11 (evening):
+**This statement is strictly weaker than the old holdout**: it is the
+old holdout's conclusion at `g = ◯D`, with `hd1` dropped and `hc`
+implied by `hb`.  `Round4.boxDescR_of_holdout` (`wip/round4Comp.lean`)
+certifies the implication, so nothing stronger has been assumed.
 
-* **Piece-closure kills the fourth site — but only for closed `S`.**
-  If `S` is subformula-closed, a goal-membership invariant `g ∈ S`
-  threads through every recursion of `cascade_main` (entry goals are
-  antecedent/body pieces of `S`-clauses; decomposition, `C₂`,
-  γ-unboxing and carried goals preserve it), and then a fresh goal
-  antecedent outside `S` is impossible — the fresh-antecedent seal is
-  dead code.  This CANNOT be used here: the three interface lemmas
-  quantify over arbitrary `S`, and for non-closed `S` the site is
-  reachable at depth 0 (goal `A₁⊃B₁` with `A₁ ∉ Γ ∪ S`).  The
-  downstream adequacy instantiation uses the piece-closed space, so a
-  closed-`S` variant of this lemma would face only the three ◯-seals;
-  recorded for the consumer, not usable for the ∀`S` statements.
-* **The ◯-goal specialization is a circular reduction.**  Landing the
-  target's truncation disjunct keeps the goal ◯-shaped through every
-  box (laxL/`box_fire` need no fresh seen-allotment for the crossing
-  itself), and the collapse+re-import moves reduce the γ-family seals
-  to: inner descents at strictly smaller goals (weight-paying),
-  pointwise `others`-maps (fuel-paying), and the jump-env first
-  components at `(c → c−1)` — which are again pair descents at
-  arbitrary-shaped jump goals at burned room, i.e. THIS statement one
-  budget down.  No measure decreases across that residue (jump goals
-  reset weight and ◯-depth; `c` burns without pigeonhole room), so
-  the specialization re-derives what the seen-machinery already gives
-  above the threshold and cannot close the band below it.
+**Why room-carrying.**  The three sites all supply the room at the
+*target* budget (`hroomW` at `c'+1` for the two `◯`-goal arms,
+`hroomW0` at `c'` for the γ-head), so carrying it costs nothing.  The
+room-free form is believed true — `boxDesc_atom_all` proves it at an
+atomic body, and `Round4Probe3.box_is_load_bearing` shows that the one
+configuration in the repository's refutation inventory which breaks the
+room-free descent at an *unboxed* goal (`AscRefute.not_roomFreeDescent`,
+`gk = (◯r ⊃ s) ⊃ t` over `Sk` in `Mk` at budget 1) does **not** break
+its `◯`-goal form — but the room is kept because it is free and it
+makes the weakening unconditional.
 
-Guarded/consumed reshaping campaign (2026-07-12; zoo file
-`wip/refute4.lean` — 34-pair exhaustive-nuclei zoo; engines
-`box_remap`/`box_reguard` above).  The task-#13 transfer hypothesis
-(guardMP's consumed form admissible where retained fails; Pitts'
-guarded `L4→` provable where Iemhoff's unguarded needs cut) was
-adjudicated against these seals.  Verdict — the analogy breaks for an
-identified structural reason, and the obstruction is now sharper:
-
-* **What crosses a seal is machine-delimited** (`box_remap`): the
-  inner obligation receives the opened source body, the target
-  guard, and the ENTIRE outer context — every formula-shaped
-  resource crosses (laxL retains contexts); only the seen-set
-  continuations (meta-level, concluding the outer `R`) do not.
-  Guarded-engine candidates therefore repackage the same inner
-  sequent.  At same-context seals every reachable guard is
-  budget-mono-DOMINATED by the ambient (`E@(c+1) ⊢ E@c ⊢ E@(c−1)`
-  pointwise): machine-checked by Z6 ≡ Z1 at the failing point.
-  `box_reguard` (Z2b) is the (A)-family survivor — guard plumbing
-  with the ambient outside the box; it leaves the value map intact.
-* **The floor is a ledger artifact on the A-side** (Z1): the BARE
-  descent with only `1 ≤ c` is zoo-true at every probed
-  configuration and budget `c ≥ 1` — defect 1 and 2, J ∈ {1,2,4},
-  chained (`S={◯p⊃r,r,◯r⊃s,s}`, floor 12) and shared-consequent
-  (`S={◯p⊃r,◯p₂⊃r,r}`, floor 6) jump structures, mostly with zero
-  slack — and zoo-FALSE at exactly the structural point
-  (◯-shaped goal, `c = 0`), where the target table is empty (goal
-  clause and truncation both b-gated: `A@0(Γ,◯D) = ⊥` — literally,
-  since `orAll [] = ⊥`).
-* **But the E-mate genuinely fails low** (Z8): the floorless ascent
-  `E@c ⊢ E@(c+1)` is zoo-REFUTED at (chained-d2, `c = 1`) — witness
-  chain3, nucleus `[0,2,2]`, `v(r)=v(s)=1` — while true at `c ≥ 2`
-  there.  So the mutual-pair decomposition (the only known proof
-  scheme) is closed off below `c = 2` by countermodel, independent
-  of the seal problem; the A-band's truth at `c = 1` does not
-  decompose through the pair.
-* **Why the Pitts/guardMP analogy breaks**: her guards are
-  ANTECEDENT-side — weakening carries hypotheses across any commit,
-  which is exactly why consumed forms close.  The seal deficit is
-  SUCCEDENT-side-under-◯: continuations are conclusion-anchored
-  (they conclude the outer disjunction `R`, strictly weaker than
-  the single ◯-disjunct a seal must produce), and formula-shaped
-  stand-ins fail — in-context oracles `(value ⇢ R)` fire to the
-  wrong conclusion inside a seal, and budget-family oracles
-  `⋀_{β≤c}(A@(β+1) ⇢ A@β)` are the stabilization ladder itself.
-  Ledger-raising cannot compensate: entry `… + X` funds seals to
-  `defect·(J+2)+X ≤ c−1` while the raised holdout would need
-  `J+1+defect·(J+2)+X ≤ c−1` — short by `J+1` for every `X`.
-* **The fresh-antecedent seal's law is semantically FREE** (Z5):
-  `E@(c+1)(Γ) ⊓ E@c(C₁::Γ) = E@(c+1)(C₁::Γ)` with EQUALITY on the
-  zoo at every probed instance (`C₁ ∈ {u, u⊃r, ◯u}`, at and below
-  the floor, including the moving-E chained-d2 config where the
-  bare E-ascent fails).  A proof of Z5 would kill the fourth seal (the one
-  with no decreasing measure) without the whole-head rebuild; its
-  γ-conjunct conversions recurse into the A-descent at `c−1`, i.e.
-  into this statement — same knot, but now with a zoo-true target.
-* **Identified residue** (the sharpest known formulation): a
-  low-band A-lemma — this statement's conclusion from `1 ≤ c` alone
-  — is TRUE on the zoo; the known decompositions cannot reach it
-  (chains hit the (◯-goal, 0) false point; the E-mate fails at 1;
-  continuations cannot cross seals).  The mechanism the semantics
-  uses at `c = 1` is SYNTACTIC starvation: b-gated tables at
-  saturated/grown contexts collapse to literal `⊥` (`orAll [] = ⊥`),
-  e.g. `A@1(Γ,p) ⊢ ⊥` at the canonical config, killing every pair
-  disjunct whose partner starves.  A future development would prove
-  starvation-collapse lemmas (which `(Γ, g, b)` starve) plus a
-  `(defect, budget)`-lex landing map for the `c = 1` base, meeting
-  the pigeonhole band from below — cascade_main-scale work, not
-  attempted here. -/
-private theorem cascade_low_pos_box (p : String) (S : Finset PLLFormula)
+**What remains to prove.**  Not a ledger: PROGRESS §59 shows no ledger
+crosses the old seals, and §60 shows this architecture never asks one
+to.  What remains is the direct-form (value-concluding) traversal at a
+general body.  Its goal-clause and truncation cases need no recursion
+beyond the `(budget, defect, goal-size)` lex measure of §59(a); the
+one case that does is the jump clause, whose target-side env disjunct
+carries its first component one budget below the source's — the
+pigeonhole `cascade_main` already implements in continuation form.
+See PROGRESS §60(d). -/
+private theorem cascade_boxgoal_pos (p : String) (S : Finset PLLFormula)
     (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
     (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
     (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
     (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
-    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
-    (Δ : List PLLFormula)
-    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S) (hc : 1 ≤ c)
-    (hd1 : 1 ≤ defect S Γ)
-    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
-    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
-    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
-    (hfh : fh ≤ fuel) :
-    G4c Δ (itpA p S fuel c Γ g) := by
+    (fs ft b : Nat) (Γ Δ : List PLLFormula) (D : PLLFormula)
+    (hgS : D.somehow ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S)
+    (hfs : fs ≤ ft) (hb : 1 ≤ b) (hd1 : 1 ≤ defect S Γ)
+    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ b)
+    (hamb : G4c Δ (itpE p S ft (b + 1) Γ))
+    (hsrc : G4c Δ (itpA p S fs (b + 1) Γ D.somehow)) :
+    G4c Δ (itpA p S ft b Γ D.somehow) := by
   sorry
 
-/-- The open-band descent, dispatched: the box-free instance is
-settled by `cascade_low_pos_boxfree` (which, with closure and coverage
-now in scope, needs only `hSbf`); the rest is the ◯-involving holdout
-`cascade_low_pos_box`. -/
-private theorem cascade_low_pos (p : String) (S : Finset PLLFormula)
+/-- The `◯`-goal descent, dispatched: a saturated context settles by the
+zero tier (`cascade_zero`, sorry-free, unchanged since July), the rest is
+`cascade_boxgoal_pos`.  This is why the round-4 obligation may be stated
+without `1 ≤ defect S Γ` while the `sorry` keeps it — and hence why
+`Round4.boxDescR_pos_of_holdout` can certify the replacement as an
+unconditional weakening of the deleted holdout. -/
+private theorem cascade_boxgoal (p : String) (S : Finset PLLFormula)
     (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
     (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
     (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
     (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
-    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
-    (Δ : List PLLFormula)
-    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S)
-    (hd1 : 1 ≤ defect S Γ)
-    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
-    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
-    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
-    (hfh : fh ≤ fuel) :
-    G4c Δ (itpA p S fuel c Γ g) := by
-  have hc : 1 ≤ c := by
-    have hmul1 : 1 * ((jumpGoals S).card + 2) ≤
-        defect S Γ * ((jumpGoals S).card + 2) :=
-      Nat.mul_le_mul_right _ hd1
-    omega
-  by_cases hbf : ∀ F ∈ S, boxFree F
-  · exact cascade_low_pos_boxfree p S hbf hand hor himp fh Γ fuel c g Δ
-      hgS hΓS hroom hc hamb hhead hfh
-  · exact cascade_low_pos_box p S hand hor himp hsome fh Γ fuel c g Δ
-      hgS hΓS hc hd1 hroom hamb hhead hfh
-
-/-- The sealed-site descent: saturated contexts settle by the
-zero tier, the rest is the holdout. -/
-private theorem cascade_low (p : String) (S : Finset PLLFormula)
-    (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
-    (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
-    (himp : ∀ {A B : PLLFormula}, A.ifThen B ∈ S → A ∈ S ∧ B ∈ S)
-    (hsome : ∀ {A : PLLFormula}, A.somehow ∈ S → A ∈ S)
-    (fh : Nat) (Γ : List PLLFormula) (fuel c : Nat) (g : PLLFormula)
-    (Δ : List PLLFormula)
-    (hgS : g ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S)
-    (hc : 1 ≤ c) (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ c)
-    (hamb : G4c Δ (itpE p S fuel (c + 1) Γ))
-    (hhead : G4c Δ (itpA p S fh (c + 1) Γ g))
-    (hfh : fh ≤ fuel) :
-    G4c Δ (itpA p S fuel c Γ g) := by
+    (fs ft b : Nat) (Γ Δ : List PLLFormula) (D : PLLFormula)
+    (hgS : D.somehow ∈ S) (hΓS : ∀ X ∈ Γ, X ∈ S)
+    (hfs : fs ≤ ft) (hb : 1 ≤ b)
+    (hroom : defect S Γ * ((jumpGoals S).card + 2) ≤ b)
+    (hamb : G4c Δ (itpE p S ft (b + 1) Γ))
+    (hsrc : G4c Δ (itpA p S fs (b + 1) Γ D.somehow)) :
+    G4c Δ (itpA p S ft b Γ D.somehow) := by
   by_cases hd0 : defect S Γ = 0
-  · exact cascade_zero p S fh Γ (sat_of_defect_zero hd0) fuel c g Δ hc
-      hamb hhead hfh
-  · exact cascade_low_pos p S hand hor himp hsome fh Γ fuel c g Δ hgS hΓS
-      (by omega) hroom hamb hhead hfh
+  · exact cascade_zero p S fs Γ (sat_of_defect_zero hd0) ft b D.somehow Δ hb
+      hamb hsrc hfs
+  · exact cascade_boxgoal_pos p S hand hor himp hsome fs ft b Γ Δ D hgS hΓS
+      hfs hb (by omega) hroom hamb hsrc
 
 /-- The generalized cascade, RE-PARAMETERISED (2026-08-04): four
 piece-closure hypotheses on the fixed space `S` (free — `S` never
 changes inside), and the two coverage invariants `g ∈ S`, `Γ ⊆ S`
 threaded through every recursion, exactly as the box-free spine
 `cascade_main_bf` above already does.  The ledger is unchanged (the
-unshifted `(J∖seen)+1+defect·(J+2) ≤ c`). -/
+unshifted `(J∖seen)+1+defect·(J+2) ≤ c`).
+
+ROUND 4 (2026-08-05): the A-half now splits on the goal shape at its
+head — a `◯`-goal is discharged outright by `cascade_boxgoal` and the
+caller's own continuation, which makes two of the three old sealed
+sites unreachable and turns the third into a `cascade_boxgoal`
+instance. -/
 private theorem cascade_main (p : String) (S : Finset PLLFormula)
     (hand : ∀ {A B : PLLFormula}, A.and B ∈ S → A ∈ S ∧ B ∈ S)
     (hor : ∀ {A B : PLLFormula}, A.or B ∈ S → A ∈ S ∧ B ∈ S)
@@ -2485,8 +2367,21 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula)
           · exact hΓS _ hF'
         obtain ⟨c', rfl⟩ : ∃ c', c = c' + 1 := ⟨c - 1, by omega⟩
         obtain ⟨fl, rfl⟩ : ∃ fl, fuel = fl + 1 := ⟨fuel - 1, by omega⟩
-        rw [itpA_succ p S F (c' + 2) Γ g] at hhead
         have hF : F ≤ fl := Nat.succ_le_succ_iff.mp hfh
+        -- ROUND 4: split on the goal shape BEFORE unfolding the head.  A
+        -- `◯`-goal is a `cascade_boxgoal` instance outright and the
+        -- caller's own continuation consumes the value, so no target
+        -- disjunct is committed and no seal is crossed.  This is what
+        -- makes the old goal-γ (:2764) and truncation (:3516) sites
+        -- unreachable.
+        by_cases hbox : ∃ D : PLLFormula, g = D.somehow
+        case pos =>
+          obtain ⟨D, rfl⟩ := hbox
+          exact hcls _ hg Δ (fun _ h => h)
+            (cascade_boxgoal p S hand hor himp hsome (F + 1) (fl + 1)
+              (c' + 1) Γ Δ D hgS hΓS (Nat.succ_le_succ hF) (by omega)
+              (by omega) hamb hhead)
+        rw [itpA_succ p S F (c' + 2) Γ g] at hhead
         -- lowered ambient at any weaker fuel/budget
         have hambL : ∀ (f' b' : Nat), f' ≤ fl + 1 → b' ≤ c' + 2 →
             G4c Δ (itpE p S f' b' Γ) := fun f' b' hf hb =>
@@ -2746,26 +2641,10 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula)
                       (himp hgS).2 hΓS'
                       (hroomG _ hlt) hE2 (val_lift hV hF (Nat.le_refl _))
           | somehow D =>
-              -- the ◯-goal disjunct: sealed box crossing
-              simp only [itpAgoal] at hφ
-              rcases List.mem_singleton.mp hφ with rfl
-              refine hfinT _ (fun χ h => .tail _ h)
-                (((itpE p S fl c' Γ).ifThen
-                  (itpA p S fl (c' + 1) Γ D)).somehow) ?_ ?_
-              · simp only [itpAfull, itpAoth, itpAgoal]
-                exact List.mem_append.mpr (Or.inl (List.mem_append.mpr
-                  (Or.inl (.head _))))
-              · refine box_fire (W := (itpE p S fl c' Γ).ifThen
-                    (itpA p S fl (c' + 1) Γ D))
-                  (G4c.identity_mem (.head _))
-                  ((hambL F (c' + 1) (le_trans hF (Nat.le_succ _))
-                    (Nat.le_succ _)).weaken _) ?_
-                refine G4c.laxR (G4c.impR ?_)
-                exact cascade_low p S hand hor himp hsome F Γ fl (c' + 1) D _
-                  (hsome hgS) hΓS (by omega) hroomW
-                  (weaken_sub (fun ψ h => .tail _ (.tail _ (.tail _ h)))
-                    (hambL fl (c' + 2) (Nat.le_succ _) (Nat.le_refl _)))
-                  (G4c.identity_mem (.tail _ (.head _))) hF
+              -- ROUND 4: DEAD CODE.  This was the goal-γ sealed site
+              -- (old :2764).  The `◯`-goal case is closed at the head of
+              -- the A-half by `cascade_boxgoal`, so `hbox` refutes it.
+              exact absurd ⟨D, rfl⟩ hbox
         have hENV : ∀ φ ∈ itpAenv p S F (c' + 2) Γ g, G4c (φ :: Δ) R := by
           intro φ hφ
           simp only [itpAenv] at hφ
@@ -3288,9 +3167,16 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula)
                                     (le_trans hF (Nat.le_succ _))
                                     (Nat.le_succ _))) ?_
                               refine G4c.laxR (G4c.impR ?_)
-                              exact cascade_low p S hand hor himp hsome F Γ
-                                fl c' A₁.somehow _
-                                (himp (hΓS _ hF'Γ)).1 hΓS
+                              -- ROUND 4: the clause-γ-head sealed site
+                              -- (old :3291) is a `cascade_boxgoal`
+                              -- instance: goal `◯A₁ ∈ S`, source budget
+                              -- `c'+1`, target budget `c'`, fuels `F ≤ fl`.
+                              -- The room it hands down is `hroomW0`, at
+                              -- the TARGET budget — nothing is transported
+                              -- across the drop.
+                              exact cascade_boxgoal p S hand hor himp hsome
+                                F fl c' Γ _ A₁
+                                (himp (hΓS _ hF'Γ)).1 hΓS hF
                                 (by
                                   have hd1 : 1 ≤ defect S Γ :=
                                     Finset.card_pos.mpr ⟨B,
@@ -3306,7 +3192,7 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula)
                                   (.tail _ (.tail _ h))))
                                   (hambL fl (c' + 1) (Nat.le_succ _)
                                     (Nat.le_succ _)))
-                                (G4c.identity_mem (.tail _ (.head _))) hF
+                                (G4c.identity_mem (.tail _ (.head _)))
                             · -- second component: fire the γ-head conjunct
                               refine hgrown (B :: Γ)
                                 (defect_cons_lt hBS hBΓ) fl (c' + 1) g _
@@ -3507,22 +3393,10 @@ private theorem cascade_main (p : String) (S : Finset PLLFormula)
         intro φ hφ
         cases g with
         | somehow D =>
-            simp only [itpAfull] at hφ
-            rcases List.mem_append.mp hφ with hφ | hφ
-            · exact hOTH φ hφ
-            · -- the truncation disjunct: sealed box crossing; rebuild
-              -- the full head from this disjunct and descend whole
-              refine hcls _ hg _ (fun χ h => .tail _ h) ?_
-              refine cascade_low p S hand hor himp hsome (F + 1) Γ (fl + 1)
-                (c' + 1) _ _ hgS hΓS
-                (by omega) hroomW
-                ((hambL (fl + 1) (c' + 2) (Nat.le_refl _)
-                  (Nat.le_refl _)).weaken _) ?_ hfh
-              rw [itpA_succ]
-              refine G4c.orAll_intro (l := itpAfull p S F (c' + 2) Γ
-                (D.somehow)) ?_ (G4c.identity_mem (.head _))
-              simp only [itpAfull]
-              exact List.mem_append.mpr (Or.inr hφ)
+            -- ROUND 4: DEAD CODE.  This was the truncation sealed site
+            -- (old :3516) — the one site §59(a) showed no lex measure can
+            -- discharge.  The `◯`-goal case never reaches here.
+            exact absurd ⟨D, rfl⟩ hbox
         | prop q => exact hOTH φ hφ
         | falsePLL => exact hOTH φ hφ
         | and C₁ C₂ => exact hOTH φ hφ

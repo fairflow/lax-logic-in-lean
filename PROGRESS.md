@@ -5995,3 +5995,198 @@ and neither has been tried:
    `(c, defect S Γ, gsize D)`, which §59(a) shows is available for sites
    1 and 2 — but not for the truncation, which is why 1. is the one to
    try first.
+
+## §60 (2026-08-05) — Round 4: the seals reduce to ONE room-free lemma, the fuel warning dissolves, and the `◯` is machine-screened load-bearing
+
+`wip/round4Comp.lean`, `wip/round4Free.lean`, `wip/round4probe2.lean`,
+`wip/round4probe3.lean` (all new, all sorry-free, all pinned).
+`wip/absorb_base.lean` and everything below it are **untouched**; the
+standalone stack rebuilds and the crown is unchanged.  The round's
+four tasks were: financing analysis first, then semantic pre-check,
+then the same-context traversal, then assembly.  Three landed; the
+fourth is blocked on one identified mathematical step, reported below
+with the exact reduction rather than a partial build.
+
+**(a) TASK 0 — the positive twin of `no_ledger_survives_gamma_seal`,
+type-checked.**  `cascade_low_pos_box` is consumed from exactly three
+places in the whole development: the `cascade_low` calls at
+`absorb_base`:2764, :3291 and :3516 (`grep -n "cascade_low "` finds no
+others; `cascade_low_pos` is called only from `cascade_low`:2428 and
+`cascade_low_pos_box` only from `cascade_low_pos`:2407).  So the
+holdout is not a lemma the tower needs — it is a lemma **those three
+sites** need, and killing the sites makes the `sorry` unreachable
+whether or not it is ever proved.
+
+All three reduce to **one** obligation:
+
+    def BoxDesc (p : String) (S : Finset PLLFormula) : Prop :=
+      ∀ (fs ft b : Nat) (Γ Δ : List PLLFormula) (D : PLLFormula),
+        D.somehow ∈ S → (∀ X ∈ Γ, X ∈ S) → fs ≤ ft → 1 ≤ b →
+        G4c Δ (itpE p S ft (b + 1) Γ) →
+        G4c Δ (itpA p S fs (b + 1) Γ D.somehow) →
+        G4c Δ (itpA p S ft b Γ D.somehow)
+
+— the holdout **restricted to `◯`-goals**, with `hroom`, `hd1` and
+every ledger deleted.  `boxDesc_seal2` and `boxDesc_seal3` are
+instances; `boxDesc_kills_site1` **eliminates** site 1 rather than
+discharging it (site 1's own goal is the body `D`, but site 1 is only
+reached inside the `g = ◯D` arm, and `BoxDesc` closes that arm before
+the head is unfolded, using the caller's own continuation).
+`boxDesc_discharges_the_seals` bundles all three,
+`[propext, Quot.sound]`.
+
+**Why this dodges round 3.**  Every use of `BoxDesc` is at the
+*caller's own* budget, so `no_ledger_survives_gamma_seal`'s `hseal`
+premise is never instantiated.  The dilemma needed both demands; the
+architecture makes only `hentry` — which `LedgerS`, the shifted ledger
+`cascade_main_bf` already runs on, satisfies in general
+(`ledgerS_entry`, proved in round 3).  `shifted_ledger_is_entered`
+re-exports it.  A room-carrying fallback `BoxDescR` is also
+type-checked (`boxDescR_discharges_the_seals`): all three sites supply
+the room **at the target budget** (`hroomW` at `c'+1` for sites 1 and
+3, `hroomW0` at `c'` for site 2), so if the general body turns out to
+need financing the composition does not change.
+
+Two transcription discrepancies recorded: `sealLedger`'s `Seal2` omits
+the `1 ≤ c'` that `cascade_low` demands and the site proves
+(`seal2_room_gives_no_positivity` shows `Room` alone does not give it);
+`Seal3` quantifies over `g ∈ S` while the site is inside
+`cases g with | somehow D`.  Both are in the safe direction.
+
+**(b) TASK 2 — the §59 fuel warning DISSOLVES.**  §59 warned that
+`boxSnd_tight` lands one fuel level above the consumer and that either
+`fh ≤ fuel` must be tightened to `fh < fuel` or the traversal re-run a
+level down.  Neither is needed: the `+1` is an artefact of how
+`tgtClause` is *written*, not of what the traversal proves.  The
+target is produced in exactly one place, and there the guard slot is
+never used (the source's guard is discharged against the grown
+ambient) and the value slot is the forced atom.  So all four target
+parameters are free:
+
+    theorem tgtClause_relax (p) (S) (hOr) {q} (hq)
+        {f c fg cg fv cv} {Γ Δ}
+        (hΓS : ∀ Y ∈ Γ, Y ∈ S) (hf : f ≤ fg) (hc : c ≤ cg)
+        (h : G4c Δ (tgtClause p S f c Γ q)) :
+        G4c Δ (((itpE p S fg cg Γ).ifThen
+          (itpA p S (fv + 1) cv Γ (prop q))).somehow)
+
+and `boxDesc_atom_all` is `BoxDesc` at an **atomic** body with exactly
+the sites' own calibration `fs ≤ ft` — no fuel tightening, no re-run.
+The `ft ≤ 1` corner is absorbed by `itpA_one_budget_blind` (`by rfl`:
+at fuel `1` every recursion sits at fuel `0`, where `itpE = ⊤` and
+`itpA = ⊥`, so the table cannot read the budget).
+
+**(c) TASK 1 — the `◯` is load-bearing, machine-screened.**  The
+sharpest available test: `AscRefute.not_roomFreeDescent` refutes the
+room-free descent at `gk = (◯r ⊃ s) ⊃ t` over `Sk` in the model `Mk`
+at budget `1`.  Open `BoxDesc`'s target box and the obligation inside
+looks like exactly that descent — so if the `◯` changed nothing, `Mk`
+would refute `BoxDesc` too.  Add `◯gk` to `Sk` and ask the same model
+at the same budget and fuels (`wip/round4probe3.lean`,
+`decide +kernel`, `[propext, Quot.sound]`):
+
+    unboxed_refuted   : checkB Mk 0 [srcU, ambB] tgtU = true
+    boxed_survives    : checkB Mk 0 [srcB, ambB] tgtB = false
+    boxed_survives_Mr : checkB Mr 0 [srcB, ambB] tgtB = false
+
+The control fires and the boxed form survives — in both inventory
+models, and (scratch, unpinned) also when the source is replaced by its
+goal-clause disjunct alone, the strongest form of the instance.
+`wip/round4probe2.lean` screens compound bodies at the `◯`-band room
+floor countermodel-first over the ladder + default battery: 18 rows,
+**zero** refutations, with the atomic control rows (theorems) coming
+back `proved` as they must and the compound rows `proved` at the
+gapped and higher-fuel calibrations.  No `Seal_i` obligation is false
+at any admissible instance the repository can exhibit.
+
+**(d) TASK 3 — NOT reached, and the reason is one identified step.**
+`BoxDesc` at a general body is not `boxSnd_tight` with `prop q`
+replaced.  §59's amendment named the context-shrinking value move; the
+round's analysis sharpens it.  In the traversal the target is a fixed
+formula because its value is the forced atom; at a general body the
+value must instead be injected into the target's table **at the
+context the traversal has grown to**, and the target's own `itpAenv`
+supplies exactly the matching nested disjunct at each growth step — so
+the shrink is avoidable.  What is *not* avoidable is the jump clause:
+the target's env disjunct for `(A⊃B)⊃D` carries its first component one
+budget below the source's, so injecting it needs a same-context descent
+at the jump goal — the pigeonhole the ledger exists for.  So the
+general-body `BoxDesc` is a **direct-form (value-concluding) clone of
+`cascade_main`'s A-half**, which is the ~1500-line build §58 scoped.
+It is available to be entered with the full ledger (`hroom` is in scope
+at all three sites), and the entry demand is the only one it faces —
+which is the round's contribution to it.
+
+**(e) THE ASSEMBLY LANDED — the three sites are CLOSED in the file,
+and the holdout is DELETED.**  (e) was written after (d): the analysis
+in (d) says the *remaining mathematics* is a direct-form clone, but it
+does not stop the restructuring, and the restructuring is what the
+composition was for.  `wip/absorb_base.lean` now reads:
+
+* `cascade_main`'s A-half splits on the **goal shape at its head** —
+  `by_cases hbox : ∃ D, g = D.somehow`, inserted after the two
+  `obtain`s and *before* `rw [itpA_succ] at hhead`.  A `◯`-goal is
+  discharged outright by `cascade_boxgoal` and consumed by the
+  caller's own continuation `hcls`.  No target disjunct is committed,
+  so no seal is crossed and nothing is handed back one budget lower —
+  `no_ledger_survives_gamma_seal`'s `hseal` is never instantiated;
+* **old sealed site 1** (goal-γ disjunct, :2764) and **old sealed site
+  3** (truncation disjunct, :3516) are now DEAD CODE — both sit inside
+  a `cases g with | somehow D` arm and are closed by
+  `exact absurd ⟨D, rfl⟩ hbox`.  Site 3 is the one §59(a) proved *no*
+  `(budget, defect, goal-size)`-lex induction can discharge; it is
+  gone, not financed;
+* **old sealed site 2** (clause-γ-head, :3291) is a `cascade_boxgoal`
+  instance outright, with `hroomW0` — the room **at the target
+  budget** — passed straight through;
+* `cascade_low_pos_box`, `cascade_low_pos` and `cascade_low` are
+  **deleted**.  They had no other consumer anywhere in the
+  development.  The chain is now
+  `cascade_boxgoal → cascade_main → cascade_entry`.
+
+`wip/absorb_base.lean` has **exactly one** `sorry` and it is now
+
+    cascade_boxgoal_pos :
+      ◯D ∈ S → Γ ⊆ S → fs ≤ ft → 1 ≤ b → 1 ≤ defect S Γ →
+      defect S Γ · (|jumpGoals S| + 2) ≤ b →
+      Δ ⊢ E@(ft, b+1)(Γ) → Δ ⊢ A@(fs, b+1)(Γ, ◯D) →
+      Δ ⊢ A@(ft, b)(Γ, ◯D)
+
+`cascade_boxgoal` dispatches `defect S Γ = 0` to the sorry-free
+`cascade_zero`, which is why the obligation may be *stated* without
+`hd1` while the `sorry` keeps it.
+
+**STATEMENT CHANGE, FLAGGED.**  The file's open obligation is no
+longer the general-goal pair descent.  It is a **weakening**, and the
+weakening is certified rather than asserted:
+`Round4.boxDescR_pos_of_holdout` (`wip/round4Comp.lean`) derives the
+new obligation from `Holdout`, the deleted statement transcribed
+verbatim.  Nothing stronger has been assumed, so no falsity can have
+been introduced by the replacement.  Consumers adjusted: **none**
+outside `cascade_main`; `cascade_low_pos_boxfree`, `cascade_main_bf`,
+`cascade_zero` and the whole box-free tier are untouched.
+
+**Build state.**  `wip/absorb_base.lean` has exactly ONE `sorry`
+(`cascade_boxgoal_pos`); the standalone stack rebuilds
+(absorb_base → adequacy → packaging → indiff → spaceindiff → final);
+every `#guard_msgs` pin passes; the crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+and it will stay that way until `cascade_boxgoal_pos` lands — but the
+statement it is waiting on is now the `◯`-goal descent, not the
+general-goal one, and two of the three positions that used to consume
+it no longer exist.
+
+Regression: `lake exe towertest sizes 2` reproduces the twelve-row
+table byte-identical; zero files touched under `LaxLogic/`,
+`wip/towerkit.lean`, `wip/towertest.lean`.
+
+**Method note.**  §57 "check the statement against the CONSUMER"; §58
+"check it against the repo's own refutations"; §59 "check the FINANCING
+before the proof".  §60 adds the cheapest structural check of all:
+**count the consumers.**  The holdout had been treated as a lemma the
+tower needs; it is consumed from three places, all of one shape, and
+that fact — three lines of `grep` — is what turns a 1500-line ledger
+rebuild into a single room-free statement.
