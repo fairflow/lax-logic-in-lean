@@ -7162,3 +7162,150 @@ question.  And a search-engine note, recorded for future rounds: the
 searcher is not premise-monotone (`Skb-U0` quiet with `Skb-U` proved —
 the extra premise only enlarged the space past the budget); a quiet
 verdict on a STRONGER premise list proves nothing about the weaker one.
+
+## §68 (2026-08-05) — Round 9: the ROOM-FREE ROUTE IS REFUTED.  The §67(h) residue is false, `BoxDesc` / `CompProd` / `GoalRowAbsorb` fall with it, and three independent blind spots in the screen are identified and closed
+
+`wip/round9pin.lean` (new, sorry-free, all pins from actual output);
+`wip/frontier.lean` extended by ten strata and two axis knobs (every
+campaign-1/2/g8 stratum byte-identical — the 1152-record regression replay
+agrees 1152/1152); probe artifacts `wip/frontier_g9a/b/c/v/w/x/y/z.lean`
+with durable transcripts.  `wip/absorb_base.lean` and everything below it
+are **untouched**: the one `sorry` is still `cascade_boxgoal_pos`, and the
+crown is unchanged.  The round's brief was §67(h)'s residue attacked
+two-sidedly under the §65 standing rule.  It came back NEGATIVE.
+
+**(a) THE RESIDUE IS FALSE.**  §67(h) left exactly one shape open — the
+goal-row absorption at a compound unboxed body `D = C₁ ⊃ C₂` whose
+antecedent is FRESH (`C₁ ∉ Γ`), equivalently the **fresh-row descent**
+
+    E@(f,b)(C₁::Γ) ⊃ A@(f,b)(C₁::Γ, C₂) ,  E@(ft,b+1)(Γ)
+      ⟹  E@(f,c)(C₁::Γ) ⊃ A@(f,c)(C₁::Γ, C₂)            (C₁ ∉ Γ, c < b)
+
+`Round9Pin.not_freshRowDescent` refutes it (`[propext, Classical.choice,
+Quot.sound]`), from the kernel-checked countermodel
+`Round9Pin.freshRow_refuted` (`[propext, Quot.sound]`).  The instance:
+`vS` = the piece-closure of `◯((◯x ⊃ y) ⊃ z)` (seven formulas), `Γ = []`,
+inner fuel `3`, `b = 2`, `c = 1`; the model `M2` = July's `Mk` with the
+atoms renamed (two worlds `0 ⊑ 1`, `0 ⊳ 1`, infallible, `x`, `y`, `z`
+exactly at world `1`).  At `Γ = []` the ambient premise is literally `⊤`,
+so the refutation holds with every resource the walk has.
+
+**(b) …AND IT LIFTS TO THE THREE ROOM-FREE STATEMENTS.**  `M2` alone does
+NOT refute the `◯`-goal statements: its modal successor is its top world,
+where `z` holds, so the target's boxed disjuncts are satisfied there —
+`Round4Probe3.box_is_load_bearing`'s rescue, at this instance.  Pushing the
+modal step one world UP removes the rescue.  With
+`P3c = ⟨3, ri = 0⊑1⊑2, rm = [(1,2)], fall = [], x,y,z at 2⟩`:
+
+    Round9Pin.not_boxDesc        ¬ Round4.BoxDesc "p" vS
+                                   (fs = ft = 5, b = 1, Γ = [])
+    Round9Pin.not_compProd       ¬ Round7.CompProd "p" vS
+                                   (fs = ft = 5, b = 2, c = 1, Γ = [])
+    Round9Pin.not_goalRowAbsorb  ¬ Round8.GoalRowAbsorb "p" vS
+                                   (f = 4, b = 2, c = 1, Γ = [])
+
+each `[propext, Classical.choice, Quot.sound]` over a `decide +kernel`
+`FinCM.checkB` certificate.  Rounds 7 and 8's own upgrade theorems
+re-derive the first from the other two
+(`Round9Pin.not_boxDesc_via_compProd`, `…_via_goalRowAbsorb`), so the three
+refutations are mutually consistent by machine.  The `◯` is load-bearing
+but not decisive: it buys exactly one modal step, and a chain longer than
+the one the battery carried spends it.
+
+**(c) WHERE THE SCREEN WAS BLIND — three independent axes.**  Rounds 4–8
+screened ~1150 cells and nine candidate passes, all clean, for statements
+that were false the whole time.  The corpus missed the refutation three
+times over, and each miss is a fixed assumption in the harness:
+
+* **defect.**  `genDrop cfg.defectTarget` removes one or two members, so
+  every cell's context is nearly all of `S`.  The refutation lives at the
+  other end: `Γ = []`.  (July's `Gk` — the inventory's one high-defect
+  instance — is also the one place the unboxed room-free descent was
+  already known to fail.)
+* **fuel.**  `fuelGrid` ties `ft = b + 1`, so a `b = 1` cell is screened at
+  `ft = 2`.  At `Γ = []` the `BoxDesc` cell is PROVABLE at `ft ≤ 4` and
+  REFUTED from `ft = 5` — the tie made the refuting fuel unreachable at
+  every budget inside `ftCap`.
+* **frame.**  `P3c` is in NEITHER frame list: `Round5Refute.xFrames` has
+  the three-chain with `rm` EMPTY, `defaultFrames` has it with
+  `rm = [(1,2)]` but a FALLIBLE top, which forces every atom at world `2`
+  and destroys the configuration.  The infallible single-modal-step
+  three-chain — the frame that refutes — was never in the battery.
+
+**(d) THE SAMPLER, CORRECTED.**  `wip/frontier.lean` gains, all
+value-preserving at their defaults (`gimp := false`, `bgridOverride := []`,
+`fuelBump := 0`): a fresh-antecedent generator (`genBaseGimp`, `D =
+(◯x ⊃ y) ⊃ z` with `C₁ = ◯x ⊃ y` dropped from the context — July's `Sk` at
+rotation 0), a stratum-fixed budget grid, and a fuel bump that unties `ft`
+from `b + 1`.  Ten new strata: `g9-gimp/gimpX/gimp0` (fresh antecedent),
+`g9-gimpP` (the PRESENT-antecedent control), `g9-bare/bareG/bareJ`
+(context emptied), `g9-bareF/bareFG/bareFJ` (context emptied, fuels lifted
+by three — the refuting region).  Regression: 1152/1152 shape agreement,
+so every stored verdict still stands for the statement it was recorded
+against.
+
+**(e) THE REPLAY VERDICT — the corrected screen fires.**  Over the enlarged
+corpus (1382 records) with `P3c` and its four-world analogue prepended to
+the frame list:
+
+    Z0 control (goal row to component@0):        825 HITS (calibration)
+    F2  fresh-row descent, c = 1:                 19 HITS
+    F1  fresh-row descent, c = b−1:               10 HITS
+    Fp  PRESENT-antecedent row descent, c = 1:     0 hits  (control)
+    BD  Round4.BoxDesc, [src, amb] ⊢ tgt:          4 HITS
+    W2  Round8.GoalRowAbsorb, c = 1:              10 HITS
+
+Every F1/F2 hit is on a round-9 stratum and every certificate is `P3c` (up
+to atom renaming); the matched present-antecedent control is silent, so the
+discriminator is exactly the `C₁ ∉ Γ` branch of `itpAgoal` — the branch
+that does NOT lower the target's guard, and therefore demands the guard
+ascent `c → b` at the grown context that `AscRefute.not_ambGuardAscent`
+already refuted room-free.  The three fixes are jointly necessary: with the
+round-8 frame list, or the round-8 defect range, or the tied fuel grid, the
+same passes are silent.
+
+**(f) WHAT IS UNTOUCHED.**  The refuted cell has
+`defect vS [] · (|jumpGoals vS| + 2) = 35` and `b = 1`
+(`Round9Pin.vS_room`, `not_room_at_one`, `not_room_at_two`): it is
+STRICTLY SUB-ROOM by a factor of 35.  `Round4.BoxDescR` — the room-carrying
+obligation, `Room S Γ b` at the target budget — and
+`wip/absorb_base.lean`'s `cascade_boxgoal_pos` are therefore untouched, and
+nothing in this round bears on them.  The crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+**(g) THE REDIRECT.**  §61(c) alternative 1, §63(e) fork (1), and the whole
+of rounds 6, 7 and 8 were assembled on `Round4.BoxDesc` being true.  It is
+not.  What survives is the room-carrying fallback the `sorry` already
+states — `BoxDescR` plus `1 ≤ defect S Γ` — and the campaign's question
+becomes the one §65 measured and set aside: the room-carrying statement's
+live regime is not decide-feasible wherever a γ-clause is present
+(`two_le_jumpGoals_of_gamma`, `four_le_budget_of_gamma`), so the next round
+cannot screen its way in and must build.  The positive results of rounds 6
+and 8 survive intact and are reusable there: `Round6.easc_tight` (the E-half
+at `J+2`), `Round6Force.itpA_atom_forces_amb`, `Round8.goalRowAbsorb_top`
+and `goalRowAbsorb_atom` are theorems about the tables, not about the
+room-free route.
+
+**(h) METHOD NOTES.**
+
+* **A clean screen is a statement about the screen.**  Nine passes over
+  1152 cells, three rounds, all clean — and false.  Every "quiet" verdict
+  in the corpus was produced by a battery blind to one frame, a generator
+  blind to one end of one axis, and a grid that tied two axes together.
+  A negative result from a fixed battery bounds the countermodel, not the
+  statement; the bound must be recorded with the verdict.
+* **Sample the DEGENERATE end of every axis, not just the interesting
+  end.**  `Γ = []` is where the tables collapse and the ambient becomes
+  `⊤` — the cheapest instances in the whole space, and the ones no
+  stratum drew.  Cheap degenerate cells should be screened FIRST, before
+  the expensive interesting ones.
+* **Never tie two axes in a grid.**  `ft = b + 1` was a convenience; it
+  made a whole region unreachable at every budget, silently.
+* **Widen the frame list when a `◯`-goal statement survives a screen its
+  unboxed form fails.**  §60 recorded that contrast
+  (`box_is_load_bearing`) as evidence FOR the `◯`-goal form.  It was
+  really a signal that the battery's modal depth was the binding
+  constraint: the `◯` buys one modal step, so the refuting frame is one
+  step longer than the one that refutes the unboxed form.

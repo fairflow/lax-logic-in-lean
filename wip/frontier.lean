@@ -206,6 +206,30 @@ structure StratCfg where
   goalBoxDepth : Nat := 0
   /-- Target defect (`|S ∖ Γ|`). -/
   defectTarget : Nat := 1
+  /-- **Round 9.**  Generate the FRESH-ANTECEDENT shape instead of drawing the
+  goal body out of the space: `D = (◯x ⊃ y) ⊃ z`, whose antecedent
+  `C₁ = ◯x ⊃ y` is a `⊃◯`-clause, so the grown context `C₁ :: Γ` carries
+  budget-GATED conjuncts — the configuration `AscRefute.not_ambGuardAscent`
+  refutes the guard ascent at.  Everything else in `genBase` is bypassed;
+  `gimp := false` leaves every campaign-1/2/g8 stratum byte-identical. -/
+  gimp : Bool := false
+  /-- Chain a γ-clause `◯w ⊃ x` in front of the goal body, sharing the atom
+  `x` with the body's boxed antecedent — July's `Sk` verbatim. -/
+  gimpGamma : Bool := true
+  /-- Drop `C₁` from the context (the residue).  `false` keeps it — the
+  PRESENT-antecedent control, whose goal disjunct lowers the guard. -/
+  gimpFresh : Bool := true
+  /-- Override the budget grid.  Empty = `budgetGrid room` as before.  The
+  fresh-antecedent spaces have `room ≥ 5`, so the default grid would offer
+  `b = 1` only and no `c < b` would exist to screen. -/
+  bgridOverride : List Nat := []
+  /-- Add a constant to BOTH fuels of every grid position.  `fuelGrid` ties
+  `ft = b + 1`, which is right when the budget is what is being probed and
+  wrong when the FUEL is: the round-9 refutation needs `ft = 5` at `b = 1`,
+  a cell the tied grid cannot produce at any budget inside `ftCap`.  `0`
+  (the default, and every campaign-1/2/g8 stratum's value) leaves the grid
+  exactly as it was. -/
+  fuelBump : Nat := 0
   deriving Inhabited
 
 /-- A generated base instance: the space, the context, the goal body, and the
@@ -216,9 +240,15 @@ structure Base where
   ctx : List PLLFormula
   dropped : List PLLFormula
   body : PLLFormula
+  /-- Round 9: a stratum-fixed budget grid.  Empty (the default, and the
+  value every campaign-1/2/g8 base carries) means `budgetGrid room`. -/
+  bgrid : List Nat := []
+  /-- Round 9: a constant added to both fuels of every grid position.  `0`
+  is every campaign-1/2/g8 base's value. -/
+  fbump : Nat := 0
   deriving Inhabited
 
-def genBase (cfg : StratCfg) : Gen Base := do
+def genBaseStd (cfg : StratCfg) : Gen Base := do
   let gam ← match cfg.gammaDepth with
     | none => pure ([] : List PLLFormula)
     | some k => do
@@ -252,7 +282,42 @@ def genBase (cfg : StratCfg) : Gen Base := do
   let Sl := closureOfSeeds (seeds ++ [D.somehow])
   let dropped ← genDrop Sl cfg.defectTarget
   pure { seeds, Sl, ctx := Sl.filter (fun F => !(dropped.contains F))
-       , dropped, body := D }
+       , dropped, body := D, bgrid := cfg.bgridOverride
+       , fbump := cfg.fuelBump }
+
+/-- **Round 9: the fresh-antecedent base.**  `D = (◯x ⊃ y) ⊃ z` with the
+antecedent `C₁ = ◯x ⊃ y` deleted from the context (`gimpFresh`), optionally
+behind a chained γ-clause `◯w ⊃ x`.  At `pool = ["p","r","s","t"]`,
+`gimpGamma := true`, `defectTarget := 0` and rotation `0` this is July's
+`Skb`/`Gk` verbatim (up to the extra dropped pieces): the space whose
+guard ascent `AscRefute.not_ambGuardAscent` kernel-refutes. -/
+def genBaseGimp (cfg : StratCfg) : Gen Base := do
+  let n := cfg.pool.length
+  let i ← pick n
+  let w := prop (cfg.pool.getD (i % n) "a")
+  let x := prop (cfg.pool.getD ((i + 1) % n) "b")
+  let y := prop (cfg.pool.getD ((i + 2) % n) "c")
+  let z := prop (cfg.pool.getD ((i + 3) % n) "d")
+  let ant := (w.somehow).ifThen x
+  let c1 := (x.somehow).ifThen y
+  let D := c1.ifThen z
+  let mut ors : List PLLFormula := []
+  for _ in [0:cfg.orCount] do
+    let o ← genBodyOf cfg.pool .disj
+    ors := o :: ors
+  let seeds := (if cfg.gimpGamma then [ant] else []) ++ [D] ++ ors
+  let Sl := closureOfSeeds (seeds ++ [D.somehow])
+  let extra ← genDrop (Sl.filter (fun F => F != c1)) cfg.defectTarget
+  let dropped := ((if cfg.gimpFresh then [c1] else []) ++ extra).eraseDups
+  pure { seeds, Sl, ctx := Sl.filter (fun F => !(dropped.contains F))
+       , dropped, body := D, bgrid := cfg.bgridOverride
+       , fbump := cfg.fuelBump }
+
+/-- The generator, dispatched.  `gimp := false` — every stratum of campaigns
+1, 2 and g8 — runs `genBaseStd`, which is the pre-round-9 `genBase` verbatim,
+so the recorded corpus regenerates byte-identically. -/
+def genBase (cfg : StratCfg) : Gen Base :=
+  if cfg.gimp then genBaseGimp cfg else genBaseStd cfg
 
 /-! ## §4  The cell grid
 
@@ -293,10 +358,11 @@ def fuelGrid (b : Nat) : List (Nat × Nat) :=
 def gridOf (base : Base) : List Cell :=
   let S := base.Sl.toFinset
   let room := PLLND.defect S base.ctx * ((jumpGoals S).card + 2)
-  let cells := (budgetGrid room).flatMap (fun b =>
+  let cells := (if base.bgrid.isEmpty then budgetGrid room else base.bgrid).flatMap (fun b =>
     (fuelGrid b).map (fun fp => (fp.1, fp.2, b)))
   cells.zipIdx.map (fun p =>
-    { toBase := base, fs := p.1.1, ft := p.1.2.1, b := p.1.2.2, gidx := p.2 })
+    { toBase := base, fs := p.1.1 + base.fbump, ft := p.1.2.1 + base.fbump
+    , b := p.1.2.2, gidx := p.2 })
 
 /-- Cells per base.  The seed is split as `seed / cellsPerBase` (which base)
 and `seed % cellsPerBase` (which grid position), so a cell is a pure function
@@ -581,13 +647,101 @@ def s_g8_d2jump : Stratum Cell :=
     , goalShape := .jump }
     72 21000 "γ-clause ◯◯E⊃B (S3 shape) plus jump clause, D=(x⊃y)⊃z unboxed — THE ROUND-8 RESIDUE SHAPE"
 
+/-! ### Round-9 strata — the §67(h) residue shape
+
+The round-8 strata put a jump-shaped unboxed body `D = (x⊃y)⊃z` over a
+γ-carrying space, but their antecedent `x⊃y` is COLD (`hotOf` prefers
+implication consequents and box bodies), so `genDrop` leaves it in the
+context and every cell realises the PRESENT-antecedent branch of
+`itpAgoal` — the branch that lowers the target guard by one.  The residue is
+the other branch.  These four strata force it: the body is
+`D = (◯x ⊃ y) ⊃ z` and its antecedent `C₁ = ◯x ⊃ y` is deleted from the
+context, so `C₁ ∉ Γ` and — because `C₁` is a `⊃◯`-clause — the grown context
+`C₁ :: Γ` carries budget-gated conjuncts.  `g9-gimpP` is the matched control
+with `C₁` kept. -/
+
+def s_g9_gimp : Stratum Cell :=
+  mkStratum "g9-gimp"
+    { pool := ["p", "r", "s", "t"], gimp := true, gimpGamma := true
+    , defectTarget := 0, bgridOverride := [3, 2, 1] }
+    36 22000 "D=(◯x⊃y)⊃z, antecedent FRESH, chained γ-clause — July's Sk shape"
+def s_g9_gimpX : Stratum Cell :=
+  mkStratum "g9-gimpX"
+    { pool := ["a", "b", "c", "d"], gimp := true, gimpGamma := true
+    , defectTarget := 1, bgridOverride := [3, 2, 1] }
+    36 23000 "D=(◯x⊃y)⊃z, antecedent FRESH plus one hot drop, chained γ-clause"
+def s_g9_gimp0 : Stratum Cell :=
+  mkStratum "g9-gimp0"
+    { pool := ["a", "b", "c", "d"], gimp := true, gimpGamma := false
+    , defectTarget := 1, bgridOverride := [3, 2, 1] }
+    36 24000 "D=(◯x⊃y)⊃z, antecedent FRESH, no γ-clause"
+def s_g9_gimpP : Stratum Cell :=
+  mkStratum "g9-gimpP"
+    { pool := ["a", "b", "c", "d"], gimp := true, gimpGamma := true
+    , gimpFresh := false, defectTarget := 1, bgridOverride := [3, 2, 1] }
+    36 25000 "CONTROL: the same shape with the antecedent PRESENT"
+
+/-! ### Round-9 strata, second tier — THE DEFECT AXIS, to its end
+
+Every campaign-1/2/g8 stratum drops one or two members of the space, so its
+context is nearly all of `S` and its defect is 1 or 2.  The refutation round
+9 found (`wip/round9pin.lean`) lives at the OTHER end of that axis: `Γ = []`,
+defect `|S|`, where the ambient degenerates to `⊤` and the `itpAenv` tables
+are empty.  `defectTarget := 99` drops everything `genDrop` can reach — the
+context is emptied — and these strata put the region into the corpus. -/
+
+def s_g9_bare : Stratum Cell :=
+  mkStratum "g9-bare"
+    { pool := ["a", "b", "c", "d"], gimp := true, gimpGamma := false
+    , defectTarget := 99, bgridOverride := [3, 2, 1] }
+    24 26000 "D=(◯x⊃y)⊃z, antecedent fresh, CONTEXT EMPTIED"
+def s_g9_bareG : Stratum Cell :=
+  mkStratum "g9-bareG"
+    { pool := ["p", "r", "s", "t"], gimp := true, gimpGamma := true
+    , defectTarget := 99, bgridOverride := [3, 2, 1] }
+    24 27000 "July's Sk shape with the CONTEXT EMPTIED"
+def s_g9_bareJ : Stratum Cell :=
+  mkStratum "g9-bareJ"
+    { gammaDepth := some 1, gammaBody := .atom, jumpExtra := true
+    , goalShape := .jump, defectTarget := 99, bgridOverride := [3, 2, 1] }
+    24 28000 "the ROUND-8 stratum shape with the CONTEXT EMPTIED"
+
+/-! ### Round-9 strata, third tier — the FUEL axis, untied from the budget
+
+The bare-context strata above still produce nothing: `fuelGrid` ties
+`ft = b + 1`, so an emptied context at `b ≤ 3` is screened at `ft ≤ 4`, and
+the refutation of `Round4.BoxDesc` at `Γ = []` first appears at `ft = 5`
+(at `ft = 4` the same cell is provable — `wip/frontier_g9v.txt`).  The tie
+is an assumption about where the content lives, and it was wrong.  These
+three strata lift both fuels by three. -/
+
+def s_g9_bareF : Stratum Cell :=
+  mkStratum "g9-bareF"
+    { pool := ["a", "b", "c", "d"], gimp := true, gimpGamma := false
+    , defectTarget := 99, bgridOverride := [2, 1], fuelBump := 3 }
+    24 29000 "emptied context, fuels lifted by 3 — THE ROUND-9 REFUTING REGION"
+def s_g9_bareFG : Stratum Cell :=
+  mkStratum "g9-bareFG"
+    { pool := ["p", "r", "s", "t"], gimp := true, gimpGamma := true
+    , defectTarget := 99, bgridOverride := [2, 1], fuelBump := 3 }
+    24 30000 "July's Sk shape, emptied context, fuels lifted by 3"
+def s_g9_bareFJ : Stratum Cell :=
+  mkStratum "g9-bareFJ"
+    { gammaDepth := some 1, gammaBody := .atom, jumpExtra := true
+    , goalShape := .jump, defectTarget := 99, bgridOverride := [2, 1]
+    , fuelBump := 3 }
+    24 31000 "the round-8 stratum shape, emptied context, fuels lifted by 3"
+
 def allStrata : List (Stratum Cell) :=
   [ s_d1_atom, s_d1_jump, s_d1_nbox
   , s_d2_imp, s_d2_jumpbody, s_d2_atomgoal
   , s_d3_imp, s_d3_atomgoal
   , s_j1, s_j3, s_or1, s_or2, s_df2_d1, s_df2_d2, s_pv
   , s_jb1_imp, s_jb1_nbox, s_jb1_nbox2, s_jb1_atom2
-  , s_g8_d1jump, s_g8_d2jump ]
+  , s_g8_d1jump, s_g8_d2jump
+  , s_g9_gimp, s_g9_gimpX, s_g9_gimp0, s_g9_gimpP
+  , s_g9_bare, s_g9_bareG, s_g9_bareJ
+  , s_g9_bareF, s_g9_bareFG, s_g9_bareFJ ]
 
 /-- Campaign 1's fifteen strata, kept separately so that campaign 1 can be
 re-run exactly. -/
@@ -597,8 +751,20 @@ def campaign1Strata : List (Stratum Cell) := allStrata.take 15
 value unchanged by the round-8 strata appended after it.) -/
 def campaign2Strata : List (Stratum Cell) := (allStrata.drop 15).take 4
 
-/-- Campaign g8: the round-8 residue shape. -/
-def campaignG8Strata : List (Stratum Cell) := allStrata.drop 19
+/-- Campaign g8: the round-8 residue shape.  (`take 2` keeps this list's
+value unchanged by the round-9 strata appended after it.) -/
+def campaignG8Strata : List (Stratum Cell) := (allStrata.drop 19).take 2
+
+/-- Campaign g9: the round-9 fresh-antecedent residue shape. -/
+def campaignG9Strata : List (Stratum Cell) := (allStrata.drop 21).take 4
+
+/-- Campaign g9b: the defect axis to its end (the context emptied) — the
+region the whole campaign-1/2/g8 corpus never sampled, and the one that
+carries the refutation. -/
+def campaignG9bStrata : List (Stratum Cell) := (allStrata.drop 25).take 3
+
+/-- Campaign g9c: the same region with the FUEL untied from the budget. -/
+def campaignG9cStrata : List (Stratum Cell) := allStrata.drop 28
 
 /-- Look a stratum up by name — the replay side of `genCell`. -/
 def stratumByName (nm : String) : Option (Stratum Cell) :=
