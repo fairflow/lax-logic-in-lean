@@ -6593,3 +6593,72 @@ its call sites (§60), financed at its first self-call (§61(d)'s entry
 band), and still die at a fixed finite depth — the band must be computed
 before the build is scoped, and here it is two levels wide against a
 recursion of unbounded depth.
+
+## §64 (2026-08-05) — Round 6, refute prong: the room-free `BoxDesc` is SCREEN-CLEAN across the sub-room band, including the July family at budgets 1–3
+
+`wip/round6refute.lean` (pin schema + room-gate-free harness + families),
+stage runners `wip/round6refute_s1`–`_s9`, durable transcripts
+`wip/round6refute_out.txt` / `_out2.txt`.  Run concurrently with the
+round-6 prove prong (§63), in the round-5 detached worktree at `762fc23`;
+no existing file touched.
+
+**Headline.**  `Round4.BoxDesc` is NOT refuted.  The statement's
+room-freeness opened a band no round had swept: every certified July
+refutation of the unboxed descent sat ~30× below its room, and the
+room-carrying round-5 screen (§62) was barred from that band by its own
+admissibility floor.  This round swept it: 863 two-sided verdicts over
+693 admissible cells (`◯D ∈ S`, `Γ ⊆ S`, `fs ≤ ft`, `1 ≤ b`, `S`
+piece-closed), 695 sub-room, **zero refutations**.  The refutation
+schema `not_boxDesc_of_check` (`[propext, Quot.sound]`, pinned) needs no
+closure hypotheses — `BoxDesc` as stated has none, so ANY firing cell
+would have killed it; none fired.  Calibration fired in the refuting
+direction (`R!` on round 4's unboxed control, 16 ms) and, new, the boxed
+July cell survived the FULL 22-frame battery, extending
+`boxed_survives` from two fixed models to all 22 frames.
+
+**The July family sub-room, first sweep.**  `Skb`/`Sk` at `ctx = Gk`
+(defect 8–9, room 56–63), bodies `gk`, `r`, `p`, budgets 1–3, six fuel
+calibrations: no battery frame refutes any cell — and no cell proves
+either, at up to 20000 nodes and 1843 s/cell.  The band is two-sidedly
+undecided; the saturated defect-1 variants prove (33/36), `miss-t` and
+the defect 2–3 contexts stay open or size-out.  The configuration that
+generated every July refutation does not touch the boxed statement even
+in its own budget range.
+
+**The ∨-band, screened hard** (the prove prong's sub-task (ii)
+surface): ∨-bodies boxed once/twice, ∨ under and inside jump gates, ∨
+as gate consequent — 129/135 cells PROVED at depth, 2 residual `~`,
+zero countermodels.  The least-exercised apparatus is the
+best-behaved.
+
+**The §62 residual JB2 cells at 10×.**  `(1,5)`, `(4,5)`, `(5,5)` at
+`b = 3` re-run at 300000 nodes (19–64 min each): still `~`, still no
+countermodel.  OPEN-at-budget, now at 10× the round-5 budget.
+
+**Method caveats, recorded.**  The closure emitter never ran anywhere:
+measured closures (30–158, stage-9 instrumentation) exceed every
+feasible cap, so the negative side of the whole screen is the ≤5-world
+battery alone.  A refutation needing a larger or off-battery model is
+invisible to this method — and would also be beyond `decide +kernel` to
+pin.  The mitigation stands as in §62: every historical refutation in
+this repository appeared at the smallest instances of its family, and
+those instances are now swept clean both above (§62) and below (this
+section) the room.  Runner provenance: `_s5`/`_s6` were killed
+externally mid-run; `_s7`/`_s8` are their recorded re-runs (documented
+in their docstrings); `_s5`/`_s6` have no oleans and are committed as
+recorded artifacts only.  Unswept: budgets 4–7 under rooms ≥ 8;
+defect-0 contexts (admitted by `BoxDesc`, excluded by every family);
+fuels beyond 6; 91 size-SKIPs.
+
+**Verdict for round 6, both prongs.**  The room hypothesis of
+`cascade_boxgoal_pos` is not certified necessary: no sub-room
+countermodel exists within the screen's reach.  §63's financing
+frontier (the depth ≥ 2 same-context γ-nest at compound landing bodies)
+therefore stands unrefuted on BOTH sides of the room floor — the
+statement looks true everywhere any instrument can reach, while every
+self-financed proof design provably dies at depth 3.  The sharpest
+remaining doubt sits in the two-sidedly undecided July defect ≥ 8
+sub-room band and the three JB2 cells, none of which any instrument in
+the repository can currently settle in either direction.  Round-7 forks
+as recorded in §63(e), now to be entered through the frontier sampler
+(§65, in progress) per the reach-over-completeness rule.
