@@ -1114,3 +1114,5 @@ fs1|stratum=jb1-atom2|seed=19069|size=4|sf=(a ⊃ b) ⊃ c ⋄ b ⊃ c|D=◯(◯
 fs1|stratum=jb1-atom2|seed=19071|size=4|sf=(a ⊃ b) ⊃ c ⋄ b ⊃ c|D=◯(◯c)|drop=◯c|nS=9|d=1|J=1|room=3|b=3|fs=4|ft=4|g=0|lg=1|stmt=both|why=run|sz=3070|act=false|triv=true|at=3|gate=ok|verdict=quiet|ms=3241|cert=
 # stratum jb1-atom2: hits=0 quiet=64 skip=0 gated-out=0 gen-fail=8 counted=64 (97277 ms)
 # === campaign c2 TOTAL: hits=0 quiet=256 skip=0 gated-out=0 gen-fail=32 counted=256 (295770 ms) ===
+# CALIB unboxed(expect R!)=true boxed(expect quiet)=true (1094 ms)
+# CALIB unboxed(expect R!)=true boxed(expect quiet)=true (1123 ms)

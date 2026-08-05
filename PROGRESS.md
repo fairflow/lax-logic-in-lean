@@ -6789,3 +6789,176 @@ round.  Corollary, from (c): when a sampler cannot reach a statement's
 live regime, that unreachability is itself a result — compute it, pin
 it, and re-aim the next campaign at the band where the regime *is*
 reachable.
+
+## §66 (2026-08-05) — Round 7, prove prong: fork (1) enters through the replay layer — the boxed-component production (`CompProd`) stated and screened two-sidedly, its band pinned at both ends, the γ-head case certified to factor through it room-free, and the goal-row landing refuted at EVERY ambient elevation: the two §61(c) horns meet at one machine-checked wall
+
+`wip/round7core.lean`, `wip/round7pin.lean` (both new, both sorry-free,
+all pinned); replay drivers `wip/frontier_g7.lean` / `_g7b` / `_g7c`
+(recorded artifacts; durable transcript `wip/frontier_g7.txt`).
+`wip/absorb_base.lean` and everything below it are **untouched**: the one
+`sorry` is still `cascade_boxgoal_pos`.  The round's brief was §63(e)'s
+fork (1) — produce the boxed γ-component directly from the accumulated
+guard stack — under the §65 standing rule: candidates STATED and REPLAYED
+over the corpus before any build is scoped.  The rule earned its keep:
+the replay verdicts re-scoped the build twice before a line of proof was
+written, and the one build-shaped step that was attempted anyway
+(the direct walk's goal-row landing) turned out to be kernel-refutable —
+found by a 10-second targeted probe, pinned the same hour.
+
+**(a) THE GUARD STACK IS FREE — AND THAT CUTS BOTH WAYS.**  The design
+observation that reframes fork (1): every guard the truncation tower
+accumulates (`E@(b−1)(Γ) … E@(b−k)(Γ)`, same context) is derivable from
+the statement's own ambient `E@(ft, b+1)(Γ)` by downward budget
+monotonicity (`ambE`).  So the "unpriced resource" of §63(e) costs
+nothing — and supplies nothing beyond the ambient.  What it DOES license:
+every boxed row of the source can be OPENED (`laxL` under a boxed goal,
+guard fired by the lowered ambient), so the γ-head self-recursion becomes
+a gap-preserving pair recursion `(b, c) → (b−1, c−1)` on the held
+components, with NO budget-sensitive hypothesis per level — the demand
+profile that escapes `no_self_financed_nest` (which kills per-level
+`Room (c+2)` demands, not demand-free descents).
+
+**(b) THE CANDIDATE** (stated first, per the standing rule) — the
+production of the boxed γ-head component, ROOM-FREE
+(`Round7.CompProd`):
+
+    for all fs ≤ ft, 1 ≤ c ≤ b, Γ ⊆ S, ◯D ∈ S:
+      Δ ⊢ E@(ft, b+1)(Γ)                          (the ambient)
+      Δ ⊢ ◯( E@(fs, b)(Γ) ⊃ A@(fs, b)(Γ, ◯D) )   (the held component)
+      ────────────────────────────────────────────
+      Δ ⊢ ◯( E@(ft, c)(Γ) ⊃ A@(ft, c)(Γ, ◯D) )
+
+This is the exact shape of the γ-row landing: the first conjunct of the
+target's γ-head disjunct is a `CompProd` conclusion
+(`Round7.gammaComp_lands`), and the source's γ-head row hands exactly the
+premise component.
+
+**(c) THE REPLAY VERDICTS — the corpus's first decisive value test.**
+Ten passes over the 1072-record corpus (683 non-trivially run cells),
+zero generation cost, countermodel-only, live-fire calibrated per pass:
+
+    Z  control: production at c=0            344 HITS (calibration)
+    A  from the table, c=b−1                 0 hits over 1072
+    B  from the table, c=1 (the deep end)    0 hits
+    C  committed goal clause, c=b−1          0 hits
+    D  committed goal clause, c=1            0 hits
+    G  from the component, c=b−1 (γ-cells)   0 hits
+    H  from the component, c=1  (γ-cells)    0 hits
+    T  gap-recursion bottom, γ-body          0 hits
+    U  gap-recursion bottom, goal body       0 hits
+    V  bottom + grown conjunct               0 hits
+
+Pass C's cleanness is a surprise worth recording: committing the target
+to its own goal disjunct — the "fire"-horn extension §61(b) argued
+unsound as a LEMMA — is nowhere refuted as a STATEMENT, compound bodies
+included.  The control matters as much as the clean rows: 344 kernel-
+checkable certificates at `c = 0` prove the pass machinery can fire on
+exactly this sequent shape, so the nine silent rows are calibrated
+silence.
+
+**(d) THE BAND, PINNED AT BOTH ENDS.**  `Round7Pin.comp0_refuted`
+(+ `comp0_not_derivable`, both `[propext, Quot.sound]`): at `c = 0` the
+production fails — corpus cell `d1-atom/1021`, a one-world model; at
+budget 0 the component's value table degenerates to a boxed negation of
+the live atoms.  `Round7.compProd_gap0`: at `c = b` the production is
+unconditional (open, fire with the lowered ambient, lift the fuel,
+re-box).  The open content of `CompProd` is exactly the band
+`1 ≤ c < b`.
+
+**(e) THE REDUCTIONS** (`wip/round7core.lean`, sorry-free):
+`compProd_of_boxDesc` — the production follows from the room-free
+`Round4.BoxDesc` by opening the component and iterating the descent with
+the ambient re-lowered at every step (no room anywhere); hence
+`not_boxDesc_of_not_compProd`: any countermodel to `CompProd` at
+admissible parameters refutes `BoxDesc` itself.  Passes G/H are thereby
+two-sided instruments for the room-free route as a whole — and they came
+back clean.
+
+**(f) THE NEW NEGATIVE — the goal-row landing dies at EVERY ambient
+elevation** (`Round7Pin.goalrow_landing_refuted_elev1/_elev2`,
+`goalrow_landing_not_derivable`, all `[propext, Quot.sound]`).  Inside
+any value-concluding walk (of `CompProd` or of `cascade_boxgoal_pos`
+itself), the source's goal row opens to the UNBOXED value
+`A@(b)(Γ, D)` and the target's goal row needs `A@(c)(Γ, D)`, `c < b`,
+same context.  July's `Mk` refuted that descent at MATCHED budgets
+(ambient = source); the walk's inner positions are better off by one
+budget of ambient (top ambient `b+1` against a fired value at `b`), so
+the matched refutation left a gap.  Closed: `Mk` refutes the landing
+with the ambient elevated by one AND by two.  The elevation is not
+load-bearing.  Consequently the goal rows of any direct walk MUST be
+treated in continuation form (the pigeonhole), which is room-priced
+through the spine — against `CompProd`'s room-free statement.
+
+**(g) THE S3 INSTANCE — the bottom is not only clean, it is PROVED.**
+The gap-preserving recursion bottoms at `c = 1` (the source's γ-head row
+hands a budget-1 component against a budget-1 table).  At the round-6
+witness (`S3`/`Γ3`, the space that killed the tower), at the room floor
+`b = 4` and the budget-active reference fuel `fs = ft = 5`:
+
+    [ comp@1 , grown@2 , amb@5 ] ⊢ A@(5,1)(Γ3, ◯◯(a⊃b))   P (40000)
+    [ comp@1 , amb@5 ]           ⊢ A@(5,1)(Γ3, ◯◯(a⊃b))   P (40000)
+
+— searcher-PROVED, certificate-carrying, even WITHOUT the grown
+conjunct (the `fs = ft = 2` truncating-fuel variants stay `~`, searcher
+weakness at a nearly-degenerate component).  The bottom of the fork-1
+recursion is affirmatively derivable at the exact configuration that
+was the round-6 residue.
+
+**(h) WHERE THE RESIDUE NOW STANDS — one wall, seen from every side.**
+Fork (1) delimits as follows.  (i) The γ-head rows of the `◯`-goal
+descent factor through `CompProd` room-free — and IF `CompProd` were
+proved, the walk's spine would enter once, at depth 0 (`tower_entry_depth0`
+from the bare room): §63(c)'s per-crossing entry band evaporates, because
+the crossings live inside `CompProd`'s recursion, not on the spine.
+(ii) `CompProd`'s own direct proof closes room-free at boxed bodies
+(size recursion), atomic bodies (ambient-carrying forcing, §63(b)) and
+its bottom (screened clean; PROVED at the witness) — and is obstructed
+at exactly one place: its goal rows at compound UNBOXED cores
+(jump-shaped `D`), where the pointwise landing is kernel-refuted at
+every elevation (f) and the continuation-form alternative re-imports the
+room-priced pigeonhole against a room-free statement.  The prove-side
+residue of the entire campaign is now a single named lemma shape:
+
+    RESIDUE (round 8): `CompProd` restricted to the goal-row case at
+    jump-shaped unboxed bodies — equivalently, absorb the source's goal
+    row `◯(E@(b−1) ⊃ A@(b)(Γ, D))` into the target's table at `c < b`
+    from the ambient alone, `D` compound unboxed, WITHOUT the pointwise
+    descent (refuted) and WITHOUT a budget-priced side condition
+    (`no_self_financed_nest`).
+
+Everything else — both horns of §61(c), the §63(c) band, the bottom,
+the atomic tier, the ∨-tier — is either proved, financed, or reduced to
+this.
+
+**(i) REPLAY VALUE VERDICT: KEEP.**  §65(f) set the test: if the
+round-7 pass answers nothing fresh screening wouldn't, prune the layer.
+It answered: ten statement-variants screened at zero generation cost in
+one afternoon, one boundary (c = 0) certified refuted at 344 known-
+admissible instances, two candidate re-scopings before any build, and
+the S3 bottom aimed by the recursion analysis the passes made possible.
+This is the designed statement-change-time use, delivered.
+
+**Build state.**  `wip/absorb_base.lean` untouched, exactly ONE `sorry`
+(`cascade_boxgoal_pos`, :2269); full stack rebuilt from fresh `.dep` in
+the pinned order (absorb_base → adequacy → packaging → indiff →
+spaceindiff → final → sealLedger → round4Comp → round4Free → round4probe
+→ round4probe2 → round4probe3 → round5core → round5probe → round5probe2
+→ round5refute → round5refute_bdefs → round6refute → round6core →
+round6force → frontierCore → frontier → frontier_pin → round7core →
+round7pin), RC=0, one `sorry` warning; every `#guard_msgs` pin passes;
+the crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+Regression: `lake exe towertest sizes 2` byte-identical; zero files
+touched under `LaxLogic/`.
+
+**Method note.**  §59 financing before the proof; §61 the recursion; §63
+every depth; §65 the sampler before the build.  §66 adds the
+counterpart for POSITIVE design steps: **when a design names a rescuing
+resource, first check what the resource is derivable from** — the guard
+stack was ambient-derivable, so the design's real content was the
+demand-free recursion it licensed, and the real obstruction was wherever
+the ambient alone provably does not suffice: findable by one targeted
+countermodel probe at the inherited witness, before any build.
