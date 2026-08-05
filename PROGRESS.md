@@ -6661,4 +6661,131 @@ remaining doubt sits in the two-sidedly undecided July defect ≥ 8
 sub-room band and the three JB2 cells, none of which any instrument in
 the repository can currently settle in either direction.  Round-7 forks
 as recorded in §63(e), now to be entered through the frontier sampler
-(§65, in progress) per the reach-over-completeness rule.
+(§65) per the reach-over-completeness rule.
+
+## §65 (2026-08-05) — The frontier sampler: 948 admissible cells over 19 strata, zero refutations, and the room-carrying statement's live regime measured and pinned unreachable wherever a γ-clause is present
+
+`wip/frontierCore.lean`, `wip/frontier.lean`, `wip/frontier_pin.lean`
+(all new, all sorry-free, all pinned), runners `wip/frontier_show` /
+`_run` / `_run2` / `_replay` / `_row`, the calibration
+`wip/frontier_calib.lean`, the wall-clock wrapper
+`wip/_probe_elab.sh`, the cumulative corpus `wip/frontier_corpus.txt`
+(1072 records) and `wip/frontier_replay.txt`.  A standalone skeleton of
+the generic layer sits at `tools/FrontierSampler/`, unreferenced by the
+main lakefile.  `wip/absorb_base.lean` and everything below it are
+**untouched**; the one `sorry` is still `cascade_boxgoal_pos`.  Built
+by a delegated agent in a separate detached worktree at `33548e4`,
+commissioned on Matthew's completeness-vs-reach critique (2026-08-05).
+
+**The brief.**  §§59–63 screened by exhaustive sweeps over small
+bounded regions, re-scoped per formula as each arose.  The shape that
+mattered in round 6 — a space with a doubly-boxed γ-clause `◯◯E ⊃ B`,
+witness `S3` — sat one `◯`-nesting level beyond the swept region and
+was found proof-side two rounds later.  This section is the other
+method: sample sparsely and broadly along the axes the tables branch
+on, one structural level beyond current use, and never re-derive the
+region per formula.
+
+**(a) THE HARNESS.**  Nineteen strata: γ-clause `◯`-nesting depth 1
+(the swept region), 2 (the §63 frontier), **3** (one beyond);
+goal-body shape atom / jump / nested-box / ∨-carrying; ∨-density
+0/1/2; jump count `J`; defect 1/2; the eliminated variable inside `S`.
+Generation is constructive — a seeded formula, its piece-closure, `◯D`
+re-closed in, `Γ = S ∖ drop` with the drop biased toward
+clause-completing members — so cells are admissible by construction,
+and six machine gates transcribed from the statement's hypotheses
+confirm it (`gated-out = 0` over 1072 records).  Triage is
+**countermodel-only**: `refute?` with `emitClosureCap := 0`, i.e. the
+certified battery and nothing else — no proof search, no exponential
+emitter.  Every cell appends and flushes one corpus line before the
+next begins.  Generation uses `Plausible.Gen` — the repo already
+carries it via mathlib — through `runRandWith` with a splitmix step
+(`Gen.run` is unseeded, and `mkStdGen` gave seeds 1000/1009/1017 the
+same formula).
+
+**(b) THE RESULT — nothing false, at 948 cells.**  Campaign 1 (15
+strata) 692 counted, campaign 2 (4 strata) 256, **0 refutations**, 124
+size-skips at the 40 000-node cap, live-fire calibrated against round
+4's unboxed control at every run.  `Round4.BoxDesc` was screened at
+sub-room budgets throughout, so its room-free content is included; a
+hit there would have killed the round-7 prove route, and there was
+none.
+
+**(c) THE MEASUREMENT, AND ITS LEMMA.**  Of campaign 1's 692 cells,
+only **12** were simultaneously room-admissible, budget-active and
+non-trivial — all in the one stratum with no γ-clause.  The arithmetic
+explains it and `wip/frontier_pin.lean` pins it:
+`two_le_jumpGoals_of_gamma` (a γ-clause `◯X ⊃ B ∈ S` puts **both** `X`
+and `◯X` in `jumpGoals`, and they are distinct), hence
+`four_le_budget_of_gamma` (room + `1 ≤ defect` forces `4 ≤ b`), hence
+fuel `≥ 5`, hence tables of 10⁵–10⁶ nodes — past `checkB`.  **The
+room-carrying statement's own live regime is not decide-feasible
+wherever a γ-clause is present.**  `three_le_budget_of_j1` gives the
+escape: at `J = 1` the room is 3 and the band is reachable.  This is
+the sampling-side counterpart of §62's structural finding A, and it is
+now a theorem rather than an observation.
+
+**(d) CAMPAIGN 2, AIMED BY (c).**  Four `J = 1` strata in the
+reachable band: `jb1-imp` (`D = (x⊃y)⊃z`, round 5's JB family),
+**`jb1-nbox` (`D = ◯((x⊃y)⊃z)` — a randomised generalisation of §62's
+three residual JB2 cells)**, `jb1-nbox2` (one `◯` beyond them),
+`jb1-atom2`.  27 live cells against campaign 1's 12; 0 refutations.
+The JB2 residue shape and the level beyond it both screen clean under
+randomisation — weak positive evidence for the statement, and against
+§63(e)'s fork (2).
+
+**(e) WHAT THE SCREEN DOES NOT RULE OUT.**  It is not a proof.  Cells
+above 40 000 nodes were not run (124 of them); defect ≥ 2 contributes
+sub-room cells only (room ≥ 6 forces fuel ≥ 7); the battery is ≤ 5
+worlds with the closure emitter off; and 265 of the 948 counted cells
+are syntactically vacuous (`src = tgt`, which happens exactly when
+`fs = ft` and the budget is inactive) and are excluded from the live
+counts above.  Two replay passes aimed at *different* statements — the
+unboxed room-free descent, and the statement with the ambient premise
+dropped — returned **no hits over 683 non-trivial cells**, which
+measures the battery's reach at these sizes at least as much as it
+measures the statements.
+
+**(f) REPLAY, ASSESSED PLAINLY.**  The corpus is replayable: 1072 of
+1072 records regenerate with identical shape columns from
+`(stratum, seed, size)` alone, including campaign 1's records after
+campaign 2's generator refactor.  That determinism audit is replay's
+only demonstrated yield so far; the two re-aim passes found nothing.
+Its designed value is at statement-change time — when round 7 revises
+`cascade_boxgoal_pos`, 948 admissible instances are available for a
+certificate-check pass at zero generation cost.  **If that pass is
+also empty, the replay layer should be pruned rather than carried**
+(explore first, prune later — Matthew's stated principle).
+
+**Sharing stance.**  `tools/FrontierSampler/SHARING.md` leads with
+Matthew's named prerequisites (the mechanisms must be proved against
+tasks beyond proof/model theory before any generalisation or
+publication) and records that the default is NOT to publish;
+recommendation as written there: leave it in-tree.  One ungated piece:
+a small upstream note to Plausible that `Gen.run` is unseeded and
+`mkStdGen` diffuses consecutive seeds poorly, with a pure
+`Gen.runWithSeed` — a Plausible observation, not a publication of this
+tool.  Ecosystem picture (verified by web search, URLs in the README):
+Plausible is the Lean 4 QuickCheck descendant (ex-SlimCheck, split out
+2024-11); constrained *generation* exists outside it
+(Chamelean/Specimen, Palamedes); stratification with per-region sample
+budgets, certificate-carrying persistent corpora, and cross-property
+replay were found in no Lean tool, and mostly in no tool anywhere.
+
+**Build state.**  `wip/absorb_base.lean` untouched, exactly ONE
+`sorry`; nothing under `LaxLogic/` modified; the new files build in
+order `frontierCore → frontier → frontier_pin` from the pinned `.dep`;
+all four `#guard_msgs` pins pass, transcribed from actual output.
+`wip/round5refute.lean`'s admissibility instruments are imported, not
+reimplemented.
+
+**Method note (standing rule, adopted).**  §59 "check the FINANCING
+before the proof"; §61 "the financing of the RECURSION"; §63 "the
+financing at every DEPTH".  §65 adds the cheap prior step: **each
+round's residue shape defines the next sampler stratum, and the
+sampler runs before any proof build is scoped.**  A stratum costs
+minutes of countermodel checking; a mis-scoped proof build costs a
+round.  Corollary, from (c): when a sampler cannot reach a statement's
+live regime, that unreachability is itself a result — compute it, pin
+it, and re-aim the next campaign at the band where the regime *is*
+reachable.
