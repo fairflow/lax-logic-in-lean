@@ -6450,3 +6450,146 @@ positive screen this family has had, blocked by a machine-checked
 financing obstruction, with the truncation-tower design of §61(f) as
 the concrete round-6 attack and the three `JB2` cells at `b = 3` as
 the sharpest place to aim any further doubt.
+
+## §63 (2026-08-05) — Round 6: both named residues of the truncation-tower LANDED (the E-half tightens to `J+2`; atom forcing over `∨`-spaces), and the tower's financing is BANDED — dead at the second same-context γ-crossing
+
+`wip/round6core.lean`, `wip/round6force.lean` (both new, both sorry-free,
+all pinned).  `wip/absorb_base.lean` and everything below it are
+**untouched**: the one `sorry` is still `cascade_boxgoal_pos`, exactly as
+round 4 left it.  The round's brief was to prove the room-free
+`Round4.BoxDesc` at general bodies via the truncation-tower design of
+§61(f), attacking its two named residues first.  Both residues fell —
+and are now theorems available to any future build — but assembling the
+tower exposed a THIRD gate §61(f) did not name, and that gate is
+machine-refuted at its exact boundary.  Per the round's fallback rules
+the obstruction is delivered pinned, with the reduction it leaves.
+
+**(a) RESIDUE (i) LANDED — the E-half room constant tightens,
+`J+3 → J+2`** (`Round6.easc_tight`).  The one-step budget ascent
+`E@(f,c)(Γ) → E@(f,c+1)(Γ)` holds under
+
+    (jumpGoals S).card + 2 + defect S Γ · ((jumpGoals S).card + 2) ≤ c
+
+— `cascade_main`'s E-half transcribed with the constant lowered and every
+internal `omega` re-closed.  §61(f)(i)'s hand-check was right: the entry
+demand `hroomA` closes with ZERO slack from `+2` (so `+2` is exact), and
+the two grown-context demands (`hEg`, `hAg`) have a whole defect level of
+slack each.  The statement is parametric in `EntryDesc` — the
+entry-shaped same-context descent at a singleton seen-set, the ONE
+interface through which the E-half consumes the A-half (`hAd`/`hAg`),
+which `cascade_main`'s own `ihfA` supplies verbatim inside
+`wip/absorb_base.lean`; `cascade_main` being `private`, the parametric
+form is what a standalone file can certify, and it is also exactly the
+shape a transplant would consume.  Why it matters:
+`tight_ascent_from_room` shows the tightened demand at any defect-paying
+grown context follows from the BARE room `defect·(J+2) ≤ b` —
+`cascade_boxgoal_pos`'s only budget hypothesis — and `tight_exact_at_sγ`
+pins that the `+3` form FAILS at the same instance (`Sγ` floor, grown
+context saturated).  So the defect-paying guard ascents of the tower
+(fresh `⊃`-antecedent, `somehow`-χ, γ-context rows) are financed by the
+statement's own room if and only if the tightening holds.  It holds.
+
+**(b) RESIDUE (ii) LANDED — ambient-carrying atom forcing over
+`∨`-spaces** (`Round6Force.itpA_atom_forces_amb`).
+
+    q ≠ p → Γ ⊆ S → Δ ⊢ E@(f,e+2)(Γ) → Δ ⊢ A@(f,e+2)(Γ, q) → Δ ⊢ q
+
+**No `∨`-freeness hypothesis.**  The or-rows split against the ambient's
+or-conjunct `E(A::Γ) ∨ E(B::Γ)`, defect-recursively, exactly as §61(f)(ii)
+prescribed; every other growth row fires the ambient's matching conjunct
+(the `grown_*`/`tGrownAmb_*` apparatus at matched budgets).  The ambient
+and source sit at matched fuel and budget — the configuration
+`boxSnd_tight`'s traversal holds at every step — so the lift is
+consumable wherever `AtomForce.itpA_atom_forces` was, by any caller that
+carries the ambient (all of them do).  What is PROVED is the forcing
+lemma itself; extending the lift to the whole atomic tier
+(`boxDesc_atom_all`, `gammaHead_budget_free`) needs two adjustments to
+`boxSnd_tight`'s traversal — the same or-split at its or-case, and the
+goal-clause value switched from the bare to the ambient-carrying
+forcing (available there: the traversal holds the grown ambient at the
+matched budget) — both by the moves of this file, but NOT re-run this
+round, so the tier-wide statements keep their `∨`-free hypothesis for
+now.
+
+**(c) THE THIRD GATE — the tower's financing is BANDED, and the band is
+too shallow.**  Assembling §61(f)'s tower: conclude the target through
+its truncation row, accumulating a guard per budget level; the source's
+γ-head rows land goal-size (the accumulated guard fires the held value's
+goal row with the guard budgets matching on the nose), so each
+same-context γ-crossing turns into (1) a same-context CPS entry
+(`LedgerS`, the shifted spine) for the landing body one budget further
+down, and (2), when the γ-clause body is itself `◯`-shaped, a further
+tower level at the same context and defect.  The entries are financed by
+the bare room in a BAND, pinned at both ends
+(`tower_entry_depth0/1/2`, round 5's `ledgerS_entry_two_below` and
+`ledgerS_entry_dies_at_sγ`, and the new `S3` pins):
+
+* landing body a JUMP GOAL of the space (the γ-clause bodies): financed
+  at `c ∈ [b−2, b]`, dead at `b−3`;
+* landing body GENERIC (the goal-row body of a nested tower level):
+  financed at `c ∈ [b−1, b]` — `depth1_entry_exact_at_s3` holds with
+  zero slack — dead at `b−2`: `no_depth2_entry_at_s3`.
+
+The witness `S3` = piece-closure of `◯◯(a⊃b) ⊃ c` (defect 1, `J = 2`,
+room floor 4, `s3_nested_gamma`): its γ-clause has a BOXED body, so the
+first γ-crossing's landing is again a `◯`-goal, the tower recurses a
+second budget down at the same context, and the second crossing's
+goal-row body `a⊃b` — not a jump goal of `S3` — needs the entry at
+`c = b−2 = 2`, where `LedgerS` demands `7 ≤ 6`.  One clause, one nest,
+one budget short.
+
+**(d) No family escapes the band** (`Round6.no_self_financed_nest`).
+Round 5's `no_self_financed_crossing` refuted side-condition families
+that must re-supply the room at their own level.  The tower's entries
+demand strictly less — only `Room` two levels up (`hneed : Φ c →
+Room (c+2)`, the two-below entry).  Even that dies: supplied from the
+bare room, surviving one budget drop per crossing, and paying the
+two-below entry at each level, the family contradicts `sγ_room_lo` after
+THREE crossings.  Four hypotheses, no arithmetic beyond the `Sγ`
+instance.  So the band of (c) is not an artefact of `LedgerS`: no ledger
+family extends it by a single level, and §61(c)'s dichotomy sharpens —
+on the recursion path below depth two there can be no budget-sensitive
+hypothesis AT ALL, not even a two-below one.
+
+**(e) What remains, exactly.**  The tower closes every case of the
+`◯`-goal descent EXCEPT: a same-context γ-nest of depth ≥ 2 whose
+landing bodies are compound — which requires a γ-clause with a boxed
+body (`◯◯E ⊃ B ∈ S`, the `S3` shape).  Everything else is financed:
+defect-paying steps regenerate the room; guard ascents fit exactly by
+(a); atomic landings are free at any depth by (b) plus the ambient the
+tower always holds (over `∨`-spaces once the traversal repeats (b)'s
+or-split); jump-row and goal-row landings enter the spine within the
+band.  The unfinanced configuration is precisely the
+nested-box shape of the refute prong's three residual `JB2` cells
+(§62, `b = 3`, `D = ◯((a⊃b)⊃c)`, still OPEN-at-budget) — the machine
+evidence thus concentrates prove-side and refute-side residue on the
+SAME shape.  Round-7 forks: (1) alternative 2 of §61(c) at depth ≥ 2
+only — a forcing-style direct production of the boxed γ-component from
+the accumulated guard stack (the guards `E@(b−1)…E@(b−k)` are held
+there, and they are the one resource the financing analysis does not
+price); or (2) aim the deepened battery at the three `JB2` cells: a
+refutation there would kill `cascade_boxgoal_pos` as stated and
+re-open the statement, not the proof.
+
+**Build state.**  `wip/absorb_base.lean` untouched, exactly ONE `sorry`
+(`cascade_boxgoal_pos`); the standalone stack rebuilds from a fresh
+`.dep` in the pinned order (absorb_base → adequacy → packaging → indiff
+→ spaceindiff → final → sealLedger → round4Comp → round4Free →
+round4probe → round4probe2 → round4probe3 → round5core → round5probe →
+round5probe2 → round5refute → round5refute_bdefs → round6core →
+round6force); every `#guard_msgs` pin passes; the crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+Regression: `lake exe towertest sizes 2` reproduces the twelve-row table
+byte-identical; zero files touched under `LaxLogic/`, `wip/towerkit.lean`,
+`wip/towertest.lean`.
+
+**Method note.**  §59 "check the FINANCING before the proof"; §61 "check
+the financing of the RECURSION".  §63 closes the sequence: **check the
+financing at every DEPTH of the recursion.**  A design can be financed at
+its call sites (§60), financed at its first self-call (§61(d)'s entry
+band), and still die at a fixed finite depth — the band must be computed
+before the build is scoped, and here it is two levels wide against a
+recursion of unbounded depth.
