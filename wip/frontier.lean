@@ -557,19 +557,48 @@ def s_jb1_atom2 : Stratum Cell :=
     , goalBoxDepth := 2 }
     72 19000 "J=1, D=◯◯a — nested box over an atomic body"
 
+/-! ### Round-8 strata — the §66(h) residue shape
+
+`CompProd`'s goal-row case at jump-shaped UNBOXED bodies over a γ-carrying
+space: `D = (x⊃y)⊃z` with `goalBoxDepth = 0`, a γ-clause present so the
+walk's γ-tier is live.  A genuinely jump-shaped `D` needs `jumpExtra` (the
+γ-seed's own closure contains no jump-shaped member, so without it the
+generator falls back — `d1-jump`'s recorded `D` is the γ-clause itself).
+The γ-clause plus the jump clause force `J ≥ 3`, so every cell here is
+SUB-room: the standard triage screens the room-free `Round4.BoxDesc`
+(a hit kills it outright), and the `wip/frontier_g8.lean` passes re-drive
+the same cells at the round-8 goal-row sequents (`c < b`), where a hit is
+a `CompProd`-level result (`Round7.not_boxDesc_of_not_compProd`). -/
+
+def s_g8_d1jump : Stratum Cell :=
+  mkStratum "g8-d1jump"
+    { gammaDepth := some 1, gammaBody := .atom, jumpExtra := true
+    , goalShape := .jump }
+    72 20000 "γ-clause ◯E⊃B plus jump clause, D=(x⊃y)⊃z unboxed"
+def s_g8_d2jump : Stratum Cell :=
+  mkStratum "g8-d2jump"
+    { gammaDepth := some 2, gammaBody := .atom, jumpExtra := true
+    , goalShape := .jump }
+    72 21000 "γ-clause ◯◯E⊃B (S3 shape) plus jump clause, D=(x⊃y)⊃z unboxed — THE ROUND-8 RESIDUE SHAPE"
+
 def allStrata : List (Stratum Cell) :=
   [ s_d1_atom, s_d1_jump, s_d1_nbox
   , s_d2_imp, s_d2_jumpbody, s_d2_atomgoal
   , s_d3_imp, s_d3_atomgoal
   , s_j1, s_j3, s_or1, s_or2, s_df2_d1, s_df2_d2, s_pv
-  , s_jb1_imp, s_jb1_nbox, s_jb1_nbox2, s_jb1_atom2 ]
+  , s_jb1_imp, s_jb1_nbox, s_jb1_nbox2, s_jb1_atom2
+  , s_g8_d1jump, s_g8_d2jump ]
 
 /-- Campaign 1's fifteen strata, kept separately so that campaign 1 can be
 re-run exactly. -/
 def campaign1Strata : List (Stratum Cell) := allStrata.take 15
 
-/-- Campaign 2: the reachable `J = 1` band. -/
-def campaign2Strata : List (Stratum Cell) := allStrata.drop 15
+/-- Campaign 2: the reachable `J = 1` band.  (`take 4` keeps this list's
+value unchanged by the round-8 strata appended after it.) -/
+def campaign2Strata : List (Stratum Cell) := (allStrata.drop 15).take 4
+
+/-- Campaign g8: the round-8 residue shape. -/
+def campaignG8Strata : List (Stratum Cell) := allStrata.drop 19
 
 /-- Look a stratum up by name — the replay side of `genCell`. -/
 def stratumByName (nm : String) : Option (Stratum Cell) :=

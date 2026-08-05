@@ -6962,3 +6962,203 @@ stack was ambient-derivable, so the design's real content was the
 demand-free recursion it licensed, and the real obstruction was wherever
 the ambient alone provably does not suffice: findable by one targeted
 countermodel probe at the inherited witness, before any build.
+
+## §67 (2026-08-05) — Round 8: the goal-row absorption stated and screened two-sidedly (clean over 1152 cells, two new residue strata included), the env route kernel-refuted, the atomic tier and the band top PROVED room-free, and the open shape delimited to the fresh-antecedent inner goal row
+
+`wip/round8core.lean`, `wip/round8pin.lean` (both new, both sorry-free,
+all pinned); replay drivers `wip/frontier_g8.lean` / `_g8b` / `_g8c` /
+`_g8d` / `_g8e` (recorded artifacts; durable transcripts
+`wip/frontier_g8.txt`, `wip/frontier_g8e.txt`); two new strata in
+`wip/frontier.lean` (`g8-d1jump` seeds 20000, `g8-d2jump` seeds 21000 —
+existing strata byte-identical, `campaign1Strata`/`campaign2Strata`
+value-preserved).  `wip/absorb_base.lean` and everything below it are
+**untouched**: the one `sorry` is still `cascade_boxgoal_pos`.  The
+round's brief was §66(h)'s residue — `Round7.CompProd`'s goal-row case at
+compound unboxed bodies — attacked two-sidedly under the §65 standing
+rule: candidates STATED, REPLAYED, the residue shape given its own
+sampler stratum, and the witness instances run with derivation terms,
+before any build was scoped.
+
+**(a) THE CANDIDATES** (stated first).  With `Gsrc` the source table's
+goal row at the reference fuel (`f = ft − 1`; the walk lifts the fired
+value to `ft`, so its rows sit at inner fuel `f`):
+
+    Gsrc = ◯( E@(f, b−1)(Γ) ⊃ A@(f, b)(Γ, D) )
+
+* GR-W (the residue verbatim, `Round8.GoalRowAbsorb`, room-free):
+      Δ ⊢ E@(f+1, b+1)(Γ) → Δ ⊢ Gsrc → Δ ⊢ A@(f+1, c)(Γ, ◯D),  1 ≤ c ≤ b
+* GR-X (the committed-goal-clause route, exact inner slots):
+      … → Δ ⊢ ◯( E@(f, c−1)(Γ) ⊃ A@(f, c)(Γ, D) )
+* CP-P (`CompProd` proper at the cell's OWN body — round 7's G/H screened
+  only the γ-antecedent body):
+      Δ ⊢ E@(ft, b+1)(Γ) → Δ ⊢ ◯(E@(fs,b)(Γ) ⊃ A@(fs,b)(Γ,◯D)) →
+      Δ ⊢ ◯(E@(ft,c)(Γ) ⊃ A@(ft,c)(Γ,◯D))
+* GR-E (the γ-env route: land `Gsrc` in the target's γ-head env disjunct):
+      … → Δ ⊢ (◯(E@(f,c−1)(Γ) ⊃ A@(f,c−1)(Γ,◯A₁))) ∧ A@(f,c)(B₀::Γ,◯D)
+
+**(b) THE REDUCTION — the W passes are two-sided instruments**
+(`Round8.goalRowAbsorb_of_boxDesc`, `not_boxDesc_of_not_goalRowAbsorb`,
+`[propext, Classical.choice, Quot.sound]`).  GR-W follows from the
+room-free `Round4.BoxDesc`: the goal row IS a disjunct of the source
+table at budget `b`, and the band is walked by iterating the descent with
+the ambient re-lowered per step (`Round7.compProd_of_boxDesc`'s move).
+Hence any GR-W countermodel at admissible parameters kills `BoxDesc` and
+the whole room-free route — the same upgrade round 7 gave the G/H passes.
+
+**(c) THE REPLAY VERDICTS.**  Nine passes over the corpus (1072 records;
+then re-driven over the enlarged 1152 after (d)), countermodel-only,
+live-fire calibrated:
+
+    Z0 control (Gsrc → component@0):      608 HITS (+35 on the g8 strata)
+    Z1 control (Gsrc → table@0):          745 HITS (+49 on the g8 strata)
+    P1  CP-P, c=b−1:                      0 hits          (0 on g8 strata)
+    P2  CP-P, c=1:                        0 hits          (0)
+    W1  GR-W, c=b−1:                      0 hits          (0)
+    W2  GR-W, c=1:                        0 hits          (0)
+    X1  GR-X, c=b−1:                      0 hits          (0)
+    X2  GR-X, c=1:                        0 hits          (0)
+    E1  GR-E, c=b−1 (γ-cells):            8 HITS          (0)
+
+The eight E1 hits (`d2-imp/4000-4001`, `d3-atomgoal/8032-8033`,
+`or2/12064-12065`, `pvar/15016-15017`, all one-world models) refute the
+env route across four strata.  Everything else is calibrated silence: the
+goal-row absorption, its committed form, and `CompProd` at the cells' own
+bodies are NOWHERE refuted — compound unboxed bodies included.
+
+**(d) THE RESIDUE STRATUM** (the §65 standing rule).  Jump-shaped UNBOXED
+goal bodies over a γ-carrying space need `jumpExtra` (the γ-seed's own
+closure has no jump-shaped member — recorded: `d1-jump`'s `D` is the
+γ-clause itself).  Two new strata (`g8-d1jump`, `g8-d2jump` — the latter
+the S3 nest shape behind a jump goal, THE residue configuration), 67
+admissible run cells appended to the corpus: the standard screen
+(`[src, amb] ⊢ tgt`, a hit kills `BoxDesc` outright) and all six
+candidate passes came back CLEAN; both controls fire on the same cells.
+
+**(e) THE NEW NEGATIVE — the env route is CLOSED**
+(`Round8Pin.genv_absorption_refuted` / `genv_absorption_not_derivable`,
+`[propext, Quot.sound]`).  At July's jump witness (`Skb`/`Gk`,
+`D = gk = (◯r⊃s)⊃t` — the residue's compound unboxed shape; `ft = 4`,
+`b = 2`, `c = 1`), from the FULL walk position — goal row, introduced
+guard `E@(4,1)(Gk)`, ambient `E@(4,3)(Gk)` — `Mk` refutes the target's
+γ-head env disjunct, kernel-checked.  In the same model the same
+premises SATISFY the committed goal clause, the full target table and
+the `CompProd` conclusion (scratch-probed, recorded in the transcript).
+With round 7's pointwise pins: if the goal-row absorption is derivable
+at all, it goes through the target's own goal clause or truncation row.
+
+**(f) THE DELIMITED POSITIVES** (`wip/round8core.lean`):
+
+* `goalRowAbsorb_top` (`[propext, Quot.sound]`): at `c = b` the
+  absorption is disjunct introduction — ANY body, no descent, no room;
+* `goalRowAbsorb_atom` (`[propext, Classical.choice, Quot.sound]`): at
+  ATOMIC bodies `D = q ≠ p` the full band `1 ≤ c ≤ b` closes room-free —
+  commit the target's goal clause, fire the goal row with the lowered
+  ambient, and the fired value is consumed whole by the ambient-carrying
+  atom forcing (`Round6Force.itpA_atom_forces_amb`, no `∨`-freeness);
+  the fuel-0 corner closes by explosion under the box.
+
+**(g) THE WITNESS INSTANCES** (the `_g7c` pattern, `refute?` full battery
+first, then `prove?Bounded 40000` with the found derivation printed).
+At the jump witness `Skb`/`Gk` (defect 8, fresh goal antecedent
+`◯r⊃s ∉ Gk`):
+
+    Skb-CTRL (the round-7 pinned landing)      R!  (Mk — live fire)
+    Skb-W  gap 1   [Gsrc, amb] ⊢ table@1       ~ (quiet, unproved 40000)
+    Skb-P  gap 1   CompProd instance           ~ (quiet, unproved 40000)
+    Skb-F  [freshRow@2, amb@3] ⊢ freshRow@1    ~ (quiet, unproved 40000)
+    Skb-F3 [freshRow@3, amb@4] ⊢ freshRow@1    ~ (quiet, unproved 40000)
+    Skb-U  grown-context descent (r::Gk)       P (PROVED, budget 40000)
+    Skb-U0 = U + extra ambient premise         ~ (searcher noise: U's
+                                                  derivation weakens in)
+
+`freshRow(β) = E@(2,β)((◯r⊃s)::Gk) ⊃ A@(2,β)((◯r⊃s)::Gk, t)` is the
+DELIMITED INNER OBLIGATION of the committed route at the fresh inner
+goal row — the step whose only known financing is the room-priced guard
+ascent (`cascade_main_bf`'s `hroomE`; `Round6.easc_tight`'s demand
+`J+2+defect′·(J+2) ≤ budget` fails at `c < J+2`), which a room-free walk
+does not have.  `Skb-U` is the counter-signal on the OTHER inner family:
+the unboxed same-context descent at the GROWN context `r::Gk` (defect 7,
+one below July's refuted instance) is searcher-PROVED — July's
+refutation does NOT propagate one growth step in; the γ-row-inner
+landing is affirmatively financed at the witness.
+At the same witness the committed clause itself:
+
+    Skb-X  gap 1   [Gsrc, amb] ⊢ gclause@1    ~ (quiet, unproved 40000)
+
+(first derived in the ordered `_g8c` run, whose verdict line was lost to
+a concurrent-writer race on the ledger — two processes appending to one
+file can clobber a line in the open-to-write window; re-derived on a
+separate ledger, `wip/frontier_g8e.txt`, and recorded there.)
+
+At the nest witness `S3`/`Γ3` (defect 1, PRESENT goal antecedent
+`a ∈ Γ3`, room floor `b = 4`, `fs = ft = 5`):
+
+    S3-X  c=3   [Gsrc, amb] ⊢ gclause@3       P (PROVED, budget 40000)
+    S3-X  c=1   [Gsrc, amb] ⊢ gclause@1       P (PROVED, budget 40000)
+
+with the `c = 3` derivation printed IN FULL — eight rules:
+
+    ◯R (→R (∨R₁ (→R (∨R₁ (∧L (∧L (∧L init)))))))
+
+box, guard in, commit the present-antecedent inner goal disjunct, guard
+in, commit the atom disjunct, and the atom `b` is a CONJUNCT of the
+introduced grown guard `E(a::Γ3)` (`b ∈ Γ3`): guard-absorption.  The
+source goal row is never touched — the §61(e) caveat in sharpest form:
+atom-rich contexts close the committed route through the guard alone,
+which is why the S3 positives support but cannot decide the bare-context
+case, and why `Skb`/`Gk` (no atoms in the context) is the witness that
+matters.  (The remaining `S3-W`/`S3-P` and gap-2 `Skb` rows of the
+re-ordered driver are recorded in `wip/frontier_g8e.txt` as they land;
+none of them is load-bearing for (h).)
+
+**(h) WHERE THE RESIDUE NOW STANDS.**  The goal-row case delimits row
+family by row family, each with machine evidence:
+
+* target env family: CLOSED (kernel-refuted, (e) + the eight E1 hits);
+* atomic bodies: PROVED ((f), any `c`);
+* band top `c = b`: PROVED ((f), any body);
+* γ-row-inner (grown second components): financed — grown-context
+  descent searcher-PROVED at the witness ((g) `Skb-U`), defect strictly
+  drops per growth;
+* fresh-antecedent inner goal row (`D = C₁ ⊃ C₂`, `C₁ ∉ Γ`): THE OPEN
+  SHAPE.  Pointwise it needs the guard ascent `c → b` at the grown
+  context `C₁::Γ`, room-priced with zero room in the statement; the
+  delimited sequent is two-sidedly undecided at the witness (battery
+  quiet, searcher exhausted at 40000 over the defect-8 space).
+
+    RESIDUE (round 9): `Round8.GoalRowAbsorb` restricted to compound
+    unboxed `D` whose decomposition reaches a FRESH implication
+    antecedent — equivalently, close (or refute) the fresh-row descent
+
+        E@(f,b)(C₁::Γ) ⊃ A@(f,b)(C₁::Γ, C₂) , E@(ft, b+1)(Γ)
+          ⟹ E@(f,c)(C₁::Γ) ⊃ A@(f,c)(C₁::Γ, C₂)      (C₁ ∉ Γ, c < b)
+
+    from the ambient alone.  Nothing else of the goal-row case is open.
+
+**(i) REPLAY VALUE VERDICT: KEEP.**  Third statement-change use, third
+yield: two controls calibrated 608/745-hot on the exact premise pair,
+one route (env) refuted at eight instances the round-7 passes never
+touched, and the two-sided W upgrade ((b)) turned 4 × 1152 silent cells
+into implied evidence for the room-free route.  The residue-shape
+stratum (67 cells) ran BEFORE the build was scoped, per §65.
+
+**Build state.**  `wip/absorb_base.lean` untouched, exactly ONE `sorry`
+(`cascade_boxgoal_pos`); full 27-file stack in the pinned order
+(absorb_base → … → round7pin → round8core → round8pin) RC=0, every
+`#guard_msgs` pin passes; the crown is unchanged:
+
+    'PLLND.uniform_interpolation_PLL' depends on axioms:
+      [propext, sorryAx, Classical.choice, Quot.sound]
+
+Regression: `lake exe towertest sizes 2` byte-identical; zero files
+touched under `LaxLogic/`.
+
+**Method note.**  §66 checked what a rescuing resource is derivable
+from; §67 adds the mate: **when a route is refuted, ask which DISJUNCT
+FAMILY of the target it used, and refute per family** — the env family
+died by one countermodel probe and eight replay hits, which is what
+narrowed the open shape to a single row family with a single financing
+question.  And a search-engine note, recorded for future rounds: the
+searcher is not premise-monotone (`Skb-U0` quiet with `Skb-U` proved —
+the extra premise only enlarged the space past the budget); a quiet
+verdict on a STRONGER premise list proves nothing about the weaker one.
