@@ -108,6 +108,9 @@
   .sw.z { background: var(--zig-fill);   border:1.5px solid var(--zig); }
   .sw.br { background: none; border:0; border-left: 2px solid var(--anti);
            border-radius:0; width: 7px; }
+  .sw.jpp { border-radius:50%; background: var(--panel); border:1.6px solid var(--green); }
+  .sw.jpv { border-radius:50%; background: var(--panel); border:1.6px solid var(--ink-soft); }
+  .sw.jpr { border-radius:50%; background: var(--rust); border:1.6px solid var(--rust); }
   .jglyph { display:inline-block; width:15px; height:15px; flex:none; margin-top:2px;
             border:1.2px solid var(--ink-soft); border-radius:50%; background: var(--panel);
             text-align:center; line-height:13px; font-size:10px; color: var(--ink); }
@@ -133,6 +136,7 @@
   .check { font-size: 12.5px; padding: 8px 10px; border-radius: 7px; line-height:1.45;
            background: var(--green-fill); color: var(--green-text); border:1px solid var(--green); }
   .check.bad { background: var(--rust-fill); color: var(--rust); border-color: var(--rust); }
+  .check.warn { background: var(--anti-fill); color: var(--anti-text); border-color: var(--anti); font-weight:600; }
 
   .stage { background: var(--panel); border:1px solid var(--rule); border-radius: 10px;
            box-shadow: var(--shadow); overflow: auto; max-height: 74vh; position:relative; }
@@ -187,6 +191,16 @@
   .node:hover rect { filter: brightness(.97); }
   :root[data-theme="dark"] .node:hover rect,
   .node:hover rect { filter: brightness(1.06); }
+  .stage.jp-focus .node:not(.jp-proved):not(.jp-prime) { opacity: .16; }
+  .stage.jp-focus .node:not(.jp-proved):not(.jp-prime):hover { opacity: .5; }
+
+  .scopeline { font-size: 12px; color: var(--ink-soft); margin: 8px 0 0; line-height: 1.5; }
+  .gradebox { font-size: 12.5px; padding: 8px 10px; border-radius: 7px; line-height:1.5;
+              margin-top: 8px; }
+  .gradebox.g-proved  { background: var(--green-fill); color: var(--green-text); border:1px solid var(--green); }
+  .gradebox.g-prime   { background: var(--slate-fill); color: var(--ink); border:1px solid var(--slate); }
+  .gradebox.g-reduc   { background: var(--rust-fill);  color: var(--rust);  border:1px solid var(--rust); }
+  .gradebox.g-untested{ background: transparent; color: var(--ink-soft); border:1px dashed var(--rule); }
 
   .note { font-size: 13.5px; color: var(--ink-soft); max-width: 68ch; margin: 18px 0 0; }
   .note code { font-family: var(--mono); font-size: 12.5px;
@@ -202,7 +216,7 @@
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
-  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v10 · 2026-08-06 · descent, link toggles, full screen, export</p>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v11 · 2026-08-06 · join-primality, visible/invisible points</p>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
   The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
@@ -290,7 +304,19 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         <div class="legend">
           <div class="lrow"><span class="sw g"></span><span><span class="fml">t 0</span> – <span class="fml">t 7</span> — also a dictionary class</span></div>
           <div class="lrow"><span class="sw u" style="border-color:var(--green)"></span><span><span class="fml">t 8</span> and up — certified distinct, but outside the dictionary</span></div>
+          <div class="lrow"><span class="sw jpv"></span><span><strong>join-prime</strong>, verified against the shown rungs — a <em>visible point</em> of the dual (a ring)</span></div>
+          <div class="lrow"><span class="sw jpr"></span><span><strong>join-reducible</strong>, REFUTED by a witnessing pair — not a point of the dual (a dot)</span></div>
         </div>
+      </div>
+      <div class="card">
+        <h2>Visible points</h2>
+        <p style="font-size:12.5px;margin:0 0 8px;color:var(--ink-soft)">A point <span class="fml">a</span>
+        names a point of the Esakia dual directly iff <span class="fml">a</span> is
+        <strong>join-prime</strong>: <span class="fml">a ≤ x ∨ y ⟹ a ≤ x or a ≤ y</span>. Tested here by
+        brute force over every pair of rungs shown — recomputed live as N changes.</p>
+        <label class="opctl" style="margin-bottom:0"><input type="checkbox" id="tog-jp-ladder">
+          <span>Show only join-prime (visible) rungs</span></label>
+        <p class="scopeline" id="jp-scope-ladder"></p>
       </div>
       <div class="card">
         <h2>Self-check</h2>
@@ -337,6 +363,10 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
           <div class="lrow"><span class="swl d"></span><span>Relation certified; whether anything sits strictly between depends on one of the 2 remaining open cells</span></div>
           <div class="lrow"><span class="swl x"></span><span>Where distribution fails</span></div>
           <div class="lrow"><span class="swl" style="border-top:2px dashed var(--green)"></span><span>The ◯-chain: infinitely many further classes, strict at every step, all below ⊤ — not covers</span></div>
+          <div class="lrow"><span class="sw jpp"></span><span><strong>join-prime, PROVED</strong> — <span class="fml">⊤</span> only, from <code>disjunction_property</code>: a <em>visible point</em>, the root of <span class="fml">X</span></span></div>
+          <div class="lrow"><span class="sw jpv"></span><span><strong>join-prime, verified in scope</strong> — no counterexample found among the 14 classes with a certified operation table</span></div>
+          <div class="lrow"><span class="sw jpr"></span><span><strong>join-reducible, REFUTED</strong> — witnessing pair found; click for it</span></div>
+          <div class="lrow"><span class="swl" style="opacity:.4"></span><span>No ring/dot at all — not tested: no certified join table reaches this class</span></div>
         </div>
       </div>
       <div class="card">
@@ -351,6 +381,9 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
           <dt>width</dt><dd>∞ (gap family) ✓</dd>
           <dt>floor</dt><dd>none (gap meets) ✓</dd>
         </dl>
+        <label class="opctl" style="margin:10px 0 0"><input type="checkbox" id="tog-jp-dict">
+          <span>Show only join-prime (visible) classes</span></label>
+        <p class="scopeline" id="jp-scope-dict"></p>
       </div>
       <div class="card">
         <h2>No floor either</h2>
@@ -365,6 +398,78 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         (<code>gap_no_glb</code>, <code>L_no_greatest</code>, <code>wip/floor.lean</code>).
         RN(◯,{}) is not a complete lattice. Drawn as a new column in the
         <strong>Families</strong> tab, below <span class="fml">g1</span>.</div>
+      </div>
+      <div class="card">
+        <h2>The invisible points</h2>
+        <div style="color:var(--ink-soft);font-size:12.5px">
+        <p style="margin:0 0 8px">Every <span class="fml">a</span> gives a principal filter
+        <span class="fml">↑a = {x : a ≤ x}</span> — always a filter, proper iff
+        <span class="fml">a ≠ ⊥</span>. It is <strong>prime</strong> — names a point of the Esakia
+        dual <span class="fml">X</span> directly — iff <span class="fml">a</span> is join-prime (the
+        rings and dots on the diagrams). Prime filters that are <em>not</em> of this principal form
+        are the <strong>invisible points</strong>: points of <span class="fml">X</span> that no
+        formula names.</p>
+        <p style="margin:0 0 8px"><strong>Existence.</strong> <span class="fml">X</span> is compact
+        (Esakia/Priestley duality); a compact space that is also discrete is finite; RN(◯,{}) is
+        infinite — the rungs escape forever, so the algebra never stabilises
+        (<code>exists_escaping_rungs</code>, <code>closed_lax_infinite</code>,
+        <code>PLLLaxInfinite.lean</code>) — so <span class="fml">X</span> is not finite, hence not
+        discrete. Non-principal prime filters are the general shape of what a non-discrete point
+        looks like; the gap family below is a concrete one.</p>
+        <p style="margin:0 0 8px"><strong>The gap family.</strong> Each
+        <span class="fml">g k = ◯t(2k+1) ⊃ t(2k+1)</span> names a clopen upset
+        <span class="fml">φ(g k)</span>. The intersection <span class="fml">⋂ₖ φ(g k)</span> is a
+        <strong>closed</strong> upset of <span class="fml">X</span> — an intersection of clopens —
+        and it is <strong>nonempty</strong>: every finite sub-intersection is
+        <span class="fml">φ(Gmeet n)</span> for a genuine, non-⊥ class of RN(◯,{}), and
+        compactness turns that finite-intersection property into a nonempty limit. It is
+        <strong>not clopen</strong>: <code>gap_no_glb</code> proves no formula derives every
+        <span class="fml">g k</span> while being derived by every other common lower bound — over
+        all of PLL — and its variable-free reading <code>L_no_greatest</code> says the same for
+        RN(◯,{}) itself (both <code>wip/floor.lean</code>, sorry-free). Dually: no clopen upset
+        inside <span class="fml">⋂ₖ φ(g k)</span> is the largest one — if one were, its formula
+        would be the missing glb. So some points of that closed set are unnamed by any formula: the
+        missing interpolant would have to live at one of them.</p>
+        <p style="margin:0 0 8px"><strong>Open.</strong> Is the filter
+        <span class="fml">⋃ₙ ↑Gmeet n</span> itself prime — equivalently, does
+        <span class="fml">⋂ₖ φ(g k)</span> have a <em>least</em> point? If so, the whole descending
+        chain converges on one invisible point. Nothing here settles it.</p>
+        <p style="margin:0 0 8px"><strong>Completing the order.</strong> RN(◯,{}) is not a complete
+        lattice — <code>gap_no_glb</code>/<code>L_no_greatest</code> are proofs that a specific
+        infimum is missing. The standard way to name what an order is missing is an
+        <strong>order completion</strong>: MacNeille's is the smallest one, adding exactly the joins
+        and meets needed, as new elements of a <em>larger</em> lattice. It is usually credited to
+        Funayama (1959, <em>Nagoya Math. J.</em> 15, 71–81) that the MacNeille completion of a
+        Heyting algebra is again a Heyting algebra — in fact a complete one, a frame. Checked here
+        against a citable secondary source, Bezhanishvili, Gabelaia &amp; Jibladze, "Funayama's
+        theorem revisited" (<em>Algebra Universalis</em> 70 (2013), 271–286), who state that the
+        variety of all Heyting algebras is one of only three varieties closed under MacNeille
+        completion — not checked against Funayama's original 1959 paper directly, and not checked
+        against anything in this repository: nothing here computes or names the MacNeille
+        completion of RN(◯,{}).</p>
+        <div class="check warn">This does <u>not</u> give uniform interpolation. MacNeille
+        completion adds the missing meet as a new <em>element</em> of a bigger lattice — not a
+        <em>formula</em> of PLL. Uniform interpolation demands an actual formula, inside the
+        algebra RN(◯,{}) already has. Order-completeness names what is missing; uniform
+        interpolation demands that nothing be missing. <code>gap_no_glb</code>/<code>L_no_greatest</code>
+        are an order-completeness failure, and they obstruct uniform interpolation exactly because
+        the missing interpolant would have to <em>be</em> that missing meet, written as a formula —
+        and by these theorems, no such formula exists anywhere in PLL.</div>
+        <p style="margin:8px 0 0"><strong>A different completion.</strong> The completion uniform
+        interpolation actually corresponds to is Robinson's <strong>model completion</strong> — a
+        model-theoretic notion, about the first-order theory of a whole variety of algebras, not
+        about filling gaps in one particular order. Pitts (1992, <em>J. Symbolic Logic</em> 57,
+        33–52) proved IPC has uniform interpolation, with <span class="fml">∀p</span>,
+        <span class="fml">∃p</span> as adjoints to substitution; Ghilardi &amp; Zawadowski recast
+        this as: a variety of Heyting or modal algebras has uniform interpolation exactly when the
+        first-order theory of that variety admits a model completion — the positive case for
+        Heyting algebras/IPC, the negative case for S4, where they prove no model completion exists
+        (<em>Sheaves, Games, and Model Completions</em>, Trends in Logic 14, Springer 2002;
+        "Undefinability of Propositional Quantifiers in the Modal System S4",
+        <em>Studia Logica</em> 55 (1995), 259–271). Reported here from that literature, independent
+        of the order-completion discussion above and not checked against this repository — the two
+        completions should not be run together.</p>
+        </div>
       </div>
       <div class="card">
         <h2>◯ leaves the image</h2>
@@ -461,6 +566,10 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
             family continues beyond what's drawn: every comb repeats verbatim at levels
             <span class="fml">k = 4, 5, …</span>, and the gap column additionally continues
             <em>downward</em> below <span class="fml">g1</span>, forever, with no floor</span></div>
+          <div class="lrow"><span class="sw jpp"></span><span><strong>join-prime, PROVED</strong> — <span class="fml">⊤</span> only (<code>disjunction_property</code>)</span></div>
+          <div class="lrow"><span class="sw jpv"></span><span><strong>join-prime, verified in scope</strong> — no counterexample found among the classes this tab can test</span></div>
+          <div class="lrow"><span class="sw jpr"></span><span><strong>join-reducible, REFUTED</strong> — witnessing pair found; click for it</span></div>
+          <div class="lrow"><span class="swl" style="opacity:.4"></span><span>No ring/dot — not tested: this class has no certified join data in the page (every <span class="fml">k ≥ 2</span> family class, and <span class="fml">w</span>, <span class="fml">Gmeet</span>)</span></div>
         </div>
       </div>
       <div class="card no-print">
@@ -476,6 +585,9 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         </div>
         <p style="font-size:12px;margin:9px 0 0;color:var(--ink-soft)">The order edges — solid,
         dashed blue, dotted grey — stay on regardless: those <em>are</em> the order.</p>
+        <label class="opctl" style="margin:9px 0 0"><input type="checkbox" id="tog-jp-fam">
+          <span>Show only join-prime (visible) classes</span></label>
+        <p class="scopeline" id="jp-scope-fam"></p>
       </div>
       <div class="card">
         <h2>Fold-back laws</h2>
@@ -539,6 +651,11 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         — <span style="font-family:var(--mono);font-size:11px">gap_two_le_one</span> — is why the
         antichain proper is drawn from <span class="fml">k = 2</span>: <span class="fml">g1</span>
         is strictly above it.)</p>
+        <p style="font-size:12.5px;margin:8px 0 0;color:var(--ink-soft)">What this misses is a
+        <em>point</em> of the Esakia dual, not just a formula — see "The invisible points" in the
+        Dictionary tab: the closed set <span class="fml">⋂ₖ φ(g k)</span> is nonempty by
+        compactness but not clopen, and completing the order (MacNeille) is not the same question
+        as uniform interpolation.</p>
       </div>
     </div>
 
@@ -741,6 +858,15 @@ function renderLadder(N) {
     box.textContent = "MISMATCH with covers9_eq — the page and the proof disagree. Do not trust this drawing.";
   }
 
+  /* join-primality: exact truth-set arithmetic over every rung shown, live in N */
+  const rungList = []; for (let n = 0; n <= N; n++) rungList.push(n);
+  const jpRaw = sweepLadderJoinPrime(rungList, n => sets[n], le);
+  const jp = {}; rungList.forEach(n => jp[n] = mergeJPVerdict(undefined, jpRaw[n]));
+  const jpTotalPairs = ((N + 1) * (N + 2)) / 2;
+  document.getElementById("jp-scope-ladder").innerHTML =
+    `checked: all ${N + 1} rungs shown, ${jpTotalPairs} pairs, recomputed live from the truth-set `
+    + `arithmetic above — no missing data at this scope.`;
+
   /* layout: odd rungs left column, even rungs right, t 0 centred at the foot */
   const COLL = 120, COLR = 300, VS = 54, TOP = 34;
   const levels = Math.floor((N - 1) / 2) + 1;
@@ -787,6 +913,8 @@ function renderLadder(N) {
       fill: "var(--green-text)"
     }, "t " + n);
     g.appendChild(label);
+    const v = jp[n];
+    addPrimeGlyph(g, cx, cy, w / 2, h / 2, v);
     const show = () => {
       const s = sets[n];
       const m = TMIN[n];
@@ -806,6 +934,8 @@ function renderLadder(N) {
         if (p.open) bits.push("open against " + p.open.join(", "));
         extra += `<br><span class="muted">pinned: ${bits.join(" · ")}</span>`;
       }
+      const jpNameOf = k => "t " + k;
+      const jpFormOf = k => `{ ${sets[k].join(", ") || "∅"} }`;
       document.getElementById("read-ladder").innerHTML =
         `<strong>t ${n}</strong> &nbsp; truth set { ${s.join(", ") || "∅"} }`
         + `<span class="muted"> &nbsp;·&nbsp; textbook form rn ${n}</span>` + extra
@@ -816,7 +946,10 @@ function renderLadder(N) {
             : n % 2 === 1 ? "odd rung — a join; two upper covers"
                           : "even rung — an implication; one upper cover"}`
         + (n > 7 ? " · <strong>beyond the dictionary</strong> — no dictionary class names it"
-                 : " · in the dictionary") + `</span>`;
+                 : " · in the dictionary") + `</span>`
+        + `<br>` + jpVerdictHtml("t " + n, v, jpNameOf, jpFormOf)
+        + (n === 0 ? ` <span class="muted">(⊥ is join-prime trivially: ⊥ ≤ everything, so the `
+                     + `disjunct "⊥ ≤ x" always holds)</span>` : "");
     };
     g.addEventListener("click", show);
     g.addEventListener("focus", show);
@@ -826,6 +959,7 @@ function renderLadder(N) {
   const stage = document.getElementById("stage-ladder");
   stage.replaceChildren(svg);
   stage.scrollTop = stage.scrollHeight;
+  stage.classList.toggle("jp-focus", document.getElementById("tog-jp-ladder").checked);
 }
 
 /* ── dictionary data ── */
@@ -884,6 +1018,30 @@ const DICT_EDGES = [
 ];
 
 function renderDict() {
+  /* join-primality over the 14 classes with a full certified table, merged with
+     exact truth-set arithmetic over t0..t7 (the rungs this tab draws) — the same
+     merge the Families tab uses, and for the same reason: the RNC/PCLL table has
+     open cells the DICTIONARY's own certified covers already settle (e.g.
+     t7 ⊃ t6 is open in the harvested table, but t6 < t7 is a certified cover), so
+     table-only would under-report and could even disagree with the Families tab
+     for the very same class. ⊤ (index 1) is forced to PROVED regardless — its
+     join-primality is the disjunction property, true of the whole infinite
+     algebra, not scope-limited. c2/c3/c4/the general ◯-chain (indices 12, 15, 16,
+     17) carry no join arithmetic at all: untested.                          */
+  const dictTableRaw = sweepTableJoinPrime(REPS_SCOPE);
+  const dictLadderRaw = sweepLadderJoinPrime([0,1,2,3,4,5,6,7], truthSet);
+  const dictJP = {};
+  for (let i = 0; i <= 17; i++) {
+    if (i === 1) { dictJP[i] = { status: "proved" }; continue; }
+    const rung = RUNG_OF_DICT[i];
+    dictJP[i] = mergeJPVerdict(dictTableRaw[i], rung !== undefined ? dictLadderRaw[rung] : undefined);
+  }
+  const dictTotalPairs = (REPS_SCOPE.length * (REPS_SCOPE.length + 1)) / 2;
+  document.getElementById("jp-scope-dict").innerHTML =
+    `checked: ${REPS_SCOPE.length} classes with a full certified ∨/⊃ table `
+    + `(t0–t7, ⊤, c1, g1, s1, r1, ◯g1), ${dictTotalPairs} pairs. c2, c3, c4 and the general `
+    + `◯-chain are not tested — no certified join table reaches them.`;
+
   const svg = el("svg", {
     viewBox: "0 0 960 700", width: 960, height: 700,
     role: "img",
@@ -942,7 +1100,11 @@ function renderDict() {
       x: d.x, y: d.y + 17, "text-anchor": "middle",
       "font-family": "var(--sans)", "font-size": "8", fill: ACC[2]
     }, kind));
+    const v = dictJP[i];
+    addPrimeGlyph(g, d.x, d.y, d.w / 2, 22, v);
     const show = () => {
+      const nameOf = v.wkind === "rung" ? (k => "t " + k) : (k => NEWNAME[k]);
+      const formOf = v.wkind === "rung" ? (k => `{ ${truthSet(k).join(", ") || "∅"} }`) : (k => DICT[k].f);
       document.getElementById("read-dict").innerHTML =
         `<strong>${d.tag ?? name}</strong> &nbsp; ${d.f}`
         + ` <span class="muted">— ${kind}</span><br><span class="muted">`
@@ -950,7 +1112,8 @@ function renderDict() {
         + (d.desc ?? (inImg
             ? `rung ${RUNG_OF_DICT[i]} of the ladder — in the image of h`
             : `outside the image of h — and by the mechanised classification (image_classification), every class is a rung or ⊤ or off the image outright`))
-        + `</span>`;
+        + `</span>`
+        + `<br>` + jpVerdictHtml(name, v, nameOf, formOf);
     };
     g.addEventListener("click", show);
     g.addEventListener("focus", show);
@@ -958,6 +1121,8 @@ function renderDict() {
   });
 
   document.getElementById("stage-dict").replaceChildren(svg);
+  document.getElementById("stage-dict").classList.toggle("jp-focus",
+    document.getElementById("tog-jp-dict").checked);
 }
 
 /* ─────────────────── families: the combs ───────────────────
@@ -1116,6 +1281,35 @@ function famStub(gE, n, dir, color, label) {
 
 function renderFamilies() {
   const N = id => FAMBY[id];
+
+  /* join-primality: the 14-class certified table (t0..t7, ⊤, c1, g1, s1, r1, ◯g1 —
+     the level-1 instances, reusing the same table as the Dictionary tab) merged
+     with exact truth-set arithmetic over t0..t10 (so t8, t9, t10 get tested too,
+     against the other rungs, though not against the family classes — no join
+     between the two kinds is known to the page). Everything at level k ≥ 2, plus
+     w and Gmeet, has no join data at all: untested.                            */
+  const famTableRaw = sweepTableJoinPrime(REPS_SCOPE);
+  const famRungs = [0,1,2,3,4,5,6,7,8,9,10];
+  const famLadderRaw = sweepLadderJoinPrime(famRungs, truthSet);
+  const FAM_REPS_ID = { top: 1, c1: 5, g1: 8, s1: 9, r1: 14, bg1: 13 };
+  function famVerdict(id) {
+    const tr = /^t(\d+)$/.exec(id);
+    if (tr) {
+      const rung = +tr[1];
+      const tbl = rung <= 7 ? famTableRaw[DICT_OF_RUNG[rung]] : undefined;
+      return mergeJPVerdict(tbl, famLadderRaw[rung]);
+    }
+    if (id === "top") return { status: "proved" };
+    if (FAM_REPS_ID[id] !== undefined) return mergeJPVerdict(famTableRaw[FAM_REPS_ID[id]], undefined);
+    return { status: "untested" };
+  }
+  document.getElementById("jp-scope-fam").innerHTML =
+    `checked: 17 of the classes drawn — t0–t10 (11 rungs, truth-set arithmetic, cross-checked `
+    + `against the table for t0–t7), ⊤, c1, g1, s1, r1, ◯g1 (the certified table). Not tested: `
+    + `every level <span class="fml">k ≥ 2</span> family class, and the whole `
+    + `<span class="fml">w</span> and <span class="fml">Gmeet</span> columns — no join is known `
+    + `between a family class and anything outside its own certified table.`;
+
   const svg = el("svg", {
     viewBox: "0 0 1000 780", width: 1000, height: 780, role: "img",
     "aria-label": "The ladder spine of odd rungs t1 to t9 with even rungs to its left, and at each of "
@@ -1258,7 +1452,11 @@ function renderFamilies() {
       "font-family": "var(--mono)", "font-size": "11.5", fill: A[2] }, n.name));
     if (n.sub) g.appendChild(el("text", { x: n.x, y: n.y + 9.5, "text-anchor": "middle",
       "font-family": "var(--serif)", "font-size": "8", fill: A[2] }, n.sub));
+    const v = famVerdict(n.id);
+    addPrimeGlyph(g, n.x, n.y, n.w / 2, n.h / 2, v);
     const show = () => {
+      const nameOf = v.wkind === "rung" ? (k => "t " + k) : (k => NEWNAME[k]);
+      const formOf = v.wkind === "rung" ? (k => `{ ${truthSet(k).join(", ") || "∅"} }`) : (k => DICT[k].f);
       document.getElementById("read-fam").innerHTML =
         `<strong>${n.name}</strong> &nbsp; <span class="fml">${n.form}</span>`
         + (n.exp ? ` <span class="muted">= ${n.exp}</span>` : "")
@@ -1266,7 +1464,8 @@ function renderFamilies() {
         + `<br><span class="muted">`
         + (n.old ? `was ${n.old}` : "no old q-name — beyond the dictionary")
         + ` &nbsp;·&nbsp; Lean: <span style="font-family:var(--mono);font-size:12px">`
-        + `${n.thm}</span></span>`;
+        + `${n.thm}</span></span>`
+        + `<br>` + jpVerdictHtml(n.name, v, nameOf, formOf);
     };
     g.addEventListener("click", show);
     g.addEventListener("focus", show);
@@ -1296,6 +1495,8 @@ function renderFamilies() {
   gTJ.style.display = famShowJoin ? "" : "none";
 
   document.getElementById("stage-fam").replaceChildren(svg);
+  document.getElementById("stage-fam").classList.toggle("jp-focus",
+    document.getElementById("tog-jp-fam").checked);
 }
 
 /* ── wiring ── */
@@ -1312,6 +1513,13 @@ document.querySelectorAll(".chip[data-n]").forEach(c =>
     range.value = c.dataset.n;
     range.dispatchEvent(new Event("input"));
   }));
+
+/* "show only visible points" — each toggle just re-renders its own tab, which
+   re-reads the checkbox at the end and (de)dims the non-join-prime nodes.    */
+document.getElementById("tog-jp-ladder").addEventListener("change",
+  () => renderLadder(parseInt(range.value, 10)));
+document.getElementById("tog-jp-dict").addEventListener("change", renderDict);
+document.getElementById("tog-jp-fam").addEventListener("change", renderFamilies);
 
 const tabs = [["tab-ladder","p-ladder"],["tab-dict","p-dict"],
               ["tab-fam","p-fam"],["tab-tab","p-tab"]];
@@ -1530,6 +1738,148 @@ let NONE_CELLS = 0;
 })));
 REPS.forEach(i => { const key = "3," + i + ",0";
   if (!CELLMAP[key] && !OPENSET.has(key)) NONE_CELLS++; });
+
+/* ── join-primality: which points of the Esakia dual are visible ──
+   a ↦ ↑a = {x : a ≤ x} is always a filter, proper iff a ≠ ⊥; it is PRIME —
+   names a point of the dual X directly — iff a is join-prime:
+     a ≤ x ∨ y  ⟹  a ≤ x  or  a ≤ y,     for every x, y.
+   Join-primality quantifies over the WHOLE algebra, and RN(◯,{}) is
+   infinite, so nothing here can be tested exhaustively. Two independent,
+   exact sources of arithmetic are used, and nothing is claimed beyond what
+   they actually decide:
+     · t-rungs: truth-set arithmetic (rungMem/truthSet, live in N) — the
+       same order predicate as rnSub_order. No missing data.
+     · the 14 classes with a full certified operation table — t0..t7, ⊤,
+       c1, g1, s1, r1, ◯g1 (REPS minus c2 and the harvested w15) — using the
+       kernel-checked ∧/∨/⊃ cells (RNC above) plus the unit laws. Open cells
+       and the 2 PCLL-only cells are UNKNOWN: never evidence either way.
+   Every other drawn class (c2, c3, c4, the general ◯-chain, and every
+   family class at level k ≥ 2, plus w and Gmeet) has no join arithmetic the
+   page holds at all — reported NOT TESTED, which is a different thing from
+   "verified": there is no data to look for a counterexample in.            */
+const REPS_SCOPE = [0,1,2,3,4,5,6,7,8,9,10,11,13,14]; // DICT indices with a full ⊃/∨ table
+const REPS_RUNG  = {0:0,2:1,3:2,4:3,6:4,7:5,10:6,11:7}; // -> rung number, for the 8 that overlap
+
+function tableLe(a, b) {                 // a ≤ b, from the ⊃ table: a ⊃ b ≡ ⊤
+  if (a === b) return true;
+  const u = unitLaw(2, a, b);
+  if (u !== null) return u === 1;
+  const c = CELLMAP["2," + a + "," + b];
+  if (c && !c[4]) return c[3] === 1;      // certified, non-PCLL-only
+  return null;                            // open, blank, or PCLL-only: unknown
+}
+function tableJoin(a, b) {               // a ∨ b, from the ∨ table (commutative: try both orders)
+  if (a === b) return a;
+  const u = unitLaw(1, a, b);
+  if (u !== null) return u;
+  const c = CELLMAP["1," + a + "," + b] || CELLMAP["1," + b + "," + a];
+  if (c && !c[4]) return c[3];
+  return null;
+}
+
+/* exact truth-set sweep over a list of rung numbers — no unknowns. Used for
+   the Ladder tab (live in N) and for t8..t10 in the Families tab.          */
+function sweepLadderJoinPrime(rungs, setsOf, le) {
+  const out = {};
+  rungs.forEach(a => out[a] = { pairs: 0, refuted: false, witness: null });
+  /* memoise truth sets (array, for iteration, and Set, for O(1) membership) —
+     this runs with N up to 201, so recomputing setsOf(k) inside the innermost
+     loop would be wasteful.                                                 */
+  const arrCache = new Map(), setCache = new Map();
+  const arrOf = k => { let a = arrCache.get(k); if (!a) { a = setsOf(k); arrCache.set(k, a); } return a; };
+  const setOf = k => { let s = setCache.get(k); if (!s) { s = new Set(arrOf(k)); setCache.set(k, s); } return s; };
+  const subset = (smallArr, bigSet) => smallArr.every(v => bigSet.has(v));
+  /* le(a,b) = a ≤ b: an O(1) lookup into the caller's precomputed order
+     matrix when given (renderLadder already builds one via buildOrder), else
+     an O(|a|) fallback via truth-set inclusion.                             */
+  const leOf = le ? ((a, b) => !!le[a][b]) : ((a, b) => subset(arrOf(a), setOf(b)));
+  for (let xi = 0; xi < rungs.length; xi++) for (let yi = xi; yi < rungs.length; yi++) {
+    const x = rungs[xi], y = rungs[yi];
+    let uxySet = null;                                     /* the join's truth set, lazy */
+    rungs.forEach(a => {
+      if (out[a].refuted) return;
+      /* x and y are each ≤ x∨y (upper-bound property of joins), so a ≤ x or
+         a ≤ y already forces the premise a ≤ x∨y — no need to touch the
+         union at all in that (common) case, and it can never be a
+         counterexample. The union is only computed, once per (x,y), on the
+         rare pairs where NEITHER disjunct holds — the only place a
+         counterexample could be hiding.                                    */
+      if (leOf(a, x) || leOf(a, y)) { out[a].pairs++; return; }
+      if (!uxySet) { uxySet = new Set(arrOf(x)); for (const v of arrOf(y)) uxySet.add(v); }
+      if (!subset(arrOf(a), uxySet)) return;                /* premise a ≤ x∨y false too */
+      out[a].pairs++;
+      out[a].refuted = true; out[a].witness = [x, y];
+    });
+  }
+  return out;
+}
+/* certified-table sweep over REPS_SCOPE — open/PCLL-only cells contribute to
+   `skipped`, never to a verdict.                                          */
+function sweepTableJoinPrime(ids) {
+  const out = {};
+  ids.forEach(a => out[a] = { pairs: 0, skipped: 0, refuted: false, witness: null });
+  for (let xi = 0; xi < ids.length; xi++) for (let yi = xi; yi < ids.length; yi++) {
+    const x = ids[xi], y = ids[yi];
+    const j = tableJoin(x, y);
+    if (j === null) { ids.forEach(a => out[a].skipped++); continue; }
+    ids.forEach(a => {
+      if (out[a].refuted) return;
+      const aj = tableLe(a, j);
+      if (aj === null) { out[a].skipped++; return; }
+      if (!aj) return;                                   /* premise a ≤ x∨y false */
+      const ax = tableLe(a, x), ay = tableLe(a, y);
+      if (ax === null || ay === null) { out[a].skipped++; return; }
+      out[a].pairs++;
+      if (!ax && !ay) { out[a].refuted = true; out[a].witness = [x, y]; }
+    });
+  }
+  return out;
+}
+function mergeJPVerdict(tbl, lad) {
+  if (tbl && tbl.refuted) return { status: "reducible", witness: tbl.witness, wkind: "table" };
+  if (lad && lad.refuted) return { status: "reducible", witness: lad.witness, wkind: "rung" };
+  if (tbl || lad) return { status: "prime",
+    pairs: (tbl ? tbl.pairs : 0) + (lad ? lad.pairs : 0),
+    skipped: (tbl ? tbl.skipped : 0) };
+  return { status: "untested" };
+}
+
+/* a small ring (join-prime) or filled dot (join-reducible) at a node's
+   corner — never a colour change to the node itself. Nothing drawn at all
+   for "untested": absence of data must not look like a verdict.           */
+function addPrimeGlyph(g, cx, cy, hw, hh, v) {
+  if (!v || v.status === "untested") return;
+  const gx = cx + hw - 3, gy = cy - hh + 3;
+  if (v.status === "reducible") {
+    g.appendChild(el("circle", { cx: gx, cy: gy, r: 3, fill: "var(--rust)", stroke: "none" }));
+  } else {
+    g.appendChild(el("circle", { cx: gx, cy: gy, r: 3.6, fill: "var(--panel)",
+      stroke: v.status === "proved" ? "var(--green)" : "var(--ink-soft)", "stroke-width": 1.5 }));
+  }
+  g.classList.add("jp-" + v.status);
+}
+/* readout text for a join-primality verdict, given a display name for each
+   witness id (so it works with either rung numbers or REPS/DICT indices)   */
+function jpVerdictHtml(name, v, nameOf, formOf) {
+  if (!v || v.status === "untested")
+    return `<span class="muted">join-primality: <strong>not tested</strong> — no certified `
+      + `join/order data reaches this class in the page.</span>`;
+  if (v.status === "proved")
+    return `<span class="muted"><strong>join-prime — PROVED</strong> `
+      + `(<code>disjunction_property</code>: ${name} ≤ x ∨ y ⟹ ${name} ≤ x or ${name} ≤ y, for `
+      + `every x, y in RN(◯,{}) — not scope-limited). A visible point: ↑⊤ = {⊤}.</span>`;
+  if (v.status === "prime")
+    return `<span class="muted"><strong>join-prime — verified against the displayed elements</strong> `
+      + `(no counterexample among ${v.pairs} pair${v.pairs === 1 ? "" : "s"} tested`
+      + (v.skipped ? `, ${v.skipped} left undetermined by open/PCLL-only cells` : "") + `). `
+      + `Evidence, not a proof — an element outside this page could still refute it.</span>`;
+  const [x, y] = v.witness;
+  return `<span class="muted"><strong>join-reducible — REFUTED</strong>: witness `
+    + `<span class="fml">${nameOf(x)} = ${formOf(x)}</span>, `
+    + `<span class="fml">${nameOf(y)} = ${formOf(y)}</span> — `
+    + `${name} ≤ ${nameOf(x)} ∨ ${nameOf(y)} but ${name} ⊄ ${nameOf(x)} and ${name} ⊄ ${nameOf(y)}. `
+    + `Not a visible point: ↑${name} is a filter but not prime.</span>`;
+}
 
 function renderTable(op) {
   const t = document.createElement("table");
