@@ -6,12 +6,14 @@ formalisation, and the testing theory it needs".*
 
 ## Thesis
 
-Mechanising known mathematics and extending it are different activities with
-different failure modes. Mechanisation succeeds because the statement is given
-and the kernel is a complete oracle for the only thing at risk. Extension fails
-because the statement is the artefact at risk and there is no oracle for it. The
-substitute is a testing discipline over statements, and software testing theory
-already supplies it.
+Extension succeeds when the difficulty is in the **proof** and fails when it is
+in the **statement**, because a proof assistant is a complete oracle for the
+first and no oracle at all for the second. Two extensions run in the same
+repository, under the same mandate, with the same human and model, came out on
+opposite sides of that line: strong normalisation of the full proof-term
+reduction succeeded, uniform interpolation did not. The substitute for the
+missing oracle is a testing discipline over statements, and software testing
+theory already supplies it.
 
 ## Structure (12 pages, ITP/CPP format)
 
@@ -19,9 +21,9 @@ already supplies it.
 |---|---|---|
 | 1 | Introduction: the campaign in one page; the thesis; contributions | 1 |
 | 2 | Setting: PLL, uniform interpolation, the machine-checked mandate, the human/model configuration | 1 |
-| 3 | The measurement: where the `sorry`s are. 5 in 50 kLOC of mechanised known mathematics, all in the extension line; 1 load-bearing in the extension's kernel; five refuted routes, none in mechanisation | 1 |
-| 4 | The nine rounds, as a table, and round 9 as the pivot | 1.5 |
-| 5 | Why extension goes off track: four mechanical causes, of which "a `sorry` lets a false statement pass every automated gate" is the sharpest | 1 |
+| 3 | **The successful extension**: strong normalisation of the full interleaved reduction. Obstruction machine-checked first (two counterexample terms killing both orientations of quasi-commutation); `⊤⊤`-lifting located in the literature and repurposed (its `K = []` shadow was already in hand); one induction measure engineered. Provenance stated exactly: the λml theorem predates the method, the mechanisation is the claimed novelty and the source file hedges it | 1.5 |
+| 4 | **The failed extension**: the measurement (5 `sorry`s in 50 kLOC, all in the semantic UI line; 1 load-bearing in the syntactic UI kernel), the nine rounds as a table, round 9 as the pivot | 1.5 |
+| 5 | The comparison, and the condition it yields: difficulty-in-proof versus difficulty-in-statement; four mechanical causes, of which "a `sorry` lets a false statement pass every automated gate" is the sharpest; expositional debt as a cost of the success | 1 |
 | 6 | The statement-hygiene ledger: eight rules, each with the incident that bought it; the observation that all eight are checks a machine could run | 1.5 |
 | 7 | **The testing-theory gap** (core technical section): anatomy of the round-9 3-way interaction fault; the mapping to boundary-value analysis, category-partition, t-way covering arrays, metamorphic relations, statement mutation, definition-clause coverage, fault seeding, shrinking; the screen-power principle | 2.5 |
 | 8 | Tooling: ten requirements for a proof-engineering test layer; what Plausible and the constrained-generation line already give; what is absent | 1 |
@@ -33,8 +35,9 @@ separate two-page position piece.
 
 ## Claimed contributions
 
-1. A measured account of the mechanise/extend asymmetry in one substantial Lean 4
-   development, with the `sorry` distribution as the primary evidence.
+1. A measured account, from two extensions with opposite outcomes in one
+   substantial Lean 4 development, of the condition that separates them:
+   difficulty in the proof versus difficulty in the statement.
 2. Eight transferable statement-hygiene rules, each traceable to a specific wasted
    build.
 3. The identification of statement testing as the missing discipline, with a
@@ -51,7 +54,9 @@ separate two-page position piece.
   round-4 screen with boundary and 3-way discipline, without knowledge of the
   round-9 witness, and measure whether it finds the refutation.
 - **Mutant-kill matrix** for the round-4 statement under the round-4 screen.
-- **A second, smaller case** run with the rules in place from the start.
+- **A second, smaller case** run with the rules in place from the start; the
+  SN/UI pair is N = 2 in one repository and has the competing explanation that
+  SN was simply the easier problem.
 - Complete cost accounting (coordinator tokens, human hours).
 - Consent and quotation policy for the transcript; decision on model attribution.
 - Independent verification of the ecosystem survey's citations.
@@ -76,7 +81,9 @@ case study's central finding.
 ## Non-goals
 
 - No claim of mathematical progress on uniform interpolation for PLL. It is OPEN,
-  and was OPEN before and after.
+  and was OPEN before and after. The SN contribution is a *mechanisation* claim,
+  hedged as the source file hedges it: strong normalisation for λml predates the
+  method used.
 - No claim that the method rules are validated. They are derived from one case and
   are offered as hypotheses with their provenance attached.
 - No general claim about LLM capability. One model family, one problem, no control.

@@ -8,36 +8,43 @@ progress ledger, and the git history.*
 
 ## Abstract
 
-Between 21 July and 6 August 2026 a single human mathematician and a large
+Between early July and 6 August 2026 a single human mathematician and a large
 language model, working in Lean 4 under a rule that nothing counts as proved
 until it is `sorry`-free and axiom-audited, mechanised a substantial body of
-existing results about propositional lax logic (PLL) and then attempted to
-extend it with a new theorem: uniform interpolation. The mechanisation of known
-mathematics succeeded broadly. The extension did not, and it failed in a
-characteristic and instructive way. Five successive proof routes were
-machine-refuted, each after substantial build effort. The last of these, refuted
-on 5 August, invalidated three consecutive rounds of work that had been screened
-clean by a purpose-built property-based testing harness. The harness had returned
-nine clean passes over roughly 1150 generated instances for statements that were
-false throughout, because it sampled typical values rather than boundaries, tied
-two of its own axes together, and drew its countermodels from a fixed battery
-that lacked the one frame shape that refutes.
+existing results about propositional lax logic (PLL) and attempted two
+extensions of it. The mechanisation succeeded broadly. **The two extensions came
+out differently, and the contrast is the point of this document.** One succeeded:
+strong normalisation of the full proof-term reduction, where the obstruction to
+the naive route was diagnosed and machine-checked *first*, a known technique
+(Lindley–Stark `⊤⊤`-lifting) was then located in the literature and repurposed,
+and the resulting proof is `sorry`-free. The other did not: uniform
+interpolation, where five successive proof routes were machine-refuted, each
+after substantial build effort. The last of these, refuted on 5 August,
+invalidated three consecutive rounds of work that had been screened clean by a
+purpose-built property-based testing harness. The harness had returned nine clean
+passes over roughly 1150 generated instances for statements that were false
+throughout, because it sampled typical values rather than boundaries, tied two of
+its own axes together, and drew its countermodels from a fixed battery that
+lacked the one frame shape that refutes.
 
 This document extracts what is transferable. Three things stand out. First, the
-distinction between mechanising and extending is sharp and has a mechanical
-cause: the Lean kernel is a perfect oracle for "does this proof work" and no
-oracle at all for "is this statement true", and mechanisation supplies statements
-while extension must invent them. Second, the campaign's own antidote, a growing
-ledger of statement-hygiene checks, was assembled the expensive way, one wasted
-build at a time, and each check is stateable in a sentence. Third, the campaign
-reinvented property-based testing and imported almost none of software testing
-theory: boundary-value analysis, equivalence partitioning, combinatorial
-interaction testing, metamorphic relations, mutation of the specification, and
-coverage over a definition's own case analysis would each have addressed a
-specific documented failure. A tooling proposal and a candid failure inventory
-follow, together with a short argument that formal semantics in the Montague
-tradition is a good next target for this configuration of human, model, prover
-and tools.
+condition that separates the two extensions is *where the difficulty sits*. When
+the difficulty is in the **proof**, this configuration is strong: impossibility
+of a naive route can be established mechanically, a published technique can be
+found and adapted, and the assistant checks the adaptation. When the difficulty
+is in the **statement**, the same configuration is weak without external
+discipline, because the Lean kernel is a perfect oracle for "does this proof
+work" and no oracle at all for "is this statement true". Second, the campaign's
+own antidote, a growing ledger of statement-hygiene checks, was assembled the
+expensive way, one wasted build at a time, and each check is stateable in a
+sentence. Third, the campaign reinvented property-based testing and imported
+almost none of software testing theory: boundary-value analysis, equivalence
+partitioning, combinatorial interaction testing, metamorphic relations, mutation
+of the specification, and coverage over a definition's own case analysis would
+each have addressed a specific documented failure. A tooling proposal and a
+candid failure inventory follow, together with a short argument that formal
+semantics in the Montague tradition is a good next target for this configuration
+of human, model, prover and tools.
 
 The mathematics is not offered as a contribution. The human guide's own
 assessment, which this document adopts, is that the campaign is not publishable
@@ -139,7 +146,7 @@ token consumption, for which the transcript carries no aggregate.
 
 ## 2. Narrative arc
 
-### 2.1 What succeeded: mechanising known mathematics
+### 2.1 The mechanisation, and where the `sorry`s are
 
 The mechanisation half of the project is broadly clean, and the cleanest single
 measurement is where the `sorry`s are.
@@ -151,9 +158,14 @@ docstrings) finds exactly **five** `sorry` proof terms in the whole 104-module,
 327, `PLLSemUILayered.lean` line 827, `PLLSemUIHenkin.lean` lines 341 and 352
 (*measured*). Everything else, including strong normalisation
 (`PLLStrongNorm.lean`, and the `⊤⊤`-lifting development `PLLTopTop.lean`, 1320
-lines), completeness (`PLLCompleteness.lean`, 648 lines), the confluent variant's
-completeness (`PLLConfluentComplete.lean`, 523 lines) and the decidability
-groundwork (`PLLDecide.lean`, 829 lines), carries no `sorry` at all.
+lines, the subject of §2.2), completeness (`PLLCompleteness.lean`, 648 lines),
+the confluent variant's completeness (`PLLConfluentComplete.lean`, 523 lines) and
+the decidability groundwork (`PLLDecide.lean`, 829 lines), carries no `sorry` at
+all.
+
+Note that this measurement is about the `sorry`s, not about difficulty: it says
+where the unfinished business is, and §2.2 shows that one of the clean modules is
+an extension rather than a transcription.
 
 Two further data points on the mechanisation half:
 
@@ -168,7 +180,110 @@ Two further data points on the mechanisation half:
   work and incorrect for the extension work, and the model's failure to
   distinguish the two produced the incident in §8.2 below.
 
-### 2.2 The extension: uniform interpolation
+### 2.2 The extension that succeeded: strong normalisation of the full reduction
+
+This is the campaign's other extension, and it landed. It is treated here at
+length because the contrast with uniform interpolation is what makes the case
+study useful.
+
+**The target.** Strong normalisation of the *full* one-step reduction `Step` for
+the PLL proof-term calculus: `β` for every connective **and** `let`-assoc, freely
+interleaved, over intrinsically-typed syntax. The theorem is
+
+```lean
+theorem strong_normalisation {Γ : List PLLFormula} {φ : PLLFormula}
+    (t : Tm Γ φ) : SNt t
+```
+
+at `LaxLogic/PLLTopTop.lean:1278`, in a 1320-line `sorry`-free module
+(*measured*), landed on 2026-07-07 across three commits (`f9b5dbd`, `e475719`,
+`78461cd`).
+
+**The starting position.** Two fragments were already strongly normalising in
+isolation: `beta_sn` (`PLLReducibility.lean`, Kripke–Tait reducibility) and
+`assoc_sn` (`PLLStrongNorm.lean`, a weight measure), with `step_split`
+establishing that `Step` is exactly their disjoint union. The obvious hope is
+that they compose.
+
+**The obstruction, established first and machine-checked.** They do not, and the
+development proves it before choosing a method. `PLLReducibility.lean` closes
+with a section headed "Why the two halves do not combine: machine-checked
+counterexamples" (line 1017), containing two terms and five checked `example`s:
+`ce₁ = let y ⇐ (let x ⇐ z in val x) in val y` is proved β-normal
+(`∀ y, ¬ RStep ce₁ y`) yet one assoc step creates a `let`-β redex in it; and
+`ce₂ = (λf. let x ⇐ f in val x) (let x ⇐ z in val x)` is proved assoc-normal
+(`∀ y, ¬ AStep ce₂ y`) yet one β step reduces it to `ce₁` exactly, closing the
+ping-pong. The file draws the consequence itself:
+
+> "These examples also close the generic modular-termination route
+> (Bachmair–Dershowitz/Geser quasi-commutation, which combines `SN(R)` and
+> `SN(A)` into `SN(R ∪ A)` given `A;R ⊆ R;(R∪A)*` or its mirror): the first
+> performs `assoc;β` from a term admitting *no* β-step, the second `β;assoc` from
+> a term admitting *no* assoc-step, so neither inclusion can hold. A semantic
+> method is forced."
+
+It also disposes of the obvious escape, noting that a measure for the phased
+strategy "β to completion; assoc to completion; repeat" would prove only that one
+strategy normalises, which is weak normalisation and was already available via
+cut elimination (`PLLNormal.lean`).
+
+**The method, located and repurposed.** Lindley–Stark `⊤⊤`-lifting (TLCA 2005),
+described in the file's own header as "the biorthogonal upgrade of the
+value-style `◯`-clause used for the β-fragment": a continuation stack
+`K : Kont Γ A B` is a list of `bind`-bodies, `K` is reducible when `K[val s]` is
+SN for every reducible `s` in any renaming extension, and `SRed (◯A) t` holds
+when `K[t ρ]` is SN for every reducible stack. The relationship to what was
+already in hand is exact, and is why the repurposing was cheap: "The β-fragment's
+value clause is exactly the `K = []` shadow of this definition." Everything
+outside the `◯` clause is the existing Kripke–Tait skeleton re-run over the
+larger relation.
+
+**The one piece of genuine engineering.** The principal lemma
+(`PLLTopTop.lean:683`),
+
+```lean
+theorem principal (s : Tm Γ A) (u : Tm (A :: Γ) (somehow B)) (K : Kont Γ C B) :
+    SNt s → SNt (K.plug (u.subst1 s)) → SNt (K.plug (.bind (.val s) u))
+```
+
+has an assoc-interface case whose reduct carries the *same* underlying SN witness
+with a *shorter* stack. Bare accessibility induction cannot recurse on an
+argument that has not decreased, so the induction runs on the lexicographic
+measure `(Acc.rank hKu, K.size, Acc.rank hs)` using mathlib's ordinal rank of
+accessibility (`Mathlib.SetTheory.Ordinal.Rank`). The dividend is a total
+computable normaliser, `Tm.normalize` with
+`Tm.normalize_spec : Steps t t.normalize ∧ Nf t.normalize`, upgrading a
+previously fuelled reducer.
+
+**Provenance, stated exactly.** This is where the episode could be overclaimed,
+and the file itself does the disclaiming, which is worth quoting rather than
+paraphrasing:
+
+> "On paper, the method including sums is Lindley–Stark's own: TLCA 2005 §4.1
+> treats λml with sums, case restricted to computation-typed branches, via sum
+> continuations, and the unrestricted case construct is handled by frame stacks
+> in Lindley's PhD thesis (Edinburgh, 2005, §3.5) ... Strong normalisation for
+> λml itself predates the method: Benton–Bierman–de Paiva (JFP 1998) obtained it
+> by translation into a λ-calculus with sums plus Prawitz's
+> permutation-conversion result".
+
+So the mathematical result was **not** unknown in advance in the literature. What
+is claimed, and claimed with hedges the file supplies itself, is the
+mechanisation: "The only prior *mechanisation* of `⊤⊤`-lifting we know of is
+Doczkal–Schwinghammer (Isabelle/HOL-Nominal, LFMTP 2009; AFP entry
+`Lam-ml-Normalization`), for the core calculus without sums; the present file
+appears to be the first mechanisation with sums, the first in Lean, and the first
+over intrinsically-typed syntax." The file also records two ways in which its
+relation is *smaller* than the published system, so no unearned generality is
+implied: `Step` has no η-rules and no case commuting conversions.
+
+What was genuinely new *to the campaign*, and is machine-checked here rather than
+inherited, is the non-composition result: that this calculus's two SN fragments
+create each other's redexes and defeat both orientations of quasi-commutation.
+That is what forced the method choice, and it was established before any effort
+was spent on the method.
+
+### 2.3 The extension that did not: uniform interpolation
 
 Uniform interpolation for PLL was the campaign's target. Two routes ran, at
 different times and sometimes in parallel: a **syntactic** route (a Pitts-style
@@ -220,7 +335,7 @@ table at budget `b + 1` for a boxed goal `◯D`, produce the target table at
 budget `b`. The hypothesis `hroom` is the arithmetic side condition. Everything
 that follows in this document is, in one way or another, about that hypothesis.
 
-### 2.3 The nine rounds
+### 2.4 The nine rounds
 
 On 2026-08-04 at 18:17 UTC the human gave an instruction that shaped the rest of
 the campaign:
@@ -252,7 +367,7 @@ Within that window the transcript records 14 completed background agents, roughl
 | 8 | `05f8708` | 08-05 | `GoalRowAbsorb` stated and screened two-sidedly, clean over 1152 cells (§67) |
 | 9 | `6dfc093` | 08-05 | **the entire room-free route is REFUTED**, kernel-checked at `Γ = []` (§68) |
 
-### 2.4 Round 9: the turn
+### 2.5 Round 9: the turn
 
 Round 9 (`commit 6dfc093`, §68) refuted, in the kernel, the three statements
 rounds 4, 7 and 8 had been built on: `Round4.BoxDesc`, `Round7.CompProd`,
@@ -283,27 +398,70 @@ route: `Round6.easc_tight`, `Round6Force.itpA_atom_forces_amb`,
 
 ---
 
-## 3. Where extension goes off track, and why mechanisation does not
+## 3. When extension succeeds and when it fails
 
-This is the case study's central claim, and the evidence for it is structural
-rather than anecdotal.
+The campaign ran two extensions to completion or exhaustion. One succeeded and
+one did not, in the same repository, under the same mandate, with the same human
+and the same model family. That is the case study's most useful evidence, and it
+supports a sharper claim than "extension is hard".
 
-**The evidence.** In a 50 000-line library of mechanised known mathematics there
-are five `sorry`s, all in the extension line. In an 88 000-line working area the
-one load-bearing `sorry` is the extension's kernel. Five successive extension
-routes died; no mechanisation route died. The mechanisation work that the human
-described as "pleasantly slick" (2026-07-21) took one sitting; the extension
-consumed three weeks and, in its last 28 hours alone, roughly 20 hours of
-delegated agent time and produced a net negative result.
+### 3.1 The two extensions, compared
+
+| dimension | strong normalisation (§2.2) | uniform interpolation (§2.3) |
+|---|---|---|
+| where the difficulty sat | **in the proof**: the statement was known-shaped and its meaning was never in doubt | **in the statement**: the target was fixed, but every intermediate obligation was a design choice |
+| the obstruction | diagnosed **first** and machine-checked: two counterexample terms killing both orientations of quasi-commutation, before any method was chosen | discovered **last**, five times over, each time after a build had been scoped on it |
+| the method | **found in the literature and repurposed**: `⊤⊤`-lifting, whose `K = []` shadow was already the fragment's own value clause | invented in-house each round; five successive in-house routes machine-refuted |
+| the assistant's job | check an adaptation of a known technique against an intrinsically-typed calculus, and engineer one induction measure | choose a statement with no oracle to check it against |
+| the oracle situation | complete: once the method was fixed, every step was kernel-checkable, and failure was local and immediate | absent: a false statement compiled the whole stack and passed every axiom pin (§58) |
+| outcome | PROVED, `sorry`-free, plus a total normaliser as a dividend | OPEN, one `sorry`, five routes REFUTED, a reusable set of table lemmas and financing theorems |
+| elapsed | one day (2026-07-07, three commits) | roughly three weeks, with the last nine rounds in 28 hours |
+
+**The transferable condition.** When the difficulty is in the **proof**, the
+configuration of LLM plus literature search plus proof assistant is strong, and
+the strength is specific and repeatable: the impossibility of a naive route can
+be established *mechanically* and therefore cheaply and finally; a published
+technique can be located, and the assistant is good at adapting one and at
+absorbing the bookkeeping cost of the adaptation (renamings, stack indices,
+measure engineering). When the difficulty is in the **statement**, the same
+configuration is weak, because the step that decides the outcome is the one step
+the machine cannot check. That is precisely the gap the testing apparatus of §5
+is for.
+
+Two secondary conditions are visible in the same comparison and are worth naming
+separately, because both are actionable:
+
+- **Establish the obstruction before choosing the method.** The SN episode spent
+  its first effort proving that the cheap route is impossible. Every UI round
+  except the two-pronged ones spent its first effort on a build. The
+  campaign's own §59 rule ("check the financing before the proof") is this
+  lesson learned again, at much higher cost, on the other extension.
+- **Prefer a known technique over an invented one, and say which you are doing.**
+  `⊤⊤`-lifting arrived with a published correctness argument and a published
+  scope; the UI routes arrived with neither. An assistant that will happily
+  invent an architecture should be asked, first, what the literature already has.
+
+### 3.2 Why the UI extension had none of those conditions
+
+**The evidence.** All five `sorry`s in the 50 000-line library are in the
+semantic UI line, and the one load-bearing `sorry` in the 88 000-line working
+area is the syntactic UI kernel. Five successive UI routes died; no mechanisation
+route died, and the SN extension did not die. The UI extension consumed three
+weeks and, in its last 28 hours alone, roughly 20 hours of delegated agent time,
+for a net negative result.
 
 **Four mechanical reasons.**
 
-1. **Mechanisation supplies the statement; extension must invent it.** In
-   mechanising a known theorem, the statement is given (by the paper) and only
-   the proof is at risk. In extension, the statement is a design artifact, and a
-   wrong statement is expensive in a way a wrong proof is not: a wrong proof
-   fails in seconds, a wrong statement fails in rounds. §57's summary is exactly
-   this: "SIX consecutive obligations were statement problems".
+1. **Some work supplies its statements and some does not.** In mechanising a
+   known theorem the statement is given, by the paper, and only the proof is at
+   risk; the SN extension inherited this property too, because its target
+   statement ("every term is strongly normalising for the full reduction") was
+   fixed and unambiguous from the start and only the route was open. In the UI
+   extension the statement was the artefact: every intermediate obligation was a
+   design choice, and a wrong statement is expensive in a way a wrong proof is
+   not, because a wrong proof fails in seconds and a wrong statement fails in
+   rounds. §57's summary is exactly this: "SIX consecutive obligations were
+   statement problems".
 
 2. **The kernel is a perfect oracle for proofs and no oracle at all for
    statements.** Lean will tell you instantly and infallibly whether a proof
@@ -335,6 +493,52 @@ the route. His single highest-value intervention (2026-08-04, quoted above) was 
 statement-calibration warning; his second (2026-08-05) was a probe-design
 critique; his third (2026-07-26) was a two-line argument that a proposed
 hypothesis implied an absurdity. None of the three required reading any Lean.
+
+### 3.3 The cost the successful extension carried
+
+The SN episode is not free of the campaign's characteristic problem, and the
+failure inventory of §4 would be misleading without this entry. The proof the
+guide now owns is one he cannot yet read. On 2026-07-21 he wrote:
+
+> "We may need an advanced session going through eg SN which I didn't really
+> understand properly, before I try to publish any of this stuff. Wouldn't want
+> to get exposed in a viva!"
+
+`⊤⊤`-lifting was not part of his working repertoire, and the mechanisation does
+not supply the tutorial. This is a real cost of the method rather than an
+incidental one: a machine-checked proof that its owner cannot expound is an asset
+he cannot defend, cite from, or extend, and under a machine-checked mandate the
+temptation is to treat the audit as if it discharged the obligation to
+understand. It does not. **Expositional debt belongs in the ledger alongside
+proof debt**, and the repository already tracks it as a standing item, requiring
+a conventional-language exposition reverse-engineered from the formal proofs and
+a distillation of the reusable proof moves. The practical rule: when an assistant
+imports a technique the guide does not know, the exposition is part of the
+deliverable, not a follow-up.
+
+### 3.4 What the campaign produced, stated plainly
+
+The rest of this document is an anatomy of failures, and read alone it would
+misrepresent the enterprise. For balance, the machine-checked positives from the
+same repository and the same working method:
+
+- the Fairtlough–Mendler results mechanised `sorry`-free over a
+  natural-deduction system: models and soundness, the canonical model and
+  completeness, the Hilbert system, a G3 calculus with cut elimination, the
+  finite model property;
+- **strong normalisation of the full interleaved reduction** (§2.2), with a total
+  computable normaliser as a dividend, plus Craig interpolation and the
+  decidability groundwork;
+- soundness and completeness for the confluent variant PCLL, a logic that did not
+  exist at the start of the campaign, in one sitting;
+- five machine-checked route refutations (§8), each closing a line of attack
+  permanently rather than provisionally, plus the surviving table lemmas and
+  financing theory from the refuted rounds;
+- a property-based screening tool with a pinned reachability measurement (§5.1)
+  and a replayable corpus of its verdicts.
+
+Uniform interpolation for PLL is OPEN, and closing five wrong routes is not the
+same as opening a right one. Both statements are true at once.
 
 ---
 
@@ -1077,7 +1281,15 @@ Stated plainly, because they bound everything above.
 - **N = 1, in every dimension.** One campaign, one logic, one human guide, one
   repository, one model family. There is no control condition: no parallel human-
   only attempt, no parallel LLM-only attempt, no second problem run with the
-  method rules in place from the start. Every "would have prevented it" claim in §4
+  method rules in place from the start.
+- **The central comparison is N = 2.** The proof-difficulty versus
+  statement-difficulty condition of §3.1 rests on exactly two extensions in one
+  repository, and they differ in more than that one dimension: strong
+  normalisation is a termination result with a mature published toolkit, uniform
+  interpolation is an open problem whose analogue is known to fail for S4. The
+  condition is offered as a hypothesis with its provenance attached, not as a
+  finding. It also has a plainer competing explanation that the evidence here
+  cannot exclude: that SN was simply an easier problem. Every "would have prevented it" claim in §4
   and §5 is a counterfactual reconstructed after the fact, and although the
   round-9 replay evidence makes some of them concrete (§68(e): once the three
   fixes were applied, four silent passes became 43 hits), none of them was tested
@@ -1113,9 +1325,11 @@ Stated plainly, because they bound everything above.
 
 An experience report on LLM-assisted formalisation and extension, whose
 contribution is method rather than mathematics, organised around one measured
-claim: *mechanising known mathematics and extending it are different activities
-with different failure modes, and the tooling for the second is missing and can be
-imported from software testing.*
+claim, evidenced by two extensions run in the same repository with opposite
+outcomes: *extension succeeds when the difficulty is in the proof and fails when
+it is in the statement, because the proof assistant is a complete oracle for the
+first and no oracle at all for the second; the missing discipline for the second
+exists already, in software testing.*
 
 ### Venue options
 
@@ -1162,16 +1376,20 @@ evidence below exists.
 
 ### What to cut
 
-- Substantially all of the PLL mathematics beyond what makes the failures legible:
-  the RN lattice campaign (a rich exploratory sub-project: an infinite antichain,
-  unbounded width, a classification theorem), the quantifier-value ladder, the
-  semantic amalgamation route. These are interesting and they are not the paper.
+- Substantially all of the PLL mathematics beyond what makes the two extensions
+  comparable: the RN lattice campaign (a rich exploratory sub-project: an infinite
+  antichain, unbounded width, a classification theorem), the quantifier-value
+  ladder, the semantic amalgamation route. These are interesting and they are not
+  the paper. **Do not cut the SN material**: the comparison is the argument, and
+  without the successful extension the paper is an anecdote about one failure.
 - The internal vocabulary, entirely. If a term cannot be defined in one line for a
   reader outside the project, it should not appear.
 - Any suggestion that the campaign advanced uniform interpolation for PLL. It did
   not. It closed five routes, produced a set of reusable table lemmas, and left the
-  question exactly as open as it found it.
-- The narrative of individual rounds beyond the table in §2.3. Rounds are evidence,
+  question exactly as open as it found it. Equally, keep the SN priority claim at
+  the strength the source file states it: the mechanisation is claimed novel and
+  hedged, the underlying theorem for λml is not.
+- The narrative of individual rounds beyond the table in §2.4. Rounds are evidence,
   not story.
 
 ---
@@ -1183,6 +1401,9 @@ evidence below exists.
 | branch head, round commits and dates | `git log ui-confluence`, hashes as cited |
 | one `sorry` in the syntactic stack; crown axiom list | `wip/final.lean:176–209`, `wip/absorb_base.lean:2215–2281` |
 | five `sorry` proof terms in `LaxLogic/`, all in the semantic-UI line | *measured*, filtered grep over `LaxLogic/*.lean` |
+| `strong_normalisation`, its `sorry`-free 1320-line module, and the `⊤⊤` method | `LaxLogic/PLLTopTop.lean:1278`, header docstring lines 1–58, principal lemma at :683; commits `f9b5dbd`, `e475719`, `78461cd` (2026-07-07) |
+| the non-composition counterexamples and the quasi-commutation argument | `LaxLogic/PLLReducibility.lean:1017` ff and the `Counterexamples` section at the file's end |
+| SN provenance (Benton–Bierman–de Paiva; Lindley–Stark; Doczkal–Schwinghammer) | quoted from the `PLLTopTop.lean` header; the priority claim is the file's own and is hedged there |
 | module and line counts | *measured* |
 | the six statement-hygiene rules | `PROGRESS.md` §§57, 58, 59, 60, 61, 63, plus §§66, 67 |
 | the sampler's design, strata and results | `PROGRESS.md` §65; `tools/FrontierSampler/README.md` |
