@@ -369,3 +369,18 @@ root = "wip.pforkprobe"
 [[lean_exe]]
 name = "towertest"
 root = "wip.towertest"
+
+# ---------------------------------------------------------------------------
+# `pstates` — the proof-state recorder and replay viewer (tools/proofstates/).
+# Elaborates a .lean file, walks Lean's own info trees, and writes a
+# self-contained HTML page that replays every tactic step with its goals
+# before and after.  `supportInterpreter` is required because the tool runs
+# the Lean frontend, which uses the interpreter for elaborators.
+[[lean_lib]]
+name = "proofstates"
+globs = ["tools.proofstates.Recorder", "tools.proofstates.Html"]
+
+[[lean_exe]]
+name = "pstates"
+root = "tools.proofstates.Main"
+supportInterpreter = true
