@@ -45,6 +45,11 @@ import LaxLogic.PLLSearch
 import LaxLogic.PLLSearchEx
 import LaxLogic.PLLSearchConf
 import LaxLogic.PLLSearchCmd
+import LaxLogic.PLLSearchPin
+import LaxLogic.PLLNoFall
+import LaxLogic.PLLNoFallNF
+import LaxLogic.PLLNoFallSep
+import LaxLogic.PLLSearchNoFall
 import LaxLogic.PLLDiagram
 import LaxLogic.PLLDiagramCmd
 import LaxLogic.GuardMsgsShow

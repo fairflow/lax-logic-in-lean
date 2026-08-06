@@ -13,7 +13,8 @@ describe the functions behind the commands, for use inside programs.
 
 Modules: `LaxLogic/PLLSearchCmd.lean` (the commands),
 `LaxLogic/PLLSearch.lean` (the staged procedure and the API),
-`LaxLogic/PLLSearchConf.lean` (PCLL), `LaxLogic/PLLG4Term.lean` (the proof
+`LaxLogic/PLLSearchConf.lean` (PCLL),
+`LaxLogic/PLLSearchNoFall.lean` (PCLL + `¬◯⊥`), `LaxLogic/PLLG4Term.lean` (the proof
 searcher), `LaxLogic/PLLCountermodelEmit.lean` (the verified countermodel
 checker and the simplifier), `LaxLogic/PLLDiagram.lean` +
 `LaxLogic/PLLDiagramCmd.lean` (pictures),
@@ -48,6 +49,10 @@ propositional logic with a modality `◯` satisfying `A ⊃ ◯A`, `◯◯A ⊃ 
 `LaxND Γ C`.
 
 **PCLL.**  PLL plus the distribution scheme `◯(A ∨ B) ⊃ (◯A ∨ ◯B)`.  See §5.
+
+**PCLL + `¬◯⊥`.**  PCLL plus the single axiom `¬◯⊥` — the *infallible*
+system: it is sound and complete for confluent models with no fallible
+worlds.  See §6.
 
 **Sequent.**  A pair of a hypothesis list `Γ : List PLLFormula` and a
 conclusion `C : PLLFormula`, written `Γ ⊢ C`.
@@ -842,10 +847,66 @@ foot of `PLLDiagram.lean`; `#eval regen` rewrites them when the module is
 elaborated.  `#draw` writes its file at elaboration time too, and both are
 deterministic, so a drawing committed under `docs/figures/` stays
 byte-identical across rebuilds.
+## 7. PCLL + `¬◯⊥`
+
+Adding to PCLL the single axiom `¬◯⊥` gives the *infallible* system, in
+`LaxLogic/PLLNoFall.lean`, namespace `PLLND.NoFall`:
+
+```
+DerivUNoFall Γ φ  :=  DerivU (¬◯⊥ :: Γ) φ
+```
+
+Adding one formula (not a scheme) as an axiom is the same as adding it as a
+persistent hypothesis, because every rule of the calculus carries its context
+unchanged; the formula is `NoFall.nobot`.  The system is sound and complete
+for mutually confluent models **with no fallible worlds**
+(`derivUNoFall_iff_infallible_valid`) — hence the Lean name.  It is a proper
+extension of PCLL (`pcll_not_nobot`), and it collapses the variable-free
+fragment: every variable-free formula is derivable or inconsistent
+(`varfree_dichotomy`), whereas PLL and PCLL have infinitely many
+non-interderivable variable-free formulas.
+
+### `#searchNF` and `#refuteNF`
+
+The command pair of `LaxLogic/PLLSearchNoFall.lean` works like `#search` and
+`#refuteConf`:
+
+* `#searchNF Γ ⊢ C` tries a countermodel first — accepted only if mutually
+  confluent **and** infallible (`RNC.confB` and `NoFall.infB`) — then runs
+  the proof searcher on the extended context `¬◯⊥ :: Γ`;
+* `#refuteNF Γ ⊢ C` runs only the countermodel engines, with the same double
+  filter.
+
+The showcase of the difference: `◯⊥ ⊢ ⊥` is PLL-refutable (a fallible top
+forces `◯⊥` without `⊥`), but the infallible system proves it.
+
+```lean
+#refute   [(falsePLL).somehow] ⊢ falsePLL   -- REFUTED, by a fallible model
+#searchNF [(falsePLL).somehow] ⊢ falsePLL   -- PROVED
+```
+
+The trap of §5 has an exact analogue, and the same resolution: a countermodel
+found by `#refute` or `#refuteConf` refutes `DerivUNoFall` only if it also
+has no fallible worlds, which is what `#refuteNF` enforces by construction.
+
+### Pinning
+
+The printed snippets use two certificate theorems:
+
+* positive — `NoFall.derivUNoFall_of_nd`, applied to a PLL proof term over
+  `¬◯⊥ :: Γ`.  As with PCLL, the searcher does not use the distribution
+  scheme on its own; add `ConfluentU.distF` instances to the context and pin
+  through `derivUNoFall_of_proved` when distribution is needed.
+* negative — `NoFall.not_derivUNoFall_of_check`, with three `by decide` side
+  conditions (confluence, infallibility, the checked sequent).  Note the
+  checked context is `Γ` itself: the axiom needs no checking, because every
+  infallible model forces `¬◯⊥` everywhere (`NoFall.force_nobot`).
+
+`LaxLogic/PLLSearchDemo.lean` §6 runs all of this with pinned outputs.
 
 ---
 
-## 7. Command-line tools
+## 8. Command-line tools
 
 The `lakefile.toml` declares a number of `lean_exe` targets, most of them
 one-off probes.  Two are representative.
@@ -876,7 +937,7 @@ instances rather than the searcher described here.
 
 ---
 
-## 8. Failure modes
+## 9. Failure modes
 
 - **`UNKNOWN` and you want to know why.**  Use `verdictWhy` or `settleWhy`
   rather than `verdict` or `settle`: the `Reason` names the parameter
@@ -917,3 +978,86 @@ instances rather than the searcher described here.
   which is why the info view seems to jump to the end of the file and show
   one stale-looking block.  Use `#guard_msgs_show`
   (`LaxLogic/GuardMsgsShow.lean`), which checks *and* displays.
+
+---
+
+## 10. Pinning a found proof: `#pinsrc`
+
+The refutation side of this tool has always produced *theorems*: a countermodel
+is data, `FinCM.checkB M w Γ C = true` is a cheap kernel computation, and
+`FinCM.not_provable_of_check` turns it into `¬ G4c Γ C`.  Every refutation in
+this development is pinned that way.
+
+The positive side did not, and the reason was purely mechanical.
+`Verdict.proved` carries a **typed** term `t : G4cTm Γ C` — so Lean's
+typechecker has already checked a derivation the moment the searcher builds one
+— but there was no way to get `t` into a source file.  Running the searcher
+inside the kernel is not an option: it is deliberately kernel-opaque.
+
+`LaxLogic/PLLSearchPin.lean` supplies the missing step.
+
+    #pinsrc Γ ⊢ C
+    #pinsrc Γ ⊢ C with cfg
+
+prints, on success,
+
+    PROVED  (n nodes, rule tree …)
+    paste as the proof term:
+    (.impR (.laxR (.init (.head _))))
+
+and on failure the same `Reason` diagnostics as `#search`.  Paste the term as
+
+    theorem my_fact : G4c Γ C := (<term> : G4cTm Γ C).toG4c
+
+and the kernel re-elaborates and re-checks it from scratch.  Nothing about the
+search is trusted.
+
+**Why the output is short.**  The emitter prints **no formulas at all**.  Every
+index is recovered by unification: the conclusion's `Γ` and `C` come from the
+ascription, and each side formula is pinned down by the *membership proof*,
+emitted structurally as a `.tail _ (… (.head _))` chain pointing at a position
+in `Γ`.  Unifying (say) `A.and B` with the formula at that position determines
+`A` and `B`.  So the emitted term is proportional to the **derivation**, not to
+the formulas in the sequent — which matters here, because the sequents this
+development cares about have quantifier tables in them, formulas of weight in
+the hundreds.
+
+The chain is computed from the member's position in `Γ` rather than by recursion
+on the membership proof: `List.Mem` is `Prop`-valued, so a `String`-valued
+function cannot eliminate it.
+
+**Worked examples** are in `wip/jumpPinned.lean`, which pins three facts that
+`wip/jumpprobe.lean` and `wip/sealprobe2.lean` had only as probe output: the
+descent to budget `0` at two atom jump goals, and the `◯⊥` collapse at a boxed
+one (57 nodes).
+
+
+## 11. Running probes under a wall-clock cap
+
+`Config.findBudget` bounds a *single* search. Nothing bounds a *run*. A probe
+with 84 cells of which 40 never close sits at 100% CPU until killed by hand.
+Between 2026-07-30 and 2026-08-02 two probes from an abandoned line of work ran
+for three days that way, alongside six others.
+
+So probes are launched through the wrapper, never directly:
+
+```bash
+scripts/probe <seconds> <exe-name> > wip/<exe>_out.txt
+```
+
+It runs the executable, arms a killer at the cap, and returns. Partial output is
+the normal outcome and is fine — every probe flushes after each line, so whatever
+reached the file is intact and usable. The wrapper appends a line saying the cap
+was hit, so a truncated run is never mistaken for a completed one.
+
+Choosing the cap: a probe whose cells mostly close wants 60–300s; a sweep over a
+space where most cells are expected to resist wants 300–900s and should be read
+as a sample, not a survey. Anything that would need longer than that is asking
+the wrong question — the productive move has always been a smaller cell (see the
+`#pinsrc` discipline in §10) rather than a bigger budget.
+
+Before ending a working session, check nothing survived:
+
+```bash
+ps -eo pid,etime,args | grep '.lake/build/bin/' | grep -v grep
+```

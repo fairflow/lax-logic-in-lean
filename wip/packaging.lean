@@ -581,10 +581,13 @@ theorem existsP_adequate (p : String)
           (max (n + 1)
             (uiFuel (pieceClosure φ) (kcap (pieceClosure φ) + 1) 0 [φ]))
           (kcap (pieceClosureList (φ :: ψ :: Δ)) + 1) [φ]) :=
-      (itp_stab_le p (pieceClosure φ)
+      (itp_stab_le p (pieceClosure φ) hPCφ.and_mem hPCφ.or_mem hPCφ.imp_mem
+        hPCφ.box_mem
         (show kcap (pieceClosure φ) < kcap (pieceClosure φ) + 1 from
           Nat.lt_succ_self _)
         (Nat.succ_le_succ (kcap_mono hsub))).1 [φ]
+        (by intro F hF; rw [List.mem_singleton.mp hF]
+            exact self_mem_pieceClosure φ)
     have hcut : G4s
         (insert (itpE p (pieceClosure φ)
           (max (n + 1)
@@ -687,10 +690,12 @@ theorem forallP_adequate (p : String)
           (max (n + 1)
             (uiFuel (pieceClosure C) (kcap (pieceClosure C) + 1) C.weight []))
           (kcap (pieceClosure C) + 1) [] C) :=
-      (itp_stab_le p (pieceClosure C)
+      (itp_stab_le p (pieceClosure C) hPCC.and_mem hPCC.or_mem hPCC.imp_mem
+        hPCC.box_mem
         (show kcap (pieceClosure C) < kcap (pieceClosure C) + 1 from
           Nat.lt_succ_self _)
-        (Nat.succ_le_succ (kcap_mono hsub))).2 [] C
+        (Nat.succ_le_succ (kcap_mono hsub))).2 [] C (by simp)
+        (self_mem_pieceClosure C)
     have hE2 : G4s
         (insert (itpA p (pieceClosure C)
           (max (n + 1)

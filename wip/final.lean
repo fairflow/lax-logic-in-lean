@@ -26,8 +26,11 @@ The tower, bottom to top (file — what it contributes):
 * `wip/absorb_base.lean` — the `kcap` budget and the
   absorption/stabilization ladder up to `itp_stab_le` (budget
   monotonicity of the truncated quantifiers).  Contains **the single
-  open kernel of the whole development**: `cascade_low_pos` (private),
-  proved with `sorry` — the only point where `sorryAx` enters.
+  open kernel of the whole development**: `cascade_boxgoal_pos`
+  (private), proved with `sorry` — the only point where `sorryAx`
+  enters.  Round 4 (PROGRESS §60) replaced the former holdout
+  `cascade_low_pos_box` by this strictly weaker `◯`-goal descent and
+  deleted `cascade_low_pos`/`cascade_low` with it.
 * `wip/adequacy.lean` — `PieceClosed` spaces and the sequent-level
   Pitts (iv): `itp_adequate`.  Sorry-free in itself; inherits
   `sorryAx` from `absorb_base` (see `itp_adequate_axiom_note` there).
@@ -183,9 +186,10 @@ theorem uniform_interpolation_PLL (p : String) (φ C : PLLFormula) :
 /-! ### §5 Axiom audits, pinned
 
 `sorryAx` enters the development through **exactly one declaration**:
-`cascade_low_pos` in `wip/absorb_base.lean` — the quarantined open
-kernel of the stabilization ladder (it feeds `itp_stab`, hence
-`itp_stab_le`, hence the adequacy consumers).  Every other layer of
+`cascade_boxgoal_pos` in `wip/absorb_base.lean` — the quarantined open
+kernel of the stabilization ladder (it feeds `cascade_boxgoal`, hence
+`cascade_main`, hence `itp_stab`, `itp_stab_le` and the adequacy
+consumers).  Every other layer of
 the tower is axiom-clean in itself:
 
 * `LaxLogic/PLLG4UITrunc.lean` — clean (see the `existsP_sound` audit
@@ -195,7 +199,7 @@ the tower is axiom-clean in itself:
 * `wip/indiff.lean`, `wip/spaceindiff.lean`, `wip/packaging.lean`,
   `wip/final.lean` — sorry-free.
 
-So the crown's `sorryAx` disappears the moment `cascade_low_pos`
+So the crown's `sorryAx` disappears the moment `cascade_boxgoal_pos`
 lands, with no other change anywhere. -/
 
 /--
@@ -220,7 +224,7 @@ The `◯`-free specialization: for box-free `φ`/`C` the interpolants
 `existsP p φ`/`forallP p C` are uniform interpolants against every
 box-free p-free `ψ`, and the derivation is **`sorryAx`-free** — it
 routes through `itp_stab_bf`/`itp_adequate_bf`, never the `◯`-band
-holdout `cascade_low_pos`.  `existsP_sound`/`forallP_sound` and the
+holdout `cascade_boxgoal_pos`.  `existsP_sound`/`forallP_sound` and the
 atom lemmas are shared with the full-PLL crown (they never touch the
 open kernel). -/
 

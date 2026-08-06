@@ -172,12 +172,16 @@ private theorem E_feed {p : String} {S : Finset PLLFormula}
 form): with `itpE f (b₀+1) Γ` in context, an `itpA f (b₀+1) Γ C`
 value feeds the `b₀` slot. -/
 private theorem stab_lower {p : String} {S : Finset PLLFormula}
+    (hPC : PieceClosed S)
     {b₀ : Nat} (hB : kcap S < b₀ + 1) {f : Nat} {Γ : List PLLFormula}
     {C : PLLFormula} {Θ : Finset PLLFormula}
+    (hΓS : ∀ F ∈ Γ, F ∈ S) (hCS : C ∈ S)
     (hE : itpE p S f (b₀ + 1) Γ ∈ Θ)
     (hA : G4s Θ (itpA p S f (b₀ + 1) Γ C)) :
     G4s Θ (itpA p S f b₀ Γ C) := by
-  refine G4s.cut_adm hA (of_G4c2 ((itp_stab p S f (b₀ + 1) hB).2 Γ C)
+  refine G4s.cut_adm hA (of_G4c2
+    ((itp_stab p S hPC.and_mem hPC.or_mem hPC.imp_mem hPC.box_mem
+        f (b₀ + 1) hB).2 Γ C hΓS hCS)
     (Finset.mem_insert_of_mem hE) (Finset.mem_insert_self _ _))
 
 /-- An `others`-disjunct is a disjunct of the full table, any goal. -/
@@ -1033,7 +1037,7 @@ theorem itp_adequate (p : String) (S : Finset PLLFormula)
                   refine G4s.impR ?_
                   refine G4s.cut_adm
                     (E_feed rfl (Finset.mem_insert_of_mem hamb)) ?_
-                  refine stab_lower hB (Finset.mem_insert_self _ _) ?_
+                  refine stab_lower hPC hB hΓS (by assumption) (Finset.mem_insert_self _ _) ?_
                   exact ih₁.2.weaken_subset (by
                     intro y hy
                     simp only [Finset.mem_insert] at hy ⊢
@@ -1218,7 +1222,7 @@ theorem itp_adequate (p : String) (S : Finset PLLFormula)
                   G4s Θ (itpA p S f b₀ Γ A) := by
                 intro Θ hamb hΘ
                 refine G4s.cut_adm (E_feed rfl hamb) ?_
-                refine stab_lower hB (Finset.mem_insert_self _ _) ?_
+                refine stab_lower hPC hB hΓS (by assumption) (Finset.mem_insert_self _ _) ?_
                 exact ih₁.2.weaken_subset (by
                   intro y hy
                   simp only [Finset.mem_insert] at hy ⊢
@@ -1336,7 +1340,7 @@ theorem itp_adequate (p : String) (S : Finset PLLFormula)
                     refine G4s.laxR (G4s.impR ?_)
                     refine G4s.cut_adm
                       (E_feed rfl (Finset.mem_insert_of_mem hamb)) ?_
-                    refine stab_lower hB (Finset.mem_insert_self _ _) ?_
+                    refine stab_lower hPC hB hΓS (by assumption) (Finset.mem_insert_self _ _) ?_
                     exact ih₁.2.weaken_subset (by
                       intro y hy
                       simp only [Finset.mem_insert] at hy ⊢
@@ -1473,7 +1477,7 @@ theorem itp_adequate (p : String) (S : Finset PLLFormula)
                   refine G4s.cut_adm
                     (E_feed rfl (Finset.mem_insert_of_mem
                       (Finset.mem_insert_of_mem hamb))) ?_
-                  refine stab_lower hB (Finset.mem_insert_self _ _) ?_
+                  refine stab_lower hPC hB hΓS (by assumption) (Finset.mem_insert_self _ _) ?_
                   exact ih₁.2.weaken_subset (by
                     intro y hy
                     simp only [Finset.mem_insert] at hy ⊢
@@ -1648,8 +1652,9 @@ theorem itp_adequate (p : String) (S : Finset PLLFormula)
                     tauto)
 
 /-- The file itself is sorry-free; the `sorryAx` below is inherited
-from `absorb_base`'s single quarantined holdout (`cascade_low_pos`,
-feeding `itp_stab`), and disappears when that lands. -/
+from `absorb_base`'s single quarantined holdout — since round 4
+(PROGRESS §60) that is `cascade_boxgoal_pos`, the `◯`-goal descent,
+feeding `itp_stab` — and disappears when that lands. -/
 theorem itp_adequate_axiom_note : True := trivial
 
 /--
