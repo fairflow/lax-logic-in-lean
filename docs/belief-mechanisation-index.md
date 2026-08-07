@@ -24,20 +24,33 @@ below were promoted accordingly on 2026-07-16 (with `closedNucleus` /
 
 ## Added 2026-08-07 — the closed-fragment ladder (paper §3.1)
 
-*Every result below is `sorry`-free with its `#print axioms` pinned in-file,
-and all pins were re-run on 2026-08-07 (`lake build`, 8663 jobs, green).
+*Every result below is `sorry`-free with its `#print axioms` pinned in-file.
 **They are nevertheless NOT yet claimable** under the 2026-07-16 policy above:
 all but `varfree_dichotomy` live in `wip/`. Promotion to `LaxLogic/` is a
 precondition for the paper §3.1 text that cites them.*
 
+**Which command checks what — corrected 2026-08-07.** `lakefile.toml` sets
+`defaultTargets = ["LaxLogic"]`, so plain **`lake build` does NOT check any
+`wip/` module**, including the `wipshared` glob. It builds 8663 jobs, all of
+them `LaxLogic/`. The `wip/` pins are run by
+
+```
+lake build wipshared
+```
+
+which is 3126 jobs and is green as of 2026-08-07. An earlier version of this
+section credited the `wip/` rows to `lake build`; that was wrong. The rows now
+say which command actually runs them.
+
 | file | key results | audit | build path | paper § |
 |---|---|---|---|---|
-| `wip/linear.lean` | `varfree_exactly_six` (+`_wem0`), `six_pairwise`, `box_nobot`, `dist_of_lin`, `wem_of_lin`, `derivLin_iff_valid` (completeness for connected models), `canonL_connected`, `truthL` | clean | `lake build` (glob `wipshared`) | §3.1 Thm, Props |
-| `wip/classical.lean` | `varfree_exactly_four` (+`_em0`), `four_distinct`, `box_nobot_em`, `box_trivial` (F&M p. 6, machine-checked), `K_does_not_force_dist`, `nucleus_eq_closed`, `nucleus_not_closed_Fin3` | clean | `lake build` (glob) | §3.1 Thm, Props |
-| `wip/schemeext.lean` | `DerivX`/`Interd` — the scheme-extension harness both rungs run on (`chain_classify`, `combine`, `dich_*`) | (no pins in-file) | `lake build` (glob) | §3.1 infrastructure |
-| `wip/depth.lean`, `depth2.lean`, `depth3.lean` | `depth_box_gap_one_exact` (class depth of `◯g₁` is exactly 3, so `D₂ ⊊ D₃`), `depth_three_is_inhabited`, `not_derivU_box_atom` | `[propext]` / `[propext, Quot.sound]` / clean | `lake build` (glob) | §3.1 depth para |
+| `wip/linear.lean` | `varfree_exactly_six` (+`_wem0`), `six_pairwise`, `box_nobot`, `dist_of_lin`, `wem_of_lin`, `derivLin_iff_valid` (completeness for connected models), `canonL_connected`, `truthL` | clean | `lake build wipshared` | §3.1 Thm, Props |
+| `wip/classical.lean` | `varfree_exactly_four` (+`_em0`), `four_distinct`, `box_nobot_em`, `box_trivial` (F&M p. 6, machine-checked), `K_does_not_force_dist`, `nucleus_eq_closed`, `nucleus_not_closed_Fin3` | clean | `lake build wipshared` | §3.1 Thm, Props |
+| `wip/schemeext.lean` | `DerivX`/`Interd` — the scheme-extension harness both rungs run on (`chain_classify`, `combine`, `dich_*`) | (no pins in-file) | `lake build wipshared` | §3.1 infrastructure |
+| `wip/depth.lean`, `depth2.lean`, `depth3.lean` | `depth_box_gap_one_exact` (class depth of `◯g₁` is exactly 3, so `D₂ ⊊ D₃`), `depth_three_is_inhabited`, `not_derivU_box_atom` | `[propext]` / `[propext, Quot.sound]` / clean | `lake build wipshared` | §3.1 depth para |
 | `wip/visible.lean` | `Visible`; `visible_top`, `visible_rnSub_{one,two,four,six}`, `visible_gap_zero`; `not_joinPrime_rnSub_odd` (whole odd family from `t₃`); the PLL Harrop lemma | clean / `[propext, Quot.sound]` | **NOT on the build path** — needs `rnEmbed.olean` on `LEAN_PATH` (see note) | §3.1 visibility para |
 | `wip/converseK.lean` | `converseK_fails_infallible`, `converseK_fails_fallible` (`◯A ⊃ ◯B ⊬ ◯(A ⊃ B)`; the first model is linear) | `[propext, Quot.sound]` | not registered; checks standalone | §3.1 Prop (dist) |
+| `wip/negFour.lean` *(new 2026-08-07)* | `neg_exactly_four` — for every variable-free `A`, `¬A ⊣⊢` one of `⊥`, `¬◯⊥`, `¬¬◯⊥`, `⊤`. Since `𝔟⊥` (the regular elements) is the **image of `¬`**, this bounds the booleanization of RN(◯,{}) at four. Holds over an arbitrary axiom set `X`. | clean | `lake build wipshared` (registered) | candidate §3.1 |
 | [`LaxLogic/PLLNoFall.lean`](../LaxLogic/PLLNoFall.lean) | `varfree_dichotomy` — the two-element rung; already in the library | clean | `lake build` | §3.1 Thm cl. (4) |
 
 **Two facts recorded on measurement, 2026-08-07.**
