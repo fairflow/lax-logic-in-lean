@@ -24,20 +24,31 @@ that isotonicity of the map `𝔟_A` resp. `β_A` is already sufficient (and
 necessary) for `A` to be a boolean lattice."*
 
 Contrapositive, for us: since RN(◯,{}) is **not** boolean, `a ↦ 𝔟a` is **not
-isotone** on it.  So there must exist `a ≤ b` and a `y` with
+isotone** on it.
 
-    y = (y → a) → a      but      y ≠ (y → b) → b,
+MIND THE ORDER.  `𝒩A` carries **dual** inclusion (Proposition 3.2), a point
+Erné flags with an exclamation mark inside the proof of 5.9: isotone means
 
-i.e. `y ∈ 𝔟a ∖ 𝔟b` with `a ≤ b`.  Theorem 5.9 guarantees a witness exists but
-does not name one.  This file names one and checks it.
+    a ≤ b   implies   𝔟b ⊆ 𝔟a.
 
-The candidate is the smallest place the failure of booleanness lives:
+So a witness to the failure is `a ≤ b` together with an element of
+`𝔟b ∖ 𝔟a` — NOT of `𝔟a ∖ 𝔟b`.  (An earlier version of this file had the
+inclusion the wrong way round and so checked the wrong thing.)
 
-    a = ⊥,   b = ◯⊥,   y = ¬◯⊥.
+Theorem 5.9 guarantees a witness but does not name one.  Here is one, at the
+smallest place the failure of booleanness lives:
 
-`𝔟⊥` is the set of regular elements (`y = ¬¬y`) — the booleanization, by the
-Glivenko–Frink theorem Erné cites.  So the two things to check are that
-`¬◯⊥` is regular, and that it is *not* fixed by `β_{◯⊥}`.
+    a = ⊥ ≤ b = ◯⊥,   and the element ◯⊥ itself.
+
+`𝔟⊥` is the set of regular elements `{y | y = ¬¬y}` — the booleanization, by
+the Glivenko–Frink theorem Erné cites.  `◯⊥` is the *least* element of `𝔟◯⊥`
+(Theorem 5.2), and directly `(◯⊥→◯⊥)→◯⊥ = ⊤→◯⊥ = ◯⊥`.  So the one thing to
+check is that `◯⊥` is **not** regular, i.e. `¬¬◯⊥ ⊬ ◯⊥` — which is already a
+pinned cell of the Figure 6 matrix in `wip/nisFig6.lean`.
+
+The `¬◯⊥` computation is kept below because it is worth having on record: it
+shows `β_◯⊥(¬◯⊥) ⊣⊢ ¬¬◯⊥⊃◯⊥`, Figure 6's fifth element, so `𝔟⊥ ⊄ 𝔟◯⊥` as
+well.  Both inclusions fail; only the second direction bears on 5.9.
 
 PROBE, not a theorem: `#eval` output is not kernel-checked.  Not registered in
 `lakefile.toml`; run with `lake env lean wip/erneNuclei.lean`.
@@ -67,6 +78,16 @@ def interd (A B : PLLFormula) : String :=
     | .refuted _ _ _ => "."
     | .unknown       => "?"
   f A B ++ f B A
+
+/-- THE witness for Theorem 5.9, in the direction that matters:
+`⊥ ≤ ◯⊥` but `𝔟◯⊥ ⊄ 𝔟⊥`, because `◯⊥ ∈ 𝔟◯⊥ ∖ 𝔟⊥`. -/
+def isotonicityWitness : String :=
+  String.intercalate "\n"
+    [ "  ◯⊥ ∈ 𝔟◯⊥ :  ◯⊥ ⊣⊢ β_◯⊥(◯⊥) = (◯⊥→◯⊥)→◯⊥      " ++ interd oBot (beta oBot oBot)
+    , "  ◯⊥ ∈ 𝔟⊥  :  ◯⊥ ⊣⊢ β_⊥(◯⊥)  = ¬¬◯⊥            " ++ interd oBot (beta falsePLL oBot)
+    , "    of which the failing half:  ¬¬◯⊥ ⊢ ◯⊥       " ++
+        (match settle budgetedConfig [beta falsePLL oBot] oBot with
+         | .proved _ => "Y" | .refuted _ _ _ => "REFUTED" | .unknown => "?") ]
 
 def report : String :=
   String.intercalate "\n"
@@ -107,5 +128,6 @@ def locate : String :=
 
 end ErneNuclei
 
+#eval IO.println ErneNuclei.isotonicityWitness
 #eval IO.println ErneNuclei.report
 #eval IO.println ErneNuclei.locate
