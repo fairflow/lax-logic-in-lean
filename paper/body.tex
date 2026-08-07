@@ -244,6 +244,132 @@ closure operator. The underivabilities are by the countermodels of
 collapse, confined to the \ensuremath{\bigcirc}-level --- a believer of the absurd
 believes everything, and nothing is thereby true.
 
+\subsection{The ladder of logics}\label{31-the-ladder-of-logics}
+
+Theorem~\ref{thm:collapse} says that classically a believer is one
+parameter; Theorem~\ref{thm:openclosed} says that constructively the
+closed fragment is infinite. Between those two statements there is a
+measurement to be made, and it can be made exactly. Read
+RN(\ensuremath{\bigcirc}, \{\}) as the believer\textquotesingle s vocabulary for
+describing its own credulity: the propositions expressible from
+\ensuremath{\bigcirc} and \ensuremath{\mathit{false}} alone, up to
+interderivability --- ``I believe the absurd'', ``I do not believe the
+absurd'', ``I do not disbelieve that I believe the absurd'', and so on
+upwards. Constructively that vocabulary is infinite. The following
+theorem says what each classical principle costs.
+
+\begin{theorem}[the ladder]\label{thm:ladder}
+Let A range over the closed formulas --- those built from
+\ensuremath{\mathit{false}} and \ensuremath{\bigcirc} with no propositional
+constants. Up to interderivability there are:
+\begin{enumerate}
+\item over PLL, infinitely many classes (\texttt{closed\_lax\_infinite});
+\item over PLL + linearity \ensuremath{(A \supset B) \vee (B \supset A)},
+  exactly six --- \ensuremath{\bot}, \ensuremath{\lnot\bigcirc\bot},
+  \ensuremath{\bigcirc\bot},
+  \ensuremath{\bigcirc\bot \vee \lnot\bigcirc\bot},
+  \ensuremath{\lnot\lnot\bigcirc\bot}, \ensuremath{\top}
+  (\texttt{varfree\_exactly\_six}; pairwise distinct, \texttt{six\_pairwise});
+\item over PLL + excluded middle, exactly four --- \ensuremath{\bot},
+  \ensuremath{\bigcirc\bot}, \ensuremath{\lnot\bigcirc\bot}, \ensuremath{\top}
+  (\texttt{varfree\_exactly\_four}; distinct, \texttt{four\_distinct});
+\item over PLL + \ensuremath{\lnot\bigcirc\bot}, exactly two, \ensuremath{\bot}
+  and \ensuremath{\top} (\texttt{varfree\_dichotomy}).
+\end{enumerate}
+Clauses (2) and (3) hold already for the \emph{single closed axioms}
+\ensuremath{\lnot\bigcirc\bot \vee \lnot\lnot\bigcirc\bot} and
+\ensuremath{\bigcirc\bot \vee \lnot\bigcirc\bot}
+(\texttt{varfree\_exactly\_six\_wem0},
+\texttt{varfree\_exactly\_four\_em0}), so each count is stable across every
+system between that one axiom and the full scheme.
+\end{theorem}
+
+The ladder is the quantitative form of the paper\textquotesingle s
+argument. The space between the total sceptic and the totally credulous
+believer is vast --- infinite already in the fragment that mentions no
+subject matter at all --- and it is constructivity alone that keeps it
+so. Linearity of the evidential order cuts the infinity to six;
+excluded middle cuts it to four; and the further assumption that belief
+is consistent, \ensuremath{\lnot\bigcirc\bot}, cuts it to two, at which
+point the believer can no longer say anything about its own credulity
+that is not already \ensuremath{\bot} or \ensuremath{\top}. The last two
+rungs recover the two poles of Theorem~\ref{thm:collapse}: at four
+classes the parameter \ensuremath{a = \bigcirc\mathit{false}} still
+ranges, and at two it has been fixed at \ensuremath{\bot}. Each rung is
+also a completeness theorem: PLL + linearity is sound and complete for
+the \emph{connected} constraint models, those whose
+\ensuremath{R_{i}}-successor sets are chains
+(\texttt{derivLin\_iff\_valid}), by the canonical construction of
+Section~\ref{62-the-countermodels-finitely-and-without-zorn} relativised
+to prime theories containing the scheme.
+
+\begin{proposition}[the modality on each rung]\label{prop:rungs}
+At six classes \ensuremath{\bigcirc\lnot\bigcirc\bot \dashv\vdash \bigcirc\bot \vee \lnot\bigcirc\bot}
+(\texttt{box\_nobot}); at four,
+\ensuremath{\bigcirc\lnot\bigcirc\bot \dashv\vdash \top}
+(\texttt{box\_nobot\_em}), so \ensuremath{\bigcirc} acts there as the closed
+nucleus \ensuremath{x \mapsto x \vee \bigcirc\bot}. Under excluded middle
+together with \ensuremath{\lnot\bigcirc\bot} the modality is trivial:
+\ensuremath{\bigcirc A \dashv\vdash A} for \emph{every} A, closed or not
+(\texttt{box\_trivial}).
+\end{proposition}
+
+The last clause is a remark of~\cite[p.~6]{FairtloughMendler1997}, here
+machine-checked; under reading (7) it is the exact statement that a
+classical believer who is guaranteed consistent is the total sceptic and
+nothing else. Booleanness is doing the work and not merely the
+excluded-middle instance: on a general Heyting algebra the closed form
+fails, witnessed by a nucleus on the three-element chain with
+\ensuremath{j\bot = \bot} but \ensuremath{j\,1 = 2 \neq 1}
+(\texttt{nucleus\_not\_closed\_Fin3}), which is why the classical rung
+has four elements and not two.
+
+\begin{proposition}[what forces distribution]\label{prop:dist}
+K is a theorem of plain PLL, and K does not force the distribution
+scheme \ensuremath{\bigcirc(A \vee B) \supset (\bigcirc A \vee \bigcirc B)}
+(\texttt{K\_does\_not\_force\_dist}). Linearity does: each instance follows
+from the single instance \ensuremath{(A \supset B) \vee (B \supset A)}
+(\texttt{dist\_of\_lin}). The converse of K fails, and fails already on a
+\emph{linear} model: \ensuremath{\bigcirc A \supset \bigcirc B \nvdash \bigcirc(A \supset B)},
+by two certified countermodels, one infallible and linear, one with a
+fallible world (\texttt{converseK\_fails\_infallible},
+\texttt{converseK\_fails\_fallible}).
+\end{proposition}
+
+So the chain-based validity of distribution is financed by linearity of
+the evidential order, not by normality; a believer whose grounds are
+linearly ordered must, on being persuaded of a disjunction, be
+persuaded of a disjunct, because one of the two implications between
+them is already available. That the converse of K fails even there is
+the doxastic point that believing B whenever one believes A is weaker
+than believing the conditional.
+
+Two structural facts about the fragment complete the picture. First, its
+\ensuremath{\bigcirc}-depth stratification is strict. Writing
+\ensuremath{D_{0} = \{\bot, \top\}}, \ensuremath{D_{1}} for the ladder
+generated by \ensuremath{\bigcirc\bot}, and \ensuremath{D_{n+1}} for the
+Heyting algebra generated by
+\ensuremath{D_{n} \cup \bigcirc D_{n}}, the class depth of
+\ensuremath{\bigcirc g_{1}} is exactly three, so
+\ensuremath{D_{2} \subsetneq D_{3}}
+(\texttt{depth\_box\_gap\_one\_exact}): nesting the modality genuinely
+buys new belief states, and the hierarchy does not collapse at the first
+opportunity. Whether the depth-three layer is itself infinite --- that
+is, whether the whole \ensuremath{\bigcirc g} antichain sits at class
+depth three --- is open. Second, the fragment has identifiable points:
+calling a closed A \emph{visible} when \ensuremath{\uparrow}A is proper
+and prime, so that A names a point of the Esakia dual, the classes of
+\ensuremath{\top}, \ensuremath{t_{1}}, \ensuremath{t_{2}},
+\ensuremath{t_{4}} and \ensuremath{t_{6}} are visible, while no odd rung
+from \ensuremath{t_{3}} upwards is (\texttt{visible\_top},
+\texttt{visible\_rnSub\_\{one,two,four,six\}},
+\texttt{not\_joinPrime\_rnSub\_odd}). The engine is a Harrop lemma for
+PLL: \ensuremath{\bigcirc A} is Harrop for arbitrary A, because the
+succedent of the left rule for \ensuremath{\bigcirc} must itself be
+\ensuremath{\bigcirc}-shaped, so a believed hypothesis can never help
+produce a disjunction. Under reading (7): what is merely believed never
+settles an open question, however much it settles.
+
 \section{Evidence}\label{4-evidence}
 
 We now equip the constraint models with evidence; the ancestry is
