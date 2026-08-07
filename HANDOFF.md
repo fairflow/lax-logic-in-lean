@@ -1,8 +1,15 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
-**Last updated:** 2026-07-10 by Fable 5 (Termination A–C landed; Thm 2.8 complete)
-**Repo state:** `worktree-g4ill` @ 0456582 — `lake build` clean, every `#guard_msgs` audit green
+**Last updated:** 2026-08-07 by Opus 5 — see **§10**, which supersedes §§2 and 7 where they conflict
+**Repo state:** `main` @ 925bc10 — `lake build` clean, every `#guard_msgs` audit green; no live feature branch (`ui-confluence` merged 2026-08-06)
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.
+
+**Start here:**
+* **`docs/calculus-map.md`** — the summary of results: which of the seven proof
+  systems each result belongs to, what is proved about it, and whose it is
+  (ours vs Fairtlough–Mendler 1997). Read it before asserting provenance.
+* **`docs/next-session.md`** — the live threads as of 2026-08-07, one section
+  each, with the next action and who decides. Read it before starting work.
 
 ## 1. What this project is (3 sentences max)
 
@@ -98,3 +105,43 @@ Longer log: `docs/g4p-ladder.md` is the design history (this repo's DECISIONS.md
 - **Write-up:** `docs/ui-attempts-table.md` (this session) — plain-English attempt-by-attempt table for readers outside the project; `docs/iemhoff-note.md` (drafted in parallel) — the human-readable note on G4iLL's incompleteness and the two flaws located in Iemhoff's own printed uniform-interpolation proof (`wip/g4ill_ui.lean`).
 - **Toolchain:** bumped to `leanprover/lean4:v4.31.0`.
 - **Late addendum, same day:** `uniform_interpolation_IPC` landed sorry-free (box-free crown, pinned audit `[propext, Classical.choice, Quot.sound]`) — proved by an Opus agent from a mapped brief; the two missing facts and the method are recorded in `docs/opus-handover.md`, the handover strategical for delegated proof agents.
+
+## 10. Update — 2026-08-07: uniform interpolation SHELVED; the threads are in `docs/next-session.md`
+
+**Where the record is.** Two documents govern, and both are newer than
+everything above:
+
+| document | what it is |
+|---|---|
+| **`docs/calculus-map.md`** | **the summary of results** — the seven proof systems (`LaxND`, `SC`, `G3iLL`, `G4iLL`, `G4h`/`G4c`, `DerivU`, `DerivUNoFall`), what each is, what is proved about it here, what depends on it, and the provenance summary (ours vs F&M 1997). It ends with a "which system is a given result really about?" table. Written because the calculi had been confused in conversation more than once. |
+| **`docs/next-session.md`** | **the live threads**, 2026-08-07: shelved UI and the confluent idea; the testing layer (frontier sampler, catpart, what is missing); the case study; the `omega`/`⊥` issue and the Zulip question; the belief paper; the Q○.K thread; the new RN(◯,{}) mathematics; the standing constraints. |
+
+**State, superseding §2.** `main` @ 925bc10, `lake build` green. Sorries:
+five in `LaxLogic/` (all in the semantic-UI extension line —
+`PLLSemUIChar.lean:322,327`, `PLLSemUILayered.lean:827`,
+`PLLSemUIHenkin.lean:341,352`), one that matters in `wip/`
+(`cascade_boxgoal_pos`, `wip/absorb_base.lean:2281`), two routine ones in
+`wip/G4conf.lean`. `uniform_interpolation_IPC` is sorry-free;
+`uniform_interpolation_PLL` still carries `sorryAx`.
+
+**The UI campaign's verdict (PROGRESS §§57–68, rounds 1–9).** The *room-free*
+route is REFUTED, kernel-checked at `Γ = []`: `BoxDesc`, `CompProd` and
+`GoalRowAbsorb` each fall, and `¬BoxDesc` is re-derived twice more through
+rounds 7's and 8's own upgrade theorems. The refuted cell is strictly
+sub-room, so the room-carrying `cascade_boxgoal_pos` survives — the room is
+the sole countermodel excluder for the third time. §65 then proved that the
+surviving statement's live regime is **not decide-feasible** wherever a
+γ-clause is present, so it cannot be screened in either direction: it has to
+be built. That is why the campaign is shelved rather than continued.
+
+**Status of §7's list.** Items 1–3 done (2026-07-10). Item 4 (uniform
+interpolation) — shelved, as above. Item 6 (note to Iemhoff) — drafted as
+`docs/iemhoff-note.md`, still not sent, still Matthew's to send. Items 5, 7,
+9, 10 untouched. Item 8 (PR #6) still Matthew's.
+
+**Two new invariants for §5.** (i) A *false statement* compiles the whole
+stack and passes every axiom pin, because it is a `sorry` — check statements
+against the repo's own refutations before believing a clean build. (ii) A
+clean screen is a statement about the screen: screen the **degenerate end** of
+every axis first (round 9's fault needed empty context × untied fuel ×
+missing frame simultaneously, and no sweep had ever emptied a context).
