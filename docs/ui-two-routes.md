@@ -281,3 +281,69 @@ Steps 1 and 2 are days; 3 is a session or two; 4 and 5 are the research.
   (`docs/belief-mechanisation-index.md`).
 * Do not claim Howe refuted, or PLL-UI settled either way, anywhere
   (HANDOFF §8).
+
+---
+
+## 6. Built so far, and the next obstacle located (2026-08-08)
+
+### Done, in the library, sorry-free
+
+| file | content | audit |
+|---|---|---|
+| `LaxLogic/PLLJudgmental.lean` | two-judgment PLL (`true`/`lax`), `rename`, `erase`, soundness both judgments, **completeness**, `equiv_nd`, `equiv_lax` | **no axioms at all** |
+| `LaxLogic/PLLPolar.lean` | polarised syntax `Pos`/`Neg` with `circ : Pos → Neg`, erasure, `polPos`/`polNeg`, roundtrip, `phase` | `[propext]` / axiom-free |
+| `wip/polarity.lean` | `box_right_not_invertible`, `box_left_invertible` | `[propext, Quot.sound]` / `[propext]` |
+
+Two findings worth keeping from the build:
+
+* **`CircInvert` was free.** The plan was to assume `PD .tru Γ ◯φ → PD .lax Γ φ`
+  as an explicit hypothesis and discharge it later by normalisation. It is
+  `circE` with the identity continuation — the monad law `bind m return = m`.
+  So completeness of the judgmental system is unconditional and step 1 carries
+  no debt.
+* **The phase measure is proof-independent for free, and that is not the
+  content.** `phase : PLLFormula → ℕ` obviously does not depend on a
+  derivation. The programme needs the *other* half — that the interpolant
+  recursion **descends** on it — and nothing built so far bears on that.
+
+### The next obstacle, precisely
+
+Focusing needs three judgments: right focus `Γ ⊢ [P]`, left focus
+`Γ ; [N] ⊢ Q`, and inversion `Γ ; Ω ⊢ N`. The rules for `∨`, `∧`, `⊃` and the
+shifts are standard. **`◯` is not**, and the reason is the same one that has
+been shadowing this problem throughout:
+
+> Left-focusing on `◯P` may only fire when the stable goal is **lax**.
+
+In `SC` that appeared as "the succedent must be `◯`-shaped". In the judgmental
+system it became "the conclusion is in the `lax` judgment", which was progress
+because a judgment is a phase. But in the *focused* system the stable goal is a
+parameter of the left-focus judgment, so the consequence is concrete:
+
+> **the stable goal must carry the judgment flag** — the focused judgments are
+> `RFoc : List Neg → JD → Pos → Type`, `LFoc : List Neg → Neg → JD → Pos → Type`,
+> `Inv : List Neg → List Pos → JD → Neg → Type`,
+
+and the `◯` rules are the only ones that change it. That is a design decision
+with consequences for every subsequent proof (soundness, focalization, identity
+expansion), so it is recorded here before being committed to code rather than
+discovered halfway through a soundness induction.
+
+**Why this is not merely bookkeeping.** If the flag threads through
+untouched by every rule except `◯`'s, then the phase structure genuinely
+separates the modal content, and the interpolant recursion has two smaller
+things to descend on rather than one — which is exactly the handoff's bet
+("because the Lax modality is a box-then-diamond composite, it may give two
+smaller pieces to descend on"). If instead the flag has to be inspected by the
+`⊃` or `∨` rules, the separation fails and the polarised route inherits the
+entanglement it was meant to dissolve. **Which of these happens is the next
+thing to determine, and it is a question about the rules, not a search.**
+
+### Order from here
+
+1. Write the three focused judgments with the `JD` flag; check by inspection
+   whether any rule other than `◯`'s must read it.
+2. Soundness into `PD` — mechanical, one induction.
+3. Focalization (completeness). State as an explicit hypothesis if costly;
+   `wip/polarity.lean` and Simmons both say identity expansion is the risk.
+4. Only then the interpolant recursion.
