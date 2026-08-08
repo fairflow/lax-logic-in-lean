@@ -98,3 +98,8 @@ import LaxLogic.PLLSemUILayered
 import LaxLogic.PLLSemUIFrag
 import LaxLogic.PLLSemUIChar
 import LaxLogic.PLLSemUIHenkin
+import LaxLogic.PLLJudgmental
+import LaxLogic.PLLPolar
+import LaxLogic.PLLFocused
+import LaxLogic.PLLCandidate
+import LaxLogic.PLLCandOr
