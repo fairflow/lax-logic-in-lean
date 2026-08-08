@@ -101,3 +101,4 @@ import LaxLogic.PLLSemUIHenkin
 import LaxLogic.PLLJudgmental
 import LaxLogic.PLLPolar
 import LaxLogic.PLLFocused
+import LaxLogic.PLLCandidate
