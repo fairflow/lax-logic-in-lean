@@ -106,11 +106,18 @@ structure Cand (p : String) where
   /-- `RFocus.rel`, guarded: release. -/
   cl_rel : ∀ {Γ j N}, C Γ [] j N → C Γ [] j (.up (.down N))
   /-- `LFoc.impL`, guarded and **cross-flag**: the argument premise sits at
-  `.tru` while the conclusion sits at `j`. The only place `⊃` meets the flag. -/
-  cl_impL : ∀ {Γ j Q N P}, C Γ [] .tru (.up Q) → C Γ [] j (.up P) →
-      .imp Q N ∈ Γ → C Γ [] j (.up P)
-  /-- `LFoc.and1`/`and2`, guarded: projection. -/
-  cl_andL : ∀ {Γ j M N P}, .and M N ∈ Γ → C Γ [] j (.up P) → C Γ [] j (.up P)
+  `.tru` while the conclusion sits at `j`; the continuation gains `N` as a
+  stable hypothesis. The only place `⊃` meets the flag. (An earlier statement
+  of this clause omitted the `N :: Γ` and was trivially satisfiable — caught
+  when the discharge attempt made it vacuous.) -/
+  cl_impL : ∀ {Γ j Q N P}, .imp Q N ∈ Γ → C Γ [] .tru (.up Q) →
+      C (N :: Γ) [] j (.up P) → C Γ [] j (.up P)
+  /-- `LFoc.and1`/`and2`, guarded: projection, the continuation gaining the
+  chosen conjunct. (Same correction as `cl_impL`.) -/
+  cl_andL : ∀ {Γ j M N P}, .and M N ∈ Γ → C (M :: Γ) [] j (.up P) →
+      C Γ [] j (.up P)
+  cl_andL' : ∀ {Γ j M N P}, .and M N ∈ Γ → C (N :: Γ) [] j (.up P) →
+      C Γ [] j (.up P)
   /-- `circL` ★. **Guarded, and at `.lax` only.** Stripping `◯` from a hypothesis
   in the lax phase. The clause into which contraction-tracking goes — see
   below. -/
