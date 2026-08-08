@@ -312,3 +312,63 @@ whose `fml` field the clauses build.
 the entire difference between the two logics, for UI purposes, is one rule of
 one phase — sitting on top of a core difficulty (the ∀p implication clause)
 that both logics share and neither has here.
+
+## §9 — The pure development: LJF from the ground up (2026-08-08, late)
+
+Direction change on Matthew's instruction, stated back and confirmed: the
+technique is under test, so **nothing is borrowed from any other calculus** —
+no `Deriv`, no `G4c`, no substitution lemmas, no completeness. `LaxLogic/LJF.lean`
+imports nothing at all, not even Mathlib. Cut is **not** used anywhere and is
+not planned to be: identity expansion plus per-clause invertibility carry the
+property proofs (cut-admissibility remains available as a corollary-grade
+extra, per Matthew's expectation).
+
+### Landed, sorry-free, `lake build` green (commits e8bcd3f, 6b9696f)
+
+1. **The calculus.** `LJF` = canonical-polarity Liang–Miller: `Stab`/`RFocus`/
+   `LFoc`/`Inv`, weakening as one traversal, identity expansion as the mutual
+   pair `posRestore`/`idNegK` (continuation-passing, no cut).
+
+2. **The weight, solved for.** `atom = ⊥ = 1`; `∨`, `⊃`, `↓` cost +1; `∧`
+   costs +3; `↑` costs 0. Contexts measured by `Σ 3^w`. Each clause of the
+   recursion contributes an inequality and this assignment satisfies all of
+   them — the costs differ from Dyckhoff's because the shifts change the
+   clause set. The exponential base does the multiset-order work: one
+   hypothesis of weight w is only ever replaced by ≤ 2 of weight ≤ w−1,
+   and 2·3^(w−1) < 3^w.
+
+3. **The interpolant as a total function.** `interp p todo done goal` computes
+   BOTH quantifiers in one recursion — `goal = none` is ∃p (strongest p-free
+   consequence of the context), `goal = some G` is ∀p (weakest p-free missing
+   hypothesis). Eleven processing clauses, fire-saturation of parked atom
+   implications, then the saturated aggregate whose three irreducible shapes
+   are exactly G4ip's: atoms, `a ⊃ N` with `a` absent, and the Dyckhoff
+   implication `↓(Q′ ⊃ N′) ⊃ N`, whose clause is the mutual ∃p/∀p recursion.
+   Termination: single Nat measure `2·sum3 todo + sum3 done + goalW goal` —
+   the factor 2 makes parking strict; no lexicographic order.
+
+4. **p-freeness.** `interp_pfree`, by the functional-induction principle Lean
+   derives from the weighted recursion, all 22 cases.
+
+### The remaining contract (recorded at the end of LJF.lean)
+
+E1/A1 (soundness of both modes) and E2/A2 (minimality of both modes), with
+the internal toolkit: hypothesis-simulation traversal + branch extraction.
+The expected mountain is the E2/A2 case for the Dyckhoff implication — the
+focused `(A⊃B)⊃C` argument. If it resists, it is carried as an explicit
+hypothesis.
+
+### What the weights are FOR (Matthew's question, answered in full in the
+file header of Part 2 and in the session report)
+
+Uniformity forces the interpolant to be defined by recursion on the sequent,
+not on a derivation. The clauses transform rather than decompose (currying
+preserves naive size; the ∨-antecedent clause duplicates N; goal inversion
+grows the context), so no naive measure survives; the weight is the solution
+of the clause-inequality system, and the exponential sum is a Nat-valued
+stand-in for the Dershowitz–Manna multiset order. Necessity: a loop-checker
+could give termination of search but yields no formula — the interpolant is
+built BY the recursion, so its existence needs structural well-foundedness.
+And it buys predicativity: the interpolation candidate is a least fixed
+point; Girard-style candidates take such fixed points impredicatively, while
+the weight reaches this one by well-founded recursion.
