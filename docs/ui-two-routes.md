@@ -37,18 +37,33 @@ every `p`-free consequence of `φ` follows from `χ`. So `χ` *is* `∃p φ`, an
 exists for the reason that there are only finitely many candidates. No
 construction, no proof search, no interpolation machinery.
 
-**`∀p φ` is not free, and the obstruction is exactly `∨`.** `∀p φ` is the
-strongest `p`-free formula *entailing* `φ` — dually, a **join** over
-`{ ψ ∈ L_p : ψ ⊢ φ }`. That set is finite too, but a finite join is not a
-∨-free formula: the ∨-free fragment is an *implicative semilattice*, which has
-meets and residuals but **no joins**. Erné's framework says the same thing from
-the algebraic side — `𝔠a = ↑a` is a nuclear range only in lattices
-(*Nuclear ranges in implicative semilattices*, Prop. 5.5).
+**`∀p φ` is the hard half — but NOT for the reason first given here.**
 
-So the ∨-free fragment is **not self-contained for uniform interpolation**: it
-supplies `∃p` for free and cannot express `∀p`. That is a clean statement of
-where the difficulty actually lives, and it is not where the nine-round
-campaign was looking.
+*Corrected 2026-08-08, Matthew having declined to accept the first version.*
+The first draft argued: `∀p φ` is a **join**, the ∨-free fragment is an
+implicative semilattice with no joins, therefore `∀p` is inexpressible. That is
+**wrong**, and the error is instructive. `L_p` is *finite* (local finiteness)
+and has all finite meets and a top, so every subset has a least upper bound in
+it — a finite meet-semilattice with `⊤` is automatically a lattice, indeed here
+a finite Heyting algebra. `L_p` does have joins.
+
+The real obstruction is that the join *internal to* `L_p` — call it `⊔`, the
+least ∨-free upper bound — **overshoots** the true join `∨` of the ambient
+algebra. Concretely, in the eight-element ∨-free algebra of Figure 6 the
+antichain `¬¬◯⊥`, `◯¬◯⊥` has `⊔` equal to one of the third-layer elements,
+whereas the genuine `¬¬◯⊥ ∨ ◯¬◯⊥` is strictly smaller and is not ∨-free.
+
+So put `T = { ψ ∈ L_p : ψ ⊢ φ }`, finite. If `ψ₁, ψ₂ ∈ T` then
+`ψ₁ ∨ ψ₂ ⊢ φ`, but `ψ₁ ⊔ ψ₂` may not, since `⊔` sits above `∨`. Hence `T`
+need not be closed under `⊔`, and `max T` — which is what `∀p φ` must be —
+need not exist. Precisely:
+
+> **`∀p φ` exists in the ∨-free fragment iff `T` is directed.**
+
+That is a checkable criterion rather than an impossibility, and it is the right
+statement of where the difficulty lives. It is still asymmetric with `∃p`,
+because `S = { ψ : φ ⊢ ψ }` *is* closed under `∧` and `∧` preserves
+∨-freeness, which is why `∃p` goes through unconditionally.
 
 **Why this is more than bookkeeping.** It matches everything else found in the
 closed fragment on 2026-08-07: RN(◯,{}) is infinite but its ∨-free part has
@@ -145,10 +160,98 @@ calculus — a conjecture this repository has so far *supported* (HANDOFF §4;
 evidence *for* Howe). So the route is not a safe fallback: it is a bet against
 a standing conjecture, and its failure would be informative in its own right.
 
-**First move, and it is cheap.** Run the multiplicity-3 hunt. It is a decider
-sweep with existing tooling and it either produces a witness (bound is not 2,
-and we learn what drives it) or a documented negative sweep (evidence that 2
-suffices, which would make the whole route immediate).
+### 3.1 Two escalation families, both refuted — and the reason
+
+*2026-08-08. Matthew's instruction: "your task is to prove rather than search;
+the interplay is delicate and you tend towards brute force." Both results below
+are structural, and the second needed no computation at all.*
+
+**Why the gap needs exactly 2.** With `F = ◯p ⊃ r` and goal `r`, the boxed
+hypothesis `◯(F ⊃ ◯p)` can only be used by `laxL`, which fires **only when the
+goal is `◯`-shaped**. The goal is `r`. So one copy of `F` is spent *converting
+the goal*: `→L` on `F` replaces goal `r` by goal `◯p`. Only then can `laxL`
+strip the box, yielding `F ⊃ ◯p`, and firing that needs a **second** copy. The
+count decomposes as **one goal-conversion + one use inside the box**.
+
+**Family A — nest the scopes** (`wip/multiplicity.lean`, computed).
+`K 0 = ◯p`, `K (n+1) = ◯(F ⊃ K n)`; test `K n, Fᵏ ⇒ r`. Measured least `k`:
+
+    K 0 → 1     K 1 → 2     K 2 → 2     K 3 → 2
+
+Refuted. The reason: once inside the modal phase the goal **stays** `◯`-shaped,
+so no further conversion is demanded, and the copies available inside are
+shared across the layers. This is also why `PLLG4Tower.lean`'s naive tower caps
+at 2.
+
+**Family B — Matthew's recursion** (`F(n+1) = ◯G(n) ⊃ r`). Refuted **by
+inspection, not by search**: `F(n+1)` is again an implication with a boxed
+antecedent and conclusion `r`, so `[◯(F(n) ⊃ ◯p), F(n)] ⇒ r` is the gap's own
+shape for every `n` — the same two roles, hence the same two copies. Nesting
+the *conversion* fails for the same reason as nesting the *host*.
+
+### 3.1a WHICH CALCULUS — the check that undercuts §3.1
+
+*Matthew, 2026-08-08: "are you using the right decision procedure? G4??"  He is
+right to ask, and the answer is that it is right for the datum and wrong for
+the purpose.*
+
+`PLLDecide` decides **`G4`** — Iemhoff's naive calculus, the **incomplete**
+one. That is deliberate and protected: HANDOFF §8 says do not "fix" it, since
+deciding `G4`-original is its job in the refutation, and it does **not** decide
+PLL. So every number in §3.1 is a fact about `G4`.
+
+The contraction-bound route, however, is about the search the interpolant
+construction would actually run over, and that is **`G4c`** — the tables
+`itpE`/`itpA` are over `G4c` (`docs/calculus-map.md`). In `G4c` contraction is
+**already admissible cut-free** (`G4c.contract`), absorbed into the three
+retention rules. So "how many copies does the antecedent need" is not the right
+question there at all: the answer is none, and the multiplicity has been
+**hidden inside the rule shapes** rather than removed — which is exactly the
+localisation HANDOFF §4 insists is *not* a refutation of strong Howe.
+
+Consequences, and they matter:
+
+* the two refutations in §3.1 stand, but they are statements about `G4`;
+* the conjecture in §3.2 is likewise about `G4`, and is therefore **not**
+  directly the bound the route needs;
+* the *right* formulation of Matthew's idea over `G4c` is not a count of
+  antecedent copies but a bound on **how often the retention rules re-use a
+  formula along a branch** — and that is a property of derivations, which
+  returns us to the handoff's proof-dependence problem rather than escaping it.
+
+Restating the route over `G4c` is therefore the first thing to do, before any
+more measurement. Until that is done, §§3.1–3.2 are about the wrong object.
+
+### 3.2 The conjecture this forces (about `G4`, see §3.1a)
+
+> **Multiplicity in `G4` is capped at 2.**
+
+Reason, not evidence: the intuitionistic part of `G4iLL` is Dyckhoff-style and
+already contraction-free, so `◯` is the only source of contraction; the `◯`
+demand is the goal-conversion; and **at most one goal-conversion is ever
+needed**, the outermost, because inside the modal phase goals remain
+`◯`-shaped.
+
+**If true**, Matthew's contraction-bound route works immediately with the
+constant 2 — pre-duplicate every antecedent formula once and search
+contraction-free — and Howe's conjecture that lax logic admits no
+contraction-free calculus is in serious trouble. Given that this repository has
+so far *supported* Howe (`PLLG4Gap` shows contraction inadmissible in Iemhoff's
+calculus, which is evidence **for** him), that is a claim to attack rather than
+to hope for.
+
+**If false**, the witness must break the phase-sharing, and no nesting
+construction can do that — the two refuted families show why. It would need
+two goal-conversions genuinely separated by a non-modal step, which is a
+specific structural demand and the thing to design against.
+
+**How to settle it, without sweeping.** `PLLG4Gap`'s `not_S0`…`not_S5` chain is
+the model: G4-underivability proved by exhaustive case analysis on the rules,
+each branch either impossible or reduced to a smaller refutation, with the
+bottom case (`not_S5`) failing precisely because a needed *occurrence* is
+absent. Multiplicity is a resource count, and that chain is where the count is
+visible. Generalising that invariant — rather than deciding instances — is the
+proof obligation.
 
 ---
 
