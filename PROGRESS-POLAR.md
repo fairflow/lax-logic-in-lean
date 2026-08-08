@@ -169,3 +169,47 @@ descending chain is its threat. Two hunts, each with its chain mechanised:
 
 The ∃p hunt inherits the old campaign's floor machinery (wip/floor.lean,
 wip/floorRefute.lean, the Gmeet family) and is likely the cheaper start.
+
+## §6. Second-order candidates, the least candidate, and the armed hunts (2026-08-08 evening)
+
+**Matthew's structural point, and its proof.** He asked whether candidates must
+be strictly second-order. YES — and `extremal_iff_forallp` is now the proof:
+any FORMULA-indexed candidate family collapses to ∀p, chains and all. So the
+convergence theorem is re-read as: first-order candidates buy nothing. The
+chains are refutation-only instruments; the positive route must go through
+predicates on sequents.
+
+**The least candidate exists, for free** (`LaxLogic/PLLCandLeast.lean`):
+`LC p` is the inductive predicate whose CONSTRUCTORS are the thirteen clauses
+— a least fixed point, no extremal formula needed. `LC.toCand` (it is a
+candidate), `LC.initial` (contained in every candidate — NO AXIOMS AT ALL),
+`LC.le_budget` (via initiality, LC-membership makes the sequent derivable from
+every budget — LC marks the sequents whose p-content is irrelevant).
+UI = DEFINABILITY of this second-order object by a formula, per antecedent.
+Refuting definability = the chains; proving it = the phase recursion, which is
+the next build.
+
+**The refutation criteria, kernel-checked, generic**
+(`LaxLogic/PLLUIChains.lean`, [propext] only): `no_least_consequence` (∃p) and
+`no_greatest_antecedent` (∀p), generic in the chain AND in the p-free class.
+The unused-variable linter found the chain's monotonicity hypotheses were
+unnecessary — strictness and trapping suffice — so the criteria are stronger
+than the prose that proposed them.
+
+**The hunts, armed** (`wip/hunts.lean`, in wipshared):
+
+    no_existsP_of_trap : φ below every Gmeet n + closed consequences trapped
+                         above the chain ⟹ NO post-interpolant
+    no_forallP_of_trap : every chainF k below φ + closed antecedents trapped
+                         below the chain ⟹ NO pre-interpolant
+
+New mechanised inputs both hunts needed:
+* `Gmeet_strict : Gmeet n ⊬ Gmeet (n+1)` — strict descent of the gap meets,
+  proved from the cmE edged lift (gap_forced/gap_fails); a fact the floor
+  campaign never pinned.
+* `varFree_rnSub/chainF/gap/Gmeet` — closedness of all chain members, via the
+  substitution lemma `varFree_embed` (embed = substP pv ◯⊥).
+
+Each hunt is now exactly TWO obligations about a witness φ. Next: candidate
+witnesses. The trapping condition is the hard half in both; the natural first
+φ's are GZ-style limit formulas over the respective chains.
