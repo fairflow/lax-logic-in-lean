@@ -141,3 +141,31 @@ made of ◯'s.
 
 Next: the hunt for that φ — or the proof that no such φ exists, which would be
 the 1-pv base case of UI. Either outcome is the paper.
+
+## §5. Ascending vs descending — the two dual hunts (2026-08-08, Matthew's question)
+
+Matthew: previously we looked for infinite DESCENDING chains; §4 asks for
+ASCENDING. What changed? Answer: the quantifier. Nothing else.
+
+    ∃p φ = least element of the FILTER  S = {ψ p-free : φ ⊢ ψ}  (∧-closed)
+           fails ⟺ descending coinitial chain, no floor
+    ∀p φ = greatest element of the IDEAL T = {ψ p-free : ψ ⊢ φ}  (∨-closed)
+           fails ⟺ ascending cofinal chain, no cap
+
+Chains are wlog in both directions: T ∨-closed ⟹ (countable) non-principality
+⟺ a strictly ascending cofinal chain exists; dually for S via ∧.
+
+The earlier exploration (Gmeet descending, gap_no_glb, the floorless chain of
+next-session §7) is ∃p-side ammunition. The convergence theorem landed the
+candidate route on ∀p, whose chain is chainF (ascending, chain_step_strict).
+
+SCOPE, honestly: full UI needs BOTH quantifiers. The ∨-free local-finiteness
+argument freed ∃p within the ∨-free fragment only; for full PLL at 1 pv
+(p-free = closed, closed fragment infinite) ∃p is NOT settled and the
+descending chain is its threat. Two hunts, each with its chain mechanised:
+
+  ∀p hunt: φ(p) with ∀k chainF k ⊢ φ, and every closed θ ⊢ φ below some chainF k.
+  ∃p hunt: φ(p) with ∀n φ ⊢ Gmeet n, and every closed consequence above some Gmeet n.
+
+The ∃p hunt inherits the old campaign's floor machinery (wip/floor.lean,
+wip/floorRefute.lean, the Gmeet family) and is likely the cheaper start.
