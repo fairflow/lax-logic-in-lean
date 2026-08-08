@@ -1421,3 +1421,158 @@ theorem atomMem_mem {a : String} {Γ : List Neg} (h : atomMem a Γ = true) :
       subst this; exact hx
 
 end LJF
+
+namespace LJF
+
+/-! # Part 4: soundness of both modes
+
+`eSound`: the context proves its `∃p` interpolant.  `aSound`: the `∀p`
+interpolant, beside the context, proves the goal.  Mutual, by the same
+weighted recursion as `interp` itself.  This section: the support layer. -/
+
+/-! ## Small membership lemmas -/
+
+theorem subPark {X : Neg} {t d : List Neg} :
+    Sub (t ++ X :: d) (X :: (t ++ d)) := by
+  intro N h
+  simp only [List.mem_append, List.mem_cons] at h ⊢
+  rcases h with h | h | h
+  · exact .inr (.inl h)
+  · exact .inl h
+  · exact .inr (.inr h)
+
+theorem subParkInv {X : Neg} {t d : List Neg} :
+    Sub (X :: (t ++ d)) (t ++ X :: d) := by
+  intro N h
+  simp only [List.mem_append, List.mem_cons] at h ⊢
+  rcases h with h | h | h
+  · exact .inr (.inl h)
+  · exact .inl h
+  · exact .inr (.inr h)
+
+theorem splits_sub {Γ : List Neg} :
+    ∀ {X rest}, (X, rest) ∈ splits Γ → Sub rest Γ := by
+  induction Γ with
+  | nil => intro X rest h; simp [splits] at h
+  | cons Y Γ ih =>
+      intro X rest h
+      simp only [splits, List.mem_cons, List.mem_map] at h
+      rcases h with h | ⟨⟨Z, rest'⟩, hZ, hEq⟩
+      · cases h; exact Sub.grow Y
+      · cases hEq; exact Sub.cons Y (ih hZ)
+
+theorem findFire_atom {full : List Neg} :
+    ∀ {l : List (Neg × List Neg)} {a N rest},
+      findFire full l = some (a, N, rest) → atomMem a full = true := by
+  intro l
+  induction l with
+  | nil => intro a N rest h; simp [findFire] at h
+  | cons XR more ih =>
+      intro a N rest h
+      obtain ⟨X, R⟩ := XR
+      match X, h with
+      | .imp (.atom b) N', h => ?_
+      | .up P, h => exact ih h
+      | .imp .fls N', h => exact ih h
+      | .imp (.or Q₁ Q₂) N', h => exact ih h
+      | .imp (.down M) N', h => exact ih h
+      | .and M₁ M₂, h => exact ih h
+      simp only [findFire] at h
+      by_cases hM : atomMem b full
+      · simp [hM] at h; obtain ⟨rfl, _, _⟩ := h; exact hM
+      · simp [hM] at h; exact ih h
+
+/-! ## The residual simulator
+
+Uses of the residual `↓N′ ⊃ N` are manufactured from the Dyckhoff hypothesis
+`↓(Q′ ⊃ N′) ⊃ N` itself: a use supplies a stable proof of `↓N′`; routing it
+(`routeStab`) releases an inversion of `N′`, which — weakened under the
+inversion of `Q′` — rebuilds the stronger antecedent `↓(Q′ ⊃ N′)`, and the
+hypothesis fires.  This is the derivability of `(A⊃B)⊃C ⊢ B⊃C`, in focused
+form, with no cut. -/
+
+def resSim {Q' : Pos} {N' N : Neg} {Δ₀ : List Neg}
+    (hX : Neg.imp (.down (.imp Q' N')) N ∈ Δ₀) :
+    ∀ {Δ' : List Neg} {P : Pos}, Sub Δ₀ Δ' →
+      LFoc Δ' (.imp (.down N') N) P → Stab Δ' P
+  | _, _, hs, .impL s' lf'' =>
+      routeStab
+        (k := fun {Δ''} hs' r =>
+          .lfoc (hs' _ (hs _ hX))
+            (.impL
+              (.rfoc (.rel (.impR (invBranches Q' (fun c _ =>
+                (relOf r).wk (fun Z hZ => List.mem_append_right c hZ))))))
+              (lf''.wk hs')))
+        (Sub.refl _) s'
+
+/-! ## The attack handlers
+
+Each attack disjunct of a `∀p` interpolant, once produced by `nOrAllElim`,
+is consumed by one of these.  They take the interpolant premises as
+arguments, so they sit outside the mutual recursion. -/
+
+/-- Attack via `a ⊃ N ∈ Γ'`: the disjunct `↑a ∧ A″` supplies the atom (left
+component) and the continuation interpolant (right component). -/
+def atkQimp {a : String} {N A'' G : Neg} {rest Γ' : List Neg}
+    (hx : Neg.and (.up (.atom a)) A'' ∈ Γ')
+    (hX : Neg.imp (.atom a) N ∈ Γ')
+    (hrest : Sub rest Γ')
+    (DN : Inv (A'' :: N :: rest) [] G) : Inv Γ' [] G :=
+  -- strip A″ (project the right component), then N (fire the implication,
+  -- proving its atom from the left component)
+  simHyp
+    (fl := fun hs lf => .lfoc (hs _ hX)
+      (.impL (.lfoc (hs _ hx) (.and1 (.rel (idPos (.atom a) _)))) lf))
+    (Sub.refl Γ')
+    (simHyp
+      (fl := fun hs lf =>
+        .lfoc (hs _ (List.mem_cons_of_mem _ hx)) (.and2 lf))
+      (Sub.cons N hrest)
+      DN)
+
+end LJF
+
+namespace LJF
+
+/-- Attack via the Dyckhoff hypothesis: the disjunct `A₁ ∧ A₂` supplies the
+antecedent interpolant (left component) and the continuation interpolant
+(right component). -/
+def atkDyk {Q' : Pos} {N' N A₁ A₂ G : Neg} {rest Γ' : List Neg}
+    (hx : Neg.and A₁ A₂ ∈ Γ')
+    (hX : Neg.imp (.down (.imp Q' N')) N ∈ Γ')
+    (hrest : Sub rest Γ')
+    (D₁ : Inv (A₁ :: .imp (.down N') N :: rest) [] (.imp Q' N'))
+    (D₂ : Inv (A₂ :: N :: rest) [] G) : Inv Γ' [] G :=
+  -- the antecedent Q′ ⊃ N′, residual uses simulated from the hypothesis
+  let dM' : Inv Γ' [] (.imp Q' N') :=
+    simHyp (fl := resSim hX) (Sub.refl Γ')
+      (simHyp
+        (fl := fun hs lf =>
+          .lfoc (hs _ (List.mem_cons_of_mem _ hx)) (.and1 lf))
+        (Sub.cons _ hrest)
+        D₁)
+  -- main line: strip A₂ (right component), then N (fire the hypothesis)
+  simHyp
+    (fl := fun hs lf => .lfoc (hs _ hX)
+      (.impL (.rfoc (.rel (dM'.wk hs))) lf))
+    (Sub.refl Γ')
+    (simHyp
+      (fl := fun hs lf =>
+        .lfoc (hs _ (List.mem_cons_of_mem _ hx)) (.and2 lf))
+      (Sub.cons N hrest)
+      D₂)
+
+/-- Choice-free witness for membership in a mapped list: the witness is
+*found* by scanning, since `∃`-elimination cannot target `Type`. -/
+def memMapWitness {α β : Type} [DecidableEq β] (f : α → β) :
+    ∀ (l : List α) (y : β), y ∈ l.map f → {a : α // a ∈ l ∧ f a = y}
+  | a :: l, y, h =>
+      if e : f a = y then ⟨a, List.mem_cons_self .., e⟩
+      else
+        have h' : y ∈ l.map f := by
+          simp only [List.map_cons, List.mem_cons] at h
+          exact h.resolve_left (fun hy => e hy.symm)
+        let ⟨w, hw, he⟩ := memMapWitness f l y h'
+        ⟨w, List.mem_cons_of_mem _ hw, he⟩
+
+end LJF
