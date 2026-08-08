@@ -645,6 +645,14 @@ theorem dec_dyk2_g {done rest : List Neg} {Q' : Pos} {N' N : Neg} {g : Nat}
     2 * (3 ^ wNeg N + 0) + sum3 rest < 2 * 0 + sum3 done + g :=
   Nat.lt_of_lt_of_le (dec_dyk2 h) (by omega)
 
+theorem dec_ainv0 {Q : Pos} {b : List Neg} {N : Neg} {d : Nat}
+    (hb : b ∈ invertPos Q) :
+    2 * sum3 b + d + 0 < 2 * 0 + d + 3 ^ (wPos Q + wNeg N + 1) := by
+  have h1 := invertPos_le Q b hb
+  have := p3_2 (a := wPos Q) (c := wPos Q + wNeg N + 1)
+    (by have := wNeg_pos N; omega)
+  omega
+
 theorem dec_ainv {Q : Pos} {b : List Neg} {N : Neg} {d : Nat}
     (hb : b ∈ invertPos Q) :
     2 * sum3 b + d + 3 ^ wNeg N < 2 * 0 + d + 3 ^ (wPos Q + wNeg N + 1) := by
@@ -748,9 +756,16 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
       | some G =>
         match G with
         -- goal inversion  [2·sum3 b + 3^wN < 3^(wQ+wN+1)]
+        -- ∀p at an implication goal: each branch conjunct is GUARDED by the
+        -- branch's ∃p — without the guard, minimality fails (it would demand
+        -- E(Γ) ⊢ E(Γ+b), which is false); with it, soundness still closes
+        -- because eSound supplies the guard.  This is the clause the (ii)
+        -- induction forces.
         | .imp Q N =>
             nAndAll ((invertPos Q).attach.map
-              (fun ⟨b, hb⟩ => interp p b done (some N)))
+              (fun ⟨b, hb⟩ =>
+                .imp (.down (interp p b done none))
+                  (interp p b done (some N))))
         | .and M N =>
             nAnd (interp p [] done (some M)) (interp p [] done (some N))
         -- context attacks: ways the saturated context can advance any goal;
@@ -825,6 +840,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
       | exact dec_dyk2 (by assumption)
       | exact dec_dyk2_g (by assumption)
       | exact dec_ainv (by assumption)
+      | exact dec_ainv0 (by assumption)
 
 
 /-! ## `p`-freeness -/
@@ -950,12 +966,14 @@ theorem interp_pfree (p : String) :
                   exact ⟨ih2 rest Q' N' N hXr, ih1 rest Q' N' N hXr⟩
       | and _ _ => exact pfree_nTop
   | case16 =>
-      rename_i ih
+      rename_i ih2 ih1
       apply pfree_nAndAll
       intro x hx
       simp only [List.mem_map, List.mem_attach, true_and] at hx
       obtain ⟨⟨b, hb⟩, rfl⟩ := hx
-      exact ih b hb
+      first
+      | exact ⟨ih2 b hb, ih1 b hb⟩
+      | exact ⟨ih1 b hb, ih2 b hb⟩
   | case17 => exact ⟨by assumption, by assumption⟩
   | case18 => exact pfree_nTop
   | case19 =>
@@ -1784,6 +1802,7 @@ def eSound (p : String) : ∀ (todo done : List Neg),
       | exact dec_dyk2 (by assumption)
       | exact dec_dyk2_g (by assumption)
       | exact dec_ainv (by assumption)
+      | exact dec_ainv0 (by assumption)
       | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
@@ -1793,6 +1812,7 @@ def eSound (p : String) : ∀ (todo done : List Neg),
       | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_ainv0 (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
 
 def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
@@ -1958,12 +1978,19 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
             (fl := fun hs lf =>
               .lfoc (hs _ (List.mem_append_right _ (List.mem_cons_self ..)))
                 (lfocAndAll
-                  (List.mem_map_of_mem (List.mem_attach _ ⟨b, hb⟩)) lf))
-            (by
-              intro Z hZ
+                  (List.mem_map_of_mem (List.mem_attach _ ⟨b, hb⟩))
+                  (.impL
+                    (.rfoc (.rel ((eSound p b done).wk (fun Z hZ => hs _ (by
+                      rcases List.mem_append.mp hZ with hZ | hZ
+                      · exact List.mem_append_left _ hZ
+                      · exact List.mem_append_right _
+                          (List.mem_cons_of_mem _ hZ))))))
+                    lf)))
+            (fun Z hZ => by
               rcases List.mem_append.mp hZ with hZ | hZ
               · exact List.mem_append_left _ hZ
-              · exact List.mem_append_right _ (List.mem_cons_of_mem _ hZ))
+              · exact List.mem_append_right _ (List.mem_cons_of_mem _
+                  (List.mem_append_right _ hZ)))
             (aSound p b done N)
   | [], done, .and M N => by
       rw [interp]
@@ -2300,6 +2327,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       | exact dec_dyk2 (by assumption)
       | exact dec_dyk2_g (by assumption)
       | exact dec_ainv (by assumption)
+      | exact dec_ainv0 (by assumption)
       | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
@@ -2309,6 +2337,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_ainv0 (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
 
 end
