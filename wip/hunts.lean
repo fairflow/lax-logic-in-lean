@@ -1,7 +1,11 @@
 import LaxLogic.PLLUIChains
 import LaxLogic.PLLNoFall
+import LaxLogic.PLLCtxCompleteness
 import wip.gapWidth
 import wip.uiObstruct
+import wip.collapse
+import wip.rungbound
+import wip.wlanding
 
 /-!
 # The two hunts, instantiated: the chains are armed
@@ -144,6 +148,97 @@ theorem no_forallP_of_trap (φ : PLLFormula)
   no_greatest_antecedent VarFree chainF varFree_chainF
     (fun k => chain_step_strict k) φ habove htrap
 
+/-! ## Both hunts, as armed, are VACUOUS — neither witness can exist
+
+Before searching for a witness `φ`, check whether one COULD exist. It cannot,
+on either side, and the reason is a pair of "collapse" theorems the earlier
+campaign already proved for a different purpose (`wip/collapse.lean`,
+`wip/rungbound.lean`): a formula pulled all the way to the bottom of the gap
+chain collapses onto a single rung; a formula pulled all the way to the top of
+the `chainF` chain collapses onto an outright THEOREM. Both collapses hand
+back a trivial witness that breaks the trap condition immediately.
+
+## The `∃p` side: `post_interp_exists` already IS the refutation of the trap
+
+`collapse` (`hg : ∀k≥1, φ⊢gap k → ∃m, φ⊢rnSub m`) gives `post_interp_exists`:
+every gap-entailing `φ` has a CLOSED consequence `ψ` that ITSELF entails every
+gap. That `ψ` is exactly what breaks `htrap`: `htrap` would need
+`Gmeet n ⊢ ψ` for some `n`, but `ψ` entailing every gap means `ψ ⊢ Gmeet n`
+for ALL `n` (via `gmeet_of_hg`) — in particular `ψ ⊢ Gmeet (n+1)` — so
+`Gmeet n ⊢ ψ ⊢ Gmeet (n+1)` gives `Gmeet n ⊢ Gmeet (n+1)`, contradicting
+`Gmeet_strict`. So `htrap` can NEVER hold together with `hbelow`: the two
+premises of `no_existsP_of_trap` are jointly unsatisfiable. -/
+
+/-- `atomFree` (Bool) and `VarFree` (Prop) are the same notion; the bridge is
+a structural induction. -/
+theorem varFree_of_atomFree : ∀ (A : PLLFormula),
+    LaxInfinite.atomFree A = true → VarFree A
+  | .prop _, h => by simp [LaxInfinite.atomFree] at h
+  | .falsePLL, _ => trivial
+  | .and a b, h => by
+      simp only [LaxInfinite.atomFree, Bool.and_eq_true] at h
+      exact ⟨varFree_of_atomFree a h.1, varFree_of_atomFree b h.2⟩
+  | .or a b, h => by
+      simp only [LaxInfinite.atomFree, Bool.and_eq_true] at h
+      exact ⟨varFree_of_atomFree a h.1, varFree_of_atomFree b h.2⟩
+  | .ifThen a b, h => by
+      simp only [LaxInfinite.atomFree, Bool.and_eq_true] at h
+      exact ⟨varFree_of_atomFree a h.1, varFree_of_atomFree b h.2⟩
+  | .somehow a, h => varFree_of_atomFree a h
+
+/-- `hbelow`'s shape converts to `collapse`'s `hg` shape. -/
+theorem hbelow_to_hg {φ : PLLFormula} (hbelow : ∀ n, Deriv [φ] (Gmeet n)) :
+    ∀ k, 1 ≤ k → Deriv [φ] (gap k) := by
+  intro k hk
+  exact Deriv.cutHead (hbelow (k - 1))
+    ((show k - 1 + 1 = k from by omega) ▸ Gmeet_proj (k - 1) k hk (by omega))
+
+/-- **The `∃p` trap is UNSATISFIABLE.**  No `φ` can ever meet both premises
+of `no_existsP_of_trap` at once, so the hunt via `Gmeet` is closed — not by
+exhausting candidates, but by showing none can exist. This is the same fact
+the earlier campaign proved as `post_interp_schema_vacuous`
+(`wip/collapse.lean`), reached here as a direct corollary of
+`no_existsP_of_trap`'s own hypotheses. -/
+theorem existsP_trap_unsatisfiable :
+    ¬ ∃ φ : PLLFormula, (∀ n, Deriv [φ] (Gmeet n)) ∧
+        (∀ ψ, VarFree ψ → Deriv [φ] ψ → ∃ n, Deriv [Gmeet n] ψ) := by
+  rintro ⟨φ, hbelow, htrap⟩
+  have hg := hbelow_to_hg hbelow
+  obtain ⟨ψ, hψVF, hψgap, hψφ⟩ := post_interp_exists hg
+  obtain ⟨n, hn⟩ := htrap ψ (varFree_of_atomFree ψ hψVF) hψφ
+  exact Gmeet_strict n (Deriv.cutHead hn (gmeet_of_hg hψgap (n + 1)))
+
+/-! ## The `∀p` side: `c_chain_bound_is_theorem` is the mirror collapse
+
+`c_chain_bound_is_theorem` (`hc : ∀k, chainF k ⊢ φ → ⊢ φ`) says a formula
+entailed from EVERY level of the ascending chain is an outright theorem. Then
+`⊤` is a closed formula with `⊢ φ` (weakening the empty-context proof), so
+`htrap` would need `⊤ ⊢ chainF k` for some `k` — i.e. `chainF k` itself a
+theorem. It never is: `chain_step_strict k` already forbids it (a theorem
+weakens into `Deriv [chainF (k+1)] (chainF k)`, contradicting strictness
+directly). So `htrap` can never hold together with `habove` either. -/
+
+/-- No `chainF k` is a theorem — a one-line consequence of `chain_step_strict`
+via weakening, no new semantic content needed. -/
+theorem chainF_not_theorem (k : Nat) : ¬ Deriv [] (chainF k) := by
+  rintro ⟨d⟩
+  exact chain_step_strict k ⟨d.rename (fun _ h => by cases h)⟩
+
+/-- **The `∀p` trap is UNSATISFIABLE.**  No `φ` can ever meet both premises of
+`no_forallP_of_trap` at once, so the hunt via `chainF` is closed the same way —
+the mirror of `existsP_trap_unsatisfiable`, and the same fact the earlier
+campaign proved as `pre_interp_schema_vacuous` (`wip/rungbound.lean`). -/
+theorem forallP_trap_unsatisfiable :
+    ¬ ∃ φ : PLLFormula, (∀ k, Deriv [chainF k] φ) ∧
+        (∀ ψ, VarFree ψ → Deriv [ψ] φ → ∃ k, Deriv [ψ] (chainF k)) := by
+  rintro ⟨φ, habove, htrap⟩
+  have hthm : Deriv [] φ := c_chain_bound_is_theorem habove
+  obtain ⟨d⟩ := hthm
+  have hψφ : Deriv [truePLL] φ :=
+    ⟨d.rename (fun _ h => by cases h)⟩
+  obtain ⟨k, hk⟩ := htrap truePLL varFree_truePLL hψφ
+  exact chainF_not_theorem k (Deriv.cutHead ⟨PLLND.Ctx.truePLL_intro []⟩ hk)
+
 end Hunts
 end PLLND
 
@@ -160,3 +255,15 @@ end PLLND
 /-- info: 'PLLND.Hunts.no_forallP_of_trap' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms PLLND.Hunts.no_forallP_of_trap
+
+/-- info: 'PLLND.Hunts.existsP_trap_unsatisfiable' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.Hunts.existsP_trap_unsatisfiable
+
+/-- info: 'PLLND.Hunts.forallP_trap_unsatisfiable' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.Hunts.forallP_trap_unsatisfiable
+
+/-- info: 'PLLND.Hunts.chainF_not_theorem' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms PLLND.Hunts.chainF_not_theorem

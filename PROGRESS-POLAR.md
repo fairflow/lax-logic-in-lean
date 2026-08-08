@@ -213,3 +213,51 @@ New mechanised inputs both hunts needed:
 Each hunt is now exactly TWO obligations about a witness φ. Next: candidate
 witnesses. The trapping condition is the hard half in both; the natural first
 φ's are GZ-style limit formulas over the respective chains.
+
+## §7. BOTH HUNTS ARE VACUOUS — no witness can exist, either side (2026-08-08 night)
+
+Instruction was: start the ∃p hunt. The first step of a refutation hunt is to
+check a witness COULD exist. It cannot — on either side — and the reason was
+already in the repository, proved by the shelved campaign for a different
+purpose. Two new theorems in `wip/hunts.lean` make it explicit:
+
+    existsP_trap_unsatisfiable : ¬ ∃ φ, (∀n, φ ⊢ Gmeet n)
+                                        ∧ (closed consequences trapped)
+    forallP_trap_unsatisfiable : ¬ ∃ φ, (∀k, chainF k ⊢ φ)
+                                        ∧ (closed antecedents trapped)
+
+**∃p side.** `collapse` (wip/collapse.lean) — every gap-entailing φ entails
+some rung — yields `post_interp_exists`: every such φ has a CLOSED consequence
+ψ which itself entails every gap. That ψ breaks the trap immediately: the trap
+demands `Gmeet n ⊢ ψ` for some n, while ψ ⊢ Gmeet(n+1) always, giving
+`Gmeet n ⊢ Gmeet (n+1)` against `Gmeet_strict`.
+
+**∀p side, the mirror.** `c_chain_bound_is_theorem` (wip/rungbound.lean) — a
+formula entailed by every chainF k is an outright THEOREM. Then ⊤ is a closed
+antecedent, and the trap would demand `⊤ ⊢ chainF k`, i.e. chainF k a theorem;
+`chainF_not_theorem` (new, one line from chain_step_strict) forbids it.
+
+**What this means, precisely.** These do NOT refute uniform interpolation, and
+do not prove it. They kill the two chains as REFUTATION INSTRUMENTS: the
+mechanised ascending and descending chains of RN(◯,{}) cannot be the shape of
+a counterexample, because anything sitting at their limit collapses onto a
+closed formula (a rung, or ⊤) which is then trapped by construction. The
+chain criteria of `PLLUIChains.lean` remain correct and generic — they simply
+have no instance here.
+
+**Duplication check, honestly.** `existsP_trap_unsatisfiable` is the same fact
+as `post_interp_schema_vacuous` and `forallP_trap_unsatisfiable` the same as
+`pre_interp_schema_vacuous`, both already in the repo. What is new is only the
+routing: they are now stated as unsatisfiability of the CANDIDATE-METHOD trap
+hypotheses, which is what connects them to `PLLCandLeast.LC`. Had I searched
+the repo before arming the hunts, §6 would have been written differently — the
+memory rule "search before treating a finding as new" applies to my own
+instruments, not just to results.
+
+**Where this leaves the programme.** The negative prong is closed for these
+chains; a counterexample would need a genuinely different escaping family, and
+the two collapse theorems constrain what that could look like (its limit must
+avoid collapsing onto a closed formula — which is exactly what both collapse
+theorems say cannot happen for gap-entailing or chain-entailed formulas). So
+the weight shifts to the POSITIVE prong: the phase recursion over PLLFocused,
+verified against LC by initiality. That is the next build.
