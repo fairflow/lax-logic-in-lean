@@ -105,3 +105,4 @@ import LaxLogic.PLLCandidate
 import LaxLogic.PLLCandOr
 import LaxLogic.PLLUIChains
 import LaxLogic.PLLCandLeast
+import LaxLogic.IPCFocused

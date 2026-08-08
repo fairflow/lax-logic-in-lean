@@ -261,3 +261,54 @@ avoid collapsing onto a closed formula — which is exactly what both collapse
 theorems say cannot happen for gap-entailing or chain-entailed formulas). So
 the weight shifts to the POSITIVE prong: the phase recursion over PLLFocused,
 verified against LC by initiality. That is the next build.
+
+## §8. The IPC control experiment — and the gap it found (2026-08-08 night)
+
+Matthew's test: build the polarised/focused apparatus with the lax rules
+omitted, same names throughout, and see whether the proposed UI proof runs.
+
+`LaxLogic/IPCFocused.lean`, namespace `IPC`, sorry-free, on the root.
+Calculus named **`LJF`** (Liang–Miller); the PLL version is **`LJF◯`** = LJF +
+`◯` + the second judgment. Differences are exactly: no `circ`, no `JD` flag,
+no `circR`/`circL`, and `impR`/`andR` unrestricted.
+
+**PROVED outright** — `∃p` side, all four left-inversion clauses, each named
+for its rule as in `Cand`: `cl_fls`, `cl_downL`, `cl_atomL`, `cl_orL` (the join
+clause, four lines, exactly as `cθ_orL` was in PLL). Plus soundness of all four
+judgments, and `exInterp_of_stable` assembling the whole inversion phase as a
+terminating recursion on `sizeΩ`.
+
+**THE GAP THE EXPERIMENT FOUND.** `StableInterp` was stated as a leaf of the
+recursion. It is not. At a stable sequent the only way to use `Q ⊃ N ∈ Γ` is
+`LFoc.impL`, whose first premise is `Stab Γ Q` — a GOAL-directed subproblem
+(Dyckhoff's case). So computing the p-free content of an ANTECEDENT needs the
+p-free content of a GOAL:
+
+    ∃p and ∀p are MUTUALLY RECURSIVE, and the structure as built was incomplete.
+
+This was invisible while only inversion clauses were in view — every one of
+them goes through with `ExInterp` alone — and would have been carried into the
+PLL development unnoticed. That is precisely what the control was for, and it
+is the first time this campaign's structure has been caught being wrong rather
+than merely incomplete.
+
+**The missing half added**: `AllInterp` (∀p at a goal), with
+`allInterp_pfree` (axiom-free) and `allInterp_and` (`[propext]` only) proved.
+
+**Where the difficulty localises, sharply**: the IMPLICATION clause of ∀p. The
+obvious candidate `(∃p Q) ⊃ (∀p N)` is sound but NOT minimal — from p-free ψ
+with ψ ⊢ Q ⊃ N one cannot recover Q from ∃p Q, which is weaker. Repairing that
+IS Dyckhoff's weight argument, i.e. the whole of Pitts. Left as the explicit
+hypothesis `ImpInterp`.
+
+**No back door.** I was about to discharge `StableInterp` by lifting `existsP`
+out of `wip/final.lean` (whose IPC crown is genuinely sorry-free). Matthew
+stopped it, correctly: that would supply the formula from Pitts' recursion
+rather than from these clauses, making the machinery decorative. The
+construction here emerges from the proof — `ExInterp`/`AllInterp` are Σ-types
+whose `fml` field the clauses build.
+
+**Consequence for PLL**: `circL` is the only stable-phase rule IPC lacks. So
+the entire difference between the two logics, for UI purposes, is one rule of
+one phase — sitting on top of a core difficulty (the ∀p implication clause)
+that both logics share and neither has here.
