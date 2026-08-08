@@ -495,6 +495,14 @@ def nAndAll : List Neg → Neg := fun l => l.foldr nAnd nTop
 /-- Disjunction of a list, unit `⊥`. -/
 def nOrAll : List Neg → Neg := fun l => l.foldr nOr nBot
 
+/-- `p`-guard: the unit `C` when the atom is `p`, else `D`.  A named helper
+so the aggregate match-arms stay opaque applications, which keeps the
+functional-induction cases clean. -/
+def pGuard (p a : String) (C D : Neg) : Neg := if a = p then C else D
+
+/-- The head disjunct of an atomic goal: nothing if the atom is `p`. -/
+def atomHead (p q : String) : List Neg := if q = p then [] else [.up (.atom q)]
+
 /-- Is the atom `a` a hypothesis (as `↑a`)? -/
 def atomMem (a : String) (Γ : List Neg) : Bool :=
   Γ.any (fun | .up (.atom b) => a == b | _ => false)
@@ -680,18 +688,16 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
   | .up (.atom a) :: todo, done, g =>
       interp p todo (.up (.atom a) :: done) g
   -- absurd hypothesis: `∨` over no branches is `⊥`, `∧` over none is `⊤`
-  | .up .fls :: todo, done, g =>
-      match g with
-      | none   => nBot
-      | some _ => nTop
+  | .up .fls :: _, _, none => nBot
+  | .up .fls :: _, _, some _ => nTop
   -- context split: `∨` of branch results in `∃p` mode, `∧` in `∀p` mode
   -- [sum3 b < 3^(w P∨Q), both branches]
-  | .up (.or P Q) :: todo, done, g =>
-      let branches := (invertPos (.or P Q)).attach.map
-        (fun ⟨b, hb⟩ => interp p (b ++ todo) done g)
-      match g with
-      | none   => nOrAll branches
-      | some _ => nAndAll branches
+  | .up (.or P Q) :: todo, done, none =>
+      nOrAll ((invertPos (.or P Q)).attach.map
+        (fun ⟨b, hb⟩ => interp p (b ++ todo) done none))
+  | .up (.or P Q) :: todo, done, some G =>
+      nAndAll ((invertPos (.or P Q)).attach.map
+        (fun ⟨b, hb⟩ => interp p (b ++ todo) done (some G)))
   -- a shifted negative moves into the context  [w M < w ↑↓M = w M + 1]
   | .up (.down M) :: todo, done, g =>
       interp p (M :: todo) done g
@@ -729,11 +735,10 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
           nAndAll ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
             match X with
             -- a surviving atom is its own p-free content
-            | .up (.atom a) => if a == p then nTop else .up (.atom a)
+            | .up (.atom a) => pGuard p a nTop (.up (.atom a))
             -- `a ⊃ N`, atom absent: guard the recursion by the atom
             | .imp (.atom a) N =>
-                if a == p then nTop
-                else .imp (.atom a) (interp p [N] rest none)
+                pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
             -- the Dyckhoff implication: what it yields, guarded by what
             -- the goal interpolant of its antecedent demands
             | .imp (.down (.imp Q' N')) N =>
@@ -751,28 +756,53 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               (fun ⟨b, hb⟩ => interp p b done (some N)))
         | .and M N =>
             nAnd (interp p [] done (some M)) (interp p [] done (some N))
-        | .up P =>
-          -- context attacks: ways the saturated context can advance any goal
-          let attacks := (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-            match X with
-            | .imp (.atom a) N =>
-                if a == p then nBot
-                else nAnd (.up (.atom a)) (interp p [N] rest (some (.up P)))
-            | .imp (.down (.imp Q' N')) N =>
-                nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                     (interp p [N] rest (some (.up P)))
-            | _ => nBot)
-          match P with
-          -- an atomic goal already available needs nothing
-          | .atom q =>
-              if atomMem q done then nTop
-              else nOrAll ((if q == p then [] else [Neg.up (.atom q)]) ++ attacks)
-          | .fls => nOrAll attacks
-          | .or P₁ P₂ =>
-              nOrAll ([interp p [] done (some (.up P₁)),
-                       interp p [] done (some (.up P₂))] ++ attacks)
-          | .down M =>
-              nOrAll ([interp p [] done (some M)] ++ attacks)
+        -- context attacks: ways the saturated context can advance any goal;
+        -- inlined per goal shape so each aggregate case is self-contained
+        | .up (.atom q) =>
+            if atomMem q done then nTop
+            else nOrAll (atomHead p q ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X with
+              | .imp (.atom a) N =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up (Pos.atom q)))))
+              | .imp (.down (.imp Q' N')) N =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.up (Pos.atom q))))
+              | _ => nBot))
+        | .up .fls =>
+            nOrAll ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X with
+              | .imp (.atom a) N =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up Pos.fls))))
+              | .imp (.down (.imp Q' N')) N =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.up Pos.fls)))
+              | _ => nBot))
+        | .up (.or P₁ P₂) =>
+            nOrAll ([interp p [] done (some (.up P₁)),
+                     interp p [] done (some (.up P₂))] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X with
+              | .imp (.atom a) N =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up (Pos.or P₁ P₂)))))
+              | .imp (.down (.imp Q' N')) N =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.up (Pos.or P₁ P₂))))
+              | _ => nBot))
+        | .up (.down M) =>
+            nOrAll ([interp p [] done (some M)] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X with
+              | .imp (.atom a) N =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up (Pos.down M)))))
+              | .imp (.down (.imp Q' N')) N =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.up (Pos.down M))))
+              | _ => nBot))
   termination_by todo done goal => 2 * sum3 todo + sum3 done + goalW goal
   decreasing_by
     all_goals simp_wf
@@ -798,3 +828,263 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
       | exact dec_dyk2 (by assumption)
       | exact dec_dyk2_g (by assumption)
       | exact dec_ainv (by assumption)
+
+namespace LJF
+
+/-! ## `p`-freeness -/
+
+mutual
+/-- The atom `p` does not occur (positives). -/
+def PFreeP (p : String) : Pos → Prop
+  | .atom a  => a ≠ p
+  | .fls     => True
+  | .or P Q  => PFreeP p P ∧ PFreeP p Q
+  | .down M  => PFreeN p M
+/-- The atom `p` does not occur (negatives). -/
+def PFreeN (p : String) : Neg → Prop
+  | .up P    => PFreeP p P
+  | .imp Q N => PFreeP p Q ∧ PFreeN p N
+  | .and M N => PFreeN p M ∧ PFreeN p N
+end
+
+theorem pfree_nTop {p : String} : PFreeN p nTop := by
+  simp [nTop, PFreeN, PFreeP]
+
+theorem pfree_nBot {p : String} : PFreeN p nBot := by
+  simp [nBot, PFreeN, PFreeP]
+
+theorem pfree_nAnd {p : String} {M N : Neg}
+    (hM : PFreeN p M) (hN : PFreeN p N) : PFreeN p (nAnd M N) :=
+  ⟨hM, hN⟩
+
+theorem pfree_nOr {p : String} {M N : Neg}
+    (hM : PFreeN p M) (hN : PFreeN p N) : PFreeN p (nOr M N) :=
+  ⟨hM, hN⟩
+
+theorem pfree_nAndAll {p : String} {l : List Neg}
+    (h : ∀ x ∈ l, PFreeN p x) : PFreeN p (nAndAll l) := by
+  induction l with
+  | nil => exact pfree_nTop
+  | cons x l ih =>
+      exact pfree_nAnd (h x (List.mem_cons_self ..))
+        (ih (fun y hy => h y (List.mem_cons_of_mem _ hy)))
+
+theorem pfree_nOrAll {p : String} {l : List Neg}
+    (h : ∀ x ∈ l, PFreeN p x) : PFreeN p (nOrAll l) := by
+  induction l with
+  | nil => exact pfree_nBot
+  | cons x l ih =>
+      exact pfree_nOr (h x (List.mem_cons_self ..))
+        (ih (fun y hy => h y (List.mem_cons_of_mem _ hy)))
+
+theorem pfree_pGuard {p a : String} {C D : Neg}
+    (hC : PFreeN p C) (hD : a ≠ p → PFreeN p D) : PFreeN p (pGuard p a C D) := by
+  unfold pGuard; split
+  · exact hC
+  · exact hD (by assumption)
+
+theorem pfree_atomHead {p q : String} : ∀ x ∈ atomHead p q, PFreeN p x := by
+  unfold atomHead; split
+  · intro x hx; exact absurd hx (List.not_mem_nil)
+  · intro x hx
+    rcases List.mem_singleton.mp hx with rfl
+    rename_i h
+    simpa only [PFreeN, PFreeP] using h
+
+/-- **The interpolant never mentions `p`.**  Every clause either keeps `p` out
+by construction, or is guarded by the `a == p` test that replaces the would-be
+conjunct or disjunct by its unit. -/
+theorem interp_pfree (p : String) :
+    ∀ (todo done : List Neg) (g : Option Neg), PFreeN p (interp p todo done g) := by
+  intro todo done g
+  fun_induction interp p todo done g with
+  | case1 => assumption
+  | case2 => exact pfree_nBot
+  | case3 => exact pfree_nTop
+  | case4 =>
+      rename_i ih
+      apply pfree_nOrAll
+      intro x hx
+      simp only [List.mem_map, List.mem_attach, true_and] at hx
+      obtain ⟨⟨b, hb⟩, rfl⟩ := hx
+      exact ih b hb
+  | case5 =>
+      rename_i ih
+      apply pfree_nAndAll
+      intro x hx
+      simp only [List.mem_map, List.mem_attach, true_and] at hx
+      obtain ⟨⟨b, hb⟩, rfl⟩ := hx
+      exact ih b hb
+  | case6 => assumption
+  | case7 => assumption
+  | case8 => assumption
+  | case9 => assumption
+  | case10 => assumption
+  | case11 => assumption
+  | case12 => assumption
+  | case13 => assumption
+  | case14 => assumption
+  | case15 =>
+      rename_i ih3 ih2 ih1
+      apply pfree_nAndAll
+      intro x hx
+      simp only [List.mem_map, List.mem_attach, true_and] at hx
+      obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+      cases X with
+      | up P =>
+          cases P with
+          | atom a =>
+              exact pfree_pGuard pfree_nTop
+                (fun h => by simpa only [PFreeN, PFreeP] using h)
+          | fls => exact pfree_nTop
+          | or _ _ => exact pfree_nTop
+          | down _ => exact pfree_nTop
+      | imp Q N =>
+          cases Q with
+          | atom a =>
+              exact pfree_pGuard pfree_nTop
+                (fun h => ⟨h, ih3 rest a N hXr⟩)
+          | fls => exact pfree_nTop
+          | or _ _ => exact pfree_nTop
+          | down M =>
+              cases M with
+              | up _ => exact pfree_nTop
+              | and _ _ => exact pfree_nTop
+              | imp Q' N' =>
+                  exact ⟨ih2 rest Q' N' N hXr, ih1 rest Q' N' N hXr⟩
+      | and _ _ => exact pfree_nTop
+  | case16 =>
+      rename_i ih
+      apply pfree_nAndAll
+      intro x hx
+      simp only [List.mem_map, List.mem_attach, true_and] at hx
+      obtain ⟨⟨b, hb⟩, rfl⟩ := hx
+      exact ih b hb
+  | case17 => exact ⟨by assumption, by assumption⟩
+  | case18 => exact pfree_nTop
+  | case19 =>
+      rename_i q hq ih3 ih2 ih1
+      apply pfree_nOrAll
+      intro x hx
+      rcases List.mem_append.mp hx with hx | hx
+      · exact pfree_atomHead x hx
+      · simp only [List.mem_map, List.mem_attach, true_and] at hx
+        obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+        cases X with
+        | up P => cases P <;> exact pfree_nBot
+        | imp Q N =>
+            cases Q with
+            | atom a =>
+                exact pfree_pGuard pfree_nBot
+                  (fun h => pfree_nAnd h (ih3 rest a N hXr))
+            | fls => exact pfree_nBot
+            | or _ _ => exact pfree_nBot
+            | down M =>
+                cases M with
+                | up _ => exact pfree_nBot
+                | and _ _ => exact pfree_nBot
+                | imp Q' N' =>
+                    exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
+        | and _ _ => exact pfree_nBot
+  | case20 =>
+      rename_i ih3 ih2 ih1
+      apply pfree_nOrAll
+      intro x hx
+      simp only [List.mem_map, List.mem_attach, true_and] at hx
+      obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+      cases X with
+      | up P => cases P <;> exact pfree_nBot
+      | imp Q N =>
+          cases Q with
+          | atom a =>
+              exact pfree_pGuard pfree_nBot
+                (fun h => pfree_nAnd h (ih3 rest a N hXr))
+          | fls => exact pfree_nBot
+          | or _ _ => exact pfree_nBot
+          | down M =>
+              cases M with
+              | up _ => exact pfree_nBot
+              | and _ _ => exact pfree_nBot
+              | imp Q' N' =>
+                  exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
+      | and _ _ => exact pfree_nBot
+  | case21 =>
+      rename_i ihP ihQ ih3 ih2 ih1
+      apply pfree_nOrAll
+      intro x hx
+      rcases List.mem_append.mp hx with hx | hx
+      · rcases List.mem_cons.mp hx with rfl | hx
+        · exact ihP
+        · rcases List.mem_singleton.mp hx with rfl
+          exact ihQ
+      · simp only [List.mem_map, List.mem_attach, true_and] at hx
+        obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+        cases X with
+        | up P => cases P <;> exact pfree_nBot
+        | imp Q N =>
+            cases Q with
+            | atom a =>
+                exact pfree_pGuard pfree_nBot
+                  (fun h => pfree_nAnd h (ih3 rest a N hXr))
+            | fls => exact pfree_nBot
+            | or _ _ => exact pfree_nBot
+            | down M =>
+                cases M with
+                | up _ => exact pfree_nBot
+                | and _ _ => exact pfree_nBot
+                | imp Q' N' =>
+                    exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
+        | and _ _ => exact pfree_nBot
+  | case22 =>
+      rename_i ihM ih3 ih2 ih1
+      apply pfree_nOrAll
+      intro x hx
+      rcases List.mem_append.mp hx with hx | hx
+      · rcases List.mem_singleton.mp hx with rfl
+        exact ihM
+      · simp only [List.mem_map, List.mem_attach, true_and] at hx
+        obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+        cases X with
+        | up P => cases P <;> exact pfree_nBot
+        | imp Q N =>
+            cases Q with
+            | atom a =>
+                exact pfree_pGuard pfree_nBot
+                  (fun h => pfree_nAnd h (ih3 rest a N hXr))
+            | fls => exact pfree_nBot
+            | or _ _ => exact pfree_nBot
+            | down M =>
+                cases M with
+                | up _ => exact pfree_nBot
+                | and _ _ => exact pfree_nBot
+                | imp Q' N' =>
+                    exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
+        | and _ _ => exact pfree_nBot
+end LJF
+
+/-! ## The contract that remains
+
+With `interp` total and `interp_pfree` proved, the components of the Σ-type
+are in place: the formula, built by the clauses, and its `p`-freeness.  The
+characteristic properties are the remaining obligations, stated as the
+contract for the next stretch — all four internal to `LJF`, none touching
+another calculus:
+
+* **(E1) soundness of `∃p`**:
+  `Inv (todo ++ done) [] (interp p todo done none)`
+* **(A1) soundness of `∀p`**:
+  `Inv (interp p todo done (some G) :: todo ++ done) [] G`
+* **(E2) minimality of `∃p`**: for `p`-free `Δ` and `ψ`,
+  `Inv (todo ++ done ++ Δ) [] ψ  →  Inv (interp p todo done none :: Δ) [] ψ`
+* **(A2) minimality of `∀p`**: for `p`-free `Δ`,
+  `Inv (todo ++ done ++ Δ) [] G  →
+     Inv (interp p todo done none :: Δ) [] (interp p todo done (some G))`
+
+The toolkit they need, also internal: a hypothesis-simulation traversal
+(replace uses of one hypothesis by a derived simulator — powers E1/A1 and the
+easy inversion directions of E2/A2), and branch extraction
+(`Inv Δ (P :: Ω) C → ∀ b ∈ invertPos P, Inv (b ++ Δ) Ω C`, from the
+determinism of the inversion phase).  The one expected mountain is the
+`E2`/`A2` case for the Dyckhoff implication — the focused form of the
+`(A⊃B)⊃C` argument; if it resists, it is to be carried as an explicit
+hypothesis, never a `sorry`. -/
