@@ -48,11 +48,13 @@ inductive Pos where
   | fls  : Pos
   | or   : Pos → Pos → Pos
   | down : Neg → Pos
+  deriving DecidableEq
 /-- Negative (asynchronous) propositions. -/
 inductive Neg where
   | up   : Pos → Neg
   | imp  : Pos → Neg → Neg
   | and  : Neg → Neg → Neg
+  deriving DecidableEq
 end
 
 /-! ## The calculus -/
@@ -1088,3 +1090,334 @@ determinism of the inversion phase).  The one expected mountain is the
 `E2`/`A2` case for the Dyckhoff implication — the focused form of the
 `(A⊃B)⊃C` argument; if it resists, it is to be carried as an explicit
 hypothesis, never a `sorry`. -/
+
+namespace LJF
+
+/-! # Part 3: the toolkit for the characteristic properties
+
+Six tools, each internal to `LJF`, each structural, none using cut:
+
+* `routeStab` — CPS re-targeting of a stable proof of a positive `P`: every
+  right focus on `P` is handed to a continuation, every left-focus chain and
+  goal-side inversion is rebuilt with the new target.  Its instances do the
+  work classically assigned to cut: shift release, disjunction routing,
+  ex falso from a provable `⊥`.
+* `invBranches` — realise `invertPos` on the left: branch derivations
+  assemble into the inversion of the positive.
+* `extract` — the converse, at any position of `Ω`: the inversion phase is
+  deterministic, so a pending positive can be replayed along any one branch.
+* `stableFire` — fire a shifted hypothesis `↑R` at a stable sequent, given
+  stable continuations for every branch of `R`.
+* `upMerge` — eliminate a shifted hypothesis into a negative goal, by
+  recursion on the goal; the leaf case is `stableFire`.
+* `simStab` — hypothesis simulation: replace every use of one hypothesis
+  `H` by derivations manufactured on the other side.  The `init` uses of an
+  atomic `H` reduce to left-focus uses via `idPos`, so one handler covers
+  everything.
+-/
+
+/-! ## Routing a positive conclusion -/
+
+mutual
+
+/-- Re-target a stable proof: any right focus on `P` is passed to `k`. -/
+def routeStab {Δ₀ : List Neg} {P P₀ : Pos}
+    (k : ∀ {Δ' : List Neg}, Sub Δ₀ Δ' → RFocus Δ' P → Stab Δ' P₀) :
+    ∀ {Δ : List Neg}, Sub Δ₀ Δ → Stab Δ P → Stab Δ P₀
+  | _, hs, .rfoc r => k hs r
+  | _, hs, .lfoc h lf => .lfoc h (routeLFoc k hs lf)
+
+/-- Re-target below a left focus. -/
+def routeLFoc {Δ₀ : List Neg} {P P₀ : Pos}
+    (k : ∀ {Δ' : List Neg}, Sub Δ₀ Δ' → RFocus Δ' P → Stab Δ' P₀) :
+    ∀ {Δ : List Neg} {H : Neg}, Sub Δ₀ Δ → LFoc Δ H P → LFoc Δ H P₀
+  | _, _, hs, .rel d => .rel (routeInv k hs d)
+  | _, _, hs, .impL s lf => .impL s (routeLFoc k hs lf)
+  | _, _, hs, .and1 lf => .and1 (routeLFoc k hs lf)
+  | _, _, hs, .and2 lf => .and2 (routeLFoc k hs lf)
+
+/-- Re-target through the inversion of a released antecedent.  The goal is a
+shift, so `impR`/`andR` cannot occur and the traversal is total. -/
+def routeInv {Δ₀ : List Neg} {P P₀ : Pos}
+    (k : ∀ {Δ' : List Neg}, Sub Δ₀ Δ' → RFocus Δ' P → Stab Δ' P₀) :
+    ∀ {Δ : List Neg} {Ω : List Pos}, Sub Δ₀ Δ →
+      Inv Δ Ω (.up P) → Inv Δ Ω (.up P₀)
+  | _, _, hs, .stable s => .stable (routeStab k hs s)
+  | _, _, hs, .orL d₁ d₂ => .orL (routeInv k hs d₁) (routeInv k hs d₂)
+  | _, _, _, .flsL => .flsL
+  | _, _, hs, .downL d => .downL (routeInv k (hs.trans (Sub.grow _)) d)
+  | _, _, hs, .atomL d => .atomL (routeInv k (hs.trans (Sub.grow _)) d)
+
+end
+
+/-- Disjunction introduction at the stable level, left side. -/
+def stabOr1 {Δ : List Neg} {A B : Pos} (s : Stab Δ A) : Stab Δ (.or A B) :=
+  routeStab (Δ₀ := Δ) (fun _ r => .rfoc (.or1 r)) (Sub.refl Δ) s
+
+/-- Disjunction introduction at the stable level, right side. -/
+def stabOr2 {Δ : List Neg} {A B : Pos} (s : Stab Δ B) : Stab Δ (.or A B) :=
+  routeStab (Δ₀ := Δ) (fun _ r => .rfoc (.or2 r)) (Sub.refl Δ) s
+
+/-! ## Forced-shape extractors -/
+
+/-- An inversion with empty `Ω` and shifted goal must be `stable`. -/
+def unStable {Δ : List Neg} {P : Pos} : Inv Δ [] (.up P) → Stab Δ P
+  | .stable s => s
+
+/-- A right focus on a shift must be `rel`. -/
+def relOf {Δ : List Neg} {M : Neg} : RFocus Δ (.down M) → Inv Δ [] M
+  | .rel d => d
+
+/-- An inversion with empty `Ω` and implication goal must be `impR`. -/
+def impROf {Δ : List Neg} {Q : Pos} {N : Neg} :
+    Inv Δ [] (.imp Q N) → Inv Δ [Q] N
+  | .impR d => d
+
+/-- An inversion with empty `Ω` and conjunction goal must be `andR`: left. -/
+def andROf1 {Δ : List Neg} {M N : Neg} : Inv Δ [] (.and M N) → Inv Δ [] M
+  | .andR d _ => d
+
+/-- Right. -/
+def andROf2 {Δ : List Neg} {M N : Neg} : Inv Δ [] (.and M N) → Inv Δ [] N
+  | .andR _ e => e
+
+/-! ## Realising and replaying the inversion of a positive -/
+
+/-- Branch derivations assemble into the inversion of the positive. -/
+def invBranches : ∀ (R : Pos) {Γ : List Neg} {Ω : List Pos} {N : Neg},
+    (∀ b ∈ invertPos R, Inv (b ++ Γ) Ω N) → Inv Γ (R :: Ω) N
+  | .atom a, _, _, _, h =>
+      .atomL (h [.up (.atom a)] (by simp [invertPos]))
+  | .fls, _, _, _, _ => .flsL
+  | .or P Q, _, _, _, h =>
+      .orL (invBranches P (fun b hb =>
+              h b (by simp only [invertPos, List.mem_append]; exact .inl hb)))
+           (invBranches Q (fun b hb =>
+              h b (by simp only [invertPos, List.mem_append]; exact .inr hb)))
+  | .down M, _, _, _, h => .downL (h [M] (by simp [invertPos]))
+termination_by R => sizePos R
+decreasing_by all_goals (simp_wf; simp only [sizePos]; omega)
+
+/-- **Replay along a branch.**  A pending positive anywhere in `Ω` can be
+extracted along any one branch of its inversion — the inversion phase is
+deterministic, so the derivation already contains that branch. -/
+def extract : ∀ {Γ : List Neg} (Ω₁ : List Pos) {R : Pos} {Ω₂ : List Pos}
+    {C : Neg}, Inv Γ (Ω₁ ++ R :: Ω₂) C →
+    ∀ b ∈ invertPos R, Inv (b ++ Γ) (Ω₁ ++ Ω₂) C
+  -- extraction point at the head
+  | _, [], .atom a, _, _, .atomL d, b, hb => by
+      simp only [invertPos, List.mem_singleton] at hb; subst hb; exact d
+  | _, [], .fls, _, _, .flsL, b, hb => by simp [invertPos] at hb
+  | _, [], .or P Q, _, _, .orL d₁ d₂, b, hb =>
+      if hP : b ∈ invertPos P then extract [] d₁ b hP
+      else extract [] d₂ b (by
+        simp only [invertPos, List.mem_append] at hb
+        exact hb.resolve_left hP)
+  | _, [], .down M, _, _, .downL d, b, hb => by
+      simp only [invertPos, List.mem_singleton] at hb; subst hb; exact d
+  -- goal rules commute past the extraction point
+  | _, [], _, _, _, .impR d, b, hb => .impR (extract [_] d b hb)
+  | _, [], _, _, _, .andR d e, b, hb => .andR (extract [] d b hb) (extract [] e b hb)
+  | _, S :: Ω₁, _, _, _, .impR d, b, hb => .impR (extract (_ :: S :: Ω₁) d b hb)
+  | _, S :: Ω₁, _, _, _, .andR d e, b, hb =>
+      .andR (extract (S :: Ω₁) d b hb) (extract (S :: Ω₁) e b hb)
+  -- left rules on the head of `Ω₁` are rebuilt
+  | _, .or _ _ :: Ω₁, _, _, _, .orL d₁ d₂, b, hb =>
+      .orL (extract (_ :: Ω₁) d₁ b hb) (extract (_ :: Ω₁) d₂ b hb)
+  | _, .fls :: _, _, _, _, .flsL, _, _ => .flsL
+  | _, .down M :: Ω₁, _, _, _, .downL d, b, hb =>
+      (extract Ω₁ d b hb).wk (fun X hX => by
+        rcases List.mem_append.mp hX with hX | hX
+        · exact List.mem_cons_of_mem _ (List.mem_append_left _ hX)
+        · rcases List.mem_cons.mp hX with rfl | hX
+          · exact List.mem_cons_self ..
+          · exact List.mem_cons_of_mem _ (List.mem_append_right _ hX))
+      |> Inv.downL
+  | _, .atom a :: Ω₁, _, _, _, .atomL d, b, hb =>
+      (extract Ω₁ d b hb).wk (fun X hX => by
+        rcases List.mem_append.mp hX with hX | hX
+        · exact List.mem_cons_of_mem _ (List.mem_append_left _ hX)
+        · rcases List.mem_cons.mp hX with rfl | hX
+          · exact List.mem_cons_self ..
+          · exact List.mem_cons_of_mem _ (List.mem_append_right _ hX))
+      |> Inv.atomL
+
+end LJF
+
+namespace LJF
+
+/-! ## Firing a shifted hypothesis, and merging its branches -/
+
+/-- Fire `↑R ∈ Δ` at a stable sequent: stable continuations for every branch
+of `R` assemble into one stable proof. -/
+def stableFire {Δ : List Neg} {R : Pos} {P₀ : Pos} (h : Neg.up R ∈ Δ)
+    (s : ∀ b ∈ invertPos R, Stab (b ++ Δ) P₀) : Stab Δ P₀ :=
+  .lfoc h (.rel (invBranches R (fun b hb => .stable (s b hb))))
+
+/-- **Eliminate a shifted hypothesis into a negative goal.**  By recursion on
+the goal: implications invert their antecedent (`invBranches`) and push the
+branch family through (`extract` + reordering), conjunctions project, and at
+a shifted goal the hypothesis fires (`stableFire`).  This subsumes ex falso
+(`R = ⊥`: the branch family is vacuous), disjunction elimination, and the
+inversion of a shifted hypothesis. -/
+def upMerge : ∀ (G : Neg) {Γ : List Neg} {R : Pos}, Neg.up R ∈ Γ →
+    (∀ b ∈ invertPos R, Inv (b ++ Γ) [] G) → Inv Γ [] G
+  | .imp Q N, Γ, R, h, D =>
+      .impR (invBranches Q (fun c hc =>
+        upMerge N (List.mem_append_right c h) (fun b hb =>
+          (extract [] (impROf (D b hb)) c hc).wk (fun X hX => by
+            rcases List.mem_append.mp hX with hX | hX
+            · exact List.mem_append_right _ (List.mem_append_left _ hX)
+            · rcases List.mem_append.mp hX with hX | hX
+              · exact List.mem_append_left _ hX
+              · exact List.mem_append_right _ (List.mem_append_right _ hX)))))
+  | .and M N, _, _, h, D =>
+      .andR (upMerge M h (fun b hb => andROf1 (D b hb)))
+            (upMerge N h (fun b hb => andROf2 (D b hb)))
+  | .up P, _, _, h, D =>
+      .stable (stableFire h (fun b hb => unStable (D b hb)))
+
+/-! ## Hypothesis simulation
+
+Replace every use of one hypothesis `H` by material manufactured on the
+target side.  A use is either a left focus on `H` — handled by `fl` — or, for
+atomic `H`, an `init`; the latter reduces to the former through `idPos`, so
+`fl` alone suffices. -/
+
+theorem memBoth {H M : Neg} {Γ Δ : List Neg}
+    (hm : ∀ X, X ∈ Γ → X = H ∨ X ∈ Δ) :
+    ∀ X, X ∈ M :: Γ → X = H ∨ X ∈ M :: Δ := by
+  intro X hX
+  rcases List.mem_cons.mp hX with rfl | hX
+  · exact .inr (List.mem_cons_self ..)
+  · exact (hm X hX).imp id (List.mem_cons_of_mem _)
+
+mutual
+
+/-- Simulation at a stable sequent. -/
+def simStab {H : Neg} {Δ₀ : List Neg}
+    (fl : ∀ {Δ' : List Neg} {P : Pos}, Sub Δ₀ Δ' → LFoc Δ' H P → Stab Δ' P) :
+    ∀ {Γ Δ : List Neg} {P : Pos}, (∀ X, X ∈ Γ → X = H ∨ X ∈ Δ) →
+      Sub Δ₀ Δ → Stab Γ P → Stab Δ P
+  | _, _, _, hm, hs, .rfoc r => simRFocus fl hm hs r
+  | _, _, _, hm, hs, @Stab.lfoc _ _ N h lf =>
+      if e : N = H then fl hs (e ▸ simLFoc fl hm hs lf)
+      else .lfoc ((hm _ h).resolve_left e) (simLFoc fl hm hs lf)
+
+/-- Simulation under right focus.  Returns a stable proof, because an `init`
+use of an atomic `H` must be re-routed through `fl` (via `idPos`), and that
+produces a stable proof, not a focus. -/
+def simRFocus {H : Neg} {Δ₀ : List Neg}
+    (fl : ∀ {Δ' : List Neg} {P : Pos}, Sub Δ₀ Δ' → LFoc Δ' H P → Stab Δ' P) :
+    ∀ {Γ Δ : List Neg} {P : Pos}, (∀ X, X ∈ Γ → X = H ∨ X ∈ Δ) →
+      Sub Δ₀ Δ → RFocus Γ P → Stab Δ P
+  | _, _, _, hm, hs, @RFocus.init _ a h =>
+      if e : Neg.up (.atom a) = H then fl hs (e ▸ LFoc.rel (idPos (.atom a) _))
+      else .rfoc (.init ((hm _ h).resolve_left e))
+  | _, _, _, hm, hs, .or1 r => stabOr1 (simRFocus fl hm hs r)
+  | _, _, _, hm, hs, .or2 r => stabOr2 (simRFocus fl hm hs r)
+  | _, _, _, hm, hs, .rel d => .rfoc (.rel (simInv fl hm hs d))
+
+/-- Simulation under a left focus on some other hypothesis. -/
+def simLFoc {H : Neg} {Δ₀ : List Neg}
+    (fl : ∀ {Δ' : List Neg} {P : Pos}, Sub Δ₀ Δ' → LFoc Δ' H P → Stab Δ' P) :
+    ∀ {Γ Δ : List Neg} {H' : Neg} {P : Pos}, (∀ X, X ∈ Γ → X = H ∨ X ∈ Δ) →
+      Sub Δ₀ Δ → LFoc Γ H' P → LFoc Δ H' P
+  | _, _, _, _, hm, hs, .rel d => .rel (simInv fl hm hs d)
+  | _, _, _, _, hm, hs, .impL s lf =>
+      .impL (simStab fl hm hs s) (simLFoc fl hm hs lf)
+  | _, _, _, _, hm, hs, .and1 lf => .and1 (simLFoc fl hm hs lf)
+  | _, _, _, _, hm, hs, .and2 lf => .and2 (simLFoc fl hm hs lf)
+
+/-- Simulation through inversion. -/
+def simInv {H : Neg} {Δ₀ : List Neg}
+    (fl : ∀ {Δ' : List Neg} {P : Pos}, Sub Δ₀ Δ' → LFoc Δ' H P → Stab Δ' P) :
+    ∀ {Γ Δ : List Neg} {Ω : List Pos} {C : Neg},
+      (∀ X, X ∈ Γ → X = H ∨ X ∈ Δ) → Sub Δ₀ Δ → Inv Γ Ω C → Inv Δ Ω C
+  | _, _, _, _, hm, hs, .impR d => .impR (simInv fl hm hs d)
+  | _, _, _, _, hm, hs, .andR d e =>
+      .andR (simInv fl hm hs d) (simInv fl hm hs e)
+  | _, _, _, _, hm, hs, .stable s => .stable (simStab fl hm hs s)
+  | _, _, _, _, hm, hs, .orL d₁ d₂ =>
+      .orL (simInv fl hm hs d₁) (simInv fl hm hs d₂)
+  | _, _, _, _, _, _, .flsL => .flsL
+  | _, _, _, _, hm, hs, .downL d =>
+      .downL (simInv fl (memBoth hm) (hs.trans (Sub.grow _)) d)
+  | _, _, _, _, hm, hs, .atomL d =>
+      .atomL (simInv fl (memBoth hm) (hs.trans (Sub.grow _)) d)
+
+end
+
+/-- The common instantiation: strip the head hypothesis, simulating its
+uses. -/
+def simHyp {H : Neg} {Γ Δ₀ : List Neg} {C : Neg}
+    (fl : ∀ {Δ' : List Neg} {P : Pos}, Sub Δ₀ Δ' → LFoc Δ' H P → Stab Δ' P)
+    (hΓ : Sub Γ Δ₀) (d : Inv (H :: Γ) [] C) : Inv Δ₀ [] C :=
+  simInv fl (fun X hX => (List.mem_cons.mp hX).imp id (hΓ X)) (Sub.refl Δ₀) d
+
+/-! ## Interpolant-connective introductions and eliminations -/
+
+/-- `⊤` needs nothing. -/
+def nTopIntro {Γ : List Neg} : Inv Γ [] nTop := .impR .flsL
+
+/-- Conjunction of a list, introduction. -/
+def nAndAllIntro : ∀ {l : List Neg} {Γ : List Neg},
+    (∀ x ∈ l, Inv Γ [] x) → Inv Γ [] (nAndAll l)
+  | [], _, _ => nTopIntro
+  | x :: l, _, h =>
+      .andR (h x (List.mem_cons_self ..))
+        (nAndAllIntro (fun y hy => h y (List.mem_cons_of_mem _ hy)))
+
+/-- Focused projection out of a list conjunction. -/
+def lfocAndAll : ∀ {l : List Neg} {x : Neg} {Δ : List Neg} {P : Pos},
+    x ∈ l → LFoc Δ x P → LFoc Δ (nAndAll l) P
+  | y :: l, x, _, _, hx, lf =>
+      if e : x = y then .and1 (e ▸ lf)
+      else .and2 (lfocAndAll (by
+        rcases List.mem_cons.mp hx with rfl | hx
+        · exact absurd rfl e
+        · exact hx) lf)
+
+/-- Disjunction of a list, introduction at a member. -/
+def nOrAllIntro : ∀ {l : List Neg} {x : Neg} {Γ : List Neg},
+    x ∈ l → Inv Γ [] x → Inv Γ [] (nOrAll l)
+  | y :: l, x, _, hx, d =>
+      if e : x = y then .stable (.rfoc (.or1 (.rel (e ▸ d))))
+      else .stable (.rfoc (.or2 (.rel (nOrAllIntro (by
+        rcases List.mem_cons.mp hx with rfl | hx
+        · exact absurd rfl e
+        · exact hx) d))))
+
+/-- Disjunction of a list, elimination: a case per member. -/
+def nOrAllElim : ∀ {l : List Neg} {Γ : List Neg} (G : Neg), nOrAll l ∈ Γ →
+    (∀ x ∈ l, ∀ {Γ' : List Neg}, Sub Γ Γ' → Inv (x :: Γ') [] G) → Inv Γ [] G
+  | [], _, G, h, _ =>
+      upMerge G (R := .fls) h (fun b hb => by simp [invertPos] at hb)
+  | x :: l, Γ, G, h, D =>
+      upMerge G h (fun b hb =>
+        if e : b = [x] then
+          e ▸ (D x (List.mem_cons_self ..) (Sub.refl _) |>.wk
+            (fun Y hY => by
+              rcases List.mem_cons.mp hY with rfl | hY
+              · exact List.mem_append_left _ (List.mem_cons_self ..)
+              · exact List.mem_append_right _ hY))
+        else by
+          have hb' : b = [nOrAll l] := by
+            simp only [invertPos, List.mem_append, List.mem_singleton] at hb
+            exact hb.resolve_left e
+          subst hb'
+          exact nOrAllElim G (List.mem_append_left _ (List.mem_cons_self ..))
+            (fun y hy _ hs => D y (List.mem_cons_of_mem _ hy)
+              (fun Z hZ => hs Z (List.mem_cons_of_mem _ hZ))))
+
+/-- A `true` `atomMem` is a membership. -/
+theorem atomMem_mem {a : String} {Γ : List Neg} (h : atomMem a Γ = true) :
+    Neg.up (.atom a) ∈ Γ := by
+  simp only [atomMem, List.any_eq_true] at h
+  obtain ⟨x, hx, he⟩ := h
+  match x, he with
+  | .up (.atom b), he =>
+      have : a = b := by simpa [BEq.comm] using he
+      subst this; exact hx
+
+end LJF
