@@ -441,3 +441,26 @@ Literature (docs/second-order-pll-survey.md, full survey): **Iemhoff 2024
 "explicit machine-checked construction", not "first proof". Second-order
 PLL does not exist; recommended name PLL2; Aczel's Russell–Prawitz
 modality is the near-miss (J ⊢ ◯ strictly).
+
+## §12 — SatE2 PROVED modulo DykAnt (2026-08-09, 08:09)
+
+`satE2_of_dyk : DykAnt p → SatE2 p` — on `main` (892deec), sorry-free,
+axioms pinned. The three termination diagnoses that unblocked the 8-def
+mutual are recorded in commit 07debf6 for reuse on the A-side:
+(1) align lexicographic first components SYNTACTICALLY (0 + n is not
+defeq to n); (2) never `cases` an atom equality inside a dispatch —
+generalise the p-fire family over both atoms with a = p, b = p
+hypotheses; (3) prefer an offset first component (μ+1, 0) to a sizeOf
+tie-break across defs.
+
+REMAINING for unconditional UI-for-LJF: (i) DykAnt — the Dyckhoff
+antecedent dispatch (X-to-residual commute with branch bookkeeping);
+(ii) the A-side mirror (aMinF + U-components: attack emissions instead
+of conjunct fires; goal-clauses already discharge through aMin);
+(iii) LJF-completeness for the bridge to IPC-as-Deriv.
+
+Correction to §11's survey note: Iemhoff 2024's UI-for-PLL proof rests
+on her G4iLL, which this repo REFUTED as incomplete (machine-checked
+counterexample, 2026-07-08, wip; unsent letter in repo). UI for PLL
+remains OPEN — this campaign is the third serious attempt, and the
+claim discipline is back to "first proof, machine-checked".
