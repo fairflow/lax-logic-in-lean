@@ -1045,250 +1045,288 @@ theorem pfree_atomHead {p q : String} : ∀ x ∈ atomHead p q, PFreeN p x := by
     rename_i h
     simpa only [PFreeN, PFreeP] using h
 
-/- **The interpolant never mentions `p`.**  Every clause either keeps `p` out
-by construction, or is guarded by the `a == p` test that replaces the would-be
-conjunct or disjunct by its unit.
-TEMPORARILY DISABLED for the probe-file cycle: to be restored
-with the modal cases once `interp` is frozen in the olean.
+set_option maxHeartbeats 4000000 in
+/-- **The interpolant never mentions `p`.**  Every clause either keeps
+`p` out by construction, or is guarded by the `a == p` test that replaces
+the would-be conjunct or disjunct by its unit.  The proof is farm-style —
+no positional case names: every case of the recursion falls through the
+alternative scripts until arity and shape match — so it survives clause
+insertion and reordering. -/
 theorem interp_pfree (p : String) :
     ∀ (todo done : List Neg) (g : Option Neg), PFreeN p (interp p todo done g) := by
   intro todo done g
-  fun_induction interp p todo done g with
-  | case1 => assumption
-  | case2 => exact pfree_nBot
-  | case3 => exact pfree_nTop
-  | case4 =>
-      rename_i ih
-      apply pfree_nOrAll
-      intro x hx
-      simp only [List.mem_map, List.mem_attach, true_and] at hx
-      obtain ⟨⟨b, hb⟩, rfl⟩ := hx
-      exact ih b hb
-  | case5 =>
-      rename_i ih2 ih1
-      apply pfree_nAndAll
-      intro x hx
-      simp only [List.mem_map, List.mem_attach, true_and] at hx
-      obtain ⟨⟨b, hb⟩, rfl⟩ := hx
-      refine ⟨?_, ?_⟩ <;>
-        first | exact ih1 b hb | exact ih2 b | exact ih1 b | exact ih2 b hb
-  | case6 => assumption
-  | case7 => assumption
-  | case8 => assumption
-  | case9 => assumption
-  | case10 => assumption
-  | case11 => assumption
-  | case12 => assumption
-  | case13 => assumption
-  | case14 => assumption
-  | case15 =>
-      rename_i ih4 ih3 ih2 ih1
-      apply pfree_nAndAll
-      intro x hx
-      simp only [List.mem_map, List.mem_attach, true_and] at hx
-      obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
-      cases X with
-      | up P =>
-          cases P with
-          | atom a =>
-              exact pfree_pGuard pfree_nTop
-                (fun h => by simpa only [PFreeN, PFreeP] using h)
-          | fls => exact pfree_nTop
-          | or _ _ => exact pfree_nTop
-          | down _ => exact pfree_nTop
-      | imp Q N =>
-          cases Q with
-          | atom a =>
-              exact pfree_pGuard pfree_nTop
-                (fun h => ⟨h, by
-                  first
-                  | exact ih4 rest a N hXr
-                  | exact ih3 rest a N hXr
-                  | exact ih2 rest a N hXr
-                  | exact ih1 rest a N hXr⟩)
-          | fls => exact pfree_nTop
-          | or _ _ => exact pfree_nTop
-          | down M =>
-              cases M with
-              | up _ => exact pfree_nTop
-              | and _ _ => exact pfree_nTop
-              | imp Q' N' =>
-                  refine ⟨⟨?_, ?_⟩, ?_⟩ <;>
-                    first
-                    | exact ih1 rest Q' N' N hXr
-                    | exact ih2 rest Q' N' N hXr
-                    | exact ih3 rest Q' N' N hXr
-                    | exact ih4 rest Q' N' N hXr
-      | and _ _ => exact pfree_nTop
-  | case16 =>
-      rename_i ih2 ih1
-      apply pfree_nAndAll
-      intro x hx
-      simp only [List.mem_map, List.mem_attach, true_and] at hx
-      obtain ⟨⟨b, hb⟩, rfl⟩ := hx
-      refine ⟨?_, ?_⟩ <;>
-        first | exact ih1 b hb | exact ih2 b | exact ih1 b | exact ih2 b hb
-  | case17 => exact ⟨by assumption, by assumption⟩
-  | case18 => exact pfree_nTop
-  | case19 =>
-      rename_i q hq ih3 ih2 ih1
-      apply pfree_nOrAll
-      intro x hx
-      rcases List.mem_append.mp hx with hx | hx
-      · exact pfree_atomHead x hx
-      · simp only [List.mem_map, List.mem_attach, true_and] at hx
-        obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
-        cases X with
-        | up P => cases P <;> exact pfree_nBot
-        | imp Q N =>
-            cases Q with
-            | atom a =>
-                exact pfree_pGuard pfree_nBot
-                  (fun h => pfree_nAnd h (ih3 rest a N hXr))
-            | fls => exact pfree_nBot
-            | or _ _ => exact pfree_nBot
-            | down M =>
-                cases M with
-                | up _ => exact pfree_nBot
-                | and _ _ => exact pfree_nBot
-                | imp Q' N' =>
-                    exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
-        | and _ _ => exact pfree_nBot
-  | case20 =>
-      rename_i ih3 ih2 ih1
-      apply pfree_nOrAll
-      intro x hx
-      simp only [List.mem_map, List.mem_attach, true_and] at hx
-      obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
-      cases X with
-      | up P => cases P <;> exact pfree_nBot
-      | imp Q N =>
-          cases Q with
-          | atom a =>
-              exact pfree_pGuard pfree_nBot
-                (fun h => pfree_nAnd h (ih3 rest a N hXr))
-          | fls => exact pfree_nBot
-          | or _ _ => exact pfree_nBot
-          | down M =>
-              cases M with
-              | up _ => exact pfree_nBot
-              | and _ _ => exact pfree_nBot
-              | imp Q' N' =>
-                  exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
-      | and _ _ => exact pfree_nBot
-  | case21 =>
-      rename_i ihP ihQ ih3 ih2 ih1
-      apply pfree_nOrAll
-      intro x hx
-      rcases List.mem_append.mp hx with hx | hx
-      · rcases List.mem_cons.mp hx with rfl | hx
-        · exact ihP
-        · rcases List.mem_singleton.mp hx with rfl
-          exact ihQ
-      · simp only [List.mem_map, List.mem_attach, true_and] at hx
-        obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
-        cases X with
-        | up P => cases P <;> exact pfree_nBot
-        | imp Q N =>
-            cases Q with
-            | atom a =>
-                exact pfree_pGuard pfree_nBot
-                  (fun h => pfree_nAnd h (ih3 rest a N hXr))
-            | fls => exact pfree_nBot
-            | or _ _ => exact pfree_nBot
-            | down M =>
-                cases M with
-                | up _ => exact pfree_nBot
-                | and _ _ => exact pfree_nBot
-                | imp Q' N' =>
-                    exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
-        | and _ _ => exact pfree_nBot
-  | case22 =>
-      rename_i ihM ih3 ih2 ih1
-      apply pfree_nOrAll
-      intro x hx
-      rcases List.mem_append.mp hx with hx | hx
-      · rcases List.mem_singleton.mp hx with rfl
-        exact ihM
-      · simp only [List.mem_map, List.mem_attach, true_and] at hx
-        obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
-        cases X with
-        | up P => cases P <;> exact pfree_nBot
-        | imp Q N =>
-            cases Q with
-            | atom a =>
-                exact pfree_pGuard pfree_nBot
-                  (fun h => pfree_nAnd h (ih3 rest a N hXr))
-            | fls => exact pfree_nBot
-            | or _ _ => exact pfree_nBot
-            | down M =>
-                cases M with
-                | up _ => exact pfree_nBot
-                | and _ _ => exact pfree_nBot
-                | imp Q' N' =>
-                    exact pfree_nAnd (ih2 rest Q' N' N hXr) (ih1 rest Q' N' N hXr)
-        | and _ _ => exact pfree_nBot
-
-/-! ## The contract that remains
-
-With `interp` total and `interp_pfree` proved, the components of the Σ-type
-are in place: the formula, built by the clauses, and its `p`-freeness.  The
-characteristic properties are the remaining obligations, stated as the
-contract for the next stretch — all four internal to `LJF`, none touching
-another calculus:
-
-* **(E1) soundness of `∃p`**:
-  `Inv (todo ++ done) [] (interp p todo done none)`
-* **(A1) soundness of `∀p`**:
-  `Inv (interp p todo done (some G) :: todo ++ done) [] G`
-* **(E2) minimality of `∃p`**: for `p`-free `Δ` and `ψ`,
-  `Inv (todo ++ done ++ Δ) [] ψ  →  Inv (interp p todo done none :: Δ) [] ψ`
-* **(A2) minimality of `∀p`**: for `p`-free `Δ`,
-  `Inv (todo ++ done ++ Δ) [] G  →
-     Inv (interp p todo done none :: Δ) [] (interp p todo done (some G))`
-
-**Status (2026-08-09, final)**: E1 and A1 are `eSound`/`aSound`, proved
-unconditionally in Part 4.  E2 and A2 are `eMinF`/`aMinF` in Part 6, proved
-unconditionally — the saturated case is discharged inline, and the
-statements `SatE2`/`SatA2` naming it are discharged as `satE2`/`satA2`.  The minimality analysis also
-forced the E-guards on the two branching `∀p` clauses of `interp`.
-
-The toolkit they need, also internal: a hypothesis-simulation traversal
-(replace uses of one hypothesis by a derived simulator — powers E1/A1 and the
-easy inversion directions of E2/A2), and branch extraction
-(`Inv Δ (P :: Ω) C → ∀ b ∈ invertPos P, Inv (b ++ Δ) Ω C`, from the
-determinism of the inversion phase).  The one expected mountain is the
-`E2`/`A2` case for the Dyckhoff implication — the focused form of the
-`(A⊃B)⊃C` argument; if it resists, it is to be carried as an explicit
-hypothesis, never a `sorry`. -/​
-
-
-/-! # Part 3: the toolkit for the characteristic properties
-
-Six tools, each internal to `LJF`, each structural, none using cut:
-
-* `routeStab` — CPS re-targeting of a stable proof of a positive `P`: every
-  right focus on `P` is handed to a continuation, every left-focus chain and
-  goal-side inversion is rebuilt with the new target.  Its instances do the
-  work classically assigned to cut: shift release, disjunction routing,
-  ex falso from a provable `⊥`.
-* `invBranches` — realise `invertPos` on the left: branch derivations
-  assemble into the inversion of the positive.
-* `extract` — the converse, at any position of `Ω`: the inversion phase is
-  deterministic, so a pending positive can be replayed along any one branch.
-* `stableFire` — fire a shifted hypothesis `↑R` at a stable sequent, given
-  stable continuations for every branch of `R`.
-* `upMerge` — eliminate a shifted hypothesis into a negative goal, by
-  recursion on the goal; the leaf case is `stableFire`.
-* `simStab` — hypothesis simulation: replace every use of one hypothesis
-  `H` by derivations manufactured on the other side.  The `init` uses of an
-  atomic `H` reduce to left-focus uses via `idPos`, so one handler covers
-  everything.
--/​
-
-/-! ## Routing a positive conclusion -/​
-
--/
+  fun_induction interp p todo done g <;>
+    first
+    | assumption
+    | exact pfree_nBot
+    | exact pfree_nTop
+    | exact ⟨by assumption, by assumption⟩
+    | (rename_i ih
+       apply pfree_nOrAll
+       intro x hx
+       simp only [List.mem_map, List.mem_attach, true_and] at hx
+       obtain ⟨⟨b, hb⟩, rfl⟩ := hx
+       exact ih b hb)
+    | (rename_i ih2 ih1
+       apply pfree_nAndAll
+       intro x hx
+       simp only [List.mem_map, List.mem_attach, true_and] at hx
+       obtain ⟨⟨b, hb⟩, rfl⟩ := hx
+       refine ⟨?_, ?_⟩ <;>
+         first | exact ih1 b hb | exact ih2 b | exact ih1 b | exact ih2 b hb)
+    | -- ∃p aggregate: qimp, dyk triple, box, modal triple — 8 ihs
+      (rename_i ih8 ih7 ih6 ih5 ih4 ih3 ih2 ih1
+       apply pfree_nAndAll
+       intro x hx
+       simp only [List.mem_map, List.mem_attach, true_and] at hx
+       obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+       cases X with
+       | up P =>
+           cases P with
+           | atom a =>
+               exact pfree_pGuard pfree_nTop
+                 (fun h => by simpa only [PFreeN, PFreeP] using h)
+           | fls => exact pfree_nTop
+           | or _ _ => exact pfree_nTop
+           | down _ => exact pfree_nTop
+       | imp Q N =>
+           cases Q with
+           | atom a =>
+               exact pfree_pGuard pfree_nTop (fun h => ⟨h, by
+                 first
+                 | exact ih8 rest a N hXr | exact ih7 rest a N hXr
+                 | exact ih6 rest a N hXr | exact ih5 rest a N hXr
+                 | exact ih4 rest a N hXr | exact ih3 rest a N hXr
+                 | exact ih2 rest a N hXr | exact ih1 rest a N hXr⟩)
+           | fls => exact pfree_nTop
+           | or _ _ => exact pfree_nTop
+           | down M =>
+               cases M with
+               | up _ => exact pfree_nTop
+               | and _ _ => exact pfree_nTop
+               | imp Q' N' =>
+                   refine ⟨⟨?_, ?_⟩, ?_⟩ <;>
+                     first
+                     | exact ih8 rest Q' N' N hXr | exact ih7 rest Q' N' N hXr
+                     | exact ih6 rest Q' N' N hXr | exact ih5 rest Q' N' N hXr
+                     | exact ih4 rest Q' N' N hXr | exact ih3 rest Q' N' N hXr
+                     | exact ih2 rest Q' N' N hXr | exact ih1 rest Q' N' N hXr
+               | circ Q' =>
+                   refine ⟨⟨?_, ?_⟩, ?_⟩ <;>
+                     first
+                     | exact ih8 rest Q' N hXr | exact ih7 rest Q' N hXr
+                     | exact ih6 rest Q' N hXr | exact ih5 rest Q' N hXr
+                     | exact ih4 rest Q' N hXr | exact ih3 rest Q' N hXr
+                     | exact ih2 rest Q' N hXr | exact ih1 rest Q' N hXr
+       | and _ _ => exact pfree_nTop
+       | circ Q =>
+           first
+           | exact ih8 rest Q hXr | exact ih7 rest Q hXr
+           | exact ih6 rest Q hXr | exact ih5 rest Q hXr
+           | exact ih4 rest Q hXr | exact ih3 rest Q hXr
+           | exact ih2 rest Q hXr | exact ih1 rest Q hXr)
+    | -- atom-goal attack aggregate (if-false): q hq + 5 ihs
+      (rename_i q hq ih5 ih4 ih3 ih2 ih1
+       apply pfree_nOrAll
+       intro x hx
+       rcases List.mem_append.mp hx with hx | hx
+       · exact pfree_atomHead x hx
+       · simp only [List.mem_map, List.mem_attach, true_and] at hx
+         obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+         cases X with
+         | up P => cases P <;> exact pfree_nBot
+         | imp Q N =>
+             cases Q with
+             | atom a =>
+                 exact pfree_pGuard pfree_nBot (fun h => pfree_nAnd h (by
+                   first
+                   | exact ih5 rest a N hXr | exact ih4 rest a N hXr
+                   | exact ih3 rest a N hXr | exact ih2 rest a N hXr
+                   | exact ih1 rest a N hXr))
+             | fls => exact pfree_nBot
+             | or _ _ => exact pfree_nBot
+             | down M =>
+                 cases M with
+                 | up _ => exact pfree_nBot
+                 | and _ _ => exact pfree_nBot
+                 | imp Q' N' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih5 rest Q' N' N hXr | exact ih4 rest Q' N' N hXr
+                       | exact ih3 rest Q' N' N hXr | exact ih2 rest Q' N' N hXr
+                       | exact ih1 rest Q' N' N hXr
+                 | circ Q' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih5 rest Q' N hXr | exact ih4 rest Q' N hXr
+                       | exact ih3 rest Q' N hXr | exact ih2 rest Q' N hXr
+                       | exact ih1 rest Q' N hXr
+         | and _ _ => exact pfree_nBot
+         | circ _ => exact pfree_nBot)
+    | -- fls-goal attack aggregate: 5 ihs
+      (rename_i ih5 ih4 ih3 ih2 ih1
+       apply pfree_nOrAll
+       intro x hx
+       simp only [List.mem_map, List.mem_attach, true_and] at hx
+       obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+       cases X with
+       | up P => cases P <;> exact pfree_nBot
+       | imp Q N =>
+           cases Q with
+           | atom a =>
+               exact pfree_pGuard pfree_nBot (fun h => pfree_nAnd h (by
+                 first
+                 | exact ih5 rest a N hXr | exact ih4 rest a N hXr
+                 | exact ih3 rest a N hXr | exact ih2 rest a N hXr
+                 | exact ih1 rest a N hXr))
+           | fls => exact pfree_nBot
+           | or _ _ => exact pfree_nBot
+           | down M =>
+               cases M with
+               | up _ => exact pfree_nBot
+               | and _ _ => exact pfree_nBot
+               | imp Q' N' =>
+                   refine pfree_nAnd ?_ ?_ <;>
+                     first
+                     | exact ih5 rest Q' N' N hXr | exact ih4 rest Q' N' N hXr
+                     | exact ih3 rest Q' N' N hXr | exact ih2 rest Q' N' N hXr
+                     | exact ih1 rest Q' N' N hXr
+               | circ Q' =>
+                   refine pfree_nAnd ?_ ?_ <;>
+                     first
+                     | exact ih5 rest Q' N hXr | exact ih4 rest Q' N hXr
+                     | exact ih3 rest Q' N hXr | exact ih2 rest Q' N hXr
+                     | exact ih1 rest Q' N hXr
+       | and _ _ => exact pfree_nBot
+       | circ _ => exact pfree_nBot)
+    | -- or-goal attack aggregate: ihP ihQ + 5 ihs
+      (rename_i ihP ihQ ih5 ih4 ih3 ih2 ih1
+       apply pfree_nOrAll
+       intro x hx
+       rcases List.mem_append.mp hx with hx | hx
+       · rcases List.mem_cons.mp hx with rfl | hx
+         · exact ihP
+         · rcases List.mem_singleton.mp hx with rfl
+           exact ihQ
+       · simp only [List.mem_map, List.mem_attach, true_and] at hx
+         obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+         cases X with
+         | up P => cases P <;> exact pfree_nBot
+         | imp Q N =>
+             cases Q with
+             | atom a =>
+                 exact pfree_pGuard pfree_nBot (fun h => pfree_nAnd h (by
+                   first
+                   | exact ih5 rest a N hXr | exact ih4 rest a N hXr
+                   | exact ih3 rest a N hXr | exact ih2 rest a N hXr
+                   | exact ih1 rest a N hXr))
+             | fls => exact pfree_nBot
+             | or _ _ => exact pfree_nBot
+             | down M =>
+                 cases M with
+                 | up _ => exact pfree_nBot
+                 | and _ _ => exact pfree_nBot
+                 | imp Q' N' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih5 rest Q' N' N hXr | exact ih4 rest Q' N' N hXr
+                       | exact ih3 rest Q' N' N hXr | exact ih2 rest Q' N' N hXr
+                       | exact ih1 rest Q' N' N hXr
+                 | circ Q' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih5 rest Q' N hXr | exact ih4 rest Q' N hXr
+                       | exact ih3 rest Q' N hXr | exact ih2 rest Q' N hXr
+                       | exact ih1 rest Q' N hXr
+         | and _ _ => exact pfree_nBot
+         | circ _ => exact pfree_nBot)
+    | -- down-goal attack aggregate: ihM + 5 ihs
+      (rename_i ihM ih5 ih4 ih3 ih2 ih1
+       apply pfree_nOrAll
+       intro x hx
+       rcases List.mem_append.mp hx with hx | hx
+       · rcases List.mem_singleton.mp hx with rfl
+         exact ihM
+       · simp only [List.mem_map, List.mem_attach, true_and] at hx
+         obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+         cases X with
+         | up P => cases P <;> exact pfree_nBot
+         | imp Q N =>
+             cases Q with
+             | atom a =>
+                 exact pfree_pGuard pfree_nBot (fun h => pfree_nAnd h (by
+                   first
+                   | exact ih5 rest a N hXr | exact ih4 rest a N hXr
+                   | exact ih3 rest a N hXr | exact ih2 rest a N hXr
+                   | exact ih1 rest a N hXr))
+             | fls => exact pfree_nBot
+             | or _ _ => exact pfree_nBot
+             | down M =>
+                 cases M with
+                 | up _ => exact pfree_nBot
+                 | and _ _ => exact pfree_nBot
+                 | imp Q' N' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih5 rest Q' N' N hXr | exact ih4 rest Q' N' N hXr
+                       | exact ih3 rest Q' N' N hXr | exact ih2 rest Q' N' N hXr
+                       | exact ih1 rest Q' N' N hXr
+                 | circ Q' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih5 rest Q' N hXr | exact ih4 rest Q' N hXr
+                       | exact ih3 rest Q' N hXr | exact ih2 rest Q' N hXr
+                       | exact ih1 rest Q' N hXr
+         | and _ _ => exact pfree_nBot
+         | circ _ => exact pfree_nBot)
+    | -- ◯-goal attack aggregate: direct + qimp + dyk pair + modal pair + box pair — 8 ihs
+      (rename_i ihD ih7 ih6 ih5 ih4 ih3 ih2 ih1
+       apply pfree_nOrAll
+       intro x hx
+       rcases List.mem_append.mp hx with hx | hx
+       · rcases List.mem_singleton.mp hx with rfl
+         exact ihD
+       · simp only [List.mem_map, List.mem_attach, true_and] at hx
+         obtain ⟨⟨⟨X, rest⟩, hXr⟩, rfl⟩ := hx
+         cases X with
+         | up P => cases P <;> exact pfree_nBot
+         | imp Q N =>
+             cases Q with
+             | atom a =>
+                 exact pfree_pGuard pfree_nBot (fun h => pfree_nAnd h (by
+                   first
+                   | exact ih7 rest a N hXr | exact ih6 rest a N hXr
+                   | exact ih5 rest a N hXr | exact ih4 rest a N hXr
+                   | exact ih3 rest a N hXr | exact ih2 rest a N hXr
+                   | exact ih1 rest a N hXr))
+             | fls => exact pfree_nBot
+             | or _ _ => exact pfree_nBot
+             | down M =>
+                 cases M with
+                 | up _ => exact pfree_nBot
+                 | and _ _ => exact pfree_nBot
+                 | imp Q' N' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih7 rest Q' N' N hXr | exact ih6 rest Q' N' N hXr
+                       | exact ih5 rest Q' N' N hXr | exact ih4 rest Q' N' N hXr
+                       | exact ih3 rest Q' N' N hXr | exact ih2 rest Q' N' N hXr
+                       | exact ih1 rest Q' N' N hXr
+                 | circ Q' =>
+                     refine pfree_nAnd ?_ ?_ <;>
+                       first
+                       | exact ih7 rest Q' N hXr | exact ih6 rest Q' N hXr
+                       | exact ih5 rest Q' N hXr | exact ih4 rest Q' N hXr
+                       | exact ih3 rest Q' N hXr | exact ih2 rest Q' N hXr
+                       | exact ih1 rest Q' N hXr
+         | and _ _ => exact pfree_nBot
+         | circ R =>
+             refine ⟨?_, ?_⟩ <;>
+               first
+               | exact ih7 rest R hXr | exact ih6 rest R hXr
+               | exact ih5 rest R hXr | exact ih4 rest R hXr
+               | exact ih3 rest R hXr | exact ih2 rest R hXr
+               | exact ih1 rest R hXr)
 
 /-! ## Standing test 1: the G4iLL blocker
 
@@ -1363,3 +1401,7 @@ end LJFO
 /-- info: 'LJFO.idNeg' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms LJFO.idNeg
+
+/-- info: 'LJFO.interp_pfree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFO.interp_pfree
