@@ -171,6 +171,57 @@ Statement hygiene noted for stage 3: the saturated-case statements
 (`SatE2`/`SatA2`) generalise over the flag `j` — the interpolant is
 flag-free, the traversals are flag-indexed.
 
+**(e) The dykAnt-analogue pass (2026-08-09, run to completion).** The
+parked `◯`-implication is `X = ↓◯Q′ ⊃ N` at `(X, rest) ∈ splits done`; a
+use of it is `impL s k` with `s : ⊢tru ↓◯Q′` over the station and `k` the
+continuation through `N`. Four results:
+
+1. **The antecedent demand sits at `rest` — `X` consumed, nothing
+   retained, no residual.** The analysis of `s` (the flagged
+   `negOfDownStab`, then `circR` is the only goal-inversion for a
+   `◯`-goal) releases a *lax* derivation `d′` of `↑Q′` over the station.
+   The traversal mining `d′` for `A(rest ⇒ ◯Q′)` meets uses of `X`
+   itself — the case that killed both of Iemhoff's options (consume:
+   incomplete; retain: non-terminating). Here it dissolves: an inner use
+   of `X` carries its own argument `s₂ : ⊢tru ↓◯Q′`, a *structural
+   subterm*, and the traversal restarts on `s₂`, discarding the inner
+   continuation — we are mining for the `∀p`-formula, not replaying the
+   derivation, and `s₂` already proves the very goal being analysed.
+   Structural descent on the argument replaces `dykCommute`'s residual
+   trick, and is simpler: no commute, no manufactured uses. Working name
+   for the traversal case: the **circ-descent**.
+2. **Witness-box absorption CONFIRMED at design level.** G4s's `L◯→″`
+   witness-variant clauses (fire against a witness box `◯X` with demand
+   `A(X::Γ ⇒ ◯A)`) are the composition of our `◯`-implication row with
+   the *guarded opening rows inside* `A(rest ⇒ ◯Q′)`: when `d′` opens a
+   box during the lax phase, the mined formula's own opening row carries
+   it. One clause, box-variability internal to the recursion.
+3. **The E-side pair carries the E-res component**, by the same forcing
+   as the intuitionistic Dyckhoff conjunct (same-station minimality
+   climbs in a measure-carrying proof):
+
+       (↓A(rest ⇒ ◯Q′) ⊃ E(N :: rest)) ∧ E(rest)
+
+   and the A-side attack row is the unguarded pair
+   `A(rest ⇒ ◯Q′) ∧ A(N :: rest ⇒ G)`, mirroring `atkDyk`; the weight
+   `w(X) = wQ′ + wN + 3` dominates both components' recursions with the
+   same slack shapes as `dec_dyk1/2` (checked arithmetically:
+   `3^{wQ′+1}` and `2·3^{wN}` both sit under `3^{wQ′+wN+3}`).
+4. **Blocker consistency check.** In the blocker, `χ = ↓(↓◯p ⊃ ↑r) ⊃ ◯p`
+   is an *intuitionistic* Dyckhoff shape whose `N` happens to be a box,
+   and `h = ↓◯p ⊃ ↑r` is the modal shape; the sequent flows through the
+   guarded box-opening row composed with the existing Dyckhoff row — the
+   double use of `h` is the first use dispatched at the outer station and
+   the second inside the antecedent mining, met by circ-descent. No
+   retention anywhere. The known-hard sequent is covered by clause
+   composition, on paper.
+
+**Paper obligations status**: (1)–(3) and (e) run; forced changes
+incorporated (one modal E-guard, one E-res component); obligations left
+to mechanisation: the E-res forcing verification, the `boxClean`
+construction, and the standing tests (blocker replay, converse-K
+failure). Stage 1 begins.
+
 ## 4. Porting plan (Rules 1–2 compliant)
 
 New branch `ljf-pll` from `ljf-simp-1`. The extension is built as
