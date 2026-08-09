@@ -72,10 +72,12 @@ The `◯`-goal station is the *lax* station — strictly more attacks than a
 `tru` station, because `circL` is enabled:
 
 * the direct row: `interp p [] done (some (.up Q))` (prove `Q` truly;
-  laxness for free);
-* for each parked box `circ R`: the opening attack
-  `interp p [↑R] rest (some (circ Q))` — goal kept, station opened
-  (no guard: opening is free given the box);
+  laxness for free; same station, smaller goal — no guard, like the
+  `∧`-goal rows);
+* for each parked box `circ R`: the opening attack, **E-guarded**:
+  `↓E_p(↑R :: rest) ⊃ A_p(↑R :: rest ⇒ circ Q)` — goal kept, station
+  opened. The naked row is WRONG: see §3-results below, where the
+  (ii)-induction forces the guard;
 * the existing fire and Dyckhoff attack rows, unchanged;
 * the `◯`-implication fire attacks, mirroring the E-side pair.
 
@@ -108,6 +110,66 @@ writing `interp`'s new arms:
    restriction is what blocks it; a `decide`-style or hand check that the
    extended rules do NOT derive it (the restriction was found by soundness
    failing once already; keep it as a standing negative test).
+
+## 3-results. First pass of the paper obligations (2026-08-09, late)
+
+Run per the method: the (ii)-minimality induction on paper, per candidate
+clause, before mechanising. Three findings and one conjecture.
+
+**(a) The E-side box conjunct needs no guard.** At a saturated station
+with `circ Q` parked at `(circ Q, rest) ∈ splits done`, a lax use of the
+box (`circL`) is dispatched through the conjunct `◯(↓E(↑Q :: rest))`:
+left-focus the interpolant's conjunct, `circL` it (the goal flag at the
+use site is lax, matching the conjunct's own openability), `downL` puts
+`E(↑Q :: rest)` in context, and the continuation crosses to the opened
+station through the minimality recursion at strictly smaller measure —
+`3^{wQ} + sum3 rest < 3^{wQ+1} + sum3 rest`, which is why
+`w(circ Q) = wPos Q + 1`. Residual uses of the consumed box in the
+continuation are cleaned by a `boxClean` analogue of `fireClean`: a later
+`circL` on the same box re-derives its content from the opened station's
+own products (`posRestore` territory). Single-premise clause, no
+branching, no guard forced.
+
+**(b) The A-side box-opening row MUST be guarded — first modal guard,
+forced on paper.** With the naked row `A(↑R :: rest ⇒ ◯Q)`, the
+(ii)-induction fails at the assembly step: the recursion at the opened
+station yields the row from `E(↑R :: rest)` beside Δ, but the aggregate
+is proved at `tru` from `E(done)`, and `E(done) ⊢tru E(↑R :: rest)` is
+FALSE — only `◯E(↑R :: rest)` holds (that is the box conjunct itself).
+Guarding repairs both directions at once:
+
+    row_R  =  ↓E(↑R :: rest) ⊃ A(↑R :: rest ⇒ ◯Q)
+
+*Soundness*: beside the station, at the lax goal open `circ R`; `eSound`
+at the opened station supplies the guard; the implication yields the
+opened-station `∀p`, which closes `◯Q` there. *Minimality*: `impR` (at
+`tru` — the flag restriction is satisfied because rows are formulas
+proved truly), assume the guard, and the recursion's conclusion is
+exactly the body. This is the same failure-and-repair shape as the two
+intuitionistic E-guards; the discipline extends to the modal rows
+verbatim.
+
+**(c) `findFire` and `Saturated` are unchanged.** Boxes and
+`◯`-implications never fire during station reduction — like the Dyckhoff
+implications they are parked shapes with *aggregate* rows, so saturation
+is still exactly `findFire = none`, and `findFire_none_spec` is
+untouched. The whole change to the station discipline is two new
+`ParkedN` constructors.
+
+**(d) Conjecture (the dykAnt-analogue, still to run).** The
+`◯`-implication pair's antecedent demand `↓A(rest ⇒ ◯Q′) ⊃ …` should
+need NO witness-box clause family: Iemhoff's `L◯→″` witness variants
+existed because her `∀p` at a `◯`-succedent could not itself open boxes;
+here the `◯`-goal aggregate *contains* the (guarded) opening rows, so the
+witness variability is absorbed inside `A(⇒ ◯Q′)`. If this survives the
+dykAnt-analogue paper pass, the modal clause set is strictly simpler than
+the G4s-corrected one. This is the next obligation to run, together with
+the flagged `dykCommute` (the argument `s : Stab … tru (↓circ Q′)`
+analysed through `circR` into its lax phase).
+
+Statement hygiene noted for stage 3: the saturated-case statements
+(`SatE2`/`SatA2`) generalise over the flag `j` — the interpolant is
+flag-free, the traversals are flag-indexed.
 
 ## 4. Porting plan (Rules 1–2 compliant)
 
