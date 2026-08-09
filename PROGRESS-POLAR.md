@@ -492,3 +492,25 @@ already available as the E-components are in the same mutual).
 Measures: the established lexicographic pattern; dykAntC's first
 component sits in the dec_dyk1 slack. All three termination diagnoses
 of §12 apply verbatim.
+
+## §14 — UNIFORM INTERPOLATION FOR LJF: PROVED (2026-08-09)
+
+The mega-mutual landed. All four characteristic properties plus the
+saturated cases and the Dyckhoff dispatch are machine-checked,
+unconditionally, sorry-free, axioms [propext, Classical.choice,
+Quot.sound]:
+
+  eSound  aSound  eMinF  aMinF  satE2  satA2  dykAnt
+
+The final week's structure: dykCommute (the focused Dyckhoff commute) +
+aMinF at the residual station + projection of the E-res conjunct
+discharged DykAnt; the A-side traversal (UEntry/UStab/URF/ULF/UInvG +
+the UpElim p-fire family) emits attack disjuncts where the E-side fired
+conjuncts; the p-fire elimination needed no extra hypothesis in either
+mode. The termination war ended with the Prod.Lex display-deception
+diagnosis and term-level monotone chains (defeq-unification replacing
+omega atom-sharing). Full account and the simplification/tools pass:
+docs/ljf-simplification-pass.md.
+
+Remaining: focalization completeness (→ UI for IPC); then circL + the
+lax judgment through every layer (→ UI for PLL, the open prize).
