@@ -3376,17 +3376,20 @@ def eMinF : ∀ (todo done Δ : List Neg) (ψ : Neg), ParkedCtx done →
             (fun Z hZ => List.mem_append_left _ hZ)
             hΔ (fun _ h => absurd h (List.not_mem_nil)) hψ d
   termination_by todo done Δ ψ hP hΔ hψ d =>
-    (2 * sum3 todo + sum3 done, sizeOf d + 1)
+    (2 * sum3 todo + sum3 done + 1, 0)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -3489,17 +3492,20 @@ def TInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           · rcases List.mem_cons.mp hZ with rfl | hZ
             · exact List.mem_cons_self ..
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
-  termination_by Γ' K Ω C hm hm2 hK hΩ hC d => (sum3 done, sizeOf d)
+  termination_by Γ' K Ω C hm hm2 hK hΩ hC d => (2 * sum3 [] + sum3 done, sizeOf d)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -3564,9 +3570,8 @@ def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             TStab done hsat hP (hmConsDone hd hm)
               (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK hp s'
         | .imp (.atom a) N, _, hd, .impL s_a lf' =>
-            if hap : a = p then by
-              cases hap
-              exact TpElim done hsat hP hm hm2 hK hp hd lf' s_a
+            if hap : a = p then
+              TpElim done hsat hP hm hm2 hK hp hap hap hd lf' s_a
             else
               let ⟨rest, hXr⟩ := splitAt done _ hd
               qAssemble (interpE_eq hsat) (qimpConjMem hXr) hap
@@ -3595,17 +3600,20 @@ def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         .lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
           (TLF done hsat hP hm hm2 hK
             (hK _ ((hm _ h).resolve_left hd)) hp lf)
-  termination_by Γ' K P hm hm2 hK hp s => (sum3 done, sizeOf s)
+  termination_by Γ' K P hm hm2 hK hp s => (2 * sum3 [] + sum3 done, sizeOf s)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -3676,17 +3684,20 @@ def TRF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, _, hm, hm2, hK, hp, .rel d =>
       .rfoc (.rel (TInv done hsat hP hm hm2 hK
         (fun _ h => absurd h (List.not_mem_nil)) hp d))
-  termination_by Γ' K P hm hm2 hK hp r => (sum3 done, sizeOf r)
+  termination_by Γ' K P hm hm2 hK hp r => (2 * sum3 [] + sum3 done, sizeOf r)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -3753,17 +3764,20 @@ def TLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       .and1 (TLF done hsat hP hm hm2 hK hH.1 hp lf)
   | _, _, _, _, hm, hm2, hK, hH, hp, .and2 lf =>
       .and2 (TLF done hsat hP hm hm2 hK hH.2 hp lf)
-  termination_by Γ' K H P hm hm2 hK hH hp lf => (sum3 done, sizeOf lf)
+  termination_by Γ' K H P hm hm2 hK hH hp lf => (2 * sum3 [] + sum3 done, sizeOf lf)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -3819,38 +3833,40 @@ outer `p ⊃ M` package, yields the target directly — `init` on `↑p` is
 impossible, kept chains rebuild, nested `p`-fires shortcut to their own
 premise, and every other fire composes the package with the fire's body. -/
 def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos},
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {a b : String},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      PFreeP p P₀ → Neg.imp (.atom p) M ∈ done → LFoc Γ' M P₀ →
-      Stab Γ' (.atom p) → Stab (interp p [] done none :: K) P₀
-  | _, _, _, _, hm, _, hK, _, hXpkg, _, .rfoc (.init h) =>
+      PFreeP p P₀ → a = p → b = p →
+      Neg.imp (.atom a) M ∈ done → LFoc Γ' M P₀ →
+      Stab Γ' (.atom b) → Stab (interp p [] done none :: K) P₀
+  | _, _, _, _, _, _, hm, _, hK, _, ha, hb, hXpkg, _, .rfoc (.init h) =>
       False.elim (by
         rcases hm _ h with hd | hk
         · have h1 := atomMem_of_mem hd
           have h2 := saturated_atom_absent hsat hXpkg
+          rw [hb.trans ha.symm] at h1
           rw [h1] at h2; cases h2
-        · exact (hK _ hk) rfl)
-  | _, _, _, _, hm, hm2, hK, hpT, hXpkg, lfP, @Stab.lfoc _ _ N₀ h lf =>
+        · exact (hK _ hk) hb)
+  | _, _, _, _, a, b, hm, hm2, hK, hpT, ha, hb, hXpkg, lfP, @Stab.lfoc _ _ N₀ h lf =>
       if hd : N₀ ∈ done then
         match N₀, hP _ hd, hd, lf with
-        | .up (.atom a), _, hd, .rel (.atomL (.stable s')) =>
+        | .up (.atom c), _, hd, .rel (.atomL (.stable s')) =>
             TpElim done hsat hP (hmConsDone hd hm)
-              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK hpT hXpkg
-              (lfP.wk (Sub.grow _)) s'
-        | .imp (.atom b) N_b, _, hd, .impL s_b lf_b =>
-            if hbp : b = p then by
-              cases hbp
-              exact TpElim done hsat hP hm hm2 hK hpT hXpkg lfP s_b
+              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK hpT ha hb
+              hXpkg (lfP.wk (Sub.grow _)) s'
+        | .imp (.atom c) N_b, _, hd, .impL s_b lf_b =>
+            if hcp : c = p then
+              TpElim done hsat hP hm hm2 hK hpT ha hcp hXpkg lfP s_b
             else
               let ⟨rest, hXr⟩ := splitAt done _ hd
-              qAssemble (interpE_eq hsat) (qimpConjMem hXr) hbp
-                (TStab done hsat hP hm hm2 hK hbp s_b)
+              qAssemble (interpE_eq hsat) (qimpConjMem hXr) hcp
+                (TStab done hsat hP hm hm2 hK hcp s_b)
                 (eMinF [N_b] rest _ _ (hP.sub (splits_sub hXr)) hK hpT
                   (fireClean (splitHyp hm hXr) (.stable
                     (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                       (.impL
-                        (.lfoc (List.mem_cons_self ..)
-                          (lf_b.wk (Sub.grow _)))
+                        ((hb.trans ha.symm) ▸
+                          Stab.lfoc (List.mem_cons_self ..)
+                            (lf_b.wk (Sub.grow _)))
                         (lfP.wk (Sub.grow _)))))))
         | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -3860,8 +3876,9 @@ def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      (.lfoc (List.mem_cons_self ..)
-                        (lf_d.wk (Sub.grow _)))
+                      ((hb.trans ha.symm) ▸
+                        Stab.lfoc (List.mem_cons_self ..)
+                          (lf_d.wk (Sub.grow _)))
                       (lfP.wk (Sub.grow _)))))))
         | .up .fls, hpk, _, _ => nomatch hpk
         | .up (.or _ _), hpk, _, _ => nomatch hpk
@@ -3874,19 +3891,22 @@ def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       else
         .lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
           (TpLF done hsat hP hm hm2 hK
-            (hK _ ((hm _ h).resolve_left hd)) hpT hXpkg lfP lf)
-  termination_by Γ' K M P₀ hm hm2 hK hpT hXpkg lfP s =>
-    (sum3 done, sizeOf s)
+            (hK _ ((hm _ h).resolve_left hd)) hpT ha hb hXpkg lfP lf)
+  termination_by Γ' K M P₀ a b hm hm2 hK hpT ha hb hXpkg lfP s =>
+    (2 * sum3 [] + sum3 done, sizeOf s)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -3939,34 +3959,37 @@ def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
 
 /-- Left focus on a kept hypothesis, inside a `p`-proof. -/
 def TpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {H : Neg},
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {H : Neg} {a b : String},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      PFreeN p H → PFreeP p P₀ → Neg.imp (.atom p) M ∈ done →
-      LFoc Γ' M P₀ →
-      LFoc Γ' H (.atom p) → LFoc (interp p [] done none :: K) H P₀
-  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .rel d =>
+      PFreeN p H → PFreeP p P₀ → a = p → b = p →
+      Neg.imp (.atom a) M ∈ done → LFoc Γ' M P₀ →
+      LFoc Γ' H (.atom b) → LFoc (interp p [] done none :: K) H P₀
+  | _, _, _, _, _, _, _, hm, hm2, hK, hH, hpT, ha, hb, hXpkg, lfP, .rel d =>
       .rel (TpInv done hsat hP hm hm2 hK
         (ΩOk.cons (.inl hH) (fun _ h => absurd h (List.not_mem_nil)))
-        hpT hXpkg lfP d)
-  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .impL s lf =>
+        hpT ha hb hXpkg lfP d)
+  | _, _, _, _, _, _, _, hm, hm2, hK, hH, hpT, ha, hb, hXpkg, lfP, .impL s lf =>
       .impL (TStab done hsat hP hm hm2 hK hH.1 s)
-            (TpLF done hsat hP hm hm2 hK hH.2 hpT hXpkg lfP lf)
-  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .and1 lf =>
-      .and1 (TpLF done hsat hP hm hm2 hK hH.1 hpT hXpkg lfP lf)
-  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .and2 lf =>
-      .and2 (TpLF done hsat hP hm hm2 hK hH.2 hpT hXpkg lfP lf)
-  termination_by Γ' K M P₀ H hm hm2 hK hH hpT hXpkg lfP lf =>
-    (sum3 done, sizeOf lf)
+            (TpLF done hsat hP hm hm2 hK hH.2 hpT ha hb hXpkg lfP lf)
+  | _, _, _, _, _, _, _, hm, hm2, hK, hH, hpT, ha, hb, hXpkg, lfP, .and1 lf =>
+      .and1 (TpLF done hsat hP hm hm2 hK hH.1 hpT ha hb hXpkg lfP lf)
+  | _, _, _, _, _, _, _, hm, hm2, hK, hH, hpT, ha, hb, hXpkg, lfP, .and2 lf =>
+      .and2 (TpLF done hsat hP hm hm2 hK hH.2 hpT ha hb hXpkg lfP lf)
+  termination_by Γ' K M P₀ H a b hm hm2 hK hH hpT ha hb hXpkg lfP lf =>
+    (2 * sum3 [] + sum3 done, sizeOf lf)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -4019,68 +4042,71 @@ def TpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
 
 /-- Inversion inside a `p`-proof, with the goal re-targeted. -/
 def TpInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {Ω : List Pos},
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {Ω : List Pos} {a b : String},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      ΩOk p done Ω → PFreeP p P₀ → Neg.imp (.atom p) M ∈ done →
-      LFoc Γ' M P₀ →
-      Inv Γ' Ω (.up (.atom p)) → Inv (interp p [] done none :: K) Ω (.up P₀)
-  | _, _, _, _, _, hm, hm2, hK, _, hpT, hXpkg, lfP, .stable s =>
-      .stable (TpElim done hsat hP hm hm2 hK hpT hXpkg lfP s)
-  | _, _, _, _, .or P₁ Q₁ :: _, hm, hm2, hK, hΩ, hpT, hXpkg, lfP, .orL d₁ d₂ =>
+      ΩOk p done Ω → PFreeP p P₀ → a = p → b = p →
+      Neg.imp (.atom a) M ∈ done → LFoc Γ' M P₀ →
+      Inv Γ' Ω (.up (.atom b)) → Inv (interp p [] done none :: K) Ω (.up P₀)
+  | _, _, _, _, _, _, _, hm, hm2, hK, _, hpT, ha, hb, hXpkg, lfP, .stable s =>
+      .stable (TpElim done hsat hP hm hm2 hK hpT ha hb hXpkg lfP s)
+  | _, _, _, _, .or P₁ Q₁ :: _, _, _, hm, hm2, hK, hΩ, hpT, ha, hb, hXpkg, lfP, .orL d₁ d₂ =>
       have hor : PFreeP p (.or P₁ Q₁) := by
         rcases hΩ.head with h | ⟨a, hQ, _⟩
         · exact h
         · exact absurd hQ (by intro h; cases h)
       .orL (TpInv done hsat hP hm hm2 hK (hΩ.tail.cons (.inl hor.1))
-              hpT hXpkg lfP d₁)
+              hpT ha hb hXpkg lfP d₁)
            (TpInv done hsat hP hm hm2 hK (hΩ.tail.cons (.inl hor.2))
-              hpT hXpkg lfP d₂)
-  | _, _, _, _, _, _, _, _, _, _, _, _, .flsL => .flsL
-  | _, _, _, _, .down M₀ :: _, hm, hm2, hK, hΩ, hpT, hXpkg, lfP, .downL d =>
+              hpT ha hb hXpkg lfP d₂)
+  | _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, .flsL => .flsL
+  | _, _, _, _, .down M₀ :: _, _, _, hm, hm2, hK, hΩ, hpT, ha, hb, hXpkg, lfP, .downL d =>
       have hM : PFreeN p M₀ := by
         rcases hΩ.head with h | ⟨a, hQ, _⟩
         · exact h
         · exact absurd hQ (by intro h; cases h)
       .downL (((TpInv done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
-          (PFreeCtx.cons hM hK) hΩ.tail hpT hXpkg
+          (PFreeCtx.cons hM hK) hΩ.tail hpT ha hb hXpkg
           (lfP.wk (Sub.grow _)) d)).wk (fun Z hZ => by
         rcases List.mem_cons.mp hZ with rfl | hZ
         · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
         · rcases List.mem_cons.mp hZ with rfl | hZ
           · exact List.mem_cons_self ..
           · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
-  | _, _, _, _, .atom a :: _, hm, hm2, hK, hΩ, hpT, hXpkg, lfP, .atomL d =>
-      if hd : Neg.up (.atom a) ∈ done then
+  | _, _, _, _, .atom c :: _, _, _, hm, hm2, hK, hΩ, hpT, ha, hb, hXpkg, lfP, .atomL d =>
+      if hd : Neg.up (.atom c) ∈ done then
         .atomL (((TpInv done hsat hP (hmConsDone hd hm)
             (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK
-            hΩ.tail hpT hXpkg (lfP.wk (Sub.grow _)) d)).wk (Sub.grow _))
+            hΩ.tail hpT ha hb hXpkg (lfP.wk (Sub.grow _)) d)).wk (Sub.grow _))
       else
-        have ha : PFreeP p (.atom a) := by
-          rcases hΩ.head with h | ⟨b, hQ, hb⟩
+        have hc : PFreeP p (.atom c) := by
+          rcases hΩ.head with h | ⟨e, hQ, he⟩
           · exact h
-          · cases hQ; exact absurd hb hd
+          · cases hQ; exact absurd he hd
         .atomL (((TpInv done hsat hP (hmConsK hm)
             (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
-            (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from ha) hK) hΩ.tail hpT hXpkg
+            (PFreeCtx.cons (show PFreeN p (.up (.atom c)) from hc) hK) hΩ.tail hpT ha hb hXpkg
             (lfP.wk (Sub.grow _)) d)).wk (fun Z hZ => by
           rcases List.mem_cons.mp hZ with rfl | hZ
           · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
           · rcases List.mem_cons.mp hZ with rfl | hZ
             · exact List.mem_cons_self ..
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
-  termination_by Γ' K M P₀ Ω hm hm2 hK hΩ hpT hXpkg lfP d =>
-    (sum3 done, sizeOf d)
+  termination_by Γ' K M P₀ Ω a b hm hm2 hK hΩ hpT ha hb hXpkg lfP d =>
+    (2 * sum3 [] + sum3 done, sizeOf d)
   decreasing_by 
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals
       first
+        | exact Nat.lt_succ_self _
         | omega
         | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
-        | exact dec_fireT (findFire_mem (by assumption))
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
         | exact dec_park
@@ -4167,3 +4193,7 @@ end LJF
 /-- info: 'LJF.aMin' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms LJF.aMin
+
+/-- info: 'LJF.satE2_of_dyk' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJF.satE2_of_dyk
