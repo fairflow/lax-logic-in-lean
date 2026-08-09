@@ -645,6 +645,14 @@ theorem dec_dyk2_g {done rest : List Neg} {Q' : Pos} {N' N : Neg} {g : Nat}
     2 * (3 ^ wNeg N + 0) + sum3 rest < 2 * 0 + sum3 done + g :=
   Nat.lt_of_lt_of_le (dec_dyk2 h) (by omega)
 
+theorem dec_orA {P Q : Pos} {b todo : List Neg} {d g : Nat}
+    (hb : b ∈ invertPos (Pos.or P Q)) :
+    2 * (sum3 b + sum3 todo) + d + 0 <
+      2 * (3 ^ (wPos P + wPos Q + 1) + sum3 todo) + d + g := by
+  have h1 := invertPos_lt (P := Pos.or P Q) (fun a h => Pos.noConfusion h) b hb
+  simp only [wPos] at h1
+  omega
+
 theorem dec_ainv0 {Q : Pos} {b : List Neg} {N : Neg} {d : Nat}
     (hb : b ∈ invertPos Q) :
     2 * sum3 b + d + 0 < 2 * 0 + d + 3 ^ (wPos Q + wNeg N + 1) := by
@@ -700,9 +708,14 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
   | .up (.or P Q) :: todo, done, none =>
       nOrAll ((invertPos (.or P Q)).attach.map
         (fun ⟨b, hb⟩ => interp p (b ++ todo) done none))
+  -- context split in ∀p mode: each branch conjunct guarded by the branch's
+  -- ∃p, for the same reason as the implication goal — minimality would
+  -- otherwise demand deriving one branch's ∀p from another branch's ∃p.
   | .up (.or P Q) :: todo, done, some G =>
       nAndAll ((invertPos (.or P Q)).attach.map
-        (fun ⟨b, hb⟩ => interp p (b ++ todo) done (some G)))
+        (fun ⟨b, hb⟩ =>
+          .imp (.down (interp p (b ++ todo) done none))
+            (interp p (b ++ todo) done (some G))))
   -- a shifted negative moves into the context  [w M < w ↑↓M = w M + 1]
   | .up (.down M) :: todo, done, g =>
       interp p (M :: todo) done g
@@ -832,6 +845,9 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
           | (have := wNeg_pos M; have := wNeg_pos N; omega))
       | exact dec_impor (wPos_pos _) (wPos_pos _)
       | exact dec_orctx (by assumption)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)
       | exact dec_fire (by assumption)
       | exact dec_qimp (by assumption)
       | exact dec_qimp_g (by assumption)
@@ -841,6 +857,8 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
       | exact dec_dyk2_g (by assumption)
       | exact dec_ainv (by assumption)
       | exact dec_ainv0 (by assumption)
+      | exact dec_orA (by assumption)
+      | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
 
 
 /-! ## `p`-freeness -/
@@ -921,12 +939,13 @@ theorem interp_pfree (p : String) :
       obtain ⟨⟨b, hb⟩, rfl⟩ := hx
       exact ih b hb
   | case5 =>
-      rename_i ih
+      rename_i ih2 ih1
       apply pfree_nAndAll
       intro x hx
       simp only [List.mem_map, List.mem_attach, true_and] at hx
       obtain ⟨⟨b, hb⟩, rfl⟩ := hx
-      exact ih b hb
+      refine ⟨?_, ?_⟩ <;>
+        first | exact ih1 b hb | exact ih2 b | exact ih1 b | exact ih2 b hb
   | case6 => assumption
   | case7 => assumption
   | case8 => assumption
@@ -971,9 +990,8 @@ theorem interp_pfree (p : String) :
       intro x hx
       simp only [List.mem_map, List.mem_attach, true_and] at hx
       obtain ⟨⟨b, hb⟩, rfl⟩ := hx
-      first
-      | exact ⟨ih2 b hb, ih1 b hb⟩
-      | exact ⟨ih1 b hb, ih2 b hb⟩
+      refine ⟨?_, ?_⟩ <;>
+        first | exact ih1 b hb | exact ih2 b | exact ih1 b | exact ih2 b hb
   | case17 => exact ⟨by assumption, by assumption⟩
   | case18 => exact pfree_nTop
   | case19 =>
@@ -1794,6 +1812,9 @@ def eSound (p : String) : ∀ (todo done : List Neg),
           | (have := wNeg_pos M; have := wNeg_pos N; omega))
       | exact dec_impor (wPos_pos _) (wPos_pos _)
       | exact dec_orctx (by assumption)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)
       | exact dec_fire (by assumption)
       | exact dec_qimp (by assumption)
       | exact dec_qimp_g (by assumption)
@@ -1803,6 +1824,8 @@ def eSound (p : String) : ∀ (todo done : List Neg),
       | exact dec_dyk2_g (by assumption)
       | exact dec_ainv (by assumption)
       | exact dec_ainv0 (by assumption)
+      | exact dec_orA (by assumption)
+      | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
@@ -1833,7 +1856,14 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       exact simHyp
         (fl := fun hs lf =>
           .lfoc (hs _ (List.mem_append_right _ (List.mem_cons_self ..)))
-            (lfocAndAll (List.mem_map_of_mem (List.mem_attach _ ⟨b, hb⟩)) lf))
+            (lfocAndAll (List.mem_map_of_mem (List.mem_attach _ ⟨b, hb⟩))
+              (.impL
+                (.rfoc (.rel ((eSound p (b ++ todo) done).wk (fun Z hZ =>
+                  hs _ (subBranch2 Z (by
+                    rcases List.mem_append.mp hZ with hZ | hZ
+                    · exact List.mem_append_left _ hZ
+                    · exact List.mem_append_right _ hZ))))))
+                lf)))
         (subBranch2)
         (aSound p (b ++ todo) done G)
   | .up (.down M) :: todo, done, G => by
@@ -2319,6 +2349,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           | (have := wNeg_pos M; have := wNeg_pos N; omega))
       | exact dec_impor (wPos_pos _) (wPos_pos _)
       | exact dec_orctx (by assumption)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)
       | exact dec_fire (by assumption)
       | exact dec_qimp (by assumption)
       | exact dec_qimp_g (by assumption)
@@ -2328,6 +2361,8 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       | exact dec_dyk2_g (by assumption)
       | exact dec_ainv (by assumption)
       | exact dec_ainv0 (by assumption)
+      | exact dec_orA (by assumption)
+      | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
       | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
@@ -2343,6 +2378,507 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
 end
 
 
+
+end LJF
+
+namespace LJF
+
+/-! # Part 5: minimality of both modes
+
+`eMin`: any `p`-free consequence of the context follows from its `∃p`
+interpolant.  `aMin`: any way a context beside `p`-free material reaches the
+goal factors through the `∀p` interpolant.  The processing phase is proved
+here outright: each clause's *inverse* transformation — replacing uses of the
+consumed hypothesis by uses of its residual — is one `simulate` instance.
+What remains is the saturated case, isolated below as `SatE2`/`SatA2`.
+
+## The inverse transformations -/
+
+/-! Forced-shape analysers, top level so the index specialises. -/
+
+/-- A left focus on a conjunction projects. -/
+def lfocAnd {Δ : List Neg} {M N : Neg} {P : Pos} :
+    LFoc Δ (.and M N) P → LFoc Δ M P ⊕ LFoc Δ N P
+  | .and1 lf => .inl lf
+  | .and2 lf => .inr lf
+
+/-- A left focus on an implication is `impL`. -/
+def lfocImp {Δ : List Neg} {Q : Pos} {N : Neg} {P : Pos} :
+    LFoc Δ (.imp Q N) P → Stab Δ Q × LFoc Δ N P
+  | .impL s lf => (s, lf)
+
+/-- A left focus on a shift is `rel`. -/
+def lfocUp {Δ : List Neg} {Q : Pos} {P : Pos} :
+    LFoc Δ (.up Q) P → Inv Δ [Q] (.up P)
+  | .rel d => d
+
+/-- There is no right focus on `⊥`. -/
+def rfocFls {Δ : List Neg} {A : Sort _} : RFocus Δ .fls → A := nofun
+
+/-- A right focus on a disjunction picks a side. -/
+def rfocOr {Δ : List Neg} {A B : Pos} :
+    RFocus Δ (.or A B) → RFocus Δ A ⊕ RFocus Δ B
+  | .or1 r => .inl r
+  | .or2 r => .inr r
+
+/-- Uses of `M ∧ N` become uses of `M` and `N`. -/
+def invAndHyp {M N : Neg} {Γ : List Neg} {C : Neg}
+    (d : Inv (.and M N :: Γ) [] C) : Inv (M :: N :: Γ) [] C :=
+  simHyp (H := .and M N)
+    (fl := fun hs lf => match lfocAnd lf with
+      | .inl lf' => .lfoc (hs _ (List.mem_cons_self ..)) lf'
+      | .inr lf' =>
+          .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..))) lf')
+    (fun Z hZ => List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+    d
+
+/-- Uses of `⊥ ⊃ N` are vacuous: the antecedent proof routes to nothing —
+`RFocus _ ⊥` has no constructor. -/
+def invImpFls {N : Neg} {Γ : List Neg} {C : Neg}
+    (d : Inv (.imp .fls N :: Γ) [] C) : Inv Γ [] C :=
+  simHyp (H := .imp .fls N)
+    (fl := fun _ lf =>
+      routeStab (k := fun _ r => rfocFls r) (Sub.refl _) (lfocImp lf).1)
+    (Sub.refl _)
+    d
+
+/-- Uses of `(Q₁∨Q₂) ⊃ N` route through the split residuals. -/
+def invImpOr {Q₁ Q₂ : Pos} {N : Neg} {Γ : List Neg} {C : Neg}
+    (d : Inv (.imp (.or Q₁ Q₂) N :: Γ) [] C) :
+    Inv (.imp Q₁ N :: .imp Q₂ N :: Γ) [] C :=
+  simHyp (H := .imp (.or Q₁ Q₂) N)
+    (fl := fun hs lf =>
+      routeStab
+        (k := fun hs' r => match rfocOr r with
+          | .inl r₁ =>
+              .lfoc (hs' _ (hs _ (List.mem_cons_self ..)))
+                (.impL (.rfoc r₁) ((lfocImp lf).2.wk hs'))
+          | .inr r₂ =>
+              .lfoc (hs' _ (hs _ (List.mem_cons_of_mem _
+                  (List.mem_cons_self ..))))
+                (.impL (.rfoc r₂) ((lfocImp lf).2.wk hs')))
+        (Sub.refl _) (lfocImp lf).1)
+    (fun Z hZ => List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+    d
+
+/-- Uses of `↓↑P′ ⊃ N` strip the double shift. -/
+def invStrip {P' : Pos} {N : Neg} {Γ : List Neg} {C : Neg}
+    (d : Inv (.imp (.down (.up P')) N :: Γ) [] C) : Inv (.imp P' N :: Γ) [] C :=
+  simHyp (H := .imp (.down (.up P')) N)
+    (fl := fun hs lf =>
+      routeStab
+        (k := fun hs' r =>
+          .lfoc (hs' _ (hs _ (List.mem_cons_self ..)))
+            (.impL (unStable (relOf r)) ((lfocImp lf).2.wk hs')))
+        (Sub.refl _) (lfocImp lf).1)
+    (fun Z hZ => List.mem_cons_of_mem _ hZ)
+    d
+
+/-- Uses of `↓(M₁∧M₂) ⊃ N` fire the curried residual twice. -/
+def invCurry {M₁ M₂ N : Neg} {Γ : List Neg} {C : Neg}
+    (d : Inv (.imp (.down (.and M₁ M₂)) N :: Γ) [] C) :
+    Inv (.imp (.down M₁) (.imp (.down M₂) N) :: Γ) [] C :=
+  simHyp (H := .imp (.down (.and M₁ M₂)) N)
+    (fl := fun hs lf =>
+      routeStab
+        (k := fun hs' r =>
+          .lfoc (hs' _ (hs _ (List.mem_cons_self ..)))
+            (.impL (.rfoc (.rel (andROf1 (relOf r))))
+              (.impL (.rfoc (.rel (andROf2 (relOf r))))
+                ((lfocImp lf).2.wk hs'))))
+        (Sub.refl _) (lfocImp lf).1)
+    (fun Z hZ => List.mem_cons_of_mem _ hZ)
+    d
+
+/-- Uses of a shifted hypothesis restrict to any one branch of its
+inversion — the derivation already contains that branch (`extract`). -/
+def invUp {R : Pos} {Γ : List Neg} {C : Neg}
+    (d : Inv (.up R :: Γ) [] C) (b : List Neg) (hb : b ∈ invertPos R) :
+    Inv (b ++ Γ) [] C :=
+  simHyp (H := .up R)
+    (fl := fun {Δ'} {_} hs lf =>
+      unStable ((extract [] (lfocUp lf) b hb).wk (fun Z hZ => by
+        rcases List.mem_append.mp hZ with hZ | hZ
+        · exact hs _ (List.mem_append_left _ hZ)
+        · exact hZ)))
+    (fun Z hZ => List.mem_append_right _ hZ)
+    d
+
+end LJF
+
+namespace LJF
+
+/-! ## Splitting a context member -/
+
+theorem splits_mem_split {Γ : List Neg} :
+    ∀ {X rest}, (X, rest) ∈ splits Γ → ∀ Z ∈ Γ, Z = X ∨ Z ∈ rest := by
+  induction Γ with
+  | nil => intro X rest h; simp [splits] at h
+  | cons Y Γ ih =>
+      intro X rest h Z hZ
+      simp only [splits, List.mem_cons, List.mem_map] at h
+      rcases h with h | ⟨⟨W, rest'⟩, hW, hEq⟩
+      · cases h
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact .inl rfl
+        · exact .inr hZ
+      · cases hEq
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact .inr (List.mem_cons_self ..)
+        · rcases ih hW Z hZ with e | hZ
+          · exact .inl e
+          · exact .inr (List.mem_cons_of_mem _ hZ)
+
+/-- Uses of a fired implication become uses of its conclusion. -/
+def invFireHyp {a : String} {N : Neg} {done rest Δext : List Neg} {C : Neg}
+    (h : (Neg.imp (.atom a) N, rest) ∈ splits done)
+    (d : Inv (done ++ Δext) [] C) : Inv (N :: (rest ++ Δext)) [] C :=
+  simInv (H := .imp (.atom a) N)
+    (fl := fun hs lf => .lfoc (hs _ (List.mem_cons_self ..)) (lfocImp lf).2)
+    (fun Z hZ => by
+      rcases List.mem_append.mp hZ with hZ | hZ
+      · rcases splits_mem_split h Z hZ with e | hZ
+        · exact .inl e
+        · exact .inr (List.mem_cons_of_mem _ (List.mem_append_left _ hZ))
+      · exact .inr (List.mem_cons_of_mem _ (List.mem_append_right _ hZ)))
+    (Sub.refl _) d
+
+/-! ## Context shuffles for the minimality reductions -/
+
+theorem subParkOut {X : Neg} {t d Δ : List Neg} :
+    Sub (((X :: t) ++ d) ++ Δ) ((t ++ X :: d) ++ Δ) := by
+  intro Z hZ
+  rcases List.mem_append.mp hZ with hZ | hZ
+  · exact List.mem_append_left _ (subParkInv _ hZ)
+  · exact List.mem_append_right _ hZ
+
+theorem subHeadOut {X : Neg} {t d Δ : List Neg} :
+    Sub (((X :: t) ++ d) ++ Δ) (X :: ((t ++ d) ++ Δ)) := by
+  intro Z hZ
+  rcases List.mem_append.mp hZ with hZ | hZ
+  · rcases List.mem_cons.mp hZ with rfl | hZ
+    · exact List.mem_cons_self ..
+    · exact List.mem_cons_of_mem _ (List.mem_append_left _ hZ)
+  · exact List.mem_cons_of_mem _ (List.mem_append_right _ hZ)
+
+theorem subChainIn {b t d Δ : List Neg} :
+    Sub (b ++ ((t ++ d) ++ Δ)) (((b ++ t) ++ d) ++ Δ) := by
+  intro Z hZ
+  rcases List.mem_append.mp hZ with hZ | hZ
+  · exact List.mem_append_left _ (List.mem_append_left _
+      (List.mem_append_left _ hZ))
+  · rcases List.mem_append.mp hZ with hZ | hZ
+    · rcases List.mem_append.mp hZ with hZ | hZ
+      · exact List.mem_append_left _ (List.mem_append_left _
+          (List.mem_append_right _ hZ))
+      · exact List.mem_append_left _ (List.mem_append_right _ hZ)
+    · exact List.mem_append_right _ hZ
+
+/-! ## The two open obligations, and minimality modulo them -/
+
+/-- The context is `p`-free. -/
+def PFreeCtx (p : String) (Δ : List Neg) : Prop := ∀ N ∈ Δ, PFreeN p N
+
+/-- Saturation: no parked implication can fire. -/
+def Saturated (done : List Neg) : Prop :=
+  findFire done (splits done) = none
+
+/-- **Open obligation 1**: minimality of `∃p` at a saturated context.  The
+inner induction over derivations at saturated sequents — the heart of Pitts'
+argument.  Everything else in `eMin`/`aMin` is proved below. -/
+def SatE2 (p : String) : Type :=
+  ∀ (done Δ : List Neg) (ψ : Neg), Saturated done →
+    PFreeCtx p Δ → PFreeN p ψ →
+    Inv (done ++ Δ) [] ψ → Inv (interp p [] done none :: Δ) [] ψ
+
+/-- **Open obligation 2**: minimality of `∀p` at a saturated context. -/
+def SatA2 (p : String) : Type :=
+  ∀ (done Δ : List Neg) (G : Neg), Saturated done → PFreeCtx p Δ →
+    Inv (done ++ Δ) [] G →
+    Inv (interp p [] done none :: Δ) [] (interp p [] done (some G))
+
+/-- **Minimality of `∃p`, modulo the saturated case**: any `p`-free
+consequence of the context follows from its interpolant.  Every processing
+clause is its inverse transformation followed by the recursive call; the
+saturated case is `satE`. -/
+def eMin (p : String) (satE : SatE2 p) :
+    ∀ (todo done Δ : List Neg) (ψ : Neg), PFreeCtx p Δ → PFreeN p ψ →
+      Inv ((todo ++ done) ++ Δ) [] ψ →
+      Inv (interp p todo done none :: Δ) [] ψ
+  | .up (.atom a) :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE todo (.up (.atom a) :: done) Δ ψ hΔ hψ
+        (d.wk subParkOut)
+  | .up .fls :: todo, done, Δ, ψ, _, _, _ => by
+      rw [interp]
+      exact nBotElim _ (List.mem_cons_self ..)
+  | .up (.or P Q) :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      refine nOrAllElim _ (List.mem_cons_self ..) ?_
+      intro x hx Γ' hsub
+      obtain ⟨⟨b, hb⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+      subst hEq
+      refine ((eMin p satE (b ++ todo) done Δ ψ hΔ hψ
+        ((invUp (d.wk subHeadOut) b hb).wk subChainIn)).wk ?_)
+      intro Z hZ
+      rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_self ..
+      · exact List.mem_cons_of_mem _ (hsub _ (List.mem_cons_of_mem _ hZ))
+  | .up (.down M) :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE (M :: todo) done Δ ψ hΔ hψ
+        (((invUp (d.wk subHeadOut) [M] (by simp [invertPos]))).wk subChainIn)
+  | .and M N :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE (M :: N :: todo) done Δ ψ hΔ hψ
+        ((invAndHyp (d.wk subHeadOut)).wk (subChainIn (b := [M, N])))
+  | .imp .fls N :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE todo done Δ ψ hΔ hψ (invImpFls (d.wk subHeadOut))
+  | .imp (.atom a) N :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE todo (.imp (.atom a) N :: done) Δ ψ hΔ hψ
+        (d.wk subParkOut)
+  | .imp (.or Q₁ Q₂) N :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE (.imp Q₁ N :: .imp Q₂ N :: todo) done Δ ψ hΔ hψ
+        ((invImpOr (d.wk subHeadOut)).wk
+          (subChainIn (b := [.imp Q₁ N, .imp Q₂ N])))
+  | .imp (.down (.up P')) N :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE (.imp P' N :: todo) done Δ ψ hΔ hψ
+        ((invStrip (d.wk subHeadOut)).wk (subChainIn (b := [.imp P' N])))
+  | .imp (.down (.and M₁ M₂)) N :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done Δ ψ
+        hΔ hψ
+        ((invCurry (d.wk subHeadOut)).wk
+          (subChainIn (b := [.imp (.down M₁) (.imp (.down M₂) N)])))
+  | .imp (.down (.imp Q' N')) N :: todo, done, Δ, ψ, hΔ, hψ, d => by
+      rw [interp]
+      exact eMin p satE todo (.imp (.down (.imp Q' N')) N :: done) Δ ψ hΔ hψ
+        (d.wk subParkOut)
+  | [], done, Δ, ψ, hΔ, hψ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N, rest) =>
+          have eq1 : interp p [] done none = interp p [N] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1]
+          exact eMin p satE [N] rest Δ ψ hΔ hψ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact satE done Δ ψ hf hΔ hψ d
+  termination_by todo done _ _ => 2 * sum3 todo + sum3 done
+  decreasing_by
+    all_goals simp_wf
+    all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals first
+      | exact dec_park
+      | exact dec_shift1
+      | exact dec_and
+      | exact dec_curry
+      | exact dec_stripshift
+      | exact dec_drop
+      | exact dec_impor (wPos_pos _) (wPos_pos _)
+      | exact dec_orctx (by assumption)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)
+      | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+      | (have h1 := p3_pos (wNeg M); omega)
+      | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega); omega)
+
+/-- **Minimality of `∀p`, modulo the saturated case**: any route from the
+context beside `p`-free material to the goal factors through the `∀p`
+interpolant, given the `∃p` interpolant as a hypothesis. -/
+def aMin (p : String) (satA : SatA2 p) :
+    ∀ (todo done Δ : List Neg) (G : Neg), PFreeCtx p Δ →
+      Inv ((todo ++ done) ++ Δ) [] G →
+      Inv (interp p todo done none :: Δ) [] (interp p todo done (some G))
+  | .up (.atom a) :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA todo (.up (.atom a) :: done) Δ G hΔ (d.wk subParkOut)
+  | .up .fls :: todo, done, Δ, G, _, _ => by
+      rw [interp, interp]
+      exact nBotElim _ (List.mem_cons_self ..)
+  | .up (.or P Q) :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      refine nAndAllIntro ?_
+      intro x hx
+      obtain ⟨⟨b, hb⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+      subst hEq
+      refine .impR (.downL ?_)
+      refine ((aMin p satA (b ++ todo) done Δ G hΔ
+        ((invUp (d.wk subHeadOut) b hb).wk subChainIn)).wk ?_)
+      intro Z hZ
+      rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_self ..
+      · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)
+  | .up (.down M) :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA (M :: todo) done Δ G hΔ
+        (((invUp (d.wk subHeadOut) [M] (by simp [invertPos]))).wk subChainIn)
+  | .and M N :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA (M :: N :: todo) done Δ G hΔ
+        ((invAndHyp (d.wk subHeadOut)).wk (subChainIn (b := [M, N])))
+  | .imp .fls N :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA todo done Δ G hΔ (invImpFls (d.wk subHeadOut))
+  | .imp (.atom a) N :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA todo (.imp (.atom a) N :: done) Δ G hΔ
+        (d.wk subParkOut)
+  | .imp (.or Q₁ Q₂) N :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA (.imp Q₁ N :: .imp Q₂ N :: todo) done Δ G hΔ
+        ((invImpOr (d.wk subHeadOut)).wk
+          (subChainIn (b := [.imp Q₁ N, .imp Q₂ N])))
+  | .imp (.down (.up P')) N :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA (.imp P' N :: todo) done Δ G hΔ
+        ((invStrip (d.wk subHeadOut)).wk (subChainIn (b := [.imp P' N])))
+  | .imp (.down (.and M₁ M₂)) N :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done Δ G
+        hΔ
+        ((invCurry (d.wk subHeadOut)).wk
+          (subChainIn (b := [.imp (.down M₁) (.imp (.down M₂) N)])))
+  | .imp (.down (.imp Q' N')) N :: todo, done, Δ, G, hΔ, d => by
+      rw [interp, interp]
+      exact aMin p satA todo (.imp (.down (.imp Q' N')) N :: done) Δ G hΔ
+        (d.wk subParkOut)
+  | [], done, Δ, (.imp Q N), hΔ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          have eq1 : interp p [] done none = interp p [N'] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          have eq2 : interp p [] done (some (.imp Q N)) =
+              interp p [N'] rest (some (.imp Q N)) := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1, eq2]
+          exact aMin p satA [N'] rest Δ (.imp Q N) hΔ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact satA done Δ (.imp Q N) hf hΔ d
+  | [], done, Δ, (.and M N), hΔ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          have eq1 : interp p [] done none = interp p [N'] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          have eq2 : interp p [] done (some (.and M N)) =
+              interp p [N'] rest (some (.and M N)) := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1, eq2]
+          exact aMin p satA [N'] rest Δ (.and M N) hΔ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact satA done Δ (.and M N) hf hΔ d
+  | [], done, Δ, (.up (.atom q)), hΔ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          have eq1 : interp p [] done none = interp p [N'] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          have eq2 : interp p [] done (some (.up (.atom q))) =
+              interp p [N'] rest (some (.up (.atom q))) := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1, eq2]
+          exact aMin p satA [N'] rest Δ (.up (.atom q)) hΔ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact satA done Δ (.up (.atom q)) hf hΔ d
+  | [], done, Δ, (.up .fls), hΔ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          have eq1 : interp p [] done none = interp p [N'] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          have eq2 : interp p [] done (some (.up .fls)) =
+              interp p [N'] rest (some (.up .fls)) := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1, eq2]
+          exact aMin p satA [N'] rest Δ (.up .fls) hΔ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact satA done Δ (.up .fls) hf hΔ d
+  | [], done, Δ, (.up (.or P₁ P₂)), hΔ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          have eq1 : interp p [] done none = interp p [N'] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          have eq2 : interp p [] done (some (.up (.or P₁ P₂))) =
+              interp p [N'] rest (some (.up (.or P₁ P₂))) := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1, eq2]
+          exact aMin p satA [N'] rest Δ (.up (.or P₁ P₂)) hΔ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact satA done Δ (.up (.or P₁ P₂)) hf hΔ d
+  | [], done, Δ, (.up (.down M)), hΔ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          have eq1 : interp p [] done none = interp p [N'] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          have eq2 : interp p [] done (some (.up (.down M))) =
+              interp p [N'] rest (some (.up (.down M))) := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1, eq2]
+          exact aMin p satA [N'] rest Δ (.up (.down M)) hΔ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact satA done Δ (.up (.down M)) hf hΔ d
+  termination_by todo done _ G => 2 * sum3 todo + sum3 done + 3 ^ wNeg G
+  decreasing_by
+    all_goals simp_wf
+    all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals first
+      | exact dec_park
+      | exact dec_shift1
+      | exact dec_and
+      | exact dec_curry
+      | exact dec_stripshift
+      | exact dec_drop
+      | exact dec_impor (wPos_pos _) (wPos_pos _)
+      | exact dec_orctx (by assumption)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)
+      | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+      | (have h1 := p3_pos (wNeg M); omega)
+      | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega); omega)
 
 end LJF
 
@@ -2363,3 +2899,11 @@ end LJF
 /-- info: 'LJF.aSound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms LJF.aSound
+
+/-- info: 'LJF.eMin' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJF.eMin
+
+/-- info: 'LJF.aMin' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJF.aMin
