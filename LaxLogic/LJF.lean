@@ -2985,6 +2985,239 @@ def aMin (p : String) (satA : SatA2 p) :
 
 end LJF
 
+namespace LJF
+
+/-! # Part 6: the saturated case — the inner induction
+
+The plan, fixed by the analysis of 2026-08-09:
+
+* One traversal over the four judgments, structural in the derivation, at a
+  fixed saturated parked station `done`, with the context split as
+  `done`-part plus a `p`-free kept part `K`.
+* Uses of `done`-members are dispatched through the matching conjunct of the
+  interpolant; the continuation after a fire is packaged as a derivation
+  over the fired context (`d_cont`), cleaned of residual uses of the fired
+  member, and handed to the minimality function at strictly smaller measure.
+* Proofs of the atom `p` at the main line are eliminated by **composition**:
+  `init` on `↑p` is impossible (saturation excludes `↑p` beside `p ⊃ M`;
+  the kept side is `p`-free), so every such proof bottoms out in a fire
+  whose body releases the `p`-material — and at that node all pieces exist
+  to compose the outer `p ⊃ M` use with the inner fire directly.
+* The single dispatch that does not close by these means is the Dyckhoff
+  antecedent — deriving `∀p` of the antecedent at the residual station from
+  a main-line stable proof of it.  It is isolated as `DykAnt`, one
+  statement serving both modes.
+
+## Preliminaries -/
+
+/-- `p`-freeness for a pending list. -/
+def PFreeΩ (p : String) (Ω : List Pos) : Prop := ∀ Q ∈ Ω, PFreeP p Q
+
+theorem PFreeΩ.nil {p : String} : PFreeΩ p [] := fun _ h => absurd h (List.not_mem_nil)
+
+theorem PFreeΩ.cons {p : String} {Q : Pos} {Ω : List Pos}
+    (hQ : PFreeP p Q) (h : PFreeΩ p Ω) : PFreeΩ p (Q :: Ω) := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact hQ
+  · exact h Z hZ
+
+theorem PFreeΩ.head {p : String} {Q : Pos} {Ω : List Pos}
+    (h : PFreeΩ p (Q :: Ω)) : PFreeP p Q := h Q (List.mem_cons_self ..)
+
+theorem PFreeΩ.tail {p : String} {Q : Pos} {Ω : List Pos}
+    (h : PFreeΩ p (Q :: Ω)) : PFreeΩ p Ω :=
+  fun Z hZ => h Z (List.mem_cons_of_mem _ hZ)
+
+/-- Locate a member's split, constructively. -/
+def splitAt : (Γ : List Neg) → (X : Neg) → X ∈ Γ → {rest // (X, rest) ∈ splits Γ}
+  | Y :: Γ, X, h =>
+      if e : X = Y then
+        ⟨Γ, by cases e; exact List.mem_cons_self ..⟩
+      else
+        have h' : X ∈ Γ := by
+          rcases List.mem_cons.mp h with rfl | h'
+          · exact absurd rfl e
+          · exact h'
+        let ⟨rest, hr⟩ := splitAt Γ X h'
+        ⟨Y :: rest, List.mem_cons_of_mem _
+          (List.mem_map_of_mem (f := fun zr => (zr.1, Y :: zr.2)) hr)⟩
+
+/-- The `∃p` conjunct of a `q`-implication member, and its membership in the
+interpolant's conjunction list. -/
+theorem qimpConjMem {p : String} {done : List Neg} {a : String} {N : Neg}
+    {rest : List Neg} (hXr : (Neg.imp (.atom a) N, rest) ∈ splits done) :
+    pGuard p a nTop (.imp (.atom a) (interp p [N] rest none)) ∈
+      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+        match X with
+        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
+        | .imp (.atom a) N =>
+            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
+        | .imp (.down (.imp Q' N')) N =>
+            .imp (.down (interp p [.imp (.down N') N] rest
+                           (some (.imp Q' N'))))
+                 (interp p [N] rest none)
+        | _ => nTop)) :=
+  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
+
+/-- Likewise for a surviving atom. -/
+theorem atomConjMem {p : String} {done : List Neg} {a : String}
+    {rest : List Neg} (hXr : (Neg.up (.atom a), rest) ∈ splits done) :
+    pGuard p a nTop (.up (.atom a)) ∈
+      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+        match X with
+        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
+        | .imp (.atom a) N =>
+            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
+        | .imp (.down (.imp Q' N')) N =>
+            .imp (.down (interp p [.imp (.down N') N] rest
+                           (some (.imp Q' N'))))
+                 (interp p [N] rest none)
+        | _ => nTop)) :=
+  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
+
+/-- And for a Dyckhoff member. -/
+theorem dykConjMem {p : String} {done : List Neg} {Q' : Pos} {N' N : Neg}
+    {rest : List Neg}
+    (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done) :
+    (Neg.imp (.down (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
+             (interp p [N] rest none)) ∈
+      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+        match X with
+        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
+        | .imp (.atom a) N =>
+            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
+        | .imp (.down (.imp Q' N')) N =>
+            .imp (.down (interp p [.imp (.down N') N] rest
+                           (some (.imp Q' N'))))
+                 (interp p [N] rest none)
+        | _ => nTop)) :=
+  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
+
+/-- **The isolated obligation** — the Dyckhoff antecedent dispatch: from a
+main-line stable proof of the antecedent `↓(Q′ ⊃ N′)`, derive the `∀p`
+interpolant of the antecedent at the residual station, on the interpolant
+side.  One statement serves both modes.  This is Pitts' hardest case
+(the `(A⊃B)⊃C` commute), and everything else below is proved outright. -/
+def DykAnt (p : String) : Type :=
+  ∀ (done rest K Γ' : List Neg) (Q' : Pos) (N' N : Neg),
+    Saturated done → ParkedCtx done →
+    (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done →
+    (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+    Stab Γ' (.down (.imp Q' N')) →
+    Inv (interp p [] done none :: K) []
+        (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+
+end LJF
+
+namespace LJF
+
+/-! ## Part 6b: the dispatch helpers
+
+Each is a plain `simulate`/assembly instance — no recursion into the coming
+mutual block, so they compile standalone. -/
+
+variable {p : String}
+
+/-- **Fired-context cleanup.**  After a fire of `Q₀ ⊃ N`, residual uses of
+the fired implication are redundant: the body `N` is now a hypothesis, so
+`impL`-uses drop their antecedent and use `N` directly. -/
+def fireClean {Q₀ : Pos} {N : Neg} {Γ' rest K : List Neg} {C : Neg}
+    (hsplit : ∀ Z ∈ Γ', Z = Neg.imp Q₀ N ∨ Z ∈ rest ∨ Z ∈ K)
+    (d : Inv (N :: Γ') [] C) : Inv ((N :: rest) ++ K) [] C :=
+  simInv (H := .imp Q₀ N)
+    (fl := fun hs lf =>
+      .lfoc (hs _ (List.mem_append_left _ (List.mem_cons_self ..)))
+        (lfocImp lf).2)
+    (fun Z hZ => by
+      rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact .inr (List.mem_append_left _ (List.mem_cons_self ..))
+      · rcases hsplit Z hZ with e | hZ | hZ
+        · exact .inl e
+        · exact .inr (List.mem_append_left _ (List.mem_cons_of_mem _ hZ))
+        · exact .inr (List.mem_append_right _ hZ))
+    (Sub.refl _) d
+
+/-- The saturated `∃p` aggregate, as an equation. -/
+theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
+    interp p [] done none = nAndAll ((splits done).attach.map
+      (fun ⟨(X, rest), hXr⟩ =>
+        match X with
+        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
+        | .imp (.atom a) N =>
+            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
+        | .imp (.down (.imp Q' N')) N =>
+            .imp (.down (interp p [.imp (.down N') N] rest
+                           (some (.imp Q' N'))))
+                 (interp p [N] rest none)
+        | _ => nTop)) := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · rfl
+
+/-- Project a surviving atom from the interpolant. -/
+def atomAssemble {done K rest : List Neg} {a : String} {L : List Neg}
+    (hE : interp p [] done none = nAndAll L)
+    (hmem : pGuard p a nTop (.up (.atom a)) ∈ L) (hap : ¬ a = p) :
+    Stab (interp p [] done none :: K) (.atom a) :=
+  .lfoc (List.mem_cons_self ..)
+    (hE.symm ▸ lfocAndAll hmem (by
+      simp only [pGuard]; rw [if_neg hap]
+      exact LFoc.rel (idPos (.atom a) _)))
+
+/-- Fire the `q`-implication conjunct: the atom from `sa`, the recursively
+interpolated body consumed through `δ`. -/
+def qAssemble {done rest K : List Neg} {a : String} {N : Neg} {P : Pos}
+    {L : List Neg}
+    (hE : interp p [] done none = nAndAll L)
+    (hmem : pGuard p a nTop (.imp (.atom a) (interp p [N] rest none)) ∈ L)
+    (hap : ¬ a = p)
+    (sa : Stab (interp p [] done none :: K) (.atom a))
+    (δ : Inv (interp p [N] rest none :: K) [] (.up P)) :
+    Stab (interp p [] done none :: K) P :=
+  unStable (simHyp
+    (fl := fun hs lf =>
+      .lfoc (hs _ (List.mem_cons_self ..))
+        (hE.symm ▸ lfocAndAll hmem (by
+          simp only [pGuard]; rw [if_neg hap]
+          exact LFoc.impL (sa.wk hs) lf)))
+    (Sub.grow _) δ)
+
+/-- Fire the Dyckhoff conjunct: the antecedent interpolant from `sant`, the
+recursively interpolated body consumed through `δ`. -/
+def dykAssemble {done rest K : List Neg} {Q' : Pos} {N' N : Neg} {P : Pos}
+    {L : List Neg}
+    (hE : interp p [] done none = nAndAll L)
+    (hmem : (Neg.imp
+        (.down (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
+        (interp p [N] rest none)) ∈ L)
+    (sant : Inv (interp p [] done none :: K) []
+      (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
+    (δ : Inv (interp p [N] rest none :: K) [] (.up P)) :
+    Stab (interp p [] done none :: K) P :=
+  unStable (simHyp
+    (fl := fun hs lf =>
+      .lfoc (hs _ (List.mem_cons_self ..))
+        (hE.symm ▸ lfocAndAll hmem
+          (.impL (.rfoc (.rel (sant.wk hs))) lf)))
+    (Sub.grow _) δ)
+
+/-- The context split after locating a member: `done`-side members are the
+member itself or in its complement. -/
+theorem splitHyp {done K Γ' rest : List Neg} {X : Neg}
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K)
+    (hXr : (X, rest) ∈ splits done) :
+    ∀ Z ∈ Γ', Z = X ∨ Z ∈ rest ∨ Z ∈ K := by
+  intro Z hZ
+  rcases hm Z hZ with hd | hK
+  · rcases splits_mem_split hXr Z hd with e | hr
+    · exact .inl e
+    · exact .inr (.inl hr)
+  · exact .inr (.inr hK)
+
+end LJF
+
 /-! ### Axiom audit — measured and pinned on creation (2026-08-09). -/
 
 /-- info: 'LJF.interp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
