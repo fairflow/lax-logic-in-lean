@@ -1658,12 +1658,304 @@ theorem subBranch2 {b t d : List Neg} {X Y : Neg} :
 def nBotElim {Γ : List Neg} (G : Neg) (h : nBot ∈ Γ) : Inv Γ [] G :=
   upMerge G (R := .fls) h (fun _ hb => by simp [invertPos] at hb)
 
+/-- The fire step of `aSound`, one term for every goal shape: the fired
+`a ⊃ N'` is simulated through the context, its atom argument coming from
+the saturated station, and the recursive derivation at the residual
+station is weakened back in. -/
+def fireASound {p : String} {done : List Neg} {a : String} {N' : Neg}
+    {rest : List Neg} {G : Neg}
+    (hf : findFire done (splits done) = some (a, N', rest))
+    (rec : Inv (interp p [N'] rest (some G) :: ([N'] ++ rest)) [] G) :
+    Inv (interp p [N'] rest (some G) :: done) [] G :=
+  simHyp
+    (fl := fun hs lf =>
+      .lfoc (hs _ (List.mem_cons_of_mem _
+          (splits_mem (findFire_mem hf))))
+        (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
+          (atomMem_mem (findFire_atom hf)))))) lf))
+    (Sub.cons _ (splits_sub (findFire_mem hf)))
+    (rec.wk (by
+      intro Z hZ
+      rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+      · rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_self ..
+        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+
 /-! ## Soundness of both modes
 
 `eSound`: the context proves its `∃p` interpolant.
 `aSound`: the `∀p` interpolant, beside the context, proves the goal.
 Mutual, by the same weighted recursion as `interp`; every case is a
 construction — no inner induction over derivations is needed for soundness. -/
+
+set_option hygiene false in
+/-- The decreasing farm of the soundness mutual (`eSound`/`aSound`). Hygiene is off so entries naming call-site variables resolve there. -/
+macro "ljf_dec_sound" : tactic => `(tactic| (
+    all_goals simp_wf
+    all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals first
+      | exact dec_dyk0 (by assumption)
+      | exact dec_park
+      | exact dec_drop
+      | exact dec_shift1
+      | exact dec_and
+      | exact dec_curry
+      | exact dec_stripshift
+      | exact p3_strict (by first
+          | omega
+          | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+          | (have := wNeg_pos M; have := wNeg_pos N; omega))
+      | exact dec_impor (wPos_pos _) (wPos_pos _)
+      | exact dec_orctx (by assumption)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)
+      | exact dec_fire (by assumption)
+      | exact dec_qimp (by assumption)
+      | exact dec_qimp_g (by assumption)
+      | exact dec_dyk1 (by assumption)
+      | (have h1 := dec_dyk1 (by assumption); omega)
+      | exact dec_dyk1_g (by assumption)
+      | exact dec_dyk2 (by assumption)
+      | exact dec_dyk2_g (by assumption)
+      | exact dec_ainv (by assumption)
+      | exact dec_ainv0 (by assumption)
+      | exact dec_orA (by assumption)
+      | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_ainv0 (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)))
+
+set_option hygiene false in
+/-- The decreasing farm of the E-side traversal (`eMinF` and the `T*` family). One definition, eight uses; edit here to tune all farms. -/
+macro "ljf_dec_e" : tactic => `(tactic| (
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | exact Nat.lt_succ_self _
+        | omega
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_add_right _ _)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
+        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+        | (have h1 := dec_fireS (by assumption); omega)
+        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+        | (have h1 := dec_dykC (by assumption); omega)
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | (refine Prod.Lex.left _ _ ?_
+           first
+             | omega
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+             | (have h1 := dec_fireS (by assumption); omega)
+             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+             | (have h1 := dec_dykC (by assumption); omega))
+        | decreasing_tactic))
+
+set_option hygiene false in
+/-- The decreasing farm of the A-side traversal (`aMinF`, `UEntry`, the `U*` family, `dykAntC`). One definition, nine uses. -/
+macro "ljf_dec_a" : tactic => `(tactic| (
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | exact Nat.lt_succ_self _
+        | omega
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_add_right _ _)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
+        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+        | (have h1 := dec_fireS (by assumption); omega)
+        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+        | (have h1 := dec_dykC (by assumption); omega)
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
+        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireS (by assumption); omega)
+        | (have h := dec_dykC (by assumption); omega)
+        | exact dec_dyk0 (by assumption)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | (have h1 := dec_dyk1 (by assumption); omega)
+        | (have h1 := dec_ainv (by assumption); omega)
+        | (have h1 := dec_ainvS (by assumption); omega)
+        | (have h1 := dec_ainv0 (by assumption); omega)
+        | (have h1 := dec_orA (by assumption); omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_pos (wPos P₀); omega)
+        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
+             (by have := wPos_pos P₂; omega); omega)
+        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
+             (by have := wPos_pos P₁; omega); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
+             (by omega); omega)
+        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
+             (by omega); omega)
+        | (refine Prod.Lex.left _ _ ?_
+           first
+             | omega
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+             | (have h1 := dec_fireS (by assumption); omega)
+             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+             | (have h1 := dec_dykC (by assumption); omega))
+        | decreasing_tactic))
+
 
 set_option maxHeartbeats 2000000 in
 mutual
@@ -1834,49 +2126,7 @@ def eSound (p : String) : ∀ (todo done : List Neg),
           | and _ _ => exact nTopIntro
 
   termination_by todo done => 2 * sum3 todo + sum3 done
-  decreasing_by
-    all_goals simp_wf
-    all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals first
-      | exact dec_dyk0 (by assumption)
-      | exact dec_park
-      | exact dec_drop
-      | exact dec_shift1
-      | exact dec_and
-      | exact dec_curry
-      | exact dec_stripshift
-      | exact p3_strict (by first
-          | omega
-          | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-          | (have := wNeg_pos M; have := wNeg_pos N; omega))
-      | exact dec_impor (wPos_pos _) (wPos_pos _)
-      | exact dec_orctx (by assumption)
-      | (have h1 := invertPos_lt (P := Pos.or _ _)
-           (by intro a h; nomatch h) _ (by assumption)
-         simp only [wPos] at h1; omega)
-      | exact dec_fire (by assumption)
-      | exact dec_qimp (by assumption)
-      | exact dec_qimp_g (by assumption)
-      | exact dec_dyk1 (by assumption)
-      | (have h1 := dec_dyk1 (by assumption); omega)
-      | exact dec_dyk1_g (by assumption)
-      | exact dec_dyk2 (by assumption)
-      | exact dec_dyk2_g (by assumption)
-      | exact dec_ainv (by assumption)
-      | exact dec_ainv0 (by assumption)
-      | exact dec_orA (by assumption)
-      | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_ainv0 (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+  decreasing_by ljf_dec_sound
 
 def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
     Inv (interp p todo done (some G) :: (todo ++ done)) [] G
@@ -2026,20 +2276,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
           simp only [hf]
-          exact simHyp
-            (fl := fun hs lf =>
-              .lfoc (hs _ (List.mem_cons_of_mem _
-                  (splits_mem (findFire_mem hf))))
-                (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
-                  (atomMem_mem (findFire_atom hf)))))) lf))
-            (Sub.cons _ (splits_sub (findFire_mem hf)))
-            ((aSound p [N'] rest (.imp Q N)).wk (by
-              intro Z hZ
-              rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          exact fireASound hf (aSound p [N'] rest (.imp Q N))
       | none =>
           simp only [hf]
           refine .impR (invBranches Q ?_)
@@ -2067,20 +2304,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
           simp only [hf]
-          exact simHyp
-            (fl := fun hs lf =>
-              .lfoc (hs _ (List.mem_cons_of_mem _
-                  (splits_mem (findFire_mem hf))))
-                (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
-                  (atomMem_mem (findFire_atom hf)))))) lf))
-            (Sub.cons _ (splits_sub (findFire_mem hf)))
-            ((aSound p [N'] rest (.and M N)).wk (by
-              intro Z hZ
-              rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          exact fireASound hf (aSound p [N'] rest (.and M N))
       | none =>
           simp only [hf]
           refine .andR ?_ ?_
@@ -2099,20 +2323,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
           simp only [hf]
-          exact simHyp
-            (fl := fun hs lf =>
-              .lfoc (hs _ (List.mem_cons_of_mem _
-                  (splits_mem (findFire_mem hf))))
-                (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
-                  (atomMem_mem (findFire_atom hf)))))) lf))
-            (Sub.cons _ (splits_sub (findFire_mem hf)))
-            ((aSound p [N'] rest (.up (.atom q))).wk (by
-              intro Z hZ
-              rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          exact fireASound hf (aSound p [N'] rest (.up (.atom q)))
       | none =>
           simp only [hf]
           by_cases hq : atomMem q done = true
@@ -2168,20 +2379,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
           simp only [hf]
-          exact simHyp
-            (fl := fun hs lf =>
-              .lfoc (hs _ (List.mem_cons_of_mem _
-                  (splits_mem (findFire_mem hf))))
-                (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
-                  (atomMem_mem (findFire_atom hf)))))) lf))
-            (Sub.cons _ (splits_sub (findFire_mem hf)))
-            ((aSound p [N'] rest (.up .fls)).wk (by
-              intro Z hZ
-              rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          exact fireASound hf (aSound p [N'] rest (.up .fls))
       | none =>
           simp only [hf]
           refine nOrAllElim _ (List.mem_cons_self ..) ?_
@@ -2228,20 +2426,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
           simp only [hf]
-          exact simHyp
-            (fl := fun hs lf =>
-              .lfoc (hs _ (List.mem_cons_of_mem _
-                  (splits_mem (findFire_mem hf))))
-                (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
-                  (atomMem_mem (findFire_atom hf)))))) lf))
-            (Sub.cons _ (splits_sub (findFire_mem hf)))
-            ((aSound p [N'] rest (.up (.or P₁ P₂))).wk (by
-              intro Z hZ
-              rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          exact fireASound hf (aSound p [N'] rest (.up (.or P₁ P₂)))
       | none =>
           simp only [hf]
           refine nOrAllElim _ (List.mem_cons_self ..) ?_
@@ -2310,20 +2495,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
           simp only [hf]
-          exact simHyp
-            (fl := fun hs lf =>
-              .lfoc (hs _ (List.mem_cons_of_mem _
-                  (splits_mem (findFire_mem hf))))
-                (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
-                  (atomMem_mem (findFire_atom hf)))))) lf))
-            (Sub.cons _ (splits_sub (findFire_mem hf)))
-            ((aSound p [N'] rest (.up (.down M))).wk (by
-              intro Z hZ
-              rcases List.mem_cons.mp hZ with rfl | hZ
-              · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
-              · rcases List.mem_cons.mp hZ with rfl | hZ
-                · exact List.mem_cons_self ..
-                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+          exact fireASound hf (aSound p [N'] rest (.up (.down M)))
       | none =>
           simp only [hf]
           refine nOrAllElim _ (List.mem_cons_self ..) ?_
@@ -2373,49 +2545,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
 
   termination_by todo done G => 2 * sum3 todo + sum3 done + 3 ^ wNeg G
-  decreasing_by
-    all_goals simp_wf
-    all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals first
-      | exact dec_dyk0 (by assumption)
-      | exact dec_park
-      | exact dec_drop
-      | exact dec_shift1
-      | exact dec_and
-      | exact dec_curry
-      | exact dec_stripshift
-      | exact p3_strict (by first
-          | omega
-          | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-          | (have := wNeg_pos M; have := wNeg_pos N; omega))
-      | exact dec_impor (wPos_pos _) (wPos_pos _)
-      | exact dec_orctx (by assumption)
-      | (have h1 := invertPos_lt (P := Pos.or _ _)
-           (by intro a h; nomatch h) _ (by assumption)
-         simp only [wPos] at h1; omega)
-      | exact dec_fire (by assumption)
-      | exact dec_qimp (by assumption)
-      | exact dec_qimp_g (by assumption)
-      | exact dec_dyk1 (by assumption)
-      | (have h1 := dec_dyk1 (by assumption); omega)
-      | exact dec_dyk1_g (by assumption)
-      | exact dec_dyk2 (by assumption)
-      | exact dec_dyk2_g (by assumption)
-      | exact dec_ainv (by assumption)
-      | exact dec_ainv0 (by assumption)
-      | exact dec_orA (by assumption)
-      | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_ainv0 (by assumption)) (by omega)
-      | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+  decreasing_by ljf_dec_sound
 
 end
 
@@ -2888,6 +3018,25 @@ def fireClean {Q₀ : Pos} {N : Neg} {Γ' rest K : List Neg} {C : Neg}
         · exact .inr (List.mem_append_left _ (List.mem_cons_of_mem _ hZ))
         · exact .inr (List.mem_append_right _ hZ))
     (Sub.refl _) d
+
+/-- The fire step, as one equation for every mode: when a parked `a ⊃ N'`
+fires, the interpolant at the station equals the interpolant at the residual
+station, whatever the goal.  Stated by cases because the equation lemmas of
+the well-founded `interp` are specialised per fused matcher alternative, so
+an abstract goal matches none of them — `rw [interp]` fails on
+`interp p [] done (some G)` with `G` a variable. -/
+theorem interpFire_eq {p : String} {done : List Neg} {a : String} {N' : Neg}
+    {rest : List Neg}
+    (hf : findFire done (splits done) = some (a, N', rest)) :
+    ∀ g, interp p [] done g = interp p [N'] rest g := by
+  intro g
+  match g with
+  | none | some (.up (.atom _)) | some (.up .fls) | some (.up (.or _ _))
+  | some (.up (.down _)) | some (.imp _ _) | some (.and _ _) =>
+      rw [interp]; split
+      all_goals rename_i heq
+      · rw [hf] at heq; cases heq; rfl
+      · rw [hf] at heq; cases heq
 
 /-- The saturated `∃p` aggregate, as an equation. -/
 theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
@@ -3394,12 +3543,7 @@ def eMinF : ∀ (todo done Δ : List Neg) (ψ : Neg), ParkedCtx done →
   | [], done, Δ, ψ, hP, hΔ, hψ, d => by
       match hf : findFire done (splits done) with
       | some (a, N, rest) =>
-          have eq1 : interp p [] done none = interp p [N] rest none := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          rw [eq1]
+          rw [interpFire_eq hf none]
           exact eMinF [N] rest Δ ψ
             (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ hψ (invFireHyp (findFire_mem hf) d)
       | none =>
@@ -3409,116 +3553,7 @@ def eMinF : ∀ (todo done Δ : List Neg) (ψ : Neg), ParkedCtx done →
             hΔ (fun _ h => absurd h (List.not_mem_nil)) hψ d
   termination_by todo done Δ ψ hP hΔ hψ d =>
     (2 * sum3 todo + sum3 done + 1, 0)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- Inversion-phase traversal. -/
@@ -3560,116 +3595,7 @@ def TInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           · exact List.mem_cons_self ..
           · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
   termination_by Γ' K Ω C hm hm2 hK hΩ hC d => (2 * sum3 [] + sum3 done, sizeOf d)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- Stable-phase traversal: the dispatch point. -/
@@ -3717,116 +3643,7 @@ def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           (TLF done hsat hP hm hm2 hK
             (hK _ ((hm _ h).resolve_left hd)) hp lf)
   termination_by Γ' K P hm hm2 hK hp s => (2 * sum3 [] + sum3 done, sizeOf s)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- Right-focus traversal. -/
@@ -3850,116 +3667,7 @@ def TRF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       .rfoc (.rel (TInv done hsat hP hm hm2 hK
         (fun _ h => absurd h (List.not_mem_nil)) hp d))
   termination_by Γ' K P hm hm2 hK hp r => (2 * sum3 [] + sum3 done, sizeOf r)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- Left-focus traversal on a kept hypothesis. -/
@@ -3979,116 +3687,7 @@ def TLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, _, _, hm, hm2, hK, hH, hp, .and2 lf =>
       .and2 (TLF done hsat hP hm hm2 hK hH.2 hp lf)
   termination_by Γ' K H P hm hm2 hK hH hp lf => (2 * sum3 [] + sum3 done, sizeOf lf)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- The `p`-fire eliminator: a main-line proof of the atom `p`, plus the
@@ -4157,116 +3756,7 @@ def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             (hK _ ((hm _ h).resolve_left hd)) hpT ha hb hXpkg lfP lf)
   termination_by Γ' K M P₀ a b hm hm2 hK hpT ha hb hXpkg lfP s =>
     (2 * sum3 [] + sum3 done, sizeOf s)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- Left focus on a kept hypothesis, inside a `p`-proof. -/
@@ -4289,116 +3779,7 @@ def TpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       .and2 (TpLF done hsat hP hm hm2 hK hH.2 hpT ha hb hXpkg lfP lf)
   termination_by Γ' K M P₀ H a b hm hm2 hK hH hpT ha hb hXpkg lfP lf =>
     (2 * sum3 [] + sum3 done, sizeOf lf)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- Inversion inside a `p`-proof, with the goal re-targeted. -/
@@ -4440,116 +3821,7 @@ def TpInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
   termination_by Γ' K M P₀ Ω a b hm hm2 hK hΩ hpT ha hb hXpkg lfP d =>
     (2 * sum3 [] + sum3 done, sizeOf d)
-  decreasing_by 
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | exact p3_strict (by first
-            | omega
-            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
-            | (have := wNeg_pos M; have := wNeg_pos N; omega))
-        | exact dec_qimp_g (by assumption)
-        | exact dec_dyk1 (by assumption)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | exact dec_dyk1_g (by assumption)
-        | exact dec_dyk2 (by assumption)
-        | exact dec_dyk2_g (by assumption)
-        | exact dec_ainv (by assumption)
-        | exact dec_ainv0 (by assumption)
-        | exact dec_orA (by assumption)
-        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_e
 
 
 /-- Minimality of `∀p`, with the saturated case discharged inline. -/
@@ -4613,245 +3885,20 @@ def aMinF : ∀ (todo done Δ : List Neg) (G : Neg), ParkedCtx done →
       exact aMinF todo (.imp (.down (.imp Q' N')) N :: done) Δ G
         (ParkedCtx.cons (ParkedN.dyk Q' N' N) hP) hΔ
         (d.wk subParkOut)
-  | [], done, Δ, (.imp Q N), hP, hΔ, d => by
+  | [], done, Δ, G, hP, hΔ, d => by
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
-          have eq1 : interp p [] done none = interp p [N'] rest none := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          have eq2 : interp p [] done (some (.imp Q N)) =
-              interp p [N'] rest (some (.imp Q N)) := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          rw [eq1, eq2]
-          exact aMinF [N'] rest Δ (.imp Q N)
+          rw [interpFire_eq hf none, interpFire_eq hf (some G)]
+          exact aMinF [N'] rest Δ G
             (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ (invFireHyp (findFire_mem hf) d)
       | none =>
           exact UEntry done hf hP
             (fun Z hZ => List.mem_append.mp hZ)
             (fun Z hZ => List.mem_append_left _ hZ)
-            hΔ (.imp Q N) d
-  | [], done, Δ, (.and M N), hP, hΔ, d => by
-      match hf : findFire done (splits done) with
-      | some (a, N', rest) =>
-          have eq1 : interp p [] done none = interp p [N'] rest none := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          have eq2 : interp p [] done (some (.and M N)) =
-              interp p [N'] rest (some (.and M N)) := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          rw [eq1, eq2]
-          exact aMinF [N'] rest Δ (.and M N)
-            (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ (invFireHyp (findFire_mem hf) d)
-      | none =>
-          exact UEntry done hf hP
-            (fun Z hZ => List.mem_append.mp hZ)
-            (fun Z hZ => List.mem_append_left _ hZ)
-            hΔ (.and M N) d
-  | [], done, Δ, (.up (.atom q)), hP, hΔ, d => by
-      match hf : findFire done (splits done) with
-      | some (a, N', rest) =>
-          have eq1 : interp p [] done none = interp p [N'] rest none := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          have eq2 : interp p [] done (some (.up (.atom q))) =
-              interp p [N'] rest (some (.up (.atom q))) := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          rw [eq1, eq2]
-          exact aMinF [N'] rest Δ (.up (.atom q))
-            (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ (invFireHyp (findFire_mem hf) d)
-      | none =>
-          exact UEntry done hf hP
-            (fun Z hZ => List.mem_append.mp hZ)
-            (fun Z hZ => List.mem_append_left _ hZ)
-            hΔ (.up (.atom q)) d
-  | [], done, Δ, (.up .fls), hP, hΔ, d => by
-      match hf : findFire done (splits done) with
-      | some (a, N', rest) =>
-          have eq1 : interp p [] done none = interp p [N'] rest none := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          have eq2 : interp p [] done (some (.up .fls)) =
-              interp p [N'] rest (some (.up .fls)) := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          rw [eq1, eq2]
-          exact aMinF [N'] rest Δ (.up .fls)
-            (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ (invFireHyp (findFire_mem hf) d)
-      | none =>
-          exact UEntry done hf hP
-            (fun Z hZ => List.mem_append.mp hZ)
-            (fun Z hZ => List.mem_append_left _ hZ)
-            hΔ (.up .fls) d
-  | [], done, Δ, (.up (.or P₁ P₂)), hP, hΔ, d => by
-      match hf : findFire done (splits done) with
-      | some (a, N', rest) =>
-          have eq1 : interp p [] done none = interp p [N'] rest none := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          have eq2 : interp p [] done (some (.up (.or P₁ P₂))) =
-              interp p [N'] rest (some (.up (.or P₁ P₂))) := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          rw [eq1, eq2]
-          exact aMinF [N'] rest Δ (.up (.or P₁ P₂))
-            (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ (invFireHyp (findFire_mem hf) d)
-      | none =>
-          exact UEntry done hf hP
-            (fun Z hZ => List.mem_append.mp hZ)
-            (fun Z hZ => List.mem_append_left _ hZ)
-            hΔ (.up (.or P₁ P₂)) d
-  | [], done, Δ, (.up (.down M)), hP, hΔ, d => by
-      match hf : findFire done (splits done) with
-      | some (a, N', rest) =>
-          have eq1 : interp p [] done none = interp p [N'] rest none := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          have eq2 : interp p [] done (some (.up (.down M))) =
-              interp p [N'] rest (some (.up (.down M))) := by
-            rw [interp]; split
-            all_goals rename_i heq
-            · rw [hf] at heq; cases heq; rfl
-            · rw [hf] at heq; cases heq
-          rw [eq1, eq2]
-          exact aMinF [N'] rest Δ (.up (.down M))
-            (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ (invFireHyp (findFire_mem hf) d)
-      | none =>
-          exact UEntry done hf hP
-            (fun Z hZ => List.mem_append.mp hZ)
-            (fun Z hZ => List.mem_append_left _ hZ)
-            hΔ (.up (.down M)) d
+            hΔ G d
   termination_by todo done Δ G hP hΔ d =>
     (2 * sum3 todo + sum3 done + 3 ^ wNeg G + 4, 0)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- The `∀p` interpolant of any goal over a mixed saturated context. -/
@@ -4925,111 +3972,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         s
   termination_by Γ' K hm hm2 hK G d =>
     (2 * sum3 [] + sum3 done + 3 ^ wNeg G + 3, 0)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- Stable-phase `∀p` traversal: attack emission. -/
@@ -5172,111 +4115,7 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         (UEntry done hsat hP hm hm2 hK M dI)
   termination_by Γ' K P₀ hm hm2 hK r =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf r)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- Left focus on a kept hypothesis, `∀p` mode. -/
@@ -5306,111 +4145,7 @@ def ULF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       .and2 (ULF done hsat hP hm hm2 hK hV qmem dmem hH.2 lf)
   termination_by Γ' K P₀ L H hm hm2 hK hV qmem dmem hH lf =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- Inversion, `∀p` mode, goal re-targeted to the disjunction. -/
@@ -5460,111 +4195,7 @@ def UInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
   termination_by Γ' K P₀ L Ω hm hm2 hK hV qmem dmem hΩ d =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- The `p`-fire eliminator, `∀p` mode: same composition, attack emission. -/
@@ -5650,111 +4281,7 @@ def UpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
               (hK _ ((hm _ h).resolve_left hd)) ha hb hXpkg lfP lf))
   termination_by Γ' K M P₀ L a b hm hm2 hK hV qmem dmem ha hb hXpkg lfP s =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- Left focus on a kept hypothesis, inside an `∀p`-mode `p`-proof. -/
@@ -5790,111 +4317,7 @@ def UpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       .and2 (UpLF done hsat hP hm hm2 hK hV qmem dmem hH.2 ha hb hXpkg lfP lf)
   termination_by Γ' K M P₀ L H a b hm hm2 hK hV qmem dmem hH ha hb hXpkg lfP lf =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- Inversion inside an `∀p`-mode `p`-proof. -/
@@ -5953,111 +4376,7 @@ def UpInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
   termination_by Γ' K M P₀ L Ω a b hm hm2 hK hV qmem dmem hΩ ha hb hXpkg lfP d =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 /-- The Dyckhoff antecedent dispatch, discharged: commute, interpolate at
@@ -6081,111 +4400,7 @@ def dykAntC : ∀ (done rest K Γ' : List Neg) (Q' : Pos) (N' N : Neg),
   termination_by done rest K Γ' Q' N' N hsat hP hXr hm hm2 hK s =>
     (2 * sum3 [Neg.imp (Pos.down N') N] + sum3 rest +
       3 ^ wNeg (Neg.imp Q' N') + 5, 0)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
-        | exact Nat.lt_of_lt_of_le
-            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-            (Nat.le_add_right _ _)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
-        | exact dec_fireT (by assumption)
-        | exact dec_dykT (by assumption)
-        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireT (by assumption); omega)
-        | (have h := dec_dykT (by assumption); omega)
-        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
-        | (have h := dec_fireS (by assumption); omega)
-        | (have h := dec_dykC (by assumption); omega)
-        | exact dec_dyk0 (by assumption)
-        | exact dec_park
-        | exact dec_drop
-        | exact dec_shift1
-        | exact dec_and
-        | exact dec_curry
-        | exact dec_stripshift
-        | exact dec_impor (wPos_pos _) (wPos_pos _)
-        | exact dec_orctx (by assumption)
-        | (have h1 := invertPos_lt (P := Pos.or _ _)
-             (by intro a h; nomatch h) _ (by assumption)
-           simp only [wPos] at h1; omega)
-        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
-        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
-        | (have h1 := dec_dyk1 (by assumption); omega)
-        | (have h1 := dec_ainv (by assumption); omega)
-        | (have h1 := dec_ainvS (by assumption); omega)
-        | (have h1 := dec_ainv0 (by assumption); omega)
-        | (have h1 := dec_orA (by assumption); omega)
-        | (have h1 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
-           omega)
-        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
-        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
-             (t := 0); omega)
-        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
-           omega)
-        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
-             (t := 0) (wPos_pos _) (wPos_pos _); omega)
-        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
-        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
-        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
-        | (have h1 := p3_pos (wPos P₀); omega)
-        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₂; omega); omega)
-        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
-             (by have := wPos_pos P₁; omega); omega)
-        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
-             (by omega); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
 end

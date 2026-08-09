@@ -331,11 +331,13 @@ move them verbatim into `Archive/` with a header note saying what superseded
 them and when, for future archaeologists. Files from this round stay in place
 until then.
 
-**Rule 4 (metrics)**: before-numbers — `LaxLogic/LJF.lean` 6636 lines; clean
-single-module rebuild time being measured on `ljf-simp-1` (LJF.lean has zero
-imports, so `lake build LaxLogic.LJF` is exactly the file's elaboration
-time). Compare after simp round 1: wall-clock, lines of proof, and
-simplicity of argument.
+**Rule 4 (metrics)**: measured on `ljf-simp-1` (LJF.lean has zero imports,
+so `lake build LaxLogic.LJF` is exactly the file's elaboration time):
+baseline 6,636 lines / 15 min 53.7 s → after rounds A+B+C+C2 **4,462
+lines / 13 min 52.0 s** (−33% lines, −13% compile), zero statement
+changes, all pins passing. Full log: `docs/ljf-simp-round1.md`. Round D
+(the eliminator unification) is designed there and queued as the next
+session's opening move.
 
 **The post-simp sweep (Matthew's Note, 2026-08-09)** — standing checklist:
 
