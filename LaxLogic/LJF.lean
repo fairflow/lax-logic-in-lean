@@ -631,6 +631,17 @@ theorem dec_dyk1_g {done rest : List Neg} {Q' : Pos} {N' N : Neg} {g : Nat}
       2 * 0 + sum3 done + g := by
   have := dec_dyk1 h; omega
 
+theorem dec_dyk0 {done rest : List Neg} {Q' : Pos} {N' N : Neg}
+    (h : (Neg.imp (Pos.down (Neg.imp Q' N')) N, rest) ∈ splits done) :
+    2 * (3 ^ (wNeg N' + 1 + wNeg N + 1) + 0) + sum3 rest + 0 <
+      2 * 0 + sum3 done + 0 := by
+  have hs := splits_sum h
+  simp only [wNeg, wPos] at hs
+  have := p3_2 (a := wNeg N' + 1 + wNeg N + 1)
+    (c := wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1)
+    (by have := wPos_pos Q'; omega)
+  omega
+
 theorem dec_dyk2 {done rest : List Neg} {Q' : Pos} {N' N : Neg}
     (h : (Neg.imp (Pos.down (Neg.imp Q' N')) N, rest) ∈ splits done) :
     2 * (3 ^ wNeg N + 0) + sum3 rest < 2 * 0 + sum3 done := by
@@ -695,6 +706,7 @@ The measure is `2·sum3 todo + sum3 done + goalW goal`: parking moves a
 hypothesis from the doubled side to the single side, so even the bookkeeping
 steps are strict, and no lexicographic order is needed. -/
 
+set_option maxHeartbeats 2000000 in
 def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
   -- ── processing phase: consume the head of `todo` ──
   -- park an atom
@@ -758,11 +770,16 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
             | .imp (.atom a) N =>
                 pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
             -- the Dyckhoff implication: what it yields, guarded by what
-            -- the goal interpolant of its antecedent demands
+            -- the goal interpolant of its antecedent demands — PAIRED with
+            -- the ∃p of the residual station, which the minimality
+            -- dispatch projects (third clause the (ii) induction forced;
+            -- sound because done ⊢ res via resSim)
             | .imp (.down (.imp Q' N')) N =>
-                .imp (.down (interp p [.imp (.down N') N] rest
-                               (some (.imp Q' N'))))
-                     (interp p [N] rest none)
+                nAnd
+                  (.imp (.down (interp p [.imp (.down N') N] rest
+                                 (some (.imp Q' N'))))
+                       (interp p [N] rest none))
+                  (interp p [.imp (.down N') N] rest none)
             -- unreachable shapes park nothing
             | _ => nTop))
       -- ∀p mode: by the goal
@@ -833,6 +850,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
     all_goals simp_wf
     all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals first
+      | exact dec_dyk0 (by assumption)
       | exact dec_park
       | exact dec_drop
       | exact dec_shift1
@@ -852,6 +870,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
       | exact dec_qimp (by assumption)
       | exact dec_qimp_g (by assumption)
       | exact dec_dyk1 (by assumption)
+      | (have h1 := dec_dyk1 (by assumption); omega)
       | exact dec_dyk1_g (by assumption)
       | exact dec_dyk2 (by assumption)
       | exact dec_dyk2_g (by assumption)
@@ -956,7 +975,7 @@ theorem interp_pfree (p : String) :
   | case13 => assumption
   | case14 => assumption
   | case15 =>
-      rename_i ih3 ih2 ih1
+      rename_i ih4 ih3 ih2 ih1
       apply pfree_nAndAll
       intro x hx
       simp only [List.mem_map, List.mem_attach, true_and] at hx
@@ -974,7 +993,12 @@ theorem interp_pfree (p : String) :
           cases Q with
           | atom a =>
               exact pfree_pGuard pfree_nTop
-                (fun h => ⟨h, ih3 rest a N hXr⟩)
+                (fun h => ⟨h, by
+                  first
+                  | exact ih4 rest a N hXr
+                  | exact ih3 rest a N hXr
+                  | exact ih2 rest a N hXr
+                  | exact ih1 rest a N hXr⟩)
           | fls => exact pfree_nTop
           | or _ _ => exact pfree_nTop
           | down M =>
@@ -982,7 +1006,12 @@ theorem interp_pfree (p : String) :
               | up _ => exact pfree_nTop
               | and _ _ => exact pfree_nTop
               | imp Q' N' =>
-                  exact ⟨ih2 rest Q' N' N hXr, ih1 rest Q' N' N hXr⟩
+                  refine ⟨⟨?_, ?_⟩, ?_⟩ <;>
+                    first
+                    | exact ih1 rest Q' N' N hXr
+                    | exact ih2 rest Q' N' N hXr
+                    | exact ih3 rest Q' N' N hXr
+                    | exact ih4 rest Q' N' N hXr
       | and _ _ => exact pfree_nTop
   | case16 =>
       rename_i ih2 ih1
@@ -1772,7 +1801,10 @@ def eSound (p : String) : ∀ (todo done : List Neg),
                   | up _ => exact nTopIntro
                   | and _ _ => exact nTopIntro
                   | imp Q' N' =>
-                      refine .impR (.downL ?_)
+                      refine .andR (.impR (.downL ?_))
+                        (simHyp (fl := resSim (splits_mem hXr))
+                          (splits_sub hXr)
+                          (eSound p [.imp (.down N') N] rest))
                       have hXd : Neg.imp (.down (.imp Q' N')) N ∈
                           (interp p [.imp (.down N') N] rest
                             (some (.imp Q' N')) :: ([] ++ done)) :=
@@ -1806,6 +1838,7 @@ def eSound (p : String) : ∀ (todo done : List Neg),
     all_goals simp_wf
     all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals first
+      | exact dec_dyk0 (by assumption)
       | exact dec_park
       | exact dec_drop
       | exact dec_shift1
@@ -1825,6 +1858,7 @@ def eSound (p : String) : ∀ (todo done : List Neg),
       | exact dec_qimp (by assumption)
       | exact dec_qimp_g (by assumption)
       | exact dec_dyk1 (by assumption)
+      | (have h1 := dec_dyk1 (by assumption); omega)
       | exact dec_dyk1_g (by assumption)
       | exact dec_dyk2 (by assumption)
       | exact dec_dyk2_g (by assumption)
@@ -2343,6 +2377,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
     all_goals simp_wf
     all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals first
+      | exact dec_dyk0 (by assumption)
       | exact dec_park
       | exact dec_drop
       | exact dec_shift1
@@ -2362,6 +2397,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
       | exact dec_qimp (by assumption)
       | exact dec_qimp_g (by assumption)
       | exact dec_dyk1 (by assumption)
+      | (have h1 := dec_dyk1 (by assumption); omega)
       | exact dec_dyk1_g (by assumption)
       | exact dec_dyk2 (by assumption)
       | exact dec_dyk2_g (by assumption)
@@ -2769,6 +2805,7 @@ def eMin (p : String) (satE : SatE2 p) :
     all_goals simp_wf
     all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals first
+      | exact dec_dyk0 (by assumption)
       | exact dec_park
       | exact dec_shift1
       | exact dec_and
@@ -2967,6 +3004,7 @@ def aMin (p : String) (satA : SatA2 p) :
     all_goals simp_wf
     all_goals simp only [sum3, sum3_append, goalW, wNeg, wPos]
     all_goals first
+      | exact dec_dyk0 (by assumption)
       | exact dec_park
       | exact dec_shift1
       | exact dec_and
@@ -3054,9 +3092,11 @@ theorem qimpConjMem {p : String} {done : List Neg} {a : String} {N : Neg}
         | .imp (.atom a) N =>
             pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
         | .imp (.down (.imp Q' N')) N =>
-            .imp (.down (interp p [.imp (.down N') N] rest
-                           (some (.imp Q' N'))))
-                 (interp p [N] rest none)
+            nAnd
+              (.imp (.down (interp p [.imp (.down N') N] rest
+                             (some (.imp Q' N'))))
+                   (interp p [N] rest none))
+              (interp p [.imp (.down N') N] rest none)
         | _ => nTop)) :=
   List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
 
@@ -3070,9 +3110,11 @@ theorem atomConjMem {p : String} {done : List Neg} {a : String}
         | .imp (.atom a) N =>
             pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
         | .imp (.down (.imp Q' N')) N =>
-            .imp (.down (interp p [.imp (.down N') N] rest
-                           (some (.imp Q' N'))))
-                 (interp p [N] rest none)
+            nAnd
+              (.imp (.down (interp p [.imp (.down N') N] rest
+                             (some (.imp Q' N'))))
+                   (interp p [N] rest none))
+              (interp p [.imp (.down N') N] rest none)
         | _ => nTop)) :=
   List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
 
@@ -3080,17 +3122,21 @@ theorem atomConjMem {p : String} {done : List Neg} {a : String}
 theorem dykConjMem {p : String} {done : List Neg} {Q' : Pos} {N' N : Neg}
     {rest : List Neg}
     (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done) :
-    (Neg.imp (.down (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
-             (interp p [N] rest none)) ∈
+    nAnd
+      (.imp (.down (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
+           (interp p [N] rest none))
+      (interp p [.imp (.down N') N] rest none) ∈
       ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
         match X with
         | .up (.atom a) => pGuard p a nTop (.up (.atom a))
         | .imp (.atom a) N =>
             pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
         | .imp (.down (.imp Q' N')) N =>
-            .imp (.down (interp p [.imp (.down N') N] rest
-                           (some (.imp Q' N'))))
-                 (interp p [N] rest none)
+            nAnd
+              (.imp (.down (interp p [.imp (.down N') N] rest
+                             (some (.imp Q' N'))))
+                   (interp p [N] rest none))
+              (interp p [.imp (.down N') N] rest none)
         | _ => nTop)) :=
   List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
 
@@ -3147,9 +3193,11 @@ theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
         | .imp (.atom a) N =>
             pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
         | .imp (.down (.imp Q' N')) N =>
-            .imp (.down (interp p [.imp (.down N') N] rest
-                           (some (.imp Q' N'))))
-                 (interp p [N] rest none)
+            nAnd
+              (.imp (.down (interp p [.imp (.down N') N] rest
+                             (some (.imp Q' N'))))
+                   (interp p [N] rest none))
+              (interp p [.imp (.down N') N] rest none)
         | _ => nTop)) := by
   rw [interp]; split
   all_goals rename_i heq
@@ -3189,9 +3237,10 @@ recursively interpolated body consumed through `δ`. -/
 def dykAssemble {done rest K : List Neg} {Q' : Pos} {N' N : Neg} {P : Pos}
     {L : List Neg}
     (hE : interp p [] done none = nAndAll L)
-    (hmem : (Neg.imp
-        (.down (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
-        (interp p [N] rest none)) ∈ L)
+    (hmem : nAnd
+        (.imp (.down (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
+             (interp p [N] rest none))
+        (interp p [.imp (.down N') N] rest none) ∈ L)
     (sant : Inv (interp p [] done none :: K) []
       (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
     (δ : Inv (interp p [N] rest none :: K) [] (.up P)) :
@@ -3200,7 +3249,7 @@ def dykAssemble {done rest K : List Neg} {Q' : Pos} {N' N : Neg} {P : Pos}
     (fl := fun hs lf =>
       .lfoc (hs _ (List.mem_cons_self ..))
         (hE.symm ▸ lfocAndAll hmem
-          (.impL (.rfoc (.rel (sant.wk hs))) lf)))
+          (.and1 (.impL (.rfoc (.rel (sant.wk hs))) lf))))
     (Sub.grow _) δ)
 
 /-- The context split after locating a member: `done`-side members are the
@@ -3392,6 +3441,7 @@ def eMinF : ∀ (todo done Δ : List Neg) (ψ : Neg), ParkedCtx done →
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -3411,6 +3461,7 @@ def eMinF : ∀ (todo done Δ : List Neg) (ψ : Neg), ParkedCtx done →
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
@@ -3508,6 +3559,7 @@ def TInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -3527,6 +3579,7 @@ def TInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
@@ -3616,6 +3669,7 @@ def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -3635,6 +3689,7 @@ def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
@@ -3700,6 +3755,7 @@ def TRF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -3719,6 +3775,7 @@ def TRF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
@@ -3780,6 +3837,7 @@ def TLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -3799,6 +3857,7 @@ def TLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
@@ -3909,6 +3968,7 @@ def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -3928,6 +3988,7 @@ def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
@@ -3992,6 +4053,7 @@ def TpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -4011,6 +4073,7 @@ def TpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
@@ -4109,6 +4172,7 @@ def TpInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | (have h := dec_dykT (by assumption); omega)
         | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
         | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
         | exact dec_park
         | exact dec_drop
         | exact dec_shift1
@@ -4128,6 +4192,7 @@ def TpInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
             | (have := wNeg_pos M; have := wNeg_pos N; omega))
         | exact dec_qimp_g (by assumption)
         | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
         | exact dec_dyk1_g (by assumption)
         | exact dec_dyk2 (by assumption)
         | exact dec_dyk2_g (by assumption)
