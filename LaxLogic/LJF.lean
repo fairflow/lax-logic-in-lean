@@ -3157,7 +3157,7 @@ theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
   · rfl
 
 /-- Project a surviving atom from the interpolant. -/
-def atomAssemble {done K rest : List Neg} {a : String} {L : List Neg}
+def atomAssemble {done K : List Neg} {a : String} {L : List Neg}
     (hE : interp p [] done none = nAndAll L)
     (hmem : pGuard p a nTop (.up (.atom a)) ∈ L) (hap : ¬ a = p) :
     Stab (interp p [] done none :: K) (.atom a) :=
@@ -3215,6 +3215,930 @@ theorem splitHyp {done K Γ' rest : List Neg} {X : Neg}
     · exact .inl e
     · exact .inr (.inl hr)
   · exact .inr (.inr hK)
+
+end LJF
+
+namespace LJF
+
+/-! ## Part 6c: the inner induction, `∃p` side
+
+The mutual block: `eMinF` (minimality, as before, but with the saturated
+case discharged inline) and the traversal components.  Structural in the
+derivation at a fixed station; every station-crossing goes through `eMinF`
+at strictly smaller measure, so the lexicographic pair `(μ, size)` carries
+the whole block. -/
+
+/-- Pending entries are `p`-free or atoms already present in `done` —
+the invariant that lets inversion push `done`-atoms back without breaking
+the `p`-freeness of the kept side. -/
+def ΩOk (p : String) (done : List Neg) (Ω : List Pos) : Prop :=
+  ∀ Q ∈ Ω, PFreeP p Q ∨ ∃ a, Q = .atom a ∧ Neg.up (.atom a) ∈ done
+
+theorem ΩOk.cons {p : String} {done : List Neg} {Q : Pos} {Ω : List Pos}
+    (hQ : PFreeP p Q ∨ ∃ a, Q = .atom a ∧ Neg.up (.atom a) ∈ done)
+    (h : ΩOk p done Ω) : ΩOk p done (Q :: Ω) := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact hQ
+  · exact h Z hZ
+
+theorem ΩOk.head {p : String} {done : List Neg} {Q : Pos} {Ω : List Pos}
+    (h : ΩOk p done (Q :: Ω)) :
+    PFreeP p Q ∨ ∃ a, Q = .atom a ∧ Neg.up (.atom a) ∈ done :=
+  h Q (List.mem_cons_self ..)
+
+theorem ΩOk.tail {p : String} {done : List Neg} {Q : Pos} {Ω : List Pos}
+    (h : ΩOk p done (Q :: Ω)) : ΩOk p done Ω :=
+  fun Z hZ => h Z (List.mem_cons_of_mem _ hZ)
+
+theorem hmConsDone {done K Γ' : List Neg} {M : Neg} (hMd : M ∈ done)
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) :
+    ∀ Z ∈ M :: Γ', Z ∈ done ∨ Z ∈ K := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact .inl hMd
+  · exact hm Z hZ
+
+theorem hmConsK {done K Γ' : List Neg} {M : Neg}
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) :
+    ∀ Z ∈ M :: Γ', Z ∈ done ∨ Z ∈ M :: K := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact .inr (List.mem_cons_self ..)
+  · exact (hm Z hZ).imp id (List.mem_cons_of_mem _)
+
+theorem PFreeCtx.cons {p : String} {K : List Neg} {M : Neg}
+    (hM : PFreeN p M) (hK : PFreeCtx p K) : PFreeCtx p (M :: K) := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact hM
+  · exact hK Z hZ
+
+/-- The weight inequalities for the traversal's station crossings. -/
+theorem dec_fireT {done rest : List Neg} {a : String} {N : Neg}
+    (h : (Neg.imp (.atom a) N, rest) ∈ splits done) :
+    2 * 3 ^ wNeg N + sum3 rest < sum3 done := by
+  have hs := splits_sum h
+  simp only [wNeg, wPos] at hs
+  have := p3_2 (a := wNeg N) (c := 1 + wNeg N + 1) (by omega)
+  omega
+
+theorem dec_dykT {done rest : List Neg} {Q' : Pos} {N' N : Neg}
+    (h : (Neg.imp (Pos.down (Neg.imp Q' N')) N, rest) ∈ splits done) :
+    2 * 3 ^ wNeg N + sum3 rest < sum3 done := by
+  have hs := splits_sum h
+  simp only [wNeg, wPos] at hs
+  have := p3_2 (a := wNeg N) (c := wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1)
+    (by have := wPos_pos Q'; have := wNeg_pos N'; omega)
+  omega
+
+variable {p : String} (dyk : DykAnt p)
+
+set_option maxHeartbeats 4000000 in
+mutual
+
+/-- Minimality of `∃p`, with the saturated case discharged inline —
+conditional only on the Dyckhoff antecedent dispatch `dyk`. -/
+def eMinF : ∀ (todo done Δ : List Neg) (ψ : Neg), ParkedCtx done →
+    PFreeCtx p Δ → PFreeN p ψ →
+    Inv ((todo ++ done) ++ Δ) [] ψ →
+    Inv (interp p todo done none :: Δ) [] ψ
+  | .up (.atom a) :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF todo (.up (.atom a) :: done) Δ ψ
+        (ParkedCtx.cons (ParkedN.atom a) hP) hΔ hψ
+        (d.wk subParkOut)
+  | .up .fls :: todo, done, Δ, ψ, _, _, _, _ => by
+      rw [interp]
+      exact nBotElim _ (List.mem_cons_self ..)
+  | .up (.or P Q) :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      refine nOrAllElim _ (List.mem_cons_self ..) ?_
+      intro x hx Γ' hsub
+      obtain ⟨⟨b, hb⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+      subst hEq
+      refine ((eMinF (b ++ todo) done Δ ψ hP hΔ hψ
+        ((invUp (d.wk subHeadOut) b hb).wk subChainIn)).wk ?_)
+      intro Z hZ
+      rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_self ..
+      · exact List.mem_cons_of_mem _ (hsub _ (List.mem_cons_of_mem _ hZ))
+  | .up (.down M) :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF (M :: todo) done Δ ψ hP hΔ hψ
+        (((invUp (d.wk subHeadOut) [M] (by simp [invertPos]))).wk subChainIn)
+  | .and M N :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF (M :: N :: todo) done Δ ψ hP hΔ hψ
+        ((invAndHyp (d.wk subHeadOut)).wk (subChainIn (b := [M, N])))
+  | .imp .fls N :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF todo done Δ ψ hP hΔ hψ (invImpFls (d.wk subHeadOut))
+  | .imp (.atom a) N :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF todo (.imp (.atom a) N :: done) Δ ψ
+        (ParkedCtx.cons (ParkedN.qimp a N) hP) hΔ hψ
+        (d.wk subParkOut)
+  | .imp (.or Q₁ Q₂) N :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF (.imp Q₁ N :: .imp Q₂ N :: todo) done Δ ψ hP hΔ hψ
+        ((invImpOr (d.wk subHeadOut)).wk
+          (subChainIn (b := [.imp Q₁ N, .imp Q₂ N])))
+  | .imp (.down (.up P')) N :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF (.imp P' N :: todo) done Δ ψ hP hΔ hψ
+        ((invStrip (d.wk subHeadOut)).wk (subChainIn (b := [.imp P' N])))
+  | .imp (.down (.and M₁ M₂)) N :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done Δ ψ
+        hP hΔ hψ
+        ((invCurry (d.wk subHeadOut)).wk
+          (subChainIn (b := [.imp (.down M₁) (.imp (.down M₂) N)])))
+  | .imp (.down (.imp Q' N')) N :: todo, done, Δ, ψ, hP, hΔ, hψ, d => by
+      rw [interp]
+      exact eMinF todo (.imp (.down (.imp Q' N')) N :: done) Δ ψ
+        (ParkedCtx.cons (ParkedN.dyk Q' N' N) hP) hΔ hψ
+        (d.wk subParkOut)
+  | [], done, Δ, ψ, hP, hΔ, hψ, d => by
+      match hf : findFire done (splits done) with
+      | some (a, N, rest) =>
+          have eq1 : interp p [] done none = interp p [N] rest none := by
+            rw [interp]; split
+            all_goals rename_i heq
+            · rw [hf] at heq; cases heq; rfl
+            · rw [hf] at heq; cases heq
+          rw [eq1]
+          exact eMinF [N] rest Δ ψ
+            (ParkedCtx.sub (splits_sub (findFire_mem hf)) hP) hΔ hψ (invFireHyp (findFire_mem hf) d)
+      | none =>
+          exact TInv done hf hP
+            (fun Z hZ => List.mem_append.mp hZ)
+            (fun Z hZ => List.mem_append_left _ hZ)
+            hΔ (fun _ h => absurd h (List.not_mem_nil)) hψ d
+  termination_by todo done Δ ψ hP hΔ hψ d =>
+    (2 * sum3 todo + sum3 done, sizeOf d + 1)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+/-- Inversion-phase traversal. -/
+def TInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {Ω : List Pos} {C : Neg},
+      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+      ΩOk p done Ω → PFreeN p C →
+      Inv Γ' Ω C → Inv (interp p [] done none :: K) Ω C
+  | _, _, _, _, hm, hm2, hK, hΩ, hC, .impR d =>
+      .impR (TInv done hsat hP hm hm2 hK (hΩ.cons (.inl hC.1)) hC.2 d)
+  | _, _, _, _, hm, hm2, hK, hΩ, hC, .andR d e =>
+      .andR (TInv done hsat hP hm hm2 hK hΩ hC.1 d)
+            (TInv done hsat hP hm hm2 hK hΩ hC.2 e)
+  | _, _, _, _, hm, hm2, hK, _, hC, .stable s =>
+      .stable (TStab done hsat hP hm hm2 hK hC s)
+  | _, _, .or P₁ Q₁ :: _, _, hm, hm2, hK, hΩ, hC, .orL d₁ d₂ =>
+      have hor : PFreeP p (.or P₁ Q₁) := by
+        rcases hΩ.head with h | ⟨a, hQ, _⟩
+        · exact h
+        · exact absurd hQ (by intro h; cases h)
+      .orL (TInv done hsat hP hm hm2 hK (hΩ.tail.cons (.inl hor.1)) hC d₁)
+           (TInv done hsat hP hm hm2 hK (hΩ.tail.cons (.inl hor.2)) hC d₂)
+  | _, _, _, _, _, _, _, _, _, .flsL => .flsL
+  | _, _, .down M₀ :: _, _, hm, hm2, hK, hΩ, hC, .downL d =>
+      have hM : PFreeN p M₀ := by
+        rcases hΩ.head with h | ⟨a, hQ, _⟩
+        · exact h
+        · exact absurd hQ (by intro h; cases h)
+      .downL (((TInv done hsat hP (hmConsK hm)
+          (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
+          (PFreeCtx.cons hM hK) hΩ.tail hC d)).wk (fun Z hZ => by
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+        · rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_self ..
+          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+  | _, _, .atom a :: _, _, hm, hm2, hK, hΩ, hC, .atomL d =>
+      if hd : Neg.up (.atom a) ∈ done then
+        .atomL (((TInv done hsat hP (hmConsDone hd hm)
+            (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK
+            hΩ.tail hC d)).wk (Sub.grow _))
+      else
+        have ha : PFreeP p (.atom a) := by
+          rcases hΩ.head with h | ⟨b, hQ, hb⟩
+          · exact h
+          · cases hQ; exact absurd hb hd
+        .atomL (((TInv done hsat hP (hmConsK hm)
+            (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
+            (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from ha) hK) hΩ.tail hC d)).wk (fun Z hZ => by
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+          · rcases List.mem_cons.mp hZ with rfl | hZ
+            · exact List.mem_cons_self ..
+            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+  termination_by Γ' K Ω C hm hm2 hK hΩ hC d => (sum3 done, sizeOf d)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+/-- Stable-phase traversal: the dispatch point. -/
+def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {P : Pos},
+      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+      PFreeP p P →
+      Stab Γ' P → Stab (interp p [] done none :: K) P
+  | _, _, _, hm, hm2, hK, hp, .rfoc r => TRF done hsat hP hm hm2 hK hp r
+  | _, _, _, hm, hm2, hK, hp, @Stab.lfoc _ _ N₀ h lf =>
+      if hd : N₀ ∈ done then
+        match N₀, hP _ hd, hd, lf with
+        | .up (.atom a), _, hd, .rel (.atomL (.stable s')) =>
+            TStab done hsat hP (hmConsDone hd hm)
+              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK hp s'
+        | .imp (.atom a) N, _, hd, .impL s_a lf' =>
+            if hap : a = p then by
+              cases hap
+              exact TpElim done hsat hP hm hm2 hK hp hd lf' s_a
+            else
+              let ⟨rest, hXr⟩ := splitAt done _ hd
+              qAssemble (interpE_eq hsat) (qimpConjMem hXr) hap
+                (TStab done hsat hP hm hm2 hK hap s_a)
+                (eMinF [N] rest _ _ (hP.sub (splits_sub hXr)) hK hp
+                  (fireClean (splitHyp hm hXr)
+                    (.stable (.lfoc (List.mem_cons_self ..)
+                      (lf'.wk (Sub.grow _))))))
+        | .imp (.down (.imp Q' N')) N, _, hd, .impL s_d lf' =>
+            let ⟨rest, hXr⟩ := splitAt done _ hd
+            dykAssemble (interpE_eq hsat) (dykConjMem hXr)
+              (dyk done rest _ _ Q' N' N hsat hP hXr hm hm2 hK s_d)
+              (eMinF [N] rest _ _ (hP.sub (splits_sub hXr)) hK hp
+                (fireClean (splitHyp hm hXr)
+                  (.stable (.lfoc (List.mem_cons_self ..)
+                    (lf'.wk (Sub.grow _))))))
+        | .up .fls, hpk, _, _ => nomatch hpk
+        | .up (.or _ _), hpk, _, _ => nomatch hpk
+        | .up (.down _), hpk, _, _ => nomatch hpk
+        | .imp .fls _, hpk, _, _ => nomatch hpk
+        | .imp (.or _ _) _, hpk, _, _ => nomatch hpk
+        | .imp (.down (.up _)) _, hpk, _, _ => nomatch hpk
+        | .imp (.down (.and _ _)) _, hpk, _, _ => nomatch hpk
+        | .and _ _, hpk, _, _ => nomatch hpk
+      else
+        .lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
+          (TLF done hsat hP hm hm2 hK
+            (hK _ ((hm _ h).resolve_left hd)) hp lf)
+  termination_by Γ' K P hm hm2 hK hp s => (sum3 done, sizeOf s)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+/-- Right-focus traversal. -/
+def TRF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {P : Pos},
+      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+      PFreeP p P →
+      RFocus Γ' P → Stab (interp p [] done none :: K) P
+  | _, _, .atom a, hm, _, hK, hp, .init h => by
+      by_cases hd : Neg.up (.atom a) ∈ done
+      · exact
+          let w := splitAt done _ hd
+          atomAssemble (interpE_eq hsat) (atomConjMem w.2) hp
+      · exact .rfoc (.init (List.mem_cons_of_mem _
+          ((hm _ h).resolve_left hd)))
+  | _, _, _, hm, hm2, hK, hp, .or1 r =>
+      stabOr1 (TRF done hsat hP hm hm2 hK hp.1 r)
+  | _, _, _, hm, hm2, hK, hp, .or2 r =>
+      stabOr2 (TRF done hsat hP hm hm2 hK hp.2 r)
+  | _, _, _, hm, hm2, hK, hp, .rel d =>
+      .rfoc (.rel (TInv done hsat hP hm hm2 hK
+        (fun _ h => absurd h (List.not_mem_nil)) hp d))
+  termination_by Γ' K P hm hm2 hK hp r => (sum3 done, sizeOf r)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+/-- Left-focus traversal on a kept hypothesis. -/
+def TLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {H : Neg} {P : Pos},
+      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+      PFreeN p H → PFreeP p P →
+      LFoc Γ' H P → LFoc (interp p [] done none :: K) H P
+  | _, _, _, _, hm, hm2, hK, hH, hp, .rel d =>
+      .rel (TInv done hsat hP hm hm2 hK
+        (ΩOk.cons (.inl hH) (fun _ h => absurd h (List.not_mem_nil))) hp d)
+  | _, _, _, _, hm, hm2, hK, hH, hp, .impL s lf =>
+      .impL (TStab done hsat hP hm hm2 hK hH.1 s)
+            (TLF done hsat hP hm hm2 hK hH.2 hp lf)
+  | _, _, _, _, hm, hm2, hK, hH, hp, .and1 lf =>
+      .and1 (TLF done hsat hP hm hm2 hK hH.1 hp lf)
+  | _, _, _, _, hm, hm2, hK, hH, hp, .and2 lf =>
+      .and2 (TLF done hsat hP hm hm2 hK hH.2 hp lf)
+  termination_by Γ' K H P hm hm2 hK hH hp lf => (sum3 done, sizeOf lf)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+/-- The `p`-fire eliminator: a main-line proof of the atom `p`, plus the
+outer `p ⊃ M` package, yields the target directly — `init` on `↑p` is
+impossible, kept chains rebuild, nested `p`-fires shortcut to their own
+premise, and every other fire composes the package with the fire's body. -/
+def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos},
+      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+      PFreeP p P₀ → Neg.imp (.atom p) M ∈ done → LFoc Γ' M P₀ →
+      Stab Γ' (.atom p) → Stab (interp p [] done none :: K) P₀
+  | _, _, _, _, hm, _, hK, _, hXpkg, _, .rfoc (.init h) =>
+      False.elim (by
+        rcases hm _ h with hd | hk
+        · have h1 := atomMem_of_mem hd
+          have h2 := saturated_atom_absent hsat hXpkg
+          rw [h1] at h2; cases h2
+        · exact (hK _ hk) rfl)
+  | _, _, _, _, hm, hm2, hK, hpT, hXpkg, lfP, @Stab.lfoc _ _ N₀ h lf =>
+      if hd : N₀ ∈ done then
+        match N₀, hP _ hd, hd, lf with
+        | .up (.atom a), _, hd, .rel (.atomL (.stable s')) =>
+            TpElim done hsat hP (hmConsDone hd hm)
+              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK hpT hXpkg
+              (lfP.wk (Sub.grow _)) s'
+        | .imp (.atom b) N_b, _, hd, .impL s_b lf_b =>
+            if hbp : b = p then by
+              cases hbp
+              exact TpElim done hsat hP hm hm2 hK hpT hXpkg lfP s_b
+            else
+              let ⟨rest, hXr⟩ := splitAt done _ hd
+              qAssemble (interpE_eq hsat) (qimpConjMem hXr) hbp
+                (TStab done hsat hP hm hm2 hK hbp s_b)
+                (eMinF [N_b] rest _ _ (hP.sub (splits_sub hXr)) hK hpT
+                  (fireClean (splitHyp hm hXr) (.stable
+                    (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
+                      (.impL
+                        (.lfoc (List.mem_cons_self ..)
+                          (lf_b.wk (Sub.grow _)))
+                        (lfP.wk (Sub.grow _)))))))
+        | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d =>
+            let ⟨rest, hXr⟩ := splitAt done _ hd
+            dykAssemble (interpE_eq hsat) (dykConjMem hXr)
+              (dyk done rest _ _ Q' N' N_d hsat hP hXr hm hm2 hK s_d)
+              (eMinF [N_d] rest _ _ (hP.sub (splits_sub hXr)) hK hpT
+                (fireClean (splitHyp hm hXr) (.stable
+                  (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
+                    (.impL
+                      (.lfoc (List.mem_cons_self ..)
+                        (lf_d.wk (Sub.grow _)))
+                      (lfP.wk (Sub.grow _)))))))
+        | .up .fls, hpk, _, _ => nomatch hpk
+        | .up (.or _ _), hpk, _, _ => nomatch hpk
+        | .up (.down _), hpk, _, _ => nomatch hpk
+        | .imp .fls _, hpk, _, _ => nomatch hpk
+        | .imp (.or _ _) _, hpk, _, _ => nomatch hpk
+        | .imp (.down (.up _)) _, hpk, _, _ => nomatch hpk
+        | .imp (.down (.and _ _)) _, hpk, _, _ => nomatch hpk
+        | .and _ _, hpk, _, _ => nomatch hpk
+      else
+        .lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
+          (TpLF done hsat hP hm hm2 hK
+            (hK _ ((hm _ h).resolve_left hd)) hpT hXpkg lfP lf)
+  termination_by Γ' K M P₀ hm hm2 hK hpT hXpkg lfP s =>
+    (sum3 done, sizeOf s)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+/-- Left focus on a kept hypothesis, inside a `p`-proof. -/
+def TpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {H : Neg},
+      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+      PFreeN p H → PFreeP p P₀ → Neg.imp (.atom p) M ∈ done →
+      LFoc Γ' M P₀ →
+      LFoc Γ' H (.atom p) → LFoc (interp p [] done none :: K) H P₀
+  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .rel d =>
+      .rel (TpInv done hsat hP hm hm2 hK
+        (ΩOk.cons (.inl hH) (fun _ h => absurd h (List.not_mem_nil)))
+        hpT hXpkg lfP d)
+  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .impL s lf =>
+      .impL (TStab done hsat hP hm hm2 hK hH.1 s)
+            (TpLF done hsat hP hm hm2 hK hH.2 hpT hXpkg lfP lf)
+  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .and1 lf =>
+      .and1 (TpLF done hsat hP hm hm2 hK hH.1 hpT hXpkg lfP lf)
+  | _, _, _, _, _, hm, hm2, hK, hH, hpT, hXpkg, lfP, .and2 lf =>
+      .and2 (TpLF done hsat hP hm hm2 hK hH.2 hpT hXpkg lfP lf)
+  termination_by Γ' K M P₀ H hm hm2 hK hH hpT hXpkg lfP lf =>
+    (sum3 done, sizeOf lf)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+/-- Inversion inside a `p`-proof, with the goal re-targeted. -/
+def TpInv (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {Ω : List Pos},
+      (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+      ΩOk p done Ω → PFreeP p P₀ → Neg.imp (.atom p) M ∈ done →
+      LFoc Γ' M P₀ →
+      Inv Γ' Ω (.up (.atom p)) → Inv (interp p [] done none :: K) Ω (.up P₀)
+  | _, _, _, _, _, hm, hm2, hK, _, hpT, hXpkg, lfP, .stable s =>
+      .stable (TpElim done hsat hP hm hm2 hK hpT hXpkg lfP s)
+  | _, _, _, _, .or P₁ Q₁ :: _, hm, hm2, hK, hΩ, hpT, hXpkg, lfP, .orL d₁ d₂ =>
+      have hor : PFreeP p (.or P₁ Q₁) := by
+        rcases hΩ.head with h | ⟨a, hQ, _⟩
+        · exact h
+        · exact absurd hQ (by intro h; cases h)
+      .orL (TpInv done hsat hP hm hm2 hK (hΩ.tail.cons (.inl hor.1))
+              hpT hXpkg lfP d₁)
+           (TpInv done hsat hP hm hm2 hK (hΩ.tail.cons (.inl hor.2))
+              hpT hXpkg lfP d₂)
+  | _, _, _, _, _, _, _, _, _, _, _, _, .flsL => .flsL
+  | _, _, _, _, .down M₀ :: _, hm, hm2, hK, hΩ, hpT, hXpkg, lfP, .downL d =>
+      have hM : PFreeN p M₀ := by
+        rcases hΩ.head with h | ⟨a, hQ, _⟩
+        · exact h
+        · exact absurd hQ (by intro h; cases h)
+      .downL (((TpInv done hsat hP (hmConsK hm)
+          (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
+          (PFreeCtx.cons hM hK) hΩ.tail hpT hXpkg
+          (lfP.wk (Sub.grow _)) d)).wk (fun Z hZ => by
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+        · rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_self ..
+          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+  | _, _, _, _, .atom a :: _, hm, hm2, hK, hΩ, hpT, hXpkg, lfP, .atomL d =>
+      if hd : Neg.up (.atom a) ∈ done then
+        .atomL (((TpInv done hsat hP (hmConsDone hd hm)
+            (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK
+            hΩ.tail hpT hXpkg (lfP.wk (Sub.grow _)) d)).wk (Sub.grow _))
+      else
+        have ha : PFreeP p (.atom a) := by
+          rcases hΩ.head with h | ⟨b, hQ, hb⟩
+          · exact h
+          · cases hQ; exact absurd hb hd
+        .atomL (((TpInv done hsat hP (hmConsK hm)
+            (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
+            (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from ha) hK) hΩ.tail hpT hXpkg
+            (lfP.wk (Sub.grow _)) d)).wk (fun Z hZ => by
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+          · rcases List.mem_cons.mp hZ with rfl | hZ
+            · exact List.mem_cons_self ..
+            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+  termination_by Γ' K M P₀ Ω hm hm2 hK hΩ hpT hXpkg lfP d =>
+    (sum3 done, sizeOf d)
+  decreasing_by 
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | omega
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | exact dec_fireT (findFire_mem (by assumption))
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | decreasing_tactic
+
+
+end
+
+/-- **SatE2, conditional only on the Dyckhoff antecedent dispatch.** -/
+def satE2_of_dyk : SatE2 p := fun done Δ ψ hsat hP hΔ hψ d =>
+  TInv dyk done hsat hP
+    (fun Z hZ => List.mem_append.mp hZ)
+    (fun Z hZ => List.mem_append_left _ hZ)
+    hΔ (fun _ h => absurd h (List.not_mem_nil)) hψ d
 
 end LJF
 
