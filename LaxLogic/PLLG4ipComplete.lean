@@ -14,11 +14,14 @@ the equivalence Iemhoff claims **does** hold:
     (∀ ψ ∈ Γ, isIPL ψ) → isIPL C → SC Γ C → G4 Γ C
 
 (`G4.completeness_isIPL`), and hence `G4 Γ C ↔ SC Γ C ↔ IPLND Γ C` on
-the fragment (`G4.iff_SC_isIPL`, `G4.iff_IPLND`).  So the incompleteness
-of G4iLL is created **exactly** by its two `◯`-antecedent implication
-rules `R◯→`/`L◯→` (`impLLax`, `impLLaxLax`) together with `L◯`
-(`laxL`) — not by the propositional base it inherits from Dyckhoff.
-`G4.base_complete_gap_modal` packages the two halves as one statement.
+the fragment (`G4.iff_SC_isIPL`, `G4.iff_IPLND`), and contraction is
+admissible there (`G4.contract_isIPL`) although
+`PLLG4Gap.contraction_not_admissible` refutes it in general.  So the
+incompleteness of G4iLL is created **exactly** by its two
+`◯`-antecedent implication rules `R◯→`/`L◯→` (`impLLax`,
+`impLLaxLax`) together with `L◯` (`laxL`) — not by the propositional
+base it inherits from Dyckhoff.  `G4.base_complete_gap_modal` packages
+the two halves as one statement.
 
 ## Route
 
@@ -213,6 +216,19 @@ theorem iff_IPLND {Γ : List PLLFormula} {C : PLLFormula}
     (hΓ : ∀ ψ ∈ Γ, isIPL ψ) (hC : isIPL C) : G4 Γ C ↔ IPLND Γ C :=
   ⟨toIPLND hΓ hC, of_IPLND hΓ hC⟩
 
+/-- **Contraction is admissible on the `◯`-free fragment.**  Directly
+opposite to `PLLG4Gap.contraction_not_admissible`, which exhibits a
+sequent with a `◯` where contraction fails in `G4`.  Proof: out to `SC`,
+where contraction is `SC.rename`, and back by `completeness_isIPL`. -/
+theorem contract_isIPL {Γ : List PLLFormula} {A C : PLLFormula}
+    (hΓ : ∀ ψ ∈ Γ, isIPL ψ) (hA : isIPL A) (hC : isIPL C)
+    (d : G4 (A :: A :: Γ) C) : G4 (A :: Γ) C := by
+  refine completeness_isIPL (ipl_cons hA hΓ) hC (d.toSC.rename ?_)
+  intro ψ hψ
+  rcases List.mem_cons.mp hψ with rfl | hψ
+  · exact .head _
+  · exact hψ
+
 /-! ## The packaging: the gap is modal -/
 
 /-- **The incompleteness of G4iLL is created by its `◯` rules.**  Both
@@ -276,6 +292,10 @@ example : G4 [prop "p"] ((prop "p").or (prop "q")) :=
 /-- info: 'PLLND.G4.iff_IPLND' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms iff_IPLND
+
+/-- info: 'PLLND.G4.contract_isIPL' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms contract_isIPL
 
 /-- info: 'PLLND.G4.base_complete_gap_modal' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
