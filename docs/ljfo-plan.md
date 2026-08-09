@@ -189,7 +189,7 @@ continuation through `N`. Four results:
    derivation, and `s₂` already proves the very goal being analysed.
    Structural descent on the argument replaces `dykCommute`'s residual
    trick, and is simpler: no commute, no manufactured uses. Working name
-   for the traversal case: the **circ-descent**.
+   for the traversal case: the **modal descent**.
 2. **Witness-box absorption CONFIRMED at design level.** G4s's `L◯→″`
    witness-variant clauses (fire against a witness box `◯X` with demand
    `A(X::Γ ⇒ ◯A)`) are the composition of our `◯`-implication row with
@@ -212,7 +212,7 @@ continuation through `N`. Four results:
    and `h = ↓◯p ⊃ ↑r` is the modal shape; the sequent flows through the
    guarded box-opening row composed with the existing Dyckhoff row — the
    double use of `h` is the first use dispatched at the outer station and
-   the second inside the antecedent mining, met by circ-descent. No
+   the second inside the antecedent mining, met by modal descent. No
    retention anywhere. The known-hard sequent is covered by clause
    composition, on paper.
 
