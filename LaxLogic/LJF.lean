@@ -3157,7 +3157,7 @@ theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
   · rfl
 
 /-- Project a surviving atom from the interpolant. -/
-def atomAssemble {done K rest : List Neg} {a : String} {L : List Neg}
+def atomAssemble {done K : List Neg} {a : String} {L : List Neg}
     (hE : interp p [] done none = nAndAll L)
     (hmem : pGuard p a nTop (.up (.atom a)) ∈ L) (hap : ¬ a = p) :
     Stab (interp p [] done none :: K) (.atom a) :=
@@ -3215,6 +3215,89 @@ theorem splitHyp {done K Γ' rest : List Neg} {X : Neg}
     · exact .inl e
     · exact .inr (.inl hr)
   · exact .inr (.inr hK)
+
+end LJF
+
+namespace LJF
+
+/-! ## Part 6c: the inner induction, `∃p` side
+
+The mutual block: `eMinF` (minimality, as before, but with the saturated
+case discharged inline) and the traversal components.  Structural in the
+derivation at a fixed station; every station-crossing goes through `eMinF`
+at strictly smaller measure, so the lexicographic pair `(μ, size)` carries
+the whole block. -/
+
+/-- Pending entries are `p`-free or atoms already present in `done` —
+the invariant that lets inversion push `done`-atoms back without breaking
+the `p`-freeness of the kept side. -/
+def ΩOk (p : String) (done : List Neg) (Ω : List Pos) : Prop :=
+  ∀ Q ∈ Ω, PFreeP p Q ∨ ∃ a, Q = .atom a ∧ Neg.up (.atom a) ∈ done
+
+theorem ΩOk.cons {p : String} {done : List Neg} {Q : Pos} {Ω : List Pos}
+    (hQ : PFreeP p Q ∨ ∃ a, Q = .atom a ∧ Neg.up (.atom a) ∈ done)
+    (h : ΩOk p done Ω) : ΩOk p done (Q :: Ω) := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact hQ
+  · exact h Z hZ
+
+theorem ΩOk.head {p : String} {done : List Neg} {Q : Pos} {Ω : List Pos}
+    (h : ΩOk p done (Q :: Ω)) :
+    PFreeP p Q ∨ ∃ a, Q = .atom a ∧ Neg.up (.atom a) ∈ done :=
+  h Q (List.mem_cons_self ..)
+
+theorem ΩOk.tail {p : String} {done : List Neg} {Q : Pos} {Ω : List Pos}
+    (h : ΩOk p done (Q :: Ω)) : ΩOk p done Ω :=
+  fun Z hZ => h Z (List.mem_cons_of_mem _ hZ)
+
+theorem hmConsDone {done K Γ' : List Neg} {M : Neg} (hMd : M ∈ done)
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) :
+    ∀ Z ∈ M :: Γ', Z ∈ done ∨ Z ∈ K := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact .inl hMd
+  · exact hm Z hZ
+
+theorem hmConsK {done K Γ' : List Neg} {M : Neg}
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) :
+    ∀ Z ∈ M :: Γ', Z ∈ done ∨ Z ∈ M :: K := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact .inr (List.mem_cons_self ..)
+  · exact (hm Z hZ).imp id (List.mem_cons_of_mem _)
+
+theorem PFreeCtx.cons {p : String} {K : List Neg} {M : Neg}
+    (hM : PFreeN p M) (hK : PFreeCtx p K) : PFreeCtx p (M :: K) := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact hM
+  · exact hK Z hZ
+
+/-- The weight inequalities for the traversal's station crossings. -/
+theorem dec_fireT {done rest : List Neg} {a : String} {N : Neg}
+    (h : (Neg.imp (.atom a) N, rest) ∈ splits done) :
+    2 * 3 ^ wNeg N + sum3 rest < sum3 done := by
+  have hs := splits_sum h
+  simp only [wNeg, wPos] at hs
+  have := p3_2 (a := wNeg N) (c := 1 + wNeg N + 1) (by omega)
+  omega
+
+theorem dec_dykT {done rest : List Neg} {Q' : Pos} {N' N : Neg}
+    (h : (Neg.imp (Pos.down (Neg.imp Q' N')) N, rest) ∈ splits done) :
+    2 * 3 ^ wNeg N + sum3 rest < sum3 done := by
+  have hs := splits_sum h
+  simp only [wNeg, wPos] at hs
+  have := p3_2 (a := wNeg N) (c := wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1)
+    (by have := wPos_pos Q'; have := wNeg_pos N'; omega)
+  omega
+
+variable {p : String} (dyk : DykAnt p)
+
+/- The full inner-induction mutual block — every dispatch written and
+type-correct, eight termination obligations outstanding — lives on the
+branch `claude/inner-induction` pending a fresh termination diagnosis.
+Nothing below depends on it. -/
 
 end LJF
 

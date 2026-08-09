@@ -406,3 +406,38 @@ shift release, disjunction routing, ex falso in one traversal), `simulate`,
 induction over derivations (the heart of Pitts). That is the whole distance
 between here and unconditional UI for LJF; then LJF-completeness bridges to
 IPC, and `circL` is the only new rule for PLL.
+
+## §11 — The saturated case, opened (2026-08-09, second session)
+
+Review findings (all repaired on `main`): SatE2/SatA2 were FALSE as stated
+(parkedness missing — counterexample `done = [↑q ∧ ↑q]`); the ∀p clause for
+an implication goal AND the ∀p clause for a context disjunction both need
+E-guards (`⋀_b (↓E(Γ+b) ⊃ …)`); the four properties' induction is a plain
+predicative WF-recursion — the second-order candidates apparatus is
+scaffolding, not load-bearing, exactly as expected for a non-impredicative
+target.
+
+The inner induction (Pitts' hard lemma) is DESIGNED AND WRITTEN, one
+statement isolated:
+
+* `DykAnt` — the Dyckhoff antecedent dispatch — is the SINGLE remaining
+  hypothesis; one statement serves both modes.
+* The p-fire elimination needs NO extra hypothesis: `init` on `↑p` is
+  refuted by saturation + parkedness + p-free kept side; nested p-fires
+  shortcut to their own premise; every other fire composes the outer
+  `p ⊃ M` package with the inner fire's body into a genuine derivation
+  over the fired context, handed to eMinF at smaller measure.
+* Everything on `main` compiles: the dispatch helpers (fireClean,
+  atomAssemble/qAssemble/dykAssemble, interpE_eq), saturation facts,
+  ΩOk-invariant machinery, dec_fireT/dec_dykT.
+* Branch `claude/inner-induction`: the full 8-def mutual
+  {eMinF, TInv, TStab, TRF, TLF, TpElim, TpLF, TpInv} — all dispatches
+  type-correct; 8 termination obligations remain, all in the aggregate
+  arm's tactic block (two shapes, both provable by the context lemmas —
+  suspected decreasing_by attachment issue; diagnose fresh next session).
+
+Literature (docs/second-order-pll-survey.md, full survey): **Iemhoff 2024
+(arXiv:2209.08976) already proves UI for PLL** — claim discipline is now
+"explicit machine-checked construction", not "first proof". Second-order
+PLL does not exist; recommended name PLL2; Aczel's Russell–Prawitz
+modality is the near-miss (J ⊢ ◯ strictly).
