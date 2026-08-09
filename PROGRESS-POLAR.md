@@ -464,3 +464,31 @@ on her G4iLL, which this repo REFUTED as incomplete (machine-checked
 counterexample, 2026-07-08, wip; unsent letter in repo). UI for PLL
 remains OPEN — this campaign is the third serious attempt, and the
 claim discipline is back to "first proof, machine-checked".
+
+## §13 — The Dyckhoff commute PROVED (2026-08-09, third session stretch)
+
+Commit 24d41b6 + this: on branch `claude/inner-induction`, all green.
+
+* **The E-res conjunct** (third definition change forced by the (ii)
+  induction): the ∃p Dyckhoff conjunct is now the PAIR
+  `(↓A([res],rest ⇒ Q'⊃N') ⊃ E([N],rest)) ∧ E([res],rest)` — without the
+  second component the dispatch needs minimality at its own station (a
+  measure-climbing call); with it, it projects. Full cascade repaired.
+* **`negOfDownStab`** — shift release into a plain derivation, by
+  recursion on the formula (mirror of upMerge), via the CPS release
+  `relStab/relLF/relInv`.
+* **`dykCommute`** — PROVED: a mixed-context stable proof of the
+  antecedent `↓(Q'⊃N')` becomes a derivation over the residual station;
+  X-uses are manufactured from the residual because the branch of Q' in
+  context closes the released implication (extract). Focused Dyckhoff.
+
+**DykAnt is now mechanical**: dykAntC := (E-res-conjunct-projection via
+simHyp) ∘ aMinF([res],rest) ∘ dykCommute. It needs aMinF — i.e. the
+A-side — so the final assembly is ONE mega-mutual: the E-components
+(moved in, dyk-parameter replaced by the in-mutual dykAntC) + aMinF +
+the U-components (attack emissions; goal-clauses discharge through
+aMinF + the guards; p-fires mirror TpElim; atom-parts use the satE
+already available as the E-components are in the same mutual).
+Measures: the established lexicographic pattern; dykAntC's first
+component sits in the dec_dyk1 slack. All three termination diagnoses
+of §12 apply verbatim.

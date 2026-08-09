@@ -4233,6 +4233,124 @@ def satE2_of_dyk : SatE2 p := fun done Δ ψ hsat hP hΔ hψ d =>
 
 end LJF
 
+namespace LJF
+
+/-! ## Part 7: shift release and the Dyckhoff commute
+
+`relStab`: CPS release of a stable proof of `↓M` — the continuation receives
+an inversion of `M` at every point one is produced.  `negOfDownStab` closes
+the loop into a plain derivation of `M`, by recursion on `M` (the mirror of
+`upMerge`).  `dykCommute` then converts a mixed-context stable proof of the
+Dyckhoff antecedent into a derivation over the residual station — uses of
+the full hypothesis are manufactured from the residual, because under the
+antecedent's own inversion the goal-branch is in context (Dyckhoff's
+observation, in focused form). -/
+
+mutual
+
+/-- CPS release of a stable `↓M`-proof. -/
+def relStab {Δ₀ : List Neg} {M : Neg} {P₀ : Pos}
+    (k : ∀ {Δ' : List Neg}, Sub Δ₀ Δ' → Inv Δ' [] M → Stab Δ' P₀) :
+    ∀ {Δ : List Neg}, Sub Δ₀ Δ → Stab Δ (.down M) → Stab Δ P₀
+  | _, hs, .rfoc r => k hs (relOf r)
+  | _, hs, .lfoc h lf => .lfoc h (relLF k hs lf)
+
+/-- Release below a left focus. -/
+def relLF {Δ₀ : List Neg} {M : Neg} {P₀ : Pos}
+    (k : ∀ {Δ' : List Neg}, Sub Δ₀ Δ' → Inv Δ' [] M → Stab Δ' P₀) :
+    ∀ {Δ : List Neg} {H : Neg}, Sub Δ₀ Δ →
+      LFoc Δ H (.down M) → LFoc Δ H P₀
+  | _, _, hs, .rel d => .rel (relInv k hs d)
+  | _, _, hs, .impL s lf => .impL s (relLF k hs lf)
+  | _, _, hs, .and1 lf => .and1 (relLF k hs lf)
+  | _, _, hs, .and2 lf => .and2 (relLF k hs lf)
+
+/-- Release through inversion; the goal is a shift, so the traversal is
+total. -/
+def relInv {Δ₀ : List Neg} {M : Neg} {P₀ : Pos}
+    (k : ∀ {Δ' : List Neg}, Sub Δ₀ Δ' → Inv Δ' [] M → Stab Δ' P₀) :
+    ∀ {Δ : List Neg} {Ω : List Pos}, Sub Δ₀ Δ →
+      Inv Δ Ω (.up (.down M)) → Inv Δ Ω (.up P₀)
+  | _, _, hs, .stable s => .stable (relStab k hs s)
+  | _, _, hs, .orL d₁ d₂ => .orL (relInv k hs d₁) (relInv k hs d₂)
+  | _, _, _, .flsL => .flsL
+  | _, _, hs, .downL d => .downL (relInv k (hs.trans (Sub.grow _)) d)
+  | _, _, hs, .atomL d => .atomL (relInv k (hs.trans (Sub.grow _)) d)
+
+end
+
+/-- **A stable proof of `↓M` yields a derivation of `M`** — by recursion on
+`M`, releasing at each stage. -/
+def negOfDownStab : ∀ (M : Neg) {Δ : List Neg}, Stab Δ (.down M) → Inv Δ [] M
+  | .up P, _, s =>
+      .stable (relStab (fun _ d => unStable d) (Sub.refl _) s)
+  | .imp Q N, _, s =>
+      .impR (invBranches Q (fun c hc =>
+        negOfDownStab N (relStab
+          (fun {Δ'} hs d =>
+            .rfoc (.rel ((extract [] (impROf d) c hc).wk (fun Z hZ => by
+              rcases List.mem_append.mp hZ with hZ | hZ
+              · exact hs _ (List.mem_append_left _ hZ)
+              · exact hZ))))
+          (Sub.refl _)
+          (s.wk (fun Z hZ => List.mem_append_right c hZ)))))
+  | .and M₁ M₂, _, s =>
+      .andR
+        (negOfDownStab M₁ (relStab
+          (fun _ d => .rfoc (.rel (andROf1 d))) (Sub.refl _) s))
+        (negOfDownStab M₂ (relStab
+          (fun _ d => .rfoc (.rel (andROf2 d))) (Sub.refl _) s))
+
+/-- **The Dyckhoff commute.**  A mixed-context stable proof of the antecedent
+`↓(Q′ ⊃ N′)` becomes a derivation of `Q′ ⊃ N′` over the residual station:
+uses of the full hypothesis `X = ↓(Q′⊃N′) ⊃ N` are replaced by fires of the
+residual `↓N′ ⊃ N`, whose antecedent is recovered because the branch of `Q′`
+currently in context closes the released implication (`extract`). -/
+def dykCommute {p : String} {Q' : Pos} {N' N : Neg}
+    {done rest K Γ' : List Neg}
+    (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done)
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K)
+    (s : Stab Γ' (.down (.imp Q' N'))) :
+    Inv ((Neg.imp (.down N') N :: rest) ++ K) [] (.imp Q' N') :=
+  .impR (invBranches Q' (fun b hb =>
+    negOfDownStab N'
+      (routeStab
+        (k := fun {Δ''} hs' r =>
+          .rfoc (.rel ((extract [] (impROf (relOf r)) b hb).wk (fun Z hZ => by
+            rcases List.mem_append.mp hZ with hZ | hZ
+            · exact hs' _ (List.mem_append_left _ hZ)
+            · exact hZ))))
+        (Sub.refl _)
+        (simStab (H := Neg.imp (.down (.imp Q' N')) N)
+          (fl := fun {Δ'} _ hs lf =>
+            .lfoc
+              (hs _ (List.mem_append_right b (List.mem_append_left _
+                (List.mem_cons_self ..))))
+              (.impL
+                (routeStab
+                  (k := fun {Δ''} hs' r =>
+                    .rfoc (.rel ((extract [] (impROf (relOf r)) b hb).wk
+                      (fun Z hZ => by
+                        rcases List.mem_append.mp hZ with hZ | hZ
+                        · exact hs' _ (hs _ (List.mem_append_left _ hZ))
+                        · exact hZ))))
+                  (Sub.refl _) (lfocImp lf).1)
+                (lfocImp lf).2))
+          (fun Z hZ => by
+            rcases List.mem_append.mp hZ with hZ | hZ
+            · exact .inr (List.mem_append_left _ hZ)
+            · rcases hm Z hZ with hd | hk
+              · rcases splits_mem_split hXr Z hd with e | hr
+                · exact .inl e
+                · exact .inr (List.mem_append_right b
+                    (List.mem_append_left _ (List.mem_cons_of_mem _ hr)))
+              · exact .inr (List.mem_append_right b
+                  (List.mem_append_right _ hk)))
+          (Sub.refl _)
+          (s.wk (fun Z hZ => List.mem_append_right b hZ))))))
+
+end LJF
+
 /-! ### Axiom audit — measured and pinned on creation (2026-08-09). -/
 
 /-- info: 'LJF.interp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
