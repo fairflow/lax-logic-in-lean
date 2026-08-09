@@ -307,3 +307,60 @@ scattered across `wip/`.
    that is research rather than tidying, and the only one where the answer is
    unknown.
 6. Prune `wip/`. Last, and only when nothing else wants attention.
+
+---
+
+## 10. LJF UI proved — the state as of 2026-08-09 evening
+
+**The landmark**: uniform interpolation for LJF is machine-checked and
+unconditional at `7aefbdc` (= tag `ljf-ui-v1`): `interp` computes both Pitts
+quantifiers by one well-founded recursion; `eSound`, `aSound`, `eMinF`,
+`aMinF`, `satE2`, `satA2`, `dykAnt` sorry-free, axioms pinned. Scope
+discipline: this is UI for **LJF**; IPC awaits focalization completeness
+(running on branch `ljf-focalization`, delegated); PLL awaits the lax flag +
+`circL` (Matthew 2026-08-09: ◯R is subsumed by the lax judgment, so `circL`
+is the only rule with content — but the lax phase is untested).
+
+**Branches**: `ljf-simp-1` = simplification round 1 (this branch; may
+overwrite files with compiling code). `ljf-focalization` = Deriv → LJF bridge.
+Tag `ljf-ui-v1` marks the revert point.
+
+**Rule 1 (archive, don't discard)**: when simp round 1 deletes superseded
+proofs (the eMin/aMin/qAssemble layer, the pre-unification Tp/Up families),
+move them verbatim into `Archive/` with a header note saying what superseded
+them and when, for future archaeologists. Files from this round stay in place
+until then.
+
+**Rule 4 (metrics)**: before-numbers — `LaxLogic/LJF.lean` 6636 lines; clean
+single-module rebuild time being measured on `ljf-simp-1` (LJF.lean has zero
+imports, so `lake build LaxLogic.LJF` is exactly the file's elaboration
+time). Compare after simp round 1: wall-clock, lines of proof, and
+simplicity of argument.
+
+**The post-simp sweep (Matthew's Note, 2026-08-09)** — standing checklist:
+
+1. *Calculus fidelity.* Concern: the proof detoured so far through admissible
+   machinery that it was "effectively proving the result using a different
+   calculus". Kernel of truth: the effective working system is LJF + its
+   admissible-rule toolkit (routeStab, simStab, dykCommute, …). Defence:
+   every toolkit lemma concludes with genuine LJF constructors, so the
+   theorem is about LJF proper. The simp-round side-by-side table
+   (docs/ljf-simplification-pass.md §3) is the instrument: for each clause,
+   record whether the induction runs on raw rules or on toolkit lemmas, and
+   whether Pitts/Dyckhoff make the corresponding move on paper (they do —
+   their "admissibility of weakening/inversion" citations are the same
+   moves, unmechanised).
+2. *Comparison against the shorter proofs.* Two in-repo comparators:
+   `IPCFocused.lean` (545 lines, ∃-side only, over the shared PLLFormula
+   stack — Matthew's 2026-08-08 control experiment) and the fuel/height route
+   (`PLLG4UI` 1856 + `PLLG4UIAdq` 1113 + `PLLG4UITrunc` 4036 — adequacy by
+   height induction, no sequent termination order). Question: what did the
+   zero-import LJF rebuild buy — both quantifiers, both minimality
+   directions, and a reusable termination order; at what cost in lines; and
+   could the short file have been completed to the full theorem without
+   growing into the long one?
+3. *omega defect, second exhibit.* §9 item 1's omega filing gains the
+   goal-only-pow-atom positivity drop from the termination fight (unsat
+   systems reported satisfiable); file both together, with the `Prod.Lex`
+   printer deception (error printer shows reduced first components while the
+   tactic faces the raw pair) as a separate usability issue.
