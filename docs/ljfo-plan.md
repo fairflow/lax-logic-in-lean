@@ -216,6 +216,27 @@ continuation through `N`. Four results:
    retention anywhere. The known-hard sequent is covered by clause
    composition, on paper.
 
+**(f) Stage-1 port check: `PLLFocused` lacks the truth-to-lax coercion.**
+With `impR`/`andR` at `tru` only and no coercion rule, `⊢ ◯(↓(⊤⊃⊤))` is
+underivable in `PLLFocused` as written: `circR` forces the lax phase,
+where no rule can prove an implication — the calculus misses `◯φ` for
+provable implicational `φ`, i.e. it is incomplete for PLL (its
+completeness was only ever the stated `Focalization` hypothesis, so
+nothing proved is affected; the blocker never crosses this gap). The
+repair is Pfenning–Davies `laxIntro` in focused form:
+
+    laxOf : Stab Γ tru P → Stab Γ lax P
+
+at the *stable* judgment only — the phase where judgment transitions
+belong. Consequences checked: the identity `idPos` at a lax index routes
+through `laxOf` at its stable node (this is how the defect was found);
+the `∀p` direct row ("prove `Q` truly") is exactly `laxOf`'s soundness,
+which the clause design had already assumed; converse-K stays refuted
+(`laxOf` demands the whole positive truly — `Q ⊢ ◯N` supplies only a lax
+body). Bookkeeping: two flag-reading rules now, `circL` (content) and
+`laxOf` (administrative coercion); the traversals gain one benign `Stab`
+case, recursing at the `tru` index.
+
 **Paper obligations status**: (1)–(3) and (e) run; forced changes
 incorporated (one modal E-guard, one E-res component); obligations left
 to mechanisation: the E-res forcing verification, the `boxClean`
