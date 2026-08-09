@@ -372,3 +372,37 @@ built BY the recursion, so its existence needs structural well-foundedness.
 And it buys predicativity: the interpolation candidate is a least fixed
 point; Girard-style candidates take such fixed points impredicatively, while
 the weight reaches this one by well-founded recursion.
+
+## §10 — The four properties (2026-08-09)
+
+All on `main`, `lake build` green, sorry-free, axioms pinned at
+`[propext, Classical.choice, Quot.sound]`, file still imports nothing.
+
+* **E1 `eSound` : Γ ⊢ ∃p(Γ)** — PROVED unconditionally (db733d4).
+* **A1 `aSound` : ∀p(Γ⇒G), Γ ⊢ G** — PROVED unconditionally (db733d4).
+* **E2 `eMin`** — PROVED modulo `SatE2` (3448020): every processing clause
+  discharged by its inverse transformation (a `simulate` instance per
+  clause); the saturated case is the explicit hypothesis.
+* **A2 `aMin`** — PROVED modulo `SatA2`, same shape.
+
+Two structural discoveries, both forced by the minimality induction *before
+writing its Lean*, both now in the definition of `interp` (da31337 and the
+following commit):
+
+1. **The E-guards.** The ∀p clause for an implication goal must be
+   `⋀_b (↓E(Γ+b) ⊃ A(Γ+b ⇒ N))`, and likewise the ∀p clause for a context
+   disjunction — the unguarded forms would demand `E(Γ) ⊢ E(Γ+b)`, which is
+   false. Soundness still closes because `eSound` supplies the guard.
+2. **eMin/aMin are not mutual.** The E/A coupling lives entirely in the
+   E-guards of `interp` and in the saturated case; each minimality function
+   recurses only into itself.
+
+The cut-free toolkit that carries all of it: `routeStab` (CPS re-targeting —
+shift release, disjunction routing, ex falso in one traversal), `simulate`,
+`extract`/`invBranches`, `stableFire`/`upMerge`, `resSim` (the focused
+`(A⊃B)⊃C ⊢ B⊃C`), the inverse transformations `inv*`.
+
+**OPEN**: `SatE2`/`SatA2` — minimality at saturated contexts, the inner
+induction over derivations (the heart of Pitts). That is the whole distance
+between here and unconditional UI for LJF; then LJF-completeness bridges to
+IPC, and `circL` is the only new rule for PLL.

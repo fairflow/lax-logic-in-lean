@@ -1111,6 +1111,12 @@ another calculus:
   `Inv (todo ++ done ++ Δ) [] G  →
      Inv (interp p todo done none :: Δ) [] (interp p todo done (some G))`
 
+**Status (2026-08-09, later)**: E1 and A1 are `eSound`/`aSound`, proved
+unconditionally in Part 4.  E2 and A2 are `eMin`/`aMin` in Part 5, proved
+modulo the saturated-context statements `SatE2`/`SatA2` — the one remaining
+mountain, carried as explicit hypotheses.  The minimality analysis also
+forced the E-guards on the two branching `∀p` clauses of `interp`.
+
 The toolkit they need, also internal: a hypothesis-simulation traversal
 (replace uses of one hypothesis by a derived simulator — powers E1/A1 and the
 easy inversion directions of E2/A2), and branch extraction
