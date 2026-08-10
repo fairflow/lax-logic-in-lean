@@ -275,6 +275,10 @@ the left and focused (truly) on the right. -/
 def idPos (P : Pos) (Γ : List Neg) (j : JD) : Inv Γ [P] j (.up P) :=
   posRestore P Γ [] (.up P) (fun _ _ r => .stable (Stab.ofTru j (.rfoc r)))
 
+/-- The one-step self witness: `↑P ⊢ ↑P`, at either flag. -/
+def upSelf (P : Pos) (j : JD) : Inv [Neg.up P] [] j (.up P) :=
+  .stable (.lfoc (List.mem_cons_self ..) (.rel (idPos P _ _)))
+
 /-! ## The weight -/
 
 mutual
@@ -920,7 +924,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                        (interp p [N] rest (some (.up (Pos.down M))))
               | _, _ => nBot))
         | .circ (.atom q) =>
-            nOrAll ([interp p [] done (some (.up (.atom q)))] ++
+            .circ (.down (nOrAll ([interp p [] done (some (.up (.atom q)))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -935,9 +939,9 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.atom q))))
-              | _, _ => nBot))
+              | _, _ => nBot))))
         | .circ .fls =>
-            nOrAll ([interp p [] done (some (.up .fls))] ++
+            .circ (.down (nOrAll ([interp p [] done (some (.up .fls))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -952,9 +956,9 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ .fls)))
-              | _, _ => nBot))
+              | _, _ => nBot))))
         | .circ (.or P₁ P₂) =>
-            nOrAll ([interp p [] done (some (.circ P₁)),
+            .circ (.down (nOrAll ([interp p [] done (some (.circ P₁)),
                      interp p [] done (some (.circ P₂)),
                      interp p [] done (some (.up (.or P₁ P₂)))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
@@ -971,9 +975,9 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.or P₁ P₂))))
-              | _, _ => nBot))
+              | _, _ => nBot))))
         | .circ (.down (.up P')) =>
-            nOrAll ([interp p [] done (some (.circ P'))] ++
+            .circ (.down (nOrAll ([interp p [] done (some (.circ P'))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -988,9 +992,9 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.up P')))))
-              | _, _ => nBot))
+              | _, _ => nBot))))
         | .circ (.down (.circ P')) =>
-            nOrAll ([interp p [] done (some (.circ P'))] ++
+            .circ (.down (nOrAll ([interp p [] done (some (.circ P'))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -1005,9 +1009,9 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.circ P')))))
-              | _, _ => nBot))
+              | _, _ => nBot))))
         | .circ (.down (.and M₁ M₂)) =>
-            nOrAll ([interp p [] done (some (.up (.down (.and M₁ M₂))))] ++
+            .circ (.down (nOrAll ([interp p [] done (some (.up (.down (.and M₁ M₂))))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -1022,9 +1026,9 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.and M₁ M₂)))))
-              | _, _ => nBot))
+              | _, _ => nBot))))
         | .circ (.down (.imp Q₀ N₀)) =>
-            nOrAll ([interp p [] done (some (.up (.down (.imp Q₀ N₀))))] ++
+            .circ (.down (nOrAll ([interp p [] done (some (.up (.down (.imp Q₀ N₀))))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -1039,7 +1043,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.imp Q₀ N₀)))))
-              | _, _ => nBot))
+              | _, _ => nBot))))
   termination_by todo done goal => 2 * sum3 todo + sum3 done + goalW goal
   decreasing_by
     all_goals simp_wf
@@ -1821,6 +1825,18 @@ def nOrAllIntro {j : JD} : ∀ {l : List Neg} {x : Neg} {Γ : List Neg},
         · exact absurd rfl e
         · exact hx) d))))
 
+theorem nOr_inj {a b c d : Neg} (h : nOr a b = nOr c d) : a = c ∧ b = d := by
+  simp only [nOr, Neg.up.injEq, Pos.or.injEq, Pos.down.injEq] at h
+  exact h
+
+theorem nOrAll_inj : ∀ {l₁ l₂ : List Neg}, nOrAll l₁ = nOrAll l₂ → l₁ = l₂
+  | [], [], _ => rfl
+  | [], _ :: _, h => by simp [nOrAll, nOr, nBot] at h
+  | _ :: _, [], h => by simp [nOrAll, nOr, nBot] at h
+  | _ :: _, _ :: _, h => by
+      obtain ⟨h1, h2⟩ := nOr_inj h
+      rw [h1, nOrAll_inj h2]
+
 /-- Disjunction of a list, elimination: a case per member. -/
 def nOrAllElim : ∀ {l : List Neg} {Γ : List Neg} (G : Neg), nOrAll l ∈ Γ →
     (∀ x ∈ l, ∀ {Γ' : List Neg}, Sub Γ Γ' → Inv (x :: Γ') [] .tru G) → Inv Γ [] .tru G
@@ -2256,6 +2272,15 @@ macro "ljf_dec_e" : tactic => `(tactic| (
       first
         | exact Nat.lt_succ_self _
         | omega
+        | (have h1 := p3_pos (wPos Q + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + 1 + 1 + wNeg N + 1); omega)
+        | (have h1 := dec_boxF (by assumption); omega)
+        | (have h1 := dec_cimpF (Q' := Q') (N := N) (by assumption); omega)
+        | (have h1 := dec_cimpF (Q' := Q') (N := N_c) (by assumption); omega)
+        | (have h1 := p3_succ (wPos P); have h2 := p3_pos (wPos P); omega)
+        | (have h1 := p3_succ (wPos P'); have h2 := p3_pos (wPos P'); omega)
+        | (have h1 := p3_succ (wPos P' + 1); have h2 := p3_pos (wPos P' + 1)
+           omega)
         | exact Nat.lt_of_lt_of_le
             (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
               (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
@@ -2369,6 +2394,15 @@ macro "ljf_dec_a" : tactic => `(tactic| (
       first
         | exact Nat.lt_succ_self _
         | omega
+        | (have h1 := p3_pos (wPos Q + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + 1 + 1 + wNeg N + 1); omega)
+        | (have h1 := dec_boxF (by assumption); omega)
+        | (have h1 := dec_cimpF (Q' := Q') (N := N) (by assumption); omega)
+        | (have h1 := dec_cimpF (Q' := Q') (N := N_c) (by assumption); omega)
+        | (have h1 := p3_succ (wPos P); have h2 := p3_pos (wPos P); omega)
+        | (have h1 := p3_succ (wPos P'); have h2 := p3_pos (wPos P'); omega)
+        | (have h1 := p3_succ (wPos P' + 1); have h2 := p3_pos (wPos P' + 1)
+           omega)
         | exact Nat.lt_of_lt_of_le
             (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
               (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
@@ -3152,8 +3186,13 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           exact fireASound hf (aSound p [N'] rest (.circ (.atom q)))
       | none =>
           simp only [hf]
-          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          refine .circR (.stable (.lfoc (List.mem_cons_self ..)
+            (.circL (.downL ?_))))
+          refine nOrAllElimJ _ (List.mem_cons_self ..) (upSelf _ .lax) ?_
           intro x hx Γ' hsub
+          have hsubD : ∀ Z ∈ done, Z ∈ Γ' := fun Z hZ =>
+            hsub _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          refine circROf (j := .tru) ?_
           if hx1 : x ∈ [interp p [] done (some (.up (.atom q)))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
@@ -3162,7 +3201,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+                    (hsubD _ (hZ)))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3179,9 +3218,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
                       (List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (hsubD _ ((splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (hsubD _ ((splits_sub hXr Z hZ))))
                       (aSound p [N] rest (.circ (.atom q)))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3192,17 +3231,17 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.atom q)))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
                         (aSound p [N] rest (.circ (.atom q)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3214,7 +3253,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
-                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                  (hsubD _ ((splits_mem hXr))))
                 (.circL (invBranches R (fun b hb => ?_)))))
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
@@ -3228,7 +3267,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (fun h => hs Z (List.mem_append_left _ h)) id)))
                   (fun Z hZ => List.mem_append_right b
                     (List.mem_cons_of_mem _
-                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                      (hsubD _ ((splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
               have D := (aSound p [.up R] rest (.circ (.atom q)))
@@ -3250,7 +3289,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     · exact List.mem_cons_self ..
                     · exact List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))))
                   (circROf D))))
 
 
@@ -3262,8 +3301,13 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           exact fireASound hf (aSound p [N'] rest (.circ .fls))
       | none =>
           simp only [hf]
-          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          refine .circR (.stable (.lfoc (List.mem_cons_self ..)
+            (.circL (.downL ?_))))
+          refine nOrAllElimJ _ (List.mem_cons_self ..) (upSelf _ .lax) ?_
           intro x hx Γ' hsub
+          have hsubD : ∀ Z ∈ done, Z ∈ Γ' := fun Z hZ =>
+            hsub _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          refine circROf (j := .tru) ?_
           if hx1 : x ∈ [interp p [] done (some (.up .fls))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
@@ -3272,7 +3316,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+                    (hsubD _ (hZ)))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3289,9 +3333,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
                       (List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (hsubD _ ((splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (hsubD _ ((splits_sub hXr Z hZ))))
                       (aSound p [N] rest (.circ .fls))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3302,17 +3346,17 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ .fls))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
                         (aSound p [N] rest (.circ .fls))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3324,7 +3368,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
-                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                  (hsubD _ ((splits_mem hXr))))
                 (.circL (invBranches R (fun b hb => ?_)))))
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
@@ -3338,7 +3382,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (fun h => hs Z (List.mem_append_left _ h)) id)))
                   (fun Z hZ => List.mem_append_right b
                     (List.mem_cons_of_mem _
-                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                      (hsubD _ ((splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
               have D := (aSound p [.up R] rest (.circ .fls))
@@ -3360,7 +3404,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     · exact List.mem_cons_self ..
                     · exact List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))))
                   (circROf D))))
 
 
@@ -3372,8 +3416,13 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           exact fireASound hf (aSound p [N'] rest (.circ (.or P₁ P₂)))
       | none =>
           simp only [hf]
-          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          refine .circR (.stable (.lfoc (List.mem_cons_self ..)
+            (.circL (.downL ?_))))
+          refine nOrAllElimJ _ (List.mem_cons_self ..) (upSelf _ .lax) ?_
           intro x hx Γ' hsub
+          have hsubD : ∀ Z ∈ done, Z ∈ Γ' := fun Z hZ =>
+            hsub _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          refine circROf (j := .tru) ?_
           if he1 : x = interp p [] done (some (.circ P₁)) then
             subst he1
             exact .circR (.stable (stabOr1 (unStable (circROf
@@ -3382,7 +3431,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ))))))))
+                    (hsubD _ (hZ))))))))
           else if he2 : x = interp p [] done (some (.circ P₂)) then
             subst he2
             exact .circR (.stable (stabOr2 (unStable (circROf
@@ -3391,7 +3440,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ))))))))
+                    (hsubD _ (hZ))))))))
           else if he3 : x = interp p [] done (some (.up (.or P₁ P₂))) then
             subst he3
             exact .circR (.stable (.laxOf (unStable
@@ -3400,7 +3449,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+                    (hsubD _ (hZ)))))))
           else
           have hx2 := (List.mem_append.mp hx).resolve_left (by
             intro h
@@ -3422,9 +3471,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
                       (List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (hsubD _ ((splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (hsubD _ ((splits_sub hXr Z hZ))))
                       (aSound p [N] rest (.circ (.or P₁ P₂)))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3435,17 +3484,17 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.or P₁ P₂)))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
                         (aSound p [N] rest (.circ (.or P₁ P₂)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3457,7 +3506,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
-                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                  (hsubD _ ((splits_mem hXr))))
                 (.circL (invBranches R (fun b hb => ?_)))))
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
@@ -3471,7 +3520,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (fun h => hs Z (List.mem_append_left _ h)) id)))
                   (fun Z hZ => List.mem_append_right b
                     (List.mem_cons_of_mem _
-                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                      (hsubD _ ((splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
               have D := (aSound p [.up R] rest (.circ (.or P₁ P₂)))
@@ -3493,7 +3542,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     · exact List.mem_cons_self ..
                     · exact List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))))
                   (circROf D))))
 
 
@@ -3505,8 +3554,13 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           exact fireASound hf (aSound p [N'] rest (.circ (.down (.up P'))))
       | none =>
           simp only [hf]
-          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          refine .circR (.stable (.lfoc (List.mem_cons_self ..)
+            (.circL (.downL ?_))))
+          refine nOrAllElimJ _ (List.mem_cons_self ..) (upSelf _ .lax) ?_
           intro x hx Γ' hsub
+          have hsubD : ∀ Z ∈ done, Z ∈ Γ' := fun Z hZ =>
+            hsub _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          refine circROf (j := .tru) ?_
           if hx1 : x ∈ [interp p [] done (some (.circ P'))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.rfoc (.rel (circROf
@@ -3515,7 +3569,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ))))))))
+                    (hsubD _ (hZ))))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3532,9 +3586,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
                       (List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (hsubD _ ((splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (hsubD _ ((splits_sub hXr Z hZ))))
                       (aSound p [N] rest (.circ (.down (.up P'))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3545,17 +3599,17 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.up P'))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
                         (aSound p [N] rest (.circ (.down (.up P'))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3567,7 +3621,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
-                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                  (hsubD _ ((splits_mem hXr))))
                 (.circL (invBranches R (fun b hb => ?_)))))
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
@@ -3581,7 +3635,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (fun h => hs Z (List.mem_append_left _ h)) id)))
                   (fun Z hZ => List.mem_append_right b
                     (List.mem_cons_of_mem _
-                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                      (hsubD _ ((splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
               have D := (aSound p [.up R] rest (.circ (.down (.up P'))))
@@ -3603,7 +3657,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     · exact List.mem_cons_self ..
                     · exact List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))))
                   (circROf D))))
 
 
@@ -3615,8 +3669,13 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           exact fireASound hf (aSound p [N'] rest (.circ (.down (.circ P'))))
       | none =>
           simp only [hf]
-          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          refine .circR (.stable (.lfoc (List.mem_cons_self ..)
+            (.circL (.downL ?_))))
+          refine nOrAllElimJ _ (List.mem_cons_self ..) (upSelf _ .lax) ?_
           intro x hx Γ' hsub
+          have hsubD : ∀ Z ∈ done, Z ∈ Γ' := fun Z hZ =>
+            hsub _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          refine circROf (j := .tru) ?_
           if hx1 : x ∈ [interp p [] done (some (.circ P'))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.rfoc (.rel (.circR (circROf
@@ -3625,7 +3684,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))))
+                    (hsubD _ (hZ)))))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3642,9 +3701,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
                       (List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (hsubD _ ((splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (hsubD _ ((splits_sub hXr Z hZ))))
                       (aSound p [N] rest (.circ (.down (.circ P'))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3655,17 +3714,17 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.circ P'))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
                         (aSound p [N] rest (.circ (.down (.circ P'))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3677,7 +3736,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
-                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                  (hsubD _ ((splits_mem hXr))))
                 (.circL (invBranches R (fun b hb => ?_)))))
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
@@ -3691,7 +3750,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (fun h => hs Z (List.mem_append_left _ h)) id)))
                   (fun Z hZ => List.mem_append_right b
                     (List.mem_cons_of_mem _
-                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                      (hsubD _ ((splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
               have D := (aSound p [.up R] rest (.circ (.down (.circ P'))))
@@ -3713,7 +3772,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     · exact List.mem_cons_self ..
                     · exact List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))))
                   (circROf D))))
 
 
@@ -3725,8 +3784,13 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           exact fireASound hf (aSound p [N'] rest (.circ (.down (.and M₁ M₂))))
       | none =>
           simp only [hf]
-          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          refine .circR (.stable (.lfoc (List.mem_cons_self ..)
+            (.circL (.downL ?_))))
+          refine nOrAllElimJ _ (List.mem_cons_self ..) (upSelf _ .lax) ?_
           intro x hx Γ' hsub
+          have hsubD : ∀ Z ∈ done, Z ∈ Γ' := fun Z hZ =>
+            hsub _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          refine circROf (j := .tru) ?_
           if hx1 : x ∈ [interp p [] done (some (.up (.down (.and M₁ M₂))))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
@@ -3735,7 +3799,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+                    (hsubD _ (hZ)))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3752,9 +3816,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
                       (List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (hsubD _ ((splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (hsubD _ ((splits_sub hXr Z hZ))))
                       (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3765,17 +3829,17 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
                         (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3787,7 +3851,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
-                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                  (hsubD _ ((splits_mem hXr))))
                 (.circL (invBranches R (fun b hb => ?_)))))
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
@@ -3801,7 +3865,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (fun h => hs Z (List.mem_append_left _ h)) id)))
                   (fun Z hZ => List.mem_append_right b
                     (List.mem_cons_of_mem _
-                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                      (hsubD _ ((splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
               have D := (aSound p [.up R] rest (.circ (.down (.and M₁ M₂))))
@@ -3823,7 +3887,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     · exact List.mem_cons_self ..
                     · exact List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))))
                   (circROf D))))
 
 
@@ -3835,8 +3899,13 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           exact fireASound hf (aSound p [N'] rest (.circ (.down (.imp Q₀ N₀))))
       | none =>
           simp only [hf]
-          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          refine .circR (.stable (.lfoc (List.mem_cons_self ..)
+            (.circL (.downL ?_))))
+          refine nOrAllElimJ _ (List.mem_cons_self ..) (upSelf _ .lax) ?_
           intro x hx Γ' hsub
+          have hsubD : ∀ Z ∈ done, Z ∈ Γ' := fun Z hZ =>
+            hsub _ (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))
+          refine circROf (j := .tru) ?_
           if hx1 : x ∈ [interp p [] done (some (.up (.down (.imp Q₀ N₀))))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
@@ -3845,7 +3914,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
                 · exact List.mem_cons_of_mem _
-                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+                    (hsubD _ (hZ)))))))
           else
           have hx2 : x ∈ (splits done).attach.map _ :=
             (List.mem_append.mp hx).resolve_left hx1
@@ -3862,9 +3931,9 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   · simp only [pGuard, if_neg hap]
                     exact atkQimp (List.mem_cons_self ..)
                       (List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (hsubD _ ((splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
-                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (hsubD _ ((splits_sub hXr Z hZ))))
                       (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3875,17 +3944,17 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   | imp Q' N' =>
                       exact atkDyk (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
                         (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                          (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
                         (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3897,7 +3966,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
-                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                  (hsubD _ ((splits_mem hXr))))
                 (.circL (invBranches R (fun b hb => ?_)))))
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
@@ -3911,7 +3980,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (fun h => hs Z (List.mem_append_left _ h)) id)))
                   (fun Z hZ => List.mem_append_right b
                     (List.mem_cons_of_mem _
-                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                      (hsubD _ ((splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
               have D := (aSound p [.up R] rest (.circ (.down (.imp Q₀ N₀))))
@@ -3933,7 +4002,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                     · exact List.mem_cons_self ..
                     · exact List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_of_mem _
-                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                          (hsubD _ ((splits_sub hXr Z hZ))))))
                   (circROf D))))
 
   termination_by todo done G => 2 * sum3 todo + sum3 done + 3 ^ wNeg G
@@ -4251,6 +4320,12 @@ theorem jGoal_tru : ∀ {G : Neg}, jGoal .tru G = G
   | .imp _ _ => rfl
   | .and _ _ => rfl
   | .circ _ => rfl
+
+/-- The wrapper at the `jGoal` boundary: identity at `tru`, the modality
+at `lax` (forced change #3 — the ◯-goal aggregate is box-wrapped). -/
+def jBox : JD → Neg → Neg
+  | .tru, X => X
+  | .lax, X => .circ (.down X)
 
 /-- Minimality of `∃p` at a saturated context — the inner induction over
 derivations at saturated sequents, the heart of Pitts' argument.
@@ -4775,6 +4850,32 @@ def orChain : List Neg → Pos
 theorem nOrAll_eq (L : List Neg) : nOrAll L = .up (orChain L) := by
   cases L <;> rfl
 
+/-- The positive concluded by a rebuilt focus inside the `∀p` value: the
+disjunction chain at `tru`, the shifted disjunction under the box at
+`lax`. -/
+def jChain : JD → List Neg → Pos
+  | .tru, L => orChain L
+  | .lax, L => .down (nOrAll L)
+
+/-- Emit one disjunct of the (possibly box-wrapped) `∀p` value from a
+`tru` derivation of the row. -/
+def emitJ {Γ : List Neg} {x : Neg} {L : List Neg} : ∀ (j : JD), x ∈ L →
+    Inv Γ [] .tru x → Inv Γ [] .tru (jBox j (nOrAll L))
+  | .tru, hx, d => nOrAllIntro hx d
+  | .lax, hx, d => .circR (.stable (.laxOf (.rfoc (.rel (nOrAllIntro hx d)))))
+
+/-- Close the value from a rebuilt kept-hypothesis focus. -/
+def keepFold {Γ : List Neg} {H : Neg} {L : List Neg} : ∀ {j : JD},
+    H ∈ Γ → LFoc Γ H j (jChain j L) → Inv Γ [] .tru (jBox j (nOrAll L))
+  | .tru, hm, lf => (nOrAll_eq _).symm ▸ Inv.stable (.lfoc hm lf)
+  | .lax, hm, lf => .circR (.stable (.lfoc hm lf))
+
+/-- Re-enter the inversion phase from the value. -/
+def stabFold {Γ : List Neg} {L : List Neg} : ∀ {j : JD},
+    Inv Γ [] .tru (jBox j (nOrAll L)) → Inv Γ [] j (.up (jChain j L))
+  | .tru, d => nOrAll_eq _ ▸ d
+  | .lax, d => circROf d
+
 theorem p3_succ (m : Nat) : (3:Nat) ^ (m + 1) = 3 ^ m * 3 := Nat.pow_succ ..
 
 /-- The station drop for the Dyckhoff pipeline, with generous slack. -/
@@ -4807,6 +4908,30 @@ theorem dec_fireS {done rest : List Neg} {a : String} {N : Neg}
   have h1 := p3_succ (wNeg N)
   have h2 := p3_succ (wNeg N + 1)
   have h3 := p3_mono (a := 1) (b := wNeg N) (wNeg_pos N)
+  omega
+
+/-- The box-opening station drop, with slack `2`. -/
+theorem dec_boxF {done rest : List Neg} {Q : Pos}
+    (h : (Neg.circ Q, rest) ∈ splits done) :
+    2 * 3 ^ wPos Q + sum3 rest + 2 < sum3 done := by
+  have hs := splits_sum h
+  simp only [wNeg] at hs
+  have h1 := p3_succ (wPos Q)
+  have h2 := p3_mono (a := 1) (b := wPos Q) (wPos_pos Q)
+  omega
+
+/-- The `◯`-implication fire drop, with slack. -/
+theorem dec_cimpF {done rest : List Neg} {Q' : Pos} {N : Neg}
+    (h : (Neg.imp (Pos.down (Neg.circ Q')) N, rest) ∈ splits done) :
+    2 * 3 ^ wNeg N + sum3 rest + 9 < sum3 done := by
+  have hs := splits_sum h
+  simp only [wNeg, wPos] at hs
+  have h1 := p3_mono (a := wNeg N + 1 + 1)
+    (b := wPos Q' + 1 + 1 + wNeg N + 1)
+    (by have := wPos_pos Q'; omega)
+  have h2 := p3_succ (wNeg N)
+  have h3 := p3_succ (wNeg N + 1)
+  have h4 := p3_mono (a := 1) (b := wNeg N) (wNeg_pos N)
   omega
 
 /-- The Dyckhoff-fire drop, with slack. -/
@@ -5035,7 +5160,7 @@ variable {p : String}
 
 theorem interpA_circAtom_eq {p : String} {done : List Neg}
     (hsat : Saturated done) {q : String} :
-    interp p [] done (some (.circ (.atom q))) = nOrAll ([interp p [] done (some (.up (.atom q)))] ++
+    interp p [] done (some (.circ (.atom q))) = .circ (.down (nOrAll ([interp p [] done (some (.up (.atom q)))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -5050,7 +5175,7 @@ theorem interpA_circAtom_eq {p : String} {done : List Neg}
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.atom q))))
-              | _, _ => nBot)) := by
+              | _, _ => nBot)))) := by
   conv => lhs; rw [interp]
   split
   all_goals rename_i heq
@@ -5059,7 +5184,7 @@ theorem interpA_circAtom_eq {p : String} {done : List Neg}
 
 theorem interpA_circFls_eq {p : String} {done : List Neg}
     (hsat : Saturated done) :
-    interp p [] done (some (.circ .fls)) = nOrAll ([interp p [] done (some (.up .fls))] ++
+    interp p [] done (some (.circ .fls)) = .circ (.down (nOrAll ([interp p [] done (some (.up .fls))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -5074,7 +5199,7 @@ theorem interpA_circFls_eq {p : String} {done : List Neg}
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ .fls)))
-              | _, _ => nBot)) := by
+              | _, _ => nBot)))) := by
   conv => lhs; rw [interp]
   split
   all_goals rename_i heq
@@ -5083,7 +5208,7 @@ theorem interpA_circFls_eq {p : String} {done : List Neg}
 
 theorem interpA_circOr_eq {p : String} {done : List Neg}
     (hsat : Saturated done) (P₁ P₂ : Pos) :
-    interp p [] done (some (.circ (.or P₁ P₂))) = nOrAll ([interp p [] done (some (.circ P₁)),
+    interp p [] done (some (.circ (.or P₁ P₂))) = .circ (.down (nOrAll ([interp p [] done (some (.circ P₁)),
                      interp p [] done (some (.circ P₂)),
                      interp p [] done (some (.up (.or P₁ P₂)))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
@@ -5100,7 +5225,7 @@ theorem interpA_circOr_eq {p : String} {done : List Neg}
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.or P₁ P₂))))
-              | _, _ => nBot)) := by
+              | _, _ => nBot)))) := by
   conv => lhs; rw [interp]
   split
   all_goals rename_i heq
@@ -5109,7 +5234,7 @@ theorem interpA_circOr_eq {p : String} {done : List Neg}
 
 theorem interpA_circDownUp_eq {p : String} {done : List Neg}
     (hsat : Saturated done) (P' : Pos) :
-    interp p [] done (some (.circ (.down (.up P')))) = nOrAll ([interp p [] done (some (.circ P'))] ++
+    interp p [] done (some (.circ (.down (.up P')))) = .circ (.down (nOrAll ([interp p [] done (some (.circ P'))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -5124,7 +5249,7 @@ theorem interpA_circDownUp_eq {p : String} {done : List Neg}
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.up P')))))
-              | _, _ => nBot)) := by
+              | _, _ => nBot)))) := by
   rw [interp]; split
   all_goals rename_i heq
   · rw [hsat] at heq; cases heq
@@ -5132,7 +5257,7 @@ theorem interpA_circDownUp_eq {p : String} {done : List Neg}
 
 theorem interpA_circDownCirc_eq {p : String} {done : List Neg}
     (hsat : Saturated done) (P' : Pos) :
-    interp p [] done (some (.circ (.down (.circ P')))) = nOrAll ([interp p [] done (some (.circ P'))] ++
+    interp p [] done (some (.circ (.down (.circ P')))) = .circ (.down (nOrAll ([interp p [] done (some (.circ P'))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -5147,7 +5272,7 @@ theorem interpA_circDownCirc_eq {p : String} {done : List Neg}
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.circ P')))))
-              | _, _ => nBot)) := by
+              | _, _ => nBot)))) := by
   rw [interp]; split
   all_goals rename_i heq
   · rw [hsat] at heq; cases heq
@@ -5155,7 +5280,7 @@ theorem interpA_circDownCirc_eq {p : String} {done : List Neg}
 
 theorem interpA_circDownAnd_eq {p : String} {done : List Neg}
     (hsat : Saturated done) (M₁ M₂ : Neg) :
-    interp p [] done (some (.circ (.down (.and M₁ M₂)))) = nOrAll ([interp p [] done (some (.up (.down (.and M₁ M₂))))] ++
+    interp p [] done (some (.circ (.down (.and M₁ M₂)))) = .circ (.down (nOrAll ([interp p [] done (some (.up (.down (.and M₁ M₂))))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -5170,7 +5295,7 @@ theorem interpA_circDownAnd_eq {p : String} {done : List Neg}
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.and M₁ M₂)))))
-              | _, _ => nBot)) := by
+              | _, _ => nBot)))) := by
   conv => lhs; rw [interp]
   split
   all_goals rename_i heq
@@ -5179,7 +5304,7 @@ theorem interpA_circDownAnd_eq {p : String} {done : List Neg}
 
 theorem interpA_circDownImp_eq {p : String} {done : List Neg}
     (hsat : Saturated done) (Q₀ : Pos) (N₀ : Neg) :
-    interp p [] done (some (.circ (.down (.imp Q₀ N₀)))) = nOrAll ([interp p [] done (some (.up (.down (.imp Q₀ N₀))))] ++
+    interp p [] done (some (.circ (.down (.imp Q₀ N₀)))) = .circ (.down (nOrAll ([interp p [] done (some (.up (.down (.imp Q₀ N₀))))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
@@ -5194,12 +5319,43 @@ theorem interpA_circDownImp_eq {p : String} {done : List Neg}
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
                        (interp p [.up R] rest (some (.circ (.down (.imp Q₀ N₀)))))
-              | _, _ => nBot)) := by
+              | _, _ => nBot)))) := by
   conv => lhs; rw [interp]
   split
   all_goals rename_i heq
   · rw [hsat] at heq; cases heq
   · rfl
+
+/-- Every ◯-goal aggregate is box-wrapped: the row list, with its
+equation.  One case per goal shape, so callers with an abstract positive
+can still cross the wrapper. -/
+def interpCircShape {p : String} {done : List Neg} (hsat : Saturated done) :
+    ∀ (P₀ : Pos), Σ' L, interp p [] done (some (.circ P₀)) = .circ (.down (nOrAll L))
+  | .atom _ => ⟨_, interpA_circAtom_eq hsat⟩
+  | .fls => ⟨_, interpA_circFls_eq hsat⟩
+  | .or P₁ P₂ => ⟨_, interpA_circOr_eq hsat P₁ P₂⟩
+  | .down (.up P') => ⟨_, interpA_circDownUp_eq hsat P'⟩
+  | .down (.circ P') => ⟨_, interpA_circDownCirc_eq hsat P'⟩
+  | .down (.and M₁ M₂) => ⟨_, interpA_circDownAnd_eq hsat M₁ M₂⟩
+  | .down (.imp Q₀ N₀) => ⟨_, interpA_circDownImp_eq hsat Q₀ N₀⟩
+
+/-- **The isolated modal obligation** — the ◯-implication antecedent
+dispatch, the modal-descent miner: from a main-line stable proof of the
+antecedent `↓◯Q′` over a mixed context, derive the `∀p` interpolant of
+`◯Q′` at the residual station, on the interpolant side.  Isolated as a
+typed hypothesis exactly as `DykAnt` was in the intuitionistic
+development; the mutual below is conditional on it, and it is discharged
+separately (the modal descent of plan §3(e)). -/
+def CimpAnt (p : String) : Type :=
+  ∀ (done rest K Γ' : List Neg) (Q' : Pos) (N : Neg),
+    Saturated done → ParkedCtx done →
+    (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
+    (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+    Stab Γ' .tru (.down (.circ Q')) →
+    Inv (interp p [] done none :: K) [] .tru
+      (interp p [] rest (some (.circ Q')))
+
+variable (cAnt : CimpAnt p)
 
 set_option maxHeartbeats 8000000 in
 mutual
@@ -5372,7 +5528,7 @@ def TStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | .imp (.down (.circ Q')) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             unStable (cimpAssembleN (interpE_eq hsat) (cimpConjMem hXr)
-              (cimpAntC done rest _ _ Q' N hsat hP hXr hm hm2 hK s_d)
+              (cAnt done rest _ _ Q' N hsat hP hXr hm hm2 hK s_d)
               (eMinF [N] rest _ (.up _) (hP.sub (splits_sub hXr)) hK hp
                 (fireClean (splitHyp hm hXr)
                   (.stable (.lfoc (List.mem_cons_self ..)
@@ -5503,7 +5659,7 @@ def TpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | .imp (.down (.circ Q')) N_c, _, hd, .impL s_c lf_c =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             unStable (cimpAssembleN (interpE_eq hsat) (cimpConjMem hXr)
-              (cimpAntC done rest _ _ Q' N_c hsat hP hXr hm hm2 hK s_c)
+              (cAnt done rest _ _ Q' N_c hsat hP hXr hm hm2 hK s_c)
               (eMinF [N_c] rest _ (.up _) (hP.sub (splits_sub hXr)) hK hpT
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
@@ -5726,7 +5882,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       by_cases hq : atomMem q done = true
       · rw [interpA_atomT_eq hsat hq]; exact nTopIntro
       · rw [interpA_atom_eq hsat hq]
-        exact UStab done hsat hP hm hm2 hK (interpA_atom_eq hsat hq)
+        exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_atom_eq hsat hq)
           (fun {c Nc rest} hsp =>
             List.mem_append_right _
               (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5741,7 +5897,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up .fls, .tru, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.up .fls)))
       rw [interpA_fls_eq hsat]
-      exact UStab done hsat hP hm hm2 hK (interpA_fls_eq hsat)
+      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_fls_eq hsat)
         (fun {c Nc rest} hsp =>
           List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
         (fun {Q' N' N rest} hsp =>
@@ -5753,7 +5909,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.or P₁ P₂), .tru, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.up (.or P₁ P₂))))
       rw [interpA_or_eq hsat P₁ P₂]
-      exact UStab done hsat hP hm hm2 hK (interpA_or_eq hsat P₁ P₂)
+      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_or_eq hsat P₁ P₂)
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5768,7 +5924,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.down M), .tru, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.up (.down M))))
       rw [interpA_down_eq hsat M]
-      exact UStab done hsat hP hm hm2 hK (interpA_down_eq hsat M)
+      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_down_eq hsat M)
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5783,7 +5939,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.atom q), .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.atom q))))
       rw [interpA_circAtom_eq hsat]
-      exact UStab done hsat hP hm hm2 hK (interpA_circAtom_eq hsat)
+      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circAtom_eq hsat)
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5800,7 +5956,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up .fls, .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ .fls)))
       rw [interpA_circFls_eq hsat]
-      exact UStab done hsat hP hm hm2 hK (interpA_circFls_eq hsat)
+      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circFls_eq hsat)
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5817,7 +5973,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.or P₁ P₂), .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.or P₁ P₂))))
       rw [interpA_circOr_eq hsat P₁ P₂]
-      exact UStab done hsat hP hm hm2 hK (interpA_circOr_eq hsat P₁ P₂)
+      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circOr_eq hsat P₁ P₂)
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5834,7 +5990,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.down (.up P')), .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.up P')))))
       rw [interpA_circDownUp_eq hsat P']
-      exact UStab done hsat hP hm hm2 hK (interpA_circDownUp_eq hsat P')
+      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownUp_eq hsat P')
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5851,7 +6007,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.down (.circ P')), .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.circ P')))))
       rw [interpA_circDownCirc_eq hsat P']
-      exact UStab done hsat hP hm hm2 hK (interpA_circDownCirc_eq hsat P')
+      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownCirc_eq hsat P')
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5868,7 +6024,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.down (.and M₁ M₂)), .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.and M₁ M₂)))))
       rw [interpA_circDownAnd_eq hsat M₁ M₂]
-      exact UStab done hsat hP hm hm2 hK (interpA_circDownAnd_eq hsat M₁ M₂)
+      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownAnd_eq hsat M₁ M₂)
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5885,7 +6041,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, hm, hm2, hK, .up (.down (.imp Q₀ N₀)), .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.imp Q₀ N₀)))))
       rw [interpA_circDownImp_eq hsat Q₀ N₀]
-      exact UStab done hsat hP hm hm2 hK (interpA_circDownImp_eq hsat Q₀ N₀)
+      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownImp_eq hsat Q₀ N₀)
         (fun {c Nc rest} hsp =>
           List.mem_append_right _
             (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
@@ -5904,11 +6060,12 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   decreasing_by ljf_dec_a
 
 
-/-- Stable-phase `∀p` traversal: attack emission. -/
+/-- Stable-phase `∀p` traversal: attack emission, into the possibly
+box-wrapped value (forced change #3). -/
 def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
     ∀ {Γ' K : List Neg} {P₀ : Pos} {j : JD} {L : List Neg},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      interp p [] done (some (jGoal j (.up P₀))) = nOrAll L →
+      interp p [] done (some (jGoal j (.up P₀))) = jBox j (nOrAll L) →
       (∀ {c : String} {Nc : Neg} {rest : List Neg},
         (Neg.imp (.atom c) Nc, rest) ∈ splits done →
         pGuard p c nBot (nAnd (.up (.atom c))
@@ -5925,21 +6082,134 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         (Neg.circ R, rest) ∈ splits done →
         Neg.imp (.down (interp p [.up R] rest none))
           (interp p [.up R] rest (some (jGoal j (.up P₀)))) ∈ L) →
-      Stab Γ' j P₀ → Inv (interp p [] done none :: K) [] .tru (nOrAll L)
+      Stab Γ' j P₀ → Inv (interp p [] done none :: K) [] .tru (jBox j (nOrAll L))
   | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .rfoc r =>
       hV ▸ URF done hsat hP hm hm2 hK r
-  | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, @Stab.lfoc _ _ N₀ h lf =>
+  | _, _, .atom q, _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
+      have hV' : interp p [] done (some (.circ (.atom q)))
+          = .circ (.down (nOrAll L)) := hV
+      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
+        ((interpA_circAtom_eq hsat).symm.trans hV')))
+      refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
+      by_cases hq : atomMem q done = true
+      · rw [interpA_atomT_eq hsat hq]; exact nTopIntro
+      · rw [interpA_atom_eq hsat hq]
+        exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_atom_eq hsat hq)
+          (fun {c Nc rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun hj => nomatch hj)
+          s
+  | _, _, .fls, _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
+      have hV' : interp p [] done (some (.circ .fls))
+          = .circ (.down (nOrAll L)) := hV
+      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
+        ((interpA_circFls_eq hsat).symm.trans hV')))
+      refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
+      rw [interpA_fls_eq hsat]
+      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_fls_eq hsat)
+        (fun {c Nc rest} hsp =>
+            List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
+          (fun {Q' N' N rest} hsp =>
+            List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
+          (fun {Q' N rest} hsp =>
+            List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
+          (fun hj => nomatch hj)
+        s
+  | _, _, .or P₁ P₂, _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
+      have hV' : interp p [] done (some (.circ (.or P₁ P₂)))
+          = .circ (.down (nOrAll L)) := hV
+      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
+        ((interpA_circOr_eq hsat P₁ P₂).symm.trans hV')))
+      refine emitJ .lax (List.mem_append_left _
+        (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+          (List.mem_cons_self ..)))) ?_
+      rw [interpA_or_eq hsat P₁ P₂]
+      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_or_eq hsat P₁ P₂)
+        (fun {c Nc rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun hj => nomatch hj)
+        s
+  | _, _, .down (.up P'), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
+      have hV' : interp p [] done (some (.circ (.down (.up P'))))
+          = .circ (.down (nOrAll L)) := hV
+      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
+        ((interpA_circDownUp_eq hsat P').symm.trans hV')))
+      exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
+        (UEntry done hsat hP hm hm2 hK (.up P')
+          (.stable (.laxOf (unStable (negOfDownStab (.up P') s)))))
+  | _, _, .down (.circ P'), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
+      have hV' : interp p [] done (some (.circ (.down (.circ P'))))
+          = .circ (.down (nOrAll L)) := hV
+      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
+        ((interpA_circDownCirc_eq hsat P').symm.trans hV')))
+      exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
+        (UEntry done hsat hP hm hm2 hK (.circ P') (negOfDownStab (.circ P') s))
+  | _, _, .down (.and M₁ M₂), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
+      have hV' : interp p [] done (some (.circ (.down (.and M₁ M₂))))
+          = .circ (.down (nOrAll L)) := hV
+      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
+        ((interpA_circDownAnd_eq hsat M₁ M₂).symm.trans hV')))
+      refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
+      rw [interpA_down_eq hsat (.and M₁ M₂)]
+      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_down_eq hsat (.and M₁ M₂))
+        (fun {c Nc rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun hj => nomatch hj)
+        s
+  | _, _, .down (.imp Q₀ N₀), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
+      have hV' : interp p [] done (some (.circ (.down (.imp Q₀ N₀))))
+          = .circ (.down (nOrAll L)) := hV
+      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
+        ((interpA_circDownImp_eq hsat Q₀ N₀).symm.trans hV')))
+      refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
+      rw [interpA_down_eq hsat (.imp Q₀ N₀)]
+      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_down_eq hsat (.imp Q₀ N₀))
+        (fun {c Nc rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun {Q' N rest} hsp =>
+            List.mem_append_right _
+              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
+          (fun hj => nomatch hj)
+        s
+  | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, @Stab.lfoc _ _ _ N₀ h lf =>
       if hd : N₀ ∈ done then
         match N₀, hP _ hd, hd, lf with
         | .up (.atom c), _, hd, .rel (.atomL (.stable s')) =>
             UStab done hsat hP (hmConsDone hd hm)
-              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK hV qmem dmem s'
+              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK
+              hV qmem dmem cmem bmem s'
         | .imp (.atom c) Nc, _, hd, .impL s_c lf' =>
             if hcp : c = p then
-              UpElim done hsat hP hm hm2 hK hV qmem dmem hcp hcp hd lf' s_c
+              UpElim done hsat hP hm hm2 hK hV qmem dmem cmem bmem
+                hcp hcp hd lf' s_c
             else by
               obtain ⟨rest, hXr⟩ := splitAt done _ hd
-              exact nOrAllIntro (qmem hXr) (by
+              exact emitJ _ (qmem hXr) (by
                 simp only [pGuard]; rw [if_neg hcp]
                 refine .andR
                   (.stable (TStab done hsat hP hm hm2 hK hcp s_c)) ?_
@@ -5952,7 +6222,7 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
                         (lf'.wk (Sub.grow _)))))))
         | .imp (.down (.imp Q' N')) N, _, hd, .impL s_d lf' => by
             obtain ⟨rest, hXr⟩ := splitAt done _ hd
-            exact nOrAllIntro (dmem hXr)
+            exact emitJ _ (dmem hXr)
               (.andR
                 (dykAntC done rest _ _ Q' N' N hsat hP hXr hm hm2 hK s_d)
                 (dykAssembleN (interpE_eq hsat) (dykConjMem hXr)
@@ -5962,6 +6232,30 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
                     (fireClean (splitHyp hm hXr)
                       (.stable (.lfoc (List.mem_cons_self ..)
                         (lf'.wk (Sub.grow _))))))))
+        | .imp (.down (.circ Q')) N, _, hd, .impL s_d lf' => by
+            obtain ⟨rest, hXr⟩ := splitAt done _ hd
+            exact emitJ _ (cmem hXr)
+              (.andR
+                (cAnt done rest _ _ Q' N hsat hP hXr hm hm2 hK s_d)
+                (cimpAssembleN (interpE_eq hsat) (cimpConjMem hXr)
+                  (cAnt done rest _ _ Q' N hsat hP hXr hm hm2 hK s_d)
+                  (aMinF [N] rest _ (.up _)
+                    (ParkedCtx.sub (splits_sub hXr) hP) hK
+                    (fireClean (splitHyp hm hXr)
+                      (.stable (.lfoc (List.mem_cons_self ..)
+                        (lf'.wk (Sub.grow _))))))))
+        | .circ Q, _, hd, .circL d => by
+            obtain ⟨rest, hXr⟩ := splitAt done _ hd
+            have haux := aMinF [.up Q] rest _ (.up _)
+              (hP.sub (splits_sub hXr)) hK
+              (boxClean (splitHyp hm hXr)
+                (.stable (.lfoc (List.mem_cons_self ..)
+                  (.rel (d.wk (Sub.grow _))))))
+            exact emitJ .lax (bmem rfl hXr)
+              (.impR (.downL (haux.wk (fun Z hZ => by
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))))
         | .up .fls, hpk, _, _ => nomatch hpk
         | .up (.or _ _), hpk, _, _ => nomatch hpk
         | .up (.down _), hpk, _, _ => nomatch hpk
@@ -5971,56 +6265,15 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | .imp (.down (.and _ _)) _, hpk, _, _ => nomatch hpk
         | .and _ _, hpk, _, _ => nomatch hpk
       else
-        (nOrAll_eq _).symm ▸
-          Inv.stable (.lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
-            (ULF done hsat hP hm hm2 hK hV qmem dmem
-              (hK _ ((hm _ h).resolve_left hd)) lf))
+        keepFold (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
+          (ULF done hsat hP hm hm2 hK hV qmem dmem cmem bmem
+            (hK _ ((hm _ h).resolve_left hd)) lf)
   termination_by Γ' K P₀ j L hm hm2 hK hV qmem dmem cmem bmem s =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
-  decreasing_by
-    all_goals simp_wf
-    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-    all_goals
-      first
-        | exact Nat.lt_succ_self _
-        | omega
-        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-        | (have h1 := dec_fireS (by assumption); omega)
-        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-        | (refine Prod.Lex.left _ _ ?_
-           first
-             | omega
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | exact Nat.lt_of_lt_of_le
-                 (Nat.lt_of_le_of_lt
-                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
-                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
-                 (Nat.le_trans (Nat.le_add_left _ _)
-                   (Nat.le_trans (Nat.le_add_right _ _)
-                     (Nat.le_add_right _ _)))
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
-             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
-                omega)
-             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
-             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
-             | (have h1 := dec_fireS (by assumption); omega)
-             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
-             | (have h1 := dec_dykC (by assumption); omega))
-        | decreasing_tactic
+  decreasing_by ljf_dec_a
 
 
-/-- Right-focus `∀p` traversal: the goal-driven disjuncts. -/
+/-- Right-focus `∀p` traversal: the goal-driven disjuncts, in value form. -/
 def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
     ∀ {Γ' K : List Neg} {P₀ : Pos} {j : JD},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
@@ -6042,7 +6295,7 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, .atom q, .lax, hm, hm2, hK, .init h => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.atom q))))
       rw [interpA_circAtom_eq hsat]
-      refine nOrAllIntro (List.mem_append_left _ (List.mem_cons_self ..)) ?_
+      refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
       by_cases hq : atomMem q done = true
       · rw [interpA_atomT_eq hsat hq]; exact nTopIntro
       · have hk : Neg.up (.atom q) ∈ _ :=
@@ -6061,7 +6314,7 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, .or P₁ P₂, .lax, hm, hm2, hK, .or1 r₁ => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.or P₁ P₂))))
       rw [interpA_circOr_eq hsat P₁ P₂]
-      exact nOrAllIntro (List.mem_append_left _ (List.mem_cons_self ..))
+      exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (URF done hsat hP hm hm2 hK r₁)
   | _, _, .or P₁ P₂, .tru, hm, hm2, hK, .or2 r₂ => by
       show Inv _ [] .tru (interp p [] done (some (.up (.or P₁ P₂))))
@@ -6072,7 +6325,7 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, .or P₁ P₂, .lax, hm, hm2, hK, .or2 r₂ => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.or P₁ P₂))))
       rw [interpA_circOr_eq hsat P₁ P₂]
-      exact nOrAllIntro (List.mem_append_left _
+      exact emitJ .lax (List.mem_append_left _
           (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
         (URF done hsat hP hm hm2 hK r₂)
   | _, _, .down M, .tru, hm, hm2, hK, .rel dI => by
@@ -6084,12 +6337,12 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   | _, _, .down (.up P'), .lax, hm, hm2, hK, .rel dI => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.up P')))))
       rw [interpA_circDownUp_eq hsat P']
-      exact nOrAllIntro (List.mem_append_left _ (List.mem_cons_self ..))
+      exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (UEntry done hsat hP hm hm2 hK (.up P') dI)
   | _, _, .down (.circ P'), .lax, hm, hm2, hK, .rel dI => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.circ P')))))
       rw [interpA_circDownCirc_eq hsat P']
-      exact nOrAllIntro (List.mem_append_left _ (List.mem_cons_self ..))
+      exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (UEntry done hsat hP hm hm2 hK (.circ P') dI)
   | _, _, .down (.and _ _), .lax, _, _, _, .rel dI => nomatch dI
   | _, _, .down (.imp _ _), .lax, _, _, _, .rel dI => nomatch dI
@@ -6098,11 +6351,12 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   decreasing_by ljf_dec_a
 
 
-/-- Left focus on a kept hypothesis, `∀p` mode. -/
+/-- Left focus on a kept hypothesis, `∀p` mode: rebuilt at the flag,
+concluding the `jChain` positive. -/
 def ULF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
     ∀ {Γ' K : List Neg} {P₀ : Pos} {j : JD} {L : List Neg} {H : Neg},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      interp p [] done (some (jGoal j (.up P₀))) = nOrAll L →
+      interp p [] done (some (jGoal j (.up P₀))) = jBox j (nOrAll L) →
       (∀ {c : String} {Nc : Neg} {rest : List Neg},
         (Neg.imp (.atom c) Nc, rest) ∈ splits done →
         pGuard p c nBot (nAnd (.up (.atom c))
@@ -6120,7 +6374,7 @@ def ULF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         Neg.imp (.down (interp p [.up R] rest none))
           (interp p [.up R] rest (some (jGoal j (.up P₀)))) ∈ L) →
       PFreeN p H →
-      LFoc Γ' H j P₀ → LFoc (interp p [] done none :: K) H j (orChain L)
+      LFoc Γ' H j P₀ → LFoc (interp p [] done none :: K) H j (jChain j L)
   | _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hH, .rel d =>
       .rel (UInvG done hsat hP hm hm2 hK hV qmem dmem cmem bmem
         (PFreeΩ.cons hH PFreeΩ.nil) d)
@@ -6139,11 +6393,11 @@ def ULF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   decreasing_by ljf_dec_a
 
 
-/-- Inversion, `∀p` mode, goal re-targeted to the disjunction. -/
+/-- Inversion, `∀p` mode, goal re-targeted to the `jChain` positive. -/
 def UInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
     ∀ {Γ' K : List Neg} {P₀ : Pos} {j : JD} {L : List Neg} {Ω : List Pos},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      interp p [] done (some (jGoal j (.up P₀))) = nOrAll L →
+      interp p [] done (some (jGoal j (.up P₀))) = jBox j (nOrAll L) →
       (∀ {c : String} {Nc : Neg} {rest : List Neg},
         (Neg.imp (.atom c) Nc, rest) ∈ splits done →
         pGuard p c nBot (nAnd (.up (.atom c))
@@ -6162,9 +6416,9 @@ def UInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           (interp p [.up R] rest (some (jGoal j (.up P₀)))) ∈ L) →
       PFreeΩ p Ω →
       Inv Γ' Ω j (.up P₀) →
-      Inv (interp p [] done none :: K) Ω j (.up (orChain L))
+      Inv (interp p [] done none :: K) Ω j (.up (jChain j L))
   | _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, _, .stable s =>
-      nOrAll_eq _ ▸ UStab done hsat hP hm hm2 hK hV qmem dmem cmem bmem s
+      stabFold (UStab done hsat hP hm hm2 hK hV qmem dmem cmem bmem s)
   | _, _, _, _, _, .or PA PB :: _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hΩ, .orL d₁ d₂ =>
       .orL (UInvG done hsat hP hm hm2 hK hV qmem dmem cmem bmem
               (hΩ.tail.cons hΩ.head.1) d₁)
@@ -6199,21 +6453,29 @@ def UInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
 
 /-- The `p`-fire eliminator, `∀p` mode: same composition, attack emission. -/
 def UpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {L : List Neg} {a b : String},
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {j : JD} {L : List Neg} {a b : String},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      interp p [] done (some (.up P₀)) = nOrAll L →
+      interp p [] done (some (jGoal j (.up P₀))) = jBox j (nOrAll L) →
       (∀ {c : String} {Nc : Neg} {rest : List Neg},
         (Neg.imp (.atom c) Nc, rest) ∈ splits done →
         pGuard p c nBot (nAnd (.up (.atom c))
-          (interp p [Nc] rest (some (.up P₀)))) ∈ L) →
+          (interp p [Nc] rest (some (jGoal j (.up P₀))))) ∈ L) →
       (∀ {Q' : Pos} {N' N : Neg} {rest : List Neg},
         (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done →
         nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-             (interp p [N] rest (some (.up P₀))) ∈ L) →
-      a = p → b = p → Neg.imp (.atom a) M ∈ done → LFoc Γ' M P₀ →
-      Stab Γ' (.atom b) →
-      Inv (interp p [] done none :: K) [] (nOrAll L)
-  | _, _, _, _, _, a, b, hm, _, hK, _, _, _, ha, hb, hXpkg, _, .rfoc (.init h) =>
+             (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
+      (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
+        (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
+        nAnd (interp p [] rest (some (.circ Q')))
+             (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
+      (j = .lax → ∀ {R : Pos} {rest : List Neg},
+        (Neg.circ R, rest) ∈ splits done →
+        Neg.imp (.down (interp p [.up R] rest none))
+          (interp p [.up R] rest (some (jGoal j (.up P₀)))) ∈ L) →
+      a = p → b = p → Neg.imp (.atom a) M ∈ done → LFoc Γ' M j P₀ →
+      Stab Γ' .tru (.atom b) →
+      Inv (interp p [] done none :: K) [] .tru (jBox j (nOrAll L))
+  | _, _, _, _, _, _, a, b, hm, _, hK, _, _, _, _, _, ha, hb, hXpkg, _, .rfoc (.init h) =>
       False.elim (by
         rcases hm _ h with hd | hk
         · have h1 := atomMem_of_mem hd
@@ -6221,20 +6483,22 @@ def UpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           rw [hb.trans ha.symm] at h1
           rw [h1] at h2; cases h2
         · exact (hK _ hk) hb)
-  | _, _, _, _, _, a, b, hm, hm2, hK, hV, qmem, dmem, ha, hb, hXpkg, lfP,
-      @Stab.lfoc _ _ N₀ h lf =>
+  | _, _, _, _, _, _, a, b, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, ha, hb, hXpkg, lfP,
+      @Stab.lfoc _ _ _ N₀ h lf =>
       if hd : N₀ ∈ done then
         match N₀, hP _ hd, hd, lf with
         | .up (.atom c), _, hd, .rel (.atomL (.stable s')) =>
             UpElim done hsat hP (hmConsDone hd hm)
-              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK hV qmem dmem
+              (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ)) hK
+              hV qmem dmem cmem bmem
               ha hb hXpkg (lfP.wk (Sub.grow _)) s'
         | .imp (.atom c) Nc, _, hd, .impL s_c lf_c =>
             if hcp : c = p then
-              UpElim done hsat hP hm hm2 hK hV qmem dmem ha hcp hXpkg lfP s_c
+              UpElim done hsat hP hm hm2 hK hV qmem dmem cmem bmem
+                ha hcp hXpkg lfP s_c
             else by
               obtain ⟨rest, hXr⟩ := splitAt done _ hd
-              exact nOrAllIntro (qmem hXr) (by
+              exact emitJ _ (qmem hXr) (by
                 simp only [pGuard]; rw [if_neg hcp]
                 refine .andR
                   (.stable (TStab done hsat hP hm hm2 hK hcp s_c)) ?_
@@ -6251,7 +6515,7 @@ def UpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
                           (lfP.wk (Sub.grow _))))))))
         | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d => by
             obtain ⟨rest, hXr⟩ := splitAt done _ hd
-            exact nOrAllIntro (dmem hXr)
+            exact emitJ _ (dmem hXr)
               (.andR
                 (dykAntC done rest _ _ Q' N' N_d hsat hP hXr hm hm2 hK s_d)
                 (dykAssembleN (interpE_eq hsat) (dykConjMem hXr)
@@ -6265,6 +6529,23 @@ def UpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
                             Stab.lfoc (List.mem_cons_self ..)
                               (lf_d.wk (Sub.grow _)))
                           (lfP.wk (Sub.grow _)))))))))
+        | .imp (.down (.circ Q')) N_c, _, hd, .impL s_c lf_c => by
+            obtain ⟨rest, hXr⟩ := splitAt done _ hd
+            exact emitJ _ (cmem hXr)
+              (.andR
+                (cAnt done rest _ _ Q' N_c hsat hP hXr hm hm2 hK s_c)
+                (cimpAssembleN (interpE_eq hsat) (cimpConjMem hXr)
+                  (cAnt done rest _ _ Q' N_c hsat hP hXr hm hm2 hK s_c)
+                  (aMinF [N_c] rest _ (.up _)
+                    (ParkedCtx.sub (splits_sub hXr) hP) hK
+                    (fireClean (splitHyp hm hXr) (.stable
+                      (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
+                        (.impL
+                          ((hb.trans ha.symm) ▸
+                            Stab.lfoc (List.mem_cons_self ..)
+                              (lf_c.wk (Sub.grow _)))
+                          (lfP.wk (Sub.grow _)))))))))
+        | .circ _, _, _, lf => nomatch lf
         | .up .fls, hpk, _, _ => nomatch hpk
         | .up (.or _ _), hpk, _, _ => nomatch hpk
         | .up (.down _), hpk, _, _ => nomatch hpk
@@ -6274,85 +6555,99 @@ def UpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         | .imp (.down (.and _ _)) _, hpk, _, _ => nomatch hpk
         | .and _ _, hpk, _, _ => nomatch hpk
       else
-        (nOrAll_eq _).symm ▸
-          Inv.stable (.lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
-            (UpLF done hsat hP hm hm2 hK hV qmem dmem
-              (hK _ ((hm _ h).resolve_left hd)) ha hb hXpkg lfP lf))
-  termination_by Γ' K M P₀ L a b hm hm2 hK hV qmem dmem ha hb hXpkg lfP s =>
+        keepFold (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
+          (UpLF done hsat hP hm hm2 hK hV qmem dmem cmem bmem
+            (hK _ ((hm _ h).resolve_left hd)) ha hb hXpkg lfP lf)
+  termination_by Γ' K M P₀ j L a b hm hm2 hK hV qmem dmem cmem bmem ha hb hXpkg lfP s =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
   decreasing_by ljf_dec_a
 
 
 /-- Left focus on a kept hypothesis, inside an `∀p`-mode `p`-proof. -/
 def UpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {L : List Neg} {H : Neg}
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {j : JD} {L : List Neg} {H : Neg}
       {a b : String},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      interp p [] done (some (.up P₀)) = nOrAll L →
+      interp p [] done (some (jGoal j (.up P₀))) = jBox j (nOrAll L) →
       (∀ {c : String} {Nc : Neg} {rest : List Neg},
         (Neg.imp (.atom c) Nc, rest) ∈ splits done →
         pGuard p c nBot (nAnd (.up (.atom c))
-          (interp p [Nc] rest (some (.up P₀)))) ∈ L) →
+          (interp p [Nc] rest (some (jGoal j (.up P₀))))) ∈ L) →
       (∀ {Q' : Pos} {N' N : Neg} {rest : List Neg},
         (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done →
         nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-             (interp p [N] rest (some (.up P₀))) ∈ L) →
+             (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
+      (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
+        (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
+        nAnd (interp p [] rest (some (.circ Q')))
+             (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
+      (j = .lax → ∀ {R : Pos} {rest : List Neg},
+        (Neg.circ R, rest) ∈ splits done →
+        Neg.imp (.down (interp p [.up R] rest none))
+          (interp p [.up R] rest (some (jGoal j (.up P₀)))) ∈ L) →
       PFreeN p H → a = p → b = p → Neg.imp (.atom a) M ∈ done →
-      LFoc Γ' M P₀ →
-      LFoc Γ' H (.atom b) → LFoc (interp p [] done none :: K) H (orChain L)
-  | _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, ha, hb, hXpkg,
+      LFoc Γ' M j P₀ →
+      LFoc Γ' H .tru (.atom b) → LFoc (interp p [] done none :: K) H j (jChain j L)
+  | _, _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hH, ha, hb, hXpkg,
       lfP, .rel d =>
-      .rel (UpInvG done hsat hP hm hm2 hK hV qmem dmem
+      .rel (UpInvG done hsat hP hm hm2 hK hV qmem dmem cmem bmem
         (PFreeΩ.cons hH PFreeΩ.nil) ha hb hXpkg lfP d)
-  | _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, ha, hb, hXpkg,
+  | _, _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hH, ha, hb, hXpkg,
       lfP, .impL s lf =>
       .impL (TStab done hsat hP hm hm2 hK hH.1 s)
-            (UpLF done hsat hP hm hm2 hK hV qmem dmem hH.2 ha hb hXpkg lfP lf)
-  | _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, ha, hb, hXpkg,
+            (UpLF done hsat hP hm hm2 hK hV qmem dmem cmem bmem hH.2 ha hb hXpkg lfP lf)
+  | _, _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hH, ha, hb, hXpkg,
       lfP, .and1 lf =>
-      .and1 (UpLF done hsat hP hm hm2 hK hV qmem dmem hH.1 ha hb hXpkg lfP lf)
-  | _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, hH, ha, hb, hXpkg,
+      .and1 (UpLF done hsat hP hm hm2 hK hV qmem dmem cmem bmem hH.1 ha hb hXpkg lfP lf)
+  | _, _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hH, ha, hb, hXpkg,
       lfP, .and2 lf =>
-      .and2 (UpLF done hsat hP hm hm2 hK hV qmem dmem hH.2 ha hb hXpkg lfP lf)
-  termination_by Γ' K M P₀ L H a b hm hm2 hK hV qmem dmem hH ha hb hXpkg lfP lf =>
+      .and2 (UpLF done hsat hP hm hm2 hK hV qmem dmem cmem bmem hH.2 ha hb hXpkg lfP lf)
+  termination_by Γ' K M P₀ j L H a b hm hm2 hK hV qmem dmem cmem bmem hH ha hb hXpkg lfP lf =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
   decreasing_by ljf_dec_a
 
 
 /-- Inversion inside an `∀p`-mode `p`-proof. -/
 def UpInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
-    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {L : List Neg} {Ω : List Pos}
+    ∀ {Γ' K : List Neg} {M : Neg} {P₀ : Pos} {j : JD} {L : List Neg} {Ω : List Pos}
       {a b : String},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      interp p [] done (some (.up P₀)) = nOrAll L →
+      interp p [] done (some (jGoal j (.up P₀))) = jBox j (nOrAll L) →
       (∀ {c : String} {Nc : Neg} {rest : List Neg},
         (Neg.imp (.atom c) Nc, rest) ∈ splits done →
         pGuard p c nBot (nAnd (.up (.atom c))
-          (interp p [Nc] rest (some (.up P₀)))) ∈ L) →
+          (interp p [Nc] rest (some (jGoal j (.up P₀))))) ∈ L) →
       (∀ {Q' : Pos} {N' N : Neg} {rest : List Neg},
         (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done →
         nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-             (interp p [N] rest (some (.up P₀))) ∈ L) →
+             (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
+      (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
+        (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
+        nAnd (interp p [] rest (some (.circ Q')))
+             (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
+      (j = .lax → ∀ {R : Pos} {rest : List Neg},
+        (Neg.circ R, rest) ∈ splits done →
+        Neg.imp (.down (interp p [.up R] rest none))
+          (interp p [.up R] rest (some (jGoal j (.up P₀)))) ∈ L) →
       PFreeΩ p Ω → a = p → b = p → Neg.imp (.atom a) M ∈ done →
-      LFoc Γ' M P₀ →
-      Inv Γ' Ω (.up (.atom b)) →
-      Inv (interp p [] done none :: K) Ω (.up (orChain L))
-  | _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, _, ha, hb, hXpkg,
+      LFoc Γ' M j P₀ →
+      Inv Γ' Ω .tru (.up (.atom b)) →
+      Inv (interp p [] done none :: K) Ω j (.up (jChain j L))
+  | _, _, _, _, _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, _, ha, hb, hXpkg,
       lfP, .stable s =>
-      nOrAll_eq _ ▸
-        UpElim done hsat hP hm hm2 hK hV qmem dmem ha hb hXpkg lfP s
-  | _, _, _, _, _, .or PA PB :: _, _, _, hm, hm2, hK, hV, qmem, dmem, hΩ, ha, hb, hXpkg,
+      stabFold (UpElim done hsat hP hm hm2 hK hV qmem dmem cmem bmem ha hb hXpkg lfP s)
+  | _, _, _, _, _, _, .or PA PB :: _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hΩ, ha, hb, hXpkg,
       lfP, .orL d₁ d₂ =>
-      .orL (UpInvG done hsat hP hm hm2 hK hV qmem dmem
+      .orL (UpInvG done hsat hP hm hm2 hK hV qmem dmem cmem bmem
               (hΩ.tail.cons hΩ.head.1) ha hb hXpkg lfP d₁)
-           (UpInvG done hsat hP hm hm2 hK hV qmem dmem
+           (UpInvG done hsat hP hm hm2 hK hV qmem dmem cmem bmem
               (hΩ.tail.cons hΩ.head.2) ha hb hXpkg lfP d₂)
-  | _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, .flsL => .flsL
-  | _, _, _, _, _, .down M₀ :: _, _, _, hm, hm2, hK, hV, qmem, dmem, hΩ, ha, hb, hXpkg,
+  | _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, .flsL => .flsL
+  | _, _, _, _, _, _, .down M₀ :: _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hΩ, ha, hb, hXpkg,
       lfP, .downL d =>
       .downL (((UpInvG done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
-          (PFreeCtx.cons hΩ.head hK) hV qmem dmem hΩ.tail ha hb hXpkg
+          (PFreeCtx.cons hΩ.head hK) hV qmem dmem cmem bmem hΩ.tail ha hb hXpkg
           (lfP.wk (Sub.grow _)) d)).wk
         (fun Z hZ => by
           rcases List.mem_cons.mp hZ with rfl | hZ
@@ -6360,12 +6655,12 @@ def UpInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           · rcases List.mem_cons.mp hZ with rfl | hZ
             · exact List.mem_cons_self ..
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
-  | _, _, _, _, _, .atom c :: _, _, _, hm, hm2, hK, hV, qmem, dmem, hΩ, ha, hb, hXpkg,
+  | _, _, _, _, _, _, .atom c :: _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, hΩ, ha, hb, hXpkg,
       lfP, .atomL d =>
       .atomL (((UpInvG done hsat hP (hmConsK hm)
           (fun Z hZ => List.mem_cons_of_mem _ (hm2 Z hZ))
           (PFreeCtx.cons (show PFreeN p (.up (.atom c)) from hΩ.head) hK)
-          hV qmem dmem hΩ.tail ha hb hXpkg
+          hV qmem dmem cmem bmem hΩ.tail ha hb hXpkg
           (lfP.wk (Sub.grow _)) d)).wk
         (fun Z hZ => by
           rcases List.mem_cons.mp hZ with rfl | hZ
@@ -6373,7 +6668,7 @@ def UpInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
           · rcases List.mem_cons.mp hZ with rfl | hZ
             · exact List.mem_cons_self ..
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
-  termination_by Γ' K M P₀ L Ω a b hm hm2 hK hV qmem dmem hΩ ha hb hXpkg lfP d =>
+  termination_by Γ' K M P₀ j L Ω a b hm hm2 hK hV qmem dmem cmem bmem hΩ ha hb hXpkg lfP d =>
     (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
   decreasing_by ljf_dec_a
 
@@ -6404,21 +6699,21 @@ def dykAntC : ∀ (done rest K Γ' : List Neg) (Q' : Pos) (N' N : Neg),
 
 end
 
-/-- **SatE2, unconditional.** -/
+/-- **SatE2, conditional on the isolated modal obligation.** -/
 def satE2 : SatE2 p := fun done Δ ψ hsat hP hΔ hψ d =>
-  TInv done hsat hP (fun Z hZ => List.mem_append.mp hZ)
+  TInv cAnt done hsat hP (fun Z hZ => List.mem_append.mp hZ)
     (fun Z hZ => List.mem_append_left _ hZ) hΔ
     (fun _ h => absurd h (List.not_mem_nil)) hψ d
 
-/-- **SatA2, unconditional.** -/
+/-- **SatA2, conditional on the isolated modal obligation.** -/
 def satA2 : SatA2 p := fun done Δ G hsat hP hΔ d =>
-  UEntry done hsat hP (fun Z hZ => List.mem_append.mp hZ)
+  UEntry cAnt done hsat hP (fun Z hZ => List.mem_append.mp hZ)
     (fun Z hZ => List.mem_append_left _ hZ) hΔ G d
 
 /-- **The Dyckhoff antecedent dispatch, as originally isolated.** -/
 def dykAnt : DykAnt p :=
   fun done rest K Γ' Q' N' N hsat hP hXr hm hm2 hK s =>
-    dykAntC done rest K Γ' Q' N' N hsat hP hXr hm hm2 hK s
+    dykAntC cAnt done rest K Γ' Q' N' N hsat hP hXr hm hm2 hK s
 
 end LJFO
 
