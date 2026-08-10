@@ -218,3 +218,42 @@ def calib3_old : C3 :=
 #eval a2res
 #eval cimpRes
 #eval cimpBRes
+
+/-- Route-(3) cell: the uniformised antecedent `A(rest ⇒ ↑↓◯Q′)`
+(tru-mode at the residual station).  Minimality direction. -/
+def cimpCellC (Q' : Pos) (N : Neg) (rest K : List Neg) : C3 :=
+  let χ : Neg := .imp (.down (.circ Q')) N
+  let done := χ :: rest
+  cell (provN (done ++ K) (.somehow (posF Q')))
+       (provN (interp pv [] done none :: K)
+         (negF (interp pv [] rest (some (.up (.down (.circ Q')))))))
+
+/-- Route-(3) soundness spot: the new antecedent value, beside its
+station, yields the fire argument: `A(rest ⇒ ↑↓◯Q′), rest ⊢ ◯Q′`. -/
+def cimpSoundC (Q' : Pos) (rest : List Neg) : C3 :=
+  cell V.yes
+       (provN (interp pv [] rest (some (.up (.down (.circ Q')))) :: rest)
+         (.somehow (posF Q')))
+
+def cimpCRes : List (C3 × Pos × Neg × List Neg × List Neg) := Id.run do
+  let mut out := []
+  for Q' in [aQ, aP, .or aQ aR, .down boxQ] do
+    for N in [uQ, uP, boxQ, .up (.or aQ aR)] do
+      for rest in [([] : List Neg), [uQ], [boxQ], [qimpP]] do
+        for K in kBank do
+          if isSat (Neg.imp (.down (.circ Q')) N :: rest) then
+            let r := cimpCellC Q' N rest K
+            if r != .pass then out := (r, Q', N, rest, K) :: out
+  return out
+
+def cimpCSound : List (C3 × Pos × List Neg) := Id.run do
+  let mut out := []
+  for Q' in [aQ, aP, .or aQ aR, .down boxQ] do
+    for rest in [([] : List Neg), [uQ], [boxQ], [qimpP]] do
+      if isSat rest then
+        let r := cimpSoundC Q' rest
+        if r != .pass then out := (r, Q', rest) :: out
+  return out
+
+#eval cimpCRes
+#eval cimpCSound
