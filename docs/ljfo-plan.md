@@ -417,3 +417,48 @@ analysis (this session) shows the miner needs either (a) a dedicated
 subterm-measured traversal family, or (b) a further forced change to the
 E-row antecedent — the evaluator bank should adjudicate (b) cheaply
 before (a) is built.
+
+## Evaluator bank verdicts (2026-08-10 evening, `wip/ljfo_eval.lean`)
+
+Built on `prove?Bounded`/`refute?` (the certificate engines, per the
+standing search-tooling rule — the decidability fuel is infeasible).
+Three-valued cells: fail/flag only ever reported on certificates.
+
+* **Calibration PASSED (live-fire):** the forced-change-#3 cell
+  (`done = []`, `Δ = [◯q]`, goal `◯q` at lax) is CERTIFIED-FAIL against
+  the pre-wrapper value and PASSES against the wrapped one.
+* **E2/A2 minimality sweeps: zero failures, zero flags** over the
+  degenerate bank (empty stations, p-carrying boxes, ∨-bodies, ⊥,
+  p-guarded rows, boxed kept hypotheses).
+* **The CimpAnt cells: zero failures, zero flags** — including p-carrying
+  `Q′`, boxes in `rest`, kept-side grounding.  The E-row antecedent
+  `A(rest ⇒ ◯Q′)` is minimality-adequate on the bank; no forced change
+  #4 is indicated.  Option (b) (guard at the full station) also passes —
+  no discriminating cell found.
+
+## The miner: the measure wall, precisely (for Matthew)
+
+The statement `CimpAnt` is supported by the bank; the remaining question
+is purely proof-architecture.  Ten-odd designs were pushed to their
+failure points this session; the wall, in one sentence: **the mining must
+restart on χ-fire arguments inside material it obtained by rebuilding
+(peel/simulation/weakening), so no structural measure survives; and no
+station/goal-weight measure orders the restart, because a χ-use can occur
+at an arbitrarily small local goal.**  Deep χ-uses under branch-local
+releases are semantically real (their arguments use the branch locals),
+so top-level descent alone cannot reach them.
+
+Two costed discharge routes:
+
+1. **Height bound by pigeonhole for LJF◯** — the exact ingredient
+   `PLLG4Dec` provides for G4c ("what lets the Pitts interpolants be
+   defined by plain fuel recursion").  Scope: a decider-scale finite-space
+   development for the focused calculus.  Big, but on well-trodden
+   in-repo ground.
+2. **A χ-aware antecedent aggregate** (retention-lite in the formula) —
+   needs a termination-compatible formulation; the naive one is circular.
+   This is a definition-design decision of the kind Matthew governs.
+
+Station-fuel (strong induction on `sum3 done`, tying the `cAnt` knot per
+station) handles all OTHER cimps' dispatches during the mining; it is the
+same-χ deep uses that need (1) or (2).
