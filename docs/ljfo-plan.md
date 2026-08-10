@@ -277,3 +277,23 @@ flag decoration only: `Sub`/weakening, `routeStab`, `simStab`/`simHyp`,
 version + the `◯`-implication analogue), `findFire` (two new dispatch
 kinds), the saturated-case entry analysis (`TInv`-family gains circL
 cases at lax indices).
+
+## Stage-3 threading scheme (fixed 2026-08-10, mid-port)
+
+* `eMinF`/`SatE2`/the T-family: **j-generic** — `∀ {j}, Inv … j ψ → Inv (E :: Δ) [] j ψ`; every arm gains one slot before the derivation.
+* `aMinF`/`SatA2`/the U-family: derivation at `j`, conclusion at `tru`
+  against the **jGoal-translated** target:
+  `Inv (E :: Δ) [] .tru (interp … (some (jGoal j G)))` with
+  `jGoal tru G = G`, `jGoal lax (↑P) = ◯P` (lax sequents are interpolated
+  at the ◯-goal; lax imp/and-goal derivations are constructor-free).
+* New mutual members: `cimpAntC` — the modal-descent miner, deriving
+  `A(rest ⇒ ◯Q′)` from the ◯-implication's tru argument by structural
+  descent on inner self-arguments (no residual, no commute); `boxClean` —
+  the fireClean analogue for a consumed box (later `circL`-uses re-derive
+  the content from the opened station's products).
+* New T/U cases: `laxOf` (recurse at tru, administrative), `circR`
+  (recurse at lax), `circL`-dispatch on parked boxes (through the box
+  conjunct at lax + station-crossing recursion), ◯-implication dispatch
+  (through the modal pair; argument mined by `cimpAntC`; E-res projected
+  as in the intuitionistic case).
+* Farms: `ljf_dec_e`/`ljf_dec_a` already carry the modal descent entries.
