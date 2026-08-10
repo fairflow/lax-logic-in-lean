@@ -297,3 +297,25 @@ cases at lax indices).
   (through the modal pair; argument mined by `cimpAntC`; E-res projected
   as in the intuitionistic case).
 * Farms: `ljf_dec_e`/`ljf_dec_a` already carry the modal descent entries.
+
+## Forced change #2 (2026-08-10, caught at mechanisation): the direct row is a FAMILY
+
+The paper pass enumerated the *stable* dispatch at the ◯-goal but not the
+right-focus spine. A lax `RFocus` can reach genuinely lax stable nodes
+(`or1 → … → rel → inversion → stable → circL`), and `◯` does not
+distribute over `∨` in PLL, so the single direct row
+`A(done ⇒ ↑Q)` cannot cover them. The repair, by the body's shape — the
+**lax goal-inversion rows** replacing the direct row in the ◯-goal
+aggregate for goal `◯Q`:
+
+* `Q = atom/fls`: the old direct row `A(done ⇒ ↑Q)` (laxness only via
+  `laxOf` there);
+* `Q = or P₁ P₂`: three rows — `A(done ⇒ ◯P₁)`, `A(done ⇒ ◯P₂)`, and
+  `A(done ⇒ ↑(P₁∨P₂))`;
+* `Q = down M`: `A(done ⇒ jGoal lax M)` (for `M` an implication there is
+  no row: lax implications are underivable).
+
+Correspondingly `URF`/`UStab` at the lax index dispatch right-focus
+constructors through this family; the station rows are unchanged. This
+is the modal round's second forced definition change, and the first
+caught by the machine rather than the paper pass.
