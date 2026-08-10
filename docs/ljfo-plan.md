@@ -391,3 +391,29 @@ hypothesis; the E-row guards track automatically (stated via `interp`).
 mechanised granularity: the statement (`SatA2`) was refutable by a 2-line
 countermodel BEFORE any proof attempt could fail opaquely — the flag
 discipline made the defect a TYPE error, not a stuck goal.
+
+## Process adoption (2026-08-10, from the reviewer's note `ljfo-cost-review.md`)
+
+Adopted at the conditional-E2/A2 clean compile (`70740d3`):
+
+1. **Single-build loop** — every build now `tee`s to a log; secondary
+   greps read the log at zero compile cost.
+2. **Part 4/5 split** — `LaxLogic/LJFOCore.lean` (Parts 1–4, the blocker
+   standing test, and the five axiom pins; zero imports) is frozen and
+   cached; `LaxLogic/LJFO.lean` (Parts 5–8) imports only the core. One
+   cross-module repair was needed: `interpA_atom_eq`'s closing `simp`
+   relied on same-module matcher reuse; it now ends `simp only …; rfl`.
+3. **Deferred: `laxRows` (reviewer §5).** The recommendation predates the
+   U-family port: UStab/URF/ULF/UInvG are now already written against the
+   seven inlined shape clauses and compile. Naming the row family remains
+   the right simplification-round refactor, but its "strictly cheaper
+   now" premise no longer holds; deferred to the simp round.
+4. **Next: the evaluator bank (reviewer §4), then `CimpAnt` in
+   `wip/ljfo_dev.lean` against the frozen core (reviewer §3).**
+
+Status at this point: satE2/satA2 are GREEN **conditional on `CimpAnt`**
+(the isolated modal-descent miner, DykAnt-style). The deep self-use
+analysis (this session) shows the miner needs either (a) a dedicated
+subterm-measured traversal family, or (b) a further forced change to the
+E-row antecedent — the evaluator bank should adjudicate (b) cheaply
+before (a) is built.
