@@ -462,3 +462,40 @@ Two costed discharge routes:
 Station-fuel (strong induction on `sum3 done`, tying the `cAnt` knot per
 station) handles all OTHER cimps' dispatches during the mining; it is the
 same-χ deep uses that need (1) or (2).
+
+## Route (3) — the χ-threaded family with the max-measure (designed 2026-08-10 late; the first fully-closing termination story)
+
+Thread an optional active-χ datum `χdat : Option Pos` (carrying `Q′`)
+through the T/U-family, with the THREE changes:
+
+1. **hm gains the χ-class** (`Z ∈ done ∨ Z ∈ K ∨ Z = χ` when active), and
+   the two stable dispatchers gain a χ-arm;
+2. **every member's measure becomes**
+   `(2·sum3 todo + sum3 station + 3 ^ max (goal-w) (χ-w) + c, sizeOf d)`
+   — inactive mode: `max` collapses to the goal weight, the existing
+   arithmetic untouched;
+3. **`cimpAnt` joins the mutual** with measure second component
+   `sizeOf s + 2`.
+
+Why it closes, where every previous design failed: within a fixed
+station the family walks RAW SUBTERMS only (all rebuilds are on outputs
+or feed strictly smaller stations — this is why the family's own measure
+works).  So at a χ-use node `.lfoc h (.impL s₂ lf₂)` the re-entry
+`cimpAnt … s₂` has: first components EQUAL (both `max`-dominated by the
+χ-weight), second `sizeOf s₂ + 2 < sizeOf node` (node ≥ s₂ + lf₂ + 2).
+The entry `cimpAnt → UEntry (.stable s)` drops on `sizeOf s + 1 <
+sizeOf s + 2`.  Cross-station exits drop on the first component as
+always.  Deep χ-uses under branch locals are handled AT their nodes by
+the walk (the locals are already in the walk's bookkeeping), which is
+what the top-level-descent designs could never reach.
+
+Cost: one extra argument everywhere, the max-form re-run of the
+decreasing farm, χdat-threading through the crossing helpers, and the
+row/guard adjustments — with the E-guard and the A-row's antecedent
+component uniformised to `A(rest ⇒ ↑↓◯Q′)` (tru-mode at the residual
+station; termination station-financed on both sides, checked above).
+The evaluator bank should re-run on the adjusted rows first.
+
+Estimated as the cheapest of the three routes and the one that keeps the
+descent argument of §3(e) intact.  Routes: (1) height bound (decider
+scale), (2) χ-aware antecedent formula (design risk), (3) this.
