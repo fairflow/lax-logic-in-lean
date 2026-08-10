@@ -6700,13 +6700,13 @@ def dykAntC : ∀ (done rest K Γ' : List Neg) (Q' : Pos) (N' N : Neg),
 end
 
 /-- **SatE2, conditional on the isolated modal obligation.** -/
-def satE2 : SatE2 p := fun done Δ ψ hsat hP hΔ hψ d =>
+def satE2 : SatE2 p := fun done Δ ψ hsat hP hΔ hψ {j} d =>
   TInv cAnt done hsat hP (fun Z hZ => List.mem_append.mp hZ)
     (fun Z hZ => List.mem_append_left _ hZ) hΔ
     (fun _ h => absurd h (List.not_mem_nil)) hψ d
 
 /-- **SatA2, conditional on the isolated modal obligation.** -/
-def satA2 : SatA2 p := fun done Δ G hsat hP hΔ d =>
+def satA2 : SatA2 p := fun done Δ G hsat hP hΔ {j} d =>
   UEntry cAnt done hsat hP (fun Z hZ => List.mem_append.mp hZ)
     (fun Z hZ => List.mem_append_left _ hZ) hΔ G d
 
@@ -6727,6 +6727,7 @@ inside LJF◯ itself, so every rebuild re-checks it.  Ported from
 unchanged: `laxOf` is never needed here, and the two left-focusings of
 `◯p→r` are free because contexts are persistent. -/
 
+namespace LJFO
 namespace BlockerTest
 
 variable (p r : String)
