@@ -1880,6 +1880,31 @@ def atkDyk {j : JD} {Q' : Pos} {N' N A₁ A₂ G : Neg} {rest Γ' : List Neg}
       (Sub.cons N hrest)
       D₂)
 
+/-- Attack via the modal implication: the disjunct `A₁ ∧ A₂` supplies the
+`∀p` of the antecedent's `◯`-goal (left component) and the continuation
+interpolant (right component).  No residual simulator: the antecedent is
+rebuilt from `A₁` directly — modal descent needs no residual. -/
+def atkCimp {j : JD} {Q' : Pos} {N A₁ A₂ G : Neg} {rest Γ' : List Neg}
+    (hx : Neg.and A₁ A₂ ∈ Γ')
+    (hX : Neg.imp (.down (.circ Q')) N ∈ Γ')
+    (hrest : Sub rest Γ')
+    (D₁ : Inv (A₁ :: rest) [] .tru (.circ Q'))
+    (D₂ : Inv (A₂ :: N :: rest) [] j G) : Inv Γ' [] j G :=
+  let dM' : Inv Γ' [] .tru (.circ Q') :=
+    simHyp
+      (fl := fun hs lf => .lfoc (hs _ hx) (.and1 lf))
+      hrest
+      D₁
+  simHyp
+    (fl := fun hs lf => .lfoc (hs _ hX)
+      (.impL (.rfoc (.rel (dM'.wk hs))) lf))
+    (Sub.refl Γ')
+    (simHyp
+      (fl := fun hs lf =>
+        .lfoc (hs _ (List.mem_cons_of_mem _ hx)) (.and2 lf))
+      (Sub.cons N hrest)
+      D₂)
+
 /-- Choice-free witness for membership in a mapped list: the witness is
 *found* by scanning, since `∃`-elimination cannot target `Type`. -/
 def memMapWitness {α β : Type} [DecidableEq β] (f : α → β) :
@@ -1918,6 +1943,1099 @@ theorem subBranch2 {b t d : List Neg} {X Y : Neg} :
 /-- `⊥` as a hypothesis proves anything. -/
 def nBotElim {Γ : List Neg} (G : Neg) (h : nBot ∈ Γ) : Inv Γ [] .tru G :=
   upMerge G (R := .fls) h (fun _ hb => by simp [invertPos] at hb)
+
+/-- The fire step of `aSound`, one term for every goal shape. -/
+def fireASound {p : String} {done : List Neg} {a : String} {N' : Neg}
+    {rest : List Neg} {G : Neg}
+    (hf : findFire done (splits done) = some (a, N', rest))
+    (rec : Inv (interp p [N'] rest (some G) :: ([N'] ++ rest)) [] .tru G) :
+    Inv (interp p [N'] rest (some G) :: done) [] .tru G :=
+  simHyp
+    (fl := fun hs lf =>
+      .lfoc (hs _ (List.mem_cons_of_mem _
+          (splits_mem (findFire_mem hf))))
+        (.impL (.rfoc (.init (hs _ (List.mem_cons_of_mem _
+          (atomMem_mem (findFire_atom hf)))))) lf))
+    (Sub.cons _ (splits_sub (findFire_mem hf)))
+    (rec.wk (by
+      intro Z hZ
+      rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+      · rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_self ..
+        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ)))
+
+/-! # Part 4: soundness of both modes -/
+
+set_option hygiene false in
+/-- The decreasing farm of the soundness mutual (`eSound`/`aSound`). Hygiene is off so entries naming call-site variables resolve there. -/
+macro "ljf_dec_sound" : tactic => `(tactic| (
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals first
+      | exact dec_dyk0 (by assumption)
+      | exact dec_park
+      | exact dec_drop
+      | exact dec_shift1
+      | exact dec_and
+      | exact dec_curry
+      | exact dec_stripshift
+      | exact p3_strict (by first
+          | omega
+          | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+          | (have := wNeg_pos M; have := wNeg_pos N; omega))
+      | exact dec_impor (wPos_pos _) (wPos_pos _)
+      | exact dec_orctx (by assumption)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)
+      | exact dec_fire (by assumption)
+      | exact dec_qimp (by assumption)
+      | exact dec_qimp_g (by assumption)
+      | exact dec_dyk1 (by assumption)
+      | (have h1 := dec_dyk1 (by assumption); omega)
+      | exact dec_dyk1_g (by assumption)
+      | exact dec_dyk2 (by assumption)
+      | exact dec_dyk2_g (by assumption)
+      | exact dec_ainv (by assumption)
+      | exact dec_ainv0 (by assumption)
+      | exact dec_orA (by assumption)
+      | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_park) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_ainv0 (by assumption)) (by omega)
+      | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+      | exact dec_boxE (by assumption)
+      | exact dec_boxE_g (by assumption)
+      | exact dec_boxA_g (by assumption)
+      | exact dec_cimp1 (by assumption)
+      | exact dec_cimp1_g (by assumption)
+      | exact dec_cimp2 (by assumption)
+      | exact dec_cimp2_g (by assumption)
+      | exact dec_cimp3 (by assumption)
+      | exact dec_circDirect
+      | (have h1 := dec_boxE (by assumption); omega)
+      | (have h1 := dec_cimp1 (by assumption); omega)
+      | (have h1 := dec_cimp2 (by assumption); omega)
+      | (have h1 := dec_cimp3 (by assumption); omega)))
+
+set_option hygiene false in
+/-- The decreasing farm of the E-side traversal (`eMinF` and the `T*` family). One definition, eight uses; edit here to tune all farms. -/
+macro "ljf_dec_e" : tactic => `(tactic| (
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | exact Nat.lt_succ_self _
+        | omega
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_add_right _ _)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
+        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+        | (have h1 := dec_fireS (by assumption); omega)
+        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+        | (have h1 := dec_dykC (by assumption); omega)
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
+        | exact Nat.lt_of_lt_of_le (dec_fireT (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dykT (by assumption)) (by omega)
+        | exact dec_dyk0 (by assumption)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | exact p3_strict (by first
+            | omega
+            | (have := wPos_pos P₁; have := wPos_pos P₂; omega)
+            | (have := wNeg_pos M; have := wNeg_pos N; omega))
+        | exact dec_qimp_g (by assumption)
+        | exact dec_dyk1 (by assumption)
+        | (have h1 := dec_dyk1 (by assumption); omega)
+        | exact dec_dyk1_g (by assumption)
+        | exact dec_dyk2 (by assumption)
+        | exact dec_dyk2_g (by assumption)
+        | exact dec_ainv (by assumption)
+        | exact dec_ainv0 (by assumption)
+        | exact dec_orA (by assumption)
+        | exact Nat.lt_of_lt_of_le (dec_qimp_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk1_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2 (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_dyk2_g (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_ainv (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orA (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_orctx (by assumption)) (by omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | (refine Prod.Lex.left _ _ ?_
+           first
+             | omega
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+             | (have h1 := dec_fireS (by assumption); omega)
+             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+             | (have h1 := dec_dykC (by assumption); omega))
+        | decreasing_tactic))
+
+set_option hygiene false in
+/-- The decreasing farm of the A-side traversal (`aMinF`, `UEntry`, the `U*` family, `dykAntC`). One definition, nine uses. -/
+macro "ljf_dec_a" : tactic => `(tactic| (
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    all_goals
+      first
+        | exact Nat.lt_succ_self _
+        | omega
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+            (Nat.le_trans (Nat.le_add_right _ _) (Nat.le_add_right _ _))
+        | exact Nat.lt_of_lt_of_le
+            (Nat.lt_of_le_of_lt (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+              (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+            (Nat.le_add_right _ _)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+        | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr; omega)
+        | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+        | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+        | (have h1 := dec_fireS (by assumption); omega)
+        | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+        | (have h1 := dec_dykC (by assumption); omega)
+        | (simp_arith; done)
+        | exact dec_fireT (by assumption)
+        | exact dec_dykT (by assumption)
+        | (have h := dec_fireT (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireT (by assumption); omega)
+        | (have h := dec_dykT (by assumption); omega)
+        | (have h := dec_fireS (findFire_mem (by assumption)); omega)
+        | (have h := dec_fireS (by assumption); omega)
+        | (have h := dec_dykC (by assumption); omega)
+        | exact dec_dyk0 (by assumption)
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | exact dec_curry
+        | exact dec_stripshift
+        | exact dec_impor (wPos_pos _) (wPos_pos _)
+        | exact dec_orctx (by assumption)
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | exact Nat.lt_of_lt_of_le (dec_qimp (by assumption)) (by omega)
+        | (have h1 := dec_dyk1 (by assumption); omega)
+        | (have h1 := dec_ainv (by assumption); omega)
+        | (have h1 := dec_ainvS (by assumption); omega)
+        | (have h1 := dec_ainv0 (by assumption); omega)
+        | (have h1 := dec_orA (by assumption); omega)
+        | (have h1 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + 1) (by omega)
+           omega)
+        | (have h1 := dec_and (m := wNeg M) (n := wNeg N) (t := 0); omega)
+        | (have h1 := dec_curry (m₁ := wNeg M₁) (m₂ := wNeg M₂) (n := wNeg N)
+             (t := 0); omega)
+        | (have h1 := dec_stripshift (x := wPos P') (n := wNeg N) (t := 0)
+           omega)
+        | (have h1 := dec_impor (a := wPos Q₁) (b := wPos Q₂) (n := wNeg N)
+             (t := 0) (wPos_pos _) (wPos_pos _); omega)
+        | (have h1 := p3_pos (1 + wNeg N + 1); omega)
+        | (have h1 := p3_pos (wPos Q' + wNeg N' + 1 + 1 + wNeg N + 1); omega)
+        | (have h1 := p3_succ (wNeg M); have h2 := p3_pos (wNeg M); omega)
+        | (have h1 := p3_pos (wPos P₀); omega)
+        | (have h1 := p3_strict (a := wPos P₁) (b := wPos P₁ + wPos P₂ + 1)
+             (by have := wPos_pos P₂; omega); omega)
+        | (have h1 := p3_strict (a := wPos P₂) (b := wPos P₁ + wPos P₂ + 1)
+             (by have := wPos_pos P₁; omega); omega)
+        | (have h1 := p3_strict (a := wNeg M) (b := wNeg M + wNeg N + 3)
+             (by omega); omega)
+        | (have h1 := p3_strict (a := wNeg N) (b := wNeg M + wNeg N + 3)
+             (by omega); omega)
+        | (refine Prod.Lex.left _ _ ?_
+           first
+             | omega
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | exact Nat.lt_of_lt_of_le
+                 (Nat.lt_of_le_of_lt
+                   (Nat.add_le_add_left (show (5:Nat) ≤ 9 from by decide) _)
+                   (dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr))
+                 (Nat.le_trans (Nat.le_add_left _ _)
+                   (Nat.le_trans (Nat.le_add_right _ _)
+                     (Nat.le_add_right _ _)))
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykC (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N) hXr; omega)
+             | (have h1 := dec_dykS (Q' := Q') (N' := N') (N := N_d) hXr
+                omega)
+             | (have h1 := dec_fireS (a := c) (N := Nc) hXr; omega)
+             | (have h1 := dec_ainvS (N := N) (by assumption); omega)
+             | (have h1 := dec_fireS (by assumption); omega)
+             | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
+             | (have h1 := dec_dykC (by assumption); omega))
+        | decreasing_tactic))
+
+
+set_option maxHeartbeats 2000000 in
+mutual
+
+def eSound (p : String) : ∀ (todo done : List Neg),
+    Inv (todo ++ done) [] .tru (interp p todo done none)
+  | .up (.atom a) :: todo, done => by
+      rw [interp]
+      exact (eSound p todo (.up (.atom a) :: done)).wk subPark
+  | .up .fls :: todo, done => by
+      rw [interp]
+      exact .stable (.lfoc (List.mem_cons_self ..) (.rel .flsL))
+  | .up (.or P Q) :: todo, done => by
+      rw [interp]
+      refine upMerge _ (List.mem_cons_self ..) ?_
+      intro b hb
+      refine nOrAllIntro
+        (List.mem_map_of_mem (List.mem_attach _ ⟨b, hb⟩)) ?_
+      exact (eSound p (b ++ todo) done).wk subBranch1
+  | .up (.down M) :: todo, done => by
+      rw [interp]
+      refine upMerge _ (List.mem_cons_self ..) ?_
+      intro b hb
+      simp only [invertPos, List.mem_singleton] at hb
+      subst hb
+      exact (eSound p (M :: todo) done).wk (Sub.cons M (Sub.grow _))
+  | .and M N :: todo, done => by
+      rw [interp]
+      exact simHyp
+        (fl := fun hs lf => .lfoc (hs _ (List.mem_cons_self ..)) (.and2 lf))
+        (Sub.refl _)
+        (simHyp
+          (fl := fun hs lf =>
+            .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+              (.and1 lf))
+          (Sub.cons N (Sub.grow _))
+          (eSound p (M :: N :: todo) done))
+  | .imp .fls N :: todo, done => by
+      rw [interp]
+      exact (eSound p todo done).wk (Sub.grow _)
+  | .imp (.atom a) N :: todo, done => by
+      rw [interp]
+      exact (eSound p todo (.imp (.atom a) N :: done)).wk subPark
+  | .circ Q :: todo, done => by
+      rw [interp]
+      exact (eSound p todo (.circ Q :: done)).wk subPark
+  | .imp (.down (.circ Q')) N :: todo, done => by
+      rw [interp]
+      exact (eSound p todo (.imp (.down (.circ Q')) N :: done)).wk subPark
+  | .imp (.or Q₁ Q₂) N :: todo, done => by
+      rw [interp]
+      exact simHyp (H := .imp Q₂ N)
+        (fl := fun hs lf => match lf with
+          | .impL s lf1 =>
+              .lfoc (hs _ (List.mem_cons_self ..)) (.impL (stabOr2 s) lf1))
+        (Sub.refl _)
+        (simHyp (H := .imp Q₁ N)
+          (fl := fun hs lf => match lf with
+            | .impL s lf1 =>
+                .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+                  (.impL (stabOr1 s) lf1))
+          (Sub.cons _ (Sub.grow _))
+          (eSound p (.imp Q₁ N :: .imp Q₂ N :: todo) done))
+  | .imp (.down (.up P')) N :: todo, done => by
+      rw [interp]
+      exact simHyp (H := .imp P' N)
+        (fl := fun hs lf => match lf with
+          | .impL s lf1 =>
+              .lfoc (hs _ (List.mem_cons_self ..))
+                (.impL (.rfoc (.rel (.stable s))) lf1))
+        (Sub.grow _)
+        (eSound p (.imp P' N :: todo) done)
+  | .imp (.down (.and M₁ M₂)) N :: todo, done => by
+      rw [interp]
+      exact simHyp (H := .imp (.down M₁) (.imp (.down M₂) N))
+        (fl := fun {Δa} {_} {_} hs lf => match lf with
+          | LFoc.impL s₁ (LFoc.impL s₂ lf2) =>
+              routeStabT (Δ₀ := Δa)
+                (k := fun {Δb} hsb r₁ =>
+                  routeStabT (Δ₀ := Δb)
+                    (k := fun {Δc} hsc r₂ =>
+                      .lfoc (hsc _ (hsb _ (hs _ (List.mem_cons_self ..))))
+                        (.impL
+                          (.rfoc (.rel (.andR ((relOf r₁).wk hsc) (relOf r₂))))
+                          (lf2.wk (fun Z hZ => hsc _ (hsb _ hZ)))))
+                    (Sub.refl _) (s₂.wk hsb))
+                (Sub.refl _) s₁)
+        (Sub.grow _)
+        (eSound p (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done)
+  | .imp (.down (.imp Q' N')) N :: todo, done => by
+      rw [interp]
+      exact (eSound p todo (.imp (.down (.imp Q' N')) N :: done)).wk subPark
+  | [], done => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N, rest) =>
+          simp only [hf]
+          exact simHyp
+            (fl := fun hs lf =>
+              .lfoc (hs _ (splits_mem (findFire_mem hf)))
+                (.impL (.rfoc (.init (hs _ (atomMem_mem (findFire_atom hf)))))
+                  lf))
+            (splits_sub (findFire_mem hf))
+            (eSound p [N] rest)
+      | none =>
+          simp only [hf]
+          refine nAndAllIntro ?_
+          intro x hx
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+          subst hEq
+          cases X with
+          | up P0 =>
+              cases P0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]; exact nTopIntro
+                  · simp only [pGuard, if_neg hap]
+                    exact .stable (.rfoc (.init (splits_mem hXr)))
+              | fls => exact nTopIntro
+              | or _ _ => exact nTopIntro
+              | down _ => exact nTopIntro
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]; exact nTopIntro
+                  · simp only [pGuard, if_neg hap]
+                    refine .impR (.atomL ?_)
+                    exact simHyp
+                      (fl := fun hs lf =>
+                        .lfoc (hs _ (List.mem_cons_of_mem _ (splits_mem hXr)))
+                          (.impL (.rfoc (.init (hs _ (List.mem_cons_self ..))))
+                            lf))
+                      (fun Z hZ =>
+                        List.mem_cons_of_mem _ (splits_sub hXr Z hZ))
+                      (eSound p [N] rest)
+              | fls => exact nTopIntro
+              | or _ _ => exact nTopIntro
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nTopIntro
+                  | and _ _ => exact nTopIntro
+
+                  | circ Q' =>
+                      -- the modal Dyckhoff pair: the fire guarded by the ∀p
+                      -- of (rest ⇒ ◯Q′), PAIRED with the ∃p of rest; the
+                      -- argument comes from aSound at the ◯-goal — the
+                      -- E1/A1 interlock
+                      refine .andR (.impR (.downL ?_))
+                        ((eSound p [] rest).wk (splits_sub hXr))
+                      have dArg : Inv (interp p [] rest (some (.circ Q')) ::
+                          ([] ++ done)) [] .tru (.up (.down (.circ Q'))) :=
+                        .stable (.rfoc (.rel
+                          ((aSound p [] rest (.circ Q')).wk (by
+                            intro Z hZ
+                            rcases List.mem_cons.mp hZ with rfl | hZ
+                            · exact List.mem_cons_self ..
+                            · exact List.mem_cons_of_mem _
+                                (splits_sub hXr Z hZ)))))
+                      exact simHyp
+                        (fl := fun hs lf =>
+                          .lfoc (hs _ (List.mem_cons_of_mem _ (splits_mem hXr)))
+                            (.impL (unStable (dArg.wk hs)) lf))
+                        (fun Z hZ =>
+                          List.mem_cons_of_mem _ (splits_sub hXr Z hZ))
+                        (eSound p [N] rest)
+                  | imp Q' N' =>
+                      refine .andR (.impR (.downL ?_))
+                        (simHyp (fl := resSim (splits_mem hXr))
+                          (splits_sub hXr)
+                          (eSound p [.imp (.down N') N] rest))
+                      have hXd : Neg.imp (.down (.imp Q' N')) N ∈
+                          (interp p [.imp (.down N') N] rest
+                            (some (.imp Q' N')) :: ([] ++ done)) :=
+                        List.mem_cons_of_mem _ (splits_mem hXr)
+                      have dM' : Inv (interp p [.imp (.down N') N] rest
+                          (some (.imp Q' N')) :: ([] ++ done)) []
+                          .tru (.imp Q' N') :=
+                        simHyp (fl := resSim hXd) (Sub.refl _)
+                          ((aSound p [.imp (.down N') N] rest
+                              (.imp Q' N')).wk (by
+                            intro Z hZ
+                            rcases List.mem_cons.mp hZ with rfl | hZ
+                            · exact List.mem_cons_of_mem _
+                                (List.mem_cons_self ..)
+                            · rcases List.mem_cons.mp hZ with rfl | hZ
+                              · exact List.mem_cons_self ..
+                              · exact List.mem_cons_of_mem _
+                                  (List.mem_cons_of_mem _
+                                    (splits_sub hXr Z hZ))))
+                      exact simHyp
+                        (fl := fun hs lf =>
+                          .lfoc (hs _ hXd)
+                            (.impL (.rfoc (.rel (dM'.wk hs))) lf))
+                        (fun Z hZ =>
+                          List.mem_cons_of_mem _ (splits_sub hXr Z hZ))
+                        (eSound p [N] rest)
+          | and _ _ => exact nTopIntro
+          | circ Q =>
+              -- the box conjunct ◯(↓E(↑Q :: rest)): circR into the lax
+              -- phase, open the parked box, invert per branch, laxOf at
+              -- the leaf, and eSound at the opened station — uses of the
+              -- whole ↑Q mediated by extract along the branch
+              refine .circR (.stable (.lfoc (splits_mem hXr)
+                (.circL (invBranches Q (fun b hb => ?_)))))
+              refine .stable (.laxOf (.rfoc (.rel ?_)))
+              exact simHyp (H := .up Q)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (fun Z hZ => List.mem_append_right b (splits_sub hXr Z hZ))
+                (eSound p [.up Q] rest)
+
+  termination_by todo done => 2 * sum3 todo + sum3 done
+  decreasing_by ljf_dec_sound
+
+def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
+    Inv (interp p todo done (some G) :: (todo ++ done)) [] .tru G
+  | .up (.atom a) :: todo, done, G => by
+      rw [interp]
+      exact (aSound p todo (.up (.atom a) :: done) G).wk (Sub.cons _ subPark)
+  | .up .fls :: todo, done, G => by
+      rw [interp]
+      exact upMerge G (R := .fls)
+        (List.mem_cons_of_mem _ (List.mem_cons_self ..))
+        (fun _ hb => by simp [invertPos] at hb)
+  | .up (.or P Q) :: todo, done, G => by
+      rw [interp]
+      refine upMerge G (R := .or P Q)
+        (List.mem_cons_of_mem _ (List.mem_cons_self ..)) ?_
+      intro b hb
+      exact simHyp
+        (fl := fun hs lf =>
+          .lfoc (hs _ (List.mem_append_right _ (List.mem_cons_self ..)))
+            (lfocAndAll (List.mem_map_of_mem (List.mem_attach _ ⟨b, hb⟩))
+              (.impL
+                (.rfoc (.rel ((eSound p (b ++ todo) done).wk (fun Z hZ =>
+                  hs _ (subBranch2 Z (by
+                    rcases List.mem_append.mp hZ with hZ | hZ
+                    · exact List.mem_append_left _ hZ
+                    · exact List.mem_append_right _ hZ))))))
+                lf)))
+        (subBranch2)
+        (aSound p (b ++ todo) done G)
+  | .up (.down M) :: todo, done, G => by
+      rw [interp]
+      refine upMerge G (R := .down M)
+        (List.mem_cons_of_mem _ (List.mem_cons_self ..)) ?_
+      intro b hb
+      simp only [invertPos, List.mem_singleton] at hb
+      subst hb
+      exact (aSound p (M :: todo) done G).wk (by
+        intro Z hZ
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+        · rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_self ..
+          · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+              (List.mem_cons_of_mem _ hZ)))
+  | .and M N :: todo, done, G => by
+      rw [interp]
+      exact simHyp
+        (fl := fun hs lf =>
+          .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+            (.and2 lf))
+        (Sub.refl _)
+        (simHyp
+          (fl := fun hs lf =>
+            .lfoc (hs _ (List.mem_cons_of_mem _
+              (List.mem_cons_of_mem _ (List.mem_cons_self ..)))) (.and1 lf))
+          (Sub.cons N (Sub.cons _ (Sub.grow _)))
+          ((aSound p (M :: N :: todo) done G).wk (by
+            intro Z hZ
+            rcases List.mem_cons.mp hZ with rfl | hZ
+            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+                (List.mem_cons_self ..))
+            · rcases List.mem_cons.mp hZ with rfl | hZ
+              · exact List.mem_cons_self ..
+              · rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+                    (List.mem_cons_of_mem _ hZ)))))
+  | .imp .fls N :: todo, done, G => by
+      rw [interp]
+      exact (aSound p todo done G).wk (Sub.cons _ (Sub.grow _))
+  | .imp (.atom a) N :: todo, done, G => by
+      rw [interp]
+      exact (aSound p todo (.imp (.atom a) N :: done) G).wk (Sub.cons _ subPark)
+  | .circ Q :: todo, done, G => by
+      rw [interp]
+      exact (aSound p todo (.circ Q :: done) G).wk (Sub.cons _ subPark)
+  | .imp (.down (.circ Q')) N :: todo, done, G => by
+      rw [interp]
+      exact (aSound p todo (.imp (.down (.circ Q')) N :: done) G).wk
+        (Sub.cons _ subPark)
+  | .imp (.or Q₁ Q₂) N :: todo, done, G => by
+      rw [interp]
+      exact simHyp (H := .imp Q₂ N)
+        (fl := fun hs lf => match lf with
+          | .impL s lf1 =>
+              .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+                (.impL (stabOr2 s) lf1))
+        (Sub.refl _)
+        (simHyp (H := .imp Q₁ N)
+          (fl := fun hs lf => match lf with
+            | .impL s lf1 =>
+                .lfoc (hs _ (List.mem_cons_of_mem _
+                  (List.mem_cons_of_mem _ (List.mem_cons_self ..))))
+                  (.impL (stabOr1 s) lf1))
+          (Sub.cons _ (Sub.cons _ (Sub.grow _)))
+          ((aSound p (.imp Q₁ N :: .imp Q₂ N :: todo) done G).wk (by
+            intro Z hZ
+            rcases List.mem_cons.mp hZ with rfl | hZ
+            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+                (List.mem_cons_self ..))
+            · rcases List.mem_cons.mp hZ with rfl | hZ
+              · exact List.mem_cons_self ..
+              · rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+                · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+                    (List.mem_cons_of_mem _ hZ)))))
+  | .imp (.down (.up P')) N :: todo, done, G => by
+      rw [interp]
+      exact simHyp (H := .imp P' N)
+        (fl := fun hs lf => match lf with
+          | .impL s lf1 =>
+              .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+                (.impL (.rfoc (.rel (.stable s))) lf1))
+        (Sub.refl _)
+        ((aSound p (.imp P' N :: todo) done G).wk (by
+          intro Z hZ
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+          · rcases List.mem_cons.mp hZ with rfl | hZ
+            · exact List.mem_cons_self ..
+            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+                (List.mem_cons_of_mem _ hZ))))
+  | .imp (.down (.and M₁ M₂)) N :: todo, done, G => by
+      rw [interp]
+      exact simHyp (H := .imp (.down M₁) (.imp (.down M₂) N))
+        (fl := fun {Δa} {_} {_} hs lf => match lf with
+          | LFoc.impL s₁ (LFoc.impL s₂ lf2) =>
+              routeStabT (Δ₀ := Δa)
+                (k := fun {Δb} hsb r₁ =>
+                  routeStabT (Δ₀ := Δb)
+                    (k := fun {Δc} hsc r₂ =>
+                      .lfoc (hsc _ (hsb _ (hs _ (List.mem_cons_of_mem _
+                          (List.mem_cons_self ..)))))
+                        (.impL
+                          (.rfoc (.rel (.andR ((relOf r₁).wk hsc) (relOf r₂))))
+                          (lf2.wk (fun Z hZ => hsc _ (hsb _ hZ)))))
+                    (Sub.refl _) (s₂.wk hsb))
+                (Sub.refl _) s₁)
+        (Sub.refl _)
+        ((aSound p (.imp (.down M₁) (.imp (.down M₂) N) :: todo) done G).wk (by
+          intro Z hZ
+          rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+          · rcases List.mem_cons.mp hZ with rfl | hZ
+            · exact List.mem_cons_self ..
+            · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+                (List.mem_cons_of_mem _ hZ))))
+  | .imp (.down (.imp Q' N')) N :: todo, done, G => by
+      rw [interp]
+      exact (aSound p todo (.imp (.down (.imp Q' N')) N :: done) G).wk
+        (Sub.cons _ subPark)
+  | [], done, .imp Q N => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.imp Q N))
+      | none =>
+          simp only [hf]
+          refine .impR (invBranches Q ?_)
+          intro b hb
+          exact simHyp
+            (fl := fun hs lf =>
+              .lfoc (hs _ (List.mem_append_right _ (List.mem_cons_self ..)))
+                (lfocAndAll
+                  (List.mem_map_of_mem (List.mem_attach _ ⟨b, hb⟩))
+                  (.impL
+                    (.rfoc (.rel ((eSound p b done).wk (fun Z hZ => hs _ (by
+                      rcases List.mem_append.mp hZ with hZ | hZ
+                      · exact List.mem_append_left _ hZ
+                      · exact List.mem_append_right _
+                          (List.mem_cons_of_mem _ hZ))))))
+                    lf)))
+            (fun Z hZ => by
+              rcases List.mem_append.mp hZ with hZ | hZ
+              · exact List.mem_append_left _ hZ
+              · exact List.mem_append_right _ (List.mem_cons_of_mem _
+                  (List.mem_append_right _ hZ)))
+            (aSound p b done N)
+  | [], done, .and M N => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.and M N))
+      | none =>
+          simp only [hf]
+          refine .andR ?_ ?_
+          · exact simHyp
+              (fl := fun hs lf =>
+                .lfoc (hs _ (List.mem_cons_self ..)) (.and1 lf))
+              (Sub.grow _)
+              (aSound p [] done M)
+          · exact simHyp
+              (fl := fun hs lf =>
+                .lfoc (hs _ (List.mem_cons_self ..)) (.and2 lf))
+              (Sub.grow _)
+              (aSound p [] done N)
+  | [], done, .up (.atom q) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.up (.atom q)))
+      | none =>
+          simp only [hf]
+          by_cases hq : atomMem q done = true
+          · simp only [hq, if_true]
+            exact .stable (.rfoc (.init (List.mem_cons_of_mem _
+              (atomMem_mem hq))))
+          · simp only [hq, if_false]
+            refine nOrAllElim _ (List.mem_cons_self ..) ?_
+            intro x hx Γ' hsub
+            if hx1 : x ∈ atomHead p q then
+              by_cases hqp : q = p
+              · simp [atomHead, hqp] at hx1
+              · simp only [atomHead, if_neg hqp, List.mem_singleton] at hx1
+                subst hx1
+                exact .stable (.rfoc (.init (List.mem_cons_self ..)))
+            else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.up (.atom q)))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.up (.atom q)))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.up (.atom q)))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ _ => exact nBotElim _ (List.mem_cons_self ..)
+  | [], done, .up .fls => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.up .fls))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ ([] : List Neg) then
+            exact absurd hx1 (List.not_mem_nil)
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.up .fls))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.up .fls))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.up .fls))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ _ => exact nBotElim _ (List.mem_cons_self ..)
+  | [], done, .up (.or P₁ P₂) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.up (.or P₁ P₂)))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some (.up P₁)),
+              interp p [] done (some (.up P₂))] then
+            if e1 : x = interp p [] done (some (.up P₁)) then
+              subst e1
+              exact .stable (stabOr1 (unStable ((aSound p [] done
+                (.up P₁)).wk (by
+                  intro Z hZ
+                  rcases List.mem_cons.mp hZ with rfl | hZ
+                  · exact List.mem_cons_self ..
+                  · exact List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ hZ))))))
+            else
+              have e2 : x = interp p [] done (some (.up P₂)) := by
+                rcases List.mem_cons.mp hx1 with h | h
+                · exact absurd h e1
+                · exact List.mem_singleton.mp h
+              subst e2
+              exact .stable (stabOr2 (unStable ((aSound p [] done
+                (.up P₂)).wk (by
+                  intro Z hZ
+                  rcases List.mem_cons.mp hZ with rfl | hZ
+                  · exact List.mem_cons_self ..
+                  · exact List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ hZ))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.up (.or P₁ P₂)))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.up (.or P₁ P₂)))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.up (.or P₁ P₂)))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ _ => exact nBotElim _ (List.mem_cons_self ..)
+  | [], done, .up (.down M) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.up (.down M)))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some M)] then
+            rcases List.mem_singleton.mp hx1 with rfl
+            exact .stable (.rfoc (.rel ((aSound p [] done M).wk (by
+              intro Z hZ
+              rcases List.mem_cons.mp hZ with rfl | hZ
+              · exact List.mem_cons_self ..
+              · exact List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ hZ))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.up (.down M)))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.up (.down M)))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.up (.down M)))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ _ => exact nBotElim _ (List.mem_cons_self ..)
+
+  | [], done, .circ Q => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.circ Q))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some (.up Q))] then
+            -- the direct row: prove `Q` truly; laxness by `laxOf`
+            rcases List.mem_singleton.mp hx1 with rfl
+            exact .circR (.stable (.laxOf (unStable
+              ((aSound p [] done (.up Q)).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.circ Q))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.circ Q))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.circ Q))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ R =>
+              -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
+              -- circR into the lax phase; open the station box; per branch of R,
+              -- derive E at the opened station (extract-mediated eSound), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- re-enter the lax phase through circROf.
+              refine .circR (.stable (.lfoc
+                (List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                (.circL (invBranches R (fun b hb => ?_)))))
+              -- dE: the opened-station ∃p, over the branch products
+              have dE : Inv (b ++ (Neg.imp
+                    (.down (interp p [.up R] rest none))
+                    (interp p [.up R] rest (some (.circ Q))) :: Γ')) []
+                  .tru (interp p [.up R] rest none) :=
+                simHyp (H := .up R)
+                  (fl := fun hs lf => match lf with
+                    | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                        (List.mem_append.mp hZ).elim
+                          (fun h => hs Z (List.mem_append_left _ h)) id)))
+                  (fun Z hZ => List.mem_append_right b
+                    (List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                  (eSound p [.up R] rest)
+              -- the opened-station ∀p beside the opened station closes ◯Q
+              have D := (aSound p [.up R] rest (.circ Q))
+              -- strip A (via the row fired with dE), then ↑R (via extract)
+              refine .stable (unStable (simHyp (H := .up R)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (Sub.refl _)
+                (simHyp (H := interp p [.up R] rest (some (.circ Q)))
+                  (fl := fun hs lf =>
+                    .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_self ..))))
+                      (.impL (.rfoc (.rel (dE.wk (fun Z hZ =>
+                        hs Z (List.mem_cons_of_mem _ hZ))))) lf))
+                  (fun Z hZ => by
+                    rcases List.mem_cons.mp hZ with rfl | hZ
+                    · exact List.mem_cons_self ..
+                    · exact List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                  (circROf D))))
+  termination_by todo done G => 2 * sum3 todo + sum3 done + 3 ^ wNeg G
+  decreasing_by ljf_dec_sound
+
+end
 
 /-! ## Standing test 1: the G4iLL blocker
 
@@ -1996,3 +3114,11 @@ end LJFO
 /-- info: 'LJFO.interp_pfree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms LJFO.interp_pfree
+
+/-- info: 'LJFO.eSound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFO.eSound
+
+/-- info: 'LJFO.aSound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFO.aSound
