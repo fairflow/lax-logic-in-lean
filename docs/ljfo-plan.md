@@ -356,3 +356,38 @@ Remaining, in dependency order:
    cimpAntC + eMinF at [N]++rest.
 9. Farms: ljf_dec_e/a already carry modal entries; add per-error.
 10. satE2/satA2/dykAnt assembly + pins; blocker still standing test.
+
+## Forced change #3 (2026-08-10, caught during the U-family port): the ◯-goal aggregate must be box-wrapped
+
+**The defect.** With the ◯-goal aggregate a bare disjunction `nOrAll rows`,
+`SatA2` is FALSE. Counterexample: `done = []`, `Δ = [◯q]` (p-free, kept),
+`G = ↑q` at `lax`. The sequent `◯q ⊢lax ↑q` is derivable (`circL` on the
+kept box), but the conclusion demands `⊤, ◯q ⊢tru A([] ⇒ ◯q)` where
+`A([] ⇒ ◯q) ≈ ↑q` — and `◯q ⊬tru q`. A lax use of a KEPT hypothesis (the
+traversal's keep branch) cannot be rebuilt inside a tru derivation of a
+bare disjunction.
+
+**The repair.** Wrap every ◯-goal aggregate in the modality:
+
+    interp p [] done (some (.circ P)) = ◯(↓(nOrAll rows))
+
+with the row families exactly as in forced change #2. Then the ∀p value is
+tru-derivable by `circR`, and its inversion (`circR; stable; rfoc; rel`)
+re-enters the LAX judgment, inside which the traversal's keep branch
+rebuilds kept-hypothesis focuses natively (`circL` legal). In the
+counterexample: `◯q ⊢tru ◯(↓↑q)` by `circR` then `circL` — derivable.
+
+**Scheme.** The wrapper lives at the jGoal boundary only; interp's
+recursive calls (the rows) are untouched, so the termination measure and
+the whole descent kit are unchanged. The inner U-family
+(`UStab`/`URF`/`ULF`/`UInvG`) targets the UNWRAPPED disjunction at the
+flag `j` (`Inv (E::K) [] j (nOrAll L)`); row emissions built at tru lift by
+`laxOf` at the stable judgment (`upOfTru`); `UEntry` alone crosses the
+wrapper (`circR; stable; rfoc; rel` prefix at lax). Soundness side:
+`aSound`'s ◯-clauses gain a `circL`-open prefix on the interpolant
+hypothesis; the E-row guards track automatically (stated via `interp`).
+
+**Method note.** Third instance of the definition-revision loop at
+mechanised granularity: the statement (`SatA2`) was refutable by a 2-line
+countermodel BEFORE any proof attempt could fail opaquely — the flag
+discipline made the defect a TYPE error, not a stuck goal.
