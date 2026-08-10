@@ -319,3 +319,40 @@ Correspondingly `URF`/`UStab` at the lax index dispatch right-focus
 constructors through this family; the station rows are unchanged. This
 is the modal round's second forced definition change, and the first
 caught by the machine rather than the paper pass.
+
+## Resume point (2026-08-10 ~09:30, mid E2/A2 port; goal: all four UI statements)
+
+Done: eMinF/TInv/TStab/TRF/TLF/TpElim/TpLF/TpInv/aMinF/UEntry threaded
+(E-side j-generic, Tp-family walks tru emitting at j); UStab redesigned
+(jGoal-uniform oracles + cmem + j-conditioned bmem); interp's ◯-goal
+clause = 7 concrete shape clauses with the lax goal-inversion prefix
+family (forced change #2); aSound's ◯-goal clause = 7 matching clauses
+(or-shape by decidable-equality dispatch; shifted bodies via circROf);
+interpFire_eq moved before Part 4 with 7 concrete ◯-cases; soundness
+heartbeats 12M. `lake build LaxLogic.LJFO 2>&1 | grep -E "^error:"` drives.
+
+Remaining, in dependency order:
+1. Seven ◯-shape equation lemmas (mirror interpA_atom_eq) for the
+   U-rewrites.
+2. interp_pfree's ◯-goal blocks (7 farm-style variants; prefix arities 1
+   and 3 + the station cases as in the existing blocks).
+3. URF: {j}, target jGoal; lax arms route: init → direct row (tru-init
+   body under nOrAllIntro head); or1/or2 → the ◯Pᵢ rows; rel → the
+   down-shape rows (circROf compositions).
+4. UStab arms: pass cmem/bmem through; lax lfoc-dispatch: boxes via bmem
+   rfl + the guarded-row construction; ◯-imps via cmem + cimpAntC;
+   laxOf-case recurses at tru (same L).
+5. ULF/UInvG/UpElim/UpLF/UpInvG: bump + circL/circR cases (UInvG's circR
+   → recurse at lax with the same aggregate).
+6. dykAntC: thread; NEW cimpAntC — the modal-descent miner: derive
+   A(rest ⇒ ◯Q′) from s : ⊢tru ↓◯Q′ mined via flagged negOfDownStab →
+   circROf → the lax phase traversal; self-uses of X descend structurally
+   on their (smaller) arguments — measure (station-μ, szS s).
+7. boxClean (fireClean-analogue: later circL-uses of the consumed box
+   re-derive content from the opened station's products via posRestore).
+8. eMinF/aMinF [] clauses: TInv/UEntry calls carry j; box/cimp dispatch
+   cases in TStab/TLF (E-side): box → the box conjunct + station-crossing
+   eMinF at [↑Q]++rest with boxClean; cimp → modal pair projection +
+   cimpAntC + eMinF at [N]++rest.
+9. Farms: ljf_dec_e/a already carry modal entries; add per-error.
+10. satE2/satA2/dykAnt assembly + pins; blocker still standing test.

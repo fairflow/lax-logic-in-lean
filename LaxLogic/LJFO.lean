@@ -919,22 +919,126 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [] rest (some (.circ Q')))
                        (interp p [N] rest (some (.up (Pos.down M))))
               | _, _ => nBot))
-        | .circ Q =>
-            nOrAll ([interp p [] done (some (.up Q))] ++
+        | .circ (.atom q) =>
+            nOrAll ([interp p [] done (some (.up (.atom q)))] ++
               (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
               match X, hXr with
               | .imp (.atom a) N, hXr =>
                   pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ Q))))
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.atom q)))))
               | .imp (.down (.imp Q' N')) N, hXr =>
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ Q)))
+                       (interp p [N] rest (some (.circ (.atom q))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interp p [] rest (some (.circ Q')))
-                       (interp p [N] rest (some (.circ Q)))
+                       (interp p [N] rest (some (.circ (.atom q))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ Q)))
+                       (interp p [.up R] rest (some (.circ (.atom q))))
+              | _, _ => nBot))
+        | .circ .fls =>
+            nOrAll ([interp p [] done (some (.up .fls))] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X, hXr with
+              | .imp (.atom a) N, hXr =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ .fls))))
+              | .imp (.down (.imp Q' N')) N, hXr =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.circ .fls)))
+              | .imp (.down (.circ Q')) N, hXr =>
+                  nAnd (interp p [] rest (some (.circ Q')))
+                       (interp p [N] rest (some (.circ .fls)))
+              | .circ R, hXr =>
+                  .imp (.down (interp p [.up R] rest none))
+                       (interp p [.up R] rest (some (.circ .fls)))
+              | _, _ => nBot))
+        | .circ (.or P₁ P₂) =>
+            nOrAll ([interp p [] done (some (.circ P₁)),
+                     interp p [] done (some (.circ P₂)),
+                     interp p [] done (some (.up (.or P₁ P₂)))] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X, hXr with
+              | .imp (.atom a) N, hXr =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.or P₁ P₂)))))
+              | .imp (.down (.imp Q' N')) N, hXr =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.circ (.or P₁ P₂))))
+              | .imp (.down (.circ Q')) N, hXr =>
+                  nAnd (interp p [] rest (some (.circ Q')))
+                       (interp p [N] rest (some (.circ (.or P₁ P₂))))
+              | .circ R, hXr =>
+                  .imp (.down (interp p [.up R] rest none))
+                       (interp p [.up R] rest (some (.circ (.or P₁ P₂))))
+              | _, _ => nBot))
+        | .circ (.down (.up P')) =>
+            nOrAll ([interp p [] done (some (.circ P'))] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X, hXr with
+              | .imp (.atom a) N, hXr =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.up P'))))))
+              | .imp (.down (.imp Q' N')) N, hXr =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.circ (.down (.up P')))))
+              | .imp (.down (.circ Q')) N, hXr =>
+                  nAnd (interp p [] rest (some (.circ Q')))
+                       (interp p [N] rest (some (.circ (.down (.up P')))))
+              | .circ R, hXr =>
+                  .imp (.down (interp p [.up R] rest none))
+                       (interp p [.up R] rest (some (.circ (.down (.up P')))))
+              | _, _ => nBot))
+        | .circ (.down (.circ P')) =>
+            nOrAll ([interp p [] done (some (.circ P'))] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X, hXr with
+              | .imp (.atom a) N, hXr =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.circ P'))))))
+              | .imp (.down (.imp Q' N')) N, hXr =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.circ (.down (.circ P')))))
+              | .imp (.down (.circ Q')) N, hXr =>
+                  nAnd (interp p [] rest (some (.circ Q')))
+                       (interp p [N] rest (some (.circ (.down (.circ P')))))
+              | .circ R, hXr =>
+                  .imp (.down (interp p [.up R] rest none))
+                       (interp p [.up R] rest (some (.circ (.down (.circ P')))))
+              | _, _ => nBot))
+        | .circ (.down (.and M₁ M₂)) =>
+            nOrAll ([interp p [] done (some (.up (.down (.and M₁ M₂))))] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X, hXr with
+              | .imp (.atom a) N, hXr =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.and M₁ M₂))))))
+              | .imp (.down (.imp Q' N')) N, hXr =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
+              | .imp (.down (.circ Q')) N, hXr =>
+                  nAnd (interp p [] rest (some (.circ Q')))
+                       (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
+              | .circ R, hXr =>
+                  .imp (.down (interp p [.up R] rest none))
+                       (interp p [.up R] rest (some (.circ (.down (.and M₁ M₂)))))
+              | _, _ => nBot))
+        | .circ (.down (.imp Q₀ N₀)) =>
+            nOrAll ([interp p [] done (some (.up (.down (.imp Q₀ N₀))))] ++
+              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+              match X, hXr with
+              | .imp (.atom a) N, hXr =>
+                  pGuard p a nBot
+                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀))))))
+              | .imp (.down (.imp Q' N')) N, hXr =>
+                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+                       (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
+              | .imp (.down (.circ Q')) N, hXr =>
+                  nAnd (interp p [] rest (some (.circ Q')))
+                       (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
+              | .circ R, hXr =>
+                  .imp (.down (interp p [.up R] rest none))
+                       (interp p [.up R] rest (some (.circ (.down (.imp Q₀ N₀)))))
               | _, _ => nBot))
   termination_by todo done goal => 2 * sum3 todo + sum3 done + goalW goal
   decreasing_by
@@ -1944,6 +2048,28 @@ theorem subBranch2 {b t d : List Neg} {X Y : Neg} :
 def nBotElim {Γ : List Neg} (G : Neg) (h : nBot ∈ Γ) : Inv Γ [] .tru G :=
   upMerge G (R := .fls) h (fun _ hb => by simp [invertPos] at hb)
 
+/-- The fire step, as one equation for every mode: when a parked `a ⊃ N'`
+fires, the interpolant at the station equals the interpolant at the residual
+station, whatever the goal.  Stated by cases because the equation lemmas of
+the well-founded `interp` are specialised per fused matcher alternative, so
+an abstract goal matches none of them — `rw [interp]` fails on
+`interp p [] done (some G)` with `G` a variable. -/
+theorem interpFire_eq {p : String} {done : List Neg} {a : String} {N' : Neg}
+    {rest : List Neg}
+    (hf : findFire done (splits done) = some (a, N', rest)) :
+    ∀ g, interp p [] done g = interp p [N'] rest g := by
+  intro g
+  match g with
+  | none | some (.up (.atom _)) | some (.up .fls) | some (.up (.or _ _))
+  | some (.up (.down _)) | some (.imp _ _) | some (.and _ _)
+  | some (.circ (.atom _)) | some (.circ .fls) | some (.circ (.or _ _))
+  | some (.circ (.down (.up _))) | some (.circ (.down (.circ _)))
+  | some (.circ (.down (.and _ _))) | some (.circ (.down (.imp _ _))) =>
+      rw [interp]; split
+      all_goals rename_i heq
+      · rw [hf] at heq; cases heq; rfl
+      · rw [hf] at heq; cases heq
+
 /-- The fire step of `aSound`, one term for every goal shape. -/
 def fireASound {p : String} {done : List Neg} {a : String} {N' : Neg}
     {rest : List Neg} {G : Neg}
@@ -2248,7 +2374,7 @@ macro "ljf_dec_a" : tactic => `(tactic| (
         | decreasing_tactic))
 
 
-set_option maxHeartbeats 2000000 in
+set_option maxHeartbeats 12000000 in
 mutual
 
 def eSound (p : String) : ∀ (todo done : List Neg),
@@ -2923,21 +3049,20 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
 
-  | [], done, .circ Q => by
+  | [], done, .circ (.atom q) => by
       rw [interp]
       match hf : findFire done (splits done) with
       | some (a, N', rest) =>
           simp only [hf]
-          exact fireASound hf (aSound p [N'] rest (.circ Q))
+          exact fireASound hf (aSound p [N'] rest (.circ (.atom q)))
       | none =>
           simp only [hf]
           refine nOrAllElim _ (List.mem_cons_self ..) ?_
           intro x hx Γ' hsub
-          if hx1 : x ∈ [interp p [] done (some (.up Q))] then
-            -- the direct row: prove `Q` truly; laxness by `laxOf`
+          if hx1 : x ∈ [interp p [] done (some (.up (.atom q)))] then
             rcases List.mem_singleton.mp hx1 with rfl
             exact .circR (.stable (.laxOf (unStable
-              ((aSound p [] done (.up Q)).wk (by
+              ((aSound p [] done (.up (.atom q))).wk (by
                 intro Z hZ
                 rcases List.mem_cons.mp hZ with rfl | hZ
                 · exact List.mem_cons_self ..
@@ -2962,7 +3087,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                         (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                       (fun Z hZ => List.mem_cons_of_mem _
                         (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
-                      (aSound p [N] rest (.circ Q))
+                      (aSound p [N] rest (.circ (.atom q)))
               | fls => exact nBotElim _ (List.mem_cons_self ..)
               | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
               | down M0 =>
@@ -2976,7 +3101,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
                         (aSound p [.imp (.down N') N] rest (.imp Q' N'))
-                        (aSound p [N] rest (.circ Q))
+                        (aSound p [N] rest (.circ (.atom q)))
                   | circ Q' =>
                       exact atkCimp (List.mem_cons_self ..)
                         (List.mem_cons_of_mem _
@@ -2984,7 +3109,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
                         (aSound p [] rest (.circ Q'))
-                        (aSound p [N] rest (.circ Q))
+                        (aSound p [N] rest (.circ (.atom q)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
@@ -2999,7 +3124,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
               -- dE: the opened-station ∃p, over the branch products
               have dE : Inv (b ++ (Neg.imp
                     (.down (interp p [.up R] rest none))
-                    (interp p [.up R] rest (some (.circ Q))) :: Γ')) []
+                    (interp p [.up R] rest (some (.circ (.atom q)))) :: Γ')) []
                   .tru (interp p [.up R] rest none) :=
                 simHyp (H := .up R)
                   (fl := fun hs lf => match lf with
@@ -3011,7 +3136,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                       (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
                   (eSound p [.up R] rest)
               -- the opened-station ∀p beside the opened station closes ◯Q
-              have D := (aSound p [.up R] rest (.circ Q))
+              have D := (aSound p [.up R] rest (.circ (.atom q)))
               -- strip A (via the row fired with dE), then ↑R (via extract)
               refine .stable (unStable (simHyp (H := .up R)
                 (fl := fun hs lf => match lf with
@@ -3019,7 +3144,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                       (List.mem_append.mp hZ).elim
                         (fun h => hs Z (List.mem_append_left _ h)) id)))
                 (Sub.refl _)
-                (simHyp (H := interp p [.up R] rest (some (.circ Q)))
+                (simHyp (H := interp p [.up R] rest (some (.circ (.atom q))))
                   (fl := fun hs lf =>
                     .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
                         (List.mem_cons_self ..))))
@@ -3032,6 +3157,690 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                         (List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
                   (circROf D))))
+
+
+  | [], done, .circ .fls => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.circ .fls))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some (.up .fls))] then
+            rcases List.mem_singleton.mp hx1 with rfl
+            exact .circR (.stable (.laxOf (unStable
+              ((aSound p [] done (.up .fls)).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.circ .fls))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.circ .fls))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.circ .fls))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ R =>
+              -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
+              -- circR into the lax phase; open the station box; per branch of R,
+              -- derive E at the opened station (extract-mediated eSound), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- re-enter the lax phase through circROf.
+              refine .circR (.stable (.lfoc
+                (List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                (.circL (invBranches R (fun b hb => ?_)))))
+              -- dE: the opened-station ∃p, over the branch products
+              have dE : Inv (b ++ (Neg.imp
+                    (.down (interp p [.up R] rest none))
+                    (interp p [.up R] rest (some (.circ .fls))) :: Γ')) []
+                  .tru (interp p [.up R] rest none) :=
+                simHyp (H := .up R)
+                  (fl := fun hs lf => match lf with
+                    | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                        (List.mem_append.mp hZ).elim
+                          (fun h => hs Z (List.mem_append_left _ h)) id)))
+                  (fun Z hZ => List.mem_append_right b
+                    (List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                  (eSound p [.up R] rest)
+              -- the opened-station ∀p beside the opened station closes ◯Q
+              have D := (aSound p [.up R] rest (.circ .fls))
+              -- strip A (via the row fired with dE), then ↑R (via extract)
+              refine .stable (unStable (simHyp (H := .up R)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (Sub.refl _)
+                (simHyp (H := interp p [.up R] rest (some (.circ .fls)))
+                  (fl := fun hs lf =>
+                    .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_self ..))))
+                      (.impL (.rfoc (.rel (dE.wk (fun Z hZ =>
+                        hs Z (List.mem_cons_of_mem _ hZ))))) lf))
+                  (fun Z hZ => by
+                    rcases List.mem_cons.mp hZ with rfl | hZ
+                    · exact List.mem_cons_self ..
+                    · exact List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                  (circROf D))))
+
+
+  | [], done, .circ (.or P₁ P₂) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.circ (.or P₁ P₂)))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if he1 : x = interp p [] done (some (.circ P₁)) then
+            subst he1
+            exact .circR (.stable (stabOr1 (unStable (circROf
+                ((aSound p [] done (.circ P₁)).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ))))))))
+          else if he2 : x = interp p [] done (some (.circ P₂)) then
+            subst he2
+            exact .circR (.stable (stabOr2 (unStable (circROf
+                ((aSound p [] done (.circ P₂)).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ))))))))
+          else if he3 : x = interp p [] done (some (.up (.or P₁ P₂))) then
+            subst he3
+            exact .circR (.stable (.laxOf (unStable
+              ((aSound p [] done (.up (.or P₁ P₂))).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+          else
+          have hx2 := (List.mem_append.mp hx).resolve_left (by
+            intro h
+            rcases List.mem_cons.mp h with h | h
+            · exact he1 h
+            · rcases List.mem_cons.mp h with h | h
+              · exact he2 h
+              · exact he3 (List.mem_singleton.mp h))
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.circ (.or P₁ P₂)))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.circ (.or P₁ P₂)))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.circ (.or P₁ P₂)))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ R =>
+              -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
+              -- circR into the lax phase; open the station box; per branch of R,
+              -- derive E at the opened station (extract-mediated eSound), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- re-enter the lax phase through circROf.
+              refine .circR (.stable (.lfoc
+                (List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                (.circL (invBranches R (fun b hb => ?_)))))
+              -- dE: the opened-station ∃p, over the branch products
+              have dE : Inv (b ++ (Neg.imp
+                    (.down (interp p [.up R] rest none))
+                    (interp p [.up R] rest (some (.circ (.or P₁ P₂)))) :: Γ')) []
+                  .tru (interp p [.up R] rest none) :=
+                simHyp (H := .up R)
+                  (fl := fun hs lf => match lf with
+                    | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                        (List.mem_append.mp hZ).elim
+                          (fun h => hs Z (List.mem_append_left _ h)) id)))
+                  (fun Z hZ => List.mem_append_right b
+                    (List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                  (eSound p [.up R] rest)
+              -- the opened-station ∀p beside the opened station closes ◯Q
+              have D := (aSound p [.up R] rest (.circ (.or P₁ P₂)))
+              -- strip A (via the row fired with dE), then ↑R (via extract)
+              refine .stable (unStable (simHyp (H := .up R)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (Sub.refl _)
+                (simHyp (H := interp p [.up R] rest (some (.circ (.or P₁ P₂))))
+                  (fl := fun hs lf =>
+                    .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_self ..))))
+                      (.impL (.rfoc (.rel (dE.wk (fun Z hZ =>
+                        hs Z (List.mem_cons_of_mem _ hZ))))) lf))
+                  (fun Z hZ => by
+                    rcases List.mem_cons.mp hZ with rfl | hZ
+                    · exact List.mem_cons_self ..
+                    · exact List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                  (circROf D))))
+
+
+  | [], done, .circ (.down (.up P')) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.circ (.down (.up P'))))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some (.circ P'))] then
+            rcases List.mem_singleton.mp hx1 with rfl
+            exact .circR (.stable (.rfoc (.rel (circROf
+              ((aSound p [] done (.circ P')).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ))))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.circ (.down (.up P'))))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.circ (.down (.up P'))))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.circ (.down (.up P'))))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ R =>
+              -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
+              -- circR into the lax phase; open the station box; per branch of R,
+              -- derive E at the opened station (extract-mediated eSound), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- re-enter the lax phase through circROf.
+              refine .circR (.stable (.lfoc
+                (List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                (.circL (invBranches R (fun b hb => ?_)))))
+              -- dE: the opened-station ∃p, over the branch products
+              have dE : Inv (b ++ (Neg.imp
+                    (.down (interp p [.up R] rest none))
+                    (interp p [.up R] rest (some (.circ (.down (.up P'))))) :: Γ')) []
+                  .tru (interp p [.up R] rest none) :=
+                simHyp (H := .up R)
+                  (fl := fun hs lf => match lf with
+                    | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                        (List.mem_append.mp hZ).elim
+                          (fun h => hs Z (List.mem_append_left _ h)) id)))
+                  (fun Z hZ => List.mem_append_right b
+                    (List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                  (eSound p [.up R] rest)
+              -- the opened-station ∀p beside the opened station closes ◯Q
+              have D := (aSound p [.up R] rest (.circ (.down (.up P'))))
+              -- strip A (via the row fired with dE), then ↑R (via extract)
+              refine .stable (unStable (simHyp (H := .up R)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (Sub.refl _)
+                (simHyp (H := interp p [.up R] rest (some (.circ (.down (.up P')))))
+                  (fl := fun hs lf =>
+                    .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_self ..))))
+                      (.impL (.rfoc (.rel (dE.wk (fun Z hZ =>
+                        hs Z (List.mem_cons_of_mem _ hZ))))) lf))
+                  (fun Z hZ => by
+                    rcases List.mem_cons.mp hZ with rfl | hZ
+                    · exact List.mem_cons_self ..
+                    · exact List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                  (circROf D))))
+
+
+  | [], done, .circ (.down (.circ P')) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.circ (.down (.circ P'))))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some (.circ P'))] then
+            rcases List.mem_singleton.mp hx1 with rfl
+            exact .circR (.stable (.rfoc (.rel (.circR (circROf
+              ((aSound p [] done (.circ P')).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.circ (.down (.circ P'))))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.circ (.down (.circ P'))))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.circ (.down (.circ P'))))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ R =>
+              -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
+              -- circR into the lax phase; open the station box; per branch of R,
+              -- derive E at the opened station (extract-mediated eSound), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- re-enter the lax phase through circROf.
+              refine .circR (.stable (.lfoc
+                (List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                (.circL (invBranches R (fun b hb => ?_)))))
+              -- dE: the opened-station ∃p, over the branch products
+              have dE : Inv (b ++ (Neg.imp
+                    (.down (interp p [.up R] rest none))
+                    (interp p [.up R] rest (some (.circ (.down (.circ P'))))) :: Γ')) []
+                  .tru (interp p [.up R] rest none) :=
+                simHyp (H := .up R)
+                  (fl := fun hs lf => match lf with
+                    | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                        (List.mem_append.mp hZ).elim
+                          (fun h => hs Z (List.mem_append_left _ h)) id)))
+                  (fun Z hZ => List.mem_append_right b
+                    (List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                  (eSound p [.up R] rest)
+              -- the opened-station ∀p beside the opened station closes ◯Q
+              have D := (aSound p [.up R] rest (.circ (.down (.circ P'))))
+              -- strip A (via the row fired with dE), then ↑R (via extract)
+              refine .stable (unStable (simHyp (H := .up R)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (Sub.refl _)
+                (simHyp (H := interp p [.up R] rest (some (.circ (.down (.circ P')))))
+                  (fl := fun hs lf =>
+                    .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_self ..))))
+                      (.impL (.rfoc (.rel (dE.wk (fun Z hZ =>
+                        hs Z (List.mem_cons_of_mem _ hZ))))) lf))
+                  (fun Z hZ => by
+                    rcases List.mem_cons.mp hZ with rfl | hZ
+                    · exact List.mem_cons_self ..
+                    · exact List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                  (circROf D))))
+
+
+  | [], done, .circ (.down (.and M₁ M₂)) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.circ (.down (.and M₁ M₂))))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some (.up (.down (.and M₁ M₂))))] then
+            rcases List.mem_singleton.mp hx1 with rfl
+            exact .circR (.stable (.laxOf (unStable
+              ((aSound p [] done (.up (.down (.and M₁ M₂)))).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ R =>
+              -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
+              -- circR into the lax phase; open the station box; per branch of R,
+              -- derive E at the opened station (extract-mediated eSound), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- re-enter the lax phase through circROf.
+              refine .circR (.stable (.lfoc
+                (List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                (.circL (invBranches R (fun b hb => ?_)))))
+              -- dE: the opened-station ∃p, over the branch products
+              have dE : Inv (b ++ (Neg.imp
+                    (.down (interp p [.up R] rest none))
+                    (interp p [.up R] rest (some (.circ (.down (.and M₁ M₂))))) :: Γ')) []
+                  .tru (interp p [.up R] rest none) :=
+                simHyp (H := .up R)
+                  (fl := fun hs lf => match lf with
+                    | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                        (List.mem_append.mp hZ).elim
+                          (fun h => hs Z (List.mem_append_left _ h)) id)))
+                  (fun Z hZ => List.mem_append_right b
+                    (List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                  (eSound p [.up R] rest)
+              -- the opened-station ∀p beside the opened station closes ◯Q
+              have D := (aSound p [.up R] rest (.circ (.down (.and M₁ M₂))))
+              -- strip A (via the row fired with dE), then ↑R (via extract)
+              refine .stable (unStable (simHyp (H := .up R)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (Sub.refl _)
+                (simHyp (H := interp p [.up R] rest (some (.circ (.down (.and M₁ M₂)))))
+                  (fl := fun hs lf =>
+                    .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_self ..))))
+                      (.impL (.rfoc (.rel (dE.wk (fun Z hZ =>
+                        hs Z (List.mem_cons_of_mem _ hZ))))) lf))
+                  (fun Z hZ => by
+                    rcases List.mem_cons.mp hZ with rfl | hZ
+                    · exact List.mem_cons_self ..
+                    · exact List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                  (circROf D))))
+
+
+  | [], done, .circ (.down (.imp Q₀ N₀)) => by
+      rw [interp]
+      match hf : findFire done (splits done) with
+      | some (a, N', rest) =>
+          simp only [hf]
+          exact fireASound hf (aSound p [N'] rest (.circ (.down (.imp Q₀ N₀))))
+      | none =>
+          simp only [hf]
+          refine nOrAllElim _ (List.mem_cons_self ..) ?_
+          intro x hx Γ' hsub
+          if hx1 : x ∈ [interp p [] done (some (.up (.down (.imp Q₀ N₀))))] then
+            rcases List.mem_singleton.mp hx1 with rfl
+            exact .circR (.stable (.laxOf (unStable
+              ((aSound p [] done (.up (.down (.imp Q₀ N₀)))).wk (by
+                intro Z hZ
+                rcases List.mem_cons.mp hZ with rfl | hZ
+                · exact List.mem_cons_self ..
+                · exact List.mem_cons_of_mem _
+                    (hsub _ (List.mem_cons_of_mem _ hZ)))))))
+          else
+          have hx2 : x ∈ (splits done).attach.map _ :=
+            (List.mem_append.mp hx).resolve_left hx1
+          obtain ⟨⟨⟨X, rest⟩, hXr⟩, hmem, hEq⟩ := memMapWitness _ _ x hx2
+          subst hEq
+          cases X with
+          | up P0 => cases P0 <;> exact nBotElim _ (List.mem_cons_self ..)
+          | imp Q0 N =>
+              cases Q0 with
+              | atom a =>
+                  by_cases hap : a = p
+                  · simp only [pGuard, if_pos hap]
+                    exact nBotElim _ (List.mem_cons_self ..)
+                  · simp only [pGuard, if_neg hap]
+                    exact atkQimp (List.mem_cons_self ..)
+                      (List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                      (fun Z hZ => List.mem_cons_of_mem _
+                        (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                      (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
+              | fls => exact nBotElim _ (List.mem_cons_self ..)
+              | or _ _ => exact nBotElim _ (List.mem_cons_self ..)
+              | down M0 =>
+                  cases M0 with
+                  | up _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+                  | imp Q' N' =>
+                      exact atkDyk (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [.imp (.down N') N] rest (.imp Q' N'))
+                        (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
+                  | circ Q' =>
+                      exact atkCimp (List.mem_cons_self ..)
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                        (fun Z hZ => List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
+                        (aSound p [] rest (.circ Q'))
+                        (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
+          | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
+          | circ R =>
+              -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
+              -- circR into the lax phase; open the station box; per branch of R,
+              -- derive E at the opened station (extract-mediated eSound), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- re-enter the lax phase through circROf.
+              refine .circR (.stable (.lfoc
+                (List.mem_cons_of_mem _
+                  (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
+                (.circL (invBranches R (fun b hb => ?_)))))
+              -- dE: the opened-station ∃p, over the branch products
+              have dE : Inv (b ++ (Neg.imp
+                    (.down (interp p [.up R] rest none))
+                    (interp p [.up R] rest (some (.circ (.down (.imp Q₀ N₀))))) :: Γ')) []
+                  .tru (interp p [.up R] rest none) :=
+                simHyp (H := .up R)
+                  (fl := fun hs lf => match lf with
+                    | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                        (List.mem_append.mp hZ).elim
+                          (fun h => hs Z (List.mem_append_left _ h)) id)))
+                  (fun Z hZ => List.mem_append_right b
+                    (List.mem_cons_of_mem _
+                      (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ)))))
+                  (eSound p [.up R] rest)
+              -- the opened-station ∀p beside the opened station closes ◯Q
+              have D := (aSound p [.up R] rest (.circ (.down (.imp Q₀ N₀))))
+              -- strip A (via the row fired with dE), then ↑R (via extract)
+              refine .stable (unStable (simHyp (H := .up R)
+                (fl := fun hs lf => match lf with
+                  | .rel d' => unStable ((extract [] d' b hb).wk (fun Z hZ =>
+                      (List.mem_append.mp hZ).elim
+                        (fun h => hs Z (List.mem_append_left _ h)) id)))
+                (Sub.refl _)
+                (simHyp (H := interp p [.up R] rest (some (.circ (.down (.imp Q₀ N₀)))))
+                  (fl := fun hs lf =>
+                    .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_self ..))))
+                      (.impL (.rfoc (.rel (dE.wk (fun Z hZ =>
+                        hs Z (List.mem_cons_of_mem _ hZ))))) lf))
+                  (fun Z hZ => by
+                    rcases List.mem_cons.mp hZ with rfl | hZ
+                    · exact List.mem_cons_self ..
+                    · exact List.mem_cons_of_mem _ (List.mem_append_right b
+                        (List.mem_cons_of_mem _
+                          (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))))
+                  (circROf D))))
+
   termination_by todo done G => 2 * sum3 todo + sum3 done + 3 ^ wNeg G
   decreasing_by ljf_dec_sound
 
@@ -3524,25 +4333,6 @@ def fireClean {Q₀ : Pos} {N : Neg} {Γ' rest K : List Neg} {j : JD} {C : Neg}
         · exact .inr (List.mem_append_right _ hZ))
     (Sub.refl _) d
 
-/-- The fire step, as one equation for every mode: when a parked `a ⊃ N'`
-fires, the interpolant at the station equals the interpolant at the residual
-station, whatever the goal.  Stated by cases because the equation lemmas of
-the well-founded `interp` are specialised per fused matcher alternative, so
-an abstract goal matches none of them — `rw [interp]` fails on
-`interp p [] done (some G)` with `G` a variable. -/
-theorem interpFire_eq {p : String} {done : List Neg} {a : String} {N' : Neg}
-    {rest : List Neg}
-    (hf : findFire done (splits done) = some (a, N', rest)) :
-    ∀ g, interp p [] done g = interp p [N'] rest g := by
-  intro g
-  match g with
-  | none | some (.up (.atom _)) | some (.up .fls) | some (.up (.or _ _))
-  | some (.up (.down _)) | some (.imp _ _) | some (.and _ _)
-  | some (.circ _) =>
-      rw [interp]; split
-      all_goals rename_i heq
-      · rw [hf] at heq; cases heq; rfl
-      · rw [hf] at heq; cases heq
 
 /-- The saturated `∃p` aggregate, as an equation. -/
 theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
