@@ -660,3 +660,20 @@ where the duplication lives (`CimpAnt`).  The real options:
 The dependency structure is now exactly the roadmap's: item 1 (the
 termination discipline) precedes the last step of item 2 (UI).  The
 campaign advanced item 2 to within one typed obligation of completion.
+
+## Route (B) begun (2026-08-11 01:35): layer 1 GREEN
+
+`LaxLogic/LJFOHeight.lean` — the height-indexed four-judgment calculus
+(`StabH`/`RFocusH`/`LFocH`/`InvH`), monotone in the bound, equivalent to
+the unindexed judgments (`toH`/`ofH`).  The `G4sh`-analogue for LJF◯;
+purely additive over the frozen core; compiled green first build.
+
+Next layers, in order:
+2. the set-context (Finset) forms + transfer (membership-based rules
+   make this direct), and the Ω-component finiteness discipline;
+3. the sequent-space bound + duplicate-collapse (pigeonhole), giving the
+   computable height bound H₀ — `PLLG4Dec.height_bound` is the template;
+4. the retention rows + fuel-founded `interp` (the definitional step —
+   THE point to confirm direction with Matthew before executing);
+5. `CimpAnt` discharged natively over the retention rows; satE2/satA2
+   unconditional; pins.
