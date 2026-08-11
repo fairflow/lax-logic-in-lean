@@ -632,3 +632,31 @@ absorbable into the guarded opening rows on the additive measure.
       isolated `CimpAnt`, pending (A) or (B).
 The evaluator bank and the `cAnt`-parameterised development re-check any
 choice mechanically.
+
+## CORRECTION to the resolution, from the repo's own roadmap (2026-08-11 01:40)
+
+`docs/commentary.md` §"what remains" states it outright: the corrected
+calculus is **not Dershowitz–Manna decreasing at `L◯→″`/`R◯→″`'s first
+premises** — there is NO DM template to transpose; option (A) as
+previously stated is infeasible-as-stated.  The repo's own plan (item 1)
+for exactly this is the **history/loop-check over finite subformula-
+closed set-contexts** (weak termination + complete strategy), with a
+Bílková-style order as fallback; and item 2 predicted that the UI
+interpolant recursion "needs care exactly where the duplication lives".
+
+Tonight's terminus is that prediction reached at mechanised granularity —
+with the notable result that the focused route absorbed everything else:
+the whole minimality induction is machine-checked except the SINGLE point
+where the duplication lives (`CimpAnt`).  The real options:
+
+  (A′) a Bílková-style order for the antecedent recursion (research);
+  (B)  the finite-space/history discipline for LJF◯ — the roadmap's own
+       item 1, acknowledged there as "a genuinely separate piece of
+       work", which the pigeonhole/fuel machinery of `PLLG4Dec` already
+       demonstrates for G4c;
+  (C)  E2/A2 stand as machine-checked conditional on the isolated
+       `CimpAnt` until (A′) or (B) lands.
+
+The dependency structure is now exactly the roadmap's: item 1 (the
+termination discipline) precedes the last step of item 2 (UI).  The
+campaign advanced item 2 to within one typed obligation of completion.
