@@ -18,6 +18,7 @@ as calibration, and sweeps E2/A2 minimality cells.
 import LaxLogic.LJFOCore
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLSearch
+import LaxLogic.LJFOFuel
 
 open LJFO PLLND
 
@@ -257,3 +258,107 @@ def cimpCSound : List (C3 × Pos × List Neg) := Id.run do
 
 #eval cimpCRes
 #eval cimpCSound
+
+/-! ## Route (B) layer 4a cells: the fuel-founded retention interpolant -/
+
+-- NOTE (2026-08-11 03:20): fuel 24 makes the retention values large
+-- enough to grind the bounded prover on this bank; the stations here are
+-- 1-2 members, for which small fuel stabilises.  Start the fresh-session
+-- run at 6 and raise only if cells flag.
+def fuel0 : Nat := 6
+
+def e2cellF (done Δ : List Neg) (ψ : Neg) : C3 :=
+  cell (provN (done ++ Δ) (negF ψ))
+       (provN (interpF pv fuel0 [] done none :: Δ) (negF ψ))
+
+def a2cellFT (done Δ : List Neg) (P : Pos) : C3 :=
+  cell (provN (done ++ Δ) (posF P))
+       (provN (interpF pv fuel0 [] done none :: Δ)
+         (negF (interpF pv fuel0 [] done (some (.up P)))))
+
+def a2cellFL (done Δ : List Neg) (P : Pos) : C3 :=
+  cell (provN (done ++ Δ) (.somehow (posF P)))
+       (provN (interpF pv fuel0 [] done none :: Δ)
+         (negF (interpF pv fuel0 [] done (some (.circ P)))))
+
+/-- The retention-miner cell: `done, K ⊢ ◯Q′` implies
+`E_F(done), K ⊢ A_F(done ⇒ ↑↓◯Q′)` — the (b)-guard the rows now carry. -/
+def cimpCellF (Q' : Pos) (N : Neg) (rest K : List Neg) : C3 :=
+  let χ : Neg := .imp (.down (.circ Q')) N
+  let done := χ :: rest
+  cell (provN (done ++ K) (.somehow (posF Q')))
+       (provN (interpF pv fuel0 [] done none :: K)
+         (negF (interpF pv fuel0 [] done (some (.up (.down (.circ Q')))))))
+
+/-- Soundness spots for the retention rows. -/
+def cimpSoundF (Q' : Pos) (N : Neg) (rest : List Neg) : C3 :=
+  let χ : Neg := .imp (.down (.circ Q')) N
+  let done := χ :: rest
+  cell V.yes
+       (provN (interpF pv fuel0 [] done (some (.up (.down (.circ Q')))) :: done)
+         (.somehow (posF Q')))
+
+def e2resF : List (C3 × List Neg × List Neg × Neg) := Id.run do
+  let mut out := []
+  for done in stationBank do
+    for Δ in kBank do
+      for ψ in negBank.filter pfreeN do
+        let r := e2cellF done Δ ψ
+        if r != .pass then out := (r, done, Δ, ψ) :: out
+  return out
+
+def a2resF : List (C3 × List Neg × List Neg × Pos × Bool) := Id.run do
+  let mut out := []
+  for done in stationBank do
+    for Δ in kBank do
+      for P in posBank do
+        let rT := a2cellFT done Δ P
+        let rL := a2cellFL done Δ P
+        if rT != .pass then out := (rT, done, Δ, P, true) :: out
+        if rL != .pass then out := (rL, done, Δ, P, false) :: out
+  return out
+
+def cimpResF : List (C3 × Pos × Neg × List Neg × List Neg) := Id.run do
+  let mut out := []
+  for Q' in [aQ, aP, .or aQ aR, .down boxQ] do
+    for N in [uQ, uP, boxQ, .up (.or aQ aR)] do
+      for rest in [([] : List Neg), [uQ], [boxQ], [qimpP]] do
+        for K in kBank do
+          if isSat (Neg.imp (.down (.circ Q')) N :: rest) then
+            let r := cimpCellF Q' N rest K
+            if r != .pass then out := (r, Q', N, rest, K) :: out
+  return out
+
+def cimpSoundResF : List (C3 × Pos × Neg × List Neg) := Id.run do
+  let mut out := []
+  for Q' in [aQ, aP, .or aQ aR] do
+    for N in [uQ, uP, boxQ] do
+      for rest in [([] : List Neg), [uQ], [boxQ], [qimpP]] do
+        if isSat (Neg.imp (.down (.circ Q')) N :: rest) then
+          let r := cimpSoundF Q' N rest
+          if r != .pass then out := (r, Q', N, rest) :: out
+  return out
+
+/-- The ①/② blocker-shaped cell family: the station carries BOTH the
+modal implication AND a box whose opening re-uses it — the configuration
+that defeated every consumed-χ design. -/
+def howeCell (K : List Neg) : C3 :=
+  -- χ = ↓◯p ⊃ ↑r ;  box ◯q ;  goal ◯p from the pair, K kept
+  let χ : Neg := .imp (.down (.circ aP)) (.up aR)
+  let done := [χ, boxQ]
+  cell (provN (done ++ K) (.somehow (posF aP)))
+       (provN (interpF pv fuel0 [] done none :: K)
+         (negF (interpF pv fuel0 [] done (some (.up (.down (.circ aP)))))))
+
+def howeRes : List (C3 × List Neg) := Id.run do
+  let mut out := []
+  for K in kBank do
+    let r := howeCell K
+    if r != .pass then out := (r, K) :: out
+  return out
+
+#eval e2resF
+#eval a2resF
+#eval cimpResF
+#eval cimpSoundResF
+#eval howeRes

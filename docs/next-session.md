@@ -408,3 +408,28 @@ attacks (bisimulation quantifiers, model completion) are the other fork.
 
 **Claim discipline:** UI for PLL remains OPEN.  Nothing in this thread
 claims otherwise; every result stands exactly as strong as its pin.
+
+### Layer 4 resume brief (2026-08-11 03:20, session close)
+
+Matthew's direction: **proceed with layer 4 in a fresh session.**  The
+foundation is in place and green:
+
+* `LaxLogic/LJFOFuel.lean` — `interpF`, the fuel-founded RETENTION
+  interpolant: `interp` mirrored clause for clause on structural fuel,
+  the modal rows carrying the (b)-guard `A(done ⇒ ↑↓◯Q′)` at the FULL
+  station (12 sites), sound defaults at fuel 0 (⊤/⊥).  Compiled first
+  build.  Retention dissolves the crossed-station obstruction: χ is a
+  member of every station the mining visits, so `CimpAnt`'s analogue is
+  a native `UEntry`-style call — no χ-class, no descent machinery.
+* The decider round-trip (`LJFOSearch.lean`): derivable ⟺ searchable at
+  existential fuel, `search_sound` rebuilding kernel derivations —
+  heights are available for every derivation via `toH`.
+* First fresh-session step: run the `interpF` evaluator cells
+  (`wip/ljfo_eval.lean`, tail section — fuel0 lowered to 6 after the
+  fuel-24 values ground the bounded prover; the `howeCell` family
+  targets the ①/② configuration directly).  If green, build the
+  parallel fuel-founded tail: `eSoundF`/`aSoundF`, the minimality
+  family, the native miner, unconditional `satE2F`/`satA2F`, pins.
+  Fuel-sufficiency/stabilisation is the one open design point — decide
+  whether the UI statements quantify fuel existentially (heights via
+  `toH`) or need the pigeonhole-computable bound.
