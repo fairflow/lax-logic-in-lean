@@ -344,3 +344,64 @@ def succs_complete : ∀ (s : LSeq), s.holds → Inst s
 
 end LSeq
 end LJFO
+
+namespace LJFO
+namespace LSeq
+
+/-! ## The fueled backward search
+
+Depth-fueled: `search n s` succeeds when some enumerated instance's
+premises all succeed at fuel `n`.  Soundness holds at every fuel;
+completeness at sufficient fuel is the pigeonhole layer.  (The
+visited-set refinement is introduced with the space bound; plain depth
+fuel suffices for the sound direction and for the fuel-monotone
+interface the interpolant recursion consumes.) -/
+
+def search : Nat → LSeq → Bool
+  | 0, _ => false
+  | n+1, s => (succs s).any (fun ps => ps.all (fun p => search n p))
+
+/-- Computable witness extraction from a successful `any`. -/
+def anyWitness : ∀ (l : List (List LSeq)) (f : List LSeq → Bool),
+    l.any f = true → Σ' ps : List LSeq, (ps ∈ l) ×' f ps = true
+  | ps :: l, f, h =>
+      if hf : f ps = true then ⟨ps, List.mem_cons_self .., hf⟩
+      else
+        have h' : l.any f = true := by
+          have hor : f ps = true ∨ l.any f = true := by
+            simpa [List.any_cons] using h
+          exact hor.resolve_left hf
+        let ⟨qs, hq, hfq⟩ := anyWitness l f h'
+        ⟨qs, List.mem_cons_of_mem _ hq, hfq⟩
+
+/-- Search is sound: a successful search rebuilds a derivation. -/
+def search_sound : ∀ (n : Nat) (s : LSeq), search n s = true → s.holds
+  | 0, _, h => absurd h (by simp [search])
+  | n+1, s, h =>
+      let ⟨ps, hmem, hall⟩ := anyWitness (succs s)
+        (fun ps => ps.all (fun p => search n p))
+        (by simpa [search] using h)
+      succs_sound s ps hmem (fun p hp =>
+        search_sound n p (by
+          have h2 : ps.all (fun p => search n p) = true := by simpa using hall
+          have h3 := List.all_eq_true.mp h2 p hp
+          simpa using h3))
+
+/-- Search is monotone in fuel. -/
+theorem search_mono : ∀ {n m : Nat}, n ≤ m → ∀ {s : LSeq},
+    search n s = true → search m s = true := by
+  intro n m hnm
+  induction n generalizing m with
+  | zero => intro s h; simp [search] at h
+  | succ k ih =>
+      intro s h
+      match m, hnm with
+      | m+1, hnm =>
+          simp only [search, List.any_eq_true] at h ⊢
+          obtain ⟨ps, hmem, hall⟩ := h
+          exact ⟨ps, hmem, by
+            simp only [List.all_eq_true] at hall ⊢
+            exact fun p hp => ih (Nat.le_of_succ_le_succ hnm) (hall p hp)⟩
+
+end LSeq
+end LJFO

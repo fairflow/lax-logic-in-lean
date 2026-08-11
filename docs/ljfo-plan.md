@@ -728,3 +728,17 @@ matches, when Type-valued elimination follows.
 
 Next: `succs_complete` (each constructor's premise list is enumerated),
 then the fueled visited-set search and the round-trip.
+
+## Route (B) layer 3d GREEN (2026-08-11 ~02:55)
+
+The fueled backward search (`search`), computable witness extraction
+(`anyWitness`), **`search_sound`** (a successful search rebuilds a kernel
+derivation, at every fuel), and `search_mono`.  With 3b/3c this
+completes the sound half of the decider round-trip.
+
+Remaining for the height bound: the completeness half — search at
+pigeonhole fuel finds every derivable sequent — which needs the
+sequent-space cardinality over the `UClosed` universe (layers 2a/2b
+supply the invariant) and the duplicate-collapse argument.  That is the
+one genuinely hard piece of the decider; then layer 4 (retention rows +
+fuel-founded `interp`) discharges `CimpAnt`.
