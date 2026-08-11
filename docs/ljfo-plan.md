@@ -872,3 +872,43 @@ combined; (4) unify U/V/W formally inside a bi-lax-intuitionistic
 frame (`docs/lax-dual-colax-biint-handoff.md`: ◯∃ ⊣ ◯∀, and §6.1's
 point that multi-succedent may dissolve the goal-dependent left rule)
 — separate thread, real mathematics, health warnings in that file.
+
+## The measure-interface stratum (pinned 2026-08-11, Matthew's suggestion, assessed and adopted post-layer-4)
+
+Origin: Matthew proposed a Girard-candidates move for the complexity
+measure — prove against an abstract μ satisfying a named descent
+interface, realise concretely later, with a parallel existence/
+consistency ledger.  Assessment (2026-08-11 afternoon reply):
+
+* NOT for termination, and no `partial def` anywhere: a Lean partial
+  def is kernel-opaque (no equations, nothing provable — the mandate
+  dies); and the abstract-μ interface for termination either contains
+  the retention re-entry inequality (unrealisable by any additive
+  measure — the route-(B) terminus) or weakens to "μ exists over the
+  finite space", which IS the fuel/pigeonhole formulation.  Fuel is
+  the initial object of the measure category: every concrete μ
+  factors through a fuel bound, and a computable stabilisation bound
+  f₀(S, Q) IS the realised measure.  The existence ledger already has
+  a name: W.
+* ADOPTED as the post-layer-4 bounds-and-unification layer:
+  1. `Measure := {μ // the descent interface}` (the interface = the
+     dec_* farm's inequalities, stated abstractly);
+  2. every inhabitant realises a terminating `interp_μ` agreeing with
+     `interpF` at fuel `μ(S,Q)` (WF recursion on hypothesised μ via
+     `termination_by`/`decreasing_by` from the interface — supported,
+     no partiality);
+  3. inhabitation ⟺ W-with-computable-bounds;
+  4. the room-style (G4c tower) and height-style finances become
+     INSTANCES — exact bounds as theorem-shaped comparisons, and the
+     only stateable frame found so far for route (4)'s formal
+     implications among U/V/W (morphisms between interface instances
+     over the three judgment spaces).
+* Speculative lead, flagged as such: "derivable at some fuel" is a
+  constraint-indexed judgment in F&M's own reading of ◯ ("φ under
+  some constraint"); the Curry-problem constraint-completeness
+  machinery (Thms 5/6, partly mechanised) is the natural host for the
+  measure-existence statement as a constraint family — the method
+  self-applied.
+
+Sequencing: layer 4 first (fuel-soundness + cofinal minimality); this
+stratum after, feeding the paper's bounds section and route (4).
