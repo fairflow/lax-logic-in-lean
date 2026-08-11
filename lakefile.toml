@@ -47,6 +47,10 @@ root = "wip.ljfo_attack_run"
 name = "escrun"
 root = "wip.ljfo_escalate_run"
 
+[[lean_exe]]
+name = "kernesc"
+root = "wip.ljfo_kernel_esc"
+
 # The two-sided decision tool (countermodel-first; wip/oracle2.lean) and its
 # one-sided baseline, compiled — the native oracle route.
 [[lean_exe]]

@@ -2722,3 +2722,5 @@ obligation `CimpAnt`*, never assumed. -/
 /-- info: 'LJFO.satA2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms LJFO.satA2
+
+-- (simp round 1 baseline bump, 2026-08-11)

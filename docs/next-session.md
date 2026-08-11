@@ -81,12 +81,18 @@ claims otherwise; every result stands exactly as strong as its pin.
 
 ### Layer 4 resume brief (2026-08-11 03:20; status updated after the review round)
 
-**STATUS 2026-08-11: layer 4 is PAUSED at Matthew's direction pending
-the review round** (`docs/ljfo-review-2026-08-11.md`: efficiency
-scorecard, the three-blocker comparison, the CimpAnt frontier attack,
-and up to three proposed simplification rounds). Resume layer 4 only on
-Matthew's explicit go — and after the simplification rounds if he
-orders them first.
+**STATUS 2026-08-11 (updated after the review round): layer 4 is
+PAUSED; the simplification rounds are RUNNING at Matthew's direction**
+(`docs/ljfo-review-2026-08-11.md` holds the full review). The frontier
+attack on `CimpAnt` concluded with zero certified failures; both
+engine-unreachable survivors settled TRUE at kernel level via
+`LJFOSearch.search` (fuels 32/48), including the φ★ cross-route check
+against the proved `∃p.φ★ = ¬¬◯⊥`. The focused kernel search is the
+escalation engine of record; the `bchi` screening-horizon stations are
+its named next stratum. Simp round 1 (support modules) is logged in
+the plan; round 2 = the `laxRows` collapse + the merged LJFO.lean
+dedup; round 3 = farms/profiling/fidelity table. Resume layer 4 after
+the rounds, on Matthew's go.
 
 The layer-4 foundation, in place and green:
 

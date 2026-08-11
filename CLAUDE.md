@@ -61,7 +61,12 @@ only ever on a certificate; `flag` (hypothesis certified, conclusion
 unsettled at budget) is a frontier marker — re-run it at a raised
 budget, never drop it silently. Gate cells by the statement's own side
 conditions (saturation, parkedness, p-freeness) so a fail is a genuine
-counterexample. Escalate certified fails to kernel level (pin the
+counterexample; record gate failures as such, never as passes. Run
+banks COMPILED (a `lean_exe`, the repo's oracle pattern), not by
+interpreted `#eval`; stream one appended line per cell so a killed run
+loses nothing and hits are replayable without re-running the search.
+Gate expensive cells by CONSTRUCTED value size and report every skip
+(no silent caps). Escalate certified fails to kernel level (pin the
 countermodel; it becomes a forced change or a refutation). Tools:
 `tools/FrontierSampler` (stratified generation), `tools/catpart-ref`
 (category partition; Lean port designed in `docs/catpart-lean-design.md`),

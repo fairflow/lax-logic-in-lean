@@ -108,6 +108,11 @@ namespace LSeq
 
 /-! ## Soundness of the enumerator: each instance replays its rule -/
 
+/-- Singleton-membership elimination (the shape every one-instance rule
+family produces). -/
+theorem memSingle {α : Type} {a b : α} (h : a ∈ [b]) : a = b :=
+  (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+
 /-- Premise packages: a derivation for every premise of the instance. -/
 def Prems (ps : List LSeq) : Type := ∀ p ∈ ps, p.holds
 
@@ -124,15 +129,15 @@ def invGoalSound : ∀ (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD)
     Prems ps → Inv Γ Ω j C
   | Γ, Ω, .imp Q N, .tru, ps, hg, k =>
       have h1 : ps = [inv Γ (Q :: Ω) .tru N] :=
-        (List.mem_cons.mp hg).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle hg
       by subst h1; exact Inv.impR (prems_head k)
   | Γ, Ω, .and M N, .tru, ps, hg, k =>
       have h1 : ps = [inv Γ Ω .tru M, inv Γ Ω .tru N] :=
-        (List.mem_cons.mp hg).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle hg
       by subst h1; exact Inv.andR (prems_head k) (prems_head (prems_tail k))
   | Γ, Ω, .circ P, j, ps, hg, k =>
       have h1 : ps = [inv Γ Ω .lax (.up P)] :=
-        (List.mem_cons.mp hg).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle hg
       by subst h1; exact Inv.circR (prems_head k)
   | _, _, .imp _ _, .lax, _, hg, _ => absurd hg (List.not_mem_nil)
   | _, _, .and _ _, .lax, _, hg, _ => absurd hg (List.not_mem_nil)
@@ -145,7 +150,7 @@ def invStableSound : ∀ (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD)
     Prems ps → Inv Γ Ω j C
   | Γ, [], .up P, j, ps, hs, k =>
       have h1 : ps = [stab Γ j P] :=
-        (List.mem_cons.mp hs).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle hs
       by subst h1; exact Inv.stable (prems_head k)
   | _, [], .imp _ _, _, _, hs, _ => absurd hs (List.not_mem_nil)
   | _, [], .and _ _, _, _, hs, _ => absurd hs (List.not_mem_nil)
@@ -160,19 +165,19 @@ def invOmegaSound : ∀ (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD)
   | _, [], _, _, _, h3, _ => absurd h3 (List.not_mem_nil)
   | Γ, .or P Q :: Ω', C, j, ps, h3, k =>
       have h1 : ps = [inv Γ (P :: Ω') j C, inv Γ (Q :: Ω') j C] :=
-        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle h3
       by subst h1; exact Inv.orL (prems_head k) (prems_head (prems_tail k))
   | Γ, .fls :: Ω', C, j, ps, h3, k =>
       have h1 : ps = [] :=
-        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle h3
       by subst h1; exact Inv.flsL
   | Γ, .down M :: Ω', C, j, ps, h3, k =>
       have h1 : ps = [inv (M :: Γ) Ω' j C] :=
-        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle h3
       by subst h1; exact Inv.downL (prems_head k)
   | Γ, .atom a :: Ω', C, j, ps, h3, k =>
       have h1 : ps = [inv (Neg.up (Pos.atom a) :: Γ) Ω' j C] :=
-        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle h3
       by subst h1; exact Inv.atomL (prems_head k)
 
 /-- The lax-coercion instance of the stable dispatch, factored. -/
@@ -181,7 +186,7 @@ def stabLaxSound : ∀ (Γ : List Neg) (j : JD) (P : Pos) (ps : List LSeq),
     Prems ps → Stab Γ j P
   | Γ, .lax, P, ps, h4, k =>
       have h5 : ps = [stab Γ .tru P] :=
-        (List.mem_cons.mp h4).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle h4
       by subst h5; exact Stab.laxOf (prems_head k)
   | _, .tru, _, _, h4, _ => absurd h4 (List.not_mem_nil)
 
@@ -191,7 +196,7 @@ def lfocCircSound : ∀ (Γ : List Neg) (Q : Pos) (j : JD) (P : Pos) (ps : List 
     Prems ps → LFoc Γ (.circ Q) j P
   | Γ, Q, .lax, P, ps, h, k =>
       have h1 : ps = [inv Γ [Q] .lax (.up P)] :=
-        (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+        memSingle h
       by subst h1; exact LFoc.circL (prems_head k)
   | _, _, .tru, _, _, h, _ => absurd h (List.not_mem_nil)
 
@@ -228,18 +233,18 @@ def succs_sound : ∀ (s : LSeq) (ps : List LSeq), ps ∈ succs s → Prems ps �
             by subst h2; exact RFocus.or2 (prems_head k)
       | .down N, h =>
           have h1 : ps = [inv Γ [] j N] :=
-            (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+            memSingle h
           by subst h1; exact RFocus.rel (prems_head k)
       | .fls, h => absurd h (List.not_mem_nil)
   | lfoc Γ N j P, ps, h, k =>
       match N, h with
       | .up Q, h =>
           have h1 : ps = [inv Γ [Q] j (.up P)] :=
-            (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+            memSingle h
           by subst h1; exact LFoc.rel (prems_head k)
       | .imp Q M, h =>
           have h1 : ps = [stab Γ .tru Q, lfoc Γ M j P] :=
-            (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+            memSingle h
           by subst h1; exact LFoc.impL (prems_head k) (prems_head (prems_tail k))
       | .and M₁ M₂, h =>
           if h1 : ps = [lfoc Γ M₁ j P] then by
@@ -423,6 +428,21 @@ def holdsH : Nat → LSeq → Type
   | n, .lfoc Γ N j P => LFocH n Γ N j P
   | n, .inv Γ Ω j C => InvH n Γ Ω j C
 
+/-- Premise packagers for the height-indexed instances. -/
+def premsH0 {n : Nat} : ∀ q ∈ ([] : List LSeq), holdsH n q :=
+  fun _ hq => absurd hq (List.not_mem_nil)
+
+def premsH1 {n : Nat} {p : LSeq} (d : holdsH n p) : ∀ q ∈ [p], holdsH n q :=
+  fun q hq => by have h := memSingle hq; subst h; exact d
+
+def premsH2 {n : Nat} {p q : LSeq} (d : holdsH n p) (e : holdsH n q) :
+    ∀ r ∈ [p, q], holdsH n r :=
+  fun r hr =>
+    if h : r = p then by subst h; exact d
+    else by
+      have h2 := memSingle ((List.mem_cons.mp hr).resolve_left h)
+      subst h2; exact e
+
 /-- `succs_complete`, height-indexed: the root instance's premises hold
 one level down. -/
 def succs_completeH : ∀ (n : Nat) (s : LSeq), holdsH (n+1) s →
@@ -430,14 +450,12 @@ def succs_completeH : ∀ (n : Nat) (s : LSeq), holdsH (n+1) s →
   | n, .stab Γ j P, d =>
       match d with
       | .rfoc r => ⟨[.rfocus Γ j P], List.mem_cons_self ..,
-          fun p hp => by
-            have h := List.mem_singleton.mp hp; subst h; exact r⟩
+          premsH1 r⟩
       | @StabH.lfoc _ _ _ _ N hN lf =>
           ⟨[.lfoc Γ N j P],
            List.mem_append_left _ (List.mem_cons_of_mem _
              (List.mem_map_of_mem hN)),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact lf⟩
+           premsH1 lf⟩
       | .laxOf s' =>
           ⟨[.stab Γ .tru P],
            List.mem_append_right _ (List.mem_cons_self ..),
@@ -447,90 +465,63 @@ def succs_completeH : ∀ (n : Nat) (s : LSeq), holdsH (n+1) s →
       match P, d with
       | .atom a, .init hm =>
           ⟨[], by simp [succs, succsRFocus, if_pos hm],
-           fun p hp => absurd hp (List.not_mem_nil)⟩
+           premsH0⟩
       | .or P Q, .or1 r =>
           ⟨[.rfocus Γ j P], List.mem_cons_self ..,
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact r⟩
+           premsH1 r⟩
       | .or P Q, .or2 r =>
           ⟨[.rfocus Γ j Q], List.mem_cons_of_mem _ (List.mem_cons_self ..),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact r⟩
+           premsH1 r⟩
       | .down N, .rel dI =>
           ⟨[.inv Γ [] j N], List.mem_cons_self ..,
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+           premsH1 dI⟩
   | n, .lfoc Γ N j P, d =>
       match N, d with
       | .up Q, .rel dI =>
           ⟨[.inv Γ [Q] j (.up P)], List.mem_cons_self ..,
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+           premsH1 dI⟩
       | .imp Q M, .impL s lf =>
           ⟨[.stab Γ .tru Q, .lfoc Γ M j P], List.mem_cons_self ..,
-           fun p hp =>
-             if h : p = .stab Γ .tru Q then by subst h; exact s
-             else by
-               have h2 := List.mem_singleton.mp
-                 ((List.mem_cons.mp hp).resolve_left h)
-               subst h2; exact lf⟩
+           premsH2 s lf⟩
       | .and M₁ M₂, .and1 lf =>
           ⟨[.lfoc Γ M₁ j P], List.mem_cons_self ..,
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact lf⟩
+           premsH1 lf⟩
       | .and M₁ M₂, .and2 lf =>
           ⟨[.lfoc Γ M₂ j P], List.mem_cons_of_mem _ (List.mem_cons_self ..),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact lf⟩
+           premsH1 lf⟩
       | .circ Q, .circL dI =>
           ⟨[.inv Γ [Q] .lax (.up P)], List.mem_cons_self ..,
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+           premsH1 dI⟩
   | n, .inv Γ Ω j C, d =>
       match d with
       | .impR dI =>
           ⟨_, List.mem_append_left _ (List.mem_append_left _
             (List.mem_cons_self ..)),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+           premsH1 dI⟩
       | @InvH.andR _ _ _ M N d₁ d₂ =>
           ⟨_, List.mem_append_left _ (List.mem_append_left _
             (List.mem_cons_self ..)),
-           fun p hp =>
-             if h : p = .inv Γ Ω .tru M then by subst h; exact d₁
-             else by
-               have h2 := List.mem_singleton.mp
-                 ((List.mem_cons.mp hp).resolve_left h)
-               subst h2; exact d₂⟩
+           premsH2 d₁ d₂⟩
       | .circR dI =>
           ⟨_, List.mem_append_left _ (List.mem_append_left _
             (List.mem_cons_self ..)),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+           premsH1 dI⟩
       | .stable s =>
           ⟨_, List.mem_append_left _ (List.mem_append_right _
             (List.mem_cons_self ..)),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact s⟩
+           premsH1 s⟩
       | @InvH.orL _ _ Ω₀ _ P₀ Q₀ C₀ d₁ d₂ =>
           ⟨_, List.mem_append_right _ (List.mem_cons_self ..),
-           fun p hp =>
-             if h : p = .inv Γ (P₀ :: Ω₀) j C₀ then by subst h; exact d₁
-             else by
-               have h2 := List.mem_singleton.mp
-                 ((List.mem_cons.mp hp).resolve_left h)
-               subst h2; exact d₂⟩
+           premsH2 d₁ d₂⟩
       | .flsL =>
           ⟨[], List.mem_append_right _ (List.mem_cons_self ..),
-           fun p hp => absurd hp (List.not_mem_nil)⟩
+           premsH0⟩
       | .downL dI =>
           ⟨_, List.mem_append_right _ (List.mem_cons_self ..),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+           premsH1 dI⟩
       | .atomL dI =>
           ⟨_, List.mem_append_right _ (List.mem_cons_self ..),
-           fun p hp => by
-             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+           premsH1 dI⟩
 
 /-- Completeness at fuel = height. -/
 theorem search_complete_h : ∀ (n : Nat) (s : LSeq), holdsH n s →

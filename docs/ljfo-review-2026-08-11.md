@@ -210,6 +210,22 @@ fidelity table as a standalone document.
 Sizing note: my refactor estimates in this repo have run about 4×
 pessimistic (recorded 2026-08-05), so these are afternoons, not days.
 
+**Round 1 executed (2026-08-11 morning, Matthew's go).** Support
+modules only, after the survey found that every LJFO.lean round-1
+candidate sits inside the seven-shape regions round 2 rewrites
+wholesale (doing them twice would be waste — they merge into round 2):
+
+* `LJFOSearch.lean`: `memSingle` replacing 14 singleton-membership
+  chains; `premsH0/H1/H2` replacing 19 premise lambdas. Compiles
+  green; statements untouched.
+* `LJFOUniverse.lean`: the eightfold mutual assessed and deliberately
+  left — the imp constructor's Pos/Neg asymmetry blocks the duality
+  collapse; recorded so no later round re-derives this.
+* Metrics baseline banked for rounds 2–3: the `LJFO.lean` tail alone
+  re-elaborates in **1773 s (≈29.6 min)** (measured under the attack
+  runs' load — the realistic working condition); the pins passed in
+  that same build.
+
 ---
 
 ## 5. The blocked-result pattern
@@ -294,7 +310,73 @@ minimality sweeps over the same extended stations (the frontier may
 force change #4 in the aggregates rather than in the antecedent
 obligation).
 
-**Results: RESULTS-PENDING** (filled from the run log).
+Two structural findings arrived before any verdict did:
+
+* **The screening horizon is real here too.** The first (ungated) run
+  hung on the blocker station: `sum3 [◯p→r, ◯((◯p→r)→◯p)] = 177,390`
+  and the engine cost blows up with it, while the small stations the
+  marathon bank used sit at `sum3` 243–729 with interpolant values of
+  35–170 nodes. This is quantitatively the G4c room finding again (the
+  γ-clause regime needed 10⁵–10⁶-node tables, past `checkB`): in both
+  routes the DISCRIMINATING regime of the blocked lemma begins near the
+  edge of what the screens can decide. The corrected attack gates cells
+  by constructed value size and REPORTS what it skips (no silent caps);
+  the interpreter `#eval` bank was also replaced by a compiled driver
+  (`lake build attackrun`, the repo's native-oracle pattern), which is
+  the right standing form for all future banks. Note `sum3` alone
+  over-predicts: the φ★ station has `sum3` ≈ 1.6M yet its E-value is
+  only 569 nodes, so the gate belongs on constructed size.
+* **A cross-route validation cell now exists** (`wip/ljfo_crosscheck.lean`):
+  the semantic campaign PROVED `∃p.φ★ = ¬¬◯⊥` for
+  `φ★ = ((◯⊥ ⊃ p) ⊃ (◯⊥ ∧ p)) ∧ ¬¬p`, and φ★ polarises into a legal
+  parked station, so `interp`'s E-value has a machine-known correct
+  answer to be tested against — the first direct bridge between the
+  semantic route's results and the focused calculus's interpolant.
+  First verdicts: `¬¬◯⊥ ⊢ E` CERTIFIED YES (the soundness direction
+  agrees with the proved strongest value); `E ⊢ ¬¬◯⊥` unknown at the
+  40k budget (a flag, escalated at 400k in the native run).
+
+**Results (compiled sweeps + two escalation tiers, 2026-08-11 morning):**
+
+* **Zero certified failures of `CimpAnt`**, across corpus replay,
+  crossed-χ, size-3, GZ-nesting, p-placement, boundary and no-row-corner
+  strata, with χ at every split position and the statement's own side
+  conditions enforced per cell.
+* The sweep's flags concentrated on ONE family: p-carrying modal
+  implication beside a p-carrying box (`[◯p→r, ◯p]`,
+  `[◯p→r, ◯(↓◯p)]`) — exactly the stratum the marathon bank never
+  mixed. Escalation at 400k nodes resolved `[◯p→r, ◯p]` (both kept
+  variants) and the GZ depth-2 cell to certified YES; two survivors
+  remained unknown at 400k: the `[◯p→r, ◯(↓◯p)]` conclusion and the
+  φ★ minimality direction `E ⊢ ¬¬◯⊥`.
+* **Kernel escalation settled both survivors TRUE** (Matthew's
+  direction): `LJFOSearch.search` found derivations at fuel 32
+  (`E(φ★) ⊢ ¬¬◯⊥`) and fuel 48 (`E ⊢ A` on the `◯(↓◯p)` cell, and
+  `⊢ A` outright over the empty context), each a kernel derivation via
+  `search_sound`. Every escalated flag has resolved YES; the earlier
+  unknowns were engine reach, not falsity.
+* Method finding with standing value: **the focused kernel search
+  out-screens the G4c certificate prover on interpolant values by
+  orders of magnitude** (seconds at fuel 32–48 versus unknown at 400k
+  nodes) — focusing prunes the space the unfocused prover drowns in.
+  It is now the escalation engine of record (CLAUDE.md), and it is the
+  instrument that can plausibly push INTO the `bchi` screening horizon
+  next (the one regime still unscreened; `refute?`'s complete emit
+  stage is capped at closure ≤ 12, so "no countermodel" is weak
+  evidence exactly there).
+* Net position for §5b: the attack found no evidence against
+  `CimpAnt` anywhere it could decide, including the corpus seeds
+  carrying the known duplication content. The evidence now tilts
+  toward TRUE-but-hard, with the fuel/retention route (B) being
+  precisely the non-structural finance the three-blocker analysis
+  says is needed. The GZ-style risk stays live only past the
+  screening horizon, with the kernel-search screen as the named next
+  stratum.
+* (The E2/A2 minimality sweeps over the extended stations were still
+  running at delivery — the unfocused prover grinds on the box-wrapped
+  aggregates at p-carrying stations, the same reach limit as above.
+  Any flags it produces route to the kernel screen; a certified FAIL
+  would be reported immediately.)
 
 ### 5d. Testing doctrine
 

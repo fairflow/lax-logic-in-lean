@@ -765,3 +765,30 @@ H-form); the fueled search; `search_sound`/`search_mono`/
 
 Next: layer 4 — the retention rows + fuel-founded `interp` (the
 definitional step), now with the fuel discipline standing ready.
+
+## Review round, 2026-08-11 morning (Matthew-directed): the frontier attack + simp round 1
+
+Full review: `docs/ljfo-review-2026-08-11.md`.  Attack outcome, one
+line: zero certified failures of `CimpAnt` anywhere decidable
+(corpus/crossed-χ/boundary/no-row/GZ strata); every escalated flag
+resolved YES, the last two at KERNEL level via `LJFOSearch.search`
+(fuel 32: `E(φ★) ⊢ ¬¬◯⊥`, closing the cross-route check against the
+semantically proved `∃p.φ★ = ¬¬◯⊥`; fuel 48: the `[◯p→r, ◯(↓◯p)]`
+cell, with `⊢ A` outright).  The focused kernel search out-screens the
+G4c certificate prover by orders of magnitude on interp values and is
+now the escalation engine of record; the `bchi` horizon stations are
+its named next stratum.
+
+**Simp round 1 (support modules) log:**
+* `LJFOSearch.lean`: `memSingle` (14 singleton-membership chains),
+  `premsH0/H1/H2` (19 premise lambdas in the height-indexed
+  completeness).  Statements untouched.
+* `LJFOUniverse.lean`: the eightfold transitivity mutual was ASSESSED
+  and left alone — the imp constructor's Pos/Neg asymmetry blocks the
+  duality collapse; the file is already clean.  Recorded so round 2
+  does not re-derive this.
+* `LJFO.lean`: the survey found its round-1 candidates (the laxOf-arm
+  prefixes, the ConjMems rows) all sit INSIDE the seven-shape regions
+  that round 2's `laxRows` collapse rewrites wholesale — deduplicating
+  them now would edit the same lines twice.  Round-1 scope closed at
+  the support modules; the LJFO.lean dedup merges into round 2.
