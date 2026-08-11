@@ -372,11 +372,13 @@ Two structural findings arrived before any verdict did:
   says is needed. The GZ-style risk stays live only past the
   screening horizon, with the kernel-search screen as the named next
   stratum.
-* (The E2/A2 minimality sweeps over the extended stations were still
-  running at delivery — the unfocused prover grinds on the box-wrapped
-  aggregates at p-carrying stations, the same reach limit as above.
-  Any flags it produces route to the kernel screen; a certified FAIL
-  would be reported immediately.)
+* (The E2/A2 minimality sweeps over the extended stations were
+  TERMINATED after 8.8 CPU-hours inside their chunks, with zero fail
+  or flag records emitted after the horizon report — the unfocused
+  prover cannot practically decide the box-wrapped aggregates at
+  p-carrying stations, the same reach limit as above. Minimality
+  screening at that scale belongs to the kernel-search engine; noted
+  as a layer-4 instrumentation item.)
 
 ### 5d. Testing doctrine
 
