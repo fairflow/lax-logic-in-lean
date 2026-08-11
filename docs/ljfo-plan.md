@@ -840,3 +840,35 @@ stabilisation per cell (pigeonhole over the finite sequent space
 bounds derivation heights, hence the needed fuel) gives UI.  The same
 two lemmas (fuel-soundness, cofinality) are the first step of BOTH
 prongs — layer 4 is the next move regardless of the answer's sign.
+
+### Correction to "the core extracted" (2026-08-11 afternoon, Matthew's objection — he is right)
+
+"Each blocker is exactly W with my bound" is NOT literally true and is
+withdrawn.  The scopes differ: `cascade_boxgoal_pos` (U) and the
+semantic `mforth`/`mback` (V) close routes to UI for the ONE-VARIABLE
+fragment as those campaigns fought it; `CimpAnt` (and W) concern full
+PLL.  What survives precisely: U, V, W each are UI-sufficient FOR
+THEIR SCOPE together with their route's proved machinery; none is a
+consequence of UI; the ◯-crossing-reuse shape is common but the
+statements are not interchangeable, and no disjunction
+ψ = U ∨ V ∨ W ⊣⊢ PLL.UI is claimed — as literally stated ψ ⊣⊢ PLL.UI
+is almost certainly FALSE in the ⟸ direction (UI does not imply any
+of the three construction-specific statements) and the ⟹ direction
+fails at scope for U and V.  The machine-checkable surrogate on offer
+is layer 4's per-cell equivalence: fuel-soundness + cofinal
+minimality make (chain stabilises at the cell) ⟺ (the cell's uniform
+interpolant exists), for LJF◯, cell by cell — the two lemmas are the
+fresh session's first target either way.
+
+Matthew's alternative preparation routes, recorded: (1) prove
+`CimpAnt` restricted to the 1-pv fragment (matching U/V's scope; note
+the candidate cell needs q, r, so it vanishes at 1 pv — the fragment
+may genuinely be easier); (2) PCLL (◯ distributes over ∨): the
+distribution law collapses forced change #2's row family toward the
+single direct row and shrinks the fixpoint system; the engines
+already support PCLL refutation natively (`Config.accept :=
+RNC.confB`); run the paper pass over the clauses first; (3) both
+combined; (4) unify U/V/W formally inside a bi-lax-intuitionistic
+frame (`docs/lax-dual-colax-biint-handoff.md`: ◯∃ ⊣ ◯∀, and §6.1's
+point that multi-succedent may dissolve the goal-dependent left rule)
+— separate thread, real mathematics, health warnings in that file.

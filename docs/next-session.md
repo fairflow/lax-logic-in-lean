@@ -79,6 +79,32 @@ decider round-trip and `interpF`.
 **Claim discipline:** UI for PLL remains OPEN. Nothing in this thread
 claims otherwise; every result stands exactly as strong as its pin.
 
+### THE FRESH SESSION'S GOAL: the full-UI attempt (layer 4)
+
+*Everything in this session after the marathon — the review, the
+frontier attack, the kernel escalations, the stabilisation probe, the
+simplification rounds, the two background attacks on the candidate
+cell — is PREPARATION.  The fresh session attempts full UI.*
+
+**Its first target, valuable whichever way the answer goes:** the two
+layer-4 lemmas over `interpF` — fuel-soundness (`eSoundF`/`aSoundF`)
+and cofinal fuel-minimality (`satE2F`/`satA2F`, whose retention guard
+makes the modal miner a native `UEntry` call).  Together they make,
+cell by cell: (the fuel chain stabilises) ⟺ (the cell's uniform
+interpolant exists) — the machine-checkable form of the campaign core
+W (see the plan's "core extracted" section AND its correction: the
+1-pv scope of the old routes' blockers, the withdrawn union claim).
+Then: EITHER prove stabilisation (pigeonhole over the finite sequent
+space bounds heights, hence fuel) ⟹ UI for LJF◯; OR the candidate
+cell ({◯p→r, ◯q} ⇒ ◯p) refutes stabilisation via the θ_k family ⟹
+this scheme dies and (with cofinality) the cell has NO uniform
+interpolant in LJF◯ — read the two background agents' reports first
+(θ_k extraction; the p-free upper-bound hunt), they decide the prong.
+
+Alternative preparation routes Matthew has named (plan, same section):
+1-pv restriction of `CimpAnt`; PCLL (◯ distributes over ∨); both;
+the bi-lax unification thread.
+
 ### Layer 4 resume brief (2026-08-11 03:20; status updated after the review round)
 
 **STATUS 2026-08-11 (updated after the review round): layer 4 is
