@@ -792,3 +792,15 @@ its named next stratum.
   that round 2's `laxRows` collapse rewrites wholesale — deduplicating
   them now would edit the same lines twice.  Round-1 scope closed at
   the support modules; the LJFO.lean dedup merges into round 2.
+
+**Round 2 design pin (before starting):** the row family is named in
+the TAIL, not the core — `LJFOCore.lean` stays frozen.  The seam
+already exists: `interpCircShape` (LJFO.lean:1325) packages the
+shape-generic box-wrapped equation as a Σ'.  Round 2 = (1) a top-level
+`laxRows p done Q : List Neg` with seven shape equations proved
+through that seam; (2) the four layers' seven-clause groups
+(U-rewrites, pfree blocks, dispatch arms) collapsed to single
+`laxRows` clauses discharged by `cases Q`; (3) the merged round-1
+LJFO.lean dedup (laxOf-arm prefixes, ConjMems rows) done inside the
+same rewrite.  Baseline to beat: 1773 s tail re-elaboration; every
+batch lands green or is reverted.
