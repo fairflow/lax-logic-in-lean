@@ -1,38 +1,38 @@
 /-
-The CimpAnt frontier attack (2026-08-11, the review round).
+The CimpAnt frontier attack, v2 (2026-08-11, the review round).
 
 Purpose: attack the STATEMENT `CimpAnt` (LJFO.lean:1342) as a statement,
-per the testing doctrine — not re-check the cells the bank already
-passed.  Three directions the existing bank did not cover:
+per the testing doctrine (CLAUDE.md §Testing for counterexamples):
 
-  1. CORPUS REPLAY — the hard instances of the OTHER routes, translated
-     into CimpAnt stations: the G4iLL blocker station `[◯p→r, ◯((◯p→r)→◯p)]`
-     itself (the ①/② double-use configuration with the p-CARRYING modal
-     implication), the join shape `↓◯p ⊃ ◯p`, the unboxed blocker.
-  2. FRONTIER EXTENSION — strata the bank never reached: stations with
+  1. CORPUS REPLAY — the hard instances of the OTHER routes: the G4iLL
+     blocker station `[◯p→r, ◯((◯p→r)→◯p)]` (the ①/② double-use
+     configuration, p-CARRYING modal implication), the join shape
+     `↓◯p ⊃ ◯p`, the unboxed blocker.
+  2. FRONTIER EXTENSION — strata the marathon bank never reached:
      TWO modal implications (crossed χ), station size 3, χ at non-head
-     positions (all splits swept), `Q′` of modal depth 2–3 (the GZ
-     ladder direction), p-carrying `Q′` beside p-carrying stations.
-  3. BOUNDARY / BRANCH COVERAGE — the no-row corner (`Q′ = ↓(imp)`,
-     where forced change #2 assigns NO lax goal-inversion row), `Q′ = ⊥`,
-     or-shaped `Q′` (the 3-row family), boxes with implication content
-     on the kept side.
+     positions (all splits swept), `Q′` at modal depth 2–3 (the GZ
+     ladder), p-carrying `Q′` beside p-carrying stations.
+  3. BOUNDARY / BRANCH COVERAGE — the no-row corner (`Q′ = ↓(imp)`),
+     `Q′ = ⊥`, or-shaped `Q′`, kept boxes with implication content.
 
-Verdict discipline: `.fail` and `.no` only ever on CERTIFICATES
-(refute? countermodels); `.flag` = hypothesis certified derivable but
-conclusion unsettled at budget — the frontier marker, to be re-run at
-higher budget, never a verdict.
+v2 adds the SCREENING-HORIZON GATES, after v1 established (by hanging)
+that corpus stations with `bchi` sit past the horizon: `sum3 [hyp,bchi]
+= 177,390` and the interp values blow up super-linearly with sum3
+(E[hyp]=35 nodes but E[hyp,chi]=4,689).  Gates: `sum3 done ≤ 25,000`,
+then constructed value sizes `szE + szA ≤ 6,000`; gated-out cells are
+REPORTED as skipW/skipSz records (no silent caps), never ground.
+This mirrors the G4c room finding: the discriminating regime of the
+blocked lemma is expensive to screen there too.
 
-Caveat on refutation strength: the engines decide PLL (G4c-complete).
-A certified fail refutes CimpAnt's semantic content; to refute the Lean
-statement itself, rebuild the hypothesis derivation as a `Stab` witness
-via `LJFOSearch.search` (the decider round-trip) — escalation step,
-done per-fail, not in the sweep.
+Verdict discipline: `fail`/`no` only on refute? certificates; `flag` =
+hypothesis certified derivable, conclusion unsettled at budget (re-run
+at raised budget, never a verdict).  A certified fail refutes CimpAnt's
+semantic content; to refute the Lean statement, rebuild the hypothesis
+as a `Stab` witness via `LJFOSearch.search` (escalation, per-fail).
 -/
 import LaxLogic.LJFOCore
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLSearch
-import LaxLogic.LJFOFuel
 
 open LJFO PLLND
 
@@ -54,6 +54,19 @@ def negF : Neg → PLLFormula
   | .imp Q N => .ifThen (posF Q) (negF N)
   | .and M N => .and (negF M) (negF N)
   | .circ P => .somehow (posF P)
+end
+
+mutual
+def szP : Pos → Nat
+  | .atom _ => 1
+  | .fls => 1
+  | .or P Q => szP P + szP Q + 1
+  | .down M => szN M + 1
+def szN : Neg → Nat
+  | .up P => szP P + 1
+  | .imp Q N => szP Q + szN N + 1
+  | .and M N => szN M + szN N + 1
+  | .circ P => szP P + 1
 end
 
 inductive V | yes | no | unk
@@ -83,7 +96,7 @@ def cell (hyp : V) (concl : V) : C3 :=
   | .yes, .unk => .flag
   | _, _ => .pass
 
-/-! ## Legality: parked shapes + saturation (the statement's hypotheses) -/
+/-! ## Legality + gates -/
 
 def isParked : Neg → Bool
   | .up (.atom _) => true
@@ -113,28 +126,33 @@ where
     | .or P Q => pfreeP P && pfreeP Q
     | .down M => pfreeN M
 
-/-! ## THE cell: the full CimpAnt statement, χ at an arbitrary split -/
+def wCap : Nat := 25000
+def szCap : Nat := 6000
 
-/-- `E(done), K ⊢ A(rest ⇒ ↑↓◯Q′)` demanded whenever `done, K ⊢ ◯Q′`,
-for `(↓◯Q′ ⊃ N, rest) ∈ splits done` — exactly `CimpAnt`'s cell with
-`Γ′ = done ++ K` (the maximal legal `Γ′`, so the most instances). -/
-def cimpAntCell (done rest : List Neg) (Q' : Pos) (K : List Neg) : C3 :=
-  cell (provN (done ++ K) (.somehow (posF Q')))
-       (provN (interp pv [] done none :: K)
-         (negF (interp pv [] rest (some (.up (.down (.circ Q')))))))
+/-! ## THE cell: the full CimpAnt statement, χ at an arbitrary split.
+Output records: (tag, Q′, rest) with tag ∈ FAIL/flag/skipW/skipSz. -/
 
-/-- Sweep one station against one kept context: every ◯-implication
-member, at its own split (so χ-position is covered by construction). -/
-def sweepStation (done : List Neg) (K : List Neg) :
-    List (C3 × Pos × List Neg) :=
-  if legal done && K.all pfreeN then
-    (splits done).foldr (fun (X, rest) acc =>
-      match X with
-      | .imp (.down (.circ Q')) _ =>
-          let r := cimpAntCell done rest Q' K
-          if r != .pass then (r, Q', rest) :: acc else acc
+def sweepStation (done K : List Neg) : List (String × Pos × List Neg) :=
+  if !(legal done && K.all pfreeN) then []
+  else if sum3 done > wCap then
+    if K.isEmpty then [(s!"skipW sum3={sum3 done}", .fls, [])] else []
+  else
+    let e := interp pv [] done none
+    let esz := szN e
+    (splits done).foldr (fun XR acc =>
+      match XR with
+      | (.imp (.down (.circ Q')) _, rest) =>
+          let a := interp pv [] rest (some (.up (.down (.circ Q'))))
+          if esz + szN a > szCap then
+            (s!"skipSz E={esz} A={szN a}", Q', rest) :: acc
+          else
+            let hy := provN (done ++ K) (.somehow (posF Q'))
+            let co := verdict ((e :: K).map negF) (negF a)
+            match cell hy co with
+            | .pass => acc
+            | .fail => ("FAIL", Q', rest) :: acc
+            | .flag => ("flag", Q', rest) :: acc
       | _ => acc) []
-  else []
 
 /-! ## Building blocks -/
 
@@ -148,107 +166,65 @@ def boxQ : Neg := .circ aQ
 def boxOr : Neg := .circ (.or aP aQ)
 def boxBoxP : Neg := .circ (.down (.circ aP))
 
-/-- `◯p → r` — the blocker's p-carrying modal implication. -/
-def hyp : Neg := .imp (.down (.circ aP)) uR
-/-- `◯q → r` — its p-free twin. -/
-def hypQ : Neg := .imp (.down (.circ aQ)) uR
-/-- `◯q → p` — p in the consequent. -/
-def hypQP : Neg := .imp (.down (.circ aQ)) (.up aP)
-/-- `◯p → ◯p` — the join shape (monad multiplication territory). -/
-def joinP : Neg := .imp (.down (.circ aP)) (.circ aP)
+def hyp : Neg := .imp (.down (.circ aP)) uR       -- ◯p → r (blocker)
+def hypQ : Neg := .imp (.down (.circ aQ)) uR      -- ◯q → r
+def hypQP : Neg := .imp (.down (.circ aQ)) (.up aP) -- ◯q → p
+def joinP : Neg := .imp (.down (.circ aP)) (.circ aP) -- ◯p → ◯p
 def joinQ : Neg := .imp (.down (.circ aQ)) (.circ aQ)
-/-- `(◯p→r) → ◯p` — the blocker's Dyckhoff implication. -/
-def chi : Neg := .imp (.down hyp) (.circ aP)
-/-- `◯((◯p→r)→◯p)` — the blocker's box. -/
-def bchi : Neg := .circ (.down chi)
-/-- Dyckhoff, p-free, box body: `(q→r) → ◯q`. -/
+def chi : Neg := .imp (.down hyp) (.circ aP)      -- (◯p→r) → ◯p
+def bchi : Neg := .circ (.down chi)               -- ◯((◯p→r)→◯p)
 def dq : Neg := .imp (.down (.imp aQ uR)) (.circ aQ)
-/-- qimp on p: `p → ↑q`. -/
 def qimpP : Neg := .imp aP uQ
 
-/-- GZ-ladder modal implications: `Q′` at modal depth 2 and 3. -/
 def cimpNest : Neg := .imp (.down (.circ (.down (.circ aP)))) uR
 def cimpNest2 : Neg := .imp (.down (.circ (.down (.circ (.down (.circ aP)))))) uR
-/-- Or-shaped `Q′` (the 3-row family): `◯(p∨q) → r`. -/
 def cimpOr : Neg := .imp (.down (.circ (.or aP aQ))) uR
-/-- The NO-ROW corner: `Q′ = ↓(q ⊃ ↑r)` — lax implications have no
-goal-inversion row (forced change #2). -/
 def cimpImp : Neg := .imp (.down (.circ (.down (.imp aQ uR)))) uR
 def cimpImpP : Neg := .imp (.down (.circ (.down (.imp aP uR)))) uR
-/-- Boundary: `Q′ = ⊥`. -/
 def cimpFls : Neg := .imp (.down (.circ .fls)) uR
 
-/-! ## Banks -/
+/-! ## Banks, cheap strata first -/
 
-/-- Kept contexts, all p-free; the last carries a box with implication
-content (a kept box that must be OPENED and its content used). -/
 def kBank : List (List Neg) :=
   [[], [uQ], [boxQ], [hypQ], [dq], [.circ (.down (.imp aQ uR))]]
 
-/-- Stations.  Corpus first, then frontier strata, then boundary. -/
-def stationBank : List (List Neg) :=
-  [ -- corpus
-    [hyp, bchi],            -- THE blocker station (①/② live)
-    [bchi, hyp],            -- position swap
-    [hyp, chi],             -- blocker unboxed: cimp + dyk
-    [joinP],                -- join alone
-    [joinP, boxQ],
-    [joinP, bchi],          -- join meets the blocker box
-    -- frontier: two modal implications (crossed χ)
-    [hyp, hypQ],
-    [hyp, joinQ],
-    [joinP, hyp],
-    [hypQP, hyp],           -- p in one consequent, p in the other antecedent
-    -- frontier: size 3
-    [hyp, dq, boxQ],
-    [hyp, bchi, boxQ],
-    [hyp, hypQ, boxP],
-    [hyp, .up (.atom "q"), boxQ],
-    -- frontier: p-placements
+/-- sum3 ≤ ~2,500: the engine-cheap regime. -/
+def smallBank : List (List Neg) :=
+  [ [hypQ], [hyp], [joinP],                       -- controls
+    [cimpFls], [cimpFls, boxQ],                   -- boundary Q′=⊥
+    [hyp, boxQ], [hyp, boxP], [hyp, boxOr], [hyp, boxBoxP],
+    [hyp, qimpP], [hyp, uQ],
+    [hyp, hypQ], [hyp, joinQ], [joinP, hyp], [hypQP, hyp],  -- crossed χ
     [hypQP, boxP],
-    [hyp, boxP],
-    [hyp, boxOr],
-    [hyp, boxBoxP],
-    [hyp, qimpP],
-    -- GZ ladder
-    [cimpNest, boxP],
-    [cimpNest],
-    [cimpNest2, boxP],
-    -- boundary / branch coverage
-    [cimpOr, boxP],
-    [cimpOr],
-    [cimpImp, boxQ],
-    [cimpImp],
-    [cimpImpP, boxP],
-    [cimpFls],
-    [cimpFls, boxQ],
-    -- controls (bank territory, kept for calibration)
-    [hypQ],
-    [hyp] ]
+    [hyp, uQ, boxQ], [hyp, hypQ, boxP], [hyp, dq, boxQ],    -- size 3
+    [cimpNest, boxP], [cimpNest],                 -- GZ depth 2
+    [cimpOr, boxP], [cimpOr] ]                    -- or-family
 
-/-! ## Sweeps (streamed in chunks so partial output survives) -/
+/-- sum3 2,500–25,000: mid-scale, engines slower. -/
+def midBank : List (List Neg) :=
+  [ [cimpImp, boxQ], [cimpImp], [cimpImpP, boxP],  -- the no-row corner
+    [cimpNest2, boxP], [cimpNest2],                -- GZ depth 3
+    [hyp, chi] ]                                   -- unboxed blocker
+
+/-- Past the screening horizon (reported, not run). -/
+def horizonBank : List (List Neg) :=
+  [ [hyp, bchi], [bchi, hyp], [joinP, bchi], [hyp, bchi, boxQ] ]
 
 def runChunk (stations : List (List Neg)) :
-    List (List Neg × List Neg × C3 × Pos × List Neg) := Id.run do
+    List (List Neg × List Neg × String × Pos × List Neg) := Id.run do
   let mut out := []
   for done in stations do
     for K in kBank do
-      for (r, Q', rest) in sweepStation done K do
-        out := (done, K, r, Q', rest) :: out
+      for (tag, Q', rest) in sweepStation done K do
+        out := (done, K, tag, Q', rest) :: out
   return out
 
--- corpus + join (stations 1–6)
-#eval runChunk (stationBank.take 6)
--- crossed-χ + size 3 (stations 7–14)
-#eval runChunk ((stationBank.drop 6).take 8)
--- p-placements + GZ ladder (stations 15–22)
-#eval runChunk ((stationBank.drop 14).take 8)
--- boundary + controls (stations 23–31)
-#eval runChunk (stationBank.drop 22)
 
-/-! ## E2/A2 minimality on the extended stations (a different direction:
-the frontier may force change #4 in the aggregates rather than in the
-miner).  ψ/P p-free. -/
+/-! ## E2/A2 minimality on the extended stations (the frontier may force
+change #4 in the aggregates rather than the antecedent obligation). -/
+
+def gateMin (done : List Neg) (goalV : Neg) : Bool :=
+  sum3 done ≤ wCap && szN (interp pv [] done none) + szN goalV ≤ szCap
 
 def e2cell (done Δ : List Neg) (ψ : Neg) : C3 :=
   cell (provN (done ++ Δ) (negF ψ))
@@ -268,23 +244,19 @@ def psiBank : List Neg := [uQ, uR, boxQ, hypQ, .up (.or aQ aR)]
 def pBank : List Pos := [aQ, aR, .fls, .or aQ aR, .down boxQ]
 
 def runMinChunk (stations : List (List Neg)) :
-    List (String × List Neg × List Neg × C3) := Id.run do
+    List (String × List Neg × List Neg) := Id.run do
   let mut out := []
   for done in stations do
-    if legal done then
+    if legal done && sum3 done ≤ 2500 then
       for Δ in [([] : List Neg), [uQ], [boxQ], [hypQ]] do
         for ψ in psiBank do
-          let r := e2cell done Δ ψ
-          if r != .pass then out := ("E2", done, Δ, r) :: out
+          if e2cell done Δ ψ != .pass then out := ("E2", done, Δ) :: out
         for P in pBank do
-          let rT := a2cellT done Δ P
-          let rL := a2cellL done Δ P
-          if rT != .pass then out := ("A2T", done, Δ, rT) :: out
-          if rL != .pass then out := ("A2L", done, Δ, rL) :: out
+          if gateMin done (interp pv [] done (some (.up P))) then
+            if a2cellT done Δ P != .pass then out := ("A2T", done, Δ) :: out
+          if gateMin done (interp pv [] done (some (.circ P))) then
+            if a2cellL done Δ P != .pass then out := ("A2L", done, Δ) :: out
   return out
 
-#eval runMinChunk (stationBank.take 10)
-#eval runMinChunk ((stationBank.drop 10).take 11)
-#eval runMinChunk (stationBank.drop 21)
 
 end LJFOAttack
