@@ -596,3 +596,39 @@ theorem itself.
 (seconds per cell, certified verdicts) and the conditional-green
 development (any row change re-checks E1/A1/E2/A2 mechanically through
 the `cAnt` parameterisation, as tonight's surgery proved in one pass).
+
+## RESOLUTION of the terminus (2026-08-11 01:30) — the corrected calculus already answers this, at a known price
+
+`docs/commentary.md` §4 (the three retention revisions) holds the actual
+corrected rule:
+
+    Γ, ◯χ, ◯φ→ψ, χ ⇒ ◯φ    Γ, ◯χ, ψ ⇒ Δ
+    ------------------------------------- L◯→″
+            Γ, ◯χ, ◯φ→ψ ⇒ Δ
+
+The antecedent premise RETAINS the modal implication itself (and the
+witness box, opened) — precisely what dissolves both of tonight's
+obstructions at once: with χ retained in the antecedent station, every
+χ-use at every depth and in every crossing is a NATIVE station-member
+dispatch (no χ-class, no descent, no miner at all — `CimpAnt` becomes a
+plain `UEntry` call).  The gap review's ①/② pattern (one occurrence of
+the modal implication used outside AND inside a box-opening) is exactly
+the (β)-configuration that defeated every consumed-χ architecture.
+
+**The price, stated exactly:** retention breaks the additive `sum3`
+measure — the corrected calculus terminates on the **DM (multiset)
+order**, and transposing the E/A-row retention to `interp` means
+re-founding `interp`'s termination, the descent kit, and the family
+measures on that order.  §3(e)'s absorption claim is hereby REFUTED at
+mechanised granularity: the witness/retention discipline is not
+absorbable into the guarded opening rows on the additive measure.
+
+**The decision (Matthew's):**
+  (A) re-found on the DM-order and take the retention rows — the
+      literature-faithful route; multi-session, but the corrected
+      calculus's own termination argument is the template, in-repo;
+  (B) the pigeonhole height-bound / fuel route (decider-scale for LJF◯);
+  (C) an exemption: E2/A2 stand as machine-checked conditional on the
+      isolated `CimpAnt`, pending (A) or (B).
+The evaluator bank and the `cAnt`-parameterised development re-check any
+choice mechanically.
