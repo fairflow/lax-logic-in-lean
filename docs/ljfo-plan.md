@@ -742,3 +742,26 @@ sequent-space cardinality over the `UClosed` universe (layers 2a/2b
 supply the invariant) and the duplicate-collapse argument.  That is the
 one genuinely hard piece of the decider; then layer 4 (retention rows +
 fuel-founded `interp`) discharges `CimpAnt`.
+
+## Route (B) layer 3e GREEN (2026-08-11 ~03:10): THE DECIDER ROUND-TRIP
+
+`search_complete` closes the round-trip: **derivable ⟺ searchable**, at
+existential fuel (fuel = derivation height), with `search_sound`
+rebuilding kernel derivations.  The pigeonhole/computable bound is NOT
+needed for this form — it is only needed if layer 4's fuel-founded
+`interp` requires a sequent-computable fuel (stabilisation); the
+existential form may suffice for the miner, which transforms GIVEN
+derivations whose heights are available through `toH`.
+
+The completeness proof caught two genuine defects in the height layer
+(the `init` and `flsL` leaves were indexed at bare `n`, defeating fuel-0
+search) — fixed at source, all layers re-verified.
+
+Standing (B)-inventory, all sorry-free over the frozen core:
+heights + equivalence; universes + transitivity + `uClosed_ctx`;
+`LSeq`/`succs` in named families; `succs_sound`/`succs_complete` (+ the
+H-form); the fueled search; `search_sound`/`search_mono`/
+`search_complete_h`/`search_complete`.
+
+Next: layer 4 — the retention rows + fuel-founded `interp` (the
+definitional step), now with the fuel discipline standing ready.

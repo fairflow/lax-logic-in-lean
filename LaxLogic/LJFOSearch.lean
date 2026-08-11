@@ -9,6 +9,7 @@ pigeonhole height bound, as `PLLG4Dec` does for G4c) is the next layer.
 Zero imports beyond the frozen core.
 -/
 import LaxLogic.LJFOCore
+import LaxLogic.LJFOHeight
 
 namespace LJFO
 
@@ -320,26 +321,26 @@ def succs_complete : ∀ (s : LSeq), s.holds → Inst s
       | .circ Q, .circL dI =>
           ⟨[inv Γ [Q] .lax (.up P)], List.mem_cons_self .., prems1 dI⟩
   | inv Γ Ω j C, d =>
-      match Ω, C, d with
-      | _, _, .impR dI =>
+      match d with
+      | .impR dI =>
           ⟨_, List.mem_append_left _ (List.mem_append_left _
             (List.mem_cons_self ..)), prems1 dI⟩
-      | _, _, .andR d₁ d₂ =>
+      | .andR d₁ d₂ =>
           ⟨_, List.mem_append_left _ (List.mem_append_left _
             (List.mem_cons_self ..)), prems2 d₁ d₂⟩
-      | _, _, .circR dI =>
+      | .circR dI =>
           ⟨_, List.mem_append_left _ (List.mem_append_left _
             (List.mem_cons_self ..)), prems1 dI⟩
-      | _, _, .stable s =>
+      | .stable s =>
           ⟨_, List.mem_append_left _ (List.mem_append_right _
             (List.mem_cons_self ..)), prems1 s⟩
-      | _, _, .orL d₁ d₂ =>
+      | .orL d₁ d₂ =>
           ⟨_, List.mem_append_right _ (List.mem_cons_self ..), prems2 d₁ d₂⟩
-      | _, _, .flsL =>
+      | .flsL =>
           ⟨[], List.mem_append_right _ (List.mem_cons_self ..), prems0⟩
-      | _, _, .downL dI =>
+      | .downL dI =>
           ⟨_, List.mem_append_right _ (List.mem_cons_self ..), prems1 dI⟩
-      | _, _, .atomL dI =>
+      | .atomL dI =>
           ⟨_, List.mem_append_right _ (List.mem_cons_self ..), prems1 dI⟩
 
 end LSeq
@@ -402,6 +403,158 @@ theorem search_mono : ∀ {n m : Nat}, n ≤ m → ∀ {s : LSeq},
           exact ⟨ps, hmem, by
             simp only [List.all_eq_true] at hall ⊢
             exact fun p hp => ih (Nat.le_of_succ_le_succ hnm) (hall p hp)⟩
+
+end LSeq
+end LJFO
+
+namespace LJFO
+namespace LSeq
+
+/-! ## Completeness at existential fuel
+
+Fuel equal to the derivation height suffices: the height-indexed
+judgments feed the induction directly — no pigeonhole is needed for the
+existential form of the round-trip. -/
+
+/-- The height-indexed uniform judgment. -/
+def holdsH : Nat → LSeq → Type
+  | n, .stab Γ j P => StabH n Γ j P
+  | n, .rfocus Γ j P => RFocusH n Γ j P
+  | n, .lfoc Γ N j P => LFocH n Γ N j P
+  | n, .inv Γ Ω j C => InvH n Γ Ω j C
+
+/-- `succs_complete`, height-indexed: the root instance's premises hold
+one level down. -/
+def succs_completeH : ∀ (n : Nat) (s : LSeq), holdsH (n+1) s →
+    Σ' ps : List LSeq, (ps ∈ succs s) ×' (∀ p ∈ ps, holdsH n p)
+  | n, .stab Γ j P, d =>
+      match d with
+      | .rfoc r => ⟨[.rfocus Γ j P], List.mem_cons_self ..,
+          fun p hp => by
+            have h := List.mem_singleton.mp hp; subst h; exact r⟩
+      | @StabH.lfoc _ _ _ _ N hN lf =>
+          ⟨[.lfoc Γ N j P],
+           List.mem_append_left _ (List.mem_cons_of_mem _
+             (List.mem_map_of_mem hN)),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact lf⟩
+      | .laxOf s' =>
+          ⟨[.stab Γ .tru P],
+           List.mem_append_right _ (List.mem_cons_self ..),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact s'⟩
+  | n, .rfocus Γ j P, d =>
+      match P, d with
+      | .atom a, .init hm =>
+          ⟨[], by simp [succs, succsRFocus, if_pos hm],
+           fun p hp => absurd hp (List.not_mem_nil)⟩
+      | .or P Q, .or1 r =>
+          ⟨[.rfocus Γ j P], List.mem_cons_self ..,
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact r⟩
+      | .or P Q, .or2 r =>
+          ⟨[.rfocus Γ j Q], List.mem_cons_of_mem _ (List.mem_cons_self ..),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact r⟩
+      | .down N, .rel dI =>
+          ⟨[.inv Γ [] j N], List.mem_cons_self ..,
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+  | n, .lfoc Γ N j P, d =>
+      match N, d with
+      | .up Q, .rel dI =>
+          ⟨[.inv Γ [Q] j (.up P)], List.mem_cons_self ..,
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+      | .imp Q M, .impL s lf =>
+          ⟨[.stab Γ .tru Q, .lfoc Γ M j P], List.mem_cons_self ..,
+           fun p hp =>
+             if h : p = .stab Γ .tru Q then by subst h; exact s
+             else by
+               have h2 := List.mem_singleton.mp
+                 ((List.mem_cons.mp hp).resolve_left h)
+               subst h2; exact lf⟩
+      | .and M₁ M₂, .and1 lf =>
+          ⟨[.lfoc Γ M₁ j P], List.mem_cons_self ..,
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact lf⟩
+      | .and M₁ M₂, .and2 lf =>
+          ⟨[.lfoc Γ M₂ j P], List.mem_cons_of_mem _ (List.mem_cons_self ..),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact lf⟩
+      | .circ Q, .circL dI =>
+          ⟨[.inv Γ [Q] .lax (.up P)], List.mem_cons_self ..,
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+  | n, .inv Γ Ω j C, d =>
+      match d with
+      | .impR dI =>
+          ⟨_, List.mem_append_left _ (List.mem_append_left _
+            (List.mem_cons_self ..)),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+      | @InvH.andR _ _ _ M N d₁ d₂ =>
+          ⟨_, List.mem_append_left _ (List.mem_append_left _
+            (List.mem_cons_self ..)),
+           fun p hp =>
+             if h : p = .inv Γ Ω .tru M then by subst h; exact d₁
+             else by
+               have h2 := List.mem_singleton.mp
+                 ((List.mem_cons.mp hp).resolve_left h)
+               subst h2; exact d₂⟩
+      | .circR dI =>
+          ⟨_, List.mem_append_left _ (List.mem_append_left _
+            (List.mem_cons_self ..)),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+      | .stable s =>
+          ⟨_, List.mem_append_left _ (List.mem_append_right _
+            (List.mem_cons_self ..)),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact s⟩
+      | @InvH.orL _ _ Ω₀ _ P₀ Q₀ C₀ d₁ d₂ =>
+          ⟨_, List.mem_append_right _ (List.mem_cons_self ..),
+           fun p hp =>
+             if h : p = .inv Γ (P₀ :: Ω₀) j C₀ then by subst h; exact d₁
+             else by
+               have h2 := List.mem_singleton.mp
+                 ((List.mem_cons.mp hp).resolve_left h)
+               subst h2; exact d₂⟩
+      | .flsL =>
+          ⟨[], List.mem_append_right _ (List.mem_cons_self ..),
+           fun p hp => absurd hp (List.not_mem_nil)⟩
+      | .downL dI =>
+          ⟨_, List.mem_append_right _ (List.mem_cons_self ..),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+      | .atomL dI =>
+          ⟨_, List.mem_append_right _ (List.mem_cons_self ..),
+           fun p hp => by
+             have h := List.mem_singleton.mp hp; subst h; exact dI⟩
+
+/-- Completeness at fuel = height. -/
+theorem search_complete_h : ∀ (n : Nat) (s : LSeq), holdsH n s →
+    search n s = true := by
+  intro n
+  induction n with
+  | zero =>
+      intro s d
+      cases s <;> exact nomatch d
+  | succ k ih =>
+      intro s d
+      obtain ⟨ps, hmem, hprem⟩ := succs_completeH k s d
+      simp only [search, List.any_eq_true]
+      exact ⟨ps, hmem, by
+        simp only [List.all_eq_true]
+        exact fun p hp => ih p (hprem p hp)⟩
+
+/-- The round-trip at existential fuel: derivable iff searchable. -/
+def search_complete {s : LSeq} (d : s.holds) : Σ' n, search n s = true :=
+  match s, d with
+  | .stab _ _ _, d => let ⟨n, dh⟩ := Stab.toH d; ⟨n, search_complete_h n _ dh⟩
+  | .rfocus _ _ _, d => let ⟨n, dh⟩ := RFocus.toH d; ⟨n, search_complete_h n _ dh⟩
+  | .lfoc _ _ _ _, d => let ⟨n, dh⟩ := LFoc.toH d; ⟨n, search_complete_h n _ dh⟩
+  | .inv _ _ _ _, d => let ⟨n, dh⟩ := Inv.toH d; ⟨n, search_complete_h n _ dh⟩
 
 end LSeq
 end LJFO

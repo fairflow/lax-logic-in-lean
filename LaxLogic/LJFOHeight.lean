@@ -27,7 +27,7 @@ inductive StabH : Nat → List Neg → JD → Pos → Type
   | laxOf {n Γ P} : StabH n Γ .tru P → StabH (n+1) Γ .lax P
 
 inductive RFocusH : Nat → List Neg → JD → Pos → Type
-  | init {n Γ j a} (h : Neg.up (Pos.atom a) ∈ Γ) : RFocusH n Γ j (.atom a)
+  | init {n Γ j a} (h : Neg.up (Pos.atom a) ∈ Γ) : RFocusH (n+1) Γ j (.atom a)
   | or1 {n Γ j P Q} : RFocusH n Γ j P → RFocusH (n+1) Γ j (.or P Q)
   | or2 {n Γ j P Q} : RFocusH n Γ j Q → RFocusH (n+1) Γ j (.or P Q)
   | rel {n Γ j N} : InvH n Γ [] j N → RFocusH (n+1) Γ j (.down N)
@@ -48,7 +48,7 @@ inductive InvH : Nat → List Neg → List Pos → JD → Neg → Type
   | stable {n Γ j P} : StabH n Γ j P → InvH (n+1) Γ [] j (.up P)
   | orL {n Γ Ω j P Q N} : InvH n Γ (P :: Ω) j N → InvH n Γ (Q :: Ω) j N →
       InvH (n+1) Γ (.or P Q :: Ω) j N
-  | flsL {n Γ Ω j N} : InvH n Γ (.fls :: Ω) j N
+  | flsL {n Γ Ω j N} : InvH (n+1) Γ (.fls :: Ω) j N
   | downL {n Γ Ω j M N} : InvH n (M :: Γ) Ω j N → InvH (n+1) Γ (.down M :: Ω) j N
   | atomL {n Γ Ω j a N} : InvH n (.up (.atom a) :: Γ) Ω j N →
       InvH (n+1) Γ (.atom a :: Ω) j N
@@ -68,7 +68,8 @@ def StabH.mono : ∀ {n m : Nat} {Γ j P}, n ≤ m → StabH n Γ j P → StabH 
   | _, 0, _, _, _, h, .laxOf _ => absurd h (by omega)
 
 def RFocusH.mono : ∀ {n m : Nat} {Γ j P}, n ≤ m → RFocusH n Γ j P → RFocusH m Γ j P
-  | _, _, _, _, _, _, .init hm => .init hm
+  | _, m+1, _, _, _, _, .init hm => .init hm
+  | _, 0, _, _, _, h, .init _ => absurd h (by omega)
   | _, m+1, _, _, _, h, .or1 r => .or1 (r.mono (Nat.le_of_succ_le_succ h))
   | _, m+1, _, _, _, h, .or2 r => .or2 (r.mono (Nat.le_of_succ_le_succ h))
   | _, m+1, _, _, _, h, .rel d => .rel (d.mono (Nat.le_of_succ_le_succ h))
@@ -97,7 +98,8 @@ def InvH.mono : ∀ {n m : Nat} {Γ Ω j C}, n ≤ m → InvH n Γ Ω j C → In
   | _, m+1, _, _, _, _, h, .stable s => .stable (s.mono (Nat.le_of_succ_le_succ h))
   | _, m+1, _, _, _, _, h, .orL d e =>
       .orL (d.mono (Nat.le_of_succ_le_succ h)) (e.mono (Nat.le_of_succ_le_succ h))
-  | _, _, _, _, _, _, _, .flsL => .flsL
+  | _, m+1, _, _, _, _, _, .flsL => .flsL
+  | _, 0, _, _, _, _, h, .flsL => absurd h (by omega)
   | _, m+1, _, _, _, _, h, .downL d => .downL (d.mono (Nat.le_of_succ_le_succ h))
   | _, m+1, _, _, _, _, h, .atomL d => .atomL (d.mono (Nat.le_of_succ_le_succ h))
   | _, 0, _, _, _, _, h, .impR _ => absurd h (by omega)
