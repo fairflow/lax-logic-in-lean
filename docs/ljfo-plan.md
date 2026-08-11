@@ -561,3 +561,38 @@ Steps: (1) interp reweight + guard change + farm repair [the risk item];
 (2) `(n, hn)` threading [~60 mechanical sites]; (3) the wrapper; (4)
 assembly + pins.  Each step banked green or reverted — the branch is
 never left red.
+
+## TERMINUS of the discharge search (2026-08-11 02:15) — two sharp obstructions, and the §3(e) suspicion
+
+**(I) The (b)-guard is termination-INFEASIBLE.** Any `f(none)` heavy
+enough to finance the same-station reference `A(done ⇒ ↑↓◯Q′)` inside
+`E(done)` (needs `f ≳ 3^(wQ′+2)`, station-dependent) is unpayable at the
+box-row's crossing `some@done → none@[↑R]+rest`: the box's weight is
+spent exactly (`2·3^wR` vs `3^(wR+1)`), leaving no margin for a
+station-sized `f` over `rest` against an arbitrarily small goal weight.
+Checked for `f = sum3 todo + sum3 done`, `f = sum3 done`, and the
+cimp-only variant with adjusted todo-coefficients — the box-row breaks
+all of them.  So the guard stays at `rest`, as landed.
+
+**(II) With the guard at `rest`, every mining architecture fails at the
+same point: χ-uses inside CROSSED-station material.**  A use of the
+consumed ◯-implication inside a fire/box-crossing's continuation sits at
+a station that does not contain χ and cannot retain it (p-fulness), at an
+arbitrary local goal; the full-aggregate descent trick types only at the
+mining station's own walk.  Exhausted tonight: top-level descent,
+scan-strengthen, 3-way maps with max-measures, szF ghost measures, the
+bounded `(n, hn)` family, station-fuel knots — each closes every cycle
+EXCEPT this one.
+
+**The suspicion this pins on the paper design:** §3(e)'s claim that
+Iemhoff's witness-box family is "absorbed" by the guarded opening rows
+covered the ANTECEDENT's box-openings — but crossed-station χ-reuse is
+precisely the configuration her `L◯→″` witness variants existed for.
+The absorption claim may be wrong for the E-row, and the row may need a
+witness-style component after all — a definitional decision on the
+theorem itself.
+
+**Standing equipment for whatever is decided:** the calibrated evaluator
+(seconds per cell, certified verdicts) and the conditional-green
+development (any row change re-checks E1/A1/E2/A2 mechanically through
+the `cAnt` parameterisation, as tonight's surgery proved in one pass).
