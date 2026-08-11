@@ -804,3 +804,39 @@ through that seam; (2) the four layers' seven-clause groups
 LJFO.lean dedup (laxOf-arm prefixes, ConjMems rows) done inside the
 same rewrite.  Baseline to beat: 1773 s tail re-elaboration; every
 batch lands green or is reverted.
+
+## The core extracted (2026-08-11 ~08:45, Matthew's question): W, its equivalence route, and a GZ-candidate cell
+
+**W (the common core of the three blockers):** over the finite
+(station, ◯-goal) space of the input's universe, the monotone fuel
+iteration of the retention equations (`interpF`; A from ⊥, E from ⊤)
+stabilises up to interderivability at finite fuel.  Each route blocker
+= W + a specific computable bound (room / 2d / structural measure) —
+all three are UI-sufficient (with their banked machinery) and none is
+a consequence of UI.  **Upgrade: modulo layer 4's fuel-soundness and
+fuel-minimality (cofinality — every sufficient p-free θ sits below
+A_{height of θ's derivation}, provable with the native retention
+miner), W ⟺ UI for LJF◯ per cell**: a cofinal ascending chain has a
+greatest element iff it is eventually constant.  So W is not merely
+the common factor; with cofinality it is EQUIVALENT to UI (modulo
+focalization for PLL proper).
+
+**Empirics (wip/ljfo_stab.lean, certified):** monotonicity direction
+holds everywhere tested; `[◯p→r]` stabilises at f₀=2 (both engines),
+`[◯q→r]` at f₀=3.  **The GZ-candidate cell: ({◯p→r, ◯q} ⇒ ◯p)** —
+certified two-periodic strict ascent A₁⊊A₂⟛A₃⊊A₄⟛A₅⊊A₆ with A₂, A₄
+certified INSIDE the sufficient set (A_f, S ⊢ ◯p); A₆'s sufficiency
+unsettled at 200k budget.  Chains grow ~2× per level syntactically
+(never syntactically stable — a simplifier is a layer-4 engineering
+need).
+
+**The fork, both prongs now concrete:** (i) REFUTATION prong — extract
+the closed family θ_k from A₂/A₄/A₆ on the candidate cell, prove
+strict ascent for all k by a parametric countermodel family
+(branchdia/paramfork machinery), and cofinality ⟹ ∀p inexpressible at
+this cell ⟹ **UI for PLL is FALSE**.  (ii) PROOF prong — layer 4
+(fuel soundness + cofinal minimality) formalises W ⟺ UI; then proving
+stabilisation per cell (pigeonhole over the finite sequent space
+bounds derivation heights, hence the needed fuel) gives UI.  The same
+two lemmas (fuel-soundness, cofinality) are the first step of BOTH
+prongs — layer 4 is the next move regardless of the answer's sign.
