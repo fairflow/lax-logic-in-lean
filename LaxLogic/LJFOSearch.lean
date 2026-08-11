@@ -262,3 +262,85 @@ def succs_sound : ∀ (s : LSeq) (ps : List LSeq), ps ∈ succs s → Prems ps �
 
 end LSeq
 end LJFO
+
+namespace LJFO
+namespace LSeq
+
+/-! ## Completeness of the enumerator: every derivation's root rule is
+an enumerated instance with held premises -/
+
+def prems0 : Prems [] := fun _ hp => absurd hp (List.not_mem_nil)
+
+def prems1 {p : LSeq} (d : p.holds) : Prems [p] := fun q hq =>
+  have h : q = p := List.mem_singleton.mp hq
+  by subst h; exact d
+
+def prems2 {p q : LSeq} (d : p.holds) (e : q.holds) : Prems [p, q] := fun r hr =>
+  if h : r = p then by subst h; exact d
+  else
+    have h2 : r = q :=
+      List.mem_singleton.mp ((List.mem_cons.mp hr).resolve_left h)
+    by subst h2; exact e
+
+/-- The instance package: a premise list, its membership, and its
+derivations. -/
+def Inst (s : LSeq) : Type := Σ' ps : List LSeq, (ps ∈ succs s) ×' Prems ps
+
+def succs_complete : ∀ (s : LSeq), s.holds → Inst s
+  | stab Γ j P, d =>
+      match d with
+      | .rfoc r => ⟨[rfocus Γ j P], List.mem_cons_self .., prems1 r⟩
+      | @Stab.lfoc _ _ _ N hN lf =>
+          ⟨[lfoc Γ N j P],
+           List.mem_append_left _ (List.mem_cons_of_mem _
+             (List.mem_map_of_mem hN)),
+           prems1 lf⟩
+      | .laxOf s' =>
+          ⟨[stab Γ .tru P],
+           List.mem_append_right _ (List.mem_cons_self ..),
+           prems1 s'⟩
+  | rfocus Γ j P, d =>
+      match P, d with
+      | .atom a, .init hm =>
+          ⟨[], by simp [succs, succsRFocus, if_pos hm], prems0⟩
+      | .or P Q, .or1 r => ⟨[rfocus Γ j P], List.mem_cons_self .., prems1 r⟩
+      | .or P Q, .or2 r =>
+          ⟨[rfocus Γ j Q],
+           List.mem_cons_of_mem _ (List.mem_cons_self ..), prems1 r⟩
+      | .down N, .rel dI => ⟨[inv Γ [] j N], List.mem_cons_self .., prems1 dI⟩
+  | lfoc Γ N j P, d =>
+      match N, d with
+      | .up Q, .rel dI => ⟨[inv Γ [Q] j (.up P)], List.mem_cons_self .., prems1 dI⟩
+      | .imp Q M, .impL s lf =>
+          ⟨[stab Γ .tru Q, lfoc Γ M j P], List.mem_cons_self .., prems2 s lf⟩
+      | .and M₁ M₂, .and1 lf => ⟨[lfoc Γ M₁ j P], List.mem_cons_self .., prems1 lf⟩
+      | .and M₁ M₂, .and2 lf =>
+          ⟨[lfoc Γ M₂ j P],
+           List.mem_cons_of_mem _ (List.mem_cons_self ..), prems1 lf⟩
+      | .circ Q, .circL dI =>
+          ⟨[inv Γ [Q] .lax (.up P)], List.mem_cons_self .., prems1 dI⟩
+  | inv Γ Ω j C, d =>
+      match Ω, C, d with
+      | _, _, .impR dI =>
+          ⟨_, List.mem_append_left _ (List.mem_append_left _
+            (List.mem_cons_self ..)), prems1 dI⟩
+      | _, _, .andR d₁ d₂ =>
+          ⟨_, List.mem_append_left _ (List.mem_append_left _
+            (List.mem_cons_self ..)), prems2 d₁ d₂⟩
+      | _, _, .circR dI =>
+          ⟨_, List.mem_append_left _ (List.mem_append_left _
+            (List.mem_cons_self ..)), prems1 dI⟩
+      | _, _, .stable s =>
+          ⟨_, List.mem_append_left _ (List.mem_append_right _
+            (List.mem_cons_self ..)), prems1 s⟩
+      | _, _, .orL d₁ d₂ =>
+          ⟨_, List.mem_append_right _ (List.mem_cons_self ..), prems2 d₁ d₂⟩
+      | _, _, .flsL =>
+          ⟨[], List.mem_append_right _ (List.mem_cons_self ..), prems0⟩
+      | _, _, .downL dI =>
+          ⟨_, List.mem_append_right _ (List.mem_cons_self ..), prems1 dI⟩
+      | _, _, .atomL dI =>
+          ⟨_, List.mem_append_right _ (List.mem_cons_self ..), prems1 dI⟩
+
+end LSeq
+end LJFO
