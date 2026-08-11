@@ -2709,3 +2709,16 @@ def dykAnt : DykAnt p :=
     dykAntC cAnt done rest K Γ' Q' N' N hsat hP hXr hm hm2 hK s
 
 end LJFO
+
+/-! ### Axiom audit for the conditional minimality statements
+
+Both are `sorryAx`-free: conditional means *parameterised by the typed
+obligation `CimpAnt`*, never assumed. -/
+
+/-- info: 'LJFO.satE2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFO.satE2
+
+/-- info: 'LJFO.satA2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFO.satA2
