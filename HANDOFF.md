@@ -145,3 +145,17 @@ against the repo's own refutations before believing a clean build. (ii) A
 clean screen is a statement about the screen: screen the **degenerate end** of
 every axis first (round 9's fault needed empty context × untied fuel ×
 missing frame simultaneously, and no sweep had ever emptied a context).
+
+## 11. Update — 2026-08-11: the LJF◯ campaign and the review round
+
+The LJF◯ route to UI for PLL (branch `ljf-pll`) reached: E1/A1 proved
+outright and pinned; E2/A2 sorry-free conditional on the single typed
+obligation `CimpAnt`; route-(B) infrastructure (heights, universes, the
+decider round-trip, the fuel-founded `interpF`) green. Layer 4 is
+PAUSED pending Matthew's decisions after the review round:
+`docs/ljfo-review-2026-08-11.md` (efficiency scorecard, the
+three-blocker comparison, the `CimpAnt` frontier attack, three proposed
+simplification rounds). The live thread is `docs/next-session.md`;
+the campaign dossier is `docs/ljfo-plan.md`. A repo `CLAUDE.md` now
+exists (created in the review round) with the testing-for-counterexamples
+doctrine.
