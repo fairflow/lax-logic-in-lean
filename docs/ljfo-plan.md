@@ -912,3 +912,31 @@ consistency ledger.  Assessment (2026-08-11 afternoon reply):
 
 Sequencing: layer 4 first (fuel-soundness + cofinal minimality); this
 stratum after, feeding the paper's bounds section and route (4).
+
+## The candidate cell RESOLVED (refutation prong, 2026-08-11 15:04; integrated and independently re-verified by the coordinator)
+
+**({◯p→r, ◯q} ⇒ ◯p) is NOT a Ghilardi–Zawadowski witness: the chain
+stops climbing at f = 6.**  The extracted closed family, with
+π := (q∧r) ⊃ ◯⊥, ρ := ◯π, σ := q ∧ (◯⊥ ⊃ r), crank
+F(X) := ◯((X ∧ ρ) ∨ (σ ⊃ ◯⊥)):
+θ₁ = ◯⊥, θ₂ = ◯(◯⊥ ∨ (q ⊃ ◯⊥)), θ_{k+1} = F(θ_k).  Certified:
+θ₁ ⊊ θ₂ ⊊ θ₃ (checkB countermodels M₁, M₂ — M₂ also refutes the raw
+A₆ ⊢ A₅); then **θ₄ ⟛ θ₃ and ∀n. θ_{n+4} ⊢ θ_{n+3}, kernel-proved,
+axioms [propext, Quot.sound]** (`wip/ljfo_theta_pinned.lean`,
+`_certs`, `_axioms`; rebuilt green in the main worktree).  The
+collapse mechanism: F's X-FREE disjunct σ ⊃ ◯⊥ re-derives the whole
+body from the third rung — the retention crank has a fixpoint and
+cannot generate unbounded content at this cell.  On the simplified
+forms the chain itself is proved to plateau (pnf(A₆) ⟛ pnf(A₇);
+pnf(A₈) ⊢ pnf(A₆)).
+
+OPEN, named: (1) the raw bridge for f ≥ 6 — the clean fix is the
+NORMALISER-SOUNDNESS lemma (LaxND derivability of the pnf rewrite,
+both directions; unit laws + idempotence + absorption + ◯∧-fusion +
+◯⊥ ⊢ ◯C + unit + join; a few hundred routine lines) — now a named
+layer-4 adjunct, upgrading every pnf-level result to raw wholesale;
+(2) faithfulness θ_k ⟛ A_{2k} for k ≥ 4 (blocked by the bridge);
+(3) W at this cell follows from (1)+(2) — currently proved for the
+family, de-risked for the chain.  **The next GZ stratum is specified
+by the failure analysis: stations whose crank has NO X-free
+disjunct** — the σ ⊃ ◯⊥ escape must be structurally impossible.
