@@ -419,7 +419,7 @@ theorem qimpConjMem {p : String} {done : List Neg} {a : String} {N : Neg}
             .circ (.down (interp p [.up Q] rest none))
         | .imp (.down (.circ Q')) N =>
             nAnd
-              (.imp (.down (interp p [] rest (some (.circ Q'))))
+              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
                    (interp p [N] rest none))
               (interp p [] rest none)
         | _ => nTop)) :=
@@ -444,7 +444,7 @@ theorem atomConjMem {p : String} {done : List Neg} {a : String}
             .circ (.down (interp p [.up Q] rest none))
         | .imp (.down (.circ Q')) N =>
             nAnd
-              (.imp (.down (interp p [] rest (some (.circ Q'))))
+              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
                    (interp p [N] rest none))
               (interp p [] rest none)
         | _ => nTop)) :=
@@ -473,7 +473,7 @@ theorem dykConjMem {p : String} {done : List Neg} {Q' : Pos} {N' N : Neg}
             .circ (.down (interp p [.up Q] rest none))
         | .imp (.down (.circ Q')) N =>
             nAnd
-              (.imp (.down (interp p [] rest (some (.circ Q'))))
+              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
                    (interp p [N] rest none))
               (interp p [] rest none)
         | _ => nTop)) :=
@@ -499,7 +499,7 @@ theorem boxConjMem {p : String} {done : List Neg} {Q : Pos}
             .circ (.down (interp p [.up Q] rest none))
         | .imp (.down (.circ Q')) N =>
             nAnd
-              (.imp (.down (interp p [] rest (some (.circ Q'))))
+              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
                    (interp p [N] rest none))
               (interp p [] rest none)
         | _ => nTop)) :=
@@ -510,7 +510,7 @@ theorem cimpConjMem {p : String} {done : List Neg} {Q' : Pos} {N : Neg}
     {rest : List Neg}
     (hXr : (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done) :
     nAnd
-      (.imp (.down (interp p [] rest (some (.circ Q'))))
+      (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
            (interp p [N] rest none))
       (interp p [] rest none) ∈
       ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
@@ -528,7 +528,7 @@ theorem cimpConjMem {p : String} {done : List Neg} {Q' : Pos} {N : Neg}
             .circ (.down (interp p [.up Q] rest none))
         | .imp (.down (.circ Q')) N =>
             nAnd
-              (.imp (.down (interp p [] rest (some (.circ Q'))))
+              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
                    (interp p [N] rest none))
               (interp p [] rest none)
         | _ => nTop)) :=
@@ -618,7 +618,7 @@ theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
             .circ (.down (interp p [.up Q] rest none))
         | .imp (.down (.circ Q')) N =>
             nAnd
-              (.imp (.down (interp p [] rest (some (.circ Q'))))
+              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
                    (interp p [N] rest none))
               (interp p [] rest none)
         | _ => nTop)) := by
@@ -1020,11 +1020,11 @@ def cimpAssembleN {done rest K : List Neg} {Q' : Pos} {N : Neg} {C : Neg}
     {L : List Neg}
     (hE : interp p [] done none = nAndAll L)
     (hmem : nAnd
-        (.imp (.down (interp p [] rest (some (.circ Q'))))
+        (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
              (interp p [N] rest none))
         (interp p [] rest none) ∈ L)
     (sant : Inv (interp p [] done none :: K) [] .tru
-      (interp p [] rest (some (.circ Q'))))
+      (interp p [] rest (some (.up (.down (.circ Q'))))))
     {j : JD} (δ : Inv (interp p [N] rest none :: K) [] j C) :
     Inv (interp p [] done none :: K) [] j C :=
   simHyp
@@ -1050,7 +1050,7 @@ theorem interpA_atom_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up (.atom q))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up (.atom q))))
               | _, _ => nBot)) := by
   rw [interp]; split
@@ -1078,7 +1078,7 @@ theorem interpA_fls_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up .fls)))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up .fls)))
               | _, _ => nBot)) := by
   rw [interp]; split
@@ -1099,7 +1099,7 @@ theorem interpA_or_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up (.or P₁ P₂))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up (.or P₁ P₂))))
               | _, _ => nBot)) := by
   rw [interp]; split
@@ -1119,7 +1119,7 @@ theorem interpA_down_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up (.down M))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up (.down M))))
               | _, _ => nBot)) := by
   rw [interp]; split
@@ -1163,7 +1163,7 @@ theorem interpA_circAtom_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.atom q))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.atom q))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1187,7 +1187,7 @@ theorem interpA_circFls_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ .fls)))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ .fls)))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1213,7 +1213,7 @@ theorem interpA_circOr_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.or P₁ P₂))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.or P₁ P₂))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1237,7 +1237,7 @@ theorem interpA_circDownUp_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.up P')))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.up P')))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1260,7 +1260,7 @@ theorem interpA_circDownCirc_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.circ P')))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.circ P')))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1283,7 +1283,7 @@ theorem interpA_circDownAnd_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1307,7 +1307,7 @@ theorem interpA_circDownImp_eq {p : String} {done : List Neg}
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1346,7 +1346,7 @@ def CimpAnt (p : String) : Type :=
     (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
     Stab Γ' .tru (.down (.circ Q')) →
     Inv (interp p [] done none :: K) [] .tru
-      (interp p [] rest (some (.circ Q')))
+      (interp p [] rest (some (.up (.down (.circ Q')))))
 
 variable (cAnt : CimpAnt p)
 
@@ -2069,7 +2069,7 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
         (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
-        nAnd (interp p [] rest (some (.circ Q')))
+        nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (j = .lax → ∀ {R : Pos} {rest : List Neg},
         (Neg.circ R, rest) ∈ splits done →
@@ -2360,7 +2360,7 @@ def ULF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
         (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
-        nAnd (interp p [] rest (some (.circ Q')))
+        nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (j = .lax → ∀ {R : Pos} {rest : List Neg},
         (Neg.circ R, rest) ∈ splits done →
@@ -2401,7 +2401,7 @@ def UInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
         (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
-        nAnd (interp p [] rest (some (.circ Q')))
+        nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (j = .lax → ∀ {R : Pos} {rest : List Neg},
         (Neg.circ R, rest) ∈ splits done →
@@ -2459,7 +2459,7 @@ def UpElim (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
         (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
-        nAnd (interp p [] rest (some (.circ Q')))
+        nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (j = .lax → ∀ {R : Pos} {rest : List Neg},
         (Neg.circ R, rest) ∈ splits done →
@@ -2572,7 +2572,7 @@ def UpLF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
         (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
-        nAnd (interp p [] rest (some (.circ Q')))
+        nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (j = .lax → ∀ {R : Pos} {rest : List Neg},
         (Neg.circ R, rest) ∈ splits done →
@@ -2616,7 +2616,7 @@ def UpInvG (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (∀ {Q' : Pos} {N : Neg} {rest : List Neg},
         (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done →
-        nAnd (interp p [] rest (some (.circ Q')))
+        nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
              (interp p [N] rest (some (jGoal j (.up P₀)))) ∈ L) →
       (j = .lax → ∀ {R : Pos} {rest : List Neg},
         (Neg.circ R, rest) ∈ splits done →

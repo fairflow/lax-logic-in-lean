@@ -603,10 +603,10 @@ theorem dec_boxE {done rest : List Neg} {Q : Pos}
 /-- Modal pair, `∀p`-component: `A(rest ⇒ ◯Q′)` from the station. -/
 theorem dec_cimp1 {done rest : List Neg} {Q' : Pos} {N : Neg}
     (h : (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done) :
-    sum3 rest + 3 ^ (wPos Q' + 1) < sum3 done := by
+    sum3 rest + 3 ^ (wPos Q' + 1 + 1) < sum3 done := by
   have hs := splits_sum h
   simp only [wNeg, wPos] at hs
-  have := p3_strict (a := wPos Q' + 1) (b := wPos Q' + 1 + 1 + wNeg N + 1) (by omega)
+  have := p3_strict (a := wPos Q' + 1 + 1) (b := wPos Q' + 1 + 1 + wNeg N + 1) (by omega)
   omega
 
 /-- Modal pair, fire component: `E(N :: rest)`. -/
@@ -630,7 +630,7 @@ the goal exactly so the farm's `exact` instantiates `g` without omega ever
 meeting two power atoms — the pow-drop defect strikes otherwise). -/
 theorem dec_cimp1_g {done rest : List Neg} {Q' : Pos} {N : Neg} {g : Nat}
     (h : (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done) :
-    2 * 0 + sum3 rest + 3 ^ (wPos Q' + 1) < 2 * 0 + sum3 done + g := by
+    2 * 0 + sum3 rest + 3 ^ (wPos Q' + 1 + 1) < 2 * 0 + sum3 done + g := by
   have := dec_cimp1 h; omega
 
 /-- The box-opening attack, body component: shared goal weight. -/
@@ -855,7 +855,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
             -- §3-results (e)) handles self-uses inside the antecedent.
             | .imp (.down (.circ Q')) N =>
                 nAnd
-                  (.imp (.down (interp p [] rest (some (.circ Q'))))
+                  (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
                        (interp p [N] rest none))
                   (interp p [] rest none)
             -- unreachable shapes park nothing
@@ -890,7 +890,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up (Pos.atom q))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up (Pos.atom q))))
               | _, _ => nBot))
         | .up .fls =>
@@ -903,7 +903,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up Pos.fls)))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up Pos.fls)))
               | _, _ => nBot))
         | .up (.or P₁ P₂) =>
@@ -918,7 +918,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up (Pos.or P₁ P₂))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up (Pos.or P₁ P₂))))
               | _, _ => nBot))
         | .up (.down M) =>
@@ -932,7 +932,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.up (Pos.down M))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.up (Pos.down M))))
               | _, _ => nBot))
         | .circ (.atom q) =>
@@ -946,7 +946,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.atom q))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.atom q))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -963,7 +963,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ .fls)))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ .fls)))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -982,7 +982,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.or P₁ P₂))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.or P₁ P₂))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -999,7 +999,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.up P')))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.up P')))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1016,7 +1016,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.circ P')))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.circ P')))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1033,7 +1033,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -1050,7 +1050,7 @@ def interp (p : String) : (todo done : List Neg) → (goal : Option Neg) → Neg
                   nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
                        (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
               | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.circ Q')))
+                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
                        (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
               | .circ R, hXr =>
                   .imp (.down (interp p [.up R] rest none))
@@ -2072,16 +2072,16 @@ def atkCimp {j : JD} {Q' : Pos} {N A₁ A₂ G : Neg} {rest Γ' : List Neg}
     (hx : Neg.and A₁ A₂ ∈ Γ')
     (hX : Neg.imp (.down (.circ Q')) N ∈ Γ')
     (hrest : Sub rest Γ')
-    (D₁ : Inv (A₁ :: rest) [] .tru (.circ Q'))
+    (D₁ : Inv (A₁ :: rest) [] .tru (.up (.down (.circ Q'))))
     (D₂ : Inv (A₂ :: N :: rest) [] j G) : Inv Γ' [] j G :=
-  let dM' : Inv Γ' [] .tru (.circ Q') :=
+  let dM' : Inv Γ' [] .tru (.up (.down (.circ Q'))) :=
     simHyp
       (fl := fun hs lf => .lfoc (hs _ hx) (.and1 lf))
       hrest
       D₁
   simHyp
     (fl := fun hs lf => .lfoc (hs _ hX)
-      (.impL (.rfoc (.rel (dM'.wk hs))) lf))
+      (.impL (unStable (dM'.wk hs)) lf))
     (Sub.refl Γ')
     (simHyp
       (fl := fun hs lf =>
@@ -2664,15 +2664,14 @@ def eSound (p : String) : ∀ (todo done : List Neg),
                       -- E1/A1 interlock
                       refine .andR (.impR (.downL ?_))
                         ((eSound p [] rest).wk (splits_sub hXr))
-                      have dArg : Inv (interp p [] rest (some (.circ Q')) ::
+                      have dArg : Inv (interp p [] rest (some (.up (.down (.circ Q')))) ::
                           ([] ++ done)) [] .tru (.up (.down (.circ Q'))) :=
-                        .stable (.rfoc (.rel
-                          ((aSound p [] rest (.circ Q')).wk (by
-                            intro Z hZ
-                            rcases List.mem_cons.mp hZ with rfl | hZ
-                            · exact List.mem_cons_self ..
-                            · exact List.mem_cons_of_mem _
-                                (splits_sub hXr Z hZ)))))
+                        (aSound p [] rest (.up (.down (.circ Q')))).wk (by
+                          intro Z hZ
+                          rcases List.mem_cons.mp hZ with rfl | hZ
+                          · exact List.mem_cons_self ..
+                          · exact List.mem_cons_of_mem _
+                              (splits_sub hXr Z hZ))
                       exact simHyp
                         (fl := fun hs lf =>
                           .lfoc (hs _ (List.mem_cons_of_mem _ (splits_mem hXr)))
@@ -2989,7 +2988,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.up (.atom q)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3045,7 +3044,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.up .fls))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3123,7 +3122,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.up (.or P₁ P₂)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3185,7 +3184,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ (splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.up (.down M)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
@@ -3254,7 +3253,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ ((splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.atom q)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
@@ -3369,7 +3368,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ ((splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ .fls))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
@@ -3507,7 +3506,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ ((splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.or P₁ P₂)))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
@@ -3622,7 +3621,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ ((splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.up P'))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
@@ -3737,7 +3736,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ ((splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.circ P'))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
@@ -3852,7 +3851,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ ((splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.and M₁ M₂))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
@@ -3967,7 +3966,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ ((splits_sub hXr Z hZ))))
-                        (aSound p [] rest (.circ Q'))
+                        (aSound p [] rest (.up (.down (.circ Q'))))
                         (aSound p [N] rest (.circ (.down (.imp Q₀ N₀))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>

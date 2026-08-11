@@ -499,3 +499,35 @@ The evaluator bank should re-run on the adjusted rows first.
 Estimated as the cheapest of the three routes and the one that keeps the
 descent argument of §3(e) intact.  Routes: (1) height bound (decider
 scale), (2) χ-aware antecedent formula (design risk), (3) this.
+
+## Route (3) part 1 LANDED (2026-08-11 ~00:40): the uniformised antecedent, whole development green
+
+The row surgery is complete and machine-checked end to end:
+
+* `interp`: all 12 antecedent sites (the E-guard and the 11 A-attack
+  rows) now carry `A(rest ⇒ ↑↓◯Q′)` — truth-mode at the residual
+  station; termination station-financed (dec_cimp1 kit bumped one
+  exponent).
+* `eSound`'s modal pair SIMPLIFIED: the E1/A1 interlock is now a direct
+  `aSound` call at the ↑↓-goal (no `circR` dance); `atkCimp` fires by
+  `unStable` on the antecedent value.
+* The tail (equations, ConjMems, oracles, dispatch arms, `CimpAnt`)
+  tracked in ONE pass — the `cAnt`-parameterisation absorbed the target
+  change automatically. Both modules green; all pins pass.
+* Evaluator: zero certified failures; the calibration defect still
+  reproduces; the route-(3) cells (minimality AND the soundness spot)
+  green. The pre-surgery `cimpCell`/`cimpCellB` sweeps are now STALE
+  (they test formulas no longer in the rows) and only flag on budget.
+
+## The one remaining hole in route (3) part 2, precisely
+
+The χ-threaded family closes every cycle EXCEPT: in mining mode the walk
+can enter a LAX phase (through a ◯-goal emission), where `UStab`'s
+laxOf-down arms REBUILD (`negOfDownStab`) — breaking the raw-subterm
+size invariant that the descent's second component rides.  Candidate
+patch: a ghost measure `szF` = the largest χ-fire-argument size in a
+derivation, with monotonicity lemmas through every rebuilder (`wk`,
+`relStab`, `negOfDownStab`, `simInv`; fire arguments are preserved
+verbatim by all of them), and the lex `(station, szF, …)`.  Needs its own
+session: the `szF`-monotonicity family is ~20 mechanical lemmas plus the
+measure rewrite.
