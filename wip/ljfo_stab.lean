@@ -47,26 +47,26 @@ def kprobe (name : String) (S : List Neg) (Q' : Pos) (f g sfuel : Nat) :
   IO.println s!"== kernel {name} A_{f} vs A_{g}: {kernelBoth sfuel a1 a2}"
   (← IO.getStdout).flush
 
+def provB (budget : Nat) (Γ : List Neg) (C : PLLFormula) : String :=
+  match PLLND.Search.prove?Bounded budget (Γ.map negF) C with
+  | some _ => "yes"
+  | none =>
+    match PLLND.Search.refute? {} (Γ.map negF) C with
+    | some _ => "NO-certified"
+    | none => "unk"
+
 def main : IO Unit := do
-  probe "[◯q→r] Q'=q (p-free control)" [hypQ] aQ
-  probe "[◯p→r] Q'=p (the minimal p-cell)" [hyp] aP
-  probe "[◯p→◯p] Q'=p (join)" [joinP] aP
-  probe "[◯p→r, ◯q] Q'=p (howe shape)" [hyp, boxQ] aP
-  probe "[◯⊥→r] Q'=⊥ (boundary)" [cimpFls] .fls
-  probe "[◯p→r, ◯p] Q'=p (the flagged family)" [hyp, boxP] aP
-  probe "[◯p→r, ◯(↓◯p)] Q'=p (the fuel-48 cell)" [hyp, boxBoxP] aP
-  -- kernel + engine interderivability at SMALL f (inside proven search
-  -- reach); fwd = A_f ⊢ A_{f+1} (the monotonicity direction), bwd = the
-  -- stabilisation direction.
-  for (nm, S, Q') in [("[◯q→r]", [hypQ], aQ), ("[◯p→r]", [hyp], aP),
-                      ("[◯p→r, ◯q]", [hyp, boxQ], aP)] do
-    for f in [1, 2, 3, 4] do
-      let (_, a1) := chainRow S Q' f
-      let (_, a2) := chainRow S Q' (f+1)
-      let eng1 := provN [a1] (negF a2)
-      let eng2 := provN [a2] (negF a1)
-      IO.println s!"== {nm} A_{f} vs A_{f+1}: eng fwd={repr eng1} bwd={repr eng2}"
-      (← IO.getStdout).flush
-      IO.println s!"   kernel: {kernelBoth 48 a1 a2}"
-      (← IO.getStdout).flush
-  IO.println "STAB-DONE"
+  -- The push: [◯p→r, ◯q] showed A_2 ⟛ A_3 then a certified strict step
+  -- at 3→4.  Chase the chain at raised budget (200k).
+  for f in [4, 5, 6, 7] do
+    let (_, a1) := chainRow [hyp, boxQ] aP f
+    let (_, a2) := chainRow [hyp, boxQ] aP (f+1)
+    IO.println s!"== [◯p→r, ◯q] A_{f} (|{szN a1}|) vs A_{f+1} (|{szN a2}|): fwd={provB 200000 [a1] (negF a2)} bwd={provB 200000 [a2] (negF a1)}"
+    (← IO.getStdout).flush
+  -- Soundness guard: each A_f must itself be sufficient
+  -- (A_f, S ⊢ ◯p), or the ascent happens outside the relevant set.
+  for f in [2, 4, 6] do
+    let (_, a) := chainRow [hyp, boxQ] aP f
+    IO.println s!"== sound A_{f}: {provB 200000 (a :: [hyp, boxQ]) (.somehow (posF aP))}"
+    (← IO.getStdout).flush
+  IO.println "PUSH-DONE"
