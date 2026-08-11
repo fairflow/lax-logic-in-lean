@@ -715,3 +715,16 @@ Next slices, template-mode: `succs_sound` (constructor replay per
 instance; use the if-chain idiom — Or-elimination into Type is blocked),
 then `succs_complete` (each constructor's premises appear), then the
 fueled search with a visited set, its round-trip, and the height bound.
+
+## Route (B) layer 3b GREEN (2026-08-11 ~03:00)
+
+`succs_sound` — every enumerated instance replays its rule (uniform over
+the four judgments), with the enumerator refactored into NAMED instance
+families (`laxInsts`/`circInsts`/`goalInsts`/`stableInsts`/`omegaInsts`)
+after inline matches kept capturing hypotheses into motives.  Idiom
+lessons banked in passing: `++` is left-associative in the membership
+chains; decidable-if conditions must be atomic applications, not inline
+matches, when Type-valued elimination follows.
+
+Next: `succs_complete` (each constructor's premise list is enumerated),
+then the fueled visited-set search and the round-trip.

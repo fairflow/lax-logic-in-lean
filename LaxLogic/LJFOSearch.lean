@@ -22,14 +22,16 @@ deriving DecidableEq
 
 namespace LSeq
 
+/-- The truth-to-lax coercion instances. -/
+def laxInsts (Γ : List Neg) (j : JD) (P : Pos) : List (List LSeq) :=
+  match j with
+  | .lax => [[stab Γ .tru P]]
+  | .tru => []
+
 /-- Backward rule instances for a stable sequent: right focus, a left
 focus per context member, and the truth-to-lax coercion at `lax`. -/
 def succsStab (Γ : List Neg) (j : JD) (P : Pos) : List (List LSeq) :=
-  [[rfocus Γ j P]]
-    ++ Γ.map (fun N => [lfoc Γ N j P])
-    ++ (match j with
-        | .lax => [[stab Γ .tru P]]
-        | .tru => [])
+  [[rfocus Γ j P]] ++ Γ.map (fun N => [lfoc Γ N j P]) ++ laxInsts Γ j P
 
 /-- Backward rule instances under right focus, by the positive's shape. -/
 def succsRFocus (Γ : List Neg) (j : JD) : Pos → List (List LSeq)
@@ -38,38 +40,48 @@ def succsRFocus (Γ : List Neg) (j : JD) : Pos → List (List LSeq)
   | .or P Q => [[rfocus Γ j P], [rfocus Γ j Q]]
   | .down N => [[inv Γ [] j N]]
 
-/-- Backward rule instances under left focus, by the hypothesis's shape;
-`circL` is the lax-only box opening. -/
+/-- The lax-only box-opening instances. -/
+def circInsts (Γ : List Neg) (Q : Pos) (j : JD) (P : Pos) : List (List LSeq) :=
+  match j with
+  | .lax => [[inv Γ [Q] .lax (.up P)]]
+  | .tru => []
+
+/-- Backward rule instances under left focus, by the hypothesis's shape. -/
 def succsLFoc (Γ : List Neg) (j : JD) (P : Pos) : Neg → List (List LSeq)
   | .up Q => [[inv Γ [Q] j (.up P)]]
   | .imp Q N => [[stab Γ .tru Q, lfoc Γ N j P]]
   | .and M N => [[lfoc Γ M j P], [lfoc Γ N j P]]
-  | .circ Q =>
-      match j with
-      | .lax => [[inv Γ [Q] .lax (.up P)]]
-      | .tru => []
+  | .circ Q => circInsts Γ Q j P
 
-/-- Backward rule instances in inversion: the goal-driven rules (`impR`
-and `andR` at `tru`, `circR` at either flag, `stable` at an empty list
-and a shifted goal) together with the `Ω`-head rules. -/
+/-- The goal-driven inversion instances. -/
+def goalInsts (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD) : List (List LSeq) :=
+  match C, j with
+  | .imp Q N, .tru => [[inv Γ (Q :: Ω) .tru N]]
+  | .and M N, .tru => [[inv Γ Ω .tru M, inv Γ Ω .tru N]]
+  | .circ P, _ => [[inv Γ Ω .lax (.up P)]]
+  | _, _ => []
+
+/-- The stable-transition instance. -/
+def stableInsts (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD) : List (List LSeq) :=
+  match Ω, C with
+  | [], .up P => [[stab Γ j P]]
+  | _, _ => []
+
+/-- The `Ω`-head instances. -/
+def omegaInsts (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD) : List (List LSeq) :=
+  match Ω with
+  | [] => []
+  | X :: Ω' =>
+      match X with
+      | .or P Q => [[inv Γ (P :: Ω') j C, inv Γ (Q :: Ω') j C]]
+      | .fls => [[]]
+      | .down M => [[inv (M :: Γ) Ω' j C]]
+      | .atom a => [[inv (Neg.up (Pos.atom a) :: Γ) Ω' j C]]
+
+/-- Backward rule instances in inversion. -/
 def succsInv (Γ : List Neg) (Ω : List Pos) (j : JD) (C : Neg) :
     List (List LSeq) :=
-  (match C, j with
-    | .imp Q N, .tru => [[inv Γ (Q :: Ω) .tru N]]
-    | .and M N, .tru => [[inv Γ Ω .tru M, inv Γ Ω .tru N]]
-    | .circ P, _ => [[inv Γ Ω .lax (.up P)]]
-    | _, _ => [])
-  ++ (match Ω, C with
-    | [], .up P => [[stab Γ j P]]
-    | _, _ => [])
-  ++ (match Ω with
-    | [] => []
-    | X :: Ω' =>
-        match X with
-        | .or P Q => [[inv Γ (P :: Ω') j C, inv Γ (Q :: Ω') j C]]
-        | .fls => [[]]
-        | .down M => [[inv (M :: Γ) Ω' j C]]
-        | .atom a => [[inv (Neg.up (Pos.atom a) :: Γ) Ω' j C]])
+  goalInsts Γ Ω C j ++ stableInsts Γ Ω C j ++ omegaInsts Γ Ω C j
 
 /-- The enumerator. -/
 def succs : LSeq → List (List LSeq)
@@ -88,4 +100,165 @@ def LSeq.holds : LSeq → Type
   | .lfoc Γ N j P => LFoc Γ N j P
   | .inv Γ Ω j C => Inv Γ Ω j C
 
+end LJFO
+
+namespace LJFO
+namespace LSeq
+
+/-! ## Soundness of the enumerator: each instance replays its rule -/
+
+/-- Premise packages: a derivation for every premise of the instance. -/
+def Prems (ps : List LSeq) : Type := ∀ p ∈ ps, p.holds
+
+def prems_head {p : LSeq} {ps : List LSeq} (k : Prems (p :: ps)) : p.holds :=
+  k p (List.mem_cons_self ..)
+
+def prems_tail {p : LSeq} {ps : List LSeq} (k : Prems (p :: ps)) : Prems ps :=
+  fun q hq => k q (List.mem_cons_of_mem _ hq)
+
+/-- Goal-driven inversion instances, factored for clean motives. -/
+def invGoalSound : ∀ (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD)
+    (ps : List LSeq),
+    ps ∈ goalInsts Γ Ω C j →
+    Prems ps → Inv Γ Ω j C
+  | Γ, Ω, .imp Q N, .tru, ps, hg, k =>
+      have h1 : ps = [inv Γ (Q :: Ω) .tru N] :=
+        (List.mem_cons.mp hg).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.impR (prems_head k)
+  | Γ, Ω, .and M N, .tru, ps, hg, k =>
+      have h1 : ps = [inv Γ Ω .tru M, inv Γ Ω .tru N] :=
+        (List.mem_cons.mp hg).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.andR (prems_head k) (prems_head (prems_tail k))
+  | Γ, Ω, .circ P, j, ps, hg, k =>
+      have h1 : ps = [inv Γ Ω .lax (.up P)] :=
+        (List.mem_cons.mp hg).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.circR (prems_head k)
+  | _, _, .imp _ _, .lax, _, hg, _ => absurd hg (List.not_mem_nil)
+  | _, _, .and _ _, .lax, _, hg, _ => absurd hg (List.not_mem_nil)
+  | _, _, .up _, _, _, hg, _ => absurd hg (List.not_mem_nil)
+
+/-- The stable-transition instance, factored. -/
+def invStableSound : ∀ (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD)
+    (ps : List LSeq),
+    ps ∈ stableInsts Γ Ω C j →
+    Prems ps → Inv Γ Ω j C
+  | Γ, [], .up P, j, ps, hs, k =>
+      have h1 : ps = [stab Γ j P] :=
+        (List.mem_cons.mp hs).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.stable (prems_head k)
+  | _, [], .imp _ _, _, _, hs, _ => absurd hs (List.not_mem_nil)
+  | _, [], .and _ _, _, _, hs, _ => absurd hs (List.not_mem_nil)
+  | _, [], .circ _, _, _, hs, _ => absurd hs (List.not_mem_nil)
+  | _, _ :: _, _, _, _, hs, _ => absurd hs (List.not_mem_nil)
+
+/-- The `Ω`-head instances, factored. -/
+def invOmegaSound : ∀ (Γ : List Neg) (Ω : List Pos) (C : Neg) (j : JD)
+    (ps : List LSeq),
+    ps ∈ omegaInsts Γ Ω C j →
+    Prems ps → Inv Γ Ω j C
+  | _, [], _, _, _, h3, _ => absurd h3 (List.not_mem_nil)
+  | Γ, .or P Q :: Ω', C, j, ps, h3, k =>
+      have h1 : ps = [inv Γ (P :: Ω') j C, inv Γ (Q :: Ω') j C] :=
+        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.orL (prems_head k) (prems_head (prems_tail k))
+  | Γ, .fls :: Ω', C, j, ps, h3, k =>
+      have h1 : ps = [] :=
+        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.flsL
+  | Γ, .down M :: Ω', C, j, ps, h3, k =>
+      have h1 : ps = [inv (M :: Γ) Ω' j C] :=
+        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.downL (prems_head k)
+  | Γ, .atom a :: Ω', C, j, ps, h3, k =>
+      have h1 : ps = [inv (Neg.up (Pos.atom a) :: Γ) Ω' j C] :=
+        (List.mem_cons.mp h3).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact Inv.atomL (prems_head k)
+
+/-- The lax-coercion instance of the stable dispatch, factored. -/
+def stabLaxSound : ∀ (Γ : List Neg) (j : JD) (P : Pos) (ps : List LSeq),
+    ps ∈ laxInsts Γ j P →
+    Prems ps → Stab Γ j P
+  | Γ, .lax, P, ps, h4, k =>
+      have h5 : ps = [stab Γ .tru P] :=
+        (List.mem_cons.mp h4).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h5; exact Stab.laxOf (prems_head k)
+  | _, .tru, _, _, h4, _ => absurd h4 (List.not_mem_nil)
+
+/-- The lax-only box opening under left focus, factored. -/
+def lfocCircSound : ∀ (Γ : List Neg) (Q : Pos) (j : JD) (P : Pos) (ps : List LSeq),
+    ps ∈ circInsts Γ Q j P →
+    Prems ps → LFoc Γ (.circ Q) j P
+  | Γ, Q, .lax, P, ps, h, k =>
+      have h1 : ps = [inv Γ [Q] .lax (.up P)] :=
+        (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+      by subst h1; exact LFoc.circL (prems_head k)
+  | _, _, .tru, _, _, h, _ => absurd h (List.not_mem_nil)
+
+/-- Each enumerated instance, given derivations of its premises, yields a
+derivation of the conclusion. -/
+def succs_sound : ∀ (s : LSeq) (ps : List LSeq), ps ∈ succs s → Prems ps → s.holds
+  | stab Γ j P, ps, h, k =>
+      if h1 : ps = [rfocus Γ j P] then by
+        subst h1; exact Stab.rfoc (prems_head k)
+      else
+        have h2 := (List.mem_cons.mp h).resolve_left h1
+        if h3 : ps ∈ Γ.map (fun N => [lfoc Γ N j P]) then
+          let ⟨N, hN, hEq⟩ := memMapWitness _ _ _ h3
+          have h5 : ps = [lfoc Γ N j P] := hEq.symm
+          by subst h5; exact Stab.lfoc hN (prems_head k)
+        else
+          stabLaxSound Γ j P ps ((List.mem_append.mp h2).resolve_left h3) k
+  | rfocus Γ j P, ps, h, k =>
+      match P, h with
+      | .atom a, h =>
+          if hmem : Neg.up (Pos.atom a) ∈ Γ then
+            have h5 : ps = [] := by
+              simp only [succs, succsRFocus, if_pos hmem] at h
+              simpa using h
+            by subst h5; exact RFocus.init hmem
+          else
+            absurd (by simpa [succs, succsRFocus, if_neg hmem] using h) not_false
+      | .or P Q, h =>
+          if h1 : ps = [rfocus Γ j P] then by
+            subst h1; exact RFocus.or1 (prems_head k)
+          else
+            have h2 : ps = [rfocus Γ j Q] :=
+              List.mem_singleton.mp ((List.mem_cons.mp h).resolve_left h1)
+            by subst h2; exact RFocus.or2 (prems_head k)
+      | .down N, h =>
+          have h1 : ps = [inv Γ [] j N] :=
+            (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+          by subst h1; exact RFocus.rel (prems_head k)
+      | .fls, h => absurd h (List.not_mem_nil)
+  | lfoc Γ N j P, ps, h, k =>
+      match N, h with
+      | .up Q, h =>
+          have h1 : ps = [inv Γ [Q] j (.up P)] :=
+            (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+          by subst h1; exact LFoc.rel (prems_head k)
+      | .imp Q M, h =>
+          have h1 : ps = [stab Γ .tru Q, lfoc Γ M j P] :=
+            (List.mem_cons.mp h).resolve_right (fun hc => absurd hc (List.not_mem_nil))
+          by subst h1; exact LFoc.impL (prems_head k) (prems_head (prems_tail k))
+      | .and M₁ M₂, h =>
+          if h1 : ps = [lfoc Γ M₁ j P] then by
+            subst h1; exact LFoc.and1 (prems_head k)
+          else
+            have h2 : ps = [lfoc Γ M₂ j P] :=
+              List.mem_singleton.mp ((List.mem_cons.mp h).resolve_left h1)
+            by subst h2; exact LFoc.and2 (prems_head k)
+      | .circ Q, h => lfocCircSound Γ Q j P ps h k
+  | inv Γ Ω j C, ps, h, k =>
+      if hg : ps ∈ goalInsts Γ Ω C j then
+        invGoalSound Γ Ω C j ps hg k
+      else
+        if hs : ps ∈ stableInsts Γ Ω C j then
+          invStableSound Γ Ω C j ps hs k
+        else
+          invOmegaSound Γ Ω C j ps
+            ((List.mem_append.mp h).resolve_left
+              (fun hAB => (List.mem_append.mp hAB).elim
+                (fun ha => hg ha) (fun hb => hs hb))) k
+
+end LSeq
 end LJFO
