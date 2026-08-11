@@ -531,3 +531,33 @@ derivation, with monotonicity lemmas through every rebuilder (`wk`,
 verbatim by all of them), and the lex `(station, szF, …)`.  Needs its own
 session: the `szF`-monotonicity family is ~20 mechanical lemmas plus the
 measure rewrite.
+
+## Route (3) FINAL form (2026-08-11 ~02:00): the bounded family — no measure rewrite, no χ-threading
+
+The discharge architecture that survives every failure mode found tonight:
+
+1. **Guard at the FULL station**: the E/A cimp-row antecedent becomes
+   `A(done ⇒ ↑↓◯Q′)` (the (b)-form; its cells were CERTIFIED GREEN on the
+   bank tonight as `cimpCellB`).  Requires the `f(none)` reweighting of
+   `interp`'s termination (`none`-mode weighted `sum3 todo + sum3 done`,
+   arithmetic verified this session) so the same-station reference is
+   financed.  With the guard at `done`, the miner is ONE LINE — 
+   `UEntry done … (.up (.down (.circ Q′))) (.stable s)` — and every χ-use
+   at every depth dispatches NATIVELY (χ ∈ done); no 3-way map exists
+   anywhere.
+2. **The knot, termination-visibly**: `CimpAntLt n := ∀ …, sizeOf s < n → …`;
+   the mutual's `cAnt` parameter becomes `CimpAntLt n` with `(n, hn)`
+   threaded as PASSENGER arguments (no measure changes — the family's own
+   WF is untouched); each member's `hn` bounds its derivation argument,
+   propagated by `sizeOf`-constructor arithmetic at each recursive call;
+   crossings restart with a FRESH `n′ := sizeOf (rebuilt) + 1` (rebuilds
+   harmless — this is what kills the szF/#5 machinery).  Dispatch sites
+   supply `sizeOf s_d < n` from `hn` by subterm arithmetic.
+3. **`cimpAnt : ∀ n, CimpAntLt n`** by plain strong induction on `n`
+   OUTSIDE the mutual, passing itself at smaller `n`.
+4. `satE2`/`satA2` unconditional with entry `n := sizeOf d + 1`.
+
+Steps: (1) interp reweight + guard change + farm repair [the risk item];
+(2) `(n, hn)` threading [~60 mechanical sites]; (3) the wrapper; (4)
+assembly + pins.  Each step banked green or reverted — the branch is
+never left red.
