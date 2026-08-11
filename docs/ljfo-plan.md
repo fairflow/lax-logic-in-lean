@@ -691,3 +691,11 @@ Layer 2b next: closure transitivity (`UClosed (uCtxP Γ) (uCtxN Γ)`, by
 the mutual subformulas-of-subformulas induction) + the rule-stability
 lemmas (each rule's premises stay in a `UClosed` universe).  Both
 direction-neutral.  The direction-committing step remains layer 4.
+
+## Route (B) layer 2b GREEN (2026-08-11 01:45)
+
+The eightfold closure-transitivity mutual (`uPP`/`uNP`/`uPN`/`uNN`/
+`uPPn`/`uNPn`/`uPNn`/`uNNn`) and the invariant theorem `uClosed_ctx :
+UClosed (uCtxP Γ) (uCtxN Γ)` — sorry-free.  Next (2c): the
+rule-stability lemmas over the H-judgments (every rule's premises stay
+within a `UClosed` universe), then layer 3 (space bound + collapse).

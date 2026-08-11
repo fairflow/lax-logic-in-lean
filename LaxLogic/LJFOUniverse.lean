@@ -129,3 +129,183 @@ structure UClosed (UP : List Pos) (UN : List Neg) : Prop where
   negCirc : ∀ P, Neg.circ P ∈ UN → P ∈ UP
 
 end LJFO
+
+namespace LJFO
+
+/-! ## Layer 2b: closure transitivity — subformulas of subformulas -/
+
+mutual
+
+theorem uPP : ∀ (P : Pos) {X : Pos}, X ∈ uPosP P → ∀ {Y : Pos}, Y ∈ uPosP X → Y ∈ uPosP P
+  | .atom _, _, hX => by simp [uPosP] at hX; subst hX; exact fun hY => hY
+  | .fls, _, hX => by simp [uPosP] at hX; subst hX; exact fun hY => hY
+  | .or P Q, X, hX => by
+      simp only [uPosP, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact fun hY => hY
+      · exact fun hY => uPos_or_left _ (uPP P hX hY)
+      · exact fun hY => uPos_or_right _ (uPP Q hX hY)
+  | .down M, X, hX => by
+      simp only [uPosP, List.mem_cons] at hX
+      rcases hX with rfl | hX
+      · exact fun hY => hY
+      · exact fun hY => uPos_down _ (uNP M hX hY)
+
+theorem uNP : ∀ (N : Neg) {X : Pos}, X ∈ uNegP N → ∀ {Y : Pos}, Y ∈ uPosP X → Y ∈ uNegP N
+  | .up P, X, hX => by
+      simp only [uNegP] at hX ⊢; exact fun hY => uPP P hX hY
+  | .imp Q N, X, hX => by
+      simp only [uNegP, List.mem_append] at hX ⊢
+      rcases hX with hX | hX
+      · exact fun hY => .inl (uPP Q hX hY)
+      · exact fun hY => .inr (uNP N hX hY)
+  | .and M N, X, hX => by
+      simp only [uNegP, List.mem_append] at hX ⊢
+      rcases hX with hX | hX
+      · exact fun hY => .inl (uNP M hX hY)
+      · exact fun hY => .inr (uNP N hX hY)
+  | .circ P, X, hX => by
+      simp only [uNegP] at hX ⊢; exact fun hY => uPP P hX hY
+
+theorem uPN : ∀ (P : Pos) {X : Pos}, X ∈ uPosP P → ∀ {Y : Neg}, Y ∈ uPosN X → Y ∈ uPosN P
+  | .atom _, _, hX => by simp [uPosP] at hX; subst hX; exact fun hY => hY
+  | .fls, _, hX => by simp [uPosP] at hX; subst hX; exact fun hY => hY
+  | .or P Q, X, hX => by
+      simp only [uPosP, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact fun hY => hY
+      · exact fun hY => by
+          simp only [uPosN, List.mem_append]; exact .inl (uPN P hX hY)
+      · exact fun hY => by
+          simp only [uPosN, List.mem_append]; exact .inr (uPN Q hX hY)
+  | .down M, X, hX => by
+      simp only [uPosP, List.mem_cons] at hX
+      rcases hX with rfl | hX
+      · exact fun hY => hY
+      · exact fun hY => uNeg_down _ (uNN M hX hY)
+
+theorem uNN : ∀ (N : Neg) {X : Pos}, X ∈ uNegP N → ∀ {Y : Neg}, Y ∈ uPosN X → Y ∈ uNegN N
+  | .up P, X, hX => by
+      simp only [uNegP] at hX; exact fun hY => uNeg_up _ (uPN P hX hY)
+  | .imp Q N, X, hX => by
+      simp only [uNegP, List.mem_append] at hX
+      rcases hX with hX | hX
+      · exact fun hY => uNeg_imp_ant _ (uPN Q hX hY)
+      · exact fun hY => uNeg_imp_body _ (uNN N hX hY)
+  | .and M N, X, hX => by
+      simp only [uNegP, List.mem_append] at hX
+      rcases hX with hX | hX
+      · exact fun hY => uNeg_and_left _ (uNN M hX hY)
+      · exact fun hY => uNeg_and_right _ (uNN N hX hY)
+  | .circ P, X, hX => by
+      simp only [uNegP] at hX; exact fun hY => uNeg_circ _ (uPN P hX hY)
+
+theorem uPPn : ∀ (P : Pos) {X : Neg}, X ∈ uPosN P → ∀ {Y : Pos}, Y ∈ uNegP X → Y ∈ uPosP P
+  | .atom _, _, hX => by simp [uPosN] at hX
+  | .fls, _, hX => by simp [uPosN] at hX
+  | .or P Q, X, hX => by
+      simp only [uPosN, List.mem_append] at hX
+      rcases hX with hX | hX
+      · exact fun hY => uPos_or_left _ (uPPn P hX hY)
+      · exact fun hY => uPos_or_right _ (uPPn Q hX hY)
+  | .down M, X, hX => by
+      simp only [uPosN] at hX
+      exact fun hY => uPos_down _ (uNPn M hX hY)
+
+theorem uNPn : ∀ (N : Neg) {X : Neg}, X ∈ uNegN N → ∀ {Y : Pos}, Y ∈ uNegP X → Y ∈ uNegP N
+  | .up P, X, hX => by
+      simp only [uNegN, List.mem_cons] at hX
+      rcases hX with rfl | hX
+      · exact fun hY => hY
+      · exact fun hY => uPos_up _ (uPPn P hX hY)
+  | .imp Q N, X, hX => by
+      simp only [uNegN, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact fun hY => hY
+      · exact fun hY => uPos_imp_ant _ (uPPn Q hX hY)
+      · exact fun hY => uPos_imp_body _ (uNPn N hX hY)
+  | .and M N, X, hX => by
+      simp only [uNegN, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact fun hY => hY
+      · exact fun hY => by
+          simp only [uNegP, List.mem_append]; exact .inl (uNPn M hX hY)
+      · exact fun hY => by
+          simp only [uNegP, List.mem_append]; exact .inr (uNPn N hX hY)
+  | .circ P, X, hX => by
+      simp only [uNegN, List.mem_cons] at hX
+      rcases hX with rfl | hX
+      · exact fun hY => hY
+      · exact fun hY => uPos_circ _ (uPPn P hX hY)
+
+theorem uPNn : ∀ (P : Pos) {X : Neg}, X ∈ uPosN P → ∀ {Y : Neg}, Y ∈ uNegN X → Y ∈ uPosN P
+  | .atom _, _, hX => by simp [uPosN] at hX
+  | .fls, _, hX => by simp [uPosN] at hX
+  | .or P Q, X, hX => by
+      simp only [uPosN, List.mem_append] at hX ⊢
+      rcases hX with hX | hX
+      · exact fun hY => .inl (uPNn P hX hY)
+      · exact fun hY => .inr (uPNn Q hX hY)
+  | .down M, X, hX => by
+      simp only [uPosN] at hX ⊢
+      exact fun hY => uNNn M hX hY
+
+theorem uNNn : ∀ (N : Neg) {X : Neg}, X ∈ uNegN N → ∀ {Y : Neg}, Y ∈ uNegN X → Y ∈ uNegN N
+  | .up P, X, hX => by
+      simp only [uNegN, List.mem_cons] at hX
+      rcases hX with rfl | hX
+      · exact fun hY => hY
+      · exact fun hY => uNeg_up _ (uPNn P hX hY)
+  | .imp Q N, X, hX => by
+      simp only [uNegN, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact fun hY => hY
+      · exact fun hY => uNeg_imp_ant _ (uPNn Q hX hY)
+      · exact fun hY => uNeg_imp_body _ (uNNn N hX hY)
+  | .and M N, X, hX => by
+      simp only [uNegN, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact fun hY => hY
+      · exact fun hY => uNeg_and_left _ (uNNn M hX hY)
+      · exact fun hY => uNeg_and_right _ (uNNn N hX hY)
+  | .circ P, X, hX => by
+      simp only [uNegN, List.mem_cons] at hX
+      rcases hX with rfl | hX
+      · exact fun hY => hY
+      · exact fun hY => uNeg_circ _ (uPNn P hX hY)
+
+end
+
+/-- The context universe is closed: the invariant the finite-space
+argument runs on. -/
+theorem uClosed_ctx (Γ : List Neg) : UClosed (uCtxP Γ) (uCtxN Γ) := by
+  constructor
+  · intro M h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxN_mem hN (uNN N hX (by simp [uPosN, uNegN_self M]))
+  · intro P Q h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxP_mem hN (uNP N hX (uPos_or_left _ (uPosP_self P)))
+  · intro P Q h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxP_mem hN (uNP N hX (uPos_or_right _ (uPosP_self Q)))
+  · intro P h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxP_mem hN (uNPn N hX (uPos_up _ (uPosP_self P)))
+  · intro Q M h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxP_mem hN (uNPn N hX (uPos_imp_ant _ (uPosP_self Q)))
+  · intro Q M h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxN_mem hN (uNNn N hX (uNeg_imp_body _ (uNegN_self M)))
+  · intro M M' h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxN_mem hN (uNNn N hX (uNeg_and_left _ (uNegN_self M)))
+  · intro M M' h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxN_mem hN (uNNn N hX (uNeg_and_right _ (uNegN_self M')))
+  · intro P h
+    obtain ⟨N, hN, hX⟩ := List.mem_flatMap.mp h
+    exact uCtxP_mem hN (uNPn N hX (uPos_circ _ (uPosP_self P)))
+
+end LJFO
