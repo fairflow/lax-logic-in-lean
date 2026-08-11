@@ -94,12 +94,16 @@ cell by cell: (the fuel chain stabilises) ⟺ (the cell's uniform
 interpolant exists) — the machine-checkable form of the campaign core
 W (see the plan's "core extracted" section AND its correction: the
 1-pv scope of the old routes' blockers, the withdrawn union claim).
-Then: EITHER prove stabilisation (pigeonhole over the finite sequent
-space bounds heights, hence fuel) ⟹ UI for LJF◯; OR the candidate
-cell ({◯p→r, ◯q} ⇒ ◯p) refutes stabilisation via the θ_k family ⟹
-this scheme dies and (with cofinality) the cell has NO uniform
-interpolant in LJF◯ — read the two background agents' reports first
-(θ_k extraction; the p-free upper-bound hunt), they decide the prong.
+Then: prove stabilisation (pigeonhole over the finite sequent space
+bounds heights, hence fuel) ⟹ UI for LJF◯.  **The candidate cell is
+RESOLVED (2026-08-11, both agents, convergent): NOT a GZ witness —
+the chain stabilises at f = 6 with limit θmax = ((◯⊥⊃r) ∧ ◯q) ⊃ ◯⊥ =
+the station's ⊥-instance ⊃ ◯⊥; W held.**  See the plan's two
+resolution sections: the θ_k family (kernel-pinned fixpoint), the
+⊥-instance maximality mechanism, the double filter for any next GZ
+candidate (crank without X-free disjunct AND goal not settled by ◯⊥),
+and the two named adjunct lemmas (normaliser soundness; substitution
+admissibility).  Stabilisation testing must be logical, not syntactic.
 
 Alternative preparation routes Matthew has named (plan, same section):
 1-pv restriction of `CimpAnt`; PCLL (◯ distributes over ∨); both;

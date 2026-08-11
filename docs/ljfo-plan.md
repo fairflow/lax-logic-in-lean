@@ -940,3 +940,44 @@ layer-4 adjunct, upgrading every pnf-level result to raw wholesale;
 family, de-risked for the chain.  **The next GZ stratum is specified
 by the failure analysis: stations whose crank has NO X-free
 disjunct** — the σ ⊃ ◯⊥ escape must be structurally impossible.
+
+## The candidate cell CLOSED from the proof side too (proof prong, 2026-08-11 14:58; convergent with the refutation prong)
+
+**The cell's ∀p pre-interpolant exists and is identified:**
+
+    θmax := ((◯⊥ ⊃ r) ∧ ◯q) ⊃ ◯⊥        (p-free, 13 nodes)
+
+— which is exactly `E₃ ⊃ ◯⊥` where `E₃ ⟛ (◯⊥⊃r) ∧ ◯q` is the ∃p
+value at fuel 3, i.e. the station's own ⊥-INSTANCE.  Certified:
+θmax ∈ Suff (sufficiency), A₂/A₄/A₆ ⊢ θmax, and **A₆ ⟛ A₇ ⟛ A₈ ⟛
+θmax all PROVED both directions ON THE RAW VALUES** via the certified
+decomposition (θmax is ◯-fixed, so ∨/∧/◯-elimination splits the
+2036-node sequents into engine-sized leaves; `θmax ⊢ A₇` needed 8M
+nodes).  This CLOSES the refutation prong's raw-bridge gap from f = 6
+up, and closes A₆/A₈ soundness.  The 5→6 countermodel dissection: the
+last climb adds the station's head implication in its ⊥-instance as a
+guard — bounded content; every chain value sits at ◯-class-depth ≤ 2
+(nothing escapes upward).  So at this cell: the chain stabilises at
+f = 6, the limit is θmax, and W holds.
+
+**The maximality mechanism, general and important:** substituting
+p := ⊥ in any derivation of `θ, S ⊢ ◯p` yields `θ ⊢ ⊥-instance` — the
+⊥-instance of a cell is ALWAYS a p-free upper bound of Suff, and it is
+the maximum whenever it is itself sufficient (here: because ◯⊥ ⊢ ◯p
+re-derives the goal).  OPEN to make this a certificate: the
+substitution-admissibility lemma `Deriv Γ C → Deriv (Γ[p:=χ])
+(C[p:=χ])` (routine induction; also generally valuable — it turns
+instance-bounding into a certified screening tool for every cell).
+OPEN also: the decomposition trees as single pinned Lean terms.
+
+**The next GZ stratum, now doubly filtered** (both agents converge):
+a station whose crank has NO X-free disjunct (refutation prong) AND
+whose goal is NOT settled by ◯⊥ (proof prong: otherwise the
+⊥-instance closes the cell).  Layer-4 requirements enriched:
+stabilisation testing must be LOGICAL, never syntactic (the chain is
+logically stationary from f = 6 while syntax doubles); the
+normaliser-soundness lemma and the substitution lemma are the two
+named adjuncts.
+
+Probe: `wip/ljfo_ub.lean` (exe `ubrun`), integrated from the agent
+worktree; prong-1 artefacts already integrated and kernel-verified.

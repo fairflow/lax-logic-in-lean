@@ -437,3 +437,11 @@ root = "wip.ljfo_theta_triage"
 [[lean_exe]]
 name = "thetafamily"
 root = "wip.ljfo_theta_family"
+
+# The upper-bound probe on the candidate cell (proof-prong agent,
+# 2026-08-11): θmax, candidate bank, certified decomposition, chain
+# extension.  Subcommands: print|cand|h6|push|pushraw|split|splitraw|
+# splitsnd|cm|estruct|kernD.
+[[lean_exe]]
+name = "ubrun"
+root = "wip.ljfo_ub"
