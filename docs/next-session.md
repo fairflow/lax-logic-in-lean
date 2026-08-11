@@ -366,3 +366,45 @@ session's opening move.
    systems reported satisfiable); file both together, with the `Prod.Lex`
    printer deception (error printer shows reduced first components while the
    tactic faces the raw pair) as a separate usability issue.
+
+---
+
+## LJF◯ / PLL-UI thread (2026-08-11, branch `ljf-pll` at `e5b7f41`) — THE LIVE THREAD
+
+*Appended at the end of the 2026-08-10/11 marathon.  Full dossier:
+`docs/ljfo-plan.md` (read its 2026-08-10/11 sections top to bottom);
+memory note `ljfo-cimpant-terminus` guards against re-derivation.*
+
+**Standing results (all pinned, sixteen green commits):**
+
+* `LaxLogic/LJFOCore.lean` (frozen, zero imports): the lax-flagged
+  focused calculus, the box-wrapped modal `interp` with the uniformised
+  antecedent `A(rest ⇒ ↑↓◯Q′)`, termination, `interp_pfree`,
+  **E1 (`eSound`) and A1 (`aSound`) proved outright**, the G4iLL-blocker
+  standing test, five axiom pins.
+* `LaxLogic/LJFO.lean` (imports only the core): the complete minimality
+  development — **E2/A2 (`satE2`/`satA2`) sorry-free and machine-checked,
+  conditional on the single isolated typed obligation `CimpAnt`** (the
+  modal antecedent miner, staged exactly as `DykAnt` was).
+* `wip/ljfo_eval.lean`: the calibrated evaluator bank (certificate
+  engines; reproduces forced change #3 as a certified failure; all
+  current-definition cells green).
+* Route (B) infrastructure, direction-neutral, all green:
+  `LJFOHeight.lean` (height-indexed judgments + equivalence),
+  `LJFOUniverse.lean` (subformula closures, transitivity, `uClosed_ctx`).
+
+**The one open point and the decision that is Matthew's to make:**
+`CimpAnt`'s discharge fails for every consumed-implication architecture
+at χ-uses inside crossed-station material (Howe's ①/② duplication — the
+gap review's own pattern).  The repair is the `L◯→″` retention
+discipline, whose termination the commentary records as absent
+(not DM-decreasing) and plans as roadmap item 1 (finite space/history).
+Options, fully costed in the plan: (A′) Bílková-style order, (B) the
+item-1 discipline (layers 1–2b of its infrastructure are now banked;
+layers 2c–3 are the decider skeleton; layer 4 — retention rows +
+fuel-founded `interp` — is the definitional step), (C) explicit
+exemption, E2/A2 standing conditional.  The commentary's alternative UI
+attacks (bisimulation quantifiers, model completion) are the other fork.
+
+**Claim discipline:** UI for PLL remains OPEN.  Nothing in this thread
+claims otherwise; every result stands exactly as strong as its pin.
