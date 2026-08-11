@@ -677,3 +677,17 @@ Next layers, in order:
    THE point to confirm direction with Matthew before executing);
 5. `CimpAnt` discharged natively over the retention rows; satE2/satA2
    unconditional; pins.
+
+## Route (B) layer 2a GREEN (2026-08-11 01:35)
+
+`LaxLogic/LJFOUniverse.lean` — the mutual subformula closures
+(`uPosP`/`uNegP`/`uPosN`/`uNegN`), self-membership, the fourteen one-step
+closure facts, context universes (`uCtxP`/`uCtxN`), and the `UClosed`
+invariant structure.  List-based, zero imports beyond the core,
+sorry-free (a first draft of the closure-transitivity theorem was CUT
+rather than committed with sorries — it is layer 2b's first obligation).
+
+Layer 2b next: closure transitivity (`UClosed (uCtxP Γ) (uCtxN Γ)`, by
+the mutual subformulas-of-subformulas induction) + the rule-stability
+lemmas (each rule's premises stay in a `UClosed` universe).  Both
+direction-neutral.  The direction-committing step remains layer 4.
