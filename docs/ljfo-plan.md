@@ -699,3 +699,19 @@ The eightfold closure-transitivity mutual (`uPP`/`uNP`/`uPN`/`uNN`/
 UClosed (uCtxP Γ) (uCtxN Γ)` — sorry-free.  Next (2c): the
 rule-stability lemmas over the H-judgments (every rule's premises stay
 within a `UClosed` universe), then layer 3 (space bound + collapse).
+
+## Route (B) layer 3a GREEN (2026-08-11 02:45)
+
+`LaxLogic/LJFOSearch.lean` — the four-judgment sequent type `LSeq`
+(DecidableEq), the backward rule-instance enumerator `succs` (all four
+judgment kinds, the lax-only gates explicit), and the uniform
+derivability target `LSeq.holds`.  Definitions only, first-build green.
+Direction note: (B) is the commentary's OWN primary plan ("the planned
+route … history/loop-check over the finite space"), which is why the
+build proceeds without waiting — (A′)/model-completion remain the
+documented fallbacks.
+
+Next slices, template-mode: `succs_sound` (constructor replay per
+instance; use the if-chain idiom — Or-elimination into Type is blocked),
+then `succs_complete` (each constructor's premises appear), then the
+fueled search with a visited set, its round-trip, and the height bound.
