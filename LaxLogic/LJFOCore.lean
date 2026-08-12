@@ -2276,7 +2276,7 @@ macro "ljf_dec_sound" : tactic => `(tactic| (
       | (have h1 := dec_cimp3 (by assumption); omega)))
 
 set_option hygiene false in
-/-- The decreasing farm of the E-side traversal (`eMinF` and the `T*` family). One definition, eight uses; edit here to tune all farms. -/
+/-- The decreasing farm of the E-side traversal (`eMinF` and the `T*` family). One definition, eight uses; edit here to tune all farms. Round 3 (2026-08-12) removed the `(simp_arith; done)` alternative from position 21: it is DEAD in both farms — deleting it leaves `LaxLogic.LJFO` and `LaxLogic.LJF` green — and every goal not closed by the first twenty alternatives used to pay a full `simp_arith` before the remaining forty-odd were tried. Do not re-add it without a failing goal that needs it. -/
 macro "ljf_dec_e" : tactic => `(tactic| (
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
@@ -2312,7 +2312,6 @@ macro "ljf_dec_e" : tactic => `(tactic| (
         | (have h1 := dec_fireS (by assumption); omega)
         | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
         | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
         | (have h := dec_fireT (findFire_mem (by assumption)); omega)
@@ -2398,7 +2397,7 @@ macro "ljf_dec_e" : tactic => `(tactic| (
         | decreasing_tactic))
 
 set_option hygiene false in
-/-- The decreasing farm of the A-side traversal (`aMinF`, `UEntry`, the `U*` family, `dykAntC`). One definition, nine uses. -/
+/-- The decreasing farm of the A-side traversal (`aMinF`, `UEntry`, the `U*` family, `dykAntC`). One definition, nine uses. Round 3 (2026-08-12) removed the `(simp_arith; done)` alternative from position 21: it is DEAD in both farms — deleting it leaves `LaxLogic.LJFO` and `LaxLogic.LJF` green — and every goal not closed by the first twenty alternatives used to pay a full `simp_arith` before the remaining forty-odd were tried. Do not re-add it without a failing goal that needs it. -/
 macro "ljf_dec_a" : tactic => `(tactic| (
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
@@ -2434,7 +2433,6 @@ macro "ljf_dec_a" : tactic => `(tactic| (
         | (have h1 := dec_fireS (by assumption); omega)
         | (have h1 := dec_fireS (findFire_mem (by assumption)); omega)
         | (have h1 := dec_dykC (by assumption); omega)
-        | (simp_arith; done)
         | exact dec_fireT (by assumption)
         | exact dec_dykT (by assumption)
         | (have h := dec_fireT (findFire_mem (by assumption)); omega)

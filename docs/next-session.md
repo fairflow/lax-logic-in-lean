@@ -126,7 +126,14 @@ engine-unreachable survivors settled TRUE at kernel level via
 `LJFOSearch.search` (fuels 32/48), including the φ★ cross-route check
 against the proved `∃p.φ★ = ¬¬◯⊥`. The focused kernel search is the
 escalation engine of record; the `bchi` screening-horizon stations are
-its named next stratum. Simp round 1 (support modules) is logged in
+its named next stratum. **Round 3 is DONE too (2026-08-12)**: the tail's
+1163 s is **68 % `simp` inside `decreasing_by`** (not the WF packing, not
+the aggregate `rfl` checks); the farms have no duplicate alternatives but
+`(simp_arith; done)` is dead in both and is removed; the tru-side station
+map is named (`truStationRows`) and all nine aggregate equations now live
+in `LJFORows.lean`; `docs/ljfo-fidelity.md` is the calculus-fidelity table.
+Further farm trimming needs batched delete-and-build probes at ~30 min a
+bit. Simp round 1 (support modules) is logged in
 the plan; **round 2 (the `laxRows` collapse + the merged LJFO.lean
 dedup) is DONE, both batches, 2026-08-12** — the tail is 2726 → 2202
 lines (2807 → 2466 built, −12.1 %) with every statement and axiom pin

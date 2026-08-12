@@ -1205,3 +1205,99 @@ its `decreasing_by` farm; the `rfl` defeq checks that close the aggregate
 equations (each runs on `interp` values thousands of nodes wide); and
 `interp`'s own equation-lemma generation.  Only after that does the
 fidelity table have a cost model to sit on.
+
+## Simp round 3 (2026-08-12): profiling, the farm, the tru-side map, the fidelity table
+
+Matthew's steer before starting: compile time matters ("times are getting
+long") but is worth about **10 % of the effort**, the rest on completing the
+rounds.  Logged against that budget.
+
+### 17. Where the 1163 s goes — all three of item 16's candidates are wrong
+
+`lean -Dprofiler=true` on the tail, core cached:
+
+| phase | time | share |
+|---|---|---|
+| **`simp`** | **811 s** | **68 %** |
+| kernel type checking | 230 s | 19 % |
+| process pre-definitions (WF packing) | 115 s | 10 % |
+| elaboration | ~15 s | 1 % |
+| linting | 4 s | <1 % |
+
+Item 16 guessed the WF packing, the aggregate `rfl` checks and `interp`'s
+equation-lemma generation.  The WF packing is 10 %, the `rfl` checks sit
+inside elaboration and type checking, and equation-lemma generation does not
+register.  **It is `simp`, and it is inside `decreasing_by`**: both farms
+open with `all_goals simp_wf` and `all_goals try simp only [sum3,
+sum3_append, goalW, wNeg, wPos]`, run over every decreasing goal the
+eighteen-function mega-mutual generates, before a `first |` chain of 68
+(`ljf_dec_e`) and 62 (`ljf_dec_a`) alternatives.
+
+### 18. The farm: one dead alternative, found and removed; no duplicates exist
+
+Two corrections to what the round assumed on opening.
+
+* **The farms are not tail-only.**  `LaxLogic/LJF.lean`, the IPC control,
+  invokes them seventeen times.  Any trim must keep that file green, so the
+  probe target is `lake build LaxLogic.LJFO LaxLogic.LJF`.
+* **There are no duplicate alternatives to delete.**  A first analysis
+  reported 51; that was a parser running past the end of `ljf_dec_e` into
+  `ljf_dec_a` and comparing the two macros' lists against each other.  Within
+  true boundaries (2280–2399 and 2402–2545) both farms have zero
+  byte-identical repeats.  The safe mechanical trim does not exist.
+
+What does exist: `(simp_arith; done)` at **position 21 of 68 and 21 of 62**
+is **DEAD in both farms** — deleted, and `LaxLogic.LJFO` and `LaxLogic.LJF`
+both build green.  Every goal not closed by the first twenty alternatives
+used to pay a full `simp_arith` before the remaining forty-odd were tried.
+Recorded in both macro docstrings so it is not re-added blindly.
+
+**Its timing effect was NOT isolated, and no speedup is claimed.**  The probe
+build (core + LJF + LJFO, parallel, 30:59) is not comparable to the
+LJFO-alone figure (26:03), and isolating it costs two more ~20-minute runs —
+outside the budget.  What remains of the 811 s is `simp_wf` and the
+unconditional `simp only`, both load-bearing.
+
+**The method, for whoever continues.**  Delete-and-build is a decisive
+one-bit test for a farm alternative at ~30 min a bit.  Do it in BATCHES:
+delete a suspected-dead block, and bisect only if the build goes red.  At one
+alternative per probe the remaining ~125 entries are unaffordable.
+
+### 19. The tru-side station map — line-neutral, and that is the honest result
+
+The map was spelled out verbatim in four `interpA_*` equations, exactly the
+duplication `laxRows` removed on the lax side.  It is now `truStationRows`,
+and all nine aggregate equations live in `LJFORows.lean` over the three named
+maps.  A structural fact fell out worth keeping: `circStationRows` is
+`truStationRows` **plus the single lax-only `circL` row**, so the entire modal
+content of the aggregate is one row.
+
+Numbers: **2466 → 2461 built lines, tail build 23:13 → 26:03.**  Line-neutral
+and slightly slower — the 44 duplicated lines are offset by the named
+definition and its pointer comments, and naming a map adds a delta-unfolding
+step to many defeq checks.  This is item 9 again, now with a second data
+point: in this development these refactors buy structure, not size and not
+speed.  Keep them for the single point of truth, and stop predicting
+otherwise.
+
+### 20. The fidelity table
+
+`docs/ljfo-fidelity.md`: per clause of `interp`, the move, the LJF◯ rule it
+answers, whether soundness and minimality run on raw rules or a named toolkit
+lemma, and whether Pitts/Dyckhoff make the corresponding move.  §4 is the four
+forced departures; §5 the PROVED/conditional/OPEN ledger.  The correspondence
+column is expository and says so.
+
+Two claims corrected while writing it, both against the source, both of a kind
+worth watching for: **`dykAnt` is not unconditional** (it is `dykAntC cAnt …`
+inside the cAnt-parameterised mutual — `DykAnt` is not open, but it is
+discharged *relative to* `CimpAnt`), and **`LJF.lean` is not a Liang–Miller
+port** (its header records that it is built from its own rules so the
+technique is what is under test).  The table also flags that
+`docs/calculus-map.md` still has no LJF◯ entry.
+
+### 21. Process note
+
+A docstring-only edit to `LJFOCore.lean` costs a full 31-minute core + LJF +
+LJFO rebuild.  Bundle comment edits with the build that tests them; this round
+spent one rebuild on a comment.
