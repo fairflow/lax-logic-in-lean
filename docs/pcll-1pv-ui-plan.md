@@ -215,3 +215,49 @@ one argument).  File: `wip/pcll1pv_stage2.lean`.  All in-repo
 ingredients: charPos/charNeg/agree_of_char/crank lemmas (Char file),
 force_somehow_iff_of_confluent (PLLFrames), directedness by iterated
 confluence (new small lemma).
+
+## Stage 2 progress (2026-08-12 late evening) — the m-clause heart PROVED
+
+DONE, pinned `[propext, choice, Quot.sound]`, no sorryAx
+(`wip/pcll1pv_stage2.lean`, commits 9193fc6/e209911/eb3fc0f):
+
+* `confluent_directed` — Rm-row directedness from mutual confluence.
+* `confluent_char_match` — **THE σ-PING-PONG**, with strict-growth
+  termination (`filter_length_lt`) and the two fallible bounces (◯⊥).
+  crank note: ◯ costs 2 (`crank (somehow φ) = crank φ + 2`); the
+  budget closes because `bigAnd` is crank-free on cons — `◯charPos` is
+  transferred only when the filter is nonempty (else the reflexive Rm
+  witness serves), `◯D₀` and `◯⊥` fit under r+2 always.
+* `agree_mwit` / `agree_mwitN` — the confluent WITNESS-form m-clauses
+  of the agreement family (K-side `mwit`-shaped, M-side `MWitM`-shaped),
+  closed to full rank-2α agreement via `frag_reps_exist'` +
+  `agree_of_char` + `force_of_deriv` (the agree_iforth closer).
+  These discharge, for the CONFLUENT class in witness form, the exact
+  clause family whose general-PLL forms are the standing sorries.
+
+REMAINING for stage 2:
+* (e) the Wit-family assembly: build the `LayeredBisimWit (· ∈ V)`-style
+  family with Z α := rank-2α agreement, i-clauses := agree_iforth/iback,
+  mwit := agree_mwit; MWitM := agree_mwitN.  Mechanical.  CHECK FIRST:
+  whether the amalgamation chain accepts MWitM in place of MBack
+  (`witTriple_mwit` exists per the structure's doc comment — find its
+  consumers; if only the MBack-form `wit_pbisimC` exists, an
+  MWitM-form variant must be built or MBack proved for agreement,
+  which the ping-pong does NOT give).
+* (f) `ObInvForthCore` + `ConfResidue`.  THE CRUX, stated exactly: the
+  proper triple constructor demands a BASE link `Z_{2d'} k* u` at the
+  FIXED M-world `u`, but the ping-pong (like every witness-form move)
+  produces its OWN M-side world; links at fixed worlds come only from
+  MBack.  Candidate resolutions, in order: (i) seed the ping-pong from
+  the promise-realiser (directedness gives κ₀ realising ALL of
+  obInv(Δ).val; heredity keeps this along the growth; the matched κ̂
+  then traces EXACTLY to obInv-val — proved-shape) and take the
+  ping-pong's own u' as the triple's M-world, reconciling the corner's
+  Ri-b₂ demand via M-side directedness THEN re-running the ping-pong
+  ABOVE the reconciled world (the link-at-u₂ gap is the open step);
+  (ii) relax WitTripleC's base to an Ri-predecessor slot (a
+  construction repair — the plan allows it; check every consumer);
+  (iii) switch the whole assembly to witness-form maintenance
+  (witTriple_mwit) so no fixed-world base links are ever demanded —
+  the cleanest if the chain supports it.  Start with (iii)'s
+  feasibility check.
