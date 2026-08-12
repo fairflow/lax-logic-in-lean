@@ -177,6 +177,93 @@ def s3pair (K M : FinCM) (cl : List F) :
             fails := s!"residue FLAG at Δ={Δ.length} m={m} u={u}" :: fails
   return (checked, amW.length, fails)
 
+/-! ## S4: the `StableCore` kernel screen (stage 2f)
+
+Configuration: `⊥ ∉ Δ`; `k, t` both tracing to `Δ` with `Rₘ k t`;
+`u₂` agreement-linked to `t` (constant proxy for the level-`2d−1`
+link); any `m` with `Rₘ m u₂`; any `ψ` from `cl ++ vfBank` forced at
+`u₂` (the p-CARRYING members of `cl` are the ones the corrected
+vacuity analysis says matter).  Wanted: a triple `(Δ', u₃)` with
+`Rₘ m u₃`, `u₃ ⊩ ψ`, `RmC Δ Δ'`. -/
+
+def mentionsP : F → Bool
+  | .prop a => a == pv
+  | .falsePLL => false
+  | .and φ ψ => mentionsP φ || mentionsP ψ
+  | .or φ ψ => mentionsP φ || mentionsP ψ
+  | .ifThen φ ψ => mentionsP φ || mentionsP ψ
+  | .somehow φ => mentionsP φ
+
+def s4pair (K M : FinCM) (cl : List F) :
+    Nat × Nat × List String := Id.run do
+  let (amW, _) := amWorlds K M cl
+  let psiBank := cl ++ vfBank
+  let mut checked := 0
+  let mut pCarrying := 0
+  let mut fails := []
+  for Δ in dedup ((worlds K).map (traceOf K cl)) do
+    if !(decide (fls ∈ Δ)) then
+      for k in worlds K do
+        if decide (traceOf K cl k = Δ) then
+          for t in worlds K do
+            if decide (traceOf K cl t = Δ) && K.rmB k t then
+              for u₂ in worlds M do
+                if vfAgreeB K M t u₂ then
+                  for m in worlds M do
+                    if M.rmB m u₂ then
+                      for ψ in psiBank do
+                        if M.forceB u₂ ψ then
+                          checked := checked + 1
+                          if mentionsP ψ then pCarrying := pCarrying + 1
+                          let answered := amW.any fun (Δ', u₃) =>
+                            M.rmB m u₃ && M.forceB u₃ ψ && rmCB cl Δ Δ'
+                          if !answered then
+                            fails := s!"S4 FLAG Δ={Δ.length} k={k} t={t} u₂={u₂} m={m} ψ={reprStr ψ}" :: fails
+  return (checked, pCarrying, fails)
+
+/-! ## S5: the `CornerCoreW` kernel screen (stage 2g, REPAIRED form)
+
+Configuration: a triple at `(Δ, m)` with `⊥ ∉ Δ`; a b-side `Δb`
+dominated by the promise set `obInv Δ`; `u` with `Rₘ m u`; `k` tracing
+to `Δ`; `kv` with `Rᵢ k kv` agreement-linked to `u`.  Wanted: SOME
+`Δu ⊇ Δb` with `RmC Δ Δu` carrying a triple with the SAME `u`.
+(A first, anchored form demanded the triple AT `obInv Δ`; this screen
+REFUTED it in the promised-`⊥`/infallible-`u` region — see the stage2g
+header.  Candidate `Δu`s here: battery traces plus `obInv Δ`.) -/
+
+def obInvOf (cl Δ : List F) : List F :=
+  cl.filter fun χ => decide (boxOfB χ ∈ Δ)
+
+def s5pair (K M : FinCM) (cl : List F) :
+    Nat × Nat × List String := Id.run do
+  let (amW, _) := amWorlds K M cl
+  let ts := dedup ((worlds K).map (traceOf K cl))
+  let mut checked := 0
+  let mut viaTop := 0
+  let mut fails := []
+  for (Δ, m) in amW do
+    if !(decide (fls ∈ Δ)) then
+      for Δb in ts do
+        if subsetB Δb (obInvOf cl Δ) && !(decide (fls ∈ Δb)) then
+          for u in worlds M do
+            if M.rmB m u then
+              for k in worlds K do
+                if decide (traceOf K cl k = Δ) then
+                  for kv in worlds K do
+                    if K.riB k kv && vfAgreeB K M kv u then
+                      checked := checked + 1
+                      let cands := obInvOf cl Δ :: ts
+                      let ok := cands.any fun Δu =>
+                        subsetB Δb Δu && rmCB cl Δ Δu &&
+                          (tripleB K M cl Δu u).1
+                      let okTop := cands.any fun Δu =>
+                        subsetB Δb Δu && rmCB cl Δ Δu &&
+                          (tripleB K M cl Δu u).2
+                      if ok && okTop then viaTop := viaTop + 1
+                      if !ok then
+                        fails := s!"S5 FLAG Δ={Δ.length} Δb={Δb.length} m={m} u={u} k={k} kv={kv}" :: fails
+  return (checked, viaTop, fails)
+
 def main : IO Unit := do
   let confl := bank.filter fun (_, M) => confluentB M && pPureB M
   IO.println s!"confluent+p-pure models: {confl.map (·.1)}"
@@ -185,12 +272,17 @@ def main : IO Unit := do
       for (nCl, cl) in clBank do
         let (checked, nW, tops, fails) := s2pair K M cl
         let (checked3, _, fails3) := s3pair K M cl
-        if fails.isEmpty && fails3.isEmpty then
-          IO.println s!"S2/S3 pass  K={nK} M={nM} {nCl}: corners={checked} mmoves={checked3} amW={nW} topTriples={tops}"
+        let (checked4, pCarry, fails4) := s4pair K M cl
+        let (checked5, tops5, fails5) := s5pair K M cl
+        if fails.isEmpty && fails3.isEmpty && fails4.isEmpty
+            && fails5.isEmpty then
+          IO.println s!"S2-S5 pass  K={nK} M={nM} {nCl}: corners={checked} mmoves={checked3} stable={checked4} (pψ={pCarry}) cornerW={checked5} (top={tops5}) amW={nW} topTriples={tops}"
         else do
           IO.println s!"== K={nK} M={nM} {nCl}: amW={nW} topTriples={tops}"
           for f in fails do IO.println s!"  S2 {f}"
           for f in fails3 do IO.println s!"  S3 {f}"
+          for f in fails4 do IO.println s!"  {f}"
+          for f in fails5 do IO.println s!"  {f}"
         (← IO.getStdout).flush
   IO.println "SCREENS-DONE"
 
