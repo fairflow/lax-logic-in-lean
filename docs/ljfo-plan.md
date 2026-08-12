@@ -1301,3 +1301,49 @@ technique is what is under test).  The table also flags that
 A docstring-only edit to `LJFOCore.lean` costs a full 31-minute core + LJF +
 LJFO rebuild.  Bundle comment edits with the build that tests them; this round
 spent one rebuild on a comment.
+
+### 22. The focused profile: there is no hot spot, and a fifth of the build is the audit
+
+Matthew, 2026-08-12: *"we can't do 125 × 30 minute probes, and I find them of
+questionable use, but that may be because they are not sufficiently
+focussed."*  Both halves are right.  Delete-and-build answers one bit per
+30 minutes and was the wrong instrument; the right one is
+`-Dtrace.profiler=true`, which nests by tactic invocation and marks each
+`first` alternative ✅/❌ with its own time.  `-Dprofiler=true` only reports
+per-COMMAND aggregates, which for a single mega-mutual is one number ("simp
+811 s") with no way to see which simp.  One traced run answers what 125
+probes would have.
+
+**Finding 1 — there is no hot spot.**  At a 250 ms threshold, *three* tactic
+nodes in the entire file exceed it.  The farm's cost is thousands of
+individually-cheap calls, not a slow tactic.  So trimming alternatives can
+only ever shave a fraction, however many are dead: the probes were indeed of
+questionable use, and not because they were badly run.
+
+**Finding 2 — two nodes dominate.**
+
+| node | traced time | what it is |
+|---|---|---|
+| `Elab.def.processPreDef` | 1114 s, **one** node | the mega-mutual's WF pre-definition processing — every `decreasing_by` run lives inside this |
+| `#print axioms LJFO.satE2` | 223 s (`Kernel` 219 s under `Elab.async`) | the AXIOM PIN, not the proof |
+
+The 223 s matches the 230 s that `-Dprofiler=true` reported as "type
+checking" almost exactly, so it is not a tracing artifact: **about a fifth of
+the tail's build is the kernel checking `satE2` when `collectAxioms` forces
+it at the pin.**  That is the price of the machine-checked mandate on a term
+this size, it is not optional, and it should be counted as audit cost rather
+than proof cost when the build time is discussed.
+
+**Finding 3 — the lever, and it is not the farm.**  What makes each of the
+thousands of calls cost anything is the *goals*: eighteen mutually recursive
+functions, each contributing decreasing goals over a lexicographic measure
+containing `3 ^ wNeg G` on large terms.  Fewer functions in the mutual, or a
+cheaper measure, would move the needle.  Deleting `first` alternatives will
+not.  **Recommendation: stop trimming the farm.**  `(simp_arith; done)` was
+worth removing because it was dead, but it was never going to be the answer.
+
+**Note for anyone re-running this**: with tracing on, the two `#guard_msgs`
+pins FAIL and `lean` exits 1 — trace output is appended to the message the
+docstring is compared against (`+ trace: [Elab.command] …`). The axiom lines
+themselves are correct. This is an artifact of tracing, not a broken tree;
+the untracked build at the same commit is green.
