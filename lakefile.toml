@@ -445,3 +445,9 @@ root = "wip.ljfo_theta_family"
 [[lean_exe]]
 name = "ubrun"
 root = "wip.ljfo_ub"
+
+# Stage-0 screens for the 1-pv PCLL semantic UI plan (S2 corner /
+# S3 residue-vacuity proxies; docs/pcll-1pv-ui-plan.md).
+[[lean_exe]]
+name = "s0screens"
+root = "wip.pcll1pv_screens"

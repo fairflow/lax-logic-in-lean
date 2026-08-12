@@ -111,3 +111,32 @@ diamond-case shape).
   estimates optimistic (method ledger items 9/15) — so: stage 0 is
   hours; stages 1–3 are a focused session each IF the screen passes;
   no compile-time promises are made at all.
+
+## Stage 0 executed (2026-08-12 afternoon) — GREEN; stage 1 is go
+
+* Statements landed (`wip/pcll1pv_stage0.lean`, elaborates clean):
+  `AmalgamConfluent`, `CornerTriple` (the isolated crux content — the
+  amalgam's Ri/Rm are componentwise, so confluence = component
+  confluences + a triple at the corner), `ConfResidue`,
+  `OneVarConfluentAmalgamation` (the stage-3 target, N confluent), and
+  the proved glue `amalgamConfluent_of_corner`.
+* S1 assessed on paper: `MutuallyConfluent (canonFinC cl)` looks
+  provable by design under `OBoxAdeq` — `RmC`'s anticipation clause
+  restricts Rm-successors to promised content, Ri-extensions inherit
+  the promises, `Ri` demands only val-inclusion, and joint consistency
+  at the corner is the `Backed`/primeness machinery's purpose.
+* S2/S3 implemented and run (`wip/pcll1pv_screens.lean`, exe
+  `s0screens`): **128 cells, 0 flags** — 2,624 corner checks (S2, the
+  `CornerTriple` proxy) and 504 infallible-M-move checks (S3, the
+  `ConfResidue` vacuity proxy) all pass over nine law-closed frames
+  (incl. a depth-3 frame for the old d ≥ 3 region) × two ◯-adequate
+  closures; 68 non-vacuous / 60 vacuous cells counted.  Proxy
+  semantics: canonical worlds proxied by traces, link by constant
+  bounded-rank vf-agreement; failures would have been FLAGS, passes
+  are genuine support.  Finding: the `top` escape is SUBSUMED by
+  `proper` under the constant link (fallible worlds agree on
+  everything), so `topTriples = 0` is structural, not vacuity.
+* Stage 1 order confirmed: (1) `MutuallyConfluent (canonFinC cl)`
+  under `OBoxAdeq` (the paper argument above); (2) `CornerTriple` —
+  the one genuinely new maintenance lemma; then the glue to
+  `OneVarConfluentAmalgamation` via `amalgamation_assembledC`.
