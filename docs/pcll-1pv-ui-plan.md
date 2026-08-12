@@ -356,3 +356,62 @@ promise-stable configuration on the battery (it is finitely checkable
 configuration and re-screen).  Stage-2 completion = the m-clauses
 (DONE) + this reduction + the screen + the corner's analogous
 treatment.
+
+## STAGE 2 COMPLETE (2026-08-12 ~23:00)
+
+The criterion set above — the m-clauses + the residue reduction + the
+screen + the corner's analogous treatment — is met in full:
+
+* **(f) the residue**: `mwitResidue_of_stableCore`
+  (`wip/pcll1pv_stage2f.lean`, commit 8e9ddd5) — `MwitResidue` for
+  `lvlB` modulo the single kernel `StableCore` (the same-trace matched
+  pair one level short at a promise-stable world); fallible branch by
+  `top` at the partner's trace, grown branch financed by the depth
+  drop.  Pin `[propext, choice, Quot.sound]`.
+* **(g) the corner**: `amalgamConfluent_of_coreW`
+  (`wip/pcll1pv_stage2g.lean`) — `AmalgamConfluent` for `lvlB` modulo
+  the kernel `CornerCoreW`, with NO adversarial clause anywhere: the
+  corner's M-move is also an `Rᵢ`-move (`sub_mi`), so the K-partner
+  comes from the family's proved `iback`; the fallible escape closes
+  by bare possibility + the family's own `◯⊥`-transfer.  Pin
+  `[propext, choice, Quot.sound]`.
+* **Two screen-forced statement repairs** (S5, the testing doctrine
+  working as designed — both were NO-CASE corner defects caught
+  before any discharge was scoped):
+  1. The first kernel anchored the corner triple AT `obInvW Δ`;
+     REFUTED in the promised-`⊥` region: `◯⊥ ∈ Δ.val` puts `⊥` in the
+     promise set, and a triple there with an infallible `u` is
+     impossible (`top` needs `u ∈ M.F`; a `proper` K-slot traces
+     through `⊥`, so the fall clause forces `u ∈ M.F` too).  Repair:
+     b-side world as data, existential corner world.  **Stage 1's
+     `ObInvForthCore` shares the anchor — treat it as superseded; do
+     not scope a discharge of the anchored form.**
+  2. The freed b-side then flagged `⊥ ∈ Δb` against infallible `u` —
+     unreachable in the real corner (`⊥ ∈ val b₁` makes `b₂` fallible
+     through b's own triple, and fallibility is hereditary along
+     `Rᵢ b₂ v₂`).  Repair: the maintenance carries the tie
+     `⊥ ∈ Δb.val → u ∈ M.F` (discharged at the consumer exactly so);
+     the kernel is gated on `⊥ ∉ Δb.val`.
+* **The kernel screens** (S4 `StableCore`, S5 `CornerCoreW`,
+  `wip/pcll1pv_screens.lean`, compiled `s0screens`): **0 flags on all
+  128 battery cells**.  Non-vacuity: S4 exercised 3,366
+  configurations, 862 with p-CARRYING ψ (the corrected vacuity
+  analysis's live region); S5 exercised 2,154 corner configurations,
+  all answered by proper triples (`top=0` in the gated region is
+  expected — the `top` answers live in the PROVED branches).
+
+**Stage-3 wiring (pinned for the wrapper):** the Thm 5.1 chain is now
+  `lvlB` + `agree_iforth/iback` (i-clauses) + `lvlB_mwitM` (M-witness
+  clause) + `mwitResidue_of_stableCore` (residue) +
+  `amalgamation_assembledW` (assembly) +
+  `amalgamConfluent_of_coreW` (confluence of the p-variant),
+entirely MBack-free.  The open Props after stage 2 are exactly the two
+screened kernels, `StableCore` and `CornerCoreW`.  Discharge designs,
+ranked as before: (1) level re-founding on promise-depth (`pdepth`)
+making promise-stable worlds cheap — a principled construction repair;
+(2) for `CornerCoreW`, the promise-seeded ping-pong (directedness
+realises all of `obInv(Δ).val` at one κ₀; `traceC κ₀` is an
+`RmC`-successor by `traceC_mforth` and covers every promise-dominated
+b-side; budget wall: transferring `◯⋀promises` needs
+`maxCrank + 2 ≤ 4d − 2`, so the low-depth region needs (1) or the
+ψ₀-refinement).
