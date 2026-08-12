@@ -261,3 +261,32 @@ REMAINING for stage 2:
   (witTriple_mwit) so no fixed-world base links are ever demanded —
   the cleanest if the chain supports it.  Start with (iii)'s
   feasibility check.
+
+### The (f)-lead found at the context boundary (2026-08-12 ~22:15)
+
+The witness-form chain EXISTS AND IS PROVED in-repo
+(`wip/witOut.lean`: `witTriple_mwit`, `wit_pbisimW`,
+`amalgamation_assembledW`, pinned) — it consumes `MWitM` (proved
+today, `agree_mwitN`) and `MwitResidue`, never MBack.  So route (iii)
+is real: the 1-pv confluent chain is
+  levelled agreement family (V := ∅ over p-pure models — the
+  DICTIONARY-FREE repair of §39: levels finance what the dictionary
+  was for) + agree_iforth/iback + agree_mwit/agree_mwitN
+  + MwitResidue + amalgamation_assembledW + AmalgamConfluent.
+Remaining open: `MwitResidue` for this family, and the corner
+(`ObInvForthCore` or its witness-form analogue for the W-assembly).
+
+**NEW vacuity lead for MwitResidue (agreement family, confluent M):**
+in the residue configuration both κ (same-trace, level 2d−1) and kv
+(grown-trace, level 2d) are agreement-linked to the SAME witness u'.
+Agreement is an iff, so κ and kv agree WITH EACH OTHER on every
+formula of crank ≤ 2·(2d−1).  If `2·(2d−1) ≥ max crank over cl`, the
+traces are determined by those agreements: trace κ = trace kv —
+CONTRADICTING the configuration's same/grown split.  So the residue
+is VACUOUS in the high-depth region `4d − 2 ≥ maxCrank cl`; the
+low-depth remainder is the region the old analysis shut on paper
+(d ≤ 2).  NEXT ACTION: compute both bounds for ◯-adequate closures
+and check whether the regions COVER (if maxCrank cl ≤ 6 the whole
+range is covered by d ≤ 2 ∪ 4d−2 ≥ 6, i.e. always); if a gap remains,
+it is finitely many d per closure — screen it.  Then the corner by
+the same two-region analysis.
