@@ -244,10 +244,6 @@ info: 'PLLND.SemUI.agree_mwit' depends on axioms: [propext, choice, Quot.sound]
 #print axioms agree_mwit
 
 /--
-info: 'PLLND.SemUI.agree_mwit' depends on axioms: [propext, choice, Quot.sound]
--/
-#guard_msgs in
-/--
 info: 'PLLND.SemUI.agree_mwitN' depends on axioms: [propext, choice, Quot.sound]
 -/
 #guard_msgs in
