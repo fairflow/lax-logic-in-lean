@@ -140,3 +140,36 @@ diamond-case shape).
   under `OBoxAdeq` (the paper argument above); (2) `CornerTriple` —
   the one genuinely new maintenance lemma; then the glue to
   `OneVarConfluentAmalgamation` via `amalgamation_assembledC`.
+
+## Stage 1 executed (2026-08-12 evening) — items 1 and 3 outright, item 2 modulo one minimal Prop
+
+`wip/pcll1pv_stage1.lean`, all pins `#guard_msgs`-transcribed at
+`[propext, Classical.choice, Quot.sound]`, no sorryAx:
+
+* **Item 1 was already in-repo**: `FinComp.canonFinC_confluent`
+  (wip/canonFinC.lean) — the finite canonical component IS mutually
+  confluent under `OBoxAdeq`, witnessed by `obInvW` (the
+  promise-collecting successor).  Found by the read-before-prove
+  discipline; pinned, not re-derived.
+* **Item 2, the corner**: PROVED — `rmC_le_obInv` (`obInvW c₁` is the
+  MAXIMUM `RmC`-successor and dominates the b-side: an Rm-successor's
+  content is promised, promises persist up Ri), `obInvForth_of_core`
+  (BOTH escape families discharged: the `⊥`-region tops out via
+  `boxUnit`; the `MBack`-fallible pair tops out via bare possibility —
+  one fallible Rm-successor forces `◯⊥` at the base under K's
+  confluence), `cornerTriple_of_core`, `amalgamConfluent_of_core` —
+  all conditional on the single minimal Prop **`ObInvForthCore`**: at
+  a proper-region triple with the MBack-LINKED partner in hand
+  (`Z_{2d−1} κ u`, `Rm k κ`, `k` tracing to `Δ`), produce a triple at
+  `obInvW Δ`.  This is exactly PROGRESS §43's choice-freedom
+  configuration (κ has the link, not the trace; the directed witness
+  has the trace, not the link), isolated as `DykAnt`/`MforthResidue`
+  were; its discharge is stage 2's m-clause work by the plan's own
+  assignment.
+* **Item 3 PROVED OUTRIGHT**: `oneVarConfluentAmalgamation_holds` —
+  the assembly with the confluence conjunct, by
+  `amalgamation_assembledC`'s own proof term.
+
+Stage 2 therefore has a single sharpened target list: `ObInvForthCore`
++ the agreement-side m-clauses + `ConfResidue`, all of one family, all
+under bare possibility.
