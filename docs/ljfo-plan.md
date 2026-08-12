@@ -1108,3 +1108,100 @@ timing question above is precisely its remit: this session has one sample
 per configuration, which bounds the answer at "flat" but does not
 attribute the cost.  Profile before assuming any structural change here
 buys elaboration time.
+
+## Simp round 2 — retrospective (2026-08-12)
+
+Continuing the method ledger (the numbering runs on from the review
+round's item 8).  Round 2 is the first simplification round in this
+development whose headline goal was *missed*, so the lessons are worth
+more than the diff.
+
+**9. Source duplication and elaboration cost are independent here — the
+round's central finding, and it refutes the premise it was scoped on.**
+The design pin named "1773 s tail re-elaboration" as the baseline to
+beat, on the reasoning that seven restatements of one aggregate must cost
+seven times.  They do not.  What the elaborator pays for is *defeq checks
+on `interp` values*, and collapsing seven statements into one lemma with
+seven branches leaves the number and the size of those checks exactly
+where they were: 1126 s → 1163 s.  The rule for round 3 and after: in
+this development, to buy elaboration time you must reduce the NUMBER of
+defeq checks or the SIZE of the terms they run on.  Reducing the number
+of *lines that mention* those terms buys readability and nothing else.
+Never again scope a simplification round on a compile-time promise
+without a profile first.
+
+**10. The frozen core admits a middle module for free, and that is where
+iteration is cheap.**  `LJFOCore.lean` has ZERO imports, and every
+station equation needs nothing beyond `interp`.  So a module between the
+core and the tail costs nothing structurally — and anything living there
+type-checks in **0.4 s** against the cached core, against **19 minutes**
+for the same content inside the tail.  Round 2's whole design
+(`eConjRows`, `laxRows`, the membership combinators, the unified
+equation) was developed and debugged in that 0.4 s loop and entered the
+tail already correct; the one tail failure was in tail-only code.  Rule:
+anything provable from the frozen core goes in `LJFORows.lean`, not
+because the tail cannot hold it, but because the tail cannot afford to
+iterate on it.  Layer 4's `interpF` row families are the next candidates.
+
+**11. Time elaboration with bare `lean`, solo, like-for-like — mtimes are
+not a measurement.**  The first figure this session reported was a 33 %
+speedup.  It was wrong twice over: the "baseline" was derived from olean
+timestamps inside a `lake` run that had a second elaboration on the
+machine for 12 of its 29 minutes, and it was compared against a bare
+`lean` number that excludes the 333 MB olean write and lake's overhead.
+The correct protocol, used for the figures now in the log: `lean <file>`
+on the tail alone, core cached, nothing else running, both sides, same
+mode.  A `lake` number is a *build* measurement and is only comparable to
+another `lake` number taken the same way.
+
+**12. Where the sevenfold-ness is essential, and where it was
+incidental — the map, for reuse.**  ESSENTIAL: `interp`'s ∀p goal
+dispatch matches on the positive UNDER the `◯` (`| .circ (.atom q) =>`,
+`| .circ .fls =>`, …), so no tactic can cross that wrapper at an abstract
+`Q`; the shape analysis is irreducible and now sits in exactly one place,
+`interp_circ_laxRows`'s `match Q`.  Also essential: any arm that SELECTS
+a row (`URF`'s `or1`/`or2` take prefix entries 1 and 2) or DISPATCHES on
+the shape (`.down (.up P')` vs `.down (.circ P')` enter `UEntry`
+differently; `.down (.and _ _)`/`.down (.imp _ _)` are `nomatch`).
+INCIDENTAL, and now gone: restating the aggregate once per shape;
+re-proving row membership at each call site; opening each lax arm with
+its own `nOrAll_inj` chain.  This map transfers directly to layer 4 —
+`interpF` mirrors `interp` clause for clause with the (b)-guard at all
+twelve modal sites, so it will grow the same essential seven and the same
+incidental duplication unless the row families are named from the start.
+
+**13. The deliverable that compounds is the single point of truth, not
+the line count.**  Before: the 19-line `∃p` station map appeared verbatim
+six times (`interpE_eq` plus five `*ConjMem`), the ◯-goal station map
+seven times, and the membership argument at 55 call sites.  Changing one
+row shape — which forced changes #2 and #3 each did — meant editing every
+copy consistently, and a divergence between copies would have shown up
+only as a mysterious defeq failure hundreds of lines away.  After: one
+edit site each.  That is the answer to the standing point that stacked
+layers are a HUMAN cost (item 8) even where the machine is indifferent —
+which, as item 9 says, it turned out to be.
+
+**14. One failed build, one cause: a rewritten lambda's binder list.**
+`(fun _ hsp => laxRows_boxMem hsp)` against
+`j = .lax → ∀ {R rest}, mem → …` bound `hsp` to the implicit `R`, not to
+the membership: Lean auto-binds leading implicits when the lambda's FIRST
+binder faces them, but once an explicit binder has been consumed the next
+named binder takes the implicit.  The original wrote `fun _ {R rest} hsp`
+and was right to.  Cost: one 22-minute cycle.  Rule: when replacing a
+lambda in an argument position, keep the original binder list verbatim
+and change only the body.
+
+**15. Estimation bias, now recorded in both directions.**  The banked
+calibration is that my refactor COST estimates run ~4× pessimistic.
+Round 2 adds the opposite error on the other axis: the BENEFIT estimate
+was optimistic — a predicted large compile-time cut, delivered flat.
+Treat both as the same failure to measure before promising.
+
+**16. What round 3 should ask first.**  Not "what else can be
+deduplicated" — item 9 says that spends effort on the wrong axis.  Ask
+where the 1163 s actually goes.  The three candidates worth profiling,
+in order of suspected cost: the mega-mutual's well-founded packing and
+its `decreasing_by` farm; the `rfl` defeq checks that close the aggregate
+equations (each runs on `interp` values thousands of nodes wide); and
+`interp`'s own equation-lemma generation.  Only after that does the
+fidelity table have a cost model to sit on.
