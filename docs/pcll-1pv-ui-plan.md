@@ -290,3 +290,30 @@ and check whether the regions COVER (if maxCrank cl ≤ 6 the whole
 range is covered by d ≤ 2 ∪ 4d−2 ≥ 6, i.e. always); if a gap remains,
 it is finitely many d per closure — screen it.  Then the corner by
 the same two-region analysis.
+
+### Stage 2(e) DONE + a correction to the vacuity lead (2026-08-12 ~22:20)
+
+(e) PROVED and pinned (`wip/pcll1pv_stage2e.lean`): `lvlB` — the
+LEVELLED variable-free agreement Wit-family over p-pure confluent
+models (Z α := rank-2α closed-formula agreement; i-clauses by the
+character argument at V = ∅, mwit by the σ-ping-pong, atoms by purity)
+— plus `lvlB_mwitM`.  The dictionary-free constant link, assembled.
+
+CORRECTION to the (f) vacuity lead: the κ~kv comparison runs THROUGH
+the M-side witness u′, so it constrains CLOSED formulas only — for
+`lvlB` the links are closed-formula agreement, and cl's P-CARRYING
+members are untouched.  The high-d conclusion is therefore NOT
+vacuity but a structural constraint: in the residue configuration at
+`4d−2 ≥ maxCrank cl`, trace(kv) agrees with Δ.val on every CLOSED
+member — the same/grown split is witnessed by a p-carrying formula
+only.  (f) stands as real work with that sharpened target; the
+remaining routes: exploit p-purity of K (kv's p-decoration is
+constrained by hPK: p-carrying formulas at p-pure worlds reduce
+toward their ⊥/⊤-instances — check whether forcing of p-carrying cl
+members at K-worlds is DETERMINED by closed data on p-pure models;
+if yes, vacuity is restored!), the low-d mechanisation, the corner,
+or the construction repair (ii).  NOTE the promising specific: on a
+p-pure model, w ∈ V p is the ONLY p-fact; forcing φ(p) at w is
+determined by the closed theory PLUS the V p-decoration pattern of
+the cone above w — screen whether the residue split can live in that
+pattern.
