@@ -152,6 +152,105 @@ theorem cimpConjMem {p : String} {done : List Neg} {Q' : Pos} {N : Neg}
       (interp p [] rest none) ∈ eConjRows p done :=
   rowMem hXr
 
+/-! ## The `tru`-goal station map
+
+The `∀p` aggregates at a SHIFTED goal `↑G` share one station map — the
+◯-goal map of `circStationRows` minus its `circL` row, which is lax-only
+(only a lax sequent may focus left on a box) — and differ only in the goal
+parameter and the goal-inversion prefix.  Four of the equations below
+spelled that map out verbatim before round 3, exactly as the seven ◯-goal
+equations did before round 2. -/
+
+set_option linter.unusedVariables false in
+/-- The station rows of every `↑`-goal aggregate: one row per split of the
+saturated station, the goal threaded through the continuations.  Identical
+across all four shifted goal shapes. -/
+def truStationRows (p : String) (done : List Neg) (G : Pos) : List Neg :=
+  (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
+    match X, hXr with
+    | .imp (.atom a) N, hXr =>
+        pGuard p a nBot
+          (nAnd (.up (.atom a)) (interp p [N] rest (some (.up G))))
+    | .imp (.down (.imp Q' N')) N, hXr =>
+        nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
+             (interp p [N] rest (some (.up G)))
+    | .imp (.down (.circ Q')) N, hXr =>
+        nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
+             (interp p [N] rest (some (.up G)))
+    | _, _ => nBot)
+
+/-! ### The `∀p` aggregates as equations, at each goal shape
+
+Stated outside any mutual block so the elaborator reuses `interp`'s own
+compiled matchers. -/
+
+theorem interpA_atom_eq {p : String} {done : List Neg}
+    (hsat : Saturated done) {q : String} (hq : ¬ atomMem q done = true) :
+    interp p [] done (some (.up (.atom q))) =
+      nOrAll (atomHead p q ++ truStationRows p done (.atom q)) := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · simp only [hq, if_false, Bool.false_eq_true]; rfl
+
+theorem interpA_atomT_eq {p : String} {done : List Neg}
+    (hsat : Saturated done) {q : String} (hq : atomMem q done = true) :
+    interp p [] done (some (.up (.atom q))) = nTop := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · simp [hq]
+
+theorem interpA_fls_eq {p : String} {done : List Neg}
+    (hsat : Saturated done) :
+    interp p [] done (some (.up .fls)) =
+      nOrAll (truStationRows p done .fls) := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · rfl
+
+theorem interpA_or_eq {p : String} {done : List Neg}
+    (hsat : Saturated done) (P₁ P₂ : Pos) :
+    interp p [] done (some (.up (.or P₁ P₂))) =
+      nOrAll ([interp p [] done (some (.up P₁)),
+               interp p [] done (some (.up P₂))] ++
+              truStationRows p done (.or P₁ P₂)) := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · rfl
+
+theorem interpA_down_eq {p : String} {done : List Neg}
+    (hsat : Saturated done) (M : Neg) :
+    interp p [] done (some (.up (.down M))) =
+      nOrAll ([interp p [] done (some M)] ++ truStationRows p done (.down M)) := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · rfl
+
+theorem interpA_imp_eq {p : String} {done : List Neg}
+    (hsat : Saturated done) (Q : Pos) (N : Neg) :
+    interp p [] done (some (.imp Q N)) =
+      nAndAll ((invertPos Q).attach.map
+        (fun ⟨b, hb⟩ =>
+          .imp (.down (interp p b done none))
+            (interp p b done (some N)))) := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · rfl
+
+theorem interpA_and_eq {p : String} {done : List Neg}
+    (hsat : Saturated done) (M N : Neg) :
+    interp p [] done (some (.and M N)) =
+      nAnd (interp p [] done (some M)) (interp p [] done (some N)) := by
+  rw [interp]; split
+  all_goals rename_i heq
+  · rw [hsat] at heq; cases heq
+  · rfl
+
 /-! ## The ◯-goal row family -/
 
 set_option linter.unusedVariables false in

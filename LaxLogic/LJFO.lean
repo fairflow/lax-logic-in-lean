@@ -886,119 +886,15 @@ def cimpAssembleN {done rest K : List Neg} {Q' : Pos} {N : Neg} {C : Neg}
     (Sub.grow _) δ
 
 
-/-! The `∀p` aggregates as equations, at each goal shape (stated outside any
-mutual block so the elaborator reuses `interp`'s own compiled matchers). -/
+/-! ## Where the aggregate equations live
 
-theorem interpA_atom_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) {q : String} (hq : ¬ atomMem q done = true) :
-    interp p [] done (some (.up (.atom q))) =
-      nOrAll (atomHead p q ++ (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up (.atom q)))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.up (.atom q))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.up (.atom q))))
-              | _, _ => nBot)) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · simp only [hq, if_false, Bool.false_eq_true]; rfl
-
-theorem interpA_atomT_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) {q : String} (hq : atomMem q done = true) :
-    interp p [] done (some (.up (.atom q))) = nTop := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · simp [hq]
-
-theorem interpA_fls_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) :
-    interp p [] done (some (.up .fls)) =
-      nOrAll ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up .fls))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.up .fls)))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.up .fls)))
-              | _, _ => nBot)) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_or_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (P₁ P₂ : Pos) :
-    interp p [] done (some (.up (.or P₁ P₂))) =
-      nOrAll ([interp p [] done (some (.up P₁)),
-               interp p [] done (some (.up P₂))] ++ (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up (.or P₁ P₂)))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.up (.or P₁ P₂))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.up (.or P₁ P₂))))
-              | _, _ => nBot)) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_down_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (M : Neg) :
-    interp p [] done (some (.up (.down M))) =
-      nOrAll ([interp p [] done (some M)] ++ (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.up (.down M)))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.up (.down M))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.up (.down M))))
-              | _, _ => nBot)) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_imp_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (Q : Pos) (N : Neg) :
-    interp p [] done (some (.imp Q N)) =
-      nAndAll ((invertPos Q).attach.map
-        (fun ⟨b, hb⟩ =>
-          .imp (.down (interp p b done none))
-            (interp p b done (some N)))) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_and_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (M N : Neg) :
-    interp p [] done (some (.and M N)) =
-      nAnd (interp p [] done (some M)) (interp p [] done (some N)) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
+All nine `∀p` aggregate equations are in `LaxLogic.LJFORows`, stated over
+the two named station maps: `truStationRows` for the shifted goals
+(`interpA_atom_eq`, `interpA_atomT_eq`, `interpA_fls_eq`, `interpA_or_eq`,
+`interpA_down_eq`, plus `interpA_imp_eq`/`interpA_and_eq`, which have no
+station map) and `laxRows` for the ◯-goal (`interp_circ_laxRows`).  Each
+map used to be spelled out verbatim at every statement about it — four
+times on the tru side (round 3), seven on the lax side (round 2). -/
 
 /-! The seven per-shape ◯-goal equations `interpA_circ*_eq` and the
 `interpCircShape` seam that chained them are superseded by the single
