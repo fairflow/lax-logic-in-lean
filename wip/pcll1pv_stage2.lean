@@ -179,5 +179,79 @@ decreasing_by
   · have : M.force κ2 D₀ := M.force_hered (M.sub_mi htκ2) htD₀
     simpa using this
 
+/-! ## Part (d): the witness m-clauses of the agreement family -/
+
+/-- **The confluent K-side witness m-clause** (`mwit`-shaped): the
+ping-pong's match, closed to full rank-2α agreement through the
+representative list. -/
+theorem agree_mwit {V : Finset String} {α : Nat}
+    {M N : ConstraintModel} (hM : MutuallyConfluent M)
+    (hN : MutuallyConfluent N) {w : M.W} {w' : N.W}
+    (h : ∀ χ : PLLFormula, crank χ ≤ 2 * α + 2 →
+      (∀ a ∈ χ.atoms, a ∈ V) → (M.force w χ ↔ N.force w' χ))
+    {ψ : PLLFormula} (hex : ∃ κ, M.Rm w κ ∧ M.force κ ψ) :
+    ∃ κ u', M.Rm w κ ∧ M.force κ ψ ∧ N.Rm w' u' ∧
+      ((∀ χ : PLLFormula, crank χ ≤ 2 * α →
+        (∀ a ∈ χ.atoms, a ∈ V) → (M.force κ χ ↔ N.force u' χ)) ∨
+       (κ ∈ M.F ∧ u' ∈ N.F)) := by
+  classical
+  obtain ⟨L, hL, hrep⟩ := frag_reps_exist' V (2 * α)
+  obtain ⟨κ₀, hκ₀, hψ₀⟩ := hex
+  obtain ⟨κ, u', hκ, hψκ, hu', hres⟩ :=
+    confluent_char_match hM hN hL h κ₀ hκ₀ hψ₀
+  rcases hres with ⟨hpos, hneg⟩ | hfal
+  · refine ⟨κ, u', hκ, hψκ, hu', .inl ?_⟩
+    intro χ hχc hχa
+    obtain ⟨D, hD, h1, h2⟩ := hrep χ hχc hχa
+    have hagree := agree_of_char hpos hneg D hD
+    constructor
+    · intro hf
+      exact force_of_deriv h2 (hagree.mp (force_of_deriv h1 hf))
+    · intro hf
+      exact force_of_deriv h2 (hagree.mpr (force_of_deriv h1 hf))
+  · exact ⟨κ, u', hκ, hψκ, hu', .inr hfal⟩
+
+/-- **The confluent M-side witness m-clause** (`MWitM`-shaped), by
+symmetry of the agreement. -/
+theorem agree_mwitN {V : Finset String} {α : Nat}
+    {M N : ConstraintModel} (hM : MutuallyConfluent M)
+    (hN : MutuallyConfluent N) {w : M.W} {w' : N.W}
+    (h : ∀ χ : PLLFormula, crank χ ≤ 2 * α + 2 →
+      (∀ a ∈ χ.atoms, a ∈ V) → (M.force w χ ↔ N.force w' χ))
+    {ψ : PLLFormula} (hex : ∃ u', N.Rm w' u' ∧ N.force u' ψ) :
+    ∃ u' u, N.Rm w' u' ∧ N.force u' ψ ∧ M.Rm w u ∧
+      ((∀ χ : PLLFormula, crank χ ≤ 2 * α →
+        (∀ a ∈ χ.atoms, a ∈ V) → (M.force u χ ↔ N.force u' χ)) ∨
+       (u ∈ M.F ∧ u' ∈ N.F)) := by
+  obtain ⟨κ, u, hκ, hψκ, hu, hres⟩ :=
+    agree_mwit hN hM (fun χ hc ha => (h χ hc ha).symm) hex
+  rcases hres with hagree | ⟨hκF, huF⟩
+  · exact ⟨κ, u, hκ, hψκ, hu, .inl (fun χ hc ha => (hagree χ hc ha).symm)⟩
+  · exact ⟨κ, u, hκ, hψκ, hu, .inr ⟨huF, hκF⟩⟩
+
+/-! ## Pins -/
+
+/--
+info: 'PLLND.SemUI.confluent_char_match' depends on axioms: [propext, choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms confluent_char_match
+
+/--
+info: 'PLLND.SemUI.agree_mwit' depends on axioms: [propext, choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms agree_mwit
+
+/--
+info: 'PLLND.SemUI.agree_mwit' depends on axioms: [propext, choice, Quot.sound]
+-/
+#guard_msgs in
+/--
+info: 'PLLND.SemUI.agree_mwitN' depends on axioms: [propext, choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms agree_mwitN
+
 end SemUI
 end PLLND
