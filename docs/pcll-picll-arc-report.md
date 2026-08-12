@@ -143,3 +143,18 @@ no build cache; run after round 3 or in the fresh session)
 
 Claim discipline: UI is OPEN for PLL, PCLL and PICLL at every variable
 count; the nearest closed result on this map is item 1 of §3.
+
+## Correction (2026-08-12, same day — found while planning the job)
+
+§0's headline fact 1 ("one obligation from done") is SUPERSEDED
+in-repo and is withdrawn as stated: PROGRESS §39's constant-link route
+is conditional on `D : RNDict` (a finite variable-free dictionary),
+and §§40–44 then kernel-refuted the 15-class closure, certified ≥ 25
+classes with no plateau (in BOTH quotients — "the tower continues past
+distribution"), and declared the plateau/constant/band routes
+empirically dead. The proved machinery of `wip/stabilise.lean` stands
+but its premise is uninhabited on all current evidence. The corrected
+statement of what remains for 1-pv PCLL semantic UI, and the plan for
+finishing it WITHOUT the dictionary (the confluent bare-possibility
+route; crux = `amalgam_confluent`), is `docs/pcll-1pv-ui-plan.md`.
+§3's ranked recommendation stands with item 1 re-read accordingly.
