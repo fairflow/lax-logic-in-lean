@@ -1,6 +1,6 @@
 # A map of the calculi
 
-This development contains six or seven distinct proof systems for propositional
+This development contains seven or eight distinct proof systems for propositional
 lax logic, several of them named after their originators and several of them
 repairs or extensions of one another. Confusing them is easy and has happened
 more than once. This page says, for each: what it is, whose it is, where it
@@ -110,6 +110,53 @@ result is really about**.
   separately and never the conjunction; ours is a routine merge of their two
   specialisations. The name should be corrected.
 
+### `LJF◯` — the lax-flagged focused calculus, and the interpolant
+
+* **Files**: `LaxLogic/LJFOCore.lean` (frozen — syntax, the four judgments,
+  weights, the modal interpolant `interp` with its termination, and soundness),
+  `LaxLogic/LJFORows.lean` (the three station maps `eConjRows` /
+  `truStationRows` / `laxRows`, and the nine aggregate equations),
+  `LaxLogic/LJFO.lean` (the minimality development). Direction-neutral
+  infrastructure: `LJFOHeight.lean` (height-indexed judgments + equivalence),
+  `LJFOUniverse.lean` (subformula closures), `LJFOSearch.lean` (the decider
+  round-trip), `LJFOFuel.lean` (`interpF`, the fuel-founded retention
+  interpolant). **Zero imports** throughout — not mathlib, not `Deriv`, not
+  `G4c`.
+* **Whose**: ours. It is the `◯`-extension of `LaxLogic/LJF.lean`, which is
+  itself **not a port**: that file's header records that it is built from its
+  own rules, importing nothing, so that "the *technique* is what is under
+  test". The focusing discipline — polarised formulas and the four judgments
+  `Inv` / `Stab` / `RFocus` / `LFoc` — is LJF-style, after Liang and Miller;
+  no metatheory is borrowed from any other calculus here. The modal part is
+  three rules and a coercion: `circ` in the syntax; `circR`, which *sets* its
+  premise to lax from either flag; `circL`, the only rule with modal content
+  and lax-only — F&M's `SC` side condition "the succedent must be
+  `◯`-shaped", recast as a phase condition; and `laxOf`, the truth-to-lax
+  coercion at the stable judgment, without which the calculus misses `◯φ` for
+  provable implicational `φ`.
+* **Status here**: soundness of both interpolants — **E1 (`eSound`) and A1
+  (`aSound`) — is PROVED outright**, together with `interp_pfree` (the
+  interpolant is `p`-free), `idNeg`, and the G4iLL-blocker standing test
+  (`BlockerTest.blocker`, axiom-free). Minimality — **E2 (`satE2`) and A2
+  (`satA2`) — is sorry-free and machine-checked but CONDITIONAL** on a single
+  isolated typed obligation, `CimpAnt`, the `◯`-implication antecedent miner
+  (staged exactly as `DykAnt` was; `dykAnt` discharges the intuitionistic
+  analogue, but *relative to* `CimpAnt`, since it lives in the same
+  parameterised mutual). Seven `#guard_msgs` axiom pins. **Uniform
+  interpolation for PLL is OPEN and is not claimed**: it would need `CimpAnt`
+  discharged *and* focalization for PLL. Clause-by-clause detail, with the
+  four forced departures from paper practice: `docs/ljfo-fidelity.md`.
+* **Depended on by**: nothing outside its own family — `LJFORows`, `LJFO`,
+  `LJFOHeight`, `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`, and the four
+  `wip/ljfo_*` probes (`_eval`, `_attack`, `_attack_weights`, `_crosscheck`).
+  No result elsewhere in the repository rests on it.
+* **Do not confuse with the θ-chain results.** `thetaStabilises`,
+  `thetaNotStrict` and the GZ-candidate-cell analysis (`wip/ljfo_theta_*`) are
+  **`LaxND`** statements about PLL formulas — `Nonempty (LaxND Γ φ)` —
+  certified by `PLLND.Search.prove?Bounded` and revalidated by the kernel.
+  They concern the *cell* the LJF◯ construction was aimed at, not the
+  construction, and they would stand unchanged if LJF◯ were abandoned.
+
 ### The term calculus and reduction
 
 Not a logic, but frequently confused with one. `LaxLogic/PLLG4Term.lean` gives
@@ -136,6 +183,10 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | distribution, confluence | `DerivU` | `PLLConfluentComplete.lean` |
 | infallible collapse | `DerivUNoFall` | `PLLNoFall.lean` |
 | strong normalisation | proof terms of `LaxND` | `PLLTopTop.lean` |
+| the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJFOCore.lean` |
+| the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
+| E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |
+| the θ-chain, the GZ-candidate cell, `thetaStabilises` | `LaxND` (certificates from `G4c` search) | `wip/ljfo_theta_*.lean` |
 
 ---
 
@@ -146,7 +197,10 @@ with its cut, contraction, completeness and equivalences; the decider; the
 variable-free collapse under `¬◯⊥`; and everything about the structure of the
 closed fragment RN(◯,{}) — the Rieger–Nishimura ladder embedded by `p ↦ ◯⊥`,
 the families, the gap antichain, the descending chain with no floor, the
-visibility proofs, and the strict `◯`-depth hierarchy. None of that appears in
+visibility proofs, and the strict `◯`-depth hierarchy; and `LJF◯` with its
+modal interpolant — the focusing discipline is LJF-style after Liang and
+Miller, but the calculus, the `◯` rules, the interpolant and everything
+proved about them are ours. None of that appears in
 F&M 1997, which contains no "Rieger", no "variable-free", no "closed fragment"
 and no interpolation at all.
 
