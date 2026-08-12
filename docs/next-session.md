@@ -51,10 +51,17 @@ re-derivation of the exhausted miner designs.*
   antecedent `A(rest ⇒ ↑↓◯Q′)`, termination, `interp_pfree`,
   **E1 (`eSound`) and A1 (`aSound`) proved outright**, the G4iLL-blocker
   standing test, five axiom pins.
-* `LaxLogic/LJFO.lean` (imports only the core): the complete minimality
-  development — **E2/A2 (`satE2`/`satA2`) sorry-free and machine-checked,
-  conditional on the single isolated typed obligation `CimpAnt`** (the
-  modal antecedent miner, staged exactly as `DykAnt` was).
+* `LaxLogic/LJFORows.lean` (imports only the core, since round 2 batch 2):
+  the station maps named once — `eConjRows` (the `∃p` conjunct rows),
+  `laxRows = laxPrefix ++ circStationRows` (the ◯-goal rows) — with the two
+  aggregate equations `interpE_eq` and `interp_circ_laxRows`, the five
+  `*ConjMem` projections, and the `rowMem`/`rowMemR` membership
+  combinators.
+* `LaxLogic/LJFO.lean` (imports the core through `LJFORows`): the complete
+  minimality development — **E2/A2 (`satE2`/`satA2`) sorry-free and
+  machine-checked, conditional on the single isolated typed obligation
+  `CimpAnt`** (the modal antecedent miner, staged exactly as `DykAnt`
+  was).
 * `wip/ljfo_eval.lean`: the calibrated evaluator bank (certificate
   engines; reproduces forced change #3 as a certified failure).
   `wip/ljfo_attack.lean` (2026-08-11): the frontier attack on `CimpAnt`
@@ -120,9 +127,15 @@ engine-unreachable survivors settled TRUE at kernel level via
 against the proved `∃p.φ★ = ¬¬◯⊥`. The focused kernel search is the
 escalation engine of record; the `bchi` screening-horizon stations are
 its named next stratum. Simp round 1 (support modules) is logged in
-the plan; round 2 = the `laxRows` collapse + the merged LJFO.lean
-dedup; round 3 = farms/profiling/fidelity table. Resume layer 4 after
-the rounds, on Matthew's go.
+the plan; **round 2 (the `laxRows` collapse + the merged LJFO.lean
+dedup) is DONE, both batches, 2026-08-12** — the tail is 2726 → 2202
+lines (2807 → 2466 built, −12.1 %) with every statement and axiom pin
+unchanged, but **elaboration time is FLAT: 1126 s → 1163 s like-for-like,
+so the design pin's "beat 1773 s" was not met** and no speedup should be
+quoted for it (plan, "Simp round 2" — the seven `rfl`s survive as the
+seven branches of one lemma; only the restatement went). Round 3 =
+farms/profiling/fidelity table, NOT started; the timing attribution is
+its job. Resume layer 4 after the rounds, on Matthew's go.
 
 The layer-4 foundation, in place and green:
 

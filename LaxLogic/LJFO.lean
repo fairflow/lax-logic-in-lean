@@ -1,14 +1,20 @@
 /-
 LJF◯ — uniform interpolation, the minimality development (Parts 5–8).
 
-Imports only the frozen core (`LaxLogic.LJFOCore`); the auditability
-property is unchanged — no mathlib and no other calculus can carry any of
-the proof.  Contents: the inverse transformations, the saturated-case
-statements `SatE2`/`SatA2`, the dispatch helpers, and the minimality
-mega-mutual (`eMinF`/`aMinF` and the `T*`/`U*` traversal families),
-conditional on the isolated modal obligation `CimpAnt`.
+Imports `LaxLogic.LJFORows` (the station maps, named), which imports only
+the frozen core `LaxLogic.LJFOCore`; the auditability property is unchanged
+— no mathlib and no other calculus can carry any of the proof.  Contents:
+the inverse transformations, the saturated-case statements `SatE2`/`SatA2`,
+the dispatch helpers, and the minimality mega-mutual (`eMinF`/`aMinF` and
+the `T*`/`U*` traversal families), conditional on the isolated modal
+obligation `CimpAnt`.
+
+Simplification round 2 (batch 2) moved `Saturated`, the aggregate equations
+`interpE_eq`/`interp_circ_laxRows` and the row-membership combinators to
+`LaxLogic.LJFORows`; the seven per-shape ◯-goal equations they replace are
+in `Archive/ljfo-simp-round2-superseded.lean`.
 -/
-import LaxLogic.LJFOCore
+import LaxLogic.LJFORows
 
 namespace LJFO
 
@@ -212,9 +218,8 @@ theorem subChainIn {b t d Δ : List Neg} :
 /-- The context is `p`-free. -/
 def PFreeCtx (p : String) (Δ : List Neg) : Prop := ∀ N ∈ Δ, PFreeN p N
 
-/-- Saturation: no parked implication can fire. -/
-def Saturated (done : List Neg) : Prop :=
-  findFire done (splits done) = none
+/-! `Saturated` is in `LaxLogic.LJFORows` (round 2): the station equations
+stated there are its only consumers below the traversals. -/
 
 /-- Every member appears in `splits`. -/
 theorem splits_of_mem {Γ : List Neg} {X : Neg} (h : X ∈ Γ) :
@@ -399,140 +404,10 @@ def splitAt : (Γ : List Neg) → (X : Neg) → X ∈ Γ → {rest // (X, rest) 
         ⟨Y :: rest, List.mem_cons_of_mem _
           (List.mem_map_of_mem (f := fun zr => (zr.1, Y :: zr.2)) hr)⟩
 
-/-- The `∃p` conjunct of a `q`-implication member, and its membership in the
-interpolant's conjunction list. -/
-theorem qimpConjMem {p : String} {done : List Neg} {a : String} {N : Neg}
-    {rest : List Neg} (hXr : (Neg.imp (.atom a) N, rest) ∈ splits done) :
-    pGuard p a nTop (.imp (.atom a) (interp p [N] rest none)) ∈
-      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-        match X with
-        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
-        | .imp (.atom a) N =>
-            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
-        | .imp (.down (.imp Q' N')) N =>
-            nAnd
-              (.imp (.down (interp p [.imp (.down N') N] rest
-                             (some (.imp Q' N'))))
-                   (interp p [N] rest none))
-              (interp p [.imp (.down N') N] rest none)
-        | .circ Q =>
-            .circ (.down (interp p [.up Q] rest none))
-        | .imp (.down (.circ Q')) N =>
-            nAnd
-              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
-                   (interp p [N] rest none))
-              (interp p [] rest none)
-        | _ => nTop)) :=
-  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
-
-/-- Likewise for a surviving atom. -/
-theorem atomConjMem {p : String} {done : List Neg} {a : String}
-    {rest : List Neg} (hXr : (Neg.up (.atom a), rest) ∈ splits done) :
-    pGuard p a nTop (.up (.atom a)) ∈
-      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-        match X with
-        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
-        | .imp (.atom a) N =>
-            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
-        | .imp (.down (.imp Q' N')) N =>
-            nAnd
-              (.imp (.down (interp p [.imp (.down N') N] rest
-                             (some (.imp Q' N'))))
-                   (interp p [N] rest none))
-              (interp p [.imp (.down N') N] rest none)
-        | .circ Q =>
-            .circ (.down (interp p [.up Q] rest none))
-        | .imp (.down (.circ Q')) N =>
-            nAnd
-              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
-                   (interp p [N] rest none))
-              (interp p [] rest none)
-        | _ => nTop)) :=
-  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
-
-/-- And for a Dyckhoff member. -/
-theorem dykConjMem {p : String} {done : List Neg} {Q' : Pos} {N' N : Neg}
-    {rest : List Neg}
-    (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done) :
-    nAnd
-      (.imp (.down (interp p [.imp (.down N') N] rest (some (.imp Q' N'))))
-           (interp p [N] rest none))
-      (interp p [.imp (.down N') N] rest none) ∈
-      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-        match X with
-        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
-        | .imp (.atom a) N =>
-            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
-        | .imp (.down (.imp Q' N')) N =>
-            nAnd
-              (.imp (.down (interp p [.imp (.down N') N] rest
-                             (some (.imp Q' N'))))
-                   (interp p [N] rest none))
-              (interp p [.imp (.down N') N] rest none)
-        | .circ Q =>
-            .circ (.down (interp p [.up Q] rest none))
-        | .imp (.down (.circ Q')) N =>
-            nAnd
-              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
-                   (interp p [N] rest none))
-              (interp p [] rest none)
-        | _ => nTop)) :=
-  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
-
-/-- And for a parked box. -/
-theorem boxConjMem {p : String} {done : List Neg} {Q : Pos}
-    {rest : List Neg}
-    (hXr : (Neg.circ Q, rest) ∈ splits done) :
-    Neg.circ (.down (interp p [.up Q] rest none)) ∈
-      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-        match X with
-        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
-        | .imp (.atom a) N =>
-            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
-        | .imp (.down (.imp Q' N')) N =>
-            nAnd
-              (.imp (.down (interp p [.imp (.down N') N] rest
-                             (some (.imp Q' N'))))
-                   (interp p [N] rest none))
-              (interp p [.imp (.down N') N] rest none)
-        | .circ Q =>
-            .circ (.down (interp p [.up Q] rest none))
-        | .imp (.down (.circ Q')) N =>
-            nAnd
-              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
-                   (interp p [N] rest none))
-              (interp p [] rest none)
-        | _ => nTop)) :=
-  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
-
-/-- And for a `◯`-implication member. -/
-theorem cimpConjMem {p : String} {done : List Neg} {Q' : Pos} {N : Neg}
-    {rest : List Neg}
-    (hXr : (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done) :
-    nAnd
-      (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
-           (interp p [N] rest none))
-      (interp p [] rest none) ∈
-      ((splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-        match X with
-        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
-        | .imp (.atom a) N =>
-            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
-        | .imp (.down (.imp Q' N')) N =>
-            nAnd
-              (.imp (.down (interp p [.imp (.down N') N] rest
-                             (some (.imp Q' N'))))
-                   (interp p [N] rest none))
-              (interp p [.imp (.down N') N] rest none)
-        | .circ Q =>
-            .circ (.down (interp p [.up Q] rest none))
-        | .imp (.down (.circ Q')) N =>
-            nAnd
-              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
-                   (interp p [N] rest none))
-              (interp p [] rest none)
-        | _ => nTop)) :=
-  List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hXr⟩)
+/-! The five `∃p` conjunct projections `qimpConjMem`/`atomConjMem`/
+`dykConjMem`/`boxConjMem`/`cimpConjMem` are in `LaxLogic.LJFORows`: each
+repeated the whole station map in its statement, and each is now one
+`rowMem` against the named `eConjRows`. -/
 
 /-- **The isolated obligation** — the Dyckhoff antecedent dispatch: from a
 main-line stable proof of the antecedent `↓(Q′ ⊃ N′)`, derive the `∀p`
@@ -600,32 +475,8 @@ def boxClean {Q : Pos} {Γ' rest K : List Neg} {j : JD} {C : Neg}
     (Sub.refl _) d
 
 
-/-- The saturated `∃p` aggregate, as an equation. -/
-theorem interpE_eq {p : String} {done : List Neg} (hsat : Saturated done) :
-    interp p [] done none = nAndAll ((splits done).attach.map
-      (fun ⟨(X, rest), hXr⟩ =>
-        match X with
-        | .up (.atom a) => pGuard p a nTop (.up (.atom a))
-        | .imp (.atom a) N =>
-            pGuard p a nTop (.imp (.atom a) (interp p [N] rest none))
-        | .imp (.down (.imp Q' N')) N =>
-            nAnd
-              (.imp (.down (interp p [.imp (.down N') N] rest
-                             (some (.imp Q' N'))))
-                   (interp p [N] rest none))
-              (interp p [.imp (.down N') N] rest none)
-        | .circ Q =>
-            .circ (.down (interp p [.up Q] rest none))
-        | .imp (.down (.circ Q')) N =>
-            nAnd
-              (.imp (.down (interp p [] rest (some (.up (.down (.circ Q'))))))
-                   (interp p [N] rest none))
-              (interp p [] rest none)
-        | _ => nTop)) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
+/-! `interpE_eq` — the saturated `∃p` aggregate as an equation — is in
+`LaxLogic.LJFORows`, stated over the named map `eConjRows`. -/
 
 /-- Project a surviving atom from the interpolant. -/
 def atomAssemble {done K : List Neg} {a : String} {L : List Neg}
@@ -1149,188 +1000,10 @@ theorem interpA_and_eq {p : String} {done : List Neg}
   · rfl
 
 
-variable {p : String}
-
-theorem interpA_circAtom_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) {q : String} :
-    interp p [] done (some (.circ (.atom q))) = .circ (.down (nOrAll ([interp p [] done (some (.up (.atom q)))] ++
-              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.atom q)))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ (.atom q))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.circ (.atom q))))
-              | .circ R, hXr =>
-                  .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ (.atom q))))
-              | _, _ => nBot)))) := by
-  conv => lhs; rw [interp]
-  split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_circFls_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) :
-    interp p [] done (some (.circ .fls)) = .circ (.down (nOrAll ([interp p [] done (some (.up .fls))] ++
-              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ .fls))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ .fls)))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.circ .fls)))
-              | .circ R, hXr =>
-                  .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ .fls)))
-              | _, _ => nBot)))) := by
-  conv => lhs; rw [interp]
-  split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_circOr_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (P₁ P₂ : Pos) :
-    interp p [] done (some (.circ (.or P₁ P₂))) = .circ (.down (nOrAll ([interp p [] done (some (.circ P₁)),
-                     interp p [] done (some (.circ P₂)),
-                     interp p [] done (some (.up (.or P₁ P₂)))] ++
-              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.or P₁ P₂)))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ (.or P₁ P₂))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.circ (.or P₁ P₂))))
-              | .circ R, hXr =>
-                  .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ (.or P₁ P₂))))
-              | _, _ => nBot)))) := by
-  conv => lhs; rw [interp]
-  split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_circDownUp_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (P' : Pos) :
-    interp p [] done (some (.circ (.down (.up P')))) = .circ (.down (nOrAll ([interp p [] done (some (.circ P'))] ++
-              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.up P'))))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ (.down (.up P')))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.circ (.down (.up P')))))
-              | .circ R, hXr =>
-                  .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ (.down (.up P')))))
-              | _, _ => nBot)))) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_circDownCirc_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (P' : Pos) :
-    interp p [] done (some (.circ (.down (.circ P')))) = .circ (.down (nOrAll ([interp p [] done (some (.circ P'))] ++
-              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.circ P'))))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ (.down (.circ P')))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.circ (.down (.circ P')))))
-              | .circ R, hXr =>
-                  .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ (.down (.circ P')))))
-              | _, _ => nBot)))) := by
-  rw [interp]; split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_circDownAnd_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (M₁ M₂ : Neg) :
-    interp p [] done (some (.circ (.down (.and M₁ M₂)))) = .circ (.down (nOrAll ([interp p [] done (some (.up (.down (.and M₁ M₂))))] ++
-              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.and M₁ M₂))))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.circ (.down (.and M₁ M₂)))))
-              | .circ R, hXr =>
-                  .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ (.down (.and M₁ M₂)))))
-              | _, _ => nBot)))) := by
-  conv => lhs; rw [interp]
-  split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-theorem interpA_circDownImp_eq {p : String} {done : List Neg}
-    (hsat : Saturated done) (Q₀ : Pos) (N₀ : Neg) :
-    interp p [] done (some (.circ (.down (.imp Q₀ N₀)))) = .circ (.down (nOrAll ([interp p [] done (some (.up (.down (.imp Q₀ N₀))))] ++
-              (splits done).attach.map (fun ⟨(X, rest), hXr⟩ =>
-              match X, hXr with
-              | .imp (.atom a) N, hXr =>
-                  pGuard p a nBot
-                    (nAnd (.up (.atom a)) (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀))))))
-              | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interp p [.imp (.down N') N] rest (some (.imp Q' N')))
-                       (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
-              | .imp (.down (.circ Q')) N, hXr =>
-                  nAnd (interp p [] rest (some (.up (.down (.circ Q')))))
-                       (interp p [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
-              | .circ R, hXr =>
-                  .imp (.down (interp p [.up R] rest none))
-                       (interp p [.up R] rest (some (.circ (.down (.imp Q₀ N₀)))))
-              | _, _ => nBot)))) := by
-  conv => lhs; rw [interp]
-  split
-  all_goals rename_i heq
-  · rw [hsat] at heq; cases heq
-  · rfl
-
-/-- Every ◯-goal aggregate is box-wrapped: the row list, with its
-equation.  One case per goal shape, so callers with an abstract positive
-can still cross the wrapper. -/
-def interpCircShape {p : String} {done : List Neg} (hsat : Saturated done) :
-    ∀ (P₀ : Pos), Σ' L, interp p [] done (some (.circ P₀)) = .circ (.down (nOrAll L))
-  | .atom _ => ⟨_, interpA_circAtom_eq hsat⟩
-  | .fls => ⟨_, interpA_circFls_eq hsat⟩
-  | .or P₁ P₂ => ⟨_, interpA_circOr_eq hsat P₁ P₂⟩
-  | .down (.up P') => ⟨_, interpA_circDownUp_eq hsat P'⟩
-  | .down (.circ P') => ⟨_, interpA_circDownCirc_eq hsat P'⟩
-  | .down (.and M₁ M₂) => ⟨_, interpA_circDownAnd_eq hsat M₁ M₂⟩
-  | .down (.imp Q₀ N₀) => ⟨_, interpA_circDownImp_eq hsat Q₀ N₀⟩
+/-! The seven per-shape ◯-goal equations `interpA_circ*_eq` and the
+`interpCircShape` seam that chained them are superseded by the single
+`interp_circ_laxRows` of `LaxLogic.LJFORows` (round 2, batch 2); they are
+preserved in `Archive/ljfo-simp-round2-superseded.lean`. -/
 
 /-- **The isolated modal obligation** — the ◯-implication antecedent
 dispatch, the modal-descent miner: from a main-line stable proof of the
@@ -1876,178 +1549,38 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       · rw [interpA_atomT_eq hsat hq]; exact nTopIntro
       · rw [interpA_atom_eq hsat hq]
         exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_atom_eq hsat hq)
-          (fun {c Nc rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun hj => nomatch hj)
-          s
+          (fun hsp => rowMemR hsp) (fun hsp => rowMemR hsp)
+          (fun hsp => rowMemR hsp) (fun hj => nomatch hj) s
   | _, _, hm, hm2, hK, .up .fls, .tru, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.up .fls)))
       rw [interpA_fls_eq hsat]
       exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_fls_eq hsat)
-        (fun {c Nc rest} hsp =>
-          List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
-        (fun {Q' N rest} hsp =>
-          List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
-        (fun hj => nomatch hj)
-        s
+        (fun hsp => rowMem hsp) (fun hsp => rowMem hsp)
+        (fun hsp => rowMem hsp) (fun hj => nomatch hj) s
   | _, _, hm, hm2, hK, .up (.or P₁ P₂), .tru, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.up (.or P₁ P₂))))
       rw [interpA_or_eq hsat P₁ P₂]
       exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_or_eq hsat P₁ P₂)
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun hj => nomatch hj)
-        s
+        (fun hsp => rowMemR hsp) (fun hsp => rowMemR hsp)
+        (fun hsp => rowMemR hsp) (fun hj => nomatch hj) s
   | _, _, hm, hm2, hK, .up (.down M), .tru, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.up (.down M))))
       rw [interpA_down_eq hsat M]
       exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_down_eq hsat M)
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun hj => nomatch hj)
-        s
-  | _, _, hm, hm2, hK, .up (.atom q), .lax, .stable s => by
-      show Inv _ [] .tru (interp p [] done (some (.circ (.atom q))))
-      rw [interpA_circAtom_eq hsat]
-      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circAtom_eq hsat)
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun _ {R rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        s
-  | _, _, hm, hm2, hK, .up .fls, .lax, .stable s => by
-      show Inv _ [] .tru (interp p [] done (some (.circ .fls)))
-      rw [interpA_circFls_eq hsat]
-      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circFls_eq hsat)
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun _ {R rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        s
-  | _, _, hm, hm2, hK, .up (.or P₁ P₂), .lax, .stable s => by
-      show Inv _ [] .tru (interp p [] done (some (.circ (.or P₁ P₂))))
-      rw [interpA_circOr_eq hsat P₁ P₂]
-      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circOr_eq hsat P₁ P₂)
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun _ {R rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        s
-  | _, _, hm, hm2, hK, .up (.down (.up P')), .lax, .stable s => by
-      show Inv _ [] .tru (interp p [] done (some (.circ (.down (.up P')))))
-      rw [interpA_circDownUp_eq hsat P']
-      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownUp_eq hsat P')
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun _ {R rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        s
-  | _, _, hm, hm2, hK, .up (.down (.circ P')), .lax, .stable s => by
-      show Inv _ [] .tru (interp p [] done (some (.circ (.down (.circ P')))))
-      rw [interpA_circDownCirc_eq hsat P']
-      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownCirc_eq hsat P')
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun _ {R rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        s
-  | _, _, hm, hm2, hK, .up (.down (.and M₁ M₂)), .lax, .stable s => by
-      show Inv _ [] .tru (interp p [] done (some (.circ (.down (.and M₁ M₂)))))
-      rw [interpA_circDownAnd_eq hsat M₁ M₂]
-      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownAnd_eq hsat M₁ M₂)
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun _ {R rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        s
-  | _, _, hm, hm2, hK, .up (.down (.imp Q₀ N₀)), .lax, .stable s => by
-      show Inv _ [] .tru (interp p [] done (some (.circ (.down (.imp Q₀ N₀)))))
-      rw [interpA_circDownImp_eq hsat Q₀ N₀]
-      exact UStab (j := .lax) done hsat hP hm hm2 hK (interpA_circDownImp_eq hsat Q₀ N₀)
-        (fun {c Nc rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun {Q' N rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        (fun _ {R rest} hsp =>
-          List.mem_append_right _
-            (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-        s
+        (fun hsp => rowMemR hsp) (fun hsp => rowMemR hsp)
+        (fun hsp => rowMemR hsp) (fun hj => nomatch hj) s
+  -- Round 2: the ◯-goal entry is SHAPE-GENERIC.  The seven clauses it
+  -- replaces differed only in which `interpA_circ*_eq` they named; the
+  -- unified `interp_circ_laxRows` covers every positive, and the four row
+  -- memberships are the `laxRows_*Mem` projections of `LaxLogic.LJFORows`.
+  | _, _, hm, hm2, hK, .up P₀, .lax, .stable s => by
+      show Inv _ [] .tru (interp p [] done (some (.circ P₀)))
+      rw [interp_circ_laxRows hsat P₀]
+      exact UStab (j := .lax) done hsat hP hm hm2 hK
+        (interp_circ_laxRows hsat P₀)
+        (fun hsp => laxRows_qimpMem hsp) (fun hsp => laxRows_dykMem hsp)
+        (fun hsp => laxRows_cimpMem hsp)
+        (fun _ {R rest} hsp => laxRows_boxMem hsp) s
   termination_by Γ' K hm hm2 hK G j d =>
     (2 * sum3 [] + sum3 done + 3 ^ wNeg G + 3, 0)
   decreasing_by ljf_dec_a
@@ -2078,117 +1611,60 @@ def UStab (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       Stab Γ' j P₀ → Inv (interp p [] done none :: K) [] .tru (jBox j (nOrAll L))
   | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .rfoc r =>
       hV ▸ URF done hsat hP hm hm2 hK r
+  -- Round 2: each arm opens with the SAME identification of the row list,
+  -- `laxRows_of_eq`, in place of the seven per-shape `nOrAll_inj` chains.
+  -- What stays per-shape below is what genuinely selects a row: which
+  -- prefix entry `emitJ` emits, and which `∃p`-side traversal continues.
   | _, _, .atom q, _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
-      have hV' : interp p [] done (some (.circ (.atom q)))
-          = .circ (.down (nOrAll L)) := hV
-      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
-        ((interpA_circAtom_eq hsat).symm.trans hV')))
+      obtain rfl := laxRows_of_eq hsat (.atom q) hV
       refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
       by_cases hq : atomMem q done = true
       · rw [interpA_atomT_eq hsat hq]; exact nTopIntro
       · rw [interpA_atom_eq hsat hq]
         exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_atom_eq hsat hq)
-          (fun {c Nc rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun hj => nomatch hj)
-          s
+          (fun hsp => rowMemR hsp) (fun hsp => rowMemR hsp)
+          (fun hsp => rowMemR hsp) (fun hj => nomatch hj) s
   | _, _, .fls, _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
-      have hV' : interp p [] done (some (.circ .fls))
-          = .circ (.down (nOrAll L)) := hV
-      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
-        ((interpA_circFls_eq hsat).symm.trans hV')))
+      obtain rfl := laxRows_of_eq hsat .fls hV
       refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
       rw [interpA_fls_eq hsat]
       exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_fls_eq hsat)
-        (fun {c Nc rest} hsp =>
-            List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
-          (fun {Q' N' N rest} hsp =>
-            List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
-          (fun {Q' N rest} hsp =>
-            List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩))
-          (fun hj => nomatch hj)
-        s
+        (fun hsp => rowMem hsp) (fun hsp => rowMem hsp)
+        (fun hsp => rowMem hsp) (fun hj => nomatch hj) s
   | _, _, .or P₁ P₂, _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
-      have hV' : interp p [] done (some (.circ (.or P₁ P₂)))
-          = .circ (.down (nOrAll L)) := hV
-      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
-        ((interpA_circOr_eq hsat P₁ P₂).symm.trans hV')))
+      obtain rfl := laxRows_of_eq hsat (.or P₁ P₂) hV
       refine emitJ .lax (List.mem_append_left _
         (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
           (List.mem_cons_self ..)))) ?_
       rw [interpA_or_eq hsat P₁ P₂]
       exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_or_eq hsat P₁ P₂)
-        (fun {c Nc rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun hj => nomatch hj)
-        s
+        (fun hsp => rowMemR hsp) (fun hsp => rowMemR hsp)
+        (fun hsp => rowMemR hsp) (fun hj => nomatch hj) s
   | _, _, .down (.up P'), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
-      have hV' : interp p [] done (some (.circ (.down (.up P'))))
-          = .circ (.down (nOrAll L)) := hV
-      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
-        ((interpA_circDownUp_eq hsat P').symm.trans hV')))
+      obtain rfl := laxRows_of_eq hsat (.down (.up P')) hV
       exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (UEntry done hsat hP hm hm2 hK (.up P')
           (.stable (.laxOf (unStable (negOfDownStab (.up P') s)))))
   | _, _, .down (.circ P'), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
-      have hV' : interp p [] done (some (.circ (.down (.circ P'))))
-          = .circ (.down (nOrAll L)) := hV
-      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
-        ((interpA_circDownCirc_eq hsat P').symm.trans hV')))
+      obtain rfl := laxRows_of_eq hsat (.down (.circ P')) hV
       exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (UEntry done hsat hP hm hm2 hK (.circ P') (negOfDownStab (.circ P') s))
   | _, _, .down (.and M₁ M₂), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
-      have hV' : interp p [] done (some (.circ (.down (.and M₁ M₂))))
-          = .circ (.down (nOrAll L)) := hV
-      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
-        ((interpA_circDownAnd_eq hsat M₁ M₂).symm.trans hV')))
+      obtain rfl := laxRows_of_eq hsat (.down (.and M₁ M₂)) hV
       refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
       rw [interpA_down_eq hsat (.and M₁ M₂)]
-      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_down_eq hsat (.and M₁ M₂))
-        (fun {c Nc rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun hj => nomatch hj)
-        s
+      exact UStab (j := .tru) done hsat hP hm hm2 hK
+        (interpA_down_eq hsat (.and M₁ M₂))
+        (fun hsp => rowMemR hsp) (fun hsp => rowMemR hsp)
+        (fun hsp => rowMemR hsp) (fun hj => nomatch hj) s
   | _, _, .down (.imp Q₀ N₀), _, L, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, .laxOf s => by
-      have hV' : interp p [] done (some (.circ (.down (.imp Q₀ N₀))))
-          = .circ (.down (nOrAll L)) := hV
-      obtain rfl := nOrAll_inj (Pos.down.inj (Neg.circ.inj
-        ((interpA_circDownImp_eq hsat Q₀ N₀).symm.trans hV')))
+      obtain rfl := laxRows_of_eq hsat (.down (.imp Q₀ N₀)) hV
       refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
       rw [interpA_down_eq hsat (.imp Q₀ N₀)]
-      exact UStab (j := .tru) done hsat hP hm hm2 hK (interpA_down_eq hsat (.imp Q₀ N₀))
-        (fun {c Nc rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun {Q' N rest} hsp =>
-            List.mem_append_right _
-              (List.mem_map_of_mem (List.mem_attach _ ⟨(_, _), hsp⟩)))
-          (fun hj => nomatch hj)
-        s
+      exact UStab (j := .tru) done hsat hP hm hm2 hK
+        (interpA_down_eq hsat (.imp Q₀ N₀))
+        (fun hsp => rowMemR hsp) (fun hsp => rowMemR hsp)
+        (fun hsp => rowMemR hsp) (fun hj => nomatch hj) s
   | _, _, _, _, _, hm, hm2, hK, hV, qmem, dmem, cmem, bmem, @Stab.lfoc _ _ _ N₀ h lf =>
       if hd : N₀ ∈ done then
         match N₀, hP _ hd, hd, lf with
@@ -2287,7 +1763,7 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         exact List.mem_cons_self ..
   | _, _, .atom q, .lax, hm, hm2, hK, .init h => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.atom q))))
-      rw [interpA_circAtom_eq hsat]
+      rw [interp_circ_laxRows hsat (.atom q)]
       refine emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..)) ?_
       by_cases hq : atomMem q done = true
       · rw [interpA_atomT_eq hsat hq]; exact nTopIntro
@@ -2306,7 +1782,7 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         (URF done hsat hP hm hm2 hK r₁)
   | _, _, .or P₁ P₂, .lax, hm, hm2, hK, .or1 r₁ => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.or P₁ P₂))))
-      rw [interpA_circOr_eq hsat P₁ P₂]
+      rw [interp_circ_laxRows hsat (.or P₁ P₂)]
       exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (URF done hsat hP hm hm2 hK r₁)
   | _, _, .or P₁ P₂, .tru, hm, hm2, hK, .or2 r₂ => by
@@ -2317,7 +1793,7 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
         (URF done hsat hP hm hm2 hK r₂)
   | _, _, .or P₁ P₂, .lax, hm, hm2, hK, .or2 r₂ => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.or P₁ P₂))))
-      rw [interpA_circOr_eq hsat P₁ P₂]
+      rw [interp_circ_laxRows hsat (.or P₁ P₂)]
       exact emitJ .lax (List.mem_append_left _
           (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
         (URF done hsat hP hm hm2 hK r₂)
@@ -2329,12 +1805,12 @@ def URF (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
       exact nOrAllIntro (List.mem_append_left _ (List.mem_cons_self ..)) h₁
   | _, _, .down (.up P'), .lax, hm, hm2, hK, .rel dI => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.up P')))))
-      rw [interpA_circDownUp_eq hsat P']
+      rw [interp_circ_laxRows hsat (.down (.up P'))]
       exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (UEntry done hsat hP hm hm2 hK (.up P') dI)
   | _, _, .down (.circ P'), .lax, hm, hm2, hK, .rel dI => by
       show Inv _ [] .tru (interp p [] done (some (.circ (.down (.circ P')))))
-      rw [interpA_circDownCirc_eq hsat P']
+      rw [interp_circ_laxRows hsat (.down (.circ P'))]
       exact emitJ .lax (List.mem_append_left _ (List.mem_cons_self ..))
         (UEntry done hsat hP hm hm2 hK (.circ P') dI)
   | _, _, .down (.and _ _), .lax, _, _, _, .rel dI => nomatch dI

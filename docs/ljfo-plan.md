@@ -981,3 +981,130 @@ named adjuncts.
 
 Probe: `wip/ljfo_ub.lean` (exe `ubrun`), integrated from the agent
 worktree; prong-1 artefacts already integrated and kernel-verified.
+
+## Simp round 2 (2026-08-12): the `laxRows` collapse — both batches, done
+
+**Batch 1** (commit 9cff0c7): `LaxLogic/LJFORows.lean` created ON TOP of
+the tail — `circStationRows`/`laxPrefix`/`laxRows` named and the unified
+equation `interp_circ_laxRows` proved by `cases Q` from the seven
+`interpA_circ*_eq` lemmas.  Additive; nothing in the tail edited.
+
+**Batch 2** (this commit): the dependency reversed, the consumers
+collapsed, and round 1's deferred `LJFO.lean` dedup folded in.
+
+### Restructure
+
+`LJFORows.lean` now imports only the frozen `LaxLogic.LJFOCore`, and
+`LaxLogic.LJFO` imports IT.  Moved down, because each needs nothing beyond
+`interp`:
+
+* `Saturated` — the tail's only definition that the station equations use;
+* `rowMem` / `rowMemR`, the two row-membership combinators.  Every
+  membership side condition in the traversals has the shape
+  `f ⟨(X,rest),hsp⟩ ∈ (splits done).attach.map f`, optionally behind a
+  goal-inversion prefix, and every one of the 55 call sites re-proved it
+  inline as a three-line
+  `List.mem_append_right _ (List.mem_map_of_mem (List.mem_attach _ ⟨_,_⟩))`;
+* `eConjRows` — the `∃p` station map — with `interpE_eq` and the five
+  `*ConjMem` projections restated over it.  Those five repeated the whole
+  19-line map in their STATEMENT; each is now one `rowMem`.  (This is
+  round 1's deferred "ConjMems row families" item.)
+
+### The unified equation absorbs its own shape analysis
+
+`interp`'s goal dispatch matches on the positive UNDER the `◯`
+(`| .circ (.atom q) => …`, `| .circ .fls => …`, …), so `rw [interp]`
+cannot fire at an abstract `Q` — that is *why* seven lemmas existed.
+Round 2 keeps the case split and stops restating the lemma around it:
+
+    theorem interp_circ_laxRows (hsat : Saturated done) (Q : Pos) :
+        interp p [] done (some (◯Q)) = ◯(↓(nOrAll (laxRows p done Q))) := by
+      match Q with
+      | .atom _ | .fls | .or _ _ | .down (.up _) | .down (.circ _)
+      | .down (.and _ _) | .down (.imp _ _) =>
+        conv => lhs; rw [interp]
+        split
+        all_goals rename_i heq
+        · rw [hsat] at heq; cases heq
+        · rfl
+
+180 lines — the seven lemmas plus the `interpCircShape` Σ'-seam, which
+turned out to have NO call sites — become 14.  Both are preserved in
+`Archive/ljfo-simp-round2-superseded.lean`.
+
+### Consumer collapse: what folded, and what legitimately stayed per-shape
+
+* **`UEntry` — folded, 7 → 1.**  The seven ◯-goal arms differed only in
+  which `interpA_circ*_eq` they named; they are now the single
+  shape-generic clause `| _, _, hm, hm2, hK, .up P₀, .lax, .stable s`,
+  whose four row memberships are the named `laxRows_qimpMem` /
+  `_dykMem` / `_cimpMem` / `_boxMem`.  With the four `tru` arms
+  deduplicated alongside: 178 → 36 lines.
+* **`UStab` — prefix folded, bodies stayed.**  The seven `.laxOf` arms all
+  opened with the same five-line
+  `nOrAll_inj (Pos.down.inj (Neg.circ.inj (…)))` identification of the row
+  list; that is now one `laxRows_of_eq`.  Their bodies stay per-shape and
+  should: each emits a *different* prefix entry (`.or` emits the third of
+  three) and continues into a different `∃p`-side traversal (`.atom` splits
+  on `atomMem`, `.down (.up P')` re-enters `UEntry` through `negOfDownStab`
+  under a `laxOf`, `.down (.circ P')` without it).  111 → 52 lines.
+* **`URF` — equation folded, arms stayed.**  The five lax arms now name the
+  unified equation; the arms themselves stay per-shape by the design pin's
+  own criterion — `or1`/`or2` select prefix rows 1 and 2, and
+  `.down (.up P')` / `.down (.circ P')` dispatch to different `UEntry`
+  calls while `.down (.and _ _)` / `.down (.imp _ _)` are `nomatch`.
+* **`UInvG` — nothing to migrate.**  Its arms (`.stable`, `.orL`, `.flsL`,
+  `.downL`, `.atomL`) are already flag-generic; the row lists reach it
+  only as the parameter `L`.  Recorded so round 3 does not re-survey it.
+* **`ULF`, `UpElim`, `UpLF`, `UpInvG` — no membership blobs at all**; they
+  thread `qmem`/`dmem`/`cmem`/`bmem` through unchanged.
+
+### Discipline
+
+Zero statement changes.  `satE2`, `satA2`, `CimpAnt`, `eSound`, `aSound`
+keep their exact statements; all seven `#guard_msgs` axiom pins (five in
+`LJFOCore.lean`, two in `LJFO.lean`) are untouched and re-verified, and
+`wip.ljfo_theta_axioms` still builds clean with its five θ-family pins at
+`[propext, Quot.sound]`.  `interpE_eq` and the five `*ConjMem` keep their
+names and types up to the naming of the map.  `LJFOCore.lean` was not
+touched.
+
+### Metrics
+
+| | before (797f301) | after |
+|---|---|---|
+| `LaxLogic/LJFO.lean` | 2726 | 2202 |
+| `LaxLogic/LJFORows.lean` | 81 | 264 |
+| built total | 2807 | 2466 (**−341, −12.1 %**) |
+| `Archive/…round2-superseded.lean` | — | 224 (not built) |
+| tail elaboration (`lean`, solo, core cached) | 1126 s | 1163 s (**+3.3 %**) |
+| `LJFO.olean` (+`LJFORows.olean`) | 344.8 MB | 333.8 MB (−3.2 %) |
+
+**The compile-time target was NOT met, and the round-1 style of estimate
+that predicted it is withdrawn.**  The design pin set "1773 s tail
+re-elaboration" as the baseline to beat; the honest like-for-like pair
+(both runs `lean` on the tail alone, `LJFOCore` cached, nothing else on
+the machine) is 1126 s → 1163 s — flat to within a few percent, if
+anything marginally worse.  Two intermediate figures seen during this
+session must NOT be quoted as a speedup: the 1740 s derived from the
+baseline `lake` run's olean timestamps was contaminated by a concurrent
+elaboration for 12 of its 29 minutes, and the post-change
+`lake build LaxLogic.LJFO` of 1393 s is not comparable to it for the same
+reason.
+
+Why flat, in retrospect: the seven `rfl`s that closed the seven per-shape
+equations still happen — they are now the seven branches of
+`interp_circ_laxRows`'s `match Q`, because `interp`'s goal dispatch
+genuinely needs the shape.  Round 2 removed the *restatement* of those
+seven aggregates, not the *defeq checks* on them; and the collapsed
+`UEntry` clause pays back a little by unfolding `laxRows`/`laxPrefix`/
+`circStationRows` where the old clauses had the list spelled out.  The
+deliverable is therefore source size and a single point of truth for each
+station map — 55 inline membership blobs and five verbatim copies of the
+19-line `∃p` map are gone — not wall-clock.
+
+**Round 3 (NOT this session): farms / profiling / fidelity table.**  The
+timing question above is precisely its remit: this session has one sample
+per configuration, which bounds the answer at "flat" but does not
+attribute the cost.  Profile before assuming any structural change here
+buys elaboration time.
