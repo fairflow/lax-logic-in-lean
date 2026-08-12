@@ -317,3 +317,42 @@ p-pure model, w ∈ V p is the ONLY p-fact; forcing φ(p) at w is
 determined by the closed theory PLUS the V p-decoration pattern of
 the cone above w — screen whether the residue split can live in that
 pattern.
+
+### (f) reduced to the promise-stable kernel (2026-08-12 ~22:30, derivation pinned before implementation)
+
+Working `MwitResidue` for `lvlB` with the symmetric ping-pong
+(`agree_mwitN` at the base pair (k, m), M-side seed u′ carrying ψ):
+
+* **Fallible branch DISCHARGES**: the matched pair goes fallible →
+  `top` at `traceC t̂` (`Rm k t̂` gives the canonical RmC-move; force ψ
+  rides on the fallible side).
+* **Grown branch DISCHARGES**: matched `t̂ ~ u″` at level 2d−1 with
+  `trace t̂ ≠ Δ.val` strictly grown → depth drop finances a fresh
+  reflexive proper triple at `traceC t̂` (2d″+1 ≤ 2d−1), exactly the
+  `witTriple_mforth` strict-growth pattern.
+* **The stuck branch**: `trace t̂ = Δ.val`.  Iterating cannot help in
+  general, BUT if the stuck branch recurs for every choice then every
+  `Rm`-successor of k traces to Δ, which forces **promise-stability**:
+  `obInv(Δ) =val Δ` (all promises already honoured), and then EVERY
+  canonical `RmC`-successor of Δ is val-Δ — so the conclusion demands
+  a SAME-trace triple, whose base link at the fixed M-witness is ONE
+  level short (2d−1 vs 2d).  This is the invariant one-short wall in
+  its final, minimal form.
+
+**The residual Prop** (to isolate): at promise-stable Δ, a same-trace
+matched pair at 2d−1 promotes to a triple (equivalently: level
+promotion at promise-stable worlds).  Two discharge designs, ranked:
+(1) LEVEL RE-FOUNDING on promise-depth — the triple's 2d financing is
+calibrated for the general descent; at promise-stable Δ the remaining
+descent is 0, so the true need should be O(1); re-found `WitTripleC`'s
+levels on `pdepth Δ := number of strict obInv-growths remaining`
+(≤ canonDepthC), making promise-stable worlds cheap.  A principled
+construction repair (the plan licenses it), touching witTripleC's
+level arithmetic throughout.  (2) The isolation: state
+`StableCore`, prove `mwitResidue_lvlB_of_stableCore` (the two
+discharged branches above are machine-checkable NOW), and SCREEN the
+promise-stable configuration on the battery (it is finitely checkable
+— stage-2's own text licenses exactly this: isolate the surviving
+configuration and re-screen).  Stage-2 completion = the m-clauses
+(DONE) + this reduction + the screen + the corner's analogous
+treatment.
