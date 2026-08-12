@@ -173,3 +173,45 @@ diamond-case shape).
 Stage 2 therefore has a single sharpened target list: `ObInvForthCore`
 + the agreement-side m-clauses + `ConfResidue`, all of one family, all
 under bare possibility.
+
+## Stage 2 design pin (2026-08-12 ~21:50, BEFORE implementation — survives compaction)
+
+The sorry sites (`layered_of_frag_agree_W`, PLLSemUIChar.lean:322/327)
+are the mforth/mback of the AGREEMENT family `Z α w w' := agreement on
+V-formulas of crank ≤ 2α`.  The i-clauses are proved there via the
+implication-refutation trick + `agree_of_char`; the m-clauses have no
+such trick in general PLL.  Under BOTH models confluent, the WITNESS
+form is provable by the **σ-ping-pong**:
+
+* σ(t) := {D ∈ L : t ⊩ D}, L the finite rank-(2α−2) V-formula list
+  (the char machinery's list).  ⋀σ is transferable: crank(⋀σ) ≤ 2α−2,
+  crank(◯⋀σ) ≤ 2α−1 ≤ 2α.
+* Bare possibility (`force_somehow_iff_of_confluent`) turns
+  `t ⊩ ⋀σ` at an Rm-successor into `base ⊩ ◯⋀σ` and back — LOCAL
+  witness extraction on both sides (the ∀∃ collapse; extraction at the
+  reflexive point needs nothing).
+* Ping-pong: seed σ₀ := σ(u) (∪ the demanded ψ for mwit); transfer
+  ◯⋀σ across the agreement, extract the other side's witness, its σ
+  is ⊇; alternate.  σ ascends in the FINITE lattice of subsets of L →
+  stabilises; at stabilisation the two witnesses have EQUAL σ, i.e.
+  rank-(2α−2) V-agreement — `Z (α−1)`-linked.  Termination: strong
+  induction on `L.card − σ.card`.
+* This serves the WITNESS clauses (`mwit`, and `MBack` dually), which
+  re-choose the K-side witness — exactly §43's "mforth choice-freedom
+  refactor", now with a concrete argument.  The choice-free clause
+  (answer the GIVEN u) is NOT claimed and is not needed by the
+  amalgamation.
+
+Implementation order: (a) read `LayeredBisimWit`'s exact mwit/MBack
+field types (levels!); (b) the σ-kit over the char list (σ as a
+Finset, ⋀σ crank/atoms lemmas); (c) the ping-pong lemma
+(`confluent_sigma_match`); (d) `agree_mwit`/`agree_mback` under
+`MutuallyConfluent M ∧ MutuallyConfluent N`; (e) the confluent
+`layered_of_frag_agree_Wit` with NO sorries; (f) then revisit
+`ObInvForthCore` and `ConfResidue` with the proved link clauses (the
+missing corner base-link may now be constructible: the ping-pong can
+seed σ with the promise set — the directed witness AND the link from
+one argument).  File: `wip/pcll1pv_stage2.lean`.  All in-repo
+ingredients: charPos/charNeg/agree_of_char/crank lemmas (Char file),
+force_somehow_iff_of_confluent (PLLFrames), directedness by iterated
+confluence (new small lemma).
