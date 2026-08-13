@@ -15,6 +15,12 @@ rev = "v4.31.0"
 [[lean_lib]]
 name = "LaxLogic"
 
+# BiLax: the bi-lax extension of PLL (docs/bilax-plan.md), kept out of
+# the cluttered main directory.  Root module imports the round files.
+[[lean_lib]]
+name = "BiLax"
+
+
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup
 # (cache-shipped C IR miscompile in Mathlib.Data.Set.Basic; full analysis in
 # Main.lean's history).  FIXED by the v4.31.0 toolchain bump (adopted here,
