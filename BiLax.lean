@@ -3,3 +3,4 @@ import BiLax.Syntax
 import BiLax.Frames
 import BiLax.Hilbert
 import BiLax.Soundness
+import BiLax.Labelled
