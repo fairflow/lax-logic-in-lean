@@ -1,0 +1,335 @@
+⚠ [2966/2992] Replayed LaxLogic.PLLFormula
+warning: LaxLogic/PLLFormula.lean:99:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:102:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:104:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:107:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:110:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:113:31: This simp argument is unused:
+  subformulasOf
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, s̵u̵b̵f̵o̵r̵m̵u̵l̵a̵s̵O̵f̵,̵ ̵isSomehowFree] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:113:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: LaxLogic/PLLFormula.lean:159:0: P ⊃ (◯(Q ∧ ⊥))
+info: LaxLogic/PLLFormula.lean:160:0: P
+info: LaxLogic/PLLFormula.lean:161:0: ⊤ ∧ P
+⚠ [2969/2992] Replayed LaxLogic.PLLSequent
+warning: LaxLogic/PLLSequent.lean:216:10: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLSequent.lean:326:58: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:327:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:327:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:335:56: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:336:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:336:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:388:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:389:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:389:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:396:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:397:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:397:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:450:41: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:450:58: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:451:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:457:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:457:56: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:458:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:499:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:499:56: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:500:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [2985/2992] Replayed LaxLogic.PLLFinsetKit
+warning: LaxLogic/PLLFinsetKit.lean:101:17: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:147:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:148:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:347:19: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:399:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:400:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:405:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:406:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:411:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:412:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [2986/2992] Replayed LaxLogic.PLLG4Set
+warning: LaxLogic/PLLG4Set.lean:186:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLG4Set.lean:187:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+ℹ [2987/2992] Replayed LaxLogic.PLLG4Term
+info: LaxLogic/PLLG4Term.lean:606:0: some "(→R ⊥L)"
+info: LaxLogic/PLLG4Term.lean:609:0: some "(◯R init)"
+info: LaxLogic/PLLG4Term.lean:612:0: none
+info: LaxLogic/PLLG4Term.lean:616:0: some "(→L◯◯ (→L→ (→R (→L◯◯ (◯R init) init)) (◯L (◯R init))) init)"
+ℹ [2989/2992] Replayed LaxLogic.PLLCountermodelEmit
+info: LaxLogic/PLLCountermodelEmit.lean:617:0: refuting world: w4  (20 worlds)
+  w0: believes []
+  w1: believes [], promises-false [◯p, p]
+  w2: believes [], promises-false [◯q, q]
+  w3: believes [], promises-false [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p, q]
+  w4: believes [◯(p ∨ q)]
+  w5: believes [◯(p ∨ q)], promises-false [◯p, p]
+  w6: believes [◯(p ∨ q)], promises-false [◯q, q]
+  w7: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q)]
+  w8: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q)], promises-false [◯q, q]
+  w9: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q)]
+  w10: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q)], promises-false [◯p, p]
+  w11: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q)]
+  w12: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q), (p ∨ q), p]
+  w13: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q), (p ∨ q), p], promises-false [◯q, q]
+  w14: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p]
+  w15: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q), (p ∨ q), q]
+  w16: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q), (p ∨ q), q], promises-false [◯p, p]
+  w17: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), q]
+  w18: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p, q]
+  w19: believes [⊥, (◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p, q]
+info: LaxLogic/PLLCountermodelEmit.lean:646:0: 'PLLND.FinCM.not_provable_of_check' depends on axioms: [propext, Quot.sound]
+info: LaxLogic/PLLCountermodelEmit.lean:647:0: 'PLLND.somehow_p_not_p' depends on axioms: [propext, Quot.sound]
+FRJ-lifting probe: arity of the ◯-refutation rule
+(= number of Rm-MAXIMAL successors of a world)
+
+n=2 all well-formed          : 384 frames, 768 worlds
+  ◯-rule arity 1 (UNARY): 640 (83%)
+  arity 2: 128 (16%)   arity ≥3: 0 (0%)
+  max arity seen: 2
+n=2 REDUCED (partial orders) : 256 frames, 512 worlds
+  ◯-rule arity 1 (UNARY): 512 (100%)
+  arity 2: 0 (0%)   arity ≥3: 0 (0%)
+  max arity seen: 1
+n=2 confluent (PCLL class)   : 384 frames, 768 worlds
+  ◯-rule arity 1 (UNARY): 640 (83%)
+  arity 2: 128 (16%)   arity ≥3: 0 (0%)
+  max arity seen: 2
+n=2 reduced AND confluent    : 256 frames, 512 worlds
+  ◯-rule arity 1 (UNARY): 512 (100%)
+  arity 2: 0 (0%)   arity ≥3: 0 (0%)
+  max arity seen: 1
+
+n=3 all well-formed          : 44160 frames, 132480 worlds
+  ◯-rule arity 1 (UNARY): 111552 (84%)
+  arity 2: 18240 (13%)   arity ≥3: 2688 (2%)
+  max arity seen: 3
+n=3 REDUCED (partial orders) : 23552 frames, 70656 worlds
+  ◯-rule arity 1 (UNARY): 69696 (98%)
+  arity 2: 960 (1%)   arity ≥3: 0 (0%)
+  max arity seen: 2
+n=3 confluent (PCLL class)   : 35904 frames, 107712 worlds
+  ◯-rule arity 1 (UNARY): 87744 (81%)
+  arity 2: 17280 (16%)   arity ≥3: 2688 (2%)
+  max arity seen: 3
+n=3 reduced AND confluent    : 17600 frames, 52800 worlds
+  ◯-rule arity 1 (UNARY): 52800 (100%)
+  arity 2: 0 (0%)   arity ≥3: 0 (0%)
+  max arity seen: 1
+
+FRJ-PROBE-DONE

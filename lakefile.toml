@@ -186,6 +186,10 @@ root = "wip.rnDictGen"
 name = "rncprobe"
 root = "wip.rnc_probe"
 
+[[lean_exe]]
+name = "frjprobe"
+root = "wip.frj_probe"
+
 # Kreisel-Putnam screen for candidate ◯-rejection rules (BiLax (b)).
 [[lean_exe]]
 name = "rejscreen"
