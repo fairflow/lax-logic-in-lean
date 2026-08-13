@@ -174,3 +174,60 @@ is **not** justified as the disproof engine, and rounds 1–2 are
 corrected accordingly.  Whether to continue is a judgement call about
 appetite for genuinely new proof theory (item 4.2's hybrid rule is the
 crux), and it should be made explicitly rather than by momentum.
+
+
+## 6. Addendum (2026-08-13): the dual-intuitionistic reference, VERIFIED
+
+Matthew asked whether the handoff's §7 claim — "dual-intuitionistic
+logic (exclusion without implication) was shown by Brunner & Carnielli
+to be, as a logic, the dual of Int" — rests on a real reference.
+
+**The reference is REAL.**  A. B. M. Brunner & W. Carnielli,
+"Anti-intuitionism and paraconsistency", *Journal of Applied Logic*
+**3** (2005), 161–184 — volume and pages confirmed from two
+independent sources.  They propose classes of anti-intuitionistic
+propositional logics, show them paraconsistent, and build a hierarchy
+from Johansson's dual calculus to Gödel's three-valued dual calculus.
+Adjacent and equally real: I. Urbas, "Dual-Intuitionistic Logic",
+*NDJFL* **37** (1996) (Project Euclid).
+
+**But the handoff's gloss is imprecise in two ways, and the second
+matters.**
+
+1. *"Exclusion without implication"* does not describe Urbas's system:
+   his `LDJ` "is formulated using the same connectives as Gentzen's
+   intuitionistic sequent system LJ" — implication included — and the
+   pseudo-difference operator is ADDED to both `LJ` and `LDJ`
+   afterwards, to get a sharper mapping.  The pure `{∧,∨,⤙}`
+   co-fragment is Trafford's and Bellin's object, not Urbas's.
+2. *The duality is on the wrong axis for us.*  Urbas's own summary:
+   "whereas `LJ` has the same sentential counter-theorems as classical
+   `LK` but not the same theorems, **`LDJ` has the same sentential
+   theorems as `LK` but not the same counter-theorems**".  And the
+   field's coherence principle: *if a formula is a theorem (provable)
+   in one system then the dual sentence is a counter-theorem
+   (refutable) in the dual system.*
+
+So the verified duality is **provability ⟷ refutability**:
+
+    IPC ⊢ φ   ⟺   d(φ) is a COUNTER-theorem of the dual system.
+
+Contraposing, `IPC ⊬ φ` ⟺ `d(φ)` is NOT a counter-theorem ⟺ `d(φ)` is
+satisfiable.  **Existential on both sides.**  The duality is an
+isomorphism between the two problems, not a reduction of the hard one
+to the easy one, and in Matthew's own ∀∃/∃∀ terms it delivers a
+positive calculus for the *unsatisfiable* category — which is exactly
+the category he correctly observed our RN(◯,{}) problems are NOT in.
+Worse, on our side of the trade we are already well served:
+"`φ ⊢ ψ`" IS the unsatisfiability side (`φ ⤙ ψ` unsatisfiable, by (a)),
+and we have a proof calculus for it.  The dual would hand us a second
+one and give nothing for disproof.
+
+**The constructive redirect stands, and does not need `⤙` at all.**
+What Matthew actually wants — a positive derivation certifying
+non-provability — EXISTS for IPC: Fiorentini–Ferrari's `FRJ(G)` and
+Pinto–Dyckhoff's `CRIP` (§1).  Neither uses co-implication.  Trafford
+(*Logica Universalis* 11, 2017) argues explicitly against "countermodel
+as stand-in for refutation", so the philosophical position is shared
+and live in the literature; the technical delivery for a MODAL
+intuitionistic base is the open problem (§2).
