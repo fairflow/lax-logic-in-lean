@@ -2082,17 +2082,13 @@ def dykAnt : DykAnt p :=
 
 end LJFO
 
-/-! ### Axiom audit for the conditional minimality statements
+/-! ### Axiom audit
 
-Both are `sorryAx`-free: conditional means *parameterised by the typed
-obligation `CimpAnt`*, never assumed. -/
-
-/-- info: 'LJFO.satE2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs in
-#print axioms LJFO.satE2
-
-/-- info: 'LJFO.satA2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs in
-#print axioms LJFO.satA2
-
--- (simp round 1 baseline bump, 2026-08-11)
+`satE2` and `satA2` are pinned in `LaxLogic/LJFOAudit.lean`.  Both are
+`sorryAx`-free: *conditional* means parameterised by the typed obligation
+`CimpAnt`, never assumed.  The pins were batched out of this file 2026-08-13
+because the audit is a periodic check, not a per-edit one.  It buys no build
+time: `#print axioms LJFO.satE2` showed as ~223 s, but that is the kernel
+checking `satE2` when the olean is written, which the build pays either way —
+measured after the move, the tail is unchanged and the audit costs 1.8 s.
+Run `lake build LaxLogic.LJFOAudit` before any commit that changes a proof. -/

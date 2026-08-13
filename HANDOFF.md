@@ -1,6 +1,6 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
-**Last updated:** 2026-08-07 by Opus 5 — see **§10**, which supersedes §§2 and 7 where they conflict
+**Last updated:** 2026-08-13 by Opus 5 — see **§12** (LJF◯ rounds 2–3, and the axiom audit moved OUT of the build path), then **§10**, which supersedes §§2 and 7 where they conflict
 **Repo state:** `main` @ 925bc10 — `lake build` clean, every `#guard_msgs` audit green; no live feature branch (`ui-confluence` merged 2026-08-06)
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.
 
@@ -8,6 +8,9 @@
 * **`docs/calculus-map.md`** — the summary of results: which of the seven proof
   systems each result belongs to, what is proved about it, and whose it is
   (ours vs Fairtlough–Mendler 1997). Read it before asserting provenance.
+* **`LaxLogic/LJFOAudit.lean`** — since 2026-08-13 the seven LJF◯ axiom pins
+  live here and are NOT built by `lake build LaxLogic.LJFO`. Run
+  `lake build LaxLogic.LJFOAudit` before any commit that changes a proof (§12).
 * **`docs/next-session.md`** — the live threads as of 2026-08-07, one section
   each, with the next action and who decides. Read it before starting work.
 
@@ -159,3 +162,130 @@ simplification rounds). The live thread is `docs/next-session.md`;
 the campaign dossier is `docs/ljfo-plan.md`. A repo `CLAUDE.md` now
 exists (created in the review round) with the testing-for-counterexamples
 doctrine.
+
+## 12. Update — 2026-08-13: simplification rounds 2 and 3 CLOSED; the audit is now batched
+
+Branch `ljf-pll`. Rounds 2 and 3 of the LJF◯ simplification are complete and
+pushed; **layer 4 (the full-UI attempt) is still PAUSED and is the next
+thread**, unchanged in scope. Nothing in this section touches a statement:
+`satE2`, `satA2`, `CimpAnt`, `eSound`, `aSound` and all seven axiom pins keep
+their exact statements throughout, and **UI for PLL remains OPEN**.
+
+### What changed in the source
+
+* **`LaxLogic/LJFORows.lean`** is now the single home of every station map
+  and every aggregate equation, sitting between the frozen core and the tail
+  (round 2 reversed batch 1's dependency, so `LaxLogic.LJFO` imports it):
+  `eConjRows` (∃p), `truStationRows` (shifted goals), `laxRows = laxPrefix ++
+  circStationRows` (◯-goal), the nine equations, the `rowMem`/`rowMemR`
+  membership combinators, and `Saturated`. Each map used to be spelled out
+  verbatim at every statement about it — six times, four times and seven
+  times respectively.
+* **The seven `interpA_circ*_eq` lemmas and `interpCircShape` are gone**,
+  replaced by one `interp_circ_laxRows`; `UEntry`'s seven ◯-goal arms are one
+  shape-generic clause; `UStab`'s seven `.laxOf` arms share one
+  `laxRows_of_eq` opening. Superseded proofs in
+  `Archive/ljfo-simp-round2-superseded.lean`.
+* **`LaxLogic/LJFOCore.lean` was unfrozen twice, narrowly**: to delete the
+  dead `(simp_arith; done)` alternative from both decreasing farms, and to
+  move its five axiom pins out (below). No definition, rule or statement in
+  that file has changed.
+* **`LaxLogic/LJFOAudit.lean` is NEW and is the one thing to remember.**
+
+### The audit is no longer in the build path — READ THIS BEFORE COMMITTING
+
+All seven `#print axioms` pins now live in `LaxLogic/LJFOAudit.lean`, which
+nothing imports. Matthew's direction, 2026-08-13: **by design this development
+uses no `sorry` outside `wip/` unless Matthew authorises one**, so the pins
+are a periodic check rather than a per-edit one.
+
+A second reason was offered and then MEASURED AWAY, recorded here so nobody
+re-derives it: the round-3 trace profile showed `#print axioms LJFO.satE2` at
+~223 s of the tail's ~1160 s build, which looked like a fifth of the build in
+audit cost.  It is not.  After the move the tail takes 27:50 against 26:03
+with the pins in place — no saving — and `lake build LaxLogic.LJFOAudit`
+completes in **1.8 s**.  The kernel check of `satE2` happens when
+`LJFO.olean` is written; `#print axioms` merely awaited that asynchronous
+task.  It is proof cost, not audit cost.  The good news is the other side of
+the same measurement: **the full audit costs 1.8 s**, so there is never a
+reason to skip it.
+
+    lake build LaxLogic.LJFOAudit      # run before any commit that changes a proof
+
+`lake build LaxLogic.LJFO` no longer re-checks the axiom profile of anything.
+A regression introducing `sorryAx` into a pinned result will NOT be caught by
+the default build. `collectAxioms` remains the only sound oracle;
+`native_decide` taints and is not used here.
+
+### What round 3 established about compile time — and what not to try
+
+Three findings, all in `docs/ljfo-plan.md` items 9, 17–22:
+
+1. **Source duplication and elaboration cost are independent here.** Round 2
+   removed 341 built lines and left elaboration flat (1126 → 1163 s); round
+   3's tru-side map was line-neutral and ~3 min slower. Naming a map adds a
+   delta-unfolding step to many defeq checks. These refactors buy a single
+   point of truth — keep them for that, and stop predicting speedups.
+2. **There is no hot spot.** At a 250 ms threshold, three tactic nodes in the
+   whole tail exceed it. The 811 s of `simp` is thousands of individually
+   cheap calls inside `decreasing_by`.
+3. **Do not trim the decreasing farms.** `(simp_arith; done)` was dead and is
+   removed, but with no hot spot, trimming can only shave a fraction. The
+   lever is the *goals*: eighteen mutually recursive functions over a
+   lexicographic measure containing `3 ^ wNeg G` on large terms. Fewer
+   functions in the mutual, or a cheaper measure, would move the needle.
+   **Recommendation on record: stop the farm work.**
+
+Instrument note: `-Dprofiler=true` gives per-COMMAND aggregates (one number
+for the whole mega-mutual); `-Dtrace.profiler=true` nests by tactic
+invocation and is the one to reach for. With tracing on the `#guard_msgs`
+pins fail and `lean` exits 1 — trace text is appended to the compared
+message. Artifact, not a broken tree.
+
+### New documents
+
+* **`docs/ljfo-fidelity.md`** — the calculus-fidelity table: per clause of
+  `interp`, the move, the LJF◯ rule it answers, whether soundness and
+  minimality run on raw rules or a named toolkit lemma, and whether
+  Pitts/Dyckhoff make the corresponding move. §4 is the four forced
+  departures from paper practice; §5 the PROVED/conditional/OPEN ledger. The
+  correspondence column is expository, not machine-checked, and says so.
+* **`docs/calculus-map.md` now has an LJF◯ entry**, with a warning that
+  belongs on a provenance page: the θ-chain results (`thetaStabilises`,
+  `thetaNotStrict`, the GZ-candidate cell) are **`LaxND`** statements about
+  the *cell*, not LJF◯ results, and would stand unchanged if LJF◯ were
+  abandoned.
+
+### Two corrections made while writing those documents
+
+Both were assertions I had made and then checked against the source:
+
+* **`dykAnt` is not unconditional.** It is `dykAntC cAnt …`, inside the
+  section parameterised by `variable (cAnt : CimpAnt p)`. `DykAnt` is not
+  open, but it is discharged *relative to* `CimpAnt`, which remains the
+  single open obligation of the development.
+* **`LaxLogic/LJF.lean` is not a Liang–Miller port.** Its header records that
+  it is built from its own rules, importing nothing, so that "the *technique*
+  is what is under test". The focusing discipline is LJF-style; no metatheory
+  is borrowed.
+
+### Branch and worktree state
+
+`origin/ljf-pll` carries this work. Another session is pushing PCLL documents
+to the same branch (`docs/pcll-picll-arc-report.md`,
+`docs/pcll-1pv-ui-plan.md`); two rebases were needed and there was no file
+overlap either time — check before assuming a conflict is real. The
+`ljf-pll` local ref is checked out in the
+`discovery-toolkit-output-countermodels-a6efda` worktree and has been kept
+fast-forwarded; it carries an untracked `wip/pcll1pv_stage0.lean` belonging
+to that other session.
+
+### Next
+
+**Layer 4, unchanged**: the two lemmas over `interpF` — fuel-soundness
+(`eSoundF`/`aSoundF`) and cofinal fuel-minimality (`satE2F`/`satA2F`) — which
+together make, cell by cell, (the fuel chain stabilises) ⟺ (the cell's
+uniform interpolant exists). Plus the two named adjuncts: normaliser
+soundness and substitution admissibility. `docs/next-session.md` has the
+resume brief; `docs/ljfo-fidelity.md` §3.2/§3.3 says which row families
+`interpF` will grow, and round 3's lesson says to name them from the start.

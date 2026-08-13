@@ -1347,3 +1347,41 @@ pins FAIL and `lean` exits 1 — trace output is appended to the message the
 docstring is compared against (`+ trace: [Elab.command] …`). The axiom lines
 themselves are correct. This is an artifact of tracing, not a broken tree;
 the untracked build at the same commit is green.
+
+### 23. Correction to item 22: the satE2 pin is proof cost, not audit cost
+
+Item 22 said "about a fifth of the tail's build is the kernel checking
+`satE2` when `collectAxioms` forces it at the pin", and called it audit cost.
+The audit-cost half of that is **WRONG and is withdrawn**; the arithmetic is
+right, the attribution is not.
+
+Tested by moving all seven pins into `LaxLogic/LJFOAudit.lean`, which nothing
+imports (2026-08-13, Matthew's direction on separate grounds):
+
+| step | time |
+|---|---|
+| `LaxLogic.LJFOCore`, five pins removed | 3:19.80 |
+| `LaxLogic.LJFO`, two pins removed | **27:49.78** (was 26:03 *with* them) |
+| `LaxLogic.LJFOAudit` — all seven pins | **1.8 s** |
+
+No saving.  The kernel check of `satE2` happens when `LJFO.olean` is written;
+`#print axioms` merely AWAITED that asynchronous task, so the profiler
+attributed the wait to the pin.  It is the price of having `satE2` at all.
+
+Two lessons, both instances of ones already in this ledger:
+
+* **Item 11 again** — a profiler attributes time to the node that *waits*
+  for asynchronous work, not to the node that *causes* it.  Under async
+  elaboration, "command X took N s" means "X did not return for N s".
+* **Item 9/15 again** — I predicted a saving and measured its absence, for
+  the third round running.  The rule earned here: with async elaboration,
+  never treat a profiler attribution as a cost that can be *moved* until the
+  move has been measured.
+
+What the move is still worth, on Matthew's ground and not on speed: the pins
+are a periodic check rather than a per-edit one, since by design this
+development uses no `sorry` outside `wip/` without his authorisation.  And
+the same measurement makes that cheap — **the full audit costs 1.8 s**, so
+`lake build LaxLogic.LJFOAudit` before any commit that changes a proof is
+free.  What it costs is that a `sorryAx` regression is no longer caught by
+the default build.

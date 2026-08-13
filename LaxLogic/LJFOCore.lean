@@ -4091,24 +4091,14 @@ end BlockerTest
 
 end LJFO
 
-/-! ### Axiom audit -/
+/-! ### Axiom audit
 
-/-- info: 'LJFO.BlockerTest.blocker' does not depend on any axioms -/
-#guard_msgs in
-#print axioms LJFO.BlockerTest.blocker
-
-/-- info: 'LJFO.idNeg' depends on axioms: [propext, Quot.sound] -/
-#guard_msgs in
-#print axioms LJFO.idNeg
-
-/-- info: 'LJFO.interp_pfree' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs in
-#print axioms LJFO.interp_pfree
-
-/-- info: 'LJFO.eSound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs in
-#print axioms LJFO.eSound
-
-/-- info: 'LJFO.aSound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
-#guard_msgs in
-#print axioms LJFO.aSound
+The five pins for this file (`BlockerTest.blocker`, `idNeg`, `interp_pfree`,
+`eSound`, `aSound`) are in `LaxLogic/LJFOAudit.lean`, together with the two
+for `LaxLogic.LJFO`.  Batched out of the build path 2026-08-13 at Matthew's
+direction: this development uses no `sorry` outside `wip/` by design, so the
+pins are a periodic check rather than a per-edit one.  (It buys no build
+time — measured: the tail is unchanged and the audit module then costs 1.8 s.
+The kernel check the pin appeared to trigger is paid when the olean is
+written either way.)  Run `lake build LaxLogic.LJFOAudit` before any commit
+that changes a proof. -/
