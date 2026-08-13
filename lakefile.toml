@@ -37,7 +37,7 @@ globs = ["wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
          "wip.negFour", "wip.negFourDistinct", "wip.polarity", "wip.hunts",
          "wip.ljfo_attack", "wip.ljfo_crosscheck",
          "wip.ljfo_theta", "wip.ljfo_theta_pinned", "wip.ljfo_theta_certs", "wip.ljfo_theta_axioms",
-         "wip.pcll1pv_stage0", "wip.pcll1pv_stage1", "wip.pcll1pv_stage2", "wip.pcll1pv_stage2e", "wip.pcll1pv_stage2f", "wip.pcll1pv_stage2g", "wip.pcll1pv_stage2h", "wip.pcll1pv_stage2i", "wip.pcll1pv_stage2j", "wip.pcll1pv_stage3", "wip.pcll1pv_stage3b", "wip.pcll1pv_stage4"]
+         "wip.pcll1pv_stage0", "wip.pcll1pv_stage1", "wip.pcll1pv_stage2", "wip.pcll1pv_stage2e", "wip.pcll1pv_stage2f", "wip.pcll1pv_stage2g", "wip.pcll1pv_stage2h", "wip.pcll1pv_stage2i", "wip.pcll1pv_stage2j", "wip.pcll1pv_stage3", "wip.pcll1pv_stage3b", "wip.pcll1pv_stage4", "wip.closed_frag_pins"]
 
 # The CimpAnt frontier attack + φ★ cross-check, compiled (review round
 # 2026-08-11): the native oracle route for the LJF◯ interpolant cells.
@@ -175,6 +175,12 @@ root = "wip.rnDictGen"
 [[lean_exe]]
 name = "rncprobe"
 root = "wip.rnc_probe"
+
+# Closed-fragment collapse probe (2026-08-13): DerivU classes per crank,
+# collapse question up to crank 7 (streams one line per classification cell).
+[[lean_exe]]
+name = "closedfrag"
+root = "wip.closed_frag"
 
 # MwitResidue probe: witness-form residue (modes G/R), re-aim of biipprobe.
 [[lean_exe]]

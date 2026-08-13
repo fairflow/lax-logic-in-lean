@@ -523,3 +523,55 @@ semantic route is machine-checked end-to-end modulo exactly TWO named
 Props — `ClosedCollapse 6` (finitely certifiable; probe running) and
 `SemExC1Definable` (the realised-theory analysis; the amalgamation
 half is proved).  UI for PLL, PCLL (full), PICLL: OPEN, as always.
+
+## THE PROBE VERDICT: NO COLLAPSE — the conditional closures are vacated (2026-08-13 ~02:30)
+
+The closed-fragment probe returned (`wip/closed_frag_report.md`; probe
+`wip/closed_frag.lean`, exe `closedfrag`; 57 kernel-pinned certificates
+in `wip/closed_frag_pins.lean`, pins `[propext, Quot.sound]`; full
+680-cell stream `wip/closed_frag_out.txt`):
+
+* **NO collapse at crank ≤ 7.**  DerivU-class counts per crank
+  stratum (cumulative): 1, 2, 3, 5, 7, 11, 19, 22.  Strata 0–5 are
+  EXACT (the crank-≤5 quotient of the whole closed fragment is fully
+  certified at 11 classes); strata 6–7 are certified lower bounds
+  (109 flags remain, clustered at the lattice top).
+* **`ClosedCollapse 5` is REFUTED unconditionally** (crank-6-minimal
+  classes exist, kernel-pinned).  **`ClosedCollapse 6` fails modulo
+  the 26 stratum-6 flags**: three min-crank-7 classes are separated
+  from all 19 known crank-≤6 classes (57 pinned separations).  The
+  stratum-on-stratum growth says the closed PCLL fragment is INFINITE
+  in the same way PLL's is: distribution's entire visible effect at
+  crank ≤ 7 is FOUR merges (q12 ≡ q9, ◯q9 ≡ q9, ◯q11 ≡ q11,
+  w15 ≡ w16 ≡ w17 ≡ w18 — the last resolving the old rnc UNKNOWNs).
+* Pivots settled: ◯⊤ ≡ ⊤ (plain PLL); ¬¬◯⊥ is crank-4-minimal;
+  ◯¬◯⊥ is crank-5-minimal.
+
+**Claim-discipline consequence.**  `stableCore_of_collapse`,
+`cornerCoreW_of_collapse`, `mwitResidue_of_collapse`,
+`amalgamConfluent_of_collapse` and `oneVarConfluentAmalgamationW`
+remain TRUE, pinned theorems — but their hypothesis `ClosedCollapse 6`
+is now failing-modulo-flags (and the `R₀ = 5` variant refuted
+outright), so as a ROUTE the collapse-conditional closure is DEAD.
+The kernels revert to their honest stage-2 exit state: **`StableCore`
+and `CornerCoreW` are OPEN**, isolated and screened (0 flags on the
+battery), with the promised-`⊥` region and every branch except the
+collapse-promotion sites STILL PROVED outright (those parts of
+stages 2(i)/2(j) — the region analysis, the corner descent's
+promised-⊥/unstable branches, `promise_realiser`, the anchored
+witness clause, the stable-region kit — are collapse-free and stand).
+What the collapse was buying is exactly LEVEL PROMOTION at the two
+one-short sites; with the fragment infinite, the live route is the
+one ranked first all along: **re-found `WitTripleC`'s level system on
+promise-depth** (the stable region needs O(1) levels because its
+`Rm`-cone is trace-constant — `trace_const_of_stable` is proved and
+is the key structural input to that redesign).
+
+The PICLL contrast sharpens: stage 4's `closedCollapseInf_one` shows
+the infallible fragment collapses AT RANK 1 — fallibility is exactly
+what makes the closed fragment (and the level walls) infinite.
+
+Stage 3/4 status is unchanged in what is UNCONDITIONAL: the wrapper
+(`semExC_upper`/`semExC_adjunction`), `pPurify`, the PICLL dichotomy.
+The amalgamation now carries a dead-route condition and awaits the
+level re-founding.
