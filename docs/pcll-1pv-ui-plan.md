@@ -415,3 +415,82 @@ realises all of `obInv(Δ).val` at one κ₀; `traceC κ₀` is an
 b-side; budget wall: transferring `◯⋀promises` needs
 `maxCrank + 2 ≤ 4d − 2`, so the low-depth region needs (1) or the
 ψ₀-refinement).
+
+## STAGE 2 KERNELS CLOSED + STAGE 3 COMPLETE (2026-08-13 early)
+
+Matthew's completion spec included CLOSING the two kernels, not just
+isolating them.  Both are now closed modulo ONE Prop:
+
+**`ClosedCollapse 6`** (`wip/pcll1pv_stage2i.lean`): every closed
+formula is force-equivalent over the mutually confluent class to a
+closed representative of crank ≤ 6.  Finitely certifiable: `DerivU`
+interderivability certificates + `derivU_sound` both ways.  A
+background probe is computing the closed-fragment classes per crank
+stratum (prove side: `LaxND` + distribution instances; refute side:
+`not_derivU_of_checkConf`).
+
+* **`StableCore` CLOSED** (`stableCore_of_collapse`): promised-`⊥`
+  region (`◯⊥ ∈ val Δ`) outright — fallible realisers on both sides,
+  `◯⊥` transfers at crank 2 across the one-short link, `top` at the
+  realiser's trace; `◯⊥`-free region has depth ≥ 2 (a depth-1 val is
+  `cl \ {⊥}` ∋ `◯⊥`), so `4d−2 ≥ 6` and the collapse promotes the
+  one-short link to every level — reflexive triple, no reservoir.
+  Hence `mwitResidue_of_collapse`.
+* **`CornerCoreW` CLOSED** (`wip/pcll1pv_stage2j.lean`,
+  `cornerCoreW_of_collapse`): the kernel was RESTATED freed-`u`
+  (conclusion `Rᵢ`-anchored at the corner witness, `Rₘ`-anchored at
+  the base — both what `CornerTriple` actually consumes, via
+  `sub_mi`/`trans_i`/`trans_m`).  The closure is `corner_descend`, a
+  recursion on strictly decreasing canonical depth: promised-`⊥` →
+  fallible close (join the seed by directedness, `hered_F` carries
+  fallibility over the join); promise-stable → the ANCHORED witness
+  clause (`agree_mwitN_anchored` — `confluent_char_match` now exposes
+  its `Rᵢ`-seed anchor, latent in the directedness joins) +
+  `trace_const_of_stable` + collapse-promotion, reflexive close at the
+  current trace; unstable → `promise_realiser` (directedness fold)
+  seeds `agree_mwit` with `⋀(promise set)`, the output strictly grows
+  the trace, recurse.  `RmC` chains by `traceC_mforth`; the fallible
+  clause-escapes are vacuous in the `◯⊥`-free region (they would put
+  `◯⊥` in the trace).  Hence `amalgamConfluent_of_collapse`.
+* **Supporting kit** (`wip/pcll1pv_stage2h.lean`): `PromiseStable`,
+  `val_eq_of_stable_rmC` (RmC-successors are val-rigid at stable
+  worlds), `trace_const_of_stable` (the K-side Rm-cone is
+  trace-constant), `exists_broken_promise`.
+* **A statement-level landmine fixed at the instantiation boundary**:
+  strict `PPure` + `full_F` forces `F = ∅` — the "p-pure confluent
+  class" was secretly the INFALLIBLE class (PICLL, not PCLL).  The
+  chain now runs on weak purity `PPureF` (`V a ⊆ F` off `p`); `lvlB`'s
+  atoms clause is re-proved through the fall-tie + `full_F`.
+
+**Stage 3 (assembly + wrapper), COMPLETE:**
+
+* `DerivU`-completeness verified at source: `derivU_iff_confluent_valid`
+  (PLLConfluentComplete.lean) is over exactly the `ConstraintModel` +
+  `MutuallyConfluent` + `force` types the chain uses; pin
+  `[propext, Classical.choice, Quot.sound]`.
+* **`oneVarConfluentAmalgamationW`** (`wip/pcll1pv_stage3.lean`),
+  modulo `ClosedCollapse 6`: weakly p-pure mutually confluent `K`, `M`
+  linked by closed agreement at budget `2·cl.card + 1` amalgamate into
+  a CONFLUENT witness-form p-variant of `M` matching `K`'s `cl`-theory
+  at the root and transferring every p-free formula.  The Thm 5.1
+  semantic heart, entirely MBack-free.
+* **The wrapper** (`wip/pcll1pv_stage3b.lean`): `IsSemExC` (the
+  confluent semantic ∃p at 1 pv, variants ranged by `PBisimWit`);
+  `pPurify` (purification functor: same frame, non-p atoms restricted
+  to fallible worlds — confluence-, purity- and `{p}`-forcing-
+  preserving); **`semExC_upper` and `semExC_adjunction` PROVED
+  UNCONDITIONALLY**: any spec-satisfier `ψ` has `DerivU [φ] ψ` and,
+  for every closed `χ`, `DerivU [φ] χ ↔ DerivU [ψ] χ` — a
+  spec-satisfier IS the uniform post-interpolant over `DerivU`.
+  Pins `[propext, choice, Quot.sound]`.
+* **What remains OPEN, stated as such**: `SemExC1Definable`
+  (existence of a spec-satisfier at 1 pv).  The amalgamation is the
+  hard half; with the collapse, the candidate interpolant is
+  `⋁ {bigAnd S : S a realised closed theory of a φ-realiser}` and the
+  open step is exactly whether realised exact theories are up-closed
+  (the forward direction needs a realiser with the SAME closed theory
+  as the `ψ`-forcing world).  UI for full PCLL and for PLL remain
+  OPEN.  And `ClosedCollapse 6` itself awaits the probe's
+  certificates — if the collapse rank comes back > 6, the region
+  arithmetic in stages 2(i)/2(j) recalibrates (the `◯⊥`-free region
+  needs `4d−2 ≥ R₀`, so kernels reopen at depths `d < (R₀+2)/4` only).
