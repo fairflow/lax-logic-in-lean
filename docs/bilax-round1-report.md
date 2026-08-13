@@ -1,5 +1,24 @@
 # BiLax round 1 — soundness report, screens, and the completeness design
 
+> ## ⚠ CORRECTION (2026-08-13)
+>
+> §2's presentation of `BiLaxL` as the vehicle for disproof, and §5's
+> completeness design ("a saturated open branch IS a countermodel"),
+> aim at the WRONG TARGET — they describe proof search with countermodel
+> extraction, i.e. the standard model-construction approach, not a
+> calculus in which a refutation is itself a derivation.  See the
+> correction at the head of `docs/bilax-round2-report.md` for the full
+> diagnosis and the corrected target (internalisation via `⤙` +
+> a Skura-style rejection calculus).
+>
+> Everything stated below as PROVED is proved.  The semantic package
+> (§1) — `BiModel`, persistence, the adjunction, the collapse
+> refutation, fragment-relative fallibility — is exactly what a
+> rejection calculus must be proved complete against, and stands.
+
+---
+
+
 *2026-08-13.  Plan: `docs/bilax-plan.md`.  Survey: `docs/lax-dual-colax-biint-handoff.md`
 (cited [H§n]).  Code: `BiLax/` (own `lean_lib`), screens `lean_exe bilaxscreen`.
 Status words used precisely: PROVED (sorry-free + pinned `#print axioms`),

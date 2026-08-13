@@ -1,12 +1,65 @@
 # BiLax round 2 — the disproof engine, delivered
 
+> ## ⚠ CORRECTION (2026-08-13, Matthew's challenge — READ THIS FIRST)
+>
+> **The title of this report is wrong and the report overstates what was
+> achieved.**  What round 2 built is a countermodel constructor with a
+> labelled bookkeeping layer — *not* a calculus of disproofs.  The
+> decisive evidence: **neither certified refutation contains a single
+> `⤙` or `◯∃`.**  Both branches (`BiLax/Pipeline.lean`) hold only
+> `emb`-images, i.e. pure PLL formulas.  The co-lax modality was
+> defined, screened, shown to collapse, rescued from vacuity by adding
+> an entire extra relation `Rc` with three frame laws — and then plays
+> NO ROLE in either refutation; `Rc` is present only to satisfy laws the
+> refutations never invoke.
+>
+> §0's "structural finding" — that the route needs neither cut
+> admissibility nor the ND↔labelled equivalence — reads, honestly, as:
+> **the new logic was inessential to what was built.**  That is a
+> symptom, not a result.
+>
+> The error: I let the Pinto–Uustalu framing ("saturated open branches
+> are countermodels") substitute for the actual goal.  That literature
+> is proof search WITH countermodel extraction — the standard
+> model-construction approach.  The goal was the opposite direction: a
+> system in which **the refutation IS the derivation**, so that finding
+> one is a positive, depth-first search for a syntactic object, with the
+> co-fragment carrying the content.
+>
+> **What the right target is** (now the live thread, see
+> `docs/bilax-round3-plan.md`):
+> 1. **Internalisation** — co-residuation at `C := ⊥` gives
+>    `A ⊢ B ⟺ ⊢ ¬(A ⤙ B)`, hence **`A ⊬ B` iff `A ⤙ B` is
+>    satisfiable**: failure of entailment becomes an existential
+>    statement about ONE formula.  This is the genuine payoff of
+>    co-implication, and nothing below uses it.
+> 2. **A refutation (rejection) calculus** — Łukasiewicz's rejection
+>    systems, and for intuitionistic logic Skura's: axioms are
+>    *rejected* formulas, rules propagate rejection, and `⊬ φ` is
+>    established by a POSITIVE derivation.  Complete for logics with the
+>    finite model property, which PLL has.  That is the literature this
+>    work should have been built from.
+>
+> **What survives below**: the semantics (`BiModel`, the adjunction, the
+> collapse refutation) — a rejection calculus is proved complete
+> *against* exactly this semantics, so the model theory is not wasted.
+> **What is demoted**: everything framed here as "the disproof engine".
+> The Hintikka/saturation machinery is a countermodel constructor; this
+> repo already had those.  It is infrastructure, not the deliverable.
+>
+> The technical claims below are all still TRUE and machine-checked.
+> Only their significance was misdescribed.
+
+---
+
+
 *2026-08-13.  Plan `docs/bilax-plan.md` §7; round 1 `docs/bilax-round1-report.md`.
 Code: `BiLax/{Hintikka,Refute,Check,Pipeline}.lean`.  Status words precise:
 PROVED = sorry-free + pinned `#print axioms`; OPEN = stated as such.*
 
 ## 0. The headline
 
-**A failed proof search is now a certified refutation.**  The round-2
+**A failed proof search is now a certified refutation.**  [CORRECTED: this is countermodel construction, not a calculus of disproof — see the correction above.]  The round-2
 pipeline is
 
     (untrusted search)  →  FinBranch (plain finite data)
