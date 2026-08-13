@@ -20,6 +20,13 @@ name = "LaxLogic"
 [[lean_lib]]
 name = "BiLax"
 
+# Reject: the forward model-generating refutation calculus for PLL
+# (docs/frj-lifting.md), after Fiorentini-Ferrari FRJ(G) and their
+# JLC 2021 S4 model-generation calculus.
+[[lean_lib]]
+name = "Reject"
+
+
 [[lean_exe]]
 name = "bilaxscreen"
 root = "BiLax.Screens"
