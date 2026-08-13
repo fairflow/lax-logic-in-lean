@@ -494,3 +494,32 @@ stratum (prove side: `LaxND` + distribution instances; refute side:
   certificates — if the collapse rank comes back > 6, the region
   arithmetic in stages 2(i)/2(j) recalibrates (the `◯⊥`-free region
   needs `4d−2 ≥ R₀`, so kernels reopen at depths `d < (R₀+2)/4` only).
+
+## STAGE 4 COMPLETE (2026-08-13 ~02:20) — the PICLL corollary
+
+`wip/pcll1pv_stage4.lean`, pins `[propext, Quot.sound]` (choice-free):
+
+* **`closed_dichotomy_infallible`** — over infallible constraint
+  models (confluence not needed), every CLOSED formula is globally
+  valid or globally refuted.  The arc report's "the refuter loses"
+  made exact: no closed separation survives `¬◯⊥`.
+* **`closedCollapseInf_one`** — the infallible analogue of
+  `ClosedCollapse` holds AT RANK 1 (representatives `⊥`, `⊥ ⊃ ⊥`), by
+  induction, no certificate search.  Contrast `ClosedCollapse 6` for
+  the fallible class (probe in flight).
+* **Battery re-screen**: the PICLL restriction of the S2–S5 run (both
+  models infallible: oneW/chain2/gadget3/gadget4/lobT pairs) is 50 of
+  the 128 cells — 2,314 `StableCore` and 1,598 `CornerCoreW`
+  configurations, 0 flags (contained in the global 0-flag run).
+* **Transfer conditions recorded** (stage-4 file header): the PICLL
+  re-instantiation of the whole chain would be conditional on the
+  PROVABLE rank-1 collapse only, but needs the `DerivUNoFall`
+  completeness anchor in place of `derivU_iff_confluent_valid`.  On
+  the general-PLL sorries the stage-2 machinery transfers nothing:
+  the σ-ping-pong consumes mutual confluence at every growth step.
+
+**The campaign's standing state after stages 0–4:** the 1-pv PCLL
+semantic route is machine-checked end-to-end modulo exactly TWO named
+Props — `ClosedCollapse 6` (finitely certifiable; probe running) and
+`SemExC1Definable` (the realised-theory analysis; the amalgamation
+half is proved).  UI for PLL, PCLL (full), PICLL: OPEN, as always.
