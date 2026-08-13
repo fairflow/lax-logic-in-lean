@@ -64,9 +64,11 @@ Notes.  (i) The arrow-tails answer the ">-- and --<" request with
 single codepoints: ⤚ *is* the ">--" shape, ⤙ the "--<", mirror-images
 as ← / → are.  (ii) ⇾/⇽ give implication its directional pair with
 the same mirror discipline, visually distinct from Lean's function
-arrow → at every size.  (iii) If ⤙ renders too light against ⇾ in
-practice, the doubles ⤛/⤜ are the drop-in bolder pair — decide after
-seeing real proof states, not now.  (iv) ◯∀/◯∃ follow the handoff's
+arrow → at every size.  Unicode has NO open-headed arrow-tails (the
+open-headed family stops at U+21FD–21FF), so the pairing ⇾/⇽ with
+⤙/⤚ is the best available and is hereby LOCKED (Matthew, 2026-08-13).
+(iii) If ⤙ renders too light against ⇾ in practice, the doubles ⤛/⤜
+are the drop-in bolder pair — decide after seeing real proof states.  (iv) ◯∀/◯∃ follow the handoff's
 deliberate box/diamond avoidance [H§0].  (v) For prose and displays:
 the single-glyph biconditional you asked about is ↔ (U+2194) or the
 long ⟷ (U+27F7) — "∀∃ ⟷ ∃∀" typesets as one arrow.
@@ -108,21 +110,32 @@ constraint models do not satisfy it in general, so every lifting
 statement ("this PLL countermodel is a BiLax countermodel") gets a
 side condition — a screened lemma, not an assumption.
 
-**(b) Co-implication at fallible worlds — a landmine found while
-planning.**  Rauszer's clause `u ⊨ A ⤙ B iff ∃v ≤ᵢ u, v ⊨ A ∧ v ⊭ B`
-breaks the PLL invariant that fallible worlds force everything
-(`force_of_fallible`): at fallible u whose only ≤ᵢ-predecessors are
-fallible, no v refutes B, so u ⊮ A ⤙ B.  Three candidate repairs, to
-be screened for (persistence ∧ conservativity-over-emb ∧ co-residuation
-∧ non-vacuity):
-
-  1. patch the clause: `u ∈ F ∨ ∃v ≤ᵢ u, v ⊨ A ∧ v ⊭ B`;
-  2. keep Rauszer's clause and *give up* fallible-forces-everything
-     for BiForm (it survives on the emb-image — check that this is
-     enough for every downstream use);
-  3. restrict round 1 to F = ∅ models and add fallibility in round 2
-     (REJECTED unless 1 and 2 both fail: it forfeits the acceptance
-     corpus).
+**(b) Co-implication at fallible worlds — RESOLVED (2026-08-13,
+Matthew's question and the `ff` argument).**  Rauszer's clause
+`u ⊨ A ⤙ B iff ∃v ≤ᵢ u, v ⊨ A ∧ v ⊭ B` breaks the PLL invariant that
+fallible worlds force everything.  This is NOT frame-fixable:
+`ff := ⊤ ⤙ ⊤` is forced NOWHERE in any model (it needs a predecessor
+refuting ⊤), so exfalso `⊥ ⊢ ff` is unsound at every fallible world of
+every frame — reducedness, partial orders, seriality cannot help.
+`◯∃` has the same shape (a fallible world forces `◯∃A` only via an
+`Rm`-predecessor forcing `A`).  The principle: **fallibility
+trivialises the future; the retrospective connectives only see the
+past.**  DESIGN ADOPTED: keep Rauszer's clause (and the bare `◯∃`
+clause) unpatched; `force_of_fallible` is proved for the FORWARD
+fragment (the emb-image), which is everywhere it is used; the
+bi-language thereby distinguishes PLL's local falsum `⊥` (= F, the
+fallibility machinery driving the variable-elimination strategy) from
+the absolute falsum `ff = ⊤ ⤙ ⊤` (forced nowhere) — a refinement, not
+a defect.  Exfalso in the calculi is fragment-relative accordingly.
+The application is untouched: countermodel search concerns
+emb-fragment end-sequents, and fallibility enters the calculus as a
+LABEL PREDICATE with its own rules (§6.2), first-class.  Screens still
+verify: persistence, co-residuation, conservativity-over-emb,
+non-vacuity, and `force_of_fallible`-on-emb.  Matthew's
+reduced-model observation is retained as a SEARCH optimisation: on
+reduced partial orders all fallible worlds identify into one maximal
+point (no strict successors) — a canonical-form constraint that
+shrinks the search space, though it repairs nothing semantically.
 
 **(c) Seriality.**  The adjunction needed serial Rm at n = 3 [H§4.3].
 The repo's models are reflexive-Rm (hence serial) — likely free, but
@@ -169,29 +182,38 @@ transcribed from Rauszer 1974/1977 with the [LITERATURE — VERIFY]
 flags of the handoff discharged against the papers at transcription
 time, not trusted from memory — hers or mine.
 
-### 6.2 The sequent calculus `BiLaxSC` (Rauszer-adapted, WITH cut)
+### 6.2 The sequent calculus `BiLaxL` (LABELLED, cut-free from the start)
 
-Multi-succedent sequents Γ ⇒ Δ (finite multisets).  Base: the
-multi-succedent intuitionistic calculus with the standard asymmetric
-pair —
+REVISED 2026-08-13 (Matthew: no point starting from a defective
+calculus; cut-free wanted if available — it is).  Round 1's sequent
+system is a **labelled sequent calculus** in the Negri style, template
+Pinto–Uustalu, "Proof search and counter-model construction for
+bi-intuitionistic propositional logic with labelled sequents"
+(TABLEAUX 2009) `[LITERATURE — VERIFY]` — cut-free, complete for
+BiInt, and built for EXACTLY our purpose: saturated open branches ARE
+countermodels.  Prior mechanisation art: Shillito's Coq development of
+wBIL/sBIL `[LITERATURE — VERIFY]`.  Rauszer's own calculus is demoted
+to historical context (its cut-elimination claim is false — Uustalu).
 
-    (⇾R)   Γ, A ⇒ B        ⊢   Γ ⇒ A ⇾ B, Δ      (succedent collapses: the intuitionistic restriction)
-    (⤙L)   A ⇒ B, Δ        ⊢   Γ, A ⤙ B ⇒ Δ      (antecedent collapses: the dual restriction)
-    (⇾L)   Γ ⇒ A, Δ   and   Γ, B ⇒ Δ   ⊢   Γ, A ⇾ B ⇒ Δ
-    (⤙R)   Γ ⇒ A, Δ   and   Γ, B ⇒ Δ   ⊢   Γ ⇒ A ⤙ B, Δ
-
-— plus the modal rules: PLL's ◯∀-rules lifted to multi-succedent
-(design cell: `laxL`'s ◯-restricted succedent must be re-stated for
-Δ ≠ singleton; candidate: succedent entirely ◯∀-formulas), and for ◯∃
-round 1 takes the *adjoint presentation*: ◯∃-monotonicity, unit and
-counit as rules/initial sequents.  **Cut is a rule of the system and
-stays.**  This is deliberate and stated loudly: Rauszer's own
-cut-elimination claim is FALSE (Uustalu) [H§3.2]; round 1 makes no
-structural claims at all.  The calculus exists in round 1 to be (i)
-sound, (ii) equivalent to `BiLaxND`, (iii) the vehicle on which the
-refutation reading is prototyped.  The cut-free repair is round 3's
-job, from Buisman–Goré or the polarised route [H§6.3] — chosen then,
-with the round-1 experience in hand.
+Sequents carry a label graph: relational atoms `x ≤ y`, `x Rm y`, the
+fallibility predicate `F x`, and labelled formulas `x : A` on both
+sides.  Logical rules are the standard labelled ones (⇾ quantifies
+forward along ≤, ⤙ backward); the modal rules for ◯∀ (the ∀∃ clause
+splits into two labelled rules) and ◯∃ (one backward-existential
+rule) come out of the clauses mechanically; and every frame law of §4
+— transitivity, `Rm ; Ri ⊆ Rm`, seriality, F-heredity, `full_F`, and
+the fragment-relative exfalso of §4(b) — is a GEOMETRIC rule by
+Negri's method, so fallibility is first-class syntax, exactly the
+"amend the calculus to take fallibility" requirement.  Structural
+targets, in order: (i) soundness (round 1, machine-checked);
+(ii) admissibility of weakening/contraction and CUT, Negri-style
+(round 1 if the standard proof transcribes cleanly, else early round
+2 — this is the "repaired calculus" obligation and is REPORTED either
+way); (iii) completeness-via-saturation with countermodel extraction
+(round 2, replacing the canonical-model route where possible: the
+stuck search state is the countermodel, no Lindenbaum machinery).
+`BiLaxND` (§6.1) remains the reference system; the equivalence
+statement of §6.3(2) is `BiLaxND ⊣⊢ BiLaxL`.
 
 ### 6.3 Round-1 reports (the deliverables)
 
@@ -200,7 +222,9 @@ with the round-1 experience in hand.
    Includes the semantic theorems: persistence of every connective,
    the adjunction-as-iff, unit, counit, co-residuation, and the
    non-vacuity witnesses (a frame where ◯∃p ≠ p and ◯∀p ≠ p) [H§5.1].
-2. **Equivalence** `BiLaxND ⊣⊢ BiLaxSC-with-cut` (both directions).
+2. **Equivalence** `BiLaxND ⊣⊢ BiLaxL` (both directions; the ND→L
+   direction may route through cut admissibility, hence its round-1/2
+   placement is coupled to §6.2(ii)).
 3. **Conservativity screens** (not theorems yet): on the battery, does
    `BiLaxND ⊢ emb φ` iff `LaxND ⊢ φ`?  Expected yes (Rauszer's stated
    aim was conservativity over Int [H§7]); a failure is a certified
@@ -245,12 +269,14 @@ with the round-1 experience in hand.
 
 ## 8. Round 3 — structural proof theory (scoped, not committed)
 
-Cut-free repair (Buisman–Goré adaptation, or the polarised PBL route
-where ⇾ is negative/right-invertible, ⤙ positive/left-invertible, and
-the shifts license the interaction [H§6.3]); then the multi-succedent
-attack on the goal-dependent left rule [H§6.1] — flagged in the
-handoff as its single most actionable idea, and kept OUT of rounds
-0–2 so the disproof payoff does not wait on it.
+With cut-freeness now a round-1/2 property of the labelled system,
+round 3 is: the polarised presentation (PBL route: ⇾
+negative/right-invertible, ⤙ positive/left-invertible, shifts as the
+licensed interaction [H§6.3]) if focusing determinism is needed for
+interpolation work; and the multi-succedent attack on the
+goal-dependent left rule [H§6.1] — flagged in the handoff as its
+single most actionable idea, and kept OUT of rounds 0–2 so the
+disproof payoff does not wait on it.
 
 ## 9. Danger ledger (standing, from [H] + this plan)
 
@@ -264,6 +290,12 @@ handoff as its single most actionable idea, and kept OUT of rounds
 * Fallibility × ⤙ (the §4(b) landmine): settled by screen, round 0.
 * Interpolation non-neutrality: screened round 1, before dependence.
 * `⟶` belongs to mathlib's Quiver: never use it (tested).
+* Retrospective connectives (⤙, ◯∃) are never forced by fallibility:
+  `ff = ⊤ ⤙ ⊤` is forced nowhere, so exfalso is fragment-relative
+  (§4(b)).  No statement of the shape "fallible ⟹ forces X" for X
+  outside the emb-image.
+* File-name note: `BiLax/Sequent.lean` of §3 is now
+  `BiLax/Labelled.lean`.
 
 ## 10. Effort and sequencing
 
