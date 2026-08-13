@@ -157,6 +157,105 @@ theorem not_derivable_negOBot :
     ¬ Nonempty (PLLND.LaxND [] (.ifThen (.somehow .falsePLL) .falsePLL)) :=
   chainH.not_laxND (0 : Fin 2) (by simp) ⟨rfl, .inl rfl⟩
 
+/-! ## Calibration 2: `◯p ⊬ p` (the repo landmark, atoms exercised)
+
+Branch: `R 0 p`, `L 0 ◯p`, and `laxL` supplies an `Rm`-successor `1`
+with `L 1 p`.  `Rc` again points at the top world.  No fallible world:
+this refutation needs none. -/
+
+private abbrev pAtom : BiForm := emb (.prop "p")
+private abbrev boxP : BiForm := emb (.somehow (.prop "p"))
+
+def boxpH : Hintikka where
+  n := 2
+  ri x y := x.val ≤ y.val
+  rm x y := x.val ≤ y.val
+  rc _ y := y.val = 1
+  fal _ := False
+  L x A := (x.val = 0 ∧ A = boxP) ∨ (x.val = 1 ∧ A = pAtom)
+  R x A := x.val = 0 ∧ A = pAtom
+  ri_refl := fun _ => le_refl _
+  ri_trans := fun h1 h2 => le_trans h1 h2
+  rm_refl := fun _ => le_refl _
+  rm_trans := fun h1 h2 => le_trans h1 h2
+  sub_mi := fun h => h
+  fal_hered := fun _ h => h
+  square_c := by
+    intro w u v h1 h2
+    refine ⟨w, le_refl _, ?_⟩
+    have := v.isLt; have := u.isLt
+    show v.val = 1
+    omega
+  counit_c := by
+    intro w u h
+    refine ⟨w, le_refl _, fun y hy => ?_⟩
+    have := y.isLt
+    show y.val ≤ u.val
+    omega
+  serial_c := by
+    intro v
+    refine ⟨⟨1, by omega⟩, ?_, rfl⟩
+    have := v.isLt
+    show v.val ≤ 1
+    omega
+  open_lr := by
+    rintro x A (⟨hx0, rfl⟩ | ⟨hx1, rfl⟩) ⟨hr0, heq⟩
+    · exact absurd heq (by simp [boxP, pAtom, emb])
+    · omega
+  prop_hered := by
+    rintro x y a h (⟨hx0, heq⟩ | ⟨hx1, heq⟩)
+    · exact absurd heq (by simp [boxP, emb])
+    · exact .inr ⟨by omega, heq⟩
+  fal_no_prop := by rintro x a hx -; exact hx
+  fal_no_bot := by rintro x hx -; exact hx
+  bot_left := by
+    rintro x (⟨hx0, heq⟩ | ⟨hx1, heq⟩)
+    · exact absurd heq (by simp [boxP, emb])
+    · exact absurd heq (by simp [pAtom, emb])
+  sat_andL := by
+    rintro x A B (⟨hx0, heq⟩ | ⟨hx1, heq⟩) <;>
+      exact absurd heq (by simp [boxP, pAtom, emb])
+  sat_andR := by rintro x A B ⟨hr0, heq⟩; exact absurd heq (by simp [pAtom, emb])
+  sat_orL := by
+    rintro x A B (⟨hx0, heq⟩ | ⟨hx1, heq⟩) <;>
+      exact absurd heq (by simp [boxP, pAtom, emb])
+  sat_orR := by rintro x A B ⟨hr0, heq⟩; exact absurd heq (by simp [pAtom, emb])
+  sat_impL := by
+    rintro x y A B (⟨hx0, heq⟩ | ⟨hx1, heq⟩) hxy <;>
+      exact absurd heq (by simp [boxP, pAtom, emb])
+  sat_impR := by rintro x A B ⟨hr0, heq⟩; exact absurd heq (by simp [pAtom, emb])
+  sat_coimpL := by
+    rintro x A B (⟨hx0, heq⟩ | ⟨hx1, heq⟩) <;>
+      exact absurd heq (by simp [boxP, pAtom, emb])
+  sat_coimpR := by
+    rintro x y A B ⟨hr0, heq⟩; exact absurd heq (by simp [pAtom, emb])
+  sat_laxL := by
+    rintro x y A (⟨hx0, heq⟩ | ⟨hx1, heq⟩) hxy
+    · have hA : A = pAtom := by simpa [boxP, pAtom, emb] using heq
+      subst hA
+      refine ⟨⟨1, by omega⟩, ?_, .inr ⟨rfl, rfl⟩⟩
+      have := y.isLt
+      show y.val ≤ 1
+      omega
+    · exact absurd heq (by simp [pAtom, emb])
+  sat_laxR := by rintro x A ⟨hr0, heq⟩; exact absurd heq (by simp [pAtom, emb])
+  sat_colaxL := by
+    rintro x A (⟨hx0, heq⟩ | ⟨hx1, heq⟩) <;>
+      exact absurd heq (by simp [boxP, pAtom, emb])
+  sat_colaxR := by
+    rintro x u A ⟨hr0, heq⟩; exact absurd heq (by simp [pAtom, emb])
+
+/-- **`◯p ⊬ p`** — the repo landmark, certified by a branch. -/
+theorem not_derivable_boxp_p :
+    ¬ Nonempty (PLLND.LaxND [.somehow (.prop "p")] (.prop "p")) :=
+  boxpH.not_laxND (0 : Fin 2)
+    (by
+      intro ψ hψ
+      simp only [List.mem_singleton] at hψ
+      subst hψ
+      exact .inl ⟨rfl, rfl⟩)
+    ⟨rfl, rfl⟩
+
 /-! ## Pins -/
 
 /--
@@ -170,5 +269,11 @@ info: 'BiLax.not_derivable_negOBot' depends on axioms: [propext, Quot.sound]
 -/
 #guard_msgs in
 #print axioms not_derivable_negOBot
+
+/--
+info: 'BiLax.not_derivable_boxp_p' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms not_derivable_boxp_p
 
 end BiLax
