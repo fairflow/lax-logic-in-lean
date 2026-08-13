@@ -186,6 +186,11 @@ root = "wip.rnDictGen"
 name = "rncprobe"
 root = "wip.rnc_probe"
 
+# Kreisel-Putnam screen for candidate ◯-rejection rules (BiLax (b)).
+[[lean_exe]]
+name = "rejscreen"
+root = "wip.reject_screen"
+
 # Closed-fragment collapse probe (2026-08-13): DerivU classes per crank,
 # collapse question up to crank 7 (streams one line per classification cell).
 [[lean_exe]]
