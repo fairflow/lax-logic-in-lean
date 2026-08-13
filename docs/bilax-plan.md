@@ -311,3 +311,28 @@ build, and the duality bridge.)
 **Sign-off point:** this plan.  On approval, round 0 starts with the
 `BiLax/` skeleton and the screening harness; no theory file is written
 before the §4 cells are screened.
+
+
+## ROUNDS 1 AND 2 COMPLETE (2026-08-13)
+
+Reports: `docs/bilax-round1-report.md`, `docs/bilax-round2-report.md`.
+
+* **Round 1**: `BiLax/` lib; `BiModel` with a SEPARATE co-lax relation
+  `Rc` (the first design — `◯∃` along `Rm` — was REFUTED by its own
+  screens: it collapses to the identity, `nonId = 0` on 44,160 frames);
+  both calculi (`BiLaxND`; `BiLaxL` labelled and cut-free by design)
+  SOUND and pinned; screens with necessity and non-vacuity witnesses.
+* **Round 2**: model existence (`Hintikka.truth`, AXIOM-FREE), the PLL
+  disproof bridge (`not_laxND`), the decidable checker (`FinBranch`,
+  `checkB`, `toHintikka`) and the end-to-end pipeline — countermodels
+  as finite data, saturation by `decide`, non-derivability
+  kernel-checked at `[propext, Quot.sound]`.  Two calibrations wired
+  through it.
+* **The structural finding**: the disproof route needs NEITHER cut
+  admissibility NOR the ND↔labelled equivalence.  Both remain open as
+  proof-theory questions; neither is on the critical path.
+
+**Round 3, scoped**: the saturating searcher (demand-driven firing of
+`serialC`/`counit1` plus loop-checking; termination SCREENED on the
+catalogue's formulas before being scoped), then the catalogue's 109
+flags; optionally cut admissibility and the syntactic duality bridge.
