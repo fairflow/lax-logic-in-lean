@@ -83,12 +83,13 @@ theorem biLaxND_sound {Γ : List BiForm} {φ : BiForm}
       exact ⟨u, huv, ih M u (by simp) u (M.refl_i u) hφ⟩
   | adjL _ ih =>
       intro M w _ v hwv hφ u hvu
-      exact ⟨u, M.refl_m u,
-        ih M u (by simp) u (M.refl_i u)
-          ⟨u, M.refl_m u, bforce_hered M hvu hφ⟩⟩
+      obtain ⟨c, hmc, hcc⟩ := M.serial_c u
+      exact ⟨c, hmc,
+        ih M c (by simp) c (M.refl_i c)
+          ⟨u, hcc, bforce_hered M hvu hφ⟩⟩
   | adjR _ ih =>
       rintro M w _ v hwv ⟨u, huv, hφ⟩
-      obtain ⟨t, hut, hall⟩ := M.counit_law huv
+      obtain ⟨t, hut, hall⟩ := M.counit_c huv
       obtain ⟨y, hty, hy⟩ :=
         ih M u (by simp) u (M.refl_i u) hφ t hut
       exact bforce_hered M (hall y hty) hy

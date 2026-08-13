@@ -29,6 +29,7 @@ abbrev Label := Nat
 inductive LAtom where
   | ri : Label → Label → LAtom
   | rm : Label → Label → LAtom
+  | rc : Label → Label → LAtom
   | fal : Label → LAtom
   | cw : Label → Label → LAtom
 deriving DecidableEq, Repr
@@ -57,6 +58,7 @@ def addRight (S : LSeq) (x : Label) (A : LForm) : LSeq :=
 def atomLabels : LAtom → List Label
   | .ri x y => [x, y]
   | .rm x y => [x, y]
+  | .rc x y => [x, y]
   | .fal x => [x]
   | .cw x y => [x, y]
 
@@ -89,6 +91,7 @@ end LSeq
 def ratom (M : BiModel) (ρ : Label → M.W) : LAtom → Prop
   | .ri x y => M.Ri (ρ x) (ρ y)
   | .rm x y => M.Rm (ρ x) (ρ y)
+  | .rc x y => M.Rc (ρ x) (ρ y)
   | .fal x => ρ x ∈ M.F
   | .cw x y => ∀ u, M.Rm (ρ x) u → M.Ri u (ρ y)
 
@@ -106,6 +109,10 @@ theorem ratom_ext {M : BiModel} {ρ ρ' : Label → M.W} {a : LAtom}
       rw [show ρ x = ρ' x from h x (by simp [LSeq.atomLabels]),
           show ρ y = ρ' y from h y (by simp [LSeq.atomLabels])]
   | rm x y =>
+      simp only [ratom]
+      rw [show ρ x = ρ' x from h x (by simp [LSeq.atomLabels]),
+          show ρ y = ρ' y from h y (by simp [LSeq.atomLabels])]
+  | rc x y =>
       simp only [ratom]
       rw [show ρ x = ρ' x from h x (by simp [LSeq.atomLabels]),
           show ρ y = ρ' y from h y (by simp [LSeq.atomLabels])]
@@ -152,10 +159,12 @@ inductive BiLaxL : LSeq → Type
   | falHered {S x y} (h1 : LAtom.fal x ∈ S.rels)
       (h2 : LAtom.ri x y ∈ S.rels)
       (p : BiLaxL (S.addRel (.fal y))) : BiLaxL S
-  | squareR {S w x v} (w' : Label) (h1 : LAtom.rm w x ∈ S.rels)
+  | squareR {S w x v} (w' : Label) (h1 : LAtom.rc w x ∈ S.rels)
       (h2 : LAtom.ri x v ∈ S.rels) (hf : Fresh w' S)
-      (p : BiLaxL ((S.addRel (.ri w w')).addRel (.rm w' v))) : BiLaxL S
-  | counit1 {S w u} (v : Label) (h : LAtom.rm w u ∈ S.rels)
+      (p : BiLaxL ((S.addRel (.ri w w')).addRel (.rc w' v))) : BiLaxL S
+  | serialC {S} (v : Label) (u : Label) (hne : v ≠ u) (hf : Fresh u S)
+      (p : BiLaxL ((S.addRel (.rm v u)).addRel (.rc v u))) : BiLaxL S
+  | counit1 {S w u} (v : Label) (h : LAtom.rc w u ∈ S.rels)
       (hf : Fresh v S)
       (p : BiLaxL ((S.addRel (.ri w v)).addRel (.cw v u))) : BiLaxL S
   | counit2 {S v u y} (h1 : LAtom.cw v u ∈ S.rels)
@@ -204,9 +213,9 @@ inductive BiLaxL : LSeq → Type
       (p : BiLaxL (S.addRight y (.fm A))) : BiLaxL S
   | colaxL {S x A} (y : Label) (h : (x, LForm.fm (◯∃A)) ∈ S.left)
       (hf : Fresh y S)
-      (p : BiLaxL ((S.addRel (.rm y x)).addLeft y (.fm A))) : BiLaxL S
+      (p : BiLaxL ((S.addRel (.rc y x)).addLeft y (.fm A))) : BiLaxL S
   | colaxR {S x y A} (h : (x, LForm.fm (◯∃A)) ∈ S.right)
-      (hrel : LAtom.rm y x ∈ S.rels)
+      (hrel : LAtom.rc y x ∈ S.rels)
       (p : BiLaxL (S.addRight y (.fm A))) : BiLaxL S
 
 end BiLax
@@ -297,14 +306,14 @@ theorem biLaxL_sound {S : LSeq} (p : BiLaxL S) : S.Valid := by
         (fun M ρ hr _ => M.hered_F (hr _ h2) (hr _ h1))
   | @squareR S w x v w' h1 h2 hf _ ih =>
       intro M ρ hr hl
-      obtain ⟨c, hwc, hcv⟩ := M.square (hr _ h1) (hr _ h2)
+      obtain ⟨c, hwc, hcv⟩ := M.square_c (hr _ h1) (hr _ h2)
       have hwne : w ≠ w' := hf.rel h1 w (by simp [LSeq.atomLabels])
       have hvne : v ≠ w' := hf.rel h2 v (by simp [LSeq.atomLabels])
       obtain ⟨q, hq, hfq⟩ := ih M (Function.update ρ w' c)
         (by
           intro b hb
           rcases List.mem_cons.mp hb with rfl | hb
-          · show M.Rm (Function.update ρ w' c w')
+          · show M.Rc (Function.update ρ w' c w')
               (Function.update ρ w' c v)
             rw [Function.update_self, Function.update_of_ne hvne]
             exact hcv
@@ -316,9 +325,26 @@ theorem biLaxL_sound {S : LSeq} (p : BiLaxL S) : S.Valid := by
           · exact sat_update_rels hf hr b hb)
         (sat_update_list (fun p hp => hf.left hp) hl)
       exact ⟨q, hq, sat_update_back (hf.right hq) hfq⟩
+  | @serialC S v u hvne hf _ ih =>
+      intro M ρ hr hl
+      obtain ⟨c, hmc, hcc⟩ := M.serial_c (ρ v)
+      obtain ⟨q, hq, hfq⟩ := ih M (Function.update ρ u c)
+        (by
+          intro b hb
+          rcases List.mem_cons.mp hb with rfl | hb
+          · show M.Rc (Function.update ρ u c v) (Function.update ρ u c u)
+            rw [Function.update_self, Function.update_of_ne hvne]
+            exact hcc
+          rcases List.mem_cons.mp hb with rfl | hb
+          · show M.Rm (Function.update ρ u c v) (Function.update ρ u c u)
+            rw [Function.update_self, Function.update_of_ne hvne]
+            exact hmc
+          · exact sat_update_rels hf hr b hb)
+        (sat_update_list (fun p hp => hf.left hp) hl)
+      exact ⟨q, hq, sat_update_back (hf.right hq) hfq⟩
   | @counit1 S w u v h hf _ ih =>
       intro M ρ hr hl
-      obtain ⟨t, hwt, hall⟩ := M.counit_law (hr _ h)
+      obtain ⟨t, hwt, hall⟩ := M.counit_c (hr _ h)
       have hwne : w ≠ v := hf.rel h w (by simp [LSeq.atomLabels])
       have hune : u ≠ v := hf.rel h u (by simp [LSeq.atomLabels])
       obtain ⟨q, hq, hfq⟩ := ih M (Function.update ρ v t)
@@ -521,7 +547,7 @@ theorem biLaxL_sound {S : LSeq} (p : BiLaxL S) : S.Valid := by
         (by
           intro b hb
           rcases List.mem_cons.mp hb with rfl | hb
-          · show M.Rm (Function.update ρ y c y)
+          · show M.Rc (Function.update ρ y c y)
               (Function.update ρ y c x)
             rw [Function.update_self, Function.update_of_ne hxne]
             exact hc

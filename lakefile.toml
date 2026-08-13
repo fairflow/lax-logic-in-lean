@@ -20,6 +20,10 @@ name = "LaxLogic"
 [[lean_lib]]
 name = "BiLax"
 
+[[lean_exe]]
+name = "bilaxscreen"
+root = "BiLax.Screens"
+
 
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup
 # (cache-shipped C IR miscompile in Mathlib.Data.Set.Basic; full analysis in

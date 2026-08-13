@@ -1,22 +1,10 @@
 /-
 BiLax round 1 — models and the semantic theorems.
 
-`BiModel` = a Fairtlough–Mendler constraint model carrying the two
-RETROSPECTIVE frame laws, both EXACT (derived by the
-largest-upset-avoiding-`u` argument during round-0 planning, verified
-by the screens in BiLax/Screens.lean):
-
-* `square`  (`Rm ; Ri ⊆ Ri ; Rm`): exactly what makes `◯∃`
-  persistent — necessity via the upset `↑w`.
-* `counit_law` (every `Rm`-predecessor `w` of `u` has an
-  `Ri`-successor all of whose `Rm`-successors are `Ri`-below `u`):
-  exactly what makes the counit `◯∃◯∀A ⊢ A` sound — necessity via the
-  largest upset avoiding `u`.
-
-The unit needs only reflexive `Rm` (inherited).  NOTE the repo's
-`ConstraintModel` class does NOT satisfy `counit_law` in general (a
-2-world countermodel exists), so `BiModel` is a genuinely smaller
-class; every lifting statement carries these laws as side conditions.
+`BiModel` = a Fairtlough–Mendler constraint model carrying a SEPARATE
+co-lax relation `Rc` and three retrospective laws.  The separation is
+FORCED by the round-0 screens: over `Rm` the modality collapses to the
+identity (`colax_collapse_of_rm`).  See the structure's docstring.
 
 Fallibility: `force_of_fallible` holds for the FORWARD fragment only —
 `ff = ⊤ ⤙ ⊤` is forced nowhere (`bforce_ff`), separating the absolute
@@ -29,11 +17,33 @@ import LaxLogic.PLLKripke
 namespace BiLax
 open PLLND
 
-/-- **Bi-lax constraint models**: constraint models with the two
-retrospective frame laws. -/
+/-- **Bi-lax constraint models**: constraint models carrying a
+SEPARATE co-lax relation `Rc` (the modality `◯∃` looks back along
+`Rc`, not along `Rm`) with three laws.
+
+Why `Rc` is separate — a REFUTATION delivered by the round-0 screens
+(BiLax/Screens.lean, 2026-08-13): reading `◯∃` back along `Rm` makes
+it the IDENTITY on every constraint model (`colax_collapse_of_rm`
+below), because `Rm` is reflexive and `Rm ⊆ Ri`, so persistence closes
+both inclusions.  The screens reported `nonId = 0` on all 44,160
+well-formed 3-world frames — the vacuity trap the handoff warned of
+(§4.2).  The handoff's own working model dodged it by taking the
+co-lax relation to be the STRICT part of `≤`; `Rc` is that relation,
+and is NOT required reflexive.
+
+The laws, each exactly what it buys:
+* `square_c` — persistence of `◯∃`;
+* `counit_c` — the counit `◯∃◯∀A ⊢ A`;
+* `serial_c` — the unit `A ⊢ ◯∀◯∃A` (the handoff's seriality finding,
+  §4.3, in its exact compatible form).
+The old `square` law over `Rm` was FREE (screens: 0 failures; take the
+witness `v` itself, using `refl_m`) and is dropped. -/
 structure BiModel extends ConstraintModel where
-  square : ∀ {w u v : W}, Rm w u → Ri u v → ∃ w', Ri w w' ∧ Rm w' v
-  counit_law : ∀ {w u : W}, Rm w u → ∃ v, Ri w v ∧ ∀ y, Rm v y → Ri y u
+  /-- the co-lax accessibility relation (not required reflexive) -/
+  Rc : W → W → Prop
+  square_c : ∀ {w u v : W}, Rc w u → Ri u v → ∃ w', Ri w w' ∧ Rc w' v
+  counit_c : ∀ {w u : W}, Rc w u → ∃ v, Ri w v ∧ ∀ y, Rm v y → Ri y u
+  serial_c : ∀ v : W, ∃ u, Rm v u ∧ Rc v u
 
 /-- Forcing for bi-lax formulas.  The forward clauses are PLL's;
 `⤙` and `◯∃` look backward. -/
@@ -45,7 +55,7 @@ def bforce (M : BiModel) : M.W → BiForm → Prop
   | w, .imp A B => ∀ v, M.Ri w v → bforce M v A → bforce M v B
   | w, .coimp A B => ∃ v, M.Ri v w ∧ bforce M v A ∧ ¬ bforce M v B
   | w, .lax A => ∀ v, M.Ri w v → ∃ u, M.Rm v u ∧ bforce M u A
-  | w, .colax A => ∃ u, M.Rm u w ∧ bforce M u A
+  | w, .colax A => ∃ u, M.Rc u w ∧ bforce M u A
 
 /-- **Persistence**: every bi-lax connective is hereditary along `Ri`
 — the retrospective ones via transitivity (`⤙`) and the `square`
@@ -68,7 +78,7 @@ theorem bforce_hered (M : BiModel) {A : BiForm} :
       exact fun h hw u hvu => hw u (M.trans_i h hvu)
   | colax A ih =>
       rintro w v h ⟨u, huw, hA⟩
-      obtain ⟨u', huu', hu'v⟩ := M.square huw h
+      obtain ⟨u', huu', hu'v⟩ := M.square_c huw h
       exact ⟨u', hu'v, ih huu' hA⟩
 
 /-- The embedding agrees with PLL forcing. -/
@@ -118,19 +128,33 @@ theorem bforce_ff (M : BiModel) (w : M.W) : ¬ bforce M w BiForm.ff := by
   rintro ⟨v, _, _, hnt⟩
   exact hnt (fun u _ h => h)
 
+/-- **The collapse, recorded** (the round-0 screen's refutation): if
+the co-lax relation is read back along `Rm` — reflexive and inside
+`Ri` — then `◯∃` is the identity, and the whole retrospective modality
+is vacuous.  This is why `BiModel` carries a separate `Rc`. -/
+theorem colax_collapse_of_rm (M : BiModel) (A : BiForm) (w : M.W)
+    (hcoll : ∀ {u v : M.W}, M.Rc u v ↔ M.Rm u v) :
+    (∃ u, M.Rc u w ∧ bforce M u A) ↔ bforce M w A := by
+  constructor
+  · rintro ⟨u, huw, hA⟩
+    exact bforce_hered M (M.sub_mi (hcoll.mp huw)) hA
+  · intro hA
+    exact ⟨w, hcoll.mpr (M.refl_m w), hA⟩
+
 /-! ## The adjunction ◯∃ ⊣ ◯∀, unit, counit, co-residuation -/
 
 /-- Unit: `A ⊢ ◯∀◯∃A` (needs only reflexive `Rm` and persistence). -/
 theorem bforce_unit (M : BiModel) (A : BiForm) {w : M.W}
     (hA : bforce M w A) : bforce M w (◯∀(◯∃A)) := by
   intro v hv
-  exact ⟨v, M.refl_m v, v, M.refl_m v, bforce_hered M hv hA⟩
+  obtain ⟨u, hmu, hcu⟩ := M.serial_c v
+  exact ⟨u, hmu, v, hcu, bforce_hered M hv hA⟩
 
 /-- Counit: `◯∃◯∀A ⊢ A` (exactly `counit_law`). -/
 theorem bforce_counit (M : BiModel) (A : BiForm) {w : M.W}
     (h : bforce M w (◯∃(◯∀A))) : bforce M w A := by
   obtain ⟨u, huw, hlax⟩ := h
-  obtain ⟨v, huv, hall⟩ := M.counit_law huw
+  obtain ⟨v, huv, hall⟩ := M.counit_c huw
   obtain ⟨y, hvy, hy⟩ := hlax v huv
   exact bforce_hered M (hall y hvy) hy
 
@@ -140,11 +164,11 @@ theorem bforce_adjunction (M : BiModel) (A B : BiForm) :
     (∀ w, bforce M w A → bforce M w (◯∀B)) := by
   constructor
   · intro h w hA v hv
-    exact ⟨v, M.refl_m v,
-      h v ⟨v, M.refl_m v, bforce_hered M hv hA⟩⟩
+    obtain ⟨u, hmu, hcu⟩ := M.serial_c v
+    exact ⟨u, hmu, h u ⟨v, hcu, bforce_hered M hv hA⟩⟩
   · intro h w hcol
     obtain ⟨u, huw, hA⟩ := hcol
-    obtain ⟨v, huv, hall⟩ := M.counit_law huw
+    obtain ⟨v, huv, hall⟩ := M.counit_c huw
     obtain ⟨y, hvy, hy⟩ := h u hA v huv
     exact bforce_hered M (hall y hvy) hy
 
