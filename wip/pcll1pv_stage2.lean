@@ -106,7 +106,7 @@ theorem confluent_char_match {M N : ConstraintModel}
     (h : ∀ χ : PLLFormula, crank χ ≤ r + 2 →
       (∀ a ∈ χ.atoms, a ∈ V) → (M.force w χ ↔ N.force w' χ))
     {ψ : PLLFormula} (κ : M.W) (hκ : M.Rm w κ) (hψ : M.force κ ψ) :
-    ∃ κ' u', M.Rm w κ' ∧ M.force κ' ψ ∧ N.Rm w' u' ∧
+    ∃ κ' u', M.Rm w κ' ∧ M.Ri κ κ' ∧ M.force κ' ψ ∧ N.Rm w' u' ∧
       ((N.force u' (charPos M κ' L) ∧ ¬ N.force u' (charNeg M κ' L)) ∨
         (κ' ∈ M.F ∧ u' ∈ N.F)) := by
   classical
@@ -151,7 +151,9 @@ theorem confluent_char_match {M N : ConstraintModel}
       obtain ⟨t, hwt, htD₀⟩ := (force_somehow_iff_of_confluent hM).mp h3
       obtain ⟨κ2, hwκ2, hκκ2, htκ2⟩ := confluent_directed hM hκ hwt
       have hψ2 : M.force κ2 ψ := M.force_hered hκκ2 hψ
-      exact confluent_char_match hM hN hL h κ2 hwκ2 hψ2
+      obtain ⟨κ', u', h1, h2, h3', h4, h5⟩ :=
+        confluent_char_match hM hN hL h κ2 hwκ2 hψ2
+      exact ⟨κ', u', h1, M.trans_i hκκ2 h2, h3', h4, h5⟩
     · -- the N-side witness is fallible: bounce ◯⊥ and go fallible too
       have h2 : N.force w' ((PLLFormula.falsePLL).somehow) :=
         (force_somehow_iff_of_confluent hN).mpr ⟨u', hwu', hu'F⟩
@@ -163,9 +165,9 @@ theorem confluent_char_match {M N : ConstraintModel}
           simp [PLLFormula.atoms] at ha
       obtain ⟨t, hwt, htF⟩ := (force_somehow_iff_of_confluent hM).mp h3
       obtain ⟨κ2, hwκ2, hκκ2, htκ2⟩ := confluent_directed hM hκ hwt
-      exact ⟨κ2, u', hwκ2, M.force_hered hκκ2 hψ, hwu',
+      exact ⟨κ2, u', hwκ2, hκκ2, M.force_hered hκκ2 hψ, hwu',
         .inr ⟨M.hered_F (M.sub_mi htκ2) htF, hu'F⟩⟩
-  · exact ⟨κ, u', hκ, hψ, hwu', .inl ⟨hu'pos, hneg⟩⟩
+  · exact ⟨κ, u', hκ, M.refl_i κ, hψ, hwu', .inl ⟨hu'pos, hneg⟩⟩
 termination_by (L.filter (fun D => decide (¬ M.force κ D))).length
 decreasing_by
   refine filter_length_lt L _ _ ?_ hD₀L (by simpa using hD₀not) ?_
@@ -197,7 +199,7 @@ theorem agree_mwit {V : Finset String} {α : Nat}
   classical
   obtain ⟨L, hL, hrep⟩ := frag_reps_exist' V (2 * α)
   obtain ⟨κ₀, hκ₀, hψ₀⟩ := hex
-  obtain ⟨κ, u', hκ, hψκ, hu', hres⟩ :=
+  obtain ⟨κ, u', hκ, _hRi, hψκ, hu', hres⟩ :=
     confluent_char_match hM hN hL h κ₀ hκ₀ hψ₀
   rcases hres with ⟨hpos, hneg⟩ | hfal
   · refine ⟨κ, u', hκ, hψκ, hu', .inl ?_⟩
@@ -228,6 +230,39 @@ theorem agree_mwitN {V : Finset String} {α : Nat}
   rcases hres with hagree | ⟨hκF, huF⟩
   · exact ⟨κ, u, hκ, hψκ, hu, .inl (fun χ hc ha => (hagree χ hc ha).symm)⟩
   · exact ⟨κ, u, hκ, hψκ, hu, .inr ⟨huF, hκF⟩⟩
+
+/-- **The ANCHORED M-side witness clause**: the output witness GROWS
+from the given seed along `Rᵢ` (the ping-pong's directedness joins),
+keeping the base `Rₘ`-anchor.  The corner recursion consumes exactly
+this: `Rᵢ`-anchoring at the corner witness survives to the `Rᵢ b₂`
+corner constraint while the `Rₘ` base-anchor serves `Rₘ c₂`. -/
+theorem agree_mwitN_anchored {V : Finset String} {α : Nat}
+    {M N : ConstraintModel} (hM : MutuallyConfluent M)
+    (hN : MutuallyConfluent N) {w : M.W} {w' : N.W}
+    (h : ∀ χ : PLLFormula, crank χ ≤ 2 * α + 2 →
+      (∀ a ∈ χ.atoms, a ∈ V) → (M.force w χ ↔ N.force w' χ))
+    {ψ : PLLFormula} (u'₀ : N.W) (hu'₀ : N.Rm w' u'₀)
+    (hψ₀ : N.force u'₀ ψ) :
+    ∃ u' u, N.Rm w' u' ∧ N.Ri u'₀ u' ∧ N.force u' ψ ∧ M.Rm w u ∧
+      ((∀ χ : PLLFormula, crank χ ≤ 2 * α →
+        (∀ a ∈ χ.atoms, a ∈ V) → (M.force u χ ↔ N.force u' χ)) ∨
+       (u ∈ M.F ∧ u' ∈ N.F)) := by
+  classical
+  obtain ⟨L, hL, hrep⟩ := frag_reps_exist' V (2 * α)
+  obtain ⟨u', u, hu', hRi, hψ', hu, hres⟩ :=
+    confluent_char_match hN hM hL (fun χ hc ha => (h χ hc ha).symm)
+      u'₀ hu'₀ hψ₀
+  rcases hres with ⟨hpos, hneg⟩ | hfal
+  · refine ⟨u', u, hu', hRi, hψ', hu, .inl ?_⟩
+    intro χ hχc hχa
+    obtain ⟨D, hD, h1, h2⟩ := hrep χ hχc hχa
+    have hagree := agree_of_char hpos hneg D hD
+    constructor
+    · intro hf
+      exact force_of_deriv h2 (hagree.mpr (force_of_deriv h1 hf))
+    · intro hf
+      exact force_of_deriv h2 (hagree.mp (force_of_deriv h1 hf))
+  · exact ⟨u', u, hu', hRi, hψ', hu, .inr ⟨hfal.2, hfal.1⟩⟩
 
 /-! ## Pins -/
 

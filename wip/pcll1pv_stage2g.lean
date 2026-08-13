@@ -57,8 +57,9 @@ def CornerCoreW (cl : Finset PLLFormula) (hadeq : OBoxAdeq cl)
     ∀ {u : M.W}, M.Rm m u →
     ∀ {k kv : K.W}, (traceT K cl k).val = Δ.1.val → K.Ri k kv →
       B.Z (2 * canonDepthC cl Δ - 1) kv u →
-      ∃ Δu : (canonFinC cl).W, (∀ χ ∈ Δb.1.val, χ ∈ Δu.1.val) ∧
-        (canonFinC cl).Rm Δ Δu ∧ WitTripleC cl B Δu u
+      ∃ (u₃ : M.W) (Δu : (canonFinC cl).W), M.Ri u u₃ ∧ M.Rm m u₃ ∧
+        (∀ χ ∈ Δb.1.val, χ ∈ Δu.1.val) ∧
+        (canonFinC cl).Rm Δ Δu ∧ WitTripleC cl B Δu u₃
 
 /-- The corner maintenance for the LEVELLED family, modulo the kernel:
 the `⊥`-region and the iback escape both land `top` AT `obInvW Δ`
@@ -73,14 +74,15 @@ theorem obInvForthW_of_core {cl : Finset PLLFormula} {hadeq : OBoxAdeq cl}
       (∀ χ ∈ Δb.1.val, χ ∈ (obInvW hadeq Δ).1.val) →
       ∀ {u : M.W}, M.Rm m u →
       (PLLFormula.falsePLL ∈ Δb.1.val → u ∈ M.F) →
-      ∃ Δu : (canonFinC cl).W, (∀ χ ∈ Δb.1.val, χ ∈ Δu.1.val) ∧
+      ∃ (u₃ : M.W) (Δu : (canonFinC cl).W), M.Ri u u₃ ∧ M.Rm m u₃ ∧
+        (∀ χ ∈ Δb.1.val, χ ∈ Δu.1.val) ∧
         (canonFinC cl).Rm Δ Δu ∧
-        WitTripleC cl (lvlB (p := p) hK hM hPK hPM) Δu u := by
+        WitTripleC cl (lvlB (p := p) hK hM hPK hPM) Δu u₃ := by
   intro Δ Δb m ht hdom u hmu hbu
   by_cases hbotb : PLLFormula.falsePLL ∈ Δb.1.val
   · -- ⊥ on the b-side: `u` is fallible by the supplied tie, and the
     -- promise set contains ⊥ by domination — `top` at `obInvW Δ`
-    exact ⟨obInvW hadeq Δ, hdom, rm_obInvW hadeq Δ,
+    exact ⟨u, obInvW hadeq Δ, M.refl_i u, hmu, hdom, rm_obInvW hadeq Δ,
       .top (hdom _ hbotb) (hbu hbotb)⟩
   by_cases hbot : PLLFormula.falsePLL ∈ Δ.1.val
   · -- the ⊥-region: the triple is secretly fallible on both sides
@@ -95,7 +97,7 @@ theorem obInvForthW_of_core {cl : Finset PLLFormula} {hadeq : OBoxAdeq cl}
     have hbotcl : PLLFormula.falsePLL ∈ cl := Δ.2.1.2.1.1 hbot
     have hboxbot : PLLFormula.falsePLL.somehow ∈ Δ.1.val :=
       boxUnit (T := ⟨Δ.1, Δ.2.1⟩) (hadeq _ hbotcl) hbot
-    exact ⟨obInvW hadeq Δ, hdom, rm_obInvW hadeq Δ,
+    exact ⟨u, obInvW hadeq Δ, M.refl_i u, hmu, hdom, rm_obInvW hadeq Δ,
       .top (obInvFT_val_iff.mpr ⟨hbotcl, hboxbot⟩)
         (M.hered_F (M.sub_mi hmu) hmF)⟩
   · cases ht with
@@ -124,7 +126,7 @@ theorem obInvForthW_of_core {cl : Finset PLLFormula} {hadeq : OBoxAdeq cl}
           have hmem : (PLLFormula.falsePLL).somehow ∈ Δ.1.val := by
             rw [← hΔk]
             exact mem_traceT_val.mpr ⟨hboxcl, hforceK⟩
-          exact ⟨obInvW hadeq Δ, hdom, rm_obInvW hadeq Δ,
+          exact ⟨u, obInvW hadeq Δ, M.refl_i u, hmu, hdom, rm_obInvW hadeq Δ,
             .top (obInvFT_val_iff.mpr ⟨hcl.bot, hmem⟩) huF⟩
 
 /-- **`CornerTriple` for the levelled family, modulo the kernel**: the
@@ -149,11 +151,11 @@ theorem cornerTriple_of_coreW {cl : Finset PLLFormula}
           rw [hΔk]; exact hbot_b
         exact ((lvlB (p := p) hK hM hPK hPM).fall hZ).mp
           (mem_traceT_val.mp hk).2
-  obtain ⟨Δu, hb, hRm, htrip⟩ :=
+  obtain ⟨u₃, Δu, hRiu, hRmm, hb, hRm, htrip⟩ :=
     obInvForthW_of_core hcl hK hM hPK hPM hcore c.2
       (rmC_le_obInv hadeq hab.1 hac.1) hcv
       (fun hbb => M.hered_F hbv (hbF hbb))
-  exact ⟨Δu, v₂, hb, hRm, hbv, hcv, htrip⟩
+  exact ⟨Δu, u₃, hb, hRm, M.trans_i hbv hRiu, hRmm, htrip⟩
 
 /-- The crux for the levelled family, modulo the kernel. -/
 theorem amalgamConfluent_of_coreW {cl : Finset PLLFormula}
