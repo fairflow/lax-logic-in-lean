@@ -71,6 +71,32 @@ dictionary of `wip/rnc_probe.lean`.
 | ρ20 | 7 | (◯¬◯⊥ ⊃ (¬◯⊥ ∨ ◯⊥)) ⊃ (¬¬◯⊥ ∨ ¬◯⊥) | g 1 ⊃ t 5 | q8 ⊃ q7 | min-crank 7; pinned |
 | ρ21 | 7 | ((¬¬◯⊥ ∨ ◯¬◯⊥) ⊃ (¬◯⊥ ∨ ◯⊥)) ⊃ ◯¬◯⊥ | w 1 ⊃ c 1 | w16 ⊃ q5 | min-crank 7; pinned |
 
+## How the counts reconcile (the two 19s)
+
+Four numbers circulate and two happen to coincide; they must not be
+conflated:
+
+* **19 seed formulas** — the candidate dictionary q0…q14, w15…w18
+  (`wip/rnc_probe.lean`).  Formulas, not classes.
+* **15 PLL base classes** — q0…q14, certified pairwise distinct
+  (165 pinned countermodels, `wip/rnSep.lean`); the four w's are ONE
+  PLL class (hand-proved 2026-07-26, `wip/rnSepColl.lean`), the 16th.
+* **19 PCLL classes at crank ≤ 6** — a DIFFERENT 19: the probe's
+  class count for the crank-≤6 stratum, equal to the seed count by
+  coincidence.
+* **22 PCLL classes at crank ≤ 7** — the full catalogue above.
+
+What the probe ADDED beyond the seeds: the 19 seeds span only 15 PCLL
+classes (q12 folds into ρ9, the w's are ρ14), so **8 of the 22 are
+sweep discoveries** — ρ13 (a new shape outside the candidate
+dictionary) and the seven combination classes ρ15–ρ21.  Because
+PCLL-separation implies PLL-separation (`DerivU ⊇ LaxND`), these 8 are
+also new PLL classes relative to the 16 catalogued base classes; their
+identity against the k ≥ 2 members of the infinite families is
+UNCHARTED (those were not seeds), so the PLL dictionary's Hasse
+diagram is not redrawn here — placing the new nodes needs their order
+cells, not yet computed.
+
 ## What distribution does (all of it, at crank ≤ 7)
 
 Only four equivalences in the 680-cell run needed the scheme;
