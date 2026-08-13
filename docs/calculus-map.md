@@ -187,6 +187,7 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
 | E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |
 | the θ-chain, the GZ-candidate cell, `thetaStabilises` | `LaxND` (certificates from `G4c` search) | `wip/ljfo_theta_*.lean` |
+| the 1-pv confluent amalgamation (modulo `ClosedCollapse 6`) and the ∃p wrapper: `semExC_upper`/`semExC_adjunction` PROVED, `SemExC1Definable` OPEN | `DerivU` + confluent constraint models | `wip/pcll1pv_stage*.lean` |
 
 ---
 
