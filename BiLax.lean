@@ -8,3 +8,4 @@ import BiLax.Hintikka
 import BiLax.Refute
 import BiLax.Check
 import BiLax.Pipeline
+import BiLax.Internal
