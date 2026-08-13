@@ -110,15 +110,27 @@ passed.  R5 is the lax analogue of the very rule that killed
 Łukasiewicz's conjecture, so its silence here is the expected shape of
 trouble rather than a surprise.
 
-**A methodological finding from the screen's own failure.**  The first
-run used only the closed corpus and reported "NO WITNESS" for *every*
-rule including the dead ones — because on the closed fragment PCLL ≈
-PLL (distribution's entire visible effect there is four merges,
-`docs/pcll-closed-fragment-catalogue.md`), so no discrimination
-witness can exist by construction.  The extension test is
-**under-powered on closed formulas**; p-carrying cells are required,
-and adding them immediately produced R3's witness.  Any future
-extension screening must carry p-carrying cells.
+**A methodological finding from the screen's own failure — with a
+CORRECTION (2026-08-13, Matthew).**  The first run used only the
+closed corpus and reported "NO WITNESS" for *every* rule including the
+dead ones.  My first diagnosis said this was because "on the closed
+fragment PCLL ≈ PLL".  **That is false, and this repo refutes it**:
+distribution's four merges at crank ≤ 7 (`q12 ≡ q9`, `◯q9 ≡ q9`,
+`◯q11 ≡ q11`, `w15 ≡ w16 ≡ w17 ≡ w18`) are each a STRICT separation —
+pairs interderivable in PCLL and provably not in PLL, kernel-pinned.
+So PLL ⊊ PCLL on the closed fragment, witnessed.  The merges are
+SPARSE (four out of 680 classification cells), which is a different
+claim entirely.
+
+The true reason for the empty discrimination column: the rule
+INSTANCES generated from my corpus (`◯φ`, `φ`, `◯φ ⊃ φ`, `¬¬◯φ`)
+essentially never land on a distribution-sensitive formula — the four
+merge sites are specific `∨`-shaped classes, and none of the rule
+shapes maps the corpus onto them.  The screen was under-powered
+because of the INSTANTIATION, not because of the fragment.  Adding
+p-carrying cells fixed it incidentally (R3's witness is
+`◯p ∨ ◯q`) but the principled fix is to instantiate rules AT the known
+merge sites.  Any future extension screening should do both.
 
 ## 4. What to do next, if this thread continues
 
