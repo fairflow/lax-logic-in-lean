@@ -165,14 +165,10 @@ confluent frames, the single maximum successor's theory.  Rules:
 
 ## 5. The four obligations, honestly graded
 
-1. **PLL-closure `Cl` over the finite subformula set** — WORK, not
-   research.  Needs the closure properties (Cl1)–(Cl6) re-proved for
-   PLL consequence.  Lemma 5's analogue (`Λ_α = Cl(Λ*_α)`) needs the
-   ◯-formulas added to the "determining" part, since a world's theory
-   is no longer fixed by its implications alone.  **This is the first
-   thing to check and could sink the whole lift**: if a PLL world is
-   NOT determined by `Cl` of its implicational-plus-modal part, the
-   left-rule absorption fails and the architecture does not transfer.
+1. **PLL-closure `Cl` over the finite subformula set** — **SCREENED
+   2026-08-13: PASSES, with the repair.  See §7.**  Still WORK (the
+   closure properties (Cl1)–(Cl6) and Lemma 5's analogue must be
+   PROVED, not screened), but the architecture transfers.
 2. **The height induction** — needs `h(α)` to decrease along both `Ri`
    and `Rm` steps.  `Rm ⊆ Ri` gives it, PROVIDED the model is reduced
    (otherwise `Rm`-successors can be `Ri`-equivalent to the source and
@@ -207,3 +203,51 @@ finite syntactic object checkable by a decidable rule predicate, so
 "REFUTED" becomes as cheap as "PROVED" under the machine-checked
 mandate — and the countermodel is *extracted from* it rather than
 substituting for it.
+
+
+## 7. The `Cl` screen — RUN (2026-08-13)
+
+`lean_exe clscreen` (`wip/cl_screen.lean`, output
+`wip/cl_screen_out.txt`).  Per Matthew's instruction — a failure may
+be repairable by changing the rules for `Cl`, so do not test one
+statement — the screen sweeps a LATTICE of variants: three choices of
+determining part `Λ*` × two closures, over 6 goals × 8 battery models
+× their worlds = 156 cells each.  Only `Λ ⊆ Cl(Λ*)` can fail
+(the converse is soundness), and a failure is a certificate.
+
+| `Λ*` (determining part) | `Cl` = none | `Cl` = PLL-consequence |
+|---|---|---|
+| atoms + ⊥ | 129 FAIL | 92 FAIL |
+| atoms + ⊥ + implications *(the literal IPC choice)* | 103 FAIL | **32 FAIL** |
+| atoms + ⊥ + implications + ◯-formulas *(the repair)* | 50 FAIL | **0 FAIL** |
+
+**Verdict: GO, with the repair — and the repair is forced.**
+
+* The **literal IPC choice fails**: 32 certified cells where a formula
+  is forced at a world but is not a PLL-consequence of that world's
+  atoms and implications.  Witness: `◯(p ∧ ◯q)` at worlds 2 and 3 of
+  `deep5`.  This is the expected content — `◯` is not definable from
+  the propositional connectives, so a modal formula's truth is
+  genuinely new data about a world, not recoverable from its
+  implicational part.
+* **Adding ◯-formulas to the determining part closes it completely**:
+  0 failures in 156 cells.  So FRJ's Lemma 5 does have a PLL analogue,
+  with `Λ*` = the non-`∧`/`∨` formulas (atoms, ⊥, implications AND
+  boxes) — which is the natural reading of FRJ's own choice anyway
+  (there, `∧`/`∨` are the only compositionally-recoverable
+  connectives; PLL just has one more irreducible constructor).
+* **Non-vacuity**: every control fails, and both dimensions do work
+  (129→103→50 without closure, 92→32→0 with it).  The screen is not
+  passing by accident.
+
+**Caveats, stated.**  The battery is curated (8 models, 6 goals, 156
+cells), so a pass is SUPPORT, not proof; the actual obligation is to
+PROVE the Lemma 5 analogue.  And this screen tests only the *statement*
+`Λ = Cl(Λ*)`; the closure properties (Cl1)–(Cl6) that FRJ's rules
+consume are separate and unscreened.
+
+**Consequence for the design.**  §4's proposal — a modal zone in the
+sequent data — is not an optional extra: the screen shows modal
+formulas MUST be carried as determining data.  The lifted sequent is
+therefore `Σ ; Θ ; μ → C` with the boxes tracked explicitly, exactly as
+designed, and obligation 1 is off the critical path.
