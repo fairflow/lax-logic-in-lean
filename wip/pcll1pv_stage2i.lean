@@ -57,7 +57,7 @@ theorem lvlZ_promote {R₀ : Nat} (hcol : ClosedCollapse R₀)
 theorem stableCore_of_collapse {cl : Finset PLLFormula}
     (hadeq : OBoxAdeq cl) (hcol : ClosedCollapse 6)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M) :
+    (hPK : PPureF p K) (hPM : PPureF p M) :
     StableCore cl (lvlB (p := p) hK hM hPK hPM) := by
   intro _hK Δ m k t u₂ ψ hcl hbot hΔk hts hkt hZt hmu hψu
   have hd : 1 ≤ canonDepthC cl Δ := canonDepthC_pos hcl hbot
@@ -125,7 +125,7 @@ residue of the levelled family holds outright given `ClosedCollapse 6`. -/
 theorem mwitResidue_of_collapse {cl : Finset PLLFormula}
     (hadeq : OBoxAdeq cl) (hcol : ClosedCollapse 6)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M) :
+    (hPK : PPureF p K) (hPM : PPureF p M) :
     MwitResidue cl (lvlB (p := p) hK hM hPK hPM) :=
   mwitResidue_of_stableCore hK hM hPK hPM
     (stableCore_of_collapse hadeq hcol hK hM hPK hPM)

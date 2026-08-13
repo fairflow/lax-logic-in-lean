@@ -28,16 +28,34 @@ def lvlZ (K M : ConstraintModel) (α : Nat) (k : K.W) (m : M.W) : Prop :=
     (∀ a ∈ χ.atoms, a ∈ (∅ : Finset String)) →
     (K.force k χ ↔ M.force m χ)
 
-/-- **The levelled agreement Wit-family** over p-pure mutually
+/-- **Weak p-purity**: atoms other than `p` are decorated only at
+fallible worlds.  (STRICT purity `PPure` is inconsistent with
+fallibility: `full_F` puts every fallible world in every `V a`, so a
+strictly pure `ConstraintModel` has `F = ∅` — the infallible class,
+PICLL not PCLL.  Weak purity is what the fallible battery models
+actually satisfy, and the atoms clause below recovers the transfer
+through the fall-tie and `full_F`.) -/
+def PPureF (p : String) (C : ConstraintModel) : Prop :=
+  ∀ a, a ≠ p → ∀ w : C.W, w ∈ C.V a → w ∈ C.F
+
+/-- **The levelled agreement Wit-family** over weakly p-pure mutually
 confluent models. -/
 def lvlB (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M) :
+    (hPK : PPureF p K) (hPM : PPureF p M) :
     LayeredBisimWit (fun a => a ≠ p) K M where
   Z := lvlZ K M
   mono := fun hZ χ hc ha => hZ χ (by omega) ha
   atoms := by
-    intro n k m _ a ha
-    exact iff_of_false (hPK a ha k) (hPM a ha m)
+    intro n k m hZ a ha
+    have hfall : k ∈ K.F ↔ m ∈ M.F := by
+      have := hZ .falsePLL (by simp [crank])
+        (by intro b hb; simp [PLLFormula.atoms] at hb)
+      simpa [ConstraintModel.force] using this
+    constructor
+    · intro hk
+      exact M.full_F (hfall.mp (hPK a ha k hk))
+    · intro hm
+      exact K.full_F (hfall.mpr (hPM a ha m hm))
   fall := by
     intro n k m hZ
     have := hZ .falsePLL (by simp [crank])
@@ -61,7 +79,7 @@ def lvlB (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
 
 /-- The M-side witness clause holds for the levelled family. -/
 theorem lvlB_mwitM (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M) :
+    (hPK : PPureF p K) (hPM : PPureF p M) :
     (lvlB (p := p) hK hM hPK hPM).MWitM := by
   intro n k m hZ ψ hex
   exact agree_mwitN hK hM (fun χ hc ha => hZ χ (by omega) ha) hex

@@ -118,7 +118,7 @@ the base. -/
 theorem corner_descend {cl : Finset PLLFormula} (hadeq : OBoxAdeq cl)
     (hcl : SubClosed cl) (hcol : ClosedCollapse 6)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M)
+    (hPK : PPureF p K) (hPM : PPureF p M)
     (k₁ : K.W) (m₁ u₁ : M.W)
     (hlink : ∀ β, lvlZ K M β k₁ m₁) (hmu₁ : M.Rm m₁ u₁) :
     ∃ (u₃ : M.W) (Δu : (canonFinC cl).W),
@@ -228,7 +228,7 @@ decreasing_by exact hlt
 theorem cornerCoreW_of_collapse {cl : Finset PLLFormula}
     (hadeq : OBoxAdeq cl) (hcl : SubClosed cl) (hcol : ClosedCollapse 6)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M) :
+    (hPK : PPureF p K) (hPM : PPureF p M) :
     CornerCoreW cl hadeq (lvlB (p := p) hK hM hPK hPM) := by
   intro Δ Δb m ht hbot _hbotb hdom u hmu k kv _hΔk _hkkv _hZkv
   have hd : 1 ≤ canonDepthC cl Δ := canonDepthC_pos hcl hbot
@@ -291,7 +291,7 @@ holds outright modulo `ClosedCollapse 6`. -/
 theorem amalgamConfluent_of_collapse {cl : Finset PLLFormula}
     (hadeq : OBoxAdeq cl) (hcl : SubClosed cl) (hcol : ClosedCollapse 6)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M) :
+    (hPK : PPureF p K) (hPM : PPureF p M) :
     AmalgamConfluent cl (lvlB (p := p) hK hM hPK hPM) :=
   amalgamConfluent_of_coreW hadeq hcl hK hM hPK hPM
     (cornerCoreW_of_collapse hadeq hcl hcol hK hM hPK hPM)

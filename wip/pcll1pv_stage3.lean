@@ -25,7 +25,7 @@ heart), modulo `ClosedCollapse 6`. -/
 theorem oneVarConfluentAmalgamationW {cl : Finset PLLFormula}
     (hadeq : OBoxAdeq cl) (hcl : SubClosed cl) (hcol : ClosedCollapse 6)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M)
+    (hPK : PPureF p K) (hPM : PPureF p M)
     (k₀ : K.W) (m₀ : M.W)
     (hB : lvlZ K M (2 * cl.card + 1) k₀ m₀) :
     ∃ (N : ConstraintModel), MutuallyConfluent N ∧

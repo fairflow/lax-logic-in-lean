@@ -42,7 +42,7 @@ witness-form residue's fallible and grown branches are discharged by
 the symmetric ping-pong; the same-trace branch is the kernel. -/
 theorem mwitResidue_of_stableCore {cl : Finset PLLFormula}
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M)
+    (hPK : PPureF p K) (hPM : PPureF p M)
     (hcore : StableCore cl (lvlB (p := p) hK hM hPK hPM)) :
     MwitResidue cl (lvlB (p := p) hK hM hPK hPM) := by
   intro _hK Δ k' k kv κ m' m u' ψ hcl hbot hΔk hΔk' hik him hmu' hψ hu'F hZ' hZ

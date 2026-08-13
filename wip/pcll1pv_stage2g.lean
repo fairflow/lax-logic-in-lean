@@ -67,7 +67,7 @@ the `⊥`-region and the iback escape both land `top` AT `obInvW Δ`
 linked case is the kernel. -/
 theorem obInvForthW_of_core {cl : Finset PLLFormula} {hadeq : OBoxAdeq cl}
     (hcl : SubClosed cl) (hK : MutuallyConfluent K)
-    (hM : MutuallyConfluent M) (hPK : PPure p K) (hPM : PPure p M)
+    (hM : MutuallyConfluent M) (hPK : PPureF p K) (hPM : PPureF p M)
     (hcore : CornerCoreW cl hadeq (lvlB (p := p) hK hM hPK hPM)) :
     ∀ {Δ Δb : (canonFinC cl).W} {m : M.W},
       WitTripleC cl (lvlB (p := p) hK hM hPK hPM) Δ m →
@@ -136,7 +136,7 @@ b-side is promise-dominated (`rmC_le_obInv`), the M-corner comes from
 theorem cornerTriple_of_coreW {cl : Finset PLLFormula}
     (hadeq : OBoxAdeq cl) (hcl : SubClosed cl)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M)
+    (hPK : PPureF p K) (hPM : PPureF p M)
     (hcore : CornerCoreW cl hadeq (lvlB (p := p) hK hM hPK hPM)) :
     CornerTriple cl (lvlB (p := p) hK hM hPK hPM) := by
   intro _hK _hM a b c hab hac
@@ -161,7 +161,7 @@ theorem cornerTriple_of_coreW {cl : Finset PLLFormula}
 theorem amalgamConfluent_of_coreW {cl : Finset PLLFormula}
     (hadeq : OBoxAdeq cl) (hcl : SubClosed cl)
     (hK : MutuallyConfluent K) (hM : MutuallyConfluent M)
-    (hPK : PPure p K) (hPM : PPure p M)
+    (hPK : PPureF p K) (hPM : PPureF p M)
     (hcore : CornerCoreW cl hadeq (lvlB (p := p) hK hM hPK hPM)) :
     AmalgamConfluent cl (lvlB (p := p) hK hM hPK hPM) :=
   amalgamConfluent_of_corner
