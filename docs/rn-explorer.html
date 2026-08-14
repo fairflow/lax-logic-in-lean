@@ -216,11 +216,23 @@
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
-  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v12 · 2026-08-06 · six points PROVED visible (wip/visible.lean), odd-rung refutation general in k</p>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v14 · 2026-08-14 · the 15-class closure does NOT close — 4 refuted cells identified; the certified simpset harvested from the tables</p>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
   The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
   where the ladder is only part of the picture.</p>
+  <p class="note" style="margin:10px 0 0;border-left:3px solid var(--red,#c0392b);padding-left:10px">
+  <strong>The fifteen classes do not actually close</strong> (recorded 2026-08-14).
+  The closure record <code>rnDict15</code> is certified at 603 of its 690 cells;
+  of the 87 remaining, <strong>four are REFUTED</strong> — certified ≤4-world
+  countermodels eliminate every candidate representative, so each of
+  <span class="fml">q8 ∧ q10</span>, <span class="fml">q9 ⊃ q4</span>,
+  <span class="fml">q12 ⊃ q4</span> and <span class="fml">q14 ⊃ q4</span> is a
+  <em>new</em> class and the table genuinely fails there. The other 83 are open.
+  This is the expected shape, not a surprise: the variable-free fragment does not
+  collapse at any crank ≤ 7, so no finite dictionary can close it — the four cells
+  are simply where this one breaks. Detail:
+  <code>docs/rn-dictionary-status.md</code>.</p>
 </header>
 
 <div class="tabs" role="tablist">
@@ -790,6 +802,19 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
       <p class="readout" id="read-tab"><span class="muted">Click a cell for the equation it records.</span></p>
     </div>
   </div>
+  <p class="note" style="border-left:3px solid var(--accent,#2d7dd2);padding-left:10px">
+  <strong>These tables are now also a simplifier.</strong> Every certified cell is an
+  oriented rewrite rule <span class="fml">qi ⊙ qj ⟶ qk</span>, so the whole table can be
+  run as a normaliser on any closed goal — congruence closure over facts already paid for.
+  The PLL simpset (<code>Rewrite/</code>) carries <strong>236</strong> kernel-checked cells
+  from the separate 15-representative record <code>rnDict15</code>; canonicalising both the
+  goal and the rules, then alternating rewriting and re-canonicalising to a fixpoint, it
+  rewrites 89% of flat cells for a 34% <span class="fml">crank</span> cut and collapses
+  3,996 nested ∧/∨ trees to 25 distinct forms — against a floor of 15, the number of
+  classes. What it cannot do is <em>extend</em> the tables: tested against all 87 unproved
+  cells, it settles <strong>none</strong> of them, because rewriting only reaches what the
+  banked equations already connect. The open cells need search or countermodels, not
+  recombination.</p>
   <p class="note">These 347 cells were probe output until they were re-derived and pinned: each
   certified cell is now a proof term the kernel checks. The two PCLL-only cells are
   <span class="fml">◯t5 ≡ s1</span> (was <span class="fml">◯q7 ≡ q9</span>) and
