@@ -341,6 +341,8 @@ is axiom-free.
 | `join_cone_empty_of_confluent_branching` | a confluent BRANCHING join has an empty modal cone | `[propext]` |
 | `join_empty_box_iff` | 0 premises: `◯` is the identity at the root | `[propext]` |
 | `join_unit_box_iff` | 1 premise: the modal rule degenerates to `addRoot`'s | `[propext]` |
+| `Iso.force` | **forcing transfer**: isomorphic constraint models force the same formulas at corresponding worlds | *no axioms* |
+| `join_unit_force` | 1 premise: the join agrees with `addRoot` **POINTWISE** — every world, every formula | *no axioms* |
 | `not_derivU_of_root` | a confluent root certifies **PCLL** underivability | `[propext]` |
 | `rho6_needs_branching` | every world refuting `¬¬◯⊥ ∨ ¬◯⊥` has two `Ri`-INCOMPARABLE successors | `[propext, Classical.choice, Quot.sound]` |
 | `not_derivable_rho6` | **`⊬ ¬¬◯⊥ ∨ ¬◯⊥`** (catalogue class ρ6 = t 5 = q7, crank 4) | `[propext, Quot.sound]` |
@@ -417,9 +419,8 @@ with a control that must fail in the same run.  **All seven green**
   cells; the branching corollary holds on 4/4 branching cells with a
   non-empty cone.  Both are now theorems.
 * **E** degeneracy: 5/5 single-component cells agree POINTWISE with an
-  independently-written `addRoot`.  (Proved in Lean only for the modal
-  rule, `join_unit_box_iff`; full pointwise agreement is SCREENED, and
-  is recorded as screened, not proved.)
+  independently-written `addRoot`.  Now also PROVED — see the
+  addendum below.
 * **F** soundness, adversarially: 7 sequents certified derivable by
   the searcher IN THE SAME RUN — including the G4iLL blocker
   `◯((◯p⊃r)⊃◯p), ◯p⊃r ⇒ r` — and no cell's root witnesses any of them
@@ -488,8 +489,36 @@ skipped.
   catalogue class settled by construction rather than by search.  The
   57 pinned crank-7 separations are the rest of the calibration set,
   and §G's list (ρ6, ρ9, ρ11, ρ12) says which of them need the join.
-* **Open, and named**: `join_unit_box_iff` proves the modal rule
-  degenerates to `addRoot`'s, but full pointwise agreement of a unary
-  join with `addRoot` is screened only.  It needs a forcing-transfer
-  lemma along a frame isomorphism — routine, and worth having before
-  T2 starts quotienting models.
+* **A forcing-transfer lemma is available** (`Iso.force`, added the
+  same day — see the addendum): isomorphic constraint models force the
+  same formulas at corresponding worlds, axiom-free and stated with an
+  explicit two-sided inverse, so nothing classical enters.  T2 will
+  want it as soon as it renames or quotients models.
+
+### Addendum (same day) — the unary degeneracy is PROVED, not screened
+
+The one item left open above is closed.  Three new results, all
+`#guard_msgs`-pinned and all **axiom-free**:
+
+* **`Iso.force`** — the general forcing-transfer lemma.  `Iso C D` is a
+  bijection of worlds that reflects and preserves both relations,
+  fallibility and the valuation; stated with an explicit two-sided
+  inverse rather than a surjectivity hypothesis, so no choice is
+  needed.  The two quantifier clauses (`⊃`, `◯`) are where the
+  inverse does the work: a successor on the target side is pulled back
+  before the induction hypothesis applies.
+* **`unitIso`** — a unary join IS an `addRoot`, via the map that
+  forgets the (unique) component index (`Option.map Sigma.snd`).  Every
+  field is `Iff.rfl` except the two relation clauses, where `Lift`'s
+  single constructor is introduced and eliminated.
+* **`join_unit_force`** — `(join (fun _ : Unit => M) D).force x φ ↔
+  (addRoot M (unitRootData D)).force (x.map Sigma.snd) φ`, for EVERY
+  world and EVERY formula, with `join_unit_root_force` the root
+  instance a derivation reads.
+
+So `joinscreen` §E's 5/5 pointwise agreement is now a theorem, and the
+boundary cell the doctrine demands of a generalisation — the new
+constructor must reduce to the old one when its extra freedom is
+unused — is discharged by proof.  25 pins in the file.
+
+**T2 is unblocked**: nothing in the join is now screened-only.

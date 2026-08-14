@@ -346,9 +346,66 @@ theorem join_cone_empty_of_confluent_branching (D : RootData (union Mods))
 /-! ## 5. Degenerate cases
 
 Checked because the audit found `boxHolds` incomplete exactly at a
-degenerate case.  The empty and unary joins are proved here; the full
-pointwise agreement of a unary join with `addRoot` is SCREENED
-(`joinscreen` §E, 5/5 cells), not proved. -/
+degenerate case.  Both degeneracies are PROVED: the empty join makes
+`◯` the identity at the root, and the unary join agrees with
+`addRoot` POINTWISE, at every world and for every formula
+(`join_unit_force`).  The latter goes through a general
+forcing-transfer lemma along an isomorphism of constraint models
+(`Iso.force`), which is reusable — T2 will want it as soon as it
+quotients or renames models. -/
+
+/-- **An isomorphism of constraint models**: a bijection of worlds
+reflecting and preserving both relations, fallibility and the
+valuation.  Stated with an explicit two-sided inverse rather than a
+surjectivity hypothesis, so nothing classical is needed. -/
+structure Iso (C D : ConstraintModel) where
+  toFun : C.W → D.W
+  invFun : D.W → C.W
+  left_inv : ∀ x, invFun (toFun x) = x
+  right_inv : ∀ y, toFun (invFun y) = y
+  ri : ∀ {x y}, C.Ri x y ↔ D.Ri (toFun x) (toFun y)
+  rm : ∀ {x y}, C.Rm x y ↔ D.Rm (toFun x) (toFun y)
+  fal : ∀ {x}, x ∈ C.F ↔ toFun x ∈ D.F
+  val : ∀ {a : String} {x}, x ∈ C.V a ↔ toFun x ∈ D.V a
+
+/-- **The forcing-transfer lemma**: isomorphic models force the same
+formulas at corresponding worlds.  The two quantifier clauses are
+where the inverse earns its keep — a successor on the `D` side has to
+be pulled back before the induction hypothesis applies. -/
+theorem Iso.force {C D : ConstraintModel} (e : Iso C D) (φ : PLLFormula) :
+    ∀ x : C.W, C.force x φ ↔ D.force (e.toFun x) φ := by
+  induction φ with
+  | prop a => exact fun _ => e.val
+  | falsePLL => exact fun _ => e.fal
+  | and φ ψ ihφ ihψ => exact fun x => and_congr (ihφ x) (ihψ x)
+  | or φ ψ ihφ ihψ => exact fun x => or_congr (ihφ x) (ihψ x)
+  | ifThen φ ψ ihφ ihψ =>
+      intro x
+      constructor
+      · intro h y hy hφ
+        have hx : D.Ri (e.toFun x) (e.toFun (e.invFun y)) := by
+          rw [e.right_inv]; exact hy
+        have hz := (ihψ (e.invFun y)).mp
+          (h (e.invFun y) (e.ri.mpr hx)
+            ((ihφ (e.invFun y)).mpr (by rw [e.right_inv]; exact hφ)))
+        rw [e.right_inv] at hz
+        exact hz
+      · intro h z hz hφ
+        exact (ihψ z).mpr (h (e.toFun z) (e.ri.mp hz) ((ihφ z).mp hφ))
+  | somehow φ ih =>
+      intro x
+      constructor
+      · intro h y hy
+        obtain ⟨u, hu, hφ⟩ :=
+          h (e.invFun y) (e.ri.mpr (by rw [e.right_inv]; exact hy))
+        refine ⟨e.toFun u, ?_, (ih u).mp hφ⟩
+        have hm := e.rm.mp hu
+        rw [e.right_inv] at hm
+        exact hm
+      · intro h z hz
+        obtain ⟨u, hu, hφ⟩ := h (e.toFun z) (e.ri.mp hz)
+        exact ⟨e.invFun u, e.rm.mpr (by rw [e.right_inv]; exact hu),
+          (ih (e.invFun u)).mpr (by rw [e.right_inv]; exact hφ)⟩
 
 /-- **The empty join** (no premises): the root is alone, and `◯` is
 the identity there — the same fact `solo_force_somehow` records for
@@ -362,6 +419,56 @@ theorem join_empty_box_iff (Mods : Empty → ConstraintModel)
     · exact hA
     · exact i.elim
   · exact fun hA => ⟨.inl hA, fun i _ => i.elim⟩
+
+/-- The premise data of a unary join, read as `addRoot` data. -/
+def unitRootData {M : ConstraintModel}
+    (D : RootData (union (fun _ : Unit => M))) : RootData M where
+  S u := D.S ⟨(), u⟩
+  S_up hu hm := D.S_up hu (.mk hm)
+  At := D.At
+  At_hered h w := D.At_hered h ⟨(), w⟩
+
+/-- A unary join IS an `addRoot`, up to the isomorphism that forgets
+the (unique) component index. -/
+def unitIso (M : ConstraintModel) (D : RootData (union (fun _ : Unit => M))) :
+    Iso (join (fun _ : Unit => M) D) (addRoot M (unitRootData D)) where
+  toFun := Option.map Sigma.snd
+  invFun := Option.map (fun a => ⟨(), a⟩)
+  left_inv := by rintro (_ | ⟨⟨⟩, a⟩) <;> rfl
+  right_inv := by rintro (_ | a) <;> rfl
+  ri := by
+    rintro (_ | ⟨⟨⟩, a⟩) (_ | ⟨⟨⟩, b⟩)
+    · exact Iff.rfl
+    · exact Iff.rfl
+    · exact Iff.rfl
+    · exact ⟨fun h => by cases h with | mk hab => exact hab, fun h => .mk h⟩
+  rm := by
+    rintro (_ | ⟨⟨⟩, a⟩) (_ | ⟨⟨⟩, b⟩)
+    · exact Iff.rfl
+    · exact Iff.rfl
+    · exact Iff.rfl
+    · exact ⟨fun h => by cases h with | mk hab => exact hab, fun h => .mk h⟩
+  fal := by rintro (_ | ⟨⟨⟩, a⟩) <;> exact Iff.rfl
+  val := by rintro c (_ | ⟨⟨⟩, a⟩) <;> exact Iff.rfl
+
+/-- **The unary join degenerates to `addRoot`, POINTWISE** — at every
+world and for every formula, not merely at the root and not merely for
+the modal rule.  This is the boundary cell the repo's testing doctrine
+demands of a generalisation: the new constructor must reduce to the
+old one when its extra freedom is not used. -/
+theorem join_unit_force (M : ConstraintModel)
+    (D : RootData (union (fun _ : Unit => M))) (φ : PLLFormula)
+    (x : (join (fun _ : Unit => M) D).W) :
+    (join (fun _ : Unit => M) D).force x φ ↔
+      (addRoot M (unitRootData D)).force (x.map Sigma.snd) φ :=
+  (unitIso M D).force φ x
+
+/-- The degeneracy at the root, the form a derivation reads. -/
+theorem join_unit_root_force (M : ConstraintModel)
+    (D : RootData (union (fun _ : Unit => M))) (φ : PLLFormula) :
+    (join (fun _ : Unit => M) D).force none φ ↔
+      (addRoot M (unitRootData D)).force none φ :=
+  join_unit_force M D φ none
 
 /-- **The unary join degenerates to `addRoot`**: with one premise the
 modal rule's two conjuncts are literally `boxHoldsRoot`/`boxHolds`'s
@@ -660,6 +767,24 @@ info: 'Reject.join_empty_box_iff' depends on axioms: [propext]
 -/
 #guard_msgs in
 #print axioms join_empty_box_iff
+
+/--
+info: 'Reject.Iso.force' does not depend on any axioms
+-/
+#guard_msgs in
+#print axioms Iso.force
+
+/--
+info: 'Reject.join_unit_force' does not depend on any axioms
+-/
+#guard_msgs in
+#print axioms join_unit_force
+
+/--
+info: 'Reject.join_unit_root_force' does not depend on any axioms
+-/
+#guard_msgs in
+#print axioms join_unit_root_force
 
 /--
 info: 'Reject.join_unit_box_iff' depends on axioms: [propext]
