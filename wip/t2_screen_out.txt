@@ -34,5 +34,18 @@ E 0 ⊩ ◯p = false;  2 ⊩ ◯p = true  (differ ⇒ 0 and 2 are NOT bisimilar)
 E 0 and 1 force the same corpus formulas: true
 E pass
 
+== G  extraction cost ==
+G extraction cost on CHAINS (the worst case for the proof as written):
+G   chain n=1: proof-as-written 1, by covers 1
+G   chain n=2: proof-as-written 2, by covers 2
+G   chain n=3: proof-as-written 4, by covers 3
+G   chain n=4: proof-as-written 8, by covers 4
+G   chain n=5: proof-as-written 16, by covers 5
+G   chain n=6: proof-as-written 32, by covers 6
+G   chain n=8: proof-as-written 128, by covers 8
+G   chain n=10: proof-as-written 512, by covers 10
+G battery (2588 reduced models, ≤3 worlds): worst |T| = 4 (proof), 3 (covers); total 3866 vs 3614
+G ⇒ the extracted MODEL is exponential; the extracted DERIVATION need not be.
+
 VERDICT AB=true CD=true F=true E=true
 T2-SCREEN-DONE

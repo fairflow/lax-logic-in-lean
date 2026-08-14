@@ -81,6 +81,38 @@ theorem height_induction [Finite N.W] (hr : Reduced N) {P : N.W → Prop}
         omega
   exact fun x => key (height N x) x le_rfl
 
+/-! ## 1b. Covers
+
+The completeness construction indexes a join's components by worlds
+above `w`.  Taking ALL strictly greater worlds makes the extracted
+model EXPONENTIAL — on a chain of `n` worlds it has `2^(n-1)` worlds,
+because every world is re-expanded once per path reaching it
+(`lean_exe t2screen` §G).  Indexing by the COVERS instead makes the
+chain case linear, and it is still exhaustive: every world above `w`
+lies above some cover of `w`.  That is the lemma. -/
+
+/-- `v` COVERS `w`: strictly above, with nothing strictly between. -/
+def Covers (N : ConstraintModel) (w v : N.W) : Prop :=
+  N.Ri w v ∧ w ≠ v ∧ ∀ z, N.Ri w z → N.Ri z v → z = w ∨ z = v
+
+/-- **Every world strictly above `w` lies above a COVER of `w`.**  The
+witness is a world of maximal height in the interval — maximal height
+means minimal position, and minimal-above-`w` is exactly a cover. -/
+theorem exists_cover_below [Finite N.W] (hr : Reduced N) {w y : N.W}
+    (hwy : N.Ri w y) (hne : w ≠ y) : ∃ v, Covers N w v ∧ N.Ri v y := by
+  classical
+  obtain ⟨z, hz, hmax⟩ :=
+    Set.exists_max_image {u | N.Ri w u ∧ N.Ri u y ∧ w ≠ u} (height N)
+      (Set.toFinite _) ⟨y, hwy, N.refl_i y, hne⟩
+  refine ⟨z, ⟨hz.1, hz.2.2, fun u hwu huz => ?_⟩, hz.2.1⟩
+  by_cases hu : w = u
+  · exact .inl hu.symm
+  · right
+    by_contra hne'
+    have hlt : height N z < height N u := height_lt_of_ri hr huz hne'
+    have := hmax u ⟨hwu, N.trans_i huz hz.2.1, hu⟩
+    omega
+
 /-! ## 2. The measure under the join
 
 The join is the only constructor that creates a world, so these are
@@ -177,5 +209,11 @@ info: 'Reject.join_comp_incomparable' does not depend on any axioms
 -/
 #guard_msgs in
 #print axioms join_comp_incomparable
+
+/--
+info: 'Reject.exists_cover_below' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms exists_cover_below
 
 end Reject

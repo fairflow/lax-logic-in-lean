@@ -290,6 +290,63 @@ def sectionE : IO Bool := do
   IO.println s!"E {vd ok}"
   return ok
 
+/-! ## G — EXTRACTION COST: what the completeness proof actually builds
+
+`genJoin` indexes the components at `w` by EVERY strictly greater
+world.  So the extracted model satisfies
+
+    |T(w)| = 1 + Σ_{v > w} |T(v)|
+
+which on a CHAIN of `n` worlds is `2^(n-1)`: the procedure re-expands
+every world once per path that reaches it.  The obvious repair is to
+index by the IMMEDIATE successors (covers) instead — every world above
+`w` is still reached, inside the component of some cover — giving
+
+    |T'(w)| = 1 + Σ_{v ⋖ w} |T'(v)|
+
+which is exactly `n` on a chain.  This section measures both. -/
+
+/-- Cost of the extracted model, as the proof builds it. -/
+def treeSizeAll (M : FinCM) (fuel : Nat) (w : Nat) : Nat :=
+  match fuel with
+  | 0 => 1
+  | fuel + 1 =>
+      if M.fallB w then 1
+      else 1 + (((List.range M.n).filter fun v => M.riB w v && v != w).map
+                  (treeSizeAll M fuel)).sum
+
+/-- `v` covers `w`: strictly above, with nothing strictly between. -/
+def covers (M : FinCM) (w v : Nat) : Bool :=
+  M.riB w v && v != w &&
+    !((List.range M.n).any fun z => M.riB w z && z != w && M.riB z v && z != v)
+
+/-- Cost of the repaired extraction, indexing by covers. -/
+def treeSizeCov (M : FinCM) (fuel : Nat) (w : Nat) : Nat :=
+  match fuel with
+  | 0 => 1
+  | fuel + 1 =>
+      if M.fallB w then 1
+      else 1 + (((List.range M.n).filter (covers M w)).map
+                  (treeSizeCov M fuel)).sum
+
+def chainOf (n : Nat) : FinCM :=
+  ⟨n, (List.range n).flatMap fun i => (List.range n).filter (fun j => j > i) |>.map fun j => (i, j),
+   [], [], []⟩
+
+def sectionG (bat : List FinCM) : IO Unit := do
+  IO.println "G extraction cost on CHAINS (the worst case for the proof as written):"
+  for n in [1, 2, 3, 4, 5, 6, 8, 10] do
+    let C := chainOf n
+    IO.println s!"G   chain n={n}: proof-as-written {treeSizeAll C (n+1) 0}, by covers {treeSizeCov C (n+1) 0}"
+  let red := bat.filter reduced
+  let costs := red.map fun M => (treeSizeAll M (M.n + 1) 0, treeSizeCov M (M.n + 1) 0, M.n)
+  let worstAll := costs.foldl (fun a c => max a c.1) 0
+  let worstCov := costs.foldl (fun a c => max a c.2.1) 0
+  let sumAll := (costs.map (·.1)).sum
+  let sumCov := (costs.map (·.2.1)).sum
+  IO.println s!"G battery ({red.length} reduced models, ≤3 worlds): worst |T| = {worstAll} (proof), {worstCov} (covers); total {sumAll} vs {sumCov}"
+  IO.println s!"G ⇒ the extracted MODEL is exponential; the extracted DERIVATION need not be."
+
 /-! ## Driver -/
 
 def main : IO Unit := do
@@ -311,6 +368,9 @@ def main : IO Unit := do
   IO.println ""
   IO.println "== E  the bisimulation obstruction =="
   let e ← sectionE
+  IO.println ""
+  IO.println "== G  extraction cost =="
+  sectionG bat1
   IO.println ""
   IO.println s!"VERDICT AB={ab} CD={cd} F={f} E={e}"
   IO.println "T2-SCREEN-DONE"

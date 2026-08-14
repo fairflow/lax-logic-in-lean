@@ -522,3 +522,194 @@ constructor must reduce to the old one when its extra freedom is
 unused — is discharged by proof.  25 pins in the file.
 
 **T2 is unblocked**: nothing in the join is now screened-only.
+
+---
+
+## 2026-08-14 (evening) — T2 DONE: COMPLETENESS, and what it costs to run
+
+`Reject/Height.lean`, `Reject/Bisim.lean`, `Reject/Complete.lean`.
+Screen: `lake exe t2screen` (`wip/t2_screen.lean`, output
+`wip/t2_screen_out.txt`), seven sections, all green.
+
+### The theorem
+
+**`gen_of_reduced`** — every world of a finite REDUCED constraint
+model is bisimilar to the root of a model the calculus BUILDS. Hence
+
+**`built_countermodel_of_reduced`** — a sequent with a finite reduced
+countermodel has a countermodel that is a *construction*: a `Built`
+model whose root forces the hypotheses and refutes the conclusion.
+
+With `not_laxND_of_root` (T1) the two directions meet: on that class,
+underivability and constructibility coincide.
+
+| result | pin |
+|---|---|
+| `height_lt_of_ri`, `height_lt_of_rm`, `height_induction` | `[propext, Classical.choice, Quot.sound]` |
+| `upSet_ssubset` | `[propext, Quot.sound]` |
+| `union_reduced`, `join_reduced`, `join_comp_incomparable` | *no axioms* |
+| `exists_cover_below` | `[propext, Classical.choice, Quot.sound]` |
+| `Bisim.force` | `[propext, Classical.choice, Quot.sound]` |
+| `genSolo` | *no axioms* |
+| `genJoin`, `gen_of_reduced`, `built_countermodel_of_reduced`, `built_iff_of_reduced` | `[propext, Classical.choice, Quot.sound]` |
+| `not_laxND_of_built` | `[propext]` |
+
+51 pins across `Reject/`; the build fails if any drifts.
+
+### Three design decisions, each forced by something measured
+
+**1. The measure is UP-SET CARDINALITY, not longest path.**
+`height N x = |{z | x Rᵢ z ∧ x ≠ z}|`. FRJ uses the longest ascending
+path; the two differ in value and agree in everything the induction
+uses — a strict `Rᵢ`-step strictly decreases both. Cardinality is a
+proper-subset argument, so no well-founded recursion is needed to
+*define* it, only to consume it.
+
+**2. Reducedness is load-bearing, and now measured.** §A′ of the
+screen: the decrease holds on all **2,588** reduced models of the
+≤3-world battery and FAILS on all **1,826** non-reduced ones, smallest
+certificate the two-world `Rᵢ`-cycle `{n := 2, ri := [(0,1),(1,0)]}`.
+This is the second place `docs/frj-lifting.md` §5 predicted it would
+bite; the first was the unary arity of the ◯-rule.
+
+**3. Bisimulation, not isomorphism — and REUSED, not reinvented.**
+The built tree duplicates worlds the countermodel shares between
+branches, so the two are never isomorphic. Matthew's catch: the notion
+already exists in this tree as `SemUI.ABisim`
+(`LaxLogic/PLLSemUI.lean`), built for the *semantic route to uniform
+interpolation*, with `force_iff_of_bisim` already proved. Its zig-zag
+is already the one `◯` forces. `Reject/Bisim.lean` is therefore a thin
+adapter — `Bisim M N := ABisim (fun _ => True) M N` — and nothing is
+duplicated. The parked UI machinery has now paid for itself twice.
+
+### What `Built` actually is
+
+`solo` and `join` generate exactly the finite `Rᵢ`-TREES, with
+**fallible worlds only at leaves**: `join` sets its new root's `F` to
+`False` unconditionally, so fallibility can enter only through `solo`.
+That is why `solo` is not redundant, and it is the constructor-level
+form of "fallibility is a zone flag" (`frj-lifting.md` §4).
+
+The claim was screened before it was proved (§D): over the ≤3-world,
+two-atom battery — 30,424 well-formed frames, 1,430 of them trees —
+every corpus formula refuted anywhere is refuted **at the root of a
+tree**, 0 gaps in 22 cells, with a non-vacuity control (6 formulas
+refuted at no tree root).
+
+### Matthew's objection about PCLL, and its answer
+
+*"Tree models cannot be confluent but some models ARE confluent and
+they genuinely force other things — so trees may suffice for PLL but
+not for PCLL."*
+
+The objection is right in form and dissolves in substance, and the
+reason is worth recording because it corrects how
+`join_cone_empty_of_confluent_branching` should be read.
+
+That theorem constrains **IMMEDIATE** branching only. A confluent tree
+may branch freely *above* a node with a non-trivial modal cone.
+Certificate (§F, 4 worlds, hand-built because the ≤3-world battery is
+too small to contain the shape):
+
+    deepCone : W = {0,1,2,3},  Ri = 0 < 1 < {2,3},  Rm = {(0,1)},
+               p at 1,2,3
+    well-formed ∧ confluent ∧ a tree;  cone(0) = {1} NON-empty;
+    0 ⊩ ◯p and 0 ⊮ p;  2,3 incomparable above 0.
+
+And the constraint at immediate branching is not something the
+calculus imposes — it is what confluence *itself* forbids: in the
+union, `s Rᵢ u` keeps `u` in `s`'s component and `t Rₘ u` keeps it in
+`t`'s, so distinct components have no common completion. Any confluent
+tree has an empty cone at an immediately-branching node, built by this
+calculus or not.
+
+Measured consequence (§F): **0 completeness gaps for confluent trees
+either**, in 22 cells over 25,171 confluent models against 739
+confluent trees. So decision (a) is not paying for the PCLL reading
+with completeness, on the evidence available.
+
+### THE COST OF RUNNING IT — and the repair, applied
+
+The goal asked how to extract the most efficient checkable procedure.
+Measured, §G:
+
+| | proof indexed by ALL greater worlds | indexed by COVERS |
+|---|---|---|
+| chain, n = 5 | 16 | 5 |
+| chain, n = 8 | 128 | 8 |
+| chain, n = 10 | **512** | **10** |
+
+`|T(w)| = 1 + Σ_{v > w} |T(v)|` is `2^(n-1)` on a chain: every world is
+re-expanded once per path that reaches it. **The proof now indexes by
+COVERS** (`Succ w := {v // Covers N w v}`), which is still exhaustive
+by `exists_cover_below` — every world above `w` lies above some cover
+— and gives `n` on a chain. That repair is *in the mechanised proof*,
+not a note about it; `Gen` gained the `onto` invariant (every world
+above `w` is reached) to support it.
+
+**What remains exponential, and the plan.** Even by covers, the tree is
+the set of PATHS through the poset, so a poset with many maximal
+chains still blows up. Trees forbid sharing by construction, and that
+is the real ceiling. Two ways out, in the order they should be tried:
+
+1. **Extract the DERIVATION, not the MODEL.** FRJ's own object is a
+   DAG over a finite sequent set (subformulas of the goal), which is
+   exponentially smaller than the model it denotes, and *checking* a
+   derivation is polynomial in its own size. This is exactly T3's
+   design, and it is the reason T3 is forward saturation over sequents
+   rather than model construction. T2 says the model exists; T3 should
+   never build it.
+2. **Admit sharing into `Built`.** A `share` constructor (a join whose
+   components may overlap above a cut) would collapse paths to a DAG,
+   at the cost of re-proving the modal rules for overlapping
+   components — and, note, of leaving the tree class, so
+   `join_cone_empty_of_confluent_branching` would need restating.
+   Only worth it if (1) proves insufficient.
+
+Checking is already cheap either way: `Built` is decidable on `FinCM`
+data (is it a tree with fallible leaves), and `forceB` is polynomial in
+`|M|·|φ|`. The expensive half is FINDING, which is T3's problem, and
+(1) is the answer to it.
+
+### The ONE remaining gap, named precisely
+
+`built_countermodel_of_reduced` needs a **finite reduced** countermodel.
+That is exactly the hypothesis FRJ's Lemma 4 carries too, and it is
+what the handoff's T2 entry specified ("from any countermodel … needs
+reducedness for the measure to decrease"). What is NOT yet proved is
+the hook-up:
+
+> **(R)** every underivable sequent has a finite REDUCED countermodel.
+
+Status: **OPEN**, with evidence and with a certificate saying why the
+obvious routes fail.
+
+* Evidence for (R): §C of the screen — the reduced battery refutes
+  everything the full battery refutes, 0 gaps in 22 cells.
+* The repo's own finite-model construction does **not** supply it. The
+  filtration (`PLLFiniteModel.lean`) has worlds `(T, Fm)` with
+  `Ri q q' := T ⊆ T'`, so two worlds with the same theory and
+  different modal parts are `Rᵢ`-equivalent and distinct — not
+  reduced.
+* Quotienting cannot fix it. `Rᵢ`-equivalent worlds *do* force the
+  same formulas (their up-sets are equal — one line from
+  `force_hered` both ways), but they need not be BISIMILAR, and the
+  quotient by bisimilarity need not be antisymmetric. §E is the
+  certificate: a 3-world model with `0 ≈ᵢ 1`, `Rₘ`-cones `{0,2}` vs
+  `{1}`, where `0 ⊮ ◯p` while `2 ⊩ ◯p`. No finite tree is bisimilar to
+  it.
+* So (R) needs a construction that builds the reduced model directly
+  from the sequent — a Hintikka/canonical tree over the subformula
+  closure — rather than repairing an arbitrary countermodel. That is
+  the same object T3 searches for, which is a reason to do T3 next and
+  get (R) as its by-product rather than proving it separately.
+
+### What T3 inherits
+
+* A completeness theorem to be complete *for*: exhausting the space of
+  `Built` models is now meaningful, because `gen_of_reduced` says the
+  space is not missing anything (on reduced finite countermodels).
+* The measured reason to search **sequents, not models**: §G.
+* `exists_cover_below` and the `onto` invariant, which say a searcher
+  need only branch on COVERS.
+* The open item (R), which T3's saturation is the natural way to close.

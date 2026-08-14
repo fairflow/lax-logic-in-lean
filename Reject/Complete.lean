@@ -55,6 +55,7 @@ structure Gen (N : ConstraintModel) (w : N.W) where
   root_rel : B.Z root w
   above : ∀ {x y}, B.Z x y → N.Ri w y
   total : ∀ x, ∃ y, B.Z x y
+  onto : ∀ y, N.Ri w y → ∃ x, B.Z x y
 
 /-! ## 2. The base case: a fallible world
 
@@ -82,6 +83,7 @@ def genSolo {N : ConstraintModel} (w : N.W) (hw : w ∈ N.F) : Gen N w where
   root_rel := ⟨N.refl_i w, hw⟩
   above := fun h => h.1
   total := fun _ => ⟨w, N.refl_i w, hw⟩
+  onto := fun y hy => ⟨(), hy, N.hered_F hy hw⟩
 
 /-! ## 3. The step: an infallible world becomes a join
 
@@ -89,8 +91,14 @@ Components are indexed by the STRICTLY greater worlds, each supplied
 by the induction hypothesis.  The root's modal cone collects exactly
 the component worlds that stand for an `Rₘ`-successor of `w`. -/
 
-/-- The index type of the join step: the worlds STRICTLY above `w`. -/
-abbrev Succ {N : ConstraintModel} (w : N.W) : Type := {v : N.W // N.Ri w v ∧ w ≠ v}
+/-- The index type of the join step: the COVERS of `w`.
+
+Indexing by covers rather than by every strictly greater world is what
+keeps the extracted model small — `lean_exe t2screen` §G measures the
+difference: on a chain of `n` worlds, `2^(n-1)` against `n`.  It is
+still exhaustive, by `exists_cover_below`: everything above `w` lies
+above some cover, hence inside some component. -/
+abbrev Succ {N : ConstraintModel} (w : N.W) : Type := {v : N.W // Covers N w v}
 
 variable {N : ConstraintModel}
 
@@ -149,8 +157,8 @@ theorem genRel_total (w : N.W) (g : ∀ v : Succ w, Gen N v.1) :
 on whether the `N`-world in play is `w` itself or strictly above it —
 strictly above means it is an index, and its component's root already
 stands for it.  Every COMPONENT clause is the premise's own clause. -/
-def genBisim (w : N.W) (hw : w ∉ N.F) (g : ∀ v : Succ w, Gen N v.1) :
-    Bisim (genModel w g) N := by
+def genBisim [Finite N.W] (hr : Reduced N) (w : N.W) (hw : w ∉ N.F)
+    (g : ∀ v : Succ w, Gen N v.1) : Bisim (genModel w g) N := by
   classical
   exact
   { Z := genRel w g
@@ -178,8 +186,9 @@ def genBisim (w : N.W) (hw : w ∉ N.F) (g : ∀ v : Succ w, Gen N v.1) :
       · have hi' : N.Ri w y' := h ▸ hi
         by_cases he : w = y'
         · exact ⟨none, True.intro, he ▸ rfl⟩
-        · exact ⟨some ⟨⟨y', hi', he⟩, (g ⟨y', hi', he⟩).root⟩, True.intro,
-            (g ⟨y', hi', he⟩).root_rel⟩
+        · obtain ⟨v, hv, hvy⟩ := exists_cover_below hr hi' he
+          obtain ⟨x', hx'⟩ := (g ⟨v, hv⟩).onto y' hvy
+          exact ⟨some ⟨⟨v, hv⟩, x'⟩, True.intro, hx'⟩
       · obtain ⟨x', hx', hr⟩ := (g v).B.iback h hi
         exact ⟨some ⟨v, x'⟩, .mk hx', hr⟩
     mforth := by
@@ -197,21 +206,36 @@ def genBisim (w : N.W) (hw : w ∉ N.F) (g : ∀ v : Succ w, Gen N v.1) :
       · have hm' : N.Rm w y' := h ▸ hm
         by_cases he : w = y'
         · exact ⟨none, True.intro, he ▸ rfl⟩
-        · exact ⟨some ⟨⟨y', N.sub_mi hm', he⟩, (g ⟨y', N.sub_mi hm', he⟩).root⟩,
-            ⟨y', (g ⟨y', N.sub_mi hm', he⟩).root_rel, hm'⟩,
-            (g ⟨y', N.sub_mi hm', he⟩).root_rel⟩
+        · obtain ⟨v, hv, hvy⟩ := exists_cover_below hr (N.sub_mi hm') he
+          obtain ⟨x', hx'⟩ := (g ⟨v, hv⟩).onto y' hvy
+          exact ⟨some ⟨⟨v, hv⟩, x'⟩, ⟨y', hx', hm'⟩, hx'⟩
       · obtain ⟨x', hx', hr⟩ := (g v).B.mback h hm
         exact ⟨some ⟨v, x'⟩, .mk hx', hr⟩ }
 
+/-- Every `N`-world above `w` is reached: `w` by the root, and
+anything strictly above by a cover's component. -/
+theorem genRel_onto [Finite N.W] (hr : Reduced N) (w : N.W)
+    (g : ∀ v : Succ w, Gen N v.1) :
+    ∀ y, N.Ri w y → ∃ x, genRel w g x y := by
+  classical
+  intro y hy
+  by_cases he : w = y
+  · exact ⟨none, he ▸ rfl⟩
+  · obtain ⟨v, hv, hvy⟩ := exists_cover_below hr hy he
+    obtain ⟨x, hx⟩ := (g ⟨v, hv⟩).onto y hvy
+    exact ⟨some ⟨⟨v, hv⟩, x⟩, hx⟩
+
 /-- **The join step of the induction.** -/
-def genJoin (w : N.W) (hw : w ∉ N.F) (g : ∀ v : Succ w, Gen N v.1) : Gen N w where
+def genJoin [Finite N.W] (hr : Reduced N) (w : N.W) (hw : w ∉ N.F)
+    (g : ∀ v : Succ w, Gen N v.1) : Gen N w where
   M := genModel w g
   built := .join (genMods w g) (genData w g) (fun v => (g v).built)
-  B := genBisim w hw g
+  B := genBisim hr w hw g
   root := none
   root_rel := genRel_root w g
   above := genRel_above w g
   total := genRel_total w g
+  onto := genRel_onto hr w g
 
 /-! ## 4. The theorem -/
 
@@ -225,7 +249,7 @@ theorem gen_of_reduced {N : ConstraintModel} [Finite N.W] (hr : Reduced N) :
   refine height_induction hr (fun w ih => ?_)
   by_cases hw : w ∈ N.F
   · exact ⟨genSolo w hw⟩
-  · exact ⟨genJoin w hw (fun v => Classical.choice (ih v.1 v.2.1 v.2.2))⟩
+  · exact ⟨genJoin hr w hw (fun v => Classical.choice (ih v.1 v.2.1 v.2.2.1))⟩
 
 /-- **T2, calculus form**: a finite reduced countermodel yields a
 BUILT countermodel — a construction of the calculus whose root forces
@@ -260,5 +284,45 @@ theorem not_laxND_of_built {M : ConstraintModel} {r : M.W}
     (hΓ : ∀ χ ∈ Γ, M.force r χ) (hψ : ¬ M.force r ψ) :
     ¬ Nonempty (LaxND Γ ψ) :=
   not_laxND_of_root hΓ hψ
+
+/-! ## 5. Pins
+
+Transcribed verbatim from the build output. -/
+
+/--
+info: 'Reject.genSolo' does not depend on any axioms
+-/
+#guard_msgs in
+#print axioms genSolo
+
+/--
+info: 'Reject.genJoin' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms genJoin
+
+/--
+info: 'Reject.gen_of_reduced' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms gen_of_reduced
+
+/--
+info: 'Reject.built_countermodel_of_reduced' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms built_countermodel_of_reduced
+
+/--
+info: 'Reject.built_iff_of_reduced' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms built_iff_of_reduced
+
+/--
+info: 'Reject.not_laxND_of_built' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms not_laxND_of_built
 
 end Reject
