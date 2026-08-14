@@ -809,3 +809,111 @@ would break (c) needs a witness world whose `Fm` is incomparable to the
 source's, and the screen shows none exists at this size — support, not
 proof. `rscreen` is re-runnable at a larger battery when one is
 affordable.
+
+---
+
+## 2026-08-14 (night) — T3: the CERTIFICATE FORMAT and the SEARCHER
+
+`Reject/Cert.lean`; searcher `lake exe t3search` (`wip/t3_search.lean`,
+output `wip/t3_search_out.txt`).
+
+### What is now PROVED
+
+`certifies M w Γ C : Bool` — well-formed frame, in the BUILT class,
+root forces `Γ`, root refutes `C` — with
+
+| result | statement | pin |
+|---|---|---|
+| `not_laxND_of_certifies` | a `Bool` decides underivability | `[propext, Quot.sound]` |
+| `not_laxND_of_check_any` | the check is sound at ANY world, not only the root | `[propext, Quot.sound]` |
+
+so the thread's goal sentence is discharged on the checking side: a
+refutation is now **a finite syntactic object whose validity is a
+decidable predicate**. `BuiltB` decides membership of the class
+`solo`/`join` generate — rooted, `Rᵢ`-antisymmetric, predecessors a
+chain, fallible worlds only at leaves — which is the tree
+characterisation T2 established.
+
+The split is deliberate and worth keeping straight: **soundness does
+not need `BuiltB`.** `checkB` alone certifies underivability for any
+finite model (`FinCM.not_provable_of_check`, already in the tree).
+`BuiltB` is what makes a certificate a DERIVATION rather than a found
+countermodel, and it is what a searcher should range over — because
+T2 says completeness lives in that class and nowhere smaller.
+
+`not_laxND_of_check_any` is the mining lemma, and it needed no new
+proof: `not_laxND_of_root` was never stated only for roots. **Every
+world of every stored model settles an underivability.**
+
+### The searcher: saturation with SHARING
+
+T2 §G said the extracted MODEL is exponential, so the search must
+share. What a join consumes from a premise `c`, over the closure `cl`,
+is exactly four sets (read off `join_force_box_iff`):
+
+    root(c)  forced at c's root          (the ⊃/∧/∨ clauses)
+    univ(c)  forced at EVERY world       (⊃ quantifies over the cone)
+    some(c)  forced at SOME world        (what a modal cone realises)
+    box(c)   A with every world having an Rₘ-successor forcing A
+                                          (the ◯-positive obligation)
+
+Two premises with the same 4-tuple are interchangeable, so the store is
+keyed by it and duplicates are discarded. **That is the DAG the tree
+cannot express**, and it is why the store stays tiny while the models
+it denotes do not.
+
+### Measured, on two covering goals
+
+Matthew's point — wrap several representatives in one covering goal —
+is the operating principle, and the two runs demonstrate its content:
+**coverage = closure.**
+
+| | closure | atoms | states stored | witness worlds | calibration | adversarial | harvest |
+|---|---|---|---|---|---|---|---|
+| **Goal 1** 13 catalogue reps | 26 | — | **20** | 127 | 5/5 | 6/6 clean | **93/156** |
+| **Goal 2** 9 p,q formulas | 21 | p,q | **68** | 220 | 5/5 | 6/6 clean | **47/72** |
+
+**140 separations from two saturations**, 88 stored nodes in total.
+Goal 1 settles ρ4, ρ6, ρ11 (= g1) and ρ12 (= r1) as construction
+certificates; Goal 2 settles `◯p`, `◯p ⊃ p`, `(p⊃q)∨(q⊃p)`, `p ∨ ¬p`
+and — the useful one — `◯(p∨q) ⊃ (◯p∨◯q)`, the PCLL distribution
+axiom, correctly refuted **in PLL**.
+
+The first run of Goal 1 FLAGGED `⊬ (p⊃q)∨(q⊃p)`, which is the
+principle biting rather than a defect: a variable-free covering goal
+has no atoms in its closure, so no seed carries `p`. Goal 2 is the same
+method with a closure that reaches them, and it settles the cell at
+node 32. Choose the goal to cover the targets, or the harvest cannot
+reach them.
+
+The adversarial check is the one that matters for trust: six sequents
+certified derivable — including the G4iLL blocker
+`◯((◯p⊃r)⊃◯p), ◯p⊃r ⇒ r` — and **no** stored model certifies any of
+them, at any world, in either run.
+
+### Scope, stated rather than assumed
+
+* **Cone choices are restricted to WHOLE components.** Whole components
+  are `Rₘ`-upward closed, so every choice the searcher makes is legal
+  and every hit is kernel-checkable. But cones selecting PART of a
+  component are not explored, so the searcher is **sound, not known
+  complete**. A `FLAG` therefore means "not settled at this budget or
+  in this cone-fragment", never "underivable".
+* **The sequent-level calculus is not built.** What exists is
+  saturation over CONSTRUCTIONS keyed by their join-relevant state —
+  which is the sharing that matters — not FRJ's `Σ ; Θ ; μ → C`
+  sequents with the `Cl` closure. That remains the route to a rule set
+  with a completeness theorem of its own, and `Cl` is still the one
+  piece graded WORK in `frj-lifting.md` §5 (screened, not proved).
+* **Search completeness rests on (R).** `gen_of_reduced` says the built
+  class is complete for finite REDUCED countermodels; (R) is still
+  open, with the two-step route mapped in the previous section.
+
+### What T4 inherits
+
+A working discovery loop: pick a covering goal, saturate, harvest at
+every world. The calibration and adversarial blocks are already in
+`t3search` and should be re-run with the 57 pinned crank-7 separations
+substituted for the ad-hoc `known` list — that is the calibration the
+handoff asked for, and it is now a one-line change rather than a
+project.

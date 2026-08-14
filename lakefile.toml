@@ -519,3 +519,9 @@ root = "wip.t2_screen"
 [[lean_exe]]
 name = "rscreen"
 root = "wip.r_screen"
+
+# T3: the forward-saturation searcher over constructions, with sharing
+# keyed by the state a join consumes, plus the covering-goal harvest.
+[[lean_exe]]
+name = "t3search"
+root = "wip.t3_search"
