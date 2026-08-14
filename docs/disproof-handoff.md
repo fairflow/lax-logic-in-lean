@@ -354,15 +354,18 @@ produces. What is new is that it arrives with a construction history.
   rule per connective, and nothing indexed by a sequent. No object in
   `Reject/` is *about* a particular entailment until
   `not_laxND_of_root` is applied at the very end.
-* **Nothing to search.** `RootData` carries
+* **Nothing to search — SUPERSEDED WITHIN THE HOUR, see the amendment
+  below.** In `Build.lean`/`Join.lean`/`Complete.lean` the abstract
+  constructions are not searchable data: `RootData` carries
 
       S  : M.W → Prop
       At : String → Prop
 
-  and `Built.join` quantifies over `{ι : Type}` with no finiteness. A
-  "construction" is therefore not a finite syntactic object and not
-  decidable data. Constructions cannot be enumerated, so there is no
-  forward proof search to run — which is precisely what FRJ(G) is for.
+  and `Built.join` quantifies over `{ι : Type}` with no finiteness, so
+  a `Built` model is not a finite syntactic object and constructions
+  cannot be enumerated. `Reject/Cert.lean` (commit `c70ac4e`, landed
+  while this section was being written) supplies the effective layer
+  separately, over `FinCM`.
 
 ### What IS proved, read as mathematics rather than as a calculus
 
@@ -415,8 +418,13 @@ saturated set. `Reject/` has the extraction and no sequents.
 2. Derivations as an inductive type over that syntax, one rule per
    connective, so a derivation is a finite object about a named
    sequent.
-3. `RootData` made effective: `Finset M.W` and `Finset String` instead
-   of `Prop`, and `ι` finite, so constructions are enumerable.
+3. ~~`RootData` made effective~~ — **DONE by T3**, by a different and
+   better route than the one proposed here: rather than making the
+   abstract `RootData` finite, `Reject/Cert.lean` works over the
+   repo's concrete finite model type `FinCM` and decides class
+   membership structurally (`BuiltB` = rooted ∧ reduced ∧ tree ∧
+   fallible-leaves), with `certifies M w Γ C : Bool` and
+   `not_laxND_of_certifies` pinned `[propext, Quot.sound]`.
 4. An extraction map from saturated derivations to `Built` models.
 
 Step 4 is where the present work is retained rather than discarded:
@@ -434,6 +442,45 @@ class is expressively complete for finite reduced countermodels.** The
 open obligation (R) — every underivable sequent HAS a finite reduced
 countermodel — sits underneath T2 and is separate from everything
 above.
+
+### AMENDMENT, same night — T3 closes the effectivity point
+
+The section above was read off `Reject/{Build,Join,Complete}.lean` at
+commit `a57bfc5`. Commit `c70ac4e` (`Reject/Cert.lean`, 107 lines,
+sorry-free) landed immediately afterwards and changes one of the four
+items. Corrected status:
+
+* **Certificates ARE now finite decidable data.** `BuiltB : FinCM →
+  Bool` and `certifies : FinCM → Nat → List PLLFormula → PLLFormula →
+  Bool`, with `not_laxND_of_certifies` and `not_laxND_of_check_any`
+  pinned `[propext, Quot.sound]`. So "nothing to search" is no longer
+  true of the thread as a whole; it remains true of the abstract
+  `Built`/`RootData` layer, which is not what the searcher ranges
+  over.
+* **A forward saturating search exists and produces results.**
+  `lake exe t3search`, sharing premises by the 4-tuple
+  (`root`, `univ`, `some`, `box`) read off `join_force_box_iff`: 140
+  separations from two saturations with 88 stored states, including
+  `◯(p∨q) ⊃ (◯p∨◯q)` correctly refuted in PLL. That is a genuine
+  forward method, and it is closer to FRJ(G) than the earlier layer
+  was.
+
+**What does NOT change.** There are still no sequents, no derivation
+type, and no rule per connective. `BuiltB` is a structural predicate
+on a finite model — rooted, antisymmetric, chain predecessors,
+fallible leaves — so what it certifies is that a model lies in a
+canonical class, not that it was derived. The T3 note says "`BuiltB`
+is what makes a certificate a DERIVATION rather than a found
+countermodel"; that is the one claim in it worth contesting. A
+derivation records WHICH rule applied at WHICH sequent, and that is
+what supports the proof-theoretic payoffs — subformula property, cut,
+interpolation. A model plus a decidable class check carries none of
+it. The right description is **canonical-form countermodels found by
+forward saturation**, which is a real and useful thing, and is what
+the searcher's 140 separations demonstrate.
+
+So of the four gap items: 3 is done, 1 and 2 are open, 4 is
+conditional on 1 and 2.
 
 *Note on merging: this section was appended on `ljf-pll` while
 `claude/t1-lax-logic-refutation-37c0bf` was appending its own dated
