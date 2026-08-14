@@ -260,9 +260,27 @@ session on `claude/t1-lax-logic-refutation-37c0bf` at my request):
     git log --all -S "LaxND"      --pickaxe-regex -- 'LaxLogic/LJFO*'   → empty
     git log --all -S "PLLND.Deriv" --pickaxe-regex -- 'LaxLogic/LJFO*'  → empty
 
-**No commit has ever added a reference to PLL derivability inside an
-LJF◯ file, on any branch in this clone.** The bridge is not merely
-absent from HEAD; it has never existed here.
+**No commit had ever added a reference to PLL derivability inside an
+LJF◯ file, on any branch in this clone.** That was true when checked
+and **was overtaken the same night**: commits `70c5fda` / `7838429` on
+`claude/t1-lax-logic-refutation-37c0bf` add `LaxLogic/LJFOBridge.lean`,
+which supplies the soundness half. Verified here independently — the
+branch built and the axiom audit run from this session:
+
+    'LJFO.laxND_of_ljfo'  depends on axioms: [propext, Quot.sound]
+    'LJFO.erase_polarise' depends on axioms: [propext]
+    'LJFO.bridge_iff'     depends on axioms: [propext, Quot.sound]
+
+The construction erases polarity and reads the judgment flag as the
+modality — `Γ ⊢tru P ↦ ⌊Γ⌋ ⊢ ⌊P⌋`, `Γ ⊢lax P ↦ ⌊Γ⌋ ⊢ ◯⌊P⌋` — with
+`laxOf ↦ laxIntro`, `circL ↦ laxElim`, and every structural move a
+`LaxND.rename`, so no cut and no admissibility lemma. It carries its
+own ◯-preserving polarisation `posOfO`/`negOfO` (`LJFComplete`'s
+`posOf`/`negOf` discard `◯`) with the round trip proved.
+
+**Consequence for the comparison below: the 110 cells LJF◯ reached
+ARE now PLL certificates.** What is still missing is the converse,
+`FocalizationPLL`, so an LJF◯ FAILURE still refutes nothing.
 
 What DOES exist, and is easy to mistake for it:
 
@@ -270,7 +288,8 @@ What DOES exist, and is easy to mistake for it:
 |---|---|
 | LJF◯ search ↔ LJF◯ calculus | **PROVED** — `search_sound`, `search_complete`, both `[propext, Quot.sound]` |
 | `LJF` calculus ↔ IPC (◯-free) | **PROVED** — `LJFComplete.lean`, `sound`/`focalization` |
-| LJF◯ calculus ↔ PLL | **not present** |
+| LJF◯ calculus → PLL | **PROVED, 2026-08-14 night** — `LJFO.laxND_of_ljfo`, `[propext, Quot.sound]`, no choice (`LaxLogic/LJFOBridge.lean`, a NEW file; no existing LJF module edited) |
+| PLL → LJF◯ calculus | **OPEN**, but now one named statement: `FocalizationPLL` |
 
 Both of the first two are real, unconditional results, and either can
 be reported as "soundness and completeness". Neither licenses moving
@@ -300,10 +319,42 @@ size and testing against all of them.
   and needs no enumeration at all. T2 (`built_countermodel_of_reduced`)
   gives the completeness half. Route B does not involve LJF◯ anywhere.
 
-Route B is the nearer of the two, and its single named obstacle is:
+Route B is the nearer of the two, and its single named obstacle —
 
 > **(R)** every underivable sequent has a finite REDUCED countermodel
-> — **OPEN**.
+
+— was **PROVED the same night** (`Reject/Reduce.lean`, commit
+`059cea0`). Verified here independently:
+
+    'Reject.exists_reduced_countermodel' depends on axioms: [propext, Classical.choice, Quot.sound]
+    'Reject.not_laxND_iff_built'         depends on axioms: [propext, Classical.choice, Quot.sound]
+    'PLLND.FinComp.emitter_completeness' depends on axioms: [propext, Quot.sound]
+
+The route is: quotient by `Rₘ`-equivalence (a bisimulation, which also
+kills the `Rₘ`-cycles), then refine `Rᵢ` by `Fm`-inclusion +
+`Rₘ`-rank + injective key; the load-bearing lemma is
+`exists_refined_witness` — shrinking `Rᵢ` cannot make `◯A` true,
+because a witness pushes up to a world of maximal `Rₘ`-rank whose only
+`Rₘ`-successor is itself.
+
+**So T2 is now unconditional**, as a biconditional:
+
+    not_laxND_iff_built : ¬ Nonempty (LaxND Γ ψ) ↔
+      ∃ M r, Built M ∧ (∀ χ ∈ Γ, M.force r χ) ∧ ¬ M.force r ψ
+
+Underivability and constructibility coincide, with no side condition.
+That is the theorem Route B needed, and it is the formal statement of
+"battery enumeration is replaceable".
+
+**The residue is effectivity, not truth.** `not_laxND_iff_built` is an
+EXISTENCE statement, and `exists_reduced_countermodel` pins
+`Classical.choice`, so it cannot yet be run: it says a certificate
+exists, not how to compute one. Making the chain constructive — a
+`Sort`-valued height recursion so the induction returns data,
+`Fintype` for `Finite`, decidable membership for the `by_cases`, and a
+computable height — would turn it into a function taking any finite
+countermodel to a certificate `certifies` accepts. That is the one
+step between the theorem and the process.
 
 `built_countermodel_of_reduced` assumes it, and neither of the repo's
 two finite-countermodel sources supplies it: the filtration
