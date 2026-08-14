@@ -501,3 +501,9 @@ root = "wip.pcll1pv_screens"
 [[lean_exe]]
 name = "rnextend"
 root = "wip.rn_extend"
+
+# The JOIN screen (T1): the extensional attack on the multi-premise
+# root constructor, run before Reject/Join.lean was proved.
+[[lean_exe]]
+name = "joinscreen"
+root = "wip.join_screen"

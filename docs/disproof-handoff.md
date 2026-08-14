@@ -299,3 +299,197 @@ the join rule makes branching countermodels constructible, these are
 the first cells to aim it at. Also inherited: the *pattern* for a
 trustworthy null result — control plus adversarial check in the same
 run — which T1's screens should follow.
+
+---
+
+## 2026-08-14 — T1 DONE: the JOIN rule, and the confluence decision
+
+`Reject/Join.lean` (build: `lake build Reject`; screen: `lake exe
+joinscreen`, source `wip/join_screen.lean`, output
+`wip/join_screen_out.txt`).  The calculus is no longer restricted to
+chains.
+
+### The construction, and why it factors
+
+    join Mods D  =  addRoot (union Mods) D
+
+`union` (the disjoint union of the premise models, world type
+`Σ i, (Mods i).W`) is the only new constructor; the fresh root is the
+existing `addRoot`.  That factorisation is the design decision that
+made T1 cheap: every lemma of `Reject/Build.lean` —
+`addRoot_force_some`, both ◯-refutation rules, `boxHolds`/
+`boxHoldsRoot`, `addRoot_reduced`, `not_laxND_of_root` — applies to a
+join unchanged, and the dependent-type plumbing is confined to one
+inductive family (`Lift`) whose single constructor says the union
+relates only worlds of the same component.  `rcases` on it recovers
+the component with no transport, which is why every core lemma below
+is axiom-free.
+
+### PROVED, with pins (all transcribed verbatim, `#guard_msgs`-pinned in the file)
+
+| result | statement | pin |
+|---|---|---|
+| `union_force` | forcing inside a component is unchanged by the other components | *no axioms* |
+| `join_force_comp` | the preservation lemma for the join (the analogue of `addRoot_force_some`) | *no axioms* |
+| `join_force_box_iff` | **the ◯ rule at a join, exactly**: root ⊩ ◯A ⟺ (root ⊩ A ∨ some cone world forces A) ∧ every component world has an `Rm`-successor forcing A | *no axioms* |
+| `joinBoxRefuteHere` / `joinBoxRefuteAbove` / `joinBoxHolds` | ◯∈, ◯∉, ◯-positive, componentwise | *no axioms* |
+| `join_refute_box_iff` | **the two refutation rules are jointly EXACT** — the root refutes ◯A iff ◯∈'s premises hold or ◯∉'s do | `[propext, Classical.choice, Quot.sound]` |
+| `addRoot_confluent_iff` | confluence of `addRoot`, exactly: `MutuallyConfluent M ∧ ∀ s t, S s → ∃u. s Rᵢ u ∧ t Rₘ u` | *no axioms* |
+| `union_confluent_iff` | the union is confluent iff every premise is | *no axioms* |
+| `join_confluent_iff` | the side condition, exactly | `[propext]` |
+| `join_confluent_of_cone_empty` | confluent premises + empty cone ⟹ confluent join | `[propext]` |
+| `join_cone_empty_of_confluent_branching` | a confluent BRANCHING join has an empty modal cone | `[propext]` |
+| `join_empty_box_iff` | 0 premises: `◯` is the identity at the root | `[propext]` |
+| `join_unit_box_iff` | 1 premise: the modal rule degenerates to `addRoot`'s | `[propext]` |
+| `not_derivU_of_root` | a confluent root certifies **PCLL** underivability | `[propext]` |
+| `rho6_needs_branching` | every world refuting `¬¬◯⊥ ∨ ¬◯⊥` has two `Ri`-INCOMPARABLE successors | `[propext, Classical.choice, Quot.sound]` |
+| `not_derivable_rho6` | **`⊬ ¬¬◯⊥ ∨ ¬◯⊥`** (catalogue class ρ6 = t 5 = q7, crank 4) | `[propext, Quot.sound]` |
+| `not_derivU_rho6` | **`⊬_PCLL ¬¬◯⊥ ∨ ¬◯⊥`** — same derivation, read in PCLL | `[propext, Quot.sound]` |
+
+`MJ_confluent` `[propext]` and `MJ_root_branches`
+`[propext, Classical.choice, Quot.sound]` are pinned too.  22 pins in
+all; the build fails if any drifts.
+
+### THE CONFLUENCE DECISION: **(a)**, and why
+
+**Taken: (a) — the join carries a confluence side condition.**  Not
+drifted into; the alternative was screened and priced.
+
+The condition is exact, not a sufficient guess:
+
+    MutuallyConfluent (join Mods D)
+      ⟺ (∀ i, MutuallyConfluent (Mods i)) ∧ ConeDominates Mods D
+
+where `ConeDominates` is `∀ s t, D.S s → ∃u. s Rᵢ u ∧ t Rₘ u`.  The
+audit's `addRoot_not_confluent` is exactly the instance where the
+second conjunct fails, so the counterexample is now explained rather
+than merely recorded.
+
+**What it costs, stated as a theorem, not a hope.**
+`join_cone_empty_of_confluent_branching`: when the join genuinely
+branches — two distinct components, one carrying a cone world, the
+other inhabited — confluence forces the root's modal cone to be
+EMPTY.  In the union, `s Rᵢ u` keeps `u` in `s`'s component and
+`t Rₘ u` keeps it in `t`'s, so no common completion exists across
+components.
+
+**Why that is a design and not a restriction.**  On a confluent frame
+`w ⊩ ◯A ⟺ ∃u. w Rₘ u ∧ u ⊩ A` (`force_somehow_iff_of_confluent`,
+already in the tree).  A branching root's only `Rm`-successor is
+itself, so it witnesses `◯A` through itself: **the ◯-rule at a
+branching root is unary, with the root as its own witness** — which is
+precisely the arity licence docs/frj-lifting.md §3 measured (reduced +
+confluent ⟹ 100% unary, 52,800 worlds at n=3) and which option (b)
+would have thrown away.
+
+**And it pays.**  Because the constructions stay confluent, a
+refutation certifies underivability in **PCLL** as well as PLL
+(`not_derivU_of_root`, on the tree's `ConfluentU.derivU_sound`).  PCLL
+is the logic the acceptance corpus is stated in
+(docs/pcll-closed-fragment-catalogue.md), so option (a) makes the
+calculus speak the corpus's own language.  Option (b) would have
+bought unrestricted cones at the price of a list-arity ◯-rule
+(Goranko's `Alt_n` shape) and PLL-only conclusions.  The general rules
+are nonetheless proved here unconditionally — `join_force_box_iff` and
+the three rules carry no confluence hypothesis — so (b) remains
+available without redoing any of this work; only the side condition
+would be dropped.
+
+### What the screens found
+
+`lean_exe joinscreen`: 16 cells × 24 formulas, seven sections, each
+with a control that must fail in the same run.  **All seven green**
+(`VERDICT A=true B=true C=true D=true E=true F=true G=true`).
+
+* **A** constructor laws: 16/16 well-formed.  Control A′: an
+  `Rm`-cone that is not `Rm`-upward closed, and a root atom absent
+  from a component, are both REJECTED — the two `RootData` laws do
+  real work.
+* **B** preservation: 984 (component-world × formula) cells, 0
+  mismatches.  Control B′: of 2 well-formed cross-linked joins (an
+  `Ri` link between two components) 1 BREAKS preservation, certificate
+  `comp 0 world 0 formula ¬◯⊥` — the check has teeth.
+* **C** the exact ◯ rule: 360 cells, 0 mismatches.  Control C′: the
+  INCOMPLETE rule (the `boxHolds` defect the audit found — no
+  reflexive disjunct) is exposed on 8/15 cells, witness `◯⊤`.  The
+  degenerate case is therefore covered by test as well as by proof.
+* **D** confluence: the characterisation agrees with `confl` on 16/16
+  cells; the branching corollary holds on 4/4 branching cells with a
+  non-empty cone.  Both are now theorems.
+* **E** degeneracy: 5/5 single-component cells agree POINTWISE with an
+  independently-written `addRoot`.  (Proved in Lean only for the modal
+  rule, `join_unit_box_iff`; full pointwise agreement is SCREENED, and
+  is recorded as screened, not proved.)
+* **F** soundness, adversarially: 7 sequents certified derivable by
+  the searcher IN THE SAME RUN — including the G4iLL blocker
+  `◯((◯p⊃r)⊃◯p), ◯p⊃r ⇒ r` — and no cell's root witnesses any of them
+  as refuted.  Control F′: 7/16 cells refute `¬◯⊥∨◯⊥`, 3/16 refute
+  `(p⊃q)∨(q⊃p)`, so the pipeline fires.
+* **G** which targets NEED branching (added after the screen corrected
+  the first choice of target — see below).  Exhaustive chain battery:
+  2,378 closed chains ≤ 5 worlds, 5,510 p,q-chains ≤ 4 worlds.
+  Needs-branching in the corpus: `¬¬◯⊥∨¬◯⊥` (ρ6), `¬¬◯⊥∨◯¬◯⊥` (ρ9),
+  `g1` (ρ11), `r1` (ρ12), and the control `(p⊃q)∨(q⊃p)`.  Positive
+  control (Gödel–Dummett must need branching) and negative control
+  (`◯p`, `¬◯⊥∨◯⊥` must be chain-refutable) both pass.
+
+**A correction the screen forced.**  The first choice of worked
+target, `¬◯⊥ ∨ ◯⊥` (ρ4), does NOT need branching: a single
+`addRoot` over the two-world chain refutes it at the root (the root
+refutes `◯⊥` through its own trivial modal cone, while a world above
+forces it — heredity runs upward only).  Section G was written to
+choose the target on evidence instead, and `rho6_needs_branching` then
+upgrades that evidence to a theorem: any world refuting ρ6, in any
+constraint model, has two `Ri`-incomparable successors.  So the worked
+composition provably cannot be built by `addRoot` alone.
+
+### Normalisation (§H), reported as measured
+
+On this corpus the certified pipeline
+`Rewrite.simplifyWith Rewrite.fullSetC 12` rewrites **1/24 cells (4%)**,
+24 → 23 distinct forms, crank 72 → 70 (**2%**) — far below the 89% /
+34% of `rwscreen`'s flat corpus.  The reason is the corpus, not the
+normaliser: these are the catalogue's own canonical representatives,
+which are already in normal form.  The CONTROL in the same run
+confirms it — on a scrambled corpus (`⊤∧(φ∨φ)`, `◯◯φ`) the pipeline
+rewrites **48/48 (100%)**, 48 → 32 distinct forms, crank 243 → 169
+(**30%**).  Per `docs/rn-dictionary-status.md`, a low rate reported
+without that control would not have been trustworthy.
+
+### The banking loop
+
+**No new certified `Interd` was established by T1** — the results are
+forcing lemmas and underivabilities, not interderivabilities — so
+there is nothing to bank and `rwscreen`/`rnextend` were not re-run.
+Recording the negative explicitly so the standing item is not silently
+skipped.
+
+### What T2 (completeness) inherits
+
+* The constructor is now **complete for branching**: any finite family
+  of premise models can be joined, and `join_force_comp` says the
+  premise refutations survive the join verbatim.  The Lemma 4 analogue
+  can therefore decompose a countermodel into components without
+  re-proving anything about forcing.
+* **The rules are EXACT, not merely sound.**  `join_force_box_iff` and
+  `join_refute_box_iff` are iffs, so the completeness direction does
+  not need new modal lemmas — it needs only to produce the premises,
+  which are stated entirely inside the components.
+* **The class is fixed**: reduced (`addRoot_reduced`) and, under the
+  side condition, confluent (`join_confluent_iff`).  Both of the
+  places docs/frj-lifting.md §5 says reducedness is load-bearing — the
+  unary arity and the height induction — are therefore available.
+* **The height measure is safe under the join**: the root is strictly
+  below every component world and components are mutually
+  `Ri`-incomparable (`Lift.fst_eq`), so `h(root) = 1 + max h(premise)`.
+  This is the measure T2's induction needs; it has not been mechanised
+  yet and is the first thing T2 should write.
+* **A calibration target exists**: `not_derivU_rho6` is the first
+  catalogue class settled by construction rather than by search.  The
+  57 pinned crank-7 separations are the rest of the calibration set,
+  and §G's list (ρ6, ρ9, ρ11, ρ12) says which of them need the join.
+* **Open, and named**: `join_unit_box_iff` proves the modal rule
+  degenerates to `addRoot`'s, but full pointwise agreement of a unary
+  join with `addRoot` is screened only.  It needs a forcing-transfer
+  lemma along a frame isomorphism — routine, and worth having before
+  T2 starts quotienting models.
