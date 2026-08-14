@@ -404,14 +404,79 @@ theorem canon_interd : ∀ φ : PLLFormula, Interd φ (canon φ) := by
   | somehow a iha =>
       exact (Interd.box_congr iha).trans (mkBox_interd _)
 
-/-- **The pipeline**: canonicalise, then rewrite by the certified
-simpset.  Interderivable with the input. -/
+/-! ## Canonicalising the RULES
+
+The first cut of `simplify` was `norm rs n (canon φ)`, and it was
+measurably crippled: only 47 of the 237 cells the dictionary PROVES
+were closed by it (`lean_exe rnextend`, the control).  The reason is
+that `canon` sorts ∧/∨ arguments by `keyF` while the harvested rules
+were stated in the DICTIONARY's argument order, so canonicalising the
+goal moved it out of reach of the very rules meant to fire on it.
+
+The fix is to put the rules through the same canonicaliser.  Sound
+for free: a rule is a certified `Interd`, and `canon` is certified,
+so the canonicalised rule is `canon lhs ⊣⊢ lhs ⊣⊢ rhs ⊣⊢ canon rhs`.
+-/
+
+/-- Both sides of a rule through the canonicaliser. -/
+def canonRule (r : RwRule) : RwRule :=
+  ⟨canon r.lhs, canon r.rhs,
+   ((canon_interd r.lhs).symm.trans r.ok).trans (canon_interd r.rhs)⟩
+
+/-- Canonicalise a whole simpset.  Do this ONCE, at a top-level
+`def`, not per goal. -/
+def canonSet (rs : List RwRule) : List RwRule := rs.map canonRule
+
+/-- Rewriting a canonical term can leave it non-canonical: a rewrite
+inside an ∧-chain replaces a conjunct whose `keyF` no longer sorts
+where it sat, and flattening can expose new conjuncts.  So alternate
+`norm` and `canon` to a fixpoint rather than running each once. -/
+def simpIter (rs : List RwRule) (n : Nat) : Nat → PLLFormula → PLLFormula
+  | 0, φ => φ
+  | k + 1, φ =>
+      if canon (norm rs n φ) = φ then φ
+      else simpIter rs n k (canon (norm rs n φ))
+
+theorem simpIter_interd (rs : List RwRule) (n : Nat) :
+    ∀ (k : Nat) (φ : PLLFormula), Interd φ (simpIter rs n k φ) := by
+  intro k
+  induction k with
+  | zero => intro φ; exact Interd.refl φ
+  | succ k ih =>
+      intro φ
+      by_cases h : canon (norm rs n φ) = φ
+      · rw [simpIter, if_pos h]; exact Interd.refl φ
+      · rw [simpIter, if_neg h]
+        exact ((norm_interd rs n φ).trans (canon_interd _)).trans (ih _)
+
+/-- Rounds of `norm`/`canon` alternation.  Three is empirically a
+fixpoint on every corpus screened so far; the iteration stops early
+whenever the form is stable, so a larger number costs nothing on
+cells that settle. -/
+def simpRounds : Nat := 4
+
+/-- **The pipeline**: canonicalise, then alternate rewriting and
+re-canonicalising to a fixpoint.  Interderivable with the input,
+unconditionally.
+
+`rs` is expected to be ALREADY canonicalised (`canonSet`); passing a
+raw set is sound but much less effective. -/
+def simplifyWith (rs : List RwRule) (n : Nat) (φ : PLLFormula) : PLLFormula :=
+  simpIter rs n simpRounds (canon φ)
+
+theorem simplifyWith_interd (rs : List RwRule) (n : Nat) (φ : PLLFormula) :
+    Interd φ (simplifyWith rs n φ) :=
+  (canon_interd φ).trans (simpIter_interd rs n _ _)
+
+/-- The convenience form: canonicalises the rule set on the spot.
+Prefer `simplifyWith` against a top-level canonicalised set in any
+sweep — this recomputes `canonSet rs` on every call. -/
 def simplify (rs : List RwRule) (n : Nat) (φ : PLLFormula) : PLLFormula :=
-  norm rs n (canon φ)
+  simplifyWith (canonSet rs) n φ
 
 theorem simplify_interd (rs : List RwRule) (n : Nat) (φ : PLLFormula) :
     Interd φ (simplify rs n φ) :=
-  (canon_interd φ).trans (norm_interd rs n _)
+  simplifyWith_interd _ n φ
 
 /-! ## Pins -/
 
@@ -426,5 +491,11 @@ info: 'Rewrite.simplify_interd' depends on axioms: [propext, Classical.choice, Q
 -/
 #guard_msgs in
 #print axioms simplify_interd
+
+/--
+info: 'Rewrite.simplifyWith_interd' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms simplifyWith_interd
 
 end Rewrite

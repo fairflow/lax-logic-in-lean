@@ -244,3 +244,58 @@ Docs: `docs/frj-lifting.md` (the design + both screens),
 `docs/bilax-b-report.md` (literature + corrections),
 `docs/bilax-plan.md`, `docs/bilax-round{1,2}-report.md` (corrected),
 `docs/pcll-closed-fragment-catalogue.md` (the acceptance corpus).
+
+---
+
+## 2026-08-14 (late) — the normalisation pipeline repaired; the RN dictionary's true status
+
+Standing item adopted at Matthew's direction: **whenever equations are
+banked, re-run the loop** (`rwscreen`, then `rnextend`, then promote
+anything that closes, then re-pin the axioms). Full record:
+`docs/rn-dictionary-status.md`. Summary for whoever takes T1:
+
+**Two defects found and fixed.**
+
+1. `Rewrite/Catalogue.lean` had harvested all 323 cell theorems of
+   `wip/rnDict.lean` by name, but that file proves only 236 — 87 are
+   `sorry`, and **four are REFUTED** (`cAnd_8_10`, `cImp_9_4`,
+   `cImp_12_4`, `cImp_14_4`: the stated collapse to `q0` is FALSE).
+   So `rndSet` and `fullSet` carried `sorryAx`, and four rules
+   rewrote a formula to one *not* interderivable with it. `RwRule.ok`
+   is exactly what makes `norm_interd` unconditional, so a `sorry`ed
+   `ok` voids that guarantee silently. Fixed: 236 proved cells only,
+   with `#print axioms rndSet`/`fullSet` now `#guard_msgs`-pinned as a
+   standing guard against a repeat.
+2. The canonicaliser was fighting its own rules: `canon` sorts ∧/∨
+   arguments, the harvested rules were stated in the dictionary's
+   argument order, so canonicalising a goal moved it out of reach.
+   A control against the cells the table *provably* closes read
+   **47/237**. Fixed with `canonRule`/`canonSet` (rules through the
+   same canonicaliser — sound for free) and `simpIter` (alternate
+   `norm` and `canon` to a fixpoint). Control now **237/237**.
+
+**Use `Rewrite.simplifyWith Rewrite.fullSetC fuel φ`** — not
+`simplify`, not `fullSet`, not `norm`. Measured gain over the previous
+figures: flat cells rewritten 68% → **89%**, crank cut 21% → **34%**,
+distinct forms 96 → **28**; nested corpus 167 → **25** distinct forms
+(floor 15) with crank down 40%.
+
+**Can the method extend the RN(◯,{}) analysis? No, and the negative is
+informative.** `lean_exe rnextend` tests whether the simpset closes any
+of the 87 unproved dictionary cells — a syntactic match of normal
+forms would be a certificate, needing no search. **0 of 87**, with the
+control at 237/237 in the same run, the fifteen representatives still
+pairwise distinct (15/15), and the four refuted cells correctly *not*
+matched. Rewriting is congruence closure over banked equations, and
+the open cells are by construction outside it: recombination cannot
+settle them. Only a new proof search or a ≥5-world confluent
+countermodel can.
+
+**What this hands T1.** The 83 open cells are a concrete target list
+(⊃ 43, ∨ 28, ∧ 14, ◯ 2 — the implication table is where the dictionary
+is weakest, which is exactly where a refutation calculus should bite),
+machine-readable as `RnExtend.openCells` in `wip/rn_extend.lean`. If
+the join rule makes branching countermodels constructible, these are
+the first cells to aim it at. Also inherited: the *pattern* for a
+trustworthy null result — control plus adversarial check in the same
+run — which T1's screens should follow.

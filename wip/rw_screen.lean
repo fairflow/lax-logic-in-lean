@@ -81,7 +81,7 @@ def main : IO Unit := do
   let mut cShrunk := 0
   let mut cAfter := 0
   for c in cells do
-    let n := simplify fullSet 6 c
+    let n := simplifyWith fullSetC 6 c
     cAfter := cAfter + crank n
     if n != c then cShrunk := cShrunk + 1
   IO.println s!"cells: {cells.length}"
@@ -101,18 +101,18 @@ def main : IO Unit := do
   IO.println s!"  total crank {tb2} → {ta2} ({(tb2 - ta2) * 100 / (max tb2 1)}% reduction)"
   let distinctRaw := (cells.map keyF).eraseDups.length
   let distinctCanon := (cells.map (fun c => keyF (canon c))).eraseDups.length
-  let distinctFull := (cells.map (fun c => keyF (simplify fullSet 6 c))).eraseDups.length
+  let distinctFull := (cells.map (fun c => keyF (simplifyWith fullSetC 6 c))).eraseDups.length
   IO.println s!"distinct forms among the {cells.length} cells:"
   IO.println s!"  raw {distinctRaw}   after canon {distinctCanon}   after canon+norm {distinctFull}"
   -- the nested corpus: where associativity/flattening bites
   let nRaw := (nested.map keyF).eraseDups.length
   let nCanon := (nested.map (fun c => keyF (canon c))).eraseDups.length
-  let nFull := (nested.map (fun c => keyF (simplify fullSet 6 c))).eraseDups.length
+  let nFull := (nested.map (fun c => keyF (simplifyWith fullSetC 6 c))).eraseDups.length
   let mut nb := 0
   let mut na := 0
   for c in nested do
     nb := nb + crank c
-    na := na + crank (simplify fullSet 6 c)
+    na := na + crank (simplifyWith fullSetC 6 c)
   IO.println s!"NESTED corpus ({nested.length} cells, both associations, both orders):"
   IO.println s!"  distinct forms: raw {nRaw}   after canon {nCanon}   after canon+norm {nFull}"
   IO.println s!"  total crank {nb} → {na} ({(nb - na) * 100 / (max nb 1)}% down)"

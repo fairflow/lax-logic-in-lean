@@ -123,6 +123,18 @@ class is separation-certified.  Settling one needs a ≥6-world
 confluent countermodel or a deeper positive search.  One reported
 skip: the seed q13 (crank 8 > cap).
 
+## The 15-class dictionary is PARTIAL (added 2026-08-14)
+
+`wip/rnDict.lean`'s closure record `rnDict15` — a different object
+from this catalogue, and the source of the certified simpset — is
+certified at 603 of its 690 cells. Of the 87 remaining, **4 are
+REFUTED** (`q8 ∧ q10`, `q9 ⊃ q4`, `q12 ⊃ q4`, `q14 ⊃ q4` are each a
+new class, so the 15-representative closure genuinely fails) and 83
+are OPEN. That is consistent with, and explained by, the headline
+above: the fragment does not collapse at any bounded crank, so no
+finite dictionary closes it. Detail, and the two defects this turned
+up in the simpset built from it: `docs/rn-dictionary-status.md`.
+
 ## Consequence for the interpolation campaign
 
 The `ClosedCollapse 6` hypothesis of the stage-2 kernel closures

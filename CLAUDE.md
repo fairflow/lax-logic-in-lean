@@ -58,25 +58,52 @@ observed yield:
 
 **Normalise before you search (standing, 2026-08-14).** Every fresh
 probe pipes its cells through the CERTIFIED simpset first:
-`Rewrite.norm Rewrite.fullSet fuel φ` (324 rules, 323 of them the
-kernel-checked dictionary operation table of `wip/rnDict.lean`).
-Use `Rewrite.simplify` (canonicalise THEN rewrite), not `norm` alone:
-`simplify_interd` is UNCONDITIONAL, so this is always sound, and the
-canonicaliser is what makes the rules bite — measured
-(`lean_exe rwscreen`): on 330 flat cells, `norm` alone rewrites 13%
-for a 6% crank cut while `canon` then `norm` rewrites **68% for 21%**,
-collapsing 319 distinct forms to 96. On a NESTED corpus (3,996 ∧/∨
-trees in both associations and both argument orders) the collapse is
-**3,996 → 167 distinct forms**, a 24-fold cut, with crank down 23%.
-That collapse is the real payoff for a probe: far fewer distinct cells
-to attack, and cache hits across a sweep. The canonicaliser carries
-constant folding, idempotence, commutativity, ASSOCIATIVITY and
-FLATTENING (sorted right-nested chains), `◯◯φ = ◯φ` and `◯⊤ = ⊤`,
-each law certified. Every NEW
-certified interderivability a probe establishes gets banked into the
-simpset, so each campaign makes the next one cheaper. Keep the PLL set and any PCLL-only set separate:
-`RwRule` carries its `Interd` proof, so a PCLL-only equation cannot
-enter a PLL set by construction.
+
+    Rewrite.simplifyWith Rewrite.fullSetC fuel φ
+
+237 rules — 236 kernel-checked cells of the dictionary operation table
+(`wip/rnDict.lean`) plus the modal laws. **Use `simplifyWith` against
+`fullSetC`, not `simplify`/`norm` and not `fullSet`**: `fullSetC` is
+the canonicalised set, computed once, and the rules must be
+canonicalised or the canonicaliser sorts goals out of their reach —
+that mistake cost a factor of five and was caught only by a control
+(`docs/rn-dictionary-status.md`). Correctness is UNCONDITIONAL either
+way (`simplifyWith_interd`), so this is a question of effectiveness,
+never of soundness.
+
+Measured (`lean_exe rwscreen`): on 330 flat cells, `norm` alone
+rewrites 13% for a 6% crank cut, while the pipeline rewrites **89% for
+34%**, collapsing 319 distinct forms to **28**. On a NESTED corpus
+(3,996 ∧/∨ trees, both associations and both argument orders) the
+collapse is **3,996 → 25 distinct forms** — against a floor of 15, the
+number of dictionary classes — with crank down 40%. That collapse is
+the payoff for a probe: far fewer distinct cells to attack, and cache
+hits across a sweep. The canonicaliser carries constant folding,
+idempotence, commutativity, ASSOCIATIVITY and FLATTENING (sorted
+right-nested chains), `◯◯φ = ◯φ` and `◯⊤ = ⊤`, each law certified;
+`simpIter` alternates rewriting and re-canonicalising to a fixpoint.
+
+**Never harvest an unproved cell.** `wip/rnDict.lean` states 323 cell
+theorems and proves 236; 87 are `sorry` and FOUR ARE REFUTED. The
+first cut of the simpset took all 323 by name, so `rndSet` carried
+`sorryAx` and four rules that rewrote a formula to a NON-interderivable
+one — `RwRule.ok` is exactly what makes `norm_interd` unconditional,
+so a `sorry`ed `ok` voids the guarantee silently. `#print axioms
+rndSet`/`fullSet` are now `#guard_msgs`-pinned in
+`Rewrite/Catalogue.lean` as the standing guard; keep them pinned.
+
+**Standing item — bank, then re-run the loop.** Every NEW certified
+interderivability a probe establishes gets banked into `Rewrite/`, and
+banking is not finished until: (1) `lean_exe rwscreen` re-measures
+effectiveness; (2) `lean_exe rnextend` re-tests whether the new
+material closes any of the 83 open dictionary cells (it carries a
+control and two adversarial checks — read `docs/rn-dictionary-status.md`
+before trusting either verdict); (3) anything that closes is promoted
+to a kernel-pinned theorem, the `sorry` deleted, and the catalogue and
+RN explorer updated; (4) the axiom pins are re-transcribed verbatim.
+Each campaign then makes the next one cheaper. Keep the PLL set and
+any PCLL-only set separate: `RwRule` carries its `Interd` proof, so a
+PCLL-only equation cannot enter a PLL set by construction.
 
 Discipline: three-valued verdicts (`pass`/`fail`/`flag`) with `fail`
 only ever on a certificate; `flag` (hypothesis certified, conclusion
