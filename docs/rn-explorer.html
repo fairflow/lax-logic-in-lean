@@ -216,7 +216,7 @@
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
-  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v14 · 2026-08-14 · the 15-class closure does NOT close — 4 refuted cells identified; the certified simpset harvested from the tables</p>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v15 · 2026-08-14 · the 22-class closed-fragment ORDER computed (462 cells, 37 cover edges); the 15-class closure does NOT close</p>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
   The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
@@ -577,6 +577,129 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
   <span class="fml">◯(t3 ∨ t4) = c2</span> while
   <span class="fml">◯t3 ∨ ◯t4 = s1</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
+
+  <!-- ── the 22-class closed-fragment order, computed 2026-08-14 ── -->
+  <div style="margin-top:26px;border-top:1px solid var(--rule,#ddd);padding-top:18px">
+  <h2>The 22 closed-fragment classes, ordered</h2>
+  <p class="note">The closed-fragment catalogue certified 22 pairwise-distinct
+  <span class="fml">DerivU</span> classes and left their ORDER uncomputed —
+  "placing the new nodes needs their order cells, not yet computed". Those
+  462 cells are now computed: <strong>158 derivable, 302 refuted by a certified
+  confluent countermodel, 2 flags</strong>. Rust nodes are the eight sweep
+  discoveries; black are the classes the dictionary already knew.</p>
+  <div class="stage" style="overflow-x:auto">
+<svg viewBox="0 0 760 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hasse diagram of the 22 closed-fragment classes">
+<style>.hn{font:11px var(--mono,monospace);fill:var(--ink,#222)}.he{stroke:var(--ink-soft,#888);stroke-width:1.2;fill:none}.hd{fill:var(--rust,#c0562a)}.ho{fill:var(--ink,#333)}</style>
+<line class="he" x1="380" y1="520" x2="220" y2="453"/>
+<line class="he" x1="380" y1="520" x2="540" y2="453"/>
+<line class="he" x1="220" y1="453" x2="540" y2="386"/>
+<line class="he" x1="220" y1="453" x2="220" y2="386"/>
+<line class="he" x1="540" y1="453" x2="540" y2="386"/>
+<line class="he" x1="540" y1="386" x2="167" y2="319"/>
+<line class="he" x1="540" y1="386" x2="380" y2="319"/>
+<line class="he" x1="540" y1="386" x2="593" y2="319"/>
+<line class="he" x1="220" y1="386" x2="167" y2="319"/>
+<line class="he" x1="167" y1="319" x2="252" y2="251"/>
+<line class="he" x1="167" y1="319" x2="124" y2="251"/>
+<line class="he" x1="167" y1="319" x2="380" y2="251"/>
+<line class="he" x1="380" y1="319" x2="252" y2="251"/>
+<line class="he" x1="380" y1="319" x2="636" y2="251"/>
+<line class="he" x1="380" y1="319" x2="508" y2="251"/>
+<line class="he" x1="636" y1="184" x2="593" y2="117"/>
+<line class="he" x1="252" y1="251" x2="124" y2="184"/>
+<line class="he" x1="252" y1="251" x2="508" y2="184"/>
+<line class="he" x1="252" y1="251" x2="252" y2="184"/>
+<line class="he" x1="593" y1="117" x2="380" y2="50"/>
+<line class="he" x1="380" y1="184" x2="380" y2="117"/>
+<line class="he" x1="124" y1="184" x2="167" y2="117"/>
+<line class="he" x1="124" y1="251" x2="380" y2="184"/>
+<line class="he" x1="124" y1="251" x2="124" y2="184"/>
+<line class="he" x1="593" y1="319" x2="636" y2="251"/>
+<line class="he" x1="593" y1="319" x2="380" y2="251"/>
+<line class="he" x1="380" y1="117" x2="380" y2="50"/>
+<line class="he" x1="636" y1="251" x2="636" y2="184"/>
+<line class="he" x1="636" y1="251" x2="508" y2="184"/>
+<line class="he" x1="380" y1="251" x2="380" y2="184"/>
+<line class="he" x1="380" y1="251" x2="508" y2="184"/>
+<line class="he" x1="508" y1="184" x2="593" y2="117"/>
+<line class="he" x1="508" y1="184" x2="380" y2="117"/>
+<line class="he" x1="508" y1="251" x2="636" y2="184"/>
+<line class="he" x1="508" y1="251" x2="252" y2="184"/>
+<line class="he" x1="252" y1="184" x2="167" y2="117"/>
+<line class="he" x1="167" y1="117" x2="380" y2="50"/>
+<circle class="ho" cx="380" cy="520" r="4.5"/>
+<text class="hn" x="389" y="524">⊥</text>
+<circle class="ho" cx="380" cy="50" r="4.5"/>
+<text class="hn" x="389" y="54">⊤</text>
+<circle class="ho" cx="220" cy="453" r="4.5"/>
+<text class="hn" x="229" y="457">◯⊥</text>
+<circle class="ho" cx="540" cy="453" r="4.5"/>
+<text class="hn" x="549" y="457">¬◯⊥</text>
+<circle class="ho" cx="540" cy="386" r="4.5"/>
+<text class="hn" x="549" y="390">ρ4</text>
+<circle class="ho" cx="220" cy="386" r="4.5"/>
+<text class="hn" x="229" y="390">ρ5</text>
+<circle class="ho" cx="167" cy="319" r="4.5"/>
+<text class="hn" x="176" y="323">ρ6</text>
+<circle class="ho" cx="380" cy="319" r="4.5"/>
+<text class="hn" x="389" y="323">ρ7</text>
+<circle class="ho" cx="636" cy="184" r="4.5"/>
+<text class="hn" x="645" y="188">ρ8</text>
+<circle class="ho" cx="252" cy="251" r="4.5"/>
+<text class="hn" x="261" y="255">ρ9</text>
+<circle class="ho" cx="593" cy="117" r="4.5"/>
+<text class="hn" x="602" y="121">ρ10</text>
+<circle class="ho" cx="380" cy="184" r="4.5"/>
+<text class="hn" x="389" y="188">ρ11</text>
+<circle class="ho" cx="124" cy="184" r="4.5"/>
+<text class="hn" x="133" y="188">ρ12</text>
+<circle class="hd" cx="124" cy="251" r="6"/>
+<text class="hn" x="133" y="255">ρ13</text>
+<circle class="ho" cx="593" cy="319" r="4.5"/>
+<text class="hn" x="602" y="323">ρ14</text>
+<circle class="hd" cx="380" cy="117" r="6"/>
+<text class="hn" x="389" y="121">ρ15</text>
+<circle class="hd" cx="636" cy="251" r="6"/>
+<text class="hn" x="645" y="255">ρ16</text>
+<circle class="hd" cx="380" cy="251" r="6"/>
+<text class="hn" x="389" y="255">ρ17</text>
+<circle class="hd" cx="508" cy="184" r="6"/>
+<text class="hn" x="517" y="188">ρ18</text>
+<circle class="hd" cx="508" cy="251" r="6"/>
+<text class="hn" x="517" y="255">ρ19</text>
+<circle class="hd" cx="252" cy="184" r="6"/>
+<text class="hn" x="261" y="188">ρ20</text>
+<circle class="hd" cx="167" cy="117" r="6"/>
+<text class="hn" x="176" y="121">ρ21</text>
+</svg>
+  </div>
+  <p class="note"><strong>The discoveries are not appendages.</strong> Placing them
+  breaks <strong>seven</strong> of the twenty-one covering relations that hold among the
+  old classes alone — a new class sits strictly between:
+  <span class="fml">ρ6&lt;ρ11</span> (by ρ13, ρ17),
+  <span class="fml">ρ7&lt;ρ8</span> (by ρ16, ρ19),
+  <span class="fml">ρ9&lt;ρ10</span> (by ρ18),
+  <span class="fml">ρ11&lt;⊤</span> (by ρ15),
+  <span class="fml">ρ12&lt;⊤</span> (by ρ21),
+  <span class="fml">ρ14&lt;ρ8</span> (by ρ16),
+  <span class="fml">ρ14&lt;ρ11</span> (by ρ17).
+  So a Hasse diagram drawn for the dictionary alone shows seven edges that are
+  not covers of the real order. Cover edges: 21 for the old classes, <strong>37</strong>
+  for all 22.</p>
+  <p class="note"><strong>Top and bottom.</strong> <span class="fml">⊥</span> still has exactly
+  two upper covers, <span class="fml">◯⊥</span> and <span class="fml">¬◯⊥</span>. But
+  <span class="fml">⊤</span> has three lower covers — <span class="fml">ρ10</span>,
+  <span class="fml">ρ15</span>, <span class="fml">ρ21</span> — and <em>two of the three are
+  new</em>. That also accounts for something the catalogue recorded without explaining:
+  its 109 flags cluster at <span class="fml">⊤</span> (21), <span class="fml">ρ10</span> (21)
+  and <span class="fml">ρ21</span> (20) — precisely the co-atoms.</p>
+  <p class="note">Two cells remain flagged (<span class="fml">ρ12 ⊢ ρ15</span>,
+  <span class="fml">ρ20 ⊢ ρ10</span>): not refutable on the ≤5-world confluent battery,
+  not proved at budget 1,000,000. The diagram is insensitive to them beyond their own
+  edges — reading both as derivable adds exactly those two edges and changes nothing
+  else — so every edge drawn above is certified. Detail and the full matrix:
+  <code>docs/rho-order.md</code>.</p>
+  </div>
 </section>
 
 <!-- ──────────────────────── FAMILIES ──────────────────────── -->
