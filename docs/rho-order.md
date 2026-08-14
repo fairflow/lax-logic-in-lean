@@ -252,6 +252,71 @@ in `docs/ljfo-fidelity.md` §5 — the erasure bridge exists for the
 cross-check and a speed comparator here, never a source of PLL
 results.
 
+### Status of the LJF◯ bridge, checked 2026-08-14 evening
+
+Confirmed by two independent routes (this session, and the T1/T2
+session on `claude/t1-lax-logic-refutation-37c0bf` at my request):
+
+    git log --all -S "LaxND"      --pickaxe-regex -- 'LaxLogic/LJFO*'   → empty
+    git log --all -S "PLLND.Deriv" --pickaxe-regex -- 'LaxLogic/LJFO*'  → empty
+
+**No commit has ever added a reference to PLL derivability inside an
+LJF◯ file, on any branch in this clone.** The bridge is not merely
+absent from HEAD; it has never existed here.
+
+What DOES exist, and is easy to mistake for it:
+
+| arrow | status |
+|---|---|
+| LJF◯ search ↔ LJF◯ calculus | **PROVED** — `search_sound`, `search_complete`, both `[propext, Quot.sound]` |
+| `LJF` calculus ↔ IPC (◯-free) | **PROVED** — `LJFComplete.lean`, `sound`/`focalization` |
+| LJF◯ calculus ↔ PLL | **not present** |
+
+Both of the first two are real, unconditional results, and either can
+be reported as "soundness and completeness". Neither licenses moving
+an LJF◯ verdict to PLL.
+
+`Reject/` (T1, T2) neither supplies nor needs the bridge: its entire
+import closure is `PLLKripke`, `PLLFrames`, `PLLConfluentComplete`,
+`PLLCountermodelEmit`, `PLLSemUI`, `Mathlib.Data.Set.Card`, and
+`grep "LJF" Reject/*.lean` is empty. The only point where PLL
+derivability enters is `not_laxND_of_root`, which consumes PLL's own
+Kripke soundness.
+
+### Two routes to replacing battery enumeration, and what each needs
+
+The aim is to decide `⊬` without generating every model of a fixed
+size and testing against all of them.
+
+* **Route A — LJF◯ exhaustion.** Needs (i) the calculus↔PLL bridge
+  above, and (ii) a computable, FEASIBLE depth bound turning
+  `search_complete`'s existential `∃n` into a decision. (ii) is what
+  `LJFOHeight`'s "pigeonhole/collapse layer" is for. Precedent worth
+  respecting: `decideFuel` is a genuine decidability theorem for PLL
+  whose bounds are infeasible, which is why `CLAUDE.md` bans driving
+  discovery through it. Route A is currently blocked at (i).
+* **Route B — forward construction.** `Reject/` searches for a
+  CONSTRUCTION rather than for a proof, so a success is a countermodel
+  and needs no enumeration at all. T2 (`built_countermodel_of_reduced`)
+  gives the completeness half. Route B does not involve LJF◯ anywhere.
+
+Route B is the nearer of the two, and its single named obstacle is:
+
+> **(R)** every underivable sequent has a finite REDUCED countermodel
+> — **OPEN**.
+
+`built_countermodel_of_reduced` assumes it, and neither of the repo's
+two finite-countermodel sources supplies it: the filtration
+(`PLLFiniteModel`) and the emitter's `canonCMof` both order worlds by
+inclusion on theories while distinguishing them by a modal component,
+which is exactly what breaks antisymmetry. The T1/T2 session's
+`rscreen` found a two-step route — quotient by `Rm`-equivalence, then
+refine `Rᵢ` by `Fm`-inclusion + `Rm`-rank + index — passing 1444/1444
+on the `Rm`-acyclic stratum of the ≤3-world battery. Support, not
+proof.
+
+### The 48 unreached cells
+
 The 48 cells LJF◯ does not reach at depth 32 are concentrated where
 the hypothesis is a disjunction of modal formulas (ρ5, ρ6, ρ9 as
 antecedents) — the case where inversion generates the most phases
