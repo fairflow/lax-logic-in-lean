@@ -698,11 +698,36 @@ obvious routes fail.
   certificate: a 3-world model with `0 ≈ᵢ 1`, `Rₘ`-cones `{0,2}` vs
   `{1}`, where `0 ⊮ ◯p` while `2 ⊩ ◯p`. No finite tree is bisimilar to
   it.
-* So (R) needs a construction that builds the reduced model directly
-  from the sequent — a Hintikka/canonical tree over the subformula
-  closure — rather than repairing an arbitrary countermodel. That is
-  the same object T3 searches for, which is a reason to do T3 next and
-  get (R) as its by-product rather than proving it separately.
+* Nor does the *emitter*. `PLLFinComp.emitter_completeness` DOES give
+  a machine-checked finite countermodel for every underivable sequent
+  — `¬ Nonempty (LaxND Γ C) → ∃ M w, FinCM.checkB M w Γ C = true` —
+  so the finiteness half of (R) is already proved in the tree. But its
+  worlds are `FTheory` triples `(val, fal, mfal)` with
+  `ri := val ⊆ val'` and `rm := val ⊆ val' ∧ mfal ⊆ mfal'`
+  (`canonCMof`), so two worlds with the same `val` and different
+  `mfal` are `Rᵢ`-equivalent and distinct. Not reduced, for exactly
+  the reason the filtration is not.
+
+**A concrete, cheap route for (R), to be SCREENED before it is
+scoped.** Refine the emitted model's `Rᵢ` lexicographically:
+
+    Ri' q q' := q.val ⊆ q'.val ∧ (q.val = q'.val → q.mfal ⊆ q'.mfal)
+
+This is reflexive and transitive, ANTISYMMETRIC on `FTheory` pairs
+(equal `val` and equal `mfal`), contains `Rm` (which already demands
+both inclusions) and is contained in `Ri`. So the frame conditions and
+reducedness are free; the only obligation is that the verified checker
+still passes with the smaller `Rᵢ`. Shrinking `Rᵢ` makes `⊃` and `◯`
+EASIER to force, so only the reflecting direction is at risk, and the
+risk is confined to pairs with equal `val` and `⊆`-incomparable
+`mfal`. That is decidable, so it is a screen — run `checkB` with the
+refined `ri` over the closed-fragment corpus and over the p-carrying
+cells, with a control that the unrefined model still passes in the
+same run. If it survives, (R) is a short proof; if it fails, the
+certificate names the shape that defeats it, and the fallback is a
+Hintikka/canonical TREE over the subformula closure — the same object
+T3 searches for, which is a reason to do T3 next and take (R) as its
+by-product.
 
 ### What T3 inherits
 
