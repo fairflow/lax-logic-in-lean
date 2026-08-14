@@ -175,6 +175,45 @@ that fails, a tier ladder. And the check that matters: the 22
 representatives stay pairwise distinct under the pipeline (22/22), so
 the stronger quotient loses no class.
 
+### The full sweep, actually re-run
+
+`rhoorder sweep` re-runs the whole crank-stratified sweep with
+`simplifyWith fullSetC` substituted for `nfc` and nothing else
+changed. Against the original stream (`wip/closed_frag_out.txt`):
+
+| | original (`nfc`) | re-run (simpset) |
+|---|---|---|
+| classification cells | 680 | **469** (−31%) |
+| NEW / MEM / FLAG | 22 / 492 / 166 | 22 / 286 / **161** |
+| generation + classification | 714.9 s | **596.3 s** (−17%) |
+| classes per stratum (cranks 0–7) | 1,2,3,5,7,11,19,22 | **identical** |
+| flag-free strata | 0–5 | **identical** |
+
+**The same 22 classes, at the same cranks, from a third fewer cells.**
+
+Two details worth recording, because both look like discrepancies and
+neither is one.
+
+* **One representative is printed differently.** The original's `r18`
+  is `w16 ∨ (¬¬◯⊥ ∨ ◯¬◯⊥)`; the re-run's is
+  `¬¬◯⊥ ∨ (w16 ∨ ◯¬◯⊥)`. These are the same three-element ∨-chain in
+  a different association and order, and `canon` maps them to the same
+  formula — so `canon_interd` certifies they are interderivable. It is
+  the flattening doing exactly its job, not a different class. All 21
+  other representatives are character-for-character identical.
+* **Raised flags fall at crank ≤ 6 but rise overall** — 21 against 26
+  at stratum 6, yet 161 against 166 in total only because the totals
+  nearly cancel. The mechanism is that `crank` is measured AFTER
+  normalisation, and the simpset lowers crank further than `nfc` does,
+  so formulas that the original sweep pushed past the cap now fall
+  inside it. The pipeline removes duplicate work and simultaneously
+  widens coverage at a fixed cap. Anyone reading flag counts as a
+  quality measure across the two runs is comparing different corpora.
+
+The escalation and pivot phases of `mainSweep` were not transcribed,
+so the re-run reports RAISED flags; the original's 109 *final* flags
+have no counterpart here.
+
 ## Engine comparison — the G4c oracle and the LJF◯ focused searcher
 
 Same 462 cells, both engines.
