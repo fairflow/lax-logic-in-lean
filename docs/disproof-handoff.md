@@ -738,3 +738,74 @@ by-product.
 * `exists_cover_below` and the `onto` invariant, which say a searcher
   need only branch on COVERS.
 * The open item (R), which T3's saturation is the natural way to close.
+
+---
+
+## 2026-08-14 (late) — the (R) SCREEN: run, and it found a route
+
+`lake exe rscreen` (`wip/r_screen.lean`, output `wip/r_screen_out.txt`).
+Per doctrine the screen sweeps a LATTICE of refinements, not the one
+statement the previous section proposed — and the one proposed
+(refine `Rᵢ` lexicographically by `mfal`) is **V1**, which turns out to
+be sound but insufficient on its own.
+
+Battery: 4,414 well-formed frames on ≤3 worlds with one atom, of which
+**1,826 are NON-reduced** — the cells the question is about. Each
+variant is judged on three decidable things: (a) is the refined frame
+still well-formed, (b) is it REDUCED, (c) is FORCING PRESERVED at every
+world for all 16 closure formulas.
+
+| variant | (a) wf | (b) reduced | (c) forcing |
+|---|---|---|---|
+| **V1** `Fm`-inclusion *(the proposed route)* | 1826/1826 | **60/1826** | 1826/1826 |
+| **V2** cone-inclusion | 818/1826 | 1444/1826 | 1766/1826 |
+| **V3** index order *(control)* | 940/1826 | 1826/1826 | 1796/1826 |
+| **V4** `Fm` + index | 955/1826 | 1826/1826 | 1826/1826 |
+| **V5** `Fm` + `Rm` + index | 1806/1826 | 1444/1826 | 1826/1826 |
+| **V6** `Fm` + `Rm`-RANK + index | 1444/1826 | 1826/1826 | 1826/1826 |
+
+**V6 restricted to the `Rₘ`-ACYCLIC models: 1444/1444 on all three.**
+
+Read in order, this is a worked instance of "each round's residue
+defines the next stratum":
+
+* **V1** — the section-above proposal — preserves forcing everywhere
+  and stays well-formed everywhere, but only reduces 60 of 1,826:
+  worlds with EQUAL `Fm` stay `Rᵢ`-equivalent. Sound, insufficient.
+* **V3** is the control: antisymmetry bought by an arbitrary linear
+  order costs both well-formedness and forcing. So the modal data is
+  doing real work in V1/V4/V6, not the ordering as such.
+* **V4** (V1 + index tie-break) gets reducedness AND forcing, but
+  breaks `Rm ⊆ Ri`: `Rm w v` with `Fm(w) = Fm(v)` and `w > v` as
+  indices loses the pair.
+* **V5** lets `Rₘ` win the tie — and breaks `Rᵢ`-TRANSITIVITY on 20
+  cells, because "Rₘ wins, else index" can CYCLE. Certificate: a
+  3-element `Rᵢ`-class with `Rm 2 0`, giving `0 < 1 < 2 < 0`.
+* **V6** replaces the tie-break by a LINEAR EXTENSION of `Rₘ` — the
+  rank `|{v | v Rₘ w}|`, which strictly increases along a proper
+  `Rₘ`-step on an acyclic model. Total on each equal-`Fm` group, hence
+  transitive; extends `Rₘ`, hence `Rm ⊆ Ri` survives; antisymmetric,
+  hence reduced. All three clauses pass, on every acyclic cell.
+
+**The route for (R), in two steps, both provable:**
+
+1. **Quotient by `Rₘ`-equivalence.** `Rₘ`-equivalent worlds have equal
+   `Rᵢ`-up-sets and equal `Rₘ`-cones, so the equivalence IS a
+   bisimulation — `Bisim.force` transfers forcing, and the quotient is
+   `Rₘ`-acyclic. (This is the step V6 needs and the reason its failures
+   on the full battery are exactly the 382 `Rₘ`-cyclic cells.)
+2. **Refine `Rᵢ` by V6.** `Fm`-inclusion, then `Rₘ`-rank, then index.
+
+The remaining obligation is (c) for step 2 — that shrinking `Rᵢ` this
+way cannot make a `⊃` or `◯` become true. The `⊃` case is easy
+(`Rᵢ`-equivalent worlds force the same formulas, so a dropped witness
+is replaced by the world itself). The `◯` case is the content, and the
+`Fm` ordering is exactly what makes it work: the world with the LARGER
+`Rₘ`-cone has the SMALLER `Fm`, so V1 keeps the arrow from big-cone to
+small-cone, which is the direction that keeps ◯-witnesses reachable.
+
+**Caveat, stated.** ≤3 worlds with one atom. The configuration that
+would break (c) needs a witness world whose `Fm` is incomparable to the
+source's, and the screen shows none exists at this size — support, not
+proof. `rscreen` is re-runnable at a larger battery when one is
+affordable.

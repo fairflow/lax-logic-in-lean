@@ -513,3 +513,9 @@ root = "wip.join_screen"
 [[lean_exe]]
 name = "t2screen"
 root = "wip.t2_screen"
+
+# The (R) screen: can Rᵢ be refined so that a countermodel becomes
+# REDUCED without moving forcing?  Variant sweep, four refinements.
+[[lean_exe]]
+name = "rscreen"
+root = "wip.r_screen"
