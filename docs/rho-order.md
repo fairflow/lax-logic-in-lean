@@ -278,9 +278,30 @@ modality — `Γ ⊢tru P ↦ ⌊Γ⌋ ⊢ ⌊P⌋`, `Γ ⊢lax P ↦ ⌊Γ⌋ �
 own ◯-preserving polarisation `posOfO`/`negOfO` (`LJFComplete`'s
 `posOf`/`negOf` discard `◯`) with the round trip proved.
 
-**Consequence for the comparison below: the 110 cells LJF◯ reached
-ARE now PLL certificates.** What is still missing is the converse,
-`FocalizationPLL`, so an LJF◯ FAILURE still refutes nothing.
+**Both arrows now hold.** Commit `8f0b731` completes it:
+
+    bridge_iff : Nonempty (LaxND Γ φ) ↔
+                 Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
+
+Verified here independently — own build, own audit:
+
+    'LJFO.bridge_iff'       depends on axioms: [propext, Quot.sound]
+    'LJFO.FocalizationPLL'  depends on axioms: [propext, Quot.sound]
+    'LJFO.focalizeSCO'      depends on axioms: [propext, Quot.sound]
+    'PLLND.ND_to_SC'        depends on axioms: [propext, Quot.sound]
+
+`focalizeSCO` ports `LJFComplete.focalizeSC`, riding on the repo's
+cut elimination (`SCh`, `ND_to_SC`) exactly as the IPC version does.
+Its only genuinely new content is the two modal cases — `laxR ↦ circR`
+over `laxOf`, `laxL ↦ circR` over `lfoc`/`circL` — which are trivial
+in `LJFComplete` only because `negOf` erases `◯` there. `LJFOCore` and
+`LJFOSearch` are untouched; the new imports of `PLLNDCore` and
+`PLLSequent` are confined to the new file, so `LJFOCore`'s zero-import
+auditability is preserved.
+
+**Consequences.** The 110 order cells LJF◯ reached are now PLL
+certificates. And an LJF◯ FAILURE now transfers too — so Route A's
+missing arrow is supplied.
 
 What DOES exist, and is easy to mistake for it:
 
@@ -289,7 +310,7 @@ What DOES exist, and is easy to mistake for it:
 | LJF◯ search ↔ LJF◯ calculus | **PROVED** — `search_sound`, `search_complete`, both `[propext, Quot.sound]` |
 | `LJF` calculus ↔ IPC (◯-free) | **PROVED** — `LJFComplete.lean`, `sound`/`focalization` |
 | LJF◯ calculus → PLL | **PROVED, 2026-08-14 night** — `LJFO.laxND_of_ljfo`, `[propext, Quot.sound]`, no choice (`LaxLogic/LJFOBridge.lean`, a NEW file; no existing LJF module edited) |
-| PLL → LJF◯ calculus | **OPEN**, but now one named statement: `FocalizationPLL` |
+| PLL → LJF◯ calculus | **PROVED, hours later** — `FocalizationPLL` / `focalizeSCO`, `[propext, Quot.sound]`, commit `8f0b731` |
 
 Both of the first two are real, unconditional results, and either can
 be reported as "soundness and completeness". Neither licenses moving
@@ -307,13 +328,13 @@ Kripke soundness.
 The aim is to decide `⊬` without generating every model of a fixed
 size and testing against all of them.
 
-* **Route A — LJF◯ exhaustion.** Needs (i) the calculus↔PLL bridge
-  above, and (ii) a computable, FEASIBLE depth bound turning
-  `search_complete`'s existential `∃n` into a decision. (ii) is what
-  `LJFOHeight`'s "pigeonhole/collapse layer" is for. Precedent worth
-  respecting: `decideFuel` is a genuine decidability theorem for PLL
-  whose bounds are infeasible, which is why `CLAUDE.md` bans driving
-  discovery through it. Route A is currently blocked at (i).
+* **Route A — LJF◯ exhaustion.** (i) the calculus↔PLL bridge —
+  **PROVED**, `bridge_iff`. (ii) a computable, FEASIBLE depth bound
+  turning `search_complete`'s existential `∃n` into a decision —
+  **OPEN**; this is what `LJFOHeight`'s "pigeonhole/collapse layer" is
+  for. Precedent worth respecting: `decideFuel` is a genuine
+  decidability theorem for PLL whose bounds are infeasible, which is
+  why `CLAUDE.md` bans driving discovery through it.
 * **Route B — forward construction.** `Reject/` searches for a
   CONSTRUCTION rather than for a proof, so a success is a countermodel
   and needs no enumeration at all. T2 (`built_countermodel_of_reduced`)
@@ -365,6 +386,39 @@ which is exactly what breaks antisymmetry. The T1/T2 session's
 refine `Rᵢ` by `Fm`-inclusion + `Rm`-rank + index — passing 1444/1444
 on the `Rm`-acyclic stratum of the ≤3-world battery. Support, not
 proof.
+
+### Where both routes now stand
+
+Each has exactly one piece left, and in both cases it is EFFECTIVITY
+rather than truth:
+
+| | truth | effectivity |
+|---|---|---|
+| Route A (LJF◯ exhaustion) | `bridge_iff` ✓, `search_complete` ✓ | a feasible depth bound ✗ |
+| Route B (forward construction) | `not_laxND_iff_built` ✓ (unconditional) | choice-free, computable extraction ✗ |
+
+Neither is now blocked on a missing theorem about the logic.
+
+### A caveat on one downstream claim
+
+`docs/ljfo-fidelity.md` §5 now reads "uniform interpolation for PLL —
+OPEN (needs `CimpAnt` only; focalization for PLL is now PROVED)".
+Focalization being proved is correct and checked. "`CimpAnt` only"
+understates by one MECHANISATION step, which this repo's own
+discipline should not let pass silently: stating UI for PLL in
+`Deriv`/`LaxND` terms needs the read-back family that
+`LJFComplete.lean` supplies for IPC —
+
+    exI, allI, exI_pfree, allI_pfree, exI_sound, exI_min,
+    allI_sound, allI_min, pfree_unPos/unNeg/trans/negOf, pfreeCtx
+
+(`LJFComplete.lean:462–575`). A branch-wide grep finds those names in
+`LJFComplete.lean` and nowhere else, so no PLL analogue exists yet.
+For IPC it was about a hundred routine lines, and it is expected to be
+routine again — but `◯` is exactly where routine has stopped being
+routine before in this development, since `PFree` must now traverse
+`circ` under `negOfO`. The accurate ledger entry is "needs `CimpAnt`,
+plus the interpolant read-back through `negOfO`".
 
 ### The 48 unreached cells
 
