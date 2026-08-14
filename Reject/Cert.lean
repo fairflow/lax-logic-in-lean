@@ -23,10 +23,25 @@ Two layers, deliberately separate:
 
 The split matters.  Soundness of a certificate does NOT need
 `BuiltB` — `checkB` alone certifies underivability for ANY finite
-model.  `BuiltB` is what makes the certificate a DERIVATION rather
-than a found countermodel, and it is what a searcher should range
-over, because T2 (`gen_of_reduced`) says completeness lives in that
-class and nowhere smaller.
+model.  `BuiltB` says the certificate is in CANONICAL FORM — it is a property
+of the object, not a record of how the object was obtained.  It is what
+a searcher should range over, because T2 (`gen_of_reduced`) says
+completeness lives in that class and nowhere smaller.
+
+**Not a derivation, and the distinction is not pedantic.**  A
+derivation is indexed by what it derives and records which rule fired
+where, which is what buys the proof-theoretic payoffs — subformula
+property, cut admissibility, interpolation.  A model plus a decidable
+class predicate gives induction on the MODEL (`height_induction`, which
+is exactly what T2 uses) but no sequent to state lemmas about and no
+derivation to induct on.  The clean evidence is `not_laxND_of_check_any`
+below: ONE object settles MANY sequents, one per world.  A derivation
+cannot do that — it derives one thing.  That asymmetry is the signature
+of a countermodel, and it is precisely why the sharing in T3's searcher
+pays.  What this file supplies is therefore *canonical-form
+countermodels, checkable by a decidable predicate*; a genuine calculus
+would need FRJ's sequent syntax and derivations as an inductive type
+over it, at which point T1/T2 become its adequacy proof.
 -/
 import Reject.Complete
 import LaxLogic.PLLCountermodelEmit

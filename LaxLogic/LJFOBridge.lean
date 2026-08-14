@@ -226,6 +226,86 @@ theorem not_ljfo_of_not_laxND {Γ : List Neg} {P : Pos}
     IsEmpty (Stab Γ .tru P) :=
   ⟨fun d => h (laxND_of_ljfo d)⟩
 
+/-! ## 4b. The ◯-PRESERVING polarisation, and the converse
+
+`LJFComplete.lean`'s `posOf`/`negOf` DISCARD the modality
+(`.somehow φ ↦ posOf φ`), because that development targets IPC through
+`PLLND.erase`.  For LJF◯ the polarisation must keep it, so the round
+trip is the identity on PLL formulas rather than the ◯-erasure.  With
+that, the converse arrow becomes statable, and the bridge becomes a
+biconditional the moment it is supplied. -/
+
+mutual
+
+/-- Polarise a PLL formula positively, KEEPING `◯`. -/
+def posOfO : PLLFormula → Pos
+  | .prop a => .atom a
+  | .falsePLL => .fls
+  | .or φ ψ => .or (posOfO φ) (posOfO ψ)
+  | .and φ ψ => .down (.and (negOfO φ) (negOfO ψ))
+  | .ifThen φ ψ => .down (.imp (posOfO φ) (negOfO ψ))
+  | .somehow φ => .down (.circ (posOfO φ))
+
+/-- Polarise a PLL formula negatively, KEEPING `◯`. -/
+def negOfO : PLLFormula → Neg
+  | .prop a => .up (.atom a)
+  | .falsePLL => .up .fls
+  | .or φ ψ => .up (.or (posOfO φ) (posOfO ψ))
+  | .and φ ψ => .and (negOfO φ) (negOfO ψ)
+  | .ifThen φ ψ => .imp (posOfO φ) (negOfO ψ)
+  | .somehow φ => .circ (posOfO φ)
+
+end
+
+/-- **The round trip is the identity**: polarising and then erasing
+gives the formula back, `◯` included. -/
+theorem erase_polarise (φ : PLLFormula) :
+    erasePos (posOfO φ) = φ ∧ eraseNeg (negOfO φ) = φ := by
+  induction φ with
+  | prop a => exact ⟨rfl, rfl⟩
+  | falsePLL => exact ⟨rfl, rfl⟩
+  | and φ ψ ihφ ihψ =>
+      refine ⟨?_, ?_⟩ <;>
+        simp [posOfO, negOfO, erasePos, eraseNeg, ihφ.2, ihψ.2]
+  | or φ ψ ihφ ihψ =>
+      refine ⟨?_, ?_⟩ <;>
+        simp [posOfO, negOfO, erasePos, eraseNeg, ihφ.1, ihψ.1]
+  | ifThen φ ψ ihφ ihψ =>
+      refine ⟨?_, ?_⟩ <;>
+        simp [posOfO, negOfO, erasePos, eraseNeg, ihφ.1, ihψ.2]
+  | somehow φ ih =>
+      refine ⟨?_, ?_⟩ <;>
+        simp [posOfO, negOfO, erasePos, eraseNeg, ih.1]
+
+theorem eraseCtx_polarise (Γ : List PLLFormula) :
+    eraseCtx (Γ.map negOfO) = Γ := by
+  induction Γ with
+  | nil => rfl
+  | cons φ Γ ih =>
+      simp only [List.map_cons, eraseCtx, List.map_map] at ih ⊢
+      exact congrArg₂ _ (erase_polarise φ).2 ih
+
+/-- **The converse arrow, named** — focalization completeness for PLL.
+NOT proved here; `docs/ljfo-fidelity.md` §5 lists it as OPEN, and
+`LJFComplete.focalization` is the ◯-FREE analogue that is proved. -/
+def FocalizationPLL : Prop :=
+  ∀ (Γ : List PLLFormula) (φ : PLLFormula),
+    Nonempty (LaxND Γ φ) → Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
+
+/-- **The bridge as a BICONDITIONAL, modulo the one open implication.**
+The `←` half is proved here (it is `Inv.sound` composed with the round
+trip); the `→` half is exactly `FocalizationPLL`.  So the LJF◯ ↔ PLL
+bridge is established in one direction outright, and in the other
+reduced to a single named statement. -/
+theorem bridge_iff (h : FocalizationPLL) (Γ : List PLLFormula) (φ : PLLFormula) :
+    Nonempty (LaxND Γ φ) ↔
+      Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ)) := by
+  refine ⟨h Γ φ, ?_⟩
+  rintro ⟨d⟩
+  have hd := Inv.sound d
+  rw [eraseCtx_polarise, (erase_polarise φ).2] at hd
+  exact ⟨hd⟩
+
 /-! ## 5. The bridge in action
 
 Two derivations that exercise the modal cases, so the erasure is
@@ -282,5 +362,23 @@ info: 'LJFO.not_ljfo_of_not_laxND' depends on axioms: [propext, Quot.sound]
 -/
 #guard_msgs in
 #print axioms not_ljfo_of_not_laxND
+
+/--
+info: 'LJFO.erase_polarise' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms erase_polarise
+
+/--
+info: 'LJFO.eraseCtx_polarise' depends on axioms: [propext]
+-/
+#guard_msgs in
+#print axioms eraseCtx_polarise
+
+/--
+info: 'LJFO.bridge_iff' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms bridge_iff
 
 end LJFO

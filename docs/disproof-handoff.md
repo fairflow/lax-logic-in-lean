@@ -993,3 +993,77 @@ the source, so the source replaces it.
 * The `rscreen` caveat stands as a caveat about the SCREEN only: the
   proof is not restricted to ≤3 worlds or one atom. The screen chose the
   refinement; the proof establishes it in general.
+
+---
+
+## 2026-08-14 (night) — the LJF◯ ↔ PLL BRIDGE
+
+`LaxLogic/LJFOBridge.lean`. The arrow that did not exist anywhere in
+the repo — confirmed by pickaxe over every ref
+(`git log --all -S "LaxND" -- 'LaxLogic/LJFO*'` returns nothing) — now
+exists in one direction outright and is reduced to one named statement
+in the other.
+
+### PROVED: soundness, LJF◯ ⟹ PLL
+
+Erase polarity (`↓`/`↑` vanish, `circ` becomes `◯`) and read the
+judgment flag as the modality:
+
+    Γ ⊢tru P   ↦   ⌊Γ⌋ ⊢ ⌊P⌋
+    Γ ⊢lax P   ↦   ⌊Γ⌋ ⊢ ◯⌊P⌋
+
+which turns `LJFOCore`'s own gloss — "the lax goal is definable" — into
+a theorem. One mutual recursion over the four judgments, mirroring the
+`wk` family. The three modal rules land exactly where they should:
+
+| LJF◯ rule | PLL rule |
+|---|---|
+| `laxOf` (truth-to-lax coercion) | `laxIntro` — it IS `φ ⊢ ◯φ` |
+| `circL` (left focus on a box, lax only) | `laxElim` |
+| `circR` | identity at `tru`, `laxIntro` at `lax` (`◯φ ⊢ ◯◯φ`) |
+
+Everything else is structural, and every structural move is
+`LaxND.rename`, which subsumes weakening, exchange and contraction —
+so **no cut and no admissibility lemma is used anywhere**.
+
+| result | pin |
+|---|---|
+| `Stab.sound`, `Inv.sound`, `sound_tru`, `sound_lax`, `laxND_of_ljfo`, `not_ljfo_of_not_laxND` | `[propext, Quot.sound]` |
+| `erase_polarise`, `eraseCtx_polarise` | `[propext]` |
+| `bridge_iff` | `[propext, Quot.sound]` |
+
+**No `Classical.choice`** — the bridge matches the LJFO development's
+own axiom profile, which was a design constraint of that campaign
+(zero imports, nothing else carries the proof).
+
+### The converse, reduced to one statement
+
+`LJFComplete.lean`'s `posOf`/`negOf` DISCARD the modality
+(`.somehow φ ↦ posOf φ`), because that development targets IPC through
+`PLLND.erase`. So the bridge needed its own ◯-PRESERVING polarisation,
+`posOfO`/`negOfO`, with `erase_polarise` proving the round trip is the
+identity on PLL formulas. With it:
+
+```
+def FocalizationPLL : Prop :=
+  ∀ Γ φ, Nonempty (LaxND Γ φ) → Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
+
+theorem bridge_iff (h : FocalizationPLL) (Γ φ) :
+    Nonempty (LaxND Γ φ) ↔ Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
+```
+
+The `←` half of `bridge_iff` is PROVED (it is `Inv.sound` composed with
+the round trip). The `→` half is exactly `FocalizationPLL`, which is
+`docs/ljfo-fidelity.md` §5's open item; `LJFComplete.focalization` is
+the ◯-free analogue that IS proved, so the technique exists and the
+missing work is the `circ` cases.
+
+### What this settles about the repo's status
+
+* An LJF◯ **proof** now transfers to PLL: `laxND_of_ljfo`.
+* An LJF◯ **failure** does NOT yet transfer — that needs the converse.
+* `not_ljfo_of_not_laxND` runs the other way and is immediately usable:
+  a PLL countermodel — including any `Reject` certificate — shows the
+  corresponding LJF◯ sequent has NO derivation. So the disproof thread
+  can now settle LJF◯ questions, which is a use of `Reject/` nobody
+  had planned for.
