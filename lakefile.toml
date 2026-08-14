@@ -26,6 +26,11 @@ name = "BiLax"
 [[lean_lib]]
 name = "Reject"
 
+# Rewrite: certified interderivabilities used as a simplifier.
+[[lean_lib]]
+name = "Rewrite"
+
+
 
 [[lean_exe]]
 name = "bilaxscreen"
