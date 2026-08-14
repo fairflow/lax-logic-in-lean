@@ -299,3 +299,143 @@ the join rule makes branching countermodels constructible, these are
 the first cells to aim it at. Also inherited: the *pattern* for a
 trustworthy null result — control plus adversarial check in the same
 run — which T1's screens should follow.
+
+---
+
+## 2026-08-14 (night) — WHAT `Reject/` ACTUALLY IS: a correction to this document's own framing
+
+*Written by the `ljf-pll` session at Matthew's request, after he
+observed that he had understood the rejection calculus to be built via
+LJF◯ and that `Reject/` appears not to be that. He is right. The
+framing corrected here is MINE — it entered in `docs/frj-lifting.md`
+and was passed to the T1 agent in `docs/t1-join-rule-prompt.md`, which
+built faithfully on it.*
+
+*Read from the code on `claude/t1-lax-logic-refutation-37c0bf`
+(`Reject/{Build,Join,Complete,Height,Bisim,Audit,Demo}.lean`, 2,022
+lines, all sorry-free), not from the reports.*
+
+### What `Reject/` is
+
+Three functions on Kripke models, and theorems about them.
+
+* `solo V₀ fal hfull : ConstraintModel` — a one-world model.
+* `addRoot (M : ConstraintModel) (D : RootData M) : ConstraintModel` —
+  a new world strictly below `M`, choosing which worlds become the
+  root's proper `Rₘ`-successors (`D.S`) and which atoms hold there
+  (`D.At`).
+* `join Mods D = addRoot (union Mods) D` — the same below a disjoint
+  union. That is T1 in full: `union`, and `join` defined from it.
+
+The three things this document has been calling "the ◯ rules" —
+`boxRefuteHere`, `boxRefuteAbove`, `boxHolds` — are **theorems about
+forcing at the new root**, not rules of inference. And the step that
+reaches PLL is
+
+    theorem not_laxND_of_root (hΓ : ∀ χ ∈ Γ, N.force w χ) (hψ : ¬ N.force w ψ) :
+        ¬ Nonempty (LaxND Γ ψ) := by
+      rintro ⟨p⟩; exact hψ (soundness p N w hΓ)
+
+— PLL's own Kripke soundness, applied. So the certificate `Reject/`
+produces is a **countermodel**, the same kind of object the battery
+produces. What is new is that it arrives with a construction history.
+
+### What `Reject/` is not
+
+* **Not LJF◯-based.** Import closure: `PLLKripke`, `PLLFrames`,
+  `PLLConfluentComplete`, `PLLCountermodelEmit`, `PLLSemUI`,
+  `Mathlib.Data.Set.Card`. `grep "LJF" Reject/*.lean` is empty.
+* **No sequents.** The string "sequent" occurs 0 times in the code
+  (twice in a doc comment). There is no `Γ ⇒ C` and no irregular
+  `Σ ; Θ → C`.
+* **No derivations.** The only inductives in the directory are `Built`
+  — a PREDICATE ON MODELS — and `Lift`, a relation used to build the
+  disjoint union. There is no type of refutations, no judgment, no
+  rule per connective, and nothing indexed by a sequent. No object in
+  `Reject/` is *about* a particular entailment until
+  `not_laxND_of_root` is applied at the very end.
+* **Nothing to search.** `RootData` carries
+
+      S  : M.W → Prop
+      At : String → Prop
+
+  and `Built.join` quantifies over `{ι : Type}` with no finiteness. A
+  "construction" is therefore not a finite syntactic object and not
+  decidable data. Constructions cannot be enumerated, so there is no
+  forward proof search to run — which is precisely what FRJ(G) is for.
+
+### What IS proved, read as mathematics rather than as a calculus
+
+**`gen_of_reduced`** — every world of a finite reduced constraint
+model is bisimilar to the root of a `Built` model; hence
+**`built_countermodel_of_reduced`**, and with `not_laxND_of_built`
+(pin `[propext]`) a two-way statement on that class.
+
+So T2 is a **normal-form theorem for countermodels**: every finite
+reduced countermodel is bisimilar to a well-founded tree with fallible
+worlds only at the leaves. The height induction (`Reject/Height.lean`)
+and the bisimulation transfer lemma (`Reject/Bisim.lean`) are the real
+content, both sorry-free and pinned. This is worth keeping and is not
+affected by anything above.
+
+### Two checkable inaccuracies in the T2 documentation
+
+1. `Reject/Complete.lean`'s header says `Built` "unfolded, that is the
+   finite `Rᵢ`-TREES". `Built.join` takes `{ι : Type}` with no
+   finiteness constraint, so branching may be infinite; the inductive
+   gives well-founded DEPTH only. The theorems are unaffected —
+   `gen_of_reduced` assumes `Finite N.W` separately — but the
+   characterisation as written is wrong.
+2. "calculus" throughout, and "the class the calculus generates".
+   There is no calculus in the proof-theoretic sense. **This wording
+   is mine, inherited by the T1 agent from the handoff prompt**, and
+   should be corrected at its source rather than charged to that
+   session.
+
+### How the framing went wrong
+
+After BiLax was refuted, Matthew asked for FRJ(G) to be read and its
+◯ rules implemented on the model of the Fiorentini–Ferrari JLC 2021
+S4 paper. `docs/frj-lifting.md` argued that a FORWARD architecture
+dissolves the ∀∃ obstacle, because "all `Rₘ`-successors" becomes a
+construction-time side condition when the model is the derivation's
+own product. That argument is sound as far as it goes.
+
+What was then built was the model-construction layer and its forcing
+lemmas — and called a calculus. The layer that makes FRJ(G) a calculus
+was skipped: FRJ(G) saturates a finite set of SEQUENTS, regular
+`Γ ⇒ C` and irregular `Σ ; Θ → C`, and EXTRACTS the model from the
+saturated set. `Reject/` has the extraction and no sequents.
+
+### What would close the gap
+
+1. A sequent syntax — FRJ's regular/irregular pair, or LJF◯ sequents
+   if the calculus↔PLL bridge ever lands (it does not exist today; see
+   the status table in `docs/rho-order.md`).
+2. Derivations as an inductive type over that syntax, one rule per
+   connective, so a derivation is a finite object about a named
+   sequent.
+3. `RootData` made effective: `Finset M.W` and `Finset String` instead
+   of `Prop`, and `ι` finite, so constructions are enumerable.
+4. An extraction map from saturated derivations to `Built` models.
+
+Step 4 is where the present work is retained rather than discarded:
+T1 and T2 become the ADEQUACY proof for the calculus once a calculus
+exists — soundness of extraction, and completeness of the model class
+it targets. The semantic half is done; the syntactic half has not been
+started.
+
+### Standing correction for anyone writing here next
+
+Do not describe `Reject/` as a calculus, as a rejection calculus, or
+as LJF◯-based. Describe it as what it is: **constructors for
+countermodels, with a normal-form theorem (T2) saying the constructed
+class is expressively complete for finite reduced countermodels.** The
+open obligation (R) — every underivable sequent HAS a finite reduced
+countermodel — sits underneath T2 and is separate from everything
+above.
+
+*Note on merging: this section was appended on `ljf-pll` while
+`claude/t1-lax-logic-refutation-37c0bf` was appending its own dated
+sections to the same file. Expect a conflict here and interleave by
+date rather than taking one side.*
