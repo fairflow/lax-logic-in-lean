@@ -917,3 +917,79 @@ every world. The calibration and adversarial blocks are already in
 substituted for the ad-hoc `known` list — that is the calibration the
 handoff asked for, and it is now a one-line change rather than a
 project.
+
+---
+
+## 2026-08-14 (night) — (R) is PROVED. T2 is now UNCONDITIONAL.
+
+`Reject/Reduce.lean`. The open item is closed, by the route the screen
+found, and with it the last hypothesis comes off completeness:
+
+```
+theorem not_laxND_iff_built {Γ ψ} :
+    ¬ Nonempty (LaxND Γ ψ) ↔
+      ∃ (M : ConstraintModel) (r : M.W),
+        Built M ∧ (∀ χ ∈ Γ, M.force r χ) ∧ ¬ M.force r ψ
+```
+
+**On PLL, underivability and constructibility coincide.** `←` is T1
+(`not_laxND_of_root`); `→` is T2 composed with (R).
+
+| result | pin |
+|---|---|
+| `Fm_mono`, `force_iff_of_ri_equiv` | *no axioms* |
+| `qBisim` | `[propext]` |
+| `qModel_rm_antisymm` | `[propext, Quot.sound]` |
+| `eq_of_rm_of_rrank_eq`, `refineM_reduced`, `exists_refined_witness`, `refineM_force` | `[propext, Classical.choice, Quot.sound]` |
+| `exists_reduced_countermodel` — **(R)** | `[propext, Classical.choice, Quot.sound]` |
+| `built_countermodel`, `not_laxND_iff_built` | `[propext, Classical.choice, Quot.sound]` |
+
+64 pins across `Reject/`.
+
+### The two steps
+
+**Step 1 — quotient by `Rₘ`-equivalence** (`qModel`, `qBisim`).
+`Rₘ`-equivalent worlds are `Rᵢ`-equivalent (`Rm ⊆ Ri`), hence force the
+same formulas, and have the same `Rₘ`-cone. So the collapse is a
+bisimulation and forcing is untouched. It removes exactly the
+`Rₘ`-cycles that no refinement of `Rᵢ` could survive — an `Rᵢ`
+containing a cyclic `Rₘ` cannot be antisymmetric.
+
+**Step 2 — refine `Rᵢ`** (`refineM`). Keep `x Rᵢ y` unless `x ≈ᵢ y`, in
+which case keep it only when `rle x y`: `Fm`-inclusion, then
+`Rₘ`-RANK, then an arbitrary injective key. `Rm ⊆ Ri` survives because
+rank is a strict linear extension of `Rₘ` on an acyclic model
+(`eq_of_rm_of_rrank_eq`), which is precisely what step 1 supplies.
+
+### The one non-obvious step, and how it goes
+
+Shrinking `Rᵢ` cannot make `◯A` become TRUE. `exists_refined_witness`:
+
+> if `x`'s own cone realises `A` (`A ∉ Fm x`) but some `Rᵢ`-successor
+> `y` refutes `A` throughout its cone (`A ∈ Fm y`), then some world the
+> refinement KEEPS above `x` does too.
+
+Take `m` of maximal `Rₘ`-rank in `{v ≥ᵢ x | A ∈ Fm v}` — a set that is
+`Rₘ`-closed, since `Fm` only grows along `Rₘ` (`Fm_mono`). Maximal rank
+plus `eq_of_rm_of_rrank_eq` makes `m` its own only `Rₘ`-successor, so
+`Fm m` is exactly what `m` refutes. Then either `m ≉ᵢ x`, and the arrow
+survives vacuously; or `m ≈ᵢ x`, and then `Fm x ⊆ Fm m` (everything in
+`Fm x` is refuted at `x`, hence at `m`) while `A ∈ Fm m \ Fm x` — so
+`Fm x ⊊ Fm m` and `rle x m` holds. Either way the witness is kept.
+
+The `⊃` case is the easy dual: a dropped witness is `Rᵢ`-equivalent to
+the source, so the source replaces it.
+
+### What this changes
+
+* `docs/rn-dictionary-status.md`'s 83 open cells and the catalogue's
+  109 flags are now attackable by CONSTRUCTION with no side condition:
+  a failure to build is not "the builder was not clever enough" but
+  evidence, because the class is complete.
+* T3's searcher is now complete **for the space it explores** — the
+  remaining gap is its restriction to whole-component cones, which is a
+  searcher scope choice and is stated in `wip/t3_search.lean`, not a
+  gap in the calculus.
+* The `rscreen` caveat stands as a caveat about the SCREEN only: the
+  proof is not restricted to ≤3 worlds or one atom. The screen chose the
+  refinement; the proof establishes it in general.
