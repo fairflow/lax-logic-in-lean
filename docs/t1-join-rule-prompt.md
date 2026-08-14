@@ -98,8 +98,8 @@ Do not drift into one. Record the choice and its reason in
   rewrite by 324 kernel-checked rules) and report the shrink rate.
   Always sound — `Rewrite.simplify_interd` is unconditional. Use
   `simplify`, never `norm` alone: measured, canonicalising first takes
-  the rewrite rate from 13% to 66% and collapses 330 cells from 319
-  distinct forms to 102. Bank any NEW certified `Interd` you prove
+  the rewrite rate from 13% to 68%, and on nested ∧/∨ trees it
+  collapses 3,996 distinct forms to 167. Bank any NEW certified `Interd` you prove
   into `Rewrite/`, so the next campaign is cheaper.
 * **Three-valued verdicts**: pass / fail / flag, with `fail` only on a
   certificate and `flag` never dropped silently.

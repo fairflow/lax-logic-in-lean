@@ -62,12 +62,17 @@ probe pipes its cells through the CERTIFIED simpset first:
 kernel-checked dictionary operation table of `wip/rnDict.lean`).
 Use `Rewrite.simplify` (canonicalise THEN rewrite), not `norm` alone:
 `simplify_interd` is UNCONDITIONAL, so this is always sound, and the
-canonicaliser is what makes the rules bite — measured on 330 cells
-(`lean_exe rwscreen`): norm alone rewrites 13% for a 6% crank
-reduction, `canon` then `norm` rewrites **66% for 21%**, and the
-number of distinct syntactic forms falls 319 → 129 → 102. That
-collapse of distinct forms is the real payoff for a probe: fewer
-distinct cells to attack, and cache hits across a sweep. Every NEW
+canonicaliser is what makes the rules bite — measured
+(`lean_exe rwscreen`): on 330 flat cells, `norm` alone rewrites 13%
+for a 6% crank cut while `canon` then `norm` rewrites **68% for 21%**,
+collapsing 319 distinct forms to 96. On a NESTED corpus (3,996 ∧/∨
+trees in both associations and both argument orders) the collapse is
+**3,996 → 167 distinct forms**, a 24-fold cut, with crank down 23%.
+That collapse is the real payoff for a probe: far fewer distinct cells
+to attack, and cache hits across a sweep. The canonicaliser carries
+constant folding, idempotence, commutativity, ASSOCIATIVITY and
+FLATTENING (sorted right-nested chains), `◯◯φ = ◯φ` and `◯⊤ = ⊤`,
+each law certified. Every NEW
 certified interderivability a probe establishes gets banked into the
 simpset, so each campaign makes the next one cheaper. Keep the PLL set and any PCLL-only set separate:
 `RwRule` carries its `Interd` proof, so a PCLL-only equation cannot

@@ -1,4 +1,4 @@
-⚠ [2966/2995] Replayed LaxLogic.PLLFormula
+⚠ [2966/2986] Replayed LaxLogic.PLLFormula
 warning: LaxLogic/PLLFormula.lean:99:46: This simp argument is unused:
   isSomehowFree
 
@@ -51,7 +51,7 @@ Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
 info: LaxLogic/PLLFormula.lean:159:0: P ⊃ (◯(Q ∧ ⊥))
 info: LaxLogic/PLLFormula.lean:160:0: P
 info: LaxLogic/PLLFormula.lean:161:0: ⊤ ∧ P
-⚠ [2970/2995] Replayed LaxLogic.PLLCompleteness
+⚠ [2970/2986] Replayed LaxLogic.PLLCompleteness
 warning: LaxLogic/PLLCompleteness.lean:75:2: `push_neg` has been deprecated. Prefer using `push Not` instead.
 If you'd rather continue using `push_neg` in your project, you can implement it as follows:
 ```
@@ -80,7 +80,7 @@ open Lean.Parser.Tactic in
 macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
   `(tactic| push $cfg:optConfig Not $[$loc]?)
 ```
-⚠ [2971/2995] Replayed LaxLogic.PLLSequent
+⚠ [2971/2986] Replayed LaxLogic.PLLSequent
 warning: LaxLogic/PLLSequent.lean:216:10: Variable name `a` is not explicitly referenced.
 
 The binding can be removed (if unused) or named `_` (if used implicitly).
@@ -233,7 +233,7 @@ Hint: Omit it from the simp argument list.
   simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
 
 Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
-⚠ [2973/2995] Replayed LaxLogic.PLLFinsetKit
+⚠ [2973/2986] Replayed LaxLogic.PLLFinsetKit
 warning: LaxLogic/PLLFinsetKit.lean:101:17: Variable name `a` is not explicitly referenced.
 
 The binding can be removed (if unused) or named `_` (if used implicitly).
@@ -284,7 +284,7 @@ warning: LaxLogic/PLLFinsetKit.lean:412:9: Variable name `a` is not explicitly r
 The binding can be removed (if unused) or named `_` (if used implicitly).
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-⚠ [2974/2995] Replayed LaxLogic.PLLG4Space
+⚠ [2974/2986] Replayed LaxLogic.PLLG4Space
 warning: LaxLogic/PLLG4Space.lean:66:9: Variable name `x` is not explicitly referenced.
 
 The binding can be removed (if unused) or named `_` (if used implicitly).
@@ -315,7 +315,7 @@ warning: LaxLogic/PLLG4Space.lean:77:9: Variable name `x` is not explicitly refe
 The binding can be removed (if unused) or named `_` (if used implicitly).
 
 Note: This linter can be disabled with `set_option linter.unusedVariables false`
-⚠ [2978/2995] Replayed LaxLogic.PLLFiniteModel
+⚠ [2978/2986] Replayed LaxLogic.PLLFiniteModel
 warning: LaxLogic/PLLFiniteModel.lean:280:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
 If you'd rather continue using `push_neg` in your project, you can implement it as follows:
 ```
@@ -516,10 +516,13 @@ orientation: 324/324 crank-oriented, 0 not
   (not a soundness condition — norm_interd is unconditional)
 cells: 330
   norm ALONE      : rewritten 43 (13%), crank 1594 → 1488 (6% down)
-  canon THEN norm : rewritten 219 (66%), crank 1594 → 1252 (21% down)
+  canon THEN norm : rewritten 227 (68%), crank 1594 → 1252 (21% down)
 cells in the dictionary's OWN form: 456
   rewritten: 187 (41%)
   total crank 2219 → 1799 (18% reduction)
 distinct forms among the 330 cells:
-  raw 319   after canon 129   after canon+norm 102
+  raw 319   after canon 127   after canon+norm 96
+NESTED corpus (3996 cells, both associations, both orders):
+  distinct forms: raw 3996   after canon 206   after canon+norm 167
+  total crank 19558 → 14986 (23% down)
 RW-SCREEN-DONE

@@ -45,6 +45,16 @@ def cellsRND : List F :=
     [.and a b, .or a b, .ifThen a b]) ++
   (repsRND.map fun a => .somehow a)
 
+/-- Deeply nested ∧/∨ trees, in BOTH associations and both argument
+orders — the cells associativity/flattening exists for.  A canonicaliser
+without them leaves every one of these distinct. -/
+def nested : List F :=
+  (reps.flatMap fun a => reps.flatMap fun b => reps.flatMap fun c =>
+    [ .and (.and a b) c, .and a (.and b c),
+      .and (.and c b) a, .and c (.and b a),
+      .or (.or a b) c, .or a (.or b c),
+      .or (.or c b) a, .or c (.or b a) ]).eraseDups
+
 def cells : List F :=
   reps ++
   (reps.flatMap fun a => reps.flatMap fun b => [.and a b, .or a b, .ifThen a b]) ++
@@ -94,6 +104,18 @@ def main : IO Unit := do
   let distinctFull := (cells.map (fun c => keyF (simplify fullSet 6 c))).eraseDups.length
   IO.println s!"distinct forms among the {cells.length} cells:"
   IO.println s!"  raw {distinctRaw}   after canon {distinctCanon}   after canon+norm {distinctFull}"
+  -- the nested corpus: where associativity/flattening bites
+  let nRaw := (nested.map keyF).eraseDups.length
+  let nCanon := (nested.map (fun c => keyF (canon c))).eraseDups.length
+  let nFull := (nested.map (fun c => keyF (simplify fullSet 6 c))).eraseDups.length
+  let mut nb := 0
+  let mut na := 0
+  for c in nested do
+    nb := nb + crank c
+    na := na + crank (simplify fullSet 6 c)
+  IO.println s!"NESTED corpus ({nested.length} cells, both associations, both orders):"
+  IO.println s!"  distinct forms: raw {nRaw}   after canon {nCanon}   after canon+norm {nFull}"
+  IO.println s!"  total crank {nb} → {na} ({(nb - na) * 100 / (max nb 1)}% down)"
   IO.println "RW-SCREEN-DONE"
 
 end RwScreen

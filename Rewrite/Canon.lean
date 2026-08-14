@@ -180,13 +180,211 @@ theorem mkBox_interd (a : PLLFormula) : Interd (.somehow a) (mkBox a) := by
     · next x _ => exact box_idem x
     · exact Interd.refl _
 
+
+/-! ## Associativity and flattening
+
+Binary commutativity leaves `(a∧b)∧c` and `a∧(b∧c)` distinct.  The fix
+is to treat an ∧-tree as a SORTED RIGHT-NESTED CHAIN and insert into
+it — one mechanism that subsumes associativity, commutativity and
+deduplication.  `consAnd`/`consOr` do the constant folding WITHOUT
+reordering (so the sort is not fought by the smart constructor), and
+`insAnd`/`insAll` maintain the invariant. -/
+
+theorem and_assoc' (a b c : PLLFormula) :
+    Interd (.and (.and a b) c) (.and a (.and b c)) :=
+  ⟨⟨.andIntro (.andElim1 (.andElim1 (.iden (.head _))))
+      (.andIntro (.andElim2 (.andElim1 (.iden (.head _))))
+        (.andElim2 (.iden (.head _))))⟩,
+   ⟨.andIntro (.andIntro (.andElim1 (.iden (.head _)))
+      (.andElim1 (.andElim2 (.iden (.head _)))))
+      (.andElim2 (.andElim2 (.iden (.head _))))⟩⟩
+
+theorem and_swap (a b c : PLLFormula) :
+    Interd (.and a (.and b c)) (.and b (.and a c)) :=
+  ⟨⟨.andIntro (.andElim1 (.andElim2 (.iden (.head _))))
+      (.andIntro (.andElim1 (.iden (.head _)))
+        (.andElim2 (.andElim2 (.iden (.head _)))))⟩,
+   ⟨.andIntro (.andElim1 (.andElim2 (.iden (.head _))))
+      (.andIntro (.andElim1 (.iden (.head _)))
+        (.andElim2 (.andElim2 (.iden (.head _)))))⟩⟩
+
+theorem or_assoc' (a b c : PLLFormula) :
+    Interd (.or (.or a b) c) (.or a (.or b c)) :=
+  ⟨⟨.orElim (.iden (.head _))
+      (.orElim (.iden (.head _)) (.orIntro1 (.iden (.head _)))
+        (.orIntro2 (.orIntro1 (.iden (.head _)))))
+      (.orIntro2 (.orIntro2 (.iden (.head _))))⟩,
+   ⟨.orElim (.iden (.head _))
+      (.orIntro1 (.orIntro1 (.iden (.head _))))
+      (.orElim (.iden (.head _))
+        (.orIntro1 (.orIntro2 (.iden (.head _))))
+        (.orIntro2 (.iden (.head _))))⟩⟩
+
+theorem or_swap (a b c : PLLFormula) :
+    Interd (.or a (.or b c)) (.or b (.or a c)) :=
+  ⟨⟨.orElim (.iden (.head _))
+      (.orIntro2 (.orIntro1 (.iden (.head _))))
+      (.orElim (.iden (.head _)) (.orIntro1 (.iden (.head _)))
+        (.orIntro2 (.orIntro2 (.iden (.head _)))))⟩,
+   ⟨.orElim (.iden (.head _))
+      (.orIntro2 (.orIntro1 (.iden (.head _))))
+      (.orElim (.iden (.head _)) (.orIntro1 (.iden (.head _)))
+        (.orIntro2 (.orIntro2 (.iden (.head _)))))⟩⟩
+
+/-- Constant folding WITHOUT reordering (so sortedness survives). -/
+def consAnd (x c : PLLFormula) : PLLFormula :=
+  if x = .falsePLL then .falsePLL
+  else if c = .falsePLL then .falsePLL
+  else if x = topF then c
+  else if c = topF then x
+  else if x = c then x
+  else .and x c
+
+theorem consAnd_interd (x c : PLLFormula) :
+    Interd (.and x c) (consAnd x c) := by
+  unfold consAnd
+  split
+  · next h => exact h ▸ and_bot_l c
+  split
+  · next h => exact h ▸ and_bot_r x
+  split
+  · next h => exact h ▸ and_top_l c
+  split
+  · next h => exact h ▸ and_top_r x
+  split
+  · next h => exact h ▸ and_idem x
+  · exact Interd.refl _
+
+def consOr (x c : PLLFormula) : PLLFormula :=
+  if x = .falsePLL then c
+  else if c = .falsePLL then x
+  else if x = topF then topF
+  else if c = topF then topF
+  else if x = c then x
+  else .or x c
+
+theorem consOr_interd (x c : PLLFormula) :
+    Interd (.or x c) (consOr x c) := by
+  unfold consOr
+  split
+  · next h => exact h ▸ or_bot_l c
+  split
+  · next h => exact h ▸ or_bot_r x
+  split
+  · next h => exact h ▸ or_top_l c
+  split
+  · next h => exact h ▸ or_top_r x
+  split
+  · next h => exact h ▸ or_idem x
+  · exact Interd.refl _
+
+/-- Insert `x` into a sorted ∧-chain. -/
+def insAnd (x : PLLFormula) : PLLFormula → PLLFormula
+  | .and h t =>
+      if keyF x ≤ keyF h then consAnd x (.and h t) else consAnd h (insAnd x t)
+  | c => if keyF x ≤ keyF c then consAnd x c else consAnd c x
+
+theorem insAnd_interd (x : PLLFormula) :
+    ∀ c : PLLFormula, Interd (.and x c) (insAnd x c) := by
+  intro c
+  induction c with
+  | and h t _ iht =>
+      unfold insAnd
+      split
+      · exact consAnd_interd _ _
+      · exact ((and_swap x h t).trans
+          (Interd.and_congr (Interd.refl h) iht)).trans (consAnd_interd _ _)
+  | prop a => unfold insAnd; split
+              · exact consAnd_interd _ _
+              · exact (and_comm _ _).trans (consAnd_interd _ _)
+  | falsePLL => unfold insAnd; split
+                · exact consAnd_interd _ _
+                · exact (and_comm _ _).trans (consAnd_interd _ _)
+  | or a b _ _ => unfold insAnd; split
+                  · exact consAnd_interd _ _
+                  · exact (and_comm _ _).trans (consAnd_interd _ _)
+  | ifThen a b _ _ => unfold insAnd; split
+                      · exact consAnd_interd _ _
+                      · exact (and_comm _ _).trans (consAnd_interd _ _)
+  | somehow a _ => unfold insAnd; split
+                   · exact consAnd_interd _ _
+                   · exact (and_comm _ _).trans (consAnd_interd _ _)
+
+/-- Insert every conjunct of `a` into the chain `c` — flattening. -/
+def insAllAnd : PLLFormula → PLLFormula → PLLFormula
+  | .and a1 a2, c => insAllAnd a1 (insAllAnd a2 c)
+  | x, c => insAnd x c
+
+theorem insAllAnd_interd :
+    ∀ (a c : PLLFormula), Interd (.and a c) (insAllAnd a c) := by
+  intro a
+  induction a with
+  | and a1 a2 ih1 ih2 =>
+      intro c
+      exact ((and_assoc' a1 a2 c).trans
+        (Interd.and_congr (Interd.refl a1) (ih2 c))).trans (ih1 _)
+  | prop x => intro c; exact insAnd_interd _ _
+  | falsePLL => intro c; exact insAnd_interd _ _
+  | or a b _ _ => intro c; exact insAnd_interd _ _
+  | ifThen a b _ _ => intro c; exact insAnd_interd _ _
+  | somehow a _ => intro c; exact insAnd_interd _ _
+
+def insOr (x : PLLFormula) : PLLFormula → PLLFormula
+  | .or h t =>
+      if keyF x ≤ keyF h then consOr x (.or h t) else consOr h (insOr x t)
+  | c => if keyF x ≤ keyF c then consOr x c else consOr c x
+
+theorem insOr_interd (x : PLLFormula) :
+    ∀ c : PLLFormula, Interd (.or x c) (insOr x c) := by
+  intro c
+  induction c with
+  | or h t _ iht =>
+      unfold insOr
+      split
+      · exact consOr_interd _ _
+      · exact ((or_swap x h t).trans
+          (Interd.or_congr (Interd.refl h) iht)).trans (consOr_interd _ _)
+  | prop a => unfold insOr; split
+              · exact consOr_interd _ _
+              · exact (or_comm _ _).trans (consOr_interd _ _)
+  | falsePLL => unfold insOr; split
+                · exact consOr_interd _ _
+                · exact (or_comm _ _).trans (consOr_interd _ _)
+  | and a b _ _ => unfold insOr; split
+                   · exact consOr_interd _ _
+                   · exact (or_comm _ _).trans (consOr_interd _ _)
+  | ifThen a b _ _ => unfold insOr; split
+                      · exact consOr_interd _ _
+                      · exact (or_comm _ _).trans (consOr_interd _ _)
+  | somehow a _ => unfold insOr; split
+                   · exact consOr_interd _ _
+                   · exact (or_comm _ _).trans (consOr_interd _ _)
+
+def insAllOr : PLLFormula → PLLFormula → PLLFormula
+  | .or a1 a2, c => insAllOr a1 (insAllOr a2 c)
+  | x, c => insOr x c
+
+theorem insAllOr_interd :
+    ∀ (a c : PLLFormula), Interd (.or a c) (insAllOr a c) := by
+  intro a
+  induction a with
+  | or a1 a2 ih1 ih2 =>
+      intro c
+      exact ((or_assoc' a1 a2 c).trans
+        (Interd.or_congr (Interd.refl a1) (ih2 c))).trans (ih1 _)
+  | prop x => intro c; exact insOr_interd _ _
+  | falsePLL => intro c; exact insOr_interd _ _
+  | and a b _ _ => intro c; exact insOr_interd _ _
+  | ifThen a b _ _ => intro c; exact insOr_interd _ _
+  | somehow a _ => intro c; exact insOr_interd _ _
+
 /-! ## The canonicaliser -/
 
 /-- Bottom-up canonical form: constant folding, idempotence, canonical
 ∧/∨ argument order, `◯◯φ = ◯φ`, `◯⊤ = ⊤`. -/
 def canon : PLLFormula → PLLFormula
-  | .and a b => mkAnd (canon a) (canon b)
-  | .or a b => mkOr (canon a) (canon b)
+  | .and a b => insAllAnd (canon a) (canon b)
+  | .or a b => insAllOr (canon a) (canon b)
   | .ifThen a b => mkImp (canon a) (canon b)
   | .somehow a => mkBox (canon a)
   | F => F
@@ -198,9 +396,9 @@ theorem canon_interd : ∀ φ : PLLFormula, Interd φ (canon φ) := by
   | prop a => exact Interd.refl _
   | falsePLL => exact Interd.refl _
   | and a b iha ihb =>
-      exact (Interd.and_congr iha ihb).trans (mkAnd_interd _ _)
+      exact (Interd.and_congr iha ihb).trans (insAllAnd_interd _ _)
   | or a b iha ihb =>
-      exact (Interd.or_congr iha ihb).trans (mkOr_interd _ _)
+      exact (Interd.or_congr iha ihb).trans (insAllOr_interd _ _)
   | ifThen a b iha ihb =>
       exact (Interd.imp_congr iha ihb).trans (mkImp_interd _ _)
   | somehow a iha =>
