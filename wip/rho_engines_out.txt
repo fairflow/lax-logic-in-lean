@@ -1,0 +1,39 @@
+=== the two engines on the 462 order cells ===
+battery: 10534 confluent frames; LJF◯ depth ladder: [10, 16, 20, 24, 28, 32]
+oracle: 158 derivable, 302 refuted by countermodel, 2 flags  [14007 ms]
+  (the oracle both proves AND refutes — the refutations are why only two cells are left open)
+
+LJF◯ on the oracle's derivable cells — minimum depth at which each is found:
+reached: 110/158 within depth 32  [7151 ms]
+  depth ≤ 10: 42 cells
+  depth ≤ 16: 13 cells
+  depth ≤ 20: 5 cells
+  depth ≤ 24: 10 cells
+  depth ≤ 28: 23 cells
+  depth ≤ 32: 17 cells
+  not reached at depth 32: 48
+    ρ4 ⊢ ρ10
+    ρ5 ⊢ ρ13
+    ρ5 ⊢ ρ15
+    ρ5 ⊢ ρ21
+    ρ6 ⊢ ρ10
+    ρ6 ⊢ ρ11
+    ρ6 ⊢ ρ12
+    ρ6 ⊢ ρ13
+    ρ6 ⊢ ρ15
+    ρ6 ⊢ ρ18
+    ρ6 ⊢ ρ20
+    ρ6 ⊢ ρ21
+    ρ7 ⊢ ρ18
+    ρ8 ⊢ ρ10
+    ρ9 ⊢ ρ10
+
+cross-check: does LJF◯ derive anything the oracle REFUTES?
+  NO — 0 conflicts over 302 certified countermodels.
+  The polarisation and both engines agree everywhere the question is settled.
+
+cost over the same corpus: oracle 14007 ms (462 cells, proving AND refuting)
+                           LJF◯  7151 ms (158 cells, proving only)
+REMINDER: an LJF◯ success certifies LJF◯ only — focalization for PLL is OPEN
+(docs/ljfo-fidelity.md §5), so these derivations do not yet transfer to PLL.
+RHO-ENGINES-DONE
