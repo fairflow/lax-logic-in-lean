@@ -8,11 +8,11 @@ makes any of it mean something for PLL: a theorem relating LJF◯
 derivability to `PLLND.LaxND`.  Without it, an LJF◯ verdict is a fact
 about LJF◯ and nothing more.
 
-This file supplies the SOUNDNESS direction:
+This file supplies the bridge, BOTH WAYS:
 
-    LJF◯ ⊢ ⟹ PLL ⊢
+    LJF◯ ⊢ ⟺ PLL ⊢          (`bridge_iff`)
 
-by erasing polarity (`erasePos`/`eraseNeg` — `↓`/`↑` vanish, `circ`
+Soundness (`⟹`) goes by erasing polarity (`erasePos`/`eraseNeg` — `↓`/`↑` vanish, `circ`
 becomes `◯`) and reading the judgment flag as the modality:
 
     Γ ⊢tru P   ↦   ⌊Γ⌋ ⊢ ⌊P⌋
@@ -33,14 +33,23 @@ Everything else is structural, and every structural move is
 `LaxND.rename`, which subsumes weakening, exchange and contraction —
 so no cut and no admissibility lemma is needed anywhere below.
 
-**Scope, stated.**  This is SOUNDNESS only.  The converse — every
-PLL-derivable sequent has a focused LJF◯ derivation, i.e. focalization
-completeness for PLL — is NOT proved here and remains OPEN
-(`docs/ljfo-fidelity.md` §5).  So an LJF◯ *proof* now transfers to PLL;
-an LJF◯ *failure* does not yet transfer.
+Completeness (`⟸`) is `focalizeSCO`: the port of
+`LJFComplete.focalizeSC` to a polarisation that KEEPS the modality.
+Every helper it needs is already in `LJFOCore` with the flag threaded,
+so the new content is exactly the two modal cases —
+
+* `laxR` ↦ `circR` over `laxOf`: prove the body truly, then coerce;
+* `laxL` ↦ `circR` over `lfoc`/`circL`: focus on the box, its body
+  entering the inversion queue.
+
+both of which are TRIVIAL in `LJFComplete` only because `negOf` erases
+`◯` there.  This closes `docs/ljfo-fidelity.md` §5's open item
+("focalization for PLL").  Verdicts now transfer in BOTH directions: an
+LJF◯ proof gives a PLL proof, and an LJF◯ failure gives a PLL failure.
 -/
 import LaxLogic.LJFOCore
 import LaxLogic.PLLNDCore
+import LaxLogic.PLLSequent
 
 namespace LJFO
 
@@ -285,22 +294,165 @@ theorem eraseCtx_polarise (Γ : List PLLFormula) :
       simp only [List.map_cons, eraseCtx, List.map_map] at ih ⊢
       exact congrArg₂ _ (erase_polarise φ).2 ih
 
-/-- **The converse arrow, named** — focalization completeness for PLL.
-NOT proved here; `docs/ljfo-fidelity.md` §5 lists it as OPEN, and
-`LJFComplete.focalization` is the ◯-FREE analogue that is proved. -/
-def FocalizationPLL : Prop :=
-  ∀ (Γ : List PLLFormula) (φ : PLLFormula),
-    Nonempty (LaxND Γ φ) → Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
+/-! ### The converse: focalization completeness for PLL
 
-/-- **The bridge as a BICONDITIONAL, modulo the one open implication.**
-The `←` half is proved here (it is `Inv.sound` composed with the round
-trip); the `→` half is exactly `FocalizationPLL`.  So the LJF◯ ↔ PLL
-bridge is established in one direction outright, and in the other
-reduced to a single named statement. -/
-theorem bridge_iff (h : FocalizationPLL) (Γ : List PLLFormula) (φ : PLLFormula) :
+The port of `LJFComplete.focalizeSC` to the ◯-preserving polarisation.
+Every helper it needs is already in `LJFOCore` with the flag threaded —
+`unStable`, `invertPos`, `invBranches`, `extract`, `simHyp`, `upMerge`,
+`stabOr1/2`, `nBotElim` — so only the four bridge-specific helpers and
+the two modal cases are new.
+
+The two modal cases are where `negOfO` differs from `LJFComplete`'s
+`negOf`, which erases `◯` and makes them trivial:
+
+* `laxR` ↦ `circR` over `laxOf` — prove the body truly, coerce to lax;
+* `laxL` ↦ `circR` over `lfoc`/`circL` — focus on the box, its body
+  entering the inversion queue via `shiftInO`.
+-/
+
+/-- `circR` is the only rule that can conclude `circ` from an EMPTY
+inversion queue — the `Ω`-processing rules all need a non-empty queue —
+so inverting it is a single pattern match. -/
+def circInv {Γ : List Neg} {j : JD} {P : Pos} :
+    Inv Γ [] j (.circ P) → Inv Γ [] .lax (.up P)
+  | .circR d => d
+
+/-- An inversion at `[]` gives the stable form of the polarised goal. -/
+def stabOfInvO : (φ : PLLFormula) → {Δ : List Neg} → {j : JD} →
+    Inv Δ [] j (negOfO φ) → Stab Δ j (posOfO φ)
+  | .prop _, _, _, d => unStable d
+  | .falsePLL, _, _, d => unStable d
+  | .or _ _, _, _, d => unStable d
+  | .and _ _, _, _, d => .rfoc (.rel d)
+  | .ifThen _ _, _, _, d => .rfoc (.rel d)
+  | .somehow _, _, _, d => .rfoc (.rel d)
+
+/-- Discharge a left focus on a shifted hypothesis against a branch. -/
+def upBranchLFocO {Q : Pos} {Δ : List Neg} {j : JD} {P : Pos}
+    {b : List Neg} (hb : b ∈ invertPos Q) (hsub : ∀ X ∈ b, X ∈ Δ) :
+    LFoc Δ (.up Q) j P → Stab Δ j P
+  | .rel e =>
+      unStable ((extract [] e b hb).wk (fun Z hZ => by
+        rcases List.mem_append.mp hZ with hZ | hZ
+        · exact hsub Z hZ
+        · exact hZ))
+
+/-- Discharge a left focus on a hypothesis whose positive is a shift. -/
+def downBranchLFocO {M : Neg} {Δ : List Neg} {j : JD} {P : Pos}
+    {b : List Neg} (hb : b ∈ invertPos (.down M))
+    (hsub : ∀ X ∈ b, X ∈ Δ) (lf : LFoc Δ M j P) : Stab Δ j P := by
+  simp only [invertPos, List.mem_singleton] at hb
+  subst hb
+  exact .lfoc (hsub _ (List.mem_cons_self ..)) lf
+
+/-- Every use of the hypothesis `negOfO φ` is available inside any
+branch of the inversion of `posOfO φ`.  Note the `somehow` case is now
+a SHIFT case, not a recursive one — that is the whole effect of keeping
+the modality in the polarisation. -/
+def branchLFocO : (φ : PLLFormula) → {Δ : List Neg} → {j : JD} → {P : Pos} →
+    {b : List Neg} → b ∈ invertPos (posOfO φ) → (∀ X ∈ b, X ∈ Δ) →
+    LFoc Δ (negOfO φ) j P → Stab Δ j P
+  | .prop _, _, _, _, _, hb, hsub, lf => upBranchLFocO hb hsub lf
+  | .falsePLL, _, _, _, _, hb, _, _ => by
+      simp only [posOfO, invertPos, List.not_mem_nil] at hb
+  | .or _ _, _, _, _, _, hb, hsub, lf => upBranchLFocO hb hsub lf
+  | .and _ _, _, _, _, _, hb, hsub, lf => downBranchLFocO hb hsub lf
+  | .ifThen _ _, _, _, _, _, hb, hsub, lf => downBranchLFocO hb hsub lf
+  | .somehow _, _, _, _, _, hb, hsub, lf => downBranchLFocO hb hsub lf
+
+/-- **Branch transfer.** -/
+def branchInO (φ : PLLFormula) {Γ : List Neg} {j : JD} {C : Neg}
+    {b : List Neg} (hb : b ∈ invertPos (posOfO φ))
+    (d : Inv (negOfO φ :: Γ) [] j C) : Inv (b ++ Γ) [] j C :=
+  simHyp (H := negOfO φ)
+    (fl := fun hs lf =>
+      branchLFocO φ hb (fun X hX => hs X (List.mem_append_left _ hX)) lf)
+    (fun _ hZ => List.mem_append_right b hZ) d
+
+/-- **Hypothesis to pending positive.** -/
+def shiftInO (φ : PLLFormula) {Γ : List Neg} {j : JD} {C : Neg}
+    (d : Inv (negOfO φ :: Γ) [] j C) : Inv Γ [posOfO φ] j C :=
+  invBranches (posOfO φ) (fun _ hb => branchInO φ hb d)
+
+/-- **FOCALIZATION FOR PLL, sequent form.**  Every cut-free `SCh`
+derivation has a focused LJF◯ counterpart under the ◯-preserving
+polarisation. -/
+theorem focalizeSCO : ∀ {n : Nat} {Γ : List PLLFormula} {C : PLLFormula},
+    PLLND.SCh n Γ C → Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO C)) := by
+  intro n Γ C d
+  induction d with
+  | @init n Γ a h => exact ⟨.stable (.rfoc (.init (List.mem_map_of_mem h)))⟩
+  | @botL n Γ C h => exact ⟨nBotElim (negOfO C) (List.mem_map_of_mem h)⟩
+  | @andR n Γ A B _ _ ih₁ ih₂ =>
+      obtain ⟨d₁⟩ := ih₁; obtain ⟨d₂⟩ := ih₂
+      exact ⟨.andR d₁ d₂⟩
+  | @andL n Γ A B C h _ ih =>
+      obtain ⟨d⟩ := ih
+      have hAB : Neg.and (negOfO A) (negOfO B) ∈ Γ.map negOfO :=
+        List.mem_map_of_mem h
+      exact ⟨simHyp (H := negOfO B)
+        (fl := fun hs lf => .lfoc (hs _ hAB) (.and2 lf)) (Sub.refl _)
+        (simHyp (H := negOfO A)
+          (fl := fun hs lf =>
+            .lfoc (hs _ (List.mem_cons_of_mem _ hAB)) (.and1 lf))
+          (Sub.refl _) d)⟩
+  | @orR1 n Γ A B _ ih =>
+      obtain ⟨d⟩ := ih
+      exact ⟨.stable (stabOr1 (stabOfInvO A d))⟩
+  | @orR2 n Γ A B _ ih =>
+      obtain ⟨d⟩ := ih
+      exact ⟨.stable (stabOr2 (stabOfInvO B d))⟩
+  | @orL n Γ A B C h _ _ ih₁ ih₂ =>
+      obtain ⟨d₁⟩ := ih₁; obtain ⟨d₂⟩ := ih₂
+      have hAB : Neg.up (Pos.or (posOfO A) (posOfO B)) ∈ Γ.map negOfO :=
+        List.mem_map_of_mem h
+      refine ⟨upMerge (negOfO C) hAB (fun b hb => ?_)⟩
+      have hb' : b ∈ invertPos (posOfO A) ++ invertPos (posOfO B) := hb
+      exact
+        if hA : b ∈ invertPos (posOfO A) then branchInO A hA d₁
+        else branchInO B ((List.mem_append.mp hb').resolve_left hA) d₂
+  | @impR n Γ A B _ ih =>
+      obtain ⟨d⟩ := ih
+      exact ⟨.impR (shiftInO A d)⟩
+  | @impL n Γ A B C h _ _ ih₁ ih₂ =>
+      obtain ⟨d₁⟩ := ih₁; obtain ⟨d₂⟩ := ih₂
+      have hAB : Neg.imp (posOfO A) (negOfO B) ∈ Γ.map negOfO :=
+        List.mem_map_of_mem h
+      exact ⟨simHyp (H := negOfO B)
+        (fl := fun {Δ'} {j'} _ hs lf =>
+          .lfoc (hs _ hAB) (.impL (stabOfInvO A (d₁.wk hs)) lf))
+        (Sub.refl _) d₂⟩
+  | @laxR n Γ A _ ih =>
+      -- prove the body TRULY, then coerce: `laxOf`, under `circR`
+      obtain ⟨d⟩ := ih
+      exact ⟨.circR (.stable (.laxOf (stabOfInvO A d)))⟩
+  | @laxL n Γ A B h _ ih =>
+      -- focus on the box; its body enters the inversion queue
+      obtain ⟨d⟩ := ih
+      have hA : Neg.circ (posOfO A) ∈ Γ.map negOfO :=
+        List.mem_map_of_mem h
+      exact ⟨.circR (.stable (.lfoc hA (.circL (shiftInO A (circInv d)))))⟩
+
+/-- **Focalization for PLL**, natural-deduction form, via the repo's cut
+elimination `PLLND.ND_to_SC`. -/
+theorem focalizeO {Γ : List PLLFormula} {C : PLLFormula} (d : LaxND Γ C) :
+    Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO C)) :=
+  match PLLND.ND_to_SC d with
+  | ⟨_, s⟩ => focalizeSCO s
+
+/-- **The converse arrow** — focalization completeness for PLL.  This
+was `docs/ljfo-fidelity.md` §5's open item. -/
+theorem FocalizationPLL :
+    ∀ (Γ : List PLLFormula) (φ : PLLFormula),
+      Nonempty (LaxND Γ φ) → Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ)) :=
+  fun _ _ h => h.elim focalizeO
+
+/-- **THE BRIDGE: LJF◯ ⊢ ⟺ PLL ⊢.**  `←` is `Inv.sound` composed with
+the round trip; `→` is `FocalizationPLL`. -/
+theorem bridge_iff (Γ : List PLLFormula) (φ : PLLFormula) :
     Nonempty (LaxND Γ φ) ↔
       Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ)) := by
-  refine ⟨h Γ φ, ?_⟩
+  refine ⟨FocalizationPLL Γ φ, ?_⟩
   rintro ⟨d⟩
   have hd := Inv.sound d
   rw [eraseCtx_polarise, (erase_polarise φ).2] at hd
@@ -374,6 +526,18 @@ info: 'LJFO.eraseCtx_polarise' depends on axioms: [propext]
 -/
 #guard_msgs in
 #print axioms eraseCtx_polarise
+
+/--
+info: 'LJFO.focalizeSCO' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms focalizeSCO
+
+/--
+info: 'LJFO.FocalizationPLL' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms FocalizationPLL
 
 /--
 info: 'LJFO.bridge_iff' depends on axioms: [propext, Quot.sound]

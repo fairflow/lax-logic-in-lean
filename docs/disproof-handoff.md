@@ -1036,7 +1036,7 @@ so **no cut and no admissibility lemma is used anywhere**.
 own axiom profile, which was a design constraint of that campaign
 (zero imports, nothing else carries the proof).
 
-### The converse, reduced to one statement
+### PROVED: completeness too — focalization for PLL
 
 `LJFComplete.lean`'s `posOf`/`negOf` DISCARD the modality
 (`.somehow φ ↦ posOf φ`), because that development targets IPC through
@@ -1045,23 +1045,44 @@ own axiom profile, which was a design constraint of that campaign
 identity on PLL formulas. With it:
 
 ```
-def FocalizationPLL : Prop :=
-  ∀ Γ φ, Nonempty (LaxND Γ φ) → Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
-
-theorem bridge_iff (h : FocalizationPLL) (Γ φ) :
+theorem bridge_iff (Γ φ) :
     Nonempty (LaxND Γ φ) ↔ Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
 ```
 
-The `←` half of `bridge_iff` is PROVED (it is `Inv.sound` composed with
-the round trip). The `→` half is exactly `FocalizationPLL`, which is
-`docs/ljfo-fidelity.md` §5's open item; `LJFComplete.focalization` is
-the ◯-free analogue that IS proved, so the technique exists and the
-missing work is the `circ` cases.
+**Both halves are proved.** `←` is `Inv.sound` composed with the round
+trip. `→` is `FocalizationPLL`, via `focalizeSCO` — the port of
+`LJFComplete.focalizeSC` to the ◯-preserving polarisation, composed
+with the repo's cut elimination `PLLND.ND_to_SC`.
+
+The port was bounded, and the reason is worth recording: **every helper
+`focalizeSC` needs already exists in `LJFOCore` with the flag
+threaded** — `unStable`, `invertPos`, `invBranches`, `extract`,
+`simHyp`, `upMerge`, `stabOr1/2`, `nBotElim`. Only four
+bridge-specific helpers had to be ported (`stabOfInvO`, `branchLFocO`,
+`branchInO`, `shiftInO`), and they got SIMPLER: with `◯` kept,
+`posOfO (◯φ) = ↓(circ …)` is a shift, so the `somehow` case joins the
+`∧`/`⊃` cases instead of recursing.
+
+The genuinely new content is the two modal cases, trivial in
+`LJFComplete` only because `negOf` erases `◯` there:
+
+| `SCh` rule | LJF◯ construction |
+|---|---|
+| `laxR` | `circR` over `laxOf` — prove the body TRULY, then coerce |
+| `laxL` | `circR` over `lfoc`/`circL` — focus the box, body into the queue via `shiftInO` |
+
+`laxL` also needed `circInv`: `circR` is the only rule that concludes
+`circ` from an EMPTY inversion queue (the `Ω`-processing rules all need
+a non-empty one), so inverting it is a single pattern match.
+
+**This closes `docs/ljfo-fidelity.md` §5's open item.**
 
 ### What this settles about the repo's status
 
-* An LJF◯ **proof** now transfers to PLL: `laxND_of_ljfo`.
-* An LJF◯ **failure** does NOT yet transfer — that needs the converse.
+* An LJF◯ **proof** transfers to PLL: `laxND_of_ljfo`.
+* An LJF◯ **failure** transfers to PLL, and conversely: `bridge_iff`.
+  So LJF◯'s uniform-interpolation machinery is now connected to PLL,
+  which was the point of the campaign.
 * `not_ljfo_of_not_laxND` runs the other way and is immediately usable:
   a PLL countermodel — including any `Reject` certificate — shows the
   corresponding LJF◯ sequent has NO derivation. So the disproof thread

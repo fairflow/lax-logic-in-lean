@@ -220,7 +220,22 @@ it the calculus misses `◯φ` for provable implicational `φ`.
 | `satA2` (A2) | minimality of ∀p | **CONDITIONAL on `CimpAnt`**, sorry-free, same pin |
 | `CimpAnt` | the ◯-implication antecedent miner (clause 13) | **OPEN** |
 | uniform interpolation for LJF◯ | — | **OPEN** (needs `CimpAnt`) |
-| uniform interpolation for PLL | — | **OPEN** (needs the above *and* focalization for PLL) |
+| `focalizeSCO` / `FocalizationPLL` | focalization completeness for PLL | **PROVED** 2026-08-14, `[propext, Quot.sound]` (`LaxLogic/LJFOBridge.lean`) |
+| `Stab.sound` / `sound_tru` | LJF◯ soundness for PLL (the erasure) | **PROVED**, same pin |
+| `bridge_iff` | **LJF◯ ⊢ ⟺ PLL ⊢** | **PROVED**, same pin |
+| uniform interpolation for PLL | — | **OPEN** (needs `CimpAnt` only; focalization for PLL is now PROVED) |
+
+**Update 2026-08-14.** The row "focalization for PLL" has moved from
+OPEN to PROVED. `LaxLogic/LJFOBridge.lean` supplies the ◯-preserving
+polarisation `posOfO`/`negOfO` (`LJFComplete`'s `posOf`/`negOf` discard
+the modality, since that development targets IPC through
+`PLLND.erase`), the erasure and its soundness, and `focalizeSCO` — the
+port of `LJFComplete.focalizeSC`, whose only new content is the two
+modal cases (`laxR` ↦ `circR`/`laxOf`, `laxL` ↦ `circR`/`lfoc`/`circL`),
+those being trivial in `LJFComplete` only because `negOf` erases `◯`.
+Every other helper already existed in `LJFOCore` with the flag
+threaded. So the remaining obstacle to uniform interpolation for PLL is
+`CimpAnt` alone.
 
 `CimpAnt` is isolated as a typed hypothesis exactly as `DykAnt` was for
 clause 11. **`DykAnt` is no longer open**: `dykAnt : DykAnt p` exists
