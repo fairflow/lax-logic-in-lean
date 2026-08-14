@@ -507,3 +507,9 @@ root = "wip.rn_extend"
 [[lean_exe]]
 name = "joinscreen"
 root = "wip.join_screen"
+
+# The T2 screen: the height measure, plus an extensional test of
+# completeness for the class solo/join generate (finite trees).
+[[lean_exe]]
+name = "t2screen"
+root = "wip.t2_screen"
