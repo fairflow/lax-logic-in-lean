@@ -67,9 +67,16 @@ def main : IO Unit := do
     totalBefore := totalBefore + crank c
     totalAfter := totalAfter + crank n
     if n == c then same := same + 1 else shrunk := shrunk + 1
+  -- WITH the canonicaliser: the whole point of the exercise
+  let mut cShrunk := 0
+  let mut cAfter := 0
+  for c in cells do
+    let n := simplify fullSet 6 c
+    cAfter := cAfter + crank n
+    if n != c then cShrunk := cShrunk + 1
   IO.println s!"cells: {cells.length}"
-  IO.println s!"  rewritten: {shrunk} ({shrunk * 100 / cells.length}%)   unchanged: {same}"
-  IO.println s!"  total crank {totalBefore} → {totalAfter} ({(totalBefore - totalAfter) * 100 / (max totalBefore 1)}% reduction)"
+  IO.println s!"  norm ALONE      : rewritten {shrunk} ({shrunk * 100 / cells.length}%), crank {totalBefore} → {totalAfter} ({(totalBefore - totalAfter) * 100 / (max totalBefore 1)}% down)"
+  IO.println s!"  canon THEN norm : rewritten {cShrunk} ({cShrunk * 100 / cells.length}%), crank {totalBefore} → {cAfter} ({(totalBefore - cAfter) * 100 / (max totalBefore 1)}% down)"
   -- the same measurement on the dictionary's OWN forms
   let mut s2 := 0
   let mut tb2 := 0
@@ -82,6 +89,11 @@ def main : IO Unit := do
   IO.println s!"cells in the dictionary's OWN form: {cellsRND.length}"
   IO.println s!"  rewritten: {s2} ({s2 * 100 / cellsRND.length}%)"
   IO.println s!"  total crank {tb2} → {ta2} ({(tb2 - ta2) * 100 / (max tb2 1)}% reduction)"
+  let distinctRaw := (cells.map keyF).eraseDups.length
+  let distinctCanon := (cells.map (fun c => keyF (canon c))).eraseDups.length
+  let distinctFull := (cells.map (fun c => keyF (simplify fullSet 6 c))).eraseDups.length
+  IO.println s!"distinct forms among the {cells.length} cells:"
+  IO.println s!"  raw {distinctRaw}   after canon {distinctCanon}   after canon+norm {distinctFull}"
   IO.println "RW-SCREEN-DONE"
 
 end RwScreen

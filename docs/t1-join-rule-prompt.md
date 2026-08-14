@@ -94,12 +94,13 @@ Do not drift into one. Record the choice and its reason in
   `boxHolds` incomplete precisely because the reflexive case was
   missed.
 * **Normalise before you search.** Pipe every screen cell through
-  the certified simpset (`Rewrite.norm Rewrite.fullSet fuel φ`, 324
-  kernel-checked rules) and report the shrink rate. It is always sound
-  (`Rewrite.norm_interd` is unconditional). Matching is SYNTACTIC, so
-  canonicalise ∧/∨ argument order and definitional form first, or the
-  rules silently miss. Bank any NEW certified `Interd` you prove into
-  `Rewrite/`, so the next campaign is cheaper.
+  `Rewrite.simplify Rewrite.fullSet fuel φ` (canonicalise, then
+  rewrite by 324 kernel-checked rules) and report the shrink rate.
+  Always sound — `Rewrite.simplify_interd` is unconditional. Use
+  `simplify`, never `norm` alone: measured, canonicalising first takes
+  the rewrite rate from 13% to 66% and collapses 330 cells from 319
+  distinct forms to 102. Bank any NEW certified `Interd` you prove
+  into `Rewrite/`, so the next campaign is cheaper.
 * **Three-valued verdicts**: pass / fail / flag, with `fail` only on a
   certificate and `flag` never dropped silently.
 * **Claim discipline**: PROVED means sorry-free with a pinned
