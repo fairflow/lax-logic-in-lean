@@ -96,6 +96,42 @@ PROVED, and **all four core lemmas are AXIOM-FREE**:
   **UNSOUND** — makes `◯φ` true everywhere.  Corpse kept in
   `BiLax/Internal.lean`.
 
+## 2b. The adversarial pass — DONE (2026-08-13), and it changed T1
+
+`Reject/Audit.lean`, all pinned, three of five answers good and two
+that constrain the join rule.
+
+| question | verdict |
+|---|---|
+| Are `boxRefuteHere`'s premises vacuous or over-strong? | **Neither** — `boxRefuteHere_exact` proves they are EXACTLY "no `Rm`-successor of the root forces `A`" |
+| Is `S = ∅` legal, and does it break anything? | Legal (`emptyS`); the rule stays sound, as an instance of the above.  Documented, not a defect |
+| Does `addRoot` preserve REDUCEDNESS? | **YES** (`addRoot_reduced`) |
+| Does `addRoot` preserve CONFLUENCE? | **NO** — `addRoot_not_confluent`, machine-checked counterexample |
+| Do the rules COMPOSE to a real result? | **YES** — `boxp_not_p`: the repo landmark `◯p ⊬ p` by construction |
+
+**The finding that constrains T1.**  The counterexample is two
+incomparable worlds with identity relations (confluent and reduced);
+adding a root whose modal cone is one of them destroys confluence —
+`Rm root (some true)` and `Ri root (some false)` have no common
+completion.  This matters because the **unary-arity licence for the
+◯-rule holds on reduced AND confluent frames** (docs/frj-lifting.md
+§3).  A calculus whose constructor leaves the confluent class loses
+that licence.  So T1 must choose, EXPLICITLY:
+
+* **(a)** carry a confluence side condition on the join (stay in the
+  class where the ◯-rule is unary — the PCLL-first route); or
+* **(b)** accept non-confluent constructions and give the ◯-rule its
+  general list-of-premises form (Goranko's `Alt_n` shape, heavier to
+  mechanise).
+
+Recommendation: **(a)**, consistent with "PCLL is the easier target".
+Either way the choice must be made and recorded, not drifted into.
+
+**Also fixed**: `boxHolds` was INCOMPLETE — it could witness `◯A` at
+the root only through a PROPER `Rm`-successor, missing the reflexive
+case where the root itself forces `A`.  `boxHoldsRoot` supplies it.
+Lesson for T1: check the reflexive/degenerate case of every new rule.
+
 ## 3. The task queue, in Matthew's agreed order
 
 ### T1 — the JOIN rule  ⟵ START HERE
