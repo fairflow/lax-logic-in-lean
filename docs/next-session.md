@@ -1,3 +1,19 @@
+# LIVE THREAD (2026-08-13): the DISPROOF investigation
+
+The live front is `docs/disproof-handoff.md` — a dedicated handover
+for building a calculus in which non-provability is a POSITIVE
+derivation (`Reject/`, after Fiorentini-Ferrari's FRJ(G)).  Next task
+is T1, the JOIN rule.
+
+**The UI campaign is PARKED** by Matthew's decision (2026-08-13): no
+UI work until the disproof side has more machinery and results.  Its
+state is below and in `docs/pcll-1pv-ui-plan.md`; note that the
+closed-fragment probe REFUTED `ClosedCollapse`, so stage 2's kernels
+(`StableCore`, `CornerCoreW`) are OPEN again and the live repair is
+level re-founding on promise-depth.
+
+---
+
 # Note for the next session — the live thread
 
 *Trimmed 2026-08-11 at Matthew's direction. The previous full note
