@@ -199,6 +199,10 @@ name = "rncprobe"
 root = "wip.rnc_probe"
 
 [[lean_exe]]
+name = "rwscreen"
+root = "wip.rw_screen"
+
+[[lean_exe]]
 name = "clscreen"
 root = "wip.cl_screen"
 

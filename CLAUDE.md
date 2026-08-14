@@ -56,6 +56,21 @@ observed yield:
    defect needed a 3-way interaction (empty context × untied fuel ×
    missing frame).
 
+**Normalise before you search (standing, 2026-08-14).** Every fresh
+probe pipes its cells through the CERTIFIED simpset first:
+`Rewrite.norm Rewrite.fullSet fuel φ` (324 rules, 323 of them the
+kernel-checked dictionary operation table of `wip/rnDict.lean`).
+`Rewrite.norm_interd` is UNCONDITIONAL, so this is always sound; a
+probe reports its shrink rate as a line of output. Two rules of use:
+(i) matching is SYNTACTIC, so canonicalise argument order and
+definitional form first or the rules silently miss — measured 41%
+of cells rewritten in the dictionary's own form vs 13% otherwise
+(`lean_exe rwscreen`); (ii) every NEW certified interderivability a
+probe establishes gets banked into the simpset, so each campaign makes
+the next one cheaper. Keep the PLL set and any PCLL-only set separate:
+`RwRule` carries its `Interd` proof, so a PCLL-only equation cannot
+enter a PLL set by construction.
+
 Discipline: three-valued verdicts (`pass`/`fail`/`flag`) with `fail`
 only ever on a certificate; `flag` (hypothesis certified, conclusion
 unsettled at budget) is a frontier marker — re-run it at a raised

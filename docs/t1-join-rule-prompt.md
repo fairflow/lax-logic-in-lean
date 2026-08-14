@@ -93,6 +93,13 @@ Do not drift into one. Record the choice and its reason in
 * **Check the degenerate case of every rule.** The audit found
   `boxHolds` incomplete precisely because the reflexive case was
   missed.
+* **Normalise before you search.** Pipe every screen cell through
+  the certified simpset (`Rewrite.norm Rewrite.fullSet fuel φ`, 324
+  kernel-checked rules) and report the shrink rate. It is always sound
+  (`Rewrite.norm_interd` is unconditional). Matching is SYNTACTIC, so
+  canonicalise ∧/∨ argument order and definitional form first, or the
+  rules silently miss. Bank any NEW certified `Interd` you prove into
+  `Rewrite/`, so the next campaign is cheaper.
 * **Three-valued verdicts**: pass / fail / flag, with `fail` only on a
   certificate and `flag` never dropped silently.
 * **Claim discipline**: PROVED means sorry-free with a pinned
