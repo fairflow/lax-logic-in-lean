@@ -219,8 +219,40 @@ it the calculus misses `◯φ` for provable implicational `φ`.
 | `satE2` (E2) | minimality of ∃p | **CONDITIONAL on `CimpAnt`**, sorry-free, same pin |
 | `satA2` (A2) | minimality of ∀p | **CONDITIONAL on `CimpAnt`**, sorry-free, same pin |
 | `CimpAnt` | the ◯-implication antecedent miner (clause 13) | **OPEN** |
+| `bridge_iff` | `PLL ⊢ Γ ⇒ φ` ⟺ `LJF◯ ⊢ ⌊Γ⌋ ⇒ ⌊φ⌋` — **focalization for PLL** | **PROVED**, `[propext, Quot.sound]`, no choice (see the note below) |
 | uniform interpolation for LJF◯ | — | **OPEN** (needs `CimpAnt`) |
-| uniform interpolation for PLL | — | **OPEN** (needs the above *and* focalization for PLL) |
+| uniform interpolation for PLL | — | **OPEN** (needs `CimpAnt`, **plus the interpolant read-back through `negOfO`**) |
+
+**Update 2026-08-13 — focalization for PLL is PROVED, and this table's
+previous entry for it is withdrawn.**  It read "needs the above *and*
+focalization for PLL"; the second conjunct is discharged.
+`LaxLogic/LJFOBridge.lean` (a new file; no existing LJF module edited) gives
+
+    bridge_iff : Nonempty (LaxND Γ φ) ↔
+                 Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
+
+with `→` = `FocalizationPLL`/`focalizeSCO` and `←` = `Inv.sound` composed
+with the polarisation round trip.  Built and audited independently by this
+session against its own oleans: `bridge_iff`, `FocalizationPLL`,
+`focalizeSCO`, `laxND_of_ljfo` all `[propext, Quot.sound]`, sorry-free, no
+`Classical.choice`.
+
+**But "needs `CimpAnt` only" would overstate**, and the overstatement is a
+mechanisation step this repo's discipline should not wave through: stating UI
+for PLL in `Deriv`/`LaxND` terms also needs the interpolant read-back family
+that `LJFComplete.lean` supplies for IPC (`exI`, `allI`, `exI_pfree`,
+`allI_pfree`, `exI_sound`, `exI_min`, `allI_sound`, `allI_min`,
+`pfree_unPos`/`unNeg`/`trans`/`negOf`, `pfreeCtx` — `LJFComplete.lean:462–575`).
+No `◯` analogue exists on any branch. It was ~100 routine lines for IPC and is
+expected to be routine again, with the standing caveat that `PFree` must now
+traverse `circ` under `negOfO`, and `◯` is precisely where routine has stopped
+being routine in this development before.
+
+**Where it lives.** `LJFOBridge.lean` is on branch
+`claude/t1-lax-logic-refutation-37c0bf` (commits `70c5fda`, `7838429`,
+`8f0b731`), **not yet merged into `ljf-pll`**. That branch's `LJFOCore.lean`,
+`LJFO.lean` and `LJFORows.lean` are byte-identical to `ljf-pll`'s, so the
+merge is a file addition.
 
 `CimpAnt` is isolated as a typed hypothesis exactly as `DykAnt` was for
 clause 11. **`DykAnt` is no longer open**: `dykAnt : DykAnt p` exists
