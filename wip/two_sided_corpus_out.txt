@@ -23,8 +23,8 @@ full battery 10534 frames; Built subbattery 570 frames; fuel ladder [8, 12, 16, 
   row ρ20 done
   row ρ21 done
 
-ground truth (old machinery): 158 ⊢, 302 ⊬, 2 flag   [9819 ms]
-engine                      : 127 ⊢, 248 ⊬, 87 flag   [LJF◯ 0 ms + Reject 32112 ms]
+ground truth (old machinery): 158 ⊢, 302 ⊬, 2 flag   [10629 ms]
+engine                      : 127 ⊢, 248 ⊬, 87 flag   [LJF◯ 0 ms + Reject 33376 ms]
 agreement on settled cells  : 375/460
 conflicts                   : 0 (each one is a defect; two_sided_disjoint makes real ones impossible)
 
