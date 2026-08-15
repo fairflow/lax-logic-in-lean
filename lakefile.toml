@@ -509,3 +509,27 @@ root = "wip.rho_order_run"
 [[lean_exe]]
 name = "rhoengines"
 root = "wip.rho_engines_run"
+
+# The JOIN screen (T1): the extensional attack on the multi-premise
+# root constructor, run before Reject/Join.lean was proved.
+[[lean_exe]]
+name = "joinscreen"
+root = "wip.join_screen"
+
+# The T2 screen: the height measure, plus an extensional test of
+# completeness for the class solo/join generate (finite trees).
+[[lean_exe]]
+name = "t2screen"
+root = "wip.t2_screen"
+
+# The (R) screen: can Rᵢ be refined so that a countermodel becomes
+# REDUCED without moving forcing?  Variant sweep, four refinements.
+[[lean_exe]]
+name = "rscreen"
+root = "wip.r_screen"
+
+# T3: the forward-saturation searcher over constructions, with sharing
+# keyed by the state a join consumes, plus the covering-goal harvest.
+[[lean_exe]]
+name = "t3search"
+root = "wip.t3_search"
