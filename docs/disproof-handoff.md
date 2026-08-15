@@ -1323,3 +1323,47 @@ Built class rather than computing certificates from
 `not_laxND_iff_built` (blocked on the constructivisation already
 specced with the T1 session). Those two effectivity theorems are the
 whole remaining gap between "engine" and "decision procedure".
+
+---
+
+## 2026-08-15 (morning) — /goal: FRJ◯, the refutation calculus, derived
+
+*Matthew's /goal: derive the refutation calculus — judgment,
+completeness, extraction — on the basis of FRJ extended to ◯; continue
+to an efficient refutation procedure; test on the corpus. He also
+resolved the source of the week's confusion: FRJ(G) is the refutation
+calculus; LJF◯ was the (interpolation-born) proof calculus. Reject's
+role: the model-checking side.*
+
+**The derivation of the rules.** LJF◯'s `succs` enumerates rule
+instances; derivable = some instance with all premises derivable. The
+refutation calculus is the DUAL, one rule per instance shape (= per
+connective and phase): refuted = every instance has a refuted premise.
+Refutation AXIOMS fall out mechanically as the no-instance cases —
+right focus on `fls`; left focus on `◯Q` at `tru` (the lax-only
+condition working for disproof); `init` with the atom absent; `⊃/∧`
+right at `lax` (the flag discipline). Loops are broken by a HISTORY:
+`cyc` discharges a stable sequent already on the branch — the
+coinductive step read inductively, sound in the extracted model where
+the recurrence is the same world revisited. Contexts grow inside the
+finite subformula universe and the history blocks revisits, so search
+terminates with NO fuel — canonical-sequent counting in place of
+`decideFuel`-style bound arithmetic.
+
+**Built (`FRJO/Core.lean`, new lib):** `RT` (derivations: per
+instance, the index of the failing premise; finite syntax), `wf` (the
+decidable rule-application predicate), `find` (the untrusted searcher,
+history-terminating), `worldsOf` + `Unravel.assemble` (extraction:
+worlds = the stable contexts the DERIVATION visits), and
+
+    FRJO.refute? : List PLLFormula → PLLFormula → Option (RT × FinCM × Nat)
+
+— search, self-check `wf`, extract, gate by `FinCM.checkB`; a hit is
+consumable by `not_provable_of_check`, i.e. kernel-checkable today.
+
+**Status ledger (rigid):** per-instance soundness PROVED-by-gate
+(every emitted refutation carries a verified certificate); the
+once-and-for-all `SoundnessFRJO` and the completeness `CompletenessFRJO`
+(item 2, the pigeonhole/loop-check theorem) are STATED as named
+propositions and OPEN. Corpus test running at write-up
+(`lean_exe frjoscreen`: the 302 battery-refuted cells + the 2 flags).

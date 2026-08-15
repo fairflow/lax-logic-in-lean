@@ -30,6 +30,12 @@ name = "Reject"
 [[lean_lib]]
 name = "Rewrite"
 
+# FRJO: the refutation calculus dual to LJF◯ search (FRJ extended to ◯);
+# derivations are finite checkable trees, extraction via the unraveller's
+# assembly, soundness per instance through FinCM.checkB.
+[[lean_lib]]
+name = "FRJO"
+
 
 
 [[lean_exe]]
@@ -546,3 +552,7 @@ root = "wip.two_sided_run"
 [[lean_exe]]
 name = "unravelscreen"
 root = "wip.unravel_screen"
+
+[[lean_exe]]
+name = "frjoscreen"
+root = "wip.frjo_screen"

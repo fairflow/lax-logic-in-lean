@@ -1,0 +1,47 @@
+=== FRJ◯: derivation-carrying refutation on the corpus ===
+  row ρ0 done
+  row ρ1 done
+  row ρ2 done
+  row ρ3 done
+  row ρ4 done
+  row ρ5 done
+  row ρ6 done
+  row ρ7 done
+  row ρ8 done
+  row ρ9 done
+  row ρ10 done
+  row ρ11 done
+  row ρ12 done
+  row ρ13 done
+  row ρ14 done
+  row ρ15 done
+  row ρ16 done
+  row ρ17 done
+  row ρ18 done
+  row ρ19 done
+  row ρ20 done
+  row ρ21 done
+
+FRJ◯: 158/302 certified refutations (derivation + checkB model)
+  avg derivation size 757, avg model worlds 3, total 0 ms
+  misses: 144
+    ρ1⊬ρ6
+    ρ1⊬ρ9
+    ρ1⊬ρ10
+    ρ1⊬ρ11
+    ρ1⊬ρ12
+    ρ1⊬ρ13
+    ρ1⊬ρ15
+    ρ1⊬ρ17
+    ρ1⊬ρ18
+    ρ1⊬ρ20
+    ρ1⊬ρ21
+    ρ7⊬ρ4
+    ρ7⊬ρ6
+    ρ7⊬ρ11
+    ρ7⊬ρ13
+
+=== the two flags ===
+  ρ12 ⊬? ρ15: no derivation found [0 ms]
+  ρ20 ⊬? ρ10: no derivation found [0 ms]
+FRJO-SCREEN-DONE
