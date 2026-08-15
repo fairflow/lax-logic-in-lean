@@ -28,3 +28,66 @@ worklists: 31 unreached proofs, 54 lost refutations
   CLOSED-PROOF ρ18 ⊢ ρ15 at fuel 40  [0 ms]
   CLOSED-PROOF ρ19 ⊢ ρ8 at fuel 36  [0 ms]
   CLOSED-PROOF ρ19 ⊢ ρ10 at fuel 40  [0 ms]
+  CLOSED-PROOF ρ19 ⊢ ρ20 at fuel 44  [0 ms]
+  CLOSED-PROOF ρ19 ⊢ ρ21 at fuel 40  [0 ms]
+  CLOSED-PROOF ρ20 ⊢ ρ21 at fuel 40  [0 ms]
+  streaming Built frames on 6 worlds
+  CLOSED-REFUTATION ρ21 ⊬ ρ13: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ21 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ13: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ6: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ14: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ13: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ6: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ4: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ18 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ18 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ16 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ16 ⊬ ρ14: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ16 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ15 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ12 ⊬ ρ13: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ12 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ10 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ10 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ9 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ9 ⊬ ρ13: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ9 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ9 ⊬ ρ6: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ8 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ8 ⊬ ρ14: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ8 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ7 ⊬ ρ17: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ7 ⊬ ρ14: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ7 ⊬ ρ13: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ7 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ7 ⊬ ρ6: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ7 ⊬ ρ4: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ1 ⊬ ρ11: 6-world tree ri=[(0, 5), (1, 5), (0, 4), (0, 3), (0, 2), (0, 1)] rm=[(0, 5), (1, 5), (0, 1)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ21 ⊬ ρ15: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ21 ⊬ ρ12: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ18: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ15: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ12: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ20 ⊬ ρ9: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ18: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ16: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ15: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ12: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ9: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ19 ⊬ ρ7: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ10 ⊬ ρ18: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ10 ⊬ ρ15: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ8 ⊬ ρ18: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ8 ⊬ ρ16: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ8 ⊬ ρ15: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  CLOSED-REFUTATION ρ1 ⊬ ρ15: 6-world tree ri=[(0, 5), (1, 5), (3, 5), (0, 4), (1, 4), (0, 3), (1, 3), (0, 2), (0, 1)] rm=[(1, 5), (3, 5), (1, 3)] fall=[5] world 0 confluent=false
+  all lost refutations recovered
+
+closed by deep fuel: 31/31;  closed by 6-world trees: 54/54
+still open after the pass: 0 proofs, 0 refutations
+TWO-SIDED-CLOSE-DONE

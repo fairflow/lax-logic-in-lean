@@ -399,6 +399,13 @@ rather than truth:
 
 Neither is now blocked on a missing theorem about the logic.
 
+*(2026-08-15: both routes are now IMPLEMENTED and linked —
+`lean_exe twosided`, certified layer `wip/ljfo_link.lean`. On this
+file's own 462-cell corpus the linked engine reproduces the entire
+settled matrix — 158/158 proofs by LJF◯ at fuel ≤ 44 in ~0 ms,
+302/302 refutations by Built-tree certificates — with zero conflicts;
+the two flags resist both sides. `docs/two-sided-engine.md`.)*
+
 ### A caveat on one downstream claim
 
 `docs/ljfo-fidelity.md` §5 now reads "uniform interpolation for PLL —

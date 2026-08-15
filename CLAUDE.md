@@ -19,7 +19,15 @@ before asserting which proof system a result belongs to).
    certificate engines (`PLLND.Search.prove?Bounded` / `refute?` —
    untrusted-but-safe, discover-then-pin). NEVER drive discovery through
    the decidability theorem (`decideFuel`): its fuel bounds are
-   infeasible and it will hang.
+   infeasible and it will hang. Since 2026-08-15 there is also the
+   TWO-SIDED engine (`lean_exe twosided`; certified layer
+   `wip/ljfo_link.lean`): `TwoSidedLink.searchProves` proves via LJF◯
+   focused search (sound AND complete for PLL, choice-free) and
+   `Reject.certifies` refutes via Built-tree countermodels — on the
+   closed corpus it settles proofs ~10³× cheaper than the G4c oracle
+   and its certificates are kernel-`decide`-checkable. Prefer it for
+   PLL sequent questions; the G4c engines remain the tool for
+   premise-loaded (e.g. PCLL/`DerivU`) work.
 4. **Worktrees.** Before building in a fresh Claude worktree:
    `cp -Rc <repo-root>/.lake .lake` (APFS clone). Never remove a
    worktree to tidy up.

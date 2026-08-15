@@ -1277,3 +1277,49 @@ a non-empty one), so inverting it is a single pattern match.
   corresponding LJF◯ sequent has NO derivation. So the disproof thread
   can now settle LJF◯ questions, which is a use of `Reject/` nobody
   had planned for.
+
+---
+
+## 2026-08-15 (early) — THE LINK: LJF◯ and Reject joined into the two-sided engine
+
+*The `ljf-pll` session, at Matthew's direction ("the extra machinery in
+LJF◯ is lying unused. Use it now please and link it somehow to Reject/
+and effectively and test it"). Full report: `docs/two-sided-engine.md`.
+The T1 branch is merged into `ljf-pll` (merge `8a2d1a8`), so both
+machines now live on one line.*
+
+The link is the observation that the two campaigns built the two
+halves of one decision procedure, each ending in a Bool:
+
+* `TwoSidedLink.searchProves f Γ φ` — LJF◯ backward search on the
+  bridge's polarisation. Sound (`laxND_of_searchProves`) AND complete
+  (`searchProves_complete`), both `[propext, Quot.sound]`, choice-free
+  — completeness is `FocalizationPLL` + `search_complete` with the
+  `Nonempty` eliminated into a propositional goal.
+* `Reject.certifies M w Γ φ` — a Built-tree countermodel. Sound
+  (`not_laxND_of_certifies`); complete in principle
+  (`not_laxND_iff_built`) but not yet effectively.
+* `two_sided_disjoint` — the sides can never both fire, at kernel
+  level.
+
+Measured on the 462 ρ-order cells against the old machinery recomputed
+in the same binary (`lean_exe twosided`): agreement with zero
+conflicts; the proof side settles **all 158** derivable cells by fuel
+40 at unmeasurable cost against the G4c oracle's 9.8 s; the Built
+subbattery (570 of 10,534 frames — 5.4%) retains 248 of 302
+refutations, the missing 54 being exactly the cells whose bisimilar
+tree needs more than 5 worlds; a streaming 6-world tree generator
+chases those. Kernel exemplars in `wip/two_sided_pins.lean`: the
+kernel re-runs the focused search inside `decide` in ~1 s, no
+`native_decide`.
+
+**What this supersedes and what it does not.** For PLL sequent
+questions on the closed corpus, the engine replaces both the blind
+battery and the G4c oracle. It does NOT yet carry a feasible
+exhaustion bound (an LJF◯ `false` at fuel 64 is evidence, not a
+certificate — the pigeonhole layer over the finite subformula universe
+is the missing theorem), and the refutation side still SEARCHES the
+Built class rather than computing certificates from
+`not_laxND_iff_built` (blocked on the constructivisation already
+specced with the T1 session). Those two effectivity theorems are the
+whole remaining gap between "engine" and "decision procedure".

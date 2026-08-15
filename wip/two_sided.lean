@@ -233,33 +233,39 @@ def flagsRun (worlds : Nat) (fuels : List Nat) : IO Unit := do
         IO.println s!"  ⇒ PROVED (PLL): pin with  laxND_of_searchProves (f := {f}) (by decide)"
   -- the tree hunt
   if worlds ≥ 1 then
-    let frames := builtFrames (worlds - 1)
-    IO.println s!"  Built frames on {worlds} worlds generated: {frames.length}"
-    out.flush
+    let k := worlds - 1
+    let edges := (List.range (k + 1)).filter (· != 0)
     let mut checkedB := 0
     let mut hits := 0
     let mut done := 0
-    for M in frames do
-      done := done + 1
-      if done % 20000 == 0 then
-        IO.println s!"    …{done}/{frames.length}"; out.flush
-      if Reject.BuiltB M then
-        checkedB := checkedB + 1
-        for (i, j) in flagCells do
-          for w in List.range M.n do
-            if M.forceB w (rhoF i) && !(M.forceB w (rhoF j)) then
-              if Reject.certifies M w [rhoF i] (rhoF j) then
-                hits := hits + 1
-                let cf := confl M
-                IO.println s!"  HIT {rhoN i} ⊬ {rhoN j} (PLL): frame ri={M.ri} rm={M.rm} fall={M.fall} world {w}, confluent={cf}"
-                IO.println s!"    pin: ¬ Nonempty (LaxND [{pp (rhoF i)}] ({pp (rhoF j)})) := Reject.not_laxND_of_certifies (M := ⟨{M.n}, {M.ri}, {M.rm}, {M.fall}, []⟩) (w := {w}) (by decide)"
-                if cf then
-                  IO.println s!"    frame is mutually confluent ⇒ also refutes DerivU: the CATALOGUE flag settles"
-                out.flush
-    IO.println s!"  frames passing BuiltB: {checkedB} (control: generator emits only the class; a shortfall is a generator bug)"
+    -- STREAMED: never materialise the frame list (the first cut did,
+    -- and at 7 worlds that is millions of FinCM records — it broke a
+    -- concurrent run via memory pressure; recorded, not repeated)
+    for p in parentVectors k do
+      let lv := leaves p
+      for es in subsetsOf edges do
+        for fs in subsetsOf lv do
+          let M : FinCM := ⟨k + 1, ancPairs p, rmPairs p es, fs, []⟩
+          done := done + 1
+          if done % 100000 == 0 then
+            IO.println s!"    …{done} frames"; out.flush
+          if Reject.BuiltB M then
+            checkedB := checkedB + 1
+            for (i, j) in flagCells do
+              for w in List.range M.n do
+                if M.forceB w (rhoF i) && !(M.forceB w (rhoF j)) then
+                  if Reject.certifies M w [rhoF i] (rhoF j) then
+                    hits := hits + 1
+                    let cf := confl M
+                    IO.println s!"  HIT {rhoN i} ⊬ {rhoN j} (PLL): frame ri={M.ri} rm={M.rm} fall={M.fall} world {w}, confluent={cf}"
+                    IO.println s!"    pin: ¬ Nonempty (LaxND [{pp (rhoF i)}] ({pp (rhoF j)})) := Reject.not_laxND_of_certifies (M := ⟨{M.n}, {M.ri}, {M.rm}, {M.fall}, []⟩) (w := {w}) (by decide)"
+                    if cf then
+                      IO.println s!"    frame is mutually confluent ⇒ also refutes DerivU: the CATALOGUE flag settles"
+                    out.flush
+    IO.println s!"  frames streamed: {done}; passing BuiltB: {checkedB} (control: a shortfall is a generator bug)"
     IO.println s!"  certified hits: {hits}"
     if hits == 0 then
-      IO.println s!"  no Built countermodel on {worlds} worlds — flags STAND at this size (report, never drop)"
+      IO.println s!"  no Built countermodel on {worlds} worlds (edge-generated Rm family) — flags STAND at this size (report, never drop)"
   IO.println "TWO-SIDED-FLAGS-DONE"
 
 /-! ## The closing pass — spend more budget on exactly the engine's
@@ -309,17 +315,23 @@ def closeRun (worlds maxF : Nat) : IO Unit := do
         IO.println s!"  still open (proof side): {rhoN i} ⊢ {rhoN j} at fuel ≤ {maxF}  [{t1 - t0} ms]"
     out.flush
   -- trees
-  let frames := builtFrames (worlds - 1)
-  IO.println s!"  Built frames on {worlds} worlds: {frames.length}"
+  let k := worlds - 1
+  let edges := (List.range (k + 1)).filter (· != 0)
+  IO.println s!"  streaming Built frames on {worlds} worlds"
   out.flush
   let mut open_ := needRefu
   let mut closedR := 0
   let mut done := 0
-  for M in frames do
-    done := done + 1
-    if done % 50000 == 0 then
-      IO.println s!"    …{done}/{frames.length}, {open_.length} cells open"; out.flush
-    if !open_.isEmpty && Reject.BuiltB M then
+  for p in parentVectors k do
+   let lv := leaves p
+   for es in subsetsOf edges do
+    for fs in subsetsOf lv do
+     let M : FinCM := ⟨k + 1, ancPairs p, rmPairs p es, fs, []⟩
+     do
+      done := done + 1
+      if done % 100000 == 0 then
+        IO.println s!"    …{done} frames, {open_.length} cells open"; out.flush
+      if !open_.isEmpty && Reject.BuiltB M then
       let mut still : List (Nat × Nat) := []
       for (i, j) in open_ do
         let hit := (List.range M.n).find? fun w =>
