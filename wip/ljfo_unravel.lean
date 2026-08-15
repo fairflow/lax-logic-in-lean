@@ -185,6 +185,17 @@ def assemble (ws : List (List Neg)) (strategy : Nat) : FinCM := Id.run do
       for (_, i) in idx do
         ri := (i, top) :: ri
         rm := (i, top) :: rm
+  | 4 =>                               -- fallible leaf over each BOX-CARRYING world
+      -- fallibility exactly where a ◯-hypothesis demands its cone
+      -- realised, and nowhere else: a leaf over a box-free world makes
+      -- ◯X true there for every X and poisons ¬◯⊥-style forcing
+      for (a, i) in idx do
+        if a.any (fun nn => match nn with | .circ _ => true | _ => false) then
+          let leaf := n + extraW
+          extraW := extraW + 1
+          fal := leaf :: fal
+          rm := (i, leaf) :: rm
+          ri := (i, leaf) :: ri
   | _ => rm := ri
   -- valuation from parked atoms, hereditary closure left to checkB's wellB test
   let mut val : List (Nat × String) := []

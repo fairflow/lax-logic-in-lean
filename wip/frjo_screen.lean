@@ -27,19 +27,23 @@ def run : IO Unit := do
         if (firstSep bat (vecs.getD i #[]) (vecs.getD j #[])).isSome then
           cells := cells + 1
           let t0 ← IO.monoMsNow
-          let r := FRJO.refute? [rhoF i] (rhoF j)
+          let r := FRJO.diagnose [rhoF i] (rhoF j)
           let t1 ← IO.monoMsNow
           tT := tT + (t1 - t0)
           match r with
-          | some (t, M, _) =>
+          | .inl (t, M, _) =>
               hit := hit + 1; dSize := dSize + t.size; mW := mW + M.n
-          | none => miss := s!"{rhoN i}⊬{rhoN j}" :: miss
+          | .inr f => miss := s!"{rhoN i}⊬{rhoN j} [{f.str}]" :: miss
     IO.println s!"  row {rhoN i} done"; out.flush
   IO.println ""
   IO.println s!"FRJ◯: {hit}/{cells} certified refutations (derivation + checkB model)"
   IO.println s!"  avg derivation size {if hit == 0 then 0 else dSize / hit}, avg model worlds {if hit == 0 then 0 else mW / hit}, total {tT} ms"
   IO.println s!"  misses: {miss.length}"
   for m in miss.reverse.take 15 do IO.println s!"    {m}"
+  let nd := (miss.filter (·.endsWith "[no-derivation]")).length
+  let gm := (miss.filter (·.endsWith "[gate-miss]")).length
+  let wr := (miss.filter (·.endsWith "[wf-reject]")).length
+  IO.println s!"  breakdown: no-derivation {nd}, gate-miss {gm}, wf-reject {wr}"
   IO.println ""
   IO.println "=== the two flags ==="
   for (i, j) in [(12, 15), (20, 10)] do

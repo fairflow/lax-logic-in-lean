@@ -21,3 +21,11 @@ unravel fuel 300; emitter budget 20000, closure cap 64, battery stage off
   row ρ18 done
   row ρ19 done
   row ρ20 done
+
+[KILLED at row ρ21 after ~2h wall clock: Search.refute?'s emitter stage
+(complete-over-closure, exponential) grinds on ρ21's crank-7 cells.
+The per-row totals were never flushed, so U/E hit rates are not
+recoverable from this run; the recorded finding is the COST asymmetry
+itself — the G4c emitter is infeasible at closure cap 64 on the
+crank-7 tail, while the FRJ◯ procedure does the whole corpus in ~0 ms.
+Re-run with a lower emitter cap if the E-comparison is wanted.]

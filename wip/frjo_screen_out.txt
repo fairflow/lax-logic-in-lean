@@ -22,24 +22,25 @@
   row ρ20 done
   row ρ21 done
 
-FRJ◯: 158/302 certified refutations (derivation + checkB model)
-  avg derivation size 757, avg model worlds 3, total 0 ms
-  misses: 144
-    ρ1⊬ρ6
-    ρ1⊬ρ9
-    ρ1⊬ρ10
-    ρ1⊬ρ11
-    ρ1⊬ρ12
-    ρ1⊬ρ13
-    ρ1⊬ρ15
-    ρ1⊬ρ17
-    ρ1⊬ρ18
-    ρ1⊬ρ20
-    ρ1⊬ρ21
-    ρ7⊬ρ4
-    ρ7⊬ρ6
-    ρ7⊬ρ11
-    ρ7⊬ρ13
+FRJ◯: 227/302 certified refutations (derivation + checkB model)
+  avg derivation size 1182, avg model worlds 5, total 0 ms
+  misses: 75
+    ρ1⊬ρ11 [gate-miss]
+    ρ1⊬ρ15 [gate-miss]
+    ρ1⊬ρ17 [gate-miss]
+    ρ1⊬ρ18 [gate-miss]
+    ρ7⊬ρ4 [gate-miss]
+    ρ7⊬ρ6 [gate-miss]
+    ρ7⊬ρ11 [gate-miss]
+    ρ7⊬ρ13 [gate-miss]
+    ρ7⊬ρ14 [gate-miss]
+    ρ7⊬ρ17 [gate-miss]
+    ρ8⊬ρ11 [gate-miss]
+    ρ8⊬ρ14 [gate-miss]
+    ρ8⊬ρ15 [gate-miss]
+    ρ8⊬ρ16 [gate-miss]
+    ρ8⊬ρ17 [gate-miss]
+  breakdown: no-derivation 0, gate-miss 75, wf-reject 0
 
 === the two flags ===
   ρ12 ⊬? ρ15: no derivation found [0 ms]
