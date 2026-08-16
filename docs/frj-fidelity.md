@@ -219,7 +219,43 @@ out as `joinCtxAt`/`joinCtxOr` and both the rules and `↦` refer to them,
 so the relation cannot drift from the calculus.  `occR_steps` supplies
 each upward step from the side conditions stored in the derivation.
 
-**OPEN**: `wf` (see divergence 4 above), the remaining cases
+`wf` is **PROVED** (`wfR`/`wfI`, with `atPart_union_impPart`), so
+divergence 4's obligation is discharged: a derivable context contains
+only variables and `⊃`-formulas, and the joins' `atPart`/`impPart` split
+loses nothing.
+
+The `Ax^I` case of Lemma 3.9(ii) is **PROVED in label form**
+(`axI_not_mem_lhs`): its whole argument is "by Lemma 3.4(iii) and (Cl5),
+`Γ^at ⊆ Ĝ_at \\ {C}`, hence `C ∉ Γ^at`", which needs nothing about the
+model.  Once `Mod(D)` exists, `V(σ_p) = Lhs(σ_p) ∩ PV` turns it into
+`σ_p ⊮ C`.
+
+### The constraint the rest of Lemma 3.9 must respect
+
+Its statement quantifies over p-sequents `σ_p` with `σ ↦ σ_p` — i.e.
+*below* `σ` — and its main induction is on the height of `σ` **in `D`**,
+with the single model `Mod(D)` fixed throughout.  In the join case the
+induction hypothesis is applied at a `σ_p` *above* the join, reached by
+`↦*` rather than by being an immediate premise.
+
+Consequently a plain structural recursion over sub-derivations does not
+give the paper's induction: the model belongs to the whole `D`, while
+the induction ranges over occurrences inside it.  The two honest ways to
+set this up are
+
+* build `Mod(D)` once for the top-level derivation and induct over
+  occurrences with the model fixed (closest to the paper); or
+* generalise the statement over an ambient model together with an
+  order-embedding of a sub-derivation's part of it, discharged at each
+  join by `addRoot_force_comp`.
+
+What must NOT be done is to smuggle Lemma 3.9(i) into the construction
+as a carried invariant so that the recursion becomes structural.  That
+was tried and removed on 2026-08-16; it makes part of the conclusion an
+assumption.  Whichever setup is chosen should be settled and written
+down before any of the induction is attempted.
+
+**OPEN**: the remaining cases
 of Lemma 3.9, Theorem 3.10, Theorem 3.1.  To state Lemma 3.9 as the
 paper states it — "for every sequent `σ` occurring in `D`" — the
 occurrences of `D` must be reified, since IH1 is used at p-sequents
