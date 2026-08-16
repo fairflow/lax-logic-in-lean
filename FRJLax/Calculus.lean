@@ -199,6 +199,52 @@ def suppB (Υ : List Form) : Form → Bool
   | .imp Y _ => decide (Y ∈ Υ)
   | _ => true
 
+/-- `Σ^◯ = ⋃_j Σ^◯_j`. -/
+def sigCirc (l : List Prem) : List Form := l.flatMap (fun p => circPart p.stab)
+
+/-- `Θ^◯ = ⋂_j Θ^◯_j`. -/
+def thCirc (l : List Prem) : List Form := interAll (l.map (fun p => circPart p.theta))
+
+/-- The `◯`-formulas a promise join keeps in its conclusion. -/
+def joinCirc (l : List Prem) : List Form := sigCirc l ++ thCirc l
+
+/-- The argument of a `◯`-formula; the identity elsewhere.  Used to state
+the modal witness condition (J5) without quantifying over all formulas. -/
+def circArg : Form → Form
+  | .circ Y => Y
+  | X => X
+
+/-- The conclusion context of a promise `⋈^At`. -/
+def joinCtxAtP (l : List Prem) (F : Form) : List Form :=
+  joinCtxAt l F ++ joinCirc l
+
+/-- The conclusion context of a promise `⋈^∨`. -/
+def joinCtxOrP (l : List Prem) : List Form :=
+  joinCtxOr l ++ joinCirc l
+
+/-- (J5): every `◯Y` kept in the conclusion has its argument forced at the
+promise world — `Y ∈ Cl(Δ)`.  This is the witness that `Model.circ_intro`
+consumes. -/
+def J5 (l : List Prem) (Δ : List Form) : Prop :=
+  ∀ X ∈ joinCirc l, Clo Δ (circArg X)
+
+/-- (J6): every `◯Y` kept in the conclusion is itself forced at the
+promise world.  This is the "strictly above" half of `circ_intro` at the
+promise world; at the irregular premises' worlds it comes from the same
+closure argument that (P2) uses for `⊃`. -/
+def J6 (l : List Prem) (Δ : List Form) : Prop := ∀ X ∈ joinCirc l, Clo Δ X
+
+/-- (J7): the conclusion context is forced at the promise world, which is
+above the new world.  Monotonicity. -/
+def J7 (Γ Δ : List Form) : Prop := ∀ X ∈ Γ, Clo Δ X
+
+instance decJ5 (l : List Prem) (Δ : List Form) : Decidable (J5 l Δ) :=
+  inferInstanceAs (Decidable (∀ _ ∈ _, _))
+instance decJ6 (l : List Prem) (Δ : List Form) : Decidable (J6 l Δ) :=
+  inferInstanceAs (Decidable (∀ _ ∈ _, _))
+instance decJ7 (Γ Δ : List Form) : Decidable (J7 Γ Δ) :=
+  inferInstanceAs (Decidable (∀ _ ∈ _, _))
+
 /-- (J1): "`Σ_i ⊆ Σ_j ∪ Θ_j` for every `i ≠ j`".  Stated over all pairs,
 including `i = j`, where it holds trivially. -/
 def J1 (l : List Prem) : Prop := ∀ p ∈ l, ∀ q ∈ l, p.stab ⊆ q.stab ++ q.theta
@@ -220,34 +266,75 @@ figure's blanket condition — "in the conclusion `σ` of each rule,
 
 mutual
 
-/-- Refutations of regular sequents `Γ ⇒ C`. -/
-inductive FRJr (G : Form) : List Form → Form → Type
+/-- Refutations of regular sequents `Γ ⇒ C`.
+
+The `Bool` index is **barrenness**: `true` says the world this refutation
+builds has no proper modal successor, so that `◯Z` fails there as soon as
+`Z` does (`Model.not_force_circ_of_no_promise`).  A join that declares a
+promise sets it to `false`; every other rule passes it through, because
+every other rule builds no new world. -/
+inductive FRJr (G : Form) : Bool → List Form → Form → Type
   /-- `Ax^⇒`: `⊢ Ĝ_at \ {F} ⇒ F`, `F ∈ Prime`. -/
   | axR {Γ F} (hF : F.isPrime = true) (hg : F ∈ sfR G)
-      (hΓ : Γ ≐ rm (gAt G) F) : FRJr G Γ F
+      (hΓ : Γ ≐ rm (gAt G) F) : FRJr G true Γ F
   /-- `∧` regular, `k = 1`. -/
-  | andR₁ {Γ A₁ A₂} (d : FRJr G Γ A₁) (hg : Form.and A₁ A₂ ∈ sfR G) :
-      FRJr G Γ (.and A₁ A₂)
+  | andR₁ {b Γ A₁ A₂} (d : FRJr G b Γ A₁) (hg : Form.and A₁ A₂ ∈ sfR G) :
+      FRJr G b Γ (.and A₁ A₂)
   /-- `∧` regular, `k = 2`. -/
-  | andR₂ {Γ A₁ A₂} (d : FRJr G Γ A₂) (hg : Form.and A₁ A₂ ∈ sfR G) :
-      FRJr G Γ (.and A₁ A₂)
+  | andR₂ {b Γ A₁ A₂} (d : FRJr G b Γ A₂) (hg : Form.and A₁ A₂ ∈ sfR G) :
+      FRJr G b Γ (.and A₁ A₂)
   /-- `⊃∈` regular, side condition `A ∈ Cl(Γ)`. -/
-  | impInR {Γ A B} (d : FRJr G Γ B) (hA : Clo Γ A) (hg : Form.imp A B ∈ sfR G) :
-      FRJr G Γ (.imp A B)
+  | impInR {b Γ A B} (d : FRJr G b Γ B) (hA : Clo Γ A)
+      (hg : Form.imp A B ∈ sfR G) : FRJr G b Γ (.imp A B)
   /-- `⋈^At`, with (J1), (J2) and (J3) `F ∈ Prime \ Σ^At`. -/
   | joinAt {l Γ F} (ps : Prems G l) (j1 : J1 l) (j2 : J2 l)
       (hF : F.isPrime = true) (j3 : F ∉ sigAt l) (hg : F ∈ sfR G)
-      (hΓ : Γ ≐ joinCtxAt l F) : FRJr G Γ F
+      (hc : joinCirc l = []) (hΓ : Γ ≐ joinCtxAt l F) : FRJr G true Γ F
   /-- `⋈^∨`, with (J1), (J2) and (J4) `{C₁,C₂} ⊆ Υ`. -/
   | joinOr {l Γ C₁ C₂} (ps : Prems G l) (j1 : J1 l) (j2 : J2 l)
       (j4₁ : C₁ ∈ ups l) (j4₂ : C₂ ∈ ups l) (hg : Form.or C₁ C₂ ∈ sfR G)
-      (hΓ : Γ ≐ joinCtxOr l) : FRJr G Γ (.or C₁ C₂)
+      (hc : joinCirc l = []) (hΓ : Γ ≐ joinCtxOr l) : FRJr G true Γ (.or C₁ C₂)
+  /-- `◯∈`: from `Γ ⇒ Z` at a BARREN world infer `Γ ⇒ ◯Z`.  Justified by
+  `Model.not_force_circ_of_no_promise`: a world with no proper modal
+  successor refutes `◯Z` as soon as it refutes `Z`. -/
+  | circIn {Γ Z} (d : FRJr G true Γ Z) (hg : Form.circ Z ∈ sfR G) :
+      FRJr G true Γ (.circ Z)
+  /-- `⋈^At,p`: a `⋈^At` carrying a PROMISE PREMISE `Δ ⇒ D`, whose world
+  becomes the modal successor of the new world.  (J5) supplies the modal
+  witness, (J6) and (J7) the "strictly above" half; justified by
+  `Model.circ_intro`.  The conclusion's world is not barren. -/
+  | joinAtP {l Γ F Δ D bp} (ps : Prems G l) (pr : FRJr G bp Δ D)
+      (j1 : J1 l) (j2 : J2 l) (hF : F.isPrime = true) (j3 : F ∉ sigAt l)
+      (j5 : J5 l Δ) (j6 : J6 l Δ) (j7 : J7 Γ Δ) (hg : F ∈ sfR G)
+      (hΓ : Γ ≐ joinCtxAtP l F) : FRJr G false Γ F
+  /-- `⋈^At,⊥`: a `⋈^At` whose modal successor is a FALLIBLE world.
+
+  A fallible world forces every formula, so no (J5)/(J6)/(J7) is needed —
+  but by `Model.circ_of_fallible_cone` the witness must cover the whole
+  cone above the new world, so the fallible world is a maximum of the
+  model, modally accessible from every world.  Consequently NO world of
+  such a model is barren, which is why the conclusion's flag is `false`
+  and `◯∈` can never be applied above it. -/
+  | joinAtF {l Γ F} (ps : Prems G l) (j1 : J1 l) (j2 : J2 l)
+      (hF : F.isPrime = true) (j3 : F ∉ sigAt l) (hg : F ∈ sfR G)
+      (hΓ : Γ ≐ joinCtxAtP l F) : FRJr G false Γ F
+  /-- `⋈^∨,p`: the promise variant of `⋈^∨`. -/
+  | joinOrP {l Γ C₁ C₂ Δ D bp} (ps : Prems G l) (pr : FRJr G bp Δ D)
+      (j1 : J1 l) (j2 : J2 l) (j4₁ : C₁ ∈ ups l) (j4₂ : C₂ ∈ ups l)
+      (j5 : J5 l Δ) (j6 : J6 l Δ) (j7 : J7 Γ Δ) (hg : Form.or C₁ C₂ ∈ sfR G)
+      (hΓ : Γ ≐ joinCtxOrP l) : FRJr G false Γ (.or C₁ C₂)
 
 /-- Refutations of irregular sequents `Σ ; Θ → C`. -/
 inductive FRJi (G : Form) : List Form → List Form → Form → Type
-  /-- `Ax^→`: `⊢ · ; Ĝ_at \ {F}, Ĝ_imp → F`, `F ∈ Prime`. -/
+  /-- `Ax^→`: `⊢ · ; Ĝ_at \ {F}, Ĝ_imp, Ĝ_◯ → F`, `F ∈ Prime`.
+
+  DIVERGENCE: the paper's `Θ` is `Ĝ_at \ {F}, Ĝ_imp`; the third zone joins
+  it, since `Θ` is what the world below may force and `◯`-formulas are now
+  among the determining data.  On a `◯`-free goal `Ĝ_◯ = ∅` and this is
+  the paper's axiom. -/
   | axI {St Th F} (hF : F.isPrime = true) (hg : F ∈ sfR G)
-      (hSt : St ≐ []) (hTh : Th ≐ rm (gAt G) F ++ gImp G) : FRJi G St Th F
+      (hSt : St ≐ []) (hTh : Th ≐ rm (gAt G) F ++ gImp G ++ gCirc G) :
+      FRJi G St Th F
   /-- `∧` irregular, `k = 1`. -/
   | andI₁ {St Th A₁ A₂} (d : FRJi G St Th A₁) (hg : Form.and A₁ A₂ ∈ sfR G) :
       FRJi G St Th (.and A₁ A₂)
@@ -269,7 +356,7 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       (hg : Form.imp A B ∈ sfR G) : FRJi G St Th (.imp A B)
   /-- `⊃∉`, the only rule turning a regular sequent into an irregular one;
   sides `Θ ⊆ Cl(Γ) ∩ Ĝ` and `A ∈ Cl(Γ) \ Cl(Θ)`. -/
-  | impNotIn {St Th Γ A B} (d : FRJr G Γ B)
+  | impNotIn {b St Th Γ A B} (d : FRJr G b Γ B)
       (hTh : ∀ x ∈ Th, Clo Γ x ∧ x ∈ gHat G)
       (hA : Clo Γ A) (hnA : ¬ Clo Th A) (hSt : St ≐ [])
       (hg : Form.imp A B ∈ sfR G) : FRJi G St Th (.imp A B)
@@ -299,7 +386,7 @@ completeness construction of W4 must return one.  `Provable` is the
 
 /-- An `FRJ(G)`-refutation of `G`: a context together with a refutation of
 `Γ ⇒ G`. -/
-def Refutation (G : Form) : Type := (Γ : List Form) × FRJr G Γ G
+def Refutation (G : Form) : Type := (b : Bool) × (Γ : List Form) × FRJr G b Γ G
 
 /-- `⊢_FRJ(G) G`. -/
 def Provable (G : Form) : Prop := Nonempty (Refutation G)

@@ -13,3 +13,4 @@ import FRJLax.Model
 import FRJLax.Modal
 import FRJLax.Calculus
 import FRJLax.Paper
+import FRJLax.Circ

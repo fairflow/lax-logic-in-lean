@@ -154,7 +154,61 @@ closure argument that (P2) already uses for `⊃`, needing no new lemma.
 A join carrying **no** promise has `Σ^◯ = Θ^◯ = ∅` and its world is
 barren — that is what makes `◯∈` applicable above it.
 
-### 4.3 What is deliberately NOT proposed
+### 4.3 `⋈^⊥` — the fallible promise, and the gap that forced it
+
+**Found by building the first modal exemplar** (`FRJLax/Circ.lean`), which
+is the refutation of
+
+    G = ◯p ⊃ p
+
+not a theorem of PLL.  With only §4.1 and §4.2 it **cannot be built**, and
+the reason is structural rather than accidental:
+
+* `⋈^p` needs a promise premise `Δ ⇒ D` with `p ∈ Cl(Δ)`, hence by (Cl5)
+  `p ∈ Δ`.  But `Sf^R(G) = {G, p}` contains no `⊥`, so the only regular
+  axiom is the one at `p`, and both axioms at `p` delete `p` from the
+  context.  No derivable regular context of this goal contains `p`.
+* Semantically the reason is sharper.  The countermodel needs a world
+  forcing `p`; at such a world `◯p` holds by the unit, hence `G` holds,
+  and `⊥ ∉ Sf^R(G)`.  **That world refutes nothing in `Sf^R(G)`** — and
+  every world of `Mod(D)` is a p-sequent, which by construction refutes
+  its own goal.  So the witness cannot be a p-sequent at all.
+
+The repair: it is a **fallible** world.  Fallible worlds force everything
+and refute nothing, so they are exactly the worlds that are not
+p-sequents.
+
+    σ₁ … σₙ
+    ────────────────────────────────────────────────  ⋈^At,⊥
+    Σ^at, Θ^at\{F}, Σ^⊃, Θ^⊃, Σ^◯, Θ^◯  ⇒  F
+
+with (J1), (J2), (J3) only — no (J5), (J6), (J7), because a fallible world
+forces every argument.  By `Model.circ_of_fallible_cone` the witness must
+cover the whole cone above the new world, so the fallible world is a
+maximum of the model, modally accessible from every world; consequently
+**no world of such a model is barren**, the conclusion's flag is `false`,
+and `◯∈` can never apply above it.  That is the price, and it is the right
+price: a model with a fallible top forces every `◯`-formula everywhere, so
+nothing of the form `◯Z` can fail in it.
+
+**Verified** (`FRJLax/Circ.lean`): `⋈^At,⊥` from the single premise
+`· ; ◯p → p` gives `◯p ⇒ p`, and `⊃∈` gives `◯p ⇒ ◯p ⊃ p`.  The intended
+countermodel — two worlds, the upper fallible — is checked by `decide` to
+force `◯p`, refute `p` and refute `G`.  The two are **not yet connected**;
+that connection is soundness, and it is open.
+
+### 4.4 A second divergence the modal case forces
+
+`Ax^→` now reads
+
+    ⊢ · ; Ĝ_at \ {F}, Ĝ_imp, Ĝ_◯ → F
+
+The paper's `Θ` is `Ĝ_at \ {F}, Ĝ_imp`.  `Θ` is what the world below may
+force, and `◯`-formulas are now determining data, so the third zone joins
+it.  On a `◯`-free goal `Ĝ_◯ = ∅` and this is the paper's axiom; the
+replayed refutations of Examples 3.6, 3.7 and 3.15 all still build.
+
+### 4.5 What is deliberately NOT proposed
 
 * **No `◯` clause in `Cl`.**  `α ⊩ X` does imply `α ⊩ ◯X`
   (`Model.circ_of_force`), so (Cl1) would survive the clause; but `Cl`
@@ -164,7 +218,7 @@ barren — that is what makes `◯∈` applicable above it.
   witness earns its place only for `◯⊥`, and is a separate rule if wanted.
 * **No `◯` left rule.**  FRJ has none for any connective.
 
-### 4.4 The standing test cells
+### 4.6 The standing test cells
 
     A ⇒ ◯A          must stay UNDERIVABLE   (Model.circ_of_force: the unit)
     ◯p ⇒ p          must be derivable       (Screen 1)
@@ -188,6 +242,11 @@ obligations, in `FRJLax/Modal.lean`:
 | `not_force_circ_of_above` | refutation of `◯A` descends along `R_i` |
 | `circ_of_force` | the unit: `A` forces `◯A` |
 | `circ_of_fallible_cone` | a fallible cone forces every `◯`-formula |
+
+**IMPLEMENTED** (`FRJLax/Calculus.lean`): the barrenness index on the
+regular judgment, `circIn`, `joinAtP`, `joinOrP`, `joinAtF`, the three-zone
+`Ax^→`, and (J5)–(J7) as decidable fields.  The whole `◯`-free layer,
+including all of `FRJLax/Paper.lean`, builds unchanged over it.
 
 **NOT PROVED — OPEN.**  Theorem 3.1 for FRJ◯, `⊢_FRJ◯(G) G ⟹ G ∉ PLL`,
 is **not** proved and must not be reported as proved.  What stands

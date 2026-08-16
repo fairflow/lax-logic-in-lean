@@ -78,9 +78,10 @@ dropped, as the paper says. -/
 example : joinCtxOr [⟨[], [p, q₂, H], q₁⟩, ⟨[], [p, q₁, H], q₂⟩] = [p] := by decide
 
 /-- `p ⇒ q₁ ∨ q₂`. -/
-def refuteP : FRJr G [p] (.or q₁ q₂) :=
+def refuteP : FRJr G true [p] (.or q₁ q₂) :=
   .joinOr (.cons axq₁ (.one axq₂))
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+    (by decide)
 
 /-! ## `⋈^∨` with three premises: `H ⇒ q₁ ∨ q₂`
 
@@ -94,9 +95,10 @@ example :
       = [H] := by decide
 
 /-- `H ⇒ q₁ ∨ q₂`. -/
-def refuteH : FRJr G [H] (.or q₁ q₂) :=
+def refuteH : FRJr G true [H] (.or q₁ q₂) :=
   .joinOr (.cons axq₁ (.cons axq₂ (.one axp)))
     (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+    (by decide)
 
 /-! ## `∨` then `⊃∈`: the irregular sequent carrying the valid goal
 
@@ -163,16 +165,16 @@ example : sfR G = [G, q] := by decide
 example : gAt G = [p₁, p₂] := by decide
 
 /-- `Ax^⇒`: `p₁, p₂ ⇒ q`. -/
-def axq : FRJr G [p₁, p₂] q :=
+def axq : FRJr G true [p₁, p₂] q :=
   .axR (by decide) (by decide) (by decide)
 
 /-- `⊃∈`: `p₁, p₂ ⇒ p₁ ∧ p₂ ⊃ q`, the paper's displayed refutation, with
 its side condition `p₁ ∧ p₂ ∈ Cl({p₁, p₂})`. -/
-def refute : FRJr G [p₁, p₂] G :=
+def refute : FRJr G true [p₁, p₂] G :=
   .impInR axq (by decide) (by decide)
 
 /-- Hence `⊢_FRJ(G) G`: a `Refutation` is data, and here is one. -/
-def refutation : Refutation G := ⟨[p₁, p₂], refute⟩
+def refutation : Refutation G := ⟨true, [p₁, p₂], refute⟩
 
 theorem provable : Provable G := .intro refutation
 
@@ -195,22 +197,22 @@ example : sfL G = [] := by decide
 example : gHat G = [] := by decide
 
 /-- `∧` regular, `k = 1`: `· ⇒ q₁` then `· ⇒ q₁ ∧ q₂`. -/
-def andR₁ : FRJr G [] G :=
+def cellR₁ : FRJr G true [] G :=
   .andR₁ (.axR (by decide) (by decide) (by decide)) (by decide)
 
 /-- `∧` regular, `k = 2`. -/
-def andR₂ : FRJr G [] G :=
+def cellR₂ : FRJr G true [] G :=
   .andR₂ (.axR (by decide) (by decide) (by decide)) (by decide)
 
 /-- `∧` irregular, `k = 1`: `· ; · → q₁` then `· ; · → q₁ ∧ q₂`. -/
-def andI₁ : FRJi G [] [] G :=
+def cellI₁ : FRJi G [] [] G :=
   .andI₁ (.axI (by decide) (by decide) (by decide) (by decide)) (by decide)
 
 /-- `∧` irregular, `k = 2`. -/
-def andI₂ : FRJi G [] [] G :=
+def cellI₂ : FRJi G [] [] G :=
   .andI₂ (.axI (by decide) (by decide) (by decide) (by decide)) (by decide)
 
-theorem provable : Provable G := .intro ⟨[], andR₁⟩
+theorem provable : Provable G := .intro ⟨true, [], cellR₁⟩
 
 end AndCell
 
@@ -288,17 +290,17 @@ def s₄ : FRJi S [nnp] [H, np] nnpp :=
 `Σ^At = Σ^⊃ = Θ^At = ∅`, and `Θ^⊃ = {H, ¬¬p, ¬p}/{p}` keeps only `¬p`,
 whose antecedent is `p`, the right formula of the premise.  So the whole
 conclusion context is what the support condition lets through. -/
-def s₅ : FRJr S [np] .bot :=
+def s₅ : FRJr S true [np] .bot :=
   .joinAt (.one s₂) (by decide) (by decide) (by decide) (by decide) (by decide)
-    (by decide)
+    (by decide) (by decide)
 
 /-! ## Iteration 2 -/
 
 /-- (6) `p, ¬¬p ⇒ ⊥`, by `⋈^At` from (3).  Now `Υ = {¬p}`, so the
 restriction keeps `¬¬p = ¬p ⊃ ⊥` instead, and `Σ^At = {p}` survives. -/
-def s₆ : FRJr S [p, nnp] .bot :=
+def s₆ : FRJr S true [p, nnp] .bot :=
   .joinAt (.one s₃) (by decide) (by decide) (by decide) (by decide) (by decide)
-    (by decide)
+    (by decide) (by decide)
 
 /-- (7) `· ; H → ¬¬p`, by `⊃∉` from (5).
 
@@ -321,9 +323,9 @@ def s₈ : FRJi S [] [H, nnp] np :=
 premises.  (J1) needs `Σ₄ = {¬¬p} ⊆ Σ₈ ∪ Θ₈ = {H, ¬¬p}`, (J2) needs the
 antecedent of `¬¬p` — namely `¬p` — to be among the premises' right
 formulas, and it is, as the right formula of (8). -/
-def s₉ : FRJr S [H, nnp] p :=
+def s₉ : FRJr S true [H, nnp] p :=
   .joinAt (.cons s₄ (.one s₈)) (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide)
+    (by decide) (by decide) (by decide)
 
 /-! ## Iteration 5 -/
 
@@ -338,19 +340,19 @@ def s₁₀ : FRJi S [] [H] nnpp :=
 `{¬¬p, ¬p, ¬¬p ⊃ p}`, which contains both disjuncts, and `H` survives the
 restriction because its antecedent `¬¬p ⊃ p` is the right formula of
 (10). -/
-def s₁₁ : FRJr S [H] (.or nnp np) :=
+def s₁₁ : FRJr S true [H] (.or nnp np) :=
   .joinOr (.cons s₇ (.cons s₈ (.one s₁₀))) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide)
+    (by decide) (by decide) (by decide) (by decide)
 
 /-! ## Iteration 7 -/
 
 /-- (12) `H ⇒ S`, by `⊃∈` regular from (11), with `H ∈ Cl({H})`. -/
-def s₁₂ : FRJr S [H] S :=
+def s₁₂ : FRJr S true [H] S :=
   .impInR s₁₁ (by decide) (by decide)
 
 /-- `⊢_FRJ(S) S`: Scott's principle is refuted, and the refutation is
 data. -/
-def refutation : Refutation S := ⟨[H], s₁₂⟩
+def refutation : Refutation S := ⟨true, [H], s₁₂⟩
 
 theorem provable : Provable S := .intro refutation
 
@@ -363,10 +365,10 @@ from the paper:
 
 | constructor | cell |
 |---|---|
-| `axR` | `Paper3Imp.axq`, `AndCell.andR₁` |
+| `axR` | `Paper3Imp.axq`, `AndCell.cellR₁` |
 | `axI` | `Paper36.axq₁`, `PaperScott.s₁` |
-| `andR₁`, `andR₂` | `AndCell.andR₁`, `AndCell.andR₂` |
-| `andI₁`, `andI₂` | `AndCell.andI₁`, `AndCell.andI₂` |
+| `andR₁`, `andR₂` | `AndCell.cellR₁`, `AndCell.cellR₂` |
+| `andI₁`, `andI₂` | `AndCell.cellI₁`, `AndCell.cellI₂` |
 | `orI` | `Paper36.orStep` |
 | `impInR` | `Paper3Imp.refute`, `PaperScott.s₁₂` |
 | `impInI` | `Paper36.refuteG`, `PaperScott.s₃`, `s₄` |
