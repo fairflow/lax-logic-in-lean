@@ -23,10 +23,9 @@ identifies equal-labelled worlds, and soundness is insensitive to it —
 `Mod(D)` is a countermodel iff its quotient is.  The identification
 matters only for the minimality results of §6, which are out of scope.
 
-A `PModel` is the extracted model together with the labelling of each
-world by the left formulas of its p-sequent, and the three invariants
-that the soundness proof uses at worlds other than the one under
-consideration.
+What this file provides is the CONSTRUCTION only.  Lemma 3.4 (`lemma:lhs`)
+and Lemma 3.9 are theorems about it and are proved as theorems, not
+built in as invariants of a structure.
 -/
 import FRJ.Calculus
 
@@ -113,50 +112,26 @@ theorem addRoot_force_comp {i : ι} {a : (M i).W} :
 @[simp] theorem addRoot_root_atom (p : String) :
     (addRoot V₀ M hV).force none (.atom p) ↔ Form.atom p ∈ V₀ := Iff.rfl
 
-/-! ## `PModel`: the extracted model with its labelling
+/-! ## The `Ax^R` leaf
 
-The soundness proof reasons about worlds other than the one under
-consideration — in the `⋈` case it applies the main induction hypothesis
-at an arbitrary p-sequent above the join.  So the construction must
-carry, for every world, the left formulas of its p-sequent together with
-the facts the proof uses about them.
+The empty-index instance of `addRoot`: a single world, which is the
+model `Mod(D)` of a derivation consisting of one `Ax^R` axiom.
 -/
 
-/-- The extracted model, with each world labelled by `Lhs` of its
-p-sequent, and the three invariants of Sec. 3.1. -/
-structure PModel where
-  K : Kripke
-  /-- `Lhs(σ)` for the p-sequent `σ` at this world. -/
-  lhs : K.W → Finset Form
-  /-- "`V` maps `σ` to `V(σ) = Lhs(σ) ∩ PV`." -/
-  val_eq : ∀ (w : K.W) (p : String), K.V w p ↔ Form.atom p ∈ lhs w
-  /-- Lemma 3.4(iii): `σ₁ ↦* σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`.  In the
-  model order (`σ₂` above `σ₁` in the derivation means `σ₁ ≤ σ₂`) this
-  reads: going up, the label of a lower world stays inside the closure. -/
-  lhs_clo : ∀ {w v : K.W}, K.le w v → ∀ X ∈ lhs w, Clo (lhs v) X
-  /-- Lemma 3.9(i) at every world: each p-sequent forces its own left
-  formulas. -/
-  forces_lhs : ∀ w : K.W, K.forces w (lhs w)
+/-- A single world whose valuation is `Γ ∩ PV`. -/
+def solo (Γ : Finset Form) : Kripke :=
+  addRoot (ι := Empty) Γ (fun i => i.elim) (fun i => i.elim)
 
-namespace PModel
+@[simp] theorem solo_root_atom (Γ : Finset Form) (p : String) :
+    (solo Γ).force (solo Γ).root (.atom p) ↔ Form.atom p ∈ Γ := Iff.rfl
 
-/-- The `Ax^R` leaf: a single world whose label is a set of atoms. -/
-def solo (Γ : Finset Form) (hΓ : ∀ X ∈ Γ, X.isPV) : PModel where
-  K := addRoot (ι := Empty) Γ (fun i => i.elim) (fun i => i.elim)
-  lhs := fun _ => Γ
-  val_eq := by
-    rintro (_ | ⟨i, _⟩) p
-    · exact Iff.rfl
-    · exact i.elim
-  lhs_clo := fun _ X hX => .base hX
-  forces_lhs := by
-    rintro (_ | ⟨i, _⟩)
-    · intro X hX
-      have := hΓ X hX
-      match X, this with
-      | .atom p, _ => exact hX
-    · exact i.elim
-
-end PModel
+/-- At the single world of `solo Γ`, a set of variables is forced exactly
+when it is contained in `Γ` — the `V(σ) = Lhs(σ) ∩ PV` clause, in the
+one case where it can be checked directly. -/
+theorem solo_forces_root {Γ Δ : Finset Form} (hΔ : ∀ X ∈ Δ, X.isPV)
+    (hsub : Δ ⊆ Γ) : (solo Γ).forces (solo Γ).root Δ := by
+  intro X hX
+  match X, hΔ X hX with
+  | .atom p, _ => exact hsub hX
 
 end FRJ

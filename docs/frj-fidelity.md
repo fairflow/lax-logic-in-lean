@@ -141,68 +141,66 @@ Figure "The calculus FRJ(G)", every rule, with side conditions:
 | `Γ⊃/Υ = {Y⊃Z ∈ Γ⊃ | Y ∈ Υ}` | `restrict` |
 | `⊢_{FRJ(G)} G` | `Provable` | done |
 
-## §3.1 Soundness → `FRJ/Model.lean` (kit done) + `FRJ/Sound.lean` (TODO)
+## §3.1 Soundness → `FRJ/Model.lean` (construction) + `FRJ/Sound.lean`
 
-`Mod(D)`, `φ`, and Lemma 3.9 are what the remaining work encodes.  The
-architecture below was derived from the paper's own proof (Appendix,
-"Soundness of FRJ(G)") and is the plan to follow.
+**Correction, 2026-08-16.**  An earlier version of this section proposed
+a `PModel` structure carrying `forces_lhs` — which *is* Lemma 3.9(i) —
+as an invariant of the construction, turning part of the conclusion into
+something assumed by the object being built.  That is a restructuring of
+the proof, not the proof, and it has been removed.  The rule is: the
+paper's definitions are definitions here, and the paper's lemmas are
+theorems here.
 
-**Why a plain Kripke model is not enough.**  The join case of Lemma 3.9
-applies the main induction hypothesis at an *arbitrary* p-sequent above
-the join, and uses both that that world forces its own left formulas
-and that labels shrink modulo closure as one goes down.  So the
-construction must carry the labelling.  Hence `PModel`: the model, the
-map `lhs` sending each world to `Lhs` of its p-sequent, and
+**The paper's proof, which is the one to follow.**
 
-* `val_eq`  — `V(σ) = Lhs(σ) ∩ PV`;
-* `lhs_clo` — Lemma 3.4(iii): `w ≤ v ⟹ lhs w ⊆ Cl(lhs v)`;
-* `forces_lhs` — Lemma 3.9(i) at every world.
+`Mod(D) = ⟨PS(D), ≤, ρ, V⟩` with `PS(D)` the p-sequents of `D`,
+`σ₁ ≤ σ₂ iff σ₂ ↦* σ₁`, `V(σ) = Lhs(σ) ∩ PV`; and `φ(σ)` the p-sequent
+immediately above a regular `σ`.  Then:
 
-Done so far: `ARLe`, `addRoot` (fresh root below a finite disjoint union
-of models, with the empty index giving the `Ax^R` leaf),
-`addRoot_force_comp` (**forcing is preserved at component worlds**,
-because each component is upward closed — this is what lets a premise's
-model be treated in isolation), and `PModel.solo`.
+* **Lemma 3.4** (`lemma:lhs`), on `↦`: (i) `σ₁ ↦_R σ₂` with `R ≠ ⊃∉`
+  implies `Lhs(σ₂) ⊆ Lhs(σ₁)`; (ii) `σ₁ ↦ σ₂` implies
+  `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`; (iii) the same for `↦*`.
+* **Lemma 3.9**, for every sequent `σ` occurring in `D`: (i) if
+  `σ = Γ ⇒ C` then `φ(σ) ⊩ Γ` and `φ(σ) ⊮ C`; (ii) if
+  `σ = Σ;Θ → C`, then for every `σ_p ∈ PS(D)` with `σ ↦ σ_p` and
+  `σ_p ⊩ Σ ∩ Sf⁻(C)`, we have `σ_p ⊮ C`.
+* **Theorem 3.10**: `Mod(D)` is a countermodel for `G`; hence
+  Theorem 3.1, `⊢_FRJ(G) G` implies `G ∉ IPL`.
 
-**The two statements to prove, by mutual induction.**
+The proof of Lemma 3.9 is a **main induction (IH1) on the height of `σ`
+in `D`**, by cases on the last rule, with a **secondary induction (IH2)
+on `size H`** inside the join case proving (P2) `H ∈ Γ^⊃ ⟹ σ ⊩ H` and
+(P3) `H = A_j ⟹ σ ⊮ A_j` simultaneously.  Note where IH1 is applied in
+(P2): at a p-sequent `σ_p` *above* the join, not at an immediate
+premise.
 
-* **(R)** for `d : FRJr G Γ C`: a `PModel` `P` and a world `r` with
-  `P.lhs r = Γ` and `¬ P.K.force r C`.  (`P.K.forces r Γ` is then
-  `forces_lhs`.)  The distinguished world is the paper's `φ(σ)`, and
-  `lhs r = Γ` holds because `andR`/`impIn` do not change the context.
+**What is built so far, and how it relates to the paper's `Mod(D)`.**
 
-* **(I)** for `d : FRJi G St Th C`: for every `PModel` `P` and world `w`
-  with `Realises P w d`, `(∀ X ∈ P.lhs w, Clo (St ∪ Th) X)` and
-  `P.K.forces w (St ∩ Sf⁻(C))`, we have `¬ P.K.force w C`.
+`addRoot` is not a reformulation: a `⋈` rule's conclusion is a fresh
+p-sequent lying below exactly the p-sequents of its premises, and every
+p-sequent has a unique p-sequent immediately below it, so
+`⟨PS(D), ≤⟩` *is* computed by placing a fresh root below the disjoint
+union of the premises' p-sequent posets.  `ARLe` is the paper's `≤`
+and `solo` (empty index) is the one-world `Mod(D)` of an `Ax^R`
+derivation.
 
-  `Realises P w d` is defined by recursion on `d` and says exactly what
-  the `⊃∉` case needs: at each `impNotIn` inside `d`, with regular
-  premise `Γ ⇒ B`, there is `v ≥ w` in `P` with `v ⊩ Γ` and `v ⊮ B`.
-  Defining it by recursion avoids having to reify an abstract embedding
-  of a forest of sub-models.
+`addRoot_force_comp` — forcing agrees at component worlds — is an
+artefact of computing `Mod(D)` in pieces rather than all at once; the
+paper never needs it because it works in the single model `Mod(D)`
+throughout.  It is a proved lemma about the construction, not an
+assumption, and it is what will let the induction refer to a premise's
+part of `Mod(D)`.
 
-**Case checks already done on paper** (these are the propagation
-obligations, and they all go through):
+PROVED so far: `addRoot` is a Kripke model; `addRoot_force_comp`;
+`solo_forces_root`; and `axR_sound`, the `Ax^R` case of Lemma 3.9(i)
+(`φ(σ) = σ`, `V(σ) = Ĝ_at \ {F}`).
 
-* the hypothesis `∀ X ∈ lhs w, Clo (St ∪ Th) X` propagates to premises —
-  for `∨` because `Σ∪Θ ⊆ Σ_k ∪ Θ_k` follows from the two side
-  conditions, for `⊃∈` irregular because `Σ∪Λ∪Θ` equals the premise's
-  `Σ∪(Θ∪Λ)`;
-* `w ⊩ St ∩ Sf⁻(C)` propagates because `Sf⁻(C_k) ⊆ Sf⁻(C₁∨C₂)` and
-  `Sf⁻(A_k) ⊆ Sf⁻(A₁∧A₂)`;
-* the `⊃∈` irregular case needs **(Cl2)**, still to be proved.
-
-**The join case is the substantial one** and needs a *secondary*
-induction on `size H`, proving simultaneously
-
-* (P2) `H ∈ Γ^imp ⟹ σ ⊩ H`, and
-* (P3) `H = A_j ⟹ σ ⊮ A_j`,
-
-where (P2) at `H = A_k ⊃ B` calls (P3) at `A_k` (strictly smaller), and
-(P3) at `A_j` calls (P2) at the members of `Σ^imp_j ∩ Sf⁻(A_j)`
-(strictly smaller).  (P2) additionally applies the *main* induction
-hypothesis at a world `σ_p` above the join, which is where `forces_lhs`
-and `lhs_clo` are consumed.
+**OPEN**: `wf` (see divergence 4 above), Lemma 3.4, the remaining cases
+of Lemma 3.9, Theorem 3.10, Theorem 3.1.  To state Lemma 3.9 as the
+paper states it — "for every sequent `σ` occurring in `D`" — the
+occurrences of `D` must be reified, since IH1 is used at p-sequents
+above `σ` rather than at immediate premises.  That reification is the
+next piece of work and must be done before the induction is attempted.
 
 ## §6 Completeness → `FRJ/Complete.lean` (TODO)
 
