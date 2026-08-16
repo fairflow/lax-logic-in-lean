@@ -147,10 +147,10 @@ theorem reconstruction_solo (b : Nat) (Γ : List PLLFormula) (C : PLLFormula)
               soundness d M () (fun γ hγ => (hStMem.mp hγ).2)
             exact hC ((Reject.solo_force_somehow V₀ fal hfull A).mpr hA)
 
-end FRJO
-
 /-! ## Pins -/
 
 /-- info: 'FRJO.reconstruction_solo' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms reconstruction_solo
+
+end FRJO
