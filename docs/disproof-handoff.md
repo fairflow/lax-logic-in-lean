@@ -1381,3 +1381,19 @@ OPEN. The practical moral is the pigeonhole bound again, from the
 other direction: without it, deep fuel is not a usable instrument, and
 the refutation calculus's completeness theorem (`CompletenessFRJO`)
 is what would let FRJ◯'s "no derivation" settle them instead.
+
+### 2026-08-16 — CompletenessFRJO: substrate proved, three lemmas out
+
+`wip/ljfo_completeness.lean` (commit `8177d6b`): PROVED and pinned —
+`isEmpty_holds_iff_search` (underivability = search failure at every
+fuel, choice-free), `exists_allFail` (the finite-list pigeonhole
+through `search_mono`: a cofinally-failing instance has an
+everywhere-failing premise — S3's premise selector), and
+`completeness_of_construction` (the goal reduces to S3). OPEN: S1
+`okS_succs` (invariant preservation; every case closes on paper with
+single-step `UClosed` fields; one `sorry`, membership bookkeeping — a
+blunt-automation pass got the `stab`/`rfocus` cases through and stalled
+on `lfoc`, reverted to keep the record clean), S2 `PigeonholeBound`
+(Finset counting), S3 `ConstructionFRJO` (strong induction on
+bound−|history|, premises by `exists_allFail`, revisits by `cyc`).
+NEXT SESSION: S1 by hand (case shapes now known), then S2, then S3.
