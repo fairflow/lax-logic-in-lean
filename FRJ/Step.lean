@@ -385,7 +385,8 @@ end
 
 /-- The atomic and implicational parts of a derivable context exhaust it:
 `Γ = Γ^at ++ Γ^⊃`.  This is what the join rules' use of `atPart`/`impPart`
-silently relies on. -/
+silently relies on, and it is exactly the invariant the third zone would
+break — see the note on `gHat`. -/
 theorem atPart_union_impPart {G : Form} {Γ : List Form} {C : Form}
     (d : FRJr G Γ C) : Γ ⊆ atPart Γ ++ impPart Γ := by
   intro x hx

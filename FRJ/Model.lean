@@ -42,6 +42,16 @@ inductive ARLe {ι : Type} (M : ι → Kripke) :
   | root (x : Option ((i : ι) × (M i).W)) : ARLe M none x
   | comp {i : ι} {a b : (M i).W} : (M i).le a b → ARLe M (some ⟨i, a⟩) (some ⟨i, b⟩)
 
+/-- `Rm` on the same carrier.  W1 of the modal extension.  It is NOT
+`ARLe`: each component must keep **its own** modal relation, or forcing of
+`◯` would not be preserved at component worlds (`addRoot_force_comp`).
+The fresh root sees everything modally, which is the weakest choice
+satisfying `Rm ⊆ ≤` and costs nothing while no rule mentions `◯`. -/
+inductive ARRm {ι : Type} (M : ι → Kripke) :
+    Option ((i : ι) × (M i).W) → Option ((i : ι) × (M i).W) → Prop
+  | root (x : Option ((i : ι) × (M i).W)) : ARRm M none x
+  | comp {i : ι} {a b : (M i).W} : (M i).Rm a b → ARRm M (some ⟨i, a⟩) (some ⟨i, b⟩)
+
 /-- The fresh-root construction: a new world with valuation `V₀`, below
 the disjoint union of the models `M i`.  With `ι` empty this is a single
 world, which is the `Ax^R` case. -/
@@ -61,6 +71,20 @@ def addRoot {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe
     intro x y
     exact decEq x y
   le := ARLe M
+  Rm := ARRm M
+  rm_refl := by
+    rintro (_ | ⟨i, a⟩)
+    · exact .root _
+    · exact .comp ((M i).rm_refl a)
+  rm_trans := by
+    rintro _ _ _ (_ | ⟨hab⟩) h2
+    · exact .root _
+    · cases h2 with
+      | comp hbc => exact .comp ((M _).rm_trans hab hbc)
+  sub_mi := by
+    rintro _ _ (_ | ⟨hab⟩)
+    · exact .root _
+    · exact .comp ((M _).sub_mi hab)
   le_refl := by
     rintro (_ | ⟨i, a⟩)
     · exact .root _
@@ -103,6 +127,19 @@ def addRoot {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe
     rintro (_ | ⟨i, a⟩) p
     · exact inferInstanceAs (Decidable (Form.atom p ∈ V₀))
     · exact (M i).decV a p
+  decRm := by
+    rintro (_ | ⟨i, a⟩) y
+    · exact isTrue (.root _)
+    · cases y with
+      | none => exact isFalse (fun h => by cases h)
+      | some jb =>
+          obtain ⟨j, b⟩ := jb
+          by_cases hij : i = j
+          · subst hij
+            have : Decidable ((M i).Rm a b) := (M i).decRm a b
+            exact decidable_of_iff ((M i).Rm a b)
+              ⟨fun h => .comp h, fun h => by cases h; assumption⟩
+          · exact isFalse (fun h => by cases h; exact hij rfl)
 
 variable {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, i ∈ ιe}
   {V₀ : List Form} {M : ι → Kripke}
@@ -112,6 +149,14 @@ variable {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, i ∈ ιe}
 theorem addRoot_le_comp {i : ι} {a : (M i).W} {y : (addRoot ιe ιc V₀ M hV).W}
     (h : (addRoot ιe ιc V₀ M hV).le (some ⟨i, a⟩) y) :
     ∃ b : (M i).W, (M i).le a b ∧ y = some ⟨i, b⟩ := by
+  cases h with
+  | comp hab => exact ⟨_, hab, rfl⟩
+
+/-- The modal analogue: everything modally above a component world is in
+the same component, with the component's own `Rm`. -/
+theorem addRoot_rm_comp {i : ι} {a : (M i).W} {y : (addRoot ιe ιc V₀ M hV).W}
+    (h : (addRoot ιe ιc V₀ M hV).Rm (some ⟨i, a⟩) y) :
+    ∃ b : (M i).W, (M i).Rm a b ∧ y = some ⟨i, b⟩ := by
   cases h with
   | comp hab => exact ⟨_, hab, rfl⟩
 
@@ -134,6 +179,17 @@ theorem addRoot_force_comp {i : ι} {a : (M i).W} :
       · intro h y hy hA
         obtain ⟨b, hab, rfl⟩ := addRoot_le_comp hy
         exact (ihB).mpr (h b hab ((ihA).mp hA))
+  | circ A ihA =>
+      simp only [Kripke.force_circ]
+      constructor
+      · intro h b hab
+        obtain ⟨y, hmy, hy⟩ := h (some ⟨i, b⟩) (.comp hab)
+        obtain ⟨c, hbc, rfl⟩ := addRoot_rm_comp hmy
+        exact ⟨c, hbc, (ihA).mp hy⟩
+      · intro h y hy
+        obtain ⟨b, hab, rfl⟩ := addRoot_le_comp hy
+        obtain ⟨c, hbc, hc⟩ := h b hab
+        exact ⟨some ⟨i, c⟩, .comp hbc, (ihA).mpr hc⟩
 
 @[simp] theorem addRoot_root_atom (p : String) :
     (addRoot ιe ιc V₀ M hV).force none (.atom p) ↔ Form.atom p ∈ V₀ := Iff.rfl

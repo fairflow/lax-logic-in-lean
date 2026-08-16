@@ -40,6 +40,9 @@ inductive Form where
   | and : Form → Form → Form
   | or : Form → Form → Form
   | imp : Form → Form → Form
+  /-- the lax modality `◯` of Propositional Lax Logic.  W1 of the modal
+  extension: present in the syntax, with no rule mentioning it. -/
+  | circ : Form → Form
   deriving DecidableEq, Repr
 
 namespace Form
@@ -54,6 +57,7 @@ def size : Form → Nat
   | .and A B => size A + size B + 1
   | .or A B => size A + size B + 1
   | .imp A B => size A + size B + 1
+  | .circ A => size A + 1
 
 /-- `A` is a propositional variable, i.e. `A ∈ PV`. -/
 def isPV : Form → Bool
@@ -69,6 +73,12 @@ def isPrime : Form → Bool
 /-- "By `Fm⊃` [we denote] the set of ⊃-formulas of `L`." -/
 def isImp : Form → Bool
   | .imp _ _ => true
+  | _ => false
+
+/-- The `◯`-formulas.  The third zone of `Ĝ` in the modal extension; unused
+by the `◯`-free layer. -/
+def isCirc : Form → Bool
+  | .circ _ => true
   | _ => false
 
 theorem isPV_isPrime {A : Form} (h : A.isPV = true) : A.isPrime = true := by
@@ -211,13 +221,23 @@ structure Kripke where
   V : W → String → Prop
   /-- "`α ≤ β` implies `V(α) ⊆ V(β)`" -/
   V_mono : ∀ {a b}, le a b → ∀ p, V a p → V b p
+  /-- modal (constraint) accessibility, for the lax modality.  W1 of the
+  modal extension: `Rm` is a preorder contained in `≤`, which is all the
+  `◯`-clause of forcing needs.  On a `◯`-free formula the choice of `Rm`
+  is immaterial, and every model built below takes `Rm = ≤`. -/
+  Rm : W → W → Prop
+  rm_refl : ∀ a, Rm a a
+  rm_trans : ∀ {a b c}, Rm a b → Rm b c → Rm a c
+  /-- the modal frame is a subrelation of the intuitionistic one -/
+  sub_mi : ∀ {a b}, Rm a b → le a b
   /-- the order and the valuation are decidable: the models the paper
   works with are finite and concrete, and decidability is what keeps the
   development free of `Classical.choice`. -/
   decLe : ∀ a b, Decidable (le a b)
   decV : ∀ a p, Decidable (V a p)
+  decRm : ∀ a b, Decidable (Rm a b)
 
-attribute [instance] Kripke.decEq Kripke.decLe Kripke.decV
+attribute [instance] Kripke.decEq Kripke.decLe Kripke.decV Kripke.decRm
 
 /-! ### Counting, for the height of a world
 
@@ -270,7 +290,16 @@ theorem countP_lt_countP {α : Type} {p q : α → Bool} :
 
 namespace Kripke
 
-/-- The forcing relation, exactly the five clauses of the paper.
+/-- The forcing relation: the paper's five clauses, and the sixth of
+Propositional Lax Logic,
+
+    K,α ⊩ ◯A   iff   for every β with α ≤ β there is γ with `Rm β γ`
+                     and K,γ ⊩ A
+
+which is Fairtlough–Mendler's clause with the fallible worlds left out (no
+world forces `⊥` here, so `Fal = ∅`; see `docs/frjlax-reassessment.md`).
+The universal quantifier over `β ≥ α` is what makes `◯` monotone without
+an interaction axiom between the two frames.
 
 DIVERGENCE (presentational, standard): the paper writes the ⊃-clause as
 "for every β ≥ α, `K,β ⊮ A` or `K,β ⊩ B`"; we write the equivalent
@@ -282,6 +311,7 @@ def force (K : Kripke) : K.W → Form → Prop
   | a, .and A B => force K a A ∧ force K a B
   | a, .or A B => force K a A ∨ force K a B
   | a, .imp A B => ∀ b, K.le a b → force K b A → force K b B
+  | a, .circ A => ∀ b, K.le a b → ∃ c, K.Rm b c ∧ force K c A
 
 variable (K : Kripke)
 
@@ -296,6 +326,10 @@ variable (K : Kripke)
 
 @[simp] theorem force_or (a : K.W) (A B : Form) :
     K.force a (.or A B) ↔ (K.force a A ∨ K.force a B) := by simp [force]
+
+@[simp] theorem force_circ (a : K.W) (A : Form) :
+    K.force a (.circ A) ↔ ∀ b, K.le a b → ∃ c, K.Rm b c ∧ K.force c A := by
+  simp [force]
 
 @[simp] theorem force_imp (a : K.W) (A B : Form) :
     K.force a (.imp A B) ↔ ∀ b, K.le a b → K.force b A → K.force b B := by
@@ -312,6 +346,7 @@ theorem force_mono {a b : K.W} (hab : K.le a b) :
   | and A B ihA ihB => exact fun h => ⟨ihA h.1, ihB h.2⟩
   | or A B ihA ihB => exact fun h => h.elim (Or.inl ∘ ihA) (Or.inr ∘ ihB)
   | imp A B _ _ => exact fun h c hbc => h c (K.le_trans hab hbc)
+  | circ A _ => exact fun h c hbc => h c (K.le_trans hab hbc)
 
 /-! ### Forcing is decidable
 
@@ -339,6 +374,17 @@ instance decForce (K : Kripke) : ∀ (a : K.W) (A : Form), Decidable (K.force a 
         List.decidableBAll _ _
       decidable_of_iff (∀ b ∈ K.elems, K.le a b → K.force b A → K.force b B)
         ⟨fun h b => h b (K.complete b), fun h b _ => h b⟩
+  | a, .circ A =>
+      have : ∀ c : K.W, Decidable (K.force c A) := fun c => decForce K c A
+      have : Decidable (∀ b ∈ K.elems, K.le a b → ∃ c ∈ K.elems, K.Rm b c ∧ K.force c A) :=
+        List.decidableBAll _ _
+      decidable_of_iff (∀ b ∈ K.elems, K.le a b → ∃ c ∈ K.elems, K.Rm b c ∧ K.force c A)
+        ⟨fun h b hb => by
+            obtain ⟨c, _, hc⟩ := h b (K.complete b) hb
+            exact ⟨c, hc⟩,
+         fun h b _ hb => by
+            obtain ⟨c, hmc, hc⟩ := h b hb
+            exact ⟨c, K.complete c, hmc, hc⟩⟩
 
 /-- "`K,α ⊩ Γ` means `K,α ⊩ A` for every `A ∈ Γ`." -/
 def forces (a : K.W) (Γ : List Form) : Prop := ∀ A ∈ Γ, K.force a A
@@ -395,6 +441,8 @@ mutual
         ((Form.or A B) :: ((sfPos A).1 ++ (sfPos B).1), (sfPos A).2 ++ (sfPos B).2)
     | .imp A B =>
         ((Form.imp A B) :: ((sfNeg A).1 ++ (sfPos B).1), (sfNeg A).2 ++ (sfPos B).2)
+    | .circ A =>
+        ((Form.circ A) :: (sfPos A).1, (sfPos A).2)
 
   /-- The `(Sf^R, Sf^L)` contribution of a formula occurring in LEFT position. -/
   def sfNeg : Form → List Form × List Form
@@ -406,6 +454,8 @@ mutual
         ((sfNeg A).1 ++ (sfNeg B).1, (Form.or A B) :: ((sfNeg A).2 ++ (sfNeg B).2))
     | .imp A B =>
         ((sfPos A).1 ++ (sfNeg B).1, (Form.imp A B) :: ((sfPos A).2 ++ (sfNeg B).2))
+    | .circ A =>
+        ((sfNeg A).1, (Form.circ A) :: (sfNeg A).2)
 end
 
 /-- `Sf^R(G)`, the right (positive) subformulas of `G`. -/
@@ -426,70 +476,114 @@ structure SfClosed (R L : List Form) : Prop where
   rAnd : ∀ {A B : Form}, Form.and A B ∈ R → A ∈ R ∧ B ∈ R
   rOr : ∀ {A B : Form}, Form.or A B ∈ R → A ∈ R ∧ B ∈ R
   rImp : ∀ {A B : Form}, Form.imp A B ∈ R → A ∈ L ∧ B ∈ R
+  /-- W1: `◯` transmits polarity, like `∧` and `∨` and unlike `⊃`. -/
+  rCirc : ∀ {A : Form}, Form.circ A ∈ R → A ∈ R
   lAnd : ∀ {A B : Form}, Form.and A B ∈ L → A ∈ L ∧ B ∈ L
   lOr : ∀ {A B : Form}, Form.or A B ∈ L → A ∈ L ∧ B ∈ L
   lImp : ∀ {A B : Form}, Form.imp A B ∈ L → A ∈ R ∧ B ∈ L
+  /-- W1: the same clause on the left. -/
+  lCirc : ∀ {A : Form}, Form.circ A ∈ L → A ∈ L
 
 theorem SfClosed.union {R₁ L₁ R₂ L₂ : List Form}
     (h₁ : SfClosed R₁ L₁) (h₂ : SfClosed R₂ L₂) :
-    SfClosed (R₁ ++ R₂) (L₁ ++ L₂) := by
-  constructor <;> intro A B hmem <;>
-    rcases List.mem_append.mp hmem with h | h
-  · exact ⟨List.mem_append_left _ (h₁.rAnd h).1, List.mem_append_left _ (h₁.rAnd h).2⟩
-  · exact ⟨List.mem_append_right _ (h₂.rAnd h).1, List.mem_append_right _ (h₂.rAnd h).2⟩
-  · exact ⟨List.mem_append_left _ (h₁.rOr h).1, List.mem_append_left _ (h₁.rOr h).2⟩
-  · exact ⟨List.mem_append_right _ (h₂.rOr h).1, List.mem_append_right _ (h₂.rOr h).2⟩
-  · exact ⟨List.mem_append_left _ (h₁.rImp h).1, List.mem_append_left _ (h₁.rImp h).2⟩
-  · exact ⟨List.mem_append_right _ (h₂.rImp h).1, List.mem_append_right _ (h₂.rImp h).2⟩
-  · exact ⟨List.mem_append_left _ (h₁.lAnd h).1, List.mem_append_left _ (h₁.lAnd h).2⟩
-  · exact ⟨List.mem_append_right _ (h₂.lAnd h).1, List.mem_append_right _ (h₂.lAnd h).2⟩
-  · exact ⟨List.mem_append_left _ (h₁.lOr h).1, List.mem_append_left _ (h₁.lOr h).2⟩
-  · exact ⟨List.mem_append_right _ (h₂.lOr h).1, List.mem_append_right _ (h₂.lOr h).2⟩
-  · exact ⟨List.mem_append_left _ (h₁.lImp h).1, List.mem_append_left _ (h₁.lImp h).2⟩
-  · exact ⟨List.mem_append_right _ (h₂.lImp h).1, List.mem_append_right _ (h₂.lImp h).2⟩
+    SfClosed (R₁ ++ R₂) (L₁ ++ L₂) where
+  rAnd := by
+    intro A B hm; rcases List.mem_append.mp hm with h | h
+    · exact ⟨List.mem_append_left _ (h₁.rAnd h).1, List.mem_append_left _ (h₁.rAnd h).2⟩
+    · exact ⟨List.mem_append_right _ (h₂.rAnd h).1, List.mem_append_right _ (h₂.rAnd h).2⟩
+  rOr := by
+    intro A B hm; rcases List.mem_append.mp hm with h | h
+    · exact ⟨List.mem_append_left _ (h₁.rOr h).1, List.mem_append_left _ (h₁.rOr h).2⟩
+    · exact ⟨List.mem_append_right _ (h₂.rOr h).1, List.mem_append_right _ (h₂.rOr h).2⟩
+  rImp := by
+    intro A B hm; rcases List.mem_append.mp hm with h | h
+    · exact ⟨List.mem_append_left _ (h₁.rImp h).1, List.mem_append_left _ (h₁.rImp h).2⟩
+    · exact ⟨List.mem_append_right _ (h₂.rImp h).1, List.mem_append_right _ (h₂.rImp h).2⟩
+  rCirc := by
+    intro A hm; rcases List.mem_append.mp hm with h | h
+    · exact List.mem_append_left _ (h₁.rCirc h)
+    · exact List.mem_append_right _ (h₂.rCirc h)
+  lAnd := by
+    intro A B hm; rcases List.mem_append.mp hm with h | h
+    · exact ⟨List.mem_append_left _ (h₁.lAnd h).1, List.mem_append_left _ (h₁.lAnd h).2⟩
+    · exact ⟨List.mem_append_right _ (h₂.lAnd h).1, List.mem_append_right _ (h₂.lAnd h).2⟩
+  lOr := by
+    intro A B hm; rcases List.mem_append.mp hm with h | h
+    · exact ⟨List.mem_append_left _ (h₁.lOr h).1, List.mem_append_left _ (h₁.lOr h).2⟩
+    · exact ⟨List.mem_append_right _ (h₂.lOr h).1, List.mem_append_right _ (h₂.lOr h).2⟩
+  lImp := by
+    intro A B hm; rcases List.mem_append.mp hm with h | h
+    · exact ⟨List.mem_append_left _ (h₁.lImp h).1, List.mem_append_left _ (h₁.lImp h).2⟩
+    · exact ⟨List.mem_append_right _ (h₂.lImp h).1, List.mem_append_right _ (h₂.lImp h).2⟩
+  lCirc := by
+    intro A hm; rcases List.mem_append.mp hm with h | h
+    · exact List.mem_append_left _ (h₁.lCirc h)
+    · exact List.mem_append_right _ (h₂.lCirc h)
 
 /-- Inserting a compound formula into the RIGHT component preserves the
 clauses, provided its own components are already correctly placed. -/
 theorem SfClosed.insertR {R L : List Form} {X : Form} (h : SfClosed R L)
     (hand : ∀ A B : Form, X = .and A B → A ∈ R ∧ B ∈ R)
     (hor : ∀ A B : Form, X = .or A B → A ∈ R ∧ B ∈ R)
-    (himp : ∀ A B : Form, X = .imp A B → A ∈ L ∧ B ∈ R) :
-    SfClosed (X :: R) L := by
-  have wk : ∀ {Y : Form}, Y ∈ R → Y ∈ X :: R := fun hY => List.mem_cons_of_mem _ hY
-  constructor <;> intro A B hmem
-  · rcases List.mem_cons.mp hmem with rfl | h'
-    · exact ⟨wk (hand A B rfl).1, wk (hand A B rfl).2⟩
-    · exact ⟨wk (h.rAnd h').1, wk (h.rAnd h').2⟩
-  · rcases List.mem_cons.mp hmem with rfl | h'
-    · exact ⟨wk (hor A B rfl).1, wk (hor A B rfl).2⟩
-    · exact ⟨wk (h.rOr h').1, wk (h.rOr h').2⟩
-  · rcases List.mem_cons.mp hmem with rfl | h'
-    · exact ⟨(himp A B rfl).1, wk (himp A B rfl).2⟩
-    · exact ⟨(h.rImp h').1, wk (h.rImp h').2⟩
-  · exact ⟨(h.lAnd hmem).1, (h.lAnd hmem).2⟩
-  · exact ⟨(h.lOr hmem).1, (h.lOr hmem).2⟩
-  · exact ⟨wk (h.lImp hmem).1, (h.lImp hmem).2⟩
+    (himp : ∀ A B : Form, X = .imp A B → A ∈ L ∧ B ∈ R)
+    (hcirc : ∀ A : Form, X = .circ A → A ∈ R) :
+    SfClosed (X :: R) L where
+  rAnd := by
+    intro A B hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact ⟨List.mem_cons_of_mem _ (hand A B rfl).1,
+             List.mem_cons_of_mem _ (hand A B rfl).2⟩
+    · exact ⟨List.mem_cons_of_mem _ (h.rAnd h').1,
+             List.mem_cons_of_mem _ (h.rAnd h').2⟩
+  rOr := by
+    intro A B hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact ⟨List.mem_cons_of_mem _ (hor A B rfl).1,
+             List.mem_cons_of_mem _ (hor A B rfl).2⟩
+    · exact ⟨List.mem_cons_of_mem _ (h.rOr h').1,
+             List.mem_cons_of_mem _ (h.rOr h').2⟩
+  rImp := by
+    intro A B hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact ⟨(himp A B rfl).1, List.mem_cons_of_mem _ (himp A B rfl).2⟩
+    · exact ⟨(h.rImp h').1, List.mem_cons_of_mem _ (h.rImp h').2⟩
+  rCirc := by
+    intro A hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact List.mem_cons_of_mem _ (hcirc A rfl)
+    · exact List.mem_cons_of_mem _ (h.rCirc h')
+  lAnd := fun hm => h.lAnd hm
+  lOr := fun hm => h.lOr hm
+  lImp := fun hm => ⟨List.mem_cons_of_mem _ (h.lImp hm).1, (h.lImp hm).2⟩
+  lCirc := fun hm => h.lCirc hm
 
 /-- Inserting a compound formula into the LEFT component, dually. -/
 theorem SfClosed.insertL {R L : List Form} {X : Form} (h : SfClosed R L)
     (hand : ∀ A B : Form, X = .and A B → A ∈ L ∧ B ∈ L)
     (hor : ∀ A B : Form, X = .or A B → A ∈ L ∧ B ∈ L)
-    (himp : ∀ A B : Form, X = .imp A B → A ∈ R ∧ B ∈ L) :
-    SfClosed R (X :: L) := by
-  have wk : ∀ {Y : Form}, Y ∈ L → Y ∈ X :: L := fun hY => List.mem_cons_of_mem _ hY
-  constructor <;> intro A B hmem
-  · exact ⟨(h.rAnd hmem).1, (h.rAnd hmem).2⟩
-  · exact ⟨(h.rOr hmem).1, (h.rOr hmem).2⟩
-  · exact ⟨wk (h.rImp hmem).1, (h.rImp hmem).2⟩
-  · rcases List.mem_cons.mp hmem with rfl | h'
-    · exact ⟨wk (hand A B rfl).1, wk (hand A B rfl).2⟩
-    · exact ⟨wk (h.lAnd h').1, wk (h.lAnd h').2⟩
-  · rcases List.mem_cons.mp hmem with rfl | h'
-    · exact ⟨wk (hor A B rfl).1, wk (hor A B rfl).2⟩
-    · exact ⟨wk (h.lOr h').1, wk (h.lOr h').2⟩
-  · rcases List.mem_cons.mp hmem with rfl | h'
-    · exact ⟨(himp A B rfl).1, wk (himp A B rfl).2⟩
-    · exact ⟨(h.lImp h').1, wk (h.lImp h').2⟩
+    (himp : ∀ A B : Form, X = .imp A B → A ∈ R ∧ B ∈ L)
+    (hcirc : ∀ A : Form, X = .circ A → A ∈ L) :
+    SfClosed R (X :: L) where
+  rAnd := fun hm => h.rAnd hm
+  rOr := fun hm => h.rOr hm
+  rImp := fun hm => ⟨List.mem_cons_of_mem _ (h.rImp hm).1, (h.rImp hm).2⟩
+  rCirc := fun hm => h.rCirc hm
+  lAnd := by
+    intro A B hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact ⟨List.mem_cons_of_mem _ (hand A B rfl).1,
+             List.mem_cons_of_mem _ (hand A B rfl).2⟩
+    · exact ⟨List.mem_cons_of_mem _ (h.lAnd h').1,
+             List.mem_cons_of_mem _ (h.lAnd h').2⟩
+  lOr := by
+    intro A B hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact ⟨List.mem_cons_of_mem _ (hor A B rfl).1,
+             List.mem_cons_of_mem _ (hor A B rfl).2⟩
+    · exact ⟨List.mem_cons_of_mem _ (h.lOr h').1,
+             List.mem_cons_of_mem _ (h.lOr h').2⟩
+  lImp := by
+    intro A B hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact ⟨(himp A B rfl).1, List.mem_cons_of_mem _ (himp A B rfl).2⟩
+    · exact ⟨(h.lImp h').1, List.mem_cons_of_mem _ (h.lImp h').2⟩
+  lCirc := by
+    intro A hm; rcases List.mem_cons.mp hm with rfl | h'
+    · exact List.mem_cons_of_mem _ (hcirc A rfl)
+    · exact List.mem_cons_of_mem _ (h.lCirc h')
 
 theorem self_mem_sfPos (X : Form) : X ∈ (sfPos X).1 := by
   cases X <;> simp [sfPos]
@@ -501,52 +595,60 @@ mutual
   theorem sfPos_closed (X : Form) : SfClosed (sfPos X).1 (sfPos X).2 := by
     cases X with
     | atom p =>
-        constructor <;> intro A B hmem <;> simp [sfPos] at hmem
+        constructor <;> intros <;> simp_all [sfPos]
     | bot =>
-        constructor <;> intro A B hmem <;> simp [sfPos] at hmem
+        constructor <;> intros <;> simp_all [sfPos]
     | and A B =>
         have h := (sfPos_closed A).union (sfPos_closed B)
         refine (show SfClosed ((sfPos A).1 ++ (sfPos B).1) ((sfPos A).2 ++ (sfPos B).2) from h).insertR
-          ?_ ?_ ?_ <;> intro C D heq <;> cases heq
+          ?_ ?_ ?_ (by intro C heq; cases heq) <;> intro C D heq <;> cases heq
         exact ⟨List.mem_append_left _ (self_mem_sfPos A),
                List.mem_append_right _ (self_mem_sfPos B)⟩
     | or A B =>
         have h := (sfPos_closed A).union (sfPos_closed B)
         refine (show SfClosed ((sfPos A).1 ++ (sfPos B).1) ((sfPos A).2 ++ (sfPos B).2) from h).insertR
-          ?_ ?_ ?_ <;> intro C D heq <;> cases heq
+          ?_ ?_ ?_ (by intro C heq; cases heq) <;> intro C D heq <;> cases heq
         exact ⟨List.mem_append_left _ (self_mem_sfPos A),
                List.mem_append_right _ (self_mem_sfPos B)⟩
     | imp A B =>
         have h := (sfNeg_closed A).union (sfPos_closed B)
         refine (show SfClosed ((sfNeg A).1 ++ (sfPos B).1) ((sfNeg A).2 ++ (sfPos B).2) from h).insertR
-          ?_ ?_ ?_ <;> intro C D heq <;> cases heq
+          ?_ ?_ ?_ (by intro C heq; cases heq) <;> intro C D heq <;> cases heq
         exact ⟨List.mem_append_left _ (self_mem_sfNeg A),
                List.mem_append_right _ (self_mem_sfPos B)⟩
+    | circ A =>
+        exact (sfPos_closed A).insertR (by intro C D heq; cases heq)
+          (by intro C D heq; cases heq) (by intro C D heq; cases heq)
+          (by intro C heq; cases heq; exact self_mem_sfPos A)
 
   theorem sfNeg_closed (X : Form) : SfClosed (sfNeg X).1 (sfNeg X).2 := by
     cases X with
     | atom p =>
-        constructor <;> intro A B hmem <;> simp [sfNeg] at hmem
+        constructor <;> intros <;> simp_all [sfNeg]
     | bot =>
-        constructor <;> intro A B hmem <;> simp [sfNeg] at hmem
+        constructor <;> intros <;> simp_all [sfNeg]
     | and A B =>
         have h := (sfNeg_closed A).union (sfNeg_closed B)
         refine (show SfClosed ((sfNeg A).1 ++ (sfNeg B).1) ((sfNeg A).2 ++ (sfNeg B).2) from h).insertL
-          ?_ ?_ ?_ <;> intro C D heq <;> cases heq
+          ?_ ?_ ?_ (by intro C heq; cases heq) <;> intro C D heq <;> cases heq
         exact ⟨List.mem_append_left _ (self_mem_sfNeg A),
                List.mem_append_right _ (self_mem_sfNeg B)⟩
     | or A B =>
         have h := (sfNeg_closed A).union (sfNeg_closed B)
         refine (show SfClosed ((sfNeg A).1 ++ (sfNeg B).1) ((sfNeg A).2 ++ (sfNeg B).2) from h).insertL
-          ?_ ?_ ?_ <;> intro C D heq <;> cases heq
+          ?_ ?_ ?_ (by intro C heq; cases heq) <;> intro C D heq <;> cases heq
         exact ⟨List.mem_append_left _ (self_mem_sfNeg A),
                List.mem_append_right _ (self_mem_sfNeg B)⟩
     | imp A B =>
         have h := (sfPos_closed A).union (sfNeg_closed B)
         refine (show SfClosed ((sfPos A).1 ++ (sfNeg B).1) ((sfPos A).2 ++ (sfNeg B).2) from h).insertL
-          ?_ ?_ ?_ <;> intro C D heq <;> cases heq
+          ?_ ?_ ?_ (by intro C heq; cases heq) <;> intro C D heq <;> cases heq
         exact ⟨List.mem_append_left _ (self_mem_sfPos A),
                List.mem_append_right _ (self_mem_sfNeg B)⟩
+    | circ A =>
+        exact (sfNeg_closed A).insertL (by intro C D heq; cases heq)
+          (by intro C D heq; cases heq) (by intro C D heq; cases heq)
+          (by intro C heq; cases heq; exact self_mem_sfNeg A)
 end
 
 /-! The paper's four clauses, now as theorems about `sfR`/`sfL`. -/
@@ -568,6 +670,12 @@ theorem sfL_and {G A B : Form} (h : Form.and A B ∈ sfL G) :
 theorem sfL_or {G A B : Form} (h : Form.or A B ∈ sfL G) :
     A ∈ sfL G ∧ B ∈ sfL G := (sfPos_closed G).lOr h
 
+theorem sfR_circ {G A : Form} (h : Form.circ A ∈ sfR G) : A ∈ sfR G :=
+  (sfPos_closed G).rCirc h
+
+theorem sfL_circ {G A : Form} (h : Form.circ A ∈ sfL G) : A ∈ sfL G :=
+  (sfPos_closed G).lCirc h
+
 theorem sfL_imp {G A B : Form} (h : Form.imp A B ∈ sfL G) :
     A ∈ sfR G ∧ B ∈ sfL G := (sfPos_closed G).lImp h
 
@@ -584,6 +692,7 @@ def sf : Form → List Form
   | .and A B => (Form.and A B) :: (sf A ++ sf B)
   | .or A B => (Form.or A B) :: (sf A ++ sf B)
   | .imp A B => (Form.imp A B) :: (sf A ++ sf B)
+  | .circ A => (Form.circ A) :: sf A
 
 /-- `Sf⁻(A) = Sf(A) \ {A}`. -/
 def sfm (A : Form) : List Form := rm (sf A) A
@@ -619,6 +728,12 @@ theorem size_le_of_mem_sf : ∀ {A X : Form}, X ∈ sf A → X.size ≤ A.size :
       · exact Nat.le_refl _
       · exact Nat.le_trans (ihA h) (by simp [Form.size]; omega)
       · exact Nat.le_trans (ihB h) (by simp [Form.size]; omega)
+  | circ A ihA =>
+      intro X h
+      simp only [sf, List.mem_cons] at h
+      rcases h with rfl | h
+      · exact Nat.le_refl _
+      · exact Nat.le_trans (ihA h) (by simp only [Form.size]; omega)
 
 theorem sf_subset_sfm_impL {A B : Form} : sf A ⊆ sfm (.imp A B) := by
   intro X hX
@@ -661,6 +776,13 @@ theorem size_lt_of_mem_sfm : ∀ {A X : Form}, X ∈ sfm A → X.size < A.size :
       rcases hmem with rfl | hmem | hmem
       · exact absurd rfl hne
       · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+      · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+  | circ A ihA =>
+      intro X h
+      obtain ⟨hne, hmem⟩ := mem_rm.mp h
+      simp only [sf, List.mem_cons] at hmem
+      rcases hmem with rfl | hmem
+      · exact absurd rfl hne
       · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
 
 theorem sfm_subset_sfm_impR {A B : Form} : sfm B ⊆ sfm (.imp A B) := by
@@ -735,6 +857,24 @@ def gAt (G : Form) : List Form := (sfL G).filter Form.isPV
 def gImp (G : Form) : List Form := (sfL G).filter Form.isImp
 
 /-- `Ĝ = Ĝ_at ++ Ĝ_imp`. -/
+def gCirc (G : Form) : List Form := (sfL G).filter Form.isCirc
+
+/-- `Ĝ = Ĝ_at ∪ Ĝ_imp`, the paper's.
+
+W1 FINDING, recorded rather than acted on.  The modality needs a third
+zone `Ĝ_◯` — `◯A` can be forced where `A` is not, exactly as `A ⊃ B` can
+be forced where `B` is not, so `◯`-formulas are determining data about a
+world.  Screened twice: semantically, and in `docs/frj-lifting.md` §7,
+where determining part = atoms + `⊥` + implications gives 32 certified
+failures over 156 cells and adding the `◯`-formulas gives 0.
+
+But the third zone **cannot be added before the `◯` rules**, and the build
+is what showed it: with `Ĝ_◯` present, `⊃∉`'s side condition
+`Θ ⊆ Cl(Γ) ∩ Ĝ` lets a `◯`-formula into a zone, `⊃∈` can shift it into the
+stable set, and the join rules — which keep only `Σ^at` and `Σ^⊃` — then
+drop it, breaking condition (†) of Lemma 3.10's join case.  So `Ĝ_◯`,
+the `◯` clause of `Cl` and the `◯` clause of `Λ*` are one change with the
+rules, not a change before them.  `gCirc` is defined and unused. -/
 def gHat (G : Form) : List Form := gAt G ++ gImp G
 
 /-! ## Canonical contexts
@@ -789,6 +929,10 @@ def atPart (Γ : List Form) : List Form := Γ.filter Form.isPV
 
 /-- The implicational part of a set of formulas: the paper's `Γ^⊃`. -/
 def impPart (Γ : List Form) : List Form := Γ.filter Form.isImp
+
+/-- `Γ^◯`, the third zone.  W1 of the modal extension; no ◯-free
+derivation has a nonempty third part. -/
+def circPart (Γ : List Form) : List Form := Γ.filter Form.isCirc
 
 /-! ## The closure `Cl(Γ)`
 
@@ -888,5 +1032,13 @@ theorem clo_sf {Γ : List Form} : ∀ {A : Form}, Clo Γ A → Clo (cap Γ (sf A
         intro Z hZ
         simp only [sf, List.mem_cons, List.mem_append]
         exact Or.inr (Or.inr hZ))
+
+/-- The unit of the modality, as a fact about forcing rather than about
+`Cl`: `α ⊩ X` implies `α ⊩ ◯X`, by reflexivity of `Rm`.  This is what a
+`◯` clause of the closure grammar would rest on, and it is proved here so
+that the W2 discussion has it; nothing consumes it yet. -/
+theorem force_circ_of_force {K : Kripke} {a : K.W} {X : Form}
+    (h : K.force a X) : K.force a (.circ X) :=
+  fun b hb => ⟨b, K.rm_refl b, K.force_mono hb h⟩
 
 end FRJ

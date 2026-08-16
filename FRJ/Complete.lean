@@ -50,8 +50,11 @@ theorem forceStar_force {a : K.W} : ∀ {H : Form}, K.forceStar a H → K.force 
   | and A B => exact h.elim
   | or A B => exact h.elim
   | imp A B => exact h.1
+  | circ A => exact h.elim
 
-/-- A formula satisfying `⊩*` is a variable or an implication. -/
+/-- A formula satisfying `⊩*` is a variable or an implication.  With `◯`
+in the syntax this is still the paper's statement: `Λ*` does not yet carry
+the `◯`-formulas, for the reason recorded on `gHat`. -/
 theorem forceStar_shape {a : K.W} : ∀ {H : Form},
     K.forceStar a H → H.isPV ∨ H.isImp := by
   intro H h
@@ -61,6 +64,7 @@ theorem forceStar_shape {a : K.W} : ∀ {H : Form},
   | and A B => exact h.elim
   | or A B => exact h.elim
   | imp A B => exact Or.inr rfl
+  | circ A => exact h.elim
 
 /-- `⊩*` is decidable, because `⊩` is. -/
 instance decForceStar (K : Kripke) (a : K.W) :
@@ -71,6 +75,7 @@ instance decForceStar (K : Kripke) (a : K.W) :
   | .or _ _ => inferInstanceAs (Decidable False)
   | .imp A B =>
       inferInstanceAs (Decidable (K.force a (.imp A B) ∧ ¬ K.force a A))
+  | .circ A => inferInstanceAs (Decidable False)
 
 end Kripke
 
@@ -112,8 +117,16 @@ over ALL formulas, so `Cl(Λ_α)` contains `Z ⊃ C` for arbitrary `Z`,
 which need not lie in `Sf^L(G)` and so not in `Λ_α`.  Its proof also has
 a step ("`α ⊩ A ∧ B`, hence `A ∧ B ∈ Λ_α`") that silently needs
 `A ∧ B ∈ Sf^L(G)`.  What the rest of the paper actually uses are the two
-directions proved here and in `forces_clo_lamStar`, and both are true. -/
-theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form} :
+directions proved here and in `forces_clo_lamStar`, and both are true.
+
+**W1 hypothesis.**  With `◯` in the syntax the statement acquires the
+side condition that `Sf^L(G)` is `◯`-free.  It is not a weakening of the
+`◯`-free theory — for a `◯`-free goal it holds automatically — but it is
+where the modality first bites: a world can force `◯X` without forcing
+`X`, so `◯X` would have to be determining data, and `Λ*` does not yet
+carry it.  See the note on `gHat`. -/
+theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) :
     ∀ {A : Form}, A ∈ sfL G → K.force a A → Clo (lamStar K a G) A := by
   intro A
   induction A with
@@ -137,15 +150,22 @@ theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form} :
       by_cases hfa : K.force a A
       · exact .imp (ihB hB (hf a (K.le_refl a) hfa))
       · exact .base (mem_lamStar.mpr ⟨hsf, ⟨hf, hfa⟩⟩)
+  | circ A _ =>
+      -- excluded by the side condition: `Λ*` does not yet carry the
+      -- `◯`-formulas, so a goal whose left subformulas include one is out
+      -- of scope until the modal rules arrive.
+      intro hsf _
+      exact absurd (hcf _ (List.mem_append_right _ hsf)) (by simp [Form.isCirc])
 
 /-- `Λ*` grows along `≤`, modulo closure: if `α ≤ β` then everything in
 `Λ*_α` lies in `Cl(Λ*_β)`.  (Used where the construction moves to a
 world above.) -/
-theorem lamStar_mono {K : Kripke} {a b : K.W} {G : Form} (hab : K.le a b) :
+theorem lamStar_mono {K : Kripke} {a b : K.W} {G : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) (hab : K.le a b) :
     ∀ X ∈ lamStar K a G, Clo (lamStar K b G) X := by
   intro X hX
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hX
-  exact mem_clo_lamStar hsf (K.force_mono hab (K.forceStar_force hst))
+  exact mem_clo_lamStar hcf hsf (K.force_mono hab (K.forceStar_force hst))
 
 /-! ## The height of a world
 

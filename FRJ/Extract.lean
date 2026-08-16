@@ -148,8 +148,17 @@ def toKripke (P : PreModel)
   root_le := P.root_le
   V := fun w p => Form.atom p ∈ P.lbl w
   V_mono := fun {a b} hle p hp => clo_pv (h a b hle _ hp)
+  -- W1 of the modal extension.  A pre-model carries no modal data, so the
+  -- packaging takes `Rm = ≤`; this is uniform across the construction, so
+  -- forcing of `◯` is preserved at component worlds by the same argument
+  -- as for `⊃` (`join_force_comp`).
+  Rm := P.le
+  rm_refl := P.le_refl
+  rm_trans := P.le_trans
+  sub_mi := fun h => h
   decLe := P.decLe
   decV := fun w p => inferInstanceAs (Decidable (Form.atom p ∈ P.lbl w))
+  decRm := P.decLe
 
 @[simp] theorem toKripke_le (P : PreModel) (h) (w v : P.W) :
     (P.toKripke h).le w v ↔ P.le w v := Iff.rfl
@@ -438,6 +447,22 @@ theorem join_force_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ 
           PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) hy
         rw [hy'] at hA ⊢
         exact (ihB b).mpr (hf b hab ((ihA b).mp hA))
+  | circ A ihA =>
+      intro a
+      simp only [Kripke.force_circ]
+      constructor
+      · intro hf b hab
+        obtain ⟨y, hmy, hy⟩ := hf (some ⟨i, b⟩) (.comp hab)
+        obtain ⟨c, hbc, hy'⟩ :=
+          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) hmy
+        rw [hy'] at hy
+        exact ⟨c, hbc, (ihA c).mp hy⟩
+      · intro hf y hy
+        obtain ⟨b, hab, hy'⟩ :=
+          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) hy
+        subst hy'
+        obtain ⟨c, hbc, hc⟩ := hf b hab
+        exact ⟨some ⟨i, c⟩, .comp hbc, (ihA c).mpr hc⟩
 
 /-- The paper's `σ_p ≤ φ(σ₁)` placement, in the only form the soundness
 proof uses it: the ROOT of a contributed model sits above `w`, with the

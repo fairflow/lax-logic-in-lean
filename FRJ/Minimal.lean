@@ -266,9 +266,15 @@ theorem lamStar_subset_axI {K : Kripke} {a : K.W} {G C : Form}
 
 /-! ## Lemma 6.4 -/
 
-def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
+def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    (a : K.W) (t : Nat) (C : Form)
     (hC : C ∈ sfR G) (hnf : ¬ K.force a C) : MinModStmt K G a t C := by
   match t, C with
+  | _, .circ A =>
+      -- W1: no rule of the calculus concludes a `◯`-goal, and `Λ*` does
+      -- not carry the `◯`-formulas.  Out of scope until the modal rules
+      -- arrive; see the note on `gHat`.
+      exact absurd (hcf _ (List.mem_append_left _ hC)) (by simp [Form.isCirc])
   | 0, .atom p =>
       exact { stab := [], th := nf G ((rm (gAt G) (.atom p)) ++ gImp G)
               der := .axI (.atom p) rfl hC
@@ -285,18 +291,18 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
       obtain ⟨hC1, hC2⟩ := sfR_and hC
       by_cases h1 : K.force a C₁
       · have h2 : ¬ K.force a C₂ := fun hc => hnf ⟨h1, hc⟩
-        let w := minMod K G a 0 C₂ hC2 h2
+        let w := minMod K G hcf a 0 C₂ hC2 h2
         exact { stab := w.stab, th := w.th, der := .andI2 w.der hC
                 sub := w.sub, cov := w.cov, thNf := w.thNf }
-      · let w := minMod K G a 0 C₁ hC1 h1
+      · let w := minMod K G hcf a 0 C₁ hC1 h1
         exact { stab := w.stab, th := w.th, der := .andI1 w.der hC
                 sub := w.sub, cov := w.cov, thNf := w.thNf }
   | 0, .or C₁ C₂ =>
       obtain ⟨hC1, hC2⟩ := sfR_or hC
       have h1 : ¬ K.force a C₁ := fun hc => hnf (Or.inl hc)
       have h2 : ¬ K.force a C₂ := fun hc => hnf (Or.inr hc)
-      let w₁ := minMod K G a 0 C₁ hC1 h1
-      let w₂ := minMod K G a 0 C₂ hC2 h2
+      let w₁ := minMod K G hcf a 0 C₁ hC1 h1
+      let w₂ := minMod K G hcf a 0 C₂ hC2 h2
       refine { stab := w₁.stab ++ w₂.stab, th := nf G (cap w₁.th w₂.th)
                der := .orI w₁.der w₂.der (fun X hX => w₂.cov (w₁.sub hX))
                         (fun X hX => w₁.cov (w₂.sub hX)) hC
@@ -319,7 +325,7 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
       by_cases hea : m.e = a
       · have heA : K.force a A := hea ▸ m.fA
         have heB : ¬ K.force a B := hea ▸ m.nfB
-        let w := minMod K G a 0 B hB heB
+        let w := minMod K G hcf a 0 B hB heB
         have hLamTh : sdiff (lamStar K a G) w.stab ⊆ w.th := by
           intro x hx
           obtain ⟨hx1, hx2⟩ := mem_sdiff.mp hx
@@ -343,7 +349,7 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
             · exact List.mem_append_right _ hL
             · exact List.mem_append_left _ (mem_sdiff.mpr ⟨hx, hL⟩)
         have hAclo : Clo (nf G (w.stab ++ sdiff (lamStar K a G) w.stab)) A := by
-          refine clo_mono ?_ (mem_clo_lamStar hA heA)
+          refine clo_mono ?_ (mem_clo_lamStar hcf hA heA)
           intro x hx
           exact mem_nf.mpr ⟨lamStar_subset_gHat hx, hStLam hx⟩
         refine { stab := nf G (w.stab ++ sdiff (lamStar K a G) w.stab)
@@ -359,13 +365,13 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
             (mem_nf.mpr ⟨lamStar_subset_gHat hX, hStLam hX⟩)
       · have hnaA : ¬ K.force a A :=
           m.min a (K.le_refl a) m.le (fun hc => hea hc.symm)
-        let w := minMod K G m.e 1 B hB m.nfB
+        let w := minMod K G hcf m.e 1 B hB m.nfB
         have hab : K.le a w.wld := K.le_trans m.le w.wle
         exact { stab := [], th := nf G (lamStar K a G)
                 der := .impNotIn w.der
-                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono hab X (mem_nf.mp hX).2),
+                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono hcf hab X (mem_nf.mp hX).2),
                     (mem_nf.mp hX).1⟩)
-                  (clo_mono w.cov (mem_clo_lamStar hA (K.force_mono w.wle m.fA)))
+                  (clo_mono w.cov (mem_clo_lamStar hcf hA (K.force_mono w.wle m.fA)))
                   (fun hc => hnaA (forces_clo_lamStar (clo_mono nf_subset_self hc))) hC
                 sub := fun _ h => absurd h List.not_mem_nil
                 cov := fun x hx => mem_nf.mpr ⟨lamStar_subset_gHat hx, hx⟩
@@ -374,7 +380,7 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
       by_cases hempty : impPart (lamStar K a G) = []
       · exact regPrime_ax K G a (.atom p) rfl hC hnf hempty
       · refine regPrime_join K G a (.atom p) rfl hC hnf ?_
-          (fun A hA hnA => minMod K G a 0 A hA hnA)
+          (fun A hA hnA => minMod K G hcf a 0 A hA hnA)
         intro hc
         refine hempty (eq_nil_of_forall_not_mem (fun X hX => ?_))
         obtain ⟨hXl, hXi⟩ := List.mem_filter.mp hX
@@ -385,7 +391,7 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
       by_cases hempty : impPart (lamStar K a G) = []
       · exact regPrime_ax K G a .bot rfl hC hnf hempty
       · refine regPrime_join K G a .bot rfl hC hnf ?_
-          (fun A hA hnA => minMod K G a 0 A hA hnA)
+          (fun A hA hnA => minMod K G hcf a 0 A hA hnA)
         intro hc
         refine hempty (eq_nil_of_forall_not_mem (fun X hX => ?_))
         obtain ⟨hXl, hXi⟩ := List.mem_filter.mp hX
@@ -396,29 +402,29 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
       obtain ⟨hC1, hC2⟩ := sfR_and hC
       by_cases h1 : K.force a C₁
       · have h2 : ¬ K.force a C₂ := fun hc => hnf ⟨h1, hc⟩
-        let w := minMod K G a (n+1) C₂ hC2 h2
+        let w := minMod K G hcf a (n+1) C₂ hC2 h2
         exact { ctx := w.ctx, der := .andR2 w.der hC
                 wld := w.wld, wle := w.wle, cov := w.cov }
-      · let w := minMod K G a (n+1) C₁ hC1 h1
+      · let w := minMod K G hcf a (n+1) C₁ hC1 h1
         exact { ctx := w.ctx, der := .andR1 w.der hC
                 wld := w.wld, wle := w.wle, cov := w.cov }
   | (n+1), .or C₁ C₂ =>
-      exact regOr_join K G a C₁ C₂ hC hnf (fun A hA hnA => minMod K G a 0 A hA hnA)
+      exact regOr_join K G a C₁ C₂ hC hnf (fun A hA hnA => minMod K G hcf a 0 A hA hnA)
   | (n+1), .imp A B =>
       obtain ⟨hA, hB⟩ := sfR_imp hC
       let m := minEta hnf
       by_cases hea : m.e = a
       · have heA : K.force a A := hea ▸ m.fA
         have heB : ¬ K.force a B := hea ▸ m.nfB
-        let w := minMod K G a (n+1) B hB heB
+        let w := minMod K G hcf a (n+1) B hB heB
         exact { ctx := w.ctx
                 der := .impIn w.der (clo_mono w.cov
-                  (mem_clo_lamStar hA (K.force_mono w.wle heA))) hC
+                  (mem_clo_lamStar hcf hA (K.force_mono w.wle heA))) hC
                 wld := w.wld, wle := w.wle, cov := w.cov }
-      · let w := minMod K G m.e 1 B hB m.nfB
+      · let w := minMod K G hcf m.e 1 B hB m.nfB
         exact { ctx := w.ctx
                 der := .impIn w.der (clo_mono w.cov
-                  (mem_clo_lamStar hA (K.force_mono w.wle m.fA))) hC
+                  (mem_clo_lamStar hcf hA (K.force_mono w.wle m.fA))) hC
                 wld := w.wld, wle := K.le_trans m.le w.wle, cov := w.cov }
 termination_by (ht K a, t, C.size)
 decreasing_by
@@ -443,24 +449,27 @@ def Derivation (G : Form) : Type := Σ Γ : List Form, FRJr G Γ G
 /-- **Completeness, as an algorithm** (Theorem 6.2(i)): a countermodel
 for `G` is turned into an `FRJ(G)`-derivation of `G`.  Apply Lemma 6.4 at
 the countermodel's root, in the regular half, with goal `G`. -/
-def completenessData {G : Form} (K : Kripke) (hK : ¬ K.valid G) : Derivation G :=
-  let w := minMod K G K.root 1 G (sfR_self G) hK
+def completenessData {G : Form} (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    (K : Kripke) (hK : ¬ K.valid G) : Derivation G :=
+  let w := minMod K G hcf K.root 1 G (sfR_self G) hK
   ⟨w.ctx, w.der⟩
 
 /-- **Completeness** (Theorem 6.2(i)). -/
-theorem completeness {G : Form} (K : Kripke) (hK : ¬ K.valid G) : Provable G :=
-  ⟨(completenessData K hK).1, ⟨(completenessData K hK).2⟩⟩
+theorem completeness {G : Form} (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    (K : Kripke) (hK : ¬ K.valid G) : Provable G :=
+  ⟨(completenessData hcf K hK).1, ⟨(completenessData hcf K hK).2⟩⟩
 
 /-- **The biconditional, constructively**: `FRJ(G)` proves `G` exactly
 when `G` has a countermodel.  Soundness (Theorem 3.1, via Theorem 3.10)
 gives one direction, completeness the other. -/
-theorem frj_iff_countermodel (G : Form) :
+theorem frj_iff_countermodel (G : Form)
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) :
     Provable G ↔ ∃ K : Kripke, ¬ K.valid G := by
   constructor
   · rintro ⟨Γ, ⟨d⟩⟩
     exact ⟨modR d, modR_countermodel d⟩
   · rintro ⟨K, hK⟩
-    exact completeness K hK
+    exact completeness hcf K hK
 
 /-- **The paper's statement** (Theorem 6.2(i) with Theorem 3.1):
 `FRJ(G)` proves `G` iff `G` is not intuitionistically valid.
@@ -469,8 +478,10 @@ The only step here that is not constructive is the passage from "not
 every model validates `G`" to "some model refutes `G`", which is where
 this pins `Classical.choice`; `frj_iff_countermodel` is the same result
 with that step left to the caller, and depends on no choice. -/
-theorem frj_iff_not_IPL (G : Form) : Provable G ↔ ¬ IPL G := by
-  rw [frj_iff_countermodel]
+theorem frj_iff_not_IPL (G : Form)
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) :
+    Provable G ↔ ¬ IPL G := by
+  rw [frj_iff_countermodel G hcf]
   constructor
   · rintro ⟨K, hK⟩ h
     exact hK (h K)

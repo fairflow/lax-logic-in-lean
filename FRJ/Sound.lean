@@ -42,6 +42,7 @@ theorem not_force_prime {P : PreModel} (h : ClosedLbl P) {w : P.W} {F : Form}
   | and A B => exact absurd hF (by simp [Form.isPrime])
   | or A B => exact absurd hF (by simp [Form.isPrime])
   | imp A B => exact absurd hF (by simp [Form.isPrime])
+  | circ A => exact absurd hF (by simp [Form.isPrime])
 
 theorem imp_not_mem_atPart {A B : Form} {Γ : List Form} :
     Form.imp A B ∉ atPart Γ := fun h => by
