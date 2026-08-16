@@ -47,6 +47,9 @@ structure PreModel where
   le_refl : ∀ a, le a a
   le_trans : ∀ {a b c}, le a b → le b c → le a c
   le_antisymm : ∀ {a b}, le a b → le b a → a = b
+  /-- the order is decidable: what keeps the extracted model computable,
+  and hence the development free of `Classical.choice`. -/
+  decLe : ∀ a b, Decidable (le a b)
   root : W
   root_le : ∀ a, le root a
   lbl : W → List Form
@@ -71,6 +74,7 @@ def leaf (Γ : List Form) : PreModel where
   le_refl := fun _ => trivial
   le_trans := fun _ _ => trivial
   le_antisymm := fun {a b} _ _ => Subsingleton.elim a b
+  decLe := fun _ _ => isTrue trivial
   root := ()
   root_le := fun _ => trivial
   lbl := fun _ => Γ
@@ -85,10 +89,7 @@ def join {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe)
     · exact List.mem_cons_self
     · refine List.mem_cons_of_mem _ (List.mem_flatMap.mpr ⟨i, ιc i, ?_⟩)
       exact List.mem_map.mpr ⟨a, (Ms i).complete a, rfl⟩
-  decEq := by
-    have : ∀ i : ι, DecidableEq (Ms i).W := fun i => (Ms i).decEq
-    intro x y
-    exact decEq x y
+  decEq := inferInstance
   le := PJLe Ms
   le_refl := by
     rintro (_ | ⟨i, a⟩)
@@ -105,6 +106,19 @@ def join {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe)
       | root => rfl
     · cases h2 with
       | comp hba => exact congrArg _ (Sigma.ext rfl (heq_of_eq ((Ms _).le_antisymm hab hba)))
+  decLe := by
+    rintro (_ | ⟨i, a⟩) y
+    · exact isTrue (.root _)
+    · cases y with
+      | none => exact isFalse (fun h => by cases h)
+      | some jb =>
+          obtain ⟨j, b⟩ := jb
+          by_cases hij : i = j
+          · subst hij
+            have : Decidable ((Ms i).le a b) := (Ms i).decLe a b
+            exact decidable_of_iff ((Ms i).le a b)
+              ⟨fun h => .comp h, fun h => by cases h; assumption⟩
+          · exact isFalse (fun h => by cases h; exact hij rfl)
   root := none
   root_le := fun _ => .root _
   lbl := fun x => match x with
@@ -120,7 +134,7 @@ theorem join_le_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, 
 /-- Package a pre-model as a Kripke model once `lbl_clo` is known: the
 valuation is the paper's `V(σ) = Lhs(σ) ∩ PV`, and its monotonicity is
 exactly Lemma 3.4(iii) together with (Cl5). -/
-def toKripke (P : PreModel) (hd : ∀ w v : P.W, Decidable (P.le w v))
+def toKripke (P : PreModel)
     (h : ∀ (w v : P.W), P.le w v → ∀ X ∈ P.lbl w, Clo (P.lbl v) X) : Kripke where
   W := P.W
   elems := P.elems
@@ -134,14 +148,14 @@ def toKripke (P : PreModel) (hd : ∀ w v : P.W, Decidable (P.le w v))
   root_le := P.root_le
   V := fun w p => Form.atom p ∈ P.lbl w
   V_mono := fun {a b} hle p hp => clo_pv (h a b hle _ hp)
-  decLe := hd
+  decLe := P.decLe
   decV := fun w p => inferInstanceAs (Decidable (Form.atom p ∈ P.lbl w))
 
-@[simp] theorem toKripke_le (P : PreModel) (hd) (h) (w v : P.W) :
-    (P.toKripke hd h).le w v ↔ P.le w v := Iff.rfl
+@[simp] theorem toKripke_le (P : PreModel) (h) (w v : P.W) :
+    (P.toKripke h).le w v ↔ P.le w v := Iff.rfl
 
-@[simp] theorem toKripke_V (P : PreModel) (hd) (h) (w : P.W) (p : String) :
-    (P.toKripke hd h).V w p ↔ Form.atom p ∈ P.lbl w := Iff.rfl
+@[simp] theorem toKripke_V (P : PreModel) (h) (w : P.W) (p : String) :
+    (P.toKripke h).V w p ↔ Form.atom p ∈ P.lbl w := Iff.rfl
 
 end PreModel
 
@@ -199,6 +213,29 @@ theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _, i => regIdxComplete d i
   | _, _, _, .impNotIn _ _ _ _ _, _ => List.mem_cons_self
 
+/-! ### The index set of a join
+
+A join contributes one world per regular sub-derivation of each premise,
+so its index is `(j : Fin (n+1)) × RegIdx (prem j)`.  `PreModel.join`
+needs that index enumerated; `List.finRange` and `regIdxElems` do it
+without `Fintype`, hence without `Classical.choice`. -/
+
+/-- Every `⟨j, i⟩` with `j` a premise and `i` a regular sub-derivation
+of it. -/
+def premIdxElems {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form}
+    (prem : ∀ j, FRJi G (stab j) (th j) (rhs j)) :
+    List ((j : Fin (n + 1)) × RegIdx (prem j)) :=
+  (List.finRange (n + 1)).flatMap
+    (fun j => (regIdxElems (prem j)).map (fun i => ⟨j, i⟩))
+
+theorem premIdxComplete {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form}
+    (prem : ∀ j, FRJi G (stab j) (th j) (rhs j))
+    (ji : (j : Fin (n + 1)) × RegIdx (prem j)) : ji ∈ premIdxElems prem := by
+  obtain ⟨j, i⟩ := ji
+  exact List.mem_flatMap.mpr ⟨j, List.mem_finRange j,
+    List.mem_map.mpr ⟨i, regIdxComplete (prem j) i, rfl⟩⟩
 
 
 /-! ## `Mod(D)`, extracted
@@ -213,15 +250,17 @@ mutual
 /-- The pre-model of a regular derivation.  Its root is the paper's
 `φ(σ)` for the root sequent `σ`. -/
 def preR {G : Form} : {Γ : List Form} → {C : Form} → FRJr G Γ C → PreModel
-  | _, _, .axR F _ _ => PreModel.leaf ((gAt G).erase F)
+  | _, _, .axR F _ _ => PreModel.leaf (rm (gAt G) F)
   | _, _, .andR1 d _ => preR d
   | _, _, .andR2 d _ => preR d
   | _, _, .impIn d _ _ => preR d
   | _, _, @FRJr.joinAt _ n stab th rhs F prem _ _ _ _ _ =>
-      PreModel.join (joinCtxAt stab th rhs F)
+      PreModel.join (premIdxElems prem) (premIdxComplete prem)
+        (joinCtxAt stab th rhs F)
         (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
   | _, _, @FRJr.joinOr _ n stab th rhs C₁ C₂ prem _ _ _ _ =>
-      PreModel.join (joinCtxOr stab th rhs)
+      PreModel.join (premIdxElems prem) (premIdxComplete prem)
+        (joinCtxOr stab th rhs)
         (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
 
 /-- The pre-models an irregular derivation contributes, one per `⊃∉`
@@ -395,7 +434,8 @@ theorem join_force_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ 
       · intro hf b hab hA
         exact (ihB b).mp (hf (some ⟨i, b⟩) (.comp hab) ((ihA b).mpr hA))
       · intro hf y hy hA
-        obtain ⟨b, hab, hy'⟩ := PreModel.join_le_comp (Γ₀ := Γ₀) (Ms := Ms) hy
+        obtain ⟨b, hab, hy'⟩ :=
+          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) hy
         rw [hy'] at hA ⊢
         exact (ihB b).mpr (hf b hab ((ihA b).mp hA))
 
