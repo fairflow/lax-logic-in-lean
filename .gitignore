@@ -7,3 +7,13 @@ LaxLogic/Verso_manual.pdf
 # scripts/md2eml.py output — regenerable mail drafts, don't track
 # (the Message-ID and Date change on every run).
 *.eml
+
+# The FRJ-modal paper's build products.  The PDF is regenerable from the
+# .tex plus the Lean sources it lists; the sources are the record.
+paper/frj-modal/*.pdf
+paper/frj-modal/*.aux
+paper/frj-modal/*.log
+paper/frj-modal/*.out
+paper/frj-modal/*.toc
+paper/frj-modal/*.fls
+paper/frj-modal/*.fdb_latexmk

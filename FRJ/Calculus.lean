@@ -180,8 +180,8 @@ end
 
 /-! ## Provability
 
-"`Ｄ` is an `FRJ(G)`-derivation of `G` iff there exists a (possibly
-empty) set of formulas `Γ` such that `Ｄ` is an `FRJ(G)`-derivation of
+"`D` is an `FRJ(G)`-derivation of `G` iff there exists a (possibly
+empty) set of formulas `Γ` such that `D` is an `FRJ(G)`-derivation of
 `Γ ⇒ G`."
 -/
 
