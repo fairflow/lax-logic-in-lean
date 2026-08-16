@@ -76,6 +76,59 @@ theorem isPV_isPrime {A : Form} (h : A.isPV = true) : A.isPrime = true := by
 
 end Form
 
+/-! ### Choice-free list utilities
+
+Three Mathlib lemmas this development would otherwise reach for are
+`Classical.choice`-tainted: `List.argmax_mem`, `List.le_of_mem_argmax`
+and `List.eq_nil_iff_forall_not_mem`.  (`List.argmax` itself is clean;
+it is its specification lemmas that are not.)  The replacements are
+elementary. -/
+
+/-- A list with no members is empty. -/
+theorem eq_nil_of_forall_not_mem {α : Type} : ∀ {l : List α}, (∀ x, x ∉ l) → l = []
+  | [], _ => rfl
+  | x :: _, h => absurd List.mem_cons_self (h x)
+
+/-- An element of `a :: l` maximising `f`. -/
+def maxOn {α : Type} (f : α → Nat) : α → List α → α
+  | a, [] => a
+  | a, b :: l => if f a < f b then maxOn f b l else maxOn f a l
+
+theorem maxOn_mem {α : Type} (f : α → Nat) :
+    ∀ (a : α) (l : List α), maxOn f a l ∈ a :: l
+  | a, [] => List.mem_cons_self
+  | a, b :: l => by
+      by_cases h : f a < f b
+      · rw [maxOn, if_pos h]
+        rcases List.mem_cons.mp (maxOn_mem f b l) with h' | h'
+        · rw [h']; exact List.mem_cons_of_mem _ List.mem_cons_self
+        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ h')
+      · rw [maxOn, if_neg h]
+        rcases List.mem_cons.mp (maxOn_mem f a l) with h' | h'
+        · rw [h']; exact List.mem_cons_self
+        · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ h')
+
+theorem le_maxOn {α : Type} (f : α → Nat) :
+    ∀ (a : α) (l : List α), ∀ x ∈ a :: l, f x ≤ f (maxOn f a l)
+  | a, [], x, hx => by
+      rcases List.mem_cons.mp hx with rfl | h
+      · rw [maxOn]
+      · exact absurd h List.not_mem_nil
+  | a, b :: l, x, hx => by
+      by_cases h : f a < f b
+      · rw [maxOn, if_pos h]
+        have ih := le_maxOn f b l
+        rcases List.mem_cons.mp hx with rfl | h'
+        · exact Nat.le_trans (Nat.le_of_lt h) (ih b List.mem_cons_self)
+        · exact ih x h'
+      · rw [maxOn, if_neg h]
+        have ih := le_maxOn f a l
+        rcases List.mem_cons.mp hx with rfl | h'
+        · exact ih x List.mem_cons_self
+        · rcases List.mem_cons.mp h' with rfl | h''
+          · exact Nat.le_trans (Nat.not_lt.mp h) (ih a List.mem_cons_self)
+          · exact ih x (List.mem_cons_of_mem _ h'')
+
 /-! ## Finite sets as lists
 
 The development uses sets of formulas only up to membership, so lists
@@ -121,7 +174,7 @@ theorem sdiff_subset {l m : List Form} : sdiff l m ⊆ l :=
 /-- A difference meets what it was taken against in nothing at all —
 literally the empty list, which is what the `⊃∈` side condition wants. -/
 theorem cap_sdiff_eq_nil {l m : List Form} : cap (sdiff l m) m = [] := by
-  refine List.eq_nil_iff_forall_not_mem.mpr (fun x hx => ?_)
+  refine eq_nil_of_forall_not_mem (fun x hx => ?_)
   obtain ⟨hx1, hx2⟩ := mem_cap.mp hx
   exact (mem_sdiff.mp hx1).2 hx2
 
@@ -180,10 +233,14 @@ theorem countP_mono {α : Type} {p q : α → Bool} :
       have ih := countP_mono (fun y hy => h y (List.mem_cons_of_mem _ hy))
       rw [List.countP_cons, List.countP_cons]
       cases hpx : p x with
-      | false => cases hqx : q x <;> simp [hpx, hqx] <;> omega
+      | false =>
+          rw [if_neg (fun hc => Bool.noConfusion hc)]
+          cases hqx : q x with
+          | false => rw [if_neg (fun hc => Bool.noConfusion hc)]; omega
+          | true => rw [if_pos rfl]; omega
       | true =>
-          have hqx : q x = true := h x List.mem_cons_self hpx
-          simp [hpx, hqx] <;> omega
+          rw [if_pos rfl, if_pos (h x List.mem_cons_self hpx)]
+          omega
 
 /-- Strict version: if in addition some member satisfies `q` but not `p`. -/
 theorem countP_lt_countP {α : Type} {p q : α → Bool} :
@@ -196,14 +253,19 @@ theorem countP_lt_countP {α : Type} {p q : α → Bool} :
         (fun y hy => h y (List.mem_cons_of_mem _ hy))
       rw [List.countP_cons, List.countP_cons]
       rcases List.mem_cons.mp hb with rfl | hb'
-      · simp [hpb, hqb] <;> omega
+      · rw [hpb, hqb, if_neg (fun hc => Bool.noConfusion hc), if_pos rfl]
+        omega
       · have ih := countP_lt_countP
           (fun y hy => h y (List.mem_cons_of_mem _ hy)) hb' hqb hpb
         cases hpx : p x with
-        | false => cases hqx : q x <;> simp [hpx, hqx] <;> omega
+        | false =>
+            rw [if_neg (fun hc => Bool.noConfusion hc)]
+            cases hqx : q x with
+            | false => rw [if_neg (fun hc => Bool.noConfusion hc)]; omega
+            | true => rw [if_pos rfl]; omega
         | true =>
-            have hqx : q x = true := h x List.mem_cons_self hpx
-            simp [hpx, hqx] <;> omega
+            rw [if_pos rfl, if_pos (h x List.mem_cons_self hpx)]
+            omega
 
 
 namespace Kripke
