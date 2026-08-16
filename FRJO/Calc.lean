@@ -42,8 +42,8 @@ def worldOK (S : List PLLFormula) (C : PLLFormula)
     | .somehow A =>
         leaf ||
         (List.zip kids cone).any (fun kc =>
-          kc.2 && (clB G b kc.1.stable).contains A) ||
-        (clB G b S).contains A
+          kc.2 && kc.1.stable.contains A) ||
+        S.contains A
     | _ => true) &&
   -- the goal is NOT forced at the root: base shapes only (compound
   -- goals are discharged by their own rules before the world node)
