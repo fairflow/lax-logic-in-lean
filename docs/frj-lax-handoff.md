@@ -41,21 +41,24 @@ mkdir -p FRJLax          # already created, holding only README.md
 | | |
 |---|---|
 | **Branch** | **`frj-lax`**, cut from `frj-ipc` |
-| **Tip commit** | **`7cb7806`** — "docs: the why-chain and the calculus-adoption skill proposal" |
+| **Tip commit** | **`7393ed1`** — the choice-free FRJ development, merged |
 | **Directory to build in** | **`FRJLax/`** — created, contains only `README.md`. It is deliberately NOT `FRJO`. |
 | **Lake** | add a `[[lean_lib]] name = "FRJLax"` entry to `lakefile.toml` with your first module, and an `FRJLax.lean` root importing it |
 
-Nothing in `FRJLax/` is Lean yet. That is the point: the first Lean file
-in it is yours, written to the constraints in §4, not a copy of anything.
+`FRJ/` on this branch is **finished**: eight modules, `lake build FRJ`
+green from scratch, zero sorries, no `native_decide`, and
+`[propext, Quot.sound]` throughout — with the pins `#guard_msgs`-guarded
+in `FRJ/Audit.lean`, so any regression is a build failure. That is your
+starting point, not something to reproduce.
 
 Read also `docs/why-chain.md` on the same branch: the goal chain this
 work sits in, from the mid-range goal down.
 
-### What is PROVED and may be read (branch `frj-ipc`, tag `frj-classical-complete` = `8c711df`)
+### What `FRJ/` contains (on THIS branch — read it here, not on `frj-ipc`)
 
-`FRJ/` — FRJ(G) over IPC, transcribed from the arXiv LaTeX source of
-arXiv:1804.06689 (Fiorentini–Ferrari, TOCL 21(3), 2020), 2961 lines,
-**sorry-free, builds green**:
+FRJ(G) over IPC, transcribed from the arXiv LaTeX source of
+arXiv:1804.06689 (Fiorentini–Ferrari, TOCL 21(3), 2020),
+**sorry-free, builds green, choice-free**:
 
 | File | Content |
 |---|---|
@@ -64,7 +67,13 @@ arXiv:1804.06689 (Fiorentini–Ferrari, TOCL 21(3), 2020), 2961 lines,
 | `Step.lean` | The `↦` relation, **Lemma 3.4**, occurrences, `wf` |
 | `Model.lean`, `Extract.lean` | `Mod(D)`: the p-sequents-as-worlds model |
 | `Sound.lean` | **Lemma 3.9**, **Theorem 3.10**, **Theorem 3.1** (soundness) |
-| `Complete.lean`, `Minimal.lean` | §6: `Λ*_α`, Lemma 6.5, **Lemma 6.4** (`minMod`), **Theorem 6.2(i)**, and `frj_iff_not_IPL : Provable G ↔ ¬ IPL G` |
+| `Complete.lean` | §6 groundwork: `Λ*_α`, Lemma 6.5, decidable `⊩*`, the height `ht`, the minimal `η` (`minEta`) |
+| `Minimal.lean` | **Lemma 6.4** (`minMod`, `Type`-valued), **Theorem 6.2(i)**, `completenessData`, and both biconditionals |
+| `Audit.lean` | the `#guard_msgs`-guarded axiom pins — **extend this as you go** |
+
+Branch `frj-ipc` (tag `frj-classical-complete` = `8c711df`) holds the
+earlier `Finset`-based, classical version of the same results. It is
+kept only for comparison; do not build on it.
 
 Two divergences from the paper are recorded in `docs/frj-fidelity.md`
 and both are real: Lemma 6.5's stated set equality `Λ_α = Cl(Λ_α)` is
@@ -73,44 +82,46 @@ literally false (the `Cl` grammar lets `A` range over all formulas, so
 the two directions actually used are true and are proved; and the
 regular `C₁ ∧ C₂` case cites (IH2) where it must be (IH3).
 
-### The choice-free conversion (branch `frj-choicefree`, tip `0a050df`)
+### The development is choice-free (verified, and pinned)
 
-Six of the seven modules are converted and green: `Basic`, `Calculus`,
-`Step`, `Model`, `Extract`, `Sound`, `Complete`. **`Minimal.lean` is
-still being converted** — it is the one that needs the completeness
-*construction* made `Type`-valued, since `choose` and `Nonempty.some`
-are themselves choice. Check the branch tip before relying on this
-paragraph.
+`Classical.choice` appears in **exactly one** place, and it is a property
+of the statement rather than of the proof.
 
-This branch is the **working reference for how the constraints of §4.2
-are met in practice**. Retrieve any converted file with, e.g.
+| | axioms |
+|---|---|
+| `soundness`, `completeness`, `completenessData`, `frj_iff_countermodel`, `minMod`, `minEta`, `modR_countermodel`, `lemma39R`, `lemma39I`, `lhs_clo_of_steps` | `[propext, Quot.sound]` |
+| `nf_ext` | `[propext]` |
+| `Kripke.decForce`, `Kripke.force_mono`, `not_IPL_of_countermodel`, `maxOn`, `eq_nil_of_forall_not_mem` | **none at all** |
+| `frj_iff_not_IPL` | `[propext, Classical.choice, Quot.sound]` |
 
-```bash
-git show frj-choicefree:FRJ/Basic.lean
+The exception is unavoidable: `IPL G` is `∀ K, K.valid G`, and passing
+from `¬ ∀ K, K.valid G` to `∃ K, ¬ K.valid G` is not constructively
+valid. So the development states the biconditional twice —
+
+```
+frj_iff_countermodel : Provable G ↔ ∃ K : Kripke, ¬ K.valid G   -- choice-free
+frj_iff_not_IPL      : Provable G ↔ ¬ IPL G                     -- the paper's
 ```
 
-Three pieces of it are worth lifting wholesale rather than reinventing:
+**Keep both shapes when you extend to ◯**, and keep the modal results on
+the countermodel side of that line.
 
-* `Kripke` carrying `elems : List W`, `complete : ∀ w, w ∈ elems`,
-  `decEq`, `decLe`, `decV` in place of a `Finite` instance;
-* `decForce : Decidable (K.force a A)`, which makes forcing a
-  **computation** — the `⊃` clause is decided over `K.elems` by
-  `List.decidableBAll`;
-* `countP_mono` / `countP_lt_countP`, replacing `Finset.card_lt_card`
-  for the height of a world, and `List.argmax` replacing
-  `Finset.exists_max_image`.
+### Three pieces to understand before you touch anything
 
-Verified by `#print axioms` against the built oleans (2026-08-16):
-
-* **no axioms at all**: `clo_forces`, `clo_trans`, `clo_pv`,
-  `Kripke.force_mono`, `not_IPL_of_countermodel`
-* **`[propext]`**: `sfPos_closed`, `sfR_imp`, `clo_sf`
-* **`[propext, Quot.sound]`**: `mem_unionAll`, `mem_interAll`,
-  `lhs_subset_of_step`, `lhs_clo_of_step₀`, `lhs_clo_of_steps`,
-  `occR_steps`, `wfR`, `wfI`, `axI_not_mem_lhs`, `addRoot_force_comp`,
-  `addRoot_le_comp`
-
-`Classical.choice` is absent throughout the converted part.
+1. **Completeness is `Type`-valued.** Lemma 6.4's halves are records
+   carrying the derivation (`IrrWit`, `RegWit`), because extracting a
+   derivation from an `∃` needs `choose` or `Nonempty.some`, both
+   choice. The same constraint made `enumOf` and `minEta` data: a `Prop`
+   cannot be eliminated into `Type`. The payoff is
+   `completenessData : (K : Kripke) → ¬ K.valid G → Derivation G`, an
+   algorithm from countermodel to derivation. **This is the property the
+   whole campaign wants; do not lose it.**
+2. **Forcing is decidable** (`Kripke.decForce`, no axioms at all),
+   because `Kripke` carries `elems`/`complete` with `decEq`/`decLe`/
+   `decV` instead of a `Finite` instance. Adding ◯ to `force` means
+   extending `decForce` with the modal clause — plan for that.
+3. **Contexts are canonical** — see §4.3. This is load-bearing, not
+   cosmetic, and the ◯ rules must respect it.
 
 ## 3. DO NOT IMPORT `FRJO/`
 
@@ -151,7 +162,7 @@ included.
 
 ---
 
-## 4. The two hard constraints
+## 4. The hard constraints
 
 ### 4.1 Effective: Type-valued and slime-free
 
@@ -203,33 +214,77 @@ auditability property is worth preserving for the core module.
 ### 4.2 Choice-free
 
 Target pin: **`[propext, Quot.sound]`** at worst, and no axioms at all
-wherever attainable. `Classical.choice` must not appear. Reason: the
-target is a decision procedure, and choice blocks extraction.
+wherever attainable. Reason: the target is a decision procedure, and
+choice blocks extraction. `FRJ/` meets this; keep it that way as you add
+◯, and extend `FRJ/Audit.lean` with a `#guard_msgs`-guarded pin for
+every new headline result.
 
-The reusable findings from the IPC conversion — check each of these:
+The findings from the IPC campaign, as a checklist. Each cost real time
+to locate; none needs locating twice.
 
 * **Mathlib's `Finset` union, erase and image are choice-tainted at the
-  DEFINITION level.** `Finset.instUnion`, `Finset.erase`,
-  `Finset.image`, `Multiset.ndunion` all report `Classical.choice`, so
-  any term merely *mentioning* `s ∪ t` on a `Finset` carries choice
-  however it is proved. Re-deriving membership lemmas by hand does not
-  help. Only `Finset.filter` is clean.
+  DEFINITION level** — `Finset.instUnion`, `Finset.erase`,
+  `Finset.image`, `Multiset.ndunion` — so any term merely *mentioning*
+  `s ∪ t` carries choice however it is proved. Re-deriving membership
+  lemmas by hand does not help. Only `Finset.filter` is clean.
 * **The `List` API is axiom-free at definition level**: `List.union`,
   `List.inter`, `List.filter`, `List.map`, `List.flatMap`,
   `List.finRange`, `List.instMembership`. `List.mem_append`,
   `mem_filter`, `mem_cons` cost `[propext]`. **Avoid `List.dedup` and
   `List.erase`** — both classical; filter instead.
-* **`tauto` reasons classically.** Do not use it. Same for
-  `Classical.propDecidable`.
+* **Three more Mathlib list lemmas carry choice**: `List.argmax_mem`,
+  `List.le_of_mem_argmax` (though `List.argmax` itself is clean), and
+  `List.eq_nil_iff_forall_not_mem`. Replacements are already in
+  `FRJ/Basic.lean`: `maxOn` with `maxOn_mem`/`le_maxOn`, and
+  `eq_nil_of_forall_not_mem`. Use them.
 * **`Finite` costs choice to eliminate** (`Fintype.ofFinite`). Carry a
-  constructive enumeration instead: the converted `Kripke` has
-  `elems : List W`, `complete : ∀ w, w ∈ elems`, plus `decEq`, `decLe`,
-  `decV`, which makes forcing computable.
-* Shape predicates (`isPV`, `isPrime`, `isImp`) as `Bool`, not `Prop`.
+  constructive enumeration instead — `Kripke` already does.
+* **The tactics.** `tauto` and `push_neg` reason classically, and so
+  does `Classical.propDecidable`. **And so does `simp`**: a goal about
+  `if p x then 1 else 0` closed by `simp` pins `Classical.choice`, while
+  the *same goal* closed by explicit `if_pos`/`if_neg` does not. This
+  was established by proving one statement two ways side by side. When a
+  pin comes out dirty and the mathematics looks constructive, suspect
+  the tactic before the argument.
+* Shape predicates (`isPV`, `isPrime`, `isImp`) are `Bool`, not `Prop`.
 
-Pin the axioms with `#guard_msgs` in the module itself, so a regression
-is a build failure and not a discovery months later. `native_decide`
-taints; `collectAxioms` (i.e. `#print axioms`) is the only sound oracle.
+**Method that worked, and is worth repeating.** Do not guess at the
+source. Bisect: `#print axioms` every lemma in the chain, top down, until
+the first dirty one has only clean dependencies — that one is yours to
+fix. Every source above was found this way, and two of the four turned
+out to be tools rather than mathematics.
+
+### 4.3 Contexts are canonical — do not break this
+
+The irregular `⊃∈` rule needs, in Lemma 6.4, the zone `Θ₁` of a *given*
+derivation split as `Θ ∪ Λ`. On `Finset` that split is a literal
+equality of the rule's own index; on `List` it is not, because `++` is
+neither commutative nor idempotent. Nor is there a transport: "same
+members implies same derivations" is **false**, because `Ax^I` pins its
+own zone.
+
+The resolution — a change of carrier, not of calculus — is to represent
+contexts canonically:
+
+```
+nf G l = (gHat G).filter (· ∈ l)
+```
+
+legitimate exactly because `wfR`/`wfI` prove every context of a
+derivation is a subset of `Ĝ`, so `nf G` preserves membership, and every
+side condition in the rule table is membership-based. Two contexts with
+the same members are then *literally the same list* (`nf_ext`) — the
+property `++` lacks and `Finset` had.
+
+`Ax^I`, `∨` and **both sides** of the irregular `⊃∈` write their computed
+zones canonically; canonicalising both sides of `⊃∈` is what keeps Lemma
+3.4(i) going through with no extra side condition. `IrrWit` carries a
+`thNf` field recording that its zone is canonical.
+
+**Consequence for the ◯ rules**: any new rule with a COMPUTED context in
+its conclusion must write it as `nf G (...)`, and any rule that consumes
+a given derivation's zone must be able to split it via `nf_ext`. Design
+for this from the first rule, not afterwards.
 
 ---
 
@@ -264,10 +319,10 @@ below reuses them; it does not re-derive them.
 | Stage | Content | Exit criterion |
 |---|---|---|
 | **W0** | Read `FRJ/` end to end, and `docs/frj-fidelity.md` beside it. Read the source (arXiv:1804.06689 LaTeX `frj-corr.tex`, **including the appendix**) for §3 and §6 only as far as you need to understand what is already formalised. | You can state where each numbered result of the paper lives in `FRJ/` |
-| **W1** | Add ◯ to `Form` and to forcing. Everything that is ◯-free must still build; the point of doing this first is that `Basic`, `Calculus`, `Step`, `Model`, `Extract`, `Sound`, `Complete`, `Minimal` then tell you, by breaking or not breaking, exactly which proofs are modality-sensitive. | Library builds with ◯ in the syntax and no ◯ rules |
+| **W1** | Add ◯ to `Form` and to forcing — including the modal clause of `decForce`, so forcing stays decidable. Everything ◯-free must still build; the point of doing this first is that the eight modules then tell you, by breaking or not breaking, exactly which proofs are modality-sensitive. | Library builds with ◯ in the syntax and no ◯ rules; `Audit.lean` pins unchanged |
 | **W2** | Design the ◯ rules. **New mathematics — see §5.** Screen every candidate rule before proving anything, and get Matthew's sign-off on each rule statement. | Screens recorded; rules signed off |
-| **W3** | Extend soundness: Lemma 3.4, `wf`, Lemma 3.9, Thm 3.10, Thm 3.1, with the ◯ cases added | Sorry-free, pinned, no `Classical.choice` |
-| **W4** | Extend completeness: `Λ*`, Lemma 6.5, `minMod`, Thm 6.2(i), with the ◯ cases | Sorry-free, pinned; the construction still *computes* |
+| **W3** | Extend soundness: Lemma 3.4, `wf`, Lemma 3.9, Thm 3.10, Thm 3.1, with the ◯ cases added | Sorry-free; a new `#guard_msgs` pin in `Audit.lean` reading `[propext, Quot.sound]` |
+| **W4** | Extend completeness: `Λ*`, Lemma 6.5, `minMod`, Thm 6.2(i), with the ◯ cases | Sorry-free; pinned; and `completenessData` still *computes* a derivation |
 | **W5** | The searcher extracted from `completenessData`, plus a `decide`-checkable certificate | Runs as a `lean_exe` |
 | **W6** | Test on the existing corpus and stretch it | Corpus results recorded |
 
@@ -294,7 +349,13 @@ proofs survive the syntax change unchanged), or have `FRJLax/` import
 5. **Treating choice as a property to report in the axiom pin rather
    than a constraint to design against.** It is a design constraint, and
    it is cheapest to honour at line one.
-6. **Computed indices in constructor return types.** See §4.1.
+6. **Computed indices in constructor return types.** See §4.1, and
+   §4.3 for the canonical-context discipline that makes the irregular
+   `⊃∈` rule usable at all.
+7. **Blaming the mathematics for a dirty axiom pin.** Twice in this
+   campaign the `Classical.choice` was in a tool, not an argument —
+   Mathlib's `Finset` operations at definition level, and the `simp`
+   tactic. Bisect with `#print axioms` before redesigning anything.
 
 ---
 
