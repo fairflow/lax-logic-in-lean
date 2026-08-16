@@ -45,13 +45,21 @@ inductive ARLe {ι : Type} (M : ι → Kripke) :
 /-- The fresh-root construction: a new world with valuation `V₀`, below
 the disjoint union of the models `M i`.  With `ι` empty this is a single
 world, which is the `Ax^R` case. -/
-def addRoot {ι : Type} [Finite ι] (V₀ : Finset Form) (M : ι → Kripke)
+def addRoot {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe)
+    (V₀ : List Form) (M : ι → Kripke)
     (hV : ∀ (i : ι) (p : String), Form.atom p ∈ V₀ → (M i).V (M i).root p) :
     Kripke where
   W := Option ((i : ι) × (M i).W)
-  finite := by
-    have : ∀ i : ι, Finite (M i).W := fun i => (M i).finite
-    infer_instance
+  elems := none :: ιe.flatMap (fun i => ((M i).elems).map (fun a => some ⟨i, a⟩))
+  complete := by
+    rintro (_ | ⟨i, a⟩)
+    · exact List.mem_cons_self
+    · refine List.mem_cons_of_mem _ (List.mem_flatMap.mpr ⟨i, ιc i, ?_⟩)
+      exact List.mem_map.mpr ⟨a, (M i).complete a, rfl⟩
+  decEq := by
+    have : ∀ i : ι, DecidableEq (M i).W := fun i => (M i).decEq
+    intro x y
+    exact decEq x y
   le := ARLe M
   le_refl := by
     rintro (_ | ⟨i, a⟩)
@@ -78,13 +86,31 @@ def addRoot {ι : Type} [Finite ι] (V₀ : Finset Form) (M : ι → Kripke)
     · exact hp
     · exact (M i).V_mono ((M i).root_le a) p (hV i p hp)
     · exact (M _).V_mono hab p hp
+  decLe := by
+    rintro (_ | ⟨i, a⟩) y
+    · exact isTrue (.root _)
+    · cases y with
+      | none => exact isFalse (fun h => by cases h)
+      | some jb =>
+          obtain ⟨j, b⟩ := jb
+          by_cases hij : i = j
+          · subst hij
+            have : Decidable ((M i).le a b) := (M i).decLe a b
+            exact decidable_of_iff ((M i).le a b)
+              ⟨fun h => .comp h, fun h => by cases h; assumption⟩
+          · exact isFalse (fun h => by cases h; exact hij rfl)
+  decV := by
+    rintro (_ | ⟨i, a⟩) p
+    · exact inferInstanceAs (Decidable (Form.atom p ∈ V₀))
+    · exact (M i).decV a p
 
-variable {ι : Type} [Finite ι] {V₀ : Finset Form} {M : ι → Kripke}
+variable {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, i ∈ ιe}
+  {V₀ : List Form} {M : ι → Kripke}
   {hV : ∀ (i : ι) (p : String), Form.atom p ∈ V₀ → (M i).V (M i).root p}
 
 /-- Everything above a component world is in the same component. -/
-theorem addRoot_le_comp {i : ι} {a : (M i).W} {y : (addRoot V₀ M hV).W}
-    (h : (addRoot V₀ M hV).le (some ⟨i, a⟩) y) :
+theorem addRoot_le_comp {i : ι} {a : (M i).W} {y : (addRoot ιe ιc V₀ M hV).W}
+    (h : (addRoot ιe ιc V₀ M hV).le (some ⟨i, a⟩) y) :
     ∃ b : (M i).W, (M i).le a b ∧ y = some ⟨i, b⟩ := by
   cases h with
   | comp hab => exact ⟨_, hab, rfl⟩
@@ -93,7 +119,7 @@ theorem addRoot_le_comp {i : ι} {a : (M i).W} {y : (addRoot V₀ M hV).W}
 upward closed in `addRoot`, so no formula changes truth value there.
 This is what lets the induction treat a premise's model in isolation. -/
 theorem addRoot_force_comp {i : ι} {a : (M i).W} :
-    ∀ A : Form, (addRoot V₀ M hV).force (some ⟨i, a⟩) A ↔ (M i).force a A := by
+    ∀ A : Form, (addRoot ιe ιc V₀ M hV).force (some ⟨i, a⟩) A ↔ (M i).force a A := by
   intro A
   induction A generalizing a with
   | atom p => exact Iff.rfl
@@ -110,7 +136,7 @@ theorem addRoot_force_comp {i : ι} {a : (M i).W} :
         exact (ihB).mpr (h b hab ((ihA).mp hA))
 
 @[simp] theorem addRoot_root_atom (p : String) :
-    (addRoot V₀ M hV).force none (.atom p) ↔ Form.atom p ∈ V₀ := Iff.rfl
+    (addRoot ιe ιc V₀ M hV).force none (.atom p) ↔ Form.atom p ∈ V₀ := Iff.rfl
 
 /-! ## The `Ax^R` leaf
 
@@ -119,16 +145,16 @@ model `Mod(D)` of a derivation consisting of one `Ax^R` axiom.
 -/
 
 /-- A single world whose valuation is `Γ ∩ PV`. -/
-def solo (Γ : Finset Form) : Kripke :=
-  addRoot (ι := Empty) Γ (fun i => i.elim) (fun i => i.elim)
+def solo (Γ : List Form) : Kripke :=
+  addRoot (ι := Empty) [] (fun i => i.elim) Γ (fun i => i.elim) (fun i => i.elim)
 
-@[simp] theorem solo_root_atom (Γ : Finset Form) (p : String) :
+@[simp] theorem solo_root_atom (Γ : List Form) (p : String) :
     (solo Γ).force (solo Γ).root (.atom p) ↔ Form.atom p ∈ Γ := Iff.rfl
 
 /-- At the single world of `solo Γ`, a set of variables is forced exactly
 when it is contained in `Γ` — the `V(σ) = Lhs(σ) ∩ PV` clause, in the
 one case where it can be checked directly. -/
-theorem solo_forces_root {Γ Δ : Finset Form} (hΔ : ∀ X ∈ Δ, X.isPV)
+theorem solo_forces_root {Γ Δ : List Form} (hΔ : ∀ X ∈ Δ, X.isPV)
     (hsub : Δ ⊆ Γ) : (solo Γ).forces (solo Γ).root Δ := by
   intro X hX
   match X, hΔ X hX with
