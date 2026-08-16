@@ -195,7 +195,31 @@ PROVED so far: `addRoot` is a Kripke model; `addRoot_force_comp`;
 `solo_forces_root`; and `axR_sound`, the `Ax^R` case of Lemma 3.9(i)
 (`φ(σ) = σ`, `V(σ) = Ĝ_at \ {F}`).
 
-**OPEN**: `wf` (see divergence 4 above), Lemma 3.4, the remaining cases
+**Lemma 3.4 is PROVED** (`FRJ/Step.lean`), together with the reification
+that `↦` needs:
+
+| Paper | Lean | Status |
+|---|---|---|
+| sequents as data; `Lhs(σ)`, `Rhs(σ)` | `Sequent`, `Sequent.lhs`, `.rhs` | done |
+| `σ₁ ↦_R σ₂` | `Step`, indexed by `RuleName` | done |
+| `σ₁ ↦₀ σ₂` | `Step₀` | done |
+| `↦*` | `StepsRfl` (`Relation.ReflTransGen`) | done |
+| "σ occurs in D" | `OccR`, `OccI` | done |
+| Lemma 3.4(i) | `lhs_subset_of_step` | PROVED |
+| Lemma 3.4(ii) | `lhs_clo_of_step₀` | PROVED |
+| Lemma 3.4(iii) | `lhs_clo_of_steps` | PROVED |
+| occurrence reaches the root by `↦*` | `occR_steps`, `occI_steps` | PROVED |
+| 3.4(iii) as soundness uses it | `lhs_clo_of_occR` | PROVED |
+| (Cl6) | `clo_trans` | PROVED |
+
+`Step` is indexed by a rule name precisely so that part (i)'s condition
+"`R ≠ ⊃∉`" is statable as written; `Ax^R`/`Ax^I` have no premises and so
+contribute no constructor.  The join conclusion contexts are factored
+out as `joinCtxAt`/`joinCtxOr` and both the rules and `↦` refer to them,
+so the relation cannot drift from the calculus.  `occR_steps` supplies
+each upward step from the side conditions stored in the derivation.
+
+**OPEN**: `wf` (see divergence 4 above), the remaining cases
 of Lemma 3.9, Theorem 3.10, Theorem 3.1.  To state Lemma 3.9 as the
 paper states it — "for every sequent `σ` occurring in `D`" — the
 occurrences of `D` must be reified, since IH1 is used at p-sequents
