@@ -119,8 +119,8 @@ completeness theorem read-only.)
 | (Cl3) `Γ ⊆ Cl(Γ)` | `clo_subset` | PROVED |
 | (Cl4) monotone | `clo_mono` | PROVED |
 | (Cl5) `Cl(Γ) ∩ PV = Γ ∩ PV` | `clo_pv` | PROVED |
-| (Cl2) `A ∈ Cl(Γ) ⟹ A ∈ Cl(Γ ∩ Sf(A))` | — | **TODO** (needed by the `⊃∈` irregular case) |
-| `Sf(A)`, `Sf⁻(A) = Sf(A) \ {A}` | — | **TODO** (needed by Lemma 3.9(ii)) |
+| (Cl2) `A ∈ Cl(Γ) ⟹ A ∈ Cl(Γ ∩ Sf(A))` | `clo_sf` | PROVED |
+| `Sf(A)`, `Sf⁻(A) = Sf(A) \ {A}` | `sf`, `sfm`, `size_le_of_mem_sf` | PROVED |
 
 ## §3 The calculus → `FRJ/Calculus.lean`
 
