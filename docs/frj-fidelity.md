@@ -3,8 +3,11 @@
 *Started 2026-08-16.  Source of truth: Camillo Fiorentini and Mauro
 Ferrari, "Duality between unprovability and provability in forward
 proof-search for Intuitionistic Propositional Logic", ACM TOCL 21(3),
-2020 — read from the arXiv LaTeX source of arXiv:1804.06689
-(`frj-corr.tex`, 6682 lines), which is the full journal version.  The
+2020.  **Numbering and section references below are the published
+journal's**, corrected 2026-08-16 (see the note under Scope).  The
+transcription itself was made from the arXiv LaTeX source of
+arXiv:1804.06689 (`frj-corr.tex`, 6682 lines), which is a close variant
+of the journal version but **not** identical to it.  The
 in-repo note `docs/frj-lifting.md` is a PARAPHRASE written for
 orientation and is **not** a source for this formalisation; formalising
 from it is exactly what produced the unsound FRJ◯ rule table.*
@@ -16,18 +19,47 @@ is recorded as a divergence.
 
 ## Scope
 
-**In scope**: §2 (preliminaries), §3 (the calculus and its soundness),
+**Renumbering note, 2026-08-16.**  Every citation in this document was
+re-checked against the published ACM TOCL 21(3) article and corrected;
+sessions and commits before this date used numbers that exist in neither
+the journal nor the arXiv PDF.  The corrections were
+
+| was | is (journal) | arXiv PDF | arXiv label |
+|---|---|---|---|
+| Lemma 3.4 | **Lemma 3.5** | Lemma 1 | `lemma:lhs` |
+| Lemma 3.9 | **Lemma 3.10** | Lemma 2 | `lemma:soundFRJ` |
+| Theorem 3.10 | **Theorem 3.12** | Theorem 2 | `theo:soundFRJ` |
+| Lemma 6.4 | **Lemma 6.3** | Lemma 14 | `lemma:minMod` |
+| Lemma 6.5 | **Lemma 6.7** | Lemma 15 | `lemma:closure` |
+| Theorem 6.2(i) | **Theorem 5.13(i)** | Theorem 10 | — |
+| §3.1 (soundness) | **§3.2** | — | §3.1 |
+| §3.2 (termination) | **§3.3** | — | §3.2 |
+
+Theorem 3.1 was already correct.  The journal's §3.1 is *Restrictions
+(RS1)–(RS4)*, which the arXiv source calls (PS1)–(PS4) and states
+without a section of its own.
+
+The journal also carries material the arXiv source does not: a **Lemma
+3.9** (`⊢ Σ;Θ → C` implies `|H| < |C|` for every `H ∈ Σ`) whose proof
+uses (RS1), a relation `⇢` restricting part (ii) of Lemma 3.10 to
+irregular chains entering a join, and a correspondingly weaker part (ii).
+**What is formalised here is the arXiv form of Lemma 3.10(ii)**, which is
+the stronger statement and needs no (RS) restriction; the differences are
+set out in `docs/frj-lax-plan.md` §1.  Nothing below changes as a result:
+only the citations were wrong, never the mathematics.
+
+**In scope**: §2 (preliminaries), §3 and §3.2 (the calculus and its soundness),
 and the completeness of FRJ(G).
 
 **Route chosen for completeness, and why.**  The paper proves
 completeness of FRJ(G) twice.
 
-* *Journal main text* (Thm. `theo:GBU-FRJ`, then "Completeness of
+* *Journal main text* (Theorem 5.12, then Theorem 5.13, "Completeness of
   FRJ(G) and GBU(G)"): as a corollary of the DUALITY
   `⊢_GBU(G) G  iff  ⊬_FRJ(G) G`, which needs the whole second calculus
   GBU(G) (§5), the saturated-database machinery (§4) and the
   correctness of the `Search` procedure.
-* *§6 Minimality* (Lemma `lemma:minMod`, Thm `theo:minMod`): a DIRECT
+* *§6 Minimality* (Lemma 6.3, Theorem 6.4): a DIRECT
   construction from an arbitrary countermodel, by induction on the
   height of its worlds.  The paper states in a footnote that this is
   how completeness was proved in the TABLEAUX 2017 conference version.
@@ -38,7 +70,7 @@ calculus and a search procedure to obtain a theorem about the first.
 
 **Not in scope**: GBU(G), saturated databases, `Search`, the
 minimal-height results of §6 beyond what completeness itself needs, and
-the termination/complexity material of §3.2.
+the termination/complexity material of §3.3.
 
 **No IPC proof system is needed anywhere.**  The paper defines IPL
 semantically — "Intuitionistic Propositional Logic IPL coincides with
@@ -141,10 +173,10 @@ Figure "The calculus FRJ(G)", every rule, with side conditions:
 | `Γ⊃/Υ = {Y⊃Z ∈ Γ⊃ | Y ∈ Υ}` | `restrict` |
 | `⊢_{FRJ(G)} G` | `Provable` | done |
 
-## §3.1 Soundness → `FRJ/Model.lean` (construction) + `FRJ/Sound.lean`
+## §3.2 Countermodels and soundness → `FRJ/Model.lean` (construction) + `FRJ/Sound.lean`
 
 **Correction, 2026-08-16.**  An earlier version of this section proposed
-a `PModel` structure carrying `forces_lhs` — which *is* Lemma 3.9(i) —
+a `PModel` structure carrying `forces_lhs` — which *is* Lemma 3.10(i) —
 as an invariant of the construction, turning part of the conclusion into
 something assumed by the object being built.  That is a restructuring of
 the proof, not the proof, and it has been removed.  The rule is: the
@@ -157,17 +189,17 @@ theorems here.
 `σ₁ ≤ σ₂ iff σ₂ ↦* σ₁`, `V(σ) = Lhs(σ) ∩ PV`; and `φ(σ)` the p-sequent
 immediately above a regular `σ`.  Then:
 
-* **Lemma 3.4** (`lemma:lhs`), on `↦`: (i) `σ₁ ↦_R σ₂` with `R ≠ ⊃∉`
+* **Lemma 3.5** (`lemma:lhs`), on `↦`: (i) `σ₁ ↦_R σ₂` with `R ≠ ⊃∉`
   implies `Lhs(σ₂) ⊆ Lhs(σ₁)`; (ii) `σ₁ ↦ σ₂` implies
   `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`; (iii) the same for `↦*`.
-* **Lemma 3.9**, for every sequent `σ` occurring in `D`: (i) if
+* **Lemma 3.10**, for every sequent `σ` occurring in `D`: (i) if
   `σ = Γ ⇒ C` then `φ(σ) ⊩ Γ` and `φ(σ) ⊮ C`; (ii) if
   `σ = Σ;Θ → C`, then for every `σ_p ∈ PS(D)` with `σ ↦ σ_p` and
   `σ_p ⊩ Σ ∩ Sf⁻(C)`, we have `σ_p ⊮ C`.
-* **Theorem 3.10**: `Mod(D)` is a countermodel for `G`; hence
+* **Theorem 3.12**: `Mod(D)` is a countermodel for `G`; hence
   Theorem 3.1, `⊢_FRJ(G) G` implies `G ∉ IPL`.
 
-The proof of Lemma 3.9 is a **main induction (IH1) on the height of `σ`
+The proof of Lemma 3.10 is a **main induction (IH1) on the height of `σ`
 in `D`**, by cases on the last rule, with a **secondary induction (IH2)
 on `size H`** inside the join case proving (P2) `H ∈ Γ^⊃ ⟹ σ ⊩ H` and
 (P3) `H = A_j ⟹ σ ⊮ A_j` simultaneously.  Note where IH1 is applied in
@@ -192,10 +224,10 @@ assumption, and it is what will let the induction refer to a premise's
 part of `Mod(D)`.
 
 PROVED so far: `addRoot` is a Kripke model; `addRoot_force_comp`;
-`solo_forces_root`; and `axR_sound`, the `Ax^R` case of Lemma 3.9(i)
+`solo_forces_root`; and `axR_sound`, the `Ax^R` case of Lemma 3.10(i)
 (`φ(σ) = σ`, `V(σ) = Ĝ_at \ {F}`).
 
-**Lemma 3.4 is PROVED** (`FRJ/Step.lean`), together with the reification
+**Lemma 3.5 is PROVED** (`FRJ/Step.lean`), together with the reification
 that `↦` needs:
 
 | Paper | Lean | Status |
@@ -205,9 +237,9 @@ that `↦` needs:
 | `σ₁ ↦₀ σ₂` | `Step₀` | done |
 | `↦*` | `StepsRfl` (`Relation.ReflTransGen`) | done |
 | "σ occurs in D" | `OccR`, `OccI` | done |
-| Lemma 3.4(i) | `lhs_subset_of_step` | PROVED |
-| Lemma 3.4(ii) | `lhs_clo_of_step₀` | PROVED |
-| Lemma 3.4(iii) | `lhs_clo_of_steps` | PROVED |
+| Lemma 3.5(i) | `lhs_subset_of_step` | PROVED |
+| Lemma 3.5(ii) | `lhs_clo_of_step₀` | PROVED |
+| Lemma 3.5(iii) | `lhs_clo_of_steps` | PROVED |
 | occurrence reaches the root by `↦*` | `occR_steps`, `occI_steps` | PROVED |
 | 3.4(iii) as soundness uses it | `lhs_clo_of_occR` | PROVED |
 | (Cl6) | `clo_trans` | PROVED |
@@ -229,14 +261,14 @@ each upward step from the side conditions stored in the derivation.
 | the root of `Mod(d)` is `φ` of its root sequent | `preR_root_lbl` | PROVED |
 | components are the regular sub-derivations | `preI_spec` | PROVED |
 | forcing transfers to a component | `join_force_comp` | PROVED |
-| **Lemma 3.9(i)** | `lemma39R`, `lemma39I0` | **PROVED** |
-| **Lemma 3.9(ii)** | `lemma39I` | **PROVED** |
+| **Lemma 3.10(i)** | `lemma39R`, `lemma39I0` | **PROVED** |
+| **Lemma 3.10(ii)** | `lemma39I` | **PROVED** |
 | the `⋈^At` case, with (P1)(P2)(P3) | `joinAt_case` | PROVED |
 | the `⋈^∨` case | `joinOr_case` | PROVED |
-| **Theorem 3.10** `Mod(D)` is a countermodel for `G` | `modR_countermodel` | **PROVED** |
+| **Theorem 3.12** `Mod(D)` is a countermodel for `G` | `modR_countermodel` | **PROVED** |
 | **Theorem 3.1** `⊢_FRJ(G) G ⟹ G ∉ IPL` | `soundness` | **PROVED** |
 
-Notes on the proof.  Lemma 3.9(i) is split: `lemma39R` gives it at the
+Notes on the proof.  Lemma 3.10(i) is split: `lemma39R` gives it at the
 derivation's own root sequent, and its first component gives it at
 p-sequents ("every world forces its own label"), which is what (P2)
 consumes at worlds above the join.  In (ii), the world `σ_p` lies below
@@ -255,14 +287,14 @@ calls (P3) at `A_k`, and (P3) at `A_j` calls (P2) at the members of
 |---|---|---|
 | `α ⊩* H`; `Λ*_α` | `Kripke.forceStar`, `lamStar` | done |
 | `Λ*_α ⊆ Ĝ` | `lamStar_subset_gHat` | PROVED |
-| Lemma 6.5, usable directions | `forces_clo_lamStar`, `mem_clo_lamStar` | PROVED |
+| Lemma 6.7, usable directions | `forces_clo_lamStar`, `mem_clo_lamStar` | PROVED |
 | `h(α)` and its decrease going up | `ht`, `ht_lt` | PROVED |
 | the "w.l.o.g." choice of `η` | `exists_min_eta` | PROVED |
-| **Lemma 6.4**, existence half | `minMod` | **PROVED** |
+| **Lemma 6.3**, existence half | `minMod` | **PROVED** |
 | the `Ax^R` sub-case | `regPrime_ax` | PROVED |
 | the `⋈^At` case | `regPrime_join` | PROVED |
 | the `⋈^∨` case | `regOr_join` | PROVED |
-| **Theorem 6.2(i)** `G ∉ IPL ⟹ ⊢_FRJ(G) G` | `completeness` | **PROVED** |
+| **Theorem 5.13(i)** `G ∉ IPL ⟹ ⊢_FRJ(G) G` | `completeness` | **PROVED** |
 | soundness + completeness | `frj_iff_not_IPL` | **PROVED** |
 
 The triple induction is the paper's, realised as the lexicographic
@@ -275,7 +307,7 @@ and the remaining cases shrink the goal (third).
 
 Two simplifications, both sound because they only drop *restrictions*:
 
-* the rank bounds (i) and (iii) of Lemma 6.4 serve minimality, which is
+* the rank bounds (i) and (iii) of Lemma 6.3 serve minimality, which is
   out of scope, and the construction does not otherwise use them;
 * PS1–PS4 are proof-search restrictions ("to reduce the proof-search
   space"), so the paper's minimal `Λ` and maximal `Θ` are not needed:
@@ -284,7 +316,7 @@ Two simplifications, both sound because they only drop *restrictions*:
 
 ### Divergence found in §6
 
-The paper states Lemma 6.5 as `Λ_α = Cl(Λ_α) = Cl(Λ*_α)`.  Taken
+The paper states Lemma 6.7 as `Λ_α = Cl(Λ_α) = Cl(Λ*_α)`.  Taken
 literally the first equality is FALSE: `Cl` is generated by a grammar in
 which `A` ranges over all formulas, so `Cl(Λ_α)` contains `Z ⊃ C` for
 arbitrary `Z`, which need not lie in `Sf^L(G)` and hence not in `Λ_α`;

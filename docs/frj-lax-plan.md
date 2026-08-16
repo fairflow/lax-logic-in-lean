@@ -108,10 +108,17 @@ expensive thing in the rule table, and nothing in scope needs them.
 
 The five ✗ rows are numbers that exist in **neither** published version.
 A fidelity table whose numbers cannot be looked up is not checkable
-against the original, which is the one thing it is for.  A dated
-correction note should be appended to `docs/frj-fidelity.md`; the FRJ/
-development itself is unaffected, since only its citations are wrong, not
-its mathematics.
+against the original, which is the one thing it is for.
+
+**Applied 2026-08-16** (Matthew's call): `docs/frj-fidelity.md` has been
+renumbered throughout to the journal numbering, with a dated note under
+its Scope section recording the change.  Its section references are
+corrected too — the journal's §3.1 is *Restrictions (RS1)–(RS4)*, its
+§3.2 is *Countermodels and Soundness*, its §3.3 is *Termination*.  The
+FRJ/ development itself is unaffected: only its citations were wrong,
+never its mathematics.  Still uncorrected, and outside this campaign's
+scope: `FRJ/Basic.lean`'s header repeats the claim that `frj-corr.tex`
+"is the full journal version".
 
 ---
 
@@ -450,13 +457,14 @@ formalisation that makes `G` refutable has mis-stated (SIRR).
 
 ## 9. Open decisions for Matthew
 
-1. **Syntax staging** (handoff §8.1), refined by §7 above: carrying ◯
-   from W1 also means carrying constraint models — two relations and
-   fallible worlds — from W1, so that the ◯-free results are proved once
-   in the structure the modal case needs.  My recommendation is still to
-   carry it, and to target `FinCM` for extraction, but the cost is not
-   the one-constructor cost the handoff's wording suggests.  **This
-   blocks W1.**
+1. **Syntax staging** (handoff §8.1), refined by §7 above — **SETTLED
+   2026-08-16: ◯ and constraint models from W1**, with `FinCM` as the
+   extraction target.  The ◯-free results are therefore proved once, in
+   the structure the modal case needs, and the price is that the
+   extraction must decide infallibility of worlds from the start.  That
+   is exactly where `FRJO/`'s `worldOK` failed, so it is screened, never
+   assumed: the three refuting cells `[⊥] ⇒ p`, `[p ∧ q] ⇒ p`,
+   `[p, p ⊃ q] ⇒ q` are in round A.
 2. **The arXiv-vs-journal decision of §1** — cite the journal, prove the
    arXiv form of Lemma 3.10(ii), drop (RS1)–(RS4).  Taken; reversible;
    stated here rather than buried, because it changes which side
@@ -465,7 +473,7 @@ formalisation that makes `G` refutable has mis-stated (SIRR).
    minimal-height countermodels, which is a real gain for a disproof
    engine, at the cost of `Rn` and one more clause in each case of
    Lemma 6.3.  Recommendation: after W4 closes, not before.
-4. **The correction note to `docs/frj-fidelity.md`** (§1.1): append or
-   leave?
+4. ~~The correction note to `docs/frj-fidelity.md`~~ — **SETTLED
+   2026-08-16: renumbered throughout**, done.
 5. **The saturation half of the v4 repair** (handoff §8.2) and **every
    modal rule statement** (handoff §8.3) remain open and untouched.
