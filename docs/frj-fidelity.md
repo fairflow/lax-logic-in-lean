@@ -230,30 +230,66 @@ The `Ax^I` case of Lemma 3.9(ii) is **PROVED in label form**
 model.  Once `Mod(D)` exists, `V(σ_p) = Lhs(σ_p) ∩ PV` turns it into
 `σ_p ⊮ C`.
 
-### The constraint the rest of Lemma 3.9 must respect
+### How Lemma 3.9 is to be stated (corrected 2026-08-16, later)
 
-Its statement quantifies over p-sequents `σ_p` with `σ ↦ σ_p` — i.e.
-*below* `σ` — and its main induction is on the height of `σ` **in `D`**,
-with the single model `Mod(D)` fixed throughout.  In the join case the
-induction hypothesis is applied at a `σ_p` *above* the join, reached by
-`↦*` rather than by being an immediate premise.
+An earlier note here said that structural recursion over sub-derivations
+"does not give the paper's induction".  **That was wrong, and is
+withdrawn.**  The paper is correct and its induction is structural.
 
-Consequently a plain structural recursion over sub-derivations does not
-give the paper's induction: the model belongs to the whole `D`, while
-the induction ranges over occurrences inside it.  The two honest ways to
-set this up are
+`h(σ)` decreases going UP the derivation, and every application of IH1
+in the proof is at an occurrence inside σ's own subtree:
 
-* build `Mod(D)` once for the top-level derivation and induct over
-  occurrences with the model fixed (closest to the paper); or
-* generalise the statement over an ambient model together with an
-  order-embedding of a sub-derivation's part of it, discharged at each
-  join by `addRoot_force_comp`.
+* in the join case (P2) the world `σ_p` satisfies `σ ≤ σ_p`, which by the
+  definition of the model order means `σ_p ↦* σ`, i.e. `σ_p` lies ABOVE
+  `σ` in `D` — hence inside σ's subtree, with `h(σ_p) < h(σ)`;
+* in (P3) IH1 is applied at the premises `σ_j`, with `σ_p := σ`;
+* the `∨`, `⊃∈` and `⊃∉` cases apply IH1 at premises, keeping the same
+  `σ_p`.
 
-What must NOT be done is to smuggle Lemma 3.9(i) into the construction
-as a carried invariant so that the recursion becomes structural.  That
-was tried and removed on 2026-08-16; it makes part of the conclusion an
-assumption.  Whichever setup is chosen should be settled and written
-down before any of the induction is attempted.
+What the paper leaves implicit is only that, having fixed `D` once and
+worked inside `Mod(D)` throughout, it may name a `σ_p` lying BELOW `σ`
+without ceremony.  A structural induction must quantify that `σ_p`
+explicitly — and the paper's statement (ii) already quantifies it.  So
+this is the ordinary generalisation of an induction hypothesis, not a
+gap in the mathematics.
+
+### The statement to prove
+
+Two mutually inductive statements, by structural induction on the
+derivation.
+
+**(R)** for `d : FRJr G Γ C`: *for every regular sequent `σ` occurring in
+`d`*, `φ(σ) ⊩ Lhs(σ)` and `φ(σ) ⊮ Rhs(σ)`, where `φ(σ)` is the p-sequent
+immediately above `σ` and forcing is taken in `Mod(d)`.
+
+  Note the quantification over occurrences: it is the paper's own, and it
+  is what supplies "every world of `Mod(d)` forces its own label" (take
+  `σ` a p-sequent, where `φ(σ) = σ`), which (P2) consumes.  This is the
+  crucial difference from the `PModel` mistake: there, that fact was a
+  FIELD of the structure — assumed; here it is part of the statement
+  being PROVED.
+
+**(I)** for `d : FRJi G St Th C`: for every model `K`, every world `w` of
+`K`, and every placement of `Mod(d)`'s worlds above `w` preserving
+forcing, if
+
+* `∀ X ∈ Lhs(w), Clo (St ∪ Th) X`  (Lemma 3.4(iii) at `w`, which is the
+  `σ ↦ σ_p` hypothesis in label form), and
+* `w ⊩ (St ∩ Sf⁻(C))`,
+
+then `w ⊮ C`.  Here `w` is the paper's `σ_p`, quantified.
+
+The placement hypothesis is discharged at every join by
+`addRoot_force_comp`, which is why that lemma was proved: a component of
+`addRoot` is upward closed, so forcing there is the same as forcing in
+the component model.
+
+Sub-obligations already available: Lemma 3.4 (all parts), `occR_steps`/
+`occI_steps`, `wf`, `clo_sf` (Cl2) for the `⊃∈` irregular case, the
+`Sf⁻` inclusions for the `∧`/`∨` cases, and `axI_not_mem_lhs` for the
+`Ax^I` case.  The join case remains the substantial one: (P1) is
+immediate from `V(σ) = Lhs(σ) ∩ PV`, and (P2)/(P3) need the secondary
+induction on `size H`.
 
 **OPEN**: the remaining cases
 of Lemma 3.9, Theorem 3.10, Theorem 3.1.  To state Lemma 3.9 as the
