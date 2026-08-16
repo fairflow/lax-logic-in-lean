@@ -28,35 +28,31 @@ variable (G : Cell) (b : Nat)
 the stable zone into every child, the ◯-positive obligations against
 the declared cone, and the base-goal discharge.  Decidable by
 construction; each conjunct is one FRJ side condition. -/
-def worldOK (S : List PLLFormula) (C : PLLFormula)
+def worldOK (_b : Nat) (S : List PLLFormula) (C : PLLFormula)
     (kids : List (Reg G)) (cone : List Bool) (leaf : Bool) : Bool :=
   -- zones in the universe
   S.all (sfPlus G).contains && (sfPlus G).contains C &&
   -- heredity: the stable zone persists into every child
   kids.all (fun k => S.all (fun φ => k.stable.contains φ)) &&
-  -- the cone: the root's Rm-successors are itself, the declared
-  -- children, and the leaf; ◯-POSITIVE obligation: every ◯A ∈ S is
-  -- realised — by the leaf (fallible realises anything), or by a
-  -- declared cone child forcing A, or by the root itself
+  -- ◯-POSITIVE: every ◯A ∈ S is realised — by the fallible leaf, by a
+  -- declared cone child carrying A, or by the root itself
   (S.all fun φ => match φ with
     | .somehow A =>
         leaf ||
-        (List.zip kids cone).any (fun kc =>
-          kc.2 && kc.1.stable.contains A) ||
+        (List.zip kids cone).any (fun kc => kc.2 && kc.1.stable.contains A) ||
         S.contains A
     | _ => true) &&
-  -- the goal is NOT forced at the root: base shapes only (compound
-  -- goals are discharged by their own rules before the world node)
-  !(clB G b S).contains C &&
-  -- and if the goal is a box ◯A, refuting it at the root's OWN cone:
-  -- the cone (root + declared children + leaf) must MISS A — with a
-  -- leaf present this is impossible, so a boxed goal forces leaf=false
+  -- the goal, STRUCTURALLY by shape: atoms fail when absent from the
+  -- zone; ⊥ fails at the (always-infallible) root; ◯A fails when the
+  -- root's declared cone misses A; compound goals NEVER discharge
+  -- here — they go through their own rules first
   (match C with
+    | .prop _ => !S.contains C
+    | .falsePLL => true
     | .somehow A =>
-        !leaf && !(clB G b S).contains A &&
-        (List.zip kids cone).all (fun kc =>
-          !kc.2 || !(clB G b kc.1.stable).contains A)
-    | _ => true)
+        !leaf && !S.contains A &&
+        (List.zip kids cone).all (fun kc => !kc.2 || !kc.1.stable.contains A)
+    | _ => false)
 
 /-- **The calculus.**  `FRJD G b ⟨S, C⟩` derives "some world forces
 `S`, refutes `C`". -/
@@ -69,7 +65,7 @@ inductive FRJD : Reg G → Type where
   /-- `⊃∈`: the refuting world is this one — the antecedent already
   holds here. -/
   | impIn {S A B} : FRJD ⟨S, B⟩ →
-      (clB G b S).contains A = true → FRJD ⟨S, .ifThen A B⟩
+      S.contains A = true → FRJD ⟨S, .ifThen A B⟩
   /-- `⊃∉`: the refuting world is strictly above — a child assuming
   `A` and refuting `B`; heredity is the world-node's business, so the
   child's stable zone must extend this world's. -/

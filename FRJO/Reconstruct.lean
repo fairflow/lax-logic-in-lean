@@ -1,12 +1,21 @@
 /-
 # FRJ◯ W5, the base case — `Reconstruction` at a solo countermodel
 
-The paper analysis (handoff, 2026-08-16): the stable zone must be the
-world's THEORY restricted to `sfPlus`, and the four supporting lemmas
-are `sf` transitivity, closure soundness (`clB` ⟹ derivable, via the
-searcher's own certificate), fallible-solo triviality, and the Kripke
-soundness composition.  All proved below, then the case itself:
-`reconstruction_solo`.  The `join` case is the remaining campaign.
+The lemma kit for `Reconstruction`, all PROVED: `sf` transitivity and
+closure of the universe, closure soundness (`clB` ⟹ derivable, via
+the searcher's own certificate), fallible-solo triviality.
+
+STATUS NOTE (2026-08-16).  The solo case WAS proved against worldOK
+v2 (commit `99868db`) — and doing so flushed out that v2 was UNSOUND:
+its goal conjunct read the bounded searcher (`clB`), whose budget
+failures admit semantically wrong `world` nodes, making W3b false.
+worldOK v3 (structural membership conjuncts, shape-restricted goals)
+repairs this, and invalidates the v2 proof: under v3, compound goals
+must go through their own rules, so the solo case needs the inner
+induction on the goal formula.  Both cases of `Reconstruction` are
+therefore OPEN, each with a full worked analysis in
+`FRJO/HANDOVER.md`.  The v2 proof remains in history as the worked
+template for the v3 one.
 -/
 import FRJO.Complete
 
@@ -79,78 +88,19 @@ theorem solo_fal_forces {V₀ : String → Prop} {fal : Prop}
   | ifThen φ ψ _ ihψ => intro v _ _; cases v; exact ihψ
   | somehow φ ihφ => intro v _; cases v; exact ⟨(), True.intro, ihφ⟩
 
-/-! ## The base case -/
+/-! ## The base case — OPEN under worldOK v3 (see the status note) -/
 
-theorem reconstruction_solo (b : Nat) (Γ : List PLLFormula) (C : PLLFormula)
-    (V₀ : String → Prop) (fal : Prop) (hfull : fal → ∀ a, V₀ a)
-    (hΓ : ∀ φ ∈ Γ, (Reject.solo V₀ fal hfull).force () φ)
-    (hC : ¬ (Reject.solo V₀ fal hfull).force () C) :
+/-- The solo half of `Reconstruction`: a sequent refuted at a
+one-world countermodel has an FRJ◯ derivation.  Proof plan: inner
+induction on the goal formula; `world` nodes at base shapes with the
+zone `theory ∩ sfPlus`; `impIn` at ⊃ (the antecedent is forced at the
+only world); `orR`/`andR` at compounds. -/
+def ReconstructionSolo (b : Nat) : Prop :=
+  ∀ (Γ : List PLLFormula) (C : PLLFormula)
+    (V₀ : String → Prop) (fal : Prop) (hfull : fal → ∀ a, V₀ a),
+    (∀ φ ∈ Γ, (Reject.solo V₀ fal hfull).force () φ) →
+    ¬ (Reject.solo V₀ fal hfull).force () C →
     ∃ S : Reg ⟨Γ, C⟩, S.goal = C ∧ Γ ⊆ S.stable ∧
-      Nonempty (FRJD ⟨Γ, C⟩ b S) := by
-  classical
-  set M := Reject.solo V₀ fal hfull with hM
-  -- the world is infallible, or it would force C
-  have hnf : ¬ fal := fun hf => hC (solo_fal_forces hf C)
-  -- the stable zone: the world's theory inside the universe
-  set St : List PLLFormula :=
-    (sfPlus ⟨Γ, C⟩).filter (fun φ => decide (M.force () φ)) with hSt
-  have hStMem : ∀ {φ}, φ ∈ St ↔ (φ ∈ sfPlus ⟨Γ, C⟩ ∧ M.force () φ) := by
-    intro φ
-    simp [hSt, List.mem_filter]
-  refine ⟨⟨St, C⟩, rfl, ?_, ⟨?_⟩⟩
-  · intro φ hφ
-    exact hStMem.mpr ⟨sfPlus_ctx _ φ hφ, hΓ φ hφ⟩
-  · refine .world [] [] false (fun K hK => absurd hK (List.not_mem_nil)) ?_
-    -- worldOK, conjunct by conjunct
-    simp only [worldOK, Bool.and_eq_true, List.all_nil, List.zip_nil_left,
-      List.all_eq_true, Bool.or_eq_false_iff, Bool.not_eq_true']
-    refine ⟨⟨⟨⟨⟨?_, ?_⟩, ?_⟩, ?_⟩, ?_⟩, ?_⟩
-    · -- St inside the universe
-      intro φ hφ
-      simpa using List.elem_iff.mpr (hStMem.mp hφ).1
-    · simpa using List.elem_iff.mpr (sfPlus_goal ⟨Γ, C⟩)
-    · -- heredity over no kids: discharged by simp already
-      trivial
-    · -- ◯-positive: a forced box at a solo world forces its body here
-      intro φ hφ
-      match φ with
-      | .prop _ | .falsePLL | .and _ _ | .or _ _ | .ifThen _ _ => simp
-      | .somehow A =>
-          simp only [List.any_nil, Bool.or_false, Bool.false_or]
-          obtain ⟨hu, hfc⟩ := hStMem.mp hφ
-          have hA : M.force () A :=
-            (Reject.solo_force_somehow V₀ fal hfull A).mp hfc
-          exact List.elem_iff.mpr (hStMem.mpr
-            ⟨sfPlus_closed hu (by simp [sf, sf_self]), hA⟩)
-    · -- the goal is not in the closure: closure-membership would make
-      -- it derivable, hence forced (Kripke soundness), against hC
-      cases hcl : (clB ⟨Γ, C⟩ b St).contains C
-      · rfl
-      · exfalso
-        have hmem : C ∈ clB ⟨Γ, C⟩ b St := List.elem_iff.mp hcl
-        obtain ⟨d⟩ := clB_sound hmem
-        exact hC (soundness d M () (fun γ hγ => (hStMem.mp hγ).2))
-    · -- a boxed goal: refuted at the root's own (reflexive) cone
-      match C, hC with
-      | .prop _, _ | .falsePLL, _ | .and _ _, _ | .or _ _, _
-      | .ifThen _ _, _ => simp
-      | .somehow A, hC =>
-          simp only [Bool.and_eq_true, List.all_nil, and_true,
-            Bool.not_eq_true']
-          refine ⟨trivial, ?_⟩
-          cases hcl : (clB ⟨Γ, .somehow A⟩ b St).contains A
-          · rfl
-          · exfalso
-            have hmem : A ∈ clB ⟨Γ, .somehow A⟩ b St := List.elem_iff.mp hcl
-            obtain ⟨d⟩ := clB_sound hmem
-            have hA : M.force () A :=
-              soundness d M () (fun γ hγ => (hStMem.mp hγ).2)
-            exact hC ((Reject.solo_force_somehow V₀ fal hfull A).mpr hA)
-
-/-! ## Pins -/
-
-/-- info: 'FRJO.reconstruction_solo' depends on axioms: [propext, choice, Quot.sound] -/
-#guard_msgs in
-#print axioms reconstruction_solo
+      Nonempty (FRJD ⟨Γ, C⟩ b S)
 
 end FRJO

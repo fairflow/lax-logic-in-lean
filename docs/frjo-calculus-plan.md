@@ -185,3 +185,21 @@ the refutation search succeeds.**
 Recommended: Opus 5, max effort, W1–W3 in the first session; W5 alone
 in its own session. Verify every stage with `#print axioms` pins
 transcribed verbatim; sorry = OPEN, per mandate.
+
+---
+
+## Addendum, 2026-08-16 end of session — what got built, and the v3 correction
+
+W1–W3a and the W5 reduction are CODE now (`FRJO/{Seq,Calc,Extract,
+Complete,Reconstruct}.lean`, all compiling, zero sorries):
+`completenessFRJO` is PROVED conditional on `Reconstruction` alone,
+pinned. The solo case was proved against worldOK v2 and thereby
+EXPOSED v2's unsoundness (goal conjuncts read the bounded searcher;
+budget failure admits wrong `world` nodes, falsifying W3b). worldOK v3
+replaces every closure-read with structural membership/shape
+conjuncts; the v2 solo proof is invalidated by design and both
+`Reconstruction` cases are OPEN again — each with a complete worked
+analysis in `FRJO/HANDOVER.md`, which is the fresh session's brief.
+The join case reduces further than §3.2 hoped: component worlds are a
+one-liner via `join_force_comp`; only the root case's inner induction
+on the goal (with the realiser/leaf dichotomy) is real work.
