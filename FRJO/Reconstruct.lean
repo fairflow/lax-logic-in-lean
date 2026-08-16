@@ -12,10 +12,18 @@ failures admit semantically wrong `world` nodes, making W3b false.
 worldOK v3 (structural membership conjuncts, shape-restricted goals)
 repairs this, and invalidates the v2 proof: under v3, compound goals
 must go through their own rules, so the solo case needs the inner
-induction on the goal formula.  Both cases of `Reconstruction` are
-therefore OPEN, each with a full worked analysis in
-`FRJO/HANDOVER.md`.  The v2 proof remains in history as the worked
-template for the v3 one.
+induction on the goal formula.
+
+Both cases are now PROVED under v3, in `FRJO/Recon.lean`:
+`FRJO.recon_solo` and `FRJO.recon_join`, assembled as `FRJO.recon`,
+all pinned `[propext, Quot.sound]`.  `ReconstructionSolo` below is
+discharged by `FRJO.reconstructionSolo`.
+
+Separately, v3 turned out to be unsound for W3b as well, for a
+DIFFERENT reason: it constrains the stable zone only by membership in
+the universe, never by closure.  `FRJO/Screen.lean` refutes
+`ExtractForces` at three certified cells and specifies (and checks)
+the v4 repair.
 -/
 import FRJO.Complete
 
@@ -88,13 +96,14 @@ theorem solo_fal_forces {V₀ : String → Prop} {fal : Prop}
   | ifThen φ ψ _ ihψ => intro v _ _; cases v; exact ihψ
   | somehow φ ihφ => intro v _; cases v; exact ⟨(), True.intro, ihφ⟩
 
-/-! ## The base case — OPEN under worldOK v3 (see the status note) -/
+/-! ## The base case — PROVED, in `FRJO/Recon.lean` -/
 
 /-- The solo half of `Reconstruction`: a sequent refuted at a
-one-world countermodel has an FRJ◯ derivation.  Proof plan: inner
-induction on the goal formula; `world` nodes at base shapes with the
-zone `theory ∩ sfPlus`; `impIn` at ⊃ (the antecedent is forced at the
-only world); `orR`/`andR` at compounds. -/
+one-world countermodel has an FRJ◯ derivation.  PROVED as
+`FRJO.reconstructionSolo` (`FRJO/Recon.lean`) exactly on this plan:
+inner induction on the goal formula; `world` nodes at base shapes with
+the zone `theory ∩ sfPlus`; `impIn` at ⊃ (the antecedent is forced at
+the only world); `orR`/`andR` at compounds. -/
 def ReconstructionSolo (b : Nat) : Prop :=
   ∀ (Γ : List PLLFormula) (C : PLLFormula)
     (V₀ : String → Prop) (fal : Prop) (hfull : fal → ∀ a, V₀ a),

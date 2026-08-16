@@ -19,14 +19,21 @@ statements are named `def … : Prop`.*
   ◯-positive(leaf ∨ cone-kid ∨ zone-membership) ∧ goal-by-SHAPE
   (atom absent / ⊥ / ◯ with cone-miss; compound = false). `rank`.
 * `FRJO/Extract.lean` (W3a, done): `extract` (RK model read-off);
-  `ExtractForces` (W3b) OPEN; `not_laxND_of_FRJD` pinned conditional.
-* `FRJO/Complete.lean` (done): `Reconstruction b` OPEN;
-  **`completenessFRJO` PROVED conditional on it alone**, pinned
-  `[propext, Classical.choice, Quot.sound]`, riding
-  `Reject.built_countermodel` (the (R)+T2 chain);
-  `frjd_iff_not_laxND`.
+  `ExtractForces` (W3b) **REFUTED for v3** — see `FRJO/Screen.lean`;
+  `not_laxND_of_FRJD` pinned conditional, hence currently vacuous.
+* `FRJO/Complete.lean` (done): `Reconstruction b` **PROVED**
+  (`FRJO.reconstruction`), so `completenessFRJO` is unconditional —
+  `FRJO.completenessFRJO'`; `frjd_iff_not_laxND` vacuous until v4.
 * `FRJO/Reconstruct.lean`: PROVED kit — `sf_trans`, `sfPlus_closed`,
-  `clB_sound`, `solo_fal_forces`; `ReconstructionSolo` OPEN (v3).
+  `clB_sound`, `solo_fal_forces`; `ReconstructionSolo` **PROVED**
+  (`FRJO.reconstructionSolo`).
+* `FRJO/Recon.lean` (2026-08-16 evening, NEW): `Effective`,
+  `exists_restrict`, `worldOK_cone`, `recon_solo`, `exists_cone_kids`,
+  `recon_join`, `recon` — all `[propext, Quot.sound]` — and the
+  classical corollaries.
+* `FRJO/Screen.lean` (NEW): the three certified refutations of
+  `ExtractForces` for v3, and `zoneOK4` (the v4 zone repair) with both
+  checks — `zoneOK4_rejects` and `zoneOK4_of_theory`.
 
 ## The v2→v3 lesson (do not undo it)
 
@@ -153,3 +160,25 @@ searcher emitting `FRJD`, or drop it until one exists).
 3. `Reconstruction`/`ReconstructionSolo` as corollaries; pins.
 4. W3b.  5. W4 searcher + 302-cell corpus + the two flags.
 Opus 5, max effort. Sorry-free + pinned or it stays OPEN.
+
+
+---
+
+## 2026-08-16 evening — what changed
+
+W5 is DONE: `Reconstruction` and `ReconstructionSolo` are proved
+(`FRJO/Recon.lean`), so completeness for FRJ◯ is unconditional.  The
+constructivity requirement is met: `recon` pins `[propext,
+Quot.sound]`, via the `Effective` package (Prop-level `p ∨ ¬p` plus
+witness worlds for a refuted `⊃` and a refuted `◯`), which keeps every
+goal in `Prop` and so avoids both `Classical.propDecidable` (no
+`decide ∘ force` filter) and `Classical.choice` (premise derivations by
+`Nonempty`-elimination).  Choice appears only in
+`effective_of_classical`, i.e. only in the corollaries over an
+arbitrary model.
+
+W3b is REFUTED for worldOK v3, at three cells, before it was scoped.
+The full report, the v4 specification and the design decision it forces
+are in `docs/disproof-handoff.md` §2026-08-16 (evening).  The suggested
+order below is superseded by the "Where the next session should start"
+list there.

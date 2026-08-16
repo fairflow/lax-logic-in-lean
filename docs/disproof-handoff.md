@@ -1445,3 +1445,147 @@ a refuted goal is never in the closure; (iv) solo-infallibility from
 `hC` (a fallible root forces everything, contradiction). The join case
 is the campaign: cone from `RootData.S`, fallible kids ↦ `leaf`,
 heredity from `addRoot_force_some`.
+
+---
+
+### 2026-08-16 (evening) — `Reconstruction` PROVED; `ExtractForces` REFUTED
+
+Branch `claude/frjo-completeness` (off `ljf-pll` at `d605b19`). Two
+results, both machine-checked, both with pins transcribed verbatim from
+the build output; `lake build FRJO` is error-free at the tip.
+
+#### PROVED — completeness for FRJ◯ is unconditional
+
+`FRJO/Recon.lean`, sorry-free:
+
+    FRJO.recon               [propext, Quot.sound]
+    FRJO.recon_solo          [propext, Quot.sound]
+    FRJO.recon_join          [propext, Quot.sound]
+    FRJO.exists_cone_kids    [propext, Quot.sound]
+    FRJO.reconstruction      [propext, Classical.choice, Quot.sound]
+    FRJO.reconstructionSolo  [propext, Classical.choice, Quot.sound]
+    FRJO.completenessFRJO'   [propext, Classical.choice, Quot.sound]
+
+`FRJO.reconstruction` discharges `Reconstruction` (`FRJO/Complete.lean`),
+so `completenessFRJO` is now unconditional, restated as
+`completenessFRJO'`:
+
+    ¬ Nonempty (LaxND Γ C)  →  ∃ S : Reg ⟨Γ,C⟩,
+        S.goal = C ∧ Γ ⊆ S.stable ∧ Nonempty (FRJD ⟨Γ,C⟩ b S)
+
+`FRJO.reconstructionSolo` discharges `ReconstructionSolo`
+(`FRJO/Reconstruct.lean`). Both former OPEN statements are closed.
+
+The content is `recon`: every world of a `Reject.Built` model, and every
+formula of the cell's universe that it refutes, carry an FRJ◯ derivation
+whose stable zone is EXACTLY that world's restricted theory,
+
+    ∀ φ, φ ∈ S ↔ (φ ∈ sfPlus G ∧ M.force r φ).
+
+Structural induction on `Built`, inner induction on the goal at each
+root, per the handover's worked plan. The join's component case is the
+component's own hypothesis transported by `join_force_comp`; the join's
+root case runs the realiser/leaf dichotomy as `exists_cone_kids`.
+
+**Constructivity, as required (Matthew, 2026-08-16).** `recon` is
+choice-free. The device is `Effective M`: a Prop-level package —
+
+    force_dec : ∀ w φ, M.force w φ ∨ ¬ M.force w φ
+    imp_wit   : ¬ M.force w (A ⊃ B) → ∃ v, Ri w v ∧ force v A ∧ ¬ force v B
+    box_wit   : ¬ M.force w (◯A) → ∃ v, Ri w v ∧ ∀ u, Rm v u → ¬ force u A
+
+— which propagates from a join to its components (`Effective.comp`).
+Stating it with `∨` rather than `Decidable` is what does the work: every
+goal stays in `Prop`, so the zone comes from `exists_restrict` (no
+`List.filter (decide ∘ force)`, hence no `Classical.propDecidable`) and
+premise derivations come from `Nonempty`-elimination (hence no
+`Classical.choice`). Choice enters only at `effective_of_classical`,
+i.e. only where the corollaries quantify over an arbitrary model. Since
+the upstream (R) chain pins choice anyway, `completenessFRJO'` is no
+worse than before, and `recon` improves the day that chain lands.
+
+#### REFUTED — `ExtractForces` (W3b) is false for `worldOK` v3
+
+`FRJO/Screen.lean`, run BEFORE scoping W3b, per the testing mandate:
+
+    FRJO.not_extractForces_bot  [propext, Classical.choice, Quot.sound]
+    FRJO.not_extractForces_and  [propext, Classical.choice, Quot.sound]
+    FRJO.not_extractForces_mp   [propext, Classical.choice, Quot.sound]
+
+(the `Classical.choice` is `extract`'s own — its `while` loops make it
+`partial`, and it occurs in `ExtractForces`'s statement; nothing in the
+refutations uses choice.)
+
+v3's `worldOK` constrains the stable zone only by MEMBERSHIP in the
+universe — nothing about closure — so `world [] [] false` is a legal
+node at zones no world can force. Three cells, each with `worldOK … =
+true` by `decide` and an explicit `LaxND` proof term for the same
+sequent:
+
+    [⊥] ⊢ p          the extracted root is infallible by construction
+    [p ∧ q] ⊢ p      the root forces p ∧ q only if it forces p
+    [p, p ⊃ q] ⊢ q   the root forces p ⊃ q only if it forces q
+
+Each contradicts `not_laxND_of_FRJD`, which is exactly what
+`ExtractForces` delivers. So `frjd_iff_not_laxND` is VACUOUS as it
+stands, and the biconditional the campaign is for is still OPEN.
+
+This is NOT the v2 defect. v2 was unsound because its goal conjunct read
+the bounded searcher, so a budget failure admitted a wrong node; v2 was
+immune to these three, because reading the consequence closure blocks
+them. v3 removed the closure read and with it the only thing that
+constrained the zone.
+
+#### The repair, specified and checked
+
+`zoneOK4` (same file) is the ZONE half of the proposed v4: `⊥ ∉ S`;
+`A ∧ B ∈ S ↔ (A ∈ S ∧ B ∈ S)` and `A ∨ B ∈ S ↔ (A ∈ S ∨ B ∈ S)` for
+every such formula of the universe; and `A ⊃ B ∈ S → A ∈ S → B ∈ S`.
+Two checks:
+
+    FRJO.zoneOK4_rejects    [propext]             -- kills all three, by `decide`
+    FRJO.zoneOK4_of_theory  [propext, Quot.sound]
+
+`zoneOK4_of_theory` says the restricted theory of any INFALLIBLE world
+satisfies it — and that is precisely the zone `recon` builds at every
+node, so the repair costs the completeness direction nothing.
+
+The SATURATION half is specified in the file header but deliberately not
+coded, because it changes the `world` CONSTRUCTOR, not just a side
+condition, and that is a statement-level decision:
+
+* for `A ⊃ B ∈ sfPlus G \ S`: a witness — `A ∈ S ∧ B ∉ S`, or a kid `K`
+  with `A ∈ K.stable ∧ B ∉ K.stable`;
+* for `◯A ∈ sfPlus G \ S`: the cone misses `A` (`¬leaf`, `A ∉ S`, no
+  cone kid carries `A`), or some kid omits `◯A`.
+
+Together with the zone half these make the zone a COMPLETE description
+of the root, which is what the `⊃` and `◯` clauses of the forcing
+induction consume; and then the goal conjunct collapses to the uniform
+`C ∉ S`, no shape analysis. The decision to take is what that does to
+the other five rules: `orR`, `andR1/2`, `impIn`, `impOut`, `circOut` all
+become DERIVED, and two of them are independently extraction-unsound as
+written — `impOut` and `circOut` build a fresh root with no valuation
+and no cone (`FRJO/Extract.lean`), so they cannot carry a zone
+containing atoms or boxes; and `extract (orR d e)` returns only `d`'s
+model, whose root need not refute the second disjunct. So v4 is
+plausibly a ONE-RULE calculus (RK(Ξ)'s ⋈ with saturation, which is what
+the sources actually do), with the per-connective content in the
+side-condition table rather than in constructors. Recorded, not decided.
+
+#### Where the next session should start
+
+1. Matthew's call on the v4 shape (one rule vs. repaired rules).
+2. With that fixed: re-do `worldOK` and prove W3b — and prove it over
+   `Reject.solo`/`Reject.join` (`ConstraintModel`) rather than over
+   `extract`/`FinCM`. `Reject`'s kit is built for it
+   (`addRoot_force_some`, `join_force_comp`, `join_force_box_iff`), the
+   `FinCM` replay stays as the cheap per-instance gate, and it avoids
+   proving anything about `extract`'s imperative transitive-closure
+   loops, which are `partial` and do not reduce in the kernel.
+3. The reconstruction transfers: its zones already satisfy `zoneOK4`
+   (`zoneOK4_of_theory`), and the saturation kids come from the same
+   component hypothesis that `exists_cone_kids` already uses — a
+   refuted `A ⊃ B` at a component world gives a kid at goal `B`, a
+   refuted `◯A` gives a kid at goal `◯A`.
+4. Only then W4 (the searcher and the 302-cell corpus screen).
