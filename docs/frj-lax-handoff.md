@@ -240,19 +240,30 @@ to locate; none needs locating twice.
 * **`Finite` costs choice to eliminate** (`Fintype.ofFinite`). Carry a
   constructive enumeration instead — `Kripke` already does.
 * **The tactics.** `tauto` and `push_neg` reason classically, and so
-  does `Classical.propDecidable`. **And so does `simp`**: a goal about
-  `if p x then 1 else 0` closed by `simp` pins `Classical.choice`, while
-  the *same goal* closed by explicit `if_pos`/`if_neg` does not. This
-  was established by proving one statement two ways side by side. When a
-  pin comes out dirty and the mathematics looks constructive, suspect
-  the tactic before the argument.
+  does `Classical.propDecidable`. **`simp` can too, but indirectly**: on
+  an inequality goal it routes through Mathlib's ordered-algebra
+  instances and out through `lt_or_eq_of_le`, which is genuinely
+  classical (deciding `a = b` in a partial order needs excluded middle).
+  `simp` on a goal with no order in it is clean, and `omega` on a goal
+  `simp` taints is clean. So: **prefer `omega` to `simp` for arithmetic
+  and order goals.**
 * Shape predicates (`isPV`, `isPrime`, `isImp`) are `Bool`, not `Prop`.
 
-**Method that worked, and is worth repeating.** Do not guess at the
-source. Bisect: `#print axioms` every lemma in the chain, top down, until
-the first dirty one has only clean dependencies — that one is yours to
-fix. Every source above was found this way, and two of the four turned
-out to be tools rather than mathematics.
+**Use the bisector; do not guess.** `Meta/Audit.lean` (branch
+`meta-tools`) provides
+
+```
+#choice_path f      -- shortest chain from f to Classical.choice,
+                    -- each step annotated with its module
+#choice_sources f   -- which direct dependencies are tainted
+#axiom_pin f        -- emit the #guard_msgs block, ready to paste
+```
+
+It exists because guessing failed: the first diagnosis of the `simp`
+case in this campaign was wrong, and `#choice_path` corrected it in one
+command by naming `lt_or_eq_of_le` as the actual source. When a pin
+comes out dirty and the mathematics looks constructive, run the tool
+before changing anything.
 
 ### 4.3 Contexts are canonical — do not break this
 

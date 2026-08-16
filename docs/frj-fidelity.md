@@ -333,12 +333,39 @@ theorem with that step left to the caller, and is choice-free.
    `List.le_of_mem_argmax` (though `List.argmax` itself is clean), and
    `List.eq_nil_iff_forall_not_mem`. Replaced by `maxOn` with its two
    specification lemmas, and by `eq_nil_of_forall_not_mem`.
-4. **The tactics `tauto`, `push_neg` and — the one worth remembering —
-   `simp`.** A goal about `if p x then 1 else 0` closed by `simp` pins
-   `Classical.choice`; the same goal closed by explicit `if_pos`/
-   `if_neg` does not. This was established by proving one statement two
-   ways side by side before changing anything, and it affected
-   `countP_mono`, `countP_lt_countP` and `enumOf`.
+4. **`tauto` and `push_neg` reason classically**, and so does
+   Mathlib's `lt_or_eq_of_le` — necessarily, since deciding `a = b` in a
+   partial order needs excluded middle.
+
+   **CORRECTION (same day, by `#choice_path`).** This document first
+   recorded the source as "`simp` pins `Classical.choice` where explicit
+   `if_pos`/`if_neg` does not". That diagnosis was wrong. Measured:
+
+   ```
+   theorem t1 (n : Nat) : n ≤ n + 1 := by simp    -- TAINTED
+   theorem t2 (n : Nat) : n ≤ n + 1 := by omega   -- clean
+   theorem t3 {p : Bool} (h : p = false) :
+       (if p = true then 1 else 0) = 0 := by simp  -- clean, [propext]
+   ```
+
+   and the chain for `countP_mono` as first proved runs
+
+       cmA → cmA._f
+           → IsRightCancelAdd.addRightReflectLE_of_addRightReflectLT
+           → contravariant_le_iff_contravariant_lt_and_eq
+           → LE.le.lt_or_eq → lt_or_eq_of_le
+           → Classical.propDecidable → Classical.choice
+
+   So `simp` is the *route*, not the source: on a goal with no order in
+   it (`t3`) it is clean, and `omega` on the very goal it taints (`t2`)
+   is clean. What happened is that `simp` sent an inequality goal through
+   Mathlib's ordered-algebra instances and out through `lt_or_eq_of_le`.
+   Removing the `simp` calls from `countP_mono`, `countP_lt_countP` and
+   `enumOf` fixed it because it removed that detour.
+
+   **Guidance, corrected**: prefer `omega` to `simp` for arithmetic and
+   order goals, and when a pin comes out dirty, *bisect* rather than
+   guess — `Meta/Audit.lean`'s `#choice_path` does it in one command.
 
 **A statement-level change was needed too, and is recorded here as a
 divergence.** The irregular `⊃∈` rule
