@@ -746,6 +746,85 @@ theorem clo_sf {Γ : List Form} : ∀ {A : Form}, Clo Γ A → Clo (cap Γ (sf A
       exact .imp (clo_mono
         (cap_mono (fun _ h => h) (fun Z hZ => by simp [sf]; exact Or.inr (Or.inr hZ))) ih)
 
+/-! ### `Cl` is decidable, and so is `≐`
+
+The method the campaign follows asks for side conditions as **decidable
+fields**, and `Cl` occurs in the side conditions of both implication
+rules.  `Clo` is an inductive predicate, but only one clause can produce
+each shape, so it is decided by structural recursion on the formula.  The
+`◯` case reads `Clo Γ (◯X) ↔ ◯X ∈ Γ` exactly because `Cl` has no `◯`
+clause. -/
+
+/-- The decision procedure for `Cl(Γ)`, read off the grammar. -/
+def cloB (Γ : List Form) : Form → Bool
+  | .atom p => decide (Form.atom p ∈ Γ)
+  | .bot => decide (Form.bot ∈ Γ)
+  | .and X Y => decide (Form.and X Y ∈ Γ) || (cloB Γ X && cloB Γ Y)
+  | .or X Y => decide (Form.or X Y ∈ Γ) || cloB Γ X || cloB Γ Y
+  | .imp A X => decide (Form.imp A X ∈ Γ) || cloB Γ X
+  | .circ X => decide (Form.circ X ∈ Γ)
+
+theorem cloB_iff {Γ : List Form} : ∀ {X : Form}, cloB Γ X = true ↔ Clo Γ X := by
+  intro X
+  induction X with
+  | atom p =>
+      constructor
+      · intro h; exact .base (of_decide_eq_true h)
+      · intro h; cases h with | base hC => simpa [cloB] using hC
+  | bot =>
+      constructor
+      · intro h; exact .base (of_decide_eq_true h)
+      · intro h; cases h with | base hC => simpa [cloB] using hC
+  | and X Y ihX ihY =>
+      constructor
+      · intro h
+        simp only [cloB, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq] at h
+        rcases h with h | ⟨hX, hY⟩
+        · exact .base h
+        · exact .and (ihX.mp hX) (ihY.mp hY)
+      · intro h
+        cases h with
+        | base hC => simp [cloB, hC]
+        | and hX hY => simp [cloB, ihX.mpr hX, ihY.mpr hY]
+  | or X Y ihX ihY =>
+      constructor
+      · intro h
+        simp only [cloB, Bool.or_eq_true, decide_eq_true_eq] at h
+        rcases h with (h | h) | h
+        · exact .base h
+        · exact .orL (ihX.mp h)
+        · exact .orR (ihY.mp h)
+      · intro h
+        cases h with
+        | base hC => simp [cloB, hC]
+        | orR hY => simp [cloB, ihY.mpr hY]
+        | orL hX => simp [cloB, ihX.mpr hX]
+  | imp A X _ ihX =>
+      constructor
+      · intro h
+        simp only [cloB, Bool.or_eq_true, decide_eq_true_eq] at h
+        rcases h with h | h
+        · exact .base h
+        · exact .imp (ihX.mp h)
+      · intro h
+        cases h with
+        | base hC => simp [cloB, hC]
+        | imp hX => simp [cloB, ihX.mpr hX]
+  | circ X _ =>
+      constructor
+      · intro h; exact .base (of_decide_eq_true (by simpa [cloB] using h))
+      · intro h; cases h with | base hC => simpa [cloB] using hC
+
+instance decClo (Γ : List Form) (X : Form) : Decidable (Clo Γ X) :=
+  decidable_of_decidable_of_iff cloB_iff
+
+instance decSubset (l m : List Form) : Decidable (l ⊆ m) :=
+  decidable_of_decidable_of_iff (p := ∀ x ∈ l, x ∈ m)
+    ⟨fun h _ hx => h _ hx, fun h _ hx => h hx⟩
+
+instance decEqv (l m : List Form) : Decidable (l ≐ m) :=
+  inferInstanceAs (Decidable (_ ∧ _))
+
 /-! ## The third zone: a W5 finding, recorded here and not acted on
 
 `FRJ(G)` partitions the left formulas that may appear in a context into
@@ -824,6 +903,18 @@ a path to an actual procedure. -/
 /-- info: 'FRJLax.clo_sf' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms clo_sf
+
+/-- info: 'FRJLax.cloB_iff' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms cloB_iff
+
+/-- info: 'FRJLax.decClo' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms decClo
+
+/-- info: 'FRJLax.decEqv' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms decEqv
 
 /-- info: 'FRJLax.Form.size_pos' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

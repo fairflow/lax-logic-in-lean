@@ -10,3 +10,5 @@ Nothing here imports `FRJ/`, `FRJO/`, `Reject/` or `BiLax/`.
 -/
 import FRJLax.Core
 import FRJLax.Model
+import FRJLax.Calculus
+import FRJLax.Paper
