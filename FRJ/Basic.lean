@@ -658,6 +658,51 @@ def gImp (G : Form) : List Form := (sfL G).filter Form.isImp
 /-- `Ĝ = Ĝ_at ++ Ĝ_imp`. -/
 def gHat (G : Form) : List Form := gAt G ++ gImp G
 
+/-! ## Canonical contexts
+
+Contexts denote *sets*, and the calculus needs one operation — the split
+of an irregular zone as `Θ = Θ' ∪ Λ` in the `⊃∈` rule — to be an
+equality of the rule's own INDEX, not merely an equality of member sets.
+Lists do not give that: `++` is neither commutative nor idempotent.
+`Finset` gave it because a `Finset` *is* a set.
+
+The replacement, costing no `Classical.choice`: represent a context by
+its filter of `Ĝ`.  This is legitimate exactly because every context
+occurring in a derivation is a subset of `Ĝ` (`wfR`/`wfI`), so `nf G`
+changes no context's membership — and two contexts with the same members
+are then literally the same list. -/
+
+/-- The canonical form of a context: the members of `Ĝ` lying in it. -/
+def nf (G : Form) (l : List Form) : List Form :=
+  (gHat G).filter (fun x => decide (x ∈ l))
+
+@[simp] theorem mem_nf {G : Form} {l : List Form} {x : Form} :
+    x ∈ nf G l ↔ (x ∈ gHat G ∧ x ∈ l) := by
+  simp [nf, List.mem_filter]
+
+/-- **Extensionality** — the property `++` lacks and `Finset` had:
+canonical forms agree as soon as their members inside `Ĝ` agree. -/
+theorem nf_ext {G : Form} {l m : List Form}
+    (h : ∀ x, x ∈ gHat G → (x ∈ l ↔ x ∈ m)) : nf G l = nf G m := by
+  refine List.filter_congr ?_
+  intro x hx
+  simp [h x hx]
+
+theorem nf_idem {G : Form} {l : List Form} : nf G (nf G l) = nf G l :=
+  nf_ext (fun x hx => by simp [hx])
+
+theorem nf_subset {G : Form} {l : List Form} : nf G l ⊆ gHat G :=
+  fun _ h => (mem_nf.mp h).1
+
+theorem nf_subset_self {G : Form} {l : List Form} : nf G l ⊆ l :=
+  fun _ h => (mem_nf.mp h).2
+
+/-- On a context already inside `Ĝ`, canonicalisation changes nothing
+that membership can see. -/
+theorem mem_nf_of_subset {G : Form} {l : List Form} (hl : l ⊆ gHat G)
+    {x : Form} : x ∈ nf G l ↔ x ∈ l :=
+  ⟨fun h => (mem_nf.mp h).2, fun h => mem_nf.mpr ⟨hl h, h⟩⟩
+
 /-- The atomic part of a set of formulas: the paper's notation `Γ^at`,
 which means "`Γ^at ⊆ PV`".  For `Γ ⊆ Ĝ` the decomposition
 `Γ = Γ^at ++ Γ^⊃` is unique, so taking it by `filter` is definitional. -/
