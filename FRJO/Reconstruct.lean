@@ -149,7 +149,7 @@ theorem reconstruction_solo (b : Nat) (Γ : List PLLFormula) (C : PLLFormula)
 
 /-! ## Pins -/
 
-/-- info: 'FRJO.reconstruction_solo' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'FRJO.reconstruction_solo' depends on axioms: [propext, choice, Quot.sound] -/
 #guard_msgs in
 #print axioms reconstruction_solo
 
