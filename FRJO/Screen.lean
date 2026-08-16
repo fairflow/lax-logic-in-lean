@@ -41,7 +41,7 @@ second defect this screen records is that those two constructors build a
 fresh root with no valuation and no cone at all (`FRJO/Extract.lean`),
 so they cannot carry a zone with atoms or boxes either.
 -/
-import FRJO.Extract
+import FRJO.Recon
 
 namespace FRJO
 
@@ -100,6 +100,70 @@ def proofMP :
 theorem not_extractForces_mp (b : Nat) : ¬ ExtractForces cellMP b :=
   fun hE => not_laxND_of_FRJD hE (bareWorld cellMP b _ _ (okMP b)) ⟨proofMP⟩
 
+/-! ## The repair, checked both ways
+
+The ZONE half of the v4 specification (conjuncts 1–4 of the header) as a
+decidable predicate.  Two checks: it REJECTS all three refuting nodes
+above, and it is SATISFIED by exactly the zones the reconstruction
+builds — a world's restricted theory at an infallible world.  So the
+repair is neither too weak (it kills the counterexamples) nor too strong
+(it costs the completeness direction nothing).
+
+The SATURATION half (conjuncts 5–6) is not stated here: it constrains
+the kid list as well as the zone, so it belongs with a revised `world`
+constructor, which is a design decision for the calculus, not a lemma. -/
+
+/-- v4's zone conjuncts: `⊥`-freedom, ∧ and ∨ closure both ways over the
+universe, and detachment.  These are what make the extracted root force
+the whole zone. -/
+def zoneOK4 (G : Cell) (S : List PLLFormula) : Bool :=
+  decide (PLLFormula.falsePLL ∉ S) &&
+  (sfPlus G).all fun φ => match φ with
+    | .and A B => decide ((PLLFormula.and A B ∈ S) ↔ (A ∈ S ∧ B ∈ S))
+    | .or A B => decide ((PLLFormula.or A B ∈ S) ↔ (A ∈ S ∨ B ∈ S))
+    | .ifThen A B => decide ((PLLFormula.ifThen A B ∈ S) → A ∈ S → B ∈ S)
+    | _ => true
+
+/-- **The repair rejects all three refuting nodes.** -/
+theorem zoneOK4_rejects :
+    zoneOK4 cellBot [PLLFormula.falsePLL] = false ∧
+    zoneOK4 cellAnd [PLLFormula.and (.prop "p") (.prop "q")] = false ∧
+    zoneOK4 cellMP [PLLFormula.prop "p", .ifThen (.prop "p") (.prop "q")] = false := by
+  refine ⟨?_, ?_, ?_⟩ <;> decide
+
+/-- **The repair costs completeness nothing**: the restricted theory of
+any infallible world satisfies it.  Every zone `recon` builds is of that
+form (`FRJO/Recon.lean`), so the v4 conjuncts are already discharged on
+the reconstruction side. -/
+theorem zoneOK4_of_theory {M : ConstraintModel} {w : M.W} {G : Cell}
+    {S : List PLLFormula}
+    (hS : ∀ φ, φ ∈ S ↔ (φ ∈ sfPlus G ∧ M.force w φ))
+    (hinf : ¬ M.force w .falsePLL) : zoneOK4 G S = true := by
+  simp only [zoneOK4, Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true]
+  refine ⟨fun hc => hinf ((hS _).mp hc).2, fun φ hφ => ?_⟩
+  match φ, hφ with
+  | .prop _, _ | .falsePLL, _ | .somehow _, _ => rfl
+  | .and A B, hφ =>
+      simp only [decide_eq_true_eq, hS]
+      constructor
+      · rintro ⟨-, h1, h2⟩
+        exact ⟨⟨sfPlus_and_left hφ, h1⟩, ⟨sfPlus_and_right hφ, h2⟩⟩
+      · rintro ⟨⟨-, h1⟩, ⟨-, h2⟩⟩
+        exact ⟨hφ, h1, h2⟩
+  | .or A B, hφ =>
+      simp only [decide_eq_true_eq, hS]
+      constructor
+      · rintro ⟨-, h1 | h2⟩
+        · exact Or.inl ⟨sfPlus_or_left hφ, h1⟩
+        · exact Or.inr ⟨sfPlus_or_right hφ, h2⟩
+      · rintro (⟨-, h1⟩ | ⟨-, h2⟩)
+        · exact ⟨hφ, Or.inl h1⟩
+        · exact ⟨hφ, Or.inr h2⟩
+  | .ifThen A B, hφ =>
+      simp only [decide_eq_true_eq, hS]
+      rintro ⟨-, himp⟩ ⟨-, hA⟩
+      exact ⟨sfPlus_imp_right hφ, himp w (M.refl_i w) hA⟩
+
 /-! ## Pins
 
 `Classical.choice` here is not the refutation's: it rides in through
@@ -123,5 +187,13 @@ info: 'FRJO.not_extractForces_mp' depends on axioms: [propext, Classical.choice,
 -/
 #guard_msgs in
 #print axioms not_extractForces_mp
+
+/-- info: 'FRJO.zoneOK4_rejects' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms zoneOK4_rejects
+
+/-- info: 'FRJO.zoneOK4_of_theory' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms zoneOK4_of_theory
 
 end FRJO
