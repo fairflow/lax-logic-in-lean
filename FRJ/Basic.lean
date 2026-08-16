@@ -392,6 +392,114 @@ theorem sfL_or {G A B : Form} (h : Form.or A B ∈ sfL G) :
 theorem sfL_imp {G A B : Form} (h : Form.imp A B ∈ sfL G) :
     A ∈ sfR G ∧ B ∈ sfL G := (sfPos_closed G).lImp h
 
+/-! ### All subformulas
+
+"Given a formula `G`, `Sf(G)` is the set of all subformulas of `G`
+(including `G` itself)"; and "by `Sf⁻(C)` we denote the set
+`Sf(C) \ {C}`". -/
+
+/-- `Sf(A)`. -/
+def sf : Form → Finset Form
+  | .atom p => {.atom p}
+  | .bot => {.bot}
+  | .and A B => insert (.and A B) (sf A ∪ sf B)
+  | .or A B => insert (.or A B) (sf A ∪ sf B)
+  | .imp A B => insert (.imp A B) (sf A ∪ sf B)
+
+/-- `Sf⁻(A) = Sf(A) \ {A}`. -/
+def sfm (A : Form) : Finset Form := (sf A).erase A
+
+theorem self_mem_sf (A : Form) : A ∈ sf A := by
+  cases A <;> simp [sf]
+
+/-- Every subformula is no larger than the formula.  This is what makes
+the `Sf⁻` inclusions between a compound and its components work. -/
+theorem size_le_of_mem_sf : ∀ {A X : Form}, X ∈ sf A → X.size ≤ A.size := by
+  intro A
+  induction A with
+  | atom p => intro X h; simp [sf] at h; subst h; simp [Form.size]
+  | bot => intro X h; simp [sf] at h; subst h; simp [Form.size]
+  | and A B ihA ihB =>
+      intro X h
+      simp only [sf, Finset.mem_insert, Finset.mem_union] at h
+      rcases h with rfl | h | h
+      · exact Nat.le_refl _
+      · exact Nat.le_trans (ihA h) (by simp [Form.size]; omega)
+      · exact Nat.le_trans (ihB h) (by simp [Form.size]; omega)
+  | or A B ihA ihB =>
+      intro X h
+      simp only [sf, Finset.mem_insert, Finset.mem_union] at h
+      rcases h with rfl | h | h
+      · exact Nat.le_refl _
+      · exact Nat.le_trans (ihA h) (by simp [Form.size]; omega)
+      · exact Nat.le_trans (ihB h) (by simp [Form.size]; omega)
+  | imp A B ihA ihB =>
+      intro X h
+      simp only [sf, Finset.mem_insert, Finset.mem_union] at h
+      rcases h with rfl | h | h
+      · exact Nat.le_refl _
+      · exact Nat.le_trans (ihA h) (by simp [Form.size]; omega)
+      · exact Nat.le_trans (ihB h) (by simp [Form.size]; omega)
+
+theorem sf_subset_sfm_impL {A B : Form} : sf A ⊆ sfm (.imp A B) := by
+  intro X hX
+  refine Finset.mem_erase.mpr ⟨?_, ?_⟩
+  · intro hcon
+    have := size_le_of_mem_sf hX
+    rw [hcon] at this
+    simp only [Form.size] at this
+    omega
+  · simp only [sf, Finset.mem_insert, Finset.mem_union]
+    exact Or.inr (Or.inl hX)
+
+theorem sfm_subset_sfm_and₁ {A B : Form} : sfm A ⊆ sfm (.and A B) := by
+  intro X hX
+  obtain ⟨-, hX'⟩ := Finset.mem_erase.mp hX
+  refine Finset.mem_erase.mpr ⟨?_, ?_⟩
+  · intro hcon
+    have := size_le_of_mem_sf hX'
+    rw [hcon] at this
+    simp only [Form.size] at this
+    omega
+  · simp only [sf, Finset.mem_insert, Finset.mem_union]
+    exact Or.inr (Or.inl hX')
+
+theorem sfm_subset_sfm_and₂ {A B : Form} : sfm B ⊆ sfm (.and A B) := by
+  intro X hX
+  obtain ⟨-, hX'⟩ := Finset.mem_erase.mp hX
+  refine Finset.mem_erase.mpr ⟨?_, ?_⟩
+  · intro hcon
+    have := size_le_of_mem_sf hX'
+    rw [hcon] at this
+    simp only [Form.size] at this
+    omega
+  · simp only [sf, Finset.mem_insert, Finset.mem_union]
+    exact Or.inr (Or.inr hX')
+
+theorem sfm_subset_sfm_or₁ {A B : Form} : sfm A ⊆ sfm (.or A B) := by
+  intro X hX
+  obtain ⟨-, hX'⟩ := Finset.mem_erase.mp hX
+  refine Finset.mem_erase.mpr ⟨?_, ?_⟩
+  · intro hcon
+    have := size_le_of_mem_sf hX'
+    rw [hcon] at this
+    simp only [Form.size] at this
+    omega
+  · simp only [sf, Finset.mem_insert, Finset.mem_union]
+    exact Or.inr (Or.inl hX')
+
+theorem sfm_subset_sfm_or₂ {A B : Form} : sfm B ⊆ sfm (.or A B) := by
+  intro X hX
+  obtain ⟨-, hX'⟩ := Finset.mem_erase.mp hX
+  refine Finset.mem_erase.mpr ⟨?_, ?_⟩
+  · intro hcon
+    have := size_le_of_mem_sf hX'
+    rw [hcon] at this
+    simp only [Form.size] at this
+    omega
+  · simp only [sf, Finset.mem_insert, Finset.mem_union]
+    exact Or.inr (Or.inr hX')
+
 /-! ## The sets `Ĝ_at`, `Ĝ_imp`, `Ĝ`
 
 "`Ĝ_at = Sf^L(G) ∩ PV`,  `Ĝ_imp = Sf^L(G) ∩ Fm⊃`,  `Ĝ = Ĝ_at ∪ Ĝ_imp`."
@@ -465,5 +573,40 @@ theorem clo_pv {Γ : Finset Form} {p : String} (h : Clo Γ (.atom p)) :
     Form.atom p ∈ Γ := by
   cases h with
   | base hC => exact hC
+
+/-- **(Cl2)** `A ∈ Cl(Γ)` implies `A ∈ Cl(Γ ∩ Sf(A))`.  Consumed by the
+irregular `⊃∈` case of the soundness proof. -/
+theorem clo_sf {Γ : Finset Form} : ∀ {A : Form}, Clo Γ A → Clo (Γ ∩ sf A) A := by
+  intro A h
+  induction h with
+  | @base C hC => exact .base (Finset.mem_inter.mpr ⟨hC, self_mem_sf C⟩)
+  | @and X Y _ _ ihX ihY =>
+      refine .and (clo_mono ?_ ihX) (clo_mono ?_ ihY)
+      · exact Finset.inter_subset_inter_left (by
+          intro Z hZ
+          simp only [sf, Finset.mem_insert, Finset.mem_union]
+          exact Or.inr (Or.inl hZ))
+      · exact Finset.inter_subset_inter_left (by
+          intro Z hZ
+          simp only [sf, Finset.mem_insert, Finset.mem_union]
+          exact Or.inr (Or.inr hZ))
+  | @orR A X _ ih =>
+      refine .orR (clo_mono ?_ ih)
+      exact Finset.inter_subset_inter_left (by
+        intro Z hZ
+        simp only [sf, Finset.mem_insert, Finset.mem_union]
+        exact Or.inr (Or.inr hZ))
+  | @orL A X _ ih =>
+      refine .orL (clo_mono ?_ ih)
+      exact Finset.inter_subset_inter_left (by
+        intro Z hZ
+        simp only [sf, Finset.mem_insert, Finset.mem_union]
+        exact Or.inr (Or.inl hZ))
+  | @imp A X _ ih =>
+      refine .imp (clo_mono ?_ ih)
+      exact Finset.inter_subset_inter_left (by
+        intro Z hZ
+        simp only [sf, Finset.mem_insert, Finset.mem_union]
+        exact Or.inr (Or.inr hZ))
 
 end FRJ
