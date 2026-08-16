@@ -326,4 +326,72 @@ theorem lhs_clo_of_occR {G : Form} {Γ : Finset Form} {C : Form}
     ∀ X ∈ Γ, Clo s.lhs X :=
   lhs_clo_of_steps (occR_steps h)
 
+/-! ## Well-formedness of derivable sequents
+
+The paper builds the constraints `Γ ⊆ Ĝ` and `Σ ∪ Θ ⊆ Ĝ` into the
+definition of the sequent set.  We carry them as a lemma instead
+(divergence 4 of `docs/frj-fidelity.md`), and this is that lemma.  It is
+what makes the `atPart`/`impPart` split in the join rules faithful: a
+context can only contain variables and `⊃`-formulas, so the split loses
+nothing. -/
+
+mutual
+
+/-- Every context of a derivable regular sequent lies inside `Ĝ`. -/
+theorem wfR {G : Form} : ∀ {Γ : Finset Form} {C : Form}, FRJr G Γ C → Γ ⊆ gHat G
+  | _, _, .axR _ _ _ => fun _ hx =>
+      Finset.mem_union_left _ (Finset.mem_of_mem_erase hx)
+  | _, _, .andR1 d _ => wfR d
+  | _, _, .andR2 d _ => wfR d
+  | _, _, .impIn d _ _ => wfR d
+  | _, _, .joinAt prem hJ1 _ _ _ _ => fun _ hx =>
+      wfI (prem 0) (joinCtxAt_subset hJ1 0 hx)
+  | _, _, .joinOr prem hJ1 _ _ _ => fun _ hx =>
+      wfI (prem 0) (joinCtxOr_subset hJ1 0 hx)
+
+/-- Every zone of a derivable irregular sequent lies inside `Ĝ`. -/
+theorem wfI {G : Form} : ∀ {St Th : Finset Form} {C : Form},
+    FRJi G St Th C → St ∪ Th ⊆ gHat G
+  | _, _, _, .axI _ _ _ => by
+      intro x hx
+      simp only [Finset.empty_union, Finset.mem_union] at hx
+      rcases hx with hx | hx
+      · exact Finset.mem_union_left _ (Finset.mem_of_mem_erase hx)
+      · exact Finset.mem_union_right _ hx
+  | _, _, _, .andI1 d _ => wfI d
+  | _, _, _, .andI2 d _ => wfI d
+  | _, _, _, .orI d₁ _ _ h₂ _ => by
+      intro x hx
+      refine wfI d₁ ?_
+      simp only [Finset.mem_union, Finset.mem_inter] at hx ⊢
+      rcases hx with (hx | hx) | hx
+      · exact Or.inl hx
+      · exact Finset.mem_union.mp (h₂ hx)
+      · exact Or.inr hx.1
+  | _, _, _, .impInI d _ _ _ => by
+      intro x hx
+      refine wfI d ?_
+      simp only [Finset.mem_union] at hx ⊢
+      tauto
+  | _, _, _, .impNotIn _ hTh _ _ _ => by
+      intro x hx
+      simp only [Finset.empty_union] at hx
+      exact (hTh x hx).2
+
+end
+
+/-- The atomic and implicational parts of a derivable context exhaust it:
+`Γ = Γ^at ∪ Γ^⊃`.  This is what the join rules' use of `atPart`/`impPart`
+silently relies on. -/
+theorem atPart_union_impPart {G : Form} {Γ : Finset Form} {C : Form}
+    (d : FRJr G Γ C) : Γ ⊆ atPart Γ ∪ impPart Γ := by
+  intro x hx
+  have hG := wfR d hx
+  simp only [gHat, Finset.mem_union] at hG
+  rcases hG with hG | hG
+  · exact Finset.mem_union_left _
+      (Finset.mem_filter.mpr ⟨hx, (Finset.mem_filter.mp hG).2⟩)
+  · exact Finset.mem_union_right _
+      (Finset.mem_filter.mpr ⟨hx, (Finset.mem_filter.mp hG).2⟩)
+
 end FRJ
