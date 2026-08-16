@@ -33,25 +33,25 @@ open Form
 
 /-- An `FRJ(G)`-sequent: regular `Γ ⇒ C` or irregular `Σ ; Θ → C`. -/
 inductive Sequent where
-  | reg (Γ : Finset Form) (C : Form)
-  | irr (St Th : Finset Form) (C : Form)
+  | reg (Γ : List Form) (C : Form)
+  | irr (St Th : List Form) (C : Form)
   deriving DecidableEq
 
 namespace Sequent
 
-/-- "`Lhs(σ) = Γ` if `σ` is regular, `Σ ∪ Θ` if `σ` is irregular." -/
-def lhs : Sequent → Finset Form
+/-- "`Lhs(σ) = Γ` if `σ` is regular, `Σ ++ Θ` if `σ` is irregular." -/
+def lhs : Sequent → List Form
   | .reg Γ _ => Γ
-  | .irr St Th _ => St ∪ Th
+  | .irr St Th _ => St ++ Th
 
 /-- "`Rhs(σ) = C`." -/
 def rhs : Sequent → Form
   | .reg _ C => C
   | .irr _ _ C => C
 
-@[simp] theorem lhs_reg (Γ : Finset Form) (C : Form) : (reg Γ C).lhs = Γ := rfl
-@[simp] theorem lhs_irr (St Th : Finset Form) (C : Form) :
-    (irr St Th C).lhs = St ∪ Th := rfl
+@[simp] theorem lhs_reg (Γ : List Form) (C : Form) : (reg Γ C).lhs = Γ := rfl
+@[simp] theorem lhs_irr (St Th : List Form) (C : Form) :
+    (irr St Th C).lhs = St ++ Th := rfl
 
 end Sequent
 
@@ -68,35 +68,38 @@ inductive RuleName where
 `σ₁` is one of its premises.  Only the side conditions that Lemma 3.4
 consumes are carried. -/
 inductive Step (G : Form) : RuleName → Sequent → Sequent → Prop
-  | andR1 {Γ : Finset Form} {A₁ A₂ : Form} :
+  | andR1 {Γ : List Form} {A₁ A₂ : Form} :
       Step G .andR1 (.reg Γ A₁) (.reg Γ (.and A₁ A₂))
-  | andR2 {Γ : Finset Form} {A₁ A₂ : Form} :
+  | andR2 {Γ : List Form} {A₁ A₂ : Form} :
       Step G .andR2 (.reg Γ A₂) (.reg Γ (.and A₁ A₂))
-  | impIn {Γ : Finset Form} {A B : Form} :
+  | impIn {Γ : List Form} {A B : Form} :
       Step G .impIn (.reg Γ B) (.reg Γ (.imp A B))
-  | andI1 {St Th : Finset Form} {A₁ A₂ : Form} :
+  | andI1 {St Th : List Form} {A₁ A₂ : Form} :
       Step G .andI1 (.irr St Th A₁) (.irr St Th (.and A₁ A₂))
-  | andI2 {St Th : Finset Form} {A₁ A₂ : Form} :
+  | andI2 {St Th : List Form} {A₁ A₂ : Form} :
       Step G .andI2 (.irr St Th A₂) (.irr St Th (.and A₁ A₂))
-  | orI₁ {St₁ Th₁ St₂ Th₂ : Finset Form} {C₁ C₂ : Form}
-      (h₁ : St₁ ⊆ St₂ ∪ Th₂) (h₂ : St₂ ⊆ St₁ ∪ Th₁) :
-      Step G .orI (.irr St₁ Th₁ C₁) (.irr (St₁ ∪ St₂) (Th₁ ∩ Th₂) (.or C₁ C₂))
-  | orI₂ {St₁ Th₁ St₂ Th₂ : Finset Form} {C₁ C₂ : Form}
-      (h₁ : St₁ ⊆ St₂ ∪ Th₂) (h₂ : St₂ ⊆ St₁ ∪ Th₁) :
-      Step G .orI (.irr St₂ Th₂ C₂) (.irr (St₁ ∪ St₂) (Th₁ ∩ Th₂) (.or C₁ C₂))
-  | impInI {St Th Lam : Finset Form} {A B : Form} (hdisj : Th ∩ Lam = ∅) :
-      Step G .impInI (.irr St (Th ∪ Lam) B) (.irr (St ∪ Lam) Th (.imp A B))
-  | impNotIn {Γ Th : Finset Form} {A B : Form}
+  | orI₁ {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form}
+      (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁) :
+      Step G .orI (.irr St₁ Th₁ C₁)
+        (.irr (St₁ ++ St₂) (nf G (cap Th₁ Th₂)) (.or C₁ C₂))
+  | orI₂ {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form}
+      (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁) :
+      Step G .orI (.irr St₂ Th₂ C₂)
+        (.irr (St₁ ++ St₂) (nf G (cap Th₁ Th₂)) (.or C₁ C₂))
+  | impInI {St Th Lam : List Form} {A B : Form} (hdisj : cap Th Lam = []) :
+      Step G .impInI (.irr St (nf G (Th ++ Lam)) B)
+        (.irr (nf G (St ++ Lam)) (nf G Th) (.imp A B))
+  | impNotIn {Γ Th : List Form} {A B : Form}
       (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
-      Step G .impNotIn (.reg Γ B) (.irr ∅ Th (.imp A B))
-  | joinAt {n : Nat} {stab th : Fin (n + 1) → Finset Form}
+      Step G .impNotIn (.reg Γ B) (.irr [] Th (.imp A B))
+  | joinAt {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j) :
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
       Step G .joinAt (.irr (stab j) (th j) (rhs j))
         (.reg (joinCtxAt stab th rhs F) F)
-  | joinOr {n : Nat} {stab th : Fin (n + 1) → Finset Form}
+  | joinOr {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j) :
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
       Step G .joinOr (.irr (stab j) (th j) (rhs j))
         (.reg (joinCtxOr stab th rhs) (.or C₁ C₂))
 
@@ -109,51 +112,51 @@ abbrev StepsRfl (G : Form) : Sequent → Sequent → Prop :=
 
 /-! ## Auxiliary facts about the join contexts -/
 
-theorem interAll_subset {n : Nat} {f : Fin (n + 1) → Finset Form}
+theorem interAll_subset {n : Nat} {f : Fin (n + 1) → List Form}
     (j : Fin (n + 1)) : interAll f ⊆ f j :=
   fun _ hx => (mem_interAll.mp hx) j
 
-theorem atPart_subset {Γ : Finset Form} : atPart Γ ⊆ Γ := Finset.filter_subset _ _
+theorem atPart_subset {Γ : List Form} : atPart Γ ⊆ Γ := (fun _ h => (List.mem_filter.mp h).1)
 
-theorem impPart_subset {Γ : Finset Form} : impPart Γ ⊆ Γ := Finset.filter_subset _ _
+theorem impPart_subset {Γ : List Form} : impPart Γ ⊆ Γ := (fun _ h => (List.mem_filter.mp h).1)
 
 /-- `Σ^at` and `Σ^imp` land inside every premise's left formulas, by (J1). -/
-theorem unionAll_part_subset {n : Nat} {stab th : Fin (n + 1) → Finset Form}
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j) (j : Fin (n + 1))
-    (part : Finset Form → Finset Form) (hpart : ∀ Γ, part Γ ⊆ Γ) :
-    unionAll (fun i => part (stab i)) ⊆ stab j ∪ th j := by
+theorem unionAll_part_subset {n : Nat} {stab th : Fin (n + 1) → List Form}
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) (j : Fin (n + 1))
+    (part : List Form → List Form) (hpart : ∀ Γ, part Γ ⊆ Γ) :
+    unionAll (fun i => part (stab i)) ⊆ stab j ++ th j := by
   intro x hx
   obtain ⟨i, hi⟩ := mem_unionAll.mp hx
   have hx' : x ∈ stab i := hpart _ hi
   by_cases hij : i = j
-  · subst hij; exact Finset.mem_union_left _ hx'
+  · subst hij; exact List.mem_append_left _ hx'
   · exact hJ1 i j hij hx'
 
-theorem joinCtxAt_subset {n : Nat} {stab th : Fin (n + 1) → Finset Form}
+theorem joinCtxAt_subset {n : Nat} {stab th : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form}
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j) (j : Fin (n + 1)) :
-    joinCtxAt stab th rhs F ⊆ stab j ∪ th j := by
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) (j : Fin (n + 1)) :
+    joinCtxAt stab th rhs F ⊆ stab j ++ th j := by
   intro x hx
-  simp only [joinCtxAt, Finset.mem_union] at hx
+  simp only [joinCtxAt, List.mem_append] at hx
   rcases hx with ((hx | hx) | hx) | hx
   · exact unionAll_part_subset hJ1 j atPart (fun _ => atPart_subset) hx
-  · exact Finset.mem_union_right _
-      (atPart_subset (interAll_subset j (Finset.mem_of_mem_erase hx)))
+  · exact List.mem_append_right _
+      (atPart_subset (interAll_subset j (rm_subset hx)))
   · exact unionAll_part_subset hJ1 j impPart (fun _ => impPart_subset) hx
-  · exact Finset.mem_union_right _
+  · exact List.mem_append_right _
       (impPart_subset (interAll_subset j (restrict_subset hx)))
 
-theorem joinCtxOr_subset {n : Nat} {stab th : Fin (n + 1) → Finset Form}
+theorem joinCtxOr_subset {n : Nat} {stab th : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form}
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j) (j : Fin (n + 1)) :
-    joinCtxOr stab th rhs ⊆ stab j ∪ th j := by
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) (j : Fin (n + 1)) :
+    joinCtxOr stab th rhs ⊆ stab j ++ th j := by
   intro x hx
-  simp only [joinCtxOr, Finset.mem_union] at hx
+  simp only [joinCtxOr, List.mem_append] at hx
   rcases hx with ((hx | hx) | hx) | hx
   · exact unionAll_part_subset hJ1 j atPart (fun _ => atPart_subset) hx
-  · exact Finset.mem_union_right _ (atPart_subset (interAll_subset j hx))
+  · exact List.mem_append_right _ (atPart_subset (interAll_subset j hx))
   · exact unionAll_part_subset hJ1 j impPart (fun _ => impPart_subset) hx
-  · exact Finset.mem_union_right _
+  · exact List.mem_append_right _
       (impPart_subset (interAll_subset j (restrict_subset hx)))
 
 /-! ## Lemma 3.4 -/
@@ -163,29 +166,32 @@ theorem joinCtxOr_subset {n : Nat} {stab th : Fin (n + 1) → Finset Form}
 theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
     (h : Step G R s₁ s₂) (hR : R ≠ .impNotIn) : s₂.lhs ⊆ s₁.lhs := by
   cases h with
-  | andR1 => exact subset_refl _
-  | andR2 => exact subset_refl _
-  | impIn => exact subset_refl _
-  | andI1 => exact subset_refl _
-  | andI2 => exact subset_refl _
+  | andR1 => exact List.Subset.refl _
+  | andR2 => exact List.Subset.refl _
+  | impIn => exact List.Subset.refl _
+  | andI1 => exact List.Subset.refl _
+  | andI2 => exact List.Subset.refl _
   | orI₁ h₁ h₂ =>
       intro x hx
-      simp only [Sequent.lhs_irr, Finset.mem_union, Finset.mem_inter] at hx ⊢
-      rcases hx with (hx | hx) | hx
+      simp only [Sequent.lhs_irr, List.mem_append, mem_nf, mem_cap] at hx ⊢
+      rcases hx with (hx | hx) | ⟨-, hx⟩
       · exact Or.inl hx
-      · exact Finset.mem_union.mp (h₂ hx)
+      · exact List.mem_append.mp (h₂ hx)
       · exact Or.inr hx.1
   | orI₂ h₁ h₂ =>
       intro x hx
-      simp only [Sequent.lhs_irr, Finset.mem_union, Finset.mem_inter] at hx ⊢
-      rcases hx with (hx | hx) | hx
-      · exact Finset.mem_union.mp (h₁ hx)
+      simp only [Sequent.lhs_irr, List.mem_append, mem_nf, mem_cap] at hx ⊢
+      rcases hx with (hx | hx) | ⟨-, hx⟩
+      · exact List.mem_append.mp (h₁ hx)
       · exact Or.inl hx
       · exact Or.inr hx.2
   | impInI hdisj =>
       intro x hx
-      simp only [Sequent.lhs_irr, Finset.mem_union] at hx ⊢
-      tauto
+      simp only [Sequent.lhs_irr, List.mem_append, mem_nf] at hx ⊢
+      rcases hx with ⟨hg, hx | hx⟩ | ⟨hg, hx⟩
+      · exact Or.inl hx
+      · exact Or.inr ⟨hg, Or.inr hx⟩
+      · exact Or.inr ⟨hg, Or.inl hx⟩
   | impNotIn => exact absurd rfl hR
   | joinAt j hJ1 =>
       intro x hx
@@ -227,30 +233,30 @@ premise slot.
 mutual
 
 /-- `σ` occurs in the regular derivation `d`. -/
-inductive OccR {G : Form} : {Γ : Finset Form} → {C : Form} → FRJr G Γ C → Sequent → Prop
-  | root {Γ : Finset Form} {C : Form} (d : FRJr G Γ C) : OccR d (.reg Γ C)
-  | andR1 {Γ : Finset Form} {A₁ A₂ : Form} {d : FRJr G Γ A₁}
+inductive OccR {G : Form} : {Γ : List Form} → {C : Form} → FRJr G Γ C → Sequent → Prop
+  | root {Γ : List Form} {C : Form} (d : FRJr G Γ C) : OccR d (.reg Γ C)
+  | andR1 {Γ : List Form} {A₁ A₂ : Form} {d : FRJr G Γ A₁}
       {hg : Form.and A₁ A₂ ∈ sfR G} {s : Sequent} :
       OccR d s → OccR (FRJr.andR1 d hg) s
-  | andR2 {Γ : Finset Form} {A₁ A₂ : Form} {d : FRJr G Γ A₂}
+  | andR2 {Γ : List Form} {A₁ A₂ : Form} {d : FRJr G Γ A₂}
       {hg : Form.and A₁ A₂ ∈ sfR G} {s : Sequent} :
       OccR d s → OccR (FRJr.andR2 d hg) s
-  | impIn {Γ : Finset Form} {A B : Form} {d : FRJr G Γ B} {hA : Clo Γ A}
+  | impIn {Γ : List Form} {A B : Form} {d : FRJr G Γ B} {hA : Clo Γ A}
       {hg : Form.imp A B ∈ sfR G} {s : Sequent} :
       OccR d s → OccR (FRJr.impIn d hA hg) s
-  | joinAt {n : Nat} {stab th : Fin (n + 1) → Finset Form}
+  | joinAt {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form}
       {prem : ∀ j, FRJi G (stab j) (th j) (rhs j)}
-      {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j}
+      {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j}
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
         A ∈ upsilon rhs}
       {hF : F.isPrime} {hFnot : F ∉ unionAll (fun j => atPart (stab j))}
       {hg : F ∈ sfR G} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s → OccR (FRJr.joinAt prem hJ1 hJ2 hF hFnot hg) s
-  | joinOr {n : Nat} {stab th : Fin (n + 1) → Finset Form}
+  | joinOr {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form}
       {prem : ∀ j, FRJi G (stab j) (th j) (rhs j)}
-      {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j}
+      {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j}
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
         A ∈ upsilon rhs}
       {hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs}
@@ -259,29 +265,30 @@ inductive OccR {G : Form} : {Γ : Finset Form} → {C : Form} → FRJr G Γ C �
 
 /-- `σ` occurs in the irregular derivation `d`. -/
 inductive OccI {G : Form} :
-    {St Th : Finset Form} → {C : Form} → FRJi G St Th C → Sequent → Prop
-  | root {St Th : Finset Form} {C : Form} (d : FRJi G St Th C) : OccI d (.irr St Th C)
-  | andI1 {St Th : Finset Form} {A₁ A₂ : Form} {d : FRJi G St Th A₁}
+    {St Th : List Form} → {C : Form} → FRJi G St Th C → Sequent → Prop
+  | root {St Th : List Form} {C : Form} (d : FRJi G St Th C) : OccI d (.irr St Th C)
+  | andI1 {St Th : List Form} {A₁ A₂ : Form} {d : FRJi G St Th A₁}
       {hg : Form.and A₁ A₂ ∈ sfR G} {s : Sequent} :
       OccI d s → OccI (FRJi.andI1 d hg) s
-  | andI2 {St Th : Finset Form} {A₁ A₂ : Form} {d : FRJi G St Th A₂}
+  | andI2 {St Th : List Form} {A₁ A₂ : Form} {d : FRJi G St Th A₂}
       {hg : Form.and A₁ A₂ ∈ sfR G} {s : Sequent} :
       OccI d s → OccI (FRJi.andI2 d hg) s
-  | orI₁ {St₁ Th₁ St₂ Th₂ : Finset Form} {C₁ C₂ : Form}
+  | orI₁ {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form}
       {d₁ : FRJi G St₁ Th₁ C₁} {d₂ : FRJi G St₂ Th₂ C₂}
-      {h₁ : St₁ ⊆ St₂ ∪ Th₂} {h₂ : St₂ ⊆ St₁ ∪ Th₁}
+      {h₁ : St₁ ⊆ St₂ ++ Th₂} {h₂ : St₂ ⊆ St₁ ++ Th₁}
       {hg : Form.or C₁ C₂ ∈ sfR G} {s : Sequent} :
       OccI d₁ s → OccI (FRJi.orI d₁ d₂ h₁ h₂ hg) s
-  | orI₂ {St₁ Th₁ St₂ Th₂ : Finset Form} {C₁ C₂ : Form}
+  | orI₂ {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form}
       {d₁ : FRJi G St₁ Th₁ C₁} {d₂ : FRJi G St₂ Th₂ C₂}
-      {h₁ : St₁ ⊆ St₂ ∪ Th₂} {h₂ : St₂ ⊆ St₁ ∪ Th₁}
+      {h₁ : St₁ ⊆ St₂ ++ Th₂} {h₂ : St₂ ⊆ St₁ ++ Th₁}
       {hg : Form.or C₁ C₂ ∈ sfR G} {s : Sequent} :
       OccI d₂ s → OccI (FRJi.orI d₁ d₂ h₁ h₂ hg) s
-  | impInI {St Th Lam : Finset Form} {A B : Form} {d : FRJi G St (Th ∪ Lam) B}
-      {hdisj : Th ∩ Lam = ∅} {hA : Clo (St ∪ Lam) A}
+  | impInI {St Th Lam : List Form} {A B : Form}
+      {d : FRJi G St (nf G (Th ++ Lam)) B}
+      {hdisj : cap Th Lam = []} {hA : Clo (nf G (St ++ Lam)) A}
       {hg : Form.imp A B ∈ sfR G} {s : Sequent} :
       OccI d s → OccI (FRJi.impInI d hdisj hA hg) s
-  | impNotIn {Γ Th : Finset Form} {A B : Form} {d : FRJr G Γ B}
+  | impNotIn {Γ Th : List Form} {A B : Form} {d : FRJr G Γ B}
       {hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G} {hA : Clo Γ A} {hAnot : ¬ Clo Th A}
       {hg : Form.imp A B ∈ sfR G} {s : Sequent} :
       OccR d s → OccI (FRJi.impNotIn d hTh hA hAnot hg) s
@@ -297,7 +304,7 @@ taken from the derivation itself. -/
 
 mutual
 
-theorem occR_steps {G : Form} {Γ : Finset Form} {C : Form} {d : FRJr G Γ C}
+theorem occR_steps {G : Form} {Γ : List Form} {C : Form} {d : FRJr G Γ C}
     {s : Sequent} : OccR d s → StepsRfl G s (.reg Γ C)
   | .root _ => .refl
   | .andR1 h' => (occR_steps h').tail ⟨_, .andR1⟩
@@ -306,7 +313,7 @@ theorem occR_steps {G : Form} {Γ : Finset Form} {C : Form} {d : FRJr G Γ C}
   | .joinAt (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinAt j hJ1⟩
   | .joinOr (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinOr j hJ1⟩
 
-theorem occI_steps {G : Form} {St Th : Finset Form} {C : Form}
+theorem occI_steps {G : Form} {St Th : List Form} {C : Form}
     {d : FRJi G St Th C} {s : Sequent} : OccI d s → StepsRfl G s (.irr St Th C)
   | .root _ => .refl
   | .andI1 h' => (occI_steps h').tail ⟨_, .andI1⟩
@@ -321,14 +328,14 @@ end
 /-- **Lemma 3.4(iii), in the form the soundness proof uses it.**  For any
 sequent `σ` occurring in a derivation `D` of `Γ ⇒ C`, the left formulas
 of `D`'s root sequent lie in `Cl(Lhs(σ))`. -/
-theorem lhs_clo_of_occR {G : Form} {Γ : Finset Form} {C : Form}
+theorem lhs_clo_of_occR {G : Form} {Γ : List Form} {C : Form}
     {d : FRJr G Γ C} {s : Sequent} (h : OccR d s) :
     ∀ X ∈ Γ, Clo s.lhs X :=
   lhs_clo_of_steps (occR_steps h)
 
 /-! ## Well-formedness of derivable sequents
 
-The paper builds the constraints `Γ ⊆ Ĝ` and `Σ ∪ Θ ⊆ Ĝ` into the
+The paper builds the constraints `Γ ⊆ Ĝ` and `Σ ++ Θ ⊆ Ĝ` into the
 definition of the sequent set.  We carry them as a lemma instead
 (divergence 4 of `docs/frj-fidelity.md`), and this is that lemma.  It is
 what makes the `atPart`/`impPart` split in the join rules faithful: a
@@ -338,9 +345,9 @@ nothing. -/
 mutual
 
 /-- Every context of a derivable regular sequent lies inside `Ĝ`. -/
-theorem wfR {G : Form} : ∀ {Γ : Finset Form} {C : Form}, FRJr G Γ C → Γ ⊆ gHat G
+theorem wfR {G : Form} : ∀ {Γ : List Form} {C : Form}, FRJr G Γ C → Γ ⊆ gHat G
   | _, _, .axR _ _ _ => fun _ hx =>
-      Finset.mem_union_left _ (Finset.mem_of_mem_erase hx)
+      List.mem_append_left _ (rm_subset hx)
   | _, _, .andR1 d _ => wfR d
   | _, _, .andR2 d _ => wfR d
   | _, _, .impIn d _ _ => wfR d
@@ -350,49 +357,45 @@ theorem wfR {G : Form} : ∀ {Γ : Finset Form} {C : Form}, FRJr G Γ C → Γ �
       wfI (prem 0) (joinCtxOr_subset hJ1 0 hx)
 
 /-- Every zone of a derivable irregular sequent lies inside `Ĝ`. -/
-theorem wfI {G : Form} : ∀ {St Th : Finset Form} {C : Form},
-    FRJi G St Th C → St ∪ Th ⊆ gHat G
+theorem wfI {G : Form} : ∀ {St Th : List Form} {C : Form},
+    FRJi G St Th C → St ++ Th ⊆ gHat G
   | _, _, _, .axI _ _ _ => by
       intro x hx
-      simp only [Finset.empty_union, Finset.mem_union] at hx
-      rcases hx with hx | hx
-      · exact Finset.mem_union_left _ (Finset.mem_of_mem_erase hx)
-      · exact Finset.mem_union_right _ hx
+      simp only [List.nil_append] at hx
+      exact nf_subset hx
   | _, _, _, .andI1 d _ => wfI d
   | _, _, _, .andI2 d _ => wfI d
   | _, _, _, .orI d₁ _ _ h₂ _ => by
       intro x hx
-      refine wfI d₁ ?_
-      simp only [Finset.mem_union, Finset.mem_inter] at hx ⊢
-      rcases hx with (hx | hx) | hx
-      · exact Or.inl hx
-      · exact Finset.mem_union.mp (h₂ hx)
-      · exact Or.inr hx.1
-  | _, _, _, .impInI d _ _ _ => by
+      simp only [List.mem_append, mem_nf] at hx
+      rcases hx with (hx | hx) | ⟨hg, -⟩
+      · exact wfI d₁ (List.mem_append_left _ hx)
+      · exact wfI d₁ (h₂ hx)
+      · exact hg
+  | _, _, _, .impInI _ _ _ _ => by
       intro x hx
-      refine wfI d ?_
-      simp only [Finset.mem_union] at hx ⊢
-      tauto
+      simp only [List.mem_append, mem_nf] at hx
+      rcases hx with ⟨hg, -⟩ | ⟨hg, -⟩ <;> exact hg
   | _, _, _, .impNotIn _ hTh _ _ _ => by
       intro x hx
-      simp only [Finset.empty_union] at hx
+      simp only [List.nil_append] at hx
       exact (hTh x hx).2
 
 end
 
 /-- The atomic and implicational parts of a derivable context exhaust it:
-`Γ = Γ^at ∪ Γ^⊃`.  This is what the join rules' use of `atPart`/`impPart`
+`Γ = Γ^at ++ Γ^⊃`.  This is what the join rules' use of `atPart`/`impPart`
 silently relies on. -/
-theorem atPart_union_impPart {G : Form} {Γ : Finset Form} {C : Form}
-    (d : FRJr G Γ C) : Γ ⊆ atPart Γ ∪ impPart Γ := by
+theorem atPart_union_impPart {G : Form} {Γ : List Form} {C : Form}
+    (d : FRJr G Γ C) : Γ ⊆ atPart Γ ++ impPart Γ := by
   intro x hx
   have hG := wfR d hx
-  simp only [gHat, Finset.mem_union] at hG
+  simp only [gHat, List.mem_append] at hG
   rcases hG with hG | hG
-  · exact Finset.mem_union_left _
-      (Finset.mem_filter.mpr ⟨hx, (Finset.mem_filter.mp hG).2⟩)
-  · exact Finset.mem_union_right _
-      (Finset.mem_filter.mpr ⟨hx, (Finset.mem_filter.mp hG).2⟩)
+  · exact List.mem_append_left _
+      (List.mem_filter.mpr ⟨hx, (List.mem_filter.mp hG).2⟩)
+  · exact List.mem_append_right _
+      (List.mem_filter.mpr ⟨hx, (List.mem_filter.mp hG).2⟩)
 
 /-! ## The `Ax^I` case of Lemma 3.9(ii), in label form
 
@@ -408,16 +411,16 @@ needs Lemma 3.4(iii) and (Cl5) and nothing about the model.  Once
 /-- For a variable `p`, no sequent reachable from the `Ax^I` conclusion
 for `p` has `p` among its left formulas. -/
 theorem axI_not_mem_lhs {G : Form} {p : String} {s : Sequent}
-    (h : StepsRfl G (.irr ∅ ((gAt G).erase (.atom p) ∪ gImp G) (.atom p)) s) :
+    (h : StepsRfl G (.irr [] (rm (gAt G) (.atom p) ++ gImp G) (.atom p)) s) :
     Form.atom p ∉ s.lhs := by
   intro hmem
   have hclo := lhs_clo_of_steps h _ hmem
   have hin := clo_pv hclo
-  simp only [Sequent.lhs_irr, Finset.empty_union, Finset.mem_union] at hin
+  simp only [Sequent.lhs_irr, List.nil_append, List.mem_append] at hin
   rcases hin with hin | hin
-  · exact (Finset.notMem_erase _ _) hin
-  · have : (Form.atom p).isImp := (Finset.mem_filter.mp hin).2
-    exact this
+  · exact (mem_rm.mp hin).1 rfl
+  · rw [gImp] at hin
+    exact Bool.noConfusion ((List.mem_filter.mp hin).2)
 
 
 end FRJ

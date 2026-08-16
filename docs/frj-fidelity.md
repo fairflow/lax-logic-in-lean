@@ -329,52 +329,82 @@ Also noted: in the `C = C₁ ∧ C₂` regular case the paper cites (IH2) where
 the recursive call is regular-to-regular at the same world and so must
 be (IH3); the measure decreases either way.
 
-## Choice: where it comes from, and how it goes away
+## Choice: where it came from, and how it went away
 
-*2026-08-16.  Matthew's standing requirement: final results must not
-depend on `Classical.choice`, because the aim is decision procedures and
-choice blocks that path.*
+**Result.** The development is `[propext, Quot.sound]` throughout, with
+`Classical.choice` in exactly one place — `frj_iff_not_IPL` — and there
+for a reason that belongs to the statement, not the proof. All pins are
+`#guard_msgs`-guarded in `FRJ/Audit.lean`, so a regression is a build
+failure.
 
-**The choice in this development was never in the mathematics.**  It has
-exactly two sources, both found by audit:
+| | axioms |
+|---|---|
+| `soundness`, `completeness`, `completenessData`, `frj_iff_countermodel`, `minMod`, `minEta`, `modR_countermodel`, `lemma39R`, `lemma39I`, `lhs_clo_of_steps` | `[propext, Quot.sound]` |
+| `nf_ext` | `[propext]` |
+| `Kripke.decForce`, `Kripke.force_mono`, `not_IPL_of_countermodel`, `maxOn`, `eq_nil_of_forall_not_mem` | none at all |
+| `frj_iff_not_IPL` | `[propext, Classical.choice, Quot.sound]` |
+
+The last is unavoidable: `IPL G` is `∀ K, K.valid G`, and passing from
+`¬ ∀ K, K.valid G` to `∃ K, ¬ K.valid G` is not constructively valid.
+`frj_iff_countermodel : Provable G ↔ ∃ K, ¬ K.valid G` is the same
+theorem with that step left to the caller, and is choice-free.
+
+**Four sources, all traced rather than guessed.**
 
 1. **Mathlib's `Finset` operations are choice-tainted at the DEFINITION
-   level.**  `Finset.instUnion`, `Finset.erase`, `Finset.image` and
-   `Multiset.ndunion` each report `Classical.choice`.  So any term that
-   merely *mentions* `s ∪ t` on a `Finset` carries choice, however it is
-   proved — re-deriving the membership lemmas by hand does not help.
-   Only `Finset.filter` is clean.
+   level** — `Finset.instUnion`, `Finset.erase`, `Finset.image`,
+   `Multiset.ndunion` — so any term merely *mentioning* `s ∪ t` carries
+   choice however it is proved. Only `Finset.filter` is clean. The
+   `List` API is axiom-free at definition level, with `List.dedup` and
+   `List.erase` the two exceptions to avoid. The development moved to
+   `List`.
+2. **`Finite` costs choice to eliminate** (`Fintype.ofFinite`). `Kripke`
+   now carries `elems`/`complete` with `decEq`/`decLe`/`decV`, which is
+   also what makes `decForce` possible.
+3. **Three Mathlib list lemmas**: `List.argmax_mem` and
+   `List.le_of_mem_argmax` (though `List.argmax` itself is clean), and
+   `List.eq_nil_iff_forall_not_mem`. Replaced by `maxOn` with its two
+   specification lemmas, and by `eq_nil_of_forall_not_mem`.
+4. **The tactics `tauto`, `push_neg` and — the one worth remembering —
+   `simp`.** A goal about `if p x then 1 else 0` closed by `simp` pins
+   `Classical.choice`; the same goal closed by explicit `if_pos`/
+   `if_neg` does not. This was established by proving one statement two
+   ways side by side before changing anything, and it affected
+   `countP_mono`, `countP_lt_countP` and `enumOf`.
 
-   The `List` API, by contrast, is axiom-free at definition level:
-   `List.union`, `List.inter`, `List.filter`, `List.map`,
-   `List.flatMap`, `List.finRange`, `List.instMembership` report no
-   axioms, and `List.mem_append`, `List.mem_filter`, `List.mem_cons`
-   report only `propext`.  (`List.dedup` and `List.erase` are classical
-   and must be avoided; filtering replaces both.)
+**A statement-level change was needed too, and is recorded here as a
+divergence.** The irregular `⊃∈` rule
 
-2. **The `tauto` tactic**, which reasons classically.
+    Σ ; Θ, Λ → B
+    ─────────────────  Θ ∩ Λ = ∅,  A ∈ Cl(Σ ∪ Λ)
+     Σ, Λ ; Θ → A ⊃ B
 
-**The fix**: move off `Finset` onto `List` — the development uses sets
-only up to membership, so nothing is lost — and replace `tauto` by
-explicit proofs.  Two structural consequences: the shape predicates
-become `Bool`, and `Kripke` carries a constructive enumeration
-(`elems`/`complete`) plus `decEq`/`decLe`/`decV` rather than a `Finite`
-instance, since eliminating `Finite` needs `Fintype.ofFinite`, which
-costs choice.
+requires, in Lemma 6.4, the zone `Θ₁` of a *given* derivation to be
+split as `Θ ∪ Λ`. On `Finset` that split is a literal equality of the
+rule's own index (`Finset.sdiff_union_of_subset`); on `List` it is not,
+because `++` is neither commutative nor idempotent. Nor is there a
+transport — "same members implies same derivations" is **false** here,
+since `Ax^I` pins its own zone.
 
-**Verified so far** (branch `frj-choicefree`): `Basic.lean` is entirely
-choice-free — `sfPos_closed`, `sfR_imp`, `clo_sf` at `[propext]`, and
-`clo_forces`, `clo_trans`, `clo_pv`, `force_mono`,
-`not_IPL_of_countermodel` with **no axioms at all** — and `Calculus.lean`
-and `Step.lean` follow, with `lhs_subset_of_step`, `lhs_clo_of_steps`,
-`occR_steps`, `wfR`, `wfI`, `axI_not_mem_lhs` all down to
-`[propext, Quot.sound]`.  `Model.lean` is converted and compiles.
+The fix changes the carrier, not the calculus: contexts are represented
+canonically as `nf G l = (gHat G).filter (· ∈ l)`, the filter of `Ĝ`.
+This is legitimate exactly because `wfR`/`wfI` prove every context of a
+derivation is a subset of `Ĝ`, so `nf G` preserves membership; and every
+side condition in the rule table is membership-based. Two contexts with
+the same members are then literally the same list (`nf_ext`), which is
+the property `++` lacks and `Finset` had. `Ax^I`, `∨` and both sides of
+the irregular `⊃∈` write their computed zones canonically; canonicalising
+*both* sides of `⊃∈` is what keeps Lemma 3.4(i) going through with no
+extra side condition.
 
-**Remaining**: `Extract.lean` residuals, then `Sound.lean` and
-`Complete.lean` (mechanical — the same substitutions), then
-`Minimal.lean`, which additionally needs the completeness *construction*
-made Type-valued: `choose` and `Nonempty.some` are themselves choice, so
-the proof must return derivations rather than assert their existence.
-That last step is a redesign, not a substitution — and it is also the
-step that turns completeness into an actual algorithm from countermodel
-to derivation, which is what the decision-procedure goal wants anyway.
+**Completeness is now Type-valued.** Lemma 6.4's two halves are records
+carrying the derivation (`IrrWit`, `RegWit`), because extracting a
+derivation from an existence proof needs `choose` or `Nonempty.some`,
+both of which are choice. The same constraint forced the enumeration of
+`Υ` (`enumOf`) and the minimal `η` (`minEta`) to be data: a `Prop`
+cannot be eliminated into `Type`. The payoff is that
+
+    completenessData : (K : Kripke) → ¬ K.valid G → Derivation G
+
+is an algorithm taking a countermodel to a derivation, which is what the
+campaign wanted from a refutation calculus in the first place.
