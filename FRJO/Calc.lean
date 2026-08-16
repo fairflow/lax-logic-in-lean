@@ -33,7 +33,7 @@ def worldOK (S : List PLLFormula) (C : PLLFormula)
   -- zones in the universe
   S.all (sfPlus G).contains && (sfPlus G).contains C &&
   -- heredity: the stable zone persists into every child
-  kids.all (fun k => S.all (fun φ => (clB G b k.stable).contains φ)) &&
+  kids.all (fun k => S.all (fun φ => k.stable.contains φ)) &&
   -- the cone: the root's Rm-successors are itself, the declared
   -- children, and the leaf; ◯-POSITIVE obligation: every ◯A ∈ S is
   -- realised — by the leaf (fallible realises anything), or by a
@@ -63,6 +63,9 @@ def worldOK (S : List PLLFormula) (C : PLLFormula)
 inductive FRJD : Reg G → Type where
   /-- Refute a disjunction: both disjuncts refuted at the same world. -/
   | orR {S A B} : FRJD ⟨S, A⟩ → FRJD ⟨S, B⟩ → FRJD ⟨S, .or A B⟩
+  /-- Refute a conjunction: either conjunct refuted at this world. -/
+  | andR1 {S A B} : FRJD ⟨S, A⟩ → FRJD ⟨S, .and A B⟩
+  | andR2 {S A B} : FRJD ⟨S, B⟩ → FRJD ⟨S, .and A B⟩
   /-- `⊃∈`: the refuting world is this one — the antecedent already
   holds here. -/
   | impIn {S A B} : FRJD ⟨S, B⟩ →
@@ -71,13 +74,13 @@ inductive FRJD : Reg G → Type where
   `A` and refuting `B`; heredity is the world-node's business, so the
   child's stable zone must extend this world's. -/
   | impOut {S A B S'} : FRJD ⟨S', B⟩ →
-      (clB G b S').contains A = true →
-      S.all (fun φ => (clB G b S').contains φ) = true →
+      S'.contains A = true →
+      S.all (fun φ => S'.contains φ) = true →
       FRJD ⟨S, .ifThen A B⟩
   /-- `◯∉`: the ◯-refuting witness is strictly above — a child
   refuting `◯A` (its own cone misses `A`). -/
   | circOut {S A S'} : FRJD ⟨S', .somehow A⟩ →
-      S.all (fun φ => (clB G b S').contains φ) = true →
+      S.all (fun φ => S'.contains φ) = true →
       FRJD ⟨S, .somehow A⟩
   /-- **The world node** — RK(Ξ)'s join.  Assemble a fresh root below
   the child worlds; `cone` declares which children are
@@ -93,6 +96,8 @@ inductive FRJD : Reg G → Type where
 
 def FRJD.rank : {S : Reg G} → FRJD G b S → Nat
   | _, .orR d e => max d.rank e.rank
+  | _, .andR1 d => d.rank
+  | _, .andR2 d => d.rank
   | _, .impIn d _ => d.rank
   | _, .impOut d _ _ => d.rank + 1
   | _, .circOut d _ => d.rank + 1

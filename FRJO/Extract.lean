@@ -33,6 +33,8 @@ def shiftCM (k : Nat) (M : FinCM) : FinCM :=
 /-- Extraction, by recursion on the derivation.  Root is world 0. -/
 def extract (G : Cell) (b : Nat) : {S : Reg G} → FRJD G b S → FinCM
   | _, .orR d _ => extract G b d
+  | _, .andR1 d => extract G b d
+  | _, .andR2 d => extract G b d
   | _, .impIn d _ => extract G b d
   | _, .impOut d _ _ =>
       -- fresh root below the child's model
