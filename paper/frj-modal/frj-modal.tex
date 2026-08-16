@@ -573,63 +573,157 @@ modality-free goals, and the determining part is where the modality first
 bites.
 
 %% ==================================================================
-\section{Candidate modal rules}
+\section{The modal rules: screens, and the design}
 \label{sec:rules}
 
 The rules are new mathematics: the calculus has a published source, its
 modal extension does not. They are therefore screened before anything is
-proved about them, and their statements are the author's to sign off. What
-follows is a record of the design as it stands, with the semantic
-obligations each rule would have to discharge; all of these obligations
-are proved (Appendix~\ref{app:archive}).
+proved about them, and the screens are part of the library
+(Appendix~\ref{app:modallean}): five semantic obligations proved with no
+axioms, and every cell settled by the decision procedure for forcing.
 
-\paragraph{The difficulty, in one sentence.} For implication the
-obligation at a new world is \emph{negative} --- the antecedent fails
-there, so the implication holds vacuously --- which is all the support
-condition has to arrange. For the modality the obligation is
-\emph{positive}: a modal witness must exist, and nothing in the
-calculus's data supplies one.
+\subsection{The difficulty, in one sentence}
 
-\paragraph{Three screens.} A two-world model separates $\bigcirc p$ from
-$p$, so a rule must be able to build a world whose modal successor forces
-something the world itself does not; a three-world branching model refutes
-the distribution of the modality over disjunction, so the witness is
-attached per-world and not once per derivation; and a fallible world
-forces everything, so a fallible witness is all-or-nothing. The second
-screen also corrected a lemma: the first form written down, that a
-fallible modal successor at a world forces every modal formula there, is
-\emph{false}, because it says nothing about the modal successors of a
-world strictly above.
+For implication the obligation at a new world is \emph{negative} --- the
+antecedent fails there, so the implication holds vacuously --- which is
+all the support condition has to arrange, by naming the antecedent as some
+premise's goal. For the modality the obligation is \emph{positive}: a
+modal witness must exist, and nothing in the calculus's data supplies one.
 
-\paragraph{The design.} A regular modal introduction, gated by
-\emph{barrenness} --- the world declared no modal successor, so a modal
-formula fails there as soon as its argument does --- together with a
-\emph{promise join}, carrying one extra regular premise whose world
-becomes the modal successor, and a \emph{fallible} variant.
+\begin{lstlisting}
+theorem circ_intro {w : K.W} {A : Form}
+    (wit : ∃ u, K.Rm w u ∧ K.force u A)
+    (above : ∀ v, K.le w v → v ≠ w → K.force v (.circ A)) :
+    K.force w (.circ A)
 
-\paragraph{A gap, and why it matters.} Building the first modal exemplar,
-the refutation of $\bigcirc p \supset p$, showed the first two rules
-cannot build it. The countermodel needs a world forcing $p$; at such a
-world the modality holds by its unit, hence so does the goal, and
-falsehood is not a right subformula of this goal --- so that world refutes
-\emph{nothing} available to the calculus. Every world of the extracted
-model is a p-sequent, and a p-sequent refutes its own goal by
-construction. The witness therefore cannot be a p-sequent at all: it is a
-\emph{fallible} world, which forces everything and refutes nothing. This
-argument is about the extracted model and the right subformulas, so it
-survives any change of encoding.
+theorem not_force_circ {w : K.W} {A : Form}
+    (h : ∀ u, K.Rm w u → ¬ K.force u A) : ¬ K.force w (.circ A)
+\end{lstlisting}
+
+\subsection{Three screens}
+
+\paragraph{The witness must be selective.} In the two-world model with the
+variable true only at the upper world and the modal relation equal to the
+order, the root forces $\bigcirc p$ and refutes $p$. So a rule must be able
+to build a world whose modal successor forces something the world itself
+does not.
+
+\paragraph{The witness is per-world.} In the three-world model with a root
+below two incomparable worlds carrying $p$ and $q$, the root forces
+$\bigcirc(p \lor q)$ while both $\bigcirc p$ and $\bigcirc q$ fail. So the
+modal data cannot be one promise fixed for the whole derivation: it
+belongs to the world a join creates. The same model refutes the
+distribution of the modality over disjunction.
+
+\paragraph{The witness cannot be an arbitrary context.} This screen is a
+refutation of a design rather than a model. The tempting rule declares
+``there is a world forcing $\Delta$'' for a context of its choosing. That
+is exactly the design refuted in the abandoned first attempt at this
+extension, whose world predicate constrained a zone only by membership in
+the universe, with no closure condition; three kernel-checked cells killed
+it. So a declared context carries a \emph{realisability} obligation, and
+realisability is not membership. The obligation is stated in the library
+and nothing proves it, which is the point.
+
+\subsection{The zones arrive with the rules}
+
+Finding~\ref{find:zone} makes the following one \emph{atomic} change, each
+part of which is unsound without the others: the context universe gains
+its third zone; the closure gains a modal clause; the determining part
+gains modal formulas; the join rules gain a modal zone and its support
+condition; and the modal rules are added. Because canonical contexts are
+computed by filtering against the universe, the first part
+re-canonicalises \emph{every} context in the development --- which is the
+cost of the step, and the reason it must be done once rather than in
+pieces.
+
+\subsection{The rules}
+
+\paragraph{Regular modal introduction, gated by barrenness.}
+\[
+\frac{\Gamma \Rightarrow Z}{\Gamma \Rightarrow \bigcirc Z}
+\qquad \text{barren},\quad \bigcirc Z \in \mathrm{Sf}^{R}(G)
+\]
+where \emph{barren} says the world this refutation builds declared no
+modal successor. It is an index on the regular judgment, not a computed
+property: a function on the family cannot be defined while the family is.
+Obligation: \texttt{not\_force\_circ\_of\_no\_promise}, proved.
+
+\paragraph{The promise join.} A join carries one additional regular
+premise whose world becomes the modal successor of the new world, with
+three side conditions: every modal formula kept in the conclusion has its
+argument forced at the promise world; every modal formula kept is itself
+forced there; and the whole conclusion context is forced there.
+Obligation: \texttt{circ\_intro}, proved.
+
+\subsection{The decision the screens force}
+\label{sec:decision}
+
+The two positive screens do not settle the design between them. A world
+that forces everything witnesses every modal formula at once: enough for
+the first screen, not for the second, which needs two worlds with
+\emph{different} witnesses. Conversely the promise join alone cannot reach
+every countermodel, and the sharp instance is $\bigcirc p \supset p$.
+
+Its right subformulas are the goal and $p$, and contain no falsehood, so
+the only regular axiom is the one at $p$ and both axioms at $p$ delete it:
+no derivable regular context of this goal contains $p$, so no promise
+premise can force $p$. Semantically the reason is sharper. The
+countermodel needs a world forcing $p$; there the modality holds by its
+unit, hence so does the goal, and falsehood is not a right subformula ---
+so that world refutes \emph{nothing} available to the calculus, while
+every world of the extracted model is a p-sequent and refutes its own goal
+by construction.
+
+So the witness cannot be a p-sequent. Three ways out, and only one
+survives:
+
+\begin{center}
+\begin{tabular}{p{0.46\textwidth}p{0.44\textwidth}}
+\hline
+route & verdict\\
+\hline
+declare a context and assert a world forcing it &
+\textbf{refuted} by the third screen: needs realisability, which is not
+membership\\
+let the extracted model carry worlds that are not p-sequents, labelled by
+a context and refuting nothing &
+the same obligation in different clothing --- such a label must be
+realisable\\
+a \emph{fallible} world &
+no realisability obligation at all: a fallible world forces everything
+\emph{by construction}\\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+The recommendation is therefore fallible worlds, with two consequences to
+be accepted knowingly. The witness must cover the whole cone above the new
+world, so the fallible world is a maximum of the model and no world of
+such a model is barren --- correct rather than unfortunate, since a model
+with a fallible top forces every modal formula everywhere. And it changes
+the modality-free semantics: falsehood becomes forceable. The logic is
+unchanged, and soundness is unaffected because every model the calculus
+\emph{builds} can leave the fallible set empty unless a rule says
+otherwise; but completeness starts from an \emph{arbitrary} countermodel,
+which may now have fallible worlds, and the construction must handle them.
+That cost falls on the next stage, not this one.
 
 %% ==================================================================
 \section{Status}
 \label{sec:status}
 
 \textsc{Proved}, sorry-free and pinned: everything in
-\S\S\ref{sec:prelim}--\ref{sec:choice}, for modality-free goals, together
-with the extension of \S\ref{sec:w1}; and the six semantic obligations of
-\S\ref{sec:rules}.
+\S\S\ref{sec:prelim}--\ref{sec:choice}, for modality-free goals; the
+extension of \S\ref{sec:w1}; and the five semantic obligations and three
+screens of \S\ref{sec:rules}.
 
 \textsc{Open}: soundness and completeness for any calculus containing
-modal rules. No modal rule is part of the calculus yet.
+modal rules. No modal rule is part of the calculus; the rules of
+\S\ref{sec:rules} are put up for sign-off, and the decision of
+\S\ref{sec:decision} is the substantive one, because it changes the model
+structure and puts a new obligation on the completeness construction.
 
 \appendix
 %% ==================================================================
@@ -672,6 +766,10 @@ dependency order. The library builds from scratch with no sorries, no
 \label{app:minimal}
 \lstinputlisting{../../FRJ/Minimal.lean}
 
+\subsection{The modality: semantics, obligations, screens}
+\label{app:modallean}
+\lstinputlisting{../../FRJ/Modal.lean}
+
 \subsection{The axiom audit}
 \label{app:audit}
 \lstinputlisting{../../FRJ/Audit.lean}
@@ -682,13 +780,10 @@ dependency order. The library builds from scratch with no sorries, no
 
 A parallel re-derivation was carried out before the modality-free
 development was finished, and is superseded by it; it is archived rather
-than deleted. Its modal semantics and its screens are the source of
-\S\ref{sec:rules}, and are reproduced here because the obligations proved
-in them are what any modal rule must discharge.
-
-\subsection{The modal semantics and the screens}
-\label{app:modal}
-\lstinputlisting{../../Archive/FRJLax-parallel/Modal.lean}
+than deleted. Its modal semantics and screens have since been re-homed onto the live
+development (Appendix~\ref{app:modallean}); what remains of interest here
+is the parallel rule table, which reached index-equality by never
+computing an index, and the replayed refutations from the article.
 
 \subsection{Constraint models}
 \lstinputlisting{../../Archive/FRJLax-parallel/Model.lean}
