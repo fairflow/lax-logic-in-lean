@@ -209,24 +209,25 @@ structure MinEta (K : Kripke) (a : K.W) (A B : Form) : Type where
   min : ∀ d : K.W, K.le a d → K.le d e → d ≠ e → ¬ K.force d A
 
 /-- Take a candidate of maximal height: no candidate lies strictly below
-it, which is the minimality the paper asks for. -/
+it, which is the minimality the paper asks for.  `maxOn` rather than
+`List.argmax`, whose specification lemmas carry `Classical.choice`. -/
 def minEta {K : Kripke} {a : K.W} {A B : Form}
     (h : ¬ K.force a (.imp A B)) : MinEta K a A B :=
-  match hopt : (etaCand K a A B).argmax (fun x => ht K x) with
-  | none => absurd (List.argmax_eq_none.mp hopt) (etaCand_ne_nil h)
-  | some e =>
+  match hc : etaCand K a A B with
+  | [] => absurd hc (etaCand_ne_nil h)
+  | c :: cs =>
+      let e := maxOn (fun x => ht K x) c cs
+      have hspec := mem_etaCand.mp (hc ▸ maxOn_mem (fun x => ht K x) c cs)
       { e := e
-        le := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).1
-        fA := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).2.1
-        nfB := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).2.2
+        le := hspec.1
+        fA := hspec.2.1
+        nfB := hspec.2.2
         min := by
           intro d had hde hdne hdA
-          have heB := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).2.2
-          have hdB : ¬ K.force d B := fun hc => heB (K.force_mono hde hc)
-          have hle : ht K d ≤ ht K e :=
-            List.le_of_mem_argmax (mem_etaCand.mpr ⟨had, hdA, hdB⟩)
-              (Option.mem_def.mpr hopt)
-          exact absurd hle (Nat.not_le.mpr (ht_lt hde hdne.symm)) }
+          have hdB : ¬ K.force d B := fun hcc => hspec.2.2 (K.force_mono hde hcc)
+          have hdmem : d ∈ c :: cs := hc ▸ mem_etaCand.mpr ⟨had, hdA, hdB⟩
+          exact absurd (le_maxOn (fun x => ht K x) c cs d hdmem)
+            (Nat.not_le.mpr (ht_lt hde hdne.symm)) }
 
 
 end FRJ

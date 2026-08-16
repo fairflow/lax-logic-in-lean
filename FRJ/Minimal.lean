@@ -41,16 +41,16 @@ def enumOf : ∀ (S : List Form), S ≠ [] → Enum S
   | [], h => absurd rfl h
   | x :: xs, _ =>
       { n := xs.length
-        f := fun j => (x :: xs)[j.val]'(by simpa using j.isLt)
+        f := fun j => (x :: xs)[j.val]'j.isLt
         spec := by
           intro y
-          simp only [upsilon, List.mem_map, List.mem_finRange, true_and]
           constructor
-          · rintro ⟨j, rfl⟩
-            exact List.getElem_mem _
+          · intro hy
+            obtain ⟨j, -, hj⟩ := List.mem_map.mp hy
+            exact hj ▸ List.getElem_mem _
           · intro hy
             obtain ⟨i, hi, hval⟩ := List.getElem_of_mem hy
-            exact ⟨⟨i, by simpa using hi⟩, hval⟩ }
+            exact List.mem_map.mpr ⟨⟨i, hi⟩, List.mem_finRange _, hval⟩ }
 
 /-! ## `Υ` for the prime case -/
 
@@ -149,9 +149,9 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
         · exact Or.inl (Or.inr (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
-      · push_neg at hin
+      · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
         have hallTh : ∀ j, X ∈ th j :=
-          fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin j)
+          fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
         simp only [joinCtxAt, List.mem_append]
         rcases hXG with h | h
         · refine Or.inl (Or.inl (Or.inr (mem_rm.mpr
@@ -234,9 +234,9 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
         · exact Or.inl (Or.inr (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
-      · push_neg at hin
+      · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
         have hallTh : ∀ j, X ∈ th j :=
-          fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin j)
+          fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
         simp only [joinCtxOr, List.mem_append]
         rcases hXG with h | h
         · exact Or.inl (Or.inl (Or.inr (mem_interAll.mpr (fun j =>
@@ -376,7 +376,7 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
       · refine regPrime_join K G a (.atom p) rfl hC hnf ?_
           (fun A hA hnA => minMod K G a 0 A hA hnA)
         intro hc
-        refine hempty (List.eq_nil_iff_forall_not_mem.mpr (fun X hX => ?_))
+        refine hempty (eq_nil_of_forall_not_mem (fun X hX => ?_))
         obtain ⟨hXl, hXi⟩ := List.mem_filter.mp hX
         match X, hXi with
         | .imp A B, _ =>
@@ -387,7 +387,7 @@ def minMod (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form)
       · refine regPrime_join K G a .bot rfl hC hnf ?_
           (fun A hA hnA => minMod K G a 0 A hA hnA)
         intro hc
-        refine hempty (List.eq_nil_iff_forall_not_mem.mpr (fun X hX => ?_))
+        refine hempty (eq_nil_of_forall_not_mem (fun X hX => ?_))
         obtain ⟨hXl, hXi⟩ := List.mem_filter.mp hX
         match X, hXi with
         | .imp A B, _ =>
