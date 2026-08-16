@@ -1423,3 +1423,25 @@ wip/ljfo_completeness.lean` and transcribe pins verbatim. Corpus
 sanity after: `lake build frjoscreen && .lake/build/bin/frjoscreen`
 (expect derivations for all 302 refutable cells still). Machine-check
 mandate: sorry-free + pinned or it stays OPEN.
+
+### 2026-08-16 (morning, cont.) — FRJ◯ W1–W3a BUILT; W5 reduced to `Reconstruction`
+
+`FRJO/Seq.lean`, `FRJO/Calc.lean` (the indexed judgment `FRJD` — rule
+per connective, `world` = RK's ⋈, no histories), `FRJO/Extract.lean`
+(model read-off; `ExtractForces` = W3b, OPEN), `FRJO/Complete.lean`:
+**`completenessFRJO` is PROVED conditional on `Reconstruction` alone**
+(pinned `[propext, Classical.choice, Quot.sound]`), riding
+`built_countermodel` = the (R)+T2 chain.
+
+**Worked analysis of `Reconstruction`'s solo case, for the next
+session.** Take `S := theory(r) ∩ sfPlus` (NOT the bare context — the
+`worldOK` side conditions demand closure-membership, and forcing only
+reaches it through the full theory). Needed lemmas, all within reach:
+(i) `sfPlus` closed under subformulas (so `◯A ∈ S → A ∈ sfPlus`);
+(ii) `A ∈ S → A ∈ clB S` (identity derivation at any budget);
+(iii) the soundness composition `φ ∈ clB S → Nonempty (LaxND S φ) →
+forced at r` (Search certificate → LaxND → `PLLKripke.soundness`), so
+a refuted goal is never in the closure; (iv) solo-infallibility from
+`hC` (a fallible root forces everything, contradiction). The join case
+is the campaign: cone from `RootData.S`, fallible kids ↦ `leaf`,
+heredity from `addRoot_force_some`.
