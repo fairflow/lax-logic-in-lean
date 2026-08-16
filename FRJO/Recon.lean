@@ -607,6 +607,30 @@ theorem completenessFRJO' {b : Nat} {Γ : List PLLFormula} {C : PLLFormula}
       Nonempty (FRJD ⟨Γ, C⟩ b S) :=
   completenessFRJO (reconstruction b) h
 
+/-- **The biconditional, in the shape completeness can actually feed.**
+
+`frjd_iff_not_laxND` (`FRJO/Complete.lean`) asks its derivation for
+`S.stable = Γ`, which `completenessFRJO'` does not deliver and cannot:
+the zone `recon` builds is the refuting world's THEORY, in general
+strictly larger than the context.  The missing glue is `LaxND.rename`
+— a proof over `Γ` transports to any superset — and with it the two
+sides match exactly.
+
+VACUOUS as it stands: `ExtractForces` is REFUTED for `worldOK` v3
+(`FRJO/Screen.lean`).  Stated here so that the shape is on record for
+the v4 repair, which is the only thing between this and the
+biconditional the campaign is for. -/
+theorem frjd_iff' {b : Nat} {Γ : List PLLFormula} {C : PLLFormula}
+    (hE : ExtractForces ⟨Γ, C⟩ b) :
+    (∃ S : Reg ⟨Γ, C⟩, S.goal = C ∧ Γ ⊆ S.stable ∧
+        Nonempty (FRJD ⟨Γ, C⟩ b S)) ↔ ¬ Nonempty (PLLND.LaxND Γ C) := by
+  constructor
+  · rintro ⟨S, hg, hsub, ⟨d⟩⟩ ⟨p⟩
+    refine not_laxND_of_FRJD hE d ⟨?_⟩
+    rw [hg]
+    exact p.rename fun ψ hψ => hsub hψ
+  · exact fun h => completenessFRJO' (b := b) h
+
 /-! ## Pins
 
 Transcribed verbatim from the build output.  The three reconstruction
@@ -647,5 +671,11 @@ info: 'FRJO.completenessFRJO'' depends on axioms: [propext, Classical.choice, Qu
 -/
 #guard_msgs in
 #print axioms completenessFRJO'
+
+/--
+info: 'FRJO.frjd_iff'' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms frjd_iff'
 
 end FRJO

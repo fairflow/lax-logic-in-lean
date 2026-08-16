@@ -1589,3 +1589,21 @@ side-condition table rather than in constructors. Recorded, not decided.
    refuted `A ⊃ B` at a component world gives a kid at goal `B`, a
    refuted `◯A` gives a kid at goal `◯A`.
 4. Only then W4 (the searcher and the 302-cell corpus screen).
+
+#### One more statement-level correction
+
+`frjd_iff_not_laxND` (`FRJO/Complete.lean`) demands `S.stable = Γ` of the
+derivation it consumes.  `completenessFRJO'` does not deliver that and
+cannot: the zone `recon` builds is the refuting world's THEORY, in
+general strictly larger than the context.  The missing glue is
+`LaxND.rename` (`LaxLogic/PLLNDCore.lean`), and with it the two sides
+match exactly — stated as `FRJO.frjd_iff'` (`FRJO/Recon.lean`,
+`[propext, Classical.choice, Quot.sound]`):
+
+    ExtractForces ⟨Γ,C⟩ b →
+      ((∃ S, S.goal = C ∧ Γ ⊆ S.stable ∧ Nonempty (FRJD ⟨Γ,C⟩ b S))
+         ↔ ¬ Nonempty (LaxND Γ C))
+
+VACUOUS today, since its hypothesis is refuted; it is on record so that
+the v4 repair is the ONLY thing between the campaign and its
+biconditional.
