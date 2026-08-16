@@ -33,13 +33,27 @@ directly. See `docs/why-chain.md` for the full goal chain.
 
 ## 2. Where things stand
 
-### Branch and directory
+### START HERE — branch, directory, commit
 
-* Branch: **`frj-lax`**, cut from `frj-ipc`. Green at the cut point.
-* New namespace/directory: **`FRJLax/`** (empty; add a `[[lean_lib]]`
-  entry to `lakefile.toml`). It is deliberately NOT `FRJO`.
+```bash
+git checkout frj-lax
+mkdir -p FRJLax          # already created, holding only README.md
+```
 
-### What is PROVED and may be read (branch `frj-ipc`, tag `frj-classical-complete`)
+| | |
+|---|---|
+| **Branch** | **`frj-lax`**, cut from `frj-ipc` |
+| **Tip commit** | **`7cb7806`** — "docs: the why-chain and the calculus-adoption skill proposal" |
+| **Directory to build in** | **`FRJLax/`** — created, contains only `README.md`. It is deliberately NOT `FRJO`. |
+| **Lake** | add a `[[lean_lib]] name = "FRJLax"` entry to `lakefile.toml` with your first module, and an `FRJLax.lean` root importing it |
+
+Nothing in `FRJLax/` is Lean yet. That is the point: the first Lean file
+in it is yours, written to the constraints in §4, not a copy of anything.
+
+Read also `docs/why-chain.md` on the same branch: the goal chain this
+work sits in, from the mid-range goal down.
+
+### What is PROVED and may be read (branch `frj-ipc`, tag `frj-classical-complete` = `8c711df`)
 
 `FRJ/` — FRJ(G) over IPC, transcribed from the arXiv LaTeX source of
 arXiv:1804.06689 (Fiorentini–Ferrari, TOCL 21(3), 2020), 2961 lines,
@@ -61,18 +75,34 @@ literally false (the `Cl` grammar lets `A` range over all formulas, so
 the two directions actually used are true and are proved; and the
 regular `C₁ ∧ C₂` case cites (IH2) where it must be (IH3).
 
-### The partial choice-free conversion (branch `frj-choicefree`, commit `734d49a`)
+### The choice-free conversion (branch `frj-choicefree`, tip `0a050df`)
 
-**Does not build** — 4 of 7 modules converted, `Extract.lean` has 16
-errors, `Sound`/`Complete`/`Minimal` untouched. It is a *reference*, not
-a base. Retrieve a converted file with, e.g.
+Six of the seven modules are converted and green: `Basic`, `Calculus`,
+`Step`, `Model`, `Extract`, `Sound`, `Complete`. **`Minimal.lean` is
+still being converted** — it is the one that needs the completeness
+*construction* made `Type`-valued, since `choose` and `Nonempty.some`
+are themselves choice. Check the branch tip before relying on this
+paragraph.
+
+This branch is the **working reference for how the constraints of §4.2
+are met in practice**. Retrieve any converted file with, e.g.
 
 ```bash
 git show frj-choicefree:FRJ/Basic.lean
 ```
 
-Verified on the four green modules (`#print axioms` against the built
-oleans, 2026-08-16):
+Three pieces of it are worth lifting wholesale rather than reinventing:
+
+* `Kripke` carrying `elems : List W`, `complete : ∀ w, w ∈ elems`,
+  `decEq`, `decLe`, `decV` in place of a `Finite` instance;
+* `decForce : Decidable (K.force a A)`, which makes forcing a
+  **computation** — the `⊃` clause is decided over `K.elems` by
+  `List.decidableBAll`;
+* `countP_mono` / `countP_lt_countP`, replacing `Finset.card_lt_card`
+  for the height of a world, and `List.argmax` replacing
+  `Finset.exists_max_image`.
+
+Verified by `#print axioms` against the built oleans (2026-08-16):
 
 * **no axioms at all**: `clo_forces`, `clo_trans`, `clo_pv`,
   `Kripke.force_mono`, `not_IPL_of_countermodel`
@@ -82,10 +112,7 @@ oleans, 2026-08-16):
   `occR_steps`, `wfR`, `wfI`, `axI_not_mem_lhs`, `addRoot_force_comp`,
   `addRoot_le_comp`
 
-`Classical.choice` is absent throughout the converted part. The
-technique works; it was banked mid-flight.
-
----
+`Classical.choice` is absent throughout the converted part.
 
 ## 3. DO NOT IMPORT `FRJO/`
 
