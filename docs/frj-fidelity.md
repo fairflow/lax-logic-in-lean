@@ -79,6 +79,20 @@ completeness theorem read-only.)
    indices.  (The Finite Rule Property, which the constraints exist to
    give, is only needed for proof-search — out of scope here.)
 
+   **Outstanding obligation this creates.**  The join rules split each
+   premise's zones with `atPart`/`impPart`, which filter for variables
+   and for `⊃`-formulas.  If a premise's context could contain anything
+   else — `⊥`, a conjunction — both filters would silently drop it, and
+   the encoded rule would differ from the paper's.  It cannot, because
+   `Ĝ = Ĝ_at ∪ Ĝ_imp` holds of every derivable sequent; but that is
+   exactly the well-formedness lemma
+
+       `wf : FRJr G Γ C → Γ ⊆ gHat G`  (and the `FRJi` analogue)
+
+   which is **TODO**.  Until it is proved, the claim "the encoded joins
+   are the paper's joins" rests on an unverified invariant.  It is the
+   first thing to prove alongside soundness.
+
 ## §2 Preliminaries → `FRJ/Basic.lean`
 
 | Paper | Lean | Status |
