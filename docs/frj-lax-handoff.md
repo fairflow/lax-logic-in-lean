@@ -17,19 +17,17 @@ before asserting which proof system any result belongs to.
 
 ## 1. The task
 
-Build the refutation calculus FRJ◯ — FRJ(G) extended with the lax
-modality ◯ — in a fresh namespace, **effective and choice-free from line
-one**, and reprise over it the whole chain of results already proved for
-the IPC base: soundness, completeness, and then the countermodel search
-that is the point of the exercise.
+**Extend the finished FRJ(G) development with the lax modality ◯.** Not
+rebuild it. `FRJ/` on this branch is complete: soundness and completeness
+proved, sorry-free, `List`-based, canonical contexts, decidable forcing,
+and a `Type`-valued completeness construction that computes a derivation
+from a countermodel. Read it, reuse it, extend it.
 
 The mid-range goal this serves: an efficient, verifiable *disproof*
-procedure for PLL. The existing PLL decision procedure gives an
-effective proof procedure but an exhaustive generate-and-test disproof
-procedure. A refutation calculus reads a countermodel off a derivation
-directly. See `docs/why-chain.md` for the full goal chain.
-
----
+procedure for PLL. The existing PLL decision procedure gives an effective
+proof procedure but an exhaustive generate-and-test disproof procedure. A
+refutation calculus reads a countermodel off a derivation directly. See
+`docs/why-chain.md` for the full goal chain.
 
 ## 2. Where things stand
 
@@ -258,24 +256,28 @@ was *tried*, not as a specification.
 
 ## 6. Staging
 
-The standing rule Matthew states for this campaign: **implement existing
-results before trying to extend them.** The first attempt inverted this
-and the extension came out unsound.
+Matthew's standing rule for this campaign is **implement existing results
+before trying to extend them**. That rule is now DISCHARGED for the IPC
+base: the results exist, on this branch, machine-checked. So the staging
+below reuses them; it does not re-derive them.
 
 | Stage | Content | Exit criterion |
 |---|---|---|
-| **W0** | Read the source: arXiv:1804.06689 LaTeX (`frj-corr.tex`, 6682 lines), **including any appendix** — journal page limits push proof detail there. Re-read the prose, not only the rule figure: side conditions and the proof-search restrictions PS1–PS4 live in the prose. | A written plan listing every numbered result to be reproduced |
-| **W1** | Syntax, semantics, subformula sets, closure `Cl` — **with ◯ present in the syntax from line one** | Builds; `Cl` properties (Cl1)–(Cl6) proved; axioms pinned |
-| **W2** | The FRJ(G) rule table, slime-free, Type-valued, `List`-based; ◯-free rules only | Builds; every constructor's index a variable |
-| **W3** | Soundness of the ◯-free fragment: Lemma 3.4, `wf`, Lemma 3.9, Thm 3.10, Thm 3.1 | Sorry-free, pinned, no `Classical.choice` |
-| **W4** | Completeness of the ◯-free fragment: §6, `Λ*`, Lemma 6.5, `minMod` (Lemma 6.4), Thm 6.2(i) — **returning a derivation**, i.e. `Type`-valued | Sorry-free, pinned; the construction *computes* |
-| **W5** | The ◯ rules: screen first (§5 above), then Matthew signs off, then extend W2–W4 | Screens recorded; rules signed off; results re-proved |
-| **W6** | The searcher extracted from the completeness construction, plus a `decide`-checkable certificate; test on the existing corpus and stretch it | Runs as a `lean_exe`; corpus results recorded |
+| **W0** | Read `FRJ/` end to end, and `docs/frj-fidelity.md` beside it. Read the source (arXiv:1804.06689 LaTeX `frj-corr.tex`, **including the appendix**) for §3 and §6 only as far as you need to understand what is already formalised. | You can state where each numbered result of the paper lives in `FRJ/` |
+| **W1** | Add ◯ to `Form` and to forcing. Everything that is ◯-free must still build; the point of doing this first is that `Basic`, `Calculus`, `Step`, `Model`, `Extract`, `Sound`, `Complete`, `Minimal` then tell you, by breaking or not breaking, exactly which proofs are modality-sensitive. | Library builds with ◯ in the syntax and no ◯ rules |
+| **W2** | Design the ◯ rules. **New mathematics — see §5.** Screen every candidate rule before proving anything, and get Matthew's sign-off on each rule statement. | Screens recorded; rules signed off |
+| **W3** | Extend soundness: Lemma 3.4, `wf`, Lemma 3.9, Thm 3.10, Thm 3.1, with the ◯ cases added | Sorry-free, pinned, no `Classical.choice` |
+| **W4** | Extend completeness: `Λ*`, Lemma 6.5, `minMod`, Thm 6.2(i), with the ◯ cases | Sorry-free, pinned; the construction still *computes* |
+| **W5** | The searcher extracted from `completenessData`, plus a `decide`-checkable certificate | Runs as a `lean_exe` |
+| **W6** | Test on the existing corpus and stretch it | Corpus results recorded |
 
 Bank at every stage boundary: commit, push, and append a dated section
 to `HANDOFF.md` at the repo root (append, never rewrite).
 
----
+**How to reuse `FRJ/`.** Two options, and W1 will tell you which is
+right: either extend the modules in place (simplest, if the ◯-free
+proofs survive the syntax change unchanged), or have `FRJLax/` import
+`FRJ` and add the modal layer beside it. Do NOT copy files.
 
 ## 7. What not to do — failure modes observed, stated factually
 
