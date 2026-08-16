@@ -149,6 +149,46 @@ structure Kripke where
 
 attribute [instance] Kripke.decEq Kripke.decLe Kripke.decV
 
+/-! ### Counting, for the height of a world
+
+`Finset.card` would do this, but `Finset` carries `Classical.choice` at
+the definition level.  `List.countP` over the world enumeration does the
+same job constructively. -/
+
+theorem countP_mono {α : Type} {p q : α → Bool} :
+    ∀ {l : List α}, (∀ x ∈ l, p x = true → q x = true) →
+      l.countP p ≤ l.countP q
+  | [], _ => Nat.le_refl _
+  | x :: xs, h => by
+      have ih := countP_mono (fun y hy => h y (List.mem_cons_of_mem _ hy))
+      rw [List.countP_cons, List.countP_cons]
+      cases hpx : p x with
+      | false => cases hqx : q x <;> simp [hpx, hqx] <;> omega
+      | true =>
+          have hqx : q x = true := h x List.mem_cons_self hpx
+          simp [hpx, hqx] <;> omega
+
+/-- Strict version: if in addition some member satisfies `q` but not `p`. -/
+theorem countP_lt_countP {α : Type} {p q : α → Bool} :
+    ∀ {l : List α}, (∀ x ∈ l, p x = true → q x = true) →
+      ∀ {b : α}, b ∈ l → q b = true → p b = false →
+      l.countP p < l.countP q
+  | [], _, _, hb, _, _ => absurd hb (List.not_mem_nil)
+  | x :: xs, h, b, hb, hqb, hpb => by
+      have hmono := countP_mono (l := xs)
+        (fun y hy => h y (List.mem_cons_of_mem _ hy))
+      rw [List.countP_cons, List.countP_cons]
+      rcases List.mem_cons.mp hb with rfl | hb'
+      · simp [hpb, hqb] <;> omega
+      · have ih := countP_lt_countP
+          (fun y hy => h y (List.mem_cons_of_mem _ hy)) hb' hqb hpb
+        cases hpx : p x with
+        | false => cases hqx : q x <;> simp [hpx, hqx] <;> omega
+        | true =>
+            have hqx : q x = true := h x List.mem_cons_self hpx
+            simp [hpx, hqx] <;> omega
+
+
 namespace Kripke
 
 /-- The forcing relation, exactly the five clauses of the paper.
@@ -193,6 +233,33 @@ theorem force_mono {a b : K.W} (hab : K.le a b) :
   | and A B ihA ihB => exact fun h => ⟨ihA h.1, ihB h.2⟩
   | or A B ihA ihB => exact fun h => h.elim (Or.inl ∘ ihA) (Or.inr ∘ ihB)
   | imp A B _ _ => exact fun h c hbc => h c (K.le_trans hab hbc)
+
+/-! ### Forcing is decidable
+
+The paper's models are finite, and `Kripke` carries the witnesses of that
+constructively (`elems`/`complete`, `decLe`, `decV`).  So forcing is a
+COMPUTATION, not merely a proposition — which is what lets `Λ*_α` below
+be an ordinary `List.filter` rather than a classically-formed subset,
+and is the reason this development needs no `Classical.choice`. -/
+
+instance decForce (K : Kripke) : ∀ (a : K.W) (A : Form), Decidable (K.force a A)
+  | _, .bot => inferInstanceAs (Decidable False)
+  | a, .atom p => K.decV a p
+  | a, .and A B =>
+      have := decForce K a A
+      have := decForce K a B
+      inferInstanceAs (Decidable (_ ∧ _))
+  | a, .or A B =>
+      have := decForce K a A
+      have := decForce K a B
+      inferInstanceAs (Decidable (_ ∨ _))
+  | a, .imp A B =>
+      have : ∀ b : K.W, Decidable (K.force b A) := fun b => decForce K b A
+      have : ∀ b : K.W, Decidable (K.force b B) := fun b => decForce K b B
+      have : Decidable (∀ b ∈ K.elems, K.le a b → K.force b A → K.force b B) :=
+        List.decidableBAll _ _
+      decidable_of_iff (∀ b ∈ K.elems, K.le a b → K.force b A → K.force b B)
+        ⟨fun h b => h b (K.complete b), fun h b _ => h b⟩
 
 /-- "`K,α ⊩ Γ` means `K,α ⊩ A` for every `A ∈ Γ`." -/
 def forces (a : K.W) (Γ : List Form) : Prop := ∀ A ∈ Γ, K.force a A

@@ -17,11 +17,12 @@ Setting: `K` a countermodel for `G`, `α` a world, and
 Note that `Λ*_α ⊆ Ĝ` by construction — its members are variables or
 implications — which is what lets it appear on the left of a sequent.
 
-**Classical metatheory.**  The paper is classical throughout, and `Λ*_α`
-is a *finite set* carved out of `Sf^L(G)` by a forcing condition, which
-is not decidable for an abstract Kripke model.  We therefore use
-classical decidability to form these `Finset`s.  This is the paper's own
-setting, not a divergence from it.
+**Constructive metatheory.**  The paper is classical, and forms `Λ*_α`
+by classical comprehension.  We do not need to: `Kripke` carries a world
+enumeration together with decidable order and valuation, so forcing is
+DECIDABLE (`decForce`), `Λ*_α` is an ordinary `List.filter`, and the
+height of a world is a `List.countP`.  Nothing here depends on
+`Classical.choice`, and the construction computes.
 -/
 import FRJ.Sound
 
@@ -55,23 +56,31 @@ theorem forceStar_shape {a : K.W} : ∀ {H : Form},
     K.forceStar a H → H.isPV ∨ H.isImp := by
   intro H h
   cases H with
-  | atom p => exact Or.inl trivial
+  | atom p => exact Or.inl rfl
   | bot => exact h.elim
   | and A B => exact h.elim
   | or A B => exact h.elim
-  | imp A B => exact Or.inr trivial
+  | imp A B => exact Or.inr rfl
+
+/-- `⊩*` is decidable, because `⊩` is. -/
+instance decForceStar (K : Kripke) (a : K.W) :
+    ∀ H : Form, Decidable (K.forceStar a H)
+  | .atom p => K.decV a p
+  | .bot => inferInstanceAs (Decidable False)
+  | .and _ _ => inferInstanceAs (Decidable False)
+  | .or _ _ => inferInstanceAs (Decidable False)
+  | .imp A B =>
+      inferInstanceAs (Decidable (K.force a (.imp A B) ∧ ¬ K.force a A))
 
 end Kripke
 
-open Classical in
-/-- `Λ*_α`, as a finite set. -/
-noncomputable def lamStar (K : Kripke) (a : K.W) (G : Form) : Finset Form :=
-  (sfL G).filter (fun H => K.forceStar a H)
+/-- `Λ*_α`.  A filter, not a classical comprehension. -/
+def lamStar (K : Kripke) (a : K.W) (G : Form) : List Form :=
+  (sfL G).filter (fun H => decide (K.forceStar a H))
 
 theorem mem_lamStar {K : Kripke} {a : K.W} {G H : Form} :
     H ∈ lamStar K a G ↔ (H ∈ sfL G ∧ K.forceStar a H) := by
-  classical
-  simp [lamStar]
+  simp [lamStar, List.mem_filter]
 
 /-- `Λ*_α ⊆ Ĝ`: this is what lets it stand on the left of a sequent. -/
 theorem lamStar_subset_gHat {K : Kripke} {a : K.W} {G : Form} :
@@ -79,8 +88,8 @@ theorem lamStar_subset_gHat {K : Kripke} {a : K.W} {G : Form} :
   intro H hH
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hH
   rcases K.forceStar_shape hst with h | h
-  · exact Finset.mem_union_left _ (Finset.mem_filter.mpr ⟨hsf, h⟩)
-  · exact Finset.mem_union_right _ (Finset.mem_filter.mpr ⟨hsf, h⟩)
+  · exact List.mem_append_left _ (List.mem_filter.mpr ⟨hsf, h⟩)
+  · exact List.mem_append_right _ (List.mem_filter.mpr ⟨hsf, h⟩)
 
 /-- Everything in `Λ*_α` is forced at `α`. -/
 theorem forces_lamStar {K : Kripke} {a : K.W} {G : Form} :
@@ -145,31 +154,24 @@ above `α`, which decreases as one moves up.  On a finite poset the
 cardinality of the strict up-set does the same job and is easier to
 handle. -/
 
-open Classical in
-/-- `h(α)`, realised as the number of worlds strictly above `α`. -/
-noncomputable def ht (K : Kripke) (a : K.W) : Nat :=
-  letI : Fintype K.W := Fintype.ofFinite K.W
-  (Finset.univ.filter (fun b => K.le a b ∧ b ≠ a)).card
+/-- `h(α)`, realised as the number of worlds strictly above `α`, counted
+over the model's own enumeration.  (`Finset.card` would need `Fintype`,
+and `Fintype.ofFinite` costs `Classical.choice`.) -/
+def ht (K : Kripke) (a : K.W) : Nat :=
+  K.elems.countP (fun b => decide (K.le a b ∧ b ≠ a))
 
-open Classical in
 /-- Moving strictly up strictly decreases the height. -/
 theorem ht_lt {K : Kripke} {a b : K.W} (hab : K.le a b) (hne : b ≠ a) :
     ht K b < ht K a := by
-  letI : Fintype K.W := Fintype.ofFinite K.W
-  refine Finset.card_lt_card ⟨?_, ?_⟩
-  · intro c hc
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hc ⊢
+  refine countP_lt_countP ?_ (K.complete b) ?_ ?_
+  · intro c _ hc
+    simp only [decide_eq_true_eq] at hc ⊢
     refine ⟨K.le_trans hab hc.1, ?_⟩
     intro hca
-    subst hca
-    exact hne (K.le_antisymm hc.1 hab)
-  · intro hsub
-    have hb : b ∈ Finset.univ.filter (fun c => K.le a c ∧ c ≠ a) := by
-      simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-      exact ⟨hab, hne⟩
-    have := hsub hb
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at this
-    exact this.2 rfl
+    exact hne (K.le_antisymm (hca ▸ hc.1) hab)
+  · simp only [decide_eq_true_eq]
+    exact ⟨hab, hne⟩
+  · simp
 
 /-- A minimal world above `α` at which `A` is forced and `B` is not.
 This is the paper's "without loss of generality" choice of `η`: no world
@@ -178,27 +180,40 @@ theorem exists_min_eta {K : Kripke} {a : K.W} {A B : Form}
     (h : ¬ K.force a (.imp A B)) :
     ∃ e : K.W, K.le a e ∧ K.force e A ∧ ¬ K.force e B ∧
       ∀ d : K.W, K.le a d → K.le d e → d ≠ e → ¬ K.force d A := by
-  classical
-  letI : Fintype K.W := Fintype.ofFinite K.W
-  have hne : (Finset.univ.filter
-      (fun e => K.le a e ∧ K.force e A ∧ ¬ K.force e B)).Nonempty := by
-    simp only [Kripke.force_imp, not_forall] at h
-    obtain ⟨e, he⟩ := h
-    refine ⟨e, ?_⟩
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    obtain ⟨h1, h3, h4⟩ := he
-    exact ⟨h1, h3, h4⟩
-  -- take an element minimal for `≤` among those
-  obtain ⟨e, hemem, hmax⟩ := Finset.exists_max_image _ (fun x => ht K x) hne
-  simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hemem
-  refine ⟨e, hemem.1, hemem.2.1, hemem.2.2, ?_⟩
+  -- the candidates, enumerated
+  have hmem : ∀ e : K.W,
+      e ∈ K.elems.filter (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B))
+        ↔ (K.le a e ∧ K.force e A ∧ ¬ K.force e B) := by
+    intro e
+    simp [List.mem_filter, K.complete e]
+  -- `α ⊮ A ⊃ B` means the list is not empty; decidability of forcing makes
+  -- this constructive.
+  have hnil : K.elems.filter
+      (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B)) ≠ [] := by
+    intro hn
+    refine h ?_
+    rw [Kripke.force_imp]
+    intro b hab hbA
+    by_cases hbB : K.force b B
+    · exact hbB
+    · exact absurd ((hmem b).mpr ⟨hab, hbA, hbB⟩)
+        (by rw [hn]; exact List.not_mem_nil)
+  -- take one of maximal height: the paper's minimal `η`
+  obtain ⟨e, hesome⟩ : ∃ e, (K.elems.filter
+      (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B))).argmax
+        (fun x => ht K x) = some e := by
+    cases hopt : (K.elems.filter
+        (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B))).argmax
+          (fun x => ht K x) with
+    | none => exact absurd (List.argmax_eq_none.mp hopt) hnil
+    | some e => exact ⟨e, rfl⟩
+  obtain ⟨hae, heA, heB⟩ := (hmem e).mp (List.argmax_mem (Option.mem_def.mpr hesome))
+  refine ⟨e, hae, heA, heB, ?_⟩
   intro d had hde hdne hdA
-  have hdB : ¬ K.force d B := fun hc => hemem.2.2 (K.force_mono hde hc)
-  have hdmem : d ∈ Finset.univ.filter
-      (fun x => K.le a x ∧ K.force x A ∧ ¬ K.force x B) := by
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-    exact ⟨had, hdA, hdB⟩
-  exact absurd (hmax d hdmem) (Nat.not_le.mpr (ht_lt hde hdne.symm))
+  have hdB : ¬ K.force d B := fun hc => heB (K.force_mono hde hc)
+  have hle : ht K d ≤ ht K e :=
+    List.le_of_mem_argmax ((hmem d).mpr ⟨had, hdA, hdB⟩) (Option.mem_def.mpr hesome)
+  exact absurd hle (Nat.not_le.mpr (ht_lt hde hdne.symm))
 
 
 end FRJ
