@@ -334,3 +334,103 @@ W0–W6 staging with exit criteria, the six observed failure modes, and
 three decisions explicitly reserved for Matthew — the syntax staging,
 the saturation half of the v4 zone repair, and every modal rule
 statement.
+
+## 14. Update — 2026-08-16 20:49 BST: FRJ◯ W0 and W1 done; the source is not the version we thought
+
+Branch **`claude/frj-redevelopment-69005f`**, fast-forwarded from
+`frj-lax` (`cc6ed4b`), tip `fa7348a`.  Three commits: the plan, the
+fidelity renumbering, W1.
+
+### The finding: the arXiv LaTeX source is not the journal version
+
+`docs/frj-lax-handoff.md`, `docs/frj-fidelity.md` and `FRJ/Basic.lean` all
+describe `frj-corr.tex` as "the full journal version".  It is not; it is a
+close variant.  Both were read at source this session (the arXiv LaTeX in
+full for §2, §3, §3.1, §3.2, §6 **and Appendix A**; the published ACM TOCL
+21(3) text for §2, §3, §3.2, §6).  Inside the in-scope material the
+journal
+
+* adds **Lemma 3.9** — `⊢ Σ;Θ → C` implies `|H| < |C|` for every `H ∈ Σ` —
+  whose proof **uses restriction (RS1)**;
+* states the key soundness lemma's part (ii) with hypothesis `σ_p ⊩ Σ`
+  along a new relation `⇢` (irregular chain entering a join), where the
+  arXiv has `σ_p ⊩ Σ ∩ Sf⁻(C)` along `↦`;
+* swaps (P2)/(P3), renames (PS1)–(PS4) to (RS1)–(RS4), names (J3)/(J4),
+  and moves the height bounds to Theorem 6.1.
+
+The arXiv form of (ii) is the **stronger** statement and needs no (RS)
+restriction, so the plan cites journal numbering but proves the arXiv
+form, and the rule table carries no minimality or maximality side
+conditions.  Full account: `docs/frj-lax-plan.md` §1.
+
+### The numbering was wrong in the record
+
+`docs/frj-fidelity.md` cited five results by numbers that exist in neither
+published version.  Matthew's call: renumbered throughout, with a dated
+table under its Scope section.  `Lemma 3.4 → 3.5`, `Lemma 3.9 → 3.10`,
+`Theorem 3.10 → 3.12`, `Lemma 6.4 → 6.3`, `Lemma 6.5 → 6.7`,
+`Theorem 6.2(i) → 5.13(i)`, and the section references to the journal's
+(its §3.1 is *Restrictions*, §3.2 *Countermodels and Soundness*, §3.3
+*Termination*).  Only citations changed; no mathematics.  **Still
+uncorrected**: `FRJ/Basic.lean`'s header repeats the false provenance
+claim.
+
+### W0 — the plan
+
+`docs/frj-lax-plan.md`: what was read, the arXiv/journal divergence, the
+three numbering systems, **every numbered result to be reproduced** with
+its stage, the module plan with the slime-free constructor shapes written
+out, the choice-free budget, the two screening rounds, the paper's own
+worked formulas as a corpus, and the open decisions.
+
+### W1 — done, builds, pinned
+
+Decision 1 settled by Matthew: **`◯` and constraint models from line
+one**, with `FinCM` as the eventual extraction target.
+
+* `FRJLax/Core.lean`, **zero imports**: `Form` with `circ`, `size`, `Bool`
+  shape predicates, `rm`/`cap` and the membership-equality relation `≐`
+  that will keep the rule table free of green slime, `Sf`/`Sf⁻`,
+  `Sf^L`/`Sf^R` with `SfClosed` proved of the computed sets, the zones,
+  and `Cl` with (Cl2)–(Cl6).
+* `FRJLax/Model.lean`: rooted, antisymmetric, constructively finite
+  Fairtlough–Mendler constraint models; six forcing clauses;
+  monotonicity; (Cl1); validity and countermodels.
+
+Two results worth naming.  `force_of_fallible` — a fallible world forces
+every formula — is the coherence check that makes the `◯`-free fragment of
+this model class validate exactly IPC, since `full_F` is stated for atoms
+only.  `decForce` — forcing is decidable, `◯`-clause included, **with no
+axioms at all** — is what will let `Λ*_α` be an ordinary `List.filter` at
+W4.
+
+`Classical.choice` is absent throughout.  25 `#guard_msgs`-guarded axiom
+pins live in the modules themselves, twelve of them "does not depend on
+any axioms".  No `Finset` anywhere.  `lake build FRJLax` takes under two
+seconds from clean.
+
+### Recorded and deliberately not acted on
+
+Two W5 findings, in `docs/frjlax-fidelity.md` divergences 4 and 5 and in
+`FRJLax/Core.lean` under "The third zone":
+
+1. `Cl` is transcribed **verbatim, with no `◯` clause**.  One is available
+   and (Cl1) would survive it (`force_circ_of_force` is proved and used
+   nowhere), but `Cl` occurs in the side conditions of `⊃∈` and `⊃∉`, so
+   extending it changes the *rules*.
+2. `◯` fits neither of FRJ's two context zones and is **not** absorbed by
+   `Cl` the way `∧` and `∨` are: `◯A` can be forced at `α` without `A`
+   being forced there, exactly as `A ⊃ B` can be forced without `B`.  So
+   W5 is not "add a `◯` right-introduction rule": it is
+   `Ĝ = Ĝ_at ∪ Ĝ_imp ∪ Ĝ_◯` with a three-zone join and an analogue of the
+   support condition (J2).  `gCirc`, `circPart` and `isCirc` are defined
+   and unused against that.
+
+### Next
+
+W2: the rule table, `◯`-free rules only, every return-type index a
+variable.  Then round A of the screen — the three cells that killed
+`FRJO/` v3 (`[⊥] ⇒ p`, `[p ∧ q] ⇒ p`, `[p, p ⊃ q] ⇒ q`) must be
+underivable, and the paper's own valid `G = (p ∧ H) ⊃ (q₁ ∨ q₂)` with
+`H = p ⊃ q₁ ∨ q₂` must not be refutable although an irregular sequent
+carrying it is derivable — before any soundness proof is scoped.
