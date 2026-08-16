@@ -296,3 +296,53 @@ nothing downstream is affected.
 Also noted: in the `C = C₁ ∧ C₂` regular case the paper cites (IH2) where
 the recursive call is regular-to-regular at the same world and so must
 be (IH3); the measure decreases either way.
+
+## Choice: where it comes from, and how it goes away
+
+*2026-08-16.  Matthew's standing requirement: final results must not
+depend on `Classical.choice`, because the aim is decision procedures and
+choice blocks that path.*
+
+**The choice in this development was never in the mathematics.**  It has
+exactly two sources, both found by audit:
+
+1. **Mathlib's `Finset` operations are choice-tainted at the DEFINITION
+   level.**  `Finset.instUnion`, `Finset.erase`, `Finset.image` and
+   `Multiset.ndunion` each report `Classical.choice`.  So any term that
+   merely *mentions* `s ∪ t` on a `Finset` carries choice, however it is
+   proved — re-deriving the membership lemmas by hand does not help.
+   Only `Finset.filter` is clean.
+
+   The `List` API, by contrast, is axiom-free at definition level:
+   `List.union`, `List.inter`, `List.filter`, `List.map`,
+   `List.flatMap`, `List.finRange`, `List.instMembership` report no
+   axioms, and `List.mem_append`, `List.mem_filter`, `List.mem_cons`
+   report only `propext`.  (`List.dedup` and `List.erase` are classical
+   and must be avoided; filtering replaces both.)
+
+2. **The `tauto` tactic**, which reasons classically.
+
+**The fix**: move off `Finset` onto `List` — the development uses sets
+only up to membership, so nothing is lost — and replace `tauto` by
+explicit proofs.  Two structural consequences: the shape predicates
+become `Bool`, and `Kripke` carries a constructive enumeration
+(`elems`/`complete`) plus `decEq`/`decLe`/`decV` rather than a `Finite`
+instance, since eliminating `Finite` needs `Fintype.ofFinite`, which
+costs choice.
+
+**Verified so far** (branch `frj-choicefree`): `Basic.lean` is entirely
+choice-free — `sfPos_closed`, `sfR_imp`, `clo_sf` at `[propext]`, and
+`clo_forces`, `clo_trans`, `clo_pv`, `force_mono`,
+`not_IPL_of_countermodel` with **no axioms at all** — and `Calculus.lean`
+and `Step.lean` follow, with `lhs_subset_of_step`, `lhs_clo_of_steps`,
+`occR_steps`, `wfR`, `wfI`, `axI_not_mem_lhs` all down to
+`[propext, Quot.sound]`.  `Model.lean` is converted and compiles.
+
+**Remaining**: `Extract.lean` residuals, then `Sound.lean` and
+`Complete.lean` (mechanical — the same substitutions), then
+`Minimal.lean`, which additionally needs the completeness *construction*
+made Type-valued: `choose` and `Nonempty.some` are themselves choice, so
+the proof must return derivations rather than assert their existence.
+That last step is a redesign, not a substitution — and it is also the
+step that turns completeness into an actual algorithm from countermodel
+to derivation, which is what the decision-procedure goal wants anyway.
