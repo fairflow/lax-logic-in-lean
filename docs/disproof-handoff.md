@@ -1397,3 +1397,29 @@ on `lfoc`, reverted to keep the record clean), S2 `PigeonholeBound`
 (Finset counting), S3 `ConstructionFRJO` (strong induction on
 bound−|history|, premises by `exists_allFail`, revisits by `cyc`).
 NEXT SESSION: S1 by hand (case shapes now known), then S2, then S3.
+
+### Continuation prompt for the CompletenessFRJO session (paste as opener)
+
+You are proving `FRJO.CompletenessFRJO` in the Lean 4 repo
+`lax-logic-in-lean`, branch `ljf-pll`. Read
+`wip/ljfo_completeness.lean` first: S4 and the pigeonhole engine are
+PROVED and pinned; your work is S1 → S2 → S3, in that order.
+S1 (`okS_succs`): replace the one `sorry`; every case closes with
+single-step `UClosed` fields; destruct the flag `j` BEFORE simp so
+`laxInsts`/`circInsts` reduce; normalise memberships with
+`List.mem_singleton`/`mem_cons`/`mem_append`/`mem_map` and match the
+PRINTED disjunction shapes rather than guessing (a blunt
+`cases j <;> simp_all` pass already closed the `stab` and `rfocus`
+cases — recover it from commit history if useful; it stalled on
+`lfoc .up`). S2 (`PigeonholeBound`): inject canonical stable sequents
+into `Finset` sublists of `UN` × `UP` × 2 via `Unravel.canonCtx`; the
+bound is `2^|UN| * |UP| * 2`. S3 (`ConstructionFRJO`): strong
+induction on bound − |H|; at a stable sequent not in `H`, extend `H`;
+at one in `H`, emit `.cyc`; choose each instance's premise by
+`exists_allFail`; non-stable steps decrease the local phase measure
+(Ω + goal size). Then `CompletenessFRJO` is
+`completeness_of_construction`. Verify with `lake env lean
+wip/ljfo_completeness.lean` and transcribe pins verbatim. Corpus
+sanity after: `lake build frjoscreen && .lake/build/bin/frjoscreen`
+(expect derivations for all 302 refutable cells still). Machine-check
+mandate: sorry-free + pinned or it stays OPEN.
