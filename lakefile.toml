@@ -44,13 +44,6 @@ name = "FRJ"
 
 
 
-# FRJLax: FRJ(G) extended with the lax modality, built effective and
-# choice-free from line one (docs/frj-lax-plan.md, docs/frjlax-fidelity.md).
-# Core has ZERO imports; no Finset anywhere; judgments are Type-valued.
-[[lean_lib]]
-name = "FRJLax"
-
-
 [[lean_exe]]
 name = "bilaxscreen"
 root = "BiLax.Screens"
