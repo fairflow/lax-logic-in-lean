@@ -1367,3 +1367,17 @@ once-and-for-all `SoundnessFRJO` and the completeness `CompletenessFRJO`
 (item 2, the pigeonhole/loop-check theorem) are STATED as named
 propositions and OPEN. Corpus test running at write-up
 (`lean_exe frjoscreen`: the 302 battery-refuted cells + the 2 flags).
+
+### 2026-08-16 — the depth wall, measured to destruction
+
+The compiled `searchProves` on the flag cell `ρ12 ⊢ ρ15` at fuel 64
+was left running and killed after **~24 hours wall clock** without
+returning (fuels ≤ 52 answer `false` in ~0 ms). Together with FRJ◯'s
+refutation search finding NO derivation for either flag cell in ~0 ms
+— on a corpus where it found one for every genuinely refutable cell —
+the two flags now carry converging evidence of DERIVABILITY with a
+proof of depth > 52, out of naive reach from both sides. They stay
+OPEN. The practical moral is the pigeonhole bound again, from the
+other direction: without it, deep fuel is not a usable instrument, and
+the refutation calculus's completeness theorem (`CompletenessFRJO`)
+is what would let FRJ◯'s "no derivation" settle them instead.
