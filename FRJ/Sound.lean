@@ -404,10 +404,10 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
           intro hcon
           have hmem : Form.atom p ∈ P.lbl w := hcon
           have hin := clo_pv (hlbl _ hmem)
-          simp only [List.nil_append, List.mem_append] at hin
-          rcases hin with hin | hin
-          · exact (mem_rm.mp hin).1 rfl
-          · have himp := (List.mem_filter.mp hin).2
+          simp only [List.nil_append, mem_nf, List.mem_append] at hin
+          rcases hin.2 with hin' | hin'
+          · exact (mem_rm.mp hin').1 rfl
+          · have himp := (List.mem_filter.mp hin').2
             simp [Form.isImp] at himp
   | _, _, _, .andI1 d hg, P, hP, w, hlbl, hroot, hforce => by
       intro hcon
@@ -429,8 +429,8 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
         · intro X hX
           refine clo_mono ?_ (hlbl X hX)
           intro Y hY
-          simp only [List.mem_append, mem_cap] at hY ⊢
-          rcases hY with (hY | hY) | hY
+          simp only [List.mem_append, mem_nf, mem_cap] at hY ⊢
+          rcases hY with (hY | hY) | ⟨-, hY⟩
           · exact Or.inl hY
           · exact List.mem_append.mp (h₂ hY)
           · exact Or.inr hY.1
@@ -442,8 +442,8 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
         · intro X hX
           refine clo_mono ?_ (hlbl X hX)
           intro Y hY
-          simp only [List.mem_append, mem_cap] at hY ⊢
-          rcases hY with (hY | hY) | hY
+          simp only [List.mem_append, mem_nf, mem_cap] at hY ⊢
+          rcases hY with (hY | hY) | ⟨-, hY⟩
           · exact List.mem_append.mp (h₁ hY)
           · exact Or.inl hY
           · exact Or.inr hY.2
@@ -454,7 +454,7 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, @FRJi.impInI _ St Th Lam A B d hdisj hA hg,
       P, hP, w, hlbl, hroot, hforce => by
       intro hcon
-      have hSA : (P.toKripke hP).forces w (cap (St ++ Lam) (sf A)) := by
+      have hSA : (P.toKripke hP).forces w (cap (nf G (St ++ Lam)) (sf A)) := by
         intro X hX
         rw [mem_cap] at hX
         exact hforce X (mem_cap.mpr ⟨hX.1, sf_subset_sfm_impL hX.2⟩)
@@ -463,12 +463,17 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       · intro X hX
         refine clo_mono ?_ (hlbl X hX)
         intro Y hY
-        simp only [List.mem_append] at hY ⊢
-        tauto
+        simp only [List.mem_append, mem_nf] at hY ⊢
+        rcases hY with ⟨hg', hY | hY⟩ | ⟨hg', hY⟩
+        · exact Or.inl hY
+        · exact Or.inr ⟨hg', Or.inr hY⟩
+        · exact Or.inr ⟨hg', Or.inl hY⟩
       · intro X hX
         rw [mem_cap] at hX
+        have hXG : X ∈ gHat G := wfI d (List.mem_append_left _ hX.1)
         exact hforce X (mem_cap.mpr
-          ⟨List.mem_append_left _ hX.1, sfm_subset_sfm_impR hX.2⟩)
+          ⟨mem_nf.mpr ⟨hXG, List.mem_append_left _ hX.1⟩,
+            sfm_subset_sfm_impR hX.2⟩)
   | _, _, _, @FRJi.impNotIn _ Γ Th A B d hTh hA hAnot hg,
       P, hP, w, hlbl, hroot, hforce => by
       intro hcon

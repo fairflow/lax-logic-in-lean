@@ -80,12 +80,15 @@ inductive Step (G : Form) : RuleName → Sequent → Sequent → Prop
       Step G .andI2 (.irr St Th A₂) (.irr St Th (.and A₁ A₂))
   | orI₁ {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form}
       (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁) :
-      Step G .orI (.irr St₁ Th₁ C₁) (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂))
+      Step G .orI (.irr St₁ Th₁ C₁)
+        (.irr (St₁ ++ St₂) (nf G (cap Th₁ Th₂)) (.or C₁ C₂))
   | orI₂ {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form}
       (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁) :
-      Step G .orI (.irr St₂ Th₂ C₂) (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂))
+      Step G .orI (.irr St₂ Th₂ C₂)
+        (.irr (St₁ ++ St₂) (nf G (cap Th₁ Th₂)) (.or C₁ C₂))
   | impInI {St Th Lam : List Form} {A B : Form} (hdisj : cap Th Lam = []) :
-      Step G .impInI (.irr St (Th ++ Lam) B) (.irr (St ++ Lam) Th (.imp A B))
+      Step G .impInI (.irr St (nf G (Th ++ Lam)) B)
+        (.irr (nf G (St ++ Lam)) (nf G Th) (.imp A B))
   | impNotIn {Γ Th : List Form} {A B : Form}
       (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
       Step G .impNotIn (.reg Γ B) (.irr [] Th (.imp A B))
@@ -170,25 +173,25 @@ theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
   | andI2 => exact List.Subset.refl _
   | orI₁ h₁ h₂ =>
       intro x hx
-      simp only [Sequent.lhs_irr, List.mem_append, mem_cap] at hx ⊢
-      rcases hx with (hx | hx) | hx
+      simp only [Sequent.lhs_irr, List.mem_append, mem_nf, mem_cap] at hx ⊢
+      rcases hx with (hx | hx) | ⟨-, hx⟩
       · exact Or.inl hx
       · exact List.mem_append.mp (h₂ hx)
       · exact Or.inr hx.1
   | orI₂ h₁ h₂ =>
       intro x hx
-      simp only [Sequent.lhs_irr, List.mem_append, mem_cap] at hx ⊢
-      rcases hx with (hx | hx) | hx
+      simp only [Sequent.lhs_irr, List.mem_append, mem_nf, mem_cap] at hx ⊢
+      rcases hx with (hx | hx) | ⟨-, hx⟩
       · exact List.mem_append.mp (h₁ hx)
       · exact Or.inl hx
       · exact Or.inr hx.2
   | impInI hdisj =>
       intro x hx
-      simp only [Sequent.lhs_irr, List.mem_append] at hx ⊢
-      rcases hx with (hx | hx) | hx
+      simp only [Sequent.lhs_irr, List.mem_append, mem_nf] at hx ⊢
+      rcases hx with ⟨hg, hx | hx⟩ | ⟨hg, hx⟩
       · exact Or.inl hx
-      · exact Or.inr (Or.inr hx)
-      · exact Or.inr (Or.inl hx)
+      · exact Or.inr ⟨hg, Or.inr hx⟩
+      · exact Or.inr ⟨hg, Or.inl hx⟩
   | impNotIn => exact absurd rfl hR
   | joinAt j hJ1 =>
       intro x hx
@@ -280,8 +283,9 @@ inductive OccI {G : Form} :
       {h₁ : St₁ ⊆ St₂ ++ Th₂} {h₂ : St₂ ⊆ St₁ ++ Th₁}
       {hg : Form.or C₁ C₂ ∈ sfR G} {s : Sequent} :
       OccI d₂ s → OccI (FRJi.orI d₁ d₂ h₁ h₂ hg) s
-  | impInI {St Th Lam : List Form} {A B : Form} {d : FRJi G St (Th ++ Lam) B}
-      {hdisj : cap Th Lam = []} {hA : Clo (St ++ Lam) A}
+  | impInI {St Th Lam : List Form} {A B : Form}
+      {d : FRJi G St (nf G (Th ++ Lam)) B}
+      {hdisj : cap Th Lam = []} {hA : Clo (nf G (St ++ Lam)) A}
       {hg : Form.imp A B ∈ sfR G} {s : Sequent} :
       OccI d s → OccI (FRJi.impInI d hdisj hA hg) s
   | impNotIn {Γ Th : List Form} {A B : Form} {d : FRJr G Γ B}
@@ -357,28 +361,21 @@ theorem wfI {G : Form} : ∀ {St Th : List Form} {C : Form},
     FRJi G St Th C → St ++ Th ⊆ gHat G
   | _, _, _, .axI _ _ _ => by
       intro x hx
-      simp only [List.nil_append, List.mem_append] at hx
-      rcases hx with hx | hx
-      · exact List.mem_append_left _ (rm_subset hx)
-      · exact List.mem_append_right _ hx
+      simp only [List.nil_append] at hx
+      exact nf_subset hx
   | _, _, _, .andI1 d _ => wfI d
   | _, _, _, .andI2 d _ => wfI d
   | _, _, _, .orI d₁ _ _ h₂ _ => by
       intro x hx
-      refine wfI d₁ ?_
-      simp only [List.mem_append, mem_cap] at hx ⊢
-      rcases hx with (hx | hx) | hx
-      · exact Or.inl hx
-      · exact List.mem_append.mp (h₂ hx)
-      · exact Or.inr hx.1
-  | _, _, _, .impInI d _ _ _ => by
+      simp only [List.mem_append, mem_nf] at hx
+      rcases hx with (hx | hx) | ⟨hg, -⟩
+      · exact wfI d₁ (List.mem_append_left _ hx)
+      · exact wfI d₁ (h₂ hx)
+      · exact hg
+  | _, _, _, .impInI _ _ _ _ => by
       intro x hx
-      refine wfI d ?_
-      simp only [List.mem_append] at hx ⊢
-      rcases hx with (hx | hx) | hx
-      · exact Or.inl hx
-      · exact Or.inr (Or.inr hx)
-      · exact Or.inr (Or.inl hx)
+      simp only [List.mem_append, mem_nf] at hx
+      rcases hx with ⟨hg, -⟩ | ⟨hg, -⟩ <;> exact hg
   | _, _, _, .impNotIn _ hTh _ _ _ => by
       intro x hx
       simp only [List.nil_append] at hx

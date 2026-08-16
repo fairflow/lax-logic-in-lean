@@ -143,7 +143,7 @@ inductive FRJr (G : Form) : List Form → Form → Type
 inductive FRJi (G : Form) : List Form → List Form → Form → Type
   /-- `Ax^I`:  `⊢ [] ; Ĝ_at \ {F}, Ĝ_imp → F`,  `F ∈ Prime`. -/
   | axI (F : Form) (hF : F.isPrime) (hgoal : F ∈ sfR G) :
-      FRJi G [] ((rm (gAt G) F) ++ gImp G) F
+      FRJi G [] (nf G ((rm (gAt G) F) ++ gImp G)) F
   /-- `∧` (irregular), `k = 1`. -/
   | andI1 {St Th : List Form} {A₁ A₂ : Form}
       (d : FRJi G St Th A₁) (hgoal : Form.and A₁ A₂ ∈ sfR G) :
@@ -159,14 +159,14 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       (d₁ : FRJi G St₁ Th₁ C₁) (d₂ : FRJi G St₂ Th₂ C₂)
       (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁)
       (hgoal : Form.or C₁ C₂ ∈ sfR G) :
-      FRJi G (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂)
+      FRJi G (St₁ ++ St₂) (nf G (cap Th₁ Th₂)) (.or C₁ C₂)
   /-- `⊃∈` (irregular): from `Σ ; Θ, Λ → B` infer `Σ, Λ ; Θ → A ⊃ B`,
       side conditions `Θ ∩ Λ = ∅` and `A ∈ Cl(Σ ++ Λ)`. -/
   | impInI {St Th Lam : List Form} {A B : Form}
-      (d : FRJi G St (Th ++ Lam) B)
-      (hdisj : cap Th Lam = []) (hA : Clo (St ++ Lam) A)
+      (d : FRJi G St (nf G (Th ++ Lam)) B)
+      (hdisj : cap Th Lam = []) (hA : Clo (nf G (St ++ Lam)) A)
       (hgoal : Form.imp A B ∈ sfR G) :
-      FRJi G (St ++ Lam) Th (.imp A B)
+      FRJi G (nf G (St ++ Lam)) (nf G Th) (.imp A B)
   /-- `⊃∉`: from the REGULAR premise `Γ ⇒ B` infer `[] ; Θ → A ⊃ B`,
       side conditions `Θ ⊆ Cl(Γ) ∩ Ĝ` and `A ∈ Cl(Γ) \ Cl(Θ)`. -/
   | impNotIn {Γ Th : List Form} {A B : Form}
