@@ -617,13 +617,22 @@ def gAt (G : Form) : List Form := (sfL G).filter Form.isPV
 /-- `Ĝ_imp = Sf^L(G) ∩ Fm⊃`. -/
 def gImp (G : Form) : List Form := (sfL G).filter Form.isImp
 
-/-- `Ĝ = Ĝ_at ∪ Ĝ_imp`.  The paper's, unchanged: the `◯`-free rules put
-nothing else in a context.  See the third-zone note below. -/
-def gHat (G : Form) : List Form := gAt G ++ gImp G
-
-/-- `Sf^L(G) ∩ {◯-formulas}`.  Ours, and unused by the `◯`-free layer:
-vocabulary for W5. -/
+/-- `Sf^L(G) ∩ {◯-formulas}`, the third zone. -/
 def gCirc (G : Form) : List Form := (sfL G).filter Form.isCirc
+
+/-- `Ĝ = Ĝ_at ∪ Ĝ_imp ∪ Ĝ_◯`.
+
+DIVERGENCE, and the one the modal extension turns on.  The paper has
+`Ĝ = Ĝ_at ∪ Ĝ_imp`, and that partition is exhaustive for IPC because `Cl`
+absorbs `∧` and `∨` on the left.  `◯` is absorbed by neither: `◯A` can be
+forced at a world where `A` is not, exactly as `A ⊃ B` can be forced where
+`B` is not, so `◯`-formulas are determining data about a world and must be
+carried.  Independently corroborated by the screen recorded in
+`docs/frj-lifting.md` §7 — determining part = atoms + `⊥` + implications
+gives 32 certified failures over 156 cells, adding `◯`-formulas gives 0.
+
+On a `◯`-free goal `Ĝ_◯` is empty and this is the paper's `Ĝ`. -/
+def gHat (G : Form) : List Form := gAt G ++ gImp G ++ gCirc G
 
 /-- `Γ^at`. -/
 def atPart (Γ : List Form) : List Form := Γ.filter Form.isPV
@@ -653,26 +662,44 @@ def circPart (Γ : List Form) : List Form := Γ.filter Form.isCirc
     X ∈ circPart Γ ↔ (X ∈ Γ ∧ X.isCirc = true) := by simp [circPart, List.mem_filter]
 
 theorem gAt_subset_gHat {G : Form} : gAt G ⊆ gHat G :=
-  fun _ h => List.mem_append_left _ h
+  fun _ h => List.mem_append_left _ (List.mem_append_left _ h)
 theorem gImp_subset_gHat {G : Form} : gImp G ⊆ gHat G :=
+  fun _ h => List.mem_append_left _ (List.mem_append_right _ h)
+theorem gCirc_subset_gHat {G : Form} : gCirc G ⊆ gHat G :=
   fun _ h => List.mem_append_right _ h
 
-/-- The split that the join rules rely on: over a context drawn from `Ĝ`,
-`Γ = Γ^at ++ Γ^⊃` up to membership.  With `◯` in the language this is a
-statement about `◯`-free contexts, and it is exactly the invariant that
-the well-formedness lemma of W3 has to supply. -/
-theorem atPart_union_impPart {G : Form} {Γ : List Form} (h : Γ ⊆ gHat G) :
-    Γ ≐ (atPart Γ ++ impPart Γ) := by
+/-- The split the join rules rely on: over a context drawn from `Ĝ`,
+`Γ = Γ^at ++ Γ^⊃ ++ Γ^◯` up to membership.  This is the three-zone form of
+the invariant the well-formedness lemma has to supply, and it is what
+justifies the join rules' use of `atPart`/`impPart`/`circPart`: without
+it, a context member lying in none of the three would be silently
+dropped by all three filters. -/
+theorem zone_split {G : Form} {Γ : List Form} (h : Γ ⊆ gHat G) :
+    Γ ≐ (atPart Γ ++ impPart Γ ++ circPart Γ) := by
   constructor
   · intro X hX
-    have := h hX
-    rcases List.mem_append.mp this with hx | hx
-    · exact List.mem_append_left _ (mem_atPart.mpr ⟨hX, (mem_gAt.mp hx).2⟩)
-    · exact List.mem_append_right _ (mem_impPart.mpr ⟨hX, (mem_gImp.mp hx).2⟩)
+    have hg := h hX
+    rcases List.mem_append.mp hg with hx | hx
+    · rcases List.mem_append.mp hx with hy | hy
+      · exact List.mem_append_left _ (List.mem_append_left _
+          (mem_atPart.mpr ⟨hX, (mem_gAt.mp hy).2⟩))
+      · exact List.mem_append_left _ (List.mem_append_right _
+          (mem_impPart.mpr ⟨hX, (mem_gImp.mp hy).2⟩))
+    · exact List.mem_append_right _ (mem_circPart.mpr ⟨hX, (mem_gCirc.mp hx).2⟩)
   · intro X hX
     rcases List.mem_append.mp hX with hx | hx
-    · exact (mem_atPart.mp hx).1
-    · exact (mem_impPart.mp hx).1
+    · rcases List.mem_append.mp hx with hy | hy
+      · exact (mem_atPart.mp hy).1
+      · exact (mem_impPart.mp hy).1
+    · exact (mem_circPart.mp hx).1
+
+/-- The paper's two-zone split, still true of `◯`-free contexts. -/
+theorem atPart_union_impPart {G : Form} {Γ : List Form}
+    (h : Γ ⊆ gHat G) (hc : circPart Γ = []) :
+    Γ ≐ (atPart Γ ++ impPart Γ) := by
+  have hs := zone_split (G := G) h
+  rw [hc] at hs
+  simpa using hs
 
 /-! ## The closure `Cl(Γ)`
 
@@ -896,9 +923,9 @@ a path to an actual procedure. -/
 #guard_msgs in
 #print axioms sfL_circ
 
-/-- info: 'FRJLax.atPart_union_impPart' depends on axioms: [propext] -/
+/-- info: 'FRJLax.zone_split' depends on axioms: [propext] -/
 #guard_msgs in
-#print axioms atPart_union_impPart
+#print axioms zone_split
 
 /-- info: 'FRJLax.clo_sf' depends on axioms: [propext] -/
 #guard_msgs in
