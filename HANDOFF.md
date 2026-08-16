@@ -289,3 +289,48 @@ uniform interpolant exists). Plus the two named adjuncts: normaliser
 soundness and substitution admissibility. `docs/next-session.md` has the
 resume brief; `docs/ljfo-fidelity.md` §3.2/§3.3 says which row families
 `interpF` will grow, and round 3's lesson says to name them from the start.
+
+---
+
+## 13. Update — 2026-08-16: FRJ over IPC PROVED; FRJ◯ restarted from scratch on `frj-lax`
+
+**FRJ(G) over IPC is PROVED**, sorry-free, on branch `frj-ipc` (tag
+`frj-classical-complete`): soundness (Thm 3.1, via Lemma 3.4, `wf`,
+Lemma 3.9, Thm 3.10) and completeness (§6: Λ*, Lemma 6.5, `minMod` =
+Lemma 6.4, Thm 6.2(i)), giving
+`frj_iff_not_IPL : Provable G ↔ ¬ IPL G`. Transcribed from the arXiv
+LaTeX source of arXiv:1804.06689, with every divergence recorded in
+`docs/frj-fidelity.md`. Two divergences are real: Lemma 6.5's stated
+set equality is literally false (both directions actually used are true
+and are proved), and the regular `C₁ ∧ C₂` case cites (IH2) where it
+must be (IH3).
+
+**Choice.** The `Classical.choice` in the development was never in the
+mathematics. Two sources: Mathlib's `Finset` union/erase/image are
+choice-tainted AT THE DEFINITION LEVEL (`Finset.instUnion`,
+`Finset.erase`, `Finset.image`, `Multiset.ndunion`), so any term
+mentioning them carries choice however proved — only `Finset.filter` is
+clean, and the `List` API is axiom-free at definition level (avoid
+`List.dedup`/`List.erase`, both classical); and the `tauto` tactic.
+Branch `frj-choicefree` (`734d49a`) converts `Basic`, `Calculus`,
+`Step`, `Model` to `List` and verifies the result — several theorems
+depend on NO axioms at all, the rest on `[propext]` or
+`[propext, Quot.sound]`. It does **not** build: `Extract.lean` has 16
+errors and `Sound`/`Complete`/`Minimal` are unconverted. It is a
+reference, not a base.
+
+**FRJ◯ restarted.** `FRJO/` is abandoned: `ExtractForces` is REFUTED
+for `worldOK` v3 by three kernel-checked cells (`4730e30`), the root
+cause being that its rule table was formalised from the in-repo
+paraphrase `docs/frj-lifting.md` rather than from the paper source.
+Matthew's instruction (2026-08-16): start afresh in a new branch and
+directory, import nothing from `FRJO/`, use the FRJ calculus, and make
+it effective and choice-free, following PLL's slime-free inductive-type
+templates. Branch **`frj-lax`** (cut from `frj-ipc`), directory
+**`FRJLax/`**. The full brief is `docs/frj-lax-handoff.md`: the two
+hard constraints (Type-valued and slime-free per
+`LaxLogic/PLLNDCore.lean`; choice-free per the findings above), the
+W0–W6 staging with exit criteria, the six observed failure modes, and
+three decisions explicitly reserved for Matthew — the syntax staging,
+the saturation half of the v4 zone repair, and every modal rule
+statement.
