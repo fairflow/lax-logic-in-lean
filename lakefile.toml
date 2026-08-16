@@ -36,6 +36,12 @@ name = "Rewrite"
 [[lean_lib]]
 name = "FRJO"
 
+# FRJ: a faithful formalisation of Fiorentini-Ferrari's forward refutation
+# calculus FRJ(G) for IPC (TOCL 21(3), 2020; arXiv:1804.06689).  Base case
+# only: no modality.  Independent of FRJO/ and of LaxLogic/.
+[[lean_lib]]
+name = "FRJ"
+
 
 
 [[lean_exe]]
