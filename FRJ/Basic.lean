@@ -574,6 +574,18 @@ theorem clo_pv {Γ : Finset Form} {p : String} (h : Clo Γ (.atom p)) :
   cases h with
   | base hC => exact hC
 
+/-- **(Cl6)** `Γ₁ ⊆ Cl(Γ₂)` implies `Cl(Γ₁) ⊆ Cl(Γ₂)`.  "This follows
+from (Cl3) and (Cl4)." -/
+theorem clo_trans {Γ Δ : Finset Form} (h : ∀ X ∈ Δ, Clo Γ X) :
+    ∀ {A : Form}, Clo Δ A → Clo Γ A := by
+  intro A hA
+  induction hA with
+  | base hC => exact h _ hC
+  | and _ _ ihX ihY => exact .and ihX ihY
+  | orR _ ih => exact .orR ih
+  | orL _ ih => exact .orL ih
+  | imp _ ih => exact .imp ih
+
 /-- **(Cl2)** `A ∈ Cl(Γ)` implies `A ∈ Cl(Γ ∩ Sf(A))`.  Consumed by the
 irregular `⊃∈` case of the soundness proof. -/
 theorem clo_sf {Γ : Finset Form} : ∀ {A : Form}, Clo Γ A → Clo (Γ ∩ sf A) A := by

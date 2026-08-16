@@ -57,6 +57,31 @@ theorem mem_restrict {X Υ : Finset Form} {A B : Form} :
 theorem restrict_subset {X Υ : Finset Form} : restrict X Υ ⊆ X :=
   Finset.filter_subset _ _
 
+/-! ## The conclusion contexts of the join rules
+
+Named so that the `↦` relation of Sec. 3.1 and the calculus cannot drift
+apart: both refer to these. -/
+
+/-- `Υ = {A₁, …, Aₙ}`, the right formulas of the join's premises. -/
+def upsilon {n : Nat} (rhs : Fin (n + 1) → Form) : Finset Form :=
+  Finset.image rhs Finset.univ
+
+/-- The conclusion context of `⋈^At`:  `Σ^at, Θ^at \ {F}, Σ^imp, Θ^imp`. -/
+def joinCtxAt {n : Nat} (stab th : Fin (n + 1) → Finset Form)
+    (rhs : Fin (n + 1) → Form) (F : Form) : Finset Form :=
+  unionAll (fun j => atPart (stab j)) ∪
+    (interAll (fun j => atPart (th j))).erase F ∪
+    unionAll (fun j => impPart (stab j)) ∪
+    restrict (interAll (fun j => impPart (th j))) (upsilon rhs)
+
+/-- The conclusion context of `⋈^∨`:  `Σ^at, Θ^at, Σ^imp, Θ^imp`. -/
+def joinCtxOr {n : Nat} (stab th : Fin (n + 1) → Finset Form)
+    (rhs : Fin (n + 1) → Form) : Finset Form :=
+  unionAll (fun j => atPart (stab j)) ∪
+    interAll (fun j => atPart (th j)) ∪
+    unionAll (fun j => impPart (stab j)) ∪
+    restrict (interAll (fun j => impPart (th j))) (upsilon rhs)
+
 /-! ## The calculus
 
 Two mutually inductive families, one per sequent form:
@@ -98,15 +123,10 @@ inductive FRJr (G : Form) : Finset Form → Form → Type
       (prem : ∀ j, FRJi G (stab j) (th j) (rhs j))
       (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j)
       (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        A ∈ Finset.image rhs Finset.univ)
+        A ∈ upsilon rhs)
       (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
       (hgoal : F ∈ sfR G) :
-      FRJr G
-        (unionAll (fun j => atPart (stab j)) ∪
-          (interAll (fun j => atPart (th j))).erase F ∪
-          unionAll (fun j => impPart (stab j)) ∪
-          restrict (interAll (fun j => impPart (th j))) (Finset.image rhs Finset.univ))
-        F
+      FRJr G (joinCtxAt stab th rhs F) F
   /-- `⋈^∨`: as `⋈^At`, but the conclusion's right formula is a
       `∨`-formula `C₁ ∨ C₂` with `{C₁,C₂} ⊆ Υ`, and `Θ^at` is kept whole. -/
   | joinOr {n : Nat} {stab th : Fin (n + 1) → Finset Form}
@@ -114,15 +134,10 @@ inductive FRJr (G : Form) : Finset Form → Form → Type
       (prem : ∀ j, FRJi G (stab j) (th j) (rhs j))
       (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ∪ th j)
       (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        A ∈ Finset.image rhs Finset.univ)
-      (hC : C₁ ∈ Finset.image rhs Finset.univ ∧ C₂ ∈ Finset.image rhs Finset.univ)
+        A ∈ upsilon rhs)
+      (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G) :
-      FRJr G
-        (unionAll (fun j => atPart (stab j)) ∪
-          interAll (fun j => atPart (th j)) ∪
-          unionAll (fun j => impPart (stab j)) ∪
-          restrict (interAll (fun j => impPart (th j))) (Finset.image rhs Finset.univ))
-        (.or C₁ C₂)
+      FRJr G (joinCtxOr stab th rhs) (.or C₁ C₂)
 
 /-- Derivations of irregular sequents `Σ ; Θ → C`. -/
 inductive FRJi (G : Form) : Finset Form → Finset Form → Form → Type
