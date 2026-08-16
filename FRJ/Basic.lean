@@ -108,6 +108,23 @@ def cap (l m : List Form) : List Form := l.filter (fun y => decide (y ∈ m))
 theorem cap_subset_cap {Γ m m' : List Form} (h : m ⊆ m') : cap Γ m ⊆ cap Γ m' :=
   fun _ hy => mem_cap.mpr ⟨(mem_cap.mp hy).1, h (mem_cap.mp hy).2⟩
 
+/-- Set difference (`Finset.sdiff`'s replacement). -/
+def sdiff (l m : List Form) : List Form := l.filter (fun y => decide (y ∉ m))
+
+@[simp] theorem mem_sdiff {l m : List Form} {y : Form} :
+    y ∈ sdiff l m ↔ (y ∈ l ∧ y ∉ m) := by
+  simp [sdiff, List.mem_filter]
+
+theorem sdiff_subset {l m : List Form} : sdiff l m ⊆ l :=
+  fun _ h => (mem_sdiff.mp h).1
+
+/-- A difference meets what it was taken against in nothing at all —
+literally the empty list, which is what the `⊃∈` side condition wants. -/
+theorem cap_sdiff_eq_nil {l m : List Form} : cap (sdiff l m) m = [] := by
+  refine List.eq_nil_iff_forall_not_mem.mpr (fun x hx => ?_)
+  obtain ⟨hx1, hx2⟩ := mem_cap.mp hx
+  exact (mem_sdiff.mp hx1).2 hx2
+
 
 /-! ## Kripke models
 

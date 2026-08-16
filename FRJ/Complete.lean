@@ -173,47 +173,60 @@ theorem ht_lt {K : Kripke} {a b : K.W} (hab : K.le a b) (hne : b ≠ a) :
     exact ⟨hab, hne⟩
   · simp
 
-/-- A minimal world above `α` at which `A` is forced and `B` is not.
-This is the paper's "without loss of generality" choice of `η`: no world
-strictly between `α` and `η` forces `A`. -/
-theorem exists_min_eta {K : Kripke} {a : K.W} {A B : Form}
-    (h : ¬ K.force a (.imp A B)) :
-    ∃ e : K.W, K.le a e ∧ K.force e A ∧ ¬ K.force e B ∧
-      ∀ d : K.W, K.le a d → K.le d e → d ≠ e → ¬ K.force d A := by
-  -- the candidates, enumerated
-  have hmem : ∀ e : K.W,
-      e ∈ K.elems.filter (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B))
-        ↔ (K.le a e ∧ K.force e A ∧ ¬ K.force e B) := by
-    intro e
-    simp [List.mem_filter, K.complete e]
-  -- `α ⊮ A ⊃ B` means the list is not empty; decidability of forcing makes
-  -- this constructive.
-  have hnil : K.elems.filter
-      (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B)) ≠ [] := by
-    intro hn
-    refine h ?_
-    rw [Kripke.force_imp]
-    intro b hab hbA
-    by_cases hbB : K.force b B
-    · exact hbB
-    · exact absurd ((hmem b).mpr ⟨hab, hbA, hbB⟩)
-        (by rw [hn]; exact List.not_mem_nil)
-  -- take one of maximal height: the paper's minimal `η`
-  obtain ⟨e, hesome⟩ : ∃ e, (K.elems.filter
-      (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B))).argmax
-        (fun x => ht K x) = some e := by
-    cases hopt : (K.elems.filter
-        (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B))).argmax
-          (fun x => ht K x) with
-    | none => exact absurd (List.argmax_eq_none.mp hopt) hnil
-    | some e => exact ⟨e, rfl⟩
-  obtain ⟨hae, heA, heB⟩ := (hmem e).mp (List.argmax_mem (Option.mem_def.mpr hesome))
-  refine ⟨e, hae, heA, heB, ?_⟩
-  intro d had hde hdne hdA
-  have hdB : ¬ K.force d B := fun hc => heB (K.force_mono hde hc)
-  have hle : ht K d ≤ ht K e :=
-    List.le_of_mem_argmax ((hmem d).mpr ⟨had, hdA, hdB⟩) (Option.mem_def.mpr hesome)
-  exact absurd hle (Nat.not_le.mpr (ht_lt hde hdne.symm))
+/-! ## The minimal `η`
+
+The paper's "without loss of generality" choice of a world `η ≥ α` with
+`η ⊩ A`, `η ⊮ B` and no world strictly between forcing `A`.  This has to
+be DATA: the derivation the completeness construction builds from it must
+compute, and extracting a witness from an existence proof is choice. -/
+
+/-- The candidate worlds. -/
+def etaCand (K : Kripke) (a : K.W) (A B : Form) : List K.W :=
+  K.elems.filter (fun x => decide (K.le a x ∧ K.force x A ∧ ¬ K.force x B))
+
+theorem mem_etaCand {K : Kripke} {a : K.W} {A B : Form} {e : K.W} :
+    e ∈ etaCand K a A B ↔ (K.le a e ∧ K.force e A ∧ ¬ K.force e B) := by
+  simp [etaCand, List.mem_filter, K.complete e]
+
+/-- `α ⊮ A ⊃ B` means there is a candidate.  Constructive, because
+forcing is decidable. -/
+theorem etaCand_ne_nil {K : Kripke} {a : K.W} {A B : Form}
+    (h : ¬ K.force a (.imp A B)) : etaCand K a A B ≠ [] := by
+  intro hn
+  refine h ?_
+  rw [Kripke.force_imp]
+  intro b hab hbA
+  by_cases hbB : K.force b B
+  · exact hbB
+  · exact absurd (mem_etaCand.mpr ⟨hab, hbA, hbB⟩) (by rw [hn]; exact List.not_mem_nil)
+
+/-- The paper's minimal `η`, as data. -/
+structure MinEta (K : Kripke) (a : K.W) (A B : Form) : Type where
+  e : K.W
+  le : K.le a e
+  fA : K.force e A
+  nfB : ¬ K.force e B
+  min : ∀ d : K.W, K.le a d → K.le d e → d ≠ e → ¬ K.force d A
+
+/-- Take a candidate of maximal height: no candidate lies strictly below
+it, which is the minimality the paper asks for. -/
+def minEta {K : Kripke} {a : K.W} {A B : Form}
+    (h : ¬ K.force a (.imp A B)) : MinEta K a A B :=
+  match hopt : (etaCand K a A B).argmax (fun x => ht K x) with
+  | none => absurd (List.argmax_eq_none.mp hopt) (etaCand_ne_nil h)
+  | some e =>
+      { e := e
+        le := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).1
+        fA := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).2.1
+        nfB := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).2.2
+        min := by
+          intro d had hde hdne hdA
+          have heB := (mem_etaCand.mp (List.argmax_mem (Option.mem_def.mpr hopt))).2.2
+          have hdB : ¬ K.force d B := fun hc => heB (K.force_mono hde hc)
+          have hle : ht K d ≤ ht K e :=
+            List.le_of_mem_argmax (mem_etaCand.mpr ⟨had, hdA, hdB⟩)
+              (Option.mem_def.mpr hopt)
+          exact absurd hle (Nat.not_le.mpr (ht_lt hde hdne.symm)) }
 
 
 end FRJ
