@@ -394,4 +394,30 @@ theorem atPart_union_impPart {G : Form} {Γ : Finset Form} {C : Form}
   · exact Finset.mem_union_right _
       (Finset.mem_filter.mpr ⟨hx, (Finset.mem_filter.mp hG).2⟩)
 
+/-! ## The `Ax^I` case of Lemma 3.9(ii), in label form
+
+"We have `σ = ∅ ; Ĝ_at \ {C}, Ĝ_imp → C`, with `C ∈ Prime`.  Let
+`Γ^at = V(σ_p)`.  Since `σ ↦ σ_p`, by Lemma 3.4(iii) and (Cl5) we get
+`Γ^at ⊆ Ĝ_at \ {C}`.  This implies `C ∉ Γ^at`, hence `σ_p ⊮ C`."
+
+The argument is entirely about labels, so it is available already: it
+needs Lemma 3.4(iii) and (Cl5) and nothing about the model.  Once
+`Mod(D)` is in place, `V(σ_p) = Lhs(σ_p) ∩ PV` turns this into
+`σ_p ⊮ C` directly. -/
+
+/-- For a variable `p`, no sequent reachable from the `Ax^I` conclusion
+for `p` has `p` among its left formulas. -/
+theorem axI_not_mem_lhs {G : Form} {p : String} {s : Sequent}
+    (h : StepsRfl G (.irr ∅ ((gAt G).erase (.atom p) ∪ gImp G) (.atom p)) s) :
+    Form.atom p ∉ s.lhs := by
+  intro hmem
+  have hclo := lhs_clo_of_steps h _ hmem
+  have hin := clo_pv hclo
+  simp only [Sequent.lhs_irr, Finset.empty_union, Finset.mem_union] at hin
+  rcases hin with hin | hin
+  · exact (Finset.notMem_erase _ _) hin
+  · have : (Form.atom p).isImp := (Finset.mem_filter.mp hin).2
+    exact this
+
+
 end FRJ
