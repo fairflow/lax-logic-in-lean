@@ -41,6 +41,32 @@ goal. The v2 proof is the worked template — its `thRestrict`-style
 zone (`(sfPlus G).filter (decide ∘ force r)`, classical) and its
 conjunct-by-conjunct discharge transfer directly.
 
+## CONSTRUCTIVITY REQUIREMENT (Matthew, 2026-08-16)
+
+**All of this must be constructive** — target pins `[propext,
+Quot.sound]`, no `Classical.choice`. The classical residue in the
+current pins is extraction laziness, never logic (PLL is decidable,
+the models finite), and it enters at exactly two points:
+
+1. `thRestrict`'s filter needs DECIDABLE forcing. Do not use
+   `Classical.propDecidable`: state `recon` over decidable model data
+   — `FinCM` (`forceB : Bool`, the natural choice, and where T3's
+   `certifies` already lives), or a Built variant with `Bool`-valued
+   `V₀`/`fal`. The zone is then a computation.
+2. The upstream chain (`exists_reduced_countermodel`,
+   `gen_of_reduced`) pins choice through four removable sources —
+   `Nonempty`-valued induction, `by_cases` on `Prop`-membership,
+   `Finite` for `Fintype`, `noncomputable ncard`. The
+   constructivisation spec was sent to the T1 session on 2026-08-14
+   (recorded in `docs/disproof-handoff.md`); over `FinCM` all four
+   evaporate. If that lands first, `completenessFRJO` inherits
+   choice-freedom; if not, prove `recon` choice-free anyway and the
+   conditional theorem's pin improves the day the chain does.
+
+The payoff is the effectivity goal itself: constructive completeness
+COMPUTES the FRJ◯ derivation and its certificate from the sequent,
+which is the "practical procedure" this whole campaign is for.
+
 ## Worked analysis — the proof to write
 
 State ONE theorem, structural induction on `Built` (Prop-elim is fine,
