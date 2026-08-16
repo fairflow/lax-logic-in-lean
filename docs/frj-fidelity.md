@@ -219,84 +219,35 @@ out as `joinCtxAt`/`joinCtxOr` and both the rules and `↦` refer to them,
 so the relation cannot drift from the calculus.  `occR_steps` supplies
 each upward step from the side conditions stored in the derivation.
 
-`wf` is **PROVED** (`wfR`/`wfI`, with `atPart_union_impPart`), so
-divergence 4's obligation is discharged: a derivable context contains
-only variables and `⊃`-formulas, and the joins' `atPart`/`impPart` split
-loses nothing.
+**SOUNDNESS IS PROVED** (2026-08-16).  `wf` (`wfR`/`wfI`, with
+`atPart_union_impPart`) discharges divergence 4's obligation, and:
 
-The `Ax^I` case of Lemma 3.9(ii) is **PROVED in label form**
-(`axI_not_mem_lhs`): its whole argument is "by Lemma 3.4(iii) and (Cl5),
-`Γ^at ⊆ Ĝ_at \\ {C}`, hence `C ∉ Γ^at`", which needs nothing about the
-model.  Once `Mod(D)` exists, `V(σ_p) = Lhs(σ_p) ∩ PV` turns it into
-`σ_p ⊮ C`.
+| Paper | Lean | Status |
+|---|---|---|
+| `Mod(D) = ⟨PS(D), ≤, ρ, V⟩` | `PreModel`, `preR`/`preI`, `modR` | done |
+| `V(σ) = Lhs(σ) ∩ PV` sound (needs 3.4(iii)+(Cl5)) | `preR_closed`, `toKripke` | PROVED |
+| the root of `Mod(d)` is `φ` of its root sequent | `preR_root_lbl` | PROVED |
+| components are the regular sub-derivations | `preI_spec` | PROVED |
+| forcing transfers to a component | `join_force_comp` | PROVED |
+| **Lemma 3.9(i)** | `lemma39R`, `lemma39I0` | **PROVED** |
+| **Lemma 3.9(ii)** | `lemma39I` | **PROVED** |
+| the `⋈^At` case, with (P1)(P2)(P3) | `joinAt_case` | PROVED |
+| the `⋈^∨` case | `joinOr_case` | PROVED |
+| **Theorem 3.10** `Mod(D)` is a countermodel for `G` | `modR_countermodel` | **PROVED** |
+| **Theorem 3.1** `⊢_FRJ(G) G ⟹ G ∉ IPL` | `soundness` | **PROVED** |
 
-### How Lemma 3.9 is to be stated (corrected 2026-08-16, later)
-
-An earlier note here said that structural recursion over sub-derivations
-"does not give the paper's induction".  **That was wrong, and is
-withdrawn.**  The paper is correct and its induction is structural.
-
-`h(σ)` decreases going UP the derivation, and every application of IH1
-in the proof is at an occurrence inside σ's own subtree:
-
-* in the join case (P2) the world `σ_p` satisfies `σ ≤ σ_p`, which by the
-  definition of the model order means `σ_p ↦* σ`, i.e. `σ_p` lies ABOVE
-  `σ` in `D` — hence inside σ's subtree, with `h(σ_p) < h(σ)`;
-* in (P3) IH1 is applied at the premises `σ_j`, with `σ_p := σ`;
-* the `∨`, `⊃∈` and `⊃∉` cases apply IH1 at premises, keeping the same
-  `σ_p`.
-
-What the paper leaves implicit is only that, having fixed `D` once and
-worked inside `Mod(D)` throughout, it may name a `σ_p` lying BELOW `σ`
-without ceremony.  A structural induction must quantify that `σ_p`
-explicitly — and the paper's statement (ii) already quantifies it.  So
-this is the ordinary generalisation of an induction hypothesis, not a
-gap in the mathematics.
-
-### The statement to prove
-
-Two mutually inductive statements, by structural induction on the
-derivation.
-
-**(R)** for `d : FRJr G Γ C`: *for every regular sequent `σ` occurring in
-`d`*, `φ(σ) ⊩ Lhs(σ)` and `φ(σ) ⊮ Rhs(σ)`, where `φ(σ)` is the p-sequent
-immediately above `σ` and forcing is taken in `Mod(d)`.
-
-  Note the quantification over occurrences: it is the paper's own, and it
-  is what supplies "every world of `Mod(d)` forces its own label" (take
-  `σ` a p-sequent, where `φ(σ) = σ`), which (P2) consumes.  This is the
-  crucial difference from the `PModel` mistake: there, that fact was a
-  FIELD of the structure — assumed; here it is part of the statement
-  being PROVED.
-
-**(I)** for `d : FRJi G St Th C`: for every model `K`, every world `w` of
-`K`, and every placement of `Mod(d)`'s worlds above `w` preserving
-forcing, if
-
-* `∀ X ∈ Lhs(w), Clo (St ∪ Th) X`  (Lemma 3.4(iii) at `w`, which is the
-  `σ ↦ σ_p` hypothesis in label form), and
-* `w ⊩ (St ∩ Sf⁻(C))`,
-
-then `w ⊮ C`.  Here `w` is the paper's `σ_p`, quantified.
-
-The placement hypothesis is discharged at every join by
-`addRoot_force_comp`, which is why that lemma was proved: a component of
-`addRoot` is upward closed, so forcing there is the same as forcing in
-the component model.
-
-Sub-obligations already available: Lemma 3.4 (all parts), `occR_steps`/
-`occI_steps`, `wf`, `clo_sf` (Cl2) for the `⊃∈` irregular case, the
-`Sf⁻` inclusions for the `∧`/`∨` cases, and `axI_not_mem_lhs` for the
-`Ax^I` case.  The join case remains the substantial one: (P1) is
-immediate from `V(σ) = Lhs(σ) ∩ PV`, and (P2)/(P3) need the secondary
-induction on `size H`.
-
-**OPEN**: the remaining cases
-of Lemma 3.9, Theorem 3.10, Theorem 3.1.  To state Lemma 3.9 as the
-paper states it — "for every sequent `σ` occurring in `D`" — the
-occurrences of `D` must be reified, since IH1 is used at p-sequents
-above `σ` rather than at immediate premises.  That reification is the
-next piece of work and must be done before the induction is attempted.
+Notes on the proof.  Lemma 3.9(i) is split: `lemma39R` gives it at the
+derivation's own root sequent, and its first component gives it at
+p-sequents ("every world forces its own label"), which is what (P2)
+consumes at worlds above the join.  In (ii), the world `σ_p` lies below
+`σ`, outside `d`, so it is quantified — as the paper's own statement
+already quantifies it — along with the ambient model; `RootAbove` is the
+placement of a contributed model's root above `σ_p`, which is all the
+`⊃∉` case needs.  The join case carries the paper's secondary induction
+on `size H`, proving (P2) and (P3) simultaneously: (P2) at `A_k ⊃ B`
+calls (P3) at `A_k`, and (P3) at `A_j` calls (P2) at the members of
+`Σ^⊃_j ∩ Sf⁻(A_j)`; strictness of `size K < size A_j` comes from
+`size_lt_of_mem_sfm`.
 
 ## §6 Completeness → `FRJ/Complete.lean` (TODO)
 

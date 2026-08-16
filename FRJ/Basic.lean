@@ -452,6 +452,50 @@ theorem sf_subset_sfm_impL {A B : Form} : sf A ⊆ sfm (.imp A B) := by
   · simp only [sf, Finset.mem_insert, Finset.mem_union]
     exact Or.inr (Or.inl hX)
 
+/-- A PROPER subformula is strictly smaller.  The join case's secondary
+induction on `size H` needs the strictness. -/
+theorem size_lt_of_mem_sfm : ∀ {A X : Form}, X ∈ sfm A → X.size < A.size := by
+  intro A
+  induction A with
+  | atom p => intro X h; simp [sfm, sf] at h
+  | bot => intro X h; simp [sfm, sf] at h
+  | and A B ihA ihB =>
+      intro X h
+      obtain ⟨hne, hmem⟩ := Finset.mem_erase.mp h
+      simp only [sf, Finset.mem_insert, Finset.mem_union] at hmem
+      rcases hmem with rfl | hmem | hmem
+      · exact absurd rfl hne
+      · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+      · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+  | or A B ihA ihB =>
+      intro X h
+      obtain ⟨hne, hmem⟩ := Finset.mem_erase.mp h
+      simp only [sf, Finset.mem_insert, Finset.mem_union] at hmem
+      rcases hmem with rfl | hmem | hmem
+      · exact absurd rfl hne
+      · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+      · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+  | imp A B ihA ihB =>
+      intro X h
+      obtain ⟨hne, hmem⟩ := Finset.mem_erase.mp h
+      simp only [sf, Finset.mem_insert, Finset.mem_union] at hmem
+      rcases hmem with rfl | hmem | hmem
+      · exact absurd rfl hne
+      · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+      · have := size_le_of_mem_sf hmem; simp only [Form.size]; omega
+
+theorem sfm_subset_sfm_impR {A B : Form} : sfm B ⊆ sfm (.imp A B) := by
+  intro X hX
+  obtain ⟨-, hX'⟩ := Finset.mem_erase.mp hX
+  refine Finset.mem_erase.mpr ⟨?_, ?_⟩
+  · intro hcon
+    have := size_le_of_mem_sf hX'
+    rw [hcon] at this
+    simp only [Form.size] at this
+    omega
+  · simp only [sf, Finset.mem_insert, Finset.mem_union]
+    exact Or.inr (Or.inr hX')
+
 theorem sfm_subset_sfm_and₁ {A B : Form} : sfm A ⊆ sfm (.and A B) := by
   intro X hX
   obtain ⟨-, hX'⟩ := Finset.mem_erase.mp hX

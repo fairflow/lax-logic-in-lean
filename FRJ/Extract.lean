@@ -396,4 +396,43 @@ def modR {G : Form} {Γ : Finset Form} {C : Form} (d : FRJr G Γ C) : Kripke :=
     (w v : (preR d).W) : (modR d).le w v ↔ (preR d).le w v := Iff.rfl
 
 
+/-! ## Forcing transfers to a component of a join
+
+A component of `PreModel.join` is upward closed, so no formula changes
+truth value there.  (Forcing depends only on the pre-model's order and
+labels, not on which proof of `ClosedLbl` is used to package it, so the
+two packagings may be chosen independently.) -/
+
+theorem join_force_comp {ι : Type} [Finite ι] {Γ₀ : Finset Form}
+    {Ms : ι → PreModel} (h : ClosedLbl (PreModel.join Γ₀ Ms)) {i : ι}
+    (h' : ClosedLbl (Ms i)) :
+    ∀ (A : Form) (a : (Ms i).W),
+      ((PreModel.join Γ₀ Ms).toKripke h).force (some ⟨i, a⟩) A ↔
+        ((Ms i).toKripke h').force a A := by
+  intro A
+  induction A with
+  | atom p => intro a; exact Iff.rfl
+  | bot => intro a; exact Iff.rfl
+  | and A B ihA ihB => intro a; simp only [Kripke.force_and, ihA, ihB]
+  | or A B ihA ihB => intro a; simp only [Kripke.force_or, ihA, ihB]
+  | imp A B ihA ihB =>
+      intro a
+      simp only [Kripke.force_imp]
+      constructor
+      · intro hf b hab hA
+        exact (ihB b).mp (hf (some ⟨i, b⟩) (.comp hab) ((ihA b).mpr hA))
+      · intro hf y hy hA
+        obtain ⟨b, hab, hy'⟩ := PreModel.join_le_comp (Γ₀ := Γ₀) (Ms := Ms) hy
+        rw [hy'] at hA ⊢
+        exact (ihB b).mpr (hf b hab ((ihA b).mp hA))
+
+/-- The paper's `σ_p ≤ φ(σ₁)` placement, in the only form the soundness
+proof uses it: the ROOT of a contributed model sits above `w`, with the
+same formulas forced there. -/
+def RootAbove (P : PreModel) (hP : ClosedLbl P) (w : P.W)
+    (Q : PreModel) (hQ : ClosedLbl Q) : Prop :=
+  ∃ v : P.W, P.le w v ∧
+    ∀ A : Form, (P.toKripke hP).force v A ↔ (Q.toKripke hQ).force Q.root A
+
+
 end FRJ
