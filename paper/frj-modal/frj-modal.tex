@@ -894,14 +894,117 @@ no data the calculus can consume. It is the exact statement of
 Theorem~\ref{thm:incomplete}.
 
 %% ==================================================================
+\section{The promise join: soundness for the full modal calculus}
+\label{sec:promise}
+
+The uniform choices of \S\ref{sec:w3} were provisional, and their
+retirement was forced by a machine-checked observation: each uniform
+choice of the modal relation realises a \emph{nucleus} --- equality gives
+the identity, the order gives double negation
+(\texttt{force\_circ\_iff\_nn}, no axioms), the fallible top gives the
+trivialisation --- and each has a blind spot that is a theorem about the
+construction, not a missing rule.  The general calculus must let the
+derivation \emph{declare} the modal successors of each world it creates.
+That is the promise join, and this section records its soundness,
+machine-checked in full.
+
+Two constraints from the review that preceded the build: the framework is
+\textsc{pll}-general from the outset --- the promise is a \emph{family}
+of premises of arbitrary finite arity, because full \textsc{pll} needs
+unbounded arity while confluent reduced frames need only one --- and
+every device sticks to the source paper's own idiom, with the two
+genuinely new devices flagged as ours and tied to the semantic facts that
+force them.  The fidelity map is in the repository's fidelity document;
+its headlines appear below.
+
+\subsection{The atomic change}
+
+Five parts, landed as one commit, each unsound without the others.  The
+universe gains its third zone, the modal left subformulas, for the same
+reason the paper's universe has its implicational zone: a world can force
+$\bigcirc A$ without forcing $A$, so modal formulas are determining data.
+The closure gains the modal clause, sound by the unit.  Contexts split
+three ways.  The join rules split into three families.  And the
+extraction carries the modal relation and the fallible set as
+\emph{data}, declared by the derivation.
+
+\subsection{The rules}
+
+The barren joins are the paper's two, with one new side condition: the
+stable modal zone is empty --- a join that keeps no modal part must not
+have committed modal formulas, else condition (\dag) of the key lemma
+breaks.  The \emph{promise} joins take, besides the irregular premises, a
+family of regular premises $\Delta_i \Rightarrow D_i$ whose worlds become
+the modal successors of the new world, subject to
+\begin{itemize}
+\item[(J5)] every stable modal formula's body lands in the closure of
+  \emph{some} promise context (different formulas may use different
+  witnesses); for the second zone this is a \emph{restriction}, mirroring
+  the paper's restriction of the second implicational zone;
+\item[(J7)] the whole conclusion context lands in the closure of
+  \emph{every} promise context --- each promise world lies modally, hence
+  intuitionistically, above the new world.  This is the source paper's
+  step-relation discipline extended to the promise edge, exactly as the
+  negative implication rule supplies its own containment condition.
+\end{itemize}
+The \emph{fallible} joins declare a fallible modal successor instead: it
+forces everything, so the whole modal zone is kept with no condition, and
+it refutes nothing, so it carries no premise --- the one world of the
+extracted model that is not the world of a p-sequent.  Every other world
+still is one: the paper's identification of worlds with p-sequents
+survives the extension intact.
+
+\subsection{The pledge}
+
+The modal introduction rule is sound at a world exactly when the world's
+\emph{whole modal cone} refutes the body.  The derivation records this as
+a tag --- barren, or pledged to a single formula, or blocked --- with the
+pledge propagating down the promise chain: a join is pledged to $D$ when
+every promise has goal $D$ \emph{and} every promise's own tag continues
+the pledge.  The recursion is the point: the first draft gated the rule
+on the root's immediate promise only, and the cone \emph{beyond} the
+promise root broke it.  The semantic content of the tag is the
+\texttt{mfal} component of the repository's own canonical model for the
+logic, whose worlds are triples of a theory, a falsified set, and a set
+\emph{pledged false at every modal successor}, with the modal relation
+inclusion on both coordinates.  The tag is that mechanism restricted to a
+single pledge, and the pledge theorem --- mutually recursive with the key
+soundness lemma --- proves it honoured.
+
+\subsection{What is now machine-checked}
+
+Soundness: every derivation's extracted model is a countermodel, so
+provability refutes validity in \emph{all} constraint models.  The two
+standing cells are now settled \emph{inside} the calculus: $\neg\bigcirc\bot$
+and $\bigcirc p \supset p$ are both provable --- the irregular axiom
+feeds a fallible join, whose context keeps the modal formula, and the
+implication rule discharges it from the closure --- while the register of
+\S\ref{sec:w3} survives as the fact that \emph{no} infallible extraction
+could reach them.  As a bonus, deleting the fallible worlds of a model
+preserves modality-free forcing (the failure witnesses of implications
+are never fallible), which closes open item (4) of \S\ref{sec:w3} and
+restores both biconditionals for modality-free goals.
+
+\subsection{What remains open}
+
+Completeness with modal goals: the determining part does not yet carry
+the modal zone, the modal-goal case of the construction is unwritten, and
+the multiplicity question --- promise families against pledge sets
+against branching in the order --- is deliberately undecided until the
+authors' own S4 model-generation paper (J.\ Logic and Computation 31(3),
+2021) has been read at source; it is paywalled, and obtaining it is the
+one external action this stage requests.
+
+%% ==================================================================
 \section{Status}
 \label{sec:status}
 
 \textsc{Proved}, sorry-free and pinned: everything in
 \S\S\ref{sec:prelim}--\ref{sec:choice}, for modality-free goals; the
 extension of \S\ref{sec:w1}; the five semantic obligations and three
-screens of \S\ref{sec:rules}; and all of \S\ref{sec:w3}, including
-soundness for a calculus that now contains a modal rule.
+screens of \S\ref{sec:rules}; all of \S\ref{sec:w3}; and the
+\emph{soundness of the full promise-join calculus} of
+\S\ref{sec:promise}, fallible joins included.
 
 \textsc{Open}, and unchanged by \S\ref{sec:w3}:
 
