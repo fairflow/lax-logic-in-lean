@@ -31,6 +31,23 @@ structure MRWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
   wfal : ¬ K.Fal wld
   cov : lamStar K wld G ⊆ ctx
 
+/-- The FREE-grade regular wit: as `MRWit` but with no tag certificate.
+Consumed where any tag serves (`impNotIn` premises, the root).  The
+fallible joins produce these unconditionally at circ-carrying worlds. -/
+structure FRWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
+  t : Tag
+  ctx : List Form
+  der : FRJr G t ctx C
+  wld : K.W
+  wle : K.le a wld
+  wfal : ¬ K.Fal wld
+  cov : lamStar K wld G ⊆ ctx
+
+/-- Certified wits weaken to free ones. -/
+def MRWit.toFree {K : Kripke} {G : Form} {a : K.W} {C : Form}
+    (w : MRWit K G a C) : FRWit K G a C :=
+  ⟨w.t, w.ctx, w.der, w.wld, w.wle, w.wfal, w.cov⟩
+
 /-- **The demand closure.**  Every refuted right-signature formula at
 every world of `K` has both an irregular and a (tag-admissible) regular
 wit.  `¬ force a C` already yields `¬ Fal a` (a fallible world forces
@@ -173,7 +190,7 @@ def metI_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
     (hC : Form.imp A B ∈ sfR G) (hnf : ¬ K.force a (.imp A B))
     (supI : K.force a A → ¬ K.force a B → IrrWit K G a B)
     (supR : ∀ e : K.W, K.le a e → e ≠ a → K.force e A → ¬ K.force e B →
-      MRWit K G e B) :
+      FRWit K G e B) :
     IrrWit K G a (.imp A B) := by
   obtain ⟨hA, hB⟩ := sfR_imp hC
   have hfa : ¬ K.Fal a := fun hf => hnf (K.fal_force _ hf)
@@ -666,6 +683,164 @@ def metR_orP {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
               List.mem_filter.mpr ⟨hallTh j, rfl⟩), pf.hbody Y hX⟩
 
 
+/-- Free-grade `∧`-threading (no tag lift needed). -/
+def metR_andF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+    (hC : Form.and C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.and C₁ C₂))
+    (sup₁ : ¬ K.force a C₁ → FRWit K G a C₁)
+    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → FRWit K G a C₂) :
+    FRWit K G a (.and C₁ C₂) :=
+  if h1 : K.force a C₁ then
+    let w := sup₂ h1 (fun hc => hnf ⟨h1, hc⟩)
+    ⟨w.t, w.ctx, .andR2 w.der hC, w.wld, w.wle, w.wfal, w.cov⟩
+  else
+    let w := sup₁ h1
+    ⟨w.t, w.ctx, .andR1 w.der hC, w.wld, w.wle, w.wfal, w.cov⟩
+
+/-- Free-grade `⊃`-threading. -/
+def metR_impF {K : Kripke} {G : Form} {a : K.W} {A B : Form}
+    (hC : Form.imp A B ∈ sfR G) (hnf : ¬ K.force a (.imp A B))
+    (sup : ∀ e : K.W, K.le a e → K.force e A → ¬ K.force e B →
+      FRWit K G e B) :
+    FRWit K G a (.imp A B) :=
+  let m := minEta hnf
+  let w := sup m.e m.le m.fA m.nfB
+  let hAclo : Clo w.ctx A :=
+    clo_mono w.cov (mem_clo_lamStar w.wfal (sfR_imp hC).1 (K.force_mono w.wle m.fA))
+  ⟨w.t, w.ctx, .impIn w.der hAclo hC, w.wld, K.le_trans m.le w.wle, w.wfal, w.cov⟩
+
+/-- The prime regular demand at a circ-carrying world, FREE grade: the
+FALLIBLE `⋈^At,⊥`, whose conclusion keeps the whole modal zone with no
+side condition — no pledge needed. -/
+def metR_primeF {K : Kripke} {G : Form} {a : K.W} {C : Form}
+    (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
+    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
+    FRWit K G a C := by
+  let U := C :: upsPrime K a G
+  let E := enumOf U (by simp [U])
+  let f := E.f
+  have hfmem : ∀ j, f j ∈ U := fun j =>
+    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  let wit : ∀ j, IrrWit K G a (f j) := fun j =>
+    if h1 : f j = C then by rw [h1]; exact ih C hC hnf
+    else
+      have hm : f j ∈ upsPrime K a G := by
+        rcases List.mem_cons.mp (hfmem j) with h | h
+        · exact absurd h h1
+        · exact h
+      ih (f j) (upsPrime_spec hm).1 (upsPrime_spec hm).2
+  let stab := fun j => (wit j).stab
+  let th := fun j => (wit j).th
+  refine ⟨.blocked, joinCtxAtF stab th f C, ?_, a, K.le_refl a,
+    fun hf => hnf (K.fal_force _ hf), ?_⟩
+  · refine .joinAtF (fun j => (wit j).der)
+      (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
+      (fun A B hmem => ?_) hCp (fun hmem => ?_) hC
+    · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
+      exact (E.spec A).mpr (List.mem_cons_of_mem _
+        (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
+    · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
+      exact not_mem_lamStar_of_not_force hnf ((wit i).sub (List.mem_filter.mp hi).1)
+  · intro X hX
+    have hXG := lamStar_subset_gHat hX
+    simp only [gHat, List.mem_append] at hXG
+    by_cases hin : ∃ j, X ∈ stab j
+    · obtain ⟨j, hj⟩ := hin
+      rcases hXG with (h | h) | h
+      · exact List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+          (List.mem_append_left _ (mem_unionAll.mpr
+            ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))))
+      · exact List.mem_append_left _ (List.mem_append_left _ (List.mem_append_right _
+          (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
+      · exact List.mem_append_right _ (List.mem_append_left _ (mem_unionAll.mpr
+          ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
+    · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
+      have hallTh : ∀ j, X ∈ th j :=
+        fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
+      rcases hXG with (h | h) | h
+      · refine List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+          (List.mem_append_right _ (mem_rm.mpr
+            ⟨fun hc => not_mem_lamStar_of_not_force hnf (hc ▸ hX), ?_⟩))))
+        exact mem_interAll.mpr (fun j =>
+          List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩)
+      · refine List.mem_append_left _ (List.mem_append_right _ ?_)
+        have himp : X.isImp := (List.mem_filter.mp h).2
+        match X, himp with
+        | .imp A B, _ =>
+            refine mem_restrict.mpr ⟨mem_interAll.mpr (fun j =>
+              List.mem_filter.mpr ⟨hallTh j, rfl⟩), ?_⟩
+            exact (E.spec A).mpr (List.mem_cons_of_mem _ (mem_upsPrime hX))
+      · exact List.mem_append_right _ (List.mem_append_right _
+          (mem_interAll.mpr (fun j =>
+            List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩)))
+
+/-- The `∨`-regular demand at a circ-carrying world, FREE grade: the
+fallible `⋈^∨,⊥`. -/
+def metR_orF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+    (hC : Form.or C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.or C₁ C₂))
+    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
+    FRWit K G a (.or C₁ C₂) := by
+  have hn1 : ¬ K.force a C₁ := fun hc => hnf (Or.inl hc)
+  have hn2 : ¬ K.force a C₂ := fun hc => hnf (Or.inr hc)
+  let U := C₁ :: C₂ :: upsPrime K a G
+  let E := enumOf U (by simp [U])
+  let f := E.f
+  have hfmem : ∀ j, f j ∈ U := fun j =>
+    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  let wit : ∀ j, IrrWit K G a (f j) := fun j =>
+    if h1 : f j = C₁ then by rw [h1]; exact ih C₁ (sfR_or hC).1 hn1
+    else if h2 : f j = C₂ then by rw [h2]; exact ih C₂ (sfR_or hC).2 hn2
+    else
+      have hm : f j ∈ upsPrime K a G := by
+        rcases List.mem_cons.mp (hfmem j) with h | h
+        · exact absurd h h1
+        · rcases List.mem_cons.mp h with h' | h'
+          · exact absurd h' h2
+          · exact h'
+      ih (f j) (upsPrime_spec hm).1 (upsPrime_spec hm).2
+  let stab := fun j => (wit j).stab
+  let th := fun j => (wit j).th
+  refine ⟨.blocked, joinCtxOrF stab th f, ?_, a, K.le_refl a,
+    fun hf => hnf (K.fal_force _ hf), ?_⟩
+  · refine .joinOrF (fun j => (wit j).der)
+      (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
+      (fun A B hmem => ?_) ⟨?_, ?_⟩ hC
+    · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
+      exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+        (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
+    · exact (E.spec C₁).mpr List.mem_cons_self
+    · exact (E.spec C₂).mpr (List.mem_cons_of_mem _ List.mem_cons_self)
+  · intro X hX
+    have hXG := lamStar_subset_gHat hX
+    simp only [gHat, List.mem_append] at hXG
+    by_cases hin : ∃ j, X ∈ stab j
+    · obtain ⟨j, hj⟩ := hin
+      rcases hXG with (h | h) | h
+      · exact List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+          (List.mem_append_left _ (mem_unionAll.mpr
+            ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))))
+      · exact List.mem_append_left _ (List.mem_append_left _ (List.mem_append_right _
+          (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
+      · exact List.mem_append_right _ (List.mem_append_left _ (mem_unionAll.mpr
+          ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
+    · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
+      have hallTh : ∀ j, X ∈ th j :=
+        fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
+      rcases hXG with (h | h) | h
+      · exact List.mem_append_left _ (List.mem_append_left _ (List.mem_append_left _
+          (List.mem_append_right _ (mem_interAll.mpr (fun j =>
+            List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩)))))
+      · refine List.mem_append_left _ (List.mem_append_right _ ?_)
+        have himp : X.isImp := (List.mem_filter.mp h).2
+        match X, himp with
+        | .imp A B, _ =>
+            refine mem_restrict.mpr ⟨mem_interAll.mpr (fun j =>
+              List.mem_filter.mpr ⟨hallTh j, rfl⟩), ?_⟩
+            exact (E.spec A).mpr (List.mem_cons_of_mem _
+              (List.mem_cons_of_mem _ (mem_upsPrime hX)))
+      · exact List.mem_append_right _ (List.mem_append_right _
+          (mem_interAll.mpr (fun j =>
+            List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩)))
+
 /-! ## The gluing (slice 3)
 
 The visit that assembles the builders.  Measure `(ht, t, size)` — the
@@ -762,7 +937,8 @@ def CircSupply (K : Kripke) (G : Form) : Type :=
 def SatStmt (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
   match t with
   | 0 => IrrWit K G a C
-  | _ + 1 => MRWit K G a C
+  | 1 => MRWit K G a C
+  | _ + 2 => FRWit K G a C
 
 /-- **The visit.**  Well-founded on `(ht, t, size)`; total given the two
 named conditions (`hloc`: `Λ*` circ-free at every world, so the barren
@@ -786,7 +962,7 @@ def visit (K : Kripke) (G : Form)
   | 0, .imp A B =>
       exact metI_imp hC hnf
         (fun _ hB => visit K G psup hsup a 0 B (sfR_imp hC).2 hB)
-        (fun e _ hne _ hB => visit K G psup hsup e 1 B (sfR_imp hC).2 hB)
+        (fun e _ hne _ hB => visit K G psup hsup e 2 B (sfR_imp hC).2 hB)
   | 0, .circ Z =>
       have hnfZ : ¬ K.force a Z := fun hf => hnf (fun b hab =>
         ⟨b, K.rm_refl b, K.force_mono hab hf⟩)
@@ -795,34 +971,61 @@ def visit (K : Kripke) (G : Form)
       · exact hsup a Z hC hnf (mr.sole hea)
       · exact metI_circ hC
           ((visit K G psup hsup mr.e 1 Z (sfR_circ hC) mr.nfZ).weaken mr.le)
-  | n + 1, .atom p =>
+  | 1, .atom p =>
       by_cases hloc : circPart (lamStar K a G) = []
       · exact metR_prime hloc rfl hC hnf
           (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
       · exact metR_primeP (psup a _ hC hnf hloc) rfl hC hnf
           (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
-  | n + 1, .bot =>
+  | 1, .bot =>
       by_cases hloc : circPart (lamStar K a G) = []
       · exact metR_prime hloc rfl hC hnf
           (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
       · exact metR_primeP (psup a _ hC hnf hloc) rfl hC hnf
           (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
-  | n + 1, .and C₁ C₂ =>
+  | 1, .and C₁ C₂ =>
       exact metR_and hC hnf
-        (fun h1 => visit K G psup hsup a (n + 1) C₁ (sfR_and hC).1 h1)
-        (fun _ h2 => visit K G psup hsup a (n + 1) C₂ (sfR_and hC).2 h2)
-  | n + 1, .or C₁ C₂ =>
+        (fun h1 => visit K G psup hsup a 1 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visit K G psup hsup a 1 C₂ (sfR_and hC).2 h2)
+  | 1, .or C₁ C₂ =>
       by_cases hloc : circPart (lamStar K a G) = []
       · exact metR_or hloc hC hnf
           (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
       · exact metR_orP (psup a _ hC hnf hloc) hC hnf
           (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
-  | n + 1, .imp A B =>
+  | 1, .imp A B =>
       exact metR_imp hC hnf
-        (fun e hle _ hB => visit K G psup hsup e (n + 1) B (sfR_imp hC).2 hB)
-  | n + 1, .circ Z =>
+        (fun e hle _ hB => visit K G psup hsup e 1 B (sfR_imp hC).2 hB)
+  | 1, .circ Z =>
       exact metR_circ hC hnf
-        (fun e hle hZ => visit K G psup hsup e (n + 1) Z (sfR_circ hC) hZ)
+        (fun e hle hZ => visit K G psup hsup e 1 Z (sfR_circ hC) hZ)
+  | n + 2, .atom p =>
+      by_cases hloc : circPart (lamStar K a G) = []
+      · exact (metR_prime hloc rfl hC hnf
+          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)).toFree
+      · exact metR_primeF rfl hC hnf
+          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+  | n + 2, .bot =>
+      by_cases hloc : circPart (lamStar K a G) = []
+      · exact (metR_prime hloc rfl hC hnf
+          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)).toFree
+      · exact metR_primeF rfl hC hnf
+          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+  | n + 2, .and C₁ C₂ =>
+      exact metR_andF hC hnf
+        (fun h1 => visit K G psup hsup a (n + 2) C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visit K G psup hsup a (n + 2) C₂ (sfR_and hC).2 h2)
+  | n + 2, .or C₁ C₂ =>
+      by_cases hloc : circPart (lamStar K a G) = []
+      · exact (metR_or hloc hC hnf
+          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)).toFree
+      · exact metR_orF hC hnf
+          (fun A hA hnA => visit K G psup hsup a 0 A hA hnA)
+  | n + 2, .imp A B =>
+      exact metR_impF hC hnf
+        (fun e hle _ hB => visit K G psup hsup e (n + 2) B (sfR_imp hC).2 hB)
+  | n + 2, .circ Z =>
+      exact (visit K G psup hsup a 1 (.circ Z) hC hnf).toFree
 termination_by (ht K a, t, C.size)
 decreasing_by
   all_goals

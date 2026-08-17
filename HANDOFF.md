@@ -1,5 +1,17 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (continuation 2) — BUILD (β1) LANDED: graded visit
+
+FRWit + free threading + fallible joins (metR_primeF/metR_orF,
+unconditional at circ-carrying worlds); SatStmt t=2; supR takes free
+wits; free-◯ routes through certified.  All green, choice-free.
+PledgeSupply now exercised only on certified chains.  NEXT ((β2)): the
+transported-cov refinement — metI_circ needs only the DEMANDING
+world's Λ* through the row; anchor-Λ*-cov is over-specification and
+contains the one provably-unsatisfiable pledge instance (◯p ∈ Λ*_w at
+body-p anchors); with transported cov the pledged retention ranges
+over b-forced circs only.  docs §13.
+
 ## 2026-08-17 (close of window) — graded-demand refinement recorded
 
 tOK is consumed ONLY by ◯-feeding demands: AllMet can be graded

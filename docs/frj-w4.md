@@ -805,3 +805,40 @@ fallible-join builders (`metR_primeF`/`metR_orF` — unconditional,
 mechanical); (β2) the pledged-side semantic analysis on the sharpened
 question; (β3) `CircSupply` member-wise discharge (four routes + the
 self-destruction argument).
+
+## 13. Build (β1) LANDED: the graded visit (2026-08-17, continuation 2)
+
+`FRWit` (tag-free regular wit), `MRWit.toFree`, free-grade threading
+(`metR_andF`/`metR_impF`), and the FALLIBLE join builders
+(`metR_primeF`/`metR_orF` — `⋈^At,⊥`/`⋈^∨,⊥`, whose conclusions keep
+the whole modal zone with no side condition).  `SatStmt` gains grade
+`t = 2` (free); the `⊃∉`-suppliers (`metI_imp.supR`) take free wits
+(`impNotIn` accepts any tag); free-grade `◯`-demands route through the
+certified layer (`t`-drop).  Measure `(ht, t, |C|)` with
+`t ∈ {0,1,2}`; all edges legal; whole chain pins
+`[propext, Quot.sound]`.
+
+Consequence: at circ-carrying worlds the FREE grade discharges
+unconditionally (fallible joins), so `PledgeSupply` is exercised only
+along certified chains — the descents of ◯-bodies at minRef anchors.
+
+### The (β2) interface refinement (analysed, next to implement)
+
+`metI_circ` uses the anchor wit's `cov` ONLY to transport `Λ*_b` (the
+DEMANDING world) into the row's `Clo`; requiring `Λ*_w ⊆ ctx` at the
+anchor `w` is over-specification.  This matters: at an anchor `w` for
+body `p` with `◯p ∈ Λ*_w`, full-`Λ*_w` coverage would demand retaining
+`◯p` in a `p`-refuting row, whose promise components can never satisfy
+hJ5 for the body `p` (`Clo`-members are forced at the components'
+realisers, which refute `p`) — an unsatisfiable pledge.  But the
+transport of `Λ*_b` never needs that retention: `b ⊮ ◯p` keeps `◯p`
+out of `Λ*_b`; positive positions of `Λ*_b`-members are `b`-forced and
+persist to `w`, so `mem_clo_lamStar` at `w` follows `b`-forced paths,
+and the circ-bases it uses are `b`-forced `◯Y`s — never the demand's
+own body.  Implementation: a transported-cov certified wit (cov
+relative to the demanding world), with the visit's certified layer
+parameterised by the demand origin; the pledged joins then retain only
+the transported zone, and the `hbody`-instances range over `b`-forced
+circ-bodies.  This removes the one PROVABLY-unsatisfiable
+`PledgeSupply` instance and is the right statement of the certified
+demand for the member-wise discharge.
