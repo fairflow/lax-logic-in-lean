@@ -111,7 +111,7 @@ theorem joinCtxAtP_imp_head {n k : Nat} {stab th : Fin (n + 1) → List Form}
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
       A ∈ upsilon rhs)
     (h : Form.imp A B ∈ joinCtxAtP stab th rhs F Δs) : A ∈ upsilon rhs := by
-  rcases List.mem_append.mp h with h | h
+  rcases List.mem_append.mp (restrictP_subset h) with h | h
   · exact joinCtxAt_imp_head hJ2 h
   · exact absurd h imp_not_mem_joinCtxCircP
 
@@ -129,7 +129,7 @@ theorem joinCtxOrP_imp_head {n k : Nat} {stab th : Fin (n + 1) → List Form}
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
       A ∈ upsilon rhs)
     (h : Form.imp A B ∈ joinCtxOrP stab th rhs Δs) : A ∈ upsilon rhs := by
-  rcases List.mem_append.mp h with h | h
+  rcases List.mem_append.mp (restrictP_subset h) with h | h
   · exact joinCtxOr_imp_head hJ2 h
   · exact absurd h imp_not_mem_joinCtxCircP
 
@@ -186,8 +186,9 @@ modal zone (`Σ^◯`). -/
 theorem stab_mem_joinCtxAtP {G : Form} {n k : Nat}
     {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form} {F : Form}
     {Δs : Fin (k + 1) → List Form} {j : Fin (n + 1)} {K : Form}
-    (hK : K ∈ stab j) (hKG : K ∈ gHat G) :
+    (hK : K ∈ stab j) (hKG : K ∈ gHat G) (hcl : ∀ i, Clo (Δs i) K) :
     K ∈ joinCtxAtP stab th rhs F Δs := by
+  refine mem_restrictP.mpr ⟨?_, hcl⟩
   simp only [gHat, List.mem_append] at hKG
   rcases hKG with (hKG | hKG) | hKG
   · exact List.mem_append_left _ (by
@@ -222,8 +223,9 @@ theorem stab_mem_joinCtxAtF {G : Form} {n : Nat}
 theorem stab_mem_joinCtxOrP {G : Form} {n k : Nat}
     {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
     {Δs : Fin (k + 1) → List Form} {j : Fin (n + 1)} {K : Form}
-    (hK : K ∈ stab j) (hKG : K ∈ gHat G) :
+    (hK : K ∈ stab j) (hKG : K ∈ gHat G) (hcl : ∀ i, Clo (Δs i) K) :
     K ∈ joinCtxOrP stab th rhs Δs := by
+  refine mem_restrictP.mpr ⟨?_, hcl⟩
   simp only [gHat, List.mem_append] at hKG
   rcases hKG with (hKG | hKG) | hKG
   · exact List.mem_append_left _ (by
@@ -294,7 +296,7 @@ theorem joinCtxAtP_circ_body {n k : Nat} {stab th : Fin (n + 1) → List Form}
     (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
       ∃ i, Clo (Δs i) Y)
     (h : Form.circ Y ∈ joinCtxAtP stab th rhs F Δs) : ∃ i, Clo (Δs i) Y := by
-  rcases List.mem_append.mp h with h | h
+  rcases List.mem_append.mp (restrictP_subset h) with h | h
   · exact absurd h circ_not_mem_joinCtxAt
   · rcases List.mem_append.mp h with h | h
     · exact hJ5 Y h
@@ -305,11 +307,34 @@ theorem joinCtxOrP_circ_body {n k : Nat} {stab th : Fin (n + 1) → List Form}
     (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
       ∃ i, Clo (Δs i) Y)
     (h : Form.circ Y ∈ joinCtxOrP stab th rhs Δs) : ∃ i, Clo (Δs i) Y := by
-  rcases List.mem_append.mp h with h | h
+  rcases List.mem_append.mp (restrictP_subset h) with h | h
   · exact absurd h circ_not_mem_joinCtxOr
   · rcases List.mem_append.mp h with h | h
     · exact hJ5 Y h
     · exact (mem_restrictC.mp h).2
+
+/-- **The chain certificate refutes what it covers.**  Over any set `S` of
+worlds that is `Rm`-forward-closed, hereditarily refutes `W`, and forces
+the closure of `Γ`, every member refutes every `Z` with `Covers Γ W Z`:
+`◯`-iterates through the sub-cone, conjunctions through the refuted
+conjunct, implications through the forced antecedent. -/
+theorem covers_refutes {K : Kripke} {Γ : List Form} {W Z : Form}
+    (hcov : Covers Γ W Z) (S : K.W → Prop)
+    (hfwd : ∀ x, S x → ∀ y, K.Rm x y → S y)
+    (hW : ∀ x, S x → ¬ K.force x W)
+    (hΓ : ∀ x, S x → ∀ A : Form, Clo Γ A → K.force x A) :
+    ∀ u, S u → ¬ K.force u Z := by
+  induction hcov with
+  | refl => exact fun u hu => hW u hu
+  | circ _ ih =>
+      intro u hu hf
+      obtain ⟨y, hRy, hy⟩ := hf u (K.le_refl u)
+      exact ih y (hfwd u hu y hRy) hy
+  | andL _ ih => exact fun u hu hf => ih u hu hf.1
+  | andR _ ih => exact fun u hu hf => ih u hu hf.2
+  | imp _ hA ih =>
+      intro u hu hf
+      exact ih u hu (hf u (K.le_refl u) (hΓ u hu _ hA))
 
 theorem joinAt_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form}
@@ -572,9 +597,9 @@ theorem joinAtP_case {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form
       A ∈ upsilon rhs)
     (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
       ∃ i, Clo (Δs i) Y)
-    (hJ7 : ∀ i, ∀ X ∈ joinCtxAtP stab th rhs F Δs, Clo (Δs i) X)
+    (hJ7 : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
     (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
-      (tps i = .barren ∨ tps i = .chain (Ds 0))))
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
     (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
     (hg : F ∈ sfR G)
     (ihI0 : ∀ (j : Fin (n + 1)) (i : RegIdx (prem j)) (x : (preI (prem j) i).W),
@@ -685,17 +710,17 @@ theorem joinAtP_case {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form
             rcases hKG3 with (h | h) | h
             · match K, (List.mem_filter.mp h).2 with
               | .atom p, _ =>
-                  exact Or.inl (stab_mem_joinCtxAtP (G := G) hK.1 hKG)
+                  exact Or.inl (stab_mem_joinCtxAtP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1))
             · have hmem : K ∈ impPart (joinCtxAtP stab th rhs F Δs) :=
                 List.mem_filter.mpr
-                  ⟨stab_mem_joinCtxAtP (G := G) hK.1 hKG, (List.mem_filter.mp h).2⟩
+                  ⟨stab_mem_joinCtxAtP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1), (List.mem_filter.mp h).2⟩
               have hsz : K.size ≤ m := by
                 have := size_lt_of_mem_sfm hK.2
                 rw [hj] at this; omega
               exact (ih K hsz).1 hmem
             · match K, (List.mem_filter.mp h).2 with
               | .circ Y, _ =>
-                  exact hcircF Y (stab_mem_joinCtxAtP (G := G) hK.1 hKG)
+                  exact hcircF Y (stab_mem_joinCtxAtP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1))
   -- assemble
   constructor
   · intro w
@@ -722,7 +747,8 @@ theorem joinAtP_case {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form
         | inr i => exact hcompR i x X hX
   · refine not_force_prime hPJ hF ?_ (fun h => h)
     intro hmem0
-    have hmem : F ∈ joinCtxAtP stab th rhs F Δs := hmem0
+    have hmem : F ∈ joinCtxAt stab th rhs F ++ joinCtxCircP stab th Δs :=
+      restrictP_subset hmem0
     rcases List.mem_append.mp hmem with hmem | hmem
     · simp only [joinCtxAt, List.mem_append] at hmem
       rcases hmem with ((h | h) | h) | h
@@ -903,9 +929,9 @@ theorem joinOrP_case {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form
       A ∈ upsilon rhs)
     (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
       ∃ i, Clo (Δs i) Y)
-    (hJ7 : ∀ i, ∀ X ∈ joinCtxOrP stab th rhs Δs, Clo (Δs i) X)
+    (hJ7 : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
     (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
-      (tps i = .barren ∨ tps i = .chain (Ds 0))))
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
     (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
     (hg : Form.or C₁ C₂ ∈ sfR G)
     (ihI0 : ∀ (j : Fin (n + 1)) (i : RegIdx (prem j)) (x : (preI (prem j) i).W),
@@ -1012,17 +1038,17 @@ theorem joinOrP_case {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form
             rcases hKG3 with (h | h) | h
             · match K, (List.mem_filter.mp h).2 with
               | .atom p, _ =>
-                  exact Or.inl (stab_mem_joinCtxOrP (G := G) hK.1 hKG)
+                  exact Or.inl (stab_mem_joinCtxOrP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1))
             · have hmem : K ∈ impPart (joinCtxOrP stab th rhs Δs) :=
                 List.mem_filter.mpr
-                  ⟨stab_mem_joinCtxOrP (G := G) hK.1 hKG, (List.mem_filter.mp h).2⟩
+                  ⟨stab_mem_joinCtxOrP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1), (List.mem_filter.mp h).2⟩
               have hsz : K.size ≤ m := by
                 have := size_lt_of_mem_sfm hK.2
                 rw [hj] at this; omega
               exact (ih K hsz).1 hmem
             · match K, (List.mem_filter.mp h).2 with
               | .circ Y, _ =>
-                  exact hcircF Y (stab_mem_joinCtxOrP (G := G) hK.1 hKG)
+                  exact hcircF Y (stab_mem_joinCtxOrP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1))
   constructor
   · intro w
     cases w with
@@ -1194,6 +1220,326 @@ theorem joinOrF_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
 
 
 
+/-- `⋈^◯`, the barren modal join: the label-forcing machinery is `⋈^∨`'s
+verbatim; the root refutes `◯Z` because its modal cone is itself and it
+refutes `Z` through the premise slot with `rhs j = Z` — the (P3)
+mechanism, which is what `◯∈` cannot supply for compound `Z` at roots
+not forcing the antecedent. -/
+theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {Z : Form}
+    (prem : ∀ j, FRJi G (stab j) (th j) (rhs j))
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs)
+    (hcirc : unionAll (fun j => circPart (stab j)) = [])
+    (hZ : Z ∈ upsilon rhs)
+    (hg : Form.circ Z ∈ sfR G)
+    (ihI0 : ∀ (j : Fin (n + 1)) (i : RegIdx (prem j)) (x : (preI (prem j) i).W),
+        ((preI (prem j) i).toKripke (preI_closed (prem j) i)).forces x
+          ((preI (prem j) i).lbl x))
+    (ihI : ∀ (j : Fin (n + 1)) (P : PreModel) (hP : ClosedLbl P) (w : P.W),
+        ¬ P.fal w →
+        (∀ X ∈ P.lbl w, Clo (stab j ++ th j) X) →
+        (∀ i : RegIdx (prem j), RootAbove P hP w (preI (prem j) i) (preI_closed (prem j) i)) →
+        (P.toKripke hP).forces w (cap (stab j) (sfm (rhs j))) →
+        ¬ (P.toKripke hP).force w (rhs j)) :
+    (∀ w, (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).forces w
+        ((preR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).lbl w)) ∧
+      ¬ (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).force
+          (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).root (.circ Z) := by
+  have hPJ : ClosedLbl (preR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)) := preR_closed _
+  have hcomp : ∀ (ji : (j : Fin (n + 1)) × RegIdx (prem j))
+      (x : (preI (prem ji.1) ji.2).W) (A : Form),
+      A ∈ (preI (prem ji.1) ji.2).lbl x →
+      (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).force (some ⟨ji, x⟩) A := by
+    intro ji x A hA
+    exact (join_force_comp hPJ (preI_closed (prem ji.1) ji.2) A x).mpr
+      (ihI0 ji.1 ji.2 x A hA)
+  have key : ∀ (k : Nat) (H : Form), H.size ≤ k →
+      (H ∈ impPart (joinCtxOr stab th rhs) →
+        (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).force none H) ∧
+      (∀ j : Fin (n + 1), rhs j = H →
+        ¬ (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).force none H) := by
+    intro k
+    induction k with
+    | zero => intro H hH; exfalso; cases H <;> simp [Form.size] at hH
+    | succ k ih =>
+        intro H hH
+        constructor
+        · intro hHimp
+          obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
+          match H, hHsh with
+          | .imp A B, _ =>
+              have hAu : A ∈ upsilon rhs := joinCtxOr_imp_head hJ2 hHmem
+              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
+              have hsz : A.size ≤ k := by simp only [Form.size] at hH; omega
+              have hnA := (ih A hsz).2 j hj
+              intro v hv hAv
+              cases v with
+              | none => exact absurd hAv hnA
+              | some jx =>
+                  obtain ⟨ji, x⟩ := jx
+                  have hlblv : ∀ Y ∈ (preI (prem ji.1) ji.2).lbl x,
+                      (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).force (some ⟨ji, x⟩) Y :=
+                    fun Y hY => hcomp ji x Y hY
+                  have hclo := hPJ none (some ⟨ji, x⟩) hv (.imp A B) hHmem
+                  have hfv : (modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).force
+                      (some ⟨ji, x⟩) (.imp A B) := clo_forces hlblv hclo
+                  exact hfv _ ((modR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)).le_refl _) hAv
+        · intro j hj hcon
+          refine ihI j (preR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg)) hPJ none
+            (fun h => h) ?_ ?_ ?_ (by rw [hj]; exact hcon)
+          · exact lhs_clo_of_steps
+              (Relation.ReflTransGen.single
+                ⟨_, Step.joinCirc (G := G) (Z := Z) j hJ1⟩)
+          · intro i
+            refine ⟨some ⟨⟨j, i⟩, (preI (prem j) i).root⟩, .root _, ?_⟩
+            intro A
+            exact join_force_comp hPJ (preI_closed (prem j) i) A _
+          · intro K hK
+            rw [mem_cap] at hK
+            have hKG : K ∈ gHat G := wfI (prem j) (List.mem_append_left _ hK.1)
+            have hKG3 := hKG
+            simp only [gHat, List.mem_append] at hKG3
+            rcases hKG3 with (h | h) | h
+            · match K, (List.mem_filter.mp h).2 with
+              | .atom p, _ =>
+                  exact Or.inl (stab_mem_joinCtxOr (G := G) hcirc hK.1 hKG)
+            · have hmem : K ∈ impPart (joinCtxOr stab th rhs) :=
+                List.mem_filter.mpr
+                  ⟨stab_mem_joinCtxOr (G := G) hcirc hK.1 hKG, (List.mem_filter.mp h).2⟩
+              have hsz : K.size ≤ k := by
+                have := size_lt_of_mem_sfm hK.2
+                rw [hj] at this; omega
+              exact (ih K hsz).1 hmem
+            · exfalso
+              have : K ∈ unionAll (fun j => circPart (stab j)) := mem_unionAll.mpr
+                ⟨j, List.mem_filter.mpr ⟨hK.1, (List.mem_filter.mp h).2⟩⟩
+              rw [hcirc] at this
+              exact List.not_mem_nil this
+  constructor
+  · intro w
+    cases w with
+    | none =>
+        intro X hX
+        have hXG : X ∈ gHat G := wfR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg) hX
+        simp only [gHat, List.mem_append] at hXG
+        rcases hXG with (h | h) | h
+        · have hpv : X.isPV := (List.mem_filter.mp h).2
+          match X, hpv with
+          | .atom p, _ => exact Or.inl hX
+        · have himp : X.isImp := (List.mem_filter.mp h).2
+          exact (key X.size X (Nat.le_refl _)).1 (List.mem_filter.mpr ⟨hX, himp⟩)
+        · have : X.isCirc := (List.mem_filter.mp h).2
+          match X, this with
+          | .circ Y, _ => exact absurd hX circ_not_mem_joinCtxOr
+    | some jx =>
+        obtain ⟨ji, x⟩ := jx
+        intro X hX
+        exact hcomp ji x X hX
+  · obtain ⟨j₀, -, hj₀⟩ := List.mem_map.mp hZ
+    refine Kripke.not_force_circ _ ?_
+    intro u hu hf
+    have hu' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
+        (joinCtxOr stab th rhs)
+        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+        (fun _ => false)).rm none u := hu
+    have h0 := PreModel.join_rm_root_barren (fun _ => rfl) hu'
+    rw [h0] at hf
+    exact (key Z.size Z (Nat.le_refl _)).2 j₀ hj₀ hf
+
+
+/-- `⋈^◯,p`, the promise modal join: label-forcing as `⋈^∨,p`; the root
+refutes `◯Z` with the whole cone — itself through the premise slot, each
+promise component through its right formula `Z` at the component root
+(`ihP`) and its `Covers`-certified tag below it (`ihT` = `tag_cone`). -/
+theorem joinCircP_case {G : Form} {n k : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {Z : Form}
+    {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form}
+    (prem : ∀ j, FRJi G (stab j) (th j) (rhs j))
+    (dps : ∀ i, FRJr G (tps i) (Δs i) (Ds i))
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs)
+    (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y)
+    (hJ7 : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+    (hDs : ∀ i, Ds i = Z ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z))
+    (hZ : Z ∈ upsilon rhs)
+    (hg : Form.circ Z ∈ sfR G)
+    (ihI0 : ∀ (j : Fin (n + 1)) (i : RegIdx (prem j)) (x : (preI (prem j) i).W),
+        ((preI (prem j) i).toKripke (preI_closed (prem j) i)).forces x
+          ((preI (prem j) i).lbl x))
+    (ihI : ∀ (j : Fin (n + 1)) (P : PreModel) (hP : ClosedLbl P) (w : P.W),
+        ¬ P.fal w →
+        (∀ X ∈ P.lbl w, Clo (stab j ++ th j) X) →
+        (∀ i : RegIdx (prem j), RootAbove P hP w (preI (prem j) i) (preI_closed (prem j) i)) →
+        (P.toKripke hP).forces w (cap (stab j) (sfm (rhs j))) →
+        ¬ (P.toKripke hP).force w (rhs j))
+    (ihP : ∀ i, (∀ w, (modR (dps i)).forces w ((preR (dps i)).lbl w)) ∧
+        ¬ (modR (dps i)).force (modR (dps i)).root (Ds i))
+    (ihT : ∀ i (Z' : Form),
+        (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z') →
+        ∀ u, (modR (dps i)).Rm (modR (dps i)).root u →
+          u ≠ (modR (dps i)).root → ¬ (modR (dps i)).force u Z') :
+    (∀ w, (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).forces w
+        ((preR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).lbl w)) ∧
+      ¬ (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).force
+          (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).root (.circ Z) := by
+  have hPJ : ClosedLbl (preR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)) :=
+    preR_closed _
+  have hcompL : ∀ (ji : (j : Fin (n + 1)) × RegIdx (prem j))
+      (x : (preI (prem ji.1) ji.2).W) (A : Form),
+      A ∈ (preI (prem ji.1) ji.2).lbl x →
+      (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).force
+        (some ⟨Sum.inl ji, x⟩) A := by
+    intro ji x A hA
+    exact (join_force_comp hPJ (i := Sum.inl ji)
+      (preI_closed (prem ji.1) ji.2) A x).mpr (ihI0 ji.1 ji.2 x A hA)
+  have hcompR : ∀ (i : Fin (k + 1)) (x : (preR (dps i)).W) (A : Form),
+      A ∈ (preR (dps i)).lbl x →
+      (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).force
+        (some ⟨Sum.inr i, x⟩) A := by
+    intro i x A hA
+    exact (join_force_comp hPJ (i := Sum.inr i)
+      (preR_closed (dps i)) A x).mpr ((ihP i).1 x A hA)
+  have hcircF : ∀ Y : Form, Form.circ Y ∈ joinCtxOrP stab th rhs Δs →
+      (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).force
+        none (.circ Y) := by
+    intro Y hY
+    obtain ⟨i, hi⟩ := joinCtxOrP_circ_body hJ5 hY
+    refine Kripke.circ_intro _ ?_ ?_
+    · refine ⟨some ⟨Sum.inr i, (preR (dps i)).root⟩,
+        PJRm.prom rfl ((preR (dps i)).rm_refl _), ?_⟩
+      have hiC : Clo ((preR (dps i)).lbl (preR (dps i)).root) Y := by
+        rw [preR_root_lbl (dps i)]; exact hi
+      exact clo_forces (fun X hX => hcompR i _ X hX) hiC
+    · intro v hv hne
+      cases v with
+      | none => exact absurd rfl hne
+      | some cx =>
+          obtain ⟨c, x⟩ := cx
+          have hclo := hPJ none (some ⟨c, x⟩) hv (.circ Y) hY
+          cases c with
+          | inl ji => exact clo_forces (fun X hX => hcompL ji x X hX) hclo
+          | inr i' => exact clo_forces (fun X hX => hcompR i' x X hX) hclo
+  have key : ∀ (m : Nat) (H : Form), H.size ≤ m →
+      (H ∈ impPart (joinCtxOrP stab th rhs Δs) →
+        (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).force none H) ∧
+      (∀ j : Fin (n + 1), rhs j = H →
+        ¬ (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).force none H) := by
+    intro m
+    induction m with
+    | zero => intro H hH; exfalso; cases H <;> simp [Form.size] at hH
+    | succ m ih =>
+        intro H hH
+        constructor
+        · intro hHimp
+          obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
+          match H, hHsh with
+          | .imp A B, _ =>
+              have hAu : A ∈ upsilon rhs := joinCtxOrP_imp_head hJ2 hHmem
+              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
+              have hsz : A.size ≤ m := by
+                simp only [Form.size] at hH; omega
+              have hnA := (ih A hsz).2 j hj
+              intro v hv hAv
+              cases v with
+              | none => exact absurd hAv hnA
+              | some cx =>
+                  obtain ⟨c, x⟩ := cx
+                  have hclo := hPJ none (some ⟨c, x⟩) hv (.imp A B) hHmem
+                  have hforced : (modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).force
+                      (some ⟨c, x⟩) (.imp A B) := by
+                    cases c with
+                    | inl ji => exact clo_forces (fun Y hY => hcompL ji x Y hY) hclo
+                    | inr i' => exact clo_forces (fun Y hY => hcompR i' x Y hY) hclo
+                  exact hforced _
+                    ((modR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)).le_refl _) hAv
+        · intro j hj hcon
+          refine ihI j (preR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg)) hPJ none
+            (fun h => h) ?_ ?_ ?_ (by rw [hj]; exact hcon)
+          · exact lhs_clo_of_steps
+              (Relation.ReflTransGen.single
+                ⟨_, Step.joinCircP (G := G) (Z := Z) (Δs := Δs) j hJ1⟩)
+          · intro i
+            refine ⟨some ⟨Sum.inl ⟨j, i⟩, (preI (prem j) i).root⟩, .root _, ?_⟩
+            intro A
+            exact join_force_comp hPJ (i := Sum.inl ⟨j, i⟩)
+              (preI_closed (prem j) i) A _
+          · intro K hK
+            rw [mem_cap] at hK
+            have hKG : K ∈ gHat G := wfI (prem j) (List.mem_append_left _ hK.1)
+            have hKG3 := hKG
+            simp only [gHat, List.mem_append] at hKG3
+            rcases hKG3 with (h | h) | h
+            · match K, (List.mem_filter.mp h).2 with
+              | .atom p, _ =>
+                  exact Or.inl (stab_mem_joinCtxOrP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1))
+            · have hmem : K ∈ impPart (joinCtxOrP stab th rhs Δs) :=
+                List.mem_filter.mpr
+                  ⟨stab_mem_joinCtxOrP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1), (List.mem_filter.mp h).2⟩
+              have hsz : K.size ≤ m := by
+                have := size_lt_of_mem_sfm hK.2
+                rw [hj] at this; omega
+              exact (ih K hsz).1 hmem
+            · match K, (List.mem_filter.mp h).2 with
+              | .circ Y, _ =>
+                  exact hcircF Y (stab_mem_joinCtxOrP (G := G) hK.1 hKG (fun i => hJ7 i j _ hK.1))
+  constructor
+  · intro w
+    cases w with
+    | none =>
+        intro X hX
+        have hXG : X ∈ gHat G :=
+          wfR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg) hX
+        simp only [gHat, List.mem_append] at hXG
+        rcases hXG with (h | h) | h
+        · have : X.isPV := (List.mem_filter.mp h).2
+          match X, this with
+          | .atom p, _ => exact Or.inl hX
+        · have himp : X.isImp := (List.mem_filter.mp h).2
+          exact (key X.size X (Nat.le_refl _)).1 (List.mem_filter.mpr ⟨hX, himp⟩)
+        · have : X.isCirc := (List.mem_filter.mp h).2
+          match X, this with
+          | .circ Y, _ => exact hcircF Y hX
+    | some cx =>
+        obtain ⟨c, x⟩ := cx
+        intro X hX
+        cases c with
+        | inl ji => exact hcompL ji x X hX
+        | inr i => exact hcompR i x X hX
+  · obtain ⟨j₀, -, hj₀⟩ := List.mem_map.mp hZ
+    refine Kripke.not_force_circ _ ?_
+    intro u hu hf
+    have hu' : (PreModel.join
+        (sumElems (premIdxElems prem) (List.finRange (k + 1)))
+        (sumElems_complete (premIdxComplete prem) List.mem_finRange)
+        (joinCtxOrP stab th rhs Δs)
+        (Sum.elim
+          (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+          (fun i => preR (dps i)))
+        (Sum.elim (fun _ => false) (fun _ => true))).rm none u := hu
+    rcases PreModel.join_rm_root hu' with h0 | ⟨c, a, hc, hra, hy⟩
+    · rw [h0] at hf
+      exact (key Z.size Z (Nat.le_refl _)).2 j₀ hj₀ hf
+    · rw [hy] at hf
+      cases c with
+      | inl ji => exact Bool.noConfusion hc
+      | inr i =>
+          have hf' : (modR (dps i)).force a Z :=
+            (join_force_comp hPJ (i := Sum.inr i)
+              (preR_closed (dps i)) Z a).mp hf
+          by_cases ha : a = (modR (dps i)).root
+          · rw [ha] at hf'
+            have hDi := (hDs i).1
+            rw [← hDi] at hf'
+            exact (ihP i).2 hf'
+          · exact ihT i Z (hDs i).2 a hra ha hf'
+
+
 mutual
 
 theorem lemma39R {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
@@ -1261,6 +1607,16 @@ theorem lemma39R {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
       joinOrF_case prem hJ1 hJ2 hC hg
         (fun j i x => lemma39I0 (prem j) i x)
         (fun j P hP w hw h1 h2 h3 => lemma39I (prem j) P hP w hw h1 h2 h3)
+  | _, _, _, @FRJr.joinCirc _ n stab th rhs Z prem hJ1 hJ2 hcirc hZ hg =>
+      joinCirc_case prem hJ1 hJ2 hcirc hZ hg
+        (fun j i x => lemma39I0 (prem j) i x)
+        (fun j P hP w hw h1 h2 h3 => lemma39I (prem j) P hP w hw h1 h2 h3)
+  | _, _, _, @FRJr.joinCircP _ n k stab th rhs Z tps Δs Ds prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg =>
+      joinCircP_case prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ hg
+        (fun j i x => lemma39I0 (prem j) i x)
+        (fun j P hP w hw h1 h2 h3 => lemma39I (prem j) P hP w hw h1 h2 h3)
+        (fun i => lemma39R (dps i))
+        (fun i => tag_cone (dps i))
 
 /-- **The pledge is honoured.**  If the tag is `barren` or `chain Z`, every
 world of the root's modal cone other than the root itself refutes `Z`: a
@@ -1271,7 +1627,8 @@ promise components whose goals are all `Z`, each root refuting its goal
 This is the semantic content of the tag — the single-pledge form of the
 canonical model's `mfal` component — and the soundness of `◯∈`. -/
 theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
-    (d : FRJr G t Γ C) (Z : Form), (t = .barren ∨ t = .chain Z) →
+    (d : FRJr G t Γ C) (Z : Form),
+    (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) →
     ∀ u, (modR d).Rm (modR d).root u → u ≠ (modR d).root →
       ¬ (modR d).force u Z
   | _, _, _, .axR F hF hg, Z, ht, u, hu, hne, hf => hne rfl
@@ -1289,12 +1646,13 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
       have hPJ : ClosedLbl (preR (FRJr.joinAtP prem dps hJ1 hJ2 hJ5 hJ7 htag hF hFnot hg)) :=
         preR_closed _
       rcases htag with h' | ⟨h', hall⟩
-      · rcases ht with h | h <;> exact Tag.noConfusion (h'.symm.trans h)
-      · rcases ht with h | h
+      · rcases ht with h | ⟨W, h, -⟩ <;> exact Tag.noConfusion (h'.symm.trans h)
+      · rcases ht with h | ⟨W, h, hcov⟩
         · exact Tag.noConfusion (h'.symm.trans h)
-        · have hDZ : Ds 0 = Z := by
+        · have hDW : Ds 0 = W := by
             have hcc := h'.symm.trans h
             injection hcc
+          subst hDW
           have hu' : (PreModel.join
               (sumElems (premIdxElems prem) (List.finRange (k + 1)))
               (sumElems_complete (premIdxComplete prem) List.mem_finRange)
@@ -1312,17 +1670,25 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                 have hf' : (modR (dps i)).force a Z :=
                   (join_force_comp hPJ (i := Sum.inr i)
                     (preR_closed (dps i)) Z a).mp hf
-                by_cases ha : a = (preR (dps i)).root
-                · rw [ha] at hf'
-                  have hZD : Ds i = Z := ((hall i).1).trans hDZ
-                  rw [← hZD] at hf'
-                  exact (lemma39R (dps i)).2 hf'
-                · refine tag_cone (dps i) Z ?_ a hra ha hf'
-                  rcases (hall i).2 with h2 | h2
-                  · exact Or.inl h2
-                  · exact Or.inr (h2.trans (congrArg Tag.chain hDZ))
+                refine covers_refutes hcov
+                  (fun x => (modR (dps i)).Rm (modR (dps i)).root x) ?_ ?_ ?_ a hra hf'
+                · exact fun x hx y hxy => (modR (dps i)).rm_trans hx hxy
+                · intro x hx hfx
+                  by_cases hxr : x = (modR (dps i)).root
+                  · rw [hxr] at hfx
+                    have hDi := (hall i).1
+                    rw [← hDi] at hfx
+                    exact (lemma39R (dps i)).2 hfx
+                  · exact tag_cone (dps i) (Ds 0) (hall i).2 x hx hxr hfx
+                · intro x hx A hA
+                  have h1 : Clo (Δs i) A := clo_trans (joinCtxAtP_clo i) hA
+                  have h2 : Clo ((preR (dps i)).lbl x) A :=
+                    clo_trans (fun Y hY => preR_closed (dps i) _ _
+                      ((preR (dps i)).root_le x) Y
+                      (by rw [preR_root_lbl (dps i)]; exact hY)) h1
+                  exact clo_forces (fun Y hY => (lemma39R (dps i)).1 x Y hY) h2
   | _, _, _, .joinAtF prem hJ1 hJ2 hF hFnot hg, Z, ht, u, hu, hne, hf => by
-      rcases ht with h | h <;> exact Tag.noConfusion h
+      rcases ht with h | ⟨W, h, -⟩ <;> exact Tag.noConfusion h
   | _, _, _, @FRJr.joinOr _ n stab th rhs C₁ C₂ prem hJ1 hJ2 hcirc hC hg, Z, ht, u, hu, hne, hf => by
       have hu' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
           (joinCtxOr stab th rhs)
@@ -1333,12 +1699,13 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
       have hPJ : ClosedLbl (preR (FRJr.joinOrP prem dps hJ1 hJ2 hJ5 hJ7 htag hC hg)) :=
         preR_closed _
       rcases htag with h' | ⟨h', hall⟩
-      · rcases ht with h | h <;> exact Tag.noConfusion (h'.symm.trans h)
-      · rcases ht with h | h
+      · rcases ht with h | ⟨W, h, -⟩ <;> exact Tag.noConfusion (h'.symm.trans h)
+      · rcases ht with h | ⟨W, h, hcov⟩
         · exact Tag.noConfusion (h'.symm.trans h)
-        · have hDZ : Ds 0 = Z := by
+        · have hDW : Ds 0 = W := by
             have hcc := h'.symm.trans h
             injection hcc
+          subst hDW
           have hu' : (PreModel.join
               (sumElems (premIdxElems prem) (List.finRange (k + 1)))
               (sumElems_complete (premIdxComplete prem) List.mem_finRange)
@@ -1356,17 +1723,74 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                 have hf' : (modR (dps i)).force a Z :=
                   (join_force_comp hPJ (i := Sum.inr i)
                     (preR_closed (dps i)) Z a).mp hf
-                by_cases ha : a = (preR (dps i)).root
-                · rw [ha] at hf'
-                  have hZD : Ds i = Z := ((hall i).1).trans hDZ
-                  rw [← hZD] at hf'
-                  exact (lemma39R (dps i)).2 hf'
-                · refine tag_cone (dps i) Z ?_ a hra ha hf'
-                  rcases (hall i).2 with h2 | h2
-                  · exact Or.inl h2
-                  · exact Or.inr (h2.trans (congrArg Tag.chain hDZ))
+                refine covers_refutes hcov
+                  (fun x => (modR (dps i)).Rm (modR (dps i)).root x) ?_ ?_ ?_ a hra hf'
+                · exact fun x hx y hxy => (modR (dps i)).rm_trans hx hxy
+                · intro x hx hfx
+                  by_cases hxr : x = (modR (dps i)).root
+                  · rw [hxr] at hfx
+                    have hDi := (hall i).1
+                    rw [← hDi] at hfx
+                    exact (lemma39R (dps i)).2 hfx
+                  · exact tag_cone (dps i) (Ds 0) (hall i).2 x hx hxr hfx
+                · intro x hx A hA
+                  have h1 : Clo (Δs i) A := clo_trans (joinCtxOrP_clo i) hA
+                  have h2 : Clo ((preR (dps i)).lbl x) A :=
+                    clo_trans (fun Y hY => preR_closed (dps i) _ _
+                      ((preR (dps i)).root_le x) Y
+                      (by rw [preR_root_lbl (dps i)]; exact hY)) h1
+                  exact clo_forces (fun Y hY => (lemma39R (dps i)).1 x Y hY) h2
   | _, _, _, .joinOrF prem hJ1 hJ2 hC hg, Z, ht, u, hu, hne, hf => by
-      rcases ht with h | h <;> exact Tag.noConfusion h
+      rcases ht with h | ⟨W, h, -⟩ <;> exact Tag.noConfusion h
+
+  | _, _, _, @FRJr.joinCirc _ n stab th rhs Z0 prem hJ1 hJ2 hcirc hZ0 hg, Z, ht, u, hu, hne, hf => by
+      have hu' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
+          (joinCtxOr stab th rhs)
+          (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+          (fun _ => false)).rm none u := hu
+      exact hne (PreModel.join_rm_root_barren (fun _ => rfl) hu')
+  | _, _, _, @FRJr.joinCircP _ n k stab th rhs Z0 tps Δs Ds prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ0 hg, Z, ht, u, hu, hne, hf => by
+      rcases ht with h | ⟨W, h, hcov⟩
+      · exact Tag.noConfusion h
+      · have hWZ : Z0 = W := by injection h
+        subst hWZ
+        have hu' : (PreModel.join
+            (sumElems (premIdxElems prem) (List.finRange (k + 1)))
+            (sumElems_complete (premIdxComplete prem) List.mem_finRange)
+            (joinCtxOrP stab th rhs Δs)
+            (Sum.elim
+              (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+              (fun i => preR (dps i)))
+            (Sum.elim (fun _ => false) (fun _ => true))).rm none u := hu
+        rcases PreModel.join_rm_root hu' with h0 | ⟨c, a, hc, hra, hy⟩
+        · exact hne h0
+        · rw [hy] at hf
+          cases c with
+          | inl ji => exact Bool.noConfusion hc
+          | inr i =>
+              have hPJ : ClosedLbl
+                  (preR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7 hDs hZ0 hg)) :=
+                preR_closed _
+              have hf' : (modR (dps i)).force a Z :=
+                (join_force_comp hPJ (i := Sum.inr i)
+                  (preR_closed (dps i)) Z a).mp hf
+              refine covers_refutes hcov
+                (fun x => (modR (dps i)).Rm (modR (dps i)).root x) ?_ ?_ ?_ a hra hf'
+              · exact fun x hx y hxy => (modR (dps i)).rm_trans hx hxy
+              · intro x hx hfx
+                by_cases hxr : x = (modR (dps i)).root
+                · rw [hxr] at hfx
+                  have hDi := (hDs i).1
+                  rw [← hDi] at hfx
+                  exact (lemma39R (dps i)).2 hfx
+                · exact tag_cone (dps i) Z0 (hDs i).2 x hx hxr hfx
+              · intro x hx A hA
+                have h1 : Clo (Δs i) A := clo_trans (joinCtxOrP_clo i) hA
+                have h2 : Clo ((preR (dps i)).lbl x) A :=
+                  clo_trans (fun Y hY => preR_closed (dps i) _ _
+                    ((preR (dps i)).root_le x) Y
+                    (by rw [preR_root_lbl (dps i)]; exact hY)) h1
+                exact clo_forces (fun Y hY => (lemma39R (dps i)).1 x Y hY) h2
 
 theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (i : RegIdx d) (w : (preI d i).W),
@@ -1381,15 +1805,15 @@ theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _, i, w => lemma39I0 d i w
   | _, _, _, .impNotIn d _ _ _ _, _, w => (lemma39R d).1 w
   | _, _, _, .circNotIn d _ _ _, _, w => (lemma39R d).1 w
-  | _, _, _, @FRJi.axIC _ F hF hg, _, w => by
+  | _, _, _, @FRJi.axIC _ F ats hats hFf hg, _, w => by
       -- the mounted BARE final world (the ◯⊥-false species: no fallible
       -- Rm-access, so `◯Y ≡ Y` on its own cone) forces its zone: every
       -- member is `classForce`-true by construction, and single-world
       -- forcing IS `classForce`
       intro X hX
-      have hcf : classForce (rm (gAt G) F) X = true :=
+      have hcf : classForce ats X = true :=
         (List.mem_filter.mp (mem_nf.mp hX).2).2
-      exact (PreModel.leaf_force_iff (fun p => vacZone_atom) X).mpr hcf
+      exact (PreModel.leaf_force_iff (fun p => vacZoneA_atom hats) X).mpr hcf
 
 theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (P : PreModel) (hP : ClosedLbl P) (w : P.W),
@@ -1487,20 +1911,19 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       rw [preR_root_lbl d] at hΓ
       have hvΓ : (P.toKripke hP).forces v Γ := fun X hX => (hiff X).mpr (hΓ X hX)
       exact hb ((hiff B).mp (hcon v hwv (clo_forces hvΓ hA)))
-  | _, _, _, @FRJi.axIC _ F hF hg, P, hP, w, hw, hlbl, hroot, hforce => by
+  | _, _, _, @FRJi.axIC _ F ats hats hFf hg, P, hP, w, hw, hlbl, hroot, hforce => by
       -- `w ⊩ ◯F` would persist up to the mounted bare final world, which
-      -- refutes `◯F` because it refutes `F` and is its own modal cone.
+      -- refutes `◯F` because it refutes `F` (the recorded classical
+      -- refutation `hFf`) and is its own modal cone.
       intro hcon
       obtain ⟨v, hwv, hiff⟩ := hroot ()
       have hv : (P.toKripke hP).force v (.circ F) :=
         (P.toKripke hP).force_mono hwv hcon
       have hr := (hiff _).mp hv
-      have hcf := (PreModel.leaf_force_iff (fun p => vacZone_atom) _).mp hr
-      match F, hF, hcf with
-      | .bot, _, hcf => exact Bool.noConfusion hcf
-      | .atom p, _, hcf =>
-          simp only [classForce, decide_eq_true_eq] at hcf
-          exact (mem_rm.mp hcf).1 rfl
+      have hcf := (PreModel.leaf_force_iff (fun p => vacZoneA_atom hats) _).mp hr
+      simp only [classForce] at hcf
+      rw [hFf] at hcf
+      exact Bool.noConfusion hcf
   | _, _, _, @FRJi.circNotIn _ t Γ Th Z d htag hTh hg,
       P, hP, w, hw, hlbl, hroot, hforce => by
       -- `w ⊩ ◯Z` persists up to the embedded premise root `v`, transfers

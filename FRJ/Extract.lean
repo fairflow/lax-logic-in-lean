@@ -409,7 +409,7 @@ def RegIdx {G : Form} : {St Th : List Form} → {C : Form} → FRJi G St Th C �
   | _, _, _, .impInI d _ _ _ => RegIdx d
   | _, _, _, .impNotIn _ _ _ _ _ => Unit
   | _, _, _, .circNotIn _ _ _ _ => Unit
-  | _, _, _, .axIC _ _ _ => Unit
+  | _, _, _, .axIC _ _ _ _ _ => Unit
 
 /-- `RegIdx` has decidable equality, constructively. -/
 instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
@@ -424,7 +424,7 @@ instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ => regIdxDecEq d
   | _, _, _, .impNotIn _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
   | _, _, _, .circNotIn _ _ _ _ => inferInstanceAs (DecidableEq Unit)
-  | _, _, _, .axIC _ _ _ => inferInstanceAs (DecidableEq Unit)
+  | _, _, _, .axIC _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
 
 /-- An enumeration of `RegIdx`, constructively (no `Fintype.ofFinite`,
 hence no `Classical.choice`). -/
@@ -438,7 +438,7 @@ def regIdxElems {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ => regIdxElems d
   | _, _, _, .impNotIn _ _ _ _ _ => [()]
   | _, _, _, .circNotIn _ _ _ _ => [()]
-  | _, _, _, .axIC _ _ _ => [()]
+  | _, _, _, .axIC _ _ _ _ _ => [()]
 
 theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (i : RegIdx d), i ∈ regIdxElems d
@@ -454,7 +454,7 @@ theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _, i => regIdxComplete d i
   | _, _, _, .impNotIn _ _ _ _ _, _ => List.mem_cons_self
   | _, _, _, .circNotIn _ _ _ _, _ => List.mem_cons_self
-  | _, _, _, .axIC _ _ _, _ => List.mem_cons_self
+  | _, _, _, .axIC _ _ _ _ _, _ => List.mem_cons_self
 
 /-! ### The index set of a join
 
@@ -554,6 +554,19 @@ def preR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} → FRJr G t
           (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
           (fun _ : Unit => PreModel.leafF (joinCtxOrF stab th rhs)))
         (Sum.elim (fun _ => false) (fun _ => true))
+  | _, _, _, @FRJr.joinCirc _ n stab th rhs Z prem _ _ _ _ _ =>
+      PreModel.join (premIdxElems prem) (premIdxComplete prem)
+        (joinCtxOr stab th rhs)
+        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+        (fun _ => false)
+  | _, _, _, @FRJr.joinCircP _ n k stab th rhs Z tps Δs Ds prem dps _ _ _ _ _ _ _ =>
+      PreModel.join (sumElems (premIdxElems prem) (List.finRange (k + 1)))
+        (sumElems_complete (premIdxComplete prem) List.mem_finRange)
+        (joinCtxOrP stab th rhs Δs)
+        (Sum.elim
+          (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+          (fun i => preR (dps i)))
+        (Sum.elim (fun _ => false) (fun _ => true))
 
 /-- The pre-models an irregular derivation contributes, one per `⊃∉`
 node. -/
@@ -569,7 +582,7 @@ def preI {G : Form} : {St Th : List Form} → {C : Form} →
   | _, _, _, .impInI d _ _ _, i => preI d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR d
   | _, _, _, .circNotIn d _ _ _, _ => preR d
-  | _, _, _, .axIC F _ _, _ => PreModel.leaf (vacZone G F)
+  | _, _, _, .axIC _ ats _ _ _, _ => PreModel.leaf (vacZoneA G ats)
 
 end
 
@@ -597,6 +610,8 @@ theorem preR_root_lbl {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
   | _, _, _, .joinOr _ _ _ _ _ _ => rfl
   | _, _, _, .joinOrP _ _ _ _ _ _ _ _ _ => rfl
   | _, _, _, .joinOrF _ _ _ _ _ => rfl
+  | _, _, _, .joinCirc _ _ _ _ _ _ => rfl
+  | _, _, _, .joinCircP _ _ _ _ _ _ _ _ _ => rfl
 
 /-- Every pre-model an irregular derivation contributes is the model of a
 sequent occurring in it, and its root carries that sequent's left
@@ -629,8 +644,8 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
       ⟨_, .impNotIn (.root d), preR_root_lbl d⟩
   | _, _, _, .circNotIn d _ _ _, _ =>
       ⟨_, .circNotIn (.root d), preR_root_lbl d⟩
-  | _, _, _, .axIC F hF hg, _ =>
-      ⟨.irr [] (vacZone G F) (.circ F), .root _, rfl⟩
+  | _, _, _, .axIC F ats _ _ _, _ =>
+      ⟨.irr [] (vacZoneA G ats) (.circ F), .root _, rfl⟩
 
 /-- Labels shrink modulo closure going down: Lemma 3.4(iii) in the
 model. -/
@@ -666,7 +681,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                     ((preI (prem ji.1) ji.2).root_le b) Y ?_
                   rw [hlbl]; exact hY
               | inr i =>
-                  refine clo_trans (fun Y hY => ?_) (hJ7 i X hX)
+                  refine clo_trans (fun Y hY => ?_) (joinCtxAtP_clo i X hX)
                   refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
                   rw [preR_root_lbl (dps i)]; exact hY
           | comp hab =>
@@ -717,7 +732,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                     ((preI (prem ji.1) ji.2).root_le b) Y ?_
                   rw [hlbl]; exact hY
               | inr i =>
-                  refine clo_trans (fun Y hY => ?_) (hJ7 i X hX)
+                  refine clo_trans (fun Y hY => ?_) (joinCtxOrP_clo i X hX)
                   refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
                   rw [preR_root_lbl (dps i)]; exact hY
           | comp hab =>
@@ -748,6 +763,51 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
               | inr _ => exact .base hX
+  | _, _, _, @FRJr.joinCircP _ n k stab th rhs Z tps Δs Ds prem dps hJ1 _ _ _ _ _ _ => by
+      intro w v hle X hX
+      cases v with
+      | none => cases hle with
+        | root => exact .base hX
+      | some jb =>
+          obtain ⟨x, b⟩ := jb
+          cases hle with
+          | root =>
+              cases x with
+              | inl ji =>
+                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  refine clo_trans (fun Y hY => ?_)
+                    (lhs_clo_of_steps
+                      ((occI_steps hocc).tail
+                        ⟨_, Step.joinCircP (Z := Z) (Δs := Δs) ji.1 hJ1⟩) X hX)
+                  refine preI_closed (prem ji.1) ji.2 _ _
+                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
+                  rw [hlbl]; exact hY
+              | inr i =>
+                  refine clo_trans (fun Y hY => ?_) (joinCtxOrP_clo i X hX)
+                  refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
+                  rw [preR_root_lbl (dps i)]; exact hY
+          | comp hab =>
+              cases x with
+              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
+              | inr i => exact preR_closed (dps i) _ _ hab X hX
+  | _, _, _, @FRJr.joinCirc _ n stab th rhs Z prem hJ1 _ _ _ _ => by
+      intro w v hle X hX
+      cases v with
+      | none => cases hle with
+        | root => exact .base hX
+      | some jb =>
+          obtain ⟨ji, b⟩ := jb
+          cases hle with
+          | root =>
+              obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+              refine clo_trans (fun Y hY => ?_)
+                (lhs_clo_of_steps
+                  ((occI_steps hocc).tail
+                    ⟨_, Step.joinCirc (Z := Z) ji.1 hJ1⟩) X hX)
+              refine preI_closed (prem ji.1) ji.2 _ _
+                ((preI (prem ji.1) ji.2).root_le b) Y ?_
+              rw [hlbl]; exact hY
+          | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
   | _, _, _, @FRJr.joinAt _ n stab th rhs F prem hJ1 _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
@@ -796,7 +856,7 @@ theorem preI_closed {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _, i => preI_closed d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR_closed d
   | _, _, _, .circNotIn d _ _ _, _ => preR_closed d
-  | _, _, _, .axIC _ _ _, _ => fun _ _ _ X hX => .base hX
+  | _, _, _, .axIC _ _ _ _ _, _ => fun _ _ _ X hX => .base hX
 
 end
 

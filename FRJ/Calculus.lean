@@ -89,6 +89,29 @@ theorem isCirc_of_mem_restrictC {k : Nat} {X : List Form}
   have := (List.mem_filter.mp h).2
   cases A <;> simp_all [inRestrictC, Form.isCirc]
 
+/-- Membership test for the PROMISE-CLOSURE restriction: keep `X` when
+`X ∈ Cl(Δᵢ)` for EVERY promise context.  This is (J7) as a restriction —
+mirroring `Θ^⊃/Υ` — so that the promise joins keep exactly what their
+family can absorb; the completeness construction could not discharge a
+(J7) side condition over the fat axiom zones (their second-zone junk is
+not `Cl(Δᵢ)`-certified), but it never needs the junk kept. -/
+def cloAllB {k : Nat} (Δs : Fin (k + 1) → List Form) (X : Form) : Bool :=
+  (List.finRange (k + 1)).all (fun i => cloB (Δs i) X)
+
+/-- `Γ / Cl(Δ⃗) = { X ∈ Γ | ∀ i, X ∈ Cl(Δᵢ) }`. -/
+def restrictP {k : Nat} (X : List Form) (Δs : Fin (k + 1) → List Form) : List Form :=
+  X.filter (cloAllB Δs)
+
+theorem mem_restrictP {k : Nat} {X : List Form} {Δs : Fin (k + 1) → List Form}
+    {A : Form} :
+    A ∈ restrictP X Δs ↔ (A ∈ X ∧ ∀ i, Clo (Δs i) A) := by
+  simp [restrictP, cloAllB, List.mem_filter, List.all_eq_true, cloB_iff,
+    List.mem_finRange]
+
+theorem restrictP_subset {k : Nat} {X : List Form} {Δs : Fin (k + 1) → List Form} :
+    restrictP X Δs ⊆ X :=
+  fun _ h => (List.mem_filter.mp h).1
+
 /-! ## The conclusion contexts of the join rules
 
 Named so that the `↦` relation of Sec. 3.1 and the calculus cannot drift
@@ -128,20 +151,22 @@ def joinCtxCircF {n : Nat} (stab th : Fin (n + 1) → List Form) : List Form :=
   unionAll (fun j => circPart (stab j)) ++
     interAll (fun j => circPart (th j))
 
-/-- Conclusion context of the promise `⋈^At`. -/
+/-- Conclusion context of the promise `⋈^At`: the barren context plus the
+modal part, RESTRICTED to what every promise closure absorbs — (J7) built
+into the context. -/
 def joinCtxAtP {n k : Nat} (stab th : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (F : Form) (Δs : Fin (k + 1) → List Form) : List Form :=
-  joinCtxAt stab th rhs F ++ joinCtxCircP stab th Δs
+  restrictP (joinCtxAt stab th rhs F ++ joinCtxCircP stab th Δs) Δs
 
 /-- Conclusion context of the fallible `⋈^At`. -/
 def joinCtxAtF {n : Nat} (stab th : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (F : Form) : List Form :=
   joinCtxAt stab th rhs F ++ joinCtxCircF stab th
 
-/-- Conclusion context of the promise `⋈^∨`. -/
+/-- Conclusion context of the promise `⋈^∨`, restricted as `joinCtxAtP`. -/
 def joinCtxOrP {n k : Nat} (stab th : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (Δs : Fin (k + 1) → List Form) : List Form :=
-  joinCtxOr stab th rhs ++ joinCtxCircP stab th Δs
+  restrictP (joinCtxOr stab th rhs ++ joinCtxCircP stab th Δs) Δs
 
 /-- Conclusion context of the fallible `⋈^∨`. -/
 def joinCtxOrF {n : Nat} (stab th : Fin (n + 1) → List Form)
@@ -172,21 +197,94 @@ carries no losable data — every member is genuinely forced at the
 realising world, vacuous implications (`◯F ⊃ W`, `F ⊃ W`, and compound
 variants) included.  This is what `Cl` of a context cannot see, and what
 the `◯∉` cycle of `docs/frj-w4.md` §7 needed. -/
-def vacZone (G : Form) (F : Form) : List Form :=
-  nf G ((gHat G).filter (classForce (rm (gAt G) F)))
+def vacZoneA (G : Form) (ats : List Form) : List Form :=
+  nf G ((gHat G).filter (classForce ats))
 
-/-- The atoms of the zone are exactly the surviving atoms. -/
-theorem vacZone_atom {G F : Form} {p : String} :
-    Form.atom p ∈ vacZone G F ↔ Form.atom p ∈ rm (gAt G) F := by
+/-- The prime-`F` instance: the valuation is `Ĝ_at \ {F}`. -/
+def vacZone (G : Form) (F : Form) : List Form :=
+  vacZoneA G (rm (gAt G) F)
+
+/-- The atoms of the zone are exactly the valuation's atoms. -/
+theorem vacZoneA_atom {G : Form} {ats : List Form} (hats : ats ⊆ gAt G)
+    {p : String} :
+    Form.atom p ∈ vacZoneA G ats ↔ Form.atom p ∈ ats := by
   constructor
   · intro h
     have h2 := (List.mem_filter.mp (mem_nf.mp h).2).2
     simpa [classForce] using h2
   · intro h
-    have hAt : Form.atom p ∈ gAt G := rm_subset h
+    have hAt : Form.atom p ∈ gAt G := hats h
     have hG : Form.atom p ∈ gHat G :=
       List.mem_append_left _ (List.mem_append_left _ hAt)
     exact mem_nf.mpr ⟨hG, List.mem_filter.mpr ⟨hG, by simpa [classForce] using h⟩⟩
+
+theorem vacZone_atom {G F : Form} {p : String} :
+    Form.atom p ∈ vacZone G F ↔ Form.atom p ∈ rm (gAt G) F :=
+  vacZoneA_atom (fun _ h => rm_subset h)
+
+/-! ## The chain-certificate order
+
+A `chain W` tag certifies that the root's modal cone hereditarily refutes
+`W`.  That certificate transfers to every formula reachable from `W` by
+the tag-passing rules: `◯` (a cone hereditarily refuting `W` refutes every
+`◯`-iterate), `∧`-superformulas (refuting a conjunct refutes the
+conjunction), and `⊃`-superformulas whose antecedent lies in the closure
+of the sequent's context (every cone world forces the context's closure,
+so refuting the consequent refutes the implication).  `Covers Γ W Z` is
+that reachability; the modal side conditions compare tags THROUGH it, so
+a pledge certified for `W` can serve any goal it covers.  W4 device
+(ours, not the paper's): the single-formula tag cannot re-certify itself
+across `◯∈` nesting or the `∧`/`⊃` wraps of the completeness visit. -/
+inductive Covers (Γ : List Form) (W : Form) : Form → Prop
+  | refl : Covers Γ W W
+  | circ {Z : Form} : Covers Γ W Z → Covers Γ W (.circ Z)
+  | andL {Z₁ Z₂ : Form} : Covers Γ W Z₁ → Covers Γ W (.and Z₁ Z₂)
+  | andR {Z₁ Z₂ : Form} : Covers Γ W Z₂ → Covers Γ W (.and Z₁ Z₂)
+  | imp {A Z : Form} : Covers Γ W Z → Clo Γ A → Covers Γ W (.imp A Z)
+
+/-- Decision procedure for `Covers`. -/
+def coversB (Γ : List Form) (W : Form) : Form → Bool
+  | .circ Z => decide (Form.circ Z = W) || coversB Γ W Z
+  | .and Z₁ Z₂ => decide (Form.and Z₁ Z₂ = W) || coversB Γ W Z₁ || coversB Γ W Z₂
+  | .imp A Z => decide (Form.imp A Z = W) || (coversB Γ W Z && cloB Γ A)
+  | Z => decide (Z = W)
+
+theorem coversB_iff {Γ : List Form} {W Z : Form} :
+    coversB Γ W Z = true ↔ Covers Γ W Z := by
+  constructor
+  · intro h
+    induction Z with
+    | circ Z ih =>
+        simp only [coversB, Bool.or_eq_true, decide_eq_true_eq] at h
+        rcases h with h | h
+        · exact h ▸ .refl
+        · exact .circ (ih h)
+    | and Z₁ Z₂ ih₁ ih₂ =>
+        simp only [coversB, Bool.or_eq_true, decide_eq_true_eq] at h
+        rcases h with (h | h) | h
+        · exact h ▸ .refl
+        · exact .andL (ih₁ h)
+        · exact .andR (ih₂ h)
+    | imp A Z ihA ih =>
+        simp only [coversB, Bool.or_eq_true, Bool.and_eq_true,
+          decide_eq_true_eq] at h
+        rcases h with h | ⟨h1, h2⟩
+        · exact h ▸ .refl
+        · exact .imp (ih h1) (cloB_iff.mp h2)
+    | atom p => exact (by simpa [coversB] using h : Form.atom p = W) ▸ .refl
+    | bot => exact (by simpa [coversB] using h : Form.bot = W) ▸ .refl
+    | or Z₁ Z₂ ih₁ ih₂ =>
+        exact (by simpa [coversB] using h : Form.or Z₁ Z₂ = W) ▸ .refl
+  · intro h
+    induction h with
+    | refl => cases W <;> simp [coversB]
+    | circ _ ih => simp [coversB, ih]
+    | andL _ ih => simp [coversB, ih]
+    | andR _ ih => simp [coversB, ih]
+    | imp _ hA ih => simp [coversB, ih, cloB_iff.mpr hA]
+
+instance decCovers (Γ : List Form) (W Z : Form) : Decidable (Covers Γ W Z) :=
+  decidable_of_iff _ coversB_iff
 
 /-! ## The pledge tag
 
@@ -209,6 +307,21 @@ inductive Tag where
   /-- no claim (a fallible promise, or an unmatched chain) -/
   | blocked
   deriving DecidableEq, Repr
+
+/-- The pledge side condition of `◯∈`/`◯∉` (and, per component, of the
+promise joins) is decidable. -/
+instance decPledge (Γ : List Form) (t : Tag) (Z : Form) :
+    Decidable (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) :=
+  match t with
+  | .barren => isTrue (Or.inl rfl)
+  | .chain W =>
+      if h : Covers Γ W Z then isTrue (Or.inr ⟨W, rfl, h⟩)
+      else isFalse (by
+        rintro (h' | ⟨W', hW', hc⟩)
+        · exact Tag.noConfusion h'
+        · injection hW' with e; exact h (e ▸ hc))
+  | .blocked => isFalse (by
+      rintro (h | ⟨W, h, -⟩) <;> exact Tag.noConfusion h)
 
 /-! ## The calculus
 
@@ -248,7 +361,8 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
       promise chain pledged to `Z`).  `tag_cone` is the semantic content;
       the world stays the same, so the tag passes through. -/
   | circIn {t : Tag} {Γ : List Form} {Z : Form}
-      (d : FRJr G t Γ Z) (htag : t = .barren ∨ t = .chain Z)
+      (d : FRJr G t Γ Z)
+      (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z)
       (hgoal : Form.circ Z ∈ sfR G) :
       FRJr G t Γ (.circ Z)
   /-- `⋈^At`: from `n ≥ 1` irregular premises `σⱼ = Σⱼ ; Θⱼ → Aⱼ` infer
@@ -289,9 +403,9 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
         A ∈ upsilon rhs)
       (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
         ∃ i, Clo (Δs i) Y)
-      (hJ7 : ∀ i, ∀ X ∈ joinCtxAtP stab th rhs F Δs, Clo (Δs i) X)
+      (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
       (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
-        (tps i = .barren ∨ tps i = .chain (Ds 0))))
+        (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
       (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
       (hgoal : F ∈ sfR G) :
       FRJr G t' (joinCtxAtP stab th rhs F Δs) F
@@ -332,9 +446,9 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
         A ∈ upsilon rhs)
       (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
         ∃ i, Clo (Δs i) Y)
-      (hJ7 : ∀ i, ∀ X ∈ joinCtxOrP stab th rhs Δs, Clo (Δs i) X)
+      (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
       (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
-        (tps i = .barren ∨ tps i = .chain (Ds 0))))
+        (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
       (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G) :
       FRJr G t' (joinCtxOrP stab th rhs Δs) (.or C₁ C₂)
@@ -348,6 +462,49 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
       (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G) :
       FRJr G .blocked (joinCtxOrF stab th rhs) (.or C₁ C₂)
+  /-- `⋈^◯` — the MODAL join (W4 device, ours; the paper's ◯-free FRJ has
+      no `◯`-goals).  From `n ≥ 1` irregular premises with `Z ∈ Υ` infer
+      `Γ ⇒ ◯Z` directly: the new root is BARREN, so its modal cone is
+      itself, and it refutes `Z` by the (P3) premise mechanism — hence it
+      refutes `◯Z` with itself as the `∃`-witness.  This is what `◯∈`
+      cannot reach: its regular premise `Γ ⇒ Z` for `Z = A ⊃ B` only
+      exists at roots FORCING `A`, while a `◯(A⊃B)`-refuting root may
+      have its `A`-witness strictly above (`wip/frj_sat.lean`, cell
+      `circ_circ_imp`).  Context and side conditions are `⋈^∨`'s. -/
+  | joinCirc {n : Nat} {stab th : Fin (n + 1) → List Form}
+      {rhs : Fin (n + 1) → Form} {Z : Form}
+      (prem : ∀ j, FRJi G (stab j) (th j) (rhs j))
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+        A ∈ upsilon rhs)
+      (hcirc : unionAll (fun j => circPart (stab j)) = [])
+      (hZ : Z ∈ upsilon rhs)
+      (hgoal : Form.circ Z ∈ sfR G) :
+      FRJr G .barren (joinCtxOr stab th rhs) (.circ Z)
+  /-- `⋈^◯,p` — the promise `⋈^◯`.  The cone is the promise family, so
+      every component pledges `Z` (right formula `Z`, tag `barren` or a
+      `Covers`-certified chain); the root itself refutes `Z` through
+      `Z ∈ Υ`.  The conclusion's tag is `chain Z`: the whole cone refutes
+      `Z` by construction.  No fallible variant exists — a fallible
+      cone-member forces every body, so no `◯`-goal is refutable over
+      it. -/
+  | joinCircP {n k : Nat} {stab th : Fin (n + 1) → List Form}
+      {rhs : Fin (n + 1) → Form} {Z : Form}
+      {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
+      {Ds : Fin (k + 1) → Form}
+      (prem : ∀ j, FRJi G (stab j) (th j) (rhs j))
+      (dps : ∀ i, FRJr G (tps i) (Δs i) (Ds i))
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+        A ∈ upsilon rhs)
+      (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+        ∃ i, Clo (Δs i) Y)
+      (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+      (hDs : ∀ i, Ds i = Z ∧
+        (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z))
+      (hZ : Z ∈ upsilon rhs)
+      (hgoal : Form.circ Z ∈ sfR G) :
+      FRJr G (.chain Z) (joinCtxOrP stab th rhs Δs) (.circ Z)
 
 /-- Derivations of irregular sequents `Σ ; Θ → C`. -/
 inductive FRJi (G : Form) : List Form → List Form → Form → Type
@@ -396,7 +553,8 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       since `hJ2` demands the antecedent among the irregular premises'
       right formulas and nothing produced `rhs = ◯Z`. -/
   | circNotIn {t : Tag} {Γ Th : List Form} {Z : Form}
-      (d : FRJr G t Γ Z) (htag : t = .barren ∨ t = .chain Z)
+      (d : FRJr G t Γ Z)
+      (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z)
       (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G)
       (hgoal : Form.circ Z ∈ sfR G) :
       FRJi G [] Th (.circ Z)
@@ -408,12 +566,17 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       included.  `◯∉` cannot reach these sequents: its zone is capped by
       `Cl` of a context, which cannot see vacuous forcing (`Cl(∅) = ∅`
       in an atom-free signature), and that cap is what made `¬¬◯⊥`
-      underivable.  Unlike `Ax^I`, this axiom CONTRIBUTES a world to the
+      underivable.  GENERALISED (round 2): `F` arbitrary over an
+      arbitrary classical valuation `ats ⊆ Ĝ_at`, with the refutation
+      recorded as `classForce ats F = false` — the prime case is
+      `ats = Ĝ_at \ {F}`; the general case is what `¬¬◯◯⊥` needs
+      (`F = ◯⊥` is no prime).  Unlike `Ax^I`, this axiom CONTRIBUTES a world to the
       extracted model (`preI` mounts `PreModel.leaf (vacZone G F)`), so
       every consuming join — fallible ones included — has the
       `◯F`-refutation witness above its root. -/
-  | axIC (F : Form) (hF : F.isPrime) (hgoal : Form.circ F ∈ sfR G) :
-      FRJi G [] (vacZone G F) (.circ F)
+  | axIC (F : Form) (ats : List Form) (hats : ats ⊆ gAt G)
+      (hFf : classForce ats F = false) (hgoal : Form.circ F ∈ sfR G) :
+      FRJi G [] (vacZoneA G ats) (.circ F)
 
 end
 

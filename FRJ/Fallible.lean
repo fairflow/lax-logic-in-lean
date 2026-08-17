@@ -634,7 +634,8 @@ theorem provable_nn_circ_bot :
     FRJi.axI .bot rfl (by decide)
   have haxc : FRJi (Form.neg (Form.neg (.circ .bot))) []
       (vacZone (Form.neg (Form.neg (.circ .bot))) .bot) (.circ .bot) :=
-    FRJi.axIC .bot rfl (by decide)
+    FRJi.axIC .bot (rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
+      (fun _ h => rm_subset h) rfl (by decide)
   have hjoin := FRJr.joinAt
       (G := Form.neg (Form.neg (.circ .bot))) (n := 1)
       (stab := fun _ => [])

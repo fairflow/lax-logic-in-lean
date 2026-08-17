@@ -110,19 +110,28 @@ def seedsI (G : Form) : List (IS G) :=
       else none
     else none)
 
-/-- The `Ax^I◯` seeds: for every prime `F` with `◯F ∈ sfR G`, the mounted
-bare-final-world axiom `[] ; vacZone G F → ◯F` — the `◯⊥`-false species of
-maximal infallible world, whose classical theory `vacZone` is. -/
+/-- The `Ax^I◯` seeds (round-2 general form): for every `F` with
+`◯F ∈ sfR G` and every classical valuation `ats ⊆ Ĝ_at` refuting `F`, the
+mounted bare-final-world axiom `[] ; vacZoneA G ats → ◯F`.  Valuations
+are the full subset lattice when `Ĝ_at` is small; above the cap only the
+empty, the full, and the `F`-removed valuation are tried (reported in the
+banner). -/
 def seedsIC (G : Form) : List (IS G) :=
-  (sfR G).filterMap (fun C =>
+  (sfR G).flatMap (fun C =>
     match C with
     | .circ F =>
-      if hF : F.isPrime then
-        if hg : Form.circ F ∈ sfR G then
-          some ⟨[], vacZone G F, .circ F, .axIC F hF hg, nf_idem.symm⟩
-        else none
-      else none
-    | _ => none)
+      if hg : Form.circ F ∈ sfR G then
+        let vals := if (gAt G).length ≤ 4 then (gAt G).sublists
+          else [[], gAt G, rm (gAt G) F]
+        vals.filterMap (fun ats =>
+          if hats : ats ⊆ gAt G then
+            if hFf : classForce ats F = false then
+              some ⟨[], vacZoneA G ats, .circ F, .axIC F ats hats hFf hg,
+                nf_idem.symm⟩
+            else none
+          else none)
+      else []
+    | _ => [])
 
 /-! ## Single-premise regular rules -/
 
@@ -146,7 +155,7 @@ def stepR1 (G : Form) (r : RS G) : List (RS G) :=
           else none
       | .circ Z, hg =>
           if h : r.rhs = Z then
-            if ht : r.t = .barren ∨ r.t = .chain Z then
+            if ht : r.t = .barren ∨ ∃ W, r.t = .chain W ∧ Covers r.ctx W Z then
               some ⟨r.t, r.ctx, .circ Z, .circIn (h ▸ r.der) ht hg⟩
             else none
           else none
@@ -245,7 +254,7 @@ def stepNotIn (G : Form) (r : RS G) : List (IS G) :=
           else []
       | .circ Z, hg =>
           if h : r.rhs = Z then
-            if ht : r.t = .barren ∨ r.t = .chain Z then
+            if ht : r.t = .barren ∨ ∃ W, r.t = .chain W ∧ Covers r.ctx W Z then
               let Θ := nf G ((gHat G).filter (fun X => cloB r.ctx X))
               if hTh : ∀ X ∈ Θ, Clo r.ctx X ∧ X ∈ gHat G then
                 [⟨[], Θ, .circ Z, .circNotIn (h ▸ r.der) ht hTh hg, nf_idem.symm⟩]
@@ -338,6 +347,12 @@ def mkJoinBarren (a : IS G) (rest : List (IS G)) : List (RS G) :=
                   .or C₁ C₂,
                   .joinOr (premF a rest) h1 (hJ2_of_check h2) hcirc hC hg⟩
               else none
+          | .circ Z, hg =>
+              if hZ : Z ∈ upsilon (rhsF a rest) then
+                some ⟨.barren, joinCtxOr (stabF a rest) (thF a rest) (rhsF a rest),
+                  .circ Z,
+                  .joinCirc (premF a rest) h1 (hJ2_of_check h2) hcirc hZ hg⟩
+              else none
           | _, _ => none
         else none))
     else []
@@ -381,14 +396,17 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
       let hJ5 : ∀ Y : Form,
           Form.circ Y ∈ unionAll (fun j => circPart (stabF a rest j)) →
           ∃ i, Clo (dctxF p prest i) Y := fun _ hm => h5 _ hm
+      if h7 : ∀ i j, ∀ X ∈ stabF a rest j, Clo (dctxF p prest i) X then
       -- the two tag options
       let tags : List ((t' : Tag) ×'
           (t' = .blocked ∨ (t' = .chain (drhsF p prest 0) ∧ ∀ i,
             drhsF p prest i = drhsF p prest 0 ∧
-            (dtagF p prest i = .barren ∨ dtagF p prest i = .chain (drhsF p prest 0))))) :=
+            (dtagF p prest i = .barren ∨ ∃ W, dtagF p prest i = .chain W ∧
+              Covers (dctxF p prest i) W (drhsF p prest 0))))) :=
         ⟨.blocked, Or.inl rfl⟩ ::
         (if hch : ∀ i, drhsF p prest i = drhsF p prest 0 ∧
-            (dtagF p prest i = .barren ∨ dtagF p prest i = .chain (drhsF p prest 0)) then
+            (dtagF p prest i = .barren ∨ ∃ W, dtagF p prest i = .chain W ∧
+              Covers (dctxF p prest i) W (drhsF p prest 0)) then
           [⟨.chain (drhsF p prest 0), Or.inr ⟨rfl, hch⟩⟩]
         else [])
       (tags.flatMap (fun tg =>
@@ -397,13 +415,10 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
           if hF : F.isPrime then
             if hFnot : F ∉ unionAll (fun j => atPart (stabF a rest j)) then
               if hg : F ∈ sfR G then
-                if h7 : ∀ i, ∀ X ∈ joinCtxAtP (stabF a rest) (thF a rest)
-                    (rhsF a rest) F (dctxF p prest), Clo (dctxF p prest i) X then
-                  some ⟨tg.1,
-                    joinCtxAtP (stabF a rest) (thF a rest) (rhsF a rest) F (dctxF p prest), F,
-                    .joinAtP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                      hJ5 h7 tg.2 hF hFnot hg⟩
-                else none
+                some ⟨tg.1,
+                  joinCtxAtP (stabF a rest) (thF a rest) (rhsF a rest) F (dctxF p prest), F,
+                  .joinAtP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
+                    hJ5 h7 tg.2 hF hFnot hg⟩
               else none
             else none
           else none)) ++
@@ -413,17 +428,33 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
             match T, hg with
             | .or C₁ C₂, hg =>
                 if hC : C₁ ∈ upsilon (rhsF a rest) ∧ C₂ ∈ upsilon (rhsF a rest) then
-                  if h7 : ∀ i, ∀ X ∈ joinCtxOrP (stabF a rest) (thF a rest)
-                      (rhsF a rest) (dctxF p prest), Clo (dctxF p prest i) X then
-                    some ⟨tg.1,
-                      joinCtxOrP (stabF a rest) (thF a rest) (rhsF a rest) (dctxF p prest),
-                      .or C₁ C₂,
-                      .joinOrP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                        hJ5 h7 tg.2 hC hg⟩
-                  else none
+                  some ⟨tg.1,
+                    joinCtxOrP (stabF a rest) (thF a rest) (rhsF a rest) (dctxF p prest),
+                    .or C₁ C₂,
+                    .joinOrP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
+                      hJ5 h7 tg.2 hC hg⟩
                 else none
             | _, _ => none
-          else none))))
+          else none)))) ++
+      -- ⋈^◯,p over modal targets: components pledge the body
+      ((sfR G).filterMap (fun T =>
+        if hg : T ∈ sfR G then
+          match T, hg with
+          | .circ Z, hg =>
+              if hZ : Z ∈ upsilon (rhsF a rest) then
+                if hDs : ∀ i, drhsF p prest i = Z ∧
+                    (dtagF p prest i = .barren ∨ ∃ W, dtagF p prest i = .chain W ∧
+                      Covers (dctxF p prest i) W Z) then
+                  some ⟨.chain Z,
+                    joinCtxOrP (stabF a rest) (thF a rest) (rhsF a rest) (dctxF p prest),
+                    .circ Z,
+                    .joinCircP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
+                      hJ5 h7 hDs hZ hg⟩
+                else none
+              else none
+          | _, _ => none
+        else none))
+      else []
     else []
 
 end Joins
@@ -593,6 +624,18 @@ def corpus : List Cell := [
     "≡ ¬◯⊥ intuitionistically; the deeper-nesting twin"⟩,
   ⟨"circ_or_split", .imp (.circ (.or fp fq)) (.or (.circ fp) (.circ fq)), false,
     "Screen 2 (FRJ/Modal.lean): branch refutes it"⟩,
+  -- W4 pledge-stress cells (2026-08-17): ◯-goals with compound bodies,
+  -- probing the pledged-visit shapes BEFORE the minMod build is scoped
+  ⟨"circ_circ_imp", .circ (.imp (.circ fp) fp), false,
+    "pledge stress: ◯-goal, ⊃-body with MODAL antecedent; refuter v0 has the (◯p⊃p)-witness strictly above"⟩,
+  ⟨"neg_circ_circ_imp", .imp (.circ (.imp (.circ fp) fp)) .bot, false,
+    "pledge stress: the same body through the irregular route (Υ ∋ ◯(◯p⊃p))"⟩,
+  ⟨"lob_circ", .imp (.circ (.imp (.circ fp) fp)) (.circ fp), false,
+    "pledge stress: promise join must absorb ◯p while pledging p"⟩,
+  ⟨"circ_and_pledge", .circ (.and fp fq), false,
+    "pledge stress: ∧-body; one-world refuter"⟩,
+  ⟨"nn_circ_circ_bot", .imp (.imp (.circ (.circ .bot)) .bot) .bot, false,
+    "pledge stress: nested ◯-body through the irregular route (¬¬◯◯⊥)"⟩,
   ⟨"excluded_middle", .or fp (.imp fp .bot), false,
     "IPL classic; two-world chain refutes"⟩,
   ⟨"circ_and_goal", .circ (.and fp fq), false,
@@ -608,6 +651,8 @@ def corpus : List Cell := [
     "the unit A ⊃ ◯A"⟩,
   ⟨"mult_inst", .imp (.circ (.circ fp)) (.circ fp), true,
     "the multiplication ◯◯A ⊃ ◯A"⟩,
+  ⟨"circ_taut", .circ (.imp fp fp), true,
+    "control for the modal join: ◯(p⊃p) is PLL-derivable (unit), so no ⋈^◯ instance may reach it"⟩,
   ⟨"top", .imp .bot .bot, true,
     "⊤"⟩,
   ⟨"g4ill_blocker", .imp (.circ (.imp (.imp (.circ fp) fr) (.circ fp)))
