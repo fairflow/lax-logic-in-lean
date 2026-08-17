@@ -529,22 +529,16 @@ def minZetaNS {K : Kripke} {a : K.W} {Z : Form}
           rw [hc] at hmem
           exact List.not_mem_nil hmem }
 
-/-- A supplied cell for the sole-candidate corner: a tagged `Z`-row
-whose context `Clo`-grounds `Λ*_a` — exactly what `metI_circ_syn`
-consumes. -/
-structure CircCell (K : Kripke) (G : Form) (a : K.W) (Z : Form) : Type where
-  t : Tag
-  ctx : List Form
-  der : FRJr G t ctx Z
-  tOK : t = .barren ∨ ∃ W, t = .chain W ∧ Covers ctx W Z
-  ground : ∀ X ∈ lamStar K a G, Clo ctx X
-
 /-- **The open kernel of FRJ◯ completeness**: supply for the irregular
-◯-demand at a world that is its own sole minZeta candidate. -/
+◯-demand at a world that is its own sole minZeta candidate.  The
+`IrrWit` may be produced by any route — `metI_circ_syn` over a tagged
+grounding row, or the generalised `Ax^I◯` at maximal worlds
+(`circWit_of_maximal` below). -/
 def CircSupply (K : Kripke) (G : Form) : Type :=
   ∀ a : K.W, ∀ Z : Form, Form.circ Z ∈ sfR G → ¬ K.force a (.circ Z) →
+    (∀ v, K.Rm a v → ¬ K.force v Z) →
     (∀ u, K.le a u → (∀ v, K.Rm u v → ¬ K.force v Z) → u = a) →
-    CircCell K G a Z
+    IrrWit K G a (.circ Z)
 
 /-- The statement family: `t = 0` the irregular wit, else the regular. -/
 def SatStmt (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
@@ -578,9 +572,7 @@ def visit (K : Kripke) (G : Form)
   | 0, .circ Z =>
       let mz := minZetaNS hnf
       by_cases hea : mz.e = a
-      · exact
-          let c := hsup a Z hC hnf (mz.sole hea)
-          metI_circ_syn hC c.der c.tOK c.ground
+      · exact hsup a Z hC hnf (hea ▸ mz.cone) (mz.sole hea)
       · exact metI_circ hC
           ((visit K G hloc hsup mz.e 1 Z (sfR_circ hC)
             (mz.cone _ (K.rm_refl _))).weaken mz.le)
@@ -642,5 +634,119 @@ theorem completeness_of_supply {K : Kripke} {G : Form}
     (hsup : CircSupply K G)
     (hK : ¬ K.valid G) : Provable G :=
   completeness_of_allMet (allMet_of_supply hloc hsup) hK
+
+/-! ### Discharging the kernel at maximal worlds
+
+At a `≤`-maximal infallible world forcing is classical, with the
+polarity split doing the bookkeeping between the two subformula sets:
+left subformulas carry forcing INTO the classical valuation, right
+subformulas carry it back.  The generalised `Ax^I◯` then discharges the
+sole-candidate supply outright: the vacuous zone of the world's own
+classical theory contains `Λ*_a`, and the side condition
+`classForce ats Z = false` is exactly `a ⊮ Z`. -/
+
+/-- The classical valuation of a world: its forced `Ĝ`-atoms. -/
+def clAts (K : Kripke) (G : Form) (a : K.W) : List Form :=
+  (gAt G).filter (fun q => decide (K.force a q))
+
+theorem clAts_subset {K : Kripke} {G : Form} {a : K.W} :
+    clAts K G a ⊆ gAt G := fun _ h => (List.mem_filter.mp h).1
+
+/-- The polarity-split classical correspondence at a maximal infallible
+world. -/
+theorem force_classForce {K : Kripke} {G : Form} {a : K.W}
+    (hmax : ∀ u, K.le a u → u = a) (hinf : ¬ K.Fal a) :
+    ∀ X : Form,
+      (X ∈ sfL G → K.force a X → classForce (clAts K G a) X = true) ∧
+      (X ∈ sfR G → classForce (clAts K G a) X = true → K.force a X) := by
+  intro X
+  induction X with
+  | atom p =>
+      constructor
+      · intro hL hf
+        simp only [classForce, decide_eq_true_eq]
+        exact List.mem_filter.mpr ⟨List.mem_filter.mpr ⟨hL, rfl⟩, by
+          simpa using hf⟩
+      · intro _ hc
+        simp only [classForce, decide_eq_true_eq] at hc
+        have := (List.mem_filter.mp hc).2
+        simpa using this
+  | bot =>
+      constructor
+      · intro _ hf
+        exact absurd ((K.force_bot a).mp hf) hinf
+      · intro _ hc
+        exact Bool.noConfusion hc
+  | and A B ihA ihB =>
+      constructor
+      · intro hL hf
+        obtain ⟨h1, h2⟩ := sfL_and hL
+        simp only [classForce, Bool.and_eq_true]
+        exact ⟨ihA.1 h1 hf.1, ihB.1 h2 hf.2⟩
+      · intro hR hc
+        obtain ⟨h1, h2⟩ := sfR_and hR
+        simp only [classForce, Bool.and_eq_true] at hc
+        exact ⟨ihA.2 h1 hc.1, ihB.2 h2 hc.2⟩
+  | or A B ihA ihB =>
+      constructor
+      · intro hL hf
+        obtain ⟨h1, h2⟩ := sfL_or hL
+        simp only [classForce, Bool.or_eq_true]
+        exact hf.elim (fun h => Or.inl (ihA.1 h1 h)) (fun h => Or.inr (ihB.1 h2 h))
+      · intro hR hc
+        obtain ⟨h1, h2⟩ := sfR_or hR
+        simp only [classForce, Bool.or_eq_true] at hc
+        exact hc.elim (fun h => Or.inl (ihA.2 h1 h)) (fun h => Or.inr (ihB.2 h2 h))
+  | imp A B ihA ihB =>
+      constructor
+      · intro hL hf
+        obtain ⟨h1, h2⟩ := sfL_imp hL
+        simp only [classForce, Bool.or_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true]
+        by_cases hcA : classForce (clAts K G a) A = true
+        · exact Or.inr (ihB.1 h2 (hf a (K.le_refl a) (ihA.2 h1 hcA)))
+        · exact Or.inl (Bool.not_eq_true _ ▸ hcA)
+      · intro hR hc
+        obtain ⟨h1, h2⟩ := sfR_imp hR
+        rw [K.force_imp]
+        intro b hab hbA
+        rw [hmax b hab] at hbA ⊢
+        simp only [classForce, Bool.or_eq_true, Bool.not_eq_eq_eq_not, Bool.not_true] at hc
+        rcases hc with hcA | hcB
+        · exact absurd (ihA.1 h1 hbA) (by simp [hcA])
+        · exact ihB.2 h2 hcB
+  | circ A ihA =>
+      constructor
+      · intro hL hf
+        obtain ⟨b, hab, hbA⟩ := hf a (K.le_refl a)
+        have hba : b = a := hmax b (K.sub_mi hab)
+        exact ihA.1 (sfL_circ hL) (hba ▸ hbA)
+      · intro hR hc
+        intro b hab
+        rw [hmax b hab]
+        exact ⟨a, K.rm_refl a, ihA.2 (sfR_circ hR) hc⟩
+
+/-- **The kernel discharged at maximal worlds**, by the generalised
+`Ax^I◯` over the world's classical theory. -/
+def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
+    (hmax : ∀ u, K.le a u → u = a)
+    (hZ : Form.circ Z ∈ sfR G) (hnf : ¬ K.force a (.circ Z))
+    (hcone : ∀ v, K.Rm a v → ¬ K.force v Z) : IrrWit K G a (.circ Z) :=
+  have hinf : ¬ K.Fal a := fun hf => hnf (K.fal_force _ hf)
+  have hFf : classForce (clAts K G a) Z = false := by
+    cases hcZ : classForce (clAts K G a) Z with
+    | false => rfl
+    | true =>
+        exact absurd ((force_classForce hmax hinf Z).2 (sfR_circ hZ) hcZ)
+          (hcone a (K.rm_refl a))
+  { stab := []
+    th := vacZoneA G (clAts K G a)
+    der := .axIC Z (clAts K G a) clAts_subset hFf hZ
+    sub := List.nil_subset _
+    cov := fun X hX => by
+      obtain ⟨hsfL, hstar⟩ := mem_lamStar.mp hX
+      refine List.mem_append_right _ (mem_nf.mpr ⟨lamStar_subset_gHat hX, ?_⟩)
+      exact List.mem_filter.mpr ⟨lamStar_subset_gHat hX,
+        (force_classForce hmax hinf X).1 hsfL (K.forceStar_force hstar)⟩
+    thNf := nf_idem.symm }
 
 end FRJ
