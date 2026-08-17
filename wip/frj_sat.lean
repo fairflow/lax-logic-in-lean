@@ -110,6 +110,20 @@ def seedsI (G : Form) : List (IS G) :=
       else none
     else none)
 
+/-- The `Ax^I◯` seeds: for every prime `F` with `◯F ∈ sfR G`, the mounted
+bare-final-world axiom `[] ; vacZone G F → ◯F` — the `◯⊥`-false species of
+maximal infallible world, whose classical theory `vacZone` is. -/
+def seedsIC (G : Form) : List (IS G) :=
+  (sfR G).filterMap (fun C =>
+    match C with
+    | .circ F =>
+      if hF : F.isPrime then
+        if hg : Form.circ F ∈ sfR G then
+          some ⟨[], vacZone G F, .circ F, .axIC F hF hg, nf_idem.symm⟩
+        else none
+      else none
+    | _ => none)
+
 /-! ## Single-premise regular rules -/
 
 /-- `∧`, `⊃∈`, `◯∈` applied to one regular row, against every right
@@ -528,7 +542,7 @@ def roundStep (G : Form) (cfg : Config) (db : DB G) :
   (db2, n1 + n2, lamCapped)
 
 def saturate (G : Form) (cfg : Config) : DB G × Stats :=
-  let db0 : DB G := { rs := seedsR G, is := seedsI G }
+  let db0 : DB G := { rs := seedsR G, is := seedsI G ++ seedsIC G }
   let rec go : Nat → DB G → Stats → DB G × Stats
     | 0, db, st => (db, { st with dbCapped := st.dbCapped })
     | fuel + 1, db, st =>
@@ -574,7 +588,7 @@ def corpus : List Cell := [
   ⟨"circ_peirce", .imp (.imp (.circ fp) fq) fq, false,
     "pinned: provable_circ_peirce (the ◯∉ witness)"⟩,
   ⟨"nn_circ_bot", .imp (.imp (.circ .bot) .bot) .bot, false,
-    "STANDING FLAG: underivable in current FRJ◯ (the ◯∉ cycle, docs/frj-w4.md §7); turns pass when the Ax^I◯ repair lands"⟩,
+    "the Ax^I◯ witness: was the standing flag (the ◯∉ cycle); the bare-final-world seed unlocks it; pinned hand cell provable_nn_circ_bot"⟩,
   ⟨"nnn_circ_bot", .imp (.imp (.imp (.circ .bot) .bot) .bot) .bot, false,
     "≡ ¬◯⊥ intuitionistically; the deeper-nesting twin"⟩,
   ⟨"circ_or_split", .imp (.circ (.or fp fq)) (.or (.circ fp) (.circ fq)), false,

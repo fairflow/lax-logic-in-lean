@@ -148,6 +148,46 @@ def joinCtxOrF {n : Nat} (stab th : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) : List Form :=
   joinCtxOr stab th rhs ++ joinCtxCircF stab th
 
+/-! ## The classical theory of a final world
+
+`Ax^I◯` (the W4 §7 repair) needs the theory of the `F`-refuting FINAL
+world as a zone.  At a final world forcing is classical and the modal
+cone is the world itself, so the theory is a Boolean evaluation against
+the atom list — including the `◯`-collapse. -/
+
+/-- Single-world (classical) forcing against an atom list: the theory of
+a final infallible world.  `◯` collapses because the modal cone of a
+final world is the world itself. -/
+def classForce (ats : List Form) : Form → Bool
+  | .atom p => decide (Form.atom p ∈ ats)
+  | .bot => false
+  | .and A B => classForce ats A && classForce ats B
+  | .or A B => classForce ats A || classForce ats B
+  | .imp A B => !classForce ats A || classForce ats B
+  | .circ A => classForce ats A
+
+/-- The zone of `Ax^I◯`: the classical theory of the `F`-refuting final
+world, restricted to `Ĝ` and canonicalised.  Unlike the `Ax^I` zone it
+carries no losable data — every member is genuinely forced at the
+realising world, vacuous implications (`◯F ⊃ W`, `F ⊃ W`, and compound
+variants) included.  This is what `Cl` of a context cannot see, and what
+the `◯∉` cycle of `docs/frj-w4.md` §7 needed. -/
+def vacZone (G : Form) (F : Form) : List Form :=
+  nf G ((gHat G).filter (classForce (rm (gAt G) F)))
+
+/-- The atoms of the zone are exactly the surviving atoms. -/
+theorem vacZone_atom {G F : Form} {p : String} :
+    Form.atom p ∈ vacZone G F ↔ Form.atom p ∈ rm (gAt G) F := by
+  constructor
+  · intro h
+    have h2 := (List.mem_filter.mp (mem_nf.mp h).2).2
+    simpa [classForce] using h2
+  · intro h
+    have hAt : Form.atom p ∈ gAt G := rm_subset h
+    have hG : Form.atom p ∈ gHat G :=
+      List.mem_append_left _ (List.mem_append_left _ hAt)
+    exact mem_nf.mpr ⟨hG, List.mem_filter.mpr ⟨hG, by simpa [classForce] using h⟩⟩
+
 /-! ## The pledge tag
 
 The index that gates the modal introduction rule.  `Mod(D)`'s root world
@@ -360,6 +400,20 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G)
       (hgoal : Form.circ Z ∈ sfR G) :
       FRJi G [] Th (.circ Z)
+  /-- `Ax^I◯` — the modal irregular axiom (the W4 §7 repair).  For prime
+      `F`, the sequent `[] ; vacZone(F) → ◯F` is realised by the
+      `F`-refuting FINAL world: its modal cone is itself, so it refutes
+      `◯F` exactly because it refutes `F`, and it forces every member of
+      the zone — the zone is its classical theory, vacuous implications
+      included.  `◯∉` cannot reach these sequents: its zone is capped by
+      `Cl` of a context, which cannot see vacuous forcing (`Cl(∅) = ∅`
+      in an atom-free signature), and that cap is what made `¬¬◯⊥`
+      underivable.  Unlike `Ax^I`, this axiom CONTRIBUTES a world to the
+      extracted model (`preI` mounts `PreModel.leaf (vacZone G F)`), so
+      every consuming join — fallible ones included — has the
+      `◯F`-refutation witness above its root. -/
+  | axIC (F : Form) (hF : F.isPrime) (hgoal : Form.circ F ∈ sfR G) :
+      FRJi G [] (vacZone G F) (.circ F)
 
 end
 

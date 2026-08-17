@@ -339,6 +339,59 @@ theorem toKripke_not_force_circ_of_barren (P : PreModel) (h) {a : P.W}
   obtain ⟨c, hc, hcA⟩ := hf a ((P.toKripke h).le_refl a)
   exact hA ((hbar c hc) ▸ hcA)
 
+/-- `ClosedLbl` for a single-world model, trivially. -/
+theorem leaf_closed (Γ : List Form) :
+    ∀ (w v : (leaf Γ).W), (leaf Γ).le w v → ∀ X ∈ (leaf Γ).lbl w,
+      Clo ((leaf Γ).lbl v) X :=
+  fun _ _ _ _ hX => .base hX
+
+/-- Forcing at the single infallible world IS classical forcing against
+its atoms: the world is its own cone in both relations, so implication
+collapses to material implication and `◯` collapses away.  This is what
+certifies the `Ax^I◯` zone (`vacZone`): every member is `classForce`-true
+by construction, hence forced at the mounted world. -/
+theorem leaf_force_iff {Γ ats : List Form}
+    (hats : ∀ p : String, Form.atom p ∈ Γ ↔ Form.atom p ∈ ats) :
+    ∀ X : Form, ((leaf Γ).toKripke (leaf_closed Γ)).force () X ↔
+      classForce ats X = true := by
+  intro X
+  induction X with
+  | atom p =>
+      simp only [Kripke.force, toKripke_V, classForce, decide_eq_true_eq]
+      constructor
+      · rintro (h | h)
+        · exact (hats p).mp h
+        · exact absurd h (fun h => h)
+      · intro h; exact Or.inl ((hats p).mpr h)
+  | bot =>
+      simp only [Kripke.force, toKripke_Fal, classForce]
+      exact ⟨fun h => absurd h (fun h => h), fun h => Bool.noConfusion h⟩
+  | and A B ihA ihB =>
+      simp only [Kripke.force, classForce, Bool.and_eq_true]
+      exact and_congr ihA ihB
+  | or A B ihA ihB =>
+      simp only [Kripke.force, classForce, Bool.or_eq_true]
+      exact or_congr ihA ihB
+  | imp A B ihA ihB =>
+      simp only [Kripke.force, classForce, Bool.or_eq_true, Bool.not_eq_eq_eq_not,
+        Bool.not_true]
+      constructor
+      · intro h
+        by_cases hA : classForce ats A = true
+        · exact Or.inr (ihB.mp (h () trivial (ihA.mpr hA)))
+        · exact Or.inl (Bool.eq_false_iff.mpr hA)
+      · rintro (h | h) b _ hbA
+        · exact absurd (ihA.mp hbA) (by simp [h])
+        · exact ihB.mpr h
+  | circ A ihA =>
+      simp only [Kripke.force, classForce]
+      constructor
+      · intro h
+        obtain ⟨u, -, hu⟩ := h () trivial
+        exact ihA.mp hu
+      · intro h _ _
+        exact ⟨(), trivial, ihA.mpr h⟩
+
 end PreModel
 
 /-! ## The regular sub-derivations of an irregular derivation
@@ -356,6 +409,7 @@ def RegIdx {G : Form} : {St Th : List Form} → {C : Form} → FRJi G St Th C �
   | _, _, _, .impInI d _ _ _ => RegIdx d
   | _, _, _, .impNotIn _ _ _ _ _ => Unit
   | _, _, _, .circNotIn _ _ _ _ => Unit
+  | _, _, _, .axIC _ _ _ => Unit
 
 /-- `RegIdx` has decidable equality, constructively. -/
 instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
@@ -370,6 +424,7 @@ instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ => regIdxDecEq d
   | _, _, _, .impNotIn _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
   | _, _, _, .circNotIn _ _ _ _ => inferInstanceAs (DecidableEq Unit)
+  | _, _, _, .axIC _ _ _ => inferInstanceAs (DecidableEq Unit)
 
 /-- An enumeration of `RegIdx`, constructively (no `Fintype.ofFinite`,
 hence no `Classical.choice`). -/
@@ -383,6 +438,7 @@ def regIdxElems {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ => regIdxElems d
   | _, _, _, .impNotIn _ _ _ _ _ => [()]
   | _, _, _, .circNotIn _ _ _ _ => [()]
+  | _, _, _, .axIC _ _ _ => [()]
 
 theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (i : RegIdx d), i ∈ regIdxElems d
@@ -398,6 +454,7 @@ theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _, i => regIdxComplete d i
   | _, _, _, .impNotIn _ _ _ _ _, _ => List.mem_cons_self
   | _, _, _, .circNotIn _ _ _ _, _ => List.mem_cons_self
+  | _, _, _, .axIC _ _ _, _ => List.mem_cons_self
 
 /-! ### The index set of a join
 
@@ -512,6 +569,7 @@ def preI {G : Form} : {St Th : List Form} → {C : Form} →
   | _, _, _, .impInI d _ _ _, i => preI d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR d
   | _, _, _, .circNotIn d _ _ _, _ => preR d
+  | _, _, _, .axIC F _ _, _ => PreModel.leaf (vacZone G F)
 
 end
 
@@ -541,34 +599,38 @@ theorem preR_root_lbl {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
   | _, _, _, .joinOrF _ _ _ _ _ => rfl
 
 /-- Every pre-model an irregular derivation contributes is the model of a
-regular sequent occurring in it, and its root carries that sequent's
-context. -/
+sequent occurring in it, and its root carries that sequent's left
+formulas.  For the `⊃∉`/`◯∉` nodes the sequent is the regular premise;
+for `Ax^I◯` (which has no premise) it is the axiom's own irregular
+sequent — its zone IS the mounted world's label. -/
 theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (i : RegIdx d),
-    ∃ (Γ' : List Form) (C' : Form), OccI d (.reg Γ' C') ∧
-      (preI d i).lbl (preI d i).root = Γ'
+    ∃ s : Sequent, OccI d s ∧
+      (preI d i).lbl (preI d i).root = s.lhs
   | _, _, _, .axI _ _ _, i => (i : Empty).elim
   | _, _, _, .andI1 d _, i => by
-      obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec d i
-      exact ⟨Γ', C', .andI1 hocc, hlbl⟩
+      obtain ⟨s, hocc, hlbl⟩ := preI_spec d i
+      exact ⟨s, .andI1 hocc, hlbl⟩
   | _, _, _, .andI2 d _, i => by
-      obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec d i
-      exact ⟨Γ', C', .andI2 hocc, hlbl⟩
+      obtain ⟨s, hocc, hlbl⟩ := preI_spec d i
+      exact ⟨s, .andI2 hocc, hlbl⟩
   | _, _, _, .orI d₁ d₂ _ _ _, i => by
       match (i : Sum (RegIdx d₁) (RegIdx d₂)) with
       | .inl i₁ =>
-          obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec d₁ i₁
-          exact ⟨Γ', C', .orI₁ hocc, hlbl⟩
+          obtain ⟨s, hocc, hlbl⟩ := preI_spec d₁ i₁
+          exact ⟨s, .orI₁ hocc, hlbl⟩
       | .inr i₂ =>
-          obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec d₂ i₂
-          exact ⟨Γ', C', .orI₂ hocc, hlbl⟩
+          obtain ⟨s, hocc, hlbl⟩ := preI_spec d₂ i₂
+          exact ⟨s, .orI₂ hocc, hlbl⟩
   | _, _, _, .impInI d _ _ _, i => by
-      obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec d i
-      exact ⟨Γ', C', .impInI hocc, hlbl⟩
+      obtain ⟨s, hocc, hlbl⟩ := preI_spec d i
+      exact ⟨s, .impInI hocc, hlbl⟩
   | _, _, _, .impNotIn d _ _ _ _, _ =>
-      ⟨_, _, .impNotIn (.root d), preR_root_lbl d⟩
+      ⟨_, .impNotIn (.root d), preR_root_lbl d⟩
   | _, _, _, .circNotIn d _ _ _, _ =>
-      ⟨_, _, .circNotIn (.root d), preR_root_lbl d⟩
+      ⟨_, .circNotIn (.root d), preR_root_lbl d⟩
+  | _, _, _, .axIC F hF hg, _ =>
+      ⟨.irr [] (vacZone G F) (.circ F), .root _, rfl⟩
 
 /-- Labels shrink modulo closure going down: Lemma 3.4(iii) in the
 model. -/
@@ -595,7 +657,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
           | root =>
               cases x with
               | inl ji =>
-                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
@@ -622,7 +684,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
           | root =>
               cases x with
               | inl ji =>
-                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
@@ -646,7 +708,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
           | root =>
               cases x with
               | inl ji =>
-                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
@@ -673,7 +735,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
           | root =>
               cases x with
               | inl ji =>
-                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
@@ -695,7 +757,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
           obtain ⟨ji, b⟩ := jb
           cases hle with
           | root =>
-              obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+              obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
               refine clo_trans (fun Y hY => ?_)
                 (lhs_clo_of_steps
                   ((occI_steps hocc).tail ⟨_, Step.joinAt (F := F) ji.1 hJ1⟩) X hX)
@@ -712,7 +774,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
           obtain ⟨ji, b⟩ := jb
           cases hle with
           | root =>
-              obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+              obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
               refine clo_trans (fun Y hY => ?_)
                 (lhs_clo_of_steps
                   ((occI_steps hocc).tail
@@ -734,6 +796,7 @@ theorem preI_closed {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _, i => preI_closed d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR_closed d
   | _, _, _, .circNotIn d _ _ _, _ => preR_closed d
+  | _, _, _, .axIC _ _ _, _ => fun _ _ _ X hX => .base hX
 
 end
 

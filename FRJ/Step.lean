@@ -647,6 +647,10 @@ theorem wfI {G : Form} : ∀ {St Th : List Form} {C : Form},
       intro x hx
       simp only [List.nil_append] at hx
       exact (hTh x hx).2
+  | _, _, _, .axIC _ _ _ => by
+      intro x hx
+      simp only [List.nil_append] at hx
+      exact nf_subset hx
 
 end
 

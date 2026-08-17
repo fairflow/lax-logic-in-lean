@@ -1381,6 +1381,15 @@ theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _, i, w => lemma39I0 d i w
   | _, _, _, .impNotIn d _ _ _ _, _, w => (lemma39R d).1 w
   | _, _, _, .circNotIn d _ _ _, _, w => (lemma39R d).1 w
+  | _, _, _, @FRJi.axIC _ F hF hg, _, w => by
+      -- the mounted BARE final world (the ◯⊥-false species: no fallible
+      -- Rm-access, so `◯Y ≡ Y` on its own cone) forces its zone: every
+      -- member is `classForce`-true by construction, and single-world
+      -- forcing IS `classForce`
+      intro X hX
+      have hcf : classForce (rm (gAt G) F) X = true :=
+        (List.mem_filter.mp (mem_nf.mp hX).2).2
+      exact (PreModel.leaf_force_iff (fun p => vacZone_atom) X).mpr hcf
 
 theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (P : PreModel) (hP : ClosedLbl P) (w : P.W),
@@ -1478,6 +1487,20 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       rw [preR_root_lbl d] at hΓ
       have hvΓ : (P.toKripke hP).forces v Γ := fun X hX => (hiff X).mpr (hΓ X hX)
       exact hb ((hiff B).mp (hcon v hwv (clo_forces hvΓ hA)))
+  | _, _, _, @FRJi.axIC _ F hF hg, P, hP, w, hw, hlbl, hroot, hforce => by
+      -- `w ⊩ ◯F` would persist up to the mounted bare final world, which
+      -- refutes `◯F` because it refutes `F` and is its own modal cone.
+      intro hcon
+      obtain ⟨v, hwv, hiff⟩ := hroot ()
+      have hv : (P.toKripke hP).force v (.circ F) :=
+        (P.toKripke hP).force_mono hwv hcon
+      have hr := (hiff _).mp hv
+      have hcf := (PreModel.leaf_force_iff (fun p => vacZone_atom) _).mp hr
+      match F, hF, hcf with
+      | .bot, _, hcf => exact Bool.noConfusion hcf
+      | .atom p, _, hcf =>
+          simp only [classForce, decide_eq_true_eq] at hcf
+          exact (mem_rm.mp hcf).1 rfl
   | _, _, _, @FRJi.circNotIn _ t Γ Th Z d htag hTh hg,
       P, hP, w, hw, hlbl, hroot, hforce => by
       -- `w ⊩ ◯Z` persists up to the embedded premise root `v`, transfers

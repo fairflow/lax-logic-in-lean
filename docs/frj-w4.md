@@ -198,9 +198,13 @@ saturated-database direction (`GBU`-style proof extraction for PLL).
 4. ~~(T2) the saturation engine skeleton + corpus run~~
    **DONE 2026-08-17** — §6 below.  It caught a completeness defect
    (§7): `¬¬◯⊥` is underivable in the current calculus.
-5. The §7 repair: `Ax^I◯` seeds, the compound-body lifts, the
-   join-variant `Υ`-restriction, soundness re-cleared; `nn_circ_bot`
-   must turn `pass`.
+5. ~~The §7 repair~~ **DONE 2026-08-17**: the mounted-world `Ax^I◯`
+   (zone = the bare final world's classical theory `vacZone`, the
+   realiser CONTRIBUTED via `PreModel.leaf`), soundness re-cleared
+   with pins, witness cell `provable_nn_circ_bot`, engine seeds
+   `seedsIC`; corpus run 3 fully green (`nn_circ_bot` `pass`,
+   controls hold).  The sketched compound-body lifts and join-variant
+   `Υ`-restriction were NOT needed (§7, correction).
 6. The pledged visit (`minZeta`, pledged `RegWit` with tag field, the
    join trichotomy, the modal `minMod` cases) — after 5, since the
    `◯`-goal irregular case rests on the seeded rules.
@@ -238,6 +242,11 @@ controls saturate to fixpoint underived** (`control-ok`), no `FAIL`:
     top              control-ok  rounds=1
     g4ill_blocker    control-ok  rounds=5  RS=20  IS=62  (fixpoint, no derivation)
 
+Run 3 (after the §7 repair): **11 pass / 4 control-ok / 0 flags** —
+`nn_circ_bot` `pass` at rounds=3 RS=3 IS=5 (the two extra IS rows are
+the `Ax^I◯` seeds), every other line unchanged except `circ_peirce`
+(rounds 4 → 3: the seed shortcuts a `◯∉` detour).
+
 The passes cover both new devices end-to-end (`circ_peirce` through
 `◯∉`; `circ_or_split` keeping the modal zone through `⋈^⊥`; the
 `◯`-goal family through `◯∈`), and the database sizes confirm the
@@ -274,22 +283,62 @@ is sound (pinned) and does real work where the premise context is rich
 (`circ_peirce`, `nnn_circ_bot`), but it cannot SEED the `◯`-right
 formulas the way `Ax^I` seeds the prime ones.
 
-**The repair sketch (next campaign).**  Add the modal irregular axiom
+**The repair (LANDED 2026-08-17) — the mounted-world axiom `Ax^I◯`.**
 
-    Ax^I◯ :  ⊢  [] ; Ĝ_at \ {F}, Ĝ_imp, Ĝ_◯ → ◯F,   F prime, ◯F ∈ Sf^R
+    Ax^I◯ :  ⊢  [] ; vacZone(F) → ◯F,     F prime, ◯F ∈ Sf^R(G)
 
-sound with `Ax^I`'s own realiser — a FINAL world refutes `◯F` exactly
-when it refutes `F`, its modal cone being itself.  Lift compound bodies
-monotonically where sound unconditionally (`Σ;Θ → ◯A` gives
-`Σ;Θ → ◯(A ∧ B)`: cone-refutation is antitone in the body); the `∨`
-and `⊃` bodies need their own analysis.  One soundness constraint is
-already visible and MUST be respected: a `◯`-right premise used for the
-`Υ`-restriction is sound for barren joins (the new root's cone is
-itself) and for suitably pledged promise joins, but NOT for fallible
-joins — the fallible successor forces every body, so an `⋈^⊥` root
-with `◯Y ∈ Υ` would keep implications that are false at it.  The
-`Υ`-restriction therefore becomes join-variant-dependent (full for
-barren, `◯`-free for `⋈^⊥`, pledge-conditioned for promise joins), and
-`lemma39I` must thread the consuming join's cone data.  Verdict
-discipline: `nn_circ_bot` stays a standing `flag` in the corpus until
-the repair lands and turns it into a `pass`.
+where `vacZone G F = nf G ((Ĝ).filter (classForce (Ĝ_at \ {F})))` and
+`classForce ats` is CLASSICAL Boolean evaluation over the atom list
+`ats`, with the `◯`-clause `classForce (◯A) = classForce A`.  The zone
+is the classical theory (restricted to `Ĝ`) of the axiom's realiser,
+and — the design's one load-bearing novelty against the ◯-free
+calculus — the axiom CONTRIBUTES that realiser as a mounted world:
+`preI (axIC F) = PreModel.leaf (vacZone G F)`, a single infallible
+barren world.  Soundness (`lemma39I0`/`lemma39I` cases, pinned through
+the FRJ audit): the leaf forces its zone because single-world forcing
+IS `classForce` (`leaf_force_iff`), and it refutes `◯F` because it
+refutes `F` and is its own modal cone.  Every consuming join then
+finds the `◯F`-refutation witness ABOVE ITS ROOT through `RootAbove`,
+fallible joins included.
+
+**Correction of the first sketch.**  The earlier text here (a) gave
+the axiom the full zone `Ĝ_at \ {F}, Ĝ_imp, Ĝ_◯` — unsound: the bare
+final world does not force, e.g., `◯⊥` itself, so the zone must be its
+classical THEORY, not the whole signature; and (b) claimed the
+`Υ`-restriction must become join-variant-dependent (`◯`-free for
+fallible joins) — wrong, withdrawn: with the witness world mounted,
+`root ⊮ ◯Y` flows down from the premise's contributed model through
+`RootAbove` at every join variant.  The variance worry applies only to
+a WORLD-LESS axiom design, which is exactly why the world is mounted.
+No compound-body lifts were needed: the corpus closes with prime
+bodies only (compound `◯`-goals go through `◯∈`).
+
+**The semantic reading (Matthew, 2026-08-17): `◯⊥` is an honorary
+atom.**  The closed fragment of PLL is very large (in this repo:
+RN(◯,∅) is infinite), and its first letter behaves like an atom:
+
+    u ⊩ ◯⊥   iff   ∀ v ≥ u, ∃ f ∈ F,  v Rm f
+
+valuation-free, `≤`-persistent, tracking hereditary `Rm`-accessibility
+of the fallible region.  A maximal infallible world therefore carries
+one bit beyond its `Ĝ_at`-valuation: BARE (`◯⊥` false, and `◯Y ≡ Y` on
+its own cone — `classForce`'s `◯`-clause) versus DECORATED by a
+fallible `Rm`-successor (`◯⊥` true, and `◯Y ≡ ⊤`).  The seed layer of
+a top-down model construction must enumerate final worlds over the
+EXTENDED alphabet `Ĝ_at` + the `◯⊥` bit; the fallible join has always
+supplied the decorated species, and `Ax^I◯` supplies the missing bare
+species — that is all the repair is.  Between the extremes, non-final
+worlds realise the graded `◯`-theories through promise joins.  (The
+maximal version of the reading — `◯⊥` literally in `Ĝ_at`, axioms
+partitioning on it — would re-found the zone discipline; not needed at
+(T2) scale, on record as the fallback if the completeness construction
+stalls on exactly this.)
+
+**Outcome.**  `FRJ/Calculus.lean` (`classForce`, `vacZone`,
+`vacZone_atom`, the `axIC` constructor), `Step.lean` (`wfI` case),
+`Extract.lean` (`preI := leaf`, `preI_spec` generalised to the
+label-equality form, `leaf_closed`, `leaf_force_iff`), `Sound.lean`
+(the two cases).  Witness cell `provable_nn_circ_bot` /
+`not_PLL_nn_circ_bot_by_calculus`, pinned `[propext, Quot.sound]`.
+Engine: `seedsIC` wired into the initial database.  Corpus run 3:
+**11 pass / 4 control-ok / 0 flags**.

@@ -475,3 +475,32 @@ sound by the final-world cone), compound-body lifts, and a
 join-variant-dependent `Υ`-restriction (fallible joins must not consume
 `◯`-right premises).  `nn_circ_bot` stays a standing flag until the
 repair turns it green.
+
+## §2026-08-17 (evening) — FRJ◯ W4: the `Ax^I◯` repair LANDED; corpus fully green
+
+The §7 flag is repaired.  New axiom (`FRJi.axIC`):
+
+    Ax^I◯ :  ⊢  [] ; vacZone(F) → ◯F,    F prime, ◯F ∈ Sf^R(G)
+
+`vacZone G F` = the classical theory, restricted to `Ĝ`, of the
+`F`-refuting BARE final world (`classForce` = Boolean evaluation with
+`◯`-clause `classForce (◯A) = classForce A`), and the axiom MOUNTS that
+world into the extraction (`preI := PreModel.leaf (vacZone G F)`), so
+every consuming join — fallible included — finds the `◯F`-refutation
+witness above its root via `RootAbove`.  Soundness cases proved via
+`leaf_force_iff` (single-world forcing IS `classForce`); the sketched
+join-variant `Υ`-restriction was WRONG and is withdrawn in §7 (the
+variance worry applies only to world-less designs).  Semantic reading
+(Matthew): `◯⊥` is an honorary atom — `u ⊩ ◯⊥ iff ∀v≥u ∃f∈F, v Rm f` —
+and the maximal infallible worlds split bare/`◯⊥`-false vs
+decorated/`◯⊥`-true; `Ax^I◯` supplies the bare half of the seed
+enumeration, the fallible join the decorated half.  Recorded in
+`docs/frj-w4.md` §7.
+
+Witness cell `provable_nn_circ_bot` / `not_PLL_nn_circ_bot_by_calculus`
+pinned `[propext, Quot.sound]` (`FRJ/Fallible.lean`).  Engine seeds
+`seedsIC` wired into `frjsat`; corpus run 3: **11 pass / 4 control-ok /
+0 flags** (`nn_circ_bot` pass at rounds=3; `circ_peirce` one round
+faster; controls hold).  `lake build FRJ` + `frjsat` green, pins pass.
+Next (docs §5): item 6, the pledged `minMod` visit = completeness
+proper.

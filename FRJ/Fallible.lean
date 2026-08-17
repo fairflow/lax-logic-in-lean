@@ -613,6 +613,57 @@ theorem valid_nn_imp_circ {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
     K.valid (Form.imp (Form.neg (Form.neg A)) (.circ A)) :=
   fun v _ hv => (force_circ_iff_nn hRm hinf v A).mpr hv
 
+/-- **The `Ax^I◯` witness cell**: `¬¬◯⊥`, the standing flag of the
+saturation corpus (`docs/frj-w4.md` §7) — underivable before the axiom was
+added (the `◯∉` cycle: `Cl(∅)` cannot see vacuous forcing), derivable now.
+The join marries the classical axiom `Ax^I` for `⊥` with the mounted BARE
+final world of `Ax^I◯`.  Semantically (Matthew's reading): `◯⊥` behaves as
+an ATOM — valuation-free, persistent, forced at `u` iff hereditarily every
+`v ≥ u` has `v Rm f` for some fallible `f` — and the maximal infallible
+worlds split into the two species bare/`◯⊥`-false vs decorated/`◯⊥`-true;
+this axiom supplies the bare half of that seed enumeration, the fallible
+join the decorated half. -/
+theorem provable_nn_circ_bot :
+    Provable (Form.neg (Form.neg (.circ .bot))) := by
+  have haxb : FRJi (Form.neg (Form.neg (.circ .bot))) []
+      (nf (Form.neg (Form.neg (.circ .bot)))
+        ((rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
+          ++ gImp (Form.neg (Form.neg (.circ .bot)))
+          ++ gCirc (Form.neg (Form.neg (.circ .bot)))))
+      .bot :=
+    FRJi.axI .bot rfl (by decide)
+  have haxc : FRJi (Form.neg (Form.neg (.circ .bot))) []
+      (vacZone (Form.neg (Form.neg (.circ .bot))) .bot) (.circ .bot) :=
+    FRJi.axIC .bot rfl (by decide)
+  have hjoin := FRJr.joinAt
+      (G := Form.neg (Form.neg (.circ .bot))) (n := 1)
+      (stab := fun _ => [])
+      (th := fun j => match j with
+        | ⟨0, _⟩ =>
+            nf (Form.neg (Form.neg (.circ .bot)))
+              ((rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
+                ++ gImp (Form.neg (Form.neg (.circ .bot)))
+                ++ gCirc (Form.neg (Form.neg (.circ .bot))))
+        | ⟨1, _⟩ => vacZone (Form.neg (Form.neg (.circ .bot))) .bot)
+      (rhs := fun j => match j with
+        | ⟨0, _⟩ => .bot
+        | ⟨1, _⟩ => .circ .bot)
+      (F := .bot)
+      (fun j => match j with
+        | ⟨0, _⟩ => haxb
+        | ⟨1, _⟩ => haxc)
+      (by intro i j _ x hx; simp at hx)
+      (by intro A B h; simp [unionAll, impPart] at h)
+      (by decide)
+      rfl
+      (by decide)
+      (by decide)
+  exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
+
+theorem not_PLL_nn_circ_bot_by_calculus :
+    ¬ PLL (Form.neg (Form.neg (.circ .bot))) :=
+  soundness provable_nn_circ_bot
+
 /-! ## Axiom audit -/
 
 /-- info: 'FRJ.falTop_force' depends on axioms: [propext, Quot.sound] -/
@@ -670,5 +721,13 @@ theorem valid_nn_imp_circ {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
 /-- info: 'FRJ.not_provable_barren_neg_circ_bot' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms not_provable_barren_neg_circ_bot
+
+/-- info: 'FRJ.provable_nn_circ_bot' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_nn_circ_bot
+
+/-- info: 'FRJ.not_PLL_nn_circ_bot_by_calculus' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_PLL_nn_circ_bot_by_calculus
 
 end FRJ
