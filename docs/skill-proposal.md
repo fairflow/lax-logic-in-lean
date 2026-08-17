@@ -1,5 +1,53 @@
 # Proposal: turn calculus adoption into a Claude Code skill
 
+> **STATUS: this was the design. It is implemented, and the
+> implementation — not this document — is what runs.**
+>
+> The skill lives at `.claude/skills/calculus-adoption/`
+> (`SKILL.md`, five `reference/` files, three `templates/`). It is
+> registered and active in this repository. This document is kept as the
+> record of how the design was arrived at; where the two disagree, the
+> skill is right.
+>
+> **What the implementation changed.**
+>
+> * **Shape.** This proposal reported "no bundled reference files" as the
+>   local convention, inferred from the single existing example. That was
+>   wrong: bundled resources are normal practice. `SKILL.md` now carries
+>   only judgment — the stage gates, the constraints, what each stage
+>   cannot end without — and the depth is loaded on demand, because
+>   `SKILL.md` pays a context cost on every trigger.
+> * **Three tools now exist that did not when this was written**, each
+>   because its absence had cost real time: `#choice_path` /
+>   `#axiom_pin` (`Meta/Audit.lean`), `#rules` (`Meta/Rules.lean`), and
+>   `tools/paper-skeleton`. The stage table names which to run where, and
+>   `reference/tools.md` documents them. This proposal's Stage 0 and
+>   Stage 1 are largely automated by `paper-skeleton` as a result.
+> * **`reference/result-kinds.md` is new.** This proposal assumed
+>   throughout that the results to reproduce are soundness and
+>   completeness against a semantics. That is one kind among seven, and
+>   cut elimination, termination, interpolation, conservativity and
+>   focalisation each need a different encoding and fail differently.
+>   That gap was the main thing wrong with the design.
+> * **The choice checklist grew**, and one of its claims was corrected:
+>   the diagnosis "`simp` pins `Classical.choice`" was wrong. `simp` was
+>   the route; the source is Mathlib's `lt_or_eq_of_le`. Also added:
+>   `List.argmax_mem`, `List.le_of_mem_argmax` and
+>   `List.eq_nil_iff_forall_not_mem` are tainted, and the replacements are
+>   in `FRJ/Basic.lean`.
+> * **Two new standing rules** the design did not contain: *ask the tool,
+>   do not reimplement it* (four instances tabulated in `SKILL.md`), and
+>   its corollary, *your own success check can lie* — earned by a
+>   generator reporting "0 items unextracted" beside two rows of raw
+>   LaTeX.
+> * **Placement.** In the repo, not `~/.claude/skills/`, so that it is
+>   version controlled and travels with the tools it drives.
+>
+> The four prohibitions and the exit-criteria table below survive into
+> `reference/failure-modes.md` and `SKILL.md` respectively, with five more
+> failure modes added from the campaign that followed.
+
+
 *2026-08-16. The six-step method is already written up in
 `docs/calculus-formalisation-method.md`, dated today, after the LJF◯
 campaign (succeeded) and the FRJ◯ campaign (failed at step 2). This
