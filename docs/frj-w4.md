@@ -342,3 +342,80 @@ label-equality form, `leaf_closed`, `leaf_force_iff`), `Sound.lean`
 `not_PLL_nn_circ_bot_by_calculus`, pinned `[propext, Quot.sound]`.
 Engine: `seedsIC` wired into the initial database.  Corpus run 3:
 **11 pass / 4 control-ok / 0 flags**.
+
+## 8. Calculus round 2 (2026-08-17) and the pledged-visit blueprint
+
+Probe cells run BEFORE scoping the visit (per the testing mandate) found
+two derivability gaps past §7, both repaired and corpus-green (17 pass /
+5 control-ok / 0 flags, commit a70007e):
+
+- **`◯(◯p⊃p)` (cell `circ_circ_imp`).**  `◯∈` consumes a regular
+  premise `Γ ⇒ Z`; for `Z = A ⊃ B` such sequents exist only at roots
+  FORCING `A` (`⊃∈` is the sole regular `⊃`-introduction), while a
+  `◯(A⊃B)`-refuting root can have its `A`-witness strictly above.
+  Repair: the MODAL JOINS `⋈^◯` / `⋈^◯,p` — conclude `Γ ⇒ ◯Z` directly
+  from irregular premises with `Z ∈ Υ`; the new root is its own modal
+  cone (barren) or carries a promise family pledging `Z`; the root
+  refutes `Z` by the (P3) premise mechanism.  No fallible variant, since
+  a fallible cone-member forces every body.
+- **`¬¬◯◯⊥` (cell `nn_circ_circ_bot`).**  Prime-only `Ax^I◯` re-enters
+  the `◯∉` cycle one level up (`◯◯⊥` needs an irregular premise with
+  rhs `◯◯⊥`, and `F = ◯⊥` is no prime).  Repair: `Ax^I◯` generalised to
+  arbitrary `F` over arbitrary classical valuations `ats ⊆ Ĝ_at` with
+  side condition `classForce ats F = false`; zone `vacZoneA G ats`.
+
+Two support devices, also landed and soundness-covered:
+
+- **`Covers Γ W Z`** (the chain-certificate order): `Z` reachable from
+  `W` by `◯`-iteration, `∧`-superformula, or `⊃`-superformula with
+  antecedent in `Cl(Γ)`.  Every pledge comparison (`◯∈`, `◯∉`, promise
+  components) now goes through it; `tag_cone` proves it sound via
+  `covers_refutes` (a cone hereditarily refuting `W`, over a label
+  forcing `Cl(Γ)`, refutes everything `W` covers).  This is what lets a
+  tag born `chain W` at a join serve goals wrapped above it — the
+  single-formula tag could not re-certify across `◯∈` nesting or the
+  `∧`/`⊃` wraps of the visit.
+- **(J7) as a restriction**: `joinCtxAtP`/`joinCtxOrP` are filtered by
+  membership in EVERY `Cl(Δᵢ)` (`restrictP`); the constructor condition
+  reduces to the stable zones (`hJ7s`).  The visit could never discharge
+  (J7) over the fat axiom zones' second-zone junk — and never needs the
+  junk kept, while `Λ*`-members always survive the filter (forced at the
+  component anchors, so `Cl(Δᵢ)`-certified by Lemma 6.5).
+
+**The pledged-visit blueprint** (for `minModP`, mutual with `minMod`,
+measure `(ht, 1, size C)` shared with the regular half):
+
+    PWit K G u D C := { ctx, t, der : FRJr G t ctx C,
+      tOK : t = barren ∨ ∃ W, t = chain W ∧ (W = D ∨ Covers ctx W C),
+      wld ≥ u, ¬Fal wld, cov : Λ*_wld ⊆ ctx }
+
+with input `hcone : ∀ v, u Rm v → v ⊮ D`.  At consumption `C = D`, so
+`tOK` yields exactly the `Covers`-htag (`W = D` closes by `refl`).  The
+cases: ∧ recurses on the refuted conjunct (`tOK` via `andL/R`); ⊃ with
+`u ⊩ A` is a local `⊃∈` (`tOK` via the `imp`-clause, `Clo ctx A` from
+Lemma 6.5 at `wld`); ◯Z′ with self-`minZeta` resets the pledge to `Z′`
+(the inner `tOK` feeds `◯∈`'s htag; the result re-enters `tOK` through
+the `circ`-clause); prime/∨ end in joins — barren when
+`circPart Λ*_anchor = []`, else promise with family = the proper
+`Rm`-successors, `Ds = D`, each component `minModP` at its successor
+(`hcone` TRANSPORTS along `Rm` by transitivity, and each successor is
+in the cone, hence refutes `D` and is infallible).
+
+**The open corner.**  `hcone` does NOT transport along `≤`-floats: the
+pledged ⊃-case with `u ⊮ A` must anchor at a `minEta`-witness
+`m ≥ u` (`m ⊩ A`, `m ⊮ B`), and if `circPart Λ*_m ≠ []` the joins at
+`m` need promise components refuting some `W′` with
+`Covers ctx W′ (path)`, which no transported hypothesis supplies (`⊥`
+fails `Covers`; `m`'s `Rm`-successors may force everything relevant).
+Every adversarial configuration attempted so far SELF-DESTRUCTS: the
+refutability of the top goal forces `◯`-witnesses inside the pledging
+cone, which yield alternative anchors (`≤`-above in-cone `Rm`-witnesses)
+whose modal zones are dischargeable.  Conjecture: the corner is
+unrealisable, and the visit needs an anchor-choice policy (prefer
+`minEta` candidates above in-cone modal witnesses) rather than a
+calculus round 3.  The engine is the arbiter: any corner-shaped cell
+that flags at fixpoint reopens the calculus; cells that pass pin the
+policy the recipe must imitate.  Status: `minMod`'s modal cases and
+`minModP` are the remaining build; everything they consume (`minZeta`,
+per-world Lemma 6.5, `Covers`, the modal joins, filtered promise
+contexts) is landed and green.

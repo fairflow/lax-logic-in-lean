@@ -504,3 +504,24 @@ pinned `[propext, Quot.sound]` (`FRJ/Fallible.lean`).  Engine seeds
 faster; controls hold).  `lake build FRJ` + `frjsat` green, pins pass.
 Next (docs §5): item 6, the pledged `minMod` visit = completeness
 proper.
+
+## §2026-08-17 (night) — FRJ◯ calculus round 2 LANDED; completeness build in progress
+
+Goal: `minMod` for the full modal signature = FRJ◯ completeness.  Probe
+cells first (testing mandate) found TWO more calculus gaps, both
+repaired, soundness re-proved, corpus 17 pass / 5 control-ok / 0 flags
+(commits a70007e, 4e454a2): the modal joins `⋈^◯`/`⋈^◯,p` (◯-goals
+concluded directly from irregular premises with `Z ∈ Υ` — `◯∈` cannot
+reach `◯(A⊃B)`-refutations whose antecedent witness sits strictly above
+the root; cell `circ_circ_imp`), and `Ax^I◯` generalised to arbitrary
+`F` over arbitrary classical valuations (`¬¬◯◯⊥`; cell
+`nn_circ_circ_bot`).  Support devices: the `Covers` chain-certificate
+order replacing equality in every pledge comparison (sound via
+`covers_refutes`), and (J7) turned into a `restrictP` filter on the
+promise contexts (side condition now `hJ7s`, stable zones only).
+Lemma 6.5 (`mem_clo_lamStar`) and `lamStar_mono` now take `¬Fal` at the
+single world that needs it; `minZeta` (the `◯`-analogue of `minEta`)
+added.  REMAINING: the pledged visit `minModP` + `minMod`'s modal cases
++ statements (A)/(B) — full blueprint and the ONE open corner (pledged
+⊃-float onto a modally-loaded anchor; conjectured unrealisable, engine
+is the arbiter) recorded in `docs/frj-w4.md` §8.
