@@ -15,9 +15,9 @@
 
 | Paper item | Statement | Lean name | Status |
 |---|---|---|---|
-| **§ Introduction** | | | |
-| **§ Preliminaries** | | | |
-| **§ The calculus $\FRJof{G}$** | | | |
+| **§1 Introduction**  ·  p.1 | | | |
+| **§2 Preliminaries**  ·  p.5 | | | |
+| **§3 The calculus FRJ(G)**  ·  p.6 | | | |
 | Theorem 1 (Soundness of FRJ(G)) · `theo:FRJsound` · p.6 | $\vdash_{\mathbf{FRJ}(G)} G$ implies $G\not\in\mathrm{IPL}$.  | | OPEN |
 | Example 1 · `ex:impPS1` · p.8 | Let $\sigma_1= \ifthenelse{\isempty{}}{\cdot}{} \,;\, \ifthenelse{\isempty{p,q}}{\cdot}{p,q} \rightarrow\ifthenelse{\isempty{B}}{\cdot}{B}$ be an $\mathbf{FRJ}(G)$-sequent such tha … | | OPEN |
 | Example 2 · `ex:impPS2` · p.9 | Let $\sigma_1= \ifthenelse{\isempty{p,q}}{\cdot}{p,q} \Rightarrow\ifthenelse{\isempty{B}}{\cdot}{B}$ be an $\mathbf{FRJ}(G)$-sequent and let assume that $${\overline\Gamma}\;=\;{\n … | | OPEN |
@@ -32,12 +32,12 @@
 | Lemma 3 · `lemma:wg` · p.19 | $\sigma_1\mapsto \sigma_2$ implies $\langle 0,0,0 \rangle\preceq \mathrm{wg}(\sigma_2) \prec \mathrm{wg}(\sigma_1)$.  | | OPEN |
 | Lemma 4 · `lemma:branch` · p.19 | Let $\mathcal{D}$ be an $\mathbf{FRJ}(G)$-derivation, let $\mathcal{B}$ be a branch of $\mathcal{D}$ and $N=\| G\|$. Then: 1. the length of the branch $\mathcal{B}$ is $O(N^2)$; 2. $ … | | OPEN |
 | Theorem 3 · `theo:height` · p.20 | Let $\mathcal{D}$ be an $\mathbf{FRJ}(G)$-derivation and $N=\| G\|$. Then: 1. $\mathrm{h}(\mathcal{D})\,=\,O(N^2)$. 2. $\mathrm{h}(\mathrm{Mod}(\mathcal{D}))\,\leq\, N$.  | | OPEN |
-| **§ The proof-search procedure and saturated Databases** | | | |
+| **§4 The proof-search procedure and saturated Databases**  ·  p.21 | | | |
 | Lemma 5 · `lemma:subsRules` · p.21 | Let $$\AXC{$\sigma_1 \;\cdots\; \sigma_n$} \RightLabel{$\mathcal{R}$} \UIC{$\sigma$} \DP$$ be an instance of a rule of $\mathbf{FRJ}(G)$ and let $\sigma_1\sqsubseteq \sigma'_1$, .. … | | OPEN |
 | Theorem 4 · `theo:fsearchAdequate` · p.23 | $\FSearch$ is an adequate proof-search procedure. | | OPEN |
 | Lemma 6 · `lemma:compactSatDB` · p.23 | Let $G$ be a formula and let $\mathtt{D}_{G}^1$ be a compact saturated database for $G$. For every saturated database $\mathtt{D}_{G}^2$ for $G$, $\mathtt{D}_{G}^1\subseteq \mathtt … | | OPEN |
 | Theorem 5 · `theo:uniquetSatDB` · p.23 | For every formula $G$, there exists a unique compact saturated database $\mathtt{D}^{\ast}_{G}$ for $G$, which is the minimum saturated database for $G$. | | OPEN |
-| **§ The calculus $\GBUof{G}$ and completeness of $\FRJof{G}$** | | | |
+| **§5 The calculus Gbu(G) and completeness of FRJ(G)**  ·  p.24 | | | |
 | Lemma 7 · `lemma:GBUsound` · p.25 | If $\vdash_{\mathbf{Gbu}(G)} \tau$, then $\tau$ is valid. | | OPEN |
 | Theorem 6 (Soundness of Gbu(G)) · `theo:GBUsound` · p.25 | $\vdash_{\mathbf{Gbu}(G)} G$ implies $G\in\mathrm{IPL}$.  | | OPEN |
 | Lemma 8 · `lemma:wggbu` · p.25 | Let $\mathcal{R}$ be a rule of $\mathbf{Gbu}(G)$, let $\tau$ be the conclusion of $\mathcal{R}$ and $\tau'$ any of the premises of $\mathcal{R}$. Then $\langle 0,0,0 \rangle\preceq … | | OPEN |
@@ -50,15 +50,15 @@
 | Theorem 8 (Correctness of BSearch) · `theo:search` · p.33 | Let $G$ be a formula, let $\tau$ be a $\mathbf{Gbu}(G)$-sequent and let $\mathtt{D}_{G}$ be a saturated database for $G$ satisfying [\[search:ass1\]](#search:ass1) and [\[search:as … | | OPEN |
 | Theorem 9 · `theo:GBU-FRJ` · p.34 | $\vdash_{\mathbf{Gbu}(G)} G$ iff ${\not\vdash}_{\mathbf{FRJ}(G)} G$. | | OPEN |
 | Theorem 10 *(no own label; number inferred)* (Completeness of FRJ(G) and Gbu(G)) · p.35 | 1. $G\not\in\mathrm{IPL}$ implies $\vdash_{\mathbf{FRJ}(G)} G$. 2. $G\in\mathrm{IPL}$ implies $\vdash_{\mathbf{Gbu}(G)} G$. | | OPEN |
-| **§ Minimality** | | | |
+| **§6 Minimality**  ·  p.35 | | | |
 | Lemma 13 · `lemma:rnk` · p.36 | Let $\mathcal{D}$ be an $\mathbf{FRJ}(G)$-derivation of $G$. Then, $\mathrm{Rn}(\mathcal{D})=\mathrm{h}(\mathrm{Mod}(\mathcal{D}))$.  | | OPEN |
 | Lemma 14 · `lemma:minMod` · p.36 | Let $\mathcal{K}=\langle P,\leq,\rho, V \rangle$ be a countermodel for $G$, let $\alpha\in P$ and $C\in\Omega_\alpha$. - There exists an $\mathbf{FRJ}(G)$-derivation $\mathcal{D}^{ … | | OPEN |
 | Theorem 11 · `theo:minMod` · p.36 | Let $G\not\in \mathrm{IPL}$. Then, there exists an $\mathbf{FRJ}(G)$-derivation $\tilde\mathcal{D}$ of $G$ such that $\mathrm{h}(\mathrm{Mod}(\tilde\mathcal{D}))=\mathrm{h}(G)$.  | | OPEN |
 | Example 9 · `ex:STMinH` · p.37 | Let $S$ be the instance of Scott Principle in Ex. [\[ex:frjNishimura\]](#ex:frjNishimura): $$\begin{array}{l} S \;= \; H\,\supset\, \neg\neg p \lor \neg p \qquad H\;=\; (\neg\neg p … | | OPEN |
 | Example 10 · `ex:DUMnonMIN` · p.39 | Let $C$ be the formula $$\begin{array}{l} C \;= \; A\lor B \qquad A\;=\; (p_1\supset p_2)\lor (p_2\supset p_1) \qquad B\;=\; (q_1\supset q_2)\lor (q_2\supset q_1) \end{array}$$ We  … | | OPEN |
 | Lemma 15 · `lemma:closure` · p.40 | Let $\mathcal{K}$ be a countermodel for $G$ and $\alpha$ a world of $\mathcal{K}$. Then, $\Lambda_\alpha=\mathcal{C}l(\Lambda_\alpha)=\mathcal{C}l(\Lambda^*_\alpha)$. | | OPEN |
-| **§ Related and future work** | | | |
-| **§ Soundness of $\FRJof{G}$** | | | |
+| **§7 Related and future work**  ·  p.46 | | | |
+| **§A Soundness of FRJ(G)**  ·  p.51 | | | |
 | Lemma 16 (aka Lemma 3.9 of Sec.3) · `app:lemma:soundFRJ` · p.51 | Let $\mathcal{D}$ be an $\mathbf{FRJ}(G)$-derivation of $G$, let $\mathrm{Mod}(\mathcal{D})$ be the model extracted from $\mathcal{D}$ and $\phi$ the map associated with $\mathcal{ … | | OPEN |
 | Lemma 17 · `lemma:soundnessProperties` · p.53 | Soundness properties [\[prop:soundr\]](#prop:soundr) and [\[prop:soundi\]](#prop:soundi) hold. | | OPEN |
 

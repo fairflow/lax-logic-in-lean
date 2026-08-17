@@ -15,9 +15,9 @@
 
 | Paper item | Statement | Lean name | Status |
 |---|---|---|---|
-| **§ Introduction** | | | |
-| **§ Preliminaries** | | | |
-| **§ The calculus $\FRJof{G}$** | | | |
+| **§1 Introduction**  ·  p.1 | | | |
+| **§2 Preliminaries**  ·  p.5 | | | |
+| **§3 The calculus FRJ(G)**  ·  p.6 | | | |
 | Theorem 1 (Soundness of FRJ(G)) · `theo:FRJsound` · p.6 | ⊢FRJ(G) G implies G ∉ IPL. | | OPEN |
 | Example 1 · `ex:impPS1` · p.8 | Let σ₁ = ·; p,q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ₁ so to get a sequent with p ∨ q ⊃ B in the right, we have to select … | | OPEN |
 | Example 2 · `ex:impPS2` · p.9 | Let σ₁ = p,q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊃∉ to σ₁ yielding  … | | OPEN |
@@ -32,12 +32,12 @@
 | Lemma 3 · `lemma:wg` · p.19 | σ₁ ↦ σ₂ implies ⟨0,0,0⟩ ⪯ wg(σ₂) ≺ wg(σ₁). | | OPEN |
 | Lemma 4 · `lemma:branch` · p.19 | Let D be an FRJ(G)-derivation, let B be a branch of D and N = \|G\|. Then: (i) the length of the branch B is O(N₂); (ii) B contains N p-sequents at most. | | OPEN |
 | Theorem 3 · `theo:height` · p.20 | Let D be an FRJ(G)-derivation and N = \|G\|. Then: (i) h(D) = O(N₂). (ii) h(Mod(D)) ≤ N. | | OPEN |
-| **§ The proof-search procedure and saturated Databases** | | | |
+| **§4 The proof-search procedure and saturated Databases**  ·  p.21 | | | |
 | Lemma 5 · `lemma:subsRules` · p.21 | Let σ₁ ··· σₙ R σ be an instance of a rule of FRJ(G) and let σ₁ ⊑ σ′₁, ..., σₙ ⊑ σ′ₙ. Then, σ′₁ ··· σ′ₙ R σ′ is an instance of R in FRJ(G) where σ ⊑ σ′ . | | OPEN |
 | Theorem 4 · `theo:fsearchAdequate` · p.23 | FSearch is an adequate proof-search procedure. | | OPEN |
 | Lemma 6 · `lemma:compactSatDB` · p.23 | Let G be a formula and let D₁ G be a compact saturated database for G. For every saturated database D₂ G for G, D₁ G ⊆ D₂ G. | | OPEN |
 | Theorem 5 · `theo:uniquetSatDB` · p.23 | For every formula G, there exists a unique compact saturated database D∗ G for G, which is the minimum saturated database for G. | | OPEN |
-| **§ The calculus $\GBUof{G}$ and completeness of $\FRJof{G}$** | | | |
+| **§5 The calculus Gbu(G) and completeness of FRJ(G)**  ·  p.24 | | | |
 | Lemma 7 · `lemma:GBUsound` · p.25 | If ⊢Gbu(G) τ, then τ is valid. | | OPEN |
 | Theorem 6 (Soundness of Gbu(G)) · `theo:GBUsound` · p.25 | ⊢Gbu(G) G implies G ∈ IPL. | | OPEN |
 | Lemma 8 · `lemma:wggbu` · p.25 | Let R be a rule of Gbu(G), let τ be the conclusion of R and τ′ any of the premises of R. Then ⟨0,0,0⟩ ⪯ Wg(τ′) ≺ Wg(τ). | | OPEN |
@@ -50,15 +50,15 @@
 | Theorem 8 (Correctness of BSearch) · `theo:search` · p.33 | Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ,DG) computes a Gbu(G)-derivation of τ. | | OPEN |
 | Theorem 9 · `theo:GBU-FRJ` · p.34 | ⊢Gbu(G) G iff ⊬ FRJ(G)G. | | OPEN |
 | Theorem 10 *(no own label; number inferred)* (Completeness of FRJ(G) and Gbu(G)) · p.35 | (i) G ∉ IPL implies ⊢FRJ(G) G. (ii) G ∈ IPL implies ⊢Gbu(G) G. | | OPEN |
-| **§ Minimality** | | | |
+| **§6 Minimality**  ·  p.35 | | | |
 | Lemma 13 · `lemma:rnk` · p.36 | Let D be an FRJ(G)-derivation of G. Then, Rn(D) = h(Mod(D)). | | OPEN |
 | Lemma 14 · `lemma:minMod` · p.36 | Let K = ⟨P,≤,ρ,V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα. – There exists an FRJ(G)-derivation D→ α (C) of σ→ α (C) = Σ ; Θ → C such that: (i) Rn(D→ α (C)) < h(α); (ii) Σ ⊆  … | | OPEN |
 | Theorem 11 · `theo:minMod` · p.36 | Let G ∉ IPL. Then, there exists an FRJ(G)-derivation D̃ of G such that h(Mod(D̃)) = h(G). | | OPEN |
 | Example 9 · `ex:STMinH` · p.37 | Let S be the instance of Scott Principle in Ex. 5: S = H ⊃ ¬¬p ∨ ¬p H = (¬¬p ⊃ p) ⊃ ¬p ∨ p Sl(S) = { H, ¬p ∨ p, ¬¬p, ¬p, p} Sr(S) = { S, ¬¬p ∨ ¬p, ¬¬p ⊃ p, ¬¬p, ¬p, p, ⊥} We have h … | | OPEN |
 | Example 10 · `ex:DUMnonMIN` · p.39 | Let C be the formula C = A ∨ B A = (p1 ⊃ p2) ∨ (p2 ⊃ p1) B = (q1 ⊃ q2) ∨ (q2 ⊃ q1) We have h(C) = 1. Let KC be the following countermodel for C of height 1, consisting of the world … | | OPEN |
 | Lemma 15 · `lemma:closure` · p.40 | Let K be a countermodel for G and αₐ world of K. Then, Λα = Cl(Λα) = Cl(Λ∗ α). | | OPEN |
-| **§ Related and future work** | | | |
-| **§ Soundness of $\FRJof{G}$** | | | |
+| **§7 Related and future work**  ·  p.46 | | | |
+| **§A Soundness of FRJ(G)**  ·  p.51 | | | |
 | Lemma 16 (aka Lemma 3.9 of Sec.3) · `app:lemma:soundFRJ` · p.51 | Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ an … | | OPEN |
 | Lemma 17 · `lemma:soundnessProperties` · p.53 | Soundness properties (S₁) and (S₂) hold. | | OPEN |
 

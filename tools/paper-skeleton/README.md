@@ -87,6 +87,50 @@ source. Titles are taken from the printed heading too, so
 The LaTeX source is still kept, folded under each statement, because
 that is what a transcription is checked against.
 
+### Section headers
+
+Fixed, and by the same route as everything else. The `.aux` records
+
+    \contentsline {section}{\numberline {3}The calculus $\mathbf {FRJ}(G)...}{6}
+
+so the number and the page are exact, and the title has already been
+expanded by TeX — the paper's private macros are gone by that point. The
+printed heading is then the line on that page beginning with the section's
+own number, which pins it exactly:
+
+    | **§3 The calculus FRJ(G)**  ·  p.6 |
+    | **§A Soundness of FRJ(G)**  ·  p.51 |
+
+An earlier attempt matched printed headings by keyword and misfired —
+"calculus" matched a body line, so a correct-but-ugly title was replaced by
+a wrong one. The difference is that the number and page now come from the
+`.aux`, so nothing is being guessed at.
+
+## Where the statement text comes from
+
+The compiled PDF, via `pdftotext`, keyed by the page the `.aux` gives.
+Not the LaTeX source.
+
+The first version emitted raw source into the table, and it was
+unreadable — `$\proves{\FRJof{G}}G$ implies $G\not\in\IPL$`. That is not
+a Markdown-viewer limitation. Two separate reasons it cannot work:
+
+1. **The macros are the paper's own.** `frj-corr.tex` defines 164 of
+   them. `\proves`, `\FRJof`, `\Lhs`, `\Clo`, `\mapstorz` mean nothing
+   outside its preamble, so no renderer anywhere can display them.
+2. **Markdown has no math.** CommonMark specifies none at all. `$…$` and
+   `$$…$$` are an *extension* — GitHub added them in 2022, Pandoc has
+   `tex_math_dollars` — and even where implemented they cover maths, not
+   arbitrary LaTeX, and never undefined macros.
+
+So the tool reads what LaTeX printed. `\qed`'s box (⊔⊓) marks the end of
+a statement, which is a more reliable stop than any heuristic on the
+source. Titles are taken from the printed heading too, so
+`(Soundness of $\FRJof{G}$)` arrives as `(Soundness of FRJ(G))`.
+
+The LaTeX source is still kept, folded under each statement, because
+that is what a transcription is checked against.
+
 ### Known limitation: section headers
 
 The 38 item rows are macro-free, but **section grouping headers still show

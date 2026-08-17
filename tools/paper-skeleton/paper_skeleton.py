@@ -317,6 +317,61 @@ def fix_glyphs(t: str) -> str:
     t = re.sub(r"[ \t]{2,}", " ", t)
     return t.strip()
 
+def section_toc(main_tex: str):
+    r"""Sections as LaTeX recorded them: (number, title, page).
+
+    The .aux carries
+        \contentsline {section}{\numberline {3}The calculus $\mathbf {FRJ}(G)...}{6}
+    so the number and the page are exact, and the title has already been
+    expanded by TeX itself — the paper's private macros are gone by this point."""
+    d = os.path.dirname(os.path.abspath(main_tex)) or "."
+    aux = os.path.join(d, os.path.splitext(os.path.basename(main_tex))[0] + ".aux")
+    if not os.path.exists(aux):
+        return []
+    txt = io.open(aux, encoding="utf-8", errors="replace").read()
+    out = []
+    for m in re.finditer(r"\\contentsline \{section\}\{\\numberline \{([^}]*)\}", txt):
+        title, j = "", m.end()
+        depth = 1                      # we are inside the {\numberline{N}TITLE} group
+        while j < len(txt) and depth:
+            c = txt[j]
+            if c == "{":
+                depth += 1
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+            title += c
+            j += 1
+        pg = re.match(r"\}\{([^}]*)\}", txt[j:])
+        out.append((m.group(1), title, pg.group(1) if pg else None))
+    return out
+
+def clean_tex_title(t: str) -> str:
+    """Strip the formatting commands TeX leaves in a .toc title."""
+    for cmd in ("mathbf", "mathrm", "mathcal", "mathit", "textbf", "text",
+                "ensuremath", "emph"):
+        t = re.sub(r"\\" + cmd + r"\s*", "", t)
+    t = t.replace("\\xspace", "").replace("$", "")
+    t = re.sub(r"[{}]", "", t)
+    return re.sub(r"\s+", " ", t).strip()
+
+def printed_section_title(pages, number, page):
+    """The heading as it appears on the page: the line beginning with the
+    section's own number."""
+    if not pages or not page:
+        return None
+    try:
+        pno = int(page)
+    except ValueError:
+        return None
+    for cand in (pno, pno + 1):
+        for line in (pages.get(cand, "") or "").split("\n"):
+            m = re.match(rf"^{re.escape(number)}\s+(\S.*)$", line.strip())
+            if m and len(m.group(1)) > 3:
+                return fix_glyphs(m.group(1))
+    return None
+
 def pdf_pages(main_tex: str):
     """Rendered text of the compiled PDF, page 1 first.  The statements the
     reader wants are the ones LaTeX printed, with the paper's 164 private
@@ -433,6 +488,15 @@ def extract(tex: str, kinds: dict):
         pos = body_end
     return items
 
+def attach_section_titles(items, pages, toc):
+    """Give each section the title LaTeX printed, with its number and page."""
+    secs = [it for it in items if it["kind"] == "§"]
+    for it, (num, tex_title, page) in zip(secs, toc):
+        it["number"], it["page"] = num, page
+        it["title"] = (printed_section_title(pages, num, page)
+                       or clean_tex_title(tex_title) or it["title"])
+    return items
+
 def infer_unlabelled(items, pages):
     """Give unlabelled items a number and a page.
 
@@ -518,7 +582,9 @@ def emit_markdown(items, notes, src, aux_ok):
           "| Paper item | Statement | Lean name | Status |", "|---|---|---|---|"]
     for it in items:
         if it["kind"] == "§":
-            L.append(f"| **§ {it['title']}** | | | |")
+            num = f"{it['number']} " if it.get("number") else ""
+            pg = f"  ·  p.{it['page']}" if it.get("page") else ""
+            L.append(f"| **§{num}{it['title']}**{pg} | | | |")
             continue
         if it.get("number"):
             name = f"{it['kind']} {it['number']}"
@@ -607,6 +673,7 @@ def main():
     notes.append(note)
     pages = {} if a.no_compile else pdf_pages(main_tex)
     items = attach_numbers(extract(tex, kinds), aux, pages)
+    items = attach_section_titles(items, pages, section_toc(main_tex))
     items = infer_unlabelled(items, pages)
     macros = sanitise_macros(macro_defs(tex))
     for it in items:
