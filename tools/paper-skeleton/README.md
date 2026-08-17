@@ -165,3 +165,24 @@ Subscript restoration fires only after a Greek letter, a prime or an
 arrow, where the reading is unambiguous. A superscript such as `O(N 2 )`
 keeps its space and is deliberately left alone: guessing there would turn
 N² into N₂.
+
+### Unlabelled items
+
+An item with no `\label` of its own has no `.aux` entry, so neither its
+number nor its page can be looked up — and those are precisely the items a
+hand count skips. They are recovered instead: numbers increase with source
+order within a kind, so a gap between two labelled neighbours identifies
+them, and the page then comes from searching the printed text for that
+heading. Such rows are marked *(no own label; number inferred)*.
+
+Two traps this exposed in the FRJ paper:
+
+* a `\label` sitting inside an `\item` belongs to the **item**, so the
+  `.aux` records `(i)` rather than the theorem's number. Only a label in
+  the body *before* the first `\begin{...}` or `\item` is the item's own.
+* the `.aux` wraps such an entry with an extra brace level,
+  `{{{(i)}}{35}...}`, which a regex written for `{{11}{36}...}` misses
+  silently.
+
+A table cell never falls back to raw LaTeX: if neither route extracts a
+statement it says so and points at the sources section.

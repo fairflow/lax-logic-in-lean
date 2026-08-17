@@ -144,7 +144,8 @@ def compile_and_read_aux(main_tex: str):
         return {}, "no .aux produced; items will carry no numbers"
     txt = io.open(aux, encoding="utf-8", errors="replace").read()
     out = {}
-    for m in re.finditer(r"\\newlabel\{([^}]+)\}\{\{([^{}]*)\}\{([^{}]*)\}", txt):
+    for m in re.finditer(
+            r"\\newlabel\{([^}]+)\}\{\{\{?([^{}]*)\}?\}\{([^{}]*)\}", txt):
         out[m.group(1)] = (m.group(2), m.group(3))
     return out, f"{len(out)} labels read from {stem}.aux (compiled here)"
 
@@ -296,6 +297,11 @@ def fix_glyphs(t: str) -> str:
                lambda m: m.group(1).translate(_SUB), t)
     t = re.sub(rf"(?<=[{''.join(_SUP.values())}])(\d+)",
                lambda m: m.group(1).translate(_SUB), t)
+    # a lone capital metavariable with digits: `X1` is X₁.  The lookbehind
+    # keeps names such as PS1 intact, and `O(N 2 )` keeps its space and so is
+    # left alone — guessing there would turn N² into N₂.
+    t = re.sub(r"(?<![A-Za-z0-9])([A-Z])(\d+)(?![A-Za-z])",
+               lambda m: m.group(1) + m.group(2).translate(_SUB), t)
     # a prime keeps its subscript, which -raw separates: `σ′ 1` is σ′₁
     t = re.sub(r"(?<=[′'])\s*(\d+)", lambda m: m.group(1).translate(_SUB), t)
     # an index letter after a Greek letter or a prime is a subscript too
@@ -419,11 +425,51 @@ def extract(tex: str, kinds: dict):
                 body_end = i + mm.start()
                 break
         body = tex[i:body_end]
-        lab = re.search(r"\\label\s*\{([^}]*)\}", body)
+        head_only = re.split(r"\\begin\{|\\item\b", body, maxsplit=1)[0]
+        lab = re.search(r"\\label\s*\{([^}]*)\}", head_only)
         items.append(dict(kind=kinds[env]["display"], title=title,
                           label=lab.group(1) if lab else None,
                           body=clean(body), appendix=in_appendix))
         pos = body_end
+    return items
+
+def infer_unlabelled(items, pages):
+    """Give unlabelled items a number and a page.
+
+    They carry no `\\label` of their own, so no `.aux` entry — and they are
+    exactly the ones a hand count skips.  Numbers increase with source order
+    within a kind, so a gap between two labelled neighbours identifies them;
+    the page then comes from searching the printed text for that heading."""
+    by_kind = {}
+    for it in items:
+        if it["kind"] != "§":
+            by_kind.setdefault(it["kind"], []).append(it)
+    for seq in by_kind.values():
+        run, prev = [], None
+        for it in seq:
+            num = it.get("number")
+            if num and num.isdigit():
+                nxt = int(num)
+                if run and prev is not None and nxt - prev - 1 == len(run):
+                    for k, u in enumerate(run, start=1):
+                        u["number"], u["inferred"] = str(prev + k), True
+                run, prev = [], nxt
+            elif not num:
+                run.append(it)
+        if run and prev is not None:
+            for k, u in enumerate(run, start=1):
+                u["number"], u["inferred"] = str(prev + k), True
+    for it in items:
+        if not it.get("inferred"):
+            continue
+        for pno in sorted(pages or {}):
+            if re.search(rf"\b{re.escape(it['kind'])}\s+{it['number']}\b",
+                         pages[pno] or ""):
+                it["page"] = str(pno)
+                got = rendered_statement(pages, it["kind"], it["number"], it["page"])
+                if got:
+                    it["printed"], it["printed_title"] = got
+                break
     return items
 
 def attach_numbers(items, aux, pages=None):
@@ -474,7 +520,12 @@ def emit_markdown(items, notes, src, aux_ok):
         if it["kind"] == "§":
             L.append(f"| **§ {it['title']}** | | | |")
             continue
-        name = f"{it['kind']} {it['number']}" if it.get("number") else f"{it['kind']} (unlabelled)"
+        if it.get("number"):
+            name = f"{it['kind']} {it['number']}"
+            if it.get("inferred"):
+                name += " *(no own label; number inferred)*"
+        else:
+            name = f"{it['kind']} (unlabelled)"
         shown = it.get("printed_title") or (None if "\\" in (it["title"] or "") else it["title"])
         if shown:
             name += f" ({shown})"
@@ -482,7 +533,8 @@ def emit_markdown(items, notes, src, aux_ok):
             name += f" · `{it['label']}`"
         if it.get("page"):
             name += f" · p.{it['page']}"
-        src = it.get("printed") or it["body"]
+        src = (it.get("printed") or it.get("expanded")
+               or "*(statement not extracted; see the sources section)*")
         stmt = src[:180].replace("|", "\\|")
         L.append(f"| {name} | {stmt}{' …' if len(src)>180 else ''} | | OPEN |")
     L += ["\nStatus is one of **PROVED** (sorry-free with a pinned "
@@ -555,6 +607,7 @@ def main():
     notes.append(note)
     pages = {} if a.no_compile else pdf_pages(main_tex)
     items = attach_numbers(extract(tex, kinds), aux, pages)
+    items = infer_unlabelled(items, pages)
     macros = sanitise_macros(macro_defs(tex))
     for it in items:
         if it["kind"] == "§":
