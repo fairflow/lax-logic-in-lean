@@ -11,6 +11,16 @@ project, invariants, pitfalls, verification commands; §10 there points here.
 systems each result belongs to, and whose it is (ours vs Fairtlough–Mendler
 1997). Read the calculus map before asserting provenance about anything below.
 
+
+**Added 2026-08-17 — FRJ◯ thread (PAUSED).** Fiorentini–Ferrari FRJ(G) + ◯
+on branch `claude/frj-redevelopment-69005f`: ◯-free completeness PROVED
+(`FRJ/Minimal.lean`, `frj_iff_not_IPL`); the ◯-case paused at the
+conditional `completeness_of_supply` — the two supply kernels are OPEN and
+were never extensionally attacked.  See the final § of `HANDOFF.md`
+(2026-08-17) and, on the branch, `docs/frj-w4.md`.  First moves if resumed:
+extensional attack on the supply statements; the TOCL 2020 §6 organisation
+read at source.
+
 ---
 
 ## 0. Repo state

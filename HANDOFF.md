@@ -1,6 +1,6 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
-**Last updated:** 2026-08-07 by Opus 5 — see **§10**, which supersedes §§2 and 7 where they conflict
+**Last updated:** 2026-08-17 by Fable 5 — FRJ◯ retrospective appended (final §); previous update 2026-08-07 (§10 supersedes §§2 and 7 where they conflict)
 **Repo state:** `main` @ 925bc10 — `lake build` clean, every `#guard_msgs` audit green; no live feature branch (`ui-confluence` merged 2026-08-06)
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.
 
@@ -145,3 +145,39 @@ against the repo's own refutations before believing a clean build. (ii) A
 clean screen is a statement about the screen: screen the **degenerate end** of
 every axis first (round 9's fault needed empty context × untied fuel ×
 missing frame simultaneously, and no sweep had ever emptied a context).
+
+
+---
+
+## 2026-08-17 — FRJ◯ (forward refutation with ◯): campaign PAUSED, retrospective
+
+New since §10, all on branch `claude/frj-redevelopment-69005f` (NOT merged;
+worktree hello-8a60f1): a mechanisation of Fiorentini–Ferrari FRJ(G)
+(TOCL 21(3) 2020) extended to PLL's ◯.  The ◯-FREE completeness is PROVED
+there (`FRJ/Minimal.lean`: `frj_iff_not_IPL` — `Provable G ↔ ¬ IPL G` for
+circ-free `G`, the paper's Thm 6.2(i)+3.1).  The ◯-extension's completeness
+campaign was paused 2026-08-17: the approach was not converging.
+
+- PROVED (`FRJ/Saturate.lean`, pins `[propext, Quot.sound]`, guards in
+  `FRJ/Audit.lean`): `completeness_of_supply : PledgeSupply K G →
+  CircSupply K G → ¬K.valid G → Provable G` (conditional statement (A));
+  `provable_root_countermodel` ((B) forward, unconditional);
+  `completeness_of_discrete` (discrete models — these collapse to a single
+  classical world, ◯ transparent, so this is only the classical shadow);
+  `completeness_via_closure` (the ◯-free case re-derived through the new
+  organisation — a consistency check, no new territory).
+- REFUTED: the paper's triple-induction structure extended to ◯
+  (`minMod`-as-recursion; measure dichotomy, branch `docs/frj-w4.md` §9).
+- OPEN: unconditional (A); BOTH supply kernels as statements — never
+  extensionally attacked (first move if resumed).  Candidate cheap
+  extension: an erasure-transfer lemma for ◯-inessential countermodels
+  (`Rm = id`), reducing that class to the proved ◯-free completeness.
+
+Method lessons (banked in memory + branch HANDOFF): a lemma-statement
+introduced by interface refinement owes the standing extensional attack
+BEFORE the next analysis window; two isomorphic residues = change tack;
+an in-window-unreachable goal hook drives grinding.
+
+Full trail: branch HANDOFF.md (ten dated §§), branch `docs/frj-w4.md`
+§§8–13, engine `wip/frj_sat.lean` (corpus 28 pass / 5 control-ok /
+0 unresolved).
