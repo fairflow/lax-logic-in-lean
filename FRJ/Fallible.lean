@@ -216,7 +216,7 @@ barren calculus of `FRJ/Calculus.lean` cannot reach these formulas
 (`not_provable_neg_circ_bot`) — and it is also strictly weaker than a
 promise rule would be, since it can only ever make `◯` vacuous. -/
 theorem not_PLL_of_provable_triv {G : Form} (h : Provable (triv G)) : ¬ PLL G := by
-  obtain ⟨Γ, ⟨d⟩⟩ := h
+  obtain ⟨t, Γ, ⟨d⟩⟩ := h
   exact not_PLL_of_countermodel (falTop_countermodel (modR_countermodel d))
 
 /-! ## `¬◯⊥`: why the fallible worlds are not optional -/
@@ -238,8 +238,11 @@ extracted models are infallible.  This is a genuine incompleteness, not an
 accident of the rules: soundness concludes `¬ IPL G`, and `¬◯⊥` has `IPL`.
 Together with `not_PLL_neg_circ_bot` below it says that the formula is not
 valid in the logic and is out of the calculus's reach. -/
-theorem not_provable_neg_circ_bot : ¬ Provable (Form.neg (.circ .bot)) :=
-  fun h => soundness h IPL_neg_circ_bot
+theorem not_provable_barren_neg_circ_bot {t : Tag} {Γ : List Form}
+    (d : FRJr (Form.neg (.circ .bot)) t Γ (Form.neg (.circ .bot))) :
+    ¬ (modR d).Infallible := fun hinf =>
+  modR_countermodel d
+    (valid_neg_circ_bot_of_infallible (K := modR d) hinf)
 
 /-! ## Two models
 
@@ -370,16 +373,16 @@ which holds for every extension whose models are infallible. -/
 
 /-- The barren route on `◯p`: `Ax^R` then `◯∈`. -/
 theorem provable_circ_atom (p : String) : Provable (Form.circ (.atom p)) :=
-  ⟨_, ⟨FRJr.circIn (FRJr.axR (.atom p) rfl (by simp [sfR, sfPos]))
-    (sfR_self _)⟩⟩
+  ⟨.barren, _, ⟨FRJr.circIn (FRJr.axR (.atom p) rfl (by simp [sfR, sfPos]))
+    (Or.inl rfl) (sfR_self _)⟩⟩
 
-theorem not_IPL_circ_atom (p : String) : ¬ IPL (Form.circ (.atom p)) :=
+theorem not_PLL_circ_atom (p : String) : ¬ PLL (Form.circ (.atom p)) :=
   soundness (provable_circ_atom p)
 
 /-- The fallible route cannot reach `◯p`: its trivialisation is `⊤`. -/
 theorem not_provable_triv_circ_atom (p : String) :
     ¬ Provable (triv (Form.circ (.atom p))) :=
-  fun h => soundness h (fun _ _ _ _ hb => hb)
+  fun h => soundness h (fun _ _ _ hb => hb)
 
 /-- **The fallible route on `¬◯⊥`, as an actual derivation.**  `Ax^I` at
 `⊥` puts `⊥ ⊃ ⊥` in the irregular zone, the join keeps it by the
@@ -389,17 +392,18 @@ theorem provable_triv_neg_circ_bot : Provable (triv (Form.neg (.circ .bot))) := 
   have hax : FRJi (Form.imp (Form.imp .bot .bot) .bot) []
       (nf (Form.imp (Form.imp .bot .bot) .bot)
         ((rm (gAt (Form.imp (Form.imp .bot .bot) .bot)) .bot)
-          ++ gImp (Form.imp (Form.imp .bot .bot) .bot))) .bot :=
+          ++ gImp (Form.imp (Form.imp .bot .bot) .bot) ++ gCirc (Form.imp (Form.imp .bot .bot) .bot))) .bot :=
     FRJi.axI .bot rfl (by decide)
   have hjoin := FRJr.joinAt (G := Form.imp (Form.imp .bot .bot) .bot) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .bot)
       (fun _ => hax)
       (by intro i j h; exact absurd ((Fin.fin_one_eq_zero i).trans (Fin.fin_one_eq_zero j).symm) h)
       (by intro A B h; simp [unionAll, impPart] at h)
+      (by simp [unionAll, circPart])
       rfl
       (by simp [unionAll, atPart])
       (by decide)
-  exact ⟨_, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
+  exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 /-- The same for `◯p ⊃ p`, the formula that made the promise problem
 concrete in `docs/frj-modal-rules.md` §4.3. -/
@@ -408,17 +412,18 @@ theorem provable_triv_circ_imp :
   have hax : FRJi (Form.imp (Form.imp .bot .bot) (.atom "p")) []
       (nf (Form.imp (Form.imp .bot .bot) (.atom "p"))
         ((rm (gAt (Form.imp (Form.imp .bot .bot) (.atom "p"))) .bot)
-          ++ gImp (Form.imp (Form.imp .bot .bot) (.atom "p")))) .bot :=
+          ++ gImp (Form.imp (Form.imp .bot .bot) (.atom "p")) ++ gCirc (Form.imp (Form.imp .bot .bot) (.atom "p")))) .bot :=
     FRJi.axI .bot rfl (by decide)
   have hjoin := FRJr.joinAt (G := Form.imp (Form.imp .bot .bot) (.atom "p")) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .atom "p")
       (fun _ => hax)
       (by intro i j h; exact absurd ((Fin.fin_one_eq_zero i).trans (Fin.fin_one_eq_zero j).symm) h)
       (by intro A B h; simp [unionAll, impPart] at h)
+      (by simp [unionAll, circPart])
       rfl
       (by simp [unionAll, atPart])
       (by decide)
-  exact ⟨_, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
+  exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 /-- **`¬◯⊥` refuted through the calculus**, not merely by exhibiting a
 model: `provable_triv_neg_circ_bot` is an `FRJ`-derivation, and `falTop`
@@ -482,20 +487,55 @@ theorem force_circ_iff_nn {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
     obtain ⟨u, hvu, hu⟩ := key
     exact ⟨u, (hRm v u).mpr hvu, hu⟩
 
-/-- **The blind spot of the identity choice.**  Every extracted model
-validates `◯A ⊃ A`. -/
-theorem modR_valid_circ_imp {G : Form} {Γ : List Form} {C : Form}
-    (d : FRJr G Γ C) (A : Form) : (modR d).valid (Form.imp (.circ A) A) :=
-  fun v _ hv => (PreModel.toKripke_force_circ (preR d) (preR_closed d) v A).mp hv
+/-- **The fallible JOIN reaches `¬◯⊥` inside the calculus.**  `Ax^I` at
+`⊥` puts `◯⊥` (now in `Ĝ_◯`) into the irregular zone, the fallible join
+keeps the whole modal zone and declares a fallible modal successor for
+the new world, and `⊃∈` discharges `◯⊥` from the closure.  Under W3's
+uniform identity choice this was PROVABLY out of reach
+(`not_provable_barren_neg_circ_bot` is what remains of that fact: any
+derivation of `¬◯⊥` has a fallible world in its extracted model). -/
+theorem provable_neg_circ_bot : Provable (Form.neg (.circ .bot)) := by
+  have hax : FRJi (Form.neg (.circ .bot)) []
+      (nf (Form.neg (.circ .bot))
+        ((rm (gAt (Form.neg (.circ .bot))) .bot)
+          ++ gImp (Form.neg (.circ .bot)) ++ gCirc (Form.neg (.circ .bot)))) .bot :=
+    FRJi.axI .bot rfl (by decide)
+  have hjoin := FRJr.joinAtF (G := Form.neg (.circ .bot)) (n := 0)
+      (stab := fun _ => []) (rhs := fun _ => .bot) (F := .bot)
+      (fun _ => hax)
+      (by intro i j h; exact absurd ((Fin.fin_one_eq_zero i).trans (Fin.fin_one_eq_zero j).symm) h)
+      (by intro A B h; simp [unionAll, impPart] at h)
+      rfl
+      (by simp [unionAll, atPart])
+      (by decide)
+  exact ⟨.blocked, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
-/-- Hence **the calculus provably cannot refute `◯A ⊃ A`, for any `A`** —
-not because a rule is missing but because every model it builds validates
-the formula.  The fallible route does reach it
-(`provable_triv_circ_imp`), which is the point of having more than one
-extraction. -/
-theorem not_provable_circ_imp (A : Form) : ¬ Provable (Form.imp (.circ A) A) := by
-  rintro ⟨Γ, ⟨d⟩⟩
-  exact modR_countermodel d (modR_valid_circ_imp d A)
+/-- The same for `◯p ⊃ p` — the sharp instance of the design discussion,
+now refuted by the calculus itself. -/
+theorem provable_circ_imp : Provable (Form.imp (.circ (.atom "p")) (.atom "p")) := by
+  have hax : FRJi (Form.imp (.circ (.atom "p")) (.atom "p")) []
+      (nf (Form.imp (.circ (.atom "p")) (.atom "p"))
+        ((rm (gAt (Form.imp (.circ (.atom "p")) (.atom "p"))) (.atom "p"))
+          ++ gImp (Form.imp (.circ (.atom "p")) (.atom "p"))
+          ++ gCirc (Form.imp (.circ (.atom "p")) (.atom "p")))) (.atom "p") :=
+    FRJi.axI (.atom "p") rfl (by decide)
+  have hjoin := FRJr.joinAtF (G := Form.imp (.circ (.atom "p")) (.atom "p")) (n := 0)
+      (stab := fun _ => []) (rhs := fun _ => .atom "p") (F := .atom "p")
+      (fun _ => hax)
+      (by intro i j h; exact absurd ((Fin.fin_one_eq_zero i).trans (Fin.fin_one_eq_zero j).symm) h)
+      (by intro A B h; simp [unionAll, impPart] at h)
+      rfl
+      (by simp [unionAll, atPart])
+      (by decide)
+  exact ⟨.blocked, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
+
+/-- Hence the two standing cells, straight from soundness. -/
+theorem not_PLL_neg_circ_bot_by_calculus : ¬ PLL (Form.neg (.circ .bot)) :=
+  soundness provable_neg_circ_bot
+
+theorem not_PLL_circ_imp_by_calculus :
+    ¬ PLL (Form.imp (.circ (.atom "p")) (.atom "p")) :=
+  soundness provable_circ_imp
 
 /-- **The blind spot of the double-negation choice**, for comparison: a
 model whose modal relation is its order validates `¬¬A ⊃ ◯A`, which is not
@@ -520,9 +560,17 @@ theorem valid_nn_imp_circ {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
 #guard_msgs in
 #print axioms IPL_neg_circ_bot
 
-/-- info: 'FRJ.not_provable_neg_circ_bot' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.provable_neg_circ_bot' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
-#print axioms not_provable_neg_circ_bot
+#print axioms provable_neg_circ_bot
+
+/-- info: 'FRJ.not_PLL_neg_circ_bot_by_calculus' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_PLL_neg_circ_bot_by_calculus
+
+/-- info: 'FRJ.provable_circ_imp' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_circ_imp
 
 /-- info: 'FRJ.not_PLL_neg_circ_bot' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
@@ -544,8 +592,8 @@ theorem valid_nn_imp_circ {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
 #guard_msgs in
 #print axioms force_circ_iff_nn
 
-/-- info: 'FRJ.not_provable_circ_imp' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.not_provable_barren_neg_circ_bot' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
-#print axioms not_provable_circ_imp
+#print axioms not_provable_barren_neg_circ_bot
 
 end FRJ

@@ -1026,26 +1026,24 @@ def gAt (G : Form) : List Form := (sfL G).filter Form.isPV
 /-- `Ĝ_imp = Sf^L(G) ∩ Fm⊃`. -/
 def gImp (G : Form) : List Form := (sfL G).filter Form.isImp
 
-/-- `Ĝ = Ĝ_at ++ Ĝ_imp`. -/
+/-- `Ĝ_◯ = Sf^L(G) ∩ {◯-formulas}`, the third zone of the modal
+extension. -/
 def gCirc (G : Form) : List Form := (sfL G).filter Form.isCirc
 
-/-- `Ĝ = Ĝ_at ∪ Ĝ_imp`, the paper's.
+/-- `Ĝ = Ĝ_at ∪ Ĝ_imp ∪ Ĝ_◯` — the paper's universe plus the third zone.
 
-W1 FINDING, recorded rather than acted on.  The modality needs a third
-zone `Ĝ_◯` — `◯A` can be forced where `A` is not, exactly as `A ⊃ B` can
-be forced where `B` is not, so `◯`-formulas are determining data about a
-world.  Screened twice: semantically, and in `docs/frj-lifting.md` §7,
-where determining part = atoms + `⊥` + implications gives 32 certified
-failures over 156 cells and adding the `◯`-formulas gives 0.
+The zone is needed because `◯A` can be forced where `A` is not, exactly as
+`A ⊃ B` can be forced where `B` is not, so `◯`-formulas are determining
+data about a world.  Screened twice: semantically, and in
+`docs/frj-lifting.md` §7 (32 certified failures over 156 cells without the
+`◯`-formulas in the determining part, 0 with them).
 
-But the third zone **cannot be added before the `◯` rules**, and the build
-is what showed it: with `Ĝ_◯` present, `⊃∉`'s side condition
-`Θ ⊆ Cl(Γ) ∩ Ĝ` lets a `◯`-formula into a zone, `⊃∈` can shift it into the
-stable set, and the join rules — which keep only `Σ^at` and `Σ^⊃` — then
-drop it, breaking condition (†) of Lemma 3.10's join case.  So `Ĝ_◯`,
-the `◯` clause of `Cl` and the `◯` clause of `Λ*` are one change with the
-rules, not a change before them.  `gCirc` is defined and unused. -/
-def gHat (G : Form) : List Form := gAt G ++ gImp G
+The W1 finding stands and is now honoured rather than deferred: the zone,
+the `◯` clause of `Cl`, the modal parts of the join contexts and the
+promise rules are ONE atomic change (this commit) — adding any part alone
+breaks condition (†) of Lemma 3.10's join case, which is what the W1
+build showed. -/
+def gHat (G : Form) : List Form := gAt G ++ gImp G ++ gCirc G
 
 /-! ## Canonical contexts
 
@@ -1119,6 +1117,10 @@ inductive Clo (Γ : List Form) : Form → Prop
   | orR {A X : Form} : Clo Γ X → Clo Γ (.or A X)
   | orL {A X : Form} : Clo Γ X → Clo Γ (.or X A)
   | imp {A X : Form} : Clo Γ X → Clo Γ (.imp A X)
+  /-- the modal clause, part of the atomic change of the modal extension.
+  Sound by the unit of the modality (`Rm` is reflexive): the `circ` case
+  of `clo_forces`. -/
+  | circ {X : Form} : Clo Γ X → Clo Γ (.circ X)
 
 /-! ### Properties (Cl1)–(Cl6)
 
@@ -1134,6 +1136,7 @@ theorem clo_forces {K : Kripke} {a : K.W} {Γ : List Form}
   | orR _ ih => exact Or.inr ih
   | orL _ ih => exact Or.inl ih
   | imp _ ih => exact fun b hb _ => K.force_mono hb ih
+  | circ _ ih => exact fun b hb => ⟨b, K.rm_refl b, K.force_mono hb ih⟩
 
 /-- **(Cl3)**, first half: `Γ ⊆ Cl(Γ)`. -/
 theorem clo_subset {Γ : List Form} {C : Form} (h : C ∈ Γ) : Clo Γ C :=
@@ -1148,6 +1151,7 @@ theorem clo_mono {Γ₁ Γ₂ : List Form} (hsub : Γ₁ ⊆ Γ₂) {X : Form}
   | orR _ ih => exact .orR ih
   | orL _ ih => exact .orL ih
   | imp _ ih => exact .imp ih
+  | circ _ ih => exact .circ ih
 
 /-- **(Cl5)** `Cl(Γ) ∩ PV = Γ ∩ PV`.  Stated as: a propositional variable
 lies in `Cl(Γ)` only if it already lies in `Γ`. -/
@@ -1167,6 +1171,7 @@ theorem clo_trans {Γ Δ : List Form} (h : ∀ X ∈ Δ, Clo Γ X) :
   | orR _ ih => exact .orR ih
   | orL _ ih => exact .orL ih
   | imp _ ih => exact .imp ih
+  | circ _ ih => exact .circ ih
 
 /-- **(Cl2)** `A ∈ Cl(Γ)` implies `A ∈ Cl(Γ ∩ Sf(A))`.  Consumed by the
 irregular `⊃∈` case of the soundness proof. -/
@@ -1202,6 +1207,81 @@ theorem clo_sf {Γ : List Form} : ∀ {A : Form}, Clo Γ A → Clo (cap Γ (sf A
         intro Z hZ
         simp only [sf, List.mem_cons, List.mem_append]
         exact Or.inr (Or.inr hZ))
+  | @circ X _ ih =>
+      refine .circ (clo_mono ?_ ih)
+      exact cap_subset_cap (by
+        intro Z hZ
+        simp only [sf, List.mem_cons]
+        exact Or.inr hZ)
+
+/-! ### The closure is decidable
+
+Needed by the modal restriction operator of the promise join, which
+filters `Θ^◯` by membership of the body in `Cl(Δ)` — a filter needs a
+`Bool`, where a rule's side condition could stay a `Prop`. -/
+
+/-- `Cl(Γ)`-membership as a computation, by structural recursion. -/
+def cloB (Γ : List Form) : Form → Bool
+  | .atom p => decide (Form.atom p ∈ Γ)
+  | .bot => decide (Form.bot ∈ Γ)
+  | .and X Y => decide (Form.and X Y ∈ Γ) || (cloB Γ X && cloB Γ Y)
+  | .or X Y => decide (Form.or X Y ∈ Γ) || cloB Γ X || cloB Γ Y
+  | .imp A X => decide (Form.imp A X ∈ Γ) || cloB Γ X
+  | .circ X => decide (Form.circ X ∈ Γ) || cloB Γ X
+
+theorem cloB_iff {Γ : List Form} : ∀ {X : Form}, cloB Γ X = true ↔ Clo Γ X := by
+  intro X
+  induction X with
+  | atom p => simp only [cloB, decide_eq_true_eq]
+              exact ⟨.base, fun h => clo_pv h⟩
+  | bot => simp only [cloB, decide_eq_true_eq]
+           exact ⟨.base, fun h => by cases h with | base h => exact h⟩
+  | and X Y ihX ihY =>
+      simp only [cloB, Bool.or_eq_true, Bool.and_eq_true, decide_eq_true_eq, ihX, ihY]
+      constructor
+      · rintro (h | ⟨hX, hY⟩)
+        · exact .base h
+        · exact .and hX hY
+      · intro h
+        cases h with
+        | base h => exact Or.inl h
+        | and hX hY => exact Or.inr ⟨hX, hY⟩
+  | or X Y ihX ihY =>
+      simp only [cloB, Bool.or_eq_true, decide_eq_true_eq, ihX, ihY]
+      constructor
+      · rintro ((h | hX) | hY)
+        · exact .base h
+        · exact .orL hX
+        · exact .orR hY
+      · intro h
+        cases h with
+        | base h => exact Or.inl (Or.inl h)
+        | orL hX => exact Or.inl (Or.inr hX)
+        | orR hY => exact Or.inr hY
+      
+  | imp A X ihA ihX =>
+      simp only [cloB, Bool.or_eq_true, decide_eq_true_eq, ihX]
+      constructor
+      · rintro (h | hX)
+        · exact .base h
+        · exact .imp hX
+      · intro h
+        cases h with
+        | base h => exact Or.inl h
+        | imp hX => exact Or.inr hX
+  | circ X ihX =>
+      simp only [cloB, Bool.or_eq_true, decide_eq_true_eq, ihX]
+      constructor
+      · rintro (h | hX)
+        · exact .base h
+        · exact .circ hX
+      · intro h
+        cases h with
+        | base h => exact Or.inl h
+        | circ hX => exact Or.inr hX
+
+instance decClo (Γ : List Form) (X : Form) : Decidable (Clo Γ X) :=
+  decidable_of_iff _ cloB_iff
 
 /-- The unit of the modality, as a fact about forcing rather than about
 `Cl`: `α ⊩ X` implies `α ⊩ ◯X`, by reflexivity of `Rm`.  This is what a

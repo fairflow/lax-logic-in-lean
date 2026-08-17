@@ -6,6 +6,74 @@ the rule being correctly specified — so this document specifies it and
 records what the extensional attack has settled, before any proof build is
 scoped.*
 
+## 0a. The check against the repo's own PLL completeness (2026-08-17, Matthew's instruction)
+
+Before the build, the promise-join design was checked against the two
+places the repository already constructs PLL countermodels.  Three
+findings, one per place, and a scope correction.
+
+**1. The frame class is aligned, exactly.**  `ConstraintModel`
+(`LaxLogic/PLLKripke.lean`) demands `refl_m`, `trans_m`, `sub_mi`,
+`hered_F`, `full_F`; `FinCM` (`PLLCountermodelEmit.lean`) builds the
+reflexive closures of BOTH relations into `riB`/`rmB` and checks the rest
+in `WellFormed`.  `FRJ.Kripke` matches field for field — `rm_refl`,
+`rm_trans`, `sub_mi`, `fal_mono`, `fal_V` — so the reflexivity of `Rm`
+that the witness-merging lemmas use is not an assumption of this
+development but the repo's own completeness-bearing class.  What
+`FRJ.Kripke` adds is `le_antisymm` (posets, i.e. REDUCED models) and
+constructive finiteness; reducedness is deliberate — see finding 3.
+
+**2. The canonical model already contains the pledge mechanism.**  The
+canonical worlds of `PLLCompleteness.lean` are triples
+`(val, fal, mfal)` with
+
+    Rm T T'  :=  T.val ⊆ T'.val  ∧  T.mfal ⊆ T'.mfal
+
+`mfal` is the set of formulas *pledged false at every `Rm`-successor*;
+refuting `◯φ` at a world is exactly extending it with `φ ∈ mfal`
+(consistency argument at line ~572), the pledge propagates along `Rm` by
+definition, and `mfal_sub_fal` (pledged ⟹ false) is forced by
+reflexivity — a world is its own `Rm`-successor.  The `Tag`/chain
+mechanism of this design is the SINGLE-pledge shadow of `mfal`: `chain Z`
+says "every world of the root's `Rm`-cone refutes `Z`", which is `mfal ∋ Z`
+propagated down the promise chain.  The general mechanism is a pledge
+SET; the emitter (`PLLCountermodelEmit.lean`) uses the same device as the
+`P` component of its `(T, P)` worlds.
+
+**3. Arity, and the honest completeness scope.**  `docs/frj-lifting.md`
+§3 measured the arity of the ◯-refutation obligation (the number of
+`Rm`-MAXIMAL successors) exhaustively over well-formed frames:
+unbounded for full PLL (2 at n=2, 3 at n=3 — Goranko's `Alt_n`
+phenomenon), but **exactly 1 on reduced confluent frames**, with the
+mechanised witnesses `confluent_directed` and `rmC_le_obInv` already in
+the repo.  A single promise premise per join builds models whose
+`Rm`-cones are chains, i.e. the arity-1 class.  Consequently:
+
+* **SOUNDNESS of the single-promise rules is unconditional** — every
+  model built is a genuine constraint model, so every refutation
+  certified is a PLL refutation;
+* **COMPLETENESS of the single-promise calculus can at best hold for a
+  class where arity 1 suffices** — the lifting doc's own recommendation
+  ("do PCLL first") applies, and full PLL is expected to need promise
+  LISTS (a rule schema) or the pledge-set generalisation of finding 2.
+  One mitigation observed at Screen 2: refutations of distinct
+  `◯`-formulas can be pushed to distinct `≤`-successors (the joins
+  already branch in `≤`), so the per-frame arity numbers may overstate
+  the per-formula need.  OPEN, deliberately.
+
+**Consequence for the build (amended by Matthew, 2026-08-17): the
+framework is built PLL-GENERAL from the outset.**  "You should not be
+targeting PCLL from the outset.  That can only be a later tweak: the
+general framework must be correct for PLL."  Accordingly the promise is a
+FAMILY of regular premises `Δᵢ ⇒ Dᵢ` of arbitrary finite arity `k+1` —
+the join declares as many modal successors as it needs, matching the
+unbounded arity of full PLL; (J5) is per-formula existential (different
+kept `◯Y` may be witnessed by different promise worlds), (J7) is
+universal (every promise world lies above the new world), and the unary
+case is `k = 0`.  PCLL/reducedness is a possible later specialisation,
+never an assumption.  Soundness now; the completeness construction is
+scoped separately.
+
 ## 0. Why the uniform choices go
 
 Each uniform choice of `Rm` fixes a nucleus once and for all (`id`, `¬¬`,
@@ -126,3 +194,50 @@ has not measured that fraction**, because `FRJ/` contains no search loop at
 all.  Measuring it is a separate, well-defined piece of work and needs the
 saturation procedure plus §3.3 of the paper (termination), neither of which
 is mechanised.
+
+---
+
+## 6. BUILD OUTCOME (2026-08-17): soundness PROVED
+
+`lake build FRJ` green, no `sorry`, all `#guard_msgs` pins pass.
+What went in, as ONE atomic change (§1's list, realised):
+
+1. `gHat = gAt ++ gImp ++ gCirc`; `nf` therefore re-canonicalises every
+   context; `axI`'s zone and `lamStar_subset_axI` extended.
+2. `Clo` gained the `◯`-clause (+ `cloB`/`decClo`, needed by the
+   restriction filter).
+3. Contexts split three ways (`atPart_union_impPart`).
+4. SIX join constructors: `joinAt`/`joinOr` (barren — NEW side condition
+   `Σ^◯ = ∅`, forced by (†)), `joinAtP`/`joinOrP` (promise FAMILIES,
+   arity `k+1` arbitrary, (J5) existential per formula, (J7) universal
+   per promise, `Θ^◯/Cl(Δ⃗)` restriction), `joinAtF`/`joinOrF` (declared
+   fallible successor, whole modal zone kept, no conditions).
+5. `PreModel` carries `rm`/`fal` as data; `PJRm` wires the fresh root to
+   the designated promise components; `leafF` is the declared fallible
+   world (label = the join's own context; the one non-p-sequent world).
+6. `FRJr` indexed by `Tag` (`barren`/`chain D`/`blocked`); `◯∈` gated by
+   `t ∈ {barren, chain Z}`; `tag_cone` (mutually recursive with Lemma
+   3.9) proves the pledge is honoured down the whole promise chain —
+   including the correction that the cone BEYOND the promise root must
+   refute `Z`, which the naive Bool index missed.
+7. Lemma 3.9 extended: (P2◯) via `circ_intro` with the promise root (or
+   fallible leaf) as witness; the (ii) statement gained `¬ fal w`.
+8. `soundness : Provable G → ¬ PLL G` — against ALL constraint models,
+   the right statement for a PLL refutation calculus.
+
+**Cells, machine-checked**: `provable_neg_circ_bot` and
+`provable_circ_imp` — the calculus now refutes `¬◯⊥` and `◯p ⊃ p`
+ITSELF, by `⋈^⊥`; both were provably out of reach of every infallible
+extraction (`not_provable_barren_neg_circ_bot` keeps that fact).  The
+`triv`/`falTop` route survives as theory but is subsumed.
+
+**Bonus**: `Kripke.infPart` — deleting fallible worlds preserves ◯-free
+forcing (the failure witnesses of `⊃` are never fallible), closing W3
+open item (4); `frj_iff_countermodel` and `frj_iff_not_IPL` hold again
+for ◯-free goals with the fallible extraction in play.
+
+**OPEN (W4)**: completeness with modal goals — `Λ*` does not yet carry
+the modal zone (`forceStar` unchanged; `minMod` still `hcf`-guarded), the
+◯-goal case of the construction is unwritten, and the multiplicity
+question (promise families vs pledge sets vs `≤`-branching) is
+undecided.  Read the JLC 2021 S4 paper first (Matthew's action).

@@ -53,6 +53,19 @@ structure PreModel where
   root : W
   root_le : ∀ a, le root a
   lbl : W → List Form
+  /-- the modal relation, DECLARED BY THE DERIVATION: a join wires its
+  fresh root to the roots of its promise components.  (Before the promise
+  rules, `rm` was the uniform `Eq`, which fixed the identity nucleus; see
+  `docs/frj-w3.md` §6a.) -/
+  rm : W → W → Prop
+  rm_refl : ∀ a, rm a a
+  rm_trans : ∀ {a b c}, rm a b → rm b c → rm a c
+  rm_sub : ∀ {a b}, rm a b → le a b
+  decRm : ∀ a b, Decidable (rm a b)
+  /-- the fallible worlds: only the declared fallible leaves of `⋈^⊥`. -/
+  fal : W → Prop
+  fal_mono : ∀ {a b}, le a b → fal a → fal b
+  decFal : ∀ a, Decidable (fal a)
 
 attribute [instance] PreModel.decEq
 
@@ -62,9 +75,20 @@ inductive PJLe {ι : Type} (Ms : ι → PreModel) :
   | root (x : Option ((i : ι) × (Ms i).W)) : PJLe Ms none x
   | comp {i : ι} {a b : (Ms i).W} : (Ms i).le a b → PJLe Ms (some ⟨i, a⟩) (some ⟨i, b⟩)
 
+/-- The modal relation of a join: each component keeps its own `rm`, and
+the fresh root sees — besides itself — exactly the `rm`-cones of the
+roots of the components `iP` designates as its PROMISES. -/
+inductive PJRm {ι : Type} (Ms : ι → PreModel) (iP : ι → Bool) :
+    Option ((i : ι) × (Ms i).W) → Option ((i : ι) × (Ms i).W) → Prop
+  | rroot : PJRm Ms iP none none
+  | prom {i : ι} {a : (Ms i).W} (hi : iP i = true)
+      (hra : (Ms i).rm (Ms i).root a) :
+      PJRm Ms iP none (some ⟨i, a⟩)
+  | comp {i : ι} {a b : (Ms i).W} : (Ms i).rm a b → PJRm Ms iP (some ⟨i, a⟩) (some ⟨i, b⟩)
+
 namespace PreModel
 
-/-- `Ax^R`: a single world. -/
+/-- `Ax^R`: a single world, barren and infallible. -/
 def leaf (Γ : List Form) : PreModel where
   W := Unit
   elems := [()]
@@ -78,10 +102,46 @@ def leaf (Γ : List Form) : PreModel where
   root := ()
   root_le := fun _ => trivial
   lbl := fun _ => Γ
+  rm := fun _ _ => True
+  rm_refl := fun _ => trivial
+  rm_trans := fun _ _ => trivial
+  rm_sub := fun _ => trivial
+  decRm := fun _ _ => isTrue trivial
+  fal := fun _ => False
+  fal_mono := fun _ h => h
+  decFal := fun _ => isFalse (fun h => h)
 
-/-- A join: a fresh root labelled `Γ₀`, below the disjoint union. -/
+/-- The DECLARED FALLIBLE world of `⋈^⊥`: a single fallible world.  It is
+the one world of the model that is not the `φ(σ)` of a p-sequent — a
+fallible world forces everything, so it refutes nothing and can carry no
+refutation premise (`docs/frj-lifting.md` §4); its label is the join's
+own context, which it forces trivially. -/
+def leafF (Γ : List Form) : PreModel where
+  W := Unit
+  elems := [()]
+  complete := fun _ => List.mem_cons_self
+  decEq := inferInstance
+  le := fun _ _ => True
+  le_refl := fun _ => trivial
+  le_trans := fun _ _ => trivial
+  le_antisymm := fun {a b} _ _ => Subsingleton.elim a b
+  decLe := fun _ _ => isTrue trivial
+  root := ()
+  root_le := fun _ => trivial
+  lbl := fun _ => Γ
+  rm := fun _ _ => True
+  rm_refl := fun _ => trivial
+  rm_trans := fun _ _ => trivial
+  rm_sub := fun _ => trivial
+  decRm := fun _ _ => isTrue trivial
+  fal := fun _ => True
+  fal_mono := fun _ _ => trivial
+  decFal := fun _ => isTrue trivial
+
+/-- A join: a fresh root labelled `Γ₀`, below the disjoint union, with the
+components `iP` designates wired to the root as its modal successors. -/
 def join {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe)
-    (Γ₀ : List Form) (Ms : ι → PreModel) : PreModel where
+    (Γ₀ : List Form) (Ms : ι → PreModel) (iP : ι → Bool) : PreModel where
   W := Option ((i : ι) × (Ms i).W)
   elems := none :: ιe.flatMap (fun i => ((Ms i).elems).map (fun a => some ⟨i, a⟩))
   complete := by
@@ -124,12 +184,95 @@ def join {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe)
   lbl := fun x => match x with
     | none => Γ₀
     | some ⟨i, a⟩ => (Ms i).lbl a
+  rm := PJRm Ms iP
+  rm_refl := by
+    rintro (_ | ⟨i, a⟩)
+    · exact .rroot
+    · exact .comp ((Ms i).rm_refl a)
+  rm_trans := by
+    rintro _ _ _ h1 h2
+    cases h1 with
+    | rroot => exact h2
+    | prom hi hra =>
+        cases h2 with
+        | comp hab => exact .prom hi ((Ms _).rm_trans hra hab)
+    | comp hab =>
+        cases h2 with
+        | comp hbc => exact .comp ((Ms _).rm_trans hab hbc)
+  rm_sub := by
+    rintro _ _ h
+    cases h with
+    | rroot => exact .root _
+    | prom hi hra => exact .root _
+    | comp hab => exact .comp ((Ms _).rm_sub hab)
+  decRm := by
+    rintro (_ | ⟨i, a⟩) y
+    · cases y with
+      | none => exact isTrue .rroot
+      | some jb =>
+          obtain ⟨j, b⟩ := jb
+          by_cases hj : iP j = true
+          · have : Decidable ((Ms j).rm (Ms j).root b) := (Ms j).decRm _ b
+            exact decidable_of_iff ((Ms j).rm (Ms j).root b)
+              ⟨fun h => .prom hj h, fun h => by cases h; assumption⟩
+          · exact isFalse (fun h => by cases h with | prom hi _ => exact hj hi)
+    · cases y with
+      | none => exact isFalse (fun h => by cases h)
+      | some jb =>
+          obtain ⟨j, b⟩ := jb
+          by_cases hij : i = j
+          · subst hij
+            have : Decidable ((Ms i).rm a b) := (Ms i).decRm a b
+            exact decidable_of_iff ((Ms i).rm a b)
+              ⟨fun h => .comp h, fun h => by cases h; assumption⟩
+          · exact isFalse (fun h => by cases h; exact hij rfl)
+  fal := fun x => match x with
+    | none => False
+    | some ⟨i, a⟩ => (Ms i).fal a
+  fal_mono := by
+    rintro _ _ h hf
+    cases h with
+    | root x =>
+        cases hf
+    | comp hab => exact (Ms _).fal_mono hab hf
+  decFal := by
+    rintro (_ | ⟨i, a⟩)
+    · exact isFalse (fun h => h)
+    · exact (Ms i).decFal a
 
-theorem join_le_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, i ∈ ιe} {Γ₀ : List Form} {Ms : ι → PreModel}
-    {i : ι} {a : (Ms i).W} {y : (join ιe ιc Γ₀ Ms).W} (h : (join ιe ιc Γ₀ Ms).le (some ⟨i, a⟩) y) :
+variable {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, i ∈ ιe}
+  {Γ₀ : List Form} {Ms : ι → PreModel} {iP : ι → Bool}
+
+theorem join_le_comp {i : ι} {a : (Ms i).W} {y : (join ιe ιc Γ₀ Ms iP).W}
+    (h : (join ιe ιc Γ₀ Ms iP).le (some ⟨i, a⟩) y) :
     ∃ b : (Ms i).W, (Ms i).le a b ∧ y = some ⟨i, b⟩ := by
   cases h with
   | comp hab => exact ⟨_, hab, rfl⟩
+
+/-- The modal analogue: everything modally above a component world stays
+in the same component, with the component's own `rm`. -/
+theorem join_rm_comp {i : ι} {a : (Ms i).W} {y : (join ιe ιc Γ₀ Ms iP).W}
+    (h : (join ιe ιc Γ₀ Ms iP).rm (some ⟨i, a⟩) y) :
+    ∃ b : (Ms i).W, (Ms i).rm a b ∧ y = some ⟨i, b⟩ := by
+  cases h with
+  | comp hab => exact ⟨_, hab, rfl⟩
+
+/-- The modal successors of the fresh root: itself, or a world in the
+`rm`-cone of a designated promise component's root. -/
+theorem join_rm_root {y : (join ιe ιc Γ₀ Ms iP).W}
+    (h : (join ιe ιc Γ₀ Ms iP).rm none y) :
+    y = none ∨ ∃ (i : ι) (a : (Ms i).W),
+      iP i = true ∧ (Ms i).rm (Ms i).root a ∧ y = some ⟨i, a⟩ := by
+  cases h with
+  | rroot => exact Or.inl rfl
+  | prom hi hra => exact Or.inr ⟨_, _, hi, hra, rfl⟩
+
+/-- With no designated promises the root is BARREN. -/
+theorem join_rm_root_barren (hP : ∀ i, iP i = false) {y : (join ιe ιc Γ₀ Ms iP).W}
+    (h : (join ιe ιc Γ₀ Ms iP).rm none y) : y = none := by
+  rcases join_rm_root h with h | ⟨i, a, hi, -, -⟩
+  · exact h
+  · exact absurd hi (by simp [hP i])
 
 /-- Package a pre-model as a Kripke model once `lbl_clo` is known: the
 valuation is the paper's `V(σ) = Lhs(σ) ∩ PV`, and its monotonicity is
@@ -146,57 +289,55 @@ def toKripke (P : PreModel)
   le_antisymm := P.le_antisymm
   root := P.root
   root_le := P.root_le
-  V := fun w p => Form.atom p ∈ P.lbl w
-  V_mono := fun {a b} hle p hp => clo_pv (h a b hle _ hp)
-  -- W3 of the modal extension.  A pre-model carries no modal data, and the
-  -- packaging takes `Rm` to be EQUALITY: every extracted world is barren.
-  -- (W1 took `Rm = ≤`, which was free while no rule mentioned `◯`.)  The
-  -- consequence, `toKripke_force_circ`, is that `◯` is the identity in
-  -- every extracted model — which is exactly what makes `◯∈` sound and is
-  -- also the ceiling on what this model construction can refute; the
-  -- complementary construction is `Kripke.falTop` in `FRJ/Fallible.lean`.
-  Rm := fun a b => a = b
-  rm_refl := fun _ => rfl
-  rm_trans := fun h₁ h₂ => h₁.trans h₂
-  sub_mi := fun {a _} h => h ▸ P.le_refl a
-  -- no extracted world is fallible: `Mod(D)` is a model of the paper's kind.
-  Fal := fun _ => False
-  fal_mono := fun _ h => h
-  fal_V := fun h => h.elim
+  -- fallible worlds validate every atom (`full_F` of the constraint
+  -- semantics); at all other worlds the valuation is the paper's
+  -- `V(σ) = Lhs(σ) ∩ PV`.
+  V := fun w p => Form.atom p ∈ P.lbl w ∨ P.fal w
+  V_mono := fun {a b} hle p hp => hp.elim
+    (fun hp => Or.inl (clo_pv (h a b hle _ hp)))
+    (fun hp => Or.inr (P.fal_mono hle hp))
+  -- the modal relation and the fallible set are the pre-model's own,
+  -- DECLARED BY THE DERIVATION (a promise join wires its root to its
+  -- promise components; everything else is barren).
+  Rm := P.rm
+  rm_refl := P.rm_refl
+  rm_trans := fun h₁ h₂ => P.rm_trans h₁ h₂
+  sub_mi := fun h => P.rm_sub h
+  Fal := P.fal
+  fal_mono := fun hle hf => P.fal_mono hle hf
+  fal_V := fun hf _ => Or.inr hf
   decLe := P.decLe
-  decV := fun w p => inferInstanceAs (Decidable (Form.atom p ∈ P.lbl w))
-  decRm := fun a b => P.decEq a b
-  decFal := fun _ => isFalse (fun h => h)
+  decV := fun w p =>
+    have : Decidable (P.fal w) := P.decFal w
+    inferInstanceAs (Decidable (_ ∨ _))
+  decRm := P.decRm
+  decFal := P.decFal
 
 @[simp] theorem toKripke_le (P : PreModel) (h) (w v : P.W) :
     (P.toKripke h).le w v ↔ P.le w v := Iff.rfl
 
 @[simp] theorem toKripke_V (P : PreModel) (h) (w : P.W) (p : String) :
-    (P.toKripke h).V w p ↔ Form.atom p ∈ P.lbl w := Iff.rfl
+    (P.toKripke h).V w p ↔ (Form.atom p ∈ P.lbl w ∨ P.fal w) := Iff.rfl
 
 @[simp] theorem toKripke_Rm (P : PreModel) (h) (w v : P.W) :
-    (P.toKripke h).Rm w v ↔ w = v := Iff.rfl
+    (P.toKripke h).Rm w v ↔ P.rm w v := Iff.rfl
 
 @[simp] theorem toKripke_Fal (P : PreModel) (h) (w : P.W) :
-    ¬ (P.toKripke h).Fal w := fun hf => hf
+    (P.toKripke h).Fal w ↔ P.fal w := Iff.rfl
 
-/-- **In every extracted model the modality is the identity.**  `Rm` is
-equality, so the `◯`-clause at `α` says "every `β ≥ α` forces `A`", which
-by monotonicity is just `α ⊩ A`.
-
-Both halves are used: left-to-right is the soundness of the modal
-introduction rule `◯∈` (a barren world refutes `◯A` as soon as it refutes
-`A`), right-to-left is the unit of the modality. -/
-@[simp] theorem toKripke_force_circ (P : PreModel) (h) (a : P.W) (A : Form) :
-    (P.toKripke h).force a (.circ A) ↔ (P.toKripke h).force a A := by
-  constructor
-  · intro hf
-    obtain ⟨c, hc, hcA⟩ := hf a ((P.toKripke h).le_refl a)
-    have hac : a = c := hc
-    subst hac
-    exact hcA
-  · intro hf b hb
-    exact ⟨b, rfl, (P.toKripke h).force_mono hb hf⟩
+/-- **At a BARREN world the modality is invisible**: if the world's only
+modal successor is itself, it refutes `◯A` as soon as it refutes `A`.
+This is the soundness of `◯∈` at barren roots; the tag machinery
+(`tag_cone`) extends it along promise chains.  (Before the promise rules
+`rm` was equality everywhere and this held globally — the identity
+nucleus, `docs/frj-w3.md` §6a.) -/
+theorem toKripke_not_force_circ_of_barren (P : PreModel) (h) {a : P.W}
+    (hbar : ∀ u, P.rm a u → u = a) {A : Form}
+    (hA : ¬ (P.toKripke h).force a A) :
+    ¬ (P.toKripke h).force a (.circ A) := by
+  intro hf
+  obtain ⟨c, hc, hcA⟩ := hf a ((P.toKripke h).le_refl a)
+  exact hA ((hbar c hc) ▸ hcA)
 
 end PreModel
 
@@ -286,24 +427,72 @@ change neither the world nor its label (they leave `Γ` alone), so they
 pass the model through; a join creates the fresh root and places below
 it every world contributed by its premises. -/
 
+/-- The component list of a join with one extra component family `κ`
+(the promises, or the fallible leaf). -/
+def sumElems {ι κ : Type} (ie : List ι) (ke : List κ) : List (ι ⊕ κ) :=
+  ie.map Sum.inl ++ ke.map Sum.inr
+
+theorem sumElems_complete {ι κ : Type} {ie : List ι} {ke : List κ}
+    (hι : ∀ i, i ∈ ie) (hκ : ∀ k, k ∈ ke) : ∀ x : ι ⊕ κ, x ∈ sumElems ie ke := by
+  rintro (i | k)
+  · exact List.mem_append_left _ (List.mem_map.mpr ⟨i, hι i, rfl⟩)
+  · exact List.mem_append_right _ (List.mem_map.mpr ⟨k, hκ k, rfl⟩)
+
 mutual
 
 /-- The pre-model of a regular derivation.  Its root is the paper's
-`φ(σ)` for the root sequent `σ`. -/
-def preR {G : Form} : {Γ : List Form} → {C : Form} → FRJr G Γ C → PreModel
-  | _, _, .axR F _ _ => PreModel.leaf (rm (gAt G) F)
-  | _, _, .andR1 d _ => preR d
-  | _, _, .andR2 d _ => preR d
-  | _, _, .impIn d _ _ => preR d
-  | _, _, .circIn d _ => preR d
-  | _, _, @FRJr.joinAt _ n stab th rhs F prem _ _ _ _ _ =>
+`φ(σ)` for the root sequent `σ`.  A promise join places, besides the
+premises' contributed models, one component per PROMISE premise, and
+designates exactly those as the root's modal successors; a fallible join
+places one declared fallible leaf and designates it. -/
+def preR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} → FRJr G t Γ C → PreModel
+  | _, _, _, .axR F _ _ => PreModel.leaf (rm (gAt G) F)
+  | _, _, _, .andR1 d _ => preR d
+  | _, _, _, .andR2 d _ => preR d
+  | _, _, _, .impIn d _ _ => preR d
+  | _, _, _, .circIn d _ _ => preR d
+  | _, _, _, @FRJr.joinAt _ n stab th rhs F prem _ _ _ _ _ _ =>
       PreModel.join (premIdxElems prem) (premIdxComplete prem)
         (joinCtxAt stab th rhs F)
         (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-  | _, _, @FRJr.joinOr _ n stab th rhs C₁ C₂ prem _ _ _ _ =>
+        (fun _ => false)
+  | _, _, _, @FRJr.joinAtP _ n k stab th rhs F _ tps Δs Ds prem dps _ _ _ _ _ _ _ _ =>
+      PreModel.join (sumElems (premIdxElems prem) (List.finRange (k + 1)))
+        (sumElems_complete (premIdxComplete prem) List.mem_finRange)
+        (joinCtxAtP stab th rhs F Δs)
+        (Sum.elim
+          (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+          (fun i => preR (dps i)))
+        (Sum.elim (fun _ => false) (fun _ => true))
+  | _, _, _, @FRJr.joinAtF _ n stab th rhs F prem _ _ _ _ _ =>
+      PreModel.join (sumElems (premIdxElems prem) [()])
+        (sumElems_complete (premIdxComplete prem) (fun _ => List.mem_cons_self))
+        (joinCtxAtF stab th rhs F)
+        (Sum.elim
+          (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+          (fun _ : Unit => PreModel.leafF (joinCtxAtF stab th rhs F)))
+        (Sum.elim (fun _ => false) (fun _ => true))
+  | _, _, _, @FRJr.joinOr _ n stab th rhs C₁ C₂ prem _ _ _ _ _ =>
       PreModel.join (premIdxElems prem) (premIdxComplete prem)
         (joinCtxOr stab th rhs)
         (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+        (fun _ => false)
+  | _, _, _, @FRJr.joinOrP _ n k stab th rhs C₁ C₂ _ tps Δs Ds prem dps _ _ _ _ _ _ _ =>
+      PreModel.join (sumElems (premIdxElems prem) (List.finRange (k + 1)))
+        (sumElems_complete (premIdxComplete prem) List.mem_finRange)
+        (joinCtxOrP stab th rhs Δs)
+        (Sum.elim
+          (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+          (fun i => preR (dps i)))
+        (Sum.elim (fun _ => false) (fun _ => true))
+  | _, _, _, @FRJr.joinOrF _ n stab th rhs C₁ C₂ prem _ _ _ _ =>
+      PreModel.join (sumElems (premIdxElems prem) [()])
+        (sumElems_complete (premIdxComplete prem) (fun _ => List.mem_cons_self))
+        (joinCtxOrF stab th rhs)
+        (Sum.elim
+          (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+          (fun _ : Unit => PreModel.leafF (joinCtxOrF stab th rhs)))
+        (Sum.elim (fun _ => false) (fun _ => true))
 
 /-- The pre-models an irregular derivation contributes, one per `⊃∉`
 node. -/
@@ -332,15 +521,19 @@ transported to the model, and is exactly what makes `V` monotone. -/
 
 /-- The root of `preR d` carries `d`'s own context.  (`∧` and `⊃∈` leave
 `Γ` alone, and a join's root is labelled by its conclusion's context.) -/
-theorem preR_root_lbl {G : Form} : ∀ {Γ : List Form} {C : Form}
-    (d : FRJr G Γ C), (preR d).lbl (preR d).root = Γ
-  | _, _, .axR _ _ _ => rfl
-  | _, _, .andR1 d _ => preR_root_lbl d
-  | _, _, .andR2 d _ => preR_root_lbl d
-  | _, _, .impIn d _ _ => preR_root_lbl d
-  | _, _, .circIn d _ => preR_root_lbl d
-  | _, _, @FRJr.joinAt _ _ _ _ _ _ _ _ _ _ _ _ => rfl
-  | _, _, @FRJr.joinOr _ _ _ _ _ _ _ _ _ _ _ _ => rfl
+theorem preR_root_lbl {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJr G t Γ C), (preR d).lbl (preR d).root = Γ
+  | _, _, _, .axR _ _ _ => rfl
+  | _, _, _, .andR1 d _ => preR_root_lbl d
+  | _, _, _, .andR2 d _ => preR_root_lbl d
+  | _, _, _, .impIn d _ _ => preR_root_lbl d
+  | _, _, _, .circIn d _ _ => preR_root_lbl d
+  | _, _, _, .joinAt _ _ _ _ _ _ _ => rfl
+  | _, _, _, .joinAtP _ _ _ _ _ _ _ _ _ _ => rfl
+  | _, _, _, .joinAtF _ _ _ _ _ _ => rfl
+  | _, _, _, .joinOr _ _ _ _ _ _ => rfl
+  | _, _, _, .joinOrP _ _ _ _ _ _ _ _ _ => rfl
+  | _, _, _, .joinOrF _ _ _ _ _ => rfl
 
 /-- Every pre-model an irregular derivation contributes is the model of a
 regular sequent occurring in it, and its root carries that sequent's
@@ -377,14 +570,116 @@ abbrev ClosedLbl (P : PreModel) : Prop :=
 
 mutual
 
-theorem preR_closed {G : Form} : ∀ {Γ : List Form} {C : Form}
-    (d : FRJr G Γ C), ClosedLbl (preR d)
-  | _, _, .axR _ _ _ => fun _ _ _ X hX => .base hX
-  | _, _, .andR1 d _ => preR_closed d
-  | _, _, .andR2 d _ => preR_closed d
-  | _, _, .impIn d _ _ => preR_closed d
-  | _, _, .circIn d _ => preR_closed d
-  | _, _, @FRJr.joinAt _ n stab th rhs F prem hJ1 _ _ _ _ => by
+theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJr G t Γ C), ClosedLbl (preR d)
+  | _, _, _, .axR _ _ _ => fun _ _ _ X hX => .base hX
+  | _, _, _, .andR1 d _ => preR_closed d
+  | _, _, _, .andR2 d _ => preR_closed d
+  | _, _, _, .impIn d _ _ => preR_closed d
+  | _, _, _, .circIn d _ _ => preR_closed d
+  | _, _, _, @FRJr.joinAtP _ n k stab th rhs F t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ _ => by
+      intro w v hle X hX
+      cases v with
+      | none => cases hle with
+        | root => exact .base hX
+      | some jb =>
+          obtain ⟨x, b⟩ := jb
+          cases hle with
+          | root =>
+              cases x with
+              | inl ji =>
+                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  refine clo_trans (fun Y hY => ?_)
+                    (lhs_clo_of_steps
+                      ((occI_steps hocc).tail
+                        ⟨_, Step.joinAtP (F := F) (Δs := Δs) ji.1 hJ1⟩) X hX)
+                  refine preI_closed (prem ji.1) ji.2 _ _
+                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
+                  rw [hlbl]; exact hY
+              | inr i =>
+                  refine clo_trans (fun Y hY => ?_) (hJ7 i X hX)
+                  refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
+                  rw [preR_root_lbl (dps i)]; exact hY
+          | comp hab =>
+              cases x with
+              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
+              | inr i => exact preR_closed (dps i) _ _ hab X hX
+  | _, _, _, @FRJr.joinAtF _ n stab th rhs F prem hJ1 _ _ _ _ => by
+      intro w v hle X hX
+      cases v with
+      | none => cases hle with
+        | root => exact .base hX
+      | some jb =>
+          obtain ⟨x, b⟩ := jb
+          cases hle with
+          | root =>
+              cases x with
+              | inl ji =>
+                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  refine clo_trans (fun Y hY => ?_)
+                    (lhs_clo_of_steps
+                      ((occI_steps hocc).tail
+                        ⟨_, Step.joinAtF (F := F) ji.1 hJ1⟩) X hX)
+                  refine preI_closed (prem ji.1) ji.2 _ _
+                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
+                  rw [hlbl]; exact hY
+              | inr _ => exact .base hX
+          | comp hab =>
+              cases x with
+              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
+              | inr _ => exact .base hX
+  | _, _, _, @FRJr.joinOrP _ n k stab th rhs C₁ C₂ t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ => by
+      intro w v hle X hX
+      cases v with
+      | none => cases hle with
+        | root => exact .base hX
+      | some jb =>
+          obtain ⟨x, b⟩ := jb
+          cases hle with
+          | root =>
+              cases x with
+              | inl ji =>
+                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  refine clo_trans (fun Y hY => ?_)
+                    (lhs_clo_of_steps
+                      ((occI_steps hocc).tail
+                        ⟨_, Step.joinOrP (C₁ := C₁) (C₂ := C₂) (Δs := Δs) ji.1 hJ1⟩) X hX)
+                  refine preI_closed (prem ji.1) ji.2 _ _
+                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
+                  rw [hlbl]; exact hY
+              | inr i =>
+                  refine clo_trans (fun Y hY => ?_) (hJ7 i X hX)
+                  refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
+                  rw [preR_root_lbl (dps i)]; exact hY
+          | comp hab =>
+              cases x with
+              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
+              | inr i => exact preR_closed (dps i) _ _ hab X hX
+  | _, _, _, @FRJr.joinOrF _ n stab th rhs C₁ C₂ prem hJ1 _ _ _ => by
+      intro w v hle X hX
+      cases v with
+      | none => cases hle with
+        | root => exact .base hX
+      | some jb =>
+          obtain ⟨x, b⟩ := jb
+          cases hle with
+          | root =>
+              cases x with
+              | inl ji =>
+                  obtain ⟨Γ', C', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
+                  refine clo_trans (fun Y hY => ?_)
+                    (lhs_clo_of_steps
+                      ((occI_steps hocc).tail
+                        ⟨_, Step.joinOrF (C₁ := C₁) (C₂ := C₂) ji.1 hJ1⟩) X hX)
+                  refine preI_closed (prem ji.1) ji.2 _ _
+                    ((preI (prem ji.1) ji.2).root_le b) Y ?_
+                  rw [hlbl]; exact hY
+              | inr _ => exact .base hX
+          | comp hab =>
+              cases x with
+              | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
+              | inr _ => exact .base hX
+  | _, _, _, @FRJr.joinAt _ n stab th rhs F prem hJ1 _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -401,7 +696,7 @@ theorem preR_closed {G : Form} : ∀ {Γ : List Form} {C : Form}
                 ((preI (prem ji.1) ji.2).root_le b) Y ?_
               rw [hlbl]; exact hY
           | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
-  | _, _, @FRJr.joinOr _ n stab th rhs C₁ C₂ prem hJ1 _ _ _ => by
+  | _, _, _, @FRJr.joinOr _ n stab th rhs C₁ C₂ prem hJ1 _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -438,29 +733,19 @@ end
 /-! ## `Mod(D)` as a Kripke model -/
 
 /-- The model extracted from a regular derivation, `Mod(D)`. -/
-def modR {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C) : Kripke :=
+def modR {G : Form} {t : Tag} {Γ : List Form} {C : Form} (d : FRJr G t Γ C) : Kripke :=
   (preR d).toKripke (preR_closed d)
 
-@[simp] theorem modR_V {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C)
-    (w : (preR d).W) (p : String) :
-    (modR d).V w p ↔ Form.atom p ∈ (preR d).lbl w := Iff.rfl
+@[simp] theorem modR_V {G : Form} {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJr G t Γ C) (w : (preR d).W) (p : String) :
+    (modR d).V w p ↔ (Form.atom p ∈ (preR d).lbl w ∨ (preR d).fal w) := Iff.rfl
 
-@[simp] theorem modR_root {G : Form} {Γ : List Form} {C : Form}
-    (d : FRJr G Γ C) : (modR d).root = (preR d).root := rfl
+@[simp] theorem modR_root {G : Form} {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJr G t Γ C) : (modR d).root = (preR d).root := rfl
 
-@[simp] theorem modR_le {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C)
+@[simp] theorem modR_le {G : Form} {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJr G t Γ C)
     (w v : (preR d).W) : (modR d).le w v ↔ (preR d).le w v := Iff.rfl
-
-/-- `Mod(D)` is infallible: it is a model of the paper's own kind. -/
-theorem modR_infallible {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C) :
-    (modR d).Infallible := fun _ hf => hf
-
-/-- **Every world of `Mod(D)` is barren.**  Its only modal successor is
-itself, so `◯` is the identity there (`modR_force_circ`). -/
-theorem modR_force_circ {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C)
-    (w : (preR d).W) (A : Form) :
-    (modR d).force w (.circ A) ↔ (modR d).force w A :=
-  PreModel.toKripke_force_circ _ _ w A
 
 
 /-! ## Forcing transfers to a component of a join
@@ -470,11 +755,12 @@ truth value there.  (Forcing depends only on the pre-model's order and
 labels, not on which proof of `ClosedLbl` is used to package it, so the
 two packagings may be chosen independently.) -/
 
-theorem join_force_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, i ∈ ιe} {Γ₀ : List Form}
-    {Ms : ι → PreModel} (h : ClosedLbl (PreModel.join ιe ιc Γ₀ Ms)) {i : ι}
+theorem join_force_comp {ι : Type} [DecidableEq ι] {ιe : List ι}
+    {ιc : ∀ i, i ∈ ιe} {Γ₀ : List Form} {Ms : ι → PreModel} {iP : ι → Bool}
+    (h : ClosedLbl (PreModel.join ιe ιc Γ₀ Ms iP)) {i : ι}
     (h' : ClosedLbl (Ms i)) :
     ∀ (A : Form) (a : (Ms i).W),
-      ((PreModel.join ιe ιc Γ₀ Ms).toKripke h).force (some ⟨i, a⟩) A ↔
+      ((PreModel.join ιe ιc Γ₀ Ms iP).toKripke h).force (some ⟨i, a⟩) A ↔
         ((Ms i).toKripke h').force a A := by
   intro A
   induction A with
@@ -490,15 +776,27 @@ theorem join_force_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ 
         exact (ihB b).mp (hf (some ⟨i, b⟩) (.comp hab) ((ihA b).mpr hA))
       · intro hf y hy hA
         obtain ⟨b, hab, hy'⟩ :=
-          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) hy
+          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) (iP := iP) hy
         rw [hy'] at hA ⊢
         exact (ihB b).mpr (hf b hab ((ihA b).mp hA))
   | circ A ihA =>
-      -- both sides are the identity modality (`toKripke_force_circ`), so
-      -- this case is the induction hypothesis and nothing else.
+      -- each component keeps its own modal relation (`join_rm_comp`), so
+      -- the witnesses transfer verbatim in both directions.
       intro a
-      rw [PreModel.toKripke_force_circ, PreModel.toKripke_force_circ]
-      exact ihA a
+      simp only [Kripke.force_circ]
+      constructor
+      · intro hf b hab
+        obtain ⟨y, hmy, hy⟩ := hf (some ⟨i, b⟩) (.comp hab)
+        obtain ⟨c, hbc, hy'⟩ :=
+          PreModel.join_rm_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) (iP := iP) hmy
+        rw [hy'] at hy
+        exact ⟨c, hbc, (ihA c).mp hy⟩
+      · intro hf y hy
+        obtain ⟨b, hab, hy'⟩ :=
+          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) (iP := iP) hy
+        obtain ⟨c, hbc, hc⟩ := hf b hab
+        rw [hy']
+        exact ⟨some ⟨i, c⟩, .comp hbc, (ihA c).mpr hc⟩
 
 /-- The paper's `σ_p ≤ φ(σ₁)` placement, in the only form the soundness
 proof uses it: the ROOT of a contributed model sits above `w`, with the

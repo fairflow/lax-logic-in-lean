@@ -408,3 +408,38 @@ cannot be eliminated into `Type`. The payoff is that
 
 is an algorithm taking a countermodel to a derivation, which is what the
 campaign wanted from a refutation calculus in the first place.
+
+---
+
+## Addendum (2026-08-17): the modal extension's fidelity map
+
+Matthew's standing instruction for the ◯-extension: *"try to stick
+closely to the authors' original intent"* — prompted by the observation
+that `Reject/` (a previous Claude session's forward calculus) was built
+from the S4 paper's ABSTRACT and drifted from FRJ(G) entirely.  This map
+is the instrument: every device of the extension is either tied to a
+device of the TOCL paper, or flagged OURS with the semantic fact that
+forces it.  `Reject/` and `docs/frj-lifting.md` §4 are NOT authorial
+sources.
+
+| device | provenance |
+|---|---|
+| third zone `Ĝ_◯ = Sf^L(G) ∩ {◯-formulas}` | the paper's own rationale for `Ĝ_imp`: `◯A` forced without `A` is determining data, exactly as `A ⊃ B` forced without `B` |
+| `Cl` gains `X ::= … \| ◯X` | the paper's grammar pattern; sound by the unit (`Rm` reflexive) |
+| `Θ^◯ / Cl(Δ⃗)` restriction | the paper's own `Θ^⊃/Υ` device, with `Cl(Δᵢ)` in place of `Υ` |
+| (J5) stable-modal support | the paper's (J2) support pattern for `Σ^⊃`, positive instead of negative |
+| promise premises on joins | the paper's `⊃∉`: a REGULAR premise whose world sits above; here wired into `Rm` instead of only `≤`; family arity per Matthew's PLL-generality instruction |
+| (J7) `ctx ⊆ Cl(Δᵢ)` | the paper's Lemma 3.5 discipline: every `↦`-edge carries `Lhs`-containment modulo `Cl`; (J7) is that condition for the promise edge, as `Θ ⊆ Cl(Γ)` is for `⊃∉` |
+| worlds = p-sequents of `D` | UNCHANGED — promise components' worlds are the p-sequents of the promise sub-derivations; the paper's `PS(D)` discipline survives the extension |
+| barren-join side condition `Σ^◯ = ∅` | forced by (†): a join keeping no modal part must not have committed modal formulas |
+| the `Tag` index on `FRJr` | OURS.  The paper reads properties off the fixed derivation `D`; an index is the mechanisation of that reading.  Its semantic content is the canonical model's `mfal` pledge component (`LaxLogic/PLLCompleteness.lean`, worlds = `(val, fal, mfal)` with `Rm = ⊆×⊆`), restricted to a single pledge |
+| the fallible join `⋈^⊥` and `leafF` | OURS, forced by the SEMANTICS: `¬◯⊥` is IPL-valid but not PLL-valid, so a calculus whose models are all infallible is incomplete (`valid_neg_circ_bot_of_infallible`); a fallible world refutes nothing, hence carries no premise — the one world of `Mod(D)` that is not a p-sequent |
+| declared `rm`/`fal` on `PreModel` | forced by W3's finding that any UNIFORM choice of `Rm` fixes a nucleus (id/¬¬/⊤) and a provable blind spot |
+
+**Unread authorial source**: Fiorentini–Ferrari, *A forward internal
+calculus for model generation in S4*, JLC 31(3):771–796 (2021), DOI
+10.1093/logcom/exab014 — paywalled; no OA copy (OpenAlex), none on the
+authors' pages, both institutional repositories refuse anonymous access.
+**ACTION (Matthew)**: obtain via library access before the completeness
+(W4) design is fixed; the promise-family shape should be checked against
+their successor-declaration device.

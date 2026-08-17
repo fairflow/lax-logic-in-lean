@@ -97,7 +97,11 @@ structure IrrWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
 `Λ*` the context covers. -/
 structure RegWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
   ctx : List Form
-  der : FRJr G ctx C
+  /-- W4 note: the completeness construction never uses a promise or
+  fallible join — its input is an infallible countermodel of a `◯`-free
+  goal (`hcf`), whose `Λ*` carries no modal formula — so every derivation
+  it builds is BARREN-tagged. -/
+  der : FRJr G .barren ctx C
   wld : K.W
   wle : K.le a wld
   cov : lamStar K wld G ⊆ ctx
@@ -132,7 +136,8 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
     wle := K.le_refl a
     der := by
       refine .joinAt (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-        (fun A B hmem => ?_) hCp (fun hmem => ?_) hC
+        (fun A B hmem => ?_) (unionAll_circPart_nil (fun j => (wit j).sub))
+        hCp (fun hmem => ?_) hC
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
@@ -144,16 +149,17 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
       by_cases hin : ∃ j, X ∈ stab j
       · obtain ⟨j, hj⟩ := hin
         simp only [joinCtxAt, List.mem_append]
-        rcases hXG with h | h
+        rcases hXG with (h | h) | h
         · exact Or.inl (Or.inl (Or.inl (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
         · exact Or.inl (Or.inr (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
+        · exact absurd ((List.mem_filter.mp h).2) (fun hc => lamStar_not_circ hX hc)
       · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
         have hallTh : ∀ j, X ∈ th j :=
           fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
         simp only [joinCtxAt, List.mem_append]
-        rcases hXG with h | h
+        rcases hXG with (h | h) | h
         · refine Or.inl (Or.inl (Or.inr (mem_rm.mpr
             ⟨fun hc => not_mem_lamStar_of_not_force hnf (hc ▸ hX), ?_⟩)))
           exact mem_interAll.mpr (fun j =>
@@ -164,7 +170,9 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
           | .imp A B, _ =>
               refine mem_restrict.mpr ⟨mem_interAll.mpr (fun j =>
                 List.mem_filter.mpr ⟨hallTh j, rfl⟩), ?_⟩
-              exact (E.spec A).mpr (mem_upsPrime hX) }
+              exact (E.spec A).mpr (mem_upsPrime hX)
+        · exact absurd ((List.mem_filter.mp h).2)
+            (fun hc => lamStar_not_circ hX hc) }
 
 /-- `C` prime with `Λ*_a` purely atomic: the `Ax^R` sub-case. -/
 def regPrime_ax (K : Kripke) (G : Form) (a : K.W) (C : Form)
@@ -178,13 +186,15 @@ def regPrime_ax (K : Kripke) (G : Form) (a : K.W) (C : Form)
       intro X hX
       have hXG := lamStar_subset_gHat hX
       simp only [gHat, List.mem_append] at hXG
-      rcases hXG with h | h
+      rcases hXG with (h | h) | h
       · exact mem_rm.mpr ⟨fun hc => not_mem_lamStar_of_not_force hnf (hc ▸ hX), h⟩
       · exfalso
         have hmem : X ∈ impPart (lamStar K a G) :=
           List.mem_filter.mpr ⟨hX, (List.mem_filter.mp h).2⟩
         rw [hempty] at hmem
-        exact List.not_mem_nil hmem }
+        exact List.not_mem_nil hmem
+      · exact absurd ((List.mem_filter.mp h).2)
+            (fun hc => lamStar_not_circ hX hc) }
 
 /-- The `⋈^∨` case. -/
 def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
@@ -216,7 +226,8 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
     wle := K.le_refl a
     der := by
       refine .joinOr (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-        (fun A B hmem => ?_) ⟨?_, ?_⟩ hC
+        (fun A B hmem => ?_) (unionAll_circPart_nil (fun j => (wit j).sub))
+        ⟨?_, ?_⟩ hC
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
           (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
@@ -229,16 +240,18 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
       by_cases hin : ∃ j, X ∈ stab j
       · obtain ⟨j, hj⟩ := hin
         simp only [joinCtxOr, List.mem_append]
-        rcases hXG with h | h
+        rcases hXG with (h | h) | h
         · exact Or.inl (Or.inl (Or.inl (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
         · exact Or.inl (Or.inr (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
+        · exact absurd ((List.mem_filter.mp h).2)
+            (fun hc => lamStar_not_circ hX hc)
       · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
         have hallTh : ∀ j, X ∈ th j :=
           fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
         simp only [joinCtxOr, List.mem_append]
-        rcases hXG with h | h
+        rcases hXG with (h | h) | h
         · exact Or.inl (Or.inl (Or.inr (mem_interAll.mpr (fun j =>
             List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩))))
         · refine Or.inr ?_
@@ -248,20 +261,23 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
               refine mem_restrict.mpr ⟨mem_interAll.mpr (fun j =>
                 List.mem_filter.mpr ⟨hallTh j, rfl⟩), ?_⟩
               exact (E.spec A).mpr (List.mem_cons_of_mem _
-                (List.mem_cons_of_mem _ (mem_upsPrime hX))) }
+                (List.mem_cons_of_mem _ (mem_upsPrime hX)))
+        · exact absurd ((List.mem_filter.mp h).2)
+            (fun hc => lamStar_not_circ hX hc) }
 
 /-- The `Ax^I` zone contains `Λ*_a` whenever `C` is unforced there. -/
 theorem lamStar_subset_axI {K : Kripke} {a : K.W} {G C : Form}
     (h : ¬ K.force a C) :
-    lamStar K a G ⊆ nf G ((rm (gAt G) C) ++ gImp G) := by
+    lamStar K a G ⊆ nf G ((rm (gAt G) C) ++ gImp G ++ gCirc G) := by
   intro X hX
   have hne : X ≠ C := by
     intro hc; exact h (hc ▸ K.forceStar_force (mem_lamStar.mp hX).2)
   have hG := lamStar_subset_gHat hX
   refine mem_nf.mpr ⟨hG, ?_⟩
   simp only [gHat, List.mem_append] at hG
-  rcases hG with h1 | h1
-  · exact List.mem_append_left _ (mem_rm.mpr ⟨hne, h1⟩)
+  rcases hG with (h1 | h1) | h1
+  · exact List.mem_append_left _ (List.mem_append_left _ (mem_rm.mpr ⟨hne, h1⟩))
+  · exact List.mem_append_left _ (List.mem_append_right _ h1)
   · exact List.mem_append_right _ h1
 
 /-! ## Lemma 6.4 -/
@@ -276,13 +292,13 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
       -- arrive; see the note on `gHat`.
       exact absurd (hcf _ (List.mem_append_left _ hC)) (by simp [Form.isCirc])
   | 0, .atom p =>
-      exact { stab := [], th := nf G ((rm (gAt G) (.atom p)) ++ gImp G)
+      exact { stab := [], th := nf G ((rm (gAt G) (.atom p)) ++ gImp G ++ gCirc G)
               der := .axI (.atom p) rfl hC
               sub := fun _ h => absurd h List.not_mem_nil
               cov := fun _ hx => lamStar_subset_axI hnf hx
               thNf := nf_idem.symm }
   | 0, .bot =>
-      exact { stab := [], th := nf G ((rm (gAt G) .bot) ++ gImp G)
+      exact { stab := [], th := nf G ((rm (gAt G) .bot) ++ gImp G ++ gCirc G)
               der := .axI .bot rfl hC
               sub := fun _ h => absurd h List.not_mem_nil
               cov := fun _ hx => lamStar_subset_axI hnf hx
@@ -443,8 +459,9 @@ decreasing_by
 
 /-! ## Theorem 6.2 (Completeness) and the biconditional -/
 
-/-- A derivation of `G` in `FRJ(G)`, as data. -/
-def Derivation (G : Form) : Type := Σ Γ : List Form, FRJr G Γ G
+/-- A derivation of `G` in `FRJ(G)`, as data.  The completeness
+construction only produces barren-tagged derivations. -/
+def Derivation (G : Form) : Type := Σ Γ : List Form, FRJr G .barren Γ G
 
 /-- **Completeness, as an algorithm** (Theorem 6.2(i)): a countermodel
 for `G` is turned into an `FRJ(G)`-derivation of `G`.  Apply Lemma 6.4 at
@@ -465,7 +482,8 @@ infallible, so no derivation refutes a formula that every infallible model
 validates — and `¬◯⊥` is one (`FRJ/Fallible.lean`). -/
 theorem completeness {G : Form} (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     (K : Kripke) (hinf : K.Infallible) (hK : ¬ K.valid G) : Provable G :=
-  ⟨(completenessData hcf K hinf hK).1, ⟨(completenessData hcf K hinf hK).2⟩⟩
+  ⟨.barren, (completenessData hcf K hinf hK).1,
+    ⟨(completenessData hcf K hinf hK).2⟩⟩
 
 /-- **The biconditional, constructively**: `FRJ(G)` proves `G` exactly
 when `G` has a countermodel.  Soundness (Theorem 3.1, via Theorem 3.10)
@@ -474,8 +492,10 @@ theorem frj_iff_countermodel (G : Form)
     (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) :
     Provable G ↔ ∃ K : Kripke, K.Infallible ∧ ¬ K.valid G := by
   constructor
-  · rintro ⟨Γ, ⟨d⟩⟩
-    exact ⟨modR d, modR_infallible d, modR_countermodel d⟩
+  · rintro ⟨t, Γ, ⟨d⟩⟩
+    -- the extracted model may use declared fallible worlds; for a
+    -- `◯`-free goal the restriction deletes them (`infallible_countermodel`)
+    exact infallible_countermodel hcf (modR_countermodel d)
   · rintro ⟨K, hinf, hK⟩
     exact completeness hcf K hinf hK
 

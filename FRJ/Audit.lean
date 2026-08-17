@@ -101,7 +101,7 @@ namespace FRJ
 #guard_msgs in
 #print axioms Kripke.exists_common_witness
 
-/-- info: 'FRJ.Kripke.exists_common_witness_list' does not depend on any axioms -/
+/-- info: 'FRJ.Kripke.exists_common_witness_list' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms Kripke.exists_common_witness_list
 
