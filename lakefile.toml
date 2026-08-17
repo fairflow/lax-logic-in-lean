@@ -222,6 +222,10 @@ root = "wip.cl_screen"
 name = "frjprobe"
 root = "wip.frj_probe"
 
+[[lean_exe]]
+name = "frjsat"
+root = "wip.frj_sat"
+
 # Kreisel-Putnam screen for candidate ◯-rejection rules (BiLax (b)).
 [[lean_exe]]
 name = "rejscreen"

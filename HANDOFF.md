@@ -457,3 +457,21 @@ genuine W3 completeness gap; witness cell `provable_circ_peirce` for
 settling the pledge-float corner by anchor choice.  Next: (T2) the
 forward-saturation engine + certified corpus, then the pledged `minMod`
 visit.  `lake build FRJ` green, 8570 jobs, pins pass.
+
+## §2026-08-17 (later) — FRJ◯ W4 (T2): the saturation engine, and a defect it caught
+
+`wip/frj_sat.lean` / `lean_exe frjsat`: bounded forward saturation for
+FRJ◯, DERIVATION-CARRYING (rows pack their own `FRJr`/`FRJi` terms, so
+rule-faithfulness bugs are type errors and a hit inhabits `Provable G`).
+Corpus run (verdicts from pinned repo results): 10 PLL-underivable
+formulas PASS, 4 PLL-derivable controls saturate underived, and ONE
+GENUINE FLAG — `¬¬◯⊥` is NOT derivable in the current calculus (engine
+fixpoint at 7 rows + the cycle argument): `◯∉`'s zone is capped by
+`Cl` of its premise context, which is empty in the atom-free signature,
+while the realising world forces `¬◯⊥` vacuously — a `t=0 → t=1`
+equal-height edge the paper's measure forbids.  Repair sketched
+(`docs/frj-w4.md` §7): the modal irregular axiom `Ax^I◯` (prime seeds,
+sound by the final-world cone), compound-body lifts, and a
+join-variant-dependent `Υ`-restriction (fallible joins must not consume
+`◯`-right premises).  `nn_circ_bot` stays a standing flag until the
+repair turns it green.

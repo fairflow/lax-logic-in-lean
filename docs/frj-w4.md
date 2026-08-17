@@ -152,12 +152,15 @@ scoped:
   FRJ◯ (subsumption, tiny signatures), run on the two-sided engine's
   certified corpus: every PLL-underivable `G` in range must become
   `Provable`; no PLL-derivable one may (soundness already forbids it,
-  so this direction is an engine-correctness control).  Corpus seeds:
-  `¬◯⊥`, `◯p ⊃ p`, `(◯p ⊃ q) ⊃ q` (now a PROVED cell,
-  `provable_circ_peirce`), `◯(p ∨ q) ⊃ ◯p ∨ ◯q`, `p ∨ ¬p`,
-  `◯p ⊃ ◯q`, the G4iLL blocker
-  `◯((◯p → r) → ◯p) ⊃ ((◯p → r) → r)`, and `◯`-goal shapes `◯Z`
-  with `Z` compound (the corner's own family).
+  so this direction is an engine-correctness control).  Underivable
+  seeds: `¬◯⊥`, `◯p ⊃ p`, `(◯p ⊃ q) ⊃ q` (now a PROVED cell,
+  `provable_circ_peirce`), `¬¬◯⊥`, `◯(p ∨ q) ⊃ ◯p ∨ ◯q`, `p ∨ ¬p`,
+  `◯p ⊃ ◯q`, and `◯`-goal shapes `◯Z` with `Z` compound (the corner's
+  own family).  Derivable CONTROLS: the unit and multiplication
+  instances, `⊤`, and the G4iLL blocker
+  `◯((◯p → r) → ◯p) ⊃ ((◯p → r) → r)` — PLL-derivable (it is the
+  sequent G4iLL *misses*; an earlier draft of this list had it on the
+  wrong side).
 
 ## 4. Statement targets
 
@@ -192,7 +195,101 @@ saturated-database direction (`GBU`-style proof extraction for PLL).
    added; the ◯-free `minMod` compiles threaded.
 3. ~~(T1) the semantic probe~~ **DONE 2026-08-17** — Screen 4; corner
    resolved by anchor choice, §3.
-4. (T2) the saturation engine skeleton + certified corpus run.
-5. The pledged visit (`minZeta`, pledged `RegWit` with tag field, the
-   join trichotomy, the modal `minMod` cases) — scoped after (T2)
-   reports.
+4. ~~(T2) the saturation engine skeleton + corpus run~~
+   **DONE 2026-08-17** — §6 below.  It caught a completeness defect
+   (§7): `¬¬◯⊥` is underivable in the current calculus.
+5. The §7 repair: `Ax^I◯` seeds, the compound-body lifts, the
+   join-variant `Υ`-restriction, soundness re-cleared; `nn_circ_bot`
+   must turn `pass`.
+6. The pledged visit (`minZeta`, pledged `RegWit` with tag field, the
+   join trichotomy, the modal `minMod` cases) — after 5, since the
+   `◯`-goal irregular case rests on the seeded rules.
+
+## 6. (T2) results — the engine and the corpus run (2026-08-17)
+
+`wip/frj_sat.lean`, `lean_exe frjsat`.  **Derivation-carrying**: every
+database row packs its own `FRJr`/`FRJi` term, side conditions
+discharged by `Decidable` instances at insertion — the engine cannot
+misapply a rule (a faithfulness bug is a type error), and a hit
+inhabits `Provable G` outright.  Forward saturation with subsumption
+(`barren ≥ chain D ≥ blocked`; contexts by `⊇`; the one non-monotone
+consumer is `⊃∉`'s `hAnot` gate, mitigated by a purged `Θ`-candidate
+and flagged in the engine banner), joins bounded at premise arity 3 and
+promise arity 2, `⊃∈` zone splits fully enumerated to width 10 — every
+cap reported on the verdict line; none was hit on this corpus.
+
+Result (run 2, corrected corpus): **10 of 11 PLL-underivable formulas
+derived** (`pass`), **one genuine `flag`**, **4/4 PLL-derivable
+controls saturate to fixpoint underived** (`control-ok`), no `FAIL`:
+
+    neg_circ_bot     pass        rounds=3  RS=3   IS=3
+    circ_imp         pass        rounds=3  RS=3   IS=3
+    circ_peirce      pass        rounds=4  RS=4   IS=5   (the ◯∉ witness)
+    nn_circ_bot      FLAG        rounds=2  RS=3   IS=4   (fixpoint, § 7)
+    nnn_circ_bot     pass        rounds=6  RS=5   IS=8
+    circ_or_split    pass        rounds=4  RS=23  IS=7   (the modal-zone keeper)
+    excluded_middle  pass        rounds=3  RS=4   IS=5
+    circ_and_goal    pass        rounds=3  RS=4   IS=4   (◯-goal, ◯∈)
+    circ_imp_goal    pass        rounds=3  RS=3   IS=4   (compound-◯ family)
+    circ_mono_atoms  pass        rounds=4  RS=8   IS=6
+    godel_dummett    pass        rounds=3  RS=5   IS=7
+    unit_inst        control-ok  rounds=2
+    mult_inst        control-ok  rounds=2
+    top              control-ok  rounds=1
+    g4ill_blocker    control-ok  rounds=5  RS=20  IS=62  (fixpoint, no derivation)
+
+The passes cover both new devices end-to-end (`circ_peirce` through
+`◯∉`; `circ_or_split` keeping the modal zone through `⋈^⊥`; the
+`◯`-goal family through `◯∈`), and the database sizes confirm the
+top-down economics: single-digit rows for most goals, the largest
+signature saturating at 82 rows in 5 rounds.
+
+## 7. The (T2) finding — `¬¬◯⊥` is underivable in the current calculus
+
+The corrected cell `¬¬◯⊥` (an early corpus draft had `¬¬¬◯⊥`, which
+passes) saturates to fixpoint in 2 rounds at 7 rows with every
+enumeration exhaustive at that size: **the current FRJ◯ cannot derive
+it**, though it is PLL-underivable (every infallible model refutes it
+at the root).  This is a completeness defect that neither the § 1–§ 3
+design analysis nor Screen 4 caught — found only by the corpus, which
+is what (T2) exists for.
+
+**The cycle.**  `G = (¬◯⊥) ⊃ ⊥`; the signature has NO atoms, so
+`Ĝ_at = ∅` and the axioms carry empty stable data.  Deriving `G` needs
+a regular row `Γ ⇒ ⊥` with `¬◯⊥ ∈ Γ`; keeping `¬◯⊥ = ◯⊥ ⊃ ⊥` in a
+join context needs `◯⊥ ∈ Υ`, i.e. an irregular premise with right
+formula `◯⊥` AND a second zone rich enough to survive the `Θ`-
+intersection.  Only `◯∉` produces a `◯`-right formula, and its zone is
+bounded by `Cl` of its regular premise's context — here `Cl(∅) = ∅`,
+because the world that realises the sequent (the one-world infallible
+model, which forces `¬◯⊥` VACUOUSLY) is invisible to the syntactic
+closure.  The premise `◯∉` needs is the very row being built.
+
+**The measure diagnosis.**  `⊃∉` crosses from the irregular to the
+regular family only with a STRICT height drop (its witness lies
+properly above).  `◯∉`'s witness may be the world itself (`Rm` is
+reflexive), so it adds a `t = 0 → t = 1` edge at EQUAL height — exactly
+the edge the paper's `(ht(α), t, size C)` induction forbids.  The rule
+is sound (pinned) and does real work where the premise context is rich
+(`circ_peirce`, `nnn_circ_bot`), but it cannot SEED the `◯`-right
+formulas the way `Ax^I` seeds the prime ones.
+
+**The repair sketch (next campaign).**  Add the modal irregular axiom
+
+    Ax^I◯ :  ⊢  [] ; Ĝ_at \ {F}, Ĝ_imp, Ĝ_◯ → ◯F,   F prime, ◯F ∈ Sf^R
+
+sound with `Ax^I`'s own realiser — a FINAL world refutes `◯F` exactly
+when it refutes `F`, its modal cone being itself.  Lift compound bodies
+monotonically where sound unconditionally (`Σ;Θ → ◯A` gives
+`Σ;Θ → ◯(A ∧ B)`: cone-refutation is antitone in the body); the `∨`
+and `⊃` bodies need their own analysis.  One soundness constraint is
+already visible and MUST be respected: a `◯`-right premise used for the
+`Υ`-restriction is sound for barren joins (the new root's cone is
+itself) and for suitably pledged promise joins, but NOT for fallible
+joins — the fallible successor forces every body, so an `⋈^⊥` root
+with `◯Y ∈ Υ` would keep implications that are false at it.  The
+`Υ`-restriction therefore becomes join-variant-dependent (full for
+barren, `◯`-free for `⋈^⊥`, pledge-conditioned for promise joins), and
+`lemma39I` must thread the consuming join's cone data.  Verdict
+discipline: `nn_circ_bot` stays a standing `flag` in the corpus until
+the repair lands and turns it into a `pass`.
