@@ -86,3 +86,15 @@ source. Titles are taken from the printed heading too, so
 
 The LaTeX source is still kept, folded under each statement, because
 that is what a transcription is checked against.
+
+### Known limitation: section headers
+
+The 38 item rows are macro-free, but **section grouping headers still show
+the paper's macros** (`§ The calculus $\FRJof{G}$`), because a section
+heading has no `\label` in this paper and so no `.aux` entry to key its
+printed text by.
+
+An attempt to match printed headings by keyword made it worse — it
+replaced a correct-but-ugly title with a body line that happened to
+contain "calculus". Reverted. The headers only group the table, so a
+macro in one costs nothing; guessing a wrong title costs accuracy.
