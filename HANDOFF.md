@@ -1,5 +1,21 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (engine-gap chip) — `dn_circ_and` false negative located and closed
+
+The `frjsat` miss on the ◯-free erasure `¬¬(p∧q) ⊃ (p∧q)` was in the
+`⊃∉` zone enumeration (`stepNotIn`): only `Θmax` and `Θmax` purged of
+SINGLE generators of the antecedent were tried, so the jointly-generated
+`A = p∧q` never got the zone `{q, ¬¬(p∧q)}` (= `Λ*` of the root) that
+the PROVED construction uses.  Fixed by enumerating the ⊆-maximal
+admissible zones from the `Cl` grammar (`thetaCandidates`); `⊃∉` is now
+monotone in the context, so the RS-subsumption's documented exception is
+gone.  Corpus: `dn_circ_and` → `transfer:pass` at both bounds ((E) attack
+8/8); every other line byte-identical.  Record: `docs/frj-w4.md` §14
+second addendum (the earlier hand-trace there was not a legal
+derivation — (J1) fails; the real route and the method note are in the
+addendum).  Untrusted-layer lesson: "engine-CERTAIN" is relative to
+enumeration completeness, not only faithfulness.
+
 ## 2026-08-17 (erasure-transfer session) — the (E) build opened
 
 Matthew redirected to the erasure-transfer lemma.  Landed, all green,

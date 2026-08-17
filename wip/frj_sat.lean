@@ -229,6 +229,72 @@ def stepImpInI (G : Form) (lamCap : Nat) (i : IS G) : List (IS G) × Bool :=
 def thetaMax (G : Form) (Γ : List Form) : List Form :=
   nf G ((gHat G).filter (fun X => cloB Γ X))
 
+/-! ### The `⊃∉` zone candidates
+
+`⊃∉` needs `Θ ⊆ Cl(Γ) ∩ Ĝ` with `A ∉ Cl(Θ)`.  The admissible zones form a
+down-set (`Clo` is monotone in the zone), and every irregular consumer
+accepts a larger second zone wherever it accepts a smaller one, so the
+⊆-MAXIMAL admissible zones suffice.  They are read off the grammar of
+`Cl`: `A ∉ Cl(Θ)` iff `A ∉ Θ` and, by the shape of `A`, its generators
+are absent — `∧`: SOME conjunct absent; `∨`: BOTH disjuncts absent;
+`⊃`, `◯`: the consequent/body absent.  `removalSets Θ A` lists the
+⊆-minimal `R ⊆ Θ` with `A ∉ Cl(Θ \ R)`; the candidates are `Θmax \ R`.
+
+History (2026-08-17): the previous enumeration offered only `Θmax` and
+`Θmax` purged of the SINGLE generators of `A` (`X` with `A ∈ Cl({X})`),
+which misses every `A` generated JOINTLY.  Erasure of `dn_circ_and`,
+`G = ¬¬(p∧q) ⊃ (p∧q)`, `A = p∧q`, `Θmax = {p, q, ¬¬(p∧q)}`: no single
+member generates `p∧q`, both candidates were `Θmax` itself, `hAnot`
+failed on both, and the zone `{¬¬(p∧q)}` (= `Λ*` of the countermodel's
+root, the zone the completeness construction uses) was never offered —
+so `[] ; ¬¬(p∧q) → ¬(p∧q)`, hence `¬¬(p∧q) ⇒ p` by `⋈^At`, was never
+derived, and the engine reported a rule-closure fixpoint without the
+goal.  With the maximal admissible zones `{p, ¬¬(p∧q)}`, `{q, ¬¬(p∧q)}`
+the derivation is found.
+
+Side effect: `⊃∉` is now MONOTONE in the regular premise's context — for
+`Γ ⊆ Γ'` every maximal admissible zone over `Γ` extends to one over `Γ'`
+(admissible zones over `Γ` are admissible over `Γ'`, `Θmax` grows, `hA`
+is monotone) — so the RS subsumption's former exception (the `hAnot`
+gate) is gone. -/
+
+/-- Set inclusion of contexts, as a `Bool` (shared with the subsumption
+layer below). -/
+def subB (l m : List Form) : Bool := l.all (fun x => decide (x ∈ m))
+
+/-- The ⊆-minimal members of a family of sets (deduplicated up to set
+equality). -/
+def minimalSets (l : List (List Form)) : List (List Form) :=
+  l.foldl (fun acc R =>
+    if acc.any (fun R' => subB R' R) then acc
+    else R :: acc.filter (fun R' => !(subB R R'))) []
+
+/-- The ⊆-minimal `R ⊆ Θ` with `A ∉ Cl(Θ \ R)`, by the grammar of `Cl`. -/
+def removalSets (Θ : List Form) : Form → List (List Form)
+  | .atom p => [if Form.atom p ∈ Θ then [Form.atom p] else []]
+  | .bot => [if Form.bot ∈ Θ then [Form.bot] else []]
+  | .and X Y =>
+      let s := if Form.and X Y ∈ Θ then [Form.and X Y] else []
+      minimalSets ((removalSets Θ X ++ removalSets Θ Y).map (s ++ ·))
+  | .or X Y =>
+      let s := if Form.or X Y ∈ Θ then [Form.or X Y] else []
+      minimalSets ((removalSets Θ X).flatMap (fun R₁ =>
+        (removalSets Θ Y).map (fun R₂ => s ++ R₁ ++ R₂)))
+  | .imp A X =>
+      let s := if Form.imp A X ∈ Θ then [Form.imp A X] else []
+      minimalSets ((removalSets Θ X).map (s ++ ·))
+  | .circ X =>
+      let s := if Form.circ X ∈ Θ then [Form.circ X] else []
+      minimalSets ((removalSets Θ X).map (s ++ ·))
+
+/-- The `⊃∉` zone candidates: the ⊆-maximal `Θ ⊆ Θmax(Γ) = Cl(Γ) ∩ Ĝ`
+with `A ∉ Cl(Θ)` (pre-`nf`; `stepNotIn` canonicalises).  Untrusted:
+`hAnot` is still decided at insertion, so a defect here can only lose
+rows, never admit one. -/
+def thetaCandidates (G : Form) (Γ : List Form) (A : Form) : List (List Form) :=
+  let Θmax := thetaMax G Γ
+  (removalSets Θmax A).map (fun R => FRJ.sdiff Θmax R)
+
 /-- `⊃∉` and `◯∉` from one regular row.  The `Θ`-candidates are `nf`-images
 by construction, so the canonicality invariant is `nf_idem`. -/
 def stepNotIn (G : Form) (r : RS G) : List (IS G) :=
@@ -237,21 +303,16 @@ def stepNotIn (G : Form) (r : RS G) : List (IS G) :=
       match T, hg with
       | .imp A B, hg =>
           if h : r.rhs = B then
-            -- Θ-candidate sources: maximal, and maximal purged of
-            -- A-generators (hAnot can fail at the maximum)
-            let pre : List (List Form) := [(gHat G).filter (fun X => cloB r.ctx X),
-              (thetaMax G r.ctx).filter
-                (fun X => decide (X ≠ A) && !(cloB [X] A))]
-            pre.filterMap (fun l =>
-              let Θ := nf G l
-              if hTh : ∀ X ∈ Θ, Clo r.ctx X ∧ X ∈ gHat G then
-                if hA : Clo r.ctx A then
+            if hA : Clo r.ctx A then
+              (thetaCandidates G r.ctx A).filterMap (fun l =>
+                let Θ := nf G l
+                if hTh : ∀ X ∈ Θ, Clo r.ctx X ∧ X ∈ gHat G then
                   if hAnot : ¬ Clo Θ A then
                     some ⟨[], Θ, .imp A B,
                       .impNotIn (h ▸ r.der) hTh hA hAnot hg, nf_idem.symm⟩
                   else none
-                else none
-              else none)
+                else none)
+            else []
           else []
       | .circ Z, hg =>
           if h : r.rhs = Z then
@@ -465,13 +526,12 @@ end Joins
 Regular rows are kept maximal in (tag, context): `barren` dominates
 `chain D` dominates `blocked` (each is accepted wherever the smaller is),
 and a superset context is accepted wherever a subset is by every
-consumer — with ONE deliberate exception, reported with the results: the
-`hAnot` gate of `⊃∉` can hold for a smaller context and fail for a
-larger; the purged `Θ`-candidate mitigates, and a residual miss shows up
-as a `flag`, never as a wrong verdict.  Irregular rows are kept maximal
-in the second zone at set-equal stable zones. -/
-
-def subB (l m : List Form) : Bool := l.all (fun x => decide (x ∈ m))
+consumer.  (Until 2026-08-17 the `hAnot` gate of `⊃∉` was the one
+exception — it can hold for a smaller context and fail for a larger —
+because only two `Θ`-candidates were tried; with the maximal admissible
+zones enumerated, `thetaCandidates`, the rule is monotone in the context
+and the exception is gone.)  Irregular rows are kept maximal in the
+second zone at set-equal stable zones. -/
 
 def tagLeB : Tag → Tag → Bool
   | .blocked, _ => true
@@ -703,7 +763,17 @@ not derived — budget, or engine-certain mis-scoped cell);
 `transfer:flag` (erasure derived, G not reached, caps hit);
 `transfer:FAIL-CANDIDATE` (erasure derived, G-saturation COMPLETE below
 every cap with no derivation — an engine-certain counterexample to (E)
-modulo engine faithfulness: minimise and escalate to kernel). -/
+modulo engine faithfulness: minimise and escalate to kernel).
+
+"Engine-certain" is relative to the COMPLETENESS of the enumeration
+layer, not only its faithfulness: a rule-closure fixpoint below every
+cap says nothing when a rule's instances are under-enumerated.  The
+`dn_circ_and` erasure showed exactly that (2026-08-17): reported
+`vacuous-CERTAIN` at both bounds while `FRJ.completeness` derives it —
+the `⊃∉` zone enumeration was the gap (`thetaCandidates`).  Any future
+`vacuous-CERTAIN`/`FAIL-CANDIDATE` on a cell with a known countermodel
+is to be read the same way: check the enumeration before the
+statement. -/
 
 structure EPair where
   name : String
@@ -765,7 +835,7 @@ def runCell (cfg : Config) (c : Cell) : IO Unit := do
 
 def main : IO Unit := do
   let cfg : Config := {}
-  IO.println s!"FRJ◯ saturation — jmax={cfg.jmax} pmax={cfg.pmax} rounds={cfg.rounds} lamCap={cfg.lamCap} (subsumption: RS by tag-and-context dominance — the ⊃∉ hAnot gate is the one non-monotone consumer, mitigated by the purged Θ-candidate)"
+  IO.println s!"FRJ◯ saturation — jmax={cfg.jmax} pmax={cfg.pmax} rounds={cfg.rounds} lamCap={cfg.lamCap} (subsumption: RS by tag-and-context dominance, IS by second-zone dominance; ⊃∉ enumerates the maximal admissible zones, so every consumer is monotone)"
   for c in corpus do
     runCell cfg c
   let cfgHigh : Config := { rounds := 16, jmax := 4, pmax := 3, lamCap := 16, maxRS := 1500, maxIS := 1500 }
