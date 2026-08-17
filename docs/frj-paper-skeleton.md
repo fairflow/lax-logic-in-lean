@@ -23,7 +23,7 @@
 | Theorem 1 (Soundness of FRJ(G)) · `theo:FRJsound` · p.6 | ⊢FRJ(G) G implies G ̸∈ IPL. | | OPEN |
 | Example 1 · `ex:impPS1` · p.8 | Let σ1 = · ; p, q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ1 so to get a sequent with p ∨ q ⊃ B in the right, we have to sele … | | OPEN |
 | Example 2 · `ex:impPS2` · p.9 | Let σ1 = p, q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃ ) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊅∈ to σ1 yieldi … | | OPEN |
-| Example (unlabelled) | Let \s_1=\seqfrji{\Sigma_1 }{\Theta_1}{B}, where \Sigma_1=\{B\imp X_1, B\imp X_2, C\imp X_3 \} and C\neq B. We cannot apply a join rule having \s_1 as only premise since th … | | OPEN |
+| Example (unlabelled) | Let $\s_1=\seqfrji{\Sigma_1 }{\Theta_1}{B}$, where $\Sigma_1=\{B\imp X_1, B\imp X_2, C\imp X_3 \}$ and $C\neq B$. We cannot apply a join rule having $\s_1$ as only premise since th … | | OPEN |
 | Lemma 1 · `lemma:lhs` · p.11 | R (i) σ1 7→0 σ2 and R ̸= ⊅∈ imply Lhs(σ2 ) ⊆ Lhs(σ1 ). (ii) σ1 7→0 σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). (iii) σ1 7→∗ σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). | | OPEN |
 | Example 4 · `ex:Ror` · p.12 | In the Introduction, by applying the unsound rule R∨, we got a wrong derivation of the sequent σ = p, H ⇒ q1 ∨ q2 , where H = p ⊃ q1 ∨ q2 . By the soundness property (S1), if σ cou … | | OPEN |
 | Example 5 · `ex:frjNishimura` · p.14 | Let us consider the following instances S and T of Scott and AntiScott principles, which are equivalent to Nishimura formulas N10 and N9 respectively [3] (the schema generating Ni  … | | OPEN |
@@ -51,7 +51,7 @@
 | Lemma 12 · `lemma:gbuSuccOr` · p.33 | Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g C1 ∨ C2 be such that Ω ⊆ Γ , and let us assume that: (i) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. (ii) DG ▷ Ω →g  … | | OPEN |
 | Theorem 8 (Correctness of BSearch) · `theo:search` · p.33 | Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ, DG ) computes a Gbu(G)-derivation of τ . | | OPEN |
 | Theorem 9 · `theo:GBU-FRJ` · p.34 | ⊢Gbu(G) G iff ̸⊢FRJ(G) G. | | OPEN |
-| Theorem (unlabelled) · `theo:compl1` | \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item G\not\in\IPL implies \proves{\FRJof{G}} G. \item G\in\IPL implies \proves{\GBUof{G}} G. \end{enumerate} | | OPEN |
+| Theorem (unlabelled) · `theo:compl1` | \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item $G\not\in\IPL$ implies $\proves{\FRJof{G}} G$. \item $G\in\IPL$ implies $\proves{\GBUof{G}} G$. \end{enumerate} | | OPEN |
 | **§ Minimality** | | | |
 | Lemma 13 · `lemma:rnk` · p.36 | Let D be an FRJ(G)-derivation of G. Then, Rn(D) = h(Mod(D)). | | OPEN |
 | Lemma 14 · `lemma:minMod` · p.36 | Let K = ⟨P, ≤, ρ, V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα . – There exists an FRJ(G)-derivation Dα→ (C) of σα→ (C) = Σ ; Θ → C such that: (i) Rn(Dα→ (C)) < h(α); (ii) Σ ⊆ … | | OPEN |
@@ -92,7 +92,7 @@ Let σ1 = p, q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪
 
 ### Example (unlabelled)
 
-*(statement not extracted; see the sources section)*
+Let $\sigma_1= \ifthenelse{\isempty{\Sigma_1 }}{\cdot}{\Sigma_1 } \,;\, \ifthenelse{\isempty{\Theta_1}}{\cdot}{\Theta_1} \rightarrow\ifthenelse{\isempty{B}}{\cdot}{B}$, where $\Sigma_1=\{B\supset X_1, B\supset X_2, C\supset X_3 \}$ and $C\neq B$. We cannot apply a join rule having $\sigma_1$ as only premise since the formula $C\supset X_3$ would not be supported (while both $B\supset X_1$ and $B\supset X_2$ are, being $B$ the right formula of $\sigma_1$). Thus, to apply a join rule, we need a further premise $\sigma_2= \ifthenelse{\isempty{\Sigma_2}}{\cdot}{\Sigma_2} \,;\, \ifthenelse{\isempty{\Theta_2}}{\cdot}{\Theta_2} \rightarrow\ifthenelse{\isempty{C}}{\cdot}{C}$ such that $\Sigma_1\subseteq\Sigma_2\cup\Theta_2$ and $\Sigma_2\subseteq\Sigma_1\cup\Theta_1$ (see [\[sc:J1\]](#sc:J1)). In turn, $\Sigma_2$ might contain some non-supported formulas; e.g., a formula $D\supset X_4$ such that $D\neq B$ and $D\neq C$; in this case, we need a further premise $\sigma_3$ s.t. $\mathrm{Rhs}(\sigma_3)=D$ to support it. $\Diamond$
 
 ### Lemma 1
 `lemma:lhs`  ·  p.11
@@ -222,7 +222,7 @@ Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated databas
 ### Theorem (unlabelled)
 `theo:compl1`
 
-*(statement not extracted; see the sources section)*
+1. $G\not\in\mathrm{IPL}$ implies $\vdash_{\mathbf{FRJ}(G)} G$. 2. $G\in\mathrm{IPL}$ implies $\vdash_{\mathbf{Gbu}(G)} G$.
 
 ### Lemma 13
 `lemma:rnk`  ·  p.36

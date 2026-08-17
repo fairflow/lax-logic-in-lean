@@ -178,26 +178,57 @@ def macro_defs(tex: str) -> str:
     out = []
     for m in re.finditer(r"\\(newcommand|renewcommand|providecommand)\s*", tex):
         i = m.end()
-        name, i2 = balanced(tex, i)
-        if name is None:
+        inner, i2 = balanced(tex, i)
+        if inner is None:
             m2 = re.match(r"(\\[A-Za-z@]+)", tex[i:])
             if not m2:
                 continue
             name, i2 = "{" + m2.group(1) + "}", i + m2.end()
+        else:
+            name = "{" + inner + "}"
         j, nargs = i2, ""
         while j < len(tex) and tex[j] in " \t\n":
             j += 1
         for _ in range(2):
             if j < len(tex) and tex[j] == "[":
                 a, j = balanced(tex, j, "[", "]")
-                nargs += a or ""
+                nargs += ("[" + a + "]") if a is not None else ""
                 while j < len(tex) and tex[j] in " \t\n":
                     j += 1
         body, _ = balanced(tex, j)
         if body is None:
             continue
-        out.append("\\" + m.group(1) + name + nargs + body)
+        body = "{" + body + "}"
+        one = re.sub(r"\s+", " ", "\\" + m.group(1) + name + nargs + body)
+        out.append(one)
     return "\n".join(out)
+
+def sanitise_macros(macros: str, rounds: int = 25) -> str:
+    """Drop definitions pandoc cannot parse, one at a time.
+
+    A single pathological definition — this paper has one, a colour-
+    highlighting editing aid — makes pandoc reject the entire block and
+    emit nothing, silently.  Rather than hand-patch the extractor for each
+    such case, ask pandoc which line it choked on and drop that line."""
+    import subprocess
+    exe = shutil.which("pandoc")
+    if not exe:
+        return macros
+    lines = macros.split("\n")
+    for _ in range(rounds):
+        probe = ("\n".join(lines) + "\n$x$\n").encode("utf-8")
+        r = subprocess.run([exe, "-f", "latex", "-t", "markdown"],
+                           input=probe, capture_output=True)
+        if r.returncode == 0:
+            return "\n".join(lines)
+        m = re.search(r"line (\d+)", r.stderr.decode("utf-8", "replace"))
+        if not m:
+            return "\n".join(lines)
+        i = int(m.group(1)) - 1
+        if not (0 <= i < len(lines)):
+            return "\n".join(lines)
+        del lines[i]
+    return "\n".join(lines)
 
 def pandoc_text(macros: str, body: str):
     """Convert a statement to Markdown with the paper's macros EXPANDED, so
@@ -215,7 +246,9 @@ def pandoc_text(macros: str, body: str):
     out = r.stdout.decode("utf-8", "replace")
     out = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", out)      # links -> their text
     out = re.sub(r"\{[^{}]*reference-type[^{}]*\}", "", out)  # pandoc ref attrs
+    out = re.sub(r"\s*\\qed\b", "", out)
     out = re.sub(r"\s+", " ", out).strip()
+    out = re.sub(r"\s*[0-9]?\s*[◻□∎]\s*$", "", out).strip()
     return out or None
 
 def pdf_pages(main_tex: str):
@@ -388,7 +421,7 @@ def emit_markdown(items, notes, src, aux_ok):
         if it.get("page"):
             name += f" · p.{it['page']}"
         src = it.get("printed") or it["body"]
-        stmt = src[:180].replace("|", "\\|").replace("$", "")
+        stmt = src[:180].replace("|", "\\|")
         L.append(f"| {name} | {stmt}{' …' if len(src)>180 else ''} | | OPEN |")
     L += ["\nStatus is one of **PROVED** (sorry-free with a pinned "
           "`#print axioms`), **REFUTED** (kernel-checked countermodel), "
@@ -460,7 +493,7 @@ def main():
     notes.append(note)
     pages = {} if a.no_compile else pdf_pages(main_tex)
     items = attach_numbers(extract(tex, kinds), aux, pages)
-    macros = macro_defs(tex)
+    macros = sanitise_macros(macro_defs(tex))
     for it in items:
         if it["kind"] == "§":
             continue
