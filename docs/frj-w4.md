@@ -842,3 +842,39 @@ the transported zone, and the `hbody`-instances range over `b`-forced
 circ-bodies.  This removes the one PROVABLY-unsatisfiable
 `PledgeSupply` instance and is the right statement of the certified
 demand for the member-wise discharge.
+
+### §13 addendum: the θ-riding discharge (2026-08-17, continuation 3)
+
+Working the `OWit` layer's ⊃-case exposed and then dissolved the §13
+impossibility at the row level:
+
+- The discharged antecedent `A` need not be `Clo`-derived from
+  anchor-local `Λ*` (the route that forced the impossible retention):
+  `impIn`'s side condition accepts `A ∈ ctx` (base), and `A` can ride
+  the θ-ZONES — every irregular cell's θ is our construction, and the
+  atomic cells' zones already carry all of `Ĝ_imp` — so retention does
+  not pass through the stable zones and triggers no hJ2.
+- The θ-implication restriction (`restrict … (upsilon rhs)`) then
+  demands `A`'s antecedent among the Υ-cells; for the critical shape
+  `A = ◯P ⊃ W` at an anchor forcing `◯P`, the Υ-cell for `◯P` is
+  suppliable SYNTACTICALLY by the generalised `Ax^I◯` (any valuation
+  with `P` false — always available for atomic `P`), independent of
+  any world's refuting `◯P`.  The §13 impossible instance is thereby
+  unreachable in the θ-riding design.
+- The remaining obligation of the certified row is the ORIGIN's
+  `Λ*_b`-ground: its circ-members `◯Y` (with `b ⊮ Y`) still need
+  retention, the barren θ has no circ zone, so the certified join at a
+  ground-circ-carrying origin remains promise-mode, and the
+  `hbody`/component question recurs one level up (components refuting
+  the pledge with `Y`-witnesses in their contexts).  This is now THE
+  single remaining semantic question of build (β2); every other
+  obstruction met so far has dissolved into either a syntactic supply
+  (axIC, θ-riding, grounding) or a measure legalisation (minRef,
+  grades, seen).
+
+Design consequence: the (β2) certified layer should build rows
+BOTTOM-UP from the final join with explicit θ-CONTROL (fat zones
+carrying the retained antecedents and the origin-transported members),
+rather than threading anchor-local coverage — the visit's certified
+grade becomes a fold over the descent path with a θ-obligation
+accumulator.

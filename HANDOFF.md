@@ -1,5 +1,13 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (continuation 3) — θ-riding dissolves the §13 impossibility
+
+Antecedent discharges ride θ (fat zones, no hJ2), their Υ-obligations
+met by axIC syntactically; the certified row's remaining semantic
+question is the origin-Λ*-circ ground at promise joins (hbody one
+level up).  (β2) design: bottom-up row construction with a θ-obligation
+accumulator.  OWit interface landed previously; docs §13 addendum.
+
 ## 2026-08-17 (continuation 2) — BUILD (β1) LANDED: graded visit
 
 FRWit + free threading + fallible joins (metR_primeF/metR_orF,
