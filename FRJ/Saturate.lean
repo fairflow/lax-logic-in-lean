@@ -28,6 +28,7 @@ structure MRWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
   tOK : t = .barren ∨ ∃ W, t = .chain W ∧ Covers ctx W C
   wld : K.W
   wle : K.le a wld
+  wfal : ¬ K.Fal wld
   cov : lamStar K wld G ⊆ ctx
 
 /-- **The demand closure.**  Every refuted right-signature formula at
@@ -67,7 +68,7 @@ theorem allMet_of_circFree {K : Kripke} {G : Form}
   intro a C hC hf
   refine ⟨⟨minMod K G hcf hinf a 0 C hC hf⟩, ?_⟩
   have w : RegWit K G a C := minMod K G hcf hinf a 1 C hC hf
-  exact ⟨⟨.barren, w.ctx, w.der, Or.inl rfl, w.wld, w.wle, w.cov⟩⟩
+  exact ⟨⟨.barren, w.ctx, w.der, Or.inl rfl, w.wld, w.wle, hinf _, w.cov⟩⟩
 
 /-- The ◯-free completeness re-derived through the closure — the two
 organisations agree on their common domain. -/
@@ -75,5 +76,24 @@ theorem completeness_via_closure {G : Form}
     (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     (K : Kripke) (hinf : K.Infallible) (hK : ¬ K.valid G) : Provable G :=
   completeness_of_allMet (allMet_of_circFree hcf hinf) hK
+
+/-! ## Case builders (slice 2)
+
+Each of the visit's cases, refactored to take its supplier wits as
+HYPOTHESES: the un-orderable recursion of §9/§10 becomes a family of
+independently provable lemmas, and the open content of `AllMet`
+contracts to the per-instance supply order alone. -/
+
+/-- **The irregular ◯-demand** (`◯∉`), from a regular `Z`-wit anywhere
+above `a`.  The §9 bad edge — its supplier is now an input. -/
+theorem metI_circ {K : Kripke} {G : Form} {a : K.W} {Z : Form}
+    (hgoal : Form.circ Z ∈ sfR G)
+    (w : MRWit K G a Z) : Nonempty (IrrWit K G a (.circ Z)) := by
+  refine ⟨⟨[], nf G (lamStar K a G),
+    FRJi.circNotIn w.der w.tOK (fun X hX => ?_) hgoal,
+    List.nil_subset _, fun X hX => ?_, nf_idem.symm⟩⟩
+  · obtain ⟨hXG, hXl⟩ := mem_nf.mp hX
+    exact ⟨clo_mono w.cov (lamStar_mono w.wfal w.wle X hXl), hXG⟩
+  · exact List.mem_append_right _ (mem_nf.mpr ⟨lamStar_subset_gHat hX, hX⟩)
 
 end FRJ
