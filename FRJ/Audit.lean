@@ -13,6 +13,7 @@ constructively valid.  `frj_iff_countermodel` is the same theorem with
 that step left to the caller, and it is choice-free.
 -/
 import FRJ.Minimal
+import FRJ.Saturate
 
 namespace FRJ
 
@@ -44,6 +45,18 @@ namespace FRJ
 /-- info: 'FRJ.minMod' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms minMod
+
+/-- info: 'FRJ.completeness_of_allMet' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_allMet
+
+/-- info: 'FRJ.frj_iff_root_countermodel_of_allMet' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms frj_iff_root_countermodel_of_allMet
+
+/-- info: 'FRJ.completeness_via_closure' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_via_closure
 
 /-- info: 'FRJ.provable_root_countermodel' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
