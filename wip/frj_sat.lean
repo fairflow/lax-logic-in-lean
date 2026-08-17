@@ -650,6 +650,12 @@ def corpus : List Cell := [
     "§9 CRITICAL: A := p∨(p⊃q) is classForce-true at ∅ but unforced, so A⊃w escapes every vacZone; sole ◯z-candidate is cone-trivial — all known suppliers of the irregular ◯z-cell fail"⟩,
   ⟨"corner_poisoned_ups", .imp (.imp (.or fp (.imp fp fq)) fw) (.imp (.imp (.circ fz) fw) (.or fw fz)), false,
     "§9 CRITICAL twin: the poisoned antecedent + a Υ-demand (◯z⊃w in sfL) instead of an or-disjunct"⟩,
+  ⟨"corner_residue", .imp (.imp (.atom "x") fz) (.imp (.imp (.circ fz) fw) (.or fw (.circ fz))), false,
+    "§11 residue probe: non-maximal corner world (a < b, b forces z) with the consequent-z implication x⊃z in Λ*_a — the shape where Clo-grounding of the syn-route fails"⟩,
+  ⟨"corner_residue_poisoned", .imp (.imp (.or fp (.imp fp fq)) fz) (.imp (.imp (.circ fz) fw) (.or fw (.circ fz))), false,
+    "§11 residue probe, poisoned: antecedent A=p∨(p⊃q) classically true at ∅, consequent z — blocks BOTH the vacZone and the Clo-grounding routes at once"⟩,
+  ⟨"corner_selfloop", .imp (.imp (.circ fz) fz) (.or fw (.circ fz)), false,
+    "§11 self-loop probe: (◯z⊃z) ∈ Λ* with ungroundable consequent z — the retained imp re-demands its own ◯z-cell inside the supply row"⟩,
   ⟨"nn_circ_circ_bot", .imp (.imp (.circ (.circ .bot)) .bot) .bot, false,
     "pledge stress: nested ◯-body through the irregular route (¬¬◯◯⊥)"⟩,
   ⟨"excluded_middle", .or fp (.imp fp .bot), false,
@@ -700,7 +706,7 @@ def main : IO Unit := do
   let cfgHigh : Config := { rounds := 16, jmax := 4, pmax := 3, lamCap := 16, maxRS := 1500, maxIS := 1500 }
   IO.println s!"-- raised-budget re-run (jmax={cfgHigh.jmax} pmax={cfgHigh.pmax} lamCap={cfgHigh.lamCap}) --"
   for c in corpus do
-    if c.name == "corner_poisoned_ups" then
+    if c.name == "corner_poisoned_ups" || c.name == "corner_residue" || c.name == "corner_residue_poisoned" || c.name == "corner_selfloop" then
       runCell cfgHigh c
   IO.println "done."
 

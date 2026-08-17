@@ -1,5 +1,15 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (night) — residue probes green; seen-mechanism designed
+
+corner_residue / corner_residue_poisoned / corner_selfloop all PASS
+(27/5/0).  Self-loop reading: classForce(◯Z⊃Z) is a tautology, so the
+Ax^I◯ zone always carries the self-loop imp.  The seen-mechanism
+(visit parameter of in-flight ◯-bodies, measure (ht, |sfR|−|seen|, t,
+|C|)) is designed in docs §11 second addendum — it reduces CircSupply
+to the Z ∈ seen self-referential instance, to be discharged member-wise.
+Next builds: seen-parameter implementation; promise-mode port for hloc.
+
 ## 2026-08-17 (evening) — kernel weakened + discharged in two regimes
 
 `minRef` rewire: the visit floats the irregular ◯-demand to ANY proper

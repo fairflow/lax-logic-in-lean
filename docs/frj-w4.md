@@ -639,3 +639,32 @@ a recursive grounding-row construction or a semantic argument that the
 residue is empty); (ii) the promise-mode port of `metR_prime`/`metR_or`
 to lift `hloc` (models whose `Λ*` carries `◯`-formulas at non-maximal
 worlds).
+
+### §11 second addendum: residue probes + the seen-mechanism (2026-08-17)
+
+Three further probes, all PASS (corpus now 27 pass / 5 control-ok):
+
+    corner_residue          (x⊃z) ⊃ ((◯z⊃w) ⊃ (w ∨ ◯z))   rounds=4
+    corner_residue_poisoned (A⊃z) ⊃ ((◯z⊃w) ⊃ (w ∨ ◯z))   rounds=8, A = p∨(p⊃q)
+    corner_selfloop         (◯z⊃z) ⊃ (w ∨ ◯z)              rounds=3
+
+The self-loop reading is decisive: `classForce ats (◯Z⊃Z)` is a
+classical tautology, so the `Ax^I◯` zone contains the self-loop
+implication at EVERY valuation — the seemingly-worst instance (the
+retained implication re-demanding its own ◯-cell) discharges by the
+axiom, not by recursion.
+
+**The seen-mechanism (designed, not yet implemented).**  Give `visit` a
+per-world parameter `seen : List Form` of ◯-bodies whose corner case is
+in flight; measure `(ht, |sfR| − |seen|, t, |C|)`.  The corner edge
+`I(◯Z)@a → R(Z)@a` pushes `Z` into `seen` and drops the second
+coordinate; world-floats reset `seen` under a first-coordinate drop;
+all other edges leave it unchanged.  The kernel then fires only when
+`Z ∈ seen` — the self-referential instance — whose Λ*-retention
+demands are exactly the `(◯Z⊃W)`-shaped members, to be discharged
+member-wise: tautologous ones (`W` classically entailed by `◯Z`, e.g.
+`W = Z`) by the `Ax^I◯` zone, groundable ones by `Clo`, the rest by
+retention inside the row under construction with their Υ-cells taken
+from `seen`-aware recursion.  This is the concrete route to
+discharging `CircSupply` outright; the promise-mode port for `hloc`
+remains the other half.
