@@ -4,7 +4,7 @@
 Section 3.1.  The paper's model is `Mod(D) = ⟨PS(D), ≤, ρ, V⟩` with
 `V(σ) = Lhs(σ) ∩ PV`, and it justifies that this is a Kripke model by
 
-  "by Lemma 3.4(iii) and (Cl5), `σ₁ ≤ σ₂` implies `V(σ₁) ⊆ V(σ₂)`,
+  "by Lemma 3.5(iii) and (Cl5), `σ₁ ≤ σ₂` implies `V(σ₁) ⊆ V(σ₂)`,
    hence the definition of `V` is sound."
 
 So the labelling of worlds by `Lhs` is not bookkeeping we add: it is what
@@ -13,7 +13,7 @@ makes `V` monotone, and hence what makes `Mod(D)` a model at all.  An
 
 * `lbl`     — `Lhs(σ)` at each world,
 * `val_eq`  — `V(σ) = Lhs(σ) ∩ PV`, the paper's definition of `V`,
-* `lbl_clo` — Lemma 3.4(iii) transported to the model order.
+* `lbl_clo` — Lemma 3.5(iii) transported to the model order.
 
 What is deliberately NOT here is `∀ w, w ⊩ lbl w`.  That is Lemma
 3.9(i) at p-sequents, i.e. part of what the soundness proof concludes,
@@ -31,7 +31,7 @@ open Form
 /-! ## Pre-models: the data of `Mod(D)`, before its valuation is justified
 
 `Kripke` demands `V_mono`, but for `Mod(D)` that fact *is* Lemma
-3.4(iii) applied to the model being defined — so it cannot be supplied
+3.5(iii) applied to the model being defined — so it cannot be supplied
 while defining it.  We therefore build the data first (worlds, order,
 labels), prove `lbl_clo` of it afterwards by induction, and only then
 package it as a Kripke model with `V(σ) = Lhs(σ) ∩ PV`. -/
@@ -133,7 +133,7 @@ theorem join_le_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ i, 
 
 /-- Package a pre-model as a Kripke model once `lbl_clo` is known: the
 valuation is the paper's `V(σ) = Lhs(σ) ∩ PV`, and its monotonicity is
-exactly Lemma 3.4(iii) together with (Cl5). -/
+exactly Lemma 3.5(iii) together with (Cl5). -/
 def toKripke (P : PreModel)
     (h : ∀ (w v : P.W), P.le w v → ∀ X ∈ P.lbl w, Clo (P.lbl v) X) : Kripke where
   W := P.W
@@ -285,7 +285,7 @@ end
 Three facts, in the order the paper needs them: the root of `Mod(D)` is
 labelled by `D`'s own context; every world an irregular derivation
 contributes is the `φ` of a regular sequent occurring in it; and hence
-labels shrink modulo closure as one goes down — which is Lemma 3.4(iii)
+labels shrink modulo closure as one goes down — which is Lemma 3.5(iii)
 transported to the model, and is exactly what makes `V` monotone. -/
 
 /-- The root of `preR d` carries `d`'s own context.  (`∧` and `⊃∈` leave
@@ -327,7 +327,7 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impNotIn d _ _ _ _, _ =>
       ⟨_, _, .impNotIn (.root d), preR_root_lbl d⟩
 
-/-- Labels shrink modulo closure going down: Lemma 3.4(iii) in the
+/-- Labels shrink modulo closure going down: Lemma 3.5(iii) in the
 model. -/
 abbrev ClosedLbl (P : PreModel) : Prop :=
   ∀ (w v : P.W), P.le w v → ∀ X ∈ P.lbl w, Clo (P.lbl v) X
