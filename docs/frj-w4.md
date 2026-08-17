@@ -775,3 +775,33 @@ and `PledgeSupply` (components for the goal over the demanding world's
 cone; semantic availability is the §8 pledge-existence question).
 Both are single named Props with the engine as extensional referee
 (28/5/0 across thirteen corner cells).
+
+### §12 addendum: the graded-demand refinement for build (β)
+
+Only `metI_circ`/`metR_circ` (the `circNotIn`/`circIn` premises) consume
+`tOK`; the ⊃/∧-threading preserves any tag and `Provable` accepts any
+tag at the root.  So `AllMet` can be GRADED: tag-certified regular wits
+only for the demands that feed `◯`-introductions, free-tagged wits
+(where the FALLIBLE joins `joinAtF`/`joinOrF` are legitimate, with no
+pledge needed) for everything else.  Consequences for the two kernels:
+
+- `PledgeSupply` is only needed on the tOK-graded side, i.e. at
+  circ-carrying worlds that serve as `minRef`-anchors for some
+  `◯`-demand; free-graded demands at circ-carrying worlds discharge by
+  the fallible joins UNCONDITIONALLY (their zone keeps the whole
+  `Ĝ_◯` with no side condition, so cov is immediate).
+- The component-existence analysis for the pledged side: cone-members
+  witnessing each `Λ*`-circ-body Y (which exist, `a ⊩ ◯Y`) must be
+  infallible and refute the pledged formula; `a ⊩ ◯Y` only guarantees
+  the witness, not its `F`-refutation — the graded split means `F`
+  ranges only over ◯-feeding bodies, sharpening the semantic question
+  to: at a circ-carrying `minRef`-anchor `a` for body `F`, do the
+  circ-body witnesses in `cone(a)` refute `F`?  (`a ⊮ F` holds at
+  anchors; witnesses live in `cone(a)` where `F`-status is the §8
+  pledge question.)
+
+Next window, build order: (β1) the graded `AllMet` split with the
+fallible-join builders (`metR_primeF`/`metR_orF` — unconditional,
+mechanical); (β2) the pledged-side semantic analysis on the sharpened
+question; (β3) `CircSupply` member-wise discharge (four routes + the
+self-destruction argument).

@@ -1,5 +1,15 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (close of window) — graded-demand refinement recorded
+
+tOK is consumed ONLY by ◯-feeding demands: AllMet can be graded
+(certified grade for minRef-anchors of ◯-demands; free grade elsewhere,
+where fallible joins discharge circ-carrying worlds UNCONDITIONALLY).
+PledgeSupply narrows to tOK-graded circ-carrying anchors.  Build order
+for (β): graded split + fallible builders (mechanical), then the
+sharpened pledge question, then CircSupply member-wise.  docs §12
+addendum.
+
 ## 2026-08-17 (continuation) — BUILD (γ) LANDED: hloc eliminated
 
 metR_primeP/metR_orP (promise joins pledging the goal; PledgeFam
