@@ -528,4 +528,21 @@ theorem minZeta_ne {K : Kripke} {a : K.W} {Z : Form}
     (m : MinZeta K a Z) : m.e ≠ a :=
   fun he => hself (fun v _ => he ▸ m.cone v)
 
+/-! ## The modal biconditional, soundness half (2026-08-17)
+
+Statement (B) of the W4 targets is `Provable G ↔ ∃ K, ¬Fal root ∧
+¬valid G`.  The forward direction needs no `◯`-freeness: the extracted
+model `modR d` refutes `G` at its root, and a world refuting anything is
+infallible.  The backward direction is FRJ◯ completeness, OPEN
+(docs/frj-w4.md §9). -/
+
+/-- **Soundness in root-infallible form, no `◯`-freeness hypothesis**:
+an `FRJ(G)`-derivation of `G` yields a countermodel whose root is
+infallible.  This is the `→` half of W4 statement (B). -/
+theorem provable_root_countermodel {G : Form} (h : Provable G) :
+    ∃ K : Kripke, ¬ K.Fal K.root ∧ ¬ K.valid G := by
+  obtain ⟨t, Γ, ⟨d⟩⟩ := h
+  have hc := modR_countermodel d
+  exact ⟨modR d, fun hf => hc ((modR d).fal_force G hf), hc⟩
+
 end FRJ

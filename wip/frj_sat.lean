@@ -646,6 +646,10 @@ def corpus : List Cell := [
     "§9 stratum: modal-antecedent imp + the modal body itself as goal disjunct"⟩,
   ⟨"corner_disj_circ", .imp (.imp (.circ fz) fw) (.or fw (.circ fz)), false,
     "§9 stratum: ◯-disjunct or-cell + Υ-demand for the same ◯z — the I/R mutual-demand shape"⟩,
+  ⟨"corner_poisoned_axic", .imp (.imp (.or fp (.imp fp fq)) fw) (.or fw (.circ fz)), false,
+    "§9 CRITICAL: A := p∨(p⊃q) is classForce-true at ∅ but unforced, so A⊃w escapes every vacZone; sole ◯z-candidate is cone-trivial — all known suppliers of the irregular ◯z-cell fail"⟩,
+  ⟨"corner_poisoned_ups", .imp (.imp (.or fp (.imp fp fq)) fw) (.imp (.imp (.circ fz) fw) (.or fw fz)), false,
+    "§9 CRITICAL twin: the poisoned antecedent + a Υ-demand (◯z⊃w in sfL) instead of an or-disjunct"⟩,
   ⟨"nn_circ_circ_bot", .imp (.imp (.circ (.circ .bot)) .bot) .bot, false,
     "pledge stress: nested ◯-body through the irregular route (¬¬◯◯⊥)"⟩,
   ⟨"excluded_middle", .or fp (.imp fp .bot), false,
@@ -693,6 +697,11 @@ def main : IO Unit := do
   IO.println s!"FRJ◯ saturation — jmax={cfg.jmax} pmax={cfg.pmax} rounds={cfg.rounds} lamCap={cfg.lamCap} (subsumption: RS by tag-and-context dominance — the ⊃∉ hAnot gate is the one non-monotone consumer, mitigated by the purged Θ-candidate)"
   for c in corpus do
     runCell cfg c
+  let cfgHigh : Config := { rounds := 16, jmax := 4, pmax := 3, lamCap := 16, maxRS := 1500, maxIS := 1500 }
+  IO.println s!"-- raised-budget re-run (jmax={cfgHigh.jmax} pmax={cfgHigh.pmax} lamCap={cfgHigh.lamCap}) --"
+  for c in corpus do
+    if c.name == "corner_poisoned_ups" then
+      runCell cfgHigh c
   IO.println "done."
 
 end FRJSat

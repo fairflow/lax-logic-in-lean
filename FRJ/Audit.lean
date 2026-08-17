@@ -45,6 +45,10 @@ namespace FRJ
 #guard_msgs in
 #print axioms minMod
 
+/-- info: 'FRJ.provable_root_countermodel' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_root_countermodel
+
 /-- info: 'FRJ.modR_countermodel' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms modR_countermodel

@@ -1,5 +1,15 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 — corner attack survived; (B)-soundness half landed modally
+
+The §9 configuration was attacked with poisoned-vacZone cells
+(A := p∨(p⊃q)); both derive (one needed jmax=4 — width cap, recorded).
+Seven corner cells green, no completeness counterexample.  NEW theorem
+`provable_root_countermodel` (Provable G → root-infallible countermodel,
+no ◯-freeness), pinned [propext, Quot.sound], audit-guarded.  FRJ◯
+completeness (A) remains OPEN; saturation-closure decomposition recorded
+at docs/frj-w4.md §10.  Corpus 24/5/0.
+
 ## 2026-08-16 late — completeness obstruction pinned; OPEN, route redesigned
 
 The §8 pledged-visit build hit a second obstruction: the irregular ◯-case

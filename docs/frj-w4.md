@@ -486,3 +486,44 @@ round 2 with soundness (Covers, `covers_refutes`, restrictP/(J7),
 generalised Ax^I◯, the modal joins), per-world Lemma 6.5, minZeta, corpus
 19 pass / 5 control-ok / 0 flags. The ◯-free completeness (hcf-conditioned)
 stands as before.
+
+### §9 addendum: the corner attack survived (2026-08-17)
+
+Two further cells were built to realise the §9 configuration as sharply
+as the language allows, using the poisoned antecedent `A := p ∨ (p⊃q)`
+(classically true at the empty valuation but unforced, so `A ⊃ w`
+escapes every `vacZoneA` and Ax^I◯ cannot serve the demand):
+
+    corner_poisoned_axic = (A ⊃ w) ⊃ (w ∨ ◯z)            pass, rounds=5
+    corner_poisoned_ups  = (A ⊃ w) ⊃ ((◯z ⊃ w) ⊃ (w ∨ z)) flag at default
+                                                           budget; PASS at
+                                                           jmax=4, rounds=6
+
+Both are PLL-underivable by hand-built 2-world countermodels (for the
+second: worlds a ≤ b, a: no atoms, b: {p, w}, both Rm-loops).  The flag
+was a width cap (jmax=3), not a calculus failure.  Seven corner cells
+now derive; **no completeness counterexample found**.  Design datum: the
+derivations succeed with Θ-zones that do NOT cover Λ*_a, so the §8/§9
+demand-set (per-world Λ*-coverage) is stronger than what the calculus
+needs — the saturation-closure argument should track join-time
+subsumption, not per-world coverage.
+
+## 10. Statement (B) soundness half LANDED; the remaining target
+
+PROVED, no ◯-freeness hypothesis, pinned `[propext, Quot.sound]`
+(FRJ/Complete.lean, guarded in FRJ/Audit.lean):
+
+    provable_root_countermodel :
+      Provable G → ∃ K : Kripke, ¬ K.Fal K.root ∧ ¬ K.valid G
+
+OPEN (= FRJ◯ completeness): the converse, statement (A)
+
+    ¬ K.Fal K.root → ¬ K.force K.root G → Provable G
+
+via saturation-closure (§9).  Decomposition for the next window:
+(1) an abstract saturated-set predicate `Sat S` (closure under the rule
+schema, seeds included) with the engine's fixpoint as witness;
+(2) the round-order induction: every countermodel demand is met by a
+row of any `Sat`-set, with the invariant weakened per the design datum
+above (join-time subsumption); (3) (A) as the corollary at the root
+row.  The corpus stands at 24 pass / 5 control-ok / 0 unresolved flags.
