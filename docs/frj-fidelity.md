@@ -14,6 +14,19 @@ against the original: every Lean definition and theorem is listed
 against the numbered item of the paper it encodes, and every divergence
 is recorded as a divergence.
 
+## A note on the numbering used here
+
+The item numbers cited below (Lemma 3.4, Lemma 3.9, Theorem 3.10, …) are
+the **journal version's**. The arXiv source this formalisation was
+transcribed from, `frj-corr.tex`, numbers the same results differently:
+each kind carries its own counter with no section prefix, so `lemma:lhs`
+prints as *Lemma 1* (p. 11) there, and `lemma:soundFRJ` as *Lemma 2*.
+
+Both are the same paper. Only the **label** identifies a result across
+versions, so where a citation matters, check the label. A generated
+label → number → page map for the arXiv source is in
+`docs/frj-paper-skeleton.md`, produced by `tools/paper-skeleton`.
+
 ## Scope
 
 **In scope**: §2 (preliminaries), §3 (the calculus and its soundness),

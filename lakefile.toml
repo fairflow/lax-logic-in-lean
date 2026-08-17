@@ -40,6 +40,9 @@ name = "FRJO"
 # calculus FRJ(G) for IPC (TOCL 21(3), 2020; arXiv:1804.06689).  Base case
 # only: no modality.  Independent of FRJO/ and of LaxLogic/.
 [[lean_lib]]
+name = "Meta"
+
+[[lean_lib]]
 name = "FRJ"
 
 
