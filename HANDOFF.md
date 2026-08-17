@@ -1,5 +1,49 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 — FRJ◯ completeness campaign: retrospective at stop
+
+Goal (Stop-hook, now cleared): unconditional completeness (A).
+**Not reached; the approach was not converging.**  State at close:
+
+- PROVED (sorry-free, pins `[propext, Quot.sound]`, guards in
+  `FRJ/Audit.lean`): `completeness_of_supply : PledgeSupply K G →
+  CircSupply K G → ¬K.valid G → Provable G`;
+  `provable_root_countermodel` ((B) forward, unconditional);
+  `completeness_of_discrete`; `completeness_via_closure` (◯-free case).
+- REFUTED: minMod as structural recursion (§9 measure dichotomy:
+  Υ-edges force phase priority, ◯-body edges force size priority; the
+  resolving order is model-dependent).
+- OPEN: (A); both supply kernels — as STATEMENTS: neither proved nor
+  extensionally attacked.
+
+Non-convergence mechanism: four interface-refinement cycles (anchor-
+local Λ* → OWit origin transport → θ-riding → origin-circ ground),
+each dissolving its blocking instance and regenerating the same
+residue shape — pledge components refuting the goal while Clo-covering
+◯-bodies — one level up.  Theorem yield per window: large (org +
+conditional theorem) → medium ((γ),(β1) removed side conditions) →
+zero (interfaces and design notes only).
+
+Worked: refute-before-build (§9 killed the literal plan before an
+opaque proof-build failure); the conditional decomposition (the gap is
+two precisely stated kernels, not "completeness is hard"); the corpus
+attack (14 corner families, 28 pass / 5 control / 0 unresolved — the
+END statement stayed credible throughout); choice-free Type-valued
+builders (clean pins).
+
+Failed (method): (1) the supplies never got the standing extensional
+attack — each refinement introduced a new quantified statement that
+went to another analysis window instead of a model search; (2) no
+stop-rule on isomorphic residues — the second identical residue shape
+should have triggered a change of tack, not cycles 3–4; (3) a goal
+hook unreachable in-window drove grinding past diminishing returns.
+
+If resumed: attack `PledgeSupply`/`CircSupply` extensionally FIRST
+(harness exists: `wip/frj_sat.lean`); check the TOCL 2020 completeness
+organisation at source (the saturation-closure organisation is OURS,
+flagged per provenance discipline); only then decide build vs
+re-statement.
+
 ## 2026-08-17 (continuation 3) — θ-riding dissolves the §13 impossibility
 
 Antecedent discharges ride θ (fat zones, no hJ2), their Υ-obligations

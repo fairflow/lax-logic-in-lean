@@ -1,5 +1,11 @@
 # LIVE THREAD (2026-08-13): the DISPROOF investigation
 
+**FRJ◯ (2026-08-17): PAUSED at `completeness_of_supply`** (conditional
+completeness; (A) OPEN, minMod-as-recursion REFUTED, supplies
+unattacked).  Retrospective in HANDOFF.md §2026-08-17.  Next two moves
+if resumed: extensional attack on the supply statements; TOCL 2020
+completeness organisation at source.
+
 The live front is `docs/disproof-handoff.md` — a dedicated handover
 for building a calculus in which non-provability is a POSITIVE
 derivation (`Reject/`, after Fiorentini-Ferrari's FRJ(G)).  Next task
