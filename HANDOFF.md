@@ -1,5 +1,17 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-16 late — completeness obstruction pinned; OPEN, route redesigned
+
+The §8 pledged-visit build hit a second obstruction: the irregular ◯-case
+demands a same-world regular premise in the sole-minZeta-candidate
+configuration, creating the call cycle I(◯Z) → R(Z) → I(Y ⊇ ◯Z) that no
+lexicographic measure founds (docs/frj-w4.md §9). Both corner shapes
+probe-PASS on the engine (peirce_compound, circ_ante_circ_goal), so this
+is a proof-recipe failure, not a calculus gap. FRJ◯ completeness is OPEN;
+recommended next design is saturation-closure completeness (induct on the
+engine's round order, axIC seeds break the cycle at the base). All round-2
+material remains green; corpus 19/5/0.
+
 **Last updated:** 2026-08-13 by Opus 5 — see **§12** (LJF◯ rounds 2–3, and the axiom audit moved OUT of the build path), then **§10**, which supersedes §§2 and 7 where they conflict
 **Repo state:** `main` @ 925bc10 — `lake build` clean, every `#guard_msgs` audit green; no live feature branch (`ui-confluence` merged 2026-08-06)
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.

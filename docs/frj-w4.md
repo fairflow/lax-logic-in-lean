@@ -419,3 +419,70 @@ policy the recipe must imitate.  Status: `minMod`'s modal cases and
 `minModP` are the remaining build; everything they consume (`minZeta`,
 per-world Lemma 6.5, `Covers`, the modal joins, filtered promise
 contexts) is landed and green.
+
+## 9. The induction-order obstruction (2026-08-16, continuation window)
+
+Working §8 into Lean exposed a second obstruction, prior to and independent
+of the ⊃-float corner. It concerns the **irregular ◯-case** of the visit,
+not the pledged visit.
+
+**The demand.** The joins' Υ-premises and the ∨-goal cells demand irregular
+wits for ◯-formulas: given `a ⊮ ◯Z`, produce `Σ ; Θ → ◯Z` with
+`Λ*_a ⊆ Σ ++ Θ`. The only premise-carrying intro is ◯∉ (`circNotIn`),
+whose premise is a **regular** wit `Γ ⇒ Z` at an anchor `w ≥ a` with
+`w ⊮ Z` and `Λ*_a`-coverage through `Cl(Γ)`.
+
+**The wall.** `a ⊮ ◯Z` gives (minZeta) an `e ≥ a` whose cone refutes `Z`.
+If some candidate `e ≠ a` exists, the recursion floats and height drops.
+But the configuration
+
+    cone(a) = {a},  a ⊮ Z,  ∀ v > a : v ⊩ ◯Z   (a the sole candidate)
+
+is Kripke-realisable, and there the premise anchor can only be `a` itself:
+the irregular ◯Z-visit at `a` must call the regular Z-visit **at the same
+world**. Under the lexicographic measure `(ht, t, |C|)` this edge increases
+`t`; under size-priority `(ht, |C|, t)` the Υ-edge (regular prime-visit →
+irregular cells for arbitrary-size antecedents) breaks instead. No
+lexicographic reordering fixes both: the abstract call graph at a fixed
+world contains the cycle
+
+    I(◯Z) → R(Z) → I(Y) with ◯Z a subformula of Y → I(◯Z)
+
+(realisable e.g. with `(◯Z ⊃ W) ∈ Λ*_a`, whose hJ2-coverage puts ◯Z into
+Υ, or with `Y = ◯Z ∨ W` as a goal disjunct). Structural recursion on
+`(height, phase, size)` cannot found this proof.
+
+**What the engine says.** Both corner shapes were probed and PASS:
+
+    peirce_compound   = ((◯(q⊃p) ⊃ p) ⊃ p)          rounds=3
+    circ_ante_circ_goal = ◯q ⊃ ◯(◯p ⊃ p)             rounds=6
+
+Forward saturation has no demand cycle (it derives axioms first — the
+generalised Ax^I◯ supplies premise-free irregular ◯-cells — and grows
+monotonically), so the calculus settles these goals; the obstruction is in
+the completeness *recipe*, not the calculus. Round 3 of the calculus is
+NOT indicated.
+
+**Consequence for §8.** The pledged-visit blueprint inherits this wall in
+its own ◯-cases in addition to its ⊃-float corner. Both corners are now
+understood as symptoms of the same thing: formula-structural recursion
+over an arbitrary countermodel is the wrong organisation for the modal
+calculus.
+
+**Recommended route (next design): completeness via saturation closure.**
+Mirror the engine instead of fighting it: define the finite saturation
+closure of the axiom seeds under the rules (the object `lean_exe frjsat`
+already computes), prove it is a fixpoint reached in finitely many rounds,
+and show by induction on the **saturation order** (not formula structure)
+that every semantic demand `(Λ*_a, C)` of a countermodel is met by some
+saturated row. The regress above dissolves because saturation is founded
+on round-number, and the axIC seeds break the I(◯Z)/R(Z) mutual demand at
+its base. This also replaces the minZeta/minEta anchor-choice policies by
+the subsumption order already implemented. Statement targets (A)/(B) of §5
+item 6 are unchanged; only the proof organisation moves.
+
+**Status.** FRJ◯ completeness remains OPEN. Landed and green: calculus
+round 2 with soundness (Covers, `covers_refutes`, restrictP/(J7),
+generalised Ax^I◯, the modal joins), per-world Lemma 6.5, minZeta, corpus
+19 pass / 5 control-ok / 0 flags. The ◯-free completeness (hcf-conditioned)
+stands as before.
