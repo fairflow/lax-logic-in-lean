@@ -1031,3 +1031,41 @@ positions).  Landed so far: `clo_lift` (the closure lift, [propext]),
 the zone shape helpers, and `completeness_of_transparent_of_circSupply`
 (transparency discharges the pledge supply vacuously —
 `circPart_lamStar_nil_of_transparent`).
+
+### §14 addendum 2: verdict discipline (Matthew, 2026-08-17) and the
+### canonical-model comparison (session gallant-nobel-9dbe4a)
+
+**Verdict discipline — STANDING correction.**  The engine printed
+`transfer:vacuous-CERTAIN` for `dn_circ_and`, i.e. asserted the
+UNDERIVABILITY of a ◯-free IPL-refutable formula, the negation of the
+kernel-checked `FRJ.completeness` (Minimal.lean, proved with the ◯
+constructors present).  The inference "rule-closure fixpoint ⇒
+underivable" is only as strong as the instantiation enumeration, which
+was the bug (the ⊃∉ zone enumeration offered no jointly-generated
+Θ-candidate; fixed by that session, commit 3f240b1, ff-merged here;
+(E) attack now 8/8 pass).  Consequences (proposed by that session,
+NOT yet done — Matthew's call): retire the CERTAIN category (rename
+`no-derivation-at-fixpoint`); on ◯-free goals decide derivability by
+the THEOREM (IPL-refutability) and print ENGINE-BUG on
+fixpoint-without-derivation; build a ◯-free IPL-refutable regression
+corpus as the standing engine oracle.  Remaining un-flagged
+under-enumeration: `seedsIC` above |Ĝ_at| = 4 (not in Stats).
+
+**Canonical-model comparison (F&M §4 / PLLCompleteness.lean), verdict
+as delivered to Matthew.**  IPL rules ↔ Lemma 6.4 ↔ truth-lemma clauses:
+exact.  Modal rules: every one maps to a clause and is sound, no
+obligation lacks a rule; but the ENCODING of the pledge diverges from
+`mfal` in three ways whose consequences are exactly the two open
+kernels: (i) no IRREGULAR ◯∈ — so I(◯Z)@a at a self-witnessing world
+must call R(Z)@a, the one same-height I→R edge = the §9 obstruction
+and CircSupply; (ii) components pledge D only via rhs = D, where the
+canonical successor needs only D ∈ fal (Lemma 3.9(ii) already licenses
+D ∈ Υ ∪ {rhs}) = the §8/§11 corner and PledgeSupply; (iii) both push
+Tag towards a SET.  Proposed revision (CONJECTURE, refute-first): pledge
+as world data (required-pledge zone on irregular sequents, set-valued
+tags, Υ-certified component pledges); encode in the engine, re-run the
+corner cells, only then attempt the measure proof.  Frame note:
+canonical ≤ is a preorder, FRJ.Kripke finite posets; bridge (C) needs
+the finite-poset countermodel property for PLL, OPEN in repo.  Full
+text: that session's scratchpad `frj-canonical-comparison.md`, offered
+as `docs/frj-canonical-comparison.md`.
