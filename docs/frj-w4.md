@@ -706,3 +706,34 @@ stratum.
 visit refactor (§11 second addendum); (β) the member-wise kernel
 discharge with the four routes above + the self-destruction argument
 made formal; (γ) the promise-mode port of the prime/∨ joins for `hloc`.
+
+### §11 fourth addendum: the promise-port design pinned (2026-08-17)
+
+Two facts fix the design of build (γ):
+
+1. **Retention is forced.**  A `Λ*`-circ `◯Y` has `a ⊩ ◯Y, a ⊮ Y`
+   (the forceStar condition), and `clo_forces` makes every Clo-member
+   forced; so `Clo Γ Y` is unavailable at any realisable `Γ` and the
+   circ-clause cannot cover `◯Y` — the member must be RETAINED, and
+   the barren `joinCtxAt` has no θ-circ zone.  Circ-carrying worlds
+   therefore genuinely require `joinAtP`/`joinOrP` (promise contexts):
+   there is no retention-free route.
+
+2. **Prime pledges are the goal.**  `Covers Γ W F` for prime `F` admits
+   only `refl`, so a promise row consumable through `MRWit.tOK`
+   (chain-`W` with `Covers ctx W C`) must pledge `W = F` at the prime
+   base; compound goals then lift through the `Covers` clauses as in
+   the landed threading.  The pledge-supply for the port is thus: at a
+   circ-carrying world `a` with prime demand `F`, a component family
+   `(tps, Δs)` of regular wits FOR `F` at worlds of `a`'s modal cone,
+   each barren-or-chain-`Covers`-`F`, whose contexts `Clo`-contain the
+   stable zones (hJ7s) and the stable circ-bodies (hJ5).  Semantic
+   availability of such components — `cone(a)`-successors refuting `F`
+   — is the §8 pledge-existence question in its final form, and enters
+   the theorem as the second named supply (`PledgeSupply`), exactly
+   parallel to `CircSupply`.
+
+So build (γ) = the two join builders' promise branches, each taking a
+`PledgeSupply`-input; `completeness_of_supply` then drops `hloc` for
+`PledgeSupply`, and full unconditional (A) = the member-wise discharge
+of BOTH supplies ((β), with the four routes + self-destruction).

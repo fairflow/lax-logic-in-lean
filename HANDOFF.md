@@ -1,5 +1,16 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (close) — promise-port design pinned
+
+(γ)-design fixed by two proved constraints: Λ*-circ retention is
+FORCED (unforced bodies can never ride Clo, barren joins have no
+θ-circ zone), and prime promise-pledges must equal the goal (Covers at
+prime = refl only).  So (γ) = promise branches of metR_prime/metR_or
+taking a PledgeSupply input (component family for F over cone(a),
+tOK-shaped, hJ5/hJ7s-satisfying); hloc is then replaced by
+PledgeSupply, and full (A) = member-wise discharge of CircSupply +
+PledgeSupply.  docs §11 fourth addendum.
+
 ## 2026-08-17 (late night) — kernel discharge routes at four; killer probe green
 
 Stuck-member analysis: forced `a ⊮ W` + corner-shaped consequent; NEW
