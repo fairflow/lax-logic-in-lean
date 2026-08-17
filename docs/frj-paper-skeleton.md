@@ -20,45 +20,45 @@
 | **§ Introduction** | | | |
 | **§ Preliminaries** | | | |
 | **§ The calculus $\FRJof{G}$** | | | |
-| Theorem 1 (Soundness of FRJ(G)) · `theo:FRJsound` · p.6 | ⊢FRJ(G) G implies G ̸∈ IPL. | | OPEN |
-| Example 1 · `ex:impPS1` · p.8 | Let σ1 = · ; p, q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ1 so to get a sequent with p ∨ q ⊃ B in the right, we have to sele … | | OPEN |
-| Example 2 · `ex:impPS2` · p.9 | Let σ1 = p, q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃ ) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊅∈ to σ1 yieldi … | | OPEN |
+| Theorem 1 (Soundness of FRJ(G)) · `theo:FRJsound` · p.6 | ⊢FRJ(G) G implies G ∉ IPL. | | OPEN |
+| Example 1 · `ex:impPS1` · p.8 | Let σ₁ = ·; p,q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ₁ so to get a sequent with p ∨ q ⊃ B in the right, we have to select … | | OPEN |
+| Example 2 · `ex:impPS2` · p.9 | Let σ₁ = p,q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊃∉ to σ₁ yielding  … | | OPEN |
 | Example (unlabelled) | Let $\s_1=\seqfrji{\Sigma_1 }{\Theta_1}{B}$, where $\Sigma_1=\{B\imp X_1, B\imp X_2, C\imp X_3 \}$ and $C\neq B$. We cannot apply a join rule having $\s_1$ as only premise since th … | | OPEN |
-| Lemma 1 · `lemma:lhs` · p.11 | R (i) σ1 7→0 σ2 and R ̸= ⊅∈ imply Lhs(σ2 ) ⊆ Lhs(σ1 ). (ii) σ1 7→0 σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). (iii) σ1 7→∗ σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). | | OPEN |
-| Example 4 · `ex:Ror` · p.12 | In the Introduction, by applying the unsound rule R∨, we got a wrong derivation of the sequent σ = p, H ⇒ q1 ∨ q2 , where H = p ⊃ q1 ∨ q2 . By the soundness property (S1), if σ cou … | | OPEN |
-| Example 5 · `ex:frjNishimura` · p.14 | Let us consider the following instances S and T of Scott and AntiScott principles, which are equivalent to Nishimura formulas N10 and N9 respectively [3] (the schema generating Ni  … | | OPEN |
-| Example 6 · `ex:frjKP` · p.15 | Another significant example is the FRJ(K)-derivation DK of the instance K = (¬a ⊃ b ∨ c) ⊃ (¬a ⊃ b) ∨ (¬a ⊃ c) of Kreisel-Putnam principle [3] shown in | | OPEN |
+| Lemma 1 · `lemma:lhs` · p.11 | (i) σ₁ ↦ᴿ₀ σ₂ and R ≠ ⊃∉ imply Lhs(σ₂) ⊆ Lhs(σ₁). (ii) σ₁ ↦₀ σ₂ implies Lhs(σ₂) ⊆ Cl(Lhs(σ₁)). (iii) σ₁ ↦* σ₂ implies Lhs(σ₂) ⊆ Cl(Lhs(σ₁)). | | OPEN |
+| Example 4 · `ex:Ror` · p.12 | In the Introduction, by applying the unsound rule R∨, we got a wrong derivation of the sequent σ = p,H ⇒ q1 ∨ q2, where H = p ⊃ q1 ∨ q2. By the soundness property (S1), if σ could  … | | OPEN |
+| Example 5 · `ex:frjNishimura` · p.14 | Let us consider the following instances S and T of Scott and Anti- Scott principles, which are equivalent to Nishimura formulas N10 and N9 respectively [3] (the schema generating N … | | OPEN |
+| Example 6 · `ex:frjKP` · p.15 | Another significant example is the FRJ(K)-derivation DK of the instance K = (¬a ⊃ b∨c) ⊃ (¬a ⊃ b)∨(¬a ⊃ c) of Kreisel-Putnam principle [3] shown in | | OPEN |
 | Lemma 2 · `lemma:soundFRJ` · p.16 | Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ an … | | OPEN |
 | Theorem 2 · `theo:soundFRJ` · p.17 | Let D be an FRJ(G)-derivation of G. Then, Mod(D) is a countermodel for G. | | OPEN |
-| Example 7 · `ex:count` · p.17 | Let us consider the formulas S, T and K in examples 5 and 6. The models Mod(DS ), Mod(DT ), Mod(DK ) and the related maps ϕ are shown in Figs. 5, 6 and 7 respectively. The bottom w … | | OPEN |
-| Lemma 3 · `lemma:wg` · p.19 | σ1 7→ σ2 implies ⟨0, 0, 0⟩ ⪯ wg(σ2 ) ≺ wg(σ1 ). | | OPEN |
-| Lemma 4 · `lemma:branch` · p.19 | Let D be an FRJ(G)-derivation, let B be a branch of D and N = \|G\|. Then: (i) the length of the branch B is O(N 2 ); (ii) B contains N p-sequents at most. | | OPEN |
-| Theorem 3 · `theo:height` · p.20 | Let D be an FRJ(G)-derivation and N = \|G\|. Then: (i) h(D) = O(N 2 ). (ii) h(Mod(D)) ≤ N . | | OPEN |
+| Example 7 · `ex:count` · p.17 | Let us consider the formulas S, T and K in examples 5 and 6. The models Mod(DS), Mod(DT), Mod(DK) and the related maps ϕ are shown in Figs. 5, 6 and 7 respectively. The bottom worl … | | OPEN |
+| Lemma 3 · `lemma:wg` · p.19 | σ₁ ↦ σ₂ implies ⟨0,0,0⟩ ⪯ wg(σ₂) ≺ wg(σ₁). | | OPEN |
+| Lemma 4 · `lemma:branch` · p.19 | Let D be an FRJ(G)-derivation, let B be a branch of D and N = \|G\|. Then: (i) the length of the branch B is O(N2); (ii) B contains N p-sequents at most. | | OPEN |
+| Theorem 3 · `theo:height` · p.20 | Let D be an FRJ(G)-derivation and N = \|G\|. Then: (i) h(D) = O(N2). (ii) h(Mod(D)) ≤ N. | | OPEN |
 | **§ The proof-search procedure and saturated Databases** | | | |
-| Lemma 5 · `lemma:subsRules` · p.21 | Let σ1 · · · σn R σ be an instance of a rule of FRJ(G) and let σ1 ⊑ σ1′ , . . . , σn ⊑ σn′ . Then, σ1′ · · · σn′ R σ′ is an instance of R in FRJ(G) where σ ⊑ σ ′ . | | OPEN |
+| Lemma 5 · `lemma:subsRules` · p.21 | Let σ₁ ··· σₙ R σ be an instance of a rule of FRJ(G) and let σ₁ ⊑ σ′₁, ..., σₙ ⊑ σ′ₙ. Then, σ′₁ ··· σ′ₙ R σ′ is an instance of R in FRJ(G) where σ ⊑ σ′ . | | OPEN |
 | Theorem 4 · `theo:fsearchAdequate` · p.23 | FSearch is an adequate proof-search procedure. | | OPEN |
-| Lemma 6 · `lemma:compactSatDB` · p.23 | Let G be a formula and let D1G be a compact saturated database for G. For every saturated database D2G for G, D1G ⊆ D2G . | | OPEN |
-| Theorem 5 · `theo:uniquetSatDB` · p.23 | For every formula G, there exists a unique compact saturated database D∗G for G, which is the minimum saturated database for G. | | OPEN |
+| Lemma 6 · `lemma:compactSatDB` · p.23 | Let G be a formula and let D1 G be a compact saturated database for G. For every saturated database D2 G for G, D1 G ⊆ D2 G. | | OPEN |
+| Theorem 5 · `theo:uniquetSatDB` · p.23 | For every formula G, there exists a unique compact saturated database D∗ G for G, which is the minimum saturated database for G. | | OPEN |
 | **§ The calculus $\GBUof{G}$ and completeness of $\FRJof{G}$** | | | |
-| Lemma 7 · `lemma:GBUsound` · p.25 | If ⊢Gbu(G) τ , then τ is valid. | | OPEN |
+| Lemma 7 · `lemma:GBUsound` · p.25 | If ⊢Gbu(G) τ, then τ is valid. | | OPEN |
 | Theorem 6 (Soundness of Gbu(G)) · `theo:GBUsound` · p.25 | ⊢Gbu(G) G implies G ∈ IPL. | | OPEN |
-| Lemma 8 · `lemma:wggbu` · p.25 | Let R be a rule of Gbu(G), let τ be the conclusion of R and τ ′ any of the premises of R. Then ⟨0, 0, 0⟩ ⪯ Wg(τ ′ ) ≺ Wg(τ ). | | OPEN |
-| Theorem 7 · `theo:gbufin` · p.26 | Let T be a Gbu(G)-tree and τ the root sequent of T . Then, the height of T is O(\|τ \|2 ). | | OPEN |
-| Example 8 · `ex:gbu1` · p.28 | Let E be the following goal formula: E = (p ∧ A ∧ B ∧ C) ⊃ D A = p ⊃ (q1 ∨ q2 ) B = q1 ⊃ D C = q2 ⊃ D D = r 1 ∨ r2 ⊃ Lhs(E) ∩ (V ∪ L ) = { p, q1 , q2 , r1 , r2 , A, B, C } Rhs(E) = … | | OPEN |
-| Lemma 9 · `lemma:gbuInv` · p.30 | Let G be a formula, let DG be a saturated database for G, Ψ ⊆ Sl(G) and Ω ⊆ Γ . (i) If DG ▷ A, B, Ψ ⇒g C, then DG ▷ A ∧ B, Ψ ⇒g C. (ii) If C1 ∧ C2 ∈ Sr(G) and DG ▷ Ψ ⇒g Ck with k ∈ … | | OPEN |
-| Lemma 10 · `lemma:gbuiOr` · p.32 | Let G be a formula, let DG be a saturated database for G and Ω ⊆ Γ . If DG ▷ Ω →g C1 and DG ▷ Ω →g C2 , then DG ▷ Ω →g C1 ∨ C2 . | | OPEN |
-| Lemma 11 · `lemma:gbuSuccAt` · p.32 | Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g F be such that Ω ⊆ Γ and F ∈ V ⊥ , and let us assume that: (i) F ̸∈ Ω; (ii) for every A ⊃ B ∈ Ω, DG ▷ Ω →g … | | OPEN |
-| Lemma 12 · `lemma:gbuSuccOr` · p.33 | Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g C1 ∨ C2 be such that Ω ⊆ Γ , and let us assume that: (i) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. (ii) DG ▷ Ω →g  … | | OPEN |
-| Theorem 8 (Correctness of BSearch) · `theo:search` · p.33 | Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ, DG ) computes a Gbu(G)-derivation of τ . | | OPEN |
-| Theorem 9 · `theo:GBU-FRJ` · p.34 | ⊢Gbu(G) G iff ̸⊢FRJ(G) G. | | OPEN |
+| Lemma 8 · `lemma:wggbu` · p.25 | Let R be a rule of Gbu(G), let τ be the conclusion of R and τ′ any of the premises of R. Then ⟨0,0,0⟩ ⪯ Wg(τ′) ≺ Wg(τ). | | OPEN |
+| Theorem 7 · `theo:gbufin` · p.26 | Let T be a Gbu(G)-tree and τ the root sequent of T . Then, the height of T is O(\|τ\|2). | | OPEN |
+| Example 8 · `ex:gbu1` · p.28 | Let E be the following goal formula: E = (p ∧ A ∧ B ∧ C) ⊃ D A = p ⊃ (q1 ∨ q2) B = q1 ⊃ D C = q2 ⊃ D D = r1 ∨ r2 Lhs(E) ∩ (V ∪ L⊃) = {p, q1, q2, r1, r2, A, B, C} Rhs(E) = {p, q1, q … | | OPEN |
+| Lemma 9 · `lemma:gbuInv` · p.30 | Let G be a formula, let DG be a saturated database for G, Ψ ⊆ Sl(G) and Ω ⊆ Γ. (i) If DG ▷ A,B,Ψ ⇒g C, then DG ▷ A ∧ B,Ψ ⇒g C. (ii) If C1 ∧ C2 ∈ Sr(G) and DG ▷ Ψ ⇒g Ck with k ∈ {1, … | | OPEN |
+| Lemma 10 · `lemma:gbuiOr` · p.32 | Let G be a formula, let DG be a saturated database for G and Ω ⊆ Γ. If DG ▷ Ω →g C1 and DG ▷ Ω →g C2, then DG ▷ Ω →g C1 ∨ C2. | | OPEN |
+| Lemma 11 · `lemma:gbuSuccAt` · p.32 | Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g F be such that Ω ⊆ Γ and F ∈ V⊥ , and let us assume that: (i) F ∉ Ω; (ii) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A … | | OPEN |
+| Lemma 12 · `lemma:gbuSuccOr` · p.33 | Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g C1 ∨ C2 be such that Ω ⊆ Γ, and let us assume that: (i) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. (ii) DG ▷ Ω →g C … | | OPEN |
+| Theorem 8 (Correctness of BSearch) · `theo:search` · p.33 | Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ,DG) computes a Gbu(G)-derivation of τ. | | OPEN |
+| Theorem 9 · `theo:GBU-FRJ` · p.34 | ⊢Gbu(G) G iff ⊬ FRJ(G)G. | | OPEN |
 | Theorem (unlabelled) · `theo:compl1` | \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item $G\not\in\IPL$ implies $\proves{\FRJof{G}} G$. \item $G\in\IPL$ implies $\proves{\GBUof{G}} G$. \end{enumerate} | | OPEN |
 | **§ Minimality** | | | |
 | Lemma 13 · `lemma:rnk` · p.36 | Let D be an FRJ(G)-derivation of G. Then, Rn(D) = h(Mod(D)). | | OPEN |
-| Lemma 14 · `lemma:minMod` · p.36 | Let K = ⟨P, ≤, ρ, V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα . – There exists an FRJ(G)-derivation Dα→ (C) of σα→ (C) = Σ ; Θ → C such that: (i) Rn(Dα→ (C)) < h(α); (ii) Σ ⊆ … | | OPEN |
-| Theorem 11 · `theo:minMod` · p.36 | Let G ̸∈ IPL. Then, there exists an FRJ(G)-derivation D̃ of G such that h(Mod(D̃)) = h(G). | | OPEN |
-| Example 9 · `ex:STMinH` · p.37 | Let S be the instance of Scott Principle in Ex. 5: S = H ⊃ ¬¬p ∨ ¬p H = (¬¬p ⊃ p) ⊃ ¬p ∨ p Sl(S) = { H, ¬p ∨ p, ¬¬p, ¬p, p } Sr(S) = { S, ¬¬p ∨ ¬p, ¬¬p ⊃ p, ¬¬p, ¬p, p, ⊥ } We have … | | OPEN |
-| Example 10 · `ex:DUMnonMIN` · p.39 | Let C be the formula C = A∨B A = (p1 ⊃ p2 ) ∨ (p2 ⊃ p1 ) B = (q1 ⊃ q2 ) ∨ (q2 ⊃ q1 ) We have h(C) = 1. Let KC be the following countermodel for C of height 1, consisting of the wor … | | OPEN |
-| Lemma 15 · `lemma:closure` · p.40 | Let K be a countermodel for G and α a world of K. Then, Λα = Cl(Λα ) = Cl(Λ∗α ). | | OPEN |
+| Lemma 14 · `lemma:minMod` · p.36 | Let K = ⟨P,≤,ρ,V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα. – There exists an FRJ(G)-derivation D→ α (C) of σ→ α (C) = Σ ; Θ → C such that: (i) Rn(D→ α (C)) < h(α); (ii) Σ ⊆  … | | OPEN |
+| Theorem 11 · `theo:minMod` · p.36 | Let G ∉ IPL. Then, there exists an FRJ(G)-derivation D̃ of G such that h(Mod(D̃)) = h(G). | | OPEN |
+| Example 9 · `ex:STMinH` · p.37 | Let S be the instance of Scott Principle in Ex. 5: S = H ⊃ ¬¬p ∨ ¬p H = (¬¬p ⊃ p) ⊃ ¬p ∨ p Sl(S) = { H, ¬p ∨ p, ¬¬p, ¬p, p} Sr(S) = { S, ¬¬p ∨ ¬p, ¬¬p ⊃ p, ¬¬p, ¬p, p, ⊥} We have h … | | OPEN |
+| Example 10 · `ex:DUMnonMIN` · p.39 | Let C be the formula C = A ∨ B A = (p1 ⊃ p2) ∨ (p2 ⊃ p1) B = (q1 ⊃ q2) ∨ (q2 ⊃ q1) We have h(C) = 1. Let KC be the following countermodel for C of height 1, consisting of the world … | | OPEN |
+| Lemma 15 · `lemma:closure` · p.40 | Let K be a countermodel for G and αₐ world of K. Then, Λα = Cl(Λα) = Cl(Λ∗ α). | | OPEN |
 | **§ Related and future work** | | | |
 | **§ Soundness of $\FRJof{G}$** | | | |
 | Lemma 16 (aka Lemma 3.9 of Sec.3) · `app:lemma:soundFRJ` · p.51 | Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ an … | | OPEN |
@@ -78,17 +78,17 @@ Status is one of **PROVED** (sorry-free with a pinned `#print axioms`), **REFUTE
 ### Theorem 1 (Soundness of FRJ(G))
 `theo:FRJsound`  ·  p.6
 
-⊢FRJ(G) G implies G ̸∈ IPL.
+⊢FRJ(G) G implies G ∉ IPL.
 
 ### Example 1
 `ex:impPS1`  ·  p.8
 
-Let σ1 = · ; p, q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ1 so to get a sequent with p ∨ q ⊃ B in the right, we have to select a subset Λ of {p, q} satisfying the side condition p ∨ q ∈ Cl(Λ). The following three choices are possible: Λ1 = {p} Λ2 = {q} Λ3 = {p, q} · ; p, q → B ⊃∈ p; q → p ∨ q ⊃ B · ; p, q → B ⊃∈ q; p → p∨q ⊃ B · ; p, q → B ⊃∈ p, q ; · → p ∨ q ⊃ …
+Let σ₁ = ·; p,q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ₁ so to get a sequent with p ∨ q ⊃ B in the right, we have to select a subset Λ of {p,q} satisfying the side condition p ∨ q ∈ Cl(Λ). The following three choices are possible: Λ₁ = {p} Λ₂ = {q} Λ₃ = {p,q} ·; p,q → B ⊃∈ p; q → p ∨ q ⊃ B ·; p,q → B ⊃∈ q ; p → p ∨ q ⊃ B ·; p,q → B ⊃∈ p,q ; · → p ∨ q ⊃ B We poi …
 
 ### Example 2
 `ex:impPS2`  ·  p.9
 
-Let σ1 = p, q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃ ) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊅∈ to σ1 yielding an irregular sequent of the form · ; Θ → C. By the side conditions, Θ must be a subset of Cl({p, q})∩Γ = {p, q, r ⊃ p}, which gives rise to eight possible choices: Θ1 = ∅ Θ5 = {p, r ⊃ p} Θ2 = {p} Θ6 = {q, r ⊃ p} Θ3 = {q} Θ7 = {p, q} Θ4 = …
+Let σ₁ = p,q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊃∉ to σ₁ yielding an irregular sequent of the form ·; Θ → C. By the side conditions, Θ must be a subset of Cl({p,q})∩Γ = {p,q,r ⊃ p}, which gives rise to eight possible choices: Θ₁ = ∅ Θ₂ = {p} Θ₃ = {q} Θ₄ = {r ⊃ p} Θ₅ = {p,r ⊃ p} Θ₆ = {q,r ⊃ p} Θ₇ = {p,q} Θ …
 
 ### Example (unlabelled)
 
@@ -97,27 +97,27 @@ Let $\sigma_1= \ifthenelse{\isempty{\Sigma_1 }}{\cdot}{\Sigma_1 } \,;\, \ifthene
 ### Lemma 1
 `lemma:lhs`  ·  p.11
 
-R (i) σ1 7→0 σ2 and R ̸= ⊅∈ imply Lhs(σ2 ) ⊆ Lhs(σ1 ). (ii) σ1 7→0 σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). (iii) σ1 7→∗ σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )).
+(i) σ₁ ↦ᴿ₀ σ₂ and R ≠ ⊃∉ imply Lhs(σ₂) ⊆ Lhs(σ₁). (ii) σ₁ ↦₀ σ₂ implies Lhs(σ₂) ⊆ Cl(Lhs(σ₁)). (iii) σ₁ ↦* σ₂ implies Lhs(σ₂) ⊆ Cl(Lhs(σ₁)).
 
 ### Example 4
 `ex:Ror`  ·  p.12
 
-In the Introduction, by applying the unsound rule R∨, we got a wrong derivation of the sequent σ = p, H ⇒ q1 ∨ q2 , where H = p ⊃ q1 ∨ q2 . By the soundness property (S1), if σ could be proved in FRJ(G), there should be a world α of a model such that both p and H are forced in α and q1 ∨ q2 is not forced in α, a contradiction. We show that it is not possible to build an FRJ(G)-derivation D of σ. Indeed, the root rule …
+In the Introduction, by applying the unsound rule R∨, we got a wrong derivation of the sequent σ = p,H ⇒ q1 ∨ q2, where H = p ⊃ q1 ∨ q2. By the soundness property (S1), if σ could be proved in FRJ(G), there should be a world α of a model such that both p and H are forced in α and q1 ∨ q2 is not forced in α, a contradiction. We show that it is not possible to build an FRJ(G)-derivation D of σ. Indeed, the root rule of …
 
 ### Example 5
 `ex:frjNishimura`  ·  p.14
 
-Let us consider the following instances S and T of Scott and AntiScott principles, which are equivalent to Nishimura formulas N10 and N9 respectively [3] (the schema generating Ni is given in Sec. 7): S = ((¬¬p ⊃ p) ⊃ ¬p ∨ p) ⊃ ¬¬p ∨ ¬p T = S ⊃ (¬¬p ⊃ p) ∨ ¬¬p Both formulas are valid in Classical Logic but not in IPL. Figs. 2 and 3 show an FRJ(S)-derivation DS of S and an FRJ(T )-derivation DT of T respectively, in l …
+Let us consider the following instances S and T of Scott and Anti- Scott principles, which are equivalent to Nishimura formulas N10 and N9 respectively [3] (the schema generating Ni is given in Sec. 7): S = ((¬¬p ⊃ p) ⊃ ¬p ∨ p) ⊃ ¬¬p ∨ ¬p T = S ⊃ (¬¬p ⊃ p) ∨ ¬¬p Both formulas are valid in Classical Logic but not in IPL. Figs. 2 and 3 show an FRJ(S)-derivation DS of S and an FRJ(T)-derivation DT of T respectively, in …
 
 ### Example 6
 `ex:frjKP`  ·  p.15
 
-Another significant example is the FRJ(K)-derivation DK of the instance K = (¬a ⊃ b ∨ c) ⊃ (¬a ⊃ b) ∨ (¬a ⊃ c) of Kreisel-Putnam principle [3] shown in
+Another significant example is the FRJ(K)-derivation DK of the instance K = (¬a ⊃ b∨c) ⊃ (¬a ⊃ b)∨(¬a ⊃ c) of Kreisel-Putnam principle [3] shown in
 
 ### Lemma 2
 `lemma:soundFRJ`  ·  p.16
 
-Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ and ϕ(σ) ⊮ C; 16 K = K0 ⊃ K 1 K0 = ¬a ⊃ b ∨ c K1 = (¬a ⊃ b) ∨ (¬a ⊃ c) Sl(K) = { K0 , ¬a, a, b, c } Sr(K) = { K, K1 , ¬a ⊃ b, ¬a ⊃ c, a, b, c, ⊥ } · ; a, b, c, K0 , ¬a → ⊥ Ax→ (2) · ; b, c, K0 , ¬a → a Ax→ (3) a ; b, c, K0 , ¬a → ¬a ⊃∈ (1) (1 …
+Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ and ϕ(σ) ⊮ C; 16 K = K0 ⊃ K1 K0 = ¬a ⊃ b ∨ c K1 = (¬a ⊃ b) ∨ (¬a ⊃ c) Sl(K) = {K0, ¬a, a, b, c} Sr(K) = {K, K1, ¬a ⊃ b, ¬a ⊃ c, a, b, c, ⊥} · ; a, b, c, K0, ¬a → ⊥ Ax→ (1) · ; b, c, K0, ¬a → a Ax→ (2) a ; b, c, K0, ¬a → ¬a ⊃∈ (1) (3) c, ¬a ⇒ …
 
 ### Theorem 2
 `theo:soundFRJ`  ·  p.17
@@ -127,27 +127,27 @@ Let D be an FRJ(G)-derivation of G. Then, Mod(D) is a countermodel for G.
 ### Example 7
 `ex:count`  ·  p.17
 
-Let us consider the formulas S, T and K in examples 5 and 6. The models Mod(DS ), Mod(DT ), Mod(DK ) and the related maps ϕ are shown in Figs. 5, 6 and 7 respectively. The bottom world is the root and σ < σ ′ iff the world σ is drawn below σ ′ . For each σ, we display the set V (σ). As an example, in
+Let us consider the formulas S, T and K in examples 5 and 6. The models Mod(DS), Mod(DT), Mod(DK) and the related maps ϕ are shown in Figs. 5, 6 and 7 respectively. The bottom world is the root and σ < σ′ iff the world σ is drawn below σ′ . For each σ, we display the set V (σ). As an example, in
 
 ### Lemma 3
 `lemma:wg`  ·  p.19
 
-σ1 7→ σ2 implies ⟨0, 0, 0⟩ ⪯ wg(σ2 ) ≺ wg(σ1 ).
+σ₁ ↦ σ₂ implies ⟨0,0,0⟩ ⪯ wg(σ₂) ≺ wg(σ₁).
 
 ### Lemma 4
 `lemma:branch`  ·  p.19
 
-Let D be an FRJ(G)-derivation, let B be a branch of D and N = |G|. Then: (i) the length of the branch B is O(N 2 ); (ii) B contains N p-sequents at most.
+Let D be an FRJ(G)-derivation, let B be a branch of D and N = |G|. Then: (i) the length of the branch B is O(N2); (ii) B contains N p-sequents at most.
 
 ### Theorem 3
 `theo:height`  ·  p.20
 
-Let D be an FRJ(G)-derivation and N = |G|. Then: (i) h(D) = O(N 2 ). (ii) h(Mod(D)) ≤ N .
+Let D be an FRJ(G)-derivation and N = |G|. Then: (i) h(D) = O(N2). (ii) h(Mod(D)) ≤ N.
 
 ### Lemma 5
 `lemma:subsRules`  ·  p.21
 
-Let σ1 · · · σn R σ be an instance of a rule of FRJ(G) and let σ1 ⊑ σ1′ , . . . , σn ⊑ σn′ . Then, σ1′ · · · σn′ R σ′ is an instance of R in FRJ(G) where σ ⊑ σ ′ .
+Let σ₁ ··· σₙ R σ be an instance of a rule of FRJ(G) and let σ₁ ⊑ σ′₁, ..., σₙ ⊑ σ′ₙ. Then, σ′₁ ··· σ′ₙ R σ′ is an instance of R in FRJ(G) where σ ⊑ σ′ .
 
 ### Theorem 4
 `theo:fsearchAdequate`  ·  p.23
@@ -157,17 +157,17 @@ FSearch is an adequate proof-search procedure.
 ### Lemma 6
 `lemma:compactSatDB`  ·  p.23
 
-Let G be a formula and let D1G be a compact saturated database for G. For every saturated database D2G for G, D1G ⊆ D2G .
+Let G be a formula and let D1 G be a compact saturated database for G. For every saturated database D2 G for G, D1 G ⊆ D2 G.
 
 ### Theorem 5
 `theo:uniquetSatDB`  ·  p.23
 
-For every formula G, there exists a unique compact saturated database D∗G for G, which is the minimum saturated database for G.
+For every formula G, there exists a unique compact saturated database D∗ G for G, which is the minimum saturated database for G.
 
 ### Lemma 7
 `lemma:GBUsound`  ·  p.25
 
-If ⊢Gbu(G) τ , then τ is valid.
+If ⊢Gbu(G) τ, then τ is valid.
 
 ### Theorem 6 (Soundness of Gbu(G))
 `theo:GBUsound`  ·  p.25
@@ -177,47 +177,47 @@ If ⊢Gbu(G) τ , then τ is valid.
 ### Lemma 8
 `lemma:wggbu`  ·  p.25
 
-Let R be a rule of Gbu(G), let τ be the conclusion of R and τ ′ any of the premises of R. Then ⟨0, 0, 0⟩ ⪯ Wg(τ ′ ) ≺ Wg(τ ).
+Let R be a rule of Gbu(G), let τ be the conclusion of R and τ′ any of the premises of R. Then ⟨0,0,0⟩ ⪯ Wg(τ′) ≺ Wg(τ).
 
 ### Theorem 7
 `theo:gbufin`  ·  p.26
 
-Let T be a Gbu(G)-tree and τ the root sequent of T . Then, the height of T is O(|τ |2 ).
+Let T be a Gbu(G)-tree and τ the root sequent of T . Then, the height of T is O(|τ|2).
 
 ### Example 8
 `ex:gbu1`  ·  p.28
 
-Let E be the following goal formula: E = (p ∧ A ∧ B ∧ C) ⊃ D A = p ⊃ (q1 ∨ q2 ) B = q1 ⊃ D C = q2 ⊃ D D = r 1 ∨ r2 ⊃ Lhs(E) ∩ (V ∪ L ) = { p, q1 , q2 , r1 , r2 , A, B, C } Rhs(E) = { p, q1 , q2 , r1 , r2 , D, E } Since E is valid and the proof-search procedure FSearch of
+Let E be the following goal formula: E = (p ∧ A ∧ B ∧ C) ⊃ D A = p ⊃ (q1 ∨ q2) B = q1 ⊃ D C = q2 ⊃ D D = r1 ∨ r2 Lhs(E) ∩ (V ∪ L⊃) = {p, q1, q2, r1, r2, A, B, C} Rhs(E) = {p, q1, q2, r1, r2, D, E} Since E is valid and the proof-search procedure FSearch of
 
 ### Lemma 9
 `lemma:gbuInv`  ·  p.30
 
-Let G be a formula, let DG be a saturated database for G, Ψ ⊆ Sl(G) and Ω ⊆ Γ . (i) If DG ▷ A, B, Ψ ⇒g C, then DG ▷ A ∧ B, Ψ ⇒g C. (ii) If C1 ∧ C2 ∈ Sr(G) and DG ▷ Ψ ⇒g Ck with k ∈ {1, 2} then DG ▷ Ψ ⇒g C1 ∧ C2 . (iii) If A1 ∨ A2 ∈ Sl(G) and DG ▷ Ak , Ψ ⇒g C with k ∈ {1, 2}, then DG ▷ A1 ∨ A2 , Ψ ⇒g C. (iv) If A ⊃ B ∈ Sl(G) and DG ▷ B, Ψ ⇒g C, then DG ▷ A ⊃ B, Ψ ⇒g C. (v) If A ⊃ B ∈ Sr(G) and DG ▷ Ψ ⇒g B, with A ∈ Cl …
+Let G be a formula, let DG be a saturated database for G, Ψ ⊆ Sl(G) and Ω ⊆ Γ. (i) If DG ▷ A,B,Ψ ⇒g C, then DG ▷ A ∧ B,Ψ ⇒g C. (ii) If C1 ∧ C2 ∈ Sr(G) and DG ▷ Ψ ⇒g Ck with k ∈ {1,2} then DG ▷ Ψ ⇒g C1 ∧ C2. (iii) If A1 ∨A2 ∈ Sl(G) and DG ▷Ak,Ψ ⇒g C with k ∈ {1,2}, then DG ▷A1 ∨ A2,Ψ ⇒g C. (iv) If A ⊃ B ∈ Sl(G) and DG ▷ B,Ψ ⇒g C, then DG ▷ A ⊃ B,Ψ ⇒g C. (v) If A ⊃ B ∈ Sr(G) and DG ▷ Ψ ⇒g B, with A ∈ Cl(Ψ), then DG ▷ Ψ …
 
 ### Lemma 10
 `lemma:gbuiOr`  ·  p.32
 
-Let G be a formula, let DG be a saturated database for G and Ω ⊆ Γ . If DG ▷ Ω →g C1 and DG ▷ Ω →g C2 , then DG ▷ Ω →g C1 ∨ C2 .
+Let G be a formula, let DG be a saturated database for G and Ω ⊆ Γ. If DG ▷ Ω →g C1 and DG ▷ Ω →g C2, then DG ▷ Ω →g C1 ∨ C2.
 
 ### Lemma 11
 `lemma:gbuSuccAt`  ·  p.32
 
-Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g F be such that Ω ⊆ Γ and F ∈ V ⊥ , and let us assume that: (i) F ̸∈ Ω; (ii) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. Then, DG ▷ τ . 32
+Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g F be such that Ω ⊆ Γ and F ∈ V⊥ , and let us assume that: (i) F ∉ Ω; (ii) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. Then, DG ▷ τ. 32
 
 ### Lemma 12
 `lemma:gbuSuccOr`  ·  p.33
 
-Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g C1 ∨ C2 be such that Ω ⊆ Γ , and let us assume that: (i) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. (ii) DG ▷ Ω →g C1 and DG ▷ Ω →g C2 .
+Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g C1 ∨ C2 be such that Ω ⊆ Γ, and let us assume that: (i) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. (ii) DG ▷ Ω →g C1 and DG ▷ Ω →g C2. Then, DG ▷ τ.
 
 ### Theorem 8 (Correctness of BSearch)
 `theo:search`  ·  p.33
 
-Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ, DG ) computes a Gbu(G)-derivation of τ .
+Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ,DG) computes a Gbu(G)-derivation of τ.
 
 ### Theorem 9
 `theo:GBU-FRJ`  ·  p.34
 
-⊢Gbu(G) G iff ̸⊢FRJ(G) G.
+⊢Gbu(G) G iff ⊬ FRJ(G)G.
 
 ### Theorem (unlabelled)
 `theo:compl1`
@@ -232,32 +232,32 @@ Let D be an FRJ(G)-derivation of G. Then, Rn(D) = h(Mod(D)).
 ### Lemma 14
 `lemma:minMod`  ·  p.36
 
-Let K = ⟨P, ≤, ρ, V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα . – There exists an FRJ(G)-derivation Dα→ (C) of σα→ (C) = Σ ; Θ → C such that: (i) Rn(Dα→ (C)) < h(α); (ii) Σ ⊆ Λ∗α ⊆ Σ ∪ Θ. – There exists an FRJ(G)-derivation Dα⇒ (C) of σα⇒ (C) = Γ ⇒ C such that: (iii) Rn(Dα⇒ (C)) ≤ h(α); (iv) there is β ∈ P such that α ≤ β and Λ∗β ⊆ Γ .
+Let K = ⟨P,≤,ρ,V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα. – There exists an FRJ(G)-derivation D→ α (C) of σ→ α (C) = Σ ; Θ → C such that: (i) Rn(D→ α (C)) < h(α); (ii) Σ ⊆ Λ∗ α ⊆ Σ ∪ Θ. – There exists an FRJ(G)-derivation D⇒ α (C) of σ⇒ α (C) = Γ ⇒ C such that: (iii) Rn(D⇒ α (C)) ≤ h(α); (iv) there is β ∈ P such that α ≤ β and Λ∗ β ⊆ Γ.
 
 ### Theorem 11
 `theo:minMod`  ·  p.36
 
-Let G ̸∈ IPL. Then, there exists an FRJ(G)-derivation D̃ of G such that h(Mod(D̃)) = h(G).
+Let G ∉ IPL. Then, there exists an FRJ(G)-derivation D̃ of G such that h(Mod(D̃)) = h(G).
 
 ### Example 9
 `ex:STMinH`  ·  p.37
 
-Let S be the instance of Scott Principle in Ex. 5: S = H ⊃ ¬¬p ∨ ¬p H = (¬¬p ⊃ p) ⊃ ¬p ∨ p Sl(S) = { H, ¬p ∨ p, ¬¬p, ¬p, p } Sr(S) = { S, ¬¬p ∨ ¬p, ¬¬p ⊃ p, ¬¬p, ¬p, p, ⊥ } We have h(S) = 2. Let us consider the countermodel KS for S having height 2 depicted below, consisting of the worlds α and β of height 0, the world γ of height 1 and the root ρ of height 2: α: β: p γ: ρ: We define the sequents σα→ (C) and σα⇒ (C) …
+Let S be the instance of Scott Principle in Ex. 5: S = H ⊃ ¬¬p ∨ ¬p H = (¬¬p ⊃ p) ⊃ ¬p ∨ p Sl(S) = { H, ¬p ∨ p, ¬¬p, ¬p, p} Sr(S) = { S, ¬¬p ∨ ¬p, ¬¬p ⊃ p, ¬¬p, ¬p, p, ⊥} We have h(S) = 2. Let us consider the countermodel KS for S having height 2 depicted below, consisting of the worlds α and β of height 0, the world γ of height 1 and the root ρ of height 2: ρ: α: γ: β: p We define the sequents σ→ α (C) and σ⇒ α (C) …
 
 ### Example 10
 `ex:DUMnonMIN`  ·  p.39
 
-Let C be the formula C = A∨B A = (p1 ⊃ p2 ) ∨ (p2 ⊃ p1 ) B = (q1 ⊃ q2 ) ∨ (q2 ⊃ q1 ) We have h(C) = 1. Let KC be the following countermodel for C of height 1, consisting of the worlds α and β of height 0 and of the root ρ of height 1: α: p1 , q1 β: p2 , q2 ρ: One can easily check that there is no countermodel for C having less than 3 worlds, hence KC is a minimal countermodel for C. We have: Sl(C) = { p1 , p2 , q1 , …
+Let C be the formula C = A ∨ B A = (p1 ⊃ p2) ∨ (p2 ⊃ p1) B = (q1 ⊃ q2) ∨ (q2 ⊃ q1) We have h(C) = 1. Let KC be the following countermodel for C of height 1, consisting of the worlds α and β of height 0 and of the root ρ of height 1: ρ: α: p1, q1 β: p2, q2 One can easily check that there is no countermodel for C having less than 3 worlds, hence KC is a minimal countermodel for C. We have: Sl(C) = { p1, p2, q1, q2} Sr( …
 
 ### Lemma 15
 `lemma:closure`  ·  p.40
 
-Let K be a countermodel for G and α a world of K. Then, Λα = Cl(Λα ) = Cl(Λ∗α ).
+Let K be a countermodel for G and αₐ world of K. Then, Λα = Cl(Λα) = Cl(Λ∗ α).
 
 ### Lemma 16 (aka Lemma 3.9 of Sec.3)
 `app:lemma:soundFRJ`  ·  p.51  ·  **appendix**
 
-Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ and ϕ(σ) ⊮ C; (ii) if σ = Σ ; Θ → C, let σp ∈ P(D) such that σ 7→ σp and σp ⊩ Σ ∩ Sf − (C); then σp ⊮ C.
+Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ and ϕ(σ) ⊮ C; (ii) if σ = Σ ; Θ → C, let σₚ ∈ P(D) such that σ ↦ σₚ and σₚ ⊩ Σ ∩Sf− (C); then σₚ ⊮ C.
 
 ### Lemma 17
 `lemma:soundnessProperties`  ·  p.53  ·  **appendix**

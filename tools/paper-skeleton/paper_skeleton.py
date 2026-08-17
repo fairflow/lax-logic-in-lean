@@ -251,6 +251,66 @@ def pandoc_text(macros: str, body: str):
     out = re.sub(r"\s*[0-9]?\s*[◻□∎]\s*$", "", out).strip()
     return out or None
 
+# --- repairing pdftotext's glyph damage -------------------------------------
+# pdftotext maps a TeX font's glyphs to Unicode one code point at a time, so
+# composed and negated symbols come out wrong in predictable ways.  These are
+# the repairs, each verified against the printed page.
+
+_NEG = {"=": "≠", "∈": "∉", "⊆": "⊈", "⊂": "⊄", "⊃": "⊅", "≡": "≢",
+        "≤": "≰", "≥": "≱", "<": "≮", ">": "≯", "⊢": "⊬", "⊨": "⊭",
+        "∃": "∄", "|": "∤", "≈": "≉", "∼": "≁", "⪯": "⋠"}
+_SUB = str.maketrans("0123456789", "₀₁₂₃₄₅₆₇₈₉")
+# the capitals Unicode actually provides as modifier letters
+_SUP = {"A": "ᴬ", "B": "ᴮ", "D": "ᴰ", "E": "ᴱ", "G": "ᴳ", "H": "ᴴ", "I": "ᴵ",
+        "J": "ᴶ", "K": "ᴷ", "L": "ᴸ", "M": "ᴹ", "N": "ᴺ", "O": "ᴼ", "P": "ᴾ",
+        "R": "ᴿ", "T": "ᵀ", "U": "ᵁ", "V": "ⱽ", "W": "ᵂ"}
+_ARROWS = "↦→⇒⊢⊨⟹"
+_SUBL = {"a": "ₐ", "e": "ₑ", "i": "ᵢ", "j": "ⱼ", "k": "ₖ", "l": "ₗ", "m": "ₘ",
+         "n": "ₙ", "o": "ₒ", "p": "ₚ", "r": "ᵣ", "s": "ₛ", "t": "ₜ",
+         "u": "ᵤ", "v": "ᵥ", "x": "ₓ"}
+_GREEK = "αβγδεζηθικλμνξπρστυφχψωΑΒΓΔΕΖΗΘΙΚΛΜΝΞΠΡΣΤΥΦΧΨΩϕφσ"
+
+def fix_glyphs(t: str) -> str:
+    if not t:
+        return t
+    # ↦ is extracted as the digit 7 followed by →
+    t = t.replace("7→", "↦").replace("7 →", "↦")
+    # U+0338 COMBINING LONG SOLIDUS OVERLAY arrives either side of its base
+    for base, neg in _NEG.items():
+        t = t.replace(base + "̸", neg).replace("̸" + base, neg)
+        t = t.replace("̸ " + base, neg).replace(base + " ̸", neg)
+    # a negation landing on the wrong glyph of a two-symbol rule name:
+    # ⊃∉ extracts as ⊅∈, the slash having attached to ⊃ instead of ∈
+    t = t.replace("⊅∈", "⊃∉")
+    # a lone capital sitting just before an arrow is that arrow's superscript,
+    # and belongs after it: `σ1 R ↦0 σ2` is σ₁ ↦ᴿ₀ σ₂
+    t = re.sub(rf"\s+([A-Z])\s+([{_ARROWS}])(\d*)",
+               lambda m: " " + m.group(2) + _SUP.get(m.group(1), "^" + m.group(1))
+                         + m.group(3).translate(_SUB), t)
+    # the star of a reflexive-transitive closure extracts as ∗
+    t = re.sub(rf"(?<=[{_ARROWS}])∗", "*", t)
+    # subscripts are flattened to adjacent digits; restore them after a Greek
+    # letter or an arrow, where the reading is unambiguous (a superscript such
+    # as `N 2` keeps its space and is left alone)
+    t = re.sub(rf"(?<=[{_GREEK}{_ARROWS}])(\d+)",
+               lambda m: m.group(1).translate(_SUB), t)
+    t = re.sub(rf"(?<=[{''.join(_SUP.values())}])(\d+)",
+               lambda m: m.group(1).translate(_SUB), t)
+    # a prime keeps its subscript, which -raw separates: `σ′ 1` is σ′₁
+    t = re.sub(r"(?<=[′'])\s*(\d+)", lambda m: m.group(1).translate(_SUB), t)
+    # an index letter after a Greek letter or a prime is a subscript too
+    t = re.sub(rf"(?<=[{_GREEK}′])\s?([aeijklmnoprstuvx])(?![A-Za-z])",
+               lambda m: _SUBL[m.group(1)], t)
+    # spurious space before a closing delimiter, and doubled spaces
+    t = re.sub(r"\s+([)\]}])", r"\1", t)
+    t = re.sub(r"\(\s+", "(", t)
+    # end-of-line hyphenation: `coun- termodel` is one word
+    t = re.sub(r"([a-z])-\s+([a-z])", r"\1\2", t)
+    # a negated relation printed hard against the next symbol
+    t = re.sub(r"([≠∉⊈⊄⊅≢≰≱≮≯⊬⊭])(?=[^\s,.;:)\]}])", r"\1 ", t)
+    t = re.sub(r"[ \t]{2,}", " ", t)
+    return t.strip()
+
 def pdf_pages(main_tex: str):
     """Rendered text of the compiled PDF, page 1 first.  The statements the
     reader wants are the ones LaTeX printed, with the paper's 164 private
@@ -263,7 +323,7 @@ def pdf_pages(main_tex: str):
     if not exe or not os.path.exists(pdf):
         return {}
     try:
-        r = subprocess.run([exe, pdf, "-"], capture_output=True, timeout=300)
+        r = subprocess.run([exe, "-raw", pdf, "-"], capture_output=True, timeout=300)
     except Exception:
         return {}
     pages = r.stdout.decode("utf-8", "replace").split("\f")
@@ -319,7 +379,9 @@ def rendered_statement(pages, kind, number, page, limit=420):
     body = re.sub(r"\s+", " ", tail[:cut]).strip()
     if not body:
         return None
-    return (body[:limit].rstrip() + (" …" if len(body) > limit else ""), title)
+    body = fix_glyphs(body)
+    return (body[:limit].rstrip() + (" …" if len(body) > limit else ""),
+            fix_glyphs(title) if title else None)
 
 def extract(tex: str, kinds: dict):
     """Walk the document, recording sections and theorem-like environments.

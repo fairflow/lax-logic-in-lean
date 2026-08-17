@@ -133,3 +133,35 @@ pandoc give up on the whole file silently.
 Items that neither route can extract are marked as such, never filled with
 raw source. On the FRJ paper that is 2 of 38 — one unlabelled example,
 which has no `.aux` entry and so no page to look on.
+
+## Repairing the extractor's glyph damage
+
+`pdftotext` maps a TeX font's glyphs to Unicode one code point at a time,
+so composed and negated symbols come out wrong — predictably, and
+therefore repairably. Do not pass its output through raw.
+
+    pdftotext -raw          reading order preserved, so a superscript stays
+                            where it belongs, and no spurious spaces before
+                            a closing delimiter (the default and -layout
+                            modes both insert them, and -layout also floats
+                            the superscript to its own line)
+
+Then, each verified against the printed page:
+
+    7→        → ↦          the mapsto glyph extracts as digit-7 plus arrow
+    X + U+0338 → ≠ ∉ ⊈ …   COMBINING LONG SOLIDUS arrives either side of
+                            its base character
+    ⊅∈        → ⊃∉         a negation that landed on the wrong glyph of a
+                            two-symbol rule name
+    σ1        → σ₁         subscripts are flattened to adjacent digits
+    σ′ 1      → σ′₁        …and separated from a prime
+    σn        → σₙ         index letters likewise
+    σ1 R ↦0   → σ₁ ↦ᴿ₀     a lone capital before an arrow is that arrow's
+                            superscript, and belongs after it
+    ↦∗        → ↦*
+    coun- ter → counter    end-of-line hyphenation
+
+Subscript restoration fires only after a Greek letter, a prime or an
+arrow, where the reading is unambiguous. A superscript such as `O(N 2 )`
+keeps its space and is deliberately left alone: guessing there would turn
+N² into N₂.
