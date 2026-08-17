@@ -529,6 +529,73 @@ theorem provable_circ_imp : Provable (Form.imp (.circ (.atom "p")) (.atom "p")) 
       (by decide)
   exact ⟨.blocked, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
+/-- **The `◯∉` witness cell** (W4): `(◯p ⊃ q) ⊃ q` is reached by the
+calculus.  Under the W3 rule set no irregular sequent had a modal right
+formula — right formulas originated prime at the axioms and grew only by
+`∧`, `∨`, `⊃` on the irregular side — so `Υ` never contained a
+`◯`-formula and the context restriction could never keep an implication
+with modal antecedent: every context containing `◯p ⊃ q` was
+unreachable, and with it this goal.  `◯∉` repairs exactly that
+(`docs/frj-w4.md` §1 (D2)): `Ax^R` at `p` gives a barren `⇒ p`, `◯∉`
+turns it into `[] ; [◯p ⊃ q] → ◯p` (the zone lands in `Cl` by
+`Clo.imp` from `q`), the join at `q` now sees `◯p ∈ Υ` and keeps
+`◯p ⊃ q`, and `⊃∈` discharges. -/
+theorem provable_circ_peirce :
+    Provable (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) := by
+  have haxp : FRJr (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
+      .barren
+      (rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
+        (.atom "p"))
+      (.atom "p") :=
+    FRJr.axR (.atom "p") rfl (by decide)
+  have hnotin : FRJi (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
+      [] [Form.imp (.circ (.atom "p")) (.atom "q")] (.circ (.atom "p")) :=
+    FRJi.circNotIn haxp (Or.inl rfl)
+      (by
+        intro Y hY
+        have hYX : Y = Form.imp (.circ (.atom "p")) (.atom "q") := by simpa using hY
+        subst hYX
+        exact ⟨Clo.imp (Clo.base (by decide)), by decide⟩)
+      (by decide)
+  have haxq : FRJi (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
+      []
+      (nf (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
+        ((rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
+            (.atom "q"))
+          ++ gImp (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
+          ++ gCirc (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))))
+      (.atom "q") :=
+    FRJi.axI (.atom "q") rfl (by decide)
+  have hjoin := FRJr.joinAt
+      (G := Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) (n := 1)
+      (stab := fun _ => [])
+      (th := fun j => match j with
+        | ⟨0, _⟩ =>
+            nf (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
+              ((rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
+                  (.atom "q"))
+                ++ gImp (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
+                ++ gCirc (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
+        | ⟨1, _⟩ => [Form.imp (.circ (.atom "p")) (.atom "q")])
+      (rhs := fun j => match j with
+        | ⟨0, _⟩ => .atom "q"
+        | ⟨1, _⟩ => .circ (.atom "p"))
+      (F := .atom "q")
+      (fun j => match j with
+        | ⟨0, _⟩ => haxq
+        | ⟨1, _⟩ => hnotin)
+      (by intro i j _ x hx; simp at hx)
+      (by intro A B h; simp [unionAll, impPart] at h)
+      (by decide)
+      rfl
+      (by decide)
+      (by decide)
+  exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
+
+theorem not_PLL_circ_peirce_by_calculus :
+    ¬ PLL (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) :=
+  soundness provable_circ_peirce
+
 /-- Hence the two standing cells, straight from soundness. -/
 theorem not_PLL_neg_circ_bot_by_calculus : ¬ PLL (Form.neg (.circ .bot)) :=
   soundness provable_neg_circ_bot
@@ -571,6 +638,14 @@ theorem valid_nn_imp_circ {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
 /-- info: 'FRJ.provable_circ_imp' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provable_circ_imp
+
+/-- info: 'FRJ.provable_circ_peirce' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_circ_peirce
+
+/-- info: 'FRJ.not_PLL_circ_peirce_by_calculus' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_PLL_circ_peirce_by_calculus
 
 /-- info: 'FRJ.not_PLL_neg_circ_bot' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

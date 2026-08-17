@@ -194,6 +194,88 @@ theorem realisable_closed {Δ : List Form} {A B : Form}
   obtain ⟨K, w, hw⟩ := h
   exact ⟨K, w, (hw _ hmem).1, (hw _ hmem).2⟩
 
+/-! ### Screen 4 (W4) — the pledge anchors at classical refutation sites
+
+The completeness design (`docs/frj-w4.md` §3) has one exposed corner: a
+pledged witness for a compound consequent `Z = A ⊃ B` at a world `u`
+that refutes `A`.  The `◯`-free construction would FLOAT to the minimal
+world above forcing `A` — but that world can lie outside the pledging
+`Rm`-cone.  The model below realises exactly that configuration in a
+three-world chain `w0 < u < e` with `Rm = {reflexives, (w0, u)}`:
+`w0` refutes `◯(p ⊃ q)` with its own cone as witness, `u` (the cone's
+top) refutes `p`, and the only `p`-forcing world `e` is `Rm`-invisible
+from `w0`.
+
+The same model shows the way out: at `e` the refutation of `p ⊃ q` is
+CLASSICAL — `p` forced, `q` refuted — so a witness anchored AT `e`
+discharges `⊃∈` locally and never floats; and `e` being `≤`-maximal,
+its modal `Λ*`-part is empty (`circPart_lamStar_nil_of_maximal`), the
+barren join suffices, and the extracted cone is the root alone, which
+refutes `p ⊃ q` by its own right formula.  The promise component of the
+join at `w0` is a SEQUENT, not a world of this model, so anchoring it
+at `e` is legitimate: `Mod(D)` must refute the goal, not reproduce
+`K`. -/
+
+/-- Three worlds in a chain. -/
+inductive WPC where | w0 | u | e
+  deriving DecidableEq, Repr
+
+/-- The chain order. -/
+def lePC : WPC → WPC → Bool
+  | .w0, _ => true
+  | .u, .u => true
+  | .u, .e => true
+  | .e, .e => true
+  | _, _ => false
+
+/-- `Rm`: reflexive edges plus `(w0, u)` — `e` is modally invisible from
+`w0`. -/
+def rmPC : WPC → WPC → Bool
+  | .w0, .w0 => true
+  | .w0, .u => true
+  | .u, .u => true
+  | .e, .e => true
+  | _, _ => false
+
+/-- The chain `w0 < u < e`, `p` true only at `e`, `Rm` as above. -/
+abbrev pledgeChain : Kripke where
+  W := WPC
+  elems := [.w0, .u, .e]
+  complete := by intro w; cases w <;> simp
+  decEq := inferInstance
+  le := fun a b => lePC a b = true
+  le_refl := by intro a; cases a <;> rfl
+  le_trans := by intro a b c h₁ h₂; cases a <;> cases b <;> cases c <;> simp_all [lePC]
+  le_antisymm := by intro a b h₁ h₂; cases a <;> cases b <;> simp_all [lePC]
+  Rm := fun a b => rmPC a b = true
+  rm_refl := by intro a; cases a <;> rfl
+  rm_trans := by intro a b c h₁ h₂; cases a <;> cases b <;> cases c <;> simp_all [rmPC]
+  sub_mi := by intro a b h; cases a <;> cases b <;> simp_all [rmPC, lePC]
+  root := .w0
+  root_le := by intro a; cases a <;> rfl
+  V := fun w s => w = .e ∧ s = "p"
+  V_mono := by intro w v h s hs; cases w <;> cases v <;> simp_all [lePC]
+  Fal := fun _ => False
+  fal_mono := fun _ h => h
+  fal_V := fun h => h.elim
+  decLe := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decV := fun _ _ => inferInstanceAs (Decidable (_ ∧ _))
+  decRm := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decFal := fun _ => isFalse (fun h => h)
+
+/-- The corner is REALISABLE: `w0` refutes `◯(p ⊃ q)` through its own
+cone (both `w0` and `u` refute `p ⊃ q`), the cone's top `u` refutes the
+antecedent `p`, and the float target `e` is outside the cone.  And the
+re-route is available: at `e` the refutation of `p ⊃ q` is classical. -/
+example :
+    ¬ pledgeChain.force .w0 (.circ (.imp (.atom "p") (.atom "q")))
+    ∧ ¬ pledgeChain.force .w0 (.imp (.atom "p") (.atom "q"))
+    ∧ ¬ pledgeChain.force .u (.imp (.atom "p") (.atom "q"))
+    ∧ ¬ pledgeChain.force .u (.atom "p")
+    ∧ rmPC .w0 .e = false
+    ∧ pledgeChain.force .e (.atom "p")
+    ∧ ¬ pledgeChain.force .e (.atom "q") := by decide
+
 end Screen
 
 /-! ## Axiom audit -/

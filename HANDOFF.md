@@ -434,3 +434,26 @@ variable.  Then round A of the screen — the three cells that killed
 underivable, and the paper's own valid `G = (p ∧ H) ⊃ (q₁ ∨ q₂)` with
 `H = p ⊃ q₁ ∨ q₂` must not be refutable although an irregular sequent
 carrying it is derivable — before any soundness proof is scoped.
+
+## §2026-08-17 — FRJ◯: soundness landed; W4 (completeness) opened
+
+Branch `claude/frj-redevelopment-69005f`.  The faithful FRJ
+mechanisation (`FRJ/`, TOCL 21(3) 2020 read at source) now carries the
+full modal extension with SOUNDNESS PROVED: `soundness : Provable G →
+¬ PLL G` on `[propext, Quot.sound]` — the promise join (families of
+regular premises become declared `Rm`-successors), the fallible join
+(`⋈^⊥`, refutes `¬◯⊥` and `◯p ⊃ p` inside the calculus), and the
+pledge `Tag` with `tag_cone`.  Records: `docs/frj-promise-join.md`,
+`docs/frj-fidelity.md` (provenance map; the JLC 2021 S4 paper is
+UNOBTAINABLE — decision 2026-08-17, every modal device is OURS),
+`paper/frj-modal/` §9–§10.
+
+W4 = completeness with modal goals, design in `docs/frj-w4.md`.  Done
+today: the missing irregular rule `◯∉` (`FRJi.circNotIn` — repairs a
+genuine W3 completeness gap; witness cell `provable_circ_peirce` for
+`(◯p ⊃ q) ⊃ q`); the `⊩*`/`Λ*` modal clause with Lemma 6.5
+(`mem_clo_lamStar`) generalised to the full signature (`hcf` DROPPED);
+`circPart_lamStar_nil_of_maximal`; Screen 4 (`FRJ/Modal.lean`)
+settling the pledge-float corner by anchor choice.  Next: (T2) the
+forward-saturation engine + certified corpus, then the pledged `minMod`
+visit.  `lake build FRJ` green, 8570 jobs, pins pass.

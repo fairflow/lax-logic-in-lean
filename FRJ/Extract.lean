@@ -355,6 +355,7 @@ def RegIdx {G : Form} : {St Th : List Form} → {C : Form} → FRJi G St Th C �
   | _, _, _, .orI d₁ d₂ _ _ _ => Sum (RegIdx d₁) (RegIdx d₂)
   | _, _, _, .impInI d _ _ _ => RegIdx d
   | _, _, _, .impNotIn _ _ _ _ _ => Unit
+  | _, _, _, .circNotIn _ _ _ _ => Unit
 
 /-- `RegIdx` has decidable equality, constructively. -/
 instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
@@ -368,6 +369,7 @@ instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
       inferInstanceAs (DecidableEq (Sum _ _))
   | _, _, _, .impInI d _ _ _ => regIdxDecEq d
   | _, _, _, .impNotIn _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
+  | _, _, _, .circNotIn _ _ _ _ => inferInstanceAs (DecidableEq Unit)
 
 /-- An enumeration of `RegIdx`, constructively (no `Fintype.ofFinite`,
 hence no `Classical.choice`). -/
@@ -380,6 +382,7 @@ def regIdxElems {G : Form} : ∀ {St Th : List Form} {C : Form}
       (regIdxElems d₁).map Sum.inl ++ (regIdxElems d₂).map Sum.inr
   | _, _, _, .impInI d _ _ _ => regIdxElems d
   | _, _, _, .impNotIn _ _ _ _ _ => [()]
+  | _, _, _, .circNotIn _ _ _ _ => [()]
 
 theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (i : RegIdx d), i ∈ regIdxElems d
@@ -394,6 +397,7 @@ theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
           exact List.mem_append_right _ (List.mem_map.mpr ⟨i₂, regIdxComplete d₂ i₂, rfl⟩)
   | _, _, _, .impInI d _ _ _, i => regIdxComplete d i
   | _, _, _, .impNotIn _ _ _ _ _, _ => List.mem_cons_self
+  | _, _, _, .circNotIn _ _ _ _, _ => List.mem_cons_self
 
 /-! ### The index set of a join
 
@@ -507,6 +511,7 @@ def preI {G : Form} : {St Th : List Form} → {C : Form} →
       | .inr i₂ => preI d₂ i₂
   | _, _, _, .impInI d _ _ _, i => preI d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR d
+  | _, _, _, .circNotIn d _ _ _, _ => preR d
 
 end
 
@@ -562,6 +567,8 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
       exact ⟨Γ', C', .impInI hocc, hlbl⟩
   | _, _, _, .impNotIn d _ _ _ _, _ =>
       ⟨_, _, .impNotIn (.root d), preR_root_lbl d⟩
+  | _, _, _, .circNotIn d _ _ _, _ =>
+      ⟨_, _, .circNotIn (.root d), preR_root_lbl d⟩
 
 /-- Labels shrink modulo closure going down: Lemma 3.4(iii) in the
 model. -/
@@ -726,6 +733,7 @@ theorem preI_closed {G : Form} : ∀ {St Th : List Form} {C : Form}
       | .inr i₂ => exact preI_closed d₂ i₂
   | _, _, _, .impInI d _ _ _, i => preI_closed d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR_closed d
+  | _, _, _, .circNotIn d _ _ _, _ => preR_closed d
 
 end
 

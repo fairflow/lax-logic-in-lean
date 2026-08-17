@@ -60,7 +60,7 @@ none, so they generate no instance of `↦`. -/
 inductive RuleName where
   | andR1 | andR2 | impIn | circIn | joinAt | joinAtP | joinAtF | joinOr
   | joinOrP | joinOrF | promAt | promOr
-  | andI1 | andI2 | orI | impInI | impNotIn
+  | andI1 | andI2 | orI | impInI | impNotIn | circNotIn
   deriving DecidableEq
 
 /-! ## `↦_R`, `↦₀`, `↦`, `↦*` -/
@@ -95,6 +95,9 @@ inductive Step (G : Form) : RuleName → Sequent → Sequent → Prop
   | impNotIn {Γ Th : List Form} {A B : Form}
       (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
       Step G .impNotIn (.reg Γ B) (.irr [] Th (.imp A B))
+  | circNotIn {Γ Th : List Form} {Z : Form}
+      (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
+      Step G .circNotIn (.reg Γ Z) (.irr [] Th (.circ Z))
   | joinAt {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} (j : Fin (n + 1))
       (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
@@ -262,10 +265,13 @@ theorem joinCtxOrF_subset {n : Nat} {stab th : Fin (n + 1) → List Form}
 /-! ## Lemma 3.4 -/
 
 /-- **Lemma 3.4(i).**  "`σ₁ ↦_R σ₂` and `R ≠ ⊃∉` imply
-`Lhs(σ₂) ⊆ Lhs(σ₁)`." -/
+`Lhs(σ₂) ⊆ Lhs(σ₁)`."  `◯∉` joins `⊃∉` on the exception list: both
+change world, so their conclusion's zone is contained in the premise's
+only modulo `Cl`. -/
 theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
     (h : Step G R s₁ s₂)
-    (hR : R ≠ .impNotIn) (hRp : R ≠ .promAt) (hRq : R ≠ .promOr) :
+    (hR : R ≠ .impNotIn) (hRc : R ≠ .circNotIn)
+    (hRp : R ≠ .promAt) (hRq : R ≠ .promOr) :
     s₂.lhs ⊆ s₁.lhs := by
   cases h with
   | andR1 => exact List.Subset.refl _
@@ -296,6 +302,7 @@ theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
       · exact Or.inr ⟨hg, Or.inr hx⟩
       · exact Or.inr ⟨hg, Or.inl hx⟩
   | impNotIn => exact absurd rfl hR
+  | circNotIn => exact absurd rfl hRc
   | promAt i hJ7 => exact absurd rfl hRp
   | promOr i hJ7 => exact absurd rfl hRq
   | joinAt j hJ1 =>
@@ -330,6 +337,12 @@ theorem lhs_clo_of_step₀ {G : Form} {s₁ s₂ : Sequent} (h : Step₀ G s₁ 
     | impNotIn hTh =>
         refine (hTh X ?_).1
         simpa using hX
+  by_cases hnameC : R = .circNotIn
+  · subst hnameC
+    cases hR with
+    | circNotIn hTh =>
+        refine (hTh X ?_).1
+        simpa using hX
   by_cases hnameP : R = .promAt
   · subst hnameP
     cases hR with
@@ -338,7 +351,7 @@ theorem lhs_clo_of_step₀ {G : Form} {s₁ s₂ : Sequent} (h : Step₀ G s₁ 
   · subst hnameQ
     cases hR with
     | promOr i hJ7 => exact hJ7 X hX
-  exact .base (lhs_subset_of_step hR hname hnameP hnameQ hX)
+  exact .base (lhs_subset_of_step hR hname hnameC hnameP hnameQ hX)
 
 /-- **Lemma 3.4(iii).**  "`σ₁ ↦* σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
 By (ii) along the chain, glued with (Cl6). -/
@@ -518,6 +531,11 @@ inductive OccI {G : Form} :
       {hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G} {hA : Clo Γ A} {hAnot : ¬ Clo Th A}
       {hg : Form.imp A B ∈ sfR G} {s : Sequent} :
       OccR d s → OccI (FRJi.impNotIn d hTh hA hAnot hg) s
+  | circNotIn {t : Tag} {Γ Th : List Form} {Z : Form} {d : FRJr G t Γ Z}
+      {htag : t = .barren ∨ t = .chain Z}
+      {hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G}
+      {hg : Form.circ Z ∈ sfR G} {s : Sequent} :
+      OccR d s → OccI (FRJi.circNotIn d htag hTh hg) s
 
 end
 
@@ -556,6 +574,7 @@ theorem occI_steps {G : Form} {St Th : List Form} {C : Form}
   | .orI₂ (h₁ := h₁) (h₂ := h₂) h' => (occI_steps h').tail ⟨_, .orI₂ h₁ h₂⟩
   | .impInI (hdisj := hd) h' => (occI_steps h').tail ⟨_, .impInI hd⟩
   | .impNotIn (hTh := hTh) h' => (occR_steps h').tail ⟨_, .impNotIn hTh⟩
+  | .circNotIn (hTh := hTh) h' => (occR_steps h').tail ⟨_, .circNotIn hTh⟩
 
 end
 
@@ -621,6 +640,10 @@ theorem wfI {G : Form} : ∀ {St Th : List Form} {C : Form},
       simp only [List.mem_append, mem_nf] at hx
       rcases hx with ⟨hg, -⟩ | ⟨hg, -⟩ <;> exact hg
   | _, _, _, .impNotIn _ hTh _ _ _ => by
+      intro x hx
+      simp only [List.nil_append] at hx
+      exact (hTh x hx).2
+  | _, _, _, .circNotIn _ _ hTh _ => by
       intro x hx
       simp only [List.nil_append] at hx
       exact (hTh x hx).2

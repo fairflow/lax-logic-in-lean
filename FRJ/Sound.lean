@@ -1380,6 +1380,7 @@ theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
       | .inr i₂ => exact lemma39I0 d₂ i₂ w
   | _, _, _, .impInI d _ _ _, i, w => lemma39I0 d i w
   | _, _, _, .impNotIn d _ _ _ _, _, w => (lemma39R d).1 w
+  | _, _, _, .circNotIn d _ _ _, _, w => (lemma39R d).1 w
 
 theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (P : PreModel) (hP : ClosedLbl P) (w : P.W),
@@ -1477,6 +1478,23 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       rw [preR_root_lbl d] at hΓ
       have hvΓ : (P.toKripke hP).forces v Γ := fun X hX => (hiff X).mpr (hΓ X hX)
       exact hb ((hiff B).mp (hcon v hwv (clo_forces hvΓ hA)))
+  | _, _, _, @FRJi.circNotIn _ t Γ Th Z d htag hTh hg,
+      P, hP, w, hw, hlbl, hroot, hforce => by
+      -- `w ⊩ ◯Z` persists up to the embedded premise root `v`, transfers
+      -- into the component, and there the `◯∈` argument (root refutes `Z`
+      -- by Lemma 3.9(i), the rest of the modal cone by `tag_cone`)
+      -- refutes it.
+      intro hcon
+      obtain ⟨v, hwv, hiff⟩ := hroot ()
+      have hv : (P.toKripke hP).force v (.circ Z) :=
+        (P.toKripke hP).force_mono hwv hcon
+      have hr : (modR d).force (modR d).root (.circ Z) := (hiff _).mp hv
+      obtain ⟨ha, hb⟩ := lemma39R d
+      refine Kripke.not_force_circ (modR d) ?_ hr
+      intro u hu hf
+      by_cases hru : u = (modR d).root
+      · exact hb (hru ▸ hf)
+      · exact tag_cone d Z htag u hu hru hf
 
 end
 /-! ## Theorem 3.10 and Theorem 3.1 -/

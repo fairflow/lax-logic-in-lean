@@ -345,6 +345,21 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       (hA : Clo Γ A) (hAnot : ¬ Clo Th A)
       (hgoal : Form.imp A B ∈ sfR G) :
       FRJi G [] Th (.imp A B)
+  /-- `◯∉`: from the REGULAR premise `Γ ⇒ Z`, whose root's whole modal
+      cone refutes `Z` (the tag condition, as in `◯∈`), infer
+      `[] ; Θ → ◯Z`, side condition `Θ ⊆ Cl(Γ) ∩ Ĝ`.  The premise's
+      world realises the conclusion: it forces `Cl(Γ) ⊇ Θ` and refutes
+      `◯Z` with itself as the `∃`-witness.  This is `⊃∉` with the tag
+      condition in place of the antecedent conditions — W4's repair of
+      the W3 completeness gap (`docs/frj-w4.md` §1 (D2)): without it no
+      derivable context contains an implication with modal antecedent,
+      since `hJ2` demands the antecedent among the irregular premises'
+      right formulas and nothing produced `rhs = ◯Z`. -/
+  | circNotIn {t : Tag} {Γ Th : List Form} {Z : Form}
+      (d : FRJr G t Γ Z) (htag : t = .barren ∨ t = .chain Z)
+      (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G)
+      (hgoal : Form.circ Z ∈ sfR G) :
+      FRJi G [] Th (.circ Z)
 
 end
 

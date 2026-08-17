@@ -40,6 +40,7 @@ are variables and implications only. -/
 def forceStar (a : K.W) : Form → Prop
   | .atom p => K.V a p
   | .imp A B => K.force a (.imp A B) ∧ ¬ K.force a A
+  | .circ A => K.force a (.circ A) ∧ ¬ K.force a A
   | _ => False
 
 theorem forceStar_force {a : K.W} : ∀ {H : Form}, K.forceStar a H → K.force a H := by
@@ -50,21 +51,21 @@ theorem forceStar_force {a : K.W} : ∀ {H : Form}, K.forceStar a H → K.force 
   | and A B => exact h.elim
   | or A B => exact h.elim
   | imp A B => exact h.1
-  | circ A => exact h.elim
+  | circ A => exact h.1
 
-/-- A formula satisfying `⊩*` is a variable or an implication.  With `◯`
-in the syntax this is still the paper's statement: `Λ*` does not yet carry
-the `◯`-formulas, for the reason recorded on `gHat`. -/
+/-- A formula satisfying `⊩*` is a variable, an implication, or (W4) a
+`◯`-formula — the three determining shapes, i.e. the three zones of
+`Ĝ`. -/
 theorem forceStar_shape {a : K.W} : ∀ {H : Form},
-    K.forceStar a H → H.isPV ∨ H.isImp := by
+    K.forceStar a H → H.isPV ∨ H.isImp ∨ H.isCirc := by
   intro H h
   cases H with
   | atom p => exact Or.inl rfl
   | bot => exact h.elim
   | and A B => exact h.elim
   | or A B => exact h.elim
-  | imp A B => exact Or.inr rfl
-  | circ A => exact h.elim
+  | imp A B => exact Or.inr (Or.inl rfl)
+  | circ A => exact Or.inr (Or.inr rfl)
 
 /-- `⊩*` is decidable, because `⊩` is. -/
 instance decForceStar (K : Kripke) (a : K.W) :
@@ -75,7 +76,8 @@ instance decForceStar (K : Kripke) (a : K.W) :
   | .or _ _ => inferInstanceAs (Decidable False)
   | .imp A B =>
       inferInstanceAs (Decidable (K.force a (.imp A B) ∧ ¬ K.force a A))
-  | .circ A => inferInstanceAs (Decidable False)
+  | .circ A =>
+      inferInstanceAs (Decidable (K.force a (.circ A) ∧ ¬ K.force a A))
 
 end Kripke
 
@@ -92,36 +94,63 @@ theorem lamStar_subset_gHat {K : Kripke} {a : K.W} {G : Form} :
     lamStar K a G ⊆ gHat G := by
   intro H hH
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hH
-  rcases K.forceStar_shape hst with h | h
+  rcases K.forceStar_shape hst with h | h | h
   · exact List.mem_append_left _
       (List.mem_append_left _ (List.mem_filter.mpr ⟨hsf, h⟩))
   · exact List.mem_append_left _
       (List.mem_append_right _ (List.mem_filter.mpr ⟨hsf, h⟩))
+  · exact List.mem_append_right _ (List.mem_filter.mpr ⟨hsf, h⟩)
 
 /-- `Λ*` carries no modal formula (its members are variables and
 implications), so the stable zones of the completeness construction have
 empty modal parts — which is what the barren joins' side condition
 needs. -/
 theorem circPart_lamStar_nil {K : Kripke} {a : K.W} {G : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     {l : List Form} (hsub : l ⊆ lamStar K a G) : circPart l = [] := by
   refine eq_nil_of_forall_not_mem (fun X hX => ?_)
-  have hshape := K.forceStar_shape (mem_lamStar.mp (hsub (circPart_subset hX))).2
+  have hsf := (mem_lamStar.mp (hsub (circPart_subset hX))).1
   have hc := (List.mem_filter.mp hX).2
-  rcases hshape with h | h <;> (cases X <;> simp_all [Form.isPV, Form.isImp, Form.isCirc])
+  rw [hcf X (List.mem_append_right _ hsf)] at hc
+  exact Bool.noConfusion hc
 
 theorem unionAll_circPart_nil {K : Kripke} {a : K.W} {G : Form} {n : Nat}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     {stab : Fin (n + 1) → List Form} (hsub : ∀ j, stab j ⊆ lamStar K a G) :
     unionAll (fun j => circPart (stab j)) = [] := by
   refine eq_nil_of_forall_not_mem (fun X hX => ?_)
   obtain ⟨j, hj⟩ := mem_unionAll.mp hX
-  rw [circPart_lamStar_nil (hsub j)] at hj
+  rw [circPart_lamStar_nil hcf (hsub j)] at hj
   exact List.not_mem_nil hj
 
-/-- A member of `Λ*` cannot be a `◯`-formula: the shape lemma, pointwise. -/
+/-- For a `◯`-free goal, a member of `Λ*` cannot be a `◯`-formula.
+(W4: no longer unconditional — `Λ*` now carries the modal zone.) -/
 theorem lamStar_not_circ {K : Kripke} {a : K.W} {G : Form} {X : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     (hX : X ∈ lamStar K a G) (hc : X.isCirc = true) : False := by
-  rcases K.forceStar_shape (mem_lamStar.mp hX).2 with h | h <;>
-    (cases X <;> simp_all [Form.isPV, Form.isImp, Form.isCirc])
+  rw [hcf X (List.mem_append_right _ (mem_lamStar.mp hX).1)] at hc
+  exact Bool.noConfusion hc
+
+/-- **At a `≤`-maximal world the modal part of `Λ*` is empty** — with no
+world strictly above, `Rm`-successors collapse to the world itself
+(`sub_mi` + maximality), so a forced `◯Y` forces `Y` and the `⊩*`-clause
+excludes it.  This is what terminates W4's pledge recursion: at maximal
+anchors the barren joins suffice and the tag is `barren` for free
+(`docs/frj-w4.md` §3). -/
+theorem circPart_lamStar_nil_of_maximal {K : Kripke} {a : K.W} {G : Form}
+    (hmax : ∀ b, K.le a b → b = a) :
+    circPart (lamStar K a G) = [] := by
+  refine eq_nil_of_forall_not_mem (fun X hX => ?_)
+  have hmem := circPart_subset hX
+  have hc := (List.mem_filter.mp hX).2
+  match X, hc with
+  | .circ Y, _ =>
+      obtain ⟨-, hfY, hnY⟩ : (Form.circ Y ∈ sfL G) ∧ K.force a (.circ Y) ∧
+          ¬ K.force a Y := by
+        obtain ⟨h1, h2⟩ := mem_lamStar.mp hmem
+        exact ⟨h1, h2.1, h2.2⟩
+      obtain ⟨u, hru, huY⟩ := hfY a (K.le_refl a)
+      exact hnY ((hmax u (K.sub_mi hru)) ▸ huY)
 
 /-- Everything in `Λ*_α` is forced at `α`. -/
 theorem forces_lamStar {K : Kripke} {a : K.W} {G : Form} :
@@ -146,14 +175,14 @@ a step ("`α ⊩ A ∧ B`, hence `A ∧ B ∈ Λ_α`") that silently needs
 `A ∧ B ∈ Sf^L(G)`.  What the rest of the paper actually uses are the two
 directions proved here and in `forces_clo_lamStar`, and both are true.
 
-**W1 hypothesis.**  With `◯` in the syntax the statement acquires the
-side condition that `Sf^L(G)` is `◯`-free.  It is not a weakening of the
-`◯`-free theory — for a `◯`-free goal it holds automatically — but it is
-where the modality first bites: a world can force `◯X` without forcing
-`X`, so `◯X` would have to be determining data, and `Λ*` does not yet
-carry it.  See the note on `gHat`. -/
+**W4.**  The W1 side condition (`Sf^L(G)` `◯`-free) is GONE: `Λ*` now
+carries the modal zone through the `⊩*`-clause for `◯`, and the `◯`-case
+below is the exact analogue of the `⊃`-case — body forced: recurse and
+close under `Clo.circ`; body unforced: `◯X` is determining data and sits
+in `Λ*` literally.  Lemma 6.5 holds for every goal of the modal
+signature; only infallibility remains, for `⊥`. -/
 theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
-    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) (hinf : K.Infallible) :
+    (hinf : K.Infallible) :
     ∀ {A : Form}, A ∈ sfL G → K.force a A → Clo (lamStar K a G) A := by
   intro A
   induction A with
@@ -183,23 +212,21 @@ theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
       by_cases hfa : K.force a A
       · exact .imp (ihB hB (hf a (K.le_refl a) hfa))
       · exact .base (mem_lamStar.mpr ⟨hsf, ⟨hf, hfa⟩⟩)
-  | circ A _ =>
-      -- excluded by the side condition: `Λ*` does not yet carry the
-      -- `◯`-formulas, so a goal whose left subformulas include one is out
-      -- of scope until the modal rules arrive.
-      intro hsf _
-      exact absurd (hcf _ (List.mem_append_right _ hsf)) (by simp [Form.isCirc])
+  | circ A ihA =>
+      intro hsf hf
+      by_cases hfa : K.force a A
+      · exact .circ (ihA (sfL_circ hsf) hfa)
+      · exact .base (mem_lamStar.mpr ⟨hsf, ⟨hf, hfa⟩⟩)
 
 /-- `Λ*` grows along `≤`, modulo closure: if `α ≤ β` then everything in
 `Λ*_α` lies in `Cl(Λ*_β)`.  (Used where the construction moves to a
 world above.) -/
 theorem lamStar_mono {K : Kripke} {a b : K.W} {G : Form}
-    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) (hinf : K.Infallible)
-    (hab : K.le a b) :
+    (hinf : K.Infallible) (hab : K.le a b) :
     ∀ X ∈ lamStar K a G, Clo (lamStar K b G) X := by
   intro X hX
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hX
-  exact mem_clo_lamStar hcf hinf hsf (K.force_mono hab (K.forceStar_force hst))
+  exact mem_clo_lamStar hinf hsf (K.force_mono hab (K.forceStar_force hst))
 
 /-! ## Deleting the fallible worlds
 

@@ -440,6 +440,13 @@ sources.
 calculus for model generation in S4*, JLC 31(3):771–796 (2021), DOI
 10.1093/logcom/exab014 — paywalled; no OA copy (OpenAlex), none on the
 authors' pages, both institutional repositories refuse anonymous access.
-**ACTION (Matthew)**: obtain via library access before the completeness
-(W4) design is fixed; the promise-family shape should be checked against
-their successor-declaration device.
+**RESOLVED (2026-08-17)**: Matthew has no library access to JLC and
+declines to purchase; the S4 paper stays unread.  Consequence for W4:
+the design is grounded ONLY in (i) the TOCL paper's §6 construction
+(model → derivation, the top-down visit), read at source, and (ii) the
+repo's machine-checked PLL completeness (`LaxLogic/PLLCompleteness.lean`
+canonical model).  The promise-family shape is therefore OURS
+permanently, never to be attributed to the S4 paper; nothing in `FRJ/`
+may cite that paper except for its existence.  Zero-cost alternative on
+the table: a reprint request to Fiorentini/Ferrari (Matthew sends if he
+wishes; draft prepared 2026-08-17).

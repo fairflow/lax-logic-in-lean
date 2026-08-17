@@ -119,6 +119,7 @@ def MinModStmt (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
 implication.  The join's premises are the irregular derivations for the
 members of `Υ`, supplied by the induction hypothesis `ih`. -/
 def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
     (hne : upsPrime K a G ≠ [])
     (ih : ∀ (A : Form), A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
@@ -136,7 +137,7 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
     wle := K.le_refl a
     der := by
       refine .joinAt (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-        (fun A B hmem => ?_) (unionAll_circPart_nil (fun j => (wit j).sub))
+        (fun A B hmem => ?_) (unionAll_circPart_nil hcf (fun j => (wit j).sub))
         hCp (fun hmem => ?_) hC
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
@@ -154,7 +155,7 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
         · exact Or.inl (Or.inr (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
-        · exact absurd ((List.mem_filter.mp h).2) (fun hc => lamStar_not_circ hX hc)
+        · exact absurd ((List.mem_filter.mp h).2) (fun hc => lamStar_not_circ hcf hX hc)
       · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
         have hallTh : ∀ j, X ∈ th j :=
           fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
@@ -172,10 +173,11 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
                 List.mem_filter.mpr ⟨hallTh j, rfl⟩), ?_⟩
               exact (E.spec A).mpr (mem_upsPrime hX)
         · exact absurd ((List.mem_filter.mp h).2)
-            (fun hc => lamStar_not_circ hX hc) }
+            (fun hc => lamStar_not_circ hcf hX hc) }
 
 /-- `C` prime with `Λ*_a` purely atomic: the `Ax^R` sub-case. -/
 def regPrime_ax (K : Kripke) (G : Form) (a : K.W) (C : Form)
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
     (hempty : impPart (lamStar K a G) = []) : RegWit K G a C :=
   { ctx := rm (gAt G) C
@@ -194,10 +196,11 @@ def regPrime_ax (K : Kripke) (G : Form) (a : K.W) (C : Form)
         rw [hempty] at hmem
         exact List.not_mem_nil hmem
       · exact absurd ((List.mem_filter.mp h).2)
-            (fun hc => lamStar_not_circ hX hc) }
+            (fun hc => lamStar_not_circ hcf hX hc) }
 
 /-- The `⋈^∨` case. -/
 def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
     (hC : Form.or C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.or C₁ C₂))
     (ih : ∀ (A : Form), A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
     RegWit K G a (.or C₁ C₂) :=
@@ -226,7 +229,7 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
     wle := K.le_refl a
     der := by
       refine .joinOr (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-        (fun A B hmem => ?_) (unionAll_circPart_nil (fun j => (wit j).sub))
+        (fun A B hmem => ?_) (unionAll_circPart_nil hcf (fun j => (wit j).sub))
         ⟨?_, ?_⟩ hC
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
@@ -246,7 +249,7 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
         · exact Or.inl (Or.inr (mem_unionAll.mpr
             ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
         · exact absurd ((List.mem_filter.mp h).2)
-            (fun hc => lamStar_not_circ hX hc)
+            (fun hc => lamStar_not_circ hcf hX hc)
       · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
         have hallTh : ∀ j, X ∈ th j :=
           fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
@@ -263,7 +266,7 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
               exact (E.spec A).mpr (List.mem_cons_of_mem _
                 (List.mem_cons_of_mem _ (mem_upsPrime hX)))
         · exact absurd ((List.mem_filter.mp h).2)
-            (fun hc => lamStar_not_circ hX hc) }
+            (fun hc => lamStar_not_circ hcf hX hc) }
 
 /-- The `Ax^I` zone contains `Λ*_a` whenever `C` is unforced there. -/
 theorem lamStar_subset_axI {K : Kripke} {a : K.W} {G C : Form}
@@ -365,7 +368,7 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
             · exact List.mem_append_right _ hL
             · exact List.mem_append_left _ (mem_sdiff.mpr ⟨hx, hL⟩)
         have hAclo : Clo (nf G (w.stab ++ sdiff (lamStar K a G) w.stab)) A := by
-          refine clo_mono ?_ (mem_clo_lamStar hcf hinf hA heA)
+          refine clo_mono ?_ (mem_clo_lamStar hinf hA heA)
           intro x hx
           exact mem_nf.mpr ⟨lamStar_subset_gHat hx, hStLam hx⟩
         refine { stab := nf G (w.stab ++ sdiff (lamStar K a G) w.stab)
@@ -385,17 +388,17 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
         have hab : K.le a w.wld := K.le_trans m.le w.wle
         exact { stab := [], th := nf G (lamStar K a G)
                 der := .impNotIn w.der
-                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono hcf hinf hab X (mem_nf.mp hX).2),
+                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono hinf hab X (mem_nf.mp hX).2),
                     (mem_nf.mp hX).1⟩)
-                  (clo_mono w.cov (mem_clo_lamStar hcf hinf hA (K.force_mono w.wle m.fA)))
+                  (clo_mono w.cov (mem_clo_lamStar hinf hA (K.force_mono w.wle m.fA)))
                   (fun hc => hnaA (forces_clo_lamStar (clo_mono nf_subset_self hc))) hC
                 sub := fun _ h => absurd h List.not_mem_nil
                 cov := fun x hx => mem_nf.mpr ⟨lamStar_subset_gHat hx, hx⟩
                 thNf := nf_idem.symm }
   | (n+1), .atom p =>
       by_cases hempty : impPart (lamStar K a G) = []
-      · exact regPrime_ax K G a (.atom p) rfl hC hnf hempty
-      · refine regPrime_join K G a (.atom p) rfl hC hnf ?_
+      · exact regPrime_ax K G a (.atom p) hcf rfl hC hnf hempty
+      · refine regPrime_join K G a (.atom p) hcf rfl hC hnf ?_
           (fun A hA hnA => minMod K G hcf hinf a 0 A hA hnA)
         intro hc
         refine hempty (eq_nil_of_forall_not_mem (fun X hX => ?_))
@@ -405,8 +408,8 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
             exact absurd (mem_upsPrime hXl) (by rw [hc]; exact List.not_mem_nil)
   | (n+1), .bot =>
       by_cases hempty : impPart (lamStar K a G) = []
-      · exact regPrime_ax K G a .bot rfl hC hnf hempty
-      · refine regPrime_join K G a .bot rfl hC hnf ?_
+      · exact regPrime_ax K G a .bot hcf rfl hC hnf hempty
+      · refine regPrime_join K G a .bot hcf rfl hC hnf ?_
           (fun A hA hnA => minMod K G hcf hinf a 0 A hA hnA)
         intro hc
         refine hempty (eq_nil_of_forall_not_mem (fun X hX => ?_))
@@ -425,7 +428,7 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
         exact { ctx := w.ctx, der := .andR1 w.der hC
                 wld := w.wld, wle := w.wle, cov := w.cov }
   | (n+1), .or C₁ C₂ =>
-      exact regOr_join K G a C₁ C₂ hC hnf (fun A hA hnA => minMod K G hcf hinf a 0 A hA hnA)
+      exact regOr_join K G a C₁ C₂ hcf hC hnf (fun A hA hnA => minMod K G hcf hinf a 0 A hA hnA)
   | (n+1), .imp A B =>
       obtain ⟨hA, hB⟩ := sfR_imp hC
       let m := minEta hnf
@@ -435,12 +438,12 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
         let w := minMod K G hcf hinf a (n+1) B hB heB
         exact { ctx := w.ctx
                 der := .impIn w.der (clo_mono w.cov
-                  (mem_clo_lamStar hcf hinf hA (K.force_mono w.wle heA))) hC
+                  (mem_clo_lamStar hinf hA (K.force_mono w.wle heA))) hC
                 wld := w.wld, wle := w.wle, cov := w.cov }
       · let w := minMod K G hcf hinf m.e 1 B hB m.nfB
         exact { ctx := w.ctx
                 der := .impIn w.der (clo_mono w.cov
-                  (mem_clo_lamStar hcf hinf hA (K.force_mono w.wle m.fA))) hC
+                  (mem_clo_lamStar hinf hA (K.force_mono w.wle m.fA))) hC
                 wld := w.wld, wle := K.le_trans m.le w.wle, cov := w.cov }
 termination_by (ht K a, t, C.size)
 decreasing_by
