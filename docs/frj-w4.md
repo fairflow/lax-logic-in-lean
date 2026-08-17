@@ -527,3 +527,39 @@ schema, seeds included) with the engine's fixpoint as witness;
 row of any `Sat`-set, with the invariant weakened per the design datum
 above (join-time subsumption); (3) (A) as the corollary at the root
 row.  The corpus stands at 24 pass / 5 control-ok / 0 unresolved flags.
+
+### §10 addendum: why no structural recursion exists (2026-08-17, sharpened)
+
+Three facts close the design question:
+
+1. **Θ-freedom.** A join consumes its irregular premises' Θ-zones by
+   intersection, so a premise with Θ = [] is always admissible and only
+   shrinks the conclusion's θ-part; Λ*-material reaches the conclusion
+   through the rhs-cell's Σ and the stable zones instead.  The §8
+   invariant `Λ*_a ⊆ Σ ++ Θ` on every cell was therefore self-imposed:
+   the calculus requires it only of the row consumed by the FINAL cov.
+   Consequence: `circNotIn` may take ANY Z-refuting regular row as its
+   premise, not one anchored at the demanding world.
+
+2. **The measure dichotomy.** Even with Θ-freedom, the hJ2-cells for
+   stable-implication antecedents A (with `a ⊮ A`, |A| unbounded
+   relative to the goal) force irregular-before-regular phase priority
+   at fixed height — the paper's (IH2) — while the ◯-body edge
+   `I(◯Z) → R(Z)` at a cone-trivial sole-candidate world forces
+   regular-inside-irregular at fixed height with only a size drop.  No
+   lexicographic combination of (height, phase, size) satisfies both;
+   the supply order that resolves a given instance depends on the model
+   (which cells happen to be derivable weakly, which worlds have proper
+   Rm-successors), so the induction order must be computed per instance
+   — this is precisely what saturation is.
+
+3. **Locality of the bad edge.** If the demanding world has any proper
+   Rm-successor u, then `sub_mi` gives a ≤ u, u ≠ a, so ht drops and
+   the regular premise anchors at u with Λ*-transport by `lamStar_mono`
+   — the paper's own pattern.  The obstruction is confined to worlds
+   with `cone(a) = {a}` that are sole minZeta candidates.
+
+The §10 route (saturation closure, round-order induction) is therefore
+not one option among several: it is the only organisation compatible
+with fact 2.  The invariant to carry per round: every demand met by a
+row THE JOIN CAN CONSUME (hJ1/hJ2/hJ5-admissible), not Λ*-coverage.
