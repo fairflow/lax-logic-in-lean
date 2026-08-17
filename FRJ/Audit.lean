@@ -14,6 +14,7 @@ that step left to the caller, and it is choice-free.
 -/
 import FRJ.Minimal
 import FRJ.Saturate
+import FRJ.Erase
 
 namespace FRJ
 
@@ -137,5 +138,19 @@ namespace FRJ
 /-- info: 'FRJ.Kripke.circ_and' does not depend on any axioms -/
 #guard_msgs in
 #print axioms Kripke.circ_and
+
+/-! ### Erasure transfer (FRJ/Erase.lean, 2026-08-17) -/
+
+/-- info: 'FRJ.force_erase' does not depend on any axioms -/
+#guard_msgs in
+#print axioms force_erase
+
+/-- info: 'FRJ.erase_hcf' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms erase_hcf
+
+/-- info: 'FRJ.completeness_of_transparent_of_lift' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_transparent_of_lift
 
 end FRJ

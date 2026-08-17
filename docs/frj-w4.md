@@ -878,3 +878,45 @@ carrying the retained antecedents and the origin-transported members),
 rather than threading anchor-local coverage — the visit's certified
 grade becomes a fold over the descent path with a θ-obligation
 accumulator.
+
+## §14  The erasure-transfer route (2026-08-17, Matthew's redirect)
+
+Matthew's observation (2026-08-17): when a countermodel does not depend
+on `Rm` the ◯-machinery "should be redundant".  Made precise: on
+◯-TRANSPARENT models (`Rm = id`, legal since `id` is a preorder inside
+`≤`) forcing satisfies `force a (erase A) ↔ force a A` for the
+collapse translation `erase` (`◯ := id`), so a transparent countermodel
+of `G` is exactly an ordinary countermodel of the circ-free `erase G`,
+which the PROVED ◯-free completeness already refutes in the calculus.
+The missing content is the purely syntactic ERASURE TRANSFER
+
+    (E)    Provable (erase G) → Provable G .
+
+Landed (FRJ/Erase.lean, guards pinned): `erase`, `noCirc`, `erase_hcf`
+(the erasure meets Minimal.lean's circ-freeness hypothesis);
+`force_erase` (the semantic half — axiom-FREE);
+`completeness_of_transparent_of_lift` (completeness over transparent
+infallible models conditional on (E); `[propext, Quot.sound]`).
+
+With (E) proved, the completeness map becomes: ◯-free goals (all
+models) ∪ arbitrary goals over transparent models — strictly containing
+the discrete corner, which is the `le = id` degenerate case — with the
+supply-conditional theorem covering the genuinely modal remainder.
+
+Per the testing mandate (E) went under extensional attack BEFORE any
+proof build: `wip/frj_sat.lean` erasure-transfer block, eight
+◯-decorated intuitionistic refuters (several with classically VALID
+erasures, hence beyond the classical shadow; compound and nested
+◯-bodies included for the zone-shift stress).  Verdict semantics
+include `FAIL-CANDIDATE` = erasure derived while the G-saturation
+COMPLETED below every cap without a hit (engine-certain counterexample
+modulo faithfulness).
+
+Design note for the (E) build (ahead of results): the lift is NOT
+rule-homomorphic — at positions where `◯` wraps the goal formula the
+erased derivation has no counterpart step, and the translation must
+INSERT the irregular/regular ◯-pair (`circNotIn` then `circIn`) above
+the lifted refutation of the body; contexts lift by preimage-fattening
+`liftCtx Δ := (gHat G).filter (erase · ∈ Δ)`, which stays inside the
+zones (preimages of zone members are zone members) and commutes with
+the joins' ∪/∩/restrict algebra (preimage preserves both).

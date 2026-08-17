@@ -25,6 +25,7 @@ certificate.  A `control` line reports a PLL-derivable formula staying
 underived, as expected.
 -/
 import FRJ.Calculus
+import FRJ.Erase
 
 namespace FRJSat
 
@@ -684,6 +685,68 @@ def corpus : List Cell := [
     "PLL-derivable (the sequent G4iLL misses; g4ill campaign, pinned)"⟩
 ]
 
+
+/-! ## Erasure-transfer attack (2026-08-17)
+
+Statement under attack, BEFORE any proof build (standing mandate):
+
+    (E)    Provable (erase G) → Provable G
+
+Cells: ◯-decorations of intuitionistic refuters whose erasures are
+IPC-underivable — several classically VALID, hence beyond the discrete/
+classical-shadow corner.  Each cell also records its hand-checked
+TRANSPARENT countermodel (`Rm = id`), so (E) failing at a derivable
+erasure would exhibit FRJ◯ incompleteness on a transparent model.
+
+Verdicts: `transfer:pass` (both derived); `transfer:vacuous*` (erasure
+not derived — budget, or engine-certain mis-scoped cell);
+`transfer:flag` (erasure derived, G not reached, caps hit);
+`transfer:FAIL-CANDIDATE` (erasure derived, G-saturation COMPLETE below
+every cap with no derivation — an engine-certain counterexample to (E)
+modulo engine faithfulness: minimise and escalate to kernel). -/
+
+structure EPair where
+  name : String
+  form : Form
+  note : String
+
+def ePairs : List EPair := [
+  ⟨"dn_circ", .imp (.imp (.imp (.circ fp) .bot) .bot) (.circ fp),
+    "¬¬◯p⊃◯p; erase = ¬¬p⊃p; 2-chain r<b{p} transparent refuter"⟩,
+  ⟨"peirce_circ", .imp (.imp (.imp (.circ fp) (.circ fq)) (.circ fp)) (.circ fp),
+    "◯-Peirce; erase classically VALID; 2-chain r<b{p} refutes"⟩,
+  ⟨"wem_circ", .or (.imp (.circ fp) .bot) (.imp (.imp (.circ fp) .bot) .bot),
+    "¬◯p∨¬¬◯p; erase = weak EM, classically VALID; branch r<b1{p},b2{}"⟩,
+  ⟨"dummett_circ", .or (.imp (.circ fp) (.circ fq)) (.imp (.circ fq) (.circ fp)),
+    "◯-Dummett; erase classically VALID; branch r<b1{p},b2{q}"⟩,
+  ⟨"dn_mixed", .imp (.imp (.imp fp .bot) .bot) (.circ fp),
+    "¬¬p⊃◯p; decoration in consequent only; 2-chain r<b{p}"⟩,
+  ⟨"orshift_circ", .or (.circ fp) (.imp (.circ fp) fq),
+    "◯p∨(◯p⊃q); erase classically VALID; 2-chain r<b{p}, q nowhere"⟩,
+  ⟨"dn_circ_and", .imp (.imp (.imp (.circ (.and fp fq)) .bot) .bot) (.circ (.and fp fq)),
+    "compound ◯-body A=p∧q: the zone-shift stress; 2-chain r<b{p,q}"⟩,
+  ⟨"dn_circ_nested", .imp (.imp (.imp (.circ (.circ fp)) .bot) .bot) (.circ (.circ fp)),
+    "nested ◯◯-decoration; erase = ¬¬p⊃p; 2-chain r<b{p}"⟩
+]
+
+def runEPair (cfg : Config) (c : EPair) : IO Unit := do
+  let e := FRJ.erase c.form
+  let (dbE, stE) := saturate e cfg
+  let hitE := derivable e dbE
+  let (dbG, stG) := saturate c.form cfg
+  let hitG := derivable c.form dbG
+  let fixE := !stE.lamCapped && !stE.dbCapped && stE.roundsUsed < cfg.rounds
+  let fixG := !stG.lamCapped && !stG.dbCapped && stG.roundsUsed < cfg.rounds
+  let v :=
+    if !hitE then
+      if fixE then "transfer:vacuous-CERTAIN (erasure underivable — cell mis-scoped?)"
+      else "transfer:vacuous (erasure not reached at budget — raise)"
+    else if hitG then "transfer:pass"
+    else if fixG then "transfer:FAIL-CANDIDATE (G-saturation complete, no derivation!)"
+    else "transfer:flag (G not reached at budget — raise)"
+  IO.println s!"{c.name}: {v} | erase[hit={hitE} r={stE.roundsUsed} RS={stE.rsSize} IS={stE.isSize}{if stE.lamCapped then " Λcap" else ""}{if stE.dbCapped then " DBcap" else ""}] G[hit={hitG} r={stG.roundsUsed} RS={stG.rsSize} IS={stG.isSize}{if stG.lamCapped then " Λcap" else ""}{if stG.dbCapped then " DBcap" else ""}] | {c.note}"
+  (← IO.getStdout).flush
+
 def verdict (c : Cell) (hit : Bool) : String :=
   match c.expectDerivable, hit with
   | false, true => "pass"
@@ -710,6 +773,9 @@ def main : IO Unit := do
   for c in corpus do
     if c.name == "corner_poisoned_ups" || c.name == "corner_residue" || c.name == "corner_residue_poisoned" || c.name == "corner_selfloop" || c.name == "corner_taut_body" then
       runCell cfgHigh c
+  IO.println s!"-- erasure-transfer attack (E): Provable (erase G) → Provable G --"
+  for c in ePairs do
+    runEPair cfg c
   IO.println "done."
 
 end FRJSat
