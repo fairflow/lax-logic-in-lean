@@ -481,4 +481,166 @@ def metR_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
       · exact absurd ((List.mem_filter.mp h).2)
           (fun hc => lamStar_not_circ_loc hloc hX hc)
 
+/-! ## The gluing (slice 3)
+
+The visit that assembles the builders.  Measure `(ht, t, size)` — the
+paper's own, irregular-before-regular.  Every builder edge is legal:
+the Υ-edges drop phase, the floats drop height (`metI_imp` records
+`e ≠ a`; `minZetaNS` prefers a non-self candidate), the in-layer edges
+drop size.  The single un-orderable edge — the irregular ◯-demand at a
+world that is its own sole minZeta candidate — is discharged by an
+explicit supply (`CircSupply`), which is thereby THE open kernel of
+FRJ◯ completeness. -/
+
+/-- Anchor weakening: a wit for a demand at `b` serves any `a ≤ b`. -/
+def MRWit.weaken {K : Kripke} {G : Form} {a b : K.W} {C : Form}
+    (hab : K.le a b) (w : MRWit K G b C) : MRWit K G a C :=
+  ⟨w.t, w.ctx, w.der, w.tOK, w.wld, K.le_trans hab w.wle, w.wfal, w.cov⟩
+
+/-- minZeta with the opposite preference: a NON-self candidate whenever
+one exists, and a soleness certificate when the pick is `a` itself. -/
+structure MinZetaNS (K : Kripke) (a : K.W) (Z : Form) : Type where
+  e : K.W
+  le : K.le a e
+  cone : ∀ v, K.Rm e v → ¬ K.force v Z
+  sole : e = a → ∀ u, K.le a u → (∀ v, K.Rm u v → ¬ K.force v Z) → u = a
+
+def minZetaNS {K : Kripke} {a : K.W} {Z : Form}
+    (h : ¬ K.force a (.circ Z)) : MinZetaNS K a Z :=
+  match hc : (zetaCand K a Z).filter (fun u => decide (¬(u = a))) with
+  | u :: _ =>
+      have hu : u ∈ (zetaCand K a Z).filter (fun u => decide (¬(u = a))) := by
+        rw [hc]; exact List.mem_cons_self
+      have hz := mem_zetaCand.mp (List.mem_filter.mp hu).1
+      { e := u, le := hz.1, cone := hz.2
+        sole := fun hea => by
+          exfalso
+          have : ¬ (u = a) := by
+            have := (List.mem_filter.mp hu).2
+            simpa using this
+          exact this hea }
+  | [] =>
+      let mz := minZeta h
+      { e := mz.e, le := mz.le, cone := mz.cone
+        sole := fun _ u hu hcone => by
+          by_contra hne
+          have hmem : u ∈ (zetaCand K a Z).filter (fun u => decide (¬(u = a))) :=
+            List.mem_filter.mpr ⟨mem_zetaCand.mpr ⟨hu, hcone⟩, by simpa using hne⟩
+          rw [hc] at hmem
+          exact List.not_mem_nil hmem }
+
+/-- A supplied cell for the sole-candidate corner: a tagged `Z`-row
+whose context `Clo`-grounds `Λ*_a` — exactly what `metI_circ_syn`
+consumes. -/
+structure CircCell (K : Kripke) (G : Form) (a : K.W) (Z : Form) : Type where
+  t : Tag
+  ctx : List Form
+  der : FRJr G t ctx Z
+  tOK : t = .barren ∨ ∃ W, t = .chain W ∧ Covers ctx W Z
+  ground : ∀ X ∈ lamStar K a G, Clo ctx X
+
+/-- **The open kernel of FRJ◯ completeness**: supply for the irregular
+◯-demand at a world that is its own sole minZeta candidate. -/
+def CircSupply (K : Kripke) (G : Form) : Type :=
+  ∀ a : K.W, ∀ Z : Form, Form.circ Z ∈ sfR G → ¬ K.force a (.circ Z) →
+    (∀ u, K.le a u → (∀ v, K.Rm u v → ¬ K.force v Z) → u = a) →
+    CircCell K G a Z
+
+/-- The statement family: `t = 0` the irregular wit, else the regular. -/
+def SatStmt (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
+  match t with
+  | 0 => IrrWit K G a C
+  | _ + 1 => MRWit K G a C
+
+/-- **The visit.**  Well-founded on `(ht, t, size)`; total given the two
+named conditions (`hloc`: `Λ*` circ-free at every world, so the barren
+joins suffice; `hsup`: the sole-candidate supply). -/
+def visit (K : Kripke) (G : Form)
+    (hloc : ∀ b : K.W, circPart (lamStar K b G) = [])
+    (hsup : CircSupply K G)
+    (a : K.W) (t : Nat) (C : Form)
+    (hC : C ∈ sfR G) (hnf : ¬ K.force a C) : SatStmt K G a t C := by
+  match t, C with
+  | 0, .atom p => exact metI_atom hC hnf
+  | 0, .bot => exact metI_bot hC hnf
+  | 0, .and C₁ C₂ =>
+      exact metI_and hC hnf
+        (fun h1 => visit K G hloc hsup a 0 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visit K G hloc hsup a 0 C₂ (sfR_and hC).2 h2)
+  | 0, .or C₁ C₂ =>
+      exact metI_or hC hnf
+        (fun h1 => visit K G hloc hsup a 0 C₁ (sfR_or hC).1 h1)
+        (fun h2 => visit K G hloc hsup a 0 C₂ (sfR_or hC).2 h2)
+  | 0, .imp A B =>
+      exact metI_imp hC hnf
+        (fun _ hB => visit K G hloc hsup a 0 B (sfR_imp hC).2 hB)
+        (fun e _ hne _ hB => visit K G hloc hsup e 1 B (sfR_imp hC).2 hB)
+  | 0, .circ Z =>
+      let mz := minZetaNS hnf
+      by_cases hea : mz.e = a
+      · exact
+          let c := hsup a Z hC hnf (mz.sole hea)
+          metI_circ_syn hC c.der c.tOK c.ground
+      · exact metI_circ hC
+          ((visit K G hloc hsup mz.e 1 Z (sfR_circ hC)
+            (mz.cone _ (K.rm_refl _))).weaken mz.le)
+  | n + 1, .atom p =>
+      exact metR_prime (hloc a) rfl hC hnf
+        (fun A hA hnA => visit K G hloc hsup a 0 A hA hnA)
+  | n + 1, .bot =>
+      exact metR_prime (hloc a) rfl hC hnf
+        (fun A hA hnA => visit K G hloc hsup a 0 A hA hnA)
+  | n + 1, .and C₁ C₂ =>
+      exact metR_and hC hnf
+        (fun h1 => visit K G hloc hsup a (n + 1) C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visit K G hloc hsup a (n + 1) C₂ (sfR_and hC).2 h2)
+  | n + 1, .or C₁ C₂ =>
+      exact metR_or (hloc a) hC hnf
+        (fun A hA hnA => visit K G hloc hsup a 0 A hA hnA)
+  | n + 1, .imp A B =>
+      exact metR_imp hC hnf
+        (fun e hle _ hB => visit K G hloc hsup e (n + 1) B (sfR_imp hC).2 hB)
+  | n + 1, .circ Z =>
+      exact metR_circ hC hnf
+        (fun e hle hZ => visit K G hloc hsup e (n + 1) Z (sfR_circ hC) hZ)
+termination_by (ht K a, t, C.size)
+decreasing_by
+  all_goals
+    first
+      | (apply Prod.Lex.left
+         exact ht_lt (by assumption) (by assumption))
+      | (by_cases hne' : e = a
+         · subst hne'
+           apply Prod.Lex.right
+           apply Prod.Lex.right
+           simp only [Form.size]; omega
+         · apply Prod.Lex.left
+           exact ht_lt (by assumption) hne')
+      | (apply Prod.Lex.left
+         exact ht_lt mz.le hea)
+      | (apply Prod.Lex.right
+         apply Prod.Lex.left
+         omega)
+      | (apply Prod.Lex.right
+         apply Prod.Lex.right
+         first
+           | omega
+           | (simp only [Form.size]; omega))
+
+/-- **`AllMet` from the two named conditions.** -/
+theorem allMet_of_supply {K : Kripke} {G : Form}
+    (hloc : ∀ b : K.W, circPart (lamStar K b G) = [])
+    (hsup : CircSupply K G) : AllMet K G :=
+  fun a C hC hnf =>
+    ⟨⟨visit K G hloc hsup a 0 C hC hnf⟩, ⟨visit K G hloc hsup a 1 C hC hnf⟩⟩
+
+/-- **FRJ◯ completeness, modulo the kernel**: statement (A) for every
+model whose `Λ*` is circ-free world-wise, given the sole-candidate
+supply. -/
+theorem completeness_of_supply {K : Kripke} {G : Form}
+    (hloc : ∀ b : K.W, circPart (lamStar K b G) = [])
+    (hsup : CircSupply K G)
+    (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_allMet (allMet_of_supply hloc hsup) hK
+
 end FRJ

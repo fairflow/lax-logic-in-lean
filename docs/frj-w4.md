@@ -563,3 +563,40 @@ The §10 route (saturation closure, round-order induction) is therefore
 not one option among several: it is the only organisation compatible
 with fact 2.  The invariant to carry per round: every demand met by a
 row THE JOIN CAN CONSUME (hJ1/hJ2/hJ5-admissible), not Λ*-coverage.
+
+## 11. The gluing LANDED: completeness modulo two named conditions (2026-08-17)
+
+`FRJ/Saturate.lean` now carries the whole §10 organisation, sorry-free
+and `Classical.choice`-free (`[propext, Quot.sound]`, audit-guarded):
+
+- the demand closure `AllMet` and `completeness_of_allMet`;
+- the case-builder layer (`metI_atom/bot/and/or/imp/circ/circ_syn`,
+  `metR_and/imp/circ/prime/or`) — each visit case with its suppliers as
+  inputs, per-wit infallibility (`wfal`) replacing global infallibility;
+- `minZetaNS` (non-self-preferring candidate, soleness certificate) and
+  anchor weakening;
+- **`visit`**, total on the paper's measure `(ht, t, |C|)`: the Υ-edges
+  drop phase, every float drops height, the in-layer edges drop size,
+  and the single un-orderable edge — the irregular ◯-demand at a world
+  that is its own SOLE minZeta candidate — is discharged by an explicit
+  supplied cell;
+- `completeness_of_supply`:
+
+      hloc : ∀ b, circPart(Λ*_b) = []      (world-wise circ-free Λ*)
+      hsup : CircSupply K G                 (the sole-candidate cell)
+      ─────────────────────────────────────
+      ¬ K.valid G → Provable G
+
+`CircSupply` demands, at each sole-candidate world `a` and each
+`◯Z ∈ sfR`, a tagged `Z`-row whose context `Clo`-grounds `Λ*_a`
+(consumed by `metI_circ_syn` — the route the engine's own derivations
+of the §9 corner cells take, e.g. an `Ax^R` row grounding implications
+through `Clo`'s weakening clause).
+
+**Remaining to full (A)**: discharge or weaken `CircSupply` (the open
+kernel — per-instance row existence, engine-testable), and port the
+promise-mode joins to lift `hloc` (the §8 pledge machinery as builders;
+its pledge-existence question would enter as a second supply, so the
+kernel formulation is uniform).  The ◯-free validation
+(`allMet_of_circFree` → `completeness_via_closure`) confirms the new
+organisation subsumes the landed Theorem 6.2 analogue.

@@ -1,5 +1,17 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (later) — saturation-closure gluing LANDED
+
+FRJ/Saturate.lean: the full §10 organisation is in, sorry-free,
+choice-free, audit-guarded.  `completeness_of_supply` proves W4
+statement (A) modulo two named conditions: `hloc` (world-wise circ-free
+Λ*) and `CircSupply` (a tagged grounding Z-row at sole-minZeta-candidate
+worlds — THE open kernel).  The builder layer is complete
+(metI_*/metR_*), `visit` is total on (ht, t, |C|), and the ◯-free case
+re-derives through the closure (`completeness_via_closure`).  Next:
+discharge/weaken CircSupply; port promise joins to lift hloc.  docs
+§11.
+
 ## 2026-08-17 — corner attack survived; (B)-soundness half landed modally
 
 The §9 configuration was attacked with poisoned-vacZone cells

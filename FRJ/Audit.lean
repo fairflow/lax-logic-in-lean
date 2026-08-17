@@ -46,6 +46,14 @@ namespace FRJ
 #guard_msgs in
 #print axioms minMod
 
+/-- info: 'FRJ.visit' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms visit
+
+/-- info: 'FRJ.completeness_of_supply' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_supply
+
 /-- info: 'FRJ.completeness_of_allMet' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms completeness_of_allMet
