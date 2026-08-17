@@ -14,6 +14,19 @@ against the original: every Lean definition and theorem is listed
 against the numbered item of the paper it encodes, and every divergence
 is recorded as a divergence.
 
+## A note on the numbering used here
+
+The item numbers cited below (Lemma 3.4, Lemma 3.9, Theorem 3.10, …) are
+the **journal version's**. The arXiv source this formalisation was
+transcribed from, `frj-corr.tex`, numbers the same results differently:
+each kind carries its own counter with no section prefix, so `lemma:lhs`
+prints as *Lemma 1* (p. 11) there, and `lemma:soundFRJ` as *Lemma 2*.
+
+Both are the same paper. Only the **label** identifies a result across
+versions, so where a citation matters, check the label. A generated
+label → number → page map for the arXiv source is in
+`docs/frj-paper-skeleton.md`, produced by `tools/paper-skeleton`.
+
 ## Scope
 
 **In scope**: §2 (preliminaries), §3 (the calculus and its soundness),
@@ -157,7 +170,7 @@ theorems here.
 `σ₁ ≤ σ₂ iff σ₂ ↦* σ₁`, `V(σ) = Lhs(σ) ∩ PV`; and `φ(σ)` the p-sequent
 immediately above a regular `σ`.  Then:
 
-* **Lemma 3.5** (`lemma:lhs`), on `↦`: (i) `σ₁ ↦_R σ₂` with `R ≠ ⊃∉`
+* **Lemma 3.4** (`lemma:lhs`), on `↦`: (i) `σ₁ ↦_R σ₂` with `R ≠ ⊃∉`
   implies `Lhs(σ₂) ⊆ Lhs(σ₁)`; (ii) `σ₁ ↦ σ₂` implies
   `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`; (iii) the same for `↦*`.
 * **Lemma 3.9**, for every sequent `σ` occurring in `D`: (i) if
@@ -195,7 +208,7 @@ PROVED so far: `addRoot` is a Kripke model; `addRoot_force_comp`;
 `solo_forces_root`; and `axR_sound`, the `Ax^R` case of Lemma 3.9(i)
 (`φ(σ) = σ`, `V(σ) = Ĝ_at \ {F}`).
 
-**Lemma 3.5 is PROVED** (`FRJ/Step.lean`), together with the reification
+**Lemma 3.4 is PROVED** (`FRJ/Step.lean`), together with the reification
 that `↦` needs:
 
 | Paper | Lean | Status |
@@ -205,11 +218,11 @@ that `↦` needs:
 | `σ₁ ↦₀ σ₂` | `Step₀` | done |
 | `↦*` | `StepsRfl` (`Relation.ReflTransGen`) | done |
 | "σ occurs in D" | `OccR`, `OccI` | done |
-| Lemma 3.5(i) | `lhs_subset_of_step` | PROVED |
-| Lemma 3.5(ii) | `lhs_clo_of_step₀` | PROVED |
-| Lemma 3.5(iii) | `lhs_clo_of_steps` | PROVED |
+| Lemma 3.4(i) | `lhs_subset_of_step` | PROVED |
+| Lemma 3.4(ii) | `lhs_clo_of_step₀` | PROVED |
+| Lemma 3.4(iii) | `lhs_clo_of_steps` | PROVED |
 | occurrence reaches the root by `↦*` | `occR_steps`, `occI_steps` | PROVED |
-| 3.5(iii) as soundness uses it | `lhs_clo_of_occR` | PROVED |
+| 3.4(iii) as soundness uses it | `lhs_clo_of_occR` | PROVED |
 | (Cl6) | `clo_trans` | PROVED |
 
 `Step` is indexed by a rule name precisely so that part (i)'s condition
@@ -225,7 +238,7 @@ each upward step from the side conditions stored in the derivation.
 | Paper | Lean | Status |
 |---|---|---|
 | `Mod(D) = ⟨PS(D), ≤, ρ, V⟩` | `PreModel`, `preR`/`preI`, `modR` | done |
-| `V(σ) = Lhs(σ) ∩ PV` sound (needs 3.5(iii)+(Cl5)) | `preR_closed`, `toKripke` | PROVED |
+| `V(σ) = Lhs(σ) ∩ PV` sound (needs 3.4(iii)+(Cl5)) | `preR_closed`, `toKripke` | PROVED |
 | the root of `Mod(d)` is `φ` of its root sequent | `preR_root_lbl` | PROVED |
 | components are the regular sub-derivations | `preI_spec` | PROVED |
 | forcing transfers to a component | `join_force_comp` | PROVED |

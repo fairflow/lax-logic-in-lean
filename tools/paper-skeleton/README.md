@@ -1,8 +1,7 @@
 # paper-skeleton
 
 Turn a paper's LaTeX source into a fidelity-table skeleton — the Stage 1
-deliverable of a calculus-adoption campaign, which is otherwise built by
-hand from a PDF.
+deliverable of a calculus-adoption campaign, otherwise built by hand.
 
 ```bash
 ./paper_skeleton.py --arxiv 1804.06689 -o skeleton.md
@@ -10,40 +9,55 @@ hand from a PDF.
 ```
 
 It resolves `\input`/`\include`, strips comments, finds theorem-like
-environments (including those a document class predefines rather than
-declaring with `\newtheorem`), **simulates the counters** so items come
-out as `Lemma 3.5` rather than "the 17th lemma", flags `\appendix`, and
-emits the table, the full statements, and an empty divergence log.
+environments, **compiles the document and reads the `.aux`** for the
+numbers, flags `\appendix`, and emits the table, the full statements, and
+an empty divergence log.
 
-## The one thing to know
+## Where the numbers come from
 
-**Numbers are inferred; labels are exact.** A LaTeX source never contains
-the printed numbers — every one is a `\ref` resolved at compile time — so
-the tool simulates LaTeX's counters from the document class's
-conventions. The `\label`s *are* in the source. Key your fidelity table
-on labels; treat numbers as a convenience, and check the model against
-the PDF on two items before trusting a whole table.
+The `.aux`, where LaTeX records
 
-This is not hypothetical. On its first run against arXiv:1804.06689 the
-tool disagreed with this repo's own fidelity record, which cited
-`lemma:lhs` as Lemma 3.4. The tool said 3.5, and was right: `llncs`
-shares one counter across `theorem`, `lemma` and `example`, §3 opens with
-Theorem 3.1 and then three examples, so `lemma:lhs` is the fifth item.
-The record's own later numbers (Lemma 3.9, Theorem 3.10) only make sense
-under that same shared counter, so it was internally inconsistent — the
-hand count had skipped an *unlabelled* example. Corrected in
-`docs/frj-fidelity.md` and in the `FRJ/` docstrings.
+```
+\newlabel{lemma:lhs}{{1}{11}{}{theorem.1}{}}
+```
 
-Unlabelled environments are exactly where a manual count goes wrong,
-because there is no anchor to notice them by.
+— label, printed number, page. That is exact. A source never contains its
+printed numbers: every one is a `\ref` resolved at compile time.
+
+If the document will not compile, the tool lists items **with no number**
+rather than a guessed one.
+
+## Why it works this way (a mistake worth keeping)
+
+The first version simulated LaTeX's counters from the document class's
+conventions. It was confidently wrong about arXiv:1804.06689: it reported
+`Lemma 3.5` for the result the compiler numbers **Lemma 1**, and it had a
+plausible-looking argument for 3.5 built on the `llncs` class sharing one
+counter across `theorem`, `lemma` and `example`. `llncs` does no such
+thing — each kind has its own counter and no section prefix.
+
+On the strength of that simulation I "corrected" this repo's fidelity
+record, which had not been wrong. The edit was reverted. Matthew's
+question — *wouldn't it be easier to build the TeX and read the
+references?* — is the whole answer: reimplementing LaTeX is not worth it
+when LaTeX is installed, and a simulation that is wrong is worse than no
+number at all, because it is asserted with the same confidence as a
+correct one.
+
+## Cite by label, not by number
+
+Labels are stable across versions; numbers are not. The FRJ paper's arXiv
+source numbers `lemma:lhs` as *Lemma 1*; the journal version numbers the
+same result *3.4*. Both are "the paper". Only `lemma:lhs` identifies it
+unambiguously, which is why the generated table keys every row on its
+label and carries the number and page as a convenience.
 
 ## Options
 
-    --arxiv ID        download the e-print source
-    --src FILE        use a local main .tex
-    --dir DIR         use an already-extracted source tree
-    -o FILE           write Markdown (default stdout)
-    --json FILE       also emit the items as JSON
-    --numbering M     override the counter model:
-                      shared,section | perkind,section | shared,none
-    --keep DIR        keep a downloaded source here
+    --arxiv ID     download the e-print source
+    --src FILE     use a local main .tex
+    --dir DIR      use an already-extracted source tree
+    -o FILE        write Markdown (default stdout)
+    --json FILE    also emit the items as JSON
+    --no-compile   skip compilation; items carry no numbers
+    --keep DIR     keep a downloaded source here

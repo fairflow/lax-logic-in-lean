@@ -1,5 +1,5 @@
 /-
-# The relation `↦` and the sequents occurring in a derivation (Lemma 3.5)
+# The relation `↦` and the sequents occurring in a derivation (Lemma 3.4)
 
 Section 3 of Fiorentini–Ferrari, from "Now, we begin to study the
 properties of FRJ(G)-derivations":
@@ -10,7 +10,7 @@ properties of FRJ(G)-derivations":
 * `↦` is the transitive closure of `↦₀`;
 * `↦*` is the reflexive closure of `↦`.
 
-and then **Lemma 3.5** (`lemma:lhs`):
+and then **Lemma 3.4** (`lemma:lhs`):
 
 * (i)   `σ₁ ↦_R σ₂` and `R ≠ ⊃∉` imply `Lhs(σ₂) ⊆ Lhs(σ₁)`;
 * (ii)  `σ₁ ↦₀ σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`;
@@ -21,7 +21,7 @@ as the paper defines it, so it is reified here independently of any
 derivation.  Occurrence in a derivation is separate, and the two are
 tied together by `occR_steps`/`occI_steps`: every sequent occurring in
 `D` reaches `D`'s root sequent by `↦*`.  That is the form in which the
-soundness proof consumes Lemma 3.5(iii).
+soundness proof consumes Lemma 3.4(iii).
 -/
 import FRJ.Calculus
 
@@ -65,7 +65,7 @@ inductive RuleName where
 /-! ## `↦_R`, `↦₀`, `↦`, `↦*` -/
 
 /-- `σ₁ ↦_R σ₂`: `σ₂` is the conclusion of an instance of rule `R` and
-`σ₁` is one of its premises.  Only the side conditions that Lemma 3.5
+`σ₁` is one of its premises.  Only the side conditions that Lemma 3.4
 consumes are carried. -/
 inductive Step (G : Form) : RuleName → Sequent → Sequent → Prop
   | andR1 {Γ : List Form} {A₁ A₂ : Form} :
@@ -159,9 +159,9 @@ theorem joinCtxOr_subset {n : Nat} {stab th : Fin (n + 1) → List Form}
   · exact List.mem_append_right _
       (impPart_subset (interAll_subset j (restrict_subset hx)))
 
-/-! ## Lemma 3.5 -/
+/-! ## Lemma 3.4 -/
 
-/-- **Lemma 3.5(i).**  "`σ₁ ↦_R σ₂` and `R ≠ ⊃∉` imply
+/-- **Lemma 3.4(i).**  "`σ₁ ↦_R σ₂` and `R ≠ ⊃∉` imply
 `Lhs(σ₂) ⊆ Lhs(σ₁)`." -/
 theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
     (h : Step G R s₁ s₂) (hR : R ≠ .impNotIn) : s₂.lhs ⊆ s₁.lhs := by
@@ -200,7 +200,7 @@ theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
       intro x hx
       exact joinCtxOr_subset hJ1 j hx
 
-/-- **Lemma 3.5(ii).**  "`σ₁ ↦₀ σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
+/-- **Lemma 3.4(ii).**  "`σ₁ ↦₀ σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
 For every rule but `⊃∉` this is (i) together with (Cl3); for `⊃∉` it is
 that rule's own side condition `Θ ⊆ Cl(Γ) ∩ Ĝ`. -/
 theorem lhs_clo_of_step₀ {G : Form} {s₁ s₂ : Sequent} (h : Step₀ G s₁ s₂) :
@@ -215,7 +215,7 @@ theorem lhs_clo_of_step₀ {G : Form} {s₁ s₂ : Sequent} (h : Step₀ G s₁ 
         simpa using hX
   · exact .base (lhs_subset_of_step hR hname hX)
 
-/-- **Lemma 3.5(iii).**  "`σ₁ ↦* σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
+/-- **Lemma 3.4(iii).**  "`σ₁ ↦* σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
 By (ii) along the chain, glued with (Cl6). -/
 theorem lhs_clo_of_steps {G : Form} {s₁ s₂ : Sequent} (h : StepsRfl G s₁ s₂) :
     ∀ X ∈ s₂.lhs, Clo s₁.lhs X := by
@@ -297,7 +297,7 @@ end
 
 /-! ## Occurrence reaches the root by `↦*`
 
-This is the bridge that lets the soundness proof apply Lemma 3.5(iii) to
+This is the bridge that lets the soundness proof apply Lemma 3.4(iii) to
 an arbitrary sequent of `D`.  Each step up the derivation is an instance
 of `↦` supplied by the rule that was applied, with its side conditions
 taken from the derivation itself. -/
@@ -325,7 +325,7 @@ theorem occI_steps {G : Form} {St Th : List Form} {C : Form}
 
 end
 
-/-- **Lemma 3.5(iii), in the form the soundness proof uses it.**  For any
+/-- **Lemma 3.4(iii), in the form the soundness proof uses it.**  For any
 sequent `σ` occurring in a derivation `D` of `Γ ⇒ C`, the left formulas
 of `D`'s root sequent lie in `Cl(Lhs(σ))`. -/
 theorem lhs_clo_of_occR {G : Form} {Γ : List Form} {C : Form}
@@ -400,11 +400,11 @@ theorem atPart_union_impPart {G : Form} {Γ : List Form} {C : Form}
 /-! ## The `Ax^I` case of Lemma 3.9(ii), in label form
 
 "We have `σ = ∅ ; Ĝ_at \ {C}, Ĝ_imp → C`, with `C ∈ Prime`.  Let
-`Γ^at = V(σ_p)`.  Since `σ ↦ σ_p`, by Lemma 3.5(iii) and (Cl5) we get
+`Γ^at = V(σ_p)`.  Since `σ ↦ σ_p`, by Lemma 3.4(iii) and (Cl5) we get
 `Γ^at ⊆ Ĝ_at \ {C}`.  This implies `C ∉ Γ^at`, hence `σ_p ⊮ C`."
 
 The argument is entirely about labels, so it is available already: it
-needs Lemma 3.5(iii) and (Cl5) and nothing about the model.  Once
+needs Lemma 3.4(iii) and (Cl5) and nothing about the model.  Once
 `Mod(D)` is in place, `V(σ_p) = Lhs(σ_p) ∩ PV` turns this into
 `σ_p ⊮ C` directly. -/
 
