@@ -158,9 +158,56 @@ forced, so `Ω_α` is empty and `Cl(Λ*_α)` cannot reach `⊥` — a fallible
 countermodel carries no data the calculus can consume.  It is the exact
 statement of §2's incompleteness.
 
+## 6a. The choice of `Rm` is a choice of NUCLEUS (added 2026-08-17, after Matthew's objection)
+
+Matthew objected to `Rm := Eq` on the ground that it makes the modality
+non-generic.  The objection is right, and sharper than "one rule is
+weak": each uniform choice of `Rm` realises a **nucleus**, and the
+calculus then refutes `G` exactly when the image of `G` under that
+nucleus is IPC-refutable.
+
+    Rm := Eq      ◯A ≡ A       identity            force_circ_iff_self
+    Rm := ≤       ◯A ≡ ¬¬A     double negation     force_circ_iff_nn   (no axioms)
+    K.falTop      ◯A ≡ ⊤       trivialisation      falTop_force
+
+All three are nuclei, so all three are SOUND interpretations of PLL and
+every refutation certified through any of them is genuine.  None is
+generic, and no two are comparable.  Each therefore has a blind spot that
+is a theorem about the construction rather than a missing rule:
+
+* **identity**: every extracted model validates `◯A ⊃ A`
+  (`modR_valid_circ_imp`), hence **`not_provable_circ_imp`** — the
+  calculus provably cannot refute `◯A ⊃ A` for any `A`;
+* **double negation**: a model whose `Rm` is its order validates
+  `¬¬A ⊃ ◯A` (`valid_nn_imp_circ`), which is not valid in the logic
+  either — so reverting to `Rm := ≤` trades one blind spot for another;
+* **trivialisation**: `triv (◯A) = ⊤`, so it cannot refute anything whose
+  modal content is essential — `not_provable_triv_circ_atom`.
+
+Neither of the first two subsumes the other.  `◯¬¬p ⊃ ◯p` erases to
+`¬¬p ⊃ p` (refutable) but doubles to `¬¬¬¬p ⊃ ¬¬p` (a theorem); `◯p ⊃ p`
+erases to `p ⊃ p` (a theorem) but doubles to `¬¬p ⊃ p` (refutable).
+
+**Conclusion.**  No uniform choice of `Rm` is the right answer, and
+`Rm := Eq` should be read as what it is: the unique choice that makes the
+premise of `◯∈` sufficient, adopted to get one sound modal rule, not as a
+claim about the modality.  The general case is the promise join, where the
+derivation DECLARES the modal successors of each world it creates — that
+is, builds an arbitrary nucleus rather than picking one of three in
+advance.
+
+**Decision needed** (Matthew's): (a) keep `Rm := Eq` and add the
+double-negation extraction as a fourth route, cheap and additive, each
+with its own modal rule and soundness theorem; (b) replace `Eq` by `≤`,
+which loses `◯∈` (unsound there: the premise gives `ρ ⊮ Z`, not "`Z` fails
+on a whole up-set") and needs a new rule; or (c) go straight to the
+promise join and drop the uniform choices.  Recommendation: (a) now, (c)
+as the target.
+
 ## 7. Status
 
-**PROVED, no `sorry`, axioms pinned** — `soundness` and
+**PROVED, no `sorry`, axioms pinned** — `force_circ_iff_nn` on no axioms
+at all, `soundness` and
 `frj_iff_countermodel` on `[propext, Quot.sound]`, `frj_iff_not_IPL` adding
 `Classical.choice` at the one step that needs it, `Kripke.fal_force` on no
 axioms at all.

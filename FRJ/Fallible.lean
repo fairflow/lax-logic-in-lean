@@ -431,6 +431,81 @@ theorem not_PLL_circ_imp_via_calculus :
     ¬ PLL (Form.imp (.circ (.atom "p")) (.atom "p")) :=
   not_PLL_of_provable_triv provable_triv_circ_imp
 
+/-! ## What the choice of modal relation costs
+
+Each uniform choice of `Rm` realises a NUCLEUS, and the calculus then
+refutes `G` exactly when the image of `G` under that nucleus is
+IPC-refutable.  Three choices are available here, and they are the three
+simplest nuclei:
+
+    Rm := Eq         ◯A ≡ A          the identity
+    Rm := ≤          ◯A ≡ ¬¬A        double negation (infallible models)
+    K.falTop         ◯A ≡ ⊤          the trivialisation
+
+None of them is generic, and no two are comparable.  Each therefore has a
+blind spot that is a THEOREM about the construction, not an accident of the
+rules: the identity choice validates `◯A ⊃ A`, the double-negation choice
+validates `¬¬A ⊃ ◯A`, and neither formula is valid in the logic.  Both
+blind spots are proved below. -/
+
+/-- **`Rm = Eq` makes the modality the identity.**  Stated for an arbitrary
+model, so that it is a fact about the CHOICE and not about `toKripke`. -/
+theorem force_circ_iff_self {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ a = b)
+    (w : K.W) (A : Form) : K.force w (.circ A) ↔ K.force w A := by
+  constructor
+  · intro h
+    obtain ⟨c, hc, hcA⟩ := h w (K.le_refl w)
+    have hwc : w = c := (hRm w c).mp hc
+    subst hwc; exact hcA
+  · intro h b hb
+    exact ⟨b, (hRm b b).mpr rfl, K.force_mono hb h⟩
+
+/-- **`Rm = ≤` makes the modality double negation**, in an infallible
+model.  This is W1's choice, the one W3 replaced; the reverse implication
+needs no `Classical.choice`, because forcing is decidable and the world
+enumeration is finite. -/
+theorem force_circ_iff_nn {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
+    (hinf : K.Infallible) (w : K.W) (A : Form) :
+    K.force w (.circ A) ↔ K.force w (Form.neg (Form.neg A)) := by
+  constructor
+  · intro h v hwv hv
+    obtain ⟨c, hmc, hc⟩ := h v hwv
+    exact absurd (hv c ((hRm v c).mp hmc) hc) (hinf c)
+  · intro h v hwv
+    have hdec : Decidable (∃ u, K.le v u ∧ K.force u A) :=
+      decidable_of_iff (∃ u ∈ K.elems, K.le v u ∧ K.force u A)
+        ⟨fun ⟨u, _, hu⟩ => ⟨u, hu⟩, fun ⟨u, hu⟩ => ⟨u, K.complete u, hu⟩⟩
+    have key : ∃ u, K.le v u ∧ K.force u A :=
+      @Decidable.byContradiction _ hdec (fun hcon =>
+        hinf v (h v hwv (fun u hvu hu => absurd
+          (⟨u, hvu, hu⟩ : ∃ u, K.le v u ∧ K.force u A) hcon)))
+    obtain ⟨u, hvu, hu⟩ := key
+    exact ⟨u, (hRm v u).mpr hvu, hu⟩
+
+/-- **The blind spot of the identity choice.**  Every extracted model
+validates `◯A ⊃ A`. -/
+theorem modR_valid_circ_imp {G : Form} {Γ : List Form} {C : Form}
+    (d : FRJr G Γ C) (A : Form) : (modR d).valid (Form.imp (.circ A) A) :=
+  fun v _ hv => (PreModel.toKripke_force_circ (preR d) (preR_closed d) v A).mp hv
+
+/-- Hence **the calculus provably cannot refute `◯A ⊃ A`, for any `A`** —
+not because a rule is missing but because every model it builds validates
+the formula.  The fallible route does reach it
+(`provable_triv_circ_imp`), which is the point of having more than one
+extraction. -/
+theorem not_provable_circ_imp (A : Form) : ¬ Provable (Form.imp (.circ A) A) := by
+  rintro ⟨Γ, ⟨d⟩⟩
+  exact modR_countermodel d (modR_valid_circ_imp d A)
+
+/-- **The blind spot of the double-negation choice**, for comparison: a
+model whose modal relation is its order validates `¬¬A ⊃ ◯A`, which is not
+valid in the logic either.  So reverting `Rm` to `≤` would trade one blind
+spot for another rather than remove it. -/
+theorem valid_nn_imp_circ {K : Kripke} (hRm : ∀ a b, K.Rm a b ↔ K.le a b)
+    (hinf : K.Infallible) (A : Form) :
+    K.valid (Form.imp (Form.neg (Form.neg A)) (.circ A)) :=
+  fun v _ hv => (force_circ_iff_nn hRm hinf v A).mpr hv
+
 /-! ## Axiom audit -/
 
 /-- info: 'FRJ.falTop_force' depends on axioms: [propext, Quot.sound] -/
@@ -464,5 +539,13 @@ theorem not_PLL_circ_imp_via_calculus :
 /-- info: 'FRJ.provable_circ_atom' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provable_circ_atom
+
+/-- info: 'FRJ.force_circ_iff_nn' does not depend on any axioms -/
+#guard_msgs in
+#print axioms force_circ_iff_nn
+
+/-- info: 'FRJ.not_provable_circ_imp' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_provable_circ_imp
 
 end FRJ
