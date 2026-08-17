@@ -602,6 +602,8 @@ reach it; `true` = PLL-derivable (control), the engine cannot reach it
 
 def fp : Form := .atom "p"
 def fq : Form := .atom "q"
+def fw : Form := .atom "w"
+def fz : Form := .atom "z"
 def fr : Form := .atom "r"
 
 structure Cell where
@@ -638,6 +640,12 @@ def corpus : List Cell := [
     "corner probe: Y-cell for ◯(q⊃p) inside a Peirce shell — the t0-◯Z demand with compound body"⟩,
   ⟨"circ_ante_circ_goal", .imp (.circ fq) (.circ (.imp (.circ fp) fp)), false,
     "corner probe: modal-left signature + ◯-goal with modal-antecedent body — the pledged ⊃-float shape"⟩,
+  ⟨"corner_disj_atom", .imp (.imp (.circ (.imp fq fp)) fw) (.or fw fq), false,
+    "§9 stratum: modal-antecedent imp in sfL + atomic disjunctive goal"⟩,
+  ⟨"corner_disj_imp", .imp (.imp (.circ (.imp fq fp)) fw) (.or fw (.imp fq fp)), false,
+    "§9 stratum: modal-antecedent imp + the modal body itself as goal disjunct"⟩,
+  ⟨"corner_disj_circ", .imp (.imp (.circ fz) fw) (.or fw (.circ fz)), false,
+    "§9 stratum: ◯-disjunct or-cell + Υ-demand for the same ◯z — the I/R mutual-demand shape"⟩,
   ⟨"nn_circ_circ_bot", .imp (.imp (.circ (.circ .bot)) .bot) .bot, false,
     "pledge stress: nested ◯-body through the irregular route (¬¬◯◯⊥)"⟩,
   ⟨"excluded_middle", .or fp (.imp fp .bot), false,
