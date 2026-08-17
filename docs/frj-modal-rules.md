@@ -190,11 +190,19 @@ fallible:
 with no (J5)–(J7).  Two consequences, both to be accepted knowingly:
 
 * the witness must cover the whole cone above the new world, so the
-  fallible world is a maximum of the model, modally accessible from
-  everywhere; hence **no world of such a model is barren**, and `◯∈` never
-  applies above it.  That is correct rather than unfortunate: a model with
-  a fallible top forces every `◯`-formula everywhere, so nothing of the
-  form `◯Z` can fail in it;
+  fallible world must be **`Rm`-visible from every world of that cone**;
+  hence no world of such a model is barren, and `◯∈` never applies inside
+  it.
+
+  **CORRECTION (Matthew, 2026-08-17; the sentence that stood here was
+  wrong).**  It is *not* enough for the fallible world to be a maximum of
+  the order.  `Rm` is in general a PROPER subrelation of `≤`, and the
+  `◯`-clause asks for an `Rm`-successor of every world in the `≤`-cone.  A
+  model with a fallible top that no world sees modally forces no
+  `◯`-formula at all.  Machine-checked as `Screen.silent` in
+  `FRJ/Fallible.lean`: two worlds `w < f` with `f` fallible and `Rm`
+  equality; the root refutes `◯⊥` and `◯p` and validates `¬◯⊥`.  What does
+  the work in `Kripke.falTop` is the modal visibility, not the position;
 * **it changes the modality-free semantics**: `⊥` becomes forceable.  The
   logic is unchanged (intuitionistic logic is sound and complete for
   Kripke models with fallible worlds), and soundness is unaffected because
@@ -234,5 +242,9 @@ with no (J5)–(J7).  Two consequences, both to be accepted knowingly:
 **PROVED** (no axioms, pinned in `FRJ/Modal.lean`): the five semantic
 obligations, and the three screens by `decide`.
 
-**OPEN**: soundness and completeness for any calculus containing modal
-rules.  No modal rule is part of `FRJ/Calculus.lean`.
+**SUPERSEDED by W3** (2026-08-17, `docs/frj-w3.md`): fallible worlds were
+signed off and are now part of `Kripke`; `◯∈` is in `FRJ/Calculus.lean`
+and its soundness case is proved; the fallible route was built as a model
+construction (`Kripke.falTop`) rather than as the join rule `⋈^⊥` of §4.3.
+The promise join `⋈^p` of §4.2 remains unimplemented and is the open
+design question.

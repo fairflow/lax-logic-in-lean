@@ -113,6 +113,24 @@ inductive FRJr (G : Form) : List Form → Form → Type
   | impIn {Γ : List Form} {A B : Form}
       (d : FRJr G Γ B) (hA : Clo Γ A) (hgoal : Form.imp A B ∈ sfR G) :
       FRJr G Γ (.imp A B)
+  /-- `◯∈` (regular), **W3 of the modal extension**:  from `Γ ⇒ Z` infer
+      `Γ ⇒ ◯Z`, with no side condition beyond the blanket one.
+
+      It is sound because every world of `Mod(D)` is BARREN — its only
+      modal successor is itself (`toKripke_Rm`) — so the world that
+      refutes `Z` refutes `◯Z` as well
+      (`Kripke.not_force_circ_of_no_promise`).  Barrenness is a property
+      of the model construction, not of the derivation, which is why the
+      rule needs no index recording it.
+
+      What the rule does NOT do is make a `◯`-formula TRUE where its body
+      is false: in `Mod(D)` the modality is the identity
+      (`modR_force_circ`).  That ceiling is what `FRJ/Fallible.lean`
+      complements from the other side, and what a promise join would have
+      to break. -/
+  | circIn {Γ : List Form} {Z : Form}
+      (d : FRJr G Γ Z) (hgoal : Form.circ Z ∈ sfR G) :
+      FRJr G Γ (.circ Z)
   /-- `⋈^At`: from `n ≥ 1` irregular premises `σⱼ = Σⱼ ; Θⱼ → Aⱼ` infer
       `Σ^at, Θ^at \ {F}, Σ^imp, Θ^imp ⇒ F`, with side conditions
       (J1) `Σᵢ ⊆ Σⱼ ++ Θⱼ` for `i ≠ j`,

@@ -370,6 +370,14 @@ theorem lemma39R {G : Form} : ∀ {Γ : List Form} {C : Form} (d : FRJr G Γ C),
       have hΓ := ha (preR d).root
       rw [preR_root_lbl d] at hΓ
       exact hcon _ ((modR d).le_refl _) (clo_forces hΓ hA)
+  | _, _, .circIn d hg => by
+      -- `◯∈`: the model is the premise's, and every world of it is barren,
+      -- so the root refutes `◯Z` as soon as it refutes `Z`.
+      obtain ⟨ha, hb⟩ := lemma39R d
+      refine ⟨ha, ?_⟩
+      have hbarren : ∀ u, (modR d).Rm (modR d).root u → u = (modR d).root :=
+        fun u hu => ((PreModel.toKripke_Rm (preR d) (preR_closed d) _ u).mp hu).symm
+      exact Kripke.not_force_circ_of_no_promise (modR d) hbarren hb
   | _, _, @FRJr.joinAt _ n stab th rhs F prem hJ1 hJ2 hF hFnot hg =>
       joinAt_case prem hJ1 hJ2 hF hFnot hg
         (fun j i x => lemma39I0 (prem j) i x)
@@ -498,7 +506,12 @@ theorem modR_countermodel {G : Form} {Γ : List Form} (d : FRJr G Γ G) :
 `G ∉ IPL`." -/
 theorem soundness {G : Form} (h : Provable G) : ¬ IPL G := by
   obtain ⟨Γ, ⟨d⟩⟩ := h
-  exact not_IPL_of_countermodel (modR_countermodel d)
+  exact not_IPL_of_countermodel (modR_infallible d) (modR_countermodel d)
+
+/-- Hence `G` is not valid in all constraint models either: an infallible
+countermodel is a countermodel. -/
+theorem soundness_PLL {G : Form} (h : Provable G) : ¬ PLL G :=
+  fun hv => soundness h (IPL_of_PLL hv)
 
 /-! ## Sanity checks
 

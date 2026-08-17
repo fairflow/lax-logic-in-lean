@@ -19,72 +19,15 @@ namespace Kripke
 
 variable (K : Kripke)
 
-/-! ## The two facts every modal rule needs
+/-! ## Where the semantic obligations live
 
-    K,α ⊩ ◯A   iff   for every β with α ≤ β there is γ with `Rm β γ`
-                     and K,γ ⊩ A
-
-Read positively and negatively.  The asymmetry with `⊃` is the whole
-content of the extension.  For `A ⊃ B` the obligation at a new world is
-discharged NEGATIVELY — the antecedent fails there, so the implication
-holds vacuously — which is all the support condition (J2) has to arrange,
-by naming `A` as some premise's right formula.  For `◯A` the obligation is
-POSITIVE: a witness must exist, and no data in the calculus supplies one. -/
-
-/-- **Modal introduction.**  A witness at `w`, plus `◯A` forced strictly
-above `w`, force `◯A` at `w`.  The obligation of any rule that keeps a
-`◯`-formula in the conclusion of a join. -/
-theorem circ_intro {w : K.W} {A : Form}
-    (wit : ∃ u, K.Rm w u ∧ K.force u A)
-    (above : ∀ v, K.le w v → v ≠ w → K.force v (.circ A)) :
-    K.force w (.circ A) := by
-  intro v hv
-  by_cases hvw : v = w
-  · subst hvw; exact wit
-  · exact above v hv hvw v (K.le_refl v)
-
-/-- **Modal refutation.**  If no modal successor of `w` forces `A` then
-`◯A` fails at `w`.  The obligation of any rule concluding a sequent with a
-`◯`-formula on the right. -/
-theorem not_force_circ {w : K.W} {A : Form}
-    (h : ∀ u, K.Rm w u → ¬ K.force u A) : ¬ K.force w (.circ A) := by
-  intro hf
-  obtain ⟨u, hmu, hu⟩ := hf w (K.le_refl w)
-  exact h u hmu hu
-
-/-- Forcing `◯A` produces a witness at `w` itself. -/
-theorem exists_witness {w : K.W} {A : Form} (h : K.force w (.circ A)) :
-    ∃ u, K.Rm w u ∧ K.force u A := h w (K.le_refl w)
-
-/-- **Barrenness.**  A world with no proper modal successor refutes `◯A`
-exactly when it refutes `A`.  The obligation of a regular `◯`-introduction
-rule: from `Γ ⇒ A` at a world that declared no modal successor, infer
-`Γ ⇒ ◯A`. -/
-theorem not_force_circ_of_no_promise {w : K.W} {A : Form}
-    (solo : ∀ u, K.Rm w u → u = w) (h : ¬ K.force w A) :
-    ¬ K.force w (.circ A) :=
-  K.not_force_circ (fun u hu hf => h (solo u hu ▸ hf))
-
-/-- **Refutation descends.**  If `◯A` fails anywhere above `w` it fails at
-`w`; so a rule may refute a `◯`-formula by pointing at any successor that
-refutes it. -/
-theorem not_force_circ_of_above {w v : K.W} {A : Form}
-    (hv : K.le w v) (h : ¬ K.force v (.circ A)) : ¬ K.force w (.circ A) :=
-  fun hf => h (K.force_mono hv hf)
-
-/-- **The unit.**  `A` forces `◯A`, by reflexivity of `Rm`.  Hence no world
-forces `A` and refutes `◯A`, so `A ⇒ ◯A` must remain UNDERIVABLE in any
-sound extension — the standing test cell.  (Also proved in `Basic.lean` as
-`force_circ_of_force`; restated here because it is a design constraint,
-not an incidental fact.) -/
-theorem circ_of_force {w : K.W} {A : Form} (h : K.force w A) :
-    K.force w (.circ A) :=
-  fun v hv => ⟨v, K.rm_refl v, K.force_mono hv h⟩
-
-/-- **Idempotence, one direction.**  `◯◯A` follows from `◯A` by the unit;
-the converse needs transitivity of `Rm` and is not used here. -/
-theorem circ_circ_of_circ {w : K.W} {A : Form} (h : K.force w (.circ A)) :
-    K.force w (.circ (.circ A)) := K.circ_of_force h
+The five facts a modal rule rests on are stated and proved in
+`FRJ/Basic.lean`, next to `force` — `Kripke.circ_intro`,
+`Kripke.not_force_circ`, `Kripke.not_force_circ_of_no_promise`,
+`Kripke.not_force_circ_of_above` and `Kripke.circ_of_force`.  They moved
+there at W3 because the soundness proof consumes one of them (`◯∈`), and
+`FRJ/Sound.lean` does not import this file.  Their axiom pins are still
+kept here, at the end. -/
 
 end Kripke
 
@@ -128,9 +71,13 @@ abbrev two : Kripke where
   root_le := by intro a; cases a <;> rfl
   V := fun w s => w = .hi ∧ s = "p"
   V_mono := by intro w v h s hs; cases w <;> cases v <;> simp_all [le2]
+  Fal := fun _ => False
+  fal_mono := fun _ h => h
+  fal_V := fun h => h.elim
   decLe := fun _ _ => inferInstanceAs (Decidable (_ = true))
   decV := fun _ _ => inferInstanceAs (Decidable (_ ∧ _))
   decRm := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decFal := fun _ => isFalse (fun h => h)
 
 /-- **Screen 1 — the witness must be SELECTIVE.**  A world forces `◯p` and
 refutes `p`.  So a modal rule must be able to build a world whose modal
@@ -140,8 +87,10 @@ this model. -/
 example : two.force .lo (.circ (.atom "p")) ∧ ¬ two.force .lo (.atom "p") := by
   decide
 
-/-- With no fallible worlds `⊥` is forced nowhere, so `◯⊥` is forced
-nowhere either. -/
+/-- Both screen models are INFALLIBLE, so `⊥` is forced nowhere in them
+and `◯⊥` is forced nowhere either.  Making `◯⊥` forceable is exactly what
+a fallible world does, and it needs more than being on top — see
+`FRJ/Fallible.lean`. -/
 example : ¬ two.force .lo (.circ .bot) := by decide
 
 /-- `◯◯p` holds where `◯p` does. -/
@@ -184,9 +133,13 @@ abbrev branch : Kripke where
   root_le := by intro a; cases a <;> rfl
   V := fun w s => (w = .l ∧ s = "p") ∨ (w = .r ∧ s = "q")
   V_mono := by intro w v h s hs; cases w <;> cases v <;> simp_all [le3]
+  Fal := fun _ => False
+  fal_mono := fun _ h => h
+  fal_V := fun h => h.elim
   decLe := fun _ _ => inferInstanceAs (Decidable (_ = true))
   decV := fun _ _ => inferInstanceAs (Decidable (_ ∨ _))
   decRm := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decFal := fun _ => isFalse (fun h => h)
 
 /-- **Screen 2 — the witness is PER-WORLD.**  At the root, `◯(p ∨ q)`
 holds while both `◯p` and `◯q` fail: the modal witness of `l` forces `p`
@@ -223,7 +176,8 @@ membership.
 
 The two ways out are recorded in `docs/frj-modal-rules.md` §5.  Only one
 of them needs no realisability condition at all, because it rests on a
-world that forces everything by construction. -/
+world that forces everything by construction — and that route is the one
+W3 took: `Kripke.falTop` in `FRJ/Fallible.lean`. -/
 
 /-- Realisability, as the obligation a context-declaring rule would have
 to discharge.  Stated here so that the W2 discussion has the statement;

@@ -58,7 +58,7 @@ end Sequent
 /-- The names of the rules that have premises.  `Ax^R` and `Ax^I` have
 none, so they generate no instance of `↦`. -/
 inductive RuleName where
-  | andR1 | andR2 | impIn | joinAt | joinOr
+  | andR1 | andR2 | impIn | circIn | joinAt | joinOr
   | andI1 | andI2 | orI | impInI | impNotIn
   deriving DecidableEq
 
@@ -74,6 +74,8 @@ inductive Step (G : Form) : RuleName → Sequent → Sequent → Prop
       Step G .andR2 (.reg Γ A₂) (.reg Γ (.and A₁ A₂))
   | impIn {Γ : List Form} {A B : Form} :
       Step G .impIn (.reg Γ B) (.reg Γ (.imp A B))
+  | circIn {Γ : List Form} {Z : Form} :
+      Step G .circIn (.reg Γ Z) (.reg Γ (.circ Z))
   | andI1 {St Th : List Form} {A₁ A₂ : Form} :
       Step G .andI1 (.irr St Th A₁) (.irr St Th (.and A₁ A₂))
   | andI2 {St Th : List Form} {A₁ A₂ : Form} :
@@ -169,6 +171,7 @@ theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
   | andR1 => exact List.Subset.refl _
   | andR2 => exact List.Subset.refl _
   | impIn => exact List.Subset.refl _
+  | circIn => exact List.Subset.refl _
   | andI1 => exact List.Subset.refl _
   | andI2 => exact List.Subset.refl _
   | orI₁ h₁ h₂ =>
@@ -244,6 +247,9 @@ inductive OccR {G : Form} : {Γ : List Form} → {C : Form} → FRJr G Γ C → 
   | impIn {Γ : List Form} {A B : Form} {d : FRJr G Γ B} {hA : Clo Γ A}
       {hg : Form.imp A B ∈ sfR G} {s : Sequent} :
       OccR d s → OccR (FRJr.impIn d hA hg) s
+  | circIn {Γ : List Form} {Z : Form} {d : FRJr G Γ Z}
+      {hg : Form.circ Z ∈ sfR G} {s : Sequent} :
+      OccR d s → OccR (FRJr.circIn d hg) s
   | joinAt {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form}
       {prem : ∀ j, FRJi G (stab j) (th j) (rhs j)}
@@ -310,6 +316,7 @@ theorem occR_steps {G : Form} {Γ : List Form} {C : Form} {d : FRJr G Γ C}
   | .andR1 h' => (occR_steps h').tail ⟨_, .andR1⟩
   | .andR2 h' => (occR_steps h').tail ⟨_, .andR2⟩
   | .impIn h' => (occR_steps h').tail ⟨_, .impIn⟩
+  | .circIn h' => (occR_steps h').tail ⟨_, .circIn⟩
   | .joinAt (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinAt j hJ1⟩
   | .joinOr (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinOr j hJ1⟩
 
@@ -351,6 +358,7 @@ theorem wfR {G : Form} : ∀ {Γ : List Form} {C : Form}, FRJr G Γ C → Γ ⊆
   | _, _, .andR1 d _ => wfR d
   | _, _, .andR2 d _ => wfR d
   | _, _, .impIn d _ _ => wfR d
+  | _, _, .circIn d _ => wfR d
   | _, _, .joinAt prem hJ1 _ _ _ _ => fun _ hx =>
       wfI (prem 0) (joinCtxAt_subset hJ1 0 hx)
   | _, _, .joinOr prem hJ1 _ _ _ => fun _ hx =>

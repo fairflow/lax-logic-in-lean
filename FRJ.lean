@@ -7,4 +7,5 @@ import FRJ.Sound
 import FRJ.Complete
 import FRJ.Minimal
 import FRJ.Modal
+import FRJ.Fallible
 import FRJ.Audit

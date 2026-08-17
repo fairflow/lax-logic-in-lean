@@ -626,6 +626,7 @@ realisability is not membership. The obligation is stated in the library
 and nothing proves it, which is the point.
 
 \subsection{The zones arrive with the rules}
+\label{sec:zones}
 
 Finding~\ref{find:zone} makes the following one \emph{atomic} change, each
 part of which is unsound without the others: the context universe gains
@@ -700,15 +701,197 @@ no realisability obligation at all: a fallible world forces everything
 \noindent
 The recommendation is therefore fallible worlds, with two consequences to
 be accepted knowingly. The witness must cover the whole cone above the new
-world, so the fallible world is a maximum of the model and no world of
-such a model is barren --- correct rather than unfortunate, since a model
-with a fallible top forces every modal formula everywhere. And it changes
-the modality-free semantics: falsehood becomes forceable. The logic is
-unchanged, and soundness is unaffected because every model the calculus
-\emph{builds} can leave the fallible set empty unless a rule says
-otherwise; but completeness starts from an \emph{arbitrary} countermodel,
-which may now have fallible worlds, and the construction must handle them.
-That cost falls on the next stage, not this one.
+world, so the fallible world has to be reachable by the modal relation
+\emph{from every world of that cone}, and no world of such a model is
+barren. And it changes the modality-free semantics: falsehood becomes
+forceable. The logic is unchanged, and soundness is unaffected because
+every model the calculus \emph{builds} can leave the fallible set empty
+unless a rule says otherwise; but completeness starts from an
+\emph{arbitrary} countermodel, which may now have fallible worlds, and the
+construction must handle them. That cost falls on the next stage, not this
+one.
+
+\begin{remark}[a correction]\label{rem:correction}
+An earlier draft of this section asserted that a model with a fallible
+maximum forces every modal formula everywhere. That is false, and the
+error is instructive. The modal clause quantifies over the whole cone
+above a world and asks for a modally accessible successor of \emph{each}
+world in it, and the modal relation is in general a \emph{proper}
+subrelation of the intuitionistic one. A fallible world may therefore sit
+above everything in the order and be modally invisible, in which case it
+contributes nothing. The two-world model \texttt{Screen.silent} of
+\S\ref{app:fallible} is the countermodel: worlds $w < f$ with $f$ fallible
+and the modal relation equality; the root refutes both $\bigcirc\bot$ and
+$\bigcirc p$, and \emph{validates} $\neg\bigcirc\bot$. What does the work
+in the construction of \S\ref{sec:w3} is the modal visibility of the
+fallible world, not its position in the order.
+\end{remark}
+
+%% ==================================================================
+\section{Fallible worlds, and the modal rule}
+\label{sec:w3}
+
+Fallible worlds were signed off, and this section is what they turned out
+to buy. The short version: the two constructions available pull in
+opposite directions, each reaches formulas the other cannot, and the gap
+between them is exactly the promise rule that is still missing.
+
+\subsection{The semantics}
+
+A model now carries a set of \emph{fallible} worlds --- the worlds at
+which falsehood holds --- inherited upwards along the order, at which
+every variable is true. The clause for falsehood becomes
+Fairtlough--Mendler's, that a world forces $\bot$ exactly when it is
+fallible, in place of the paper's clause that no world does.
+
+\begin{lemma}[\texttt{Kripke.fal\_force}]\label{lem:falforce}
+A fallible world forces every formula.
+\end{lemma}
+
+\noindent
+The induction is routine except at the modality, which is where the modal
+frame enters: a fallible world forces $\bigcirc A$ because the modal
+relation is reflexive, so the world is its own witness. The lemma depends
+on no axioms whatever.
+
+With fallibility present, validity splits in two. Write $\mathrm{IPL}$ for
+validity in the \emph{infallible} models --- these are the paper's models,
+so this is its own notion read in the extended language --- and
+$\mathrm{PLL}$ for validity in all constraint models. Every
+$\mathrm{PLL}$-valid formula is $\mathrm{IPL}$-valid, and the converse
+fails, as the next result shows.
+
+\subsection{Why the fallible worlds are not optional}
+
+\begin{lemma}[\texttt{valid\_neg\_circ\_bot\_of\_infallible}]
+Every infallible model validates $\neg\bigcirc\bot$.
+\end{lemma}
+
+\begin{proof}
+For a world to force $\bigcirc\bot$ it needs a modally accessible
+successor forcing $\bot$, that is, a fallible world.
+\end{proof}
+
+\begin{theorem}[\texttt{not\_provable\_neg\_circ\_bot}]\label{thm:incomplete}
+$\neg\bigcirc\bot$ is not provable in the calculus.
+\end{theorem}
+
+\begin{proof}
+Soundness concludes non-$\mathrm{IPL}$-validity, and
+$\neg\bigcirc\bot$ is $\mathrm{IPL}$-valid.
+\end{proof}
+
+This is an incompleteness, and it is not an accident of the rules written
+so far: it holds of \emph{every} extension of the calculus whose extracted
+models are infallible. Since $\neg\bigcirc\bot$ is not valid in the logic
+(\S\ref{sec:tworoutes}), fallible worlds are needed to reach it. The
+argument is due to Matthew Fairtlough; what is recorded here is its
+mechanisation.
+
+\subsection{The extracted model is barren, and the rule that follows}
+
+The packaging of an extracted model used to take the modal relation to be
+the order, which was free while no rule mentioned the modality. It now
+takes it to be \emph{equality}: every extracted world is \emph{barren},
+its only modal successor being itself. The consequence, proved as
+\texttt{toKripke\_force\_circ}, is that in every extracted model
+
+\[ \mathrm{Mod}(D),\alpha \Vdash \bigcirc A \quad\text{iff}\quad
+   \mathrm{Mod}(D),\alpha \Vdash A, \]
+
+so the modality is the \emph{identity} there. Both halves are used: left
+to right is the soundness of the new rule, right to left is the unit of
+the modality.
+
+The rule is
+\[
+\frac{\Gamma \Rightarrow Z}{\Gamma \Rightarrow \bigcirc Z}
+\qquad\text{with } \bigcirc Z \in Sf^{R}(G)
+\]
+with no side condition. The design discussion of \S\ref{sec:rules}
+proposed an index recording that the conclusion's world is barren; it is
+not needed, because barrenness is a property of the model
+\emph{construction} --- it holds at every world of every extracted model
+--- rather than something a derivation must track. It would be needed the
+moment a rule creates a modal successor.
+
+\begin{remark}[what is and is not committed in advance]
+The rule looks like a commitment: building a world with no modal
+successors in order to refute $\bigcirc Z$. Nothing is committed in
+advance. The calculus is \emph{forward}, so the rule consumes a refutation
+of $\Gamma \Rightarrow Z$ already in hand, and the premise's derivation is
+itself the certificate that a world forcing $\Gamma$ and refuting $Z$
+exists. What \emph{is} committed in advance is the uniform choice of
+equality for the modal relation, and that choice has a stated price: it
+makes the rule sound at every world with no bookkeeping, and it makes the
+modality the identity, so the model can never witness a modality
+non-trivially. In barren models a world refutes $\bigcirc A$ exactly when
+it refutes $A$, so the rule is invertible there --- exactly right for the
+models the calculus builds, and the ceiling of what those models can do.
+\end{remark}
+
+\subsection{The fallible route}
+
+The other construction, \texttt{Kripke.falTop}, puts one fallible world on
+top of a model and makes it \emph{modally visible from every world}. Then
+every world forces every modal formula. By Remark~\ref{rem:correction} the
+visibility is the operative condition, not the position.
+
+Let $\operatorname{triv} A$ be $A$ with every modal subformula replaced by
+truth, and structural elsewhere; it is modality-free, so the
+modality-free calculus applies to it as a goal.
+
+\begin{theorem}[\texttt{falTop\_force}]\label{thm:falTop}
+At every old world, the extended model forces $A$ exactly when the
+original forces $\operatorname{triv} A$.
+\end{theorem}
+
+\begin{proposition}[\texttt{not\_PLL\_of\_provable\_triv}]
+A derivation of $\operatorname{triv} G$ refutes the $\mathrm{PLL}$-validity
+of $G$.
+\end{proposition}
+
+This needed \emph{no new rule}. What \S\ref{sec:decision} called the
+fallible promise join has been relocated from the calculus to the model
+construction, which is where it costs nothing.
+
+\subsection{The two routes are incomparable}
+\label{sec:tworoutes}
+
+Each reaches a formula the other cannot, and both directions are
+machine-checked.
+
+\begin{center}
+\begin{tabular}{lll}
+\hline
+formula & barren route & fallible route\\
+\hline
+$\bigcirc p$ & refutes it & cannot: its trivialisation is truth\\
+$\neg\bigcirc\bot$ & cannot (Thm.~\ref{thm:incomplete}) & refutes it\\
+$\bigcirc p \supset p$ & cannot & refutes it\\
+\hline
+\end{tabular}
+\end{center}
+
+\noindent
+The two entries in the right-hand column are actual derivations, not
+appeals to a model. In each, the irregular axiom at falsehood places
+$\bot \supset \bot$ in the irregular zone, the join keeps it by the
+restriction --- its antecedent is the premise's right formula --- and the
+implication rule discharges it from the closure. This closes the concrete
+instance $\bigcirc p \supset p$ raised in \S\ref{sec:decision}.
+
+\subsection{What completeness now says}
+
+The completeness results gained the hypothesis that the countermodel they
+start from is infallible, and the biconditional now reads: the goal is
+provable exactly when it has an \emph{infallible} countermodel --- which
+is stronger than before in the left-to-right direction. The hypothesis is
+not a gap in the proof. At a fallible world every formula is forced, so
+the set of refuted right subformulas is empty and the closure of the
+determining part cannot reach falsehood; a fallible countermodel carries
+no data the calculus can consume. It is the exact statement of
+Theorem~\ref{thm:incomplete}.
 
 %% ==================================================================
 \section{Status}
@@ -716,14 +899,27 @@ That cost falls on the next stage, not this one.
 
 \textsc{Proved}, sorry-free and pinned: everything in
 \S\S\ref{sec:prelim}--\ref{sec:choice}, for modality-free goals; the
-extension of \S\ref{sec:w1}; and the five semantic obligations and three
-screens of \S\ref{sec:rules}.
+extension of \S\ref{sec:w1}; the five semantic obligations and three
+screens of \S\ref{sec:rules}; and all of \S\ref{sec:w3}, including
+soundness for a calculus that now contains a modal rule.
 
-\textsc{Open}: soundness and completeness for any calculus containing
-modal rules. No modal rule is part of the calculus; the rules of
-\S\ref{sec:rules} are put up for sign-off, and the decision of
-\S\ref{sec:decision} is the substantive one, because it changes the model
-structure and puts a new obligation on the completeness construction.
+\textsc{Open}, and unchanged by \S\ref{sec:w3}:
+
+\begin{enumerate}
+\item The \emph{promise join}: the only rule that would make the modality
+  non-trivially true and so break the erasure ceiling of \S\ref{sec:w3}.
+  It needs the index the screens described, because a rule that creates a
+  modal successor destroys barrenness at the world it creates.
+\item The third zone of the universe, still not added, for the reason
+  recorded in \S\ref{sec:zones}; it is an atomic change together with the
+  joins, and the promise join would force it.
+\item Completeness for fallible countermodels, that is, for validity in
+  all constraint models rather than in the infallible ones. Needs (1).
+\item That the two notions of validity agree on modality-free formulas
+  --- deleting the fallible worlds of a model preserves modality-free
+  forcing at the worlds that remain. Nothing above needs it; it would let
+  the biconditional be restated for the wider notion.
+\end{enumerate}
 
 \appendix
 %% ==================================================================
@@ -765,6 +961,10 @@ dependency order. The library builds from scratch with no sorries, no
 \subsection{The completeness construction}
 \label{app:minimal}
 \lstinputlisting{../../FRJ/Minimal.lean}
+
+\subsection{Fallible worlds, the trivialisation, the two routes}
+\label{app:fallible}
+\lstinputlisting{../../FRJ/Fallible.lean}
 
 \subsection{The modality: semantics, obligations, screens}
 \label{app:modallean}

@@ -230,14 +230,27 @@ structure Kripke where
   rm_trans : ∀ {a b c}, Rm a b → Rm b c → Rm a c
   /-- the modal frame is a subrelation of the intuitionistic one -/
   sub_mi : ∀ {a b}, Rm a b → le a b
+  /-- the FALLIBLE worlds of Fairtlough–Mendler's constraint models: the
+  worlds at which `⊥` holds.  W3 of the modal extension.  They are not
+  optional: a model with no fallible world validates `¬◯⊥` (`valid_neg_circ_bot_of_infallible`),
+  so a calculus whose extracted models are all infallible can never refute
+  it, and `¬◯⊥` is not a theorem of the logic. -/
+  Fal : W → Prop
+  /-- fallibility is inherited upwards, which is what makes `⊥` monotone -/
+  fal_mono : ∀ {a b}, le a b → Fal a → Fal b
+  /-- every variable holds at a fallible world.  With `fal_mono` this is
+  exactly what makes a fallible world force EVERY formula (`fal_force`). -/
+  fal_V : ∀ {a}, Fal a → ∀ p, V a p
   /-- the order and the valuation are decidable: the models the paper
   works with are finite and concrete, and decidability is what keeps the
   development free of `Classical.choice`. -/
   decLe : ∀ a b, Decidable (le a b)
   decV : ∀ a p, Decidable (V a p)
   decRm : ∀ a b, Decidable (Rm a b)
+  decFal : ∀ a, Decidable (Fal a)
 
 attribute [instance] Kripke.decEq Kripke.decLe Kripke.decV Kripke.decRm
+  Kripke.decFal
 
 /-! ### Counting, for the height of a world
 
@@ -296,17 +309,26 @@ Propositional Lax Logic,
     K,α ⊩ ◯A   iff   for every β with α ≤ β there is γ with `Rm β γ`
                      and K,γ ⊩ A
 
-which is Fairtlough–Mendler's clause with the fallible worlds left out (no
-world forces `⊥` here, so `Fal = ∅`; see `docs/frjlax-reassessment.md`).
-The universal quantifier over `β ≥ α` is what makes `◯` monotone without
-an interaction axiom between the two frames.
+which is Fairtlough–Mendler's clause.  The universal quantifier over
+`β ≥ α` is what makes `◯` monotone without an interaction axiom between
+the two frames.
+
+W3 of the modal extension: the `⊥`-clause is Fairtlough–Mendler's too,
+
+    K,α ⊩ ⊥   iff   α ∈ Fal
+
+rather than the paper's `K,α ⊮ ⊥`.  On `◯`-free formulas this changes
+nothing (an infallible model is the special case `Fal = ∅`, and deleting
+the fallible worlds of a model leaves `◯`-free forcing unchanged at the
+worlds that remain), and every model this development BUILDS is infallible;
+what it changes is which `◯`-formulas are valid.
 
 DIVERGENCE (presentational, standard): the paper writes the ⊃-clause as
 "for every β ≥ α, `K,β ⊮ A` or `K,β ⊩ B`"; we write the equivalent
 implication `∀ β ≥ α, K,β ⊩ A → K,β ⊩ B`, which is the standard reading
 and avoids an appeal to excluded middle in the definition itself. -/
 def force (K : Kripke) : K.W → Form → Prop
-  | _, .bot => False
+  | a, .bot => K.Fal a
   | a, .atom p => K.V a p
   | a, .and A B => force K a A ∧ force K a B
   | a, .or A B => force K a A ∨ force K a B
@@ -315,8 +337,11 @@ def force (K : Kripke) : K.W → Form → Prop
 
 variable (K : Kripke)
 
-@[simp] theorem force_bot (a : K.W) : ¬ K.force a .bot := by
-  simp [force]
+@[simp] theorem force_bot (a : K.W) : K.force a .bot ↔ K.Fal a := Iff.rfl
+
+/-- In an INFALLIBLE model `⊥` is forced nowhere, which is the paper's
+clause.  Every model built from a derivation is of this kind. -/
+theorem not_force_bot {a : K.W} (h : ¬ K.Fal a) : ¬ K.force a .bot := h
 
 @[simp] theorem force_atom (a : K.W) (p : String) :
     K.force a (.atom p) ↔ K.V a p := by simp [force]
@@ -342,11 +367,26 @@ theorem force_mono {a b : K.W} (hab : K.le a b) :
   intro A
   induction A with
   | atom p => exact fun h => K.V_mono hab p h
-  | bot => exact fun h => h.elim
+  | bot => exact fun h => K.fal_mono hab h
   | and A B ihA ihB => exact fun h => ⟨ihA h.1, ihB h.2⟩
   | or A B ihA ihB => exact fun h => h.elim (Or.inl ∘ ihA) (Or.inr ∘ ihB)
   | imp A B _ _ => exact fun h c hbc => h c (K.le_trans hab hbc)
   | circ A _ => exact fun h c hbc => h c (K.le_trans hab hbc)
+
+/-- **A fallible world forces every formula.**  This is what makes the
+fallible worlds usable as modal witnesses: `Rm β γ` with `γ` fallible
+discharges the `◯`-obligation at `β` for every `A` at once.  Note what it
+does NOT say — see `Kripke.circ_of_fallible` in `FRJ/Fallible.lean`: a
+fallible world lying `≤`-above `α` says nothing about `K,α ⊩ ◯A`, because
+`Rm` is in general a PROPER subrelation of `≤` and the witness has to be
+reachable by `Rm` from every world above `α`. -/
+theorem fal_force : ∀ (A : Form) {a : K.W}, K.Fal a → K.force a A
+  | .atom p, _, ha => K.fal_V ha p
+  | .bot, _, ha => ha
+  | .and A B, _, ha => ⟨fal_force A ha, fal_force B ha⟩
+  | .or A _, _, ha => Or.inl (fal_force A ha)
+  | .imp _ B, _, ha => fun _ hb _ => fal_force B (K.fal_mono hb ha)
+  | .circ A, _, ha => fun b hb => ⟨b, K.rm_refl b, fal_force A (K.fal_mono hb ha)⟩
 
 /-! ### Forcing is decidable
 
@@ -357,7 +397,7 @@ be an ordinary `List.filter` rather than a classically-formed subset,
 and is the reason this development needs no `Classical.choice`. -/
 
 instance decForce (K : Kripke) : ∀ (a : K.W) (A : Form), Decidable (K.force a A)
-  | _, .bot => inferInstanceAs (Decidable False)
+  | a, .bot => K.decFal a
   | a, .atom p => K.decV a p
   | a, .and A B =>
       have := decForce K a A
@@ -396,19 +436,106 @@ theorem forces_mono {a b : K.W} (hab : K.le a b) {Γ : List Form}
 /-- "A formula `A` is valid in `K` iff `K,ρ ⊩ A`." -/
 def valid (A : Form) : Prop := K.force K.root A
 
+/-! ## The two facts every modal rule needs
+
+    K,α ⊩ ◯A   iff   for every β with α ≤ β there is γ with `Rm β γ`
+                     and K,γ ⊩ A
+
+Read positively and negatively.  The asymmetry with `⊃` is the whole
+content of the extension.  For `A ⊃ B` the obligation at a new world is
+discharged NEGATIVELY — the antecedent fails there, so the implication
+holds vacuously — which is all the support condition (J2) has to arrange,
+by naming `A` as some premise's right formula.  For `◯A` the obligation is
+POSITIVE: a witness must exist, and no data in the calculus supplies one. -/
+
+/-- **Modal introduction.**  A witness at `w`, plus `◯A` forced strictly
+above `w`, force `◯A` at `w`.  The obligation of any rule that keeps a
+`◯`-formula in the conclusion of a join. -/
+theorem circ_intro {w : K.W} {A : Form}
+    (wit : ∃ u, K.Rm w u ∧ K.force u A)
+    (above : ∀ v, K.le w v → v ≠ w → K.force v (.circ A)) :
+    K.force w (.circ A) := by
+  intro v hv
+  by_cases hvw : v = w
+  · subst hvw; exact wit
+  · exact above v hv hvw v (K.le_refl v)
+
+/-- **Modal refutation.**  If no modal successor of `w` forces `A` then
+`◯A` fails at `w`.  The obligation of any rule concluding a sequent with a
+`◯`-formula on the right. -/
+theorem not_force_circ {w : K.W} {A : Form}
+    (h : ∀ u, K.Rm w u → ¬ K.force u A) : ¬ K.force w (.circ A) := by
+  intro hf
+  obtain ⟨u, hmu, hu⟩ := hf w (K.le_refl w)
+  exact h u hmu hu
+
+/-- Forcing `◯A` produces a witness at `w` itself. -/
+theorem exists_witness {w : K.W} {A : Form} (h : K.force w (.circ A)) :
+    ∃ u, K.Rm w u ∧ K.force u A := h w (K.le_refl w)
+
+/-- **Barrenness.**  A world with no proper modal successor refutes `◯A`
+exactly when it refutes `A`.  The obligation of a regular `◯`-introduction
+rule: from `Γ ⇒ A` at a world that declared no modal successor, infer
+`Γ ⇒ ◯A`. -/
+theorem not_force_circ_of_no_promise {w : K.W} {A : Form}
+    (solo : ∀ u, K.Rm w u → u = w) (h : ¬ K.force w A) :
+    ¬ K.force w (.circ A) :=
+  K.not_force_circ (fun u hu hf => h (solo u hu ▸ hf))
+
+/-- **Refutation descends.**  If `◯A` fails anywhere above `w` it fails at
+`w`; so a rule may refute a `◯`-formula by pointing at any successor that
+refutes it. -/
+theorem not_force_circ_of_above {w v : K.W} {A : Form}
+    (hv : K.le w v) (h : ¬ K.force v (.circ A)) : ¬ K.force w (.circ A) :=
+  fun hf => h (K.force_mono hv hf)
+
+/-- **The unit.**  `A` forces `◯A`, by reflexivity of `Rm`.  Hence no world
+forces `A` and refutes `◯A`, so `A ⇒ ◯A` must remain UNDERIVABLE in any
+sound extension — the standing test cell.  (Also proved in `Basic.lean` as
+`force_circ_of_force`; restated here because it is a design constraint,
+not an incidental fact.) -/
+theorem circ_of_force {w : K.W} {A : Form} (h : K.force w A) :
+    K.force w (.circ A) :=
+  fun v hv => ⟨v, K.rm_refl v, K.force_mono hv h⟩
+
+/-- **Idempotence, one direction.**  `◯◯A` follows from `◯A` by the unit;
+the converse needs transitivity of `Rm` and is not used here. -/
+theorem circ_circ_of_circ {w : K.W} {A : Form} (h : K.force w (.circ A)) :
+    K.force w (.circ (.circ A)) := K.circ_of_force h
+
 end Kripke
+
+/-- `K` is **infallible**: no world of it forces `⊥`.  These are the
+models of the paper — a Kripke model in its sense has no fallible worlds
+— and every model this development BUILDS is of this kind
+(`modR_infallible`). -/
+def Kripke.Infallible (K : Kripke) : Prop := ∀ w : K.W, ¬ K.Fal w
 
 /-- "`A` is valid iff `A` is valid in all the Kripke models;
 Intuitionistic Propositional Logic IPL coincides with the set of valid
-formulas."  This is the paper's definition of `IPL`, and the only one
-this development uses. -/
-def IPL (A : Form) : Prop := ∀ K : Kripke, K.valid A
+formulas."  The paper's Kripke models are the infallible ones, so this
+is its definition read in the extended language. -/
+def IPL (A : Form) : Prop := ∀ K : Kripke, K.Infallible → K.valid A
+
+/-- Validity in ALL constraint models, fallible worlds included: the
+semantic definition of Propositional Lax Logic (Fairtlough–Mendler 1997).
+`PLL A` implies `IPL A`, and the converse fails already at `¬◯⊥`
+(`IPL_neg_circ_bot`, `not_PLL_neg_circ_bot` in `FRJ/Fallible.lean`). -/
+def PLL (A : Form) : Prop := ∀ K : Kripke, K.valid A
+
+theorem IPL_of_PLL {A : Form} (h : PLL A) : IPL A := fun K _ => h K
 
 /-- "If `K,ρ ⊮ A`, we say that `K` is a countermodel for `A`." -/
 def Countermodel (K : Kripke) (A : Form) : Prop := ¬ K.valid A
 
-theorem not_IPL_of_countermodel {K : Kripke} {A : Form}
-    (h : Countermodel K A) : ¬ IPL A := fun hA => h (hA K)
+/-- An INFALLIBLE countermodel refutes the paper's validity. -/
+theorem not_IPL_of_countermodel {K : Kripke} {A : Form} (hK : K.Infallible)
+    (h : Countermodel K A) : ¬ IPL A := fun hA => h (hA K hK)
+
+/-- A countermodel of any kind refutes validity in all constraint
+models. -/
+theorem not_PLL_of_countermodel {K : Kripke} {A : Form}
+    (h : Countermodel K A) : ¬ PLL A := fun hA => h (hA K)
 
 /-! ## Subformulas, and the left/right (negative/positive) split
 

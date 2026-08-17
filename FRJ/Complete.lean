@@ -126,14 +126,20 @@ where the modality first bites: a world can force `◯X` without forcing
 `X`, so `◯X` would have to be determining data, and `Λ*` does not yet
 carry it.  See the note on `gHat`. -/
 theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
-    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) :
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) (hinf : K.Infallible) :
     ∀ {A : Form}, A ∈ sfL G → K.force a A → Clo (lamStar K a G) A := by
   intro A
   induction A with
   | atom p =>
       intro hsf hf
       exact .base (mem_lamStar.mpr ⟨hsf, hf⟩)
-  | bot => intro _ hf; exact hf.elim
+  | bot =>
+      -- W3: at a FALLIBLE world `⊥` is forced and `Cl(Λ*)` cannot reach it
+      -- (`Λ*` carries variables and implications only), so this direction
+      -- of Lemma 6.5 — and with it the completeness construction — is a
+      -- statement about infallible models.
+      intro _ hf
+      exact absurd ((K.force_bot a).mp hf) (hinf a)
   | and A B ihA ihB =>
       intro hsf hf
       obtain ⟨hA, hB⟩ := sfL_and hsf
@@ -161,11 +167,12 @@ theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
 `Λ*_α` lies in `Cl(Λ*_β)`.  (Used where the construction moves to a
 world above.) -/
 theorem lamStar_mono {K : Kripke} {a b : K.W} {G : Form}
-    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) (hab : K.le a b) :
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) (hinf : K.Infallible)
+    (hab : K.le a b) :
     ∀ X ∈ lamStar K a G, Clo (lamStar K b G) X := by
   intro X hX
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hX
-  exact mem_clo_lamStar hcf hsf (K.force_mono hab (K.forceStar_force hst))
+  exact mem_clo_lamStar hcf hinf hsf (K.force_mono hab (K.forceStar_force hst))
 
 /-! ## The height of a world
 

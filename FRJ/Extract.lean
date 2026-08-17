@@ -148,23 +148,55 @@ def toKripke (P : PreModel)
   root_le := P.root_le
   V := fun w p => Form.atom p ∈ P.lbl w
   V_mono := fun {a b} hle p hp => clo_pv (h a b hle _ hp)
-  -- W1 of the modal extension.  A pre-model carries no modal data, so the
-  -- packaging takes `Rm = ≤`; this is uniform across the construction, so
-  -- forcing of `◯` is preserved at component worlds by the same argument
-  -- as for `⊃` (`join_force_comp`).
-  Rm := P.le
-  rm_refl := P.le_refl
-  rm_trans := P.le_trans
-  sub_mi := fun h => h
+  -- W3 of the modal extension.  A pre-model carries no modal data, and the
+  -- packaging takes `Rm` to be EQUALITY: every extracted world is barren.
+  -- (W1 took `Rm = ≤`, which was free while no rule mentioned `◯`.)  The
+  -- consequence, `toKripke_force_circ`, is that `◯` is the identity in
+  -- every extracted model — which is exactly what makes `◯∈` sound and is
+  -- also the ceiling on what this model construction can refute; the
+  -- complementary construction is `Kripke.falTop` in `FRJ/Fallible.lean`.
+  Rm := fun a b => a = b
+  rm_refl := fun _ => rfl
+  rm_trans := fun h₁ h₂ => h₁.trans h₂
+  sub_mi := fun {a _} h => h ▸ P.le_refl a
+  -- no extracted world is fallible: `Mod(D)` is a model of the paper's kind.
+  Fal := fun _ => False
+  fal_mono := fun _ h => h
+  fal_V := fun h => h.elim
   decLe := P.decLe
   decV := fun w p => inferInstanceAs (Decidable (Form.atom p ∈ P.lbl w))
-  decRm := P.decLe
+  decRm := fun a b => P.decEq a b
+  decFal := fun _ => isFalse (fun h => h)
 
 @[simp] theorem toKripke_le (P : PreModel) (h) (w v : P.W) :
     (P.toKripke h).le w v ↔ P.le w v := Iff.rfl
 
 @[simp] theorem toKripke_V (P : PreModel) (h) (w : P.W) (p : String) :
     (P.toKripke h).V w p ↔ Form.atom p ∈ P.lbl w := Iff.rfl
+
+@[simp] theorem toKripke_Rm (P : PreModel) (h) (w v : P.W) :
+    (P.toKripke h).Rm w v ↔ w = v := Iff.rfl
+
+@[simp] theorem toKripke_Fal (P : PreModel) (h) (w : P.W) :
+    ¬ (P.toKripke h).Fal w := fun hf => hf
+
+/-- **In every extracted model the modality is the identity.**  `Rm` is
+equality, so the `◯`-clause at `α` says "every `β ≥ α` forces `A`", which
+by monotonicity is just `α ⊩ A`.
+
+Both halves are used: left-to-right is the soundness of the modal
+introduction rule `◯∈` (a barren world refutes `◯A` as soon as it refutes
+`A`), right-to-left is the unit of the modality. -/
+@[simp] theorem toKripke_force_circ (P : PreModel) (h) (a : P.W) (A : Form) :
+    (P.toKripke h).force a (.circ A) ↔ (P.toKripke h).force a A := by
+  constructor
+  · intro hf
+    obtain ⟨c, hc, hcA⟩ := hf a ((P.toKripke h).le_refl a)
+    have hac : a = c := hc
+    subst hac
+    exact hcA
+  · intro hf b hb
+    exact ⟨b, rfl, (P.toKripke h).force_mono hb hf⟩
 
 end PreModel
 
@@ -263,6 +295,7 @@ def preR {G : Form} : {Γ : List Form} → {C : Form} → FRJr G Γ C → PreMod
   | _, _, .andR1 d _ => preR d
   | _, _, .andR2 d _ => preR d
   | _, _, .impIn d _ _ => preR d
+  | _, _, .circIn d _ => preR d
   | _, _, @FRJr.joinAt _ n stab th rhs F prem _ _ _ _ _ =>
       PreModel.join (premIdxElems prem) (premIdxComplete prem)
         (joinCtxAt stab th rhs F)
@@ -305,6 +338,7 @@ theorem preR_root_lbl {G : Form} : ∀ {Γ : List Form} {C : Form}
   | _, _, .andR1 d _ => preR_root_lbl d
   | _, _, .andR2 d _ => preR_root_lbl d
   | _, _, .impIn d _ _ => preR_root_lbl d
+  | _, _, .circIn d _ => preR_root_lbl d
   | _, _, @FRJr.joinAt _ _ _ _ _ _ _ _ _ _ _ _ => rfl
   | _, _, @FRJr.joinOr _ _ _ _ _ _ _ _ _ _ _ _ => rfl
 
@@ -349,6 +383,7 @@ theorem preR_closed {G : Form} : ∀ {Γ : List Form} {C : Form}
   | _, _, .andR1 d _ => preR_closed d
   | _, _, .andR2 d _ => preR_closed d
   | _, _, .impIn d _ _ => preR_closed d
+  | _, _, .circIn d _ => preR_closed d
   | _, _, @FRJr.joinAt _ n stab th rhs F prem hJ1 _ _ _ _ => by
       intro w v hle X hX
       cases v with
@@ -416,6 +451,17 @@ def modR {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C) : Kripke :=
 @[simp] theorem modR_le {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C)
     (w v : (preR d).W) : (modR d).le w v ↔ (preR d).le w v := Iff.rfl
 
+/-- `Mod(D)` is infallible: it is a model of the paper's own kind. -/
+theorem modR_infallible {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C) :
+    (modR d).Infallible := fun _ hf => hf
+
+/-- **Every world of `Mod(D)` is barren.**  Its only modal successor is
+itself, so `◯` is the identity there (`modR_force_circ`). -/
+theorem modR_force_circ {G : Form} {Γ : List Form} {C : Form} (d : FRJr G Γ C)
+    (w : (preR d).W) (A : Form) :
+    (modR d).force w (.circ A) ↔ (modR d).force w A :=
+  PreModel.toKripke_force_circ _ _ w A
+
 
 /-! ## Forcing transfers to a component of a join
 
@@ -448,21 +494,11 @@ theorem join_force_comp {ι : Type} [DecidableEq ι] {ιe : List ι} {ιc : ∀ 
         rw [hy'] at hA ⊢
         exact (ihB b).mpr (hf b hab ((ihA b).mp hA))
   | circ A ihA =>
+      -- both sides are the identity modality (`toKripke_force_circ`), so
+      -- this case is the induction hypothesis and nothing else.
       intro a
-      simp only [Kripke.force_circ]
-      constructor
-      · intro hf b hab
-        obtain ⟨y, hmy, hy⟩ := hf (some ⟨i, b⟩) (.comp hab)
-        obtain ⟨c, hbc, hy'⟩ :=
-          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) hmy
-        rw [hy'] at hy
-        exact ⟨c, hbc, (ihA c).mp hy⟩
-      · intro hf y hy
-        obtain ⟨b, hab, hy'⟩ :=
-          PreModel.join_le_comp (ιe := ιe) (ιc := ιc) (Γ₀ := Γ₀) (Ms := Ms) hy
-        subst hy'
-        obtain ⟨c, hbc, hc⟩ := hf b hab
-        exact ⟨some ⟨i, c⟩, .comp hbc, (ihA c).mpr hc⟩
+      rw [PreModel.toKripke_force_circ, PreModel.toKripke_force_circ]
+      exact ihA a
 
 /-- The paper's `σ_p ≤ φ(σ₁)` placement, in the only form the soundness
 proof uses it: the ROOT of a contributed model sits above `w`, with the

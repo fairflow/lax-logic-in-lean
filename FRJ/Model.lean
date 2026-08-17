@@ -42,14 +42,18 @@ inductive ARLe {ι : Type} (M : ι → Kripke) :
   | root (x : Option ((i : ι) × (M i).W)) : ARLe M none x
   | comp {i : ι} {a b : (M i).W} : (M i).le a b → ARLe M (some ⟨i, a⟩) (some ⟨i, b⟩)
 
-/-- `Rm` on the same carrier.  W1 of the modal extension.  It is NOT
-`ARLe`: each component must keep **its own** modal relation, or forcing of
-`◯` would not be preserved at component worlds (`addRoot_force_comp`).
-The fresh root sees everything modally, which is the weakest choice
-satisfying `Rm ⊆ ≤` and costs nothing while no rule mentions `◯`. -/
+/-- `Rm` on the same carrier.  It is NOT `ARLe`: each component must keep
+**its own** modal relation, or forcing of `◯` would not be preserved at
+component worlds (`addRoot_force_comp`).
+
+W3 of the modal extension: the fresh root is **barren** — its only modal
+successor is itself.  (W1 let it see everything modally, the weakest
+choice satisfying `Rm ⊆ ≤`, which cost nothing while no rule mentioned
+`◯`; it is no longer free, because a barren root refutes `◯A` as soon as
+it refutes `A`, and that is what makes a modal introduction rule sound.) -/
 inductive ARRm {ι : Type} (M : ι → Kripke) :
     Option ((i : ι) × (M i).W) → Option ((i : ι) × (M i).W) → Prop
-  | root (x : Option ((i : ι) × (M i).W)) : ARRm M none x
+  | rroot : ARRm M none none
   | comp {i : ι} {a b : (M i).W} : (M i).Rm a b → ARRm M (some ⟨i, a⟩) (some ⟨i, b⟩)
 
 /-- The fresh-root construction: a new world with valuation `V₀`, below
@@ -74,17 +78,33 @@ def addRoot {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe
   Rm := ARRm M
   rm_refl := by
     rintro (_ | ⟨i, a⟩)
-    · exact .root _
+    · exact .rroot
     · exact .comp ((M i).rm_refl a)
   rm_trans := by
     rintro _ _ _ (_ | ⟨hab⟩) h2
-    · exact .root _
+    · exact h2
     · cases h2 with
       | comp hbc => exact .comp ((M _).rm_trans hab hbc)
   sub_mi := by
     rintro _ _ (_ | ⟨hab⟩)
     · exact .root _
     · exact .comp ((M _).sub_mi hab)
+  Fal := fun x => match x with
+    | none => False
+    | some ⟨i, a⟩ => (M i).Fal a
+  fal_mono := by
+    rintro _ _ (⟨(_ | ⟨i, a⟩)⟩ | ⟨hab⟩) hf
+    · exact hf.elim
+    · exact hf.elim
+    · exact (M _).fal_mono hab hf
+  fal_V := by
+    rintro (_ | ⟨i, a⟩) hf p
+    · exact hf.elim
+    · exact (M i).fal_V hf p
+  decFal := by
+    rintro (_ | ⟨i, a⟩)
+    · exact isFalse (fun h => h)
+    · exact (M i).decFal a
   le_refl := by
     rintro (_ | ⟨i, a⟩)
     · exact .root _
@@ -129,7 +149,9 @@ def addRoot {ι : Type} [DecidableEq ι] (ιe : List ι) (ιc : ∀ i, i ∈ ιe
     · exact (M i).decV a p
   decRm := by
     rintro (_ | ⟨i, a⟩) y
-    · exact isTrue (.root _)
+    · cases y with
+      | none => exact isTrue .rroot
+      | some jb => exact isFalse (fun h => by cases h)
     · cases y with
       | none => exact isFalse (fun h => by cases h)
       | some jb =>
@@ -151,6 +173,14 @@ theorem addRoot_le_comp {i : ι} {a : (M i).W} {y : (addRoot ιe ιc V₀ M hV).
     ∃ b : (M i).W, (M i).le a b ∧ y = some ⟨i, b⟩ := by
   cases h with
   | comp hab => exact ⟨_, hab, rfl⟩
+
+/-- **The root is barren**: its only modal successor is itself.  This is
+the W3 property that makes the modal introduction rule `◯∈` sound —
+`Kripke.not_force_circ_of_no_promise` turns it into `ρ ⊮ A ⟹ ρ ⊮ ◯A`. -/
+theorem addRoot_rm_root {y : (addRoot ιe ιc V₀ M hV).W}
+    (h : (addRoot ιe ιc V₀ M hV).Rm none y) : y = none := by
+  cases h with
+  | rroot => rfl
 
 /-- The modal analogue: everything modally above a component world is in
 the same component, with the component's own `Rm`. -/
