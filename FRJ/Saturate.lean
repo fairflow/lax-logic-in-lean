@@ -383,4 +383,34 @@ def metR_prime {K : Kripke} {G : Form} {a : K.W} {C : Form}
         · exact absurd ((List.mem_filter.mp h).2)
             (fun hc => lamStar_not_circ_loc hloc hX hc)
 
+/-- **The syntactic irregular ◯-cell.**  `circNotIn` over ANY tagged
+`Z`-row, with the maximal `Clo`-zone of that row's context as `Θ`.
+This is a full `IrrWit` for the demand at `a` whenever every
+`Λ*_a`-member is `Clo`-derivable from the row's context — the
+cycle-breaking route the engine's derivations of the §9 corner cells
+use (an `Ax^R` row's atomic context grounds implication members through
+`Clo`'s weakening clause).  No world-anchoring, no minZeta. -/
+def metI_circ_syn {K : Kripke} {G : Form} {a : K.W} {Z : Form} {t : Tag}
+    {Γ : List Form}
+    (hgoal : Form.circ Z ∈ sfR G)
+    (d : FRJr G t Γ Z)
+    (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z)
+    (hcov : ∀ X ∈ lamStar K a G, Clo Γ X) :
+    IrrWit K G a (.circ Z) where
+  stab := []
+  th := (gHat G).filter (fun X => cloB Γ X)
+  der := .circNotIn d htag
+    (fun X hX => by
+      obtain ⟨hXG, hXc⟩ := List.mem_filter.mp hX
+      exact ⟨cloB_iff.mp hXc, hXG⟩) hgoal
+  sub := List.nil_subset _
+  cov := fun X hX => List.mem_append_right _
+    (List.mem_filter.mpr ⟨lamStar_subset_gHat hX, cloB_iff.mpr (hcov X hX)⟩)
+  thNf := by
+    simp only [nf]
+    refine (List.filter_congr (fun x hx => ?_)).symm
+    by_cases h : cloB Γ x = true
+    · simp [List.mem_filter, hx, h]
+    · simp [List.mem_filter, h]
+
 end FRJ
