@@ -170,6 +170,76 @@ def clean(s: str, limit=None) -> str:
         s = s[:limit].rstrip() + " …"
     return s
 
+def pdf_pages(main_tex: str):
+    """Rendered text of the compiled PDF, page 1 first.  The statements the
+    reader wants are the ones LaTeX printed, with the paper's 164 private
+    macros already expanded — which is something no Markdown renderer can
+    do for us, since those macros live only in the paper's preamble."""
+    import subprocess
+    d = os.path.dirname(os.path.abspath(main_tex)) or "."
+    pdf = os.path.join(d, os.path.splitext(os.path.basename(main_tex))[0] + ".pdf")
+    exe = shutil.which("pdftotext")
+    if not exe or not os.path.exists(pdf):
+        return {}
+    try:
+        r = subprocess.run([exe, pdf, "-"], capture_output=True, timeout=300)
+    except Exception:
+        return {}
+    pages = r.stdout.decode("utf-8", "replace").split("\f")
+    return {i + 1: t for i, t in enumerate(pages)}
+
+_HEAD = re.compile(r"\b(Theorem|Lemma|Corollary|Proposition|Definition|Example|"
+                   r"Remark|Claim|Fact|Observation|Conjecture)\s+\d")
+# the end of a statement, in order of reliability: the QED box LaTeX prints for
+# \qed, then the proof that follows, then the next numbered result.
+_QED = re.compile(r"[⊔⊓□∎]")
+
+def _skip_heading(text: str, i: int):
+    """Step past an optional parenthesised title and a full stop, allowing the
+    nested parens that a title like 'Soundness of FRJ(G)' contains."""
+    while i < len(text) and text[i] in " \t\n":
+        i += 1
+    title = None
+    if i < len(text) and text[i] == "(":
+        depth, j0 = 0, i
+        while i < len(text):
+            if text[i] == "(":
+                depth += 1
+            elif text[i] == ")":
+                depth -= 1
+                if depth == 0:
+                    i += 1
+                    title = re.sub(r"\s+", " ", text[j0 + 1:i - 1]).strip()
+                    break
+            i += 1
+    while i < len(text) and text[i] in " \t\n.":
+        i += 1
+    return i, title
+
+def rendered_statement(pages, kind, number, page, limit=420):
+    """The printed statement, read off the page the .aux points at."""
+    if not pages or not page:
+        return None
+    try:
+        pno = int(page)
+    except ValueError:
+        return None
+    text = (pages.get(pno, "") or "") + "\n" + (pages.get(pno + 1, "") or "")
+    m = re.search(rf"\b{re.escape(kind)}\s+{re.escape(str(number))}\b", text)
+    if not m:
+        return None
+    j, title = _skip_heading(text, m.end())
+    tail = text[j:]
+    cut = len(tail)
+    for pat in (_QED, re.compile(r"\bProof\s*\."), _HEAD, re.compile(r"\bFig\.")):
+        hit = pat.search(tail, 1)
+        if hit:
+            cut = min(cut, hit.start())
+    body = re.sub(r"\s+", " ", tail[:cut]).strip()
+    if not body:
+        return None
+    return (body[:limit].rstrip() + (" …" if len(body) > limit else ""), title)
+
 def extract(tex: str, kinds: dict):
     """Walk the document, recording sections and theorem-like environments.
     No numbering happens here: the .aux supplies it, keyed by label."""
@@ -213,12 +283,14 @@ def extract(tex: str, kinds: dict):
         pos = body_end
     return items
 
-def attach_numbers(items, aux):
+def attach_numbers(items, aux, pages=None):
     for it in items:
         if it["kind"] == "§":
             continue
         num, page = aux.get(it["label"] or "", (None, None))
         it["number"], it["page"] = num, page
+        got = rendered_statement(pages or {}, it["kind"], num, page)
+        it["printed"], it["printed_title"] = (got if got else (None, None))
     return items
 
 def emit_markdown(items, notes, src, aux_ok):
@@ -231,6 +303,13 @@ def emit_markdown(items, notes, src, aux_ok):
          + (f", {len(app)} of them in an appendix" if app else "") + ".*\n",
          "**Numbering** — " + "; ".join(notes) + "."]
     if aux_ok:
+        L.append("\n> Statements below are the **printed** text, read off the "
+                 "compiled PDF with `pdftotext`. They are not the LaTeX source: a "
+                 "paper's statements are written in its own private macros (this "
+                 "one defines 164 of them), so raw source is unreadable in Markdown "
+                 "and unrenderable by anything that lacks the preamble. The source "
+                 "is kept under each statement, folded, because that is what a "
+                 "transcription is checked against.\n")
         L.append("\n> Numbers and pages come from the compiled `.aux`, so they are "
                  "the paper's own. Cite by **label**: labels are stable across "
                  "versions, numbers are not — this paper's arXiv source and its "
@@ -253,14 +332,16 @@ def emit_markdown(items, notes, src, aux_ok):
             L.append(f"| **§ {it['title']}** | | | |")
             continue
         name = f"{it['kind']} {it['number']}" if it.get("number") else f"{it['kind']} (unlabelled)"
-        if it["title"]:
-            name += f" ({it['title']})"
+        shown = it.get("printed_title") or (None if "\\" in (it["title"] or "") else it["title"])
+        if shown:
+            name += f" ({shown})"
         if it["label"]:
             name += f"<br/>`{it['label']}`"
         if it.get("page"):
             name += f"<br/><sub>p.{it['page']}</sub>"
-        stmt = it["body"][:160].replace("|", "\\|")
-        L.append(f"| {name} | {stmt}{' …' if len(it['body'])>160 else ''} | | OPEN |")
+        src = it.get("printed") or it["body"]
+        stmt = src[:180].replace("|", "\\|").replace("$", "")
+        L.append(f"| {name} | {stmt}{' …' if len(src)>180 else ''} | | OPEN |")
     L += ["\nStatus is one of **PROVED** (sorry-free with a pinned "
           "`#print axioms`), **REFUTED** (kernel-checked countermodel), "
           "**OPEN**, or *out of scope* — kept rigidly distinct.\n",
@@ -272,15 +353,20 @@ def emit_markdown(items, notes, src, aux_ok):
           "|---|---|---|---|---|\n", "## Full statements\n"]
     for it in res:
         head = f"### {it['kind']} {it.get('number') or '(unlabelled)'}"
-        if it["title"]:
-            head += f" ({it['title']})"
+        shown = it.get("printed_title") or (None if "\\" in (it["title"] or "") else it["title"])
+        if shown:
+            head += f" ({shown})"
         L.append(head)
         if it["label"]:
             L.append(f"`\\label{{{it['label']}}}`" +
                      (f"  ·  p.{it['page']}" if it.get("page") else "") +
                      ("  ·  **appendix**" if it["appendix"] else ""))
-        L.append("\n```tex\n" + it["body"][:1500] +
-                 ("\n… (truncated)" if len(it["body"]) > 1500 else "") + "\n```\n")
+        if it.get("printed"):
+            L.append("\n" + it["printed"] + "\n")
+        L.append("<details><summary>LaTeX source (what to transcribe from)"
+                 "</summary>\n\n```tex\n" + it["body"][:1500] +
+                 ("\n… (truncated)" if len(it["body"]) > 1500 else "") +
+                 "\n```\n\n</details>\n")
     return "\n".join(L)
 
 def main():
@@ -314,7 +400,8 @@ def main():
     else:
         aux, note = compile_and_read_aux(main_tex)
     notes.append(note)
-    items = attach_numbers(extract(tex, kinds), aux)
+    pages = {} if a.no_compile else pdf_pages(main_tex)
+    items = attach_numbers(extract(tex, kinds), aux, pages)
     md = emit_markdown(items, notes, src, bool(aux))
     if a.out:
         io.open(a.out, "w", encoding="utf-8").write(md)

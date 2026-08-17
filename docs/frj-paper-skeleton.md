@@ -4,6 +4,9 @@
 
 **Numbering** — 108 labels read from frj-corr.aux (compiled here).
 
+> Statements below are the **printed** text, read off the compiled PDF with `pdftotext`. They are not the LaTeX source: a paper's statements are written in its own private macros (this one defines 164 of them), so raw source is unreadable in Markdown and unrenderable by anything that lacks the preamble. The source is kept under each statement, folded, because that is what a transcription is checked against.
+
+
 > Numbers and pages come from the compiled `.aux`, so they are the paper's own. Cite by **label**: labels are stable across versions, numbers are not — this paper's arXiv source and its journal version number the same results differently.
 
 > 2 item(s) carry no `\label` and so have no number here. They are the ones a hand count silently skips.
@@ -17,49 +20,49 @@
 | **§ Introduction** | | | |
 | **§ Preliminaries** | | | |
 | **§ The calculus $\FRJof{G}$** | | | |
-| Theorem 1 (Soundness of $\FRJof{G}$)<br/>`theo:FRJsound`<br/><sub>p.6</sub> | $\proves{\FRJof{G}}G$ implies $G\not\in\IPL$. \qed | | OPEN |
-| Example 1<br/>`ex:impPS1`<br/><sub>p.8</sub> | Let $\s_1=\seqfrji{}{p,q}{B}$ be an $\FRJof{G}$-sequent such that the formula $p\lor q\imp B$ belongs to $\Sfr{G}$. To apply rule $\ruleIMPi$ to $\s_1$ so to ge … | | OPEN |
-| Example 2<br/>`ex:impPS2`<br/><sub>p.9</sub> | Let $\s_1=\seqfrj{p,q}{B}$ be an $\FRJof{G}$-sequent and let assume that \[ \bG\;=\;\Sfl{G}\cap(\PV\cup\Fmimp)\;=\;\{p,\,q,\,r,\,r\imp p,\,p\imp r\} \hspace{4em … | | OPEN |
-| Example (unlabelled) | Let $\s_1=\seqfrji{\Sigma_1 }{\Theta_1}{B}$, where $\Sigma_1=\{B\imp X_1, B\imp X_2, C\imp X_3 \}$ and $C\neq B$. We cannot apply a join rule having $\s_1$ as o … | | OPEN |
-| Lemma 1<br/>`lemma:lhs`<br/><sub>p.11</sub> | \mbox{} \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item $\s_1\mapstorz{\Rcal} \s_2$ and $\Rcal\neq\,\ruleIMPni$ imply $\Lhs{\s_2}\,\subseteq\,\Lhs{\s_1}$ … | | OPEN |
-| Example 4<br/>`ex:Ror`<br/><sub>p.12</sub> | In the Introduction, by applying the unsound rule $R\lor$, we got a wrong derivation of the sequent $\s=\seqfrj{p,H}{q_1\lor q_2}$, where $H= p\imp q_1\lor q_2$ … | | OPEN |
-| Example 5<br/>`ex:frjNishimura`<br/><sub>p.14</sub> | Let us consider the following instances $S$ and $T$ of \emph{Scott} and \emph{Anti-Scott} principles, which are equivalent to Nishimura formulas $N_{10}$ and $N … | | OPEN |
-| Example 6<br/>`ex:frjKP`<br/><sub>p.15</sub> | Another significant example is the $\FRJof{K}$-derivation $\Dcal_K$ of the instance $K=(\neg a \imp b\lor c)\imp (\neg a \imp b) \lor (\neg a \imp c)$ of Kreise … | | OPEN |
-| Lemma 2<br/>`lemma:soundFRJ`<br/><sub>p.16</sub> | Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$, let $\Mod{\Dcal}$ be the model extracted from $\Dcal$ and $\phi$ the map associated with $\Dcal$. For every seq … | | OPEN |
-| Theorem 2<br/>`theo:soundFRJ`<br/><sub>p.17</sub> | Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$. Then, $\Mod{\Dcal}$ is a countermodel for $G$. | | OPEN |
-| Example 7<br/>`ex:count`<br/><sub>p.17</sub> | Let us consider the formulas $S$, $T$ and $K$ in examples~\ref{ex:frjNishimura} and~\ref{ex:frjKP}. The models $\Mod{\Dcal_S}$, $\Mod{\Dcal_T}$, $\Mod{\Dcal_K}$ … | | OPEN |
-| Lemma 3<br/>`lemma:wg`<br/><sub>p.19</sub> | $\s_1\mapsto \s_2$ implies $\stru{0,0,0}\preceq \wg{\s_2} \prec \wg{\s_1}$. \qed | | OPEN |
-| Lemma 4<br/>`lemma:branch`<br/><sub>p.19</sub> | Let $\Dcal$ be an $\FRJof{G}$-derivation, let $\Bcal$ be a branch of $\Dcal$ and $N=\size{G}$. Then: \begin{enumerate}[label=(\roman*), ref=(\roman*)] \item the … | | OPEN |
-| Theorem 3<br/>`theo:height`<br/><sub>p.20</sub> | Let $\Dcal$ be an $\FRJof{G}$-derivation and $N=\size{G}$. Then: \begin{enumerate}[label=(\roman*), ref=(\roman*)] \item $\height{\Dcal}\,=\,O(N^2)$. \item $\he … | | OPEN |
+| Theorem 1 (Soundness of FRJ(G))<br/>`theo:FRJsound`<br/><sub>p.6</sub> | ⊢FRJ(G) G implies G ̸∈ IPL. | | OPEN |
+| Example 1<br/>`ex:impPS1`<br/><sub>p.8</sub> | Let σ1 = · ; p, q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ1 so to get a sequent with p ∨ q ⊃ B in the right, we have to sele … | | OPEN |
+| Example 2<br/>`ex:impPS2`<br/><sub>p.9</sub> | Let σ1 = p, q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃ ) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊅∈ to σ1 yieldi … | | OPEN |
+| Example (unlabelled) | Let \s_1=\seqfrji{\Sigma_1 }{\Theta_1}{B}, where \Sigma_1=\{B\imp X_1, B\imp X_2, C\imp X_3 \} and C\neq B. We cannot apply a join rule having \s_1 as only premise since th … | | OPEN |
+| Lemma 1<br/>`lemma:lhs`<br/><sub>p.11</sub> | R (i) σ1 7→0 σ2 and R ̸= ⊅∈ imply Lhs(σ2 ) ⊆ Lhs(σ1 ). (ii) σ1 7→0 σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). (iii) σ1 7→∗ σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). | | OPEN |
+| Example 4<br/>`ex:Ror`<br/><sub>p.12</sub> | In the Introduction, by applying the unsound rule R∨, we got a wrong derivation of the sequent σ = p, H ⇒ q1 ∨ q2 , where H = p ⊃ q1 ∨ q2 . By the soundness property (S1), if σ cou … | | OPEN |
+| Example 5<br/>`ex:frjNishimura`<br/><sub>p.14</sub> | Let us consider the following instances S and T of Scott and AntiScott principles, which are equivalent to Nishimura formulas N10 and N9 respectively [3] (the schema generating Ni  … | | OPEN |
+| Example 6<br/>`ex:frjKP`<br/><sub>p.15</sub> | Another significant example is the FRJ(K)-derivation DK of the instance K = (¬a ⊃ b ∨ c) ⊃ (¬a ⊃ b) ∨ (¬a ⊃ c) of Kreisel-Putnam principle [3] shown in | | OPEN |
+| Lemma 2<br/>`lemma:soundFRJ`<br/><sub>p.16</sub> | Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ an … | | OPEN |
+| Theorem 2<br/>`theo:soundFRJ`<br/><sub>p.17</sub> | Let D be an FRJ(G)-derivation of G. Then, Mod(D) is a countermodel for G. | | OPEN |
+| Example 7<br/>`ex:count`<br/><sub>p.17</sub> | Let us consider the formulas S, T and K in examples 5 and 6. The models Mod(DS ), Mod(DT ), Mod(DK ) and the related maps ϕ are shown in Figs. 5, 6 and 7 respectively. The bottom w … | | OPEN |
+| Lemma 3<br/>`lemma:wg`<br/><sub>p.19</sub> | σ1 7→ σ2 implies ⟨0, 0, 0⟩ ⪯ wg(σ2 ) ≺ wg(σ1 ). | | OPEN |
+| Lemma 4<br/>`lemma:branch`<br/><sub>p.19</sub> | Let D be an FRJ(G)-derivation, let B be a branch of D and N = \|G\|. Then: (i) the length of the branch B is O(N 2 ); (ii) B contains N p-sequents at most. | | OPEN |
+| Theorem 3<br/>`theo:height`<br/><sub>p.20</sub> | Let D be an FRJ(G)-derivation and N = \|G\|. Then: (i) h(D) = O(N 2 ). (ii) h(Mod(D)) ≤ N . | | OPEN |
 | **§ The proof-search procedure and saturated Databases** | | | |
-| Lemma 5<br/>`lemma:subsRules`<br/><sub>p.21</sub> | Let \[ \AXC{$\s_1 \;\cdots\; \s_n$} \RightLabel{$\Rcal$} \UIC{$\s$} \DP \] be an instance of a rule of $\FRJof{G}$ and let $\s_1\sqsubseteq \s'_1$, \dots, $\s_n … | | OPEN |
-| Theorem 4<br/>`theo:fsearchAdequate`<br/><sub>p.23</sub> | $\FSearch$ is an adequate proof-search procedure. | | OPEN |
-| Lemma 6<br/>`lemma:compactSatDB`<br/><sub>p.23</sub> | Let $G$ be a formula and let $\DBof{G}^1$ be a compact saturated database for $G$. For every saturated database $\DBof{G}^2$ for $G$, $\DBof{G}^1\subseteq \DBof … | | OPEN |
-| Theorem 5<br/>`theo:uniquetSatDB`<br/><sub>p.23</sub> | For every formula $G$, there exists a unique compact saturated database $\DBMof{G}$ for $G$, which is the minimum saturated database for $G$. | | OPEN |
+| Lemma 5<br/>`lemma:subsRules`<br/><sub>p.21</sub> | Let σ1 · · · σn R σ be an instance of a rule of FRJ(G) and let σ1 ⊑ σ1′ , . . . , σn ⊑ σn′ . Then, σ1′ · · · σn′ R σ′ is an instance of R in FRJ(G) where σ ⊑ σ ′ . | | OPEN |
+| Theorem 4<br/>`theo:fsearchAdequate`<br/><sub>p.23</sub> | FSearch is an adequate proof-search procedure. | | OPEN |
+| Lemma 6<br/>`lemma:compactSatDB`<br/><sub>p.23</sub> | Let G be a formula and let D1G be a compact saturated database for G. For every saturated database D2G for G, D1G ⊆ D2G . | | OPEN |
+| Theorem 5<br/>`theo:uniquetSatDB`<br/><sub>p.23</sub> | For every formula G, there exists a unique compact saturated database D∗G for G, which is the minimum saturated database for G. | | OPEN |
 | **§ The calculus $\GBUof{G}$ and completeness of $\FRJof{G}$** | | | |
-| Lemma 7<br/>`lemma:GBUsound`<br/><sub>p.25</sub> | If $\proves{\GBUof{G}} \tau$, then $\tau$ is valid.\qed | | OPEN |
-| Theorem 6 (Soundness of $\GBUof{G}$)<br/>`theo:GBUsound`<br/><sub>p.25</sub> | $\proves{\GBUof{G}} G$ implies $G\in\IPL$. \qed | | OPEN |
-| Lemma 8<br/>`lemma:wggbu`<br/><sub>p.25</sub> | Let $\Rcal$ be a rule of $\GBUof{G}$, let $\tau$ be the conclusion of $\Rcal$ and $\tau'$ any of the premises of $\Rcal$. Then $\stru{0,0,0}\preceq \wggbu{\tau' … | | OPEN |
-| Theorem 7<br/>`theo:gbufin`<br/><sub>p.26</sub> | Let $\Tcal$ be a $\GBUof{G}$-tree and $\tau$ the root sequent of $\Tcal$. Then, the height of $\Tcal$ is $O(\|\tau\|^2)$. \qed | | OPEN |
-| Example 8<br/>`ex:gbu1`<br/><sub>p.28</sub> | Let $E$ be the following goal formula: \[ \begin{array}{l} E\;=\; (p\land A \land B \land C) \,\imp\, D \\[1ex] A\;=\; p\imp (q_1\lor q_2 ) \quad B\;=\; q_1\imp … | | OPEN |
-| Lemma 9<br/>`lemma:gbuInv`<br/><sub>p.30</sub> | Let $G$ be a formula, let $\DBof{G}$ be a saturated database for $G$, $\Psi\subseteq \Sfl{G}$ and $\Omega\subseteq \bG$. \begin{enumerate}[label=(\roman*),ref=( … | | OPEN |
-| Lemma 10<br/>`lemma:gbuiOr`<br/><sub>p.32</sub> | Let $G$ be a formula, let $\DBof{G}$ be a saturated database for $G$ and $\Omega \subseteq \bG$. If $\DBof{G}\eval\seqgbui{\Omega}{C_1}$ and $\DBof{G}\eval\seqg … | | OPEN |
-| Lemma 11<br/>`lemma:gbuSuccAt`<br/><sub>p.32</sub> | Let $G$ be a formula and let $\DBof{G}$ be a saturated database for $G$. Let $\tau=\seqgbu{\Omega}{F}$ be such that $\Omega\subseteq \bG$ and $F\in\Prime$, and  … | | OPEN |
-| Lemma 12<br/>`lemma:gbuSuccOr`<br/><sub>p.33</sub> | Let $G$ be a formula and let $\DBof{G}$ be a saturated database for $G$. Let $\tau=\seqgbu{\Omega}{C_1\lor C_2}$ be such that $\Omega\subseteq \bG$, and let us  … | | OPEN |
-| Theorem 8 (Correctness of $\Search$)<br/>`theo:search`<br/><sub>p.33</sub> | Let $G$ be a formula, let $\tau$ be a $\GBUof{G}$-sequent and let $\DBof{G}$ be a saturated database for $G$ satisfying~\ref{search:ass1} and~\ref{search:ass2}. … | | OPEN |
-| Theorem 9<br/>`theo:GBU-FRJ`<br/><sub>p.34</sub> | $\proves{\GBUof{G}} G$ iff $\nproves{\FRJof{G}} G$. | | OPEN |
-| Theorem (unlabelled) (Completeness of $\FRJof{G}$ and $\GBUof{G}$)<br/>`theo:compl1` | \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item $G\not\in\IPL$ implies $\proves{\FRJof{G}} G$. \item $G\in\IPL$ implies $\proves{\GBUof{G}} G$. \end{enum … | | OPEN |
+| Lemma 7<br/>`lemma:GBUsound`<br/><sub>p.25</sub> | If ⊢Gbu(G) τ , then τ is valid. | | OPEN |
+| Theorem 6 (Soundness of Gbu(G))<br/>`theo:GBUsound`<br/><sub>p.25</sub> | ⊢Gbu(G) G implies G ∈ IPL. | | OPEN |
+| Lemma 8<br/>`lemma:wggbu`<br/><sub>p.25</sub> | Let R be a rule of Gbu(G), let τ be the conclusion of R and τ ′ any of the premises of R. Then ⟨0, 0, 0⟩ ⪯ Wg(τ ′ ) ≺ Wg(τ ). | | OPEN |
+| Theorem 7<br/>`theo:gbufin`<br/><sub>p.26</sub> | Let T be a Gbu(G)-tree and τ the root sequent of T . Then, the height of T is O(\|τ \|2 ). | | OPEN |
+| Example 8<br/>`ex:gbu1`<br/><sub>p.28</sub> | Let E be the following goal formula: E = (p ∧ A ∧ B ∧ C) ⊃ D A = p ⊃ (q1 ∨ q2 ) B = q1 ⊃ D C = q2 ⊃ D D = r 1 ∨ r2 ⊃ Lhs(E) ∩ (V ∪ L ) = { p, q1 , q2 , r1 , r2 , A, B, C } Rhs(E) = … | | OPEN |
+| Lemma 9<br/>`lemma:gbuInv`<br/><sub>p.30</sub> | Let G be a formula, let DG be a saturated database for G, Ψ ⊆ Sl(G) and Ω ⊆ Γ . (i) If DG ▷ A, B, Ψ ⇒g C, then DG ▷ A ∧ B, Ψ ⇒g C. (ii) If C1 ∧ C2 ∈ Sr(G) and DG ▷ Ψ ⇒g Ck with k ∈ … | | OPEN |
+| Lemma 10<br/>`lemma:gbuiOr`<br/><sub>p.32</sub> | Let G be a formula, let DG be a saturated database for G and Ω ⊆ Γ . If DG ▷ Ω →g C1 and DG ▷ Ω →g C2 , then DG ▷ Ω →g C1 ∨ C2 . | | OPEN |
+| Lemma 11<br/>`lemma:gbuSuccAt`<br/><sub>p.32</sub> | Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g F be such that Ω ⊆ Γ and F ∈ V ⊥ , and let us assume that: (i) F ̸∈ Ω; (ii) for every A ⊃ B ∈ Ω, DG ▷ Ω →g … | | OPEN |
+| Lemma 12<br/>`lemma:gbuSuccOr`<br/><sub>p.33</sub> | Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g C1 ∨ C2 be such that Ω ⊆ Γ , and let us assume that: (i) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. (ii) DG ▷ Ω →g  … | | OPEN |
+| Theorem 8 (Correctness of BSearch)<br/>`theo:search`<br/><sub>p.33</sub> | Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ, DG ) computes a Gbu(G)-derivation of τ . | | OPEN |
+| Theorem 9<br/>`theo:GBU-FRJ`<br/><sub>p.34</sub> | ⊢Gbu(G) G iff ̸⊢FRJ(G) G. | | OPEN |
+| Theorem (unlabelled)<br/>`theo:compl1` | \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item G\not\in\IPL implies \proves{\FRJof{G}} G. \item G\in\IPL implies \proves{\GBUof{G}} G. \end{enumerate} | | OPEN |
 | **§ Minimality** | | | |
-| Lemma 13<br/>`lemma:rnk`<br/><sub>p.36</sub> | Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$. Then, $\Rn{\Dcal}=\height{\Mod{\Dcal}}$. \qed | | OPEN |
-| Lemma 14<br/>`lemma:minMod`<br/><sub>p.36</sub> | Let $\K=\stru{P,\leq,\rho, V}$ be a countermodel for $G$, let $\a\in P$ and $C\in\Omega_\a$. \begin{itemize} \item There exists an $\FRJof{G}$-derivation $\derf … | | OPEN |
-| Theorem 11<br/>`theo:minMod`<br/><sub>p.36</sub> | Let $G\not\in \IPL$. Then, there exists an $\FRJof{G}$-derivation $\tilde\Dcal$ of $G$ such that $\height{\Mod{\tilde\Dcal}}=\height{G}$. \qed | | OPEN |
-| Example 9<br/>`ex:STMinH`<br/><sub>p.37</sub> | Let $S$ be the instance of Scott Principle in Ex.~\ref{ex:frjNishimura}: \[ \begin{array}{l} S \;= \; H\,\imp\, \neg\neg p \lor \neg p \qquad H\;=\; (\neg\neg p … | | OPEN |
-| Example 10<br/>`ex:DUMnonMIN`<br/><sub>p.39</sub> | Let $C$ be the formula \[ \begin{array}{l} C \;= \; A\lor B \qquad A\;=\; (p_1\imp p_2)\lor (p_2\imp p_1) \qquad B\;=\; (q_1\imp q_2)\lor (q_2\imp q_1) \end{arr … | | OPEN |
-| Lemma 15<br/>`lemma:closure`<br/><sub>p.40</sub> | Let $\K$ be a countermodel for $G$ and $\a$ a world of $\K$. Then, $\Lambda_\a=\Clo{\Lambda_\a}=\Clo{\Lambdas_\a}$. | | OPEN |
+| Lemma 13<br/>`lemma:rnk`<br/><sub>p.36</sub> | Let D be an FRJ(G)-derivation of G. Then, Rn(D) = h(Mod(D)). | | OPEN |
+| Lemma 14<br/>`lemma:minMod`<br/><sub>p.36</sub> | Let K = ⟨P, ≤, ρ, V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα . – There exists an FRJ(G)-derivation Dα→ (C) of σα→ (C) = Σ ; Θ → C such that: (i) Rn(Dα→ (C)) < h(α); (ii) Σ ⊆ … | | OPEN |
+| Theorem 11<br/>`theo:minMod`<br/><sub>p.36</sub> | Let G ̸∈ IPL. Then, there exists an FRJ(G)-derivation D̃ of G such that h(Mod(D̃)) = h(G). | | OPEN |
+| Example 9<br/>`ex:STMinH`<br/><sub>p.37</sub> | Let S be the instance of Scott Principle in Ex. 5: S = H ⊃ ¬¬p ∨ ¬p H = (¬¬p ⊃ p) ⊃ ¬p ∨ p Sl(S) = { H, ¬p ∨ p, ¬¬p, ¬p, p } Sr(S) = { S, ¬¬p ∨ ¬p, ¬¬p ⊃ p, ¬¬p, ¬p, p, ⊥ } We have … | | OPEN |
+| Example 10<br/>`ex:DUMnonMIN`<br/><sub>p.39</sub> | Let C be the formula C = A∨B A = (p1 ⊃ p2 ) ∨ (p2 ⊃ p1 ) B = (q1 ⊃ q2 ) ∨ (q2 ⊃ q1 ) We have h(C) = 1. Let KC be the following countermodel for C of height 1, consisting of the wor … | | OPEN |
+| Lemma 15<br/>`lemma:closure`<br/><sub>p.40</sub> | Let K be a countermodel for G and α a world of K. Then, Λα = Cl(Λα ) = Cl(Λ∗α ). | | OPEN |
 | **§ Related and future work** | | | |
 | **§ Soundness of $\FRJof{G}$** | | | |
-| Lemma 16 (aka Lemma 3.9 of Sec.3)<br/>`app:lemma:soundFRJ`<br/><sub>p.51</sub> | Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$, let $\Mod{\Dcal}$ be the model extracted from $\Dcal$ and $\phi$ the map associated with $\Dcal$. For every seq … | | OPEN |
-| Lemma 17<br/>`lemma:soundnessProperties`<br/><sub>p.53</sub> | Soundness properties~\ref{prop:soundr} and~\ref{prop:soundi} hold. | | OPEN |
+| Lemma 16 (aka Lemma 3.9 of Sec.3)<br/>`app:lemma:soundFRJ`<br/><sub>p.51</sub> | Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ an … | | OPEN |
+| Lemma 17<br/>`lemma:soundnessProperties`<br/><sub>p.53</sub> | Soundness properties (S1) and (S2) hold. | | OPEN |
 
 Status is one of **PROVED** (sorry-free with a pinned `#print axioms`), **REFUTED** (kernel-checked countermodel), **OPEN**, or *out of scope* — kept rigidly distinct.
 
@@ -72,273 +75,495 @@ Status is one of **PROVED** (sorry-free with a pinned `#print axioms`), **REFUTE
 
 ## Full statements
 
-### Theorem 1 (Soundness of $\FRJof{G}$)
+### Theorem 1 (Soundness of FRJ(G))
 `\label{theo:FRJsound}`  ·  p.6
+
+⊢FRJ(G) G implies G ̸∈ IPL.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 $\proves{\FRJof{G}}G$ implies $G\not\in\IPL$. \qed
 ```
 
+</details>
+
 ### Example 1
 `\label{ex:impPS1}`  ·  p.8
+
+Let σ1 = · ; p, q → B be an FRJ(G)-sequent such that the formula p ∨ q ⊃ B belongs to Sr(G). To apply rule ⊃∈ to σ1 so to get a sequent with p ∨ q ⊃ B in the right, we have to select a subset Λ of {p, q} satisfying the side condition p ∨ q ∈ Cl(Λ). The following three choices are possible: Λ1 = {p} Λ2 = {q} Λ3 = {p, q} · ; p, q → B ⊃∈ p; q → p ∨ q ⊃ B · ; p, q → B ⊃∈ q; p → p∨q ⊃ B · ; p, q → B ⊃∈ p, q ; · → p ∨ q ⊃ …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\s_1=\seqfrji{}{p,q}{B}$ be an $\FRJof{G}$-sequent such that the formula $p\lor q\imp B$ belongs to $\Sfr{G}$. To apply rule $\ruleIMPi$ to $\s_1$ so to get a sequent with $p\lor q\imp B$ in the right, we have to select a subset $\Lambda$ of $\{p,q\}$ satisfying the side condition $p\lor q\in\Clo{\Lambda}$. The following three choices are possible: \[ \begin{array}{lll} \Lambda_1\;=\;\{p\} & \Lambda_2\;=\;\{q\} & \Lambda_3\;=\;\{p,q\} \\[1.5ex] \AXC{$\seqfrji{}{p,q}{B}$} \RightLabel{$\ruleIMPi$} \UIC{$\seqfrji{p}{q}{p\lor q\imp B}$} \DP \hspace{2em} & \AXC{$\seqfrji{}{p,q}{B}$} \RightLabel{$\ruleIMPi$} \UIC{$\seqfrji{q}{p}{p\lor q\imp B}$} \DP \hspace{2em} & \AXC{$\seqfrji{}{p,q}{B}$} \RightLabel{$\ruleIMPi$} \UIC{$\seqfrji{p,q}{}{p\lor q\imp B}$} \DP \end{array} \] We point out that $\Lambda_1$ and $\Lambda_2$ are minimal sets satisfying the side condition, while $\Lambda_3$ is not. Indeed, the empty set is the only proper subset of $\Lambda_1$ and $\Lambda_2$ and $p\lor q\not\in\Clo{\emptyset}$. On the other hand, $\Lambda_3$ is not minimal, since both $\Lambda_1$ and $\Lambda_2$ are proper subsets of $\Lambda_3$. \EndEs
 ```
 
+</details>
+
 ### Example 2
 `\label{ex:impPS2}`  ·  p.9
+
+Let σ1 = p, q ⇒ B be an FRJ(G)-sequent and let assume that Γ = Sl(G)∩(V∪L⊃ ) = {p, q, r, r ⊃ p, p ⊃ r} C = p∧q ⊃ B ∈ Sr(G) We show all the possible applications of ⊅∈ to σ1 yielding an irregular sequent of the form · ; Θ → C. By the side conditions, Θ must be a subset of Cl({p, q})∩Γ = {p, q, r ⊃ p}, which gives rise to eight possible choices: Θ1 = ∅ Θ5 = {p, r ⊃ p} Θ2 = {p} Θ6 = {q, r ⊃ p} Θ3 = {q} Θ7 = {p, q} Θ4 = …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\s_1=\seqfrj{p,q}{B}$ be an $\FRJof{G}$-sequent and let assume that \[ \bG\;=\;\Sfl{G}\cap(\PV\cup\Fmimp)\;=\;\{p,\,q,\,r,\,r\imp p,\,p\imp r\} \hspace{4em} C\,=\,p\land q\imp B\,\in\,\Sfr{G} \] We show all the possible applications of $\ruleIMPni$ to $\s_1$ yielding an irregular sequent of the form $\seqfrji{}{\Theta}{C}$. By the side conditions, $\Theta$ must be a subset of $\Clo{\{p,q\}}\cap\bG=\{p,q,r\imp p\}$, which gives rise to eight possible choices: \[ \begin{array}{llll} \Theta_1\,=\, \emptyset &\Theta_2\,=\,\{ p\} & \Theta_3\,=\,\{q\} &\Theta_4\,=\,\{r\imp p\} \\[.5ex] \Theta_5\,=\,\{p,r\imp p\} \qquad & \Theta_6\,=\,\{q,r\imp p\} \qquad & \Theta_7\,=\,\{p,q\} \qquad & \Theta_8\,=\,\{p,q,r\imp p\} \end{array} \] By the side conditions, we need $p\land q\not\in\Clo{\Theta}$, hence $\Theta_7$ and $\Theta_8$ must be ruled out. This leads to six possible applications of rule $\ruleIMPni$: \[ \begin{array}{ll} \Theta_1\,=\,\emptyset\quad \AXC{$\seqfrj{p,q}{B}$} \RightLabel{$\ruleIMPni$} \UIC{$\seqfrji{}{\Theta_1}{C}$} \DP & \Theta_2\,=\,\{ p\}\quad \AXC{$\seqfrj{p,q}{B}$} \RightLabel{$\ruleIMPni$} \UIC{$\seqfrji{}{\Theta_2}{C}$} \DP \\[5ex] \Theta_3\,=\,\{q\}\quad \AXC{$\seqfrj{p,q}{B}$} \RightLabel{$\ruleIMPni$} \UIC{$\seqfrji{}{\Theta_3}{C}$} \DP & \Theta_4\,=\,\{r\imp p\}\quad \AXC{$\seqfrj{p,q}{B}$} \RightLabel{$\ruleIMPni$} \UIC{$\seqfrji{}{\Theta_4}{C}$} \DP \\[5ex] \Theta_5\,=\,\{p,r\imp p\}\quad \AXC{$\seqfrj{p,q}{B}$} \RightLabel{$\ruleIMPni$} \UIC{$\seqfr
 … (truncated)
 ```
 
+</details>
+
 ### Example (unlabelled)
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\s_1=\seqfrji{\Sigma_1 }{\Theta_1}{B}$, where $\Sigma_1=\{B\imp X_1, B\imp X_2, C\imp X_3 \}$ and $C\neq B$. We cannot apply a join rule having $\s_1$ as only premise since the formula $C\imp X_3$ would not be supported (while both $B\imp X_1$ and $B\imp X_2$ are, being $B$ the right formula of $\s_1$). Thus, to apply a join rule, we need a further premise $\s_2=\seqfrji{\Sigma_2}{\Theta_2}{C}$ such that $\Sigma_1\subseteq\Sigma_2\cup\Theta_2$ and $\Sigma_2\subseteq\Sigma_1\cup\Theta_1$ (see~\ref{sc:J1}). In turn, $\Sigma_2$ might contain some non-supported formulas; e.g., a formula $D\imp X_4$ such that $D\neq B$ and $D\neq C$; in this case, we need a further premise $\s_3$ s.t. $\Rhs{\s_3}=D$ to support it. \EndEs
 ```
 
+</details>
+
 ### Lemma 1
 `\label{lemma:lhs}`  ·  p.11
+
+R (i) σ1 7→0 σ2 and R ̸= ⊅∈ imply Lhs(σ2 ) ⊆ Lhs(σ1 ). (ii) σ1 7→0 σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )). (iii) σ1 7→∗ σ2 implies Lhs(σ2 ) ⊆ Cl(Lhs(σ1 )).
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 \mbox{} \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item $\s_1\mapstorz{\Rcal} \s_2$ and $\Rcal\neq\,\ruleIMPni$ imply $\Lhs{\s_2}\,\subseteq\,\Lhs{\s_1}$. \item $\s_1\mapstoz \s_2$ implies $\Lhs{\s_2}\,\subseteq\,\Clo{\Lhs{\s_1}}$. \item $\s_1\mapstos \s_2$ implies $\Lhs{\s_2}\,\subseteq\,\Clo{\Lhs{\s_1}}$. \qed \end{enumerate}
 ```
 
+</details>
+
 ### Example 4
 `\label{ex:Ror}`  ·  p.12
+
+In the Introduction, by applying the unsound rule R∨, we got a wrong derivation of the sequent σ = p, H ⇒ q1 ∨ q2 , where H = p ⊃ q1 ∨ q2 . By the soundness property (S1), if σ could be proved in FRJ(G), there should be a world α of a model such that both p and H are forced in α and q1 ∨ q2 is not forced in α, a contradiction. We show that it is not possible to build an FRJ(G)-derivation D of σ. Indeed, the root rule …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 In the Introduction, by applying the unsound rule $R\lor$, we got a wrong derivation of the sequent $\s=\seqfrj{p,H}{q_1\lor q_2}$, where $H= p\imp q_1\lor q_2$. By the soundness property~\ref{prop:soundr}, if $\s$ could be proved in $\FRJof{G}$, there should be a world $\a$ of a model such that both $p$ and $H$ are forced in $\a$ and $q_1\lor q_2$ is not forced in $\a$, a contradiction. We show that it is not possible to build an $\FRJof{G}$-derivation $\Dcal$ of $\s$. Indeed, the root rule of $\Dcal$ should be $\ruleJOINO$, the only rule of $\FRJof{G}$ having as conclusion a regular sequent with an $\lor$-formula in the right. Since the formula $H$ must be supported (see~\ref{sc:J2}), rule $\ruleJOINO$ should have a premise $\s'=\seqfrji{\Sigma'}{\Theta'}{p}$. Since the only irregular sequents having a formula in $\Prime$ in the right are the irregular axioms, $\Dcal$ should have the following shape: \[ \AXC{$\cdots$} \AXC{} \RightLabel{$\ruleAXI$} \UIC{$\s'\;=\;\seqfrji{}{\Theta'}{p}$} \AXC{$\cdots$} \LeftLabel{$\Dcal\;=\quad$} \RightLabel{$\ruleJOINO$} \TIC{$\s\;=\;\seqfrj{p,H}{q_1\lor q_2}$} \DP \qquad p\not\in\Theta' \] Hence, $\s'\mapstorz{\ruleJOINO} \s$ which, by Lemma~\ref{lemma:lhs}\ref{lemma:lhs:1}, implies $\{p,H\}\subseteq \Theta'$. Thus, both $p\in\Theta'$ and $p\not\in\Theta'$, a contradiction. We conclude that $\s$ is not provable. However, it is possible to have applications of rule $\ruleJOINO$ having conclusion $\seqfrj{p}{q_1\lor q_2}$ or $\seqfrj{H}{q_1\
 … (truncated)
 ```
 
+</details>
+
 ### Example 5
 `\label{ex:frjNishimura}`  ·  p.14
+
+Let us consider the following instances S and T of Scott and AntiScott principles, which are equivalent to Nishimura formulas N10 and N9 respectively [3] (the schema generating Ni is given in Sec. 7): S = ((¬¬p ⊃ p) ⊃ ¬p ∨ p) ⊃ ¬¬p ∨ ¬p T = S ⊃ (¬¬p ⊃ p) ∨ ¬¬p Both formulas are valid in Classical Logic but not in IPL. Figs. 2 and 3 show an FRJ(S)-derivation DS of S and an FRJ(T )-derivation DT of T respectively, in l …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let us consider the following instances $S$ and $T$ of \emph{Scott} and \emph{Anti-Scott} principles, which are equivalent to Nishimura formulas $N_{10}$ and $N_{9}$ respectively~\cite{ChaZak:97} (the schema generating $N_i$ is given in Sec.~\ref{sec:rel}): \[ S\;=\;\left((\neg\neg p\imp p) \imp \neg p\lor p\right)\,\imp\,\neg\neg p \lor \neg p \qquad T\;=\; S \,\imp\,(\neg\neg p\imp p)\lor \neg\neg p \] Both formulas are valid in Classical Logic but not in $\IPL$. Figs.~\ref{fig:frjST} and~\ref{fig:frjAST} show an $\FRJof{S}$-derivation $\Dcal_S$ of $S$ and an $\FRJof{T}$-derivation $\Dcal_T$ of $T$ respectively, in linear representation. We populate the database of proved sequents according with the naive recipe of~\cite{VoronkovHAR:01}: we start by inserting the axioms; then we enter a loop where, at each iteration, we apply the rules to the sequents collected in previous steps. For the sake of conciseness, we only show the sequents needed to get the goal. We denote with $\s_{(k)}$ the sequent derived at line~$(k)$. The tree-like structure of derivations $\Dcal_S$ and $\Dcal_T$ are displayed in Figs.~\ref{fig:countST} and~\ref{fig:countAST} respectively. We point out that $\Dcal_T$ contains an application of $\ruleJOINO$ having four premises, namely: \[ \begin{array}{c} \AXC{$\sigma_{\eqref{exAST:2}} \qquad \sigma_{\eqref{exAST:7}} \qquad\sigma_{\eqref{exAST:8}}\qquad\sigma_{\eqref{exAST:11}}$} \RightLabel{$\ruleJOINO$} \UIC{$\sigma_{\eqref{exAST:13}}$} \DP \\[3ex] \begin{
 … (truncated)
 ```
 
+</details>
+
 ### Example 6
 `\label{ex:frjKP}`  ·  p.15
+
+Another significant example is the FRJ(K)-derivation DK of the instance K = (¬a ⊃ b ∨ c) ⊃ (¬a ⊃ b) ∨ (¬a ⊃ c) of Kreisel-Putnam principle [3] shown in
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Another significant example is the $\FRJof{K}$-derivation $\Dcal_K$ of the instance $K=(\neg a \imp b\lor c)\imp (\neg a \imp b) \lor (\neg a \imp c)$ of Kreisel-Putnam principle~\cite{ChaZak:97} shown in Fig.~\ref{fig:frjKP}. Differently from the formulas $S$ and $T$ in the previous example, the formula $K$ contains three propositional variables, which give rise to eight axioms. In the figure, we only consider the sequents needed to prove the goal. \EndEs
 ```
 
+</details>
+
 ### Lemma 2
 `\label{lemma:soundFRJ}`  ·  p.16
+
+Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ and ϕ(σ) ⊮ C; 16 K = K0 ⊃ K 1 K0 = ¬a ⊃ b ∨ c K1 = (¬a ⊃ b) ∨ (¬a ⊃ c) Sl(K) = { K0 , ¬a, a, b, c } Sr(K) = { K, K1 , ¬a ⊃ b, ¬a ⊃ c, a, b, c, ⊥ } · ; a, b, c, K0 , ¬a → ⊥ Ax→ (2) · ; b, c, K0 , ¬a → a Ax→ (3) a ; b, c, K0 , ¬a → ¬a ⊃∈ (1) (1 …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$, let $\Mod{\Dcal}$ be the model extracted from $\Dcal$ and $\phi$ the map associated with $\Dcal$. For every sequent $\s$ occurring in $\Dcal$: \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item if $\s= \seqfrj{\G}{C}$, then $\phi(\s)\forcing\G$ and $\phi(\s) \nforcing C$; \item if $\s= \seqfrji{\Sigma}{\Theta}{C}$, let $\s_p\in\PS{\Dcal}$ such that~$\s\mapsto\s_p$ and $\s_p\forcing\Sigma\cap\Sfm{C}$; then $\s_p\nforcing C$.\qed \end{enumerate}
 ```
 
+</details>
+
 ### Theorem 2
 `\label{theo:soundFRJ}`  ·  p.17
+
+Let D be an FRJ(G)-derivation of G. Then, Mod(D) is a countermodel for G.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$. Then, $\Mod{\Dcal}$ is a countermodel for $G$.
 ```
 
+</details>
+
 ### Example 7
 `\label{ex:count}`  ·  p.17
+
+Let us consider the formulas S, T and K in examples 5 and 6. The models Mod(DS ), Mod(DT ), Mod(DK ) and the related maps ϕ are shown in Figs. 5, 6 and 7 respectively. The bottom world is the root and σ < σ ′ iff the world σ is drawn below σ ′ . For each σ, we display the set V (σ). As an example, in
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let us consider the formulas $S$, $T$ and $K$ in examples~\ref{ex:frjNishimura} and~\ref{ex:frjKP}. The models $\Mod{\Dcal_S}$, $\Mod{\Dcal_T}$, $\Mod{\Dcal_K}$ and the related maps $\phi$ are shown in Figs.~\ref{fig:countST}, \ref{fig:countAST} and~\ref{fig:countKP} respectively. The bottom world is the root and $\s<\s'$ iff the world $\s$ is drawn below $\s'$. For each $\s$, we display the set $V(\s)$. As an example, in Fig.~\ref{fig:countST} we have $V(\s_\eqref{exST:6})=\{p\}$, while $V(\s_\eqref{exST:5})=V(\s_\eqref{exST:9})=V(\s_\eqref{exST:11})=\emptyset$. \EndEs
 ```
 
+</details>
+
 ### Lemma 3
 `\label{lemma:wg}`  ·  p.19
+
+σ1 7→ σ2 implies ⟨0, 0, 0⟩ ⪯ wg(σ2 ) ≺ wg(σ1 ).
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 $\s_1\mapsto \s_2$ implies $\stru{0,0,0}\preceq \wg{\s_2} \prec \wg{\s_1}$. \qed
 ```
 
+</details>
+
 ### Lemma 4
 `\label{lemma:branch}`  ·  p.19
+
+Let D be an FRJ(G)-derivation, let B be a branch of D and N = |G|. Then: (i) the length of the branch B is O(N 2 ); (ii) B contains N p-sequents at most.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Dcal$ be an $\FRJof{G}$-derivation, let $\Bcal$ be a branch of $\Dcal$ and $N=\size{G}$. Then: \begin{enumerate}[label=(\roman*), ref=(\roman*)] \item the length of the branch $\Bcal$ is $O(N^2)$; \item $\Bcal$ contains $N$ p-sequents at most. \end{enumerate}
 ```
 
+</details>
+
 ### Theorem 3
 `\label{theo:height}`  ·  p.20
+
+Let D be an FRJ(G)-derivation and N = |G|. Then: (i) h(D) = O(N 2 ). (ii) h(Mod(D)) ≤ N .
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Dcal$ be an $\FRJof{G}$-derivation and $N=\size{G}$. Then: \begin{enumerate}[label=(\roman*), ref=(\roman*)] \item $\height{\Dcal}\,=\,O(N^2)$. \item $\height{\Mod{\Dcal}}\,\leq\, N$. \qed \end{enumerate}
 ```
 
+</details>
+
 ### Lemma 5
 `\label{lemma:subsRules}`  ·  p.21
+
+Let σ1 · · · σn R σ be an instance of a rule of FRJ(G) and let σ1 ⊑ σ1′ , . . . , σn ⊑ σn′ . Then, σ1′ · · · σn′ R σ′ is an instance of R in FRJ(G) where σ ⊑ σ ′ .
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let \[ \AXC{$\s_1 \;\cdots\; \s_n$} \RightLabel{$\Rcal$} \UIC{$\s$} \DP \] be an instance of a rule of $\FRJof{G}$ and let $\s_1\sqsubseteq \s'_1$, \dots, $\s_n\sqsubseteq \s'_n$. Then, \[ \AXC{$\s'_1 \;\cdots\; \s'_n$} \RightLabel{$\Rcal$} \UIC{$\s'$} \DP \] is an instance of $\Rcal$ in $\FRJof{G}$ where $\s\sqsubseteq \s'$.
 ```
 
+</details>
+
 ### Theorem 4
 `\label{theo:fsearchAdequate}`  ·  p.23
+
+FSearch is an adequate proof-search procedure.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 $\FSearch$ is an adequate proof-search procedure.
 ```
 
+</details>
+
 ### Lemma 6
 `\label{lemma:compactSatDB}`  ·  p.23
+
+Let G be a formula and let D1G be a compact saturated database for G. For every saturated database D2G for G, D1G ⊆ D2G .
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $G$ be a formula and let $\DBof{G}^1$ be a compact saturated database for $G$. For every saturated database $\DBof{G}^2$ for $G$, $\DBof{G}^1\subseteq \DBof{G}^2$.
 ```
 
+</details>
+
 ### Theorem 5
 `\label{theo:uniquetSatDB}`  ·  p.23
+
+For every formula G, there exists a unique compact saturated database D∗G for G, which is the minimum saturated database for G.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 For every formula $G$, there exists a unique compact saturated database $\DBMof{G}$ for $G$, which is the minimum saturated database for $G$.
 ```
 
+</details>
+
 ### Lemma 7
 `\label{lemma:GBUsound}`  ·  p.25
+
+If ⊢Gbu(G) τ , then τ is valid.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 If $\proves{\GBUof{G}} \tau$, then $\tau$ is valid.\qed
 ```
 
-### Theorem 6 (Soundness of $\GBUof{G}$)
+</details>
+
+### Theorem 6 (Soundness of Gbu(G))
 `\label{theo:GBUsound}`  ·  p.25
+
+⊢Gbu(G) G implies G ∈ IPL.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 $\proves{\GBUof{G}} G$ implies $G\in\IPL$. \qed
 ```
 
+</details>
+
 ### Lemma 8
 `\label{lemma:wggbu}`  ·  p.25
+
+Let R be a rule of Gbu(G), let τ be the conclusion of R and τ ′ any of the premises of R. Then ⟨0, 0, 0⟩ ⪯ Wg(τ ′ ) ≺ Wg(τ ).
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Rcal$ be a rule of $\GBUof{G}$, let $\tau$ be the conclusion of $\Rcal$ and $\tau'$ any of the premises of $\Rcal$. Then $\stru{0,0,0}\preceq \wggbu{\tau'} \prec \wggbu{\tau}$. \qed
 ```
 
+</details>
+
 ### Theorem 7
 `\label{theo:gbufin}`  ·  p.26
+
+Let T be a Gbu(G)-tree and τ the root sequent of T . Then, the height of T is O(|τ |2 ).
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Tcal$ be a $\GBUof{G}$-tree and $\tau$ the root sequent of $\Tcal$. Then, the height of $\Tcal$ is $O(|\tau|^2)$. \qed
 ```
 
+</details>
+
 ### Example 8
 `\label{ex:gbu1}`  ·  p.28
+
+Let E be the following goal formula: E = (p ∧ A ∧ B ∧ C) ⊃ D A = p ⊃ (q1 ∨ q2 ) B = q1 ⊃ D C = q2 ⊃ D D = r 1 ∨ r2 ⊃ Lhs(E) ∩ (V ∪ L ) = { p, q1 , q2 , r1 , r2 , A, B, C } Rhs(E) = { p, q1 , q2 , r1 , r2 , D, E } Since E is valid and the proof-search procedure FSearch of
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $E$ be the following goal formula: \[ \begin{array}{l} E\;=\; (p\land A \land B \land C) \,\imp\, D \\[1ex] A\;=\; p\imp (q_1\lor q_2 ) \quad B\;=\; q_1\imp D \quad C\;=\; q_2\imp D \quad D\;=\; r_1\lor r_2 \\[1ex] \begin{array}{rcl} \Lhs{E}\,\cap\,(\PV\cup\Fmimp) &\;=\;& \{\,p,\, q_1,\, q_2,\, r_1,\, r_2,\,A,\,B,\,C\,\} \\[1ex] \Rhs{E} &=& \{\,p,\, q_1,\, q_2,\, r_1,\, r_2,\,D,\,E\,\} \end{array} \end{array} \] \noindent Since $E$ is valid and the proof-search procedure \FSearch of Fig.~\ref{fun:FSearch} is adequate (see Theorem~\ref{theo:fsearchAdequate}), the call $\FSearch{E}$ returns a saturated database for $E$. We can exploit it to run the procedure \Search and build a $\GBUof{E}$-derivation of $E$. We consider the compact saturated database $\DBMof{E}$ for $E$ containing the following irregular sequents $\s_{\eqref{exE:1}},\dots,\s_{\eqref{exE:6}}$ (we omit the regular sequents since they are not used by $\Search$): \leqnomode \setcounter{equation}{0} \begin{align} \tseqfrji{}{q_1,\, q_2,\, r_1,\, r_2,\,A,\, B,\, C}{p} && \ruleAXI \\ \tseqfrji{}{p,\, q_2,\, r_1,\, r_2,\,A,\, B,\, C}{q_1} && \ruleAXI \\ \tseqfrji{}{p,\, q_1,\, r_1,\, r_2,\,A,\, B,\, C}{q_2} && \ruleAXI \\ \tseqfrji{}{p,\, q_1,\, q_2,\, r_2,\,A,\, B,\, C}{r_1} && \ruleAXI \\ \tseqfrji{}{p,\, q_1,\, q_2,\, r_1,\,A,\, B,\, C}{r_2} && \ruleAXI \\ \tseqfrji{}{p,\, q_1,\, q_2,\, A,\, B,\, C}{D} && \lor\;\eqref{exE:4} \eqref{exE:5} \end{align} \noindent Proof-search starts from the sequent $\seqgbu{}{E}$.
 … (truncated)
 ```
 
+</details>
+
 ### Lemma 9
 `\label{lemma:gbuInv}`  ·  p.30
+
+Let G be a formula, let DG be a saturated database for G, Ψ ⊆ Sl(G) and Ω ⊆ Γ . (i) If DG ▷ A, B, Ψ ⇒g C, then DG ▷ A ∧ B, Ψ ⇒g C. (ii) If C1 ∧ C2 ∈ Sr(G) and DG ▷ Ψ ⇒g Ck with k ∈ {1, 2} then DG ▷ Ψ ⇒g C1 ∧ C2 . (iii) If A1 ∨ A2 ∈ Sl(G) and DG ▷ Ak , Ψ ⇒g C with k ∈ {1, 2}, then DG ▷ A1 ∨ A2 , Ψ ⇒g C. (iv) If A ⊃ B ∈ Sl(G) and DG ▷ B, Ψ ⇒g C, then DG ▷ A ⊃ B, Ψ ⇒g C. (v) If A ⊃ B ∈ Sr(G) and DG ▷ Ψ ⇒g B, with A ∈ Cl …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $G$ be a formula, let $\DBof{G}$ be a saturated database for $G$, $\Psi\subseteq \Sfl{G}$ and $\Omega\subseteq \bG$. \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item If $\DBof{G}\eval\seqgbu{A,B,\Psi}{C}$, then $\DBof{G}\eval\seqgbu{A\land B,\Psi}{C}$. \item If $C_1\land C_2\in\Sfr{G}$ and $\DBof{G}\eval\seqgbu{\Psi}{C_k}$ with $k\in\{1,2\}$ then $\DBof{G}\eval\seqgbu{\Psi}{C_1\land C_2}$. \item If $A_1\lor A_2\in\Sfl{G}$ and $\DBof{G}\eval\seqgbu{A_k,\Psi}{C}$ with $k\in\{1,2\}$, then $\DBof{G}\eval\seqgbu{A_1\lor A_2,\Psi}{C}$. \item If $A\imp B\in\Sfl{G}$ and $\DBof{G}\eval\seqgbu{B,\Psi}{C}$, then $\DBof{G}\eval\seqgbu{A\imp B,\Psi}{C}$. \item If $A\imp B\in\Sfr{G}$ and $\DBof{G}\eval\seqgbu{\Psi}{B}$, with $A\in\Clo{\Psi}$, then $\DBof{G}\eval\seqgbu{\Psi}{A\imp B}$. \item If $A\imp B\in\Sfr{G}$ and $\DBof{G}\eval\seqgbu{A,\Psi}{B}$ with $A\not\in\Clo{\Psi}$, then $\DBof{G}\eval\seqgbu{\Psi}{A\imp B}$. \item If $C_1\land C_2\in\Sfr{G}$ and $\DBof{G}\eval\seqgbui{\Omega}{C_k}$ with $k\in\{1,2\}$, then $\DBof{G}\eval\seqgbui{\Omega}{C_1\land C_2}$. \item If $A\imp B\in\Sfr{G}$ and $\DBof{G}\eval\seqgbui{\Omega}{B}$ with $A\in\Clo{\Omega}$, then $\DBof{G}\eval\seqgbui{\Omega}{A\imp B}$. \item If $\DBof{G}\eval\seqgbu{A,\Omega}{B}$ with $A\not\in\Clo{\Omega}$, then $\DBof{G}\eval\seqgbui{\Omega}{A\imp B}$. \end{enumerate}
 ```
 
+</details>
+
 ### Lemma 10
 `\label{lemma:gbuiOr}`  ·  p.32
+
+Let G be a formula, let DG be a saturated database for G and Ω ⊆ Γ . If DG ▷ Ω →g C1 and DG ▷ Ω →g C2 , then DG ▷ Ω →g C1 ∨ C2 .
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $G$ be a formula, let $\DBof{G}$ be a saturated database for $G$ and $\Omega \subseteq \bG$. If $\DBof{G}\eval\seqgbui{\Omega}{C_1}$ and $\DBof{G}\eval\seqgbui{\Omega}{C_2}$, then $\DBof{G}\eval\seqgbui{\Omega}{C_1\lor C_2}$.
 ```
 
+</details>
+
 ### Lemma 11
 `\label{lemma:gbuSuccAt}`  ·  p.32
+
+Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g F be such that Ω ⊆ Γ and F ∈ V ⊥ , and let us assume that: (i) F ̸∈ Ω; (ii) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. Then, DG ▷ τ . 32
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $G$ be a formula and let $\DBof{G}$ be a saturated database for $G$. Let $\tau=\seqgbu{\Omega}{F}$ be such that $\Omega\subseteq \bG$ and $F\in\Prime$, and let us assume that: \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item $F\not\in\Omega$; \item for every $A\imp B\in\Omega$,\ $\DBof{G}\eval\seqgbui{\Omega}{A}$. \end{enumerate} Then, $\DBof{G}\eval \tau$.
 ```
 
+</details>
+
 ### Lemma 12
 `\label{lemma:gbuSuccOr}`  ·  p.33
+
+Let G be a formula and let DG be a saturated database for G. Let τ = Ω ⇒g C1 ∨ C2 be such that Ω ⊆ Γ , and let us assume that: (i) for every A ⊃ B ∈ Ω, DG ▷ Ω →g A. (ii) DG ▷ Ω →g C1 and DG ▷ Ω →g C2 .
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $G$ be a formula and let $\DBof{G}$ be a saturated database for $G$. Let $\tau=\seqgbu{\Omega}{C_1\lor C_2}$ be such that $\Omega\subseteq \bG$, and let us assume that: \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item for every $A\imp B\in\Omega$,\ $\DBof{G}\eval\seqgbui{\Omega}{A}$. \item $\DBof{G}\eval\seqgbui{\Omega}{C_1}$ and $\DBof{G}\eval\seqgbui{\Omega}{C_2}$. \end{enumerate} Then, $\DBof{G}\eval \tau$. \qed
 ```
 
-### Theorem 8 (Correctness of $\Search$)
+</details>
+
+### Theorem 8 (Correctness of BSearch)
 `\label{theo:search}`  ·  p.33
+
+Let G be a formula, let τ be a Gbu(G)-sequent and let DG be a saturated database for G satisfying (BSr1) and (BSr2). Then, BSearch(τ, DG ) computes a Gbu(G)-derivation of τ .
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $G$ be a formula, let $\tau$ be a $\GBUof{G}$-sequent and let $\DBof{G}$ be a saturated database for $G$ satisfying~\ref{search:ass1} and~\ref{search:ass2}. Then, $\Search(\tau,\DBof{G})$ computes a $\GBUof{G}$-derivation of $\tau$.
 ```
 
+</details>
+
 ### Theorem 9
 `\label{theo:GBU-FRJ}`  ·  p.34
+
+⊢Gbu(G) G iff ̸⊢FRJ(G) G.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 $\proves{\GBUof{G}} G$ iff $\nproves{\FRJof{G}} G$.
 ```
 
-### Theorem (unlabelled) (Completeness of $\FRJof{G}$ and $\GBUof{G}$)
+</details>
+
+### Theorem (unlabelled)
 `\label{theo:compl1}`
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item $G\not\in\IPL$ implies $\proves{\FRJof{G}} G$. \item $G\in\IPL$ implies $\proves{\GBUof{G}} G$. \end{enumerate}
 ```
 
+</details>
+
 ### Lemma 13
 `\label{lemma:rnk}`  ·  p.36
+
+Let D be an FRJ(G)-derivation of G. Then, Rn(D) = h(Mod(D)).
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$. Then, $\Rn{\Dcal}=\height{\Mod{\Dcal}}$. \qed
 ```
 
+</details>
+
 ### Lemma 14
 `\label{lemma:minMod}`  ·  p.36
+
+Let K = ⟨P, ≤, ρ, V ⟩ be a countermodel for G, let α ∈ P and C ∈ Ωα . – There exists an FRJ(G)-derivation Dα→ (C) of σα→ (C) = Σ ; Θ → C such that: (i) Rn(Dα→ (C)) < h(α); (ii) Σ ⊆ Λ∗α ⊆ Σ ∪ Θ. – There exists an FRJ(G)-derivation Dα⇒ (C) of σα⇒ (C) = Γ ⇒ C such that: (iii) Rn(Dα⇒ (C)) ≤ h(α); (iv) there is β ∈ P such that α ≤ β and Λ∗β ⊆ Γ .
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\K=\stru{P,\leq,\rho, V}$ be a countermodel for $G$, let $\a\in P$ and $C\in\Omega_\a$. \begin{itemize} \item There exists an $\FRJof{G}$-derivation $\derfrji{\a}{C}$ of $\sigmairr{\a}{C} =\seqfrji{\Sigma}{\Theta}{C}$ such that: \begin{enumerate} [label=(\roman*), ref=(\roman*)] \item $\Rn{ \derfrji{\a}{C} } \,<\, \height{\a}$; \item $\Sigma\,\subseteq\, \Lambdas_\a \, \subseteq \,\Sigma\cup\Theta$. \end{enumerate} \item There exists an $\FRJof{G}$-derivation $\derfrjr{\a}{C}$ of $\sigmareg{\a}{C}=\seqfrj{\G}{C}$ such that: \begin{enumerate} [start=3, label=(\roman*), ref=(\roman*)] \item $\Rn{ \derfrjr{\a}{C} }\,\leq\,\height{\a}$; \item there is $\b\in P$ such that $\a\leq \b$ and $\Lambdas_\b\,\subseteq\, \G$. \qed \end{enumerate} \end{itemize}
 ```
 
+</details>
+
 ### Theorem 11
 `\label{theo:minMod}`  ·  p.36
+
+Let G ̸∈ IPL. Then, there exists an FRJ(G)-derivation D̃ of G such that h(Mod(D̃)) = h(G).
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $G\not\in \IPL$. Then, there exists an $\FRJof{G}$-derivation $\tilde\Dcal$ of $G$ such that $\height{\Mod{\tilde\Dcal}}=\height{G}$. \qed
 ```
 
+</details>
+
 ### Example 9
 `\label{ex:STMinH}`  ·  p.37
+
+Let S be the instance of Scott Principle in Ex. 5: S = H ⊃ ¬¬p ∨ ¬p H = (¬¬p ⊃ p) ⊃ ¬p ∨ p Sl(S) = { H, ¬p ∨ p, ¬¬p, ¬p, p } Sr(S) = { S, ¬¬p ∨ ¬p, ¬¬p ⊃ p, ¬¬p, ¬p, p, ⊥ } We have h(S) = 2. Let us consider the countermodel KS for S having height 2 depicted below, consisting of the worlds α and β of height 0, the world γ of height 1 and the root ρ of height 2: α: β: p γ: ρ: We define the sequents σα→ (C) and σα⇒ (C) …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $S$ be the instance of Scott Principle in Ex.~\ref{ex:frjNishimura}: \[ \begin{array}{l} S \;= \; H\,\imp\, \neg\neg p \lor \neg p \qquad H\;=\; (\neg\neg p\imp p)\, \imp\, \neg p\lor p \\[1ex] \Sfl{S} \:=\: \{\: H,\:\neg p\lor p,\:\neg\neg p,\:\neg p,\:p\:\} \\[.5ex] \Sfr{S} \:=\: \{\: S,\:\neg\neg p\lor \neg p,\:\neg\neg p \imp p,\: \neg\neg p,\:\neg p,\: p,\: \bot \:\} \end{array} \] We have $\height{S}=2$. Let us consider the countermodel $\K_S$ for $S$ having height 2 depicted below, consisting of the worlds $\a$ and $\b$ of height 0, the world $\g$ of height 1 and the root $\rho$ of height 2: \begin{center} \begin{tikzpicture} \path[scale=.42,grow'=up,every node/.style={fill=gray!30,rounded corners}, level 1/.style = {sibling distance = 13em}, edge from parent/.style={black,draw}] node{$\rho$: } [level distance=20mm] child{ child {node{$\a$:}} } child{ node{$\g$: } child{ node{$\b$: $p$} } } ; \end{tikzpicture} \end{center} \noindent We define the sequents $\sigmairr{\a}{C}$ and $\sigmareg{\a}{C}$ matching Lemma~\ref{lemma:minMod}. For each sequent $\s$, we display the rule applied to obtain $\s$ and the rank of $\s$. Using these annotations, one can immediately build the derivations $\derfrji{\a}{C}$ and $\derfrjr{\a}{C}$. We traverse the model $\K$ downwards, starting from the world $\a$ of height 0. We have: \[ \Lambdas_\a\,=\,\{\:\neg p\:\} \qquad \Lambda_\a\;=\;\Lambdas_\a\:\cup\:\{\:\neg p\lor p,\:H\:\} \qquad \Omega_\a \;=\;\{\:\bot,\:p,\:\neg\neg p\:\} \] No
 … (truncated)
 ```
 
+</details>
+
 ### Example 10
 `\label{ex:DUMnonMIN}`  ·  p.39
+
+Let C be the formula C = A∨B A = (p1 ⊃ p2 ) ∨ (p2 ⊃ p1 ) B = (q1 ⊃ q2 ) ∨ (q2 ⊃ q1 ) We have h(C) = 1. Let KC be the following countermodel for C of height 1, consisting of the worlds α and β of height 0 and of the root ρ of height 1: α: p1 , q1 β: p2 , q2 ρ: One can easily check that there is no countermodel for C having less than 3 worlds, hence KC is a minimal countermodel for C. We have: Sl(C) = { p1 , p2 , q1 , …
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $C$ be the formula \[ \begin{array}{l} C \;= \; A\lor B \qquad A\;=\; (p_1\imp p_2)\lor (p_2\imp p_1) \qquad B\;=\; (q_1\imp q_2)\lor (q_2\imp q_1) \end{array} \] We have $\height{C}=1$. Let $\K_C$ be the following countermodel for $C$ of height 1, consisting of the worlds $\a$ and $\b$ of height 0 and of the root $\rho$ of height 1: \begin{center} \begin{tikzpicture} \path[scale=.42,grow'=up,every node/.style={fill=gray!30,rounded corners}, level 1/.style = {sibling distance = 60mm}, edge from parent/.style={black,draw}] node{$\rho$: } [level distance=20mm] child{ node{$\a$: $p_1,\,q_1$} } child{ node{$\b$: $p_2,\,q_2$ } } ; \end{tikzpicture} \end{center} \noindent One can easily check that there is no countermodel for $C$ having less than 3 worlds, hence $\K_C$ is a minimal countermodel for $C$. We have: \[ \begin{array}{l} \Sfl{C} \;=\; \{\: p_1,\:p_2,\:q_1,\:q_2 \:\} \\[1ex] \Sfr{C} \:=\: \{\: C,\:A,\:B,\: p_1\imp p_2,\;p_2\imp p_1,\:q_1\imp q_2,\;q_2\imp q_1,\; p_1,\:p_2,\:q_1,\:q_2 \:\} \\[1ex] \Lambdas_\a\;=\;\Lambda_\a\;=\;\{\:p_1,\:q_1\:\} \qquad \Omega_\a \;=\;\{\:\:p_2,\: q_2,\: p_1\imp p_2,\:q_1\imp q_2 \:\} \\[1ex] \Lambdas_\b\;=\;\Lambda_\b\;=\;\{\:p_2,\:q_2\:\} \qquad \Omega_\b \;=\;\{\: \:p_1,\: q_1,\;p_2\imp p_1,\:q_2\imp q_1\:\} \\[1ex] \Lambdas_\rho\;=\;\Lambda_\rho\;=\;\emptyset \qquad \Omega_\rho \;=\;\Sfr{C} \end{array} \] We define the sequents $\sigmairr{\d}{C}$ and $\sigmareg{\d}{C}$, where $\d\in\{\a,\b,\rho\}$ and $C\in\Omega_\d$, only showing t
 … (truncated)
 ```
 
+</details>
+
 ### Lemma 15
 `\label{lemma:closure}`  ·  p.40
+
+Let K be a countermodel for G and α a world of K. Then, Λα = Cl(Λα ) = Cl(Λ∗α ).
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\K$ be a countermodel for $G$ and $\a$ a world of $\K$. Then, $\Lambda_\a=\Clo{\Lambda_\a}=\Clo{\Lambdas_\a}$.
 ```
 
+</details>
+
 ### Lemma 16 (aka Lemma 3.9 of Sec.3)
 `\label{app:lemma:soundFRJ}`  ·  p.51  ·  **appendix**
+
+Let D be an FRJ(G)-derivation of G, let Mod(D) be the model extracted from D and ϕ the map associated with D. For every sequent σ occurring in D: (i) if σ = Γ ⇒ C, then ϕ(σ) ⊩ Γ and ϕ(σ) ⊮ C; (ii) if σ = Σ ; Θ → C, let σp ∈ P(D) such that σ 7→ σp and σp ⊩ Σ ∩ Sf − (C); then σp ⊮ C.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Let $\Dcal$ be an $\FRJof{G}$-derivation of $G$, let $\Mod{\Dcal}$ be the model extracted from $\Dcal$ and $\phi$ the map associated with $\Dcal$. For every sequent $\s$ occurring in $\Dcal$: \begin{enumerate}[label=(\roman*),ref=(\roman*)] \item if $\s= \seqfrj{\G}{C}$, then $\phi(\s)\forcing\G$ and $\phi(\s) \nforcing C$; \item if $\s= \seqfrji{\Sigma}{\Theta}{C}$, let $\s_p\in\PS{\Dcal}$ such that~$\s\mapsto\s_p$ and $\s_p\forcing\Sigma\cap\Sfm{C}$; then $\s_p\nforcing C$. \end{enumerate}
 ```
 
+</details>
+
 ### Lemma 17
 `\label{lemma:soundnessProperties}`  ·  p.53  ·  **appendix**
+
+Soundness properties (S1) and (S2) hold.
+
+<details><summary>LaTeX source (what to transcribe from)</summary>
 
 ```tex
 Soundness properties~\ref{prop:soundr} and~\ref{prop:soundi} hold.
 ```
+
+</details>

@@ -61,3 +61,28 @@ label and carries the number and page as a convenience.
     --json FILE    also emit the items as JSON
     --no-compile   skip compilation; items carry no numbers
     --keep DIR     keep a downloaded source here
+
+## Where the statement text comes from
+
+The compiled PDF, via `pdftotext`, keyed by the page the `.aux` gives.
+Not the LaTeX source.
+
+The first version emitted raw source into the table, and it was
+unreadable — `$\proves{\FRJof{G}}G$ implies $G\not\in\IPL$`. That is not
+a Markdown-viewer limitation. Two separate reasons it cannot work:
+
+1. **The macros are the paper's own.** `frj-corr.tex` defines 164 of
+   them. `\proves`, `\FRJof`, `\Lhs`, `\Clo`, `\mapstorz` mean nothing
+   outside its preamble, so no renderer anywhere can display them.
+2. **Markdown has no math.** CommonMark specifies none at all. `$…$` and
+   `$$…$$` are an *extension* — GitHub added them in 2022, Pandoc has
+   `tex_math_dollars` — and even where implemented they cover maths, not
+   arbitrary LaTeX, and never undefined macros.
+
+So the tool reads what LaTeX printed. `\qed`'s box (⊔⊓) marks the end of
+a statement, which is a more reliable stop than any heuristic on the
+source. Titles are taken from the printed heading too, so
+`(Soundness of $\FRJof{G}$)` arrives as `(Soundness of FRJ(G))`.
+
+The LaTeX source is still kept, folded under each statement, because
+that is what a transcription is checked against.
