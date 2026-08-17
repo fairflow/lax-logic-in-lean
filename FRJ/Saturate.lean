@@ -223,4 +223,37 @@ theorem metI_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
              cov := fun x hx => mem_nf.mpr ⟨lamStar_subset_gHat hx, hx⟩
              thNf := nf_idem.symm }⟩
 
+/-- Tag admissibility threads through `∧`-introduction via `Covers.andL/R`. -/
+theorem metR_and {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+    (hC : Form.and C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.and C₁ C₂))
+    (sup₁ : ¬ K.force a C₁ → Nonempty (MRWit K G a C₁))
+    (sup₂ : K.force a C₁ → ¬ K.force a C₂ → Nonempty (MRWit K G a C₂)) :
+    Nonempty (MRWit K G a (.and C₁ C₂)) := by
+  by_cases h1 : K.force a C₁
+  · obtain ⟨w⟩ := sup₂ h1 (fun hc => hnf ⟨h1, hc⟩)
+    exact ⟨⟨w.t, w.ctx, .andR2 w.der hC,
+      w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .andR hcov⟩),
+      w.wld, w.wle, w.wfal, w.cov⟩⟩
+  · obtain ⟨w⟩ := sup₁ h1
+    exact ⟨⟨w.t, w.ctx, .andR1 w.der hC,
+      w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .andL hcov⟩),
+      w.wld, w.wle, w.wfal, w.cov⟩⟩
+
+/-- Tag admissibility threads through `⊃`-introduction via `Covers.imp`,
+whose `Clo` side condition is the same one `impIn` itself consumes.  The
+minEta float and the stay-at-`a` case share one body. -/
+theorem metR_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
+    (hC : Form.imp A B ∈ sfR G) (hnf : ¬ K.force a (.imp A B))
+    (sup : ∀ e : K.W, K.le a e → K.force e A → ¬ K.force e B →
+      Nonempty (MRWit K G e B)) :
+    Nonempty (MRWit K G a (.imp A B)) := by
+  obtain ⟨hA, hB⟩ := sfR_imp hC
+  let m := minEta hnf
+  obtain ⟨w⟩ := sup m.e m.le m.fA m.nfB
+  have hAclo : Clo w.ctx A :=
+    clo_mono w.cov (mem_clo_lamStar w.wfal hA (K.force_mono w.wle m.fA))
+  exact ⟨⟨w.t, w.ctx, .impIn w.der hAclo hC,
+    w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .imp hcov hAclo⟩),
+    w.wld, K.le_trans m.le w.wle, w.wfal, w.cov⟩⟩
+
 end FRJ
