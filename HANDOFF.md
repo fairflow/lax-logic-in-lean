@@ -1,5 +1,16 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (evening) — kernel weakened + discharged in two regimes
+
+`minRef` rewire: the visit floats the irregular ◯-demand to ANY proper
+Z-refuter; `CircSupply` fires only at [every proper extension forces
+Z].  Discharges PROVED: maximal worlds (`circWit_of_maximal`, via the
+polarity-split classical correspondence `force_classForce`, pins
+[propext]) and Clo-groundable rows (`metI_circ_syn`).  NEW UNCONDITIONAL
+instance: `completeness_of_discrete` (statement (A) over discrete
+models, full modal goals).  Remaining to full (A): non-maximal corner
+residue + promise-join port for hloc.  docs §11 addendum.
+
 ## 2026-08-17 (later) — saturation-closure gluing LANDED
 
 FRJ/Saturate.lean: the full §10 organisation is in, sorry-free,

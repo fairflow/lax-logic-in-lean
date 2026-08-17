@@ -54,6 +54,10 @@ namespace FRJ
 #guard_msgs in
 #print axioms completeness_of_supply
 
+/-- info: 'FRJ.completeness_of_discrete' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_discrete
+
 /-- info: 'FRJ.completeness_of_allMet' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms completeness_of_allMet

@@ -529,15 +529,48 @@ def minZetaNS {K : Kripke} {a : K.W} {Z : Form}
           rw [hc] at hmem
           exact List.not_mem_nil hmem }
 
+/-- A `Z`-refuting anchor above `a`, preferring a PROPER one; when the
+pick is `a` itself, a certificate that every proper extension forces
+`Z`.  (`a ⊮ ◯Z` gives `a ⊮ Z`, so `a` is always available.) -/
+structure MinRef (K : Kripke) (a : K.W) (Z : Form) : Type where
+  e : K.W
+  le : K.le a e
+  nfZ : ¬ K.force e Z
+  sole : e = a → ∀ u, K.le a u → u ≠ a → K.force u Z
+
+def minRef {K : Kripke} {a : K.W} {Z : Form}
+    (h : ¬ K.force a Z) : MinRef K a Z :=
+  match hc : K.elems.filter
+      (fun u => decide (K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z)) with
+  | u :: _ =>
+      have hu : u ∈ K.elems.filter
+          (fun u => decide (K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z)) := by
+        rw [hc]; exact List.mem_cons_self
+      have hz : K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z := by
+        have := (List.mem_filter.mp hu).2
+        simpa using this
+      { e := u, le := hz.1, nfZ := hz.2.2
+        sole := fun hea => absurd hea hz.2.1 }
+  | [] =>
+      { e := a, le := K.le_refl a, nfZ := h
+        sole := fun _ u hu hne => by
+          by_contra hnf
+          have hmem : u ∈ K.elems.filter
+              (fun u => decide (K.le a u ∧ ¬(u = a) ∧ ¬ K.force u Z)) :=
+            List.mem_filter.mpr ⟨K.complete u, by simp [hu, hne, hnf]⟩
+          rw [hc] at hmem
+          exact List.not_mem_nil hmem }
+
 /-- **The open kernel of FRJ◯ completeness**: supply for the irregular
-◯-demand at a world that is its own sole minZeta candidate.  The
-`IrrWit` may be produced by any route — `metI_circ_syn` over a tagged
-grounding row, or the generalised `Ax^I◯` at maximal worlds
+◯-demand at a world every proper extension of which forces the body.
+(This entails `cone(a) = {a}` and that `a` is the sole minZeta
+candidate; it is the weakest corner the visit cannot route around.)
+The `IrrWit` may be produced by any route — `metI_circ_syn` over a
+tagged grounding row, or the generalised `Ax^I◯` at maximal worlds
 (`circWit_of_maximal` below). -/
 def CircSupply (K : Kripke) (G : Form) : Type :=
   ∀ a : K.W, ∀ Z : Form, Form.circ Z ∈ sfR G → ¬ K.force a (.circ Z) →
-    (∀ v, K.Rm a v → ¬ K.force v Z) →
-    (∀ u, K.le a u → (∀ v, K.Rm u v → ¬ K.force v Z) → u = a) →
+    (∀ u, K.le a u → u ≠ a → K.force u Z) →
     IrrWit K G a (.circ Z)
 
 /-- The statement family: `t = 0` the irregular wit, else the regular. -/
@@ -570,12 +603,13 @@ def visit (K : Kripke) (G : Form)
         (fun _ hB => visit K G hloc hsup a 0 B (sfR_imp hC).2 hB)
         (fun e _ hne _ hB => visit K G hloc hsup e 1 B (sfR_imp hC).2 hB)
   | 0, .circ Z =>
-      let mz := minZetaNS hnf
-      by_cases hea : mz.e = a
-      · exact hsup a Z hC hnf (hea ▸ mz.cone) (mz.sole hea)
+      have hnfZ : ¬ K.force a Z := fun hf => hnf (fun b hab =>
+        ⟨b, K.rm_refl b, K.force_mono hab hf⟩)
+      let mr := minRef hnfZ
+      by_cases hea : mr.e = a
+      · exact hsup a Z hC hnf (mr.sole hea)
       · exact metI_circ hC
-          ((visit K G hloc hsup mz.e 1 Z (sfR_circ hC)
-            (mz.cone _ (K.rm_refl _))).weaken mz.le)
+          ((visit K G hloc hsup mr.e 1 Z (sfR_circ hC) mr.nfZ).weaken mr.le)
   | n + 1, .atom p =>
       exact metR_prime (hloc a) rfl hC hnf
         (fun A hA hnA => visit K G hloc hsup a 0 A hA hnA)
@@ -609,7 +643,7 @@ decreasing_by
          · apply Prod.Lex.left
            exact ht_lt (by assumption) hne')
       | (apply Prod.Lex.left
-         exact ht_lt mz.le hea)
+         exact ht_lt mr.le hea)
       | (apply Prod.Lex.right
          apply Prod.Lex.left
          omega)
@@ -729,15 +763,16 @@ theorem force_classForce {K : Kripke} {G : Form} {a : K.W}
 `Ax^I◯` over the world's classical theory. -/
 def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
     (hmax : ∀ u, K.le a u → u = a)
-    (hZ : Form.circ Z ∈ sfR G) (hnf : ¬ K.force a (.circ Z))
-    (hcone : ∀ v, K.Rm a v → ¬ K.force v Z) : IrrWit K G a (.circ Z) :=
+    (hZ : Form.circ Z ∈ sfR G) (hnf : ¬ K.force a (.circ Z)) :
+    IrrWit K G a (.circ Z) :=
   have hinf : ¬ K.Fal a := fun hf => hnf (K.fal_force _ hf)
+  have hnfZ : ¬ K.force a Z := fun hf => hnf (fun b hab =>
+    ⟨b, K.rm_refl b, K.force_mono hab hf⟩)
   have hFf : classForce (clAts K G a) Z = false := by
     cases hcZ : classForce (clAts K G a) Z with
     | false => rfl
     | true =>
-        exact absurd ((force_classForce hmax hinf Z).2 (sfR_circ hZ) hcZ)
-          (hcone a (K.rm_refl a))
+        exact absurd ((force_classForce hmax hinf Z).2 (sfR_circ hZ) hcZ) hnfZ
   { stab := []
     th := vacZoneA G (clAts K G a)
     der := .axIC Z (clAts K G a) clAts_subset hFf hZ
@@ -748,5 +783,17 @@ def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
       exact List.mem_filter.mpr ⟨lamStar_subset_gHat hX,
         (force_classForce hmax hinf X).1 hsfL (K.forceStar_force hstar)⟩
     thNf := nf_idem.symm }
+
+/-- **Unconditional completeness over discrete models.**  When every
+world is maximal, `Λ*` is circ-free everywhere and the kernel is
+discharged by `circWit_of_maximal`, so statement (A) holds with no
+side condition.  (The first completeness instance for the FULL modal
+calculus — goals may carry `◯` on both sides.) -/
+theorem completeness_of_discrete {K : Kripke} {G : Form}
+    (hdisc : ∀ a u : K.W, K.le a u → u = a)
+    (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_supply
+    (fun b => circPart_lamStar_nil_of_maximal (hdisc b))
+    (fun a Z hZ hnf _ => circWit_of_maximal (hdisc a) hZ hnf) hK
 
 end FRJ

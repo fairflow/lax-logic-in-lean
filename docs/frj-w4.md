@@ -600,3 +600,42 @@ its pledge-existence question would enter as a second supply, so the
 kernel formulation is uniform).  The ◯-free validation
 (`allMet_of_circFree` → `completeness_via_closure`) confirms the new
 organisation subsumes the landed Theorem 6.2 analogue.
+
+### §11 addendum: the kernel weakened, then discharged in two regimes
+(2026-08-17, same window)
+
+Re-examining the visit's ◯-branch: `metI_circ` needs only a
+`Z`-REFUTING anchor above `a` (not a cone-refuting minZeta candidate),
+and `a ⊮ ◯Z → a ⊮ Z`, so the branch floats to any proper refuter
+(`minRef`).  The kernel `CircSupply` therefore fires only when
+
+    a ⊮ ◯Z   and   every u > a forces Z
+
+(which entails `cone(a) = {a}` and soleness).  Two discharge routes are
+PROVED:
+
+1. `circWit_of_maximal` (pins `[propext]`): at a MAXIMAL world the
+   polarity-split correspondence `force_classForce` (left subformulas
+   push forcing into the classical valuation of the world's `Ĝ`-atoms,
+   right subformulas pull it back; maximality enters only at `⊃`/`◯`,
+   infallibility only at `⊥`) makes the generalised `Ax^I◯` supply the
+   wit outright: the vacuous zone of the world's classical theory
+   contains `Λ*_a`, and `classForce ats Z = false` is exactly `a ⊮ Z`.
+
+2. `metI_circ_syn`: a tagged grounding row (e.g. `Ax^R` on the atom
+   complement, grounding `Λ*`-implications through `Clo`'s weakening
+   clause) — the route the engine's derivations of the corner cells
+   take.
+
+Corollary landed: **`completeness_of_discrete`** — statement (A)
+UNCONDITIONAL over models in which every world is maximal, the first
+completeness instance for the full modal calculus (`◯` allowed on both
+sides of the goal).
+
+Remaining to full (A): (i) the kernel at NON-maximal corner worlds
+(`a < u` somewhere, yet every proper extension forces `Z`; the syn
+route covers the `Clo`-groundable instances, the residue needs either
+a recursive grounding-row construction or a semantic argument that the
+residue is empty); (ii) the promise-mode port of `metR_prime`/`metR_or`
+to lift `hloc` (models whose `Λ*` carries `◯`-formulas at non-maximal
+worlds).
