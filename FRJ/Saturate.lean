@@ -1098,9 +1098,11 @@ theorem allMet_of_supply {K : Kripke} {G : Form}
   fun a C hC hnf =>
     ⟨⟨visit K G psup hsup a 0 C hC hnf⟩, ⟨visit K G psup hsup a 1 C hC hnf⟩⟩
 
-/-- **FRJ◯ completeness, modulo the kernel**: statement (A) for every
-model whose `Λ*` is circ-free world-wise, given the sole-candidate
-supply. -/
+/-- **FRJ◯ completeness, modulo the two supplies**: statement (A) for
+every model providing pledge families at circ-carrying worlds and the
+sole-candidate ◯-supply.  (Docstring corrected 2026-08-17: an earlier
+version of this theorem took world-wise circ-freeness in place of
+`PledgeSupply`.) -/
 theorem completeness_of_supply {K : Kripke} {G : Form}
     (psup : PledgeSupply K G)
     (hsup : CircSupply K G)
