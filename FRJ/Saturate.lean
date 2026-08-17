@@ -256,4 +256,18 @@ theorem metR_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
     w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .imp hcov hAclo⟩),
     w.wld, K.le_trans m.le w.wle, w.wfal, w.cov⟩⟩
 
+/-- The regular `◯`-demand, by `◯∈` over a `Z`-wit at the minZeta world.
+No modal join is needed: `circIn` preserves any admissible tag, and the
+measure cycle that forced the ⋈^◯ route in the recursive organisation
+does not exist here — the supplier is an input. -/
+theorem metR_circ {K : Kripke} {G : Form} {a : K.W} {Z : Form}
+    (hC : Form.circ Z ∈ sfR G) (hnf : ¬ K.force a (.circ Z))
+    (sup : ∀ e : K.W, K.le a e → ¬ K.force e Z → Nonempty (MRWit K G e Z)) :
+    Nonempty (MRWit K G a (.circ Z)) := by
+  let mz := minZeta hnf
+  obtain ⟨w⟩ := sup mz.e mz.le (mz.cone _ (K.rm_refl _))
+  exact ⟨⟨w.t, w.ctx, .circIn w.der w.tOK hC,
+    w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .circ hcov⟩),
+    w.wld, K.le_trans mz.le w.wle, w.wfal, w.cov⟩⟩
+
 end FRJ
