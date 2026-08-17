@@ -460,6 +460,49 @@ theorem circ_intro {w : K.W} {A : Form}
   · subst hvw; exact wit
   · exact above v hv hvw v (K.le_refl v)
 
+/-- **Witnesses merge.**  If `w` forces `◯A` and `◯B` then a SINGLE modal
+successor of `w` forces both.  Transitivity of `Rm` chains the two
+witnesses, and `Rm ⊆ ≤` carries the first formula forward.
+
+This is the load-bearing fact for the promise join: a join may carry ONE
+promise premise for its whole modal zone, rather than one per modal
+formula.  Without it the rule would need a list of promises and the
+soundness argument would have to merge them by hand. -/
+theorem exists_common_witness {w : K.W} {A B : Form}
+    (hA : K.force w (.circ A)) (hB : K.force w (.circ B)) :
+    ∃ u, K.Rm w u ∧ K.force u A ∧ K.force u B := by
+  obtain ⟨u, hwu, huA⟩ := hA w (K.le_refl w)
+  obtain ⟨v, huv, hvB⟩ := hB u (K.sub_mi hwu)
+  exact ⟨v, K.rm_trans hwu huv, K.force_mono (K.sub_mi huv) huA, hvB⟩
+
+/-- The same for a whole finite zone: one modal successor forces every
+body of a list of modal formulas forced at `w`.  The empty case is `w`
+itself, by reflexivity. -/
+theorem exists_common_witness_list {w : K.W} :
+    ∀ l : List Form, (∀ X ∈ l, K.force w (.circ X)) →
+      ∃ u, K.Rm w u ∧ ∀ X ∈ l, K.force u X
+  | [], _ => ⟨w, K.rm_refl w, fun _ h => absurd h List.not_mem_nil⟩
+  | X :: l, h => by
+      obtain ⟨u, hwu, hu⟩ :=
+        exists_common_witness_list l (fun Y hY => h Y (List.mem_cons_of_mem _ hY))
+      obtain ⟨v, huv, hvX⟩ := (h X List.mem_cons_self) u (K.sub_mi hwu)
+      refine ⟨v, K.rm_trans hwu huv, fun Y hY => ?_⟩
+      rcases List.mem_cons.mp hY with rfl | hY'
+      · exact hvX
+      · exact K.force_mono (K.sub_mi huv) (hu Y hY')
+
+/-- **The conjunction law of the modality**, which the merging lemma is
+the witness form of: `◯A ∧ ◯B ⊃ ◯(A ∧ B)` holds in every constraint
+model.  Recorded because it is a validity the promise join must not
+violate, and a standing test cell. -/
+theorem circ_and {w : K.W} {A B : Form}
+    (hA : K.force w (.circ A)) (hB : K.force w (.circ B)) :
+    K.force w (.circ (.and A B)) := by
+  intro b hb
+  obtain ⟨u, hbu, huA, huB⟩ :=
+    K.exists_common_witness (K.force_mono hb hA) (K.force_mono hb hB)
+  exact ⟨u, hbu, huA, huB⟩
+
 /-- **Modal refutation.**  If no modal successor of `w` forces `A` then
 `◯A` fails at `w`.  The obligation of any rule concluding a sequent with a
 `◯`-formula on the right. -/

@@ -91,4 +91,22 @@ namespace FRJ
 #guard_msgs in
 #print axioms nf_ext
 
+/-! ## W3 and the promise-join screen -/
+
+/-- info: 'FRJ.Kripke.fal_force' does not depend on any axioms -/
+#guard_msgs in
+#print axioms Kripke.fal_force
+
+/-- info: 'FRJ.Kripke.exists_common_witness' does not depend on any axioms -/
+#guard_msgs in
+#print axioms Kripke.exists_common_witness
+
+/-- info: 'FRJ.Kripke.exists_common_witness_list' does not depend on any axioms -/
+#guard_msgs in
+#print axioms Kripke.exists_common_witness_list
+
+/-- info: 'FRJ.Kripke.circ_and' does not depend on any axioms -/
+#guard_msgs in
+#print axioms Kripke.circ_and
+
 end FRJ
