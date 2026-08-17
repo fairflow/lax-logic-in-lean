@@ -170,6 +170,54 @@ def clean(s: str, limit=None) -> str:
         s = s[:limit].rstrip() + " …"
     return s
 
+def macro_defs(tex: str) -> str:
+    """The paper's own \newcommand definitions, extracted brace-aware.
+
+    Line-wise extraction truncates multi-line definitions and leaves braces
+    unbalanced, which makes pandoc give up silently on the whole file."""
+    out = []
+    for m in re.finditer(r"\\(newcommand|renewcommand|providecommand)\s*", tex):
+        i = m.end()
+        name, i2 = balanced(tex, i)
+        if name is None:
+            m2 = re.match(r"(\\[A-Za-z@]+)", tex[i:])
+            if not m2:
+                continue
+            name, i2 = "{" + m2.group(1) + "}", i + m2.end()
+        j, nargs = i2, ""
+        while j < len(tex) and tex[j] in " \t\n":
+            j += 1
+        for _ in range(2):
+            if j < len(tex) and tex[j] == "[":
+                a, j = balanced(tex, j, "[", "]")
+                nargs += a or ""
+                while j < len(tex) and tex[j] in " \t\n":
+                    j += 1
+        body, _ = balanced(tex, j)
+        if body is None:
+            continue
+        out.append("\\" + m.group(1) + name + nargs + body)
+    return "\n".join(out)
+
+def pandoc_text(macros: str, body: str):
+    """Convert a statement to Markdown with the paper's macros EXPANDED, so
+    what is left is standard LaTeX rather than the paper's private notation."""
+    import subprocess
+    exe = shutil.which("pandoc")
+    if not exe:
+        return None
+    src = macros + "\n" + body + "\n"
+    try:
+        r = subprocess.run([exe, "-f", "latex", "-t", "markdown-raw_html"],
+                           input=src.encode("utf-8"), capture_output=True, timeout=60)
+    except Exception:
+        return None
+    out = r.stdout.decode("utf-8", "replace")
+    out = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", out)      # links -> their text
+    out = re.sub(r"\{[^{}]*reference-type[^{}]*\}", "", out)  # pandoc ref attrs
+    out = re.sub(r"\s+", " ", out).strip()
+    return out or None
+
 def pdf_pages(main_tex: str):
     """Rendered text of the compiled PDF, page 1 first.  The statements the
     reader wants are the ones LaTeX printed, with the paper's 164 private
@@ -336,9 +384,9 @@ def emit_markdown(items, notes, src, aux_ok):
         if shown:
             name += f" ({shown})"
         if it["label"]:
-            name += f"<br/>`{it['label']}`"
+            name += f" · `{it['label']}`"
         if it.get("page"):
-            name += f"<br/><sub>p.{it['page']}</sub>"
+            name += f" · p.{it['page']}"
         src = it.get("printed") or it["body"]
         stmt = src[:180].replace("|", "\\|").replace("$", "")
         L.append(f"| {name} | {stmt}{' …' if len(src)>180 else ''} | | OPEN |")
@@ -358,15 +406,21 @@ def emit_markdown(items, notes, src, aux_ok):
             head += f" ({shown})"
         L.append(head)
         if it["label"]:
-            L.append(f"`\\label{{{it['label']}}}`" +
+            L.append("`" + it["label"] + "`" +
                      (f"  ·  p.{it['page']}" if it.get("page") else "") +
                      ("  ·  **appendix**" if it["appendix"] else ""))
-        if it.get("printed"):
-            L.append("\n" + it["printed"] + "\n")
-        L.append("<details><summary>LaTeX source (what to transcribe from)"
-                 "</summary>\n\n```tex\n" + it["body"][:1500] +
-                 ("\n… (truncated)" if len(it["body"]) > 1500 else "") +
-                 "\n```\n\n</details>\n")
+        L.append("\n" + (it.get("printed") or it.get("expanded")
+                          or "*(statement not extracted; see the sources section)*") + "\n")
+    L.append("\n## LaTeX sources\n")
+    L.append("*What a transcription is checked against. Kept apart from the "
+             "statements above so that reading them is uninterrupted: these are "
+             "written in the paper's own macros and are not meant to be read as "
+             "prose.*\n")
+    for it in res:
+        L.append(f"**{it['kind']} {it.get('number') or '(unlabelled)'}**"
+                 + (f" · `{it['label']}`" if it["label"] else ""))
+        L.append("\n```tex\n" + it["body"][:1200] +
+                 ("\n… (truncated)" if len(it["body"]) > 1200 else "") + "\n```\n")
     return "\n".join(L)
 
 def main():
@@ -378,6 +432,10 @@ def main():
     g.add_argument("--dir", help="directory of an already-extracted source")
     ap.add_argument("-o", "--out", help="write Markdown here (default: stdout)")
     ap.add_argument("--json", help="also write the items as JSON")
+    ap.add_argument("--text", choices=["pdf", "pandoc"], default="pdf",
+                    help="statement text from the rendered PDF (default, Unicode "
+                         "prose) or from pandoc (standard LaTeX math, needs a "
+                         "viewer that renders $…$)")
     ap.add_argument("--no-compile", action="store_true",
                     help="skip compilation; items will carry no numbers")
     ap.add_argument("--keep", help="where to keep a downloaded source")
@@ -402,6 +460,14 @@ def main():
     notes.append(note)
     pages = {} if a.no_compile else pdf_pages(main_tex)
     items = attach_numbers(extract(tex, kinds), aux, pages)
+    macros = macro_defs(tex)
+    for it in items:
+        if it["kind"] == "§":
+            continue
+        if a.text == "pandoc" or not it.get("printed"):
+            it["expanded"] = pandoc_text(macros, it["body"])
+            if a.text == "pandoc" and it["expanded"]:
+                it["printed"] = it["expanded"]
     md = emit_markdown(items, notes, src, bool(aux))
     if a.out:
         io.open(a.out, "w", encoding="utf-8").write(md)

@@ -98,3 +98,38 @@ An attempt to match printed headings by keyword made it worse — it
 replaced a correct-but-ugly title with a body line that happened to
 contain "calculus". Reverted. The headers only group the table, so a
 macro in one costs nothing; guessing a wrong title costs accuracy.
+
+## No HTML in the output
+
+The first version used `<sub>` for page numbers, `<br/>` inside table cells,
+and `<details>` to fold the LaTeX source. In a viewer without HTML support
+the `<details>` does not collapse, so the folded source is displayed inline
+— which is what made the output look "full of undigested TeX" even after
+the statements had been fixed. The source was never the problem; the
+container was.
+
+Now: no HTML at all. Table cells are one line, `Lemma 3 · lemma:wg · p.19`,
+and every LaTeX source lives in a single **LaTeX sources** section at the
+end, so reading the statements is uninterrupted.
+
+## Two ways to get statement text
+
+    --text pdf      (default) the printed text via pdftotext: Unicode prose,
+                    readable in any viewer, e.g.
+                        σ1 7→ σ2 implies ⟨0,0,0⟩ ⪯ wg(σ2) ≺ wg(σ1).
+    --text pandoc   pandoc with the paper's own \newcommand definitions
+                    extracted brace-aware and prepended, so its macros are
+                    EXPANDED to standard LaTeX, e.g.
+                        $\mathrm{Mod}(\mathcal{D}_S)$
+                    Better structurally, and renderable by any viewer that
+                    supports $…$ math — but Markdown has no math in the
+                    spec, so many do not.
+
+`pandoc` is also the automatic fallback whenever the PDF lookup fails.
+Extracting the macros **brace-aware** is essential: line-wise extraction
+truncates multi-line definitions, leaves braces unbalanced, and makes
+pandoc give up on the whole file silently.
+
+Items that neither route can extract are marked as such, never filled with
+raw source. On the FRJ paper that is 2 of 38 — one unlabelled example,
+which has no `.aux` entry and so no page to look on.
