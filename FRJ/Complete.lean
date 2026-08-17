@@ -182,7 +182,7 @@ close under `Clo.circ`; body unforced: `◯X` is determining data and sits
 in `Λ*` literally.  Lemma 6.5 holds for every goal of the modal
 signature; only infallibility remains, for `⊥`. -/
 theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
-    (hinf : K.Infallible) :
+    (hinf : ¬ K.Fal a) :
     ∀ {A : Form}, A ∈ sfL G → K.force a A → Clo (lamStar K a G) A := by
   intro A
   induction A with
@@ -195,7 +195,7 @@ theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
       -- of Lemma 6.5 — and with it the completeness construction — is a
       -- statement about infallible models.
       intro _ hf
-      exact absurd ((K.force_bot a).mp hf) (hinf a)
+      exact absurd ((K.force_bot a).mp hf) hinf
   | and A B ihA ihB =>
       intro hsf hf
       obtain ⟨hA, hB⟩ := sfL_and hsf
@@ -222,11 +222,11 @@ theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
 `Λ*_α` lies in `Cl(Λ*_β)`.  (Used where the construction moves to a
 world above.) -/
 theorem lamStar_mono {K : Kripke} {a b : K.W} {G : Form}
-    (hinf : K.Infallible) (hab : K.le a b) :
+    (hb : ¬ K.Fal b) (hab : K.le a b) :
     ∀ X ∈ lamStar K a G, Clo (lamStar K b G) X := by
   intro X hX
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hX
-  exact mem_clo_lamStar hinf hsf (K.force_mono hab (K.forceStar_force hst))
+  exact mem_clo_lamStar hb hsf (K.force_mono hab (K.forceStar_force hst))
 
 /-! ## Deleting the fallible worlds
 
@@ -465,5 +465,67 @@ def minEta {K : Kripke} {a : K.W} {A B : Form}
           exact absurd (le_maxOn (fun x => ht K x) c cs d hdmem)
             (Nat.not_le.mpr (ht_lt hde hdne.symm)) }
 
+
+/-! ## The minimal `ζ`
+
+The `◯`-analogue of `minEta`: `α ⊮ ◯Z` supplies a world `e ≥ α` whose
+WHOLE `Rm`-cone refutes `Z` (the `∃`-witness of the failed `◯`-clause,
+instantiated at `v := e`).  As with `minEta` this must be DATA.  No
+minimality property is needed: `◯∉`/`⋈^◯` carry no `hAnot`-style
+condition. -/
+
+/-- The candidate worlds: `e ≥ a` whose whole `Rm`-cone refutes `Z`.  The
+cone check runs over the model's enumeration, which is complete. -/
+def zetaCand (K : Kripke) (a : K.W) (Z : Form) : List K.W :=
+  K.elems.filter (fun e =>
+    decide (K.le a e ∧ ∀ v ∈ K.elems, K.Rm e v → ¬ K.force v Z))
+
+theorem mem_zetaCand {K : Kripke} {a : K.W} {Z : Form} {e : K.W} :
+    e ∈ zetaCand K a Z ↔ (K.le a e ∧ ∀ v, K.Rm e v → ¬ K.force v Z) := by
+  simp only [zetaCand, List.mem_filter, decide_eq_true_eq, K.complete e,
+    true_and]
+  exact and_congr_right (fun _ =>
+    ⟨fun h v => h v (K.complete v), fun h v _ => h v⟩)
+
+/-- `α ⊮ ◯Z` means there is a candidate.  Constructive: forcing is
+decidable and the `∃`-witness search runs over the model's own
+enumeration. -/
+theorem zetaCand_ne_nil {K : Kripke} {a : K.W} {Z : Form}
+    (h : ¬ K.force a (.circ Z)) : zetaCand K a Z ≠ [] := by
+  intro hn
+  refine h ?_
+  intro v hav
+  by_cases hex : ∃ u ∈ K.elems, K.Rm v u ∧ K.force u Z
+  · obtain ⟨u, -, hru, hu⟩ := hex
+    exact ⟨u, hru, hu⟩
+  · exact absurd (mem_zetaCand.mpr ⟨hav, fun w hw hfw =>
+      hex ⟨w, K.complete w, hw, hfw⟩⟩) (by rw [hn]; exact List.not_mem_nil)
+
+/-- The cone-refutation witness, as data. -/
+structure MinZeta (K : Kripke) (a : K.W) (Z : Form) : Type where
+  e : K.W
+  le : K.le a e
+  cone : ∀ v, K.Rm e v → ¬ K.force v Z
+
+/-- Pick a candidate.  When `a` itself is one, pick `a` — the construction
+branches on `e = a` and the self-candidate case must be recognised. -/
+def minZeta {K : Kripke} {a : K.W} {Z : Form}
+    (h : ¬ K.force a (.circ Z)) : MinZeta K a Z :=
+  if hself : ∀ v ∈ K.elems, K.Rm a v → ¬ K.force v Z then
+    { e := a, le := K.le_refl a, cone := fun v => hself v (K.complete v) }
+  else
+    match hc : zetaCand K a Z with
+    | [] => absurd hc (zetaCand_ne_nil h)
+    | c :: _ =>
+        have hspec := mem_zetaCand.mp (hc ▸ List.mem_cons_self (l := _))
+        { e := c, le := hspec.1, cone := hspec.2 }
+
+/-- The floating branch is genuine: a non-self `minZeta` witness is
+strictly above.  (If `e = a` then `a`'s own cone refutes `Z`, which is
+the self case.) -/
+theorem minZeta_ne {K : Kripke} {a : K.W} {Z : Form}
+    (hself : ¬ ∀ v ∈ K.elems, K.Rm a v → ¬ K.force v Z)
+    (m : MinZeta K a Z) : m.e ≠ a :=
+  fun he => hself (fun v _ => he ▸ m.cone v)
 
 end FRJ

@@ -368,7 +368,7 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
             · exact List.mem_append_right _ hL
             · exact List.mem_append_left _ (mem_sdiff.mpr ⟨hx, hL⟩)
         have hAclo : Clo (nf G (w.stab ++ sdiff (lamStar K a G) w.stab)) A := by
-          refine clo_mono ?_ (mem_clo_lamStar hinf hA heA)
+          refine clo_mono ?_ (mem_clo_lamStar (hinf _) hA heA)
           intro x hx
           exact mem_nf.mpr ⟨lamStar_subset_gHat hx, hStLam hx⟩
         refine { stab := nf G (w.stab ++ sdiff (lamStar K a G) w.stab)
@@ -388,9 +388,9 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
         have hab : K.le a w.wld := K.le_trans m.le w.wle
         exact { stab := [], th := nf G (lamStar K a G)
                 der := .impNotIn w.der
-                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono hinf hab X (mem_nf.mp hX).2),
+                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono (hinf _) hab X (mem_nf.mp hX).2),
                     (mem_nf.mp hX).1⟩)
-                  (clo_mono w.cov (mem_clo_lamStar hinf hA (K.force_mono w.wle m.fA)))
+                  (clo_mono w.cov (mem_clo_lamStar (hinf _) hA (K.force_mono w.wle m.fA)))
                   (fun hc => hnaA (forces_clo_lamStar (clo_mono nf_subset_self hc))) hC
                 sub := fun _ h => absurd h List.not_mem_nil
                 cov := fun x hx => mem_nf.mpr ⟨lamStar_subset_gHat hx, hx⟩
@@ -438,12 +438,12 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
         let w := minMod K G hcf hinf a (n+1) B hB heB
         exact { ctx := w.ctx
                 der := .impIn w.der (clo_mono w.cov
-                  (mem_clo_lamStar hinf hA (K.force_mono w.wle heA))) hC
+                  (mem_clo_lamStar (hinf _) hA (K.force_mono w.wle heA))) hC
                 wld := w.wld, wle := w.wle, cov := w.cov }
       · let w := minMod K G hcf hinf m.e 1 B hB m.nfB
         exact { ctx := w.ctx
                 der := .impIn w.der (clo_mono w.cov
-                  (mem_clo_lamStar hinf hA (K.force_mono w.wle m.fA))) hC
+                  (mem_clo_lamStar (hinf _) hA (K.force_mono w.wle m.fA))) hC
                 wld := w.wld, wle := K.le_trans m.le w.wle, cov := w.cov }
 termination_by (ht K a, t, C.size)
 decreasing_by
