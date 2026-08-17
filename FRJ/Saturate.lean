@@ -297,6 +297,47 @@ def metR_circ {K : Kripke} {G : Form} {a : K.W} {Z : Form}
     w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .circ hcov⟩),
     w.wld, K.le_trans mz.le w.wle, w.wfal, w.cov⟩
 
+/-! ### The origin-indexed certified interface (build β2, target type)
+
+What `circNotIn`/`circIn` consumers actually need from a certified row
+is weaker than `MRWit`: the derivation, the tag certificate, and the
+DEMANDING world's `Λ*` grounded through the row's context.  Requiring
+the anchor's own full `Λ*`-coverage is over-specification and contains
+the one provably-unsatisfiable pledge instance (docs §13). -/
+
+/-- The origin-indexed certified wit: a tagged row grounding the
+origin's `Λ*`.  No anchor fields — the anchor is dissolved into
+`ground`. -/
+structure OWit (K : Kripke) (G : Form) (b : K.W) (C : Form) : Type where
+  t : Tag
+  ctx : List Form
+  der : FRJr G t ctx C
+  tOK : t = .barren ∨ ∃ W, t = .chain W ∧ Covers ctx W C
+  ground : ∀ X ∈ lamStar K b G, Clo ctx X
+
+/-- Every anchored certified wit above `b` yields an origin-indexed one:
+the transport `lamStar_mono` ∘ `clo_mono` is packaged once and for all.
+The converse fails — `OWit` is strictly weaker, which is the point. -/
+def MRWit.toOWit {K : Kripke} {G : Form} {b : K.W} {C : Form}
+    (w : MRWit K G b C) : OWit K G b C :=
+  ⟨w.t, w.ctx, w.der, w.tOK,
+    fun X hX => clo_mono w.cov (lamStar_mono w.wfal w.wle X hX)⟩
+
+/-- `metI_circ` against the corrected interface: the irregular ◯-demand
+from an origin-indexed `Z`-wit.  Subsumes `metI_circ` (via `toOWit`)
+and `metI_circ_syn` (an `OWit` with syntactic ground). -/
+def metI_circO {K : Kripke} {G : Form} {b : K.W} {Z : Form}
+    (hgoal : Form.circ Z ∈ sfR G)
+    (w : OWit K G b Z) : IrrWit K G b (.circ Z) where
+  stab := []
+  th := nf G (lamStar K b G)
+  der := .circNotIn w.der w.tOK
+    (fun X hX => ⟨w.ground X (mem_nf.mp hX).2, (mem_nf.mp hX).1⟩) hgoal
+  sub := List.nil_subset _
+  cov := fun X hX =>
+    List.mem_append_right _ (mem_nf.mpr ⟨lamStar_subset_gHat hX, hX⟩)
+  thNf := nf_idem.symm
+
 /-! ### The prime and `∨` joins at locally circ-free worlds
 
 `hcf` (the global syntactic circ-freeness) enters the landed helpers in
