@@ -1,5 +1,23 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (erasure-transfer session) — the (E) build opened
+
+Matthew redirected to the erasure-transfer lemma.  Landed, all green,
+pins in Audit: FRJ/Erase.lean — `erase`/`noCirc`/`erase_hcf`;
+`force_erase` (semantic half, axiom-FREE); `completeness_of_transparent_of_lift`
+(conditional wiring); `force_circ_transparent`,
+`circPart_lamStar_nil_of_transparent` (transparency kills the pledge
+supply), `completeness_of_transparent_of_circSupply`; `clo_lift` + zone
+shape helpers.  Engine attack on (E): 7/7 informative pass (four
+classically-valid erasures, nested ◯◯); `dn_circ_and` exposed an ENGINE
+gap (fixpoint-miss on a provably-derivable ◯-free goal — chip filed).
+Key insight recorded in docs §14 addendum: the transfer recurses on the
+erased derivation tree + decoration size, bypassing the §9 measure
+dichotomy that still blocks every semantic route (even transparently).
+NEXT: barren subfamily FRJbr/FRJbi + embedding (new file, safe);
+Minimal retarget (type ascriptions; touches the proved file — surfaced
+to Matthew before doing it); then the lift itself.
+
 ## 2026-08-17 — FRJ◯ completeness campaign: retrospective at stop
 
 Goal (Stop-hook, now cleared): unconditional completeness (A).

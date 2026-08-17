@@ -920,3 +920,49 @@ the lifted refutation of the body; contexts lift by preimage-fattening
 `liftCtx Δ := (gHat G).filter (erase · ∈ Δ)`, which stays inside the
 zones (preimages of zone members are zone members) and commutes with
 the joins' ∪/∩/restrict algebra (preimage preserves both).
+
+### §14 addendum: attack results, the measure insight, and the barren fragment
+
+**Engine attack on (E): survived.**  Eight ◯-decorated intuitionistic
+refuters; seven informative, ALL `transfer:pass` — including the four
+with classically VALID erasures (◯-Peirce, ◯-weak-EM, ◯-Dummett,
+`◯p∨(◯p⊃q)`), i.e. instances beyond the discrete corner's reach, and
+the nested `◯◯` decoration.  The eighth (`dn_circ_and`) is vacuous at
+budget: its ERASURE `¬¬(p∧q)⊃(p∧q)` is underivable-at-fixpoint for the
+engine at both budget tiers, although the PROVED ◯-free completeness
+guarantees a derivation (hand-traced: axI ⊥ → impInI Λ={p,q} → joinAt
+retaining ¬¬(p∧q) → andR → impIn).  That is an ENGINE instantiation
+gap (false-negative source), flagged as a separate task; not evidence
+about (E).
+
+**Why the transfer bypasses §9.**  The direct transparent-model rerun
+of the completeness induction still hits the §9 measure dichotomy: the
+join edge needs phase-priority `(ht, t, |C|)` while the transparency
+strip `I(◯Z)@a → R(Z)@a` (same world, smaller formula) needs
+size-priority — the same clash, so `CircSupply` survives transparency.
+The transfer instead recurses on (ERASED SUBDERIVATION, decoration
+size): the strip keeps the subderivation and shrinks the decoration;
+every rule step shrinks the subderivation.  The erased derivation is
+the well-founded skeleton that the semantics denied us.  This is the
+precise sense in which Matthew's redundancy observation is a THEOREM
+route and not just an intuition.
+
+**The tag obstruction and the barren fragment.**  The lift is NOT
+total on arbitrary erased derivations: a `blocked`-tagged row (fallible
+join) can never feed the `◯∈`-insertion, and soundly so — its realising
+world has a fallible modal successor, hence forces EVERY `◯`-formula,
+so no decoration of its goal is refutable over it.  The escape: the
+conditional theorem only ever lifts the CANONICAL derivation of the
+◯-free completeness, and Minimal.lean's construction uses exactly the
+eleven tag-field-free rules (axR, andR1/2, impIn, joinAt, joinOr; axI,
+andI1/2, orI, impInI, impNotIn) with every regular row statically
+`.barren`-indexed (`RegWit.der`).  Plan: an explicit barren subfamily
+`FRJbr`/`FRJbi` (same constructors, no Tag index), the embedding into
+`FRJr .barren`/`FRJi`, Minimal retargeted onto it (type ascriptions
+only — the construction never mentions a tag field), and the lift
+`FRJbr (erase G) → FRJr G` with the two strip insertions (`◯∈` on
+barren rows, always legal; `◯∉`/`Ax^I◯` at irregular decorated
+positions).  Landed so far: `clo_lift` (the closure lift, [propext]),
+the zone shape helpers, and `completeness_of_transparent_of_circSupply`
+(transparency discharges the pledge supply vacuously —
+`circPart_lamStar_nil_of_transparent`).

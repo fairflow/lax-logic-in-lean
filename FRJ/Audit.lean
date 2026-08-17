@@ -153,4 +153,16 @@ namespace FRJ
 #guard_msgs in
 #print axioms completeness_of_transparent_of_lift
 
+/-- info: 'FRJ.circPart_lamStar_nil_of_transparent' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms circPart_lamStar_nil_of_transparent
+
+/-- info: 'FRJ.completeness_of_transparent_of_circSupply' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_transparent_of_circSupply
+
+/-- info: 'FRJ.clo_lift' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms clo_lift
+
 end FRJ

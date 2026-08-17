@@ -776,6 +776,10 @@ def main : IO Unit := do
   IO.println s!"-- erasure-transfer attack (E): Provable (erase G) → Provable G --"
   for c in ePairs do
     runEPair cfg c
+  IO.println s!"-- erasure re-run at raised bounds (fixpoint is jmax/pmax-relative) --"
+  for c in ePairs do
+    if c.name == "dn_circ_and" then
+      runEPair cfgHigh c
   IO.println "done."
 
 end FRJSat

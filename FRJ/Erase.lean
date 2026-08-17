@@ -26,7 +26,7 @@ semantic half and the wiring:
 attack (`wip/frj_sat.lean`, erasure-transfer block) before any proof
 build is scoped.
 -/
-import FRJ.Minimal
+import FRJ.Saturate
 
 namespace FRJ
 
@@ -200,5 +200,136 @@ theorem completeness_of_transparent_of_lift {G : Form} {K : Kripke}
     (hinf : K.Infallible) (hK : ¬ K.valid G) : Provable G :=
   hlift (completeness (erase_hcf G) K hinf
     (fun h => hK ((valid_erase hRm).mp h)))
+
+/-! ## Transparent models and the supply route
+
+Independently of the transfer: on a transparent model NO `◯`-formula
+ever enters `Λ*` — membership demands `force a (◯Y) ∧ ¬ force a Y` and
+transparency collapses the conjuncts — so the pledge supply of
+`FRJ/Saturate.lean` is discharged VACUOUSLY, and the supply-conditional
+completeness needs only the `◯`-corner kernel there. -/
+
+theorem force_circ_transparent {K : Kripke}
+    (hRm : ∀ {a u : K.W}, K.Rm a u → u = a) {a : K.W} {A : Form} :
+    K.force a (.circ A) ↔ K.force a A := by
+  constructor
+  · intro h
+    obtain ⟨c, hrm, hc⟩ := h a (K.le_refl a)
+    exact hRm hrm ▸ hc
+  · intro h b hab
+    exact ⟨b, K.rm_refl b, K.force_mono hab h⟩
+
+/-- Choice-free replacement for `List.filter_eq_nil_iff.mpr` (the
+Mathlib lemma pins `Classical.choice`). -/
+theorem filter_eq_nil_of {α : Type _} {p : α → Bool} :
+    ∀ {l : List α}, (∀ a ∈ l, p a = false) → l.filter p = []
+  | [], _ => rfl
+  | a :: l, h => by
+      have ha := h a List.mem_cons_self
+      simp [ha,
+        filter_eq_nil_of (fun b hb => h b (List.mem_cons_of_mem a hb))]
+
+theorem circPart_lamStar_nil_of_transparent {K : Kripke}
+    (hRm : ∀ {a u : K.W}, K.Rm a u → u = a) (b : K.W) (G : Form) :
+    circPart (lamStar K b G) = [] := by
+  refine filter_eq_nil_of ?_
+  intro H hH
+  cases H with
+  | atom p => rfl
+  | bot => rfl
+  | and A B => rfl
+  | or A B => rfl
+  | imp A B => rfl
+  | circ A =>
+      have h := (mem_lamStar.mp hH).2
+      exact absurd ((force_circ_transparent hRm).mp h.1) h.2
+
+/-- Completeness over transparent models, through the SUPPLY route: the
+pledge side is vacuous there, so only `CircSupply` remains.  (The
+transfer route below is the one that also eliminates `CircSupply`.) -/
+theorem completeness_of_transparent_of_circSupply {G : Form} {K : Kripke}
+    (hRm : ∀ {a u : K.W}, K.Rm a u → u = a)
+    (hsup : CircSupply K G) (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_supply
+    (pledgeSupply_of_locFree fun b => circPart_lamStar_nil_of_transparent hRm b G)
+    hsup hK
+
+/-! ## Zone shape helpers -/
+
+theorem mem_gHat_shape {G X : Form} (h : X ∈ gHat G) :
+    X.isPV = true ∨ X.isImp = true ∨ X.isCirc = true := by
+  rcases List.mem_append.mp h with h | h
+  · rcases List.mem_append.mp h with h | h
+    · exact Or.inl (List.mem_filter.mp h).2
+    · exact Or.inr (Or.inl (List.mem_filter.mp h).2)
+  · exact Or.inr (Or.inr (List.mem_filter.mp h).2)
+
+theorem mem_gAt_of {G X : Form} (hX : X ∈ sfL G) (hPV : X.isPV = true) :
+    X ∈ gAt G := List.mem_filter.mpr ⟨hX, hPV⟩
+
+theorem mem_gImp_of {G X : Form} (hX : X ∈ sfL G) (hI : X.isImp = true) :
+    X ∈ gImp G := List.mem_filter.mpr ⟨hX, hI⟩
+
+theorem gAt_sub_gHat {G : Form} : gAt G ⊆ gHat G := fun _ h =>
+  List.mem_append_left _ (List.mem_append_left _ h)
+
+theorem gImp_sub_gHat {G : Form} : gImp G ⊆ gHat G := fun _ h =>
+  List.mem_append_left _ (List.mem_append_right _ h)
+
+/-! ## The closure lift
+
+The first load-bearing piece of the derivation translation. -/
+
+/-- **Closure lift.**  For a LEFT-position formula `X'` of `G`: if its
+erasure lies in `Cl(Δ)` for an `Ĝ(erase G)`-zone `Δ`, then `X'` lies in
+`Cl(Γ)` for any `Γ` containing the `Ĝ(G)`-preimages of `Δ`.  The
+`◯`-layers of `X'` are reinstated by `Clo.circ`; base cases land by the
+preimage property; compound shapes invert the closure derivation. -/
+theorem clo_lift {G : Form} {Δ Γ : List Form}
+    (hΔ : ∀ V ∈ Δ, V ∈ gHat (erase G))
+    (hpre : ∀ V' ∈ gHat G, erase V' ∈ Δ → V' ∈ Γ) :
+    ∀ X' : Form, X' ∈ sfL G → Clo Δ (erase X') → Clo Γ X' := by
+  intro X'
+  induction X' with
+  | atom p =>
+      intro hpos hE
+      simp only [erase] at hE
+      cases hE with
+      | base hmem => exact .base (hpre _ (gAt_sub_gHat (mem_gAt_of hpos rfl)) hmem)
+  | bot =>
+      intro hpos hE
+      simp only [erase] at hE
+      cases hE with
+      | base hmem =>
+          rcases mem_gHat_shape (hΔ _ hmem) with h | h | h <;>
+            simp [Form.isPV, Form.isImp, Form.isCirc] at h
+  | and A B ihA ihB =>
+      intro hpos hE
+      simp only [erase] at hE
+      cases hE with
+      | base hmem =>
+          rcases mem_gHat_shape (hΔ _ hmem) with h | h | h <;>
+            simp [Form.isPV, Form.isImp, Form.isCirc] at h
+      | and h1 h2 =>
+          exact .and (ihA (sfL_and hpos).1 h1) (ihB (sfL_and hpos).2 h2)
+  | or A B ihA ihB =>
+      intro hpos hE
+      simp only [erase] at hE
+      cases hE with
+      | base hmem =>
+          rcases mem_gHat_shape (hΔ _ hmem) with h | h | h <;>
+            simp [Form.isPV, Form.isImp, Form.isCirc] at h
+      | orR h => exact .orR (ihB (sfL_or hpos).2 h)
+      | orL h => exact .orL (ihA (sfL_or hpos).1 h)
+  | imp A B _ihA ihB =>
+      intro hpos hE
+      simp only [erase] at hE
+      cases hE with
+      | base hmem => exact .base (hpre _ (gImp_sub_gHat (mem_gImp_of hpos rfl)) hmem)
+      | imp h => exact .imp (ihB (sfL_imp hpos).2 h)
+  | circ A ih =>
+      intro hpos hE
+      simp only [erase] at hE
+      exact .circ (ih (sfL_circ hpos) hE)
 
 end FRJ
