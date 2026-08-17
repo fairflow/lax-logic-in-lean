@@ -413,4 +413,72 @@ def metI_circ_syn {K : Kripke} {G : Form} {a : K.W} {Z : Form} {t : Tag}
     · simp [List.mem_filter, hx, h]
     · simp [List.mem_filter, h]
 
+/-- The `∨`-regular demand at a locally circ-free world: the barren
+`⋈^∨` over the two disjunct cells and the prime Υ-family. -/
+def metR_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
+    (hloc : circPart (lamStar K a G) = [])
+    (hC : Form.or C₁ C₂ ∈ sfR G) (hnf : ¬ K.force a (.or C₁ C₂))
+    (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
+    MRWit K G a (.or C₁ C₂) := by
+  have hn1 : ¬ K.force a C₁ := fun hc => hnf (Or.inl hc)
+  have hn2 : ¬ K.force a C₂ := fun hc => hnf (Or.inr hc)
+  let U := C₁ :: C₂ :: upsPrime K a G
+  let E := enumOf U (by simp [U])
+  let f := E.f
+  have hfmem : ∀ j, f j ∈ U := fun j =>
+    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  let wit : ∀ j, IrrWit K G a (f j) := fun j =>
+    if h1 : f j = C₁ then by rw [h1]; exact ih C₁ (sfR_or hC).1 hn1
+    else if h2 : f j = C₂ then by rw [h2]; exact ih C₂ (sfR_or hC).2 hn2
+    else
+      have hm : f j ∈ upsPrime K a G := by
+        rcases List.mem_cons.mp (hfmem j) with h | h
+        · exact absurd h h1
+        · rcases List.mem_cons.mp h with h' | h'
+          · exact absurd h' h2
+          · exact h'
+      ih (f j) (upsPrime_spec hm).1 (upsPrime_spec hm).2
+  let stab := fun j => (wit j).stab
+  let th := fun j => (wit j).th
+  refine ⟨.barren, joinCtxOr stab th f, ?_, Or.inl rfl, a, K.le_refl a,
+    fun hf => hnf (K.fal_force _ hf), ?_⟩
+  · refine .joinOr (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
+      (fun A B hmem => ?_) (unionAll_circPart_nil_loc hloc (fun j => (wit j).sub))
+      ⟨?_, ?_⟩ hC
+    · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
+      exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+        (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
+    · exact (E.spec C₁).mpr List.mem_cons_self
+    · exact (E.spec C₂).mpr (List.mem_cons_of_mem _ List.mem_cons_self)
+  · intro X hX
+    have hXG := lamStar_subset_gHat hX
+    simp only [gHat, List.mem_append] at hXG
+    by_cases hin : ∃ j, X ∈ stab j
+    · obtain ⟨j, hj⟩ := hin
+      simp only [joinCtxOr, List.mem_append]
+      rcases hXG with (h | h) | h
+      · exact Or.inl (Or.inl (Or.inl (mem_unionAll.mpr
+          ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩)))
+      · exact Or.inl (Or.inr (mem_unionAll.mpr
+          ⟨j, List.mem_filter.mpr ⟨hj, (List.mem_filter.mp h).2⟩⟩))
+      · exact absurd ((List.mem_filter.mp h).2)
+          (fun hc => lamStar_not_circ_loc hloc hX hc)
+    · have hin' : ∀ j, X ∉ stab j := fun j hj => hin ⟨j, hj⟩
+      have hallTh : ∀ j, X ∈ th j :=
+        fun j => (List.mem_append.mp ((wit j).cov hX)).resolve_left (hin' j)
+      simp only [joinCtxOr, List.mem_append]
+      rcases hXG with (h | h) | h
+      · exact Or.inl (Or.inl (Or.inr (mem_interAll.mpr (fun j =>
+          List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩))))
+      · refine Or.inr ?_
+        have himp : X.isImp := (List.mem_filter.mp h).2
+        match X, himp with
+        | .imp A B, _ =>
+            refine mem_restrict.mpr ⟨mem_interAll.mpr (fun j =>
+              List.mem_filter.mpr ⟨hallTh j, rfl⟩), ?_⟩
+            exact (E.spec A).mpr (List.mem_cons_of_mem _
+              (List.mem_cons_of_mem _ (mem_upsPrime hX)))
+      · exact absurd ((List.mem_filter.mp h).2)
+          (fun hc => lamStar_not_circ_loc hloc hX hc)
+
 end FRJ
