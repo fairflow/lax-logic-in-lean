@@ -656,6 +656,8 @@ def corpus : List Cell := [
     "§11 residue probe, poisoned: antecedent A=p∨(p⊃q) classically true at ∅, consequent z — blocks BOTH the vacZone and the Clo-grounding routes at once"⟩,
   ⟨"corner_selfloop", .imp (.imp (.circ fz) fz) (.or fw (.circ fz)), false,
     "§11 self-loop probe: (◯z⊃z) ∈ Λ* with ungroundable consequent z — the retained imp re-demands its own ◯z-cell inside the supply row"⟩,
+  ⟨"corner_taut_body", .imp (.imp (.circ (.or fq (.imp fq fp))) (.or fp (.imp fp fq))) (.or fw (.circ (.or fq (.imp fq fp)))), false,
+    "§11 killer attempt: tautologous ◯-body Z'=q∨(q⊃p) (blocks every-ats axIC) with tautologous-but-unforced consequent W=p∨(p⊃q); 3-world model a<b{p,q},c{p}"⟩,
   ⟨"nn_circ_circ_bot", .imp (.imp (.circ (.circ .bot)) .bot) .bot, false,
     "pledge stress: nested ◯-body through the irregular route (¬¬◯◯⊥)"⟩,
   ⟨"excluded_middle", .or fp (.imp fp .bot), false,
@@ -706,7 +708,7 @@ def main : IO Unit := do
   let cfgHigh : Config := { rounds := 16, jmax := 4, pmax := 3, lamCap := 16, maxRS := 1500, maxIS := 1500 }
   IO.println s!"-- raised-budget re-run (jmax={cfgHigh.jmax} pmax={cfgHigh.pmax} lamCap={cfgHigh.lamCap}) --"
   for c in corpus do
-    if c.name == "corner_poisoned_ups" || c.name == "corner_residue" || c.name == "corner_residue_poisoned" || c.name == "corner_selfloop" then
+    if c.name == "corner_poisoned_ups" || c.name == "corner_residue" || c.name == "corner_residue_poisoned" || c.name == "corner_selfloop" || c.name == "corner_taut_body" then
       runCell cfgHigh c
   IO.println "done."
 

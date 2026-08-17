@@ -668,3 +668,41 @@ retention inside the row under construction with their Υ-cells taken
 from `seen`-aware recursion.  This is the concrete route to
 discharging `CircSupply` outright; the promise-mode port for `hloc`
 remains the other half.
+
+### §11 third addendum: the stuck-member analysis + the killer probe
+(2026-08-17, end of window)
+
+Sharpening the member-wise discharge of the self-referential kernel
+instance, for a retained member `(◯Z′ ⊃ W) ∈ Λ*_a` inside the
+`R(Z′)@a` supply row:
+
+1. If `a ⊩ W`: Lemma 6.5 grounds it (`W ∈ sfL`, forced ⟹ Clo-derivable
+   from `Λ*_a ⊆ Γ_row`).  Stuck ⟹ `a ⊮ W`, and then the corner gives
+   `∀ u > a : u ⊩ Z′ ⟹ u ⊩ ◯Z′ ⟹ u ⊩ W`: the consequent is itself
+   corner-shaped.
+2. NEW discharge route: `Ax^I◯` with a CHOSEN valuation `ats ⊆ Ĝ_at`
+   (not the world's own): the cell lands whenever some classical
+   valuation satisfies `Λ*_a` and refutes `Z′` — decidable, and blocked
+   only when `Λ*_a ⊨_cl Z′` (e.g. tautologous `Z′`).
+3. Attempting to build a configuration blocking EVERY route
+   (tautologous `Z′` to kill 2, `W` refuted at `a` to kill 1, `W`
+   built from atoms excluded from the row's zones to kill grounding)
+   SELF-DESTRUCTS: refuting `W` at `a` demands a witness world above
+   `a`, which the corner obliges to force `◯Z′` and hence `W` — the
+   same destruction pattern as the §8 attempts.  Conjecture: the fully
+   stuck configuration is semantically inconsistent, i.e. the kernel is
+   dischargeable member-wise in all models.
+
+The strongest CONSISTENT killer-attempt was probed and PASSES:
+
+    corner_taut_body  (◯(q∨(q⊃p)) ⊃ (p∨(p⊃q))) ⊃ (w ∨ ◯(q∨(q⊃p)))
+                      rounds=6; model a < b{p,q}, c{p}
+
+Corpus: 28 pass / 5 control-ok / 0 unresolved.  Thirteen corner-family
+cells, all derived; no completeness counterexample at any constructible
+stratum.
+
+**Route to unconditional (A), consolidated**: (α) the seen-mechanism
+visit refactor (§11 second addendum); (β) the member-wise kernel
+discharge with the four routes above + the self-destruction argument
+made formal; (γ) the promise-mode port of the prime/∨ joins for `hloc`.

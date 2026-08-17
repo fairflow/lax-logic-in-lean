@@ -1,5 +1,15 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (late night) — kernel discharge routes at four; killer probe green
+
+Stuck-member analysis: forced `a ⊮ W` + corner-shaped consequent; NEW
+∃-ats Ax^I◯ route (decidable; blocked only by Λ* ⊨_cl Z′); the
+all-routes-blocked configuration self-destructs semantically
+(conjecture: kernel dischargeable member-wise everywhere).  Killer
+probe corner_taut_body PASSES (28/5/0, thirteen corner cells).  Route
+to unconditional (A): seen-mechanism + member-wise discharge + promise
+port (docs §11 third addendum).
+
 ## 2026-08-17 (night) — residue probes green; seen-mechanism designed
 
 corner_residue / corner_residue_poisoned / corner_selfloop all PASS
