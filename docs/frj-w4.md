@@ -737,3 +737,41 @@ So build (γ) = the two join builders' promise branches, each taking a
 `PledgeSupply`-input; `completeness_of_supply` then drops `hloc` for
 `PledgeSupply`, and full unconditional (A) = the member-wise discharge
 of BOTH supplies ((β), with the four routes + self-destruction).
+
+## 12. Build (γ) LANDED: hloc eliminated (2026-08-17, continuation)
+
+`FRJ/Saturate.lean` now carries the promise-mode joins as builders:
+
+- `PledgeFam K G a F`: a component family deriving `F` with admissible
+  tags, contexts `Clo`-containing `Λ*_a` (discharging hJ7s and, via
+  `restrictP`, the conclusion filter) and grounding every
+  `Λ*`-circ-body (discharging hJ5 and the θ-circ `restrictC`);
+- `PledgeSupply K G`: such a family at every circ-carrying world for
+  every refuted right-signature formula — the second named kernel;
+- `metR_primeP` (the `⋈^At,p`, premise family enumerating
+  `C :: upsPrime` so the imp-free case is covered, pledging the goal:
+  the conclusion tag is `chain C`, whose `tOK` is `Covers.refl`) and
+  `metR_orP` (the `⋈^∨,p`, `U = C₁ :: C₂ :: upsPrime`);
+- `visit` branches per world on `circPart (Λ*_a) = []`: barren joins
+  where it holds, promise joins where it fails.
+
+**The main theorem is now**
+
+    completeness_of_supply :
+      PledgeSupply K G → CircSupply K G → ¬ K.valid G → Provable G
+
+— statement (A) for EVERY finite Kripke model, no `hloc`, pins
+`[propext, Quot.sound]`, audit-guarded.  `pledgeSupply_of_locFree`
+recovers the old form; `completeness_of_discrete` re-derives through
+it (both supplies discharged at discrete models).
+
+**What remains for unconditional (A)** is exactly build (β): the
+member-wise discharge of the two supplies —
+`CircSupply` (four routes proved: minRef-float exhaustion means it
+fires only when every proper extension forces the body; then maximal ⟹
+`circWit_of_maximal`, groundable ⟹ `metI_circ_syn`, ∃-ats ⟹ chosen-
+valuation `Ax^I◯`, plus the self-destruction conjecture for the rest)
+and `PledgeSupply` (components for the goal over the demanding world's
+cone; semantic availability is the §8 pledge-existence question).
+Both are single named Props with the engine as extensional referee
+(28/5/0 across thirteen corner cells).

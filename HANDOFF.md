@@ -1,5 +1,15 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (continuation) — BUILD (γ) LANDED: hloc eliminated
+
+metR_primeP/metR_orP (promise joins pledging the goal; PledgeFam
+against Λ* discharges hJ5/hJ7s/restrictP/restrictC) + visit branching
+per world.  MAIN THEOREM NOW: completeness_of_supply : PledgeSupply →
+CircSupply → ¬valid G → Provable G — statement (A) for EVERY model,
+no hloc, choice-free, audit-guarded.  completeness_of_discrete
+re-derived.  Remaining: build (β) = member-wise discharge of the two
+supplies.  docs §12.
+
 ## 2026-08-17 (close) — promise-port design pinned
 
 (γ)-design fixed by two proved constraints: Λ*-circ retention is
