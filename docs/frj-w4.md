@@ -1174,3 +1174,137 @@ transfer (E) of §14. The completeness map is now:
 **The remaining open content on `Rm = ≤` frames is `PledgeSupply`
 alone**, at worlds carrying a `Λ*`-modal formula — i.e. worlds `a` with
 `◯Y ∈ Sf^L(G)`, `a ⊩ ◯Y`, `a ⊮ Y`. That is where the next round goes.
+
+---
+
+## §16 The supplies removed: completeness on endpoint-seeing frames (2026-08-18)
+
+§15 closed the `◯`-corner on cone-grounded frames and left `PledgeSupply`
+as the only open condition. It is now gone as well, and the frame
+hypotheses of §15 have been demoted to one-line instances of a single
+theorem.
+
+### The doubt that started it, and the ablation
+
+Matthew's reading was that `PledgeSupply` "is not really needed for
+completeness" — a doubt about the STATEMENT, not about the proof. Tested
+first, per the standing rule. `wip/frj_sat.lean` grew two ablation
+switches gating the join families, and the corpus was re-run:
+
+    no promise joins            : derived 26/32; lost vs baseline: NONE
+    no promise, no fallible     : derived 20/32; lost vs baseline: neg_circ_bot,
+                                  circ_imp, nnn_circ_bot, circ_or_split,
+                                  circ_circ_imp, circ_ante_circ_goal
+    no promise, raised budget   : derived 27/32; lost vs baseline: NONE
+
+The promise joins `⋈^At,p`, `⋈^∨,p`, `⋈^◯,p` — the only consumers of
+`PledgeSupply` — are never needed on the corpus; the FALLIBLE joins are.
+So the doubt was well founded and the proof, not the calculus, was at
+fault.
+
+### Where the supply was actually consumed
+
+`PledgeSupply` enters at exactly two sites, `metR_primeP` and `metR_orP`:
+the TAGGED regular tier, at a world whose `Λ*` carries a `◯`. And the
+tagged tier is entered only in two ways —
+
+* at the root by `AllMet`, where the tag is never read
+  (`completeness_of_allMet` uses only `w.der`), and
+* through a `◯`, by `metI_circ` / `metR_circ`.
+
+So the tagged tier is reachable only under a modality. That is what the
+re-founding exploits.
+
+### The re-founding: two recursions
+
+A refuted `◯Z` at `a` gives, by `minZeta`, a world `e ≥ a` whose WHOLE
+modal cone refutes `Z`. Suppose that cone contains a `≤`-maximal world
+`m`. At such an `m`:
+
+* `Λ*_m` is circ-free (`circPart_lamStar_nil_of_maximal`), so the BARREN
+  joins apply and `metR_prime` / `metR_or` fire with no supply;
+* every `u ≥ m` is `m`, so `metR_imp`'s float and `metI_imp`'s `supR`
+  branch stay at `m` (the latter is outright vacuous);
+* the irregular `◯`-demand is closed by the generalised `Ax^I◯`
+  (`circWit_of_maximal`), so it is a LEAF, not a call into the regular
+  tier.
+
+Hence the tagged tier, run at `m`, terminates on the LOCAL measure
+`(t, |C|)` with no world ever changing:
+
+    visitMax : (∀ u, m ≤ u → u = m) → ∀ t C, C ∈ Sf^R(G) → m ⊮ C →
+               MaxStmt K G m t C            -- t = 0 irregular, else tagged
+
+The global recursion then carries only tiers 0 (irregular) and 1 (FREE
+regular) — the free tier needs no `hloc` — and both its `◯` cases are
+leaves that route into `visitMax`:
+
+    visitG : K.Endpoints → ∀ a t C, C ∈ Sf^R(G) → a ⊮ C → GStmt K G a t C
+
+measure `(ht a, t, |C|)`. **The §9/§10 bad edge `I(◯Z)@a → R(Z)@a` no
+longer exists**: it has become a call from one recursion into the other,
+at a strictly different class of world. The new global visit is SIMPLER
+than the old one, not more complicated.
+
+### The frame condition, and why it is not a shape
+
+    structure MaxSeen K a where m : K.W; rm : Rm a m; max : ∀ u, m ≤ u → u = m
+    Kripke.Endpoints K := ∀ a, MaxSeen K a
+
+"Every modal cone contains a `≤`-maximal world." Nothing is assumed about
+the SHAPE of `Rm` beyond the standing axioms — reflexive, transitive,
+contained in `≤`. It may be an arbitrary such subrelation.
+
+    completeness_of_endpoints : K.Endpoints → ¬ K.valid G → Provable G
+
+**Statement (A) with no supply of either kind and no condition on the
+goal**: `◯` free on both sides, arbitrary `Rm` subject to one modal
+condition. The special shapes are now corollaries, one line each:
+
+    endpoints_of_rmFull       : (∀ a b, a ≤ b → Rm a b) → K.Endpoints
+    endpoints_of_coneGrounded : ConeGrounded K → K.Endpoints
+
+the second via `maxRmAbove` (walk up the modal cone to an `Rm`-maximal
+world; cone-groundedness turns modal maximality into `≤`-maximality).
+`completeness_of_rmFull`, `completeness_of_coneGrounded` and
+`completeness_of_discrete` are re-proved through them and have LOST their
+supply hypotheses; `completeness_of_*_of_circFreeL` are deleted, being
+strictly weaker than what now holds.
+
+`FRJ/Modal.lean` Screen 7 checks the general theorem off both special
+shapes: `narrow` is `branchP`'s order with `Rm` cut down to
+`{(⊥,⊥), (⊥,l), (l,l), (r,r)}` — a proper reflexive-transitive subrelation
+of `≤`, equal to neither `id` nor `≤` — and refutes `◯p ⊃ q`, whose left
+subformulas are NOT `◯`-free. Neither `completeness_of_discrete`, nor
+`completeness_of_rmFull`, nor the transparent route of `FRJ/Erase.lean`
+applies; `completeness_of_endpoints` returns a derivation.
+
+### The completeness map now
+
+| class | supplies needed | status |
+|---|---|---|
+| every cone meets a `≤`-maximal world | none | **PROVED (new)** |
+| `Rm = ≤`, any goal | none | **PROVED (new)** — instance |
+| cone-grounded, any goal | none | **PROVED (new)** — instance |
+| discrete model, any goal | none | PROVED — instance |
+| `◯`-free goal, any model | none | PROVED |
+| transparent (`Rm = id`), any goal | pledge vacuous; `◯`-corner OPEN — or (E) | conditional |
+| general | both OPEN | conditional |
+
+### What is still open
+
+A frame can fail `Endpoints` in exactly one way: some modal cone contains
+no `≤`-maximal world of `K`. The transparent frames are the standing
+example — `Rm = id`, so the cone of a non-maximal `a` is `{a}` — and they
+remain on the erasure-transfer route (E) of §14. So the two open routes
+are complementary, as §15 already recorded in
+`discrete_of_transparent_of_coneGrounded`; what has changed is that
+everything BETWEEN them is now closed, rather than just the two named
+shapes.
+
+Matthew's further point stands and is not addressed here: an
+arbitrary reflexive-transitive `Rm ⊆ ≤`, with no cofinality condition at
+all, is what the theory should ask for, and the route he proposes is
+completeness for constraint interpretations of `◯` (F&M, *Solution to
+Curry's Problem*, TYPES 2000, Thm 6: `PLL ⊢ φ` iff `IPL ⊢ φ^C` for every
+standard constraint `C`). That is the next statement to test.
