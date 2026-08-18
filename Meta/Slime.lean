@@ -16,7 +16,7 @@ computed forms come out syntactically equal, and the judgment silently
 stops being the one the source defines. That is a fidelity failure, and
 it is invisible from a green build.
 
-`#deslime J` reports, for each constructor of `J`, which indices of its
+`#slime J` reports, for each constructor of `J`, which indices of its
 conclusion are computed and which function heads compute them.
 
 Inert (clean): free variables, sorts, literals, constructor applications
@@ -83,12 +83,12 @@ private def inspect (numParams : Nat) (ctor : Name) : MetaM Report := do
         bad := bad.push (i + 1, (← ppExpr e).pretty, head)
     return { ctor := ctor, bad := bad }
 
-/-- `#deslime J …` — report computed indices in the return types of the
+/-- `#slime J …` — report computed indices in the return types of the
 constructors of each inductive family `J`. -/
-syntax (name := deslimeCmd) "#deslime " ident+ : command
+syntax (name := slimeCmd) "#slime " ident+ : command
 
-@[command_elab deslimeCmd] def elabDeslime : CommandElab
-  | `(#deslime $ids*) => do
+@[command_elab slimeCmd] def elabSlime : CommandElab
+  | `(#slime $ids*) => do
       for id in ids do
         let cs ← liftCoreM <| realizeGlobalConstWithInfos id
         let n := cs.head!

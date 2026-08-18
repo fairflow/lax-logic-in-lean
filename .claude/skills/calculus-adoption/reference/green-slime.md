@@ -36,7 +36,11 @@ because `Ax^I` pins its own Θ". "Pins its own index" **is** slime, said
 in other words. Changing the carrier so the computed forms coincide
 accommodates it; it does not remove it.
 
-## The fix
+## Desliming — a separate procedure
+
+`#slime` **finds** slime; it does not remove it. Removing it is a distinct
+operation ("desliming"), worth running as its own pass on an existing
+formalisation, and it is mechanical enough to be scripted.
 
 Replace the computed index by a fresh variable and carry the computation
 as an **equation field**:
@@ -56,9 +60,9 @@ changes, from a place that blocks inversion to a place that does not.
 Do this **at transcription time** (stage 2). Retrofitting means redoing
 every proof over the family.
 
-## Running the check
+## Running the detector
 
-    #deslime FRJ.FRJr FRJ.FRJi
+    #slime FRJ.FRJr FRJ.FRJi
 
 Reports, per constructor, which index positions are computed and the head
 symbol doing the computing. Clean constructors are listed by name. Emits

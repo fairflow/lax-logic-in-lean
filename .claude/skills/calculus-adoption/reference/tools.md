@@ -1,7 +1,7 @@
 # The tools, and when to run each
 
 The first three were built during the FRJ campaign because their absence
-cost real time; `#deslime` was built after it, when the campaign's worst
+cost real time; `#slime` was built after it, when the campaign's worst
 structural problem turned out to have had no check at all. They live in
 `lax-logic-in-lean`; `Meta/` imports nothing but `Lean`, so it can be
 copied into any Lean project as-is.
@@ -98,12 +98,12 @@ tool rather than an argument, and the guess was wrong both times.
 
 ---
 
-## `#deslime` — computed indices in constructor return types
+## `#slime` — computed indices in constructor return types
 
     import Meta
-    #deslime FRJ.FRJr FRJ.FRJi
+    #slime FRJ.FRJr FRJ.FRJi
 
-Defined in `Meta/Deslime.lean` (imports `Lean` only). Reports, per
+Defined in `Meta/Slime.lean` (imports `Lean` only). Reports, per
 constructor of an indexed inductive family, which indices of its
 **conclusion** are computed and which head symbol computes them; lists
 the clean constructors by name. Warns when anything is slimed, `logInfo`

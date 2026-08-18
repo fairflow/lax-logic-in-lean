@@ -1,7 +1,7 @@
 # Green-slime census of the development
 
-*Run 2026-08-18 on `frj-lax` at the merge `bd93d09`, with `#deslime`
-(`Meta/Deslime.lean`, written the same day). This is the first time the
+*Run 2026-08-18 on `frj-lax` at the merge `bd93d09`, with `#slime`
+(`Meta/Slime.lean`, written the same day). This is the first time the
 check has ever been run in this repository.*
 
 Green slime (McBride): a **computed index in a constructor's return
@@ -13,7 +13,7 @@ Reproduce with:
 
     import Meta
     import LaxLogic.PLLNDCore
-    #deslime PLLND.LaxND        -- the control: 0 of 12
+    #slime PLLND.LaxND        -- the control: 0 of 12
 
 ## Result
 
