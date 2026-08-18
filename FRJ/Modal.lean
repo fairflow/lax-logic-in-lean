@@ -12,7 +12,7 @@ No rule of `FRJ/Calculus.lean` mentions the modality, and nothing in this
 file is consumed by the calculus; it exists to make the W2 design
 discussion machine-checked rather than verbal.
 -/
-import FRJ.Basic
+import FRJ.Saturate
 
 namespace FRJ
 namespace Kripke
@@ -275,6 +275,68 @@ example :
     ∧ rmPC .w0 .e = false
     ∧ pledgeChain.force .e (.atom "p")
     ∧ ¬ pledgeChain.force .e (.atom "q") := by decide
+
+
+/-! ### Screen 6 (2026-08-18) — the cone-grounded completeness fires off
+the discrete frame
+
+`completeness_of_rmFull_of_circFreeL` is unconditional, but it would say
+nothing new if its two hypotheses only ever met on discrete frames.  They
+do not.  The model below is `Rm = ≤`, has a strictly non-trivial order,
+and refutes a goal carrying `◯` — so the theorem delivers a derivation
+where neither the `◯`-free completeness nor `completeness_of_discrete`
+applies. -/
+
+/-- `branch` with `q` nowhere: root `bot` below incomparable `l` (forcing
+`p`) and `r` (forcing nothing); `Rm = ≤`; infallible. -/
+abbrev branchP : Kripke where
+  W := W3
+  elems := [.bot, .l, .r]
+  complete := by intro w; cases w <;> simp
+  decEq := inferInstance
+  le := fun a b => le3 a b = true
+  le_refl := by intro a; cases a <;> rfl
+  le_trans := by intro a b c h₁ h₂; cases a <;> cases b <;> cases c <;> simp_all [le3]
+  le_antisymm := by intro a b h₁ h₂; cases a <;> cases b <;> simp_all [le3]
+  Rm := fun a b => le3 a b = true
+  rm_refl := by intro a; cases a <;> rfl
+  rm_trans := by intro a b c h₁ h₂; cases a <;> cases b <;> cases c <;> simp_all [le3]
+  sub_mi := fun h => h
+  root := .bot
+  root_le := by intro a; cases a <;> rfl
+  V := fun w s => w = .l ∧ s = "p"
+  V_mono := by intro w v h s hs; cases w <;> cases v <;> simp_all [le3]
+  Fal := fun _ => False
+  fal_mono := fun _ h => h
+  fal_V := fun h => h.elim
+  decLe := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decV := fun _ _ => inferInstanceAs (Decidable (_ ∧ _))
+  decRm := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decFal := fun _ => isFalse (fun h => h)
+
+/-- The frame is NOT discrete: `l` lies strictly above the root. -/
+example : ¬ (∀ a u : branchP.W, branchP.le a u → u = a) :=
+  fun h => W3.noConfusion (h .bot .l rfl)
+
+/-- The frame is `Rm = ≤`, hence cone-grounded. -/
+theorem branchP_rmFull : ∀ a b : branchP.W, branchP.le a b → branchP.Rm a b :=
+  fun _ _ h => h
+
+/-- It refutes `(◯p ⊃ q) ⊃ q` at the root: `r` forces the antecedent
+vacuously (`r ⊮ ◯p`, since `r` is maximal and `p`-free) and refutes `q`. -/
+theorem branchP_refutes : ¬ branchP.force branchP.root
+    (.imp (.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) := by decide
+
+/-- **The theorem fires.**  A `◯`-carrying goal, a non-discrete model, no
+supply hypothesis — and the conclusion agrees with the pinned hand
+derivation `provable_circ_peirce`. -/
+theorem provable_circ_peirce_via_coneGrounded :
+    Provable (.imp (.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) :=
+  completeness_of_rmFull_of_circFreeL branchP_rmFull (by decide) branchP_refutes
+
+/-- info: 'FRJ.Screen.provable_circ_peirce_via_coneGrounded' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_circ_peirce_via_coneGrounded
 
 end Screen
 

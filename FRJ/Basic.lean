@@ -1045,50 +1045,54 @@ breaks condition (†) of Lemma 3.10's join case, which is what the W1
 build showed. -/
 def gHat (G : Form) : List Form := gAt G ++ gImp G ++ gCirc G
 
-/-! ## Canonical contexts
+/-! ## Contexts denote sets
 
-Contexts denote *sets*, and the calculus needs one operation — the split
-of an irregular zone as `Θ = Θ' ∪ Λ` in the `⊃∈` rule — to be an
-equality of the rule's own INDEX, not merely an equality of member sets.
-Lists do not give that: `++` is neither commutative nor idempotent.
-`Finset` gave it because a `Finset` *is* a set.
+The paper (§2): *"Capital Greek letters `Γ`, `Σ`, … denote **sets** of
+formulas"*.  On `List` that is not literal equality — `++` is neither
+commutative nor idempotent — so the calculus states its context equations
+EXTENSIONALLY, which is exactly what "denote sets" says.  Choice-free by
+construction: `List.Mem` depends on no axioms at all, where
+`Finset.instUnion` depends on `Classical.choice`. -/
 
-The replacement, costing no `Classical.choice`: represent a context by
-its filter of `Ĝ`.  This is legitimate exactly because every context
-occurring in a derivation is a subset of `Ĝ` (`wfR`/`wfI`), so `nf G`
-changes no context's membership — and two contexts with the same members
-are then literally the same list. -/
+/-- `Γ ≐ Δ`: the two contexts have the same members, i.e. denote the same
+set of formulas. -/
+def CtxEq (l m : List Form) : Prop := ∀ x, x ∈ l ↔ x ∈ m
 
-/-- The canonical form of a context: the members of `Ĝ` lying in it. -/
-def nf (G : Form) (l : List Form) : List Form :=
-  (gHat G).filter (fun x => decide (x ∈ l))
+@[inherit_doc] infix:50 " ≐ " => CtxEq
 
-@[simp] theorem mem_nf {G : Form} {l : List Form} {x : Form} :
-    x ∈ nf G l ↔ (x ∈ gHat G ∧ x ∈ l) := by
-  simp [nf, List.mem_filter]
+namespace CtxEq
 
-/-- **Extensionality** — the property `++` lacks and `Finset` had:
-canonical forms agree as soon as their members inside `Ĝ` agree. -/
-theorem nf_ext {G : Form} {l m : List Form}
-    (h : ∀ x, x ∈ gHat G → (x ∈ l ↔ x ∈ m)) : nf G l = nf G m := by
-  refine List.filter_congr ?_
-  intro x hx
-  simp [h x hx]
+@[refl] theorem refl (l : List Form) : l ≐ l := fun _ => Iff.rfl
 
-theorem nf_idem {G : Form} {l : List Form} : nf G (nf G l) = nf G l :=
-  nf_ext (fun x hx => by simp [hx])
+theorem rfl' {l : List Form} : l ≐ l := refl l
 
-theorem nf_subset {G : Form} {l : List Form} : nf G l ⊆ gHat G :=
-  fun _ h => (mem_nf.mp h).1
+theorem symm {l m : List Form} (h : l ≐ m) : m ≐ l := fun x => (h x).symm
 
-theorem nf_subset_self {G : Form} {l : List Form} : nf G l ⊆ l :=
-  fun _ h => (mem_nf.mp h).2
+theorem trans {l m n : List Form} (h₁ : l ≐ m) (h₂ : m ≐ n) : l ≐ n :=
+  fun x => (h₁ x).trans (h₂ x)
 
-/-- On a context already inside `Ĝ`, canonicalisation changes nothing
-that membership can see. -/
-theorem mem_nf_of_subset {G : Form} {l : List Form} (hl : l ⊆ gHat G)
-    {x : Form} : x ∈ nf G l ↔ x ∈ l :=
-  ⟨fun h => (mem_nf.mp h).2, fun h => mem_nf.mpr ⟨hl h, h⟩⟩
+/-- A context equation transports membership forwards. -/
+theorem subset {l m : List Form} (h : l ≐ m) : l ⊆ m := fun _ hx => (h _).mp hx
+
+/-- …and backwards. -/
+theorem subset' {l m : List Form} (h : l ≐ m) : m ⊆ l := fun _ hx => (h _).mpr hx
+
+theorem of_eq {l m : List Form} (h : l = m) : l ≐ m := h ▸ refl l
+
+/-- Antisymmetry of `⊆` at the level of members: mutual inclusion IS a
+context equation. -/
+theorem of_subset {l m : List Form} (h₁ : l ⊆ m) (h₂ : m ⊆ l) : l ≐ m :=
+  fun _ => ⟨fun hx => h₁ hx, fun hx => h₂ hx⟩
+
+end CtxEq
+
+/-- `≐` is a congruence for `⊆` on the left. -/
+theorem subset_of_ctxEq_left {l m n : List Form} (h : l ≐ m) (hs : m ⊆ n) :
+    l ⊆ n := fun _ hx => hs ((h _).mp hx)
+
+/-- `≐` is a congruence for `⊆` on the right. -/
+theorem subset_of_ctxEq_right {l m n : List Form} (hs : l ⊆ m) (h : m ≐ n) :
+    l ⊆ n := fun _ hx => (h _).mp (hs hx)
 
 /-- The atomic part of a set of formulas: the paper's notation `Γ^at`,
 which means "`Γ^at ⊆ PV`".  For `Γ ⊆ Ĝ` the decomposition

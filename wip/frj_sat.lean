@@ -40,14 +40,14 @@ structure RS (G : Form) where
   rhs : Form
   der : FRJr G t ctx rhs
 
-/-- An irregular row `Σ ; Θ → C` with its derivation and the invariant
-that the second zone is canonical (needed by the `⊃∈` zone split). -/
+/-- An irregular row `Σ ; Θ → C` with its derivation.  No canonicality
+invariant: since the deslime the `⊃∈` zone split is EXTENSIONAL
+(`Θ ≐ (Θ \ Λ) ++ Λ`), so any zone splits. -/
 structure IS (G : Form) where
   stab : List Form
   th : List Form
   rhs : Form
   der : FRJi G stab th rhs
-  thNf : th = nf G th
 
 /-! ## Decidable plumbing -/
 
@@ -77,20 +77,21 @@ instance {k : Nat} (Δs : Fin (k + 1) → List Form) (X : Form) :
 
 /-! ## Zone-split helper for `⊃∈` -/
 
-theorem nf_split {G : Form} {Θ Λ : List Form}
-    (hΛ : ∀ x ∈ Λ, x ∈ Θ) (hnf : Θ = nf G Θ) :
-    nf G (FRJ.sdiff Θ Λ ++ Λ) = Θ := by
-  conv_rhs => rw [hnf]
-  refine nf_ext (fun x _ => ?_)
+/-- The `⊃∈` zone split, extensionally: for `Λ ⊆ Θ`, `Θ` denotes the same
+set as `(Θ \ Λ) ++ Λ`.  This is the whole content of the split now — no
+normal form and no transport of the premise derivation. -/
+theorem zone_split {Θ Λ : List Form} (hΛ : ∀ x ∈ Λ, x ∈ Θ) :
+    Θ ≐ FRJ.sdiff Θ Λ ++ Λ := by
+  intro x
   constructor
-  · intro h
-    rcases List.mem_append.mp h with h | h
-    · exact (mem_sdiff.mp h).1
-    · exact hΛ _ h
   · intro h
     by_cases hl : x ∈ Λ
     · exact List.mem_append_right _ hl
     · exact List.mem_append_left _ (mem_sdiff.mpr ⟨h, hl⟩)
+  · intro h
+    rcases List.mem_append.mp h with h | h
+    · exact (mem_sdiff.mp h).1
+    · exact hΛ _ h
 
 /-! ## Seeds -/
 
@@ -98,7 +99,7 @@ def seedsR (G : Form) : List (RS G) :=
   (sfR G).filterMap (fun F =>
     if hF : F.isPrime then
       if hg : F ∈ sfR G then
-        some ⟨.barren, rm (gAt G) F, F, .axR F hF hg⟩
+        some ⟨.barren, rm (gAt G) F, F, .axR F hF hg (CtxEq.refl _)⟩
       else none
     else none)
 
@@ -106,8 +107,8 @@ def seedsI (G : Form) : List (IS G) :=
   (sfR G).filterMap (fun F =>
     if hF : F.isPrime then
       if hg : F ∈ sfR G then
-        some ⟨[], nf G ((rm (gAt G) F) ++ gImp G ++ gCirc G), F,
-          .axI F hF hg, nf_idem.symm⟩
+        some ⟨[], (rm (gAt G) F) ++ gImp G ++ gCirc G, F,
+          .axI F hF hg (CtxEq.refl _)⟩
       else none
     else none)
 
@@ -127,8 +128,8 @@ def seedsIC (G : Form) : List (IS G) :=
         vals.filterMap (fun ats =>
           if hats : ats ⊆ gAt G then
             if hFf : classForce ats F = false then
-              some ⟨[], vacZoneA G ats, .circ F, .axIC F ats hats hFf hg,
-                nf_idem.symm⟩
+              some ⟨[], vacZoneA G ats, .circ F,
+                .axIC F ats hats hFf hg (CtxEq.refl _)⟩
             else none
           else none)
       else []
@@ -172,9 +173,9 @@ def stepI1 (G : Form) (i : IS G) : List (IS G) :=
       match T, hg with
       | .and A B, hg =>
           if h1 : i.rhs = A then
-            some ⟨i.stab, i.th, .and A B, .andI1 (h1 ▸ i.der) hg, i.thNf⟩
+            some ⟨i.stab, i.th, .and A B, .andI1 (h1 ▸ i.der) hg⟩
           else if h2 : i.rhs = B then
-            some ⟨i.stab, i.th, .and A B, .andI2 (h2 ▸ i.der) hg, i.thNf⟩
+            some ⟨i.stab, i.th, .and A B, .andI2 (h2 ▸ i.der) hg⟩
           else none
       | _, _ => none
     else none)
@@ -189,8 +190,9 @@ def stepOrI (G : Form) (i1 i2 : IS G) : List (IS G) :=
             if h2 : i2.rhs = C₂ then
               if hs1 : i1.stab ⊆ i2.stab ++ i2.th then
                 if hs2 : i2.stab ⊆ i1.stab ++ i1.th then
-                  some ⟨i1.stab ++ i2.stab, nf G (cap i1.th i2.th), .or C₁ C₂,
-                    .orI (h1 ▸ i1.der) (h2 ▸ i2.der) hs1 hs2 hg, nf_idem.symm⟩
+                  some ⟨i1.stab ++ i2.stab, cap i1.th i2.th, .or C₁ C₂,
+                    .orI (h1 ▸ i1.der) (h2 ▸ i2.der) hs1 hs2 hg
+                      (CtxEq.refl _) (CtxEq.refl _)⟩
                 else none
               else none
             else none
@@ -214,11 +216,10 @@ def stepImpInI (G : Form) (lamCap : Nat) (i : IS G) : List (IS G) × Bool :=
           if h : i.rhs = B then
             lams.filterMap (fun Λ =>
               if hΛ : ∀ x ∈ Λ, x ∈ i.th then
-                if hA : Clo (nf G (i.stab ++ Λ)) A then
-                  let d' : FRJi G i.stab (nf G (FRJ.sdiff i.th Λ ++ Λ)) B := by
-                    rw [nf_split hΛ i.thNf]; exact (h ▸ i.der)
-                  some ⟨nf G (i.stab ++ Λ), nf G (FRJ.sdiff i.th Λ), .imp A B,
-                    .impInI d' cap_sdiff_eq_nil hA hg, nf_idem.symm⟩
+                if hA : Clo (i.stab ++ Λ) A then
+                  some ⟨i.stab ++ Λ, FRJ.sdiff i.th Λ, .imp A B,
+                    .impInI (h ▸ i.der) (zone_split hΛ) cap_sdiff_eq_nil hA hg
+                      (CtxEq.refl _) (CtxEq.refl _)⟩
                 else none
               else none)
           else []
@@ -227,7 +228,7 @@ def stepImpInI (G : Form) (lamCap : Nat) (i : IS G) : List (IS G) × Bool :=
 
 /-- The canonical maximal `Θ` for the world-changing irregular rules. -/
 def thetaMax (G : Form) (Γ : List Form) : List Form :=
-  nf G ((gHat G).filter (fun X => cloB Γ X))
+  (gHat G).filter (fun X => cloB Γ X)
 
 /-! ### The `⊃∉` zone candidates
 
@@ -295,8 +296,9 @@ def thetaCandidates (G : Form) (Γ : List Form) (A : Form) : List (List Form) :=
   let Θmax := thetaMax G Γ
   (removalSets Θmax A).map (fun R => FRJ.sdiff Θmax R)
 
-/-- `⊃∉` and `◯∉` from one regular row.  The `Θ`-candidates are `nf`-images
-by construction, so the canonicality invariant is `nf_idem`. -/
+/-- `⊃∉` and `◯∉` from one regular row.  The `Θ`-candidates are cut down
+to `Ĝ` by construction, which is what the rules' own `hTh` field asks
+for. -/
 def stepNotIn (G : Form) (r : RS G) : List (IS G) :=
   (sfR G).flatMap (fun T =>
     if hg : T ∈ sfR G then
@@ -305,11 +307,11 @@ def stepNotIn (G : Form) (r : RS G) : List (IS G) :=
           if h : r.rhs = B then
             if hA : Clo r.ctx A then
               (thetaCandidates G r.ctx A).filterMap (fun l =>
-                let Θ := nf G l
+                let Θ := l.filter (fun x => decide (x ∈ gHat G))
                 if hTh : ∀ X ∈ Θ, Clo r.ctx X ∧ X ∈ gHat G then
                   if hAnot : ¬ Clo Θ A then
                     some ⟨[], Θ, .imp A B,
-                      .impNotIn (h ▸ r.der) hTh hA hAnot hg, nf_idem.symm⟩
+                      .impNotIn (h ▸ r.der) hTh hA hAnot hg⟩
                   else none
                 else none)
             else []
@@ -317,9 +319,9 @@ def stepNotIn (G : Form) (r : RS G) : List (IS G) :=
       | .circ Z, hg =>
           if h : r.rhs = Z then
             if ht : r.t = .barren ∨ ∃ W, r.t = .chain W ∧ Covers r.ctx W Z then
-              let Θ := nf G ((gHat G).filter (fun X => cloB r.ctx X))
+              let Θ := (gHat G).filter (fun X => cloB r.ctx X)
               if hTh : ∀ X ∈ Θ, Clo r.ctx X ∧ X ∈ gHat G then
-                [⟨[], Θ, .circ Z, .circNotIn (h ▸ r.der) ht hTh hg, nf_idem.symm⟩]
+                [⟨[], Θ, .circ Z, .circNotIn (h ▸ r.der) ht hTh hg⟩]
               else []
             else []
           else []
@@ -395,7 +397,7 @@ def mkJoinBarren (a : IS G) (rest : List (IS G)) : List (RS G) :=
           if hFnot : F ∉ unionAll (fun j => atPart (stabF a rest j)) then
             if hg : F ∈ sfR G then
               some ⟨.barren, joinCtxAt (stabF a rest) (thF a rest) (rhsF a rest) F, F,
-                .joinAt (premF a rest) h1 (hJ2_of_check h2) hcirc hF hFnot hg⟩
+                .joinAt (premF a rest) h1 (hJ2_of_check h2) hcirc hF hFnot hg (CtxEq.refl _)⟩
             else none
           else none
         else none)) ++
@@ -407,13 +409,13 @@ def mkJoinBarren (a : IS G) (rest : List (IS G)) : List (RS G) :=
               if hC : C₁ ∈ upsilon (rhsF a rest) ∧ C₂ ∈ upsilon (rhsF a rest) then
                 some ⟨.barren, joinCtxOr (stabF a rest) (thF a rest) (rhsF a rest),
                   .or C₁ C₂,
-                  .joinOr (premF a rest) h1 (hJ2_of_check h2) hcirc hC hg⟩
+                  .joinOr (premF a rest) h1 (hJ2_of_check h2) hcirc hC hg (CtxEq.refl _)⟩
               else none
           | .circ Z, hg =>
               if hZ : Z ∈ upsilon (rhsF a rest) then
                 some ⟨.barren, joinCtxOr (stabF a rest) (thF a rest) (rhsF a rest),
                   .circ Z,
-                  .joinCirc (premF a rest) h1 (hJ2_of_check h2) hcirc hZ hg⟩
+                  .joinCirc (premF a rest) h1 (hJ2_of_check h2) hcirc hZ hg (CtxEq.refl _)⟩
               else none
           | _, _ => none
         else none))
@@ -429,7 +431,7 @@ def mkJoinF (a : IS G) (rest : List (IS G)) : List (RS G) :=
         if hFnot : F ∉ unionAll (fun j => atPart (stabF a rest j)) then
           if hg : F ∈ sfR G then
             some ⟨.blocked, joinCtxAtF (stabF a rest) (thF a rest) (rhsF a rest) F, F,
-              .joinAtF (premF a rest) h1 (hJ2_of_check h2) hF hFnot hg⟩
+              .joinAtF (premF a rest) h1 (hJ2_of_check h2) hF hFnot hg (CtxEq.refl _)⟩
           else none
         else none
       else none)) ++
@@ -440,7 +442,7 @@ def mkJoinF (a : IS G) (rest : List (IS G)) : List (RS G) :=
             if hC : C₁ ∈ upsilon (rhsF a rest) ∧ C₂ ∈ upsilon (rhsF a rest) then
               some ⟨.blocked, joinCtxOrF (stabF a rest) (thF a rest) (rhsF a rest),
                 .or C₁ C₂,
-                .joinOrF (premF a rest) h1 (hJ2_of_check h2) hC hg⟩
+                .joinOrF (premF a rest) h1 (hJ2_of_check h2) hC hg (CtxEq.refl _)⟩
             else none
         | _, _ => none
       else none))
@@ -480,7 +482,7 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
                 some ⟨tg.1,
                   joinCtxAtP (stabF a rest) (thF a rest) (rhsF a rest) F (dctxF p prest), F,
                   .joinAtP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                    hJ5 h7 tg.2 hF hFnot hg⟩
+                    hJ5 h7 tg.2 hF hFnot hg (CtxEq.refl _)⟩
               else none
             else none
           else none)) ++
@@ -494,7 +496,7 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
                     joinCtxOrP (stabF a rest) (thF a rest) (rhsF a rest) (dctxF p prest),
                     .or C₁ C₂,
                     .joinOrP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                      hJ5 h7 tg.2 hC hg⟩
+                      hJ5 h7 tg.2 hC hg (CtxEq.refl _)⟩
                 else none
             | _, _ => none
           else none)))) ++
@@ -511,7 +513,7 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
                     joinCtxOrP (stabF a rest) (thF a rest) (rhsF a rest) (dctxF p prest),
                     .circ Z,
                     .joinCircP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                      hJ5 h7 hDs hZ hg⟩
+                      hJ5 h7 hDs hZ hg (CtxEq.refl _)⟩
                 else none
               else none
           | _, _ => none

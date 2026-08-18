@@ -131,14 +131,23 @@ theorem lamStar_not_circ {K : Kripke} {a : K.W} {G : Form} {X : Form}
   rw [hcf X (List.mem_append_right _ (mem_lamStar.mp hX).1)] at hc
   exact Bool.noConfusion hc
 
-/-- **At a `≤`-maximal world the modal part of `Λ*` is empty** — with no
-world strictly above, `Rm`-successors collapse to the world itself
-(`sub_mi` + maximality), so a forced `◯Y` forces `Y` and the `⊩*`-clause
-excludes it.  This is what terminates W4's pledge recursion: at maximal
-anchors the barren joins suffice and the tag is `barren` for free
-(`docs/frj-w4.md` §3). -/
-theorem circPart_lamStar_nil_of_maximal {K : Kripke} {a : K.W} {G : Form}
-    (hmax : ∀ b, K.le a b → b = a) :
+/-- **Cone-triviality**: the world's modal cone is the world itself,
+`Rm(α) = {α}`.  `docs/frj-w4.md` §10 fact 3 localises the open kernel of
+FRJ◯ completeness to exactly these worlds. -/
+def Kripke.ConeTrivial (K : Kripke) (a : K.W) : Prop := ∀ c, K.Rm a c → c = a
+
+/-- `≤`-maximal worlds are cone-trivial (`Rm ⊆ ≤`). -/
+theorem Kripke.coneTrivial_of_maximal {K : Kripke} {a : K.W}
+    (hmax : ∀ b, K.le a b → b = a) : K.ConeTrivial a :=
+  fun c hc => hmax c (K.sub_mi hc)
+
+/-- **At a cone-trivial world the modal part of `Λ*` is empty**: the
+`⊩*`-clause for `◯Y` asks for `α ⊩ ◯Y` together with `α ⊮ Y`, and a
+trivial cone turns the first into the second.  This is what terminates
+W4's pledge recursion — at such anchors the barren joins suffice and the
+tag is `barren` for free (`docs/frj-w4.md` §3). -/
+theorem circPart_lamStar_nil_of_coneTrivial {K : Kripke} {a : K.W} {G : Form}
+    (hcone : K.ConeTrivial a) :
     circPart (lamStar K a G) = [] := by
   refine eq_nil_of_forall_not_mem (fun X hX => ?_)
   have hmem := circPart_subset hX
@@ -150,7 +159,13 @@ theorem circPart_lamStar_nil_of_maximal {K : Kripke} {a : K.W} {G : Form}
         obtain ⟨h1, h2⟩ := mem_lamStar.mp hmem
         exact ⟨h1, h2.1, h2.2⟩
       obtain ⟨u, hru, huY⟩ := hfY a (K.le_refl a)
-      exact hnY ((hmax u (K.sub_mi hru)) ▸ huY)
+      exact hnY (hcone u hru ▸ huY)
+
+/-- The maximal-world case, as a corollary. -/
+theorem circPart_lamStar_nil_of_maximal {K : Kripke} {a : K.W} {G : Form}
+    (hmax : ∀ b, K.le a b → b = a) :
+    circPart (lamStar K a G) = [] :=
+  circPart_lamStar_nil_of_coneTrivial (K.coneTrivial_of_maximal hmax)
 
 /-- Everything in `Λ*_α` is forced at `α`. -/
 theorem forces_lamStar {K : Kripke} {a : K.W} {G : Form} :

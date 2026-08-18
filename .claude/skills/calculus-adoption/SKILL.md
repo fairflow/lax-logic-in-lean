@@ -22,7 +22,7 @@ was already installed:
 | a statement's text | parse the source | read the compiled PDF |
 | where an axiom enters | guess from the proof | `#choice_path` |
 | whether a rule matches the paper | read the Lean and squint | `#rules` |
-| whether a judgment is slimed | eyeball the constructors | `#deslime` |
+| whether a judgment is slimed | eyeball the constructors | `#slime` |
 
 And the corollary: **your own success check can lie.** A run reporting
 "0 items unextracted" sat beside two rows of raw LaTeX, because the check
@@ -35,7 +35,7 @@ output as a reader would, or get a human to.
 |---|---|---|---|
 | **0** | Find the paper. State the requirement as a *capability*, not a shape. Get the source, not the PDF. **Read the appendix** — page limits push load-bearing detail there. | `tools/paper-skeleton` | the architectures that exist are reported, not just the first hit |
 | **1** | The plan document. Numbered results to reproduce, scope and non-scope, fidelity skeleton, empty divergence log, which existing repo results may be consumed read-only. | `paper-skeleton -o plan` + `templates/plan.md` | **Matthew has reviewed it.** No Lean before this. |
-| **2** | Transcribe the rules: one indexed inductive family, one constructor per published rule, side conditions as fields, indices the sequent. **No computed index in any conclusion.** | `#rules` vs the paper's figure; `#deslime` | every constructor cites a line of the original, and `#deslime` reports 0 |
+| **2** | Transcribe the rules: one indexed inductive family, one constructor per published rule, side conditions as fields, indices the sequent. **No computed index in any conclusion.** | `#rules` vs the paper's figure; `#slime` | every constructor cites a line of the original, and `#slime` reports 0 |
 | **3** | Prove the paper's results — **screen soundness before proving completeness** (see below). | `#choice_path`, `#axiom_pin` | sorry-free, pins `#guard_msgs`-guarded in an `Audit.lean` |
 | **4** | Extract the procedure. The proofs' termination bounds are routinely unrunnable and are not needed to search. | | a searcher that runs, timed |
 | **5** | A decidable checker for what it finds, with a soundness theorem. | | kernel exemplars replay by `decide` |
@@ -101,9 +101,9 @@ worth reading if it is ever unclear why a local task exists.
 
 ## Tools live in this repository
 
-`Meta/Audit.lean`, `Meta/Rules.lean` and `Meta/Deslime.lean` import
+`Meta/Audit.lean`, `Meta/Rules.lean` and `Meta/Slime.lean` import
 nothing but `Lean`, so they can be copied into any Lean project unchanged
-— and `#deslime` is worth copying even where no calculus is involved;
+— and `#slime` is worth copying even where no calculus is involved;
 `tools/paper-skeleton/paper_skeleton.py` needs only the standard library,
 plus `pdflatex` and `pdftotext` on the path. To use this skill outside
 `lax-logic-in-lean`, copy those four and adjust the paths in

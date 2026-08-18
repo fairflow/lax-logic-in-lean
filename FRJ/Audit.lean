@@ -117,9 +117,64 @@ namespace FRJ
 #guard_msgs in
 #print axioms not_IPL_of_countermodel
 
-/-- info: 'FRJ.nf_ext' depends on axioms: [propext] -/
+/-- info: 'FRJ.CtxEq' does not depend on any axioms -/
 #guard_msgs in
-#print axioms nf_ext
+#print axioms CtxEq
+
+/-- info: 'FRJ.CtxEq.of_subset' does not depend on any axioms -/
+#guard_msgs in
+#print axioms CtxEq.of_subset
+
+-- **Contexts are sets.**  The transport `Σ ≐ Σ' → Θ ≐ Θ' →
+-- FRJi G Σ Θ C → FRJi G Σ' Θ' C` — declared FALSE for this family while
+-- `Ax^I` pinned its own zone, a theorem since the deslime.
+/-- info: 'FRJ.transportI' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms transportI
+
+-- The regular half of the same statement: a derivation of `Γ ⇒ C` transports
+-- to any `Γ'` with the same members.  The two context-sensitive side
+-- conditions travel by monotonicity (`clo_mono`, `covers_mono`).
+/-- info: 'FRJ.covers_mono' does not depend on any axioms -/
+#guard_msgs in
+#print axioms covers_mono
+
+/-- info: 'FRJ.transportR' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms transportR
+
+/-! ### The `◯`-corner kernel, closed on cone-grounded frames (2026-08-18)
+
+`coneTrivial_of_corner` turns W4 §10 fact 3 from an observation into a
+lemma: the kernel's own hypothesis pins the demanding world's modal cone
+to itself, with NO assumption on the frame.  On a frame where
+cone-triviality implies maximality — `Rm = ≤` in particular — the
+generalised `Ax^I◯` then closes the kernel outright. -/
+
+/-- info: 'FRJ.coneTrivial_of_corner' does not depend on any axioms -/
+#guard_msgs in
+#print axioms coneTrivial_of_corner
+
+/-- info: 'FRJ.circSupply_of_coneGrounded' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms circSupply_of_coneGrounded
+
+/-- info: 'FRJ.completeness_of_coneGrounded' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_coneGrounded
+
+/-- info: 'FRJ.completeness_of_rmFull' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_rmFull
+
+-- The unconditional instance: no supply hypothesis, `◯` free on the right.
+/-- info: 'FRJ.completeness_of_rmFull_of_circFreeL' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_rmFull_of_circFreeL
+
+/-- info: 'FRJ.discrete_of_transparent_of_coneGrounded' does not depend on any axioms -/
+#guard_msgs in
+#print axioms discrete_of_transparent_of_coneGrounded
 
 /-! ## W3 and the promise-join screen -/
 
