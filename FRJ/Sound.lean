@@ -1811,14 +1811,14 @@ theorem tag_cone {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
 theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (i : RegIdx d) (w : (preI d i).W),
     ((preI d i).toKripke (preI_closed d i)).forces w ((preI d i).lbl w)
-  | _, _, _, .axI _ _ _ rfl, i, _ => (i : Empty).elim
+  | _, _, _, .axI _ _ _ _, i, _ => (i : Empty).elim
   | _, _, _, .andI1 d _, i, w => lemma39I0 d i w
   | _, _, _, .andI2 d _, i, w => lemma39I0 d i w
-  | _, _, _, .orI d₁ d₂ _ _ _ rfl rfl, i, w => by
+  | _, _, _, .orI d₁ d₂ _ _ _ rfl _, i, w => by
       match (i : Sum (RegIdx d₁) (RegIdx d₂)) with
       | .inl i₁ => exact lemma39I0 d₁ i₁ w
       | .inr i₂ => exact lemma39I0 d₂ i₂ w
-  | _, _, _, .impInI d _ _ _ rfl rfl, i, w => lemma39I0 d i w
+  | _, _, _, .impInI d _ _ _ _ _ _, i, w => lemma39I0 d i w
   | _, _, _, .impNotIn d _ _ _ _, _, w => (lemma39R d).1 w
   | _, _, _, .circNotIn d _ _ _, _, w => (lemma39R d).1 w
   | _, _, _, @FRJi.axIC _ F ats hats hFf hg _ rfl, _, w => by
@@ -1827,8 +1827,7 @@ theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
       -- member is `classForce`-true by construction, and single-world
       -- forcing IS `classForce`
       intro X hX
-      have hcf : classForce ats X = true :=
-        (List.mem_filter.mp (mem_nf.mp hX).2).2
+      have hcf : classForce ats X = true := (List.mem_filter.mp hX).2
       exact (PreModel.leaf_force_iff (fun p => vacZoneA_atom hats) X).mpr hcf
 
 theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
@@ -1838,7 +1837,7 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
     (∀ i : RegIdx d, RootAbove P hP w (preI d i) (preI_closed d i)) →
     (P.toKripke hP).forces w (cap St (sfm C)) →
     ¬ (P.toKripke hP).force w C
-  | _, _, _, .axI F hF hg rfl, P, hP, w, hw, hlbl, _, _ => by
+  | _, _, _, .axI F hF hg hTh, P, hP, w, hw, hlbl, _, _ => by
       match F, hF with
       | .bot, _ => exact fun h => hw h
       | .atom p, _ =>
@@ -1846,11 +1845,12 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
           have hmem : Form.atom p ∈ P.lbl w := hcon.elim (fun h => h)
             (fun h => absurd h hw)
           have hin := clo_pv (hlbl _ hmem)
-          simp only [List.nil_append, mem_nf, List.mem_append] at hin
-          rcases hin.2 with (hin' | hin') | hin'
-          · exact (mem_rm.mp hin').1 rfl
-          · have himp := (List.mem_filter.mp hin').2
-            simp [Form.isImp] at himp
+          simp only [List.nil_append] at hin
+          rcases List.mem_append.mp ((hTh _).mp hin) with hin' | hin'
+          · rcases List.mem_append.mp hin' with hin'' | hin''
+            · exact (mem_rm.mp hin'').1 rfl
+            · have himp := (List.mem_filter.mp hin'').2
+              simp [Form.isImp] at himp
           · have hcx := (List.mem_filter.mp hin').2
             simp [Form.isCirc] at hcx
   | _, _, _, .andI1 d hg, P, hP, w, hw, hlbl, hroot, hforce => by
@@ -1865,7 +1865,7 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       intro X hX
       rw [mem_cap] at hX
       exact hforce X (mem_cap.mpr ⟨hX.1, sfm_subset_sfm_and₂ hX.2⟩)
-  | _, _, _, @FRJi.orI _ St₁ Th₁ St₂ Th₂ C₁ C₂ d₁ d₂ h₁ h₂ hg _ _ rfl rfl,
+  | _, _, _, @FRJi.orI _ St₁ Th₁ St₂ Th₂ C₁ C₂ d₁ d₂ h₁ h₂ hg _ _ rfl hThE,
       P, hP, w, hw, hlbl, hroot, hforce => by
       intro hcon
       rcases hcon with hcon | hcon
@@ -1873,11 +1873,11 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
         · intro X hX
           refine clo_mono ?_ (hlbl X hX)
           intro Y hY
-          simp only [List.mem_append, mem_nf, mem_cap] at hY ⊢
-          rcases hY with (hY | hY) | ⟨-, hY⟩
+          simp only [List.mem_append] at hY ⊢
+          rcases hY with (hY | hY) | hY
           · exact Or.inl hY
           · exact List.mem_append.mp (h₂ hY)
-          · exact Or.inr hY.1
+          · exact Or.inr (mem_cap.mp ((hThE Y).mp hY)).1
         · intro X hX
           rw [mem_cap] at hX
           exact hforce X (mem_cap.mpr
@@ -1886,37 +1886,37 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
         · intro X hX
           refine clo_mono ?_ (hlbl X hX)
           intro Y hY
-          simp only [List.mem_append, mem_nf, mem_cap] at hY ⊢
-          rcases hY with (hY | hY) | ⟨-, hY⟩
+          simp only [List.mem_append] at hY ⊢
+          rcases hY with (hY | hY) | hY
           · exact List.mem_append.mp (h₁ hY)
           · exact Or.inl hY
-          · exact Or.inr hY.2
+          · exact Or.inr (mem_cap.mp ((hThE Y).mp hY)).2
         · intro X hX
           rw [mem_cap] at hX
           exact hforce X (mem_cap.mpr
             ⟨List.mem_append_right _ hX.1, sfm_subset_sfm_or₂ hX.2⟩)
-  | _, _, _, @FRJi.impInI _ St Th Lam A B d hdisj hA hg _ _ rfl rfl,
+  | _, _, _, @FRJi.impInI _ St Th Lam ThLam A B d hpre hdisj hA hg _ _ hStE hThE,
       P, hP, w, hw, hlbl, hroot, hforce => by
       intro hcon
-      have hSA : (P.toKripke hP).forces w (cap (nf G (St ++ Lam)) (sf A)) := by
+      have hSA : (P.toKripke hP).forces w (cap (St ++ Lam) (sf A)) := by
         intro X hX
         rw [mem_cap] at hX
-        exact hforce X (mem_cap.mpr ⟨hX.1, sf_subset_sfm_impL hX.2⟩)
+        exact hforce X (mem_cap.mpr ⟨(hStE X).mpr hX.1, sf_subset_sfm_impL hX.2⟩)
       have hAf : (P.toKripke hP).force w A := clo_forces hSA (clo_sf hA)
       refine lemma39I d P hP w hw ?_ hroot ?_ (hcon w ((P.toKripke hP).le_refl w) hAf)
       · intro X hX
         refine clo_mono ?_ (hlbl X hX)
         intro Y hY
-        simp only [List.mem_append, mem_nf] at hY ⊢
-        rcases hY with ⟨hg', hY | hY⟩ | ⟨hg', hY⟩
-        · exact Or.inl hY
-        · exact Or.inr ⟨hg', Or.inr hY⟩
-        · exact Or.inr ⟨hg', Or.inl hY⟩
+        simp only [List.mem_append] at hY ⊢
+        rcases hY with hY | hY
+        · rcases List.mem_append.mp ((hStE Y).mp hY) with hY' | hY'
+          · exact Or.inl hY'
+          · exact Or.inr ((hpre Y).mpr (List.mem_append_right _ hY'))
+        · exact Or.inr ((hpre Y).mpr (List.mem_append_left _ ((hThE Y).mp hY)))
       · intro X hX
         rw [mem_cap] at hX
-        have hXG : X ∈ gHat G := wfI d (List.mem_append_left _ hX.1)
         exact hforce X (mem_cap.mpr
-          ⟨mem_nf.mpr ⟨hXG, List.mem_append_left _ hX.1⟩,
+          ⟨(hStE X).mpr (List.mem_append_left _ hX.1),
             sfm_subset_sfm_impR hX.2⟩)
   | _, _, _, @FRJi.impNotIn _ t Γ Th A B d hTh hA hAnot hg,
       P, hP, w, hw, hlbl, hroot, hforce => by

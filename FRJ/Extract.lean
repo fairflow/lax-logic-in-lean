@@ -406,7 +406,7 @@ def RegIdx {G : Form} : {St Th : List Form} → {C : Form} → FRJi G St Th C �
   | _, _, _, .andI1 d _ => RegIdx d
   | _, _, _, .andI2 d _ => RegIdx d
   | _, _, _, .orI d₁ d₂ _ _ _ _ _ => Sum (RegIdx d₁) (RegIdx d₂)
-  | _, _, _, .impInI d _ _ _ _ _ => RegIdx d
+  | _, _, _, .impInI d _ _ _ _ _ _ => RegIdx d
   | _, _, _, .impNotIn _ _ _ _ _ => Unit
   | _, _, _, .circNotIn _ _ _ _ => Unit
   | _, _, _, .axIC _ _ _ _ _ _ => Unit
@@ -421,7 +421,7 @@ instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
       have _ := regIdxDecEq d₁
       have _ := regIdxDecEq d₂
       inferInstanceAs (DecidableEq (Sum _ _))
-  | _, _, _, .impInI d _ _ _ _ _ => regIdxDecEq d
+  | _, _, _, .impInI d _ _ _ _ _ _ => regIdxDecEq d
   | _, _, _, .impNotIn _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
   | _, _, _, .circNotIn _ _ _ _ => inferInstanceAs (DecidableEq Unit)
   | _, _, _, .axIC _ _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
@@ -435,7 +435,7 @@ def regIdxElems {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .andI2 d _ => regIdxElems d
   | _, _, _, .orI d₁ d₂ _ _ _ _ _ =>
       (regIdxElems d₁).map Sum.inl ++ (regIdxElems d₂).map Sum.inr
-  | _, _, _, .impInI d _ _ _ _ _ => regIdxElems d
+  | _, _, _, .impInI d _ _ _ _ _ _ => regIdxElems d
   | _, _, _, .impNotIn _ _ _ _ _ => [()]
   | _, _, _, .circNotIn _ _ _ _ => [()]
   | _, _, _, .axIC _ _ _ _ _ _ => [()]
@@ -451,7 +451,7 @@ theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
           exact List.mem_append_left _ (List.mem_map.mpr ⟨i₁, regIdxComplete d₁ i₁, rfl⟩)
       | .inr i₂ =>
           exact List.mem_append_right _ (List.mem_map.mpr ⟨i₂, regIdxComplete d₂ i₂, rfl⟩)
-  | _, _, _, .impInI d _ _ _ _ _, i => regIdxComplete d i
+  | _, _, _, .impInI d _ _ _ _ _ _, i => regIdxComplete d i
   | _, _, _, .impNotIn _ _ _ _ _, _ => List.mem_cons_self
   | _, _, _, .circNotIn _ _ _ _, _ => List.mem_cons_self
   | _, _, _, .axIC _ _ _ _ _ _, _ => List.mem_cons_self
@@ -579,7 +579,7 @@ def preI {G : Form} : {St Th : List Form} → {C : Form} →
       match (i : Sum (RegIdx d₁) (RegIdx d₂)) with
       | .inl i₁ => preI d₁ i₁
       | .inr i₂ => preI d₂ i₂
-  | _, _, _, .impInI d _ _ _ _ _, i => preI d i
+  | _, _, _, .impInI d _ _ _ _ _ _, i => preI d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR d
   | _, _, _, .circNotIn d _ _ _, _ => preR d
   | _, _, _, .axIC _ ats _ _ _ _, _ => PreModel.leaf (vacZoneA G ats)
@@ -637,7 +637,7 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
       | .inr i₂ =>
           obtain ⟨s, hocc, hlbl⟩ := preI_spec d₂ i₂
           exact ⟨s, .orI₂ hocc, hlbl⟩
-  | _, _, _, .impInI d _ _ _ _ _, i => by
+  | _, _, _, .impInI d _ _ _ _ _ _, i => by
       obtain ⟨s, hocc, hlbl⟩ := preI_spec d i
       exact ⟨s, .impInI hocc, hlbl⟩
   | _, _, _, .impNotIn d _ _ _ _, _ =>
@@ -853,7 +853,7 @@ theorem preI_closed {G : Form} : ∀ {St Th : List Form} {C : Form}
       match (i : Sum (RegIdx d₁) (RegIdx d₂)) with
       | .inl i₁ => exact preI_closed d₁ i₁
       | .inr i₂ => exact preI_closed d₂ i₂
-  | _, _, _, .impInI d _ _ _ _ _, i => preI_closed d i
+  | _, _, _, .impInI d _ _ _ _ _ _, i => preI_closed d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR_closed d
   | _, _, _, .circNotIn d _ _ _, _ => preR_closed d
   | _, _, _, .axIC _ _ _ _ _ _, _ => fun _ _ _ X hX => .base hX

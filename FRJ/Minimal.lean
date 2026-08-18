@@ -83,15 +83,15 @@ theorem mem_upsPrime {K : Kripke} {a : K.W} {G A B : Form}
 /-! ## The two halves of Lemma 6.4, as data -/
 
 /-- The irregular half: a derivation of `Σ ; Θ → C` with `Σ ⊆ Λ*_a` and
-`Λ*_a ⊆ Σ, Θ`.  `thNf` records that the zone is canonical, which is what
-the `⊃∈` step below needs to split it. -/
+`Λ*_a ⊆ Σ, Θ`.  No canonicity field: the `⊃∈` step below splits the zone
+EXTENSIONALLY (`Θ₁ ≐ Θ ++ Λ`), which is what the paper's "contexts denote
+sets" means, so nothing has to be normalised first. -/
 structure IrrWit (K : Kripke) (G : Form) (a : K.W) (C : Form) : Type where
   stab : List Form
   th : List Form
   der : FRJi G stab th C
   sub : stab ⊆ lamStar K a G
   cov : lamStar K a G ⊆ stab ++ th
-  thNf : th = nf G th
 
 /-- The regular half: a derivation of `Γ ⇒ C` and a world `b ≥ a` whose
 `Λ*` the context covers. -/
@@ -271,12 +271,11 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
 /-- The `Ax^I` zone contains `Λ*_a` whenever `C` is unforced there. -/
 theorem lamStar_subset_axI {K : Kripke} {a : K.W} {G C : Form}
     (h : ¬ K.force a C) :
-    lamStar K a G ⊆ nf G ((rm (gAt G) C) ++ gImp G ++ gCirc G) := by
+    lamStar K a G ⊆ (rm (gAt G) C) ++ gImp G ++ gCirc G := by
   intro X hX
   have hne : X ≠ C := by
     intro hc; exact h (hc ▸ K.forceStar_force (mem_lamStar.mp hX).2)
   have hG := lamStar_subset_gHat hX
-  refine mem_nf.mpr ⟨hG, ?_⟩
   simp only [gHat, List.mem_append] at hG
   rcases hG with (h1 | h1) | h1
   · exact List.mem_append_left _ (List.mem_append_left _ (mem_rm.mpr ⟨hne, h1⟩))
@@ -295,37 +294,35 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
       -- arrive; see the note on `gHat`.
       exact absurd (hcf _ (List.mem_append_left _ hC)) (by simp [Form.isCirc])
   | 0, .atom p =>
-      exact { stab := [], th := nf G ((rm (gAt G) (.atom p)) ++ gImp G ++ gCirc G)
-              der := .axI (.atom p) rfl hC rfl
+      exact { stab := [], th := (rm (gAt G) (.atom p)) ++ gImp G ++ gCirc G
+              der := .axI (.atom p) rfl hC (CtxEq.refl _)
               sub := fun _ h => absurd h List.not_mem_nil
-              cov := fun _ hx => lamStar_subset_axI hnf hx
-              thNf := nf_idem.symm }
+              cov := fun _ hx => lamStar_subset_axI hnf hx }
   | 0, .bot =>
-      exact { stab := [], th := nf G ((rm (gAt G) .bot) ++ gImp G ++ gCirc G)
-              der := .axI .bot rfl hC rfl
+      exact { stab := [], th := (rm (gAt G) .bot) ++ gImp G ++ gCirc G
+              der := .axI .bot rfl hC (CtxEq.refl _)
               sub := fun _ h => absurd h List.not_mem_nil
-              cov := fun _ hx => lamStar_subset_axI hnf hx
-              thNf := nf_idem.symm }
+              cov := fun _ hx => lamStar_subset_axI hnf hx }
   | 0, .and C₁ C₂ =>
       obtain ⟨hC1, hC2⟩ := sfR_and hC
       by_cases h1 : K.force a C₁
       · have h2 : ¬ K.force a C₂ := fun hc => hnf ⟨h1, hc⟩
         let w := minMod K G hcf hinf a 0 C₂ hC2 h2
         exact { stab := w.stab, th := w.th, der := .andI2 w.der hC
-                sub := w.sub, cov := w.cov, thNf := w.thNf }
+                sub := w.sub, cov := w.cov }
       · let w := minMod K G hcf hinf a 0 C₁ hC1 h1
         exact { stab := w.stab, th := w.th, der := .andI1 w.der hC
-                sub := w.sub, cov := w.cov, thNf := w.thNf }
+                sub := w.sub, cov := w.cov }
   | 0, .or C₁ C₂ =>
       obtain ⟨hC1, hC2⟩ := sfR_or hC
       have h1 : ¬ K.force a C₁ := fun hc => hnf (Or.inl hc)
       have h2 : ¬ K.force a C₂ := fun hc => hnf (Or.inr hc)
       let w₁ := minMod K G hcf hinf a 0 C₁ hC1 h1
       let w₂ := minMod K G hcf hinf a 0 C₂ hC2 h2
-      refine { stab := w₁.stab ++ w₂.stab, th := nf G (cap w₁.th w₂.th)
+      refine { stab := w₁.stab ++ w₂.stab, th := cap w₁.th w₂.th
                der := .orI w₁.der w₂.der (fun X hX => w₂.cov (w₁.sub hX))
-                        (fun X hX => w₁.cov (w₂.sub hX)) hC rfl rfl
-               sub := ?_, cov := ?_, thNf := nf_idem.symm }
+                        (fun X hX => w₁.cov (w₂.sub hX)) hC rfl (CtxEq.refl _)
+               sub := ?_, cov := ?_ }
       · intro X hX
         rcases List.mem_append.mp hX with hX' | hX'
         · exact w₁.sub hX'
@@ -335,9 +332,9 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
         · exact List.mem_append_left _ (List.mem_append_left _ hx1)
         · by_cases hx2 : X ∈ w₂.stab
           · exact List.mem_append_left _ (List.mem_append_right _ hx2)
-          · refine List.mem_append_right _ (mem_nf.mpr ⟨lamStar_subset_gHat hX, ?_⟩)
-            exact mem_cap.mpr ⟨(List.mem_append.mp (w₁.cov hX)).resolve_left hx1,
-              (List.mem_append.mp (w₂.cov hX)).resolve_left hx2⟩
+          · exact List.mem_append_right _ (mem_cap.mpr
+              ⟨(List.mem_append.mp (w₁.cov hX)).resolve_left hx1,
+               (List.mem_append.mp (w₂.cov hX)).resolve_left hx2⟩)
   | 0, .imp A B =>
       obtain ⟨hA, hB⟩ := sfR_imp hC
       let m := minEta hnf
@@ -354,47 +351,46 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
           by_cases hs : x ∈ w.stab
           · exact List.mem_append_left _ hs
           · exact List.mem_append_right _ (mem_sdiff.mpr ⟨hx, hs⟩)
-        have hzone : nf G (sdiff w.th (sdiff (lamStar K a G) w.stab) ++
-            sdiff (lamStar K a G) w.stab) = w.th := by
-          conv_rhs => rw [w.thNf]
-          refine nf_ext (fun x _ => ?_)
+        -- **The Θ-split of Lemma 6.3**, as the paper states it: `Θ₁ = Θ ∪ Λ`
+        -- is an equation between SETS, so here it is a membership
+        -- equivalence and nothing has to be normalised to make it hold.
+        have hzone : w.th ≐ sdiff w.th (sdiff (lamStar K a G) w.stab) ++
+            sdiff (lamStar K a G) w.stab := by
+          intro x
           constructor
-          · intro hx
-            rcases List.mem_append.mp hx with hx' | hx'
-            · exact (mem_sdiff.mp hx').1
-            · exact hLamTh hx'
           · intro hx
             by_cases hL : x ∈ sdiff (lamStar K a G) w.stab
             · exact List.mem_append_right _ hL
             · exact List.mem_append_left _ (mem_sdiff.mpr ⟨hx, hL⟩)
-        have hAclo : Clo (nf G (w.stab ++ sdiff (lamStar K a G) w.stab)) A := by
-          refine clo_mono ?_ (mem_clo_lamStar (hinf _) hA heA)
-          intro x hx
-          exact mem_nf.mpr ⟨lamStar_subset_gHat hx, hStLam hx⟩
-        refine { stab := nf G (w.stab ++ sdiff (lamStar K a G) w.stab)
-                 th := nf G (sdiff w.th (sdiff (lamStar K a G) w.stab))
-                 der := .impInI (by rw [hzone]; exact w.der) cap_sdiff_eq_nil hAclo hC rfl rfl
-                 sub := ?_, cov := ?_, thNf := nf_idem.symm }
+          · intro hx
+            rcases List.mem_append.mp hx with hx' | hx'
+            · exact (mem_sdiff.mp hx').1
+            · exact hLamTh hx'
+        have hAclo : Clo (w.stab ++ sdiff (lamStar K a G) w.stab) A :=
+          clo_mono hStLam (mem_clo_lamStar (hinf _) hA heA)
+        refine { stab := w.stab ++ sdiff (lamStar K a G) w.stab
+                 th := sdiff w.th (sdiff (lamStar K a G) w.stab)
+                 der := .impInI w.der hzone cap_sdiff_eq_nil hAclo hC
+                          (CtxEq.refl _) (CtxEq.refl _)
+                 sub := ?_, cov := ?_ }
         · intro X hX
-          rcases List.mem_append.mp (mem_nf.mp hX).2 with hX' | hX'
+          rcases List.mem_append.mp hX with hX' | hX'
           · exact w.sub hX'
           · exact (mem_sdiff.mp hX').1
         · intro X hX
-          exact List.mem_append_left _
-            (mem_nf.mpr ⟨lamStar_subset_gHat hX, hStLam hX⟩)
+          exact List.mem_append_left _ (hStLam hX)
       · have hnaA : ¬ K.force a A :=
           m.min a (K.le_refl a) m.le (fun hc => hea hc.symm)
         let w := minMod K G hcf hinf m.e 1 B hB m.nfB
         have hab : K.le a w.wld := K.le_trans m.le w.wle
-        exact { stab := [], th := nf G (lamStar K a G)
+        exact { stab := [], th := lamStar K a G
                 der := .impNotIn w.der
-                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono (hinf _) hab X (mem_nf.mp hX).2),
-                    (mem_nf.mp hX).1⟩)
+                  (fun X hX => ⟨clo_mono w.cov (lamStar_mono (hinf _) hab X hX),
+                    lamStar_subset_gHat hX⟩)
                   (clo_mono w.cov (mem_clo_lamStar (hinf _) hA (K.force_mono w.wle m.fA)))
-                  (fun hc => hnaA (forces_clo_lamStar (clo_mono nf_subset_self hc))) hC
+                  (fun hc => hnaA (forces_clo_lamStar hc)) hC
                 sub := fun _ h => absurd h List.not_mem_nil
-                cov := fun x hx => mem_nf.mpr ⟨lamStar_subset_gHat hx, hx⟩
-                thNf := nf_idem.symm }
+                cov := fun _ hx => hx }
   | (n+1), .atom p =>
       by_cases hempty : impPart (lamStar K a G) = []
       · exact regPrime_ax K G a (.atom p) hcf rfl hC hnf hempty

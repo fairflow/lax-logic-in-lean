@@ -117,9 +117,9 @@ namespace FRJ
 #guard_msgs in
 #print axioms not_IPL_of_countermodel
 
-/-- info: 'FRJ.nf_ext' depends on axioms: [propext] -/
+/-- info: 'FRJ.CtxEq.of_subset' does not depend on any axioms -/
 #guard_msgs in
-#print axioms nf_ext
+#print axioms CtxEq.of_subset
 
 /-! ## W3 and the promise-join screen -/
 

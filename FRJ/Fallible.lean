@@ -390,10 +390,9 @@ restriction (its antecedent `⊥` is the premise's right formula), and `⊃∈`
 discharges it from the closure. -/
 theorem provable_triv_neg_circ_bot : Provable (triv (Form.neg (.circ .bot))) := by
   have hax : FRJi (Form.imp (Form.imp .bot .bot) .bot) []
-      (nf (Form.imp (Form.imp .bot .bot) .bot)
-        ((rm (gAt (Form.imp (Form.imp .bot .bot) .bot)) .bot)
+      (((rm (gAt (Form.imp (Form.imp .bot .bot) .bot)) .bot)
           ++ gImp (Form.imp (Form.imp .bot .bot) .bot) ++ gCirc (Form.imp (Form.imp .bot .bot) .bot))) .bot :=
-    FRJi.axI .bot rfl (by decide) rfl
+    FRJi.axI .bot rfl (by decide) (CtxEq.refl _)
   have hjoin := FRJr.joinAt (G := Form.imp (Form.imp .bot .bot) .bot) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .bot)
       (fun _ => hax)
@@ -411,10 +410,9 @@ concrete in `docs/frj-modal-rules.md` §4.3. -/
 theorem provable_triv_circ_imp :
     Provable (triv (Form.imp (.circ (.atom "p")) (.atom "p"))) := by
   have hax : FRJi (Form.imp (Form.imp .bot .bot) (.atom "p")) []
-      (nf (Form.imp (Form.imp .bot .bot) (.atom "p"))
-        ((rm (gAt (Form.imp (Form.imp .bot .bot) (.atom "p"))) .bot)
+      (((rm (gAt (Form.imp (Form.imp .bot .bot) (.atom "p"))) .bot)
           ++ gImp (Form.imp (Form.imp .bot .bot) (.atom "p")) ++ gCirc (Form.imp (Form.imp .bot .bot) (.atom "p")))) .bot :=
-    FRJi.axI .bot rfl (by decide) rfl
+    FRJi.axI .bot rfl (by decide) (CtxEq.refl _)
   have hjoin := FRJr.joinAt (G := Form.imp (Form.imp .bot .bot) (.atom "p")) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .atom "p")
       (fun _ => hax)
@@ -498,10 +496,9 @@ uniform identity choice this was PROVABLY out of reach
 derivation of `¬◯⊥` has a fallible world in its extracted model). -/
 theorem provable_neg_circ_bot : Provable (Form.neg (.circ .bot)) := by
   have hax : FRJi (Form.neg (.circ .bot)) []
-      (nf (Form.neg (.circ .bot))
-        ((rm (gAt (Form.neg (.circ .bot))) .bot)
+      (((rm (gAt (Form.neg (.circ .bot))) .bot)
           ++ gImp (Form.neg (.circ .bot)) ++ gCirc (Form.neg (.circ .bot)))) .bot :=
-    FRJi.axI .bot rfl (by decide) rfl
+    FRJi.axI .bot rfl (by decide) (CtxEq.refl _)
   have hjoin := FRJr.joinAtF (G := Form.neg (.circ .bot)) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .bot)
       (fun _ => hax)
@@ -517,11 +514,10 @@ theorem provable_neg_circ_bot : Provable (Form.neg (.circ .bot)) := by
 now refuted by the calculus itself. -/
 theorem provable_circ_imp : Provable (Form.imp (.circ (.atom "p")) (.atom "p")) := by
   have hax : FRJi (Form.imp (.circ (.atom "p")) (.atom "p")) []
-      (nf (Form.imp (.circ (.atom "p")) (.atom "p"))
-        ((rm (gAt (Form.imp (.circ (.atom "p")) (.atom "p"))) (.atom "p"))
+      (((rm (gAt (Form.imp (.circ (.atom "p")) (.atom "p"))) (.atom "p"))
           ++ gImp (Form.imp (.circ (.atom "p")) (.atom "p"))
           ++ gCirc (Form.imp (.circ (.atom "p")) (.atom "p")))) (.atom "p") :=
-    FRJi.axI (.atom "p") rfl (by decide) rfl
+    FRJi.axI (.atom "p") rfl (by decide) (CtxEq.refl _)
   have hjoin := FRJr.joinAtF (G := Form.imp (.circ (.atom "p")) (.atom "p")) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .atom "p") (F := .atom "p")
       (fun _ => hax)
@@ -563,20 +559,18 @@ theorem provable_circ_peirce :
       (by decide)
   have haxq : FRJi (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
       []
-      (nf (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
-        ((rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
+      (((rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
             (.atom "q"))
           ++ gImp (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
           ++ gCirc (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))))
       (.atom "q") :=
-    FRJi.axI (.atom "q") rfl (by decide) rfl
+    FRJi.axI (.atom "q") rfl (by decide) (CtxEq.refl _)
   have hjoin := FRJr.joinAt
       (G := Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) (n := 1)
       (stab := fun _ => [])
       (th := fun j => match j with
         | ⟨0, _⟩ =>
-            nf (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
-              ((rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
+            ((rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
                   (.atom "q"))
                 ++ gImp (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
                 ++ gCirc (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
@@ -631,12 +625,11 @@ join the decorated half. -/
 theorem provable_nn_circ_bot :
     Provable (Form.neg (Form.neg (.circ .bot))) := by
   have haxb : FRJi (Form.neg (Form.neg (.circ .bot))) []
-      (nf (Form.neg (Form.neg (.circ .bot)))
-        ((rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
+      (((rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
           ++ gImp (Form.neg (Form.neg (.circ .bot)))
           ++ gCirc (Form.neg (Form.neg (.circ .bot)))))
       .bot :=
-    FRJi.axI .bot rfl (by decide) rfl
+    FRJi.axI .bot rfl (by decide) (CtxEq.refl _)
   have haxc : FRJi (Form.neg (Form.neg (.circ .bot))) []
       (vacZone (Form.neg (Form.neg (.circ .bot))) .bot) (.circ .bot) :=
     FRJi.axIC .bot (rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
@@ -646,8 +639,7 @@ theorem provable_nn_circ_bot :
       (stab := fun _ => [])
       (th := fun j => match j with
         | ⟨0, _⟩ =>
-            nf (Form.neg (Form.neg (.circ .bot)))
-              ((rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
+            ((rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
                 ++ gImp (Form.neg (Form.neg (.circ .bot)))
                 ++ gCirc (Form.neg (Form.neg (.circ .bot))))
         | ⟨1, _⟩ => vacZone (Form.neg (Form.neg (.circ .bot))) .bot)

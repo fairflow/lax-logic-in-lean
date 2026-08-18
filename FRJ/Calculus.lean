@@ -192,13 +192,13 @@ def classForce (ats : List Form) : Form → Bool
   | .circ A => classForce ats A
 
 /-- The zone of `Ax^I◯`: the classical theory of the `F`-refuting final
-world, restricted to `Ĝ` and canonicalised.  Unlike the `Ax^I` zone it
-carries no losable data — every member is genuinely forced at the
-realising world, vacuous implications (`◯F ⊃ W`, `F ⊃ W`, and compound
-variants) included.  This is what `Cl` of a context cannot see, and what
-the `◯∉` cycle of `docs/frj-w4.md` §7 needed. -/
+world, restricted to `Ĝ`.  Unlike the `Ax^I` zone it carries no losable
+data — every member is genuinely forced at the realising world, vacuous
+implications (`◯F ⊃ W`, `F ⊃ W`, and compound variants) included.  This
+is what `Cl` of a context cannot see, and what the `◯∉` cycle of
+`docs/frj-w4.md` §7 needed. -/
 def vacZoneA (G : Form) (ats : List Form) : List Form :=
-  nf G ((gHat G).filter (classForce ats))
+  (gHat G).filter (classForce ats)
 
 /-- The prime-`F` instance: the valuation is `Ĝ_at \ {F}`. -/
 def vacZone (G : Form) (F : Form) : List Form :=
@@ -210,13 +210,13 @@ theorem vacZoneA_atom {G : Form} {ats : List Form} (hats : ats ⊆ gAt G)
     Form.atom p ∈ vacZoneA G ats ↔ Form.atom p ∈ ats := by
   constructor
   · intro h
-    have h2 := (List.mem_filter.mp (mem_nf.mp h).2).2
+    have h2 := (List.mem_filter.mp h).2
     simpa [classForce] using h2
   · intro h
     have hAt : Form.atom p ∈ gAt G := hats h
     have hG : Form.atom p ∈ gHat G :=
       List.mem_append_left _ (List.mem_append_left _ hAt)
-    exact mem_nf.mpr ⟨hG, List.mem_filter.mpr ⟨hG, by simpa [classForce] using h⟩⟩
+    exact List.mem_filter.mpr ⟨hG, by simpa [classForce] using h⟩
 
 theorem vacZone_atom {G F : Form} {p : String} :
     Form.atom p ∈ vacZone G F ↔ Form.atom p ∈ rm (gAt G) F :=
@@ -519,7 +519,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
 inductive FRJi (G : Form) : List Form → List Form → Form → Type
   /-- `Ax^I`:  `⊢ [] ; Ĝ_at \ {F}, Ĝ_imp → F`,  `F ∈ Prime`. -/
   | axI (F : Form) (hF : F.isPrime) (hgoal : F ∈ sfR G)
-      {Th' : List Form} (hTh : Th' = nf G ((rm (gAt G) F) ++ gImp G ++ gCirc G)) :
+      {Th' : List Form} (hTh : Th' ≐ (rm (gAt G) F) ++ gImp G ++ gCirc G) :
       FRJi G [] Th' F
   /-- `∧` (irregular), `k = 1`. -/
   | andI1 {St Th : List Form} {A₁ A₂ : Form}
@@ -536,15 +536,15 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       (d₁ : FRJi G St₁ Th₁ C₁) (d₂ : FRJi G St₂ Th₂ C₂)
       (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {St' Th' : List Form} (hSt : St' = St₁ ++ St₂) (hTh : Th' = nf G (cap Th₁ Th₂)) :
+      {St' Th' : List Form} (hSt : St' = St₁ ++ St₂) (hTh : Th' ≐ cap Th₁ Th₂) :
       FRJi G St' Th' (.or C₁ C₂)
   /-- `⊃∈` (irregular): from `Σ ; Θ, Λ → B` infer `Σ, Λ ; Θ → A ⊃ B`,
       side conditions `Θ ∩ Λ = ∅` and `A ∈ Cl(Σ ++ Λ)`. -/
-  | impInI {St Th Lam : List Form} {A B : Form}
-      (d : FRJi G St (nf G (Th ++ Lam)) B)
-      (hdisj : cap Th Lam = []) (hA : Clo (nf G (St ++ Lam)) A)
+  | impInI {St Th Lam ThLam : List Form} {A B : Form}
+      (d : FRJi G St ThLam B) (hpre : ThLam ≐ Th ++ Lam)
+      (hdisj : cap Th Lam = []) (hA : Clo (St ++ Lam) A)
       (hgoal : Form.imp A B ∈ sfR G)
-      {St' Th' : List Form} (hSt : St' = nf G (St ++ Lam)) (hTh : Th' = nf G Th) :
+      {St' Th' : List Form} (hSt : St' ≐ St ++ Lam) (hTh : Th' ≐ Th) :
       FRJi G St' Th' (.imp A B)
   /-- `⊃∉`: from the REGULAR premise `Γ ⇒ B` infer `[] ; Θ → A ⊃ B`,
       side conditions `Θ ⊆ Cl(Γ) ∩ Ĝ` and `A ∈ Cl(Γ) \ Cl(Θ)`. -/
