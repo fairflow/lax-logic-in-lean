@@ -373,7 +373,7 @@ which holds for every extension whose models are infallible. -/
 
 /-- The barren route on `◯p`: `Ax^R` then `◯∈`. -/
 theorem provable_circ_atom (p : String) : Provable (Form.circ (.atom p)) :=
-  ⟨.barren, _, ⟨FRJr.circIn (FRJr.axR (.atom p) rfl (by simp [sfR, sfPos]))
+  ⟨.barren, _, ⟨FRJr.circIn (FRJr.axR (.atom p) rfl (by simp [sfR, sfPos]) rfl)
     (Or.inl rfl) (sfR_self _)⟩⟩
 
 theorem not_PLL_circ_atom (p : String) : ¬ PLL (Form.circ (.atom p)) :=
@@ -393,7 +393,7 @@ theorem provable_triv_neg_circ_bot : Provable (triv (Form.neg (.circ .bot))) := 
       (nf (Form.imp (Form.imp .bot .bot) .bot)
         ((rm (gAt (Form.imp (Form.imp .bot .bot) .bot)) .bot)
           ++ gImp (Form.imp (Form.imp .bot .bot) .bot) ++ gCirc (Form.imp (Form.imp .bot .bot) .bot))) .bot :=
-    FRJi.axI .bot rfl (by decide)
+    FRJi.axI .bot rfl (by decide) rfl
   have hjoin := FRJr.joinAt (G := Form.imp (Form.imp .bot .bot) .bot) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .bot)
       (fun _ => hax)
@@ -403,6 +403,7 @@ theorem provable_triv_neg_circ_bot : Provable (triv (Form.neg (.circ .bot))) := 
       rfl
       (by simp [unionAll, atPart])
       (by decide)
+      rfl
   exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 /-- The same for `◯p ⊃ p`, the formula that made the promise problem
@@ -413,7 +414,7 @@ theorem provable_triv_circ_imp :
       (nf (Form.imp (Form.imp .bot .bot) (.atom "p"))
         ((rm (gAt (Form.imp (Form.imp .bot .bot) (.atom "p"))) .bot)
           ++ gImp (Form.imp (Form.imp .bot .bot) (.atom "p")) ++ gCirc (Form.imp (Form.imp .bot .bot) (.atom "p")))) .bot :=
-    FRJi.axI .bot rfl (by decide)
+    FRJi.axI .bot rfl (by decide) rfl
   have hjoin := FRJr.joinAt (G := Form.imp (Form.imp .bot .bot) (.atom "p")) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .atom "p")
       (fun _ => hax)
@@ -423,6 +424,7 @@ theorem provable_triv_circ_imp :
       rfl
       (by simp [unionAll, atPart])
       (by decide)
+      rfl
   exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 /-- **`¬◯⊥` refuted through the calculus**, not merely by exhibiting a
@@ -499,7 +501,7 @@ theorem provable_neg_circ_bot : Provable (Form.neg (.circ .bot)) := by
       (nf (Form.neg (.circ .bot))
         ((rm (gAt (Form.neg (.circ .bot))) .bot)
           ++ gImp (Form.neg (.circ .bot)) ++ gCirc (Form.neg (.circ .bot)))) .bot :=
-    FRJi.axI .bot rfl (by decide)
+    FRJi.axI .bot rfl (by decide) rfl
   have hjoin := FRJr.joinAtF (G := Form.neg (.circ .bot)) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .bot) (F := .bot)
       (fun _ => hax)
@@ -508,6 +510,7 @@ theorem provable_neg_circ_bot : Provable (Form.neg (.circ .bot)) := by
       rfl
       (by simp [unionAll, atPart])
       (by decide)
+      rfl
   exact ⟨.blocked, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 /-- The same for `◯p ⊃ p` — the sharp instance of the design discussion,
@@ -518,7 +521,7 @@ theorem provable_circ_imp : Provable (Form.imp (.circ (.atom "p")) (.atom "p")) 
         ((rm (gAt (Form.imp (.circ (.atom "p")) (.atom "p"))) (.atom "p"))
           ++ gImp (Form.imp (.circ (.atom "p")) (.atom "p"))
           ++ gCirc (Form.imp (.circ (.atom "p")) (.atom "p")))) (.atom "p") :=
-    FRJi.axI (.atom "p") rfl (by decide)
+    FRJi.axI (.atom "p") rfl (by decide) rfl
   have hjoin := FRJr.joinAtF (G := Form.imp (.circ (.atom "p")) (.atom "p")) (n := 0)
       (stab := fun _ => []) (rhs := fun _ => .atom "p") (F := .atom "p")
       (fun _ => hax)
@@ -527,6 +530,7 @@ theorem provable_circ_imp : Provable (Form.imp (.circ (.atom "p")) (.atom "p")) 
       rfl
       (by simp [unionAll, atPart])
       (by decide)
+      rfl
   exact ⟨.blocked, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 /-- **The `◯∉` witness cell** (W4): `(◯p ⊃ q) ⊃ q` is reached by the
@@ -547,7 +551,7 @@ theorem provable_circ_peirce :
       (rm (gAt (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")))
         (.atom "p"))
       (.atom "p") :=
-    FRJr.axR (.atom "p") rfl (by decide)
+    FRJr.axR (.atom "p") rfl (by decide) rfl
   have hnotin : FRJi (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
       [] [Form.imp (.circ (.atom "p")) (.atom "q")] (.circ (.atom "p")) :=
     FRJi.circNotIn haxp (Or.inl rfl)
@@ -565,7 +569,7 @@ theorem provable_circ_peirce :
           ++ gImp (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))
           ++ gCirc (Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q"))))
       (.atom "q") :=
-    FRJi.axI (.atom "q") rfl (by decide)
+    FRJi.axI (.atom "q") rfl (by decide) rfl
   have hjoin := FRJr.joinAt
       (G := Form.imp (Form.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) (n := 1)
       (stab := fun _ => [])
@@ -590,6 +594,7 @@ theorem provable_circ_peirce :
       rfl
       (by decide)
       (by decide)
+      rfl
   exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 theorem not_PLL_circ_peirce_by_calculus :
@@ -631,11 +636,11 @@ theorem provable_nn_circ_bot :
           ++ gImp (Form.neg (Form.neg (.circ .bot)))
           ++ gCirc (Form.neg (Form.neg (.circ .bot)))))
       .bot :=
-    FRJi.axI .bot rfl (by decide)
+    FRJi.axI .bot rfl (by decide) rfl
   have haxc : FRJi (Form.neg (Form.neg (.circ .bot))) []
       (vacZone (Form.neg (Form.neg (.circ .bot))) .bot) (.circ .bot) :=
     FRJi.axIC .bot (rm (gAt (Form.neg (Form.neg (.circ .bot)))) .bot)
-      (fun _ h => rm_subset h) rfl (by decide)
+      (fun _ h => rm_subset h) rfl (by decide) rfl
   have hjoin := FRJr.joinAt
       (G := Form.neg (Form.neg (.circ .bot))) (n := 1)
       (stab := fun _ => [])
@@ -659,6 +664,7 @@ theorem provable_nn_circ_bot :
       rfl
       (by decide)
       (by decide)
+      rfl
   exact ⟨.barren, _, ⟨FRJr.impIn hjoin (Clo.base (by decide)) (by decide)⟩⟩
 
 theorem not_PLL_nn_circ_bot_by_calculus :
