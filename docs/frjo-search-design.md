@@ -148,41 +148,68 @@ construction performs when it takes `U := C :: upsPrime` in
 `metR_prime` (`FRJ/Saturate.lean`). The construction knows which cells a
 join needs; the engine currently guesses.
 
-### 4.3 Two layers, and where `partial def` is forced
+### 4.3 One layer: relevance-restricted FORWARD saturation
 
-**Layer 1 — cell library, forward, incremental.** Keep saturation for
-the irregular cells, but as a *given-clause* loop: a queue of unprocessed
-cells; pick one; combine it only with already-processed cells, through
-the indexes of §4.2; insert with subsumption; never recompute a
-combination. Bounded by the (small) irregular state space, cached per
-goal `G`.
+*(Revised 2026-08-18 after Matthew's comment A.  The first draft of this
+section proposed a second, goal-directed BACKWARD layer.  That was wrong,
+and the reasons are worth recording because they are structural, not
+stylistic.)*
 
-**Layer 2 — goal-directed backward search.** For the actual question
-`Provable G`, recurse on the goal:
+FRJ(G) is a forward calculus and the search has to stay forward.
 
-    refute? : Budget → Tag → Ctx → Form → Option (FRJr G t Γ C)
+1. **The joins compute their conclusion's context from the premises.**
+   `joinCtxAt` and its siblings are unions, intersections and restrictions
+   over the whole premise family.  Read backwards, a join asks for a family
+   of unknown size whose union-and-intersection equals a given context:
+   inverting an intersection means guessing supersets.  Forwards the
+   context is computed; backwards it is an inverse image.
 
-with the last-rule cases: `axR`; `andR1/2`; `impIn` (side condition
-`A ∈ Cl(Γ)`, a bitmask test); `circIn` (tag test); and the joins, built
-by §4.2 from Layer 1's library. Memoise on `(rhs index, ctx bitmask,
-tag)` with **dominance**: a hit at `Γ' ⊆ Γ` serves `Γ` (contexts are
-monotone in the calculus — this is the existing `rsLe`), and a *failure*
-at budget is recorded separately from a failure at fixpoint, because
-only the latter is informative.
+2. **The question does not fix the context.**  `Provable G` is
+   `∃ t Γ, FRJr G t Γ G`: tag and context are existentially quantified
+   OUTPUTS.  A recursion keyed on `(t, Γ, C)` solves a strictly harder
+   problem than the one asked.
 
-`partial def` is not laziness here, it is forced, and for a reason worth
-stating: the demand graph has genuine cycles — the same
-irregular↔regular cycle that refutes a structural completeness induction
-(`docs/frj-w4.md` §9, the measure dichotomy). There is no lexicographic
-measure to recurse on, so the searcher is a fuelled `partial def` whose
-*results* are typed derivations. Soundness survives exactly because the
-return type is the derivation, as in `PLLG4Term.proveM`.
+3. **The only goal-directed recursion in the development is driven by a
+   model.**  `visit` in `FRJ/Saturate.lean` knows, at every step, which
+   world refutes what, and that is what selects the premise family.  In a
+   search there is no model in hand, so nothing drives the recursion.
 
-**Recommended split:** Layer 1 + §4.2 first (it is a rewrite of the cost
-model inside the existing, faithful engine, with the corpus as its
-regression test), Layer 2 second (it changes the interface to
-goal-directed and is where the big constant-factor win for *hard* goals
-lands).
+What survives is the useful half, under its proper name: **relevance
+restriction**, the set-of-support strategy.  Every inference stays forward
+(premises → conclusion, derivations built bottom-up); the goal is used only
+to decide which forward inferences are worth performing, through the
+indexes of §4.2, and a given-clause queue orders the work.  §4.2's
+demand-driven join construction already carried this content; only the
+control structure around it was wrong.
+
+**Consequently `partial def` is NOT forced by the §9 measure dichotomy.**
+That argument belonged to the backward reading.  A saturation loop needs
+`partial def` (or fuel, which is what the current engine uses) for the
+ordinary reason: its termination measure is "rows not yet produced, modulo
+subsumption", which Lean cannot see.  The implemented engine keeps the
+existing fuelled-rounds shape, so it is not `partial` at all — the
+`partial def` question can be deferred until iterative deepening on join
+arity needs it.
+
+**What was implemented** (`FRJ/Search/Fast.lean`) is three exact cuts, none
+of which changes the fixpoint:
+
+* **J1 is pairwise, so admissible families are cliques.**  The side
+  condition `∀ i j, i ≠ j → Σᵢ ⊆ Σⱼ ∪ Θⱼ` is a conjunction over ordered
+  pairs, so a family passes iff every two-element subfamily does.
+  `famsUpToC` enumerates cliques of the compatibility digraph instead of
+  enumerating all `C(|Σ|, ≤ jmax)` subsets and rejecting most afterwards.
+* **`J1`/`J2` do not mention the promise family.**  `mkJoinP` re-ran
+  `j1j2Check` once per promise family; `mkJoinPFam` runs it once per
+  premise family and then loops.
+* **A family with no new member was already tried.**  Given-clause
+  incrementality, sound because subsumption is transitive: anything
+  subsumed at insertion stays subsumed.
+
+Measured on the RN(◯,{}) bank: **10.3× on the hardest cell** (164 s → 16 s,
+`cAnd_10_13`), 6× on the four known-false cells, with identical verdicts,
+identical round counts and identical database sizes against the frozen
+reference engine.
 
 ### 4.4 Module layout and API
 
@@ -204,21 +231,31 @@ Entry points, mirroring the repo's existing shapes:
 convention that lets a caller distinguish "exhausted" from "searched
 out" — the distinction the verdict discipline (§6) turns on.
 
-## 5. What §15 changes for testing
+## 5. What §15 changes for testing — and what it does not
 
-`docs/frj-w4.md` §15 (branch `frj-deslime`, merged) closes the ◯-corner
-kernel on cone-grounded frames and proves, unconditionally,
+*(Revised 2026-08-18 after Matthew's comment B.)*
 
-    completeness_of_rmFull_of_circFreeL :
-        (∀ a b, a ≤ b → Rm a b) → (∀ X ∈ Sf^L(G), X.isCirc = false) →
-        ¬ K.valid G → Provable G
+§15's new unconditional row is `Rm = ≤` with `Sf^L(G)` circ-free.  It is a
+usable regression oracle, but it must not be sold as modal reach, because
+on that frame class the modality is not primitive.  Machine-checked
+(`FRJ.circ_iff_nn`, checks against `FRJ.Basic`): on an infallible model
+with `Rm = ≤`,
 
-That is a **new oracle class for the test harness**: on `Rm = ≤` models,
-every goal with no negative-polarity subformula headed by `◯` that has a
-countermodel *must* be found. 21 of the 32 corpus cells qualify (against
-3 that are wholly ◯-free), so a miss there is an ENGINE BUG, provably —
-not a frontier flag. This is what makes serious differential testing
-possible for the first time.
+    a ⊩ ◯A   ↔   a ⊩ ¬¬A
+
+so a goal with no negative-polarity `◯` is equivalent to its
+double-negation translation and plain FRJ handles it.  The sharper way to
+say what is settled: **every settled row of the completeness map is a row
+where `◯` is definable from the intuitionistic connectives** — `Rm = id`
+gives `◯A ≡ A` (route (E), `FRJ/Erase.lean`), `Rm = ≤` gives `◯A ≡ ¬¬A`
+(§15) — and `discrete_of_transparent_of_coneGrounded` says the two meet
+only in the discrete case.  What is open is exactly `id ⊊ Rm ⊊ ≤`.
+
+Every test of REACH therefore has to live strictly between the two
+collapses.  The RN(◯,{}) bank does, and provably so: closed IPC formulas
+are each provable or refutable, so under `◯ := ¬¬` the whole variable-free
+fragment collapses to two classes, while RN(◯,{}) has at least sixteen.
+Every RN separation needs `Rm ⊊ ≤`.
 
 ## 6. Test scaffolding
 
@@ -259,18 +296,33 @@ currently unreported). Bench mode compares against the current `frjsat`
 on the same corpus: the acceptance criterion for the rewrite is
 order-of-magnitude, not percentage.
 
-## 7. Milestones
+## 7. Milestones — reordered per comment C, with status
 
-1. **Index + bitmask contexts** inside the existing engine; corpus must
-   stay 31 pass / 5 control-ok, wall clock drops. (Half a day.)
-2. **Demand-driven joins** (§4.2) replacing `famsUpTo`; same corpus,
-   plus the ◯-free regression corpus from §6.1. This is the change that
-   matters. (A day.)
-3. **Given-clause loop** (Layer 1 incremental). (Half a day.)
-4. **`partial def` backward searcher** (Layer 2) with memo + budget, and
-   `findBounded`'s remaining-fuel convention. (A day.)
-5. **Harness**: four oracles, differential runner, bench, cap reporting,
-   verdict vocabulary fixed. (A day, overlappable with 1–4.)
+Generation first, aimed at the RN(◯,{}) ladder, because that is where the
+engine does mathematics rather than regression.
+
+1. **The bridge** `FRJ/Bridge.lean` — `PLLFormula ≅ Form`, every
+   `FRJ.Kripke` is a `PLLND.ConstraintModel`, and hence an FRJ(◯)
+   derivation refutes the ORIGINAL judgment
+   (`not_derivable_of_provable`, `not_entails_of_countermodel`).
+   Choice-free; `force_toConstraint` is axiom-free.  **DONE.**
+2. **The oracle bank** `wip/rnBank.lean`, generated from the certified
+   dictionary by `tools/rn-bank-gen.sh`: 323 cells tagged `proved` (236),
+   `refuted` (4), `open` (83), two search goals each.  **DONE.**
+3. **The harness** `lake exe rnfrj`, grading every cell against what the
+   repository already knows, with the standing verdict vocabulary and an
+   `--engine=fast|ref` differential switch.  **DONE.**
+4. **The fast engine** `FRJ/Search/Fast.lean` (§4.3).  **DONE**, 6–10×,
+   verdicts identical to the frozen reference.
+5. **Pinning** `FRJ/Search/Pin.lean` + `lake exe rnpin`: extract the model
+   the derivation builds, minimise it greedily, emit it as Lean source, and
+   re-check by `decide`.  **DONE** — 13-world extractions minimise to 5–8
+   worlds, which is what makes the kernel check affordable.
+6. **Run the bank; pin every hit.**  IN PROGRESS — see §9.
+7. Iterative deepening on join arity for the cells still open at budget;
+   `partial def` if the arity loop needs it.
+8. Stratified frontier generation beyond the dictionary (the standing four
+   directions), once the ladder work is banked.
 
 ## 8. Risks
 
@@ -287,3 +339,74 @@ order-of-magnitude, not percentage.
   search layer thin over `FRJ/Calculus.lean` so a rule change is a local
   edit, and keep every row derivation-carrying so a rule change cannot
   silently invalidate results.
+
+## 9. Results — the stack, end to end, on the oracle bank
+
+Built and run 2026-08-18.  Every number below is measured, not projected.
+
+### 9.1 The stack
+
+    PLLFormula ─ FRJ/Bridge.lean ──────────→ FRJ.Form, FRJ.Kripke
+      (original)   ofPLL / toPLL, isomorphic       (the calculus's own)
+                   Kripke.toConstraint, force agrees
+                   ⟹ a derivation refutes the ORIGINAL judgment
+
+    wip/rnDict.lean ─ tools/rn-bank-gen.sh ─→ wip/rnBank.lean
+      (certified dictionary)                    323 cells, tagged
+
+    wip/rnBank.lean ─ lake exe rnfrj ────────→ graded verdicts
+      --engine=fast|ref, four oracles, standing verdict vocabulary
+
+    FRJ/Search/Engine.lean  (frozen reference, ported from wip/frj_sat.lean)
+    FRJ/Search/Fast.lean    (cliques + hoisting + incrementality)
+
+    hit ─ lake exe rnpin ───────────────────→ model, minimised, as source
+    FRJ/Search/Pin.lean: Tab, okB, toKripke, restrict, minimise, render
+
+    tools/rn-cert-asm.py ──────────────────→ wip/rnFRJCerts.lean
+      decide the frame, decide the refutation, ¬ Interd by the bridge
+
+### 9.2 Speed
+
+| goal | reference | fast | ratio |
+|---|---|---|---|
+| the four known-false cells (8 goals) | 16.3 s | 2.7 s | 6.0× |
+| `cAnd_10_13` (the first new refutation) | 164 s | 15.9 s | **10.3×** |
+
+Identical verdicts, identical round counts, identical database sizes.
+
+### 9.3 The oracles
+
+* **Must-not-refute** (236 `proved` cells, kernel-checked `Interd`):
+  **zero** ENGINE-BUGs.
+* **Must-refute** (4 cells known FALSE at ≤4 worlds): **4/4**, all found in
+  the `lhs ⊃ rhs` direction.
+* **Differential** (fast vs frozen reference): **77 cells / 154 goals, zero
+  disagreements**, at cell-verdict and per-goal level.
+* **Degeneracy control**: each emitted model must still force `q1 = ⊤`
+  (`decide`), so a model machinery that made everything false would fail
+  here.  15/15.
+
+### 9.4 The mathematics
+
+Fifteen `open` cells of the RN(◯,{}) dictionary are now **kernel-checked
+FALSE**, sorry-free, `[propext, Quot.sound]` — no `Classical.choice`, no
+`native_decide`:
+
+    cAnd_10_13  cAnd_11_13
+    cOr_8_10   cOr_8_11   cOr_8_12   cOr_8_14
+    cOr_10_12  cOr_10_14  cOr_11_12  cOr_11_14
+    cImp_8_4   cImp_8_5   cImp_10_7  cImp_11_7  cImp_12_11
+
+The extracted models have up to 13 worlds; minimised, **eleven have 5
+worlds and four have 8**.  That is why these cells were open: the
+exhaustive ≤4-world battery cannot reach them, and FRJ(◯)'s model size is bounded by the derivation, not by an
+enumeration bound.  This is the claim "more efficient than brute force"
+discharged on a workload where brute force had already stopped.
+
+Consequence for the dictionary: `docs/rn-dictionary-status.md` records four
+cells at which the fifteen-representative closure fails.  It fails at at
+least **nineteen**.  The failures cluster on `q8`, `q10`, `q11`, `q12`
+against `q4`, `q5`, `q7`, `q12`–`q14`: the same region as the four
+already known, which is evidence that the region is a genuine structural gap in
+the fifteen-representative closure and not an artefact of one cell.

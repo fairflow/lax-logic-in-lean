@@ -1,5 +1,72 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-18 — FRJ◯ search: the stack built end to end, and 15+ RN(◯,{}) cells refuted
+
+Built the design of `docs/frjo-search-design.md` (§9 now records the
+measured results).  Matthew's steer set the order: RN bridge first,
+`PLLFormula` primary and FRJ's `Form` derived, "much more depends on the
+original design than on the FRJ◯ one".
+
+**`FRJ/Bridge.lean` (new).**  `ofPLL`/`toPLL` mutually inverse
+(`[propext]`), and the forgetful `Kripke.toConstraint` with
+
+    force_toConstraint : K.toConstraint.force w φ ↔ K.force w (ofPLL φ)
+
+**axiom-free**.  Hence `not_entails_of_countermodel`: an FRJ(◯) model
+refutes the ORIGINAL `LaxND` judgment, not a private copy of it.  When
+the two syntaxes are merged, these lemmas become a renaming.
+
+**The engine.**  `wip/frj_sat.lean` is FROZEN as the reference
+implementation and differential oracle; it was ported verbatim into
+`FRJ/Search/Engine.lean`.  `FRJ/Search/Fast.lean` is the fast engine.
+Three exact optimisations, no change of semantics:
+
+1. (J1) is a conjunction over ORDERED PAIRS, so admissible families are
+   exactly the CLIQUES of `compatI` — `cliquesLe` prunes at every
+   extension instead of filtering `C(|IS|, ≤jmax)` subsets;
+2. `j1j2Check` runs once per promise family, not once per consumer;
+3. given-clause incrementality — a round only forms joins touching a
+   sequent new since the previous round.
+
+Measured: **6× on the four known-false cells, 10.3× on the hardest
+(164 s → 15.9 s)**.  Differential against the frozen reference over
+every cell it completed: **77 cells / 154 goals, ZERO disagreements**,
+cell-verdict and per-goal.
+
+**The pinning path.**  `FRJ/Search/Pin.lean`: `Tab` (frame as boolean
+tables), `okB` decidable, `toKripke`, and `minimise` — greedy world
+deletion, root self-protecting.  Extracted models have 13 worlds;
+minimised, **5 to 8**, which is what makes kernel `decide` affordable.
+
+**The result.**  `wip/rnBank.lean` (generated from `wip/rnDict.lean` by
+`tools/rn-bank-gen.sh`) carries all 323 dictionary cells tagged
+proved/refuted/open.  Sweeping it with `lake exe rnfrj --engine=fast`:
+
+* must-not-refute (236 certified `Interd` cells): **0 ENGINE-BUGs**;
+* must-refute (4 cells known FALSE): **4/4**;
+* **15+ `open` cells REFUTED** — new mathematics, not a regression test.
+
+Fifteen are kernel-checked in `wip/rnFRJCerts.lean`, sorry-free,
+each `[propext, Quot.sound]` — no `Classical.choice`, no
+`native_decide` — with a degeneracy control (the same model must still
+force `q1 = ⊤`) per certificate.
+
+These cells were open because the exhaustive ≤4-world battery cannot
+reach a 5–8-world countermodel.  FRJ(◯)'s model size is bounded by the
+derivation, not by an enumeration bound: that is "more efficient than
+brute force" discharged on a workload where brute force had stopped.
+
+NOTE for `docs/rn-dictionary-status.md`: it records FOUR cells at which
+the fifteen-representative closure fails.  It fails at at least
+nineteen.  The new failures cluster on `q8`,`q10`,`q11`,`q12` — the
+same region as the four already known.
+
+Design doc comments A/B/C answered in place: §4.3 is now one FORWARD
+layer (the backward-search proposal is retracted, with reasons); §5
+records `circ_iff_nn` — on infallible `Rm = ≤` models `◯A ↔ ¬¬A`, so
+that oracle class is a control, not a discriminator, and the open
+region is `id ⊊ Rm ⊊ ≤`; §7 reordered so the RN ladder came first.
+
 ## 2026-08-18 — FRJ◯ as a countermodel SEARCH engine: review + design
 
 `docs/frjo-search-design.md` (new, shareable).  Task: use the sound
