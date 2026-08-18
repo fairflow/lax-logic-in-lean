@@ -30,12 +30,66 @@ The 87 split two ways, and the distinction matters:
 * **83 OPEN** — neither proved by either searcher nor refuted by the
   exhaustive ≤4-world battery. These are the target list.
 
-The four refutations are the reason `rnDict15` is **not completable at
+## UPDATE 2026-08-18 — sixteen more cells refuted, by FRJ(◯) search
+
+The four rows above were found by an exhaustive ≤4-world battery, which
+is why the other 83 stayed open: their countermodels are larger than
+four worlds. A sound FRJ(◯) forward search (`FRJ/Search/`, driven over
+this dictionary by `lake exe rnfrj`) builds a model FROM the derivation,
+so its model size is bounded by the derivation rather than by an
+enumeration bound. Run over all 323 cells it settled **sixteen** more —
+each pinned as a kernel-checked countermodel in `wip/rnFRJCerts.lean`,
+sorry-free, `[propext, Quot.sound]`, models of **5 or 8 worlds**:
+
+| cell | refuted claim | model | closure |
+|---|---|---|---|
+| `cAnd_10_13` | `q10 ∧ q13 ⊣⊢ q10` | 5 | **FAILS** (last candidate) |
+| `cImp_8_4`   | `q8 ⊃ q4 ⊣⊢ q5`    | 5 | **FAILS** (last candidate) |
+| `cImp_8_5`   | `q8 ⊃ q5 ⊣⊢ q5`    | 5 | **FAILS** (last candidate) |
+| `cImp_10_7`  | `q10 ⊃ q7 ⊣⊢ q7`   | 5 | **FAILS** (last candidate) |
+| `cImp_11_7`  | `q11 ⊃ q7 ⊣⊢ q7`   | 5 | **FAILS** (last candidate) |
+| `cAnd_11_13` | `q11 ∧ q13 ⊣⊢ q1`  | 5 | narrowed to {q11, q13} |
+| `cOr_8_10`   | `q8 ∨ q10 ⊣⊢ q1`   | 8 | narrowed to {q11, q13} |
+| `cOr_8_11`   | `q8 ∨ q11 ⊣⊢ q1`   | 8 | narrowed to {q11, q13} |
+| `cOr_8_12`   | `q8 ∨ q12 ⊣⊢ q1`   | 5 | narrowed to {q11, q13} |
+| `cOr_8_14`   | `q8 ∨ q14 ⊣⊢ q1`   | 5 | narrowed to {q11, q13} |
+| `cOr_10_12`  | `q10 ∨ q12 ⊣⊢ q1`  | 5 | narrowed to {q11, q13} |
+| `cOr_10_14`  | `q10 ∨ q14 ⊣⊢ q1`  | 8 | narrowed to {q11, q13} |
+| `cOr_11_12`  | `q11 ∨ q12 ⊣⊢ q1`  | 5 | narrowed to {q11, q13} |
+| `cOr_11_14`  | `q11 ∨ q14 ⊣⊢ q1`  | 8 | narrowed to {q11, q13} |
+| `cImp_12_11` | `q12 ⊃ q11 ⊣⊢ q1`  | 5 | narrowed to {q11, q13} |
+| `cBox_11`    | `◯q11 ⊣⊢ q1`       | 5 | narrowed to {q11, q13} |
+
+**The distinction in the last column is the one to keep.** An open cell
+is sorried at the FIRST open candidate of its candidate list, so
+refuting the stated collapse eliminates ONE candidate. It closes the
+cell only when that candidate was the last. So:
+
+* the closure now **fails at nine cells**, not four: the original four
+  plus the five marked FAILS above;
+* the other eleven are **narrowed, not settled** — all had candidates
+  [1, 11, 13] and are refuted at `q1` only.
+
+All sixteen statements in `wip/rnDict.lean` are therefore FALSE, and
+their `sorry`s are hazards: anything depending on one proves `False`.
+The standing guard covers this — `#print axioms rndSet` / `fullSet` are
+`#guard_msgs`-pinned in `Rewrite/Catalogue.lean`, and none of the
+sixteen is referenced anywhere in `Rewrite/` (re-checked 2026-08-18).
+**87 unproved cells, of which 20 are now REFUTED and 67 OPEN.** Of the
+67, twenty-four stopped at budget rather than at a fixpoint and are
+frontier markers, not settled cells.
+
+Engine hygiene, for the record: zero ENGINE-BUGs over the 236 certified
+cells (the engine never derived against a kernel-checked `Interd`), 4/4
+on the cells already known false, and zero disagreements against the
+frozen reference implementation over 77 cells / 154 goals.
+
+The refutations are the reason `rnDict15` is **not completable at
 these fifteen representatives**, and they are consistent with the
 closed-fragment catalogue: the variable-free fragment does not
 collapse at any crank ≤ 7 (`docs/pcll-closed-fragment-catalogue.md`),
 so no *finite* dictionary closes it. A 15-class closure table was
-always going to break somewhere; these four cells are where.
+always going to break somewhere; these cells are where.
 
 ## The defect this exposed in the simpset
 
