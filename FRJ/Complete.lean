@@ -424,6 +424,70 @@ theorem ht_lt {K : Kripke} {a b : K.W} (hab : K.le a b) (hne : b ≠ a) :
     exact ⟨hab, hne⟩
   · simp
 
+/-! ## A maximal world above a given one
+
+Needed to re-found the completeness recursion: at a `≤`-maximal world
+every `∀ u ≥ ·` collapses, `Λ*` is circ-free, and forcing is classical,
+so the whole tagged layer runs there with the barren joins alone. -/
+
+/-- A `≤`-maximal world above `a`, as DATA. -/
+structure MaxAbove (K : Kripke) (a : K.W) : Type where
+  m : K.W
+  le : K.le a m
+  max : ∀ u, K.le m u → u = m
+
+/-- Every world has one: walk strictly up, which lowers `ht`.  Choice-free
+— each step is a search over the model's own enumeration. -/
+def maxAbove (K : Kripke) (a : K.W) : MaxAbove K a :=
+  match hc : K.elems.filter (fun u => decide (K.le a u ∧ ¬(u = a))) with
+  | [] =>
+      { m := a, le := K.le_refl a
+        max := fun u hu => by
+          by_contra hne
+          have hmem : u ∈ K.elems.filter (fun u => decide (K.le a u ∧ ¬(u = a))) :=
+            List.mem_filter.mpr ⟨K.complete u, by simp [hu, hne]⟩
+          rw [hc] at hmem
+          exact List.not_mem_nil hmem }
+  | u :: _ =>
+      have hu : u ∈ K.elems.filter (fun u => decide (K.le a u ∧ ¬(u = a))) := by
+        rw [hc]; exact List.mem_cons_self
+      have hz : K.le a u ∧ ¬(u = a) := by
+        have := (List.mem_filter.mp hu).2
+        simpa using this
+      have r := maxAbove K u
+      { m := r.m, le := K.le_trans hz.1 r.le, max := r.max }
+termination_by ht K a
+decreasing_by exact ht_lt hz.1 hz.2
+
+/-- An `Rm`-maximal world in the modal cone of `a`. -/
+structure MaxRm (K : Kripke) (a : K.W) : Type where
+  m : K.W
+  rm : K.Rm a m
+  cone : K.ConeTrivial m
+
+/-- Walking up the modal cone terminates for the same reason: `Rm ⊆ ≤`,
+so a proper modal step is a proper `≤`-step and `ht` drops. -/
+def maxRmAbove (K : Kripke) (a : K.W) : MaxRm K a :=
+  match hc : K.elems.filter (fun u => decide (K.Rm a u ∧ ¬(u = a))) with
+  | [] =>
+      { m := a, rm := K.rm_refl a
+        cone := fun c hcr => by
+          by_contra hne
+          have hmem : c ∈ K.elems.filter (fun u => decide (K.Rm a u ∧ ¬(u = a))) :=
+            List.mem_filter.mpr ⟨K.complete c, by simp [hcr, hne]⟩
+          rw [hc] at hmem
+          exact List.not_mem_nil hmem }
+  | u :: _ =>
+      have hu : u ∈ K.elems.filter (fun u => decide (K.Rm a u ∧ ¬(u = a))) := by
+        rw [hc]; exact List.mem_cons_self
+      have hz : K.Rm a u ∧ ¬(u = a) := by
+        have := (List.mem_filter.mp hu).2
+        simpa using this
+      have r := maxRmAbove K u
+      { m := r.m, rm := K.rm_trans hz.1 r.rm, cone := r.cone }
+termination_by ht K a
+decreasing_by exact ht_lt (K.sub_mi hz.1) hz.2
+
 /-! ## The minimal `η`
 
 The paper's "without loss of generality" choice of a world `η ≥ α` with

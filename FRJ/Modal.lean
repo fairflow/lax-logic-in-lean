@@ -280,12 +280,11 @@ example :
 /-! ### Screen 6 (2026-08-18) — the cone-grounded completeness fires off
 the discrete frame
 
-`completeness_of_rmFull_of_circFreeL` is unconditional, but it would say
-nothing new if its two hypotheses only ever met on discrete frames.  They
-do not.  The model below is `Rm = ≤`, has a strictly non-trivial order,
-and refutes a goal carrying `◯` — so the theorem delivers a derivation
-where neither the `◯`-free completeness nor `completeness_of_discrete`
-applies. -/
+`completeness_of_rmFull` would say nothing new if `Rm = ≤` only ever met
+a non-trivial order on discrete frames.  It does not.  The model below is
+`Rm = ≤`, has a strictly non-trivial order, and refutes a goal carrying
+`◯` — so the theorem delivers a derivation where neither the `◯`-free
+completeness nor `completeness_of_discrete` applies. -/
 
 /-- `branch` with `q` nowhere: root `bot` below incomparable `l` (forcing
 `p`) and `r` (forcing nothing); `Rm = ≤`; infallible. -/
@@ -332,11 +331,99 @@ supply hypothesis — and the conclusion agrees with the pinned hand
 derivation `provable_circ_peirce`. -/
 theorem provable_circ_peirce_via_coneGrounded :
     Provable (.imp (.imp (.circ (.atom "p")) (.atom "q")) (.atom "q")) :=
-  completeness_of_rmFull_of_circFreeL branchP_rmFull (by decide) branchP_refutes
+  completeness_of_rmFull branchP_rmFull branchP_refutes
 
 /-- info: 'FRJ.Screen.provable_circ_peirce_via_coneGrounded' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provable_circ_peirce_via_coneGrounded
+
+/-! ### Screen 7 (2026-08-18) — off BOTH special shapes of `Rm`
+
+Screens 1–6 all run on `Rm = ≤` or on `Rm = id`.  Those two shapes are
+special enough that a completeness theorem restricted to them says little
+about `◯`.  `completeness_of_endpoints` asks instead for one modal
+property — every cone contains a `≤`-maximal world — and nothing about
+the shape of `Rm`.  The model below is a witness that the property is
+strictly weaker: its `Rm` is a proper reflexive-transitive subrelation of
+`≤`, equal to neither `id` nor `≤`, and the goal carries `◯` on the left,
+so none of `completeness_of_discrete`, `completeness_of_rmFull_*` or the
+transparent route of `FRJ/Erase.lean` applies. -/
+
+/-- The modal relation of `narrow`: the root sees `l` and itself, the two
+upper worlds see only themselves.  `bot Rm r` is ABSENT although
+`bot ≤ r`. -/
+def rmN : W3 → W3 → Bool
+  | .bot, .bot => true
+  | .bot, .l   => true
+  | .l,   .l   => true
+  | .r,   .r   => true
+  | _,    _    => false
+
+/-- `branchP`'s order and valuation with the modal relation cut down to
+`rmN`. -/
+abbrev narrow : Kripke where
+  W := W3
+  elems := [.bot, .l, .r]
+  complete := by intro w; cases w <;> simp
+  decEq := inferInstance
+  le := fun a b => le3 a b = true
+  le_refl := by intro a; cases a <;> rfl
+  le_trans := by intro a b c h₁ h₂; cases a <;> cases b <;> cases c <;> simp_all [le3]
+  le_antisymm := by intro a b h₁ h₂; cases a <;> cases b <;> simp_all [le3]
+  Rm := fun a b => rmN a b = true
+  rm_refl := by intro a; cases a <;> rfl
+  rm_trans := by intro a b c h₁ h₂; cases a <;> cases b <;> cases c <;> simp_all [rmN]
+  sub_mi := by intro a b h; cases a <;> cases b <;> simp_all [rmN, le3]
+  root := .bot
+  root_le := by intro a; cases a <;> rfl
+  V := fun w s => w = .l ∧ s = "p"
+  V_mono := by intro w v h s hs; cases w <;> cases v <;> simp_all [le3]
+  Fal := fun _ => False
+  fal_mono := fun _ h => h
+  fal_V := fun h => h.elim
+  decLe := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decV := fun _ _ => inferInstanceAs (Decidable (_ ∧ _))
+  decRm := fun _ _ => inferInstanceAs (Decidable (_ = true))
+  decFal := fun _ => isFalse (fun h => h)
+
+/-- Not `Rm = ≤`: the root does not modally see `r`. -/
+example : ¬ (∀ a b : narrow.W, narrow.le a b → narrow.Rm a b) :=
+  fun h => Bool.noConfusion (h .bot .r rfl)
+
+/-- Not `Rm = id`: the root modally sees `l`. -/
+example : ¬ (∀ a u : narrow.W, narrow.Rm a u → u = a) :=
+  fun h => W3.noConfusion (h .bot .l rfl)
+
+/-- Not discrete either. -/
+example : ¬ (∀ a u : narrow.W, narrow.le a u → u = a) :=
+  fun h => W3.noConfusion (h .bot .l rfl)
+
+/-- Every cone contains an endpoint: the root sees the maximal `l`, and
+`l`, `r` are maximal and see themselves. -/
+def narrow_endpoints : narrow.Endpoints
+  | .bot => ⟨.l, rfl, by intro u hu; cases u <;> simp_all [le3]⟩
+  | .l   => ⟨.l, rfl, by intro u hu; cases u <;> simp_all [le3]⟩
+  | .r   => ⟨.r, rfl, by intro u hu; cases u <;> simp_all [le3]⟩
+
+/-- The goal carries `◯` in a LEFT position, so the `◯`-free-left
+instance does not cover it. -/
+example : ¬ (∀ X ∈ sfL (Form.imp (.circ (.atom "p")) (.atom "q")),
+    X.isCirc = false) := by decide
+
+/-- It refutes `◯p ⊃ q` at the root: `l` forces `◯p` (it sees itself and
+forces `p`) but refutes `q`. -/
+theorem narrow_refutes :
+    ¬ narrow.force narrow.root (.imp (.circ (.atom "p")) (.atom "q")) := by decide
+
+/-- **The general theorem fires** on a frame that is none of the special
+shapes, with `◯` on the left of the goal and no supply hypothesis. -/
+theorem provable_circ_imp_via_endpoints :
+    Provable (.imp (.circ (.atom "p")) (.atom "q")) :=
+  completeness_of_endpoints narrow_endpoints narrow_refutes
+
+/-- info: 'FRJ.Screen.provable_circ_imp_via_endpoints' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_circ_imp_via_endpoints
 
 end Screen
 
