@@ -117,3 +117,72 @@ cannot change what is proved. The generalisation pass (`rfl` → `_`, keep
 what builds) is a separate, cheap, and highly informative second move —
 it is what turns "the slime is gone" into a measurement of what the slime
 was costing. Run both, in that order, and record the split.
+
+---
+
+## 7. `nf` is ours, not the paper's — and the replacement is extensional
+
+*Added 2026-08-18 after Matthew questioned whether `nf` is needed at all.*
+
+**The paper has no normal form.** `frj-corr.tex` line 674: *"Capital Greek
+letters `Γ`, `Σ`, … denote **sets of formulas**"*. `normalis|canonical`
+occurs **zero** times in its 6 682 lines.
+
+**`nf` is ours**, added by `c78c121` (16 Aug), *"canonical contexts —
+`nf`, the piece the conversion was missing"*. Its own message names the
+cause:
+
+> …on List it is not, since `++` is neither commutative nor idempotent.
+> Nor is there a transport: "same members ⇒ same derivations" is FALSE
+> here, **because `Ax^I` pins its own Θ** … so no derivation exists at a
+> permuted Θ.
+
+"`Ax^I` pins its own Θ" is green slime, named as the cause. So the chain
+is: slime → the Finset→List conversion stalls at Lemma 6.3 → `nf`
+invented to force the computed forms to coincide.
+
+### The conversion itself was right, for an independent reason
+
+Finset was ditched because it carries choice, and that stands on its own.
+Measured:
+
+| | axioms |
+|---|---|
+| `List.Mem`, `List.elem`, `List.filter` | **none at all** |
+| `List.instDecidableMemOfLawfulBEq` | `[propext]` |
+| `FRJ.nf` | `[propext]` |
+| `Finset.instUnion`, `Finset.erase`, `Finset.image` | `[propext, Classical.choice, Quot.sound]` |
+
+So: the move to `List` was correct and remains correct. `nf` was the
+wrong *way* to do it — a canonical-representative device standing in for
+set equality, forced by an encoding defect rather than chosen.
+
+### The replacement
+
+Plain list equality will hit the same wall: Lemma 6.3 splits a given zone
+`Θ₁` as `Θ ∪ Λ`, which on Finset was a literal index equality
+(`Finset.sdiff_union_of_subset`) and on lists is not. The faithful
+replacement is **extensional**:
+
+    (hTh : ∀ x, x ∈ Θ' ↔ x ∈ Θ ++ Λ)      -- instead of  Th' = nf G (…)
+
+which is what "denote sets of formulas" actually says, makes the Θ-split
+a membership argument exactly as the paper argues it, leaves `nf` with no
+job, and is choice-free by construction (`List.Mem` has no axioms).
+
+**This was impossible while the index was pinned**: an extensional side
+condition is useless if the constructor forces a literal `Θ`. Desliming
+is precisely what makes it available.
+
+### Scope
+
+`nf` has 116 mentions across eight modules (Saturate 34, Minimal 25,
+Basic 16, Step 16, Calculus 8, Fallible 8, Sound 7, Audit 2). A probe
+that dropped `nf` from the three irregular rules left `Calculus.lean`
+compiling — the change is coherent — and failed at the first downstream
+module; the rest were not reached.
+
+Recommended order: convert `Ax^I` alone to the extensional form and
+confirm the Θ-split of Lemma 6.3 goes through before touching the rest.
+That is the step that would close possibility (2) of §5 — that
+completeness holds of a weaker judgment than the paper's.
