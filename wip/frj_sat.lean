@@ -696,6 +696,8 @@ def corpus : List Cell := [
     "the Ax^I◯ witness: was the standing flag (the ◯∉ cycle); the bare-final-world seed unlocks it; pinned hand cell provable_nn_circ_bot"⟩,
   ⟨"nnn_circ_bot", .imp (.imp (.imp (.circ .bot) .bot) .bot) .bot, false,
     "≡ ¬◯⊥ intuitionistically; the deeper-nesting twin"⟩,
+  ⟨"circ_neg_circ_bot", .circ (.imp (.circ .bot) .bot), false,
+    "◯¬◯⊥ — the SEPARATOR (wip/frame_need.lean): valid on every endpoint-seeing model and on every Rm = Ri model, so completeness_of_endpoints can never reach it; the calculus must derive it all the same"⟩,
   ⟨"circ_or_split", .imp (.circ (.or fp fq)) (.or (.circ fp) (.circ fq)), false,
     "Screen 2 (FRJ/Modal.lean): branch refutes it"⟩,
   -- W4 pledge-stress cells (2026-08-17): ◯-goals with compound bodies,

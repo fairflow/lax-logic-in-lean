@@ -1308,3 +1308,88 @@ all, is what the theory should ask for, and the route he proposes is
 completeness for constraint interpretations of `◯` (F&M, *Solution to
 Curry's Problem*, TYPES 2000, Thm 6: `PLL ⊢ φ` iff `IPL ⊢ φ^C` for every
 standard constraint `C`). That is the next statement to test.
+
+---
+
+## §17 Are the modal relations needed? Three separators (2026-08-18)
+
+Matthew's question, distinct from FRJ◯ completeness: is the generality of
+`Rm` — an arbitrary reflexive-transitive subrelation of `Ri` — actually
+NECESSARY, or would some restricted family of shapes already give
+completeness for PLL? It has an exact form. For a class `𝒞` of models,
+exhibit `φ` with
+
+    (a)  ∀ M ∈ 𝒞, M ⊨ φ        (b)  ¬ PLL ⊢ φ
+
+Then completeness fails for `𝒞`, so the models outside `𝒞` are needed.
+Soundness (`PLLND.soundness_valid`) turns (b) into one countermodel.
+
+### Discovery
+
+A sweep over every model on ≤ 3 worlds — all posets, all
+reflexive-transitive `Rm ⊆ Ri`, all hereditary `F` and `V` — 1035 models
+against 274 formulas of size ≤ 5 over one atom, keeping the formulas
+refuted somewhere in the full class and nowhere in the restricted one.
+Discovery only; every winner is proved below. Script:
+`scratchpad/framescan.py`.
+
+### The three separators (`wip/frame_need.lean`)
+
+| class | separator | pins |
+|---|---|---|
+| `Rm = id` (transparent) | `◯p ⊃ p` | `[propext, Quot.sound]` |
+| `Rm = Ri` | `◯¬◯⊥` | `[propext, Classical.choice, Quot.sound]` |
+| endpoint-seeing | `◯¬◯⊥` | `[propext, Quot.sound]` |
+
+`◯p ⊃ p` is immediate: on a transparent model `◯φ` and `φ` are the same
+proposition (`force_somehow_iff_of_transparent`).
+
+`◯¬◯⊥` is the interesting one, and it is CLOSED. Two independent
+validity proofs, because `Rm = Ri` does not imply endpoint-seeing for
+infinite models:
+
+* **endpoint-seeing.** At a `≤`-maximal `m` the modal successor cannot
+  leave the world, so `◯φ ⊃ φ` holds there for EVERY `φ`
+  (`force_circ_imp_of_maximal`). Every cone contains such an `m`, so
+  every instance of `◯(◯φ ⊃ φ)` is valid; `φ = ⊥` is the closed one.
+* **`Rm = Ri`.** Given `v`, either `v ⊩ ¬◯⊥` and `v` is its own witness,
+  or some `t ≥ v` forces `◯⊥` while refuting `⊥` — and `t ⊩ ◯⊥` applied
+  at `t` itself hands over a FALLIBLE world above `t`, which forces
+  everything, `¬◯⊥` included.
+
+The countermodel is shared: the 3-chain `a < b < c` with `c` fallible and
+`Rm = id ∪ {(b,c)}`. Then `b ⊩ ◯⊥` (it modally sees `c`) while `b ⊮ ⊥`,
+so `a ⊮ ¬◯⊥`; and the modal cone of `a` is `{a}`, so `a ⊮ ◯¬◯⊥`. That
+frame is transparent nowhere, is not `Rm = Ri`, and `a` sees no maximal
+world.
+
+### What this says about §16
+
+`completeness_of_endpoints` is a PROPER restriction, and now provably so.
+`◯¬◯⊥` is a PLL non-theorem all of whose countermodels lie OUTSIDE the
+endpoint-seeing class, so no amount of work on that route can settle it:
+the theorem is silent on it by construction. This is the exact price of
+the frame hypothesis, and it is what Matthew's objection was pointing at.
+
+The calculus itself is untroubled: added as corpus cell
+`circ_neg_circ_bot`, `frjsat` derives `◯¬◯⊥` in 4 rounds (RS=4, IS=3),
+and the ablation re-run shows it needs the FALLIBLE joins and not the
+promise joins — consistent with §16.
+
+    corpus now 33 cells
+    no promise joins        : derived 27/33; lost vs baseline: NONE
+    no promise, no fallible : derived 20/33; lost: neg_circ_bot, circ_imp,
+                              nnn_circ_bot, circ_neg_circ_bot, circ_or_split,
+                              circ_circ_imp, circ_ante_circ_goal
+
+### Next
+
+The three separators are the cheap cut: they show each named restriction
+is proper. The strong form of the question — that a good proportion of
+ALL `Rm`-shapes are needed — wants a Jankov–Fine characteristic formula
+`χ_M` for each finite rooted reduced constraint model, refuted by `M` and
+valid on every model not containing `M` as a p-morphic image. The
+reduction is already in `Reject/Reduce.lean` (`RmEq`, `qModel`, `qBisim`,
+`rrank`), and `lemma9` of `LaxLogic/PLLCtxCompleteness.lean` (the ℕ-model
+plus shift bisimulation behind Corollary 10, "no FINITE set of standard
+constraints is complete") is the template for the validity half.
