@@ -1,8 +1,10 @@
 # The tools, and when to run each
 
-All three were built during the FRJ campaign because their absence cost
-real time. They live in `lax-logic-in-lean`; `Meta/` imports nothing but
-`Lean`, so it can be copied into any Lean project as-is.
+The first three were built during the FRJ campaign because their absence
+cost real time; `#deslime` was built after it, when the campaign's worst
+structural problem turned out to have had no check at all. They live in
+`lax-logic-in-lean`; `Meta/` imports nothing but `Lean`, so it can be
+copied into any Lean project as-is.
 
 ## `paper-skeleton` — Stage 0/1
 
@@ -92,3 +94,30 @@ slip in a pin is a silent hole in the machine-checked mandate.
 
 Do not guess at a dirty pin. Twice in one campaign the choice was in a
 tool rather than an argument, and the guess was wrong both times.
+
+
+---
+
+## `#deslime` — computed indices in constructor return types
+
+    import Meta
+    #deslime FRJ.FRJr FRJ.FRJi
+
+Defined in `Meta/Deslime.lean` (imports `Lean` only). Reports, per
+constructor of an indexed inductive family, which indices of its
+**conclusion** are computed and which head symbol computes them; lists
+the clean constructors by name. Warns when anything is slimed, `logInfo`
+otherwise. It never fails a build.
+
+**Run it at stage 2, before proving anything over the family.** A slimed
+family cannot be case-analysed, so every later proof is fought across
+transports the unifier will not discharge — and the usual response is to
+bend the statement until the computed forms coincide, which is a fidelity
+failure invisible to a green build.
+
+Run a **control** first — a family you already believe clean, e.g.
+`PLLND.LaxND` (0 of 12). A checker that flags everything tells you
+nothing. `Nat` offsets (`n + 1`) are inert by design, so height-indexed
+families come out clean.
+
+Full rationale, the fix, and the repo-wide census: `green-slime.md`.

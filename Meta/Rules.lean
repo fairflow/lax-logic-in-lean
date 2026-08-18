@@ -87,7 +87,7 @@ private def figure (family : List Name) (ctor : Name) : MetaM String := do
       else if premLine.length ≤ 100 then premLine.length
       else premises.foldl (fun w p => max w p.length) 0
     let width := min 100 (max concl.length premWidth)
-    let bar := "    " ++ String.mk (List.replicate (width + 2) '─') ++ "\n"
+    let bar := "    " ++ String.ofList (List.replicate (width + 2) '─') ++ "\n"
     let mut out := s!"\n{ctor.getString!}\n{premBlock}{bar}    {concl}\n"
     unless data.isEmpty do
       out := out ++ "    for  " ++ String.intercalate ",  " data.toList ++ "\n"

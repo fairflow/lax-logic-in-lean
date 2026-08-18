@@ -22,6 +22,7 @@ was already installed:
 | a statement's text | parse the source | read the compiled PDF |
 | where an axiom enters | guess from the proof | `#choice_path` |
 | whether a rule matches the paper | read the Lean and squint | `#rules` |
+| whether a judgment is slimed | eyeball the constructors | `#deslime` |
 
 And the corollary: **your own success check can lie.** A run reporting
 "0 items unextracted" sat beside two rows of raw LaTeX, because the check
@@ -34,7 +35,7 @@ output as a reader would, or get a human to.
 |---|---|---|---|
 | **0** | Find the paper. State the requirement as a *capability*, not a shape. Get the source, not the PDF. **Read the appendix** — page limits push load-bearing detail there. | `tools/paper-skeleton` | the architectures that exist are reported, not just the first hit |
 | **1** | The plan document. Numbered results to reproduce, scope and non-scope, fidelity skeleton, empty divergence log, which existing repo results may be consumed read-only. | `paper-skeleton -o plan` + `templates/plan.md` | **Matthew has reviewed it.** No Lean before this. |
-| **2** | Transcribe the rules: one indexed inductive family, one constructor per published rule, side conditions as fields, indices the sequent. | `#rules` vs the paper's figure | every constructor cites a line of the original |
+| **2** | Transcribe the rules: one indexed inductive family, one constructor per published rule, side conditions as fields, indices the sequent. **No computed index in any conclusion.** | `#rules` vs the paper's figure; `#deslime` | every constructor cites a line of the original, and `#deslime` reports 0 |
 | **3** | Prove the paper's results — **screen soundness before proving completeness** (see below). | `#choice_path`, `#axiom_pin` | sorry-free, pins `#guard_msgs`-guarded in an `Audit.lean` |
 | **4** | Extract the procedure. The proofs' termination bounds are routinely unrunnable and are not needed to search. | | a searcher that runs, timed |
 | **5** | A decidable checker for what it finds, with a soundness theorem. | | kernel exemplars replay by `decide` |
@@ -43,7 +44,7 @@ output as a reader would, or get a human to.
 A stage ends when its deliverable is **written down and pushed**, not when
 the build goes green: the next session reads the document, not the build.
 
-## Four constraints, always
+## Five constraints, always
 
 1. **Machine-checked.** PROVED means sorry-free with a pinned
    `#print axioms`. `collectAxioms` is the only sound oracle;
@@ -58,6 +59,13 @@ the build goes green: the next session reads the document, not the build.
 4. **Fidelity.** Transcribe clause by clause. A rule that cannot cite a
    line of the original is invented. Record every divergence *when you
    make it*. → `templates/fidelity.md`
+5. **Slime-free** — no computed index in a constructor's return type.
+   Applies to *every* Lean development, not just calculi. Fix it at
+   transcription time; retrofitting means redoing every proof over the
+   family. Slime does not make a development unsound — it makes the
+   *statements* bend to whatever can be case-analysed, which is worse,
+   because a green build with clean pins cannot show it.
+   → `reference/green-slime.md`
 
 ## Screen soundness before proving completeness
 
@@ -80,6 +88,7 @@ each need a different encoding and each fail differently.
 
 * `reference/tools.md` — the three tools, and exactly when to run each
 * `reference/result-kinds.md` — result-kind triage, per-kind pitfalls
+* `reference/green-slime.md` — computed indices, why they bend statements
 * `reference/choice-free.md` — the checklist, and how to bisect
 * `reference/counterexample-first.md` — screening statements
 * `reference/failure-modes.md` — what went wrong before, and why
@@ -92,9 +101,10 @@ worth reading if it is ever unclear why a local task exists.
 
 ## Tools live in this repository
 
-`Meta/Audit.lean` and `Meta/Rules.lean` import nothing but `Lean`, so they
-can be copied into any Lean project unchanged;
+`Meta/Audit.lean`, `Meta/Rules.lean` and `Meta/Deslime.lean` import
+nothing but `Lean`, so they can be copied into any Lean project unchanged
+— and `#deslime` is worth copying even where no calculus is involved;
 `tools/paper-skeleton/paper_skeleton.py` needs only the standard library,
 plus `pdflatex` and `pdftotext` on the path. To use this skill outside
-`lax-logic-in-lean`, copy those three and adjust the paths in
+`lax-logic-in-lean`, copy those four and adjust the paths in
 `reference/tools.md`.
