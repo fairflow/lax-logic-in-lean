@@ -16,7 +16,7 @@ worlds or more, which is why they were open.  Each one is a cell where the
 fifteen-representative closure of the variable-free fragment FAILS, so each
 adds to the four already recorded in `docs/rn-dictionary-status.md`.
 
-Cells refuted here: 15 — cAnd_10_13, cAnd_11_13, cImp_10_7, cImp_11_7, cImp_12_11, cImp_8_4, cImp_8_5, cOr_10_12, cOr_10_14, cOr_11_12, cOr_11_14, cOr_8_10, cOr_8_11, cOr_8_12, cOr_8_14.
+Cells refuted here: 16 — cAnd_10_13, cAnd_11_13, cBox_11, cImp_10_7, cImp_11_7, cImp_12_11, cImp_8_4, cImp_8_5, cOr_10_12, cOr_10_14, cOr_11_12, cOr_11_14, cOr_8_10, cOr_8_11, cOr_8_12, cOr_8_14.
 -/
 import FRJ.Search.Pin
 import LaxLogic.PLLSemUIFrag
@@ -84,6 +84,35 @@ model machinery that made every formula false would refute everything, so
 this is the cheap check that the refutation above says something. -/
 theorem cm_cAnd_11_13_bwd_control :
     (K_cAnd_11_13_bwd).force (K_cAnd_11_13_bwd).root (ofPLL RNBank.q1) := by decide
+
+/-! ### `cBox_11` — the stated collapse is FALSE (← direction) -/
+
+def cm_cBox_11_bwd : Search.Tab where
+  n := 5
+  root := 0
+  leT := [[true, true, true, true, true], [false, true, true, true, false], [false, false, true, true, false], [false, false, false, true, false], [false, false, false, false, true]]
+  rmT := [[true, false, false, false, false], [false, true, false, false, false], [false, false, true, true, false], [false, false, false, true, false], [false, false, false, false, true]]
+  falT := [false, false, false, true, false]
+  atomsT := [[], [], [], [], []]
+
+theorem cm_cBox_11_bwd_ok : cm_cBox_11_bwd.okB = true := by decide
+theorem cm_cBox_11_bwd_root : cm_cBox_11_bwd.root < cm_cBox_11_bwd.n := by decide
+
+def K_cBox_11_bwd : Kripke := cm_cBox_11_bwd.toKripke cm_cBox_11_bwd_ok cm_cBox_11_bwd_root
+
+set_option maxRecDepth 1000000 in
+theorem cm_cBox_11_bwd_force :
+    ¬ (K_cBox_11_bwd).force (K_cBox_11_bwd).root
+        (ofPLL (.ifThen (RNBank.q1) (RNBank.q11.somehow))) := by decide
+
+theorem cBox_11_FALSE : ¬ PLLND.SemUI.Interd (RNBank.q11.somehow) (RNBank.q1) :=
+  fun h => not_entails_of_countermodel (K_cBox_11_bwd) cm_cBox_11_bwd_force h.2
+
+/-- Control: the model is not degenerate — it still forces `q1 = ⊤`.  A
+model machinery that made every formula false would refute everything, so
+this is the cheap check that the refutation above says something. -/
+theorem cm_cBox_11_bwd_control :
+    (K_cBox_11_bwd).force (K_cBox_11_bwd).root (ofPLL RNBank.q1) := by decide
 
 /-! ### `cImp_10_7` — the stated collapse is FALSE (→ direction) -/
 
@@ -466,6 +495,7 @@ theorem cm_cOr_8_14_bwd_control :
 
 #print axioms cAnd_10_13_FALSE
 #print axioms cAnd_11_13_FALSE
+#print axioms cBox_11_FALSE
 #print axioms cImp_10_7_FALSE
 #print axioms cImp_11_7_FALSE
 #print axioms cImp_12_11_FALSE

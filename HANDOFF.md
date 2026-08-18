@@ -44,9 +44,9 @@ proved/refuted/open.  Sweeping it with `lake exe rnfrj --engine=fast`:
 
 * must-not-refute (236 certified `Interd` cells): **0 ENGINE-BUGs**;
 * must-refute (4 cells known FALSE): **4/4**;
-* **15+ `open` cells REFUTED** — new mathematics, not a regression test.
+* **16 `open` cells REFUTED** — new mathematics, not a regression test.
 
-Fifteen are kernel-checked in `wip/rnFRJCerts.lean`, sorry-free,
+All sixteen are kernel-checked in `wip/rnFRJCerts.lean`, sorry-free,
 each `[propext, Quot.sound]` — no `Classical.choice`, no
 `native_decide` — with a degeneracy control (the same model must still
 force `q1 = ⊤`) per certificate.
@@ -56,10 +56,23 @@ reach a 5–8-world countermodel.  FRJ(◯)'s model size is bounded by the
 derivation, not by an enumeration bound: that is "more efficient than
 brute force" discharged on a workload where brute force had stopped.
 
-NOTE for `docs/rn-dictionary-status.md`: it records FOUR cells at which
-the fifteen-representative closure fails.  It fails at at least
-nineteen.  The new failures cluster on `q8`,`q10`,`q11`,`q12` — the
-same region as the four already known.
+IMPORTANT, and easy to get wrong: an open cell of `wip/rnDict.lean`
+carries a CANDIDATE LIST and is sorried at the FIRST open candidate, so
+a refutation eliminates one candidate and closes the cell only when that
+candidate was the last.  Of the sixteen:
+
+* five have their list exhausted, so the fifteen-representative closure
+  FAILS there — `cAnd_10_13` [10], `cImp_8_4` [5], `cImp_8_5` [5],
+  `cImp_10_7` [7], `cImp_11_7` [7].  With the four already known that is
+  NINE cells at which the closure fails, not four;
+* eleven had candidates [1, 11, 13] and are refuted at `q1` only, so they
+  are NARROWED, not closed.  `--cand=K` was added to `lake exe rnfrj` to
+  attack the survivors; `--cand=1` reproducing all eleven hits is the
+  control that the retarget path is sound.
+
+Also outstanding: of the 67 cells still open, 24 stopped AT BUDGET rather
+than at a fixpoint.  Those are frontier markers and are being re-run at
+`rounds=16 jmax=4 maxRS=maxIS=2000 lamCap=14`, not recorded as settled.
 
 Design doc comments A/B/C answered in place: §4.3 is now one FORWARD
 layer (the backward-search proposal is retracted, with reasons); §5

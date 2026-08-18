@@ -377,19 +377,34 @@ Identical verdicts, identical round counts, identical database sizes.
 
 ### 9.3 The oracles
 
+Full bank, fast engine, base budget (`rounds=10 jmax=3 pmax=2 lamCap=10
+maxRS=maxIS=800`), 323/323 cells, 2081 s wall:
+
+    ENGINE-BUG=0  control-ok=236  pass=4  miss=0
+    NEW-REFUTATION=16  open-still=67
+
 * **Must-not-refute** (236 `proved` cells, kernel-checked `Interd`):
-  **zero** ENGINE-BUGs.
-* **Must-refute** (4 cells known FALSE at ≤4 worlds): **4/4**, all found in
-  the `lhs ⊃ rhs` direction.
-* **Differential** (fast vs frozen reference): **77 cells / 154 goals, zero
-  disagreements**, at cell-verdict and per-goal level.
+  **zero** ENGINE-BUGs.  The engine never produced a typed derivation
+  against a cell the kernel has already proved.
+* **Must-refute** (4 cells known FALSE at ≤4 worlds): **4/4**, no misses.
+* **Differential** (fast vs frozen reference): **77 cells / 154 goals,
+  zero disagreements**, at cell-verdict and per-goal level.
 * **Degeneracy control**: each emitted model must still force `q1 = ⊤`
-  (`decide`), so a model machinery that made everything false would fail
-  here.  15/15.
+  (`decide`), so a machinery that made everything false would fail here.
+  16/16.
+* **Retarget control**: `--cand=1` reproduces all eleven hits whose
+  stated candidate is `q1`, so the candidate-override path agrees with
+  the stated goals.
+
+Of the 67 still open, **24 stopped at budget rather than at a fixpoint**
+and are frontier markers, re-run at raised budget rather than recorded as
+settled.  The remaining 43 reached a fixpoint: no FRJ(◯) derivation
+exists within the relevance restriction, which is evidence for the cell,
+not a proof of it.
 
 ### 9.4 The mathematics
 
-Fifteen `open` cells of the RN(◯,{}) dictionary are now **kernel-checked
+Sixteen `open` cells of the RN(◯,{}) dictionary are now **kernel-checked
 FALSE**, sorry-free, `[propext, Quot.sound]` — no `Classical.choice`, no
 `native_decide`:
 
@@ -397,16 +412,31 @@ FALSE**, sorry-free, `[propext, Quot.sound]` — no `Classical.choice`, no
     cOr_8_10   cOr_8_11   cOr_8_12   cOr_8_14
     cOr_10_12  cOr_10_14  cOr_11_12  cOr_11_14
     cImp_8_4   cImp_8_5   cImp_10_7  cImp_11_7  cImp_12_11
+    cBox_11
 
-The extracted models have up to 13 worlds; minimised, **eleven have 5
+The extracted models have up to 13 worlds; minimised, **twelve have 5
 worlds and four have 8**.  That is why these cells were open: the
-exhaustive ≤4-world battery cannot reach them, and FRJ(◯)'s model size is bounded by the derivation, not by an
-enumeration bound.  This is the claim "more efficient than brute force"
+exhaustive ≤4-world battery cannot reach them, and FRJ(◯)'s model size
+is bounded by the derivation, not by an enumeration bound.  This is the claim "more efficient than brute force"
 discharged on a workload where brute force had already stopped.
 
-Consequence for the dictionary: `docs/rn-dictionary-status.md` records four
-cells at which the fifteen-representative closure fails.  It fails at at
-least **nineteen**.  The failures cluster on `q8`, `q10`, `q11`, `q12`
-against `q4`, `q5`, `q7`, `q12`–`q14`: the same region as the four
-already known, which is evidence that the region is a genuine structural gap in
-the fifteen-representative closure and not an artefact of one cell.
+Consequence for the dictionary — stated carefully, because the cells are
+not all of one kind.  Each open cell of `wip/rnDict.lean` carries a
+CANDIDATE LIST and is sorried at the first open candidate, so refuting
+the stated collapse eliminates one candidate, and closes the cell only
+when that candidate was the last:
+
+* **Candidate list exhausted, so the fifteen-representative closure
+  FAILS** (five new cells, on top of the four already known — nine in
+  all): `cAnd_10_13` [10], `cImp_8_4` [5], `cImp_8_5` [5],
+  `cImp_10_7` [7], `cImp_11_7` [7].
+* **Candidate list narrowed, cell still open** (eleven cells, all with
+  candidates [1, 11, 13], all refuted at `q1`, leaving `q11` and `q13`):
+  `cAnd_11_13`, `cOr_8_10`, `cOr_8_11`, `cOr_8_12`, `cOr_8_14`,
+  `cOr_10_12`, `cOr_10_14`, `cOr_11_12`, `cOr_11_14`, `cImp_12_11`,
+  `cBox_11`.
+
+The failures cluster on `q8`, `q10`, `q11`, `q12` against `q4`, `q5`,
+`q7`, `q12`–`q14`: the same region as the four already known, which is
+evidence of a structural gap in the closure rather than an artefact of
+one cell.

@@ -31,7 +31,7 @@ limit was hit — a frontier marker to re-run raised, never dropped).
 
 Usage:  `lake exe rnfrj [--rounds=N] [--jmax=N] [--pmax=N] [--lamcap=N]
                         [--status=proved|refuted|open|all] [--limit=N]
-                        [--only=NAME]`
+                        [--only=NAME[,NAME...]] [--cand=K]`
 -/
 import wip.rnBank
 import FRJ.Search.Engine
@@ -146,9 +146,21 @@ def main (args : List String) : IO Unit := do
   let statusSel := (getArg args "status").getD "all"
   let limit := getNat args "limit" 0
   let only := getArg args "only"
+  -- `--cand=k` retargets each selected cell at representative `qk` instead
+  -- of the one the table assigns.  An open cell carries a CANDIDATE LIST
+  -- and is sorried at the first open candidate, so refuting the stated
+  -- collapse only eliminates that candidate; this is how the survivors are
+  -- attacked.  The status tag then no longer grades the goal, so cells run
+  -- under `--cand` are reported but not tallied against the oracles.
+  let cand := getArg args "cand"
   let sel := RNBank.cells.filter (fun c =>
     (statusSel == "all" || c.status.toString == statusSel) &&
-    (match only with | some n => c.name == n | none => true))
+    (match only with | some n => (n.splitOn ",").contains c.name | none => true))
+  let sel := match cand with
+    | none => sel
+    | some k => match RNBank.reps[k.toNat?.getD 99]? with
+      | some r => sel.map (fun (c : RNBank.Cell) => ⟨c.name, c.lhs, r, c.status⟩)
+      | none   => sel
   let sel := if limit == 0 then sel else sel.take limit
   let banner := "RN(◯,{}) bank"
   IO.println s!"{banner}: {RNBank.cells.length} cells (proved {RNBank.count .proved}, refuted {RNBank.count .refuted}, open {RNBank.count .«open»}); running {sel.length}"
