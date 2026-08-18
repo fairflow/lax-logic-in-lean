@@ -132,6 +132,17 @@ namespace FRJ
 #guard_msgs in
 #print axioms transportI
 
+-- The regular half of the same statement: a derivation of `Γ ⇒ C` transports
+-- to any `Γ'` with the same members.  The two context-sensitive side
+-- conditions travel by monotonicity (`clo_mono`, `covers_mono`).
+/-- info: 'FRJ.covers_mono' does not depend on any axioms -/
+#guard_msgs in
+#print axioms covers_mono
+
+/-- info: 'FRJ.transportR' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms transportR
+
 /-! ## W3 and the promise-join screen -/
 
 /-- info: 'FRJ.Kripke.fal_force' does not depend on any axioms -/

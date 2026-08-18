@@ -282,12 +282,57 @@ remaining two possibilities of §5 (a weaker judgment, or genuine
 incompleteness) are untouched, and the engine's verdicts are unchanged,
 which is itself evidence that `nf` was not the obstruction.
 
-### Left undone, deliberately
+## 9. The regular judgment too: `transportR`
 
-The REGULAR judgment `FRJr` still pins its context literally
-(`hΓ : Γ' = joinCtxAt …`, 13 constructors). No set-splitting operation
-acts on a regular context, so `nf` was never implicated there and nothing
-is blocked. Converting them would additionally require `preR` to mount
-the derivation's own `Γ` rather than the recomputed join context (the
-change made here for `Ax^I◯`), and would then yield a matching
-`transportR`.
+*2026-08-18, same branch, immediately after §8.*
+
+The nine context equations of `FRJr` — `Ax^R` and the eight join rules —
+were converted the same way, from `Γ' = joinCtxAt stab th rhs F` to
+`Γ' ≐ joinCtxAt stab th rhs F`. Nothing forced this: no set-splitting
+operation acts on a regular context, so `nf` was never implicated there.
+It was done for the statement it buys.
+
+Two routes were available for `preR`, whose specification
+(`preI_spec`, `preR_root_lbl`) had held with a literal `=`:
+
+* **A**: make `preR` mount the derivation's own `Γ`, as was done for
+  `Ax^I◯` in §8. This propagates into ~40 membership sites across the
+  eight join lemmas of `FRJ/Sound.lean` and was abandoned.
+* **B**: leave `preR` mounting the computed join context and relax
+  `preR_root_lbl` to
+  `(preR d).lbl (preR d).root ≐ Γ`. Every consumer of the old equation
+  was a rewrite in one direction only, so each became one application of
+  the equivalence. This is what is in the tree.
+
+The regular transport is then
+
+    transportR : FRJr G t Γ C → Γ ≐ Γ' → FRJr G t Γ' C
+
+at the SAME tag, pinned at `[propext, Quot.sound]`. Its two interesting
+cases are the two rules whose side condition reads the context:
+
+* `⊃∈` carries `A ∈ Cl(Γ)`, which travels by the existing
+  `clo_mono : Γ ⊆ Δ → Clo Γ A → Clo Δ A`;
+* `◯∈` carries the pledge `Covers Γ W Z`, which needed a new lemma
+
+      covers_mono : Γ ⊆ Δ → Covers Γ W Z → Covers Δ W Z
+
+  (induction on the pledge; the only context-dependent clause is `imp`,
+  discharged by `clo_mono`). `covers_mono` depends on no axioms at all,
+  and is pinned as such.
+
+Together with §8's `transportI`, both halves of the judgment are now
+invariant under set-equality of contexts, and that invariance is a
+machine-checked theorem rather than a design intention.
+
+### What was checked, again
+
+* `lake build FRJ` — 8572 jobs green, 0 sorries; `LaxLogic`, `Meta`,
+  `Reject`, `FRJO` green;
+* `#print axioms transportR` `[propext, Quot.sound]`, `covers_mono`
+  axiom-free, both `#guard_msgs`-pinned in `FRJ/Audit.lean`; the headline
+  pins unchanged;
+* `lean_exe frjsat` rebuilt and re-run: 40 `pass`, 5 `control-ok`, 0
+  `FAIL`, the single `corner_poisoned_ups` flag again clearing at raised
+  budget, erasure-transfer attack (E) again 8/8 — verdict-for-verdict
+  identical to §8's run.

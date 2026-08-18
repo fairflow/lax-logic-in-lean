@@ -242,6 +242,16 @@ inductive Covers (Γ : List Form) (W : Form) : Form → Prop
   | andR {Z₁ Z₂ : Form} : Covers Γ W Z₂ → Covers Γ W (.and Z₁ Z₂)
   | imp {A Z : Form} : Covers Γ W Z → Clo Γ A → Covers Γ W (.imp A Z)
 
+/-- `Covers` grows with its context: the only context-dependent clause is
+`imp`, whose `Clo Γ A` is monotone. -/
+theorem covers_mono {Γ Δ : List Form} (h : Γ ⊆ Δ) {W Z : Form} :
+    Covers Γ W Z → Covers Δ W Z
+  | .refl => .refl
+  | .circ hc => .circ (covers_mono h hc)
+  | .andL hc => .andL (covers_mono h hc)
+  | .andR hc => .andR (covers_mono h hc)
+  | .imp hc hA => .imp (covers_mono h hc) (clo_mono h hA)
+
 /-- Decision procedure for `Covers`. -/
 def coversB (Γ : List Form) (W : Form) : Form → Bool
   | .circ Z => decide (Form.circ Z = W) || coversB Γ W Z
@@ -342,7 +352,7 @@ the root world of the extracted model. -/
 inductive FRJr (G : Form) : Tag → List Form → Form → Type
   /-- `Ax^R`:  `⊢ Ĝ_at \ {F} ⇒ F`,  `F ∈ Prime`.  Its world is barren. -/
   | axR (F : Form) (hF : F.isPrime) (hgoal : F ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = rm (gAt G) F) :
+      {Γ' : List Form} (hΓ : Γ' ≐ rm (gAt G) F) :
       FRJr G .barren Γ' F
   /-- `∧` (regular), `k = 1`:  from `Γ ⇒ A₁` infer `Γ ⇒ A₁ ∧ A₂`. -/
   | andR1 {t : Tag} {Γ : List Form} {A₁ A₂ : Form}
@@ -380,7 +390,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
       (hcirc : unionAll (fun j => circPart (stab j)) = [])
       (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
       (hgoal : F ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxAt stab th rhs F) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAt stab th rhs F) :
       FRJr G .barren Γ' F
   /-- `⋈^At,p` — the PROMISE join.  A FAMILY of `k+1` additional REGULAR
       premises `Δᵢ ⇒ Dᵢ`, whose worlds become the modal successors of the
@@ -410,7 +420,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
       (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
       (hgoal : F ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxAtP stab th rhs F Δs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtP stab th rhs F Δs) :
       FRJr G t' Γ' F
   /-- `⋈^At,⊥` — the FALLIBLE join.  The modal successor of the new world
       is a declared fallible world; it forces everything, so the whole
@@ -424,7 +434,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
         A ∈ upsilon rhs)
       (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
       (hgoal : F ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxAtF stab th rhs F) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtF stab th rhs F) :
       FRJr G .blocked Γ' F
   /-- `⋈^∨`: as `⋈^At`, but the conclusion's right formula is a
       `∨`-formula `C₁ ∨ C₂` with `{C₁,C₂} ⊆ Υ`, and `Θ^at` is kept whole. -/
@@ -437,7 +447,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
       (hcirc : unionAll (fun j => circPart (stab j)) = [])
       (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxOr stab th rhs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOr stab th rhs) :
       FRJr G .barren Γ' (.or C₁ C₂)
   /-- `⋈^∨,p` — the promise `⋈^∨`, with the same promise family. -/
   | joinOrP {n k : Nat} {stab th : Fin (n + 1) → List Form}
@@ -456,7 +466,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
       (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxOrP stab th rhs Δs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs) :
       FRJr G t' Γ' (.or C₁ C₂)
   /-- `⋈^∨,⊥` — the fallible `⋈^∨`. -/
   | joinOrF {n : Nat} {stab th : Fin (n + 1) → List Form}
@@ -467,7 +477,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
         A ∈ upsilon rhs)
       (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxOrF stab th rhs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrF stab th rhs) :
       FRJr G .blocked Γ' (.or C₁ C₂)
   /-- `⋈^◯` — the MODAL join (W4 device, ours; the paper's ◯-free FRJ has
       no `◯`-goals).  From `n ≥ 1` irregular premises with `Z ∈ Υ` infer
@@ -487,7 +497,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
       (hcirc : unionAll (fun j => circPart (stab j)) = [])
       (hZ : Z ∈ upsilon rhs)
       (hgoal : Form.circ Z ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxOr stab th rhs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOr stab th rhs) :
       FRJr G .barren Γ' (.circ Z)
   /-- `⋈^◯,p` — the promise `⋈^◯`.  The cone is the promise family, so
       every component pledges `Z` (right formula `Z`, tag `barren` or a
@@ -512,7 +522,7 @@ inductive FRJr (G : Form) : Tag → List Form → Form → Type
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z))
       (hZ : Z ∈ upsilon rhs)
       (hgoal : Form.circ Z ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' = joinCtxOrP stab th rhs Δs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs) :
       FRJr G (.chain Z) Γ' (.circ Z)
 
 /-- Derivations of irregular sequents `Σ ; Θ → C`. -/
@@ -602,6 +612,41 @@ green slime.  With the indices freed and the context equations stated
 extensionally, the transport is a theorem, and it is the precise sense in
 which the mechanised judgment is the paper's judgment on *sets* of
 formulas rather than on lists. -/
+
+/-- **Transport along a context equation, regular half.**  A regular
+sequent's derivability depends on its context only through its members:
+
+    `Γ ⇒ C`  and  `Γ ≐ Γ'`   imply   `Γ' ⇒ C`,  at the same tag.
+
+The two context-sensitive side conditions travel by monotonicity: `⊃∈`'s
+`A ∈ Cl(Γ)` by `clo_mono`, `◯∈`'s pledge `Covers Γ W Z` by
+`covers_mono`. -/
+def transportR {G : Form} : ∀ {t : Tag} {Γ Γ' : List Form} {C : Form},
+    FRJr G t Γ C → Γ ≐ Γ' → FRJr G t Γ' C
+  | _, _, _, _, .axR F hF hg hΓ, h => .axR F hF hg (h.symm.trans hΓ)
+  | _, _, _, _, .andR1 d hg, h => .andR1 (transportR d h) hg
+  | _, _, _, _, .andR2 d hg, h => .andR2 (transportR d h) hg
+  | _, _, _, _, .impIn d hA hg, h =>
+      .impIn (transportR d h) (clo_mono h.subset hA) hg
+  | _, _, _, _, .circIn d htag hg, h =>
+      .circIn (transportR d h)
+        (htag.imp id (fun ⟨W, hW, hc⟩ => ⟨W, hW, covers_mono h.subset hc⟩)) hg
+  | _, _, _, _, .joinAt prem hJ1 hJ2 hcirc hF hFnot hg hΓ, h =>
+      .joinAt prem hJ1 hJ2 hcirc hF hFnot hg (h.symm.trans hΓ)
+  | _, _, _, _, .joinAtP prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ, h =>
+      .joinAtP prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg (h.symm.trans hΓ)
+  | _, _, _, _, .joinAtF prem hJ1 hJ2 hF hFnot hg hΓ, h =>
+      .joinAtF prem hJ1 hJ2 hF hFnot hg (h.symm.trans hΓ)
+  | _, _, _, _, .joinOr prem hJ1 hJ2 hcirc hC hg hΓ, h =>
+      .joinOr prem hJ1 hJ2 hcirc hC hg (h.symm.trans hΓ)
+  | _, _, _, _, .joinOrP prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ, h =>
+      .joinOrP prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg (h.symm.trans hΓ)
+  | _, _, _, _, .joinOrF prem hJ1 hJ2 hC hg hΓ, h =>
+      .joinOrF prem hJ1 hJ2 hC hg (h.symm.trans hΓ)
+  | _, _, _, _, .joinCirc prem hJ1 hJ2 hcirc hZ hg hΓ, h =>
+      .joinCirc prem hJ1 hJ2 hcirc hZ hg (h.symm.trans hΓ)
+  | _, _, _, _, .joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ, h =>
+      .joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg (h.symm.trans hΓ)
 
 /-- **Transport along context equations.**  An irregular sequent's
 derivability depends on its two zones only through their members:

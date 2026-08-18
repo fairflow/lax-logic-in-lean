@@ -99,7 +99,7 @@ def seedsR (G : Form) : List (RS G) :=
   (sfR G).filterMap (fun F =>
     if hF : F.isPrime then
       if hg : F ∈ sfR G then
-        some ⟨.barren, rm (gAt G) F, F, .axR F hF hg rfl⟩
+        some ⟨.barren, rm (gAt G) F, F, .axR F hF hg (CtxEq.refl _)⟩
       else none
     else none)
 
@@ -397,7 +397,7 @@ def mkJoinBarren (a : IS G) (rest : List (IS G)) : List (RS G) :=
           if hFnot : F ∉ unionAll (fun j => atPart (stabF a rest j)) then
             if hg : F ∈ sfR G then
               some ⟨.barren, joinCtxAt (stabF a rest) (thF a rest) (rhsF a rest) F, F,
-                .joinAt (premF a rest) h1 (hJ2_of_check h2) hcirc hF hFnot hg rfl⟩
+                .joinAt (premF a rest) h1 (hJ2_of_check h2) hcirc hF hFnot hg (CtxEq.refl _)⟩
             else none
           else none
         else none)) ++
@@ -409,13 +409,13 @@ def mkJoinBarren (a : IS G) (rest : List (IS G)) : List (RS G) :=
               if hC : C₁ ∈ upsilon (rhsF a rest) ∧ C₂ ∈ upsilon (rhsF a rest) then
                 some ⟨.barren, joinCtxOr (stabF a rest) (thF a rest) (rhsF a rest),
                   .or C₁ C₂,
-                  .joinOr (premF a rest) h1 (hJ2_of_check h2) hcirc hC hg rfl⟩
+                  .joinOr (premF a rest) h1 (hJ2_of_check h2) hcirc hC hg (CtxEq.refl _)⟩
               else none
           | .circ Z, hg =>
               if hZ : Z ∈ upsilon (rhsF a rest) then
                 some ⟨.barren, joinCtxOr (stabF a rest) (thF a rest) (rhsF a rest),
                   .circ Z,
-                  .joinCirc (premF a rest) h1 (hJ2_of_check h2) hcirc hZ hg rfl⟩
+                  .joinCirc (premF a rest) h1 (hJ2_of_check h2) hcirc hZ hg (CtxEq.refl _)⟩
               else none
           | _, _ => none
         else none))
@@ -431,7 +431,7 @@ def mkJoinF (a : IS G) (rest : List (IS G)) : List (RS G) :=
         if hFnot : F ∉ unionAll (fun j => atPart (stabF a rest j)) then
           if hg : F ∈ sfR G then
             some ⟨.blocked, joinCtxAtF (stabF a rest) (thF a rest) (rhsF a rest) F, F,
-              .joinAtF (premF a rest) h1 (hJ2_of_check h2) hF hFnot hg rfl⟩
+              .joinAtF (premF a rest) h1 (hJ2_of_check h2) hF hFnot hg (CtxEq.refl _)⟩
           else none
         else none
       else none)) ++
@@ -442,7 +442,7 @@ def mkJoinF (a : IS G) (rest : List (IS G)) : List (RS G) :=
             if hC : C₁ ∈ upsilon (rhsF a rest) ∧ C₂ ∈ upsilon (rhsF a rest) then
               some ⟨.blocked, joinCtxOrF (stabF a rest) (thF a rest) (rhsF a rest),
                 .or C₁ C₂,
-                .joinOrF (premF a rest) h1 (hJ2_of_check h2) hC hg rfl⟩
+                .joinOrF (premF a rest) h1 (hJ2_of_check h2) hC hg (CtxEq.refl _)⟩
             else none
         | _, _ => none
       else none))
@@ -482,7 +482,7 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
                 some ⟨tg.1,
                   joinCtxAtP (stabF a rest) (thF a rest) (rhsF a rest) F (dctxF p prest), F,
                   .joinAtP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                    hJ5 h7 tg.2 hF hFnot hg rfl⟩
+                    hJ5 h7 tg.2 hF hFnot hg (CtxEq.refl _)⟩
               else none
             else none
           else none)) ++
@@ -496,7 +496,7 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
                     joinCtxOrP (stabF a rest) (thF a rest) (rhsF a rest) (dctxF p prest),
                     .or C₁ C₂,
                     .joinOrP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                      hJ5 h7 tg.2 hC hg rfl⟩
+                      hJ5 h7 tg.2 hC hg (CtxEq.refl _)⟩
                 else none
             | _, _ => none
           else none)))) ++
@@ -513,7 +513,7 @@ def mkJoinP (a : IS G) (rest : List (IS G)) (p : RS G) (prest : List (RS G)) :
                     joinCtxOrP (stabF a rest) (thF a rest) (rhsF a rest) (dctxF p prest),
                     .circ Z,
                     .joinCircP (premF a rest) (dpsF p prest) h1 (hJ2_of_check h2)
-                      hJ5 h7 hDs hZ hg rfl⟩
+                      hJ5 h7 hDs hZ hg (CtxEq.refl _)⟩
                 else none
               else none
           | _, _ => none

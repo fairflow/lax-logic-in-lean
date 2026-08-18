@@ -510,8 +510,8 @@ def preR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} → FRJr G t
   | _, _, _, .axR F _ _ _ => PreModel.leaf (rm (gAt G) F)
   | _, _, _, .andR1 d _ => preR d
   | _, _, _, .andR2 d _ => preR d
-  | _, _, _, .impIn d _ _ => preR d
-  | _, _, _, .circIn d _ _ => preR d
+  | _, Γ, _, .impIn d _ _ => preR d
+  | _, Γ, _, .circIn d _ _ => preR d
   | _, _, _, @FRJr.joinAt _ n stab th rhs F prem _ _ _ _ _ _ _ _ =>
       PreModel.join (premIdxElems prem) (premIdxComplete prem)
         (joinCtxAt stab th rhs F)
@@ -598,20 +598,20 @@ transported to the model, and is exactly what makes `V` monotone. -/
 /-- The root of `preR d` carries `d`'s own context.  (`∧` and `⊃∈` leave
 `Γ` alone, and a join's root is labelled by its conclusion's context.) -/
 theorem preR_root_lbl {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
-    (d : FRJr G t Γ C), (preR d).lbl (preR d).root = Γ
-  | _, _, _, .axR _ _ _ rfl => rfl
+    (d : FRJr G t Γ C), (preR d).lbl (preR d).root ≐ Γ
+  | _, _, _, .axR _ _ _ hΓ => hΓ.symm
   | _, _, _, .andR1 d _ => preR_root_lbl d
   | _, _, _, .andR2 d _ => preR_root_lbl d
   | _, _, _, .impIn d _ _ => preR_root_lbl d
   | _, _, _, .circIn d _ _ => preR_root_lbl d
-  | _, _, _, .joinAt _ _ _ _ _ _ _ rfl => rfl
-  | _, _, _, .joinAtP _ _ _ _ _ _ _ _ _ _ rfl => rfl
-  | _, _, _, .joinAtF _ _ _ _ _ _ rfl => rfl
-  | _, _, _, .joinOr _ _ _ _ _ _ rfl => rfl
-  | _, _, _, .joinOrP _ _ _ _ _ _ _ _ _ rfl => rfl
-  | _, _, _, .joinOrF _ _ _ _ _ rfl => rfl
-  | _, _, _, .joinCirc _ _ _ _ _ _ rfl => rfl
-  | _, _, _, .joinCircP _ _ _ _ _ _ _ _ _ rfl => rfl
+  | _, _, _, .joinAt _ _ _ _ _ _ _ hΓ => hΓ.symm
+  | _, _, _, .joinAtP _ _ _ _ _ _ _ _ _ _ hΓ => hΓ.symm
+  | _, _, _, .joinAtF _ _ _ _ _ _ hΓ => hΓ.symm
+  | _, _, _, .joinOr _ _ _ _ _ _ hΓ => hΓ.symm
+  | _, _, _, .joinOrP _ _ _ _ _ _ _ _ _ hΓ => hΓ.symm
+  | _, _, _, .joinOrF _ _ _ _ _ hΓ => hΓ.symm
+  | _, _, _, .joinCirc _ _ _ _ _ _ hΓ => hΓ.symm
+  | _, _, _, .joinCircP _ _ _ _ _ _ _ _ _ hΓ => hΓ.symm
 
 /-- Every pre-model an irregular derivation contributes is the model of a
 sequent occurring in it, and its root carries that sequent's left
@@ -621,7 +621,7 @@ sequent — its zone IS the mounted world's label. -/
 theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (i : RegIdx d),
     ∃ s : Sequent, OccI d s ∧
-      (preI d i).lbl (preI d i).root = s.lhs
+      (preI d i).lbl (preI d i).root ≐ s.lhs
   | _, _, _, .axI _ _ _ _, i => (i : Empty).elim
   | _, _, _, .andI1 d _, i => by
       obtain ⟨s, hocc, hlbl⟩ := preI_spec d i
@@ -645,7 +645,7 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .circNotIn d _ _ _, _ =>
       ⟨_, .circNotIn (.root d), preR_root_lbl d⟩
   | _, Th, _, .axIC F _ _ _ _ _, _ =>
-      ⟨.irr [] Th (.circ F), .root _, rfl⟩
+      ⟨.irr [] Th (.circ F), .root _, CtxEq.refl _⟩
 
 /-- Labels shrink modulo closure going down: Lemma 3.4(iii) in the
 model. -/
@@ -676,14 +676,14 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
-                        ⟨_, Step.joinAtP (F := F) (Δs := Δs) ji.1 hJ1⟩) X hX)
+                        ⟨_, Step.joinAtP (F := F) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
                   refine preI_closed (prem ji.1) ji.2 _ _
                     ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  rw [hlbl]; exact hY
+                  exact (hlbl Y).mpr hY
               | inr i =>
                   refine clo_trans (fun Y hY => ?_) (joinCtxAtP_clo i X hX)
                   refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
-                  rw [preR_root_lbl (dps i)]; exact hY
+                  exact (preR_root_lbl (dps i) Y).mpr hY
           | comp hab =>
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
@@ -703,10 +703,10 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
-                        ⟨_, Step.joinAtF (F := F) ji.1 hJ1⟩) X hX)
+                        ⟨_, Step.joinAtF (F := F) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
                   refine preI_closed (prem ji.1) ji.2 _ _
                     ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  rw [hlbl]; exact hY
+                  exact (hlbl Y).mpr hY
               | inr _ => exact .base hX
           | comp hab =>
               cases x with
@@ -727,14 +727,14 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
-                        ⟨_, Step.joinOrP (C₁ := C₁) (C₂ := C₂) (Δs := Δs) ji.1 hJ1⟩) X hX)
+                        ⟨_, Step.joinOrP (C₁ := C₁) (C₂ := C₂) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
                   refine preI_closed (prem ji.1) ji.2 _ _
                     ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  rw [hlbl]; exact hY
+                  exact (hlbl Y).mpr hY
               | inr i =>
                   refine clo_trans (fun Y hY => ?_) (joinCtxOrP_clo i X hX)
                   refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
-                  rw [preR_root_lbl (dps i)]; exact hY
+                  exact (preR_root_lbl (dps i) Y).mpr hY
           | comp hab =>
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
@@ -754,10 +754,10 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
-                        ⟨_, Step.joinOrF (C₁ := C₁) (C₂ := C₂) ji.1 hJ1⟩) X hX)
+                        ⟨_, Step.joinOrF (C₁ := C₁) (C₂ := C₂) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
                   refine preI_closed (prem ji.1) ji.2 _ _
                     ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  rw [hlbl]; exact hY
+                  exact (hlbl Y).mpr hY
               | inr _ => exact .base hX
           | comp hab =>
               cases x with
@@ -778,14 +778,14 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                   refine clo_trans (fun Y hY => ?_)
                     (lhs_clo_of_steps
                       ((occI_steps hocc).tail
-                        ⟨_, Step.joinCircP (Z := Z) (Δs := Δs) ji.1 hJ1⟩) X hX)
+                        ⟨_, Step.joinCircP (Z := Z) (Δs := Δs) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
                   refine preI_closed (prem ji.1) ji.2 _ _
                     ((preI (prem ji.1) ji.2).root_le b) Y ?_
-                  rw [hlbl]; exact hY
+                  exact (hlbl Y).mpr hY
               | inr i =>
                   refine clo_trans (fun Y hY => ?_) (joinCtxOrP_clo i X hX)
                   refine preR_closed (dps i) _ _ ((preR (dps i)).root_le b) Y ?_
-                  rw [preR_root_lbl (dps i)]; exact hY
+                  exact (preR_root_lbl (dps i) Y).mpr hY
           | comp hab =>
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
@@ -803,7 +803,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               refine clo_trans (fun Y hY => ?_)
                 (lhs_clo_of_steps
                   ((occI_steps hocc).tail
-                    ⟨_, Step.joinCirc (Z := Z) ji.1 hJ1⟩) X hX)
+                    ⟨_, Step.joinCirc (Z := Z) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
               refine preI_closed (prem ji.1) ji.2 _ _
                 ((preI (prem ji.1) ji.2).root_le b) Y ?_
               rw [hlbl]; exact hY
@@ -820,7 +820,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               obtain ⟨s', hocc, hlbl⟩ := preI_spec (prem ji.1) ji.2
               refine clo_trans (fun Y hY => ?_)
                 (lhs_clo_of_steps
-                  ((occI_steps hocc).tail ⟨_, Step.joinAt (F := F) ji.1 hJ1⟩) X hX)
+                  ((occI_steps hocc).tail ⟨_, Step.joinAt (F := F) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
               refine preI_closed (prem ji.1) ji.2 _ _
                 ((preI (prem ji.1) ji.2).root_le b) Y ?_
               rw [hlbl]; exact hY
@@ -838,7 +838,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               refine clo_trans (fun Y hY => ?_)
                 (lhs_clo_of_steps
                   ((occI_steps hocc).tail
-                    ⟨_, Step.joinOr (C₁ := C₁) (C₂ := C₂) ji.1 hJ1⟩) X hX)
+                    ⟨_, Step.joinOr (C₁ := C₁) (C₂ := C₂) ji.1 hJ1 (CtxEq.refl _)⟩) X hX)
               refine preI_closed (prem ji.1) ji.2 _ _
                 ((preI (prem ji.1) ji.2).root_le b) Y ?_
               rw [hlbl]; exact hY

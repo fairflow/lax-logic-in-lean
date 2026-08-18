@@ -138,7 +138,7 @@ def regPrime_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
     der := by
       refine .joinAt (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
         (fun A B hmem => ?_) (unionAll_circPart_nil hcf (fun j => (wit j).sub))
-        hCp (fun hmem => ?_) hC rfl
+        hCp (fun hmem => ?_) hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
@@ -181,7 +181,7 @@ def regPrime_ax (K : Kripke) (G : Form) (a : K.W) (C : Form)
     (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
     (hempty : impPart (lamStar K a G) = []) : RegWit K G a C :=
   { ctx := rm (gAt G) C
-    der := .axR C hCp hC rfl
+    der := .axR C hCp hC (CtxEq.refl _)
     wld := a
     wle := K.le_refl a
     cov := by
@@ -230,7 +230,7 @@ def regOr_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
     der := by
       refine .joinOr (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
         (fun A B hmem => ?_) (unionAll_circPart_nil hcf (fun j => (wit j).sub))
-        ⟨?_, ?_⟩ hC rfl
+        ⟨?_, ?_⟩ hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
           (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))

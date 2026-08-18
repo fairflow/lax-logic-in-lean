@@ -101,67 +101,67 @@ inductive Step (G : Form) : RuleName → Sequent → Sequent → Prop
       Step G .circNotIn (.reg Γ Z) (.irr [] Th (.circ Z))
   | joinAt {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinAt (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxAt stab th rhs F) F)
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAt stab th rhs F) :
+      Step G .joinAt (.irr (stab j) (th j) (rhs j)) (.reg Γ' F)
   | joinOr {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinOr (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxOr stab th rhs) (.or C₁ C₂))
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOr stab th rhs) :
+      Step G .joinOr (.irr (stab j) (th j) (rhs j)) (.reg Γ' (.or C₁ C₂))
   | joinAtP {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} {Δs : Fin (k + 1) → List Form}
       (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinAtP (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxAtP stab th rhs F Δs) F)
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtP stab th rhs F Δs) :
+      Step G .joinAtP (.irr (stab j) (th j) (rhs j)) (.reg Γ' F)
   /-- the promise edge of `⋈^At,p`: condition (J7) is what Lemma 3.5
   consumes, exactly as `⊃∉` supplies its `Θ ⊆ Cl(Γ)` condition. -/
   | promAt {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} {Δs : Fin (k + 1) → List Form}
       {Ds : Fin (k + 1) → Form} (i : Fin (k + 1))
-      (hJ7 : ∀ X ∈ joinCtxAtP stab th rhs F Δs, Clo (Δs i) X) :
-      Step G .promAt (.reg (Δs i) (Ds i))
-        (.reg (joinCtxAtP stab th rhs F Δs) F)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtP stab th rhs F Δs)
+      (hJ7 : ∀ X ∈ Γ', Clo (Δs i) X) :
+      Step G .promAt (.reg (Δs i) (Ds i)) (.reg Γ' F)
   | joinAtF {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinAtF (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxAtF stab th rhs F) F)
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtF stab th rhs F) :
+      Step G .joinAtF (.irr (stab j) (th j) (rhs j)) (.reg Γ' F)
   | joinOrP {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {Δs : Fin (k + 1) → List Form}
       (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinOrP (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxOrP stab th rhs Δs) (.or C₁ C₂))
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs) :
+      Step G .joinOrP (.irr (stab j) (th j) (rhs j)) (.reg Γ' (.or C₁ C₂))
   | promOr {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {Δs : Fin (k + 1) → List Form}
       {Ds : Fin (k + 1) → Form} (i : Fin (k + 1))
-      (hJ7 : ∀ X ∈ joinCtxOrP stab th rhs Δs, Clo (Δs i) X) :
-      Step G .promOr (.reg (Δs i) (Ds i))
-        (.reg (joinCtxOrP stab th rhs Δs) (.or C₁ C₂))
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs)
+      (hJ7 : ∀ X ∈ Γ', Clo (Δs i) X) :
+      Step G .promOr (.reg (Δs i) (Ds i)) (.reg Γ' (.or C₁ C₂))
   | joinOrF {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinOrF (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxOrF stab th rhs) (.or C₁ C₂))
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrF stab th rhs) :
+      Step G .joinOrF (.irr (stab j) (th j) (rhs j)) (.reg Γ' (.or C₁ C₂))
   | joinCirc {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form} (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinCirc (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxOr stab th rhs) (.circ Z))
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOr stab th rhs) :
+      Step G .joinCirc (.irr (stab j) (th j) (rhs j)) (.reg Γ' (.circ Z))
   | joinCircP {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form} {Δs : Fin (k + 1) → List Form}
       (j : Fin (n + 1))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-      Step G .joinCircP (.irr (stab j) (th j) (rhs j))
-        (.reg (joinCtxOrP stab th rhs Δs) (.circ Z))
+      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs) :
+      Step G .joinCircP (.irr (stab j) (th j) (rhs j)) (.reg Γ' (.circ Z))
   | promCirc {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form} {Δs : Fin (k + 1) → List Form}
       {Ds : Fin (k + 1) → Form} (i : Fin (k + 1))
-      (hJ7 : ∀ X ∈ joinCtxOrP stab th rhs Δs, Clo (Δs i) X) :
-      Step G .promCirc (.reg (Δs i) (Ds i))
-        (.reg (joinCtxOrP stab th rhs Δs) (.circ Z))
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs)
+      (hJ7 : ∀ X ∈ Γ', Clo (Δs i) X) :
+      Step G .promCirc (.reg (Δs i) (Ds i)) (.reg Γ' (.circ Z))
 
 /-- `σ₁ ↦₀ σ₂`: "there exists a rule `R` such that `σ₁ ↦_R σ₂`." -/
 def Step₀ (G : Form) (s₁ s₂ : Sequent) : Prop := ∃ R, Step G R s₁ s₂
@@ -336,33 +336,33 @@ theorem lhs_subset_of_step {G : Form} {R : RuleName} {s₁ s₂ : Sequent}
       · exact Or.inr ((hpre x).mpr (List.mem_append_left _ ((hTh x).mp hx)))
   | impNotIn => exact absurd rfl hR
   | circNotIn => exact absurd rfl hRc
-  | promAt i hJ7 => exact absurd rfl hRp
-  | promOr i hJ7 => exact absurd rfl hRq
-  | promCirc i hJ7 => exact absurd rfl hRr
-  | joinCirc j hJ1 =>
+  | promAt i hΓ hJ7 => exact absurd rfl hRp
+  | promOr i hΓ hJ7 => exact absurd rfl hRq
+  | promCirc i hΓ hJ7 => exact absurd rfl hRr
+  | joinCirc j hJ1 hΓ =>
       intro x hx
-      exact joinCtxOr_subset hJ1 j hx
-  | joinCircP j hJ1 =>
+      exact joinCtxOr_subset hJ1 j ((hΓ x).mp hx)
+  | joinCircP j hJ1 hΓ =>
       intro x hx
-      exact joinCtxOrP_subset hJ1 j hx
-  | joinAt j hJ1 =>
+      exact joinCtxOrP_subset hJ1 j ((hΓ x).mp hx)
+  | joinAt j hJ1 hΓ =>
       intro x hx
-      exact joinCtxAt_subset hJ1 j hx
-  | joinOr j hJ1 =>
+      exact joinCtxAt_subset hJ1 j ((hΓ x).mp hx)
+  | joinOr j hJ1 hΓ =>
       intro x hx
-      exact joinCtxOr_subset hJ1 j hx
-  | joinAtP j hJ1 =>
+      exact joinCtxOr_subset hJ1 j ((hΓ x).mp hx)
+  | joinAtP j hJ1 hΓ =>
       intro x hx
-      exact joinCtxAtP_subset hJ1 j hx
-  | joinAtF j hJ1 =>
+      exact joinCtxAtP_subset hJ1 j ((hΓ x).mp hx)
+  | joinAtF j hJ1 hΓ =>
       intro x hx
-      exact joinCtxAtF_subset hJ1 j hx
-  | joinOrP j hJ1 =>
+      exact joinCtxAtF_subset hJ1 j ((hΓ x).mp hx)
+  | joinOrP j hJ1 hΓ =>
       intro x hx
-      exact joinCtxOrP_subset hJ1 j hx
-  | joinOrF j hJ1 =>
+      exact joinCtxOrP_subset hJ1 j ((hΓ x).mp hx)
+  | joinOrF j hJ1 hΓ =>
       intro x hx
-      exact joinCtxOrF_subset hJ1 j hx
+      exact joinCtxOrF_subset hJ1 j ((hΓ x).mp hx)
 
 /-- **Lemma 3.4(ii).**  "`σ₁ ↦₀ σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
 For every rule but `⊃∉` this is (i) together with (Cl3); for `⊃∉` it is
@@ -386,15 +386,15 @@ theorem lhs_clo_of_step₀ {G : Form} {s₁ s₂ : Sequent} (h : Step₀ G s₁ 
   by_cases hnameP : R = .promAt
   · subst hnameP
     cases hR with
-    | promAt i hJ7 => exact hJ7 X hX
+    | promAt i hΓ hJ7 => exact hJ7 X hX
   by_cases hnameQ : R = .promOr
   · subst hnameQ
     cases hR with
-    | promOr i hJ7 => exact hJ7 X hX
+    | promOr i hΓ hJ7 => exact hJ7 X hX
   by_cases hnameR : R = .promCirc
   · subst hnameR
     cases hR with
-    | promCirc i hJ7 => exact hJ7 X hX
+    | promCirc i hΓ hJ7 => exact hJ7 X hX
   exact .base (lhs_subset_of_step hR hname hnameC hnameP hnameQ hnameR hX)
 
 /-- **Lemma 3.4(iii).**  "`σ₁ ↦* σ₂` implies `Lhs(σ₂) ⊆ Cl(Lhs(σ₁))`."
@@ -443,7 +443,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
         A ∈ upsilon rhs}
       {hcirc : unionAll (fun j => circPart (stab j)) = []}
       {hF : F.isPrime} {hFnot : F ∉ unionAll (fun j => atPart (stab j))}
-      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxAt stab th rhs F} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxAt stab th rhs F} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s → OccR (FRJr.joinAt prem hJ1 hJ2 hcirc hF hFnot hg hΓ) s
   | joinAtP {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} {t' : Tag}
@@ -460,7 +460,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))}
       {hF : F.isPrime} {hFnot : F ∉ unionAll (fun j => atPart (stab j))}
-      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxAtP stab th rhs F Δs} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxAtP stab th rhs F Δs} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s →
       OccR (FRJr.joinAtP prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ) s
   | joinAtPprom {n k : Nat} {stab th : Fin (n + 1) → List Form}
@@ -478,7 +478,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))}
       {hF : F.isPrime} {hFnot : F ∉ unionAll (fun j => atPart (stab j))}
-      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxAtP stab th rhs F Δs} {s : Sequent} (i : Fin (k + 1)) :
+      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxAtP stab th rhs F Δs} {s : Sequent} (i : Fin (k + 1)) :
       OccR (dps i) s →
       OccR (FRJr.joinAtP prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ) s
   | joinAtF {n : Nat} {stab th : Fin (n + 1) → List Form}
@@ -488,7 +488,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
         A ∈ upsilon rhs}
       {hF : F.isPrime} {hFnot : F ∉ unionAll (fun j => atPart (stab j))}
-      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxAtF stab th rhs F} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : F ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxAtF stab th rhs F} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s → OccR (FRJr.joinAtF prem hJ1 hJ2 hF hFnot hg hΓ) s
   | joinOr {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form}
@@ -498,7 +498,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
         A ∈ upsilon rhs}
       {hcirc : unionAll (fun j => circPart (stab j)) = []}
       {hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs}
-      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxOr stab th rhs} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxOr stab th rhs} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s → OccR (FRJr.joinOr prem hJ1 hJ2 hcirc hC hg hΓ) s
   | joinOrP {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {t' : Tag}
@@ -515,7 +515,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))}
       {hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs}
-      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxOrP stab th rhs Δs} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s →
       OccR (FRJr.joinOrP prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ) s
   | joinOrPprom {n k : Nat} {stab th : Fin (n + 1) → List Form}
@@ -533,7 +533,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))}
       {hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs}
-      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxOrP stab th rhs Δs} {s : Sequent} (i : Fin (k + 1)) :
+      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs} {s : Sequent} (i : Fin (k + 1)) :
       OccR (dps i) s →
       OccR (FRJr.joinOrP prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ) s
   | joinOrF {n : Nat} {stab th : Fin (n + 1) → List Form}
@@ -543,7 +543,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
         A ∈ upsilon rhs}
       {hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs}
-      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxOrF stab th rhs} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : Form.or C₁ C₂ ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxOrF stab th rhs} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s → OccR (FRJr.joinOrF prem hJ1 hJ2 hC hg hΓ) s
   | joinCirc {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form}
@@ -553,7 +553,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
         A ∈ upsilon rhs}
       {hcirc : unionAll (fun j => circPart (stab j)) = []}
       {hZ : Z ∈ upsilon rhs}
-      {hg : Form.circ Z ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxOr stab th rhs} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : Form.circ Z ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxOr stab th rhs} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s → OccR (FRJr.joinCirc prem hJ1 hJ2 hcirc hZ hg hΓ) s
   | joinCircP {n k : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form}
@@ -570,7 +570,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {hDs : ∀ i, Ds i = Z ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z)}
       {hZ : Z ∈ upsilon rhs}
-      {hg : Form.circ Z ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxOrP stab th rhs Δs} {s : Sequent} (j : Fin (n + 1)) :
+      {hg : Form.circ Z ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs} {s : Sequent} (j : Fin (n + 1)) :
       OccI (prem j) s →
       OccR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ) s
   | joinCircPprom {n k : Nat} {stab th : Fin (n + 1) → List Form}
@@ -588,7 +588,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {hDs : ∀ i, Ds i = Z ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z)}
       {hZ : Z ∈ upsilon rhs}
-      {hg : Form.circ Z ∈ sfR G} {Γ' : List Form} {hΓ : Γ' = joinCtxOrP stab th rhs Δs} {s : Sequent} (i : Fin (k + 1)) :
+      {hg : Form.circ Z ∈ sfR G} {Γ' : List Form} {hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs} {s : Sequent} (i : Fin (k + 1)) :
       OccR (dps i) s →
       OccR (FRJr.joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ) s
 
@@ -646,17 +646,31 @@ theorem occR_steps {G : Form} {t : Tag} {Γ : List Form} {C : Form}
   | .andR2 h' => (occR_steps h').tail ⟨_, .andR2⟩
   | .impIn h' => (occR_steps h').tail ⟨_, .impIn⟩
   | .circIn h' => (occR_steps h').tail ⟨_, .circIn⟩
-  | .joinAt (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinAt j hJ1⟩
-  | .joinAtP (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinAtP j hJ1⟩
-  | .joinAtPprom (hΓ := rfl) i h' => (occR_steps h').tail ⟨_, .promAt i (joinCtxAtP_clo i)⟩
-  | .joinAtF (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinAtF j hJ1⟩
-  | .joinOr (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinOr j hJ1⟩
-  | .joinOrP (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinOrP j hJ1⟩
-  | .joinOrPprom (hΓ := rfl) i h' => (occR_steps h').tail ⟨_, .promOr i (joinCtxOrP_clo i)⟩
-  | .joinOrF (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinOrF j hJ1⟩
-  | .joinCirc (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinCirc j hJ1⟩
-  | .joinCircP (hΓ := rfl) (hJ1 := hJ1) j h' => (occI_steps h').tail ⟨_, .joinCircP j hJ1⟩
-  | .joinCircPprom (hΓ := rfl) i h' => (occR_steps h').tail ⟨_, .promCirc i (joinCtxOrP_clo i)⟩
+  | .joinAt (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinAt j hJ1 hΓ⟩
+  | .joinAtP (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinAtP j hJ1 hΓ⟩
+  | .joinAtPprom (hΓ := hΓ) i h' =>
+      (occR_steps h').tail
+        ⟨_, .promAt i hΓ (fun X hX => joinCtxAtP_clo i X ((hΓ X).mp hX))⟩
+  | .joinAtF (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinAtF j hJ1 hΓ⟩
+  | .joinOr (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinOr j hJ1 hΓ⟩
+  | .joinOrP (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinOrP j hJ1 hΓ⟩
+  | .joinOrPprom (hΓ := hΓ) i h' =>
+      (occR_steps h').tail
+        ⟨_, .promOr i hΓ (fun X hX => joinCtxOrP_clo i X ((hΓ X).mp hX))⟩
+  | .joinOrF (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinOrF j hJ1 hΓ⟩
+  | .joinCirc (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinCirc j hJ1 hΓ⟩
+  | .joinCircP (hΓ := hΓ) (hJ1 := hJ1) j h' =>
+      (occI_steps h').tail ⟨_, .joinCircP j hJ1 hΓ⟩
+  | .joinCircPprom (hΓ := hΓ) i h' =>
+      (occR_steps h').tail
+        ⟨_, .promCirc i hΓ (fun X hX => joinCtxOrP_clo i X ((hΓ X).mp hX))⟩
 
 theorem occI_steps {G : Form} {St Th : List Form} {C : Form}
     {d : FRJi G St Th C} {s : Sequent} : OccI d s → StepsRfl G s (.irr St Th C)
@@ -696,28 +710,28 @@ mutual
 /-- Every context of a derivable regular sequent lies inside `Ĝ`. -/
 theorem wfR {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
     FRJr G t Γ C → Γ ⊆ gHat G
-  | _, _, _, .axR _ _ _ rfl => fun _ hx =>
-      List.mem_append_left _ (List.mem_append_left _ (rm_subset hx))
+  | _, _, _, .axR _ _ _ hΓ => fun x hx =>
+      List.mem_append_left _ (List.mem_append_left _ (rm_subset ((hΓ x).mp hx)))
   | _, _, _, .andR1 d _ => wfR d
   | _, _, _, .andR2 d _ => wfR d
   | _, _, _, .impIn d _ _ => wfR d
   | _, _, _, .circIn d _ _ => wfR d
-  | _, _, _, .joinAt prem hJ1 _ _ _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxAt_subset hJ1 0 hx)
-  | _, _, _, .joinAtP prem _ hJ1 _ _ _ _ _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxAtP_subset hJ1 0 hx)
-  | _, _, _, .joinAtF prem hJ1 _ _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxAtF_subset hJ1 0 hx)
-  | _, _, _, .joinOr prem hJ1 _ _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxOr_subset hJ1 0 hx)
-  | _, _, _, .joinOrP prem _ hJ1 _ _ _ _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxOrP_subset hJ1 0 hx)
-  | _, _, _, .joinOrF prem hJ1 _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxOrF_subset hJ1 0 hx)
-  | _, _, _, .joinCirc prem hJ1 _ _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxOr_subset hJ1 0 hx)
-  | _, _, _, .joinCircP prem _ hJ1 _ _ _ _ _ _ rfl => fun _ hx =>
-      wfI (prem 0) (joinCtxOrP_subset hJ1 0 hx)
+  | _, _, _, .joinAt prem hJ1 _ _ _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxAt_subset hJ1 0 ((hΓ x).mp hx))
+  | _, _, _, .joinAtP prem _ hJ1 _ _ _ _ _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxAtP_subset hJ1 0 ((hΓ x).mp hx))
+  | _, _, _, .joinAtF prem hJ1 _ _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxAtF_subset hJ1 0 ((hΓ x).mp hx))
+  | _, _, _, .joinOr prem hJ1 _ _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxOr_subset hJ1 0 ((hΓ x).mp hx))
+  | _, _, _, .joinOrP prem _ hJ1 _ _ _ _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxOrP_subset hJ1 0 ((hΓ x).mp hx))
+  | _, _, _, .joinOrF prem hJ1 _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxOrF_subset hJ1 0 ((hΓ x).mp hx))
+  | _, _, _, .joinCirc prem hJ1 _ _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxOr_subset hJ1 0 ((hΓ x).mp hx))
+  | _, _, _, .joinCircP prem _ hJ1 _ _ _ _ _ _ hΓ => fun x hx =>
+      wfI (prem 0) (joinCtxOrP_subset hJ1 0 ((hΓ x).mp hx))
 
 /-- Every zone of a derivable irregular sequent lies inside `Ĝ`. -/
 theorem wfI {G : Form} : ∀ {St Th : List Form} {C : Form},

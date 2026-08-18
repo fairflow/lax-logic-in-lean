@@ -364,7 +364,7 @@ def metR_prime {K : Kripke} {G : Form} {a : K.W} {C : Form}
     (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
     MRWit K G a C := by
   by_cases hempty : impPart (lamStar K a G) = []
-  · refine ⟨.barren, rm (gAt G) C, .axR C hCp hC rfl, Or.inl rfl, a, K.le_refl a,
+  · refine ⟨.barren, rm (gAt G) C, .axR C hCp hC (CtxEq.refl _), Or.inl rfl, a, K.le_refl a,
       fun hf => hnf (K.fal_force _ hf), fun X hX => ?_⟩
     have hXG := lamStar_subset_gHat hX
     simp only [gHat, List.mem_append] at hXG
@@ -396,7 +396,7 @@ def metR_prime {K : Kripke} {G : Form} {a : K.W} {C : Form}
       fun hf => hnf (K.fal_force _ hf), ?_⟩
     · refine .joinAt (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
         (fun A B hmem => ?_) (unionAll_circPart_nil_loc hloc (fun j => (wit j).sub))
-        hCp (fun hmem => ?_) hC rfl
+        hCp (fun hmem => ?_) hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
@@ -488,7 +488,7 @@ def metR_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
     fun hf => hnf (K.fal_force _ hf), ?_⟩
   · refine .joinOr (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
       (fun A B hmem => ?_) (unionAll_circPart_nil_loc hloc (fun j => (wit j).sub))
-      ⟨?_, ?_⟩ hC rfl
+      ⟨?_, ?_⟩ hC (CtxEq.refl _)
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
@@ -584,7 +584,7 @@ def metR_primeP {K : Kripke} {G : Form} {a : K.W} {C : Form}
       (fun Y hmem => ?_)
       (fun i j X hX => pf.hlam i X ((wit j).sub hX))
       (Or.inr ⟨rfl, fun i => ⟨rfl, pf.htps i⟩⟩)
-      hCp (fun hmem => ?_) hC rfl
+      hCp (fun hmem => ?_) hC (CtxEq.refl _)
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
@@ -665,7 +665,7 @@ def metR_orP {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
       (fun Y hmem => ?_)
       (fun i j X hX => pf.hlam i X ((wit j).sub hX))
       (Or.inr ⟨rfl, fun i => ⟨rfl, pf.htps i⟩⟩)
-      ⟨?_, ?_⟩ hC rfl
+      ⟨?_, ?_⟩ hC (CtxEq.refl _)
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
@@ -761,7 +761,7 @@ def metR_primeF {K : Kripke} {G : Form} {a : K.W} {C : Form}
     fun hf => hnf (K.fal_force _ hf), ?_⟩
   · refine .joinAtF (fun j => (wit j).der)
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-      (fun A B hmem => ?_) hCp (fun hmem => ?_) hC rfl
+      (fun A B hmem => ?_) hCp (fun hmem => ?_) hC (CtxEq.refl _)
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
@@ -830,7 +830,7 @@ def metR_orF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
     fun hf => hnf (K.fal_force _ hf), ?_⟩
   · refine .joinOrF (fun j => (wit j).der)
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-      (fun A B hmem => ?_) ⟨?_, ?_⟩ hC rfl
+      (fun A B hmem => ?_) ⟨?_, ?_⟩ hC (CtxEq.refl _)
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
