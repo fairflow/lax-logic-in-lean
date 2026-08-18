@@ -396,11 +396,11 @@ maxRS=maxIS=800`), 323/323 cells, 2081 s wall:
   stated candidate is `q1`, so the candidate-override path agrees with
   the stated goals.
 
-Of the 67 still open, **24 stopped at budget rather than at a fixpoint**
-and are frontier markers, re-run at raised budget rather than recorded as
-settled.  The remaining 43 reached a fixpoint: no FRJ(◯) derivation
-exists within the relevance restriction, which is evidence for the cell,
-not a proof of it.
+Of the 67 still open, 24 stopped at budget rather than at a fixpoint.
+Re-run at `lamCap=16` (§9.6) all 24 reach a fixpoint and none is refuted,
+so no verdict on this bank now rests on a budget.  A fixpoint means no
+FRJ(◯) derivation exists within the relevance restriction: evidence for
+the cell, not a proof of it.
 
 ### 9.4 The mathematics
 
@@ -423,20 +423,78 @@ discharged on a workload where brute force had already stopped.
 Consequence for the dictionary — stated carefully, because the cells are
 not all of one kind.  Each open cell of `wip/rnDict.lean` carries a
 CANDIDATE LIST and is sorried at the first open candidate, so refuting
-the stated collapse eliminates one candidate, and closes the cell only
-when that candidate was the last:
+the stated collapse eliminates ONE candidate and closes the cell only
+when that candidate was the last.  Five of the sixteen were sorried at
+their last candidate and so close immediately: `cAnd_10_13` [10],
+`cImp_8_4` [5], `cImp_8_5` [5], `cImp_10_7` [7], `cImp_11_7` [7].  The
+other eleven all had candidates [1, 11, 13] and were refuted at `q1`
+only, which is what §9.5 goes after.
 
-* **Candidate list exhausted, so the fifteen-representative closure
-  FAILS** (five new cells, on top of the four already known — nine in
-  all): `cAnd_10_13` [10], `cImp_8_4` [5], `cImp_8_5` [5],
-  `cImp_10_7` [7], `cImp_11_7` [7].
-* **Candidate list narrowed, cell still open** (eleven cells, all with
-  candidates [1, 11, 13], all refuted at `q1`, leaving `q11` and `q13`):
-  `cAnd_11_13`, `cOr_8_10`, `cOr_8_11`, `cOr_8_12`, `cOr_8_14`,
-  `cOr_10_12`, `cOr_10_14`, `cOr_11_12`, `cOr_11_14`, `cImp_12_11`,
-  `cBox_11`.
+### 9.5 Walking the candidate list — `--cand=K`
 
-The failures cluster on `q8`, `q10`, `q11`, `q12` against `q4`, `q5`,
-`q7`, `q12`–`q14`: the same region as the four already known, which is
-evidence of a structural gap in the closure rather than an artefact of
-one cell.
+`lake exe rnfrj --cand=K` retargets a cell at representative `qK` instead
+of the one the table assigns; `lake exe rnpin … K` pins the result.  The
+control is that `--cand=1` reproduces all eleven `q1` hits.  Running the
+eleven narrowed cells against their two survivors:
+
+| cell | `q1` | `q11` | `q13` | outcome |
+|---|---|---|---|---|
+| `cOr_10_12`  | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cOr_11_12`  | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cImp_12_11` | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cBox_11`    | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cOr_8_10`   | ✗ | survives (fixpoint) | ✗ | `q11` only |
+| `cOr_8_11`   | ✗ | survives (budget) | ✗ | `q11` only |
+| `cOr_10_14`  | ✗ | survives (budget) | ✗ | `q11` only |
+| `cOr_11_14`  | ✗ | survives (budget) | ✗ | `q11` only |
+| `cAnd_11_13` | ✗ | ✗ | survives (budget) | `q13` only |
+| `cOr_8_12`   | ✗ | ✗ | survives (budget) | `q13` only |
+| `cOr_8_14`   | ✗ | survives (budget) | survives (budget) | `q11`, `q13` |
+
+Four more cells therefore have NO surviving candidate, each recorded as a
+single kernel-checked conjunction
+
+    <cell>_no_candidate :
+      ¬ Interd lhs q1 ∧ ¬ Interd lhs q11 ∧ ¬ Interd lhs q13
+
+`[propext, Quot.sound]`.  Its scope is exactly the three candidates it
+names: the other twelve representatives were eliminated by the ≤4-world
+battery that produced the candidate list in the first place, and that
+elimination is recorded in `wip/rnDict.lean`, not re-proved here.
+
+**Running total: the fifteen-representative closure fails at THIRTEEN
+cells** — the four already known, the five of §9.4, and these four.
+
+The seven cells with a survivor are narrowed, not settled, and six of
+those seven survivals are at budget rather than at a fixpoint.
+
+### 9.6 The frontier, and where the budget actually binds
+
+Twenty-four of the 67 still-open cells stopped at budget, not at a
+fixpoint.  The first escalation guess — raise `jmax` to 4 — was wrong,
+and measurably so: those cells stopped at rounds 6–8 out of 10, with
+|RS| ≤ 37 and |IS| ≤ 86 against caps of 800.  Neither the round limit
+nor the database caps were binding; `lamCap` was.  Raising `lamCap` from
+10 to 16 and changing nothing else, **all 24 convert from
+"no-derivation-at-budget" to a genuine fixpoint, with zero new
+refutations** (729 s).  So the frontier on this bank is now clear: every
+one of the 67 open cells reaches a fixpoint, and no cell's verdict rests
+on a budget.  That is the difference between a frontier marker and a
+settled cell, and it is why the vocabulary keeps them apart.
+
+Also on the record, per the no-silent-caps rule: `seedsIC` enumerates the
+full valuation lattice only while |Ĝ_at| ≤ 4 and tries three valuations
+above that.  The harness now prints which case it is in.  On RN(◯,{}) it
+prints |Ĝ_at| = 0 — the fragment is variable-free, so the cap never bit
+on this campaign.
+
+### 9.7 What this does not show
+
+The engine is SOUND, not known complete: `no-derivation-at-fixpoint`
+means no FRJ(◯) derivation exists within the relevance restriction, which
+is evidence about a cell and not a proof of it.  Completeness — statement
+(A) — remains OPEN, and nothing here bears on it.  What the campaign does
+establish is the weaker and still useful claim the design set out to
+test: used purely as a countermodel finder, FRJ(◯) reaches models that
+the exhaustive small-model battery cannot, on a workload where that
+battery had already stopped.

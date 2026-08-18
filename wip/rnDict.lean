@@ -743,12 +743,13 @@ theorem cOr_10_11 : Interd (q10.or q11) q11 :=
   ⟨ofG4 (.orL (A := q10) (B := q11) (.head _) (.orR2 (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))) (.orL (A := q6) (B := q10) (.head _) (.orR1 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))) (.orR2 (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))))),
    ofG4 (.orR2 (.orL (A := q6) (B := q10) (.head _) (.orR1 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))) (.orR2 (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _))))))))⟩
 
-/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
-eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
-search — `RNFRJCerts.cOr_10_12_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
-`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
-The statement below is FALSE and the `sorry` only records the failure
-point: nothing may depend on it. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cOr_10_12_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cOr_10_12_q11_FALSE` and `RNFRJCerts.cOr_10_12_q13_FALSE`,
+collected as `RNFRJCerts.cOr_10_12_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cOr_10_12 : Interd (q10.or q12) q1 := sorry
 
 /-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
@@ -764,12 +765,13 @@ The statement below is FALSE and the `sorry` only records the failure
 point: nothing may depend on it. -/
 theorem cOr_10_14 : Interd (q10.or q14) q1 := sorry
 
-/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
-eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
-search — `RNFRJCerts.cOr_11_12_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
-`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
-The statement below is FALSE and the `sorry` only records the failure
-point: nothing may depend on it. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cOr_11_12_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cOr_11_12_q11_FALSE` and `RNFRJCerts.cOr_11_12_q13_FALSE`,
+collected as `RNFRJCerts.cOr_11_12_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cOr_11_12 : Interd (q11.or q12) q1 := sorry
 
 /-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
@@ -1325,12 +1327,13 @@ theorem cImp_12_10 : Interd (q12.ifThen q10) q10 :=
   ⟨ofG4 (.impR (.impLLax (A := q7) (B := q10) (.tail _ (.head _)) (.orR2 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))) (.impLImp (A := q3) (B := q0) (D := q2) (.head _) (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.tail _ (.head _))) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))) (.laxL (A := q0) (.head _) (.botL (.head _)))))),
    ofG4 (.impR (.impR (.laxL (A := q7) (.tail _ (.head _)) (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.tail _ (.tail _ (.head _)))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q7) (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))))⟩
 
-/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
-eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
-search — `RNFRJCerts.cImp_12_11_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
-`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
-The statement below is FALSE and the `sorry` only records the failure
-point: nothing may depend on it. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cImp_12_11_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cImp_12_11_q11_FALSE` and `RNFRJCerts.cImp_12_11_q13_FALSE`,
+collected as `RNFRJCerts.cImp_12_11_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cImp_12_11 : Interd (q12.ifThen q11) q1 := sorry
 
 theorem cImp_12_13 : Interd (q12.ifThen q13) q1 :=
@@ -1479,12 +1482,13 @@ theorem cBox_10 : Interd q10.somehow q10 :=
   ⟨ofG4 (.impR (.laxL (A := q10) (.tail _ (.head _)) (.impLImp (A := q3) (B := q0) (D := q2) (.head _) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q10) (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impLImp (A := q3) (B := q0) (D := q2) (.head _) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.laxR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _))))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))),
    ofG4 (.laxR (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _))))))⟩
 
-/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
-eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
-search — `RNFRJCerts.cBox_11_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
-`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
-The statement below is FALSE and the `sorry` only records the failure
-point: nothing may depend on it. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cBox_11_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cBox_11_q11_FALSE` and `RNFRJCerts.cBox_11_q13_FALSE`,
+collected as `RNFRJCerts.cBox_11_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cBox_11 : Interd q11.somehow q1 := sorry
 
 /-- OPEN CELL: candidates [9, 12, 14] neither proved (both searchers) nor

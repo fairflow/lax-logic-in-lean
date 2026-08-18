@@ -24,7 +24,12 @@ def q(src):
 blocks, thms, names = [], [], []
 for path in sorted(glob.glob(os.path.join(certdir, '*.txt'))):
     base = os.path.basename(path)[:-4]
-    cell, tag = base.rsplit('.', 1)
+    parts = base.split('.')
+    cell, tag = parts[0], parts[-1]
+    # `<cell>.qK.<tag>` retargets the cell at representative qK instead of
+    # the one the table assigns: that is how a SURVIVING candidate of an
+    # open cell's candidate list is pinned.
+    cand = int(parts[1][1:]) if len(parts) == 3 and parts[1].startswith('q') else None
     txt = open(path).read()
     m = re.search(r'-- BEGIN CERTIFICATE --\n(.*?)\n-- END CERTIFICATE --', txt, re.S)
     if not m:
@@ -33,6 +38,10 @@ for path in sorted(glob.glob(os.path.join(certdir, '*.txt'))):
     tab = tab.replace('FRJ.Search.Tab', 'Search.Tab')
     lhs, rhs, status = cells[cell]
     lhs, rhs = q(lhs), q(rhs)
+    if cand is not None:
+        rhs = f'RNBank.q{cand}'
+    sfx = '' if cand is None else f'_q{cand}'
+    cell = cell + sfx          # every emitted name carries the candidate
     nm = f'cm_{cell}_{tag}'
     # which entailment the direction refutes
     if tag == 'fwd':          # lhs ⊃ rhs  refutes  Interd.1 : LaxND [lhs] rhs
@@ -77,13 +86,25 @@ conditions and the refutation are both `decide`, and the conclusion goes
 through `FRJ.not_entails_of_countermodel`, which is a theorem about the
 original `LaxND` judgment.  The search is nowhere in the certificate.
 
-Every cell listed here is stated as `sorry` in `wip/rnDict.lean` and was NOT
-refuted by the exhaustive ≤4-world battery — every model below needs five
-worlds or more, which is why they were open.  Each one is a cell where the
-fifteen-representative closure of the variable-free fragment FAILS, so each
-adds to the four already recorded in `docs/rn-dictionary-status.md`.
+Every goal below was NOT refuted by the exhaustive ≤4-world battery: every
+model here needs five worlds or more, which is why these were open.
 
-Cells refuted here: {len(names)} — {', '.join(names)}.
+READ THE NAMES CAREFULLY.  An open cell of `wip/rnDict.lean` carries a
+CANDIDATE LIST and is sorried at the FIRST open candidate, so refuting the
+stated collapse eliminates ONE candidate and closes the cell only when that
+candidate was the last.
+
+* `<cell>_FALSE` refutes the collapse as the dictionary states it.
+* `<cell>_qK_FALSE` refutes the collapse against representative `qK`
+  instead — that is how a SURVIVING candidate is eliminated.
+* `<cell>_no_candidate` is emitted only where every candidate is gone, and
+  IS the statement that the fifteen-representative closure fails at that
+  cell.  Its scope is exactly the candidates named in it: the remaining
+  representatives were eliminated earlier by the ≤4-world battery, which is
+  what produced the candidate list, and that elimination is recorded in
+  `wip/rnDict.lean`, not re-proved here.
+
+Goals refuted here: {len(names)} — {', '.join(names)}.
 -/
 import FRJ.Search.Pin
 import LaxLogic.PLLSemUIFrag
@@ -95,7 +116,35 @@ open FRJ
 
 """)
 print('\n'.join(blocks))
+# Where every candidate of a cell has been refuted, the closure fails there.
+byCell = {}
+for n in names:
+    m = re.match(r'(.*?)(?:_q(\d+))?$', n)
+    base = m.group(1) if m.group(2) else n
+    byCell.setdefault(base, []).append(n)
+exh = []
+for base, got in sorted(byCell.items()):
+    stated = cells[base][1] if base in cells else None
+    cands = {stated} | {f'q{n.rsplit("_q",1)[1]}' for n in got if '_q' in n.rsplit('_',1)[0]+'_'+n.rsplit('_',1)[1] and re.search(r'_q(\d+)$', n)}
+    have = {stated} | {re.search(r'_q(\d+)$', n).group(1) and 'q'+re.search(r'_q(\d+)$', n).group(1) for n in got if re.search(r'_q(\d+)$', n)}
+    if len(have) >= 3:
+        parts = ' ∧ '.join(f'¬ PLLND.SemUI.Interd ({q(cells[base][0])}) (RNBank.{c})'
+                           for c in sorted(have, key=lambda x: int(x[1:])))
+        proof = ', '.join(f'{base}{"" if c == stated else "_" + c}_FALSE'
+                          for c in sorted(have, key=lambda x: int(x[1:])))
+        print(f'''/-! ### `{base}` — NO candidate survives, so the closure FAILS here
+
+The candidate list of this cell was `[1, 11, 13]`; all three are now
+eliminated by kernel-checked countermodels.  The other twelve
+representatives were eliminated by the ≤4-world battery recorded in
+`wip/rnDict.lean`, so this theorem's scope is exactly the three named. -/
+
+theorem {base}_no_candidate :
+    {parts} :=
+  ⟨{proof}⟩
+''')
+        exh.append(f'{base}_no_candidate')
 print('/-! ## Axiom pins -/\n')
-for t in thms:
+for t in thms + exh:
     print(f'#print axioms {t}')
 print('\nend RNFRJCerts')
