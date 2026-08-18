@@ -771,9 +771,11 @@ modulo engine faithfulness: minimise and escalate to kernel).
 layer, not only its faithfulness: a rule-closure fixpoint below every
 cap says nothing when a rule's instances are under-enumerated.  The
 `dn_circ_and` erasure showed exactly that (2026-08-17): reported
-`vacuous-CERTAIN` at both bounds while `FRJ.completeness` derives it —
+`vacuous-CERTAIN` at both bounds (the verdict now printed as
+`vacuous-at-fixpoint`: there is no CERTAIN category, a fixpoint is only
+a fixpoint) while `FRJ.completeness` derives it —
 the `⊃∉` zone enumeration was the gap (`thetaCandidates`).  Any future
-`vacuous-CERTAIN`/`FAIL-CANDIDATE` on a cell with a known countermodel
+`vacuous-at-fixpoint`/`FAIL-CANDIDATE` on a cell with a known countermodel
 is to be read the same way: check the enumeration before the
 statement. -/
 
@@ -811,7 +813,7 @@ def runEPair (cfg : Config) (c : EPair) : IO Unit := do
   let fixG := !stG.lamCapped && !stG.dbCapped && stG.roundsUsed < cfg.rounds
   let v :=
     if !hitE then
-      if fixE then "transfer:vacuous-CERTAIN (erasure underivable — cell mis-scoped?)"
+      if fixE then "transfer:vacuous-at-fixpoint (erasure underivable — cell mis-scoped?)"
       else "transfer:vacuous (erasure not reached at budget — raise)"
     else if hitG then "transfer:pass"
     else if fixG then "transfer:FAIL-CANDIDATE (G-saturation complete, no derivation!)"

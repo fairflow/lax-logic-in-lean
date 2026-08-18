@@ -165,6 +165,17 @@ def main (args : List String) : IO Unit := do
   let banner := "RN(◯,{}) bank"
   IO.println s!"{banner}: {RNBank.cells.length} cells (proved {RNBank.count .proved}, refuted {RNBank.count .refuted}, open {RNBank.count .«open»}); running {sel.length}"
   IO.println s!"engine={engineName} rounds={cfg.rounds} jmax={cfg.jmax} pmax={cfg.pmax} lamCap={cfg.lamCap} maxRS={cfg.maxRS} maxIS={cfg.maxIS}"
+  -- No silent caps: `seedsIC` enumerates the full valuation lattice only
+  -- while |Ĝ_at| ≤ 4, and above that tries three valuations.  Report the
+  -- worst |Ĝ_at| over the selected goals so a capped run is never read as
+  -- an exhaustive one.  (RN(◯,{}) is variable-free, so this is 0 there.)
+  let maxAt : Nat := sel.foldl (fun (m : Nat) (c : RNBank.Cell) =>
+    c.forms.foldl (fun (m : Nat) (p : String × Form) =>
+      max m (FRJ.gAt p.2).length) m) 0
+  IO.println (if maxAt ≤ 4 then
+      s!"seedsIC valuation lattice: FULL on every goal (max |Ĝ_at| = {maxAt} ≤ 4)"
+    else
+      s!"seedsIC valuation lattice: CAPPED — max |Ĝ_at| = {maxAt} > 4, so goals above the cap try 3 valuations, not 2^|Ĝ_at|")
   let mut t : Tally := ({} : Tally)
   for c in sel do
     t ← runCell fast cfg c t

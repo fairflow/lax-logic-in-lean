@@ -1070,6 +1070,15 @@ the finite-poset countermodel property for PLL, OPEN in repo.  Full
 text: that session's scratchpad `frj-canonical-comparison.md`, offered
 as `docs/frj-canonical-comparison.md`.
 
+**Forward pointer.**  The `◯`-corner named in (i)/(ii) above is the one
+§15 closes, on cone-grounded frames, sorry-free.  The conjectured
+revision (pledge as world data) is therefore NOT the only route through
+the corner, and should be re-read against §15 before it is scoped.  For
+the search-engine consequences of all this — FRJ(◯) used as a
+countermodel finder independently of the OPEN completeness question —
+see `docs/frjo-search-design.md`, whose §9 records the first campaign:
+sixteen RN(◯,{}) dictionary cells refuted with kernel-checked models.
+
 ---
 
 ## §15  The `◯`-corner kernel closed on cone-grounded frames (2026-08-18)
