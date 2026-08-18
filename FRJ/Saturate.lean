@@ -1215,16 +1215,140 @@ def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
       exact List.mem_filter.mpr ⟨lamStar_subset_gHat hX,
         (force_classForce hmax hinf X).1 hsfL (K.forceStar_force hstar)⟩ }
 
+/-! ### The kernel's own hypothesis makes the corner cone-trivial
+
+The supply `CircSupply` is asked for at a world `a` every PROPER
+`≤`-extension of which forces the body `Z`, and at which `◯Z` is
+nevertheless refuted.  That already pins the modal cone of `a` down to
+`{a}`:
+
+    a ⊮ ◯Z   and   (∀ u > a, u ⊩ Z)   imply   ∀ c, Rm a c → c = a.
+
+For if `a Rm c` with `c ≠ a` then `c ⊩ Z` (by `sub_mi` and the corner
+hypothesis), and every `b ≥ a` then has a `Z`-forcing `Rm`-successor —
+`c` when `b = a`, `b` itself otherwise — i.e. `a ⊩ ◯Z`.  This is
+`docs/frj-w4.md` §10 fact 3, and it is now a lemma rather than an
+observation. -/
+
+/-- **The corner is cone-trivial.**  No hypothesis on the modal frame. -/
+theorem coneTrivial_of_corner {K : Kripke} {a : K.W} {Z : Form}
+    (hnf : ¬ K.force a (.circ Z))
+    (hsole : ∀ u, K.le a u → u ≠ a → K.force u Z) : K.ConeTrivial a := by
+  intro c hrm
+  by_contra hne
+  refine hnf (fun b hab => ?_)
+  by_cases hba : b = a
+  · subst hba
+    exact ⟨c, hrm, hsole c (K.sub_mi hrm) hne⟩
+  · exact ⟨b, K.rm_refl b, hsole b hab hba⟩
+
+/-- Hence the corner world's `Λ*` is circ-free — the pledge machinery is
+never needed AT the world where the kernel is asked for. -/
+theorem circPart_lamStar_nil_of_corner {K : Kripke} {G : Form} {a : K.W}
+    {Z : Form} (hnf : ¬ K.force a (.circ Z))
+    (hsole : ∀ u, K.le a u → u ≠ a → K.force u Z) :
+    circPart (lamStar K a G) = [] :=
+  circPart_lamStar_nil_of_coneTrivial (coneTrivial_of_corner hnf hsole)
+
+/-! ### Discharging the kernel: cone-trivial ⇒ maximal
+
+`circWit_of_maximal` wants `≤`-maximality at the demanding world, and
+the corner supplies cone-triviality.  The gap between the two is a
+property of the FRAME alone, so name it and discharge the kernel from
+it. -/
+
+/-- **The frame condition**: every cone-trivial world is `≤`-maximal.
+Equivalently, every non-maximal world has a proper modal successor. -/
+def Kripke.ConeGrounded (K : Kripke) : Prop :=
+  ∀ a : K.W, K.ConeTrivial a → ∀ u, K.le a u → u = a
+
+/-- `Rm = ≤` is cone-grounded: there cone-triviality IS maximality.
+(`sub_mi` is the other inclusion, so `hfull` is the whole of `Rm = ≤`.) -/
+theorem Kripke.coneGrounded_of_rmFull {K : Kripke}
+    (hfull : ∀ a b : K.W, K.le a b → K.Rm a b) : K.ConeGrounded :=
+  fun _ hcone _ hu => hcone _ (hfull _ _ hu)
+
+/-- A discrete frame is cone-grounded, vacuously in the conclusion. -/
+theorem Kripke.coneGrounded_of_discrete {K : Kripke}
+    (hdisc : ∀ a u : K.W, K.le a u → u = a) : K.ConeGrounded :=
+  fun a _ u hu => hdisc a u hu
+
+/-- **The kernel discharged on cone-grounded frames.**  The corner
+forces cone-triviality, the frame condition turns that into maximality,
+and the generalised `Ax^I◯` closes it. -/
+def circSupply_of_coneGrounded {K : Kripke} {G : Form}
+    (hg : K.ConeGrounded) : CircSupply K G :=
+  fun a Z hZ hnf hsole =>
+    circWit_of_maximal (hg a (coneTrivial_of_corner hnf hsole)) hZ hnf
+
+/-- **Completeness over cone-grounded models, modulo the pledge supply
+only.**  The `◯`-corner kernel — the open half of FRJ◯ completeness
+since W4 §10 — is GONE on this class; what remains is the pledge
+supply, whose own discharge is a separate question (it is vacuous on
+transparent models, `circPart_lamStar_nil_of_transparent`, but transparent
+frames are cone-grounded only when discrete). -/
+theorem completeness_of_coneGrounded {K : Kripke} {G : Form}
+    (hg : K.ConeGrounded) (psup : PledgeSupply K G)
+    (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_supply psup (circSupply_of_coneGrounded hg) hK
+
+/-- **Completeness over `Rm = ≤` models, modulo the pledge supply.**
+This is the frame every model extracted from a derivation carries, and
+the headline instance of the previous theorem. -/
+theorem completeness_of_rmFull {K : Kripke} {G : Form}
+    (hfull : ∀ a b : K.W, K.le a b → K.Rm a b) (psup : PledgeSupply K G)
+    (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_coneGrounded (Kripke.coneGrounded_of_rmFull hfull) psup hK
+
+/-! ### An unconditional instance: goals with no `◯` on the left
+
+The pledge supply is asked for only at worlds where `Λ*` carries a
+`◯`-formula, and `Λ*_b ⊆ Sf^L(G)`.  So a goal whose LEFT subformulas are
+`◯`-free discharges it for every model at once — with `◯` still free to
+occur anywhere on the RIGHT, since `Sf^R(G)` is untouched.  Combined
+with the previous theorem this is completeness with no side condition
+for a genuinely modal class. -/
+
+/-- `Λ*` is circ-free at every world when `Sf^L(G)` is. -/
+theorem circPart_lamStar_nil_of_sfL_circFree {K : Kripke} {G : Form} {b : K.W}
+    (hcf : ∀ X ∈ sfL G, X.isCirc = false) :
+    circPart (lamStar K b G) = [] :=
+  eq_nil_of_forall_not_mem (fun X hX => by
+    have h1 : X ∈ lamStar K b G := circPart_subset hX
+    have h2 : X.isCirc = true := (List.mem_filter.mp hX).2
+    rw [hcf X (mem_lamStar.mp h1).1] at h2
+    exact Bool.noConfusion h2)
+
+/-- **Completeness, unconditional, on cone-grounded frames for goals with
+`◯`-free left subformulas.** -/
+theorem completeness_of_coneGrounded_of_circFreeL {K : Kripke} {G : Form}
+    (hg : K.ConeGrounded) (hcf : ∀ X ∈ sfL G, X.isCirc = false)
+    (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_coneGrounded hg
+    (pledgeSupply_of_locFree (fun _ => circPart_lamStar_nil_of_sfL_circFree hcf)) hK
+
+/-- **The headline: completeness with NO side condition for `Rm = ≤`
+models and goals carrying `◯` only on the right.**  Neither supply
+survives — the `◯`-corner kernel dies on the frame, the pledge supply
+dies on the polarity — and neither the model nor the goal is required to
+be `◯`-free. -/
+theorem completeness_of_rmFull_of_circFreeL {K : Kripke} {G : Form}
+    (hfull : ∀ a b : K.W, K.le a b → K.Rm a b)
+    (hcf : ∀ X ∈ sfL G, X.isCirc = false)
+    (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_coneGrounded_of_circFreeL
+    (Kripke.coneGrounded_of_rmFull hfull) hcf hK
+
 /-- **Unconditional completeness over discrete models.**  When every
-world is maximal, `Λ*` is circ-free everywhere and the kernel is
-discharged by `circWit_of_maximal`, so statement (A) holds with no
-side condition.  (The first completeness instance for the FULL modal
-calculus — goals may carry `◯` on both sides.) -/
+world is maximal the frame is cone-grounded (so the kernel goes) and
+`Λ*` is circ-free everywhere (so the pledge supply goes): statement (A)
+holds with no side condition.  (The first completeness instance for the
+FULL modal calculus — goals may carry `◯` on both sides.) -/
 theorem completeness_of_discrete {K : Kripke} {G : Form}
     (hdisc : ∀ a u : K.W, K.le a u → u = a)
     (hK : ¬ K.valid G) : Provable G :=
-  completeness_of_supply
+  completeness_of_coneGrounded (Kripke.coneGrounded_of_discrete hdisc)
     (pledgeSupply_of_locFree (fun b => circPart_lamStar_nil_of_maximal (hdisc b)))
-    (fun a Z hZ hnf _ => circWit_of_maximal (hdisc a) hZ hnf) hK
+    hK
 
 end FRJ

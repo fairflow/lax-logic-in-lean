@@ -1069,3 +1069,108 @@ canonical ≤ is a preorder, FRJ.Kripke finite posets; bridge (C) needs
 the finite-poset countermodel property for PLL, OPEN in repo.  Full
 text: that session's scratchpad `frj-canonical-comparison.md`, offered
 as `docs/frj-canonical-comparison.md`.
+
+---
+
+## §15  The `◯`-corner kernel closed on cone-grounded frames (2026-08-18)
+
+*Branch `frj-deslime`. All statements below are sorry-free with pinned
+`#print axioms` (`FRJ/Audit.lean`).*
+
+### The corner is cone-trivial — §10 fact 3 promoted to a lemma
+
+`CircSupply K G` is asked for at a world `a` with
+
+    ◯Z ∈ Sf^R(G),   a ⊮ ◯Z,   and   ∀ u > a,  u ⊩ Z .
+
+That hypothesis alone pins the modal cone of `a`, with NO assumption on
+the frame:
+
+    coneTrivial_of_corner :  a ⊮ ◯Z  →  (∀ u, a ≤ u → u ≠ a → u ⊩ Z)
+                          →  ∀ c, Rm a c → c = a          (axiom-free)
+
+For if `a Rm c` with `c ≠ a` then `sub_mi` gives `a ≤ c`, so `c ⊩ Z`,
+and every `b ≥ a` then has a `Z`-forcing modal successor — `c` when
+`b = a`, `b` itself otherwise — i.e. `a ⊩ ◯Z`.
+
+`Kripke.ConeTrivial` is now a named predicate, and the two `Λ*`
+circ-freeness lemmas are corollaries of a single one:
+
+    circPart_lamStar_nil_of_coneTrivial : ConeTrivial a → circPart (Λ*_a) = []
+
+with `..._of_maximal` (via `sub_mi`) and `..._of_transparent` (`Rm = id`
+is cone-triviality everywhere) both derived from it.
+
+### The frame condition, and the discharge
+
+`circWit_of_maximal` wants `≤`-maximality at the demanding world; the
+corner delivers cone-triviality. The gap is a property of the frame
+alone, so name it:
+
+    Kripke.ConeGrounded K  :=  ∀ a, ConeTrivial a → ∀ u, a ≤ u → u = a
+
+i.e. every non-maximal world has a proper modal successor. Then
+
+    circSupply_of_coneGrounded : ConeGrounded K → CircSupply K G
+
+**The `◯`-corner kernel — the open half of FRJ◯ completeness since W4
+§10 — is closed on every cone-grounded frame.** In particular on
+`Rm = ≤` (`coneGrounded_of_rmFull`), which is the frame every model
+extracted from a derivation carries, and on discrete frames (which is
+how `completeness_of_discrete` is now derived).
+
+### What that leaves, and the unconditional instance
+
+    completeness_of_coneGrounded : ConeGrounded K → PledgeSupply K G →
+                                   ¬ K.valid G → Provable G
+    completeness_of_rmFull       : (∀ a b, a ≤ b → Rm a b) → PledgeSupply K G →
+                                   ¬ K.valid G → Provable G
+
+so on these frames the pledge supply is the *only* remaining condition.
+It is asked for only where `Λ*` carries a `◯`, and `Λ*_b ⊆ Sf^L(G)`, so
+it dies on a polarity condition on the GOAL:
+
+    circPart_lamStar_nil_of_sfL_circFree :
+        (∀ X ∈ Sf^L(G), X.isCirc = false) → circPart (Λ*_b) = []
+
+    completeness_of_rmFull_of_circFreeL :
+        (∀ a b, a ≤ b → Rm a b) → (∀ X ∈ Sf^L(G), X.isCirc = false) →
+        ¬ K.valid G → Provable G
+
+**Unconditional**, and genuinely modal: the hypothesis is that no
+*negative-polarity* subformula of `G` is headed by `◯`; `◯` may occur
+freely on the right, and inside negative subformulas as long as it is
+not their head. Measured on the `frjsat` corpus (32 cells): 21 satisfy
+it, against 3 that are wholly `◯`-free — so **18 corpus cells are
+newly covered**, including `circ_peirce`, `nn_circ_bot`,
+`corner_poisoned_axic`, `corner_poisoned_ups`, `corner_residue`,
+`corner_taut_body`.
+
+`FRJ/Modal.lean` Screen 6 checks the theorem is not vacuous off the
+discrete frame: `branchP` (root below incomparable `l ⊩ p` and
+`r ⊩ nothing`, `Rm = ≤`, infallible) refutes `(◯p ⊃ q) ⊃ q`, and the
+theorem returns a derivation — `provable_circ_peirce_via_coneGrounded`,
+agreeing with the pinned hand derivation.
+
+### The two discharges are complementary
+
+    discrete_of_transparent_of_coneGrounded :
+        (Rm = id) → ConeGrounded K → (≤ = id)          (axiom-free)
+
+Transparency kills the pledge supply; cone-groundedness kills the
+`◯`-corner. A frame with both is discrete. So the two frame routes do
+not combine, and the transparent case still runs through the erasure
+transfer (E) of §14. The completeness map is now:
+
+| class | pledge supply | `◯`-corner | status |
+|---|---|---|---|
+| `◯`-free goal, any model | vacuous | vacuous | PROVED |
+| discrete model, any goal | vacuous | closed (frame) | PROVED |
+| `Rm = ≤`, `Sf^L(G)` circ-free | vacuous (polarity) | closed (frame) | **PROVED (new)** |
+| `Rm = ≤`, any goal | OPEN | closed (frame) | conditional |
+| transparent (`Rm = id`), any goal | vacuous | OPEN — or (E) | conditional |
+| general | OPEN | OPEN | conditional |
+
+**The remaining open content on `Rm = ≤` frames is `PledgeSupply`
+alone**, at worlds carrying a `Λ*`-modal formula — i.e. worlds `a` with
+`◯Y ∈ Sf^L(G)`, `a ⊩ ◯Y`, `a ⊮ Y`. That is where the next round goes.

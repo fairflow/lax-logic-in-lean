@@ -143,6 +143,39 @@ namespace FRJ
 #guard_msgs in
 #print axioms transportR
 
+/-! ### The `◯`-corner kernel, closed on cone-grounded frames (2026-08-18)
+
+`coneTrivial_of_corner` turns W4 §10 fact 3 from an observation into a
+lemma: the kernel's own hypothesis pins the demanding world's modal cone
+to itself, with NO assumption on the frame.  On a frame where
+cone-triviality implies maximality — `Rm = ≤` in particular — the
+generalised `Ax^I◯` then closes the kernel outright. -/
+
+/-- info: 'FRJ.coneTrivial_of_corner' does not depend on any axioms -/
+#guard_msgs in
+#print axioms coneTrivial_of_corner
+
+/-- info: 'FRJ.circSupply_of_coneGrounded' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms circSupply_of_coneGrounded
+
+/-- info: 'FRJ.completeness_of_coneGrounded' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_coneGrounded
+
+/-- info: 'FRJ.completeness_of_rmFull' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_rmFull
+
+-- The unconditional instance: no supply hypothesis, `◯` free on the right.
+/-- info: 'FRJ.completeness_of_rmFull_of_circFreeL' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_rmFull_of_circFreeL
+
+/-- info: 'FRJ.discrete_of_transparent_of_coneGrounded' does not depend on any axioms -/
+#guard_msgs in
+#print axioms discrete_of_transparent_of_coneGrounded
+
 /-! ## W3 and the promise-join screen -/
 
 /-- info: 'FRJ.Kripke.fal_force' does not depend on any axioms -/

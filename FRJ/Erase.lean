@@ -229,20 +229,27 @@ theorem filter_eq_nil_of {α : Type _} {p : α → Bool} :
       simp [ha,
         filter_eq_nil_of (fun b hb => h b (List.mem_cons_of_mem a hb))]
 
+/-- Transparency IS cone-triviality at every world. -/
+theorem coneTrivial_of_transparent {K : Kripke}
+    (hRm : ∀ {a u : K.W}, K.Rm a u → u = a) (b : K.W) : K.ConeTrivial b :=
+  fun _ hc => hRm hc
+
 theorem circPart_lamStar_nil_of_transparent {K : Kripke}
     (hRm : ∀ {a u : K.W}, K.Rm a u → u = a) (b : K.W) (G : Form) :
-    circPart (lamStar K b G) = [] := by
-  refine filter_eq_nil_of ?_
-  intro H hH
-  cases H with
-  | atom p => rfl
-  | bot => rfl
-  | and A B => rfl
-  | or A B => rfl
-  | imp A B => rfl
-  | circ A =>
-      have h := (mem_lamStar.mp hH).2
-      exact absurd ((force_circ_transparent hRm).mp h.1) h.2
+    circPart (lamStar K b G) = [] :=
+  circPart_lamStar_nil_of_coneTrivial (coneTrivial_of_transparent hRm b)
+
+/-- **The two supply discharges meet only at the discrete frame.**  A
+transparent frame is cone-grounded exactly when it is discrete, so the
+`◯`-corner kernel (killed by `ConeGrounded`, `FRJ/Saturate.lean`) and the
+pledge supply (killed by transparency) cannot both be discharged by the
+frame unless `≤` is the identity.  The two routes are genuinely
+complementary, which is why the transparent case still runs through the
+erasure transfer (E). -/
+theorem discrete_of_transparent_of_coneGrounded {K : Kripke}
+    (hRm : ∀ {a u : K.W}, K.Rm a u → u = a) (hg : K.ConeGrounded) :
+    ∀ a u : K.W, K.le a u → u = a :=
+  fun a => hg a (coneTrivial_of_transparent hRm a)
 
 /-- Completeness over transparent models, through the SUPPLY route: the
 pledge side is vacuous there, so only `CircSupply` remains.  (The
