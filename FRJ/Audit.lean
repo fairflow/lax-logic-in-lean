@@ -13,6 +13,8 @@ constructively valid.  `frj_iff_countermodel` is the same theorem with
 that step left to the caller, and it is choice-free.
 -/
 import FRJ.Minimal
+import FRJ.Saturate
+import FRJ.Erase
 
 namespace FRJ
 
@@ -44,6 +46,34 @@ namespace FRJ
 /-- info: 'FRJ.minMod' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms minMod
+
+/-- info: 'FRJ.visit' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms visit
+
+/-- info: 'FRJ.completeness_of_supply' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_supply
+
+/-- info: 'FRJ.completeness_of_discrete' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_discrete
+
+/-- info: 'FRJ.completeness_of_allMet' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_allMet
+
+/-- info: 'FRJ.frj_iff_root_countermodel_of_allMet' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms frj_iff_root_countermodel_of_allMet
+
+/-- info: 'FRJ.completeness_via_closure' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_via_closure
+
+/-- info: 'FRJ.provable_root_countermodel' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_root_countermodel
 
 /-- info: 'FRJ.modR_countermodel' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
@@ -90,5 +120,49 @@ namespace FRJ
 /-- info: 'FRJ.nf_ext' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms nf_ext
+
+/-! ## W3 and the promise-join screen -/
+
+/-- info: 'FRJ.Kripke.fal_force' does not depend on any axioms -/
+#guard_msgs in
+#print axioms Kripke.fal_force
+
+/-- info: 'FRJ.Kripke.exists_common_witness' does not depend on any axioms -/
+#guard_msgs in
+#print axioms Kripke.exists_common_witness
+
+/-- info: 'FRJ.Kripke.exists_common_witness_list' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms Kripke.exists_common_witness_list
+
+/-- info: 'FRJ.Kripke.circ_and' does not depend on any axioms -/
+#guard_msgs in
+#print axioms Kripke.circ_and
+
+/-! ### Erasure transfer (FRJ/Erase.lean, 2026-08-17) -/
+
+/-- info: 'FRJ.force_erase' does not depend on any axioms -/
+#guard_msgs in
+#print axioms force_erase
+
+/-- info: 'FRJ.erase_hcf' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms erase_hcf
+
+/-- info: 'FRJ.completeness_of_transparent_of_lift' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_transparent_of_lift
+
+/-- info: 'FRJ.circPart_lamStar_nil_of_transparent' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms circPart_lamStar_nil_of_transparent
+
+/-- info: 'FRJ.completeness_of_transparent_of_circSupply' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completeness_of_transparent_of_circSupply
+
+/-- info: 'FRJ.clo_lift' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms clo_lift
 
 end FRJ

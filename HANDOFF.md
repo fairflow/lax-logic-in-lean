@@ -1,5 +1,199 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-17 (engine-gap chip) — `dn_circ_and` false negative located and closed
+
+The `frjsat` miss on the ◯-free erasure `¬¬(p∧q) ⊃ (p∧q)` was in the
+`⊃∉` zone enumeration (`stepNotIn`): only `Θmax` and `Θmax` purged of
+SINGLE generators of the antecedent were tried, so the jointly-generated
+`A = p∧q` never got the zone `{q, ¬¬(p∧q)}` (= `Λ*` of the root) that
+the PROVED construction uses.  Fixed by enumerating the ⊆-maximal
+admissible zones from the `Cl` grammar (`thetaCandidates`); `⊃∉` is now
+monotone in the context, so the RS-subsumption's documented exception is
+gone.  Corpus: `dn_circ_and` → `transfer:pass` at both bounds ((E) attack
+8/8); every other line byte-identical.  Record: `docs/frj-w4.md` §14
+second addendum (the earlier hand-trace there was not a legal
+derivation — (J1) fails; the real route and the method note are in the
+addendum).  Untrusted-layer lesson: "engine-CERTAIN" is relative to
+enumeration completeness, not only faithfulness.
+
+## 2026-08-17 (erasure-transfer session) — the (E) build opened
+
+Matthew redirected to the erasure-transfer lemma.  Landed, all green,
+pins in Audit: FRJ/Erase.lean — `erase`/`noCirc`/`erase_hcf`;
+`force_erase` (semantic half, axiom-FREE); `completeness_of_transparent_of_lift`
+(conditional wiring); `force_circ_transparent`,
+`circPart_lamStar_nil_of_transparent` (transparency kills the pledge
+supply), `completeness_of_transparent_of_circSupply`; `clo_lift` + zone
+shape helpers.  Engine attack on (E): 7/7 informative pass (four
+classically-valid erasures, nested ◯◯); `dn_circ_and` exposed an ENGINE
+gap (fixpoint-miss on a provably-derivable ◯-free goal — chip filed).
+Key insight recorded in docs §14 addendum: the transfer recurses on the
+erased derivation tree + decoration size, bypassing the §9 measure
+dichotomy that still blocks every semantic route (even transparently).
+NEXT: barren subfamily FRJbr/FRJbi + embedding (new file, safe);
+Minimal retarget (type ascriptions; touches the proved file — surfaced
+to Matthew before doing it); then the lift itself.
+
+## 2026-08-17 — FRJ◯ completeness campaign: retrospective at stop
+
+Goal (Stop-hook, now cleared): unconditional completeness (A).
+**Not reached; the approach was not converging.**  State at close:
+
+- PROVED (sorry-free, pins `[propext, Quot.sound]`, guards in
+  `FRJ/Audit.lean`): `completeness_of_supply : PledgeSupply K G →
+  CircSupply K G → ¬K.valid G → Provable G`;
+  `provable_root_countermodel` ((B) forward, unconditional);
+  `completeness_of_discrete`; `completeness_via_closure` (◯-free case).
+- REFUTED: minMod as structural recursion (§9 measure dichotomy:
+  Υ-edges force phase priority, ◯-body edges force size priority; the
+  resolving order is model-dependent).
+- OPEN: (A); both supply kernels — as STATEMENTS: neither proved nor
+  extensionally attacked.
+
+Non-convergence mechanism: four interface-refinement cycles (anchor-
+local Λ* → OWit origin transport → θ-riding → origin-circ ground),
+each dissolving its blocking instance and regenerating the same
+residue shape — pledge components refuting the goal while Clo-covering
+◯-bodies — one level up.  Theorem yield per window: large (org +
+conditional theorem) → medium ((γ),(β1) removed side conditions) →
+zero (interfaces and design notes only).
+
+Worked: refute-before-build (§9 killed the literal plan before an
+opaque proof-build failure); the conditional decomposition (the gap is
+two precisely stated kernels, not "completeness is hard"); the corpus
+attack (14 corner families, 28 pass / 5 control / 0 unresolved — the
+END statement stayed credible throughout); choice-free Type-valued
+builders (clean pins).
+
+Failed (method): (1) the supplies never got the standing extensional
+attack — each refinement introduced a new quantified statement that
+went to another analysis window instead of a model search; (2) no
+stop-rule on isomorphic residues — the second identical residue shape
+should have triggered a change of tack, not cycles 3–4; (3) a goal
+hook unreachable in-window drove grinding past diminishing returns.
+
+If resumed: attack `PledgeSupply`/`CircSupply` extensionally FIRST
+(harness exists: `wip/frj_sat.lean`); check the TOCL 2020 completeness
+organisation at source (the saturation-closure organisation is OURS,
+flagged per provenance discipline); only then decide build vs
+re-statement.
+
+## 2026-08-17 (continuation 3) — θ-riding dissolves the §13 impossibility
+
+Antecedent discharges ride θ (fat zones, no hJ2), their Υ-obligations
+met by axIC syntactically; the certified row's remaining semantic
+question is the origin-Λ*-circ ground at promise joins (hbody one
+level up).  (β2) design: bottom-up row construction with a θ-obligation
+accumulator.  OWit interface landed previously; docs §13 addendum.
+
+## 2026-08-17 (continuation 2) — BUILD (β1) LANDED: graded visit
+
+FRWit + free threading + fallible joins (metR_primeF/metR_orF,
+unconditional at circ-carrying worlds); SatStmt t=2; supR takes free
+wits; free-◯ routes through certified.  All green, choice-free.
+PledgeSupply now exercised only on certified chains.  NEXT ((β2)): the
+transported-cov refinement — metI_circ needs only the DEMANDING
+world's Λ* through the row; anchor-Λ*-cov is over-specification and
+contains the one provably-unsatisfiable pledge instance (◯p ∈ Λ*_w at
+body-p anchors); with transported cov the pledged retention ranges
+over b-forced circs only.  docs §13.
+
+## 2026-08-17 (close of window) — graded-demand refinement recorded
+
+tOK is consumed ONLY by ◯-feeding demands: AllMet can be graded
+(certified grade for minRef-anchors of ◯-demands; free grade elsewhere,
+where fallible joins discharge circ-carrying worlds UNCONDITIONALLY).
+PledgeSupply narrows to tOK-graded circ-carrying anchors.  Build order
+for (β): graded split + fallible builders (mechanical), then the
+sharpened pledge question, then CircSupply member-wise.  docs §12
+addendum.
+
+## 2026-08-17 (continuation) — BUILD (γ) LANDED: hloc eliminated
+
+metR_primeP/metR_orP (promise joins pledging the goal; PledgeFam
+against Λ* discharges hJ5/hJ7s/restrictP/restrictC) + visit branching
+per world.  MAIN THEOREM NOW: completeness_of_supply : PledgeSupply →
+CircSupply → ¬valid G → Provable G — statement (A) for EVERY model,
+no hloc, choice-free, audit-guarded.  completeness_of_discrete
+re-derived.  Remaining: build (β) = member-wise discharge of the two
+supplies.  docs §12.
+
+## 2026-08-17 (close) — promise-port design pinned
+
+(γ)-design fixed by two proved constraints: Λ*-circ retention is
+FORCED (unforced bodies can never ride Clo, barren joins have no
+θ-circ zone), and prime promise-pledges must equal the goal (Covers at
+prime = refl only).  So (γ) = promise branches of metR_prime/metR_or
+taking a PledgeSupply input (component family for F over cone(a),
+tOK-shaped, hJ5/hJ7s-satisfying); hloc is then replaced by
+PledgeSupply, and full (A) = member-wise discharge of CircSupply +
+PledgeSupply.  docs §11 fourth addendum.
+
+## 2026-08-17 (late night) — kernel discharge routes at four; killer probe green
+
+Stuck-member analysis: forced `a ⊮ W` + corner-shaped consequent; NEW
+∃-ats Ax^I◯ route (decidable; blocked only by Λ* ⊨_cl Z′); the
+all-routes-blocked configuration self-destructs semantically
+(conjecture: kernel dischargeable member-wise everywhere).  Killer
+probe corner_taut_body PASSES (28/5/0, thirteen corner cells).  Route
+to unconditional (A): seen-mechanism + member-wise discharge + promise
+port (docs §11 third addendum).
+
+## 2026-08-17 (night) — residue probes green; seen-mechanism designed
+
+corner_residue / corner_residue_poisoned / corner_selfloop all PASS
+(27/5/0).  Self-loop reading: classForce(◯Z⊃Z) is a tautology, so the
+Ax^I◯ zone always carries the self-loop imp.  The seen-mechanism
+(visit parameter of in-flight ◯-bodies, measure (ht, |sfR|−|seen|, t,
+|C|)) is designed in docs §11 second addendum — it reduces CircSupply
+to the Z ∈ seen self-referential instance, to be discharged member-wise.
+Next builds: seen-parameter implementation; promise-mode port for hloc.
+
+## 2026-08-17 (evening) — kernel weakened + discharged in two regimes
+
+`minRef` rewire: the visit floats the irregular ◯-demand to ANY proper
+Z-refuter; `CircSupply` fires only at [every proper extension forces
+Z].  Discharges PROVED: maximal worlds (`circWit_of_maximal`, via the
+polarity-split classical correspondence `force_classForce`, pins
+[propext]) and Clo-groundable rows (`metI_circ_syn`).  NEW UNCONDITIONAL
+instance: `completeness_of_discrete` (statement (A) over discrete
+models, full modal goals).  Remaining to full (A): non-maximal corner
+residue + promise-join port for hloc.  docs §11 addendum.
+
+## 2026-08-17 (later) — saturation-closure gluing LANDED
+
+FRJ/Saturate.lean: the full §10 organisation is in, sorry-free,
+choice-free, audit-guarded.  `completeness_of_supply` proves W4
+statement (A) modulo two named conditions: `hloc` (world-wise circ-free
+Λ*) and `CircSupply` (a tagged grounding Z-row at sole-minZeta-candidate
+worlds — THE open kernel).  The builder layer is complete
+(metI_*/metR_*), `visit` is total on (ht, t, |C|), and the ◯-free case
+re-derives through the closure (`completeness_via_closure`).  Next:
+discharge/weaken CircSupply; port promise joins to lift hloc.  docs
+§11.
+
+## 2026-08-17 — corner attack survived; (B)-soundness half landed modally
+
+The §9 configuration was attacked with poisoned-vacZone cells
+(A := p∨(p⊃q)); both derive (one needed jmax=4 — width cap, recorded).
+Seven corner cells green, no completeness counterexample.  NEW theorem
+`provable_root_countermodel` (Provable G → root-infallible countermodel,
+no ◯-freeness), pinned [propext, Quot.sound], audit-guarded.  FRJ◯
+completeness (A) remains OPEN; saturation-closure decomposition recorded
+at docs/frj-w4.md §10.  Corpus 24/5/0.
+
+## 2026-08-16 late — completeness obstruction pinned; OPEN, route redesigned
+
+The §8 pledged-visit build hit a second obstruction: the irregular ◯-case
+demands a same-world regular premise in the sole-minZeta-candidate
+configuration, creating the call cycle I(◯Z) → R(Z) → I(Y ⊇ ◯Z) that no
+lexicographic measure founds (docs/frj-w4.md §9). Both corner shapes
+probe-PASS on the engine (peirce_compound, circ_ante_circ_goal), so this
+is a proof-recipe failure, not a calculus gap. FRJ◯ completeness is OPEN;
+recommended next design is saturation-closure completeness (induct on the
+engine's round order, axIC seeds break the cycle at the base). All round-2
+material remains green; corpus 19/5/0.
+
 **Last updated:** 2026-08-13 by Opus 5 — see **§12** (LJF◯ rounds 2–3, and the axiom audit moved OUT of the build path), then **§10**, which supersedes §§2 and 7 where they conflict
 **Repo state:** `main` @ 925bc10 — `lake build` clean, every `#guard_msgs` audit green; no live feature branch (`ui-confluence` merged 2026-08-06)
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.
@@ -334,3 +528,194 @@ W0–W6 staging with exit criteria, the six observed failure modes, and
 three decisions explicitly reserved for Matthew — the syntax staging,
 the saturation half of the v4 zone repair, and every modal rule
 statement.
+
+## 14. Update — 2026-08-16 20:49 BST: FRJ◯ W0 and W1 done; the source is not the version we thought
+
+Branch **`claude/frj-redevelopment-69005f`**, fast-forwarded from
+`frj-lax` (`cc6ed4b`), tip `fa7348a`.  Three commits: the plan, the
+fidelity renumbering, W1.
+
+### The finding: the arXiv LaTeX source is not the journal version
+
+`docs/frj-lax-handoff.md`, `docs/frj-fidelity.md` and `FRJ/Basic.lean` all
+describe `frj-corr.tex` as "the full journal version".  It is not; it is a
+close variant.  Both were read at source this session (the arXiv LaTeX in
+full for §2, §3, §3.1, §3.2, §6 **and Appendix A**; the published ACM TOCL
+21(3) text for §2, §3, §3.2, §6).  Inside the in-scope material the
+journal
+
+* adds **Lemma 3.9** — `⊢ Σ;Θ → C` implies `|H| < |C|` for every `H ∈ Σ` —
+  whose proof **uses restriction (RS1)**;
+* states the key soundness lemma's part (ii) with hypothesis `σ_p ⊩ Σ`
+  along a new relation `⇢` (irregular chain entering a join), where the
+  arXiv has `σ_p ⊩ Σ ∩ Sf⁻(C)` along `↦`;
+* swaps (P2)/(P3), renames (PS1)–(PS4) to (RS1)–(RS4), names (J3)/(J4),
+  and moves the height bounds to Theorem 6.1.
+
+The arXiv form of (ii) is the **stronger** statement and needs no (RS)
+restriction, so the plan cites journal numbering but proves the arXiv
+form, and the rule table carries no minimality or maximality side
+conditions.  Full account: `docs/frj-lax-plan.md` §1.
+
+### The numbering was wrong in the record
+
+`docs/frj-fidelity.md` cited five results by numbers that exist in neither
+published version.  Matthew's call: renumbered throughout, with a dated
+table under its Scope section.  `Lemma 3.4 → 3.5`, `Lemma 3.9 → 3.10`,
+`Theorem 3.10 → 3.12`, `Lemma 6.4 → 6.3`, `Lemma 6.5 → 6.7`,
+`Theorem 6.2(i) → 5.13(i)`, and the section references to the journal's
+(its §3.1 is *Restrictions*, §3.2 *Countermodels and Soundness*, §3.3
+*Termination*).  Only citations changed; no mathematics.  **Still
+uncorrected**: `FRJ/Basic.lean`'s header repeats the false provenance
+claim.
+
+### W0 — the plan
+
+`docs/frj-lax-plan.md`: what was read, the arXiv/journal divergence, the
+three numbering systems, **every numbered result to be reproduced** with
+its stage, the module plan with the slime-free constructor shapes written
+out, the choice-free budget, the two screening rounds, the paper's own
+worked formulas as a corpus, and the open decisions.
+
+### W1 — done, builds, pinned
+
+Decision 1 settled by Matthew: **`◯` and constraint models from line
+one**, with `FinCM` as the eventual extraction target.
+
+* `FRJLax/Core.lean`, **zero imports**: `Form` with `circ`, `size`, `Bool`
+  shape predicates, `rm`/`cap` and the membership-equality relation `≐`
+  that will keep the rule table free of green slime, `Sf`/`Sf⁻`,
+  `Sf^L`/`Sf^R` with `SfClosed` proved of the computed sets, the zones,
+  and `Cl` with (Cl2)–(Cl6).
+* `FRJLax/Model.lean`: rooted, antisymmetric, constructively finite
+  Fairtlough–Mendler constraint models; six forcing clauses;
+  monotonicity; (Cl1); validity and countermodels.
+
+Two results worth naming.  `force_of_fallible` — a fallible world forces
+every formula — is the coherence check that makes the `◯`-free fragment of
+this model class validate exactly IPC, since `full_F` is stated for atoms
+only.  `decForce` — forcing is decidable, `◯`-clause included, **with no
+axioms at all** — is what will let `Λ*_α` be an ordinary `List.filter` at
+W4.
+
+`Classical.choice` is absent throughout.  25 `#guard_msgs`-guarded axiom
+pins live in the modules themselves, twelve of them "does not depend on
+any axioms".  No `Finset` anywhere.  `lake build FRJLax` takes under two
+seconds from clean.
+
+### Recorded and deliberately not acted on
+
+Two W5 findings, in `docs/frjlax-fidelity.md` divergences 4 and 5 and in
+`FRJLax/Core.lean` under "The third zone":
+
+1. `Cl` is transcribed **verbatim, with no `◯` clause**.  One is available
+   and (Cl1) would survive it (`force_circ_of_force` is proved and used
+   nowhere), but `Cl` occurs in the side conditions of `⊃∈` and `⊃∉`, so
+   extending it changes the *rules*.
+2. `◯` fits neither of FRJ's two context zones and is **not** absorbed by
+   `Cl` the way `∧` and `∨` are: `◯A` can be forced at `α` without `A`
+   being forced there, exactly as `A ⊃ B` can be forced without `B`.  So
+   W5 is not "add a `◯` right-introduction rule": it is
+   `Ĝ = Ĝ_at ∪ Ĝ_imp ∪ Ĝ_◯` with a three-zone join and an analogue of the
+   support condition (J2).  `gCirc`, `circPart` and `isCirc` are defined
+   and unused against that.
+
+### Next
+
+W2: the rule table, `◯`-free rules only, every return-type index a
+variable.  Then round A of the screen — the three cells that killed
+`FRJO/` v3 (`[⊥] ⇒ p`, `[p ∧ q] ⇒ p`, `[p, p ⊃ q] ⇒ q`) must be
+underivable, and the paper's own valid `G = (p ∧ H) ⊃ (q₁ ∨ q₂)` with
+`H = p ⊃ q₁ ∨ q₂` must not be refutable although an irregular sequent
+carrying it is derivable — before any soundness proof is scoped.
+
+## §2026-08-17 — FRJ◯: soundness landed; W4 (completeness) opened
+
+Branch `claude/frj-redevelopment-69005f`.  The faithful FRJ
+mechanisation (`FRJ/`, TOCL 21(3) 2020 read at source) now carries the
+full modal extension with SOUNDNESS PROVED: `soundness : Provable G →
+¬ PLL G` on `[propext, Quot.sound]` — the promise join (families of
+regular premises become declared `Rm`-successors), the fallible join
+(`⋈^⊥`, refutes `¬◯⊥` and `◯p ⊃ p` inside the calculus), and the
+pledge `Tag` with `tag_cone`.  Records: `docs/frj-promise-join.md`,
+`docs/frj-fidelity.md` (provenance map; the JLC 2021 S4 paper is
+UNOBTAINABLE — decision 2026-08-17, every modal device is OURS),
+`paper/frj-modal/` §9–§10.
+
+W4 = completeness with modal goals, design in `docs/frj-w4.md`.  Done
+today: the missing irregular rule `◯∉` (`FRJi.circNotIn` — repairs a
+genuine W3 completeness gap; witness cell `provable_circ_peirce` for
+`(◯p ⊃ q) ⊃ q`); the `⊩*`/`Λ*` modal clause with Lemma 6.5
+(`mem_clo_lamStar`) generalised to the full signature (`hcf` DROPPED);
+`circPart_lamStar_nil_of_maximal`; Screen 4 (`FRJ/Modal.lean`)
+settling the pledge-float corner by anchor choice.  Next: (T2) the
+forward-saturation engine + certified corpus, then the pledged `minMod`
+visit.  `lake build FRJ` green, 8570 jobs, pins pass.
+
+## §2026-08-17 (later) — FRJ◯ W4 (T2): the saturation engine, and a defect it caught
+
+`wip/frj_sat.lean` / `lean_exe frjsat`: bounded forward saturation for
+FRJ◯, DERIVATION-CARRYING (rows pack their own `FRJr`/`FRJi` terms, so
+rule-faithfulness bugs are type errors and a hit inhabits `Provable G`).
+Corpus run (verdicts from pinned repo results): 10 PLL-underivable
+formulas PASS, 4 PLL-derivable controls saturate underived, and ONE
+GENUINE FLAG — `¬¬◯⊥` is NOT derivable in the current calculus (engine
+fixpoint at 7 rows + the cycle argument): `◯∉`'s zone is capped by
+`Cl` of its premise context, which is empty in the atom-free signature,
+while the realising world forces `¬◯⊥` vacuously — a `t=0 → t=1`
+equal-height edge the paper's measure forbids.  Repair sketched
+(`docs/frj-w4.md` §7): the modal irregular axiom `Ax^I◯` (prime seeds,
+sound by the final-world cone), compound-body lifts, and a
+join-variant-dependent `Υ`-restriction (fallible joins must not consume
+`◯`-right premises).  `nn_circ_bot` stays a standing flag until the
+repair turns it green.
+
+## §2026-08-17 (evening) — FRJ◯ W4: the `Ax^I◯` repair LANDED; corpus fully green
+
+The §7 flag is repaired.  New axiom (`FRJi.axIC`):
+
+    Ax^I◯ :  ⊢  [] ; vacZone(F) → ◯F,    F prime, ◯F ∈ Sf^R(G)
+
+`vacZone G F` = the classical theory, restricted to `Ĝ`, of the
+`F`-refuting BARE final world (`classForce` = Boolean evaluation with
+`◯`-clause `classForce (◯A) = classForce A`), and the axiom MOUNTS that
+world into the extraction (`preI := PreModel.leaf (vacZone G F)`), so
+every consuming join — fallible included — finds the `◯F`-refutation
+witness above its root via `RootAbove`.  Soundness cases proved via
+`leaf_force_iff` (single-world forcing IS `classForce`); the sketched
+join-variant `Υ`-restriction was WRONG and is withdrawn in §7 (the
+variance worry applies only to world-less designs).  Semantic reading
+(Matthew): `◯⊥` is an honorary atom — `u ⊩ ◯⊥ iff ∀v≥u ∃f∈F, v Rm f` —
+and the maximal infallible worlds split bare/`◯⊥`-false vs
+decorated/`◯⊥`-true; `Ax^I◯` supplies the bare half of the seed
+enumeration, the fallible join the decorated half.  Recorded in
+`docs/frj-w4.md` §7.
+
+Witness cell `provable_nn_circ_bot` / `not_PLL_nn_circ_bot_by_calculus`
+pinned `[propext, Quot.sound]` (`FRJ/Fallible.lean`).  Engine seeds
+`seedsIC` wired into `frjsat`; corpus run 3: **11 pass / 4 control-ok /
+0 flags** (`nn_circ_bot` pass at rounds=3; `circ_peirce` one round
+faster; controls hold).  `lake build FRJ` + `frjsat` green, pins pass.
+Next (docs §5): item 6, the pledged `minMod` visit = completeness
+proper.
+
+## §2026-08-17 (night) — FRJ◯ calculus round 2 LANDED; completeness build in progress
+
+Goal: `minMod` for the full modal signature = FRJ◯ completeness.  Probe
+cells first (testing mandate) found TWO more calculus gaps, both
+repaired, soundness re-proved, corpus 17 pass / 5 control-ok / 0 flags
+(commits a70007e, 4e454a2): the modal joins `⋈^◯`/`⋈^◯,p` (◯-goals
+concluded directly from irregular premises with `Z ∈ Υ` — `◯∈` cannot
+reach `◯(A⊃B)`-refutations whose antecedent witness sits strictly above
+the root; cell `circ_circ_imp`), and `Ax^I◯` generalised to arbitrary
+`F` over arbitrary classical valuations (`¬¬◯◯⊥`; cell
+`nn_circ_circ_bot`).  Support devices: the `Covers` chain-certificate
+order replacing equality in every pledge comparison (sound via
+`covers_refutes`), and (J7) turned into a `restrictP` filter on the
+promise contexts (side condition now `hJ7s`, stable zones only).
+Lemma 6.5 (`mem_clo_lamStar`) and `lamStar_mono` now take `¬Fal` at the
+single world that needs it; `minZeta` (the `◯`-analogue of `minEta`)
+added.  REMAINING: the pledged visit `minModP` + `minMod`'s modal cases
++ statements (A)/(B) — full blueprint and the ONE open corner (pledged
+⊃-float onto a modally-loaded anchor; conjectured unrealisable, engine
+is the arbiter) recorded in `docs/frj-w4.md` §8.

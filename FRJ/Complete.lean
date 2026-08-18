@@ -40,6 +40,7 @@ are variables and implications only. -/
 def forceStar (a : K.W) : Form → Prop
   | .atom p => K.V a p
   | .imp A B => K.force a (.imp A B) ∧ ¬ K.force a A
+  | .circ A => K.force a (.circ A) ∧ ¬ K.force a A
   | _ => False
 
 theorem forceStar_force {a : K.W} : ∀ {H : Form}, K.forceStar a H → K.force a H := by
@@ -50,17 +51,21 @@ theorem forceStar_force {a : K.W} : ∀ {H : Form}, K.forceStar a H → K.force 
   | and A B => exact h.elim
   | or A B => exact h.elim
   | imp A B => exact h.1
+  | circ A => exact h.1
 
-/-- A formula satisfying `⊩*` is a variable or an implication. -/
+/-- A formula satisfying `⊩*` is a variable, an implication, or (W4) a
+`◯`-formula — the three determining shapes, i.e. the three zones of
+`Ĝ`. -/
 theorem forceStar_shape {a : K.W} : ∀ {H : Form},
-    K.forceStar a H → H.isPV ∨ H.isImp := by
+    K.forceStar a H → H.isPV ∨ H.isImp ∨ H.isCirc := by
   intro H h
   cases H with
   | atom p => exact Or.inl rfl
   | bot => exact h.elim
   | and A B => exact h.elim
   | or A B => exact h.elim
-  | imp A B => exact Or.inr rfl
+  | imp A B => exact Or.inr (Or.inl rfl)
+  | circ A => exact Or.inr (Or.inr rfl)
 
 /-- `⊩*` is decidable, because `⊩` is. -/
 instance decForceStar (K : Kripke) (a : K.W) :
@@ -71,6 +76,8 @@ instance decForceStar (K : Kripke) (a : K.W) :
   | .or _ _ => inferInstanceAs (Decidable False)
   | .imp A B =>
       inferInstanceAs (Decidable (K.force a (.imp A B) ∧ ¬ K.force a A))
+  | .circ A =>
+      inferInstanceAs (Decidable (K.force a (.circ A) ∧ ¬ K.force a A))
 
 end Kripke
 
@@ -87,9 +94,63 @@ theorem lamStar_subset_gHat {K : Kripke} {a : K.W} {G : Form} :
     lamStar K a G ⊆ gHat G := by
   intro H hH
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hH
-  rcases K.forceStar_shape hst with h | h
-  · exact List.mem_append_left _ (List.mem_filter.mpr ⟨hsf, h⟩)
+  rcases K.forceStar_shape hst with h | h | h
+  · exact List.mem_append_left _
+      (List.mem_append_left _ (List.mem_filter.mpr ⟨hsf, h⟩))
+  · exact List.mem_append_left _
+      (List.mem_append_right _ (List.mem_filter.mpr ⟨hsf, h⟩))
   · exact List.mem_append_right _ (List.mem_filter.mpr ⟨hsf, h⟩)
+
+/-- `Λ*` carries no modal formula (its members are variables and
+implications), so the stable zones of the completeness construction have
+empty modal parts — which is what the barren joins' side condition
+needs. -/
+theorem circPart_lamStar_nil {K : Kripke} {a : K.W} {G : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    {l : List Form} (hsub : l ⊆ lamStar K a G) : circPart l = [] := by
+  refine eq_nil_of_forall_not_mem (fun X hX => ?_)
+  have hsf := (mem_lamStar.mp (hsub (circPart_subset hX))).1
+  have hc := (List.mem_filter.mp hX).2
+  rw [hcf X (List.mem_append_right _ hsf)] at hc
+  exact Bool.noConfusion hc
+
+theorem unionAll_circPart_nil {K : Kripke} {a : K.W} {G : Form} {n : Nat}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    {stab : Fin (n + 1) → List Form} (hsub : ∀ j, stab j ⊆ lamStar K a G) :
+    unionAll (fun j => circPart (stab j)) = [] := by
+  refine eq_nil_of_forall_not_mem (fun X hX => ?_)
+  obtain ⟨j, hj⟩ := mem_unionAll.mp hX
+  rw [circPart_lamStar_nil hcf (hsub j)] at hj
+  exact List.not_mem_nil hj
+
+/-- For a `◯`-free goal, a member of `Λ*` cannot be a `◯`-formula.
+(W4: no longer unconditional — `Λ*` now carries the modal zone.) -/
+theorem lamStar_not_circ {K : Kripke} {a : K.W} {G : Form} {X : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    (hX : X ∈ lamStar K a G) (hc : X.isCirc = true) : False := by
+  rw [hcf X (List.mem_append_right _ (mem_lamStar.mp hX).1)] at hc
+  exact Bool.noConfusion hc
+
+/-- **At a `≤`-maximal world the modal part of `Λ*` is empty** — with no
+world strictly above, `Rm`-successors collapse to the world itself
+(`sub_mi` + maximality), so a forced `◯Y` forces `Y` and the `⊩*`-clause
+excludes it.  This is what terminates W4's pledge recursion: at maximal
+anchors the barren joins suffice and the tag is `barren` for free
+(`docs/frj-w4.md` §3). -/
+theorem circPart_lamStar_nil_of_maximal {K : Kripke} {a : K.W} {G : Form}
+    (hmax : ∀ b, K.le a b → b = a) :
+    circPart (lamStar K a G) = [] := by
+  refine eq_nil_of_forall_not_mem (fun X hX => ?_)
+  have hmem := circPart_subset hX
+  have hc := (List.mem_filter.mp hX).2
+  match X, hc with
+  | .circ Y, _ =>
+      obtain ⟨-, hfY, hnY⟩ : (Form.circ Y ∈ sfL G) ∧ K.force a (.circ Y) ∧
+          ¬ K.force a Y := by
+        obtain ⟨h1, h2⟩ := mem_lamStar.mp hmem
+        exact ⟨h1, h2.1, h2.2⟩
+      obtain ⟨u, hru, huY⟩ := hfY a (K.le_refl a)
+      exact hnY ((hmax u (K.sub_mi hru)) ▸ huY)
 
 /-- Everything in `Λ*_α` is forced at `α`. -/
 theorem forces_lamStar {K : Kripke} {a : K.W} {G : Form} :
@@ -112,15 +173,29 @@ over ALL formulas, so `Cl(Λ_α)` contains `Z ⊃ C` for arbitrary `Z`,
 which need not lie in `Sf^L(G)` and so not in `Λ_α`.  Its proof also has
 a step ("`α ⊩ A ∧ B`, hence `A ∧ B ∈ Λ_α`") that silently needs
 `A ∧ B ∈ Sf^L(G)`.  What the rest of the paper actually uses are the two
-directions proved here and in `forces_clo_lamStar`, and both are true. -/
-theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form} :
+directions proved here and in `forces_clo_lamStar`, and both are true.
+
+**W4.**  The W1 side condition (`Sf^L(G)` `◯`-free) is GONE: `Λ*` now
+carries the modal zone through the `⊩*`-clause for `◯`, and the `◯`-case
+below is the exact analogue of the `⊃`-case — body forced: recurse and
+close under `Clo.circ`; body unforced: `◯X` is determining data and sits
+in `Λ*` literally.  Lemma 6.5 holds for every goal of the modal
+signature; only infallibility remains, for `⊥`. -/
+theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form}
+    (hinf : ¬ K.Fal a) :
     ∀ {A : Form}, A ∈ sfL G → K.force a A → Clo (lamStar K a G) A := by
   intro A
   induction A with
   | atom p =>
       intro hsf hf
       exact .base (mem_lamStar.mpr ⟨hsf, hf⟩)
-  | bot => intro _ hf; exact hf.elim
+  | bot =>
+      -- W3: at a FALLIBLE world `⊥` is forced and `Cl(Λ*)` cannot reach it
+      -- (`Λ*` carries variables and implications only), so this direction
+      -- of Lemma 6.5 — and with it the completeness construction — is a
+      -- statement about infallible models.
+      intro _ hf
+      exact absurd ((K.force_bot a).mp hf) hinf
   | and A B ihA ihB =>
       intro hsf hf
       obtain ⟨hA, hB⟩ := sfL_and hsf
@@ -137,15 +212,176 @@ theorem mem_clo_lamStar {K : Kripke} {a : K.W} {G : Form} :
       by_cases hfa : K.force a A
       · exact .imp (ihB hB (hf a (K.le_refl a) hfa))
       · exact .base (mem_lamStar.mpr ⟨hsf, ⟨hf, hfa⟩⟩)
+  | circ A ihA =>
+      intro hsf hf
+      by_cases hfa : K.force a A
+      · exact .circ (ihA (sfL_circ hsf) hfa)
+      · exact .base (mem_lamStar.mpr ⟨hsf, ⟨hf, hfa⟩⟩)
 
 /-- `Λ*` grows along `≤`, modulo closure: if `α ≤ β` then everything in
 `Λ*_α` lies in `Cl(Λ*_β)`.  (Used where the construction moves to a
 world above.) -/
-theorem lamStar_mono {K : Kripke} {a b : K.W} {G : Form} (hab : K.le a b) :
+theorem lamStar_mono {K : Kripke} {a b : K.W} {G : Form}
+    (hb : ¬ K.Fal b) (hab : K.le a b) :
     ∀ X ∈ lamStar K a G, Clo (lamStar K b G) X := by
   intro X hX
   obtain ⟨hsf, hst⟩ := mem_lamStar.mp hX
-  exact mem_clo_lamStar hsf (K.force_mono hab (K.forceStar_force hst))
+  exact mem_clo_lamStar hb hsf (K.force_mono hab (K.forceStar_force hst))
+
+/-! ## Deleting the fallible worlds
+
+For a `◯`-free goal, a fallible countermodel can be replaced by an
+infallible one: the infallible worlds form a down-set, `◯`-free forcing
+never looks at `Rm`, and the failure witnesses of `⊃` are never fallible
+(a fallible world forces every consequent).  This is what connects the
+soundness theorem — whose extracted model may use declared fallible
+worlds — back to the completeness construction, which consumes an
+infallible countermodel. -/
+
+/-- `K` restricted to its infallible worlds.  Needs the root infallible,
+which every countermodel's root is (`fal_force`). -/
+def Kripke.infPart (K : Kripke) (hr : ¬ K.Fal K.root) : Kripke where
+  W := {w : K.W // ¬ K.Fal w}
+  elems := (K.elems.filter (fun w => decide (¬ K.Fal w))).attachWith _
+    (fun w hw => of_decide_eq_true (List.mem_filter.mp hw).2)
+  complete := by
+    rintro ⟨w, hw⟩
+    rw [List.mem_attachWith]
+    exact List.mem_filter.mpr ⟨K.complete w, decide_eq_true hw⟩
+  decEq := fun a b =>
+    have : DecidableEq K.W := K.decEq
+    decidable_of_iff (a.1 = b.1) Subtype.ext_iff.symm
+  le a b := K.le a.1 b.1
+  le_refl a := K.le_refl a.1
+  le_trans := K.le_trans
+  le_antisymm h h' := Subtype.ext (K.le_antisymm h h')
+  root := ⟨K.root, hr⟩
+  root_le a := K.root_le a.1
+  V a p := K.V a.1 p
+  V_mono h p hp := K.V_mono h p hp
+  Rm a b := K.Rm a.1 b.1
+  rm_refl a := K.rm_refl a.1
+  rm_trans := K.rm_trans
+  sub_mi := K.sub_mi
+  Fal _ := False
+  fal_mono _ h := h
+  fal_V h := h.elim
+  decLe a b := K.decLe a.1 b.1
+  decV a p := K.decV a.1 p
+  decRm a b := K.decRm a.1 b.1
+  decFal _ := isFalse (fun h => h)
+
+/-- **`◯`-free forcing is preserved by the restriction.**  The one
+interesting case is `⊃` right-to-left: a failure witness `v ⊩ A`, `v ⊮ B`
+in `K` cannot be fallible (it would force `B`), so it survives. -/
+theorem infPart_force {K : Kripke} (hr : ¬ K.Fal K.root) :
+    ∀ (A : Form), (∀ X ∈ sf A, X.isCirc = false) →
+    ∀ (w : K.W) (hw : ¬ K.Fal w),
+      ((K.infPart hr).force ⟨w, hw⟩ A ↔ K.force w A) := by
+  intro A
+  induction A with
+  | atom p => exact fun _ _ _ => Iff.rfl
+  | bot =>
+      intro _ w hw
+      exact ⟨fun h => h.elim, fun h => absurd h hw⟩
+  | and A B ihA ihB =>
+      intro hsf w hw
+      have hA := ihA (fun X hX => hsf X (by simp only [sf, List.mem_cons, List.mem_append]; exact Or.inr (Or.inl hX))) w hw
+      have hB := ihB (fun X hX => hsf X (by simp only [sf, List.mem_cons, List.mem_append]; exact Or.inr (Or.inr hX))) w hw
+      simp only [Kripke.force_and, hA, hB]
+  | or A B ihA ihB =>
+      intro hsf w hw
+      have hA := ihA (fun X hX => hsf X (by simp only [sf, List.mem_cons, List.mem_append]; exact Or.inr (Or.inl hX))) w hw
+      have hB := ihB (fun X hX => hsf X (by simp only [sf, List.mem_cons, List.mem_append]; exact Or.inr (Or.inr hX))) w hw
+      simp only [Kripke.force_or, hA, hB]
+  | imp A B ihA ihB =>
+      intro hsf w hw
+      have hsfA : ∀ X ∈ sf A, X.isCirc = false :=
+        fun X hX => hsf X (by simp only [sf, List.mem_cons, List.mem_append]; exact Or.inr (Or.inl hX))
+      have hsfB : ∀ X ∈ sf B, X.isCirc = false :=
+        fun X hX => hsf X (by simp only [sf, List.mem_cons, List.mem_append]; exact Or.inr (Or.inr hX))
+      simp only [Kripke.force_imp]
+      constructor
+      · intro hf v hwv hvA
+        by_cases hfv : K.Fal v
+        · exact K.fal_force B hfv
+        · exact (ihB hsfB v hfv).mp
+            (hf ⟨v, hfv⟩ hwv ((ihA hsfA v hfv).mpr hvA))
+      · intro hf v hwv hvA
+        exact (ihB hsfB v.1 v.2).mpr (hf v.1 hwv ((ihA hsfA v.1 v.2).mp hvA))
+  | circ A _ =>
+      intro hsf
+      have := hsf (.circ A) (self_mem_sf (.circ A))
+      simp [Form.isCirc] at this
+
+/-- Every subformula of `G` is a left or a right subformula. -/
+theorem mem_sfRL_of_sf {G : Form} :
+    ∀ {A : Form}, (A ∈ sfR G ∨ A ∈ sfL G) → ∀ {X : Form}, X ∈ sf A →
+      (X ∈ sfR G ∨ X ∈ sfL G) := by
+  intro A
+  induction A with
+  | atom p =>
+      intro hA X hX
+      simp only [sf, List.mem_singleton] at hX
+      exact hX ▸ hA
+  | bot =>
+      intro hA X hX
+      simp only [sf, List.mem_singleton] at hX
+      exact hX ▸ hA
+  | and A B ihA ihB =>
+      intro hA X hX
+      simp only [sf, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact hA
+      · exact ihA (hA.elim (fun h => Or.inl (sfR_and h).1)
+          (fun h => Or.inr (sfL_and h).1)) hX
+      · exact ihB (hA.elim (fun h => Or.inl (sfR_and h).2)
+          (fun h => Or.inr (sfL_and h).2)) hX
+  | or A B ihA ihB =>
+      intro hA X hX
+      simp only [sf, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact hA
+      · exact ihA (hA.elim (fun h => Or.inl (sfR_or h).1)
+          (fun h => Or.inr (sfL_or h).1)) hX
+      · exact ihB (hA.elim (fun h => Or.inl (sfR_or h).2)
+          (fun h => Or.inr (sfL_or h).2)) hX
+  | imp A B ihA ihB =>
+      intro hA X hX
+      simp only [sf, List.mem_cons, List.mem_append] at hX
+      rcases hX with rfl | hX | hX
+      · exact hA
+      · exact ihA (hA.elim (fun h => Or.inr (sfR_imp h).1)
+          (fun h => Or.inl (sfL_imp h).1)) hX
+      · exact ihB (hA.elim (fun h => Or.inl (sfR_imp h).2)
+          (fun h => Or.inr (sfL_imp h).2)) hX
+  | circ A ihA =>
+      intro hA X hX
+      simp only [sf, List.mem_cons] at hX
+      rcases hX with rfl | hX
+      · exact hA
+      · exact ihA (hA.elim (fun h => Or.inl (sfR_circ h))
+          (fun h => Or.inr (sfL_circ h))) hX
+
+/-- The `hcf` hypothesis extends from the two polarity sets to ALL
+subformulas of `G`. -/
+theorem sf_circFree_of_hcf {G : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false) :
+    ∀ X ∈ sf G, X.isCirc = false := by
+  intro X hX
+  rcases mem_sfRL_of_sf (Or.inl (sfR_self G)) hX with h | h
+  · exact hcf X (List.mem_append_left _ h)
+  · exact hcf X (List.mem_append_right _ h)
+
+/-- **A fallible countermodel of a `◯`-free goal yields an infallible
+one.**  W3's open item (4), closed. -/
+theorem infallible_countermodel {K : Kripke} {G : Form}
+    (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = false)
+    (hK : ¬ K.valid G) :
+    ∃ K' : Kripke, K'.Infallible ∧ ¬ K'.valid G := by
+  have hr : ¬ K.Fal K.root := fun hf => hK (K.fal_force G hf)
+  refine ⟨K.infPart hr, fun _ h => h, fun hv => hK ?_⟩
+  exact (infPart_force hr G (sf_circFree_of_hcf hcf) K.root hr).mp hv
 
 /-! ## The height of a world
 
@@ -229,5 +465,84 @@ def minEta {K : Kripke} {a : K.W} {A B : Form}
           exact absurd (le_maxOn (fun x => ht K x) c cs d hdmem)
             (Nat.not_le.mpr (ht_lt hde hdne.symm)) }
 
+
+/-! ## The minimal `ζ`
+
+The `◯`-analogue of `minEta`: `α ⊮ ◯Z` supplies a world `e ≥ α` whose
+WHOLE `Rm`-cone refutes `Z` (the `∃`-witness of the failed `◯`-clause,
+instantiated at `v := e`).  As with `minEta` this must be DATA.  No
+minimality property is needed: `◯∉`/`⋈^◯` carry no `hAnot`-style
+condition. -/
+
+/-- The candidate worlds: `e ≥ a` whose whole `Rm`-cone refutes `Z`.  The
+cone check runs over the model's enumeration, which is complete. -/
+def zetaCand (K : Kripke) (a : K.W) (Z : Form) : List K.W :=
+  K.elems.filter (fun e =>
+    decide (K.le a e ∧ ∀ v ∈ K.elems, K.Rm e v → ¬ K.force v Z))
+
+theorem mem_zetaCand {K : Kripke} {a : K.W} {Z : Form} {e : K.W} :
+    e ∈ zetaCand K a Z ↔ (K.le a e ∧ ∀ v, K.Rm e v → ¬ K.force v Z) := by
+  simp only [zetaCand, List.mem_filter, decide_eq_true_eq, K.complete e,
+    true_and]
+  exact and_congr_right (fun _ =>
+    ⟨fun h v => h v (K.complete v), fun h v _ => h v⟩)
+
+/-- `α ⊮ ◯Z` means there is a candidate.  Constructive: forcing is
+decidable and the `∃`-witness search runs over the model's own
+enumeration. -/
+theorem zetaCand_ne_nil {K : Kripke} {a : K.W} {Z : Form}
+    (h : ¬ K.force a (.circ Z)) : zetaCand K a Z ≠ [] := by
+  intro hn
+  refine h ?_
+  intro v hav
+  by_cases hex : ∃ u ∈ K.elems, K.Rm v u ∧ K.force u Z
+  · obtain ⟨u, -, hru, hu⟩ := hex
+    exact ⟨u, hru, hu⟩
+  · exact absurd (mem_zetaCand.mpr ⟨hav, fun w hw hfw =>
+      hex ⟨w, K.complete w, hw, hfw⟩⟩) (by rw [hn]; exact List.not_mem_nil)
+
+/-- The cone-refutation witness, as data. -/
+structure MinZeta (K : Kripke) (a : K.W) (Z : Form) : Type where
+  e : K.W
+  le : K.le a e
+  cone : ∀ v, K.Rm e v → ¬ K.force v Z
+
+/-- Pick a candidate.  When `a` itself is one, pick `a` — the construction
+branches on `e = a` and the self-candidate case must be recognised. -/
+def minZeta {K : Kripke} {a : K.W} {Z : Form}
+    (h : ¬ K.force a (.circ Z)) : MinZeta K a Z :=
+  if hself : ∀ v ∈ K.elems, K.Rm a v → ¬ K.force v Z then
+    { e := a, le := K.le_refl a, cone := fun v => hself v (K.complete v) }
+  else
+    match hc : zetaCand K a Z with
+    | [] => absurd hc (zetaCand_ne_nil h)
+    | c :: _ =>
+        have hspec := mem_zetaCand.mp (hc ▸ List.mem_cons_self (l := _))
+        { e := c, le := hspec.1, cone := hspec.2 }
+
+/-- The floating branch is genuine: a non-self `minZeta` witness is
+strictly above.  (If `e = a` then `a`'s own cone refutes `Z`, which is
+the self case.) -/
+theorem minZeta_ne {K : Kripke} {a : K.W} {Z : Form}
+    (hself : ¬ ∀ v ∈ K.elems, K.Rm a v → ¬ K.force v Z)
+    (m : MinZeta K a Z) : m.e ≠ a :=
+  fun he => hself (fun v _ => he ▸ m.cone v)
+
+/-! ## The modal biconditional, soundness half (2026-08-17)
+
+Statement (B) of the W4 targets is `Provable G ↔ ∃ K, ¬Fal root ∧
+¬valid G`.  The forward direction needs no `◯`-freeness: the extracted
+model `modR d` refutes `G` at its root, and a world refuting anything is
+infallible.  The backward direction is FRJ◯ completeness, OPEN
+(docs/frj-w4.md §9). -/
+
+/-- **Soundness in root-infallible form, no `◯`-freeness hypothesis**:
+an `FRJ(G)`-derivation of `G` yields a countermodel whose root is
+infallible.  This is the `→` half of W4 statement (B). -/
+theorem provable_root_countermodel {G : Form} (h : Provable G) :
+    ∃ K : Kripke, ¬ K.Fal K.root ∧ ¬ K.valid G := by
+  obtain ⟨t, Γ, ⟨d⟩⟩ := h
+  have hc := modR_countermodel d
+  exact ⟨modR d, fun hf => hc ((modR d).fal_force G hf), hc⟩
 
 end FRJ
