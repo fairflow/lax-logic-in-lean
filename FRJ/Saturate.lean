@@ -126,7 +126,7 @@ def metI_atom {K : Kripke} {G : Form} {a : K.W} {p : String}
     IrrWit K G a (.atom p) where
   stab := []
   th := nf G ((rm (gAt G) (.atom p)) ++ gImp G ++ gCirc G)
-  der := .axI (.atom p) rfl hC
+  der := .axI (.atom p) rfl hC rfl
   sub := fun _ h => absurd h List.not_mem_nil
   cov := fun _ hx => lamStar_subset_axI hnf hx
   thNf := nf_idem.symm
@@ -137,7 +137,7 @@ def metI_bot {K : Kripke} {G : Form} {a : K.W}
     IrrWit K G a .bot where
   stab := []
   th := nf G ((rm (gAt G) .bot) ++ gImp G ++ gCirc G)
-  der := .axI .bot rfl hC
+  der := .axI .bot rfl hC rfl
   sub := fun _ h => absurd h List.not_mem_nil
   cov := fun _ hx => lamStar_subset_axI hnf hx
   thNf := nf_idem.symm
@@ -167,7 +167,7 @@ def metI_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
   let w₂ := sup₂ (fun hc => hnf (Or.inr hc))
   refine { stab := w₁.stab ++ w₂.stab, th := nf G (cap w₁.th w₂.th)
            der := .orI w₁.der w₂.der (fun X hX => w₂.cov (w₁.sub hX))
-                    (fun X hX => w₁.cov (w₂.sub hX)) hC
+                    (fun X hX => w₁.cov (w₂.sub hX)) hC rfl rfl
            sub := ?_, cov := ?_, thNf := nf_idem.symm }
   · intro X hX
     rcases List.mem_append.mp hX with hX' | hX'
@@ -227,7 +227,7 @@ def metI_imp {K : Kripke} {G : Form} {a : K.W} {A B : Form}
       exact mem_nf.mpr ⟨lamStar_subset_gHat hx, hStLam hx⟩
     refine { stab := nf G (w.stab ++ sdiff (lamStar K a G) w.stab)
              th := nf G (sdiff w.th (sdiff (lamStar K a G) w.stab))
-             der := .impInI (by rw [hzone]; exact w.der) cap_sdiff_eq_nil hAclo hC
+             der := .impInI (by rw [hzone]; exact w.der) cap_sdiff_eq_nil hAclo hC rfl rfl
              sub := ?_, cov := ?_, thNf := nf_idem.symm }
     · intro X hX
       rcases List.mem_append.mp (mem_nf.mp hX).2 with hX' | hX'
@@ -372,7 +372,7 @@ def metR_prime {K : Kripke} {G : Form} {a : K.W} {C : Form}
     (ih : ∀ A : Form, A ∈ sfR G → ¬ K.force a A → IrrWit K G a A) :
     MRWit K G a C := by
   by_cases hempty : impPart (lamStar K a G) = []
-  · refine ⟨.barren, rm (gAt G) C, .axR C hCp hC, Or.inl rfl, a, K.le_refl a,
+  · refine ⟨.barren, rm (gAt G) C, .axR C hCp hC rfl, Or.inl rfl, a, K.le_refl a,
       fun hf => hnf (K.fal_force _ hf), fun X hX => ?_⟩
     have hXG := lamStar_subset_gHat hX
     simp only [gHat, List.mem_append] at hXG
@@ -404,7 +404,7 @@ def metR_prime {K : Kripke} {G : Form} {a : K.W} {C : Form}
       fun hf => hnf (K.fal_force _ hf), ?_⟩
     · refine .joinAt (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
         (fun A B hmem => ?_) (unionAll_circPart_nil_loc hloc (fun j => (wit j).sub))
-        hCp (fun hmem => ?_) hC
+        hCp (fun hmem => ?_) hC rfl
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
@@ -502,7 +502,7 @@ def metR_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
     fun hf => hnf (K.fal_force _ hf), ?_⟩
   · refine .joinOr (fun j => (wit j).der) (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
       (fun A B hmem => ?_) (unionAll_circPart_nil_loc hloc (fun j => (wit j).sub))
-      ⟨?_, ?_⟩ hC
+      ⟨?_, ?_⟩ hC rfl
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
@@ -598,7 +598,7 @@ def metR_primeP {K : Kripke} {G : Form} {a : K.W} {C : Form}
       (fun Y hmem => ?_)
       (fun i j X hX => pf.hlam i X ((wit j).sub hX))
       (Or.inr ⟨rfl, fun i => ⟨rfl, pf.htps i⟩⟩)
-      hCp (fun hmem => ?_) hC
+      hCp (fun hmem => ?_) hC rfl
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
@@ -679,7 +679,7 @@ def metR_orP {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
       (fun Y hmem => ?_)
       (fun i j X hX => pf.hlam i X ((wit j).sub hX))
       (Or.inr ⟨rfl, fun i => ⟨rfl, pf.htps i⟩⟩)
-      ⟨?_, ?_⟩ hC
+      ⟨?_, ?_⟩ hC rfl
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
@@ -775,7 +775,7 @@ def metR_primeF {K : Kripke} {G : Form} {a : K.W} {C : Form}
     fun hf => hnf (K.fal_force _ hf), ?_⟩
   · refine .joinAtF (fun j => (wit j).der)
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-      (fun A B hmem => ?_) hCp (fun hmem => ?_) hC
+      (fun A B hmem => ?_) hCp (fun hmem => ?_) hC rfl
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
@@ -844,7 +844,7 @@ def metR_orF {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
     fun hf => hnf (K.fal_force _ hf), ?_⟩
   · refine .joinOrF (fun j => (wit j).der)
       (fun i j _ X hX => (wit j).cov ((wit i).sub hX))
-      (fun A B hmem => ?_) ⟨?_, ?_⟩ hC
+      (fun A B hmem => ?_) ⟨?_, ?_⟩ hC rfl
     · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
       exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
         (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
@@ -1221,7 +1221,7 @@ def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
         exact absurd ((force_classForce hmax hinf Z).2 (sfR_circ hZ) hcZ) hnfZ
   { stab := []
     th := vacZoneA G (clAts K G a)
-    der := .axIC Z (clAts K G a) clAts_subset hFf hZ
+    der := .axIC Z (clAts K G a) clAts_subset hFf hZ rfl
     sub := List.nil_subset _
     cov := fun X hX => by
       obtain ⟨hsfL, hstar⟩ := mem_lamStar.mp hX
