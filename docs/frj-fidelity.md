@@ -412,8 +412,9 @@ theorem with that step left to the caller, and is choice-free.
    order goals, and when a pin comes out dirty, *bisect* rather than
    guess — `Meta/Audit.lean`'s `#choice_path` does it in one command.
 
-**A statement-level change was needed too, and is recorded here as a
-divergence.** The irregular `⊃∈` rule
+**A statement-level change was needed too, and was recorded here as a
+divergence — until 2026-08-18, when it turned out not to be one.  Read
+the paragraph below with its correction.** The irregular `⊃∈` rule
 
     Σ ; Θ, Λ → B
     ─────────────────  Θ ∩ Λ = ∅,  A ∈ Cl(Σ ∪ Λ)
@@ -426,16 +427,39 @@ because `++` is neither commutative nor idempotent. Nor is there a
 transport — "same members implies same derivations" is **false** here,
 since `Ax^I` pins its own zone.
 
-The fix changes the carrier, not the calculus: contexts are represented
-canonically as `nf G l = (gHat G).filter (· ∈ l)`, the filter of `Ĝ`.
-This is legitimate exactly because `wfR`/`wfI` prove every context of a
-derivation is a subset of `Ĝ`, so `nf G` preserves membership; and every
-side condition in the rule table is membership-based. Two contexts with
-the same members are then literally the same list (`nf_ext`), which is
-the property `++` lacks and `Finset` had. `Ax^I`, `∨` and both sides of
-the irregular `⊃∈` write their computed zones canonically; canonicalising
-*both* sides of `⊃∈` is what keeps Lemma 3.4(i) going through with no
-extra side condition.
+The fix *at the time* changed the carrier, not the calculus: contexts
+were represented canonically as `nf G l = (gHat G).filter (· ∈ l)`, the
+filter of `Ĝ`. Two contexts with the same members are then literally the
+same list (`nf_ext`), which is the property `++` lacks and `Finset` had.
+
+**Correction, 2026-08-18 — `nf` is deleted; there is no divergence
+here.** Read the italicised clause of the paragraph above: *"nor is
+there a transport … since `Ax^I` pins its own zone"*. That pinning is
+green slime, and once it was removed (branch `frj-deslime`) the
+constructor no longer forces a literal zone, so the transport that was
+missing is simply the rule's own side condition. The calculus now states
+its context equations the way the paper states them — as equations
+between **sets**:
+
+    CtxEq l m  :=  ∀ x, x ∈ l ↔ x ∈ m          notation  `l ≐ m`
+
+    Ax^I   Θ' ≐ (Ĝ_at \ {F}) ++ Ĝ_imp ++ Ĝ_◯
+    ∨      Θ' ≐ Θ₁ ∩ Θ₂
+    ⊃∈     premise `Σ ; Θ₁ → B` with `Θ₁ ≐ Θ ++ Λ`;  Σ' ≐ Σ ++ Λ,  Θ' ≐ Θ
+
+and the Lemma 6.4 zone split is the membership argument the paper gives,
+passed straight into the constructor:
+
+    hzone : w.th ≐ sdiff w.th Λ ++ Λ
+    …  .impInI w.der hzone cap_sdiff_eq_nil hAclo hC (CtxEq.refl _) (CtxEq.refl _)
+
+`FRJ.nf` and its six lemmas are gone, as is the `thNf` canonicity field
+of `IrrWit`. One genuine divergence *was* hiding inside `nf`: it had
+strengthened `⊃∈`'s side condition from the paper's `A ∈ Cl(Σ ∪ Λ)` to
+`A ∈ Cl(nf G (Σ ∪ Λ))`. That is now the paper's condition again. The
+move from `Finset` to `List` stands on its own and is unaffected: it was
+made to avoid `Classical.choice`, which `Finset.instUnion`/`erase`/
+`image` all carry and `List.Mem`/`elem`/`filter` do not.
 
 **Completeness is now Type-valued.** Lemma 6.4's two halves are records
 carrying the derivation (`IrrWit`, `RegWit`), because extracting a
