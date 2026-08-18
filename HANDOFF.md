@@ -1,5 +1,35 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-18 — FRJ◯ as a countermodel SEARCH engine: review + design
+
+`docs/frjo-search-design.md` (new, shareable).  Task: use the sound
+FRJ◯ calculus as a fast countermodel finder, independently of the OPEN
+completeness question — a derivation IS a countermodel (`Mod(D)`,
+proved), so search is untrusted-but-safe.
+
+Measured diagnosis: the regular state space of the worst corpus goal is
+~5·10^3 sequents (|Ĝ| ≤ 8, |Sf^R| ≤ 14), yet `roundStep` considers
+~5·10^6 join candidates per round at base budget (~4·10^8 at raised),
+recomputed every round; the 37-cell corpus takes 87 s.  Three cost
+centres: subset enumeration of join families (`famsUpTo`), no
+incrementality, `List Form` contexts.
+
+Design: bitmask zones indexed once per goal; **demand-driven join
+construction** (repair (J1)/(J2) from an rhs-index instead of
+enumerating families — the same reasoning `metR_prime` performs);
+given-clause forward layer for the irregular cell library; goal-directed
+`partial def refute?` with dominance memo + budget (partial is FORCED —
+the demand cycle is the §9 measure dichotomy; safety comes from
+returning typed derivations, as in `PLLG4Term.proveM`).  Test
+scaffolding: four oracles (◯-free completeness; §15's
+`completeness_of_rmFull_of_circFreeL`, which newly decides 21/32 corpus
+cells; differential vs `PLLSearch.verdict`; model round-trip through
+`FRJ/Extract` + `decide`), the retired CERTAIN vocabulary, and cap
+reporting incl. `seedsIC`'s unreported 4-atom cap.
+
+Nothing built yet; Matthew's call on whether to proceed and in what
+order (milestones §7 of the doc).
+
 ## 2026-08-17 (engine-gap chip) — `dn_circ_and` false negative located and closed
 
 The `frjsat` miss on the ◯-free erasure `¬¬(p∧q) ⊃ (p∧q)` was in the
