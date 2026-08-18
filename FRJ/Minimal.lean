@@ -321,7 +321,8 @@ def minMod (K : Kripke) (G : Form) (hcf : ∀ X ∈ sfR G ++ sfL G, X.isCirc = f
       let w₂ := minMod K G hcf hinf a 0 C₂ hC2 h2
       refine { stab := w₁.stab ++ w₂.stab, th := cap w₁.th w₂.th
                der := .orI w₁.der w₂.der (fun X hX => w₂.cov (w₁.sub hX))
-                        (fun X hX => w₁.cov (w₂.sub hX)) hC rfl (CtxEq.refl _)
+                        (fun X hX => w₁.cov (w₂.sub hX)) hC (CtxEq.refl _)
+                        (CtxEq.refl _)
                sub := ?_, cov := ?_ }
       · intro X hX
         rcases List.mem_append.mp hX with hX' | hX'

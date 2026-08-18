@@ -162,7 +162,8 @@ def metI_or {K : Kripke} {G : Form} {a : K.W} {C₁ C₂ : Form}
   let w₂ := sup₂ (fun hc => hnf (Or.inr hc))
   refine { stab := w₁.stab ++ w₂.stab, th := cap w₁.th w₂.th
            der := .orI w₁.der w₂.der (fun X hX => w₂.cov (w₁.sub hX))
-                    (fun X hX => w₁.cov (w₂.sub hX)) hC rfl (CtxEq.refl _)
+                    (fun X hX => w₁.cov (w₂.sub hX)) hC (CtxEq.refl _)
+                    (CtxEq.refl _)
            sub := ?_, cov := ?_ }
   · intro X hX
     rcases List.mem_append.mp hX with hX' | hX'
@@ -1206,7 +1207,7 @@ def circWit_of_maximal {K : Kripke} {G : Form} {a : K.W} {Z : Form}
         exact absurd ((force_classForce hmax hinf Z).2 (sfR_circ hZ) hcZ) hnfZ
   { stab := []
     th := vacZoneA G (clAts K G a)
-    der := .axIC Z (clAts K G a) clAts_subset hFf hZ rfl
+    der := .axIC Z (clAts K G a) clAts_subset hFf hZ (CtxEq.refl _)
     sub := List.nil_subset _
     cov := fun X hX => by
       obtain ⟨hsfL, hstar⟩ := mem_lamStar.mp hX

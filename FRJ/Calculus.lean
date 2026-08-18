@@ -536,7 +536,7 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       (d₁ : FRJi G St₁ Th₁ C₁) (d₂ : FRJi G St₂ Th₂ C₂)
       (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {St' Th' : List Form} (hSt : St' = St₁ ++ St₂) (hTh : Th' ≐ cap Th₁ Th₂) :
+      {St' Th' : List Form} (hSt : St' ≐ St₁ ++ St₂) (hTh : Th' ≐ cap Th₁ Th₂) :
       FRJi G St' Th' (.or C₁ C₂)
   /-- `⊃∈` (irregular): from `Σ ; Θ, Λ → B` infer `Σ, Λ ; Θ → A ⊃ B`,
       side conditions `Θ ∩ Λ = ∅` and `A ∈ Cl(Σ ++ Λ)`. -/
@@ -588,10 +588,57 @@ inductive FRJi (G : Form) : List Form → List Form → Form → Type
       `◯F`-refutation witness above its root. -/
   | axIC (F : Form) (ats : List Form) (hats : ats ⊆ gAt G)
       (hFf : classForce ats F = false) (hgoal : Form.circ F ∈ sfR G)
-      {Th' : List Form} (hTh : Th' = vacZoneA G ats) :
+      {Th' : List Form} (hTh : Th' ≐ vacZoneA G ats) :
       FRJi G [] Th' (.circ F)
 
 end
+
+/-! ## Contexts are sets: the transport
+
+The commit that introduced the (now deleted) normal form `nf` recorded
+that a transport — *"same members implies same derivations"* — is FALSE
+for this family, **because `Ax^I` pins its own zone**.  That pinning was
+green slime.  With the indices freed and the context equations stated
+extensionally, the transport is a theorem, and it is the precise sense in
+which the mechanised judgment is the paper's judgment on *sets* of
+formulas rather than on lists. -/
+
+/-- **Transport along context equations.**  An irregular sequent's
+derivability depends on its two zones only through their members:
+
+    `Σ ; Θ → C`  and  `Σ ≐ Σ'`,  `Θ ≐ Θ'`   imply   `Σ' ; Θ' → C`.
+
+Choice-free, and computational: it rebuilds the derivation rule by rule,
+each context equation composed with the given one. -/
+def transportI {G : Form} : ∀ {St Th St' Th' : List Form} {C : Form},
+    FRJi G St Th C → St ≐ St' → Th ≐ Th' → FRJi G St' Th' C
+  | _, _, St', _, _, .axI F hF hg hTh, hS, hT => by
+      have hnil : St' = [] :=
+        eq_nil_of_forall_not_mem (fun x hx => absurd ((hS x).mpr hx) List.not_mem_nil)
+      subst hnil
+      exact .axI F hF hg (hT.symm.trans hTh)
+  | _, _, _, _, _, .andI1 d hg, hS, hT => .andI1 (transportI d hS hT) hg
+  | _, _, _, _, _, .andI2 d hg, hS, hT => .andI2 (transportI d hS hT) hg
+  | _, _, _, _, _, .orI d₁ d₂ h₁ h₂ hg hSt hTh, hS, hT =>
+      .orI d₁ d₂ h₁ h₂ hg (hS.symm.trans hSt) (hT.symm.trans hTh)
+  | _, _, _, _, _, .impInI d hpre hdisj hA hg hSt hTh, hS, hT =>
+      .impInI d hpre hdisj hA hg (hS.symm.trans hSt) (hT.symm.trans hTh)
+  | _, _, St', _, _, .impNotIn d hTh hA hAnot hg, hS, hT => by
+      have hnil : St' = [] :=
+        eq_nil_of_forall_not_mem (fun x hx => absurd ((hS x).mpr hx) List.not_mem_nil)
+      subst hnil
+      exact .impNotIn d (fun X hX => hTh X ((hT X).mpr hX)) hA
+        (fun hc => hAnot (clo_mono hT.subset' hc)) hg
+  | _, _, St', _, _, .circNotIn d htag hTh hg, hS, hT => by
+      have hnil : St' = [] :=
+        eq_nil_of_forall_not_mem (fun x hx => absurd ((hS x).mpr hx) List.not_mem_nil)
+      subst hnil
+      exact .circNotIn d htag (fun X hX => hTh X ((hT X).mpr hX)) hg
+  | _, _, St', _, _, .axIC F ats hats hFf hg hTh, hS, hT => by
+      have hnil : St' = [] :=
+        eq_nil_of_forall_not_mem (fun x hx => absurd ((hS x).mpr hx) List.not_mem_nil)
+      subst hnil
+      exact .axIC F ats hats hFf hg (hT.symm.trans hTh)
 
 /-! ## Provability
 

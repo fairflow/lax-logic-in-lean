@@ -128,7 +128,8 @@ def seedsIC (G : Form) : List (IS G) :=
         vals.filterMap (fun ats =>
           if hats : ats ⊆ gAt G then
             if hFf : classForce ats F = false then
-              some ⟨[], vacZoneA G ats, .circ F, .axIC F ats hats hFf hg rfl⟩
+              some ⟨[], vacZoneA G ats, .circ F,
+                .axIC F ats hats hFf hg (CtxEq.refl _)⟩
             else none
           else none)
       else []
@@ -190,8 +191,8 @@ def stepOrI (G : Form) (i1 i2 : IS G) : List (IS G) :=
               if hs1 : i1.stab ⊆ i2.stab ++ i2.th then
                 if hs2 : i2.stab ⊆ i1.stab ++ i1.th then
                   some ⟨i1.stab ++ i2.stab, cap i1.th i2.th, .or C₁ C₂,
-                    .orI (h1 ▸ i1.der) (h2 ▸ i2.der) hs1 hs2 hg rfl
-                      (CtxEq.refl _)⟩
+                    .orI (h1 ▸ i1.der) (h2 ▸ i2.der) hs1 hs2 hg
+                      (CtxEq.refl _) (CtxEq.refl _)⟩
                 else none
               else none
             else none

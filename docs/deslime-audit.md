@@ -99,6 +99,8 @@ a separate, obvious cleanup.
 
 ## 5. What did NOT change: the fidelity question
 
+*(As written on 2026-08-18, before §8. Superseded in part — see §8.)*
+
 Desliming moved `nf` out of the indices. It did **not** remove it: the
 constructors still carry `hTh : Th' = nf G Th`, so only normalised
 contexts are derivable, and `FRJi G Σ Θ C` is the same relation it was.
@@ -186,3 +188,106 @@ Recommended order: convert `Ax^I` alone to the extensional form and
 confirm the Θ-split of Lemma 6.3 goes through before touching the rest.
 That is the step that would close possibility (2) of §5 — that
 completeness holds of a weaker judgment than the paper's.
+
+---
+
+## 8. Done: `nf` deleted, contexts are sets
+
+*2026-08-18, commits `a1361c6`, `495f7c3` and this one, branch
+`frj-deslime`.*
+
+§7's plan was carried out in full, and further than planned: **every**
+context equation of the irregular judgment is now extensional, not just
+`Ax^I`'s.
+
+### The definition
+
+    CtxEq l m  :=  ∀ x, x ∈ l ↔ x ∈ m          notation  `l ≐ m`
+
+Choice-free by construction (`List.Mem` depends on no axioms at all), and
+`#print axioms CtxEq` is now pinned in `FRJ/Audit.lean`.
+
+### The rules
+
+| rule | before | after |
+|---|---|---|
+| `Ax^I` | `Θ' = nf G ((Ĝ_at \ {F}) ++ Ĝ_imp ++ Ĝ_◯)` | `Θ' ≐ …` |
+| `∨` | `Σ' = Σ₁ ++ Σ₂`, `Θ' = nf G (Θ₁ ∩ Θ₂)` | `Σ' ≐ …`, `Θ' ≐ Θ₁ ∩ Θ₂` |
+| `⊃∈` | premise index `nf G (Θ ++ Λ)`; `A ∈ Cl(nf G (Σ ++ Λ))`; `Σ' = nf G (Σ ++ Λ)`, `Θ' = nf G Θ` | premise index free with `Θ₁ ≐ Θ ++ Λ`; `A ∈ Cl(Σ ++ Λ)`; `Σ' ≐ Σ ++ Λ`, `Θ' ≐ Θ` |
+| `Ax^I◯` | `Θ' = vacZoneA G ats` (and `vacZoneA` itself wrapped in `nf`) | `Θ' ≐ vacZoneA G ats`, `nf` wrapper gone |
+
+`FRJ.nf` and its six lemmas (`mem_nf`, `nf_ext`, `nf_idem`, `nf_subset`,
+`nf_subset_self`, `mem_nf_of_subset`) are deleted from `FRJ/Basic.lean`.
+
+### A fidelity error `nf` was hiding
+
+`⊃∈`'s side condition in the paper is `A ∈ Cl(Σ ∪ Λ)`. Ours read
+`A ∈ Cl(nf G (Σ ∪ Λ))` — strictly stronger, since `nf` throws away
+everything outside `Ĝ`. Under `wfI` the two coincide, so nothing was
+unsound; but the rule as written was not the paper's. It is now.
+`docs/frj-fidelity.md` is corrected accordingly: the `⊃∈` zone split was
+filed there as a divergence and is not one.
+
+### The payoff, in the two completeness files
+
+The Θ-split of Lemma 6.3 was, in `FRJ/Minimal.lean` and
+`FRJ/Saturate.lean`:
+
+    have hzone : nf G (sdiff w.th Λ ++ Λ) = w.th := by
+      conv_rhs => rw [w.thNf]
+      refine nf_ext (fun x _ => ?_)
+      …
+    der := .impInI (by rw [hzone]; exact w.der) cap_sdiff_eq_nil hAclo hC rfl rfl
+
+and is now
+
+    have hzone : w.th ≐ sdiff w.th Λ ++ Λ := …
+    der := .impInI w.der hzone cap_sdiff_eq_nil hAclo hC (CtxEq.refl _) (CtxEq.refl _)
+
+— no rewrite, no transport of the premise derivation, and the `thNf`
+canonicity field of `IrrWit` deleted along with the twelve obligations
+that discharged it.
+
+### The certificate: the transport is a theorem
+
+`c78c121`, which introduced `nf`, recorded that a transport is FALSE for
+this family, *"because `Ax^I` pins its own Θ"*. That pinning was the
+slime. `FRJ/Calculus.lean` now proves
+
+    transportI : FRJi G Σ Θ C → Σ ≐ Σ' → Θ ≐ Θ' → FRJi G Σ' Θ' C
+
+pinned at `[propext, Quot.sound]`. This is the precise sense in which the
+mechanised irregular judgment is the paper's judgment on **sets** of
+formulas. It is computational: it rebuilds the derivation rule by rule.
+
+### What was checked
+
+* `lake build FRJ` — 8572 jobs green, 0 sorries;
+* `#slime FRJ.FRJr` 0/13, `#slime FRJ.FRJi` 0/8;
+* axioms unchanged — `soundness`, `completeness_of_supply`,
+  `completeness_of_discrete`, `provable_nn_circ_bot`, `wfI`, `minMod`
+  all `[propext, Quot.sound]`, no `Classical.choice`, no `sorryAx`;
+* `lean_exe frjsat` rebuilt (it had been left broken by the deslime
+  commit `e0b0881`) and re-run: same 45 `pass`/`control-ok` verdicts, the
+  single `corner_poisoned_ups` flag still clearing at raised budget, and
+  the erasure-transfer attack (E) still 8/8.
+
+### What this does and does not settle
+
+It **closes** the "conservative normalisation" reading of §5 as a
+*source of doubt*: there is no normalisation left to be conservative
+about, and the judgment is now provably invariant under set-equality of
+contexts. It **does not** decide whether FRJ(G) completeness holds — the
+remaining two possibilities of §5 (a weaker judgment, or genuine
+incompleteness) are untouched, and the engine's verdicts are unchanged,
+which is itself evidence that `nf` was not the obstruction.
+
+### Left undone, deliberately
+
+The REGULAR judgment `FRJr` still pins its context literally
+(`hΓ : Γ' = joinCtxAt …`, 13 constructors). No set-splitting operation
+acts on a regular context, so `nf` was never implicated there and nothing
+is blocked. Converting them would additionally require `preR` to mount
+the derivation's own `Γ` rather than the recomputed join context (the
+change made here for `Ax^I◯`), and would then yield a matching
+`transportR`.

@@ -582,7 +582,7 @@ def preI {G : Form} : {St Th : List Form} → {C : Form} →
   | _, _, _, .impInI d _ _ _ _ _ _, i => preI d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR d
   | _, _, _, .circNotIn d _ _ _, _ => preR d
-  | _, _, _, .axIC _ ats _ _ _ _, _ => PreModel.leaf (vacZoneA G ats)
+  | _, Th, _, .axIC _ _ _ _ _ _, _ => PreModel.leaf Th
 
 end
 
@@ -644,8 +644,8 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
       ⟨_, .impNotIn (.root d), preR_root_lbl d⟩
   | _, _, _, .circNotIn d _ _ _, _ =>
       ⟨_, .circNotIn (.root d), preR_root_lbl d⟩
-  | _, _, _, .axIC F ats _ _ _ rfl, _ =>
-      ⟨.irr [] (vacZoneA G ats) (.circ F), .root _, rfl⟩
+  | _, Th, _, .axIC F _ _ _ _ _, _ =>
+      ⟨.irr [] Th (.circ F), .root _, rfl⟩
 
 /-- Labels shrink modulo closure going down: Lemma 3.4(iii) in the
 model. -/

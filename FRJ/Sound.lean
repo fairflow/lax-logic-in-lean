@@ -1814,21 +1814,23 @@ theorem lemma39I0 {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .axI _ _ _ _, i, _ => (i : Empty).elim
   | _, _, _, .andI1 d _, i, w => lemma39I0 d i w
   | _, _, _, .andI2 d _, i, w => lemma39I0 d i w
-  | _, _, _, .orI d₁ d₂ _ _ _ rfl _, i, w => by
+  | _, _, _, .orI d₁ d₂ _ _ _ _ _, i, w => by
       match (i : Sum (RegIdx d₁) (RegIdx d₂)) with
       | .inl i₁ => exact lemma39I0 d₁ i₁ w
       | .inr i₂ => exact lemma39I0 d₂ i₂ w
   | _, _, _, .impInI d _ _ _ _ _ _, i, w => lemma39I0 d i w
   | _, _, _, .impNotIn d _ _ _ _, _, w => (lemma39R d).1 w
   | _, _, _, .circNotIn d _ _ _, _, w => (lemma39R d).1 w
-  | _, _, _, @FRJi.axIC _ F ats hats hFf hg _ rfl, _, w => by
+  | _, _, _, @FRJi.axIC _ F ats hats hFf hg _ hTh, _, w => by
       -- the mounted BARE final world (the ◯⊥-false species: no fallible
       -- Rm-access, so `◯Y ≡ Y` on its own cone) forces its zone: every
       -- member is `classForce`-true by construction, and single-world
       -- forcing IS `classForce`
       intro X hX
-      have hcf : classForce ats X = true := (List.mem_filter.mp hX).2
-      exact (PreModel.leaf_force_iff (fun p => vacZoneA_atom hats) X).mpr hcf
+      have hcf : classForce ats X = true :=
+        (List.mem_filter.mp ((hTh X).mp hX)).2
+      exact (PreModel.leaf_force_iff
+        (fun p => (hTh _).trans (vacZoneA_atom hats)) X).mpr hcf
 
 theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
     (d : FRJi G St Th C) (P : PreModel) (hP : ClosedLbl P) (w : P.W),
@@ -1865,7 +1867,7 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       intro X hX
       rw [mem_cap] at hX
       exact hforce X (mem_cap.mpr ⟨hX.1, sfm_subset_sfm_and₂ hX.2⟩)
-  | _, _, _, @FRJi.orI _ St₁ Th₁ St₂ Th₂ C₁ C₂ d₁ d₂ h₁ h₂ hg _ _ rfl hThE,
+  | _, _, _, @FRJi.orI _ St₁ Th₁ St₂ Th₂ C₁ C₂ d₁ d₂ h₁ h₂ hg _ _ hStE hThE,
       P, hP, w, hw, hlbl, hroot, hforce => by
       intro hcon
       rcases hcon with hcon | hcon
@@ -1874,27 +1876,29 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
           refine clo_mono ?_ (hlbl X hX)
           intro Y hY
           simp only [List.mem_append] at hY ⊢
-          rcases hY with (hY | hY) | hY
-          · exact Or.inl hY
-          · exact List.mem_append.mp (h₂ hY)
+          rcases hY with hY | hY
+          · rcases List.mem_append.mp ((hStE Y).mp hY) with hY' | hY'
+            · exact Or.inl hY'
+            · exact List.mem_append.mp (h₂ hY')
           · exact Or.inr (mem_cap.mp ((hThE Y).mp hY)).1
         · intro X hX
           rw [mem_cap] at hX
           exact hforce X (mem_cap.mpr
-            ⟨List.mem_append_left _ hX.1, sfm_subset_sfm_or₁ hX.2⟩)
+            ⟨(hStE X).mpr (List.mem_append_left _ hX.1), sfm_subset_sfm_or₁ hX.2⟩)
       · refine lemma39I d₂ P hP w hw ?_ (fun i => hroot (Sum.inr i)) ?_ hcon
         · intro X hX
           refine clo_mono ?_ (hlbl X hX)
           intro Y hY
           simp only [List.mem_append] at hY ⊢
-          rcases hY with (hY | hY) | hY
-          · exact List.mem_append.mp (h₁ hY)
-          · exact Or.inl hY
+          rcases hY with hY | hY
+          · rcases List.mem_append.mp ((hStE Y).mp hY) with hY' | hY'
+            · exact List.mem_append.mp (h₁ hY')
+            · exact Or.inl hY'
           · exact Or.inr (mem_cap.mp ((hThE Y).mp hY)).2
         · intro X hX
           rw [mem_cap] at hX
           exact hforce X (mem_cap.mpr
-            ⟨List.mem_append_right _ hX.1, sfm_subset_sfm_or₂ hX.2⟩)
+            ⟨(hStE X).mpr (List.mem_append_right _ hX.1), sfm_subset_sfm_or₂ hX.2⟩)
   | _, _, _, @FRJi.impInI _ St Th Lam ThLam A B d hpre hdisj hA hg _ _ hStE hThE,
       P, hP, w, hw, hlbl, hroot, hforce => by
       intro hcon
@@ -1927,7 +1931,7 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       rw [preR_root_lbl d] at hΓ
       have hvΓ : (P.toKripke hP).forces v Γ := fun X hX => (hiff X).mpr (hΓ X hX)
       exact hb ((hiff B).mp (hcon v hwv (clo_forces hvΓ hA)))
-  | _, _, _, @FRJi.axIC _ F ats hats hFf hg _ rfl, P, hP, w, hw, hlbl, hroot, hforce => by
+  | _, _, _, @FRJi.axIC _ F ats hats hFf hg _ hTh, P, hP, w, hw, hlbl, hroot, hforce => by
       -- `w ⊩ ◯F` would persist up to the mounted bare final world, which
       -- refutes `◯F` because it refutes `F` (the recorded classical
       -- refutation `hFf`) and is its own modal cone.
@@ -1936,7 +1940,8 @@ theorem lemma39I {G : Form} : ∀ {St Th : List Form} {C : Form}
       have hv : (P.toKripke hP).force v (.circ F) :=
         (P.toKripke hP).force_mono hwv hcon
       have hr := (hiff _).mp hv
-      have hcf := (PreModel.leaf_force_iff (fun p => vacZoneA_atom hats) _).mp hr
+      have hcf := (PreModel.leaf_force_iff
+        (fun p => (hTh _).trans (vacZoneA_atom hats)) _).mp hr
       simp only [classForce] at hcf
       rw [hFf] at hcf
       exact Bool.noConfusion hcf

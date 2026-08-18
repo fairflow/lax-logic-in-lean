@@ -117,9 +117,20 @@ namespace FRJ
 #guard_msgs in
 #print axioms not_IPL_of_countermodel
 
+/-- info: 'FRJ.CtxEq' does not depend on any axioms -/
+#guard_msgs in
+#print axioms CtxEq
+
 /-- info: 'FRJ.CtxEq.of_subset' does not depend on any axioms -/
 #guard_msgs in
 #print axioms CtxEq.of_subset
+
+-- **Contexts are sets.**  The transport `Σ ≐ Σ' → Θ ≐ Θ' →
+-- FRJi G Σ Θ C → FRJi G Σ' Θ' C` — declared FALSE for this family while
+-- `Ax^I` pinned its own zone, a theorem since the deslime.
+/-- info: 'FRJ.transportI' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms transportI
 
 /-! ## W3 and the promise-join screen -/
 
