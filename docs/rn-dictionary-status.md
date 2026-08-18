@@ -60,15 +60,49 @@ sorry-free, `[propext, Quot.sound]`, models of **5 or 8 worlds**:
 | `cImp_12_11` | `q12 ⊃ q11 ⊣⊢ q1`  | 5 | narrowed to {q11, q13} |
 | `cBox_11`    | `◯q11 ⊣⊢ q1`       | 5 | narrowed to {q11, q13} |
 
+### Walking the candidate lists (same day, `--cand=K`)
+
+The eleven "narrowed" cells above all carry candidates [1, 11, 13] and
+were refuted at `q1` only. Attacking their survivors:
+
+| cell | `q1` | `q11` | `q13` | outcome |
+|---|---|---|---|---|
+| `cOr_10_12`  | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cOr_11_12`  | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cImp_12_11` | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cBox_11`    | ✗ | ✗ | ✗ | **closure FAILS** |
+| `cOr_8_10`   | ✗ | survives | ✗ | narrowed to {`q11`} |
+| `cOr_8_11`   | ✗ | survives | ✗ | narrowed to {`q11`} |
+| `cOr_10_14`  | ✗ | survives | ✗ | narrowed to {`q11`} |
+| `cOr_11_14`  | ✗ | survives | ✗ | narrowed to {`q11`} |
+| `cAnd_11_13` | ✗ | ✗ | survives | narrowed to {`q13`} |
+| `cOr_8_12`   | ✗ | ✗ | survives | narrowed to {`q13`} |
+| `cOr_8_14`   | ✗ | survives | survives | narrowed to {`q11`, `q13`} |
+
+Every survival above is at a FIXPOINT, not at a budget (the at-budget
+ones were re-run at `lamCap=16`), so each is a settled narrowing rather
+than a frontier marker.
+
+Each exhausted cell is recorded as one kernel-checked conjunction
+`<cell>_no_candidate : ¬ Interd lhs q1 ∧ ¬ Interd lhs q11 ∧ ¬ Interd lhs
+q13`, `[propext, Quot.sound]`. **Its scope is exactly the three
+candidates it names**: the other twelve representatives were eliminated
+by the ≤4-world battery that produced the candidate list, recorded in
+`wip/rnDict.lean`, not re-proved there.
+
+**RUNNING TOTAL: the fifteen-representative closure fails at THIRTEEN
+cells** — the original four, five sorried at their last candidate, and
+these four.
+
 **The distinction in the last column is the one to keep.** An open cell
 is sorried at the FIRST open candidate of its candidate list, so
 refuting the stated collapse eliminates ONE candidate. It closes the
 cell only when that candidate was the last. So:
 
-* the closure now **fails at nine cells**, not four: the original four
-  plus the five marked FAILS above;
-* the other eleven are **narrowed, not settled** — all had candidates
-  [1, 11, 13] and are refuted at `q1` only.
+* the closure now **fails at thirteen cells**, not four: the original
+  four, the five marked FAILS above, and the four whose whole candidate
+  list the `--cand` walk exhausted;
+* seven cells are **narrowed, not settled**.
 
 All sixteen statements in `wip/rnDict.lean` are therefore FALSE, and
 their `sorry`s are hazards: anything depending on one proves `False`.
@@ -76,8 +110,11 @@ The standing guard covers this — `#print axioms rndSet` / `fullSet` are
 `#guard_msgs`-pinned in `Rewrite/Catalogue.lean`, and none of the
 sixteen is referenced anywhere in `Rewrite/` (re-checked 2026-08-18).
 **87 unproved cells, of which 20 are now REFUTED and 67 OPEN.** Of the
-67, twenty-four stopped at budget rather than at a fixpoint and are
-frontier markers, not settled cells.
+67, twenty-four stopped at budget rather than at a fixpoint; re-run at
+`lamCap=16` all 24 reach a fixpoint with no new refutations, so no
+verdict on this bank now rests on a budget. (`lamCap` was the binding
+constraint, not rounds or the DB caps: the cells had stopped at rounds
+6–8 of 10 with |RS| ≤ 37 and |IS| ≤ 86 against caps of 800.)
 
 Engine hygiene, for the record: zero ENGINE-BUGs over the 236 certified
 cells (the engine never derived against a kernel-checked `Interd`), 4/4

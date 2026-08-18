@@ -59,20 +59,48 @@ brute force" discharged on a workload where brute force had stopped.
 IMPORTANT, and easy to get wrong: an open cell of `wip/rnDict.lean`
 carries a CANDIDATE LIST and is sorried at the FIRST open candidate, so
 a refutation eliminates one candidate and closes the cell only when that
-candidate was the last.  Of the sixteen:
+candidate was the last.  I recorded this wrongly first (as nineteen
+closure failures) and corrected it the same session.
 
-* five have their list exhausted, so the fifteen-representative closure
-  FAILS there — `cAnd_10_13` [10], `cImp_8_4` [5], `cImp_8_5` [5],
-  `cImp_10_7` [7], `cImp_11_7` [7].  With the four already known that is
-  NINE cells at which the closure fails, not four;
-* eleven had candidates [1, 11, 13] and are refuted at `q1` only, so they
-  are NARROWED, not closed.  `--cand=K` was added to `lake exe rnfrj` to
-  attack the survivors; `--cand=1` reproducing all eleven hits is the
-  control that the retarget path is sound.
+`--cand=K` was therefore added to `lake exe rnfrj` and `lake exe rnpin`:
+it retargets a cell at representative `qK` instead of the one the table
+assigns, so the survivors can be attacked in turn.  Control: `--cand=1`
+reproduces all eleven `q1` hits.  Walking the eleven narrowed cells
+against `q11` and `q13`:
 
-Also outstanding: of the 67 cells still open, 24 stopped AT BUDGET rather
-than at a fixpoint.  Those are frontier markers and are being re-run at
-`rounds=16 jmax=4 maxRS=maxIS=2000 lamCap=14`, not recorded as settled.
+| cell | q1 | q11 | q13 | outcome |
+|---|---|---|---|---|
+| `cOr_10_12`  | ✗ | ✗ | ✗ | closure FAILS |
+| `cOr_11_12`  | ✗ | ✗ | ✗ | closure FAILS |
+| `cImp_12_11` | ✗ | ✗ | ✗ | closure FAILS |
+| `cBox_11`    | ✗ | ✗ | ✗ | closure FAILS |
+| `cOr_8_10` `cOr_8_11` `cOr_10_14` `cOr_11_14` | ✗ | survives | ✗ | {q11} |
+| `cAnd_11_13` `cOr_8_12` | ✗ | ✗ | survives | {q13} |
+| `cOr_8_14` | ✗ | survives | survives | {q11, q13} |
+
+Every survival is at a FIXPOINT, not at a budget, so each is a settled
+narrowing.  Each exhausted cell is one kernel-checked conjunction
+`<cell>_no_candidate : ¬ Interd lhs q1 ∧ ¬ Interd lhs q11 ∧ ¬ Interd lhs
+q13`.  ITS SCOPE IS EXACTLY THE THREE CANDIDATES NAMED — the other
+twelve representatives were eliminated by the ≤4-world battery that
+produced the candidate list, recorded in `wip/rnDict.lean`, not
+re-proved.
+
+**RUNNING TOTAL: the closure fails at THIRTEEN cells** — the four
+already known, five sorried at their last candidate, four exhausted by
+the `--cand` walk.  Seven cells are narrowed but still open.
+
+The frontier is clear.  24 of the 67 open cells stopped at budget; the
+first escalation guess (raise `jmax` to 4) was wrong and measurably so —
+they had stopped at rounds 6-8 of 10 with |RS| ≤ 37, |IS| ≤ 86 against
+caps of 800, so `lamCap` was binding.  At `lamCap=16` all 24 reach a
+genuine fixpoint with zero new refutations (729 s).  No verdict on this
+bank now rests on a budget.
+
+WHAT IS NOT SHOWN: the engine is sound, not known complete.  A fixpoint
+means no FRJ(◯) derivation within the relevance restriction — evidence
+about a cell, not a proof of it.  Statement (A) remains OPEN and nothing
+here bears on it.
 
 Design doc comments A/B/C answered in place: §4.3 is now one FORWARD
 layer (the backward-search proposal is retracted, with reasons); §5

@@ -465,8 +465,10 @@ elimination is recorded in `wip/rnDict.lean`, not re-proved here.
 **Running total: the fifteen-representative closure fails at THIRTEEN
 cells** — the four already known, the five of §9.4, and these four.
 
-The seven cells with a survivor are narrowed, not settled, and six of
-those seven survivals are at budget rather than at a fixpoint.
+The seven cells with a survivor are narrowed, not settled.  Six of those
+survivals initially stopped at budget; re-run at `lamCap=16` (§9.6) every
+one reaches a fixpoint, so each is a settled narrowing rather than a
+frontier marker.
 
 ### 9.6 The frontier, and where the budget actually binds
 
