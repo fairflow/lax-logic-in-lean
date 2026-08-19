@@ -30,7 +30,27 @@ The 87 split two ways, and the distinction matters:
 * **83 OPEN** — neither proved by either searcher nor refuted by the
   exhaustive ≤4-world battery. These are the target list.
 
-## UPDATE 2026-08-18 — sixteen more cells refuted, by FRJ(◯) search
+## CORRECTION 2026-08-19 — the update below was measured against a superseded dictionary
+
+The section that follows compares against `wip/rnDict.lean` (round 1, 15
+representatives).  Round 2 supersedes it: `wip/rnDict2.lean` has 16
+representatives (the 15 plus `q15 = q9 ⊃ q4`, the single class the four
+§40 witnesses collapse to, `wip/rnSep.lean`), and it is FULLY RESOLVED —
+58 sorried cells, every one REFUTED, none open.  Each carries a
+kernel-checked, sorry-free
+
+    refute_<cell> : ∀ k : Fin 16, ¬ Interd (combination) (rep2 k)
+
+in `wip/rnDictRefute2.lean` — universally quantified over ALL
+representatives, which is strictly stronger than a per-candidate
+refutation.  All sixteen cells below are already REFUTED there.
+
+So the live figure is: **the closure fails at 58 cells against 16
+representatives**, and the round-1 arithmetic below (four, then nine,
+then thirteen) describes a superseded object.  It is kept for the
+record of how the FRJ(◯) engine was calibrated, not as current status.
+
+## SUPERSEDED UPDATE 2026-08-18 — sixteen cells refuted, by FRJ(◯) search
 
 The four rows above were found by an exhaustive ≤4-world battery, which
 is why the other 83 stayed open: their countermodels are larger than

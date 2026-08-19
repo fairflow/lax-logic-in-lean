@@ -1,5 +1,33 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-19 — CORRECTION: the sixteen refutations were not new
+
+`tools/rn-bank-gen.sh` reads `wip/rnDict.lean`, the ROUND-1 dictionary
+(15 representatives).  I never checked for a later one.  There is one:
+`wip/rnDict2.lean`, round 2, **16 representatives** (the 15 plus
+`q15 = q9 ⊃ q4`, the single class the four §40 witnesses collapse to,
+`wip/rnSep.lean`), and it is FULLY RESOLVED — 58 sorried cells, every
+one REFUTED, none open.  Each has a sorry-free kernel-checked witness in
+`wip/rnDictRefute2.lean` of the form
+
+    refute_<cell> : ∀ k : Fin 16, ¬ Interd (combination) (rep2 k)
+
+which is universally quantified over ALL representatives.  My
+certificates only eliminate the one to three candidates that round 1's
+candidate list named, so they are strictly weaker, and all sixteen of my
+cells are already REFUTED in round 2.
+
+Live figure: **the closure fails at 58 cells against 16
+representatives.**  Not 4, not 13.  The §2026-08-18 entry below is
+corrected accordingly; its engineering results stand, its mathematical
+novelty does not.
+
+The rule that was broken is the standing one: search the repo record
+before treating a finding as new.  The process fix is in the plan —
+one live dictionary, a version stamp on the generator, and refutation
+statements quantified over the representative set rather than over a
+candidate shortlist.
+
 ## 2026-08-18 — FRJ◯ search: the stack built end to end, and 15+ RN(◯,{}) cells refuted
 
 Built the design of `docs/frjo-search-design.md` (§9 now records the

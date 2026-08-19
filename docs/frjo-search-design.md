@@ -402,7 +402,34 @@ so no verdict on this bank now rests on a budget.  A fixpoint means no
 FRJ(◯) derivation exists within the relevance restriction: evidence for
 the cell, not a proof of it.
 
-### 9.4 The mathematics
+### 9.4 CORRECTION (2026-08-19): these refutations were NOT new
+
+Everything in §9.4–§9.5 below was measured against `wip/rnDict.lean`,
+the ROUND-1 dictionary (15 representatives).  That is a superseded
+artefact.  `wip/rnDict2.lean` (round 2, 16 representatives) already
+resolves every one of the sixteen cells, and resolves them STRONGER:
+`wip/rnDictRefute2.lean` proves, sorry-free and kernel-checked,
+
+    refute_<cell> : ∀ k : Fin 16, ¬ Interd (combination) (rep2 k)
+
+i.e. the combination is interderivable with NO representative, where my
+certificates only eliminate the one to three candidates the round-1
+candidate list happened to name.  All 16 of my cells are already
+`REFUTED` in round 2.  The correct count of closure failures is round
+2's **58**, not the 13 claimed below, and it is against 16
+representatives, not 15.
+
+Cause: `tools/rn-bank-gen.sh` reads `wip/rnDict.lean` and I never
+checked whether a later dictionary existed.  The standing rule "search
+the repo record before treating a finding as new" is exactly the rule
+that was broken.  §11 records what follows from this.
+
+What survives: the stack (`FRJ/Bridge.lean`, `FRJ/Search/*`, the
+pinning path), the engineering measurements in §9.2–§9.3, and the
+oracle discipline.  What does not survive is the claim of new
+mathematics.
+
+### 9.4 The mathematics (as measured against the SUPERSEDED round-1 dictionary)
 
 Sixteen `open` cells of the RN(◯,{}) dictionary are now **kernel-checked
 FALSE**, sorry-free, `[propext, Quot.sound]` — no `Classical.choice`, no
