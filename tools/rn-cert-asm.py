@@ -73,6 +73,18 @@ theorem {nm}_control :
 """)
     thms.append(f'{cell}_FALSE')
     names.append(cell)
+    # When the claimed representative is `q1` (= ⊤), the refutation says
+    # something much plainer than "not interderivable": the combination is
+    # NOT A THEOREM of PLL.  State that directly — it is the form a reader
+    # can check against the formula without knowing the dictionary.
+    if cand is None and rhs == 'RNBank.q1':
+        blocks.append(f'''set_option maxRecDepth 1000000 in
+/-- `{cell}` in plain form: PLL does not prove this formula. -/
+theorem {cell}_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] ({lhs})) :=
+  not_derivable_of_countermodel (K_{cell}_{tag})
+    (show ¬ (K_{cell}_{tag}).force (K_{cell}_{tag}).root (ofPLL ({lhs})) by decide)
+''')
+        thms.append(f'{cell}_not_a_theorem')
 
 print(f"""/-
 # RN(◯,{{}}) dictionary cells refuted by the FRJ(◯) search — GENERATED FILE

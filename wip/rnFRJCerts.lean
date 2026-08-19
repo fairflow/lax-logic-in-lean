@@ -97,6 +97,12 @@ this is the cheap check that the refutation above says something. -/
 theorem cm_cAnd_11_13_bwd_control :
     (K_cAnd_11_13_bwd).force (K_cAnd_11_13_bwd).root (ofPLL RNBank.q1) := by decide
 
+set_option maxRecDepth 1000000 in
+/-- `cAnd_11_13` in plain form: PLL does not prove this formula. -/
+theorem cAnd_11_13_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q11.and RNBank.q13)) :=
+  not_derivable_of_countermodel (K_cAnd_11_13_bwd)
+    (show ¬ (K_cAnd_11_13_bwd).force (K_cAnd_11_13_bwd).root (ofPLL (RNBank.q11.and RNBank.q13)) by decide)
+
 /-! ### `cBox_11` — the stated collapse is FALSE (← direction) -/
 
 def cm_cBox_11_bwd : Search.Tab where
@@ -125,6 +131,12 @@ model machinery that made every formula false would refute everything, so
 this is the cheap check that the refutation above says something. -/
 theorem cm_cBox_11_bwd_control :
     (K_cBox_11_bwd).force (K_cBox_11_bwd).root (ofPLL RNBank.q1) := by decide
+
+set_option maxRecDepth 1000000 in
+/-- `cBox_11` in plain form: PLL does not prove this formula. -/
+theorem cBox_11_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q11.somehow)) :=
+  not_derivable_of_countermodel (K_cBox_11_bwd)
+    (show ¬ (K_cBox_11_bwd).force (K_cBox_11_bwd).root (ofPLL (RNBank.q11.somehow)) by decide)
 
 /-! ### `cBox_11_q11` — the stated collapse is FALSE (→ direction) -/
 
@@ -271,6 +283,12 @@ this is the cheap check that the refutation above says something. -/
 theorem cm_cImp_12_11_bwd_control :
     (K_cImp_12_11_bwd).force (K_cImp_12_11_bwd).root (ofPLL RNBank.q1) := by decide
 
+set_option maxRecDepth 1000000 in
+/-- `cImp_12_11` in plain form: PLL does not prove this formula. -/
+theorem cImp_12_11_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q12.ifThen RNBank.q11)) :=
+  not_derivable_of_countermodel (K_cImp_12_11_bwd)
+    (show ¬ (K_cImp_12_11_bwd).force (K_cImp_12_11_bwd).root (ofPLL (RNBank.q12.ifThen RNBank.q11)) by decide)
+
 /-! ### `cImp_12_11_q11` — the stated collapse is FALSE (→ direction) -/
 
 def cm_cImp_12_11_q11_fwd : Search.Tab where
@@ -416,6 +434,12 @@ this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_10_12_bwd_control :
     (K_cOr_10_12_bwd).force (K_cOr_10_12_bwd).root (ofPLL RNBank.q1) := by decide
 
+set_option maxRecDepth 1000000 in
+/-- `cOr_10_12` in plain form: PLL does not prove this formula. -/
+theorem cOr_10_12_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q10.or RNBank.q12)) :=
+  not_derivable_of_countermodel (K_cOr_10_12_bwd)
+    (show ¬ (K_cOr_10_12_bwd).force (K_cOr_10_12_bwd).root (ofPLL (RNBank.q10.or RNBank.q12)) by decide)
+
 /-! ### `cOr_10_12_q11` — the stated collapse is FALSE (→ direction) -/
 
 def cm_cOr_10_12_q11_fwd : Search.Tab where
@@ -503,6 +527,12 @@ this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_10_14_bwd_control :
     (K_cOr_10_14_bwd).force (K_cOr_10_14_bwd).root (ofPLL RNBank.q1) := by decide
 
+set_option maxRecDepth 1000000 in
+/-- `cOr_10_14` in plain form: PLL does not prove this formula. -/
+theorem cOr_10_14_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q10.or RNBank.q14)) :=
+  not_derivable_of_countermodel (K_cOr_10_14_bwd)
+    (show ¬ (K_cOr_10_14_bwd).force (K_cOr_10_14_bwd).root (ofPLL (RNBank.q10.or RNBank.q14)) by decide)
+
 /-! ### `cOr_11_12` — the stated collapse is FALSE (← direction) -/
 
 def cm_cOr_11_12_bwd : Search.Tab where
@@ -531,6 +561,12 @@ model machinery that made every formula false would refute everything, so
 this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_11_12_bwd_control :
     (K_cOr_11_12_bwd).force (K_cOr_11_12_bwd).root (ofPLL RNBank.q1) := by decide
+
+set_option maxRecDepth 1000000 in
+/-- `cOr_11_12` in plain form: PLL does not prove this formula. -/
+theorem cOr_11_12_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q11.or RNBank.q12)) :=
+  not_derivable_of_countermodel (K_cOr_11_12_bwd)
+    (show ¬ (K_cOr_11_12_bwd).force (K_cOr_11_12_bwd).root (ofPLL (RNBank.q11.or RNBank.q12)) by decide)
 
 /-! ### `cOr_11_12_q11` — the stated collapse is FALSE (→ direction) -/
 
@@ -619,6 +655,12 @@ this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_11_14_bwd_control :
     (K_cOr_11_14_bwd).force (K_cOr_11_14_bwd).root (ofPLL RNBank.q1) := by decide
 
+set_option maxRecDepth 1000000 in
+/-- `cOr_11_14` in plain form: PLL does not prove this formula. -/
+theorem cOr_11_14_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q11.or RNBank.q14)) :=
+  not_derivable_of_countermodel (K_cOr_11_14_bwd)
+    (show ¬ (K_cOr_11_14_bwd).force (K_cOr_11_14_bwd).root (ofPLL (RNBank.q11.or RNBank.q14)) by decide)
+
 /-! ### `cOr_8_10` — the stated collapse is FALSE (← direction) -/
 
 def cm_cOr_8_10_bwd : Search.Tab where
@@ -647,6 +689,12 @@ model machinery that made every formula false would refute everything, so
 this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_8_10_bwd_control :
     (K_cOr_8_10_bwd).force (K_cOr_8_10_bwd).root (ofPLL RNBank.q1) := by decide
+
+set_option maxRecDepth 1000000 in
+/-- `cOr_8_10` in plain form: PLL does not prove this formula. -/
+theorem cOr_8_10_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q8.or RNBank.q10)) :=
+  not_derivable_of_countermodel (K_cOr_8_10_bwd)
+    (show ¬ (K_cOr_8_10_bwd).force (K_cOr_8_10_bwd).root (ofPLL (RNBank.q8.or RNBank.q10)) by decide)
 
 /-! ### `cOr_8_11` — the stated collapse is FALSE (← direction) -/
 
@@ -677,6 +725,12 @@ this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_8_11_bwd_control :
     (K_cOr_8_11_bwd).force (K_cOr_8_11_bwd).root (ofPLL RNBank.q1) := by decide
 
+set_option maxRecDepth 1000000 in
+/-- `cOr_8_11` in plain form: PLL does not prove this formula. -/
+theorem cOr_8_11_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q8.or RNBank.q11)) :=
+  not_derivable_of_countermodel (K_cOr_8_11_bwd)
+    (show ¬ (K_cOr_8_11_bwd).force (K_cOr_8_11_bwd).root (ofPLL (RNBank.q8.or RNBank.q11)) by decide)
+
 /-! ### `cOr_8_12` — the stated collapse is FALSE (← direction) -/
 
 def cm_cOr_8_12_bwd : Search.Tab where
@@ -706,6 +760,12 @@ this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_8_12_bwd_control :
     (K_cOr_8_12_bwd).force (K_cOr_8_12_bwd).root (ofPLL RNBank.q1) := by decide
 
+set_option maxRecDepth 1000000 in
+/-- `cOr_8_12` in plain form: PLL does not prove this formula. -/
+theorem cOr_8_12_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q8.or RNBank.q12)) :=
+  not_derivable_of_countermodel (K_cOr_8_12_bwd)
+    (show ¬ (K_cOr_8_12_bwd).force (K_cOr_8_12_bwd).root (ofPLL (RNBank.q8.or RNBank.q12)) by decide)
+
 /-! ### `cOr_8_14` — the stated collapse is FALSE (← direction) -/
 
 def cm_cOr_8_14_bwd : Search.Tab where
@@ -734,6 +794,12 @@ model machinery that made every formula false would refute everything, so
 this is the cheap check that the refutation above says something. -/
 theorem cm_cOr_8_14_bwd_control :
     (K_cOr_8_14_bwd).force (K_cOr_8_14_bwd).root (ofPLL RNBank.q1) := by decide
+
+set_option maxRecDepth 1000000 in
+/-- `cOr_8_14` in plain form: PLL does not prove this formula. -/
+theorem cOr_8_14_not_a_theorem : ¬ Nonempty (PLLND.LaxND [] (RNBank.q8.or RNBank.q14)) :=
+  not_derivable_of_countermodel (K_cOr_8_14_bwd)
+    (show ¬ (K_cOr_8_14_bwd).force (K_cOr_8_14_bwd).root (ofPLL (RNBank.q8.or RNBank.q14)) by decide)
 
 /-! ### `cBox_11` — NO candidate survives, so the closure FAILS here
 
@@ -783,28 +849,39 @@ theorem cOr_11_12_no_candidate :
 
 #print axioms cAnd_10_13_FALSE
 #print axioms cAnd_11_13_FALSE
+#print axioms cAnd_11_13_not_a_theorem
 #print axioms cBox_11_FALSE
+#print axioms cBox_11_not_a_theorem
 #print axioms cBox_11_q11_FALSE
 #print axioms cBox_11_q13_FALSE
 #print axioms cImp_10_7_FALSE
 #print axioms cImp_11_7_FALSE
 #print axioms cImp_12_11_FALSE
+#print axioms cImp_12_11_not_a_theorem
 #print axioms cImp_12_11_q11_FALSE
 #print axioms cImp_12_11_q13_FALSE
 #print axioms cImp_8_4_FALSE
 #print axioms cImp_8_5_FALSE
 #print axioms cOr_10_12_FALSE
+#print axioms cOr_10_12_not_a_theorem
 #print axioms cOr_10_12_q11_FALSE
 #print axioms cOr_10_12_q13_FALSE
 #print axioms cOr_10_14_FALSE
+#print axioms cOr_10_14_not_a_theorem
 #print axioms cOr_11_12_FALSE
+#print axioms cOr_11_12_not_a_theorem
 #print axioms cOr_11_12_q11_FALSE
 #print axioms cOr_11_12_q13_FALSE
 #print axioms cOr_11_14_FALSE
+#print axioms cOr_11_14_not_a_theorem
 #print axioms cOr_8_10_FALSE
+#print axioms cOr_8_10_not_a_theorem
 #print axioms cOr_8_11_FALSE
+#print axioms cOr_8_11_not_a_theorem
 #print axioms cOr_8_12_FALSE
+#print axioms cOr_8_12_not_a_theorem
 #print axioms cOr_8_14_FALSE
+#print axioms cOr_8_14_not_a_theorem
 #print axioms cBox_11_no_candidate
 #print axioms cImp_12_11_no_candidate
 #print axioms cOr_10_12_no_candidate
