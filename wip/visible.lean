@@ -1,6 +1,6 @@
 import LaxLogic.PLLSequent
 import LaxLogic.PLLLaxInfinite
-import rnEmbed
+import wip.rnEmbed
 
 /-!
 # Visibility: join-prime elements of the closed lax fragment RN(◯,{})
