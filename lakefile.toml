@@ -580,3 +580,8 @@ root = "wip.unravel_screen"
 [[lean_exe]]
 name = "frjoscreen"
 root = "wip.frjo_screen"
+
+# FRJ◯ worked example: the refutation of q6 ∨ q10 ∨ q14, end to end.
+[[lean_exe]]
+name = "frjodemo"
+root = "wip.frjo_demo"
