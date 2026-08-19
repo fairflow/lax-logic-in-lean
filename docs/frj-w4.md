@@ -1393,3 +1393,111 @@ reduction is already in `Reject/Reduce.lean` (`RmEq`, `qModel`, `qBisim`,
 `rrank`), and `lemma9` of `LaxLogic/PLLCtxCompleteness.lean` (the ℕ-model
 plus shift bisimulation behind Corollary 10, "no FINITE set of standard
 constraints is complete") is the template for the validity half.
+
+---
+
+## §18 Every bound on modal width fails: the quantified necessity result (2026-08-19)
+
+§17 gave three separators, each killing one named shape of `Rm`. That is a
+finite list of negative results. The quantified form Matthew asked for —
+that a good proportion of ALL subrelations `Rm ⊆ Ri` are needed — is now
+PROVED, and it did not need Jankov–Fine after all. It comes out of
+Corollary 10 of F&M's *Solution to Curry's Problem*, which is already
+mechanised in `LaxLogic/PLLCtxCompleteness.lean`, once that corollary is
+read on the frame side rather than the constraint side.
+
+### The invariant
+
+    Stab u   :=   ∀ t, Rm u t → Rm t u
+
+is the paper's stability: `u` lies in an `Rm`-maximal cluster. Define the
+**modal width** of a finite constraint model as the number of such worlds:
+
+    stabCard M   :=   |{ u ∈ W : Stab u }|
+
+The bridge to Corollary 10 is Lemma 7. The constraint that a finite model
+determines,
+
+    C₀  =  ⨅_{u ∈ Stab} [ α_u , ⋁_{u' ∈ iSucc u} α_{u'} ]
+
+has exactly one basic conjunct per stable world, so
+
+    length C₀  =  stabCard M                            (`length_C0`)
+
+and Lemma 8 ("depth ≤ m makes χ_m^C an IPL theorem") transfers verbatim.
+
+### The theorem
+
+With the ladder of Corollary 10,
+
+    χ₀      =  ◯⊥
+    χ_{m+1} =  ◯(◯p_{m+1} ⊃ (p_{m+1} ∨ χ_m))
+
+the result is
+
+> **Theorem** (`stabCard_bounded_incomplete`, `[propext, Classical.choice,
+> Quot.sound]`). For every `m`:
+> (a) every finite constraint model of modal width ≤ `m` forces `χ_m` at
+>     every world; and
+> (b) `χ_m` is not a PLL theorem.
+
+Hence no class of models carrying a BOUND on the number of `Rm`-stable
+worlds is complete for PLL. Completeness demands `Rm`-relations with
+unboundedly many maximal clusters — so no finite family of modal
+accessibility shapes will do, and the answer to the question is: not a
+good proportion of the shapes, but a family of unbounded modal width.
+
+Proof of (a) is three links, all already in the file: `lemma8_valid` at
+depth `C₀ ≤ m`, `force_subC_C0` (uniform `C₀`-for-`◯` substitution
+preserves forcing in `M*`), and `force_coincide` (`M*` agrees with `M` on
+formulas free of the fresh markers, which `χ_m` is). (b) is `lemma9`.
+
+### The class is not hollow
+
+A bound on `stabCard` must not secretly be a bound on `|W|`, or the
+theorem would be a restatement of the failure of the finite model property
+at fixed size. Two lemmas fix the shape of the class:
+
+    stabCard_pos          : 0 < stabCard M           (M nonempty)
+    stabCard_eq_one_of_top: (∀ w, Rm w t) → (∀ u, Rm t u → u = t)
+                            → stabCard M = 1
+
+The first says the `m = 0` rung is vacuous — every finite model has a
+maximal cluster, so the content starts at `m = 1`. The second says every
+model with an `Rm`-greatest world of trivial cluster has width exactly 1,
+whatever its cardinality: an `≤`-chain of ANY length with `Rm = Ri` sits
+inside the width-1 class. So each class `stabCard ≤ m` contains models of
+every finite size, and the bound is on modal structure alone.
+
+### Refute-first record
+
+The statement of (a) was tested before any proof was scoped, per the
+standing rule. `wip/framescan.py` was extended (`ladder.py`) to enumerate
+every model on ≤ 4 worlds — all posets, all reflexive-transitive
+`Rm ⊆ ≤`, all hereditary fallible sets and valuations — compute `stabCard`
+and evaluate `χ_m` by bitmask DP:
+
+    n ≤ 4, m = 1, 1 atom  :  73,164 models,   5,961 of width ≤ 1, 0 violations
+    n ≤ 4, m = 2, 2 atoms : 332,032 models, 156,268 of width ≤ 2, 0 violations
+    n ≤ 3, m = 2, 2 atoms :   3,487 models,   2,468 of width ≤ 2, 0 violations
+
+and the least width among models REFUTING `χ_1` is exactly 2, the
+predicted `m+1`. `χ_2` is refuted nowhere on ≤ 4 worlds, consistent with
+needing width 3 plus the intermediate structure the ladder feeds on.
+
+### Relation to §16 and §17
+
+Orthogonal and complementary. `Kripke.Endpoints` (§16) asks that every
+`Rm`-cone meet a `≤`-maximal world — that stable worlds EXIST and are
+seen. It says nothing about how many there are, and §18 says there may be
+no bound on that number. The three separators of §17 kill three named
+shapes; §18 kills every width-bounded class at once. Together: the
+required family of `Rm` is not `id`, not `Ri`, not the endpoint-seeing
+class, and not any class of bounded modal width.
+
+### Where it is
+
+`LaxLogic/PLLCtxCompleteness.lean`, after `corollary10`:
+`stabCard`, `length_C0`, `chi_valid_of_stabCard`,
+`stabCard_bounded_incomplete`, `stabCard_pos`, `stabCard_eq_one_of_top`,
+all `#print axioms`-pinned at the file's tail.
