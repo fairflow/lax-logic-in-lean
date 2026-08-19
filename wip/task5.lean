@@ -64,11 +64,17 @@ theorem not_deriv_circ_nCircBot :
     ¬ SemUI.Deriv [.somehow nCircBot] (.or circBot nCircBot) :=
   RNEmbed.nle_of_rnc RNC.rnc_ref_5_4
 
-/-- The same statement at the natural-deduction level: no `LaxND` derivation of
-`◯⊥ ∨ ¬◯⊥` from the single premise `◯¬◯⊥`. -/
+/-- The same statement at the natural-deduction level, in the `⊬` notation of
+`LaxLogic/PLLNDCore.lean`:
+
+    ◯¬◯⊥  ⊬  ◯⊥ ∨ ¬◯⊥
+-/
 theorem no_laxND_circ_nCircBot :
-    ¬ Nonempty (LaxND [.somehow nCircBot] (.or circBot nCircBot)) :=
+    [.somehow nCircBot] ⊬ (.or circBot nCircBot) :=
   not_deriv_circ_nCircBot
+
+-- Displays in the `⊬` notation, not as `¬ Nonempty (LaxND …)`:
+#check @no_laxND_circ_nCircBot
 
 end Task5
 end PLLND
