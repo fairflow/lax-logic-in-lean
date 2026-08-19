@@ -190,7 +190,7 @@ underivability.** -/
 theorem not_laxND_of_root {N : ConstraintModel} {w : N.W}
     {Γ : List PLLFormula} {ψ : PLLFormula}
     (hΓ : ∀ χ ∈ Γ, N.force w χ) (hψ : ¬ N.force w ψ) :
-    ¬ Nonempty (LaxND Γ ψ) := by
+    Γ ⊬ ψ := by
   rintro ⟨p⟩
   exact hψ (soundness p N w hΓ)
 

@@ -92,7 +92,7 @@ def certifies (M : FinCM) (w : Nat) (Γ : List PLLFormula) (C : PLLFormula) :
 `Bool` that decides underivability. -/
 theorem not_laxND_of_certifies {M : FinCM} {w : Nat}
     {Γ : List PLLFormula} {C : PLLFormula} (h : certifies M w Γ C = true) :
-    ¬ Nonempty (LaxND Γ C) :=
+    Γ ⊬ C :=
   not_provable_of_check (by
     simp only [certifies, Bool.and_eq_true] at h
     exact h.2)
@@ -102,7 +102,7 @@ is what makes MINING a derivation worthwhile: one certificate settles
 one underivability per world, not one per certificate. -/
 theorem not_laxND_of_check_any {M : FinCM} (w : Nat)
     {Γ : List PLLFormula} {C : PLLFormula} (h : checkB M w Γ C = true) :
-    ¬ Nonempty (LaxND Γ C) :=
+    Γ ⊬ C :=
   not_provable_of_check h
 
 /-! ## 3. Pins -/

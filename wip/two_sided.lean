@@ -258,7 +258,7 @@ def flagsRun (worlds : Nat) (fuels : List Nat) : IO Unit := do
                     hits := hits + 1
                     let cf := confl M
                     IO.println s!"  HIT {rhoN i} ⊬ {rhoN j} (PLL): frame ri={M.ri} rm={M.rm} fall={M.fall} world {w}, confluent={cf}"
-                    IO.println s!"    pin: ¬ Nonempty (LaxND [{pp (rhoF i)}] ({pp (rhoF j)})) := Reject.not_laxND_of_certifies (M := ⟨{M.n}, {M.ri}, {M.rm}, {M.fall}, []⟩) (w := {w}) (by decide)"
+                    IO.println s!"    pin: [{pp (rhoF i)}] ⊬ {pp (rhoF j)} := Reject.not_laxND_of_certifies (M := ⟨{M.n}, {M.ri}, {M.rm}, {M.fall}, []⟩) (w := {w}) (by decide)"
                     if cf then
                       IO.println s!"    frame is mutually confluent ⇒ also refutes DerivU: the CATALOGUE flag settles"
                     out.flush

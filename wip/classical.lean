@@ -162,9 +162,8 @@ chain-based argument for distribution is financed by linearity, not by `K`. -/
 theorem K_does_not_force_dist :
     (∀ A B : PLLFormula, Nonempty (LaxND []
         ((somehow (A.ifThen B)).ifThen ((somehow A).ifThen (somehow B)))))
-      ∧ ¬ Nonempty (LaxND []
-        ((somehow ((prop "A").or (prop "B"))).ifThen
-          ((somehow (prop "A")).or (somehow (prop "B"))))) :=
+      ∧ [] ⊬ (somehow ((prop "A").or (prop "B"))).ifThen
+          ((somehow (prop "A")).or (somehow (prop "B"))) :=
   ⟨fun A B => ⟨ndK A B⟩, not_provable_somehow_or_dist⟩
 
 /-! ## 3. The four classes -/

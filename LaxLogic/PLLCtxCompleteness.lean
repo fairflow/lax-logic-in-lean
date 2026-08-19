@@ -177,7 +177,7 @@ theorem thm6_soundness (C : StdCtx) {φ : PLLFormula}
 /-- Contrapositive, the form used to refute PLL-entailments: if some standard
 constraint `C` makes `φ^C` IPL-**un**provable, then `φ` is not a PLL theorem. -/
 theorem not_provable_of_subC (C : StdCtx) {φ : PLLFormula}
-    (h : ¬ Nonempty (LaxND [] (subC C φ))) : ¬ Nonempty (LaxND [] φ) :=
+    (h : [] ⊬ subC C φ) : [] ⊬ φ :=
   fun hp => h (thm6_soundness C hp)
 
 /-! ## `φ^C` is genuinely IPL (◯-free) when `C` is
@@ -861,7 +861,7 @@ theorem chi_not_forced : ∀ m, ¬ (Mmod m).force 0 (chi m) := by
         exact ih ((bisim m (chi m) 0).mp h2)
 
 /-- **Lemma 9.**  `χ_m` is refuted by the model `M_m`, hence is not a PLL theorem. -/
-theorem lemma9 (m : ℕ) : ¬ Nonempty (LaxND [] (chi m)) := by
+theorem lemma9 (m : ℕ) : [] ⊬ chi m := by
   intro hp
   exact chi_not_forced m (valid_iff_provable.mpr hp (Mmod m) 0)
 
@@ -980,7 +980,7 @@ depth in `𝔻` — that every `C ∈ 𝔻` expands to an IPL theorem `φ^C`, ye
 PLL theorem. -/
 theorem corollary10 (𝔻 : Finset StdCtx) :
     ∃ φ : PLLFormula,
-      (∀ C ∈ 𝔻, Nonempty (LaxND [] (subC C φ))) ∧ ¬ Nonempty (LaxND [] φ) := by
+      (∀ C ∈ 𝔻, Nonempty (LaxND [] (subC C φ))) ∧ [] ⊬ φ := by
   refine ⟨chi (𝔻.sup List.length), ?_, lemma9 _⟩
   intro C hC
   exact lemma8 C (𝔻.sup List.length) (Finset.le_sup hC)
@@ -1021,7 +1021,7 @@ PLL: completeness demands `Rm`-relations with unboundedly many maximal clusters,
 and in particular no finite family of modal accessibility shapes suffices. -/
 theorem stabCard_bounded_incomplete (m : ℕ) :
     (∀ (M : ConstraintModel) [Fintype M.W], stabCard M ≤ m → ∀ w : M.W, M.force w (chi m))
-      ∧ ¬ Nonempty (LaxND [] (chi m)) :=
+      ∧ [] ⊬ chi m :=
   ⟨fun _ _ h w => chi_valid_of_stabCard h w, lemma9 m⟩
 
 open Classical in
@@ -1782,14 +1782,14 @@ example : (⊥ : CQuot) = CQuot.mk Cbot := rfl
 example (C : StdCtx) : CQuot.mk C ⊓ (CQuot.mk C)ᶜ = ⊥ := inf_compl_eq_bot
 
 -- Lemma 9 at `m = 0,1,2`: `χ₀, χ₁, χ₂` are concrete PLL non-theorems.
-example : ¬ Nonempty (LaxND [] (chi 0)) := lemma9 0
-example : ¬ Nonempty (LaxND [] (chi 1)) := lemma9 1
-example : ¬ Nonempty (LaxND [] (chi 2)) := lemma9 2
+example : [] ⊬ chi 0 := lemma9 0
+example : [] ⊬ chi 1 := lemma9 1
+example : [] ⊬ chi 2 := lemma9 2
 
 -- Corollary 10 on a concrete finite constraint set `{⊤, ⊥}`.
 example : ∃ φ : PLLFormula,
     (∀ C ∈ ({[], [(truePLL, falsePLL)]} : Finset StdCtx),
-      Nonempty (LaxND [] (subC C φ))) ∧ ¬ Nonempty (LaxND [] φ) :=
+      Nonempty (LaxND [] (subC C φ))) ∧ [] ⊬ φ :=
   corollary10 {[], [(truePLL, falsePLL)]}
 
 end Ctx

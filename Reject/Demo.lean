@@ -53,7 +53,7 @@ theorem root_refutes_negBoxBot :
 
 /-- **`⊬ ¬◯⊥`, by construction.** -/
 theorem not_derivable_negBoxBot :
-    ¬ Nonempty (LaxND [] (.ifThen (.somehow .falsePLL) .falsePLL)) :=
+    [] ⊬ .ifThen (.somehow .falsePLL) .falsePLL :=
   not_laxND_of_root (by simp) root_refutes_negBoxBot
 
 /-! ### The ◯-refutation rules, exercised
@@ -72,7 +72,7 @@ theorem root_refutes_boxP :
 
 /-- **`⊬ ◯p`.** -/
 theorem not_derivable_boxP :
-    ¬ Nonempty (LaxND [] (.somehow (.prop "p"))) :=
+    [] ⊬ .somehow (.prop "p") :=
   not_laxND_of_root (by simp) root_refutes_boxP
 
 /-! ## Pins -/

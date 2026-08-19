@@ -94,7 +94,7 @@ theorem two_refutes : ¬ two.force false (.ifThen (.somehow p) p) := by
   exact Bool.noConfusion this.2
 
 /-- **(b) for class 1**: `◯p ⊃ p` is not a PLL theorem. -/
-theorem not_provable_circ_imp : ¬ Nonempty (LaxND [] (.ifThen (.somehow p) p)) :=
+theorem not_provable_circ_imp : [] ⊬ .ifThen (.somehow p) p :=
   fun ⟨d⟩ => two_refutes (soundness_valid d two false)
 
 /-- **The transparent models are not enough.**  `Rm = id` validates a
@@ -103,7 +103,7 @@ non-trivial modal relation are NEEDED. -/
 theorem transparent_incomplete :
     (∀ C : ConstraintModel, Transparent C → ∀ w : C.W,
         C.force w (.ifThen (.somehow p) p))
-      ∧ ¬ Nonempty (LaxND [] (.ifThen (.somehow p) p)) :=
+      ∧ [] ⊬ .ifThen (.somehow p) p :=
   ⟨fun _ h w => transparent_forces_circ_imp h w, not_provable_circ_imp⟩
 
 
@@ -261,13 +261,13 @@ theorem three_refutes : ¬ three.force .a sep := by
   · exact Bool.noConfusion hru
 
 /-- `◯¬◯⊥` is not a PLL theorem. -/
-theorem not_provable_sep : ¬ Nonempty (LaxND [] sep) :=
+theorem not_provable_sep : [] ⊬ sep :=
   fun ⟨d⟩ => three_refutes (soundness_valid d three .a)
 
 /-- **The `Rm = Ri` models are not enough.** -/
 theorem rmFull_incomplete :
     (∀ C : ConstraintModel, RmFull C → ∀ w : C.W, C.force w sep)
-      ∧ ¬ Nonempty (LaxND [] sep) :=
+      ∧ [] ⊬ sep :=
   ⟨fun _ h w => rmFull_forces_sep h w, not_provable_sep⟩
 
 /-- **The endpoint-seeing models are not enough** — so the class on which
@@ -275,7 +275,7 @@ theorem rmFull_incomplete :
 restriction, and the models outside it are needed for PLL. -/
 theorem endpointSeeing_incomplete :
     (∀ C : ConstraintModel, EndpointSeeing C → ∀ w : C.W, C.force w sep)
-      ∧ ¬ Nonempty (LaxND [] sep) :=
+      ∧ [] ⊬ sep :=
   ⟨fun _ h w => endpointSeeing_forces h w .falsePLL, not_provable_sep⟩
 
 end Need

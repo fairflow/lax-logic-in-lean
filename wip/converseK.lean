@@ -51,10 +51,10 @@ def Minf : FinCM := ⟨3, [(0,1),(1,2),(0,2)], [(1,2)], [], [(1,"A"),(2,"A"),(2,
 /-- The same frame with world 2 fallible. -/
 def Mfal : FinCM := ⟨3, [(0,1),(1,2),(0,2)], [(1,2)], [2], [(1,"A")]⟩
 
-theorem converseK_fails_infallible : ¬ Nonempty (LaxND Γck Cck) :=
+theorem converseK_fails_infallible : Γck ⊬ Cck :=
   FinCM.not_provable_of_check (M := Minf) (w := 0) (by decide)
 
-theorem converseK_fails_fallible : ¬ Nonempty (LaxND Γck Cck) :=
+theorem converseK_fails_fallible : Γck ⊬ Cck :=
   FinCM.not_provable_of_check (M := Mfal) (w := 0) (by decide)
 
 -- K itself is NOT refuted by either model (the checker finds no countermodel).
