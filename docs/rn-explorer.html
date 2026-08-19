@@ -211,16 +211,55 @@
 </style>
 
 <div class="wrap">
-<h2 class="sr-only">Interactive Hasse diagrams for the Rieger–Nishimura ladder embedded in the variable-free fragment of propositional lax logic, and for the fifteen known classes of that fragment.</h2>
+<h2 class="sr-only">Interactive Hasse diagrams for the Rieger–Nishimura ladder embedded in the variable-free fragment of propositional lax logic, and for a finite dictionary of classes of that fragment, which is proved never to close.</h2>
 
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
-  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v15 · 2026-08-14 · the 22-class closed-fragment ORDER computed (462 cells, 37 cover edges); the 15-class closure does NOT close</p>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v16 · 2026-08-19 · CORRECTED — no cover relation of RN(◯,{}) is proved; every ⋖ claim demoted to dictionary-relative; the PCLL layer archived at git tag <code>frozen-but-incorrect</code></p>
+
+  <div style="border:1px solid var(--rust);background:var(--rust-fill);border-radius:6px;padding:14px 16px;margin:0 0 16px">
+    <p style="font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin:0 0 9px">Correction · 2026-08-19</p>
+
+    <p style="margin:0 0 10px;font-size:14px"><strong>RN(◯,{}) is infinite — proved.</strong>
+    <code>closed_lax_infinite</code> (<code>LaxLogic/PLLLaxInfinite.lean</code>, sorry-free,
+    <span class="fml">[propext, Classical.choice, Quot.sound]</span>): the ⊣⊢-quotient of the
+    closed fragment has infinitely many classes, because <span class="fml">p ↦ ◯⊥</span> embeds
+    the free Heyting algebra on one generator. Infinite in three independent ways —
+    <em>height</em> (<code>exists_escaping_rungs</code>), <em>width</em>
+    (<code>width_infinite</code>) and <em>depth</em> (<code>Gmeet_desc_strict</code>,
+    <code>gap_no_glb</code>, <code>L_no_greatest</code>: no floor, so RN(◯,{}) is not a complete
+    lattice).</p>
+
+    <p style="margin:0 0 10px;font-size:14px"><strong>Therefore no finite dictionary can ever
+    close</strong>, and the earlier framing of this page — fifteen classes, closed under the
+    operations — was never going to work. Round 1 (15 representatives) and round 2 (16) both
+    fail: round 2 carries <strong>58 certified escapes</strong>, and <strong>83 of its 784
+    operation-table entries are certified false</strong>.</p>
+
+    <p style="margin:0 0 10px;font-size:14px"><strong>No cover relation of RN(◯,{}) is
+    proved.</strong> Not <span class="fml">⊥ ⋖ ◯⊥</span>, not
+    <span class="fml">⊥ ⋖ ¬◯⊥</span>, none. Writing <span class="fml">a ⋖ b</span> requires
+    ruling out <em>every</em> intermediate <span class="fml">χ ∈ RN(◯,{})</span> — an infinite
+    set. Countermodel search can refute a cover claim by exhibiting one strict interpolant; it
+    can never confirm one. What the diagrams below draw is therefore a
+    <strong>D-cover</strong>: <span class="fml">φ ⊢ ψ</span> certified, and no class of the
+    <em>current dictionary D</em> strictly between. A D-cover is relative to D and is destroyed
+    by enlarging it — placing eight further classes destroyed seven of twenty-one.</p>
+
+    <p style="margin:0;font-size:14px"><strong>Frozen.</strong> The 22-class order layer added in
+    v15 is computed in <code>DerivU</code> — PCLL, not PLL. PLL-entailment implies
+    PCLL-entailment, so PLL classes are finer and neither direction of the cover relation
+    transfers. It has been removed from this page and is recoverable at git tag
+    <code>frozen-but-incorrect</code>. The operation-tables tab records
+    <span class="fml">InterdU</span>, also PCLL, and is retained for reference only. Plan for the
+    rebuild: <code>docs/rn-dictionary-plan.md</code>.</p>
+  </div>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
-  The <strong>dictionary</strong> is the fifteen classes found by closing under ∧, ∨, ⊃, ◯ —
-  where the ladder is only part of the picture.</p>
+  The <strong>dictionary</strong> <span class="fml">D</span> is a finite set of classes obtained
+  by closing under ∧, ∨, ⊃, ◯ as far as it goes — which, since RN(◯,{}) is infinite, is never all
+  the way. It is an atlas of the bottom of the lattice, not a presentation of it.</p>
   <p class="note" style="margin:10px 0 0;border-left:3px solid var(--red,#c0392b);padding-left:10px">
   <strong>The fifteen classes do not actually close</strong> (recorded 2026-08-14).
   The closure record <code>rnDict15</code> is certified at 603 of its 690 cells;
@@ -237,9 +276,9 @@
 
 <div class="tabs" role="tablist">
   <button class="tab" id="tab-ladder" role="tab" aria-selected="true" aria-controls="p-ladder">Ladder — image of h</button>
-  <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — 15 classes + the ◯-chain</button>
+  <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — D, 15 classes + the ◯-chain</button>
   <button class="tab" id="tab-fam" role="tab" aria-selected="false" aria-controls="p-fam">Families — the combs</button>
-  <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — 347 cells</button>
+  <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — PCLL, frozen</button>
 </div>
 
 <p class="note" style="margin:-6px 0 14px;font-size:12.5px">Labels across the tabs: all three
@@ -284,7 +323,7 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         <h2>Computed</h2>
         <dl class="stats">
           <dt>elements</dt><dd id="s-n">9</dd>
-          <dt>covers</dt><dd id="s-cov">11</dd>
+          <dt>rung-covers</dt><dd id="s-cov">11</dd>
           <dt>comparable pairs</dt><dd id="s-cmp">–</dd>
           <dt>widest antichain</dt><dd id="s-w">–</dd>
           <dt>compute time</dt><dd id="s-ms">–</dd>
@@ -319,6 +358,31 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
           <div class="lrow"><span class="sw jpp"></span><span><strong>join-prime, PROVED</strong> — <span class="fml">t 1, t 2, t 4, t 6</span>, by two mechanisms (see below)</span></div>
           <div class="lrow"><span class="sw jpv"></span><span><strong>join-prime</strong>, verified against the shown rungs — a <em>visible point</em> of the dual (a ring)</span></div>
           <div class="lrow"><span class="sw jpr"></span><span><strong>join-reducible</strong>, REFUTED by a witnessing pair — not a point of the dual (a dot); every odd rung from <span class="fml">t 3</span> up is REFUTED by a single theorem general in <span class="fml">k</span></span></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>What the edges mean</h2>
+        <div style="color:var(--ink-soft);font-size:12.5px">
+        <p style="margin:0 0 8px">Every edge is a certified <span class="fml">⊢</span>: the rung
+        order is decidable <em>arithmetic</em>, not search — <code>rnSub_order i j ↔ rungLe i j</code>
+        reduces <span class="fml">rnSub i ⊢ rnSub j</span> to truth-set inclusion for
+        <span class="fml">rn 0 = ∅</span>, <span class="fml">rn (2k+1) = {w ≤ k}</span>,
+        <span class="fml">rn (2k+2) = {w &lt; k} ∪ {k+1}</span> (<code>wip/ladder8.lean</code>).</p>
+        <p style="margin:0 0 8px">The edges drawn are <strong>rung-covers</strong>:
+        <code>covers9_eq</code> is proved <em>axiom-free</em>, and <code>covers9_stable</code>
+        widens the "nothing strictly between" search from rungs &lt; 9 out to rungs &lt; 24 and
+        gets the same eleven — so the picture is not an artefact of where the table was cut.</p>
+        <p style="margin:0"><strong>A rung-cover is not a cover of RN(◯,{}).</strong> Both
+        theorems quantify over <em>rungs</em>. RN(◯,{}) contains classes off the rung image — the
+        gap family, the ◯-chain — and whether any of them lies strictly inside a rung interval is
+        open. In particular <span class="fml">⊥ ⋖ ◯⊥</span> and
+        <span class="fml">⊥ ⋖ ¬◯⊥</span> are <strong>OPEN</strong>. What is known about a strict
+        interpolant <span class="fml">χ</span> with <span class="fml">⊥ &lt; χ &lt; ◯⊥</span>:
+        it cannot be interderivable with any ◯-headed formula, since ◯ is monotone and
+        <span class="fml">⊥ ⊢ ψ</span> put every ◯-formula above ◯⊥
+        (<code>oBot_le_box</code>, <span class="fml">[propext]</span>); and it cannot be ◯-free,
+        since the ◯-free closed IPC fragment collapses to <span class="fml">{⊥, ⊤}</span>. So it
+        would have to contain ◯ while being headed by ∧, ∨ or ⊃.</p>
         </div>
       </div>
       <div class="card">
@@ -402,8 +466,8 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
           <div class="lrow"><span class="sw c"></span><span>Chain family — infinitely many, totally ordered: <span class="fml">c k</span>, <span class="fml">s k</span></span></div>
           <div class="lrow"><span class="sw a"></span><span>Antichain family — infinitely many, pairwise incomparable: <span class="fml">g k</span>, <span class="fml">r k</span>, <span class="fml">◯g k</span></span></div>
           <div class="lrow"><span class="sw o"></span><span>Outside the rungs — the top class <span class="fml">⊤</span></span></div>
-          <div class="lrow"><span class="swl"></span><span>Certified cover</span></div>
-          <div class="lrow"><span class="swl d"></span><span>Relation certified; whether anything sits strictly between depends on one of the 2 remaining open cells</span></div>
+          <div class="lrow"><span class="swl"></span><span><strong>D-cover</strong> — <span class="fml">φ ⊢ ψ</span> certified, and no class of the current dictionary <span class="fml">D</span> strictly between. <em>Not</em> a cover of RN(◯,{}): no such cover is proved.</span></div>
+          <div class="lrow"><span class="swl d"></span><span>Relation certified; whether anything of <span class="fml">D</span> sits strictly between depends on one of the 2 remaining open cells</span></div>
           <div class="lrow"><span class="swl x"></span><span>Where distribution fails</span></div>
           <div class="lrow"><span class="swl" style="border-top:2px dashed var(--green)"></span><span>The ◯-chain: infinitely many further classes, strict at every step, all below ⊤ — not covers</span></div>
           <div class="lrow"><span class="sw jpp"></span><span><strong>join-prime, PROVED</strong> — <span class="fml">⊤, t1, t2, t4, t6</span> (<code>visible_top</code>, <code>visible_rnSub_{one,two,four,six}</code>, <code>wip/visible.lean</code>): visible points</span></div>
@@ -415,15 +479,24 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
       <div class="card">
         <h2>State of the order</h2>
         <dl class="stats">
-          <dt>classes</dt><dd>15 + ∞ (chain)</dd>
-          <dt>order cells</dt><dd>225</dd>
+          <dt>classes</dt><dd>infinitely many ✓</dd>
+          <dt>this dictionary D</dt><dd>15 (round 1)</dd>
+          <dt>D closed under ∧∨⊃◯?</dt><dd>no — and no finite D can be</dd>
+          <dt>order cells within D</dt><dd>225</dd>
           <dt>settled</dt><dd id="d-set">223</dd>
           <dt>unsettled</dt><dd id="d-unk">2</dd>
           <dt>in image of h</dt><dd>8</dd>
           <dt>im h</dt><dd>= rungs ∪ {⊤} ✓</dd>
           <dt>width</dt><dd>∞ (gap family) ✓</dd>
           <dt>floor</dt><dd>none (gap meets) ✓</dd>
+          <dt>covers of RN(◯,{})</dt><dd>none proved</dd>
         </dl>
+        <p style="font-size:12px;margin:9px 0 0;color:var(--ink-soft)">Round 2
+        (<code>wip/rnDict2.lean</code>) adds a sixteenth class and still does not close: it carries
+        <strong>58 certified escapes</strong>, witnessed sorry-free in
+        <code>wip/rnDictRefute2.lean</code> in the strong form
+        <span class="fml">∀ k, ¬ Interd (q<sub>i</sub> ∘ q<sub>j</sub>) (rep2 k)</span>. The ✓ rows
+        are theorems about RN(◯,{}); the rest are relative to <span class="fml">D</span>.</p>
         <label class="opctl" style="margin:10px 0 0"><input type="checkbox" id="tog-jp-dict">
           <span>Show only join-prime (visible) classes</span></label>
         <p class="scopeline" id="jp-scope-dict"></p>
@@ -436,11 +509,23 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         meets of the gap family, <span class="fml">Gmeet n = g1 ∧ g2 ∧ … ∧ g(n+1)</span>, form a
         chain that <strong>descends strictly forever</strong>
         (<code>Gmeet_le</code>, <code>Gmeet_desc_strict</code>, <code>wip/uiObstruct.lean</code>)
-        with <strong>no floor</strong> — no formula sits below every <span class="fml">g k</span>,
-        in PLL or even restricted to variable-free formulas
-        (<code>gap_no_glb</code>, <code>L_no_greatest</code>, <code>wip/floor.lean</code>).
+        with <strong>no floor</strong> — the gap family has lower bounds
+        (<span class="fml">⊥</span> for one) but no <em>greatest</em> lower bound, in PLL or even
+        restricted to variable-free formulas (<code>gap_no_glb</code>,
+        <code>L_no_greatest</code>, <code>wip/floor.lean</code>).
         RN(◯,{}) is not a complete lattice. Drawn as a new column in the
-        <strong>Families</strong> tab, below <span class="fml">g1</span>.</div>
+        <strong>Families</strong> tab, below <span class="fml">g1</span>.
+        <p style="font-size:12.5px;margin:10px 0 0"><strong>This descent says nothing about
+        <span class="fml">[⊥, ◯⊥]</span>.</strong> The whole gap antichain sits <em>above</em>
+        <span class="fml">t3 = ◯⊥ ∨ ¬◯⊥</span> (<code>t3_below_gap</code>), and
+        <span class="fml">◯⊥</span>, <span class="fml">¬◯⊥</span> both lie below
+        <span class="fml">t3</span> in the rung order, so each absorbs every partial meet:
+        <span class="fml">◯⊥ ∧ Gmeet n ⊣⊢ ◯⊥</span> and
+        <span class="fml">¬◯⊥ ∧ Gmeet n ⊣⊢ ¬◯⊥</span> for <em>every</em> n — constant, not
+        eventually constant (<code>oBot_meet_Gmeet</code>, <code>nBot_meet_Gmeet</code>,
+        <code>wip/atomProbe.lean</code>, sorry-free). The infinite strict descent happens entirely
+        strictly above <span class="fml">t3</span>, so it cannot be used to break the atom
+        claims.</p></div>
       </div>
       <div class="card">
         <h2>The invisible points</h2>
@@ -578,127 +663,23 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
   <span class="fml">◯t3 ∨ ◯t4 = s1</span>, that strict gap <em>is</em> the failure of
   distribution, refuted by a five-world countermodel (<code>distr_4_3_not_derivable</code>).</p>
 
-  <!-- ── the 22-class closed-fragment order, computed 2026-08-14 ── -->
+  <!-- ── the 22-class PCLL layer was here; archived 2026-08-19 ── -->
   <div style="margin-top:26px;border-top:1px solid var(--rule,#ddd);padding-top:18px">
-  <h2>The 22 closed-fragment classes, ordered</h2>
-  <p class="note">The closed-fragment catalogue certified 22 pairwise-distinct
-  <span class="fml">DerivU</span> classes and left their ORDER uncomputed —
-  "placing the new nodes needs their order cells, not yet computed". Those
-  462 cells are now computed: <strong>158 derivable, 302 refuted by a certified
-  confluent countermodel, 2 flags</strong>. Rust nodes are the eight sweep
-  discoveries; black are the classes the dictionary already knew.</p>
-  <div class="stage" style="overflow-x:auto">
-<svg viewBox="0 0 760 560" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Hasse diagram of the 22 closed-fragment classes">
-<style>.hn{font:11px var(--mono,monospace);fill:var(--ink,#222)}.he{stroke:var(--ink-soft,#888);stroke-width:1.2;fill:none}.hd{fill:var(--rust,#c0562a)}.ho{fill:var(--ink,#333)}</style>
-<line class="he" x1="380" y1="520" x2="220" y2="453"/>
-<line class="he" x1="380" y1="520" x2="540" y2="453"/>
-<line class="he" x1="220" y1="453" x2="540" y2="386"/>
-<line class="he" x1="220" y1="453" x2="220" y2="386"/>
-<line class="he" x1="540" y1="453" x2="540" y2="386"/>
-<line class="he" x1="540" y1="386" x2="167" y2="319"/>
-<line class="he" x1="540" y1="386" x2="380" y2="319"/>
-<line class="he" x1="540" y1="386" x2="593" y2="319"/>
-<line class="he" x1="220" y1="386" x2="167" y2="319"/>
-<line class="he" x1="167" y1="319" x2="252" y2="251"/>
-<line class="he" x1="167" y1="319" x2="124" y2="251"/>
-<line class="he" x1="167" y1="319" x2="380" y2="251"/>
-<line class="he" x1="380" y1="319" x2="252" y2="251"/>
-<line class="he" x1="380" y1="319" x2="636" y2="251"/>
-<line class="he" x1="380" y1="319" x2="508" y2="251"/>
-<line class="he" x1="636" y1="184" x2="593" y2="117"/>
-<line class="he" x1="252" y1="251" x2="124" y2="184"/>
-<line class="he" x1="252" y1="251" x2="508" y2="184"/>
-<line class="he" x1="252" y1="251" x2="252" y2="184"/>
-<line class="he" x1="593" y1="117" x2="380" y2="50"/>
-<line class="he" x1="380" y1="184" x2="380" y2="117"/>
-<line class="he" x1="124" y1="184" x2="167" y2="117"/>
-<line class="he" x1="124" y1="251" x2="380" y2="184"/>
-<line class="he" x1="124" y1="251" x2="124" y2="184"/>
-<line class="he" x1="593" y1="319" x2="636" y2="251"/>
-<line class="he" x1="593" y1="319" x2="380" y2="251"/>
-<line class="he" x1="380" y1="117" x2="380" y2="50"/>
-<line class="he" x1="636" y1="251" x2="636" y2="184"/>
-<line class="he" x1="636" y1="251" x2="508" y2="184"/>
-<line class="he" x1="380" y1="251" x2="380" y2="184"/>
-<line class="he" x1="380" y1="251" x2="508" y2="184"/>
-<line class="he" x1="508" y1="184" x2="593" y2="117"/>
-<line class="he" x1="508" y1="184" x2="380" y2="117"/>
-<line class="he" x1="508" y1="251" x2="636" y2="184"/>
-<line class="he" x1="508" y1="251" x2="252" y2="184"/>
-<line class="he" x1="252" y1="184" x2="167" y2="117"/>
-<line class="he" x1="167" y1="117" x2="380" y2="50"/>
-<circle class="ho" cx="380" cy="520" r="4.5"/>
-<text class="hn" x="389" y="524">⊥</text>
-<circle class="ho" cx="380" cy="50" r="4.5"/>
-<text class="hn" x="389" y="54">⊤</text>
-<circle class="ho" cx="220" cy="453" r="4.5"/>
-<text class="hn" x="229" y="457">◯⊥</text>
-<circle class="ho" cx="540" cy="453" r="4.5"/>
-<text class="hn" x="549" y="457">¬◯⊥</text>
-<circle class="ho" cx="540" cy="386" r="4.5"/>
-<text class="hn" x="549" y="390">ρ4</text>
-<circle class="ho" cx="220" cy="386" r="4.5"/>
-<text class="hn" x="229" y="390">ρ5</text>
-<circle class="ho" cx="167" cy="319" r="4.5"/>
-<text class="hn" x="176" y="323">ρ6</text>
-<circle class="ho" cx="380" cy="319" r="4.5"/>
-<text class="hn" x="389" y="323">ρ7</text>
-<circle class="ho" cx="636" cy="184" r="4.5"/>
-<text class="hn" x="645" y="188">ρ8</text>
-<circle class="ho" cx="252" cy="251" r="4.5"/>
-<text class="hn" x="261" y="255">ρ9</text>
-<circle class="ho" cx="593" cy="117" r="4.5"/>
-<text class="hn" x="602" y="121">ρ10</text>
-<circle class="ho" cx="380" cy="184" r="4.5"/>
-<text class="hn" x="389" y="188">ρ11</text>
-<circle class="ho" cx="124" cy="184" r="4.5"/>
-<text class="hn" x="133" y="188">ρ12</text>
-<circle class="hd" cx="124" cy="251" r="6"/>
-<text class="hn" x="133" y="255">ρ13</text>
-<circle class="ho" cx="593" cy="319" r="4.5"/>
-<text class="hn" x="602" y="323">ρ14</text>
-<circle class="hd" cx="380" cy="117" r="6"/>
-<text class="hn" x="389" y="121">ρ15</text>
-<circle class="hd" cx="636" cy="251" r="6"/>
-<text class="hn" x="645" y="255">ρ16</text>
-<circle class="hd" cx="380" cy="251" r="6"/>
-<text class="hn" x="389" y="255">ρ17</text>
-<circle class="hd" cx="508" cy="184" r="6"/>
-<text class="hn" x="517" y="188">ρ18</text>
-<circle class="hd" cx="508" cy="251" r="6"/>
-<text class="hn" x="517" y="255">ρ19</text>
-<circle class="hd" cx="252" cy="184" r="6"/>
-<text class="hn" x="261" y="188">ρ20</text>
-<circle class="hd" cx="167" cy="117" r="6"/>
-<text class="hn" x="176" y="121">ρ21</text>
-</svg>
-  </div>
-  <p class="note"><strong>The discoveries are not appendages.</strong> Placing them
-  breaks <strong>seven</strong> of the twenty-one covering relations that hold among the
-  old classes alone — a new class sits strictly between:
-  <span class="fml">ρ6&lt;ρ11</span> (by ρ13, ρ17),
-  <span class="fml">ρ7&lt;ρ8</span> (by ρ16, ρ19),
-  <span class="fml">ρ9&lt;ρ10</span> (by ρ18),
-  <span class="fml">ρ11&lt;⊤</span> (by ρ15),
-  <span class="fml">ρ12&lt;⊤</span> (by ρ21),
-  <span class="fml">ρ14&lt;ρ8</span> (by ρ16),
-  <span class="fml">ρ14&lt;ρ11</span> (by ρ17).
-  So a Hasse diagram drawn for the dictionary alone shows seven edges that are
-  not covers of the real order. Cover edges: 21 for the old classes, <strong>37</strong>
-  for all 22.</p>
-  <p class="note"><strong>Top and bottom.</strong> <span class="fml">⊥</span> still has exactly
-  two upper covers, <span class="fml">◯⊥</span> and <span class="fml">¬◯⊥</span>. But
-  <span class="fml">⊤</span> has three lower covers — <span class="fml">ρ10</span>,
-  <span class="fml">ρ15</span>, <span class="fml">ρ21</span> — and <em>two of the three are
-  new</em>. That also accounts for something the catalogue recorded without explaining:
-  its 109 flags cluster at <span class="fml">⊤</span> (21), <span class="fml">ρ10</span> (21)
-  and <span class="fml">ρ21</span> (20) — precisely the co-atoms.</p>
-  <p class="note">Two cells remain flagged (<span class="fml">ρ12 ⊢ ρ15</span>,
-  <span class="fml">ρ20 ⊢ ρ10</span>): not refutable on the ≤5-world confluent battery,
-  not proved at budget 1,000,000. The diagram is insensitive to them beyond their own
-  edges — reading both as derivable adds exactly those two edges and changes nothing
-  else — so every edge drawn above is certified. Detail and the full matrix:
-  <code>docs/rho-order.md</code>.</p>
+  <h2>Removed: the 22-class order layer</h2>
+  <p class="note" style="border-left:3px solid var(--rust);padding-left:10px">
+  Explorer v15 drew a Hasse diagram of 22 closed-fragment classes here — 462 order cells, 460
+  certified, 37 cover edges — and recorded that placing eight sweep discoveries destroyed seven
+  of the twenty-one covering relations that held among the previous fourteen. That last
+  observation stands, and it is the clearest evidence on this page that a cover read off a finite
+  dictionary is provisional.
+  <strong>The diagram itself has been removed</strong>, for two reasons. It was computed in
+  <code>DerivU</code> — PCLL, not PLL — and PLL-entailment implies PCLL-entailment, so PLL
+  classes are strictly finer and <em>neither</em> direction of the cover relation transfers: a
+  PCLL interpolant need not be a PLL interpolant, and PCLL equivalence does not give PLL
+  equivalence. And it was added on the assumption that the PLL ladder below was
+  more-or-less right, which it is not.
+  The layer is recoverable in full at git tag <code>frozen-but-incorrect</code>; the matrix and
+  method remain in <code>docs/rho-order.md</code>, to be read as PCLL throughout.</p>
   </div>
 </section>
 
@@ -816,8 +797,8 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         chain, the mirror image of the ascending <span class="fml">◯</span>-chain in the
         Dictionary tab.</p>
         <p style="font-size:13px;margin:0;color:var(--ink-soft)">
-        It has <strong>no floor</strong>: no formula lies below every
-        <span class="fml">Gmeet n</span>, in the whole of PLL, let alone variable-free
+        It has <strong>no floor</strong>: its lower bounds have no <em>greatest</em> element, in
+        the whole of PLL, let alone variable-free
         (<span style="font-family:var(--mono);font-size:11px">gap_no_glb</span>,
         <span style="font-family:var(--mono);font-size:11px">L_no_greatest</span>,
         <code>wip/floor.lean</code>) — so RN(◯,{}) is <strong>not a complete lattice</strong>,
@@ -827,6 +808,16 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
         — <span style="font-family:var(--mono);font-size:11px">gap_two_le_one</span> — is why the
         antichain proper is drawn from <span class="fml">k = 2</span>: <span class="fml">g1</span>
         is strictly above it.)</p>
+        <p style="font-size:12.5px;margin:8px 0 0;color:var(--ink-soft)"><strong>The descent is
+        blind to <span class="fml">[⊥, ◯⊥]</span>.</strong> Because
+        <span class="fml">t3</span> is below every gap, and <span class="fml">◯⊥</span> and
+        <span class="fml">¬◯⊥</span> are below <span class="fml">t3</span>, each absorbs every
+        <span class="fml">Gmeet n</span>: <span class="fml">◯⊥ ∧ Gmeet n ⊣⊢ ◯⊥</span> for every
+        n (<span style="font-family:var(--mono);font-size:11px">oBot_meet_Gmeet</span>,
+        <span style="font-family:var(--mono);font-size:11px">nBot_meet_Gmeet</span>,
+        <code>wip/atomProbe.lean</code>). So the whole descent lies strictly above
+        <span class="fml">t3</span> and says nothing about whether
+        <span class="fml">◯⊥</span> is an atom.</p>
         <p style="font-size:12.5px;margin:8px 0 0;color:var(--ink-soft)">What this misses is a
         <em>point</em> of the Esakia dual, not just a formula — see "The invisible points" in the
         Dictionary tab: the closed set <span class="fml">⋂ₖ φ(g k)</span> is nonempty by
@@ -914,7 +905,20 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
       </div>
     </div>
     <div>
-      <h2 class="print-tab-title">Operation tables — 347 cells</h2>
+      <h2 class="print-tab-title">Operation tables — PCLL, frozen</h2>
+      <p class="note" style="border-left:3px solid var(--rust);padding-left:10px;margin-top:0">
+      <strong>Frozen, and PCLL not PLL.</strong> Every certified cell below is a kernel-checked
+      <span class="fml">InterdU</span> — interderivability in <code>DerivU</code>, the confluent
+      extension. PLL-entailment implies PCLL-entailment, so PLL classes are strictly finer: a
+      PCLL identification of two classes does <em>not</em> give a PLL one, and the quotient shown
+      here (15 classes, <span class="fml">c2</span> identified with <span class="fml">s1</span>)
+      is coarser than the PLL picture. These 347 cells are retained for reference and are not
+      being extended while the PLL picture is rebuilt. The separate PLL records are
+      <code>wip/rnDict.lean</code> (15 representatives, 87 unproved cells) and
+      <code>wip/rnDict2.lean</code> (16, 58 cells all certified-refuted, 83 of 784 table entries
+      certified false). Both instantiate <code>RNDict</code> from sorried cells, so
+      <code>rnDict15</code> and <code>rnDict16</code> carry <span class="fml">sorryAx</span> and
+      should not be used. Plan: <code>docs/rn-dictionary-plan.md</code>.</p>
       <div class="stage-wrap" id="wrap-tab">
         <div class="toolbar no-print">
           <button class="chip" type="button" id="fs-tab">Full screen</button>
@@ -1040,7 +1044,7 @@ function renderLadder(N) {
   const box = document.getElementById("selfcheck");
   if (c9 === CERTIFIED_COVERS_9.split(",").sort().join(",")) {
     box.className = "check";
-    box.innerHTML = "The eleven covers computed here for t 0…t 8 match <strong>covers9_eq</strong>, "
+    box.innerHTML = "The eleven RUNG-covers computed here for t 0…t 8 match <strong>covers9_eq</strong>, "
       + "the Lean theorem proved by <code>decide</code>.";
   } else {
     box.className = "check bad";
@@ -1132,8 +1136,8 @@ function renderLadder(N) {
             ? ` &nbsp;·&nbsp; = ${DICT[DICT_OF_RUNG[n]].f} <span class="muted">(dictionary node, was q${DICT_OF_RUNG[n]})</span>`
             : "")
         + `<br><span class="muted">${n === 0 ? "the bottom of the lattice"
-            : n % 2 === 1 ? "odd rung — a join; two upper covers"
-                          : "even rung — an implication; one upper cover"}`
+            : n % 2 === 1 ? "odd rung — a join; two upper rung-covers"
+                          : "even rung — an implication; one upper rung-cover"}`
         + (n > 7 ? " · <strong>beyond the dictionary</strong> — no dictionary class names it"
                  : " · in the dictionary") + `</span>`
         + `<br>` + jpVerdictHtml("t " + n, v, jpNameOf, jpFormOf)
@@ -1197,7 +1201,8 @@ const DICT = [
 const RUNG_OF_DICT = { 0:0, 2:1, 3:2, 4:3, 6:4, 7:5, 10:6, 11:7 };
 const DICT_OF_RUNG = { 0:0, 1:2, 2:3, 3:4, 4:6, 5:7, 6:10, 7:11 };
 
-/* [from, to, style] — "s" certified cover, "d" cover depends on an open cell, "x" distribution failure */
+/* [from, to, style] — "s" D-cover (certified <, nothing of D strictly between; NOT a cover
+   of RN(◯,{})), "d" D-cover depends on an open cell, "x" distribution failure */
 const DICT_EDGES = [
   [0,2,"s"],[0,3,"s"],[2,4,"s"],[2,6,"s"],[3,4,"s"],[4,5,"s"],[4,7,"s"],
   [6,7,"s"],[5,9,"s"],[5,10,"s"],[7,9,"s"],[7,8,"s"],[9,11,"d"],[9,12,"x"],
@@ -1210,8 +1215,8 @@ function renderDict() {
   /* join-primality over the 14 classes with a full certified table, merged with
      exact truth-set arithmetic over t0..t7 (the rungs this tab draws) — the same
      merge the Families tab uses, and for the same reason: the RNC/PCLL table has
-     open cells the DICTIONARY's own certified covers already settle (e.g.
-     t7 ⊃ t6 is open in the harvested table, but t6 < t7 is a certified cover), so
+     open cells the DICTIONARY's own D-covers already settle (e.g.
+     t7 ⊃ t6 is open in the harvested table, but t6 < t7 is a certified <), so
      table-only would under-report and could even disagree with the Families tab
      for the very same class. ⊤ (index 1) is forced to PROVED regardless — its
      join-primality is the disjunction property, true of the whole infinite
@@ -1379,8 +1384,8 @@ const FAMN = [], FAMBY = {};
     add({ id, name: id, x, y, w, h, fam: "t", grp: "t", form, old,
           kind: "im h — ladder rung " + n
                 + (n === 0 ? " (the bottom, ⊥)"
-                   : n % 2 ? " (a join — two upper covers)"
-                           : " (an implication — one upper cover)")
+                   : n % 2 ? " (a join — two upper rung-covers)"
+                           : " (an implication — one upper rung-cover)")
                 + (n === 4 || n === 6 ? " · ◯-fixed: ◯t" + n + " = t" + n : "") });
   });
   add({ id: "top", name: "⊤", x: 340, y: 32, w: 48, h: 26,
