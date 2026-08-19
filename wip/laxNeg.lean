@@ -79,7 +79,7 @@ theorem q6_rn4 : Interd q6 (rnSub 4) := by
 /-- **The refuted neighbour**: `(¬¬◯⊥ ⊃ ◯⊥) ⊬ ¬¬◯⊥` (`q10 ⊬ q6`),
 with no countermodel — transferred through the classification to the
 decidable rung order, where `rungLe 6 4 = false` by `decide`. -/
-theorem q10_not_q6 : ¬ Deriv [q10] q6 := by
+theorem q10_not_q6 : [q10] ⊬ q6 := by
   intro d
   have hr : Deriv [rnSub 6] (rnSub 4) :=
     Deriv.cutHead (Deriv.cutHead q10_rn6.2 d) q6_rn4.1
@@ -152,7 +152,7 @@ theorem lneg_top : Interd (lneg q1) q2 := by
 `¬_◯¬_◯⊥ ≡ ◯⊥`), so the ◯-localised algebra is not Boolean.  Reduced
 to the pinned `◯⊥ ⊬ ⊥`. -/
 theorem lneg_dne_fails :
-    ¬ Deriv [lneg (lneg PLLFormula.falsePLL)] PLLFormula.falsePLL := by
+    [lneg (lneg PLLFormula.falsePLL)] ⊬ PLLFormula.falsePLL := by
   intro d
   refine oBot_not_bot ?_
   refine Deriv.cutHead ?_ d

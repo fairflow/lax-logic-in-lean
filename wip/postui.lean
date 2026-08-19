@@ -830,7 +830,7 @@ theorem M3_force_phiMix : M3.force (0 : Fin 3) phiMix := by
     exact absurd hcon (by decide)
 
 /-- **`φmix ⊬ ◯⊥`.** -/
-theorem phiMix_not_oBot : ¬ Deriv [phiMix] oBot := by
+theorem phiMix_not_oBot : [phiMix] ⊬ oBot := by
   rintro ⟨d⟩
   refine M3_not_oBot_zero (soundness d M3 0 ?_)
   intro ψ hψ
@@ -853,14 +853,14 @@ theorem inst_bot_phiMix :
             PLLFormula.falsePLL) := by decide
 
 /-- **`θ = ⊤` does not cover `φmix`**: `φmix[p:=⊤] ⊢ ◯⊥`. -/
-theorem phiMix_top_fails : ¬ Deriv [phiMix] (inst truePLL phiMix) := by
+theorem phiMix_top_fails : [phiMix] ⊬ inst truePLL phiMix := by
   intro h
   refine phiMix_not_oBot (Deriv.cutHead h ?_)
   rw [inst_top_phiMix]
   exact Deriv.impElim (Deriv.andElim1 (Deriv.iden (.head _))) topD
 
 /-- **`θ = ⊥` does not cover `φmix`**: `φmix[p:=⊥] ⊢ ⊥`. -/
-theorem phiMix_bot_fails : ¬ Deriv [phiMix] (inst PLLFormula.falsePLL phiMix) := by
+theorem phiMix_bot_fails : [phiMix] ⊬ inst PLLFormula.falsePLL phiMix := by
   intro h
   refine phiMix_not_oBot (Deriv.cutHead h ?_)
   rw [inst_bot_phiMix]
@@ -872,7 +872,7 @@ theorem phiMix_bot_fails : ¬ Deriv [phiMix] (inst PLLFormula.falsePLL phiMix) :
 conjecture has real content: no fixed finite pool of substitutions
 independent of `φ` can serve. -/
 theorem phiMix_no_boolean_cover :
-    ¬ Deriv [phiMix] (bigOr (instList [truePLL, PLLFormula.falsePLL] phiMix)) := by
+    [phiMix] ⊬ bigOr (instList [truePLL, PLLFormula.falsePLL] phiMix) := by
   intro h
   refine phiMix_not_oBot (Deriv.cutHead h ?_)
   show Deriv [(inst truePLL phiMix).or
@@ -888,7 +888,7 @@ theorem phiMix_no_boolean_cover :
     · exact Deriv.falsoElim _ (Deriv.iden (.head _))
 
 /-- `φmix` is consistent — the interpolant `¬¬◯⊥` is not `⊥`. -/
-theorem phiMix_consistent : ¬ Deriv [phiMix] PLLFormula.falsePLL := by
+theorem phiMix_consistent : [phiMix] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
   have hs := soundness d M3 0 (fun ψ hψ => by
     have e : ψ = phiMix := by

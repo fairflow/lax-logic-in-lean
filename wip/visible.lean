@@ -118,7 +118,7 @@ theorem JoinPrime.of_primeAll {a : PLLFormula} (h : PrimeAll a) : JoinPrime a :=
 principal filter `↑a` is proper (`a ⊬ ⊥`), and it is prime. -/
 structure Visible (a : PLLFormula) : Prop where
   closed : atomFree a = true
-  proper : ¬ Deriv [a] .falsePLL
+  proper : [a] ⊬ .falsePLL
   prime : JoinPrime a
 
 /-- Join-primality is a property of the interderivability CLASS. -/
@@ -148,7 +148,7 @@ theorem primeAll_top : PrimeAll truePLL := by
   · exact .inl (hw h1)
   · exact .inr (hw h1)
 
-theorem proper_top : ¬ Deriv [truePLL] .falsePLL := by
+theorem proper_top : [truePLL] ⊬ .falsePLL := by
   intro h
   exact LaxInfinite.not_entails_of_force (C := LaxInfinite.MC) (0 : Fin 7)
     (by decide) (by decide) h
@@ -281,7 +281,7 @@ theorem atomFree_rnSub (n : Nat) : atomFree (rnSub n) = true := by
 
 /-- Every rung above `⊥` is consistent, so `↑(t n)` is a PROPER filter.
 (`t 0 = ⊥` is join-prime vacuously but `↑⊥` is the whole algebra, not a point.) -/
-theorem proper_rnSub {i : Nat} (hi : i ≠ 0) : ¬ Deriv [rnSub i] .falsePLL := by
+theorem proper_rnSub {i : Nat} (hi : i ≠ 0) : [rnSub i] ⊬ .falsePLL := by
   intro h
   have h0 : Deriv [rnSub i] (rnSub 0) := h
   have hc := (rnSub_deriv_iff i 0).mp h0
@@ -450,7 +450,7 @@ theorem interd_gap_zero_top : Interd (gap 0) truePLL :=
   ⟨⟨.impIntro (.iden (.head _))⟩,
    ⟨.impIntro (.laxElim (.iden (.head _)) (.iden (.head _)))⟩⟩
 
-theorem proper_gap_zero : ¬ Deriv [gap 0] .falsePLL :=
+theorem proper_gap_zero : [gap 0] ⊬ .falsePLL :=
   fun h => proper_top (Deriv.cutHead interd_gap_zero_top.2 h)
 
 theorem visible_gap_zero : Visible (gap 0) :=

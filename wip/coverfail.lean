@@ -448,7 +448,7 @@ theorem phiStar_to_phiMix : Deriv [phiStar] phiMix := by
     (Deriv.andElim1 (Deriv.iden (.tail _ (.head _)))) hp)
 
 /-- `φ★ ⊬ ◯⊥` — the root of `M4` forces `φ★` and not `◯⊥`. -/
-theorem phiStar_not_oBot : ¬ Deriv [phiStar] oBot := by
+theorem phiStar_not_oBot : [phiStar] ⊬ oBot := by
   rintro ⟨d⟩
   refine M4_not_oBot_zero (soundness d M4 0 ?_)
   intro ψ hψ
@@ -460,7 +460,7 @@ theorem phiStar_not_oBot : ¬ Deriv [phiStar] oBot := by
   exact M4_force_phiStar
 
 /-- `φ★` is consistent. -/
-theorem phiStar_consistent : ¬ Deriv [phiStar] PLLFormula.falsePLL := by
+theorem phiStar_consistent : [phiStar] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
   have hs := soundness d M4 0 (fun ψ hψ => by
     have e : ψ = phiStar := by

@@ -120,7 +120,7 @@ theorem dichotomy : ∀ B : PLLFormula, atomFree B = true →
 
 /-- `◯⊥ ⊬ ⊥`: the two-world model `0 ⊑ 1`, `0 ⇝ₘ 1`, with `1` fallible
 and `0` not. -/
-theorem oBot_not_bot : ¬ Deriv [oBot] falsePLL :=
+theorem oBot_not_bot : [oBot] ⊬ falsePLL :=
   FinCM.not_provable_of_check (M := ⟨2, [(0, 1)], [(0, 1)], [1], []⟩)
     (w := 0) (by decide)
 
@@ -224,12 +224,12 @@ theorem collapse_low {B : PLLFormula} (hB : atomFree B = true)
 
 /-- `⊤ ⊬ p ⊃ q`: one world, `p` true, `q` false — a classical
 countermodel, so the pair is even Boolean-distinct. -/
-theorem top_not_pImpQ : ¬ Deriv [topF] pImpQ :=
+theorem top_not_pImpQ : [topF] ⊬ pImpQ :=
   FinCM.not_provable_of_check (M := ⟨1, [], [], [], [(0, "p")]⟩) (w := 0)
     (by decide)
 
 /-- `⊤ ⊬ q ⊃ ¬p`: one world, `p` and `q` both true. -/
-theorem top_not_qImpNotP : ¬ Deriv [topF] qImpNotP :=
+theorem top_not_qImpNotP : [topF] ⊬ qImpNotP :=
   FinCM.not_provable_of_check
     (M := ⟨1, [], [], [], [(0, "p"), (0, "q")]⟩) (w := 0) (by decide)
 

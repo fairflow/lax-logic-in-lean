@@ -318,7 +318,7 @@ theorem postInterpPhiStarIsNNBox_true : PostInterpPhiStarIsNNBox :=
   postInterp_phiStar
 
 /-- The interpolant is non-trivial: `¬¬◯⊥` is not `⊥` … -/
-theorem postInterp_phiStar_ne_bot : ¬ Deriv [nt (nt oBot)] PLLFormula.falsePLL :=
+theorem postInterp_phiStar_ne_bot : [nt (nt oBot)] ⊬ PLLFormula.falsePLL :=
   fun h => phiStar_consistent (Deriv.cutHead phiStar_nnbox h)
 
 /-- In the fallible-free two-world model `N`, `◯⊥` fails everywhere. -/
@@ -329,7 +329,7 @@ theorem N_not_oBot (x : Fin 2) : ¬ N.force x oBot := by
 
 /-- … and not `⊤`: `¬¬◯⊥` is not a theorem (it fails at the root of the
 fallible-free model `N`, where `¬◯⊥` holds vacuously). -/
-theorem postInterp_phiStar_ne_top : ¬ Deriv [] (nt (nt oBot)) := by
+theorem postInterp_phiStar_ne_top : [] ⊬ nt (nt oBot) := by
   rintro ⟨d⟩
   have hs := soundness d N (0 : Fin 2) (fun ψ hψ => by cases hψ)
   exact hs 0 (le_refl (0 : Fin 2)) (fun v _ hv => absurd hv (N_not_oBot v))
@@ -634,7 +634,7 @@ def StretchCoverConj : Prop := ∀ φ : PLLFormula, onlyPv φ = true → HasStre
 
 theorem Lo_pv : Lo (PLLFormula.prop pv) = PLLFormula.falsePLL := rfl
 
-theorem p_consistent : ¬ Deriv [PLLFormula.prop pv] PLLFormula.falsePLL := by
+theorem p_consistent : [PLLFormula.prop pv] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
   have hs := soundness d N (1 : Fin 2) (fun ψ hψ => by
     have e : ψ = PLLFormula.prop pv := by

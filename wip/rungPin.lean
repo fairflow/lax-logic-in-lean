@@ -120,7 +120,7 @@ def main : IO Unit := do
           let _ ← IO.lazyPure (fun _ => (r.getD "").length)
           match r with
           | some body => neg := neg + 1
-                         pl s!"theorem rung{n}_nle_{nm} : ¬ Deriv [t {n}] {nm} :="
+                         pl s!"theorem rung{n}_nle_{nm} : [t {n}] ⊬ {nm} :="
                          pl s!"  {body}"
           | none => opn := opn + 1
                     pl s!"-- OPEN: t {n} ⊢ {nm}  (search cut off; asserts nothing)"
@@ -136,7 +136,7 @@ def main : IO Unit := do
           let _ ← IO.lazyPure (fun _ => (r.getD "").length)
           match r with
           | some body => neg := neg + 1
-                         pl s!"theorem {nm}_nle_rung{n} : ¬ Deriv [{nm}] (t {n}) :="
+                         pl s!"theorem {nm}_nle_rung{n} : [{nm}] ⊬ t {n} :="
                          pl s!"  {body}"
           | none => opn := opn + 1
                     pl s!"-- OPEN: {nm} ⊢ t {n}  (search cut off; asserts nothing)"

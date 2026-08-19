@@ -59,25 +59,24 @@ abbrev nCircBot : PLLFormula := .ifThen circBot .falsePLL
 example : q5 = .somehow nCircBot := rfl
 example : q4 = .or circBot nCircBot := rfl
 
-/-- **Task #5, REFUTED.**  `◯¬◯⊥ ⊢ ◯⊥ ∨ ¬◯⊥` is not derivable in PLL. -/
-theorem not_deriv_circ_nCircBot :
-    ¬ SemUI.Deriv [.somehow nCircBot] (.or circBot nCircBot) :=
-  RNEmbed.nle_of_rnc RNC.rnc_ref_5_4
-
-/-- The same statement at the natural-deduction level, in the `⊬` notation of
-`LaxLogic/PLLNDCore.lean`:
+/-- **Task #5, REFUTED.**
 
     ◯¬◯⊥  ⊬  ◯⊥ ∨ ¬◯⊥
--/
-theorem no_laxND_circ_nCircBot :
-    [.somehow nCircBot] ⊬ (.or circBot nCircBot) :=
-  not_deriv_circ_nCircBot
+
+`⊬` is the notation of `LaxLogic/PLLNDCore.lean`, and unfolds to
+`¬ Nonempty (LaxND [◯¬◯⊥] (◯⊥ ∨ ¬◯⊥))`; since `Deriv Γ φ = Nonempty (LaxND Γ φ)`
+by definition, the semantic-fragment spelling `¬ SemUI.Deriv …` and the
+natural-deduction one are the SAME statement, and this single theorem carries
+both.  (They were two theorems until the `⊬` migration made the types
+literally equal.) -/
+theorem not_deriv_circ_nCircBot :
+    [.somehow nCircBot] ⊬ .or circBot nCircBot :=
+  RNEmbed.nle_of_rnc RNC.rnc_ref_5_4
 
 -- Displays in the `⊬` notation, not as `¬ Nonempty (LaxND …)`:
-#check @no_laxND_circ_nCircBot
+#check @not_deriv_circ_nCircBot
 
 end Task5
 end PLLND
 
 #print axioms PLLND.Task5.not_deriv_circ_nCircBot
-#print axioms PLLND.Task5.no_laxND_circ_nCircBot

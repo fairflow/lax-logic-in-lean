@@ -162,19 +162,19 @@ theorem no_embeds1_q14 : ¬ Embeds1 q14 :=
 
 /-- A PCLL refutation is a fortiori a PLL refutation. -/
 theorem nle_of_rnc {A B : PLLFormula} (h : ¬ ConfluentU.DerivU [A] B) :
-    ¬ Deriv [A] B := fun ⟨p⟩ => h (ConfluentU.DerivU.of_nd p)
+    [A] ⊬ B := fun ⟨p⟩ => h (ConfluentU.DerivU.of_nd p)
 
-theorem nle_8_9  : ¬ Deriv [q8] q9  := nle_of_rnc RNC.rnc_ref_8_9
-theorem nle_8_10 : ¬ Deriv [q8] q10 := nle_of_rnc RNC.rnc_ref_8_10
-theorem nle_9_10 : ¬ Deriv [q9] q10 := nle_of_rnc RNC.rnc_ref_9_10
-theorem nle_10_9 : ¬ Deriv [q10] q9 := nle_of_rnc RNC.rnc_ref_10_9
+theorem nle_8_9  : [q8] ⊬ q9  := nle_of_rnc RNC.rnc_ref_8_9
+theorem nle_8_10 : [q8] ⊬ q10 := nle_of_rnc RNC.rnc_ref_8_10
+theorem nle_9_10 : [q9] ⊬ q10 := nle_of_rnc RNC.rnc_ref_9_10
+theorem nle_10_9 : [q10] ⊬ q9 := nle_of_rnc RNC.rnc_ref_10_9
 
 /-- **RN(◯,{}) has width at least 3**: `{q8, q9, q10}` is an antichain.
 `q10` is rung 6 of the ladder; `q8` and `q9` are off the image. -/
 theorem antichain_q8_q9_q10 :
-    (¬ Deriv [q8] q9) ∧ (¬ Deriv [q9] q8) ∧
-    (¬ Deriv [q8] q10) ∧ (¬ Deriv [q10] q8) ∧
-    (¬ Deriv [q9] q10) ∧ (¬ Deriv [q10] q9) :=
+    ([q8] ⊬ q9) ∧ ([q9] ⊬ q8) ∧
+    ([q8] ⊬ q10) ∧ ([q10] ⊬ q8) ∧
+    ([q9] ⊬ q10) ∧ ([q10] ⊬ q9) :=
   ⟨nle_8_9, five_q9_nle_q8, nle_8_10, five_q10_nle_q8, nle_9_10, nle_10_9⟩
 
 end RNEmbed

@@ -109,7 +109,7 @@ theorem force_Gmeet_cmE (m : Nat) (x : Nat)
 
 /-- **Strict descent**: `Gmeet n ⊬ gap (n+2)`, hence
 `Gmeet n ⊬ Gmeet (n+1)`. -/
-theorem Gmeet_strict (n : Nat) : ¬ Deriv [Gmeet n] (Gmeet (n + 1)) := by
+theorem Gmeet_strict (n : Nat) : [Gmeet n] ⊬ Gmeet (n + 1) := by
   rintro ⟨d⟩
   -- soundness at cmE (n+1), world n+4
   have hs := soundness d (cmE (n + 1)) (some (n + 4)) (fun ψ hψ => by
@@ -220,7 +220,7 @@ directly). So `htrap` can never hold together with `habove` either. -/
 
 /-- No `chainF k` is a theorem — a one-line consequence of `chain_step_strict`
 via weakening, no new semantic content needed. -/
-theorem chainF_not_theorem (k : Nat) : ¬ Deriv [] (chainF k) := by
+theorem chainF_not_theorem (k : Nat) : [] ⊬ chainF k := by
   rintro ⟨d⟩
   exact chain_step_strict k ⟨d.rename (fun _ h => by cases h)⟩
 
