@@ -33,9 +33,11 @@ sorry-freeness made against `lake build` alone is void.
 
 ### 0.2 Where the sorries actually are
 
-Counted with comments stripped (`grep` over the source with `/- -/` and
-`--` removed). String literals are *not* stripped, so two entries below
-are false positives and are marked as such.
+Counted by a Python walk that strips block comments, line comments
+**and string literals**, then looks for a `sorry` token — not by `grep`,
+for the reason in §0.2a. Two `wip/` entries below are listed with their
+raw counts and marked as false positives, because the raw number is what
+a naive scan reports.
 
 **Outside `wip/` — 5 real sorries in 3 files:**
 
@@ -44,10 +46,33 @@ are false positives and are marked as such.
 | `LaxLogic/PLLSemUIChar.lean` | 2 | two `exact .inl (by sorry)` at 322, 327 |
 | `LaxLogic/PLLSemUIHenkin.lean` | 2 | two named `sorry`s at 341, 352 |
 | `LaxLogic/PLLSemUILayered.lean` | 1 | `amalgamation` at 827 |
-| `tools/proofstates/Recorder.lean` | 1 | |
+
+That is the whole list. An earlier draft of this document added
+`tools/proofstates/Recorder.lean` as a fourth file; that was wrong. It
+contains the word twice, once in a docstring and once in the string
+literal `containsStr m.text "sorry"`, and no `sorry` term. Corrected
+after `lean-branch-review` challenged it.
 
 `FRJ/` (17 files, 22 554 lines), `Reject/`, `Rewrite/`, `BiLax/`,
 `Meta/`, `FRJO/` are **entirely sorry-free**.
+
+### 0.2a `grep` silently skips one file in this repo
+
+Worth knowing before trusting any audit here, including this one.
+`grep` in these sessions is a shell function wrapping `ugrep -I`, which
+skips files it judges binary. `tools/proofstates/Recorder.lean`
+contains one NUL byte, so `file` reports it as `data` and every
+`grep` over it returns **no matches and exit 1** — indistinguishable
+from a clean file. It is the only such `.lean` file in the tree
+(scanned: exactly 1 of them).
+
+Both this session and `lean-branch-review` reached "Recorder.lean has no
+`sorry`" through that silently-skipped grep. The conclusion is right,
+but the evidence was not — the file does contain the string twice.
+
+**Any sorry-scan used as a release gate must read bytes, not shell out
+to `grep`.** A Python walk that strips comments *and* string literals
+is what produced the counts above.
 
 **Inside `wip/` — 159 real sorries in 9 files** (341 `.lean` files
 total):
@@ -98,8 +123,15 @@ are blocked by exactly one file.
 - `amalgamation`, the sorry in that file, is referenced by **no other
   file in the repo**.
 
-So the sorried module is load-bearing for nothing. Cutting the
-dependency is a file move, not a proof obligation.
+So the sorried module is load-bearing for nothing *at that edge*.
+Cutting it is a file move, not a proof obligation.
+
+**But it does not unblock `Rewrite/`, and an earlier draft of this
+document claimed it did.** `Rewrite/Catalogue.lean:43` imports
+`wip.rnDict` directly — 87 sorries. So `Rewrite/` is blocked on the
+**dictionary**, not on `crank`; extracting `crank` clears
+`Rewrite/Core.lean` and nothing more. Correction owed to
+`lean-branch-review`, and it reorders this plan (§5).
 
 ---
 
@@ -109,8 +141,9 @@ Move `crank` from `LaxLogic/PLLSemUILayered.lean` into a new leaf module
 (`LaxLogic/Crank.lean`, importing only the formula datatype), and have
 both `PLLSemUILayered` and `PLLSemUIFrag` import it.
 
-Result: `PLLSemUIFrag`, `Rewrite/`, and everything downstream of them no
-longer have a sorried file anywhere in their import closure.
+Result: `PLLSemUIFrag` and `Rewrite/Core.lean` no longer have a sorried
+file in their import closure. `Rewrite/` as a whole does **not** clear
+— see §0.4 — because `Rewrite/Catalogue.lean` imports the dictionary.
 
 Verification: re-run `audit.py` on the `Rewrite.*` roots; the count must
 go to 0. Re-run the `#guard_msgs` axiom pins in
@@ -120,11 +153,10 @@ go to 0. Re-run the `#guard_msgs` axiom pins in
 **Estimated size: one afternoon at most.** (My estimates here have run
 ~4× pessimistic; treat this as an upper bound.)
 
-## 2. Work item W2 — decide the fate of the four remaining sorried files
+## 2. Work item W2 — decide the fate of the three sorried files
 
-Three of them are the **shelved UI route** (`PLLSemUIChar`,
+All three are the **shelved UI route** (`PLLSemUIChar`,
 `PLLSemUIHenkin`, `PLLSemUILayered`), shelved 2026-08-07 after round 9.
-The fourth is `tools/proofstates/Recorder.lean`.
 
 A branch criterion of "no sorried files" admits three readings, and the
 choice is Matthew's:
@@ -139,9 +171,8 @@ choice is Matthew's:
   precisely because the room-free statement was REFUTED and the
   room-carrying one is not `decide`-feasible.
 
-**Recommendation: (a) for the three UI modules, (c) for
-`Recorder.lean`** — one sorry in a tooling file is worth a look before
-it is written off, and it is the only sorry outside the shelved route.
+**Recommendation: (a).** The three UI modules are the entire list;
+there is no fourth file to decide about (§0.2).
 
 ## 3. Work item W3 — the dictionary layer (the substantive one)
 
@@ -176,25 +207,84 @@ Search is then hoisted on `cell?`: the normaliser tries a cell, and
 falls through to search when the cell is `none`. Effectiveness degrades
 gracefully; soundness never depends on the table being complete.
 
-### 3.1 OPEN — the generator and the checked-in file disagree
+### 3.1 RESOLVED — neither side is wrong, and neither may overwrite the other
 
-Discovered while patching `wip/rnDictGen.lean` during the migration, and
-**not** caused by it:
+Raised as OPEN in the first draft of this document and settled the same
+day. **Which side is wrong? Neither.** Each is stale in a different
+direction, and each holds something the other does not.
 
-    .lake/build/bin/rnDictGen > gen.lean        # 2151 lines, 53 sorry tokens
-    diff gen.lean wip/rnDict.lean               # 1280 differing lines
+**Lean's own verdict**, both files built in place as `wip.rnDict`:
 
-The in-tree `wip/rnDict.lean` is 2237 lines with 107 sorry tokens (87
-`:= sorry` cells). A fresh generator run resolves *more* cells and
-produces **different closure-table entries** — e.g. row 12 of the ∧-table
-ends `12, 12, 12` when generated and `12, 9, 9` in the tree.
+| | in-tree | regenerated |
+|---|---|---|
+| errors | 0 | 0 |
+| `declaration uses 'sorry'` | **91** | **53** |
+| cell theorems stated | 323 | 323 |
+| cells left `sorry` | 87 | 49 |
 
-I have not overwritten the checked-in file, and no one should until this
-is understood: one of the two is wrong, and which one is a question
-about the search, not about the file. **This must be resolved before L1
-is hoisted anywhere.** It is the single highest-value open item in this
-plan, because every downstream table consumer inherits whichever answer
-is wrong.
+The difference is exactly 38, and every one of the 38 runs the same way:
+
+| direction | count |
+|---|---|
+| generator has a kernel-checked proof, tree has `sorry` | **38** |
+| tree has a proof, generator has `sorry` | **0** |
+| both carry a proof, of different targets | **0** |
+
+That last row is the one that would have forced escalation. It is empty.
+
+**The differing table entries assert nothing.** All 24 sit at cells the
+tree marks `OPEN CELL … sorried at the first open candidate`. The
+clearest case is `cBox_14`:
+
+- tree — `theorem cBox_14 : Interd q14.somehow q9 := sorry`, docstring
+  *"candidates [9, 12, 14] neither proved nor refuted … sorried at the
+  first open candidate"*;
+- regenerated — `theorem cBox_14 : Interd q14.somehow q14 := ⟨ofG4 …⟩`,
+  the **third** candidate, with a proof term.
+
+`q9` was a placeholder, not a claim. The generator found the answer.
+(◯q14 ≡ q14 also matches the hand certificate recorded at `c5d9ddc`.)
+
+**Why the tree is behind.** It was last *regenerated* at `d37f9c0`
+(2026-07-26, +2199 lines). The bounded searcher
+`LaxLogic/PLLG4Term.lean` was improved the **next day**, `3a7272f`
+(2026-07-27) — *"budget × failure memo × canonical key in the bounded
+searcher"*. Same fuel budget (`budget : Nat := 400000`), longer reach.
+Every commit to `wip/rnDict.lean` since `d37f9c0` is docstring-only.
+
+**Why the generator is behind.** The tree carries **20 refutation
+records** — 13 `REFUTED CELL` and 7 `REFUTED AT THIS CANDIDATE` — and
+**24 pointers** to kernel-checked FRJ◯ countermodels in
+`wip/rnFRJCerts.lean`, added by hand on 2026-08-18 (`25679c4`,
+`e85a7e1`). The regenerated file has **4** and **0**. The generator has
+never heard of that campaign: it post-dates the generator's last source
+change, and `main` computes its tables from search alone.
+
+So `cp` in either direction destroys real content:
+
+- overwrite the tree → lose 16 refutation records and all 24 certificate
+  pointers, including the 13 cells where the 15-class closure is now
+  known to FAIL;
+- leave the tree → keep 38 cells marked OPEN that are in fact PROVED.
+
+**The generator is deterministic**, so this is a version gap, not noise:
+two independent runs are byte-identical (2151 lines; 321 s and 326 s).
+No clock value feeds a decision — the `IO.monoMsNow` calls are reporting
+only — and the bound is a fixed `Nat`.
+
+**The fix, and it belongs in the generator, not in the file.** Teach
+`wip/rnDictGen.lean` the FRJ◯ refutations as data (cell ↦ certificate
+name in `wip/rnFRJCerts.lean`), and give the emitter the precedence
+**PROOF > REFUTED > OPEN**. One run then produces both halves, and the
+file stays reproducible instead of becoming hand-maintained. Expected
+after that: 323 cells, 38 newly PROVED, 20 refutation records preserved,
+~49 sorries.
+
+**Not to be done blind, and not by me without a word from Matthew** — it
+changes the dictionary that `Rewrite/Catalogue.lean` imports and that the
+whole L1 layer rests on. Note also that the 13 `REFUTED CELL` entries
+say the 15-class closure fails at **13** cells, not the 4 the generator
+knows about.
 
 ## 4. Work item W4 — layout and the verification gate
 
@@ -247,13 +337,27 @@ that no amount of grepping would have found.
 
 ## 5. Ordering
 
-W1 → W2 → W4 gate → W3.
+**Revised after §0.4 and §3.1: W2 → W4 gate → W3 → W1.**
 
-W3 is last because §3.1 must be resolved first, and because the L1
-design should be built against a gate that already works. W1 and W2
-together are what make the "no sorried files" claim true; W4 is what
-makes it *checkable*; W3 is what makes the branch useful rather than
-merely clean.
+The first draft put W1 first, on the mistaken belief that `crank`
+unblocked `Rewrite/`. It does not — `Rewrite/Catalogue.lean` imports the
+dictionary — so **W3 is on the critical path and W1 is not**. W1 drops
+to last: it is worth doing, but it clears one file, not a subtree.
+
+W2 alone makes the "no sorried files" claim true (exclude the three
+shelved UI modules). W4 makes it checkable. W3 is what any `Rewrite/`
+or dictionary-backed search on the branch waits for, and §3.1 now tells
+it exactly what to do first: merge the two halves inside the generator.
+
+**Coordinate with `publication/core`.** A parallel session has an
+already-pushed sorry-free branch (`origin/publication/core`) that
+removes `wip/`, `Rewrite/` and `FRJO/` outright and has taken
+`LaxLogic/RN/Reps.lean` from here. Its `scripts/all-targets.py` already
+implements §4.2 gate 1. Read that branch before building any of §4
+here, or the two efforts converge on the same artefact from opposite
+ends. It has also cut `LaxLogic/Deriv.lean` and `LaxLogic/Bisim.lean`
+out of `PLLSemUIFrag`/`PLLSemUI` — so W1 should take that decomposition
+rather than inventing a second one.
 
 ## 6. Explicitly not in scope
 
