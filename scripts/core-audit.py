@@ -33,7 +33,6 @@ TRIMMED_PREFIXES = (
     "LaxLogic.PLLG4PInv",    # dead metatheory branch of the first repair
     "LaxLogic.PLLG4PAdm",
     "LaxLogic.PLLG4PStr",
-    "LaxLogic.LJF",          # the polarised/focusing route to UI
     "LaxLogic.IPCFocused",
     "LaxLogic.PLLFocused",
     "LaxLogic.PLLPolar",
@@ -49,6 +48,21 @@ TRIMMED_PREFIXES = (
     "Rewrite.",              # mechanism finished, rule data is not
     "wip.",                  # campaign material by construction
 )
+
+# The `LJF` family needs exact names, not a prefix: `LaxLogic.LJF`,
+# `LJFComplete`, `LJFOCore` and `LJFOBridge` ARE in the core — focalization
+# for PLL and uniform interpolation for IPC are finished, sorry-free
+# results — while the tail below pursues uniform interpolation for PLL,
+# which is OPEN.  A prefix would catch both halves.
+TRIMMED_MODULES = frozenset({
+    "LaxLogic.LJFO",         # the minimality tail; carries `CimpAnt`
+    "LaxLogic.LJFOAudit",
+    "LaxLogic.LJFOFuel",
+    "LaxLogic.LJFOHeight",
+    "LaxLogic.LJFORows",
+    "LaxLogic.LJFOSearch",
+    "LaxLogic.LJFOUniverse",
+})
 
 IMPORT_RE = re.compile(r"^import\s+([A-Za-z0-9_.]+)", re.M)
 # `sorry` as a term, not as part of a longer identifier and not in a string.
@@ -120,7 +134,7 @@ def main() -> int:
     # 1 + 2. Boundary: nothing trimmed, nothing from wip/, is reachable.
     for mod, path in sorted(mods.items()):
         for imp in imports_of(path):
-            if imp.startswith(TRIMMED_PREFIXES):
+            if imp.startswith(TRIMMED_PREFIXES) or imp in TRIMMED_MODULES:
                 failures.append(
                     f"boundary: {mod} ({path.relative_to(ROOT)}) imports "
                     f"trimmed/wip module {imp}")

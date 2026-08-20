@@ -205,4 +205,22 @@ namespace Core.Audit
 #guard_msgs in
 #print axioms Reject.not_laxND_of_built
 
+/-! ## 15. Focused proof search: focalization for PLL, and UI for IPC -/
+
+/-- info: 'LJFO.FocalizationPLL' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFO.FocalizationPLL
+
+/-- info: 'LJFO.bridge_iff' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFO.bridge_iff
+
+/-- info: 'LJFIPC.focalization' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFIPC.focalization
+
+/-- info: 'LJFIPC.uniform_interpolation_IPC' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms LJFIPC.uniform_interpolation_IPC
+
 end Core.Audit

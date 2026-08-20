@@ -1,6 +1,6 @@
 import LaxLogic.LJF
 import LaxLogic.PLLSequent
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.Deriv
 
 /-!
 # Focalization completeness for `LJF`, and uniform interpolation for IPC

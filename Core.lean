@@ -27,6 +27,7 @@ import LaxLogic.PLLConsequence
 import LaxLogic.PLLTheorems
 import LaxLogic.PLLHilbert
 import LaxLogic.PLLSubst
+import LaxLogic.Deriv
 
 /- ## 2. Constraint semantics: soundness, completeness, the FMP
 
@@ -213,7 +214,25 @@ import Reject.Reduce
 import Reject.Cert
 import Reject.Demo
 
-/- ## 15. Axiom-audit tooling
+/- ## 15. Focused proof search: focalization for PLL, and UI for IPC
+
+Liang–Miller's `LJF` for the intuitionistic base, and `LJF◯` — its
+lax-flagged extension.  Two finished results: focalization for PLL
+(`LJFO.bridge_iff` / `LJFO.FocalizationPLL` — LJF◯ derivability
+coincides with PLL derivability, so focused search loses nothing), and
+uniform interpolation for IPC (`LJFIPC.uniform_interpolation_IPC`,
+Pitts' properties for the `◯`-free fragment).
+
+Uniform interpolation for **PLL** is a different question and is OPEN;
+nothing here claims it.  The modules that pursue it (`LaxLogic.LJFO`
+with its conditional obligation `CimpAnt`, `LJFOSearch`, `FRJO/`) are
+not imported. -/
+import LaxLogic.LJF
+import LaxLogic.LJFComplete
+import LaxLogic.LJFOCore
+import LaxLogic.LJFOBridge
+
+/- ## 16. Axiom-audit tooling
 
 `#choice_path` / `#choice_sources` / `#axiom_path` / `#axiom_pin`:
 `#print axioms` says *whether* a declaration depends on an axiom, not

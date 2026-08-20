@@ -828,3 +828,55 @@ mutually confluent *and* infallible, strictly smaller than F&M's `F = ∅`.
 `PROGRESS.md`, ~90 probe `lean_exe` entries) is still on this branch.
 Taking it off would break the `Rewrite` and `FRJO` targets, which import
 `wip/`, so those files would have to go too.  Not done unilaterally.
+
+## §2026-08-20 (later) — focalization for PLL and UI for IPC ADMITTED; the standing rule that follows
+
+Matthew, on the first cut: *"we do need focalisation for PLL and UI for
+IPC.  These were written before the LJF material so I am not sure why
+you need to extract anything.  Perhaps there's an overlap in the LJF
+files where theorems were re-proved?  The principle should be that you
+do not make it harder to add material completed in the future."*
+
+He was right, and my "~10k lines of shared machinery" was wrong.
+Measured closures, against the then-current core:
+
+* `LJFO.bridge_iff` (focalization for PLL) — adds **2 modules**
+  (`LJFOCore`, `LJFOBridge`), no `sorry` anywhere in the closure, pins
+  `[propext, Quot.sound]`.  `CimpAnt` lives in `LaxLogic/LJFO.lean`, a
+  DIFFERENT module, not in this closure.  Nothing conditional comes in.
+* `LJFIPC.uniform_interpolation_IPC` — adds `LJF` + `LJFComplete`, and
+  *was* reaching `PLLSemUILayered` (a `sorry`) through one import.
+
+**The overlap he predicted is real, but it is a misplaced DEFINITION,
+not a re-proved theorem.** `LJFComplete.lean` imported
+`LaxLogic/PLLSemUIFrag.lean` for exactly one name: `SemUI.Deriv`, i.e.
+`Deriv Γ φ := Nonempty (LaxND Γ φ)` — the canonical spelling of "PLL
+proves `Γ ⊢ φ`", which had been defined inside the semantic-UI campaign
+(2026-07-20) and is referenced under that name by ~80 files.  The core
+had `Underivable`/`⊬` but no positive `Deriv` at all.
+
+Fix, the `Bisim` pattern again: `Deriv` and its fourteen rule wrappers
+moved verbatim to a new `LaxLogic/Deriv.lean`; `PLLSemUIFrag` imports
+it; `LJFComplete` imports it instead of the parked cluster.  Namespace
+`PLLND.SemUI` KEPT — renaming to `PLLND.Deriv` would touch ~80 `wip/`
+files, and an alias would make `Deriv` ambiguous wherever both
+namespaces are open.  The odd namespace is documented in the file
+header.  Chronology confirms his account: `LJF` 2026-08-08,
+`LJFComplete` 2026-08-09, both BEFORE `LJFOCore` (08-10) and
+`LJFOBridge` (08-14).
+
+Core is now **111 modules, 41 pinned theorems**; `lake build`,
+`lake build LaxLogic` and `scripts/core-audit.py --check` all green.
+The `LJF` family needed exact-name trimming rather than prefix matching
+in the audit script: `LaxLogic.LJFO*` is half in, half out, and the
+prefix `"LaxLogic.LJFO"` would have caught `LJFOCore`/`LJFOBridge` too.
+
+**STANDING RULE (Matthew, 2026-08-20).**  *The gate must not make it
+harder to add work completed later.*  Concretely: a finished result is
+never excluded because of the campaign it was written in — only because
+its own import closure is unfinished.  When the closure is unfinished
+only through a shared definition stranded in a parked file, HOIST the
+definition rather than exclude the result.  Two hoists so far —
+`LaxLogic/Bisim.lean` (rescued four `Reject/` modules) and
+`LaxLogic/Deriv.lean` (rescued UI for IPC).  Suspect the same shape
+whenever a clean result appears to depend on a parked campaign.

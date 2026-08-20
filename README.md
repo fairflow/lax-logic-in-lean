@@ -146,6 +146,14 @@ arXiv:2011.11847 fails as stated.
 all three equivalences above are unconditional, and decidability of PLL (F&M
 Theorem 2.8) follows.
 
+Alongside these sit the **focused** calculi: Liang–Miller's `LJF` for the
+intuitionistic base and `LJF◯`, its lax-flagged extension.  Focalization is the
+theorem that restricting search to maximal alternating phases of invertible and
+non-invertible rules loses no derivations, so a focused search procedure is
+complete without being a blind enumeration.  `LJFO.bridge_iff` proves LJF◯
+derivability and PLL derivability coincide; `LJFIPC.uniform_interpolation_IPC`
+gets uniform interpolation for IPC out of the same machinery.
+
 Two refutation calculi complete the picture, both of which derive *counter*models
 positively rather than searching for them: `FRJ(G)` for IPC, after Fiorentini and
 Ferrari (ACM TOCL **21**(3), 2020), and `Reject` for PLL, after their JLC 2021
@@ -218,6 +226,12 @@ match [`Core.lean`](Core.lean) and [`Core/Audit.lean`](Core/Audit.lean).
     countermodel at all, it has one assembled by `solo` and `join` alone, so the
     certificate format is a calculus).
 
+15. **Focused search.** `LaxLogic/LJFOBridge.lean` — `LJFO.FocalizationPLL` and
+    `LJFO.bridge_iff`: focalization for PLL. `LaxLogic/LJFComplete.lean` —
+    `LJFIPC.focalization` and `LJFIPC.uniform_interpolation_IPC`: Pitts'
+    properties for the `◯`-free fragment, i.e. uniform interpolation for IPC.
+    Note what this is *not*: uniform interpolation for PLL, which is OPEN (§6).
+
 ## 5. How to check it yourself
 
 ```bash
@@ -257,14 +271,19 @@ sequence is out, including its sorry-free members. They are untouched on this
 branch — `lake build LaxLogic` still builds the full working library — and
 completed work can be re-admitted later as its own clean sequence.
 
-**Uniform interpolation for PLL is OPEN and is not claimed here.** Two routes to
-it are parked: the semantic route after Litak–Visser (the `PLLSemUI*` cluster,
-which carries the only `sorry`s outside `wip/`) and the syntactic route through
-the `G4c` tower (`PLLG4UI*`). The polarised/focusing programme (`LJF`,
-`LJF◯`, `FRJO`) was step one of a third route; two of its results are finished —
-focalization for PLL, and uniform interpolation for *IPC* — but they sit inside
-about ten thousand lines of shared machinery aimed at the open problem, so they
-are better re-admitted separately than carved out now.
+**Uniform interpolation for PLL is OPEN and is not claimed here.** Three routes
+to it are parked: the semantic route after Litak–Visser (the `PLLSemUI*`
+cluster, which carries the only `sorry`s outside `wip/`), the syntactic route
+through the `G4c` tower (`PLLG4UI*`), and the minimality tail of the focused
+route (`LaxLogic/LJFO.lean` and `FRJO/`, where the remaining results are
+conditional on a typed obligation `CimpAnt` that has not been discharged).
+
+What those routes produced *on the way* is in the core, because it stands on its
+own: focalization for PLL and uniform interpolation for IPC (§4 step 15). A
+campaign failing to reach its goal does not retract the theorems it proved en
+route, and the core admits any such theorem whose own import closure is
+finished — which is the whole point of keeping shared definitions out of
+campaign files (see `LaxLogic/Deriv.lean` and `LaxLogic/Bisim.lean`).
 
 Also out: `BiLax/`, whose bi-lax calculus, soundness and refutation pipeline are
 proved but whose duality bridge was never attempted; and `Rewrite/`, a certified
