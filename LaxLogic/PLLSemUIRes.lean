@@ -257,7 +257,7 @@ theorem residue_obstruction {p n₀ : String} {X A ξ θ : PLLFormula}
     (hθR : (residue n₀).force PUnit.unit θ)
     (hΘR : ∀ ψ ∈ Θ, (residue n₀).force PUnit.unit ψ)
     (hξR : ¬ (residue n₀).force PUnit.unit ξ) :
-    ¬ Nonempty (LaxND (A :: Θ) ξ) := by
+    (A :: Θ) ⊬ ξ := by
   rintro ⟨d⟩
   obtain ⟨dA⟩ := hA.greatest θ hθipl hθp hθX
   have hAR : (residue n₀).force PUnit.unit A :=
@@ -296,7 +296,7 @@ theorem fails_half_boxp_imp_p {p n₀ : String} {bad : List String}
     (hA : IsIPCAll p isIPL
       (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p))) A)
     (hΘ : ∀ ψ ∈ Θ, ∃ a, a ≠ n₀ ∧ ψ = negA a) :
-    ¬ Nonempty (LaxND (A :: Θ) .falsePLL) :=
+    (A :: Θ) ⊬ .falsePLL :=
   residue_obstruction hA (diag_pfree hpn hpb) diag_isIPL (diag_row1 h)
     (residue_diag h.fresh) (residue_theta hΘ) residue_force_bot
 
@@ -308,7 +308,7 @@ theorem fails_half_box_lob {p n₀ : String} {bad : List String}
     (hA : IsIPCAll p isIPL
       (subC C ((PLLFormula.prop p).somehow.ifThen (.prop p)).somehow) A)
     (hΘ : ∀ ψ ∈ Θ, ∃ a, a ≠ n₀ ∧ ψ = negA a) :
-    ¬ Nonempty (LaxND (A :: Θ) (subC C PLLFormula.falsePLL.somehow)) :=
+    (A :: Θ) ⊬ subC C PLLFormula.falsePLL.somehow :=
   residue_obstruction hA (diag_pfree hpn hpb) diag_isIPL (diag_row2 h)
     (residue_diag h.fresh) (residue_theta hΘ) (residue_not_subC_boxBot h)
 
@@ -340,7 +340,7 @@ theorem chain3C_residue : ResiduePair "a0" ["a1", "a2"] chain3C where
 theorem chain3_fails_half {A : PLLFormula}
     (hA : IsIPCAll "p" isIPL
       (subC chain3C ((PLLFormula.prop "p").somehow.ifThen (.prop "p"))) A) :
-    ¬ Nonempty (LaxND [A, negA "a2"] .falsePLL) :=
+    [A, negA "a2"] ⊬ .falsePLL :=
   fails_half_boxp_imp_p chain3C_residue (by simp) (by simp) hA
     (fun ψ hψ => ⟨"a2", by simp, List.mem_singleton.mp hψ ▸ rfl⟩)
 

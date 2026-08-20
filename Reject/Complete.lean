@@ -282,7 +282,7 @@ after. -/
 theorem not_laxND_of_built {M : ConstraintModel} {r : M.W}
     {Γ : List PLLFormula} {ψ : PLLFormula}
     (hΓ : ∀ χ ∈ Γ, M.force r χ) (hψ : ¬ M.force r ψ) :
-    ¬ Nonempty (LaxND Γ ψ) :=
+    Γ ⊬ ψ :=
   not_laxND_of_root hΓ hψ
 
 /-! ## 5. Pins

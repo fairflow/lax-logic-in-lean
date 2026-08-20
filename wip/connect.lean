@@ -76,7 +76,7 @@ theorem odd_le_sC (k : Nat) : Deriv [rnSub (2 * k + 3)] (sC k) := by
 
 /-- `s k ⊬ c k` — with `chain_le_sC` this makes `c k < s k` STRICT at
 every level, generalising `q5 < q9`. -/
-theorem sC_not_le_chain (k : Nat) : ¬ Deriv [sC k] (chainF k) := by
+theorem sC_not_le_chain (k : Nat) : [sC k] ⊬ chainF k := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (k + 1)) (fun ψ hψ => by
     have e : ψ = sC k := by
@@ -115,7 +115,7 @@ theorem d_q6_q8 : Deriv [q6] q8 :=
 /-- `c k ⊬ g k` (`k ≥ 1`): at the edge world the box holds by escape
 while the collapse fails. -/
 theorem chain_not_le_gap {k : Nat} (hk : 1 ≤ k) :
-    ¬ Deriv [chainF k] (gap k) := by
+    [chainF k] ⊬ gap k := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (k - 1)) (some ((k - 1) + 3)) (fun ψ hψ => by
     have e : ψ = chainF k := by
@@ -128,7 +128,7 @@ theorem chain_not_le_gap {k : Nat} (hk : 1 ≤ k) :
 
 /-- `g k ⊬ c k`: the gap is forced everywhere on the plain lift, the
 box is bounded. -/
-theorem gap_not_le_chain (k : Nat) : ¬ Deriv [gap k] (chainF k) := by
+theorem gap_not_le_chain (k : Nat) : [gap k] ⊬ chainF k := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (k + 1)) (fun ψ hψ => by
     have e : ψ = gap k := by
@@ -145,7 +145,7 @@ theorem gap_not_le_chain (k : Nat) : ¬ Deriv [gap k] (chainF k) := by
 /-- `c k ⊬ t(2k+3)` (`k ≥ 1`): the chain does not re-enter the ladder
 at the next odd rung. -/
 theorem chain_not_le_odd {k : Nat} (hk : 1 ≤ k) :
-    ¬ Deriv [chainF k] (rnSub (2 * k + 3)) := by
+    [chainF k] ⊬ rnSub (2 * k + 3) := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (k - 1)) (some ((k - 1) + 3)) (fun ψ hψ => by
     have e : ψ = chainF k := by
@@ -165,7 +165,7 @@ theorem chain_not_le_odd {k : Nat} (hk : 1 ≤ k) :
 `q5 ⊢ q10`) holds: the chain's re-entry into the ladder at the next
 even rung is a level-1 accident. -/
 theorem chain_not_le_even {k : Nat} (hk : 2 ≤ k) :
-    ¬ Deriv [chainF k] (rnSub (2 * k + 4)) := by
+    [chainF k] ⊬ rnSub (2 * k + 4) := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (k - 2)) (some ((k - 2) + 3)) (fun ψ hψ => by
     have e : ψ = chainF k := by
@@ -184,7 +184,7 @@ theorem chain_not_le_even {k : Nat} (hk : 2 ≤ k) :
 /-- `t(2k+3) ⊬ g k` for `k ≥ 2` — while `t 5 ⊢ g 1` (`d_q7_q8`)
 holds: from level 2 the ladder does not climb into the gap. -/
 theorem odd_not_le_gap {k : Nat} (hk : 2 ≤ k) :
-    ¬ Deriv [rnSub (2 * k + 3)] (gap k) := by
+    [rnSub (2 * k + 3)] ⊬ gap k := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (k - 2)) (some ((k - 2) + 3)) (fun ψ hψ => by
     have e : ψ = rnSub (2 * k + 3) := by
@@ -201,7 +201,7 @@ theorem odd_not_le_gap {k : Nat} (hk : 2 ≤ k) :
 /-- `t(2k+2) ⊬ g k` for `k ≥ 2` — while `t 4 ⊢ g 1` (`d_q6_q8`)
 holds. -/
 theorem even_not_le_gap {k : Nat} (hk : 2 ≤ k) :
-    ¬ Deriv [rnSub (2 * k + 2)] (gap k) := by
+    [rnSub (2 * k + 2)] ⊬ gap k := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (k - 2)) (some ((k - 2) + 3)) (fun ψ hψ => by
     have e : ψ = rnSub (2 * k + 2) := by

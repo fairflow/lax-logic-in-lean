@@ -120,7 +120,7 @@ Left to right is PLL completeness (a countermodel exists and witnesses
 the co-implication at its own world, by reflexivity of `Ri`); right to
 left is PLL soundness. -/
 theorem not_laxND_iff_coimp_sat (φ ψ : PLLFormula) :
-    ¬ Nonempty (LaxND [φ] ψ) ↔ CoimpSat (emb φ) (emb ψ) := by
+    [φ] ⊬ ψ ↔ CoimpSat (emb φ) (emb ψ) := by
   classical
   constructor
   · intro h

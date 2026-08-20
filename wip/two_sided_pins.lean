@@ -24,7 +24,7 @@ theorem edge_rho3_rho4 : Nonempty (LaxND [nOBot] (.or nOBot oBot)) :=
 
 /-- **Refutation-side exemplar**: `[◯⊥] ⊬ ⊥` on the two-world tree
 with a fallible leaf — a `Built` certificate, `decide`-checked. -/
-theorem obot_not_bot : ¬ Nonempty (LaxND [oBot] .falsePLL) :=
+theorem obot_not_bot : [oBot] ⊬ .falsePLL :=
   Reject.not_laxND_of_certifies
     (M := ⟨2, [(0, 1)], [(0, 1)], [1], []⟩) (w := 0) (by decide)
 

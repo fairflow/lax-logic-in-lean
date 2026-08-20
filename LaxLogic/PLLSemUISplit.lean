@@ -346,8 +346,7 @@ with `boxBot_derives_frontier`, it would derive the row itself,
 against the certified countermodel).  The split reaches what the pool
 provably cannot. -/
 theorem poolAll_not_derives_value :
-    ¬ Nonempty (LaxND (poolAll "p" frontierRow)
-      PLLFormula.falsePLL.somehow) := by
+    poolAll "p" frontierRow ⊬ PLLFormula.falsePLL.somehow := by
   rintro ⟨d⟩
   obtain ⟨e⟩ := boxBot_derives_frontier
   exact poolAll_insufficient_frontier ⟨compose e d⟩

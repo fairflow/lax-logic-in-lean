@@ -669,7 +669,7 @@ theorem MJ_root_branches :
   rho6_needs_branching MJ_refutes_rho6
 
 /-- **`⊬ ¬¬◯⊥ ∨ ¬◯⊥` — the catalogue's class `ρ6`, by construction.** -/
-theorem not_derivable_rho6 : ¬ Nonempty (LaxND [] rho6) :=
+theorem not_derivable_rho6 : [] ⊬ rho6 :=
   not_laxND_of_root (by simp) MJ_refutes_rho6
 
 /-- **`⊬_PCLL ¬¬◯⊥ ∨ ¬◯⊥`** — the same derivation, read in PCLL,

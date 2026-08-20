@@ -1273,6 +1273,248 @@ theorem Kripke.coneGrounded_of_discrete {K : Kripke}
     (hdisc : ∀ a u : K.W, K.le a u → u = a) : K.ConeGrounded :=
   fun a _ u hu => hdisc a u hu
 
+/-! ## Re-founding the recursion: completeness with no supply at all
+
+The pledge supply exists because the TAGGED regular layer may be demanded
+at a world whose `Λ*` carries a `◯`, where the barren joins do not apply.
+But the tagged layer is only ever demanded UNDER a `◯`, and a refuted
+`◯Z` hands us a world whose whole modal cone refutes `Z` (`minZeta`).  So
+if that cone contains a `≤`-maximal world, run the tagged layer THERE: at
+a maximal world `Λ*` is circ-free, every `∀ u ≥ ·` collapses, and the
+irregular `◯`-demand is closed outright by the generalised `Ax^I◯`.
+
+The result is two recursions in place of one, each with a local measure,
+and NEITHER named supply is consumed.  The §9/§10 bad edge
+`I(◯Z)@a → R(Z)@a` is gone: it has become a call from one recursion into
+the other, at a strictly different world class.
+
+The hypothesis is a condition on the modal relation ALONE — every cone
+meets an endpoint — not on its shape.  `Rm = ≤` and cone-groundedness
+(hence discreteness) are instances of it, proved below in a line each;
+they are not what the theorem is about. -/
+
+/-- A `≤`-maximal world above `a` refuting `Z`. -/
+structure MaxRef (K : Kripke) (a : K.W) (Z : Form) : Type where
+  m : K.W
+  le : K.le a m
+  max : ∀ u, K.le m u → u = m
+  nfZ : ¬ K.force m Z
+
+/-- An endpoint inside the modal cone of `a`: a world `Rm`-seen from `a`
+that no proper `≤`-extension exceeds. -/
+structure MaxSeen (K : Kripke) (a : K.W) : Type where
+  m : K.W
+  rm : K.Rm a m
+  max : ∀ u, K.le m u → u = m
+
+/-- **The one frame condition the completeness proof below needs.**  Every
+modal cone contains an endpoint:
+
+    ∀ a, ∃ m, a Rm m  and  m is `≤`-maximal.
+
+Nothing else is assumed of `Rm` beyond the standing `Kripke` axioms —
+reflexive, transitive, contained in `≤`.  In particular `Rm` may be an
+arbitrary such subrelation; `Rm = ≤` is one instance
+(`endpoints_of_rmFull`) and is not the intended reading, which is that
+`◯` is witnessed at endpoints. -/
+def Kripke.Endpoints (K : Kripke) : Type := ∀ a : K.W, MaxSeen K a
+
+/-- **The routing lemma.**  `minZeta` sends a refuted `◯Z` at `a` to a
+world whose whole modal cone refutes `Z`; the frame condition supplies an
+endpoint inside that cone. -/
+def maxRef_of_not_circ {K : Kripke} (hep : K.Endpoints)
+    {a : K.W} {Z : Form} (h : ¬ K.force a (.circ Z)) : MaxRef K a Z :=
+  let mz := minZeta h
+  let ms := hep mz.e
+  ⟨ms.m, K.le_trans mz.le (K.sub_mi ms.rm), ms.max, mz.cone ms.m ms.rm⟩
+
+/-- `Rm = ≤` satisfies the condition: `maxAbove` walks up to an endpoint
+and the full relation sees it.  This is the ONLY place that special case
+is used. -/
+def endpoints_of_rmFull {K : Kripke} (hfull : ∀ x y : K.W, K.le x y → K.Rm x y) :
+    K.Endpoints :=
+  fun a => let mx := maxAbove K a; ⟨mx.m, hfull _ _ mx.le, mx.max⟩
+
+/-- **Cone-grounded frames are endpoint-seeing too.**  Walk up the modal
+cone to an `Rm`-maximal world (`maxRmAbove`); cone-groundedness turns that
+modal maximality into `≤`-maximality.  So the general theorem subsumes the
+cone-grounded case, and with it the discrete one — no separate theorem,
+no supply hypothesis, and no condition on the goal. -/
+def endpoints_of_coneGrounded {K : Kripke} (hg : K.ConeGrounded) : K.Endpoints :=
+  fun a => let r := maxRmAbove K a; ⟨r.m, r.rm, hg r.m r.cone⟩
+
+/-- `◯∈` from a `Z`-wit at a NAMED world above the demand — `metR_circ`
+with the `minZeta` choice hoisted out. -/
+def metR_circAt {K : Kripke} {G : Form} {a e : K.W} {Z : Form}
+    (hC : Form.circ Z ∈ sfR G) (hle : K.le a e) (w : MRWit K G e Z) :
+    MRWit K G a (.circ Z) :=
+  ⟨w.t, w.ctx, .circIn w.der w.tOK hC,
+    w.tOK.elim Or.inl (fun ⟨W, htg, hcov⟩ => Or.inr ⟨W, htg, .circ hcov⟩),
+    w.wld, K.le_trans hle w.wle, w.wfal, w.cov⟩
+
+/-- The two-tier statement family at a maximal world: `t = 0` irregular,
+otherwise the TAGGED regular wit.  The free grade never arises there —
+its only producer, the `⊃∉` float, needs a world strictly above. -/
+def MaxStmt (K : Kripke) (G : Form) (m : K.W) (t : Nat) (C : Form) : Type :=
+  match t with
+  | 0 => IrrWit K G m C
+  | _ => MRWit K G m C
+
+/-- **The local recursion at a maximal world.**  Measure `(t, |C|)`; no
+world ever changes, `hloc` holds throughout, and no supply is consumed. -/
+def visitMax (K : Kripke) (G : Form) (m : K.W) (hmax : ∀ u, K.le m u → u = m)
+    (t : Nat) (C : Form) (hC : C ∈ sfR G) (hnf : ¬ K.force m C) :
+    MaxStmt K G m t C := by
+  have hloc : circPart (lamStar K m G) = [] := circPart_lamStar_nil_of_maximal hmax
+  match t, C with
+  | 0, .atom p => exact metI_atom hC hnf
+  | 0, .bot => exact metI_bot hC hnf
+  | 0, .and C₁ C₂ =>
+      exact metI_and hC hnf
+        (fun h1 => visitMax K G m hmax 0 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitMax K G m hmax 0 C₂ (sfR_and hC).2 h2)
+  | 0, .or C₁ C₂ =>
+      exact metI_or hC hnf
+        (fun h1 => visitMax K G m hmax 0 C₁ (sfR_or hC).1 h1)
+        (fun h2 => visitMax K G m hmax 0 C₂ (sfR_or hC).2 h2)
+  | 0, .imp A B =>
+      exact metI_imp hC hnf
+        (fun _ hB => visitMax K G m hmax 0 B (sfR_imp hC).2 hB)
+        (fun e hle hne _ _ => absurd (hmax e hle) hne)
+  | 0, .circ Z => exact circWit_of_maximal hmax hC hnf
+  | n + 1, .atom p =>
+      exact metR_prime hloc rfl hC hnf
+        (fun A hA hnA => visitMax K G m hmax 0 A hA hnA)
+  | n + 1, .bot =>
+      exact metR_prime hloc rfl hC hnf
+        (fun A hA hnA => visitMax K G m hmax 0 A hA hnA)
+  | n + 1, .and C₁ C₂ =>
+      exact metR_and hC hnf
+        (fun h1 => visitMax K G m hmax (n + 1) C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitMax K G m hmax (n + 1) C₂ (sfR_and hC).2 h2)
+  | n + 1, .or C₁ C₂ =>
+      exact metR_or hloc hC hnf
+        (fun A hA hnA => visitMax K G m hmax 0 A hA hnA)
+  | n + 1, .imp A B =>
+      exact metR_imp hC hnf
+        (fun e hle _ hB => by
+          have he : e = m := hmax e hle
+          have hem : K.le e m := by rw [he]; exact K.le_refl m
+          have hB' : ¬ K.force m B := by rw [← he]; exact hB
+          exact MRWit.weaken hem (visitMax K G m hmax (n + 1) B (sfR_imp hC).2 hB'))
+  | n + 1, .circ Z =>
+      exact metR_circAt hC (K.le_refl m)
+        (visitMax K G m hmax (n + 1) Z (sfR_circ hC)
+          (fun hf => hnf (fun b hab => ⟨b, K.rm_refl b, K.force_mono hab hf⟩)))
+termination_by (t, C.size)
+decreasing_by
+  all_goals
+    first
+      | (apply Prod.Lex.left; omega)
+      | (apply Prod.Lex.right; simp only [Form.size]; omega)
+
+/-- The global statement family: `t = 0` irregular, otherwise the FREE
+regular wit.  The tagged grade is absent — it lives in `visitMax`. -/
+def GStmt (K : Kripke) (G : Form) (a : K.W) (t : Nat) (C : Form) : Type :=
+  match t with
+  | 0 => IrrWit K G a C
+  | _ => FRWit K G a C
+
+/-- **The global recursion.**  Measure `(ht a, t, |C|)`.  Both `◯` cases
+are LEAVES: they route to `visitMax` at the maximal refuter supplied by
+`maxRef_of_not_circ`, so no same-world irregular→regular edge remains. -/
+def visitG (K : Kripke) (G : Form) (hep : K.Endpoints)
+    (a : K.W) (t : Nat) (C : Form)
+    (hC : C ∈ sfR G) (hnf : ¬ K.force a C) : GStmt K G a t C := by
+  match t, C with
+  | 0, .atom p => exact metI_atom hC hnf
+  | 0, .bot => exact metI_bot hC hnf
+  | 0, .and C₁ C₂ =>
+      exact metI_and hC hnf
+        (fun h1 => visitG K G hep a 0 C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitG K G hep a 0 C₂ (sfR_and hC).2 h2)
+  | 0, .or C₁ C₂ =>
+      exact metI_or hC hnf
+        (fun h1 => visitG K G hep a 0 C₁ (sfR_or hC).1 h1)
+        (fun h2 => visitG K G hep a 0 C₂ (sfR_or hC).2 h2)
+  | 0, .imp A B =>
+      exact metI_imp hC hnf
+        (fun _ hB => visitG K G hep a 0 B (sfR_imp hC).2 hB)
+        (fun e _ hne _ hB => visitG K G hep e 1 B (sfR_imp hC).2 hB)
+  | 0, .circ Z =>
+      exact
+        let mx := maxRef_of_not_circ hep hnf
+        metI_circ hC
+          ((visitMax K G mx.m mx.max 1 Z (sfR_circ hC) mx.nfZ).weaken mx.le)
+  | n + 1, .atom p =>
+      exact metR_primeF rfl hC hnf
+        (fun A hA hnA => visitG K G hep a 0 A hA hnA)
+  | n + 1, .bot =>
+      exact metR_primeF rfl hC hnf
+        (fun A hA hnA => visitG K G hep a 0 A hA hnA)
+  | n + 1, .and C₁ C₂ =>
+      exact metR_andF hC hnf
+        (fun h1 => visitG K G hep a (n + 1) C₁ (sfR_and hC).1 h1)
+        (fun _ h2 => visitG K G hep a (n + 1) C₂ (sfR_and hC).2 h2)
+  | n + 1, .or C₁ C₂ =>
+      exact metR_orF hC hnf
+        (fun A hA hnA => visitG K G hep a 0 A hA hnA)
+  | n + 1, .imp A B =>
+      exact metR_impF hC hnf
+        (fun e hle _ hB => visitG K G hep e (n + 1) B (sfR_imp hC).2 hB)
+  | n + 1, .circ Z =>
+      exact
+        let mx := maxRef_of_not_circ hep hnf
+        (metR_circAt hC mx.le
+          (visitMax K G mx.m mx.max 1 Z (sfR_circ hC) mx.nfZ)).toFree
+termination_by (ht K a, t, C.size)
+decreasing_by
+  all_goals
+    first
+      | (apply Prod.Lex.left
+         exact ht_lt (by assumption) (by assumption))
+      | (by_cases hne' : e = a
+         · subst hne'
+           apply Prod.Lex.right
+           apply Prod.Lex.right
+           simp only [Form.size]; omega
+         · apply Prod.Lex.left
+           exact ht_lt (by assumption) hne')
+      | (apply Prod.Lex.right
+         apply Prod.Lex.left
+         omega)
+      | (apply Prod.Lex.right
+         apply Prod.Lex.right
+         first
+           | omega
+           | (simp only [Form.size]; omega))
+
+/-- The demand closure with the regular half at the FREE grade.  This is
+all completeness consumes: the root reads only the derivation, never the
+tag. -/
+def AllMetF (K : Kripke) (G : Form) : Prop :=
+  ∀ a : K.W, ∀ C ∈ sfR G, ¬ K.force a C →
+    Nonempty (IrrWit K G a C) ∧ Nonempty (FRWit K G a C)
+
+theorem completeness_of_allMetF {K : Kripke} {G : Form}
+    (h : AllMetF K G) (hK : ¬ K.valid G) : Provable G := by
+  obtain ⟨w⟩ := (h K.root G (sfR_self G) hK).2
+  exact ⟨w.t, w.ctx, ⟨w.der⟩⟩
+
+theorem allMetF_of_endpoints {K : Kripke} {G : Form} (hep : K.Endpoints) :
+    AllMetF K G :=
+  fun a C hC hnf =>
+    ⟨⟨visitG K G hep a 0 C hC hnf⟩, ⟨visitG K G hep a 1 C hC hnf⟩⟩
+
+/-- **FRJ◯ COMPLETENESS OVER ENDPOINT-SEEING MODELS, UNCONDITIONAL.**
+Statement (A) of the W4 targets for every model whose modal relation is a
+reflexive-transitive subrelation of `≤` each of whose cones contains a
+`≤`-maximal world.  No hypothesis on the goal, no named supply, and no
+condition on the SHAPE of `Rm`: `◯` may occur anywhere, on either side. -/
+theorem completeness_of_endpoints {K : Kripke} {G : Form} (hep : K.Endpoints)
+    (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_allMetF (allMetF_of_endpoints hep) hK
+
 /-- **The kernel discharged on cone-grounded frames.**  The corner
 forces cone-triviality, the frame condition turns that into maximality,
 and the generalised `Ax^I◯` closes it. -/
@@ -1281,33 +1523,27 @@ def circSupply_of_coneGrounded {K : Kripke} {G : Form}
   fun a Z hZ hnf hsole =>
     circWit_of_maximal (hg a (coneTrivial_of_corner hnf hsole)) hZ hnf
 
-/-- **Completeness over cone-grounded models, modulo the pledge supply
-only.**  The `◯`-corner kernel — the open half of FRJ◯ completeness
-since W4 §10 — is GONE on this class; what remains is the pledge
-supply, whose own discharge is a separate question (it is vacuous on
-transparent models, `circPart_lamStar_nil_of_transparent`, but transparent
-frames are cone-grounded only when discrete). -/
+/-- **Completeness over cone-grounded models.**  An instance of
+`completeness_of_endpoints`: no supply of either kind, no condition on
+the goal. -/
 theorem completeness_of_coneGrounded {K : Kripke} {G : Form}
-    (hg : K.ConeGrounded) (psup : PledgeSupply K G)
-    (hK : ¬ K.valid G) : Provable G :=
-  completeness_of_supply psup (circSupply_of_coneGrounded hg) hK
+    (hg : K.ConeGrounded) (hK : ¬ K.valid G) : Provable G :=
+  completeness_of_endpoints (endpoints_of_coneGrounded hg) hK
 
-/-- **Completeness over `Rm = ≤` models, modulo the pledge supply.**
-This is the frame every model extracted from a derivation carries, and
-the headline instance of the previous theorem. -/
+/-- **Completeness over `Rm = ≤` models.**  A second instance — the frame
+every model extracted from a derivation carries. -/
 theorem completeness_of_rmFull {K : Kripke} {G : Form}
-    (hfull : ∀ a b : K.W, K.le a b → K.Rm a b) (psup : PledgeSupply K G)
-    (hK : ¬ K.valid G) : Provable G :=
-  completeness_of_coneGrounded (Kripke.coneGrounded_of_rmFull hfull) psup hK
+    (hfull : ∀ a b : K.W, K.le a b → K.Rm a b) (hK : ¬ K.valid G) :
+    Provable G :=
+  completeness_of_endpoints (endpoints_of_rmFull hfull) hK
 
-/-! ### An unconditional instance: goals with no `◯` on the left
+/-! ### A supply that is vacuous on the goal
 
 The pledge supply is asked for only at worlds where `Λ*` carries a
 `◯`-formula, and `Λ*_b ⊆ Sf^L(G)`.  So a goal whose LEFT subformulas are
-`◯`-free discharges it for every model at once — with `◯` still free to
-occur anywhere on the RIGHT, since `Sf^R(G)` is untouched.  Combined
-with the previous theorem this is completeness with no side condition
-for a genuinely modal class. -/
+`◯`-free discharges it for every model at once.  This is no longer needed
+for any completeness statement below, but it is the cheapest discharge of
+`PledgeSupply` for the `visit` route and is kept for that. -/
 
 /-- `Λ*` is circ-free at every world when `Sf^L(G)` is. -/
 theorem circPart_lamStar_nil_of_sfL_circFree {K : Kripke} {G : Form} {b : K.W}
@@ -1319,36 +1555,11 @@ theorem circPart_lamStar_nil_of_sfL_circFree {K : Kripke} {G : Form} {b : K.W}
     rw [hcf X (mem_lamStar.mp h1).1] at h2
     exact Bool.noConfusion h2)
 
-/-- **Completeness, unconditional, on cone-grounded frames for goals with
-`◯`-free left subformulas.** -/
-theorem completeness_of_coneGrounded_of_circFreeL {K : Kripke} {G : Form}
-    (hg : K.ConeGrounded) (hcf : ∀ X ∈ sfL G, X.isCirc = false)
-    (hK : ¬ K.valid G) : Provable G :=
-  completeness_of_coneGrounded hg
-    (pledgeSupply_of_locFree (fun _ => circPart_lamStar_nil_of_sfL_circFree hcf)) hK
-
-/-- **The headline: completeness with NO side condition for `Rm = ≤`
-models and goals carrying `◯` only on the right.**  Neither supply
-survives — the `◯`-corner kernel dies on the frame, the pledge supply
-dies on the polarity — and neither the model nor the goal is required to
-be `◯`-free. -/
-theorem completeness_of_rmFull_of_circFreeL {K : Kripke} {G : Form}
-    (hfull : ∀ a b : K.W, K.le a b → K.Rm a b)
-    (hcf : ∀ X ∈ sfL G, X.isCirc = false)
-    (hK : ¬ K.valid G) : Provable G :=
-  completeness_of_coneGrounded_of_circFreeL
-    (Kripke.coneGrounded_of_rmFull hfull) hcf hK
-
-/-- **Unconditional completeness over discrete models.**  When every
-world is maximal the frame is cone-grounded (so the kernel goes) and
-`Λ*` is circ-free everywhere (so the pledge supply goes): statement (A)
-holds with no side condition.  (The first completeness instance for the
-FULL modal calculus — goals may carry `◯` on both sides.) -/
+/-- **Completeness over discrete models.**  The most degenerate instance
+of all: every world is its own endpoint. -/
 theorem completeness_of_discrete {K : Kripke} {G : Form}
     (hdisc : ∀ a u : K.W, K.le a u → u = a)
     (hK : ¬ K.valid G) : Provable G :=
-  completeness_of_coneGrounded (Kripke.coneGrounded_of_discrete hdisc)
-    (pledgeSupply_of_locFree (fun b => circPart_lamStar_nil_of_maximal (hdisc b)))
-    hK
+  completeness_of_coneGrounded (Kripke.coneGrounded_of_discrete hdisc) hK
 
 end FRJ

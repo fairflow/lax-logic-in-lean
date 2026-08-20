@@ -403,7 +403,7 @@ theorem not_derivU_of_sep (S : Skel) {A B : PLLFormula}
 theorem not_deriv_of_sep (S : Skel) {A B : PLLFormula}
     (hA : boxFree A = true) (hB : boxFree B = true) {w : S.W}
     (hfA : S.sat A w) (hfB : ¬ S.sat B w) :
-    ¬ Deriv [embed A] (embed B) :=
+    [embed A] ⊬ embed B :=
   fun h => not_derivU_of_sep S hA hB hfA hfB (h.elim fun d => .of_nd d)
 
 /-- **The reusable transfer theorem, PCLL**: explicit Kripke

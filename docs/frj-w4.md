@@ -1183,3 +1183,330 @@ transfer (E) of §14. The completeness map is now:
 **The remaining open content on `Rm = ≤` frames is `PledgeSupply`
 alone**, at worlds carrying a `Λ*`-modal formula — i.e. worlds `a` with
 `◯Y ∈ Sf^L(G)`, `a ⊩ ◯Y`, `a ⊮ Y`. That is where the next round goes.
+
+---
+
+## §16 The supplies removed: completeness on endpoint-seeing frames (2026-08-18)
+
+§15 closed the `◯`-corner on cone-grounded frames and left `PledgeSupply`
+as the only open condition. It is now gone as well, and the frame
+hypotheses of §15 have been demoted to one-line instances of a single
+theorem.
+
+### The doubt that started it, and the ablation
+
+Matthew's reading was that `PledgeSupply` "is not really needed for
+completeness" — a doubt about the STATEMENT, not about the proof. Tested
+first, per the standing rule. `wip/frj_sat.lean` grew two ablation
+switches gating the join families, and the corpus was re-run:
+
+    no promise joins            : derived 26/32; lost vs baseline: NONE
+    no promise, no fallible     : derived 20/32; lost vs baseline: neg_circ_bot,
+                                  circ_imp, nnn_circ_bot, circ_or_split,
+                                  circ_circ_imp, circ_ante_circ_goal
+    no promise, raised budget   : derived 27/32; lost vs baseline: NONE
+
+The promise joins `⋈^At,p`, `⋈^∨,p`, `⋈^◯,p` — the only consumers of
+`PledgeSupply` — are never needed on the corpus; the FALLIBLE joins are.
+So the doubt was well founded and the proof, not the calculus, was at
+fault.
+
+### Where the supply was actually consumed
+
+`PledgeSupply` enters at exactly two sites, `metR_primeP` and `metR_orP`:
+the TAGGED regular tier, at a world whose `Λ*` carries a `◯`. And the
+tagged tier is entered only in two ways —
+
+* at the root by `AllMet`, where the tag is never read
+  (`completeness_of_allMet` uses only `w.der`), and
+* through a `◯`, by `metI_circ` / `metR_circ`.
+
+So the tagged tier is reachable only under a modality. That is what the
+re-founding exploits.
+
+### The re-founding: two recursions
+
+A refuted `◯Z` at `a` gives, by `minZeta`, a world `e ≥ a` whose WHOLE
+modal cone refutes `Z`. Suppose that cone contains a `≤`-maximal world
+`m`. At such an `m`:
+
+* `Λ*_m` is circ-free (`circPart_lamStar_nil_of_maximal`), so the BARREN
+  joins apply and `metR_prime` / `metR_or` fire with no supply;
+* every `u ≥ m` is `m`, so `metR_imp`'s float and `metI_imp`'s `supR`
+  branch stay at `m` (the latter is outright vacuous);
+* the irregular `◯`-demand is closed by the generalised `Ax^I◯`
+  (`circWit_of_maximal`), so it is a LEAF, not a call into the regular
+  tier.
+
+Hence the tagged tier, run at `m`, terminates on the LOCAL measure
+`(t, |C|)` with no world ever changing:
+
+    visitMax : (∀ u, m ≤ u → u = m) → ∀ t C, C ∈ Sf^R(G) → m ⊮ C →
+               MaxStmt K G m t C            -- t = 0 irregular, else tagged
+
+The global recursion then carries only tiers 0 (irregular) and 1 (FREE
+regular) — the free tier needs no `hloc` — and both its `◯` cases are
+leaves that route into `visitMax`:
+
+    visitG : K.Endpoints → ∀ a t C, C ∈ Sf^R(G) → a ⊮ C → GStmt K G a t C
+
+measure `(ht a, t, |C|)`. **The §9/§10 bad edge `I(◯Z)@a → R(Z)@a` no
+longer exists**: it has become a call from one recursion into the other,
+at a strictly different class of world. The new global visit is SIMPLER
+than the old one, not more complicated.
+
+### The frame condition, and why it is not a shape
+
+    structure MaxSeen K a where m : K.W; rm : Rm a m; max : ∀ u, m ≤ u → u = m
+    Kripke.Endpoints K := ∀ a, MaxSeen K a
+
+"Every modal cone contains a `≤`-maximal world." Nothing is assumed about
+the SHAPE of `Rm` beyond the standing axioms — reflexive, transitive,
+contained in `≤`. It may be an arbitrary such subrelation.
+
+    completeness_of_endpoints : K.Endpoints → ¬ K.valid G → Provable G
+
+**Statement (A) with no supply of either kind and no condition on the
+goal**: `◯` free on both sides, arbitrary `Rm` subject to one modal
+condition. The special shapes are now corollaries, one line each:
+
+    endpoints_of_rmFull       : (∀ a b, a ≤ b → Rm a b) → K.Endpoints
+    endpoints_of_coneGrounded : ConeGrounded K → K.Endpoints
+
+the second via `maxRmAbove` (walk up the modal cone to an `Rm`-maximal
+world; cone-groundedness turns modal maximality into `≤`-maximality).
+`completeness_of_rmFull`, `completeness_of_coneGrounded` and
+`completeness_of_discrete` are re-proved through them and have LOST their
+supply hypotheses; `completeness_of_*_of_circFreeL` are deleted, being
+strictly weaker than what now holds.
+
+`FRJ/Modal.lean` Screen 7 checks the general theorem off both special
+shapes: `narrow` is `branchP`'s order with `Rm` cut down to
+`{(⊥,⊥), (⊥,l), (l,l), (r,r)}` — a proper reflexive-transitive subrelation
+of `≤`, equal to neither `id` nor `≤` — and refutes `◯p ⊃ q`, whose left
+subformulas are NOT `◯`-free. Neither `completeness_of_discrete`, nor
+`completeness_of_rmFull`, nor the transparent route of `FRJ/Erase.lean`
+applies; `completeness_of_endpoints` returns a derivation.
+
+### The completeness map now
+
+| class | supplies needed | status |
+|---|---|---|
+| every cone meets a `≤`-maximal world | none | **PROVED (new)** |
+| `Rm = ≤`, any goal | none | **PROVED (new)** — instance |
+| cone-grounded, any goal | none | **PROVED (new)** — instance |
+| discrete model, any goal | none | PROVED — instance |
+| `◯`-free goal, any model | none | PROVED |
+| transparent (`Rm = id`), any goal | pledge vacuous; `◯`-corner OPEN — or (E) | conditional |
+| general | both OPEN | conditional |
+
+### What is still open
+
+A frame can fail `Endpoints` in exactly one way: some modal cone contains
+no `≤`-maximal world of `K`. The transparent frames are the standing
+example — `Rm = id`, so the cone of a non-maximal `a` is `{a}` — and they
+remain on the erasure-transfer route (E) of §14. So the two open routes
+are complementary, as §15 already recorded in
+`discrete_of_transparent_of_coneGrounded`; what has changed is that
+everything BETWEEN them is now closed, rather than just the two named
+shapes.
+
+Matthew's further point stands and is not addressed here: an
+arbitrary reflexive-transitive `Rm ⊆ ≤`, with no cofinality condition at
+all, is what the theory should ask for, and the route he proposes is
+completeness for constraint interpretations of `◯` (F&M, *Solution to
+Curry's Problem*, TYPES 2000, Thm 6: `PLL ⊢ φ` iff `IPL ⊢ φ^C` for every
+standard constraint `C`). That is the next statement to test.
+
+---
+
+## §17 Are the modal relations needed? Three separators (2026-08-18)
+
+Matthew's question, distinct from FRJ◯ completeness: is the generality of
+`Rm` — an arbitrary reflexive-transitive subrelation of `Ri` — actually
+NECESSARY, or would some restricted family of shapes already give
+completeness for PLL? It has an exact form. For a class `𝒞` of models,
+exhibit `φ` with
+
+    (a)  ∀ M ∈ 𝒞, M ⊨ φ        (b)  ¬ PLL ⊢ φ
+
+Then completeness fails for `𝒞`, so the models outside `𝒞` are needed.
+Soundness (`PLLND.soundness_valid`) turns (b) into one countermodel.
+
+### Discovery
+
+A sweep over every model on ≤ 3 worlds — all posets, all
+reflexive-transitive `Rm ⊆ Ri`, all hereditary `F` and `V` — 1035 models
+against 274 formulas of size ≤ 5 over one atom, keeping the formulas
+refuted somewhere in the full class and nowhere in the restricted one.
+Discovery only; every winner is proved below. Script:
+`scratchpad/framescan.py`.
+
+### The three separators (`wip/frame_need.lean`)
+
+| class | separator | pins |
+|---|---|---|
+| `Rm = id` (transparent) | `◯p ⊃ p` | `[propext, Quot.sound]` |
+| `Rm = Ri` | `◯¬◯⊥` | `[propext, Classical.choice, Quot.sound]` |
+| endpoint-seeing | `◯¬◯⊥` | `[propext, Quot.sound]` |
+
+`◯p ⊃ p` is immediate: on a transparent model `◯φ` and `φ` are the same
+proposition (`force_somehow_iff_of_transparent`).
+
+`◯¬◯⊥` is the interesting one, and it is CLOSED. Two independent
+validity proofs, because `Rm = Ri` does not imply endpoint-seeing for
+infinite models:
+
+* **endpoint-seeing.** At a `≤`-maximal `m` the modal successor cannot
+  leave the world, so `◯φ ⊃ φ` holds there for EVERY `φ`
+  (`force_circ_imp_of_maximal`). Every cone contains such an `m`, so
+  every instance of `◯(◯φ ⊃ φ)` is valid; `φ = ⊥` is the closed one.
+* **`Rm = Ri`.** Given `v`, either `v ⊩ ¬◯⊥` and `v` is its own witness,
+  or some `t ≥ v` forces `◯⊥` while refuting `⊥` — and `t ⊩ ◯⊥` applied
+  at `t` itself hands over a FALLIBLE world above `t`, which forces
+  everything, `¬◯⊥` included.
+
+The countermodel is shared: the 3-chain `a < b < c` with `c` fallible and
+`Rm = id ∪ {(b,c)}`. Then `b ⊩ ◯⊥` (it modally sees `c`) while `b ⊮ ⊥`,
+so `a ⊮ ¬◯⊥`; and the modal cone of `a` is `{a}`, so `a ⊮ ◯¬◯⊥`. That
+frame is transparent nowhere, is not `Rm = Ri`, and `a` sees no maximal
+world.
+
+### What this says about §16
+
+`completeness_of_endpoints` is a PROPER restriction, and now provably so.
+`◯¬◯⊥` is a PLL non-theorem all of whose countermodels lie OUTSIDE the
+endpoint-seeing class, so no amount of work on that route can settle it:
+the theorem is silent on it by construction. This is the exact price of
+the frame hypothesis, and it is what Matthew's objection was pointing at.
+
+The calculus itself is untroubled: added as corpus cell
+`circ_neg_circ_bot`, `frjsat` derives `◯¬◯⊥` in 4 rounds (RS=4, IS=3),
+and the ablation re-run shows it needs the FALLIBLE joins and not the
+promise joins — consistent with §16.
+
+    corpus now 33 cells
+    no promise joins        : derived 27/33; lost vs baseline: NONE
+    no promise, no fallible : derived 20/33; lost: neg_circ_bot, circ_imp,
+                              nnn_circ_bot, circ_neg_circ_bot, circ_or_split,
+                              circ_circ_imp, circ_ante_circ_goal
+
+### Next
+
+The three separators are the cheap cut: they show each named restriction
+is proper. The strong form of the question — that a good proportion of
+ALL `Rm`-shapes are needed — wants a Jankov–Fine characteristic formula
+`χ_M` for each finite rooted reduced constraint model, refuted by `M` and
+valid on every model not containing `M` as a p-morphic image. The
+reduction is already in `Reject/Reduce.lean` (`RmEq`, `qModel`, `qBisim`,
+`rrank`), and `lemma9` of `LaxLogic/PLLCtxCompleteness.lean` (the ℕ-model
+plus shift bisimulation behind Corollary 10, "no FINITE set of standard
+constraints is complete") is the template for the validity half.
+
+---
+
+## §18 Every bound on modal width fails: the quantified necessity result (2026-08-19)
+
+§17 gave three separators, each killing one named shape of `Rm`. That is a
+finite list of negative results. The quantified form Matthew asked for —
+that a good proportion of ALL subrelations `Rm ⊆ Ri` are needed — is now
+PROVED, and it did not need Jankov–Fine after all. It comes out of
+Corollary 10 of F&M's *Solution to Curry's Problem*, which is already
+mechanised in `LaxLogic/PLLCtxCompleteness.lean`, once that corollary is
+read on the frame side rather than the constraint side.
+
+### The invariant
+
+    Stab u   :=   ∀ t, Rm u t → Rm t u
+
+is the paper's stability: `u` lies in an `Rm`-maximal cluster. Define the
+**modal width** of a finite constraint model as the number of such worlds:
+
+    stabCard M   :=   |{ u ∈ W : Stab u }|
+
+The bridge to Corollary 10 is Lemma 7. The constraint that a finite model
+determines,
+
+    C₀  =  ⨅_{u ∈ Stab} [ α_u , ⋁_{u' ∈ iSucc u} α_{u'} ]
+
+has exactly one basic conjunct per stable world, so
+
+    length C₀  =  stabCard M                            (`length_C0`)
+
+and Lemma 8 ("depth ≤ m makes χ_m^C an IPL theorem") transfers verbatim.
+
+### The theorem
+
+With the ladder of Corollary 10,
+
+    χ₀      =  ◯⊥
+    χ_{m+1} =  ◯(◯p_{m+1} ⊃ (p_{m+1} ∨ χ_m))
+
+the result is
+
+> **Theorem** (`stabCard_bounded_incomplete`, `[propext, Classical.choice,
+> Quot.sound]`). For every `m`:
+> (a) every finite constraint model of modal width ≤ `m` forces `χ_m` at
+>     every world; and
+> (b) `χ_m` is not a PLL theorem.
+
+Hence no class of models carrying a BOUND on the number of `Rm`-stable
+worlds is complete for PLL. Completeness demands `Rm`-relations with
+unboundedly many maximal clusters — so no finite family of modal
+accessibility shapes will do, and the answer to the question is: not a
+good proportion of the shapes, but a family of unbounded modal width.
+
+Proof of (a) is three links, all already in the file: `lemma8_valid` at
+depth `C₀ ≤ m`, `force_subC_C0` (uniform `C₀`-for-`◯` substitution
+preserves forcing in `M*`), and `force_coincide` (`M*` agrees with `M` on
+formulas free of the fresh markers, which `χ_m` is). (b) is `lemma9`.
+
+### The class is not hollow
+
+A bound on `stabCard` must not secretly be a bound on `|W|`, or the
+theorem would be a restatement of the failure of the finite model property
+at fixed size. Two lemmas fix the shape of the class:
+
+    stabCard_pos          : 0 < stabCard M           (M nonempty)
+    stabCard_eq_one_of_top: (∀ w, Rm w t) → (∀ u, Rm t u → u = t)
+                            → stabCard M = 1
+
+The first says the `m = 0` rung is vacuous — every finite model has a
+maximal cluster, so the content starts at `m = 1`. The second says every
+model with an `Rm`-greatest world of trivial cluster has width exactly 1,
+whatever its cardinality: an `≤`-chain of ANY length with `Rm = Ri` sits
+inside the width-1 class. So each class `stabCard ≤ m` contains models of
+every finite size, and the bound is on modal structure alone.
+
+### Refute-first record
+
+The statement of (a) was tested before any proof was scoped, per the
+standing rule. `wip/framescan.py` was extended (`ladder.py`) to enumerate
+every model on ≤ 4 worlds — all posets, all reflexive-transitive
+`Rm ⊆ ≤`, all hereditary fallible sets and valuations — compute `stabCard`
+and evaluate `χ_m` by bitmask DP:
+
+    n ≤ 4, m = 1, 1 atom  :  73,164 models,   5,961 of width ≤ 1, 0 violations
+    n ≤ 4, m = 2, 2 atoms : 332,032 models, 156,268 of width ≤ 2, 0 violations
+    n ≤ 3, m = 2, 2 atoms :   3,487 models,   2,468 of width ≤ 2, 0 violations
+
+and the least width among models REFUTING `χ_1` is exactly 2, the
+predicted `m+1`. `χ_2` is refuted nowhere on ≤ 4 worlds, consistent with
+needing width 3 plus the intermediate structure the ladder feeds on.
+
+### Relation to §16 and §17
+
+Orthogonal and complementary. `Kripke.Endpoints` (§16) asks that every
+`Rm`-cone meet a `≤`-maximal world — that stable worlds EXIST and are
+seen. It says nothing about how many there are, and §18 says there may be
+no bound on that number. The three separators of §17 kill three named
+shapes; §18 kills every width-bounded class at once. Together: the
+required family of `Rm` is not `id`, not `Ri`, not the endpoint-seeing
+class, and not any class of bounded modal width.
+
+### Where it is
+
+`LaxLogic/PLLCtxCompleteness.lean`, after `corollary10`:
+`stabCard`, `length_C0`, `chi_valid_of_stabCard`,
+`stabCard_bounded_incomplete`, `stabCard_pos`, `stabCard_eq_one_of_top`,
+all `#print axioms`-pinned at the file's tail.

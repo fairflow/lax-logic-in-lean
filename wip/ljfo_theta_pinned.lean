@@ -65,13 +65,13 @@ theorem theta_succ (n : Nat) : theta (n + 3) = F (theta (n + 2)) := rfl
 
 def M1 : FinCM := ⟨1, [], [], [], []⟩
 
-theorem theta2_not_theta1 : ¬ Nonempty (LaxND [theta 2] (theta 1)) :=
+theorem theta2_not_theta1 : [theta 2] ⊬ theta 1 :=
   FinCM.not_provable_of_check (M := M1) (w := 0) (by decide)
 
 def M2 : FinCM :=
   ⟨3, [(0, 1), (1, 2), (0, 2)], [(1, 2)], [2], [(0, "q"), (1, "q")]⟩
 
-theorem theta3_not_theta2 : ¬ Nonempty (LaxND [theta 3] (theta 2)) :=
+theorem theta3_not_theta2 : [theta 3] ⊬ theta 2 :=
   FinCM.not_provable_of_check (M := M2) (w := 0) (by decide)
 
 /-! ## Transitivity and monotonicity -/

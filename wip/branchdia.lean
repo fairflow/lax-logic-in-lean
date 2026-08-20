@@ -347,10 +347,10 @@ theorem not_no_post_interp_phiDia : ¬ ¬ ∃ ψ, IsPostInterp phiDia ψ :=
 
 /-- The interpolant is strictly between `◯⊥` and `⊤`: it is not `⊤`
 (`postInterpPhiDiaIsTop_false`) and not `⊥`. -/
-theorem postInterp_phiDia_ne_bot : ¬ Deriv [nt (nt oBot)] PLLFormula.falsePLL :=
+theorem postInterp_phiDia_ne_bot : [nt (nt oBot)] ⊬ PLLFormula.falsePLL :=
   postInterp_phiStar_ne_bot
 
-theorem postInterp_phiDia_ne_top : ¬ Deriv [] (nt (nt oBot)) :=
+theorem postInterp_phiDia_ne_top : [] ⊬ nt (nt oBot) :=
   postInterp_phiStar_ne_top
 
 /-! ## 5.  The general method: the BRANCHING TRANSLATION
@@ -631,7 +631,7 @@ theorem BLo_pv : BLo oBot (PLLFormula.prop pv) = oBot := rfl
 
 /-- **REFUTED**: the branching method ALONE is incomplete, exactly as
 the stretch method is — `BLo ◯⊥ p = ◯⊥` and `p ⊬ ◯⊥`. -/
-theorem p_not_oBot : ¬ Deriv [PLLFormula.prop pv] oBot := by
+theorem p_not_oBot : [PLLFormula.prop pv] ⊬ oBot := by
   rintro ⟨d⟩
   have hs := soundness d N (1 : Fin 2) (fun ψ hψ => by
     have e : ψ = PLLFormula.prop pv := by
@@ -780,7 +780,7 @@ theorem interd_instBot_phiDia : Interd (inst PLLFormula.falsePLL phiDia) oBot :=
 /-- `¬¬◯⊥ ⊬ ◯⊥`: the interpolant is STRICTLY above every Boolean
 instance.  (`M4`'s root forces `¬¬◯⊥`, being a `φ★`-world, and not
 `◯⊥`.) -/
-theorem nnbox_not_oBot : ¬ Deriv [nt (nt oBot)] oBot :=
+theorem nnbox_not_oBot : [nt (nt oBot)] ⊬ oBot :=
   fun h => phiStar_not_oBot (Deriv.cutHead phiStar_nnbox h)
 
 /-! ## 10.  The refutation tool for the successor conjecture

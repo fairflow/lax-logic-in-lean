@@ -132,7 +132,7 @@ theorem dC_forced_at_edge {k : Nat} (hk : 2 ≤ k) :
 /-- **`dC k ⊬ c k`** (`k ≥ 2`): the co-gap does NOT collapse onto the
 chain. -/
 theorem dC_not_le_chain {k : Nat} (hk : 2 ≤ k) :
-    ¬ Deriv [dC k] (chainF k) := by
+    [dC k] ⊬ chainF k := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (k - 2)) (some (k + 3)) (fun ψ hψ => by
     have e : ψ = dC k := by

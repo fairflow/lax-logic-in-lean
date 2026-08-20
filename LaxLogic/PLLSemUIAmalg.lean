@@ -408,7 +408,7 @@ theorem flatAmalgAll_bot {p : String} {M : PLLFormula}
 skeleton at the constant family. -/
 theorem semAll_ofree_bot' {p : String} {M : PLLFormula}
     (hbf : boxFree M = true) (hat : ∀ a ∈ M.atoms, a = p)
-    (hM : ¬ Nonempty (LaxND [] M)) : IsSemAll p M .falsePLL := by
+    (hM : [] ⊬ M) : IsSemAll p M .falsePLL := by
   obtain ⟨D, d, hd⟩ := exists_refuting_world hM
   have hdF : d ∉ D.F := fun hF => hd (D.force_of_fallible hF)
   have hDflat : (flatten D).F = ∅ := rfl

@@ -135,7 +135,7 @@ theorem self_instance_kills {φ : PLLFormula}
     (ha : atomFree (substP pv χ φ) = true)
     (hself : Deriv [φ] (substP pv χ φ)) :
     ¬ (∀ ψ, atomFree ψ = true → (∀ k, 1 ≤ k → Deriv [ψ] (gap k)) →
-        ¬ Deriv [φ] ψ) := by
+        [φ] ⊬ ψ) := by
   intro hL
   exact hL (substP pv χ φ) ha (fun k hk => inst_in_L hg χ hk) hself
 
@@ -198,7 +198,7 @@ theorem rung_kills {φ : PLLFormula}
     (hg : ∀ k, 1 ≤ k → Deriv [φ] (gap k)) (m : Nat)
     (hm : Deriv [φ] (rnSub m)) :
     ¬ (∀ ψ, atomFree ψ = true → (∀ k, 1 ≤ k → Deriv [ψ] (gap k)) →
-        ¬ Deriv [φ] ψ) := by
+        [φ] ⊬ ψ) := by
   intro hL
   exact hL (Ufam m) (Ufam_atomFree m) (fun _ hk => Ufam_in_L m hk)
     (Deriv.andIntro (gmeet_of_hg hg m) hm)
@@ -295,7 +295,7 @@ theorem gap_two_le_one : Deriv [gap 2] (gap 1) := by
 
 /-- `g 1 ⊬ g 2` (instance of `gap_incomparable`): the climb is strict,
 `g 1 < g 2`. -/
-theorem gap_one_not_le_two : ¬ Deriv [gap 1] (gap 2) :=
+theorem gap_one_not_le_two : [gap 1] ⊬ gap 2 :=
   gap_incomparable (le_refl 2) (by omega)
 
 /-- info: 'PLLND.RNEmbed.gap_two_le_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/

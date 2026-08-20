@@ -227,7 +227,7 @@ theorem Cclub_root_not_fallible : ¬ Cclub.force (0 : Fin 5) PLLFormula.falsePLL
   exact absurd h' (by decide)
 
 /-- `φ♣` is consistent. -/
-theorem phiClub_consistent : ¬ Deriv [phiClub] PLLFormula.falsePLL := by
+theorem phiClub_consistent : [phiClub] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
   refine Cclub_root_not_fallible (soundness d Cclub 0 ?_)
   intro ψ hψ
@@ -514,7 +514,7 @@ theorem phiClub_psi : Deriv [phiClub] psiClub :=
 
 /-- `ψ♣` is not a theorem: it fails at the root of `M3`, where `¬¬◯⊥`
 holds and `◯⊥` does not. -/
-theorem psiClub_not_thm : ¬ Deriv [] psiClub := by
+theorem psiClub_not_thm : [] ⊬ psiClub := by
   rintro ⟨d⟩
   have hs := soundness d M3 (0 : Fin 3) (fun ψ hψ => by cases hψ)
   have hb : M3.force (0 : Fin 3) oBot := hs 0 (le_refl (0 : Fin 3)) M3_root_nnbox
@@ -525,7 +525,7 @@ theorem psiClub_not_thm : ¬ Deriv [] psiClub := by
   exact absurd hu' (by decide)
 
 /-- `ψ♣` is consistent. -/
-theorem psiClub_ne_bot : ¬ Deriv [psiClub] PLLFormula.falsePLL :=
+theorem psiClub_ne_bot : [psiClub] ⊬ PLLFormula.falsePLL :=
   fun h => phiClub_consistent (Deriv.cutHead phiClub_psi h)
 
 /-! ## 6.  The PARAMETERISED fork -/
@@ -1137,7 +1137,7 @@ theorem gapGuard_to_psiClub : Deriv [gapGuard] psiClub := by
 forces the former and not the latter).  So no join of substitution
 instances can reach `∃p.φ♣` — which is `phiClub_no_cover` again, from
 above. -/
-theorem psiClub_not_gapGuard : ¬ Deriv [psiClub] gapGuard := by
+theorem psiClub_not_gapGuard : [psiClub] ⊬ gapGuard := by
   rintro ⟨d⟩
   have hroot : Cclub.force (0 : Fin 5) psiClub := by
     intro v _ hv
@@ -1155,13 +1155,13 @@ theorem psiClub_not_gapGuard : ¬ Deriv [psiClub] gapGuard := by
   · exact absurd ((Cclub_nOBot_iff 0).mp h2) (by decide)
 
 /-- The interpolant of `φ♣` is not `⊤` and not `⊥`. -/
-theorem postInterp_phiClub_ne_top : ¬ Deriv [] psiClub := psiClub_not_thm
-theorem postInterp_phiClub_ne_bot : ¬ Deriv [psiClub] PLLFormula.falsePLL := psiClub_ne_bot
+theorem postInterp_phiClub_ne_top : [] ⊬ psiClub := psiClub_not_thm
+theorem postInterp_phiClub_ne_bot : [psiClub] ⊬ PLLFormula.falsePLL := psiClub_ne_bot
 
 /-- **`∃p.φ♣ ≠ ¬¬◯⊥`.**  `φ♣ ⊬ ¬¬◯⊥`: the root of `C♣` forces `φ♣` and
 not `¬¬◯⊥`.  So the value found at `φ★` and at `φ♦` is NOT a universal
 attractor. -/
-theorem phiClub_not_nnbox : ¬ Deriv [phiClub] (nt (nt oBot)) := by
+theorem phiClub_not_nnbox : [phiClub] ⊬ nt (nt oBot) := by
   rintro ⟨d⟩
   have hs : Cclub.force (0 : Fin 5) (nt (nt oBot)) :=
     soundness d Cclub 0 (fun ψ hψ => by
@@ -1664,7 +1664,7 @@ theorem Cspade_root_not_fallible : ¬ Cspade.force (0 : Fin 5) PLLFormula.falseP
   have h' : (0 : Fin 5) = 4 := h
   exact absurd h' (by decide)
 
-theorem phiSpade_consistent : ¬ Deriv [phiSpade] PLLFormula.falsePLL := by
+theorem phiSpade_consistent : [phiSpade] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
   refine Cspade_root_not_fallible (soundness d Cspade 0 ?_)
   intro ψ hψ

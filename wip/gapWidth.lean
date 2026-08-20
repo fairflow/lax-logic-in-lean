@@ -137,7 +137,7 @@ theorem gap_fails (m k : Nat) (hk1 : m + 1 ≤ k) (hk2 : k ≤ m + 2) :
 /-- **Pairwise incomparability**: for `k ≥ 2` and any `j ≠ k`,
 `gap j ⊬ gap k` — the edge level is chosen per pair. -/
 theorem gap_incomparable {j k : Nat} (hk : 2 ≤ k) (hne : j ≠ k) :
-    ¬ Deriv [gap j] (gap k) := by
+    [gap j] ⊬ gap k := by
   rintro ⟨d⟩
   have key : ∀ m : Nat, m + 1 ≤ k → k ≤ m + 2 → j ≠ m + 1 → j ≠ m + 2 → False :=
     fun m h1 h2 h3 h4 =>

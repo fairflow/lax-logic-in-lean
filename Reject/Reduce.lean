@@ -311,7 +311,7 @@ theorem refineM_force (hanti : ∀ {x y : N.W}, N.Rm x y → N.Rm y x → x = y)
 /-- **(R) — every underivable sequent has a finite REDUCED
 countermodel.**  Quotient by `Rₘ`-equivalence, then refine `Rᵢ`. -/
 theorem exists_reduced_countermodel {Γ : List PLLFormula} {ψ : PLLFormula}
-    (h : ¬ Nonempty (LaxND Γ ψ)) :
+    (h : Γ ⊬ ψ) :
     ∃ (K : ConstraintModel) (_ : Fintype K.W), Reduced K ∧
       ∃ w : K.W, (∀ χ ∈ Γ, K.force w χ) ∧ ¬ K.force w ψ := by
   classical
@@ -344,7 +344,7 @@ countermodel that is a CONSTRUCTION of the calculus.  With
 `not_laxND_of_root` (T1) this is an equivalence: on PLL,
 underivability and constructibility coincide. -/
 theorem built_countermodel {Γ : List PLLFormula} {ψ : PLLFormula}
-    (h : ¬ Nonempty (LaxND Γ ψ)) :
+    (h : Γ ⊬ ψ) :
     ∃ (M : ConstraintModel) (r : M.W),
       Built M ∧ (∀ χ ∈ Γ, M.force r χ) ∧ ¬ M.force r ψ := by
   obtain ⟨K, hfin, hred, w, hΓ, hψ⟩ := exists_reduced_countermodel h
@@ -352,7 +352,7 @@ theorem built_countermodel {Γ : List PLLFormula} {ψ : PLLFormula}
 
 /-- **The calculus is SOUND AND COMPLETE for PLL underivability.** -/
 theorem not_laxND_iff_built {Γ : List PLLFormula} {ψ : PLLFormula} :
-    ¬ Nonempty (LaxND Γ ψ) ↔
+    Γ ⊬ ψ ↔
       ∃ (M : ConstraintModel) (r : M.W),
         Built M ∧ (∀ χ ∈ Γ, M.force r χ) ∧ ¬ M.force r ψ := by
   refine ⟨built_countermodel, ?_⟩

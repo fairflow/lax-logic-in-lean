@@ -602,6 +602,15 @@ structure Config where
   lamCap : Nat := 10
   maxRS : Nat := 800
   maxIS : Nat := 800
+  /-- ABLATION (2026-08-18): switch off the PROMISE joins `⋈^At,p`,
+  `⋈^∨,p`, `⋈^◯,p`.  These are the rules whose completeness-side supply
+  is `PledgeSupply` — the last open condition on `Rm = ≤` frames.  If the
+  corpus still derives without them, the promise machinery is not needed
+  for these goals, and `PledgeSupply` is an artefact of the construction
+  rather than of the calculus. -/
+  usePromise : Bool := true
+  /-- ABLATION: switch off the FALLIBLE joins `⋈^At,f`, `⋈^∨,f`. -/
+  useFallible : Bool := true
 
 structure Stats where
   roundsUsed : Nat := 0
@@ -624,10 +633,10 @@ def roundStep (G : Form) (cfg : Config) (db : DB G) :
   -- joins
   let fams := famsUpTo db.is cfg.jmax
   let newJB := fams.flatMap (fun (a, rest) => mkJoinBarren a rest)
-  let newJF := fams.flatMap (fun (a, rest) =>
+  let newJF := if !cfg.useFallible then [] else fams.flatMap (fun (a, rest) =>
     if modalContent a rest then mkJoinF a rest else [])
   let pfams := famsUpTo db.rs cfg.pmax
-  let newJP := fams.flatMap (fun (a, rest) =>
+  let newJP := if !cfg.usePromise then [] else fams.flatMap (fun (a, rest) =>
     if modalContent a rest then
       pfams.flatMap (fun (p, prest) => mkJoinP a rest p prest)
     else [])
@@ -687,6 +696,8 @@ def corpus : List Cell := [
     "the Ax^I◯ witness: was the standing flag (the ◯∉ cycle); the bare-final-world seed unlocks it; pinned hand cell provable_nn_circ_bot"⟩,
   ⟨"nnn_circ_bot", .imp (.imp (.imp (.circ .bot) .bot) .bot) .bot, false,
     "≡ ¬◯⊥ intuitionistically; the deeper-nesting twin"⟩,
+  ⟨"circ_neg_circ_bot", .circ (.imp (.circ .bot) .bot), false,
+    "◯¬◯⊥ — the SEPARATOR (wip/frame_need.lean): valid on every endpoint-seeing model and on every Rm = Ri model, so completeness_of_endpoints can never reach it; the calculus must derive it all the same"⟩,
   ⟨"circ_or_split", .imp (.circ (.or fp fq)) (.or (.circ fp) (.circ fq)), false,
     "Screen 2 (FRJ/Modal.lean): branch refutes it"⟩,
   -- W4 pledge-stress cells (2026-08-17): ◯-goals with compound bodies,
@@ -847,6 +858,26 @@ def main : IO Unit := do
   for c in corpus do
     if c.name == "corner_poisoned_ups" || c.name == "corner_residue" || c.name == "corner_residue_poisoned" || c.name == "corner_selfloop" || c.name == "corner_taut_body" then
       runCell cfgHigh c
+  IO.println s!"-- ABLATION: are the PROMISE joins ever needed? (PledgeSupply screen) --"
+  let cfgNoP : Config := { usePromise := false }
+  let cfgNoPF : Config := { usePromise := false, useFallible := false }
+  let cfgHiNoP : Config := { cfgHigh with usePromise := false }
+  let mut base : List (String × Bool) := []
+  for c in corpus do
+    base := base ++ [(c.name, derivable c.form (saturate c.form cfg).1)]
+  let runAbl (label : String) (k : Config) : IO Unit := do
+    let mut lost : List String := []
+    let mut hits := 0
+    for c in corpus do
+      let hit := derivable c.form (saturate c.form k).1
+      if hit then hits := hits + 1
+      let wasHit := (base.find? (fun q => q.1 == c.name)).map (·.2) |>.getD false
+      if wasHit && !hit then lost := lost ++ [c.name]
+    IO.println s!"{label}: derived {hits}/{corpus.length}; lost vs baseline: {if lost.isEmpty then "NONE" else String.intercalate ", " lost}"
+    (← IO.getStdout).flush
+  runAbl "no promise joins            " cfgNoP
+  runAbl "no promise, no fallible     " cfgNoPF
+  runAbl "no promise, raised budget   " cfgHiNoP
   IO.println s!"-- erasure-transfer attack (E): Provable (erase G) → Provable G --"
   for c in ePairs do
     runEPair cfg c

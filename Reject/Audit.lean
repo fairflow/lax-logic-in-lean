@@ -178,7 +178,7 @@ theorem pRoot_forces_boxP :
 
 /-- **`◯p ⊬ p` — the repo landmark, derived by construction.** -/
 theorem boxp_not_p :
-    ¬ Nonempty (LaxND [.somehow (.prop "p")] (.prop "p")) := by
+    [.somehow (.prop "p")] ⊬ .prop "p" := by
   refine not_laxND_of_root (N := addRoot pW pD) (w := none) ?_ (fun h => h)
   intro χ hχ
   simp only [List.mem_singleton] at hχ

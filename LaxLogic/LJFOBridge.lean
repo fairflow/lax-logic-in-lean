@@ -231,7 +231,7 @@ theorem laxND_of_ljfo {Γ : List Neg} {P : Pos} (d : Stab Γ .tru P) :
 /-- The contrapositive — the form the DISPROOF thread consumes: a PLL
 countermodel refutes the LJF◯ sequent too. -/
 theorem not_ljfo_of_not_laxND {Γ : List Neg} {P : Pos}
-    (h : ¬ Nonempty (LaxND (eraseCtx Γ) (erasePos P))) :
+    (h : eraseCtx Γ ⊬ erasePos P) :
     IsEmpty (Stab Γ .tru P) :=
   ⟨fun d => h (laxND_of_ljfo d)⟩
 
