@@ -187,6 +187,9 @@ code 0 because the *last* command in the pipeline succeeded — capture
 
 ## 6. Where the rest of the record lives
 
+- `docs/README.md` — what the `docs/` tree is, and the two cautions that apply
+  to everything in it (paths may be stale; the build is the authority on
+  status).
 - `HANDOFF.md` — the standing handover. Append a dated section; never rewrite.
 - `docs/next-session.md` — the live threads.
 - `docs/calculus-map.md` — **the** provenance reference. Read it before
@@ -211,9 +214,10 @@ assistance under human review.
 
 ## 8. Open decisions
 
-- **Residue of the removal.** `PROGRESS.md`, `PROGRESS-POLAR.md`, `CLAUDE.md`
-  and ~60 files under `docs/` still refer to `wip/` modules that are no longer
-  on this branch. None of it breaks a build; all of it is stale as a *reader's*
-  pointer. `CLAUDE.md` is the sharpest case, because its testing protocol
-  instructs a future session to run probe executables that this branch no longer
-  declares.
+None outstanding. The residue of the removal — `CLAUDE.md`, `PROGRESS.md`,
+`PROGRESS-POLAR.md` and the 50 files under `docs/` that referenced `wip/` — was
+tidied on 2026-08-20: `CLAUDE.md` now marks each rule whose machinery is absent
+and says what *is* runnable here, `docs/README.md` states the two standing
+cautions once, and the four documents the root README links to carry a banner.
+The 95 documents were not individually rewritten, deliberately: they are the
+research record, and rewriting them would damage it.

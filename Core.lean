@@ -121,8 +121,15 @@ import LaxLogic.PLLNoFallSep
 
 `closed_lax_infinite`: the `◯`-only, variable-free fragment is infinite —
 proved three independent ways (height, width, depth).  So no finite
-operation table can ever close it. -/
+operation table can ever close it.
+
+`RN.Reps` is therefore not "the classes" but the representatives found so
+far, as one shared vocabulary certificates and screens can name instead of
+transcribing.  It is APPEND-ONLY: `qk` never changes meaning, so a
+certificate pinned against an index cannot be invalidated by a later
+extension. -/
 import LaxLogic.PLLLaxInfinite
+import LaxLogic.RN.Reps
 
 /- ## 9. Craig interpolation
 

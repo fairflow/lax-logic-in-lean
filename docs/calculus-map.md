@@ -1,5 +1,10 @@
 # A map of the calculi
 
+> **Note.** This is a working document. It may reference `wip/`, `Rewrite/` or
+> `FRJO/`, which are not distributed on this branch (see
+> [`docs/README.md`](README.md)), and it states what was true when written —
+> the build is the authority on what is PROVED.
+
 This development contains seven or eight distinct proof systems for propositional
 lax logic, several of them named after their originators and several of them
 repairs or extensions of one another. Confusing them is easy and has happened

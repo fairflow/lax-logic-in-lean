@@ -1,5 +1,10 @@
 # The RN(◯,{}) dictionary — what is certified, what is not
 
+> **Note.** This is a working document. It may reference `wip/`, `Rewrite/` or
+> `FRJO/`, which are not distributed on this branch (see
+> [`docs/README.md`](README.md)), and it states what was true when written —
+> the build is the authority on what is PROVED.
+
 *2026-08-14. Written after the certified simpset was screened against
 the dictionary it was harvested from, which turned up a defect in the
 simpset and a misreading of the dictionary's own status.*

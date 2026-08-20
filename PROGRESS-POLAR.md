@@ -1,5 +1,10 @@
 # PROGRESS — the polarised UI campaign
 
+> **Note.** A working record, kept for its reasoning. It references modules
+> under `wip/` that are not distributed on this branch — see
+> [`NOTES-FOR-DEVELOPERS.md`](NOTES-FOR-DEVELOPERS.md) — and states what was
+> true when written; the build is the authority on what is PROVED.
+
 2026-08-08 · live log, updated in place as work continues. The previous
 campaign's log is `PROGRESS.md` (§§1–90, shelved 2026-08-07); this file is the
 new campaign only. Companion documents: `docs/lax-logic-interpolation-handoff.md`

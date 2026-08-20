@@ -34,6 +34,22 @@ jobs:
             exit 1
           fi
 
+      # `lake build` builds only `defaultTargets` (= Core), so every other
+      # declared library and executable would go unbuilt and a break in one
+      # would pass unnoticed.  Enumerate the targets out of lakefile.toml and
+      # build each by name.
+      - name: Every declared target builds
+        run: |
+          set -o pipefail
+          FAIL=0
+          for t in $(python3 scripts/all-targets.py); do
+            echo "::group::lake build $t"
+            if lake build "$t" 2>&1 | tail -40; then echo "ok $t"; else
+              echo "::error::target $t failed to build"; FAIL=1; fi
+            echo "::endgroup::"
+          done
+          exit $FAIL
+
       # What Lean cannot see: that the core's import closure stays inside
       # the core (no wip/, no trimmed campaign) and that every module is
       # documented.

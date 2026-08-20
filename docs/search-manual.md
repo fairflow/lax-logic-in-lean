@@ -1,5 +1,10 @@
 # Proof search and countermodel search: a user's manual
 
+> **Note.** This is a working document. It may reference `wip/`, `Rewrite/` or
+> `FRJO/`, which are not distributed on this branch (see
+> [`docs/README.md`](README.md)), and it states what was true when written —
+> the build is the authority on what is PROVED.
+
 *For a logician who knows PLL but not this codebase.*
 
 This document describes one job: settling a single sequent `Γ ⊢ C` of

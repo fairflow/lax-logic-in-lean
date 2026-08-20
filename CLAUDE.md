@@ -6,6 +6,15 @@ append dated §s, never rewrite), `docs/next-session.md` (the live
 threads), `docs/calculus-map.md` (**the** provenance reference — read it
 before asserting which proof system a result belongs to).
 
+**On this branch (`publication/core`) the working record is not
+distributed.** `wip/`, `Rewrite/`, `FRJO/` and the ~95 probe executables
+rooted in `wip/` are on the development branches and in history, not here.
+Instructions below that name them still describe how the work is done —
+they are the method, and the method is what is worth keeping — but you
+cannot run them from this checkout. Where a rule depends on machinery that
+is absent, it is marked. `NOTES-FOR-DEVELOPERS.md` says what is here and
+what is not.
+
 ## Core rules
 
 1. **Machine-checked mandate.** A claim is PROVED only when it is
@@ -21,7 +30,8 @@ before asserting which proof system a result belongs to).
    the decidability theorem (`decideFuel`): its fuel bounds are
    infeasible and it will hang. Since 2026-08-15 there is also the
    TWO-SIDED engine (`lean_exe twosided`; certified layer
-   `wip/ljfo_link.lean`): `TwoSidedLink.searchProves` proves via LJF◯
+   `wip/ljfo_link.lean` — NOT on this branch): `TwoSidedLink.searchProves`
+   proves via LJF◯
    focused search (sound AND complete for PLL, choice-free) and
    `Reject.certifies` refutes via Built-tree countermodels — on the
    closed corpus it settles proofs ~10³× cheaper than the G4c oracle
@@ -64,8 +74,10 @@ observed yield:
    defect needed a 3-way interaction (empty context × untied fuel ×
    missing frame).
 
-**Normalise before you search (standing, 2026-08-14).** Every fresh
-probe pipes its cells through the CERTIFIED simpset first:
+**Normalise before you search (standing, 2026-08-14).** *Requires
+`Rewrite/`, which is not on this branch — run this on a development
+branch.* Every fresh probe pipes its cells through the CERTIFIED simpset
+first:
 
     Rewrite.simplifyWith Rewrite.fullSetC fuel φ
 
@@ -91,7 +103,8 @@ idempotence, commutativity, ASSOCIATIVITY and FLATTENING (sorted
 right-nested chains), `◯◯φ = ◯φ` and `◯⊤ = ⊤`, each law certified;
 `simpIter` alternates rewriting and re-canonicalising to a fixpoint.
 
-**Never harvest an unproved cell.** `wip/rnDict.lean` states 323 cell
+**Never harvest an unproved cell.** *The lesson is general; the files are
+on the development branches.* `wip/rnDict.lean` states 323 cell
 theorems and proves 236; 87 are `sorry` and FOUR ARE REFUTED. The
 first cut of the simpset took all 323 by name, so `rndSet` carried
 `sorryAx` and four rules that rewrote a formula to a NON-interderivable
@@ -100,7 +113,9 @@ so a `sorry`ed `ok` voids the guarantee silently. `#print axioms
 rndSet`/`fullSet` are now `#guard_msgs`-pinned in
 `Rewrite/Catalogue.lean` as the standing guard; keep them pinned.
 
-**Standing item — bank, then re-run the loop.** Every NEW certified
+**Standing item — bank, then re-run the loop.** *Needs `Rewrite/` and the
+`rwscreen`/`rnextend` executables; development branches only.* Every NEW
+certified
 interderivability a probe establishes gets banked into `Rewrite/`, and
 banking is not finished until: (1) `lean_exe rwscreen` re-measures
 effectiveness; (2) `lean_exe rnextend` re-tests whether the new
@@ -129,4 +144,10 @@ countermodel; it becomes a forced change or a refutation). Tools:
 (category partition; Lean port designed in `docs/catpart-lean-design.md`),
 Plausible for random-only generation. Worked examples:
 `wip/ljfo_eval.lean` (calibrated bank), `wip/ljfo_attack.lean` (the
-four directions applied to `CimpAnt`).
+four directions applied to `CimpAnt`) — both on the development branches.
+
+**What IS runnable here.** `FRJ/Search/{Engine,Fast,Pin}.lean` is the
+FRJ(◯) forward-saturation engine, and `FRJ/Bridge.lean` turns a hit into
+`Γ ⊬ φ` about this development's own judgments. It is usable from Lean;
+its command-line drivers are not on this branch, because they import a
+corpus generated from the unfinished dictionary.

@@ -1,5 +1,10 @@
 # PROGRESS — uniform interpolation for PLL, the one-variable programme
 
+> **Note.** A working record, kept for its reasoning. It references modules
+> under `wip/` that are not distributed on this branch — see
+> [`NOTES-FOR-DEVELOPERS.md`](NOTES-FOR-DEVELOPERS.md) — and states what was
+> true when written; the build is the authority on what is PROVED.
+
 2026-07-15 · live session log (Fable 5) · updated in place while work continues.
 Read top-down: §1 is the mathematics, §2–4 the tooling questions you asked,
 §5 the manual-oracle recipe, §6 the running status line.

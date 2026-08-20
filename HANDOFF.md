@@ -1001,3 +1001,42 @@ revision of the engine arrives carrying an undischarged hypothesis.
 `NOTES-FOR-DEVELOPERS.md` §3: diff `FRJ/` against the recorded commit, take what
 is new, re-harvest the §13 pins rather than assuming they hold, and update the
 recorded commit.
+
+## §2026-08-20 (sync + tidy) — RN.Reps pulled in, stale pointers marked, CI closed
+
+Coordinated with the FRJ◯ re-development session (branch
+`claude/frj-redevelopment-69005f`). Told them `publication/core` exists, what it
+removes, and — the point that mattered — that their `docs/publication-plan.md`
+("moving the tools out of `wip/` onto a sorry-free branch") may be building this
+same branch from the other end.
+
+**Pulled in:** `LaxLogic/RN/Reps.lean` (9d8efea) — the fifteen RN(◯,{})
+representatives as one shared, append-only, sorry-free definition, replacing
+five transcriptions under `wip/`. Imports only `PLLNDCore`; admitted to `Core`
+§8. Also took `docs/publication-plan.md`. Their `b2f46f0` is `wip`-only, a no-op
+here. `git diff ccb472c..their-branch -- FRJ/` is empty, so the FRJ◯ snapshot is
+current.
+
+**Two of their findings corrected.** (i) `tools/proofstates/Recorder.lean` has
+ZERO `sorry` tokens on either branch — the hits under `tools/` are a Python
+string, a README line and a CSS class in `viewer.html`. Measured with comments
+and strings stripped, this branch has 5 real `sorry`s, all `PLLSemUI*`.
+(ii) Extracting `crank` does not make `Rewrite/` sorry-free: it clears
+`Rewrite/Core.lean`, but `Rewrite/Catalogue.lean:43` imports `wip.rnDict`
+directly, which is the actual blocker.
+
+**Their finding (a) was right and is now fixed.** A bare `lake build` builds
+only `defaultTargets`, so on this branch it covered `Core` and left `BiLax`
+unbuilt — a break there would have passed CI. New `scripts/all-targets.py`
+parses the target names out of `lakefile.toml`, and CI builds each by name. All
+10 targets green.
+
+**Stale pointers marked, not erased.** `CLAUDE.md` carries a banner and marks
+each rule whose machinery is absent, plus a new note saying what IS runnable
+here (the FRJ(◯) search, from Lean). New `docs/README.md` states the two
+standing cautions once — paths may be stale, and the build is the authority on
+status — and the four documents the root README links to carry a banner, as do
+`PROGRESS.md` and `PROGRESS-POLAR.md`. The 95 documents were NOT individually
+rewritten: they are the research record and rewriting them would damage it.
+
+Core: 116 roots / 116 modules, exactly closed; 49 pins; no `sorry`.

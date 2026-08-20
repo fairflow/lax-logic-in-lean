@@ -1,5 +1,10 @@
 # LIVE THREAD (2026-08-13): the DISPROOF investigation
 
+> **Note.** This is a working document. It may reference `wip/`, `Rewrite/` or
+> `FRJO/`, which are not distributed on this branch (see
+> [`docs/README.md`](README.md)), and it states what was true when written —
+> the build is the authority on what is PROVED.
+
 **FRJ◯ (2026-08-17): PAUSED at `completeness_of_supply`** (conditional
 completeness; (A) OPEN, minMod-as-recursion REFUTED, supplies
 unattacked).  Retrospective in HANDOFF.md §2026-08-17.  Next two moves
