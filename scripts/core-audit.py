@@ -5,7 +5,9 @@ The Lean build already checks what Lean can see: every module elaborates,
 every `#guard_msgs` axiom pin matches, and no declaration uses `sorry`.
 This script checks what Lean cannot see, namely the *boundary* of the core:
 
-  1. no module reachable from `Core.lean` imports a `wip.*` module;
+  1. no module reachable from `Core.lean` imports a `wip.*` module (as of
+     2026-08-20 `wip/` is not on this branch at all, so this is a guard
+     against reintroduction rather than a live constraint);
   2. no module reachable from `Core.lean` imports a module belonging to a
      trimmed campaign (a campaign whose terminal result is OPEN);
   3. every module reachable from `Core.lean` carries a module docstring;
@@ -43,9 +45,9 @@ TRIMMED_PREFIXES = (
     "LaxLogic.PLLUIChains",
     "LaxLogic.PLLExec",      # drags the UI tower in
     "LaxLogic.BeliefExamplesNative",
-    "FRJO.",                 # FRJ-circle completeness PAUSED
     "BiLax.",                # duality bridge never attempted
     "Rewrite.",              # mechanism finished, rule data is not
+    "FRJO.",                 # FRJ-circle: conditional on Reconstruction (W5)
     "wip.",                  # campaign material by construction
 )
 

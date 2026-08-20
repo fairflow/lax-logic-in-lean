@@ -56,28 +56,54 @@ that needed two clean modules and one hoist.
 
 ## 3. What is on the branch but outside `Core`
 
-Everything below still builds — `lake build LaxLogic`, and each other library by
-name — and nothing has been deleted from history or from the working branches.
+Everything in this table still builds — `lake build LaxLogic`, and each other
+library by name — and nothing has been deleted from history or from the working
+branches.
 
 | out | modules | why |
 |---|---|---|
-| `PLLSemUI*` | 15 | semantic UI after Litak–Visser; carries the only `sorry`s outside `wip/` |
+| `PLLSemUI*` | 15 | semantic UI after Litak–Visser; carries the only `sorry`s on the branch |
 | `PLLG4UI*`, `PLLG4Tower` | 5 | UI through the `G4c` tower; `PLLG4Tower` states its own open question |
 | `PLLG4PInv`, `PLLG4PAdm`, `PLLG4PStr` | 3 | dead metatheory branch of the first repair, imported by nothing |
 | the polarised programme | 8 | `IPCFocused`, `PLLFocused`, `PLLPolar`, `PLLJudgmental`, `PLLCand*`, `PLLUIChains` — step one of the polarised route to UI |
-| `LaxLogic.LJFO` and its tail | 7 | the minimality tail: `LJFOAudit`, `LJFOFuel`, `LJFOHeight`, `LJFORows`, `LJFOSearch`, `LJFOUniverse`. `LJFO.lean` carries `CimpAnt`, an undischarged obligation on which E2/A2 are conditional |
-| `FRJO/` | 6 | FRJ◯ completeness PAUSED at `completeness_of_supply` |
+| `LaxLogic.LJFO` and its tail | 7 | the minimality tail: `LJFOAudit`, `LJFOFuel`, `LJFOHeight`, `LJFORows`, `LJFOSearch`, `LJFOUniverse`. **Sorry-free**, but `LJFO.lean` carries `CimpAnt`, an undischarged obligation on which E2/A2 are conditional |
 | `BiLax/` | 11 | calculus, soundness and refutation pipeline proved; the duality bridge never attempted |
-| `Rewrite/` | 4 | mechanism finished, rule data is not: of 323 dictionary cells, 236 proved, 87 `sorry`, **four refuted** |
 | `PLLExec` | 1 | imports `PLLG4UITrunc`, so it drags the UI tower in |
 | `BeliefExamplesNative` | 1 | two `native_decide` enumerations, split out so the remaining six examples pin clean |
-| `wip/` | 333 | probes, screens and certificate banks — campaign material by construction, never results |
 
 `LJF`, `LJFComplete`, `LJFOCore` and `LJFOBridge` **are** in the core:
 focalization for PLL and uniform interpolation for IPC are finished. This is why
 `scripts/core-audit.py` needs an exact-name `TRIMMED_MODULES` set beside
 `TRIMMED_PREFIXES` — a `LaxLogic.LJFO` prefix would catch both halves of the
 family.
+
+### Removed from this branch entirely (2026-08-20)
+
+The working record is no longer distributed. All of it remains on the
+development branches and in history; nothing is lost.
+
+| removed | size | note |
+|---|---|---|
+| `wip/` | 333 modules, ~130k lines | probes, screens and certificate banks — never results |
+| ~95 probe `lean_exe` targets | — | every executable rooted in `wip.*` |
+| `Rewrite/` | 4 modules | `Catalogue.lean` imports `wip.rnDict`, which has **91 `sorry` tokens and four refuted cells**. The mechanism is finished; the rule data is not, so this one cannot return until the dictionary does |
+| `FRJO/` | 6 modules, 811 lines | removed only because `FRJO/Core.lean` imports `wip.ljfo_unravel`. See below — it is recoverable cheaply |
+
+Surviving targets: libraries `Core`, `LaxLogic`, `BiLax`, `Reject`, `Meta`,
+`FRJ`, `proofstates`; executables `bilaxscreen`, `laxrun`, `pstates`.
+
+### FRJ◯ is recoverable with one hoist
+
+Measured, not estimated. `FRJO/` is **sorry-free** across all six files. Its
+terminal theorem `completenessFRJO` is proved and pinned at `[propext,
+Classical.choice, Quot.sound]`, but *conditional* on `Reconstruction b` (W5),
+an explicit `Prop` in `FRJO/Complete.lean` that is never discharged — so the
+result is OPEN while the machinery is finished. Its only `wip` dependency is
+`wip/ljfo_unravel.lean` (262 lines, sorry-free), which imports **no other `wip`
+module**: it is a leaf. Moving that one file to `LaxLogic/LJFOUnravel.lean`,
+beside its siblings `LJFOSearch` and `LJFOBridge`, makes `FRJO/` `wip`-free and
+restores it as a buildable library outside `Core`. That is the same hoist
+pattern as §2, at one file.
 
 ## 4. Re-admitting a campaign
 
@@ -102,7 +128,10 @@ family.
   the only evidence that counts for criterion 2.
 - `lake build LaxLogic` — the full working library, parked campaigns included.
   Keep this green: it is the proof that a hoist did not disturb a trimmed
-  cluster.
+  cluster. It warns on four `sorry`s, all in the `PLLSemUI*` cluster; those are
+  the only ones on the branch.
+- `lake build BiLax` / `Reject` / `Meta` / `FRJ` / `proofstates`, and the three
+  executables `bilaxscreen`, `laxrun`, `pstates`. All green.
 - `python3 scripts/core-audit.py` — recomputes the import closure from
   `Core.lean` and checks what Lean cannot see: closed boundary, module
   docstrings, no `sorry`. `--check` exits non-zero, which is what CI runs.
@@ -124,7 +153,9 @@ code 0 because the *last* command in the pipeline succeeded — capture
 - `docs/calculus-map.md` — **the** provenance reference. Read it before
   asserting which proof system a result belongs to.
 - `docs/rn-dictionary-status.md` — the state of the rewrite dictionary, and the
-  controls that must be read before trusting `rnextend`'s verdicts.
+  controls that must be read before trusting `rnextend`'s verdicts. Both the
+  dictionary and `rnextend` are off this branch; read it on a development
+  branch.
 
 ## 7. Licence
 
@@ -141,8 +172,9 @@ assistance under human review.
 
 ## 8. Open decisions
 
-- **The working record is still on this branch.** `wip/` (333 files),
-  `PROGRESS.md`, and ~90 probe `lean_exe` entries in `lakefile.toml` are
-  present. They are outside `Core` and CI enforces that, but they ship with a
-  clone. Removing them is not free: the `Rewrite` and `FRJO` targets import
-  `wip/`, so they would have to go too.
+- **Residue of the removal.** `PROGRESS.md`, `PROGRESS-POLAR.md`, `CLAUDE.md`
+  and ~60 files under `docs/` still refer to `wip/` modules that are no longer
+  on this branch. None of it breaks a build; all of it is stale as a *reader's*
+  pointer. `CLAUDE.md` is the sharpest case, because its testing protocol
+  instructs a future session to run probe executables that this branch no longer
+  declares.

@@ -928,3 +928,37 @@ Matthew's own work. `NOTES-FOR-DEVELOPERS.md` §7 is now "Licence — settled"
 rather than an open decision; the remaining open decision (§8) is only whether
 the working record ships with a clone. `LICENSE` and `NOTICE` are unchanged:
 both were already written to state the position that now holds.
+
+## §2026-08-20 (trim) — the working record dropped from publication/core
+
+`wip/` (333 modules, ~130k lines), the ~95 probe executables rooted in it, and
+the two libraries that imported it (`Rewrite/`, `FRJO/`) are off this branch.
+630 files, 129,548 deletions. Everything remains on the development branches and
+in history; this is a change to what `publication/core` distributes, not a
+deletion of work.
+
+Surviving targets: libraries `Core`, `LaxLogic`, `BiLax`, `Reject`, `Meta`,
+`FRJ`, `proofstates`; executables `bilaxscreen`, `laxrun`, `pstates`. All build.
+`Meta` was never at risk — all three of its modules are inside `Core`'s closure
+at §16.
+
+**`Rewrite/` cannot come back** until the dictionary does: `Catalogue.lean`
+imports `wip.rnDict`, 91 `sorry` tokens and four refuted cells.
+
+**`FRJ◯` can, cheaply, and this is the live question.** Measured: `FRJO/` is
+sorry-free across all six files (811 lines); `completenessFRJO` is pinned at
+`[propext, Classical.choice, Quot.sound]` but conditional on `Reconstruction b`
+(W5), an explicit undischarged `Prop` — machinery finished, result OPEN. Its
+only `wip` dependency is `wip/ljfo_unravel.lean`, 262 lines, sorry-free, and a
+*leaf*: it imports no other `wip` module. One hoist to
+`LaxLogic/LJFOUnravel.lean` makes `FRJO/` `wip`-free.
+
+That raises the structural question Matthew put: the branch currently has two
+tiers, `Core` (finished and pinned) and everything else (unclassified, four
+`sorry`s among it). A third tier would give conditional-but-sorry-free work a
+home — `FRJO/` and the whole LJF◯ tail qualify, the latter being sorry-free
+throughout (`LJFOAudit`'s apparent `sorry` is the word in a docstring). Awaiting
+his decision.
+
+Also fixed here: a pre-existing misplacement in `lakefile.toml`, where the `FRJ`
+comment sat above the `Meta` target.
