@@ -590,3 +590,8 @@ root = "wip.frjo_demo"
 [[lean_exe]]
 name = "frjderive"
 root = "wip.frj_derive"
+
+# One command: sequent in, Lean-checked certificate + SVG out.
+[[lean_exe]]
+name = "frjcert"
+root = "wip.frj_cert"
