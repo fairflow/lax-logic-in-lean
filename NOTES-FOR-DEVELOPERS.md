@@ -126,15 +126,23 @@ code 0 because the *last* command in the pipeline succeeded — capture
 - `docs/rn-dictionary-status.md` — the state of the rewrite dictionary, and the
   controls that must be read before trusting `rnextend`'s verdicts.
 
-## 7. Open decisions
+## 7. Licence
+
+**Settled.** Avi Craimer authored the initial commit and 458 surviving Lean
+lines, concentrated in `PLLProof.lean`, `PLLFormula.lean`, `PLLAxiom.lean` and
+`FormattingUtils.lean` (see `NOTICE`), so the Apache 2.0 grant needed his
+agreement as well as Matthew Fairtlough's. He has given it — recorded
+2026-08-20. The grant covers the whole work; publication is not blocked.
+
+Anyone adding files should keep `NOTICE` accurate: it is not a licence
+condition but it is the record of who wrote what, which results are someone
+else's mathematics, and that the development was produced with machine
+assistance under human review.
+
+## 8. Open decisions
 
 - **The working record is still on this branch.** `wip/` (333 files),
   `PROGRESS.md`, and ~90 probe `lean_exe` entries in `lakefile.toml` are
   present. They are outside `Core` and CI enforces that, but they ship with a
   clone. Removing them is not free: the `Rewrite` and `FRJO` targets import
   `wip/`, so they would have to go too.
-- **The licence grant needs Avi Craimer's agreement.** He authored the initial
-  commit and 458 surviving Lean lines, concentrated in `PLLProof.lean`,
-  `PLLFormula.lean`, `PLLAxiom.lean` and `FormattingUtils.lean` — see `NOTICE`.
-  Committing `LICENSE` and `NOTICE` is preparation; *publishing* is the act that
-  needs his agreement.

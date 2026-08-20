@@ -917,3 +917,14 @@ equal closure size, i.e. the boundary is exactly closed — first went to 112/11
 Verified: `lake build` green, no `declaration uses 'sorry'`; `lake build
 LaxLogic` green; `scripts/core-audit.py --check` exits 0 at 111/111; every
 relative link and every backticked `.lean` path in both markdown files resolves.
+
+## §2026-08-20 (licence) — Avi Craimer's agreement given
+
+Matthew confirms he has Avi Craimer's permission for the Apache 2.0 grant.
+That was the one thing blocking publication of `publication/core`: the grant
+had to cover Avi's 458 surviving Lean lines (`PLLProof.lean`,
+`PLLFormula.lean`, `PLLAxiom.lean`, `FormattingUtils.lean`) as well as
+Matthew's own work. `NOTES-FOR-DEVELOPERS.md` §7 is now "Licence — settled"
+rather than an open decision; the remaining open decision (§8) is only whether
+the working record ships with a clone. `LICENSE` and `NOTICE` are unchanged:
+both were already written to state the position that now holds.
