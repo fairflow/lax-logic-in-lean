@@ -68,11 +68,29 @@ from a clean file. It is the only such `.lean` file in the tree
 
 Both this session and `lean-branch-review` reached "Recorder.lean has no
 `sorry`" through that silently-skipped grep. The conclusion is right,
-but the evidence was not — the file does contain the string twice.
+but the evidence was not — the file contains the word twice, at line 105
+in a docstring and at line 492 in `containsStr m.text "sorry"`.
 
-**Any sorry-scan used as a release gate must read bytes, not shell out
-to `grep`.** A Python walk that strips comments *and* string literals
-is what produced the counts above.
+**The NUL is deliberate — do not "fix" the file.** It is a single byte
+at offset 10485, line 274:
+
+    let key := id ++ "\x00" ++ text
+
+an unambiguous separator in a cache key, which is a reasonable thing to
+want a NUL for. Stripping it to make scanners happy would break the
+pooling. **Fix the scanners.**
+
+Nor is this a stray file that could just be excluded: `tools/proofstates`
+is a declared `[[lean_lib]] name = "proofstates"` globbing `Recorder` and
+`Html`, plus the `pstates` executable. It is a real build target here and
+on `publication/core`.
+
+**Any completeness claim used as a release gate must read bytes, not
+shell out to `grep`** — sorry scans, axiom-pin sweeps, "no references
+remain" checks. Absence is exactly what a silently-skipped file
+fabricates. A Python walk that strips comments *and* string literals is
+what produced the counts above; `grep -a` defeats the skip for a quick
+interactive look.
 
 **Inside `wip/` — 159 real sorries in 9 files** (341 `.lean` files
 total):
@@ -314,10 +332,21 @@ A script — `scripts/verify-branch.sh` — that fails on any of:
 1. **Enumerated build.** `lake build` naming every `lean_lib` and every
    `lean_exe` in `lakefile.toml` (parsed from the file, so a new target
    cannot silently escape). Not the bare `lake build` — see §0.1.
-2. **Sorry scan.** The `audit.py` walk over the branch's own modules,
-   with string literals excluded so the two false positives in §0.2 do
-   not fire, and with the §2 exemption list (if (b) is chosen) named
-   explicitly rather than pattern-matched.
+2. **Sorry scan.** A byte-reading walk over the branch's own modules —
+   never `grep`, and never `Path.read_text` either: it raises on invalid
+   UTF-8, and a scan that dies on one file cannot be trusted wholesale
+   even though it fails loudly. Read bytes, decode with
+   `errors="replace"`, strip block comments, line comments **and string
+   literals** (unstripped literals are what produced both false
+   positives in §0.2 *and* the wrong Recorder row). **Fail** if a gated
+   module contains a NUL, since the gate's own evidence would otherwise
+   rest on a file half the toolchain cannot read; report one outside the
+   gate. Name any §2 exemptions explicitly rather than pattern-matching
+   them. If CI greps the build log for `sorry` warnings, that grep needs
+   `-a`. `lean-branch-review` has implemented exactly this in
+   `scripts/core-audit.py` (`9ad0c7f`), negative-tested by injecting a
+   NUL into a core module and confirming exit 1 — take that rather than
+   writing a second one.
 3. **Axiom pins.** The `#guard_msgs`-pinned `#print axioms` in
    `Rewrite/Catalogue.lean` and the FRJ soundness pin. `collectAxioms`
    is the only sound oracle; `native_decide` taints, and
