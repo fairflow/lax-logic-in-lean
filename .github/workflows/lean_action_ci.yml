@@ -28,9 +28,13 @@ jobs:
         run: |
           set -o pipefail
           lake build 2>&1 | tee /tmp/core.log
-          if grep -q "declaration uses \`sorry\`" /tmp/core.log; then
+          # -a: treat the log as text.  A NUL anywhere in it (Lean can echo
+          # source into a warning, and source may legitimately contain one)
+          # makes some grep variants classify the whole file as binary and
+          # report nothing -- the gate would then pass by being blind.
+          if grep -a -q "declaration uses \`sorry\`" /tmp/core.log; then
             echo "::error::a declaration in the core uses 'sorry'"
-            grep "declaration uses \`sorry\`" /tmp/core.log
+            grep -a "declaration uses \`sorry\`" /tmp/core.log
             exit 1
           fi
 

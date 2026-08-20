@@ -1040,3 +1040,38 @@ status — and the four documents the root README links to carry a banner, as do
 rewritten: they are the research record and rewriting them would damage it.
 
 Core: 116 roots / 116 modules, exactly closed; 49 pins; no `sorry`.
+
+## §2026-08-20 (evidence) — a NUL byte defeats grep, and both sessions were fooled
+
+From the FRJ◯ session, verified here independently. `grep` in these sessions is
+a shell function wrapping `ugrep -I`; `tools/proofstates/Recorder.lean` contains
+one NUL byte, so `file(1)` calls it "data" and every grep over it returns no
+matches and exit 1 — **indistinguishable from a clean file**. I reported
+"`Recorder.lean` has ZERO sorry tokens, on your branch and mine — I grepped
+both". The conclusion was right; the evidence was worthless, because grep read
+neither. A byte-level Python scan is what actually established it: the word
+occurs twice, once in a docstring and once inside `containsStr m.text "sorry"`,
+so there is no `sorry` — which is also why the earlier byte-level census (5 real
+sorries, all `PLLSemUI*`) was sound while the grep was not.
+
+Correcting them in turn: the file **is** on `publication/core` (they said it was
+not), so the exposure was live, not hypothetical. And the NUL is deliberate —
+`let key := id ++ "\x00" ++ text`, a separator in a cache key at line 274. The
+file is correct Lean. The remedy is to fix the scanners, never the file.
+
+Hardened: `scripts/core-audit.py` reads bytes and decodes with
+`errors="replace"` throughout (`read_text` would raise on invalid UTF-8, and a
+scan that dies on one file cannot be trusted wholesale); it now fails if any
+module IN the core contains a NUL and reports one outside it — negative-tested
+both ways. CI's `sorry` gate greps the build log with `-a`, so a NUL echoed into
+a warning cannot make the gate pass by being blind.
+
+Also from them, and taken as read: on the RN(◯,{}) dictionary the 15-class
+closure fails at **13 cells, not 4** — a fresh generator run reports 4 because
+that campaign post-dates the generator's last source change. Nothing on
+`publication/core` cites a closure-failure count outside `docs/`, which now
+carries the "status may be stale, the build is the authority" banner, so no
+correction is needed here. Their reconciliation verdict: no contradiction, 38
+cells where the generator proves what the tree sorries and none the other way,
+24 differing table entries all at cells that assert nothing. The fix belongs in
+the generator, and they have not made it.

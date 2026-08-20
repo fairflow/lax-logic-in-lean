@@ -11,7 +11,20 @@ This script checks what Lean cannot see, namely the *boundary* of the core:
   2. no module reachable from `Core.lean` imports a module belonging to a
      trimmed campaign (a campaign whose terminal result is OPEN);
   3. every module reachable from `Core.lean` carries a module docstring;
-  4. no module reachable from `Core.lean` contains a `sorry`.
+  4. no module reachable from `Core.lean` contains a `sorry`;
+  5. no `.lean` file in the repository contains a NUL byte.
+
+Check 5 is about the TOOLING, not the mathematics.  A file containing a NUL
+is classified as binary by `file(1)`, by `ugrep -I`, and by grep variants
+that skip binary input, so every grep over it returns no matches and exit 1
+-- indistinguishable from a clean file.  A `sorry` in such a file is
+invisible to any grep-based gate, and so is anything else.  This script
+reads bytes and decodes with `errors="replace"`, so it is not itself
+fooled; the check exists to warn that other tools will be.  A NUL can be
+entirely legitimate (`tools/proofstates/Recorder.lean` uses one as a
+separator in a cache key), so a file outside the core is REPORTED, not
+failed; inside the core it fails, because the gate's own evidence would
+then depend on a file that half the toolchain cannot read.
 
 Run `scripts/core-audit.py` for a report, `--check` to exit non-zero on
 any failure (this is what CI runs).
@@ -86,11 +99,24 @@ def module_path(mod: str) -> Path | None:
     return p if p.is_file() else None
 
 
+def read(path: Path) -> str:
+    """Read a source file at BYTE level.
+
+    Never `read_text`: it raises on invalid UTF-8, and a scan that dies on
+    one file is a scan whose result cannot be trusted wholesale.  Decoding
+    with `errors="replace"` means a damaged or unusual byte degrades one
+    character rather than the whole audit."""
+    return path.read_bytes().decode("utf-8", errors="replace")
+
+
+def has_nul(path: Path) -> bool:
+    return b"\x00" in path.read_bytes()
+
+
 def imports_of(path: Path) -> list[str]:
     """Imports of a file.  Comments are stripped first: a docstring line
     that happens to begin with the word `import` is prose, not an import."""
-    return IMPORT_RE.findall(
-        strip_comments_and_strings(path.read_text(encoding="utf-8")))
+    return IMPORT_RE.findall(strip_comments_and_strings(read(path)))
 
 
 def is_trimmed(mod: str) -> bool:
@@ -122,7 +148,7 @@ def closure(roots: list[str]) -> tuple[dict[str, Path], dict[str, str]]:
 def has_module_docstring(path: Path) -> bool:
     """True if the file opens with a `/-! ... -/` module docstring or a
     `/- ... -/` header comment, before or just after the import block."""
-    text = path.read_text(encoding="utf-8")
+    text = read(path)
     # Strip the import block and any blank lines, then look at what starts the file.
     stripped = re.sub(r"^(?:import [^\n]*\n|\s*\n)+", "", text, count=1)
     head = stripped[:400]
@@ -164,12 +190,27 @@ def main() -> int:
 
     # 4. No sorry.
     for mod, path in sorted(mods.items()):
-        code = strip_comments_and_strings(path.read_text(encoding="utf-8"))
+        code = strip_comments_and_strings(read(path))
         if SORRY_RE.search(code):
             failures.append(f"sorry: {mod} ({path.relative_to(ROOT)}) contains a sorry")
 
+    # 5. NUL bytes: a hazard to every grep-based tool, in or out of the core.
+    nul_core, nul_other = [], []
+    for p in sorted(ROOT.rglob("*.lean")):
+        if ".lake" in p.parts or not has_nul(p):
+            continue
+        rel = str(p.relative_to(ROOT))
+        (nul_core if p in set(mods.values()) else nul_other).append(rel)
+    for rel in nul_core:
+        failures.append(f"nul: {rel} is IN THE CORE and contains a NUL byte -- "
+                        f"grep-based tools skip it silently")
+
     print(f"core-audit: {len(roots)} roots in Core.lean, "
           f"{len(mods)} modules in the closure")
+    for rel in nul_other:
+        print(f"core-audit: NOTE {rel} contains a NUL byte; it is outside the "
+              f"core, but grep over it returns no matches and exit 1, so do "
+              f"not certify it with grep")
     if failures:
         print(f"core-audit: {len(failures)} FAILURE(S)")
         for f in failures:

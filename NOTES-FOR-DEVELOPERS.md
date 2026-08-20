@@ -180,10 +180,32 @@ shell.
   rebuilds with the log captured, because Lean only *warns* on `sorry` and the
   build alone would not catch a reintroduced one.
 
-Two traps worth writing down. A backgrounded `lake build … | tail` reports exit
-code 0 because the *last* command in the pipeline succeeded — capture
-`LAKE_EXIT=$?` into the log and grep for it. And in a fresh Claude worktree, run
-`cp -Rc <repo-root>/.lake .lake` (APFS clone, instant) before building.
+Three traps worth writing down.
+
+**`lake build` does not build the repository.** It builds `defaultTargets`,
+which here is `Core` alone — so `BiLax` and the executables went unbuilt, and a
+break in one of them passed CI. That is why `scripts/all-targets.py` exists and
+why CI builds each declared target by name. Found by the FRJ◯ session, whose
+exposure was larger: with `defaultTargets = ["LaxLogic"]` and 103 executables, a
+syntax error survived an 8,676-job "successful" build.
+
+**A NUL byte makes a file invisible to grep.** `tools/proofstates/Recorder.lean`
+contains one — deliberately, as a separator in a cache key (`let key := id ++
+"\x00" ++ text`). `file(1)` therefore calls it "data", and `ugrep -I` and other
+grep variants skip binary input, so *every* grep over that file returns no
+matches and exit 1 — indistinguishable from a clean file. Two sessions
+independently certified it "no `sorry`" by grepping it, and neither had read a
+byte of it. Any scan that is evidence for a claim must read bytes and decode
+with `errors="replace"`, and strip comments *and string literals* before
+matching — the word `sorry` appears in that file twice, in a docstring and
+inside `containsStr m.text "sorry"`, and neither is a `sorry`.
+`scripts/core-audit.py` now does all of this, fails if a NUL appears inside the
+core, and reports one outside it.
+
+**A backgrounded `lake build … | tail` reports exit code 0** because the last
+command in the pipeline succeeded — append `LAKE_EXIT=$?` to the log and grep
+for that. And in a fresh Claude worktree, run `cp -Rc <repo-root>/.lake .lake`
+(APFS clone, instant) before building.
 
 ## 6. Where the rest of the record lives
 
