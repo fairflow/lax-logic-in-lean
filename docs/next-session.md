@@ -1,3 +1,28 @@
+# THE DICTIONARY MODULE (2026-08-20): `LaxLogic/RN/Reps.lean`
+
+The fifteen RN(◯,{}) representatives now have ONE stable home outside
+`wip/`.  Before this they were transcribed FIVE times — `wip/rho_order`,
+`wip/rnDict`, `wip/rnBank`, `wip/closed_frag`, `wip/rnc_probe` — all in
+agreement (verified by diff) with nothing enforcing it.
+
+**The append-only rule: `qk` never changes meaning.**  New classes take
+new indices at the end; a representative found to be wrong gets a NEW
+index and the old one stays, deprecated in place.  That is what makes the
+module safe under concurrent sessions: a certificate pinned against `q10`
+cannot be invalidated by anyone else's append, and two sessions can
+extend the dictionary at once without conflicting away from the tail.
+
+**Not yet done, by Matthew's decision (land on this branch only):** the
+five `wip/` copies are UNTOUCHED.  They should import `RNReps` and delete
+their own definitions, but that touches files peer sessions are working
+in, so it waits for him to merge and coordinate.
+
+`lake exe frjcert` now imports only `FRJ.Search.Pin` and
+`LaxLogic.RN.Reps` — nothing from `wip/` — and the generated certificates
+do the same.
+
+---
+
 # PENDING (2026-08-20): the route-B derivation emitter
 
 **Not implemented, by Matthew's decision on 2026-08-20 — do not build it
