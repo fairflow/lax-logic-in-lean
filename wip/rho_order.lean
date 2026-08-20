@@ -43,6 +43,7 @@ import LaxLogic.PLLSearch
 import LaxLogic.PLLConfluentComplete
 import LaxLogic.PLLSearchConf
 import Rewrite
+import LaxLogic.RN.Reps
 
 /-! ## The sweep's machinery, transcribed
 
@@ -67,22 +68,11 @@ battery" / "positive tiers" / "rooted 5-world battery", unchanged, in
 namespace `PLLND.RNC.CF` instead of `PLLND.RNC`.  `confB` and the
 certificate theorems come from the library, `LaxLogic/PLLSearchConf.lean`.) -/
 
-/-- The 15 PLL representatives of wip/rnDict.lean. -/
-def q0 : PLLFormula := .falsePLL
-def q1 : PLLFormula := (.ifThen q0 q0)
-def q2 : PLLFormula := (.somehow q0)
-def q3 : PLLFormula := (.ifThen q2 q0)
-def q4 : PLLFormula := (.or q2 q3)
-def q5 : PLLFormula := (.somehow q3)
-def q6 : PLLFormula := (.ifThen q3 q0)
-def q7 : PLLFormula := (.or q3 q6)
-def q8 : PLLFormula := (.ifThen q5 q4)
-def q9 : PLLFormula := (.or q5 q6)
-def q10 : PLLFormula := (.ifThen q6 q2)
-def q11 : PLLFormula := (.or q6 q10)
-def q12 : PLLFormula := (.somehow q7)
-def q13 : PLLFormula := (.somehow q8)
-def q14 : PLLFormula := (.ifThen q10 q5)
+/-! The fifteen RN(◯,{}) representatives, from the shared dictionary
+`LaxLogic/RN/Reps.lean` (append-only: `qk` never changes meaning).  This
+`export` re-exports the SAME constants under this namespace, so every
+existing reference keeps working and there is no second copy. -/
+export RNReps (q0 q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14)
 
 /-- The four closure witnesses (wip/rnDictRefute.lean). -/
 def w15 : PLLFormula := q8.and q10
