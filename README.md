@@ -54,10 +54,11 @@ rules are introduction and a Moggi-style bind:
    Γ ⊢ ◯φ                            Γ ⊢ ◯ψ
 ```
 
-Throughout, `Deriv Γ φ := Nonempty (LaxND Γ φ)` is what "PLL proves `Γ ⊢ φ`"
-means, `Γ ⊢- φ` is the *type* of derivations, and `Γ ⊬ φ` is underivability.
-`hd_iff_ND` (F&M Theorem 2.3) proves the Hilbert presentation above and this
-natural deduction agree.
+Throughout, the sequent is written `Γ ⊢ φ`, and `Γ ⊬ φ` when it fails. In Lean,
+`Γ ⊢- φ` (`LaxND Γ φ`) is the *type* of derivations; `Deriv Γ φ`, its
+inhabitedness, is the `Prop`-level form of `Γ ⊢ φ`; and `⊬` is notation for
+`Underivable`. `hd_iff_ND` (F&M Theorem 2.3) proves the Hilbert presentation
+above and this natural deduction agree.
 
 **Semantics.** A *constraint model* ([`LaxLogic/PLLKripke.lean`](LaxLogic/PLLKripke.lean))
 is a Kripke structure `(W, Rᵢ, Rₘ, F, V)` with two preorders — `Rᵢ` for

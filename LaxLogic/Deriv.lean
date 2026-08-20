@@ -4,12 +4,18 @@ import LaxLogic.PLLConsequence
 /-!
 # `Deriv` — derivability as a `Prop`, with the rules lifted to it
 
+The sequent is written `Γ ⊢ φ`, and `Γ ⊬ φ` when it fails.  In Lean,
 `Γ ⊢- φ` (`LaxND Γ φ`) is the *type* of natural-deduction derivations;
-`Deriv Γ φ` is its inhabitedness, i.e. the proposition "PLL proves
-`Γ ⊢ φ`".  It is the positive counterpart of `Γ ⊬ φ` (`Underivable`,
-`PLLNDCore.lean`), which is literally its negation, and it is the form
-in which derivability is stated wherever a `Prop` is wanted rather than
-a term.
+`Deriv Γ φ` is its inhabitedness, which is the `Prop`-level form of
+`Γ ⊢ φ` and the positive counterpart of `Underivable` (`⊬`,
+`PLLNDCore.lean`) — literally its negation.  Use it wherever a `Prop` is
+wanted rather than a derivation term.
+
+Note the asymmetry: `⊬` is real Lean notation, `⊢` is not (the infix
+`⊢-` denotes the derivation *type*, not the proposition).  Declaring a
+term-level `⊢` would collide with the `at h ⊢` location syntax used
+throughout the tactic proofs, so the positive side stays spelled
+`Deriv`.
 
 The rest of the file lifts each `LaxND` constructor to `Deriv`, plus
 `toHead` (weaken a one-hypothesis derivation) and `cutHead` (cut against
