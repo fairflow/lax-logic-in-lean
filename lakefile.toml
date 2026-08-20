@@ -585,3 +585,8 @@ root = "wip.frjo_screen"
 [[lean_exe]]
 name = "frjodemo"
 root = "wip.frjo_demo"
+
+# Route B: the derivation-preserving extractor (route A is `rnpin`).
+[[lean_exe]]
+name = "frjderive"
+root = "wip.frj_derive"
