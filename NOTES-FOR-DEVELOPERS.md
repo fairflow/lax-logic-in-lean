@@ -132,6 +132,18 @@ would exist for, and none of this material needs one yet.
 differential oracle. That file is on the development branches, not here, and the
 docstring says so.
 
+**Known gap: the search cannot be invoked from a command line on this branch.**
+The library came; the drivers did not. `rnfrj`, `rnpin`, `frjderive` and
+`frjcert` — including the "sequent in, Lean-checked certificate out, one
+command" path — are all rooted in `wip/`, and all four import
+`wip/rnBank.lean`, a *generated* corpus produced from `wip/rnDict.lean`, which
+is the unfinished dictionary that keeps `Rewrite/` out. So promoting a driver as
+it stands would drag the unfinished rule data back in. The clean fix, for
+whoever does the next re-sync: split `frjcert`'s sequent-driven path from its
+bank-driven one, and promote only the former as `FRJ/Cert.lean` with a
+`frjcert` executable. Until then the search is usable from Lean but not from a
+shell.
+
 ## 4. Re-admitting a campaign
 
 1. Finish its terminal result: sorry-free, `#guard_msgs`-pinned, axioms within
