@@ -1,3 +1,59 @@
+# PENDING (2026-08-20): the route-B derivation emitter
+
+**Not implemented, by Matthew's decision on 2026-08-20 — do not build it
+without asking him first.**
+
+There are two extraction routes off one FRJ(◯) search.
+
+* **Route A (fast, wired end to end).** `lake exe frjcert "<sequent>"`
+  parses the sequent, searches, keeps `modR r.der`, minimises, writes a
+  self-contained certificate plus a labelled SVG, and RUNS `lake env
+  lean` on the certificate, reporting Lean's own exit code and
+  `#print axioms` output.  The certificate is a finite `Search.Tab`,
+  frame check and refutation by `decide`, consumed by
+  `FRJ.not_entails_of_countermodel`.  It never mentions
+  `FRJ.soundness`.
+
+* **Route B (derivation-preserving, PARTIAL).** `lake exe frjderive
+  <cell> <→|←> [rounds] [--tree]` keeps the ROW rather than the model.
+  A row with `rhs = G` is a witness for
+
+      Provable G := ∃ t Γ, Nonempty (FRJr G t Γ G)
+
+  and `FrjDerive.provable_of_hitRow` proves exactly that
+  (`[propext, Quot.sound]`).  `sizeR`/`sizeI` and `renderR`/`renderI`
+  are structural — they recurse through the join constructors'
+  `∀ j : Fin (n+1), FRJi …` premise families, so there is no fuel and
+  no cap.  Measured on `cAnd_10_13←`: derivation size 25.
+
+**What is missing** is only the last step: emitting the `FRJr` term as
+Lean source so the kernel typechecks the DERIVATION and the refutation
+goes through `FRJ.soundness` (via `not_derivable_of_provable` /
+`not_entails_of_provable`, both already in `FRJ/Bridge.lean`) instead of
+through the semantic bridge.  Feasibility was established before the
+work was stopped:
+
+* every side condition of every constructor is decidable — `isPrime`,
+  `∈ sfR G`, (J1), (J2), `hcirc`, `hFnot`, `hC`, `hJ5`/`hJ7s` via
+  `decClo`, `htag` via `decCovers`, `classForce`, and all the `Fin`
+  quantifiers;
+* the one exception is the context equation `Γ ≐ Δ := ∀ x, x ∈ Γ ↔ x ∈ Δ`,
+  which quantifies over all of `Form` and is NOT `decide`-able — it
+  discharges instead as `CtxEq.of_subset (by decide) (by decide)`
+  (`FRJ/Basic.lean:1084`), since `⊆` on concrete lists is decidable;
+* 25 nodes is small enough that source emission is economical.
+
+The open design question is how to emit the join constructors' premise
+families (`![…]` / `Fin.cons`, and whether the dependent motive is
+inferred), which is why this wants a session rather than a patch.
+
+**Separate idea, also Matthew's, also unbuilt:** the q-numbering of the
+RN(◯,{}) representatives is arbitrary.  It would be better if the
+subscripts were arithmetic — some index that computes rather than a
+serial number assigned in discovery order.
+
+---
+
 # LIVE THREAD (2026-08-13): the DISPROOF investigation
 
 **FRJ◯ (2026-08-17): PAUSED at `completeness_of_supply`** (conditional
