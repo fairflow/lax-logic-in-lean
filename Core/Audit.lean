@@ -181,7 +181,7 @@ namespace Core.Audit
 #guard_msgs in
 #print axioms PLLND.BeliefReal.derivable_iff_no_realP_refutation
 
-/-! ## 13. `FRJ(G)` for IPC -/
+/-! ## 13. `FRJ(G)` for IPC, and the `FRJ(◯)` bridge and search -/
 
 /-- info: 'FRJ.soundness' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
@@ -194,6 +194,44 @@ namespace Core.Audit
 /-- info: 'FRJ.frj_iff_not_IPL' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms FRJ.frj_iff_not_IPL
+
+/-! `FRJ.Bridge`: the calculus's own syntax and model are isomorphic to the
+development's, so a refutation it finds is a statement about `LaxND`.  The
+two isomorphism halves need only `propext`, and the semantic transfer needs
+nothing at all. -/
+
+/-- info: 'FRJ.toPLL_ofPLL' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms FRJ.toPLL_ofPLL
+
+/-- info: 'FRJ.ofPLL_toPLL' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms FRJ.ofPLL_toPLL
+
+/-- info: 'FRJ.force_toConstraint' does not depend on any axioms -/
+#guard_msgs in
+#print axioms FRJ.force_toConstraint
+
+/-- info: 'FRJ.not_derivable_of_countermodel' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms FRJ.not_derivable_of_countermodel
+
+/-- info: 'FRJ.not_interd_of_provable' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms FRJ.not_interd_of_provable
+
+/-! `FRJ.Search`: discovery is untrusted, so what is pinned is the PINNING
+layer -- the map from a finite table to a `Kripke` model, whose frame
+conditions are part of the data, and the minimiser that keeps the final
+`decide` affordable. -/
+
+/-- info: 'FRJ.Search.Tab.toKripke' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms FRJ.Search.Tab.toKripke
+
+/-- info: 'FRJ.Search.Tab.minimise' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms FRJ.Search.Tab.minimise
 
 /-! ## 14. `Reject` — refutation as positive derivation, for PLL -/
 

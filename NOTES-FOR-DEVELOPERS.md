@@ -87,23 +87,50 @@ development branches and in history; nothing is lost.
 | `wip/` | 333 modules, ~130k lines | probes, screens and certificate banks — never results |
 | ~95 probe `lean_exe` targets | — | every executable rooted in `wip.*` |
 | `Rewrite/` | 4 modules | `Catalogue.lean` imports `wip.rnDict`, which has **91 `sorry` tokens and four refuted cells**. The mechanism is finished; the rule data is not, so this one cannot return until the dictionary does |
-| `FRJO/` | 6 modules, 811 lines | removed only because `FRJO/Core.lean` imports `wip.ljfo_unravel`. See below — it is recoverable cheaply |
+| `FRJO/` | 6 modules, 811 lines | superseded. See below |
 
 Surviving targets: libraries `Core`, `LaxLogic`, `BiLax`, `Reject`, `Meta`,
 `FRJ`, `proofstates`; executables `bilaxscreen`, `laxrun`, `pstates`.
 
-### FRJ◯ is recoverable with one hoist
+### FRJ◯, and the folder that is not it
 
-Measured, not estimated. `FRJO/` is **sorry-free** across all six files. Its
-terminal theorem `completenessFRJO` is proved and pinned at `[propext,
-Classical.choice, Quot.sound]`, but *conditional* on `Reconstruction b` (W5),
-an explicit `Prop` in `FRJO/Complete.lean` that is never discharged — so the
-result is OPEN while the machinery is finished. Its only `wip` dependency is
-`wip/ljfo_unravel.lean` (262 lines, sorry-free), which imports **no other `wip`
-module**: it is a leaf. Moving that one file to `LaxLogic/LJFOUnravel.lean`,
-beside its siblings `LJFOSearch` and `LJFOBridge`, makes `FRJO/` `wip`-free and
-restores it as a buildable library outside `Core`. That is the same hoist
-pattern as §2, at one file.
+**`FRJ◯` is a calculus; `FRJO/` was a folder.** Note `◯ ≠ O`. The name
+collision is unfortunate and the two must not be conflated: the live
+development of the FRJ◯ calculus is written over `FRJ/`, and `FRJO/` is the
+older attempt, now superseded and off this branch.
+
+What is here, imported 2026-08-20 from `claude/frj-redevelopment-69005f` at
+`ccb472c663d7988cf6ab9b72428cb9069294003f`:
+
+| file | lines | what |
+|---|---|---|
+| `FRJ/Bridge.lean` | 165 | `ofPLL`/`toPLL` isomorphism, `Kripke.toConstraint`, and `not_derivable_of_countermodel : ¬ K.valid (ofPLL φ) → [] ⊬ φ` |
+| `FRJ/Search/Engine.lean` | 657 | the forward-saturation engine, derivation-carrying (a hit IS a derivation) |
+| `FRJ/Search/Fast.lean` | 308 | same closure, three exact cuts |
+| `FRJ/Search/Pin.lean` | 227 | `Tab.toKripke?` and `minimise`: a discovery becomes a kernel-checkable countermodel |
+
+All four are sorry-free and **unconditional**, and depend only on modules
+already in `Core` (`FRJ.Sound`, `FRJ.Calculus`, `LaxLogic.PLLKripke`), so they
+went straight into `Core` §13 rather than into any weaker tier. Seven pins were
+added to `Core/Audit.lean` §13 — harvested from the build, not written from
+memory, which is what the first passing build verifies.
+
+**This is a snapshot, and the engine is still being built.** To re-sync, diff
+the source branch against the recorded commit and take what is new:
+
+```
+git diff ccb472c663d7988cf6ab9b72428cb9069294003f..<newer> -- FRJ/
+```
+
+Then re-harvest the §13 pins (`lake env lean` on a scratch file importing
+`Core`) rather than assuming they are unchanged, and update the commit recorded
+above. If a later revision of the engine acquires a `sorry` or a hypothesis it
+does not discharge, it does not belong in `Core`: that is the case a third tier
+would exist for, and none of this material needs one yet.
+
+`FRJ/Search/Engine.lean` is a port of `wip/frj_sat.lean`, which stays the frozen
+differential oracle. That file is on the development branches, not here, and the
+docstring says so.
 
 ## 4. Re-admitting a campaign
 

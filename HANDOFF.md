@@ -962,3 +962,42 @@ his decision.
 
 Also fixed here: a pre-existing misplacement in `lakefile.toml`, where the `FRJ`
 comment sat above the `Meta` target.
+
+## §2026-08-20 (FRJ◯) — the live refutation engine admitted to Core
+
+Correction of record, from Matthew: **FRJ◯ is the calculus, not the folder.
+`◯ ≠ O`.** The current development of FRJ◯ is written over `FRJ/`; `FRJO/` is
+the older attempt and is superseded. The plan in the previous section — hoist
+`wip/ljfo_unravel.lean` and restore `FRJO/` behind a third tier — was aimed at
+the wrong material and was not carried out.
+
+Imported instead, from `claude/frj-redevelopment-69005f` at
+`ccb472c663d7988cf6ab9b72428cb9069294003f`: `FRJ/Bridge.lean` (165) and
+`FRJ/Search/{Engine,Fast,Pin}.lean` (657 + 308 + 227). All four are sorry-free,
+**unconditional**, and import only modules already in `Core` — `FRJ.Sound`,
+`FRJ.Calculus`, `LaxLogic.PLLKripke`. No `wip`, no `FRJO`, no `Rewrite`.
+
+So no hoist was needed and no third tier was needed: the material went straight
+into `Core` §13, which is now "`FRJ(G)` and `FRJ(◯)`". Seven pins added to
+`Core/Audit.lean` §13, harvested by `lake env lean` on a scratch file importing
+`Core` and confirmed by the first passing build:
+
+    FRJ.toPLL_ofPLL                      [propext]
+    FRJ.ofPLL_toPLL                      [propext]
+    FRJ.force_toConstraint               (no axioms)
+    FRJ.not_derivable_of_countermodel    [propext, Quot.sound]
+    FRJ.not_interd_of_provable           [propext, Quot.sound]
+    FRJ.Search.Tab.toKripke              [propext, Quot.sound]
+    FRJ.Search.Tab.minimise              [propext, Quot.sound]
+
+Core is 115 roots / 115 modules, still exactly closed; 49 pins.
+
+The third tier remains a live option but has no occupant that needs it today:
+its candidates were FRJ◯-over-`FRJO/` (superseded) and the LJF◯ tail
+(sorry-free, conditional on `CimpAnt`, already outside `Core`). Build it when a
+revision of the engine arrives carrying an undischarged hypothesis.
+
+**Re-sync is expected — the engine is still being built.** The recipe is in
+`NOTES-FOR-DEVELOPERS.md` §3: diff `FRJ/` against the recorded commit, take what
+is new, re-harvest the §13 pins rather than assuming they hold, and update the
+recorded commit.

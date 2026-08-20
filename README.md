@@ -157,8 +157,9 @@ gets uniform interpolation for IPC out of the same machinery.
 
 Two refutation calculi complete the picture, both of which derive *counter*models
 positively rather than searching for them: `FRJ(G)` for IPC, after Fiorentini and
-Ferrari (ACM TOCL **21**(3), 2020), and `Reject` for PLL, after their JLC 2021
-S4 model-generation calculus.
+Ferrari (ACM TOCL **21**(3), 2020) — extended here to `FRJ(◯)` for the lax
+modality — and `Reject` for PLL, after their JLC 2021 S4 model-generation
+calculus.
 
 ## 4. A reading order
 
@@ -219,8 +220,15 @@ match [`Core.lean`](Core.lean) and [`Core/Audit.lean`](Core/Audit.lean).
     [`LaxLogic/PLLRealCompleteness.lean`](LaxLogic/PLLRealCompleteness.lean) —
     `derivable_iff_no_realP_refutation`: a sequent is derivable exactly when no
     presented-strategy realisability structure refutes it.
-13. **`FRJ(G)` for IPC.** [`FRJ/`](FRJ) — `soundness`, `completeness`,
-    `frj_iff_not_IPL`. No modality; independent of everything above.
+13. **`FRJ(G)` for IPC, and `FRJ(◯)`.** [`FRJ/`](FRJ) — `soundness`,
+    `completeness`, `frj_iff_not_IPL` for the intuitionistic base case, and
+    `FRJ/Modal.lean` for the extension by `◯`. `FRJ/Bridge.lean` proves the
+    calculus's own syntax and model isomorphic to `PLLFormula` and
+    `ConstraintModel`, so `not_derivable_of_countermodel` reads a refutation
+    it finds as `Γ ⊬ φ` in the development's own terms rather than in a
+    private copy of the logic. `FRJ/Search/` is the forward-saturation engine
+    over it: discovery is untrusted, but a hit builds a finite model that
+    `Tab.toKripke?` and `decide` re-check in the kernel.
 14. **`Reject` for PLL.** [`Reject/`](Reject) — `not_laxND_of_built` (the
     constructors are sound: a built countermodel certifies `Γ ⊬ ψ`) and
     `built_iff_of_reduced` (they are complete: if a sequent has a finite reduced

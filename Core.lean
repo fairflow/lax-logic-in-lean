@@ -181,12 +181,24 @@ import LaxLogic.BeliefFalsum
 import LaxLogic.BeliefOpenClosed
 import LaxLogic.BeliefRealisability
 
-/- ## 13. `FRJ(G)` — refutation as positive derivation, for IPC
+/- ## 13. `FRJ(G)` and `FRJ(◯)` — refutation as positive derivation
 
 Fiorentini and Ferrari's forward refutation calculus (TOCL 21(3), 2020;
 arXiv:1804.06689), formalised faithfully: soundness, completeness, and
-`frj_iff_not_IPL`.  No modality — this is the intuitionistic base case,
-independent of everything above. -/
+`frj_iff_not_IPL`.  `FRJ.Modal` extends it with `◯`.
+
+`FRJ.Bridge` connects the two syntaxes: `FRJ/` carries its own `Form` and
+its own `Kripke` structure, written to follow Fiorentini-Ferrari, and the
+bridge proves them isomorphic to `PLLFormula` and a forgetful image in
+`ConstraintModel`, so that a refutation the calculus finds is a statement
+about THIS development's judgments -- `not_derivable_of_countermodel`
+delivers `Γ ⊬ φ`.
+
+`FRJ.Search` is the forward-saturation engine over that calculus, with a
+faster equivalent and a pinning layer.  Discovery is untrusted, as the
+repo's discipline requires; what makes a hit usable is that the model is
+finite and concrete, so `Tab.toKripke?` plus `decide` re-checks the
+refutation in the kernel without replaying the search. -/
 import FRJ.Basic
 import FRJ.Model
 import FRJ.Calculus
@@ -199,6 +211,10 @@ import FRJ.Saturate
 import FRJ.Erase
 import FRJ.Extract
 import FRJ.Complete
+import FRJ.Bridge
+import FRJ.Search.Engine
+import FRJ.Search.Fast
+import FRJ.Search.Pin
 import FRJ.Audit
 
 /- ## 14. `Reject` — refutation as positive derivation, for PLL
