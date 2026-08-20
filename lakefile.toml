@@ -24,7 +24,8 @@ rev = "v4.31.0"
 # including their sorry-free parts: the semantic UI route, the G4c UI
 # tower, the polarised/focusing programme, LJF-circle, FRJO, BiLax and the
 # Rewrite catalogue.  They are untouched on this branch and buildable by
-# name (`lake build LaxLogic`); README.md says where each one stands.
+# name (`lake build LaxLogic`); NOTES-FOR-DEVELOPERS.md says where each
+# one stands.
 [[lean_lib]]
 name = "Core"
 globs = ["Core", "Core.Audit"]

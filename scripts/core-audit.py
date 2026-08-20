@@ -69,6 +69,15 @@ IMPORT_RE = re.compile(r"^import\s+([A-Za-z0-9_.]+)", re.M)
 SORRY_RE = re.compile(r"(?<![A-Za-z0-9_.])sorry(?![A-Za-z0-9_])")
 
 
+def strip_comments_and_strings(text: str) -> str:
+    """Crude but adequate: remove block comments, line comments and string
+    literals, so `sorry` inside prose does not count as a `sorry`."""
+    text = re.sub(r"/-.*?-/", " ", text, flags=re.S)
+    text = re.sub(r"--[^\n]*", " ", text)
+    text = re.sub(r'"(?:[^"\\]|\\.)*"', '""', text, flags=re.S)
+    return text
+
+
 def module_path(mod: str) -> Path | None:
     """Repo file for a module name, or None if the module is external."""
     p = ROOT / (mod.replace(".", "/") + ".lean")
@@ -76,23 +85,36 @@ def module_path(mod: str) -> Path | None:
 
 
 def imports_of(path: Path) -> list[str]:
-    return IMPORT_RE.findall(path.read_text(encoding="utf-8"))
+    """Imports of a file.  Comments are stripped first: a docstring line
+    that happens to begin with the word `import` is prose, not an import."""
+    return IMPORT_RE.findall(
+        strip_comments_and_strings(path.read_text(encoding="utf-8")))
 
 
-def closure(roots: list[str]) -> dict[str, Path]:
-    """Transitive import closure, restricted to modules that are repo files."""
+def is_trimmed(mod: str) -> bool:
+    return mod.startswith(TRIMMED_PREFIXES) or mod in TRIMMED_MODULES
+
+
+def closure(roots: list[str]) -> tuple[dict[str, Path], dict[str, str]]:
+    """Transitive import closure, restricted to modules that are repo files.
+
+    Also returns, for each module, the module that first reached it — or
+    `Core.lean` for a root.  That is what names the culprit when a trimmed
+    module turns out to be reachable."""
     seen: dict[str, Path] = {}
-    stack = list(roots)
+    via: dict[str, str] = {}
+    stack = [(mod, "Core.lean") for mod in roots]
     while stack:
-        mod = stack.pop()
+        mod, parent = stack.pop()
         if mod in seen:
             continue
         p = module_path(mod)
         if p is None:          # Mathlib, Batteries, core: not ours to audit
             continue
         seen[mod] = p
-        stack.extend(imports_of(p))
-    return seen
+        via[mod] = parent
+        stack.extend((imp, mod) for imp in imports_of(p))
+    return seen, via
 
 
 def has_module_docstring(path: Path) -> bool:
@@ -103,15 +125,6 @@ def has_module_docstring(path: Path) -> bool:
     stripped = re.sub(r"^(?:import [^\n]*\n|\s*\n)+", "", text, count=1)
     head = stripped[:400]
     return head.startswith("/-!") or head.startswith("/-\n") or head.startswith("/- ")
-
-
-def strip_comments_and_strings(text: str) -> str:
-    """Crude but adequate: remove block comments, line comments and string
-    literals, so `sorry` inside prose does not count as a `sorry`."""
-    text = re.sub(r"/-.*?-/", " ", text, flags=re.S)
-    text = re.sub(r"--[^\n]*", " ", text)
-    text = re.sub(r'"(?:[^"\\]|\\.)*"', '""', text, flags=re.S)
-    return text
 
 
 def main() -> int:
@@ -127,17 +140,19 @@ def main() -> int:
         return 2
 
     roots = imports_of(core)
-    mods = closure(roots)
+    mods, via = closure(roots)
 
     failures: list[str] = []
 
-    # 1 + 2. Boundary: nothing trimmed, nothing from wip/, is reachable.
-    for mod, path in sorted(mods.items()):
-        for imp in imports_of(path):
-            if imp.startswith(TRIMMED_PREFIXES) or imp in TRIMMED_MODULES:
-                failures.append(
-                    f"boundary: {mod} ({path.relative_to(ROOT)}) imports "
-                    f"trimmed/wip module {imp}")
+    # 1 + 2. Boundary: no trimmed module and no wip/ module is REACHABLE.
+    # Tested on the closure itself, not on the imports of its members: a
+    # trimmed module added straight to Core.lean has no core importer, and
+    # an import-level test would let it through.
+    for mod in sorted(mods):
+        if is_trimmed(mod):
+            failures.append(
+                f"boundary: trimmed/wip module {mod} is reachable "
+                f"(imported by {via[mod]})")
 
     # 3. Documentation.
     undocumented = [mod for mod, path in sorted(mods.items())

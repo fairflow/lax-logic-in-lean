@@ -113,7 +113,7 @@ anything.
 | `LaxND` | natural deduction — **the** reference | `PLLNDCore` |
 | `Tm` | the term calculus for `LaxND` | `PLLTerms` |
 | `SC` | F&M's cut-free sequent calculus (Iemhoff's `G3iLL`) | `PLLSequent` |
-| `G4` | Iemhoff's contraction-free `G4iLL`, transcribed | `PLLG4` |
+| `G4` | Iemhoff's contraction-free `G4iLL`, transcribed; **incomplete for PLL** | `PLLG4` |
 | `G4c` | the repaired contraction-free calculus | `PLLG4H*` |
 
 The equivalences are theorems, not conventions:
@@ -265,38 +265,28 @@ Three verdicts are kept rigidly distinct throughout:
 
 ## 6. What is deliberately not here
 
-The repository holds parallel campaigns accumulated over months. Several are
-parked mid-flight, and the criterion for this branch is *per campaign, not per
-file*: if a sequence of files aims at a result that was never reached, the whole
-sequence is out, including its sorry-free members. They are untouched on this
-branch — `lake build LaxLogic` still builds the full working library — and
-completed work can be re-admitted later as its own clean sequence.
+**Uniform interpolation for PLL is OPEN.** It is not claimed anywhere in this
+development, and nothing above depends on it. Three routes towards it have been
+tried — semantic, after Litak and Visser; syntactic, through the `G4c` tower;
+and through focused search — and none has reached the result.
 
-**Uniform interpolation for PLL is OPEN and is not claimed here.** Three routes
-to it are parked: the semantic route after Litak–Visser (the `PLLSemUI*`
-cluster, which carries the only `sorry`s outside `wip/`), the syntactic route
-through the `G4c` tower (`PLLG4UI*`), and the minimality tail of the focused
-route (`LaxLogic/LJFO.lean` and `FRJO/`, where the remaining results are
-conditional on a typed obligation `CimpAnt` that has not been discharged).
+What those attempts produced *on the way* is here, because it stands on its own:
+focalization for PLL and uniform interpolation for IPC (§4 step 15). A programme
+that misses its goal does not retract the theorems it proved en route. The rule
+for this build is that a result is admitted exactly when its own dependencies
+are finished, never on the strength or the failure of the programme it was
+written for.
 
-What those routes produced *on the way* is in the core, because it stands on its
-own: focalization for PLL and uniform interpolation for IPC (§4 step 15). A
-campaign failing to reach its goal does not retract the theorems it proved en
-route, and the core admits any such theorem whose own import closure is
-finished — which is the whole point of keeping shared definitions out of
-campaign files (see `LaxLogic/Deriv.lean` and `LaxLogic/Bisim.lean`).
-
-Also out: `BiLax/`, whose bi-lax calculus, soundness and refutation pipeline are
-proved but whose duality bridge was never attempted; and `Rewrite/`, a certified
-simpset whose mechanism is finished but whose rule data is not (of 323 dictionary
-cells, 236 are proved, 87 carry `sorry`, and four are refuted).
-
-`wip/` is campaign material, outside the core by construction. Its files are
-probes, screens and certificate banks, not results. The standing handover is
-[`HANDOFF.md`](HANDOFF.md); the live threads are
-[`docs/next-session.md`](docs/next-session.md).
+More generally, what is here is what is finished. Results conditional on an
+undischarged hypothesis are not stated as theorems, and anything still in
+progress is not in the build — so a green `lake build` is not a claim that the
+subject is exhausted, only that everything asserted has been checked.
 
 ## Licence and provenance
+
+Licensed under the Apache License 2.0 — see [`LICENSE`](LICENSE), and
+[`NOTICE`](NOTICE) for authorship, mathematical attribution, and a statement of
+how the development was produced.
 
 Results due to others are attributed in the module docstring of the file that
 formalises them — Fairtlough–Mendler for PLL itself, Curry's problem, and the

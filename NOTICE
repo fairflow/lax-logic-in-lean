@@ -1,0 +1,29 @@
+lax-logic-in-lean
+Copyright 2025 Avi Craimer
+Copyright 2025-2026 Matthew Fairtlough
+
+This product includes software developed by Avi Craimer and Matthew
+Fairtlough.  It began as https://github.com/AviCraimer/lax-logic-in-lean;
+the formula algebra, the Hilbert axiom schemes and the proof-checking
+data structures (LaxLogic/PLLFormula.lean, PLLAxiom.lean, PLLProof.lean,
+FormattingUtils.lean) originate there.
+
+MATHEMATICAL ATTRIBUTION.  Results due to others are attributed in the
+module docstring of the file that formalises them: Fairtlough and Mendler
+for Propositional Lax Logic, Curry's problem and the completeness
+theorems; Mendler for the timing interpretation; Iemhoff for G3iLL and
+G4iLL; Fiorentini and Ferrari for the refutation calculi; Lindley and
+Stark for the double-negation lifting; Liang and Miller for LJF.
+Formalisations of a published result are the formaliser's expression of
+someone else's mathematics, and are marked as such.
+
+MACHINE ASSISTANCE.  A substantial part of this development was written
+with the assistance of Claude (Anthropic), under human direction and
+review.  This is disclosed rather than disclaimed, because in this
+project it is checkable rather than a matter of trust: every claim in the
+default build target is verified by the Lean kernel, and the axioms each
+headline theorem depends on are pinned in Core/Audit.lean so that a
+change to them fails the build.  Machine assistance does not enlarge what
+is claimed; the kernel bounds it.
+
+No part of this notice restricts the rights granted by the LICENSE.

@@ -880,3 +880,40 @@ definition rather than exclude the result.  Two hoists so far —
 `LaxLogic/Bisim.lean` (rescued four `Reject/` modules) and
 `LaxLogic/Deriv.lean` (rescued UI for IPC).  Suspect the same shape
 whenever a clean result appears to depend on a parked campaign.
+
+## §2026-08-20 (later still) — reader/developer split, licence, and a hole in the audit
+
+`README.md` is now reader-facing only. Everything workshop-facing moved to a
+new top-level `NOTES-FOR-DEVELOPERS.md`: the admission gate, the standing rule
+("do not make it harder to add material completed in the future") with the two
+hoists that implement it, the full inventory of what is on the branch but
+outside `Core`, the re-admission procedure, the build targets, and two open
+decisions (the working record still ships with a clone; the licence grant needs
+Avi Craimer's agreement). The one scientific claim from the old §6 that a reader
+needs — uniform interpolation for PLL is OPEN and is not claimed — stays in the
+README. The `G4` row of the §3 table now says **incomplete for PLL**, which is
+what this development proves about it.
+
+`LICENSE` (Apache 2.0) and `NOTICE` are committed. `NOTICE` carries the two
+copyright lines, the attribution to the originating AviCraimer repository naming
+the four files with surviving lines, the mathematical attribution, and a
+statement that the development was produced with machine assistance and that
+`Core/Audit.lean` is where that is checked rather than trusted. **Committing is
+not publishing**: the grant over Avi Craimer's 458 surviving lines needs his
+agreement first.
+
+**A real defect in `scripts/core-audit.py`, found by a negative test rather than
+by reading.** The boundary check iterated over closure members and tested *their
+imports*, so a trimmed module added straight to `Core.lean` had no core importer
+and slipped through — the single most likely way to breach the boundary was the
+one case not covered. `import LaxLogic.PLLSemUI` appended to `Core.lean` passed
+`--check` cleanly. The check now tests the closure itself (`is_trimmed(mod)` for
+every reachable `mod`) and reports which module pulled the culprit in; both
+negative tests, direct and transitive, now fail as they should. Separately,
+`imports_of` now strips comments first: a docstring line beginning with the word
+"import" was being counted as a root, which is how the 111/111 identity — roots
+equal closure size, i.e. the boundary is exactly closed — first went to 112/111.
+
+Verified: `lake build` green, no `declaration uses 'sorry'`; `lake build
+LaxLogic` green; `scripts/core-audit.py --check` exits 0 at 111/111; every
+relative link and every backticked `.lean` path in both markdown files resolves.

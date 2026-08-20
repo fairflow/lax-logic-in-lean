@@ -7,8 +7,11 @@ and reaches no `wip/` module.  `Core/Audit.lean` pins the axioms of each
 campaign's terminal theorem, so the claims this file makes are checked by
 the build rather than asserted here.
 
-Campaigns that did NOT reach their terminal result are excluded WHOLE,
-including their sorry-free parts.  See `README.md` §"What is not here".
+Campaigns that did NOT reach their terminal result are excluded whole,
+including their sorry-free parts -- but a finished result is admitted
+whenever its OWN import closure is finished, regardless of the campaign
+it was written in.  `NOTES-FOR-DEVELOPERS.md` states the gate and
+lists what is out.
 
 Read `README.md` first; `docs/calculus-map.md` is the provenance
 reference for which proof system any given result belongs to.
