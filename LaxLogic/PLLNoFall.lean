@@ -43,7 +43,7 @@ and proves, sorry-free:
 
 4. **Semantics**: `DerivUNoFall` is sound and complete for mutually
    confluent constraint models **with no fallible worlds**
-   (`derivUNoFall_iff_infallible_valid`), by relativising the canonical
+   (`derivUNoFall_iff_confluent_infallible_valid`), by relativising the canonical
    model of `PLLConfluentComplete.lean` to the proper prime theories
    containing `nobot`.  The relativisation is cheap: `obInv` preserves both
    extra properties (`nobot ∈ obInv T` because `¬◯⊥ ⊢ ◯¬◯⊥` by the unit,
@@ -459,7 +459,7 @@ theorem truthN : ∀ (φ : PLLFormula) (T : NWld),
 
 /-- **PCLL + `¬◯⊥` is sound and complete for mutually confluent infallible
 constraint models.** -/
-theorem derivUNoFall_iff_infallible_valid {Γ : List PLLFormula}
+theorem derivUNoFall_iff_confluent_infallible_valid {Γ : List PLLFormula}
     {φ : PLLFormula} :
     DerivUNoFall Γ φ ↔
       ∀ (C : ConstraintModel), MutuallyConfluent C → Infallible C →
@@ -499,6 +499,6 @@ end PLLND
 #guard_msgs in
 #print axioms PLLND.NoFall.consistent
 
-/-- info: 'PLLND.NoFall.derivUNoFall_iff_infallible_valid' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'PLLND.NoFall.derivUNoFall_iff_confluent_infallible_valid' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
-#print axioms PLLND.NoFall.derivUNoFall_iff_infallible_valid
+#print axioms PLLND.NoFall.derivUNoFall_iff_confluent_infallible_valid

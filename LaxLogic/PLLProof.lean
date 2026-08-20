@@ -1,6 +1,22 @@
 import LaxLogic.FormattingUtils
 import LaxLogic.PLLFormula
 import LaxLogic.PLLAxiom
+
+/-!
+# Hilbert proofs as checkable objects
+
+A `PLLProof` is a linear Hilbert derivation: the empty proof, an axiom step,
+or a modus ponens step, each extending a previous proof.  `formulas` reads
+off the line-by-line list, `isValid` is the decidable check that every step
+is licensed by what precedes it, and `isProofOf` says a valid proof ends at
+a given formula.  `ProofStepInstruction` with `toInstructions` /
+`fromInstructions` is the flat, non-nested form convenient for writing
+proofs by hand.
+
+This is a data structure, not a proof system in the reasoning sense: it is
+the object that `LaxLogic.PLLHilbert.hilbert_to_ND` converts into a `LaxND`
+derivation, giving half of F&M Theorem 2.3.
+-/
 -- import Mathlib.Tactic
 
 open PLLFormula

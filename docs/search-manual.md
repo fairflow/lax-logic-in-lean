@@ -860,7 +860,7 @@ Adding one formula (not a scheme) as an axiom is the same as adding it as a
 persistent hypothesis, because every rule of the calculus carries its context
 unchanged; the formula is `NoFall.nobot`.  The system is sound and complete
 for mutually confluent models **with no fallible worlds**
-(`derivUNoFall_iff_infallible_valid`) — hence the Lean name.  It is a proper
+(`derivUNoFall_iff_confluent_infallible_valid`) — hence the Lean name.  It is a proper
 extension of PCLL (`pcll_not_nobot`), and it collapses the variable-free
 fragment: every variable-free formula is derivable or inconsistent
 (`varfree_dichotomy`), whereas PLL and PCLL have infinitely many

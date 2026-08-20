@@ -1,5 +1,31 @@
 import LaxLogic.PLLFormula
 
+/-!
+# The Hilbert axiom schemes of PLL
+
+`PLLAxiom` enumerates the axiom schemes of the Hilbert presentation of
+Propositional Lax Logic (Fairtlough–Mendler 1997): the intuitionistic
+schemes `impK`, `impS`, the ∧/∨ schemes and `explosion`, together with the
+four modal schemes
+
+* `◯R`    `φ ⊃ ◯φ`
+* `◯M`    `◯◯φ ⊃ ◯φ`
+* `◯S`    `(◯φ ∧ ◯ψ) ⊃ ◯(φ ∧ ψ)`
+* `◯Bind` `(φ ⊃ ◯ψ) ⊃ (◯φ ⊃ ◯ψ)`
+
+`get` reads off the formula a scheme instance asserts, `formulas` its
+parameters, and `getName` its display name.
+
+`◯Bind` is not redundant.  Dropping it (and the regularity rule "from
+`φ ⊃ ψ` infer `◯φ ⊃ ◯ψ`", F&M p.6) leaves `◯`-functoriality underivable:
+reading `◯` as the constant-`⊥` operator validates `◯R`, `◯M` and `◯S`
+but refutes `(φ ⊃ ψ) ⊃ (◯φ ⊃ ◯ψ)`.
+
+This is the presentation `LaxLogic.PLLHilbert` proves equivalent to natural
+deduction (`hd_iff_ND`, F&M Theorem 2.3).  `LaxND` in `PLLNDCore` is the
+reference system; this file exists to make the Hilbert side checkable.
+-/
+
 open PLLFormula
 
 -- `@[match_pattern]` removed for Lean ≥4.31: the attribute now requires an

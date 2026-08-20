@@ -19,7 +19,7 @@ rule — but its machinery is not, and this is the second time it has
 paid for itself.)
 -/
 import Reject.Height
-import LaxLogic.PLLSemUI
+import LaxLogic.Bisim
 
 namespace Reject
 

@@ -96,19 +96,20 @@ result is really about**.
   p. 16: "PLL + ¬◯*false* is sound and complete for the class of constraint
   models with F = ∅", proved there by the same route (discard the unreachable
   fallible triple from the canonical model).
-* **Status here**: `derivUNoFall_iff_infallible_valid`, plus results that are
+* **Status here**: `derivUNoFall_iff_confluent_infallible_valid`, plus results that are
   ours: `varfree_dichotomy` (the variable-free fragment collapses to `{⊥, ⊤}`;
   the proof uses the axiom exactly once, in the `◯` case, and never uses
   distribution, so it applies verbatim to PLL + `¬◯⊥`), and `exUI` / `allUI`
   (uniform interpolation into the variable-free fragment, trivial once that
   fragment is two elements — the ≥ 2-variable problem is deliberately not
   asserted).
-* **Naming caveat, flagged 2026-08-07**: the theorem name says
-  "infallible_valid" but the model class is *mutually confluent **and***
-  infallible, which is strictly smaller than F&M's `F = ∅` class — on the plain
-  `F = ∅` class distribution genuinely fails. F&M state their two bullets
-  separately and never the conjunction; ours is a routine merge of their two
-  specialisations. The name should be corrected.
+* **Naming caveat, flagged 2026-08-07, CORRECTED 2026-08-20**: the theorem was
+  called `derivUNoFall_iff_infallible_valid`, but the model class is *mutually
+  confluent **and*** infallible, which is strictly smaller than F&M's `F = ∅`
+  class — on the plain `F = ∅` class distribution genuinely fails. F&M state
+  their two bullets separately and never the conjunction; ours is a routine
+  merge of their two specialisations. It is now
+  `derivUNoFall_iff_confluent_infallible_valid`.
 
 ### `LJF◯` — the lax-flagged focused calculus, and the interpolant
 

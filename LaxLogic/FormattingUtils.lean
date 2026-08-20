@@ -1,3 +1,12 @@
+/-!
+# Pretty-printing helpers
+
+Small string utilities shared by the `Repr` instances of `PLLFormula` and
+`PLLProof`: `stripParens` removes one redundant outer bracket pair,
+`addParens` adds one, and `getReprFn` turns a `toString` function into the
+`Nat → Format` shape `Repr` expects.  No logic here.
+-/
+
 universe u
 
 open Std (Format)

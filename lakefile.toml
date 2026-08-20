@@ -1,7 +1,7 @@
 name = "lax-logic"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["LaxLogic"]
+defaultTargets = ["Core"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -12,6 +12,25 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.31.0"
 
+# ---------------------------------------------------------------------------
+# `Core` — THE PUBLISHABLE CORE.  The default target.
+#
+# Every module reachable from `Core.lean` belongs to a campaign whose
+# terminal result is PROVED (or is a completed refutation), is sorry-free,
+# and reaches no `wip/` module.  `Core/Audit.lean` pins the axioms of each
+# campaign's terminal theorem, so `lake build` failing IS the claim failing.
+#
+# Campaigns that never reached their terminal result are excluded whole,
+# including their sorry-free parts: the semantic UI route, the G4c UI
+# tower, the polarised/focusing programme, LJF-circle, FRJO, BiLax and the
+# Rewrite catalogue.  They are untouched on this branch and buildable by
+# name (`lake build LaxLogic`); README.md says where each one stands.
+[[lean_lib]]
+name = "Core"
+globs = ["Core", "Core.Audit"]
+
+# The full working library, including the parked campaigns.  Not the
+# default target; build it by name.
 [[lean_lib]]
 name = "LaxLogic"
 

@@ -7,7 +7,7 @@ import LaxLogic.PLLSearchCmd
 The system is `NoFall.DerivUNoFall` of `PLLNoFall.lean`: PCLL extended by the
 single axiom `¬◯⊥` ("NF" = *no fallible worlds*, its semantic counterpart —
 the system is sound and complete for mutually confluent constraint models with
-`F = ∅`, `NoFall.derivUNoFall_iff_infallible_valid`).
+`F = ∅`, `NoFall.derivUNoFall_iff_confluent_infallible_valid`).
 
 The adaptation of the two search directions:
 

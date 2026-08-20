@@ -749,3 +749,82 @@ added.  REMAINING: the pledged visit `minModP` + `minMod`'s modal cases
 + statements (A)/(B) — full blueprint and the ONE open corner (pledged
 ⊃-float onto a modally-loaded anchor; conjectured unrealisable, engine
 is the arbiter) recorded in `docs/frj-w4.md` §8.
+
+## §2026-08-20 — `publication/core`: a publishable core extracted
+
+Branch `publication/core`, cut from `claude/lean-branch-review-8481eb`.
+Nothing is deleted; the curated view is a new `lean_lib` and root module.
+
+**The gate, and why it is per campaign.** A module is in the core only if
+its campaign's terminal result is PROVED (or is a completed REFUTATION),
+it is sorry-free, its terminal theorem is `#guard_msgs`-pinned with
+axioms inside `[propext, Classical.choice, Quot.sound]`, its import
+closure touches no `wip.*` and no trimmed module, and it carries a module
+docstring.  Matthew's criterion (2026-08-20) is *per sequence*, not per
+file: if a file belongs to a sequence aiming at a result never reached,
+the whole sequence goes, including its sorry-free members.  File-level
+hygiene was never the problem — outside `wip/` there were 5 `sorry`
+sites, 0 declared axioms and 2 `native_decide` theorems.  Campaign-level,
+54 modules belonged to sequences whose terminal result is OPEN.
+
+**Result.** `Core.lean` — 106 modules in 15 campaign groups, and the
+import closure is exactly those 106.  `defaultTargets = ["Core"]`, so a
+bare `lake build` builds the core and `Core/Audit.lean`.
+
+**Kept**: syntax/`LaxND`; constraint semantics with soundness,
+completeness and the FMP; `SC` with cut elimination; the `G4` story
+(`G4iLL` REFUTED, `G4c` repaired, the chain `G4iLL″ = SC = LaxND = Tm`,
+decidability); terms and full strong normalisation; Curry's problem;
+PCLL and the infallible extension; the closed fragment; Craig; search
+and certified countermodels; timing; belief and realisability;
+`FRJ(G)`; `Reject`; the audit tooling.
+
+**Trimmed** (untouched on the branch, `lake build LaxLogic` still green):
+`PLLSemUI*` (15), `PLLG4UI*` (4), the polarised/focusing programme (10),
+`LJF◯`+`FRJO` (15), `Rewrite/` (4), `BiLax/` (11), and the leaves
+`PLLG4Tower`, `PLLG4PInv/PAdm/PStr`.  Two finished results go with them
+because their sequence targets UI for PLL — focalization for PLL
+(`bridge_iff`) and uniform interpolation for *IPC* (`LJFComplete`); both
+are better re-admitted later as their own clean sequence than carved out
+of ~10k lines of shared machinery now.  `PLLG4P` STAYS despite its
+"superseded by G4iLL″" docstring: `PLLG4H` imports it, so the final
+calculus is built on the first repair's definitions.  Only its
+metatheory branch is dead.  `BeliefExamples.lean` is out (it is examples,
+and carries the development's only two `native_decide` theorems).
+
+**One code motion.** `ABisim`, `force_iff_of_bisim`, `ABisim.id`,
+`PBisim` moved from `LaxLogic/PLLSemUI.lean` to a new
+`LaxLogic/Bisim.lean`; `PLLSemUI` and `Reject/Bisim` now import it.
+Without this the `PLLSemUI` trim would have taken four `Reject/` modules
+with it.  Pure code motion, verified by `lake build LaxLogic` staying
+green.
+
+**Guards.** `Core/Audit.lean` pins 37 terminal theorems, every one
+`#guard_msgs`-checked, so an axiom regression is a build failure: 16 at
+`[propext, Quot.sound]`, 15 at `[propext, Classical.choice, Quot.sound]`,
+5 at `[propext]`, 1 axiom-free.  No `sorryAx`, no `Lean.ofReduceBool`,
+and `native_decide` appears nowhere in the closure.
+`scripts/core-audit.py --check` recomputes the closure and fails on a
+boundary breach, a missing docstring or a reintroduced `sorry`; CI runs
+`lake build`, greps for the `sorry` warning Lean only warns about, and
+runs the script.
+
+**Documentation.** `README.md` rewritten as a guided tour for a reader
+who knows logic but not lax logic: what `◯` is and its four schemes, the
+three applications, the six proof systems with the equivalence chain and
+the `G4iLL` refutation witness `◯G', F' ⇒ r`, a 14-step reading order
+naming file and theorem, how to check it, and what is deliberately
+absent.  The "Superceded by" line is gone — it was inaccurate; this
+branch carries 289 commits that fork does not.  Module docstrings added
+to the four foundational files that lacked them (`FormattingUtils`,
+`PLLAxiom`, `PLLFormula`, `PLLProof`).
+
+**Naming defect corrected.**  `derivUNoFall_iff_infallible_valid` →
+`derivUNoFall_iff_confluent_infallible_valid`: the model class is
+mutually confluent *and* infallible, strictly smaller than F&M's `F = ∅`.
+`docs/calculus-map.md` had flagged this against itself on 2026-08-07.
+
+**Open decision for Matthew.**  The working record (`wip/`,
+`PROGRESS.md`, ~90 probe `lean_exe` entries) is still on this branch.
+Taking it off would break the `Rewrite` and `FRJO` targets, which import
+`wip/`, so those files would have to go too.  Not done unilaterally.

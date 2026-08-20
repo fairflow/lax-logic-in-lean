@@ -6,9 +6,36 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  core:
+    name: Publishable core
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      # `Core` is the default target, so this builds Core.lean and
+      # Core/Audit.lean.  It fails if any module fails to elaborate, if any
+      # `#guard_msgs` axiom pin stops matching, or if a `sorry` is
+      # reintroduced (see the guard step below).
       - uses: leanprover/lean-action@v1
+        with:
+          build-args: "--log-level=warning"
+
+      # Lean warns rather than errors on `sorry`, so the build alone would
+      # not catch a reintroduced one.  Rebuild with the log captured and
+      # fail on the warning.
+      - name: No `sorry` in the core
+        run: |
+          set -o pipefail
+          lake build 2>&1 | tee /tmp/core.log
+          if grep -q "declaration uses \`sorry\`" /tmp/core.log; then
+            echo "::error::a declaration in the core uses 'sorry'"
+            grep "declaration uses \`sorry\`" /tmp/core.log
+            exit 1
+          fi
+
+      # What Lean cannot see: that the core's import closure stays inside
+      # the core (no wip/, no trimmed campaign) and that every module is
+      # documented.
+      - name: Structural audit
+        run: python3 scripts/core-audit.py --check

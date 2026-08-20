@@ -1,5 +1,21 @@
 import LaxLogic.FormattingUtils
 import Mathlib.Tactic
+
+/-!
+# The formula algebra of PLL
+
+`PLLFormula` is the object language of the whole development: propositional
+constants, `falsePLL` (`⊥`), `and`, `or`, `ifThen`, and the lax modality
+`somehow` (`◯`).  Negation and truth are the usual abbreviations
+`notPLL φ = φ ⊃ ⊥` and `truePLL = ⊥ ⊃ ⊥`.
+
+Also here: `subformulasOf`; the predicates `isSomehowFormula` and
+`isSomehowFree` with their subtypes; the erasure `eraseSomehow`, which
+deletes every `◯` and is what conservativity over IPL is stated against
+(`PLLNDCore.conservativity_prop`); and the `Conditional` subtype packaging a
+formula together with a proof that it is an implication, used by the Hilbert
+proof checker in `PLLProof` for modus ponens.
+-/
 inductive PLLFormula where
 | prop (constantName: String)
 | falsePLL
