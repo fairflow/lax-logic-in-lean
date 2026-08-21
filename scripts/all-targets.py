@@ -23,7 +23,12 @@ def main() -> int:
     if not LAKEFILE.is_file():
         print("all-targets: lakefile.toml not found", file=sys.stderr)
         return 2
-    names = [m.group(1) for b in BLOCK.finditer(LAKEFILE.read_text())
+    # Read bytes and decode with errors="replace", never `read_text`: it
+    # raises on invalid UTF-8, and a gate that dies before scanning has not
+    # scanned.  The risk on a file we control is slight and the failure is
+    # loud, but a gate script is exactly where the argument applies.
+    text = LAKEFILE.read_bytes().decode("utf-8", errors="replace")
+    names = [m.group(1) for b in BLOCK.finditer(text)
              for m in [NAME.search(b.group(2))] if m]
     if not names:
         print("all-targets: no targets parsed — has the lakefile format changed?",
