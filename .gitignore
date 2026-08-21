@@ -1,4 +1,9 @@
 /.lake
+
+# Python bytecode caches — regenerable, and one was committed by accident
+# on this branch (7da4378).
+__pycache__/
+*.pyc
 LaxLogic/Verso_manual.pdf
 *.code-workspace
 .claude/settings.local.json
