@@ -23,7 +23,10 @@ def main() -> int:
     if not LAKEFILE.is_file():
         print("all-targets: lakefile.toml not found", file=sys.stderr)
         return 2
-    names = [m.group(1) for b in BLOCK.finditer(LAKEFILE.read_text())
+    # Read BYTES and decode leniently: `read_text` raises on invalid UTF-8,
+    # and a gate script that dies on its input has not checked it either.
+    text = LAKEFILE.read_bytes().decode("utf-8", errors="replace")
+    names = [m.group(1) for b in BLOCK.finditer(text)
              for m in [NAME.search(b.group(2))] if m]
     if not names:
         print("all-targets: no targets parsed — has the lakefile format changed?",

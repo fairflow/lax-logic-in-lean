@@ -63,6 +63,14 @@ root = "Main"
 
 # Shared wip modules that other wip files import (lake resolves imports
 # only against declared targets; exe roots alone don't cover imports).
+# Tools: the FRJ(◯) certificate-and-search toolchain, aggregated out of
+# wip/.  Every file here is a COPY — the wip/ originals are left in place
+# unchanged so other branches still compile — and this is the maintained
+# side.  See Tools/README.md.
+[[lean_lib]]
+name = "Tools"
+globs = ["Tools.Bank", "Tools.Cert", "Tools.Pin", "Tools.Search", "Tools.Derive"]
+
 [[lean_lib]]
 name = "wipshared"
 globs = ["wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
@@ -233,12 +241,12 @@ root = "wip.frj_sat"
 # The RN(◯,{}) oracle-bank harness for the FRJ(◯) countermodel search.
 [[lean_exe]]
 name = "rnfrj"
-root = "wip.rnfrj"
+root = "Tools.Search"
 
 # Emit a kernel-checkable countermodel from a search hit.
 [[lean_exe]]
 name = "rnpin"
-root = "wip.rnpin"
+root = "Tools.Pin"
 
 # Kreisel-Putnam screen for candidate ◯-rejection rules (BiLax (b)).
 [[lean_exe]]
@@ -589,9 +597,9 @@ root = "wip.frjo_demo"
 # Route B: the derivation-preserving extractor (route A is `rnpin`).
 [[lean_exe]]
 name = "frjderive"
-root = "wip.frj_derive"
+root = "Tools.Derive"
 
 # One command: sequent in, Lean-checked certificate + SVG out.
 [[lean_exe]]
 name = "frjcert"
-root = "wip.frj_cert"
+root = "Tools.Cert"
