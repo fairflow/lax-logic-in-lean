@@ -74,10 +74,15 @@ observed yield:
    defect needed a 3-way interaction (empty context × untied fuel ×
    missing frame).
 
-**Normalise before you search (standing, 2026-08-14).** *Requires
-`Rewrite/`, which is not on this branch — run this on a development
-branch.* Every fresh probe pipes its cells through the CERTIFIED simpset
-first:
+**Normalise before you search (standing, 2026-08-14; SUSPENDED
+2026-08-21).** *Requires `Rewrite/`, which is not on this branch.* It is
+also suspended on the development branches until the rule data is
+rebuilt: the RN(◯,{}) dictionary the rules were harvested from is
+withdrawn and must be taken as completely unverified (see below). The
+MECHANISM is sound and unaffected, because each `RwRule` carries its own
+`Interd` proof and `simplifyWith_interd` is unconditional; what is
+withdrawn is the data. The recipe, for when a re-verified set exists:
+pipe every fresh probe's cells through the certified simpset first:
 
     Rewrite.simplifyWith Rewrite.fullSetC fuel φ
 
@@ -103,15 +108,31 @@ idempotence, commutativity, ASSOCIATIVITY and FLATTENING (sorted
 right-nested chains), `◯◯φ = ◯φ` and `◯⊤ = ⊤`, each law certified;
 `simpIter` alternates rewriting and re-canonicalising to a fixpoint.
 
-**Never harvest an unproved cell.** *The lesson is general; the files are
-on the development branches.* `wip/rnDict.lean` states 323 cell
-theorems and proves 236; 87 are `sorry` and FOUR ARE REFUTED. The
-first cut of the simpset took all 323 by name, so `rndSet` carried
-`sorryAx` and four rules that rewrote a formula to a NON-interderivable
-one — `RwRule.ok` is exactly what makes `norm_interd` unconditional,
-so a `sorry`ed `ok` voids the guarantee silently. `#print axioms
-rndSet`/`fullSet` are now `#guard_msgs`-pinned in
-`Rewrite/Catalogue.lean` as the standing guard; keep them pinned.
+**Never record an undetermined relation as a `sorry`ed theorem
+(Matthew, 2026-08-21).** This is the rule the dictionary broke, and why
+the whole dictionary is now withdrawn as completely unverified rather
+than patched cell by cell. `wip/rnDict.lean` used a `sorry`ed theorem to
+mark a question still to be answered. But a `sorry`ed theorem is an
+ASSERTION in the environment: it typechecks, it can be applied, and by
+name it is indistinguishable from a proved one, so "not yet settled" and
+"asserted without proof" collapse into one object. The first cut of the
+simpset took all 323 cells by name and so carried `sorryAx` plus four
+rules rewriting a formula to a NON-interderivable one — four of the
+`sorry`ed cells were not open but FALSE, and nothing in the record said
+so. `RwRule.ok` is exactly what makes `norm_interd` unconditional, so a
+`sorry`ed `ok` voids the guarantee silently.
+
+Record status as DATA instead: a table listing every cell with a
+three-valued status, where `proved` names a real theorem, `refuted`
+names a real theorem of the negation with its countermodel, and `open`
+carries **no declaration at all**. Nothing is then harvestable that
+should not be, `#print axioms` downstream is a real gate again, and a
+check that each `proved` row resolves to an existing sorry-free
+declaration keeps the table honest about itself. Not being able to build
+on an unsettled cell is the point, not a cost. Keep `#print axioms
+rndSet`/`fullSet` `#guard_msgs`-pinned in `Rewrite/Catalogue.lean` as
+the standing guard, but a pin is a backstop, not a substitute for not
+making the claim.
 
 **Standing item — bank, then re-run the loop.** *Needs `Rewrite/` and the
 `rwscreen`/`rnextend` executables; development branches only.* Every NEW
@@ -119,11 +140,11 @@ certified
 interderivability a probe establishes gets banked into `Rewrite/`, and
 banking is not finished until: (1) `lean_exe rwscreen` re-measures
 effectiveness; (2) `lean_exe rnextend` re-tests whether the new
-material closes any of the 83 open dictionary cells (it carries a
-control and two adversarial checks — read `docs/rn-dictionary-status.md`
-before trusting either verdict); (3) anything that closes is promoted
-to a kernel-pinned theorem, the `sorry` deleted, and the catalogue and
-RN explorer updated; (4) the axiom pins are re-transcribed verbatim.
+material closes any dictionary cell still open after the rebuild (it
+carries a control and two adversarial checks; `docs/rn-dictionary-status.md`
+is withdrawn and is now history, not status); (3) anything that closes is
+promoted to a kernel-pinned theorem, its `open` row moved to `proved`, and
+the catalogue and RN explorer updated; (4) the axiom pins are re-transcribed verbatim.
 Each campaign then makes the next one cheaper. Keep the PLL set and
 any PCLL-only set separate: `RwRule` carries its `Interd` proof, so a
 PCLL-only equation cannot enter a PLL set by construction.

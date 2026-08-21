@@ -1,4 +1,18 @@
-# The RN(◯,{}) dictionary — what is certified, what is not
+# The RN(◯,{}) dictionary — the 2026-08-14 record, now withdrawn
+
+> **WITHDRAWN, 2026-08-21 (Matthew).** The dictionary is to be taken as
+> **completely unverified**: not because a particular cell is wrong, but because
+> the approach to verification was unsound. Open cells were recorded as theorems
+> carrying a `sorry`, so "this relation is still to be determined" and "this is
+> asserted without proof" became the same object in the environment. Nothing
+> downstream could distinguish them, four of the assertions were false, and every
+> tally below was computed by that same bookkeeping. **Do not cite any count in
+> this document.** What survives independently: cells with real proofs are
+> proved, refutations are kernel-checked countermodels, and
+> `closed_lax_infinite` (in `LaxLogic/`, on this branch) shows no finite
+> dictionary can close the fragment, with no table involved. A rebuild is in
+> hand on the development side. Everything below is kept as the record of what
+> was believed on 2026-08-14, and is read as history, not as status.
 
 > **Note.** This is a working document. It may reference `wip/`, `Rewrite/` or
 > `FRJO/`, which are not distributed on this branch (see

@@ -86,11 +86,56 @@ development branches and in history; nothing is lost.
 |---|---|---|
 | `wip/` | 333 modules, ~130k lines | probes, screens and certificate banks — never results |
 | ~95 probe `lean_exe` targets | — | every executable rooted in `wip.*` |
-| `Rewrite/` | 4 modules | `Catalogue.lean` imports `wip.rnDict`, which has **91 `sorry` tokens and four refuted cells**. The mechanism is finished; the rule data is not, so this one cannot return until the dictionary does |
+| `Rewrite/` | 4 modules | `Catalogue.lean` imports `wip.rnDict`, the RN(◯,{}) dictionary, **withdrawn 2026-08-21 and to be taken as completely unverified** (see below). The rewriting mechanism is finished; the rule data is not, so this one cannot return until the dictionary is rebuilt |
 | `FRJO/` | 6 modules, 811 lines | superseded. See below |
 
 Surviving targets: libraries `Core`, `LaxLogic`, `BiLax`, `Reject`, `Meta`,
 `FRJ`, `proofstates`; executables `bilaxscreen`, `laxrun`, `pstates`.
+
+### The RN(◯,{}) dictionary is withdrawn (2026-08-21)
+
+Matthew's ruling: the dictionary (`wip/rnDict.lean` and everything computed from
+it) is to be taken as **completely unverified**. Not because a particular cell
+is wrong, but because the approach to verification was unsound. A rebuild is in
+hand on the development side.
+
+The flaw is worth stating, because it is a trap any mechanised classification
+can fall into. Relations still to be determined were recorded as *theorems
+carrying a `sorry`*. A `sorry`ed theorem is an assertion in the environment: it
+typechecks, it can be applied, and it is indistinguishable by name from a proved
+one. So "we have not settled this" and "we assert this without proof" became the
+same object. Three consequences, all of which actually happened:
+
+1. A by-name harvest cannot tell the two apart. The first cut of the certified
+   simpset took all 323 cell theorems by name, so the rule set carried `sorryAx`
+   and rewrote formulas to non-interderivable ones.
+2. Four of the assertions were not merely unproved but **false**. Nothing in the
+   record distinguished "open" from "open and, as it turns out, refutable".
+3. Every count derived from the file, including the counts this branch used to
+   quote, was produced by that same bookkeeping, so no count stands.
+
+**How such a relation should be recorded instead.** Status is *data*, not a
+theorem. A cell table is a `def` listing every cell with a three-valued status;
+proved cells name a real theorem, refuted cells name a real theorem of the
+negation together with its countermodel, and open cells appear in the data with
+status `open` and **no declaration at all**. Then there is nothing for a harvest
+to pick up, `#print axioms` downstream is a real gate again, and a check that
+each `proved` row resolves to an existing sorry-free declaration keeps the table
+honest about itself. What is lost by not writing the `sorry` is the ability to
+build on an unsettled cell, which is exactly what should be lost.
+
+**Effect on this branch: none mathematically.** Nothing reachable from
+`Core.lean` depends on the dictionary; `wip/` and `Rewrite/` are not distributed
+here, and `scripts/core-audit.py` fails if either becomes reachable.
+`LaxLogic/RN/Reps.lean`, which *is* in `Core`, is unaffected: it declares the
+fifteen representatives as data and one `rfl` theorem about the list's length,
+and asserts no relation between them. Two documents carried the withdrawn
+claims and have been demoted rather than deleted:
+`docs/rn-dictionary-status.md` (retitled, withdrawal notice at the head, body
+kept as the record of the flaw) and `docs/rn-explorer.html` (dictionary layer
+marked withdrawn in the banner, the certification paragraph replaced, the
+operation-tables tab relabelled; the ladder, which rests on
+`closed_lax_infinite` and not on any table, is untouched).
 
 ### FRJ◯, and the folder that is not it
 
@@ -131,6 +176,13 @@ would exist for, and none of this material needs one yet.
 `FRJ/Search/Engine.lean` is a port of `wip/frj_sat.lean`, which stays the frozen
 differential oracle. That file is on the development branches, not here, and the
 docstring says so.
+
+**That docstring is deliberately branch-local, and is not drift.** The copy here
+says `wip/frj_sat.lean` "is not distributed on this branch"; the copy on the
+development branch says nothing of the kind, because there it is false. A later
+session diffing `FRJ/` will find the two differ. Leave them differing. Only the
+mathematics is meant to be identical across the two branches, and each side's
+prose is meant to be true where it is read.
 
 **Known gap: the search cannot be invoked from a command line on this branch.**
 The library came; the drivers did not. `rnfrj`, `rnpin`, `frjderive` and

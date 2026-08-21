@@ -33,8 +33,11 @@ build disagree, the build wins.
 - [`search-manual.md`](search-manual.md) — how the certificate-carrying search
   engines are driven, and the discover-then-pin discipline.
 - [`next-session.md`](next-session.md) — the live threads, as of its date.
-- [`rn-dictionary-status.md`](rn-dictionary-status.md) — the state of the
-  RN(◯,{}) dictionary, and the controls to read before trusting a verdict from
+- [`rn-dictionary-status.md`](rn-dictionary-status.md) — the RN(◯,{})
+  dictionary, **withdrawn 2026-08-21** and to be taken as completely unverified
+  until it is rebuilt. Kept as the record of the flaw, which is worth reading:
+  open cells were recorded as `sorry`ed theorems, so an unanswered question and
+  an unproved assertion became indistinguishable. Nothing in `Core` depends on
   it.
 - [`archive/`](archive) — superseded material, kept deliberately rather than
   deleted.

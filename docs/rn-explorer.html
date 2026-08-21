@@ -216,7 +216,7 @@
 <header>
   <p class="eyebrow">Propositional lax logic · variable-free fragment</p>
   <h1>RN(◯,{}) — the ladder and the dictionary</h1>
-  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v17 · 2026-08-19 · every table and every diagram on this page is PLL and kernel-certified; no cover relation of RN(◯,{}) is proved, so every ⋖ claim is dictionary-relative</p>
+  <p style="font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin:0 0 8px">explorer v17 · dictionary layer withdrawn 2026-08-21 · the ladder is PLL and kernel-certified; the operation tables and everything computed from them are UNVERIFIED pending re-verification; no cover relation of RN(◯,{}) is proved, so every ⋖ claim is dictionary-relative</p>
 
   <div style="border:1px solid var(--rust);background:var(--rust-fill);border-radius:6px;padding:14px 16px;margin:0 0 16px">
     <p style="font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--rust);margin:0 0 9px">Correction · 2026-08-19</p>
@@ -234,8 +234,8 @@
     <p style="margin:0 0 10px;font-size:14px"><strong>Therefore no finite dictionary can ever
     close</strong>, and the earlier framing of this page — fifteen classes, closed under the
     operations — was never going to work. Round 1 (15 representatives) and round 2 (16) both
-    fail: round 2 carries <strong>58 certified escapes</strong>, and <strong>83 of its 784
-    operation-table entries are certified false</strong>.</p>
+    fail. Individual escapes are kernel-checked countermodels and survive as such, but the
+    tallies once quoted here are withdrawn with the rest of the dictionary layer (below).</p>
 
     <p style="margin:0 0 10px;font-size:14px"><strong>No cover relation of RN(◯,{}) is
     proved.</strong> Not <span class="fml">⊥ ⋖ ◯⊥</span>, not
@@ -247,16 +247,24 @@
     <em>current dictionary D</em> strictly between. A D-cover is relative to D and is destroyed
     by enlarging it — placing eight further classes destroyed seven of twenty-one.</p>
 
-    <p style="margin:0;font-size:14px"><strong>Everything drawn here is PLL and certified.</strong>
-    The operation tables are built from the sorry-free <span class="fml">Interd</span> theorems
-    only: 561 of the 690 cells over the fifteen representatives — 236 by a named cell theorem,
-    201 by a structural law general in φ, 110 by commutativity from the transpose, 14 by
-    definition — each one <code>#print axioms</code>'d to
-    <span class="fml">[propext, Quot.sound]</span> or cleaner.
-    The unproved cells are drawn as unsettled and are never used to compute anything else on this
-    page. The earlier layer computed in <code>DerivU</code> has been removed; it is recoverable
-    at git tag <code>frozen-but-incorrect</code>. Plan for the rebuild:
-    <code>docs/rn-dictionary-plan.md</code>.</p>
+    <p style="margin:0 0 10px;font-size:14px"><strong>The dictionary layer is WITHDRAWN,
+    2026-08-21.</strong> The operation tables on this page, the cell counts, the closure verdict
+    and the D-covers computed from them are <em>not</em> evidence and should not be cited. The
+    reason is the method, not any one cell: in <code>wip/rnDict.lean</code> a relation still to be
+    determined was recorded as a theorem carrying a <span class="fml">sorry</span>, which makes
+    "not yet settled" and "asserted without proof" the same object in the environment. Nothing
+    downstream could tell the two apart (the first harvest into the simpset took all 323 cells by
+    name), and four of the assertions were in fact false. Cells that carry a real proof are still
+    proved, and refutations are kernel-checked countermodels that stand on their own; what is
+    withdrawn is the table as an artefact, meaning which cells are settled, which way, and
+    everything computed from that. No cell count previously shown on this page is quoted as fact
+    until the rebuild lands.</p>
+
+    <p style="margin:0;font-size:14px"><strong>Unaffected: everything that does not pass through
+    the dictionary.</strong> <code>closed_lax_infinite</code> and the ladder drawn from it are
+    kernel-checked in <code>LaxLogic/</code> and stand as stated. The earlier layer computed in
+    <code>DerivU</code> has been removed; it is recoverable at git tag
+    <code>frozen-but-incorrect</code>.</p>
   </div>
   <p class="sub">Two views of the same lattice. The <strong>ladder</strong> is the image of
   <span class="fml">h : p ↦ ◯⊥</span>, drawn to any depth from the certified order predicate.
@@ -264,27 +272,20 @@
   by closing under ∧, ∨, ⊃, ◯ as far as it goes — which, since RN(◯,{}) is infinite, is never all
   the way. It is an atlas of the bottom of the lattice, not a presentation of it.</p>
   <p class="note" style="margin:10px 0 0;border-left:3px solid var(--red,#c0392b);padding-left:10px">
-  <strong>The fifteen classes do not actually close</strong> (recorded 2026-08-14).
-  The closure record <code>rnDict15</code> is certified at 561 of its 690 cells.
-  The 129 remaining are the reach of the 87 cell theorems that still carry a
-  <span class="fml">sorry</span> — 87 cells blocked directly, 42 more as their
-  commutativity transpose. Of those, <strong>four are REFUTED</strong> (five cells,
-  counting one transpose) — certified ≤4-world countermodels eliminate every
-  candidate representative, so each of
-  <span class="fml">q8 ∧ q10</span>, <span class="fml">q9 ⊃ q4</span>,
-  <span class="fml">q12 ⊃ q4</span> and <span class="fml">q14 ⊃ q4</span> is a
-  <em>new</em> class and the table genuinely fails there. The other 124 are open.
-  This is the expected shape, not a surprise: the variable-free fragment does not
-  collapse at any crank ≤ 7, so no finite dictionary can close it — the four cells
-  are simply where this one breaks. Detail:
-  <code>docs/rn-dictionary-status.md</code>.</p>
+  <strong>The fifteen classes do not close</strong>, and no finite set of them could:
+  <code>closed_lax_infinite</code> settles that on its own, with no table involved.
+  <em>Where</em> this particular fifteen breaks, and how much of its 690-cell closure record is
+  settled, are questions the withdrawn dictionary cannot currently answer. The counts recorded
+  here up to 2026-08-19 came out of the same
+  <span class="fml">sorry</span>-as-open-question record that is now being rebuilt, so none of
+  them is repeated. Detail: <code>docs/rn-dictionary-status.md</code>.</p>
 </header>
 
 <div class="tabs" role="tablist">
   <button class="tab" id="tab-ladder" role="tab" aria-selected="true" aria-controls="p-ladder">Ladder — image of h</button>
   <button class="tab" id="tab-dict" role="tab" aria-selected="false" aria-controls="p-dict">Dictionary — D, 15 classes + the ◯-chain</button>
   <button class="tab" id="tab-fam" role="tab" aria-selected="false" aria-controls="p-fam">Families — the combs</button>
-  <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — PLL, certified</button>
+  <button class="tab" id="tab-tab" role="tab" aria-selected="false" aria-controls="p-tab">Operation tables — WITHDRAWN, unverified</button>
 </div>
 
 <p class="note" style="margin:-6px 0 14px;font-size:12.5px">Labels across the tabs: all three
@@ -902,7 +903,7 @@ New tab: <strong>Families — the picture of everything proved.</strong></p>
       </div>
     </div>
     <div>
-      <h2 class="print-tab-title">Operation tables — PLL, certified</h2>
+      <h2 class="print-tab-title">Operation tables — WITHDRAWN, unverified</h2>
       <p class="note" style="border-left:3px solid var(--green);padding-left:10px;margin-top:0">
       <strong>PLL, and partial by necessity.</strong> Every filled cell below is a kernel-checked
       <span class="fml">Interd</span> — interderivability in PLL itself, not in the confluent
