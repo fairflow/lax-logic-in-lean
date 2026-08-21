@@ -17,3 +17,7 @@ paper/frj-modal/*.out
 paper/frj-modal/*.toc
 paper/frj-modal/*.fls
 paper/frj-modal/*.fdb_latexmk
+
+# Python bytecode caches (never source; one was committed at fe2726c)
+__pycache__/
+*.pyc
