@@ -27,18 +27,19 @@ import RNDB.Dict2Entries
 import RNDB.FRJCertEntries
 import RNDB.DerivedEntries
 import RNDB.EscEntries
+import RNDB.Order
 
 namespace RNDB
 
 def allEntries : List Entry :=
   rhoEntries ++ dictEntriesR1 ++ dictEntriesR2 ++ frjCertEntries
-    ++ derivedEntries ++ escEntries
+    ++ derivedEntries ++ escEntries ++ orderEntries
 
 set_option maxRecDepth 65536 in
-theorem allEntries_length : allEntries.length = 1776 := by
+theorem allEntries_length : allEntries.length = 1778 := by
   simp [allEntries, rhoEntries_length, dictEntriesR1_length,
     dictEntriesR2_length, frjCertEntries_length, derivedEntries_length,
-    escEntries_length]
+    escEntries_length, orderEntries_length]
 
 /-- Every claim in the database is true — instantiating the type-level
 fact at the concrete list. -/

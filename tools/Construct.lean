@@ -28,6 +28,7 @@ import FRJ.Search.Pin
 import FRJ.Bridge
 import LaxLogic.PLLSearch
 import LaxLogic.RN.Rho
+import wip.ljfo_link
 
 open FRJ
 
@@ -110,7 +111,23 @@ def main (args : List String) : IO Unit := do
   let budget := getNat args "budget" 50000
   let lc0 := getNat args "lamcap" 0
   let lamCap := if lc0 == 0 then 1000000 else lc0   -- 0 = uncapped (see README)
-  let cfg : Search.Config := { rounds := 12, lamCap := lamCap, maxRS := 800, maxIS := 800 }
+  let cfg : Search.Config := { rounds := getNat args "rounds" 12, lamCap := lamCap,
+                               maxRS := getNat args "maxrs" 800, maxIS := getNat args "maxis" 800 }
+  if (args.find? (fun a => a == "--ljf")).isSome then
+    -- Single-cell PROOF side: `TwoSidedLink.searchProves` on ρi ⊃ ρj at a
+    -- deep fuel ladder (an LJF◯ `false` certifies nothing at any fuel).
+    let i := getNat args "i" 0
+    let j := getNat args "j" 0
+    let φ := PLLFormula.ifThen (RhoOrder.rhoF i) (RhoOrder.rhoF j)
+    let fuels := (List.range (getNat args "maxfuel" 64 / 4 + 1)).map (· * 4) |>.filter (· ≥ 8)
+    let t0 ← IO.monoMsNow
+    match fuels.find? (fun f => TwoSidedLink.searchProves f [] φ) with
+    | some f =>
+        let t1 ← IO.monoMsNow
+        return (← IO.println s!"ρ{i}⊃ρ{j}	LJF◯-PROVED fuel={f}	{t1 - t0}ms")
+    | none =>
+        let t1 ← IO.monoMsNow
+        return (← IO.println s!"ρ{i}⊃ρ{j}	ljf-not-found-≤fuel-{fuels.getLast?.getD 0} (certifies nothing)	{t1 - t0}ms")
   if (args.find? (fun a => a.startsWith "--i=")).isSome then
     return (← frjOne (getNat args "i" 0) (getNat args "j" 0) cfg)
   IO.println s!"FRJ(◯) Profile: rounds={cfg.rounds} lamCap={lamCap} (cap-free arity)"

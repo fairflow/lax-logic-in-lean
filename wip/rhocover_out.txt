@@ -1,0 +1,207 @@
+=== PLL cover sweep over the 22-class ρ-catalogue (LJF◯ fuel ≤ 48) ===
+status over 462 cells: 158 ⊢, 302 ⊬, 2 open
+  OPEN CELL ρ12 ⊢? ρ15
+  OPEN CELL ρ20 ⊢? ρ10
+
+strict pairs (a < b certified): 158
+
+── candidate cover edges ──
+  BLOCKED ρ0 < ρ1  (interposer ρ2, +19 more)
+  COVER   ρ0 ⋖ ρ2   (every interposer excluded by settled cells)
+  COVER   ρ0 ⋖ ρ3   (every interposer excluded by settled cells)
+  BLOCKED ρ0 < ρ4  (interposer ρ2, +1 more)
+  BLOCKED ρ0 < ρ5  (interposer ρ2)
+  BLOCKED ρ0 < ρ6  (interposer ρ2, +3 more)
+  BLOCKED ρ0 < ρ7  (interposer ρ2, +2 more)
+  BLOCKED ρ0 < ρ8  (interposer ρ2, +6 more)
+  BLOCKED ρ0 < ρ9  (interposer ρ2, +5 more)
+  BLOCKED ρ0 < ρ10  (interposer ρ2, +12 more)
+  BLOCKED ρ0 < ρ11  (interposer ρ2, +7 more)
+  BLOCKED ρ0 < ρ12  (interposer ρ2, +7 more)
+  BLOCKED ρ0 < ρ13  (interposer ρ2, +4 more)
+  BLOCKED ρ0 < ρ14  (interposer ρ2, +2 more)
+  BLOCKED ρ0 < ρ15  (interposer ρ2, +12 more)
+  BLOCKED ρ0 < ρ16  (interposer ρ2, +4 more)
+  BLOCKED ρ0 < ρ17  (interposer ρ2, +5 more)
+  BLOCKED ρ0 < ρ18  (interposer ρ2, +9 more)
+  BLOCKED ρ0 < ρ19  (interposer ρ2, +3 more)
+  BLOCKED ρ0 < ρ20  (interposer ρ2, +7 more)
+  BLOCKED ρ0 < ρ21  (interposer ρ2, +10 more)
+  BLOCKED ρ2 < ρ1  (interposer ρ4, +17 more)
+  COVER   ρ2 ⋖ ρ4   (every interposer excluded by settled cells)
+  COVER   ρ2 ⋖ ρ5   (every interposer excluded by settled cells)
+  BLOCKED ρ2 < ρ6  (interposer ρ4, +1 more)
+  BLOCKED ρ2 < ρ7  (interposer ρ4)
+  BLOCKED ρ2 < ρ8  (interposer ρ4, +4 more)
+  BLOCKED ρ2 < ρ9  (interposer ρ4, +3 more)
+  BLOCKED ρ2 < ρ10  (interposer ρ4, +10 more)
+  BLOCKED ρ2 < ρ11  (interposer ρ4, +5 more)
+  BLOCKED ρ2 < ρ12  (interposer ρ4, +5 more)
+  BLOCKED ρ2 < ρ13  (interposer ρ4, +2 more)
+  BLOCKED ρ2 < ρ14  (interposer ρ4)
+  BLOCKED ρ2 < ρ15  (interposer ρ4, +10 more)
+  BLOCKED ρ2 < ρ16  (interposer ρ4, +2 more)
+  BLOCKED ρ2 < ρ17  (interposer ρ4, +3 more)
+  BLOCKED ρ2 < ρ18  (interposer ρ4, +7 more)
+  BLOCKED ρ2 < ρ19  (interposer ρ4, +1 more)
+  BLOCKED ρ2 < ρ20  (interposer ρ4, +5 more)
+  BLOCKED ρ2 < ρ21  (interposer ρ4, +8 more)
+  BLOCKED ρ3 < ρ1  (interposer ρ4, +16 more)
+  COVER   ρ3 ⋖ ρ4   (every interposer excluded by settled cells)
+  BLOCKED ρ3 < ρ6  (interposer ρ4)
+  BLOCKED ρ3 < ρ7  (interposer ρ4)
+  BLOCKED ρ3 < ρ8  (interposer ρ4, +4 more)
+  BLOCKED ρ3 < ρ9  (interposer ρ4, +2 more)
+  BLOCKED ρ3 < ρ10  (interposer ρ4, +9 more)
+  BLOCKED ρ3 < ρ11  (interposer ρ4, +4 more)
+  BLOCKED ρ3 < ρ12  (interposer ρ4, +4 more)
+  BLOCKED ρ3 < ρ13  (interposer ρ4, +1 more)
+  BLOCKED ρ3 < ρ14  (interposer ρ4)
+  BLOCKED ρ3 < ρ15  (interposer ρ4, +9 more)
+  BLOCKED ρ3 < ρ16  (interposer ρ4, +2 more)
+  BLOCKED ρ3 < ρ17  (interposer ρ4, +2 more)
+  BLOCKED ρ3 < ρ18  (interposer ρ4, +6 more)
+  BLOCKED ρ3 < ρ19  (interposer ρ4, +1 more)
+  BLOCKED ρ3 < ρ20  (interposer ρ4, +4 more)
+  BLOCKED ρ3 < ρ21  (interposer ρ4, +7 more)
+  BLOCKED ρ4 < ρ1  (interposer ρ6, +15 more)
+  COVER   ρ4 ⋖ ρ6   (every interposer excluded by settled cells)
+  COVER   ρ4 ⋖ ρ7   (every interposer excluded by settled cells)
+  BLOCKED ρ4 < ρ8  (interposer ρ7, +3 more)
+  BLOCKED ρ4 < ρ9  (interposer ρ6, +1 more)
+  BLOCKED ρ4 < ρ10  (interposer ρ6, +8 more)
+  BLOCKED ρ4 < ρ11  (interposer ρ6, +3 more)
+  BLOCKED ρ4 < ρ12  (interposer ρ6, +3 more)
+  BLOCKED ρ4 < ρ13  (interposer ρ6)
+  COVER   ρ4 ⋖ ρ14   (every interposer excluded by settled cells)
+  BLOCKED ρ4 < ρ15  (interposer ρ6, +8 more)
+  BLOCKED ρ4 < ρ16  (interposer ρ7, +1 more)
+  BLOCKED ρ4 < ρ17  (interposer ρ6, +1 more)
+  BLOCKED ρ4 < ρ18  (interposer ρ6, +5 more)
+  BLOCKED ρ4 < ρ19  (interposer ρ7)
+  BLOCKED ρ4 < ρ20  (interposer ρ6, +3 more)
+  BLOCKED ρ4 < ρ21  (interposer ρ6, +6 more)
+  BLOCKED ρ5 < ρ1  (interposer ρ6, +10 more)
+  COVER   ρ5 ⋖ ρ6   (every interposer excluded by settled cells)
+  BLOCKED ρ5 < ρ9  (interposer ρ6)
+  BLOCKED ρ5 < ρ10  (interposer ρ6, +3 more)
+  BLOCKED ρ5 < ρ11  (interposer ρ6, +2 more)
+  BLOCKED ρ5 < ρ12  (interposer ρ6, +2 more)
+  BLOCKED ρ5 < ρ13  (interposer ρ6)
+  BLOCKED ρ5 < ρ15  (interposer ρ6, +5 more)
+  BLOCKED ρ5 < ρ17  (interposer ρ6)
+  BLOCKED ρ5 < ρ18  (interposer ρ6, +2 more)
+  BLOCKED ρ5 < ρ20  (interposer ρ6, +1 more)
+  BLOCKED ρ5 < ρ21  (interposer ρ6, +4 more)
+  BLOCKED ρ6 < ρ1  (interposer ρ9, +9 more)
+  COVER   ρ6 ⋖ ρ9   (every interposer excluded by settled cells)
+  BLOCKED ρ6 < ρ10  (interposer ρ9, +2 more)
+  BLOCKED ρ6 < ρ11  (interposer ρ13, +1 more)
+  BLOCKED ρ6 < ρ12  (interposer ρ9, +1 more)
+  COVER   ρ6 ⋖ ρ13   (every interposer excluded by settled cells)
+  BLOCKED ρ6 < ρ15  (interposer ρ9, +4 more)
+  COVER   ρ6 ⋖ ρ17   (every interposer excluded by settled cells)
+  BLOCKED ρ6 < ρ18  (interposer ρ9, +1 more)
+  BLOCKED ρ6 < ρ20  (interposer ρ9)
+  BLOCKED ρ6 < ρ21  (interposer ρ9, +3 more)
+  BLOCKED ρ7 < ρ1  (interposer ρ8, +9 more)
+  BLOCKED ρ7 < ρ8  (interposer ρ16, +1 more)
+  COVER   ρ7 ⋖ ρ9   (every interposer excluded by settled cells)
+  BLOCKED ρ7 < ρ10  (interposer ρ8, +4 more)
+  BLOCKED ρ7 < ρ12  (interposer ρ9)
+  BLOCKED ρ7 < ρ15  (interposer ρ9, +2 more)
+  COVER   ρ7 ⋖ ρ16   (every interposer excluded by settled cells)
+  BLOCKED ρ7 < ρ18  (interposer ρ9, +1 more)
+  COVER   ρ7 ⋖ ρ19   (every interposer excluded by settled cells)
+  BLOCKED ρ7 < ρ20  (interposer ρ9, +1 more)
+  BLOCKED ρ7 < ρ21  (interposer ρ9, +3 more)
+  BLOCKED ρ8 < ρ1  (interposer ρ10)
+  COVER   ρ8 ⋖ ρ10   (every interposer excluded by settled cells)
+  BLOCKED ρ9 < ρ1  (interposer ρ10, +5 more)
+  BLOCKED ρ9 < ρ10  (interposer ρ18)
+  COVER   ρ9 ⋖ ρ12   (every interposer excluded by settled cells)
+  BLOCKED ρ9 < ρ15  (interposer ρ18)
+  COVER   ρ9 ⋖ ρ18   (every interposer excluded by settled cells)
+  COVER   ρ9 ⋖ ρ20   (every interposer excluded by settled cells)
+  BLOCKED ρ9 < ρ21  (interposer ρ12, +1 more)
+  COVER   ρ10 ⋖ ρ1   (every interposer excluded by settled cells)
+  BLOCKED ρ11 < ρ1  (interposer ρ15)
+  COVER   ρ11 ⋖ ρ15   (every interposer excluded by settled cells)
+  BLOCKED ρ12 < ρ1  (interposer ρ21)
+  COVER   ρ12 ⋖ ρ21   (every interposer excluded by settled cells)
+  BLOCKED ρ13 < ρ1  (interposer ρ11, +3 more)
+  COVER   ρ13 ⋖ ρ11   (every interposer excluded by settled cells)
+  COVER   ρ13 ⋖ ρ12   (every interposer excluded by settled cells)
+  BLOCKED ρ13 < ρ15  (interposer ρ11)
+  BLOCKED ρ13 < ρ21  (interposer ρ12)
+  BLOCKED ρ14 < ρ1  (interposer ρ8, +6 more)
+  BLOCKED ρ14 < ρ8  (interposer ρ16)
+  BLOCKED ρ14 < ρ10  (interposer ρ8, +3 more)
+  BLOCKED ρ14 < ρ11  (interposer ρ17)
+  BLOCKED ρ14 < ρ15  (interposer ρ11, +3 more)
+  COVER   ρ14 ⋖ ρ16   (every interposer excluded by settled cells)
+  COVER   ρ14 ⋖ ρ17   (every interposer excluded by settled cells)
+  BLOCKED ρ14 < ρ18  (interposer ρ16, +1 more)
+  COVER   ρ15 ⋖ ρ1   (every interposer excluded by settled cells)
+  BLOCKED ρ16 < ρ1  (interposer ρ8, +3 more)
+  COVER   ρ16 ⋖ ρ8   (every interposer excluded by settled cells)
+  BLOCKED ρ16 < ρ10  (interposer ρ8, +1 more)
+  BLOCKED ρ16 < ρ15  (interposer ρ18)
+  COVER   ρ16 ⋖ ρ18   (every interposer excluded by settled cells)
+  BLOCKED ρ17 < ρ1  (interposer ρ10, +3 more)
+  BLOCKED ρ17 < ρ10  (interposer ρ18)
+  COVER   ρ17 ⋖ ρ11   (every interposer excluded by settled cells)
+  BLOCKED ρ17 < ρ15  (interposer ρ11, +1 more)
+  COVER   ρ17 ⋖ ρ18   (every interposer excluded by settled cells)
+  BLOCKED ρ18 < ρ1  (interposer ρ10, +1 more)
+  COVER   ρ18 ⋖ ρ10   (every interposer excluded by settled cells)
+  COVER   ρ18 ⋖ ρ15   (every interposer excluded by settled cells)
+  BLOCKED ρ19 < ρ1  (interposer ρ8, +3 more)
+  COVER   ρ19 ⋖ ρ8   (every interposer excluded by settled cells)
+  BLOCKED ρ19 < ρ10  (interposer ρ8)
+  COVER   ρ19 ⋖ ρ20   (every interposer excluded by settled cells)
+  BLOCKED ρ19 < ρ21  (interposer ρ20)
+  BLOCKED ρ20 < ρ1  (interposer ρ21)
+  COVER   ρ20 ⋖ ρ21   (every interposer excluded by settled cells)
+  COVER   ρ21 ⋖ ρ1   (every interposer excluded by settled cells)
+
+HASSE (scoped to the catalogue): 37 cover edges, 121 blocked, 0 open
+  HASSE ρ0 ⋖ ρ2
+  HASSE ρ0 ⋖ ρ3
+  HASSE ρ2 ⋖ ρ4
+  HASSE ρ2 ⋖ ρ5
+  HASSE ρ3 ⋖ ρ4
+  HASSE ρ4 ⋖ ρ6
+  HASSE ρ4 ⋖ ρ7
+  HASSE ρ4 ⋖ ρ14
+  HASSE ρ5 ⋖ ρ6
+  HASSE ρ6 ⋖ ρ9
+  HASSE ρ6 ⋖ ρ13
+  HASSE ρ6 ⋖ ρ17
+  HASSE ρ7 ⋖ ρ9
+  HASSE ρ7 ⋖ ρ16
+  HASSE ρ7 ⋖ ρ19
+  HASSE ρ8 ⋖ ρ10
+  HASSE ρ9 ⋖ ρ12
+  HASSE ρ9 ⋖ ρ18
+  HASSE ρ9 ⋖ ρ20
+  HASSE ρ10 ⋖ ρ1
+  HASSE ρ11 ⋖ ρ15
+  HASSE ρ12 ⋖ ρ21
+  HASSE ρ13 ⋖ ρ11
+  HASSE ρ13 ⋖ ρ12
+  HASSE ρ14 ⋖ ρ16
+  HASSE ρ14 ⋖ ρ17
+  HASSE ρ15 ⋖ ρ1
+  HASSE ρ16 ⋖ ρ8
+  HASSE ρ16 ⋖ ρ18
+  HASSE ρ17 ⋖ ρ11
+  HASSE ρ17 ⋖ ρ18
+  HASSE ρ18 ⋖ ρ10
+  HASSE ρ18 ⋖ ρ15
+  HASSE ρ19 ⋖ ρ8
+  HASSE ρ19 ⋖ ρ20
+  HASSE ρ20 ⋖ ρ21
+  HASSE ρ21 ⋖ ρ1
+control: ρ6 < ρ12 BLOCKED by ρ9, matching kernel theorem RNDB.not_covers_rho6_rho12
+RHOCOVER-DONE

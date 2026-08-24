@@ -957,3 +957,38 @@ to confirm), rho_order/rnSep/rnSepColl (declaration-level, rnSepColl
 last).  (2) FinCM/Kripke unification.  (3) The `tools/`–`Tools/` case
 collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
 (`◯((q8∧q11)⊃q13) ⊃ (q14∨q15)`) still unsettled at budget 2×10⁶.
+
+## §2026-08-24b — the order view settled: ρ-catalogue PLL Hasse diagram complete (scoped)
+
+* **Notation (Matthew):** strict order is `<`/`>` (scoped `LT PLLFormula`
+  instance in `RNDB`); `≺/≻` removed (order-theory texts reserve `≺` for
+  covering).  Covers: `a ⋖[S] b` scoped, converse `a ⋗[S] b`; bare
+  `⋖`/`⋗` (`RNDB.Covers`, interval empty over ALL formulas) stated,
+  uninhabited.  Symbols: ⋖ U+22D6, ⋗ U+22D7.
+* **The two frontier cells were already settled — by lookup.**  The
+  2026-08-15 record (`wip/rho_order_out.txt`, DerivU matrix) separates
+  both on the confluent battery; `rhoorder pin` re-emitted the pin lines.
+  One 5-world frame (`RNDB.sepM`) settles both at world 0:
+  `rho12_nle_rho9 : [ρ12] ⊬ ρ9` and `rho13_nle_rho6 : [ρ13] ⊬ ρ6`
+  (via `¬DerivU → ¬Deriv`).  Consequences, all kernel-checked
+  `[propext, Quot.sound]`: `not_covers_rho6_rho12 : ¬(ρ6 ⋖[ρScope] ρ12)`
+  (ρ9 interposes) and `rho6_lt_rho13` (hand term `nd_6_13`).  Banked as
+  entries `ord-0001`/`ord-0002` (`Engine.finCM`); `DB.allEntries` now
+  **1778**.
+* **Item 2, the catalogue-wide cover sweep: `lake exe rhocover`**
+  (`Tools/Cover.lean`).  PLL status per cell (battery separation ⊬;
+  G4c oracle + LJF◯ ladder ≤48 ⊢), then every strict pair classified
+  COVER / BLOCKED / OPEN with frontier emission; control = the ρ6/ρ12
+  kernel theorem, run refuses a summary without it.  Result
+  (`wip/rhocover_out.txt`): 462 cells = 158 ⊢, 302 ⊬, 2 open (exactly
+  the standing flags ρ12⊢?ρ15, ρ20⊢?ρ10); 158 strict pairs; **37 cover
+  edges, 121 blocked, 0 open** — the scoped Hasse diagram is COMPLETE,
+  and the 37 edges agree 1:1 with `docs/rho-order.md`'s table.  The two
+  flags touch no existing edge (opposite directions battery-settled);
+  each could only ADD a strict pair if resolved ⊢.  `frontierOrder` now
+  carries exactly those two `le` claims.  Diagram:
+  `docs/rho-hasse-pll.svg`.
+* **Raised-budget FRJ(◯)/LJF◯ runs on the two ex-frontier cells** were
+  launched before the lookup landed; results go to the FRJ
+  incompleteness file when they finish (a cap-free FRJ closure on these
+  now-known-refutable cells = two new incompleteness candidates).

@@ -23,6 +23,7 @@ entries, to two OPEN cells — which become frontier members below, not
 assumptions.
 -/
 import RNDB.RhoEntries
+import LaxLogic.PLLSearchConf
 
 open PLLND PLLND.SemUI PLLFormula
 
@@ -124,12 +125,90 @@ theorem not_coversIn_of_open (h : ¬ Deriv [rhoF 12] (rhoF 9)) :
   hc.2 (rhoF 9) (by decide)
     ⟨rho6_lt_rho9, ⟨rho9_le_rho12, h⟩⟩
 
-/-- The open cells the ρ6/ρ12 cover question NEEDS, recorded as frontier
-data (asserting nothing): `ρ12 ⊬ ρ9?` decides interposition of ρ9;
-`ρ13 ⊬ ρ6?` likewise for ρ13 (whose other three sides are settled). -/
+/-! ## The two cells, SETTLED — by lookup, not by search
+
+Both cells were already refuted in the 2026-08-15 record: the DerivU
+matrix (`wip/rho_order_out.txt`, rows ρ12/ρ13) separates them on the
+confluent battery, kernel-escalatable; `rhoorder pin` re-emitted the
+certificates 2026-08-24.  ONE 5-world mutually confluent frame
+separates both cells at world 0, refuting `DerivU` — and `Deriv ⊆
+DerivU` (`DerivU.of_nd`), so the PLL claims follow.  The former
+`frontierOrder` members are RETIRED below. -/
+
+/-- The separating frame: 5 worlds, `rm = {(2,3)}`, fallible world 3. -/
+def sepM : FinCM :=
+  ⟨5, [(0, 1), (0, 2), (0, 3), (0, 4), (1, 2), (1, 3), (2, 3)], [(2, 3)], [3], []⟩
+
+/-- `ρ12 ⊬ᵤ ρ9` (PCLL): battery separation, kernel-checked. -/
+theorem rho12_nleU_rho9 : ¬ ConfluentU.DerivU [rhoF 12] (rhoF 9) :=
+  RNC.not_derivU_of_checkConf (M := sepM) (w := 0) (by decide) (by decide)
+
+/-- `ρ13 ⊬ᵤ ρ6` (PCLL): the same frame, the same world. -/
+theorem rho13_nleU_rho6 : ¬ ConfluentU.DerivU [rhoF 13] (rhoF 6) :=
+  RNC.not_derivU_of_checkConf (M := sepM) (w := 0) (by decide) (by decide)
+
+/-- `[ρ12] ⊬ ρ9` in PLL, since `Deriv ⊆ DerivU`. -/
+theorem rho12_nle_rho9 : ¬ Deriv [rhoF 12] (rhoF 9) :=
+  fun ⟨t⟩ => rho12_nleU_rho9 (ConfluentU.DerivU.of_nd t)
+
+/-- `[ρ13] ⊬ ρ6` in PLL, since `Deriv ⊆ DerivU`. -/
+theorem rho13_nle_rho6 : ¬ Deriv [rhoF 13] (rhoF 6) :=
+  fun ⟨t⟩ => rho13_nleU_rho6 (ConfluentU.DerivU.of_nd t)
+
+/-- **ρ9 interposes: ρ12 does NOT cover ρ6 in the catalogue.**  The
+worked example's cover question, now unconditional. -/
+theorem not_covers_rho6_rho12 : ¬ (rhoF 6 ⋖[rhoScope] rhoF 12) :=
+  not_coversIn_of_open rho12_nle_rho9
+
+/-- `[ρ6] ⊢ ρ13`, hand term: assume `¬¬◯⊥ ⊃ ◯⊥`; the `¬◯⊥` disjunct is
+the right injection into `◯⊥ ∨ ¬◯⊥`, the `¬¬◯⊥` disjunct fires the
+hypothesis for the left. -/
+def nd_6_13 : LaxND [q7] (q10.ifThen q4) :=
+  .impIntro <|
+    .orElim (.iden (show q7 ∈ [q10, q7] by decide))
+      (.orIntro2 (.iden (show q3 ∈ q3 :: [q10, q7] by decide)))
+      (.orIntro1 (.impElim (.iden (show q10 ∈ q6 :: [q10, q7] by decide))
+        (.iden (show q6 ∈ q6 :: [q10, q7] by decide))))
+
+/-- ρ6 < ρ13, both halves kernel-checked. -/
+theorem rho6_lt_rho13 : rhoF 6 < rhoF 13 :=
+  ⟨⟨nd_6_13⟩, rho13_nle_rho6⟩
+
+/-! ## Banked: the two settlements as database entries
+
+`Engine.finCM`, not `frj`: the countermodel came from the confluent
+battery, and the engine label is provenance, never a truth condition. -/
+
+def nle_12_9 : Entry where
+  id := "ord-0001"
+  claim := ⟨rhoF 12, rhoF 9, Rel.nle, some rhoScope⟩
+  ev := Evidence.countermodel Engine.finCM 5
+  ok := ⟨Claim.wellScoped_some, rfl, by decide, rho12_nle_rho9⟩
+
+def nle_13_6 : Entry where
+  id := "ord-0002"
+  claim := ⟨rhoF 13, rhoF 6, Rel.nle, some rhoScope⟩
+  ev := Evidence.countermodel Engine.finCM 5
+  ok := ⟨Claim.wellScoped_some, rfl, by decide, rho13_nle_rho6⟩
+
+/-- The order module's entries, appended to `DB.allEntries`. -/
+def orderEntries : List Entry := [nle_12_9, nle_13_6]
+
+theorem orderEntries_length : orderEntries.length = 2 := rfl
+
+/-- The order view's LIVE frontier.  The two original members
+(`ρ12 ⊬ ρ9?`, `ρ13 ⊬ ρ6?`) were RETIRED 2026-08-24 — settled by
+looking up the 2026-08-15 battery record, not by new search; they are
+theorems above.  What remains open in the whole 462-cell PLL matrix is
+exactly the two standing flag cells (`docs/two-sided-engine.md` §"The
+two genuine flags").  The `rhocover` sweep (2026-08-24,
+`wip/rhocover_out.txt`) shows neither touches any of the 37 scoped
+cover edges: each could only ADD one strict pair (and possibly one
+edge) if resolved POSITIVELY, because the opposite directions
+(`ρ15 ⊬ ρ12`, `ρ10 ⊬ ρ20`) are battery-settled. -/
 def frontierOrder : Frontier :=
-  [ ⟨rhoF 12, rhoF 9, Rel.nle, some rhoScope⟩,
-    ⟨rhoF 13, rhoF 6, Rel.nle, some rhoScope⟩ ]
+  [ ⟨rhoF 12, rhoF 15, Rel.le, none⟩,
+    ⟨rhoF 20, rhoF 10, Rel.le, none⟩ ]
 
 /-! ## Pins — UNGUARDED as emitted; guard via tools/pin-backfill.py -/
 
@@ -144,5 +223,21 @@ def frontierOrder : Frontier :=
 /-- info: 'RNDB.not_coversIn_of_open' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms not_coversIn_of_open
+
+/-- info: 'RNDB.rho12_nle_rho9' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho12_nle_rho9
+/-- info: 'RNDB.rho13_nle_rho6' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho13_nle_rho6
+/-- info: 'RNDB.not_covers_rho6_rho12' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_covers_rho6_rho12
+/-- info: 'RNDB.rho6_lt_rho13' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho6_lt_rho13
+/-- info: 'RNDB.orderEntries' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms orderEntries
 
 end RNDB
