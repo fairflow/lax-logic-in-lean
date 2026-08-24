@@ -40,8 +40,8 @@ Read off the display normal forms, the chain is
 in any derivation of θ, S ⊢ ◯p; so the ∀p pre-interpolant EXISTS at
 this cell and this cell is NOT a Ghilardi–Zawadowski counterexample.
 -/
-import LaxLogic.LJFOSearch
-import LaxLogic.LJFOFuel
+import LJF.OSearch
+import LJF.OFuel
 import wip.ljfo_attack
 
 open LJFO LJFOAttack PLLND

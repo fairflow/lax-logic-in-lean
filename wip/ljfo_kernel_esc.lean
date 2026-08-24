@@ -5,7 +5,7 @@ kernel derivation; fuel is streamed upward (search_mono), so the
 frontier of feasibility is visible even if a level hangs.
 Cell A: the [◯p→r, ◯(↓◯p)] CimpAnt conclusion.
 Cell B: φ★'s minimality direction  E(φ★-station) ⊢ ¬¬◯⊥.  -/
-import LaxLogic.LJFOSearch
+import LJF.OSearch
 import wip.ljfo_attack
 import wip.ljfo_crosscheck
 

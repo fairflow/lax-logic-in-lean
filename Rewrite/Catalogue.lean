@@ -10,13 +10,12 @@ kernel-checked.
 
 **The 87 unproved cells are EXCLUDED, and this is not cosmetic.**
 `wip/rnDict.lean` states all 323 cell theorems but proves only 236;
-the other 87 are `sorry`, and FOUR OF THEM ARE REFUTED — the stated
-collapse is FALSE, the `sorry` recording the failure point:
+the other 87 are `sorry`.  Four of them state a collapse that is FALSE:
 
-    cAnd_8_10 : Interd (q8 ∧ q10)  q0      -- REFUTED
-    cImp_9_4  : Interd (q9  ⊃ q4)  q0      -- REFUTED
-    cImp_12_4 : Interd (q12 ⊃ q4)  q0      -- REFUTED
-    cImp_14_4 : Interd (q14 ⊃ q4)  q0      -- REFUTED
+    cAnd_8_10 : Interd (q8 ∧ q10)  q0      -- FALSE AS STATED
+    cImp_9_4  : Interd (q9  ⊃ q4)  q0      -- FALSE AS STATED
+    cImp_12_4 : Interd (q12 ⊃ q4)  q0      -- FALSE AS STATED
+    cImp_14_4 : Interd (q14 ⊃ q4)  q0      -- FALSE AS STATED
 
 The first cut of this file (2026-08-14, commit 8bb7ef4) harvested all
 323 names indiscriminately, so `rndSet` carried `sorryAx` and four
@@ -28,8 +27,31 @@ unproved `ok` makes the whole normaliser unsound, silently.  The
 repeat: any future harvest that picks up an unproved cell fails the
 build here rather than in the results.
 
-The 83 remaining OPEN cells are a TARGET LIST, not a loss — see
-`docs/rn-dictionary-status.md`.
+CORRECTION, 2026-08-21.  This header previously called those four cells
+REFUTED.  They are not.  What is refuted is the collapse **to `q0`**.
+All four formulas collapse to each other, and their common class is
+`q15 := q9 ⊃ q4`, appended to `LaxLogic/RN/Reps.lean` on 2026-08-21:
+
+    cAnd_8_10 : Interd (q8 ∧ q10) q15   PROVED   wip/rnDict2.lean:136
+    cImp_9_4  : Interd (q9  ⊃ q4) q15   PROVED   `Interd.refl` — q15 IS q9 ⊃ q4
+    cImp_12_4 : Interd (q12 ⊃ q4) q15   PROVED   wip/rnDict2.lean:519
+    cImp_14_4 : Interd (q14 ⊃ q4) q15   PROVED   wip/rnDict2.lean:585
+
+`wip/rnSep.lean` separates `q15` from all fifteen earlier representatives
+(`sep_0_16 … sep_14_16`, sorry-free), so this is a new class rather than a
+renaming.  The EXCLUSION from `rndSet` stands unchanged and for the same
+reason — the rule as written here is unsound — but the diagnosis was
+wrong, and the way it was wrong is the disease itself: **status is not a
+property of a cell.**  It is a property of a cell together with the
+representative set it was asked about, and of the engine that asked.  A
+cell "refuted" against fifteen representatives is proved against sixteen.
+
+So of the 87 excluded cells, 42 are settled against `q15` (41 proved in
+`wip/rnDict2.lean`, plus `cImp_9_4` which needs no theorem) and 45 remain
+genuinely open — sorried in round 1 and in round 2 alike.  The TARGET
+LIST is those 45, not 83; see `docs/rn-dictionary-status.md`.  Harvesting
+the 42 means re-stating them in the shared numbering, which is database
+work, not a docstring fix, so `rndSet` is unchanged by this correction.
 
 Composition (proved cells only):
   ∧-table 64   ∨-table 46   ⊃-table 121   ◯-table 5

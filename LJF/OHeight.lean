@@ -8,7 +8,7 @@ in the bound, and equivalent to the unindexed forms.  This is the
 and the fuel-founded interpolant recursion build on it.  Purely additive:
 imports the frozen core, touches nothing.
 -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 
 namespace LJFO
 

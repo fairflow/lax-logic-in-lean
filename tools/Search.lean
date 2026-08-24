@@ -28,11 +28,40 @@ searched; refuting either refutes the cell):
 * `open`    — neither proved nor refuted at ≤4 worlds.  A hit is a **NEW
   REFUTATION**: the dictionary entry is false and the ladder gains a class.
 
-Verdict vocabulary (repo standard; there is no CERTAIN category).  A
-search that stops without a derivation reports either
-`no-derivation-at-fixpoint` (the rule set produced nothing new, relative to
-the engine's own caps) or `no-derivation-at-budget` (a cap or the round
-limit was hit — a frontier marker to re-run raised, never dropped).
+Verdict vocabulary (repo standard; there is no CERTAIN category).  Two
+negative outcomes, and they are genuinely different:
+
+* `not-found-within-bound` — the search stopped with at least one cap
+  binding.  A limitation of the run, never a statement about the
+  sequent; the whole `Config` is printed so a re-run knows every
+  dimension it can raise.
+* `closed-no-cap-bound` — saturation reached `fresh == 0` with NO
+  recorded cap binding.  Still not "no countermodel exists", but a much
+  stronger situation, and the one worth escalating: if FRJ(◯) is
+  complete it means the goal is PROVABLE, so the move is to run the
+  proof engine.  See `lake exe frjterm`.
+
+WITHDRAWN 2026-08-21: `no-derivation-at-fixpoint`.  This tool used to
+split the negative case, reporting a "fixpoint" when
+`!lamCapped && !dbCapped && roundsUsed < rounds`.  That reads THREE of the
+five things that can truncate a round: `Config` also carries `jmax` and
+`pmax`, and `roundStep` forms premise families only up to those arities,
+which `Stats` did not record at all (it does now — `jmaxBinding` /
+`pmaxBinding`, added the same day).  So the flag was blind to exactly the
+two caps most likely to bind, and there is precedent for it firing falsely
+— `FRJ/Search/Engine.lean` records that on 2026-08-17 a gap in the zone
+enumeration made the engine "report a rule-closure fixpoint without the
+goal".  Repaired for that cause; the arity cause was never closed.
+
+The label is DELETED rather than repaired, because "fixpoint" will be read
+as exhaustion whatever the docstring says, and three legitimate fixpoint
+notions sit next to it in this codebase (`FRJ/Saturate.lean`'s `AllMet`
+demand-closure, and `FRJ/Search/Fast.lean`'s Fast-vs-Engine agreement) to
+lend it credibility it never had.  What WOULD justify a genuine "no
+derivation exists" verdict is a bound on FRJ(◯)'s join arity in terms of
+the goal's finite subformula universe, making the arity truncation
+provably non-binding.  There is no such theorem, so there is no such
+outcome.
 
 Usage:  `lake exe rnfrj [--rounds=N] [--jmax=N] [--pmax=N] [--lamcap=N]
                         [--status=proved|refuted|open|all] [--limit=N]
@@ -48,16 +77,42 @@ namespace RNFRJ
 
 /-! ## Per-goal search -/
 
+/-- Three outcomes.  Neither negative one says "no countermodel exists". -/
 inductive Outcome where
   | hit
-  | fixpoint
-  | budget
+  /-- Saturation reached `fresh == 0` with NO recorded cap binding: the
+  rule set, run to its own closure, produced nothing new.
+
+  This is NOT the deleted `fixpoint` flag returning.  That one was
+  computed from three of the five things that can truncate a round and
+  fired on runs where both arity caps were cutting the enumeration.  This
+  one reads all five, which only became possible when `jmaxBinding` /
+  `pmaxBinding` were added to `FRJ.Search.Stats` on 2026-08-21.
+
+  What it does NOT license: "there is no countermodel".  `fresh == 0`
+  still depends on the subsumption in `insertAllR`/`insertAllI` not
+  over-subsuming, which is unproved, and on `Certified.SearchComplete`,
+  which is OPEN.
+
+  What it IS good for: **if FRJ(◯) is complete, a cap-free closure with
+  no refutation means the goal is PROVABLE** — so the next move is to run
+  the proof engine, which is sound AND complete
+  (`TwoSidedLink.searchProves_complete`).  Agreement confirms the
+  closure; a proof engine that also finds nothing, at fuel high enough to
+  matter, is a candidate incompleteness witness for FRJ(◯).  `lake exe
+  frjterm` does exactly this pairing, and demonstrates the outcome is not
+  vacuous: `p ⊃ ◯p` closes cap-free in two rounds and the prover proves
+  it at fuel 8. -/
+  | closed
+  /-- Stopped with at least one cap binding.  NOT FOUND within the
+  `Config` given; never "does not exist". -/
+  | noneAt
   deriving DecidableEq
 
 def Outcome.toString : Outcome → String
-  | .hit      => "refuted"
-  | .fixpoint => "no-derivation-at-fixpoint"
-  | .budget   => "no-derivation-at-budget"
+  | .hit    => "refuted"
+  | .closed => "closed-no-cap-bound"
+  | .noneAt => "not-found-within-bound"
 
 structure GoalResult where
   name : String
@@ -68,6 +123,24 @@ structure GoalResult where
   ms : Nat
   fams : Nat
   pfams : Nat
+  /-- Every cap the run could have hit, so a `noneAt` is re-runnable
+  without re-deriving why it stopped. -/
+  lamCapped : Bool
+  dbCapped : Bool
+  jmaxBinding : Bool
+  pmaxBinding : Bool
+
+/-- The caps that actually bound this run, as a printable list.  Empty
+means no recorded cap truncated anything — which is NOT a fixpoint claim:
+`fresh == 0` also depends on the subsumption in `insertAllR`/`insertAllI`
+not over-subsuming, and that is unproved. -/
+def GoalResult.bindingCaps (r : GoalResult) : String :=
+  let l := (if r.lamCapped then ["lamCap"] else [])
+        ++ (if r.dbCapped then ["maxRS/maxIS"] else [])
+        ++ (if r.jmaxBinding then ["jmax"] else [])
+        ++ (if r.pmaxBinding then ["pmax"] else [])
+        ++ (if r.rounds > 0 then [] else [])
+  if l.isEmpty then "none-recorded" else String.intercalate "+" l
 
 def runGoal (fast : Bool) (cfg : Search.Config) (nm : String) (G : Form) :
     IO GoalResult := do
@@ -80,20 +153,33 @@ def runGoal (fast : Bool) (cfg : Search.Config) (nm : String) (G : Form) :
       let (db, st) := Search.saturate G cfg
       (Search.derivable G db, st, 0, 0)
   let t1 ← IO.monoMsNow
-  let atFixpoint := !st.lamCapped && !st.dbCapped && st.roundsUsed < cfg.rounds
-  let out := if hit then Outcome.hit else if atFixpoint then .fixpoint else .budget
-  return ⟨nm, out, st.roundsUsed, st.rsSize, st.isSize, t1 - t0, nf, np⟩
+  let capFree := !st.lamCapped && !st.dbCapped && !st.jmaxBinding
+                 && !st.pmaxBinding && st.roundsUsed < cfg.rounds
+  let out := if hit then Outcome.hit else if capFree then .closed else .noneAt
+  return ⟨nm, out, st.roundsUsed, st.rsSize, st.isSize, t1 - t0, nf, np,
+          st.lamCapped, st.dbCapped, st.jmaxBinding, st.pmaxBinding⟩
 
 /-! ## Per-cell grading -/
 
-def grade (s : RNBank.Status) (anyHit : Bool) (anyBudget : Bool) : String :=
+/-- **The status tags this grades against are WITHDRAWN** (see
+`Tools/Bank.lean`), so `ENGINE-BUG` and `NEW-REFUTATION` are currently
+claims about an unsound oracle, not about the engine or the cell.  The
+strings are kept so a regenerated bank makes the harness live again; until
+then read only the per-goal outcomes.  Rebuilding the oracle is Phase 3 of
+the layer plan. -/
+def grade (s : RNBank.Status) (anyHit : Bool) : String :=
   match s, anyHit with
-  | .proved,  true  => "ENGINE-BUG (typed derivation against a kernel-checked Interd)"
+  | .proved,  true  => "ENGINE-BUG? (typed derivation against a cell tagged proved)"
   | .proved,  false => "control-ok"
   | .refuted, true  => "pass"
-  | .refuted, false => if anyBudget then "miss-at-budget" else "miss-at-fixpoint"
-  | .«open»,  true  => "NEW-REFUTATION (dictionary cell is FALSE)"
-  | .«open»,  false => if anyBudget then "open-at-budget" else "open-at-fixpoint"
+  | .refuted, false => "miss"
+  | .«open»,  true  => "NEW-REFUTATION? (cell tagged open, engine refutes)"
+  | .«open»,  false => "open-still"
+
+/-- Cells whose search CLOSED cap-free are the ones to hand to the proof
+engine: on those, and only those, a completeness assumption would turn
+"no refutation" into "provable". -/
+def escalate (res : List GoalResult) : Bool := res.any (fun r => r.out == .closed)
 
 structure Tally where
   bug : Nat := 0
@@ -119,11 +205,10 @@ def runCell (fast : Bool) (cfg : Search.Config) (c : RNBank.Cell) (t : Tally) : 
   for (nm, G) in c.forms do
     res := res ++ [← runGoal fast cfg nm G]
   let anyHit := res.any (fun r => r.out == .hit)
-  let anyBudget := res.any (fun r => r.out == .budget)
   let ms := res.foldl (fun a r => a + r.ms) 0
   let detail := String.intercalate " " (res.map (fun r =>
-    s!"{r.name}={r.out.toString}(r={r.rounds},RS={r.rs},IS={r.is},fam={r.fams},pfam={r.pfams},{r.ms}ms)"))
-  IO.println s!"{c.name} [{c.status.toString}]: {grade c.status anyHit anyBudget} | {detail}"
+    s!"{r.name}={r.out.toString}(r={r.rounds},RS={r.rs},IS={r.is},fam={r.fams},pfam={r.pfams},caps={r.bindingCaps},{r.ms}ms)"))
+  IO.println s!"{c.name} [{c.status.toString}]: {grade c.status anyHit} | {detail}"
   (← IO.getStdout).flush
   return t.bump c.status anyHit ms
 
@@ -143,7 +228,7 @@ def main (args : List String) : IO Unit := do
     rounds := getNat args "rounds" 10,
     jmax   := getNat args "jmax" 3,
     pmax   := getNat args "pmax" 2,
-    lamCap := getNat args "lamcap" 10,
+    lamCap := (fun n => if n == 0 then 1000000 else n) (getNat args "lamcap" 10),
     maxRS  := getNat args "maxrs" 800,
     maxIS  := getNat args "maxis" 800 }
   let fast := (getArg args "engine").getD "fast" == "fast"

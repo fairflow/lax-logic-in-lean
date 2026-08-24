@@ -606,6 +606,27 @@ structure Stats where
   dbCapped : Bool := false
   rsSize : Nat := 0
   isSize : Nat := 0
+  /-- Did the join ARITY cap `jmax` omit a premise family in some round?
+
+  `famsUpTo l k` enumerates families of total size `≤ k`, so a family it
+  never formed exists exactly when `l.length > k`.  This records
+  `db.is.length > cfg.jmax` at the start of each round, disjunctively.
+
+  Added 2026-08-21.  `Stats` previously recorded `lamCapped` and
+  `dbCapped` but NOT the two arity caps, and `roundStep` truncates on both
+  — so a caller could see every recorded cap unset while `jmax` had
+  silently cut the enumeration.  Anything reading "no cap was hit" off
+  this structure was reading three of the five. -/
+  jmaxBinding : Bool := false
+  /-- Did the promise-family arity cap `pmax` omit a family in some round?
+  `db.rs.length > cfg.pmax` at the start of each round, disjunctively.
+
+  CONSERVATIVE in `saturateFast`, which enumerates promise families over a
+  FILTERED `db.rs` (the `J7` survivors), so this can report binding when
+  the filtered list was in fact short enough.  That asymmetry is
+  deliberate: a false "possibly binding" costs a re-run, a false "not
+  binding" is the failure this field exists to prevent. -/
+  pmaxBinding : Bool := false
 
 /-- One saturation round: every rule against the current database. -/
 def roundStep (G : Form) (cfg : Config) (db : DB G) :
@@ -643,7 +664,9 @@ def saturate (G : Form) (cfg : Config) : DB G × Stats :=
           let (db', fresh, lc) := roundStep G cfg db
           let st' := { st with
             roundsUsed := st.roundsUsed + 1,
-            lamCapped := st.lamCapped || lc }
+            lamCapped := st.lamCapped || lc,
+            jmaxBinding := st.jmaxBinding || decide (db.is.length > cfg.jmax),
+            pmaxBinding := st.pmaxBinding || decide (db.rs.length > cfg.pmax) }
           if fresh == 0 then (db', st')
           else go fuel db' st'
   let (db, st) := go cfg.rounds db0 {}

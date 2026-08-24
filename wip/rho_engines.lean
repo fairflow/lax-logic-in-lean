@@ -54,7 +54,7 @@ verdict against either engine.
     rhoengines pol      -- the polarisation and its round-trip check
     rhoengines cross    -- both engines on all 462 cells
 -/
-import LaxLogic.LJFOSearch
+import LJF.OSearch
 import wip.rho_order
 
 open PLLND PLLND.RNC PLLND.RNC.CFX PLLFormula

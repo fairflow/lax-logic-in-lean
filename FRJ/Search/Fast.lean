@@ -299,6 +299,8 @@ def saturateFast (G : Form) (cfg : Config) : DB G × FastStats :=
           let st' := { st with
             roundsUsed := st.roundsUsed + 1,
             lamCapped := st.lamCapped || lc,
+            jmaxBinding := st.jmaxBinding || decide (db.is.length > cfg.jmax),
+            pmaxBinding := st.pmaxBinding || decide (db.rs.length > cfg.pmax),
             fams := max st.fams nf,
             pfams := max st.pfams np }
           if fresh == 0 then (db', st') else go fuel db' db st'

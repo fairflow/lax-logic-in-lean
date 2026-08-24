@@ -1,7 +1,7 @@
 /- Weight probe for the attack banks: place the screening horizon
 before spending engine time.  sum3 done = Σ 3^wNeg drives interp's
 recursion; value sizes explode with it. -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 
 open LJFO
 

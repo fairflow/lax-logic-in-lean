@@ -7,7 +7,7 @@ argument needs: every rule of the calculus stays within the universe of
 its conclusion.  List-based (no `Finset`), keeping this layer as
 audit-clean as the core: zero imports beyond `LJFOCore`.
 -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 
 namespace LJFO
 

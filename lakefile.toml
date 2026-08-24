@@ -27,6 +27,30 @@ name = "BiLax"
 name = "Reject"
 
 # Rewrite: certified interderivabilities used as a simplifier.
+# Certified: LAYER 1 of the RN(◯,{}) mapping — the register of every
+# theorem the dictionary is allowed to cite, each re-pinned here with a
+# #guard_msgs-checked #print axioms.  Imports upward only: it may cite
+# LaxLogic/, FRJ/, Reject/ and wip/, and nothing may cite it except the
+# tools and the database.
+# LJF: LJF and LJF◯, the focused sequent calculi, split out of LaxLogic/
+# on 2026-08-22 to modularise.  Dependency runs LJF -> LaxLogic only.
+[[lean_lib]]
+name = "LJF"
+globs = ["LJF.Base", "LJF.Complete", "LJF.OCore", "LJF.OUniverse", "LJF.ORows",
+         "LJF.OHeight", "LJF.OFuel", "LJF.O", "LJF.OSearch", "LJF.OBridge",
+         "LJF.OAudit"]
+
+# RNDB: LAYER 3 — the dictionary database types (Claim/Evidence/Entry/
+# Frontier, the un-sorriable `ok` field).  Built by a delegated agent
+# 2026-08-21 in worktree agent-aea09736d84d32c6f; pulled in 2026-08-24.
+[[lean_lib]]
+name = "RNDB"
+globs = ["RNDB.Types", "RNDB.RhoEntries"]
+
+[[lean_lib]]
+name = "Certified"
+globs = ["Certified.Register", "Certified.RhoRefutations"]
+
 [[lean_lib]]
 name = "Rewrite"
 
@@ -69,7 +93,35 @@ root = "Main"
 # side.  See Tools/README.md.
 [[lean_lib]]
 name = "Tools"
-globs = ["Tools.Bank", "Tools.Cert", "Tools.Pin", "Tools.Search", "Tools.Derive"]
+globs = ["Tools.Bank", "Tools.Cert", "Tools.Pin", "Tools.Search", "Tools.Derive", "Tools.Engines", "Tools.Terminate", "Tools.Diff", "Tools.Hard", "Tools.Verdict", "Tools.Construct", "Tools.BankRho"]
+
+# frjterm: is the CAP-FREE CLOSURE outcome reachable at all?  (2026-08-21)
+[[lean_exe]]
+name = "frjterm"
+root = "Tools.Terminate"
+
+# frjdiff: Fast vs Profile, matched and unbounded arity  (2026-08-21)
+[[lean_exe]]
+name = "frjdiff"
+root = "Tools.Diff"
+
+# frjhard: the escalation ladder, one engine per invocation so the caller
+# can impose a real (process-level) timeout.  (2026-08-21)
+[[lean_exe]]
+name = "frjhard"
+root = "Tools.Hard"
+
+# frjconstruct: FRJ(◯) modR vs G4c CounterEmit.emit, construction vs
+# construction, battery excluded.  (2026-08-23)
+[[lean_exe]]
+name = "frjconstruct"
+root = "Tools.Construct"
+
+# rhobank: sweep the 462 ρ-cells and emit kernel-checkable refutation
+# certificates for every hit (discover-then-pin).  (2026-08-24)
+[[lean_exe]]
+name = "rhobank"
+root = "Tools.BankRho"
 
 [[lean_lib]]
 name = "wipshared"

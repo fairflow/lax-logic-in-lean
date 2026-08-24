@@ -7,7 +7,13 @@ Written 2026-08-19, after the correction recorded in `HANDOFF.md`
 
 ## 0. The true state today
 
-Two dictionaries exist. **Round 2 supersedes round 1; round 1 is dead.**
+Two dictionaries exist.
+
+> **CORRECTION, 2026-08-21.** This section read "**Round 2 supersedes
+> round 1; round 1 is dead.**" That verdict is FALSE, and acting on it
+> would have destroyed `Rewrite/Catalogue.lean`. The relation is
+> **extension**, not supersession — see the supersession check below,
+> which the verdict was recorded without running.
 
 | | round 1 `wip/rnDict.lean` | round 2 `wip/rnDict2.lean` |
 |---|---|---|
@@ -21,6 +27,69 @@ Two dictionaries exist. **Round 2 supersedes round 1; round 1 is dead.**
 Your figure of "347 tables" is not one I can match to anything in the
 files; the counts above are the real ones. The substance of your remark
 is right, and stronger than you put it.
+
+### Supersession check: round 1 → round 2
+
+Run 2026-08-21 per `.claude/skills/constraint-supersession-check`, because
+the bare "round 1 is dead" verdict above is exactly the failure that skill
+closes: argued from one constraint (the corrupted tables), silent about
+the rest.
+
+Measured over cell-theorem names, with Lean comments stripped first (a
+`sorry` mentioned in a docstring otherwise misclassifies the theorem
+above it — that error alone moved the counts by twelve):
+
+| | count |
+|---|---|
+| round 1 stated / proved / sorried | 323 / **236** / 87 |
+| round 2 stated / proved / sorried | 140 / 82 / 58 |
+| round 1 **proved** cells that round 2 restates | **0** — all 236 absent |
+| round 1 sorried cells round 2 **proves** | 41 |
+| sorried in round 1 and round 2 alike | 45 |
+| round 1 sorried, round 2 never states | 1 (`cImp_9_4`: `q15` IS `q9 ⊃ q4`, so `Interd.refl`) |
+| new in round 2 | 54 |
+
+41 + 45 + 1 = 87. Round 2 is a **partial second round over an enlarged
+representative set**: it re-attacks round 1's failures and adds `q15`'s
+row and column. It restates none of round 1's proved cells.
+
+| constraint | source | round 1 | round 2 | verdict |
+|---|---|---|---|---|
+| the 236 certified operation-table cells that become `rndSet` | `Rewrite/Catalogue.lean` header | states and proves all 236 | restates **none** | **RE-OPENED** |
+| the `q0…q14` numbering every certificate is stated in | `LaxLogic/RN/Reps.lean` | defines it | identical, plus `q15` | DISCHARGED |
+| the candidate-list record backing `_no_candidate` | `wip/rnFRJCerts.lean` header | prose only | not restated | **RE-OPENED** |
+| a usable record of which cells are open | `docs/rn-dictionary-status.md` | 87 sorried, OPEN and REFUTED indistinguishable | 58 sorried, all refuted, witnesses universal | DISCHARGED for the 42 it settles; 45 remain sorried in both |
+
+**Verdict: NOT superseded. The relation is EXTENSION.** Round 1 stays
+live until its 236 proved cells are migrated. Re-opened constraints: the
+236 `rndSet` cells and the candidate-list record — both owned by the
+database migration (Phase 3.2 of the layer plan).
+
+### Supersession check: `PartialRNDict` (§4 below) → the `Entry`/DAG database
+
+| constraint | source | `PartialRNDict` | `Entry`/DAG | verdict |
+|---|---|---|---|---|
+| `sorry` impossible | §4 | `some k` + proof, or `none` + escape proof | the `ok` field; and an open claim gets **no `Entry` at all** | DISCHARGED, more strongly |
+| refutations at full strength | §4, §7.3 | `andMiss : ∀ k, ¬ Interd …` | only if scope is a **required field** of `Claim` | DISCHARGED by construction |
+| `rep_distinct` | §4 | a new obligation | two `.nle` entries; derived, not assumed | DISCHARGED |
+| `none` not spelled as `⊥` | §7.1 | the `Option` | absence of an entry, not a value | DISCHARGED |
+| O(1) indexed lookup, table as a function | §4 (`andT : Fin n → Fin n → Option (Fin n)`) | the type | a DAG has no indexing | **RE-OPENED** |
+
+**Verdict: superseded EXCEPT indexed lookup**, recovered by keeping
+`PartialRNDict` as a *computed view* over the DAG plus a theorem that the
+view and the entries agree.
+
+### Supersession check: `wip/rho_engines_out.txt` → `docs/two-sided-engine.md`
+
+| constraint | source | `rho_engines` | two-sided | verdict |
+|---|---|---|---|---|
+| cost comparison on the 462 ρ-cells | its own header | 110/158 proofs at depth ≤32 | 158/158 at fuel ≤44 | DISCHARGED |
+| cross-check for engine conflicts | same | 0 over 302 | 0 again | DISCHARGED |
+| "an LJF◯ success certifies LJF◯ only" | `docs/ljfo-fidelity.md` §5 | true when written | `FocalizationPLL` / `bridge_iff` now PROVED | **LAPSED** — the goal changed, not the remedy |
+| diagnostic: where LJF◯ struggles | its 48-unreached list | the list | empty at fuel 44; survives as the fuel histogram | DISCHARGED |
+
+**Verdict: superseded, no re-opened constraints.** Mark the file stale
+with a pointer; do not delete.
 
 ### The tables are not merely unproved — 83 entries are certified false
 

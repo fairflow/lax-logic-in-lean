@@ -107,6 +107,7 @@ import LaxLogic.PLLCandOr
 import LaxLogic.PLLUIChains
 import LaxLogic.PLLCandLeast
 import LaxLogic.IPCFocused
-import LaxLogic.LJF
-import LaxLogic.LJFComplete
-import LaxLogic.LJFOBridge
+
+-- LJF and LJF◯ moved to their own library `LJF/` (2026-08-22).
+-- `LaxLogic` no longer aggregates them; import `LJF` or a specific
+-- `LJF.*` module instead.  The dependency runs LJF -> LaxLogic only.

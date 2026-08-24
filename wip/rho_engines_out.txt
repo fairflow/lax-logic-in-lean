@@ -1,3 +1,19 @@
+=== STALE, 2026-08-21 — SUPERSEDED BY docs/two-sided-engine.md ===
+
+This run (2026-08-14) drove LJF◯ on a DEPTH ladder to 32 and reached
+110 of the 158 derivable cells.  The two-sided run of 2026-08-15 reaches
+158/158 on the SAME 462-cell corpus, at fuel ≤ 44, each cell below timer
+resolution — same corpus, better driver (normalise first, then a fuel
+ladder rather than a depth ladder).  That is the ~10^3x figure in
+CLAUDE.md.  The "48 not reached at depth 32" list below is therefore a
+fact about this driver, NOT about LJF◯; do not cite it as a limit.
+
+Superseded, with no re-opened constraints — the supersession check is in
+docs/rn-dictionary-plan.md 0.  Kept, not deleted: it is the measurement
+of record for the depth-ladder driver and for the 14007 ms oracle cost.
+
+=== original output follows ===
+
 === the two engines on the 462 order cells ===
 battery: 10534 confluent frames; LJF◯ depth ladder: [10, 16, 20, 24, 28, 32]
 oracle: 158 derivable, 302 refuted by countermodel, 2 flags  [14007 ms]

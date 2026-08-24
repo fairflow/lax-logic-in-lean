@@ -38,16 +38,20 @@ import LaxLogic.RN.Reps
 
 namespace RNBank
 
-/-! ## The fifteen representatives (shared: `LaxLogic/RN/Reps.lean`) -/
+/-! ## The representatives (shared: `LaxLogic/RN/Reps.lean`) -/
 
-/-! The fifteen RN(◯,{}) representatives, from the shared dictionary
+/-! The RN(◯,{}) representatives, from the shared dictionary
 `LaxLogic/RN/Reps.lean` (append-only: `qk` never changes meaning).  This
 `export` re-exports the SAME constants under this namespace, so every
 existing reference keeps working and there is no second copy. -/
-export RNReps (q0 q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14)
+export RNReps (q0 q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14 q15)
 
-def reps : List PLLFormula :=
-  [q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14]
+/-- Not a second list: `RNReps.reps` itself, so this can never fall behind
+the shared dictionary.  It was a re-typed literal until 2026-08-21, when
+appending `q15` upstream would have left `--cand=15` silently unreachable
+here — the divergence the `Tools/` ↔ `wip/` split is supposed to prevent,
+reproduced inside `Tools/`. -/
+def reps : List PLLFormula := RNReps.reps
 
 /-! ## The cells -/
 

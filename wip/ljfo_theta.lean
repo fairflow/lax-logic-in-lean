@@ -21,7 +21,7 @@ which is an equivalence in both directions.  Nothing here is trusted: the
 θ-family that comes out is re-verified against the raw A_f by
 `prove?Bounded` in both directions (wip/ljfo_theta_run.lean).
 -/
-import LaxLogic.LJFOFuel
+import LJF.OFuel
 import LaxLogic.PLLSearch
 import wip.ljfo_attack
 

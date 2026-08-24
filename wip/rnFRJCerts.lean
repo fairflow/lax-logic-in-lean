@@ -32,7 +32,7 @@ Goals refuted here: 24 — cAnd_10_13, cAnd_11_13, cBox_11, cBox_11_q11, cBox_11
 -/
 import FRJ.Search.Pin
 import LaxLogic.PLLSemUIFrag
-import wip.rnBank
+import Tools.Bank
 
 namespace RNFRJCerts
 
@@ -847,44 +847,122 @@ theorem cOr_11_12_no_candidate :
 
 /-! ## Axiom pins -/
 
+/-- info: 'RNFRJCerts.cAnd_10_13_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cAnd_10_13_FALSE
+/-- info: 'RNFRJCerts.cAnd_11_13_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cAnd_11_13_FALSE
+/-- info: 'RNFRJCerts.cAnd_11_13_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cAnd_11_13_not_a_theorem
+/-- info: 'RNFRJCerts.cBox_11_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cBox_11_FALSE
+/-- info: 'RNFRJCerts.cBox_11_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cBox_11_not_a_theorem
+/-- info: 'RNFRJCerts.cBox_11_q11_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cBox_11_q11_FALSE
+/-- info: 'RNFRJCerts.cBox_11_q13_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cBox_11_q13_FALSE
+/-- info: 'RNFRJCerts.cImp_10_7_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_10_7_FALSE
+/-- info: 'RNFRJCerts.cImp_11_7_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_11_7_FALSE
+/-- info: 'RNFRJCerts.cImp_12_11_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_12_11_FALSE
+/-- info: 'RNFRJCerts.cImp_12_11_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_12_11_not_a_theorem
+/-- info: 'RNFRJCerts.cImp_12_11_q11_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_12_11_q11_FALSE
+/-- info: 'RNFRJCerts.cImp_12_11_q13_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_12_11_q13_FALSE
+/-- info: 'RNFRJCerts.cImp_8_4_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_8_4_FALSE
+/-- info: 'RNFRJCerts.cImp_8_5_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_8_5_FALSE
+/-- info: 'RNFRJCerts.cOr_10_12_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_10_12_FALSE
+/-- info: 'RNFRJCerts.cOr_10_12_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_10_12_not_a_theorem
+/-- info: 'RNFRJCerts.cOr_10_12_q11_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_10_12_q11_FALSE
+/-- info: 'RNFRJCerts.cOr_10_12_q13_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_10_12_q13_FALSE
+/-- info: 'RNFRJCerts.cOr_10_14_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_10_14_FALSE
+/-- info: 'RNFRJCerts.cOr_10_14_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_10_14_not_a_theorem
+/-- info: 'RNFRJCerts.cOr_11_12_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_11_12_FALSE
+/-- info: 'RNFRJCerts.cOr_11_12_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_11_12_not_a_theorem
+/-- info: 'RNFRJCerts.cOr_11_12_q11_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_11_12_q11_FALSE
+/-- info: 'RNFRJCerts.cOr_11_12_q13_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_11_12_q13_FALSE
+/-- info: 'RNFRJCerts.cOr_11_14_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_11_14_FALSE
+/-- info: 'RNFRJCerts.cOr_11_14_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_11_14_not_a_theorem
+/-- info: 'RNFRJCerts.cOr_8_10_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_10_FALSE
+/-- info: 'RNFRJCerts.cOr_8_10_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_10_not_a_theorem
+/-- info: 'RNFRJCerts.cOr_8_11_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_11_FALSE
+/-- info: 'RNFRJCerts.cOr_8_11_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_11_not_a_theorem
+/-- info: 'RNFRJCerts.cOr_8_12_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_12_FALSE
+/-- info: 'RNFRJCerts.cOr_8_12_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_12_not_a_theorem
+/-- info: 'RNFRJCerts.cOr_8_14_FALSE' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_14_FALSE
+/-- info: 'RNFRJCerts.cOr_8_14_not_a_theorem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_8_14_not_a_theorem
+/-- info: 'RNFRJCerts.cBox_11_no_candidate' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cBox_11_no_candidate
+/-- info: 'RNFRJCerts.cImp_12_11_no_candidate' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cImp_12_11_no_candidate
+/-- info: 'RNFRJCerts.cOr_10_12_no_candidate' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_10_12_no_candidate
+/-- info: 'RNFRJCerts.cOr_11_12_no_candidate' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
 #print axioms cOr_11_12_no_candidate
 
 end RNFRJCerts

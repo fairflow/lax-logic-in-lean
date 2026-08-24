@@ -47,8 +47,8 @@ On failure, the trace is read as a model:
   (worlds, `Rᵢ`, valuation) is read off the trace deterministically;
   the completion is a bounded choice resolved by `checkB`.
 -/
-import LaxLogic.LJFOSearch
-import LaxLogic.LJFOBridge
+import LJF.OSearch
+import LJF.OBridge
 import LaxLogic.PLLCountermodelEmit
 import Std.Data.HashMap
 

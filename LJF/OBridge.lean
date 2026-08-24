@@ -47,7 +47,7 @@ both of which are TRIVIAL in `LJFComplete` only because `negOf` erases
 ("focalization for PLL").  Verdicts now transfer in BOTH directions: an
 LJF◯ proof gives a PLL proof, and an LJF◯ failure gives a PLL failure.
 -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 import LaxLogic.PLLNDCore
 import LaxLogic.PLLSequent
 

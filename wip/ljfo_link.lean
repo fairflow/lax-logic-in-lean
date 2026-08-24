@@ -32,8 +32,8 @@ Everything here is choice-free: the pins are `[propext, Quot.sound]`.
 
 NEW FILE.  Nothing under `LaxLogic/` or `Reject/` is edited.
 -/
-import LaxLogic.LJFOBridge
-import LaxLogic.LJFOSearch
+import LJF.OBridge
+import LJF.OSearch
 import Reject.Cert
 import Rewrite
 

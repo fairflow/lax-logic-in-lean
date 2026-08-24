@@ -30,7 +30,7 @@ at raised budget, never a verdict).  A certified fail refutes CimpAnt's
 semantic content; to refute the Lean statement, rebuild the hypothesis
 as a `Stab` witness via `LJFOSearch.search` (escalation, per-fail).
 -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLSearch
 

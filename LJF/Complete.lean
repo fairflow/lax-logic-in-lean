@@ -1,4 +1,4 @@
-import LaxLogic.LJF
+import LJF.Base
 import LaxLogic.PLLSequent
 import LaxLogic.PLLSemUIFrag
 

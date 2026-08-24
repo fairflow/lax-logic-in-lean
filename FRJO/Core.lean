@@ -67,8 +67,8 @@ carried OPEN:
 They are the formal debts of the calculus, kept rigidly distinct from
 what is proved per instance.
 -/
-import LaxLogic.LJFOSearch
-import LaxLogic.LJFOBridge
+import LJF.OSearch
+import LJF.OBridge
 import LaxLogic.PLLCountermodelEmit
 import wip.ljfo_unravel
 

@@ -27,8 +27,8 @@ Proof architecture, staged:
 S1 and S4 are the load-bearing substrate; S2 is Finset bookkeeping;
 S3 is the induction that consumes all three.
 -/
-import LaxLogic.LJFOSearch
-import LaxLogic.LJFOUniverse
+import LJF.OSearch
+import LJF.OUniverse
 import FRJO.Core
 
 namespace LJFO

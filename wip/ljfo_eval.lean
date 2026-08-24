@@ -15,10 +15,10 @@ adequate, i.e. does
 hold on the bank?  Also re-checks the two known forced changes (#2, #3)
 as calibration, and sweeps E2/A2 minimality cells.
 -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 import LaxLogic.PLLG4Dec
 import LaxLogic.PLLSearch
-import LaxLogic.LJFOFuel
+import LJF.OFuel
 
 open LJFO PLLND
 

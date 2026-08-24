@@ -26,10 +26,10 @@ and proves the two equations the tail consumes — `interpE_eq` (batch 2) and
 `List.mem_append_right _ (List.mem_map_of_mem (List.mem_attach _ ⟨_, _⟩))`
 blob that the traversals used to re-prove inline at every call site.
 
-Batch 1 put `laxRows` here on top of `LaxLogic.LJFO`; batch 2 reverses the
-dependency — the proofs need only `interp` in `LaxLogic.LJFOCore` (which
+Batch 1 put `laxRows` here on top of `LJF.O`; batch 2 reverses the
+dependency — the proofs need only `interp` in `LJF.OCore` (which
 stays FROZEN), so this module sits between the core and the tail, and
-`LaxLogic.LJFO` imports it.  The seven per-shape equation lemmas
+`LJF.O` imports it.  The seven per-shape equation lemmas
 `interpA_circ*_eq` that batch 1 chained through are superseded by the
 unified equation and preserved in
 `Archive/ljfo-simp-round2-superseded.lean`.
@@ -38,7 +38,7 @@ The reviewer's §5 recommendation ("name the attack map"), landed at last;
 `docs/ljf-simplification-pass.md` §2.6 identified the same refactor for the
 intuitionistic round.
 -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 
 namespace LJFO
 

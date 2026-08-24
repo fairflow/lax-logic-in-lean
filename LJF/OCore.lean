@@ -7,7 +7,7 @@ judgments, weights, the modal interpolant `interp` with its termination,
 p-freeness, the cut-free toolkit, and soundness of both modes
 (`eSound`/`aSound`) — together with the G4iLL-blocker standing test and
 the axiom audit.  The minimality development (Parts 5–8) lives in
-`LaxLogic.LJFO`, which imports this module and nothing else.
+`LJF.O`, which imports this module and nothing else.
 -/
 
 /-!
@@ -2276,7 +2276,7 @@ macro "ljf_dec_sound" : tactic => `(tactic| (
       | (have h1 := dec_cimp3 (by assumption); omega)))
 
 set_option hygiene false in
-/-- The decreasing farm of the E-side traversal (`eMinF` and the `T*` family). One definition, eight uses; edit here to tune all farms. Round 3 (2026-08-12) removed the `(simp_arith; done)` alternative from position 21: it is DEAD in both farms — deleting it leaves `LaxLogic.LJFO` and `LaxLogic.LJF` green — and every goal not closed by the first twenty alternatives used to pay a full `simp_arith` before the remaining forty-odd were tried. Do not re-add it without a failing goal that needs it. -/
+/-- The decreasing farm of the E-side traversal (`eMinF` and the `T*` family). One definition, eight uses; edit here to tune all farms. Round 3 (2026-08-12) removed the `(simp_arith; done)` alternative from position 21: it is DEAD in both farms — deleting it leaves `LJF.O` and `LJF.Base` green — and every goal not closed by the first twenty alternatives used to pay a full `simp_arith` before the remaining forty-odd were tried. Do not re-add it without a failing goal that needs it. -/
 macro "ljf_dec_e" : tactic => `(tactic| (
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
@@ -2397,7 +2397,7 @@ macro "ljf_dec_e" : tactic => `(tactic| (
         | decreasing_tactic))
 
 set_option hygiene false in
-/-- The decreasing farm of the A-side traversal (`aMinF`, `UEntry`, the `U*` family, `dykAntC`). One definition, nine uses. Round 3 (2026-08-12) removed the `(simp_arith; done)` alternative from position 21: it is DEAD in both farms — deleting it leaves `LaxLogic.LJFO` and `LaxLogic.LJF` green — and every goal not closed by the first twenty alternatives used to pay a full `simp_arith` before the remaining forty-odd were tried. Do not re-add it without a failing goal that needs it. -/
+/-- The decreasing farm of the A-side traversal (`aMinF`, `UEntry`, the `U*` family, `dykAntC`). One definition, nine uses. Round 3 (2026-08-12) removed the `(simp_arith; done)` alternative from position 21: it is DEAD in both farms — deleting it leaves `LJF.O` and `LJF.Base` green — and every goal not closed by the first twenty alternatives used to pay a full `simp_arith` before the remaining forty-odd were tried. Do not re-add it without a failing goal that needs it. -/
 macro "ljf_dec_a" : tactic => `(tactic| (
     all_goals simp_wf
     all_goals try simp only [sum3, sum3_append, goalW, wNeg, wPos]
@@ -4095,10 +4095,10 @@ end LJFO
 
 The five pins for this file (`BlockerTest.blocker`, `idNeg`, `interp_pfree`,
 `eSound`, `aSound`) are in `LaxLogic/LJFOAudit.lean`, together with the two
-for `LaxLogic.LJFO`.  Batched out of the build path 2026-08-13 at Matthew's
+for `LJF.O`.  Batched out of the build path 2026-08-13 at Matthew's
 direction: this development uses no `sorry` outside `wip/` by design, so the
 pins are a periodic check rather than a per-edit one.  (It buys no build
 time — measured: the tail is unchanged and the audit module then costs 1.8 s.
 The kernel check the pin appeared to trigger is paid when the olean is
-written either way.)  Run `lake build LaxLogic.LJFOAudit` before any commit
+written either way.)  Run `lake build LJF.OAudit` before any commit
 that changes a proof. -/

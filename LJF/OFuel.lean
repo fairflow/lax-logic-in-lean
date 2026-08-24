@@ -10,7 +10,7 @@ defaults at fuel 0 (`⊤` in ∃p mode, `⊥` in ∀p mode): every fuel level is
 sound; sufficiency is only needed for minimality.  Purely additive; the
 weight-founded development is untouched.
 -/
-import LaxLogic.LJFOCore
+import LJF.OCore
 
 namespace LJFO
 

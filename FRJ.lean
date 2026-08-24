@@ -10,3 +10,4 @@ import FRJ.Modal
 import FRJ.Fallible
 import FRJ.Audit
 import FRJ.Erase
+import FRJ.Profile

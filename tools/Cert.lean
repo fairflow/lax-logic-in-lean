@@ -67,7 +67,32 @@ partial def tokenize (cs : List Char) : Except String (List Tok) :=
       (tokenize (rest.dropWhile isIdChar)).map (.id name :: ·)
     else .error s!"unexpected character '{c}'"
 
-/-- `q0 … q14` name the RN(◯,{}) representatives; anything else is an atom. -/
+/-- Every `q<k>` token in the input must name a real representative.
+Before this check, `q99` resolved SILENTLY to a fresh propositional
+ATOM — so a typo became a new variable and the search then succeeded
+trivially, reporting a countermodel for a formula nobody asked about. -/
+def badQIndex (src : String) : Option String := Id.run do
+  let cs := src.toList
+  let mut i := 0
+  let mut out : Option String := none
+  let arr := cs.toArray
+  while i < arr.size do
+    if arr[i]! == 'q' && (i == 0 || !(arr[i-1]!.isAlphanum)) then
+      let mut j := i + 1
+      let mut ds := ""
+      while j < arr.size && arr[j]!.isDigit do
+        ds := ds.push arr[j]!; j := j + 1
+      if ds != "" then
+        match ds.toNat? with
+        | some k => if k ≥ RNReps.reps.length && out.isNone then
+                      out := some s!"q{ds}"
+        | none => pure ()
+      i := j
+    else i := i + 1
+  return out
+
+/-- `q0 … q15` name the RN(◯,{}) representatives; anything else is an atom.
+Guarded by `badQIndex` at the entry point. -/
 def resolve (s : String) : Form :=
   if s.startsWith "q" then
     match (s.drop 1).toNat? with
@@ -252,7 +277,8 @@ def toSvg (T : Search.Tab) (G : Form) : String :=
 
 /-! ## 4. The certificate file -/
 
-def certFile (T : Search.Tab) (nm : String) (Γ : List Form) (φ G : Form) : String :=
+def certFile (T : Search.Tab) (nm : String) (Γ : List Form) (φ G : Form)
+    (pins : Option (String × String)) : String :=
   -- Theorem 1 is stated with the dictionary names, theorem 2 with every
   -- abbreviation expanded.  The second is proved BY the first: `qk` is a
   -- `def`, so the two statements are definitionally equal and no reader
@@ -290,16 +316,57 @@ def certFile (T : Search.Tab) (nm : String) (Γ : List Form) (φ G : Form) : Str
   "/-- Control: the model is not degenerate — it still forces `⊤`. -/\n" ++
   s!"theorem cm_{nm}_control :\n" ++
   s!"    (K_{nm}).force (K_{nm}).root (ofPLL (PLLFormula.ifThen PLLFormula.falsePLL PLLFormula.falsePLL)) := by decide\n\n" ++
-  s!"#print axioms {nm}\n" ++
-  s!"#print axioms {nm}_expanded\n"
+  (match pins with
+   | none =>
+       -- FIRST PASS: unguarded, because the axiom strings are not known
+       -- until Lean has been run.  Never left in this state (below).
+       s!"#print axioms {nm}\n" ++ s!"#print axioms {nm}_expanded\n"
+   | some (p1, p2) =>
+       -- SECOND PASS: the strings Lean ITSELF printed, now CHECKED.  An
+       -- unguarded `#print axioms` prints into a log and verifies
+       -- nothing; a repo-wide scan on 2026-08-21 found 142 such pins, 39
+       -- of them in `wip/rnFRJCerts.lean` — all emitted by this tool.
+       s!"/-- info: {p1} -/\n#guard_msgs in\n#print axioms {nm}\n\n" ++
+       s!"/-- info: {p2} -/\n#guard_msgs in\n#print axioms {nm}_expanded\n")
 
 /-! ## 5. The driver -/
+
+/-- Pull the payload out of one of Lean's own axiom lines.  Accepts both
+shapes: `lake build` prefixes `file:line:col: info: `, a bare
+`lake env lean` does not. -/
+def axiomPayload (l : String) : Option String :=
+  if (l.splitOn "depends on axioms:").length > 1
+     || (l.splitOn "does not depend on any axioms").length > 1 then
+    match l.splitOn "'" with
+    | _ :: nm :: rest => some ("'" ++ nm ++ "'" ++ String.intercalate "'" rest)
+    | _ => none
+  else none
 
 def hitModel (G : Form) (cfg : Search.Config) : Option Kripke :=
   let (db, _) := Search.saturateFast G cfg
   (db.rs.find? (fun x => decide (x.rhs = G))).map (fun x => modR x.der)
 
+/-- **Exit codes are distinct, and this matters.**  Before 2026-08-21 a
+frontier marker ("no derivation at this budget") and an engine defect
+("Lean rejected the certificate this tool generated") both returned 1, so
+no caller could tell a limitation from a bug.
+
+    0  CHECKED — certificate emitted, and Lean accepted it
+    1  LEAN REJECTED the generated certificate — an ENGINE DEFECT
+    2  parse error in the sequent
+    3  no derivation at this budget — a FRONTIER MARKER, not a verdict
+    4  unknown `q<k>` index — a typo, refused rather than silently
+       reinterpreted as an atom
+    5  the emitted `#guard_msgs` pin did not match — a TOOL defect -/
 def run (seq : String) (out : String) (cfg : Search.Config) : IO UInt32 := do
+  match badQIndex seq with
+  | some bad =>
+      IO.println s!"ERROR: {bad} is not a representative — \
+`LaxLogic/RN/Reps.lean` defines q0 … q{RNReps.reps.length - 1}.  Refusing: \
+an unknown index used to become a fresh ATOM, which makes the search \
+succeed on a formula you did not ask about."
+      pure 4
+  | none =>
   match parseSequent seq with
   | .error e => IO.println s!"parse error: {e}"; pure 2
   | .ok (Γ, φ) =>
@@ -316,30 +383,56 @@ def run (seq : String) (out : String) (cfg : Search.Config) : IO UInt32 := do
         IO.println s!"NO DERIVATION at this budget [{t1-t0} ms] (rounds={cfg.rounds}, \
           jmax={cfg.jmax}, pmax={cfg.pmax}, lamCap={cfg.lamCap}, maxRS={cfg.maxRS}, \
           maxIS={cfg.maxIS}) — a frontier marker, not a verdict."
-        pure 1
+        pure 3
     | some K =>
         let t1 ← IO.monoMsNow
         let T0 := Search.tabOf K (Search.atomsOf G)
         let T := T0.minimise G
         IO.println s!"search    {t1-t0} ms; model {T0.n} worlds → minimised {T.n}, \
           frame-ok={T.okB}, refutes={T.refutes G}"
-        let nm := ((out.splitOn "/").getLastD out).replace "-" "_"
+        -- With more than one hypothesis the bridge lemmas do not reach the
+        -- SEQUENT form, so the certificate states the IMPLICATION.  The
+        -- name now says so: a file outlives the run that printed the NOTE.
+        let base := ((out.splitOn "/").getLastD out).replace "-" "_"
+        let nm := if Γ.length > 1 then base ++ "_implForm" else base
         let leanPath := out ++ ".lean"
         let svgPath := out ++ ".svg"
-        IO.FS.writeFile leanPath (certFile T nm Γ φ G)
+        IO.FS.writeFile leanPath (certFile T nm Γ φ G none)
         IO.FS.writeFile svgPath (toSvg T G)
         IO.println s!"wrote     {leanPath}, {svgPath}"
-        IO.println "checking with Lean …"
+        IO.println "checking with Lean (pass 1: unguarded pins) …"
         let r ← IO.Process.output { cmd := "lake", args := #["env", "lean", leanPath] }
         let txt := r.stdout ++ r.stderr
         IO.println s!"lean exit {r.exitCode}"
         for l in txt.splitOn "\n" do
           if !l.isEmpty then IO.println s!"  | {l}"
-        if r.exitCode == 0 then
-          IO.println s!"VERDICT   CHECKED — {nm} holds, sorry-free, axioms as printed above."
-        else
+        if r.exitCode != 0 then
           IO.println s!"VERDICT   LEAN REJECTED the generated certificate (exit {r.exitCode})."
-        pure (if r.exitCode == 0 then 0 else 1)
+          IO.println "          That is an ENGINE DEFECT, not a search limitation."
+          pure 1
+        else
+          -- PASS 2: re-emit with the axiom strings Lean itself printed,
+          -- now under `#guard_msgs`, and re-check.  Without this the
+          -- committed file's pin is unchecked forever after.
+          match (txt.splitOn "\n").filterMap axiomPayload with
+          | p1 :: p2 :: _ =>
+              IO.FS.writeFile leanPath (certFile T nm Γ φ G (some (p1, p2)))
+              IO.println "checking with Lean (pass 2: #guard_msgs-checked pins) …"
+              let r2 ← IO.Process.output { cmd := "lake", args := #["env", "lean", leanPath] }
+              let txt2 := r2.stdout ++ r2.stderr
+              for l in txt2.splitOn "\n" do
+                if !l.isEmpty then IO.println s!"  | {l}"
+              if r2.exitCode == 0 then
+                IO.println s!"VERDICT   CHECKED — {nm} holds, sorry-free, pins GUARDED."
+                pure 0
+              else
+                IO.println s!"VERDICT   the emitted #guard_msgs pin did not match \
+(exit {r2.exitCode}) — a TOOL defect, not a result."
+                pure 5
+          | _ =>
+              IO.println "VERDICT   Lean accepted the certificate but printed no axiom \
+lines to guard — emitter defect."
+              pure 5
 
 end FrjCert
 

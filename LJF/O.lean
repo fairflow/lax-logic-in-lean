@@ -1,8 +1,8 @@
 /-
 LJF◯ — uniform interpolation, the minimality development (Parts 5–8).
 
-Imports `LaxLogic.LJFORows` (the station maps, named), which imports only
-the frozen core `LaxLogic.LJFOCore`; the auditability property is unchanged
+Imports `LJF.ORows` (the station maps, named), which imports only
+the frozen core `LJF.OCore`; the auditability property is unchanged
 — no mathlib and no other calculus can carry any of the proof.  Contents:
 the inverse transformations, the saturated-case statements `SatE2`/`SatA2`,
 the dispatch helpers, and the minimality mega-mutual (`eMinF`/`aMinF` and
@@ -11,10 +11,10 @@ obligation `CimpAnt`.
 
 Simplification round 2 (batch 2) moved `Saturated`, the aggregate equations
 `interpE_eq`/`interp_circ_laxRows` and the row-membership combinators to
-`LaxLogic.LJFORows`; the seven per-shape ◯-goal equations they replace are
+`LJF.ORows`; the seven per-shape ◯-goal equations they replace are
 in `Archive/ljfo-simp-round2-superseded.lean`.
 -/
-import LaxLogic.LJFORows
+import LJF.ORows
 
 namespace LJFO
 
@@ -218,7 +218,7 @@ theorem subChainIn {b t d Δ : List Neg} :
 /-- The context is `p`-free. -/
 def PFreeCtx (p : String) (Δ : List Neg) : Prop := ∀ N ∈ Δ, PFreeN p N
 
-/-! `Saturated` is in `LaxLogic.LJFORows` (round 2): the station equations
+/-! `Saturated` is in `LJF.ORows` (round 2): the station equations
 stated there are its only consumers below the traversals. -/
 
 /-- Every member appears in `splits`. -/
@@ -405,7 +405,7 @@ def splitAt : (Γ : List Neg) → (X : Neg) → X ∈ Γ → {rest // (X, rest) 
           (List.mem_map_of_mem (f := fun zr => (zr.1, Y :: zr.2)) hr)⟩
 
 /-! The five `∃p` conjunct projections `qimpConjMem`/`atomConjMem`/
-`dykConjMem`/`boxConjMem`/`cimpConjMem` are in `LaxLogic.LJFORows`: each
+`dykConjMem`/`boxConjMem`/`cimpConjMem` are in `LJF.ORows`: each
 repeated the whole station map in its statement, and each is now one
 `rowMem` against the named `eConjRows`. -/
 
@@ -476,7 +476,7 @@ def boxClean {Q : Pos} {Γ' rest K : List Neg} {j : JD} {C : Neg}
 
 
 /-! `interpE_eq` — the saturated `∃p` aggregate as an equation — is in
-`LaxLogic.LJFORows`, stated over the named map `eConjRows`. -/
+`LJF.ORows`, stated over the named map `eConjRows`. -/
 
 /-- Project a surviving atom from the interpolant. -/
 def atomAssemble {done K : List Neg} {a : String} {L : List Neg}
@@ -888,7 +888,7 @@ def cimpAssembleN {done rest K : List Neg} {Q' : Pos} {N : Neg} {C : Neg}
 
 /-! ## Where the aggregate equations live
 
-All nine `∀p` aggregate equations are in `LaxLogic.LJFORows`, stated over
+All nine `∀p` aggregate equations are in `LJF.ORows`, stated over
 the two named station maps: `truStationRows` for the shifted goals
 (`interpA_atom_eq`, `interpA_atomT_eq`, `interpA_fls_eq`, `interpA_or_eq`,
 `interpA_down_eq`, plus `interpA_imp_eq`/`interpA_and_eq`, which have no
@@ -898,7 +898,7 @@ times on the tru side (round 3), seven on the lax side (round 2). -/
 
 /-! The seven per-shape ◯-goal equations `interpA_circ*_eq` and the
 `interpCircShape` seam that chained them are superseded by the single
-`interp_circ_laxRows` of `LaxLogic.LJFORows` (round 2, batch 2); they are
+`interp_circ_laxRows` of `LJF.ORows` (round 2, batch 2); they are
 preserved in `Archive/ljfo-simp-round2-superseded.lean`. -/
 
 /-- **The isolated modal obligation** — the ◯-implication antecedent
@@ -1468,7 +1468,7 @@ def UEntry (done : List Neg) (hsat : Saturated done) (hP : ParkedCtx done) :
   -- Round 2: the ◯-goal entry is SHAPE-GENERIC.  The seven clauses it
   -- replaces differed only in which `interpA_circ*_eq` they named; the
   -- unified `interp_circ_laxRows` covers every positive, and the four row
-  -- memberships are the `laxRows_*Mem` projections of `LaxLogic.LJFORows`.
+  -- memberships are the `laxRows_*Mem` projections of `LJF.ORows`.
   | _, _, hm, hm2, hK, .up P₀, .lax, .stable s => by
       show Inv _ [] .tru (interp p [] done (some (.circ P₀)))
       rw [interp_circ_laxRows hsat P₀]
@@ -2091,4 +2091,4 @@ because the audit is a periodic check, not a per-edit one.  It buys no build
 time: `#print axioms LJFO.satE2` showed as ~223 s, but that is the kernel
 checking `satE2` when the olean is written, which the build pays either way —
 measured after the move, the tail is unchanged and the audit costs 1.8 s.
-Run `lake build LaxLogic.LJFOAudit` before any commit that changes a proof. -/
+Run `lake build LJF.OAudit` before any commit that changes a proof. -/

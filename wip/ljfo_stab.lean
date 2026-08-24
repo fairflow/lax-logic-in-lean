@@ -5,8 +5,8 @@ interderivability (LJFOSearch, both directions) where they differ.
 Stabilisation at finite fuel is the statement W that all three route
 blockers factor through; a station with certified strict growth is the
 Ghilardi–Zawadowski candidate. -/
-import LaxLogic.LJFOSearch
-import LaxLogic.LJFOFuel
+import LJF.OSearch
+import LJF.OFuel
 import wip.ljfo_attack
 
 open LJFO LJFOAttack

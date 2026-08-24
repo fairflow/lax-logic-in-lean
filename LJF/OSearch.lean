@@ -8,8 +8,8 @@ definitions — the soundness/completeness round-trip (which yields the
 pigeonhole height bound, as `PLLG4Dec` does for G4c) is the next layer.
 Zero imports beyond the frozen core.
 -/
-import LaxLogic.LJFOCore
-import LaxLogic.LJFOHeight
+import LJF.OCore
+import LJF.OHeight
 
 namespace LJFO
 

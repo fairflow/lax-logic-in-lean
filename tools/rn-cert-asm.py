@@ -10,7 +10,7 @@ in the output mentions the search that found the model.
 import sys, re, os, glob
 
 certdir = sys.argv[1]
-bank = open('wip/rnBank.lean').read()
+bank = open('Tools/Bank.lean').read()   # maintained side; NOT the frozen wip/ twin
 
 # cell name -> (lhs source, rhs source, status)
 cells = {}
@@ -120,7 +120,7 @@ Goals refuted here: {len(names)} — {', '.join(names)}.
 -/
 import FRJ.Search.Pin
 import LaxLogic.PLLSemUIFrag
-import wip.rnBank
+import Tools.Bank
 
 namespace RNFRJCerts
 
