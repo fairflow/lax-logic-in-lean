@@ -10,7 +10,8 @@ before asserting which proof system a result belongs to).
 
 1. **Machine-checked mandate.** A claim is PROVED only when it is
    sorry-free in Lean with a pinned `#print axioms` (the only sound
-   oracle is `collectAxioms`; `native_decide` taints). Everything else
+   oracle is `collectAxioms`; `native_decide` taints; the pin concept —
+   what it checks, what it does not — is defined in `docs/pins.md`). Everything else
    is REFUTED (kernel-checked countermodel) or OPEN — keep the three
    distinct. UI for PLL is OPEN.
 2. **Register.** Standard proof-theoretic language only; state lemmas as
