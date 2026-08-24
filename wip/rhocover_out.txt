@@ -1,7 +1,7 @@
 === PLL cover sweep over the 22-class ρ-catalogue (LJF◯ fuel ≤ 48) ===
-status over 462 cells: 158 ⊢, 302 ⊬, 2 open
+DB-OVERLAY ρ20 ⊬ ρ10  (entry rho-0167)
+status over 462 cells: 158 ⊢, 303 ⊬, 1 open
   OPEN CELL ρ12 ⊢? ρ15
-  OPEN CELL ρ20 ⊢? ρ10
 
 strict pairs (a < b certified): 158
 
@@ -204,4 +204,26 @@ HASSE (scoped to the catalogue): 37 cover edges, 121 blocked, 0 open
   HASSE ρ20 ⋖ ρ21
   HASSE ρ21 ⋖ ρ1
 control: ρ6 < ρ12 BLOCKED by ρ9, matching kernel theorem RNDB.not_covers_rho6_rho12
+LABEL ρ0 ⊥
+LABEL ρ1 ⊤
+LABEL ρ2 ◯⊥
+LABEL ρ3 ¬◯⊥
+LABEL ρ4 ◯⊥ ∨ (¬◯⊥)
+LABEL ρ5 ¬(¬◯⊥)
+LABEL ρ6 (¬◯⊥) ∨ (¬(¬◯⊥))
+LABEL ρ7 ◯(¬◯⊥)
+LABEL ρ8 (¬(¬◯⊥)) ⊃ ◯⊥
+LABEL ρ9 ◯(¬◯⊥) ∨ (¬(¬◯⊥))
+LABEL ρ10 (¬(¬◯⊥)) ∨ ((¬(¬◯⊥)) ⊃ ◯⊥)
+LABEL ρ11 ◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))
+LABEL ρ12 ((¬(¬◯⊥)) ⊃ ◯⊥) ⊃ ◯(¬◯⊥)
+LABEL ρ13* ((¬(¬◯⊥)) ⊃ ◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))
+LABEL ρ14 (◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))
+LABEL ρ15* (◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ ◯(¬◯⊥)
+LABEL ρ16* ((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ ◯(¬◯⊥)
+LABEL ρ17* (¬(¬◯⊥)) ∨ ((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥)))
+LABEL ρ18* ((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ (◯(¬◯⊥) ∨ (¬(¬◯⊥)))
+LABEL ρ19* (◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ◯(¬◯⊥)
+LABEL ρ20* (◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ((¬◯⊥) ∨ (¬(¬◯⊥)))
+LABEL ρ21* ((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ◯(¬◯⊥)
 RHOCOVER-DONE

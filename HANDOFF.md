@@ -992,3 +992,41 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
   launched before the lookup landed; results go to the FRJ
   incompleteness file when they finish (a cap-free FRJ closure on these
   now-known-refutable cells = two new incompleteness candidates).
+
+## §2026-08-25 — Hasse pipeline tool; ρ20⊬ρ10 flag resolved by lookup; FRJ incompleteness witnesses #80/#81; missing-class predictions
+
+* **`tools/rho-hasse.sh`** = sweep → `wip/rhocover_out.txt` →
+  `docs/rho-hasse-pll.svg`, fully data-driven (labels/★ emitted by the
+  exe; the drawer refuses failed-control or incomplete runs).  Run it
+  whenever the order data changes.
+* **`rhocover` now overlays the DATABASE** before classifying: banked
+  kernel entries beat engine verdicts; a conflict aborts.  First run
+  caught `ρ20 ⊬ ρ10` (entry rho-0167, FRJ 8-world, kernel-pinned) —
+  the two-sided record's "genuine flag" `ρ20 ⊢? ρ10` was ALREADY
+  REFUTED; restated as `RNDB.rho20_nle_rho10`.  The whole 462-cell PLL
+  matrix now has ONE open cell: `ρ12 ⊢? ρ15` (= `frontierOrder`, one
+  claim).
+* **Raised-budget FRJ(◯) on the two ex-frontier cells
+  (`wip/frontier2_run.txt`)**: CLOSED-CAP-FREE in ~100 ms each (Profile
+  engine, NO arity caps) on cells whose refutability is kernel-pinned →
+  the first two FULL FRJ(◯)-incompleteness witnesses (#80, #81):
+  kernel-certified `ρ12 ⊬ ρ9` / `ρ13 ⊬ ρ6`, saturation-certified
+  FRJ-unreachable.  LJF◯ burned its 45-min cap on each proof side, as
+  expected on refutable cells.
+* **Structure of the diagram** (analysis, on-paper from settled cells):
+  graded, rank profile 1-2-2-3-5-5-3-1; interval [ρ4, ρ18] is a PERFECT
+  CUBE 2³ on atoms {ρ6, ρ7, ρ14}; the RN(p) ladder under p:=◯⊥ is the
+  left rail (ρ13★ = rn₉); the dual upper cube over ρ9 on {ρ12, ρ18,
+  ρ20} is missing its joins.  The 22 are NOT a lattice: the failures
+  predict MISSING CLASSES, two of them unconditional and mutually
+  distinct — class(ρ9∨ρ19) and class(ρ18∨ρ20) (disjunction property
+  forbids ⊤) — plus candidates ρ10∧ρ20, ρ10∧ρ21, ρ12∨ρ18,
+  ρ18∨ρ20∨ρ12, and flag-conditional ρ7∨ρ13, ρ12∧ρ15.  NEXT PROBE:
+  order these candidate formulas against the 22 (two-sided machinery);
+  each lands as a known class or a certified 23rd/24th class.
+* **Pin gap for the incomparability claim**: 73 no-path pairs; 72 fully
+  settled both directions (exception {ρ12,ρ15}: one open half); but
+  only 187/303 ⊬ cells are kernel-pinned in-repo — the other 116 are
+  battery separations with machine-emitted `by decide` pin lines not
+  yet compiled.  NEXT: compile them (Certified/RhoSeparations.lean) and
+  bank the entries; then the no-edge ⇒ both-⊬ reading is kernel-complete.

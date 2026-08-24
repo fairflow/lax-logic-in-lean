@@ -30,6 +30,7 @@ theorem `RNDB.not_covers_rho6_rho12`); the tool refuses to print a
 summary if it does not.
 -/
 import wip.two_sided
+import RNDB.DB
 
 open PLLND PLLND.RNC.CFX PLLFormula LJFO Rewrite TwoSidedLink RhoOrder
 
@@ -85,7 +86,28 @@ def needed (mat : Array (Array Status)) (a b c : Nat) : List String :=
 def main (args : List String) : IO Unit := do
   let maxF := (args.head?.bind String.toNat?).getD 48
   IO.println s!"=== PLL cover sweep over the 22-class ρ-catalogue (LJF◯ fuel ≤ {maxF}) ==="
-  let mat ← statusMat maxF
+  let mat0 ← statusMat maxF
+  -- DB OVERLAY: the database can know cells the sweep machinery cannot
+  -- reach (e.g. FRJ(◯) countermodels — ρ20 ⊬ ρ10, entry rho-0167, is
+  -- invisible to battery+G4c+LJF◯).  Banked kernel entries take
+  -- precedence over an engine "open"; a CONFLICT (entry vs settled
+  -- opposite verdict) aborts the run — it would mean a soundness bug.
+  let idx : PLLFormula → Option Nat := fun φ =>
+    (List.range n).find? (fun i => rhoF i == φ)
+  let mut mat := mat0
+  for e in RNDB.allEntries do
+    if e.claim.rel == RNDB.Rel.nle then
+      match idx e.claim.lhs, idx e.claim.rhs with
+      | some i, some j =>
+          match (mat.getD i #[]).getD j none with
+          | none =>
+              IO.println s!"DB-OVERLAY ρ{i} ⊬ ρ{j}  (entry {e.id})"
+              mat := mat.set! i ((mat.getD i #[]).set! j (some false))
+          | some true =>
+              IO.println s!"CONTROL FAILED: entry {e.id} claims ρ{i} ⊬ ρ{j} but the sweep proved ρ{i} ⊢ ρ{j}"
+              return
+          | some false => pure ()
+      | _, _ => pure ()
   -- the matrix, and its open cells
   let mut openCells : List (Nat × Nat) := []
   let mut nPos := 0; let mut nNeg := 0
@@ -138,6 +160,10 @@ def main (args : List String) : IO Unit := do
     IO.println "CONTROL FAILED: ρ6/ρ12 did not come out BLOCKED by ρ9 — do not trust this run"
   else
     IO.println "control: ρ6 < ρ12 BLOCKED by ρ9, matching kernel theorem RNDB.not_covers_rho6_rho12"
+  -- machine-readable class labels, for the diagram generator
+  for i in List.range n do
+    let star := if RhoOrder.discovered.contains i then "*" else ""
+    IO.println s!"LABEL ρ{i}{star} {PLLND.RNC.CFX.pp (rhoF i)}"
   IO.println "RHOCOVER-DONE"
 
 end RhoCover

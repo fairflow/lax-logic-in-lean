@@ -196,19 +196,28 @@ def orderEntries : List Entry := [nle_12_9, nle_13_6]
 
 theorem orderEntries_length : orderEntries.length = 2 := rfl
 
-/-- The order view's LIVE frontier.  The two original members
-(`ρ12 ⊬ ρ9?`, `ρ13 ⊬ ρ6?`) were RETIRED 2026-08-24 — settled by
-looking up the 2026-08-15 battery record, not by new search; they are
-theorems above.  What remains open in the whole 462-cell PLL matrix is
-exactly the two standing flag cells (`docs/two-sided-engine.md` §"The
-two genuine flags").  The `rhocover` sweep (2026-08-24,
-`wip/rhocover_out.txt`) shows neither touches any of the 37 scoped
-cover edges: each could only ADD one strict pair (and possibly one
-edge) if resolved POSITIVELY, because the opposite directions
-(`ρ15 ⊬ ρ12`, `ρ10 ⊬ ρ20`) are battery-settled. -/
+/-- `[ρ20] ⊬ ρ10` was NEVER open: the FRJ(◯) 8-world countermodel is
+banked as entry `rho-0167` (`RhoCerts.rho_20_nle_10`, one of the 48
+cells FRJ settled beyond the 2026-08-15 ground truth).  The two-sided
+record lists `ρ20 ⊢? ρ10` as a "genuine flag" — that flag is hereby
+RESOLVED NEGATIVE by lookup; restated so the resolution is visible
+where the order lives. -/
+theorem rho20_nle_rho10 : ¬ Deriv [rhoF 20] (rhoF 10) :=
+  nle_20_10.ok.holds
+
+/-- The order view's LIVE frontier — now a SINGLE claim.  History: the
+two original members (`ρ12 ⊬ ρ9?`, `ρ13 ⊬ ρ6?`) were retired
+2026-08-24, settled from the 2026-08-15 battery record; the
+`ρ20 ⊢? ρ10` flag briefly recorded here was then found ALREADY REFUTED
+by the banked FRJ certificate above (the sweep machinery cannot see
+FRJ countermodels — `rhocover` now overlays the database precisely so
+this cannot recur).  What remains open in the whole 462-cell PLL
+matrix is exactly `ρ12 ⊢? ρ15`; its converse (`ρ15 ⊬ ρ12`) is
+battery-settled, so a positive resolution would add the strict pair
+`ρ12 < ρ15` (and possibly one cover edge), and a negative one makes
+`{ρ12, ρ15}` incomparable — either way no existing edge moves. -/
 def frontierOrder : Frontier :=
-  [ ⟨rhoF 12, rhoF 15, Rel.le, none⟩,
-    ⟨rhoF 20, rhoF 10, Rel.le, none⟩ ]
+  [ ⟨rhoF 12, rhoF 15, Rel.le, none⟩ ]
 
 /-! ## Pins — UNGUARDED as emitted; guard via tools/pin-backfill.py -/
 
