@@ -278,3 +278,14 @@ layer 4 introduces is a SECOND interpolant definition, `interpF`
 be proved afresh; the existing `interp` results stand unchanged
 alongside. The UI theorem is an existence statement, so which
 interpolant witnesses it is strategy, not content.
+
+
+## 2026-08-24 refresh (see HANDOFF.md §2026-08-24 for the full state)
+
+Live threads, in order: (1) Matthew's publication/core branch decision —
+all measurements in; (2) migrate the incompleteness candidates into
+`RNDB` as `Frontier` members and wire the miner; (3) `PartialRNDict` as
+a computed view + the order DAG (store `<`, covers only relative to a
+named set); (4) prove the second Profile-Lemma engine against
+`wip/frj_sat.lean` row-for-row if the profile engine is to REPLACE Fast
+rather than sit beside it; (5) `enginecmp` — deferred, must revisit.

@@ -885,3 +885,75 @@ added.  REMAINING: the pledged visit `minModP` + `minMod`'s modal cases
 + statements (A)/(B) — full blueprint and the ONE open corner (pledged
 ⊃-float onto a modally-loaded anchor; conjectured unrealisable, engine
 is the arbiter) recorded in `docs/frj-w4.md` §8.
+
+## §2026-08-24 — profile engine, ρ-certificates, the RNDB database, and the Deriv/Interd hoist
+
+Branch `claude/frj-redevelopment-69005f`, at `3c1b616`.  Four days'
+campaign, summarised for the next reader; every claim below is pushed and
+pin-guarded.
+
+**Engine.**  `FRJ/Profile.lean` (43 thms, sorry-free, choice-free) proves
+the Profile Lemma: join conclusions and side conditions factor through
+the aggregates (Σ, Θ, M, Υ), J1-extendability through (Σ, M) alone, the
+promise side through (E, A).  `FRJ/Search/Profile.lean` implements the
+profile-indexed search — one witness family per profile, NO arity caps —
+alongside `Fast` and the frozen oracle, both untouched.  Differential
+tests (`lake exe frjdiff`, with a G4c ground-truth column): zero
+defects over 460+ goals, 13–28× faster, three countermodels `Fast`
+misses.  `FRJ.Search.Stats` now records `jmaxBinding`/`pmaxBinding`;
+the old `fixpoint` verdict (wrong on 119/119 measured negatives) is
+deleted; `closed-no-cap-bound` is reported only when every cap is
+observed slack.  Engine ranking is REGIME-DEPENDENT: LJF◯ wins on small
+closed sequents, the G4c battery+search on larger ones (300–700× on the
+frjhard ladder) — `tools/Engines.lean` records both measurements;
+`enginecmp` (deferred, MUST REVISIT) is what keeps that from decaying
+into folklore again.
+
+**Refutation capability, measured.**  Against G4c ground truth on the
+462 ρ-order cells: FRJ(◯) profile constructs countermodels for 62% of
+the known-refutable cells; the misses are CONSEQUENT-shaped (five
+disjunction/implication-over-modal-compound shapes are never refuted,
+0/56).  79+ cap-free closures against certified countermodels stand as
+incompleteness CANDIDATES for FRJ(◯) — they become witnesses only via
+the FinCM → FRJ.Kripke link, which does not exist; Matthew's instruction
+is to UNIFY the two model definitions, not bridge them (recorded in
+`docs/frj-profile-search.md`).
+
+**Certificates.**  `lake exe rhobank` swept all 462 cells and banked
+every refutation found: `Certified/RhoRefutations.lean`, 185
+kernel-checked certificates, all `[propext, Quot.sound]`, stated with
+`⊬` — 137 confirm known-refutable cells, **48 settle cells the two-sided
+ground truth left unknown**, zero conflicts.
+
+**Database (layer 3).**  `RNDB/` — schema (`Types.lean`: Claim with
+MANDATORY scope on negatives / Evidence / Entry with the un-sorriable
+`ok` field / Frontier) plus 1,776 entries in six modules
+(`allEntries_hold` pinned): ρ 185 + round-1 236 (the `rndSet` harvest) +
+round-2 82 + rnFRJCerts 24 (the corpus is 24 countermodels backing 135
+theorems, not "135 certificates") + derived 321 (symm closure + q15
+trans triangle — first evidence-DAG edges) + escapes 928 (the 58
+universal escapes DECOMPOSE into directional nle entries; no Rel
+extension was needed).  Statuses live in data, `open` claims get no
+declaration, duplicates across sources are corroboration (any future
+dedup must COUNT sources, not drop them).
+
+**The hoist and admissibility.**  `Deriv` (verbatim from
+publication/core) and `Interd` (new, same pattern) are hoisted to
+`LaxLogic/{Deriv,Interd}.lean`; `PLLSemUIFrag` imports them.
+Consequence, verified by TWO independent measurements (mine and the
+lax-logic-in-lean-3f session running core-audit's own rule sets over
+this tree): `RNDB.EscEntries`'s closure is 29 modules, zero wip/, zero
+PLLSemUI*, zero sorry, zero NUL, zero trimmed — **928 entries (52% of
+the database) are admissible to publication/core's boundary today**.
+Two documentation-check failures (`FormattingUtils`, `PLLFormula`
+lacking module docstrings) are BRANCH ARTEFACTS: publication/core's
+versions carry the docstrings; do NOT add them here — let that branch's
+versions win at merge.
+
+**Open, in Matthew's hands.**  (1) The publication/core branch strategy
+— reconciliation cost now measured twice; remaining hoist surface is
+ladder8/rnEmbed (mechanical), ljfo_link (mechanism-only Rewrite import
+to confirm), rho_order/rnSep/rnSepColl (declaration-level, rnSepColl
+last).  (2) FinCM/Kripke unification.  (3) The `tools/`–`Tools/` case
+collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
+(`◯((q8∧q11)⊃q13) ⊃ (q14∨q15)`) still unsettled at budget 2×10⁶.
