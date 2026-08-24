@@ -98,6 +98,7 @@ import LaxLogic.PLLSemUITrace
 import LaxLogic.PLLSemUILayered
 import LaxLogic.Deriv
 import LaxLogic.Interd
+import LaxLogic.RN.Rho
 import LaxLogic.PLLSemUIFrag
 import LaxLogic.PLLSemUIChar
 import LaxLogic.PLLSemUIHenkin

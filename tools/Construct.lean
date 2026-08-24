@@ -27,7 +27,7 @@ import FRJ.Search.Profile
 import FRJ.Search.Pin
 import FRJ.Bridge
 import LaxLogic.PLLSearch
-import wip.rho_order
+import LaxLogic.RN.Rho
 
 open FRJ
 

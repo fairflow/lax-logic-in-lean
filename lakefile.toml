@@ -45,7 +45,7 @@ globs = ["LJF.Base", "LJF.Complete", "LJF.OCore", "LJF.OUniverse", "LJF.ORows",
 # 2026-08-21 in worktree agent-aea09736d84d32c6f; pulled in 2026-08-24.
 [[lean_lib]]
 name = "RNDB"
-globs = ["RNDB.Types", "RNDB.RhoEntries", "RNDB.DictEntries", "RNDB.Dict2Entries", "RNDB.FRJCertEntries", "RNDB.DerivedEntries", "RNDB.EscEntries", "RNDB.DB", "RNDB.Examples", "RNDB.Frontier79"]
+globs = ["RNDB.Types", "RNDB.RhoEntries", "RNDB.DictEntries", "RNDB.Dict2Entries", "RNDB.FRJCertEntries", "RNDB.DerivedEntries", "RNDB.EscEntries", "RNDB.DB", "RNDB.Examples", "RNDB.Frontier79", "RNDB.Order"]
 
 [[lean_lib]]
 name = "Certified"

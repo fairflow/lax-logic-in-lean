@@ -18,7 +18,7 @@ output before the file is committed — an unguarded pin checks nothing.
 import FRJ.Search.Profile
 import FRJ.Search.Pin
 import FRJ.Bridge
-import wip.rho_order
+import LaxLogic.RN.Rho
 
 open FRJ
 
@@ -66,7 +66,7 @@ def main : IO Unit := do
   out.putStrLn "-/"
   out.putStrLn "import FRJ.Search.Pin"
   out.putStrLn "import FRJ.Bridge"
-  out.putStrLn "import wip.rho_order"
+  out.putStrLn "import LaxLogic.RN.Rho"
   out.putStrLn ""
   out.putStrLn "open FRJ PLLND"
   out.putStrLn ""

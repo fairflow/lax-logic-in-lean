@@ -44,6 +44,7 @@ import LaxLogic.PLLConfluentComplete
 import LaxLogic.PLLSearchConf
 import Rewrite
 import LaxLogic.RN.Reps
+import LaxLogic.RN.Rho
 
 /-! ## The sweep's machinery, transcribed
 
@@ -429,37 +430,10 @@ open Rewrite (simplifyWith fullSetC canon)
 
 namespace RhoOrder
 
-abbrev F := PLLFormula
+-- The 22-representative catalogue (r13, w1, rhos, discovered, rhoF,
+-- rhoN, n, abbrev F) was HOISTED to LaxLogic/RN/Rho.lean on 2026-08-24;
+-- this namespace continues below with the probe machinery only.
 
-/-! ## The 22 representatives, in the catalogue's ρ-numbering
-
-Transcribed from the catalogue's "was" column, so every one of these
-is the formula the 680-cell sweep actually classified. -/
-
-def r13 : F := q10.ifThen q4
-def w1  : F := w16
-
-def rhos : List (String × F) :=
-  [ ("ρ0",  q0),                ("ρ1",  q1),
-    ("ρ2",  q2),                ("ρ3",  q3),
-    ("ρ4",  q4),                ("ρ5",  q6),
-    ("ρ6",  q7),                ("ρ7",  q5),
-    ("ρ8",  q10),               ("ρ9",  q9),
-    ("ρ10", q11),               ("ρ11", q8),
-    ("ρ12", q14),               ("ρ13", r13),
-    ("ρ14", w1),                ("ρ15", q8.or q5),
-    ("ρ16", w1.or q5),          ("ρ17", q6.or w1),
-    ("ρ18", w1.or q9),          ("ρ19", q8.ifThen q5),
-    ("ρ20", q8.ifThen q7),      ("ρ21", w1.ifThen q5) ]
-
-/-- The eight sweep discoveries — the classes the catalogue never
-placed.  ρ13 is a new SHAPE; ρ15–ρ21 are combinations. -/
-def discovered : List Nat := [13, 15, 16, 17, 18, 19, 20, 21]
-
-def rhoF (i : Nat) : F := (rhos.getD i ("", q0)).2
-def rhoN (i : Nat) : String := (rhos.getD i ("", q0)).1
-
-def n : Nat := rhos.length
 
 /-! ## Part A — what the repaired pipeline does to the sweep's cells
 

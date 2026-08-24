@@ -20,7 +20,7 @@ import FRJ.Bridge
 import Tools.Bank
 import LaxLogic.RN.Reps
 import LaxLogic.PLLSearch
-import wip.rho_order
+import LaxLogic.RN.Rho
 
 open FRJ
 

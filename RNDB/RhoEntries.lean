@@ -16,7 +16,7 @@ settle cells it left UNKNOWN**.  Zero conflicts with any proved cell.
 -/
 import RNDB.Types
 import Certified.RhoRefutations
-import wip.rho_order
+import LaxLogic.RN.Rho
 
 open PLLND PLLND.SemUI
 
