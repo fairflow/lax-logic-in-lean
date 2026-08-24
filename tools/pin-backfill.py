@@ -38,8 +38,11 @@ for i, l in enumerate(src):
     st = l.strip()
     if st.startswith("#print axioms "):
         name = st[len("#print axioms "):].strip()
+        # a pin is guarded iff the immediately preceding non-blank line is
+        # `#guard_msgs in`; scanning a 4-line window misclassified a bare
+        # pin sitting directly under a DIFFERENT pin's guard (2026-08-24)
         prev = [x.strip() for x in src[max(0, i-4):i] if x.strip()]
-        already = any(x.startswith("#guard_msgs") for x in prev)
+        already = bool(prev) and prev[-1].startswith("#guard_msgs")
         # the printed name may be fully qualified while the source is not
         hit = info.get(name) or next(
             (v for k, v in info.items() if k == name or k.endswith("." + name)), None)
