@@ -90,7 +90,7 @@ entry file imports — is `wip`-free.  The schema needs only the shared
 representatives and the `Deriv`/`Interd` definitions.
 -/
 import LaxLogic.RN.Reps
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.Interd
 
 namespace RNDB
 
@@ -345,8 +345,15 @@ def Frontier : Type := List Claim
 
 Transcribed verbatim from `lake env lean RNDB/Types.lean`.  Since the
 worked examples moved to `RNDB/Examples.lean` (2026-08-24) this module
-imports nothing from `wip/`, so there is no sorried environment to
-guard against here — the pins now guard only against regression. -/
+imports nothing from `wip/`.  Two DIFFERENT properties are in play and
+must not be conflated (peer correction, 2026-08-24): REACHABILITY — no
+sorry-carrying module in the import closure, which is what
+`scripts/core-audit.py` gates — and TAINT — no theorem here depends on a
+sorried declaration, which is what the `#guard_msgs` pins check.  The
+pins were always what made the entries safe; reachability is what makes
+them ADMISSIBLE to the publication branch.  Since the `Deriv`/`Interd`
+hoist (`LaxLogic/Interd.lean`) this module's closure carries neither
+`wip/` nor the semantic-UI chain, so both properties hold. -/
 
 /-- info: 'RNDB.entries_hold' does not depend on any axioms -/
 #guard_msgs in
