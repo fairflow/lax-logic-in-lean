@@ -5,8 +5,17 @@
 slice of the VIEW layer over them: the strict order as a `Prop`, and
 cover-ness — which, the fragment being proved infinite, exists ONLY
 relative to a named representative set (Matthew, 2026-08-24: "we don't
-have a reliable way of determining ≺ anywhere"; the standing rule is
-store `<`, expose covers as a scoped view).
+have a reliable way of determining covers anywhere"; the standing rule
+is store `<`, expose covers as a scoped view).
+
+Notation (Matthew, 2026-08-24): the strict order is plain `<`/`>`
+(scoped instance); `≺/≻` is NOT used — many order-theory texts reserve
+it for covering, so it invites exactly the confusion it caused.  The
+covering relation is `⋖` ("is covered by") / `⋗` ("covers"), and it
+appears ONLY in scoped form `a ⋖[S] b` — no element of `S` strictly
+between — until emptiness of an open interval `(a, b)` is proved for
+the WHOLE fragment, which the bare `Covers`/`⋖` below states and
+nothing yet inhabits.
 
 The worked example ρ6/ρ12 shows the machinery AND its coupling to the
 frontier: deciding one candidate Hasse edge reduced, via the banked
@@ -22,19 +31,32 @@ namespace RNDB
 /-- Strict order: derivable one way, refuted the other. -/
 def Lt (a b : PLLFormula) : Prop := Deriv [a] b ∧ ¬ Deriv [b] a
 
-@[inherit_doc] infix:50 " ≺ " => Lt
+/-- `a < b` on formulas is the derivability order, scoped to `RNDB`. -/
+scoped instance : LT PLLFormula := ⟨Lt⟩
 
-/-- `a ≻ b` = `b ≺ a`. -/
-def Gt (a b : PLLFormula) : Prop := Lt b a
-
-@[inherit_doc] infix:50 " ≻ " => Gt
-
-/-- Cover RELATIVE TO a named set: nothing in `S` sits strictly
-between.  Never stated absolutely — the fragment is infinite. -/
+/-- Cover RELATIVE TO a named set: `a < b` and no element of `S` sits
+strictly between. -/
 def CoversIn (S : List PLLFormula) (a b : PLLFormula) : Prop :=
   Lt a b ∧ ∀ c ∈ S, ¬ (Lt a c ∧ Lt c b)
 
-/-! ## The worked example: ρ12 ≻ ρ6, and what its cover question needs
+@[inherit_doc CoversIn] notation:50 a:51 " ⋖[" S "] " b:51 => CoversIn S a b
+/-- `a ⋗[S] b` = `b ⋖[S] a` ("covers", within `S`). -/
+notation:50 a:51 " ⋗[" S "] " b:51 => CoversIn S b a
+
+/-- The ABSOLUTE cover — the open interval `(a, b)` empty over ALL
+formulas.  Stated so the target of a generalisation is on record;
+nothing inhabits it yet, and any scoped `⋖[S]` result is strictly
+weaker.  (Quantifying over all of `PLLFormula` makes this the cover in
+the full PLL derivability order; a variable-carrying interposer can
+defeat it even where every closed one fails.) -/
+def Covers (a b : PLLFormula) : Prop :=
+  Lt a b ∧ ∀ c, ¬ (Lt a c ∧ Lt c b)
+
+@[inherit_doc Covers] infix:50 " ⋖ " => Covers
+/-- `a ⋗ b` = `b ⋖ a` ("covers", absolutely). -/
+infix:50 " ⋗ " => fun a b => Covers b a
+
+/-! ## The worked example: ρ6 < ρ12, and what its cover question needs
 
 ρ6 = `¬◯⊥ ∨ ¬¬◯⊥`, ρ9 = `◯¬◯⊥ ∨ ¬¬◯⊥`, ρ12 = `(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥`. -/
 
@@ -59,15 +81,18 @@ def nd_6_9 : LaxND [q7] q9 :=
     (.orIntro1 (.laxIntro (.iden (show q3 ∈ q3 :: [q7] by decide))))
     (.orIntro2 (.iden (show q6 ∈ q6 :: [q7] by decide)))
 
-/-- **ρ12 ≻ ρ6** — Matthew's example, both halves kernel-checked: the
+/-- **ρ6 < ρ12** — Matthew's example, both halves kernel-checked: the
 hand derivation above, and the banked 4-world countermodel entry
 `nle_12_6` ("rho-0094") for strictness. -/
-theorem rho12_gt_rho6 : rhoF 12 ≻ rhoF 6 :=
+theorem rho6_lt_rho12 : rhoF 6 < rhoF 12 :=
   ⟨⟨nd_6_12⟩, nle_12_6.holds⟩
 
-/-- ρ6 ≺ ρ9, strict: the derivation above plus the banked `nle_9_6`
+@[deprecated rho6_lt_rho12 (since := "2026-08-24")]
+theorem rho12_gt_rho6 : rhoF 12 > rhoF 6 := rho6_lt_rho12
+
+/-- ρ6 < ρ9, strict: the derivation above plus the banked `nle_9_6`
 (one of the 48 cells the ground truth left unknown and FRJ(◯) settled). -/
-theorem rho6_lt_rho9 : rhoF 6 ≺ rhoF 9 :=
+theorem rho6_lt_rho9 : rhoF 6 < rhoF 9 :=
   ⟨⟨nd_6_9⟩, nle_9_6.holds⟩
 
 /-- `[q9] ⊢ q14` (= ρ9 ⊢ ρ12): case split on `q9 = q5∨q6`; the `q6`
@@ -95,7 +120,7 @@ strictly between, and ρ12 does NOT cover ρ6 in the catalogue.  The
 hypothesis is a `frontierOrder` member below, never an assumption
 smuggled in. -/
 theorem not_coversIn_of_open (h : ¬ Deriv [rhoF 12] (rhoF 9)) :
-    ¬ CoversIn (rhoScope) (rhoF 6) (rhoF 12) := fun hc =>
+    ¬ rhoF 6 ⋖[rhoScope] rhoF 12 := fun hc =>
   hc.2 (rhoF 9) (by decide)
     ⟨rho6_lt_rho9, ⟨rho9_le_rho12, h⟩⟩
 
@@ -108,9 +133,9 @@ def frontierOrder : Frontier :=
 
 /-! ## Pins — UNGUARDED as emitted; guard via tools/pin-backfill.py -/
 
-/-- info: 'RNDB.rho12_gt_rho6' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'RNDB.rho6_lt_rho12' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
-#print axioms rho12_gt_rho6
+#print axioms rho6_lt_rho12
 
 /-- info: 'RNDB.rho6_lt_rho9' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
