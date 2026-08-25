@@ -1,9 +1,19 @@
 # RefAt mechanisation plan — the vacuous-retention extension of FRJ(◯)
 
-**Status: IN EXECUTION 2026-08-25 (session-scoped goal directive; Matthew's
-review of this plan is PENDING — flagged per the calculus-adoption gate,
-which normally requires review before Lean.  Everything below lands on
-branch `claude/frj-incompleteness-80-81-251e7f` and nothing is merged.)**
+**Status: DELIVERED 2026-08-25 (same session; Matthew's review of this
+plan is PENDING — flagged per the calculus-adoption gate, which normally
+requires review before Lean.  Everything on branch
+`claude/frj-incompleteness-80-81-251e7f`, nothing merged.)  Deliverable
+status: 1–6 ALL LANDED, sorry-free, pins green (`FRJ/AuditV.lean`,
+negative-tested); `#slime` reports 0 on both V-families; `refAt_refutes`
+is AXIOM-FREE, `keptOf_ok` `[propext]`, `soundnessV`
+`[propext, Quot.sound]`.  The functor+paperOps differential agrees with
+the legacy engine row-for-row on 8 goals; the typed V-engine derives
+#80/#81 and (spot-checks) 4/4 known-refutable sample cells, misses the
+ρ20⊢?ρ12 residue cell as expected, and derives the open cell ρ12⊢?ρ15.
+End-to-end: `wip/frjv_consequences.lean` re-derives ¬Deriv[ρ12]ρ9 and
+¬Deriv[ρ13]ρ6 THROUGH the repaired calculus (witness ∘ soundnessV ∘
+bridge), a third independent kernel route.**
 
 Source: not a paper — our own repair, designed and extensionally screened
 2026-08-25 (session report artifact "FRJ(◯) Witnesses 80 and 81",
