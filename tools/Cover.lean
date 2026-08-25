@@ -119,8 +119,140 @@ def emitMode : IO Unit := do
   IO.println s!"EMIT-COUNT {count}"
   IO.println "RHOCOVER-DONE"
 
+/-- The candidate formulas the cover sweep's lattice failures predict:
+each is a join/meet the Lindenbaum order MUST contain but the 22-class
+catalogue lacks a home for.  `probe` orders each against the catalogue
+(and against the other candidates): a `k` with both directions ⊢
+identifies it with class `ρk`; no such `k` = a NEW class. -/
+def candidates : List (String × PLLFormula) :=
+  [ ("ρ9∨ρ19",      .or (rhoF 9) (rhoF 19))
+  , ("ρ18∨ρ20",     .or (rhoF 18) (rhoF 20))
+  , ("ρ5∨ρ19",      .or (rhoF 5) (rhoF 19))
+  , ("ρ6∨ρ19",      .or (rhoF 6) (rhoF 19))
+  , ("ρ7∨ρ13",      .or (rhoF 7) (rhoF 13))
+  , ("ρ9∨ρ13",      .or (rhoF 9) (rhoF 13))
+  , ("ρ12∨ρ18",     .or (rhoF 12) (rhoF 18))
+  , ("ρ12∨ρ18∨ρ20", .or (rhoF 12) (.or (rhoF 18) (rhoF 20)))
+  , ("ρ10∧ρ20",     .and (rhoF 10) (rhoF 20))
+  , ("ρ10∧ρ21",     .and (rhoF 10) (rhoF 21))
+  , ("ρ12∧ρ15",     .and (rhoF 12) (rhoF 15))
+  , ("ρ15∧ρ21",     .and (rhoF 15) (rhoF 21)) ]
+
+/-- Three-valued conjunction over a list of statuses. -/
+def andS (l : List Status) : Status :=
+  if l.any (· == some false) then some false
+  else if l.all (· == some true) then some true
+  else none
+
+def probeMode (maxF : Nat) : IO Unit := do
+  let bat := battery ++ framesRooted5.toArray
+  let vecs : Array (Array (Array Bool)) :=
+    (List.range n).toArray.map fun i => bat.map fun M => vecOf M (rhoF i)
+  -- candidate decompositions: (name, formula, join-of, meet-of)
+  let cands : List (String × PLLFormula × List Nat × List Nat) :=
+    [ ("ρ9∨ρ19",      .or (rhoF 9) (rhoF 19),                [9, 19],      [])
+    , ("ρ18∨ρ20",     .or (rhoF 18) (rhoF 20),               [18, 20],     [])
+    , ("ρ5∨ρ19",      .or (rhoF 5) (rhoF 19),                [5, 19],      [])
+    , ("ρ6∨ρ19",      .or (rhoF 6) (rhoF 19),                [6, 19],      [])
+    , ("ρ7∨ρ13",      .or (rhoF 7) (rhoF 13),                [7, 13],      [])
+    , ("ρ9∨ρ13",      .or (rhoF 9) (rhoF 13),                [9, 13],      [])
+    , ("ρ12∨ρ18",     .or (rhoF 12) (rhoF 18),               [12, 18],     [])
+    , ("ρ12∨ρ18∨ρ20", .or (rhoF 12) (.or (rhoF 18) (rhoF 20)), [12, 18, 20], [])
+    , ("ρ10∧ρ20",     .and (rhoF 10) (rhoF 20),              [],           [10, 20])
+    , ("ρ10∧ρ21",     .and (rhoF 10) (rhoF 21),              [],           [10, 21])
+    , ("ρ12∧ρ15",     .and (rhoF 12) (rhoF 15),              [],           [12, 15])
+    , ("ρ15∧ρ21",     .and (rhoF 15) (rhoF 21),              [],           [15, 21]) ]
+  let cvecs : Array (Array (Array Bool)) :=
+    cands.toArray.map fun (_, X, _, _) => bat.map fun M => vecOf M X
+  let out ← IO.getStdout
+  -- the settled 22-matrix, with the DB overlay
+  IO.println "building the 22-matrix (with DB overlay)…"; out.flush
+  let mat0 ← statusMat maxF
+  let idx : PLLFormula → Option Nat := fun φ =>
+    (List.range n).find? (fun i => rhoF i == φ)
+  let mut mat := mat0
+  for e in RNDB.allEntries do
+    if e.claim.rel == RNDB.Rel.nle then
+      match idx e.claim.lhs, idx e.claim.rhs with
+      | some i, some j =>
+          if (mat.getD i #[]).getD j none == none then
+            mat := mat.set! i ((mat.getD i #[]).set! j (some false))
+      | _, _ => pure ()
+  let g := fun (x y : Nat) => (mat.getD x #[]).getD y none
+  -- residual single cell by search, X → Y (used only where laws are
+  -- silent).  MODEST budgets on purpose: a residual cell that resists
+  -- them is FLAGGED `?` and listed, never ground at — the G4c oracle
+  -- at 10⁵ on a composite goal is where the first two probe runs died.
+  let search := fun (tag : String) (vX : Array (Array Bool)) (X : PLLFormula)
+                    (vY : Array (Array Bool)) (Y : PLLFormula) => do
+    match firstSep bat vX vY with
+    | some _ => pure (some false)
+    | none =>
+        IO.println s!"  residual search: {tag}"; (← IO.getStdout).flush
+        if provedAt 20000 [X] Y then pure (some true)
+        else if (TwoSided.fuelLadder (min maxF 24)).any
+                  (fun f => searchProves f [X] Y) then pure (some true)
+        else pure none
+  IO.println s!"=== catalogue-extension probe: {cands.length} candidates vs the 22 (lattice laws first, search residual, LJF◯ ≤ {maxF}) ==="
+  out.flush
+  let pr := fun (s : Status) => match s with
+    | some true => "⊢" | some false => "⊬" | none => "?"
+  let mut fwds : Array (Array Status) := #[]
+  let mut bwds : Array (Array Status) := #[]
+  for ci in [0:cands.length] do
+    let (name, X, ors, ands) := cands.getD ci ("", falsePLL, [], [])
+    let vX := cvecs.getD ci #[]
+    let mut fwd : Array Status := #[]   -- X → ρk
+    let mut bwd : Array Status := #[]   -- ρk → X
+    for k in [0:n] do
+      -- X → ρk
+      let f : Status ←
+        if !ors.isEmpty then pure (andS (ors.map (g · k)))   -- ⋁S ⊢ k iff ∀a. a ⊢ k
+        else if ands.any (fun a => g a k == some true) then pure (some true)  -- A∧B ≤ A ≤ k
+        else search s!"{name} → ρ{k}" vX X (vecs.getD k #[]) (rhoF k)
+      -- ρk → X
+      let b : Status ←
+        if !ands.isEmpty then pure (andS (ands.map (g k ·)))  -- k ⊢ ⋀S iff ∀a. k ⊢ a
+        else if ors.any (fun a => g k a == some true) then pure (some true)   -- k ≤ A ≤ A∨B
+        else search s!"ρ{k} → {name}" (vecs.getD k #[]) (rhoF k) vX X
+      fwd := fwd.push f
+      bwd := bwd.push b
+    fwds := fwds.push fwd
+    bwds := bwds.push bwd
+    let idents := (List.range n).filter fun k =>
+      fwd.getD k none == some true && bwd.getD k none == some true
+    let above := (List.range n).filter fun k =>
+      bwd.getD k none == some true && fwd.getD k none == some false
+    let below := (List.range n).filter fun k =>
+      fwd.getD k none == some true && bwd.getD k none == some false
+    let openC := (List.range n).filter fun k =>
+      fwd.getD k none == none || bwd.getD k none == none
+    match idents with
+    | [k] => IO.println s!"IDENT {name} ≡ ρ{k}"
+    | [] => IO.println s!"NEW   {name}   strictly above {above.map (s!"ρ{·}")}, strictly below {below.map (s!"ρ{·}")}, open cells at {openC.map (s!"ρ{·}")}"
+    | ks => IO.println s!"CONTROL FAILED: {name} identified with TWO classes {ks} — catalogue distinctness violated"
+    out.flush
+  -- candidate × candidate, by the same laws (search residual)
+  IO.println ""
+  for ci in [0:cands.length] do
+    for cj in [0:cands.length] do
+      if ci != cj then
+        let (ni, X, orsI, andsI) := cands.getD ci ("", falsePLL, [], [])
+        let (nj, Y, orsJ, andsJ) := cands.getD cj ("", falsePLL, [], [])
+        let d : Status ←
+          if !orsI.isEmpty then pure (andS (orsI.map (fun a => (bwds.getD cj #[]).getD a none)))
+          else if !andsJ.isEmpty then pure (andS (andsJ.map (fun b => (fwds.getD ci #[]).getD b none)))
+          else if orsJ.any (fun b => (fwds.getD ci #[]).getD b none == some true) then pure (some true)
+          else if andsI.any (fun a => (bwds.getD cj #[]).getD a none == some true) then pure (some true)
+          else search s!"{ni} → {nj}" (cvecs.getD ci #[]) X (cvecs.getD cj #[]) Y
+        IO.println s!"CAND {ni} → {nj}: {pr d}"
+    out.flush
+  IO.println "PROBE-DONE"
+
 def main (args : List String) : IO Unit := do
   if args.head? == some "emit" then return (← emitMode)
+  if args.head? == some "probe" then
+    return (← probeMode ((args.getD 1 "48").toNat?.getD 48))
   let maxF := (args.head?.bind String.toNat?).getD 48
   IO.println s!"=== PLL cover sweep over the 22-class ρ-catalogue (LJF◯ fuel ≤ {maxF}) ==="
   let mat0 ← statusMat maxF
