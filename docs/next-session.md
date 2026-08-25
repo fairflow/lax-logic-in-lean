@@ -21,6 +21,16 @@ in, so it waits for him to merge and coordinate.
 `LaxLogic.RN.Reps` — nothing from `wip/` — and the generated certificates
 do the same.
 
+
+**Added 2026-08-17 — FRJ◯ thread (PAUSED).** Fiorentini–Ferrari FRJ(G) + ◯
+on branch `claude/frj-redevelopment-69005f`: ◯-free completeness PROVED
+(`FRJ/Minimal.lean`, `frj_iff_not_IPL`); the ◯-case paused at the
+conditional `completeness_of_supply` — the two supply kernels are OPEN and
+were never extensionally attacked.  See the final § of `HANDOFF.md`
+(2026-08-17) and, on the branch, `docs/frj-w4.md`.  First moves if resumed:
+extensional attack on the supply statements; the TOCL 2020 §6 organisation
+read at source.
+
 ---
 
 # PENDING (2026-08-20): the route-B derivation emitter

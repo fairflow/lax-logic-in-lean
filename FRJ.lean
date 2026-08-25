@@ -4,6 +4,14 @@ import FRJ.Step
 import FRJ.Model
 import FRJ.Extract
 import FRJ.Sound
+import FRJ.RefAt
+import FRJ.CalculusV
+import FRJ.CalculusVLemmas
+import FRJ.StepV
+import FRJ.ExtractV
+import FRJ.SoundV
+import FRJ.BridgeV
+import FRJ.AuditV
 import FRJ.Complete
 import FRJ.Minimal
 import FRJ.Modal
@@ -11,3 +19,5 @@ import FRJ.Fallible
 import FRJ.Audit
 import FRJ.Erase
 import FRJ.Profile
+import FRJ.Search.Core
+import FRJ.Search.OpsV
