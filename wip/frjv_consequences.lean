@@ -33,11 +33,11 @@ theorem ofPLL_g81 : FRJ.ofPLL (PLLFormula.ifThen (rhoF 13) (rhoF 6)) = G81 := by
   decide
 
 /-- `[ρ12] ⊬ ρ9`, through the repaired calculus. -/
-theorem rho12_nle_rho9_viaV : ¬ Deriv [rhoF 12] (rhoF 9) :=
+theorem rho12_nle_rho9_viaV : [rhoF 12] ⊬ rhoF 9 :=
   FRJ.not_entails_of_provableV (ofPLL_g80 ▸ provableV_G80)
 
 /-- `[ρ13] ⊬ ρ6`, through the repaired calculus. -/
-theorem rho13_nle_rho6_viaV : ¬ Deriv [rhoF 13] (rhoF 6) :=
+theorem rho13_nle_rho6_viaV : [rhoF 13] ⊬ rhoF 6 :=
   FRJ.not_entails_of_provableV (ofPLL_g81 ▸ provableV_G81)
 
 /-! ## THE FRONTIER CELL: `ρ12 ⊢? ρ15` SETTLED NEGATIVE
@@ -56,7 +56,7 @@ theorem ofPLL_g1215 :
 
 /-- `[ρ12] ⊬ ρ15` — the last open cell of the matrix, settled through
 the repaired calculus. -/
-theorem rho12_nle_rho15 : ¬ Deriv [rhoF 12] (rhoF 15) :=
+theorem rho12_nle_rho15 : [rhoF 12] ⊬ rhoF 15 :=
   FRJ.not_entails_of_provableV (ofPLL_g1215 ▸ FRJV1215.provableV_1215)
 
 /-! ## Pins -/
