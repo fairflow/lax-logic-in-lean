@@ -1341,3 +1341,26 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
 * CORRECTION: my peer message claimed RNDB.DB's closure was wip-free —
   false (DictEntries always imported wip/rnDict.lean); it is Order.lean
   whose closure is wip-free, preserved via Certified/RhoFRJV.
+
+## §2026-08-26 — catalogue page v19 (R-centred); last 15-index data deleted; Catalogue header corrected
+
+* **v19 published to the SAME Artifact URL** (label v19-R-tables); page =
+  docs/rn-catalogue.html.  Grep-clean of ∉D/D₁₅/D₁₆/rnDict15/sorried;
+  membership stated φ ∈ R ⟺ ∃k<22. Interd φ (ρk); the four R operation
+  tables are the interactive centrepiece (independently re-counted,
+  matches wip/rtable_out.txt exactly); FRJV chain + total matrix + DB
+  1874 + empty frontier displayed; embedded Hasse copy drops the
+  now-settled dashed (12,15) line (docs/rho-hasse-pll.svg untouched).
+* **v19 audit findings acted on**: (1) wip/rnDict.lean's dead 15-indexed
+  closure tables (andT/orT/impT/boxT + Fin-15 wrappers) DELETED — zero
+  external references; (2) Rewrite/Catalogue.lean header corrected (the
+  "45 remain genuinely open" claim was false — all 45 are refuted cells
+  with sorry-free refute_* theorems; sorried statements now deleted);
+  (3) the v18 floor-refutation argument replaced on-page by the R-native
+  fact: closing the ten generators under the ∧/∨ tables reaches exactly
+  17 ρ-classes and hits NO ∉R cell (four open join cells); bounds
+  [14,25] unaffected.  (4) Synthesis: 8 of the 17 probe candidates are
+  now certified ∉R (7 direct + ρ7∨ρ13 by transport through ρ12∧ρ15);
+  8 of the 16 ∉R cells were never probe candidates; 9 candidates remain
+  unsettled against R.  rho-structure §4 was already corrected on the
+  branch (agent read a pre-merge copy).

@@ -1,4 +1,5 @@
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>RN(◯,{}) catalogue</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -45,7 +46,6 @@ body{margin:0;background:var(--ground);color:var(--ink);
 .wrap{max-width:1120px;margin:0 auto;padding:34px 22px 80px;
       display:flex;flex-direction:column;gap:26px}
 
-/* ---- header ---- */
 header{display:flex;flex-direction:column;gap:10px;
        border-bottom:1px solid var(--line);padding-bottom:20px}
 .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;
@@ -58,7 +58,6 @@ h1{font-family:var(--serif);font-weight:600;font-size:clamp(28px,4.2vw,38px);
            display:flex;flex-wrap:wrap;gap:6px 16px}
 .buildline b{color:var(--ink-2);font-weight:500}
 
-/* ---- nav ---- */
 nav.tabs{display:flex;flex-wrap:wrap;gap:2px;border-bottom:1px solid var(--line);
          position:sticky;top:0;background:var(--ground);z-index:20;
          padding-top:2px;margin-top:-2px}
@@ -73,7 +72,6 @@ nav.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:-3p
 section[hidden]{display:none}
 section{display:flex;flex-direction:column;gap:22px}
 
-/* ---- panels ---- */
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:4px;
        padding:20px 22px;display:flex;flex-direction:column;gap:13px}
 .panel > h2{font-family:var(--serif);font-size:21px;font-weight:600;margin:0;
@@ -86,7 +84,6 @@ section{display:flex;flex-direction:column;gap:22px}
      border-top:1px solid var(--line-soft);padding-top:9px}
 .src b{color:var(--ink-2);font-weight:500}
 
-/* ---- displayed formulas ---- */
 .disp{font-family:var(--serif);font-size:17px;line-height:1.9;
       background:var(--surface-2);border-left:2px solid var(--accent);
       padding:13px 18px;overflow-x:auto;white-space:pre}
@@ -96,16 +93,13 @@ section{display:flex;flex-direction:column;gap:22px}
 code,.m{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);
         padding:1px 5px;border-radius:3px;color:var(--ink-2)}
 
-/* ---- status chips ---- */
 .chip{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);
       font-size:11px;letter-spacing:.04em;padding:1px 7px;border-radius:3px;
       border:1px solid;white-space:nowrap}
 .chip.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-soft)}
 .chip.no{color:var(--no);border-color:var(--no);background:var(--no-soft)}
 .chip.op{color:var(--op);border-color:var(--op);background:var(--op-soft)}
-.chip.nu{color:var(--ink-3);border-color:var(--line);background:var(--surface-2)}
 
-/* ---- tables ---- */
 .scroll{overflow-x:auto;max-width:100%;border:1px solid var(--line-soft);
         border-radius:3px;background:var(--surface)}
 table{border-collapse:collapse;font-size:13px;width:100%}
@@ -117,34 +111,32 @@ tbody tr:last-child td{border-bottom:0}
 td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right}
 td .f{font-size:14.5px}
 
-/* ---- operation grid ---- */
-.grid{border-collapse:collapse;font-family:var(--mono);font-size:11.5px;
+.grid{border-collapse:collapse;font-family:var(--mono);font-size:11px;
       font-variant-numeric:tabular-nums;width:auto}
-.grid th{padding:3px 6px;background:none;text-transform:none;letter-spacing:0;
-         font-family:var(--mono);font-size:11px;color:var(--ink-3);border:0;
+.grid th{padding:3px 5px;background:none;text-transform:none;letter-spacing:0;
+         font-family:var(--mono);font-size:10.5px;color:var(--ink-3);border:0;
          text-align:center;font-weight:500}
-.grid th.rh{text-align:right;padding-right:8px}
+.grid th.rh{text-align:right;padding-right:7px}
 .grid td{padding:0;border:1px solid var(--line-soft);text-align:center;
-         min-width:30px;height:26px;cursor:pointer}
-.grid td span{display:block;line-height:26px}
-.grid td.c-p{background:var(--ok-soft);color:var(--ok)}
-.grid td.c-t{background:var(--surface-2);color:var(--ink-3)}
-.grid td.c-r{background:var(--no-soft);color:var(--no);font-weight:500}
-.grid td.c-o{background:var(--op-soft);color:var(--op)}
-.grid td.c-n{background:var(--op-soft);color:var(--op);font-style:italic}
+         min-width:30px;height:24px;cursor:pointer}
+.grid td span{display:block;line-height:24px}
+.grid td.c-k{background:var(--ok-soft);color:var(--ok)}
+.grid td.c-d{background:var(--surface-2);color:var(--ink-3)}
+.grid td.c-x{background:var(--no-soft);color:var(--no);font-weight:500}
+.grid td.c-q{background:var(--op-soft);color:var(--op)}
 .grid td.sel{outline:2px solid var(--accent);outline-offset:-2px}
 .grid td:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:3px;overflow:hidden}
 .seg button{appearance:none;background:var(--surface);border:0;cursor:pointer;
-   font-family:var(--mono);font-size:12.5px;color:var(--ink-2);padding:5px 12px;
+   font-family:var(--mono);font-size:12.5px;color:var(--ink-2);padding:5px 13px;
    border-right:1px solid var(--line)}
 .seg button:last-child{border-right:0}
 .seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink);font-weight:500}
 .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
 
-.readout{font-family:var(--serif);font-size:15.5px;min-height:3.2em;
+.readout{font-family:var(--serif);font-size:15.5px;min-height:3.4em;
          background:var(--surface-2);border-radius:3px;padding:11px 14px;
          overflow-x:auto}
 .readout .muted{font-family:var(--sans);font-size:13px;color:var(--ink-3)}
@@ -152,12 +144,11 @@ td .f{font-size:14.5px}
 .legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-size:12.5px;color:var(--ink-2)}
 .legend span.k{display:inline-flex;align-items:center;gap:6px}
 .legend i{width:13px;height:13px;border-radius:2px;display:inline-block;border:1px solid}
-.legend i.p{background:var(--ok-soft);border-color:var(--ok)}
-.legend i.t{background:var(--surface-2);border-color:var(--line)}
-.legend i.r{background:var(--no-soft);border-color:var(--no)}
-.legend i.o{background:var(--op-soft);border-color:var(--op)}
+.legend i.k{background:var(--ok-soft);border-color:var(--ok)}
+.legend i.d{background:var(--surface-2);border-color:var(--line)}
+.legend i.x{background:var(--no-soft);border-color:var(--no)}
+.legend i.q{background:var(--op-soft);border-color:var(--op)}
 
-/* ---- stat strip ---- */
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:1px;
        background:var(--line-soft);border:1px solid var(--line-soft);border-radius:3px}
 .stat{background:var(--surface);padding:11px 13px;display:flex;flex-direction:column;gap:2px}
@@ -165,16 +156,15 @@ td .f{font-size:14.5px}
         font-variant-numeric:tabular-nums;color:var(--ink);line-height:1.15}
 .stat span{font-size:11.5px;color:var(--ink-3);line-height:1.35}
 
-/* ---- callout ---- */
 .call{border:1px solid var(--no);background:var(--no-soft);border-radius:3px;
       padding:14px 17px;display:flex;flex-direction:column;gap:9px}
 .call h3{margin:0;font-family:var(--mono);font-size:11px;letter-spacing:.12em;
          text-transform:uppercase;color:var(--no)}
 .call p{margin:0;max-width:70ch}
+.call ul{margin:0;padding-left:1.25em;display:flex;flex-direction:column;gap:5px;max-width:70ch}
 .call.note{border-color:var(--accent);background:var(--accent-soft)}
 .call.note h3{color:var(--accent-ink)}
 
-/* ---- hasse ---- */
 .hasse-wrap{overflow-x:auto;border:1px solid var(--line-soft);border-radius:3px;
             background:var(--surface)}
 .hasse-wrap svg{display:block;min-width:900px;width:100%;height:auto}
@@ -186,7 +176,6 @@ td .f{font-size:14.5px}
 .hasse-wrap svg [stroke="#3556a8"]{stroke:var(--accent)}
 .hasse-wrap svg [stroke="#999"]{stroke:var(--ink-3)}
 
-hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
          clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -200,22 +189,22 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
 <header>
   <p class="eyebrow">Propositional lax logic · the variable-free fragment</p>
   <h1>RN(◯,{}) catalogue</h1>
-  <p class="standfirst">A working reference for the closed fragment of PLL: the operation
-  tables, the 22-class ρ-order, the Rieger–Nishimura embedding, the four infinite families,
-  and the certified rewrite set they generate.</p>
+  <p class="standfirst">A working reference for the closed fragment of PLL. The reference set
+  is the ρ-catalogue <span class="f">R</span>: twenty-two pairwise-distinct classes, its order
+  now total, its operation tables computed cell by cell, and open-ended by construction.</p>
   <p class="buildline">
-    <span><b>v18</b>, successor of rn-explorer v17</span>
+    <span><b>v19</b>, successor of v18 and of rn-explorer v17</span>
     <span>built 2026-08-25</span>
-    <span>branch <b>claude/frj-redevelopment-69005f</b> @ 85c8a49</span>
+    <span>branch <b>claude/frj-redevelopment-69005f</b> @ 9aac1b4</span>
     <span>if the version above reads lower than the one you were told, force-reload (⇧ + reload)</span>
   </p>
 </header>
 
 <nav class="tabs" role="tablist" aria-label="Sections">
   <button role="tab" id="t-def"   aria-controls="p-def"   aria-selected="true">Definitions</button>
-  <button role="tab" id="t-op"    aria-controls="p-op"    aria-selected="false">Operation tables</button>
+  <button role="tab" id="t-op"    aria-controls="p-op"    aria-selected="false">R operation tables</button>
   <button role="tab" id="t-rho"   aria-controls="p-rho"   aria-selected="false">The ρ-order</button>
-  <button role="tab" id="t-probe" aria-controls="p-probe" aria-selected="false">Extension probe</button>
+  <button role="tab" id="t-out"   aria-controls="p-out"   aria-selected="false">Beyond R</button>
   <button role="tab" id="t-lad"   aria-controls="p-lad"   aria-selected="false">RN ladder</button>
   <button role="tab" id="t-fam"   aria-controls="p-fam"   aria-selected="false">Families</button>
   <button role="tab" id="t-simp"  aria-controls="p-simp"  aria-selected="false">Simplifier</button>
@@ -236,59 +225,44 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
     relative to a named finite set <span class="f">K</span>:</p>
     <div class="disp">a ⋖[K] b  :=  a &lt; b  and  ∀ c ∈ K.  ¬(a &lt; c &lt; b)</div>
     <p>No unscoped cover of RN(◯,{}) is proved, and none can be settled by search:
-    RN(◯,{}) is <strong>infinite</strong>, so ruling out every interposer is a statement
-    about an infinite set. A scoped cover is destroyed by enlarging <span class="f">K</span>
-    (placing eight further classes destroyed seven of twenty-one scoped covers).</p>
+    RN(◯,{}) is <strong>infinite</strong>, so ruling out every interposer is a statement about
+    an infinite set. A scoped cover is destroyed by enlarging <span class="f">K</span>.</p>
     <p class="src"><b>closed_lax_infinite</b> — LaxLogic/PLLLaxInfinite.lean:616, sorry-free,
     <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
   </div>
 
   <div class="panel">
-    <h2>Dictionary inclusion</h2>
-    <p>Status is never a property of a formula alone. It is a property of a formula
-    <em>together with the representative set it is asked about</em>. Fix a finite list of
-    closed formulas <span class="f">R = (r₀, …, r<sub>n−1</sub>)</span>. Then the dictionary
-    it determines is</p>
-    <div class="disp">D(R)  :=  { [φ] : φ closed,  ∃ k &lt; n.  Interd φ (r k) }</div>
-    <p>so membership and its negation are, as machine-checkable statements,</p>
-    <div class="disp">φ ∈ D(R)   ⟺   ∃ k : Fin n.  Interd φ (R k)
-φ ∉ D(R)   ⟺   ∀ k : Fin n.  ¬ Interd φ (R k)<span class="tag">the shape of every refute_&lt;cell&gt; theorem</span></div>
-    <p>The second is the statement actually banked: each closure failure of round 2 is a
-    sorry-free theorem <span class="m">refute_&lt;cell&gt; : ∀ k : Fin 16, ¬ Interd (combination) (rep2 k)</span>,
-    universally quantified over <em>all</em> sixteen representatives — strictly stronger than
-    a per-candidate refutation. That is what the tables mark <span class="chip no">∉D</span>.</p>
-    <p><strong>Two representative sets are in play, and they must not be conflated.</strong></p>
-    <div class="scroll"><table>
-      <thead><tr><th>set</th><th>size</th><th>source</th><th>what is asked of it</th></tr></thead>
-      <tbody>
-        <tr><td class="m">rnDict15</td><td class="num">15</td>
-            <td class="m">wip/rnDict.lean</td>
-            <td>round 1. The set the certified simpset <span class="m">rndSet</span> was
-                harvested from.</td></tr>
-        <tr><td class="m">rnDict16</td><td class="num">16</td>
-            <td class="m">wip/rnDict2.lean</td>
-            <td>round 2: the 15 plus <span class="f">q15 = q9 ⊃ q4</span>, the class the four
-                round-1 escapes collapse to. Fully resolved: every cell is certified or
-                <span class="f">∉D</span>.</td></tr>
-      </tbody>
-    </table></div>
-    <p>Representatives are <strong>append-only</strong>: an index never changes meaning, so a
-    certificate pinned against <span class="f">q10</span> stays true under any later extension.
-    Indices are serial, assigned in discovery order, and carry no information.</p>
-    <p class="src"><b>Interd</b> LaxLogic/Interd.lean · <b>RNDict</b> wip/stabilise.lean:60 ·
-    <b>reps / append-only rule</b> LaxLogic/RN/Reps.lean ·
-    <b>refute_* </b> wip/rnDictRefute2.lean (58 theorems, 0 sorries,
-    <span class="m">[propext, Quot.sound]</span>)</p>
+    <h2>R, and membership in it</h2>
+    <p><span class="f">R</span> is the ρ-catalogue: twenty-two closed formulas
+    <span class="f">ρ0 … ρ21</span>, held as data (formulas and a numbering, nothing asserted),
+    with their pairwise distinctness certified separately. It is the reference set for
+    everything on this page, and it is <strong>open-ended</strong>: RN(◯,{}) is infinite, so no
+    finite <span class="f">R</span> can be closed under the operations, and the tables locate
+    where the current one runs out rather than pretending it does not.</p>
+    <div class="disp">φ ∈ R   ⟺   ∃ k &lt; 22.  Interd φ (ρ k)
+φ ∉ R   ⟺   ∀ k &lt; 22.  ¬ Interd φ (ρ k)</div>
+    <p>The second is the statement the tables mark <span class="chip no">∉R</span>: for
+    <em>every</em> class of <span class="f">R</span>, at least one direction of the would-be
+    collapse is refuted. An <span class="f">∉R</span> cell is therefore a located new class,
+    not a gap, and it is a statement about <span class="f">R</span>, not about the formula:
+    enlarging <span class="f">R</span> can turn an <span class="f">∉R</span> verdict into a
+    named class, and never the other way.</p>
+    <p class="src"><b>LaxLogic/RN/Rho.lean</b> (the catalogue as data; the eight sweep
+    discoveries are listed there as <span class="m">discovered</span>) ·
+    <b>LaxLogic/Interd.lean</b></p>
   </div>
 
   <div class="panel">
-    <h2>The sixteen representatives</h2>
+    <h2>The twenty-two classes</h2>
+    <p>Writing <span class="f">a := ◯⊥</span> and <span class="f">b := ◯¬◯⊥</span>: every
+    representative is a Heyting term over <span class="f">{a, b}</span> alone, so exactly two
+    applications of <span class="f">◯</span> occur in the whole catalogue.</p>
     <div class="scroll"><table>
-      <thead><tr><th>q</th><th>formula</th><th>ρ</th><th>note</th></tr></thead>
+      <thead><tr><th>ρ</th><th>formula</th><th>short form</th><th>note</th></tr></thead>
       <tbody id="repsbody"></tbody>
     </table></div>
-    <p class="src"><b>LaxLogic/RN/Reps.lean</b> (q0–q15) · <b>LaxLogic/RN/Rho.lean</b>
-    (the ρ-numbering, formulas and a numbering only — nothing asserted)</p>
+    <p class="src"><b>LaxLogic/RN/Rho.lean</b> · labels emitted by
+    <span class="m">lake exe rhocover</span> (<b>wip/rhocover_out.txt</b>, LABEL lines)</p>
   </div>
 
   <div class="panel">
@@ -297,112 +271,122 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
     <div class="scroll"><table>
       <thead><tr><th>verdict</th><th>meaning</th><th>evidence</th></tr></thead>
       <tbody>
-        <tr><td><span class="chip ok">PROVED</span></td>
-            <td>the stated collapse holds</td>
-            <td>a sorry-free Lean term, axioms pinned</td></tr>
-        <tr><td><span class="chip no">REFUTED · ∉D</span></td>
-            <td>the combination is interderivable with no representative</td>
-            <td>a kernel-checked finite countermodel per candidate,
-                <span class="m">∀ k, ¬ Interd …</span></td></tr>
-        <tr><td><span class="chip op">OPEN · ?</span></td>
-            <td>neither settled</td>
-            <td>none — a <span class="f">sorry</span> ASSERTS, so open status lives in data,
-                never in a declaration</td></tr>
+        <tr><td><span class="chip ok">ρk</span></td>
+            <td>the combination is interderivable with <span class="f">ρk</span></td>
+            <td>both directions certified</td></tr>
+        <tr><td><span class="chip no">∉R</span></td>
+            <td>interderivable with no class of <span class="f">R</span></td>
+            <td>for every <span class="f">k</span>, one direction certified refuted</td></tr>
+        <tr><td><span class="chip op">?</span></td>
+            <td>open at the stated budgets</td>
+            <td>none; flagged, never dropped. A <span class="f">sorry</span> ASSERTS, so open
+                status lives in data, never in a declaration.</td></tr>
       </tbody>
     </table></div>
-    <p>A further distinction, used only in the round-1 table: a cell can be
-    <em>refuted at its first candidate but still open</em>, because refuting the stated
-    collapse eliminates one candidate from a shortlist, not the whole shortlist. Those are
-    marked <span class="chip op">?</span> in italic.</p>
-    <p><strong>Engine-certified is not kernel-checked.</strong> The extension probe runs on
-    sound engines (confluent-battery separation for <span class="f">⊬</span>, the G4c oracle
-    and the LJF◯ ladder for <span class="f">⊢</span>). Its verdicts carry certificates, and
-    those certificates are kernel-escalatable, but until a verdict is banked it is a
-    computation, not a theorem. The probe sections say which is which.</p>
+    <p><strong>Kernel-pinned and engine-certified are different things.</strong> On the ρ-order
+    every <span class="f">⊬</span> cell is a kernel theorem with pinned axioms; the
+    <span class="f">⊢</span> cells are engine-certified (the G4c oracle and the LJF◯ ladder,
+    both sound for PLL) and kernel-escalatable, but a verdict is a computation until it is
+    banked. Each table below says which it is.</p>
   </div>
 </section>
 
-<!-- ═══════════════════════ OPERATION TABLES ═══════════════════════ -->
+<!-- ═══════════════════════ R OPERATION TABLES ═══════════════════════ -->
 <section id="p-op" role="tabpanel" aria-labelledby="t-op" hidden>
 
   <div class="panel">
-    <h2>Operation tables</h2>
-    <p>For each pair of representatives and each operation, the cell holds the representative
-    the combination collapses to, together with the status of that claim. Nothing is blank and
-    nothing is guessed: an unsettled cell reads <span class="f">?</span>, a cell whose value
-    is provably outside the representative set reads <span class="f">∉D</span>.</p>
+    <h2>Operation tables over R</h2>
+    <p>For every pair of classes and each operation, the cell holds the class of the
+    combination. Nothing is blank and nothing is guessed. <span class="f">∧</span> and
+    <span class="f">∨</span> are symmetric and were computed on the upper triangle;
+    the full grids are shown.</p>
     <div class="controls">
-      <div class="seg" role="group" aria-label="Representative set">
-        <button id="s-r2" aria-pressed="true">16 reps · round 2</button>
-        <button id="s-r1" aria-pressed="false">15 reps · round 1</button>
-      </div>
       <div class="seg" role="group" aria-label="Operation">
-        <button class="opb" data-op="and" aria-pressed="true">∧</button>
-        <button class="opb" data-op="or"  aria-pressed="false">∨</button>
-        <button class="opb" data-op="imp" aria-pressed="false">⊃</button>
-        <button class="opb" data-op="box" aria-pressed="false">◯</button>
+        <button class="opb" data-op="and" aria-pressed="true">ρi ∧ ρj</button>
+        <button class="opb" data-op="or"  aria-pressed="false">ρi ∨ ρj</button>
+        <button class="opb" data-op="imp" aria-pressed="false">ρi ⊃ ρj</button>
+        <button class="opb" data-op="box" aria-pressed="false">◯ρi</button>
       </div>
     </div>
     <div class="legend">
-      <span class="k"><i class="p"></i> certified by a named cell theorem</span>
-      <span class="k"><i class="t"></i> certified by a structural law (⊥, ⊤, reflexivity, idempotence)</span>
-      <span class="k"><i class="r"></i> ∉D — certified outside the set</span>
-      <span class="k"><i class="o"></i> ? — open</span>
+      <span class="k"><i class="k"></i> class certified, off the diagonal</span>
+      <span class="k"><i class="d"></i> class certified, degenerate cell (⊥, ⊤, idempotence, self)</span>
+      <span class="k"><i class="x"></i> ∉R — certified outside every class of R</span>
+      <span class="k"><i class="q"></i> ? — open at budget, flagged</span>
     </div>
     <div class="scroll" style="padding:10px"><div id="opgrid"></div></div>
-    <p class="readout" id="opread"><span class="muted">Click a cell for its statement, its
-    theorem name and its status.</span></p>
+    <p class="readout" id="opread"><span class="muted">Click a cell for its statement and its
+    verdict.</span></p>
     <div class="stats" id="opstats"></div>
-    <p class="src" id="opsrc"></p>
-  </div>
-
-  <div class="call">
-    <h3>Both dictionaries fail, and the failure is the result</h3>
-    <p>RN(◯,{}) is infinite, so <em>no</em> finite operation table can ever close. The tables
-    are an atlas of the bottom of the lattice, not a presentation of it. Round 1 fails at 17
-    of its 690 cells; round 2 fails at 83 of its 784. Round 2 has no open cells at all: every
-    one of its 58 sorried lemmas carries a kernel-checked
-    <span class="m">∀ k : Fin 16, ¬ Interd … (rep2 k)</span>, so each is a located escape
-    rather than a gap.</p>
+    <p class="src"><b>Run of record: wip/rtable_out.txt</b>
+    (<span class="m">lake exe rhocover rtable</span>), 1012 <span class="m">RTAB</span> lines,
+    re-parsed for this page on 2026-08-25 · rendered reference version
+    <b>docs/rho-optables.html</b>. Budgets: battery separation, then the G4c oracle at
+    2·10⁴, then the LJF◯ ladder at fuel ≤ 24 on the residual. Verdicts on these tables are
+    <strong>engine-certified</strong>; the underlying 462-cell order matrix they consume is
+    total, with all 304 <span class="f">⊬</span> cells kernel-pinned.</p>
   </div>
 
   <div class="panel">
-    <h3>Cell census, counted from the sources</h3>
+    <h3>Census, counted from the run</h3>
     <div class="scroll"><table>
-      <thead><tr><th>round</th><th>cells</th><th class="num">named theorem</th>
-        <th class="num">structural law</th><th class="num">∉D</th><th class="num">open</th></tr></thead>
+      <thead><tr><th>table</th><th class="num">cells</th><th class="num">class certified</th>
+        <th class="num">∉R</th><th class="num">open</th></tr></thead>
       <tbody>
-        <tr><td>round 1 · 15 reps</td><td>690 (3×225 + 15)</td>
-            <td class="num">346</td><td class="num">215</td><td class="num">17</td><td class="num">112</td></tr>
-        <tr><td>round 2 · 16 reps</td><td>784 (3×256 + 16)</td>
-            <td class="num">471</td><td class="num">230</td><td class="num">83</td><td class="num">0</td></tr>
+        <tr><td><span class="f">∧</span> (upper triangle, 22·23/2)</td><td class="num">253</td>
+            <td class="num">233</td><td class="num">4</td><td class="num">16</td></tr>
+        <tr><td><span class="f">∨</span> (upper triangle)</td><td class="num">253</td>
+            <td class="num">204</td><td class="num">12</td><td class="num">37</td></tr>
+        <tr><td><span class="f">⊃</span> (full 22²)</td><td class="num">484</td>
+            <td class="num">348</td><td class="num">0</td><td class="num">136</td></tr>
+        <tr><td><span class="f">◯</span> (22 classes)</td><td class="num">22</td>
+            <td class="num">10</td><td class="num">0</td><td class="num">12</td></tr>
+        <tr><td><strong>total</strong></td><td class="num"><strong>1012</strong></td>
+            <td class="num"><strong>795</strong></td><td class="num"><strong>16</strong></td>
+            <td class="num"><strong>201</strong></td></tr>
       </tbody>
     </table></div>
-    <p>At theorem level rather than cell level (∧ and ∨ share a theorem with their transpose):
-    round 1 states 323 cell theorems of which <strong>236 are proved</strong>, 13 are marked
-    REFUTED CELL, 7 are refuted at their first candidate only, and 67 are open. Round 2
-    declares 140, of which 82 are proved and 58 are REFUTED CELL.</p>
-    <p>Tracing the 87 unproved round-1 theorems into round 2: 86 are restated there, and one
-    (<span class="m">cImp_9_4</span>) needs no restatement because <span class="f">q15</span>
-    <em>is</em> <span class="f">q9 ⊃ q4</span>. Of the 86, <strong>41 are proved</strong> and
-    <strong>45 are REFUTED</strong> against the sixteen. None is open.</p>
-    <p class="src"><b>wip/rnDict.lean</b> (323 cell theorems, 87 sorries) ·
-    <b>wip/rnDict2.lean</b> (140, 58 sorries) · <b>wip/rnDictRefute2.lean</b> ·
-    <b>docs/rn-dictionary-status.md</b>. Counts above re-extracted from the Lean sources
-    on 2026-08-25, not copied from the prose.</p>
+    <p>The shape of the residue is itself information. <span class="f">∧</span> is nearly
+    settled and <span class="f">∨</span> nearly so; the open cells concentrate in
+    <span class="f">⊃</span> (136 of 201) and in <span class="f">◯</span>, where 12 of 22
+    classes have no settled image. Implication and the modality are where the search effort
+    belongs.</p>
   </div>
 
-  <div class="call">
-    <h3>Discrepancy found — the header of Rewrite/Catalogue.lean</h3>
-    <p>The 2026-08-21 correction in <span class="m">Rewrite/Catalogue.lean</span> says
-    "45 remain genuinely open — sorried in round 1 and in round 2 alike". Those 45 are not
-    open: each is a <span class="m">REFUTED CELL</span> in <span class="m">wip/rnDict2.lean</span>
-    with a matching sorry-free <span class="m">refute_*</span> theorem in
-    <span class="m">wip/rnDictRefute2.lean</span>. A sorry in round 2 records a located
-    escape, not an unsettled question. The arithmetic 42 + 45 = 87 is right; the label on
-    the 45 is wrong. Nothing downstream depends on it (the exclusion of all 87 from
-    <span class="m">rndSet</span> stands for its own reason), but the target list it
-    advertises is empty.</p>
+  <div class="panel">
+    <h2>The sixteen ∉R cells</h2>
+    <p>Every cell whose value provably leaves <span class="f">R</span>. Four are meets, twelve
+    are joins, and they cluster on one flank of the order: fourteen of the sixteen involve
+    <span class="f">ρ12</span> or <span class="f">ρ20</span>. The two exceptions are the meets
+    <span class="f">ρ10 ∧ ρ21</span> and <span class="f">ρ15 ∧ ρ21</span>, which reach the same
+    flank through <span class="f">ρ21</span>, the upper cover of both
+    <span class="f">ρ12</span> and <span class="f">ρ20</span>.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>kind</th><th>cells</th></tr></thead>
+      <tbody>
+        <tr><td>meets</td>
+            <td class="f">ρ10 ∧ ρ20 &nbsp; ρ10 ∧ ρ21 &nbsp; ρ12 ∧ ρ15 &nbsp; ρ15 ∧ ρ21</td></tr>
+        <tr><td>joins on <span class="f">ρ12</span></td>
+            <td class="f">ρ11 ∨ ρ12 &nbsp; ρ12 ∨ ρ14 &nbsp; ρ12 ∨ ρ15 &nbsp; ρ12 ∨ ρ16 &nbsp;
+                ρ12 ∨ ρ17 &nbsp; ρ12 ∨ ρ18</td></tr>
+        <tr><td>joins on <span class="f">ρ20</span></td>
+            <td class="f">ρ8 ∨ ρ20 &nbsp; ρ10 ∨ ρ20 &nbsp; ρ14 ∨ ρ20 &nbsp; ρ16 ∨ ρ20 &nbsp;
+                ρ17 ∨ ρ20 &nbsp; ρ18 ∨ ρ20</td></tr>
+      </tbody>
+    </table></div>
+    <div class="call note">
+      <h3>What sixteen ∉R cells do and do not say</h3>
+      <ul>
+        <li>Each is a <strong>located new class</strong>: the combination is interderivable
+            with no <span class="f">ρk</span>, and the verdict rests on 22 refutations, one per
+            candidate.</li>
+        <li>They are <strong>not sixteen distinct classes</strong>. Whether two
+            <span class="f">∉R</span> cells name the same class is a separate question, settled
+            for only a few pairs; see <em>Beyond R</em>.</li>
+        <li>Nothing here says <span class="f">R</span> is nearly closed. 201 cells are open, and
+            an open cell may yet turn out to leave <span class="f">R</span> too.</li>
+      </ul>
+    </div>
   </div>
 </section>
 
@@ -410,42 +394,66 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
 <section id="p-rho" role="tabpanel" aria-labelledby="t-rho" hidden>
 
   <div class="panel">
-    <h2>The 22-class ρ-catalogue</h2>
-    <p>Twenty-two pairwise-distinct closed classes, held as data (formulas and a numbering,
-    nothing asserted). Fourteen come from the dictionary; eight — <span class="f">ρ13</span>
-    and <span class="f">ρ15</span>–<span class="f">ρ21</span> — were found by the closure
-    sweep. <span class="f">ρ14</span> is the same class as <span class="f">q15</span>.</p>
+    <h2>The order is total</h2>
+    <p>All 462 ordered cells of <span class="f">R</span> are settled. The last open cell,
+    <span class="f">ρ12 ⊢? ρ15</span>, fell on 2026-08-25, negatively, and the frontier list
+    is now empty.</p>
     <div class="stats">
       <div class="stat"><b>462</b><span>ordered cells (22 × 21)</span></div>
-      <div class="stat"><b>158</b><span>⊢ certified</span></div>
-      <div class="stat"><b>303</b><span>⊬ certified, every one kernel-pinned</span></div>
-      <div class="stat"><b>1</b><span>open cell: ρ12 ⊢? ρ15</span></div>
-      <div class="stat"><b>37</b><span>scoped cover edges ⋖[catalogue]</span></div>
-      <div class="stat"><b>7</b><span>height of the graded order</span></div>
+      <div class="stat"><b>158</b><span>⊢ engine-certified</span></div>
+      <div class="stat"><b>304</b><span>⊬ certified, every one kernel-pinned</span></div>
+      <div class="stat"><b>0</b><span>open cells — frontierOrder = []</span></div>
+      <div class="stat"><b>1874</b><span>RNDB entries</span></div>
+      <div class="stat"><b>37</b><span>scoped cover edges ⋖[R]</span></div>
     </div>
-    <p>The <span class="f">⊬</span> side is now complete at kernel level. The 95 battery
-    separations the database lacked were emitted as sorry-free theorems, each a mutually
-    confluent ≤5-world frame checked by <span class="m">decide</span> and transferred to PLL
-    by <span class="m">Deriv ⊆ DerivU</span>. So the absence of an edge in the diagram below
-    is a theorem, with the single exception of the open half
-    <span class="f">ρ12 ⊢? ρ15</span>.</p>
-    <p class="src"><b>LaxLogic/RN/Rho.lean</b> (the catalogue as data) ·
-    <b>Certified/RhoSeparations.lean</b> (95 <span class="m">sepU_*</span> + 95
-    <span class="m">rho_*_nle_*</span>, 0 sorries, <span class="m">[propext, Quot.sound]</span>) ·
-    <b>RNDB/DB.lean</b> (<span class="m">allEntries_length = 1873</span>) ·
-    <b>wip/rhocover_out.txt</b> · <b>docs/rho-order.md</b></p>
+    <p class="src"><b>RNDB/Order.lean</b> (<span class="m">frontierOrder : Frontier := []</span>) ·
+    <b>RNDB/DB.lean</b> (<span class="m">allEntries_length = 1874</span>,
+    <span class="m">[propext, Quot.sound]</span>) ·
+    <b>Certified/RhoSeparations.lean</b> (95 battery separations,
+    <span class="m">sepU_*</span> + <span class="m">rho_*_nle_*</span>, 0 sorries) ·
+    <b>wip/rhocover_out.txt</b></p>
   </div>
 
   <div class="panel">
-    <h2>PLL Hasse diagram, scoped to the catalogue</h2>
-    <p>Solid edges are <span class="f">a ⋖[catalogue] b</span>: every candidate interposer
-    <span class="f">c</span> among the 22 is excluded by a settled cell. The dashed grey edge
-    marks the one open cell, whose positive resolution would add exactly that edge and nothing
-    else.</p>
+    <h2>ρ12 ⊬ ρ15, through the repaired calculus</h2>
+    <p>The cell resisted the battery and both searchers. It was settled through
+    <span class="f">FRJV</span>, the repaired refutation calculus: a hand-built, kernel-checked
+    derivation of the refutation sequent, composed with the calculus's proved soundness.</p>
+    <div class="disp">derivation in FRJV  +  soundnessV  ⟹  ¬ Deriv [ρi] ρj
+
+rho12_nle_rho15 : [ρ12] ⊬ ρ15<span class="tag">Certified/RhoFRJV.lean, [propext, Quot.sound]</span></div>
+    <p>The witness is <span class="m">FRJ.WitnessV1215.provableV_1215</span>
+    (<span class="m">FRJ/WitnessV1215.lean</span>), transported by
+    <span class="m">FRJ.not_entails_of_provableV</span>. It is banked as RNDB entry
+    <span class="m">ord-0003</span>, <span class="m">Engine.frjv</span>, with an 11-world
+    extracted model. Its converse <span class="f">ρ15 ⊬ ρ12</span> was already
+    battery-settled, so:</p>
+    <ul>
+      <li><span class="f">{ρ12, ρ15}</span> is <strong>incomparable</strong>;</li>
+      <li><strong>no Hasse edge moves</strong> — the 37 scoped covers stand exactly as drawn;</li>
+      <li><span class="f">class(ρ12 ∨ ρ18)</span> is now <strong>unconditionally</strong>
+          outside <span class="f">R</span>, its last conditioning cell having been removed.</li>
+    </ul>
+    <p><strong>FRJ and FRJV.</strong> The paper calculus FRJ(◯) is incomplete:
+    <span class="m">Certified.CompletenessFRJ</span> is REFUTED by witness #80
+    (<span class="m">FRJ80.not_CompletenessFRJ</span>, <span class="m">wip/frj80_noprov.lean</span>,
+    <span class="m">[propext, Quot.sound]</span>), with a second witness #81 alongside. The
+    repaired calculus FRJV has its soundness PROVED
+    (<span class="m">FRJ.soundnessV</span>, <span class="m">FRJ/SoundV.lean</span>, same pin),
+    which is what licenses reading its derivations as underivability in PLL. FRJV completeness
+    is OPEN.</p>
+    <p class="src"><b>Certified/RhoFRJV.lean</b> · <b>FRJ/WitnessV1215.lean</b> ·
+    <b>FRJ/SoundV.lean</b> · <b>RNDB/Order.lean:209-230</b> · <b>wip/frj80_noprov.lean</b></p>
+  </div>
+
+  <div class="panel">
+    <h2>PLL Hasse diagram, scoped to R</h2>
+    <p>Solid edges are <span class="f">a ⋖[R] b</span>: every candidate interposer among the 22
+    is excluded by a settled cell.</p>
     <div class="hasse-wrap"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 900" font-family="Helvetica, Arial, sans-serif">
 <rect width="1240" height="900" fill="#ffffff"/>
-<text x="20" y="30" font-size="17" fill="#111">RN(◯,∅) catalogue — PLL Hasse diagram, scoped covers (37 edges)</text>
-<text x="20" y="882" font-size="12" fill="#666">solid: a ⋖[catalogue] b, every interposer excluded by settled cells · dashed grey ?: open cell — a positive resolution would add that edge · ★ = sweep-discovered class</text>
+<text x="20" y="30" font-size="17" fill="#111">RN(◯,{}) — PLL Hasse diagram over R, scoped covers (37 edges)</text>
+<text x="20" y="882" font-size="12" fill="#666">solid: a ⋖[R] b, every interposer excluded by settled cells · the 462-cell order is total, so there are no open cells · ★ = sweep-discovered class</text>
 <line x1="620" y1="804" x2="413" y2="734" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="620" y1="804" x2="827" y2="734" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="413" y1="694" x2="827" y2="624" stroke="#3556a8" stroke-width="1.4"/>
@@ -483,7 +491,6 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
 <line x1="827" y1="364" x2="413" y2="294" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="413" y1="254" x2="310" y2="184" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="310" y1="144" x2="620" y2="74" stroke="#3556a8" stroke-width="1.4"/>
-<line x1="207" y1="254" x2="620" y2="184" stroke="#999" stroke-width="1.3" stroke-dasharray="5,4"/>
 <text x="417" y="225" font-size="12" fill="#888">?</text>
 <circle cx="620" cy="830" r="4" fill="#16305e"/>
 <text x="620" y="818" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ0</text>
@@ -552,122 +559,113 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
 <text x="620" y="48" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ1</text>
 <text x="620" y="80" font-size="11.5" fill="#333" text-anchor="middle">⊤</text>
 </svg></div>
-    <p class="src"><b>docs/rho-hasse-pll.svg</b>, emitted by <span class="m">lake exe rhocover</span>
-    (37 covers, 121 blocked, 0 open cover questions; control: ρ6 &lt; ρ12 comes out BLOCKED by
-    ρ9, matching the kernel theorem <span class="m">RNDB.not_covers_rho6_rho12</span>)</p>
+    <p class="src"><b>docs/rho-hasse-pll.svg</b>, emitted by
+    <span class="m">lake exe rhocover</span> (37 covers, 121 blocked, 0 open cover questions;
+    control: <span class="f">ρ6 &lt; ρ12</span> comes out BLOCKED by <span class="f">ρ9</span>,
+    matching the kernel theorem <span class="m">RNDB.not_covers_rho6_rho12</span>).
+    <b>One edit to the embedded copy:</b> the source file still carries a dashed grey line for
+    the then-open cell <span class="f">ρ12 ⊢? ρ15</span>, and its caption still explains one.
+    That cell is now settled <span class="f">⊬</span>, so there is no edge; the line and the
+    caption clause are removed here. The file itself is the tool's output and is unchanged.</p>
   </div>
 
   <div class="panel">
-    <h3>What the eight sweep discoveries did to the earlier diagram</h3>
-    <p>Seven covering relations that held among the fourteen older classes are not covers of
-    the 22-class order: a new class sits strictly between. Two of the three co-atoms are new.
-    This is the concrete cost of reading a cover off a finite dictionary.</p>
-    <div class="scroll"><table>
-      <thead><tr><th>edge in the 14-class diagram</th><th>interposed by</th></tr></thead>
-      <tbody>
-        <tr><td class="f">ρ6 &lt; ρ11</td><td class="f">ρ13, ρ17</td></tr>
-        <tr><td class="f">ρ7 &lt; ρ8</td><td class="f">ρ16, ρ19</td></tr>
-        <tr><td class="f">ρ9 &lt; ρ10</td><td class="f">ρ18</td></tr>
-        <tr><td class="f">ρ11 &lt; ⊤</td><td class="f">ρ15</td></tr>
-        <tr><td class="f">ρ12 &lt; ⊤</td><td class="f">ρ21</td></tr>
-        <tr><td class="f">ρ14 &lt; ρ8</td><td class="f">ρ16</td></tr>
-        <tr><td class="f">ρ14 &lt; ρ11</td><td class="f">ρ17</td></tr>
-      </tbody>
-    </table></div>
-    <p class="src"><b>docs/rho-order.md</b></p>
-  </div>
-
-  <div class="panel">
-    <h3>Regularities of the order, as recorded</h3>
-    <p>From <span class="m">docs/rho-structure.md</span>. Writing
-    <span class="f">a := ◯⊥</span>, <span class="f">b := ◯¬◯⊥</span>.</p>
+    <h3>Regularities of the order</h3>
     <ul>
       <li><strong>Graded.</strong> Every cover edge spans one rank; rank profile
           <span class="m">1-2-2-3-5-5-3-1</span>, height 7.</li>
       <li><strong>Ten poset-join-irreducibles</strong>:
-          <span class="f">⊥, a, ¬a, ¬¬a, b, ρ12, ρ13, ρ14, ρ19, ρ20</span>. Every one that is
+          <span class="f">ρ0, ρ2, ρ3, ρ5, ρ7, ρ12, ρ13, ρ14, ρ19, ρ20</span>. Every one that is
           not a rail atom is an implication.</li>
-      <li><strong>Two stacked cubes.</strong> The interval
-          <span class="f">[ρ4, ρ18]</span> is exactly 2³ on atoms
-          <span class="f">{ρ6, ρ7, ρ14}</span>, with its joins and meets certified as class
-          identities.</li>
-      <li><strong>Two generators.</strong> All 22 representatives are Heyting terms over
-          <span class="f">{a, b}</span>: exactly two applications of <span class="f">◯</span>
-          occur in the whole catalogue.</li>
+      <li><strong>Two stacked cubes.</strong> The interval <span class="f">[ρ4, ρ18]</span> is
+          exactly 2³ on atoms <span class="f">{ρ6, ρ7, ρ14}</span>. The R tables confirm its
+          identities: <span class="f">ρ6 ∧ ρ7 ≡ ρ7 ∧ ρ14 ≡ ρ6 ∧ ρ14 ≡ ρ4</span> and
+          <span class="f">ρ9 ∨ ρ16 ≡ ρ9 ∨ ρ17 ≡ ρ16 ∨ ρ17 ≡ ρ18</span>.</li>
+      <li><strong>Two rails.</strong> The Rieger–Nishimura ladder at <span class="f">p := ◯⊥</span>
+          is the left rail; the modal rail starts at <span class="f">b = ◯¬◯⊥ = ρ7</span> and
+          meets it through the joins and the five <span class="f">⊃</span>-classes.</li>
       <li><strong>Local disjunction property.</strong> For <span class="f">x &lt; u</span> and
-          <span class="f">y &lt; u</span>,
-          <span class="f">u ⊢ x ∨ y ⟺ u ≡ x ∨ y</span>. This turns every "is this hub join a
-          new class?" into a single identity cell.</li>
+          <span class="f">y &lt; u</span>, <span class="f">u ⊢ x ∨ y ⟺ u ≡ x ∨ y</span>. Every
+          "is this join a new class?" is therefore one identity cell, which is exactly what the
+          <span class="f">∨</span> table now answers.</li>
     </ul>
-    <p><em>Poset lub is weaker than the class of the syntactic join</em>, and the first draft
-    of that note conflated them; the correction is dated 2026-08-25 in the source. Whether
-    <span class="f">v ≡ ⋁(lower covers of v)</span> is a separate question per node.</p>
+    <p><em>Poset lub is weaker than the class of the syntactic join.</em> Whether
+    <span class="f">v ≡ ⋁(lower covers of v)</span> is a separate question per node, and the
+    <span class="f">∨</span> table settles it node by node.</p>
     <p class="src"><b>docs/rho-structure.md</b> §1 (verified regularities), §2 (construction
-    conjectures C1–C4, labelled as conjectures there and here)</p>
+    conjectures C1–C4, labelled as conjectures there and here) · <b>docs/rho-order.md</b></p>
   </div>
 </section>
 
-<!-- ═══════════════════════ PROBE ═══════════════════════ -->
-<section id="p-probe" role="tabpanel" aria-labelledby="t-probe" hidden>
+<!-- ═══════════════════════ BEYOND R ═══════════════════════ -->
+<section id="p-out" role="tabpanel" aria-labelledby="t-out" hidden>
 
   <div class="panel">
-    <h2>Catalogue-extension probe, rounds 1 and 2</h2>
-    <p>The probe orders a candidate formula against all 22 classes using lattice laws first
-    and a budgeted search only for the residue. A candidate matching exactly one class is an
-    identity; matching none is a new class. Round 1 ran 12 candidates, round 2 ran 37
-    (round 1 plus the remaining hub joins, co-hub meets, and <span class="f">◯</span>-shifts).
-    The control is green in both.</p>
-    <div class="stats">
-      <div class="stat"><b>37</b><span>candidates, round 2</span></div>
-      <div class="stat"><b>15</b><span>identity verdicts</span></div>
-      <div class="stat"><b>22</b><span>NEW verdicts</span></div>
-      <div class="stat"><b>17</b><span>distinct new-class candidates</span></div>
-      <div class="stat"><b>≈39</b><span>classes at this depth, if all hold</span></div>
-    </div>
-    <div class="call note">
-      <h3>Exactly what is certified</h3>
-      <p>The <strong>22</strong> catalogue classes are pairwise distinct, kernel-backed. The
-      <strong>17</strong> are candidates, and each carries its own conditions:</p>
-      <ul>
-        <li>each is distinct from all 22 <em>modulo the open cells listed against it</em>
-            below — a candidate with a non-empty "open at" list is not yet known to be new;</li>
-        <li>they are pairwise distinct <em>except</em> at the 22 open candidate-pairs listed
-            below, where neither direction is settled;</li>
-        <li>the grouping into 17 is an <strong>upper bound</strong> on distinctness: it
-            quotients the 22 NEW verdicts by the 7 certified mutual derivabilities only. If an
-            open pair later collapses, the count falls.</li>
-      </ul>
-      <p><strong>Two</strong> members have no open cell against the 22 at all, so each is
-      unconditionally distinct from every catalogue class:
-      <span class="f">class(ρ8 ∨ ρ20)</span> — strictly above <span class="f">ρ10</span>,
-      strictly below <span class="f">⊤</span> — and <span class="f">class(ρ10 ∧ ρ20)</span> —
-      strictly below <span class="f">ρ10, ρ20, ρ21, ⊤</span>. (The round-2 note names only the
-      first; the stream records both.) Both still have open cells against <em>other
-      candidates</em>, so their place among the 17 is not settled. All probe verdicts are
-      engine-certified, not yet banked as theorems.</p>
-    </div>
+    <h2>What lies just outside R</h2>
+    <p>Two independent sources locate classes beyond the 22: the <span class="f">∉R</span> cells
+    of the operation tables, and the catalogue-extension probe, which orders composite
+    candidates (including ternary joins and <span class="f">◯</span>-shifts, which the binary
+    tables do not reach) against all 22.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>candidate</th><th>same class as</th><th>verdict in the R tables</th></tr></thead>
+      <tbody id="probebody"></tbody>
+    </table></div>
     <p class="src"><b>tools/Cover.lean</b> (<span class="m">lake exe rhocover probe</span>) ·
-    <b>wip/rhoprobe_out.txt</b> (round 1) · <b>wip/rhoprobe2_out.txt</b> (round 2).
-    The 17 classes, the 7 mutual pairs and the 22 open pairs below were recomputed from the
-    round-2 stream on 2026-08-25. Two counts in <b>docs/rho-structure.md</b> §4 do not match
-    that stream: it says 36 candidates where the run header says 37, and "12 identities
-    certified" where the stream carries 15 <span class="m">IDENT</span> lines plus one further
-    identity (<span class="f">◯ρ6 ≡ ◯ρ9</span>) recorded in the candidate × candidate matrix.
-    The counts on this page are the stream's.</p>
+    <b>wip/rhoprobe_out.txt</b>, <b>wip/rhoprobe2_out.txt</b> · cross-referenced against
+    <b>wip/rtable_out.txt</b> for this page on 2026-08-25</p>
+  </div>
+
+  <div class="call note">
+    <h3>Exactly what is certified</h3>
+    <ul>
+      <li>The <strong>22</strong> classes of <span class="f">R</span> are pairwise distinct,
+          kernel-backed.</li>
+      <li>The <strong>16 ∉R cells</strong> are each certified outside <span class="f">R</span>,
+          on 22 refutations apiece.</li>
+      <li>The probe's <strong>17</strong> candidate classes are a count
+          <em>modulo the open cells recorded against each</em>, and they are pairwise distinct
+          only up to 22 open candidate-pairs. It is an upper bound: if an open pair collapses,
+          the count falls.</li>
+      <li>How many distinct classes the 16 <span class="f">∉R</span> cells and the 17 candidates
+          amount to <em>together</em> is OPEN. Only a few identifications are certified: the
+          probe certified <span class="f">ρ7∨ρ13 ≡ ρ9∨ρ13 ≡ ρ12∧ρ15</span>,
+          <span class="f">ρ9∨ρ19 ≡ ρ5∨ρ19 ≡ ρ6∨ρ19</span>, and
+          <span class="f">◯ρ6 ≡ ◯ρ9</span>.</li>
+    </ul>
   </div>
 
   <div class="panel">
-    <h3>The 17 candidate classes</h3>
-    <div class="scroll"><table>
-      <thead><tr><th>candidate class</th><th>alternative presentations</th>
-        <th>strictly above</th><th>strictly below</th><th>open at</th></tr></thead>
-      <tbody id="probebody"></tbody>
-    </table></div>
+    <h3>What the tables do to the probe's list</h3>
+    <p>The two sources overlap, and putting them side by side settles some of what the probe
+    left open. <strong>Eight of the seventeen candidate classes are now certified outside
+    <span class="f">R</span></strong>: seven read <span class="f">∉R</span> directly off the
+    tables, and one more transports across a certified identity —
+    <span class="f">ρ12 ∧ ρ15</span> is <span class="f">∉R</span> and the probe certified
+    <span class="f">ρ7∨ρ13 ≡ ρ9∨ρ13 ≡ ρ12∧ρ15</span>, so all three presentations are outside
+    <span class="f">R</span> even though the <span class="f">∨</span> table flags
+    <span class="f">ρ7 ∨ ρ13</span> itself as open.</p>
+    <p>The traffic runs the other way too. Eight of the sixteen <span class="f">∉R</span> cells
+    — <span class="f">ρ10∨ρ20</span>, <span class="f">ρ12∨ρ14</span>,
+    <span class="f">ρ12∨ρ15</span>, <span class="f">ρ12∨ρ16</span>,
+    <span class="f">ρ12∨ρ17</span>, <span class="f">ρ14∨ρ20</span>,
+    <span class="f">ρ16∨ρ20</span>, <span class="f">ρ17∨ρ20</span> — are cells the probe never
+    asked about. The tables are the wider net; the probe reaches shapes the binary tables
+    cannot (ternary joins, <span class="f">◯</span>-shifts).</p>
+    <p>Nine candidate classes remain unsettled against <span class="f">R</span>: the
+    <span class="f">ρ19</span>-join class (three presentations), <span class="f">ρ16∨ρ19</span>,
+    <span class="f">ρ10∨ρ15</span>, <span class="f">ρ12∧ρ20</span>,
+    <span class="f">◯ρ6 (≡ ◯ρ9)</span>, <span class="f">◯ρ11</span>, and the three ternary
+    joins, which no binary table reaches.</p>
+    <p class="src">Cross-reference computed for this page from <b>wip/rtable_out.txt</b> and
+    <b>wip/rhoprobe2_out.txt</b>, 2026-08-25. The transport step is sound but inherits the tier
+    of its inputs: both the identity and the <span class="f">∉R</span> verdict are
+    engine-certified, so the conclusion is too.</p>
   </div>
 
   <div class="panel">
     <h3>Open candidate-pairs</h3>
-    <p>Neither direction settled at budget. Until these fall, "17 distinct" is an upper bound.</p>
+    <p>Neither direction settled at budget. Until these fall, the candidate count is an upper
+    bound.</p>
     <div class="scroll"><table>
       <thead><tr><th>X</th><th>Y</th><th>X ⊢ Y</th><th>Y ⊢ X</th></tr></thead>
       <tbody id="openbody"></tbody>
@@ -675,59 +673,47 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
   </div>
 
   <div class="panel">
-    <h3>The 15 certified identities</h3>
-    <div class="scroll"><table>
-      <thead><tr><th>identity</th><th>kind</th><th>already kernel-proved?</th></tr></thead>
-      <tbody id="identbody"></tbody>
-    </table></div>
-  </div>
-
-  <div class="call">
-    <h3>Discrepancy found — the four ◯-laws are not new</h3>
-    <p>The round-2 note presents three <span class="f">◯</span>-collapses plus
-    <span class="f">◯ρ6 ≡ ◯ρ9</span> as this session's findings. All four were already
-    kernel-proved in the repository, and two of them are already <em>in</em> the certified
-    simpset:</p>
-    <div class="disp">◯(◯⊥ ∨ ¬◯⊥) ≡ ◯¬◯⊥      cBox_4   wip/rnDict.lean:1460   ∈ rndSet
-◯¬¬◯⊥       ≡ ¬¬◯⊥        cBox_6   wip/rnDict.lean:1464   ∈ rndSet
-◯(¬¬◯⊥ ⊃ ◯⊥) ≡ ¬¬◯⊥ ⊃ ◯⊥  cBox_10  wip/rnDict.lean:1472   ∈ rndSet
-◯ρ9         ≡ ◯ρ6          cBox_9   wip/rnDict.lean:1468   ∈ rndSet</div>
+    <h3>The ◯-identities, and where they came from</h3>
+    <p>Four <span class="f">◯</span>-collapses are sometimes reported as recent probe findings.
+    They are not new: all four were already kernel-proved, and all four are already rules of the
+    certified simpset.</p>
+    <div class="disp">◯ρ4 ≡ ρ7        cBox_4    wip/rnDict.lean   ∈ rndSet
+◯ρ5 ≡ ρ5        cBox_6    wip/rnDict.lean   ∈ rndSet
+◯ρ8 ≡ ρ8        cBox_10   wip/rnDict.lean   ∈ rndSet
+◯ρ9 ≡ ◯ρ6       cBox_9    wip/rnDict.lean   ∈ rndSet</div>
     <p>Each carries an explicit G4iLL″ proof term bridged to <span class="m">LaxND</span>, and
-    all five <span class="f">◯</span>-rules of <span class="m">rndSet</span> are exactly
+    the five <span class="f">◯</span>-rules of the simpset are exactly
     <span class="m">cBox_1, cBox_4, cBox_6, cBox_9, cBox_10</span>. Two further independent
-    proofs exist: <span class="m">RNEmbed.boxq9_q12</span> (wip/seeds.lean) is
-    <span class="f">◯q9 ≡ q12 = ◯ρ6</span>, and
-    <span class="m">DepthPCLL.box_rnSub_four</span> (wip/depth3.lean) is
-    <span class="f">◯t4 ≡ t4</span> as an instance of the proved nucleus law
-    <span class="m">Depth.box_imp_box</span>. The v17 page already displayed
-    <span class="f">◯t4 = t4, ◯t6 = t6</span> among its fold-back laws.</p>
-    <p>What the probe did establish is engine-level agreement with the kernel record — which
-    is a cross-validation, and worth having, but it is not four new laws.</p>
+    proofs exist: <span class="m">RNEmbed.boxq9_q12</span> (<span class="m">wip/seeds.lean</span>)
+    and <span class="m">DepthPCLL.box_rnSub_four</span>
+    (<span class="m">wip/depth3.lean</span>), the latter as an instance of the proved nucleus law
+    <span class="m">Depth.box_imp_box</span>. The probe agreeing with them is a cross-validation
+    of the engines, and worth having as that.</p>
+    <p>The <span class="f">◯</span> row of the R tables adds two more fixed points that follow
+    the same nucleus law: <span class="f">◯ρ12 ≡ ρ12</span> and
+    <span class="f">◯ρ19 ≡ ρ19</span>, both of the form <span class="f">X ⊃ b</span> with
+    <span class="f">b = ◯¬◯⊥</span> already <span class="f">◯</span>-fixed.
+    <span class="m">cBox_14 : Interd (◯ρ12) ρ12</span> is now kernel-proved in
+    <span class="m">wip/rnDict2.lean</span>.</p>
+    <p class="src"><b>wip/rnDict.lean</b> · <b>wip/rnDict2.lean</b> ·
+    <b>Rewrite/Catalogue.lean</b> · <b>wip/depth.lean</b> (<span class="m">box_imp_box</span>,
+    no axioms)</p>
   </div>
 
   <div class="panel">
-    <h3>Which probe identities are still awaiting kernel certification</h3>
-    <p>These may not enter <span class="m">rndSet</span> until they are proved: an unproved
-    <span class="m">RwRule.ok</span> voids <span class="m">norm_interd</span> silently, which
-    is exactly the defect that put <span class="m">sorryAx</span> into the first cut of
-    <span class="m">Rewrite/Catalogue.lean</span>. Nothing engine-only has been added here.</p>
-    <div class="scroll"><table>
-      <thead><tr><th>identity</th><th>status</th></tr></thead>
-      <tbody>
-        <tr><td class="f">◯ρ4 ≡ ρ7, ◯ρ5 ≡ ρ5, ◯ρ8 ≡ ρ8, ◯ρ6 ≡ ◯ρ9</td>
-            <td><span class="chip ok">kernel-proved</span> and already banked
-                (<span class="m">cBox_4/6/9/10</span>)</td></tr>
-        <tr><td class="f">ρ9∨ρ17 ≡ ρ18, ρ9∨ρ16 ≡ ρ18, ρ16∨ρ17 ≡ ρ18, ρ8∨ρ18 ≡ ρ10, ρ11∨ρ18 ≡ ρ15</td>
-            <td><span class="chip op">engine-certified only</span> — awaiting kernel proof
-                before banking</td></tr>
-        <tr><td class="f">ρ6∧ρ7 ≡ ρ4, ρ16∧ρ19 ≡ ρ7, ρ13∧ρ17 ≡ ρ6, ρ9∧ρ13 ≡ ρ6, ρ7∧ρ14 ≡ ρ4, ρ6∧ρ14 ≡ ρ4, ρ8∧ρ18 ≡ ρ16</td>
-            <td><span class="chip op">engine-certified only</span> — awaiting kernel proof
-                before banking</td></tr>
-      </tbody>
-    </table></div>
-    <p class="src">Banking discipline: <b>docs/rn-dictionary-status.md</b> §"The standing item"
-    — bank, then re-run <span class="m">rwscreen</span> and <span class="m">rnextend</span>,
-    promote anything that closes, re-transcribe the axiom pins.</p>
+    <h3>Banking discipline</h3>
+    <p>An identity may not enter the simpset until it is kernel-proved: an unproved
+    <span class="m">RwRule.ok</span> voids <span class="m">norm_interd</span> silently. The
+    probe's hub-join and co-hub-meet identities (<span class="f">ρ9∨ρ17 ≡ ρ18</span>,
+    <span class="f">ρ8∨ρ18 ≡ ρ10</span>, <span class="f">ρ11∨ρ18 ≡ ρ15</span>,
+    <span class="f">ρ6∧ρ7 ≡ ρ4</span>, <span class="f">ρ16∧ρ19 ≡ ρ7</span>,
+    <span class="f">ρ13∧ρ17 ≡ ρ6</span>, <span class="f">ρ9∧ρ13 ≡ ρ6</span>,
+    <span class="f">ρ7∧ρ14 ≡ ρ4</span>, <span class="f">ρ6∧ρ14 ≡ ρ4</span>,
+    <span class="f">ρ8∧ρ18 ≡ ρ16</span>) are <strong>engine-certified only</strong> and are
+    awaiting kernel proof. Nothing engine-only has been added to the simpset.</p>
+    <p class="src">The standing loop after any banking: re-measure with
+    <span class="m">lake exe rwscreen</span>, re-test reach, promote what closes, re-transcribe
+    the axiom pins.</p>
   </div>
 </section>
 
@@ -737,7 +723,7 @@ hr.rule{border:0;border-top:1px solid var(--line-soft);margin:2px 0}
   <div class="panel">
     <h2>The Rieger–Nishimura embedding</h2>
     <p>The substitution <span class="f">p ↦ ◯⊥</span> carries the one-variable
-    Rieger–Nishimura rungs to pairwise non-interderivable closed formulas — in PLL and in
+    Rieger–Nishimura rungs to pairwise non-interderivable closed formulas, in PLL and in
     PCLL, for <em>every</em> pair of rungs, not a finite initial segment.</p>
     <div class="disp">rn 0 = ⊥,   rn 1 = p,   rn 2 = ¬p
 rn (2k+3) = rn (2k+1) ∨ rn (2k+2)
@@ -749,24 +735,23 @@ rnSub_deriv_iff  : t i ⊢ t j  ⟺  T(i) ⊆ T(j)  on the RN ladder frame<span 
     <strong>RN(◯,{}) has infinite height</strong>. And it is an order-isomorphism onto its
     image, with the <em>same</em> image order in PLL and PCLL: distribution's collapses do not
     touch the embedded ladder's arrows.</p>
-    <p class="src"><b>wip/rnEmbed.lean</b> — 15 <span class="m">#guard_msgs</span>-pinned
-    axiom audits: <span class="m">Skel.transfer</span> [propext],
+    <p class="src"><b>wip/rnEmbed.lean</b> — 15 <span class="m">#guard_msgs</span>-pinned axiom
+    audits: <span class="m">Skel.transfer</span> [propext],
     <span class="m">Skel.cm_confluent</span> (no axioms),
     <span class="m">rn_transfer_pcll/pll</span> [propext],
     <span class="m">rn_pairwise_pcll/pll</span>,
     <span class="m">varfree_no_finite_cover_pcll/pll</span>,
-    <span class="m">rank_escape_pcll/pll</span>,
-    <span class="m">rnSub_deriv_iff</span>, <span class="m">rnSub_derivU_iff</span>,
-    <span class="m">rnSub_derivU_iff_deriv</span>
+    <span class="m">rank_escape_pcll/pll</span>, <span class="m">rnSub_deriv_iff</span>,
+    <span class="m">rnSub_derivU_iff</span>, <span class="m">rnSub_derivU_iff_deriv</span>
     [propext, Classical.choice, Quot.sound], <span class="m">rnSub_four_interd</span>
     (no axioms), <span class="m">interd_substP</span> [propext, Quot.sound]</p>
   </div>
 
   <div class="panel">
-    <h2>The ladder image among the catalogue classes</h2>
-    <p>The image of the embedding is the <em>left rail</em> of the ρ-order. Nine of the 22
-    catalogue classes are rungs, and the ladder <em>predicts</em>
-    <span class="f">ρ13</span>, which the sweep found independently as a new shape.</p>
+    <h2>The ladder image inside R</h2>
+    <p>The image of the embedding is the left rail of the ρ-order. Nine of the 22 classes are
+    rungs, and the ladder <em>predicts</em> <span class="f">ρ13</span>, which the closure sweep
+    found independently as a new shape.</p>
     <div class="scroll"><table>
       <thead><tr><th>rung</th><th>class</th><th>ρ</th><th>bridge</th></tr></thead>
       <tbody>
@@ -782,13 +767,13 @@ rnSub_deriv_iff  : t i ⊢ t j  ⟺  T(i) ⊆ T(j)  on the RN ladder frame<span 
             <td>a sweep discovery the ladder predicts</td></tr>
       </tbody>
     </table></div>
-    <p>The other thirteen catalogue classes are off the image. The classification
-    <span class="f">im h = rungs ∪ {⊤}</span> is mechanised
+    <p>The other thirteen classes of <span class="f">R</span> are off the image. The
+    classification <span class="f">im h = rungs ∪ {⊤}</span> is mechanised
     (<span class="m">image_classification</span>), so "off the image" is decidable against the
     rungs and <span class="f">⊤</span> alone.</p>
-    <p class="src"><b>docs/rho-order.md</b> R5 (the two rails) · <b>wip/ladder8.lean</b>
-    (the rung order and its Hasse data, computation only, no axioms) ·
-    <b>wip/seeds.lean</b>, <b>wip/gapWidth.lean</b> (the bridges)</p>
+    <p class="src"><b>docs/rho-order.md</b> R5 (the two rails) · <b>wip/ladder8.lean</b> (the
+    rung order and its Hasse data, computation only, no axioms) · <b>wip/seeds.lean</b>,
+    <b>wip/gapWidth.lean</b>, <b>wip/rnClassify.lean</b> (the bridges)</p>
   </div>
 </section>
 
@@ -797,14 +782,15 @@ rnSub_deriv_iff  : t i ⊢ t j  ⟺  T(i) ⊆ T(j)  on the RN ladder frame<span 
 
   <div class="panel">
     <h2>The families</h2>
-    <p>Four shapes, each uniform in a level index <span class="f">k ≥ 1</span>, each built
-    over the embedded rungs. Together they prove RN(◯,{}) infinite in three independent
-    ways: height, width, and depth.</p>
-    <div class="disp">c k = ◯t(2k+1)                    ascending chain
-g k = c k ⊃ t(2k+1)               antichain
-r k = t(2k+4) ⊃ c k               antichain, ◯-fixed
-◯(g k)                            antichain
-w k = g k ∧ t(2k+4)               zigzag: comparable only two levels apart
+    <p>Four shapes, each uniform in a level index <span class="f">k ≥ 1</span>, each built over
+    the embedded rungs. Together they prove RN(◯,{}) infinite in three independent ways:
+    height, width, and depth. Level 1 of each family lands inside
+    <span class="f">R</span>; every level above it is outside.</p>
+    <div class="disp">c k = ◯t(2k+1)                    ascending chain          c 1 = ρ7
+g k = c k ⊃ t(2k+1)               antichain                g 1 = ρ11
+r k = t(2k+4) ⊃ c k               antichain, ◯-fixed       r 1 = ρ12
+◯(g k)                            antichain                ◯(g 1) ∉ R
+w k = g k ∧ t(2k+4)               zigzag                   w 1 = ρ14
 Gmeet n = g 1 ∧ … ∧ g (n+1)       strictly descending, no floor</div>
   </div>
 
@@ -815,19 +801,20 @@ chain_step_strict : c (k+1) ⊬ c k
 chain_up          : j ≤ k → c j ⊢ c k
 chain_lt_strict   : j &lt; k → c k ⊬ c j
 chain_pairwise    : j ≠ k → ¬ Interd (c j) (c k)<span class="tag">wip/chainStrict.lean</span></div>
-    <p><strong>It still holds good.</strong> Every step is proved and the strictness is
-    uniform in <span class="f">k</span>, not a finite check: the negative halves evaluate one
-    infinite constraint model (the abyss lift of the RN ladder skeleton) through
+    <p><strong>It holds good.</strong> Every step is proved and the strictness is uniform in
+    <span class="f">k</span>, not a finite check: the negative halves evaluate one infinite
+    constraint model (the abyss lift of the RN ladder skeleton) through
     <span class="m">Skel.box_force</span> and <span class="m">Skel.transfer</span>, and land by
-    Kripke soundness. Nothing in the 2026-08-25 material touches it.</p>
-    <p>Two of the four <span class="f">◯</span>-collapse laws are in fact statements about the
-    first two rungs of this very chain: <span class="f">c 1 = ◯t3 ≡ ρ7</span> is
-    <span class="m">cBox_4</span>, and <span class="f">c 2 = ◯t5 ≡ q12 = ◯ρ6</span> together
-    with <span class="f">◯ρ9 ≡ ◯ρ6</span> is <span class="m">cBox_9</span>. Far from
-    collapsing the chain, they identify its low rungs.
-    <span class="f">c 3 = ◯t7 = ◯q11</span> is the round-1 cell
-    <span class="m">cBox_11</span>, certified <span class="f">∉D₁₅</span> and
-    <span class="f">∉D₁₆</span> — a new class, strictly above <span class="f">t7</span>.</p>
+    Kripke soundness.</p>
+    <p>Two of the four <span class="f">◯</span>-identities are statements about the first two
+    rungs of this very chain: <span class="f">c 1 = ◯t3 ≡ ρ7</span> is
+    <span class="m">cBox_4</span>, and <span class="f">c 2 = ◯t5 = ◯ρ6</span> with
+    <span class="f">◯ρ9 ≡ ◯ρ6</span> is <span class="m">cBox_9</span>. Far from collapsing the
+    chain, they identify its low rungs. <span class="f">c 2 = ◯ρ6</span> and
+    <span class="f">c 3 = ◯t7 = ◯ρ10</span> are both flagged <span class="f">?</span> in the
+    <span class="f">◯</span> row of the R tables: the chain is proved strict, but its members
+    above <span class="f">c 1</span> are not yet placed against
+    <span class="f">R</span>.</p>
     <p class="src"><b>wip/chainStrict.lean</b> — <span class="m">chain_step_strict</span>,
     <span class="m">chain_pairwise</span>, both
     <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
@@ -840,65 +827,71 @@ width_infinite   : i ≠ j  →  ¬ Interd (g (i+2)) (g (j+2))
 rC_incomparable  : j, k ≥ 1,  j ≠ k  →  r j ⊬ r k<span class="tag">wip/gapWidth.lean · wip/families.lean</span></div>
     <p><span class="f">{ g k : k ≥ 2 }</span> is an infinite antichain, so RN(◯,{}) has
     unbounded width. Each <span class="f">g k</span> is off the image and off the chain
-    (<span class="m">gap_off_image</span>, <span class="m">gap_not_chain</span>).
-    <span class="f">g 1 ≡ q8 = ρ11</span> (<span class="m">gap_one_q8</span>).</p>
-    <p>The <span class="f">r</span>-family is an antichain with no
-    <span class="f">k ≥ 2</span> restriction, and it is <span class="f">◯</span>-fixed:
+    (<span class="m">gap_off_image</span>, <span class="m">gap_not_chain</span>);
+    <span class="f">g 1 ≡ ρ11</span> (<span class="m">gap_one_q8</span>).</p>
+    <p>The <span class="f">r</span>-family is an antichain with no <span class="f">k ≥ 2</span>
+    restriction, and it is <span class="f">◯</span>-fixed:
     <span class="m">Depth.box_rC : ◯(r k) ⊣⊢ r k</span>, an instance of
-    <span class="m">box_imp_box</span> and proved with no axioms at all. So boxing does not
-    move it, and the whole family stays at <span class="f">◯</span>-depth 2.
-    <span class="f">r 1 ≡ q14 = ρ12</span> (<span class="m">rC_one_q14</span>).</p>
+    <span class="m">box_imp_box</span> proved with no axioms at all. Its level 1 is
+    <span class="f">ρ12</span>, and the R tables' <span class="f">◯ρ12 ≡ ρ12</span> is exactly
+    that law at <span class="f">k = 1</span>.</p>
     <p class="src"><b>wip/gapWidth.lean</b> (<span class="m">width_infinite</span>,
     <span class="m">gap_off_image</span>, <span class="m">gap_not_chain</span>,
     <span class="m">gap_one_q8</span> — all
-    <span class="m">[propext, Classical.choice, Quot.sound]</span>) ·
-    <b>wip/families.lean</b> (<span class="m">rC_incomparable</span>, same pin) ·
-    <b>wip/depth.lean</b> (<span class="m">box_rC</span>, no axioms)</p>
+    <span class="m">[propext, Classical.choice, Quot.sound]</span>) · <b>wip/families.lean</b>
+    (<span class="m">rC_incomparable</span>, same pin) · <b>wip/depth.lean</b>
+    (<span class="m">box_rC</span>, no axioms)</p>
   </div>
 
   <div class="panel">
     <h2>◯(g k) — one infinite antichain, not many small ones</h2>
-    <p>The question asked of this page was whether <span class="f">◯(g k)</span> is
-    "many families of size-3 antichains". It is not. The record carries one theorem, uniform
-    in the indices:</p>
+    <p>Whether <span class="f">◯(g k)</span> is "many families of size-3 antichains": it is
+    not. The record carries one theorem, uniform in the indices.</p>
     <div class="disp">bg_incomparable : k ≥ 2,  j ≠ k  →  ◯(g j) ⊬ ◯(g k)
 bg_pairwise     : j, k ≥ 2,  j ≠ k  →  ¬ Interd (◯(g j)) (◯(g k))<span class="tag">wip/families.lean:535, 558</span></div>
     <p>So <span class="f">{ ◯(g k) : k ≥ 2 }</span> is a <strong>single ℕ-indexed
     antichain</strong>: infinitely many classes, pairwise incomparable, each off the image and
     not <span class="f">⊤</span> (<span class="m">bg_off_image</span>,
-    <span class="m">bg_not_top</span>, both for <span class="f">k ≥ 2</span>). The
-    "size 3" reading comes from the picture, not the theorem: the v17 diagram drew three
-    levels of each family with a faded continuation stub, and put one amber bracket down the
+    <span class="m">bg_not_top</span>, both for <span class="f">k ≥ 2</span>). The "size 3"
+    reading comes from the picture, not the theorem: the v17 diagram drew three levels of each
+    family with a faded continuation stub and put one bracket down the
     <span class="f">◯g</span> column. The bracket denotes the whole antichain; three of its
     members are drawn.</p>
     <h3>The one place the record really is incomplete</h3>
-    <p>The uniform theorem needs <span class="f">k ≥ 2</span> on the <em>target</em> index
-    only. So for <span class="f">k ≥ 2</span> we have <span class="f">◯(g 1) ⊬ ◯(g k)</span>,
-    but the converse cells <span class="f">◯(g k) ⊢? ◯(g 1)</span> are <strong>not</strong>
-    covered by anything in the record. The certified antichain therefore starts at
+    <p>The uniform theorem needs <span class="f">k ≥ 2</span> on the <em>target</em> index only.
+    So for <span class="f">k ≥ 2</span> we have <span class="f">◯(g 1) ⊬ ◯(g k)</span>, but the
+    converse cells <span class="f">◯(g k) ⊢? ◯(g 1)</span> are <strong>not</strong> covered by
+    anything in the record. The certified antichain therefore starts at
     <span class="f">k = 2</span>; whether <span class="f">◯(g 1)</span> joins it is open at
-    exactly those cells. <span class="f">◯(g 1) ≡ q13 = ◯ρ11</span>
-    (<span class="m">bg_one_q13</span>), which the round-2 probe independently reports as a
-    new class.</p>
-    <h3>What the ◯-collapse laws do to it: nothing</h3>
-    <p>The classes whose <span class="f">◯</span>-image collapses are
+    exactly those cells. <span class="f">◯(g 1) = ◯ρ11</span>
+    (<span class="m">bg_one_q13</span>), and the probe places it outside
+    <span class="f">R</span> up to two open cells.</p>
+    <h3>What the ◯-identities do to it: nothing</h3>
+    <p>The classes whose <span class="f">◯</span>-image collapses onto a named class are
     <span class="f">ρ4 = t3</span>, <span class="f">ρ5 = t4</span>,
-    <span class="f">ρ8 = t6</span> (all rungs) and the pair
-    <span class="f">ρ6 = t5</span>, <span class="f">ρ9</span>. No
-    <span class="f">g k</span> is any of them:</p>
+    <span class="f">ρ8 = t6</span> (all rungs), together with
+    <span class="f">ρ6 = t5</span> and <span class="f">ρ9</span> (which collapse onto each
+    other), and the two <span class="f">◯</span>-fixed implications
+    <span class="f">ρ12, ρ19</span>. No <span class="f">g k</span> is any of them:</p>
     <div class="disp">gap_not_rung  : ∀ k n. ¬ Interd (t n)  (g k)      → rules out t3, t4, t5, t6
-gap_not_q9    : ∀ k.   ¬ Interd (g k) q9           → rules out ρ9
+gap_not_q9    : ∀ k.   ¬ Interd (g k) ρ9           → rules out ρ9
 gap_not_chain : ∀ k i. ¬ Interd (c i)  (g k)<span class="tag">wip/gapWidth.lean · wip/families.lean</span></div>
-    <p>So none of the collapse laws has an instance inside the family, and the antichain
-    stands unchanged. The laws that <em>do</em> apply to it are the fold-backs
-    <span class="m">box_idem</span> (<span class="f">◯◯(g k) ≡ ◯(g k)</span>, so the family
-    does not iterate) and <span class="m">gap2_collapse</span>
+    <p>Nor is any <span class="f">g k</span> equal to <span class="f">r 1 = ρ12</span> or
+    <span class="f">ρ19</span>: for <span class="f">k = 1</span> that is catalogue
+    distinctness (<span class="f">g 1 = ρ11</span>), and for
+    <span class="f">k ≥ 2</span> each <span class="f">g k</span> is incomparable with
+    <span class="f">g 1</span> while <span class="f">ρ12, ρ19</span> sit at fixed places in the
+    order. So no collapse law has an instance inside the family, and the antichain stands
+    unchanged. The laws that <em>do</em> apply are the fold-backs
+    <span class="m">box_idem</span> (<span class="f">◯◯(g k) ≡ ◯(g k)</span>, so the family does
+    not iterate) and <span class="m">gap2_collapse</span>
     (<span class="f">◯(g k) ⊃ g k ≡ g k</span>).</p>
     <p class="src"><b>wip/families.lean</b> — <span class="m">bg_incomparable</span>,
     <span class="m">bg_pairwise</span>, <span class="m">bg_off_image</span>,
     <span class="m">bg_not_top</span>, <span class="m">bg_one_q13</span>,
     <span class="m">gap_not_q9</span>; pins
-    <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
+    <span class="m">[propext, Classical.choice, Quot.sound]</span> ·
+    <b>wip/gap2.lean</b> (<span class="m">gap2_collapse</span>)</p>
   </div>
 
   <div class="panel">
@@ -910,14 +903,12 @@ wC_strict      : j &lt; k     → w k ⊬ w j
 wC_succ_not_le : w j ⊬ w (j+1)<span class="tag">wip/seeds.lean:120-190</span></div>
     <p><span class="f">w j ≤ w k</span> exactly when <span class="f">k ≥ j + 2</span>:
     consecutive members are incomparable, so the family climbs by stepping over its own
-    neighbour. <span class="f">w 1 ≡ q8 ∧ q10 ≡ q15 = ρ14</span> — the meet that broke round 1
-    (<span class="m">cAnd_8_10</span> against the fifteen) and is proved against the sixteen.
-    That single cell is the clearest illustration of the page's governing rule: status is
-    relative to a representative set.</p>
+    neighbour. Level 1 is <span class="f">ρ14</span>, and the R tables read
+    <span class="f">ρ8 ∧ ρ11 ≡ ρ14</span>, the meet <span class="f">g 1 ∧ t6</span>, in place.</p>
     <p class="src"><b>wip/seeds.lean</b> (<span class="m">wC_le</span>,
     <span class="m">wC_strict</span>, <span class="m">wC_succ_not_le</span>,
-    <span class="m">wC_off_image</span>) · <b>LaxLogic/RN/Reps.lean</b> (q15's four
-    presentations, <span class="m">wip/rnSepColl.lean</span>)</p>
+    <span class="m">wC_off_image</span>) · <b>wip/rnSepColl.lean</b> (four presentations of the
+    same class)</p>
   </div>
 
   <div class="panel">
@@ -927,23 +918,22 @@ Gmeet (n+1) = Gmeet n ∧ g (n+2)
 
 Gmeet_le     : Gmeet (n+1) ⊢ Gmeet n
 Gmeet_strict : [Gmeet n] ⊬ Gmeet (n+1)<span class="tag">wip/uiObstruct.lean:109 · wip/hunts.lean:112</span></div>
-    <p>The partial meets of the gap antichain descend strictly forever. The countermodel is
-    the edged lift <span class="m">cmE (n+1)</span>, at whose edge world gaps
-    <span class="f">1 … n+1</span> are forced — hence <span class="f">Gmeet n</span> — while
-    <span class="f">g (n+2)</span> fails. Every <span class="f">Gmeet n</span> is closed and
-    has <span class="f">◯</span>-depth ≤ 2 (<span class="m">depth_Gmeet</span>).</p>
+    <p>The partial meets of the gap antichain descend strictly forever. The countermodel is the
+    edged lift <span class="m">cmE (n+1)</span>, at whose edge world gaps
+    <span class="f">1 … n+1</span> are forced, hence <span class="f">Gmeet n</span>, while
+    <span class="f">g (n+2)</span> fails. Every <span class="f">Gmeet n</span> is closed and has
+    <span class="f">◯</span>-depth ≤ 2 (<span class="m">depth_Gmeet</span>).</p>
     <p>The descent has no limit inside the logic:</p>
     <div class="disp">gap_no_glb    : the family { g k : k ≥ 1 } has NO greatest lower bound,
                 quantified over ALL formulas
 L_no_greatest : its variable-free reading — the landing ideal has no
                 greatest element<span class="tag">wip/floor.lean:489, 507</span></div>
-    <p>So RN(◯,{}) is <strong>not a complete lattice</strong>: this is the third
-    independent sense in which it is infinite, alongside height (the ladder) and width (the
-    gap antichain).</p>
+    <p>So RN(◯,{}) is <strong>not a complete lattice</strong>: this is the third independent
+    sense in which it is infinite, alongside height (the ladder) and width (the gap
+    antichain).</p>
     <p class="src"><b>wip/hunts.lean</b> (<span class="m">Gmeet_strict</span>) ·
-    <b>wip/depth.lean</b> (<span class="m">depth_Gmeet</span>) ·
-    <b>wip/floor.lean</b> (<span class="m">gap_no_glb</span>,
-    <span class="m">L_no_greatest</span>), all
+    <b>wip/depth.lean</b> (<span class="m">depth_Gmeet</span>) · <b>wip/floor.lean</b>
+    (<span class="m">gap_no_glb</span>, <span class="m">L_no_greatest</span>), all
     <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
   </div>
 
@@ -956,10 +946,10 @@ L_no_greatest : its variable-free reading — the landing ideal has no
 ◯(A ∧ B)    ⊣⊢ ◯A ∧ ◯B          box_and          [propext]
 ◯(A ⊃ ◯B)   ⊣⊢ A ⊃ ◯B           box_imp_box      no axioms
 ◯(◯A ∨ ◯B)  ⊣⊢ ◯(A ∨ B)         box_or_box       [propext]<span class="tag">wip/depth.lean</span></div>
-    <p>The only depth-raising constructions are <span class="f">◯</span> over a disjunction
-    and <span class="f">◯</span> over an implication whose consequent is not already boxed
-    (<span class="m">depth_raising_only_or_imp</span>). And
-    <span class="f">◯</span> over <span class="f">∨</span> genuinely escapes:
+    <p>The only depth-raising constructions are <span class="f">◯</span> over a disjunction and
+    <span class="f">◯</span> over an implication whose consequent is not already boxed
+    (<span class="m">depth_raising_only_or_imp</span>). And <span class="f">◯</span> over
+    <span class="f">∨</span> genuinely escapes:
     <span class="m">distr_4_3_not_derivable</span> refutes
     <span class="f">◯(t3 ∨ t4) ⊢ ◯t3 ∨ ◯t4</span>.</p>
   </div>
@@ -969,218 +959,225 @@ L_no_greatest : its variable-free reading — the landing ideal has no
 <section id="p-simp" role="tabpanel" aria-labelledby="t-simp" hidden>
 
   <div class="panel">
-    <h2>The tables as a simplifier</h2>
-    <p>Every certified cell is an oriented rewrite rule
-    <span class="f">q<sub>i</sub> ⊙ q<sub>j</sub> ⟶ q<sub>k</sub></span>, so the table runs as
-    a normaliser on any closed goal: congruence closure over facts already paid for. The
-    claim, as stated in the record:</p>
-    <div class="call note">
-      <h3>The claim under test</h3>
-      <p>"These tables are now also a simplifier. Every certified cell is an oriented rewrite
-      rule <span class="f">qi ⊙ qj ⟶ qk</span>, so the whole table can be run as a normaliser
-      on any closed goal — congruence closure over facts already paid for. The PLL simpset
-      (<span class="m">Rewrite/</span>) carries 236 kernel-checked cells from the separate
-      15-representative record <span class="m">rnDict15</span>; canonicalising both the goal
-      and the rules, then alternating rewriting and re-canonicalising to a fixpoint, it
-      rewrites 89% of flat cells for a 34% crank cut and collapses 3,996 nested ∧/∨ trees to
-      25 distinct forms — against a floor of 15, the number of classes."</p>
-    </div>
-    <p>Correctness does not depend on any of these numbers.
+    <h2>The certified rewrite set — machinery</h2>
+    <p>A certified interderivability, oriented compound → representative, is a rewrite rule.
+    Collect enough of them and the collection runs as a normaliser on any closed goal:
+    congruence closure over facts already paid for. That is what
+    <span class="m">Rewrite/</span> is.</p>
+    <div class="disp">rndSet : List RwRule   —   236 kernel-checked rules
+                           ∧ 64   ∨ 46   ⊃ 121   ◯ 5
+fullSetC := canonSet fullSet   —   the canonicalised set, computed once
+simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<span class="tag">Rewrite/Catalogue.lean · Rewrite/Canon.lean</span></div>
+    <p>Correctness does not depend on how effective it is:
     <span class="m">simplifyWith_interd</span> is unconditional given that each rule's
-    <span class="m">ok</span> field is a proof, which is why the 87 unproved cells are
-    excluded and why the exclusion is guarded by an axiom pin rather than by convention.</p>
+    <span class="m">ok</span> field is a proof. That is why the axiom pins below are a standing
+    build-time guard rather than a convention.</p>
+    <p>The 236 rules are cells over the fifteen earliest representatives, which is a historical
+    fact about where they were found, not a claim about coverage. In ρ terms the rules act on
+    <span class="f">ρ0–ρ11</span> together with <span class="f">ρ12</span> and the two
+    <span class="f">◯</span>-depth-2 formulas <span class="f">◯ρ6</span> and
+    <span class="f">◯ρ11</span>. No rule of the set rewrites to anything outside
+    <span class="f">R</span>, and no unproved rule is in it.</p>
   </div>
 
   <div class="panel">
-    <h2>Fresh measurement, 2026-08-25</h2>
-    <p>Re-run of <span class="m">lake exe rwscreen</span> on this branch with
-    <span class="m">LEAN_NUM_THREADS=1</span>, using
-    <span class="m">Rewrite.simplifyWith</span> against the canonicalised set
-    <span class="m">Rewrite.fullSetC</span>.</p>
+    <h2>Measurement, 2026-08-25</h2>
+    <p><span class="m">lake exe rwscreen</span> on this branch,
+    <span class="m">LEAN_NUM_THREADS=1</span>, using <span class="m">Rewrite.simplifyWith</span>
+    against the canonicalised set <span class="m">Rewrite.fullSetC</span>.</p>
     <div class="scroll"><table>
-      <thead><tr><th>corpus</th><th>metric</th><th class="num">claimed</th>
-        <th class="num">measured 2026-08-25</th><th>agrees</th></tr></thead>
+      <thead><tr><th>corpus</th><th>metric</th><th class="num">measured</th></tr></thead>
       <tbody>
         <tr><td rowspan="4">flat, 330 cells</td><td>rules in the set</td>
-            <td class="num">236 + 1</td><td class="num">237 (236 from the table)</td>
-            <td><span class="chip ok">yes</span></td></tr>
-        <tr><td>rewritten, canon then norm</td><td class="num">89%</td>
-            <td class="num">295 (89%)</td><td><span class="chip ok">yes</span></td></tr>
-        <tr><td>crank reduction</td><td class="num">34%</td>
-            <td class="num">1594 → 1038 (34%)</td><td><span class="chip ok">yes</span></td></tr>
-        <tr><td>distinct forms</td><td class="num">319 → 28</td>
-            <td class="num">319 → 127 → 28</td><td><span class="chip ok">yes</span></td></tr>
+            <td class="num">237 (236 from the tables)</td></tr>
+        <tr><td>rewritten, canonicalise then rewrite</td><td class="num">295 (89%)</td></tr>
+        <tr><td>crank reduction</td><td class="num">1594 → 1038 (34%)</td></tr>
+        <tr><td>distinct forms</td><td class="num">319 → 127 → 28</td></tr>
         <tr><td rowspan="2">nested, 3,996 ∧/∨ trees</td><td>distinct forms</td>
-            <td class="num">3996 → 25</td><td class="num">3996 → 206 → 25</td>
-            <td><span class="chip ok">yes</span></td></tr>
-        <tr><td>crank reduction</td><td class="num">40%</td>
-            <td class="num">19558 → 11626 (40%)</td><td><span class="chip ok">yes</span></td></tr>
-        <tr><td>control: norm alone</td><td>rewritten / crank</td>
-            <td class="num">13% / 6%</td><td class="num">43 (13%) / 1594 → 1488 (6%)</td>
-            <td><span class="chip ok">yes</span></td></tr>
+            <td class="num">3996 → 206 → 25</td></tr>
+        <tr><td>crank reduction</td><td class="num">19558 → 11626 (40%)</td></tr>
+        <tr><td>control: rewriting alone, no canonicalisation</td><td>rewritten / crank</td>
+            <td class="num">43 (13%) / 1594 → 1488 (6%)</td></tr>
       </tbody>
     </table></div>
-    <p>Every figure reproduces. The claim's numbers are current.</p>
+    <p>The nested figure is the one that matters for a sweep: 3,996 syntactically distinct
+    trees, in both associations and both argument orders, reduce to 25 forms to attack.</p>
     <p class="src">Replay: <span class="m">lake build rwscreen &amp;&amp; .lake/build/bin/rwscreen</span>
-    (0.3 s). Source <b>wip/rw_screen.lean</b>. Verbatim output:
-    <span class="m">certified simpset: 237 rules (236 from the dictionary table) · orientation:
-    237/237 crank-oriented, 0 not · cells: 330 · norm ALONE: rewritten 43 (13%), crank 1594 →
-    1488 (6% down) · canon THEN norm: rewritten 295 (89%), crank 1594 → 1038 (34% down) ·
-    NESTED corpus (3996 cells): distinct forms raw 3996, after canon 206, after canon+norm 25;
-    total crank 19558 → 11626 (40% down)</span></p>
+    (0.3 s). Source <b>wip/rw_screen.lean</b>. Verbatim: <span class="m">certified simpset: 237
+    rules (236 from the dictionary table) · orientation: 237/237 crank-oriented, 0 not · cells:
+    330 · norm ALONE: rewritten 43 (13%), crank 1594 → 1488 (6% down) · canon THEN norm:
+    rewritten 295 (89%), crank 1594 → 1038 (34% down) · NESTED corpus (3996 cells): distinct
+    forms raw 3996, after canon 206, after canon+norm 25; total crank 19558 → 11626 (40%
+    down)</span></p>
   </div>
 
   <div class="panel">
-    <h2>Axiom pins, re-verified</h2>
+    <h2>Axiom pins, verified</h2>
     <p><span class="m">lake env lean Rewrite/Catalogue.lean</span> exits clean, so all three
     <span class="m">#guard_msgs</span> pins match as written:</p>
     <div class="disp">'Rewrite.rndSet'   depends on axioms: [propext, Quot.sound]
 'Rewrite.fullSet'  depends on axioms: [propext, Quot.sound]
 'Rewrite.fullSetC' depends on axioms: [propext, Classical.choice, Quot.sound]</div>
-    <p>No <span class="m">sorryAx</span>. The guard is doing its job: a future harvest that
-    picks up an unproved cell fails the build there rather than silently in the results.
-    <span class="m">rndSet</span> is composed of ∧ 64, ∨ 46, ⊃ 121, ◯ 5 — and the five
-    <span class="f">◯</span>-rules are exactly
-    <span class="m">cBox_1, cBox_4, cBox_6, cBox_9, cBox_10</span>.</p>
+    <p>No <span class="m">sorryAx</span>.</p>
   </div>
 
   <div class="call">
-    <h3>Discrepancy found — "a floor of 15" is not supported</h3>
-    <p>The record explains the nested figure by saying the floor is 15, "the dictionary's
-    classes, which the ∧/∨ closure cannot leave". <strong>The ∧/∨ closure does leave the
-    dictionary</strong>, and the repository's own certificates say so. Two of the corpus
-    generators are <span class="f">q8</span> and <span class="f">q10</span>, and</p>
-    <div class="disp">q8 ∧ q10  ∉ D₁₅     cAnd_8_10 refuted against the fifteen (it is q15)
-q8 ∨ q10  ∉ D₁₆     refute_cOr_8_10 : ∀ k : Fin 16, ¬ Interd (q8 ∨ q10) (rep2 k)</div>
-    <p>So 15 is neither a floor nor even an upper bound on the classes the corpus reaches.
-    Two things are worth saying instead, and both are measured, not asserted.</p>
+    <h3>The "floor of 15" is not supported: measured bounds instead</h3>
+    <p>The nested figure has been explained by saying the floor is 15, the number of classes the
+    <span class="f">∧</span>/<span class="f">∨</span> closure cannot leave. That reasoning does
+    not survive: 15 was a representative count, not a bound, and the number that matters is the
+    number of distinct classes among the <em>corpus's own values</em>. Three measurements
+    replace it, all made on this branch.</p>
     <p><strong>25 is a certified upper bound.</strong> The normaliser collapsing two forms
     <em>is</em> a proof that they are interderivable
     (<span class="m">simplifyWith_interd</span>), so the 3,996 trees carry at most 25 distinct
     classes.</p>
     <p><strong>14 is a certified lower bound.</strong> Running the ≤5-world mutually confluent
-    battery over the 25 residual forms separates 268 of the 300 pairs; 32 pairs are left
-    unresolved. The maximum set of forms that are pairwise separated has size 14 — computed
-    exactly, not greedily.</p>
+    battery over the 25 residual forms separates 268 of the 300 pairs; 32 are left unresolved.
+    The maximum set of forms that are pairwise separated has size 14, computed exactly and not
+    greedily.</p>
+    <p><strong>The closure lands inside R, as far as the tables reach.</strong> The corpus's ten
+    generators are, in ρ terms, <span class="f">ρ0, ρ1, ρ2, ρ3, ρ4, ρ5, ρ7, ρ8, ρ9,
+    ρ11</span>. Closing them under the <span class="f">∧</span> and <span class="f">∨</span>
+    tables reaches exactly <strong>17</strong> classes —
+    <span class="f">ρ0–ρ11</span> together with <span class="f">ρ14, ρ15, ρ16, ρ17, ρ18</span> —
+    and <strong>no ∉R cell at all</strong>. Four join cells inside that closure are open:
+    <span class="f">ρ8 ∨ ρ11</span>, <span class="f">ρ8 ∨ ρ15</span>,
+    <span class="f">ρ10 ∨ ρ11</span>, <span class="f">ρ10 ∨ ρ15</span>. So the closure has 17
+    classes if those four are classed, and more if any of them leaves
+    <span class="f">R</span>.</p>
     <div class="stats">
       <div class="stat"><b>3996</b><span>nested trees</span></div>
-      <div class="stat"><b>25</b><span>residual normal forms = upper bound on classes</span></div>
+      <div class="stat"><b>25</b><span>residual forms = certified upper bound</span></div>
       <div class="stat"><b>268 / 300</b><span>pairs certified distinct</span></div>
       <div class="stat"><b>14</b><span>maximum pairwise-separated set = lower bound</span></div>
+      <div class="stat"><b>17</b><span>ρ-classes the whole ∧/∨ closure reaches</span></div>
+      <div class="stat"><b>4</b><span>open join cells inside that closure</span></div>
     </div>
-    <p>The number of classes in that corpus therefore lies in
-    <span class="f">[14, 25]</span>, and settling it needs either a proof or a ≥6-world
-    countermodel for each of the 32 unresolved pairs. It is OPEN, and 15 has no standing
-    in it.</p>
+    <p>The number of classes in the corpus therefore lies in <span class="f">[14, 25]</span>,
+    and settling it needs either a proof or a ≥6-world countermodel for each of the 32
+    unresolved pairs. It is OPEN, and 15 has no standing in it.</p>
     <p class="src">Measured by <b>wip/floor_probe.lean</b>
-    (<span class="m">lake exe floorprobe</span>), a new read-only tool added on this branch;
-    it transcribes the corpus of <span class="m">wip/rw_screen.lean</span> verbatim and reuses
-    the battery of <span class="m">wip/rho_order.lean</span> (<span class="m">PLLND.RNC.CFX</span>).
-    Separation is sound for PLL by <span class="m">not_derivU_of_checkConf</span> +
-    <span class="m">Deriv ⊆ DerivU</span>.</p>
+    (<span class="m">lake exe floorprobe</span>), a read-only tool added on this branch: it
+    transcribes the corpus of <span class="m">wip/rw_screen.lean</span> verbatim and reuses the
+    battery of <span class="m">wip/rho_order.lean</span>
+    (<span class="m">PLLND.RNC.CFX</span>). Separation is sound for PLL by
+    <span class="m">not_derivU_of_checkConf</span> + <span class="m">Deriv ⊆ DerivU</span>. The
+    closure computation runs over <b>wip/rtable_out.txt</b>.</p>
   </div>
 
   <div class="panel">
-    <h3>What ≈39 classes does to the reading</h3>
-    <p>The extension probe puts the catalogue at ≈39 classes at this
-    <span class="f">◯</span>-depth (22 certified plus up to 17 candidates). That does not
-    change any measured number above, because the corpus the simplifier is screened on is
-    fixed: ten generators and their ∧/∨-trees. It does change what "the floor" could ever
-    mean. The bound that matters for a probe is the one just measured — the number of
-    distinct classes among the <em>target cells' values</em>, which is a property of the
-    corpus, not of any catalogue. Quoting the catalogue's size as a floor conflates the two,
-    and the size is now a moving number in any case.</p>
-    <p>The standing consequence for banking is unchanged and worth restating: recombination
-    cannot settle a cell outside the congruence closure of the banked equations
-    (<span class="m">rnextend</span>: 0 of 87, control 237/237 in the same run). Only a new
-    proof search or a larger countermodel can.</p>
+    <h3>What rewriting cannot do</h3>
+    <p>Rewriting is congruence closure over the banked equations, so a cell outside that closure
+    is by construction out of reach: recombination cannot settle it, and only a new proof search
+    or a larger countermodel can. That is the standing reason the 201 open cells of the R tables
+    are search work, not bookkeeping. The simpset's value is throughput on the cells that
+    <em>are</em> in the closure, and there the gain is about fivefold.</p>
   </div>
 </section>
 
 <p class="buildline" style="border-top:1px solid var(--line);padding-top:16px">
-  <span>RN(◯,{}) catalogue · v18, successor of rn-explorer v17 · 2026-08-25</span>
+  <span>RN(◯,{}) catalogue · v19 · 2026-08-25</span>
   <span>every number on this page was re-derived from the sources named beside it</span>
 </p>
 </div>
 
 <script>
 "use strict";
-const TAB = {"r1":{"and":["ttttttttttttttt","ttttttttttttttt","tttpppppppppppp","ttptppppppppppp","ttpptpppppppppo","ttppptppppppppp","ttpppptpppppppp","ttppppptppppppp","ttpppppptproopo","ttppppppptpppoo","ttpppppprptppro","ttppppppopptpno","ttppppppoppptoo","ttpppppppornoto","ttppopppoooooot"],"andV":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],[0,2,2,0,2,2,2,2,2,2,2,2,2,2,2],[0,3,0,3,3,3,0,3,3,3,3,3,3,3,3],[0,4,2,3,4,4,2,4,4,4,4,4,4,4,4],[0,5,2,3,4,5,2,4,4,5,5,5,5,5,5],[0,6,2,0,2,2,6,6,6,6,2,6,6,6,6],[0,7,2,3,4,4,6,7,7,7,4,7,7,7,7],[0,8,2,3,4,4,6,7,8,7,0,8,7,8,7],[0,9,2,3,4,5,6,7,7,9,5,9,9,9,9],[0,10,2,3,4,5,2,4,0,5,10,10,5,10,5],[0,11,2,3,4,5,6,7,8,9,10,11,9,1,9],[0,12,2,3,4,5,6,7,7,9,5,9,12,9,9],[0,13,2,3,4,5,6,7,8,9,10,1,9,13,9],[0,14,2,3,4,5,6,7,7,9,5,9,9,9,14]],"andN":[["","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","",""],["","","","cAnd_2_3","cAnd_2_4","cAnd_2_5","cAnd_2_6","cAnd_2_7","cAnd_2_8","cAnd_2_9","cAnd_2_10","cAnd_2_11","cAnd_2_12","cAnd_2_13","cAnd_2_14"],["","","cAnd_2_3","","cAnd_3_4","cAnd_3_5","cAnd_3_6","cAnd_3_7","cAnd_3_8","cAnd_3_9","cAnd_3_10","cAnd_3_11","cAnd_3_12","cAnd_3_13","cAnd_3_14"],["","","cAnd_2_4","cAnd_3_4","","cAnd_4_5","cAnd_4_6","cAnd_4_7","cAnd_4_8","cAnd_4_9","cAnd_4_10","cAnd_4_11","cAnd_4_12","cAnd_4_13","cAnd_4_14"],["","","cAnd_2_5","cAnd_3_5","cAnd_4_5","","cAnd_5_6","cAnd_5_7","cAnd_5_8","cAnd_5_9","cAnd_5_10","cAnd_5_11","cAnd_5_12","cAnd_5_13","cAnd_5_14"],["","","cAnd_2_6","cAnd_3_6","cAnd_4_6","cAnd_5_6","","cAnd_6_7","cAnd_6_8","cAnd_6_9","cAnd_6_10","cAnd_6_11","cAnd_6_12","cAnd_6_13","cAnd_6_14"],["","","cAnd_2_7","cAnd_3_7","cAnd_4_7","cAnd_5_7","cAnd_6_7","","cAnd_7_8","cAnd_7_9","cAnd_7_10","cAnd_7_11","cAnd_7_12","cAnd_7_13","cAnd_7_14"],["","","cAnd_2_8","cAnd_3_8","cAnd_4_8","cAnd_5_8","cAnd_6_8","cAnd_7_8","","cAnd_8_9","cAnd_8_10","cAnd_8_11","cAnd_8_12","cAnd_8_13","cAnd_8_14"],["","","cAnd_2_9","cAnd_3_9","cAnd_4_9","cAnd_5_9","cAnd_6_9","cAnd_7_9","cAnd_8_9","","cAnd_9_10","cAnd_9_11","cAnd_9_12","cAnd_9_13","cAnd_9_14"],["","","cAnd_2_10","cAnd_3_10","cAnd_4_10","cAnd_5_10","cAnd_6_10","cAnd_7_10","cAnd_8_10","cAnd_9_10","","cAnd_10_11","cAnd_10_12","cAnd_10_13","cAnd_10_14"],["","","cAnd_2_11","cAnd_3_11","cAnd_4_11","cAnd_5_11","cAnd_6_11","cAnd_7_11","cAnd_8_11","cAnd_9_11","cAnd_10_11","","cAnd_11_12","cAnd_11_13","cAnd_11_14"],["","","cAnd_2_12","cAnd_3_12","cAnd_4_12","cAnd_5_12","cAnd_6_12","cAnd_7_12","cAnd_8_12","cAnd_9_12","cAnd_10_12","cAnd_11_12","","cAnd_12_13","cAnd_12_14"],["","","cAnd_2_13","cAnd_3_13","cAnd_4_13","cAnd_5_13","cAnd_6_13","cAnd_7_13","cAnd_8_13","cAnd_9_13","cAnd_10_13","cAnd_11_13","cAnd_12_13","","cAnd_13_14"],["","","cAnd_2_14","cAnd_3_14","cAnd_4_14","cAnd_5_14","cAnd_6_14","cAnd_7_14","cAnd_8_14","cAnd_9_14","cAnd_10_14","cAnd_11_14","cAnd_12_14","cAnd_13_14",""]],"andH":[["","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","",""],["","","","1","1","1","1","1","1","1","1","1","1","1","1"],["","","1","","1","1","1","1","1","1","1","1","1","1","1"],["","","1","1","","1","1","1","1","1","1","1","1","1","1"],["","","1","1","1","","1","1","1","1","1","1","1","1","1"],["","","1","1","1","1","","1","1","1","1","1","1","1","1"],["","","1","1","1","1","1","","1","1","1","1","1","1","1"],["","","1","1","1","1","1","1","","1","1","1","1","1","1"],["","","1","1","1","1","1","1","1","","1","1","1","1","1"],["","","1","1","1","1","1","1","1","1","","1","1","1","1"],["","","1","1","1","1","1","1","1","1","1","","1","1","1"],["","","1","1","1","1","1","1","1","1","1","1","","1","1"],["","","1","1","1","1","1","1","1","1","1","1","1","","1"],["","","1","1","1","1","1","1","1","1","1","1","1","1",""]],"or":["ttttttttttttttt","ttttttttttttttt","ttttpppppppppoo","ttttpptppppppoo","ttpptpppppppppo","ttpppttpopppppo","ttptpttppptppoo","ttppppptpppppoo","ttpppopptonnnon","ttppppppotpppoo","ttpppptpnptpron","ttppppppnpptron","ttppppppnprrtoo","ttooppoooooooto","ttoooooononnoot"],"orV":[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[2,1,2,4,4,5,6,7,8,9,10,11,12,1,9],[3,1,4,3,4,5,7,7,8,9,10,11,12,1,9],[4,1,4,4,4,5,7,7,8,9,10,11,12,13,9],[5,1,5,5,5,5,9,9,1,9,10,11,12,13,9],[6,1,6,7,7,9,6,7,8,9,11,11,12,1,9],[7,1,7,7,7,9,7,7,8,9,11,11,12,1,9],[8,1,8,8,8,1,8,8,8,1,1,1,1,1,1],[9,1,9,9,9,9,9,9,1,9,11,11,12,1,9],[10,1,10,10,10,10,11,11,1,11,10,11,1,1,1],[11,1,11,11,11,11,11,11,1,11,11,11,1,1,1],[12,1,12,12,12,12,12,12,1,12,1,1,12,1,9],[13,1,1,1,13,13,1,1,1,1,1,1,1,13,1],[14,1,9,9,9,9,9,9,1,9,1,1,9,1,14]],"orN":[["","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","",""],["","","","","cOr_2_4","cOr_2_5","cOr_2_6","cOr_2_7","cOr_2_8","cOr_2_9","cOr_2_10","cOr_2_11","cOr_2_12","cOr_2_13","cOr_2_14"],["","","","","cOr_3_4","cOr_3_5","","cOr_3_7","cOr_3_8","cOr_3_9","cOr_3_10","cOr_3_11","cOr_3_12","cOr_3_13","cOr_3_14"],["","","cOr_2_4","cOr_3_4","","cOr_4_5","cOr_4_6","cOr_4_7","cOr_4_8","cOr_4_9","cOr_4_10","cOr_4_11","cOr_4_12","cOr_4_13","cOr_4_14"],["","","cOr_2_5","cOr_3_5","cOr_4_5","","","cOr_5_7","cOr_5_8","cOr_5_9","cOr_5_10","cOr_5_11","cOr_5_12","cOr_5_13","cOr_5_14"],["","","cOr_2_6","","cOr_4_6","","","cOr_6_7","cOr_6_8","cOr_6_9","","cOr_6_11","cOr_6_12","cOr_6_13","cOr_6_14"],["","","cOr_2_7","cOr_3_7","cOr_4_7","cOr_5_7","cOr_6_7","","cOr_7_8","cOr_7_9","cOr_7_10","cOr_7_11","cOr_7_12","cOr_7_13","cOr_7_14"],["","","cOr_2_8","cOr_3_8","cOr_4_8","cOr_5_8","cOr_6_8","cOr_7_8","","cOr_8_9","cOr_8_10","cOr_8_11","cOr_8_12","cOr_8_13","cOr_8_14"],["","","cOr_2_9","cOr_3_9","cOr_4_9","cOr_5_9","cOr_6_9","cOr_7_9","cOr_8_9","","cOr_9_10","cOr_9_11","cOr_9_12","cOr_9_13","cOr_9_14"],["","","cOr_2_10","cOr_3_10","cOr_4_10","cOr_5_10","","cOr_7_10","cOr_8_10","cOr_9_10","","cOr_10_11","cOr_10_12","cOr_10_13","cOr_10_14"],["","","cOr_2_11","cOr_3_11","cOr_4_11","cOr_5_11","cOr_6_11","cOr_7_11","cOr_8_11","cOr_9_11","cOr_10_11","","cOr_11_12","cOr_11_13","cOr_11_14"],["","","cOr_2_12","cOr_3_12","cOr_4_12","cOr_5_12","cOr_6_12","cOr_7_12","cOr_8_12","cOr_9_12","cOr_10_12","cOr_11_12","","cOr_12_13","cOr_12_14"],["","","cOr_2_13","cOr_3_13","cOr_4_13","cOr_5_13","cOr_6_13","cOr_7_13","cOr_8_13","cOr_9_13","cOr_10_13","cOr_11_13","cOr_12_13","","cOr_13_14"],["","","cOr_2_14","cOr_3_14","cOr_4_14","cOr_5_14","cOr_6_14","cOr_7_14","cOr_8_14","cOr_9_14","cOr_10_14","cOr_11_14","cOr_12_14","cOr_13_14",""]],"orH":[["","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","",""],["","","","","1","1","1","1","1","1","1","1","1","1","1"],["","","","","1","1","","1","1","1","1","1","1","1","1"],["","","1","1","","1","1","1","1","1","1","1","1","1","1"],["","","1","1","1","","","1","1","1","1","1","1","1","1"],["","","1","","1","","","1","1","1","","1","1","1","1"],["","","1","1","1","1","1","","1","1","1","1","1","1","1"],["","","1","1","1","1","1","1","","1","1","1","1","1","1"],["","","1","1","1","1","1","1","1","","1","1","1","1","1"],["","","1","1","1","1","","1","1","1","","1","1","1","1"],["","","1","1","1","1","1","1","1","1","1","","1","1","1"],["","","1","1","1","1","1","1","1","1","1","1","","1","1"],["","","1","1","1","1","1","1","1","1","1","1","1","","1"],["","","1","1","1","1","1","1","1","1","1","1","1","1",""]],"imp":["ttttttttttttttt","ttttttttttttttt","tttpppppppppppp","ttptppppppppppp","ptpptpppppppppp","ptppttppppppppp","pttppptpppppppp","ptppppptppppppp","ptpprrpotoooopo","ptpprpppotppppp","ptppotprootpooo","ptppopprooptooo","ptpprppoooprtpp","ptpppoppoopooto","ptppropooopooot"],"impV":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],[3,1,1,3,1,1,1,1,1,1,1,1,1,1,1],[6,1,6,1,1,1,6,1,1,1,1,1,1,1,1],[0,1,6,3,1,1,6,1,1,1,1,1,1,1,1],[0,1,6,3,8,1,6,8,8,1,1,1,1,1,1],[3,1,10,3,10,10,1,1,1,1,10,1,1,1,1],[0,1,2,3,10,10,6,1,1,1,10,1,1,1,1],[0,1,2,3,5,5,6,9,1,9,10,1,9,1,9],[0,1,2,3,0,10,6,8,8,1,10,1,1,1,1],[0,1,6,3,7,14,6,7,8,9,1,1,9,1,9],[0,1,2,3,4,5,6,7,8,9,10,1,9,1,9],[0,1,2,3,0,10,6,8,8,1,10,1,1,1,1],[0,1,2,3,4,5,6,7,8,9,10,1,9,1,9],[0,1,2,3,0,10,6,8,8,1,10,1,1,1,1]],"impN":[["","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","",""],["","","","cImp_2_3","cImp_2_4","cImp_2_5","cImp_2_6","cImp_2_7","cImp_2_8","cImp_2_9","cImp_2_10","cImp_2_11","cImp_2_12","cImp_2_13","cImp_2_14"],["","","cImp_3_2","","cImp_3_4","cImp_3_5","cImp_3_6","cImp_3_7","cImp_3_8","cImp_3_9","cImp_3_10","cImp_3_11","cImp_3_12","cImp_3_13","cImp_3_14"],["cImp_4_0","","cImp_4_2","cImp_4_3","","cImp_4_5","cImp_4_6","cImp_4_7","cImp_4_8","cImp_4_9","cImp_4_10","cImp_4_11","cImp_4_12","cImp_4_13","cImp_4_14"],["cImp_5_0","","cImp_5_2","cImp_5_3","","","cImp_5_6","cImp_5_7","cImp_5_8","cImp_5_9","cImp_5_10","cImp_5_11","cImp_5_12","cImp_5_13","cImp_5_14"],["cImp_6_0","","","cImp_6_3","cImp_6_4","cImp_6_5","","cImp_6_7","cImp_6_8","cImp_6_9","cImp_6_10","cImp_6_11","cImp_6_12","cImp_6_13","cImp_6_14"],["cImp_7_0","","cImp_7_2","cImp_7_3","cImp_7_4","cImp_7_5","cImp_7_6","","cImp_7_8","cImp_7_9","cImp_7_10","cImp_7_11","cImp_7_12","cImp_7_13","cImp_7_14"],["cImp_8_0","","cImp_8_2","cImp_8_3","cImp_8_4","cImp_8_5","cImp_8_6","cImp_8_7","","cImp_8_9","cImp_8_10","cImp_8_11","cImp_8_12","cImp_8_13","cImp_8_14"],["cImp_9_0","","cImp_9_2","cImp_9_3","cImp_9_4","cImp_9_5","cImp_9_6","cImp_9_7","cImp_9_8","","cImp_9_10","cImp_9_11","cImp_9_12","cImp_9_13","cImp_9_14"],["cImp_10_0","","cImp_10_2","cImp_10_3","cImp_10_4","","cImp_10_6","cImp_10_7","cImp_10_8","cImp_10_9","","cImp_10_11","cImp_10_12","cImp_10_13","cImp_10_14"],["cImp_11_0","","cImp_11_2","cImp_11_3","cImp_11_4","cImp_11_5","cImp_11_6","cImp_11_7","cImp_11_8","cImp_11_9","cImp_11_10","","cImp_11_12","cImp_11_13","cImp_11_14"],["cImp_12_0","","cImp_12_2","cImp_12_3","cImp_12_4","cImp_12_5","cImp_12_6","cImp_12_7","cImp_12_8","cImp_12_9","cImp_12_10","cImp_12_11","","cImp_12_13","cImp_12_14"],["cImp_13_0","","cImp_13_2","cImp_13_3","cImp_13_4","cImp_13_5","cImp_13_6","cImp_13_7","cImp_13_8","cImp_13_9","cImp_13_10","cImp_13_11","cImp_13_12","","cImp_13_14"],["cImp_14_0","","cImp_14_2","cImp_14_3","cImp_14_4","cImp_14_5","cImp_14_6","cImp_14_7","cImp_14_8","cImp_14_9","cImp_14_10","cImp_14_11","cImp_14_12","cImp_14_13",""]],"impH":[["","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","",""],["","","","1","1","1","1","1","1","1","1","1","1","1","1"],["","","1","","1","1","1","1","1","1","1","1","1","1","1"],["1","","1","1","","1","1","1","1","1","1","1","1","1","1"],["1","","1","1","","","1","1","1","1","1","1","1","1","1"],["1","","","1","1","1","","1","1","1","1","1","1","1","1"],["1","","1","1","1","1","1","","1","1","1","1","1","1","1"],["1","","1","1","1","1","1","1","","1","1","1","1","1","1"],["1","","1","1","1","1","1","1","1","","1","1","1","1","1"],["1","","1","1","1","","1","1","1","1","","1","1","1","1"],["1","","1","1","1","1","1","1","1","1","1","","1","1","1"],["1","","1","1","1","1","1","1","1","1","1","1","","1","1"],["1","","1","1","1","1","1","1","1","1","1","1","1","","1"],["1","","1","1","1","1","1","1","1","1","1","1","1","1",""]],"box":"tpttptpttpprtto","boxV":[2,1,2,5,5,5,6,12,13,12,10,1,12,13,9],"boxN":["","cBox_1","","","cBox_4","","cBox_6","","","cBox_9","cBox_10","cBox_11","","","cBox_14"],"boxH":["","1","","","1","","1","","","1","1","1","","","1"]},"r2":{"and":["tttttttttttttttt","tttttttttttttttt","tttppppppppppppp","ttptpppppppppppp","ttpptppppppppppp","ttppptpppppppppp","ttpppptppppppppp","ttppppptpppppppp","ttpppppptpprrprp","ttppppppptpppppp","ttpppppppptpprpp","ttpppppprpptprpp","ttpppppprppptppp","ttpppppppprrptrp","ttpppppprpppprtp","ttpppppppppppppt"],"andV":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],[0,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2],[0,3,0,3,3,3,0,3,3,3,3,3,3,3,3,3],[0,4,2,3,4,4,2,4,4,4,4,4,4,4,4,4],[0,5,2,3,4,5,2,4,4,5,5,5,5,5,5,4],[0,6,2,0,2,2,6,6,6,6,2,6,6,6,6,2],[0,7,2,3,4,4,6,7,7,7,4,7,7,7,7,4],[0,8,2,3,4,4,6,7,8,7,15,0,0,8,0,15],[0,9,2,3,4,5,6,7,7,9,5,9,9,9,9,4],[0,10,2,3,4,5,2,4,15,5,10,10,5,0,5,15],[0,11,2,3,4,5,6,7,0,9,10,11,9,0,9,15],[0,12,2,3,4,5,6,7,0,9,5,9,12,12,12,4],[0,13,2,3,4,5,6,7,8,9,0,0,12,13,0,15],[0,14,2,3,4,5,6,7,0,9,5,9,12,0,14,4],[0,15,2,3,4,4,2,4,15,4,15,15,4,15,4,15]],"andN":[["","","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","","",""],["","","","cAnd_2_3","cAnd_2_4","cAnd_2_5","cAnd_2_6","cAnd_2_7","cAnd_2_8","cAnd_2_9","cAnd_2_10","cAnd_2_11","cAnd_2_12","cAnd_2_13","cAnd_2_14","cAnd_2_15"],["","","cAnd_2_3","","cAnd_3_4","cAnd_3_5","cAnd_3_6","cAnd_3_7","cAnd_3_8","cAnd_3_9","cAnd_3_10","cAnd_3_11","cAnd_3_12","cAnd_3_13","cAnd_3_14","cAnd_3_15"],["","","cAnd_2_4","cAnd_3_4","","cAnd_4_5","cAnd_4_6","cAnd_4_7","cAnd_4_8","cAnd_4_9","cAnd_4_10","cAnd_4_11","cAnd_4_12","cAnd_4_13","cAnd_4_14","cAnd_4_15"],["","","cAnd_2_5","cAnd_3_5","cAnd_4_5","","cAnd_5_6","cAnd_5_7","cAnd_5_8","cAnd_5_9","cAnd_5_10","cAnd_5_11","cAnd_5_12","cAnd_5_13","cAnd_5_14","cAnd_5_15"],["","","cAnd_2_6","cAnd_3_6","cAnd_4_6","cAnd_5_6","","cAnd_6_7","cAnd_6_8","cAnd_6_9","cAnd_6_10","cAnd_6_11","cAnd_6_12","cAnd_6_13","cAnd_6_14","cAnd_6_15"],["","","cAnd_2_7","cAnd_3_7","cAnd_4_7","cAnd_5_7","cAnd_6_7","","cAnd_7_8","cAnd_7_9","cAnd_7_10","cAnd_7_11","cAnd_7_12","cAnd_7_13","cAnd_7_14","cAnd_7_15"],["","","cAnd_2_8","cAnd_3_8","cAnd_4_8","cAnd_5_8","cAnd_6_8","cAnd_7_8","","cAnd_8_9","cAnd_8_10","cAnd_8_11","cAnd_8_12","cAnd_8_13","cAnd_8_14","cAnd_8_15"],["","","cAnd_2_9","cAnd_3_9","cAnd_4_9","cAnd_5_9","cAnd_6_9","cAnd_7_9","cAnd_8_9","","cAnd_9_10","cAnd_9_11","cAnd_9_12","cAnd_9_13","cAnd_9_14","cAnd_9_15"],["","","cAnd_2_10","cAnd_3_10","cAnd_4_10","cAnd_5_10","cAnd_6_10","cAnd_7_10","cAnd_8_10","cAnd_9_10","","cAnd_10_11","cAnd_10_12","cAnd_10_13","cAnd_10_14","cAnd_10_15"],["","","cAnd_2_11","cAnd_3_11","cAnd_4_11","cAnd_5_11","cAnd_6_11","cAnd_7_11","cAnd_8_11","cAnd_9_11","cAnd_10_11","","cAnd_11_12","cAnd_11_13","cAnd_11_14","cAnd_11_15"],["","","cAnd_2_12","cAnd_3_12","cAnd_4_12","cAnd_5_12","cAnd_6_12","cAnd_7_12","cAnd_8_12","cAnd_9_12","cAnd_10_12","cAnd_11_12","","cAnd_12_13","cAnd_12_14","cAnd_12_15"],["","","cAnd_2_13","cAnd_3_13","cAnd_4_13","cAnd_5_13","cAnd_6_13","cAnd_7_13","cAnd_8_13","cAnd_9_13","cAnd_10_13","cAnd_11_13","cAnd_12_13","","cAnd_13_14","cAnd_13_15"],["","","cAnd_2_14","cAnd_3_14","cAnd_4_14","cAnd_5_14","cAnd_6_14","cAnd_7_14","cAnd_8_14","cAnd_9_14","cAnd_10_14","cAnd_11_14","cAnd_12_14","cAnd_13_14","","cAnd_14_15"],["","","cAnd_2_15","cAnd_3_15","cAnd_4_15","cAnd_5_15","cAnd_6_15","cAnd_7_15","cAnd_8_15","cAnd_9_15","cAnd_10_15","cAnd_11_15","cAnd_12_15","cAnd_13_15","cAnd_14_15",""]],"andH":[["","","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","","",""],["","","","1","1","1","1","1","1","1","1","1","1","1","1","2"],["","","1","","1","1","1","1","1","1","1","1","1","1","1","2"],["","","1","1","","1","1","1","1","1","1","1","1","1","2","2"],["","","1","1","1","","1","1","1","1","1","1","1","1","1","2"],["","","1","1","1","1","","1","1","1","1","1","1","1","1","2"],["","","1","1","1","1","1","","1","1","1","1","1","1","1","2"],["","","1","1","1","1","1","1","","1","2","2","2","1","2","2"],["","","1","1","1","1","1","1","1","","1","1","1","2","2","2"],["","","1","1","1","1","1","1","2","1","","1","1","2","2","2"],["","","1","1","1","1","1","1","2","1","1","","1","2","2","2"],["","","1","1","1","1","1","1","2","1","1","1","","2","2","2"],["","","1","1","1","1","1","1","1","2","2","2","2","","2","2"],["","","1","1","2","1","1","1","2","2","2","2","2","2","","2"],["","","2","2","2","2","2","2","2","2","2","2","2","2","2",""]],"or":["tttttttttttttttt","tttttttttttttttt","ttttpppppppppppp","ttttpptppppppppp","ttpptppppppppppp","ttpppttprppppppr","ttptpttppptppppr","ttppppptpppppppr","ttppprpptrrrrprp","ttpppppprtpppppr","ttpppptprptprrrp","ttpppppprpptrrrp","ttpppppprprrtppr","ttpppppppprrptrp","ttpppppprprrprtr","ttppprrrprpprprt"],"orV":[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[2,1,2,4,4,5,6,7,8,9,10,11,12,13,14,15],[3,1,4,3,4,5,7,7,8,9,10,11,12,13,14,15],[4,1,4,4,4,5,7,7,8,9,10,11,12,13,14,15],[5,1,5,5,5,5,9,9,0,9,10,11,12,13,14,0],[6,1,6,7,7,9,6,7,8,9,11,11,12,13,14,0],[7,1,7,7,7,9,7,7,8,9,11,11,12,13,14,0],[8,1,8,8,8,0,8,8,8,0,0,0,0,13,0,8],[9,1,9,9,9,9,9,9,0,9,11,11,12,13,14,0],[10,1,10,10,10,10,11,11,0,11,10,11,0,0,0,10],[11,1,11,11,11,11,11,11,0,11,11,11,0,0,0,11],[12,1,12,12,12,12,12,12,0,12,0,0,12,13,14,0],[13,1,13,13,13,13,13,13,13,13,0,0,13,13,0,13],[14,1,14,14,14,14,14,14,0,14,0,0,14,0,14,0],[15,1,15,15,15,0,0,0,8,0,10,11,0,13,0,15]],"orN":[["","","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","","",""],["","","","","cOr_2_4","cOr_2_5","cOr_2_6","cOr_2_7","cOr_2_8","cOr_2_9","cOr_2_10","cOr_2_11","cOr_2_12","cOr_2_13","cOr_2_14","cOr_2_15"],["","","","","cOr_3_4","cOr_3_5","","cOr_3_7","cOr_3_8","cOr_3_9","cOr_3_10","cOr_3_11","cOr_3_12","cOr_3_13","cOr_3_14","cOr_3_15"],["","","cOr_2_4","cOr_3_4","","cOr_4_5","cOr_4_6","cOr_4_7","cOr_4_8","cOr_4_9","cOr_4_10","cOr_4_11","cOr_4_12","cOr_4_13","cOr_4_14","cOr_4_15"],["","","cOr_2_5","cOr_3_5","cOr_4_5","","","cOr_5_7","cOr_5_8","cOr_5_9","cOr_5_10","cOr_5_11","cOr_5_12","cOr_5_13","cOr_5_14","cOr_5_15"],["","","cOr_2_6","","cOr_4_6","","","cOr_6_7","cOr_6_8","cOr_6_9","","cOr_6_11","cOr_6_12","cOr_6_13","cOr_6_14","cOr_6_15"],["","","cOr_2_7","cOr_3_7","cOr_4_7","cOr_5_7","cOr_6_7","","cOr_7_8","cOr_7_9","cOr_7_10","cOr_7_11","cOr_7_12","cOr_7_13","cOr_7_14","cOr_7_15"],["","","cOr_2_8","cOr_3_8","cOr_4_8","cOr_5_8","cOr_6_8","cOr_7_8","","cOr_8_9","cOr_8_10","cOr_8_11","cOr_8_12","cOr_8_13","cOr_8_14","cOr_8_15"],["","","cOr_2_9","cOr_3_9","cOr_4_9","cOr_5_9","cOr_6_9","cOr_7_9","cOr_8_9","","cOr_9_10","cOr_9_11","cOr_9_12","cOr_9_13","cOr_9_14","cOr_9_15"],["","","cOr_2_10","cOr_3_10","cOr_4_10","cOr_5_10","","cOr_7_10","cOr_8_10","cOr_9_10","","cOr_10_11","cOr_10_12","cOr_10_13","cOr_10_14","cOr_10_15"],["","","cOr_2_11","cOr_3_11","cOr_4_11","cOr_5_11","cOr_6_11","cOr_7_11","cOr_8_11","cOr_9_11","cOr_10_11","","cOr_11_12","cOr_11_13","cOr_11_14","cOr_11_15"],["","","cOr_2_12","cOr_3_12","cOr_4_12","cOr_5_12","cOr_6_12","cOr_7_12","cOr_8_12","cOr_9_12","cOr_10_12","cOr_11_12","","cOr_12_13","cOr_12_14","cOr_12_15"],["","","cOr_2_13","cOr_3_13","cOr_4_13","cOr_5_13","cOr_6_13","cOr_7_13","cOr_8_13","cOr_9_13","cOr_10_13","cOr_11_13","cOr_12_13","","cOr_13_14","cOr_13_15"],["","","cOr_2_14","cOr_3_14","cOr_4_14","cOr_5_14","cOr_6_14","cOr_7_14","cOr_8_14","cOr_9_14","cOr_10_14","cOr_11_14","cOr_12_14","cOr_13_14","","cOr_14_15"],["","","cOr_2_15","cOr_3_15","cOr_4_15","cOr_5_15","cOr_6_15","cOr_7_15","cOr_8_15","cOr_9_15","cOr_10_15","cOr_11_15","cOr_12_15","cOr_13_15","cOr_14_15",""]],"orH":[["","","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","","",""],["","","","","1","1","1","1","1","1","1","1","1","2","2","2"],["","","","","1","1","","1","1","1","1","1","1","2","2","2"],["","","1","1","","1","1","1","1","1","1","1","1","1","2","2"],["","","1","1","1","","","1","2","1","1","1","1","1","2","2"],["","","1","","1","","","1","1","1","","1","1","2","2","2"],["","","1","1","1","1","1","","1","1","1","1","1","2","2","2"],["","","1","1","1","2","1","1","","2","2","2","2","2","2","2"],["","","1","1","1","1","1","1","2","","1","1","1","2","2","2"],["","","1","1","1","1","","1","2","1","","1","2","2","2","2"],["","","1","1","1","1","1","1","2","1","1","","2","2","2","2"],["","","1","1","1","1","1","1","2","1","2","2","","2","2","2"],["","","2","2","1","1","2","2","2","2","2","2","2","","2","2"],["","","2","2","2","2","2","2","2","2","2","2","2","2","","2"],["","","2","2","2","2","2","2","2","2","2","2","2","2","2",""]],"imp":["tttttttttttttttt","tttttttttttttttt","tttppppppppppppp","ttptpppppppppppp","ptpptppppppppppp","ptppttpppppppppp","pttppptppppppppp","ptppppptpppppppp","ptpprrprtrprrprp","ptpptpppptpppppp","ptpprtprpptpprpp","ptppppprppptprpp","ptppppprprprtppp","ptppprppprprrtrp","ptppppprprprrrtp","ptpprrprprpprprt"],"impV":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15],[3,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1],[6,1,6,1,1,1,6,1,1,1,1,1,1,1,1,1],[0,1,6,3,1,1,6,1,1,1,1,1,1,1,1,1],[0,1,6,3,8,1,6,8,8,1,1,1,1,1,1,8],[3,1,10,3,10,10,1,1,1,1,10,1,1,1,1,10],[0,1,2,3,10,10,6,1,1,1,10,1,1,1,1,10],[0,1,2,3,0,0,6,0,1,0,10,0,0,1,0,10],[0,1,2,3,15,10,6,8,8,1,10,1,1,1,1,15],[0,1,6,3,0,14,6,0,8,14,1,1,14,0,14,8],[0,1,2,3,4,5,6,0,8,14,10,1,14,0,14,15],[0,1,2,3,15,10,6,0,8,0,10,0,1,1,1,15],[0,1,2,3,4,0,6,7,8,0,10,0,0,1,0,15],[0,1,2,3,15,10,6,0,8,0,10,0,0,0,1,15],[0,1,6,3,0,0,6,0,1,0,1,1,0,1,0,1]],"impN":[["","","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","","",""],["","","","cImp_2_3","cImp_2_4","cImp_2_5","cImp_2_6","cImp_2_7","cImp_2_8","cImp_2_9","cImp_2_10","cImp_2_11","cImp_2_12","cImp_2_13","cImp_2_14","cImp_2_15"],["","","cImp_3_2","","cImp_3_4","cImp_3_5","cImp_3_6","cImp_3_7","cImp_3_8","cImp_3_9","cImp_3_10","cImp_3_11","cImp_3_12","cImp_3_13","cImp_3_14","cImp_3_15"],["cImp_4_0","","cImp_4_2","cImp_4_3","","cImp_4_5","cImp_4_6","cImp_4_7","cImp_4_8","cImp_4_9","cImp_4_10","cImp_4_11","cImp_4_12","cImp_4_13","cImp_4_14","cImp_4_15"],["cImp_5_0","","cImp_5_2","cImp_5_3","","","cImp_5_6","cImp_5_7","cImp_5_8","cImp_5_9","cImp_5_10","cImp_5_11","cImp_5_12","cImp_5_13","cImp_5_14","cImp_5_15"],["cImp_6_0","","","cImp_6_3","cImp_6_4","cImp_6_5","","cImp_6_7","cImp_6_8","cImp_6_9","cImp_6_10","cImp_6_11","cImp_6_12","cImp_6_13","cImp_6_14","cImp_6_15"],["cImp_7_0","","cImp_7_2","cImp_7_3","cImp_7_4","cImp_7_5","cImp_7_6","","cImp_7_8","cImp_7_9","cImp_7_10","cImp_7_11","cImp_7_12","cImp_7_13","cImp_7_14","cImp_7_15"],["cImp_8_0","","cImp_8_2","cImp_8_3","cImp_8_4","cImp_8_5","cImp_8_6","cImp_8_7","","cImp_8_9","cImp_8_10","cImp_8_11","cImp_8_12","cImp_8_13","cImp_8_14","cImp_8_15"],["cImp_9_0","","cImp_9_2","cImp_9_3","","cImp_9_5","cImp_9_6","cImp_9_7","cImp_9_8","","cImp_9_10","cImp_9_11","cImp_9_12","cImp_9_13","cImp_9_14","cImp_9_15"],["cImp_10_0","","cImp_10_2","cImp_10_3","cImp_10_4","","cImp_10_6","cImp_10_7","cImp_10_8","cImp_10_9","","cImp_10_11","cImp_10_12","cImp_10_13","cImp_10_14","cImp_10_15"],["cImp_11_0","","cImp_11_2","cImp_11_3","cImp_11_4","cImp_11_5","cImp_11_6","cImp_11_7","cImp_11_8","cImp_11_9","cImp_11_10","","cImp_11_12","cImp_11_13","cImp_11_14","cImp_11_15"],["cImp_12_0","","cImp_12_2","cImp_12_3","cImp_12_4","cImp_12_5","cImp_12_6","cImp_12_7","cImp_12_8","cImp_12_9","cImp_12_10","cImp_12_11","","cImp_12_13","cImp_12_14","cImp_12_15"],["cImp_13_0","","cImp_13_2","cImp_13_3","cImp_13_4","cImp_13_5","cImp_13_6","cImp_13_7","cImp_13_8","cImp_13_9","cImp_13_10","cImp_13_11","cImp_13_12","","cImp_13_14","cImp_13_15"],["cImp_14_0","","cImp_14_2","cImp_14_3","cImp_14_4","cImp_14_5","cImp_14_6","cImp_14_7","cImp_14_8","cImp_14_9","cImp_14_10","cImp_14_11","cImp_14_12","cImp_14_13","","cImp_14_15"],["cImp_15_0","","cImp_15_2","cImp_15_3","cImp_15_4","cImp_15_5","cImp_15_6","cImp_15_7","cImp_15_8","cImp_15_9","cImp_15_10","cImp_15_11","cImp_15_12","cImp_15_13","cImp_15_14",""]],"impH":[["","","","","","","","","","","","","","","",""],["","","","","","","","","","","","","","","",""],["","","","1","1","1","1","1","1","1","1","1","1","1","1","2"],["","","1","","1","1","1","1","1","1","1","1","1","1","1","2"],["1","","1","1","","1","1","1","1","1","1","1","1","1","1","2"],["1","","1","1","","","1","1","1","1","1","1","1","1","1","2"],["1","","","1","1","1","","1","1","1","1","1","1","1","1","2"],["1","","1","1","1","1","1","","1","1","1","1","1","1","1","2"],["1","","1","1","2","2","1","2","","2","2","2","2","1","2","2"],["1","","1","1","","1","1","1","2","","1","1","1","1","1","2"],["1","","1","1","2","","1","2","2","2","","1","2","2","2","2"],["1","","1","1","2","1","1","2","2","2","1","","2","2","2","2"],["1","","1","1","2","1","1","2","2","2","1","2","","1","1","2"],["1","","1","1","1","2","1","1","2","2","1","2","2","","2","2"],["1","","1","1","2","2","1","2","2","2","1","2","2","2","","2"],["2","","2","2","2","2","2","2","2","2","2","2","2","2","2",""]],"box":"tpttptpttpprttpr","boxV":[2,1,2,5,5,5,6,12,13,12,10,0,12,13,14,0],"boxN":["","cBox_1","","","cBox_4","","cBox_6","","","cBox_9","cBox_10","cBox_11","","","cBox_14","cBox_15"],"boxH":["","1","","","1","","1","","","1","1","2","","","2","2"]}};
+const RT = {"and":[[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[0,2,2,0,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],[0,3,0,3,3,0,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3,3],[0,4,2,3,4,2,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4],[0,5,2,0,2,5,5,2,2,5,5,5,5,5,2,5,2,5,5,2,5,5],[0,6,2,3,4,5,6,4,4,6,6,6,6,6,4,6,4,6,6,4,6,6],[0,7,2,3,4,2,4,7,7,7,7,4,7,4,4,7,7,4,7,7,7,7],[0,8,2,3,4,2,4,7,8,7,8,14,7,4,14,16,16,14,16,19,19,-1],[0,9,2,3,4,5,6,7,7,9,9,6,9,6,4,9,7,6,9,7,9,9],[0,10,2,3,4,5,6,7,8,9,10,17,9,6,14,18,16,17,18,19,-2,-2],[0,11,2,3,4,5,6,4,14,6,17,11,13,13,14,11,14,17,17,4,6,-1],[0,12,2,3,4,5,6,7,7,9,9,13,12,13,4,-2,7,6,-1,7,-1,12],[0,13,2,3,4,5,6,4,4,6,6,13,13,13,4,13,4,6,-1,4,-1,13],[0,14,2,3,4,2,4,4,14,4,14,14,4,4,14,14,14,14,14,4,-1,-1],[0,15,2,3,4,5,6,7,16,9,18,11,-2,13,14,15,16,17,18,7,9,-2],[0,16,2,3,4,2,4,7,16,7,16,14,7,4,14,16,16,14,16,7,-1,-1],[0,17,2,3,4,5,6,4,14,6,17,17,6,6,14,17,14,17,17,-1,-1,-1],[0,18,2,3,4,5,6,7,16,9,18,17,-1,-1,14,18,16,17,18,-1,-1,-1],[0,19,2,3,4,2,4,7,19,7,19,4,7,4,4,7,7,-1,-1,19,19,19],[0,20,2,3,4,5,6,7,19,9,-2,6,-1,-1,-1,9,-1,-1,-1,19,20,20],[0,21,2,3,4,5,6,7,-1,9,-2,-1,12,13,-1,-2,-1,-1,-1,19,20,21]],"or":[[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[2,1,2,4,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[3,1,4,3,4,6,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[4,1,4,4,4,6,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21],[5,1,5,6,6,5,6,9,10,9,10,11,12,13,17,15,18,17,18,-1,20,21],[6,1,6,6,6,6,6,9,10,9,10,11,12,13,17,15,18,17,18,-1,20,21],[7,1,7,7,7,9,9,7,8,9,10,15,12,-1,16,15,16,18,18,19,20,21],[8,1,8,8,8,10,10,8,8,10,10,-1,-1,-1,8,-1,8,10,10,8,-2,-1],[9,1,9,9,9,9,9,9,10,9,10,15,12,-1,18,15,18,18,18,-1,20,21],[10,1,10,10,10,10,10,10,10,10,10,-1,-1,-1,10,-1,10,10,10,10,-2,-1],[11,1,11,11,11,11,11,15,-1,15,-1,11,-2,11,11,15,15,11,15,-1,-1,-1],[12,1,12,12,12,12,12,12,-1,12,-1,-2,12,12,-2,-2,-2,-2,-2,-1,-1,21],[13,1,13,13,13,13,13,-1,-1,-1,-1,11,12,13,-1,15,-1,-1,-1,-1,-1,21],[14,1,14,14,14,17,17,16,8,18,10,11,-2,-1,14,15,16,17,18,-1,-2,-1],[15,1,15,15,15,15,15,15,-1,15,-1,15,-2,15,15,15,15,15,15,-1,-1,-1],[16,1,16,16,16,18,18,16,8,18,10,15,-2,-1,16,15,16,18,18,-1,-2,-1],[17,1,17,17,17,17,17,18,10,18,10,11,-2,-1,17,15,18,17,18,-1,-2,-1],[18,1,18,18,18,18,18,18,10,18,10,15,-2,-1,18,15,18,18,18,-1,-2,-1],[19,1,19,19,19,-1,-1,19,8,-1,10,-1,-1,-1,-1,-1,-1,-1,-1,19,20,21],[20,1,20,20,20,20,20,20,-2,20,-2,-1,-1,-1,-2,-1,-2,-2,-2,20,20,21],[21,1,21,21,21,21,21,21,-1,21,-1,-1,21,21,-1,-1,-1,-1,-1,21,21,21]],"imp":[[1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,-1],[3,1,1,3,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[5,1,5,1,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[0,1,5,3,1,5,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],[3,1,8,3,8,1,1,8,8,1,1,1,1,1,8,1,8,1,1,8,1,1],[0,1,2,3,8,5,1,8,8,1,1,1,1,1,8,1,-1,1,1,-1,1,1],[0,1,5,3,11,5,11,1,1,1,1,11,1,11,11,1,1,11,1,1,1,1],[0,1,5,3,13,5,13,12,1,12,1,11,12,13,11,-1,-1,11,-1,-1,-1,-1],[0,1,2,3,14,5,11,8,8,1,1,11,1,11,14,1,-1,11,1,-1,1,1],[0,1,2,3,4,5,13,7,8,12,1,11,12,13,-1,-1,-1,11,-1,-1,-1,-1],[0,1,2,3,19,5,20,19,8,20,-1,1,-1,-1,-1,1,-1,-1,-1,-1,-1,-1],[0,1,2,3,14,5,-1,8,8,-1,-1,11,1,11,-1,-1,-1,-1,-1,-1,-1,1],[0,1,2,3,8,5,-1,8,8,-1,-1,1,1,1,-1,1,-1,-1,-1,-1,-1,1],[0,1,5,3,-1,5,-1,-1,1,-1,1,1,-1,-1,1,1,1,1,1,-1,-1,-1],[0,1,2,3,4,5,6,19,8,-1,-1,11,-1,-1,-1,1,-1,-1,-1,-1,-1,-1],[0,1,5,3,-1,5,-1,-1,1,-1,1,11,-1,-1,-1,1,1,-1,1,-1,-1,-1],[0,1,2,3,-1,5,-1,-1,-1,-1,1,1,-1,-1,-1,1,-1,1,1,-1,-1,-1],[0,1,2,3,-1,5,-1,-1,-1,-1,1,-1,-1,-1,-1,1,-1,-1,1,-1,-1,-1],[0,1,5,3,11,5,11,-1,1,-1,1,11,-1,11,11,-1,-1,11,-1,1,1,1],[0,1,2,3,-1,5,11,-1,8,-1,-1,11,-1,-1,-1,-1,-1,-1,-1,-1,1,1],[0,1,2,3,-1,5,-1,-1,8,-1,-1,11,-1,-1,14,-1,-1,-1,-1,-1,-1,-1]],"box":[2,1,2,7,7,5,-1,7,8,-1,-1,-1,12,-1,-1,-1,-1,-1,-1,19,-1,-1]};
 const PROBE = {"new":[{"n":"ρ9∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ18∨ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ14","ρ16","ρ17","ρ18","ρ19","ρ20"],"b":["ρ1"],"o":["ρ8","ρ10"]},{"n":"ρ5∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ6∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ7∨ρ13","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ9∨ρ13","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ12∨ρ18","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ12","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ11","ρ15"]},{"n":"ρ12∨ρ18∨ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ12","ρ13","ρ14","ρ16","ρ17","ρ18","ρ19","ρ20"],"b":[],"o":["ρ1","ρ8","ρ10","ρ11","ρ15","ρ21"]},{"n":"ρ10∧ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ20","ρ21"],"o":[]},{"n":"ρ10∧ρ21","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ19"],"b":["ρ1","ρ10","ρ21"],"o":["ρ20"]},{"n":"ρ12∧ρ15","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ15∧ρ21","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13"],"b":["ρ1","ρ15","ρ21"],"o":["ρ12"]},{"n":"ρ9∨ρ13∨ρ17","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ11","ρ12","ρ15"]},{"n":"ρ16∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ7","ρ14","ρ16","ρ19"],"b":["ρ1","ρ10"],"o":["ρ8"]},{"n":"ρ9∨ρ16∨ρ19","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ14","ρ16","ρ17","ρ18","ρ19"],"b":["ρ1"],"o":["ρ8","ρ10","ρ20"]},{"n":"ρ11∨ρ12","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ11","ρ12","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ15"]},{"n":"ρ10∨ρ15","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ8","ρ9","ρ10","ρ11","ρ13","ρ14","ρ15","ρ16","ρ17","ρ18","ρ19"],"b":[],"o":["ρ1","ρ12","ρ20","ρ21"]},{"n":"ρ8∨ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ8","ρ9","ρ10","ρ14","ρ16","ρ17","ρ18","ρ19","ρ20"],"b":["ρ1"],"o":[]},{"n":"ρ12∧ρ20","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7"],"b":["ρ1","ρ12","ρ20","ρ21"],"o":["ρ9","ρ10","ρ15","ρ18"]},{"n":"◯ρ6","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7"],"b":["ρ1","ρ12","ρ21"],"o":["ρ9","ρ10","ρ15","ρ18","ρ20"]},{"n":"◯ρ9","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7"],"b":["ρ1","ρ12","ρ21"],"o":["ρ9","ρ10","ρ15","ρ18","ρ20"]},{"n":"◯ρ11","a":["ρ0","ρ2","ρ3","ρ4","ρ5","ρ6","ρ7","ρ9","ρ11","ρ13","ρ14","ρ16","ρ17","ρ18"],"b":["ρ1"],"o":["ρ12","ρ15"]}],"ident":["ρ9∨ρ17 ≡ ρ18","ρ9∨ρ16 ≡ ρ18","ρ16∨ρ17 ≡ ρ18","ρ8∨ρ18 ≡ ρ10","ρ11∨ρ18 ≡ ρ15","ρ6∧ρ7 ≡ ρ4","ρ16∧ρ19 ≡ ρ7","ρ13∧ρ17 ≡ ρ6","ρ9∧ρ13 ≡ ρ6","ρ7∧ρ14 ≡ ρ4","ρ6∧ρ14 ≡ ρ4","ρ8∧ρ18 ≡ ρ16","◯ρ4 ≡ ρ7","◯ρ5 ≡ ρ5","◯ρ8 ≡ ρ8"],"mutual":[["ρ9∨ρ19","ρ5∨ρ19"],["ρ9∨ρ19","ρ6∨ρ19"],["ρ5∨ρ19","ρ6∨ρ19"],["ρ7∨ρ13","ρ9∨ρ13"],["ρ7∨ρ13","ρ12∧ρ15"],["ρ9∨ρ13","ρ12∧ρ15"],["◯ρ6","◯ρ9"]],"openp":[["ρ9∨ρ19","ρ10∧ρ20","⊢","?"],["ρ9∨ρ19","ρ10∧ρ21","⊢","?"],["ρ18∨ρ20","ρ9∨ρ16∨ρ19","?","⊢"],["ρ18∨ρ20","ρ8∨ρ20","⊢","?"],["ρ5∨ρ19","ρ10∧ρ20","⊢","?"],["ρ5∨ρ19","ρ10∧ρ21","⊢","?"],["ρ6∨ρ19","ρ10∧ρ20","⊢","?"],["ρ6∨ρ19","ρ10∧ρ21","⊢","?"],["ρ7∨ρ13","ρ15∧ρ21","⊢","?"],["ρ9∨ρ13","ρ15∧ρ21","⊢","?"],["ρ12∨ρ18","ρ9∨ρ13∨ρ17","?","⊢"],["ρ12∨ρ18","ρ11∨ρ12","⊢","?"],["ρ12∨ρ18","◯ρ11","?","?"],["ρ12∨ρ18∨ρ20","ρ10∨ρ15","?","?"],["ρ10∧ρ20","ρ10∧ρ21","⊢","?"],["ρ12∧ρ15","ρ15∧ρ21","⊢","?"],["ρ9∨ρ13∨ρ17","ρ11∨ρ12","⊢","?"],["ρ9∨ρ13∨ρ17","◯ρ11","⊢","?"],["ρ9∨ρ16∨ρ19","ρ8∨ρ20","⊢","?"],["ρ11∨ρ12","◯ρ11","?","?"],["ρ12∧ρ20","◯ρ6","?","?"],["ρ12∧ρ20","◯ρ9","?","?"]],"classes":[["ρ9∨ρ19","ρ5∨ρ19","ρ6∨ρ19"],["ρ18∨ρ20"],["ρ7∨ρ13","ρ9∨ρ13","ρ12∧ρ15"],["ρ12∨ρ18"],["ρ12∨ρ18∨ρ20"],["ρ10∧ρ20"],["ρ10∧ρ21"],["ρ15∧ρ21"],["ρ9∨ρ13∨ρ17"],["ρ16∨ρ19"],["ρ9∨ρ16∨ρ19"],["ρ11∨ρ12"],["ρ10∨ρ15"],["ρ8∨ρ20"],["ρ12∧ρ20"],["◯ρ6","◯ρ9"],["◯ρ11"]]};
+const N = 22;
 
-/* ---------- representatives ---------- */
-const QF = [
- "⊥", "⊤", "◯⊥", "¬◯⊥", "◯⊥ ∨ ¬◯⊥", "◯¬◯⊥", "¬¬◯⊥", "¬◯⊥ ∨ ¬¬◯⊥",
- "◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)", "◯¬◯⊥ ∨ ¬¬◯⊥", "¬¬◯⊥ ⊃ ◯⊥", "¬¬◯⊥ ∨ (¬¬◯⊥ ⊃ ◯⊥)",
- "◯(¬◯⊥ ∨ ¬¬◯⊥)", "◯(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥))", "(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥",
- "(◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)"];
-const QRHO = ["ρ0","ρ1","ρ2","ρ3","ρ4","ρ7","ρ5","ρ6","ρ11","ρ9","ρ8","ρ10",
-              "—","—","ρ12","ρ14"];
-const QNOTE = ["","","t1","t2","t3","c 1","t4","t5","g 1","s 1","t6","t7",
-  "◯t5 — outside the catalogue, ◯-depth 2","◯(g 1) — outside the catalogue, ◯-depth 2",
-  "r 1","w 1 — four presentations, wip/rnSepColl.lean"];
+/* ---------- the catalogue ---------- */
+const RF = [
+ "⊥","⊤","◯⊥","¬◯⊥","◯⊥ ∨ ¬◯⊥","¬¬◯⊥","¬◯⊥ ∨ ¬¬◯⊥","◯¬◯⊥",
+ "¬¬◯⊥ ⊃ ◯⊥","◯¬◯⊥ ∨ ¬¬◯⊥","¬¬◯⊥ ∨ (¬¬◯⊥ ⊃ ◯⊥)","◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)",
+ "(¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥","(¬¬◯⊥ ⊃ ◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)",
+ "(◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)","(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ∨ ◯¬◯⊥",
+ "((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ∨ ◯¬◯⊥",
+ "¬¬◯⊥ ∨ ((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥))",
+ "((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ∨ (◯¬◯⊥ ∨ ¬¬◯⊥)",
+ "(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ⊃ ◯¬◯⊥","(◯¬◯⊥ ⊃ (◯⊥ ∨ ¬◯⊥)) ⊃ (¬◯⊥ ∨ ¬¬◯⊥)",
+ "((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ⊃ ◯¬◯⊥"];
+const RSHORT = ["⊥","⊤","a","¬a","a ∨ ¬a","¬¬a","¬a ∨ ¬¬a","b","¬¬a ⊃ a","b ∨ ¬¬a",
+ "¬¬a ∨ ρ8","b ⊃ ρ4","ρ8 ⊃ b","ρ8 ⊃ ρ4","ρ9 ⊃ ρ4","ρ11 ∨ b","ρ14 ∨ b","ρ5 ∨ ρ14",
+ "ρ14 ∨ ρ9","ρ11 ⊃ b","ρ11 ⊃ ρ6","ρ14 ⊃ b"];
+const RNOTE = ["","","rung t1","rung t2","rung t3","rung t4","rung t5",
+ "b · c 1 = ◯t3 · ◯-fixed","rung t6 · ◯-fixed","","rung t7","g 1","r 1 · ◯-fixed",
+ "rung t8 ★ · predicted by the ladder","w 1","★","★","★","★","★ · ◯-fixed","★","★"];
+const STAR = [13,15,16,17,18,19,20,21];
 
 (function reps(){
   const tb = document.getElementById("repsbody");
-  QF.forEach((f,i)=>{
+  for (let i=0;i<N;i++){
     const tr = document.createElement("tr");
-    tr.innerHTML = '<td class="m">q'+i+'</td><td><span class="f">'+f+
-      '</span></td><td class="f">'+QRHO[i]+'</td><td>'+QNOTE[i]+'</td>';
+    tr.innerHTML = '<td class="f">ρ'+i+(STAR.indexOf(i)>-1?' ★':'')+'</td>' +
+      '<td><span class="f">'+RF[i]+'</span></td>' +
+      '<td><span class="f">'+RSHORT[i]+'</span></td>' +
+      '<td>'+RNOTE[i].replace(/★/g,'sweep discovery')+'</td>';
     tb.appendChild(tr);
-  });
+  }
 })();
 
-/* ---------- operation grid ---------- */
-let curSet = "r2", curOp = "and";
+/* ---------- operation grids ---------- */
+let curOp = "and";
 const OPSYM = {and:"∧", or:"∨", imp:"⊃", box:"◯"};
-const STATUS = {
-  p:["c-p","certified by a named cell theorem"],
-  t:["c-t","certified by a structural law"],
-  r:["c-r","∉D — certified outside the representative set"],
-  o:["c-o","open"],
-  n:["c-n","refuted at this candidate; the cell is still open"]
-};
-const THMPRE = {and:"cAnd", or:"cOr", imp:"cImp", box:"cBox"};
 
-function nreps(){ return curSet === "r2" ? 16 : 15; }
+function degenerate(op,i,j){
+  if (op === "box") return false;
+  if (i === j) return true;
+  if (i === 0 || j === 0 || i === 1 || j === 1) return true;
+  return false;
+}
+function cellText(v){
+  if (v === -1) return "?";
+  if (v === -2) return "∉R";
+  return "ρ"+v;
+}
+function cellClass(op,i,j,v){
+  if (v === -1) return "c-q";
+  if (v === -2) return "c-x";
+  return degenerate(op,i,j) ? "c-d" : "c-k";
+}
 
 function drawGrid(){
-  const n = nreps(), d = TAB[curSet], host = document.getElementById("opgrid");
+  const host = document.getElementById("opgrid");
   host.innerHTML = "";
   const t = document.createElement("table");
   t.className = "grid";
+  let h = "";
   if (curOp === "box"){
-    const st = d.box, val = d.boxV;
-    let h = "<tr><th class='rh'>◯</th>";
-    for (let i=0;i<n;i++) h += "<th>q"+i+"</th>";
+    h += "<tr><th class='rh'>◯ρi</th>";
+    for (let i=0;i<N;i++) h += "<th>"+i+"</th>";
     h += "</tr><tr><th class='rh'>value</th>";
-    for (let i=0;i<n;i++){
-      const c = st[i], cls = STATUS[c][0];
-      h += "<td class='"+cls+"' tabindex='0' data-i='"+i+"' data-j='-1'><span>"+
-           (c==="r" ? "∉D" : (c==="o"||c==="n" ? "?" : "q"+val[i])) + "</span></td>";
+    for (let i=0;i<N;i++){
+      const v = RT.box[i];
+      h += "<td class='"+cellClass("box",i,i,v)+"' tabindex='0' data-i='"+i+
+           "' data-j='-1'><span>"+cellText(v)+"</span></td>";
     }
     h += "</tr>";
-    t.innerHTML = h;
   } else {
-    const st = d[curOp], val = d[curOp+"V"];
-    let h = "<tr><th class='rh'>"+OPSYM[curOp]+"</th>";
-    for (let j=0;j<n;j++) h += "<th>q"+j+"</th>";
+    const g = RT[curOp];
+    h += "<tr><th class='rh'>"+OPSYM[curOp]+"</th>";
+    for (let j=0;j<N;j++) h += "<th>"+j+"</th>";
     h += "</tr>";
-    for (let i=0;i<n;i++){
-      h += "<tr><th class='rh'>q"+i+"</th>";
-      for (let j=0;j<n;j++){
-        const c = st[i][j], cls = STATUS[c][0];
-        h += "<td class='"+cls+"' tabindex='0' data-i='"+i+"' data-j='"+j+"'><span>"+
-             (c==="r" ? "∉D" : (c==="o"||c==="n" ? "?" : "q"+val[i][j])) + "</span></td>";
+    for (let i=0;i<N;i++){
+      h += "<tr><th class='rh'>ρ"+i+"</th>";
+      for (let j=0;j<N;j++){
+        const v = g[i][j];
+        h += "<td class='"+cellClass(curOp,i,j,v)+"' tabindex='0' data-i='"+i+
+             "' data-j='"+j+"'><span>"+cellText(v)+"</span></td>";
       }
       h += "</tr>";
     }
-    t.innerHTML = h;
   }
+  t.innerHTML = h;
   host.appendChild(t);
   t.querySelectorAll("td").forEach(td=>{
     td.addEventListener("click", ()=>select(td));
-    td.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();select(td);} });
+    td.addEventListener("keydown", e=>{
+      if (e.key === "Enter" || e.key === " "){ e.preventDefault(); select(td); }
+    });
   });
   stats();
 }
@@ -1188,72 +1185,46 @@ function drawGrid(){
 function select(td){
   document.querySelectorAll("#opgrid td.sel").forEach(x=>x.classList.remove("sel"));
   td.classList.add("sel");
-  const i = +td.dataset.i, j = +td.dataset.j, d = TAB[curSet];
-  const c = (curOp === "box") ? d.box[i] : d[curOp][i][j];
-  const v = (curOp === "box") ? d.boxV[i] : d[curOp+"V"][i][j];
-  const lhs = (curOp === "box") ? "◯q"+i : "q"+i+" "+OPSYM[curOp]+" q"+j;
-  const lhsF = (curOp === "box") ? "◯("+QF[i]+")"
-             : "("+QF[i]+") "+OPSYM[curOp]+" ("+QF[j]+")";
-  const thm = (curOp === "box") ? d.boxN[i] : d[curOp+"N"][i][j];
-  const home = (curOp === "box") ? d.boxH[i] : d[curOp+"H"][i][j];
-  const file = home === "2" ? "wip/rnDict2.lean" : "wip/rnDict.lean";
-  const nm = nreps();
-  const tp = (curOp !== "box" && thm && thm !== THMPRE[curOp]+"_"+i+"_"+j)
-    ? ' <span class="muted" style="color:var(--ink-3);font-size:12.5px">(reached by commutativity from the transpose)</span>' : '';
+  const i = +td.dataset.i, j = +td.dataset.j;
+  const v = (curOp === "box") ? RT.box[i] : RT[curOp][i][j];
+  const lhs = (curOp === "box") ? "◯ρ"+i : "ρ"+i+" "+OPSYM[curOp]+" ρ"+j;
+  const lhsF = (curOp === "box") ? "◯("+RF[i]+")"
+             : "("+RF[i]+") "+OPSYM[curOp]+" ("+RF[j]+")";
   let body;
-  if (c === "r"){
-    body = '<span class="chip no">∉D</span> &nbsp;<span class="f">'+lhs+
-      '</span> is interderivable with no representative: <span class="f">∀ k : Fin '+nm+
-      ', ¬ Interd ('+lhs+') (rep k)</span>. ' + (curSet==="r2"
-        ? 'Cell <span class="m">'+thm+'</span> (wip/rnDict2.lean, sorried as a placeholder); witness <span class="m">refute_'+thm+'</span>, wip/rnDictRefute2.lean, sorry-free, [propext, Quot.sound].'+tp
-        : 'Marked REFUTED CELL in wip/rnDict.lean; every candidate eliminated by kernel-checked countermodels (the ≤4-world battery, and wip/rnFRJCerts.lean for the 5- and 8-world ones). Refuted against the FIFTEEN only: four such cells are PROVED against the sixteen, where they land on q15.');
-  } else if (c === "o"){
+  if (v === -2){
+    body = '<span class="chip no">∉R</span> &nbsp;<span class="f">'+lhs+
+      '</span> is interderivable with no class of R: <span class="f">∀ k &lt; 22. ¬ Interd ('+
+      lhs+') ρk</span>. A located new class, on 22 refutations.';
+  } else if (v === -1){
     body = '<span class="chip op">?</span> &nbsp;<span class="f">'+lhs+
-      '</span> — open: neither proved by either searcher nor refuted by the battery. Cell <span class="m">'+
-      thm+'</span>, '+file+'. Recorded as data, not asserted. Settled against the sixteen: switch to round 2.';
-  } else if (c === "n"){
-    body = '<span class="chip op">?</span> &nbsp;<span class="f">'+lhs+
-      '</span> — the stated collapse is refuted, but only one candidate of its shortlist was eliminated, so the cell is still open. Cell <span class="m">'+
-      thm+'</span>, '+file+'.';
-  } else if (c === "t"){
-    body = '<span class="chip ok">PROVED</span> &nbsp;<span class="f">'+lhs+' ⊣⊢ q'+v+
-      '</span> by a structural law general in φ (⊥, ⊤, reflexivity, idempotence, or commutativity from the transpose).';
+      '</span> — open at budget (battery, then G4c at 2·10⁴, then LJF◯ at fuel ≤ 24). ' +
+      'Flagged, never dropped. It may yet be a class of R or lie outside it.';
   } else {
-    body = '<span class="chip ok">PROVED</span> &nbsp;<span class="f">'+lhs+' ⊣⊢ q'+v+
-      '</span> &nbsp;<span class="m">'+thm+'</span>, '+file+'.'+tp;
+    const sym = (curOp === "and" || curOp === "or") && i !== j
+      ? ' &nbsp;<span class="muted" style="color:var(--ink-3);font-size:12.5px">(symmetric cell; computed on the upper triangle)</span>' : '';
+    body = '<span class="chip ok">certified</span> &nbsp;<span class="f">'+lhs+' ⊣⊢ ρ'+v+
+      '</span>, both directions.' + sym;
   }
   document.getElementById("opread").innerHTML =
-    body + '<br><span class="muted"><span class="f">'+lhsF+'</span></span>';
+    body + '<br><span class="muted"><span class="f">'+lhsF+'</span>' +
+    (v >= 0 ? ' &nbsp;⊣⊢&nbsp; <span class="f">'+RF[v]+'</span>' : '') + '</span>';
 }
 
+const CENSUS = {
+  and: {cells:253, cls:233, x:4, q:16, label:"upper triangle, 22·23/2"},
+  or:  {cells:253, cls:204, x:12, q:37, label:"upper triangle, 22·23/2"},
+  imp: {cells:484, cls:348, x:0, q:136, label:"full 22 × 22"},
+  box: {cells:22,  cls:10,  x:0, q:12, label:"one per class"}
+};
 function stats(){
-  const n = nreps(), d = TAB[curSet];
-  let cnt = {p:0,t:0,r:0,o:0,n:0}, total = 0;
-  if (curOp === "box"){ for (let i=0;i<n;i++){ cnt[d.box[i]]++; total++; } }
-  else { for (let i=0;i<n;i++) for (let j=0;j<n;j++){ cnt[d[curOp][i][j]]++; total++; } }
-  const el = document.getElementById("opstats");
-  el.innerHTML =
-    '<div class="stat"><b>'+total+'</b><span>cells in this table</span></div>' +
-    '<div class="stat"><b>'+(cnt.p+cnt.t)+'</b><span>certified ('+cnt.p+' named, '+cnt.t+' structural)</span></div>' +
-    '<div class="stat"><b>'+cnt.r+'</b><span>∉D</span></div>' +
-    '<div class="stat"><b>'+(cnt.o+cnt.n)+'</b><span>open ('+cnt.n+' refuted at first candidate)</span></div>';
-  document.getElementById("opsrc").innerHTML = curSet === "r2"
-    ? '<b>wip/rnDict2.lean</b> — 16 representatives, closure tables <span class="m">and2T / or2T / imp2T / box2T</span>, certificates <span class="m">and2_ok / or2_ok / imp2_ok / box2_ok</span>; escapes in <b>wip/rnDictRefute2.lean</b>.'
-    : '<b>wip/rnDict.lean</b> — 15 representatives, closure tables <span class="m">andT / orT / impT / boxT</span>, certificates <span class="m">and_ok / or_ok / imp_ok / box_ok</span>. This is the record the simpset <span class="m">rndSet</span> was harvested from.';
+  const c = CENSUS[curOp];
+  document.getElementById("opstats").innerHTML =
+    '<div class="stat"><b>'+c.cells+'</b><span>cells computed ('+c.label+')</span></div>' +
+    '<div class="stat"><b>'+c.cls+'</b><span>class certified</span></div>' +
+    '<div class="stat"><b>'+c.x+'</b><span>∉R</span></div>' +
+    '<div class="stat"><b>'+c.q+'</b><span>open, flagged</span></div>';
 }
 
-document.getElementById("s-r2").addEventListener("click", ()=>{
-  curSet="r2";
-  document.getElementById("s-r2").setAttribute("aria-pressed","true");
-  document.getElementById("s-r1").setAttribute("aria-pressed","false");
-  drawGrid();
-});
-document.getElementById("s-r1").addEventListener("click", ()=>{
-  curSet="r1";
-  document.getElementById("s-r1").setAttribute("aria-pressed","true");
-  document.getElementById("s-r2").setAttribute("aria-pressed","false");
-  drawGrid();
-});
 document.querySelectorAll(".opb").forEach(b=>{
   b.addEventListener("click", ()=>{
     curOp = b.dataset.op;
@@ -1263,26 +1234,46 @@ document.querySelectorAll(".opb").forEach(b=>{
 });
 drawGrid();
 
-/* ---------- probe tables ---------- */
-(function probeTables(){
+/* ---------- beyond R ---------- */
+(function beyond(){
   const byName = {};
   PROBE.new.forEach(x => byName[x.n] = x);
   const tb = document.getElementById("probebody");
+
+  function tableVerdict(name){
+    let m = name.match(/^ρ(\d+)([∧∨])ρ(\d+)$/);
+    if (m){
+      const op = m[2] === "∧" ? "and" : "or";
+      const v = RT[op][+m[1]][+m[3]];
+      if (v === -2) return ['<span class="chip no">∉R</span>', 'certified outside R'];
+      if (v === -1) return ['<span class="chip op">?</span>', 'open at budget'];
+      return ['<span class="chip ok">ρ'+v+'</span>', 'classed'];
+    }
+    m = name.match(/^◯ρ(\d+)$/);
+    if (m){
+      const v = RT.box[+m[1]];
+      if (v === -1) return ['<span class="chip op">?</span>', 'open at budget'];
+      if (v === -2) return ['<span class="chip no">∉R</span>', 'certified outside R'];
+      return ['<span class="chip ok">ρ'+v+'</span>', 'classed'];
+    }
+    return ['<span style="color:var(--ink-3)">—</span>',
+            'ternary; the binary tables do not reach it'];
+  }
+
   PROBE.classes.forEach(cl=>{
     const head = cl[0], x = byName[head];
     const alt = cl.length > 1
       ? cl.slice(1).map(s=>'<span class="f">'+s+'</span>').join(", ") +
-        ' <span class="muted" style="color:var(--ink-3);font-size:12px">(certified mutual)</span>'
+        ' <span style="color:var(--ink-3);font-size:12px">(certified mutual)</span>'
       : '<span style="color:var(--ink-3)">—</span>';
+    const tv = tableVerdict(head);
+    const open = x.o.length
+      ? ' <span style="color:var(--ink-3);font-size:12px">probe open at ' + x.o.join(", ") + '</span>'
+      : ' <span style="color:var(--ink-3);font-size:12px">probe: no open cell against R</span>';
     const tr = document.createElement("tr");
-    tr.innerHTML =
-      '<td><span class="f">'+head+'</span></td>' +
-      '<td>'+alt+'</td>' +
-      '<td class="f">'+(x.a.length? x.a.join(", ") : "—")+'</td>' +
-      '<td class="f">'+(x.b.length? x.b.join(", ") : "—")+'</td>' +
-      '<td>'+(x.o.length
-        ? '<span class="chip op">'+x.o.join(", ")+'</span>'
-        : '<span class="chip ok">none</span>')+'</td>';
+    tr.innerHTML = '<td><span class="f">'+head+'</span></td><td>'+alt+'</td>' +
+                   '<td>'+tv[0]+' <span style="color:var(--ink-3);font-size:12px">'+tv[1]+
+                   '</span><br>'+open+'</td>';
     tb.appendChild(tr);
   });
 
@@ -1293,29 +1284,6 @@ drawGrid();
       '</td><td class="f">'+p[2]+'</td><td class="f">'+p[3]+'</td>';
     ob.appendChild(tr);
   });
-
-  const KERNEL = {
-    "◯ρ4 ≡ ρ7"  : ["cBox_4",  "wip/rnDict.lean:1460"],
-    "◯ρ5 ≡ ρ5"  : ["cBox_6",  "wip/rnDict.lean:1464"],
-    "◯ρ8 ≡ ρ8"  : ["cBox_10", "wip/rnDict.lean:1472"]
-  };
-  const ib = document.getElementById("identbody");
-  PROBE.ident.forEach(s=>{
-    const kind = s.indexOf("◯") === 0 ? "◯-collapse"
-               : s.indexOf("∧") > -1 ? "co-hub meet" : "hub join";
-    const k = KERNEL[s];
-    const tr = document.createElement("tr");
-    tr.innerHTML = '<td class="f">'+s+'</td><td>'+kind+'</td><td>' +
-      (k ? '<span class="chip ok">yes</span> <span class="m">'+k[0]+'</span>, '+k[1]
-         : '<span class="chip op">engine-certified only</span>') + '</td>';
-    ib.appendChild(tr);
-  });
-  const tr = document.createElement("tr");
-  tr.innerHTML = '<td class="f">◯ρ6 ≡ ◯ρ9</td><td>◯-collapse (certified mutual, from the ' +
-    'candidate × candidate matrix rather than an IDENT line)</td>' +
-    '<td><span class="chip ok">yes</span> <span class="m">cBox_9</span>, wip/rnDict.lean:1468; ' +
-    'also <span class="m">RNEmbed.boxq9_q12</span>, wip/seeds.lean</td>';
-  ib.appendChild(tr);
 })();
 
 /* ---------- tabs ---------- */
@@ -1331,7 +1299,7 @@ tabs.forEach(t=>{
   t.addEventListener("click", ()=>show(t.id));
   t.addEventListener("keydown", e=>{
     const i = tabs.indexOf(t);
-    if (e.key === "ArrowRight"){ tabs[(i+1)%tabs.length].focus(); tabs[(i+1)%tabs.length].click(); }
+    if (e.key === "ArrowRight"){ const k=(i+1)%tabs.length; tabs[k].focus(); tabs[k].click(); }
     if (e.key === "ArrowLeft"){ const k=(i-1+tabs.length)%tabs.length; tabs[k].focus(); tabs[k].click(); }
   });
 });

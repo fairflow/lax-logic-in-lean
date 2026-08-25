@@ -9,7 +9,10 @@ rewrite rule, already oriented compound → representative, and already
 kernel-checked.
 
 **The 87 unproved cells are EXCLUDED, and this is not cosmetic.**
-`wip/rnDict.lean` states all 323 cell theorems but proves only 236;
+`wip/rnDict.lean` holds exactly its 236 PROVED cell theorems (the
+sorried statements and the refuted closure layer were deleted
+2026-08-25, Matthew's directive — the reference set is the ρ-catalogue
+R, open-ended);
 the other 87 are `sorry`.  Four of them state a collapse that is FALSE:
 
     cAnd_8_10 : Interd (q8 ∧ q10)  q0      -- FALSE AS STATED
@@ -46,10 +49,12 @@ property of a cell.**  It is a property of a cell together with the
 representative set it was asked about, and of the engine that asked.  A
 cell "refuted" against fifteen representatives is proved against sixteen.
 
-So of the 87 excluded cells, 42 are settled against `q15` (41 proved in
-`wip/rnDict2.lean`, plus `cImp_9_4` which needs no theorem) and 45 remain
-genuinely open — sorried in round 1 and in round 2 alike.  The TARGET
-LIST is those 45, not 83; see `docs/rn-dictionary-status.md`.  Harvesting
+CORRECTED 2026-08-25 (v18 audit + the purge): of the 87 once-excluded
+cells, 42 are settled against `q15` (41 proved in `wip/rnDict2.lean`,
+plus `cImp_9_4` which needs no theorem) and the remaining 45 are
+REFUTED CELLS with sorry-free `refute_*` theorems — NONE is open; the
+former "target list" is empty, and the sorried statements themselves
+were deleted in the 2026-08-25 purge.  Harvesting
 the 42 means re-stating them in the shared numbering, which is database
 work, not a docstring fix, so `rndSet` is unchanged by this correction.
 
