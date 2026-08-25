@@ -664,3 +664,7 @@ root = "Tools.Cert"
 [[lean_exe]]
 name = "frjxrun"
 root = "wip.frjx_run"
+
+[[lean_exe]]
+name = "frjvrun"
+root = "wip.frjv_run"
