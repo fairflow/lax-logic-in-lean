@@ -182,6 +182,7 @@ def main (args : List String) : IO Unit := do
   match args.head? with
   | some "diff" => diffMain
   | some "cells" => do cellMain 12 9; cellMain 13 6
+  | some "cell" => cellMain (((args.getD 1 "12").toNat?).getD 12) (((args.getD 2 "9").toNat?).getD 9)
   | some "sweep" => sweepMain
   | _ => IO.println "usage: … [diff|cells|sweep]"
 

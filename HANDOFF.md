@@ -1,5 +1,70 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-25c — FRJ◯ #80/#81 PROVED as incompleteness THEOREMS; CompletenessFRJ REFUTED; the RefAt repair validated
+
+Branch `claude/frj-incompleteness-80-81-251e7f` (merges
+`claude/frj-redevelopment-69005f` @ 393194c, so this branch IS the live
+FRJ◯ line plus today's work).  Full report with proof states and
+derivation trees: the session artifact "FRJ(◯) Witnesses 80 and 81".
+
+**PROVED (kernel-checked, sorry-free, `[propext, Quot.sound]`, pinned):**
+
+    FRJ80.frj_incompleteness_80 : ¬ PLL G80 ∧ ¬ Provable G80   (wip/frj80_noprov.lean)
+    FRJ81.frj_incompleteness_81 : ¬ PLL G81 ∧ ¬ Provable G81   (wip/frj81_noprov.lean)
+    FRJ80.not_CompletenessFRJ   : ¬ Certified.CompletenessFRJ
+
+with G80 = ρ12 ⊃ ρ9, G81 = ρ13 ⊃ ρ6.  These are the first CALCULUS-level
+incompleteness results (all prior evidence was cap-free saturation
+closure, a statement about the search).  The FinCM → FRJ.Kripke
+unification was NOT needed: the 5-world `sepM` frame was rebuilt
+natively as a `Search.Tab` and `decide`-checked, and `¬ Provable` is a
+last-rule case analysis whose semantic steps are discharged by the
+already-proved `lemma39R` and `tag_cone`.  The same template converts
+any Frontier79 candidate into a theorem (per-cell case analysis needed).
+
+**The mechanism (one sentence):** join contexts cannot retain an
+implication forced VACUOUSLY at the world being created (its antecedent
+ι = ¬¬◯⊥ ⊃ ◯⊥ is refuted with the new world itself as witness) — `Cl`
+and the Υ-restriction are both blind to it; this is the Ax^I◯ blindness
+one level up, at internal worlds.  #80 additionally has NO derivable
+irregular sequent with rhs ◯¬◯⊥ at all (◯∉ premise dies on a
+tag/fallibility contradiction; Ax^I◯ dies since classForce [] ¬◯⊥ =
+true).
+
+**The repair (engine-validated, NOT yet mechanised):** one relaxation,
+`RefAt(Υ, ctx)` = closure of Υ under { ⊥ } ∪ { A⊃B | A ∈ Cl(ctx), B ∈
+RefAt } ∪ { ◯Z | Z ∈ RefAt, barren joins only } ∪ ∨/∧-clauses,
+replacing the three "refuted at the new root" tests (⋈^∨ hC, ⋈^◯ hZ,
+and the Θ^⊃/Υ retention, which becomes a bounded monotone fixpoint).
+Per-clause soundness argument in the report; the typed mechanisation
+(Calculus + Extract + Sound) is the designated next chunk, and needs
+one new lemma class: "a join root refutes EVERY premise rhs" (today
+implicit in the join cases).
+
+**Validation** (`wip/frjx.lean` untyped engine mirror + `wip/frjx_run.lean`,
+exe `frjxrun`; patch off = row-for-row identical to `FRJ.Search.saturate`
+on 8 goals):
+
+* both witnesses DERIVED: `[barren] ρ12 ⇒ G80`, `[barren] ρ13 ⇒ G81`,
+  exactly along the predicted trees (#81 needs only the retention
+  clause; #80 also the ◯-clause for σ ∈ RefAt);
+* 462-cell sweep vs two-sided ground truth (`wip/frjx_sweep_out.txt`):
+  **ALARMS 0** (no hit on any of the 158 ⊢ cells), **297/303 refutable
+  cells found** (was 62%); 6 residual misses at the capped budget
+  (consequent ρ18 / antecedent ρ20 family) = the next residue shape;
+* **ρ12 ⊢? ρ15, the ONE open cell of the matrix, got a HIT** (7.9 s,
+  `wip/frjx_cell1215_out.txt`) — ENGINE-CLAIMED ONLY, certifies
+  nothing; an independent G4c stage-3 probe (`wip/rho1215_probe.lean`)
+  was left running for kernel confirmation.  Do NOT bank anything from
+  this until a FinCM exists.
+
+**Next session:** (1) outcome of the ρ12/ρ15 probe → bank or escalate;
+(2) typed mechanisation of RefAt; (3) the 6-cell residue at uncapped
+arity (profile-style engine for FRJX); (4) Frontier79 → theorems via
+the #80/#81 template; (5) Matthew decides placement of the two proof
+files (currently wip/; they import only FRJ.Sound + Search.Pin +
+Certified.Register).
+
 ## 2026-08-19 — CORRECTION: the sixteen refutations were not new
 
 `tools/rn-bank-gen.sh` reads `wip/rnDict.lean`, the ROUND-1 dictionary
@@ -360,7 +425,7 @@ recommended next design is saturation-closure completeness (induct on the
 engine's round order, axIC seeds break the cycle at the base). All round-2
 material remains green; corpus 19/5/0.
 
-**Last updated:** 2026-08-25 by Fable 5 — merged `claude/frj-redevelopment-69005f` (through §2026-08-25: FRJ incompleteness witnesses #80/#81) into `claude/frj-incompleteness-80-81-251e7f`; prior update lines: 2026-08-17 (pointer-retrospective §, kept below), 2026-08-13 (§12)
+**Last updated:** 2026-08-25 by Fable 5 — §2026-08-25c: witnesses #80/#81 PROVED as incompleteness theorems, CompletenessFRJ refuted, RefAt repair validated (branch claude/frj-incompleteness-80-81-251e7f); earlier: merge of claude/frj-redevelopment-69005f (through §2026-08-25)
 **Repo state:** `main` @ 925bc10 — `lake build` clean, every `#guard_msgs` audit green; no live feature branch (`ui-confluence` merged 2026-08-06)
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.
 
