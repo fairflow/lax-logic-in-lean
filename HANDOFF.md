@@ -1134,3 +1134,19 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
   5. c_k ascending chain HOLDS unchanged (chainStrict.lean pins);
      c 1 ≡ ρ7 and c 2 ≡ ◯ρ6 are cBox_4/cBox_9 in disguise;
      c 3 = ◯q11 certified ∉D₁₅/∉D₁₆.
+
+## §2026-08-25f — the sorry story ends: dictionary purged to fixpoint; D₁₅/D₁₆ decommissioned
+
+* Matthew's directive: the ρ-catalogue **R** (open-ended, 22 now) is THE
+  reference set; forget 15/16; operation tables write **∉R** (certified
+  outside the known classes) or `?`, never ∉D; delete every sorried
+  dictionary result and iterate to fixpoint (genuine-theory wip sorries
+  may stay).  Recorded as standing memory.
+* Purge executed: wip/rnDict.lean 87 sorried cells + the refuted closure
+  layer (and_ok/or_ok/imp_ok/box_ok, andIdx15 tables, rnDict15) DELETED
+  → exactly the 236 proved theorems remain; wip/rnDict2.lean 58 sorried
+  + closure layer (rnDict16) DELETED → the 82 proved remain.  Zero
+  sorry tokens in both.  Cascade rebuild: RNDB, Certified, Tools,
+  Rewrite, rwscreen, rnDictGen, rhocover, wipshared + spot-checks all
+  green ON THE FIRST PASS — the proved layer was self-contained;
+  fixpoint reached with no external breakage.
