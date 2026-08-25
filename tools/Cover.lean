@@ -161,7 +161,35 @@ def probeMode (maxF : Nat) : IO Unit := do
     , ("ρ10∧ρ20",     .and (rhoF 10) (rhoF 20),              [],           [10, 20])
     , ("ρ10∧ρ21",     .and (rhoF 10) (rhoF 21),              [],           [10, 21])
     , ("ρ12∧ρ15",     .and (rhoF 12) (rhoF 15),              [],           [12, 15])
-    , ("ρ15∧ρ21",     .and (rhoF 15) (rhoF 21),              [],           [15, 21]) ]
+    , ("ρ15∧ρ21",     .and (rhoF 15) (rhoF 21),              [],           [15, 21])
+    -- round 2 (2026-08-25): the remaining hub joins (every node with ≥2
+    -- upper covers spawns a cube of joins; these are its unprobed
+    -- vertices), the co-hub meets, and the ◯-shift generators.
+    , ("ρ9∨ρ17",      .or (rhoF 9) (rhoF 17),                [9, 17],      [])
+    , ("ρ9∨ρ13∨ρ17",  .or (rhoF 9) (.or (rhoF 13) (rhoF 17)), [9, 13, 17], [])
+    , ("ρ9∨ρ16",      .or (rhoF 9) (rhoF 16),                [9, 16],      [])
+    , ("ρ16∨ρ19",     .or (rhoF 16) (rhoF 19),               [16, 19],     [])
+    , ("ρ9∨ρ16∨ρ19",  .or (rhoF 9) (.or (rhoF 16) (rhoF 19)), [9, 16, 19], [])
+    , ("ρ11∨ρ12",     .or (rhoF 11) (rhoF 12),               [11, 12],     [])
+    , ("ρ16∨ρ17",     .or (rhoF 16) (rhoF 17),               [16, 17],     [])
+    , ("ρ8∨ρ18",      .or (rhoF 8) (rhoF 18),                [8, 18],      [])
+    , ("ρ11∨ρ18",     .or (rhoF 11) (rhoF 18),               [11, 18],     [])
+    , ("ρ10∨ρ15",     .or (rhoF 10) (rhoF 15),               [10, 15],     [])
+    , ("ρ8∨ρ20",      .or (rhoF 8) (rhoF 20),                [8, 20],      [])
+    , ("ρ6∧ρ7",       .and (rhoF 6) (rhoF 7),                [],           [6, 7])
+    , ("ρ16∧ρ19",     .and (rhoF 16) (rhoF 19),              [],           [16, 19])
+    , ("ρ13∧ρ17",     .and (rhoF 13) (rhoF 17),              [],           [13, 17])
+    , ("ρ9∧ρ13",      .and (rhoF 9) (rhoF 13),               [],           [9, 13])
+    , ("ρ7∧ρ14",      .and (rhoF 7) (rhoF 14),               [],           [7, 14])
+    , ("ρ6∧ρ14",      .and (rhoF 6) (rhoF 14),               [],           [6, 14])
+    , ("ρ12∧ρ20",     .and (rhoF 12) (rhoF 20),              [],           [12, 20])
+    , ("ρ8∧ρ18",      .and (rhoF 8) (rhoF 18),               [],           [8, 18])
+    , ("◯ρ4",         .somehow (rhoF 4),                     [],           [])
+    , ("◯ρ5",         .somehow (rhoF 5),                     [],           [])
+    , ("◯ρ6",         .somehow (rhoF 6),                     [],           [])
+    , ("◯ρ8",         .somehow (rhoF 8),                     [],           [])
+    , ("◯ρ9",         .somehow (rhoF 9),                     [],           [])
+    , ("◯ρ11",        .somehow (rhoF 11),                    [],           []) ]
   let cvecs : Array (Array (Array Bool)) :=
     cands.toArray.map fun (_, X, _, _) => bat.map fun M => vecOf M X
   let out ← IO.getStdout

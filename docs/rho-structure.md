@@ -13,26 +13,30 @@ labelled CONJECTURE or PREDICTED is exactly that.
 **R1 — graded.**  Every cover edge spans one rank; profile
 `1‑2‑2‑3‑5‑5‑3‑1`, height 7.
 
-**R2 — lower-cover join-generation.**  Every join-reducible node is
-the join of its own lower covers, and there are exactly ten
-join-irreducible classes:
+**R2 — lower-cover join-generation (POSET sense) and the ten
+poset-join-irreducibles.**  Every join-reducible node is the POSET
+least upper bound of its own lower covers; the poset-irreducibles are
 
     ⊥,  a,  ¬a,  ¬¬a,  b,  ρ12 = ρ8⊃b,  ρ13 = ρ8⊃ρ4,
     ρ14 = ρ9⊃ρ4,  ρ19 = ρ11⊃b,  ρ20 = ρ11⊃ρ6.
 
-Two surprises among the reducibles, PROVED by the matrix:
-
-    ρ8  = ¬¬a⊃a  ≡  ρ16 ∨ ρ19        ρ11 = b⊃ρ4  ≡  ρ13 ∨ ρ17
-    ρ21 = ρ14⊃b  ≡  ρ12 ∨ ρ20
-
-— implications that ARE joins.  Every join-irreducible except the
-four atoms-of-the-rails (⊥, a, ¬a, ¬¬a, b) is an implication.
+CORRECTION (2026-08-25, after probe round 2): poset-lub is WEAKER than
+class-of-the-syntactic-join, and the first draft of this note
+conflated them.  Whether `v ≡ ⋁(lower covers of v)` is an R6 identity
+question per node.  Probe round 2 CERTIFIED it for
+`ρ10 ≡ ρ8∨ρ18`, `ρ15 ≡ ρ11∨ρ18`, `ρ18 ≡ ρ9∨ρ16 ≡ ρ9∨ρ17 ≡ ρ16∨ρ17`,
+and left it OPEN (frontier cells) for
+`ρ8 ⊢? ρ16∨ρ19` (class(ρ16∨ρ19) is otherwise NEW and < ρ8),
+`ρ11 ≡? ρ13∨ρ17`, `ρ21 ≡? ρ12∨ρ20` (untested).  Every
+poset-irreducible except the rails' atoms is an implication.
 
 **R3 — two stacked cubes.**  The interval [ρ4, ρ18] is exactly 2³ on
-atoms {ρ6, ρ7, ρ14} (all joins and meets land inside).  The probe
-completed the second, dual cube over ρ9 on atoms {ρ12, ρ18, ρ20}:
-ρ12∨ρ20 ≡ ρ21 was already catalogued; the other three vertices are
-the new classes X₄ = ρ12∨ρ18, X₃ = ρ18∨ρ20, X₅ = ρ12∨ρ18∨ρ20.
+atoms {ρ6, ρ7, ρ14}, and round 2 certified its identities as CLASS
+identities: joins ρ9∨ρ16 ≡ ρ9∨ρ17 ≡ ρ16∨ρ17 ≡ ρ18, meets ρ6∧ρ7 ≡
+ρ7∧ρ14 ≡ ρ6∧ρ14 ≡ ρ4.  The dual cube over ρ9 on atoms {ρ12, ρ18,
+ρ20}: three vertices are the new classes X₄ = ρ12∨ρ18, X₃ = ρ18∨ρ20,
+X₅ = ρ12∨ρ18∨ρ20; the fourth, ρ12∨ρ20, is the poset-lub ρ21 but the
+class identity `ρ21 ≡? ρ12∨ρ20` is OPEN (untested).
 
 **R4 — a two-generator presentation of the catalogue.**  Every one of
 the 22 representatives is a Heyting-algebra term over `{a, b}` alone:
@@ -118,3 +122,27 @@ Each needs either a proof (LJF◯ deep fuel) or a countermodel BEYOND
 the battery — the FRJ(◯) Profile engine on custom sequents is the
 designated finder (extend `frjconstruct` past ρ-pairs; it found the
 8-world model for ρ20⊬ρ10 that the battery lacks).
+
+## 4. Probe round 2 (2026-08-25, `wip/rhoprobe2_out.txt`)
+
+36 candidates (round 1 + remaining hub joins, co-hub meets, ◯-shifts).
+Control green.  Results:
+
+* **12 identities certified**, including three new ◯-laws:
+
+      ◯(a∨¬a) ≡ b        ◯¬¬a ≡ ¬¬a        ◯(¬¬a⊃a) ≡ ¬¬a⊃a
+
+  so ρ5 and ρ8 are ◯-FIXED classes (consistent with the nucleus law
+  "x ⊃ y is j-fixed when y is j-fixed", since a = ◯⊥ is ◯-fixed), and
+  ◯ collapses [ρ6, ρ9]: `◯ρ6 ≡ ◯ρ9` (certified mutual).  Also
+  ρ8∨ρ18 ≡ ρ10, ρ11∨ρ18 ≡ ρ15, and the meet identities of R3.
+* **22 NEW verdicts, collapsing to 17 distinct new-class candidates**
+  under certified mutual derivability (an upper bound; some
+  candidate-pairs remain open).  Fully-settled unconditional member:
+  `class(ρ8∨ρ20)` — NO open cells, strictly above ρ10, below ⊤.
+  The ◯-stratum contributes `◯ρ6 (≡ ◯ρ9)` and `◯ρ11` as new classes;
+  `◯ρ4, ◯ρ5, ◯ρ8` collapse (the laws above), confirming C1's shape:
+  most shifts collapse, a few are genuinely new generators.
+* The catalogue is heading from 22 to ≈ 39 classes at this depth;
+  every remaining "?" is a recorded frontier cell, and R6 turns each
+  hub-join "?" into a single identity question.

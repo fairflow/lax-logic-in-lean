@@ -1065,3 +1065,22 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
 * NEXT: kernel-certify X₃/X₅ distinctness (hand or-elim terms + the
   banked cells — mechanical), append the new representatives to the
   catalogue (append-only rule), re-run `tools/rho-hasse.sh`.
+
+## §2026-08-25c — probe round 2: 17 distinct new-class candidates; ◯-laws; R2 correction
+
+* Round 2 (`wip/rhoprobe2_out.txt`, 36 candidates): 12 identities
+  certified incl. ◯(a∨¬a) ≡ b, ◯¬¬a ≡ ¬¬a, ◯(¬¬a⊃a) ≡ ¬¬a⊃a (ρ5, ρ8
+  ◯-FIXED; ◯ρ6 ≡ ◯ρ9); 22 NEW verdicts → **17 distinct new classes**
+  (mutual-⊢ dedup; ρ8∨ρ20 fully settled, no open cells).  Catalogue
+  heading 22 → ≈39.
+* CORRECTION recorded in docs/rho-structure.md: poset-lub ≠ class-join;
+  "ρ8 ≡ ρ16∨ρ19 / ρ11 ≡ ρ13∨ρ17 / ρ21 ≡ ρ12∨ρ20" were overclaims —
+  now explicit OPEN cells (`ρ8 ⊢? ρ16∨ρ19` flagged by the probe;
+  ρ11/ρ21 identities untested).  Certified instead: ρ10 ≡ ρ8∨ρ18,
+  ρ15 ≡ ρ11∨ρ18, ρ18 ≡ any two-of-{ρ9,ρ16,ρ17} joins; [ρ4,ρ18] cube
+  identities now class-level.
+* Hasse rerun after the 95 pins: byte-identical (stability check ✓).
+* NEXT: kernel-certify the unconditional new classes; extend the
+  catalogue (append-only) once identities distilled; FRJ(◯) on custom
+  sequents for the open identity cells; ρ21 ≡? ρ12∨ρ20 and
+  ρ11 ≡? ρ13∨ρ17 to round 3 candidates.
