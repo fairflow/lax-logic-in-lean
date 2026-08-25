@@ -130,7 +130,7 @@ root = "Tools.BankRho"
 
 [[lean_lib]]
 name = "wipshared"
-globs = ["wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
+globs = ["wip.frjx", "wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
          "wip.mforth_probe", "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rho_order", "wip.rho_engines", "wip.ljfo_link", "wip.two_sided", "wip.ljfo_unravel", "wip.rnDictRefute", "wip.bandStabilise", "wip.bandM", "wip.rnc_probe", "wip.rncCert", "wip.rncCertPos",
          "wip.rnSep", "wip.rnSepColl", "wip.rnDict2Hand", "wip.rnDict2", "wip.rnDictRefute2", "wip.rnSpawnColl",
          "wip.witOut", "wip.bandW", "wip.rankedM", "wip.rnEmbed", "wip.visible", "wip.bandRefute", "wip.semSpecW", "wip.rankedResidue", "wip.rankGapPoint", "wip.mwit_complete", "wip.starve", "wip.g4confGap", "wip.cascadeBox", "wip.ascRefute", "wip.descent2",
@@ -660,3 +660,7 @@ root = "Tools.Derive"
 [[lean_exe]]
 name = "frjcert"
 root = "Tools.Cert"
+
+[[lean_exe]]
+name = "frjxrun"
+root = "wip.frjx_run"
