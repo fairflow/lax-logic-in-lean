@@ -54,9 +54,13 @@ on 8 goals):
   (consequent ρ18 / antecedent ρ20 family) = the next residue shape;
 * **ρ12 ⊢? ρ15, the ONE open cell of the matrix, got a HIT** (7.9 s,
   `wip/frjx_cell1215_out.txt`) — ENGINE-CLAIMED ONLY, certifies
-  nothing; an independent G4c stage-3 probe (`wip/rho1215_probe.lean`)
-  was left running for kernel confirmation.  Do NOT bank anything from
-  this until a FinCM exists.
+  nothing; the independent G4c stage-3 probe (`wip/rho1215_probe.lean`,
+  emitcap 40, budget 10^5) returned `allStagesMissed` — no countermodel,
+  no proof; the cell stays two-sidedly OPEN and the FRJX hit is an
+  untrusted lead.  If it is right, the model lies outside the emitter's
+  closure-frame class; if the patch leaks, this cell would be the first
+  to show it.  Do NOT bank anything from this until a FinCM exists or
+  the typed mechanisation lands.
 
 **Next session:** (1) outcome of the ρ12/ρ15 probe → bank or escalate;
 (2) typed mechanisation of RefAt; (3) the 6-cell residue at uncapped
