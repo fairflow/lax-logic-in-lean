@@ -83,7 +83,44 @@ def needed (mat : Array (Array Status)) (a b c : Nat) : List String :=
   ++ (if g c b == none then [s!"ρ{c} ⊢? ρ{b}"] else [])
   ++ (if g b c == none then [s!"ρ{b} ⊢? ρ{c}"] else [])
 
+/-- `emit` mode: generate `Certified/RhoSeparations.lean` source — one
+`¬ ConfluentU.DerivU` theorem per battery-separable ⊬ cell the database
+does NOT yet cover, each `by decide`-checkable, plus its PLL transfer
+and its `Entry`.  Output goes to stdout; the wrapper splits it. -/
+def emitMode : IO Unit := do
+  let bat := battery ++ framesRooted5.toArray
+  let vecs : Array (Array (Array Bool)) :=
+    (List.range n).toArray.map fun i => bat.map fun M => vecOf M (rhoF i)
+  let idx : PLLFormula → Option Nat := fun φ =>
+    (List.range n).find? (fun i => rhoF i == φ)
+  let mut banked : List (Nat × Nat) := []
+  for e in RNDB.allEntries do
+    if e.claim.rel == RNDB.Rel.nle then
+      match idx e.claim.lhs, idx e.claim.rhs with
+      | some i, some j => banked := (i, j) :: banked
+      | _, _ => pure ()
+  let mut count := 0
+  for i in [0:n] do
+    for j in [0:n] do
+      if i != j && !banked.contains (i, j) then
+        match firstSep bat (vecs.getD i #[]) (vecs.getD j #[]) with
+        | some (fi, w) =>
+            let M := bat.getD fi default
+            count := count + 1
+            IO.println s!"THM|/-- `ρ{i} ⊬ᵤ ρ{j}` (PCLL): battery separation, frame {fi}, world {w}. -/"
+            IO.println s!"THM|theorem sepU_{i}_{j} : ¬ PLLND.ConfluentU.DerivU [RhoOrder.rhoF {i}] (RhoOrder.rhoF {j}) :="
+            IO.println s!"THM|  PLLND.RNC.not_derivU_of_checkConf (M := {PLLND.Search.srcOfCM M}) (w := {w}) (by decide) (by decide)"
+            IO.println s!"THM|"
+            IO.println s!"THM|theorem rho_{i}_nle_{j} : ¬ PLLND.SemUI.Deriv [RhoOrder.rhoF {i}] (RhoOrder.rhoF {j}) :="
+            IO.println s!"THM|  nle_of_nleU sepU_{i}_{j}"
+            IO.println s!"THM|"
+            IO.println s!"ENT|def nle_{i}_{j} : Entry := sepEntry \"sep-{count}\" {i} {j} {M.n} (by decide) RhoSeps.rho_{i}_nle_{j}"
+        | none => pure ()
+  IO.println s!"EMIT-COUNT {count}"
+  IO.println "RHOCOVER-DONE"
+
 def main (args : List String) : IO Unit := do
+  if args.head? == some "emit" then return (← emitMode)
   let maxF := (args.head?.bind String.toNat?).getD 48
   IO.println s!"=== PLL cover sweep over the 22-class ρ-catalogue (LJF◯ fuel ≤ {maxF}) ==="
   let mat0 ← statusMat maxF
