@@ -1102,3 +1102,35 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
   formal dictionary-inclusion definition, families c_k/g_k/r_k/◯(g_k)/
   zigzag/Gmeet, ≈39-class data with distinctness caveats, and fresh
   rwscreen substantiation of the simplifier claim.
+
+## §2026-08-25e — explorer v18 delivered; audit corrections (◯-laws NOT new; floor ∈ [14,25]; Catalogue "45 open" is wrong)
+
+* **v18 delivered**: `docs/rn-catalogue.html` ("RN(◯,{}) catalogue",
+  v18, successor of rn-explorer v17, which is untouched).  Artifact:
+  https://claude.ai/code/artifact/63620d1b-1f7f-4476-8cd2-0c975bddae2b
+  Built by an Opus agent; verified in-browser both themes/widths, zero
+  console errors.  All rwscreen figures REPRODUCED EXACTLY (89% / 34%
+  / 319→28 / 3996→25 / 40%; pins green).
+* **CORRECTIONS (all also on the page)**:
+  1. The probe's four "◯-laws" were already kernel-proved and in
+     `rndSet` (rnDict cBox_4/6/9/10) — cross-validation, not
+     discovery.  §2026-08-25b/c overclaimed; docs/rho-structure.md §4
+     corrected (also: 37 candidates not 36; 15+1 identities not 12;
+     ρ10∧ρ20 also fully settled).
+  2. **The "floor of 15" has no standing**: its rationale is refuted
+     by banked certificates (q8∧q10 ∉ D₁₅; refute_cOr_8_10).  New tool
+     `wip/floor_probe.lean` (`lake exe floorprobe`): 25 = certified
+     upper bound, max battery-separated subset = 14 ⇒ floor ∈ [14,25].
+  3. `Rewrite/Catalogue.lean`'s header "45 remain genuinely open" is
+     WRONG: all 45 are REFUTED CELLS with sorry-free refute_* theorems
+     in round 2; the advertised open target list is empty.  (Header
+     NOT yet edited — put before Matthew first, since that file's
+     docstring is load-bearing for the dictionary campaign.)
+  4. ◯(g_k): ONE infinite antichain (bg_incomparable/bg_pairwise
+     uniform in indices, k ≥ 2), not many size-3 ones; the size-3
+     look was v17's three-level rendering.  Gap: `◯(g k) ⊢? ◯(g 1)`
+     uncovered; whether ◯(g 1) ≡ q13 joins is open.  The ◯-collapses
+     have NO instance in the family (gap_not_rung/q9/chain).
+  5. c_k ascending chain HOLDS unchanged (chainStrict.lean pins);
+     c 1 ≡ ρ7 and c 2 ≡ ◯ρ6 are cBox_4/cBox_9 in disguise;
+     c 3 = ◯q11 certified ∉D₁₅/∉D₁₆.

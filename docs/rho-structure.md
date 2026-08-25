@@ -125,21 +125,27 @@ designated finder (extend `frjconstruct` past ρ-pairs; it found the
 
 ## 4. Probe round 2 (2026-08-25, `wip/rhoprobe2_out.txt`)
 
-36 candidates (round 1 + remaining hub joins, co-hub meets, ◯-shifts).
-Control green.  Results:
+37 candidates (round 1 + remaining hub joins, co-hub meets, ◯-shifts).
+Control green.  Results (COUNTS CORRECTED 2026-08-25 by the v18
+rebuild audit; first draft said 36 and 12):
 
-* **12 identities certified**, including three new ◯-laws:
+* **15 IDENT lines plus `◯ρ6 ≡ ◯ρ9` from the candidate matrix**.  The
+  four ◯-identities
 
-      ◯(a∨¬a) ≡ b        ◯¬¬a ≡ ¬¬a        ◯(¬¬a⊃a) ≡ ¬¬a⊃a
+      ◯(a∨¬a) ≡ b   ◯¬¬a ≡ ¬¬a   ◯(¬¬a⊃a) ≡ ¬¬a⊃a   ◯ρ6 ≡ ◯ρ9
 
-  so ρ5 and ρ8 are ◯-FIXED classes (consistent with the nucleus law
-  "x ⊃ y is j-fixed when y is j-fixed", since a = ◯⊥ is ◯-fixed), and
-  ◯ collapses [ρ6, ρ9]: `◯ρ6 ≡ ◯ρ9` (certified mutual).  Also
-  ρ8∨ρ18 ≡ ρ10, ρ11∨ρ18 ≡ ρ15, and the meet identities of R3.
+  are NOT new: all four were already kernel-proved AND in `rndSet`
+  (`wip/rnDict.lean:1460–1472`, cells cBox_4/6/9/10, explicit G4iLL″
+  terms; v17 already displayed two of them).  The probe re-finding
+  them is a CROSS-VALIDATION of the engine pipeline, not a discovery
+  — a lookup-before-claiming failure, caught by the audit.  ρ5 and ρ8
+  ◯-fixed matches the nucleus law "x ⊃ y is j-fixed when y is", a = ◯⊥
+  being ◯-fixed.  Also ρ8∨ρ18 ≡ ρ10, ρ11∨ρ18 ≡ ρ15, and the meet
+  identities of R3.
 * **22 NEW verdicts, collapsing to 17 distinct new-class candidates**
   under certified mutual derivability (an upper bound; some
-  candidate-pairs remain open).  Fully-settled unconditional member:
-  `class(ρ8∨ρ20)` — NO open cells, strictly above ρ10, below ⊤.
+  candidate-pairs remain open).  Fully-settled unconditional members (empty
+  open-cell list vs the 22): `class(ρ8∨ρ20)` AND `class(ρ10∧ρ20)`.
   The ◯-stratum contributes `◯ρ6 (≡ ◯ρ9)` and `◯ρ11` as new classes;
   `◯ρ4, ◯ρ5, ◯ρ8` collapse (the laws above), confirming C1's shape:
   most shifts collapse, a few are genuinely new generators.

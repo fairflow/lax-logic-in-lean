@@ -660,3 +660,10 @@ root = "Tools.Derive"
 [[lean_exe]]
 name = "frjcert"
 root = "Tools.Cert"
+
+# floorprobe: certified bounds on the normal-form floor (agent a6e77, 2026-08-25):
+# 25 = certified upper bound; battery separates 268/300 pairs among the 25
+# residual forms, max pairwise-separated set = 14; floor ∈ [14, 25].
+[[lean_exe]]
+name = "floorprobe"
+root = "wip.floor_probe"
