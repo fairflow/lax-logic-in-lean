@@ -1084,3 +1084,21 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
   catalogue (append-only) once identities distilled; FRJ(◯) on custom
   sequents for the open identity cells; ρ21 ≡? ρ12∨ρ20 and
   ρ11 ≡? ρ13∨ρ17 to round 3 candidates.
+
+## §2026-08-25d — first inhabitants of the cover notion, and its refutation for open formulas
+
+* `RNDB/Order.lean`: `CoversVF` (interposers over the CLOSED fragment,
+  the covering relation of RN(◯,{})).  PROVED, kernel-pinned:
+  - `obot_decides` / `nbot_decides` — the theories of ◯⊥ and ¬◯⊥ are
+    COMPLETE over closed formulas ([propext] only!): structural
+    induction `decides_of_somehow` with the ◯-case a parameter.
+  - `bot_coversVF_obot : ⊥ ⋖ ◯⊥` and `bot_coversVF_nbot : ⊥ ⋖ ¬◯⊥`
+    in the closed fragment (strictness via banked rho-0014/rho-0016)
+    — theorems finite testing cannot decide (Matthew's point, 2026-08-25).
+  - `not_covers_bot_obot` — the ALL-formulas cover `⊥ ⋖ ◯⊥` is
+    REFUTED: `◯⊥ ∧ p` interposes, both countermodels kernel `decide`.
+* Explorer v18 rebuild delegated to an Opus agent (own worktree,
+  running); brief includes operation table (? / ∉D), embedding ladder,
+  formal dictionary-inclusion definition, families c_k/g_k/r_k/◯(g_k)/
+  zigzag/Gmeet, ≈39-class data with distinctness caveats, and fresh
+  rwscreen substantiation of the simplifier claim.

@@ -24,6 +24,7 @@ assumptions.
 -/
 import RNDB.RhoEntries
 import LaxLogic.PLLSearchConf
+import LaxLogic.PLLNoFall
 
 open PLLND PLLND.SemUI PLLFormula
 
@@ -219,6 +220,171 @@ battery-settled, so a positive resolution would add the strict pair
 def frontierOrder : Frontier :=
   [ ⟨rhoF 12, rhoF 15, Rel.le, none⟩ ]
 
+/-! ## Absolute covers in the CLOSED fragment — proofs testing cannot reach
+
+Matthew, 2026-08-25: "I think it is perfectly possible to prove
+`⊥ ⋖ ◯⊥` and `⊥ ⋖ ¬◯⊥`".  Two precisions, both settled below.
+
+FIRST: for the all-formulas `Covers` above, `⊥ ⋖ ◯⊥` is REFUTED —
+`◯⊥ ∧ p` interposes (consistent, entails `◯⊥`, and `◯⊥ ⊬ p`).  The
+variable-carrying hazard is real, and kernel-checked
+(`not_covers_bot_obot`).
+
+SECOND: the right notion for RN(◯,{}) is the cover with interposers
+ranging over the CLOSED (variable-free) fragment, `CoversVF`.  There
+both covers are PROVED, via a lemma no finite test reaches: the
+theories of `◯⊥` and of `¬◯⊥` are COMPLETE over closed formulas
+(structural induction; under `◯⊥` every `◯ψ` is decided positively,
+under `¬◯⊥` a decided `ψ` decides `◯ψ` since `◯ψ, ¬ψ ⊢ ◯⊥`).  A
+closed interposer `c` would satisfy `[◯⊥] ⊬ c`, hence `[◯⊥] ⊢ ¬c` by
+completeness, hence `c` inconsistent (it entails `◯⊥`), contradicting
+`⊥ < c`. -/
+
+/-- Cover with interposers restricted to the CLOSED fragment: the
+covering relation OF RN(◯,{}) itself. -/
+def CoversVF (a b : PLLFormula) : Prop :=
+  Lt a b ∧ ∀ c, NoFall.VarFree c → ¬ (Lt a c ∧ Lt c b)
+
+/-- The two smallest nontrivial classes. -/
+abbrev oBot : PLLFormula := PLLFormula.somehow PLLFormula.falsePLL
+abbrev nBot : PLLFormula := PLLFormula.ifThen oBot PLLFormula.falsePLL
+
+private theorem wk1 {h c χ : PLLFormula} (d : Deriv [h] χ) : Deriv [c, h] χ :=
+  d.rename (by intro x hm; simp at hm; simp [hm])
+
+/-- Weaken a one-hypothesis derivation into any context containing it. -/
+private theorem wkH {h χ : PLLFormula} (d : Deriv [h] χ)
+    {Γ : List PLLFormula} (hh : h ∈ Γ) : Deriv Γ χ :=
+  d.rename (by intro x hm; simp at hm; simpa [hm] using hh)
+
+/-- `[◯⊥] ⊢ ◯ψ`, for every `ψ`. -/
+theorem obot_somehow (ψ : PLLFormula) : Deriv [oBot] (PLLFormula.somehow ψ) :=
+  ⟨.laxElim (.iden (show oBot ∈ [oBot] by simp))
+    (.laxIntro (.falsoElim ψ
+      (.iden (show PLLFormula.falsePLL ∈ [PLLFormula.falsePLL, oBot] by simp))))⟩
+
+/-- The propositional induction shared by both deciders: any hypothesis
+whose `◯`-case is supplied decides every closed formula. -/
+theorem decides_of_somehow (h : PLLFormula)
+    (hsom : ∀ ψ, NoFall.VarFree ψ →
+      (Deriv [h] ψ ∨ Deriv [h] (ψ.ifThen .falsePLL)) →
+      Deriv [h] (PLLFormula.somehow ψ) ∨
+      Deriv [h] ((PLLFormula.somehow ψ).ifThen .falsePLL)) :
+    ∀ φ, NoFall.VarFree φ →
+      Deriv [h] φ ∨ Deriv [h] (φ.ifThen .falsePLL) := by
+  intro φ
+  induction φ with
+  | prop a => exact fun hv => absurd hv (by simp [NoFall.VarFree])
+  | falsePLL =>
+      exact fun _ => .inr (Deriv.impIntro
+        (Deriv.iden (show PLLFormula.falsePLL ∈ [PLLFormula.falsePLL, h] by simp)))
+  | and φ ψ ihφ ihψ =>
+      rintro ⟨hφ, hψ⟩
+      match ihφ hφ, ihψ hψ with
+      | .inl p, .inl q => exact .inl (Deriv.andIntro p q)
+      | .inr np, _ =>
+          exact .inr (Deriv.impIntro (Deriv.impElim (wk1 np)
+            (Deriv.andElim1 (Deriv.iden (show φ.and ψ ∈ [φ.and ψ, h] by simp)))))
+      | .inl _, .inr nq =>
+          exact .inr (Deriv.impIntro (Deriv.impElim (wk1 nq)
+            (Deriv.andElim2 (Deriv.iden (show φ.and ψ ∈ [φ.and ψ, h] by simp)))))
+  | or φ ψ ihφ ihψ =>
+      rintro ⟨hφ, hψ⟩
+      match ihφ hφ, ihψ hψ with
+      | .inl p, _ => exact .inl (Deriv.orIntro1 p)
+      | .inr _, .inl q => exact .inl (Deriv.orIntro2 q)
+      | .inr np, .inr nq =>
+          refine .inr (Deriv.impIntro (Deriv.orElim
+            (Deriv.iden (show φ.or ψ ∈ [φ.or ψ, h] by simp)) ?_ ?_))
+          · exact Deriv.impElim (wkH np (by simp))
+              (Deriv.iden (show φ ∈ [φ, φ.or ψ, h] by simp))
+          · exact Deriv.impElim (wkH nq (by simp))
+              (Deriv.iden (show ψ ∈ [ψ, φ.or ψ, h] by simp))
+  | ifThen φ ψ ihφ ihψ =>
+      rintro ⟨hφ, hψ⟩
+      match ihφ hφ, ihψ hψ with
+      | _, .inl q => exact .inl (Deriv.impIntro (wk1 q))
+      | .inr np, .inr _ =>
+          exact .inl (Deriv.impIntro (Deriv.falsoElim ψ
+            (Deriv.impElim (wk1 np) (Deriv.iden (show φ ∈ [φ, h] by simp)))))
+      | .inl p, .inr nq =>
+          exact .inr (Deriv.impIntro (Deriv.impElim (wk1 nq)
+            (Deriv.impElim
+              (Deriv.iden (show φ.ifThen ψ ∈ [φ.ifThen ψ, h] by simp))
+              (wk1 p))))
+  | somehow ψ ih =>
+      exact fun hv => hsom ψ hv (ih hv)
+
+/-- The theory of `◯⊥` is complete over the closed fragment. -/
+theorem obot_decides : ∀ φ, NoFall.VarFree φ →
+    Deriv [oBot] φ ∨ Deriv [oBot] (φ.ifThen .falsePLL) :=
+  decides_of_somehow oBot (fun ψ _ _ => .inl (obot_somehow ψ))
+
+/-- The theory of `¬◯⊥` is complete over the closed fragment. -/
+theorem nbot_decides : ∀ φ, NoFall.VarFree φ →
+    Deriv [nBot] φ ∨ Deriv [nBot] (φ.ifThen .falsePLL) := by
+  refine decides_of_somehow nBot (fun ψ _ dec => ?_)
+  match dec with
+  | .inl p =>
+      exact .inl (p.cutHead ⟨.laxIntro (.iden (show ψ ∈ [ψ] by simp))⟩)
+  | .inr np =>
+      refine .inr (Deriv.impIntro ?_)
+      have hstep : Deriv (ψ :: [PLLFormula.somehow ψ, nBot]) oBot :=
+        Deriv.falsoElim _ (Deriv.impElim (wkH np (by simp))
+          (Deriv.iden (show ψ ∈ [ψ, PLLFormula.somehow ψ, nBot] by simp)))
+      have hOB : Deriv [PLLFormula.somehow ψ, nBot] oBot :=
+        match (Deriv.iden
+                (show PLLFormula.somehow ψ ∈ [PLLFormula.somehow ψ, nBot] by simp) :
+               Deriv [PLLFormula.somehow ψ, nBot] (PLLFormula.somehow ψ)), hstep with
+        | ⟨p₁⟩, ⟨p₂⟩ => ⟨.laxElim p₁ p₂⟩
+      exact Deriv.impElim
+        (Deriv.iden (show nBot ∈ [PLLFormula.somehow ψ, nBot] by simp)) hOB
+
+/-- `⊥ < ◯⊥` (strictness = the banked consistency cell rho-0014). -/
+theorem bot_lt_obot : Lt PLLFormula.falsePLL oBot :=
+  ⟨Deriv.falsoElim _
+    (Deriv.iden (show PLLFormula.falsePLL ∈ [PLLFormula.falsePLL] by simp)),
+   nle_2_0.ok.holds⟩
+
+/-- `⊥ < ¬◯⊥` (strictness = the banked consistency cell rho-0016). -/
+theorem bot_lt_nbot : Lt PLLFormula.falsePLL nBot :=
+  ⟨Deriv.falsoElim _
+    (Deriv.iden (show PLLFormula.falsePLL ∈ [PLLFormula.falsePLL] by simp)),
+   nle_3_0.ok.holds⟩
+
+/-- **`⊥ ⋖ ◯⊥` in the closed fragment** — the first inhabitant of the
+cover notion, and a theorem finite testing cannot decide. -/
+theorem bot_coversVF_obot : CoversVF PLLFormula.falsePLL oBot := by
+  refine ⟨bot_lt_obot, fun c hvf ⟨⟨_, hcons⟩, hup, hno⟩ => ?_⟩
+  match obot_decides c hvf with
+  | .inl hc => exact hno hc
+  | .inr hnc =>
+      exact hcons (Deriv.impElim (hup.cutHead hnc)
+        (Deriv.iden (show c ∈ [c] by simp)))
+
+/-- **`⊥ ⋖ ¬◯⊥` in the closed fragment.** -/
+theorem bot_coversVF_nbot : CoversVF PLLFormula.falsePLL nBot := by
+  refine ⟨bot_lt_nbot, fun c hvf ⟨⟨_, hcons⟩, hup, hno⟩ => ?_⟩
+  match nbot_decides c hvf with
+  | .inl hc => exact hno hc
+  | .inr hnc =>
+      exact hcons (Deriv.impElim (hup.cutHead hnc)
+        (Deriv.iden (show c ∈ [c] by simp)))
+
+/-- The ALL-FORMULAS cover `⊥ ⋖ ◯⊥` is REFUTED: `◯⊥ ∧ p` interposes.
+Both countermodels kernel-checked (`FinCM.not_provable_of_check`). -/
+theorem not_covers_bot_obot : ¬ Covers PLLFormula.falsePLL oBot := by
+  intro h
+  refine h.2 (oBot.and (.prop "p"))
+    ⟨⟨Deriv.falsoElim _
+        (Deriv.iden (show PLLFormula.falsePLL ∈ [PLLFormula.falsePLL] by simp)), ?_⟩,
+      ⟨Deriv.andElim1
+        (Deriv.iden (show oBot.and (.prop "p") ∈ [oBot.and (.prop "p")] by simp)), ?_⟩⟩
+  · exact FinCM.not_provable_of_check
+      (M := ⟨2, [(1, 0)], [(1, 0)], [0], [(1, "p")]⟩) (w := 1) (by decide)
+  · exact FinCM.not_provable_of_check
+      (M := ⟨2, [(1, 0)], [(1, 0)], [0], []⟩) (w := 1) (by decide)
+
 /-! ## Pins — UNGUARDED as emitted; guard via tools/pin-backfill.py -/
 
 /-- info: 'RNDB.rho6_lt_rho12' depends on axioms: [propext, Quot.sound] -/
@@ -248,5 +414,21 @@ def frontierOrder : Frontier :=
 /-- info: 'RNDB.orderEntries' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms orderEntries
+
+/-- info: 'RNDB.obot_decides' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms obot_decides
+/-- info: 'RNDB.nbot_decides' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms nbot_decides
+/-- info: 'RNDB.bot_coversVF_obot' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms bot_coversVF_obot
+/-- info: 'RNDB.bot_coversVF_nbot' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms bot_coversVF_nbot
+/-- info: 'RNDB.not_covers_bot_obot' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_covers_bot_obot
 
 end RNDB
