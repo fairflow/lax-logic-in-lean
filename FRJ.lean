@@ -11,6 +11,8 @@ import FRJ.StepV
 import FRJ.ExtractV
 import FRJ.SoundV
 import FRJ.BridgeV
+import FRJ.WitnessV
+import FRJ.WitnessV1215
 import FRJ.AuditV
 import FRJ.Complete
 import FRJ.Minimal

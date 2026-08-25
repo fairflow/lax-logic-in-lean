@@ -1,6 +1,9 @@
 /-
 # The repaired calculus derives the incompleteness cells #80 and #81
 
+HOISTED from `wip/frjv_witness.lean` (2026-08-25, same session) so the
+consequence layer is admissible to wip-free closures (`RNDB.DB`).
+
 The paper family `FRJr`/`FRJi` provably misses
 
     G80 = ((¬¬◯⊥ ⊃ ◯⊥) ⊃ ◯¬◯⊥) ⊃ (◯¬◯⊥ ∨ ¬¬◯⊥)
@@ -23,6 +26,8 @@ import FRJ.CalculusV
 set_option maxRecDepth 4000
 
 open FRJ Form
+
+namespace FRJ.WitnessV
 
 /-! ## The two cells -/
 
@@ -257,10 +262,12 @@ theorem provableV_G80 : FRJ.ProvableV G80 := ⟨.barren, _, ⟨W80.goal⟩⟩
 provably misses. -/
 theorem provableV_G81 : FRJ.ProvableV G81 := ⟨.barren, _, ⟨W81.goal⟩⟩
 
-/-- info: 'provableV_G80' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.WitnessV.provableV_G80' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provableV_G80
 
-/-- info: 'provableV_G81' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.WitnessV.provableV_G81' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provableV_G81
+
+end FRJ.WitnessV
