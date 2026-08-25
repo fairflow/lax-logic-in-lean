@@ -29,6 +29,9 @@ right occurrence).  Hence `Rν` is not the planned `⋈^At {T2, R2}`: it
 is `⋈^At {R1}` alone, with `ν` entering through the KEPT zone rather
 than through `Σ^imp` — the same context up to `≐`, and `R2`/`T2` drop
 out of the derivation entirely.
+
+HOISTED from `wip/frjv_witness_1215.lean` (2026-08-25, same session) so
+the consequence layer is admissible to wip-free closures (`RNDB.DB`).
 -/
 import FRJ.CalculusV
 
@@ -36,7 +39,7 @@ set_option maxRecDepth 4000
 
 open FRJ Form
 
-namespace FRJV1215
+namespace FRJ.WitnessV1215
 
 /-! ## The cell -/
 
@@ -243,8 +246,8 @@ end W1215
 `soundnessV` this settles the cell NEGATIVELY. -/
 theorem provableV_1215 : FRJ.ProvableV G1215 := ⟨.barren, _, ⟨W1215.goal⟩⟩
 
-/-- info: 'FRJV1215.provableV_1215' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.WitnessV1215.provableV_1215' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provableV_1215
 
-end FRJV1215
+end FRJ.WitnessV1215
