@@ -31,6 +31,7 @@ summary if it does not.
 -/
 import wip.two_sided
 import RNDB.DB
+import wip.frjv_consequences
 
 open PLLND PLLND.RNC.CFX PLLFormula LJFO Rewrite TwoSidedLink RhoOrder
 
@@ -277,8 +278,123 @@ def probeMode (maxF : Nat) : IO Unit := do
     out.flush
   IO.println "PROBE-DONE"
 
+/-- `rtable` mode: the operation tables over the ρ-catalogue R (the 22
+known distinct classes, open-ended).  For each `ρi ⊙ ρj` (⊙ ∈ {∧,∨,⊃})
+and each `◯ρi`, the verdict against R:
+
+* `ρk`  — mutual derivability with class k certified both ways;
+* `∉R`  — for EVERY k one direction is certified refuted: the result
+  provably lies outside the currently known classes;
+* `?`   — neither, at the stated budgets (flagged, never dropped).
+
+Lattice laws first (for ∧/∨ one direction is EXACT from the settled
+order matrix), battery separation next, bounded search last.  The
+matrix is TOTAL: the last open cell ρ12 ⊢? ρ15 was settled NEGATIVE
+through the repaired calculus (`FRJVConsequences.rho12_nle_rho15`,
+kernel-pinned; applied as an overlay below). -/
+def rtableMode (maxF : Nat) : IO Unit := do
+  let bat := battery ++ framesRooted5.toArray
+  let vecs : Array (Array (Array Bool)) :=
+    (List.range n).toArray.map fun i => bat.map fun M => vecOf M (rhoF i)
+  let out ← IO.getStdout
+  IO.println "building the settled 22-matrix (DB overlay + V-overlay)…"; out.flush
+  let mat0 ← statusMat maxF
+  let idx : PLLFormula → Option Nat := fun φ =>
+    (List.range n).find? (fun i => rhoF i == φ)
+  let mut mat := mat0
+  for e in RNDB.allEntries do
+    if e.claim.rel == RNDB.Rel.nle then
+      match idx e.claim.lhs, idx e.claim.rhs with
+      | some i, some j =>
+          if (mat.getD i #[]).getD j none == none then
+            mat := mat.set! i ((mat.getD i #[]).set! j (some false))
+      | _, _ => pure ()
+  -- V-overlay: the repaired-calculus settlement of the last open cell
+  let _ : [rhoF 12] ⊬ rhoF 15 := FRJVConsequences.rho12_nle_rho15
+  if (mat.getD 12 #[]).getD 15 none == none then
+    IO.println "V-OVERLAY ρ12 ⊬ ρ15  (FRJVConsequences.rho12_nle_rho15)"
+    mat := mat.set! 12 ((mat.getD 12 #[]).set! 15 (some false))
+  let g := fun (x y : Nat) => (mat.getD x #[]).getD y none
+  let opens := (List.range n).flatMap fun i =>
+    (List.range n).filter fun j => i != j && g i j == none
+  IO.println s!"matrix open cells: {opens.length} (must be 0 for a total table)"
+  let search := fun (tag : String) (vX : Array (Array Bool)) (X : PLLFormula)
+                    (vY : Array (Array Bool)) (Y : PLLFormula) => do
+    match firstSep bat vX vY with
+    | some _ => pure (some false)
+    | none =>
+        IO.println s!"  residual search: {tag}"; (← IO.getStdout).flush
+        if provedAt 20000 [X] Y then pure (some true)
+        else if (TwoSided.fuelLadder (min maxF 24)).any
+                  (fun f => searchProves f [X] Y) then pure (some true)
+        else pure none
+  -- classify one composite formula against R
+  let classify := fun (tag : String) (X : PLLFormula)
+                      (fwdLaw bwdLaw : Nat → Status) => do
+    let vX : Array (Array Bool) := bat.map fun M => vecOf M X
+    let mut fwd : Array Status := #[]
+    let mut bwd : Array Status := #[]
+    for k in [0:n] do
+      let f ← match fwdLaw k with
+        | some v => pure (some v)
+        | none => search s!"{tag} → ρ{k}" vX X (vecs.getD k #[]) (rhoF k)
+      let b ← match bwdLaw k with
+        | some v => pure (some v)
+        | none => search s!"ρ{k} → {tag}" (vecs.getD k #[]) (rhoF k) vX X
+      fwd := fwd.push f
+      bwd := bwd.push b
+    let ident := (List.range n).find? fun k =>
+      fwd.getD k none == some true && bwd.getD k none == some true
+    match ident with
+    | some k => pure s!"ρ{k}"
+    | none =>
+        let allExcluded := (List.range n).all fun k =>
+          fwd.getD k none == some false || bwd.getD k none == some false
+        pure (if allExcluded then "∉R" else "?")
+  IO.println "── ∧ table ──"
+  for i in [0:n] do
+    for j in [i:n] do
+      let X := (rhoF i).and (rhoF j)
+      -- ρk ⊢ ρi∧ρj  ⟺  ρk ⊢ ρi and ρk ⊢ ρj (EXACT); ρi∧ρj ⊢ ρk sufficient via either conjunct
+      let v ← classify s!"ρ{i}∧ρ{j}" X
+        (fun k => if g i k == some true || g j k == some true then some true else none)
+        (fun k => andS [g k i, g k j])
+      IO.println s!"RTAB and {i} {j} = {v}"
+    out.flush
+  IO.println "── ∨ table ──"
+  for i in [0:n] do
+    for j in [i:n] do
+      let X := (rhoF i).or (rhoF j)
+      let v ← classify s!"ρ{i}∨ρ{j}" X
+        (fun k => andS [g i k, g j k])
+        (fun k => if g k i == some true || g k j == some true then some true else none)
+      IO.println s!"RTAB or {i} {j} = {v}"
+    out.flush
+  IO.println "── ⊃ table ──"
+  for i in [0:n] do
+    for j in [0:n] do
+      let X := (rhoF i).ifThen (rhoF j)
+      -- law: ρk ⊢ (ρi ⊃ ρj) is implied by ρk ⊢ ρj; ρi⊃ρj ⊢ ρk implied by... none safe.
+      let v ← classify s!"ρ{i}⊃ρ{j}" X
+        (fun _ => none)
+        (fun k => if g k j == some true then some true else none)
+      IO.println s!"RTAB imp {i} {j} = {v}"
+    out.flush
+  IO.println "── ◯ row ──"
+  for i in [0:n] do
+    let X := (rhoF i).somehow
+    -- ρk ⊢ ◯ρi implied by ρk ⊢ ρi (φ ⊢ ◯φ); ◯ρi ⊢ ρk: no safe law
+    let v ← classify s!"◯ρ{i}" X
+      (fun _ => none)
+      (fun k => if g k i == some true then some true else none)
+    IO.println s!"RTAB box {i} {i} = {v}"
+  out.flush
+  IO.println "RTABLE-DONE"
+
 def main (args : List String) : IO Unit := do
   if args.head? == some "emit" then return (← emitMode)
+  if args.head? == some "rtable" then
+    return (← rtableMode ((args.getD 1 "48").toNat?.getD 48))
   if args.head? == some "probe" then
     return (← probeMode ((args.getD 1 "48").toNat?.getD 48))
   let maxF := (args.head?.bind String.toNat?).getD 48
