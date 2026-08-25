@@ -391,7 +391,7 @@ theorem phiDia_no_stretchCover : ¬ HasStretchCover phiDia :=
   fun h => phiDia_no_mixedCover (hasMixedCover_of_stretch h)
 
 /-- `φ♦` is consistent. -/
-theorem phiDia_consistent : ¬ Deriv [phiDia] PLLFormula.falsePLL := by
+theorem phiDia_consistent : [phiDia] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
   refine Md_root_not_fallible (soundness d Md 0 ?_)
   intro ψ hψ
@@ -403,7 +403,7 @@ theorem phiDia_consistent : ¬ Deriv [phiDia] PLLFormula.falsePLL := by
   exact Md_force_phiDia
 
 /-- `φ♦ ⊬ ◯⊥`. -/
-theorem phiDia_not_oBot : ¬ Deriv [phiDia] oBot := by
+theorem phiDia_not_oBot : [phiDia] ⊬ oBot := by
   rintro ⟨d⟩
   refine Md_not_oBot_zero (soundness d Md 0 ?_)
   intro ψ hψ

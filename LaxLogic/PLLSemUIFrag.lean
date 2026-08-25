@@ -1,4 +1,5 @@
 import LaxLogic.PLLSemUILayered
+import LaxLogic.Interd
 
 /-!
 # Fragment finiteness up to interderivability
@@ -26,119 +27,6 @@ namespace SemUI
 
 /-! ## Derivability, `Prop`-level -/
 
-/-- `Deriv Γ φ`: the natural-deduction sequent `Γ ⊢ φ` is derivable. -/
-def Deriv (Γ : List PLLFormula) (φ : PLLFormula) : Prop := Nonempty (LaxND Γ φ)
-
-namespace Deriv
-
-theorem iden {Γ : List PLLFormula} {φ : PLLFormula} (h : φ ∈ Γ) : Deriv Γ φ :=
-  ⟨.iden h⟩
-
-theorem rename {Γ Γ' : List PLLFormula} {φ : PLLFormula}
-    (H : ∀ χ ∈ Γ, χ ∈ Γ') : Deriv Γ φ → Deriv Γ' φ
-  | ⟨p⟩ => ⟨p.rename H⟩
-
-theorem falsoElim {Γ : List PLLFormula} (φ : PLLFormula) :
-    Deriv Γ .falsePLL → Deriv Γ φ
-  | ⟨p⟩ => ⟨.falsoElim φ p⟩
-
-theorem impIntro {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv (φ :: Γ) ψ → Deriv Γ (φ.ifThen ψ)
-  | ⟨p⟩ => ⟨.impIntro p⟩
-
-theorem impElim {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ (φ.ifThen ψ) → Deriv Γ φ → Deriv Γ ψ
-  | ⟨p⟩, ⟨q⟩ => ⟨.impElim p q⟩
-
-theorem andIntro {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ φ → Deriv Γ ψ → Deriv Γ (φ.and ψ)
-  | ⟨p⟩, ⟨q⟩ => ⟨.andIntro p q⟩
-
-theorem andElim1 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ (φ.and ψ) → Deriv Γ φ
-  | ⟨p⟩ => ⟨.andElim1 p⟩
-
-theorem andElim2 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ (φ.and ψ) → Deriv Γ ψ
-  | ⟨p⟩ => ⟨.andElim2 p⟩
-
-theorem orIntro1 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ φ → Deriv Γ (φ.or ψ)
-  | ⟨p⟩ => ⟨.orIntro1 p⟩
-
-theorem orIntro2 {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv Γ ψ → Deriv Γ (φ.or ψ)
-  | ⟨p⟩ => ⟨.orIntro2 p⟩
-
-theorem orElim {Γ : List PLLFormula} {φ ψ χ : PLLFormula} :
-    Deriv Γ (φ.or ψ) → Deriv (φ :: Γ) χ → Deriv (ψ :: Γ) χ → Deriv Γ χ
-  | ⟨p⟩, ⟨q₁⟩, ⟨q₂⟩ => ⟨.orElim p q₁ q₂⟩
-
-theorem somehowMono {Γ : List PLLFormula} {φ ψ : PLLFormula} :
-    Deriv (φ :: Γ) ψ → Deriv (.somehow φ :: Γ) (.somehow ψ)
-  | ⟨p⟩ => ⟨LaxND.somehowMono p⟩
-
-/-- Weaken a one-hypothesis derivation to any context carrying that
-hypothesis at the head. -/
-theorem toHead {φ ψ : PLLFormula} {Γ : List PLLFormula} (h : Deriv [φ] ψ) :
-    Deriv (φ :: Γ) ψ :=
-  h.rename fun χ hχ => by
-    simp only [List.mem_singleton] at hχ; subst hχ; exact List.mem_cons_self ..
-
-/-- Cut against a single hypothesis. -/
-theorem cutHead {Γ : List PLLFormula} {φ ψ : PLLFormula}
-    (p : Deriv Γ φ) (q : Deriv [φ] ψ) : Deriv Γ ψ :=
-  impElim (impIntro q.toHead) p
-
-end Deriv
-
-/-! ## Interderivability -/
-
-/-- Interderivability: each formula proves the other from a single
-hypothesis. -/
-def Interd (φ ψ : PLLFormula) : Prop :=
-  Nonempty (LaxND [φ] ψ) ∧ Nonempty (LaxND [ψ] φ)
-
-namespace Interd
-
-theorem refl (φ : PLLFormula) : Interd φ φ :=
-  ⟨⟨.iden (.head _)⟩, ⟨.iden (.head _)⟩⟩
-
-theorem symm {φ ψ : PLLFormula} (h : Interd φ ψ) : Interd ψ φ := ⟨h.2, h.1⟩
-
-theorem trans {φ ψ χ : PLLFormula} (h₁ : Interd φ ψ) (h₂ : Interd ψ χ) :
-    Interd φ χ :=
-  ⟨Deriv.cutHead h₁.1 h₂.1, Deriv.cutHead h₂.2 h₁.2⟩
-
-theorem and_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : Interd ψ ψ') :
-    Interd (φ.and ψ) (φ'.and ψ') :=
-  ⟨Deriv.andIntro (Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) h₁.1)
-      (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) h₂.1),
-   Deriv.andIntro (Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) h₁.2)
-      (Deriv.cutHead (Deriv.andElim2 (Deriv.iden (.head _))) h₂.2)⟩
-
-theorem or_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : Interd ψ ψ') :
-    Interd (φ.or ψ) (φ'.or ψ') :=
-  ⟨Deriv.orElim (Deriv.iden (.head _))
-      (Deriv.orIntro1 (Deriv.toHead h₁.1)) (Deriv.orIntro2 (Deriv.toHead h₂.1)),
-   Deriv.orElim (Deriv.iden (.head _))
-      (Deriv.orIntro1 (Deriv.toHead h₁.2)) (Deriv.orIntro2 (Deriv.toHead h₂.2))⟩
-
-theorem imp_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : Interd ψ ψ') :
-    Interd (φ.ifThen ψ) (φ'.ifThen ψ') := by
-  refine ⟨?_, ?_⟩
-  · refine Deriv.impIntro (Deriv.cutHead
-      (Deriv.impElim (Deriv.iden (.tail _ (.head _))) ?_) h₂.1)
-    exact Deriv.cutHead (Deriv.iden (.head _)) h₁.2
-  · refine Deriv.impIntro (Deriv.cutHead
-      (Deriv.impElim (Deriv.iden (.tail _ (.head _))) ?_) h₂.2)
-    exact Deriv.cutHead (Deriv.iden (.head _)) h₁.1
-
-theorem box_congr {φ φ' : PLLFormula} (h : Interd φ φ') :
-    Interd (PLLFormula.somehow φ) (PLLFormula.somehow φ') :=
-  ⟨Deriv.somehowMono h.1, Deriv.somehowMono h.2⟩
-
-end Interd
 
 /-! ## Finite conjunctions -/
 

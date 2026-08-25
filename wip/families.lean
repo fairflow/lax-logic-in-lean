@@ -228,7 +228,7 @@ theorem sC_le {j k : Nat} (h : j ≤ k) : Deriv [sC j] (sC k) := by
 
 /-- `sC` is STRICT at every step (PLL): refuted at plain-lift world
 `j+2`. -/
-theorem sC_strict {j k : Nat} (h : j < k) : ¬ Deriv [sC k] (sC j) := by
+theorem sC_strict {j k : Nat} (h : j < k) : [sC k] ⊬ sC j := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (j + 2)) (fun ψ hψ => by
     have e : ψ = sC k := by
@@ -433,7 +433,7 @@ theorem rC_fails (m k : Nat) (hne : k + 2 ≠ m + 3) :
 /-- **The q14-family is an antichain** (PLL): for ALL `j ≠ k ≥ 1`,
 `rC j ⊬ rC k` — no `k ≥ 2` restriction, unlike the gaps. -/
 theorem rC_incomparable {j k : Nat} (hj : 1 ≤ j) (hk : 1 ≤ k)
-    (hne : j ≠ k) : ¬ Deriv [rC j] (rC k) := by
+    (hne : j ≠ k) : [rC j] ⊬ rC k := by
   rintro ⟨d⟩
   have hs := soundness d (cmE (j - 1)) (some (k + 2)) (fun ψ hψ => by
     have e : ψ = rC j := by
@@ -533,7 +533,7 @@ theorem gap_fails_above (m k x : Nat) (hk1 : m + 1 ≤ k) (hk2 : k ≤ m + 2)
 `(gap k).somehow` are pairwise ⊬-incomparable for `j ≠ k`, `k ≥ 2` —
 separated at world `m+5`, just above the edge. -/
 theorem bg_incomparable {j k : Nat} (hk : 2 ≤ k) (hne : j ≠ k) :
-    ¬ Deriv [(gap j).somehow] ((gap k).somehow) := by
+    [(gap j).somehow] ⊬ (gap k).somehow := by
   rintro ⟨d⟩
   have key : ∀ m : Nat, m + 1 ≤ k → k ≤ m + 2 → j ≠ m + 1 → j ≠ m + 2 →
       False := by

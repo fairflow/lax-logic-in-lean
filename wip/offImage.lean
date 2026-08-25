@@ -78,7 +78,7 @@ theorem d_q5_q10 : Deriv [q5] q10 :=
       (Deriv.impElim (Deriv.iden (.tail _ (.head _))) (Deriv.iden (.head _)))))
 
 /-- `q10 ⊬ q5`: four-world countermodel. -/
-theorem ref_q10_q5 : ¬ Deriv [q10] q5 :=
+theorem ref_q10_q5 : [q10] ⊬ q5 :=
   FinCM.not_provable_of_check
     (M := ⟨4, [(0, 1), (0, 2), (2, 3), (0, 3)], [(2, 3)], [3], []⟩)
     (w := 0) (by decide)

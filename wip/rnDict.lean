@@ -1,5 +1,6 @@
 import wip.stabilise
 import wip.rnDictBase
+import LaxLogic.RN.Reps
 
 /-!
 # The certified RN(◯,{}) dictionary: `rnDict15 : RNDict`
@@ -32,21 +33,11 @@ namespace RND
 
 /-! ## The fifteen representatives (probe order) -/
 
-def q0 : PLLFormula := .falsePLL
-def q1 : PLLFormula := (.ifThen q0 q0)
-def q2 : PLLFormula := (.somehow q0)
-def q3 : PLLFormula := (.ifThen q2 q0)
-def q4 : PLLFormula := (.or q2 q3)
-def q5 : PLLFormula := (.somehow q3)
-def q6 : PLLFormula := (.ifThen q3 q0)
-def q7 : PLLFormula := (.or q3 q6)
-def q8 : PLLFormula := (.ifThen q5 q4)
-def q9 : PLLFormula := (.or q5 q6)
-def q10 : PLLFormula := (.ifThen q6 q2)
-def q11 : PLLFormula := (.or q6 q10)
-def q12 : PLLFormula := (.somehow q7)
-def q13 : PLLFormula := (.somehow q8)
-def q14 : PLLFormula := (.ifThen q10 q5)
+/-! The fifteen RN(◯,{}) representatives, from the shared dictionary
+`LaxLogic/RN/Reps.lean` (append-only: `qk` never changes meaning).  This
+`export` re-exports the SAME constants under this namespace, so every
+existing reference keeps working and there is no second copy. -/
+export RNReps (q0 q1 q2 q3 q4 q5 q6 q7 q8 q9 q10 q11 q12 q13 q14)
 
 def repsL : List PLLFormula := [q0, q1, q2, q3, q4, q5, q6, q7, q8, q9, q10, q11, q12, q13, q14]
 
@@ -408,9 +399,11 @@ theorem cAnd_10_12 : Interd (q10.and q12) q5 :=
   ⟨ofG4 (.andL (A := q10) (B := q12) (.head _) (.laxL (A := q7) (.tail _ (.head _)) (.orL (A := q3) (B := q6) (.head _) (.laxR (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))) (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q7) (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _))))))),
    ofG4 (.andR (.impR (.laxL (A := q3) (.tail _ (.head _)) (.laxR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))))) (.laxL (A := q3) (.head _) (.laxR (.orR1 (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))))))⟩
 
-/-- OPEN CELL: candidates [10] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): the LAST remaining candidate `q10` is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cAnd_10_13_FALSE` in `wip/rnFRJCerts.lean`.  The
+15-class closure therefore FAILS here.  The statement below is FALSE and
+the `sorry` only records the failure point: nothing may depend on it. -/
 theorem cAnd_10_13 : Interd (q10.and q13) q10 := sorry
 
 /-- OPEN CELL: candidates [5] neither proved (both searchers) nor
@@ -422,9 +415,12 @@ theorem cAnd_11_12 : Interd (q11.and q12) q9 :=
   ⟨ofG4 (.andL (A := q11) (B := q12) (.head _) (.orL (A := q6) (B := q10) (.head _) (.orR2 (.impR (.impLLaxLax (A := q0) (B := q0) (X := q7) (.head _) (.tail _ (.tail _ (.tail _ (.head _)))) (.laxR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.botL (.head _))))) (.orR1 (.laxL (A := q7) (.tail _ (.tail _ (.head _))) (.orL (A := q3) (B := q6) (.head _) (.laxR (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))) (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q7) (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _))))))))),
    ofG4 (.andR (.orL (A := q5) (B := q6) (.head _) (.orR2 (.impR (.laxL (A := q3) (.tail _ (.head _)) (.laxR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))))) (.orR1 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))))) (.orL (A := q5) (B := q6) (.head _) (.laxL (A := q3) (.head _) (.laxR (.orR1 (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))))) (.laxR (.orR2 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))))))⟩
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cAnd_11_13_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
+`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
+The statement below is FALSE and the `sorry` only records the failure
+point: nothing may depend on it. -/
 theorem cAnd_11_13 : Interd (q11.and q13) q1 := sorry
 
 /-- OPEN CELL: candidates [9, 12, 14] neither proved (both searchers) nor
@@ -675,19 +671,28 @@ refuted (exhaustive ≤4-world battery).  Sorried at the first open
 candidate. -/
 theorem cOr_8_9 : Interd (q8.or q9) q1 := sorry
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
+eliminated by a kernel-checked 8-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cOr_8_10_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
+`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
+The statement below is FALSE and the `sorry` only records the failure
+point: nothing may depend on it. -/
 theorem cOr_8_10 : Interd (q8.or q10) q1 := sorry
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
+eliminated by a kernel-checked 8-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cOr_8_11_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
+`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
+The statement below is FALSE and the `sorry` only records the failure
+point: nothing may depend on it. -/
 theorem cOr_8_11 : Interd (q8.or q11) q1 := sorry
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cOr_8_12_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
+`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
+The statement below is FALSE and the `sorry` only records the failure
+point: nothing may depend on it. -/
 theorem cOr_8_12 : Interd (q8.or q12) q1 := sorry
 
 /-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
@@ -695,9 +700,12 @@ refuted (exhaustive ≤4-world battery).  Sorried at the first open
 candidate. -/
 theorem cOr_8_13 : Interd (q8.or q13) q1 := sorry
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cOr_8_14_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
+`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
+The statement below is FALSE and the `sorry` only records the failure
+point: nothing may depend on it. -/
 theorem cOr_8_14 : Interd (q8.or q14) q1 := sorry
 
 theorem cOr_9_10 : Interd (q9.or q10) q11 :=
@@ -726,9 +734,13 @@ theorem cOr_10_11 : Interd (q10.or q11) q11 :=
   ⟨ofG4 (.orL (A := q10) (B := q11) (.head _) (.orR2 (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))) (.orL (A := q6) (B := q10) (.head _) (.orR1 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))) (.orR2 (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))))),
    ofG4 (.orR2 (.orL (A := q6) (B := q10) (.head _) (.orR1 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))) (.orR2 (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _))))))))⟩
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cOr_10_12_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cOr_10_12_q11_FALSE` and `RNFRJCerts.cOr_10_12_q13_FALSE`,
+collected as `RNFRJCerts.cOr_10_12_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cOr_10_12 : Interd (q10.or q12) q1 := sorry
 
 /-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
@@ -736,14 +748,21 @@ refuted (exhaustive ≤4-world battery).  Sorried at the first open
 candidate. -/
 theorem cOr_10_13 : Interd (q10.or q13) q1 := sorry
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
+eliminated by a kernel-checked 8-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cOr_10_14_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
+`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
+The statement below is FALSE and the `sorry` only records the failure
+point: nothing may depend on it. -/
 theorem cOr_10_14 : Interd (q10.or q14) q1 := sorry
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cOr_11_12_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cOr_11_12_q11_FALSE` and `RNFRJCerts.cOr_11_12_q13_FALSE`,
+collected as `RNFRJCerts.cOr_11_12_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cOr_11_12 : Interd (q11.or q12) q1 := sorry
 
 /-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
@@ -751,9 +770,12 @@ refuted (exhaustive ≤4-world battery).  Sorried at the first open
 candidate. -/
 theorem cOr_11_13 : Interd (q11.or q13) q1 := sorry
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED AT THIS CANDIDATE, cell still OPEN.  The stated collapse is
+eliminated by a kernel-checked 8-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cOr_11_14_FALSE` in `wip/rnFRJCerts.lean`.  Candidates
+`q11`, `q13` of [1, 11, 13] survive it, so the CELL is not yet settled.
+The statement below is FALSE and the `sorry` only records the failure
+point: nothing may depend on it. -/
 theorem cOr_11_14 : Interd (q11.or q14) q1 := sorry
 
 /-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
@@ -1030,14 +1052,18 @@ theorem cImp_8_3 : Interd (q8.ifThen q3) q3 :=
   ⟨ofG4 (.impR (.impLImp (A := q5) (B := q4) (D := q3) (.tail _ (.head _)) (.impR (.orR1 (.laxR (.impLOr (A := q2) (B := q3) (D := q3) (.tail _ (.head _)) (.impLLaxLax (A := q0) (B := q3) (X := q3) (.head _) (.tail _ (.tail _ (.head _))) (.laxR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))) (.botL (.head _)) (.botL (.head _)))) (.impLLaxLax (A := q0) (B := q0) (X := q3) (.head _) (.tail _ (.tail _ (.tail _ (.head _)))) (.laxL (A := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))) (.botL (.head _))) (.botL (.head _)))))))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.head _) (.tail _ (.head _)) (.botL (.head _)) (.botL (.head _))))),
    ofG4 (.impR (.impR (.impLLax (A := q3) (B := q4) (.tail _ (.head _)) (.impLLaxLax (A := q3) (B := q4) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.head _) (.botL (.head _)) (.botL (.head _))))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.tail _ (.head _)) (.botL (.head _)) (.botL (.head _))))))⟩
 
-/-- OPEN CELL: candidates [5] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): the LAST remaining candidate `q5` is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cImp_8_4_FALSE` in `wip/rnFRJCerts.lean`.  The
+15-class closure therefore FAILS here.  The statement below is FALSE and
+the `sorry` only records the failure point: nothing may depend on it. -/
 theorem cImp_8_4 : Interd (q8.ifThen q4) q5 := sorry
 
-/-- OPEN CELL: candidates [5] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): the LAST remaining candidate `q5` is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cImp_8_5_FALSE` in `wip/rnFRJCerts.lean`.  The
+15-class closure therefore FAILS here.  The statement below is FALSE and
+the `sorry` only records the failure point: nothing may depend on it. -/
 theorem cImp_8_5 : Interd (q8.ifThen q5) q5 := sorry
 
 theorem cImp_8_6 : Interd (q8.ifThen q6) q6 :=
@@ -1150,9 +1176,11 @@ theorem cImp_10_6 : Interd (q10.ifThen q6) q6 :=
   ⟨ofG4 (.impR (.impLImp (A := q6) (B := q2) (D := q6) (.tail _ (.head _)) (.impR (.laxR (.impLImp (A := q2) (B := q0) (D := q0) (.head _) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))) (.tail _ (.head _)) (.botL (.head _)) (.botL (.head _))) (.botL (.head _)))) (.botL (.head _))))) (.impLImp (A := q2) (B := q0) (D := q0) (.head _) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.tail _ (.head _)) (.botL (.head _)) (.botL (.head _))) (.botL (.head _)))) (.botL (.head _))))),
    ofG4 (.impR (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))))⟩
 
-/-- OPEN CELL: candidates [7] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): the LAST remaining candidate `q7` is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cImp_10_7_FALSE` in `wip/rnFRJCerts.lean`.  The
+15-class closure therefore FAILS here.  The statement below is FALSE and
+the `sorry` only records the failure point: nothing may depend on it. -/
 theorem cImp_10_7 : Interd (q10.ifThen q7) q7 := sorry
 
 /-- OPEN CELL: candidates [8] neither proved (both searchers) nor
@@ -1208,9 +1236,11 @@ theorem cImp_11_6 : Interd (q11.ifThen q6) q6 :=
   ⟨ofG4 (.impR (.impLOr (A := q6) (B := q10) (D := q6) (.tail _ (.head _)) (.impLImp (A := q3) (B := q0) (D := q6) (.head _) (.impR (.impLImp (A := q6) (B := q2) (D := q6) (.tail _ (.tail _ (.tail _ (.head _)))) (.impR (.laxR (.impLImp (A := q2) (B := q0) (D := q0) (.head _) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))) (.tail _ (.head _)) (.botL (.head _)) (.botL (.head _))) (.botL (.head _)))) (.botL (.head _))))) (.impLImp (A := q2) (B := q0) (D := q0) (.head _) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.tail _ (.head _)) (.botL (.head _)) (.botL (.head _))) (.botL (.head _)))) (.botL (.head _))))) (.impLImp (A := q2) (B := q0) (D := q0) (.head _) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))) (.tail _ (.head _)) (.botL (.head _)) (.botL (.head _))) (.botL (.head _)))) (.botL (.head _)))))),
    ofG4 (.impR (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))))⟩
 
-/-- OPEN CELL: candidates [7] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): the LAST remaining candidate `q7` is
+eliminated by a kernel-checked 5-world countermodel found by FRJ(◯)
+search — `RNFRJCerts.cImp_11_7_FALSE` in `wip/rnFRJCerts.lean`.  The
+15-class closure therefore FAILS here.  The statement below is FALSE and
+the `sorry` only records the failure point: nothing may depend on it. -/
 theorem cImp_11_7 : Interd (q11.ifThen q7) q7 := sorry
 
 /-- OPEN CELL: candidates [8] neither proved (both searchers) nor
@@ -1288,9 +1318,13 @@ theorem cImp_12_10 : Interd (q12.ifThen q10) q10 :=
   ⟨ofG4 (.impR (.impLLax (A := q7) (B := q10) (.tail _ (.head _)) (.orR2 (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.head _)) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))))) (.impLImp (A := q3) (B := q0) (D := q2) (.head _) (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.tail _ (.head _))) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.head _)) (.head _) (.botL (.head _)) (.botL (.head _))))) (.laxL (A := q0) (.head _) (.botL (.head _)))))),
    ofG4 (.impR (.impR (.laxL (A := q7) (.tail _ (.head _)) (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.tail _ (.tail _ (.head _)))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q7) (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.head _)))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))))⟩
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cImp_12_11_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cImp_12_11_q11_FALSE` and `RNFRJCerts.cImp_12_11_q13_FALSE`,
+collected as `RNFRJCerts.cImp_12_11_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cImp_12_11 : Interd (q12.ifThen q11) q1 := sorry
 
 theorem cImp_12_13 : Interd (q12.ifThen q13) q1 :=
@@ -1439,9 +1473,13 @@ theorem cBox_10 : Interd q10.somehow q10 :=
   ⟨ofG4 (.impR (.laxL (A := q10) (.tail _ (.head _)) (.impLImp (A := q3) (B := q0) (D := q2) (.head _) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q10) (.head _) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.impLImp (A := q3) (B := q0) (D := q2) (.head _) (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.tail _ (.head _)))))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _))) (.laxR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _))))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _)))))),
    ofG4 (.laxR (.impR (.impLImp (A := q3) (B := q0) (D := q2) (.tail _ (.head _)) (.impR (.impLImp (A := q2) (B := q0) (D := q0) (.tail _ (.tail _ (.head _))) (.impR (.impLLaxLax (A := q0) (B := q0) (X := q0) (.tail _ (.tail _ (.head _))) (.head _) (.botL (.head _)) (.botL (.head _)))) (.botL (.head _)))) (.laxL (A := q0) (.head _) (.botL (.head _))))))⟩
 
-/-- OPEN CELL: candidates [1, 11, 13] neither proved (both searchers) nor
-refuted (exhaustive ≤4-world battery).  Sorried at the first open
-candidate. -/
+/-- REFUTED CELL (new class): ALL THREE candidates [1, 11, 13] are now
+eliminated by kernel-checked countermodels found by FRJ(◯) search —
+`RNFRJCerts.cBox_11_FALSE` (at `q1`, 5 worlds),
+`RNFRJCerts.cBox_11_q11_FALSE` and `RNFRJCerts.cBox_11_q13_FALSE`,
+collected as `RNFRJCerts.cBox_11_no_candidate`.  The 15-class closure
+therefore FAILS here.  The statement below is FALSE and the `sorry` only
+records the failure point: nothing may depend on it. -/
 theorem cBox_11 : Interd q11.somehow q1 := sorry
 
 /-- OPEN CELL: candidates [9, 12, 14] neither proved (both searchers) nor

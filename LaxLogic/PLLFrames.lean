@@ -86,7 +86,7 @@ instance (φ : PLLFormula) (w : modelFallible.W) :
 
 /-- `¬◯⊥` is **not** a theorem of PLL (F&M Figure 3, left model). -/
 theorem not_provable_not_somehow_false :
-    ¬ Nonempty (LaxND [] (notPLL (somehow falsePLL))) := by
+    [] ⊬ notPLL (somehow falsePLL) := by
   rintro ⟨p⟩
   exact absurd (soundness_valid p modelFallible false) (by decide)
 
@@ -140,9 +140,8 @@ instance (φ : PLLFormula) (w : modelOrSplit.W) :
 /-- `◯(A ∨ B) ⊃ (◯A ∨ ◯B)` is **not** a theorem of PLL
 (F&M Figure 3, middle model). -/
 theorem not_provable_somehow_or_dist :
-    ¬ Nonempty (LaxND []
-      ((somehow ((prop "A").or (prop "B"))).ifThen
-        ((somehow (prop "A")).or (somehow (prop "B"))))) := by
+    [] ⊬ (somehow ((prop "A").or (prop "B"))).ifThen
+        ((somehow (prop "A")).or (somehow (prop "B"))) := by
   rintro ⟨p⟩
   exact absurd (soundness_valid p modelOrSplit .r) (by decide)
 
@@ -203,9 +202,8 @@ instance (φ : PLLFormula) (w : modelNoImpDist.W) :
 /-- `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)` is **not** a theorem of PLL
 (F&M Figure 3, right model). -/
 theorem not_provable_imp_somehow_dist :
-    ¬ Nonempty (LaxND []
-      (((somehow (prop "A")).ifThen (somehow (prop "B"))).ifThen
-        (somehow ((prop "A").ifThen (prop "B"))))) := by
+    [] ⊬ ((somehow (prop "A")).ifThen (somehow (prop "B"))).ifThen
+        (somehow ((prop "A").ifThen (prop "B"))) := by
   rintro ⟨p⟩
   exact absurd (soundness_valid p modelNoImpDist .r) (by decide)
 

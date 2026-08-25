@@ -892,7 +892,7 @@ theorem essential_of_separation {p : String} {M χ₁ χ₂ : PLLFormula}
 /-- Classically, non-derivability yields a countermodel (contrapositive
 of `completeness`). -/
 theorem exists_countermodel {Γ : List PLLFormula} {φ : PLLFormula}
-    (h : ¬ Nonempty (LaxND Γ φ)) :
+    (h : Γ ⊬ φ) :
     ∃ (C : ConstraintModel) (w : C.W),
       (∀ ψ ∈ Γ, C.force w ψ) ∧ ¬ C.force w φ := by
   by_contra hn
@@ -922,7 +922,7 @@ theorem semAll_or_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms) :
 /-- For underivable p-free ξ, `p` is essential in `ξ ∨ p`: the instances
 `p := ⊤` and `p := ⊥` are separated at any countermodel to ξ. -/
 theorem essential_or_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms)
-    (hξ : ¬ Nonempty (LaxND [] ξ)) : ¬ Inessential p (ξ.or (.prop p)) := by
+    (hξ : [] ⊬ ξ) : ¬ Inessential p (ξ.or (.prop p)) := by
   obtain ⟨C, w, -, hnf⟩ := exists_countermodel hξ
   refine essential_of_separation (χ₁ := truePLL) (χ₂ := .falsePLL) C w ?_ ?_
   · rw [show substP p truePLL (ξ.or (.prop p)) = ξ.or truePLL from by
@@ -947,7 +947,7 @@ theorem semEx_and_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms) :
 
 /-- For p-free ξ with `ξ ⊬ ⊥`, `p` is essential in `ξ ∧ p`. -/
 theorem essential_and_p (p : String) {ξ : PLLFormula} (hp : p ∉ ξ.atoms)
-    (hξ : ¬ Nonempty (LaxND [ξ] .falsePLL)) :
+    (hξ : [ξ] ⊬ .falsePLL) :
     ¬ Inessential p (ξ.and (.prop p)) := by
   obtain ⟨C, w, hfor, hnf⟩ := exists_countermodel hξ
   have hξw : C.force w ξ := hfor ξ (List.mem_singleton.mpr rfl)
@@ -965,7 +965,7 @@ formula in which `p` is essential  iff  ξ is not derivable.  On the
 closed fragment: the essential ∀p-image is RN(◯,{}) ∖ {⊤}. -/
 theorem essential_semAll_image {p : String} {ξ : PLLFormula}
     (hp : p ∉ ξ.atoms) :
-    (∃ M, IsSemAll p M ξ ∧ ¬ Inessential p M) ↔ ¬ Nonempty (LaxND [] ξ) := by
+    (∃ M, IsSemAll p M ξ ∧ ¬ Inessential p M) ↔ [] ⊬ ξ := by
   constructor
   · rintro ⟨M, hall, hess⟩ ⟨d⟩
     exact hess ⟨ξ, hp, ⟨d.rename (by simp)⟩, semAll_lower hall⟩
@@ -978,7 +978,7 @@ fragment: the essential ∃p-image is RN(◯,{}) ∖ {⊥}. -/
 theorem essential_semEx_image {p : String} {ξ : PLLFormula}
     (hp : p ∉ ξ.atoms) :
     (∃ M, IsSemEx p M ξ ∧ ¬ Inessential p M) ↔
-      ¬ Nonempty (LaxND [ξ] .falsePLL) := by
+      [ξ] ⊬ .falsePLL := by
   constructor
   · rintro ⟨M, hex, hess⟩ ⟨d⟩
     exact hess ⟨ξ, hp, semEx_upper hex, ⟨.falsoElim M d⟩⟩
@@ -1101,10 +1101,9 @@ at the one-world model, so no finite family of instances derives ⊥.
 The ∀-criterion provably cannot establish `semAll_em_p`: the doubling
 is necessary. -/
 theorem em_p_no_certificate (p : String) (χs : List PLLFormula) :
-    ¬ Nonempty (LaxND (χs.map (fun χ =>
+    χs.map (fun χ =>
         substP p χ
-          ((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen .falsePLL))))
-      .falsePLL) := by
+          ((PLLFormula.prop p).or ((PLLFormula.prop p).ifThen .falsePLL))) ⊬ .falsePLL := by
   rintro ⟨d⟩
   have hval := soundness d oneW () (fun ξ hξ => by
     obtain ⟨χ, -, rfl⟩ := List.mem_map.mp hξ
@@ -2200,7 +2199,7 @@ end W4
 /-- **REFUTED: the fixed-basis ∃-reconstruction.**  `bicond p` does not
 derive its five-generator disjunction. -/
 theorem exRec_fails (p : String) :
-    ¬ Nonempty (LaxND [bicond p] (exCand p (bicond p))) := by
+    [bicond p] ⊬ exCand p (bicond p) := by
   rintro ⟨d⟩
   exact W4.not_force_w0_exCand p (soundness d C4 W4.w0 (fun ξ hξ => by
     simp only [List.mem_singleton] at hξ
@@ -2394,7 +2393,7 @@ end W3
 /-- **REFUTED: the fixed-basis ∀-reconstruction.**  The four-generator
 conjunction does not derive `peirce p` back. -/
 theorem allRec_fails (p : String) :
-    ¬ Nonempty (LaxND [allCand p (peirce p)] (peirce p)) := by
+    [allCand p (peirce p)] ⊬ peirce p := by
   rintro ⟨d⟩
   exact W3.not_force_a_peirce p (soundness d C3 W3.a (fun ξ hξ => by
     simp only [List.mem_singleton] at hξ
@@ -2562,14 +2561,14 @@ def twoChain : ConstraintModel where
 /-- `⊬ ◯⊥`: at the one-world irrefutable model, no constraint witness is
 fallible. -/
 theorem not_derivable_boxFalse :
-    ¬ Nonempty (LaxND [] PLLFormula.falsePLL.somehow) := by
+    [] ⊬ PLLFormula.falsePLL.somehow := by
   rintro ⟨d⟩
   obtain ⟨u, -, hu⟩ := soundness d oneW () (by simp) () (oneW.refl_i ())
   exact hu
 
 /-- `⊬ ¬◯⊥`: at the root of `twoChain`, `◯⊥` holds non-fallibly. -/
 theorem not_derivable_neg_boxFalse :
-    ¬ Nonempty (LaxND [] (PLLFormula.falsePLL.somehow.ifThen .falsePLL)) := by
+    [] ⊬ PLLFormula.falsePLL.somehow.ifThen .falsePLL := by
   rintro ⟨d⟩
   have hval := soundness d twoChain false (by simp) false (fun h => h)
   have hbox : twoChain.force false PLLFormula.falsePLL.somehow := by

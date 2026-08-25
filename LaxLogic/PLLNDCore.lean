@@ -98,6 +98,21 @@ inductive LaxND : List PLLFormula → PLLFormula → Type
 
 infix:70 " ⊢- " => LaxND
 
+/-- `Γ ⊬ φ`: `φ` is NOT derivable from `Γ`.
+
+`Γ ⊢- φ` is the *type* of derivations, so underivability is the emptiness of that
+type.  Lean's general spelling for that is `¬ Nonempty _`, or as a class
+`IsEmpty _` (`not_nonempty_iff : ¬ Nonempty α ↔ IsEmpty α`); `Empty` is the empty
+type itself, not this.  Here it is worth a name of its own: refutation results are
+half of this development, the repo's comments have always written them `⊬`, and a
+`reducible` definition displays that way in goals while still unifying silently
+with the `¬ Nonempty (LaxND …)` and `¬ Deriv …` spellings already in use — so
+existing certificates typecheck against it unchanged. -/
+abbrev Underivable (Γ : List PLLFormula) (φ : PLLFormula) : Prop :=
+  ¬ Nonempty (LaxND Γ φ)
+
+@[inherit_doc] infix:70 " ⊬ " => Underivable
+
 /-! ## Admissible structural rules
 
 Because `iden` is membership-based, one renaming traversal gives weakening,

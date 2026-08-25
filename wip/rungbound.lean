@@ -135,7 +135,7 @@ theorem chain_bound_is_theorem {φ : PLLFormula}
 
 /-- Contrapositive, in the exact shape of the question. -/
 theorem no_witness (φ : PLLFormula) :
-    ¬ ((∀ k, Deriv [rnSub (2 * k + 1)] φ) ∧ ¬ Deriv [] φ) := by
+    ¬ ((∀ k, Deriv [rnSub (2 * k + 1)] φ) ∧ [] ⊬ φ) := by
   rintro ⟨hA, hB⟩
   exact hB (chain_bound_is_theorem hA)
 
@@ -177,7 +177,7 @@ cannot both hold.  (`hU` at `χ = ⊤` demands `⊬ φ`, while `hc` forces
 theorem pre_interp_schema_vacuous {φ : PLLFormula}
     (hc : ∀ k, Deriv [chainF k] φ)
     (hU : ∀ χ, atomFree χ = true → (∀ k, Deriv [chainF k] χ) →
-      ¬ Deriv [χ] φ) : False := by
+      [χ] ⊬ φ) : False := by
   have hthm : Deriv [] φ := c_chain_bound_is_theorem hc
   refine hU (PLLFormula.falsePLL.ifThen .falsePLL) top_atomFree
     (fun _ => Deriv.impIntro (Deriv.iden (.head _))) ?_

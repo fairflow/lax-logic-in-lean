@@ -15,6 +15,67 @@ rev = "v4.31.0"
 [[lean_lib]]
 name = "LaxLogic"
 
+# BiLax: the bi-lax extension of PLL (docs/bilax-plan.md), kept out of
+# the cluttered main directory.  Root module imports the round files.
+[[lean_lib]]
+name = "BiLax"
+
+# Reject: the forward model-generating refutation calculus for PLL
+# (docs/frj-lifting.md), after Fiorentini-Ferrari FRJ(G) and their
+# JLC 2021 S4 model-generation calculus.
+[[lean_lib]]
+name = "Reject"
+
+# Rewrite: certified interderivabilities used as a simplifier.
+# Certified: LAYER 1 of the RN(◯,{}) mapping — the register of every
+# theorem the dictionary is allowed to cite, each re-pinned here with a
+# #guard_msgs-checked #print axioms.  Imports upward only: it may cite
+# LaxLogic/, FRJ/, Reject/ and wip/, and nothing may cite it except the
+# tools and the database.
+# LJF: LJF and LJF◯, the focused sequent calculi, split out of LaxLogic/
+# on 2026-08-22 to modularise.  Dependency runs LJF -> LaxLogic only.
+[[lean_lib]]
+name = "LJF"
+globs = ["LJF.Base", "LJF.Complete", "LJF.OCore", "LJF.OUniverse", "LJF.ORows",
+         "LJF.OHeight", "LJF.OFuel", "LJF.O", "LJF.OSearch", "LJF.OBridge",
+         "LJF.OAudit"]
+
+# RNDB: LAYER 3 — the dictionary database types (Claim/Evidence/Entry/
+# Frontier, the un-sorriable `ok` field).  Built by a delegated agent
+# 2026-08-21 in worktree agent-aea09736d84d32c6f; pulled in 2026-08-24.
+[[lean_lib]]
+name = "RNDB"
+globs = ["RNDB.Types", "RNDB.RhoEntries", "RNDB.DictEntries", "RNDB.Dict2Entries", "RNDB.FRJCertEntries", "RNDB.DerivedEntries", "RNDB.EscEntries", "RNDB.DB", "RNDB.Examples", "RNDB.Frontier79", "RNDB.Order"]
+
+[[lean_lib]]
+name = "Certified"
+globs = ["Certified.Register", "Certified.RhoRefutations"]
+
+[[lean_lib]]
+name = "Rewrite"
+
+# FRJO: the refutation calculus dual to LJF◯ search (FRJ extended to ◯);
+# derivations are finite checkable trees, extraction via the unraveller's
+# assembly, soundness per instance through FinCM.checkB.
+[[lean_lib]]
+name = "FRJO"
+
+# FRJ: a faithful formalisation of Fiorentini-Ferrari's forward refutation
+# calculus FRJ(G) for IPC (TOCL 21(3), 2020; arXiv:1804.06689).  Base case
+# only: no modality.  Independent of FRJO/ and of LaxLogic/.
+[[lean_lib]]
+name = "Meta"
+
+[[lean_lib]]
+name = "FRJ"
+
+
+
+[[lean_exe]]
+name = "bilaxscreen"
+root = "BiLax.Screens"
+
+
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup
 # (cache-shipped C IR miscompile in Mathlib.Data.Set.Basic; full analysis in
 # Main.lean's history).  FIXED by the v4.31.0 toolchain bump (adopted here,
@@ -26,15 +87,78 @@ root = "Main"
 
 # Shared wip modules that other wip files import (lake resolves imports
 # only against declared targets; exe roots alone don't cover imports).
+# Tools: the FRJ(◯) certificate-and-search toolchain, aggregated out of
+# wip/.  Every file here is a COPY — the wip/ originals are left in place
+# unchanged so other branches still compile — and this is the maintained
+# side.  See Tools/README.md.
+[[lean_lib]]
+name = "Tools"
+globs = ["Tools.Bank", "Tools.Cert", "Tools.Pin", "Tools.Search", "Tools.Derive", "Tools.Engines", "Tools.Terminate", "Tools.Diff", "Tools.Hard", "Tools.Verdict", "Tools.Construct", "Tools.BankRho", "Tools.Cover"]
+
+# frjterm: is the CAP-FREE CLOSURE outcome reachable at all?  (2026-08-21)
+# rhocover: the catalogue-wide PLL cover sweep (item 2, 2026-08-24).
+[[lean_exe]]
+name = "rhocover"
+root = "Tools.Cover"
+
+[[lean_exe]]
+name = "frjterm"
+root = "Tools.Terminate"
+
+# frjdiff: Fast vs Profile, matched and unbounded arity  (2026-08-21)
+[[lean_exe]]
+name = "frjdiff"
+root = "Tools.Diff"
+
+# frjhard: the escalation ladder, one engine per invocation so the caller
+# can impose a real (process-level) timeout.  (2026-08-21)
+[[lean_exe]]
+name = "frjhard"
+root = "Tools.Hard"
+
+# frjconstruct: FRJ(◯) modR vs G4c CounterEmit.emit, construction vs
+# construction, battery excluded.  (2026-08-23)
+[[lean_exe]]
+name = "frjconstruct"
+root = "Tools.Construct"
+
+# rhobank: sweep the 462 ρ-cells and emit kernel-checkable refutation
+# certificates for every hit (discover-then-pin).  (2026-08-24)
+[[lean_exe]]
+name = "rhobank"
+root = "Tools.BankRho"
+
 [[lean_lib]]
 name = "wipshared"
 globs = ["wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
-         "wip.mforth_probe", "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rnDictRefute", "wip.bandStabilise", "wip.bandM", "wip.rnc_probe", "wip.rncCert", "wip.rncCertPos",
+         "wip.mforth_probe", "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rho_order", "wip.rho_engines", "wip.ljfo_link", "wip.two_sided", "wip.ljfo_unravel", "wip.rnDictRefute", "wip.bandStabilise", "wip.bandM", "wip.rnc_probe", "wip.rncCert", "wip.rncCertPos",
          "wip.rnSep", "wip.rnSepColl", "wip.rnDict2Hand", "wip.rnDict2", "wip.rnDictRefute2", "wip.rnSpawnColl",
-         "wip.witOut", "wip.bandW", "wip.rankedM", "wip.rnEmbed", "wip.bandRefute", "wip.semSpecW", "wip.rankedResidue", "wip.rankGapPoint", "wip.mwit_complete", "wip.starve", "wip.g4confGap", "wip.cascadeBox", "wip.ascRefute", "wip.descent2",
+         "wip.witOut", "wip.bandW", "wip.rankedM", "wip.rnEmbed", "wip.visible", "wip.bandRefute", "wip.semSpecW", "wip.rankedResidue", "wip.rankGapPoint", "wip.mwit_complete", "wip.starve", "wip.g4confGap", "wip.cascadeBox", "wip.ascRefute", "wip.descent2",
          "wip.floorRefute", "wip.goalDesc", "wip.envDesc", "wip.sealRefute", "wip.jumpPinned", "wip.pinnedFacts", "wip.boxedBranchS1", "wip.atomForce", "wip.floorImp", "wip.freshAnt", "wip.boxedS1b", "wip.boxedOnPath", "wip.boxSnd", "wip.boxSndTight", "wip.floorGoals", "wip.ladder8", "wip.ladderdistr", "wip.rncCells", "wip.rungPinned", "wip.fiveWorld", "wip.twogenStmt", "wip.secondgen", "wip.embedNeg", "wip.overlap", "wip.offImage", "wip.boxTop", "wip.boxq11", "wip.chainStrict", "wip.chainOff", "wip.rnClass", "wip.rnClassify", "wip.laxNeg", "wip.omegaFix", "wip.gapWidth", "wip.families", "wip.connect", "wip.seeds", "wip.gap2", "wip.uiObstruct", "wip.witness", "wip.rungbound", "wip.floor", "wip.wlanding", "wip.collapse", "wip.gzSchema", "wip.postui", "wip.coverfail", "wip.phistar", "wip.guardstretch", "wip.mixedfail", "wip.branchdia", "wip.paramfork", "wip.phispade", "wip.nfcorrect", "wip.towerkit", "wip.towerpin", "wip.towercircle", "wip.toweratoms",
          "wip.depth", "wip.depth2", "wip.depth3", "wip.schemeext", "wip.classical", "wip.linear",
-         "wip.negFour", "wip.negFourDistinct", "wip.polarity", "wip.hunts"]
+         "wip.negFour", "wip.negFourDistinct", "wip.polarity", "wip.hunts",
+         "wip.ljfo_attack", "wip.ljfo_crosscheck",
+         "wip.ljfo_theta", "wip.ljfo_theta_pinned", "wip.ljfo_theta_certs", "wip.ljfo_theta_axioms",
+         "wip.pcll1pv_stage0", "wip.pcll1pv_stage1", "wip.pcll1pv_stage2", "wip.pcll1pv_stage2e", "wip.pcll1pv_stage2f", "wip.pcll1pv_stage2g", "wip.pcll1pv_stage2h", "wip.pcll1pv_stage2i", "wip.pcll1pv_stage2j", "wip.pcll1pv_stage3", "wip.pcll1pv_stage3b", "wip.pcll1pv_stage4", "wip.closed_frag_pins", "wip.task5",
+         "wip.rnBank", "wip.rnFRJCerts", "wip.atomProbe"]
+
+# The CimpAnt frontier attack + φ★ cross-check, compiled (review round
+# 2026-08-11): the native oracle route for the LJF◯ interpolant cells.
+[[lean_exe]]
+name = "attackrun"
+root = "wip.ljfo_attack_run"
+
+[[lean_exe]]
+name = "escrun"
+root = "wip.ljfo_escalate_run"
+
+[[lean_exe]]
+name = "kernesc"
+root = "wip.ljfo_kernel_esc"
+
+[[lean_exe]]
+name = "stabrun"
+root = "wip.ljfo_stab"
 
 # The two-sided decision tool (countermodel-first; wip/oracle2.lean) and its
 # one-sided baseline, compiled — the native oracle route.
@@ -154,6 +278,43 @@ root = "wip.rnDictGen"
 [[lean_exe]]
 name = "rncprobe"
 root = "wip.rnc_probe"
+
+[[lean_exe]]
+name = "rwscreen"
+root = "wip.rw_screen"
+
+[[lean_exe]]
+name = "clscreen"
+root = "wip.cl_screen"
+
+[[lean_exe]]
+name = "frjprobe"
+root = "wip.frj_probe"
+
+[[lean_exe]]
+name = "frjsat"
+root = "wip.frj_sat"
+
+# The RN(◯,{}) oracle-bank harness for the FRJ(◯) countermodel search.
+[[lean_exe]]
+name = "rnfrj"
+root = "Tools.Search"
+
+# Emit a kernel-checkable countermodel from a search hit.
+[[lean_exe]]
+name = "rnpin"
+root = "Tools.Pin"
+
+# Kreisel-Putnam screen for candidate ◯-rejection rules (BiLax (b)).
+[[lean_exe]]
+name = "rejscreen"
+root = "wip.reject_screen"
+
+# Closed-fragment collapse probe (2026-08-13): DerivU classes per crank,
+# collapse question up to crank 7 (streams one line per classification cell).
+[[lean_exe]]
+name = "closedfrag"
+root = "wip.closed_frag"
 
 # MwitResidue probe: witness-form residue (modes G/R), re-aim of biipprobe.
 [[lean_exe]]
@@ -386,3 +547,116 @@ globs = ["tools.proofstates.Recorder", "tools.proofstates.Html"]
 name = "pstates"
 root = "tools.proofstates.Main"
 supportInterpreter = true
+
+# θ_k family attack on the candidate cell (refutation-prong agent,
+# 2026-08-11): discovery/verification drivers; the pinned results are
+# wip/ljfo_theta_pinned.lean, _certs, _axioms (built via wipshared).
+[[lean_exe]]
+name = "thetaprint"
+root = "wip.ljfo_theta_print"
+[[lean_exe]]
+name = "thetarun"
+root = "wip.ljfo_theta_run"
+[[lean_exe]]
+name = "thetachain"
+root = "wip.ljfo_theta_chain"
+[[lean_exe]]
+name = "thetapush"
+root = "wip.ljfo_theta_push"
+[[lean_exe]]
+name = "thetabridge"
+root = "wip.ljfo_theta_bridge"
+[[lean_exe]]
+name = "thetapin"
+root = "wip.ljfo_theta_pin"
+[[lean_exe]]
+name = "thetared"
+root = "wip.ljfo_theta_red"
+[[lean_exe]]
+name = "thetatriage"
+root = "wip.ljfo_theta_triage"
+[[lean_exe]]
+name = "thetafamily"
+root = "wip.ljfo_theta_family"
+
+# The upper-bound probe on the candidate cell (proof-prong agent,
+# 2026-08-11): θmax, candidate bank, certified decomposition, chain
+# extension.  Subcommands: print|cand|h6|push|pushraw|split|splitraw|
+# splitsnd|cm|estruct|kernD.
+[[lean_exe]]
+name = "ubrun"
+root = "wip.ljfo_ub"
+
+# Stage-0 screens for the 1-pv PCLL semantic UI plan (S2 corner /
+# S3 residue-vacuity proxies; docs/pcll-1pv-ui-plan.md).
+[[lean_exe]]
+name = "s0screens"
+root = "wip.pcll1pv_screens"
+
+[[lean_exe]]
+name = "rnextend"
+root = "wip.rn_extend"
+
+[[lean_exe]]
+name = "rhoorder"
+root = "wip.rho_order_run"
+
+[[lean_exe]]
+name = "rhoengines"
+root = "wip.rho_engines_run"
+
+# The JOIN screen (T1): the extensional attack on the multi-premise
+# root constructor, run before Reject/Join.lean was proved.
+[[lean_exe]]
+name = "joinscreen"
+root = "wip.join_screen"
+
+# The T2 screen: the height measure, plus an extensional test of
+# completeness for the class solo/join generate (finite trees).
+[[lean_exe]]
+name = "t2screen"
+root = "wip.t2_screen"
+
+# The (R) screen: can Rᵢ be refined so that a countermodel becomes
+# REDUCED without moving forcing?  Variant sweep, four refinements.
+[[lean_exe]]
+name = "rscreen"
+root = "wip.r_screen"
+
+# T3: the forward-saturation searcher over constructions, with sharing
+# keyed by the state a join consumes, plus the covering-goal harvest.
+[[lean_exe]]
+name = "t3search"
+root = "wip.t3_search"
+
+# The two-sided engine: LJF◯ backward search proves (certified via the
+# bridge), Reject/Built trees refute (certified via certifies); the
+# link layer with kernel pins is wip/ljfo_link.lean.
+[[lean_exe]]
+name = "twosided"
+root = "wip.two_sided_run"
+
+# Sequent-directed disproof: the LJF◯ unraveller vs the G4c emitter vs
+# the battery, on the refutable ρ-order cells and the two flags.
+[[lean_exe]]
+name = "unravelscreen"
+root = "wip.unravel_screen"
+
+[[lean_exe]]
+name = "frjoscreen"
+root = "wip.frjo_screen"
+
+# FRJ◯ worked example: the refutation of q6 ∨ q10 ∨ q14, end to end.
+[[lean_exe]]
+name = "frjodemo"
+root = "wip.frjo_demo"
+
+# Route B: the derivation-preserving extractor (route A is `rnpin`).
+[[lean_exe]]
+name = "frjderive"
+root = "Tools.Derive"
+
+# One command: sequent in, Lean-checked certificate + SVG out.
+[[lean_exe]]
+name = "frjcert"
+root = "Tools.Cert"

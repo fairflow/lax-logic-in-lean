@@ -65,7 +65,7 @@ def p : PLLFormula := prop "p"
 whose only judgment is `true`.  (Contrast the EMPTY context, where reflection
 DOES hold — `⊢ ◯A → ⊢ A`, `wip/boxTop.lean`.  Non-invertibility is a statement
 about open sequents.) -/
-theorem box_right_not_invertible : ¬ Nonempty (LaxND [p.somehow] p) :=
+theorem box_right_not_invertible : [p.somehow] ⊬ p :=
   FinCM.not_provable_of_check
     (M := ⟨2, [(0,1)], [(0,1)], [], [(1,"p")]⟩) (w := 0) (by decide)
 

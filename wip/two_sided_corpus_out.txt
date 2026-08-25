@@ -1,0 +1,65 @@
+=== TWO-SIDED ENGINE: LJF◯ proves / Reject refutes — the 462 ρ-order cells, as PLL questions ===
+full battery 10534 frames; Built subbattery 570 frames; fuel ladder [8, 12, 16, 20, 24, 28, 32]
+  row ρ0 done
+  row ρ1 done
+  row ρ2 done
+  row ρ3 done
+  row ρ4 done
+  row ρ5 done
+  row ρ6 done
+  row ρ7 done
+  row ρ8 done
+  row ρ9 done
+  row ρ10 done
+  row ρ11 done
+  row ρ12 done
+  row ρ13 done
+  row ρ14 done
+  row ρ15 done
+  row ρ16 done
+  row ρ17 done
+  row ρ18 done
+  row ρ19 done
+  row ρ20 done
+  row ρ21 done
+
+ground truth (old machinery): 158 ⊢, 302 ⊬, 2 flag   [10629 ms]
+engine                      : 127 ⊢, 248 ⊬, 87 flag   [LJF◯ 0 ms + Reject 33376 ms]
+agreement on settled cells  : 375/460
+conflicts                   : 0 (each one is a defect; two_sided_disjoint makes real ones impossible)
+
+proof side, minimum fuel histogram:
+  fuel ≤ 8: 46 cells
+  fuel ≤ 12: 10 cells
+  fuel ≤ 16: 4 cells
+  fuel ≤ 20: 10 cells
+  fuel ≤ 24: 24 cells
+  fuel ≤ 28: 19 cells
+  fuel ≤ 32: 14 cells
+
+refutations LOST by restricting the battery to the Built class (≤5 worlds): 54
+  (T2 says a Built countermodel EXISTS for each; the bisimilar tree may need
+   more worlds than 5 — these cells are the tree generator's worklist, not losses)
+    ρ1⊬ρ11
+    ρ1⊬ρ15
+    ρ7⊬ρ4
+    ρ7⊬ρ6
+    ρ7⊬ρ11
+    ρ7⊬ρ13
+    ρ7⊬ρ14
+    ρ7⊬ρ17
+    ρ8⊬ρ11
+    ρ8⊬ρ14
+    ρ8⊬ρ15
+    ρ8⊬ρ16
+    ρ8⊬ρ17
+    ρ8⊬ρ18
+    ρ9⊬ρ6
+    ρ9⊬ρ11
+    ρ9⊬ρ13
+    ρ9⊬ρ17
+    ρ10⊬ρ11
+    ρ10⊬ρ15
+
+engine flags: 87
+TWO-SIDED-CORPUS-DONE

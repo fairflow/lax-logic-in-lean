@@ -694,14 +694,14 @@ theorem proved_sound {Γ : List PLLFormula} {C : PLLFormula} (t : G4cTm Γ C) :
 `FinCM.not_provable_of_check` (Kripke soundness of natural deduction). -/
 theorem refuted_sound {Γ : List PLLFormula} {C : PLLFormula}
     {M : FinCM} {w : Nat} (h : FinCM.checkB M w Γ C = true) :
-    ¬ Nonempty (LaxND Γ C) :=
+    Γ ⊬ C :=
   FinCM.not_provable_of_check h
 
 /-- A certified verdict: the derivability status of `Γ ⊢ C` together with a
 proof of it (or `dontKnow`). -/
 inductive Decision (Γ : List PLLFormula) (C : PLLFormula) where
   | derivable   : Nonempty (LaxND Γ C) → Decision Γ C
-  | underivable : ¬ Nonempty (LaxND Γ C) → Decision Γ C
+  | underivable : Γ ⊬ C → Decision Γ C
   | dontKnow    : Decision Γ C
 
 /-- Discharge an `Answer` into a certified `Decision` in one call. -/
@@ -932,7 +932,7 @@ def Witness.snippet {Γ : List PLLFormula} {C : PLLFormula}
   let ⟨M, w, _⟩ := wit
   String.intercalate "\n"
     [ s!"theorem {name} :",
-      s!"    ¬ Nonempty (LaxND {srcOfCtx Γ} {srcOf C}) :=",
+      s!"    {srcOfCtx Γ} ⊬ {srcOf C} :=",
       "  FinCM.not_provable_of_check",
       s!"    (M := {srcOfCM M}) (w := {w}) (by decide)",
       "",

@@ -1,0 +1,458 @@
+# Plan: rebuilding the RN(◯,{}) dictionary and operation tables
+
+Written 2026-08-19, after the correction recorded in `HANDOFF.md`
+(§ "the sixteen refutations were not new").
+
+---
+
+## 0. The true state today
+
+Two dictionaries exist.
+
+> **CORRECTION, 2026-08-21.** This section read "**Round 2 supersedes
+> round 1; round 1 is dead.**" That verdict is FALSE, and acting on it
+> would have destroyed `Rewrite/Catalogue.lean`. The relation is
+> **extension**, not supersession — see the supersession check below,
+> which the verdict was recorded without running.
+
+| | round 1 `wip/rnDict.lean` | round 2 `wip/rnDict2.lean` |
+|---|---|---|
+| representatives | 15 (`q0…q14`) | 16 (`q0…q15`, `q15 = q9 → q4`) |
+| table entries (∧,∨,→,◯) | 225+225+225+15 = **690** | 256+256+256+16 = **784** |
+| stated cell theorems | 323 | 140 |
+| `:= sorry` cells | 87 | **58** |
+| status of those cells | mixed OPEN / REFUTED | **all 58 REFUTED**, none open |
+| witnesses | scattered | `wip/rnDictRefute2.lean`, sorry-free, 168 KB |
+
+Your figure of "347 tables" is not one I can match to anything in the
+files; the counts above are the real ones. The substance of your remark
+is right, and stronger than you put it.
+
+### Supersession check: round 1 → round 2
+
+Run 2026-08-21 per `.claude/skills/constraint-supersession-check`, because
+the bare "round 1 is dead" verdict above is exactly the failure that skill
+closes: argued from one constraint (the corrupted tables), silent about
+the rest.
+
+Measured over cell-theorem names, with Lean comments stripped first (a
+`sorry` mentioned in a docstring otherwise misclassifies the theorem
+above it — that error alone moved the counts by twelve):
+
+| | count |
+|---|---|
+| round 1 stated / proved / sorried | 323 / **236** / 87 |
+| round 2 stated / proved / sorried | 140 / 82 / 58 |
+| round 1 **proved** cells that round 2 restates | **0** — all 236 absent |
+| round 1 sorried cells round 2 **proves** | 41 |
+| sorried in round 1 and round 2 alike | 45 |
+| round 1 sorried, round 2 never states | 1 (`cImp_9_4`: `q15` IS `q9 ⊃ q4`, so `Interd.refl`) |
+| new in round 2 | 54 |
+
+41 + 45 + 1 = 87. Round 2 is a **partial second round over an enlarged
+representative set**: it re-attacks round 1's failures and adds `q15`'s
+row and column. It restates none of round 1's proved cells.
+
+| constraint | source | round 1 | round 2 | verdict |
+|---|---|---|---|---|
+| the 236 certified operation-table cells that become `rndSet` | `Rewrite/Catalogue.lean` header | states and proves all 236 | restates **none** | **RE-OPENED** |
+| the `q0…q14` numbering every certificate is stated in | `LaxLogic/RN/Reps.lean` | defines it | identical, plus `q15` | DISCHARGED |
+| the candidate-list record backing `_no_candidate` | `wip/rnFRJCerts.lean` header | prose only | not restated | **RE-OPENED** |
+| a usable record of which cells are open | `docs/rn-dictionary-status.md` | 87 sorried, OPEN and REFUTED indistinguishable | 58 sorried, all refuted, witnesses universal | DISCHARGED for the 42 it settles; 45 remain sorried in both |
+
+**Verdict: NOT superseded. The relation is EXTENSION.** Round 1 stays
+live until its 236 proved cells are migrated. Re-opened constraints: the
+236 `rndSet` cells and the candidate-list record — both owned by the
+database migration (Phase 3.2 of the layer plan).
+
+### Supersession check: `PartialRNDict` (§4 below) → the `Entry`/DAG database
+
+| constraint | source | `PartialRNDict` | `Entry`/DAG | verdict |
+|---|---|---|---|---|
+| `sorry` impossible | §4 | `some k` + proof, or `none` + escape proof | the `ok` field; and an open claim gets **no `Entry` at all** | DISCHARGED, more strongly |
+| refutations at full strength | §4, §7.3 | `andMiss : ∀ k, ¬ Interd …` | only if scope is a **required field** of `Claim` | DISCHARGED by construction |
+| `rep_distinct` | §4 | a new obligation | two `.nle` entries; derived, not assumed | DISCHARGED |
+| `none` not spelled as `⊥` | §7.1 | the `Option` | absence of an entry, not a value | DISCHARGED |
+| O(1) indexed lookup, table as a function | §4 (`andT : Fin n → Fin n → Option (Fin n)`) | the type | a DAG has no indexing | **RE-OPENED** |
+
+**Verdict: superseded EXCEPT indexed lookup**, recovered by keeping
+`PartialRNDict` as a *computed view* over the DAG plus a theorem that the
+view and the entries agree.
+
+### Supersession check: `wip/rho_engines_out.txt` → `docs/two-sided-engine.md`
+
+| constraint | source | `rho_engines` | two-sided | verdict |
+|---|---|---|---|---|
+| cost comparison on the 462 ρ-cells | its own header | 110/158 proofs at depth ≤32 | 158/158 at fuel ≤44 | DISCHARGED |
+| cross-check for engine conflicts | same | 0 over 302 | 0 again | DISCHARGED |
+| "an LJF◯ success certifies LJF◯ only" | `docs/ljfo-fidelity.md` §5 | true when written | `FocalizationPLL` / `bridge_iff` now PROVED | **LAPSED** — the goal changed, not the remedy |
+| diagnostic: where LJF◯ struggles | its 48-unreached list | the list | empty at fuel 44; survives as the fuel histogram | DISCHARGED |
+
+**Verdict: superseded, no re-opened constraints.** Mark the file stale
+with a pointer; do not delete.
+
+### The tables are not merely unproved — 83 entries are certified false
+
+Every one of the 58 sorried round-2 cells has the same shape:
+
+    Interd (q_i ∘ q_j) q0        where q0 = ⊥
+
+and every one is refuted in `wip/rnDictRefute2.lean` in the *strong*
+form
+
+    ∀ k : Fin 16, ¬ Interd (q_i ∘ q_j) (rep2 k)
+
+so no representative works, not merely the one tabulated. Since
+`and2Idx i j` reads entry `and2T[i][j]`, and ∧ and ∨ are tabulated
+symmetrically, the 58 cells corrupt **83 of the 784 entries**:
+
+| table | entries | certified wrong |
+|---|---|---|
+| `and2T` | 256 | 12 |
+| `or2T`  | 256 | 38 |
+| `imp2T` | 256 | 31 |
+| `box2T` | 16  | 2  |
+| | **784** | **83** |
+
+for instance `and2T[8][11] = 0`, `or2T[8][10] = 0`, `imp2T[13][9] = 0`,
+`box2T[11] = 0`.
+
+The mechanism is a pipeline defect, not a mathematical one: the
+generator emitted `0` (i.e. `⊥`) whenever search failed to find a
+collapse target. **And `0` is also a legitimate table value** — of the
+131 zero entries across the four tables, 48 are correct (q2 ∧ q3 = ⊥
+really is ⊥) and 83 are the failure default. The two are
+indistinguishable by inspection: *absence of evidence was written into
+the table in the same notation as evidence.* That is the single worst
+decision in the pipeline and item 1 of the process changes below.
+
+### Both `RNDict` instances are unsound objects
+
+`rnDict15` and `rnDict16` are declared as instances of
+
+    structure RNDict where
+      …
+      and_interd : ∀ i j, Interd ((rep i).and (rep j)) (rep (andIdx i j))
+      or_interd  : ∀ i j, Interd ((rep i).or  (rep j)) (rep (orIdx  i j))
+      imp_interd : ∀ i j, Interd ((rep i).ifThen (rep j)) (rep (impIdx i j))
+      box_interd : ∀ i,   Interd (PLLFormula.somehow (rep i)) (rep (boxIdx i))
+
+with those four fields supplied by `and2_ok`, `or2_ok`, `imp2_ok`,
+`box2_ok`, which case-split onto the sorried cells. So both instances
+carry `sorryAx`, and both assert statements now known to be false.
+They must not exist in this form. Fixed in Phase B.
+
+### Where the escapes are
+
+The 58 break down as ∧ 6, ∨ 19, → 31, ◯ 2, and they are concentrated
+at the top of the order — every escape involves at least one of
+q8, q10, q11, q12, q13, q14, q15. Two features matter for what follows:
+
+1. **◯ now escapes.** At round 1, `boxT` was total (◯ mapped the 15
+   classes into themselves). At round 2, `◯q11` and `◯q15` escape.
+   Adding one representative made ◯ non-total.
+2. **Adjacent-implication escapes.** `cImp_12_11`, `cImp_13_12`,
+   `cImp_14_13`, `cImp_15_14`, `cImp_13_9`, `cImp_14_9` — implication
+   between neighbouring high classes escapes, repeatedly. In the
+   Rieger–Nishimura lattice the infinite ladder is generated by exactly
+   that step, `g_{n+2} = g_{n+1} → g_n`.
+
+Together these say the failure is not "we are one or two
+representatives short".
+
+---
+
+## 1. Three faults, separated
+
+**Fault A — the artefact lies.** A total table of assertions with
+`sorry` cells. A cell that search could not settle is indistinguishable,
+in the data structure, from a cell that is true. Structural, fixable,
+Phase B.
+
+**Fault B — atomicity is not a search problem.** Yours:
+
+> to validate ψ → φ as an atomic upward step we need ψ ⊢ φ, φ ⊬ ψ, and
+> NO interpolant χ with ψ ⊬⊣ χ ⊢ φ ⊬⊣ χ. But there are infinitely many
+> potential interpolants.
+
+Stated in the repo's vocabulary:
+
+    Covers ψ φ  :=  Deriv ψ φ
+                 ∧ ¬ Deriv φ ψ
+                 ∧ ∀ χ : PLLFormula, χ.atoms = ∅ →
+                     Deriv ψ χ → Deriv χ φ → (Interd χ ψ ∨ Interd χ φ)
+
+The last conjunct quantifies over a countably infinite set. No amount
+of countermodel search touches it: search can only ever *refute* a
+`Covers` claim by exhibiting one strict interpolant. Confirming one
+requires a proof. Phase C.
+
+Note the two are linked. If a finite set R of representatives were
+*proved complete* — `∀ φ closed, ∃ r ∈ R, Interd φ r` — then χ may be
+taken in R and `Covers` becomes a `decide`. That completeness theorem is
+what the dictionary was always implicitly for. It failed at 15
+representatives and at 16, and §2 shows it **cannot succeed at any
+number**: the fragment is infinite, and that is proved.
+
+**Fault C — process.** Generation read a superseded source; refutations
+were stated per-candidate rather than universally; results were
+compared against a stale baseline. Phase D.
+
+---
+
+## 2. RN(◯,{}) is infinite — PROVED, and it closes this question
+
+This was already settled in the main library and I should have found it
+before writing §2 of the first draft.
+
+    theorem PLLND.LaxInfinite.closed_lax_infinite :
+      Infinite (Quotient closedSetoid)
+
+`LaxLogic/PLLLaxInfinite.lean:616`, sorry-free, axioms
+`[propext, Classical.choice, Quot.sound]`, in the build via
+`LaxLogic.lean:75`. `closedSetoid` is the ⊣⊢ setoid on atom-free
+`PLLFormula`, so the statement is exactly *RN(◯,{}) has infinitely many
+classes*.
+
+The proof is the embedding I guessed at, done properly: `p ↦ ◯⊥` embeds
+the free Heyting algebra on one generator — the infinite
+Rieger–Nishimura lattice — into RN(◯,{}) (`force_subOb`, `not_Le_subOb`,
+`propext` only). `infinite_of_strict_chain` turns any strict ascending
+chain of closed formulas into the result; `disjLadder` makes the forward
+entailments axiom-free ∨-introductions; `ipc_escaping` supplies the
+◯-free residual via the staircase model `rnModel`.
+
+And it is infinite in three independent ways, all mechanised:
+
+| direction | statement | where |
+|---|---|---|
+| height | the ladder climbs forever, strict at every step | `exists_escaping_rungs` |
+| width | the gap antichain is infinite, pairwise incomparable | `width_infinite`, `wip/gapWidth.lean` |
+| depth | `Gmeet n = g1 ∧ … ∧ g(n+1)` descends strictly forever, **no floor** | `Gmeet_desc_strict`, `gap_no_glb`, `L_no_greatest`, `wip/floor.lean` |
+
+The depth result carries a corollary that matters here: **RN(◯,{}) is
+not a complete lattice.**
+
+### The immediate consequence for the dictionary
+
+Write `Total D` for the claim that every entry of a `PartialRNDict D` is
+`some`. Then `Total D` gives `complete D` (§4), which puts every closed
+formula in one of finitely many classes, contradicting
+`closed_lax_infinite`. So
+
+    theorem no_total_dict (D : PartialRNDict) : ¬ Total D
+
+is a corollary, and **no finite operation table can ever close.** That is
+the founding assumption of rounds 1 and 2, settled negatively. It should
+be the first thing proved in the rebuild — it is a few lines, and it
+converts the dictionary from *a presentation that keeps failing* into *a
+finite atlas of the bottom of an infinite algebra*, which is a coherent
+thing for it to be.
+
+`no_total_dict` also kills route C2 below outright.
+
+---
+
+## 3. What the order already knows
+
+The second thing I should have read. `docs/rho-order.md` (2026-08-14)
+computes the order on **22** classes:
+
+* all 462 ordered pairs, **460 settled by certificate**, 2 flags;
+* 158 ⊢, 302 ⊬;
+* **37 cover edges** for the 22 classes against 21 for the old 14;
+* **7 of those 21 old covers are no longer covers** once the new classes
+  are placed, and two of the three co-atoms are new classes.
+
+That last line is your atomicity objection, already observed
+experimentally: a covering claim made against a finite table was
+destroyed in seven cases out of twenty-one by the discovery of seven
+further classes. Any "certified cover" read off a finite dictionary is
+provisional in exactly the way you describe.
+
+**Caveat on provenance.** `rho-order.md` computes `DerivU`, i.e. PCLL.
+PLL-entailment implies PCLL-entailment, so the PLL order is a *sub*-relation
+and PLL classes are finer. Neither direction of the cover relation
+transfers: a PCLL interpolant need not be a PLL interpolant, and PCLL
+equivalence does not give PLL equivalence. The 37 cover edges are a PCLL
+diagram and must be recomputed for PLL, not translated.
+
+### Where atomicity *is* settled
+
+On the rungs. `wip/ladder8.lean` proves
+
+    theorem rnSub_order (i j : Nat) : Deriv [rnSub i] (rnSub j) ↔ rungLe i j = true
+
+so the order on the ladder is decidable *arithmetic* — truth-set
+inclusion for `rn 0 = ∅`, `rn (2k+1) = {w ≤ k}`, `rn (2k+2) = {w < k} ∪ {k+1}` —
+with no search at all. On top of it,
+
+    theorem covers9_eq : covers9 = [(0,1),(0,2),(1,3),(1,4),(2,3),(3,5),(3,6),(4,5),(5,7),(5,8),(6,7)]
+
+is proved **axiom-free** (`decide`), and `covers9_stable` re-runs the
+"nothing strictly between" search from rungs < 9 out to rungs < 24 and
+gets the same eleven, so the drawing is not an artefact of where the
+table was cut.
+
+`covers9_stable` is the right *shape* for an atomicity guard, and it is
+still not a proof of atomicity: it quantifies over rungs, not over
+RN(◯,{}). The gap family `g_k`, `r_k`, `◯g_k` lies outside the rung
+image, and the 22-class computation shows precisely that off-image
+classes interleave. So:
+
+**The target theorem is rung convexity.**
+
+    theorem rung_convex {i j : Nat} {χ : PLLFormula} : atomFree χ = true →
+      Le (rnSub i) χ → Le χ (rnSub j) → ∃ k, LaxEquiv χ (rnSub k)
+
+With it, `covers9_eq` upgrades from *covers among the nine listed* to
+covers in the whole algebra, and the ladder's Hasse diagram becomes a
+theorem. Without it, it does not. Treat it refute-first: the gap family
+is the obvious counterexample source, and the seven destroyed covers say
+the analogous statement for the 14-class table is **false**.
+
+---
+
+## 4. Phase B — an artefact that cannot lie
+
+Unchanged from the first draft and now better motivated, since the
+partiality is permanent rather than provisional.
+
+    structure PartialRNDict where
+      n        : Nat
+      rep      : Fin n → PLLFormula
+      rep_varFree : ∀ i, (rep i).atoms = ∅
+      rep_distinct : ∀ i j, i ≠ j → ¬ Interd (rep i) (rep j)
+      andT : Fin n → Fin n → Option (Fin n)
+      andHit  : ∀ i j k, andT i j = some k →
+                  Interd ((rep i).and (rep j)) (rep k)
+      andMiss : ∀ i j, andT i j = none →
+                  ∀ k, ¬ Interd ((rep i).and (rep j)) (rep k)
+      -- likewise orT / impT / boxT
+
+* **`sorry` becomes impossible.** A cell is `some k` with a collapse
+  proof or `none` with an escape proof; there is no third state that
+  typechecks, and `none` is no longer spelled the same way as `⊥`.
+* **Refutations are stated at full strength** — `andMiss` *is* round 2's
+  `∀ k : Fin 16, ¬ Interd …` form. Per-candidate refutation is not
+  expressible.
+* **`rep_distinct` is a real new obligation**: neither existing
+  dictionary proves its representatives pairwise distinct.
+
+Migration: build `rnDictP16` from round 2's 726 proved entries plus
+`rnDictRefute2.lean`'s 58 `none`s; sorry-free at once, with a
+`#guard_msgs`-pinned `#print axioms`. Retire `rnDict15`/`rnDict16`; leave
+round 1 behind a one-line pointer. Then prove `no_total_dict`.
+
+---
+
+## 5. Phase C — the presentation, now forced
+
+C2 (finite completeness) is dead by `no_total_dict`. What replaces the
+table is a normal form, and the machinery is half built: `Rewrite/`
+carries 237 certified rules with `simplifyWith_interd` unconditional,
+and measured collapse of 3,996 nested cells to 25 forms.
+
+1. Termination and local confluence of `fullSetC` on closed formulas;
+   Newman gives confluence.
+2. The goal theorem
+
+       theorem norm_complete {φ ψ : PLLFormula} :
+         φ.atoms = ∅ → ψ.atoms = ∅ → (Interd φ ψ ↔ norm φ = norm ψ)
+
+   `←` is already free from `simplifyWith_interd`; `→` is the work.
+3. The operation table becomes the computable function `norm (φ ∘ ψ)` of
+   `norm φ` and `norm ψ` — a finite presentation of an infinite algebra,
+   which is what a table can never be.
+
+The 58 escapes and the 22-class corpus are the test data for step 2:
+each certified-distinct pair must receive distinct normal forms, and
+each certified-interderivable pair the same one.
+
+A caution from §2: `norm_complete` asserts a decision procedure for
+⊣⊢ on the closed fragment. That is consistent — PLL is decidable
+(`decideFuel`) — but the fragment being infinite means `norm` cannot be
+a lookup, and the depth result (no floor, not a complete lattice) says
+the normal forms cannot be bounded in any obvious size measure. Expect
+the confluence proof to be the hard part.
+
+---
+
+## 6. Phase D — atomicity
+
+`Covers` goes in as a definition with no attempt to compute it:
+
+    def Covers (ψ φ : PLLFormula) : Prop :=
+      Le ψ φ ∧ ¬ Le φ ψ ∧
+      ∀ χ, atomFree χ = true → Le ψ χ → Le χ φ →
+        (LaxEquiv χ ψ ∨ LaxEquiv χ φ)
+
+Three routes, reordered by what §2 and §3 now establish:
+
+**D1 — rung convexity** (§3). Proves the ladder's covers outright and
+reuses `rnSub_order`'s decidable arithmetic. Narrow, but it is the one
+place a genuine cover theorem is close.
+
+**D2 — crank-bounded intervals.** If every class in `[ψ,φ]` has a
+representative of crank ≤ max(crank ψ, crank φ) + c, the ∀χ becomes a
+finite search and `Covers` is decidable on closed formulas without
+finiteness of the fragment. Refute-first against the 22 classes, the 58
+escape witnesses and the catalogue's crank ≤ 7 strata: hunt an interval
+containing a class with no low-crank representative. The seven destroyed
+covers are the first place to look, and they may well kill it.
+
+**D3 — via `norm_complete`.** Define the order on normal forms and prove
+the covering relation by induction on normal-form structure. Most work,
+but it is the same work as Phase C, so it comes free if C is done.
+
+What search may do: refute a `Covers` claim by exhibiting one strict
+interpolant. What it may never do: confirm one.
+
+---
+
+## 7. Phase E — process changes
+
+1. **Never write a default into a table.** Emit `none` where search
+   fails, never `0`. Enforced by the `Option` in `PartialRNDict`.
+2. **One live dictionary**, with a version stamp the generator checks
+   and refuses to run against a stale source. Round 1 archived behind a
+   pointer, not deleted.
+3. **Refutations universally quantified** over the representative set.
+   Eliminating one candidate is not a result.
+4. **`#print axioms` pinned by `#guard_msgs` on the dictionary object**,
+   so `sorryAx` in a field is a build failure, not a comment.
+5. **Search is candidate-finding only.** No structural claim —
+   completeness, atomicity, distinctness, finiteness — rests on a search
+   verdict.
+6. **Read the record before scoping.** This draft's first version
+   proposed measuring a question the main library had already answered,
+   and proposed probing families whose infinitude was proved. The
+   concrete rule: before scoping any RN question, read
+   `LaxLogic/PLLLaxInfinite.lean`, `docs/rho-order.md`,
+   `docs/rn-explorer.html` and `wip/ladder8.lean`, which between them
+   hold the fragment's proved structure.
+
+---
+
+## 8. Sequence
+
+| step | what | cost | status |
+|---|---|---|---|
+| — | RN(◯,{}) infinite | — | **PROVED**, `closed_lax_infinite` |
+| B0 | `no_total_dict` from `closed_lax_infinite` | ~an hour | closes the finite-table programme |
+| B1 | `PartialRNDict` + migrate round 2 | ~half a day | fixes 83 false entries, removes `sorryAx` |
+| D1 | rung convexity — refute-first, then prove | ~a day | upgrades `covers9_eq` to real covers |
+| D2 | crank-bounded intervals — refute-first | ~1 hour | decides whether the general route is live |
+| A′ | recompute the 22-class order for **PLL**, not `DerivU` | ~a day | the PLL Hasse diagram |
+| C | normal form + `norm_complete` | days | the replacement presentation |
+| D3 | covers from normal forms | with C | atomicity in general |
+
+**First action: B0 then B1.** B0 is short and it retires the question
+rounds 1 and 2 were built on. B1 is the correction of what is already
+known and depends on nothing.
+
+**Dropped from the first draft**: A1 (separate the 58 witnesses) and A2
+(◯-tower and →-ladder probes), both of which existed to decide
+finiteness. A1 retains a smaller purpose — the 58 witnesses still need
+placing in the order if the atlas is to be extended — but it is no
+longer decisive and should not be run first.

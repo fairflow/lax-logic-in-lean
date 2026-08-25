@@ -165,7 +165,7 @@ countermodel:
 
 pin it:
 theorem underivable :
-    ¬ Nonempty (LaxND [] (((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p"))) :=
+    [] ⊬ (((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p")) :=
   FinCM.not_provable_of_check
     (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide)
 
@@ -180,7 +180,7 @@ Again a paste of the `pin it:` block, with `underivable` renamed.  The `by
 decide` is the kernel running `checkB` on the concrete model. -/
 
 theorem esc_underivable :
-    ¬ Nonempty (LaxND [] (((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p"))) :=
+    [] ⊬ ((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p") :=
   FinCM.not_provable_of_check
     (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide)
 
@@ -354,7 +354,7 @@ info: 2 worlds, refuting world 0
 -- ready to paste: this is the text §2.4 pasted.
 /--
 info: theorem esc_underivable :
-    ¬ Nonempty (LaxND [] (((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p"))) :=
+    [] ⊬ (((PLLFormula.prop "p").somehow).ifThen (PLLFormula.prop "p")) :=
   FinCM.not_provable_of_check
     (M := ⟨2, [(0, 1)], [(0, 1)], [], [(1, "p")]⟩) (w := 0) (by decide)
 
@@ -547,7 +547,7 @@ countermodel:
 
 pin it:
 theorem underivable :
-    ¬ Nonempty (LaxND [(((PLLFormula.prop "p").or (PLLFormula.prop "q")).somehow)] (((PLLFormula.prop "p").somehow).or ((PLLFormula.prop "q").somehow))) :=
+    [(((PLLFormula.prop "p").or (PLLFormula.prop "q")).somehow)] ⊬ (((PLLFormula.prop "p").somehow).or ((PLLFormula.prop "q").somehow)) :=
   FinCM.not_provable_of_check
     (M := ⟨3, [(0, 0), (0, 1), (0, 2), (1, 1), (2, 2)], [(0, 0), (0, 2), (1, 1), (2, 2)], [], [(1, "p"), (2, "q")]⟩) (w := 0) (by decide)
 
@@ -681,7 +681,7 @@ countermodel:
 
 pin it:
 theorem underivable :
-    ¬ Nonempty (LaxND [(PLLFormula.falsePLL.somehow)] PLLFormula.falsePLL) :=
+    [(PLLFormula.falsePLL.somehow)] ⊬ PLLFormula.falsePLL :=
   FinCM.not_provable_of_check
     (M := ⟨2, [(0, 1)], [(0, 1)], [1], []⟩) (w := 0) (by decide)
 

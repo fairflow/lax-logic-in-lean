@@ -96,6 +96,9 @@ import LaxLogic.PLLSemUIBox
 import LaxLogic.PLLSemUIDesc
 import LaxLogic.PLLSemUITrace
 import LaxLogic.PLLSemUILayered
+import LaxLogic.Deriv
+import LaxLogic.Interd
+import LaxLogic.RN.Rho
 import LaxLogic.PLLSemUIFrag
 import LaxLogic.PLLSemUIChar
 import LaxLogic.PLLSemUIHenkin
@@ -107,5 +110,7 @@ import LaxLogic.PLLCandOr
 import LaxLogic.PLLUIChains
 import LaxLogic.PLLCandLeast
 import LaxLogic.IPCFocused
-import LaxLogic.LJF
-import LaxLogic.LJFComplete
+
+-- LJF and LJF◯ moved to their own library `LJF/` (2026-08-22).
+-- `LaxLogic` no longer aggregates them; import `LJF` or a specific
+-- `LJF.*` module instead.  The dependency runs LJF -> LaxLogic only.

@@ -67,7 +67,7 @@ post-interpolant.  No order structure on `D` is needed. -/
 theorem no_post_interp_schema_family {φ : PLLFormula} (D : Nat → PLLFormula)
     (hDa : ∀ k, atomFree (D k) = true)
     (hg : ∀ k, Deriv [φ] (D k))
-    (hL : ∀ χ, atomFree χ = true → (∀ k, Deriv [χ] (D k)) → ¬ Deriv [φ] χ) :
+    (hL : ∀ χ, atomFree χ = true → (∀ k, Deriv [χ] (D k)) → [φ] ⊬ χ) :
     ¬ ∃ ψ, IsPostInterp φ ψ := by
   rintro ⟨ψ, hψa, hφψ, hmin⟩
   exact hL ψ hψa (fun k => hmin (D k) (hDa k) (hg k)) hφψ
@@ -76,7 +76,7 @@ theorem no_post_interp_schema_family {φ : PLLFormula} (D : Nat → PLLFormula)
 theorem no_pre_interp_schema_family {φ : PLLFormula} (D : Nat → PLLFormula)
     (hDa : ∀ k, atomFree (D k) = true)
     (hc : ∀ k, Deriv [D k] φ)
-    (hU : ∀ χ, atomFree χ = true → (∀ k, Deriv [D k] χ) → ¬ Deriv [χ] φ) :
+    (hU : ∀ χ, atomFree χ = true → (∀ k, Deriv [D k] χ) → [χ] ⊬ φ) :
     ¬ ∃ ψ, IsPreInterp φ ψ := by
   rintro ⟨ψ, hψa, hψφ, hmax⟩
   exact hU ψ hψa (fun k => hmax (D k) (hDa k) (hc k)) hψφ
@@ -87,7 +87,7 @@ the campaign actually ran, `no_post_interp_schema`, is this at
 theorem gap_family_instance {φ : PLLFormula}
     (hg : ∀ k, Deriv [φ] (gap (k + 1)))
     (hL : ∀ χ, atomFree χ = true → (∀ k, Deriv [χ] (gap (k + 1))) →
-      ¬ Deriv [φ] χ) :
+      [φ] ⊬ χ) :
     ¬ ∃ ψ, IsPostInterp φ ψ :=
   no_post_interp_schema_family (fun k => gap (k + 1))
     (fun k => gap_atomFree (k + 1)) hg hL
@@ -99,7 +99,7 @@ never fire. -/
 theorem gz_gap_uninhabited {φ : PLLFormula}
     (hg : ∀ k, Deriv [φ] (gap (k + 1)))
     (hL : ∀ χ, atomFree χ = true → (∀ k, Deriv [χ] (gap (k + 1))) →
-      ¬ Deriv [φ] χ) : False := by
+      [φ] ⊬ χ) : False := by
   refine post_interp_schema_vacuous (φ := φ) ?_ ?_
   · intro k hk
     match k, hk with
@@ -113,7 +113,7 @@ family indexing). -/
 theorem gz_chain_uninhabited {φ : PLLFormula}
     (hc : ∀ k, Deriv [chainF k] φ)
     (hU : ∀ χ, atomFree χ = true → (∀ k, Deriv [chainF k] χ) →
-      ¬ Deriv [χ] φ) : False :=
+      [χ] ⊬ φ) : False :=
   pre_interp_schema_vacuous hc hU
 
 /-! ## Axiom audits — sorry-free, all PLL -/

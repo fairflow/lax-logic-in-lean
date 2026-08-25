@@ -1,0 +1,68 @@
+(R) SCREEN — can Rᵢ be refined to make a countermodel REDUCED?
+closure: 16 formulas
+
+OBSTRUCTION (t2screen §E): 0 ≈ᵢ 1 with different Rₘ-cones
+  V1 Fm-incl: wf=true reduced=true forcing-preserved=true
+  V2 cone-incl: wf=true reduced=true forcing-preserved=false
+    moves at world 0, formula ◯p
+  V3 index: wf=true reduced=true forcing-preserved=true
+  V4 Fm+index: wf=true reduced=true forcing-preserved=true
+  V5 Fm+Rm+index: wf=true reduced=true forcing-preserved=true
+  V6 Fm+rank+index: wf=true reduced=true forcing-preserved=true
+
+battery 4414 well-formed frames; NON-reduced 1826; of those Rₘ-ACYCLIC 1444
+
+V1 Fm-incl
+   (a) still well-formed : 1826/1826  pass
+   (b) REDUCED           : 60/1826  FAIL
+   (c) forcing preserved : 1826/1826  pass
+   control: refinement actually changed Rᵢ on 1826/1826
+   on Rₘ-ACYCLIC only: wf 1444/1444, reduced 60/1444, forcing 1444/1444  FAIL
+V2 cone-incl
+   (a) still well-formed : 818/1826  FAIL
+   (b) REDUCED           : 1444/1826  FAIL
+   (c) forcing preserved : 1766/1826  FAIL
+   control: refinement actually changed Rᵢ on 1760/1826
+   certificate: { n := 3, ri := [(0, 1), (0, 2), (1, 0), (1, 2)], rm := [(0, 2)], fall := [], val := [(2, "p")] } moves at some (0, ◯p)
+   on Rₘ-ACYCLIC only: wf 496/1444, reduced 1444/1444, forcing 1384/1444  FAIL
+   acyclic certificate: { n := 3, ri := [(0, 1), (0, 2), (1, 0), (1, 2)], rm := [(0, 2)], fall := [], val := [(2, "p")] } moves at some (0, ◯p)
+   acyclic wf-failures: 948, clauses [Rm⊆Ri]
+   first source: { n := 2, ri := [(0, 1), (1, 0)], rm := [(0, 1)], fall := [], val := [] }
+   refined to  : { n := 2, ri := [(0, 0), (1, 0), (1, 1)], rm := [(0, 1)], fall := [], val := [] }
+V3 index
+   (a) still well-formed : 940/1826  FAIL
+   (b) REDUCED           : 1826/1826  pass
+   (c) forcing preserved : 1796/1826  FAIL
+   control: refinement actually changed Rᵢ on 1536/1826
+   certificate: { n := 3, ri := [(0, 1), (0, 2), (1, 0), (1, 2)], rm := [(1, 2)], fall := [], val := [(2, "p")] } moves at some (0, (◯p) ⊃ p)
+   on Rₘ-ACYCLIC only: wf 940/1444, reduced 1444/1444, forcing 1414/1444  FAIL
+   acyclic certificate: { n := 3, ri := [(0, 1), (0, 2), (1, 0), (1, 2)], rm := [(1, 2)], fall := [], val := [(2, "p")] } moves at some (0, (◯p) ⊃ p)
+   acyclic wf-failures: 504, clauses [Rm⊆Ri]
+   first source: { n := 2, ri := [(0, 1), (1, 0)], rm := [(1, 0)], fall := [], val := [] }
+   refined to  : { n := 2, ri := [(0, 0), (0, 1), (1, 1)], rm := [(1, 0)], fall := [], val := [] }
+V4 Fm+index
+   (a) still well-formed : 955/1826  FAIL
+   (b) REDUCED           : 1826/1826  pass
+   (c) forcing preserved : 1826/1826  pass
+   control: refinement actually changed Rᵢ on 1536/1826
+   on Rₘ-ACYCLIC only: wf 955/1444, reduced 1444/1444, forcing 1444/1444  FAIL
+   acyclic wf-failures: 489, clauses [Rm⊆Ri]
+   first source: { n := 2, ri := [(0, 1), (1, 0)], rm := [(1, 0)], fall := [], val := [] }
+   refined to  : { n := 2, ri := [(0, 0), (0, 1), (1, 1)], rm := [(1, 0)], fall := [], val := [] }
+V5 Fm+Rm+index
+   (a) still well-formed : 1806/1826  FAIL
+   (b) REDUCED           : 1444/1826  FAIL
+   (c) forcing preserved : 1826/1826  pass
+   control: refinement actually changed Rᵢ on 1636/1826
+   on Rₘ-ACYCLIC only: wf 1434/1444, reduced 1444/1444, forcing 1444/1444  FAIL
+   acyclic wf-failures: 10, clauses [Ri-trans]
+   first source: { n := 3, ri := [(0, 1), (0, 2), (1, 0), (1, 2), (2, 0), (2, 1)], rm := [(2, 0)], fall := [], val := [] }
+   refined to  : { n := 3, ri := [(0, 0), (0, 1), (1, 1), (1, 2), (2, 0), (2, 2)], rm := [(2, 0)], fall := [], val := [] }
+V6 Fm+rank+index
+   (a) still well-formed : 1444/1826  FAIL
+   (b) REDUCED           : 1826/1826  pass
+   (c) forcing preserved : 1826/1826  pass
+   control: refinement actually changed Rᵢ on 1536/1826
+   on Rₘ-ACYCLIC only: wf 1444/1444, reduced 1444/1444, forcing 1444/1444  pass
+
+R-SCREEN-DONE

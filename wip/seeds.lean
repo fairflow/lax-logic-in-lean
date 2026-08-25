@@ -162,7 +162,7 @@ theorem wC_le {j k : Nat} (h : j + 2 ≤ k) : Deriv [wC j] (wC k) := by
     exact hr
 
 /-- `wC k ⊬ wC j` for `j < k`: refuted at plain-lift world `k+2`. -/
-theorem wC_strict {j k : Nat} (h : j < k) : ¬ Deriv [wC k] (wC j) := by
+theorem wC_strict {j k : Nat} (h : j < k) : [wC k] ⊬ wC j := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (k + 2)) (fun ψ hψ => by
     have e : ψ = wC k := by
@@ -176,7 +176,7 @@ theorem wC_strict {j k : Nat} (h : j < k) : ¬ Deriv [wC k] (wC j) := by
 
 /-- `wC j ⊬ wC (j+1)`: consecutive members are incomparable (with
 `wC_strict` this gives the even-rung order type). -/
-theorem wC_succ_not_le (j : Nat) : ¬ Deriv [wC j] (wC (j + 1)) := by
+theorem wC_succ_not_le (j : Nat) : [wC j] ⊬ wC (j + 1) := by
   rintro ⟨d⟩
   have hs := soundness d ladder.cm (some (j + 2)) (fun ψ hψ => by
     have e : ψ = wC j := by
