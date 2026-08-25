@@ -1,5 +1,69 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-25d — RefAt MECHANISED: FRJV typed calculus, soundnessV PROVED, engines modular, ρ12⊢?ρ15 SETTLED — the matrix has no open cell
+
+Same branch (`claude/frj-incompleteness-80-81-251e7f`).  Plan (review
+PENDING, per the calculus-adoption gate): `docs/refat-plan.md`.  All six
+deliverables landed sorry-free; `FRJ/AuditV.lean` guard-pins the stack
+(gate negative-tested); `#slime` = 0 on both new families.
+
+**The stack** (all new files; nothing existing edited except `FRJ.lean`
+and `lakefile.toml`):
+
+* `FRJ/RefAt.lean` — `RefAt` (cone-gated), decider+iff, the stratified
+  `KeptChain` certificate, greedy `keptOf` with PROVED `keptOf_ok`, and
+  `refAt_refutes` (AXIOM-FREE).  The stratification is load-bearing:
+  the unstratified retention condition admits mutually-justifying kept
+  pairs and was rejected at design time.
+* `FRJ/CalculusV.lean` (+`CalculusVLemmas`) — `FRJVr`/`FRJVi`: the paper
+  family with the three BARREN joins generalised (explicit kept zone +
+  `KeptChain`; hC/hZ via `RefAt`).  A SEPARATE family, deliberately: the
+  ¬Provable theorems are exhaustive case analyses over the paper family
+  and survive verbatim.  `toVr`/`toVi` embed paper ⊆ repaired
+  (`provableV_of_provable`).
+* `FRJ/StepV.lean`, `FRJ/ExtractV.lean`, `FRJ/SoundV.lean` — the ↦
+  relation/Lemma 3.4, extraction, and **`soundnessV : ProvableV G →
+  ¬ PLL G`** `[propext, Quot.sound]`; the three changed join cases use
+  the layered proof (base-(P2)/(P3) size induction unchanged; kept zone
+  by chain induction with `refAt_refutes`).
+* `FRJ/Search/Core.lean` — **the engine functor `Ops G`: the calculus is
+  now an INPUT to the saturation loop.**  `paperOps` = the legacy engine
+  (row-for-row differential on 8 goals: AGREE); `FRJ/Search/OpsV.lean` =
+  the RefAt instance (kept zones via `keptOf`+`keptOf_ok`, no decision
+  procedure runs for the chain).  Runner `lake exe frjvrun
+  [diff|cells|cell i j]`.  A typed V-hit IS a derivation, so with
+  `soundnessV` every hit is sound by construction — no alarm sweep
+  needed.  `Fast`/`Profile` over the functor: follow-up (non-scope).
+* `FRJ/BridgeV.lean` — `not_derivable_of_provableV`,
+  `not_entails_of_provableV`.
+
+**Witnesses and consequences** (kernel-checked, pins green):
+
+* `wip/frjv_witness.lean` — hand-built `ProvableV G80`, `ProvableV G81`.
+* `wip/frjv_consequences.lean` — `¬Deriv [ρ12] ρ9`, `¬Deriv [ρ13] ρ6`
+  re-derived THROUGH the repaired calculus (third independent route).
+* **`wip/frjv_witness_1215.lean` + `rho12_nle_rho15 : ¬ Deriv [rhoF 12]
+  (rhoF 15)`** — the ONE open cell of the 462-cell matrix, settled
+  NEGATIVE through the repaired calculus.  With the converse
+  battery-settled, {ρ12, ρ15} is INCOMPARABLE; no Hasse edge moves.
+  BANKING (an `RNDB` entry via `Engine.frj`-successor provenance +
+  retiring `frontierOrder`) is a DATA-layer edit — Matthew's decision;
+  nothing is banked yet.  NB the witness derivation never uses `Ax^I◯`:
+  its bottom layer runs through the kept chain (`[barren] ν ⇒ ⊥` with ν
+  adopted by the ◯-clause over ⊥), machine-verified deviation recorded
+  in the file.
+
+**Typed-engine spot checks** (`frjvrun cell`): 4/4 known-refutable
+sample cells HIT, residue cell ρ20⊢?ρ12 no-hit (expected), ρ12⊢?ρ15 HIT
+(now also settled by hand, above).
+
+**Open / next:** FRJV completeness (untouched, OPEN); the 6-cell residue
+(consequent ρ18 / antecedent ρ20) at uncapped arity; `Fast`/`Profile`
+instances of the functor; the long-term single policy-parameterised
+family (recorded in the plan's non-scope); Matthew: review
+`docs/refat-plan.md`, decide banking of ρ12⊬ρ15 and placement of the
+witness/consequence files.
+
 ## 2026-08-25c — FRJ◯ #80/#81 PROVED as incompleteness THEOREMS; CompletenessFRJ REFUTED; the RefAt repair validated
 
 Branch `claude/frj-incompleteness-80-81-251e7f` (merges
@@ -429,7 +493,7 @@ recommended next design is saturation-closure completeness (induct on the
 engine's round order, axIC seeds break the cycle at the base). All round-2
 material remains green; corpus 19/5/0.
 
-**Last updated:** 2026-08-25 by Fable 5 — §2026-08-25c: witnesses #80/#81 PROVED as incompleteness theorems, CompletenessFRJ refuted, RefAt repair validated (branch claude/frj-incompleteness-80-81-251e7f); earlier: merge of claude/frj-redevelopment-69005f (through §2026-08-25)
+**Last updated:** 2026-08-25 by Fable 5 — §2026-08-25d: RefAt mechanised (FRJV + soundnessV + modular engines), ρ12⊢?ρ15 settled negative — no open cell in the matrix; §2026-08-25c: witnesses #80/#81 PROVED as incompleteness theorems, CompletenessFRJ refuted, RefAt repair validated (branch claude/frj-incompleteness-80-81-251e7f); earlier: merge of claude/frj-redevelopment-69005f (through §2026-08-25)
 **Repo state:** `main` @ 925bc10 — `lake build` clean, every `#guard_msgs` audit green; no live feature branch (`ui-confluence` merged 2026-08-06)
 **Deployed:** n/a (library). Merged: `main` @ PR #5 (the summit theorems). **PR #6 OPEN** (commentary + comment sweep) — awaiting Matthew's personal prose review; do not merge it yourself.
 
