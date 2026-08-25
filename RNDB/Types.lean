@@ -223,6 +223,11 @@ inductive Engine where
   | frj
   /-- The two-sided engine (LJF◯ focused search + `Reject.certifies`). -/
   | twoSided
+  /-- The repaired FRJ(◯) calculus FRJV: the verdict rests on
+  `soundnessV` applied to a kernel-checked derivation
+  (`FRJ/CalculusV.lean`); the countermodel is extracted from the
+  derivation by `FRJ.V.modR`. -/
+  | frjv
   /-- Hand-authored; no engine was involved. -/
   | hand
   deriving DecidableEq, Repr, Inhabited

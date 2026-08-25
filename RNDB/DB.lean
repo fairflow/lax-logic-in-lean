@@ -37,7 +37,7 @@ def allEntries : List Entry :=
     ++ derivedEntries ++ escEntries ++ orderEntries ++ sepEntries
 
 set_option maxRecDepth 65536 in
-theorem allEntries_length : allEntries.length = 1873 := by
+theorem allEntries_length : allEntries.length = 1874 := by
   simp [allEntries, rhoEntries_length, dictEntriesR1_length,
     dictEntriesR2_length, frjCertEntries_length, derivedEntries_length,
     escEntries_length, orderEntries_length, sepEntries_length]

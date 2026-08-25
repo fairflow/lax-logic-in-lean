@@ -25,6 +25,7 @@ assumptions.
 import RNDB.RhoEntries
 import LaxLogic.PLLSearchConf
 import LaxLogic.PLLNoFall
+import Certified.RhoFRJV
 
 open PLLND PLLND.SemUI PLLFormula
 
@@ -192,33 +193,41 @@ def nle_13_6 : Entry where
   ev := Evidence.countermodel Engine.finCM 5
   ok := ⟨Claim.wellScoped_some, rfl, by decide, rho13_nle_rho6⟩
 
-/-- The order module's entries, appended to `DB.allEntries`. -/
-def orderEntries : List Entry := [nle_12_9, nle_13_6]
-
-theorem orderEntries_length : orderEntries.length = 2 := rfl
-
 /-- `[ρ20] ⊬ ρ10` was NEVER open: the FRJ(◯) 8-world countermodel is
-banked as entry `rho-0167` (`RhoCerts.rho_20_nle_10`, one of the 48
-cells FRJ settled beyond the 2026-08-15 ground truth).  The two-sided
-record lists `ρ20 ⊢? ρ10` as a "genuine flag" — that flag is hereby
-RESOLVED NEGATIVE by lookup; restated so the resolution is visible
-where the order lives. -/
+banked as entry `rho-0167` (`RhoCerts.rho_20_nle_10`); restated so the
+resolution is visible where the order lives. -/
 theorem rho20_nle_rho10 : ¬ Deriv [rhoF 20] (rhoF 10) :=
   nle_20_10.ok.holds
 
-/-- The order view's LIVE frontier — now a SINGLE claim.  History: the
-two original members (`ρ12 ⊬ ρ9?`, `ρ13 ⊬ ρ6?`) were retired
-2026-08-24, settled from the 2026-08-15 battery record; the
-`ρ20 ⊢? ρ10` flag briefly recorded here was then found ALREADY REFUTED
-by the banked FRJ certificate above (the sweep machinery cannot see
-FRJ countermodels — `rhocover` now overlays the database precisely so
-this cannot recur).  What remains open in the whole 462-cell PLL
-matrix is exactly `ρ12 ⊢? ρ15`; its converse (`ρ15 ⊬ ρ12`) is
-battery-settled, so a positive resolution would add the strict pair
-`ρ12 < ρ15` (and possibly one cover edge), and a negative one makes
-`{ρ12, ρ15}` incomparable — either way no existing edge moves. -/
-def frontierOrder : Frontier :=
-  [ ⟨rhoF 12, rhoF 15, Rel.le, none⟩ ]
+/-- **The LAST open cell, settled** (2026-08-25, the FRJ-incompleteness
+session): `[ρ12] ⊬ ρ15` through the REPAIRED calculus FRJV — the
+kernel-checked derivation `FRJ.WitnessV1215.provableV_1215` via
+`soundnessV` (`Certified/RhoFRJV.lean`, wip-free).  `{ρ12, ρ15}` are
+incomparable; no Hasse edge moves; `class(ρ12∨ρ18)` is thereby
+UNCONDITIONALLY a new class (its last candidate identity needed
+`ρ12 ≤ ρ15`). -/
+theorem rho12_nle_rho15 : ¬ Deriv [rhoF 12] (rhoF 15) :=
+  FRJVConsequences.rho12_nle_rho15
+
+/-- Banked: `ord-0003`.  `Engine.frjv`; the 11-world countermodel is
+extracted from the derivation by `FRJ.V.modR`. -/
+def nle_12_15 : Entry where
+  id := "ord-0003"
+  claim := ⟨rhoF 12, rhoF 15, Rel.nle, some rhoScope⟩
+  ev := Evidence.countermodel Engine.frjv 11
+  ok := ⟨Claim.wellScoped_some, rfl, by decide, rho12_nle_rho15⟩
+
+/-- The order module's entries, appended to `DB.allEntries`. -/
+def orderEntries : List Entry := [nle_12_9, nle_13_6, nle_12_15]
+
+theorem orderEntries_length : orderEntries.length = 3 := rfl
+
+/-- EMPTY, and now PROVABLY so: every cell of the 462-cell PLL matrix
+is settled — the 158 ⊢ engine-certified, all 304 ⊬ kernel-pinned.
+History of the retirements: two cells settled 2026-08-24 from the
+battery record, `ρ20 ⊢? ρ10` found already refuted (rho-0167), and
+`ρ12 ⊢? ρ15` settled through FRJV above. -/
+def frontierOrder : Frontier := []
 
 /-! ## Absolute covers in the CLOSED fragment — proofs testing cannot reach
 
@@ -414,6 +423,10 @@ theorem not_covers_bot_obot : ¬ Covers PLLFormula.falsePLL oBot := by
 /-- info: 'RNDB.orderEntries' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms orderEntries
+
+/-- info: 'RNDB.rho12_nle_rho15' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho12_nle_rho15
 
 /-- info: 'RNDB.obot_decides' depends on axioms: [propext] -/
 #guard_msgs in

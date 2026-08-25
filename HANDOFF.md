@@ -1321,3 +1321,23 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
   Rewrite, rwscreen, rnDictGen, rhocover, wipshared + spot-checks all
   green ON THE FIRST PASS — the proved layer was self-contained;
   fixpoint reached with no external breakage.
+
+## §2026-08-25g — ρ12⊬ρ15 banked; the 462-cell matrix is TOTAL; frontier EMPTY
+
+* Peer branch merged twice (incompleteness theorems #80/#81 + FRJV
+  repaired calculus with soundnessV PROVED; then the hoist 89ba5cc:
+  witnesses → FRJ/WitnessV*.lean, consequences → Certified/RhoFRJV.lean,
+  wip stub kept).  Matthew: promote + bank.
+* `Engine.frjv` added to the provenance enum (verdict via soundnessV on
+  a kernel-checked FRJV derivation; countermodel extracted by
+  FRJ.V.modR).  `RNDB.rho12_nle_rho15` restated wip-free; entry
+  `ord-0003` (11-world extracted model, computed); `orderEntries` = 3;
+  DB = **1874**; `frontierOrder = []` — every cell of the 462-matrix
+  settled (158 ⊢ engine-certified, 304 ⊬ kernel-pinned).
+* Consequence for the cubes: `class(ρ12∨ρ18)` (X₄) is now
+  UNCONDITIONALLY new (its last candidate identity needed ρ12 ≤ ρ15);
+  all three new ρ9-cube vertices unconditional.  Remaining cube
+  question: `ρ21 ≡? ρ12∨ρ20` (untested).
+* CORRECTION: my peer message claimed RNDB.DB's closure was wip-free —
+  false (DictEntries always imported wip/rnDict.lean); it is Order.lean
+  whose closure is wip-free, preserved via Certified/RhoFRJV.
