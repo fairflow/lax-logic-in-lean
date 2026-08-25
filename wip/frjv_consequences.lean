@@ -16,6 +16,7 @@ derivations mean what they must.
 -/
 import FRJ.BridgeV
 import wip.frjv_witness
+import wip.frjv_witness_1215
 import LaxLogic.RN.Rho
 import LaxLogic.Deriv
 
@@ -39,6 +40,25 @@ theorem rho12_nle_rho9_viaV : ¬ Deriv [rhoF 12] (rhoF 9) :=
 theorem rho13_nle_rho6_viaV : ¬ Deriv [rhoF 13] (rhoF 6) :=
   FRJ.not_entails_of_provableV (ofPLL_g81 ▸ provableV_G81)
 
+/-! ## THE FRONTIER CELL: `ρ12 ⊢? ρ15` SETTLED NEGATIVE
+
+The single remaining open claim of the 462-cell ρ-order matrix
+(`RNDB.frontierOrder`).  The repaired calculus derives the refutation
+sequent (`wip/frjv_witness_1215.lean`, hand-built, kernel-checked), and
+`soundnessV` turns it into the underivability of the cell.  With its
+converse already battery-settled (`ρ15 ⊬ ρ12`), the pair {ρ12, ρ15} is
+INCOMPARABLE and no Hasse edge moves.  Banking this as an `RNDB` entry
+and retiring `frontierOrder` is a DATA-layer decision — Matthew's. -/
+
+theorem ofPLL_g1215 :
+    FRJ.ofPLL (PLLFormula.ifThen (rhoF 12) (rhoF 15)) = FRJV1215.G1215 := by
+  decide
+
+/-- `[ρ12] ⊬ ρ15` — the last open cell of the matrix, settled through
+the repaired calculus. -/
+theorem rho12_nle_rho15 : ¬ Deriv [rhoF 12] (rhoF 15) :=
+  FRJ.not_entails_of_provableV (ofPLL_g1215 ▸ FRJV1215.provableV_1215)
+
 /-! ## Pins -/
 
 /-- info: 'FRJVConsequences.rho12_nle_rho9_viaV' depends on axioms: [propext, Quot.sound] -/
@@ -48,5 +68,9 @@ theorem rho13_nle_rho6_viaV : ¬ Deriv [rhoF 13] (rhoF 6) :=
 /-- info: 'FRJVConsequences.rho13_nle_rho6_viaV' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms rho13_nle_rho6_viaV
+
+/-- info: 'FRJVConsequences.rho12_nle_rho15' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho12_nle_rho15
 
 end FRJVConsequences
