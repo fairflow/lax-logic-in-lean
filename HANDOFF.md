@@ -1478,7 +1478,101 @@ cells are the promotion queue (engine verdict → kernel `Interd` theorem
 → `RwRule`). Recorded in TOOLS.md §1 and on the page (Simplifier tab);
 the "fifteen earliest representatives" framing is retired. Page → v24.
 
-## §2026-08-26e — FRJV completeness campaign opened: plan approved, native scaffolding ported, target reduced to two supply lemmas
+## §2026-08-26e — the simplifier pegged to R AND updated: 679 rules, banked
+
+Matthew's directive executed end to end.  The route matters as much as
+the result: the first design (LJF◯ fueled search re-run under kernel
+`decide`, per-cell minimal-fuel metering) was WORKING but wrong-shaped —
+Matthew asked why fuel was in the statement at all, and the answer was
+in the repo: `rnDictGen`'s G4c certificate pattern (untrusted compiled
+`G4cTm.findBounded`, budget 4·10⁵ nodes; found proof TERMS printed as
+Lean source; the kernel only type-checks literals).  A record-search
+failure on my part — the pattern built the original 236 rules.
+
+- `tools/RCellsGen.lean` (`lake exe rcellsgen`): the R-increment
+  generator, self-contained copy of the RNGen printer (rnDictGen
+  exports a root `main`, so it cannot be imported by another exe).
+- `wip/rcells.lean` GENERATED: 442 kernel-checked `Interd` cells over
+  ρ13–ρ21 (of 445 classed: 2 SKIP — fwd ρ20∧ρ21, fwd ρ20∨ρ21, the
+  G4-search-resistant implication shapes, hand-term candidates in the
+  `rncCertPos` precedent — and 1 TRIV, ρ5∨ρ14 syntactically ρ17).
+  Whole file kernel-checks in 27 s.
+- `Rewrite/Catalogue.lean`: `fullSet := pllSet ++ rndSet ++ rcSet`,
+  679 rules, pins UNCHANGED `[propext, Quot.sound]` (guards passed).
+- `rwscreen` re-measured (wip/rwscreen_out2.txt): flat 330 cells 89%
+  rewritten, crank −34%, distinct forms 319 → 27; NESTED corpus
+  3,996 → **18** distinct forms (was 25), crank −40%.  All 679 rules
+  crank-oriented.
+- Page v26: simpset panels updated (counts, measurement, queue = the
+  two skips); TOOLS.md §1 row updated.
+
+The LJF-fuel byproducts are kept as cross-checks (`tools/RCFuel.lean`,
+`wip/rcfuel_out.txt`, 255 cells fueled).  The certificate-passing
+proof-side engine for LJF◯ (queued in docs/next-session.md) remains
+worth building for LJF-specific work; for table promotion the G4c
+route is the standing mechanism.
+
+## §2026-08-26f — the two hand cells: the promotion queue is EMPTY
+
+Matthew's interactive-proof exercise, done by anticipating the steps
+rather than engine search.  Both skips are absorptions reducing to ONE
+fact,  ρ20 ⊢ ρ21 :  [(b⊃ρ4)⊃ρ6] ⊢ (ρ9⊃ρ4)⊃b  (a = ◯⊥, b = ◯¬a).
+Proof: from K : ρ9⊃ρ4, `fun hb => K (inl hb)` inhabits b⊃ρ4, so the
+hypothesis yields ρ6 = ¬a ∨ ¬¬a; case ¬a → the unit; case ¬¬a → K at
+inr gives ρ4 = a ∨ ¬a, where a = ◯⊥ binds over falsum to ◯¬a and ¬a is
+absurd against ¬¬a.  The G4 searcher's failure was compound-identity
+expansion (atomic init, no atoms in the fragment); ND's `iden` at every
+formula is why hand terms win.  The term elaborated FIRST PASS.
+
+- `wip/rcells_hand.lean`: `nd2021` (context-polymorphic, weakening
+  free), `rc_and_20_21`, `rc_or_20_21`, pins **[propext]** (cleaner
+  than the generated cells' [propext, Quot.sound]).
+- `fullSet` = 681 rules; ALL 445 classed R-table cells now
+  kernel-checked; rwscreen re-measured (wip/rwscreen_out3.txt, metrics
+  unchanged — the absorptions complete the table, not the corpus).
+- Page v27: queue EMPTY.
+
+## §2026-08-26g — the four remaining sweep misses HAND-DERIVED in FRJV: the corpus carries NO incompleteness witness
+
+Matthew's directive: pause the raised-budget FRJX computations (up to
+2 h/cell) and construct the derivations by hand, anticipating the steps.
+Done — all four, EACH COMPILING ON THE FIRST PASS, guided by the cells'
+banked countermodels and probed zone vocabularies (sfR/gHat/Clo checked
+computationally before each design; the `by decide` side conditions
+were the safety net, never the designer):
+
+- `FRJ/WitnessV1918.lean` — [ρ19]⊬ρ18.  Bottom half = WitnessV1215's
+  tree at the alphabet a=◯⊥, ¬a, b=◯¬a; the promise `⋈^∨` over the
+  ¬a-world gives the ρ4-refuting world 1; root `⋈^∨` with
+  RefAt ρ9 = or(circ(ups ¬a), ups ¬¬a).
+- `FRJ/WitnessV2018.lean` — [ρ20]⊬ρ18.  Same tree + the Υ-ENRICHMENT:
+  orI(i_a, i_na) merges to a ρ4-row, impInI Λ={b} stabilises to a
+  ρ11-row (st=[b]; its hJ5 discharged by Clo Γ2 ¬a) — putting ρ11 ∈ Υ
+  lets ρ20 ride the promise join's restricted zone.
+- `FRJ/WitnessV2013.lean` — [ρ20]⊬ρ13.  New device: the ¬a-world's
+  KeptChain adopts ρ8 = ¬¬a⊃a as its SECOND link (ante ¬¬a
+  RefAt-refuted through the imp-clause once ¬a is kept) — ρ8 then
+  rides Clo everywhere; two nested impIn at the top.
+- `FRJ/WitnessV2012.lean` — [ρ20]⊬ρ12.  As 2013, plus a barren `⋈^◯`
+  root (RefAt ¬a by ups; kept ρ8, ρ20) for the ◯-target b, under the
+  two impIn.
+
+Consequences hoisted into `Certified/RhoFRJV.lean`
+(`rho{19,20}_nle_rho{18,13,12}_viaV`, pins [propext, Quot.sound]).
+With the two engine hits at jmax=4 (ρ12⊬ρ18, ρ13⊬ρ18, ~2 h each), ALL
+SIX of the FRJX sweep's misses are now derived inside the repaired
+calculus: the 462-cell corpus yields ZERO incompleteness witnesses for
+FRJV — every miss was the join-arity cap.  (Paused computations killed;
+the hand route was ~100× cheaper than the engine at jmax=4 and produced
+kernel objects instead of logs.)
+
+Lesson for METHOD.md's skill list: the witness idiom is
+model-→-tree transcription: probe sfR/gHat/Clo first, one world per
+join, promise joins where Rm matters, axIC for vacuous cones,
+KeptChain/Υ-enrichment as the two levers when a hypothesis must reach
+the root context.
+
+## §2026-08-26e(ii) — FRJV completeness campaign opened: plan approved, native scaffolding ported, target reduced to two supply lemmas
 
 Session (worktree `intelligent-sanderson`, branch
 `claude/frj-incompleteness-80-81-251e7f`, synced to redevelopment tip

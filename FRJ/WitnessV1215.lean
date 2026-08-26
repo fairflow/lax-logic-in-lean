@@ -33,7 +33,7 @@ out of the derivation entirely.
 HOISTED from `wip/frjv_witness_1215.lean` (2026-08-25, same session) so
 the consequence layer is admissible to wip-free closures (`RNDB.DB`).
 -/
-import FRJ.CalculusV
+import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
 
@@ -53,66 +53,8 @@ def q8 : Form := .imp σ (.or β ν)
 def ρ15 : Form := .or q8 σ
 def G1215 : Form := .imp ρ12 ρ15
 
-/-! ## Helpers (as in `wip/frjv_witness.lean`) -/
-
-/-- Subset of formula lists is decidable (a bounded `∀`). -/
-instance decSubForm (l m : List Form) : Decidable (l ⊆ m) :=
-  decidable_of_iff (∀ x ∈ l, x ∈ m)
-    ⟨fun h _ hx => h _ hx, fun h _ hx => h hx⟩
-
-/-- Local copy of `FRJ.Search.zone_split` (importing the engine here would
-drag the whole search stack into the witness). -/
-theorem zoneSplit {Θ Λ : List Form} (hΛ : ∀ x ∈ Λ, x ∈ Θ) :
-    Θ ≐ FRJ.sdiff Θ Λ ++ Λ := by
-  intro x
-  constructor
-  · intro h
-    by_cases hl : x ∈ Λ
-    · exact List.mem_append_right _ hl
-    · exact List.mem_append_left _ (mem_sdiff.mpr ⟨h, hl⟩)
-  · intro h
-    rcases List.mem_append.mp h with h | h
-    · exact (mem_sdiff.mp h).1
-    · exact hΛ _ h
-
-/-- Boolean form of the joins' (J2): every implication of `l` has its
-antecedent in `Υ`. -/
-def impAnteB (Υ l : List Form) : Bool :=
-  l.all fun f => match f with | .imp A _ => decide (A ∈ Υ) | _ => true
-
-theorem hJ2_of_impAnteB {Υ l : List Form} (h : impAnteB Υ l = true) :
-    ∀ A B : Form, Form.imp A B ∈ l → A ∈ Υ := fun _ _ hm =>
-  of_decide_eq_true (List.all_eq_true.mp h _ hm)
-
-/-- The promise joins' (J5) is vacuous when the joint stable modal zone
-is empty (a closed equation `decide` settles). -/
-theorem hJ5_of_nil {n k : Nat} {stab : Fin (n + 1) → List Form}
-    {Δs : Fin (k + 1) → List Form}
-    (h : unionAll (fun j => circPart (stab j)) = []) :
-    ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
-      ∃ i, Clo (Δs i) Y :=
-  fun _ hY => absurd (h ▸ hY) List.not_mem_nil
-
-/-- A derived irregular row, packaged so a mixed premise family can be
-indexed by `Fin (n+1)` definitionally (the engine's `stabF` pattern). -/
-structure IRow (G : Form) where
-  st : List Form
-  th : List Form
-  rhs : Form
-  der : FRJVi G st th rhs
-
-def istF {G : Form} (a : IRow G) (rest : List (IRow G)) :
-    Fin (rest.length + 1) → List Form := fun j => ((a :: rest).get j).st
-
-def ithF {G : Form} (a : IRow G) (rest : List (IRow G)) :
-    Fin (rest.length + 1) → List Form := fun j => ((a :: rest).get j).th
-
-def irhsF {G : Form} (a : IRow G) (rest : List (IRow G)) :
-    Fin (rest.length + 1) → Form := fun j => ((a :: rest).get j).rhs
-
-def ipremF {G : Form} (a : IRow G) (rest : List (IRow G)) :
-    ∀ j, FRJVi G (istF a rest j) (ithF a rest j) (irhsF a rest j) :=
-  fun j => ((a :: rest).get j).der
+/-! ## Helpers — hoisted to `FRJ/WitnessKit.lean` (2026-08-26); this
+file keeps only the witness itself. -/
 
 /-! ## The witness
 

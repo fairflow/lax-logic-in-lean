@@ -1,0 +1,15 @@
+certified simpset: 679 rules (236 from the dictionary table)
+orientation: 679/679 crank-oriented, 0 not
+  (not a soundness condition — norm_interd is unconditional)
+cells: 330
+  norm ALONE      : rewritten 43 (13%), crank 1594 → 1488 (6% down)
+  canon THEN norm : rewritten 295 (89%), crank 1594 → 1038 (34% down)
+cells in the dictionary's OWN form: 456
+  rewritten: 164 (35%)
+  total crank 2219 → 1867 (15% reduction)
+distinct forms among the 330 cells:
+  raw 319   after canon 127   after canon+norm 27
+NESTED corpus (3996 cells, both associations, both orders):
+  distinct forms: raw 3996   after canon 206   after canon+norm 18
+  total crank 19558 → 11626 (40% down)
+RW-SCREEN-DONE

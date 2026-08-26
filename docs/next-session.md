@@ -322,3 +322,102 @@ fueled `decide` gate in the current RCells campaign is fail-closed and
 minimal-fuel-metered, so it is safe — but the tree route removes the
 fuel question permanently for the one-time price of a checker soundness
 proof.
+
+## CAMPAIGN (2026-08-26, Matthew): FRJV completeness via model-to-tree
+
+The architecture, agreed without further spelling out:
+
+    [] ⊬ φ  ⟹  Built-class TREE countermodel   (not_laxND_iff_built;
+                                                the G4c/classical side)
+            ⟹  FRJVr derivation of ofPLL φ     (THE NEW LEMMA: the hand
+                                                recipe as a recursion
+                                                over the tree)
+            ⟹  ProvableV (ofPLL φ)             — completeness of FRJV.
+
+The new lemma formalises METHOD.md Appendix A: structural recursion
+over the finite tree model, one world per join, with two sub-lemmas
+carrying the content: (i) kept-link adoptability = RefAt-vs-truth
+alignment at each world (which implications true at a world are
+KeptChain-adoptable); (ii) premise-row existence for every cone-false
+formula (the induction hypothesis).  This is the W4 progress lemma in
+semantic clothing.  Interactive skill base: the five hand witnesses +
+`wip/frjv_interactive_114.lean` (goal-first, rules-only, trace_state
+proofviews; the ProvableV metavariable pattern solves the context by
+unification).  Next skill step before scoping the recursion: run the
+interactive construction on 3–5 more banked ⊬ cells of DIFFERENT
+shapes (a promise-join cell, an axIC/vacuous cell, a 2-premise orI
+cell) to force the remaining rule families through the same discipline.
+
+UPDATE (same date, Matthew's question answered YES): the completeness
+recursion should consume `Reject/`'s Built-class trees (`Tab`), not the
+general `Kripke` structure — they are concrete inductive data the
+calculus side already constructs and checks, `not_laxND_iff_built`
+guarantees one for every underivable sequent, and tree shape is what
+world-per-join transcription wants.  Caveat carried: that existence
+theorem uses Classical.choice, so the composed completeness statement is
+Prop-level; the recursion itself stays constructive over the tree.
+
+TACTIC KIT (from the interactive corpus): `frjv_side`
+(wip/frjv_interactive_94.lean) — eight closed moves covering every side
+condition in all seven witnesses; a rule application is
+`refine Rule (…premises…) <;> all_goals frjv_side`, one line per node.
+Second exercise file covers the remaining rule families: joinOrP
+(promise) and axIC (vacuous cone), first-pass.  For the GENERAL lemma
+the decide arms die (side conditions no longer closed) — but each arm
+names exactly one helper obligation of the recursion: keptOf_ok and
+CtxEq.refl are already generic; zoneSplit generalises with one
+membership lemma; hJ2/hJ5's Boolean checks become carried invariants of
+the tree; `cloB_iff.mp ∘ decide` becomes the truth-vs-Clo alignment
+lemma.  The witness corpus's decide-sites are a SPECIFICATION of the
+completeness proof's helper list.
+
+CORRECTIONS (Matthew, 2026-08-26 evening):
+1. The countermodel-existence side can be CHOICE-FREE: the G4c
+   decidability/completeness chain ([propext, Quot.sound], the
+   axiom-hygiene campaign's result) constructs a finite countermodel on
+   the refutation branch.  So the source-model class is a DESIGN CHOICE
+   with three candidates, none yet committed: (a) the G4c decider's
+   finite models (choice-free, but not tree-shaped); (b) Reject/ Built
+   trees (tree-shaped, matching the recipe, but existence via choice,
+   and Matthew doubts the simple constructions match FRJV); (c) FRJV's
+   own modR-image class (self-normal-form).  Pick whichever makes the
+   two sub-lemmas provable; that pick is the first task of the campaign.
+2. NON-DETERMINISM CONCERN (Matthew): FRJV may be too non-deterministic
+   for a completeness recursion.  Assessment from the hand corpus: the
+   saturation engine is already the canonical deterministic strategy
+   (maximal Θ, full row closure — the hand witnesses' choices were
+   shortcuts through that space, not essential creativity), so the
+   determinism question reduces to the W4 AllMet progress question.
+   The two REAL risks, both measured: join ARITY growth (jmax 3→4
+   needed on six cells; unbounded arity kills any bounded-family
+   recursion — the syntactic none_ex question), and the UN-REPAIRED
+   PROMISE JOINS (paper-strict; the hand work needed the Υ-enrichment
+   trick exactly to get hypotheses through the promise restriction — a
+   completeness proof must show the trick always suffices, and if it
+   does not, the next refinement cycle relaxes the promise joins as
+   RefAt relaxed the barren ones).
+3. PARKING CRITERION (Matthew's decision rule): if neither this
+   semantic route nor the peer session's W4 route succeeds, FRJV is
+   PARKED as an instructive failed extension of Fiorentini–Ferrari's
+   IPC refutation calculus to PLL — keeping soundnessV, the ρ12⊬ρ15
+   settlement, the witness corpus, and the method lessons.
+
+STEP 0 (Matthew, 2026-08-26 late): before attempting the FRJV
+completeness recursion, RUN THE METHOD ON THE ◯-FREE FRAGMENT — FRJV
+restricted to ◯-free goals is essentially Fiorentini–Ferrari's FRJ(G),
+whose IPC completeness is PROVED on paper (TOCL 2020).  So the fragment
+is a CONTROL with a known answer: if the method fails there, the fault
+is our formalisation or the method's Lean shape, not the calculus — and
+it certainly fails for full FRJV (the fragment's rules are a subset in
+action).  If it succeeds, the entire risk mass is isolated in the
+◯-delta: the promise joins and join arity.  The paper's own
+completeness proof is the scaffold for the recursion's shape.
+
+FAMILY COVERAGE COMPLETE (interactive III, wip/frjv_interactive_92_90.lean):
+[ρ9]⊬ρ2 forces joinCircP and [ρ9]⊬ρ0 forces joinAtP (the final ⊃∈
+needs b in context; only the promise formers carry a ◯-formula; the
+conclusions rule out joinOrP).  Both four-node trees, first-pass, via
+the hoisted kit.  Every join family of FRJV has now been driven
+goal-first at least once.  KIT HOISTED: FRJ/WitnessKit.lean (generic
+helpers + frjv_side), answering the review point that the helpers were
+stranded in WitnessV1215's namespace.
