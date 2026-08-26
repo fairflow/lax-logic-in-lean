@@ -68,6 +68,7 @@ import Rewrite.Core
 import Rewrite.Set
 import Rewrite.Canon
 import wip.rnDict
+import wip.rcells
 
 namespace Rewrite
 
@@ -313,8 +314,14 @@ def rndSet : List RwRule :=
   ⟨_, _, RND.cBox_9⟩,
   ⟨_, _, RND.cBox_10⟩ ]
 
-/-- The full round-1 PLL simpset: the modal laws plus the table. -/
-def fullSet : List RwRule := pllSet ++ rndSet
+/-- The R-increment rules (`wip/rcells.lean`, GENERATED — the classed
+R-table cells involving ρ13–ρ21, G4c-certificate route; the R-peg
+standing rule, 2026-08-26).  442 rules; grows with R, never shrinks. -/
+def rcSet : List RwRule := RCX.rcSet
+
+/-- The full PLL simpset: the modal laws, the table, and the
+R-increment. -/
+def fullSet : List RwRule := pllSet ++ rndSet ++ rcSet
 
 /-- **The canonicalised simpset — use THIS in a sweep.**  Computed
 once here rather than per goal; the rules are stated in the
