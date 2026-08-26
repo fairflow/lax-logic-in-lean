@@ -23,3 +23,4 @@ import FRJ.Erase
 import FRJ.Profile
 import FRJ.Search.Core
 import FRJ.Search.OpsV
+import FRJ.CompleteV
