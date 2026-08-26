@@ -370,3 +370,34 @@ membership lemma; hJ2/hJ5's Boolean checks become carried invariants of
 the tree; `cloB_iff.mp ∘ decide` becomes the truth-vs-Clo alignment
 lemma.  The witness corpus's decide-sites are a SPECIFICATION of the
 completeness proof's helper list.
+
+CORRECTIONS (Matthew, 2026-08-26 evening):
+1. The countermodel-existence side can be CHOICE-FREE: the G4c
+   decidability/completeness chain ([propext, Quot.sound], the
+   axiom-hygiene campaign's result) constructs a finite countermodel on
+   the refutation branch.  So the source-model class is a DESIGN CHOICE
+   with three candidates, none yet committed: (a) the G4c decider's
+   finite models (choice-free, but not tree-shaped); (b) Reject/ Built
+   trees (tree-shaped, matching the recipe, but existence via choice,
+   and Matthew doubts the simple constructions match FRJV); (c) FRJV's
+   own modR-image class (self-normal-form).  Pick whichever makes the
+   two sub-lemmas provable; that pick is the first task of the campaign.
+2. NON-DETERMINISM CONCERN (Matthew): FRJV may be too non-deterministic
+   for a completeness recursion.  Assessment from the hand corpus: the
+   saturation engine is already the canonical deterministic strategy
+   (maximal Θ, full row closure — the hand witnesses' choices were
+   shortcuts through that space, not essential creativity), so the
+   determinism question reduces to the W4 AllMet progress question.
+   The two REAL risks, both measured: join ARITY growth (jmax 3→4
+   needed on six cells; unbounded arity kills any bounded-family
+   recursion — the syntactic none_ex question), and the UN-REPAIRED
+   PROMISE JOINS (paper-strict; the hand work needed the Υ-enrichment
+   trick exactly to get hypotheses through the promise restriction — a
+   completeness proof must show the trick always suffices, and if it
+   does not, the next refinement cycle relaxes the promise joins as
+   RefAt relaxed the barren ones).
+3. PARKING CRITERION (Matthew's decision rule): if neither this
+   semantic route nor the peer session's W4 route succeeds, FRJV is
+   PARKED as an instructive failed extension of Fiorentini–Ferrari's
+   IPC refutation calculus to PLL — keeping soundnessV, the ρ12⊬ρ15
+   settlement, the witness corpus, and the method lessons.
