@@ -83,12 +83,39 @@ def cellMain (i j : Nat) : IO Unit := do
   IO.println "-- regular rows:"
   for r in db.rs do IO.println s!"    [{ppTag r.t}] {ppL r.ctx} ⇒ {ppF r.rhs}"
 
+/-- The incompleteness-miner sweep: run the V-engine BLIND on every
+directed ρ-cell and stream one line per cell.  A `HIT` is a row of shape
+`ProvableV` (rhs = the goal implication — any tag, any context, exactly
+the shape `not_entails_of_provableV` consumes); a `MISS` is
+not-found-within-bound, never a verdict — its cap flags are printed so a
+binding cap is visible.  Compare externally against `rhocover matrix`
+ground truth: a MISS on a settled-⊬ cell is a candidate incompleteness
+witness for FRJV; a HIT on a settled-⊢ cell is a soundness alarm. -/
+def sweepMain (rounds lam : Nat) : IO Unit := do
+  let c : Config := { rounds := rounds, lamCap := lam, maxRS := 4000, maxIS := 4000 }
+  IO.println s!"== V-ENGINE SWEEP over the 462 directed ρ-cells (rounds={rounds} lamCap={lam} maxRS/IS=4000) =="
+  let mut hits := 0
+  let mut miss := 0
+  for i in List.range 22 do
+    for j in List.range 22 do
+      if i != j then
+        let G := goal i j
+        let t0 ← IO.monoMsNow
+        let (db, st) := saturateO (V.vOps G) c
+        let t1 ← IO.monoMsNow
+        let hit := db.rs.any (fun r => decide (r.rhs = G))
+        if hit then hits := hits + 1 else miss := miss + 1
+        IO.println s!"VCELL {i} {j} {if hit then "HIT" else "MISS"} {t1 - t0}ms r={st.roundsUsed} RS={st.rsSize} IS={st.isSize} lamCapped={st.lamCapped} dbCapped={st.dbCapped}"
+        (← IO.getStdout).flush
+  IO.println s!"V-SWEEP-DONE hits={hits} miss={miss}"
+
 def main (args : List String) : IO Unit := do
   match args.head? with
   | some "diff" => diffMain
   | some "cells" => do cellMain 12 9; cellMain 13 6
   | some "cell" => cellMain (((args.getD 1 "12").toNat?).getD 12) (((args.getD 2 "9").toNat?).getD 9)
-  | _ => IO.println "usage: … [diff|cells]"
+  | some "sweep" => sweepMain (((args.getD 1 "12").toNat?).getD 12) (((args.getD 2 "20").toNat?).getD 20)
+  | _ => IO.println "usage: … [diff|cells|cell i j|sweep rounds lamCap]"
 
 end FRJVRun
 

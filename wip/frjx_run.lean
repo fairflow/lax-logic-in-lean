@@ -178,13 +178,32 @@ def sweepMain : IO Unit := do
         (← IO.getStdout).flush
   IO.println s!"-- SWEEP SUMMARY: ALARMS={alarms}  refutable-found={hitsRef}  refutable-missed={missRef}  open-hit={hitsOpen}"
 
+/-- Raised-budget single cell, all caps settable and all cap flags
+printed — the re-run tool for sweep misses (`none_at` discipline: a miss
+re-runs at a raised budget, and a run is only evidence of anything if no
+cap was binding). -/
+def cellAtMain (i j rounds lam jm pm : Nat) : IO Unit := do
+  let c : Search.Config := { rounds := rounds, lamCap := lam, maxRS := 8000, maxIS := 8000,
+                             jmax := jm, pmax := pm }
+  let G := goal i j
+  let t0 ← IO.monoMsNow
+  let (db, st) := FRJX.saturate true G c
+  let t1 ← IO.monoMsNow
+  let hit := db.rs.any (fun r => decide (r.rhs = G))
+  IO.println s!"XCELL {i} {j} {if hit then "HIT" else "MISS"} {t1 - t0}ms rounds={rounds} lamCap={lam} jmax={jm} pmax={pm} r={st.roundsUsed} RS={st.rsSize} IS={st.isSize} lamCapped={st.lamCapped} dbCapped={st.dbCapped} jmaxBinding={st.jmaxBinding} pmaxBinding={st.pmaxBinding}"
+  (← IO.getStdout).flush
+
 def main (args : List String) : IO Unit := do
   match args.head? with
   | some "diff" => diffMain
   | some "cells" => do cellMain 12 9; cellMain 13 6
   | some "cell" => cellMain (((args.getD 1 "12").toNat?).getD 12) (((args.getD 2 "9").toNat?).getD 9)
+  | some "cellat" =>
+      cellAtMain (((args.getD 1 "12").toNat?).getD 12) (((args.getD 2 "18").toNat?).getD 18)
+                 (((args.getD 3 "16").toNat?).getD 16) (((args.getD 4 "20").toNat?).getD 20)
+                 (((args.getD 5 "4").toNat?).getD 4) (((args.getD 6 "3").toNat?).getD 3)
   | some "sweep" => sweepMain
-  | _ => IO.println "usage: … [diff|cells|sweep]"
+  | _ => IO.println "usage: … [diff|cells|cell i j|cellat i j rounds lamCap jmax pmax|sweep]"
 
 end FRJXRun
 

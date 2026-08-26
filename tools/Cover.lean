@@ -419,7 +419,10 @@ def main (args : List String) : IO Unit := do
     return (← rtableMode ((args.getD 1 "48").toNat?.getD 48))
   if args.head? == some "probe" then
     return (← probeMode ((args.getD 1 "48").toNat?.getD 48))
-  let maxF := (args.head?.bind String.toNat?).getD 48
+  -- `matrix` mode: same settled matrix (engines + DB overlay), dumped one
+  -- machine-readable line per cell, for external side-by-side comparisons.
+  let isMatrix := args.head? == some "matrix"
+  let maxF := ((if isMatrix then args.getD 1 "48" else args.getD 0 "48").toNat?).getD 48
   IO.println s!"=== PLL cover sweep over the 22-class ρ-catalogue (LJF◯ fuel ≤ {maxF}) ==="
   let mat0 ← statusMat maxF
   -- DB OVERLAY: the database can know cells the sweep machinery cannot
@@ -456,6 +459,16 @@ def main (args : List String) : IO Unit := do
   IO.println s!"status over {n * (n-1)} cells: {nPos} ⊢, {nNeg} ⊬, {openCells.length} open"
   for (i, j) in openCells.reverse do
     IO.println s!"  OPEN CELL ρ{i} ⊢? ρ{j}"
+  if isMatrix then
+    for i in [0:n] do
+      for j in [0:n] do
+        if i != j then
+          match mat.getD i #[] |>.getD j none with
+          | some true => IO.println s!"GT {i} {j} P"
+          | some false => IO.println s!"GT {i} {j} N"
+          | none => IO.println s!"GT {i} {j} ?"
+    IO.println "MATRIX-DONE"
+    return
   IO.println ""
   -- strict pairs
   let strict := (List.range n).flatMap fun a =>
