@@ -439,3 +439,21 @@ kept chains turn stuck-member retention into decidable `RefAt`);
 (3) `hinf` → root-only infallibility (per-wit `wfal`).  Parking
 criterion unchanged: if neither this nor the peer W4 route closes,
 FRJV parks as an instructive failure.
+
+ROUND 2 DONE (2026-08-26 22:12): `CircSupplyV` DISCHARGED on
+cone-grounded frames (`circSupplyV_of_coneGrounded`: corner →
+cone-trivial → maximal → generalised `Ax^I◯`, embedded by `toVi`), and
+`completenessV_of_endpoints` gives FRJV completeness UNCONDITIONAL over
+endpoint-seeing models (no hloc/inf/supply) by composing the peer's
+`completeness_of_endpoints` with the embedding.  Chosen-valuation route
+landed as `circWitV_of_ats` (decidable per world; blocked exactly on
+`Λ*_a ⊨_cl Z`).  Peer refutation absorbed: no supply-form organisation
+of the promise side is possible (`V.PledgeSupply` FALSE; kept members
+are implications only) — the corner supply is unaffected (its world is
+provably circ-free).  REMAINING FRONTIER: (a) non-endpoint frames —
+where #80/#81 live and FRJV must exceed FRJ; the open kernel is the
+cone-trivial non-maximal corner with a poisoned Λ*-implication, V-lever
+= kept chains on the circNotIn premise row; (b) the hloc-lift by
+instance-wise promise families (hand-witness pattern), NOT a supply;
+(c) hinf → root-only infallibility for the minModV route (the
+endpoint route already needs neither).
