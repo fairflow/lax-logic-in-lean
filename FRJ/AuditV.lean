@@ -113,4 +113,8 @@ builds on. -/
 #guard_msgs in
 #print axioms V.provableV_root_countermodel
 
+/-- info: 'FRJ.V.not_pledgeFam_of_circ_mem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.not_pledgeFam_of_circ_mem
+
 end FRJ

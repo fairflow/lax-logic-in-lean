@@ -564,6 +564,28 @@ def PledgeSupply (K : Kripke) (G : Form) : Type :=
   ∀ a : K.W, ∀ F : Form, F ∈ sfR G → ¬ K.force a F →
     circPart (lamStar K a G) ≠ [] → PledgeFam K G a F
 
+/-- **`PledgeFam` is UNSATISFIABLE at its own defect site** (2026-08-26,
+the FRJV completeness campaign's statement screen): whenever
+`◯F ∈ Λ*_a`, the family for `F` at `a` cannot exist — `hbody` demands a
+row whose context `Clo`-contains `F`, but the row derives `F`, so its
+root model forces the context (`lemma39R`) and hence `F` (`clo_forces`),
+contradicting the same root's `F`-refutation.  Consequently
+`∀ K G, PledgeSupply K G` is FALSE (`wip/frjv_pledge_refute.lean`
+realises the configuration on sepM with `F = ⊥`), and
+`completeness_of_supply` is VACUOUS on any model realising it — e.g.
+the two-world countermodel of `◯p ⊃ p`.  This is the §13
+provably-unsatisfiable instance (`docs/frj-w4.md:832-845`); the live
+route is the transported-cov refinement designed there
+(`docs/frjv-completeness-plan.md`, Lemma A′). -/
+theorem not_pledgeFam_of_circ_mem {K : Kripke} {G : Form} {a : K.W}
+    {F : Form} (h : Form.circ F ∈ lamStar K a G)
+    (pf : PledgeFam K G a F) : False := by
+  obtain ⟨i, hclo⟩ := pf.hbody F h
+  have hl := lemma39R (pf.dps i)
+  have hroot : (modR (pf.dps i)).forces (modR (pf.dps i)).root (pf.Δs i) :=
+    fun X hX => hl.1 _ _ ((preR_root_lbl (pf.dps i) X).mpr hX)
+  exact hl.2 (clo_forces hroot hclo)
+
 /-- The prime regular demand at a circ-carrying world: the promise
 `⋈^At,p`, pledging the goal. -/
 def metR_primeP {K : Kripke} {G : Form} {a : K.W} {C : Form}

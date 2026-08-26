@@ -122,3 +122,51 @@ Fast/Profile ports; unifying the FRJ/FRJV families.
 No new rules and no rule changes are proposed: the campaign proves a
 theorem ABOUT `FRJV` as already reviewed.  Any discovered need to touch
 a rule is a STOP: back to Matthew with the failure analysis.
+
+## Route revision — 2026-08-27 statement screen (REFUTATION of route step 1)
+
+The frj-w4 §§8–16 design-doc audit plus two probes settled the route
+BEFORE the proof build, and the original route step 1 is DEAD:
+
+* **REFUTED: "kept ⊇ the Λ*-circs".**  Kept members are implications
+  only (`KeptChain` pool = `thPool = impPart (interAll th)`;
+  `keptChain_isImp`), and the barren V-bases carry no modal zone, so a
+  barren V-join's conclusion context contains NO ◯-formula and — since
+  `MRWit.cov` is literal containment — a barren V-join can never serve
+  a circ-carrying world.  The RefAt ◯-clause certifies kept ANTECEDENTS
+  and join disjunct/body conditions, never retention of a ◯.  The
+  "Why it might be true" claim (ii) above is withdrawn accordingly.
+* **REFUTED: Lemma A as stated.**  `PledgeFam K G a F` is uninhabited
+  whenever `◯F ∈ Λ*_a`: kernel theorem
+  `FRJ.V.not_pledgeFam_of_circ_mem` (`FRJ/SaturateV.lean`, from
+  `lemma39R` + `preR_root_lbl` + `clo_forces`), realised concretely on
+  sepM/G80/F=⊥ (`wip/frjv_pledge_refute.lean`, pinned).  So
+  `∀ K G, V.PledgeSupply K G` is FALSE and `completeness_of_supply` is
+  vacuous on the very frames at issue — this is the §13
+  provably-unsatisfiable instance, now in the kernel.
+* **Corner probe** (`wip/frjv_corner_probe.lean`): on all four residue
+  frames every `CircSupply` demand is `Z = ⊥` with the `axIC`
+  empty-valuation route available (incl. the non-maximal fires on
+  frame 9900) — Lemma B never blocks on the residue corpus.
+
+REVISED ROUTE (unconditional target unchanged):
+
+1'. **Lemma A′ (transported-cov pledge)** — the §13 refinement designed
+    2026-08-17 and never built: parameterise the pledge family by the
+    DEMANDING world `b` (`hlam`/`hbody` over `lamStar K b G`; the
+    demand has `b ⊮ ◯F`, so `◯F ∉ Λ*_b` and the defect site vanishes),
+    thread a demand-origin parameter through the tagged tier of
+    `visit`.  Three of four fields come free
+    (`exists_common_witness_list` + `clo_mono`/`lamStar_mono` +
+    `mem_clo_lamStar`; recursion legal, `ht` strictly drops at the
+    common witness).  THE one semantic question left: at a
+    circ-carrying anchor `a` for prime demand `F`, does the common
+    witness `u ∈ cone(a)` (forcing all Λ*-circ bodies) refute `F`?
+    Screen it on the residue frames before proving (next probe).
+2'. **The ⊥-pledge pattern** (from the ρ12⊬ρ15 witness, node `Q`):
+    pledge `⊥` and consume tag-blind through `impNotIn` — a promise
+    row any infallible successor can fill.  Unformalised; candidate
+    fallback where A′'s semantic question fails.
+3'. Lemma B unchanged: `circWit_of_maximal` + `axIC` chosen-valuation +
+    `metI_circ_syn` + the self-destruction argument; already closed on
+    cone-grounded and Endpoints frames.
