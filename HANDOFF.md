@@ -1477,3 +1477,51 @@ join the set; the set NEVER shrinks. The 795 engine-classed R-table
 cells are the promotion queue (engine verdict → kernel `Interd` theorem
 → `RwRule`). Recorded in TOOLS.md §1 and on the page (Simplifier tab);
 the "fifteen earliest representatives" framing is retired. Page → v24.
+
+## §2026-08-26e — FRJV completeness campaign opened: plan approved, native scaffolding ported, target reduced to two supply lemmas
+
+Session (worktree `intelligent-sanderson`, branch
+`claude/frj-incompleteness-80-81-251e7f`, synced to redevelopment tip
+`6ab559f` then advanced).  Matthew reviewed `docs/refat-plan.md` in
+session: plan RATIFIED, architecture ACCEPTED (with the fidelity-anchor
+wording corrected — `FRJ/Calculus.lean` is FRJ(G) + the W4 devices, not
+TOCL 2020 verbatim), divergences V1–V3 accepted, and FRJV COMPLETENESS
+pulled INTO scope.  Campaign plan `docs/frjv-completeness-plan.md`
+APPROVED: the target is the UNCONDITIONAL statement
+
+    completenessV : ∀ {K : Kripke} {G : Form}, ¬ K.valid G → ProvableV G
+
+with repair₂ (RefAt at the promise/fallible joins) only if screening
+forces it.
+
+Landed, all sorry-free, pins `[propext, Quot.sound]` in `FRJ/AuditV.lean`
+(negative-tested):
+
+* `FRJ/CompleteV.lean` (`3ceec1c`) — transfer baseline:
+  `completenessV_of_{endpoints,coneGrounded,discrete,supply}`,
+  `completenessV_via_closure`, free via `provableV_of_provable`.
+* `FRJ/SaturateV.lean` (`7560a98`) — the NATIVE port of the full
+  completeness scaffolding to `FRJVr`/`FRJVi` (1,590 lines; the
+  mechanical retarget collapsed to three real edits: the soundness half
+  over `V.modR_countermodel`, and the two barren-join builder bodies
+  via `restrict_keptChain` + `joinCtx*_eq_base` — the paper case is the
+  kept-zone special case, as designed).  `V.visit`/`visitMax`/`visitG`,
+  `V.completeness_of_endpoints` etc. all native now.
+
+THE REDUCTION: `V.completeness_of_supply` is proved, so the
+unconditional target is exactly two `Type`-valued construction lemmas —
+
+    Lemma A:  ∀ K G, V.PledgeSupply K G     (pledge families at
+              circ-carrying worlds; the PAPER analogue is FALSE by
+              #80/#81, so the kept zone must carry the difference)
+    Lemma B:  ∀ K G, V.CircSupply K G      (the §9 stuck corner; the
+              frj-w4 §11 self-destruction conjecture, 28 probes pass)
+
+Screening S0 (gating, RUNNING): the six sweep-missed refutable cells.
+Settled so far: (ρ12,ρ18) HIT and (ρ13,ρ18) HIT at raised budget
+(the redevelopment worktree's own re-run, ~2 h/cell) — budget misses as
+the frame analysis predicted (both refuted on sepM).  Outstanding: the
+four two-modal-edge cells (ρ19,ρ18), (ρ20,ρ18), (ρ20,ρ12), (ρ20,ρ13),
+running in both worktrees at two budget points.  A cap-free miss on any
+would falsify Lemma A or B for that configuration and trigger repair₂.
+S1 (corner probes vs V) discharged by inclusion: paper ⊆ repaired.
