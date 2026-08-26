@@ -114,9 +114,41 @@ ABOUT the paper calculus and must survive verbatim.  So:
 
 ## Non-scope
 
-Completeness of FRJV; relaxing the promise/fallible joins; the 6-cell
+Completeness of FRJV (**pulled INTO scope 2026-08-26, see the review
+section**); relaxing the promise/fallible joins; the 6-cell
 residue (consequent ρ18 / antecedent ρ20); `Fast`/`Profile`
 re-optimisation over the functor (follow-up; the reference instance is
 the correctness anchor); unifying `FRJ` and `FRJV` into one
 policy-parameterised family (recorded as the long-term shape, not
 attempted here).
+
+## Review — 2026-08-26 (Matthew, in session)
+
+Verdicts on the four points put to him:
+
+1. **Gate inversion** (plan executed same-session, review after the
+   fact): ratified — the plan stands as delivered.
+2. **Architecture** (separate `FRJV` family + `Ops` functor, paper
+   family untouched, unification a recorded non-goal): **accepted**,
+   with one wording correction he raised: `FRJ/Calculus.lean` is NOT
+   the TOCL 2020 calculus verbatim — it is FRJ(G) plus our W4 modal
+   devices — so "paper-fidelity anchor" above means *anchor for the
+   documented extension*: the IPC rules transcribe the paper clause by
+   clause and every modal device is a recorded divergence in that
+   file's log; the incompleteness theorems are about that documented
+   extension FRJ(◯), not about the paper's FRJ(G).
+3. **Divergences V1–V3** (ours; promise/fallible joins untouched for
+   scope control): accepted as recorded.
+4. **Scope**: FRJV COMPLETENESS is now IN scope — Matthew: "I have
+   tried several times to get an agent to complete FRJV completeness."
+   It is the next campaign (goal issued 2026-08-26).
+
+Status corrections at review time (events of the evening of
+2026-08-25): the branch IS merged into `claude/frj-redevelopment-69005f`
+(`bd30a5c`, then hoist merge); ρ12⊬ρ15 is BANKED (RNDB ord-0003, new
+provenance case `Engine.frjv`, frontier empty — the 462-cell ρ-matrix
+is total); the witnesses/consequences were hoisted out of `wip/` by
+`89ba5cc` (`FRJ/WitnessV{,1215}.lean`, `Certified/RhoFRJV.lean`,
+namespace `FRJVConsequences` kept; `wip/frjv_consequences.lean` is a
+forwarding stub).  The status block at the top of this file predates
+all of this and is retained unedited as the delivery record.
