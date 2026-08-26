@@ -1390,3 +1390,52 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
     bottom diamond ρ0,ρ2,ρ3,ρ4.
   - Mechanisation queue: (i) cube lemma at class level; (ii) U(⊥);
     (iii) full-PLL density (subst lemma).
+
+## §2026-08-26c — the cube embedding is a THEOREM, and RN(◯,{}) is formally a bounded distributive lattice
+
+Matthew's Theorem 2 (the covers programme) is mechanised, in its
+conditional form (the cover set enters as a hypothesis — this is "prove 2
+subject to the existence premise"):
+
+- `LaxLogic/CubeEmbedding.lean` — abstract, over any `DistribLattice`
+  with `⊥` (used only for `Finset.sup`), via Mathlib's `CovBy`:
+  `cube_le_iff : (∀ y ∈ U, n ⋖ y) → S ⊆ U → T ⊆ U →
+  (n ⊔ ⋁S ≤ n ⊔ ⋁T ↔ S ⊆ T)`, plus `cube_inj`.  Sorry-free, pinned
+  `[propext, Classical.choice, Quot.sound]`.
+- `LaxLogic/ClosedFragmentLattice.lean` — the application home:
+  `DistribLattice`/`OrderBot`/`OrderTop`/`BoundedOrder` instances on
+  `RNClass := Quotient closedSetoid` (the closed-fragment Lindenbaum
+  quotient of `PLLLaxInfinite.lean`).  Every lattice law incl.
+  distributivity is pointwise in the Kripke forcing clauses against the
+  semantic `Le` — one-line proofs, no ND terms.  `⊥` and `⊤ = ⊥⊃⊥` are
+  classes of the fragment itself: NOTHING had to be added.
+  `rn_cube_le_iff`/`rn_cube_inj` instantiate the cube theorem at
+  RN(◯,{}) verbatim.  Both modules imported by `LaxLogic.lean`.
+
+THE OPEN PREMISE (no Lean declaration — a sorry asserts; recorded here
+and on the page):
+
+    For a class n of ◯-depth k, is there a set U(n) of GENUINE fragment
+    covers of n with |U(n)| = f(k), f strictly monotone a.e.?
+
+Known: f-data at ⊥ (depth 0): U(⊥) ⊇ {◯⊥, ¬◯⊥} is kernel-proved
+(`bot_coversVF_obot/nbot`); exactness U(⊥) = that pair is argued
+(consistency split + `obot_decides`/`nbot_decides`) but its mechanisation
+is still queue item (ii).  NOTE the embedding needs only MEMBERSHIP, not
+exactness: the two proved covers already force the bottom diamond
+{⊥, ◯⊥, ¬◯⊥, ◯⊥∨¬◯⊥} = 2² — the first full instance — once the
+`CoversVF` ⇄ quotient-`CovBy` bridge lemma is stated (VarFree vs
+atomFree alignment; next mechanisation step, with (ii)).
+
+Per-edge programme (the empirical content after the theorem): each
+scoped cover a ⋖[R] b of the Hasse diagram upgrades to a genuine cover
+only by a relative-completeness argument in the style of the ⊥ case —
+proof, never testing.  Page updated to v23: genuine-covers status, the
+DL statement, and the previously-undefined ◯-depth (boxDepth + DepthLe)
+now in the Definitions tab.
+
+Also this date (§ earlier): the FRJV/FRJX side-by-side record located
+(`wip/frjx_sweep_out.txt`, 2026-08-25: ALARMS=0, 297/303, six misses all
+with jmax/pmax binding); raised-budget re-run of the six in flight
+(`wip/frjx_missrerun_out.txt`); `rhocover matrix` GT dump total at 462
+(`wip/rho_matrix_out.txt`).

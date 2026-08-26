@@ -199,7 +199,7 @@ td .f{font-size:14.5px}
   is the ρ-catalogue <span class="f">R</span>: twenty-two pairwise-distinct classes, its order
   now total, its operation tables computed cell by cell, and open-ended by construction.</p>
   <p class="buildline">
-    <span><b>v22</b>, successor of v21 and of rn-explorer v17</span>
+    <span><b>v23</b>, successor of v22 and of rn-explorer v17</span>
     <span>built 2026-08-26</span>
     <span>branch <b>claude/frj-redevelopment-69005f</b> @ d224201</span>
     <span>if the version above reads lower than the one you were told, force-reload (⇧ + reload)</span>
@@ -231,11 +231,41 @@ td .f{font-size:14.5px}
     relation is written <strong>only in scoped form</strong>, <span class="f">a ⋖[K] b</span>
     relative to a named finite set <span class="f">K</span>:</p>
     <div class="disp">a ⋖[K] b  :=  a &lt; b  and  ∀ c ∈ K.  ¬(a &lt; c &lt; b)</div>
-    <p>No unscoped cover of RN(◯,{}) is proved, and none can be settled by search:
+    <p>An <strong>unscoped (genuine) cover</strong> cannot be settled by search:
     RN(◯,{}) is <strong>infinite</strong>, so ruling out every interposer is a statement about
-    an infinite set. A scoped cover is destroyed by enlarging <span class="f">K</span>.</p>
-    <p class="src"><b>closed_lax_infinite</b> — LaxLogic/PLLLaxInfinite.lean:616, sorry-free,
+    an infinite set — a proof obligation, not a test. The first genuine covers are now
+    kernel-proved: <span class="f">⊥ ⋖ ◯⊥</span> and <span class="f">⊥ ⋖ ¬◯⊥</span>
+    (<span class="m">bot_coversVF_obot</span>, <span class="m">bot_coversVF_nbot</span>).
+    A scoped cover is destroyed by enlarging <span class="f">K</span>; a genuine cover is
+    permanent.</p>
+    <p>RN(◯,{}) is a <strong>bounded distributive lattice</strong> (meet/join the lifted
+    <span class="f">∧</span>/<span class="f">∨</span>; <span class="f">⊥</span> and
+    <span class="f">⊤ = ⊥ ⊃ ⊥</span> are classes of the fragment itself), and genuine covers
+    buy algebra: for any finite set <span class="f">U</span> of genuine covers of
+    <span class="f">n</span>, the map <span class="f">S ⊆ U ⟼ n ∨ ⋁S</span> order-embeds the
+    Boolean lattice <span class="f">2^U</span> — the cube above <span class="f">n</span> is
+    free.</p>
+    <p class="src"><b>closed_lax_infinite</b> — LaxLogic/PLLLaxInfinite.lean:616 ·
+    <b>bot_coversVF_obot/nbot</b> — RNDB/Order.lean, <span class="m">[propext, Quot.sound]</span> ·
+    <b>CubeEmbedding.cube_le_iff</b> — LaxLogic/CubeEmbedding.lean ·
+    <b>DistribLattice/BoundedOrder instances</b> — LaxLogic/ClosedFragmentLattice.lean
+    (<span class="m">rn_cube_le_iff</span>), all sorry-free,
     <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
+  </div>
+
+  <div class="panel">
+    <h2>◯-depth</h2>
+    <p>The syntactic ◯-depth of a formula is the maximal nesting of
+    <span class="f">◯</span>:</p>
+    <div class="disp">boxDepth ⊥ = 0        boxDepth (A ∧ B) = boxDepth (A ∨ B) = boxDepth (A ⊃ B)
+                                    = max (boxDepth A) (boxDepth B)
+boxDepth (◯A) = boxDepth A + 1<span class="tag">wip/depth.lean</span></div>
+    <p>Classes take the <em>minimum</em> over their members — class depth, not syntactic
+    depth, is the invariant:</p>
+    <div class="disp">DepthLe n A  :=  ∃ B.  Interd A B  ∧  boxDepth B ≤ n</div>
+    <p>The depth-reducing laws (Families tab, last panel) collapse most constructions;
+    the only depth-raising ones are <span class="f">◯</span> over <span class="f">∨</span> and
+    <span class="f">◯</span> over an implication whose consequent is not already boxed.</p>
   </div>
 
   <div class="panel">
@@ -1275,7 +1305,7 @@ simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<
 </section>
 
 <p class="buildline" style="border-top:1px solid var(--line);padding-top:16px">
-  <span>RN(◯,{}) catalogue · v22 · 2026-08-26</span>
+  <span>RN(◯,{}) catalogue · v23 · 2026-08-26</span>
   <span>every number on this page was re-derived from the sources named beside it</span>
 </p>
 </div>

@@ -73,6 +73,8 @@ import LaxLogic.PLLDemos
 import LaxLogic.PLLExec
 import LaxLogic.PLLCtxCompleteness
 import LaxLogic.PLLLaxInfinite
+import LaxLogic.CubeEmbedding
+import LaxLogic.ClosedFragmentLattice
 import LaxLogic.BeliefCollapse
 import LaxLogic.BeliefBooleanIso
 import LaxLogic.BeliefNormality
