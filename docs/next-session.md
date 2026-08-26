@@ -457,3 +457,13 @@ cone-trivial non-maximal corner with a poisoned Λ*-implication, V-lever
 instance-wise promise families (hand-witness pattern), NOT a supply;
 (c) hinf → root-only infallibility for the minModV route (the
 endpoint route already needs neither).
+
+RESIDUE ATTACKED (2026-08-26 22:24, wip/minmodv_residue.lean): the
+cone-trivial non-maximal corner is REALISED (KR: a<b, Rm=id; GR =
+(A⊃w)⊃◯w, A = p∨(p⊃q)); route 3 (chosen valuation) REFUTED by
+certificate (`route3_blocked`, A is a classForce-tautology); the corner
+SERVED anyway by the Υ-enrichment wit (paper second zone; RefAt not
+needed); `provableV_residue` runs minModV end-to-end on the instance.
+NEXT CONCRETE STEP for the unconditional discharge: the
+seen-parametrised minModV — measure (ht, |sfR|−|seen|, t, |C|), corner
+branch BUILDS the Υ-enriched join instead of consuming CircSupplyV.
