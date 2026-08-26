@@ -322,3 +322,28 @@ fueled `decide` gate in the current RCells campaign is fail-closed and
 minimal-fuel-metered, so it is safe — but the tree route removes the
 fuel question permanently for the one-time price of a checker soundness
 proof.
+
+## CAMPAIGN (2026-08-26, Matthew): FRJV completeness via model-to-tree
+
+The architecture, agreed without further spelling out:
+
+    [] ⊬ φ  ⟹  Built-class TREE countermodel   (not_laxND_iff_built;
+                                                the G4c/classical side)
+            ⟹  FRJVr derivation of ofPLL φ     (THE NEW LEMMA: the hand
+                                                recipe as a recursion
+                                                over the tree)
+            ⟹  ProvableV (ofPLL φ)             — completeness of FRJV.
+
+The new lemma formalises METHOD.md Appendix A: structural recursion
+over the finite tree model, one world per join, with two sub-lemmas
+carrying the content: (i) kept-link adoptability = RefAt-vs-truth
+alignment at each world (which implications true at a world are
+KeptChain-adoptable); (ii) premise-row existence for every cone-false
+formula (the induction hypothesis).  This is the W4 progress lemma in
+semantic clothing.  Interactive skill base: the five hand witnesses +
+`wip/frjv_interactive_114.lean` (goal-first, rules-only, trace_state
+proofviews; the ProvableV metavariable pattern solves the context by
+unification).  Next skill step before scoping the recursion: run the
+interactive construction on 3–5 more banked ⊬ cells of DIFFERENT
+shapes (a promise-join cell, an axIC/vacuous cell, a 2-premise orI
+cell) to force the remaining rule families through the same discipline.
