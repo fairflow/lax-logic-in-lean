@@ -1602,3 +1602,57 @@ hypothesis is the first ◯-lesson: fallible countermodels carry no data
 the calculus can consume (`¬◯⊥` validated by every infallible model),
 so the ◯-extension must both handle ◯-goals in `minMod` AND admit
 fallible worlds in the source models — the two halves of the delta.
+
+## §2026-08-26i — the ◯-delta ROUND 1: `minModV` extends the template past `.circ`, first-pass green
+
+Matthew's directives, both mid-turn: (1) extend `minMod` past `.circ` by
+USING THE EXISTING PROOF AS A FIRM TEMPLATE (same witnesses, recursion,
+measure; new cases only — never a fresh proof strategy; lesson added to
+`.claude/skills/calculus-adoption/SKILL.md` as the "Extending an adopted
+calculus" section and banked in memory); (2) the tweak recorded in the
+calculus-adoption skill.
+
+**Landed (`wip/minmodv.lean`, compiles first pass, pins
+`[propext, Quot.sound]`, `#guard_msgs`-guarded):**
+
+- `IrrWitV`/`RegWitV`/`MinModStmtV` — the template's witness records,
+  V-valued; `RegWitV` carries the tag and the `tOK` obligation
+  (`t = barren ∨ ∃ W, t = chain W ∧ Covers ctx W C`) that
+  `circIn`/`circNotIn` consume, threaded through every case by
+  `tOK_lift` (the `Covers` clauses).
+- `regPrimeV_join`/`regPrimeV_ax`/`regOrV_join` — the three regular
+  cases on the V-formers.  The paper's `Θ^⊃/Υ` second zone is recreated
+  as `restrict (thPool th) Υ` with certificate `keptChain_restrict`
+  (via `keptChain_of_ups`); the `hcf`-discharges are replaced by
+  `hloc : ∀ b, circPart (Λ*_b) = []`.
+- `minModV` — the full recursion, same measure `(ht, t, |C|)`.  NEW
+  cases: regular `◯Z` needs NO float at all (`Rm` reflexive gives
+  `a ⊮ ◯Z → a ⊮ Z`; recurse on `Z`, close with `circIn`); irregular
+  `◯Z` floats to any proper extension refuting `Z` (height drops,
+  `circNotIn` with `Λ*`-transport), and when NONE exists — every
+  `u > a` forces `Z` — the named supply `CircSupplyV` fires.  That
+  corner is the §9 wall of `docs/frj-w4.md` (no lexicographic measure
+  orders `I(◯Z)@a → R(Z)@a`); it is a hypothesis consumed at exactly
+  that branch and nowhere else.
+- `completenessV_of_supply : hloc → Infallible → CircSupplyV →
+  ¬valid G → ProvableV G` — round-1 completeness with `G` MODAL on both
+  sides.
+
+**Smoke test (`wip/minmodv_test.lean`)**: the Peirce cell
+`(◯p ⊃ q) ⊃ q` on `Kripke.point` drives every new branch end to end
+(imp case, join with MODAL `Υ`-member `◯p`, irregular `◯`-demand, supply
+discharged by the generalised `Ax^I◯` at the empty valuation); pin
+guarded, and the guard was WATCHED FAILING on an intermediate sorried
+build before the fix (gate discipline).
+
+**Round 2 (the remaining delta, in order of expected yield):**
+1. discharge `CircSupplyV` — the four W4 §11 routes (maximal-world
+   `Ax^I◯`, chosen-valuation `Ax^I◯`, `Clo`-grounding, member-wise
+   analysis), PLUS the new V-fact: the kept chains make the stuck-member
+   retention (`(◯Z⊃W) ∈ Λ*` inside the supply row) a decidable `RefAt`
+   question rather than a circular `Υ`-demand;
+2. lift `hloc` — the promise-join port (`joinAtP`/`joinOrP`/`joinCircP`
+   branches at circ-carrying worlds; family = the `Rm`-cone, the §8
+   pledge-existence question enters as `PledgeSupplyV`);
+3. weaken `hinf` to root-infallibility (per-wit `wfal`, fallible joins
+   for the free-graded demands).

@@ -76,6 +76,30 @@ is worth very little, and in this repo one was: three certified cells
 refuted the soundness of a calculus whose completeness had already been
 proved.
 
+## Extending an adopted calculus (e.g. adding ◯)
+
+When the base calculus is already mechanised with its metatheory proved,
+an extension (new connective, new rules) is NOT a fresh adoption. **Use
+the existing proofs as firm templates**: same witness structures, same
+recursion, same measure, new cases only — do not copy the calculus, add
+rules, and build soundness/completeness with a new proof strategy.
+
+- Port the base cases verbatim first (they must still compile against
+  the extended family); only then write the new-connective cases.
+- A templated case that fails localises the problem to one rule or one
+  measure edge; the loop *fix the calculus, re-run the template* is much
+  tighter than parallel campaigns with divergent proof organisations.
+- Where the template genuinely cannot close a case, surface it as a
+  NAMED hypothesis (a supply `Prop`/`Type` consumed exactly at that
+  branch) with the displayed statement, for review — never a silent
+  strategy fork, and never a `sorry` (a `sorry` asserts).
+
+Evidence: the FRJ◯ completeness campaign (2026-08, `docs/frj-w4.md`)
+reorganised to saturation-closure instead of extending the mechanised
+`minMod` template; the FRJV ◯-delta returned to the template
+(Matthew's directive, 2026-08-26). Cost of the fork: two proof
+organisations to maintain, and design findings that do not transfer.
+
 ## Before step 2, decide what kind of result you are reproducing
 
 Soundness-and-completeness-against-a-semantics is *one* possibility, and

@@ -421,3 +421,21 @@ the hoisted kit.  Every join family of FRJV has now been driven
 goal-first at least once.  KIT HOISTED: FRJ/WitnessKit.lean (generic
 helpers + frjv_side), answering the review point that the helpers were
 stranded in WitnessV1215's namespace.
+
+ROUND 1 OF THE ◯-DELTA LANDED (2026-08-26 22:02): `wip/minmodv.lean`
+extends `minMod` past `.circ` on the template (Matthew's method
+directive: existing proofs as firm templates, never a fresh strategy —
+now also a section of the calculus-adoption skill).  `minModV` +
+`completenessV_of_supply` compile FIRST PASS, pins
+`[propext, Quot.sound]` guarded.  Hypotheses of round 1: `hloc`
+(world-wise circ-free Λ*), global infallibility, and `CircSupplyV`
+(the §9 sole-candidate corner as a named supply).  Regular `◯`-goals
+need no float (Rm reflexivity); irregular `◯`-demands float on height
+or hit the supply.  Smoke test `wip/minmodv_test.lean`: Peirce cell
+end-to-end on `Kripke.point`, supply discharged by `Ax^I◯`.  NEXT:
+(1) discharge `CircSupplyV` (four W4 §11 routes + the NEW V-lever —
+kept chains turn stuck-member retention into decidable `RefAt`);
+(2) lift `hloc` = promise-join port with `PledgeSupplyV`;
+(3) `hinf` → root-only infallibility (per-wit `wfal`).  Parking
+criterion unchanged: if neither this nor the peer W4 route closes,
+FRJV parks as an instructive failure.
