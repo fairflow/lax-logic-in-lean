@@ -1477,3 +1477,37 @@ join the set; the set NEVER shrinks. The 795 engine-classed R-table
 cells are the promotion queue (engine verdict → kernel `Interd` theorem
 → `RwRule`). Recorded in TOOLS.md §1 and on the page (Simplifier tab);
 the "fifteen earliest representatives" framing is retired. Page → v24.
+
+## §2026-08-26e — the simplifier pegged to R AND updated: 679 rules, banked
+
+Matthew's directive executed end to end.  The route matters as much as
+the result: the first design (LJF◯ fueled search re-run under kernel
+`decide`, per-cell minimal-fuel metering) was WORKING but wrong-shaped —
+Matthew asked why fuel was in the statement at all, and the answer was
+in the repo: `rnDictGen`'s G4c certificate pattern (untrusted compiled
+`G4cTm.findBounded`, budget 4·10⁵ nodes; found proof TERMS printed as
+Lean source; the kernel only type-checks literals).  A record-search
+failure on my part — the pattern built the original 236 rules.
+
+- `tools/RCellsGen.lean` (`lake exe rcellsgen`): the R-increment
+  generator, self-contained copy of the RNGen printer (rnDictGen
+  exports a root `main`, so it cannot be imported by another exe).
+- `wip/rcells.lean` GENERATED: 442 kernel-checked `Interd` cells over
+  ρ13–ρ21 (of 445 classed: 2 SKIP — fwd ρ20∧ρ21, fwd ρ20∨ρ21, the
+  G4-search-resistant implication shapes, hand-term candidates in the
+  `rncCertPos` precedent — and 1 TRIV, ρ5∨ρ14 syntactically ρ17).
+  Whole file kernel-checks in 27 s.
+- `Rewrite/Catalogue.lean`: `fullSet := pllSet ++ rndSet ++ rcSet`,
+  679 rules, pins UNCHANGED `[propext, Quot.sound]` (guards passed).
+- `rwscreen` re-measured (wip/rwscreen_out2.txt): flat 330 cells 89%
+  rewritten, crank −34%, distinct forms 319 → 27; NESTED corpus
+  3,996 → **18** distinct forms (was 25), crank −40%.  All 679 rules
+  crank-oriented.
+- Page v26: simpset panels updated (counts, measurement, queue = the
+  two skips); TOOLS.md §1 row updated.
+
+The LJF-fuel byproducts are kept as cross-checks (`tools/RCFuel.lean`,
+`wip/rcfuel_out.txt`, 255 cells fueled).  The certificate-passing
+proof-side engine for LJF◯ (queued in docs/next-session.md) remains
+worth building for LJF-specific work; for table promotion the G4c
+route is the standing mechanism.
