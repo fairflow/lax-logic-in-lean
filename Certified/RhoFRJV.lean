@@ -17,6 +17,10 @@ derivations mean what they must.
 import FRJ.BridgeV
 import FRJ.WitnessV
 import FRJ.WitnessV1215
+import FRJ.WitnessV1918
+import FRJ.WitnessV2018
+import FRJ.WitnessV2013
+import FRJ.WitnessV2012
 import LaxLogic.RN.Rho
 import LaxLogic.Deriv
 
@@ -75,5 +79,61 @@ theorem rho12_nle_rho15 : [rhoF 12] ⊬ rhoF 15 :=
 /-- info: 'FRJVConsequences.rho12_nle_rho15' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms rho12_nle_rho15
+
+
+/-! ## The four hand witnesses (2026-08-26): the FRJX sweep's remaining
+misses, settled THROUGH the repaired calculus by hand-built derivations
+(`FRJ/WitnessV1918.lean`, `V2018`, `V2013`, `V2012`) — with the two
+engine hits at raised join arity (ρ12⊬ρ18, ρ13⊬ρ18), every ⊬ cell of
+the 462-cell matrix the sweep could not re-derive is now known INSIDE
+FRJV: no incompleteness witness survives the corpus. -/
+
+theorem ofPLL_g1918 :
+    FRJ.ofPLL (PLLFormula.ifThen (rhoF 19) (rhoF 18)) = FRJ.WitnessV1918.G1918 := by
+  decide
+
+theorem ofPLL_g2018 :
+    FRJ.ofPLL (PLLFormula.ifThen (rhoF 20) (rhoF 18)) = FRJ.WitnessV2018.G2018 := by
+  decide
+
+theorem ofPLL_g2013 :
+    FRJ.ofPLL (PLLFormula.ifThen (rhoF 20) (rhoF 13)) = FRJ.WitnessV2013.G2013 := by
+  decide
+
+theorem ofPLL_g2012 :
+    FRJ.ofPLL (PLLFormula.ifThen (rhoF 20) (rhoF 12)) = FRJ.WitnessV2012.G2012 := by
+  decide
+
+/-- `[ρ19] ⊬ ρ18`, through the repaired calculus (hand witness). -/
+theorem rho19_nle_rho18_viaV : [rhoF 19] ⊬ rhoF 18 :=
+  FRJ.not_entails_of_provableV (ofPLL_g1918 ▸ FRJ.WitnessV1918.provableV_1918)
+
+/-- `[ρ20] ⊬ ρ18`, through the repaired calculus (hand witness). -/
+theorem rho20_nle_rho18_viaV : [rhoF 20] ⊬ rhoF 18 :=
+  FRJ.not_entails_of_provableV (ofPLL_g2018 ▸ FRJ.WitnessV2018.provableV_2018)
+
+/-- `[ρ20] ⊬ ρ13`, through the repaired calculus (hand witness). -/
+theorem rho20_nle_rho13_viaV : [rhoF 20] ⊬ rhoF 13 :=
+  FRJ.not_entails_of_provableV (ofPLL_g2013 ▸ FRJ.WitnessV2013.provableV_2013)
+
+/-- `[ρ20] ⊬ ρ12`, through the repaired calculus (hand witness). -/
+theorem rho20_nle_rho12_viaV : [rhoF 20] ⊬ rhoF 12 :=
+  FRJ.not_entails_of_provableV (ofPLL_g2012 ▸ FRJ.WitnessV2012.provableV_2012)
+
+/-- info: 'FRJVConsequences.rho19_nle_rho18_viaV' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho19_nle_rho18_viaV
+
+/-- info: 'FRJVConsequences.rho20_nle_rho18_viaV' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho20_nle_rho18_viaV
+
+/-- info: 'FRJVConsequences.rho20_nle_rho13_viaV' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho20_nle_rho13_viaV
+
+/-- info: 'FRJVConsequences.rho20_nle_rho12_viaV' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rho20_nle_rho12_viaV
 
 end FRJVConsequences

@@ -1531,3 +1531,43 @@ formula is why hand terms win.  The term elaborated FIRST PASS.
   kernel-checked; rwscreen re-measured (wip/rwscreen_out3.txt, metrics
   unchanged — the absorptions complete the table, not the corpus).
 - Page v27: queue EMPTY.
+
+## §2026-08-26g — the four remaining sweep misses HAND-DERIVED in FRJV: the corpus carries NO incompleteness witness
+
+Matthew's directive: pause the raised-budget FRJX computations (up to
+2 h/cell) and construct the derivations by hand, anticipating the steps.
+Done — all four, EACH COMPILING ON THE FIRST PASS, guided by the cells'
+banked countermodels and probed zone vocabularies (sfR/gHat/Clo checked
+computationally before each design; the `by decide` side conditions
+were the safety net, never the designer):
+
+- `FRJ/WitnessV1918.lean` — [ρ19]⊬ρ18.  Bottom half = WitnessV1215's
+  tree at the alphabet a=◯⊥, ¬a, b=◯¬a; the promise `⋈^∨` over the
+  ¬a-world gives the ρ4-refuting world 1; root `⋈^∨` with
+  RefAt ρ9 = or(circ(ups ¬a), ups ¬¬a).
+- `FRJ/WitnessV2018.lean` — [ρ20]⊬ρ18.  Same tree + the Υ-ENRICHMENT:
+  orI(i_a, i_na) merges to a ρ4-row, impInI Λ={b} stabilises to a
+  ρ11-row (st=[b]; its hJ5 discharged by Clo Γ2 ¬a) — putting ρ11 ∈ Υ
+  lets ρ20 ride the promise join's restricted zone.
+- `FRJ/WitnessV2013.lean` — [ρ20]⊬ρ13.  New device: the ¬a-world's
+  KeptChain adopts ρ8 = ¬¬a⊃a as its SECOND link (ante ¬¬a
+  RefAt-refuted through the imp-clause once ¬a is kept) — ρ8 then
+  rides Clo everywhere; two nested impIn at the top.
+- `FRJ/WitnessV2012.lean` — [ρ20]⊬ρ12.  As 2013, plus a barren `⋈^◯`
+  root (RefAt ¬a by ups; kept ρ8, ρ20) for the ◯-target b, under the
+  two impIn.
+
+Consequences hoisted into `Certified/RhoFRJV.lean`
+(`rho{19,20}_nle_rho{18,13,12}_viaV`, pins [propext, Quot.sound]).
+With the two engine hits at jmax=4 (ρ12⊬ρ18, ρ13⊬ρ18, ~2 h each), ALL
+SIX of the FRJX sweep's misses are now derived inside the repaired
+calculus: the 462-cell corpus yields ZERO incompleteness witnesses for
+FRJV — every miss was the join-arity cap.  (Paused computations killed;
+the hand route was ~100× cheaper than the engine at jmax=4 and produced
+kernel objects instead of logs.)
+
+Lesson for METHOD.md's skill list: the witness idiom is
+model-→-tree transcription: probe sfR/gHat/Clo first, one world per
+join, promise joins where Rm matters, axIC for vacuous cones,
+KeptChain/Υ-enrichment as the two levers when a hypothesis must reach
+the root context.
