@@ -1525,3 +1525,20 @@ four two-modal-edge cells (ρ19,ρ18), (ρ20,ρ18), (ρ20,ρ12), (ρ20,ρ13),
 running in both worktrees at two budget points.  A cap-free miss on any
 would falsify Lemma A or B for that configuration and trigger repair₂.
 S1 (corner probes vs V) discharged by inclusion: paper ⊆ repaired.
+
+Late addendum (same date, evening): the statement screen KILLED the
+supply route before any proof build — `∀ K G, V.PledgeSupply K G` is
+FALSE (`FRJ.V.not_pledgeFam_of_circ_mem`, kernel, `◯F ∈ Λ*_a` defect
+site; realised on sepM/G80/F=⊥ in `wip/frjv_pledge_refute.lean`).  Two
+probes then re-founded the route: `wip/frjv_corner_probe.lean` (every
+residue-frame CircSupply demand is Z=⊥ with axIC available) and
+`wip/frjv_demand_trace.lean` (a V-routed visit simulator: frame 9900 +
+(20,13) trace CLEAN; the one residual demand — `I(◯⊥)@1` on sepM,
+axIC blocked by classically-false δ — is served by the kernel witness
+via an axIC row INSIDE a join, showing the paper visit's Λ*-coverage
+invariants over-demand).  Revised construction target: weakened wit
+invariants (witness pattern: axIC rows in joins, classically-true stab
+discipline, tag-blind impNotIn floats); the pledge machinery is
+expected to drop out entirely.  Full record:
+`docs/frjv-completeness-plan.md` (route revision + demand-trace §§).
+S0 unchanged: 2/6 HIT, four hard cells still running in both worktrees.
