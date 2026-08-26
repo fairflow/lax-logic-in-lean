@@ -1,10 +1,10 @@
 # FRJV completeness plan — statement (A) for the repaired calculus
 
-**Status: PLAN, 2026-08-26.  Matthew's review REQUIRED before any proof
-Lean is written (calculus-adoption stage 1; the RefAt mechanisation's
-gate inversion is not to be repeated).  The only Lean landed so far is
-the free transfer baseline (`FRJ/CompleteV.lean`, commit `3ceec1c`),
-which contains no new mathematics.**
+**Status: PLAN APPROVED by Matthew 2026-08-26 ("go ahead with the
+unconditional statement; repair₂ if S0 forces it").  The target is the
+unconditional statement (A) below; the `EndpointsV` fallback of route
+step 2 remains a fallback, not the declared goal.  Free transfer
+baseline landed (`FRJ/CompleteV.lean`, commit `3ceec1c`).**
 
 Goal issued by Matthew 2026-08-26 ("complete a completeness proof for
 FRJV", `docs/refat-plan.md` review section).  Base: the repaired
