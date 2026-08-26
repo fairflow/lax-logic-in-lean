@@ -125,3 +125,54 @@ was the trigger for the calculus refinement, not the end of the line.
 - A cycle is closed only when its statement, refuters, and validations
   are banked — the next cycle starts from the enlarged record, which is
   what makes each campaign cheaper than the last.
+
+## Appendix A · The model-to-tree recipe (hand witnesses in a refutation calculus)
+
+A refutation calculus with a model extractor has two directions, and
+knowing which one you are running prevents a provenance error:
+
+- **Native (derivation → model).**  The calculus's constructive content:
+  `FRJ.V.modR` extracts a Kripke countermodel FROM a refutation
+  derivation — this is `soundnessV`'s computational heart, and it is how
+  FRJ◯ *discovers* countermodels when its engine finds the derivation
+  first (ρ12⊬ρ15's 11-world model came this way).
+- **Reverse (model → tree), the hand-witness practice.**  When the
+  countermodel is already banked (battery sweep, streamed Tab
+  generation — NOT the refutation calculus), the model becomes the
+  DESIGN for a hand derivation.  The 2026-08-26 witnesses
+  (`FRJ/WitnessV{1918,2018,2013,2012}.lean`, each first-pass) ran this
+  direction; `wip/frjv_extract_demo.lean` then closes the circle by
+  running `modR` on a finished hand term and checking the extracted
+  model refutes the goal (it does — 14 worlds, the tree unfolded).
+
+The recipe, in order:
+
+1. **Probe before designing.**  Compute the goal's `sfR` (admissible
+   conclusions), `gHat` (the Θ-vocabulary), and `Clo` closures of the
+   candidate contexts — one probe caught `b ∉ sfR(G2013)` and steered
+   that design away from any `b`-concluding row.  Never guess a side
+   condition the checker can compute.
+2. **Match the alphabet.**  Look for an existing witness over the same
+   subformula alphabet; the 1918 tree's bottom half is WitnessV1215's
+   verbatim under `β,ν,σ,δ ↦ a,¬a,b,¬¬a`.
+3. **One world per join, bottom-up.**  Fallible top ↦ `Ax^I ⊥`; a world
+   assuming an antecedent ↦ `⊃∈ⁱ` with that `Λ`; an interior world whose
+   `◯`-content survives via `Rm` ↦ a PROMISE join carrying the modal
+   kept zone; a world forcing content only vacuously (its cone ends
+   fallible) ↦ `Ax^I◯`/blocked joins; the root ↦ the barren V-join whose
+   `RefAt` disjunct/body conditions the premise rhs's (Υ) must supply.
+4. **Two levers when the hypothesis must reach the root context**:
+   the KeptChain (a link is adoptable when its ANTECEDENT is
+   RefAt-refuted over base + earlier links — stratification lets a
+   second link ride the first, as ρ8 rode ¬a), and Υ-ENRICHMENT (merge
+   rows with `orI`, stabilise with `⊃∈ⁱ Λ`, so a needed antecedent
+   becomes a premise right formula — how ρ11 entered Υ for ρ20).
+5. **`decide` referees; it never designs.**  Every side condition is
+   discharged by `decide` against the probed design; a `decide` failure
+   is a design error to rethink, not a nudge to weaken the statement.
+   The one hand proof in four files was an ∃ under a free variable
+   (a nonempty stable modal zone's (J5)).
+
+Cost calibration: four witnesses ≈ one session, ~200 lines each; the
+engine alternative was ~2 h/cell at the raised join arity and returns a
+log line, not a kernel object.
