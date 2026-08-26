@@ -199,7 +199,7 @@ td .f{font-size:14.5px}
   is the ρ-catalogue <span class="f">R</span>: twenty-two pairwise-distinct classes, its order
   now total, its operation tables computed cell by cell, and open-ended by construction.</p>
   <p class="buildline">
-    <span><b>v24</b>, successor of v23 and of rn-explorer v17</span>
+    <span><b>v25</b>, successor of v24 and of rn-explorer v17</span>
     <span>built 2026-08-26</span>
     <span>branch <b>claude/frj-redevelopment-69005f</b> @ d224201</span>
     <span>if the version above reads lower than the one you were told, force-reload (⇧ + reload)</span>
@@ -212,6 +212,7 @@ td .f{font-size:14.5px}
   <button role="tab" id="t-rho"   aria-controls="p-rho"   aria-selected="false">The ρ-order</button>
   <button role="tab" id="t-out"   aria-controls="p-out"   aria-selected="false">Beyond R</button>
   <button role="tab" id="t-struct" aria-controls="p-struct" aria-selected="false">Large-scale structure</button>
+  <button role="tab" id="t-cube"  aria-controls="p-cube"  aria-selected="false">Hypercubes</button>
   <button role="tab" id="t-lad"   aria-controls="p-lad"   aria-selected="false">RN ladder</button>
   <button role="tab" id="t-fam"   aria-controls="p-fam"   aria-selected="false">Families</button>
   <button role="tab" id="t-simp"  aria-controls="p-simp"  aria-selected="false">Simplifier</button>
@@ -958,6 +959,218 @@ rho12_nle_rho15 : [ρ12] ⊬ ρ15<span class="tag">Certified/RhoFRJV.lean, [prop
 </section>
 
 <!-- ═══════════════════════ LADDER ═══════════════════════ -->
+<section id="p-cube" role="tabpanel" aria-labelledby="t-cube" hidden>
+
+  <div class="panel">
+    <h2>Directed hypercubes</h2>
+    <p>A hypercube here is always <strong>directed</strong>: vertices are the joins
+    <span class="f">n ∨ ⋁S</span> for <span class="f">S ⊆ U</span>, <span class="f">U</span> a
+    finite set of covers of <span class="f">n</span>, and every arrow points up the derivability
+    order — <span class="f">a ⟶ b</span> means <span class="f">[a] ⊢ b</span> (and, along a
+    cube edge, that the step adds exactly one generator). The cube-embedding theorem
+    (<span class="m">CubeEmbedding.cube_le_iff</span>) makes all <span class="f">2^|U|</span>
+    vertices distinct and the arrows exactly the subset order — <em>when the covers are
+    genuine</em>. With scoped covers <span class="f">⋖[R]</span> the same picture is assembled
+    empirically, cell by table cell.</p>
+  </div>
+
+  <div class="panel">
+    <h3>2² — the bottom diamond <span class="chip ok">PROVED · genuine covers</span></h3>
+    <p>The first full instance, kernel-proved end to end: both covers genuine
+    (<span class="m">bot_coversVF_obot/nbot</span>), transferred to classes by the bridge lemma
+    (<span class="m">covBy_of_coversVF</span>), embedding by
+    <span class="m">bottom_diamond</span>, top corner identified as ρ4
+    (<span class="m">cube_bottomU_eq_rho4</span>).</p>
+    <svg viewBox="0 0 360 310" style="max-width:360px;display:block;margin:0 auto" font-family="inherit">
+      <defs>
+        <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--accent)"/>
+        </marker>
+      </defs>
+      <g stroke="var(--accent)" stroke-width="1.6">
+        <line x1="171" y1="245" x2="94" y2="172" marker-end="url(#arrA)"/>
+        <line x1="189" y1="245" x2="266" y2="172" marker-end="url(#arrA)"/>
+        <line x1="94" y1="138" x2="171" y2="65" marker-end="url(#arrA)"/>
+        <line x1="266" y1="138" x2="189" y2="65" marker-end="url(#arrA)"/>
+      </g>
+      <g text-anchor="middle" font-size="15" fill="var(--ink)">
+        <text x="180" y="265">⊥ <tspan fill="var(--ink-3)" font-size="12">ρ0</tspan></text>
+        <text x="80" y="160">◯⊥ <tspan fill="var(--ink-3)" font-size="12">ρ2</tspan></text>
+        <text x="284" y="160">¬◯⊥ <tspan fill="var(--ink-3)" font-size="12">ρ3</tspan></text>
+        <text x="180" y="50">◯⊥ ∨ ¬◯⊥ <tspan fill="var(--ink-3)" font-size="12">ρ4</tspan></text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <h3>2³ — the cube [ρ4, ρ18] on {ρ6, ρ7, ρ14} <span class="chip op">scoped covers · complete inside R</span></h3>
+    <p>All eight vertices land in R and every identity is table-certified:
+    <span class="f">ρ6∨ρ7 ≡ ρ9</span>, <span class="f">ρ6∨ρ14 ≡ ρ17</span>,
+    <span class="f">ρ7∨ρ14 ≡ ρ16</span>, and all three mid-layer joins collapse to
+    <span class="f">ρ18</span>. The three atoms are covers of ρ4 <em>scoped to R</em>; per-edge
+    upgrade to genuine covers is the open programme.</p>
+    <svg viewBox="0 0 560 470" style="max-width:560px;display:block;margin:0 auto" font-family="inherit">
+      <g stroke="var(--accent)" stroke-width="1.5">
+        <line x1="266" y1="425" x2="130" y2="322" marker-end="url(#arrA)"/>
+        <line x1="280" y1="420" x2="280" y2="322" marker-end="url(#arrA)"/>
+        <line x1="294" y1="425" x2="430" y2="322" marker-end="url(#arrA)"/>
+        <line x1="120" y1="298" x2="120" y2="202" marker-end="url(#arrA)"/>
+        <line x1="132" y1="298" x2="268" y2="202" marker-end="url(#arrA)"/>
+        <line x1="270" y1="298" x2="132" y2="202" marker-end="url(#arrA)"/>
+        <line x1="290" y1="298" x2="428" y2="202" marker-end="url(#arrA)"/>
+        <line x1="428" y1="298" x2="292" y2="202" marker-end="url(#arrA)"/>
+        <line x1="440" y1="298" x2="440" y2="202" marker-end="url(#arrA)"/>
+        <line x1="130" y1="178" x2="266" y2="82" marker-end="url(#arrA)"/>
+        <line x1="280" y1="172" x2="280" y2="82" marker-end="url(#arrA)"/>
+        <line x1="430" y1="178" x2="294" y2="82" marker-end="url(#arrA)"/>
+      </g>
+      <g text-anchor="middle" font-size="14" fill="var(--ink)">
+        <text x="280" y="445">ρ4</text>
+        <text x="120" y="315">ρ6</text>
+        <text x="280" y="315">ρ7</text>
+        <text x="440" y="315">ρ14</text>
+        <text x="120" y="195">ρ9 <tspan fill="var(--ink-3)" font-size="11">= ρ6∨ρ7</tspan></text>
+        <text x="280" y="195">ρ17 <tspan fill="var(--ink-3)" font-size="11">= ρ6∨ρ14</tspan></text>
+        <text x="440" y="195">ρ16 <tspan fill="var(--ink-3)" font-size="11">= ρ7∨ρ14</tspan></text>
+        <text x="280" y="66">ρ18</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <h3>2³ — the cube over ρ9 on {ρ12, ρ18, ρ20} <span class="chip no">reaches beyond R</span></h3>
+    <p>Three vertices are <strong>certified new classes</strong> (∉R):
+    <span class="f">X₄ = ρ12∨ρ18</span>, <span class="f">X₃ = ρ18∨ρ20</span>,
+    <span class="f">X₅ = ρ12∨ρ18∨ρ20</span>. The fourth mid vertex
+    <span class="f">ρ12∨ρ20</span> has poset-lub ρ21, but the class identity
+    <span class="f">ρ21 ≡? ρ12∨ρ20</span> is <strong>OPEN</strong> (hardened: no battery
+    separation in 10,534 frames, LJF◯ capped) — drawn dashed. This cube is where R
+    demonstrably runs out: the catalogue's next classes are its vertices.</p>
+    <svg viewBox="0 0 560 470" style="max-width:560px;display:block;margin:0 auto" font-family="inherit">
+      <defs>
+        <marker id="arrN" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--no)"/>
+        </marker>
+        <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="var(--op)"/>
+        </marker>
+      </defs>
+      <g stroke="var(--accent)" stroke-width="1.5">
+        <line x1="266" y1="425" x2="130" y2="322" marker-end="url(#arrA)"/>
+        <line x1="280" y1="420" x2="280" y2="322" marker-end="url(#arrA)"/>
+        <line x1="294" y1="425" x2="430" y2="322" marker-end="url(#arrA)"/>
+      </g>
+      <g stroke="var(--no)" stroke-width="1.5">
+        <line x1="120" y1="298" x2="120" y2="202" marker-end="url(#arrN)"/>
+        <line x1="270" y1="298" x2="132" y2="202" marker-end="url(#arrN)"/>
+        <line x1="428" y1="298" x2="292" y2="202" marker-end="url(#arrN)"/>
+        <line x1="440" y1="298" x2="440" y2="202" marker-end="url(#arrN)"/>
+        <line x1="130" y1="178" x2="266" y2="82" marker-end="url(#arrN)"/>
+        <line x1="280" y1="172" x2="280" y2="82" marker-end="url(#arrN)"/>
+        <line x1="430" y1="178" x2="294" y2="82" marker-end="url(#arrN)"/>
+      </g>
+      <g stroke="var(--op)" stroke-width="1.5" stroke-dasharray="6 4">
+        <line x1="132" y1="298" x2="268" y2="202" marker-end="url(#arrO)"/>
+        <line x1="290" y1="298" x2="428" y2="202" marker-end="url(#arrO)"/>
+      </g>
+      <g text-anchor="middle" font-size="14" fill="var(--ink)">
+        <text x="280" y="445">ρ9</text>
+        <text x="120" y="315">ρ12</text>
+        <text x="280" y="315">ρ18</text>
+        <text x="440" y="315">ρ20</text>
+        <text x="120" y="195" fill="var(--no)">X₄ <tspan font-size="11">= ρ12∨ρ18 ∉R</tspan></text>
+        <text x="280" y="195" fill="var(--op)">ρ12∨ρ20 <tspan font-size="11">≡? ρ21 OPEN</tspan></text>
+        <text x="440" y="195" fill="var(--no)">X₃ <tspan font-size="11">= ρ18∨ρ20 ∉R</tspan></text>
+        <text x="280" y="66" fill="var(--no)">X₅ <tspan font-size="11">= ρ12∨ρ18∨ρ20 ∉R</tspan></text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="panel">
+    <h3>How many cubes? Count by choosing covers, not by counting nodes</h3>
+    <p>A node with <span class="f">m</span> upper covers spawns
+    <span class="f">C(m,k)</span> candidate <span class="f">2^k</span> cubes — one per
+    <span class="f">k</span>-subset of its cover set — so the census is
+    <span class="f">Σ_n C(m_n, k)</span> over the Hasse diagram, not any simple function of the
+    node count. Candidate means: the covers are scoped (⋖[R]); the cube is <em>certified</em>
+    once its join identities are table-settled, and <em>theorem-grade</em> once its covers are
+    proved genuine (today only ⊥'s two are).</p>
+    <div class="scroll"><table>
+      <thead><tr><th>hub n</th><th>scoped covers of n</th><th class="num">m</th>
+        <th class="num">C(m,2)</th><th class="num">C(m,3)</th></tr></thead>
+      <tbody>
+        <tr><td class="f">ρ0 = ⊥</td><td class="f">ρ2, ρ3</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ2</td><td class="f">ρ4, ρ5</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ4</td><td class="f">ρ6, ρ7, ρ14</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ6</td><td class="f">ρ9, ρ13, ρ17</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ7</td><td class="f">ρ9, ρ16, ρ19</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ9</td><td class="f">ρ12, ρ18, ρ20</td><td class="num">3</td><td class="num">3</td><td class="num">1</td></tr>
+        <tr><td class="f">ρ13</td><td class="f">ρ11, ρ12</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ14</td><td class="f">ρ16, ρ17</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ16</td><td class="f">ρ8, ρ18</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ17</td><td class="f">ρ11, ρ18</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ18</td><td class="f">ρ10, ρ15</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+        <tr><td class="f">ρ19</td><td class="f">ρ8, ρ20</td><td class="num">2</td><td class="num">1</td><td class="num">0</td></tr>
+      </tbody>
+    </table></div>
+    <p>Totals over the 37-edge Hasse (2026-08-25 sweep; the ρ12/ρ15 banking makes that pair
+    incomparable, which changes no cover edge): <strong>20 candidate squares</strong> and
+    <strong>4 candidate 2³ cubes</strong> — hubs ρ4, ρ6, ρ7, ρ9, one each
+    (<span class="f">C(3,3) = 1</span>). Verified: ρ4's is complete inside R; ρ9's reaches
+    beyond R (above); ρ6's and ρ7's are provisional (below).</p>
+  </div>
+
+
+  <div class="panel">
+    <h3>The other two 2³ candidates — hubs ρ6 and ρ7 <span class="chip op">provisional</span></h3>
+    <p>Both hubs have exactly three scoped covers, so each spawns one candidate cube. One mid
+    join of each is table-settled; the rest are open cells — the hypothetical
+    <span class="f">&lt;</span> arrows are dotted.</p>
+    <div class="scroll"><table>
+      <thead><tr><th>hub</th><th>atoms</th><th>settled joins</th><th>open joins (dotted)</th></tr></thead>
+      <tbody>
+        <tr><td class="f">ρ6</td><td class="f">ρ9, ρ13, ρ17</td>
+            <td class="f">ρ9∨ρ17 ≡ ρ18</td>
+            <td class="f">ρ9∨ρ13, ρ13∨ρ17, ρ9∨ρ13∨ρ17</td></tr>
+        <tr><td class="f">ρ7</td><td class="f">ρ9, ρ16, ρ19</td>
+            <td class="f">ρ9∨ρ16 ≡ ρ18</td>
+            <td class="f">ρ9∨ρ19, ρ16∨ρ19, ρ9∨ρ16∨ρ19</td></tr>
+      </tbody>
+    </table></div>
+    <svg viewBox="0 0 560 470" style="max-width:560px;display:block;margin:0 auto" font-family="inherit">
+      <g stroke="var(--accent)" stroke-width="1.5">
+        <line x1="266" y1="425" x2="130" y2="322" marker-end="url(#arrA)"/>
+        <line x1="280" y1="420" x2="280" y2="322" marker-end="url(#arrA)"/>
+        <line x1="294" y1="425" x2="430" y2="322" marker-end="url(#arrA)"/>
+        <line x1="270" y1="298" x2="132" y2="202" marker-end="url(#arrA)"/>
+        <line x1="120" y1="298" x2="120" y2="202" marker-end="url(#arrA)"/>
+      </g>
+      <g stroke="var(--op)" stroke-width="1.5" stroke-dasharray="6 4">
+        <line x1="132" y1="298" x2="268" y2="202" marker-end="url(#arrO)"/>
+        <line x1="290" y1="298" x2="428" y2="202" marker-end="url(#arrO)"/>
+        <line x1="428" y1="298" x2="292" y2="202" marker-end="url(#arrO)"/>
+        <line x1="440" y1="298" x2="440" y2="202" marker-end="url(#arrO)"/>
+        <line x1="130" y1="178" x2="266" y2="82" marker-end="url(#arrO)"/>
+        <line x1="280" y1="172" x2="280" y2="82" marker-end="url(#arrO)"/>
+        <line x1="430" y1="178" x2="294" y2="82" marker-end="url(#arrO)"/>
+      </g>
+      <g text-anchor="middle" font-size="14" fill="var(--ink)">
+        <text x="280" y="445">ρ6</text>
+        <text x="120" y="315">ρ9</text>
+        <text x="280" y="315">ρ13</text>
+        <text x="440" y="315">ρ17</text>
+        <text x="120" y="195">ρ18 <tspan fill="var(--ink-3)" font-size="11">= ρ9∨ρ17</tspan></text>
+        <text x="280" y="195" fill="var(--op)">ρ9∨ρ13 <tspan font-size="11">?</tspan></text>
+        <text x="440" y="195" fill="var(--op)">ρ13∨ρ17 <tspan font-size="11">?</tspan></text>
+        <text x="280" y="66" fill="var(--op)">ρ9∨ρ13∨ρ17 <tspan font-size="11">?</tspan></text>
+      </g>
+      <text x="280" y="462" text-anchor="middle" font-size="11" fill="var(--ink-3)">hub ρ6 drawn; hub ρ7 is the same shape with {ρ9, ρ16, ρ19} and ρ9∨ρ16 ≡ ρ18</text>
+    </svg>
+  </div>
+
+</section>
+
+
 <section id="p-lad" role="tabpanel" aria-labelledby="t-lad" hidden>
 
   <div class="panel">
@@ -1316,7 +1529,7 @@ simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<
 </section>
 
 <p class="buildline" style="border-top:1px solid var(--line);padding-top:16px">
-  <span>RN(◯,{}) catalogue · v24 · 2026-08-26</span>
+  <span>RN(◯,{}) catalogue · v25 · 2026-08-26</span>
   <span>every number on this page was re-derived from the sources named beside it</span>
 </p>
 </div>
