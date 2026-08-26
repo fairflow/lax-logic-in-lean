@@ -23,7 +23,7 @@ Register head: branch `claude/frj-redevelopment-69005f`, regenerated
 
 | tool | use | version |
 |---|---|---|
-| `Rewrite.simplifyWith Rewrite.fullSetC fuel φ` (`Rewrite/`) | **Normalise before you search** — every fresh probe pipes its cells through this certified simpset first. Use `simplifyWith` against `fullSetC` (the canonicalised set), never `simplify`/`norm` or `fullSet`. Correctness is unconditional (`simplifyWith_interd`); the choice is effectiveness only. Measured by `lake exe rwscreen`. Pins: `#print axioms rndSet`/`fullSet` are `#guard_msgs`-guarded in `Rewrite/Catalogue.lean` — keep them pinned. | `b05e2a1` · 2026-08-26 |
+| `Rewrite.simplifyWith Rewrite.fullSetC fuel φ` (`Rewrite/`) | **Normalise before you search** — every fresh probe pipes its cells through this certified simpset first. Use `simplifyWith` against `fullSetC` (the canonicalised set), never `simplify`/`norm` or `fullSet`. Correctness is unconditional (`simplifyWith_interd`); the choice is effectiveness only. Measured by `lake exe rwscreen`. Pins: `#print axioms rndSet`/`fullSet` are `#guard_msgs`-guarded in `Rewrite/Catalogue.lean` — keep them pinned. **Pegged to R** (standing, 2026-08-26): when R grows, the new class's kernel-proved `Interd` cells join the set; the set never shrinks; the 795 engine-classed R-table cells are the promotion queue. | `b05e2a1` · 2026-08-26 |
 
 ## 2 · Proof search
 

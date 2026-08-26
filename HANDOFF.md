@@ -1439,3 +1439,41 @@ Also this date (§ earlier): the FRJV/FRJX side-by-side record located
 with jmax/pmax binding); raised-budget re-run of the six in flight
 (`wip/frjx_missrerun_out.txt`); `rhocover matrix` GT dump total at 462
 (`wip/rho_matrix_out.txt`).
+
+## §2026-08-26d — bridge lemma + bottom diamond PROVED; simplifier pegged to R
+
+`RNDB/Diamond.lean` (new module, in the RNDB lib), all sorry-free,
+pins `[propext, Classical.choice, Quot.sound]`:
+
+- `varFree_iff_atomFree` — the two closedness spellings agree.
+- `mkC_le_iff` / `mkC_lt_iff` — quotient ≤/< are `Deriv`/`Lt` on
+  representatives (via `le_iff_nonempty`; definitional through
+  `Quotient.lift₂`).
+- `covBy_of_coversVF` — THE BRIDGE: a `CoversVF` cover on formulas is a
+  Mathlib `⋖` cover on classes (interposer quantifiers match because
+  every class has an atomFree representative).
+- `bot_covBy_obotC`, `bot_covBy_nbotC` — the two ⊥-covers on classes;
+  `obotC_ne_nbotC` from `RhoCerts.rho_2_nle_3` (ρ2/ρ3 are ◯⊥/¬◯⊥
+  syntactically, `decide +kernel`).
+- `bottom_diamond` / `bottom_diamond_inj` — {⊥, ◯⊥, ¬◯⊥, ◯⊥∨¬◯⊥} ≅ 2²,
+  the FIRST FULL INSTANCE of the cube embedding, from cover MEMBERSHIP
+  alone (exactness of U(⊥) not needed).
+- `cube_bottomU_eq_rho4` — the diamond's top corner is ρ4 on the nose.
+
+PREMISE RESTATED (Matthew's correction, 2026-08-26): the outer
+quantifier is ∃f —
+
+    ∃ f : ℕ → ℕ, f strictly monotone a.e., such that every class n of
+    ◯-depth k has a genuine-cover set U(n) with |U(n)| = f(k)
+
+("a.e." precisely to tolerate low-k oddities; the alternative — excluding
+the first so-many k — was considered and rejected as less flexible).
+Status OPEN; known data: |U(⊥)| ≥ 2 at depth 0 (now on classes, above);
+exactness of U(⊥) remains queue item (ii).
+
+SIMPLIFIER PEGGED TO R (standing rule, Matthew): the rule set is
+R-indexed; when R grows, the new class's kernel-proved `Interd` cells
+join the set; the set NEVER shrinks. The 795 engine-classed R-table
+cells are the promotion queue (engine verdict → kernel `Interd` theorem
+→ `RwRule`). Recorded in TOOLS.md §1 and on the page (Simplifier tab);
+the "fifteen earliest representatives" framing is retired. Page → v24.

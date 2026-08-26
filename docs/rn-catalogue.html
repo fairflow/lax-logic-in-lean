@@ -199,7 +199,7 @@ td .f{font-size:14.5px}
   is the ρ-catalogue <span class="f">R</span>: twenty-two pairwise-distinct classes, its order
   now total, its operation tables computed cell by cell, and open-ended by construction.</p>
   <p class="buildline">
-    <span><b>v23</b>, successor of v22 and of rn-explorer v17</span>
+    <span><b>v24</b>, successor of v23 and of rn-explorer v17</span>
     <span>built 2026-08-26</span>
     <span>branch <b>claude/frj-redevelopment-69005f</b> @ d224201</span>
     <span>if the version above reads lower than the one you were told, force-reload (⇧ + reload)</span>
@@ -244,13 +244,19 @@ td .f{font-size:14.5px}
     buy algebra: for any finite set <span class="f">U</span> of genuine covers of
     <span class="f">n</span>, the map <span class="f">S ⊆ U ⟼ n ∨ ⋁S</span> order-embeds the
     Boolean lattice <span class="f">2^U</span> — the cube above <span class="f">n</span> is
-    free.</p>
+    free. The first full instance is proved: the <strong>bottom diamond</strong>
+    <span class="f">{⊥, ◯⊥, ¬◯⊥, ◯⊥ ∨ ¬◯⊥} ≅ 2²</span>
+    (<span class="m">bottom_diamond</span>, with the top corner identified as ρ4 —
+    <span class="m">cube_bottomU_eq_rho4</span>), via the bridge lemma
+    <span class="m">covBy_of_coversVF</span> transferring formula-level covers to
+    class-level <span class="f">⋖</span>.</p>
     <p class="src"><b>closed_lax_infinite</b> — LaxLogic/PLLLaxInfinite.lean:616 ·
     <b>bot_coversVF_obot/nbot</b> — RNDB/Order.lean, <span class="m">[propext, Quot.sound]</span> ·
     <b>CubeEmbedding.cube_le_iff</b> — LaxLogic/CubeEmbedding.lean ·
     <b>DistribLattice/BoundedOrder instances</b> — LaxLogic/ClosedFragmentLattice.lean
-    (<span class="m">rn_cube_le_iff</span>), all sorry-free,
-    <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
+    (<span class="m">rn_cube_le_iff</span>) ·
+    <b>covBy_of_coversVF, bottom_diamond, cube_bottomU_eq_rho4</b> — RNDB/Diamond.lean,
+    all sorry-free, <span class="m">[propext, Classical.choice, Quot.sound]</span></p>
   </div>
 
   <div class="panel">
@@ -1200,12 +1206,17 @@ simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<
     <span class="m">simplifyWith_interd</span> is unconditional given that each rule's
     <span class="m">ok</span> field is a proof. That is why the axiom pins below are a standing
     build-time guard rather than a convention.</p>
-    <p>The 236 rules are cells over the fifteen earliest representatives, which is a historical
-    fact about where they were found, not a claim about coverage. In ρ terms the rules act on
-    <span class="f">ρ0–ρ11</span> together with <span class="f">ρ12</span> and the two
-    <span class="f">◯</span>-depth-2 formulas <span class="f">◯ρ6</span> and
-    <span class="f">◯ρ11</span>. No rule of the set rewrites to anything outside
-    <span class="f">R</span>, and no unproved rule is in it.</p>
+    <p><strong>The set is pegged to R.</strong> Its current extent: the rules act on
+    <span class="f">ρ0–ρ12</span> and the two <span class="f">◯</span>-depth-2 formulas
+    <span class="f">◯ρ6</span> and <span class="f">◯ρ11</span> — where they happened to be
+    found first is history, not a boundary. No rule rewrites to anything outside
+    <span class="f">R</span>, and no unproved rule is in the set.</p>
+    <p><strong>Standing rule:</strong> whenever <span class="f">R</span> grows, the new class's
+    kernel-proved interderivabilities (its identity cells in the R operation tables, once
+    promoted from engine verdicts to <span class="m">Interd</span> theorems) are added to the
+    set; the set never shrinks. The 795 engine-classed R-table cells are the promotion queue —
+    each classed cell <span class="f">ρi ∘ ρj ≡ ρk</span> is a candidate rule awaiting its
+    kernel <span class="m">Interd</span> proof.</p>
   </div>
 
   <div class="panel">
@@ -1305,7 +1316,7 @@ simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<
 </section>
 
 <p class="buildline" style="border-top:1px solid var(--line);padding-top:16px">
-  <span>RN(◯,{}) catalogue · v23 · 2026-08-26</span>
+  <span>RN(◯,{}) catalogue · v24 · 2026-08-26</span>
   <span>every number on this page was re-derived from the sources named beside it</span>
 </p>
 </div>
