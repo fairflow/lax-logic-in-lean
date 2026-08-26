@@ -3,8 +3,10 @@
 Keep this file SHORT and stable: project detail lives in `HANDOFF.md`
 (standing handover, append dated §s, never rewrite), `docs/next-session.md`
 (the live threads), `docs/calculus-map.md` (**the** provenance reference —
-read it before asserting which proof system a result belongs to), and
-**`TOOLS.md`** (the register of the current recommended tools — see rule 4).
+read it before asserting which proof system a result belongs to),
+**`TOOLS.md`** (the register of the current recommended tools — see rule 4),
+and **`METHOD.md`** (the conjecture → statement → test → proof pipeline —
+see rule 7).
 
 ## Core rules
 
@@ -37,6 +39,15 @@ read it before asserting which proof system a result belongs to), and
 6. **Delivery.** Matthew cannot open worktree paths (and often not repo
    paths) from the session UI: inline short content in full; publish
    documents as Artifacts; `open <path>` commands for local HTML.
+7. **Proof requests.** Any request to prove a statement follows the
+   pipeline in `METHOD.md`: formal statement first; then a test strategy
+   for refutation AND validation (for high-level statements the harness
+   is manufactured by descent — witness-space bounding, certified
+   equivalents with witnessable failure, scheme refutation, instance
+   ladders, cross-engine mining); only a surviving, validated statement
+   gets a proof build. A disproof is a result and the trigger for the
+   next refinement cycle. The section below is the cell-level stage of
+   that pipeline.
 
 ## Testing for counterexamples
 
