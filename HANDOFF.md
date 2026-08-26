@@ -1511,3 +1511,23 @@ The LJF-fuel byproducts are kept as cross-checks (`tools/RCFuel.lean`,
 proof-side engine for LJF◯ (queued in docs/next-session.md) remains
 worth building for LJF-specific work; for table promotion the G4c
 route is the standing mechanism.
+
+## §2026-08-26f — the two hand cells: the promotion queue is EMPTY
+
+Matthew's interactive-proof exercise, done by anticipating the steps
+rather than engine search.  Both skips are absorptions reducing to ONE
+fact,  ρ20 ⊢ ρ21 :  [(b⊃ρ4)⊃ρ6] ⊢ (ρ9⊃ρ4)⊃b  (a = ◯⊥, b = ◯¬a).
+Proof: from K : ρ9⊃ρ4, `fun hb => K (inl hb)` inhabits b⊃ρ4, so the
+hypothesis yields ρ6 = ¬a ∨ ¬¬a; case ¬a → the unit; case ¬¬a → K at
+inr gives ρ4 = a ∨ ¬a, where a = ◯⊥ binds over falsum to ◯¬a and ¬a is
+absurd against ¬¬a.  The G4 searcher's failure was compound-identity
+expansion (atomic init, no atoms in the fragment); ND's `iden` at every
+formula is why hand terms win.  The term elaborated FIRST PASS.
+
+- `wip/rcells_hand.lean`: `nd2021` (context-polymorphic, weakening
+  free), `rc_and_20_21`, `rc_or_20_21`, pins **[propext]** (cleaner
+  than the generated cells' [propext, Quot.sound]).
+- `fullSet` = 681 rules; ALL 445 classed R-table cells now
+  kernel-checked; rwscreen re-measured (wip/rwscreen_out3.txt, metrics
+  unchanged — the absorptions complete the table, not the corpus).
+- Page v27: queue EMPTY.

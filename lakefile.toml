@@ -140,7 +140,7 @@ globs = ["wip.frjx", "wip.frjv_consequences", "wip.oracle2", "wip.semui_ctx_core
          "wip.ljfo_attack", "wip.ljfo_crosscheck",
          "wip.ljfo_theta", "wip.ljfo_theta_pinned", "wip.ljfo_theta_certs", "wip.ljfo_theta_axioms",
          "wip.pcll1pv_stage0", "wip.pcll1pv_stage1", "wip.pcll1pv_stage2", "wip.pcll1pv_stage2e", "wip.pcll1pv_stage2f", "wip.pcll1pv_stage2g", "wip.pcll1pv_stage2h", "wip.pcll1pv_stage2i", "wip.pcll1pv_stage2j", "wip.pcll1pv_stage3", "wip.pcll1pv_stage3b", "wip.pcll1pv_stage4", "wip.closed_frag_pins", "wip.task5",
-         "wip.rnBank", "wip.rnFRJCerts", "wip.atomProbe", "wip.rcells"]
+         "wip.rnBank", "wip.rnFRJCerts", "wip.atomProbe", "wip.rcells", "wip.rcells_hand"]
 
 # The CimpAnt frontier attack + φ★ cross-check, compiled (review round
 # 2026-08-11): the native oracle route for the LJF◯ interpolant cells.
