@@ -17,7 +17,7 @@ and paste its output over the cells. A row whose printed hash differs
 from the cell here is stale; fix it before relying on the row.
 
 Register head: branch `claude/frj-redevelopment-69005f`, regenerated
-2026-08-26 @ `ddeaa67`.
+2026-08-26 @ `e629a64`.
 
 ## 1 · Tactics and normalisation
 
@@ -45,11 +45,11 @@ Register head: branch `claude/frj-redevelopment-69005f`, regenerated
 
 | tool | use | version |
 |---|---|---|
-| `RNDB` library (`RNDB/DB.lean`, `Types.lean`, `Order.lean`, `SepEntries.lean`) | The banked evidence: every entry carries its certificate (`ok` cannot be sorried); OPEN claims get **no entry** — the frontier lists are the record of what is unsettled. Census 2026-08-25: 1874 entries; the 462-cell ρ-order matrix is TOTAL (`frontierOrder = []`). Pins `#guard_msgs`-guarded per file. | `35f789d` · 2026-08-25 |
-| `lake exe rhocover` (`tools/Cover.lean`) | The R-catalogue workbench, DB-overlaid (banked entries beat engine verdicts; conflicts abort). Modes: `sweep` (order matrix + Hasse, with control), `emit` (generate separation certificates + DB entries), `probe` (new-class candidates, lattice-laws-first), `rtable` (the R operation tables), `jcell k i j fuel` (single directed cell ρk ⊢? ρi∨ρj). | `da39147` · 2026-08-26 |
+| `RNDB` library (`RNDB/DB.lean`, `Types.lean`, `Order.lean`, `SepEntries.lean`) | The banked evidence: every entry carries its certificate (`ok` cannot be sorried); OPEN claims get **no entry** — the frontier lists are the record of what is unsettled. Census 2026-08-25: 1874 entries; the 462-cell ρ-order matrix is TOTAL (`frontierOrder = []`). Pins `#guard_msgs`-guarded per file. New 2026-08-26: `RNDB/Diamond.lean` (the covers bridge + bottom diamond). | `b16da79` · 2026-08-26 |
+| `lake exe rhocover` (`tools/Cover.lean`) | The R-catalogue workbench, DB-overlaid (banked entries beat engine verdicts; conflicts abort). Modes: `sweep` (order matrix + Hasse, with control), `emit` (generate separation certificates + DB entries), `probe` (new-class candidates, lattice-laws-first), `rtable` (the R operation tables), `jcell k i j fuel` (single directed cell ρk ⊢? ρi∨ρj), `matrix` (machine-readable settled-matrix dump). | `710cb33` · 2026-08-26 |
 | Hasse drawer: `tools/rho-hasse.sh` → `tools/rho-hasse-svg.py` | Re-runs the sweep and redraws `docs/rho-hasse-pll.svg`; refuses a failed-control or incomplete run. Run whenever the order changes. | `23401ae` · 2026-08-26 |
 | Certificate emit/pin: `lake exe frjcert` (`tools/Cert.lean`), `lake exe rnpin` (`tools/Pin.lean`) | Emit a kernel-checkable certificate file for a settled cell and pin it. Every emitted `#print axioms` gets a `#guard_msgs` guard. | `3884eeb` · 2026-08-24 |
-| The catalogue page: `docs/rn-catalogue.html` (Artifact, v23) | The presented reference: R representatives, operation tables, order matrix, structure, ladders and families. Republish to the SAME artifact URL; bump the visible version number every publish. | `bac984e` · 2026-08-26 |
+| The catalogue page: `docs/rn-catalogue.html` (Artifact, v26) | The presented reference: R representatives, operation tables, order matrix, structure, ladders and families. Republish to the SAME artifact URL; bump the visible version number every publish. | `e629a64` · 2026-08-26 |
 
 **Banking loop** (unchanged in spirit): a new certified result is banked
 into the DB/`Rewrite/` with its pin; banking is finished only when the
