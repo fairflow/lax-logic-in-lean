@@ -45,8 +45,9 @@ exactly two `◯`-applications occur in the entire catalogue (`◯⊥` and
 the catalogue — they are the first depth-2 ◯-generators.
 
 **R5 — the two rails.**  The Rieger–Nishimura ladder at `p := a` is
-the left rail: ρ0, ρ2=a, ρ3=¬a, ρ4, ρ5=¬¬a, ρ6, ρ8, ρ10, ρ13 (= rn₉,
-a sweep DISCOVERY that the ladder predicts).  The modal rail starts at
+the left rail: ρ0, ρ2=a, ρ3=¬a, ρ4, ρ5=¬¬a, ρ6, ρ8, ρ10, ρ13 (= rn₈ in the
+code's 0-indexed rungs — R5's first draft said rn₉, off by one; truth
+sets checked — a sweep DISCOVERY that the ladder predicts).  The modal rail starts at
 `b = ◯¬a` (ρ7) and interacts with the pure rail through joins and the
 five ⊃-classes.
 

@@ -176,6 +176,12 @@ td .f{font-size:14.5px}
 .hasse-wrap svg [stroke="#3556a8"]{stroke:var(--accent)}
 .hasse-wrap svg [stroke="#999"]{stroke:var(--ink-3)}
 
+/* Figures that carry their own ground: shown as authored in both themes. */
+.figure{overflow-x:auto;border:1px solid var(--line);border-radius:3px;background:#ffffff}
+.figure svg{display:block;width:100%;height:auto}
+.figure.wide svg{min-width:1340px}
+.figure.tall svg{min-width:520px;max-width:620px;margin:0 auto}
+
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
          clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -193,9 +199,9 @@ td .f{font-size:14.5px}
   is the ρ-catalogue <span class="f">R</span>: twenty-two pairwise-distinct classes, its order
   now total, its operation tables computed cell by cell, and open-ended by construction.</p>
   <p class="buildline">
-    <span><b>v19</b>, successor of v18 and of rn-explorer v17</span>
-    <span>built 2026-08-25</span>
-    <span>branch <b>claude/frj-redevelopment-69005f</b> @ 9aac1b4</span>
+    <span><b>v20</b>, successor of v19 and of rn-explorer v17</span>
+    <span>built 2026-08-26</span>
+    <span>branch <b>claude/frj-redevelopment-69005f</b> @ d224201</span>
     <span>if the version above reads lower than the one you were told, force-reload (⇧ + reload)</span>
   </p>
 </header>
@@ -205,6 +211,7 @@ td .f{font-size:14.5px}
   <button role="tab" id="t-op"    aria-controls="p-op"    aria-selected="false">R operation tables</button>
   <button role="tab" id="t-rho"   aria-controls="p-rho"   aria-selected="false">The ρ-order</button>
   <button role="tab" id="t-out"   aria-controls="p-out"   aria-selected="false">Beyond R</button>
+  <button role="tab" id="t-struct" aria-controls="p-struct" aria-selected="false">Large-scale structure</button>
   <button role="tab" id="t-lad"   aria-controls="p-lad"   aria-selected="false">RN ladder</button>
   <button role="tab" id="t-fam"   aria-controls="p-fam"   aria-selected="false">Families</button>
   <button role="tab" id="t-simp"  aria-controls="p-simp"  aria-selected="false">Simplifier</button>
@@ -491,7 +498,6 @@ rho12_nle_rho15 : [ρ12] ⊬ ρ15<span class="tag">Certified/RhoFRJV.lean, [prop
 <line x1="827" y1="364" x2="413" y2="294" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="413" y1="254" x2="310" y2="184" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="310" y1="144" x2="620" y2="74" stroke="#3556a8" stroke-width="1.4"/>
-<text x="417" y="225" font-size="12" fill="#888">?</text>
 <circle cx="620" cy="830" r="4" fill="#16305e"/>
 <text x="620" y="818" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ0</text>
 <text x="620" y="850" font-size="11.5" fill="#333" text-anchor="middle">⊥</text>
@@ -565,8 +571,8 @@ rho12_nle_rho15 : [ρ12] ⊬ ρ15<span class="tag">Certified/RhoFRJV.lean, [prop
     matching the kernel theorem <span class="m">RNDB.not_covers_rho6_rho12</span>).
     <b>One edit to the embedded copy:</b> the source file still carries a dashed grey line for
     the then-open cell <span class="f">ρ12 ⊢? ρ15</span>, and its caption still explains one.
-    That cell is now settled <span class="f">⊬</span>, so there is no edge; the line and the
-    caption clause are removed here. The file itself is the tool's output and is unchanged.</p>
+    That cell is now settled <span class="f">⊬</span>, so there is no edge; the line, its
+    <span class="f">?</span> marker and the caption clause are removed here. The file itself is the tool's output and is unchanged.</p>
   </div>
 
   <div class="panel">
@@ -717,6 +723,205 @@ rho12_nle_rho15 : [ρ12] ⊬ ρ15<span class="tag">Certified/RhoFRJV.lean, [prop
   </div>
 </section>
 
+<!-- ═══════════════════════ LARGE-SCALE STRUCTURE ═══════════════════════ -->
+<section id="p-struct" role="tabpanel" aria-labelledby="t-struct" hidden>
+
+  <div class="panel">
+    <h2>The large-scale structure</h2>
+    <p><span class="f">R</span> is a finite atlas of the bottom of an infinite lattice. This is
+    what surrounds it: the embedded ladder, two ascending chains, three antichains, and one
+    descending ladder with no floor, drawn from the theorems that establish each.</p>
+    <div class="figure wide"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1340 1040" font-family="Helvetica,Arial,sans-serif">
+<rect width="1340" height="1040" fill="#ffffff"/>
+<text x="24" y="36" font-size="19" fill="#16233a">RN(◯,∅) — the large-scale structure (verified families, 2026-08-26)</text>
+<text x="24" y="56" font-size="12" fill="#8a93a6">a = ◯⊥.  Solid edges: strict &lt;.  Dotted rows: pairwise-incomparable antichains.  Dashes: proved infinite continuation.  All theorems PLL, sorry-free, pinned.</text>
+<circle cx="670" cy="975" r="4" fill="#3556a8"/><text x="670" y="966" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">⊥</text><text x="670" y="995" font-size="10.5" fill="#8a93a6" text-anchor="middle">ρ0</text>
+<circle cx="670" cy="90" r="4" fill="#3556a8"/><text x="670" y="81" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">⊤</text><text x="670" y="110" font-size="10.5" fill="#8a93a6" text-anchor="middle">ρ1</text>
+<line x1="240" y1="900" x2="170" y2="830" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="900" x2="310" y2="830" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="170" y1="830" x2="240" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="170" y1="830" x2="110" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="310" y1="830" x2="240" y2="760" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="760" x2="190" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="240" y1="760" x2="340" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="110" y1="760" x2="190" y2="690" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="190" y1="690" x2="265" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="190" y1="690" x2="120" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="340" y1="690" x2="265" y2="620" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="670" y1="975" x2="240" y2="900" stroke="#8a93a6" stroke-width="1.0"/>
+<line x1="265" y1="620" x2="200" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="120" y1="620" x2="200" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="265" y1="620" x2="330" y2="550" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<circle cx="240" cy="900" r="3.5" fill="#3556a8"/><text x="240" y="891" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₀=⊥</text>
+<circle cx="170" cy="830" r="3.5" fill="#3556a8"/><text x="170" y="821" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">a</text>
+<circle cx="310" cy="830" r="3.5" fill="#3556a8"/><text x="310" y="821" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬a</text>
+<circle cx="240" cy="760" r="3.5" fill="#3556a8"/><text x="240" y="751" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">a∨¬a</text>
+<circle cx="110" cy="760" r="3.5" fill="#3556a8"/><text x="110" y="751" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬¬a</text>
+<circle cx="190" cy="690" r="3.5" fill="#3556a8"/><text x="190" y="681" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₅</text>
+<circle cx="340" cy="690" r="3.5" fill="#3556a8"/><text x="340" y="681" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">¬¬a⊃a</text>
+<circle cx="265" cy="620" r="3.5" fill="#3556a8"/><text x="265" y="611" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₇</text>
+<circle cx="120" cy="620" r="3.5" fill="#3556a8"/><text x="120" y="611" font-size="11.5" font-weight="bold" fill="#16233a" text-anchor="middle">rn₈</text>
+<circle cx="200" cy="550" r="3.5" fill="#8a93a6"/>
+<circle cx="330" cy="550" r="3.5" fill="#8a93a6"/>
+<text x="265" y="520" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="235" y="470" font-size="12.5" fill="#16233a" text-anchor="middle">RN({p})-embedding ladder (zigzag)</text>
+<text x="235" y="486" font-size="10.5" fill="#8a93a6" text-anchor="middle">rnEmbed (15 pins) · rnSub_order · covers9_stable</text>
+<rect x="560" y="700" width="220" height="200" rx="10" fill="#eef2f8" stroke="#8a93a6"/>
+<circle cx="670" cy="885" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="861" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="861" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="837" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="837" r="2.5" fill="#8a93a6"/>
+<circle cx="622" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="718" cy="813" r="2.5" fill="#8a93a6"/>
+<circle cx="607" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="733" cy="789" r="2.5" fill="#8a93a6"/>
+<circle cx="607" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="638" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="702" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="733" cy="765" r="2.5" fill="#8a93a6"/>
+<circle cx="622" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="718" cy="741" r="2.5" fill="#8a93a6"/>
+<circle cx="670" cy="717" r="2.5" fill="#8a93a6"/>
+<text x="670" y="723" font-size="12.5" fill="#16233a" text-anchor="middle">R — the certified catalogue</text>
+<text x="670" y="738" font-size="10.5" fill="#8a93a6" text-anchor="middle">22 classes · height 7 · matrix total</text>
+<text x="670" y="752" font-size="10.5" fill="#8a93a6" text-anchor="middle">(detail: rho-hasse-pll.svg, rho-optables.html)</text>
+<line x1="670" y1="975" x2="670" y2="900" stroke="#8a93a6" stroke-width="1.0"/>
+<circle cx="970" cy="820" r="4" fill="#3556a8"/><text x="970" y="811" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₁ = ◯(a∨¬a)</text><text x="970" y="840" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ7</text>
+<circle cx="970" cy="730" r="4" fill="#3556a8"/><text x="970" y="721" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₂ = ◯rn₅</text><text x="970" y="750" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ◯ρ6, ∉R cand.</text>
+<line x1="970" y1="820" x2="970" y2="736" stroke="#3556a8" stroke-width="1.4"/>
+<circle cx="970" cy="640" r="4" fill="#3556a8"/><text x="970" y="631" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">c₃ = ◯rn₇</text>
+<line x1="970" y1="730" x2="970" y2="646" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="970" y1="640" x2="970" y2="560" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="970" y="545" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="970" y="862" font-size="12.5" fill="#16233a" text-anchor="middle">ascending chain c_k = ◯ rn₂ₖ₊₁</text>
+<text x="970" y="877" font-size="10.5" fill="#8a93a6" text-anchor="middle">chain_lt_strict · chain_pairwise (wip/chainStrict.lean)</text>
+<circle cx="1180" cy="820" r="4" fill="#3556a8"/><text x="1180" y="811" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₁</text><text x="1180" y="840" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ9</text>
+<circle cx="1180" cy="730" r="4" fill="#3556a8"/><text x="1180" y="721" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₂</text>
+<line x1="1180" y1="820" x2="1180" y2="736" stroke="#3556a8" stroke-width="1.4"/>
+<circle cx="1180" cy="640" r="4" fill="#3556a8"/><text x="1180" y="631" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">sC₃</text>
+<line x1="1180" y1="730" x2="1180" y2="646" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="1180" y1="640" x2="1180" y2="560" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="1180" y="545" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="1180" y="862" font-size="12.5" fill="#16233a" text-anchor="middle">ascending chain sC_k = c_k ∨ rn₂ₖ₊₂</text>
+<text x="1180" y="877" font-size="10.5" fill="#8a93a6" text-anchor="middle">sC_le · sC_strict (wip/families.lean)</text>
+<circle cx="840" cy="180" r="4" fill="#3556a8"/><text x="840" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₂</text>
+<circle cx="950" cy="180" r="4" fill="#3556a8"/><text x="950" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₃</text>
+<line x1="858" y1="180" x2="932" y2="180" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="180" r="4" fill="#3556a8"/><text x="1060" y="171" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">◯g₄</text>
+<line x1="968" y1="180" x2="1042" y2="180" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="184" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="154" font-size="12.5" fill="#16233a">antichain ◯(g_k) — ONE infinite antichain (k ≥ 2)</text>
+<text x="838" y="214" font-size="10.5" fill="#8a93a6">bg_incomparable · bg_pairwise (wip/families.lean)  ·  ◯g₁ ≡ ◯ρ11: membership OPEN</text>
+<circle cx="840" cy="300" r="4" fill="#3556a8"/><text x="840" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₁</text><text x="840" y="320" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ12</text>
+<circle cx="950" cy="300" r="4" fill="#3556a8"/><text x="950" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₂</text>
+<line x1="858" y1="300" x2="932" y2="300" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="300" r="4" fill="#3556a8"/><text x="1060" y="291" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">r₃</text>
+<line x1="968" y1="300" x2="1042" y2="300" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="304" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="274" font-size="12.5" fill="#16233a">antichain r_k = rn₂ₖ₊₄ ⊃ c_k — all j ≠ k ≥ 1</text>
+<text x="838" y="334" font-size="10.5" fill="#8a93a6">rC_incomparable · rC_pairwise (wip/families.lean)</text>
+<circle cx="840" cy="420" r="4" fill="#3556a8"/><text x="840" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₁</text><text x="840" y="440" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ11</text>
+<circle cx="950" cy="420" r="4" fill="#3556a8"/><text x="950" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₂</text>
+<line x1="858" y1="420" x2="932" y2="420" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<circle cx="1060" cy="420" r="4" fill="#3556a8"/><text x="1060" y="411" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">g₃</text>
+<line x1="968" y1="420" x2="1042" y2="420" stroke="#b3402e" stroke-width="1" stroke-dasharray="2,4"/>
+<text x="1210" y="424" font-size="15" fill="#8a93a6">⋯ ∞</text>
+<text x="838" y="394" font-size="12.5" fill="#16233a">antichain g_k = c_k ⊃ rn₂ₖ₊₁ (k ≥ 2; g₁ anchors)</text>
+<text x="838" y="454" font-size="10.5" fill="#8a93a6">gap_incomparable (wip/gapWidth.lean)</text>
+<line x1="950" y1="414" x2="950" y2="192" stroke="#8a93a6" stroke-width="1" stroke-dasharray="1,3"/>
+<text x="957" y="305" font-size="10" fill="#8a93a6" transform="rotate(-90 957 305)">g_k ≤ ◯g_k (unit)</text>
+<circle cx="520" cy="470" r="4" fill="#3556a8"/><text x="520" y="461" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₀ = g₁</text><text x="520" y="490" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ11</text>
+<circle cx="520" cy="570" r="4" fill="#3556a8"/><text x="520" y="561" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₁ = g₁∧g₂</text>
+<circle cx="520" cy="670" r="4" fill="#3556a8"/><text x="520" y="661" font-size="12" font-weight="bold" fill="#16233a" text-anchor="middle">G₂ = g₁∧g₂∧g₃</text>
+<line x1="520" y1="476" x2="520" y2="560" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="520" y1="576" x2="520" y2="660" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="520" y1="676" x2="520" y2="800" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<text x="520" y="825" font-size="18" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="520" y="855" font-size="11" fill="#b3402e" text-anchor="middle">strictly descending, NO FLOOR — never reaches ⊥</text>
+<text x="520" y="440" font-size="12.5" fill="#16233a" text-anchor="middle">descending ladder Gmeet n = g₁ ∧ … ∧ g_{n+1}</text>
+<text x="520" y="425" font-size="10.5" fill="#8a93a6" text-anchor="middle">Gmeet_strict · no_least_consequence (wip/hunts.lean)</text>
+<text x="24" y="1000" font-size="12" fill="#16233a">RN(◯,∅) is INFINITE three ways — height (the ladder and both chains), width (the three antichains), depth (Gmeet, no floor):</text>
+<text x="24" y="1016" font-size="12" fill="#16233a">closed_lax_infinite, LaxLogic/PLLLaxInfinite.lean, pinned [propext, Classical.choice, Quot.sound].  Anchors ≡ ρk are certified identities; nothing else is asserted between families.</text>
+</svg></div>
+    <p class="src"><b>docs/rn-large-structure.svg</b>. The figure carries its own ground and is
+    shown as authored in both themes. Anchors <span class="f">≡ ρk</span> and every theorem name
+    on it were checked against the Lean sources before embedding; the checks are recorded in the
+    sections that follow.</p>
+  </div>
+
+  <div class="panel">
+    <h2>The embedded zigzag</h2>
+    <p>The left rail in close-up: the Rieger–Nishimura ladder under
+    <span class="f">p ≔ ◯⊥</span>, with its cover relation computed rather than drawn by hand.
+    Odd rungs have two upper covers, even rungs one.</p>
+    <div class="figure tall"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 960" font-family="Helvetica,Arial,sans-serif">
+<rect width="620" height="960" fill="#ffffff"/>
+<text x="20" y="34" font-size="17" fill="#16233a">RN({p}) ↪ RN(◯,∅) under p ≔ a = ◯⊥ — the embedded zigzag ladder</text>
+<text x="20" y="54" font-size="11.5" fill="#8a93a6">Embedding PROVED (wip/rnEmbed.lean, 15 pins); rung order decidable arithmetic (rnSub_order, wip/ladder8.lean);</text>
+<text x="20" y="68" font-size="11.5" fill="#8a93a6">covers below = covers9_eq, stable widening the search to rung 24 (covers9_stable, axiom-free).</text>
+<line x1="300" y1="860" x2="200" y2="770" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="300" y1="860" x2="400" y2="770" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="200" y1="770" x2="300" y2="680" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="200" y1="770" x2="120" y2="680" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="400" y1="770" x2="300" y2="680" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="300" y1="680" x2="230" y2="590" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="300" y1="680" x2="440" y2="590" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="120" y1="680" x2="230" y2="590" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="230" y1="590" x2="340" y2="500" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="230" y1="590" x2="140" y2="500" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="440" y1="590" x2="340" y2="500" stroke="#3556a8" stroke-width="1.4"/>
+<line x1="340" y1="500" x2="250" y2="410" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="140" y1="500" x2="250" y2="410" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<line x1="340" y1="500" x2="430" y2="410" stroke="#8a93a6" stroke-width="1.4" stroke-dasharray="5,4"/>
+<circle cx="300" cy="860" r="4" fill="#3556a8"/><text x="300" y="851" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₀ = ⊥</text><text x="300" y="880" font-size="10.5" fill="#8a93a6" text-anchor="middle">= ⊥ (ρ0)</text>
+<circle cx="200" cy="770" r="4" fill="#3556a8"/><text x="200" y="761" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₁ = a</text><text x="200" y="790" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ2</text>
+<circle cx="400" cy="770" r="4" fill="#3556a8"/><text x="400" y="761" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₂ = ¬a</text><text x="400" y="790" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ3</text>
+<circle cx="300" cy="680" r="4" fill="#3556a8"/><text x="300" y="671" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₃ = a∨¬a</text><text x="300" y="700" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ4</text>
+<circle cx="120" cy="680" r="4" fill="#3556a8"/><text x="120" y="671" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₄ = ¬¬a</text><text x="120" y="700" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ5</text>
+<circle cx="230" cy="590" r="4" fill="#3556a8"/><text x="230" y="581" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₅</text><text x="230" y="610" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ6</text>
+<circle cx="440" cy="590" r="4" fill="#3556a8"/><text x="440" y="581" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₆ = ¬¬a⊃a</text><text x="440" y="610" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ8</text>
+<circle cx="340" cy="500" r="4" fill="#3556a8"/><text x="340" y="491" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₇</text><text x="340" y="520" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ10</text>
+<circle cx="140" cy="500" r="4" fill="#3556a8"/><text x="140" y="491" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₈</text><text x="140" y="520" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ13 ★</text>
+<circle cx="250" cy="410" r="4" fill="#8a93a6"/><text x="250" y="401" font-size="12" fill="#8a93a6" text-anchor="middle">rn₉</text>
+<circle cx="430" cy="410" r="4" fill="#8a93a6"/><text x="430" y="401" font-size="12" fill="#8a93a6" text-anchor="middle">rn₁₀</text>
+<text x="310" y="330" font-size="20" fill="#8a93a6" text-anchor="middle">⋮</text>
+<text x="310" y="300" font-size="12" fill="#8a93a6" text-anchor="middle">infinite — every rung a distinct class of RN(◯,∅)</text>
+<text x="20" y="905" font-size="11.5" fill="#8a93a6">Zigzag: odd rungs have two upper covers, even rungs one.  Rungs rn₀…rn₈ land on catalogue classes (labels);</text>
+<text x="20" y="920" font-size="11.5" fill="#8a93a6">rn₈ ≡ ρ13 was a sweep DISCOVERY the ladder predicts.  From rn₉ up the rungs leave the current 22-class catalogue R.</text>
+</svg></div>
+    <p class="src"><b>docs/rn-embed-ladder.svg</b>. The eleven covers are
+    <span class="m">covers9_eq</span>, and <span class="m">covers9_stable</span> shows they do
+    not depend on where the table was cut: widening the interposer search from rungs &lt; 9 to
+    rungs &lt; 24 returns the same eleven. Both are pinned <em>axiom-free</em>
+    (<span class="m">wip/ladder8.lean</span>).</p>
+  </div>
+
+  <div class="call note">
+    <h3>Two notes on the figures</h3>
+    <ul>
+      <li><span class="f">rn₈ ≡ ρ13</span>, as both figures label it.
+          <span class="m">docs/rho-structure.md</span> R5 calls the same class
+          <span class="f">rn₉</span>; its own rail list
+          (<span class="f">ρ0, ρ2, ρ3, ρ4, ρ5, ρ6, ρ8, ρ10, ρ13</span>) is nine entries long and
+          therefore ends at <span class="f">rn₈</span>, so the parenthetical there is off by
+          one. The rung's truth set on the ladder frame is
+          <span class="f">{0, 1, 2, 4}</span>, and so is
+          <span class="f">ρ13 = ρ8 ⊃ ρ4</span>'s.</li>
+      <li><span class="f">c₂ = ◯ρ6</span> is marked "∉R cand." because it is exactly that: the
+          extension probe places it outside <span class="f">R</span> up to five open cells, and
+          the <span class="f">◯</span> row of the R tables flags it
+          <span class="chip op">?</span>. It is not certified <span class="f">∉R</span>.</li>
+    </ul>
+  </div>
+</section>
+
 <!-- ═══════════════════════ LADDER ═══════════════════════ -->
 <section id="p-lad" role="tabpanel" aria-labelledby="t-lad" hidden>
 
@@ -782,10 +987,9 @@ rnSub_deriv_iff  : t i ⊢ t j  ⟺  T(i) ⊆ T(j)  on the RN ladder frame<span 
 
   <div class="panel">
     <h2>The families</h2>
-    <p>Four shapes, each uniform in a level index <span class="f">k ≥ 1</span>, each built over
-    the embedded rungs. Together they prove RN(◯,{}) infinite in three independent ways:
-    height, width, and depth. Level 1 of each family lands inside
-    <span class="f">R</span>; every level above it is outside.</p>
+    <p>The definitions behind the map in <em>Large-scale structure</em>. Each is uniform in a
+    level index <span class="f">k ≥ 1</span> and built over the embedded rungs; level 1 lands
+    inside <span class="f">R</span>.</p>
     <div class="disp">c k = ◯t(2k+1)                    ascending chain          c 1 = ρ7
 g k = c k ⊃ t(2k+1)               antichain                g 1 = ρ11
 r k = t(2k+4) ⊃ c k               antichain, ◯-fixed       r 1 = ρ12
@@ -825,8 +1029,7 @@ chain_pairwise    : j ≠ k → ¬ Interd (c j) (c k)<span class="tag">wip/chain
     <div class="disp">gap_incomparable : k ≥ 2,  j ≠ k  →  g j ⊬ g k
 width_infinite   : i ≠ j  →  ¬ Interd (g (i+2)) (g (j+2))
 rC_incomparable  : j, k ≥ 1,  j ≠ k  →  r j ⊬ r k<span class="tag">wip/gapWidth.lean · wip/families.lean</span></div>
-    <p><span class="f">{ g k : k ≥ 2 }</span> is an infinite antichain, so RN(◯,{}) has
-    unbounded width. Each <span class="f">g k</span> is off the image and off the chain
+    <p>Each <span class="f">g k</span> is off the image and off the chain
     (<span class="m">gap_off_image</span>, <span class="m">gap_not_chain</span>);
     <span class="f">g 1 ≡ ρ11</span> (<span class="m">gap_one_q8</span>).</p>
     <p>The <span class="f">r</span>-family is an antichain with no <span class="f">k ≥ 2</span>
@@ -852,11 +1055,9 @@ bg_pairwise     : j, k ≥ 2,  j ≠ k  →  ¬ Interd (◯(g j)) (◯(g k))<spa
     <p>So <span class="f">{ ◯(g k) : k ≥ 2 }</span> is a <strong>single ℕ-indexed
     antichain</strong>: infinitely many classes, pairwise incomparable, each off the image and
     not <span class="f">⊤</span> (<span class="m">bg_off_image</span>,
-    <span class="m">bg_not_top</span>, both for <span class="f">k ≥ 2</span>). The "size 3"
-    reading comes from the picture, not the theorem: the v17 diagram drew three levels of each
-    family with a faded continuation stub and put one bracket down the
-    <span class="f">◯g</span> column. The bracket denotes the whole antichain; three of its
-    members are drawn.</p>
+    <span class="m">bg_not_top</span>, both for <span class="f">k ≥ 2</span>). It is drawn as
+    one dotted row in <em>Large-scale structure</em>; a "size 3" reading counts the members a
+    diagram happens to draw, not the members the theorem quantifies over.</p>
     <h3>The one place the record really is incomplete</h3>
     <p>The uniform theorem needs <span class="f">k ≥ 2</span> on the <em>target</em> index only.
     So for <span class="f">k ≥ 2</span> we have <span class="f">◯(g 1) ⊬ ◯(g k)</span>, but the
@@ -918,7 +1119,7 @@ Gmeet (n+1) = Gmeet n ∧ g (n+2)
 
 Gmeet_le     : Gmeet (n+1) ⊢ Gmeet n
 Gmeet_strict : [Gmeet n] ⊬ Gmeet (n+1)<span class="tag">wip/uiObstruct.lean:109 · wip/hunts.lean:112</span></div>
-    <p>The partial meets of the gap antichain descend strictly forever. The countermodel is the
+    <p>The countermodel behind the strict descent is the
     edged lift <span class="m">cmE (n+1)</span>, at whose edge world gaps
     <span class="f">1 … n+1</span> are forced, hence <span class="f">Gmeet n</span>, while
     <span class="f">g (n+2)</span> fails. Every <span class="f">Gmeet n</span> is closed and has
@@ -928,9 +1129,7 @@ Gmeet_strict : [Gmeet n] ⊬ Gmeet (n+1)<span class="tag">wip/uiObstruct.lean:10
                 quantified over ALL formulas
 L_no_greatest : its variable-free reading — the landing ideal has no
                 greatest element<span class="tag">wip/floor.lean:489, 507</span></div>
-    <p>So RN(◯,{}) is <strong>not a complete lattice</strong>: this is the third independent
-    sense in which it is infinite, alongside height (the ladder) and width (the gap
-    antichain).</p>
+    <p>So RN(◯,{}) is <strong>not a complete lattice</strong>.</p>
     <p class="src"><b>wip/hunts.lean</b> (<span class="m">Gmeet_strict</span>) ·
     <b>wip/depth.lean</b> (<span class="m">depth_Gmeet</span>) · <b>wip/floor.lean</b>
     (<span class="m">gap_no_glb</span>, <span class="m">L_no_greatest</span>), all
@@ -1077,7 +1276,7 @@ simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<
 </section>
 
 <p class="buildline" style="border-top:1px solid var(--line);padding-top:16px">
-  <span>RN(◯,{}) catalogue · v19 · 2026-08-25</span>
+  <span>RN(◯,{}) catalogue · v20 · 2026-08-26</span>
   <span>every number on this page was re-derived from the sources named beside it</span>
 </p>
 </div>
