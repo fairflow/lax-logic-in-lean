@@ -1656,3 +1656,47 @@ build before the fix (gate discipline).
    pledge-existence question enters as `PledgeSupplyV`);
 3. weaken `hinf` to root-infallibility (per-wit `wfal`, fallible joins
    for the free-graded demands).
+
+## §2026-08-26j — ROUND 2: `CircSupplyV` DISCHARGED (cone-grounded frames); FRJV completeness over endpoint-seeing models unconditional
+
+The supply of round 1 is gone as a hypothesis wherever the frame allows
+it, all in `wip/minmodv.lean`, all first-pass, pins
+`[propext, Quot.sound]` guarded:
+
+- `IrrWit.toV` — the paper wit embeds (`toVi`), so every FRJ-side
+  discharge route serves FRJV.
+- `circSupplyV_of_coneGrounded : K.ConeGrounded → CircSupplyV K G` —
+  the corner is cone-trivial (`coneTrivial_of_corner`,
+  hypothesis-free), cone-groundedness makes it `≤`-maximal, and
+  `circWit_of_maximal` (generalised `Ax^I◯` over the world's classical
+  theory) closes it.  Covers every `Rm = ≤` model and every discrete
+  model.
+- `completenessV_of_coneGrounded : hloc → Infallible → ConeGrounded →
+  ¬valid G → ProvableV G` — round 1 with NO supply.
+- `completenessV_of_endpoints : K.Endpoints → ¬valid G → ProvableV G`
+  — UNCONDITIONAL (no `hloc`, no infallibility, no supply): the peer
+  campaign's two-tier recursion (`completeness_of_endpoints`,
+  `FRJ/Saturate.lean`) composed with the embedding.  The #80/#81
+  incompleteness witnesses live on non-endpoint frames — which is
+  exactly where FRJV must eventually exceed FRJ.
+- `circWitV_of_ats` — the chosen-valuation route (frj-w4 §11 route 3)
+  as maximality-free machinery: decidable per world, blocked exactly on
+  the poisoned residue `Λ*_a ⊨_cl Z`.
+- Smoke test extended: `provableV_circ_peirce_discharged` re-derives
+  the Peirce cell with the DERIVED supply (point is discrete →
+  cone-grounded); the hand-built supply stays as documentation.
+
+**Peer refutation absorbed (Matthew, mid-turn):** `∀ K G, V.PledgeSupply
+K G` is FALSE (`not_pledgeFam_of_circ_mem`; `PledgeFam` uninhabited
+whenever `◯F ∈ Λ*_a`, realised at `F = ⊥` on sepM), and kept members
+are IMPLICATIONS, full stop.  Consequences recorded in the file header
+of the round-2 section: (i) `CircSupplyV` is NOT touched — its corner
+is provably circ-free, so `◯F ∈ Λ*_a` cannot arise there; (ii) round
+2's `hloc`-lift must NOT be organised through any supply-form
+hypothesis on the promise side — instance-wise promise families (the
+hand-witness pattern) or a semantic argument, not a `PledgeSupplyV`.
+
+**The residue** (open, both calculi): the corner at cone-trivial
+NON-maximal worlds, where a poisoned `Λ*`-implication defeats every
+chosen valuation.  The V-lever is the kept chain on the `circNotIn`
+premise row — for poisoned IMPLICATIONS only.

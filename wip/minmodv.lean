@@ -31,6 +31,7 @@ Every other case is `Minimal.lean` verbatim on the V-constructors.
 -/
 import FRJ.Minimal
 import FRJ.CalculusV
+import FRJ.Saturate
 
 namespace FRJ
 
@@ -529,5 +530,90 @@ theorem completenessV_of_supply {G : Form} (K : Kripke)
 /-- info: 'FRJ.completenessV_of_supply' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms completenessV_of_supply
+
+/-! ## Round 2: the supply discharged
+
+The corner's own hypotheses pin the demanding world's modal cone to
+`{a}` (`coneTrivial_of_corner`, hypothesis-free).  On a CONE-GROUNDED
+frame — every cone-trivial world is `≤`-maximal, which holds in
+particular whenever `Rm = ≤`, and on discrete frames — the corner world
+is therefore maximal, where the generalised `Ax^I◯` over the world's own
+classical theory produces the wit outright (`circWit_of_maximal`,
+`FRJ/Saturate.lean`).  `FRJVi` is the paper family verbatim, so the wit
+embeds by `toVi` and `CircSupplyV` is DISCHARGED — round 1's supply
+hypothesis disappears on cone-grounded frames.
+
+What does NOT discharge: the corner at a cone-trivial world that is not
+`≤`-maximal (an `Rm` strictly finer than `≤`).  There the chosen
+valuation can be beaten by a poisoned `Λ*`-implication (classically true
+antecedent, unforced at the world — frj-w4 §9 addendum), and the open
+kernel is exactly that residue — for BOTH calculi.  The V-lever for it
+is the kept chain on the row a `circNotIn` premise needs; note the
+peer's refutation (2026-08-26): kept members are IMPLICATIONS, full
+stop, so the lever addresses poisoned implications only, and no
+supply-form hypothesis can organise the promise side
+(`V.PledgeSupply` is FALSE in the kernel — `not_pledgeFam_of_circ_mem`). -/
+
+/-- The paper wit embeds. -/
+def IrrWit.toV {K : Kripke} {G : Form} {a : K.W} {C : Form}
+    (w : IrrWit K G a C) : IrrWitV K G a C :=
+  ⟨w.stab, w.th, toVi w.der, w.sub, w.cov⟩
+
+/-- **The chosen-valuation route** (frj-w4 §11 route 3), maximality-free:
+any classical valuation `ats ⊆ Ĝ_at` whose theory contains `Λ*_a` and
+refutes `Z` closes the corner by the generalised `Ax^I◯`.  Both
+hypotheses are decidable per world on a finite model; it is blocked
+exactly when `Λ*_a ⊨_cl Z` (the poisoned residue). -/
+def circWitV_of_ats {K : Kripke} {G : Form} {a : K.W} {Z : Form}
+    (ats : List Form) (hats : ats ⊆ gAt G)
+    (hZf : classForce ats Z = false) (hZ : Form.circ Z ∈ sfR G)
+    (hcov : ∀ X ∈ lamStar K a G, classForce ats X = true) :
+    IrrWitV K G a (.circ Z) :=
+  { stab := []
+    th := vacZoneA G ats
+    der := .axIC Z ats hats hZf hZ (CtxEq.refl _)
+    sub := List.nil_subset _
+    cov := fun X hX =>
+      List.mem_filter.mpr ⟨lamStar_subset_gHat hX, hcov X hX⟩ }
+
+/-- **`CircSupplyV` discharged on cone-grounded frames**: the corner is
+cone-trivial, the frame condition makes it maximal, and the generalised
+`Ax^I◯` closes it. -/
+def circSupplyV_of_coneGrounded {K : Kripke} {G : Form}
+    (hg : K.ConeGrounded) : CircSupplyV K G :=
+  fun _ _ hZ hnf hsole =>
+    (circWit_of_maximal (hg _ (coneTrivial_of_corner hnf hsole)) hZ hnf).toV
+
+/-- **Round-1 completeness with NO supply hypothesis** on cone-grounded
+frames (in particular on every `Rm = ≤` model and every discrete
+model). -/
+theorem completenessV_of_coneGrounded {G : Form} (K : Kripke)
+    (hloc : ∀ b : K.W, circPart (lamStar K b G) = [])
+    (hinf : K.Infallible) (hg : K.ConeGrounded)
+    (hK : ¬ K.valid G) : ProvableV G :=
+  completenessV_of_supply K hloc hinf (circSupplyV_of_coneGrounded hg) hK
+
+/-- **FRJV completeness over endpoint-seeing models, UNCONDITIONAL** —
+no `hloc`, no infallibility, no supply: the peer campaign's two-tier
+recursion (`completeness_of_endpoints`, `FRJ/Saturate.lean`) composed
+with the embedding.  On frames whose every modal cone contains a
+`≤`-maximal world, the repaired calculus derives every refuted goal.
+(The #80/#81 incompleteness witnesses live on NON-endpoint frames, which
+is where FRJV must eventually go beyond FRJ.) -/
+theorem completenessV_of_endpoints {G : Form} (K : Kripke)
+    (hep : K.Endpoints) (hK : ¬ K.valid G) : ProvableV G :=
+  provableV_of_provable (completeness_of_endpoints hep hK)
+
+/-- info: 'FRJ.circSupplyV_of_coneGrounded' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms circSupplyV_of_coneGrounded
+
+/-- info: 'FRJ.completenessV_of_coneGrounded' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completenessV_of_coneGrounded
+
+/-- info: 'FRJ.completenessV_of_endpoints' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completenessV_of_endpoints
 
 end FRJ

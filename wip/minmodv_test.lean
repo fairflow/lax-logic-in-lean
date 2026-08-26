@@ -74,4 +74,22 @@ theorem provableV_circ_peirce_viaMinModV : ProvableV GP :=
 #guard_msgs in
 #print axioms provableV_circ_peirce_viaMinModV
 
+/-! ## Round 2: the same cell with the supply DISCHARGED
+
+`point` is discrete, hence cone-grounded, so `circSupplyV_of_coneGrounded`
+replaces the hand-built supply above (which stays as documentation of the
+`Ax^I◯` discharge the derived route performs at the corner). -/
+
+theorem point_coneGrounded : Kripke.point.ConeGrounded :=
+  fun _ _ _ hu => Kripke.point.le_antisymm trivial hu
+
+/-- **The Peirce cell through the recursion with NO hand-built supply.** -/
+theorem provableV_circ_peirce_discharged : ProvableV GP :=
+  completenessV_of_coneGrounded Kripke.point hloc_GP point_infallible
+    point_coneGrounded not_valid_GP
+
+/-- info: 'FRJ.MinModVTest.provableV_circ_peirce_discharged' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableV_circ_peirce_discharged
+
 end FRJ.MinModVTest
