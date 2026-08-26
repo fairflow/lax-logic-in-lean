@@ -391,8 +391,30 @@ def rtableMode (maxF : Nat) : IO Unit := do
   out.flush
   IO.println "RTABLE-DONE"
 
+/-- `jcell k i j [maxF]`: the single directed cell `ρk ⊢? ρi ∨ ρj`,
+battery separation then the LJF◯ ladder to `maxF` (default 56).  The
+R6 reduction makes this cell the identity question
+`ρk ≡? ρi ∨ ρj` whenever `ρi, ρj < ρk`. -/
+def jcellMode (k i j maxF : Nat) : IO Unit := do
+  let bat := battery ++ framesRooted5.toArray
+  let X := (rhoF i).or (rhoF j)
+  let vK : Array (Array Bool) := bat.map fun M => vecOf M (rhoF k)
+  let vX : Array (Array Bool) := bat.map fun M => vecOf M X
+  match firstSep bat vK vX with
+  | some (fi, w) =>
+      IO.println s!"ρ{k} ⊬ ρ{i}∨ρ{j}  (battery frame {fi}, world {w})"
+  | none =>
+      IO.println s!"no battery separation; LJF◯ ladder to {maxF}…"
+      (← IO.getStdout).flush
+      match (TwoSided.fuelLadder maxF).find? (fun f => searchProves f [rhoF k] X) with
+      | some f => IO.println s!"ρ{k} ⊢ ρ{i}∨ρ{j}  PROVED at fuel {f} — identity ρ{k} ≡ ρ{i}∨ρ{j}"
+      | none => IO.println s!"OPEN: not found ≤ fuel {maxF} (certifies nothing), no battery countermodel"
+
 def main (args : List String) : IO Unit := do
   if args.head? == some "emit" then return (← emitMode)
+  if args.head? == some "jcell" then
+    return (← jcellMode ((args.getD 1 "0").toNat?.getD 0) ((args.getD 2 "0").toNat?.getD 0)
+                        ((args.getD 3 "0").toNat?.getD 0) ((args.getD 4 "56").toNat?.getD 56))
   if args.head? == some "rtable" then
     return (← rtableMode ((args.getD 1 "48").toNat?.getD 48))
   if args.head? == some "probe" then

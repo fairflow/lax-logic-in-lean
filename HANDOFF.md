@@ -1364,3 +1364,29 @@ collision (gate: `sh tools/check-twins.sh`, section 4).  (4) H5 forward
   8 of the 16 ∉R cells were never probe candidates; 9 candidates remain
   unsettled against R.  rho-structure §4 was already corrected on the
   branch (agent read a pre-merge copy).
+
+## §2026-08-26b — ρ21 ≡? ρ12∨ρ20 hardened OPEN; covers: density of full PLL + the cube THEOREM
+
+* (a) `ρ21 ⊢? ρ12∨ρ20` (rtable cell `or 12 20 = ?`): NOT closed.  New
+  compiled probe `rhocover jcell 21 12 20 56`: NO battery separation
+  exists (10534 frames), LJF◯ deep ladder capped at 50 min without a
+  proof.  Same profile as the two former genuine flags, both of which
+  fell to beyond-battery countermodels — first-rank FRJV target.  By R6
+  the cell IS the identity ρ21 ≡? ρ12∨ρ20 (the ρ9-cube's 4th vertex).
+* (b) Matthew's cover programme, assessed:
+  - Full PLL: bare ⋖ is EMPTY — the order is DENSE: for a < b and p
+    fresh, a ∨ (b∧p) interposes (strictness by substituting p:=⊤/⊥;
+    c ⊢ b by orElim from a ⊢ b).  PROVABLE on paper; Lean needs the
+    substitution-preserves-LaxND lemma.  Instance a=⊥,b=◯⊥ already
+    kernel-checked (not_covers_bot_obot).
+  - In the FRAGMENT (CoversVF): the cube conjecture is a THEOREM of
+    distributive-lattice algebra for GENUINE covers: S ⊆ U ↦ n∨⋁S
+    order-embeds 2^U whenever U is a finite set of covers of n (proof:
+    distribute, the cover collapses [n,y] to two elements, distinct
+    covers meet at n).  No conditions on n.  The scoped-⋖[K] version
+    lacks the interval collapse — that is why it degenerated to testing.
+  - First full instance PROVABLE from pinned lemmas: U(⊥) = {◯⊥, ¬◯⊥}
+    exactly (consistency split + the completeness lemmas), cube = the
+    bottom diamond ρ0,ρ2,ρ3,ρ4.
+  - Mechanisation queue: (i) cube lemma at class level; (ii) U(⊥);
+    (iii) full-PLL density (subst lemma).
