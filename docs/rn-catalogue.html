@@ -199,7 +199,7 @@ td .f{font-size:14.5px}
   is the ρ-catalogue <span class="f">R</span>: twenty-two pairwise-distinct classes, its order
   now total, its operation tables computed cell by cell, and open-ended by construction.</p>
   <p class="buildline">
-    <span><b>v21</b>, successor of v20 and of rn-explorer v17</span>
+    <span><b>v22</b>, successor of v21 and of rn-explorer v17</span>
     <span>built 2026-08-26</span>
     <span>branch <b>claude/frj-redevelopment-69005f</b> @ d224201</span>
     <span>if the version above reads lower than the one you were told, force-reload (⇧ + reload)</span>
@@ -1275,7 +1275,7 @@ simplifyWith fullSetC n φ      —   alternate rewriting and re-canonicalising<
 </section>
 
 <p class="buildline" style="border-top:1px solid var(--line);padding-top:16px">
-  <span>RN(◯,{}) catalogue · v21 · 2026-08-26</span>
+  <span>RN(◯,{}) catalogue · v22 · 2026-08-26</span>
   <span>every number on this page was re-derived from the sources named beside it</span>
 </p>
 </div>
@@ -1302,17 +1302,16 @@ const RSHORT = ["⊥","⊤","a","¬a","a ∨ ¬a","¬¬a","¬a ∨ ¬¬a","b","�
  "ρ14 ∨ ρ9","ρ11 ⊃ b","ρ11 ⊃ ρ6","ρ14 ⊃ b"];
 const RNOTE = ["","","rung t1","rung t2","rung t3","rung t4","rung t5",
  "b · c 1 = ◯t3 · ◯-fixed","rung t6 · ◯-fixed","","rung t7","g 1","r 1 · ◯-fixed",
- "rung t8  · predicted by the ladder","w 1","","","",""," · ◯-fixed","",""];
-const STAR = [13,15,16,17,18,19,20,21];
+ "rung t8 · predicted by the ladder","w 1","","","","","◯-fixed","",""];
 
 (function reps(){
   const tb = document.getElementById("repsbody");
   for (let i=0;i<N;i++){
     const tr = document.createElement("tr");
-    tr.innerHTML = '<td class="f">ρ'+i+(STAR.indexOf(i)>-1?' ':'')+'</td>' +
+    tr.innerHTML = '<td class="f">ρ'+i+'</td>' +
       '<td><span class="f">'+RF[i]+'</span></td>' +
       '<td><span class="f">'+RSHORT[i]+'</span></td>' +
-      '<td>'+RNOTE[i].replace(//g,'sweep discovery')+'</td>';
+      '<td>'+RNOTE[i]+'</td>';
     tb.appendChild(tr);
   }
 })();
