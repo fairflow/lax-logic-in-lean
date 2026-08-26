@@ -209,3 +209,27 @@ from the witness pattern:
 3''. The demand tracer is the screen: any frame/goal whose trace shows
      a demand the weakened wits cannot serve is a counterexample
      candidate BEFORE proof work resumes.
+
+## S0 SETTLED + campaign convergence (2026-08-26 late)
+
+S0 is CLOSED, and not by the engine: the redevelopment session
+HAND-DERIVED all four hard cells (`FRJ/WitnessV{1918,2018,2013,2012}`,
+each first-pass; consequences pinned in `Certified/RhoFRJV`) — the
+corpus carries ZERO FRJV incompleteness witnesses.  No repair₂.  Merged
+here (branch = the union of both sessions' work; FRJ.lean imports
+unioned, HANDOFF sections e/e(ii)).
+
+The syntactic route this file's G4c study pointed at and the
+redevelopment session's model-to-tree campaign are THE SAME route; the
+shared record is now `docs/next-session.md` §"CAMPAIGN (2026-08-26,
+Matthew)" (architecture, Matthew's corrections 1-3, STEP 0 = the
+◯-free control) and `METHOD.md` Appendix A (the recipe the recursion
+formalises).  Assets by session: theirs — the witness corpus, the
+interactive discipline, `FRJ/WitnessKit.lean` + `frjv_side` (whose
+decide-sites SPECIFY the recursion's helper list); ours —
+`FRJ/SaturateV.lean` (native scaffolding incl. `V.completeness_of_
+endpoints`), `FRJ/CompleteV.lean` (NB `completenessV_via_closure` is
+already the ◯-free fragment's completeness THEOREM by transfer — STEP 0
+is therefore about validating the METHOD's Lean shape against a known
+answer, not about the theorem), the kernel refutation of the supply
+route, and the demand tracer.
