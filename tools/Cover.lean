@@ -475,8 +475,7 @@ def main (args : List String) : IO Unit := do
     IO.println "control: ρ6 < ρ12 BLOCKED by ρ9, matching kernel theorem RNDB.not_covers_rho6_rho12"
   -- machine-readable class labels, for the diagram generator
   for i in List.range n do
-    let star := if RhoOrder.discovered.contains i then "*" else ""
-    IO.println s!"LABEL ρ{i}{star} {PLLND.RNC.CFX.pp (rhoF i)}"
+    IO.println s!"LABEL ρ{i} {PLLND.RNC.CFX.pp (rhoF i)}"
   IO.println "RHOCOVER-DONE"
 
 end RhoCover

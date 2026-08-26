@@ -83,7 +83,7 @@ def main():
            f'({len(edges)} edges{", " + str(len(open_edges)) + " OPEN edges" if open_edges else ""})</text>',
            f'<text x="20" y="{H-18}" font-size="12" fill="#666">solid: a ⋖[catalogue] b, every interposer excluded '
            f'by settled cells · dashed grey ?: open cell — a positive resolution would add that edge'
-           f'{" · red: OPEN cover edge" if open_edges else ""} · ★ = sweep-discovered class</text>']
+           f'{" · red: OPEN cover edge" if open_edges else ""}</text>']
     for a, b in edges:
         (x1, y1), (x2, y2) = xy[a], xy[b]
         out.append(f'<line x1="{x1:.0f}" y1="{y1-26:.0f}" x2="{x2:.0f}" y2="{y2+14:.0f}" stroke="#3556a8" stroke-width="1.4"/>')
@@ -96,7 +96,7 @@ def main():
             out.append(f'<line x1="{x1:.0f}" y1="{y1-26:.0f}" x2="{x2:.0f}" y2="{y2+14:.0f}" stroke="#999" stroke-width="1.3" stroke-dasharray="5,4"/>')
             out.append(f'<text x="{(x1+x2)/2+4:.0f}" y="{(y1+y2)/2:.0f}" font-size="12" fill="#888">?</text>')
     for v, (x, y) in xy.items():
-        star = "★" if v in new else ""
+        star = ""
         out.append(f'<circle cx="{x:.0f}" cy="{y:.0f}" r="4" fill="#16305e"/>')
         out.append(f'<text x="{x:.0f}" y="{y-12:.0f}" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ{v}{star}</text>')
         out.append(f'<text x="{x:.0f}" y="{y+20:.0f}" font-size="11.5" fill="#333" text-anchor="middle">{label.get(v, "")}</text>')

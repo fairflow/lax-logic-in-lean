@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1240 900" font-family="Helvetica, Arial, sans-serif">
 <rect width="1240" height="900" fill="#ffffff"/>
 <text x="20" y="30" font-size="17" fill="#111">RN(◯,∅) catalogue — PLL Hasse diagram, scoped covers (37 edges)</text>
-<text x="20" y="882" font-size="12" fill="#666">solid: a ⋖[catalogue] b, every interposer excluded by settled cells · dashed grey ?: open cell — a positive resolution would add that edge · ★ = sweep-discovered class</text>
+<text x="20" y="882" font-size="12" fill="#666">solid: a ⋖[catalogue] b, every interposer excluded by settled cells · dashed grey ?: open cell — a positive resolution would add that edge</text>
 <line x1="620" y1="804" x2="413" y2="734" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="620" y1="804" x2="827" y2="734" stroke="#3556a8" stroke-width="1.4"/>
 <line x1="413" y1="694" x2="827" y2="624" stroke="#3556a8" stroke-width="1.4"/>
@@ -66,40 +66,40 @@
 <text x="930" y="488" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ14</text>
 <text x="930" y="520" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))</text>
 <circle cx="207" cy="390" r="4" fill="#16305e"/>
-<text x="207" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ13★</text>
+<text x="207" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ13</text>
 <text x="207" y="410" font-size="11.5" fill="#333" text-anchor="middle">((¬(¬◯⊥)) ⊃ ◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))</text>
 <circle cx="413" cy="390" r="4" fill="#16305e"/>
 <text x="413" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ9</text>
 <text x="413" y="410" font-size="11.5" fill="#333" text-anchor="middle">◯(¬◯⊥) ∨ (¬(¬◯⊥))</text>
 <circle cx="620" cy="390" r="4" fill="#16305e"/>
-<text x="620" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ17★</text>
+<text x="620" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ17</text>
 <text x="620" y="410" font-size="11.5" fill="#333" text-anchor="middle">(¬(¬◯⊥)) ∨ ((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥)))</text>
 <circle cx="827" cy="390" r="4" fill="#16305e"/>
-<text x="827" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ19★</text>
+<text x="827" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ19</text>
 <text x="827" y="410" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ◯(¬◯⊥)</text>
 <circle cx="1033" cy="390" r="4" fill="#16305e"/>
-<text x="1033" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ16★</text>
+<text x="1033" y="378" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ16</text>
 <text x="1033" y="410" font-size="11.5" fill="#333" text-anchor="middle">((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ ◯(¬◯⊥)</text>
 <circle cx="207" cy="280" r="4" fill="#16305e"/>
 <text x="207" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ12</text>
 <text x="207" y="300" font-size="11.5" fill="#333" text-anchor="middle">((¬(¬◯⊥)) ⊃ ◯⊥) ⊃ ◯(¬◯⊥)</text>
 <circle cx="413" cy="280" r="4" fill="#16305e"/>
-<text x="413" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ20★</text>
+<text x="413" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ20</text>
 <text x="413" y="300" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ((¬◯⊥) ∨ (¬(¬◯⊥)))</text>
 <circle cx="620" cy="280" r="4" fill="#16305e"/>
 <text x="620" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ11</text>
 <text x="620" y="300" font-size="11.5" fill="#333" text-anchor="middle">◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))</text>
 <circle cx="827" cy="280" r="4" fill="#16305e"/>
-<text x="827" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ18★</text>
+<text x="827" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ18</text>
 <text x="827" y="300" font-size="11.5" fill="#333" text-anchor="middle">((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ (◯(¬◯⊥) ∨ (¬(¬◯⊥)))</text>
 <circle cx="1033" cy="280" r="4" fill="#16305e"/>
 <text x="1033" y="268" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ8</text>
 <text x="1033" y="300" font-size="11.5" fill="#333" text-anchor="middle">(¬(¬◯⊥)) ⊃ ◯⊥</text>
 <circle cx="310" cy="170" r="4" fill="#16305e"/>
-<text x="310" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ21★</text>
+<text x="310" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ21</text>
 <text x="310" y="190" font-size="11.5" fill="#333" text-anchor="middle">((◯(¬◯⊥) ∨ (¬(¬◯⊥))) ⊃ (◯⊥ ∨ (¬◯⊥))) ⊃ ◯(¬◯⊥)</text>
 <circle cx="620" cy="170" r="4" fill="#16305e"/>
-<text x="620" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ15★</text>
+<text x="620" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ15</text>
 <text x="620" y="190" font-size="11.5" fill="#333" text-anchor="middle">(◯(¬◯⊥) ⊃ (◯⊥ ∨ (¬◯⊥))) ∨ ◯(¬◯⊥)</text>
 <circle cx="930" cy="170" r="4" fill="#16305e"/>
 <text x="930" y="158" font-size="14" font-weight="bold" fill="#16305e" text-anchor="middle">ρ10</text>

@@ -25,11 +25,11 @@
 <circle cx="230" cy="590" r="4" fill="#3556a8"/><text x="230" y="581" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₅</text><text x="230" y="610" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ6</text>
 <circle cx="440" cy="590" r="4" fill="#3556a8"/><text x="440" y="581" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₆ = ¬¬a⊃a</text><text x="440" y="610" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ8</text>
 <circle cx="340" cy="500" r="4" fill="#3556a8"/><text x="340" y="491" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₇</text><text x="340" y="520" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ10</text>
-<circle cx="140" cy="500" r="4" fill="#3556a8"/><text x="140" y="491" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₈</text><text x="140" y="520" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ13 ★</text>
+<circle cx="140" cy="500" r="4" fill="#3556a8"/><text x="140" y="491" font-size="13" font-weight="bold" fill="#16233a" text-anchor="middle">rn₈</text><text x="140" y="520" font-size="10.5" fill="#8a93a6" text-anchor="middle">≡ ρ13</text>
 <circle cx="250" cy="410" r="4" fill="#8a93a6"/><text x="250" y="401" font-size="12" fill="#8a93a6" text-anchor="middle">rn₉</text>
 <circle cx="430" cy="410" r="4" fill="#8a93a6"/><text x="430" y="401" font-size="12" fill="#8a93a6" text-anchor="middle">rn₁₀</text>
 <text x="310" y="330" font-size="20" fill="#8a93a6" text-anchor="middle">⋮</text>
 <text x="310" y="300" font-size="12" fill="#8a93a6" text-anchor="middle">infinite — every rung a distinct class of RN(◯,∅)</text>
 <text x="20" y="905" font-size="11.5" fill="#8a93a6">Zigzag: odd rungs have two upper covers, even rungs one.  Rungs rn₀…rn₈ land on catalogue classes (labels);</text>
-<text x="20" y="920" font-size="11.5" fill="#8a93a6">rn₈ ≡ ρ13 was a sweep DISCOVERY the ladder predicts.  From rn₉ up the rungs leave the current 22-class catalogue R.</text>
+<text x="20" y="920" font-size="11.5" fill="#8a93a6">rn₈ ≡ ρ13was a sweep DISCOVERY the ladder predicts.  From rn₉ up the rungs leave the current 22-class catalogue R.</text>
 </svg>
