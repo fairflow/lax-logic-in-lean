@@ -347,3 +347,26 @@ unification).  Next skill step before scoping the recursion: run the
 interactive construction on 3–5 more banked ⊬ cells of DIFFERENT
 shapes (a promise-join cell, an axIC/vacuous cell, a 2-premise orI
 cell) to force the remaining rule families through the same discipline.
+
+UPDATE (same date, Matthew's question answered YES): the completeness
+recursion should consume `Reject/`'s Built-class trees (`Tab`), not the
+general `Kripke` structure — they are concrete inductive data the
+calculus side already constructs and checks, `not_laxND_iff_built`
+guarantees one for every underivable sequent, and tree shape is what
+world-per-join transcription wants.  Caveat carried: that existence
+theorem uses Classical.choice, so the composed completeness statement is
+Prop-level; the recursion itself stays constructive over the tree.
+
+TACTIC KIT (from the interactive corpus): `frjv_side`
+(wip/frjv_interactive_94.lean) — eight closed moves covering every side
+condition in all seven witnesses; a rule application is
+`refine Rule (…premises…) <;> all_goals frjv_side`, one line per node.
+Second exercise file covers the remaining rule families: joinOrP
+(promise) and axIC (vacuous cone), first-pass.  For the GENERAL lemma
+the decide arms die (side conditions no longer closed) — but each arm
+names exactly one helper obligation of the recursion: keptOf_ok and
+CtxEq.refl are already generic; zoneSplit generalises with one
+membership lemma; hJ2/hJ5's Boolean checks become carried invariants of
+the tree; `cloB_iff.mp ∘ decide` becomes the truth-vs-Clo alignment
+lemma.  The witness corpus's decide-sites are a SPECIFICATION of the
+completeness proof's helper list.
