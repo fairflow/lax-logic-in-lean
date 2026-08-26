@@ -31,6 +31,7 @@ root 0: a bad world 1 forcing b and ρ9 but not ρ4, whose cone holds the
     goal  ⊃∈ ROOT             [barren] ρ19 ⇒ G1918
 -/
 import FRJ.WitnessV1215
+import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
 
@@ -38,8 +39,6 @@ open FRJ Form
 
 namespace FRJ.WitnessV1918
 
-open FRJ.WitnessV1215 (decSubForm zoneSplit impAnteB hJ2_of_impAnteB
-  hJ5_of_nil IRow istF ithF irhsF ipremF)
 
 /-! ## The cell -/
 

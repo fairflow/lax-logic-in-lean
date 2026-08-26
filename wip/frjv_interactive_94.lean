@@ -31,6 +31,7 @@ Tree (contexts up to `≐`):
     goal  ⊃∈ Q (A=ρ9)         [chain ⊥] b ⇒ G94   (Clo {b} ρ9 by ∨-intro)
 -/
 import FRJ.WitnessV1215
+import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
 
@@ -38,8 +39,6 @@ open FRJ Form
 
 namespace FRJ.Interactive94
 
-open FRJ.WitnessV1215 (decSubForm zoneSplit impAnteB hJ2_of_impAnteB
-  hJ5_of_nil IRow istF ithF irhsF ipremF)
 
 def aF : Form := .circ .bot
 def naF : Form := .imp aF .bot
@@ -53,19 +52,6 @@ def Θax : List Form := FRJ.rm (gAt G94) .bot ++ gImp G94 ++ gCirc G94
 
 /-! ## The tactic that fell out of the witness corpus -/
 
-/-- The seven closed side-condition moves of the FRJV witness corpus, in
-cheapest-first order.  Everything a hand witness ever needed that was
-not a premise or a genuinely quantified statement. -/
-macro "frjv_side" : tactic =>
-  `(tactic| first
-    | exact CtxEq.refl _
-    | exact keptOf_ok _ _ _
-    | exact cap_sdiff_eq_nil
-    | exact FRJ.WitnessV1215.zoneSplit (by decide)
-    | exact FRJ.WitnessV1215.hJ2_of_impAnteB (by decide)
-    | exact FRJ.WitnessV1215.hJ5_of_nil (by decide)
-    | exact cloB_iff.mp (by decide)
-    | decide)
 
 /-! ## The substrate, one line per node -/
 

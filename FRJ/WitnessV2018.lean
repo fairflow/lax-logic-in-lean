@@ -20,6 +20,7 @@ disjunct) through every Θ up to the root's kept chain.  Everything else
 is the 1918 tree verbatim.
 -/
 import FRJ.WitnessV1215
+import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
 
@@ -27,8 +28,6 @@ open FRJ Form
 
 namespace FRJ.WitnessV2018
 
-open FRJ.WitnessV1215 (decSubForm zoneSplit impAnteB hJ2_of_impAnteB
-  hJ5_of_nil IRow istF ithF irhsF ipremF)
 
 /-! ## The cell -/
 

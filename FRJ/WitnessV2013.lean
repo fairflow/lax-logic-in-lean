@@ -35,6 +35,7 @@ Tree (contexts up to `≐`):
     goal  ⊃∈ ROOT (A=ρ20)     [chain ⊥] … ⇒ G2013
 -/
 import FRJ.WitnessV1215
+import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
 
@@ -42,8 +43,6 @@ open FRJ Form
 
 namespace FRJ.WitnessV2013
 
-open FRJ.WitnessV1215 (decSubForm zoneSplit impAnteB hJ2_of_impAnteB
-  hJ5_of_nil IRow istF ithF irhsF ipremF)
 
 /-! ## The cell -/
 

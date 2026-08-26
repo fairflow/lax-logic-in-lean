@@ -26,6 +26,7 @@ fallible):
     goal  ⊃∈ ROOT           [barren] ρ11 ⇒ G114
 -/
 import FRJ.WitnessV1215
+import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
 
@@ -33,7 +34,6 @@ open FRJ Form
 
 namespace FRJ.Interactive114
 
-open FRJ.WitnessV1215 (decSubForm zoneSplit impAnteB hJ2_of_impAnteB)
 
 def aF : Form := .circ .bot
 def naF : Form := .imp aF .bot
@@ -58,7 +58,7 @@ def R1 : FRJVi G114 [] Θax .bot := by
 def Ta : FRJVi G114 [aF] (FRJ.sdiff Θax [aF]) naF := by
   refine .impInI (Th := FRJ.sdiff Θax [aF]) (Lam := [aF]) R1
     ?split ?disj ?ante ?goal ?st ?th
-  case split => exact zoneSplit (by decide)  -- Θax ≐ (Θax∖{a}) ++ {a}
+  case split => exact FRJ.zoneSplit (by decide)  -- Θax ≐ (Θax∖{a}) ++ {a}
   case disj => exact cap_sdiff_eq_nil        -- the split is disjoint
   case ante => decide                        -- Clo ({a}) a
   case goal => decide                        -- ¬a ∈ sfR G114

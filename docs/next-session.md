@@ -401,3 +401,23 @@ CORRECTIONS (Matthew, 2026-08-26 evening):
    PARKED as an instructive failed extension of Fiorentini–Ferrari's
    IPC refutation calculus to PLL — keeping soundnessV, the ρ12⊬ρ15
    settlement, the witness corpus, and the method lessons.
+
+STEP 0 (Matthew, 2026-08-26 late): before attempting the FRJV
+completeness recursion, RUN THE METHOD ON THE ◯-FREE FRAGMENT — FRJV
+restricted to ◯-free goals is essentially Fiorentini–Ferrari's FRJ(G),
+whose IPC completeness is PROVED on paper (TOCL 2020).  So the fragment
+is a CONTROL with a known answer: if the method fails there, the fault
+is our formalisation or the method's Lean shape, not the calculus — and
+it certainly fails for full FRJV (the fragment's rules are a subset in
+action).  If it succeeds, the entire risk mass is isolated in the
+◯-delta: the promise joins and join arity.  The paper's own
+completeness proof is the scaffold for the recursion's shape.
+
+FAMILY COVERAGE COMPLETE (interactive III, wip/frjv_interactive_92_90.lean):
+[ρ9]⊬ρ2 forces joinCircP and [ρ9]⊬ρ0 forces joinAtP (the final ⊃∈
+needs b in context; only the promise formers carry a ◯-formula; the
+conclusions rule out joinOrP).  Both four-node trees, first-pass, via
+the hoisted kit.  Every join family of FRJV has now been driven
+goal-first at least once.  KIT HOISTED: FRJ/WitnessKit.lean (generic
+helpers + frjv_side), answering the review point that the helpers were
+stranded in WitnessV1215's namespace.
