@@ -24,6 +24,7 @@ import FRJ.CalculusV
 import FRJ.SoundV
 import FRJ.BridgeV
 import FRJ.CompleteV
+import FRJ.SaturateV
 
 namespace FRJ
 
@@ -92,5 +93,24 @@ endpoint-seeing frames is OPEN and has no declaration. -/
 /-- info: 'FRJ.completenessV_of_supply' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms completenessV_of_supply
+
+/-! ## Completeness — the NATIVE port (`FRJ/SaturateV.lean`)
+
+The full visit scaffolding rebuilt over `FRJVr`/`FRJVi` (not by
+transfer): the barren joins go through the V-constructors with
+`restrict_keptChain`, so this is the platform the kept-zone extension
+builds on. -/
+
+/-- info: 'FRJ.V.completeness_of_endpoints' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.completeness_of_endpoints
+
+/-- info: 'FRJ.V.completeness_of_supply' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.completeness_of_supply
+
+/-- info: 'FRJ.V.provableV_root_countermodel' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.provableV_root_countermodel
 
 end FRJ
