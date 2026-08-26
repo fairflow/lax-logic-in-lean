@@ -1700,3 +1700,40 @@ hand-witness pattern) or a semantic argument, not a `PledgeSupplyV`.
 NON-maximal worlds, where a poisoned `Λ*`-implication defeats every
 chosen valuation.  The V-lever is the kept chain on the `circNotIn`
 premise row — for poisoned IMPLICATIONS only.
+
+## §2026-08-26k — the RESIDUE attacked: realised, route 3 refuted by certificate, and SERVED by Υ-enrichment
+
+`wip/minmodv_residue.lean` (first-pass green except one `Decidable`
+unfold), the instance
+
+    KR:  a < b,  V(a) = ∅,  V(b) = {p, w},  Rm = identity, infallible
+    GR = (A ⊃ w) ⊃ ◯w,     A := p ∨ (p ⊃ q)   (the poisoned antecedent)
+
+- `residue_corner`: the corner FIRES at `a` for body `w`, `cone(a) =
+  {a}`, `a` NOT `≤`-maximal — the exact configuration round 2's
+  frame-condition discharge cannot reach.
+- `route3_blocked` (pins `[propext]`): `A` is a classForce-TAUTOLOGY,
+  so NO valuation satisfies `Λ*_a = {A⊃w}` and refutes `w` — the first
+  kernel-checked witness that the chosen-valuation route (frj-w4 §11
+  route 3) is insufficient.
+- `residueWit`: the demanded `IrrWitV` EXISTS anyway.  Tree: `Ax^I p`;
+  `Ax^R q` (whose context grounds `p` and, through the consequent `w`,
+  the poisoned `A⊃w`); `⊃∉` gives `· ; {A⊃w} → p⊃q`; `orI` merges to
+  `· ; {A⊃w} → A` — **Υ-enrichment**: the poisoned antecedent becomes a
+  premise right formula; the `⋈^At` over that row keeps `A⊃w` in the
+  PAPER second zone (`keptChain_restrict`, ups-route — the `RefAt`
+  relaxation was NOT needed); `◯∉` closes `· ; Λ*_a → ◯w`.
+- `supplyR` totalises the supply for the instance and
+  `provableV_residue` (pins `[propext, Quot.sound]`) runs `minModV`
+  END TO END on the residue model.
+
+**Design consequence for the general discharge**: at any corner, the
+poisoned antecedents are `sfR`-members unforced at the corner world —
+exactly the demands the recursion's irregular layer already serves; the
+corner's regular `Z`-row is a join over those `I(A)`-cells with the
+second zone doing the retention.  The missing piece is ONLY the measure
+that lets `I(◯Z)@a` call `I(A)@a` (the seen-mechanism, frj-w4 §11
+second addendum): no calculus gap, no new supply, and the kept chains
+stay in reserve.  Next concrete step: the seen-parametrised `minModV`
+(measure `(ht, |sfR| − |seen|, t, |C|)`), whose corner branch builds the
+join in place of consuming `CircSupplyV`.
