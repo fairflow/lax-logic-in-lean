@@ -299,3 +299,26 @@ a computed view + the order DAG (store `<`, covers only relative to a
 named set); (4) prove the second Profile-Lemma engine against
 `wip/frj_sat.lean` row-for-row if the profile engine is to REPLACE Fast
 rather than sit beside it; (5) `enginecmp` — deferred, must revisit.
+
+## QUEUED (2026-08-26, Matthew): certificate-passing for the proof side — after the RCells campaign
+
+Replace fueled kernel re-search with tree-checking, mirroring what the
+refutation side already has (`Reject.certifies` needs no fuel):
+
+1. A concrete derivation-tree datatype for LJF◯ (the rule table already
+   exists — `LSeq.search_sound` rebuilds derivations from search wins).
+2. `partial def emitTree` — the emitter runs COMPILED and is UNTRUSTED:
+   no termination proof, no correctness proof.  It does not have to be
+   proven correct, because nothing rests on it (G4c fix pattern).
+3. `checkDeriv : Tree → LSeq → Bool` — structural, fuel-free — plus the
+   ONE soundness theorem `provable_of_checkDeriv : checkDeriv t s = true
+   → provable s`.  Built once; works in every later campaign.
+4. Campaign theorems become `laxND_of_checkDeriv (by decide)` on a tree
+   literal: `decide` cost linear in tree size, fuel eliminated from the
+   statement entirely, no failing-branch blowup anywhere.
+
+Rationale (Matthew): unnecessary fuel is what hurt G4c search; the
+fueled `decide` gate in the current RCells campaign is fail-closed and
+minimal-fuel-metered, so it is safe — but the tree route removes the
+fuel question permanently for the one-time price of a checker soundness
+proof.
