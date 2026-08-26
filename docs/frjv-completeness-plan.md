@@ -170,3 +170,42 @@ REVISED ROUTE (unconditional target unchanged):
 3'. Lemma B unchanged: `circWit_of_maximal` + `axIC` chosen-valuation +
     `metI_circ_syn` + the self-destruction argument; already closed on
     cone-grounded and Endpoints frames.
+
+## Demand-trace stage (2026-08-26 evening, wip/frjv_demand_trace.lean)
+
+A visit simulator traced the V-routed demand graph on all four residue
+frames.  V-routing = three repair-exploiting deviations from the paper
+visit, each grounded in a kernel witness: (i) ∨-join disjunct
+conditions are `RefAt`, so their row demands are the RefAt-descent
+LEAVES (the G80 ROOT: σ needs only the irregular ν-row, no tagged
+◯-machinery); (ii) `axIC` serves `I(◯Z)` at ANY world whose `Λ*` is
+classically satisfiable with `Z` refuted, not corner-only (the G80 R2
+node); (iii) irregular ⊃-floats land in the FREE tier (fallible joins,
+no pledge).
+
+RESULT: frame 9900 (both cells) and (20,13) trace CLEAN — no pledges,
+corners, or floats.  The RESIDUAL bad path (sepM ×3, (20,12)):
+
+    I(◯⊥)@1 with Λ*₁ = {ρ12, δ}: cl(δ) = false blocks axIC; not a
+    corner; minRef escalates to tagged ⊥@2 — the dead pledge.
+
+The G80 kernel witness serves this exact demand: `R2 = axIC ⊥ []` used
+as a ROW inside `R4 = joinAt {T2, R2}` — legitimate because the join
+needs only pairwise hJ1 (T2's stab {ν} is classically true), not the
+visit's blanket Λ*-coverage.  CONCLUSION: the paper visit's wit
+invariants (`IrrWit.cov`/`MRWit.cov` = Λ*-coverage) are sufficient but
+NOT necessary, and they are what manufactures the unsatisfiable pledge.
+The construction must run on WEAKENED invariants reverse-engineered
+from the witness pattern:
+
+1''. Formulate the V-wit invariants: rows either Λ*-covering OR
+     axIC-shaped (stab = [], th = vacZone), with the join discipline
+     "every sibling stab classically true at the axIC valuation";
+     floats absorbed by `impNotIn` (tag-blind).
+2''. Re-run the visit port on the weakened wits; the pledge machinery
+     (`metR_primeP`/`metR_orP` + `PledgeSupply`) should fall out of the
+     construction entirely — matching the ablation datum that promise
+     joins were never needed on the 32-cell corpus.
+3''. The demand tracer is the screen: any frame/goal whose trace shows
+     a demand the weakened wits cannot serve is a counterexample
+     candidate BEFORE proof work resumes.
