@@ -675,3 +675,13 @@ root = "wip.frjx_run"
 [[lean_exe]]
 name = "frjvrun"
 root = "wip.frjv_run"
+
+[[lean_exe]]
+name = "rcfuel"
+root = "tools.RCFuel"
+supportInterpreter = true
+
+[[lean_exe]]
+name = "rcellsgen"
+root = "tools.RCellsGen"
+supportInterpreter = true
