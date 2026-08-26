@@ -123,7 +123,7 @@ No new rules and no rule changes are proposed: the campaign proves a
 theorem ABOUT `FRJV` as already reviewed.  Any discovered need to touch
 a rule is a STOP: back to Matthew with the failure analysis.
 
-## Route revision — 2026-08-27 statement screen (REFUTATION of route step 1)
+## Route revision — 2026-08-26 statement screen (REFUTATION of route step 1)
 
 The frj-w4 §§8–16 design-doc audit plus two probes settled the route
 BEFORE the proof build, and the original route step 1 is DEAD:
