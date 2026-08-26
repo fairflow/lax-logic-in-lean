@@ -1571,3 +1571,34 @@ model-→-tree transcription: probe sfR/gHat/Clo first, one world per
 join, promise joins where Rm matters, axIC for vacuous cones,
 KeptChain/Υ-enrichment as the two levers when a hypothesis must reach
 the root context.
+
+## §2026-08-26h — STEP 0 CLOSED AS FOUND: ◯-free completeness was already proved
+
+Matthew's instruction "check we didn't already prove completeness for
+FRJ(G)" hit gold before any new proof was scoped: `FRJ/Minimal.lean`
+mechanises Fiorentini–Ferrari THEOREM 6.2(i) —
+
+    completenessData : ◯-free G → K infallible → ¬ K.valid G →
+                       Derivation G          (data: model ⟶ derivation)
+    completeness     : … → Provable G
+    frj_iff_countermodel : the constructive biconditional
+
+pins [propext, Quot.sound] (FRJ/Audit.lean, guarded).  The construction
+IS the campaign's planned recursion: `minMod` recurses over (phase,
+goal) at each world, `MinModStmt` carries the two invariants (`sub`,
+`cov`) the campaign predicted as its sub-lemmas, and the `.circ` match
+arm is the explicitly marked ◯-boundary ("out of scope until the modal
+rules arrive").
+
+NEW: `FRJ/CompleteV0.lean` — `completenessV_circFree`, the one missing
+composition (Theorem 6.2(i) ∘ `provableV_of_provable`): ◯-free
+completeness holds for the REPAIRED calculus too, [propext, Quot.sound].
+
+CONSEQUENCES for the campaign: the method is VALIDATED on the control
+(it not only works — it is already written); the full FRJV completeness
+task is now precisely "extend `minMod` past its `.circ` case", i.e. the
+◯-delta alone: promise joins and join arity.  The infallibility
+hypothesis is the first ◯-lesson: fallible countermodels carry no data
+the calculus can consume (`¬◯⊥` validated by every infallible model),
+so the ◯-extension must both handle ◯-goals in `minMod` AND admit
+fallible worlds in the source models — the two halves of the delta.

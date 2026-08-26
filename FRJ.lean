@@ -23,6 +23,8 @@ import FRJ.Erase
 import FRJ.Profile
 import FRJ.Search.Core
 import FRJ.Search.OpsV
+import FRJ.WitnessKit
+import FRJ.CompleteV0
 import FRJ.WitnessV1918
 import FRJ.WitnessV2018
 import FRJ.WitnessV2013
