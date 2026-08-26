@@ -233,3 +233,19 @@ already the ◯-free fragment's completeness THEOREM by transfer — STEP 0
 is therefore about validating the METHOD's Lean shape against a known
 answer, not about the theorem), the kernel refutation of the supply
 route, and the demand tracer.
+
+## PARKED for this session (Matthew, 2026-08-26 late)
+
+The redevelopment session owns the completeness campaign ("your peer is
+already on completeness so park your attempt for now").  This session's
+completeness work STOPS here; no STEP 0 scoping from this side.  What
+this session leaves in the union branch for the campaign: the native
+scaffolding (`FRJ/SaturateV.lean`), the transfer baseline
+(`FRJ/CompleteV.lean`, incl. the ◯-free fragment's theorem
+`completenessV_via_closure`), the supply-route kernel refutation
+(`not_pledgeFam_of_circ_mem` + `wip/frjv_pledge_refute.lean`), the two
+probes (`wip/frjv_corner_probe.lean`, `wip/frjv_demand_trace.lean`),
+and the G4c decision-procedure study (in-session, 2026-08-26: the
+load-bearing completeness uses classified; the "go round the outside"
+pattern).  Status of the target statement (A): OPEN, campaign live in
+the redevelopment thread.
