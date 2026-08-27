@@ -481,3 +481,17 @@ re-closed supply-free (provableV_residue_guarded).  REMAINING KERNEL
 closures on file: support-restricted Lemma 6.5 (thin the fat cells), or
 calculus round 3 relaxing hJ2 to RefAt (soundness = the refAt_refutes
 vacuity the kept clause already uses).
+
+CALCULUS ROUND 3 DONE (2026-08-27 08:18): barren (J2) relaxed to RefAt
+(divergence V5, docs/refat-plan.md); soundnessV re-proved FIRST PASS via
+the sf-bounded refAt_refutes_sf/clo_forces_sf (all certificate leaves
+are subformulas of the target — the size induction survives); whole
+stack green (8915 jobs), pins hold, TOOLS row updated.  Demo:
+wip/minmodv_round3_demo.lean — the flight-shaped, guard-violating
+(◯w⊃q)⊃◯w in four nodes; M_kept (RefAt-kept) vs M_not_ups_kept (paper
+zone cannot).  BOTH obstructions to guard-free completeness are now
+cleared (measure: seen-mechanism; calculus: round 3); the remaining
+work is the flight-branch corner-join CONSTRUCTION in minModS (thin
+premises; kept-completeness by antecedent-size induction; the
+support-restricted Lemma 6.5).  Screening step first: hunt the
+poison+flight discriminating cell (round-2-FRJV vs round-3-FRJV).
