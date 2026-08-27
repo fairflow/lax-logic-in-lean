@@ -54,18 +54,7 @@ open Form
 
 /-! ## Small subformula lemmas -/
 
-theorem sf_sub_and₁ {A B : Form} : sf A ⊆ sf (.and A B) :=
-  fun _ h => List.mem_cons_of_mem _ (List.mem_append_left _ h)
-theorem sf_sub_and₂ {A B : Form} : sf B ⊆ sf (.and A B) :=
-  fun _ h => List.mem_cons_of_mem _ (List.mem_append_right _ h)
-theorem sf_sub_or₁ {A B : Form} : sf A ⊆ sf (.or A B) :=
-  fun _ h => List.mem_cons_of_mem _ (List.mem_append_left _ h)
-theorem sf_sub_or₂ {A B : Form} : sf B ⊆ sf (.or A B) :=
-  fun _ h => List.mem_cons_of_mem _ (List.mem_append_right _ h)
-theorem sf_sub_imp₂ {A B : Form} : sf B ⊆ sf (.imp A B) :=
-  fun _ h => List.mem_cons_of_mem _ (List.mem_append_right _ h)
-theorem sf_sub_circ {A : Form} : sf A ⊆ sf (.circ A) :=
-  fun _ h => List.mem_cons_of_mem _ h
+-- (the `sf_sub_*` lemmas moved to `FRJ/RefAt.lean` with calculus round 3)
 
 /-- `◯Z` is no subformula of `Z` (sizes). -/
 theorem circ_not_mem_sf_self (Z : Form) : Form.circ Z ∉ sf Z := by
@@ -124,7 +113,7 @@ def regPrimeS_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
         (keptChain_restrict _ th)
         hCp (fun hmem => ?_) hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
-        exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
+        exact .ups ((E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact not_mem_lamStar_of_not_force hnf ((wit i).sub (List.mem_filter.mp hi).1)
     cov := by
@@ -198,8 +187,8 @@ def regOrS_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
          .ups ((E.spec C₂).mpr (List.mem_cons_of_mem _ List.mem_cons_self))⟩
         hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
-        exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-          (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
+        exact .ups ((E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+          (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))))
     cov := by
       intro X hX
       have hXG := lamStar_subset_gHat hX

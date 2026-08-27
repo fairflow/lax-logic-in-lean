@@ -185,7 +185,7 @@ def Rw : FRJVr GR .barren
     wF :=
   .joinAt (fun _ => RA)
     (by decide)
-    (hJ2_of_impAnteB (by decide))
+    (hJ2R_of_impAnteB (by decide))
     (by decide)
     (keptChain_restrict _ th1)
     (by decide) (by decide) (by decide)

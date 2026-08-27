@@ -82,7 +82,7 @@ def Γ2 : List Form := base2 ++ kept2
 def R2 : FRJVr G2018 .barren Γ2 .bot :=
   .joinAt (n := 0) (F := .bot) (stab := fun _ => [])
     (th := fun _ => Θax) (rhs := fun _ => .bot) (kept := kept2)
-    (fun _ => R1) (by decide) (hJ2_of_impAnteB (by decide))
+    (fun _ => R1) (by decide) (hJ2R_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) (by decide) (by decide) (by decide)
     (CtxEq.refl _)
 
@@ -154,7 +154,7 @@ def rownna : IRow G2018 := ⟨[], [r20], nnaF, i_nna⟩
 
 def ROOT := FRJVr.joinOr (G := G2018) (C₁ := r14) (C₂ := r9)
     (ipremF row14 [row11, rowna, rownna]) (by decide)
-    (hJ2_of_impAnteB (by decide))
+    (hJ2R_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) ⟨by decide, by decide⟩ (by decide)
     (CtxEq.refl _)
 

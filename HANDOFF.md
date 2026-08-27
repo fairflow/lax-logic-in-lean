@@ -1793,3 +1793,48 @@ configuration rounds 1–2 needed a hand supply for.
 two candidate closures above; the Υ-enrichment instance
 (§2026-08-26k) shows the thin-premise route works when no fat premise
 is forced.
+
+## §2026-08-27a — CALCULUS ROUND 3: barren (J2) relaxed to RefAt; soundness re-proved size-founded; whole stack green
+
+Matthew's directive ("try the hJ2 relaxation — this reminds me of the
+issues with duplication in G4iLL" — the same disease: a search-friendly
+side condition too strict for completeness).  Executed as the tight
+template loop, one rule change + downstream fixes, all green in one
+session (8915 jobs across LaxLogic/FRJ/wipshared/Certified/Tools/
+Rewrite/RNDB):
+
+- **The rule change** (`FRJ/CalculusV.lean`, divergence V5 in
+  `docs/refat-plan.md`): `joinAt`/`joinOr`/`joinCirc` (J2) becomes
+  `RefAt true Υ base A` in place of `A ∈ Υ`; promise/fallible joins
+  stay paper-strict (V3 discipline).  `toVr` embeds old derivations by
+  `RefAt.ups`.
+- **Soundness, first pass** (`FRJ/SoundV.lean`): the (P2) branch of the
+  size-mutual induction now refutes stable antecedents by
+  `refAt_refutes_sf` — a new `sf`-bounded variant (with
+  `clo_forces_sf`, `FRJ/RefAt.lean`) whose point is that every
+  `ups`-leaf AND every `Clo`-leaf of a certificate is a SUBFORMULA of
+  its target, so the induction stays founded where the naive
+  `refAt_refutes` would demand full-context forcing at arbitrary sizes.
+  `hcone`/`hinf` are frame facts and hoisted above the induction.
+- **Downstream**: `baseAtV/OrV_imp_head`, `StepV` binder types (barren
+  constructors only), `OpsV` barren builders (`.ups`-wrapped — the
+  V-engine now admits strictly MORE barren rows), `WitnessKit` gains
+  `hJ2R_of_impAnteB` + a `frjv_side` arm, witness files patched at
+  barren sites only, both recursions re-wrapped.  Pins all hold
+  (`[propext, Quot.sound]` throughout; soundnessV re-cleared).
+- **The device, live** (`wip/minmodv_round3_demo.lean`):
+  `G3 = (◯w ⊃ q) ⊃ ◯w` — guard-violating, flight-shaped — derived in
+  four nodes; `M_kept` certifies the kept chain adopts `◯w ⊃ q` via
+  `RefAt.circ∘ups`, and `M_not_ups_kept` certifies the PAPER zone
+  cannot (no separation claim: this cell is also axIC-servable; the
+  discriminating cell needs poison + flight together — next screening).
+- TOOLS.md row updated in the same commit (engine behaviour changed).
+
+**What round 3 unblocks**: the flight corner's stable-zone deadlock is
+gone — a stable `(◯Z ⊃ W)` discharges (J2) by `RefAt.circ` over an
+`I(Z)`-premise (t-drop legal).  The remaining build for guard-free
+completeness: the corner-join construction inside `minModS`'s flight
+branch (thin premises + kept-completeness by antecedent-size induction
+with the support-restricted Lemma 6.5).  The measure obstruction and
+the calculus obstruction are now BOTH cleared; what remains is
+construction, not repair.

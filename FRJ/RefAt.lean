@@ -285,7 +285,55 @@ theorem keptOf_ok (Υ base pool : List Form) :
     KeptChain Υ base pool (keptOf Υ base pool) :=
   growChain_ok _ .nil
 
+/-! ## Subformula bounds
+
+Round 3 of the repair (the relaxed barren (J2)) must keep the
+soundness proof's size-mutual induction founded: both the `RefAt`- and
+the `Clo`-leaves of a certificate are SUBFORMULAS of its target, so the
+semantic lemmas below need their side conditions only on `sf` of the
+target — which is what lets the (P2) branch consume them at strictly
+smaller sizes. -/
+
+theorem sf_sub_and₁ {A B : Form} : sf A ⊆ sf (.and A B) :=
+  fun _ h => List.mem_cons_of_mem _ (List.mem_append_left _ h)
+theorem sf_sub_and₂ {A B : Form} : sf B ⊆ sf (.and A B) :=
+  fun _ h => List.mem_cons_of_mem _ (List.mem_append_right _ h)
+theorem sf_sub_or₁ {A B : Form} : sf A ⊆ sf (.or A B) :=
+  fun _ h => List.mem_cons_of_mem _ (List.mem_append_left _ h)
+theorem sf_sub_or₂ {A B : Form} : sf B ⊆ sf (.or A B) :=
+  fun _ h => List.mem_cons_of_mem _ (List.mem_append_right _ h)
+theorem sf_sub_imp₁ {A B : Form} : sf A ⊆ sf (.imp A B) :=
+  fun _ h => List.mem_cons_of_mem _ (List.mem_append_left _ h)
+theorem sf_sub_imp₂ {A B : Form} : sf B ⊆ sf (.imp A B) :=
+  fun _ h => List.mem_cons_of_mem _ (List.mem_append_right _ h)
+theorem sf_sub_circ {A : Form} : sf A ⊆ sf (.circ A) :=
+  fun _ h => List.mem_cons_of_mem _ h
+
 /-! ## The semantic content -/
+
+/-- `clo_forces`, needing the context forced only on the goal's
+subformulas: every `.base` leaf of a `Clo` derivation is a subformula of
+the goal. -/
+theorem clo_forces_sf {K : Kripke} {r : K.W} {Γ : List Form} :
+    ∀ {Y : Form}, Clo Γ Y →
+      (∀ C ∈ Γ, C ∈ sf Y → K.force r C) → K.force r Y := by
+  intro Y h
+  induction h with
+  | base hC => exact fun hctx => hctx _ hC (self_mem_sf _)
+  | and _ _ ih₁ ih₂ =>
+      exact fun hctx =>
+        ⟨ih₁ (fun C hC hs => hctx C hC (sf_sub_and₁ hs)),
+         ih₂ (fun C hC hs => hctx C hC (sf_sub_and₂ hs))⟩
+  | orR _ ih =>
+      exact fun hctx => Or.inr (ih (fun C hC hs => hctx C hC (sf_sub_or₂ hs)))
+  | orL _ ih =>
+      exact fun hctx => Or.inl (ih (fun C hC hs => hctx C hC (sf_sub_or₁ hs)))
+  | imp _ ih =>
+      exact fun hctx b hb _ =>
+        K.force_mono hb (ih (fun C hC hs => hctx C hC (sf_sub_imp₂ hs)))
+  | circ _ ih =>
+      exact fun hctx =>
+        force_circ_of_force (ih (fun C hC hs => hctx C hC (sf_sub_circ hs)))
 
 /-- **`RefAt` members are refuted at the root.**  The four hypotheses are
 the invariants a barren join's soundness case already carries: the root
@@ -315,5 +363,48 @@ theorem refAt_refutes {K : Kripke} {r : K.W} {Υ ctx : List Form}
       · exact ih₂ h
   | andL _ ih => exact fun hf => ih hf.1
   | andR _ ih => exact fun hf => ih hf.2
+
+/-- `refAt_refutes` with both side conditions restricted to the target's
+subformulas — every `ups`-leaf and every `Clo`-leaf of a `RefAt`
+certificate sits inside `sf` of the target.  This is what keeps the
+relaxed barren (J2) size-founded in the soundness induction. -/
+theorem refAt_refutes_sf {K : Kripke} {r : K.W} {Υ ctx : List Form}
+    (hcone : ∀ c, K.Rm r c → c = r)
+    (hinf : ¬ K.Fal r) :
+    ∀ {X : Form}, RefAt true Υ ctx X →
+      (∀ C ∈ Υ, C ∈ sf X → ¬ K.force r C) →
+      (∀ C ∈ ctx, C ∈ sf X → K.force r C) →
+      ¬ K.force r X := by
+  intro X h
+  induction h with
+  | ups hC => exact fun hups _ => hups _ hC (self_mem_sf _)
+  | bot => exact fun _ _ => hinf
+  | imp hA _ ih =>
+      intro hups hctx hf
+      exact ih (fun C hC hs => hups C hC (sf_sub_imp₂ hs))
+        (fun C hC hs => hctx C hC (sf_sub_imp₂ hs))
+        (hf r (K.le_refl r)
+          (clo_forces_sf hA (fun C hC hs => hctx C hC (sf_sub_imp₁ hs))))
+  | circ _ _ ih =>
+      intro hups hctx hf
+      obtain ⟨c, hrc, hc⟩ := hf r (K.le_refl r)
+      exact ih (fun C hC hs => hups C hC (sf_sub_circ hs))
+        (fun C hC hs => hctx C hC (sf_sub_circ hs))
+        ((hcone c hrc) ▸ hc)
+  | or _ _ ih₁ ih₂ =>
+      intro hups hctx hf
+      rcases hf with h | h
+      · exact ih₁ (fun C hC hs => hups C hC (sf_sub_or₁ hs))
+          (fun C hC hs => hctx C hC (sf_sub_or₁ hs)) h
+      · exact ih₂ (fun C hC hs => hups C hC (sf_sub_or₂ hs))
+          (fun C hC hs => hctx C hC (sf_sub_or₂ hs)) h
+  | andL _ ih =>
+      exact fun hups hctx hf => ih
+        (fun C hC hs => hups C hC (sf_sub_and₁ hs))
+        (fun C hC hs => hctx C hC (sf_sub_and₁ hs)) hf.1
+  | andR _ ih =>
+      exact fun hups hctx hf => ih
+        (fun C hC hs => hups C hC (sf_sub_and₂ hs))
+        (fun C hC hs => hctx C hC (sf_sub_and₂ hs)) hf.2
 
 end FRJ

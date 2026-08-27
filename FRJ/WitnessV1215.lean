@@ -120,7 +120,7 @@ def Γν : List Form := baseν ++ keptν
 def Rν : FRJVr G1215 .barren Γν .bot :=
   .joinAt (n := 0) (F := .bot) (stab := fun _ => [])
     (th := fun _ => Θax) (rhs := fun _ => .bot) (kept := keptν)
-    (fun _ => R1) (by decide) (hJ2_of_impAnteB (by decide))
+    (fun _ => R1) (by decide) (hJ2R_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) (by decide) (by decide) (by decide)
     (CtxEq.refl _)
 
@@ -158,7 +158,7 @@ def i4 : FRJVi G1215 [] [ρ12] q8 :=
 
 def W1 := FRJVr.joinAt (G := G1215) (n := 0) (F := .bot)
     (stab := fun _ => []) (th := fun _ => [ρ12, δ, σ]) (rhs := fun _ => ν)
-    (fun _ => i1) (by decide) (hJ2_of_impAnteB (by decide))
+    (fun _ => i1) (by decide) (hJ2R_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) (by decide) (by decide) (by decide)
     (CtxEq.refl _)
 
@@ -172,7 +172,7 @@ def row4 : IRow G1215 := ⟨[], [ρ12], q8, i4⟩
 def row3 : IRow G1215 := ⟨[], [ρ12], ι, i3⟩
 
 def ROOT := FRJVr.joinOr (G := G1215) (C₁ := q8) (C₂ := σ)
-    (ipremF row1 [row4, row3]) (by decide) (hJ2_of_impAnteB (by decide))
+    (ipremF row1 [row4, row3]) (by decide) (hJ2R_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) ⟨by decide, by decide⟩ (by decide)
     (CtxEq.refl _)
 

@@ -99,6 +99,7 @@ ABOUT the paper calculus and must survive verbatim.  So:
 | V2 | hC/hZ via `RefAt` instead of `∈ Υ` (barren joins) | CalculusV | ours; #80 needs the ◯-clause |
 | V3 | promise/fallible joins UNCHANGED (no ◯-clause is sound there; the rest not needed) | CalculusV | scope control |
 | V4 | everything already diverging in `FRJ/Calculus.lean` (⋈^◯, ⋈^◯p, Ax^I◯, tags) carries over verbatim | CalculusV | inherited |
+| V5 | **round 3 (2026-08-27)**: (J2) on the three BARREN joins relaxed from `A ∈ Υ` to `RefAt true Υ base A` (promise/fallible joins stay strict, as V3) | CalculusV | ours; the flight corner of the completeness recursion — a stable `(◯Z ⊃ W)` must be retainable without an `I(◯Z)`-premise. Soundness obligation = the same `refAt_refutes` vacuity as V1's kept clause, re-proved size-founded via `refAt_refutes_sf`/`clo_forces_sf` (both `RefAt`- and `Clo`-leaves are subformulas of the target). Old derivations embed by `RefAt.ups`. Live demo: `wip/minmodv_round3_demo.lean` (`M_kept` vs `M_not_ups_kept`). |
 
 ## Screening record (counterexample-first)
 

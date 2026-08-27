@@ -249,7 +249,7 @@ def mkJoinBarrenV (G : Form) (a : VIS G) (rest : List (VIS G)) : List (VRS G) :=
                   keptOf (upsilon (rhsFV a rest))
                     (joinCtxAtVBase (stabFV a rest) (thFV a rest) F)
                     (thPool (thFV a rest)), F,
-                .joinAt (premFV a rest) h1 (hJ2_of_checkV h2) hcirc
+                .joinAt (premFV a rest) h1 (fun A B h => .ups (hJ2_of_checkV h2 A B h)) hcirc
                   (keptOf_ok _ _ _) hF hFnot hg (CtxEq.refl _)⟩
             else none
           else none
@@ -274,7 +274,7 @@ def mkJoinBarrenV (G : Form) (a : VIS G) (rest : List (VIS G)) : List (VRS G) :=
                     keptOf (upsilon (rhsFV a rest))
                       (joinCtxOrVBase (stabFV a rest) (thFV a rest))
                       (thPool (thFV a rest)), .or C₁ C₂,
-                  .joinOr (premFV a rest) h1 (hJ2_of_checkV h2) hcirc
+                  .joinOr (premFV a rest) h1 (fun A B h => .ups (hJ2_of_checkV h2 A B h)) hcirc
                     (keptOf_ok _ _ _) hC hg (CtxEq.refl _)⟩
               else none
           | .circ Z, hg =>
@@ -288,7 +288,7 @@ def mkJoinBarrenV (G : Form) (a : VIS G) (rest : List (VIS G)) : List (VRS G) :=
                     keptOf (upsilon (rhsFV a rest))
                       (joinCtxOrVBase (stabFV a rest) (thFV a rest))
                       (thPool (thFV a rest)), .circ Z,
-                  .joinCirc (premFV a rest) h1 (hJ2_of_checkV h2) hcirc
+                  .joinCirc (premFV a rest) h1 (fun A B h => .ups (hJ2_of_checkV h2 A B h)) hcirc
                     (keptOf_ok _ _ _) hZ hg (CtxEq.refl _)⟩
               else none
           | _, _ => none
