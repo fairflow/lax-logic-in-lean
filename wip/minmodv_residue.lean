@@ -32,6 +32,7 @@ cells (the seen-mechanism of frj-w4 §11); no calculus gap and no new
 supply is indicated, and the V-kept chains were NOT needed here.
 -/
 import wip.minmodv
+import wip.minmodv_seen
 import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
@@ -225,6 +226,22 @@ round 2's frame-condition discharge cannot reach, closed by the
 theorem provableV_residue : ProvableV GR :=
   completenessV_of_supply KR hloc_R KR_infallible supplyR
     (by change ¬ KR.force KR.root GR; decide)
+
+/-! ## Round 3: the same instance, supply-free by the goal guard
+
+`GR`'s left-implication antecedents (`A`, `p`) are `◯`-free, so the
+seen-parametrised recursion serves it with NO supply — on this frame,
+which is exactly the non-cone-grounded one round 2 could not reach. -/
+
+theorem provableV_residue_guarded : ProvableV GR :=
+  completenessV_of_circAnteFree KR
+    (guard_of_guardB (by decide))
+    hloc_R KR_infallible
+    (by change ¬ KR.force KR.root GR; decide)
+
+/-- info: 'FRJ.MinModVResidue.provableV_residue_guarded' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableV_residue_guarded
 
 /-- info: 'FRJ.MinModVResidue.route3_blocked' depends on axioms: [propext] -/
 #guard_msgs in

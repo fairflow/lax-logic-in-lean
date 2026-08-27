@@ -1737,3 +1737,59 @@ second addendum): no calculus gap, no new supply, and the kept chains
 stay in reserve.  Next concrete step: the seen-parametrised `minModV`
 (measure `(ht, |sfR| − |seen|, t, |C|)`), whose corner branch builds the
 join in place of consuming `CircSupplyV`.
+
+## §2026-08-26l — the ◯-delta ROUND 3: the seen-mechanism BUILT; supply-free completeness for guarded goals on ALL frames
+
+Matthew asked for the next step "not hopeful"; the design pass first
+located exactly where the hope should have failed, then walled it off:
+
+**The flight analysis** (recorded in the header of
+`wip/minmodv_seen.lean`): the corner push `I(◯Z)@a → R(Z)@a` is fine on
+the seen-measure, but inside the `Z`-row the demand `I(◯Z)` can
+RE-arise — only through `upsPrime`, i.e. whenever `(◯Z ⊃ W) ∈ Λ*_a`.
+At that flight corner the current calculus has no new route (the kept
+chain covers the SECOND zone via `RefAt.circ` from an `I(Z)`-premise,
+but a Υ-member with an `a`-forced antecedent forces a fat `⊃∈ⁱ` premise
+whose STABILISED zone re-demands antecedents in Υ literally — strict
+hJ2).  Candidate closures, not needed this round: support-restricted
+Lemma 6.5, or calculus round 3 relaxing hJ2 to `RefAt` (its soundness
+obligation is the same `refAt_refutes` vacuity the kept clause uses).
+
+**The build** (`wip/minmodv_seen.lean`, first-pass modulo one
+choice-taint fix — `List.mem_dedup` carries `Classical.choice`, so the
+budget runs over `sfR G` un-dedup'd; the subperm bound needs only the
+seen-list Nodup):
+
+- `minModS` — `minModV` with `seen` threaded on the measure
+  `(ht a, |sfR G| − |seen|, t, |C|)`: corner pushes drop the budget,
+  floats reset `seen` under a height drop; the join helpers re-typed
+  with `upsPrime`-membership `ih`s (`regPrimeS_join`, `regOrS_join`) so
+  the caller can establish the invariant
+  `hCseen : ∀ Y, ◯Y ∈ seen → ◯Y ∉ sf C`.
+- The FLIGHT branch is closed by `hCseen` + `self_mem_sf` — a
+  contradiction, not a supply — because the guard
+
+      hguard : ∀ A B, (A ⊃ B) ∈ Sf^L(G) → ∀ X ∈ sf A, ¬ X.isCirc
+
+  (decidable: `guardB`/`guard_of_guardB`) makes `upsPrime`-goals
+  hereditarily ◯-free, so no in-flight `◯` can be re-demanded.
+
+**The theorem** (pins `[propext, Quot.sound]`, guarded):
+
+    completenessV_of_circAnteFree :
+      hguard → hloc → K.Infallible → ¬ K.valid G → ProvableV G
+
+— NO supply and NO frame condition: the first goal-conditioned FRJV
+completeness.  Frame-conditioned (rounds 1–2) and goal-conditioned
+(this) now cover complementary regimes; neither supersedes the other.
+
+**Instance closed supply-free**: `provableV_residue_guarded`
+(`wip/minmodv_residue.lean`) re-derives the residue cell through the
+guarded recursion on its cone-trivial non-maximal frame — the exact
+configuration rounds 1–2 needed a hand supply for.
+
+**The remaining kernel, sharpened**: unguarded goals whose `Λ*` carries
+`(◯Z ⊃ W)` AND whose corner Υ needs a fat premise stabilising it.  The
+two candidate closures above; the Υ-enrichment instance
+(§2026-08-26k) shows the thin-premise route works when no fat premise
+is forced.
