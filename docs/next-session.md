@@ -467,3 +467,17 @@ needed); `provableV_residue` runs minModV end-to-end on the instance.
 NEXT CONCRETE STEP for the unconditional discharge: the
 seen-parametrised minModV — measure (ht, |sfR|−|seen|, t, |C|), corner
 branch BUILDS the Υ-enriched join instead of consuming CircSupplyV.
+
+ROUND 3 DONE (2026-08-27 07:38, wip/minmodv_seen.lean): the
+seen-mechanism is BUILT (minModS, measure (ht, |sfR|−|seen|, t, |C|);
+push drops budget, floats reset).  The flight analysis pinned the true
+kernel: I(◯Z) re-arises inside its own row ONLY through upsPrime; under
+the decidable guard "left-implication antecedents hereditarily ◯-free"
+(guardB) the flight branch is unreachable and
+`completenessV_of_circAnteFree` gives SUPPLY-FREE, FRAME-UNCONDITIONAL
+FRJV completeness (pins [propext, Quot.sound]).  The residue cell is
+re-closed supply-free (provableV_residue_guarded).  REMAINING KERNEL
+(sharp): unguarded goals where a fat ⊃∈ⁱ premise stabilises (◯Z⊃W) —
+closures on file: support-restricted Lemma 6.5 (thin the fat cells), or
+calculus round 3 relaxing hJ2 to RefAt (soundness = the refAt_refutes
+vacuity the kept clause already uses).
