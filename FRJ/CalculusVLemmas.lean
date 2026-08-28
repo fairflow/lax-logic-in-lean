@@ -45,16 +45,16 @@ theorem baseOrV_imp {A B : Form}
 among the premises' right formulas. -/
 theorem baseAtV_imp_head
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxAtVBase stab th F) A)
+      A ∈ upsilon rhs)
     {A B : Form} (h : Form.imp A B ∈ joinCtxAtVBase stab th F) :
-    RefAt true (upsilon rhs) (joinCtxAtVBase stab th F) A :=
+    A ∈ upsilon rhs :=
   hJ2 A B (baseAtV_imp h)
 
 theorem baseOrV_imp_head
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A)
+      A ∈ upsilon rhs)
     {A B : Form} (h : Form.imp A B ∈ joinCtxOrVBase stab th) :
-    RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A :=
+    A ∈ upsilon rhs :=
   hJ2 A B (baseOrV_imp h)
 
 /-- No `◯`-formula inhabits the `⋈^At` base. -/

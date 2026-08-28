@@ -74,10 +74,6 @@ theorem hJ2_of_impAnteB {Υ l : List Form} (h : impAnteB Υ l = true) :
     ∀ A B : Form, Form.imp A B ∈ l → A ∈ Υ := fun _ _ hm =>
   of_decide_eq_true (List.all_eq_true.mp h _ hm)
 
-theorem hJ2R_of_impAnteB {Υ base l : List Form} (h : impAnteB Υ l = true) :
-    ∀ A B : Form, Form.imp A B ∈ l → RefAt true Υ base A := fun _ _ hm =>
-  .ups (of_decide_eq_true (List.all_eq_true.mp h _ hm))
-
 /-- A derived irregular row, packaged so a mixed premise family can be
 indexed by `Fin (n+1)` definitionally (the engine's `stabF` pattern). -/
 structure IRow (G : Form) where
@@ -153,7 +149,7 @@ def rowT2 : IRow G80 := ⟨[ν], FRJ.sdiff Θax [ν], δ, T2⟩
 def rowR2 : IRow G80 := ⟨[], vacZoneA G80 [], .circ .bot, R2⟩
 
 def R4 := FRJVr.joinAt (G := G80) (F := .bot)
-    (ipremF rowT2 [rowR2]) (by decide) (hJ2R_of_impAnteB (by decide))
+    (ipremF rowT2 [rowR2]) (by decide) (hJ2_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) (by decide) (by decide) (by decide)
     (CtxEq.refl _)
 
@@ -162,7 +158,7 @@ def i2 : FRJVi G80 [] [ρ12, σ] δ :=
 
 def W1 := FRJVr.joinAt (G := G80) (n := 0) (F := .bot)
     (stab := fun _ => []) (th := fun _ => [ρ12, δ, σ]) (rhs := fun _ => ν)
-    (fun _ => i1) (by decide) (hJ2R_of_impAnteB (by decide))
+    (fun _ => i1) (by decide) (hJ2_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) (by decide) (by decide) (by decide)
     (CtxEq.refl _)
 
@@ -176,7 +172,7 @@ def row2 : IRow G80 := ⟨[], [ρ12, σ], δ, i2⟩
 def row3 : IRow G80 := ⟨[], [ρ12], ι, i3⟩
 
 def ROOT := FRJVr.joinOr (G := G80) (C₁ := σ) (C₂ := δ)
-    (ipremF row1 [row2, row3]) (by decide) (hJ2R_of_impAnteB (by decide))
+    (ipremF row1 [row2, row3]) (by decide) (hJ2_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) ⟨by decide, by decide⟩ (by decide)
     (CtxEq.refl _)
 
@@ -224,7 +220,7 @@ def rowT2 : IRow G81 := ⟨[ν], FRJ.sdiff Θax [ν], δ, T2⟩
 def rowR2 : IRow G81 := ⟨[], vacZoneA G81 [], .circ .bot, R2⟩
 
 def R4 := FRJVr.joinAt (G := G81) (F := .bot)
-    (ipremF rowT2 [rowR2]) (by decide) (hJ2R_of_impAnteB (by decide))
+    (ipremF rowT2 [rowR2]) (by decide) (hJ2_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) (by decide) (by decide) (by decide)
     (CtxEq.refl _)
 
@@ -233,7 +229,7 @@ def i2 : FRJVi G81 [] [ρ13] δ :=
 
 def W1 := FRJVr.joinAt (G := G81) (n := 0) (F := .bot)
     (stab := fun _ => []) (th := fun _ => [ρ13, δ]) (rhs := fun _ => ν)
-    (fun _ => i1) (by decide) (hJ2R_of_impAnteB (by decide))
+    (fun _ => i1) (by decide) (hJ2_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) (by decide) (by decide) (by decide)
     (CtxEq.refl _)
 
@@ -247,7 +243,7 @@ def row2 : IRow G81 := ⟨[], [ρ13], δ, i2⟩
 def row3 : IRow G81 := ⟨[], [ρ13], ι, i3⟩
 
 def ROOT := FRJVr.joinOr (G := G81) (C₁ := ν) (C₂ := δ)
-    (ipremF row1 [row2, row3]) (by decide) (hJ2R_of_impAnteB (by decide))
+    (ipremF row1 [row2, row3]) (by decide) (hJ2_of_impAnteB (by decide))
     (by decide) (keptOf_ok _ _ _) ⟨by decide, by decide⟩ (by decide)
     (CtxEq.refl _)
 

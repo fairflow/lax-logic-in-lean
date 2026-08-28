@@ -40,7 +40,7 @@ theorem joinAt_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     (prem : ∀ j, FRJVi G (stab j) (th j) (rhs j))
     (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxAtVBase stab th F) A)
+      A ∈ upsilon rhs)
     (hcirc : unionAll (fun j => circPart (stab j)) = [])
     (hkc : KeptChain (upsilon rhs) (joinCtxAtVBase stab th F)
       (thPool th) kept)
@@ -74,13 +74,6 @@ theorem joinAt_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
       (ihI0 ji.1 ji.2 x A hA)
   -- (P2) and (P3) over the BASE context, by the secondary induction on
   -- `size H`
-  have hcone0 : ∀ c, (modR d).Rm none c → c = none := by
-    intro c hc
-    have hc' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxAtVBase stab th F ++ kept)
-        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-        (fun _ => false)).rm none c := hc
-    exact PreModel.join_rm_root_barren (fun _ => rfl) hc'
   have key : ∀ (k : Nat) (H : Form), H.size ≤ k →
       (H ∈ impPart (joinCtxAtVBase stab th F) →
         (modR d).force none H) ∧
@@ -97,26 +90,11 @@ theorem joinAt_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
           obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
           match H, hHsh with
           | .imp A B, _ =>
-              have hAr := baseAtV_imp_head hJ2 hHmem
+              have hAu : A ∈ upsilon rhs := baseAtV_imp_head hJ2 hHmem
+              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
               have hsz : A.size ≤ k := by
                 simp only [Form.size] at hH; omega
-              have hnA : ¬ (modR d).force none A := by
-                refine refAt_refutes_sf hcone0 (fun h => h) hAr
-                  (fun C hCu hCs => ?_) (fun C hCb hCs => ?_)
-                · obtain ⟨j, -, hj⟩ := List.mem_map.mp hCu
-                  exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).2 j hj
-                · have hCG : C ∈ gHat G :=
-                    wfR d ((hΓ C).mpr (List.mem_append_left _ hCb))
-                  simp only [gHat, List.mem_append] at hCG
-                  rcases hCG with (h' | h') | h'
-                  · have hpv : C.isPV := (List.mem_filter.mp h').2
-                    match C, hpv with
-                    | .atom p, _ => exact Or.inl (List.mem_append_left _ hCb)
-                  · exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).1
-                      (List.mem_filter.mpr ⟨hCb, (List.mem_filter.mp h').2⟩)
-                  · have hcx : C.isCirc := (List.mem_filter.mp h').2
-                    match C, hcx with
-                    | .circ Y, _ => exact absurd hCb circ_not_mem_baseAtV
+              have hnA := (ih A hsz).2 j hj
               intro v hv hAv
               cases v with
               | none => exact absurd hAv hnA
@@ -255,7 +233,7 @@ theorem joinOr_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     (prem : ∀ j, FRJVi G (stab j) (th j) (rhs j))
     (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A)
+      A ∈ upsilon rhs)
     (hcirc : unionAll (fun j => circPart (stab j)) = [])
     (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
       (thPool th) kept)
@@ -286,13 +264,6 @@ theorem joinOr_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     intro ji x A hA
     exact (join_force_comp hPJ (preI_closed (prem ji.1) ji.2) A x).mpr
       (ihI0 ji.1 ji.2 x A hA)
-  have hcone0 : ∀ c, (modR d).Rm none c → c = none := by
-    intro c hc
-    have hc' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxOrVBase stab th ++ kept)
-        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-        (fun _ => false)).rm none c := hc
-    exact PreModel.join_rm_root_barren (fun _ => rfl) hc'
   have key : ∀ (k : Nat) (H : Form), H.size ≤ k →
       (H ∈ impPart (joinCtxOrVBase stab th) →
         (modR d).force none H) ∧
@@ -308,25 +279,10 @@ theorem joinOr_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
           obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
           match H, hHsh with
           | .imp A B, _ =>
-              have hAr := baseOrV_imp_head hJ2 hHmem
+              have hAu : A ∈ upsilon rhs := baseOrV_imp_head hJ2 hHmem
+              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
               have hsz : A.size ≤ k := by simp only [Form.size] at hH; omega
-              have hnA : ¬ (modR d).force none A := by
-                refine refAt_refutes_sf hcone0 (fun h => h) hAr
-                  (fun C hCu hCs => ?_) (fun C hCb hCs => ?_)
-                · obtain ⟨j, -, hj⟩ := List.mem_map.mp hCu
-                  exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).2 j hj
-                · have hCG : C ∈ gHat G :=
-                    wfR d ((hΓ C).mpr (List.mem_append_left _ hCb))
-                  simp only [gHat, List.mem_append] at hCG
-                  rcases hCG with (h' | h') | h'
-                  · have hpv : C.isPV := (List.mem_filter.mp h').2
-                    match C, hpv with
-                    | .atom p, _ => exact Or.inl (List.mem_append_left _ hCb)
-                  · exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).1
-                      (List.mem_filter.mpr ⟨hCb, (List.mem_filter.mp h').2⟩)
-                  · have hcx : C.isCirc := (List.mem_filter.mp h').2
-                    match C, hcx with
-                    | .circ Y, _ => exact absurd hCb circ_not_mem_baseOrV
+              have hnA := (ih A hsz).2 j hj
               intro v hv hAv
               cases v with
               | none => exact absurd hAv hnA
@@ -455,7 +411,7 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     (prem : ∀ j, FRJVi G (stab j) (th j) (rhs j))
     (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A)
+      A ∈ upsilon rhs)
     (hcirc : unionAll (fun j => circPart (stab j)) = [])
     (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
       (thPool th) kept)
@@ -485,13 +441,6 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     intro ji x A hA
     exact (join_force_comp hPJ (preI_closed (prem ji.1) ji.2) A x).mpr
       (ihI0 ji.1 ji.2 x A hA)
-  have hcone0 : ∀ c, (modR d).Rm none c → c = none := by
-    intro c hc
-    have hc' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxOrVBase stab th ++ kept)
-        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-        (fun _ => false)).rm none c := hc
-    exact PreModel.join_rm_root_barren (fun _ => rfl) hc'
   have key : ∀ (k : Nat) (H : Form), H.size ≤ k →
       (H ∈ impPart (joinCtxOrVBase stab th) →
         (modR d).force none H) ∧
@@ -507,25 +456,10 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
           obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
           match H, hHsh with
           | .imp A B, _ =>
-              have hAr := baseOrV_imp_head hJ2 hHmem
+              have hAu : A ∈ upsilon rhs := baseOrV_imp_head hJ2 hHmem
+              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
               have hsz : A.size ≤ k := by simp only [Form.size] at hH; omega
-              have hnA : ¬ (modR d).force none A := by
-                refine refAt_refutes_sf hcone0 (fun h => h) hAr
-                  (fun C hCu hCs => ?_) (fun C hCb hCs => ?_)
-                · obtain ⟨j, -, hj⟩ := List.mem_map.mp hCu
-                  exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).2 j hj
-                · have hCG : C ∈ gHat G :=
-                    wfR d ((hΓ C).mpr (List.mem_append_left _ hCb))
-                  simp only [gHat, List.mem_append] at hCG
-                  rcases hCG with (h' | h') | h'
-                  · have hpv : C.isPV := (List.mem_filter.mp h').2
-                    match C, hpv with
-                    | .atom p, _ => exact Or.inl (List.mem_append_left _ hCb)
-                  · exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).1
-                      (List.mem_filter.mpr ⟨hCb, (List.mem_filter.mp h').2⟩)
-                  · have hcx : C.isCirc := (List.mem_filter.mp h').2
-                    match C, hcx with
-                    | .circ Y, _ => exact absurd hCb circ_not_mem_baseOrV
+              have hnA := (ih A hsz).2 j hj
               intro v hv hAv
               cases v with
               | none => exact absurd hAv hnA

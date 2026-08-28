@@ -44,13 +44,6 @@ theorem hJ2_of_impAnteB {Υ l : List Form} (h : impAnteB Υ l = true) :
     ∀ A B : Form, Form.imp A B ∈ l → A ∈ Υ := fun _ _ hm =>
   of_decide_eq_true (List.all_eq_true.mp h _ hm)
 
-/-- The relaxed-(J2) form for the BARREN V-joins (calculus round 3): the
-same decidable antecedent check, lifted through `RefAt.ups` — the base
-context is free. -/
-theorem hJ2R_of_impAnteB {Υ base l : List Form} (h : impAnteB Υ l = true) :
-    ∀ A B : Form, Form.imp A B ∈ l → RefAt true Υ base A := fun _ _ hm =>
-  .ups (of_decide_eq_true (List.all_eq_true.mp h _ hm))
-
 /-- The promise joins' (J5) is vacuous when the joint stable modal zone
 is empty. -/
 theorem hJ5_of_nil {n k : Nat} {stab : Fin (n + 1) → List Form}
@@ -93,7 +86,6 @@ macro "frjv_side" : tactic =>
     | exact FRJ.cap_sdiff_eq_nil
     | exact FRJ.zoneSplit (by decide)
     | exact FRJ.hJ2_of_impAnteB (by decide)
-    | exact FRJ.hJ2R_of_impAnteB (by decide)
     | exact FRJ.hJ5_of_nil (by decide)
     | exact FRJ.cloB_iff.mp (by decide)
     | decide)

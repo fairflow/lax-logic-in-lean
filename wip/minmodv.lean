@@ -155,7 +155,7 @@ def regPrimeV_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
         (keptChain_restrict _ th)
         hCp (fun hmem => ?_) hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
-        exact .ups ((E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
+        exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact not_mem_lamStar_of_not_force hnf ((wit i).sub (List.mem_filter.mp hi).1)
     cov := by
@@ -257,8 +257,8 @@ def regOrV_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
          .ups ((E.spec C₂).mpr (List.mem_cons_of_mem _ List.mem_cons_self))⟩
         hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
-        exact .ups ((E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-          (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))))
+        exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+          (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
     cov := by
       intro X hX
       have hXG := lamStar_subset_gHat hX

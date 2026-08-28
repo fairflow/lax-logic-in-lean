@@ -105,7 +105,7 @@ inductive FRJVr (G : Form) : Tag → List Form → Form → Type
       (prem : ∀ j, FRJVi G (stab j) (th j) (rhs j))
       (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
       (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        RefAt true (upsilon rhs) (joinCtxAtVBase stab th F) A)
+        A ∈ upsilon rhs)
       (hcirc : unionAll (fun j => circPart (stab j)) = [])
       (hkc : KeptChain (upsilon rhs) (joinCtxAtVBase stab th F)
         (thPool th) kept)
@@ -147,7 +147,7 @@ inductive FRJVr (G : Form) : Tag → List Form → Form → Type
       (prem : ∀ j, FRJVi G (stab j) (th j) (rhs j))
       (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
       (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A)
+        A ∈ upsilon rhs)
       (hcirc : unionAll (fun j => circPart (stab j)) = [])
       (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
         (thPool th) kept)
@@ -190,7 +190,7 @@ inductive FRJVr (G : Form) : Tag → List Form → Form → Type
       (prem : ∀ j, FRJVi G (stab j) (th j) (rhs j))
       (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
       (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A)
+        A ∈ upsilon rhs)
       (hcirc : unionAll (fun j => circPart (stab j)) = [])
       (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
         (thPool th) kept)
@@ -347,8 +347,7 @@ def toVr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
   | _, _, _, .impIn d hA hg => .impIn (toVr d) hA hg
   | _, _, _, .circIn d htag hg => .circIn (toVr d) htag hg
   | _, _, _, .joinAt prem hJ1 hJ2 hcirc hF hFnot hg hΓ =>
-      .joinAt (fun j => toVi (prem j)) hJ1
-        (fun A B h => .ups (hJ2 A B h)) hcirc
+      .joinAt (fun j => toVi (prem j)) hJ1 hJ2 hcirc
         (restrict_keptChain _) hF hFnot hg
         (hΓ.trans joinCtxAt_eq_base)
   | _, _, _, .joinAtP prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ =>
@@ -357,8 +356,7 @@ def toVr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
   | _, _, _, .joinAtF prem hJ1 hJ2 hF hFnot hg hΓ =>
       .joinAtF (fun j => toVi (prem j)) hJ1 hJ2 hF hFnot hg hΓ
   | _, _, _, .joinOr prem hJ1 hJ2 hcirc hC hg hΓ =>
-      .joinOr (fun j => toVi (prem j)) hJ1
-        (fun A B h => .ups (hJ2 A B h)) hcirc
+      .joinOr (fun j => toVi (prem j)) hJ1 hJ2 hcirc
         (restrict_keptChain _)
         ⟨.ups hC.1, .ups hC.2⟩ hg
         (hΓ.trans joinCtxOr_eq_base)
@@ -368,8 +366,7 @@ def toVr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
   | _, _, _, .joinOrF prem hJ1 hJ2 hC hg hΓ =>
       .joinOrF (fun j => toVi (prem j)) hJ1 hJ2 hC hg hΓ
   | _, _, _, .joinCirc prem hJ1 hJ2 hcirc hZ hg hΓ =>
-      .joinCirc (fun j => toVi (prem j)) hJ1
-        (fun A B h => .ups (hJ2 A B h)) hcirc
+      .joinCirc (fun j => toVi (prem j)) hJ1 hJ2 hcirc
         (restrict_keptChain _) (.ups hZ) hg
         (hΓ.trans joinCtxOr_eq_base)
   | _, _, _, .joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ =>

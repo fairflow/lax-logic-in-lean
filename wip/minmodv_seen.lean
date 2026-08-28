@@ -54,7 +54,7 @@ open Form
 
 /-! ## Small subformula lemmas -/
 
--- (the `sf_sub_*` lemmas moved to `FRJ/RefAt.lean` with calculus round 3)
+-- (the `sf_sub_*` lemmas live in `FRJ/RefAt.lean` since 2026-08-27)
 
 /-- `◯Z` is no subformula of `Z` (sizes). -/
 theorem circ_not_mem_sf_self (Z : Form) : Form.circ Z ∉ sf Z := by
@@ -113,7 +113,7 @@ def regPrimeS_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
         (keptChain_restrict _ th)
         hCp (fun hmem => ?_) hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
-        exact .ups ((E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
+        exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact not_mem_lamStar_of_not_force hnf ((wit i).sub (List.mem_filter.mp hi).1)
     cov := by
@@ -187,8 +187,8 @@ def regOrS_join (K : Kripke) (G : Form) (a : K.W) (C₁ C₂ : Form)
          .ups ((E.spec C₂).mpr (List.mem_cons_of_mem _ List.mem_cons_self))⟩
         hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
-        exact .ups ((E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
-          (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))))
+        exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
+          (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))))
     cov := by
       intro X hX
       have hXG := lamStar_subset_gHat hX

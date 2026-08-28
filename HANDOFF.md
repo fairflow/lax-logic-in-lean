@@ -1838,3 +1838,47 @@ branch (thin premises + kept-completeness by antecedent-size induction
 with the support-restricted Lemma 6.5).  The measure obstruction and
 the calculus obstruction are now BOTH cleared; what remains is
 construction, not repair.
+
+## §2026-08-27b — ROUND 3 REVERTED under the conservativity screening: unwitnessed, and the kept chain suffices
+
+Matthew flagged the calculus change ("that would be a flag") and chose
+option (B): prove round 3 conservative over round 2, and on success
+revert.  The screening's operational form was the tight loop in
+reverse — revert the rule and rebuild everything; a breakage would BE
+the separating witness.  Outcome:
+
+- **The vacuity finding** (the decisive fact, a correction to
+  §2026-08-27a): the round-3 "device live" demo never exercised the
+  relaxed rule — its join has an EMPTY stable implication zone, so its
+  (J2) was vacuous; the retention that served the flight-shaped cell is
+  the V1 KEPT CHAIN, which already carries full `RefAt` power in round
+  2.  Round 3 had no witnessed instance of necessity.
+- **Design dry-runs** (recorded here as the screening's second leg):
+  every attempted blocking configuration self-destructs into a kept
+  reroute — (i) a stable `(◯Z⊃W)` with in-flight `◯Z` is keptable via
+  `RefAt.circ` over an `I(Z)`-premise; (ii) the demotion-blocking shape
+  (`X = ◯w⊃v` Clo-load-bearing inside a forced conjunction) reroutes by
+  keeping `X` FIRST (context-free `RefAt.circ∘ups`) and the dependent
+  member second — the stratification handles it; (iii) the kept-pool
+  intersection over thin premises survives because `⊃∉`-premises may
+  take `Θ ∋` any `Λ*`-forced member (Lemma 6.5 at the float anchor).
+  Conjecture (OPEN, recorded not asserted): full conservativity
+  `ProvableV₃ → ProvableV₂`; corpus-level conservativity is now
+  VERIFIED — the whole stack (8906 jobs) rebuilds green on strict (J2),
+  including the flight demo BY THE SAME TREE
+  (`wip/minmodv_round3_demo.lean`, reheadered as the vacuity witness).
+- **Kept from round 3** (calculus-independent): `sf_sub_*`,
+  `clo_forces_sf`, `refAt_refutes_sf` in `FRJ/RefAt.lean` — the
+  sf-bounded semantic lemmas, useful machinery regardless.
+- **Licence discipline going forward** (V5, `docs/refat-plan.md`): a
+  barren-(J2) relaxation re-enters only with a kernel-checked
+  separating cell.  Rounds V1/V2 keep their #80/#81 licence.
+
+**The construction path this clarifies**: the flight branch of
+`minModS` should be closed IN THE ROUND-2 CALCULUS by thin premise
+families (empty stable zones → (J2) vacuous) + the stratified kept
+chain; the enabling brick is `keptOf_saturated` (the greedy chain is a
+fixpoint: anything `RefAt`-addable over base++kept is already kept) and
+the corner coverage induction (forced → `Clo(base++kept)`; refuted →
+`RefAt`), which closes on plain size because every leaf is a
+subformula.  No calculus change is on that path.

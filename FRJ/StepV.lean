@@ -363,7 +363,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {prem : ∀ j, FRJVi G (stab j) (th j) (rhs j)}
       {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j}
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        RefAt true (upsilon rhs) (joinCtxAtVBase stab th F) A}
+        A ∈ upsilon rhs}
       {hcirc : unionAll (fun j => circPart (stab j)) = []}
       {hkc : KeptChain (upsilon rhs) (joinCtxAtVBase stab th F)
         (thPool th) kept}
@@ -421,7 +421,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {prem : ∀ j, FRJVi G (stab j) (th j) (rhs j)}
       {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j}
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A}
+        A ∈ upsilon rhs}
       {hcirc : unionAll (fun j => circPart (stab j)) = []}
       {hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
         (thPool th) kept}
@@ -480,7 +480,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {prem : ∀ j, FRJVi G (stab j) (th j) (rhs j)}
       {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j}
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        RefAt true (upsilon rhs) (joinCtxOrVBase stab th) A}
+        A ∈ upsilon rhs}
       {hcirc : unionAll (fun j => circPart (stab j)) = []}
       {hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
         (thPool th) kept}
