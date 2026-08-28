@@ -533,3 +533,21 @@ fresh-◯ pushes on the seen budget), take the barren join over it
 completenessV_of_circAnteFree.  Watch: the join's conclusion context
 must ALSO serve the outer cov (Λ*-coverage of the IrrWitV) — that is
 corner_lamStar_clo again through circNotIn's hTh.
+
+THE ASSEMBLY COMPLETE (2026-08-28 21:14, commit 166e7ac,
+wip/minmodv_assembly.lean): `completenessV : hloc → K.Infallible →
+¬K.valid G → ProvableV G` — supply-free, guard-free, frame-free, strict
+round-2 calculus, round-1 measure, pins [propext, Quot.sound] guarded.
+The corner fell to two semantic vacuities (refuted imp → refuted
+consequent; refuted ◯ → refuted body: no ◯-cell is ever demanded, seen
+machinery retired) + the thin family (axI rows for refuted primes, ⊃∉
+floats strictly above with filtered good Θ-zones) + the two bricks.
+Instances re-derived with nothing supplied: residue cell + Peirce cell.
+REMAINING for full (A): (1) lift hloc — the promise-join port at
+circ-carrying worlds (instance-wise families, NOT a supply-form
+hypothesis — peer's refutation stands); (2) K.Infallible → root-only
+(per-wit wfal + fallible joins), needed before the fallible ρ-cell
+countermodels can feed the recursion.  ALSO: hoist the assembly chain
+(minmodv → flight → assembly) to library level once Matthew reviews;
+consider retiring minModS/the guard route as superseded (run the
+supersession check — the guard theorem is now a corollary).
