@@ -495,3 +495,20 @@ work is the flight-branch corner-join CONSTRUCTION in minModS (thin
 premises; kept-completeness by antecedent-size induction; the
 support-restricted Lemma 6.5).  Screening step first: hunt the
 poison+flight discriminating cell (round-2-FRJV vs round-3-FRJV).
+
+ROUND 3 REVERTED (2026-08-28, option B executed): the relaxation was
+UNWITNESSED — its own demo's (J2) was vacuous (the V1 kept chain did
+the work), and the revert rebuilt the ENTIRE stack green (8906 jobs) =
+corpus-level conservativity verified.  Strict (J2) stands; the
+sf-bounded lemmas (clo_forces_sf, refAt_refutes_sf, sf_sub_*) stay in
+FRJ/RefAt.lean; licence discipline in refat-plan V5: barren-(J2)
+relaxation re-enters only with a kernel-checked separating cell.  THE
+CONSTRUCTION PATH (no calculus change): close minModS's flight branch
+in the round-2 calculus via thin premise families (empty stable zones →
+(J2) vacuous) + the stratified kept chain.  First bricks:
+(1) keptOf_saturated — the greedy kept chain is a fixpoint (anything
+RefAt-addable over base++kept is already kept);
+(2) the corner coverage induction at cone-trivial worlds (forced →
+Clo(base++kept); refuted → RefAt), plain size induction since every
+Clo/RefAt leaf is a subformula (the refAt_refutes_sf observation);
+(3) assemble as the flight-branch join in minModS, dropping the guard.
