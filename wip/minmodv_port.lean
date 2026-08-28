@@ -38,6 +38,27 @@ def RegWitV.toFree {K : Kripke} {G : Form} {a : K.W} {C : Form}
   { ctx := w.ctx, t := w.t, der := w.der, wld := w.wld, wle := w.wle,
     cov := w.cov }
 
+/-- Proper `Rm`-successors, as a list. -/
+def properSucc (K : Kripke) (w : K.W) : List K.W :=
+  K.elems.filter (fun c => decide (K.Rm w c ∧ c ≠ w))
+
+theorem mem_properSucc {K : Kripke} {w c : K.W} :
+    c ∈ properSucc K w ↔ (K.Rm w c ∧ c ≠ w) := by
+  simp [properSucc, List.mem_filter, K.complete c]
+
+/-- The fat irregular cell `Ax^I` as an `IrrWitV` — available for EVERY
+refuted prime, and its Θ-zone holds the whole of `Ĝ`'s three zones, so
+`Λ*`-coverage is free.  (This removes the `upsPrime ≠ []`/`Ax^R`
+dichotomy of the template: the family `C :: upsPrime` is never empty.) -/
+def axIWitV (K : Kripke) (G : Form) (w : K.W) (C : Form)
+    (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force w C) :
+    IrrWitV K G w C :=
+  { stab := []
+    th := rm (gAt G) C ++ gImp G ++ gCirc G
+    der := .axI C hCp hC (CtxEq.refl _)
+    sub := List.nil_subset _
+    cov := fun _ hx => lamStar_subset_axI hnf hx }
+
 section FreeJoins
 
 variable {K : Kripke} {G : Form}
@@ -47,15 +68,18 @@ paper context plus the UNCONDITIONAL modal zone; no `hloc`, tag
 `.blocked`. -/
 def regPrimeF_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
     (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force a C)
-    (hne : upsPrime K a G ≠ [])
     (ih : ∀ (A : Form), A ∈ sfR G → ¬ K.force a A → IrrWitV K G a A) :
     FreeWitV K G a C :=
-  let E := enumOf (upsPrime K a G) hne
+  let E := enumOf (C :: upsPrime K a G) (by simp)
   let f := E.f
-  let hfmem : ∀ j, f j ∈ upsPrime K a G := fun j =>
+  let hfmem : ∀ j, f j ∈ C :: upsPrime K a G := fun j =>
     (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
   let wit : ∀ j, IrrWitV K G a (f j) := fun j =>
-    ih (f j) (upsPrime_spec (hfmem j)).1 (upsPrime_spec (hfmem j)).2
+    if h1 : f j = C then by rw [h1]; exact axIWitV K G a C hCp hC hnf
+    else
+      have hm : f j ∈ upsPrime K a G :=
+        (List.mem_cons.mp (hfmem j)).resolve_left h1
+      ih (f j) (upsPrime_spec hm).1 (upsPrime_spec hm).2
   let stab := fun j => (wit j).stab
   let th := fun j => (wit j).th
   { ctx := joinCtxAtF stab th f C
@@ -68,7 +92,7 @@ def regPrimeF_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
         (fun A B hmem => ?_)
         hCp (fun hmem => ?_) hC (CtxEq.refl _)
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
-        exact (E.spec A).mpr (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1))
+        exact (E.spec A).mpr (List.mem_cons_of_mem _ (mem_upsPrime ((wit i).sub (List.mem_filter.mp hi).1)))
       · obtain ⟨i, hi⟩ := mem_unionAll.mp hmem
         exact not_mem_lamStar_of_not_force hnf ((wit i).sub (List.mem_filter.mp hi).1)
     cov := by
@@ -97,7 +121,7 @@ def regPrimeF_join (K : Kripke) (G : Form) (a : K.W) (C : Form)
           have himp : X.isImp := (List.mem_filter.mp h).2
           match X, himp with
           | .imp A B, _ =>
-              refine mem_restrict.mpr ⟨?_, (E.spec A).mpr (mem_upsPrime hX)⟩
+              refine mem_restrict.mpr ⟨?_, (E.spec A).mpr (List.mem_cons_of_mem _ (mem_upsPrime hX))⟩
               exact mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hallTh j, rfl⟩)
         · exact Or.inr (Or.inr (mem_interAll.mpr (fun j =>
             List.mem_filter.mpr ⟨hallTh j, (List.mem_filter.mp h).2⟩))) }
@@ -198,27 +222,6 @@ forcing — which is a proper successor, hence IN the family — and an
 all-Θ one survives `restrictC` the same way.  The `restrictP` filter
 keeps every `Λ*`-member because `Λ*`-members are forced, hence
 `Clo`-derivable in every family context (`mem_clo_lamStar`). -/
-
-/-- Proper `Rm`-successors, as a list. -/
-def properSucc (K : Kripke) (w : K.W) : List K.W :=
-  K.elems.filter (fun c => decide (K.Rm w c ∧ c ≠ w))
-
-theorem mem_properSucc {K : Kripke} {w c : K.W} :
-    c ∈ properSucc K w ↔ (K.Rm w c ∧ c ≠ w) := by
-  simp [properSucc, List.mem_filter, K.complete c]
-
-/-- The fat irregular cell `Ax^I` as an `IrrWitV` — available for EVERY
-refuted prime, and its Θ-zone holds the whole of `Ĝ`'s three zones, so
-`Λ*`-coverage is free.  (This removes the `upsPrime ≠ []`/`Ax^R`
-dichotomy of the template: the family `C :: upsPrime` is never empty.) -/
-def axIWitV (K : Kripke) (G : Form) (w : K.W) (C : Form)
-    (hCp : C.isPrime) (hC : C ∈ sfR G) (hnf : ¬ K.force w C) :
-    IrrWitV K G w C :=
-  { stab := []
-    th := rm (gAt G) C ++ gImp G ++ gCirc G
-    der := .axI C hCp hC (CtxEq.refl _)
-    sub := List.nil_subset _
-    cov := fun _ hx => lamStar_subset_axI hnf hx }
 
 section Pledged
 

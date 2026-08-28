@@ -593,3 +593,33 @@ THE REFINED MAP (what remains, in dependency order):
 (iii) integration: swap circRegWit into minModF's (n+1,◯)-case (needs
     ht antitone lemma ht_le for the ifl measure: float at e > b ≥ a
     gives ht e < ht b ≤ ht a); only worth doing together with (i).
+
+THE LIFT LANDED (2026-08-28 22:24, wip/minmodv_port.lean +
+wip/minmodv_liftmain.lean, four staged commits):
+`completenessV_lift : TagLeafV K G → K.Infallible → ¬K.valid G →
+ProvableV G` — hloc GONE from the statement, replaced by the ONE named
+interface TagLeafV (tagged prime/or wit at a circ-carrying world where
+the goal is refuted but forced at some proper Rm-successor), vacuous
+under hloc (completenessV_of_hloc = the supersession gate, instance
+cells re-validated).  Machinery: FreeWitV free grade (fallible joins,
+Λ*-thick premises, C :: upsPrime family with axIWitV head);
+tagPrimeP_join/tagOrP_join (pledged promise joins for cone-refuted
+goals, family = tagged rows at ALL proper Rm-successors, (J5) via each
+Λ*-circ's own Rm-witness); minModL on (ht, grade, size) with
+ht_le/ht_lt_of_le; (0,◯Z) via minZeta/maxRmAbove/corner-in-place.
+Probe (frjvprobe): strata ≤7 = 16696 refuted, 1027 circ-carrying
+targets, ZERO V-engine misses; size-8 sweep pending
+(scratchpad/probe8.txt).
+
+NEXT for full (A):
+(1) TagLeafV-freeness: prove reached interface instances are always
+    constructible, or find the kernel-checked separating cell (next
+    calculus-round licence).  Probe evidence: zero misses anywhere.
+(2) Root-only infallibility (per-wit wfal + fallible joins) — after
+    which the fallible ρ-cell countermodels can feed the recursion.
+(3) A hand end-to-end instance on a circ-carrying model (M2-style)
+    with tl supplied — the missing validation stratum.
+(4) Curation: hoist the chain (minmodv → flight → assembly → port →
+    lift → liftmain) to library level; register frjvprobe in TOOLS.md;
+    run the supersession check on minModS/guard (already
+    superseded-in-effect) — all pending Matthew's review.

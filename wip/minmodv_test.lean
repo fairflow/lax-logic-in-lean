@@ -22,6 +22,7 @@ through the extended completeness recursion.
 -/
 import wip.minmodv
 import wip.minmodv_assembly
+import wip.minmodv_liftmain
 import FRJ.Fallible
 
 namespace FRJ.MinModVTest
@@ -100,5 +101,14 @@ theorem provableV_circ_peirce_assembled : ProvableV GP :=
 /-- info: 'FRJ.MinModVTest.provableV_circ_peirce_assembled' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provableV_circ_peirce_assembled
+
+/-- The Peirce cell through the LIFTED recursion — `hloc` supplied only
+through the vacuous interface. -/
+theorem provableV_circ_peirce_lifted : ProvableV GP :=
+  completenessV_of_hloc Kripke.point hloc_GP point_infallible not_valid_GP
+
+/-- info: 'FRJ.MinModVTest.provableV_circ_peirce_lifted' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableV_circ_peirce_lifted
 
 end FRJ.MinModVTest

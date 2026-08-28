@@ -2028,3 +2028,68 @@ model+goal realising the residual configuration before scoping any
 build.
 
 Stack green (8811 jobs), `wip.minmodv_lift` in the wipshared globs.
+
+## 2026-08-28d — THE hloc-LIFT LANDS: the promise-join port, built and green
+
+Same evening as §2026-08-28c, under Matthew's /goal "lift hloc then:
+the promise-join port".  Four staged commits, every stage green and
+pinned `[propext, Quot.sound]`, choice-free throughout (two
+Classical.choice intrusions caught by the pins and removed: push_neg
+and a by_cases on a bounded ∀, both replaced by the constructive
+filter-match device).
+
+**PROVED** (wip/minmodv_port.lean, wip/minmodv_liftmain.lean):
+
+  * Stage 1 — the free grade: `FreeWitV` (RegWitV minus the tag
+    obligation) + `regPrimeF_join`/`regOrF_join`: fallible joins at
+    ANY world, `Λ*`-thick premises, the modal zone kept by
+    `joinCtxCircF`; family `C :: upsPrime` headed by the fat `Ax^I`
+    cell (`axIWitV`), so no emptiness dichotomy.
+  * Stage 2 — the pledged joins: `tagPrimeP_join`/`tagOrP_join`:
+    chain-tagged rows for CONE-REFUTED prime/or goals; promise family
+    = one tagged row per proper `Rm`-successor pledging the goal
+    (`htag`'s per-row condition is `RegWitV.tOK` verbatim); (J5) and
+    the `restrictC`-zone grounded by each `Λ*`-circ's own
+    `Rm`-witness, which is a proper successor hence IN the family;
+    `restrictP` survived by forced-ness (`mem_clo_lamStar`).
+  * Stages 3–4 — `minModL` (wip/minmodv_liftmain.lean): three grades
+    (0 = irregular, 1 = tagged, ≥2 = free) on the assembly's measure
+    `(ht, grade, size)`; `ht_le`/`ht_lt_of_le` (height antitonicity)
+    for the re-anchored floats; the `(0, ◯Z)`-cell routes through
+    `minZeta` (anchor strictly above → tagged row there) or
+    `maxRmAbove` (`Rm`-walk to a cone-trivial world ≠ a) or the
+    assembly's corner in place (a itself cone-trivial); `circRegWit`
+    serves every regular `◯`-goal.  **The theorem:**
+
+        completenessV_lift : TagLeafV K G → K.Infallible →
+          ¬ K.valid G → ProvableV G
+
+    where `TagLeafV` is the ONE named residual: a tagged prime/or wit
+    at a circ-carrying world where the goal is refuted but some proper
+    `Rm`-successor forces it (not cone-refuted).  `hloc` makes it
+    vacuous: `completenessV_of_hloc` re-derives the assembly theorem
+    through the lift (the supersession gate), and both instance cells
+    (residue, Peirce) are re-validated through it.
+
+**The refute-first probe** (wip/frjv_probe.lean, `lake exe frjvprobe`):
+closed formulas are constant across infallible models (`◯⊥ ≡ ⊥`
+there), so the ρ-matrix cannot test the lift — the probe enumerates
+variable-carrying goals over {p,q,⊥} against a battery of small
+infallible circ-carrying models (wf-gated, negative control watched
+failing) and runs the typed V-engine (`vOps`, a HIT is an FRJVr
+derivation) on every refuted survivor.  Strata ≤5/≤6/≤7: 608/2702/
+16696 refuted goals, 19/236/1027 at circ-carrying configurations,
+**zero misses** — every target derivable, `(LIFT)` unrefuted; the
+corpus-replay mode (residue/flight/witness shapes) also all-HIT.
+Size-8 (116k formulas, 9-model battery) launched.  The probe also
+showed the engine's winning rows are often barren with the `Λ*`-circ
+only in irregular Θ-zones — provability routes around retention.
+
+**OPEN, sharply:** discharge or refute `TagLeafV`-freeness — either
+(a) a semantic argument that reached interface instances are always
+constructible (the probe's zero-miss evidence points this way), or
+(b) a kernel-checked cell whose lifted derivation genuinely needs an
+un-cone-refuted tagged leaf, which would be the next calculus-round
+licence.  Also still open: root-only infallibility (the second
+remaining hypothesis), and a hand end-to-end instance on a genuinely
+circ-carrying model (M2-style) with `tl` hand-supplied.

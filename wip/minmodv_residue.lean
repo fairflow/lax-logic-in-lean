@@ -34,6 +34,7 @@ supply is indicated, and the V-kept chains were NOT needed here.
 import wip.minmodv
 import wip.minmodv_seen
 import wip.minmodv_assembly
+import wip.minmodv_liftmain
 import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
@@ -255,6 +256,15 @@ theorem provableV_residue_assembled : ProvableV GR :=
 /-- info: 'FRJ.MinModVResidue.provableV_residue_assembled' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provableV_residue_assembled
+
+/-- The residue cell through the LIFTED recursion. -/
+theorem provableV_residue_lifted : ProvableV GR :=
+  completenessV_of_hloc KR hloc_R KR_infallible
+    (by change ¬ KR.force KR.root GR; decide)
+
+/-- info: 'FRJ.MinModVResidue.provableV_residue_lifted' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableV_residue_lifted
 
 /-- info: 'FRJ.MinModVResidue.route3_blocked' depends on axioms: [propext] -/
 #guard_msgs in
