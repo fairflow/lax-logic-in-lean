@@ -551,3 +551,45 @@ countermodels can feed the recursion.  ALSO: hoist the assembly chain
 (minmodv → flight → assembly) to library level once Matthew reviews;
 consider retiring minModS/the guard route as superseded (run the
 supersession check — the guard theorem is now a corollary).
+
+HLOC-LIFT ROUND 1 (2026-08-28 21:41, wip/minmodv_lift.lean): the
+design pass mapped the lift's three hloc-consumption points, and the
+first — the regular (n+1, ◯Z)-case — is CLOSED hloc-free:
+`circRegWit : Infallible → ◯Z ∈ sfR G → ¬force a ◯Z →
+(∀ b ≥ a, IFloat K G b) → RegWitV K G a ◯Z` (pins [propext,
+Quot.sound]).  Route: minZeta (a cone above a refuting Z) →
+maxRmAbove (cone-trivial m INSIDE that cone, still refuting Z since
+cone-refutation transports along Rm) → ONE barren ⋈^◯ with
+(R)-coverage concludes ◯Z there, NO Z-row, NO descent, tag barren for
+free; `corner_lamStar_mem` upgrades corner coverage from Clo to
+LITERAL membership (Λ*-atoms in the joint atom zone; Λ*-imps all have
+refuted antecedents by forceStar, so keptOf_saturated adopts them;
+Λ*-circs impossible at cone-trivial worlds), which is RegWitV.cov.
+Pledge-existence is moot on this route: cone-refuted Z never has
+◯Z ∈ Λ*_m, and barren joins pledge nothing — the peer's
+not_pledgeFam obstruction cannot arise.
+
+THE REFINED MAP (what remains, in dependency order):
+(i) free-grade prime/or at circ-carrying worlds: template-copy of
+    regPrimeV_join/regOrV_join with joinAtF/joinOrF, SAME Λ*-thick
+    premises — the Λ*-circs ride through the fallible modal zone
+    (each premise's IrrWit invariant puts ◯Y in st ++ th, so ◯Y lands
+    in ∪circPart(stab) or ∩circPart(th) either way); hcirc is not a
+    field of the F-joins.  Believed mechanical; blocked-tagged output.
+(ii) EVERYTHING FUNNELS INTO ONE RESIDUAL: tagged Z-rows at
+    arbitrary (possibly circ-carrying) worlds, demanded by ◯∉'s
+    premise in (0, ◯Z)-cells (reachable via upsPrime ◯-antecedents
+    and or-disjunct descents).  The pledged promise-join route
+    (family = tagged rows at proper Rm-successors, pledging the goal,
+    htag per-row = RegWitV.tOK verbatim; hJ5 via the cone's own
+    Rm-witnesses for Λ*-circ-bodies) works EXACTLY where the goal is
+    cone-refuted at its anchor — but structural descent through
+    ∧/⊃ loses cone-refutation (a cone refuting Z₁∧Z₂ splits per
+    world), so prime/or LEAVES without cone-refutation at
+    circ-carrying anchors remain — the §8 corner's V-form, genuinely
+    open.  REFUTE-FIRST next: hunt a model+goal realising that
+    configuration before scoping any build; if none exists in the
+    6-cell residue's models, the funnel may be vacuous in practice.
+(iii) integration: swap circRegWit into minModF's (n+1,◯)-case (needs
+    ht antitone lemma ht_le for the ifl measure: float at e > b ≥ a
+    gives ht e < ht b ≤ ht a); only worth doing together with (i).

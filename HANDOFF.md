@@ -1984,3 +1984,47 @@ hand-roll with `decide_eq_false_iff_not`; `#choice_path` named both.
 NOT a supply, per the peer's refutation) and weaken `K.Infallible` to
 root-infallibility (per-wit `wfal`, fallible joins).  The corner — the
 open kernel since W4 — is CLOSED.
+
+## 2026-08-28c — hloc-lift round 1: the regular ◯-case closes hloc-free (wip/minmodv_lift.lean)
+
+Matthew's goal: "lift hloc then: the promise-join port".  The design
+pass split `completenessV`'s `hloc` into its three consumption points
+and closed the first the same evening.
+
+**PROVED** (pins `[propext, Quot.sound]`, choice-free):
+
+  * `corner_lamStar_mem` — at a cone-trivial infallible world,
+    `Λ*_m ⊆ base ++ keptOf Υ base pool` as LITERAL membership (not
+    just `Clo`-coverage): atoms sit in the joint atom zone; every
+    `Λ*`-implication has a refuted antecedent (`forceStar`), so
+    `keptOf_saturated` adopts it into the kept chain; `Λ*`-circs are
+    impossible at cone-trivial worlds.  This is exactly `RegWitV.cov`.
+  * `circRegWit` — the hloc-free regular `◯Z`-witness at ANY world of
+    ANY infallible model: `minZeta` picks `e ≥ a` whose whole Rm-cone
+    refutes `Z`; `maxRmAbove` walks Rm-up inside that cone to a
+    cone-trivial `m` (cone-refutation transports along Rm, so `m ⊮ Z`
+    and `m ⊮ ◯Z`); ONE barren `⋈^◯` over the corner family with
+    `(R)`-coverage concludes `◯Z` there — no `Z`-row, no descent into
+    `Z`, tag `.barren` for free — and the `RegWitV` floats back to `a`
+    with `wld := m`.
+
+Why the peer's pledge refutation does not bite here: nothing is
+pledged (barren join), and a cone-refuted `Z` can never have
+`◯Z ∈ Λ*_m` — `m ⊩ ◯Z` would place a `Z`-forcing successor inside the
+refuting cone.  Pledging is safe exactly on cone-refuted formulas,
+which is the paper's own discipline; `PledgeSupply`-as-universal
+quantified over the unsafe instances too, hence its refutation.
+
+**The refined map** (recorded in docs/next-session.md): the
+free-grade prime/or port at circ-carrying worlds looks mechanical
+(fallible joins, Λ*-thick premises — the `Λ*`-circs ride through the
+modal zones because every premise's invariant carries them); after it
+and this brick, EVERYTHING remaining funnels into one residual —
+tagged `Z`-rows at arbitrary circ-carrying worlds for `◯∉`'s premise,
+where structural descent loses cone-refutation (a cone refuting
+`Z₁ ∧ Z₂` splits per world).  That is the §8 corner's V-form and is
+genuinely OPEN.  Next step per METHOD.md: refute-first — hunt a
+model+goal realising the residual configuration before scoping any
+build.
+
+Stack green (8811 jobs), `wip.minmodv_lift` in the wipshared globs.
