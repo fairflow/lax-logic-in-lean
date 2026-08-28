@@ -512,3 +512,24 @@ RefAt-addable over base++kept is already kept);
 Clo(base++kept); refuted → RefAt), plain size induction since every
 Clo/RefAt leaf is a subformula (the refAt_refutes_sf observation);
 (3) assemble as the flight-branch join in minModS, dropping the guard.
+
+FLIGHT BRICKS PROVED (2026-08-28 19:45, commit cf82e83):
+(1) `keptOf_saturated` (FRJ/RefAt.lean) — the greedy kept chain is a
+FIXPOINT: kept membership = RefAt-derivability over base ++ keptOf;
+(2) `corner_coverage` (wip/minmodv_flight.lean) — at cone-trivial
+infallible worlds with a `CornerSupply`-adequate Υ/base/pool, forced
+sfL-members are Clo-derivable and refuted sfR-members RefAt-refutable
+(one plain size induction; brick 1 cuts the retention knot); corollary
+`corner_lamStar_clo` = the ◯∉ cell's hTh obligation.  Pins
+[propext, Quot.sound] guarded.  Hygiene: omega on CONJUNCTION goals
+pulls Classical.propDecidable (De Morgan) — split before omega
+(#choice_path found it; banked in memory).  NEXT (the assembly): in
+minModS's flight branch, build the thin premise family discharging
+CornerSupply (Ax^I rows for refuted atoms; ⊃∉ floats for imps refuted
+only above — NB the float needs a regular row at e > a, ht-drop legal;
+fresh-◯ pushes on the seen budget), take the barren join over it
+(St = [] everywhere → strict (J2) vacuous → hJ1 trivial), close with
+◯∉ via corner_lamStar_clo, and DROP THE GUARD from
+completenessV_of_circAnteFree.  Watch: the join's conclusion context
+must ALSO serve the outer cov (Λ*-coverage of the IrrWitV) — that is
+corner_lamStar_clo again through circNotIn's hTh.
