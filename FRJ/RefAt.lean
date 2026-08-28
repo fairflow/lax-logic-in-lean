@@ -285,6 +285,106 @@ theorem keptOf_ok (Υ base pool : List Form) :
     KeptChain Υ base pool (keptOf Υ base pool) :=
   growChain_ok _ .nil
 
+/-! ## Saturation: the greedy chain is a FIXPOINT
+
+`keptOf` runs the greedy adoption for `pool.length` rounds.  Each round
+adds a fresh pool implication or stops; a Nodup sublist of `pool` has at
+most `pool.length` members, so the fuel cannot run out before the greedy
+stops of its own accord — and a stop means NOTHING addable remains.
+Consequence: to show a pool implication kept, it suffices to refute its
+antecedent by `RefAt` over `base ++ keptOf …` — the final state itself.
+This is the enabling brick of the flight-branch construction: kept
+membership becomes a `RefAt`-derivability question. -/
+
+theorem length_le_of_nodup_subset {α : Type} [DecidableEq α]
+    {l₁ l₂ : List α} (h1 : l₁.Nodup) (h2 : l₁ ⊆ l₂) :
+    l₁.length ≤ l₂.length :=
+  (List.subperm_of_subset h1 h2).length_le
+
+theorem growChain_extends (Υ base pool : List Form) :
+    ∀ (fuel : Nat) (acc : List Form), acc ⊆ growChain Υ base pool fuel acc
+  | 0, acc => fun _ h => h
+  | fuel + 1, acc => by
+      simp only [growChain]
+      cases hf : pool.find? (fun f =>
+        match f with
+        | .imp Y _ => !decide (f ∈ acc) && refAtB true Υ (base ++ acc) Y
+        | _ => false) with
+      | none => exact fun _ h => h
+      | some f =>
+          exact fun x hx => growChain_extends Υ base pool fuel (f :: acc)
+            (List.mem_cons_of_mem _ hx)
+
+theorem growChain_saturated {Υ base pool : List Form} :
+    ∀ (fuel : Nat) (acc : List Form), acc.Nodup → acc ⊆ pool →
+      pool.length ≤ acc.length + fuel →
+      ∀ A B : Form, Form.imp A B ∈ pool →
+        Form.imp A B ∉ growChain Υ base pool fuel acc →
+        refAtB true Υ (base ++ growChain Υ base pool fuel acc) A = false
+  | 0, acc, hnd, hsub, hlen, A, B, hAB, hnot => by
+      exfalso
+      have hcons : (Form.imp A B :: acc).Nodup :=
+        List.nodup_cons.mpr ⟨hnot, hnd⟩
+      have hsub' : (Form.imp A B :: acc) ⊆ pool := by
+        intro x hx
+        rcases List.mem_cons.mp hx with rfl | hx'
+        · exact hAB
+        · exact hsub hx'
+      have := length_le_of_nodup_subset hcons hsub'
+      simp only [List.length_cons] at this
+      omega
+  | fuel + 1, acc, hnd, hsub, hlen, A, B, hAB, hnot => by
+      simp only [growChain] at hnot ⊢
+      cases hf : pool.find? (fun f =>
+        match f with
+        | .imp Y _ => !decide (f ∈ acc) && refAtB true Υ (base ++ acc) Y
+        | _ => false) with
+      | some f =>
+          rw [hf] at hnot
+          have hp := List.find?_some hf
+          have hmem := List.mem_of_find?_eq_some hf
+          cases f with
+          | imp Y B' =>
+              simp only [Bool.and_eq_true, Bool.not_eq_true',
+                decide_eq_false_iff_not] at hp
+              exact growChain_saturated fuel (Form.imp Y B' :: acc)
+                (List.nodup_cons.mpr ⟨hp.1, hnd⟩)
+                (fun x hx => by
+                  rcases List.mem_cons.mp hx with rfl | hx'
+                  · exact hmem
+                  · exact hsub hx')
+                (by simp only [List.length_cons]; omega)
+                A B hAB hnot
+          | atom p => simp at hp
+          | bot => simp at hp
+          | and Z₁ Z₂ => simp at hp
+          | or Z₁ Z₂ => simp at hp
+          | circ Z => simp at hp
+      | none =>
+          rw [hf] at hnot
+          have hall := List.find?_eq_none.mp hf _ hAB
+          simp only [Bool.and_eq_true, Bool.not_eq_true',
+            decide_eq_false_iff_not, not_and] at hall
+          cases hr : refAtB true Υ (base ++ acc) A with
+          | false => rfl
+          | true => exact absurd hr (by simpa using hall hnot)
+
+/-- **The fixpoint property**: any pool implication whose antecedent is
+`RefAt`-refutable over the FINAL kept context is itself kept. -/
+theorem keptOf_saturated {Υ base pool : List Form} {A B : Form}
+    (hpool : Form.imp A B ∈ pool)
+    (h : RefAt true Υ (base ++ keptOf Υ base pool) A) :
+    Form.imp A B ∈ keptOf Υ base pool := by
+  by_contra hnot
+  have hfalse := growChain_saturated (Υ := Υ) (base := base) (pool := pool)
+    pool.length [] List.nodup_nil (List.nil_subset _)
+    (by omega) A B hpool hnot
+  have htrue : refAtB true Υ (base ++ keptOf Υ base pool) A = true :=
+    refAtB_iff.mpr h
+  rw [show keptOf Υ base pool = growChain Υ base pool pool.length [] from rfl,
+    hfalse] at htrue
+  exact Bool.noConfusion htrue
+
 /-! ## Subformula bounds
 
 Round 3 of the repair (the relaxed barren (J2)) must keep the

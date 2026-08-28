@@ -63,10 +63,7 @@ theorem circ_not_mem_sf_self (Z : Form) : Form.circ Z ∉ sf Z := by
   simp only [Form.size] at this
   omega
 
-theorem length_le_of_nodup_subset {α : Type} [DecidableEq α]
-    {l₁ l₂ : List α} (h1 : l₁.Nodup) (h2 : l₁ ⊆ l₂) :
-    l₁.length ≤ l₂.length :=
-  (List.subperm_of_subset h1 h2).length_le
+-- (`length_le_of_nodup_subset` lives in `FRJ/RefAt.lean` since 2026-08-28)
 
 /-- The budget universe: the right subformulas.  (No dedup: the
 subperm length bound needs only the SEEN list to be Nodup, and

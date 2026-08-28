@@ -1882,3 +1882,54 @@ fixpoint: anything `RefAt`-addable over base++kept is already kept) and
 the corner coverage induction (forced → `Clo(base++kept)`; refuted →
 `RefAt`), which closes on plain size because every leaf is a
 subformula.  No calculus change is on that path.
+
+## §2026-08-28a — the two flight bricks PROVED: `keptOf_saturated` and the corner coverage induction
+
+Both bricks of the guard-free flight closure are kernel-checked,
+choice-free (`[propext, Quot.sound]`, `#guard_msgs`-pinned):
+
+**Brick 1, `keptOf_saturated`** (`FRJ/RefAt.lean`, with
+`growChain_extends`/`growChain_saturated`): the greedy kept chain is a
+FIXPOINT —
+
+    (A ⊃ B) ∈ pool → RefAt true Υ (base ++ keptOf Υ base pool) A →
+    (A ⊃ B) ∈ keptOf Υ base pool.
+
+Fuel `pool.length` cannot run out before saturation: each round adopts
+a FRESH pool member, and a Nodup sublist of `pool` has at most
+`pool.length` members (`length_le_of_nodup_subset`, hoisted here from
+the seen file).  Consequence: kept membership IS `RefAt`-derivability
+over the final context — the mutual retention knot is cut.
+
+**Brick 2, `corner_coverage`** (`wip/minmodv_flight.lean`): at a
+cone-trivial infallible world with an adequate Υ/base/pool triple
+(`CornerSupply`: forced sfL-atoms in base; forceStar implications in
+pool; Υ covering refuted sfR-atoms, imps without a local
+counter-witness, and ◯s with locally-forced body), ONE plain size
+induction gives both halves:
+
+    (F)  X ∈ Sf^L(G), a ⊩ X  ⟹  Clo (base ++ keptOf Υ base pool) X
+    (R)  Y ∈ Sf^R(G), a ⊮ Y  ⟹  RefAt true Υ (base ++ keptOf …) Y
+
+— (F) at a forceStar implication calls (R) at its antecedent (proper
+subformula, opposite polarity) and lands it in the kept zone by
+brick 1; forced `◯X'` descends by cone-triviality.  Corollary
+`corner_lamStar_clo`: `Λ*_a ⊆ Clo(base ++ kept)` — the `hTh`
+obligation of the flight branch's `◯∉` cell.
+
+**Two hygiene catches** (both by tooling, per the discipline):
+`by_cases` was replaced by explicit `Decidable.em` splits, and —
+the real culprit, found by `#choice_path` — **`omega` on a CONJUNCTION
+goal pulls `Classical.propDecidable`** through its De Morgan
+normalisation (`Lean.Omega.Decidable.or_not_not_of_not_and`); single
+comparison goals are clean.  Standing fix: split conjunction goals
+before omega.  Recorded in the axiom-hygiene memory.
+
+**Remaining for the guard-free flight closure** (the assembly): inside
+`minModS`'s flight branch, build the thin premise family that
+discharges `CornerSupply` — `Ax^I` rows for refuted atoms (Υ), `⊃∉`
+floats for imps refuted only above (Υ), fresh-corner pushes for ◯s
+(seen-budget), the base/pool zones from the same rows — then the
+barren join over it (empty stable zones, so strict (J2) is vacuous),
+`◯∉` via `corner_lamStar_clo`, replacing the guard.  No calculus
+change anywhere.
