@@ -33,6 +33,7 @@ supply is indicated, and the V-kept chains were NOT needed here.
 -/
 import wip.minmodv
 import wip.minmodv_seen
+import wip.minmodv_assembly
 import FRJ.WitnessKit
 
 set_option maxRecDepth 4000
@@ -242,6 +243,18 @@ theorem provableV_residue_guarded : ProvableV GR :=
 /-- info: 'FRJ.MinModVResidue.provableV_residue_guarded' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provableV_residue_guarded
+
+/-! ## The assembly closes the instance with NOTHING: no supply, no
+guard, no frame condition — `completenessV` end to end on the residue
+model. -/
+
+theorem provableV_residue_assembled : ProvableV GR :=
+  completenessV KR hloc_R KR_infallible
+    (by change ¬ KR.force KR.root GR; decide)
+
+/-- info: 'FRJ.MinModVResidue.provableV_residue_assembled' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableV_residue_assembled
 
 /-- info: 'FRJ.MinModVResidue.route3_blocked' depends on axioms: [propext] -/
 #guard_msgs in

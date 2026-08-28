@@ -21,6 +21,7 @@ Consistency control: the paper calculus already derives this cell
 through the extended completeness recursion.
 -/
 import wip.minmodv
+import wip.minmodv_assembly
 import FRJ.Fallible
 
 namespace FRJ.MinModVTest
@@ -91,5 +92,13 @@ theorem provableV_circ_peirce_discharged : ProvableV GP :=
 /-- info: 'FRJ.MinModVTest.provableV_circ_peirce_discharged' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms provableV_circ_peirce_discharged
+
+/-- The Peirce cell through the ASSEMBLED recursion — no supply. -/
+theorem provableV_circ_peirce_assembled : ProvableV GP :=
+  completenessV Kripke.point hloc_GP point_infallible not_valid_GP
+
+/-- info: 'FRJ.MinModVTest.provableV_circ_peirce_assembled' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableV_circ_peirce_assembled
 
 end FRJ.MinModVTest

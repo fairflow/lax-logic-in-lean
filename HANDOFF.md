@@ -1933,3 +1933,54 @@ floats for imps refuted only above (Υ), fresh-corner pushes for ◯s
 barren join over it (empty stable zones, so strict (J2) is vacuous),
 `◯∉` via `corner_lamStar_clo`, replacing the guard.  No calculus
 change anywhere.
+
+## §2026-08-28b — THE ASSEMBLY COMPLETE: supply-free, guard-free, frame-free FRJV completeness
+
+The campaign statement is PROVED, kernel-checked, choice-free
+(`wip/minmodv_assembly.lean`, pins `[propext, Quot.sound]` guarded):
+
+    completenessV : (∀ b, circPart (Λ*_b) = []) → K.Infallible →
+                    ¬ K.valid G → ProvableV G
+
+— `◯` unrestricted on both sides of the goal, NO supply, NO goal guard,
+NO frame condition, in the STRICT round-2 calculus, on the round-1
+measure `(ht, t, |C|)`.  End-to-end instances re-derived through it
+with nothing supplied: the residue cell (`provableV_residue_assembled`)
+and the Peirce cell (`provableV_circ_peirce_assembled`).
+
+**How the corner fell.**  Two semantic vacuities sharpened everything:
+a refuted implication has a REFUTED consequent, and a refuted `◯` has a
+REFUTED body — so at the corner no `◯`-cell is ever demanded (the SEEN
+machinery died on the spot) and `rowFor`'s descent is total:
+
+- the thin premise family (`familyRows`): `Ax^I` rows for every refuted
+  `Sf^R`-prime + `⊃∉` float rows for every refuted-antecedent
+  `Sf^R`-imp, the floats' regular premises built by the recursion at
+  the `minEta` witness STRICTLY ABOVE (height drops — the only
+  recursive calls the corner makes); nonemptiness by descending the
+  refuted skeleton (`familyRows_ne`);
+- the float rows' Θ-zones are the FILTERED good zones
+  (`Ĝ ∩ Clo(w.ctx) ∩ forced-at-a`), giving `thGoodAt` — so the joint
+  atom zone and the kept pool absorb everything forced (`cc_interAt`,
+  `cc_pool`) while `hAnot` still discharges (members a-forced,
+  antecedent a-refuted);
+- all stable zones empty → strict (J2) VACUOUS, hJ1 trivial;
+- `CornerSupply` discharges (`cc_supply`) — the over-provisioned
+  clauses (`Or.inr`, `hUcirc`) by the vacuities — and the two bricks
+  (`corner_coverage`, `keptOf_saturated`) give `(F)`/`(R)` coverage
+  over each leaf base;
+- `rowFor` descends `Z` structurally to the three barren-join leaves
+  (`atLeaf`/`orLeaf`/`circLeaf`: hC/hZ from `(R)`, `⊃∈`'s `Clo` from
+  `(F)`), and `◯∉` closes the irregular cell with `hTh` =
+  `corner_lamStar_clo`'s content.
+
+**Hygiene catches this round** (tool-found, both banked): `Decidable.em`
+match cannot eliminate into data (use `dite`); a bare `simp` on
+membership-in-filter over `force`-atoms pulled classical `not_forall` —
+hand-roll with `decide_eq_false_iff_not`; `#choice_path` named both.
+
+**What remains of the FRJV completeness question**: lift `hloc`
+(promise-join port at circ-carrying worlds — instance-wise families,
+NOT a supply, per the peer's refutation) and weaken `K.Infallible` to
+root-infallibility (per-wit `wfal`, fallible joins).  The corner — the
+open kernel since W4 — is CLOSED.
