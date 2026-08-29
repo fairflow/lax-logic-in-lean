@@ -24,10 +24,36 @@ This corrects the 2026-08-29 audit, which proposed the opposite traffic
 FRJ-completeness; the paper's is the one with a mechanised engine already
 in this repo (`saturateO`, `V.vOps`, forward subsumption).
 
-**`Gbu(G)` is not LJF◯.**  It is a purpose-built backtracking-free
-backward calculus.  LJF◯ is a *focused* calculus, and focusing is also a
-backtracking-reduction discipline, so LJF◯ is a plausible substitute —
-but that is an assumption to discharge, not a fact.  (OPEN.)
+**`Gbu(G)` is not LJF◯, and LJF◯ cannot substitute for it.**  Corrected
+2026-08-29 after reading `docs/frj-paper-skeleton.md` §5, which records
+the paper's statements with page numbers.  Two facts settle it.
+
+*Gbu is DATABASE-RELATIVE over FRJ's own sequents.*  Its judgment is
+written `D_G ▷ Ω ⇒g C` (Lemmas 9–12, pp. 30–33) — derivability *relative
+to a saturated FRJ database*, with `Ω ⊆ Sl(G)` and `C ∈ Sr(G)`, i.e. over
+FRJ(G)'s own `sfL`/`sfR` universe.  Theorem 8 (Correctness of `BSearch`,
+p. 33) reads a Gbu-derivation OFF that database.  The duality is not
+"any complete proof calculus will do"; it is *one saturated database,
+read two ways*.  LJF◯'s sequents are polarised (`Pos`/`Neg`, four
+judgments, an `Ω` inversion zone, reached through `negOfO`), so it shares
+no database with FRJV and cannot play this role without a further
+translation layer — strictly more work than building `Gbu(◯)` over FRJ's
+own sequents.
+
+*Gbu is IPC-only.*  Theorem 6: "⊢Gbu(G) G implies G ∈ IPL".  Theorem 10:
+"(i) G ∉ IPL implies ⊢FRJ(G) G. (ii) G ∈ IPL implies ⊢Gbu(G) G."  Every
+statement of §5 is about IPL, and the rule table is over `V⊥` and `L⊃` —
+variables, `⊥`, implications, `∧`, `∨`.  **There is no `◯` clause, and no
+`Gbu(◯)` anywhere: `Gbu` occurs 42 times in this repo, all of them in
+Markdown, zero in Lean.**
+
+So `Gbu(◯)` would have to be invented, together with the whole of §5:
+Lemma 7 / Theorem 6 (soundness), Lemma 8 (the weight decrease that makes
+it terminate), Theorem 7 (the `O(|τ|²)` height bound), Lemmas 9–12 (the
+four database-relative inversion and succedent lemmas), Theorem 8
+(`BSearch` correctness), Theorem 9 (the duality).  And its `◯` clause
+would need the dual of the tag — which is exactly the device that has
+been failing.
 
 ## 2. The duality as CALCULI — what really corresponds
 
@@ -97,6 +123,37 @@ testing is:
 the `tag_cone` argument with a weaker tag, and per the V5 licence rule
 (`docs/refat-plan.md`) it needs a kernel-checked separating cell before
 any calculus round.)
+
+## 3a. The converse direction is FREE, and already proved here
+
+Matthew asked to check `⊢_Gbu G → ⊬_FRJ G`.  In our setting its analogue
+is in the repo already, PROVED:
+
+    FRJ/BridgeV.lean
+    not_derivable_of_provableV {φ} (h : ProvableV (ofPLL φ)) : [] ⊬ φ
+      := fun ⟨p⟩ => soundnessV h (valid_of_derivable p)
+
+FRJV-derivable implies not `LaxND`-provable — two SOUNDNESS theorems
+composed (`soundnessV`, and soundness of `LaxND` for constraint models).
+It carries no completeness content whatever.  That is the general shape
+of the duality: in `⊢_Gbu G iff ⊬_FRJ G`, one direction is soundness and
+free, the other is completeness and is the entire theorem.  Nothing is
+gained by the biconditional packaging.
+
+## 3b. Why §5 was skipped before, and whether that still holds
+
+`docs/frj-lax-plan.md` records the earlier decision: the journal "derives
+completeness of FRJ(G) as a corollary of the duality … which costs a
+second calculus and a search procedure.  §6 proves it directly.  Same
+theorem, a fraction of the work."  That judgement was made for the
+`◯`-FREE target, where §6 works — and it does work here:
+`FRJ/Minimal.lean`'s `completeness` is §6 for `◯`-free goals.
+
+What has changed is that §6's Lemma 6.4 (`lemma:minMod`) is exactly the
+construction that has now failed seven times at the modal case.  So the
+trade-off that justified skipping §5 no longer holds — but §5 is a
+*bigger* build for `◯` than it was for IPC, because its `◯` clause does
+not exist either.
 
 ## 4. What a duality proof would need, and what exists
 
