@@ -201,6 +201,74 @@ theorem not_PLL_circ_counit :
 #guard_msgs in
 #print axioms not_PLL_circ_counit
 
+/-! ## Which class DOES the schema define?  Hereditary cone-triviality
+
+A world `d` satisfies `d ⊩ ◯A ⊃ A` for EVERY `A` and every valuation
+exactly when `d` is cone-trivial.  (⇐ is below.  ⇒: atoms realise every
+upward-closed set, and for a non-cone-trivial `d` the largest up-set
+missing `d`, namely `{x | x ≰ d}`, is hit by `Rm(e)` for every `e ≥ d` —
+by a proper `Rm`-successor when `e = d`, by `e` itself when `e > d` — so
+it makes `d ⊩ ◯A` while `d ⊮ A`.)
+
+`◯A ⊃ A` at `c` quantifies over all `d ≥ c`, so the world-level
+condition for the ANTECEDENT of the schema is
+
+    HCT c  :=  ∀ d ≥ c, ConeTrivial d          ("hereditarily cone-trivial")
+
+and the schema `◯(◯A ⊃ A)` is then valid iff
+
+    HCTSeeing K := ∀ b, ∃ c, Rm b c ∧ HCT c.
+
+`⇐` is proved below.  `⇒` is proved on paper and NOT yet mechanised, so
+it is labelled OPEN here: given `b` whose cone contains no `HCT` world,
+let `D` be the `≤`-maximal elements of `{d ≥ b | ¬ ConeTrivial d}` — an
+antichain, and every `c ∈ Rm(b)` has its witness in it, by finiteness.
+Take `A` an atom with extension `U = {x | ∀ d ∈ D, x ≰ d}`.  Each `d ∈ D`
+has `d ∉ U`, and `d ⊩ ◯A` because every `e ≥ d` hits `U` — by a proper
+`Rm`-successor of `d` when `e = d`, by `e` itself when `e > d`, the
+antichain condition ruling out `≤ d'` in both cases.  So every
+`c ∈ Rm(b)` refutes `◯A ⊃ A` and `b ⊮ ◯(◯A ⊃ A)`.
+
+Sanity, all three models of this file: endpoint frames are HCT-seeing
+(a `≤`-maximal world is `HCT`); the transparent `K3t` is HCT-seeing
+(every world is cone-trivial), which is why it validates the schema
+without being endpoint-seeing; and `K3m` is NOT HCT-seeing — its only
+`HCT` world is the top, which the root's cone `{e0}` does not reach —
+which is why it refutes the schema. -/
+
+def HCT (K : Kripke) (c : K.W) : Prop :=
+  ∀ d, K.le c d → K.ConeTrivial d
+
+def HCTSeeing (K : Kripke) : Prop :=
+  ∀ b : K.W, ∃ c, K.Rm b c ∧ HCT K c
+
+theorem force_counit_of_hct {K : Kripke} {c : K.W} {A : Form}
+    (h : HCT K c) : K.force c (.imp (.circ A) A) := by
+  intro d hcd hOp
+  obtain ⟨f, hrf, hf⟩ := hOp d (K.le_refl d)
+  exact (h d hcd f hrf) ▸ hf
+
+/-- **Sufficiency**: an HCT-seeing model validates the schema. -/
+theorem hctSeeing_valid_counit {K : Kripke} (h : HCTSeeing K) (A : Form) :
+    K.valid (.circ (.imp (.circ A) A)) := by
+  intro b _
+  obtain ⟨c, hrc, hc⟩ := h b
+  exact ⟨c, hrc, force_counit_of_hct hc⟩
+
+/-- Endpoint-seeing is the special case "the witness is `≤`-maximal". -/
+theorem hctSeeing_of_endpoints {K : Kripke} (hep : K.Endpoints) :
+    HCTSeeing K := by
+  intro b
+  refine ⟨(hep b).m, (hep b).rm, ?_⟩
+  intro d hmd c hrc
+  have hdm : d = (hep b).m := (hep b).max d hmd
+  have hcm : c = (hep b).m := (hep b).max c (K.le_trans hmd (K.sub_mi hrc))
+  exact hcm.trans hdm.symm
+
+/-- info: 'FRJ.EndpointRefute.hctSeeing_valid_counit' does not depend on any axioms -/
+#guard_msgs in
+#print axioms hctSeeing_valid_counit
+
 /-! ## The consequence -/
 
 /-- **The endpoint-seeing class is NOT complete for PLL.**  There is a
@@ -310,6 +378,20 @@ theorem K3t_transparent : ∀ {a u : K3t.W}, K3t.Rm a u → u = a :=
 theorem K3t_valid_counit (A : Form) :
     K3t.valid (.circ (.imp (.circ A) A)) :=
   transparent_valid_counit K3t_transparent A
+
+/-- The transparent frame is HCT-seeing without being endpoint-seeing —
+the strictness of the inclusion, at `K3t`. -/
+theorem K3t_hctSeeing : HCTSeeing K3t :=
+  fun b => ⟨b, rfl, fun _ _ _ hrc => hrc.symm⟩
+
+/-- `K3m` is NOT HCT-seeing: the root's modal cone is `{e0}`, and `e0`
+is not `HCT` because `e1` above it carries a proper `Rm`-successor. -/
+theorem K3m_not_hctSeeing : ¬ HCTSeeing K3m := by
+  intro h
+  obtain ⟨c, hrc, hc⟩ := h .e0
+  have hce : c = .e0 := cone_root c hrc
+  subst hce
+  exact W3.noConfusion (hc .e1 (by decide) .e2 (Or.inr ⟨rfl, rfl⟩))
 
 /-- But it refutes `◯(p ∨ ¬p)`: the root's cone is `{root}`, and the root
 refutes `p ∨ ¬p` because `p` first holds two worlds up. -/
