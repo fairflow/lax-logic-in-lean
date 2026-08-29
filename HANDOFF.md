@@ -2241,3 +2241,58 @@ un-cone-refuted tagged leaf, which would be the next calculus-round
 licence.  Also still open: root-only infallibility (the second
 remaining hypothesis), and a hand end-to-end instance on a genuinely
 circ-carrying model (M2-style) with `tl` hand-supplied.
+
+## 2026-08-29b — Gbu(G) stage 3 complete over IPC; the three ◯-seams named
+
+Branch `claude/frjv-completeness-693c52`, worktree `strange-thompson-902a24`.
+
+Continuing the track opened in §2026-08-29a (reconstruct `Gbu(G)` from
+the recovered arXiv source, prove §5, then derive `Gbu◯` from unmet
+obligations rather than guessing rules).
+
+**Done.**  §5 of Fiorentini–Ferrari is now fully mechanised over IPC:
+
+* Lemma 12 `gbuSuccOr` (the `∨` success lemma) — `wip/gbu_db.lean`;
+* Theorem 8 `search` (correctness of `BSearch`) — `wip/gbu_search.lean`,
+  by well-founded recursion on `Wg`, every case DECIDED (the
+  `Decidable (EvalI …)` argument is the paper's own database query, so
+  the proof is a procedure, not an appeal to excluded middle);
+* `saturated_fderivable` — `Subsumes` is reflexive, so the set of all
+  derivable sequents is a saturated database;
+* Theorem 9 `gbu_frj_duality`: `⊢_Gbu(G) G ↔ ⊬_FRJV(G) G`;
+* Theorem 10: `provableV_of_not_pll` is **FRJV completeness on the
+  ◯-free fragment**, relative to a saturated database with a decidable
+  evaluation relation.
+
+Everything pins `[propext, Quot.sound]`.
+
+**Open on the IPC layer**: the finite saturated database of §4 with a
+decidable `▷` (stage 4).  Saturation is not the obstruction; finiteness
+and decidability are.
+
+**The deliverable for the ◯ extension** is `docs/gbu-circ-seams.md`.
+Theorem 8 takes ◯-freeness as two hypotheses; they are consumed at
+exactly three points, and each determines its rule from the `FRJV` rule
+with the matching conclusion:
+
+1. `Ψ, ◯Z ⇒g C` → `L◯` with an **◯-shaped goal** (unrestricted is
+   unsound); invertibility free from `Clo.circ`; measure fine.  But ◯
+   still enters the critical zone, so Lemmas 11/12 must be re-proved
+   over `joinAtP`/`joinOrP`, whose `hJ5` is a NEW database query.  At a
+   **prime** goal with `◯Y ∈ Ω` no rule can exist — a candidate site for
+   the residual incompleteness, to be tested against the 6-cell residue
+   BEFORE any rule is written.
+2. `Ψ ⇒g ◯Z` → `R◯`, unconditional and sound; the cost is a condition
+   on the database (the `Covers`/`KeptChain` retention obligation, the
+   same object as LJF◯'s `CimpAnt`).
+3. `Ω →g ◯Z` → `R◯ₙᵢ`, focus-**releasing**; no focus-preserving `R◯ᵢ`
+   can exist (its FRJ direction is unsound, and correspondingly no such
+   `FRJVi` rule is in the table).  **It breaks the measure `Wg`** — `tp`
+   rises with nothing added to the left zone.  Settling the measure is
+   the first task; a used-implication history is conjectured (untested)
+   to fix it.
+
+**Next session**: (1) settle the `Wg◯` measure; (2) test the seam-1
+prime-goal gap against the residue; (3) only then add the three rules
+and re-prove Lemmas 11/12, keeping every ◯-free case of `search`
+compiling verbatim.

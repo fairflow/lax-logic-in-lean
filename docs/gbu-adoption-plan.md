@@ -183,8 +183,22 @@ saturation loop, subsumption), `FRJ/Minimal.lean` (§6 for `◯`-free).
   proved (the earlier `pdftotext` extract truncated at six).  Sorry-free;
   the three pure-`Clo` clauses pin `[propext]`, the six that apply an
   `FRJ` rule `[propext, Quot.sound]`.
-* **Next**: Lemmas 10–12 (the `∨`-closure and the two success lemmas),
-  Theorem 8 (`BSearch`), Theorem 9 (the duality).
+* **Lemmas 10–12, Theorems 8–10 — DONE** (2026-08-29).  `gbuInv10`,
+  `gbuSuccAt`, `gbuSuccOr` in `wip/gbu_db.lean`; `search` (Theorem 8),
+  `gbu_frj_duality` (Theorem 9), `provableV_of_not_pll` and
+  `provableGbu_of_pll` (Theorem 10) in `wip/gbu_search.lean`.  All pin
+  `[propext, Quot.sound]` — choice-free, the two `Decidable` arguments
+  being the paper's own database queries.  **Stage 3 is therefore
+  complete over IPC.**
+* **Stage 4 (the runnable procedure) — OPEN.**  What is missing is the
+  FINITE saturated database of §4 with a decidable `▷`.
+  `saturated_fderivable` shows saturation is not the obstruction (the
+  set of all derivable sequents is saturated); finiteness and
+  decidability are.
+* **Stage B (the `◯` extension) — SPECIFIED, not implemented.**  The
+  three obligations, the rules they force, and the measure failure are
+  in `docs/gbu-circ-seams.md`.  D8 below records how they are named in
+  the Lean.
 
 ## Divergence log
 
@@ -195,6 +209,8 @@ saturation loop, subsumption), `FRJ/Minimal.lean` (§6 for `◯`-free).
 | D3 | left zones are `List Form` with a `CtxEq` field on each conclusion naming a member | `wip/gbu.lean` | keeps the paper's set reading of `A,Ψ`; house style |
 | D4 | soundness proved semantically against `Kripke`, not by the paper's translation into `GJ` | `wip/gbu.lean` | same statement, stronger conclusion: no infallibility needed, so `PLL`-validity, of which the paper's `IPL` reading is a corollary |
 | D5 | Theorem 7's `O(|τ|²)` height bound replaced by well-foundedness of the step relation | `wip/gbu.lean` | well-foundedness is what backward search needs; the asymptotic constant is not used downstream |
+| D7 | the well-formedness invariant `Ψ ⊆ Sf^L(G)`, `C ∈ Sf^R(G)` is carried as an explicit hypothesis of `SearchOk` | `wip/gbu_search.lean` | the paper leaves it inside "a `Gbu(G)`-sequent"; it is what makes `unclosed_lt` apply and what Lemmas 9–12's FRJ side conditions need |
+| D8 | `◯`-freeness of `G` is a hypothesis (`hcircL`, `hcircR`) of Theorem 8 | `wip/gbu_search.lean` | our `Form` has a `◯` constructor because the same datatype carries the modal development; §5 is about IPC.  The hypotheses are consumed at exactly three points, which is the obligation list for `Gbu◯` (`docs/gbu-circ-seams.md`) |
 | D6 | derivability taken in the REPAIRED family `FRJVr`/`FRJVi`, tag existentially quantified | `wip/gbu_db.lean` | the paper's `FRJ(G)` is the IPC calculus and carries no tag; `FRJV` is what this campaign is about, and Lemma 9's proofs use only rules the two families share |
 
 ## Open questions for review
