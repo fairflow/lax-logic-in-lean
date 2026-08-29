@@ -214,6 +214,132 @@ theorem endpoints_not_complete :
    not_PLL_circ_counit,
    fun _ hep => endpoints_valid_circ_counit hep (.atom "p")⟩
 
+/-! ## Does `◯(◯A ⊃ A)` AXIOMATISE the endpoint class?  No.
+
+Two facts separate them.
+
+**(i) Endpoint models validate far more than the co-unit schema.**  An
+endpoint `m` is `≤`-maximal, so its up-set is `{m}` and forcing there is
+CLASSICAL — `m ⊩ A` or `m ⊩ ¬A` for every `A`, with no induction and no
+choice (`decForce` decides it).  So every endpoint model validates
+`◯(A ∨ ¬A)`, and by the same argument `◯φ` for every `φ` whose
+`◯`-erasure is a classical tautology.  That is an infinite schema, not
+one axiom.
+
+**(ii) The co-unit schema holds on frames that are not endpoint-seeing.**
+On a TRANSPARENT frame (`Rm` the identity — `FRJ/Erase.lean`'s class)
+`◯` collapses to the identity outright, so `◯A ⊃ A` holds at every
+world and the schema is valid; but a transparent 3-chain has no
+`≤`-maximal world in the cone of its root, so `Endpoints` fails.  On it
+`◯(p ∨ ¬p)` is refuted, since `◯` transparent turns the goal into the
+intuitionistically invalid `p ∨ ¬p`.
+
+Together: `K3t` validates `◯(◯A ⊃ A)` for every `A` and refutes a
+formula valid on every endpoint model.  So the schema — over PLL, or as
+a frame condition — does **not** axiomatise the endpoint class; the
+endpoint class sits strictly inside the schema's frames, and its logic
+strictly above PLL + the schema. -/
+
+/-- At a `≤`-maximal world forcing is classical, constructively: `decForce`
+decides the split, and the `¬A` branch is vacuous because the world has no
+proper extension. -/
+theorem force_lem_of_max {K : Kripke} {m : K.W} {A : Form}
+    (hmax : ∀ u, K.le m u → u = m) :
+    K.force m (.or A (.imp A .bot)) :=
+  match Kripke.decForce K m A with
+  | isTrue h => Or.inl h
+  | isFalse h => Or.inr (fun d hmd hA => absurd ((hmax d hmd) ▸ hA) h)
+
+/-- **Every endpoint-seeing model validates `◯(A ∨ ¬A)`** — the endpoint
+is a classical point, and the `◯`-clause is handed it. -/
+theorem endpoints_valid_circ_lem {K : Kripke} (hep : K.Endpoints) (A : Form) :
+    K.valid (.circ (.or A (.imp A .bot))) := by
+  intro b _
+  exact ⟨(hep b).m, (hep b).rm, force_lem_of_max (hep b).max⟩
+
+/-- On a transparent frame `◯` is the identity, so the co-unit holds
+everywhere. -/
+theorem force_counit_of_transparent {K : Kripke}
+    (hRm : ∀ {a u : K.W}, K.Rm a u → u = a) (c : K.W) (A : Form) :
+    K.force c (.imp (.circ A) A) := by
+  intro d _ hOp
+  obtain ⟨f, hrf, hf⟩ := hOp d (K.le_refl d)
+  exact (hRm hrf) ▸ hf
+
+theorem transparent_valid_counit {K : Kripke}
+    (hRm : ∀ {a u : K.W}, K.Rm a u → u = a) (A : Form) :
+    K.valid (.circ (.imp (.circ A) A)) :=
+  fun b _ => ⟨b, K.rm_refl b, force_counit_of_transparent hRm b A⟩
+
+/-! ### `K3t` — the same 3-chain with `Rm` the identity -/
+
+def rm3t (a b : W3) : Prop := a = b
+
+instance decRm3t (a b : W3) : Decidable (rm3t a b) :=
+  inferInstanceAs (Decidable (a = b))
+
+def K3t : Kripke where
+  W := W3
+  elems := [.e0, .e1, .e2]
+  complete := fun w => by cases w <;> decide
+  decEq := inferInstance
+  le := le3
+  le_refl := le3_refl
+  le_trans := fun {a b c} => le3_trans a b c
+  le_antisymm := fun {a b} => le3_antisymm a b
+  root := .e0
+  root_le := le3_root
+  V := v3
+  V_mono := fun {a b} hab => v3_mono a b hab
+  Rm := rm3t
+  rm_refl := fun _ => rfl
+  rm_trans := fun hab hbc => hab.trans hbc
+  sub_mi := fun {a b} h => h ▸ le3_refl a
+  Fal := fun _ => False
+  fal_mono := fun _ h => h
+  fal_V := fun h => h.elim
+  decLe := fun a b => inferInstanceAs (Decidable (le3 a b))
+  decV := fun w s => inferInstanceAs (Decidable (v3 w s))
+  decRm := fun a b => inferInstanceAs (Decidable (rm3t a b))
+  decFal := fun _ => isFalse (fun h => h)
+
+theorem K3t_transparent : ∀ {a u : K3t.W}, K3t.Rm a u → u = a :=
+  fun h => h.symm
+
+/-- `K3t` validates the co-unit schema, for every `A`. -/
+theorem K3t_valid_counit (A : Form) :
+    K3t.valid (.circ (.imp (.circ A) A)) :=
+  transparent_valid_counit K3t_transparent A
+
+/-- But it refutes `◯(p ∨ ¬p)`: the root's cone is `{root}`, and the root
+refutes `p ∨ ¬p` because `p` first holds two worlds up. -/
+theorem K3t_not_valid_circ_lem :
+    ¬ K3t.valid (.circ (.or (.atom "p") (.imp (.atom "p") .bot))) := by
+  intro h
+  obtain ⟨c, hrc, hc⟩ := h .e0 (le3_refl _)
+  have hce : c = .e0 := K3t_transparent hrc
+  subst hce
+  rcases hc with hp | hn
+  · exact absurd hp.1 (by decide)
+  · exact hn .e2 (by decide) ⟨rfl, rfl⟩
+
+/-- **`◯(◯A ⊃ A)` does NOT axiomatise the endpoint class.**  Every
+endpoint model validates `◯(A ∨ ¬A)`; `K3t` validates the co-unit schema
+yet refutes it; so `K3t` is a schema-model that is not an endpoint model,
+and the endpoint logic strictly exceeds PLL + the schema. -/
+theorem counit_schema_not_axiomatising :
+    (∀ (K : Kripke), K.Endpoints → ∀ A : Form,
+        K.valid (.circ (.or A (.imp A .bot))))
+      ∧ (∀ A : Form, K3t.valid (.circ (.imp (.circ A) A)))
+      ∧ ¬ K3t.valid (.circ (.or (.atom "p") (.imp (.atom "p") .bot))) :=
+  ⟨fun _ hep A => endpoints_valid_circ_lem hep A,
+   K3t_valid_counit,
+   K3t_not_valid_circ_lem⟩
+
+/-- info: 'FRJ.EndpointRefute.counit_schema_not_axiomatising' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms counit_schema_not_axiomatising
+
 /-- info: 'FRJ.EndpointRefute.endpoints_valid_circ_counit' does not depend on any axioms -/
 #guard_msgs in
 #print axioms endpoints_valid_circ_counit
