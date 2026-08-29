@@ -1,0 +1,261 @@
+/-
+# `Gbu(G)`, transcribed — the calculus dual to `FRJ(G)`
+
+Stage 2 of `docs/gbu-adoption-plan.md`.  Source: Fiorentini & Ferrari,
+*Duality between Unprovability and Provability in Forward
+Refutation-search for IPL*, ACM TOCL 21(3) Art. 22 (2020); transcribed
+from the LaTeX of arXiv:1804.06689, parked at
+`LaxLogic/papers/frj-corr-arxiv-1804.06689.tex` (git-ignored — a
+copyrighted preprint, and this repository is public).  Line numbers
+below are that file's.
+
+`Gbu(G)` derives the VALIDITY of `G`; `FRJ(G)` derives its refutability.
+The point of the pair is the duality (their Theorem 9): a saturated
+`FRJ(G)` database that fails to derive `G` can be read back as a
+`Gbu(G)`-derivation of `G`.  This file is only the calculus and its
+soundness — the read-back is later stages.
+
+**Two judgments** (source 3084–3089), `Ψ ⊆ Sf^L(G)`, `A ∈ Sf^R(G)`:
+regular `Ψ ⇒g A` (`GbuR`) and irregular `Ψ →g A` (`GbuI`).  The
+irregular judgment has NO left rules: it is the right-focused phase, and
+that is what makes backward search backtracking-free.  The two
+non-invertible rules are `R∨ₖ` and `L⊃`, and the paper's `Search`
+resolves both by querying the `FRJ` database rather than by guessing
+(source 3396, 3416).
+
+**Validity of a sequent** (source 3102): `τ` is valid iff
+`(⋀ Lhs τ) ⊃ Rhs τ` is, with `⋀∅ = ⊥ ⊃ ⊥`.  `⊢_Gbu(G) G` abbreviates
+`⊢_Gbu(G) (∅ ⇒g G)` (source 3107).
+
+**Divergences, logged as made:**
+
+* D1 — `R∨ₖ` (and its focused twin) is split into two constructors
+  `rorR1`/`rorR2`, as `FRJ/CalculusV.lean` already splits `∧R`; the
+  paper writes one rule with `k ∈ {1,2}`.
+* D2 — the blanket well-formedness condition `Lhs ⊆ Sf^L(G)`,
+  `Rhs ∈ Sf^R(G)` (source 3084) is NOT carried as a field on every
+  constructor.  It is a condition on the sequent LANGUAGE, not a
+  per-rule side condition, and soundness does not use it.  It becomes a
+  separate predicate when the later stages need it (they will: it bounds
+  the search space).
+* D3 — left zones are `List Form` with a `CtxEq` (`≐`) field on each
+  conclusion that names a member, so the paper's set reading of `A,Ψ`
+  survives.  House style, as `FRJ/CalculusV.lean`.
+* D4 — soundness is proved SEMANTICALLY, against `Kripke`, where the
+  paper maps `Gbu(G)`-derivations into `GJ` (source 3113).  Same
+  statement, different route, and the semantic one is stronger: it needs
+  no infallibility, so it yields `PLL`-validity, of which the paper's
+  `IPL`-validity is a corollary.
+-/
+import FRJ.Basic
+import Meta.Slime
+
+namespace FRJ.Gbu
+
+open Form
+
+/-! ## The calculus (Fig. `fig:GBU`, source 2960–3078) -/
+
+mutual
+
+/-- Regular sequents `Ψ ⇒g A`. -/
+inductive GbuR (G : Form) : List Form → Form → Type
+  /-- `Ax`, source 2967. -/
+  | ax {Γ Ψ : List Form} (A : Form) (hΓ : Γ ≐ A :: Ψ) : GbuR G Γ A
+  /-- `L⊥`, source 2975. -/
+  | lbot {Γ Ψ : List Form} (C : Form) (hΓ : Γ ≐ .bot :: Ψ) : GbuR G Γ C
+  /-- `L∧`, source 2982. -/
+  | landL {Γ Ψ : List Form} {A B C : Form}
+      (d : GbuR G (A :: B :: Ψ) C) (hΓ : Γ ≐ .and A B :: Ψ) : GbuR G Γ C
+  /-- `R∧`, source 2991. -/
+  | randR {Γ : List Form} {A B : Form}
+      (d₁ : GbuR G Γ A) (d₂ : GbuR G Γ B) : GbuR G Γ (.and A B)
+  /-- `L∨`, source 3000. -/
+  | lorL {Γ Ψ : List Form} {A B C : Form}
+      (d₁ : GbuR G (A :: Ψ) C) (d₂ : GbuR G (B :: Ψ) C)
+      (hΓ : Γ ≐ .or A B :: Ψ) : GbuR G Γ C
+  /-- `R∨₁`, source 3006 (D1). -/
+  | rorR1 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuI G Γ C₁) : GbuR G Γ (.or C₁ C₂)
+  /-- `R∨₂`, source 3006 (D1). -/
+  | rorR2 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuI G Γ C₂) : GbuR G Γ (.or C₁ C₂)
+  /-- `L⊃`, source 3012.  The left premise is FOCUSED. -/
+  | limpL {Γ Ψ : List Form} {A B C : Form}
+      (d₁ : GbuI G (.imp A B :: Ψ) A) (d₂ : GbuR G (B :: Ψ) C)
+      (hΓ : Γ ≐ .imp A B :: Ψ) : GbuR G Γ C
+  /-- `R⊃ᵢ`, source 3019; side condition `A ∈ Cl(Ψ)`. -/
+  | rimpI {Γ : List Form} {A B : Form}
+      (d : GbuR G Γ B) (hA : Clo Γ A) : GbuR G Γ (.imp A B)
+  /-- `R⊃ₙᵢ`, source 3028; side condition `A ∉ Cl(Ψ)`. -/
+  | rimpNI {Γ : List Form} {A B : Form}
+      (d : GbuR G (A :: Γ) B) (hA : ¬ Clo Γ A) : GbuR G Γ (.imp A B)
+
+/-- Irregular (right-focused) sequents `Ψ →g A`.  No left rules. -/
+inductive GbuI (G : Form) : List Form → Form → Type
+  /-- `Ax`, source 3036. -/
+  | ax {Γ Ψ : List Form} (A : Form) (hΓ : Γ ≐ A :: Ψ) : GbuI G Γ A
+  /-- `R∧`, source 3044. -/
+  | randI {Γ : List Form} {A B : Form}
+      (d₁ : GbuI G Γ A) (d₂ : GbuI G Γ B) : GbuI G Γ (.and A B)
+  /-- `R∨₁`, source 3054 (D1). -/
+  | rorI1 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuI G Γ C₁) : GbuI G Γ (.or C₁ C₂)
+  /-- `R∨₂`, source 3054 (D1). -/
+  | rorI2 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuI G Γ C₂) : GbuI G Γ (.or C₁ C₂)
+  /-- `R⊃ᵢ`, source 3061; side condition `A ∈ Cl(Ψ)`. -/
+  | rimpII {Γ : List Form} {A B : Form}
+      (d : GbuI G Γ B) (hA : Clo Γ A) : GbuI G Γ (.imp A B)
+  /-- `R⊃ₙᵢ`, source 3070; side condition `A ∉ Cl(Ψ)`.  The premise is
+  REGULAR — focus is released here. -/
+  | rimpNII {Γ : List Form} {A B : Form}
+      (d : GbuR G (A :: Γ) B) (hA : ¬ Clo Γ A) : GbuI G Γ (.imp A B)
+
+end
+
+/-- `⊢_Gbu(G) G` (source 3107). -/
+def ProvableGbu (G : Form) : Prop := Nonempty (GbuR G [] G)
+
+/-! ## `⋀`, and the paper's validity reading of a sequent -/
+
+/-- `⋀ Ψ`, with `⋀ [] = ⊥ ⊃ ⊥` (source 3102). -/
+def bigAnd : List Form → Form
+  | [] => .imp .bot .bot
+  | A :: Ψ => .and A (bigAnd Ψ)
+
+theorem forces_bigAnd {K : Kripke} {w : K.W} :
+    ∀ {Ψ : List Form}, K.forces w Ψ → K.force w (bigAnd Ψ)
+  | [], _ => fun _ _ h => h
+  | A :: Ψ, h => ⟨h A List.mem_cons_self,
+      forces_bigAnd (fun X hX => h X (List.mem_cons_of_mem _ hX))⟩
+
+theorem bigAnd_forces {K : Kripke} {w : K.W} :
+    ∀ {Ψ : List Form}, K.force w (bigAnd Ψ) → K.forces w Ψ
+  | [], _ => fun _ hX => absurd hX List.not_mem_nil
+  | A :: Ψ, h => fun X hX => by
+      rcases List.mem_cons.mp hX with rfl | hX'
+      · exact h.1
+      · exact bigAnd_forces h.2 X hX'
+
+/-- A sequent is VALID when `(⋀ Lhs) ⊃ Rhs` is (source 3102). -/
+def SeqValid (Ψ : List Form) (C : Form) : Prop := PLL (.imp (bigAnd Ψ) C)
+
+/-! ## Soundness (Lemma 7, `lemma:GBUsound`, source 3117)
+
+The local form: a derivation transports forcing of the left zone to
+forcing of the right formula, at EVERY world of EVERY model.  No
+infallibility is used — `L⊥` closes because a fallible world forces
+every formula (`Kripke.fal_force`). -/
+
+theorem forces_ctxEq {K : Kripke} {w : K.W} {Γ Γ' : List Form}
+    (h : Γ ≐ Γ') (hf : K.forces w Γ) : K.forces w Γ' :=
+  fun X hX => hf X ((h X).mpr hX)
+
+mutual
+
+theorem soundR {G : Form} {K : Kripke} :
+    ∀ {Ψ : List Form} {C : Form}, GbuR G Ψ C →
+      ∀ w : K.W, K.forces w Ψ → K.force w C
+  | _, _, .ax A hΓ, w, h => (forces_ctxEq hΓ h) A List.mem_cons_self
+  | _, _, .lbot C hΓ, w, h =>
+      K.fal_force C ((forces_ctxEq hΓ h) .bot List.mem_cons_self)
+  | _, _, .landL d hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have hab := h' _ List.mem_cons_self
+      refine soundR d w (fun X hX => ?_)
+      rcases List.mem_cons.mp hX with rfl | hX'
+      · exact hab.1
+      rcases List.mem_cons.mp hX' with rfl | hX''
+      · exact hab.2
+      · exact h' X (List.mem_cons_of_mem _ hX'')
+  | _, _, .randR d₁ d₂, w, h => ⟨soundR d₁ w h, soundR d₂ w h⟩
+  | _, _, .lorL d₁ d₂ hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have hor := h' _ List.mem_cons_self
+      have tail : ∀ X ∈ _, K.force w X := fun X hX =>
+        h' X (List.mem_cons_of_mem _ hX)
+      rcases hor with hA | hB
+      · exact soundR d₁ w (fun X hX => by
+          rcases List.mem_cons.mp hX with rfl | hX'
+          · exact hA
+          · exact tail X hX')
+      · exact soundR d₂ w (fun X hX => by
+          rcases List.mem_cons.mp hX with rfl | hX'
+          · exact hB
+          · exact tail X hX')
+  | _, _, .rorR1 d, w, h => Or.inl (soundI d w h)
+  | _, _, .rorR2 d, w, h => Or.inr (soundI d w h)
+  | _, _, .limpL d₁ d₂ hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have himp := h' _ List.mem_cons_self
+      have hA := soundI d₁ w h'
+      have hB := himp w (K.le_refl w) hA
+      refine soundR d₂ w (fun X hX => ?_)
+      rcases List.mem_cons.mp hX with rfl | hX'
+      · exact hB
+      · exact h' X (List.mem_cons_of_mem _ hX')
+  | _, _, .rimpI d _, w, h => fun v hwv hA =>
+      soundR d v (K.forces_mono hwv h)
+  | _, _, .rimpNI d _, w, h => fun v hwv hA =>
+      soundR d v (fun X hX => by
+        rcases List.mem_cons.mp hX with rfl | hX'
+        · exact hA
+        · exact K.force_mono hwv (h X hX'))
+
+theorem soundI {G : Form} {K : Kripke} :
+    ∀ {Ψ : List Form} {C : Form}, GbuI G Ψ C →
+      ∀ w : K.W, K.forces w Ψ → K.force w C
+  | _, _, .ax A hΓ, w, h => (forces_ctxEq hΓ h) A List.mem_cons_self
+  | _, _, .randI d₁ d₂, w, h => ⟨soundI d₁ w h, soundI d₂ w h⟩
+  | _, _, .rorI1 d, w, h => Or.inl (soundI d w h)
+  | _, _, .rorI2 d, w, h => Or.inr (soundI d w h)
+  | _, _, .rimpII d _, w, h => fun v hwv hA =>
+      soundI d v (K.forces_mono hwv h)
+  | _, _, .rimpNII d _, w, h => fun v hwv hA =>
+      soundR d v (fun X hX => by
+        rcases List.mem_cons.mp hX with rfl | hX'
+        · exact hA
+        · exact K.force_mono hwv (h X hX'))
+
+end
+
+/-- **Lemma 7** (`lemma:GBUsound`, source 3117): a derivable sequent is
+valid.  Proved against every `Kripke` model, so the conclusion is
+`PLL`-validity; the paper's `IPL` reading follows. -/
+theorem seqValid_of_GbuR {G : Form} {Ψ : List Form} {C : Form}
+    (d : GbuR G Ψ C) : SeqValid Ψ C :=
+  fun K => fun _ _ hbig => soundR d _ (bigAnd_forces hbig)
+
+theorem seqValid_of_GbuI {G : Form} {Ψ : List Form} {C : Form}
+    (d : GbuI G Ψ C) : SeqValid Ψ C :=
+  fun K => fun _ _ hbig => soundI d _ (bigAnd_forces hbig)
+
+/-- **Theorem 6** (Soundness of `Gbu(G)`, `theo:GBUsound`, source 3125):
+`⊢_Gbu(G) G` implies `G ∈ IPL`.  Stated against the wider `PLL` class,
+which is stronger. -/
+theorem pll_of_provableGbu {G : Form} (h : ProvableGbu G) : PLL G := by
+  obtain ⟨d⟩ := h
+  intro K
+  exact soundR d K.root (fun _ hX => absurd hX List.not_mem_nil)
+
+theorem ipl_of_provableGbu {G : Form} (h : ProvableGbu G) : IPL G :=
+  IPL_of_PLL (pll_of_provableGbu h)
+
+/-! ## Stage-2 gate: no computed index in any constructor's return type -/
+
+#slime FRJ.Gbu.GbuR FRJ.Gbu.GbuI
+
+/-- info: 'FRJ.Gbu.soundR' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms soundR
+
+/-- info: 'FRJ.Gbu.pll_of_provableGbu' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms pll_of_provableGbu
+
+/-- info: 'FRJ.Gbu.ipl_of_provableGbu' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms ipl_of_provableGbu
+
+end FRJ.Gbu
