@@ -1,5 +1,111 @@
 # HANDOFF — lax-logic-in-lean (fairflow/lax-logic-in-lean)
 
+## 2026-08-29a — `TagLeafV` is REFUTED: the lift's interface is uninhabited, and (LIFT) must be reached another way
+
+Branch `claude/frj-redevelopment-69005f`.  The campaign's open item 1
+("prove reached `TagLeafV` instances always constructible") is **closed
+in the negative**, kernel-checked.  Two increments, both sorry-free and
+pinning `[propext, Quot.sound]`.
+
+### 1. The interface was first SHRUNK (wip/minmodv_liftmain.lean)
+
+`RegWitV` constrains the derivation's world only through `K.le a wld`
+and `Λ*_wld ⊆ ctx`; the goal must be refuted at `a`, NOT at `wld`.  Two
+moves the round-2 recursion did not use, both decidable, both inserted
+in the grade-1 prime/or branch ahead of `tl`:
+
+* `RegWitV.mono : K.le a b → RegWitV K G b C → RegWitV K G a C` — a wit
+  transports DOWNWARD along `≤` unchanged.  Hence the **strict-refuter
+  walk** `strictRef K a C` (the `v > a` still refuting `C`): re-anchor
+  there, `ht` drops, recurse.  Run to exhaustion it leaves the demand
+  only at a SOLE REFUTER.
+* The **coverage re-anchor** `axAnchor K G a C`: `Ax^R` is barren with
+  no semantic side condition, so a PRIME goal closes outright as soon
+  as some `v ≥ a` has `Λ*_v ⊆ Ĝ_at \ {C}` — a world where the goal may
+  even be FORCED.  (`regPrimeV_ax` with its `hloc`/`impPart` hypotheses
+  replaced by one subset test, at a world that may be strictly above.)
+
+`TagLeafV` accordingly gained `hsole` and `hax`; `tagLeafV_of_hloc` is
+still vacuous, `completenessV_of_hloc` still re-derives `completenessV`,
+and both instance cells (`provableV_residue_lifted`,
+`provableV_circ_peirce_lifted`) revalidate.
+
+### 2. Then the shrunken interface was REFUTED (wip/tagleaf_refute.lean)
+
+    theorem V.not_clo_of_tagged (d : FRJVr G t Γ C)
+        (ht : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W C) :
+        ¬ Clo Γ C ∧ ¬ Clo Γ (◯C)
+
+`lemma39R` forces the whole of `Γ` at the root of `Mod(d)` and refutes
+`C` there; `tag_cone` refutes `C` on the rest of the root's modal cone;
+so the root forces neither `C` nor `◯C`.  **A tagged row can retain
+neither its own goal nor the goal's `◯`.**
+
+The separating cell.  `K₂` = the 2-chain `⊥ ≤ ⊤`, `Rm = ≤`, `p` at `⊤`
+only, infallible; `G = ◯p ⊃ p` (the co-unit).  Then `Λ*_⊥ = [◯p]`
+(circ-carrying) and `Λ*_⊤ = [p]`, the root refutes `G` and refutes
+`C = p` while `⊤ ⊩ p`; `⊥` is a sole refuter; `Ĝ_at \ {p} = []` so
+`hax` holds.  Every `TagLeafV` hypothesis is DISCHARGED, and its
+conclusion would need a tagged row containing `◯p` (anchor `⊥`) or `p`
+(anchor `⊤`) — both refuted above.
+
+    theorem tagLeafV_K2_GC_uninhabited : TagLeafV K2 GC → False
+    theorem no_universal_tagLeafV :
+      ¬ (∀ K G, K.Infallible → ¬ K.valid G → Nonempty (TagLeafV K G))
+
+The refutation uses only `hcirc`/`hsucc`/`hsole`/`hax`, so it kills the
+ROUND-2 interface as well, not just the shrunken one.
+
+### 3. What this does and does not say
+
+It does NOT refute (LIFT).  The control is in the same file:
+`provableV_GC : ProvableV GC`, via `completenessV_of_endpoints` (`K₂` is
+cone-grounded).  The V-engine exhibits the derivation concretely —
+`{◯p} ⇒ ◯p ⊃ p` with a **blocked** tag, i.e. through a fallible join,
+which `minModL`'s FREE grade accepts and the TAGGED grade cannot.  So
+the tagged demand is strictly stronger than provability: the interface
+is the wrong object to inhabit.  For `(K₂, ◯p⊃p)`, `completenessV_lift`
+is VACUOUS — a false hypothesis — while the goal is provable.
+
+Where the tagged demand comes from, exactly: grade 1 is entered ONLY
+from the irregular `◯Z` case, at `mz.e`/`mr.m`, both of which CONE-REFUTE
+`Z` — and at a cone-refuted goal `tagPrimeP_join` fires, never `tl`.
+Cone-refutation survives the `∧`-descent (a forced conjunct transports)
+but NOT the `⊃`-descent to `minEta`'s world.  **So `tl` is reachable only
+through a `⊃`-descent (or the corner's regular float) that loses
+cone-refutation** — which is where the repair belongs.
+
+### 4. The census (wip/tagleaf_probe.lean, `lake exe tagleafprobe`)
+
+Battery of 9 infallible models (wf-gated, watched negative control
+`Mbad`, two independent circ-carrying detectors cross-checked, and a
+watched POSITIVE control for the coverage re-anchor) × exhaustive goals
+over `{p,q,⊥}` × the typed V-engine.
+
+| stratum | tl-configs | closed by re-anchor | closed by walk | residue | residue with a RegWitV row |
+|---|---|---|---|---|---|
+| size ≤ 5 | 76 | 16 | 12 | 48 | 0 |
+| size ≤ 6 | 1691 | 282 | 271 | 1138 | 68 |
+
+Cone-trivial refuters: 0 at both strata — the walk never lands on the
+easy case.  The residue is one shape: **`C` is an atom occurring on the
+LEFT of `G` too**, so `hsole` puts it into `Λ*_v` at every world above
+and no anchor escapes.  `wip/tagleaf_probe6_out.txt` banks the run.
+(Caveat: the census enumerates configurations MATCHING the predicate,
+not configurations the recursion VISITS — see §3 for the reachability
+characterisation, which is the open question.)
+
+### 5. Open, restated
+
+1. **Repair the demand, not the interface.**  Either restore
+   cone-refutation at the grade-1 `⊃`-descent, or weaken what `circNotIn`
+   asks of its premise row.  A third candidate, not yet built: the
+   **axiom-pledged join** — `joinAtP` pledging `C` with `Ax^R C` as the
+   single promise row, legal whenever the stable zones are empty
+   (`hJ5`/`hJ7s` vacuous).  It is decidable per cell.
+2. Root-only infallibility (unchanged).
+3. Curation (unchanged), now including `tagleafprobe` in TOOLS.md.
+
 ## 2026-08-25d — RefAt MECHANISED: FRJV typed calculus, soundnessV PROVED, engines modular, ρ12⊢?ρ15 SETTLED — the matrix has no open cell
 
 Same branch (`claude/frj-incompleteness-80-81-251e7f`).  Plan (review

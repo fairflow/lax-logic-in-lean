@@ -52,23 +52,113 @@ theorem ht_lt_of_le {K : Kripke} {a b e : K.W} (hab : K.le a b)
     (hbe : K.le b e) (hne : e ≠ b) : ht K e < ht K a :=
   Nat.lt_of_lt_of_le (ht_lt hbe hne) (ht_le hab)
 
+/-! ## Two moves that shrink the tagged residual
+
+`RegWitV` ties the derivation to a world only through `K.le a wld` and
+`Λ*_wld ⊆ ctx`; the goal need be refuted at `a`, NOT at `wld`.  Two
+consequences the round-2 recursion did not use:
+
+* **Coverage re-anchor.**  `Ax^R` is a barren rule with no semantic side
+  condition, so for a PRIME goal the demand closes outright as soon as
+  some `v ≥ a` has `Λ*_v ⊆ Ĝ_at \ {C}` — the axiom's own context.  This
+  is `regPrimeV_ax` with its two hypotheses (`hloc`, `impPart Λ* = []`)
+  replaced by one decidable subset test at a world that may be strictly
+  above `a`, and where the goal may even be FORCED.
+* **Strict-refuter walk.**  A `RegWitV` transports DOWNWARD along `≤`
+  unchanged, so a demand at `a` may be re-anchored at any strict
+  `≤`-extension still refuting the goal, where `ht` drops.  Run to
+  exhaustion this leaves the demand only at a SOLE REFUTER, whose whole
+  strict up-set forces the goal.
+
+Both tests are decidable and both hypotheses they fail on are added to
+`TagLeafV` below, so the interface is strictly weaker than round 2's.
+
+(`RegWitV.mono` is a general utility of `wip/minmodv.lean`'s structure;
+it lives here so the lift stays a leaf edit, and hoists at curation.) -/
+
+def RegWitV.mono {K : Kripke} {G : Form} {a b : K.W} {C : Form}
+    (hab : K.le a b) (w : RegWitV K G b C) : RegWitV K G a C :=
+  { ctx := w.ctx, t := w.t, der := w.der, tOK := w.tOK
+    wld := w.wld, wle := K.le_trans hab w.wle, cov := w.cov }
+
+/-- The worlds `≥ a` whose `Λ*` fits inside the `Ax^R` context of `C`. -/
+def axAnchor (K : Kripke) (G : Form) (a : K.W) (C : Form) : List K.W :=
+  K.elems.filter (fun v => decide (K.le a v) &&
+    (lamStar K v G).all (fun X => decide (X ∈ rm (gAt G) C)))
+
+theorem mem_axAnchor {K : Kripke} {G : Form} {a v : K.W} {C : Form} :
+    v ∈ axAnchor K G a C ↔ (K.le a v ∧ lamStar K v G ⊆ rm (gAt G) C) := by
+  constructor
+  · intro h
+    have hb := (List.mem_filter.mp h).2
+    rw [Bool.and_eq_true] at hb
+    refine ⟨of_decide_eq_true hb.1, fun {X} hX => ?_⟩
+    exact of_decide_eq_true (List.all_eq_true.mp hb.2 X hX)
+  · rintro ⟨hle, hsub⟩
+    refine List.mem_filter.mpr ⟨K.complete v, ?_⟩
+    rw [Bool.and_eq_true]
+    exact ⟨decide_eq_true hle,
+      List.all_eq_true.mpr (fun X hX => decide_eq_true (hsub hX))⟩
+
+theorem noax_of_axAnchor_nil {K : Kripke} {G : Form} {a : K.W} {C : Form}
+    (h : axAnchor K G a C = []) :
+    ∀ v, K.le a v → ¬ (lamStar K v G ⊆ rm (gAt G) C) := by
+  intro v hle hsub
+  have hmem : v ∈ axAnchor K G a C := mem_axAnchor.mpr ⟨hle, hsub⟩
+  rw [h] at hmem
+  exact absurd hmem List.not_mem_nil
+
+/-- The barren axiom cell, anchored at a world that need not refute `C`. -/
+def axRegWit {K : Kripke} {G : Form} {a v : K.W} {C : Form}
+    (hCp : C.isPrime) (hC : C ∈ sfR G)
+    (hv : K.le a v ∧ lamStar K v G ⊆ rm (gAt G) C) : RegWitV K G a C :=
+  { ctx := rm (gAt G) C, t := .barren
+    der := .axR C hCp hC (CtxEq.refl _)
+    tOK := Or.inl rfl
+    wld := v, wle := hv.1, cov := hv.2 }
+
+/-- The strict `≤`-extensions of `a` that still refute `C`. -/
+def strictRef (K : Kripke) (a : K.W) (C : Form) : List K.W :=
+  K.elems.filter (fun v => decide (K.le a v ∧ v ≠ a ∧ ¬ K.force v C))
+
+theorem mem_strictRef {K : Kripke} {a v : K.W} {C : Form} :
+    v ∈ strictRef K a C ↔ (K.le a v ∧ v ≠ a ∧ ¬ K.force v C) := by
+  simp [strictRef, List.mem_filter, K.complete v]
+
+/-- `strictRef` empty is exactly the sole-refuter condition.  Proved
+through `Decidable.of_not_not` (`decForce`), not `by_contra`, to keep
+`Classical.choice` out. -/
+theorem sole_of_strictRef_nil {K : Kripke} {a : K.W} {C : Form}
+    (h : strictRef K a C = []) : ∀ u, K.le a u → u ≠ a → K.force u C := by
+  intro u hau hne
+  refine Decidable.of_not_not (fun hfu => ?_)
+  have hmem : u ∈ strictRef K a C := mem_strictRef.mpr ⟨hau, hne, hfu⟩
+  rw [h] at hmem
+  exact absurd hmem List.not_mem_nil
+
 /-! ## The interface: the one un-served tagged leaf -/
 
 /-- A tagged prime/or witness at a circ-carrying world where the goal
-is refuted but NOT cone-refuted (some proper `Rm`-successor forces it).
-Everything else in the lifted recursion is constructed; this is the
-named residual — VACUOUS under `hloc`. -/
+is refuted but NOT cone-refuted (some proper `Rm`-successor forces it),
+the world is a SOLE REFUTER (every strict `≤`-extension forces the goal,
+so the strict-refuter walk has nowhere to go), and — for a prime goal —
+no world above it carries a `Λ*` small enough for `Ax^R` (so the
+coverage re-anchor fails too).  Everything else in the lifted recursion
+is constructed; this is the named residual — VACUOUS under `hloc`. -/
 def TagLeafV (K : Kripke) (G : Form) : Type :=
   ∀ (w : K.W) (C : Form), C ∈ sfR G → ¬ K.force w C →
     (C.isPrime = true ∨ ∃ C₁ C₂, C = Form.or C₁ C₂) →
     circPart (lamStar K w G) ≠ [] →
     (∃ c, K.Rm w c ∧ c ≠ w ∧ K.force c C) →
+    (∀ u, K.le w u → u ≠ w → K.force u C) →
+    (C.isPrime = true → ∀ v, K.le w v →
+      ¬ (lamStar K v G ⊆ rm (gAt G) C)) →
     RegWitV K G w C
 
 /-- `hloc` makes the interface vacuous. -/
 def tagLeafV_of_hloc {K : Kripke} {G : Form}
     (hloc : ∀ b : K.W, circPart (lamStar K b G) = []) : TagLeafV K G :=
-  fun w _ _ _ _ hcirc _ => absurd (hloc w) hcirc
+  fun w _ _ _ _ hcirc _ _ _ => absurd (hloc w) hcirc
 
 /-- A circ-carrying world has a proper `Rm`-successor: the carried
 `◯Y`'s own forcing supplies the witness. -/
@@ -306,8 +396,24 @@ def minModL (K : Kripke) (G : Form)
             have hcspec : K.Rm a c ∧ K.force c (.atom p) := by
               have := (List.mem_filter.mp hcmem).2
               simpa using this
-            exact tl a (.atom p) hC hnf (Or.inl rfl) hcirc
-              ⟨c, hcspec.1, fun h => hnf (h ▸ hcspec.2), hcspec.2⟩
+            match hax : axAnchor K G a (.atom p) with
+            | v :: _ =>
+                have hvm : v ∈ axAnchor K G a (.atom p) := by
+                  rw [hax]; exact List.mem_cons_self
+                exact axRegWit rfl hC (mem_axAnchor.mp hvm)
+            | [] =>
+              match hv : strictRef K a (.atom p) with
+              | v :: _ =>
+                  have hvm : v ∈ strictRef K a (.atom p) := by
+                    rw [hv]; exact List.mem_cons_self
+                  have hvs : K.le a v ∧ v ≠ a ∧ ¬ K.force v (.atom p) :=
+                    mem_strictRef.mp hvm
+                  exact (minModL K G hinf tl v 1 (.atom p) hC hvs.2.2).mono hvs.1
+              | [] =>
+                  exact tl a (.atom p) hC hnf (Or.inl rfl) hcirc
+                    ⟨c, hcspec.1, fun h => hnf (h ▸ hcspec.2), hcspec.2⟩
+                    (sole_of_strictRef_nil hv)
+                    (fun _ => noax_of_axAnchor_nil hax)
   | 1, .bot =>
       by_cases hcirc : circPart (lamStar K a G) = []
       · by_cases hempty : impPart (lamStar K a G) = []
@@ -341,8 +447,24 @@ def minModL (K : Kripke) (G : Form)
             have hcspec : K.Rm a c ∧ K.force c .bot := by
               have := (List.mem_filter.mp hcmem).2
               simpa using this
-            exact tl a .bot hC hnf (Or.inl rfl) hcirc
-              ⟨c, hcspec.1, fun h => hnf (h ▸ hcspec.2), hcspec.2⟩
+            match hax : axAnchor K G a .bot with
+            | v :: _ =>
+                have hvm : v ∈ axAnchor K G a .bot := by
+                  rw [hax]; exact List.mem_cons_self
+                exact axRegWit rfl hC (mem_axAnchor.mp hvm)
+            | [] =>
+              match hv : strictRef K a .bot with
+              | v :: _ =>
+                  have hvm : v ∈ strictRef K a .bot := by
+                    rw [hv]; exact List.mem_cons_self
+                  have hvs : K.le a v ∧ v ≠ a ∧ ¬ K.force v .bot :=
+                    mem_strictRef.mp hvm
+                  exact (minModL K G hinf tl v 1 .bot hC hvs.2.2).mono hvs.1
+              | [] =>
+                  exact tl a .bot hC hnf (Or.inl rfl) hcirc
+                    ⟨c, hcspec.1, fun h => hnf (h ▸ hcspec.2), hcspec.2⟩
+                    (sole_of_strictRef_nil hv)
+                    (fun _ => noax_of_axAnchor_nil hax)
   | 1, .or C₁ C₂ =>
       by_cases hcirc : circPart (lamStar K a G) = []
       · exact regOrV_join K G a C₁ C₂ hcirc hC hnf
@@ -368,8 +490,18 @@ def minModL (K : Kripke) (G : Form)
             have hcspec : K.Rm a c ∧ K.force c (.or C₁ C₂) := by
               have := (List.mem_filter.mp hcmem).2
               simpa using this
-            exact tl a (.or C₁ C₂) hC hnf (Or.inr ⟨C₁, C₂, rfl⟩) hcirc
-              ⟨c, hcspec.1, fun h => hnf (h ▸ hcspec.2), hcspec.2⟩
+            match hv : strictRef K a (.or C₁ C₂) with
+            | v :: _ =>
+                have hvm : v ∈ strictRef K a (.or C₁ C₂) := by
+                  rw [hv]; exact List.mem_cons_self
+                have hvs : K.le a v ∧ v ≠ a ∧ ¬ K.force v (.or C₁ C₂) :=
+                  mem_strictRef.mp hvm
+                exact (minModL K G hinf tl v 1 (.or C₁ C₂) hC hvs.2.2).mono hvs.1
+            | [] =>
+                exact tl a (.or C₁ C₂) hC hnf (Or.inr ⟨C₁, C₂, rfl⟩) hcirc
+                  ⟨c, hcspec.1, fun h => hnf (h ▸ hcspec.2), hcspec.2⟩
+                  (sole_of_strictRef_nil hv)
+                  (fun h => Bool.noConfusion h)
   | 1, .circ Z =>
       exact circRegWit K G hinf hC hnf
         (fun b hab A B hsf hnfY hnA =>
@@ -533,6 +665,8 @@ decreasing_by
          exact ht_lt mz.le hea)
       | (apply Prod.Lex.left
          exact ht_lt (K.sub_mi hrm) hne)
+      | (apply Prod.Lex.left
+         exact ht_lt hvs.1 hvs.2.1)
       | (apply Prod.Lex.left
          exact ht_lt_of_le hab m.le hea')
       | (apply Prod.Lex.right
