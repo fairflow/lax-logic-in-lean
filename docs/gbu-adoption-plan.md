@@ -166,12 +166,31 @@ mechanised); `BSearch` as a *runnable* procedure (Stage 4, later); the
 `FRJ/Sound.lean` + `SoundV.lean`, `FRJ/Search/Core.lean` (`Ops`, the
 saturation loop, subsumption), `FRJ/Minimal.lean` (§6 for `◯`-free).
 
-## Divergence log
+## Stage status
 
-*(empty — nothing transcribed yet)*
+* **Stage 2 (transcription) — DONE.**  `wip/gbu.lean`: 16 constructors
+  across `GbuR`/`GbuI`, each citing its source line; `#slime` reports 0
+  of 16 slimed.
+* **Stage 3 (the paper's results) — soundness and termination DONE.**
+  Lemma 7 (`seqValid_of_GbuR`/`_GbuI`), Theorem 6
+  (`pll_of_provableGbu`, `ipl_of_provableGbu`), Lemma 8 (`wg_step`),
+  Theorem 7's usable content (`step_wf`).  Sorry-free; soundness pins
+  `[propext]`, the weight and termination results `[propext,
+  Quot.sound]`.
+* **Next**: §4's saturated databases with (DB1)/(DB2), which Lemma 9
+  needs — its NINE clauses (the earlier `pdftotext` extract truncated at
+  six) are all about the evaluation relation `▷`, i.e. the FRJ bridge.
+  Then Lemmas 10–12, Theorem 8 (`BSearch`), Theorem 9 (the duality).
+
+## Divergence log
 
 | # | Divergence from the paper | Where | Why |
 |---|---|---|---|
+| D1 | `R∨ₖ` split into `rorR1`/`rorR2` (and the focused twins) | `wip/gbu.lean` | house style; `FRJ/CalculusV.lean` already splits `∧R` |
+| D2 | the blanket `Lhs ⊆ Sf^L(G)`, `Rhs ∈ Sf^R(G)` is not a field on every constructor | `wip/gbu.lean` | a condition on the sequent LANGUAGE, not a rule side condition; soundness never uses it.  It IS load-bearing for Lemma 8, so it is carried explicitly on the two `R⊃ₙᵢ` steps |
+| D3 | left zones are `List Form` with a `CtxEq` field on each conclusion naming a member | `wip/gbu.lean` | keeps the paper's set reading of `A,Ψ`; house style |
+| D4 | soundness proved semantically against `Kripke`, not by the paper's translation into `GJ` | `wip/gbu.lean` | same statement, stronger conclusion: no infallibility needed, so `PLL`-validity, of which the paper's `IPL` reading is a corollary |
+| D5 | Theorem 7's `O(|τ|²)` height bound replaced by well-foundedness of the step relation | `wip/gbu.lean` | well-foundedness is what backward search needs; the asymptotic constant is not used downstream |
 
 ## Open questions for review
 

@@ -464,6 +464,46 @@ theorem wg_step {G : Form} {p q : Bool × List Form × Form} (h : Step G p q) :
 #guard_msgs in
 #print axioms wg_step
 
+/-! ## Termination (Theorem 7, `theo:gbufin`, source 3222)
+
+The paper bounds the height of a `Gbu(G)`-tree by `O(|τ|²)`.  Divergence
+**D5**: the asymptotic bound is not mechanised — what backward search
+actually needs is that the step relation is WELL-FOUNDED, which is what
+Lemma 8 buys and what is proved here.  The constant-factor statement
+would need a separate development and is not used downstream. -/
+
+/-- `Acc` for the lexicographic triple, by well-founded recursion on the
+triple itself — Lean's own machinery, so no mathlib well-foundedness
+lemma is needed (and none is imported). -/
+private def accWg (a b c : Nat) : Acc WgLt (a, b, c) :=
+  .intro _ (by
+    rintro ⟨a', b', c'⟩ h
+    exact accWg a' b' c')
+termination_by (a, b, c)
+decreasing_by
+  rcases h with h | ⟨he, h | ⟨he2, h⟩⟩
+  · exact Prod.Lex.left _ _ h
+  · subst he
+    exact Prod.Lex.right _ (Prod.Lex.left _ _ h)
+  · subst he
+    subst he2
+    exact Prod.Lex.right _ (Prod.Lex.right _ h)
+
+theorem wgLt_wf : WellFounded WgLt :=
+  ⟨fun x => by obtain ⟨a, b, c⟩ := x; exact accWg a b c⟩
+
+/-- **Termination of backward proof-search in `Gbu(G)`** — the content of
+Theorem 7 that the search needs. -/
+theorem step_wf (G : Form) :
+    WellFounded (fun p q : Bool × List Form × Form => Step G p q) :=
+  Subrelation.wf (fun {_ _} h => wg_step h)
+    (InvImage.wf (fun p : Bool × List Form × Form => wg G p.1 p.2.1 p.2.2)
+      wgLt_wf)
+
+/-- info: 'FRJ.Gbu.step_wf' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms step_wf
+
 /-! ## Stage-2 gate: no computed index in any constructor's return type -/
 
 #slime FRJ.Gbu.GbuR FRJ.Gbu.GbuI
