@@ -75,7 +75,49 @@ but NOT the `⊃`-descent to `minEta`'s world.  **So `tl` is reachable only
 through a `⊃`-descent (or the corner's regular float) that loses
 cone-refutation** — which is where the repair belongs.
 
-### 4. The census (wip/tagleaf_probe.lean, `lake exe tagleafprobe`)
+### 3a. The criterion — CONSTRUCTED, not enumerated (Matthew, 2026-08-29)
+
+The battery sweep below answered "how often is the interface empty?"
+with a statistic.  That is the wrong instrument: the answer is a
+theorem, read off two `Λ*` computations with no enumeration.
+
+    theorem tagLeafV_empty_of_stuckAtom {K G w} {x : String}
+        (hCR : atom x ∈ sfR G) (hCL : atom x ∈ sfL G)
+        (hOCL : ◯(atom x) ∈ sfL G)
+        (hnf : ¬ K.force w (atom x)) (hOC : K.force w (◯(atom x)))
+        (hsole : ∀ u, K.le w u → u ≠ w → K.force u (atom x)) :
+        TagLeafV K G → False
+
+Call `(w, p)` a **stuck atom**: a variable occurring on both sides of
+`G` (with `◯p` on the left), refuted at `w`, with `w ⊩ ◯p`, and forced
+at every strict `≤`-extension of `w`.  Then `◯p ∈ Λ*_w` and `p ∈ Λ*_v`
+for every `v > w`, so every anchor a `RegWitV` could choose is poisoned:
+at `w` it must swallow `◯p`, above `w` it must swallow `p`, and
+`not_mem_of_tagged` forbids both.  `tagLeafV_K2_GC_uninhabited'`
+re-derives the `K₂` cell from the criterion as a consistency control.
+
+So `completenessV_lift` is VACUOUS on the whole stuck-atom class — for
+every goal carrying `p` and `◯p` on the left and `p` on the right, and
+every model with such a world.  That is not a corner.
+
+### 3b. Where the conflict can and cannot arise
+
+Sharper, and the repair target.  The grade-1 entry worlds `mz.e`/`mr.m`
+CONE-REFUTE `Z`, and cone-refutation is exactly incompatible with
+`◯Z ∈ Λ*_{w₁}` (forcing `◯Z` needs an `Rm`-successor forcing `Z`).
+**So at the entry worlds the conflict cannot happen.**  It is introduced
+by the `⊃`-descent to `minEta`'s world, which drops cone-refutation
+(the `∧`-descent keeps it).  A grade-1 recursion that preserved
+cone-refutation would be conflict-free by construction; restoring it at
+the `⊃`-descent — or replacing that descent — is the open design
+question, and it is a STATEMENT question for review, not a proof grind.
+
+### 4. The census, SUPERSEDED by §3a (wip/tagleaf_probe.lean, `lake exe tagleafprobe`)
+
+Retained only as the record of how the shapes were first spotted; the
+criterion subsumes its evidential role and its brute-force method is
+retired (standing rule: construct countermodels, do not sweep).
+
 
 Battery of 9 infallible models (wf-gated, watched negative control
 `Mbad`, two independent circ-carrying detectors cross-checked, and a

@@ -195,6 +195,69 @@ theorem no_universal_tagLeafV :
   obtain ⟨tl⟩ := h K2 GC K2_infallible not_valid_GC
   exact tagLeafV_K2_GC_uninhabited tl
 
+/-! ## The general criterion: a STUCK ATOM empties the interface
+
+The `K₂` cell is not special.  Call `(w, p)` a **stuck atom** for `G`
+when `p` is a variable with `p ∈ Sf^R(G)`, `p ∈ Sf^L(G)`, `◯p ∈ Sf^L(G)`,
+and
+
+    w ⊮ p,    w ⊩ ◯p,    ∀ u > w, u ⊩ p.
+
+Then `◯p ∈ Λ*_w` (so `w` is circ-carrying and has a proper `Rm`-successor
+forcing `p`), and `p ∈ Λ*_v` for every `v > w` (an atom's `⊩*` is its
+valuation).  So EVERY anchor a `RegWitV` could pick is poisoned: at `w`
+it must swallow `◯p`, above `w` it must swallow `p` — and
+`not_mem_of_tagged` forbids both.  No enumeration is involved: the
+hypotheses are read off the two `Λ*` computations. -/
+
+theorem tagLeafV_empty_of_stuckAtom {K : Kripke} {G : Form} {w : K.W}
+    {x : String}
+    (hCR : Form.atom x ∈ sfR G) (hCL : Form.atom x ∈ sfL G)
+    (hOCL : Form.circ (Form.atom x) ∈ sfL G)
+    (hnf : ¬ K.force w (.atom x)) (hOC : K.force w (.circ (.atom x)))
+    (hsole : ∀ u, K.le w u → u ≠ w → K.force u (.atom x)) :
+    TagLeafV K G → False := by
+  intro tl
+  have hOCmem : Form.circ (Form.atom x) ∈ lamStar K w G :=
+    mem_lamStar.mpr ⟨hOCL, ⟨hOC, hnf⟩⟩
+  have hcirc : circPart (lamStar K w G) ≠ [] := by
+    intro h
+    have hm : Form.circ (Form.atom x) ∈ circPart (lamStar K w G) :=
+      List.mem_filter.mpr ⟨hOCmem, rfl⟩
+    rw [h] at hm
+    exact absurd hm List.not_mem_nil
+  have hsucc : ∃ c, K.Rm w c ∧ c ≠ w ∧ K.force c (.atom x) := by
+    obtain ⟨c, hrc, hcC⟩ := hOC w (K.le_refl w)
+    exact ⟨c, hrc, fun h => hnf (h ▸ hcC), hcC⟩
+  -- above `w` the atom itself sits in `Λ*`; at `w` the `◯` does
+  have hmem : ∀ v, K.le w v → v ≠ w → Form.atom x ∈ lamStar K v G :=
+    fun v hwv hvw => mem_lamStar.mpr ⟨hCL, hsole v hwv hvw⟩
+  have hax : (Form.atom x).isPrime = true → ∀ v, K.le w v →
+      ¬ (lamStar K v G ⊆ rm (gAt G) (.atom x)) := by
+    intro _ v hwv hsub
+    by_cases hvw : v = w
+    · subst hvw
+      have hin := rm_subset (hsub hOCmem)
+      exact Bool.noConfusion (List.mem_filter.mp hin).2
+    · exact (mem_rm.mp (hsub (hmem v hwv hvw))).1 rfl
+  have wit := tl w (.atom x) hCR hnf (Or.inl rfl) hcirc hsucc hsole hax
+  obtain ⟨hnC, hnOC⟩ := V.not_mem_of_tagged wit.der wit.tOK
+  have hcov : lamStar K wit.wld G ⊆ wit.ctx := wit.cov
+  by_cases hvw : wit.wld = w
+  · rw [hvw] at hcov
+    exact hnOC (hcov hOCmem)
+  · exact hnC (hcov (hmem wit.wld wit.wle hvw))
+
+/-- The `K₂` cell is the criterion at `x = "p"`, `w = ⊥` — a consistency
+control on the two proofs. -/
+theorem tagLeafV_K2_GC_uninhabited' : TagLeafV K2 GC → False :=
+  tagLeafV_empty_of_stuckAtom (x := "p") (by decide) (by decide) (by decide)
+    not_force_bot_p force_bot_circ_p hsole
+
+/-- info: 'FRJ.TagLeafRefute.tagLeafV_empty_of_stuckAtom' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms tagLeafV_empty_of_stuckAtom
+
 /-! ## The control: the SAME cell IS provable
 
 `K₂` is cone-grounded (`Rm = ≤`), hence endpoint-seeing, so the peer
