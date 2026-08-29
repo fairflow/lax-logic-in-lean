@@ -13,14 +13,28 @@ way to finish the campaign would be to show every PLL non-theorem has an
 endpoint-seeing countermodel.  **That route is dead**, and this file
 kills it.
 
+**`Endpoints` is ∀∃, not ∃∀** (Matthew, 2026-08-29).  It says every
+world sees SOME `≤`-maximal world, not that one `≤`-maximal world is
+seen by all.  The distinction is the whole reason the condition is not
+already absurd: the ∃∀ form would make the frame directed — a finite
+rooted poset with a greatest element — and directed frames validate
+Jankov's `¬A ∨ ¬¬A`, so the ∃∀ class could not be complete even for
+IPL.  Dropping `◯` altogether, the ∀∃ form is automatic (every finite
+poset has a maximal element above every point), so it constrains
+nothing intuitionistically; everything below is modal.
+
 The semantic content of the frame condition is a COLLAPSE.  At a
 `≤`-maximal world `m`, `Rm ⊆ ≤` forces the modal cone to be `{m}`, so
 
     m ⊩ ◯A   ⟺   m ⊩ A          (◯ is the identity at an endpoint)
 
 and therefore `m ⊩ ◯A ⊃ A` — the co-unit, which PLL does not prove,
-holds at every endpoint.  `Endpoints` says every modal cone reaches such
-a world, which is exactly what it takes to make `◯(◯p ⊃ p)` valid.
+holds at every endpoint, for EVERY `A`.  `Endpoints` says every modal
+cone reaches such a world, which is exactly what it takes to make the
+schema `◯(◯A ⊃ A)` valid.  So `completeness_of_endpoints` is not a
+partial result towards PLL completeness: it is a COMPLETE result for a
+stronger logic, PLL + `◯(◯A ⊃ A)` (at least — the schema is validated,
+whether it axiomatises the class is open).
 
     endpoints_valid_circ_counit : K.Endpoints → K.valid (◯(◯p ⊃ p))
     not_PLL_circ_counit         : ¬ PLL (◯(◯p ⊃ p))
@@ -49,20 +63,22 @@ open Form
 
 /-- At a `≤`-maximal world the modal cone is a singleton, so `◯` is the
 identity there and the co-unit holds. -/
-theorem force_counit_of_max {K : Kripke} {m : K.W} {x : String}
+theorem force_counit_of_max {K : Kripke} {m : K.W} {A : Form}
     (hmax : ∀ u, K.le m u → u = m) :
-    K.force m (.imp (.circ (.atom x)) (.atom x)) := by
+    K.force m (.imp (.circ A) A) := by
   intro d hmd hOp
   obtain ⟨c, hrc, hc⟩ := hOp d (K.le_refl d)
   have hdm : d = m := hmax d hmd
   have hcm : c = m := hmax c (K.le_trans hmd (K.sub_mi hrc))
   exact (hcm.trans hdm.symm) ▸ hc
 
-/-- **`◯(◯p ⊃ p)` is valid on every endpoint-seeing model.**  Each world
-`b` hands the `◯`-clause the endpoint of its own modal cone. -/
+/-- **The SCHEMA `◯(◯A ⊃ A)` is valid on every endpoint-seeing model.**
+Each world `b` hands the `◯`-clause the endpoint of its own modal cone.
+Nothing in the proof is atomic, so this is "the modality is eventually
+transparent", for every `A`. -/
 theorem endpoints_valid_circ_counit {K : Kripke} (hep : K.Endpoints)
-    (x : String) :
-    K.valid (.circ (.imp (.circ (.atom x)) (.atom x))) := by
+    (A : Form) :
+    K.valid (.circ (.imp (.circ A) A)) := by
   intro b _
   exact ⟨(hep b).m, (hep b).rm, force_counit_of_max (hep b).max⟩
 
@@ -196,7 +212,7 @@ theorem endpoints_not_complete :
     ∃ G : Form, ¬ PLL G ∧ ∀ K : Kripke, K.Endpoints → K.valid G :=
   ⟨.circ (.imp (.circ (.atom "p")) (.atom "p")),
    not_PLL_circ_counit,
-   fun _ hep => endpoints_valid_circ_counit hep "p"⟩
+   fun _ hep => endpoints_valid_circ_counit hep (.atom "p")⟩
 
 /-- info: 'FRJ.EndpointRefute.endpoints_valid_circ_counit' does not depend on any axioms -/
 #guard_msgs in
