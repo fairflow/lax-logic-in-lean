@@ -242,6 +242,228 @@ theorem pll_of_provableGbu {G : Form} (h : ProvableGbu G) : PLL G := by
 theorem ipl_of_provableGbu {G : Form} (h : ProvableGbu G) : IPL G :=
   IPL_of_PLL (pll_of_provableGbu h)
 
+/-! ## The weight, and Lemma 8 (`lemma:wggbu`, source 3216)
+
+    Wg(τ) = ⟨ |Sf^L(G) \ Cl(Ψ)| , tp(τ) , |τ| ⟩,   Ψ = Lhs(τ),
+    tp(τ) = 1 if τ regular, 0 otherwise,
+
+ordered lexicographically (source 3196–3212).  The paper proves three
+properties and reads the triple off them; they are `unclosed_mono`
+(its 1), `unclosed_lt` (its 2) and the `size` arithmetic (its 3).
+
+Why the middle component exists: `L⊃`'s leftmost premise and `R∨ₖ`'s
+premise keep the left zone unchanged, so component 1 cannot drop — but
+they pass from a regular conclusion to an IRREGULAR premise, and
+`1 → 0` is the decrease.  Conversely `GbuI`'s `R⊃ₙᵢ` goes the other way,
+irregular conclusion to REGULAR premise, so there component 1 must do
+the work — which is exactly the case the paper's property 2 covers. -/
+
+/-- `|Sf^L(G) \ Cl(Ψ)|`. -/
+def unclosed (G : Form) (Ψ : List Form) : Nat :=
+  (sfL G).countP (fun X => !cloB Ψ X)
+
+/-- **Property 1** (source 3200): the left zone's closure only grows
+along a rule, so the count of unclosed left subformulas does not. -/
+theorem unclosed_mono {G : Form} {Ψ Ψ' : List Form}
+    (h : ∀ X, Clo Ψ X → Clo Ψ' X) : unclosed G Ψ' ≤ unclosed G Ψ := by
+  refine countP_mono (fun X _ hX => ?_)
+  simp only [Bool.not_eq_true'] at hX ⊢
+  exact Bool.eq_false_iff.mpr
+    (fun hc => Bool.eq_false_iff.mp hX (cloB_iff.mpr (h X (cloB_iff.mp hc))))
+
+/-- **Property 2** (source 3205): `R⊃ₙᵢ` adds an `A` that was NOT in the
+closure, so the count strictly drops.  This is where the blanket
+well-formedness condition (divergence D2) is load-bearing: `A` must be a
+left subformula of `G` to be counted at all. -/
+theorem unclosed_lt {G : Form} {Ψ : List Form} {A : Form}
+    (hA : A ∈ sfL G) (hnc : ¬ Clo Ψ A) :
+    unclosed G (A :: Ψ) < unclosed G Ψ := by
+  refine countP_lt_countP (fun X _ hX => ?_) hA ?_ ?_
+  · simp only [Bool.not_eq_true'] at hX ⊢
+    exact Bool.eq_false_iff.mpr (fun hc => Bool.eq_false_iff.mp hX
+      (cloB_iff.mpr (clo_mono (List.subset_cons_self _ _) (cloB_iff.mp hc))))
+  · simp only [Bool.not_eq_true']
+    exact Bool.eq_false_iff.mpr (fun hc => hnc (cloB_iff.mp hc))
+  · simp only [Bool.not_eq_true', Bool.not_eq_false']
+    exact cloB_iff.mpr (.base List.mem_cons_self)
+
+/-- The size of a sequent: the logical symbols of both zones
+(source 3145). -/
+def seqSize (Ψ : List Form) (C : Form) : Nat :=
+  (Ψ.map Form.size).sum + C.size
+
+/-- `tp`: `1` for a regular sequent, `0` for an irregular one. -/
+def tp : Bool → Nat
+  | true => 1
+  | false => 0
+
+/-- `Wg(τ)`. -/
+def wg (G : Form) (reg : Bool) (Ψ : List Form) (C : Form) : Nat × Nat × Nat :=
+  (unclosed G Ψ, tp reg, seqSize Ψ C)
+
+/-- The lexicographic order `≺` on triples, written out. -/
+def WgLt (x y : Nat × Nat × Nat) : Prop :=
+  x.1 < y.1 ∨ (x.1 = y.1 ∧
+    (x.2.1 < y.2.1 ∨ (x.2.1 = y.2.1 ∧ x.2.2 < y.2.2)))
+
+/-- `⟨0,0,0⟩ ⪯ Wg(τ)` — the lower bound of Lemma 8, which holds because
+all three components are `Nat`s. -/
+theorem wg_nonneg {G : Form} {reg : Bool} {Ψ : List Form} {C : Form} :
+    0 ≤ (wg G reg Ψ C).1 ∧ 0 ≤ (wg G reg Ψ C).2.1 ∧ 0 ≤ (wg G reg Ψ C).2.2 :=
+  ⟨Nat.zero_le _, Nat.zero_le _, Nat.zero_le _⟩
+
+/-! ### Size arithmetic
+
+Written out rather than left to `simp`, which pulls `Classical.choice`
+here (checked: a probe closing one of these goals by `simp` pins
+`[propext, Classical.choice, Quot.sound]`). -/
+
+private theorem size_lt_binL {A B : Form} :
+    A.size < A.size + B.size + 1 :=
+  Nat.lt_succ_of_le (Nat.le_add_right _ _)
+
+private theorem size_lt_binR {A B : Form} :
+    B.size < A.size + B.size + 1 :=
+  Nat.lt_succ_of_le (Nat.le_add_left _ _)
+
+private theorem seqSize_lt_right {Ψ : List Form} {X Y : Form}
+    (h : X.size < Y.size) : seqSize Ψ X < seqSize Ψ Y :=
+  Nat.add_lt_add_left h _
+
+private theorem seqSize_lt_and {Ψ : List Form} {A B C : Form} :
+    seqSize (A :: B :: Ψ) C < seqSize (.and A B :: Ψ) C := by
+  simp only [seqSize, List.map_cons, List.sum_cons, Form.size]
+  rw [← Nat.add_assoc]
+  exact Nat.add_lt_add_right (Nat.add_lt_add_right (Nat.lt_succ_self _) _) _
+
+private theorem seqSize_lt_left {Ψ : List Form} {X Y C : Form}
+    (h : X.size < Y.size) : seqSize (X :: Ψ) C < seqSize (Y :: Ψ) C := by
+  simp only [seqSize, List.map_cons, List.sum_cons]
+  exact Nat.add_lt_add_right (Nat.add_lt_add_right h _) _
+
+/-! ### The backward step relation
+
+One constructor per (rule, premise) pair of Fig. `fig:GBU` — the object
+"backward proof-search in `Gbu(G)`" acts on, and what Lemma 8 is about.
+The two `R⊃ₙᵢ` steps carry `A ∈ Sf^L(G)`, from the sequent language's
+blanket condition (D2). -/
+
+inductive Step (G : Form) : (Bool × List Form × Form) →
+    (Bool × List Form × Form) → Prop
+  | landL {Ψ A B C} : Step G (true, A :: B :: Ψ, C) (true, .and A B :: Ψ, C)
+  | randR1 {Ψ A B} : Step G (true, Ψ, A) (true, Ψ, .and A B)
+  | randR2 {Ψ A B} : Step G (true, Ψ, B) (true, Ψ, .and A B)
+  | lorL1 {Ψ A B C} : Step G (true, A :: Ψ, C) (true, .or A B :: Ψ, C)
+  | lorL2 {Ψ A B C} : Step G (true, B :: Ψ, C) (true, .or A B :: Ψ, C)
+  | rorR1 {Ψ C₁ C₂} : Step G (false, Ψ, C₁) (true, Ψ, .or C₁ C₂)
+  | rorR2 {Ψ C₁ C₂} : Step G (false, Ψ, C₂) (true, Ψ, .or C₁ C₂)
+  | limpL1 {Ψ A B C} :
+      Step G (false, .imp A B :: Ψ, A) (true, .imp A B :: Ψ, C)
+  | limpL2 {Ψ A B C} : Step G (true, B :: Ψ, C) (true, .imp A B :: Ψ, C)
+  | rimpI {Ψ A B} : Step G (true, Ψ, B) (true, Ψ, .imp A B)
+  | rimpNI {Ψ A B} (hA : A ∈ sfL G) (hnc : ¬ Clo Ψ A) :
+      Step G (true, A :: Ψ, B) (true, Ψ, .imp A B)
+  | randI1 {Ψ A B} : Step G (false, Ψ, A) (false, Ψ, .and A B)
+  | randI2 {Ψ A B} : Step G (false, Ψ, B) (false, Ψ, .and A B)
+  | rorI1 {Ψ C₁ C₂} : Step G (false, Ψ, C₁) (false, Ψ, .or C₁ C₂)
+  | rorI2 {Ψ C₁ C₂} : Step G (false, Ψ, C₂) (false, Ψ, .or C₁ C₂)
+  | rimpII {Ψ A B} : Step G (false, Ψ, B) (false, Ψ, .imp A B)
+  | rimpNII {Ψ A B} (hA : A ∈ sfL G) (hnc : ¬ Clo Ψ A) :
+      Step G (true, A :: Ψ, B) (false, Ψ, .imp A B)
+
+/-! ### The three closure facts the `≤` component needs -/
+
+theorem clo_and_cons {Ψ : List Form} {A B : Form} :
+    ∀ X, Clo (.and A B :: Ψ) X → Clo (A :: B :: Ψ) X := by
+  intro X h
+  induction h with
+  | @base C hC =>
+      rcases List.mem_cons.mp hC with rfl | hC'
+      · exact .and (.base List.mem_cons_self)
+          (.base (List.mem_cons_of_mem _ List.mem_cons_self))
+      · exact .base (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hC'))
+  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
+  | orR _ ih => exact .orR ih
+  | orL _ ih => exact .orL ih
+  | imp _ ih => exact .imp ih
+  | circ _ ih => exact .circ ih
+
+theorem clo_or_cons {Ψ : List Form} {A B : Form} :
+    ∀ X, Clo (.or A B :: Ψ) X → Clo (A :: Ψ) X := by
+  intro X h
+  induction h with
+  | @base C hC =>
+      rcases List.mem_cons.mp hC with rfl | hC'
+      · exact .orL (.base List.mem_cons_self)
+      · exact .base (List.mem_cons_of_mem _ hC')
+  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
+  | orR _ ih => exact .orR ih
+  | orL _ ih => exact .orL ih
+  | imp _ ih => exact .imp ih
+  | circ _ ih => exact .circ ih
+
+theorem clo_or_cons' {Ψ : List Form} {A B : Form} :
+    ∀ X, Clo (.or A B :: Ψ) X → Clo (B :: Ψ) X := by
+  intro X h
+  induction h with
+  | @base C hC =>
+      rcases List.mem_cons.mp hC with rfl | hC'
+      · exact .orR (.base List.mem_cons_self)
+      · exact .base (List.mem_cons_of_mem _ hC')
+  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
+  | orR _ ih => exact .orR ih
+  | orL _ ih => exact .orL ih
+  | imp _ ih => exact .imp ih
+  | circ _ ih => exact .circ ih
+
+theorem clo_imp_cons {Ψ : List Form} {A B : Form} :
+    ∀ X, Clo (.imp A B :: Ψ) X → Clo (B :: Ψ) X := by
+  intro X h
+  induction h with
+  | @base C hC =>
+      rcases List.mem_cons.mp hC with rfl | hC'
+      · exact .imp (.base List.mem_cons_self)
+      · exact .base (List.mem_cons_of_mem _ hC')
+  | and _ _ ih₁ ih₂ => exact .and ih₁ ih₂
+  | orR _ ih => exact .orR ih
+  | orL _ ih => exact .orL ih
+  | imp _ ih => exact .imp ih
+  | circ _ ih => exact .circ ih
+
+/-- **Lemma 8** (`lemma:wggbu`, source 3216): every backward step
+strictly decreases `Wg` in the lexicographic order. -/
+theorem wg_step {G : Form} {p q : Bool × List Form × Form} (h : Step G p q) :
+    WgLt (wg G p.1 p.2.1 p.2.2) (wg G q.1 q.2.1 q.2.2) := by
+  -- the component-1 cases: `≤` by property 1, then component 3 decides
+  have keep : ∀ {Ψ Ψ' : List Form} {C C' : Form},
+      (∀ X, Clo Ψ X → Clo Ψ' X) → seqSize Ψ' C' < seqSize Ψ C →
+      WgLt (wg G true Ψ' C') (wg G true Ψ C) := by
+    intro Ψ Ψ' C C' hclo hsz
+    rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with hlt | hge
+    · exact Or.inl hlt
+    · exact Or.inr ⟨Nat.le_antisymm (unclosed_mono hclo) hge,
+        Or.inr ⟨rfl, hsz⟩⟩
+  cases h with
+  | landL => exact keep clo_and_cons seqSize_lt_and
+  | randR1 => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binL⟩⟩
+  | randR2 => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binR⟩⟩
+  | lorL1 => exact keep clo_or_cons (seqSize_lt_left size_lt_binL)
+  | lorL2 => exact keep clo_or_cons' (seqSize_lt_left size_lt_binR)
+  | rorR1 | rorR2 | limpL1 => exact Or.inr ⟨rfl, Or.inl Nat.zero_lt_one⟩
+  | limpL2 => exact keep clo_imp_cons (seqSize_lt_left size_lt_binR)
+  | rimpI => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binR⟩⟩
+  | rimpNI hA hnc => exact Or.inl (unclosed_lt hA hnc)
+  | randI1 => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binL⟩⟩
+  | randI2 => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binR⟩⟩
+  | rorI1 => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binL⟩⟩
+  | rorI2 => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binR⟩⟩
+  | rimpII => exact Or.inr ⟨rfl, Or.inr ⟨rfl, seqSize_lt_right size_lt_binR⟩⟩
+  | rimpNII hA hnc => exact Or.inl (unclosed_lt hA hnc)
+
+/-- info: 'FRJ.Gbu.wg_step' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms wg_step
+
 /-! ## Stage-2 gate: no computed index in any constructor's return type -/
 
 #slime FRJ.Gbu.GbuR FRJ.Gbu.GbuI
