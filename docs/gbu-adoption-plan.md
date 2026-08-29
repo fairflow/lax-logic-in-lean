@@ -177,10 +177,14 @@ saturation loop, subsumption), `FRJ/Minimal.lean` (§6 for `◯`-free).
   Theorem 7's usable content (`step_wf`).  Sorry-free; soundness pins
   `[propext]`, the weight and termination results `[propext,
   Quot.sound]`.
-* **Next**: §4's saturated databases with (DB1)/(DB2), which Lemma 9
-  needs — its NINE clauses (the earlier `pdftotext` extract truncated at
-  six) are all about the evaluation relation `▷`, i.e. the FRJ bridge.
-  Then Lemmas 10–12, Theorem 8 (`BSearch`), Theorem 9 (the duality).
+* **§4 and Lemma 9 — DONE** (`wip/gbu_db.lean`).  Subsumption `⊑`
+  (source 2664), (DB1) and (DB2) (source 2827/2830), and the evaluation
+  relation `▷` (source 3287) transcribed; all NINE clauses of Lemma 9
+  proved (the earlier `pdftotext` extract truncated at six).  Sorry-free;
+  the three pure-`Clo` clauses pin `[propext]`, the six that apply an
+  `FRJ` rule `[propext, Quot.sound]`.
+* **Next**: Lemmas 10–12 (the `∨`-closure and the two success lemmas),
+  Theorem 8 (`BSearch`), Theorem 9 (the duality).
 
 ## Divergence log
 
@@ -191,6 +195,7 @@ saturation loop, subsumption), `FRJ/Minimal.lean` (§6 for `◯`-free).
 | D3 | left zones are `List Form` with a `CtxEq` field on each conclusion naming a member | `wip/gbu.lean` | keeps the paper's set reading of `A,Ψ`; house style |
 | D4 | soundness proved semantically against `Kripke`, not by the paper's translation into `GJ` | `wip/gbu.lean` | same statement, stronger conclusion: no infallibility needed, so `PLL`-validity, of which the paper's `IPL` reading is a corollary |
 | D5 | Theorem 7's `O(|τ|²)` height bound replaced by well-foundedness of the step relation | `wip/gbu.lean` | well-foundedness is what backward search needs; the asymptotic constant is not used downstream |
+| D6 | derivability taken in the REPAIRED family `FRJVr`/`FRJVi`, tag existentially quantified | `wip/gbu_db.lean` | the paper's `FRJ(G)` is the IPC calculus and carries no tag; `FRJV` is what this campaign is about, and Lemma 9's proofs use only rules the two families share |
 
 ## Open questions for review
 
