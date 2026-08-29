@@ -1,0 +1,5 @@
+== wf gate: 6 models pass, negative control fails ==
+== goals: 116232 formulas of size ≤ 8 over p,q,⊥ ==
+== screened: 86957 refuted on the battery; 9277 at circ-carrying configurations (TARGETS), 77680 hloc-controls ==
+== TARGET misses: 0; control misses (engine-budget signals, completenessV covers them): 0 ==
+LIFT-PROBE: no target survivor at this stratum — (LIFT) unrefuted
