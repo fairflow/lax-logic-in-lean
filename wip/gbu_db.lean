@@ -25,6 +25,7 @@ and Lemma 9's proofs use only rules the two families share.
 -/
 import wip.gbu
 import FRJ.CalculusV
+import FRJ.Minimal
 
 namespace FRJ.Gbu
 
@@ -286,6 +287,183 @@ theorem gbuInv10 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
             · exact absurd (List.mem_append_right _ h') hs
             · exact h'
 
+/-! ## Lemma 11 (`lemma:gbuSuccAt`, source 4118) — the prime success lemma
+
+The first place `▷` is ESTABLISHED rather than propagated: under
+saturation, a prime goal `F` not in `Ω`, all of whose left implications
+have `▷`-refuted antecedents, is itself `▷`-refuted.  The paper's proof
+splits on whether `Ω` has implications: none, and the `Ax^R` cell does
+it; some, and the `⋈^At` JOIN over their antecedents does.
+
+Note what does NOT appear: any `◯`-freeness hypothesis.  `Ω ⊆ Γ̂` and
+`Γ̂ = Ĝ_at ∪ Ĝ_imp` already exclude top-level `◯`, so the V-join's
+`hcirc` side condition is discharged from the paper's own hypothesis.
+The `◯`-extension's obligation therefore does not sit here. -/
+
+/-- Finite choice over `Fin (n+1)`: needed to turn the database's
+`Nonempty` derivations into the join's premise FAMILY, and provable by
+induction because the index type is finite — `Classical.choice` is not
+required and must not be used. -/
+private theorem finPi : ∀ {n : Nat} {X : Fin (n + 1) → Type},
+    (∀ j, Nonempty (X j)) → Nonempty (∀ j, X j)
+  | 0, X, h =>
+      (h 0).elim (fun x0 => ⟨fun j => Fin.cases x0 (fun i => i.elim0) j⟩)
+  | _ + 1, X, h =>
+      (h 0).elim (fun x0 =>
+        (finPi (X := fun j => X j.succ) (fun j => h j.succ)).elim
+          (fun xs => ⟨fun j => Fin.cases x0 xs j⟩))
+
+/-- The paper's `Θ^⊃∩` retention zone as a `KeptChain` certificate.
+Inlined from `wip/minmodv.lean`'s `keptChain_restrict` so that this
+development does not depend on the `minmodv` campaign. -/
+private theorem keptChainRestrict {n : Nat} {rhs : Fin (n + 1) → Form}
+    (base : List Form) (th : Fin (n + 1) → List Form) :
+    KeptChain (upsilon rhs) base (thPool th)
+      (restrict (thPool th) (upsilon rhs)) :=
+  keptChain_of_ups (fun _ hX => restrict_subset hX)
+    (fun h => (mem_restrict.mp h).2)
+    (fun _ hX => (List.mem_filter.mp (restrict_subset hX)).2)
+
+/-- Finite choice for existentials, the `∃`-form of `finPi`.  `choose`
+would do this but pulls `Classical.choice`; over a finite index type it
+is a theorem. -/
+private theorem finEx : ∀ {n : Nat} {α : Type} {P : Fin (n + 1) → α → Prop},
+    (∀ j, ∃ x, P j x) → ∃ g : Fin (n + 1) → α, ∀ j, P j (g j)
+  | 0, _, _, h => by
+      obtain ⟨x0, hx0⟩ := h 0
+      exact ⟨fun _ => x0, fun j => Fin.cases hx0 (fun i => i.elim0) j⟩
+  | _ + 1, _, _, h => by
+      obtain ⟨x0, hx0⟩ := h 0
+      obtain ⟨g, hg⟩ := finEx (fun j => h j.succ)
+      exact ⟨Fin.cases x0 g, fun j => Fin.cases hx0 hg j⟩
+
+private theorem not_isCirc_of_gHatAtImp {G X : Form}
+    (h : X ∈ gAt G ++ gImp G) : X.isCirc = false := by
+  rcases List.mem_append.mp h with h' | h'
+  · have := (List.mem_filter.mp h').2
+    cases X <;> simp_all [Form.isPV, Form.isCirc]
+  · have := (List.mem_filter.mp h').2
+    cases X <;> simp_all [Form.isImp, Form.isCirc]
+
+private theorem mem_gAt_of_not_imp {G X : Form}
+    (h : X ∈ gAt G ++ gImp G) (himp : X.isImp = false) : X ∈ gAt G := by
+  rcases List.mem_append.mp h with h' | h'
+  · exact h'
+  · exact absurd (List.mem_filter.mp h').2 (by simp [himp])
+
+theorem gbuSuccAt {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {F : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
+    (hFp : F.isPrime) (hFgoal : F ∈ sfR G) (hFmem : F ∉ Ω)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A) :
+    EvalR D Ω F := by
+  by_cases hne : (impPart Ω).map ante = []
+  · -- no left implications: the `Ax^R` cell
+    have hnoimp : ∀ X ∈ Ω, X.isImp = false := by
+      intro X hX
+      by_cases hi : X.isImp
+      · have hmem : ante X ∈ (impPart Ω).map ante :=
+          List.mem_map.mpr ⟨X, List.mem_filter.mpr ⟨hX, hi⟩, rfl⟩
+        rw [hne] at hmem
+        exact absurd hmem List.not_mem_nil
+      · simpa using hi
+    obtain ⟨s', hs'mem, hsub⟩ :=
+      hsat.2 (.reg (rm (gAt G) F) F)
+        ⟨.barren, ⟨.axR F hFp hFgoal (CtxEq.refl _)⟩⟩
+    match s', hsub with
+    | .reg Γ' _, ⟨rfl, hΓ⟩ =>
+        refine ⟨Γ', hs'mem, fun X hX => .base (hΓ (mem_rm.mpr ⟨?_, ?_⟩))⟩
+        · exact fun hc => hFmem (hc ▸ hX)
+        · exact mem_gAt_of_not_imp (hΩ X hX) (hnoimp X hX)
+  · -- the `⋈^At` join over the antecedents of `Ω`'s implications
+    let E := enumOf ((impPart Ω).map ante) hne
+    let f := E.f
+    have hfmem : ∀ j, ∃ B, Form.imp (f j) B ∈ Ω := by
+      intro j
+      have : f j ∈ (impPart Ω).map ante :=
+        (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+      obtain ⟨X, hXmem, hante⟩ := List.mem_map.mp this
+      obtain ⟨hXΩ, hXi⟩ := List.mem_filter.mp hXmem
+      match X, hXi with
+      | .imp A B, _ =>
+          refine ⟨B, ?_⟩
+          have hA : A = f j := hante
+          subst hA
+          exact hXΩ
+    have hwit : ∀ j, ∃ p : List Form × List Form,
+        D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
+      intro j
+      obtain ⟨B, hB⟩ := hfmem j
+      obtain ⟨St, Th, h₁, h₂, h₃⟩ := himp (f j) B hB
+      exact ⟨(St, Th), h₁, h₂, h₃⟩
+    obtain ⟨g, hg⟩ := finEx hwit
+    set St : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
+    set Th : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
+    have hStTh : ∀ j, D (.irr (St j) (Th j) (f j)) := fun j => (hg j).1
+    have hStΩ : ∀ j, St j ⊆ Ω := fun j => (hg j).2.1
+    have hΩSt : ∀ j, Ω ⊆ St j ++ Th j := fun j => (hg j).2.2
+    have hder : ∀ j, Nonempty (FRJVi G (St j) (Th j) (f j)) :=
+      fun j => hsat.1 _ (hStTh j)
+    obtain ⟨d⟩ := finPi hder
+    -- the join's side conditions
+    have hJ1 : ∀ i j, i ≠ j → St i ⊆ St j ++ Th j :=
+      fun i j _ => fun {_} hX => hΩSt j (hStΩ i hX)
+    have hJ2 : ∀ A B : Form,
+        Form.imp A B ∈ unionAll (fun j => impPart (St j)) → A ∈ upsilon f := by
+      intro A B hmem
+      obtain ⟨j, hj⟩ := mem_unionAll.mp hmem
+      have hAB : Form.imp A B ∈ Ω := hStΩ j (List.mem_filter.mp hj).1
+      exact (E.spec A).mpr
+        (List.mem_map.mpr ⟨.imp A B, List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩)
+    have hcirc : unionAll (fun j => circPart (St j)) = [] := by
+      refine eq_nil_of_forall_not_mem (fun X hX => ?_)
+      obtain ⟨j, hj⟩ := mem_unionAll.mp hX
+      obtain ⟨hmem, hc⟩ := List.mem_filter.mp hj
+      exact absurd hc (by
+        rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
+        exact fun h => Bool.noConfusion h)
+    have hFn : F ∉ unionAll (fun j => atPart (St j)) := by
+      intro hX
+      obtain ⟨j, hj⟩ := mem_unionAll.mp hX
+      exact hFmem (hStΩ j (List.mem_filter.mp hj).1)
+    obtain ⟨s', hs'mem, hsub⟩ :=
+      hsat.2 (.reg (joinCtxAtVBase St Th F ++ restrict (thPool Th) (upsilon f)) F)
+        ⟨.barren, ⟨.joinAt (fun j => d j) hJ1 hJ2 hcirc
+          (keptChainRestrict _ Th) hFp hFn hFgoal (CtxEq.refl _)⟩⟩
+    match s', hsub with
+    | .reg Γ' _, ⟨rfl, hΓ⟩ =>
+        refine ⟨Γ', hs'mem, fun X hX => .base (hΓ ?_)⟩
+        -- `Ω ⊆ Γ`: in some `Σ`, or in every `Θ`
+        by_cases hin : ∃ j, X ∈ St j
+        · obtain ⟨j, hj⟩ := hin
+          refine List.mem_append_left _ ?_
+          by_cases hi : X.isImp
+          · exact List.mem_append_right _
+              (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
+          · refine List.mem_append_left _ (List.mem_append_left _
+              (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
+            have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+            exact (List.mem_filter.mp this).2
+        · have hall : ∀ j, X ∈ Th j := by
+            intro j
+            rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+            · exact absurd ⟨j, h'⟩ hin
+            · exact h'
+          by_cases hi : X.isImp
+          · refine List.mem_append_right _ ?_
+            match X, hi with
+            | .imp A B, _ =>
+                refine mem_restrict.mpr ⟨?_, ?_⟩
+                · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
+                · exact (E.spec A).mpr (List.mem_map.mpr
+                    ⟨.imp A B, List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩)
+          · refine List.mem_append_left _ (List.mem_append_left _
+              (List.mem_append_right _ (mem_rm.mpr ⟨?_, ?_⟩)))
+            · exact fun hc => hFmem (hc ▸ hX)
+            · refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
+              have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+              exact (List.mem_filter.mp this).2
+
 /-! ## Axiom pins -/
 
 /-- info: 'FRJ.Gbu.gbuInv1' depends on axioms: [propext] -/
@@ -315,5 +493,9 @@ theorem gbuInv10 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
 /-- info: 'FRJ.Gbu.gbuInv10' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms gbuInv10
+
+/-- info: 'FRJ.Gbu.gbuSuccAt' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuSuccAt
 
 end FRJ.Gbu
