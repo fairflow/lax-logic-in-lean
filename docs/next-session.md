@@ -608,8 +608,9 @@ goals, family = tagged rows at ALL proper Rm-successors, (J5) via each
 Λ*-circ's own Rm-witness); minModL on (ht, grade, size) with
 ht_le/ht_lt_of_le; (0,◯Z) via minZeta/maxRmAbove/corner-in-place.
 Probe (frjvprobe): strata ≤7 = 16696 refuted, 1027 circ-carrying
-targets, ZERO V-engine misses; size-8 sweep pending
-(scratchpad/probe8.txt).
+targets, ZERO V-engine misses; size-8 stratum COMPLETE (2026-08-29
+00:05-ish, 6-model battery): 86957 refuted, 9277 circ-carrying
+targets, ZERO misses — (LIFT) unrefuted through four strata.
 
 NEXT for full (A):
 (1) TagLeafV-freeness: prove reached interface instances are always
