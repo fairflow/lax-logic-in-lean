@@ -251,6 +251,41 @@ theorem gbuInv9 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
       · exact absurd ((hSteq X).mpr hX) List.not_mem_nil
       · exact List.mem_append_right _ (hTh' hX)
 
+/-! ## Lemma 10 (`lemma:gbuiOr`, source 4057)
+
+The `∨`-closure of `▷` on the focused judgment.  `▷` is a REFUTATION
+fact, so a disjunction needs BOTH disjuncts — this is FRJ's `∨` join,
+whose two side conditions `Σ₁ ⊆ Σ₂ ∪ Θ₂` and `Σ₂ ⊆ Σ₁ ∪ Θ₁` come free
+from `Σₖ ⊆ Ω ⊆ Σₖ ∪ Θₖ`. -/
+
+theorem gbuInv10 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {C₁ C₂ : Form} (hgoal : Form.or C₁ C₂ ∈ sfR G)
+    (h₁ : EvalI D Ω C₁) (h₂ : EvalI D Ω C₂) : EvalI D Ω (.or C₁ C₂) := by
+  obtain ⟨St₁, Th₁, hmem₁, hSt₁, hΩ₁⟩ := h₁
+  obtain ⟨St₂, Th₂, hmem₂, hSt₂, hΩ₂⟩ := h₂
+  obtain ⟨d₁⟩ := hsat.1 _ hmem₁
+  obtain ⟨d₂⟩ := hsat.1 _ hmem₂
+  have hj₁ : St₁ ⊆ St₂ ++ Th₂ := fun {_} hX => hΩ₂ (hSt₁ hX)
+  have hj₂ : St₂ ⊆ St₁ ++ Th₁ := fun {_} hX => hΩ₁ (hSt₂ hX)
+  obtain ⟨s', hs'mem, hsub⟩ :=
+    hsat.2 (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂))
+      ⟨.orI d₁ d₂ hj₁ hj₂ hgoal (CtxEq.refl _) (CtxEq.refl _)⟩
+  match s', hsub with
+  | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
+      refine ⟨St', Th', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
+      · rcases List.mem_append.mp ((hSteq X).mpr hX) with h' | h'
+        · exact hSt₁ h'
+        · exact hSt₂ h'
+      · by_cases hs : X ∈ St₁ ++ St₂
+        · exact List.mem_append_left _ ((hSteq X).mp hs)
+        · refine List.mem_append_right _ (hTh' (mem_cap.mpr ⟨?_, ?_⟩))
+          · rcases List.mem_append.mp (hΩ₁ hX) with h' | h'
+            · exact absurd (List.mem_append_left _ h') hs
+            · exact h'
+          · rcases List.mem_append.mp (hΩ₂ hX) with h' | h'
+            · exact absurd (List.mem_append_right _ h') hs
+            · exact h'
+
 /-! ## Axiom pins -/
 
 /-- info: 'FRJ.Gbu.gbuInv1' depends on axioms: [propext] -/
@@ -276,5 +311,9 @@ theorem gbuInv9 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
 /-- info: 'FRJ.Gbu.gbuInv9' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms gbuInv9
+
+/-- info: 'FRJ.Gbu.gbuInv10' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuInv10
 
 end FRJ.Gbu
