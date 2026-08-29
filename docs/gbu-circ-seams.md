@@ -187,10 +187,30 @@ saturated `Ω` is a one-point endpoint.
     so `¬ WellFounded (StepC G)`.  Axiom-free.
   * `no_measure_stepC` — hence **no** measure `m` from sequents into
     **any** well-founded order can decrease along every step.  Not "the
-    reordering is hard": impossible.  (The statement is about the step
-    relation, which is what Theorem 7 and `step_wf` are about.  A
-    measure allowed to consult `D` is not excluded, but neither Lemma 8
-    nor Theorem 8's recursion has one.)
+    reordering is hard": impossible.
+  * `cyc_notRefuted` — and the cycle is **reachable**: it is not an
+    artefact of the abstract relation.  The fair objection to
+    `not_wf_stepC` is that `BSearch` only visits sequents the database
+    does not refute, so a cycle among unreachable states would be
+    harmless.  Take
+
+        Γ  =  ◯z ⊃ ⊥ ,  p ,  p ⊃ z
+
+    Then `Γ ⊢ z` and `Γ ⊢ ◯z`, so by soundness neither `Γ ⇒g z` nor
+    `Γ →g ◯z` is refutable — **for every database** — while the two
+    steps `L⊃` on `◯z ⊃ ⊥` and `R◯ₙᵢ` connect them both ways.  Both
+    nodes satisfy (BSr1), and `Γ ⊆ Ĝ` for the concrete goal formula
+    `cycG = p ⊃ ((p ⊃ z) ⊃ ((◯z ⊃ ⊥) ⊃ z))` (`cycCtx_critical`).
+
+    The proof is `FRJV` used the way it should be — to settle a
+    statement rather than guess one.  A database row is a derivation, a
+    derivation is a countermodel (`frjv_countermodel`, sequent-form
+    soundness, new), and a valid sequent has none
+    (`not_evalR_of_valid`).  For the irregular node the same argument
+    runs after noting that only two `FRJVi` rules can conclude `◯Z`:
+    `circNotIn`, whose regular premise supplies the countermodel, and
+    `axIC`, excluded by a `classForce` computation
+    (`not_evalI_circ_of_valid`).
 
   **The measure that does work** carries a store `U` — the implications
   of the current context already focused on — in the state:

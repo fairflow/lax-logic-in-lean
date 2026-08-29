@@ -47,6 +47,8 @@ Two things are worth recording about that measure.
   not in `Ψ^⊃` before, so the store count is not monotone on its own.
 -/
 import wip.gbu
+import wip.gbu_db
+import FRJ.SoundV
 
 namespace FRJ.Gbu
 
@@ -382,6 +384,115 @@ theorem stepC_of_stepU {G : Form} {s t : SeqU} (h : StepU G s t) :
   | rcirc => exact .rcirc
   | rcircNI => exact .rcircNI
 
+/-! ## 3.  The cycle is REACHABLE
+
+`not_wf_stepC` is about the step relation.  A fair objection is that
+`BSearch` only ever visits sequents the database does NOT refute
+(assumption (BSr1)), so a cycle among *unreachable* states would be
+harmless.  It is not: this section exhibits a cycle both of whose nodes
+satisfy (BSr1), for EVERY database.
+
+The tool is `FRJV` used to settle a statement rather than to guess one.
+A database row is a derivation, a derivation is a countermodel, and a
+countermodel cannot exist for a valid sequent — so a semantically valid
+sequent is refuted by no database.  Take
+
+    Γ  =  ◯z ⊃ ⊥ ,  p ,  p ⊃ z
+
+Then `Γ ⊢ z` and `Γ ⊢ ◯z`, so neither `Γ ⇒g z` nor `Γ →g ◯z` is
+refutable, while
+
+    Γ ⇒g z  --L⊃ on ◯z ⊃ ⊥-->  Γ →g ◯z  --R◯ₙᵢ-->  Γ ⇒g z. -/
+
+/-- Sequent-form soundness of `FRJV(G)`: a derivation of `Γ ⇒ C` carries
+a model whose root forces `Γ` and refutes `C`. -/
+theorem frjv_countermodel {G : Form} {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJVr G t Γ C) :
+    ∃ (K : Kripke) (a : K.W), K.forces a Γ ∧ ¬ K.force a C :=
+  ⟨V.modR d, (V.preR d).root,
+   fun X hX => (V.lemma39R d).1 _ X ((V.preR_root_lbl d X).mpr hX),
+   (V.lemma39R d).2⟩
+
+/-- **A valid sequent is refuted by no database.** -/
+theorem not_evalR_of_valid {G : Form} {D : FSeq → Prop} (hD : IsDatabase G D)
+    {Ω : List Form} {C : Form}
+    (hval : ∀ (K : Kripke) (a : K.W), K.forces a Ω → K.force a C) :
+    ¬ EvalR D Ω C := by
+  rintro ⟨Γ, hmem, hcl⟩
+  obtain ⟨t, ⟨d⟩⟩ := hD _ hmem
+  obtain ⟨K, a, hf, hnf⟩ := frjv_countermodel d
+  exact hnf (hval K a (fun X hX => clo_forces hf (hcl X hX)))
+
+/-- The same for a `◯` goal in the irregular judgment.  Only two `FRJVi`
+rules can conclude `◯Z`: `circNotIn`, whose regular premise gives a
+countermodel and so contradicts validity, and `axIC`, which is excluded
+by the `classForce` computation `hax`. -/
+theorem not_evalI_circ_of_valid {G : Form} {D : FSeq → Prop}
+    (hD : IsDatabase G D) {Ω : List Form} {Z : Form}
+    (hval : ∀ (K : Kripke) (a : K.W), K.forces a Ω → K.force a Z)
+    (hax : ∀ ats : List Form, classForce ats Z = false →
+      ¬ (∀ X ∈ Ω, X ∈ vacZoneA G ats)) :
+    ¬ EvalI D Ω (.circ Z) := by
+  rintro ⟨St, Th, hmem, hSt, hΩ⟩
+  obtain ⟨d⟩ := hD _ hmem
+  cases d with
+  | axI F hF _ _ => exact Bool.noConfusion hF
+  | axIC F ats hats hFf hgoal hTh =>
+      refine hax ats hFf (fun X hX => ?_)
+      have h := hΩ hX
+      rw [List.nil_append] at h
+      exact (hTh X).mp h
+  | circNotIn d' htag hTh hgoal =>
+      obtain ⟨K, a, hf, hnf⟩ := frjv_countermodel d'
+      refine hnf (hval K a (fun X hX => ?_))
+      have h := hΩ hX
+      rw [List.nil_append] at h
+      exact clo_forces hf (hTh X h).1
+
+/-! ### The witness -/
+
+private def pA : Form := .atom "p"
+private def zA : Form := .atom "z"
+
+/-- `Γ = ◯z ⊃ ⊥, p, p ⊃ z`.  The head is the implication `L⊃` focuses
+on, so `Step.limpL1` applies to the list as written. -/
+def cycCtx : List Form := [.imp (.circ zA) .bot, pA, .imp pA zA]
+
+/-- A goal formula for which `Γ` is a legitimate critical context. -/
+def cycG : Form :=
+  .imp pA (.imp (.imp pA zA) (.imp (.imp (.circ zA) .bot) zA))
+
+theorem cycCtx_critical : ∀ X ∈ cycCtx, X ∈ gAt cycG ++ gImp cycG := by decide
+
+theorem cyc_goal_z : zA ∈ sfR cycG := by decide
+
+theorem cyc_goal_circ : Form.circ zA ∈ sfR cycG := by decide
+
+/-- `Γ ⊢ z`, semantically. -/
+theorem cyc_valid {K : Kripke} {a : K.W} (h : K.forces a cycCtx) :
+    K.force a zA :=
+  h (.imp pA zA) (by decide) a (K.le_refl a) (h pA (by decide))
+
+/-- **Both nodes of the cycle satisfy (BSr1), for every database.** -/
+theorem cyc_notRefuted {D : FSeq → Prop} (hD : IsDatabase cycG D) :
+    ¬ EvalR D cycCtx zA ∧ ¬ EvalI D cycCtx (.circ zA) := by
+  refine ⟨not_evalR_of_valid hD (fun _ _ h => cyc_valid h),
+    not_evalI_circ_of_valid hD (fun _ _ h => cyc_valid h) (fun ats hz hsub => ?_)⟩
+  have h1 : classForce ats pA = true :=
+    (List.mem_filter.mp (hsub pA (by decide))).2
+  have h2 : classForce ats (.imp pA zA) = true :=
+    (List.mem_filter.mp (hsub (.imp pA zA) (by decide))).2
+  rw [show classForce ats (.imp pA zA)
+      = (!classForce ats pA || classForce ats zA) from rfl, h1, hz] at h2
+  exact Bool.noConfusion h2
+
+/-- The two steps of the cycle, at the very same pair of sequents. -/
+theorem cyc_step_limpL (G : Form) :
+    StepC G (false, cycCtx, Form.circ zA) (true, cycCtx, zA) := .old .limpL1
+
+theorem cyc_step_rcircNI (G : Form) :
+    StepC G (true, cycCtx, zA) (false, cycCtx, Form.circ zA) := .rcircNI
+
 /-! ## Axiom pins -/
 
 /-- info: 'FRJ.Gbu.not_wf_stepC' does not depend on any axioms -/
@@ -403,5 +514,9 @@ theorem stepC_of_stepU {G : Form} {s t : SeqU} (h : StepU G s t) :
 /-- info: 'FRJ.Gbu.stepC_of_stepU' does not depend on any axioms -/
 #guard_msgs in
 #print axioms stepC_of_stepU
+
+/-- info: 'FRJ.Gbu.cyc_notRefuted' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms cyc_notRefuted
 
 end FRJ.Gbu

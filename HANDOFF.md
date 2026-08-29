@@ -2337,3 +2337,32 @@ so the strategy stays complete.
 
 **Next**: rebuild `SearchOk` over the store-carrying state `SeqU`, then
 items 2–4 of `docs/gbu-circ-seams.md`.
+
+### 2026-08-29d — the cycle is REACHABLE (FRJV used to settle it)
+
+Matthew's reminder mid-session — "you can use FRJV to construct
+countermodels" — closes the one real gap in §2026-08-29c.  `not_wf_stepC`
+is about the abstract step relation, and the fair objection is that
+`BSearch` only visits sequents the database does NOT refute, so a cycle
+among unreachable states would be harmless.  It is not.  With
+
+    Γ  =  ◯z ⊃ ⊥ ,  p ,  p ⊃ z
+
+`Γ ⊢ z` and `Γ ⊢ ◯z`, so neither `Γ ⇒g z` nor `Γ →g ◯z` is refutable —
+for EVERY database (`cyc_notRefuted`) — while `L⊃` on `◯z ⊃ ⊥` and
+`R◯ni` connect them in both directions.  `Γ ⊆ Ĝ` for the concrete
+`cycG = p ⊃ ((p ⊃ z) ⊃ ((◯z ⊃ ⊥) ⊃ z))`.
+
+Two lemmas were needed and are reusable:
+
+* `frjv_countermodel` — sequent-form soundness of FRJV: a derivation of
+  `Γ ⇒ C` carries a model whose root forces `Γ` and refutes `C` (this is
+  `lemma39R` plus `preR_root_lbl`, which nothing had packaged before);
+* `not_evalR_of_valid` / `not_evalI_circ_of_valid` — a semantically
+  valid sequent is refuted by no database.  The irregular case turns on
+  the observation that only `circNotIn` and `axIC` can conclude `◯Z`,
+  and `axIC` is excluded by a `classForce` computation.
+
+`not_evalR_of_valid` is worth keeping in view for the whole campaign: it
+converts "this is PLL-valid" into "no database refutes it", which is the
+(BSr1) side of every `BSearch` argument.
