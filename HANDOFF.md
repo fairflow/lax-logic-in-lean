@@ -2296,3 +2296,44 @@ with the matching conclusion:
 prime-goal gap against the residue; (3) only then add the three rules
 and re-prove Lemmas 11/12, keeping every ◯-free case of `search`
 compiling verbatim.
+
+### 2026-08-29c — the `Wg◯` measure, settled
+
+`wip/gbu_measure.lean`.  Two results, both machine-checked.
+
+**Negative.**  The step relation of `Gbu◯(G)` on sequents alone has a
+two-cycle, for every `G`: with `Γ = ◯Z ⊃ B, Ψ`,
+
+    Γ →g ◯Z  is a premise of  Γ ⇒g Z    by L⊃ on ◯Z ⊃ B
+    Γ ⇒g Z   is a premise of  Γ →g ◯Z   by R◯ni
+
+`not_wf_stepC` (axiom-free), and hence `no_measure_stepC`: **no** measure
+from sequents into **any** well-founded order can work.  The conjecture
+in §2026-08-29b — that a reordering of `Wg` might do — is REFUTED, not
+merely unproved.
+
+**Positive.**  Carrying a store `U` of the implications already focused
+on at the current context, the measure
+
+    Wg◯(τ, U) = ⟨ |Sf^L(G) \ Cl(Ψ)| , Σ_{X∈Ψ}|X| , |Ψ^⊃ \ U| , |C| ⟩
+
+lexicographic, decreases on all twenty steps (`wgo_step`), so `stepU_wf`.
+`tp` disappears — it existed for exactly one step, `L⊃`'s left premise,
+and it is precisely what `R◯ni` increases; `ctxSize` replaces it as the
+component the context-shrinking left rules decrease, which is what lets
+the store count be reset when the context changes (`L∧` can expose
+implications that were not in `Ψ^⊃` before).  `stepC_of_stepU` certifies
+that this is bookkeeping, not a different calculus: every `StepU` step
+erases to a `StepC` step.
+
+The gate was negative-tested: injecting a non-decreasing step turns
+`wgo_step` red and taints the pin with `sorryAx`.
+
+**Consequence for `BSearch◯`**: when Lemma 11's witness is already
+banked, the left premise must be supplied from the store rather than
+re-derived, and only the right premise is recursed on (its `ctxSize`
+drops).  So `U` should store DERIVATIONS.  Lemma 11 itself is unchanged,
+so the strategy stays complete.
+
+**Next**: rebuild `SearchOk` over the store-carrying state `SeqU`, then
+items 2–4 of `docs/gbu-circ-seams.md`.

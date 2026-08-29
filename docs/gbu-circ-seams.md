@@ -173,27 +173,67 @@ saturated `Ω` is a one-point endpoint.
   and any component placed above `tp` must be non-increasing there —
   which the ◯-degree of the goal is not.
 
-  The cycle to be killed is
-  ```
-      Ω ⇒g F  --L⊃-->  Ω →g A  --(A = ◯Z, R◯ₙᵢ)-->  Ω ⇒g Z  --L⊃-->  …
-  ```
-  in which `Ω` is constant (the *left* premise of `L⊃` keeps `Ω` intact).
-  **Conjecture (untested):** adding a used-implication history, as in the
-  contraction-free calculi, terminates it —
+  **This is now settled, and the conjecture recorded here on
+  2026-08-29 is REFUTED.**  See `wip/gbu_measure.lean`:
 
-      Wg◯(τ) = ⟨ |Sf^L(G) ∖ Cl(Ψ)| , |Ψ^⊃ ∖ used(τ)| , tp(τ) , |τ| ⟩
+  * `not_wf_stepC` — the extended step relation has a **two-cycle**, for
+    every `G`.  With `Γ = ◯Z ⊃ B, Ψ`,
 
-  because each turn of the cycle consumes one implication from the fixed
-  finite pool `Ω^⊃`.  This is a conjecture about the measure, not a
-  proved lemma, and it is the first thing to settle.
+    ```
+        Γ →g ◯Z   is a premise of   Γ ⇒g Z      by L⊃ on ◯Z ⊃ B
+        Γ ⇒g Z    is a premise of   Γ →g ◯Z     by R◯ₙᵢ
+    ```
+
+    so `¬ WellFounded (StepC G)`.  Axiom-free.
+  * `no_measure_stepC` — hence **no** measure `m` from sequents into
+    **any** well-founded order can decrease along every step.  Not "the
+    reordering is hard": impossible.  (The statement is about the step
+    relation, which is what Theorem 7 and `step_wf` are about.  A
+    measure allowed to consult `D` is not excluded, but neither Lemma 8
+    nor Theorem 8's recursion has one.)
+
+  **The measure that does work** carries a store `U` — the implications
+  of the current context already focused on — in the state:
+
+      Wg◯(τ, U) = ⟨ |Sf^L(G) ∖ Cl(Ψ)| , Σ_{X∈Ψ} |X| , |Ψ^⊃ ∖ U| , |C| ⟩
+
+  lexicographic, decreasing on all twenty steps (`wgo_step`), whence
+  `stepU_wf`.  Two things about it are worth stating.
+
+  * **`tp` disappears.**  In the paper `tp` exists for exactly one step,
+    the left premise of `L⊃`, where the goal may grow; `|Ψ^⊃ ∖ U|`
+    covers that step instead.  And `tp` cannot be kept: it is precisely
+    what `R◯ₙᵢ` increases.
+  * **`ctxSize` is new and load-bearing.**  It is what the
+    context-shrinking left rules (`L∧`, `L∨`, `L⊃`-right, `L◯`)
+    decrease, which is what lets `|Ψ^⊃ ∖ U|` be reset whenever the
+    context changes — necessary, because `L∧` can expose implications
+    that were not in `Ψ^⊃` before, so the store count is not monotone on
+    its own.
+
+  `stepC_of_stepU` certifies that this is bookkeeping and not a
+  different calculus: every `StepU` step erases to a `StepC` step.  The
+  only thing the store does is forbid re-focusing an implication already
+  focused on at the same context — exactly the move the two-cycle
+  repeats.
+
+  **Consequence for the search.**  When Lemma 11's witness `A ⊃ B` is
+  already in `U`, `BSearch` must not recurse on the left premise; it
+  reuses the derivation of `Ω →g A` built when the implication was
+  banked (the context is unchanged along that whole stratum, since
+  `ctxSize` is constant there) and recurses only on the right premise,
+  whose `ctxSize` strictly drops.  So `U` should be a store of
+  DERIVATIONS, not just of formulas.  Completeness of the strategy
+  survives: Lemma 11 is used unchanged.
 
 ---
 
 ## What to do next, in order
 
-1. **Settle the measure** (Seam 3).  Until `Wg◯` is known to be
-   well-founded there is no point writing rules: Theorem 8 is a
-   well-founded recursion and nothing else.
+1. ~~**Settle the measure** (Seam 3).~~  **DONE 2026-08-29**, see above:
+   the naive measure is impossible (`no_measure_stepC`) and the
+   store-carrying `Wg◯` works (`stepU_wf`).  What remains is to rebuild
+   `SearchOk` over `SeqU` and thread the derivation store.
 2. **Test Seam 1's prime-goal gap** against the known residue before
    adding rules.  If the 6-cell residue lands there, the extension is
    *not* a matter of adding rules and the calculus needs repair.
