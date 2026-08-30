@@ -43,7 +43,7 @@ def cmd_search(cfg, args) -> int:
             data = json.load(r)
     except OSError as e:
         print(f"index not reachable on port {cfg.index_port}: {e}\n"
-              f"start it:  python3 leansearch/server.py --port {cfg.index_port}")
+              f"start it:  python3 leansearch/server.py   (uses toolkit.json)")
         return 2
     if not data or not data[0]:
         print("no results")

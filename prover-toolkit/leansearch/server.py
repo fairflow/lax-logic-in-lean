@@ -29,6 +29,7 @@ import argparse
 import json
 import math
 import re
+import sys
 import unicodedata
 from collections import defaultdict
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -185,9 +186,17 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--index", type=Path, default=Path(__file__).parent / "index.jsonl")
     ap.add_argument("--host", default="127.0.0.1")
-    ap.add_argument("--port", type=int, default=8080)
+    ap.add_argument("--port", type=int, default=None,
+                    help="default: the port in toolkit.json, so the server and "
+                         "the clients cannot disagree")
     a = ap.parse_args()
 
+    port = a.port
+    if port is None:
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        from toolkit_config import find_config
+        port = find_config().index_port
+    a.port = port
     entries = [json.loads(l) for l in a.index.read_text().splitlines() if l.strip()]
     idx = Index(entries)
     print(f"indexed {len(entries)} declarations; serving on http://{a.host}:{a.port}")

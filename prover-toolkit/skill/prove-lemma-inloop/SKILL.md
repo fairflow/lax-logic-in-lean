@@ -21,7 +21,7 @@ through many lemmas; this one is free per attempt and can bring judgement.
 
 ```bash
 export PROVER_TOOLKIT_CONFIG=/path/to/toolkit.json
-python3 prover-toolkit/leansearch/server.py --port 8080 &   # if not running
+python3 prover-toolkit/leansearch/server.py &   # port comes from toolkit.json
 ```
 
 ## The loop
