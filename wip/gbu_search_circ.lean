@@ -1178,4 +1178,45 @@ theorem no_axiom_forces_p :
 #guard_msgs in
 #print axioms no_axiom_forces_p
 
+/-! ### …and why that does NOT generalise: `V = ∅` was an artefact
+
+`no_axiom_forces_p` is about `Gcc = ◯(◯p ⊃ p)`, whose `Ĝ_at` is the
+SINGLETON `{p}` — and `p` is also the goal, so `Ĝ_at ∖ {p} = ∅` and every
+axiom zone is atom-free.  That is a degenerate cell, not a feature of the
+calculus.  With two variables the zones separate them, and `Ax^I◯` — which
+CHOOSES a classical valuation `ats ⊆ Ĝ_at` — installs it directly.
+
+For `Gd = ◯(p ∨ q) ⊃ (◯p ∨ ◯q)` (not valid; cf. the local disjunction
+property):
+
+    Ĝ_at = {p, q},  Ĝ_imp = ∅,  Ĝ_◯ = {◯(p ∨ q)}
+
+| device | zone built | forces |
+|---|---|---|
+| `Ax^R`/`Ax^I` at `p` | `Ĝ_at ∖ {p} = {q}` | `q`, not `p` |
+| `Ax^R`/`Ax^I` at `q` | `Ĝ_at ∖ {q} = {p}` | `p`, not `q` |
+| `Ax^I◯`, `ats = {q}` | `{q, ◯(p ∨ q)}` | `q` and `◯(p∨q)`, not `p` |
+| `Ax^I◯`, `ats = {p}` | `{p, ◯(p ∨ q)}` | `p` and `◯(p∨q)`, not `q` |
+
+all INFALLIBLE, all with non-empty valuation.  `Ax^I◯`'s side condition
+`classForce ats F = false` is met in both directions here (it failed for
+`Gcc` only because `classForce ats (◯p ⊃ p)` is `true` for every
+`ats ⊆ {p}`).  So `V` is not irrelevant, and PLL is not being modelled
+with empty valuations — the two worlds a distribution countermodel needs
+are exactly what these zones give. -/
+
+/-- The separation, decided. -/
+theorem zones_separate_p_q :
+    let pF : Form := .atom "p"
+    let qF : Form := .atom "q"
+    let Gd : Form := .imp (.circ (.or pF qF)) (.or (.circ pF) (.circ qF))
+    rm (gAt Gd) pF = [qF] ∧ rm (gAt Gd) qF = [pF] ∧
+    classForce [qF] pF = false ∧ classForce [pF] qF = false ∧
+    vacZoneA Gd [qF] = [qF, .circ (.or pF qF)] ∧
+    vacZoneA Gd [pF] = [pF, .circ (.or pF qF)] := by decide
+
+/-- info: 'FRJ.Gbu.zones_separate_p_q' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms zones_separate_p_q
+
 end FRJ.Gbu
