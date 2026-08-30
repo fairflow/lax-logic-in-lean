@@ -16,5 +16,17 @@ Two further candidates (`force_circ_transparent`, `mem_gHat_shape`, both from
 `FRJ/Erase.lean`) were dropped: their prefixes do not compile standalone, which
 is a limitation of prefix-truncation extraction, not of the lemmas.
 
-Each file is self-contained and compiles with exactly one `sorry`. Do not
-consult the original proof before attempting one.
+Each file was self-contained and compiled with exactly one `sorry`. **All four
+are now proved** (2026-08-30) and carry no `sorry`; the axiom pins are
+`[propext, Quot.sound]` for `conservativity` and `conservativity_prop`,
+`[propext, Classical.choice, Quot.sound]` for `focalization` (inherited from
+this file's own `sound`, not from the added proof), and none at all for
+`pfree_trans`. To re-run the exercise, take the statements from git history.
+
+Treat the results with care: the set is **contaminated by construction**.
+Prefix truncation puts everything the ground-truth proof used above the cut,
+`conservativity_prop`'s answer is in `conservativity.lean`, and only
+`pfree_trans` needed anything its own file did not contain. See
+`docs/toolkit-test-design.md`.
+
+Do not consult the original proof before attempting one.
