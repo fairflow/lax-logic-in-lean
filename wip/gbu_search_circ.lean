@@ -1135,4 +1135,47 @@ info: root = w0, worlds = 3
 #guard_msgs in
 #eval IO.println (dumpModel GccWitness.2)
 
+/-! ### Why FRJV reaches for FALLIBILITY here, and not `Fal = ∅`
+
+The economical model — same frame, no fallible world, `p` simply true at
+the top — refutes `◯(◯p ⊃ p)` just as well:
+
+    w0 ≤ w1 ≤ w2,   Rm: w0→{w0}, w1→{w1,w2}, w2→{w2},   V(p) = {w2}
+
+`w1 ⊩ ◯p` through the infallible `w2`, `w1 ⊮ p`, so `w1 ⊮ ◯p ⊃ p`; and
+`w0`'s only modal successor is itself.  So FRJV's fallible world is not
+forced by the FORMULA.  It is forced by the CALCULUS, and precisely:
+
+**no `FRJV(Gcc)` axiom can make `p` true at any world.**
+
+* `Ax^R` / `Ax^I` at the only prime right subformula `p` leave the atomic
+  zone `Ĝ_at ∖ {p} = ∅` — the axiom's whole job is to exclude its goal.
+* There is no OTHER prime right subformula to run an axiom at: `Sf^R(Gcc)`
+  is `{◯(◯p⊃p), ◯p⊃p, p}` and contains no `⊥`.  (This is why the
+  promise join `⋈^At_P` cannot help either: its components are themselves
+  `FRJV(Gcc)` derivations, so their worlds inherit the same zones.)
+* `Ax^I◯` chooses a valuation `ats ⊆ Ĝ_at = {p}` and needs
+  `classForce ats (◯p ⊃ p) = false`.  Both admissible choices give `true`.
+
+Every world FRJV builds is labelled by one of those zones, so the only
+device left that can force `p` is `fal_V`.  FRJV is not being lazy here;
+its model space does not contain Matthew's model.
+
+Bearing on FRJV COMPLETENESS: soundness is unaffected — a fallible
+countermodel is a countermodel.  But FRJV's countermodels are canonical
+(`Ĝ`-labelled), not minimal, and an economical model can lie outside the
+space FRJV searches.  That is exactly the kind of restriction a
+completeness proof has to confront. -/
+
+/-- The three facts above, decided. -/
+theorem no_axiom_forces_p :
+    rm (gAt Gcc) pv = [] ∧
+    Form.bot ∉ sfR Gcc ∧
+    classForce [] (Form.imp (.circ pv) pv) = true ∧
+    classForce [pv] (Form.imp (.circ pv) pv) = true := by decide
+
+/-- info: 'FRJ.Gbu.no_axiom_forces_p' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms no_axiom_forces_p
+
 end FRJ.Gbu
