@@ -275,4 +275,16 @@ def LaxND.isIPLProof : {Γ : List PLLFormula} → {φ : PLLFormula} →
 `PLLconservative` in `PLLNDProof.lean`/`PLLNDProofPostZoom.lean`. -/
 theorem conservativity {Γ : List PLLFormula} {φ : PLLFormula}
     (p : LaxND Γ φ) : p.erased.isIPLProof := by
-  sorry
+  induction p with
+  | iden h => exact isIPL_erase _
+  | falsoElim φ _ ih => exact ih
+  | impIntro _ ih => exact ih
+  | impElim _ _ ih₁ ih₂ => exact ⟨ih₁, ih₂⟩
+  | andIntro _ _ ih₁ ih₂ => exact ⟨ih₁, ih₂⟩
+  | andElim1 _ ih => exact ih
+  | andElim2 _ ih => exact ih
+  | orIntro1 _ ih => exact ih
+  | orIntro2 _ ih => exact ih
+  | orElim _ _ _ ih₀ ih₁ ih₂ => exact ⟨ih₀, ih₁, ih₂⟩
+  | laxIntro _ ih => exact ih
+  | laxElim _ _ ih₁ ih₂ => exact ⟨ih₂, ih₁⟩
