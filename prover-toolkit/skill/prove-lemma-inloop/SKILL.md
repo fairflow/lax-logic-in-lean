@@ -20,7 +20,9 @@ through many lemmas; this one is free per attempt and can bring judgement.
 ## Setup
 
 ```bash
-export PROVER_TOOLKIT_CONFIG=/path/to/toolkit.json
+# Optional: the config is found automatically by walking up from the
+# working directory. Set it only to override.
+export PROVER_TOOLKIT_CONFIG=/path/to/prover-toolkit/toolkit.json
 python3 prover-toolkit/leansearch/server.py &   # port comes from toolkit.json
 ```
 
