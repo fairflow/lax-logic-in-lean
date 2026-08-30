@@ -2199,6 +2199,203 @@ theorem unrefutedBelow_step {G : Form} {D : FSeq → Prop} (hsat : Saturated G D
 #guard_msgs in
 #print axioms unrefutedBelow_step
 
+/-! ### The closure is derivable
+
+`Clo Ψ C` says `C` is built from `Ψ` by `∧`, `∨`, `⊃` and `◯`
+INTRODUCTION only — and `Gbu◯` has a rule for each.  So a context that
+closes its goal derives it, in both judgments.  This is the part of the
+`cirr` obligation that needs no database at all, and it is what the
+corrected S3 no longer has to supply. -/
+
+private def byDecC {p : Prop} (d : Decidable p) {q : Prop}
+    (h1 : p → q) (h2 : ¬ p → q) : q := by
+  cases d with
+  | isTrue h => exact h1 h
+  | isFalse h => exact h2 h
+
+private def decCloC (Ψ : List Form) (A : Form) : Decidable (Clo Ψ A) :=
+  match h : cloB Ψ A with
+  | true => isTrue (cloB_iff.mp h)
+  | false => isFalse (by intro hc; rw [cloB_iff.mpr hc] at h; exact Bool.noConfusion h)
+
+private theorem ctxEqConsSelf {Γ : List Form} {A : Form} (h : A ∈ Γ) :
+    Γ ≐ A :: Γ := by
+  intro x
+  refine ⟨fun hx => List.mem_cons_of_mem _ hx, fun hx => ?_⟩
+  rcases List.mem_cons.mp hx with rfl | hx'
+  · exact h
+  · exact hx'
+
+/-- **`Cl(Ψ) ∋ C` implies `Ψ ⇒g C` and `Ψ →g C`.**  Stated over any
+SUPERCONTEXT, so the `R⊃ₙᵢ` case can extend it by the antecedent. -/
+theorem gbu_of_clo {G : Form} : ∀ {Ψ : List Form} {C : Form}, Clo Ψ C →
+    ∀ {Ψ' : List Form}, Ψ ⊆ Ψ' → C ∈ sfR G →
+      Nonempty (GbuRC G Ψ' C) ∧ Nonempty (GbuIC G Ψ' C) := by
+  intro Ψ C h
+  induction h with
+  | @base C hC =>
+      intro Ψ' hmo _
+      have hin : C ∈ Ψ' := hmo hC
+      exact ⟨⟨.ax C (ctxEqConsSelf hin)⟩, ⟨.ax C (ctxEqConsSelf hin)⟩⟩
+  | @and X Y _ _ ihX ihY =>
+      intro Ψ' hmo hsf
+      obtain ⟨hX, hY⟩ := sfR_and hsf
+      obtain ⟨⟨dRX⟩, ⟨dIX⟩⟩ := ihX hmo hX
+      obtain ⟨⟨dRY⟩, ⟨dIY⟩⟩ := ihY hmo hY
+      exact ⟨⟨.randR dRX dRY⟩, ⟨.randI dIX dIY⟩⟩
+  | @orR A X _ ih =>
+      intro Ψ' hmo hsf
+      obtain ⟨-, hX⟩ := sfR_or hsf
+      obtain ⟨-, ⟨dIX⟩⟩ := ih hmo hX
+      exact ⟨⟨.rorR2 dIX⟩, ⟨.rorI2 dIX⟩⟩
+  | @orL A X _ ih =>
+      intro Ψ' hmo hsf
+      obtain ⟨hX, -⟩ := sfR_or hsf
+      obtain ⟨-, ⟨dIX⟩⟩ := ih hmo hX
+      exact ⟨⟨.rorR1 dIX⟩, ⟨.rorI1 dIX⟩⟩
+  | @imp A X _ ih =>
+      intro Ψ' hmo hsf
+      obtain ⟨hA, hX⟩ := sfR_imp hsf
+      refine byDecC (decCloC Ψ' A) (fun hcl => ?_) (fun hcl => ?_)
+      · obtain ⟨⟨dR⟩, ⟨dI⟩⟩ := ih hmo hX
+        exact ⟨⟨.rimpI dR hcl⟩, ⟨.rimpII dI hcl⟩⟩
+      · obtain ⟨⟨dR⟩, -⟩ :=
+          ih (hmo.trans (List.subset_cons_self _ _)) hX
+        exact ⟨⟨.rimpNI dR hcl⟩, ⟨.rimpNII dR hcl⟩⟩
+  | @circ X _ ih =>
+      intro Ψ' hmo hsf
+      obtain ⟨-, ⟨dI⟩⟩ := ih hmo (sfR_circ hsf)
+      exact ⟨⟨.rcirc dI hsf⟩, ⟨.rcircI dI hsf⟩⟩
+
+/-! ### The `◯`-goal refutation lifts along the clean mode's own rules
+
+The clean irregular mode is entered from `(irr, Ω, ◯C)` by `R◯ᵢ`, so it
+can carry the parent's `D ⋫ (Ω →g ◯C)`.  For that to be an INVARIANT
+each `cirr` rule must lift a refutation of its premise's `◯`-goal back
+to one of its conclusion's.  Four of the five do, and these are the
+lemmas; the fifth, `R⊃ₙᵢ`, does not — see the S3 note below.
+
+Both `FRJVi` rules that conclude a `◯` goal cooperate: `◯∉` because
+`∧R`/`⊃∈`/`◯∈` preserve the tag and `Covers` has a clause for each, and
+`Ax^I◯` because `classForce` is a homomorphism for exactly those
+connectives (with `clo_classForce` supplying the antecedent's value). -/
+
+private theorem evalI_circ_lift {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {C C' : Form}
+    (hgoal : Form.circ C ∈ sfR G)
+    (hder : ∀ {t : Tag} {Γ : List Form}, FRJVr G t Γ C' →
+      (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W C') →
+      (∀ X ∈ Ω, Clo Γ X) →
+      PProd (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W C) (FRJVr G t Γ C))
+    (hcf : ∀ ats : List Form, (∀ Y ∈ Ω, classForce ats Y = true) →
+      classForce ats C' = false → classForce ats C = false)
+    (h : EvalI D Ω (.circ C')) : EvalI D Ω (.circ C) := by
+  obtain ⟨St, Th, hmem, h1, h2⟩ := h
+  obtain ⟨d⟩ := hsat.1 (.irr St Th (.circ C')) hmem
+  cases d with
+  | axI F hF hg hTh => exact Bool.noConfusion hF
+  | circNotIn dr htag hTh hg =>
+      have hcov : ∀ X ∈ Ω, Clo _ X := fun X hX => (hTh X (by simpa using h2 hX)).1
+      obtain ⟨htag', dr'⟩ := hder dr htag hcov
+      obtain ⟨s', hs'mem, hsub⟩ :=
+        hsat.2 (.irr [] Th (.circ C)) ⟨.circNotIn dr' htag' hTh hgoal⟩
+      match s', hsub with
+      | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
+          exact ⟨St', Th', hs'mem,
+            fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+            fun {x} hx => List.mem_append_right _ (hTh' (by simpa using h2 hx))⟩
+  | axIC F ats hats hFf hg hThv =>
+      have hall : ∀ Y ∈ Ω, classForce ats Y = true := by
+        intro Y hY
+        exact (List.mem_filter.mp ((hThv Y).mp (by simpa using h2 hY))).2
+      obtain ⟨s', hs'mem, hsub⟩ :=
+        hsat.2 (.irr [] Th (.circ C))
+          ⟨.axIC C ats hats (hcf ats hall hFf) hgoal hThv⟩
+      match s', hsub with
+      | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
+          exact ⟨St', Th', hs'mem,
+            fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+            fun {x} hx => List.mem_append_right _ (hTh' (by simpa using h2 hx))⟩
+
+/-- `R∧ᵢ`, left conjunct. -/
+theorem evalI_circ_and1 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {A B : Form} (hgoal : Form.circ (.and A B) ∈ sfR G)
+    (h : EvalI D Ω (.circ A)) : EvalI D Ω (.circ (.and A B)) :=
+  evalI_circ_lift hsat hgoal
+    (fun dr htag _ => ⟨htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .andL hc⟩),
+      .andR1 dr (sfR_circ hgoal)⟩)
+    (fun _ _ hf => by simp [classForce, hf]) h
+
+/-- `R∧ᵢ`, right conjunct. -/
+theorem evalI_circ_and2 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {A B : Form} (hgoal : Form.circ (.and A B) ∈ sfR G)
+    (h : EvalI D Ω (.circ B)) : EvalI D Ω (.circ (.and A B)) :=
+  evalI_circ_lift hsat hgoal
+    (fun dr htag _ => ⟨htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .andR hc⟩),
+      .andR2 dr (sfR_circ hgoal)⟩)
+    (fun _ _ hf => by simp [classForce, hf]) h
+
+/-- `R⊃ᵢ` (the `Clo` branch). -/
+theorem evalI_circ_imp {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {A B : Form} (hgoal : Form.circ (.imp A B) ∈ sfR G)
+    (hA : Clo Ω A) (h : EvalI D Ω (.circ B)) : EvalI D Ω (.circ (.imp A B)) :=
+  evalI_circ_lift hsat hgoal
+    (fun dr htag hcov =>
+      let hAΓ : Clo _ A := clo_trans hcov hA
+      ⟨htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .imp hc hAΓ⟩),
+        .impIn dr hAΓ (sfR_circ hgoal)⟩)
+    (fun ats hall hf => by
+      have : classForce ats A = true := clo_classForce hall hA
+      simp [classForce, this, hf]) h
+
+/-- `R◯ᵢ`. -/
+theorem evalI_circ_circ {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form} (hgoal : Form.circ (.circ Z) ∈ sfR G)
+    (h : EvalI D Ω (.circ Z)) : EvalI D Ω (.circ (.circ Z)) :=
+  evalI_circ_lift hsat hgoal
+    (fun dr htag _ => ⟨htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .circ hc⟩),
+      .circIn dr htag (sfR_circ hgoal)⟩)
+    (fun _ _ hf => hf) h
+
+/-! ### S3, re-framed
+
+(S3) `CleanReg` is FALSE (`not_cleanReg`), so it cannot be discharged.
+The right move is not to patch the search but to make the clean mode
+carry the parent's `D ⋫ (Ω →g ◯C)` — the invariant that makes the false
+nodes UNREACHABLE.  The `◯p ⊃ p` cell that refutes `CleanReg` sits under
+`(irr, ∅, ◯(◯p ⊃ p))`, and `◯(◯p ⊃ p)` IS refutable (`provableV_Gcc`),
+so that node is never reached by a search over a saturated database.
+
+Of the five `cirr` rules, FOUR maintain the invariant, and the four
+lemmas above are exactly those cases:
+
+| rule | premise goal | lift |
+|---|---|---|
+| `R∧ᵢ` | `Cᵢ` | `evalI_circ_and1` / `_and2` |
+| `R∨ᵢ` | `Cᵢ`, into the `irr` mode | none needed — the query is `EvalI` |
+| `R⊃ᵢ` (`Cl(Ω) ∋ A`) | `B` | `evalI_circ_imp` |
+| `R◯ᵢ` | `Z` | `evalI_circ_circ` |
+| `R⊃ₙᵢ` (`Cl(Ω) ∌ A`) | `B`, context `A :: Ω`, REGULAR | **does not lift** |
+
+The fifth is the whole of the residue.  It needs
+
+    D ▷ (A,Ω ⇒g B)  ⟹  D ▷ (Ω →g ◯(A ⊃ B))
+
+whose left side gives `D ▷ (Ω →g A ⊃ B)` by `gbuInv9`, and then the
+missing step is `D ▷ (Ω →g A ⊃ B) ⟹ D ▷ (Ω →g ◯(A ⊃ B))`.  `◯∉` would
+need a CLEAN REGULAR row for `A ⊃ B`, and an irregular one does not give
+that; `⊃∈` propagates its premise's tag, and the premise here carries a
+`◯`-antecedent, which `not_clean_of_clo_circ` makes dirty.
+
+Semantically the step is fine: a world refuting `A ⊃ B` sits ABOVE a
+fresh barren root that also refutes it (forcing is monotone), and a
+barren root satisfies every `tag_cone` obligation vacuously.  So what
+FRJV lacks here is a way to introduce a fresh barren root below an
+existing refutation while keeping a chosen `Ĝ`-context — the analogue,
+on the regular side, of what `⋈^◯` does on the modal one.  That is a
+CALCULUS proposal, not a search fix, and it is the live question for
+FRJV completeness. -/
+
 /-! ## Pins — the clean-refutation layer -/
 
 /-- info: 'FRJ.Gbu.refutedCleanly_circ' depends on axioms: [propext, Quot.sound] -/
@@ -2240,6 +2437,27 @@ theorem unrefutedBelow_step {G : Form} {D : FSeq → Prop} (hsat : Saturated G D
 /-- info: 'FRJ.Gbu.evalRC_of_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms evalRC_of_refutedCleanly
+
+/-- info: 'FRJ.Gbu.gbu_of_clo' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms gbu_of_clo
+
+/-- info: 'FRJ.Gbu.evalI_circ_and1' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalI_circ_and1
+
+/-- info: 'FRJ.Gbu.evalI_circ_and2' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalI_circ_and2
+
+/-- info: 'FRJ.Gbu.evalI_circ_imp' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalI_circ_imp
+
+/-- info: 'FRJ.Gbu.evalI_circ_circ' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalI_circ_circ
+
 
 
 end FRJ.Gbu

@@ -3081,3 +3081,65 @@ is not refuted by that cell. The repair direction for (S3) is therefore
 back on the table — have `cirr` carry the parent's `D ⋫ (Ω →g ◯C)`
 alongside the clean query, so `R⊃ₙᵢ`'s premise can go to the PLAIN
 regular mode via `gbuInv9`. That is the next thing to try.
+
+## 2026-08-30m — S3 re-framed; four of its five cases discharged
+
+**FRJV sweep, partial: no incompleteness found.** 205/462 cells run,
+every banked `⊬` cell among them HIT, zero MISS. `tools/frjv-sweep-check.py`
+(new, registered in `TOOLS.md` §3) closes the "compare externally" gap in
+`sweepMain`'s docstring: it extracts the banked `⊬` cells from `RNDB/`
+— `sepEntry`/`nleEntry`/`frjCertEntry`/`escEntry`, each a kernel-checked
+`¬ Deriv [ρi] ρj`, so PLL-level — and joins them against the sweep. A
+MISS on a banked cell is an incompleteness candidate; a HIT on a banked
+`⊢` cell is a soundness alarm. Neither has appeared.
+
+**S3: the approach was wrong, not just the statement.** I kept trying to
+patch the search around a false hypothesis. `CleanReg` is false and
+cannot be discharged; what makes the false nodes go away is an
+INVARIANT, not a supply. The clean mode is entered from
+`(irr, Ω, ◯C)` by `R◯ᵢ`, so it can carry the parent's
+`D ⋫ (Ω →g ◯C)` — and the `◯p ⊃ p` cell that refutes `CleanReg` sits
+under `(irr, ∅, ◯(◯p ⊃ p))`, which IS refutable (`provableV_Gcc`), so
+that node is unreachable on a saturated database.
+
+Two new results carry it:
+
+* **`gbu_of_clo`** (`[propext]`) — `Cl(Ψ) ∋ C` implies both `Ψ ⇒g C` and
+  `Ψ →g C`, stated over any supercontext so `R⊃ₙᵢ` can extend it. `Clo`
+  has introduction clauses only and `Gbu◯` has a rule for each, so this
+  part of the obligation needs no database at all.
+* **`evalI_circ_and1/_and2/_imp/_circ`** — the `◯`-goal refutation lifts
+  along the clean mode's own rules. Both `FRJVi` rules that conclude a
+  `◯` goal cooperate: `◯∉` because `∧R`/`⊃∈`/`◯∈` keep the tag and
+  `Covers` has a clause for each, and `Ax^I◯` because `classForce` is a
+  homomorphism for exactly those connectives — the antecedent's value in
+  the `⊃` case coming from `clo_classForce`.
+
+**Four of the five `cirr` rules therefore maintain the invariant.** The
+residue is one rule:
+
+| rule | premise | lifts? |
+|---|---|---|
+| `R∧ᵢ` | `Cᵢ` | ✓ `evalI_circ_and1/2` |
+| `R∨ᵢ` | `Cᵢ`, into `irr` | ✓ nothing needed |
+| `R⊃ᵢ` | `B` | ✓ `evalI_circ_imp` |
+| `R◯ᵢ` | `Z` | ✓ `evalI_circ_circ` |
+| **`R⊃ₙᵢ`** | `B` at `A :: Ω`, REGULAR | **✗** |
+
+`R⊃ₙᵢ` needs `D ▷ (A,Ω ⇒g B) ⟹ D ▷ (Ω →g ◯(A ⊃ B))`. `gbuInv9` gets as
+far as `D ▷ (Ω →g A ⊃ B)`; the missing step is from there to the modal
+goal. `◯∉` would need a CLEAN REGULAR row for `A ⊃ B`, which an
+irregular one does not give, and `⊃∈` propagates its premise's tag —
+dirty here, because the premise carries a `◯`-antecedent
+(`not_clean_of_clo_circ`).
+
+Semantically the step is unproblematic: a world refuting `A ⊃ B` sits
+above a fresh barren root that also refutes it (forcing is monotone
+upward), and a barren root discharges every `tag_cone` obligation
+vacuously. So what FRJV lacks is a way to introduce a fresh barren root
+below an existing refutation while keeping a chosen `Ĝ`-context — the
+regular-side analogue of what `⋈^◯` does modally. That is a CALCULUS
+proposal, not a search fix, and it is now the live question for FRJV
+completeness. Not implemented: changing a rule's form is Matthew's call,
+and this one needs its own soundness case (the fresh root must force the
+kept context, which is exactly the `Λ*` obligation).
