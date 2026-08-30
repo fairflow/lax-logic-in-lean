@@ -2503,3 +2503,53 @@ turned into a database query.  Negative-tested: drop it and `hJ5` is
 underivable (the proof needs a sorry).
 
 Both pin `[propext, Quot.sound]` / `[propext]`.
+
+### 2026-08-30d — the two-rule change adopted; Theorem 8◯ localised
+
+Pushed to `origin/claude/frjv-completeness-693c52` (explicit refspec;
+`push.default = upstream` and no upstream was set, so nothing had gone
+out before — that is why the campaigns looked out of sync).
+
+**Adopted** (Matthew, 2026-08-30): `R◯ni` (regular premise) replaced by
+
+    Ω →g Z
+    ──────── R◯i        premise IRREGULAR
+    Ω →g ◯Z
+
+and `L⊃ᵢ` restricted by `|A| < |◯C|`.  Motivation: `no_measure_stepC`
+forced a store, and the store cannot carry the recursion (the spec's
+only useful reading of a banked implication is "its left premise is
+built", and the `∉U` branch recurses for exactly that premise —
+circular).  With the change the PAPER's weight `⟨unclosed, tp, |τ|⟩`
+decreases on every step: `wg_stepO`, `stepO_wf`, no store.  The size
+restriction is what kills the cycle of `cyc_notRefuted`, and both
+motivating cells survive (`{p,p⊃◯q} →g ◯q` by `L⊃ᵢ`, `{p} →g ◯p` by
+`R◯i`).  `#slime` 0 on both families; `deCircI` re-checked conservativity
+automatically, per the standing rule.
+
+`no_measure_stepC` and the store-carrying `Wg◯` stay in
+`wip/gbu_measure.lean` as the record of WHY `R◯ni` was abandoned.
+
+**Theorem 8◯, case analysis done.**  Three findings.
+
+* GOOD — the regular `◯` goal needs NO promise world.  `L◯` is
+  invertible for free (`gbuInv11`) and fires whenever the goal is
+  `◯`-shaped, so search strips the modal zone EAGERLY; by the time a
+  `◯`-goal sequent is critical its context has no top-level `◯`, and
+  `gbuSuccCirc` suffices.  `gbuSuccCircP` is not needed by the search.
+* OBSTRUCTION 1 — the irregular `◯` goal `Ω →g ◯Z` has no success
+  lemma.  Its rules (`Ax`, `L◯ᵢ`, `L⊃ᵢ`, `R◯i`) are none of them
+  invertible: `EvalI` is membership-based, not `Clo`-based, so `L◯ᵢ`
+  does not come free the way `gbuInv11` does.  The only `FRJVi` rules
+  concluding `◯Z` are `Ax^I◯` and `◯∉`, whose premise is REGULAR — the
+  same mismatch `rcircNI_not_invertible` exposed, now confined to ONE
+  case.
+* OBSTRUCTION 2 — `L◯ᵢ` breaks the invariant `Ω ⊆ Ĝ`: it replaces `◯Y`
+  by `Y`, which need not be an atom/implication/`◯`, and the irregular
+  judgment has no `L∧`/`L∨` to recover.  `circ_body_escapes_gHat`
+  (`G = ◯(p∧q) ⊃ p`) is a kernel-checked instance.  Fixes: admit
+  `L∧ᵢ`/`L∨ᵢ` (further departure), or restrict `L◯ᵢ` to bodies in `Ĝ`
+  and check completeness of that restriction.
+
+**Next**: obstruction 2 first (it is a choice between two rule sets, and
+the answer decides what obstruction 1's success lemma has to cover).

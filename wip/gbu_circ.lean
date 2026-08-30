@@ -1175,9 +1175,15 @@ goal, and so what makes the gate mechanical).
     ───────────── L◯      ───────────── L◯ᵢ    ───────────────────── L⊃ᵢ
     Ψ, ◯Z ⇒g ◯C           Ψ, ◯Z →g ◯C                Ω →g ◯C
 
-    Ω →g Z                Ω ⇒g Z
-    ──────── R◯           ────────── R◯ₙᵢ
+    Ω →g Z                Ω →g Z
+    ──────── R◯           ────────── R◯ᵢ
     Ω ⇒g ◯Z               Ω →g ◯Z
+
+`L⊃ᵢ` carries `|A| < |◯C|`, and `R◯ᵢ`'s premise is IRREGULAR: those two
+choices are what make the PAPER's weight `⟨unclosed, tp, |τ|⟩` decrease
+on every step (`wg_stepO`), with no store.  The store-carrying `Wg◯` of
+`wip/gbu_measure.lean` — and `no_measure_stepC`, which forced it —
+remain as the record of why `R◯ₙᵢ` was abandoned.
 
 `L◯`'s goal must be `◯`-shaped (`lcirc_goal_must_be_circ`); `L⊃ᵢ` is
 admitted only at a `◯`-shaped goal, which is what confines it to the
@@ -1239,12 +1245,17 @@ inductive GbuIC (G : Form) : List Form → Form → Type
   `Ω`, and no `◯` rule can substitute for it. -/
   | limpLI {Γ Ψ : List Form} {A B C : Form}
       (d₁ : GbuIC G (.imp A B :: Ψ) A) (d₂ : GbuIC G (B :: Ψ) (.circ C))
+      (hsz : A.size < (Form.circ C).size)
       (hgoal : Form.circ C ∈ sfR G) (hΓ : Γ ≐ .imp A B :: Ψ) :
       GbuIC G Γ (.circ C)
-  /-- `R◯ₙᵢ`, seam 3: focus is released, as `◯∉`'s regular premise
-  dictates. -/
-  | rcircNI {Γ : List Form} {Z : Form}
-      (d : GbuRC G Γ Z) (hgoal : Form.circ Z ∈ sfR G) : GbuIC G Γ (.circ Z)
+  /-- `R◯ᵢ`, seam 3.  The premise is IRREGULAR — focus is NOT released.
+  `◯∉`'s premise is regular, which is what made `R◯ₙᵢ` the first
+  candidate; but `rcircNI_not_invertible` refutes its licence and
+  `not_gbuR_omegaNI` its completeness, and with `L⊃ᵢ` admitted the work
+  `R◯ₙᵢ` was doing is done by modus ponens instead.  Keeping the premise
+  irregular is what restores the PAPER's weight (`wg_stepO`). -/
+  | rcircI {Γ : List Form} {Z : Form}
+      (d : GbuIC G Γ Z) (hgoal : Form.circ Z ∈ sfR G) : GbuIC G Γ (.circ Z)
 
 end
 
@@ -1324,7 +1335,7 @@ theorem soundIC {G : Form} {K : Kripke} :
         · exact K.force_mono hwv (h X hX'))
   | _, _, .lcircI d _ hΓ, w, h =>
       sound_lcirc (fun v hv => soundIC d v hv) w (forces_ctxEq hΓ h)
-  | _, _, .limpLI d₁ d₂ _ hΓ, w, h => by
+  | _, _, .limpLI d₁ d₂ _ _ hΓ, w, h => by
       have h' := forces_ctxEq hΓ h
       have himp := h' _ List.mem_cons_self
       have hA := soundIC d₁ w h'
@@ -1333,8 +1344,8 @@ theorem soundIC {G : Form} {K : Kripke} :
       rcases List.mem_cons.mp hX with rfl | hX'
       · exact hB
       · exact h' X (List.mem_cons_of_mem _ hX')
-  | _, _, .rcircNI d _, w, h =>
-      sound_rcirc (fun v hv => soundRC d v hv) w h
+  | _, _, .rcircI d _, w, h =>
+      sound_rcirc (fun v hv => soundIC d v hv) w h
 
 end
 
@@ -1377,8 +1388,8 @@ def deCircI {G : Form} (hG : noCirc G = true) :
   | _, _, .rimpII d hA => .rimpII (deCircI hG d) hA
   | _, _, .rimpNII d hA => .rimpNII (deCircR hG d) hA
   | _, _, .lcircI _ hprin _ => absurd (noCirc_sfL hG _ hprin) (by simp [Form.isCirc])
-  | _, _, .limpLI _ _ hgoal _ => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
-  | _, _, .rcircNI _ hgoal => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+  | _, _, .limpLI _ _ _ hgoal _ => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+  | _, _, .rcircI _ hgoal => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
 
 end
 
@@ -1424,6 +1435,189 @@ theorem provableGbuC_iff_provableGbu {G : Form} (hG : noCirc G = true) :
 /-- info: 'FRJ.Gbu.pll_of_provableGbuC' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms pll_of_provableGbuC
+
+/-! ## §11c  Termination for `Gbu◯(G)` — and what it costs
+
+Theorem 8◯ is a well-founded recursion, so the measure decides whether
+it can be written at all.  Two facts, and they point in opposite
+directions.
+
+**With `R◯ₙᵢ` (regular premise) the paper's weight is unusable** — that
+is `no_measure_stepC` and `cyc_notRefuted` in `wip/gbu_measure.lean`:
+the step relation has a two-cycle both of whose nodes satisfy (BSr1), so
+no measure on sequents works, and the store-carrying `Wg◯` is forced.
+
+**But the store cannot carry the recursion.**  The spec would have to
+say what a banked implication buys, and the only useful reading is
+`∀ A⊃B ∈ U, Nonempty (GbuIC G Ψ A)` — the left premise is already
+built.  At the `L⊃` step with `A⊃B ∉ U` the recursion banks it and
+recurses for exactly that left premise, so discharging the store
+hypothesis of the recursive call requires the derivation being built.
+Circular.  Banking after the fact does not drop `|Ψ^⊃ ∖ U|`, so the
+measure fails instead.
+
+**The way out is a rule change, and it restores the PAPER's own
+measure.**  Replace `R◯ₙᵢ` (regular premise) by
+
+    Ω →g Z
+    ────────  R◯ᵢ
+    Ω →g ◯Z
+
+— sound by `sound_rcirc`, which is already judgment-generic — and
+restrict `L⊃ᵢ` to implications whose antecedent is smaller than the
+goal.  Then `Wg = ⟨ |Sf^L(G) ∖ Cl(Ψ)| , tp(τ) , |τ| ⟩` decreases on
+every step, with no store: `wg_stepO` and `stepO_wf` below.
+
+The restriction is exactly what kills the cycle.  On
+`Γ = ◯z ⊃ ⊥, p, p ⊃ z` the looping step was `L⊃` on `◯z ⊃ ⊥` at goal
+`◯z`, and `|◯z| < |◯z|` fails, so it is blocked; `L⊃ᵢ` on `p ⊃ z` is
+still available (`|p| = 1 < 2 = |◯z|`) and the cell goes through.  The
+two motivating cells survive too: `{p, p⊃◯q} →g ◯q` by `L⊃ᵢ` on
+`p ⊃ ◯q` (`|p| < |◯q|`), and `{p} →g ◯p` by `R◯ᵢ`.
+
+This is a change to two rules, so it is PROPOSED, not adopted.  What
+follows is the evidence for it. -/
+
+/-- The redesigned step relation: `Step` plus the `◯` steps, with
+`R◯ᵢ` in place of `R◯ₙᵢ` and `L⊃ᵢ` size-restricted. -/
+inductive StepO (G : Form) : (Bool × List Form × Form) →
+    (Bool × List Form × Form) → Prop
+  | old {p q} (h : Step G p q) : StepO G p q
+  | lcirc {Ψ Z C} :
+      StepO G (true, Z :: Ψ, .circ C) (true, .circ Z :: Ψ, .circ C)
+  | lcircI {Ψ Z C} :
+      StepO G (false, Z :: Ψ, .circ C) (false, .circ Z :: Ψ, .circ C)
+  | limpLI1 {Ψ A B C} (hsz : A.size < (Form.circ C).size) :
+      StepO G (false, .imp A B :: Ψ, A) (false, .imp A B :: Ψ, .circ C)
+  | limpLI2 {Ψ A B C} :
+      StepO G (false, B :: Ψ, .circ C) (false, .imp A B :: Ψ, .circ C)
+  | rcirc {Ψ Z} : StepO G (false, Ψ, Z) (true, Ψ, .circ Z)
+  | rcircI {Ψ Z} : StepO G (false, Ψ, Z) (false, Ψ, .circ Z)
+
+private theorem sqCons {Ψ : List Form} {X C : Form} :
+    seqSize (X :: Ψ) C = X.size + seqSize Ψ C := by
+  show ((X :: Ψ).map Form.size).sum + C.size
+      = X.size + (((Ψ.map Form.size).sum) + C.size)
+  rw [List.map_cons, List.sum_cons, Nat.add_assoc]
+
+private theorem sqGoal {Ψ : List Form} {C C' : Form} (h : C'.size < C.size) :
+    seqSize Ψ C' < seqSize Ψ C := Nat.add_lt_add_left h _
+
+private theorem wgOCtx {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
+    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (hs : seqSize Ψ' C' < seqSize Ψ C) :
+    WgLt (wg G r Ψ' C') (wg G r Ψ C) := by
+  have hmono : unclosed G Ψ' ≤ unclosed G Ψ :=
+    unclosed_mono (fun _ hX => clo_trans hcl hX)
+  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
+  · exact Or.inl h
+  · exact Or.inr ⟨Nat.le_antisymm hmono h, Or.inr ⟨rfl, hs⟩⟩
+
+private theorem wgOFocus {G : Form} {Ψ : List Form} {C C' : Form} :
+    WgLt (wg G false Ψ C') (wg G true Ψ C) :=
+  Or.inr ⟨rfl, Or.inl Nat.zero_lt_one⟩
+
+/-- **Lemma 8 for the redesigned `Gbu◯(G)`**: the PAPER's weight, with no
+store, decreases on every step. -/
+theorem wg_stepO {G : Form} {p q : Bool × List Form × Form} (h : StepO G p q) :
+    WgLt (wg G p.1 p.2.1 p.2.2) (wg G q.1 q.2.1 q.2.2) := by
+  cases h with
+  | old h => exact wg_step h
+  | @lcirc Ψ Z C =>
+      refine wgOCtx (fun X hX => ?_) ?_
+      · rcases List.mem_cons.mp hX with rfl | hX'
+        · exact .circ (.base List.mem_cons_self)
+        · exact .base (List.mem_cons_of_mem _ hX')
+      · show seqSize (Z :: Ψ) (.circ C) < seqSize (Form.circ Z :: Ψ) (.circ C)
+        rw [sqCons, sqCons]
+        show Z.size + seqSize Ψ (.circ C) < (Z.size + 1) + seqSize Ψ (.circ C)
+        omega
+  | @lcircI Ψ Z C =>
+      refine wgOCtx (fun X hX => ?_) ?_
+      · rcases List.mem_cons.mp hX with rfl | hX'
+        · exact .circ (.base List.mem_cons_self)
+        · exact .base (List.mem_cons_of_mem _ hX')
+      · show seqSize (Z :: Ψ) (.circ C) < seqSize (Form.circ Z :: Ψ) (.circ C)
+        rw [sqCons, sqCons]
+        show Z.size + seqSize Ψ (.circ C) < (Z.size + 1) + seqSize Ψ (.circ C)
+        omega
+  | limpLI1 hsz => exact wgOCtx (fun _ h => .base h) (sqGoal hsz)
+  | @limpLI2 Ψ A B C =>
+      refine wgOCtx (fun X hX => ?_) ?_
+      · rcases List.mem_cons.mp hX with rfl | hX'
+        · exact .imp (.base List.mem_cons_self)
+        · exact .base (List.mem_cons_of_mem _ hX')
+      · show seqSize (B :: Ψ) (.circ C) < seqSize (Form.imp A B :: Ψ) (.circ C)
+        rw [sqCons, sqCons]
+        show B.size + seqSize Ψ (.circ C)
+          < (A.size + B.size + 1) + seqSize Ψ (.circ C)
+        omega
+  | rcirc => exact wgOFocus
+  | @rcircI Ψ Z =>
+      exact wgOCtx (fun _ h => .base h)
+        (sqGoal (show Z.size < (Form.circ Z).size from Nat.lt_succ_self _))
+
+/-- **Termination of backward search in the redesigned `Gbu◯(G)`** —
+the paper's own weight suffices. -/
+theorem stepO_wf (G : Form) :
+    WellFounded (fun p q : Bool × List Form × Form => StepO G p q) :=
+  Subrelation.wf (fun {_ _} h => wg_stepO h)
+    (InvImage.wf (fun p : Bool × List Form × Form => wg G p.1 p.2.1 p.2.2)
+      wgLt_wf)
+
+/-- info: 'FRJ.Gbu.wg_stepO' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms wg_stepO
+
+/-- info: 'FRJ.Gbu.stepO_wf' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms stepO_wf
+
+/-! ## §11d  Theorem 8◯: the case analysis, and the two obstructions left
+
+With the two-rule change the measure is the paper's own, so the
+recursion can be written.  Walking every case of `search` against the
+new rule set leaves exactly three findings.
+
+**GOOD — the regular `◯` goal needs no promise world.**  `L◯` is
+invertible for free (`gbuInv11`, the `Clo.circ` clause) and applies
+whenever the goal is `◯`-shaped, so backward search strips the modal
+zone EAGERLY: by the time a `◯`-goal sequent is critical, its context
+has no top-level `◯` left (each `L◯` replaces `◯Y` by `Y`, and if `Y` is
+a `∧` or `∨` the regular `L∧`/`L∨` finish the job).  So `gbuSuccCirc`
+suffices there and `gbuSuccCircP`'s `PromiseWorld` hypothesis is NOT
+needed by the search.  The modal-zone lemma remains available for the
+irregular side.
+
+**OBSTRUCTION 1 — the irregular `◯` goal has no success lemma.**  At an
+unrefuted `Ω →g ◯Z` the available rules are `Ax`, `L◯ᵢ`, `L⊃ᵢ`, `R◯ᵢ`,
+and NONE of them is invertible: `EvalI` is membership-based, not
+`Clo`-based, so even `L◯ᵢ` does not come free the way `gbuInv11` does.
+A licence is needed — the analogue of Lemmas 11–13 for this case — and
+the only `FRJVi` rules concluding `◯Z` are `Ax^I◯` and `◯∉`, whose
+premise is REGULAR.  This is the same mismatch `rcircNI_not_invertible`
+exposed, now confined to one case.
+
+**OBSTRUCTION 2 — `L◯ᵢ` breaks the irregular invariant.**  Irregular
+sequents carry `Ω ⊆ Ĝ`, and `L◯ᵢ` replaces `◯Y` by `Y`, which need not
+be an atom, an implication or a `◯`-formula.  The regular judgment
+recovers by `L∧`/`L∨`; the irregular one has neither.  `circ_body_escapes_gHat`
+below is a concrete instance.  The fixes are to admit `L∧ᵢ`/`L∨ᵢ` too —
+a further departure — or to restrict `L◯ᵢ` to bodies in `Ĝ`, whose
+completeness would then have to be checked. -/
+
+private def qw : Form := .atom "q"
+
+/-- `G = ◯(p ∧ q) ⊃ p`.  Here `◯(p∧q) ∈ Ĝ` but its body `p∧q` is not,
+so `L◯ᵢ`'s premise leaves the irregular sequent language. -/
+def Gesc : Form := .imp (.circ (.and pv qw)) pv
+
+theorem circ_body_escapes_gHat :
+    Form.circ (.and pv qw) ∈ gHat Gesc ∧ (Form.and pv qw) ∉ gHat Gesc := by
+  constructor <;> decide
+
+/-- info: 'FRJ.Gbu.circ_body_escapes_gHat' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms circ_body_escapes_gHat
 
 /-! ## §12  Theorems 8–10
 
