@@ -1,0 +1,102 @@
+[
+  {
+    "name": "subHeadOut",
+    "file": "LaxLogic/ToolkitTest/Challenge2/subHeadOut.lean",
+    "group": "ljf-measure",
+    "source_file": "LaxLogic/LJF.lean",
+    "source_line": 2729,
+    "proof_lines": 7,
+    "external_citations": [
+      "List.mem_append.mp",
+      "List.mem_append_left",
+      "List.mem_append_right",
+      "List.mem_cons.mp",
+      "List.mem_cons_of_mem",
+      "List.mem_cons_self"
+    ],
+    "proof_external_citations": [
+      "List.mem_append.mp",
+      "List.mem_append_left",
+      "List.mem_append_right",
+      "List.mem_cons.mp",
+      "List.mem_cons_of_mem",
+      "List.mem_cons_self"
+    ],
+    "max_visible_twin": 0.5
+  },
+  {
+    "name": "force_hered",
+    "file": "LaxLogic/ToolkitTest/Challenge2/force_hered.lean",
+    "group": "soundness",
+    "source_file": "LaxLogic/PLLKripke.lean",
+    "source_line": 61,
+    "proof_lines": 11,
+    "external_citations": [
+      "C.Ri",
+      "C.W",
+      "C.hered_F",
+      "C.hered_V",
+      "C.trans_i",
+      "PLLFormula"
+    ],
+    "proof_external_citations": [
+      "C.hered_F",
+      "C.hered_V",
+      "C.trans_i"
+    ],
+    "max_visible_twin": 0.0
+  },
+  {
+    "name": "map_unNeg_negOf",
+    "file": "LaxLogic/ToolkitTest/Challenge2/map_unNeg_negOf.lean",
+    "group": "completeness",
+    "source_file": "LaxLogic/LJFComplete.lean",
+    "source_line": 180,
+    "proof_lines": 7,
+    "external_citations": [
+      "List.map_cons",
+      "List.mem_cons_of_mem",
+      "List.mem_cons_self",
+      "PLLFormula"
+    ],
+    "proof_external_citations": [
+      "List.map_cons",
+      "List.mem_cons_of_mem",
+      "List.mem_cons_self"
+    ],
+    "max_visible_twin": 0.0
+  },
+  {
+    "name": "iff_G4c_isIPL",
+    "file": "LaxLogic/ToolkitTest/Challenge2/iff_G4c_isIPL.lean",
+    "group": "completeness",
+    "source_file": "LaxLogic/PLLG4ipComplete.lean",
+    "source_line": 194,
+    "proof_lines": 1,
+    "external_citations": [
+      "G4c",
+      "G4c.ofG4p",
+      "G4p.ofG4",
+      "PLLFormula",
+      "isIPL"
+    ],
+    "proof_external_citations": [
+      "G4c.ofG4p",
+      "G4p.ofG4"
+    ],
+    "max_visible_twin": 0.0
+  },
+  {
+    "name": "isIPL_erase",
+    "file": "LaxLogic/ToolkitTest/Challenge2/isIPL_erase.lean",
+    "group": "nd-core",
+    "source_file": "LaxLogic/PLLNDCore.lean",
+    "source_line": 51,
+    "proof_lines": 2,
+    "external_citations": [
+      "PLLFormula"
+    ],
+    "proof_external_citations": [],
+    "max_visible_twin": 0.0
+  }
+]
