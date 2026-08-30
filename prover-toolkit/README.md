@@ -20,14 +20,11 @@ conjunction.
 
 **An axiom gate.** ax-prover checks that a proof compiles and has no `sorry`.
 It does not check axioms. `constructive_prove.py` compares against the axioms
-of the proof being replaced and rejects only a **strict superset** — catching a
-model that reaches for `Classical.em` on a lemma proved constructively, while
-accepting one that merely matches what was already there.
-
-> An absolute policy was tried first and was **wrong**. Rejecting any use of
-> `Classical.choice` produced three false rejections whose *human* proofs also
-> use choice. In a 28-proof sample of one development, 25 were choice-free and
-> 3 were not. Regression against the actual baseline is the rule that survives.
+of the proof being replaced and flags a **strict superset**, so a proof that
+introduces a dependency the previous one did not have is surfaced rather than
+silently accepted. Whether that baseline is the *right* standard is an open
+question: it records what an existing proof happens to rest on, which is not
+the same as what the statement requires.
 
 **A paranoid checker.** `verify.py` splices the model's proof under the
 benchmark's verbatim statement, so a weakened goal cannot score; catches

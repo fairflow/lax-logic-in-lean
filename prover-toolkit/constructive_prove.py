@@ -37,20 +37,17 @@ if AX is None or not (AX / ".venv" / "bin" / "ax-prover").exists():
     raise SystemExit(
         "set AX_PROVER_HOME to your ax-prover-base checkout, e.g.\n"
         "  export AX_PROVER_HOME=~/src/ax-prover-base")
-# There is no fixed list of permitted axioms. An absolute policy was tried
-# first and was WRONG: `F_iff`, `interpA_or_eq` and `sat_iff_forall_sle` were
-# all rejected for using `Classical.choice`, and the human proofs of all three
-# use it too. In a 28-proof sample of this repository 25 were choice-free and 3
-# were not, so choice is rare but legitimate here.
+# The gate compares a proof against the axioms of the proof it replaces and
+# flags a STRICT SUPERSET -- a dependency the previous proof did not have.
 #
-# The rule that survives is AXIOM REGRESSION: the baseline is whatever the
-# proof being replaced already depends on, and only a STRICT SUPERSET is a
-# defect. That catches a model reaching for `Classical.em` on a lemma proved
-# constructively, while accepting a proof that merely matches what was there.
+# This is a change-detector, not a correctness standard. The baseline records
+# what an existing proof happens to rest on, which is not necessarily what the
+# statement requires: an axiom may enter incidentally through a library lemma
+# rather than from any mathematical need. Treat a flag as "look at this",
+# not as "this is wrong".
 #
 # Used when no ground truth exists (a genuinely new lemma): anything except
-# `sorryAx` is accepted, with a warning, since there is nothing to regress
-# against.
+# `sorryAx` is accepted, with a warning, since there is nothing to compare to.
 FALLBACK_NOTE = "no ground truth available - accepting any sorry-free proof"
 
 BANNER = "-- === PROOF CONSTRAINT (added by constructive_prove.py) ==="
