@@ -351,12 +351,59 @@ theorem mem_gAt_of_not_imp {G X : Form}
   · exact h'
   · exact absurd (List.mem_filter.mp h').2 (by simp [himp])
 
-theorem gbuSuccAt {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+/-! ## §10a′  Clean refutations, and Lemma 14 — the irregular `◯` goal
+
+Obstruction 1 was that `Ω →g ◯Z` had no success lemma.  Its root cause
+is in the DATABASE model, not the calculus: `FDerivable (.reg Γ C)` is
+`∃ t, Nonempty (FRJVr G t Γ C)` — the tag is quantified away — and (DB2)
+returns a SUBSUMING row whose tag is then unknown.  `◯∈`/`◯∉` need a
+tag they can lift, so the query has to be made before the database
+forgets it.
+
+`RefutedCleanly` is that query, localised to one derivation rather than
+imposed on the whole database as `TagClean` was: a derivation of
+`Γ ⇒ C` with a liftable tag, `Γ` covering `Ω`.  It is what the BARREN
+joins produce — `⋈^At`, `⋈^∨` and `⋈^◯` all conclude at `barren` — and
+what the fallible ones do not.
+
+With it, Lemma 14 is short, and needs no query on `Υ` at all. -/
+
+/-- An `FRJV` derivation of `Γ ⇒ C` whose tag `◯∈`/`◯∉` can lift, with
+`Γ` covering `Ω`.  Strictly stronger than `EvalR D Ω C`. -/
+def RefutedCleanly (G : Form) (Ω : List Form) (C : Form) : Prop :=
+  ∃ (Γ : List Form) (t : Tag), Nonempty (FRJVr G t Γ C) ∧
+    (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W C) ∧ (∀ X ∈ Ω, Clo Γ X)
+
+/-- A clean refutation is in particular a refutation. -/
+theorem evalR_of_refutedCleanly {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D) {Ω : List Form} {C : Form}
+    (h : RefutedCleanly G Ω C) : EvalR D Ω C := by
+  obtain ⟨Γ, t, ⟨d⟩, _, hcov⟩ := h
+  obtain ⟨s', hs'mem, hsub⟩ := hsat.2 (.reg Γ C) ⟨t, ⟨d⟩⟩
+  match s', hsub with
+  | .reg Γ' _, ⟨rfl, hΓ⟩ =>
+      exact ⟨Γ', hs'mem, fun X hX => clo_mono hΓ (hcov X hX)⟩
+
+/-- Clean refutation is antitone in the context it covers — the same
+monotonicity `EvalR` has, and for the same reason. -/
+theorem refutedCleanly_mono {G : Form} {Ω Ω' : List Form} {C : Form}
+    (h : Ω ⊆ Ω') (hr : RefutedCleanly G Ω' C) : RefutedCleanly G Ω C :=
+  let ⟨Γ, t, d, htag, hcov⟩ := hr
+  ⟨Γ, t, d, htag, fun X hX => hcov X (h hX)⟩
+
+/-- …and closed under `Clo`, since the covering is a `Clo` already. -/
+theorem refutedCleanly_clo {G : Form} {Ω Ω' : List Form} {C : Form}
+    (h : ∀ X ∈ Ω, Clo Ω' X) (hr : RefutedCleanly G Ω' C) :
+    RefutedCleanly G Ω C :=
+  let ⟨Γ, t, d, htag, hcov⟩ := hr
+  ⟨Γ, t, d, htag, fun X hX => clo_trans hcov (h X hX)⟩
+
+theorem refutedCleanly_at {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     {Ω : List Form} {F : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
     (hFp : F.isPrime) (hFgoal : F ∈ sfR G) (hFmem : F ∉ Ω)
     (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A) :
-    EvalR D Ω F := by
+    RefutedCleanly G Ω F := by
   by_cases hne : (impPart Ω).map ante = []
   · -- no left implications: the `Ax^R` cell
     have hnoimp : ∀ X ∈ Ω, X.isImp = false := by
@@ -367,14 +414,10 @@ theorem gbuSuccAt {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
         rw [hne] at hmem
         exact absurd hmem List.not_mem_nil
       · simpa using hi
-    obtain ⟨s', hs'mem, hsub⟩ :=
-      hsat.2 (.reg (rm (gAt G) F) F)
-        ⟨.barren, ⟨.axR F hFp hFgoal (CtxEq.refl _)⟩⟩
-    match s', hsub with
-    | .reg Γ' _, ⟨rfl, hΓ⟩ =>
-        refine ⟨Γ', hs'mem, fun X hX => .base (hΓ (mem_rm.mpr ⟨?_, ?_⟩))⟩
-        · exact fun hc => hFmem (hc ▸ hX)
-        · exact mem_gAt_of_not_imp (hΩ X hX) (hnoimp X hX)
+    refine ⟨_, .barren, ⟨.axR F hFp hFgoal (CtxEq.refl _)⟩,
+      Or.inl rfl, fun X hX => .base ((mem_rm.mpr ⟨?_, ?_⟩))⟩
+    · exact fun hc => hFmem (hc ▸ hX)
+    · exact mem_gAt_of_not_imp (hΩ X hX) (hnoimp X hX)
   · -- the `⋈^At` join over the antecedents of `Ω`'s implications
     let E := enumOf ((impPart Ω).map ante) hne
     let f := E.f
@@ -426,43 +469,48 @@ theorem gbuSuccAt {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
       intro hX
       obtain ⟨j, hj⟩ := mem_unionAll.mp hX
       exact hFmem (hStΩ j (List.mem_filter.mp hj).1)
-    obtain ⟨s', hs'mem, hsub⟩ :=
-      hsat.2 (.reg (joinCtxAtVBase St Th F ++ restrict (thPool Th) (upsilon f)) F)
-        ⟨.barren, ⟨.joinAt (fun j => d j) hJ1 hJ2 hcirc
-          (keptChainRestrict _ Th) hFp hFn hFgoal (CtxEq.refl _)⟩⟩
-    match s', hsub with
-    | .reg Γ' _, ⟨rfl, hΓ⟩ =>
-        refine ⟨Γ', hs'mem, fun X hX => .base (hΓ ?_)⟩
-        -- `Ω ⊆ Γ`: in some `Σ`, or in every `Θ`
-        by_cases hin : ∃ j, X ∈ St j
-        · obtain ⟨j, hj⟩ := hin
-          refine List.mem_append_left _ ?_
-          by_cases hi : X.isImp
-          · exact List.mem_append_right _
-              (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
-          · refine List.mem_append_left _ (List.mem_append_left _
-              (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
-            have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-            exact (List.mem_filter.mp this).2
-        · have hall : ∀ j, X ∈ Th j := by
-            intro j
-            rcases List.mem_append.mp (hΩSt j hX) with h' | h'
-            · exact absurd ⟨j, h'⟩ hin
-            · exact h'
-          by_cases hi : X.isImp
-          · refine List.mem_append_right _ ?_
-            match X, hi with
-            | .imp A B, _ =>
-                refine mem_restrict.mpr ⟨?_, ?_⟩
-                · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
-                · exact (E.spec A).mpr (List.mem_map.mpr
-                    ⟨.imp A B, List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩)
-          · refine List.mem_append_left _ (List.mem_append_left _
-              (List.mem_append_right _ (mem_rm.mpr ⟨?_, ?_⟩)))
-            · exact fun hc => hFmem (hc ▸ hX)
-            · refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
-              have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-              exact (List.mem_filter.mp this).2
+    refine ⟨_, .barren, ⟨.joinAt (fun j => d j) hJ1 hJ2 hcirc
+          (keptChainRestrict _ Th) hFp hFn hFgoal (CtxEq.refl _)⟩,
+      Or.inl rfl, fun X hX => .base (?_)⟩
+    -- `Ω ⊆ Γ`: in some `Σ`, or in every `Θ`
+    by_cases hin : ∃ j, X ∈ St j
+    · obtain ⟨j, hj⟩ := hin
+      refine List.mem_append_left _ ?_
+      by_cases hi : X.isImp
+      · exact List.mem_append_right _
+          (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
+      · refine List.mem_append_left _ (List.mem_append_left _
+          (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
+        have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+        exact (List.mem_filter.mp this).2
+    · have hall : ∀ j, X ∈ Th j := by
+        intro j
+        rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+        · exact absurd ⟨j, h'⟩ hin
+        · exact h'
+      by_cases hi : X.isImp
+      · refine List.mem_append_right _ ?_
+        match X, hi with
+        | .imp A B, _ =>
+            refine mem_restrict.mpr ⟨?_, ?_⟩
+            · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
+            · exact (E.spec A).mpr (List.mem_map.mpr
+                ⟨.imp A B, List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩)
+      · refine List.mem_append_left _ (List.mem_append_left _
+          (List.mem_append_right _ (mem_rm.mpr ⟨?_, ?_⟩)))
+        · exact fun hc => hFmem (hc ▸ hX)
+        · refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
+          have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+          exact (List.mem_filter.mp this).2
+
+
+theorem gbuSuccAt {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {F : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
+    (hFp : F.isPrime) (hFgoal : F ∈ sfR G) (hFmem : F ∉ Ω)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A) :
+    EvalR D Ω F :=
+  evalR_of_refutedCleanly hsat (refutedCleanly_at hsat hΩ hFp hFgoal hFmem himp)
 
 /-! ## Lemma 12 (`lemma:gbuSuccOr`, source 4193) — the `∨` success lemma
 
@@ -473,13 +521,13 @@ the V-join's `RefAt` disjunct condition is discharged by its base clause
 `RefAt.ups`, membership in `Υ`, which is exactly why the disjuncts have
 to be in the family. -/
 
-theorem gbuSuccOr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+theorem refutedCleanly_or {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     {Ω : List Form} {C₁ C₂ : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
     (hgoal : Form.or C₁ C₂ ∈ sfR G)
     (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
     (h₁ : EvalI D Ω C₁) (h₂ : EvalI D Ω C₂) :
-    EvalR D Ω (.or C₁ C₂) := by
+    RefutedCleanly G Ω (.or C₁ C₂) := by
   let U := C₁ :: C₂ :: (impPart Ω).map ante
   let E := enumOf U (by simp [U])
   let f := E.f
@@ -530,45 +578,50 @@ theorem gbuSuccOr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     exact absurd hc (by
       rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
       exact fun h => Bool.noConfusion h)
-  obtain ⟨s', hs'mem, hsub⟩ :=
-    hsat.2 (.reg (joinCtxOrVBase St Th ++ restrict (thPool Th) (upsilon f))
-      (.or C₁ C₂))
-      ⟨.barren, ⟨.joinOr (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Th)
+  refine ⟨_, .barren, ⟨.joinOr (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Th)
         ⟨.ups ((E.spec C₁).mpr List.mem_cons_self),
          .ups ((E.spec C₂).mpr (List.mem_cons_of_mem _ List.mem_cons_self))⟩
-        hgoal (CtxEq.refl _)⟩⟩
-  match s', hsub with
-  | .reg Γ' _, ⟨rfl, hΓ⟩ =>
-      refine ⟨Γ', hs'mem, fun X hX => .base (hΓ ?_)⟩
-      by_cases hin : ∃ j, X ∈ St j
-      · obtain ⟨j, hj⟩ := hin
-        refine List.mem_append_left _ ?_
-        by_cases hi : X.isImp
-        · exact List.mem_append_right _
-            (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
-        · refine List.mem_append_left _ (List.mem_append_left _
-            (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
-          have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-          exact (List.mem_filter.mp this).2
-      · have hall : ∀ j, X ∈ Th j := by
-          intro j
-          rcases List.mem_append.mp (hΩSt j hX) with h' | h'
-          · exact absurd ⟨j, h'⟩ hin
-          · exact h'
-        by_cases hi : X.isImp
-        · refine List.mem_append_right _ ?_
-          match X, hi with
-          | .imp A B, _ =>
-              refine mem_restrict.mpr ⟨?_, ?_⟩
-              · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
-              · exact (E.spec A).mpr (List.mem_cons_of_mem _
-                  (List.mem_cons_of_mem _ (List.mem_map.mpr
-                    ⟨.imp A B, List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩)))
-        · refine List.mem_append_left _ (List.mem_append_left _
-            (List.mem_append_right _ ?_))
-          refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
-          have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-          exact (List.mem_filter.mp this).2
+        hgoal (CtxEq.refl _)⟩,
+    Or.inl rfl, fun X hX => .base (?_)⟩
+  by_cases hin : ∃ j, X ∈ St j
+  · obtain ⟨j, hj⟩ := hin
+    refine List.mem_append_left _ ?_
+    by_cases hi : X.isImp
+    · exact List.mem_append_right _
+        (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
+    · refine List.mem_append_left _ (List.mem_append_left _
+        (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
+      have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+      exact (List.mem_filter.mp this).2
+  · have hall : ∀ j, X ∈ Th j := by
+      intro j
+      rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+      · exact absurd ⟨j, h'⟩ hin
+      · exact h'
+    by_cases hi : X.isImp
+    · refine List.mem_append_right _ ?_
+      match X, hi with
+      | .imp A B, _ =>
+          refine mem_restrict.mpr ⟨?_, ?_⟩
+          · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
+          · exact (E.spec A).mpr (List.mem_cons_of_mem _
+              (List.mem_cons_of_mem _ (List.mem_map.mpr
+                ⟨.imp A B, List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩)))
+    · refine List.mem_append_left _ (List.mem_append_left _
+        (List.mem_append_right _ ?_))
+      refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
+      have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+      exact (List.mem_filter.mp this).2
+
+
+theorem gbuSuccOr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {C₁ C₂ : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
+    (hgoal : Form.or C₁ C₂ ∈ sfR G)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
+    (h₁ : EvalI D Ω C₁) (h₂ : EvalI D Ω C₂) :
+    EvalR D Ω (.or C₁ C₂) :=
+  evalR_of_refutedCleanly hsat (refutedCleanly_or hsat hΩ hgoal himp h₁ h₂)
 
 /-! ## Axiom pins -/
 
@@ -607,5 +660,25 @@ theorem gbuSuccOr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
 /-- info: 'FRJ.Gbu.gbuSuccOr' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms gbuSuccOr
+
+/-- info: 'FRJ.Gbu.evalR_of_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalR_of_refutedCleanly
+
+/-- info: 'FRJ.Gbu.refutedCleanly_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_mono
+
+/-- info: 'FRJ.Gbu.refutedCleanly_clo' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_clo
+
+/-- info: 'FRJ.Gbu.refutedCleanly_at' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_at
+
+/-- info: 'FRJ.Gbu.refutedCleanly_or' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_or
 
 end FRJ.Gbu

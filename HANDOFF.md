@@ -2647,3 +2647,79 @@ now have the SAME rules at a `◯` goal, the success lemma the irregular
 database query is `EvalR` or `EvalI`.
 
 **Next**: obstruction 1 — the success lemma for `Ω →g ◯Z`.
+
+## 2026-08-30f — Obstruction 1 CLEARED: the clean-refutation layer
+
+Obstruction 1 was that the irregular `◯` goal `Ω →g ◯Z` had no success
+lemma. The cause was in the DATABASE model, not the calculus.
+
+`FDerivable (.reg Γ C)` is `∃ t, Nonempty (FRJVr G t Γ C)` — the tag is
+existentially quantified away — and (DB2) answers a query with a
+SUBSUMING row, whose tag is then unknown. But the only two `FRJVi`
+rules that conclude `◯Z` are `Ax^I◯` and `◯∉` (`FRJ/CalculusV.lean:250`),
+and `◯∉` carries
+
+    htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z
+
+so it needs a tag the database has already forgotten. That is the same
+mismatch `rcircNI_not_invertible` exposed, seen from the other side.
+
+**The fix: ask before the database forgets.** `RefutedCleanly G Ω C` —
+an `FRJV` derivation of `Γ ⇒ C` with a liftable tag and `Γ` covering `Ω`
+— localises `TagClean` to one derivation instead of imposing it on the
+whole database. That matters, because `TagClean D` is FALSE for the real
+database: `⋈^At_F` and `⋈^∨_F` store `blocked` rows, and they must, since
+fallible worlds are what make `¬◯⊥` refutable.
+
+| | | pin |
+|---|---|---|
+| `RefutedCleanly` | the localised query | — |
+| `evalR_of_refutedCleanly` | clean ⟹ refuted | `[propext, Quot.sound]` |
+| `refutedCleanly_mono`, `_clo` | antitone in the covered context | same |
+| **`gbuSuccCircI`** | **Lemma 14**: `RefutedCleanly G Ω Z → EvalI D Ω (◯Z)` | same |
+
+Lemma 14 is short, and — the surprise — needs NO query on `Υ`: the
+antecedents are already carried by `Γ`'s covering of `Ω`. It is
+semantically exactly right. `a ⊮ ◯Z` iff `Z` fails at some `Rm`-successor,
+that successor is the root of its own REGULAR refutation, and `Ω` is
+forced there too because `Rm ⊆ ≤`. A fallible successor cannot serve,
+because a fallible world forces `Z` for free — which is why `◯∉` carries
+the tag, and why there is no `⋈^◯_F`.
+
+**The suppliers are complete.** Every shape of `Z` has one, and each was
+obtained by splitting an existing lemma at its (DB2) step rather than by
+a new proof — `gbuSuccAt` and `gbuSuccOr` are now one-line wrappers:
+
+| `Z` | supplier | rule |
+|---|---|---|
+| prime | `refutedCleanly_at` | `Ax^R` / `⋈^At` — both `barren` |
+| `∨` | `refutedCleanly_or` | `⋈^∨` — `barren` |
+| `∧` | `refutedCleanly_and1/2` | `∧R₁/₂`, tag kept, `Covers.andL/.andR` |
+| `⊃` | `refutedCleanly_imp` | `⊃∈`, tag kept, `Covers.imp` |
+| `◯` | `refutedCleanly_circIn` | `◯∈`, tag kept, `Covers.circ` |
+| `◯` (join) | `refutedCleanly_circ` | `⋈^◯` — `barren` |
+
+Negative test: weakening the tag disjunct to `t = .barren ∨ True` makes
+`gbuSuccCircI` fail at its `◯∉` argument (`wip/gbu_circ.lean:906`), and
+`refutedCleanly_circIn` at its `◯∈` argument. Restored, green.
+
+**FOR REVIEW — a divergence from the paper.** The suppliers above are
+closed under exactly the regular search's moves, so Theorem 8◯ should be
+re-based with `¬ RefutedCleanly G Ψ C` in place of `¬ EvalR D Ψ C` on the
+regular side. That is a STRONGER theorem (`RefutedCleanly → EvalR`, so the
+hypothesis is weaker), and the top level survives it: `¬ ProvableV G`
+gives `¬ RefutedCleanly G [] G` immediately. But `RefutedCleanly` does not
+mention `D` at all, so re-basing weakens the paper's own point — Gbu(G)'s
+backtracking-freedom comes from querying the database, and on the regular
+side that query would no longer be a lookup. Two readings, and the choice
+is Matthew's:
+
+  (i) accept it: Gbu◯ is complete w.r.t. clean FRJV refutations, and the
+      database survives on the irregular side only;
+  (ii) restore the lookup by making the database tag-aware — add a
+      `regC` clause to `FSeq`. Blocked on whether FRJV admits
+      tag-preserving weakening, since (DB2) returns `Γ ⊆ Γ'`; FRJ contexts
+      are exact, so this is not obviously available.
+
+No rule of `GbuRC`/`GbuIC` changed this session, so the conservativity
+gate `deCircR`/`deCircI` is untouched and still green.

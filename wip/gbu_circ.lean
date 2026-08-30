@@ -740,6 +740,44 @@ theorem rcircNI_not_invertible :
   not_evalI_tc (h Gtc (FDerivable Gtc) (saturated_fderivable Gtc)
     [Form.circ pv] pv (by decide) (by decide) evalR_tc)
 
+/-! The INVERTIBLE right rules lift a clean refutation, because `∧R`, `⊃∈`
+and `◯∈` all keep the tag and the context, and `Covers` has a clause for
+each of them (`Covers.andL/.andR/.imp/.circ`, `FRJ/Calculus.lean:238`).
+So a clean refutation of a subgoal is a clean refutation of the goal. -/
+
+theorem refutedCleanly_and1 {G : Form} {Ω : List Form} {A B : Form}
+    (hgoal : Form.and A B ∈ sfR G) (h : RefutedCleanly G Ω A) :
+    RefutedCleanly G Ω (.and A B) :=
+  let ⟨Γ, t, ⟨d⟩, htag, hcov⟩ := h
+  ⟨Γ, t, ⟨.andR1 d hgoal⟩,
+    htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .andL hc⟩), hcov⟩
+
+theorem refutedCleanly_and2 {G : Form} {Ω : List Form} {A B : Form}
+    (hgoal : Form.and A B ∈ sfR G) (h : RefutedCleanly G Ω B) :
+    RefutedCleanly G Ω (.and A B) :=
+  let ⟨Γ, t, ⟨d⟩, htag, hcov⟩ := h
+  ⟨Γ, t, ⟨.andR2 d hgoal⟩,
+    htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .andR hc⟩), hcov⟩
+
+/-- `⊃∈`.  The antecedent is asked for in the CONTEXT of the premise, which
+is where `impIn`'s own `Clo Γ A` side condition comes from. -/
+theorem refutedCleanly_imp {G : Form} {Ω : List Form} {A B : Form}
+    (hgoal : Form.imp A B ∈ sfR G) (h : RefutedCleanly G (A :: Ω) B) :
+    RefutedCleanly G Ω (.imp A B) :=
+  let ⟨Γ, t, ⟨d⟩, htag, hcov⟩ := h
+  let hA : Clo Γ A := hcov A List.mem_cons_self
+  ⟨Γ, t, ⟨.impIn d hA hgoal⟩,
+    htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .imp hc hA⟩),
+    fun X hX => hcov X (List.mem_cons_of_mem _ hX)⟩
+
+/-- `◯∈`, whose side condition is exactly `RefutedCleanly`'s tag clause. -/
+theorem refutedCleanly_circIn {G : Form} {Ω : List Form} {Z : Form}
+    (hgoal : Form.circ Z ∈ sfR G) (h : RefutedCleanly G Ω Z) :
+    RefutedCleanly G Ω (.circ Z) :=
+  let ⟨Γ, t, ⟨d⟩, htag, hcov⟩ := h
+  ⟨Γ, t, ⟨.circIn d htag hgoal⟩,
+    htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .circ hc⟩), hcov⟩
+
 /-! ## §10a  Lemma 13 (P2) — the `◯` success lemma
 
 `⋈^◯` carries `hZ : RefAt … Z` where `⋈^∨` carries `hC : … C₁ ∧ … C₂`.
@@ -755,13 +793,13 @@ Note the hypothesis `Ω ⊆ Ĝ_at ∪ Ĝ_imp`: unlike `⋈^At` and `⋈^∨`, th
 `◯`-join has NO fallible variant, so the modal-zone case of this lemma
 is not a free swap.  It needs `⋈^◯_P` and its `hJ5`, and is left open. -/
 
-theorem gbuSuccCirc {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+theorem refutedCleanly_circ {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     {Ω : List Form} {Z : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
     (hgoal : Form.circ Z ∈ sfR G)
     (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
     (hz : EvalI D Ω Z) :
-    EvalR D Ω (.circ Z) := by
+    RefutedCleanly G Ω (.circ Z) := by
   let U := Z :: (impPart Ω).map ante
   let E := enumOf U (by simp [U])
   let f := E.f
@@ -808,43 +846,69 @@ theorem gbuSuccCirc {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     exact absurd hc (by
       rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
       exact fun h => Bool.noConfusion h)
+  refine ⟨_, .barren,
+    ⟨.joinCirc (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Th)
+      (.ups ((E.spec Z).mpr List.mem_cons_self)) hgoal (CtxEq.refl _)⟩,
+    Or.inl rfl, fun X hX => .base ?_⟩
+  by_cases hin : ∃ j, X ∈ St j
+  · obtain ⟨j, hj⟩ := hin
+    refine List.mem_append_left _ ?_
+    by_cases hi : X.isImp
+    · exact List.mem_append_right _
+        (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
+    · refine List.mem_append_left _ (List.mem_append_left _
+        (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
+      have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+      exact (List.mem_filter.mp this).2
+  · have hall : ∀ j, X ∈ Th j := by
+      intro j
+      rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+      · exact absurd ⟨j, h'⟩ hin
+      · exact h'
+    by_cases hi : X.isImp
+    · refine List.mem_append_right _ ?_
+      match X, hi with
+      | .imp A B, _ =>
+          refine mem_restrict.mpr ⟨?_, ?_⟩
+          · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
+          · exact (E.spec A).mpr (List.mem_cons_of_mem _
+              (List.mem_map.mpr ⟨.imp A B,
+                List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩))
+    · refine List.mem_append_left _ (List.mem_append_left _
+        (List.mem_append_right _ ?_))
+      refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
+      have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+      exact (List.mem_filter.mp this).2
+
+/-- Lemma 13, MODAL zone — `gbuSuccCirc` is the clean refutation, forgotten
+    into the database. -/
+theorem gbuSuccCirc {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
+    (hgoal : Form.circ Z ∈ sfR G)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
+    (hz : EvalI D Ω Z) :
+    EvalR D Ω (.circ Z) :=
+  evalR_of_refutedCleanly hsat (refutedCleanly_circ hsat hΩ hgoal himp hz)
+
+/-- **Lemma 14** — the success lemma for the IRREGULAR `◯` goal, and the
+clearing of obstruction 1.  `◯∉` turns a CLEAN refutation of `Ω ⇒ Z`
+into an irregular refutation of `Ω →g ◯Z`; (DB2) then puts it in the
+database.  No query on `Υ` is needed — the implications are already
+carried by `Γ`'s covering of `Ω`. -/
+theorem gbuSuccCircI {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hgoal : Form.circ Z ∈ sfR G)
+    (hcl : RefutedCleanly G Ω Z) : EvalI D Ω (.circ Z) := by
+  obtain ⟨Γ, t, ⟨d⟩, htag, hcov⟩ := hcl
   obtain ⟨s', hs'mem, hsub⟩ :=
-    hsat.2 (.reg (joinCtxOrVBase St Th ++ restrict (thPool Th) (upsilon f))
-      (.circ Z))
-      ⟨.barren, ⟨.joinCirc (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Th)
-        (.ups ((E.spec Z).mpr List.mem_cons_self)) hgoal (CtxEq.refl _)⟩⟩
+    hsat.2 (.irr [] Ω (.circ Z))
+      ⟨.circNotIn d htag (fun X hX => ⟨hcov X hX, hΩ X hX⟩) hgoal⟩
   match s', hsub with
-  | .reg Γ' _, ⟨rfl, hΓ⟩ =>
-      refine ⟨Γ', hs'mem, fun X hX => .base (hΓ ?_)⟩
-      by_cases hin : ∃ j, X ∈ St j
-      · obtain ⟨j, hj⟩ := hin
-        refine List.mem_append_left _ ?_
-        by_cases hi : X.isImp
-        · exact List.mem_append_right _
-            (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
-        · refine List.mem_append_left _ (List.mem_append_left _
-            (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
-          have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-          exact (List.mem_filter.mp this).2
-      · have hall : ∀ j, X ∈ Th j := by
-          intro j
-          rcases List.mem_append.mp (hΩSt j hX) with h' | h'
-          · exact absurd ⟨j, h'⟩ hin
-          · exact h'
-        by_cases hi : X.isImp
-        · refine List.mem_append_right _ ?_
-          match X, hi with
-          | .imp A B, _ =>
-              refine mem_restrict.mpr ⟨?_, ?_⟩
-              · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
-              · exact (E.spec A).mpr (List.mem_cons_of_mem _
-                  (List.mem_map.mpr ⟨.imp A B,
-                    List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩))
-        · refine List.mem_append_left _ (List.mem_append_left _
-            (List.mem_append_right _ ?_))
-          refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
-          have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
-          exact (List.mem_filter.mp this).2
+  | .irr St' Th' _, ⟨rfl, hSt, hTh⟩ =>
+      exact ⟨St', Th', hs'mem,
+        fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+        fun {x} hx => List.mem_append_right _ (hTh hx)⟩
 
 /-! ## §10b  Lemma 13, the MODAL-zone case
 
@@ -1818,5 +1882,32 @@ cannot lift. -/
 /-- info: 'FRJ.Gbu.not_gbuR_omegaNI' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms not_gbuR_omegaNI
+
+/-! ## Pins — the clean-refutation layer -/
+
+/-- info: 'FRJ.Gbu.refutedCleanly_circ' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_circ
+
+/-- info: 'FRJ.Gbu.refutedCleanly_and1' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_and1
+
+/-- info: 'FRJ.Gbu.refutedCleanly_and2' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_and2
+
+/-- info: 'FRJ.Gbu.refutedCleanly_imp' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_imp
+
+/-- info: 'FRJ.Gbu.refutedCleanly_circIn' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms refutedCleanly_circIn
+
+/-- info: 'FRJ.Gbu.gbuSuccCircI' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuSuccCircI
+
 
 end FRJ.Gbu
