@@ -36,6 +36,14 @@ open Form
 /-- An `FRJ(G)`-sequent, as data. -/
 inductive FSeq where
   | reg (Γ : List Form) (C : Form)
+  /-- the CLEAN regular stratum (divergence D8): a row whose derivation
+  carries a tag `◯∈`/`◯∉` can lift.  A SEPARATE clause, not a flag on
+  `reg`, because tag-preserving weakening is refuted
+  (`tag_weakening_refuted`): `[] ⇒ p` is barren, `[◯p] ⇒ p` is derivable
+  only at `blocked`, and `[] ⊆ [◯p]`.  So cleanliness is not inherited
+  along subsumption and the clean rows must be kept in their own
+  stratum, subsumed only by clean rows. -/
+  | regC (Γ : List Form) (C : Form)
   | irr (St Th : List Form) (C : Form)
 
 /-- `s₁ ⊑ s₂`: `s₂` subsumes `s₁` (source 2664–2669).  Regular sequents
@@ -43,12 +51,15 @@ compare by context inclusion at a common goal; irregular ones by the
 `Θ`-zone alone, the `Σ`-zone being fixed. -/
 def Subsumes : FSeq → FSeq → Prop
   | .reg Γ₁ C₁, .reg Γ₂ C₂ => C₁ = C₂ ∧ Γ₁ ⊆ Γ₂
+  | .regC Γ₁ C₁, .regC Γ₂ C₂ => C₁ = C₂ ∧ Γ₁ ⊆ Γ₂
   | .irr St₁ Th₁ C₁, .irr St₂ Th₂ C₂ => C₁ = C₂ ∧ St₁ ≐ St₂ ∧ Th₁ ⊆ Th₂
   | _, _ => False
 
 /-- Derivability of a sequent in the repaired family (divergence D6). -/
 def FDerivable (G : Form) : FSeq → Prop
   | .reg Γ C => ∃ t, Nonempty (FRJVr G t Γ C)
+  | .regC Γ C => ∃ t, Nonempty (FRJVr G t Γ C) ∧
+      (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W C)
   | .irr St Th C => Nonempty (FRJVi G St Th C)
 
 /-- **(DB1)** (source 2827): every member is derivable. -/
@@ -65,6 +76,11 @@ def Saturated (G : Form) (D : FSeq → Prop) : Prop :=
 /-- `D ▷ (Ψ ⇒g C)`. -/
 def EvalR (D : FSeq → Prop) (Ψ : List Form) (C : Form) : Prop :=
   ∃ Γ, D (.reg Γ C) ∧ ∀ X ∈ Ψ, Clo Γ X
+
+/-- `D ▷ᶜ (Ψ ⇒g C)` — the CLEAN regular lookup.  Same shape as `EvalR`,
+one stratum down. -/
+def EvalRC (D : FSeq → Prop) (Ψ : List Form) (C : Form) : Prop :=
+  ∃ Γ, D (.regC Γ C) ∧ ∀ X ∈ Ψ, Clo Γ X
 
 /-- `D ▷ (Ω →g C)`. -/
 def EvalI (D : FSeq → Prop) (Ω : List Form) (C : Form) : Prop :=
@@ -384,6 +400,24 @@ theorem evalR_of_refutedCleanly {G : Form} {D : FSeq → Prop}
   | .reg Γ' _, ⟨rfl, hΓ⟩ =>
       exact ⟨Γ', hs'mem, fun X hX => clo_mono hΓ (hcov X hX)⟩
 
+/-- **The clean lookup IS the clean-refutation predicate**, under (DB1)
+and (DB2).  This is what makes divergence D8 pay: `RefutedCleanly`
+quantifies over derivations, `EvalRC` is a database lookup, and on a
+saturated database they coincide — so Gbu◯ keeps the paper's
+backtracking-free character at the modal rules too. -/
+theorem evalRC_iff_refutedCleanly {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D) {Ψ : List Form} {C : Form} :
+    EvalRC D Ψ C ↔ RefutedCleanly G Ψ C := by
+  constructor
+  · rintro ⟨Γ, hmem, hcov⟩
+    obtain ⟨t, hd, htag⟩ := hsat.1 (.regC Γ C) hmem
+    exact ⟨Γ, t, hd, htag, hcov⟩
+  · rintro ⟨Γ, t, hd, htag, hcov⟩
+    obtain ⟨s', hs'mem, hsub⟩ := hsat.2 (.regC Γ C) ⟨t, hd, htag⟩
+    match s', hsub with
+    | .regC Γ' _, ⟨rfl, hΓ⟩ =>
+        exact ⟨Γ', hs'mem, fun X hX => clo_mono hΓ (hcov X hX)⟩
+
 /-- Clean refutation is antitone in the context it covers — the same
 monotonicity `EvalR` has, and for the same reason. -/
 theorem refutedCleanly_mono {G : Form} {Ω Ω' : List Form} {C : Form}
@@ -664,6 +698,10 @@ theorem gbuSuccOr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
 /-- info: 'FRJ.Gbu.evalR_of_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms evalR_of_refutedCleanly
+
+/-- info: 'FRJ.Gbu.evalRC_iff_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalRC_iff_refutedCleanly
 
 /-- info: 'FRJ.Gbu.refutedCleanly_mono' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

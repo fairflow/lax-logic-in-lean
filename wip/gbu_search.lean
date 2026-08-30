@@ -510,6 +510,7 @@ theorem saturated_fderivable (G : Form) : Saturated G (FDerivable G) := by
   refine ⟨fun _ h => h, fun s h => ⟨s, h, ?_⟩⟩
   cases s with
   | reg Γ C => exact ⟨rfl, fun {_} h => h⟩
+  | regC Γ C => exact ⟨rfl, fun {_} h => h⟩
   | irr St Th C => exact ⟨rfl, fun _ => Iff.rfl, fun {_} h => h⟩
 
 /-! ## Theorem 9 (`theo:GBU-FRJ`, source 4320) — the duality

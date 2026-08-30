@@ -1883,6 +1883,40 @@ cannot lift. -/
 #guard_msgs in
 #print axioms not_gbuR_omegaNI
 
+/-! ### Lemma 14 as a DATABASE LOOKUP
+
+With the clean stratum in place (divergence D8) the success lemma for the
+irregular `◯` goal is a lookup, like every other (BSr1) query: the search
+asks `D ▷ᶜ (Ω ⇒g Z)` and never inspects a derivation. -/
+
+/-- The clean stratum refines the regular one. -/
+theorem evalR_of_evalRC {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ψ : List Form} {C : Form} (h : EvalRC D Ψ C) : EvalR D Ψ C :=
+  evalR_of_refutedCleanly hsat ((evalRC_iff_refutedCleanly hsat).mp h)
+
+/-- **Lemma 14, lookup form.**  `D ▷ᶜ (Ω ⇒g Z)` licenses `D ▷ (Ω →g ◯Z)`. -/
+theorem gbuSuccCircIC {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hgoal : Form.circ Z ∈ sfR G)
+    (h : EvalRC D Ω Z) : EvalI D Ω (.circ Z) :=
+  gbuSuccCircI hsat hΩ hgoal ((evalRC_iff_refutedCleanly hsat).mp h)
+
+/-- The contrapositive, which is the form the search consumes: an
+unrefuted irregular `◯` goal leaves its `R◯ᵢ` premise unrefuted in the
+clean stratum. -/
+theorem not_evalRC_of_not_evalI_circ {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D) {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hgoal : Form.circ Z ∈ sfR G)
+    (h : ¬ EvalI D Ω (.circ Z)) : ¬ EvalRC D Ω Z :=
+  fun hc => h (gbuSuccCircIC hsat hΩ hgoal hc)
+
+/-- The clean suppliers, in lookup form.  Each of `refutedCleanly_at`,
+`_or`, `_circ`, `_and1/2`, `_imp`, `_circIn` composes with this. -/
+theorem evalRC_of_refutedCleanly {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D) {Ψ : List Form} {C : Form}
+    (h : RefutedCleanly G Ψ C) : EvalRC D Ψ C :=
+  (evalRC_iff_refutedCleanly hsat).mpr h
+
 /-! ## Pins — the clean-refutation layer -/
 
 /-- info: 'FRJ.Gbu.refutedCleanly_circ' depends on axioms: [propext, Quot.sound] -/
@@ -1908,6 +1942,22 @@ cannot lift. -/
 /-- info: 'FRJ.Gbu.gbuSuccCircI' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms gbuSuccCircI
+
+/-- info: 'FRJ.Gbu.evalR_of_evalRC' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalR_of_evalRC
+
+/-- info: 'FRJ.Gbu.gbuSuccCircIC' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuSuccCircIC
+
+/-- info: 'FRJ.Gbu.not_evalRC_of_not_evalI_circ' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_evalRC_of_not_evalI_circ
+
+/-- info: 'FRJ.Gbu.evalRC_of_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalRC_of_refutedCleanly
 
 
 end FRJ.Gbu

@@ -2723,3 +2723,77 @@ is Matthew's:
 
 No rule of `GbuRC`/`GbuIC` changed this session, so the conservativity
 gate `deCircR`/`deCircI` is untouched and still green.
+
+## 2026-08-30g — Tag-preserving weakening REFUTED; option (ii) adopted (D8)
+
+**The question.** (DB2) answers a query with a SUBSUMING row, `Γ ⊆ Γ'`.
+Option (ii) — restore the database lookup at the modal rules by recording
+tags — turns on whether cleanliness survives that enlargement:
+
+> **(W)** If `Γ ⇒ C` has a derivation with a liftable tag, `Γ ⊆ Γ'`, and
+> `Γ' ⇒ C` is derivable, then `Γ' ⇒ C` has a derivation with a liftable tag.
+
+**REFUTED**, kernel-checked, `wip/gbu_weakening.lean`, `[propext, Quot.sound]`.
+
+The general obstruction first (`not_clean_of_clo_circ`):
+
+> If `Clo Γ (◯C)` then NO derivation of `Γ ⇒ C` carries a liftable tag.
+
+Proof — three lines, and it is the ◯-clause's existential form that makes
+it work. The root forces `◯C`, and forcing is
+`a ⊩ ◯A  iff  ∀b ≥ a. ∃c. b Rm c ∧ c ⊩ A`, so SOME `Rm`-successor `c` of
+the root forces `C`. `tag_cone` (`FRJ/SoundV.lean:1510`) says every PROPER
+successor refutes `C`. Hence `c` is the root, so the root forces `C` —
+contradicting `lemma39R`, which has the root refuting the goal.
+
+The witness is the sharp one, `G = ◯p ⊃ p` (`tag_weakening_refuted`):
+
+| | | tag |
+|---|---|---|
+| `[] ⇒ p` | `Ax^R` | `barren` — clean |
+| `[] ⊆ [◯p]` | `gAt G = [p]`, so `rm (gAt G) p = []` | |
+| `[◯p] ⇒ p` | `⋈^At_F`, whole modal zone kept | `blocked` |
+| `[◯p] ⇒ p` | no clean derivation exists | by the above |
+
+Note what this is: the same fact as `FRJ.provable_circ_imp`, read from the
+tag side. `◯p ⊃ p` is refutable only through a fallible successor, and a
+fallible successor is exactly what no tag can certify.
+
+**Decision: (ii), via a SEPARATE stratum (divergence D8).** W's failure
+does not block (ii); it dictates its shape. Cleanliness cannot be a flag
+on a `reg` row, because it is not inherited along subsumption. It can be
+a clause of its own, subsumed only by clean rows:
+
+    FSeq.regC Γ C
+    FDerivable (.regC Γ C) = ∃t. FRJVr G t Γ C ∧ (t = barren ∨ ∃W. t = chain W ∧ Covers Γ W C)
+    Subsumes (.regC Γ₁ C₁) (.regC Γ₂ C₂) = C₁ = C₂ ∧ Γ₁ ⊆ Γ₂
+    EvalRC D Ψ C = ∃Γ. D (.regC Γ C) ∧ ∀X ∈ Ψ. Clo Γ X
+
+and then, the point of the exercise —
+
+    evalRC_iff_refutedCleanly :  Saturated G D →  (EvalRC D Ψ C ↔ RefutedCleanly G Ψ C)
+
+`RefutedCleanly` quantifies over derivations; `EvalRC` is a lookup; on a
+saturated database they coincide. So **Lemma 14 becomes a (BSr1) query
+like every other** (`gbuSuccCircIC`, and the contrapositive
+`not_evalRC_of_not_evalI_circ` that the search will consume), and Gbu◯
+keeps the paper's backtracking-free character at the modal rules. The
+regular side stays on `EvalR`; the divergence from §5 is one extra
+database clause, not a change to what the search computes.
+
+Realisability at the interface: `saturated_fderivable` extends by one
+line — reflexive subsumption — so the enlarged axiom set is satisfiable.
+That is consistency of the interface, NOT a claim that FRJ's saturation
+procedure as implemented emits `regC` rows; that is a separate obligation,
+and it is stage 4 work, not stage 3.
+
+Cost across the codebase: one constructor, three match arms, one lemma.
+Every existing `match s', hsub` stayed exhaustive on its own (the
+cross-stratum cases reduce to `False`).
+
+Negative test: allowing `Subsumes (.regC …) (.reg …)` makes
+`evalRC_iff_refutedCleanly` report "Missing cases" at
+`wip/gbu_db.lean:418`. Restored, green.
+
+No rule of `GbuRC`/`GbuIC` changed, so the conservativity gate
+`deCircR`/`deCircI` is untouched.
