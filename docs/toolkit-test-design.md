@@ -1,6 +1,7 @@
 # Testing the prover toolkit cleanly — a proposal
 
-**Status:** proposal, for Matthew's decision. Nothing here is built.
+**Status:** steps 1–3 of §6 are **built** (2026-08-30); steps 4–5 are not.
+See §6a for what building them changed about the proposal itself.
 **Written:** 2026-08-30, after running the four `LaxLogic/ToolkitTest/Challenge`
 files end to end with `prove-lemma-inloop`.
 
@@ -168,14 +169,40 @@ precisely the split §4 is designed to create.
 
 ## 6. Staging
 
-1. Exclude `ToolkitTest` from the index roots. One line. *(Done — see the
-   commit that added this file; revert freely.)*
+1. Exclude `ToolkitTest` from the index roots. One line. **DONE** (`57371bf`);
+   index 2903 → 2804.
 2. Blind the challenge headers, and drop `conservativity_prop` from the set.
-3. Add the acceptance filter of §4 ("a cited lemma must be absent") to the
-   extractor, and regenerate. This alone converts the set from decorative to
-   informative.
-4. Hole-punching proper, plus the harness metrics of §5.
-5. The retrieval ablation.
+   **DONE.** Headers now carry the name and the group and nothing else;
+   `conservativity_prop` is on `challenge.py`'s deny-list, because its ground
+   truth is written out inside the retired `Solved/conservativity.lean`.
+3. Add the acceptance filter of §4 to the extractor, and regenerate. **DONE**
+   — `prover-toolkit/challenge.py`. See §6a for what building it changed about
+   the filter as specified here.
+4. Hole-punching proper, plus the harness metrics of §5. *Not built.*
+5. The retrieval ablation. *Not built.*
+
+### 6a. What implementing steps 2–3 changed about this proposal
+
+**The §4 filter as written above is wrong, and testing it found that.** "At
+least one lemma the ground-truth proof cites is absent from the prefix" drops
+`pfree_trans` — the one target of the original four that genuinely tested
+retrieval. Its proof cites nothing external; the dependency is in the
+*statement*, `LJF.PFreeP` and `LJF.PFreeN`, which live in another file and
+must be unfolded to write the proof at all. The implemented filter counts
+statement citations too, and ranks on proof citations, which are the stronger
+signal.
+
+**A rule the proposal missed: one target per source file.** Two
+prefix-truncated targets from the same module always leak, because the later
+one's prefix contains the earlier one's proof. That is the mechanism that
+voided `conservativity_prop`, and §2 diagnosed it as a property of that pair
+rather than of the method. Hole-punching lifts the restriction; nothing else
+does.
+
+**Measured on the corpus:** 137 candidates → 54 pass the content filters → 5
+emitted after the compile check and the one-per-file rule. The twin filter
+scores `conservativity` against `conservativity_prop` at **0.92** and drops
+it, which is the case the whole exercise came from.
 
 Steps 1–3 are an afternoon. Step 4 is the real work and is where the extractor
 would need to learn to emit two files instead of one.
