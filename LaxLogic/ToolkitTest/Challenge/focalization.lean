@@ -441,4 +441,7 @@ theorem focalization {Γ : List PLLFormula} {φ : PLLFormula}
     (hφ : PLLND.isIPL φ) (hΓ : ∀ ψ ∈ Γ, PLLND.isIPL ψ) :
     PLLND.SemUI.Deriv Γ φ ↔
       Nonempty (LJF.Inv (Γ.map negOf) [] (negOf φ)) := by
-  sorry
+  refine ⟨focalizeD, fun h => ?_⟩
+  obtain ⟨d⟩ := h
+  have hs := sound d
+  rwa [map_unNeg_negOf hΓ, unNeg_negOf_isIPL hφ] at hs

@@ -210,4 +210,16 @@ application: `List.map` computes definitionally on `[]` and `::`, which is
 exactly what the slime-free indices buy. -/
 theorem conservativity_prop {Γ : List PLLFormula} {φ : PLLFormula}
     (p : LaxND Γ φ) : IPLND (Γ.map erase) (erase φ) := by
-  sorry
+  induction p with
+  | iden h => exact .iden (List.mem_map.mpr ⟨_, h, rfl⟩)
+  | falsoElim φ _ ih => exact .falsoElim _ ih
+  | impIntro _ ih => exact .impIntro ih
+  | impElim _ _ ih₁ ih₂ => exact .impElim ih₁ ih₂
+  | andIntro _ _ ih₁ ih₂ => exact .andIntro ih₁ ih₂
+  | andElim1 _ ih => exact .andElim1 ih
+  | andElim2 _ ih => exact .andElim2 ih
+  | orIntro1 _ ih => exact .orIntro1 ih
+  | orIntro2 _ ih => exact .orIntro2 ih
+  | orElim _ _ _ ih₀ ih₁ ih₂ => exact .orElim ih₀ ih₁ ih₂
+  | laxIntro _ ih => exact ih
+  | laxElim _ _ ih₁ ih₂ => exact .impElim (.impIntro ih₂) ih₁

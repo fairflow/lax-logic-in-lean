@@ -479,4 +479,14 @@ end
 
 theorem pfree_trans {p : String} : ∀ φ : PLLFormula, PFree p φ →
     LJF.PFreeP p (posOf φ) ∧ LJF.PFreeN p (negOf φ) := by
-  sorry
+  intro φ
+  induction φ with
+  | prop a => exact fun h => ⟨h, h⟩
+  | falsePLL => exact fun _ => ⟨trivial, trivial⟩
+  | ifThen φ ψ ihφ ihψ =>
+      exact fun h => ⟨⟨(ihφ h.1).1, (ihψ h.2).2⟩, (ihφ h.1).1, (ihψ h.2).2⟩
+  | and φ ψ ihφ ihψ =>
+      exact fun h => ⟨⟨(ihφ h.1).2, (ihψ h.2).2⟩, (ihφ h.1).2, (ihψ h.2).2⟩
+  | or φ ψ ihφ ihψ =>
+      exact fun h => ⟨⟨(ihφ h.1).1, (ihψ h.2).1⟩, (ihφ h.1).1, (ihψ h.2).1⟩
+  | somehow φ ih => exact ih
