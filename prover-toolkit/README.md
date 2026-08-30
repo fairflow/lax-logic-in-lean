@@ -88,6 +88,9 @@ changing anything under `skill/`.
   answer in a sibling file and two more have every ingredient in the prefix;
   only `pfree_trans` needs anything the file does not contain. Proposal for a
   clean replacement: [`../docs/toolkit-test-design.md`](../docs/toolkit-test-design.md).
+- `exclude` entries in `toolkit.json` are matched as single **path
+  components**, not relative paths; a path-shaped entry warns since 2026-08-30
+  but still matches nothing.
 - `corpora/items.jsonl` is derived data and not committed. If it is missing the
   gate warns and degrades; rebuild it with `extract.py`.
 
