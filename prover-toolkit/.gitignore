@@ -1,4 +1,4 @@
 __pycache__/
 *.pyc
-prover-toolkit/corpora/items.jsonl
-prover-toolkit/leansearch/index.jsonl
+corpora/items.jsonl
+leansearch/index.jsonl
