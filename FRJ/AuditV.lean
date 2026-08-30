@@ -23,6 +23,8 @@ import FRJ.RefAt
 import FRJ.CalculusV
 import FRJ.SoundV
 import FRJ.BridgeV
+import FRJ.CompleteV
+import FRJ.SaturateV
 
 namespace FRJ
 
@@ -65,5 +67,54 @@ namespace FRJ
 /-- info: 'FRJ.not_entails_of_provableV' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms not_entails_of_provableV
+
+/-! ## Completeness — the transfer baseline (`FRJ/CompleteV.lean`)
+
+Free corollaries of the paper-side completeness theorems via
+`provableV_of_provable`; the repair-exploiting completeness beyond
+endpoint-seeing frames is OPEN and has no declaration. -/
+
+/-- info: 'FRJ.completenessV_of_endpoints' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completenessV_of_endpoints
+
+/-- info: 'FRJ.completenessV_of_coneGrounded' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completenessV_of_coneGrounded
+
+/-- info: 'FRJ.completenessV_of_discrete' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completenessV_of_discrete
+
+/-- info: 'FRJ.completenessV_via_closure' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completenessV_via_closure
+
+/-- info: 'FRJ.completenessV_of_supply' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms completenessV_of_supply
+
+/-! ## Completeness — the NATIVE port (`FRJ/SaturateV.lean`)
+
+The full visit scaffolding rebuilt over `FRJVr`/`FRJVi` (not by
+transfer): the barren joins go through the V-constructors with
+`restrict_keptChain`, so this is the platform the kept-zone extension
+builds on. -/
+
+/-- info: 'FRJ.V.completeness_of_endpoints' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.completeness_of_endpoints
+
+/-- info: 'FRJ.V.completeness_of_supply' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.completeness_of_supply
+
+/-- info: 'FRJ.V.provableV_root_countermodel' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.provableV_root_countermodel
+
+/-- info: 'FRJ.V.not_pledgeFam_of_circ_mem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms V.not_pledgeFam_of_circ_mem
 
 end FRJ
