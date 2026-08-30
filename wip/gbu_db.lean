@@ -36,7 +36,7 @@ open Form
 /-- An `FRJ(G)`-sequent, as data. -/
 inductive FSeq where
   | reg (Γ : List Form) (C : Form)
-  /-- the CLEAN regular stratum (divergence D8): a row whose derivation
+  /-- the CLEAN regular stratum (divergence D9): a row whose derivation
   carries a tag `◯∈`/`◯∉` can lift.  A SEPARATE clause, not a flag on
   `reg`, because tag-preserving weakening is refuted
   (`tag_weakening_refuted`): `[] ⇒ p` is barren, `[◯p] ⇒ p` is derivable
@@ -401,7 +401,7 @@ theorem evalR_of_refutedCleanly {G : Form} {D : FSeq → Prop}
       exact ⟨Γ', hs'mem, fun X hX => clo_mono hΓ (hcov X hX)⟩
 
 /-- **The clean lookup IS the clean-refutation predicate**, under (DB1)
-and (DB2).  This is what makes divergence D8 pay: `RefutedCleanly`
+and (DB2).  This is what makes divergence D9 pay: `RefutedCleanly`
 quantifies over derivations, `EvalRC` is a database lookup, and on a
 saturated database they coincide — so Gbu◯ keeps the paper's
 backtracking-free character at the modal rules too. -/

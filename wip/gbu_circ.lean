@@ -340,7 +340,7 @@ This is what closes seam 1: at a prime goal the database always refutes,
 so (BSr1) fails and backward search never arrives there.  Seam 1 needs
 no rule.  The price is the tag — the row is `blocked`. -/
 
-private theorem gHat_cases {G X : Form} (h : X ∈ gHat G) :
+theorem gHat_cases {G X : Form} (h : X ∈ gHat G) :
     (X ∈ gAt G ∧ X.isPV = true) ∨ (X ∈ gImp G ∧ X.isImp = true) ∨
       (X ∈ gCirc G ∧ X.isCirc = true) := by
   rcases List.mem_append.mp h with h' | h'
@@ -1916,6 +1916,68 @@ theorem evalRC_of_refutedCleanly {G : Form} {D : FSeq → Prop}
     (hsat : Saturated G D) {Ψ : List Form} {C : Form}
     (h : RefutedCleanly G Ψ C) : EvalRC D Ψ C :=
   (evalRC_iff_refutedCleanly hsat).mpr h
+
+/-! ### Lemma 9, clause 14 — the irregular `◯` goal is `Clo`-monotone
+
+The IPC inversions move a regular sequent's context; this is their
+irregular counterpart at a `◯` goal, and the modal search needs it at
+`L◯ᵢ`, `L⊃ᵢ`, `L⊥ᵢ`, `L∧ᵢ` and `L∨ᵢ` — every rule that puts a COMPOUND
+formula back into an irregular context.
+
+It is not the monotonicity `EvalI` has by itself; it holds because only
+two `FRJVi` rules conclude a `◯` goal.  `◯∉` carries its zone as a
+side condition and admits any `Cl(Γ)`-member of `Ĝ`; and `Ax^I◯`'s zone
+is `Ĝ` filtered by a CLASSICAL valuation, which is closed under `Clo`
+because `Clo` has introduction clauses only. -/
+
+/-- `classForce` is closed under `Clo`: every `Clo` clause is an
+introduction, and a classical valuation validates all of them. -/
+theorem clo_classForce {ats : List Form} {Γ : List Form} {X : Form}
+    (h : ∀ Y ∈ Γ, classForce ats Y = true) (hc : Clo Γ X) :
+    classForce ats X = true := by
+  induction hc with
+  | base hY => exact h _ hY
+  | and _ _ ih1 ih2 => exact Bool.and_eq_true _ _ ▸ ⟨ih1, ih2⟩
+  | orL _ ih => simp [classForce, ih]
+  | orR _ ih => simp [classForce, ih]
+  | imp _ ih => simp [classForce, ih]
+  | circ _ ih => exact ih
+
+/-- **Lemma 9, clause 14.** -/
+theorem gbuInv14 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω Ω' : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hcl : ∀ X ∈ Ω, Clo Ω' X)
+    (h : EvalI D Ω' (.circ Z)) : EvalI D Ω (.circ Z) := by
+  obtain ⟨St, Th, hmem, h1, h2⟩ := h
+  obtain ⟨d⟩ := hsat.1 (.irr St Th (.circ Z)) hmem
+  cases d with
+  | axI F hF hgoal hTh => exact Bool.noConfusion hF
+  | circNotIn dr htag hTh hgoal =>
+      -- `◯∉`: re-admit the zone, enlarged by `Ω`
+      obtain ⟨s', hs'mem, hsub⟩ :=
+        hsat.2 (.irr [] (Ω ++ Th) (.circ Z))
+          ⟨.circNotIn dr htag (fun X hX => by
+              rcases List.mem_append.mp hX with hX' | hX'
+              · refine ⟨?_, hΩ X hX'⟩
+                refine clo_trans (fun Y hY => ?_) (hcl X hX')
+                exact (hTh Y (by
+                  have := h2 hY
+                  simpa using this)).1
+              · exact hTh X hX') hgoal⟩
+      match s', hsub with
+      | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
+          exact ⟨St', Th', hs'mem,
+            fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+            fun {x} hx => List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
+  | axIC F ats hats hFf hgoal hThv =>
+      -- `Ax^I◯`: the zone already contains `Ω`, classically
+      refine ⟨[], Th, hmem, fun {x} hx => absurd hx List.not_mem_nil, ?_⟩
+      intro x hx
+      refine List.mem_append_right _ ((hThv x).mpr ?_)
+      refine List.mem_filter.mpr ⟨hΩ x hx, ?_⟩
+      refine clo_classForce (fun Y hY => ?_) (hcl x hx)
+      have hY' : Y ∈ Th := by simpa using h2 hY
+      exact (List.mem_filter.mp ((hThv Y).mp hY')).2
 
 /-! ## Pins — the clean-refutation layer -/
 

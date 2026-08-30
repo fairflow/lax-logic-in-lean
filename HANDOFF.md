@@ -2724,7 +2724,7 @@ is Matthew's:
 No rule of `GbuRC`/`GbuIC` changed this session, so the conservativity
 gate `deCircR`/`deCircI` is untouched and still green.
 
-## 2026-08-30g — Tag-preserving weakening REFUTED; option (ii) adopted (D8)
+## 2026-08-30g — Tag-preserving weakening REFUTED; option (ii) adopted (D9)
 
 **The question.** (DB2) answers a query with a SUBSUMING row, `Γ ⊆ Γ'`.
 Option (ii) — restore the database lookup at the modal rules by recording
@@ -2759,7 +2759,7 @@ Note what this is: the same fact as `FRJ.provable_circ_imp`, read from the
 tag side. `◯p ⊃ p` is refutable only through a fallible successor, and a
 fallible successor is exactly what no tag can certify.
 
-**Decision: (ii), via a SEPARATE stratum (divergence D8).** W's failure
+**Decision: (ii), via a SEPARATE stratum (divergence D9).** W's failure
 does not block (ii); it dictates its shape. Cleanliness cannot be a flag
 on a `reg` row, because it is not inherited along subsumption. It can be
 a clause of its own, subsumed only by clean rows:
@@ -2797,3 +2797,81 @@ Negative test: allowing `Subsumes (.regC …) (.reg …)` makes
 
 No rule of `GbuRC`/`GbuIC` changed, so the conservativity gate
 `deCircR`/`deCircI` is untouched.
+
+## 2026-08-30h — Theorem 8◯: regular branch PROVED, three residues named
+
+`wip/gbu_search_circ.lean`, sorry-free, `[propext, Quot.sound]`.
+`searchO` is the modal `BSearch` correctness theorem, over THREE modes:
+
+| mode | sequent | (BSr1) query |
+|---|---|---|
+| `reg` | `Ψ ⇒g C` | `¬ D ▷ (Ψ ⇒g C)` |
+| `irr` | `Ω →g C` | `¬ D ▷ (Ω →g C)` |
+| `cirr` | `Ω →g C` | `¬ D ▷ᶜ (Ω ⇒g C)` |
+
+The third is forced by `R◯ᵢ`: its licence is `gbuSuccCircI`, whose
+hypothesis is the CLEAN lookup, and the two irregular queries are
+incomparable. `cirr` also carries the `Υ` queries the clean success
+lemmas consume.
+
+**Weight.** The paper's `Wg` is unchanged; a mode-graded `tp` was tried
+and REFUTED — `R∧ᵢ` at `C₁ ∧ ◯C₂` turns a non-modal goal into a modal
+one, so the mode cannot be graded by the goal's shape. What pays for
+`L⊃ᵢ`, whose premises are both irregular, is the rule's own `hsz`.
+
+**Proved outright: the whole REGULAR branch**, `L◯` and `R◯` included.
+`L◯` is invertible (`gbuInv11`) so the search exhausts it first, which
+is exactly what leaves `Ψ ⊆ Ĝ_at ∪ Ĝ_imp` for `⋈^◯` at `R◯`. The
+irregular branch is proved at every non-modal goal, and at a modal goal
+over a critical context; the clean branch is proved outright.
+
+**New: Lemma 9 clause 14** (`gbuInv14`) — `D ▷ (Ω' →g ◯Z)` transfers to
+any `Ω ⊆ Ĝ` with `Ω ⊆ Cl(Ω')`. Not `EvalI`'s own monotonicity: it holds
+because only `◯∉` and `Ax^I◯` conclude a `◯` goal, `◯∉` admits any
+`Cl(Γ)`-member of `Ĝ` into its zone, and `Ax^I◯`'s zone is `Ĝ` filtered
+by a CLASSICAL valuation — closed under `Clo` because `Clo` has
+introduction clauses only (`clo_classForce`). This licenses `L◯ᵢ` and
+`L⊃ᵢ`, and removed the supply I expected to need for them.
+
+### The three residues, as named hypotheses
+
+**(S1) `BigAnte`** — `L⊃ᵢ` carries `hsz : |A| < |◯C|`, so modus ponens on
+an implication with a large antecedent is unavailable, and the `Υ` query
+the clean mode needs cannot be discharged.
+
+    Ω ⊆ Ĝ_at ∪ Ĝ_imp,  A ⊃ B ∈ Ω,  ◯Z ∈ Sf^R(G),
+    D ⋫ (Ω →g A),  |A| ≥ |◯Z|   ⟹   Ω →g ◯Z
+
+`hsz` is not removable: without it `Ω = {◯r ⊃ s, ◯s ⊃ r}` cycles
+`Ω →g ◯s → Ω →g ◯r → Ω →g ◯s`. A weakening to
+`A.isCirc = false ∨ |A| < |◯C|` would kill that cycle and close S1 for
+all non-modal antecedents — but it is a change to the FORM of a rule, so
+it is PROPOSED here, not implemented.
+
+**(S2) `NonHatCirc`** — and this one is a finding, not a gap to fill.
+`L⊥ᵢ`/`L∧ᵢ`/`L∨ᵢ` (obstruction 2) are UNLICENSED by (BSr1). Their
+premises need `gbuInv14`, whose `Ω ⊆ Ĝ` hypothesis fails exactly when
+the context carries the `⊥`/`∧`/`∨` they decompose. And such a context
+can never be covered by an irregular row at all — every `FRJVi` zone is
+a subset of `Ĝ` — so (BSr1) is satisfied VACUOUSLY there and carries no
+information. The root cause is upstream: `L⊃ᵢ`'s second premise
+`B :: Ψ →g ◯C` puts an arbitrary `B ∈ Sf^L(G)` into an irregular
+context, breaking the `Ω ⊆ Ĝ` invariant (BSr2) that the whole irregular
+judgment rests on. Obstruction 2's repair kept the CALCULUS complete but
+did not restore the invariant, and the search can only see the
+invariant. Either `L⊃ᵢ`'s second premise becomes regular (and then its
+licence needs a clean tag — the `rcircNI` problem again), or (BSr2) is
+weakened and `gbuInv14` generalised past `Ĝ`. Matthew's call.
+
+**(S3) `CleanReg`** — the clean-regular search that `R⊃ₙᵢ` releases into
+from the clean mode. Its own residue is a critical context carrying a
+`◯` at a non-modal goal, where only the FALLIBLE joins apply and no
+clean row exists — the same fact as `tag_weakening_refuted`, met from
+the other direction.
+
+Top-level corollary `provableGbuC_of_not_provableV` is proved from the
+three supplies plus `¬ D ▷ ([] ⇒g G)`, and `not_evalR_root` shows that
+hypothesis IS `⊬_{FRJV(G)} G` on the canonical database.
+
+The clean-stratum divergence is renumbered **D9**: `wip/gbu_search.lean`
+already used D8 for ◯-freeness-as-a-hypothesis.

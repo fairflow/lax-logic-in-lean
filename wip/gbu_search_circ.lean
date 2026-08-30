@@ -1,0 +1,808 @@
+/-
+# `Gbu◯(G)`: Theorem 8◯, the correctness of `BSearch` in the modal calculus
+
+Stage 3 of the adoption, modal layer.  The IPC original is
+`wip/gbu_search.lean`; this file follows it clause by clause, adding the
+`◯` cases and nothing else, per the extension discipline.
+
+## Modes
+
+`Gbu(G)` has two judgments; the search over `Gbu◯(G)` needs THREE
+specifications, because the modal rules query the database differently:
+
+| mode | sequent | (BSr1) query | why |
+|---|---|---|---|
+| `reg` | `Ψ ⇒g C` | `¬ D ▷ (Ψ ⇒g C)` | as in the paper |
+| `irr` | `Ω →g C` | `¬ D ▷ (Ω →g C)` | as in the paper |
+| `cirr` | `Ω →g C` | `¬ D ▷ᶜ (Ω ⇒g C)` | `◯∉` reads the CLEAN stratum |
+
+The third is forced: `R◯ᵢ`'s licence is `gbuSuccCircI`, whose hypothesis
+is `RefutedCleanly G Ω Z` — the clean lookup — not `D ▷ (Ω →g Z)`.  So
+the premise of `R◯ᵢ` is searched under the clean query, and the two
+irregular modes are incomparable (`EvalI` and `EvalRC` neither implies
+the other).  `cirr` also carries the `Υ` queries, which the clean
+success lemmas need and `EvalI`'s do not.
+-/
+import wip.gbu_circ
+
+namespace FRJ.Gbu
+
+open FRJ Form
+
+/-! ## The three modes -/
+
+inductive Mode where
+  | reg
+  | irr
+  /-- irregular, under the CLEAN query -/
+  | cirr
+  deriving DecidableEq, Repr
+
+def Mode.isReg : Mode → Bool
+  | .reg => true
+  | _ => false
+
+/-! ## Context bookkeeping, `Ĝ`-flavoured
+
+The IPC search splits a regular context into "all atoms-and-implications"
+(critical) or "contains a `⊥`/`∧`/`∨`".  With `◯` the critical zone is
+`Ĝ` — atoms, implications AND modal formulas — which is exactly
+`sfL_dec`. -/
+
+private theorem byDec {p : Prop} (d : Decidable p) {q : Prop}
+    (h1 : p → q) (h2 : ¬ p → q) : q := by
+  cases d with
+  | isTrue h => exact h1 h
+  | isFalse h => exact h2 h
+
+private def decClo (Ψ : List Form) (A : Form) : Decidable (Clo Ψ A) :=
+  match h : cloB Ψ A with
+  | true => isTrue (cloB_iff.mp h)
+  | false => isFalse (by intro hc; rw [cloB_iff.mpr hc] at h; exact Bool.noConfusion h)
+
+private theorem findNot {α : Type} {P : α → Prop} (dec : ∀ a, Decidable (P a)) :
+    ∀ l : List α, (∀ a ∈ l, P a) ∨ ∃ a, a ∈ l ∧ ¬ P a
+  | [] => Or.inl (fun _ ha => absurd ha List.not_mem_nil)
+  | a :: t =>
+      byDec (dec a)
+        (fun h =>
+          match findNot dec t with
+          | Or.inl hall => Or.inl (by
+              intro b hb
+              rcases List.mem_cons.mp hb with rfl | hb'
+              · exact h
+              · exact hall b hb')
+          | Or.inr ⟨b, hb, hnb⟩ => Or.inr ⟨b, List.mem_cons_of_mem _ hb, hnb⟩)
+        (fun h => Or.inr ⟨a, List.mem_cons_self, h⟩)
+
+private theorem ctxEq_cons_self {Γ : List Form} {A : Form} (h : A ∈ Γ) :
+    Γ ≐ A :: Γ := by
+  intro x
+  refine ⟨fun hx => List.mem_cons_of_mem _ hx, fun hx => ?_⟩
+  rcases List.mem_cons.mp hx with rfl | hx'
+  · exact h
+  · exact hx'
+
+private theorem ctxEq_split {l r : List Form} {X : Form} :
+    (l ++ X :: r) ≐ X :: (l ++ r) := by
+  intro x
+  constructor
+  · intro h
+    rcases List.mem_append.mp h with h' | h'
+    · exact List.mem_cons_of_mem _ (List.mem_append_left _ h')
+    · rcases List.mem_cons.mp h' with rfl | h''
+      · exact List.mem_cons_self
+      · exact List.mem_cons_of_mem _ (List.mem_append_right _ h'')
+  · intro h
+    rcases List.mem_cons.mp h with rfl | h'
+    · exact List.mem_append_right _ List.mem_cons_self
+    · rcases List.mem_append.mp h' with h'' | h''
+      · exact List.mem_append_left _ h''
+      · exact List.mem_append_right _ (List.mem_cons_of_mem _ h'')
+
+private theorem ctxEq_symm {l m : List Form} (h : l ≐ m) : m ≐ l :=
+  fun x => (h x).symm
+
+private theorem orTrue {a b : Bool} (h : (a || b) = true) : a = true ∨ b = true := by
+  cases a with
+  | true => exact Or.inl rfl
+  | false => exact Or.inr h
+
+/-- Membership of the critical zone `Ĝ`, as a Boolean on the shape. -/
+private def isHat (X : Form) : Bool := X.isPV || X.isImp || X.isCirc
+
+/-- `Ψ` is all-`Ĝ`-shaped, or it splits around a `⊥`/`∧`/`∨`. -/
+private theorem splitHat : ∀ Ψ : List Form,
+    (∀ X ∈ Ψ, isHat X = true) ∨
+    (∃ l r X, Ψ = l ++ X :: r ∧ isHat X = false)
+  | [] => Or.inl (fun _ hX => absurd hX List.not_mem_nil)
+  | X :: t =>
+      match h : isHat X with
+      | true =>
+          match splitHat t with
+          | Or.inl hall => Or.inl (by
+              intro Y hY
+              rcases List.mem_cons.mp hY with rfl | hY'
+              · exact h
+              · exact hall Y hY')
+          | Or.inr ⟨l, r, Y, hY, hY'⟩ =>
+              Or.inr ⟨X :: l, r, Y, by rw [hY]; rfl, hY'⟩
+      | false => Or.inr ⟨[], t, X, rfl, h⟩
+
+/-- A `Ĝ`-shaped left subformula is in `Ĝ`. -/
+private theorem mem_gHat_of_isHat {G X : Form} (hsf : X ∈ sfL G)
+    (h : isHat X = true) : X ∈ gHat G := by
+  rcases orTrue h with h' | hc
+  · rcases orTrue h' with hp | hi
+    · exact List.mem_append_left _ (List.mem_append_left _
+        (List.mem_filter.mpr ⟨hsf, hp⟩))
+    · exact List.mem_append_left _ (List.mem_append_right _
+        (List.mem_filter.mpr ⟨hsf, hi⟩))
+  · exact List.mem_append_right _ (List.mem_filter.mpr ⟨hsf, hc⟩)
+
+/-! ## Transport and size arithmetic (verbatim from the IPC search) -/
+
+private theorem evalR_ctxEq {D : FSeq → Prop} {Ψ Ψ' : List Form} {C : Form}
+    (h : Ψ ≐ Ψ') (he : EvalR D Ψ C) : EvalR D Ψ' C := by
+  obtain ⟨Γ, hm, hcl⟩ := he
+  exact ⟨Γ, hm, fun X hX => hcl X ((h X).mpr hX)⟩
+
+private theorem evalRC_ctxEq {D : FSeq → Prop} {Ψ Ψ' : List Form} {C : Form}
+    (h : Ψ ≐ Ψ') (he : EvalRC D Ψ C) : EvalRC D Ψ' C := by
+  obtain ⟨Γ, hm, hcl⟩ := he
+  exact ⟨Γ, hm, fun X hX => hcl X ((h X).mpr hX)⟩
+
+private theorem evalI_ctxEq {D : FSeq → Prop} {Ω Ω' : List Form} {C : Form}
+    (h : Ω ≐ Ω') (he : EvalI D Ω C) : EvalI D Ω' C := by
+  obtain ⟨St, Th, hm, h1, h2⟩ := he
+  exact ⟨St, Th, hm, fun {x} hx => (h x).mp (h1 hx), fun {x} hx => h2 ((h x).mpr hx)⟩
+
+private theorem seqSize_cons {Ψ : List Form} {X C : Form} :
+    seqSize (X :: Ψ) C = X.size + seqSize Ψ C := by
+  show ((X :: Ψ).map Form.size).sum + C.size
+      = X.size + (((Ψ.map Form.size).sum) + C.size)
+  rw [List.map_cons, List.sum_cons, Nat.add_assoc]
+
+private theorem seqSize_split {l r : List Form} {X C : Form} :
+    seqSize (l ++ X :: r) C = seqSize (l ++ r) C + X.size := by
+  show ((l ++ X :: r).map Form.size).sum + C.size
+      = (((l ++ r).map Form.size).sum + C.size) + X.size
+  rw [List.map_append, List.sum_append, List.map_append, List.sum_append,
+    List.map_cons, List.sum_cons]
+  omega
+
+private theorem seqSize_goal {Ψ : List Form} {C C' : Form} (h : C'.size < C.size) :
+    seqSize Ψ C' < seqSize Ψ C := Nat.add_lt_add_left h _
+
+private theorem wgKeep {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
+    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (hs : seqSize Ψ' C' < seqSize Ψ C) :
+    WgLt (wg G r Ψ' C') (wg G r Ψ C) := by
+  have hmono : unclosed G Ψ' ≤ unclosed G Ψ :=
+    unclosed_mono (fun _ hX => clo_trans hcl hX)
+  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
+  · exact Or.inl h
+  · exact Or.inr ⟨Nat.le_antisymm hmono h, Or.inr ⟨rfl, hs⟩⟩
+
+private theorem wgFocus {G : Form} {Ψ Ψ' : List Form} {C C' : Form}
+    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) :
+    WgLt (wg G false Ψ' C') (wg G true Ψ C) := by
+  have hmono : unclosed G Ψ' ≤ unclosed G Ψ :=
+    unclosed_mono (fun _ hX => clo_trans hcl hX)
+  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
+  · exact Or.inl h
+  · exact Or.inr ⟨Nat.le_antisymm hmono h, Or.inl Nat.zero_lt_one⟩
+
+private theorem wgDrop {G : Form} {r r' : Bool} {Ψ Ψ' : List Form} {C C' : Form}
+    (h : unclosed G Ψ' < unclosed G Ψ) : WgLt (wg G r' Ψ' C') (wg G r Ψ C) := Or.inl h
+
+/-! ## The weight
+
+Both irregular modes sit at the paper's `tp = 0`: a goal decomposition
+can turn a non-modal goal into a modal one (`R∧ᵢ` at `C₁ ∧ ◯C₂`), so the
+mode cannot be graded by the goal's shape, and `Wg` is unchanged.  What
+pays for `L⊃ᵢ`, whose premises are both irregular, is the rule's own
+`hsz` field. -/
+
+/-! ## The specification -/
+
+/-- `SearchOkO G D (m, Ψ, C)`.  The `reg` and `irr` clauses are the
+paper's, with the `Ĝ` invariant relaxed at a `◯` goal (where the
+irregular judgment has the regular left rules).  The `cirr` clause is
+the modal addition: its query is the CLEAN lookup, and it carries the
+`Υ` queries that the clean success lemmas consume. -/
+def SearchOkO (G : Form) (D : FSeq → Prop) : Mode × List Form × Form → Prop
+  | (.reg, Ψ, C) =>
+      (∀ X ∈ Ψ, X ∈ sfL G) → C ∈ sfR G → ¬ EvalR D Ψ C → Nonempty (GbuRC G Ψ C)
+  | (.irr, Ω, C) =>
+      (∀ X ∈ Ω, X ∈ sfL G) → (C.isCirc = false → ∀ X ∈ Ω, X ∈ gHat G) →
+        C ∈ sfR G → ¬ EvalI D Ω C → Nonempty (GbuIC G Ω C)
+  | (.cirr, Ω, C) =>
+      (∀ X ∈ Ω, X ∈ gAt G ++ gImp G) → C ∈ sfR G →
+        (∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A) →
+        ¬ EvalRC D Ω C → Nonempty (GbuIC G Ω C)
+
+/-! ## The three residues, named
+
+Everything the modal search cannot close from `Gbu◯(G)`'s current rule
+set is isolated here as an explicit hypothesis, with its displayed
+statement.  None is a `sorry`: each is a `Prop` consumed at exactly one
+branch, so the theorem below states precisely what it does and does not
+establish. -/
+
+/-- **(S1)** `L⊃ᵢ` carries `hsz : |A| < |◯C|`, so modus ponens on an
+implication with a LARGE antecedent is unavailable — and the `Υ` query
+that the clean mode needs cannot then be discharged.
+
+    Ω ⊆ Ĝ_at ∪ Ĝ_imp,  A ⊃ B ∈ Ω,  ◯Z ∈ Sf^R(G),
+    D ⋫ (Ω →g A),  |A| ≥ |◯Z|
+    ⟹  Ω →g ◯Z -/
+def BigAnte (G : Form) (D : FSeq → Prop) : Prop :=
+  ∀ (Ω : List Form) (A B Z : Form),
+    (∀ X ∈ Ω, X ∈ gAt G ++ gImp G) → Form.imp A B ∈ Ω →
+    Form.circ Z ∈ sfR G → ¬ EvalI D Ω A →
+    ¬ (A.size < (Form.circ Z).size) →
+    Nonempty (GbuIC G Ω (.circ Z))
+
+/-- **(S2)** `L⊥ᵢ`/`L∧ᵢ`/`L∨ᵢ` (obstruction 2) are UNLICENSED: their
+premises need `gbuInv14`, whose `Ω ⊆ Ĝ` hypothesis fails exactly when
+the context carries the `⊥`/`∧`/`∨` those rules decompose.  Such a
+context is one no irregular row can cover, so (BSr1) holds vacuously
+there and carries no information.
+
+    Ω ⊆ Sf^L(G),  ◯Z ∈ Sf^R(G),  some X ∈ Ω with X ∉ Ĝ,
+    D ⋫ (Ω →g ◯Z)  ⟹  Ω →g ◯Z -/
+def NonHatCirc (G : Form) (D : FSeq → Prop) : Prop :=
+  ∀ (Ω : List Form) (Z : Form), (∀ X ∈ Ω, X ∈ sfL G) → Form.circ Z ∈ sfR G →
+    (∃ X ∈ Ω, X ∉ gHat G) → ¬ EvalI D Ω (.circ Z) →
+    Nonempty (GbuIC G Ω (.circ Z))
+
+/-- **(S3)** the CLEAN-regular search, which `R⊃ₙᵢ` in the clean
+irregular mode releases into.  Its own residue is a critical context
+carrying a `◯` at a non-modal goal, where only the FALLIBLE joins apply
+and no clean row exists.
+
+    Ψ ⊆ Sf^L(G),  C ∈ Sf^R(G),  D ⋫ᶜ (Ψ ⇒g C)  ⟹  Ψ ⇒g C -/
+def CleanReg (G : Form) (D : FSeq → Prop) : Prop :=
+  ∀ (Ψ : List Form) (C : Form), (∀ X ∈ Ψ, X ∈ sfL G) → C ∈ sfR G →
+    ¬ EvalRC D Ψ C → Nonempty (GbuRC G Ψ C)
+
+/-! ## Theorem 8◯ -/
+
+theorem searchO {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    (decI : ∀ Ω C, Decidable (EvalI D Ω C))
+    (decRC : ∀ Ψ C, Decidable (EvalRC D Ψ C))
+    (bigAnte : BigAnte G D) (nonHat : NonHatCirc G D) (cleanReg : CleanReg G D) :
+    ∀ p : Mode × List Form × Form, SearchOkO G D p := by
+  have main : ∀ x : Nat × Nat × Nat, ∀ p : Mode × List Form × Form,
+      wg G p.1.isReg p.2.1 p.2.2 = x → SearchOkO G D p := by
+    intro x
+    induction x using wgLt_wf.induction with
+    | _ x ih =>
+      rintro ⟨mode, Ψ, C⟩ hx
+      have IH : ∀ q : Mode × List Form × Form,
+          WgLt (wg G q.1.isReg q.2.1 q.2.2) (wg G mode.isReg Ψ C) → SearchOkO G D q :=
+        fun q hq => ih _ (hx ▸ hq) q rfl
+      cases mode with
+      | reg =>
+          -- ==================== REGULAR: `Ψ ⇒g C` ====================
+          show (∀ X ∈ Ψ, X ∈ sfL G) → C ∈ sfR G → ¬ EvalR D Ψ C →
+            Nonempty (GbuRC G Ψ C)
+          intro hΨ hC hne
+          refine byDec (inferInstance : Decidable (C ∈ Ψ))
+            (fun hax => ⟨.ax C (ctxEq_cons_self hax)⟩) (fun hax => ?_)
+          rcases splitHat Ψ with hall | ⟨l, r, X, hsplit, hX⟩
+          · -- critical: `Ψ ⊆ Ĝ`
+            have hΩ : ∀ Y ∈ Ψ, Y ∈ gHat G :=
+              fun Y hY => mem_gHat_of_isHat (hΨ Y hY) (hall Y hY)
+            have limpStep : ∀ A B : Form, Form.imp A B ∈ Ψ → ¬ EvalI D Ψ A →
+                Nonempty (GbuRC G Ψ C) := by
+              intro A B hYΨ hnA
+              obtain ⟨lY, rY, hYsplit⟩ := List.append_of_mem hYΨ
+              obtain ⟨hAsf, hBsf⟩ := sfL_imp (hΨ _ hYΨ)
+              have hΓ : Ψ ≐ .imp A B :: (lY ++ rY) := by
+                rw [hYsplit]; exact ctxEq_split
+              have hmemsub : ∀ W ∈ lY ++ rY, W ∈ Ψ :=
+                fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
+              obtain ⟨d₁⟩ := IH (.irr, .imp A B :: (lY ++ rY), A)
+                (wgFocus (fun W hW => .base ((hΓ W).mp hW)))
+                (by
+                  intro W hW
+                  rcases List.mem_cons.mp hW with rfl | hW'
+                  · exact hΨ _ hYΨ
+                  · exact hΨ W (hmemsub W hW'))
+                (by
+                  intro _ W hW
+                  rcases List.mem_cons.mp hW with rfl | hW'
+                  · exact hΩ _ hYΨ
+                  · exact hΩ W (hmemsub W hW'))
+                hAsf (fun h => hnA (evalI_ctxEq (ctxEq_symm hΓ) h))
+              obtain ⟨d₂⟩ := IH (.reg, B :: (lY ++ rY), C)
+                (by
+                  refine wgKeep (fun W hW => ?_) ?_
+                  · rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
+                    · exact .imp (.base List.mem_cons_self)
+                    · exact .base (List.mem_cons_of_mem _ hW')
+                  · show seqSize (B :: (lY ++ rY)) C < seqSize Ψ C
+                    rw [hYsplit, seqSize_split, seqSize_cons]
+                    have hb : B.size < (Form.imp A B).size :=
+                      Nat.lt_succ_of_le (Nat.le_add_left _ _)
+                    omega)
+                (by
+                  intro W hW
+                  rcases List.mem_cons.mp hW with rfl | hW'
+                  · exact hBsf
+                  · exact hΨ W (hmemsub W hW'))
+                hC (fun h => hne (evalR_ctxEq (ctxEq_symm hΓ) (gbuInv4 h)))
+              exact ⟨.limpL d₁ d₂ hΓ⟩
+            have fromUps : ∀ Z : Form, Z ∈ (impPart Ψ).map ante → ¬ EvalI D Ψ Z →
+                Nonempty (GbuRC G Ψ C) := by
+              intro Z hZ hnZ
+              obtain ⟨Y, hYmem, hYante⟩ := List.mem_map.mp hZ
+              obtain ⟨hYΨ, hYi⟩ := List.mem_filter.mp hYmem
+              match Y, hYi, hYante, hYΨ with
+              | .imp A B, _, hYante, hYΨ =>
+                  have hAZ : A = Z := hYante
+                  exact limpStep A B hYΨ (by rw [hAZ]; exact hnZ)
+            have upsToImp : (∀ Z ∈ (impPart Ψ).map ante, EvalI D Ψ Z) →
+                ∀ A B : Form, Form.imp A B ∈ Ψ → EvalI D Ψ A := by
+              intro hallI A B hAB
+              exact hallI A (List.mem_map.mpr ⟨.imp A B,
+                List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩)
+            cases C with
+            | atom a =>
+                rcases findNot (fun Z => decI Ψ Z) ((impPart Ψ).map ante) with
+                  hallI | ⟨Z, hZ, hnZ⟩
+                · exact absurd (gbuSuccAtF hsat hΩ rfl hC hax (upsToImp hallI)) hne
+                · exact fromUps Z hZ hnZ
+            | bot =>
+                rcases findNot (fun Z => decI Ψ Z) ((impPart Ψ).map ante) with
+                  hallI | ⟨Z, hZ, hnZ⟩
+                · exact absurd (gbuSuccAtF hsat hΩ rfl hC hax (upsToImp hallI)) hne
+                · exact fromUps Z hZ hnZ
+            | and C₁ C₂ =>
+                obtain ⟨h₁, h₂⟩ := sfR_and hC
+                obtain ⟨d₁⟩ := IH (.reg, Ψ, C₁)
+                  (wgKeep (fun _ h => .base h) (seqSize_goal
+                    (show C₁.size < (Form.and C₁ C₂).size from
+                      Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                  hΨ h₁ (fun h => hne (gbuInv2 hsat hC (Or.inl h)))
+                obtain ⟨d₂⟩ := IH (.reg, Ψ, C₂)
+                  (wgKeep (fun _ h => .base h) (seqSize_goal
+                    (show C₂.size < (Form.and C₁ C₂).size from
+                      Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                  hΨ h₂ (fun h => hne (gbuInv2 hsat hC (Or.inr h)))
+                exact ⟨.randR d₁ d₂⟩
+            | imp A B =>
+                obtain ⟨hA, hB⟩ := sfR_imp hC
+                refine byDec (decClo Ψ A) (fun hcl => ?_) (fun hcl => ?_)
+                · obtain ⟨d⟩ := IH (.reg, Ψ, B)
+                    (wgKeep (fun _ h => .base h) (seqSize_goal
+                      (show B.size < (Form.imp A B).size from
+                        Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                    hΨ hB (fun h => hne (gbuInv5 hsat hC hcl h))
+                  exact ⟨.rimpI d hcl⟩
+                · obtain ⟨d⟩ := IH (.reg, A :: Ψ, B) (wgDrop (unclosed_lt hA hcl))
+                    (by
+                      intro Y hY
+                      rcases List.mem_cons.mp hY with rfl | hY'
+                      · exact hA
+                      · exact hΨ Y hY')
+                    hB (fun h => hne (gbuInv6 hsat hC h))
+                  exact ⟨.rimpNI d hcl⟩
+            | or C₁ C₂ =>
+                obtain ⟨h₁, h₂⟩ := sfR_or hC
+                refine byDec (decI Ψ C₁) (fun he₁ => ?_) (fun he₁ => ?_)
+                · refine byDec (decI Ψ C₂) (fun he₂ => ?_) (fun he₂ => ?_)
+                  · rcases findNot (fun Z => decI Ψ Z) ((impPart Ψ).map ante) with
+                      hallI | ⟨Z, hZ, hnZ⟩
+                    · exact absurd (gbuSuccOrF hsat hΩ hC (upsToImp hallI) he₁ he₂) hne
+                    · exact fromUps Z hZ hnZ
+                  · obtain ⟨d⟩ := IH (.irr, Ψ, C₂)
+                      (wgFocus (fun _ h => .base h))
+                      hΨ (fun _ => hΩ) h₂ he₂
+                    exact ⟨.rorR2 d⟩
+                · obtain ⟨d⟩ := IH (.irr, Ψ, C₁)
+                    (wgFocus (fun _ h => .base h))
+                    hΨ (fun _ => hΩ) h₁ he₁
+                  exact ⟨.rorR1 d⟩
+            | circ Z =>
+                -- `L◯` is invertible (`gbuInv11`), so exhaust it first.
+                rcases findNot (fun X => (inferInstance : Decidable (X.isCirc = false))) Ψ with
+                  hnoc | ⟨Y, hYΨ, hYc⟩
+                · -- no modal formula left: `Ψ ⊆ Ĝ_at ∪ Ĝ_imp`, so `⋈^◯` applies
+                  have hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G := by
+                    intro W hW
+                    rcases gHat_cases (hΩ W hW) with ⟨h, _⟩ | ⟨h, _⟩ | ⟨_, hc⟩
+                    · exact List.mem_append_left _ h
+                    · exact List.mem_append_right _ h
+                    · exact absurd hc (by simpa using hnoc W hW)
+                  refine byDec (decI Ψ Z) (fun heZ => ?_) (fun heZ => ?_)
+                  · rcases findNot (fun W => decI Ψ W) ((impPart Ψ).map ante) with
+                      hallI | ⟨W, hW, hnW⟩
+                    · exact absurd (gbuSuccCirc hsat hΩai hC (upsToImp hallI) heZ) hne
+                    · exact fromUps W hW hnW
+                  · obtain ⟨d⟩ := IH (.irr, Ψ, Z)
+                      (wgFocus (fun _ h => .base h))
+                      hΨ (fun _ => hΩ) (sfR_circ hC) heZ
+                    exact ⟨.rcirc d hC⟩
+                · -- a `◯Y'` in the context: apply `L◯`
+                  have hYc' : Y.isCirc = true := by
+                    cases hb : Y.isCirc with
+                    | true => rfl
+                    | false => exact absurd hb hYc
+                  match Y, hYc' with
+                  | .circ Y', _ =>
+                      obtain ⟨lY, rY, hYsplit⟩ := List.append_of_mem hYΨ
+                      have hΓ : Ψ ≐ .circ Y' :: (lY ++ rY) := by
+                        rw [hYsplit]; exact ctxEq_split
+                      have hmemsub : ∀ W ∈ lY ++ rY, W ∈ Ψ :=
+                        fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
+                      have hY'sf : Y' ∈ sfL G := sfL_circ (hΨ _ hYΨ)
+                      obtain ⟨d⟩ := IH (.reg, Y' :: (lY ++ rY), Form.circ Z)
+                        (by
+                          refine wgKeep (fun W hW => ?_) ?_
+                          · rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
+                            · exact .circ (.base List.mem_cons_self)
+                            · exact .base (List.mem_cons_of_mem _ hW')
+                          · show seqSize (Y' :: (lY ++ rY)) (Form.circ Z) < seqSize Ψ _
+                            rw [hYsplit, seqSize_split, seqSize_cons]
+                            have : Y'.size < (Form.circ Y').size := Nat.lt_succ_self _
+                            omega)
+                        (by
+                          intro W hW
+                          rcases List.mem_cons.mp hW with rfl | hW'
+                          · exact hY'sf
+                          · exact hΨ W (hmemsub W hW'))
+                        hC (fun h => hne (evalR_ctxEq (ctxEq_symm hΓ) (gbuInv11 h)))
+                      exact ⟨.lcirc d (hΨ _ hYΨ) hΓ⟩
+          · -- non-critical: an invertible LEFT rule
+            subst hsplit
+            have hXmem : X ∈ l ++ X :: r := List.mem_append_right _ List.mem_cons_self
+            have hΓ : (l ++ X :: r) ≐ X :: (l ++ r) := ctxEq_split
+            have hmemsub : ∀ W ∈ l ++ r, W ∈ l ++ X :: r :=
+              fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
+            cases X with
+            | atom a => exact Bool.noConfusion hX
+            | imp A B => exact Bool.noConfusion hX
+            | circ Z => exact Bool.noConfusion hX
+            | bot => exact ⟨.lbot C (ctxEq_cons_self hXmem)⟩
+            | and A B =>
+                obtain ⟨hA, hB⟩ := sfL_and (hΨ _ hXmem)
+                obtain ⟨d⟩ := IH (.reg, A :: B :: (l ++ r), C)
+                  (by
+                    refine wgKeep (fun W hW => ?_) ?_
+                    · rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
+                      · exact .and (.base List.mem_cons_self)
+                          (.base (List.mem_cons_of_mem _ List.mem_cons_self))
+                      · exact .base (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hW'))
+                    · rw [seqSize_split, seqSize_cons, seqSize_cons]
+                      show A.size + (B.size + seqSize (l ++ r) C)
+                        < seqSize (l ++ r) C + (A.size + B.size + 1)
+                      omega)
+                  (by
+                    intro W hW
+                    rcases List.mem_cons.mp hW with rfl | hW'
+                    · exact hA
+                    · rcases List.mem_cons.mp hW' with rfl | hW''
+                      · exact hB
+                      · exact hΨ W (hmemsub W hW''))
+                  hC (fun h => hne (evalR_ctxEq (ctxEq_symm hΓ) (gbuInv1 h)))
+                exact ⟨.landL d hΓ⟩
+            | or A B =>
+                obtain ⟨hA, hB⟩ := sfL_or (hΨ _ hXmem)
+                have hsz : ∀ Y : Form, Y.size < (Form.or A B).size →
+                    seqSize (Y :: (l ++ r)) C < seqSize (l ++ Form.or A B :: r) C := by
+                  intro Y hY
+                  rw [seqSize_split, seqSize_cons]
+                  omega
+                obtain ⟨d₁⟩ := IH (.reg, A :: (l ++ r), C)
+                  (wgKeep (fun W hW => by
+                      rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
+                      · exact .orL (.base List.mem_cons_self)
+                      · exact .base (List.mem_cons_of_mem _ hW'))
+                    (hsz A (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                  (by
+                    intro W hW
+                    rcases List.mem_cons.mp hW with rfl | hW'
+                    · exact hA
+                    · exact hΨ W (hmemsub W hW'))
+                  hC (fun h => hne (evalR_ctxEq (ctxEq_symm hΓ) (gbuInv3L h)))
+                obtain ⟨d₂⟩ := IH (.reg, B :: (l ++ r), C)
+                  (wgKeep (fun W hW => by
+                      rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
+                      · exact .orR (.base List.mem_cons_self)
+                      · exact .base (List.mem_cons_of_mem _ hW'))
+                    (hsz B (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                  (by
+                    intro W hW
+                    rcases List.mem_cons.mp hW with rfl | hW'
+                    · exact hB
+                    · exact hΨ W (hmemsub W hW'))
+                  hC (fun h => hne (evalR_ctxEq (ctxEq_symm hΓ) (gbuInv3R h)))
+                exact ⟨.lorL d₁ d₂ hΓ⟩
+      | irr =>
+          -- ==================== IRREGULAR: `Ψ →g C` ====================
+          show (∀ X ∈ Ψ, X ∈ sfL G) → (C.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G) →
+            C ∈ sfR G → ¬ EvalI D Ψ C → Nonempty (GbuIC G Ψ C)
+          intro hΨ hΩc hC hne
+          refine byDec (inferInstance : Decidable (C ∈ Ψ))
+            (fun hax => ⟨.ax C (ctxEq_cons_self hax)⟩) (fun hax => ?_)
+          cases C with
+          | atom a => exact absurd (evalI_axI_gHat hsat (hΩc rfl) rfl hC hax) hne
+          | bot => exact absurd (evalI_axI_gHat hsat (hΩc rfl) rfl hC hax) hne
+          | and C₁ C₂ =>
+              obtain ⟨h₁, h₂⟩ := sfR_and hC
+              have hg := hΩc rfl
+              obtain ⟨d₁⟩ := IH (.irr, Ψ, C₁)
+                (wgKeep (fun _ h => .base h) (seqSize_goal
+                  (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                hΨ (fun _ => hg) h₁ (fun h => hne (gbuInv7 hsat hC (Or.inl h)))
+              obtain ⟨d₂⟩ := IH (.irr, Ψ, C₂)
+                (wgKeep (fun _ h => .base h) (seqSize_goal
+                  (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                hΨ (fun _ => hg) h₂ (fun h => hne (gbuInv7 hsat hC (Or.inr h)))
+              exact ⟨.randI d₁ d₂⟩
+          | or C₁ C₂ =>
+              obtain ⟨h₁, h₂⟩ := sfR_or hC
+              have hg := hΩc rfl
+              refine byDec (decI Ψ C₁) (fun he₁ => ?_) (fun he₁ => ?_)
+              · refine byDec (decI Ψ C₂) (fun he₂ => ?_) (fun he₂ => ?_)
+                · exact absurd (gbuInv10 hsat hC he₁ he₂) hne
+                · obtain ⟨d⟩ := IH (.irr, Ψ, C₂)
+                    (wgKeep (fun _ h => .base h) (seqSize_goal
+                      (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                    hΨ (fun _ => hg) h₂ he₂
+                  exact ⟨.rorI2 d⟩
+              · obtain ⟨d⟩ := IH (.irr, Ψ, C₁)
+                  (wgKeep (fun _ h => .base h) (seqSize_goal
+                    (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                  hΨ (fun _ => hg) h₁ he₁
+                exact ⟨.rorI1 d⟩
+          | imp A B =>
+              obtain ⟨hA, hB⟩ := sfR_imp hC
+              have hg := hΩc rfl
+              refine byDec (decClo Ψ A) (fun hcl => ?_) (fun hcl => ?_)
+              · obtain ⟨d⟩ := IH (.irr, Ψ, B)
+                  (wgKeep (fun _ h => .base h) (seqSize_goal
+                    (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                  hΨ (fun _ => hg) hB (fun h => hne (gbuInv8 hsat hC hcl h))
+                exact ⟨.rimpII d hcl⟩
+              · obtain ⟨d⟩ := IH (.reg, A :: Ψ, B) (wgDrop (unclosed_lt hA hcl))
+                  (by
+                    intro Y hY
+                    rcases List.mem_cons.mp hY with rfl | hY'
+                    · exact hA
+                    · exact hΨ Y hY')
+                  hB (fun h => hne (gbuInv9 hsat hC hg hcl h))
+                exact ⟨.rimpNII d hcl⟩
+          | circ Z =>
+              have hZsf : Z ∈ sfR G := sfR_circ hC
+              rcases findNot (fun X => (inferInstance : Decidable (X ∈ gHat G))) Ψ with
+                hg | ⟨X, hXΨ, hXn⟩
+              · rcases findNot
+                  (fun X => (inferInstance : Decidable (X.isCirc = false))) Ψ with
+                  hnoc | ⟨Y, hYΨ, hYc⟩
+                · -- `Ψ ⊆ Ĝ_at ∪ Ĝ_imp`: the critical modal cell
+                  have hΩai : ∀ W ∈ Ψ, W ∈ gAt G ++ gImp G := by
+                    intro W hW
+                    rcases gHat_cases (hg W hW) with ⟨h, _⟩ | ⟨h, _⟩ | ⟨_, hc⟩
+                    · exact List.mem_append_left _ h
+                    · exact List.mem_append_right _ h
+                    · exact absurd hc (by simpa using hnoc W hW)
+                  refine byDec (decRC Ψ Z) (fun hrc => ?_) (fun hrc => ?_)
+                  · exact absurd (gbuSuccCircIC hsat hg hC hrc) hne
+                  · rcases findNot (fun W => decI Ψ W) ((impPart Ψ).map ante) with
+                      hallI | ⟨W, hW, hnW⟩
+                    · obtain ⟨d⟩ := IH (.cirr, Ψ, Z)
+                        (wgKeep (fun _ h => .base h)
+                          (seqSize_goal (Nat.lt_succ_self _)))
+                        hΩai hZsf
+                        (fun A B hAB => hallI A (List.mem_map.mpr
+                          ⟨.imp A B, List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩))
+                        hrc
+                      exact ⟨.rcircI d hC⟩
+                    · obtain ⟨Y', hYmem, hYante⟩ := List.mem_map.mp hW
+                      obtain ⟨hYΨ', hYi⟩ := List.mem_filter.mp hYmem
+                      match Y', hYi, hYante, hYΨ' with
+                      | .imp A B, _, hYante, hYΨ' =>
+                          have hAW : A = W := hYante
+                          have hnA : ¬ EvalI D Ψ A := by rw [hAW]; exact hnW
+                          refine byDec
+                            (inferInstance : Decidable (A.size < (Form.circ Z).size))
+                            (fun hsz => ?_)
+                            (fun hnsz => bigAnte Ψ A B Z hΩai hYΨ' hC hnA hnsz)
+                          obtain ⟨lY, rY, hYsplit⟩ := List.append_of_mem hYΨ'
+                          obtain ⟨hAsf, hBsf⟩ := sfL_imp (hΨ _ hYΨ')
+                          have hΓ : Ψ ≐ .imp A B :: (lY ++ rY) := by
+                            rw [hYsplit]; exact ctxEq_split
+                          have hmemsub : ∀ V ∈ lY ++ rY, V ∈ Ψ :=
+                            fun V hV => (hΓ V).mpr (List.mem_cons_of_mem _ hV)
+                          obtain ⟨d₁⟩ := IH (.irr, .imp A B :: (lY ++ rY), A)
+                            (wgKeep (fun V hV => .base ((hΓ V).mp hV)) (by
+                              have hgoal' := seqSize_goal (Ψ := lY ++ rY) hsz
+                              show seqSize (Form.imp A B :: (lY ++ rY)) A
+                                < seqSize Ψ (Form.circ Z)
+                              rw [hYsplit, seqSize_split, seqSize_cons]
+                              omega))
+                            (by
+                              intro V hV
+                              rcases List.mem_cons.mp hV with rfl | hV'
+                              · exact hΨ _ hYΨ'
+                              · exact hΨ V (hmemsub V hV'))
+                            (by
+                              intro _ V hV
+                              rcases List.mem_cons.mp hV with rfl | hV'
+                              · exact hg _ hYΨ'
+                              · exact hg V (hmemsub V hV'))
+                            hAsf (fun h => hnA (evalI_ctxEq (ctxEq_symm hΓ) h))
+                          obtain ⟨d₂⟩ := IH (.irr, B :: (lY ++ rY), Form.circ Z)
+                            (by
+                              refine wgKeep (fun V hV => ?_) ?_
+                              · rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
+                                · exact .imp (.base List.mem_cons_self)
+                                · exact .base (List.mem_cons_of_mem _ hV')
+                              · show seqSize (B :: (lY ++ rY)) (Form.circ Z)
+                                  < seqSize Ψ (Form.circ Z)
+                                rw [hYsplit, seqSize_split, seqSize_cons]
+                                have hb : B.size < (Form.imp A B).size :=
+                                  Nat.lt_succ_of_le (Nat.le_add_left _ _)
+                                omega)
+                            (by
+                              intro V hV
+                              rcases List.mem_cons.mp hV with rfl | hV'
+                              · exact hBsf
+                              · exact hΨ V (hmemsub V hV'))
+                            (fun h => Bool.noConfusion h) hC
+                            (fun h => hne (gbuInv14 hsat hg (fun V hV => by
+                              rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
+                              · exact .imp (.base List.mem_cons_self)
+                              · exact .base (List.mem_cons_of_mem _ hV')) h))
+                          exact ⟨.limpLI d₁ d₂ hsz hC hΓ⟩
+                · -- a modal formula in the context: `L◯ᵢ`
+                  have hYc' : Y.isCirc = true := by
+                    cases hb : Y.isCirc with
+                    | true => rfl
+                    | false => exact absurd hb hYc
+                  match Y, hYc' with
+                  | .circ Y', _ =>
+                      obtain ⟨lY, rY, hYsplit⟩ := List.append_of_mem hYΨ
+                      have hΓ : Ψ ≐ .circ Y' :: (lY ++ rY) := by
+                        rw [hYsplit]; exact ctxEq_split
+                      have hmemsub : ∀ V ∈ lY ++ rY, V ∈ Ψ :=
+                        fun V hV => (hΓ V).mpr (List.mem_cons_of_mem _ hV)
+                      have hY'sf : Y' ∈ sfL G := sfL_circ (hΨ _ hYΨ)
+                      have hcov : ∀ V ∈ Ψ, Clo (Y' :: (lY ++ rY)) V := by
+                        intro V hV
+                        rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
+                        · exact .circ (.base List.mem_cons_self)
+                        · exact .base (List.mem_cons_of_mem _ hV')
+                      obtain ⟨d⟩ := IH (.irr, Y' :: (lY ++ rY), Form.circ Z)
+                        (by
+                          refine wgKeep hcov ?_
+                          show seqSize (Y' :: (lY ++ rY)) (Form.circ Z)
+                            < seqSize Ψ (Form.circ Z)
+                          rw [hYsplit, seqSize_split, seqSize_cons]
+                          have : Y'.size < (Form.circ Y').size := Nat.lt_succ_self _
+                          omega)
+                        (by
+                          intro V hV
+                          rcases List.mem_cons.mp hV with rfl | hV'
+                          · exact hY'sf
+                          · exact hΨ V (hmemsub V hV'))
+                        (fun h => Bool.noConfusion h) hC
+                        (fun h => hne (gbuInv14 hsat hg hcov h))
+                      exact ⟨.lcircI d (hΨ _ hYΨ) hΓ⟩
+              · exact nonHat Ψ Z hΨ hC ⟨X, hXΨ, hXn⟩ hne
+      | cirr =>
+          -- ============ IRREGULAR, CLEAN QUERY: `Ψ →g C` ============
+          show (∀ X ∈ Ψ, X ∈ gAt G ++ gImp G) → C ∈ sfR G →
+            (∀ A B, Form.imp A B ∈ Ψ → EvalI D Ψ A) → ¬ EvalRC D Ψ C →
+            Nonempty (GbuIC G Ψ C)
+          intro hΩai hC hups hne
+          have hg : ∀ X ∈ Ψ, X ∈ gHat G :=
+            fun X hX => List.mem_append_left _ (hΩai X hX)
+          have hΨ : ∀ X ∈ Ψ, X ∈ sfL G := by
+            intro X hX
+            rcases List.mem_append.mp (hΩai X hX) with h | h
+            · exact (List.mem_filter.mp h).1
+            · exact (List.mem_filter.mp h).1
+          have toRC : ∀ {Ω : List Form} {F : Form}, RefutedCleanly G Ω F → EvalRC D Ω F :=
+            fun h => evalRC_of_refutedCleanly hsat h
+          have fromRC : ∀ {Ω : List Form} {F : Form}, EvalRC D Ω F → RefutedCleanly G Ω F :=
+            fun h => (evalRC_iff_refutedCleanly hsat).mp h
+          refine byDec (inferInstance : Decidable (C ∈ Ψ))
+            (fun hax => ⟨.ax C (ctxEq_cons_self hax)⟩) (fun hax => ?_)
+          cases C with
+          | atom a =>
+              exact absurd (toRC (refutedCleanly_at hsat hΩai rfl hC hax hups)) hne
+          | bot =>
+              exact absurd (toRC (refutedCleanly_at hsat hΩai rfl hC hax hups)) hne
+          | and C₁ C₂ =>
+              obtain ⟨h₁, h₂⟩ := sfR_and hC
+              obtain ⟨d₁⟩ := IH (.cirr, Ψ, C₁)
+                (wgKeep (fun _ h => .base h) (seqSize_goal
+                  (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                hΩai h₁ hups (fun h => hne (toRC (refutedCleanly_and1 hC (fromRC h))))
+              obtain ⟨d₂⟩ := IH (.cirr, Ψ, C₂)
+                (wgKeep (fun _ h => .base h) (seqSize_goal
+                  (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                hΩai h₂ hups (fun h => hne (toRC (refutedCleanly_and2 hC (fromRC h))))
+              exact ⟨.randI d₁ d₂⟩
+          | or C₁ C₂ =>
+              obtain ⟨h₁, h₂⟩ := sfR_or hC
+              refine byDec (decI Ψ C₁) (fun he₁ => ?_) (fun he₁ => ?_)
+              · refine byDec (decI Ψ C₂) (fun he₂ => ?_) (fun he₂ => ?_)
+                · exact absurd
+                    (toRC (refutedCleanly_or hsat hΩai hC hups he₁ he₂)) hne
+                · obtain ⟨d⟩ := IH (.irr, Ψ, C₂)
+                    (wgKeep (fun _ h => .base h) (seqSize_goal
+                      (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                    hΨ (fun _ => hg) h₂ he₂
+                  exact ⟨.rorI2 d⟩
+              · obtain ⟨d⟩ := IH (.irr, Ψ, C₁)
+                  (wgKeep (fun _ h => .base h) (seqSize_goal
+                    (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                  hΨ (fun _ => hg) h₁ he₁
+                exact ⟨.rorI1 d⟩
+          | imp A B =>
+              obtain ⟨hA, hB⟩ := sfR_imp hC
+              refine byDec (decClo Ψ A) (fun hcl => ?_) (fun hcl => ?_)
+              · obtain ⟨d⟩ := IH (.cirr, Ψ, B)
+                  (wgKeep (fun _ h => .base h) (seqSize_goal
+                    (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                  hΩai hB hups
+                  (fun h => hne (toRC (refutedCleanly_imp hC
+                    (refutedCleanly_clo (fun X hX => by
+                      rcases List.mem_cons.mp hX with rfl | hX'
+                      · exact hcl
+                      · exact .base hX') (fromRC h)))))
+                exact ⟨.rimpII d hcl⟩
+              · obtain ⟨d⟩ := cleanReg (A :: Ψ) B
+                  (by
+                    intro Y hY
+                    rcases List.mem_cons.mp hY with rfl | hY'
+                    · exact hA
+                    · exact hΨ Y hY')
+                  hB (fun h => hne (toRC (refutedCleanly_imp hC (fromRC h))))
+                exact ⟨.rimpNII d hcl⟩
+          | circ Z =>
+              obtain ⟨d⟩ := IH (.cirr, Ψ, Z)
+                (wgKeep (fun _ h => .base h) (seqSize_goal (Nat.lt_succ_self _)))
+                hΩai (sfR_circ hC) hups
+                (fun h => hne (toRC (refutedCleanly_circIn hC (fromRC h))))
+              exact ⟨.rcircI d hC⟩
+  exact fun p => main _ p rfl
+
+/-! ## The root sequent
+
+`BSearch` at `⇒g G` is legitimate for the same reason as in the paper: a
+database row `Γ ⇒ G` would BE an `FRJV(G)`-refutation of `G`. -/
+
+theorem provableGbuC_of_not_provableV {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D)
+    (decI : ∀ Ω C, Decidable (EvalI D Ω C))
+    (decRC : ∀ Ψ C, Decidable (EvalRC D Ψ C))
+    (bigAnte : BigAnte G D) (nonHat : NonHatCirc G D) (cleanReg : CleanReg G D)
+    (hroot : ¬ EvalR D [] G) : ProvableGbuC G :=
+  searchO hsat decI decRC bigAnte nonHat cleanReg (.reg, [], G)
+    (fun _ h => absurd h List.not_mem_nil) (sfR_self G) hroot
+
+/-- On the canonical database the root hypothesis IS `⊬_{FRJV(G)} G`. -/
+theorem not_evalR_root {G : Form} (h : ¬ ProvableV G) :
+    ¬ EvalR (FDerivable G) [] G := by
+  rintro ⟨Γ, ⟨t, hd⟩, -⟩
+  exact h ⟨t, Γ, hd⟩
+
+/-- info: 'FRJ.Gbu.searchO' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms searchO
+
+/-- info: 'FRJ.Gbu.provableGbuC_of_not_provableV' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableGbuC_of_not_provableV
+
+/-- info: 'FRJ.Gbu.not_evalR_root' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_evalR_root
+
+end FRJ.Gbu
