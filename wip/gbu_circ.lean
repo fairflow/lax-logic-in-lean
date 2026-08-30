@@ -714,6 +714,112 @@ theorem rcircNI_not_invertible :
   not_evalI_tc (h Gtc (FDerivable Gtc) (saturated_fderivable Gtc)
     [Form.circ pv] pv (by decide) (by decide) evalR_tc)
 
+/-! ## §10a  Lemma 13 (P2) — the `◯` success lemma
+
+`⋈^◯` carries `hZ : RefAt … Z` where `⋈^∨` carries `hC : … C₁ ∧ … C₂`.
+So the `◯` goal is a one-disjunct disjunction: Lemma 12 with the family
+`Z :: antecedents` instead of `C₁ :: C₂ :: antecedents`, and `⋈^◯` in
+place of `⋈^∨`.
+
+This is P2's licence.  At a critical `Ω ⇒g ◯Z`, if every member of
+`Υ ∪ {Z}` is refuted then so is the sequent; so when `Ω →g Z` is NOT
+refuted, `R◯` fires with THAT irregular premise.
+
+Note the hypothesis `Ω ⊆ Ĝ_at ∪ Ĝ_imp`: unlike `⋈^At` and `⋈^∨`, the
+`◯`-join has NO fallible variant, so the modal-zone case of this lemma
+is not a free swap.  It needs `⋈^◯_P` and its `hJ5`, and is left open. -/
+
+theorem gbuSuccCirc {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
+    (hgoal : Form.circ Z ∈ sfR G)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
+    (hz : EvalI D Ω Z) :
+    EvalR D Ω (.circ Z) := by
+  let U := Z :: (impPart Ω).map ante
+  let E := enumOf U (by simp [U])
+  let f := E.f
+  have hfmem : ∀ j, f j ∈ U := fun j =>
+    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hwit : ∀ j, ∃ p : List Form × List Form,
+      D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
+    intro j
+    have hev : EvalI D Ω (f j) := by
+      by_cases e₀ : f j = Z
+      · exact e₀ ▸ hz
+      have hm : f j ∈ (impPart Ω).map ante := by
+        rcases List.mem_cons.mp (hfmem j) with h | h
+        · exact absurd h e₀
+        · exact h
+      obtain ⟨X, hXmem, hante⟩ := List.mem_map.mp hm
+      obtain ⟨hXΩ, hXi⟩ := List.mem_filter.mp hXmem
+      match X, hXi with
+      | .imp A B, _ =>
+          have hA : A = f j := hante
+          exact hA ▸ himp A B hXΩ
+    obtain ⟨St, Th, k₁, k₂, k₃⟩ := hev
+    exact ⟨(St, Th), k₁, k₂, k₃⟩
+  obtain ⟨g, hg⟩ := finEx hwit
+  set St : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
+  set Th : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
+  have hStTh : ∀ j, D (.irr (St j) (Th j) (f j)) := fun j => (hg j).1
+  have hStΩ : ∀ j, St j ⊆ Ω := fun j => (hg j).2.1
+  have hΩSt : ∀ j, Ω ⊆ St j ++ Th j := fun j => (hg j).2.2
+  obtain ⟨d⟩ := finPi (fun j => hsat.1 _ (hStTh j))
+  have hJ1 : ∀ i j, i ≠ j → St i ⊆ St j ++ Th j :=
+    fun i j _ => fun {_} hX => hΩSt j (hStΩ i hX)
+  have hJ2 : ∀ A B : Form,
+      Form.imp A B ∈ unionAll (fun j => impPart (St j)) → A ∈ upsilon f := by
+    intro A B hmem
+    obtain ⟨j, hj⟩ := mem_unionAll.mp hmem
+    have hAB : Form.imp A B ∈ Ω := hStΩ j (List.mem_filter.mp hj).1
+    exact (E.spec A).mpr (List.mem_cons_of_mem _
+      (List.mem_map.mpr ⟨.imp A B, List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩))
+  have hcirc : unionAll (fun j => circPart (St j)) = [] := by
+    refine eq_nil_of_forall_not_mem (fun X hX => ?_)
+    obtain ⟨j, hj⟩ := mem_unionAll.mp hX
+    obtain ⟨hmem, hc⟩ := List.mem_filter.mp hj
+    exact absurd hc (by
+      rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
+      exact fun h => Bool.noConfusion h)
+  obtain ⟨s', hs'mem, hsub⟩ :=
+    hsat.2 (.reg (joinCtxOrVBase St Th ++ restrict (thPool Th) (upsilon f))
+      (.circ Z))
+      ⟨.barren, ⟨.joinCirc (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Th)
+        (.ups ((E.spec Z).mpr List.mem_cons_self)) hgoal (CtxEq.refl _)⟩⟩
+  match s', hsub with
+  | .reg Γ' _, ⟨rfl, hΓ⟩ =>
+      refine ⟨Γ', hs'mem, fun X hX => .base (hΓ ?_)⟩
+      by_cases hin : ∃ j, X ∈ St j
+      · obtain ⟨j, hj⟩ := hin
+        refine List.mem_append_left _ ?_
+        by_cases hi : X.isImp
+        · exact List.mem_append_right _
+            (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)
+        · refine List.mem_append_left _ (List.mem_append_left _
+            (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
+          have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+          exact (List.mem_filter.mp this).2
+      · have hall : ∀ j, X ∈ Th j := by
+          intro j
+          rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+          · exact absurd ⟨j, h'⟩ hin
+          · exact h'
+        by_cases hi : X.isImp
+        · refine List.mem_append_right _ ?_
+          match X, hi with
+          | .imp A B, _ =>
+              refine mem_restrict.mpr ⟨?_, ?_⟩
+              · exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, rfl⟩
+              · exact (E.spec A).mpr (List.mem_cons_of_mem _
+                  (List.mem_map.mpr ⟨.imp A B,
+                    List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩))
+        · refine List.mem_append_left _ (List.mem_append_left _
+            (List.mem_append_right _ ?_))
+          refine mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, ?_⟩)
+          have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
+          exact (List.mem_filter.mp this).2
+
 /-! ## §11  The open question of `docs/gbu-tag-proposal.md` §5, ANSWERED
 
 The question was whether `Ω →g ◯Z` — the IRREGULAR `◯` goal — is always
@@ -910,6 +1016,10 @@ cannot lift. -/
 /-- info: 'FRJ.Gbu.rcircNI_not_invertible' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms rcircNI_not_invertible
+
+/-- info: 'FRJ.Gbu.gbuSuccCirc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuSuccCirc
 
 /-- info: 'FRJ.Gbu.not_evalI_omegaNI' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

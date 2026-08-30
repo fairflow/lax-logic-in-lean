@@ -316,7 +316,7 @@ theorem finPi : ∀ {n : Nat} {X : Fin (n + 1) → Type},
 /-- The paper's `Θ^⊃∩` retention zone as a `KeptChain` certificate.
 Inlined from `wip/minmodv.lean`'s `keptChain_restrict` so that this
 development does not depend on the `minmodv` campaign. -/
-private theorem keptChainRestrict {n : Nat} {rhs : Fin (n + 1) → Form}
+theorem keptChainRestrict {n : Nat} {rhs : Fin (n + 1) → Form}
     (base : List Form) (th : Fin (n + 1) → List Form) :
     KeptChain (upsilon rhs) base (thPool th)
       (restrict (thPool th) (upsilon rhs)) :=
@@ -337,7 +337,7 @@ theorem finEx : ∀ {n : Nat} {α : Type} {P : Fin (n + 1) → α → Prop},
       obtain ⟨g, hg⟩ := finEx (fun j => h j.succ)
       exact ⟨Fin.cases x0 g, fun j => Fin.cases hx0 hg j⟩
 
-private theorem not_isCirc_of_gHatAtImp {G X : Form}
+theorem not_isCirc_of_gHatAtImp {G X : Form}
     (h : X ∈ gAt G ++ gImp G) : X.isCirc = false := by
   rcases List.mem_append.mp h with h' | h'
   · have := (List.mem_filter.mp h').2
@@ -345,7 +345,7 @@ private theorem not_isCirc_of_gHatAtImp {G X : Form}
   · have := (List.mem_filter.mp h').2
     cases X <;> simp_all [Form.isImp, Form.isCirc]
 
-private theorem mem_gAt_of_not_imp {G X : Form}
+theorem mem_gAt_of_not_imp {G X : Form}
     (h : X ∈ gAt G ++ gImp G) (himp : X.isImp = false) : X ∈ gAt G := by
   rcases List.mem_append.mp h with h' | h'
   · exact h'
