@@ -55,7 +55,15 @@ class Config:
 
     @property
     def index_roots(self) -> list[dict]:
-        return self._d.get("index", {}).get("roots", [])
+        """Roots resolved relative to the config file, not the working
+        directory -- otherwise the index silently depends on where you
+        happened to run the command from."""
+        base = self.source.parent if self.source else Path.cwd()
+        out = []
+        for r in self._d.get("index", {}).get("roots", []):
+            q = Path(r["path"]).expanduser()
+            out.append({**r, "path": str(q if q.is_absolute() else (base / q).resolve())})
+        return out
 
     @property
     def index_port(self) -> int:

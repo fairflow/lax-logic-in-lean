@@ -32,7 +32,8 @@ from extract import find_proof_separator
 
 FENCE_RE = re.compile(r"```(?:lean4?|)\n(.*?)(?:```|\Z)", re.DOTALL)
 AXIOM_RE = re.compile(r"depends on axioms:\s*\[(.*?)\]", re.DOTALL)
-ERROR_RE = re.compile(r"^.*?:\d+:\d+: error:", re.MULTILINE)
+# Lean emits both `error:` and `error(lean.someCode):`.
+ERROR_RE = re.compile(r"^.*?:\d+:\d+: error(?:\([^)]*\))?:", re.MULTILINE)
 
 BANNED = ("native_decide", "sorry", "admit", "@[implemented_by")
 
