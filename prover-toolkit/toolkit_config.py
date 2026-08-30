@@ -89,11 +89,18 @@ def find_config(explicit: str | os.PathLike | None = None) -> Config:
     if env:
         p = Path(env).expanduser().resolve()
         return Config(json.loads(p.read_text()), p)
+    # Walk up from the working directory, checking both the directory itself
+    # and a `prover-toolkit/` inside it -- the config lives beside the toolkit,
+    # but commands are normally run from the project root above it.
     here = Path.cwd().resolve()
     for d in [here, *here.parents]:
-        cand = d / "toolkit.json"
-        if cand.exists():
-            return Config(json.loads(cand.read_text()), cand)
+        for cand in (d / "toolkit.json", d / "prover-toolkit" / "toolkit.json"):
+            if cand.exists():
+                return Config(json.loads(cand.read_text()), cand)
+    # Last resort: the config shipped next to this module.
+    beside = Path(__file__).resolve().parent / "toolkit.json"
+    if beside.exists():
+        return Config(json.loads(beside.read_text()), beside)
     raise FileNotFoundError(
         "no toolkit.json found. Create one (see toolkit_config.py docstring), "
         "or pass --config, or set PROVER_TOOLKIT_CONFIG.")
