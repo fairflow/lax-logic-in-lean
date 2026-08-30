@@ -61,6 +61,7 @@ rules with matching conclusions:
 -/
 import wip.gbu_search
 import wip.gbu_measure
+import FRJ.Erase
 
 namespace FRJ.Gbu
 
@@ -952,6 +953,44 @@ be.  So the rule is incomplete at the irregular `◯` goal. -/
 theorem not_gbuR_omegaNI (G : Form) : ¬ Nonempty (GbuR G omegaNI qv) := by
   rintro ⟨d⟩
   exact Kni_not_force_q (soundR (K := Kni) d W2.wa Kni_forces_omegaNI)
+
+/-! ## §11a  Conservativity: the `◯` rules cannot touch the IPC calculus
+
+A fair worry about admitting `L◯` — and, at the irregular `◯` goal,
+`L⊃` — is that it alters the `◯`-FREE calculus, i.e. the paper's own.
+It does not, and the reason is the blanket condition on the sequent
+language rather than anything about the rules: every sequent of
+`Gbu(G)` satisfies `Lhs(τ) ⊆ Sf^L(G)` and `Rhs(τ) ∈ Sf^R(G)`, and if
+`G` is `◯`-free then NO signed subformula of `G` is a `◯`-formula
+(`mem_sf_noCirc`, `FRJ/Erase.lean`).  Hence for `◯`-free `G`:
+
+* no sequent has a `◯`-shaped goal, so `R◯`, `R◯ₙᵢ` and the proposed
+  `◯`-goal-restricted `L⊃` are all INAPPLICABLE;
+* no sequent has a `◯` in the left zone, so `L◯` is inapplicable.
+
+So `Gbu◯(G)` and `Gbu(G)` coincide as RULE SETS, not merely in what they
+prove, and the results of §§1–12 of `wip/gbu_search.lean` are untouched.
+The two `◯`-freeness hypotheses of Theorem 8 become automatic. -/
+
+theorem noCirc_sfR {G : Form} (hG : noCirc G = true) :
+    ∀ X ∈ sfR G, X.isCirc = false :=
+  fun X hX => mem_sf_noCirc G hG X (Or.inl hX)
+
+theorem noCirc_sfL {G : Form} (hG : noCirc G = true) :
+    ∀ X ∈ sfL G, X.isCirc = false :=
+  fun X hX => mem_sf_noCirc G hG X (Or.inr (Or.inl hX))
+
+/-- **Theorem 8 for a `◯`-free goal, with no modal hypotheses at all.**
+This is the paper's own statement recovered: nothing about `◯` is
+assumed, because for such a `G` there is nothing about `◯` to assume. -/
+theorem search_of_noCirc {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    (decI : ∀ Ω C, Decidable (EvalI D Ω C)) (hG : noCirc G = true) :
+    ∀ p : Bool × List Form × Form, SearchOk G D p :=
+  search hsat decI (noCirc_sfL hG) (noCirc_sfR hG)
+
+/-- info: 'FRJ.Gbu.search_of_noCirc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms search_of_noCirc
 
 /-! ## §12  Theorems 8–10
 
