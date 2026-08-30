@@ -67,6 +67,16 @@ namespace FRJ.Gbu
 
 open FRJ Form
 
+/-- Does a `◯` occur anywhere in the formula? -/
+def _root_.FRJ.Form.hasCirc : Form → Bool
+  | .atom _ => false
+  | .bot => false
+  | .and A B => A.hasCirc || B.hasCirc
+  | .or A B => A.hasCirc || B.hasCirc
+  | .imp A B => A.hasCirc || B.hasCirc
+  | .circ _ => true
+
+
 /-! ## §0  The re-run points -/
 
 /-- Every database row for `Z` carries a tag `◯∈` / `◯∉` can lift.  This
@@ -1309,7 +1319,7 @@ inductive GbuIC (G : Form) : List Form → Form → Type
   `Ω`, and no `◯` rule can substitute for it. -/
   | limpLI {Γ Ψ : List Form} {A B C : Form}
       (d₁ : GbuIC G (.imp A B :: Ψ) A) (d₂ : GbuIC G (B :: Ψ) (.circ C))
-      (hsz : A.size < (Form.circ C).size)
+      (hsz : A.hasCirc = false ∨ A.size < (Form.circ C).size)
       (hgoal : Form.circ C ∈ sfR G) (hΓ : Γ ≐ .imp A B :: Ψ) :
       GbuIC G Γ (.circ C)
   /-- `L⊥` in the irregular judgment, at a `◯`-shaped goal. -/
@@ -1580,11 +1590,127 @@ still available (`|p| = 1 < 2 = |◯z|`) and the cell goes through.  The
 two motivating cells survive too: `{p, p⊃◯q} →g ◯q` by `L⊃ᵢ` on
 `p ⊃ ◯q` (`|p| < |◯q|`), and `{p} →g ◯p` by `R◯ᵢ`.
 
-This is a change to two rules, so it is PROPOSED, not adopted.  What
-follows is the evidence for it. -/
+ADOPTED 2026-08-30 on Matthew's authorisation, with `L⊃ᵢ`'s side
+condition weakened further to admit any `◯`-FREE antecedent — see
+`not_wf_stepW` for why `◯`-shapedness is not enough, and `wgC` for the
+`tp` grading that pays for it. -/
+
+/-! ### `Wg◯`: the paper's weight with `tp` graded by the goal's modality
+
+The adopted `L⊃ᵢ` admits a `◯`-FREE antecedent unrestricted.  What pays
+for it is a `tp` that separates a modal irregular goal from a `◯`-free
+one:
+
+    tpC(reg, C)   = 2
+    tpC(irr, C)   = 1  if `◯` occurs in `C`,  0 otherwise
+
+`tp` graded by whether the goal IS `◯`-shaped does not work — `R∧ᵢ` at
+`C₁ ∧ ◯C₂` would raise it.  Graded by whether the goal CONTAINS a `◯` it
+does, because that is monotone under subformula: every goal
+decomposition keeps it or lowers it, and `L⊃ᵢ` into a `◯`-free
+antecedent strictly lowers it. -/
+
+def tpC (reg : Bool) (C : Form) : Nat :=
+  if reg then 2 else if C.hasCirc then 1 else 0
+
+def wgC (G : Form) (reg : Bool) (Ψ : List Form) (C : Form) : Nat × Nat × Nat :=
+  (unclosed G Ψ, tpC reg C, seqSize Ψ C)
+
+theorem tpC_true (C : Form) : tpC true C = 2 := rfl
+
+theorem tpC_false_le_one (C : Form) : tpC false C ≤ 1 := by
+  show (if C.hasCirc = true then 1 else 0) ≤ 1
+  cases C.hasCirc
+  · exact Nat.zero_le 1
+  · exact Nat.le_refl 1
+
+theorem tpC_false_lt_true (C C' : Form) : tpC false C' < tpC true C :=
+  Nat.lt_of_le_of_lt (tpC_false_le_one C') (Nat.lt_succ_self 1)
+
+theorem tpC_false_mono {C C' : Form}
+    (h : C'.hasCirc = true → C.hasCirc = true) : tpC false C' ≤ tpC false C := by
+  show (if C'.hasCirc = true then 1 else 0) ≤ (if C.hasCirc = true then 1 else 0)
+  cases hc' : C'.hasCirc
+  · exact Nat.zero_le _
+  · rw [h hc']
+
+theorem orL' {a b : Bool} (h : a = true) : (a || b) = true := by
+  rw [h]; rfl
+
+theorem orR' {a b : Bool} (h : b = true) : (a || b) = true := by
+  rw [h]; cases a <;> rfl
+
+theorem tpC_le_circ (W Z : Form) : tpC false W ≤ tpC false (Form.circ Z) :=
+  tpC_false_le_one W
+
+theorem wgCCtx {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
+    (hcl : ∀ X, Clo Ψ X → Clo Ψ' X) (htp : tpC r C' ≤ tpC r C)
+    (hs : seqSize Ψ' C' < seqSize Ψ C) :
+    WgLt (wgC G r Ψ' C') (wgC G r Ψ C) := by
+  have hmono : unclosed G Ψ' ≤ unclosed G Ψ := unclosed_mono hcl
+  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
+  · exact Or.inl h
+  · refine Or.inr ⟨Nat.le_antisymm hmono h, ?_⟩
+    rcases Nat.lt_or_ge (tpC r C') (tpC r C) with h' | h'
+    · exact Or.inl h'
+    · exact Or.inr ⟨Nat.le_antisymm htp h', hs⟩
+
+theorem wgCFocus {G : Form} {r r' : Bool} {Ψ Ψ' : List Form} {C C' : Form}
+    (hcl : ∀ X, Clo Ψ X → Clo Ψ' X) (htp : tpC r' C' < tpC r C) :
+    WgLt (wgC G r' Ψ' C') (wgC G r Ψ C) := by
+  have hmono : unclosed G Ψ' ≤ unclosed G Ψ := unclosed_mono hcl
+  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
+  · exact Or.inl h
+  · exact Or.inr ⟨Nat.le_antisymm hmono h, Or.inl htp⟩
+
+theorem wgCDrop {G : Form} {r r' : Bool} {Ψ Ψ' : List Form} {C C' : Form}
+    (h : unclosed G Ψ' < unclosed G Ψ) : WgLt (wgC G r' Ψ' C') (wgC G r Ψ C) :=
+  Or.inl h
+
+/-- The paper's own steps decrease `Wg◯` too.  Mirrors `wg_step` case for
+case; the only new obligation is the `tp` component at the irregular
+goal decompositions, where `hasCirc` is monotone under subformula. -/
+theorem wgC_step {G : Form} {p q : Bool × List Form × Form} (h : Step G p q) :
+    WgLt (wgC G p.1 p.2.1 p.2.2) (wgC G q.1 q.2.1 q.2.2) := by
+  have keep : ∀ {Ψ Ψ' : List Form} {C C' : Form},
+      (∀ X, Clo Ψ X → Clo Ψ' X) → seqSize Ψ' C' < seqSize Ψ C →
+      WgLt (wgC G true Ψ' C') (wgC G true Ψ C) := by
+    intro Ψ Ψ' C C' hclo hsz
+    rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with hlt | hge
+    · exact Or.inl hlt
+    · exact Or.inr ⟨Nat.le_antisymm (unclosed_mono hclo) hge, Or.inr ⟨rfl, hsz⟩⟩
+  have irr : ∀ {Ψ : List Form} {C C' : Form},
+      (C'.hasCirc = true → C.hasCirc = true) → seqSize Ψ C' < seqSize Ψ C →
+      WgLt (wgC G false Ψ C') (wgC G false Ψ C) := by
+    intro Ψ C C' hmo hsz
+    refine Or.inr ⟨rfl, ?_⟩
+    rcases Nat.lt_or_ge (tpC false C') (tpC false C) with h' | h'
+    · exact Or.inl h'
+    · exact Or.inr ⟨Nat.le_antisymm (tpC_false_mono hmo) h', hsz⟩
+  cases h with
+  | landL => exact keep clo_and_cons seqSize_lt_and
+  | randR1 => exact keep (fun _ h => h) (seqSize_lt_right size_lt_binL)
+  | randR2 => exact keep (fun _ h => h) (seqSize_lt_right size_lt_binR)
+  | lorL1 => exact keep clo_or_cons (seqSize_lt_left size_lt_binL)
+  | lorL2 => exact keep clo_or_cons' (seqSize_lt_left size_lt_binR)
+  | @rorR1 Ψ C₁ C₂ => exact Or.inr ⟨rfl, Or.inl (tpC_false_lt_true (Form.or C₁ C₂) C₁)⟩
+  | @rorR2 Ψ C₁ C₂ => exact Or.inr ⟨rfl, Or.inl (tpC_false_lt_true (Form.or C₁ C₂) C₂)⟩
+  | @limpL1 Ψ A B C => exact Or.inr ⟨rfl, Or.inl (tpC_false_lt_true C A)⟩
+  | limpL2 => exact keep clo_imp_cons (seqSize_lt_left size_lt_binR)
+  | rimpI => exact keep (fun _ h => h) (seqSize_lt_right size_lt_binR)
+  | rimpNI hA hnc => exact Or.inl (unclosed_lt hA hnc)
+  | randI1 => exact irr orL' (seqSize_lt_right size_lt_binL)
+  | randI2 => exact irr orR' (seqSize_lt_right size_lt_binR)
+  | rorI1 => exact irr orL' (seqSize_lt_right size_lt_binL)
+  | rorI2 => exact irr orR' (seqSize_lt_right size_lt_binR)
+  | rimpII => exact irr orR' (seqSize_lt_right size_lt_binR)
+  | rimpNII hA hnc => exact Or.inl (unclosed_lt hA hnc)
+
+theorem wgCLt_wf : WellFounded WgLt := wgLt_wf
 
 /-- The redesigned step relation: `Step` plus the `◯` steps, with
-`R◯ᵢ` in place of `R◯ₙᵢ` and `L⊃ᵢ` size-restricted. -/
+`R◯ᵢ` in place of `R◯ₙᵢ` and `L⊃ᵢ` restricted to a `◯`-free or smaller
+antecedent.  Measured by `wgC`. -/
 inductive StepO (G : Form) : (Bool × List Form × Form) →
     (Bool × List Form × Form) → Prop
   | old {p q} (h : Step G p q) : StepO G p q
@@ -1592,7 +1718,7 @@ inductive StepO (G : Form) : (Bool × List Form × Form) →
       StepO G (true, Z :: Ψ, .circ C) (true, .circ Z :: Ψ, .circ C)
   | lcircI {Ψ Z C} :
       StepO G (false, Z :: Ψ, .circ C) (false, .circ Z :: Ψ, .circ C)
-  | limpLI1 {Ψ A B C} (hsz : A.size < (Form.circ C).size) :
+  | limpLI1 {Ψ A B C} (hsz : A.hasCirc = false ∨ A.size < (Form.circ C).size) :
       StepO G (false, .imp A B :: Ψ, A) (false, .imp A B :: Ψ, .circ C)
   | limpLI2 {Ψ A B C} :
       StepO G (false, B :: Ψ, .circ C) (false, .imp A B :: Ψ, .circ C)
@@ -1615,24 +1741,22 @@ private theorem sqGoal {Ψ : List Form} {C C' : Form} (h : C'.size < C.size) :
     seqSize Ψ C' < seqSize Ψ C := Nat.add_lt_add_left h _
 
 private theorem wgOCtx {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
-    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (hs : seqSize Ψ' C' < seqSize Ψ C) :
-    WgLt (wg G r Ψ' C') (wg G r Ψ C) := by
-  have hmono : unclosed G Ψ' ≤ unclosed G Ψ :=
-    unclosed_mono (fun _ hX => clo_trans hcl hX)
-  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
-  · exact Or.inl h
-  · exact Or.inr ⟨Nat.le_antisymm hmono h, Or.inr ⟨rfl, hs⟩⟩
+    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (hs : seqSize Ψ' C' < seqSize Ψ C)
+    (htp : tpC r C' ≤ tpC r C := by
+      first | exact Nat.le_refl _ | exact tpC_le_circ _ _) :
+    WgLt (wgC G r Ψ' C') (wgC G r Ψ C) :=
+  wgCCtx (fun _ hX => clo_trans hcl hX) htp hs
 
 private theorem wgOFocus {G : Form} {Ψ : List Form} {C C' : Form} :
-    WgLt (wg G false Ψ C') (wg G true Ψ C) :=
-  Or.inr ⟨rfl, Or.inl Nat.zero_lt_one⟩
+    WgLt (wgC G false Ψ C') (wgC G true Ψ C) :=
+  Or.inr ⟨rfl, Or.inl (tpC_false_lt_true C C')⟩
 
 /-- **Lemma 8 for the redesigned `Gbu◯(G)`**: the PAPER's weight, with no
 store, decreases on every step. -/
 theorem wg_stepO {G : Form} {p q : Bool × List Form × Form} (h : StepO G p q) :
-    WgLt (wg G p.1 p.2.1 p.2.2) (wg G q.1 q.2.1 q.2.2) := by
+    WgLt (wgC G p.1 p.2.1 p.2.2) (wgC G q.1 q.2.1 q.2.2) := by
   cases h with
-  | old h => exact wg_step h
+  | old h => exact wgC_step h
   | @lcirc Ψ Z C =>
       refine wgOCtx (fun X hX => ?_) ?_
       · rcases List.mem_cons.mp hX with rfl | hX'
@@ -1651,7 +1775,13 @@ theorem wg_stepO {G : Form} {p q : Bool × List Form × Form} (h : StepO G p q) 
         rw [sqCons, sqCons]
         show Z.size + seqSize Ψ (.circ C) < (Z.size + 1) + seqSize Ψ (.circ C)
         omega
-  | limpLI1 hsz => exact wgOCtx (fun _ h => .base h) (sqGoal hsz)
+  | @limpLI1 Ψ A B C hsz =>
+      rcases hsz with hfree | hlt
+      · exact wgCFocus (fun _ h => h)
+          (show tpC false A < tpC false (Form.circ C) by
+            show (if A.hasCirc = true then 1 else 0) < 1
+            rw [hfree]; exact Nat.zero_lt_one)
+      · exact wgOCtx (fun _ h => .base h) (sqGoal hlt) (tpC_le_circ _ _)
   | @limpLI2 Ψ A B C =>
       refine wgOCtx (fun X hX => ?_) ?_
       · rcases List.mem_cons.mp hX with rfl | hX'
@@ -1704,7 +1834,7 @@ the paper's own weight suffices. -/
 theorem stepO_wf (G : Form) :
     WellFounded (fun p q : Bool × List Form × Form => StepO G p q) :=
   Subrelation.wf (fun {_ _} h => wg_stepO h)
-    (InvImage.wf (fun p : Bool × List Form × Form => wg G p.1 p.2.1 p.2.2)
+    (InvImage.wf (fun p : Bool × List Form × Form => wgC G p.1 p.2.1 p.2.2)
       wgLt_wf)
 
 /-- info: 'FRJ.Gbu.wg_stepO' depends on axioms: [propext, Quot.sound] -/
@@ -1916,6 +2046,52 @@ theorem evalRC_of_refutedCleanly {G : Form} {D : FSeq → Prop}
     (hsat : Saturated G D) {Ψ : List Form} {C : Form}
     (h : RefutedCleanly G Ψ C) : EvalRC D Ψ C :=
   (evalRC_iff_refutedCleanly hsat).mpr h
+
+/-! ### The `L⊃ᵢ` measure field, and how far it can be weakened
+
+`L⊃ᵢ` carries `hsz : |A| < |◯C|`, which blocks modus ponens on a large
+antecedent and so blocks the `Υ` query the clean mode needs.  The
+obvious weakening is to let a NON-MODAL antecedent through:
+
+    hsz : A.isCirc = false ∨ |A| < |◯C|
+
+**That form is REFUTED** — it leaves a two-cycle, because `R∧ᵢ` can put
+the modality back:
+
+    Ω = { (◯z ∧ ⊥) ⊃ ⊥ }
+
+    Ω →g ◯z ∧ ⊥   is a premise of   Ω →g ◯z        by the weakened L⊃ᵢ
+    Ω →g ◯z       is a premise of   Ω →g ◯z ∧ ⊥    by R∧ᵢ
+
+`◯z ∧ ⊥` is not `◯`-SHAPED, so the weakened side condition admits it;
+but it is not `◯`-FREE, and the conjunct walks straight back to a modal
+goal.  The working condition is `◯`-freeness, `Form.hasCirc A = false`,
+which is what `L⊃ᵢ` carries below: a `◯`-free goal decomposes only into
+`◯`-free goals, so the sub-search under `L⊃ᵢ`'s first premise can never
+return to a modal one. -/
+
+/-- The step relation of the REFUTED weakening: `L⊃ᵢ`'s first premise
+under `A.isCirc = false`, together with `R∧ᵢ`. -/
+inductive StepW (Ω : List Form) : Form → Form → Prop
+  | limpLI {A B C : Form} (hmem : Form.imp A B ∈ Ω) (hnc : A.isCirc = false) :
+      StepW Ω A (.circ C)
+  | randI1 {C₁ C₂ : Form} : StepW Ω C₁ (.and C₁ C₂)
+  | randI2 {C₁ C₂ : Form} : StepW Ω C₂ (.and C₁ C₂)
+
+private def zw : Form := .atom "z"
+private def Aw : Form := .and (.circ zw) .bot
+private def Ωw : List Form := [.imp Aw .bot]
+
+/-- **`hsz : A.isCirc = false ∨ …` does not terminate.** -/
+theorem not_wf_stepW : ¬ WellFounded (StepW Ωw) := by
+  intro hwf
+  exact no_two_cycle (a := Aw) (b := Form.circ zw) hwf
+    (.limpLI List.mem_cons_self rfl) .randI1
+
+/-- info: 'FRJ.Gbu.not_wf_stepW' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms not_wf_stepW
+
 
 /-! ### Lemma 9, clause 14 — the irregular `◯` goal is `Clo`-monotone
 

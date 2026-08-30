@@ -2875,3 +2875,59 @@ hypothesis IS `⊬_{FRJV(G)} G` on the canonical database.
 
 The clean-stratum divergence is renumbered **D9**: `wip/gbu_search.lean`
 already used D8 for ◯-freeness-as-a-hypothesis.
+
+## 2026-08-30i — `L⊃ᵢ`'s `hsz` weakened, but NOT to the form I proposed
+
+Matthew authorised the `hsz` weakening. Implementing it refuted the
+form I had proposed, so the adopted condition is strictly stronger than
+the authorised one — recorded here because that is a deviation.
+
+**What I proposed** (§2026-08-30h):
+
+    hsz : A.isCirc = false ∨ |A| < |◯C|
+
+**REFUTED** (`not_wf_stepW`, `[propext]`). `R∧ᵢ` puts the modality
+straight back, giving a two-cycle:
+
+    Ω = { (◯z ∧ ⊥) ⊃ ⊥ }
+    Ω →g ◯z ∧ ⊥   is a premise of   Ω →g ◯z        by the weakened L⊃ᵢ
+    Ω →g ◯z       is a premise of   Ω →g ◯z ∧ ⊥    by R∧ᵢ
+
+`◯z ∧ ⊥` is not `◯`-SHAPED, so the proposed condition admits it; but it
+is not `◯`-FREE, and the conjunct walks straight back to a modal goal.
+
+**What is ADOPTED**:
+
+    hsz : A.hasCirc = false ∨ |A| < |◯C|
+
+`◯`-freeness, not `◯`-shapedness. A `◯`-free goal decomposes only into
+`◯`-free goals, so the sub-search under `L⊃ᵢ`'s first premise can never
+return to a modal one, and the cycle above cannot form.
+
+**What pays for it: `Wg◯`.** The paper's `tp` is graded by the goal:
+
+    tpC(reg, C) = 2        tpC(irr, C) = 1 if `◯` occurs in C, else 0
+
+Grading by "the goal IS `◯`-shaped" fails — `R∧ᵢ` at `C₁ ∧ ◯C₂` would
+raise it, which is what I recorded as refuting mode-grading in §h.
+Grading by "the goal CONTAINS a `◯`" works, because that IS monotone
+under subformula: every goal decomposition keeps it or lowers it, and
+`L⊃ᵢ` into a `◯`-free antecedent strictly lowers it. `wgC_step` re-proves
+the paper's own eighteen steps against the graded weight, case for case
+against `wg_step`; `StepO`/`wg_stepO`/`stepO_wf` are re-founded on it.
+
+**Effect on the residues.** (S1) `BigAnte` shrinks to antecedents that
+BOTH carry a `◯` and are too large:
+
+    Ω ⊆ Ĝ_at ∪ Ĝ_imp,  A ⊃ B ∈ Ω,  ◯Z ∈ Sf^R(G),  D ⋫ (Ω →g A),
+    ¬(A is `◯`-free ∨ |A| < |◯Z|)   ⟹   Ω →g ◯Z
+
+(S2) `NonHatCirc` and (S3) `CleanReg` are untouched. `searchO` and
+`provableGbuC_of_not_provableV` remain sorry-free at
+`[propext, Quot.sound]`, and the whole repository builds.
+
+**Conservativity re-checked**, per the standing instruction. `deCircR`
+and `deCircI` are unchanged and still total; negative-tested by
+injecting an `L⊃ᵢ` variant with no `◯`-goal condition, which makes both
+`soundIC` (`:1415`) and `deCircI` (`:1499`) report "Missing cases" and
+taints `provableGbuC_iff_provableGbu` with `sorryAx`. Restored, green.

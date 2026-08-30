@@ -318,25 +318,25 @@ Written out rather than left to `simp`, which pulls `Classical.choice`
 here (checked: a probe closing one of these goals by `simp` pins
 `[propext, Classical.choice, Quot.sound]`). -/
 
-private theorem size_lt_binL {A B : Form} :
+theorem size_lt_binL {A B : Form} :
     A.size < A.size + B.size + 1 :=
   Nat.lt_succ_of_le (Nat.le_add_right _ _)
 
-private theorem size_lt_binR {A B : Form} :
+theorem size_lt_binR {A B : Form} :
     B.size < A.size + B.size + 1 :=
   Nat.lt_succ_of_le (Nat.le_add_left _ _)
 
-private theorem seqSize_lt_right {Ψ : List Form} {X Y : Form}
+theorem seqSize_lt_right {Ψ : List Form} {X Y : Form}
     (h : X.size < Y.size) : seqSize Ψ X < seqSize Ψ Y :=
   Nat.add_lt_add_left h _
 
-private theorem seqSize_lt_and {Ψ : List Form} {A B C : Form} :
+theorem seqSize_lt_and {Ψ : List Form} {A B C : Form} :
     seqSize (A :: B :: Ψ) C < seqSize (.and A B :: Ψ) C := by
   simp only [seqSize, List.map_cons, List.sum_cons, Form.size]
   rw [← Nat.add_assoc]
   exact Nat.add_lt_add_right (Nat.add_lt_add_right (Nat.lt_succ_self _) _) _
 
-private theorem seqSize_lt_left {Ψ : List Form} {X Y C : Form}
+theorem seqSize_lt_left {Ψ : List Form} {X Y C : Form}
     (h : X.size < Y.size) : seqSize (X :: Ψ) C < seqSize (Y :: Ψ) C := by
   simp only [seqSize, List.map_cons, List.sum_cons]
   exact Nat.add_lt_add_right (Nat.add_lt_add_right h _) _

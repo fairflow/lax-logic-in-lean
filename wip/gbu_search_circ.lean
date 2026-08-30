@@ -174,26 +174,39 @@ private theorem seqSize_split {l r : List Form} {X C : Form} :
 private theorem seqSize_goal {Ψ : List Form} {C C' : Form} (h : C'.size < C.size) :
     seqSize Ψ C' < seqSize Ψ C := Nat.add_lt_add_left h _
 
+/-- The `tp` obligation is discharged by an auto-param: `Nat.le_refl` for
+a regular step or a context rule, `hasCirc`-monotonicity for a goal
+decomposition, and `tpC_le_circ` where the conclusion's goal is modal. -/
 private theorem wgKeep {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
-    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (hs : seqSize Ψ' C' < seqSize Ψ C) :
-    WgLt (wg G r Ψ' C') (wg G r Ψ C) := by
-  have hmono : unclosed G Ψ' ≤ unclosed G Ψ :=
-    unclosed_mono (fun _ hX => clo_trans hcl hX)
-  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
-  · exact Or.inl h
-  · exact Or.inr ⟨Nat.le_antisymm hmono h, Or.inr ⟨rfl, hs⟩⟩
+    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (hs : seqSize Ψ' C' < seqSize Ψ C)
+    (htp : tpC r C' ≤ tpC r C := by
+      first
+        | exact Nat.le_refl _
+        | exact tpC_false_mono orL'
+        | exact tpC_false_mono orR'
+        | exact tpC_le_circ _ _) :
+    WgLt (wgC G r Ψ' C') (wgC G r Ψ C) :=
+  wgCCtx (fun _ hX => clo_trans hcl hX) htp hs
 
 private theorem wgFocus {G : Form} {Ψ Ψ' : List Form} {C C' : Form}
     (hcl : ∀ X ∈ Ψ, Clo Ψ' X) :
-    WgLt (wg G false Ψ' C') (wg G true Ψ C) := by
-  have hmono : unclosed G Ψ' ≤ unclosed G Ψ :=
-    unclosed_mono (fun _ hX => clo_trans hcl hX)
-  rcases Nat.lt_or_ge (unclosed G Ψ') (unclosed G Ψ) with h | h
-  · exact Or.inl h
-  · exact Or.inr ⟨Nat.le_antisymm hmono h, Or.inl Nat.zero_lt_one⟩
+    WgLt (wgC G false Ψ' C') (wgC G true Ψ C) :=
+  wgCFocus (fun _ hX => clo_trans hcl hX) (tpC_false_lt_true C C')
+
+private theorem wgTpLt {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
+    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (htp : tpC r C' < tpC r C) :
+    WgLt (wgC G r Ψ' C') (wgC G r Ψ C) :=
+  wgCFocus (fun _ hX => clo_trans hcl hX) htp
+
+private theorem tpC_free_lt_circ {A Z : Form} (h : A.hasCirc = false) :
+    tpC false A < tpC false (Form.circ Z) := by
+  show (if A.hasCirc = true then 1 else 0) < 1
+  rw [h]
+  exact Nat.zero_lt_one
 
 private theorem wgDrop {G : Form} {r r' : Bool} {Ψ Ψ' : List Form} {C C' : Form}
-    (h : unclosed G Ψ' < unclosed G Ψ) : WgLt (wg G r' Ψ' C') (wg G r Ψ C) := Or.inl h
+    (h : unclosed G Ψ' < unclosed G Ψ) : WgLt (wgC G r' Ψ' C') (wgC G r Ψ C) :=
+  Or.inl h
 
 /-! ## The weight
 
@@ -229,9 +242,10 @@ statement.  None is a `sorry`: each is a `Prop` consumed at exactly one
 branch, so the theorem below states precisely what it does and does not
 establish. -/
 
-/-- **(S1)** `L⊃ᵢ` carries `hsz : |A| < |◯C|`, so modus ponens on an
-implication with a LARGE antecedent is unavailable — and the `Υ` query
-that the clean mode needs cannot then be discharged.
+/-- **(S1)** `L⊃ᵢ` admits any `◯`-FREE antecedent, and otherwise needs
+`|A| < |◯C|`.  What is left out is modus ponens on an implication whose
+antecedent BOTH carries a `◯` and is too large — and the `Υ` query that
+the clean mode needs cannot then be discharged.
 
     Ω ⊆ Ĝ_at ∪ Ĝ_imp,  A ⊃ B ∈ Ω,  ◯Z ∈ Sf^R(G),
     D ⋫ (Ω →g A),  |A| ≥ |◯Z|
@@ -240,7 +254,7 @@ def BigAnte (G : Form) (D : FSeq → Prop) : Prop :=
   ∀ (Ω : List Form) (A B Z : Form),
     (∀ X ∈ Ω, X ∈ gAt G ++ gImp G) → Form.imp A B ∈ Ω →
     Form.circ Z ∈ sfR G → ¬ EvalI D Ω A →
-    ¬ (A.size < (Form.circ Z).size) →
+    ¬ (A.hasCirc = false ∨ A.size < (Form.circ Z).size) →
     Nonempty (GbuIC G Ω (.circ Z))
 
 /-- **(S2)** `L⊥ᵢ`/`L∧ᵢ`/`L∨ᵢ` (obstruction 2) are UNLICENSED: their
@@ -274,13 +288,13 @@ theorem searchO {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     (bigAnte : BigAnte G D) (nonHat : NonHatCirc G D) (cleanReg : CleanReg G D) :
     ∀ p : Mode × List Form × Form, SearchOkO G D p := by
   have main : ∀ x : Nat × Nat × Nat, ∀ p : Mode × List Form × Form,
-      wg G p.1.isReg p.2.1 p.2.2 = x → SearchOkO G D p := by
+      wgC G p.1.isReg p.2.1 p.2.2 = x → SearchOkO G D p := by
     intro x
     induction x using wgLt_wf.induction with
     | _ x ih =>
       rintro ⟨mode, Ψ, C⟩ hx
       have IH : ∀ q : Mode × List Form × Form,
-          WgLt (wg G q.1.isReg q.2.1 q.2.2) (wg G mode.isReg Ψ C) → SearchOkO G D q :=
+          WgLt (wgC G q.1.isReg q.2.1 q.2.2) (wgC G mode.isReg Ψ C) → SearchOkO G D q :=
         fun q hq => ih _ (hx ▸ hq) q rfl
       cases mode with
       | reg =>
@@ -607,57 +621,70 @@ theorem searchO {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
                       | .imp A B, _, hYante, hYΨ' =>
                           have hAW : A = W := hYante
                           have hnA : ¬ EvalI D Ψ A := by rw [hAW]; exact hnW
-                          refine byDec
-                            (inferInstance : Decidable (A.size < (Form.circ Z).size))
-                            (fun hsz => ?_)
-                            (fun hnsz => bigAnte Ψ A B Z hΩai hYΨ' hC hnA hnsz)
                           obtain ⟨lY, rY, hYsplit⟩ := List.append_of_mem hYΨ'
                           obtain ⟨hAsf, hBsf⟩ := sfL_imp (hΨ _ hYΨ')
                           have hΓ : Ψ ≐ .imp A B :: (lY ++ rY) := by
                             rw [hYsplit]; exact ctxEq_split
                           have hmemsub : ∀ V ∈ lY ++ rY, V ∈ Ψ :=
                             fun V hV => (hΓ V).mpr (List.mem_cons_of_mem _ hV)
-                          obtain ⟨d₁⟩ := IH (.irr, .imp A B :: (lY ++ rY), A)
-                            (wgKeep (fun V hV => .base ((hΓ V).mp hV)) (by
-                              have hgoal' := seqSize_goal (Ψ := lY ++ rY) hsz
-                              show seqSize (Form.imp A B :: (lY ++ rY)) A
-                                < seqSize Ψ (Form.circ Z)
-                              rw [hYsplit, seqSize_split, seqSize_cons]
-                              omega))
-                            (by
-                              intro V hV
-                              rcases List.mem_cons.mp hV with rfl | hV'
-                              · exact hΨ _ hYΨ'
-                              · exact hΨ V (hmemsub V hV'))
-                            (by
-                              intro _ V hV
-                              rcases List.mem_cons.mp hV with rfl | hV'
-                              · exact hg _ hYΨ'
-                              · exact hg V (hmemsub V hV'))
-                            hAsf (fun h => hnA (evalI_ctxEq (ctxEq_symm hΓ) h))
-                          obtain ⟨d₂⟩ := IH (.irr, B :: (lY ++ rY), Form.circ Z)
-                            (by
-                              refine wgKeep (fun V hV => ?_) ?_
-                              · rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
+                          have hclA : ∀ V ∈ Ψ, Clo (Form.imp A B :: (lY ++ rY)) V :=
+                            fun V hV => .base ((hΓ V).mp hV)
+                          have go : ∀ _hsz : A.hasCirc = false ∨
+                              A.size < (Form.circ Z).size,
+                              Nonempty (GbuIC G Ψ (Form.circ Z)) := by
+                            intro hsz
+                            obtain ⟨d₁⟩ := IH (.irr, .imp A B :: (lY ++ rY), A)
+                              (by
+                                rcases hsz with hfree | hlt
+                                · exact wgTpLt hclA (tpC_free_lt_circ hfree)
+                                · refine wgKeep hclA ?_ (tpC_le_circ _ _)
+                                  have hgoal' := seqSize_goal (Ψ := lY ++ rY) hlt
+                                  show seqSize (Form.imp A B :: (lY ++ rY)) A
+                                    < seqSize Ψ (Form.circ Z)
+                                  rw [hYsplit, seqSize_split, seqSize_cons]
+                                  omega)
+                              (by
+                                intro V hV
+                                rcases List.mem_cons.mp hV with rfl | hV'
+                                · exact hΨ _ hYΨ'
+                                · exact hΨ V (hmemsub V hV'))
+                              (by
+                                intro _ V hV
+                                rcases List.mem_cons.mp hV with rfl | hV'
+                                · exact hg _ hYΨ'
+                                · exact hg V (hmemsub V hV'))
+                              hAsf (fun h => hnA (evalI_ctxEq (ctxEq_symm hΓ) h))
+                            obtain ⟨d₂⟩ := IH (.irr, B :: (lY ++ rY), Form.circ Z)
+                              (by
+                                refine wgKeep (fun V hV => ?_) ?_
+                                · rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
+                                  · exact .imp (.base List.mem_cons_self)
+                                  · exact .base (List.mem_cons_of_mem _ hV')
+                                · show seqSize (B :: (lY ++ rY)) (Form.circ Z)
+                                    < seqSize Ψ (Form.circ Z)
+                                  rw [hYsplit, seqSize_split, seqSize_cons]
+                                  have hb : B.size < (Form.imp A B).size :=
+                                    Nat.lt_succ_of_le (Nat.le_add_left _ _)
+                                  omega)
+                              (by
+                                intro V hV
+                                rcases List.mem_cons.mp hV with rfl | hV'
+                                · exact hBsf
+                                · exact hΨ V (hmemsub V hV'))
+                              (fun h => Bool.noConfusion h) hC
+                              (fun h => hne (gbuInv14 hsat hg (fun V hV => by
+                                rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
                                 · exact .imp (.base List.mem_cons_self)
-                                · exact .base (List.mem_cons_of_mem _ hV')
-                              · show seqSize (B :: (lY ++ rY)) (Form.circ Z)
-                                  < seqSize Ψ (Form.circ Z)
-                                rw [hYsplit, seqSize_split, seqSize_cons]
-                                have hb : B.size < (Form.imp A B).size :=
-                                  Nat.lt_succ_of_le (Nat.le_add_left _ _)
-                                omega)
-                            (by
-                              intro V hV
-                              rcases List.mem_cons.mp hV with rfl | hV'
-                              · exact hBsf
-                              · exact hΨ V (hmemsub V hV'))
-                            (fun h => Bool.noConfusion h) hC
-                            (fun h => hne (gbuInv14 hsat hg (fun V hV => by
-                              rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
-                              · exact .imp (.base List.mem_cons_self)
-                              · exact .base (List.mem_cons_of_mem _ hV')) h))
-                          exact ⟨.limpLI d₁ d₂ hsz hC hΓ⟩
+                                · exact .base (List.mem_cons_of_mem _ hV')) h))
+                            exact ⟨.limpLI d₁ d₂ hsz hC hΓ⟩
+                          refine byDec
+                            (inferInstance : Decidable (A.hasCirc = false))
+                            (fun hfree => go (Or.inl hfree)) (fun hnfree => ?_)
+                          refine byDec
+                            (inferInstance : Decidable (A.size < (Form.circ Z).size))
+                            (fun hlt => go (Or.inr hlt))
+                            (fun hnlt => bigAnte Ψ A B Z hΩai hYΨ' hC hnA
+                              (fun hc => hc.elim hnfree hnlt))
                 · -- a modal formula in the context: `L◯ᵢ`
                   have hYc' : Y.isCirc = true := by
                     cases hb : Y.isCirc with
