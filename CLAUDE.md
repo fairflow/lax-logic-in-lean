@@ -33,9 +33,15 @@ see rule 7).
    registered tool; this file never carries tool detail. One standing
    NEVER lives here too: never drive discovery through the decidability
    theorem (`decideFuel`) — its fuel bounds are infeasible.
-5. **Worktrees.** Before building in a fresh Claude worktree:
-   `cp -Rc <repo-root>/.lake .lake` (APFS clone). Never remove a
-   worktree to tidy up.
+5. **Worktrees and branches.** Before building in a fresh Claude
+   worktree: `cp -Rc <repo-root>/.lake .lake` (APFS clone). Never
+   remove a worktree to tidy up. **Worktree branch names
+   (`claude/…-<hash>`) are LOCAL ONLY — never push them.** A campaign
+   pushes to a durable, human-named branch with an explicit refspec:
+   `scripts/campaign-push.sh frj-dev`, i.e.
+   `git push origin HEAD:frj-dev`. The `pre-push` hook in
+   `scripts/hooks/` enforces this; install it once per clone with
+   `scripts/install-hooks.sh`.
 6. **Delivery.** Matthew cannot open worktree paths (and often not repo
    paths) from the session UI: inline short content in full; publish
    documents as Artifacts; `open <path>` commands for local HTML.
