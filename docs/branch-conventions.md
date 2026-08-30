@@ -168,7 +168,7 @@ was written:
 |---|---|---|---|
 | `frj-dev` | `ace04e0` 08-30 | 7 | clean |
 | `ljfo-dev` | `78a985c` 08-09 | 34 | clean, but 34 files is not "the tooling commits" |
-| `publication/core` | `78a985c` 08-09 | 729 | **conflicts**: `.gitignore`, `HANDOFF.md`, `README.md`, `scripts/all-targets.py` |
+| `publication/core` | `78a985c` 08-09 | 729 | **conflicts** on 4 paths — but only 2 are tooling's, see the trap below |
 
 For the two older lines the delta from the merge base is most of the summer's
 work on `main`, not the tooling commits — and it is those two, not the ones I
@@ -176,15 +176,49 @@ checked first, that would receive `LaxLogic/ToolkitTest/`, `HANDOFF.md` and
 `README.md` along with the tooling.
 
 **Before merging `tooling` into a campaign that predates `ace04e0`, bring the
-campaign current with `main` first**, then merge `tooling`; the delta is small
-again. A stale branch is the cause here, and no branch topology fixes it —
-`tooling` cannot be rooted below the point where `prover-toolkit/` exists.
+campaign current with `main` first.** Measured, not reasoned: merging `main`
+into `ljfo-dev` is clean, moves its merge-base with `tooling` from `78a985c`
+to `909e7db`, and takes the delta from 34 files to 16; `tooling` then merges
+clean.
 
-The available hardening, if this bites: re-root `tooling` at `main` rather
-than `ace04e0`. That would drop `LaxLogic/ToolkitTest/` and the challenge
-proofs from its tree, so no campaign could ever receive them from a tooling
-merge. It costs a rebase and a force-push, and it still does nothing for a
-campaign that has not merged `main`.
+**It does not fully work for `publication/core.`** Merging `main` there
+conflicts on `HANDOFF.md` and `README.md`, and after resolving that, merging
+`tooling` still conflicts on `.gitignore` and `scripts/all-targets.py`. The
+remedy takes that branch from four conflicts to two; it does not remove them.
+
+Re-rooting `tooling` at `main` is **not** a fix, though an earlier version of
+this file said it was. `origin/main` already contains all six
+`LaxLogic/ToolkitTest/` files, in their `sorry`-carrying form, so re-rooting
+would not drop them from the tree — it would only change which version
+crosses in a merge. If those paths ever must not travel, the fix is to remove
+them from `tooling`'s tree, not to move its base.
+
+### The `publication/core` trap: take OURS for `README.md` and `HANDOFF.md`
+
+Of the four conflicts a `tooling` merge raises on `publication/core`, **only
+two are tooling's**. `tooling` does not touch `HANDOFF.md` or `README.md` at
+all relative to `main` — those conflicts are `publication/core`-versus-`main`
+drift, and *any* merge from a main-descended branch hits them.
+
+They are dangerous precisely because they look incidental.
+`publication/core` carries the rich public front page — `README.md` 304 lines,
+`HANDOFF.md` 1077 — where `main` has the short ones, 16 and 183. So the merge
+presents as *"delete 300 lines of the public README"*, and a resolver who
+takes theirs, or reaches for `-X theirs` to get past the noise, guts the
+published front page.
+
+**Merging anything into `publication/core`: take `--ours` for both files.**
+The rest of the recipe, verified in a throwaway worktree:
+
+| path | resolution |
+|---|---|
+| `README.md`, `HANDOFF.md` | `--ours` — keep publication/core's |
+| `.gitignore` | union; `tooling` adds only `__pycache__/` and `*.pyc` |
+| `scripts/all-targets.py` | either side (see below) |
+
+No build risk: `publication/core`'s lakefile has `defaultTargets = ["Core"]`
+and the `LaxLogic` lib has no globs, so `LaxLogic/ToolkitTest/` is inert
+unless imported, and it is not.
 
 ### Known divergence: `scripts/all-targets.py`
 
