@@ -1,58 +1,15 @@
 [
   {
-    "name": "subHeadOut",
-    "file": "LaxLogic/ToolkitTest/Challenge2/subHeadOut.lean",
-    "group": "ljf-measure",
-    "source_file": "LaxLogic/LJF.lean",
-    "source_line": 2729,
-    "proof_lines": 7,
-    "external_citations": [
-      "List.mem_append.mp",
-      "List.mem_append_left",
-      "List.mem_append_right",
-      "List.mem_cons.mp",
-      "List.mem_cons_of_mem",
-      "List.mem_cons_self"
-    ],
-    "proof_external_citations": [
-      "List.mem_append.mp",
-      "List.mem_append_left",
-      "List.mem_append_right",
-      "List.mem_cons.mp",
-      "List.mem_cons_of_mem",
-      "List.mem_cons_self"
-    ],
-    "max_visible_twin": 0.5
-  },
-  {
-    "name": "force_hered",
-    "file": "LaxLogic/ToolkitTest/Challenge2/force_hered.lean",
-    "group": "soundness",
-    "source_file": "LaxLogic/PLLKripke.lean",
-    "source_line": 61,
-    "proof_lines": 11,
-    "external_citations": [
-      "C.Ri",
-      "C.W",
-      "C.hered_F",
-      "C.hered_V",
-      "C.trans_i",
-      "PLLFormula"
-    ],
-    "proof_external_citations": [
-      "C.hered_F",
-      "C.hered_V",
-      "C.trans_i"
-    ],
-    "max_visible_twin": 0.0
-  },
-  {
     "name": "map_unNeg_negOf",
-    "file": "LaxLogic/ToolkitTest/Challenge2/map_unNeg_negOf.lean",
+    "file": "LaxLogic/ToolkitTest/Challenge/map_unNeg_negOf.lean",
+    "punched_module": "LaxLogic.ToolkitTest.Punched.LJFComplete",
+    "punched_file": "LaxLogic/ToolkitTest/Punched/LJFComplete.lean",
     "group": "completeness",
     "source_file": "LaxLogic/LJFComplete.lean",
     "source_line": 180,
     "proof_lines": 7,
+    "challenge_lines": 16,
+    "statement": "theorem map_unNeg_negOf {\u0393 : List PLLFormula} (h : \u2200 \u03c8 \u2208 \u0393, PLLND.isIPL \u03c8) :\n    (\u0393.map negOf).map unNeg = \u0393",
     "external_citations": [
       "List.map_cons",
       "List.mem_cons_of_mem",
@@ -64,39 +21,90 @@
       "List.mem_cons_of_mem",
       "List.mem_cons_self"
     ],
-    "max_visible_twin": 0.0
+    "max_visible_twin": 0.0,
+    "needed": [
+      "List.map_cons",
+      "List.mem_cons_of_mem",
+      "List.mem_cons_self",
+      "PLLFormula",
+      "negOf",
+      "unNeg",
+      "unNeg_negOf_isIPL"
+    ]
   },
   {
-    "name": "iff_G4c_isIPL",
-    "file": "LaxLogic/ToolkitTest/Challenge2/iff_G4c_isIPL.lean",
+    "name": "pfreeCtx",
+    "file": "LaxLogic/ToolkitTest/Challenge/pfreeCtx.lean",
+    "punched_module": "LaxLogic.ToolkitTest.Punched.LJFComplete",
+    "punched_file": "LaxLogic/ToolkitTest/Punched/LJFComplete.lean",
     "group": "completeness",
-    "source_file": "LaxLogic/PLLG4ipComplete.lean",
-    "source_line": 194,
-    "proof_lines": 1,
+    "source_file": "LaxLogic/LJFComplete.lean",
+    "source_line": 497,
+    "proof_lines": 4,
+    "challenge_lines": 16,
+    "statement": "theorem pfreeCtx {p : String} {\u0394 : List PLLFormula}\n    (h : \u2200 \u03c8 \u2208 \u0394, PFree p \u03c8) : LJF.PFreeCtx p (\u0394.map negOf)",
     "external_citations": [
-      "G4c",
-      "G4c.ofG4p",
-      "G4p.ofG4",
-      "PLLFormula",
-      "isIPL"
+      "List.mem_map.mp",
+      "PLLFormula"
     ],
     "proof_external_citations": [
-      "G4c.ofG4p",
-      "G4p.ofG4"
+      "List.mem_map.mp"
     ],
-    "max_visible_twin": 0.0
+    "max_visible_twin": 0.0,
+    "needed": [
+      "List.mem_map.mp",
+      "PFree",
+      "PLLFormula",
+      "negOf",
+      "pfree_negOf"
+    ]
   },
   {
     "name": "isIPL_erase",
-    "file": "LaxLogic/ToolkitTest/Challenge2/isIPL_erase.lean",
+    "file": "LaxLogic/ToolkitTest/Challenge/isIPL_erase.lean",
+    "punched_module": "LaxLogic.ToolkitTest.Punched.PLLNDCore",
+    "punched_file": "LaxLogic/ToolkitTest/Punched/PLLNDCore.lean",
     "group": "nd-core",
     "source_file": "LaxLogic/PLLNDCore.lean",
     "source_line": 51,
     "proof_lines": 2,
+    "challenge_lines": 16,
+    "statement": "@[simp]\nlemma isIPL_erase (\u03c6 : PLLFormula) : isIPL (erase \u03c6)",
     "external_citations": [
       "PLLFormula"
     ],
     "proof_external_citations": [],
-    "max_visible_twin": 0.0
+    "max_visible_twin": 0.0,
+    "needed": [
+      "PLLFormula",
+      "erase",
+      "isIPL"
+    ]
+  },
+  {
+    "name": "conservativity_IPL",
+    "file": "LaxLogic/ToolkitTest/Challenge/conservativity_IPL.lean",
+    "punched_module": "LaxLogic.ToolkitTest.Punched.PLLNDCore",
+    "punched_file": "LaxLogic/ToolkitTest/Punched/PLLNDCore.lean",
+    "group": "nd-core",
+    "source_file": "LaxLogic/PLLNDCore.lean",
+    "source_line": 226,
+    "proof_lines": 3,
+    "challenge_lines": 18,
+    "statement": "/-- **Conservativity, classic form.**  If context and conclusion are already\nIPL, a PLL derivation yields an IPL derivation of the same sequent. -/\ntheorem conservativity_IPL {\u0393 : List PLLFormula} {\u03c6 : PLLFormula}\n    (h\u03c6 : isIPL \u03c6) (h\u0393 : \u2200 \u03c8 \u2208 \u0393, isIPL \u03c8) (p : LaxND \u0393 \u03c6) : IPLND \u0393 \u03c6",
+    "external_citations": [
+      "PLLFormula"
+    ],
+    "proof_external_citations": [],
+    "max_visible_twin": 0.0,
+    "needed": [
+      "IPLND",
+      "LaxND",
+      "PLLFormula",
+      "conservativity_prop",
+      "erase_eq_self_of_isIPL",
+      "isIPL",
+      "map_erase_eq_self"
+    ]
   }
 ]
