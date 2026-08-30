@@ -14,7 +14,3 @@ mutually confluent, so a PCLL claim wants `#refuteConf`, not `#refute`.
 `LaxLogic/PLLSearchDemo.lean` is the same manual as a file to step through in
 the info view.
 
-## Superceded by 
-https://github.com/AviCraimer/lax-logic-in-lean/tree/matthew-develop
-
-
