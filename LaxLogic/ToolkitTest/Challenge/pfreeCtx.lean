@@ -1,4 +1,4 @@
-/- Challenge: `map_unNeg_negOf`.  Group: completeness.
+/- Challenge: `pfreeCtx`.  Group: completeness.
    Replace the `sorry`.  Do not look for the original proof.
 
    Deliberately not stated here: where this comes from, how long the known
@@ -9,8 +9,8 @@ namespace LJFIPC
 
 open PLLND (LaxND SCh SC)
 
-theorem map_unNeg_negOf {Γ : List PLLFormula} (h : ∀ ψ ∈ Γ, PLLND.isIPL ψ) :
-    (Γ.map negOf).map unNeg = Γ := by
+theorem pfreeCtx {p : String} {Δ : List PLLFormula}
+    (h : ∀ ψ ∈ Δ, PFree p ψ) : LJF.PFreeCtx p (Δ.map negOf) := by
   sorry
 
 end LJFIPC
