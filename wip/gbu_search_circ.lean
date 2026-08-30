@@ -1028,20 +1028,20 @@ private theorem not_clo_nil_circ_atom : ¬ Clo [] (Form.circ pv) := by
 The tag of step 1 is `blocked`, which is why step 3 must be the JOIN and
 not `◯∈` — `not_clean_of_clo_circ` forbids the latter.  The dirty tag is
 the whole content of the cell. -/
-theorem provableV_Gcc : ProvableV Gcc := by
-  have hax : FRJVi Gcc [] (rm (gAt Gcc) pv ++ gImp Gcc ++ gCirc Gcc) pv :=
+def GccWitness : (Γ : List Form) × FRJVr Gcc .barren Γ Gcc :=
+  let hax : FRJVi Gcc [] (rm (gAt Gcc) pv ++ gImp Gcc ++ gCirc Gcc) pv :=
     .axI pv rfl (by decide) (CtxEq.refl _)
-  have hjoin := FRJVr.joinAtF (G := Gcc) (n := 0)
+  let hjoin := FRJVr.joinAtF (G := Gcc) (n := 0)
     (stab := fun _ => []) (rhs := fun _ => pv) (F := pv)
     (fun _ => hax)
     (by intro i j h;
         exact absurd ((Fin.fin_one_eq_zero i).trans (Fin.fin_one_eq_zero j).symm) h)
     (by intro A B h; simp [unionAll, impPart] at h)
     rfl (by simp [unionAll, atPart]) (by decide) (CtxEq.refl _)
-  have hirr : FRJVi Gcc [] [] (Form.imp (.circ pv) pv) :=
+  let hirr : FRJVi Gcc [] [] (Form.imp (.circ pv) pv) :=
     .impNotIn hjoin (fun X hX => absurd hX List.not_mem_nil)
       (.base (by decide)) not_clo_nil_circ_atom (by decide)
-  exact ⟨.barren, _, ⟨FRJVr.joinCirc (G := Gcc) (n := 0)
+  ⟨_, FRJVr.joinCirc (G := Gcc) (n := 0)
     (stab := fun _ => []) (th := fun _ => [])
     (rhs := fun _ => Form.imp (.circ pv) pv)
     (fun _ => hirr)
@@ -1051,7 +1051,10 @@ theorem provableV_Gcc : ProvableV Gcc := by
     (by simp [unionAll, circPart])
     (keptChainRestrict _ _)
     (.ups (by simp [upsilon]))
-    (by decide) (CtxEq.refl _)⟩⟩
+    (by decide) (CtxEq.refl _)⟩
+
+theorem provableV_Gcc : ProvableV Gcc :=
+  ⟨.barren, GccWitness.1, ⟨GccWitness.2⟩⟩
 
 /-- **`◯(◯p ⊃ p)` is NOT PLL-valid** — the open question of §2026-08-30k,
 closed by the calculus itself rather than by a hand-built model. -/
@@ -1060,8 +1063,7 @@ theorem not_pll_Gcc : ¬ PLL Gcc := soundnessV provableV_Gcc
 
 /-- The countermodel itself, extracted from the derivation by `modR`. -/
 theorem countermodel_Gcc : ∃ K : Kripke, Countermodel K Gcc := by
-  obtain ⟨t, Γ, ⟨d⟩⟩ := provableV_Gcc
-  exact ⟨FRJ.V.modR d, FRJ.V.modR_countermodel d⟩
+  exact ⟨FRJ.V.modR GccWitness.2, FRJ.V.modR_countermodel GccWitness.2⟩
 
 /-- info: 'FRJ.Gbu.provableV_Gcc' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
@@ -1074,5 +1076,63 @@ theorem countermodel_Gcc : ∃ K : Kripke, Countermodel K Gcc := by
 /-- info: 'FRJ.Gbu.countermodel_Gcc' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms countermodel_Gcc
+
+/-! ### The extracted model, burned in
+
+`preR`/`modR` build the countermodel FROM the derivation.  Dumping it is
+a closed computation, so the model below is checked by the build, not
+asserted in prose. -/
+
+private def ppF : Form → String
+  | .atom p => p
+  | .bot => "⊥"
+  | .and a b => s!"({ppF a} ∧ {ppF b})"
+  | .or a b => s!"({ppF a} ∨ {ppF b})"
+  | .imp a .bot => s!"¬{ppF a}"
+  | .imp a b => s!"({ppF a} ⊃ {ppF b})"
+  | .circ a => s!"◯{ppF a}"
+
+private def ppL (l : List Form) : String :=
+  if l.isEmpty then "·" else String.intercalate ", " (l.map ppF)
+
+/-- Dump the model a derivation extracts: worlds, labels, `≤`, `Rm`,
+fallibility. -/
+def dumpModel {G : Form} {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJVr G t Γ C) : String :=
+  let P := FRJ.V.preR d
+  let ws := P.elems
+  let ix : P.W → Nat := fun w => ws.findIdx (fun x => decide (x = w))
+  let leOf : P.W → List Nat := fun w =>
+    (ws.filter (fun v => @decide (P.le w v) (P.decLe w v))).map ix
+  let rmOf : P.W → List Nat := fun w =>
+    (ws.filter (fun v => @decide (P.rm w v) (P.decRm w v))).map ix
+  let falOf : P.W → Bool := fun w => @decide (P.fal w) (P.decFal w)
+  let lines := ws.map (fun w =>
+    let tag := if falOf w then "FALLIBLE" else "        "
+    s!"  w{ix w} {tag}  lbl = [{ppL (P.lbl w)}]  le -> {leOf w}  rm -> {rmOf w}")
+  s!"root = w{ix P.root}, worlds = {ws.length}\n" ++ String.intercalate "\n" lines
+
+/-!  The countermodel for `◯(◯p ⊃ p)`, as the derivation builds it.
+
+`w0` is the barren root of the `⋈^◯` conclusion — its modal cone is
+`{w0}`, which IS the `barren` tag.  `w1` is the `⋈^At_F` world: its cone
+is `{w1, w2}` and contains the fallible `w2`, which is the `blocked` tag.
+So `w1 ⊩ ◯p` (through the fallible successor) while `w1 ⊮ p`, hence
+`w1 ⊮ ◯p ⊃ p`; and `w0`'s only modal successor is `w0` itself, which
+refutes `◯p ⊃ p` for the same reason — so `w0 ⊮ ◯(◯p ⊃ p)`.
+
+This is `rnc_ref_1_5`'s three-world model, up to reversal of the
+indexing.
+
+`#guard_msgs` below pins the dump, so the model is checked by the build. -/
+
+/--
+info: root = w0, worlds = 3
+  w0           lbl = [·]  le -> [0, 1, 2]  rm -> [0]
+  w1           lbl = [◯p]  le -> [1, 2]  rm -> [1, 2]
+  w2 FALLIBLE  lbl = [◯p]  le -> [2]  rm -> [2]
+-/
+#guard_msgs in
+#eval IO.println (dumpModel GccWitness.2)
 
 end FRJ.Gbu
