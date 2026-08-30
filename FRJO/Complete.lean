@@ -28,9 +28,13 @@ namespace FRJO
 
 open PLLND PLLFormula
 
-/-- **W5, the one open statement**: every sequent with a BUILT
-countermodel has an FRJ◯ derivation whose stable zone the context
-enters. -/
+/-- **W5**: every sequent with a BUILT countermodel has an FRJ◯
+derivation whose stable zone the context enters.
+
+**PROVED** (2026-08-16) as `FRJO.reconstruction` in `FRJO/Recon.lean`,
+so `completenessFRJO` below is unconditional — see
+`FRJO.completenessFRJO'`.  The proof's content is the choice-free
+`FRJO.recon`, pinned `[propext, Quot.sound]`. -/
 def Reconstruction (b : Nat) : Prop :=
   ∀ (Γ : List PLLFormula) (C : PLLFormula)
     (M : PLLND.ConstraintModel) (r : M.W),
@@ -52,7 +56,12 @@ theorem completenessFRJO {b : Nat} (hR : Reconstruction b)
 
 /-- And the two-sided reading: with `ExtractForces` (W3b) as well,
 derivability of the refutation calculus is EXACTLY underivability —
-the biconditional that makes "REFUTED" a derivation. -/
+the biconditional that makes "REFUTED" a derivation.
+
+**CAUTION (2026-08-16)**: `ExtractForces` is REFUTED for `worldOK` v3
+(`FRJO/Screen.lean`, three certified cells), so this theorem is
+currently VACUOUS.  It becomes usable only with the v4 repair of the
+`world` rule specified there. -/
 theorem frjd_iff_not_laxND {b : Nat} {Γ : List PLLFormula} {C : PLLFormula}
     (hE : ExtractForces ⟨Γ, C⟩ b) :
     (∃ S : Reg ⟨Γ, C⟩, S.goal = C ∧ Γ ⊆ S.stable ∧

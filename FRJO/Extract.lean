@@ -12,7 +12,12 @@ every use today.
 W3b — the once-and-for-all theorem `extract_forces` (root forces the
 stable zone, refutes the goal; by induction on the derivation,
 consuming `Reject.addRoot_force_some`/`join_force_comp`/
-`boxRefuteHere`/`boxRefuteAbove`) — is STATED and OPEN.  Until it
+`boxRefuteHere`/`boxRefuteAbove`) — is STATED and, for `worldOK` v3,
+**REFUTED** (`FRJO/Screen.lean`, 2026-08-16: three certified cells).
+v3 constrains the stable zone only by membership in the universe, so a
+`world` node may carry a zone no world forces; the v4 repair is
+specified and checked in that file.  Until it lands, everything below
+that depends on `ExtractForces` is VACUOUS.  Until it
 lands, soundness of each concrete refutation is delivered by
 `FinCM.checkB` + `not_provable_of_check`, the same trust base as the
 rest of the repo; the theorem retires the per-instance gate.
@@ -86,7 +91,9 @@ def extract (G : Cell) (b : Nat) : {S : Reg G} → FRJD G b S → FinCM
               rmC := (x, z) :: rmC; changed := true
       return ⟨n, riC, rmC, fal, val⟩
 
-/-- **W3b, OPEN**: extraction is sound, once and for all. -/
+/-- **W3b**: extraction is sound, once and for all.  **REFUTED for
+`worldOK` v3** — `FRJO.not_extractForces_bot`/`_and`/`_mp` in
+`FRJO/Screen.lean`. -/
 def ExtractForces (G : Cell) (b : Nat) : Prop :=
   ∀ (S : Reg G) (d : FRJD G b S),
     FinCM.checkB (extract G b d) 0 S.stable S.goal = true

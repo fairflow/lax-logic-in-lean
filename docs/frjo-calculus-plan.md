@@ -203,3 +203,35 @@ analysis in `FRJO/HANDOVER.md`, which is the fresh session's brief.
 The join case reduces further than §3.2 hoped: component worlds are a
 one-liner via `join_force_comp`; only the root case's inner induction
 on the goal (with the realiser/leaf dichotomy) is real work.
+
+
+---
+
+## Addendum, 2026-08-16 evening — W5 CLOSED, W3b REFUTED for v3
+
+Branch `claude/frjo-completeness`.
+
+**W5 is done.** `Reconstruction` and `ReconstructionSolo` are PROVED
+(`FRJO/Recon.lean`), so `completenessFRJO` is unconditional
+(`FRJO.completenessFRJO'`).  The Lemma-1 analogue the plan called "the
+ONE genuinely new induction" is `FRJO.recon`: structural induction on
+`Reject.Built`, inner induction on the goal at each root, with the
+join's root case running the realiser/leaf dichotomy
+(`FRJO.exists_cone_kids`).  It is CHOICE-FREE, pinned
+`[propext, Quot.sound]`, over the `Effective` package.
+
+**W3b is refuted for worldOK v3** (`FRJO/Screen.lean`, three certified
+cells).  The reason is not v2's — no budget is read any more — but the
+opposite: v3 constrains the zone only by membership in the universe, so
+the `world` rule admits zones that no world forces.  §3's commitment (3)
+("extraction soundness, once and for all") therefore cannot be
+discharged against the current rule table, and the biconditional of §3
+is still OPEN.  The v4 repair is specified in that file, its zone half
+is coded and checked both ways, and the design decision it forces (the
+five goal-directed rules become derived, and two of them are separately
+extraction-unsound as written) is recorded in `docs/disproof-handoff.md`
+§2026-08-16 (evening) for Matthew.
+
+**W4** (searcher + 302-cell corpus) should wait for the v4 rule table:
+a searcher emitting `FRJD` v3 would emit certificates that do not
+certify.
