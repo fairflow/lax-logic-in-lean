@@ -304,7 +304,7 @@ The `◯`-extension's obligation therefore does not sit here. -/
 `Nonempty` derivations into the join's premise FAMILY, and provable by
 induction because the index type is finite — `Classical.choice` is not
 required and must not be used. -/
-private theorem finPi : ∀ {n : Nat} {X : Fin (n + 1) → Type},
+theorem finPi : ∀ {n : Nat} {X : Fin (n + 1) → Type},
     (∀ j, Nonempty (X j)) → Nonempty (∀ j, X j)
   | 0, X, h =>
       (h 0).elim (fun x0 => ⟨fun j => Fin.cases x0 (fun i => i.elim0) j⟩)
@@ -327,7 +327,7 @@ private theorem keptChainRestrict {n : Nat} {rhs : Fin (n + 1) → Form}
 /-- Finite choice for existentials, the `∃`-form of `finPi`.  `choose`
 would do this but pulls `Classical.choice`; over a finite index type it
 is a theorem. -/
-private theorem finEx : ∀ {n : Nat} {α : Type} {P : Fin (n + 1) → α → Prop},
+theorem finEx : ∀ {n : Nat} {α : Type} {P : Fin (n + 1) → α → Prop},
     (∀ j, ∃ x, P j x) → ∃ g : Fin (n + 1) → α, ∀ j, P j (g j)
   | 0, _, _, h => by
       obtain ⟨x0, hx0⟩ := h 0

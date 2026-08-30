@@ -2366,3 +2366,67 @@ Two lemmas were needed and are reusable:
 `not_evalR_of_valid` is worth keeping in view for the whole campaign: it
 converts "this is PLL-valid" into "no database refutes it", which is the
 (BSr1) side of every `BSearch` argument.
+
+## 2026-08-30a — seam 1 CLOSED (the fallible join); §5 reorganised into paper order
+
+Branch `claude/frjv-completeness-693c52`, worktree `strange-thompson-902a24`.
+
+**Item 2 of `docs/gbu-circ-seams.md` answered, and the prediction was
+wrong.**  The seam-1 prime-goal gap does not exist.  I had reasoned that
+`Ω ⇒g F` (F prime, `◯Y ∈ Ω`) would be neither Gbu◯-provable nor
+FRJV-refutable, because the PROMISE join's `hJ5` asks, at `Y = F`, for a
+row refuting `F` whose context closes `F`.  What I missed: the promise
+join is not the only one.  The FALLIBLE join `⋈^At_F` has no modal side
+condition and keeps the whole modal zone.  Kernel-checked, in FRJ◯, not
+in the search engine:
+
+* `provableV_counit` — the derivation of `◯p ⊃ p` written out (`Ax^I`
+  gives `∅ ; {◯p} → p`; `⋈^At_F` puts `◯p` in the context; `⊃∈`);
+* `gbuSuccAtF` / `gbuSuccOrF` — Lemmas 11 and 12 with `Ω ⊆ Ĝ` in FULL
+  three-zone form, by swapping `⋈^At`/`⋈^∨` for their fallible twins.
+  The `hcirc = []` premise was the only place ◯-freeness was used.
+  Negative-tested: reinstating it leaves an unsolved goal.
+
+Two supporting findings.  (1) The **6-cell residue was already CLOSED**
+(2026-08-26): 4/6 kernel-checked in `Certified/RhoFRJV.lean`, 2/6 engine
+hits at jmax=4; every miss was the join-arity cap.  My memory was a day
+stale — the standing rule "search the record before treating a finding
+as new" caught it only after I had re-derived part of it.  (2) A
+462-cell syntactic sweep (`wip/gbu_residue_probe.lean`) shows the
+seam-1 configuration reachable in 283/297 of the cells the engine DID
+refute, so it could never have discriminated the six; the residue
+concentrates on consequent ρ18 (4/10 vs a 2% baseline) and antecedent
+ρ20, i.e. the ∨-side.  And the ρ-corpus is CLOSED, so its only prime
+formula is `⊥` and it contains no instance of seam 1 at a genuine atom
+(`wip/gbu_seam1_probe.lean` supplies them; all six PLL-invalid cells
+HIT, all three valid ones `none`).
+
+**`wip/gbu_circ.lean` reorganised into the paper's own order** (Lemma 7,
+Thm 6, Lemma 8, Thm 7, Lemma 9 clauses 11–13, Lemma 10, Lemma 11, Lemma
+12, Thms 8–10), with a status ledger at the head, and TWO re-run points
+so a change to either calculus edits one declaration:
+
+* `TagClean G D Z` — everything the modal layer takes from FRJ◯.  `◯∈`
+  and `◯∉` both carry `t = barren ∨ (t = chain W ∧ Covers Γ W Z)`, so a
+  row for `Z` lifts to `◯Z` only when its tag is clean.  Lemma 9's two
+  modal clauses (`gbuInv12`, `gbuInv13`) are then THEOREMS, and
+  `frjCircKit_of_tagClean` is the single declaration to edit when FRJ◯'s
+  tag discipline changes.
+* `FRJCircKit G D` — the whole interface as one record.
+* The three rules are given SEMANTICALLY, one lemma each, independent of
+  any inductive: `sound_lcirc` (pins `[propext]`), `sound_rcirc`
+  (axiom-FREE).  Writing the extended inductive later is a one-line
+  dispatch per constructor.
+
+`lcirc_goal_must_be_circ` REFUTES the unrestricted `L◯` with a two-world
+countermodel, so the ◯-shaped goal is a fact, not a style choice.
+
+**The live obligation, sharpened.**  `gbuSuccAtF`/`gbuSuccOrF` deliver
+`Tag.blocked` rows, and `blocked` is NOT clean: `◯∈`/`◯∉` cannot lift
+it.  So the fallible route and the `◯`-introduction route currently have
+INCOMPATIBLE TAGS.  That, not seam 1, is what stands between here and
+Theorem 8◯.
+
+**Next**: (a) settle the tag conflict — either a fallible `◯∈` (the way
+`RefAt` relaxed the barren joins) or a route that avoids `blocked`;
+(b) rebuild `SearchOk` over the store-carrying state `SeqU`.

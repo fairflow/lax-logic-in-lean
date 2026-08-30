@@ -61,48 +61,65 @@ subject only to soundness.  The complete list of `FRJV` rules with a
     ───────────────  L◯          (goal ◯-shaped)
     Ψ, ◯Z ⇒g ◯C
 
-* *Soundness*: `⋀(Ψ,◯Z) ⊃ ◯C` follows from `⋀(Ψ,Z) ⊃ ◯C` by ◯E.  With
-  an unrestricted goal the rule is **unsound** — `◯Z ⊬ Z` — so the
-  ◯-shape of the goal is not a convenience, it is the rule.
-* *Invertibility (`INV_L◯`)* is **free**: `D ▷ (Z::Ψ ⇒g C)` gives
-  `Z ∈ Cl(Γ)`, hence `◯Z ∈ Cl(Γ)` by the `Clo.circ` clause already in
-  `FRJ/Basic.lean:1127`.  No FRJ rule is applied, exactly as for
-  `L∧`/`L∨`/`L⊃`'s right premise.
-* *Measure*: `Cl(◯Z::Ψ) ⊆ Cl(Z::Ψ)` so `unclosed` does not rise, and
-  `|Z| < |◯Z|` so `seqSize` drops.  `Wg` is unaffected.
+* *Soundness*: `sound_lcirc` (`wip/gbu_circ.lean`), axiom pin
+  `[propext]`.  The ◯-shape of the goal is not a convenience:
+  `lcirc_goal_must_be_circ` REFUTES the unrestricted rule with a
+  two-world countermodel (`a ≤ b`, `Rm = ≤`, `p` only at `b`; the root
+  forces `◯p` and refutes `p`).
+* *Invertibility (`gbuInv11`)* is **free**, exactly as clauses 1, 3, 4:
+  `Clo Γ X → Clo Γ (◯X)` is already a constructor of the closure.
+* *Measure*: `ctxSize` drops, `unclosed` does not rise.
 
-**But `L◯` does not remove `◯` from the critical case.**  When the goal
-is not ◯-shaped, `◯Z` stays in the context and reaches the critical
-sequent.  So `Ĝ` must be widened to its three-zone form
+### The prime-goal gap: RESOLVED, it does not exist (2026-08-30)
 
-    Ĝ = Ĝ_at ∪ Ĝ_imp ∪ Ĝ_circ
+This section previously predicted that a critical sequent
 
-and **Lemmas 11 and 12 must be re-proved with a non-empty ◯ zone.**
-That is where the weight of the extension actually falls.  Both current
-proofs discharge the V-join's premise
+    Ω ⇒g F      F prime,   ◯Y ∈ Ω,   Ω ⊆ Ĝ
 
-    hcirc : ⋃ⱼ (Σⱼ)^◯ = []
+would be neither `Gbu◯`-provable (true — no rule can use `◯Y` to prove
+an atom) nor `FRJV`-refutable, because the promise join `⋈^At_P` demands
 
-from `Ω ⊆ Ĝ_at ∪ Ĝ_imp`; with ◯ admitted this is false and `joinAt` /
-`joinOr` no longer apply.  Their modal variants `joinAtP` / `joinOrP`
-apply instead, at the cost of a second, *regular* premise family `Δs`
-and the condition
+    hJ5 : ∀ Y, ◯Y ∈ ⋃ⱼ (Σⱼ)^◯ → ∃ i, Y ∈ Cl(Δ_i)      (Δ_i ⇒ F)
 
-    hJ5 : ∀ Y, ◯Y ∈ ⋃ⱼ (Σⱼ)^◯ → ∃ i, Y ∈ Cl(Δ_i).
+which for `Y = F` asks for a row REFUTING `F` whose context CLOSES `F`,
+and soundness forbids that.  **The prediction was wrong.**  The promise
+join is not the only one: the FALLIBLE join `⋈^At_F` carries no modal
+side condition and keeps the WHOLE modal zone,
 
-In `Search` terms this is a **new database query**, beside `▷`:
+    joinCtxCircF stab th  =  ⋃ⱼ (Σⱼ)^◯ ++ ⋂ⱼ (Θⱼ)^◯
 
-    for each ◯Y ∈ Ω:  ∃ (Δ ⇒ F) ∈ D  with  Y ∈ Cl(Δ)
+("a fallible witness forces every body, so no restriction is needed",
+`FRJ/Calculus.lean:148`).  Two machine-checked consequences:
 
-i.e. "some row refuting the goal already forces `Y`".  If that query
-fails for some `◯Y ∈ Ω`, the Search pattern says a non-invertible rule
-must fire — and the only candidate premise is `Ω, Y ⇒g F`, which is
-sound only when `F` is ◯-shaped, i.e. it collapses back into `L◯`.  For
-a **prime** goal `F` with `◯Y ∈ Ω` there is no rule at all: `◯Y` cannot
-help prove an atom.  So the cell is neither `Gbu◯`-provable nor (unless
-`hJ5` is dischargeable) `FRJV`-refutable.  **This is a candidate
-location for the residual incompleteness**, and it should be tested
-against the 6-cell residue before any rule is written.
+* **`provableV_counit`** — the FRJ◯ derivation of `◯p ⊃ p`, written out:
+  `Ax^I` at goal `p` gives `∅ ; {◯p} → p`; `⋈^At_F` puts `◯p` in the
+  conclusion context; `⊃∈` closes.  This is seam 1's sharpest instance
+  (`Y = F`) and PLL-invalid, so a complete calculus must reach it.
+* **`gbuSuccAtF`** — Lemma 11 with `Ω ⊆ Ĝ` in full three-zone form.  The
+  `hcirc : ⋃ⱼ (Σⱼ)^◯ = []` premise was the ONLY place ◯-freeness was
+  used, and `⋈^At_F` has no such premise.  Negative-tested: reinstating
+  that premise leaves an unsolved goal, so the fallible join is
+  load-bearing.  `gbuSuccOrF` is the same swap for Lemma 12.
+
+So at a prime goal the database always refutes, (BSr1) fails, and
+backward search never arrives.  **Seam 1 needs no rule beyond `L◯`.**
+The price is the tag: the join is `blocked`.
+
+### Why the ρ-corpus could not have told us this
+
+The 6-cell residue named here as the test is CLOSED, and has been since
+2026-08-26: four of the six have kernel-checked FRJV witnesses in
+`Certified/RhoFRJV.lean`, two were engine hits at `jmax = 4`; every miss
+was the join-ARITY cap, not a calculus gap.  A 462-cell syntactic sweep
+(`wip/gbu_residue_probe.lean`) adds that the seam-1 configuration is
+reachable in **283 of the 297** cells the engine did refute, so it could
+not have discriminated the six even had they been open; the residue
+concentrates on consequent ρ18 (4 of 10 refutable cells, against a 2%
+baseline) and antecedent ρ20 — the ∨-side.  And the corpus is CLOSED
+(`◯`/`⊥`, no propositional variables), so its only prime formula is `⊥`,
+where `Ω ⇒ ⊥` asks merely for an infallible root: it contains no
+instance of seam 1 at a genuine atom at all.  `wip/gbu_seam1_probe.lean`
+supplies them.
 
 ## Seam 2 — a `◯` goal in a regular sequent
 
@@ -254,9 +271,9 @@ saturated `Ω` is a one-point endpoint.
    the naive measure is impossible (`no_measure_stepC`) and the
    store-carrying `Wg◯` works (`stepU_wf`).  What remains is to rebuild
    `SearchOk` over `SeqU` and thread the derivation store.
-2. **Test Seam 1's prime-goal gap** against the known residue before
-   adding rules.  If the 6-cell residue lands there, the extension is
-   *not* a matter of adding rules and the calculus needs repair.
+2. ~~**Test Seam 1's prime-goal gap** against the known residue.~~
+   **DONE 2026-08-30**: the gap does not exist (above), and the residue
+   was already closed.
 3. **Then** add `L◯`, `R◯`, `R◯ₙᵢ` and re-prove Lemmas 11/12 over
    `joinAtP` / `joinOrP`, in that order, reusing every case of `search`
    verbatim (the ◯-free cases must still compile — that is the
