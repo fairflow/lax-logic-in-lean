@@ -2481,3 +2481,25 @@ and the missing fallible `◯`-join are the same fact.
 
 **Next**: Theorem 8◯ — rebuild `SearchOk` over the store-carrying `SeqU`
 with the ◯ critical cases; and the modal-zone case of Lemma 13.
+
+### 2026-08-30c — Lemma 13 modal case; `L⊃ᵢ`'s soundness isolated
+
+`sound_limp` (pins `[propext]`) answers Matthew's "`L⊃ᵢ` doesn't look
+valid": it is valid, and MORE generally than the rule states — plain
+modus ponens, for ANY goal and in either judgment.  The `◯`-shaped goal
+on `GbuIC.limpLI` is not a soundness condition; it is there only so the
+rule cannot fire on a `◯`-free goal, i.e. purely to keep `deCircI`
+total.  What the rule does change is the READING of `→g` (the paper's
+frozen context), which is the design cost already accepted.
+
+`gbuSuccCircP` — Lemma 13 for the MODAL zone, via `⋈^◯_P`.  `⋈^◯` has no
+fallible variant, and that is forced: a `⋈^◯` must make its root REFUTE
+`◯Z`, so its whole modal cone must refute `Z`, which a fallible world
+forbids.  The extra hypothesis is `PromiseWorld G Ω Z` — a derivation
+refuting `Z` from a `Δ` that covers `Ω`, carries a liftable tag, and
+REALISES every body of `Ω`'s modal zone.  That clause is the canonical
+model's `Rm Ω Δ iff {Y : ◯Y ∈ Ω} ⊆ Δ` from PLL's completeness theorem,
+turned into a database query.  Negative-tested: drop it and `hJ5` is
+underivable (the proof needs a sorry).
+
+Both pin `[propext, Quot.sound]` / `[propext]`.

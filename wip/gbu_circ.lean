@@ -117,6 +117,31 @@ theorem sound_rcirc {K : Kripke} {Ψ : List Form} {Z : Form}
   intro w hw b hwb
   exact ⟨b, K.rm_refl b, h b (K.forces_mono hwb hw)⟩
 
+/-- **`L⊃` is sound in EITHER judgment, and for ANY goal.**  It is plain
+modus ponens: the left premise gives `A` from `A⊃B, Ψ`; the implication
+is in the context, so `B` follows; the right premise then gives `C` from
+`B, Ψ`.  Nothing about the judgment or the shape of `C` enters.
+
+This is the answer to "`L⊃ᵢ` doesn't look valid": it is valid, and MORE
+generally than the rule states.  The `◯`-shaped goal on `GbuIC.limpLI`
+is not a soundness condition at all — it is there ONLY so the rule
+cannot fire on a `◯`-free goal, i.e. purely to keep `deCircI` total.
+What the irregular `L⊃` does change is the READING of `→g`: the paper's
+irregular judgment is "provable with the context frozen", and this rule
+unfreezes it.  That is the design cost we accepted, and it is a cost in
+proof-search discipline, not in soundness. -/
+theorem sound_limp {K : Kripke} {Ψ : List Form} {A B C : Form}
+    (h₁ : ∀ w : K.W, K.forces w (.imp A B :: Ψ) → K.force w A)
+    (h₂ : ∀ w : K.W, K.forces w (B :: Ψ) → K.force w C) :
+    ∀ w : K.W, K.forces w (.imp A B :: Ψ) → K.force w C := by
+  intro w h
+  have himp := h _ List.mem_cons_self
+  have hB := himp w (K.le_refl w) (h₁ w h)
+  refine h₂ w (fun X hX => ?_)
+  rcases List.mem_cons.mp hX with rfl | hX'
+  · exact hB
+  · exact h X (List.mem_cons_of_mem _ hX')
+
 /-! ### The `◯`-shaped goal of `L◯` is not a convenience
 
 `sound_lcirc` asserts the restriction; this refutes the unrestricted
@@ -821,6 +846,145 @@ theorem gbuSuccCirc {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
           have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
           exact (List.mem_filter.mp this).2
 
+/-! ## §10b  Lemma 13, the MODAL-zone case
+
+`gbuSuccCirc` assumed `Ω ⊆ Ĝ_at ∪ Ĝ_imp`, because `⋈^◯` carries
+`hcirc : ⋃ⱼ (Σⱼ)^◯ = []` and — unlike `⋈^At` and `⋈^∨` — has NO
+FALLIBLE variant to fall back on.  There is a reason: a `⋈^◯` must make
+its root REFUTE `◯Z`, i.e. its whole modal cone must refute `Z`, and a
+fallible world in that cone forces `Z`.  So the modal zone has to go
+through the PROMISE join `⋈^◯_P`, and its `hJ5` has to be discharged.
+
+`hJ5` is the canonical model's accessibility clause from PLL's
+completeness theorem,
+
+    Rm Γ Δ   iff   { Y : ◯Y ∈ Γ } ⊆ Δ,
+
+turned into a proof obligation: for each `◯Y` the context carries, some
+premise world must REALISE `Y`.  So the extra hypothesis below is not
+bookkeeping — it is exactly "the model has an `Rm`-successor". -/
+
+/-- `Ω` has a promise world at `Z`: a derivation refuting `Z` from a
+context `Δ` that covers `Ω` and realises every body of `Ω`'s modal zone,
+with a tag `◯∈` can lift.  The last clause is `Rm Ω Δ`. -/
+def PromiseWorld (G : Form) (Ω : List Form) (Z : Form) : Prop :=
+  ∃ (Δ : List Form) (t : Tag), Nonempty (FRJVr G t Δ Z) ∧
+    (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Δ W Z) ∧
+    (∀ X ∈ Ω, Clo Δ X) ∧ (∀ Y : Form, Form.circ Y ∈ Ω → Clo Δ Y)
+
+/-- **Lemma 13, modal case.**  Same query set as `gbuSuccCirc` — the
+antecedents of `Ω`'s implications, and `Z` — plus a promise world. -/
+theorem gbuSuccCircP {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gHat G)
+    (hgoal : Form.circ Z ∈ sfR G)
+    (hpw : PromiseWorld G Ω Z)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
+    (hz : EvalI D Ω Z) :
+    EvalR D Ω (.circ Z) := by
+  obtain ⟨Δ, t, ⟨dΔ⟩, htag, hcov, hreal⟩ := hpw
+  let U := Z :: (impPart Ω).map ante
+  let E := enumOf U (by simp [U])
+  let f := E.f
+  have hfmem : ∀ j, f j ∈ U := fun j =>
+    (E.spec (f j)).mp (List.mem_map.mpr ⟨j, List.mem_finRange j, rfl⟩)
+  have hwit : ∀ j, ∃ p : List Form × List Form,
+      D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
+    intro j
+    have hev : EvalI D Ω (f j) := by
+      by_cases e₀ : f j = Z
+      · exact e₀ ▸ hz
+      have hm : f j ∈ (impPart Ω).map ante := by
+        rcases List.mem_cons.mp (hfmem j) with h | h
+        · exact absurd h e₀
+        · exact h
+      obtain ⟨X, hXmem, hante⟩ := List.mem_map.mp hm
+      obtain ⟨hXΩ, hXi⟩ := List.mem_filter.mp hXmem
+      match X, hXi with
+      | .imp A B, _ =>
+          have hA : A = f j := hante
+          exact hA ▸ himp A B hXΩ
+    obtain ⟨St, Th, k₁, k₂, k₃⟩ := hev
+    exact ⟨(St, Th), k₁, k₂, k₃⟩
+  obtain ⟨g, hg⟩ := finEx hwit
+  set St : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
+  set Th : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
+  have hStΩ : ∀ j, St j ⊆ Ω := fun j => (hg j).2.1
+  have hΩSt : ∀ j, Ω ⊆ St j ++ Th j := fun j => (hg j).2.2
+  obtain ⟨d⟩ := finPi (fun j => hsat.1 _ (hg j).1)
+  have hJ1 : ∀ i j, i ≠ j → St i ⊆ St j ++ Th j :=
+    fun i j _ => fun {_} hX => hΩSt j (hStΩ i hX)
+  have hJ2 : ∀ A B : Form,
+      Form.imp A B ∈ unionAll (fun j => impPart (St j)) → A ∈ upsilon f := by
+    intro A B hmem
+    obtain ⟨j, hj⟩ := mem_unionAll.mp hmem
+    have hAB : Form.imp A B ∈ Ω := hStΩ j (List.mem_filter.mp hj).1
+    exact (E.spec A).mpr (List.mem_cons_of_mem _
+      (List.mem_map.mpr ⟨.imp A B, List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩))
+  have hJ5 : ∀ Y : Form,
+      Form.circ Y ∈ unionAll (fun j => circPart (St j)) →
+      ∃ _i : Fin 1, Clo Δ Y := by
+    intro Y hY
+    obtain ⟨j, hj⟩ := mem_unionAll.mp hY
+    exact ⟨0, hreal Y (hStΩ j (List.mem_filter.mp hj).1)⟩
+  have hJ7s : ∀ _i : Fin 1, ∀ j, ∀ X ∈ St j, Clo Δ X :=
+    fun _ j X hX => hcov X (hStΩ j hX)
+  obtain ⟨s', hs'mem, hsub⟩ :=
+    hsat.2 (.reg (joinCtxOrP St Th f (fun _ : Fin 1 => Δ)) (.circ Z))
+      ⟨.chain Z, ⟨.joinCircP (fun j => d j) (fun _ => dΔ) hJ1 hJ2 hJ5 hJ7s
+        (fun _ => ⟨rfl, htag⟩) ((E.spec Z).mpr List.mem_cons_self) hgoal
+        (CtxEq.refl _)⟩⟩
+  match s', hsub with
+  | .reg Γ' _, ⟨rfl, hΓ⟩ =>
+      refine ⟨Γ', hs'mem, fun X hX => .base (hΓ ?_)⟩
+      refine mem_restrictP.mpr ⟨?_, fun _ => hcov X hX⟩
+      rcases gHat_cases (hΩ X hX) with ⟨_, hpv⟩ | ⟨_, hi⟩ | ⟨_, hc⟩
+      · by_cases hin : ∃ j, X ∈ St j
+        · obtain ⟨j, hj⟩ := hin
+          exact List.mem_append_left _ (List.mem_append_left _
+            (List.mem_append_left _ (List.mem_append_left _
+              (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hpv⟩⟩))))
+        · have hall : ∀ j, X ∈ Th j := by
+            intro j
+            rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+            · exact absurd ⟨j, h'⟩ hin
+            · exact h'
+          refine List.mem_append_left _ (List.mem_append_left _
+            (List.mem_append_left _ (List.mem_append_right _ ?_)))
+          exact mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, hpv⟩)
+      · by_cases hin : ∃ j, X ∈ St j
+        · obtain ⟨j, hj⟩ := hin
+          exact List.mem_append_left _ (List.mem_append_left _
+            (List.mem_append_right _
+              (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hi⟩⟩)))
+        · have hall : ∀ j, X ∈ Th j := by
+            intro j
+            rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+            · exact absurd ⟨j, h'⟩ hin
+            · exact h'
+          refine List.mem_append_left _ (List.mem_append_right _ ?_)
+          match X, hi with
+          | .imp A B, _ =>
+              refine mem_restrict.mpr ⟨?_, ?_⟩
+              · exact mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, rfl⟩)
+              · exact (E.spec A).mpr (List.mem_cons_of_mem _
+                  (List.mem_map.mpr ⟨.imp A B,
+                    List.mem_filter.mpr ⟨hX, rfl⟩, rfl⟩))
+      · by_cases hin : ∃ j, X ∈ St j
+        · obtain ⟨j, hj⟩ := hin
+          exact List.mem_append_right _ (List.mem_append_left _
+            (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, hc⟩⟩))
+        · have hall : ∀ j, X ∈ Th j := by
+            intro j
+            rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+            · exact absurd ⟨j, h'⟩ hin
+            · exact h'
+          refine List.mem_append_right _ (List.mem_append_right _ ?_)
+          match X, hc with
+          | .circ Y, _ =>
+              refine mem_restrictC.mpr ⟨?_, ⟨0, hreal Y hX⟩⟩
+              exact mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, rfl⟩)
+
 /-! ## §11  The open question of `docs/gbu-tag-proposal.md` §5, ANSWERED
 
 The question was whether `Ω →g ◯Z` — the IRREGULAR `◯` goal — is always
@@ -1324,6 +1488,14 @@ cannot lift. -/
 /-- info: 'FRJ.Gbu.rcircNI_not_invertible' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms rcircNI_not_invertible
+
+/-- info: 'FRJ.Gbu.sound_limp' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms sound_limp
+
+/-- info: 'FRJ.Gbu.gbuSuccCircP' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuSuccCircP
 
 /-- info: 'FRJ.Gbu.gbuSuccCirc' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

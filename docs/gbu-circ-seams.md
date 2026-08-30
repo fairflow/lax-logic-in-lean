@@ -282,6 +282,24 @@ saturated `Ω` is a one-point endpoint.
    condition on the database; it is the same object as the LJF◯
    campaign's retention condition, and should be stated once.
 
+## Lemma 13 and the modal zone (2026-08-30)
+
+`gbuSuccCirc` covers `Ω ⊆ Ĝ_at ∪ Ĝ_imp` via `⋈^◯`.  The modal zone needs
+`⋈^◯_P`, because `⋈^◯` has NO fallible variant — and that is not an
+oversight: a `⋈^◯` must make its root REFUTE `◯Z`, i.e. its whole modal
+cone must refute `Z`, and a fallible world in that cone forces `Z`.  So
+the tag conflict and the missing fallible `◯`-join are one fact.
+
+`gbuSuccCircP` therefore takes one extra hypothesis, `PromiseWorld G Ω Z`:
+a derivation refuting `Z` from a context `Δ` that covers `Ω`, carries a
+tag `◯∈` can lift, and **realises every body of `Ω`'s modal zone**
+(`∀ Y, ◯Y ∈ Ω → Y ∈ Cl(Δ)`).  That last clause is the canonical model's
+
+    Rm Ω Δ   iff   { Y : ◯Y ∈ Ω } ⊆ Δ
+
+from PLL's completeness theorem, turned into a database query.
+Negative-tested: dropping it leaves the `hJ5` goal underivable.
+
 ## Status of the IPC layer
 
 | result | source | Lean | pins |
