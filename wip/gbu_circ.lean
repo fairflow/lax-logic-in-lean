@@ -60,6 +60,7 @@ rules with matching conclusions:
 `L◯`'s goal MUST be `◯`-shaped: unrestricted the rule is unsound.
 -/
 import wip.gbu_search
+import wip.gbu_measure
 
 namespace FRJ.Gbu
 
@@ -604,7 +605,116 @@ theorem provableV_counit : ProvableV counit :=
 /-- The counit is PLL-invalid, so the derivation is not vacuous. -/
 theorem not_pll_counit : ¬ PLL counit := soundnessV provableV_counit
 
-/-! ## §10  Theorems 8–10
+/-! ## §10  The tag conflict, SETTLED
+
+`gbuInv12`/`gbuInv13` were proved under `TagClean`.  The question is
+whether `TagClean` can be arranged — by relaxing `◯∈`, say, the way
+`RefAt` relaxed the barren joins.  It cannot, and the reason is
+semantic, not bookkeeping.
+
+`◯∈` and `◯∉` need the root's WHOLE MODAL CONE to refute `Z` (that is
+what the tag pledges — `tag_cone`, `FRJ/SoundV.lean:1457`), because
+`◯Z` fails at the root only if no `Rm`-successor of any world above it
+forces `Z`.  A `blocked` row's extracted model has a FALLIBLE world in
+that cone, and a fallible world forces everything; so its root forces
+`◯W` for every `W` and cannot refute `◯Z`.  Excluding `blocked` is
+therefore forced by soundness, and no relaxation of `◯∈` is available.
+
+What the conflict shows instead is that the seam-2/3 rules were
+mis-derived.  The two clauses below are refuted outright — no `TagClean`
+hypothesis, no appeal to tags — by the counit's own join.  Take
+`Ψ = {◯p}`, `Z = p`:
+
+* `{◯p} ⇒ p` IS refutable — that is `counitJoin`;
+* `{◯p} ⇒ ◯p` is NOT, and neither is `{◯p} → ◯p`, because `◯p ⊢ ◯p`
+  and a valid sequent is refuted by no database.
+
+So refuting `◯Z` at a root is STRICTLY STRONGER than refuting `Z`, and
+`R◯`/`R◯ₙᵢ` with a REGULAR premise cannot be invertible. -/
+
+/-- Refuting `◯Z` is refuted by validity of `◯Z` — the sharp form.  The
+lemma in `wip/gbu_measure.lean` asks for validity of the BODY, which is
+strictly stronger and unusable here (`◯p ⊨ p` is false).  Only two
+`FRJVi` rules conclude `◯Z`: `Ax^I◯`, excluded by `classForce`; and
+`◯∉`, whose regular premise can be lifted by `◯∈` — the tag condition
+is available, since `◯∉` carries it — giving a row for `◯Z` whose model
+root forces `Ω` and refutes `◯Z`. -/
+theorem not_evalI_circ_of_valid' {G : Form} {D : FSeq → Prop}
+    (hD : IsDatabase G D) {Ω : List Form} {Z : Form}
+    (hgoal : Form.circ Z ∈ sfR G)
+    (hval : ∀ (K : Kripke) (a : K.W), K.forces a Ω → K.force a (.circ Z))
+    (hax : ∀ ats : List Form, classForce ats Z = false →
+      ¬ (∀ X ∈ Ω, X ∈ vacZoneA G ats)) :
+    ¬ EvalI D Ω (.circ Z) := by
+  rintro ⟨St, Th, hmem, hSt, hΩ⟩
+  obtain ⟨d⟩ := hD _ hmem
+  cases d with
+  | axI F hF _ _ => exact Bool.noConfusion hF
+  | axIC F ats hats hFf hgoal' hTh =>
+      refine hax ats hFf (fun X hX => ?_)
+      have h := hΩ hX
+      rw [List.nil_append] at h
+      exact (hTh X).mp h
+  | circNotIn d' htag hTh hgoal' =>
+      obtain ⟨K, a, hf, hnf⟩ := frjv_countermodel (.circIn d' htag hgoal')
+      refine hnf (hval K a (fun X hX => ?_))
+      have h := hΩ hX
+      rw [List.nil_append] at h
+      exact clo_forces hf (hTh X h).1
+
+/-! ### The cell
+
+`Gtc = (◯p ⊃ p) ⊃ (◯p ⊃ p)` puts `◯p` in BOTH `Sf^L` and `Sf^R`, so the
+context `Ω = {◯p}` is critical AND the two clauses' own side condition
+`◯Z ∈ Sf^R(G)` is met.  Nothing else about `Gtc` matters. -/
+
+def Gtc : Form := .imp (.imp (.circ pv) pv) (.imp (.circ pv) pv)
+
+/-- `{◯p} ⇒ p` is refutable — straight from Lemma 11's modal case, with
+an empty implication family. -/
+theorem evalR_tc : EvalR (FDerivable Gtc) [Form.circ pv] pv :=
+  gbuSuccAtF (saturated_fderivable Gtc) (by decide) rfl (by decide) (by decide)
+    (by
+      intro A B hAB
+      rcases List.mem_cons.mp hAB with h | h
+      · exact absurd h (fun he => Form.noConfusion he)
+      · exact absurd h List.not_mem_nil)
+
+/-- `{◯p} ⇒ ◯p` is NOT refutable: `◯p ⊢ ◯p`. -/
+theorem not_evalR_tc : ¬ EvalR (FDerivable Gtc) [Form.circ pv] (.circ pv) :=
+  not_evalR_of_valid (G := Gtc) (saturated_fderivable Gtc).1
+    (fun _ _ hf => hf (Form.circ pv) List.mem_cons_self)
+
+/-- `{◯p} → ◯p` is NOT refutable either. -/
+theorem not_evalI_tc : ¬ EvalI (FDerivable Gtc) [Form.circ pv] (.circ pv) := by
+  refine not_evalI_circ_of_valid' (G := Gtc) (saturated_fderivable Gtc).1
+    (by decide) (fun _ _ hf => hf (Form.circ pv) List.mem_cons_self) ?_
+  intro ats hz hsub
+  have hmem := List.mem_filter.mp (hsub (Form.circ pv) List.mem_cons_self)
+  have hcf : classForce ats pv = true := hmem.2
+  rw [hz] at hcf
+  exact Bool.noConfusion hcf
+
+/-- **`R◯` with a REGULAR premise is NOT invertible.**  So Lemma 9's
+clause 12 cannot hold unconditionally, and `TagClean` is not a
+bookkeeping hypothesis that could be discharged by relaxing `◯∈`. -/
+theorem rcirc_not_invertible :
+    ¬ (∀ (G : Form) (D : FSeq → Prop), Saturated G D →
+        ∀ (Ψ : List Form) (Z : Form), Form.circ Z ∈ sfR G →
+          EvalR D Ψ Z → EvalR D Ψ (.circ Z)) := fun h =>
+  not_evalR_tc (h Gtc (FDerivable Gtc) (saturated_fderivable Gtc)
+    [Form.circ pv] pv (by decide) evalR_tc)
+
+/-- **`R◯ₙᵢ` with a REGULAR premise is NOT invertible either**, by the
+same cell. -/
+theorem rcircNI_not_invertible :
+    ¬ (∀ (G : Form) (D : FSeq → Prop), Saturated G D →
+        ∀ (Ω : List Form) (Z : Form), Form.circ Z ∈ sfR G →
+          (∀ X ∈ Ω, X ∈ gHat G) → EvalR D Ω Z → EvalI D Ω (.circ Z)) := fun h =>
+  not_evalI_tc (h Gtc (FDerivable Gtc) (saturated_fderivable Gtc)
+    [Form.circ pv] pv (by decide) (by decide) evalR_tc)
+
+/-! ## §11  Theorems 8–10
 
 OPEN.  What remains is to rebuild `SearchOk` over the store-carrying
 state `SeqU` of `wip/gbu_measure.lean`, with the three new rules
@@ -659,5 +769,13 @@ cannot lift. -/
 /-- info: 'FRJ.Gbu.not_pll_counit' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms not_pll_counit
+
+/-- info: 'FRJ.Gbu.rcirc_not_invertible' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rcirc_not_invertible
+
+/-- info: 'FRJ.Gbu.rcircNI_not_invertible' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms rcircNI_not_invertible
 
 end FRJ.Gbu
