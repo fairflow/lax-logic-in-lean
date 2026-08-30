@@ -7,7 +7,7 @@ at a time.
 ## The three kinds of branch
 
 **Durable campaign branches** — human-chosen names, no hash: `frj-dev`,
-`ljfo-dev`, `tools-dev`, `publication/core`. One per line of work, living
+`ljfo-dev`, `publication/core`. One per line of work, living
 across many sessions and many worktrees. The branch *is* the archive: its own
 `HANDOFF.md` sections are the record. Sessions commit onto these.
 
@@ -24,7 +24,7 @@ is the point.
 pushing with an explicit refspec is the normal way to do this and is allowed:
 
 ```bash
-git push origin HEAD:refs/heads/tools-dev     # fine from any local branch
+git push origin HEAD:refs/heads/tooling     # fine from any local branch
 ```
 
 Two notes on the hook's second arm, which refuses any ref ending in `-` plus
@@ -48,10 +48,15 @@ merge it in. Nothing merges back the other way.
 
 ```
         tooling
-       /   |   \
-      /    |    \
- frj-dev  tools-dev  (future campaigns)
+       /       \
+      /         \
+ frj-dev      ljfo-dev, publication/core, ...
 ```
+
+`tools-dev` was retired on 2026-08-30 and folded into `tooling`: it had become
+a second name for the same thing, and `tooling` was a strict superset of it —
+no file on `tools-dev` was absent here. Toolkit work, the `prover-toolkit/`
+tree and the `LaxLogic/ToolkitTest/` fixtures all live on `tooling` now.
 
 ### What belongs on `tooling`
 
@@ -74,20 +79,21 @@ Anything bound to the development's own content, even if it is called a tool:
   `lake build`.
 - `tools/paper-skeleton/`, the RN/ρ shell and Python drivers
 - build-product ignores for a particular paper
-- benchmark *fixtures* that mention the development's own theorems —
-  `LaxLogic/ToolkitTest/` is toolkit-adjacent but LaxLogic-specific, so it
-  lives on `tools-dev`, not here
 
 The test: would this still make sense in a repository that had never heard of
 lax logic? If yes, `tooling`. If no, the campaign branch.
 
 **The rule governs what a `tooling` commit may CHANGE, not what the branch
 contains.** A branch carries a whole tree, so `tooling` also holds all of
-`LaxLogic/` — including `LaxLogic/ToolkitTest/`, which the list above says
-belongs elsewhere. That is not a contradiction but it is a trap: those files
-came free with the branch's base, and a merge moves the delta from the merge
-base, not the tree. They are therefore invisible to any campaign that shares
-that base, and delivered to any campaign that does not. See the limits below.
+`LaxLogic/`. That is not a contradiction, but it is a trap: those files came
+free with the branch's base, and a merge moves the delta from the merge base,
+not the tree. They are invisible to any campaign that shares that base, and
+delivered to any campaign that does not. See the limits below.
+
+`LaxLogic/ToolkitTest/` — the toolkit's benchmark fixtures — is the one piece
+of LaxLogic-specific content that lives here **deliberately**. It is the
+toolkit's test set, it has no other home now that `tools-dev` is retired, and
+it changes only when the toolkit does.
 
 ### The exception: shared files at the root
 
@@ -160,7 +166,6 @@ was written:
 
 | campaign | merge-base | files a merge would touch | result |
 |---|---|---|---|
-| `tools-dev` | `ace04e0` 08-30 | 6 | clean |
 | `frj-dev` | `ace04e0` 08-30 | 7 | clean |
 | `ljfo-dev` | `78a985c` 08-09 | 34 | clean, but 34 files is not "the tooling commits" |
 | `publication/core` | `78a985c` 08-09 | 729 | **conflicts**: `.gitignore`, `HANDOFF.md`, `README.md`, `scripts/all-targets.py` |
@@ -204,7 +209,7 @@ found all three claims above to be wrong as first written.)*
 They will, and the remote is the only thing that arbitrates. The rules that
 have actually prevented damage here:
 
-- push with an **explicit refspec** (`HEAD:refs/heads/tools-dev`); this repo's
+- push with an **explicit refspec** (`HEAD:refs/heads/tooling`); this repo's
   `push.default` is `upstream`, so a bare `git push` on a new branch can aim
   at `main`
 - `gh` defaults to the **AviCraimer** parent repo, not `fairflow` — always
