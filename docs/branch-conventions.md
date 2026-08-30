@@ -181,6 +181,20 @@ proofs from its tree, so no campaign could ever receive them from a tooling
 merge. It costs a rebase and a force-push, and it still does nothing for a
 campaign that has not merged `main`.
 
+### Known divergence: `scripts/all-targets.py`
+
+`frj-dev` and `publication/core` carry copies that differ **only in a
+comment**; the code is identical. `frj-dev` adopted publication/core's copy at
+`a30266d`, then shortened the comment inside an unrelated bulk commit
+(`d389ab9`). The file does not exist at the merge base, so any campaign whose
+copy differs from `tooling`'s gets an **add/add conflict** — and there is no
+choice that is clean for both.
+
+`tooling` carries **frj-dev's** copy, because frj-dev is the active branch and
+publication/core needs a hand-sorted merge anyway. Taking publication/core's
+copy instead was tried and reverted: it removed one conflict there and created
+one on frj-dev. When merging into `publication/core`, take either side.
+
 *(This section exists because a peer session checked `ljfo-dev` and
 `publication/core` after I had checked only `frj-dev` and `tools-dev`, and
 found all three claims above to be wrong as first written.)*
