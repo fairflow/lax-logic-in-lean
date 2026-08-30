@@ -21,3 +21,7 @@ paper/frj-modal/*.fdb_latexmk
 # Python bytecode caches (never source; one was committed at fe2726c)
 __pycache__/
 *.pyc
+
+# challenge.py compiles candidates through a temp file at the repo root; a
+# killed run leaves one behind.
+tmp*.lean

@@ -178,8 +178,11 @@ precisely the split §4 is designed to create.
 3. Add the acceptance filter of §4 to the extractor, and regenerate. **DONE**
    — `prover-toolkit/challenge.py`. See §6a for what building it changed about
    the filter as specified here.
-4. Hole-punching proper, plus the harness metrics of §5. *Not built.*
-5. The retrieval ablation. *Not built.*
+4. Hole-punching proper, plus the harness metrics of §5. **DONE** —
+   `challenge.py build --punch`, and `challenge.py score`.
+5. The retrieval ablation. **Half done** — `challenge.py retrieval-check` is
+   the agent-free half; `ablate.sh` sets up and records the other half, which
+   cannot be automated. See §6b.
 
 ### 6a. What implementing steps 2–3 changed about this proposal
 
@@ -206,6 +209,99 @@ it, which is the case the whole exercise came from.
 
 Steps 1–3 are an afternoon. Step 4 is the real work and is where the extractor
 would need to learn to emit two files instead of one.
+
+### 6b. Steps 4 and 5 as built
+
+**Hole-punching.** `challenge.py build --punch` writes, per source module, a
+copy under `LaxLogic/ToolkitTest/Punched/` with the selected targets *deleted*
+— not `sorry`ed; the name must not be in scope. Each challenge file imports
+that module and is **16–18 lines**: header, one `import`, the namespace and
+`open`s in force, the verbatim statement, `sorry`. Removing all of a module's
+targets from the *same* punched copy lifts the one-target-per-file rule of
+§6a.
+
+**§4 above is wrong where it says "everything else in `M` survives".** All six
+punched modules failed to compile on the first attempt, uniformly, because the
+deleted target is used further down its own module — `isIPL_erase` at line 273,
+`map_unNeg_negOf` at 443, `force_hered` at 102. In a mature development a
+theorem is *normally* used downstream; naive hole-punching cannot work. The cut
+must be closed under reverse dependency: delete the target, then delete
+anything naming something already deleted, to fixpoint. What survives is still
+strictly more than a prefix truncation, which also drops every later
+declaration that was independent of the target.
+
+Four further things the build found, none of them predictable from §4:
+
+- **The cascade must run over every top-level chunk, not just declarations.**
+  `#guard_msgs in / #print axioms X` audit blocks are commands, so a
+  declaration-only cascade leaves them naming what it has just deleted.
+- **An emptied `mutual` block is a syntax error.** Deleting every member
+  leaves `mutual` immediately followed by `end` — `unexpected end`.
+- **A cap is needed.** `LJF.lean` loses 81% of itself and `PLLKripke.lean` 54%
+  when their targets come out. A module whose target is that load-bearing is
+  not a good challenge, and rejecting it on the arithmetic costs nothing where
+  discovering it by compiling costs twelve minutes.
+- **The namespace and `open` context must be reconstructed**, the statement
+  being verbatim. `mutual` and `section` are also closed by `end`, and a bare
+  `end` never closes a namespace; a first version popped the stack on every
+  `end` and reported all of `LJFComplete`'s targets as top-level.
+
+**On making the punched module importable, I was wrong twice.** A
+`[[lean_lib]] ToolkitPunched` in `lakefile.toml` was added and then reverted:
+measured, it conflicts with `frj-dev`, which inserts its own libraries at
+exactly that point — and the branch convention says tooling does not touch the
+lakefile. The punched `.olean` now goes straight into Lake's existing build
+root, so plain `lake env lean` resolves the import and `toolkit_cli.py check`
+works unchanged, with no build configuration touched at all.
+
+**Metrics.** `challenge.py score <target>` reports whether the file closes and
+what it rests on: compiles, no `sorry`, and the `#print axioms` result. Those
+are *checked*. Attempts, searches and whether a search hit was cited are
+**self-reported** by whoever ran the loop — a harness that could count them
+would have to be the proposer, which is the thing being measured. `ablate.sh`
+records both kinds side by side and the schema distinguishes them.
+
+**The ablation.** `ablate.sh setup index|noindex` brings the server up or
+confirms it down (with the server down, `search` fails and the loop degrades to
+`grep` plus whole-file reading — the honest control); `ablate.sh score` appends
+a row to `LaxLogic/ToolkitTest/ablation.jsonl`. What it cannot do is prove
+anything, so the experiment is set up but **not run**: it needs an agent per
+target per condition.
+
+`challenge.py retrieval-check` is the half that needs no agent. For each
+target it queries the index with the target's own statement and asks whether
+that target's external citations come back in the top *k*. A target whose
+dependencies retrieval cannot surface is one where the with/without comparison
+has nothing to measure, so this bounds what the full ablation could show.
+
+**And it gives hole-punching a second, quantified justification.** Measured on
+both sets:
+
+| set | citations needed | off-corpus | in-corpus recall@10 |
+|---|---|---|---|
+| prefix-truncated (5 targets) | 22 | **12** | 2/10 = 20% |
+| hole-punched (4 targets) | 22 | **3** | 6/19 = **32%** |
+
+Truncation leaves a target's dependencies mostly in Lean core and Mathlib,
+which this index does not contain. Punching moves them into the development,
+where the index can reach them. So hole-punching is not only about the file
+being short: it is what makes the ablation measurable at all.
+
+That is the most useful thing steps 4–5 produced, and it reframes the ablation
+before it is run:
+
+> For this challenge set the corpus index has little to offer. Over half the
+> dependencies are not in it, and it is not a ranking problem — the answer is
+> simply absent.
+
+Two consequences. First, an ablation over these targets would likely measure
+nothing, and a null result would be about the *corpus*, not about whether
+retrieval helps in general. Second, the fix is not tuning: it is either
+indexing Mathlib alongside the development, or selecting targets whose
+dependencies are in-corpus. `challenge.py` already records
+`external_citations` per target, so filtering on in-corpus dependencies is a
+one-line change — and it is the change that would make the ablation worth
+running.
 
 ## 7. What this does not address
 
