@@ -133,7 +133,44 @@ has one), so it still raises `tp` and the store-carrying `Wg◯` of
 `wip/gbu_measure.lean` is still required. Nothing in §§1–3 disturbs
 `no_measure_stepC` or `stepU_wf`.
 
-## 5. The one question left open
+## 5. DECIDED (2026-08-30) — and the open question, answered
+
+**Matthew's decision:** go with (P2), and admit the left rule in the
+irregular judgment; conservativity is proved, and it is to be RE-CHECKED
+whenever the rules change.
+
+**The open question of §5, answered — both horns fail.**  With
+
+    Ω = { p ,  p ⊃ ◯q },   Z = q,   G = p ⊃ ((p ⊃ ◯q) ⊃ (r ∨ ◯q))
+
+`Ω ⊨ ◯q`, so `Ω →g ◯q` is refuted by no database (`not_evalI_omegaNI`):
+(BSr1) holds at it, `◯q ∉ Ω` so `Ax` does not fire, and `Ω` has no
+top-level `◯` so `L◯` cannot apply.  Search does arrive there, by `R∨₂`
+from the critical `Ω ⇒g r ∨ ◯q`.  But `Ω ⊭ q`, so `Ω ⇒g q` — `R◯ₙᵢ`'s
+only premise — is not derivable at all (`not_gbuR_omegaNI`).  So `R◯ₙᵢ`
+is NEEDED and does NOT SUFFICE.
+
+What `Ω ⊢ ◯q` uses is modus ponens on `p ⊃ ◯q`, i.e. a LEFT rule.  Hence
+`L⊃ᵢ`, restricted to a `◯`-shaped goal.
+
+**Why this is safe, and how it stays safe.**  Every `Gbu` sequent obeys
+`Lhs(τ) ⊆ Sf^L(G)` and `Rhs(τ) ∈ Sf^R(G)`, and for `◯`-free `G` no
+signed subformula of `G` is a `◯`-formula (`mem_sf_noCirc`).  So all six
+new rules are inapplicable there and `Gbu◯(G) = Gbu(G)` as RULE SETS.
+`provableGbuC_iff_provableGbu` states it, `search_of_noCirc` recovers
+Theorem 8 for a `◯`-free goal with no modal hypotheses at all.
+
+**The re-check is mechanical.**  `deCircR`/`deCircI` (`wip/gbu_circ.lean`)
+is a TOTAL translation `Gbu◯(G) → Gbu(G)` for `◯`-free `G`, each new
+constructor discharged by its own sequent-language side condition
+(**divergence D9**: the new constructors carry that condition where
+`Gbu(G)`'s do not — see D2 — precisely so the discharge is mechanical).
+Add a rule that can fire on `◯`-free input and the translation stops
+compiling.  Negative-tested: injecting an unrestricted `L⊃ᵢ` makes both
+`soundIC` and `deCircI` report the missing case and taints the pin with
+`sorryAx`.
+
+## 6. What is still open
 
 `Ω →g ◯Z` — the irregular `◯` goal — has no success lemma yet. Only two
 `FRJVi` rules conclude `◯Z`: `Ax^I◯`, which fires when `Ω` is

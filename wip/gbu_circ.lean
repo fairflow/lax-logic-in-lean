@@ -992,6 +992,275 @@ theorem search_of_noCirc {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
 #guard_msgs in
 #print axioms search_of_noCirc
 
+/-! ## §11b  The calculus `Gbu◯(G)`
+
+Matthew's decision (2026-08-30): admit the left rule in the irregular
+judgment, conservativity being proved — and RE-CHECK conservativity
+whenever the rules change.  The re-check is `deCircR`/`deCircI` below: a
+total translation of `Gbu◯(G)` into `Gbu(G)` for `◯`-free `G`.  Add a
+rule that can fire on `◯`-free input and that translation stops
+compiling.  It is the gate, not a remark.
+
+Six new constructors, all carrying the blanket sequent-language
+condition on their `◯`-formula (**divergence D9**: `Gbu(G)`'s own
+constructors do not carry it — see D2 — but the new ones must, since
+that condition is exactly what makes them inapplicable on a `◯`-free
+goal, and so what makes the gate mechanical).
+
+    Ψ, Z ⇒g ◯C            Ψ, Z →g ◯C           Ω →g A     Ω_B →g ◯C
+    ───────────── L◯      ───────────── L◯ᵢ    ───────────────────── L⊃ᵢ
+    Ψ, ◯Z ⇒g ◯C           Ψ, ◯Z →g ◯C                Ω →g ◯C
+
+    Ω →g Z                Ω ⇒g Z
+    ──────── R◯           ────────── R◯ₙᵢ
+    Ω ⇒g ◯Z               Ω →g ◯Z
+
+`L◯`'s goal must be `◯`-shaped (`lcirc_goal_must_be_circ`); `L⊃ᵢ` is
+admitted only at a `◯`-shaped goal, which is what confines it to the
+modal fragment. -/
+
+mutual
+
+/-- Regular sequents `Ψ ⇒g A` of `Gbu◯(G)`. -/
+inductive GbuRC (G : Form) : List Form → Form → Type
+  | ax {Γ Ψ : List Form} (A : Form) (hΓ : Γ ≐ A :: Ψ) : GbuRC G Γ A
+  | lbot {Γ Ψ : List Form} (C : Form) (hΓ : Γ ≐ .bot :: Ψ) : GbuRC G Γ C
+  | landL {Γ Ψ : List Form} {A B C : Form}
+      (d : GbuRC G (A :: B :: Ψ) C) (hΓ : Γ ≐ .and A B :: Ψ) : GbuRC G Γ C
+  | randR {Γ : List Form} {A B : Form}
+      (d₁ : GbuRC G Γ A) (d₂ : GbuRC G Γ B) : GbuRC G Γ (.and A B)
+  | lorL {Γ Ψ : List Form} {A B C : Form}
+      (d₁ : GbuRC G (A :: Ψ) C) (d₂ : GbuRC G (B :: Ψ) C)
+      (hΓ : Γ ≐ .or A B :: Ψ) : GbuRC G Γ C
+  | rorR1 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuIC G Γ C₁) : GbuRC G Γ (.or C₁ C₂)
+  | rorR2 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuIC G Γ C₂) : GbuRC G Γ (.or C₁ C₂)
+  | limpL {Γ Ψ : List Form} {A B C : Form}
+      (d₁ : GbuIC G (.imp A B :: Ψ) A) (d₂ : GbuRC G (B :: Ψ) C)
+      (hΓ : Γ ≐ .imp A B :: Ψ) : GbuRC G Γ C
+  | rimpI {Γ : List Form} {A B : Form}
+      (d : GbuRC G Γ B) (hA : Clo Γ A) : GbuRC G Γ (.imp A B)
+  | rimpNI {Γ : List Form} {A B : Form}
+      (d : GbuRC G (A :: Γ) B) (hA : ¬ Clo Γ A) : GbuRC G Γ (.imp A B)
+  /-- `L◯`, seam 1.  The goal must be `◯`-shaped. -/
+  | lcirc {Γ Ψ : List Form} {Z C : Form}
+      (d : GbuRC G (Z :: Ψ) (.circ C)) (hprin : Form.circ Z ∈ sfL G)
+      (hΓ : Γ ≐ .circ Z :: Ψ) : GbuRC G Γ (.circ C)
+  /-- `R◯`, seam 2, with the IRREGULAR premise that `⋈^◯`'s `hZ`
+  dictates (P2). -/
+  | rcirc {Γ : List Form} {Z : Form}
+      (d : GbuIC G Γ Z) (hgoal : Form.circ Z ∈ sfR G) : GbuRC G Γ (.circ Z)
+
+/-- Irregular sequents `Ψ →g A` of `Gbu◯(G)`. -/
+inductive GbuIC (G : Form) : List Form → Form → Type
+  | ax {Γ Ψ : List Form} (A : Form) (hΓ : Γ ≐ A :: Ψ) : GbuIC G Γ A
+  | randI {Γ : List Form} {A B : Form}
+      (d₁ : GbuIC G Γ A) (d₂ : GbuIC G Γ B) : GbuIC G Γ (.and A B)
+  | rorI1 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuIC G Γ C₁) : GbuIC G Γ (.or C₁ C₂)
+  | rorI2 {Γ : List Form} {C₁ C₂ : Form}
+      (d : GbuIC G Γ C₂) : GbuIC G Γ (.or C₁ C₂)
+  | rimpII {Γ : List Form} {A B : Form}
+      (d : GbuIC G Γ B) (hA : Clo Γ A) : GbuIC G Γ (.imp A B)
+  | rimpNII {Γ : List Form} {A B : Form}
+      (d : GbuRC G (A :: Γ) B) (hA : ¬ Clo Γ A) : GbuIC G Γ (.imp A B)
+  /-- `L◯` in the irregular judgment. -/
+  | lcircI {Γ Ψ : List Form} {Z C : Form}
+      (d : GbuIC G (Z :: Ψ) (.circ C)) (hprin : Form.circ Z ∈ sfL G)
+      (hΓ : Γ ≐ .circ Z :: Ψ) : GbuIC G Γ (.circ C)
+  /-- `L⊃` in the irregular judgment, at a `◯`-shaped goal ONLY.  This is
+  the departure from the paper's frozen-context discipline, forced by
+  `not_gbuR_omegaNI`: `Ω ⊢ ◯q` can use modus ponens on an implication of
+  `Ω`, and no `◯` rule can substitute for it. -/
+  | limpLI {Γ Ψ : List Form} {A B C : Form}
+      (d₁ : GbuIC G (.imp A B :: Ψ) A) (d₂ : GbuIC G (B :: Ψ) (.circ C))
+      (hgoal : Form.circ C ∈ sfR G) (hΓ : Γ ≐ .imp A B :: Ψ) :
+      GbuIC G Γ (.circ C)
+  /-- `R◯ₙᵢ`, seam 3: focus is released, as `◯∉`'s regular premise
+  dictates. -/
+  | rcircNI {Γ : List Form} {Z : Form}
+      (d : GbuRC G Γ Z) (hgoal : Form.circ Z ∈ sfR G) : GbuIC G Γ (.circ Z)
+
+end
+
+/-- `⊢_Gbu◯(G) G`. -/
+def ProvableGbuC (G : Form) : Prop := Nonempty (GbuRC G [] G)
+
+/-! ### Lemma 7 for `Gbu◯(G)` -/
+
+mutual
+
+theorem soundRC {G : Form} {K : Kripke} :
+    ∀ {Ψ : List Form} {C : Form}, GbuRC G Ψ C →
+      ∀ w : K.W, K.forces w Ψ → K.force w C
+  | _, _, .ax A hΓ, _, h => (forces_ctxEq hΓ h) A List.mem_cons_self
+  | _, _, .lbot C hΓ, _, h =>
+      K.fal_force C ((forces_ctxEq hΓ h) .bot List.mem_cons_self)
+  | _, _, .landL d hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have hab := h' _ List.mem_cons_self
+      refine soundRC d w (fun X hX => ?_)
+      rcases List.mem_cons.mp hX with rfl | hX'
+      · exact hab.1
+      rcases List.mem_cons.mp hX' with rfl | hX''
+      · exact hab.2
+      · exact h' X (List.mem_cons_of_mem _ hX'')
+  | _, _, .randR d₁ d₂, w, h => ⟨soundRC d₁ w h, soundRC d₂ w h⟩
+  | _, _, .lorL d₁ d₂ hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have hor := h' _ List.mem_cons_self
+      have tail : ∀ X ∈ _, K.force w X := fun X hX =>
+        h' X (List.mem_cons_of_mem _ hX)
+      rcases hor with hA | hB
+      · exact soundRC d₁ w (fun X hX => by
+          rcases List.mem_cons.mp hX with rfl | hX'
+          · exact hA
+          · exact tail X hX')
+      · exact soundRC d₂ w (fun X hX => by
+          rcases List.mem_cons.mp hX with rfl | hX'
+          · exact hB
+          · exact tail X hX')
+  | _, _, .rorR1 d, w, h => Or.inl (soundIC d w h)
+  | _, _, .rorR2 d, w, h => Or.inr (soundIC d w h)
+  | _, _, .limpL d₁ d₂ hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have himp := h' _ List.mem_cons_self
+      have hA := soundIC d₁ w h'
+      have hB := himp w (K.le_refl w) hA
+      refine soundRC d₂ w (fun X hX => ?_)
+      rcases List.mem_cons.mp hX with rfl | hX'
+      · exact hB
+      · exact h' X (List.mem_cons_of_mem _ hX')
+  | _, _, .rimpI d _, w, h => fun v hwv _ =>
+      soundRC d v (K.forces_mono hwv h)
+  | _, _, .rimpNI d _, w, h => fun v hwv hA =>
+      soundRC d v (fun X hX => by
+        rcases List.mem_cons.mp hX with rfl | hX'
+        · exact hA
+        · exact K.force_mono hwv (h X hX'))
+  | _, _, .lcirc d _ hΓ, w, h =>
+      sound_lcirc (fun v hv => soundRC d v hv) w (forces_ctxEq hΓ h)
+  | _, _, .rcirc d _, w, h =>
+      sound_rcirc (fun v hv => soundIC d v hv) w h
+
+theorem soundIC {G : Form} {K : Kripke} :
+    ∀ {Ψ : List Form} {C : Form}, GbuIC G Ψ C →
+      ∀ w : K.W, K.forces w Ψ → K.force w C
+  | _, _, .ax A hΓ, _, h => (forces_ctxEq hΓ h) A List.mem_cons_self
+  | _, _, .randI d₁ d₂, w, h => ⟨soundIC d₁ w h, soundIC d₂ w h⟩
+  | _, _, .rorI1 d, w, h => Or.inl (soundIC d w h)
+  | _, _, .rorI2 d, w, h => Or.inr (soundIC d w h)
+  | _, _, .rimpII d _, w, h => fun v hwv _ =>
+      soundIC d v (K.forces_mono hwv h)
+  | _, _, .rimpNII d _, w, h => fun v hwv hA =>
+      soundRC d v (fun X hX => by
+        rcases List.mem_cons.mp hX with rfl | hX'
+        · exact hA
+        · exact K.force_mono hwv (h X hX'))
+  | _, _, .lcircI d _ hΓ, w, h =>
+      sound_lcirc (fun v hv => soundIC d v hv) w (forces_ctxEq hΓ h)
+  | _, _, .limpLI d₁ d₂ _ hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have himp := h' _ List.mem_cons_self
+      have hA := soundIC d₁ w h'
+      have hB := himp w (K.le_refl w) hA
+      refine soundIC d₂ w (fun X hX => ?_)
+      rcases List.mem_cons.mp hX with rfl | hX'
+      · exact hB
+      · exact h' X (List.mem_cons_of_mem _ hX')
+  | _, _, .rcircNI d _, w, h =>
+      sound_rcirc (fun v hv => soundRC d v hv) w h
+
+end
+
+/-- **Theorem 6 for `Gbu◯(G)`.** -/
+theorem pll_of_provableGbuC {G : Form} (h : ProvableGbuC G) : PLL G := by
+  obtain ⟨d⟩ := h
+  intro K
+  exact soundRC d K.root (fun _ hX => absurd hX List.not_mem_nil)
+
+/-! ### THE CONSERVATIVITY GATE
+
+A total translation `Gbu◯(G) → Gbu(G)` for `◯`-free `G`.  Every new
+constructor is discharged by its own sequent-language side condition,
+which `noCirc_sfL`/`noCirc_sfR` make contradictory.  **If a rule is ever
+added that can fire on a `◯`-free goal, this stops compiling.** -/
+
+mutual
+
+def deCircR {G : Form} (hG : noCirc G = true) :
+    ∀ {Γ : List Form} {C : Form}, GbuRC G Γ C → GbuR G Γ C
+  | _, _, .ax A hΓ => .ax A hΓ
+  | _, _, .lbot C hΓ => .lbot C hΓ
+  | _, _, .landL d hΓ => .landL (deCircR hG d) hΓ
+  | _, _, .randR d₁ d₂ => .randR (deCircR hG d₁) (deCircR hG d₂)
+  | _, _, .lorL d₁ d₂ hΓ => .lorL (deCircR hG d₁) (deCircR hG d₂) hΓ
+  | _, _, .rorR1 d => .rorR1 (deCircI hG d)
+  | _, _, .rorR2 d => .rorR2 (deCircI hG d)
+  | _, _, .limpL d₁ d₂ hΓ => .limpL (deCircI hG d₁) (deCircR hG d₂) hΓ
+  | _, _, .rimpI d hA => .rimpI (deCircR hG d) hA
+  | _, _, .rimpNI d hA => .rimpNI (deCircR hG d) hA
+  | _, _, .lcirc _ hprin _ => absurd (noCirc_sfL hG _ hprin) (by simp [Form.isCirc])
+  | _, _, .rcirc _ hgoal => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+
+def deCircI {G : Form} (hG : noCirc G = true) :
+    ∀ {Γ : List Form} {C : Form}, GbuIC G Γ C → GbuI G Γ C
+  | _, _, .ax A hΓ => .ax A hΓ
+  | _, _, .randI d₁ d₂ => .randI (deCircI hG d₁) (deCircI hG d₂)
+  | _, _, .rorI1 d => .rorI1 (deCircI hG d)
+  | _, _, .rorI2 d => .rorI2 (deCircI hG d)
+  | _, _, .rimpII d hA => .rimpII (deCircI hG d) hA
+  | _, _, .rimpNII d hA => .rimpNII (deCircR hG d) hA
+  | _, _, .lcircI _ hprin _ => absurd (noCirc_sfL hG _ hprin) (by simp [Form.isCirc])
+  | _, _, .limpLI _ _ hgoal _ => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+  | _, _, .rcircNI _ hgoal => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+
+end
+
+mutual
+
+/-- The other direction: `Gbu(G)` embeds in `Gbu◯(G)`, always. -/
+def ofGbuR {G : Form} : ∀ {Γ : List Form} {C : Form}, GbuR G Γ C → GbuRC G Γ C
+  | _, _, .ax A hΓ => .ax A hΓ
+  | _, _, .lbot C hΓ => .lbot C hΓ
+  | _, _, .landL d hΓ => .landL (ofGbuR d) hΓ
+  | _, _, .randR d₁ d₂ => .randR (ofGbuR d₁) (ofGbuR d₂)
+  | _, _, .lorL d₁ d₂ hΓ => .lorL (ofGbuR d₁) (ofGbuR d₂) hΓ
+  | _, _, .rorR1 d => .rorR1 (ofGbuI d)
+  | _, _, .rorR2 d => .rorR2 (ofGbuI d)
+  | _, _, .limpL d₁ d₂ hΓ => .limpL (ofGbuI d₁) (ofGbuR d₂) hΓ
+  | _, _, .rimpI d hA => .rimpI (ofGbuR d) hA
+  | _, _, .rimpNI d hA => .rimpNI (ofGbuR d) hA
+
+def ofGbuI {G : Form} : ∀ {Γ : List Form} {C : Form}, GbuI G Γ C → GbuIC G Γ C
+  | _, _, .ax A hΓ => .ax A hΓ
+  | _, _, .randI d₁ d₂ => .randI (ofGbuI d₁) (ofGbuI d₂)
+  | _, _, .rorI1 d => .rorI1 (ofGbuI d)
+  | _, _, .rorI2 d => .rorI2 (ofGbuI d)
+  | _, _, .rimpII d hA => .rimpII (ofGbuI d) hA
+  | _, _, .rimpNII d hA => .rimpNII (ofGbuR d) hA
+
+end
+
+/-- **Conservativity, both directions.**  On a `◯`-free goal the two
+calculi prove exactly the same sequents. -/
+theorem provableGbuC_iff_provableGbu {G : Form} (hG : noCirc G = true) :
+    ProvableGbuC G ↔ ProvableGbu G :=
+  ⟨fun ⟨d⟩ => ⟨deCircR hG d⟩, fun ⟨d⟩ => ⟨ofGbuR d⟩⟩
+
+/-! ### Stage-2 gate: no computed index in any constructor's return type -/
+
+#slime FRJ.Gbu.GbuRC FRJ.Gbu.GbuIC
+
+/-- info: 'FRJ.Gbu.provableGbuC_iff_provableGbu' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms provableGbuC_iff_provableGbu
+
+/-- info: 'FRJ.Gbu.pll_of_provableGbuC' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms pll_of_provableGbuC
+
 /-! ## §12  Theorems 8–10
 
 OPEN.  What remains is to rebuild `SearchOk` over the store-carrying

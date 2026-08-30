@@ -2430,3 +2430,54 @@ Theorem 8◯.
 **Next**: (a) settle the tag conflict — either a fallible `◯∈` (the way
 `RefAt` relaxed the barren joins) or a route that avoids `blocked`;
 (b) rebuild `SearchOk` over the store-carrying state `SeqU`.
+
+## 2026-08-30b — Gbu◯(G) built: P2 adopted, left rule admitted, conservativity gated
+
+Matthew's decisions this session: settle the open question first, then go
+with (P2); admit the left rule in the irregular judgment, conservativity
+being proved, and RE-CHECK conservativity whenever the rules change.
+
+**The open question (docs/gbu-tag-proposal.md §5) — both horns fail.**
+With `Ω = {p, p⊃◯q}`, `Z = q`: `Ω ⊨ ◯q` so `Ω →g ◯q` is refuted by NO
+database (`not_evalI_omegaNI`) — (BSr1) holds, `Ax` does not fire, `L◯`
+cannot apply — yet `Ω ⊭ q`, so `Ω ⇒g q`, `R◯ni`'s only premise, is not
+derivable at all (`not_gbuR_omegaNI`).  `R◯ni` is needed AND
+insufficient.  What `Ω ⊢ ◯q` uses is modus ponens, a LEFT rule.
+
+**The tag conflict, settled negatively.**  `◯∈` needs the root's whole
+modal cone to refute `Z`; a `blocked` row's model has a fallible world
+there, which forces everything.  So excluding `blocked` is forced by
+soundness, and `rcirc_not_invertible` / `rcircNI_not_invertible` refute
+Lemma 9's clauses 12 and 13 outright, on
+`Gtc = (◯p ⊃ p) ⊃ (◯p ⊃ p)` (chosen so `◯p` is in both `Sf^L` and
+`Sf^R`, meeting the clauses' own side condition).
+
+**The PLL-completeness reading**, which unifies several loose ends: the
+canonical model's `Rm Γ Δ iff {A : ◯A ∈ Γ} ⊆ Δ` IS the joins' `hJ5`; the
+fallible worlds PLL's completeness requires ARE `Tag.blocked` and the
+fallible joins; a fallible world realises every body at once, which is
+why `⋈^At_F`/`⋈^∨_F` need no `hJ5` and why Lemmas 11–12 extended for
+free.  And there is no `⋈^◯_F` because a `⋈^◯` must REFUTE `◯Z` at the
+root, which a fallible successor makes impossible — so the tag conflict
+and the missing fallible `◯`-join are the same fact.
+
+**Built** (`wip/gbu_circ.lean`, all sorry-free):
+
+* `gbuSuccCirc` — Lemma 13, P2's licence, via `⋈^◯` (`hZ : Z ∈ Υ` is
+  `⋈^∨`'s `hC` with one element).  Caveat: `⋈^◯` has no fallible
+  variant, so the modal-zone case needs `⋈^◯_P` and its `hJ5` — OPEN.
+* `GbuRC`/`GbuIC` — the calculus, 12 + 9 constructors, `#slime` 0.  Six
+  new rules: `L◯` (regular and irregular), `L⊃ᵢ` at a `◯`-goal, `R◯`
+  (irregular premise, per P2), `R◯ni` (regular premise).
+* `soundRC`/`soundIC` (Lemma 7) and `pll_of_provableGbuC` (Theorem 6).
+* **The conservativity gate**: `deCircR`/`deCircI`, a TOTAL translation
+  `Gbu◯(G) → Gbu(G)` for `◯`-free `G`; `ofGbuR`/`ofGbuI` the converse;
+  `provableGbuC_iff_provableGbu`.  Divergence D9: the new constructors
+  carry the blanket sequent-language condition on their `◯`-formula
+  (`Gbu(G)`'s do not, see D2) precisely so the discharge is mechanical.
+  **Negative-tested**: injecting an unrestricted `L⊃ᵢ` makes BOTH
+  `soundIC` and `deCircI` report the missing case and taints the pin.
+  A future rule that can fire on `◯`-free input cannot slip through.
+
+**Next**: Theorem 8◯ — rebuild `SearchOk` over the store-carrying `SeqU`
+with the ◯ critical cases; and the modal-zone case of Lemma 13.
