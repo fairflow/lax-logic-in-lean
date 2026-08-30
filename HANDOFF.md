@@ -3026,3 +3026,58 @@ as OPEN.
 Residues now: **(S1) `BigAnte`** — still a genuine open obligation;
 **(S3) `CleanReg`** — false, kept in the source only so the shape of the
 obligation stays visible.
+
+## 2026-08-30l — `◯(◯p ⊃ p)` is NOT valid; FRJV drove the countermodel
+
+The question left OPEN in §k is closed, NEGATIVELY, and I got it wrong
+twice over first.
+
+**Matthew's argument.** If `◯(◯p ⊃ p)` were a theorem then so would be
+its substitution instance at `p := ⊥`,
+
+    ◯(◯⊥ ⊃ ⊥)  =  ◯¬◯⊥  =  q5  =  ρ7
+
+and ρ7 is provably distinct from `⊤` in the ρ-order.
+
+**The verdict was already in the repository.** `PLLND.RNC.rnc_ref_1_5`
+(`wip/rncCert.lean:32`) kernel-checks `¬ ConfluentU.DerivU [q1] q5` on
+
+    ⟨3, ≤ = [(1,0),(2,0),(2,1)], Rm = [(1,0)], Fal = {0}, V = ∅⟩,  w = 2
+
+— a chain `w₂ ≤ w₁ ≤ w₀` with `w₀` fallible and one non-reflexive modal
+edge `w₁ ⊳ w₀`. The standing rule (memory: RNC certificate lookup) is to
+DECODE AND LOOK UP before searching. I did not. I asserted a semantic
+hunch instead, recorded it as "evidence for validity", and it was wrong.
+Second error, same turn: told to get a countermodel I hand-built a
+Kripke structure by transcribing that certificate, which is not the
+calculus finding anything. Matthew: "don't just construct a countermodel
+from thin air. Drive FRJ◯ to find it."
+
+**Driven.** `provableV_Gcc : ProvableV (◯(◯p ⊃ p))`, three steps, each
+forced by the rule set, compiled first try:
+
+| | rule | result | tag |
+|---|---|---|---|
+| 1 | `Ax^I`, then `⋈^At_F` | `◯p ⇒ p` | `blocked` |
+| 2 | `⊃∉` with an EMPTY moveable zone | `∅ ; ∅ → ◯p ⊃ p` | — |
+| 3 | `⋈^◯` | `∅ ⇒ ◯(◯p ⊃ p)` | `barren` |
+
+Step 1 is the fallible atomic join, which keeps the whole modal zone —
+the extracted world reaches `p` only through a fallible successor, which
+is exactly why `◯p ⊃ p` fails there. Step 2's side condition
+`¬ Cl(Θ) ∋ ◯p` is met by taking `Θ = ∅`: the antecedent is closed by the
+PREMISE's context, not by the moveable zone. Step 3 must be the JOIN and
+not `◯∈`, because step 1's tag is `blocked` and `not_clean_of_clo_circ`
+forbids `◯∈` there. The dirty tag is the whole content of the cell.
+
+Then `soundnessV` gives `not_pll_Gcc : ¬ PLL (◯(◯p ⊃ p))`, and
+`modR_countermodel` gives `countermodel_Gcc : ∃ K, Countermodel K Gcc`
+— the model EXTRACTED from the derivation, not transcribed into it. All
+`[propext, Quot.sound]`, `#guard_msgs`-pinned; whole repo builds.
+
+**Consequence for Gbu◯.** The incompleteness I feared in §k does not
+arise: `⊢ ◯(◯p ⊃ p)` is not an obligation, so `R◯`'s irregular premise
+is not refuted by that cell. The repair direction for (S3) is therefore
+back on the table — have `cirr` carry the parent's `D ⋫ (Ω →g ◯C)`
+alongside the clean query, so `R⊃ₙᵢ`'s premise can go to the PLAIN
+regular mode via `gbuInv9`. That is the next thing to try.

@@ -978,4 +978,101 @@ theorem not_cleanReg : ¬ CleanReg Gcr (FDerivable Gcr) := by
 #guard_msgs in
 #print axioms not_cleanReg
 
+/-! ## `◯(◯p ⊃ p)` is NOT valid — the OPEN question of §2026-08-30k, closed
+
+Matthew, 2026-08-30: if `◯(◯p ⊃ p)` were a theorem then so would be its
+substitution instance at `p := ⊥`,
+
+    ◯(◯⊥ ⊃ ⊥)  =  ◯¬◯⊥  =  q5  =  ρ7
+
+and ρ7 is provably distinct from `⊤` in the ρ-order.  The verdict was
+already in the repository — `PLLND.RNC.rnc_ref_1_5` in `wip/rncCert.lean`
+kernel-checks `¬ ConfluentU.DerivU [q1] q5` on the three-world model
+
+    ⟨3, ≤ = [(1,0),(2,0),(2,1)], Rm = [(1,0)], Fal = {0}, V = ∅⟩,  w = 2
+
+— and the standing rule is to look the cell up BEFORE searching.  I did
+not; I asserted a semantic hunch, and the hunch was wrong.
+
+What follows is the same fact obtained the way it should be: by driving
+`FRJV(G)` to the refutation and letting `modR` extract the model. -/
+
+private def pv : Form := .atom "p"
+/-- `G = ◯(◯p ⊃ p)`. -/
+def Gcc : Form := .circ (.imp (.circ pv) pv)
+
+-- `Ĝ_at = {p}`, `Ĝ_imp = ∅`, `Ĝ_◯ = {◯p}`, and `Ĝ_at ∖ {p} = ∅`.
+example : (gAt Gcc, gImp Gcc, gCirc Gcc, rm (gAt Gcc) pv)
+    = ([pv], [], [Form.circ pv], []) := rfl
+
+private theorem not_clo_nil_circ_atom : ¬ Clo [] (Form.circ pv) := by
+  intro h
+  cases h with
+  | base hm => exact absurd hm List.not_mem_nil
+  | circ h' => cases h' with
+    | base hm => exact absurd hm List.not_mem_nil
+
+/-- **`FRJV(G)` finds the countermodel.**  Three steps, each forced:
+
+1. `Ax^I◯`… no — `Ax^I` on the prime goal `p`, then the FALLIBLE atomic
+   join `⋈^At_F`, which keeps the whole modal zone.  Its conclusion is
+   `◯p ⇒ p` at tag `blocked`: the extracted world reaches `p` only
+   through a fallible successor, which is exactly why `◯p ⊃ p` fails.
+2. `⊃∉` turns that into the irregular `∅ ; ∅ → ◯p ⊃ p`.  Its side
+   condition `¬ Cl(Θ) ∋ ◯p` is met by taking the moveable zone EMPTY —
+   the antecedent is closed by the premise's context, not by `Θ`.
+3. `⋈^◯` lifts it under the modality.  The join's `RefAt` obligation is
+   discharged by its base clause `Υ`-membership, and the conclusion
+   context is empty, so this IS `⊢_{FRJV(Gcc)} Gcc`.
+
+The tag of step 1 is `blocked`, which is why step 3 must be the JOIN and
+not `◯∈` — `not_clean_of_clo_circ` forbids the latter.  The dirty tag is
+the whole content of the cell. -/
+theorem provableV_Gcc : ProvableV Gcc := by
+  have hax : FRJVi Gcc [] (rm (gAt Gcc) pv ++ gImp Gcc ++ gCirc Gcc) pv :=
+    .axI pv rfl (by decide) (CtxEq.refl _)
+  have hjoin := FRJVr.joinAtF (G := Gcc) (n := 0)
+    (stab := fun _ => []) (rhs := fun _ => pv) (F := pv)
+    (fun _ => hax)
+    (by intro i j h;
+        exact absurd ((Fin.fin_one_eq_zero i).trans (Fin.fin_one_eq_zero j).symm) h)
+    (by intro A B h; simp [unionAll, impPart] at h)
+    rfl (by simp [unionAll, atPart]) (by decide) (CtxEq.refl _)
+  have hirr : FRJVi Gcc [] [] (Form.imp (.circ pv) pv) :=
+    .impNotIn hjoin (fun X hX => absurd hX List.not_mem_nil)
+      (.base (by decide)) not_clo_nil_circ_atom (by decide)
+  exact ⟨.barren, _, ⟨FRJVr.joinCirc (G := Gcc) (n := 0)
+    (stab := fun _ => []) (th := fun _ => [])
+    (rhs := fun _ => Form.imp (.circ pv) pv)
+    (fun _ => hirr)
+    (by intro i j h;
+        exact absurd ((Fin.fin_one_eq_zero i).trans (Fin.fin_one_eq_zero j).symm) h)
+    (by intro A B h; simp [unionAll, impPart] at h)
+    (by simp [unionAll, circPart])
+    (keptChainRestrict _ _)
+    (.ups (by simp [upsilon]))
+    (by decide) (CtxEq.refl _)⟩⟩
+
+/-- **`◯(◯p ⊃ p)` is NOT PLL-valid** — the open question of §2026-08-30k,
+closed by the calculus itself rather than by a hand-built model. -/
+theorem not_pll_Gcc : ¬ PLL Gcc := soundnessV provableV_Gcc
+
+
+/-- The countermodel itself, extracted from the derivation by `modR`. -/
+theorem countermodel_Gcc : ∃ K : Kripke, Countermodel K Gcc := by
+  obtain ⟨t, Γ, ⟨d⟩⟩ := provableV_Gcc
+  exact ⟨FRJ.V.modR d, FRJ.V.modR_countermodel d⟩
+
+/-- info: 'FRJ.Gbu.provableV_Gcc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableV_Gcc
+
+/-- info: 'FRJ.Gbu.not_pll_Gcc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_pll_Gcc
+
+/-- info: 'FRJ.Gbu.countermodel_Gcc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms countermodel_Gcc
+
 end FRJ.Gbu
