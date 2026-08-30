@@ -1,0 +1,6 @@
+[
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean/.lake/packages/mathlib", "file": "Mathlib/Order/Nucleus.lean",             "group": "mathlib-nucleus"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean/.lake/packages/mathlib", "file": "Mathlib/Order/BooleanAlgebra/Defs.lean", "group": "mathlib-boolalg"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean/.lake/packages/mathlib", "file": "Mathlib/Order/Defs/PartialOrder.lean",   "group": "mathlib-order"},
+  {"repo": "/Users/matthew/Lean/Sources/lax-logic-in-lean/.lake/packages/mathlib", "file": "Mathlib/Order/Heyting/Basic.lean",       "group": "mathlib-heyting"}
+]
