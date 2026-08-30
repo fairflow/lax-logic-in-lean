@@ -167,6 +167,15 @@ def main() -> int:
     out = args.out or (Path(__file__).parent / "index.jsonl")
     entries: list[dict] = []
     skip = set(cfg.exclude)
+    # `exclude` entries are matched as single PATH COMPONENTS (see
+    # iter_lean_files), so a path-shaped entry like "LaxLogic/ToolkitTest"
+    # matches nothing and does so silently. Say so.
+    for e in sorted(skip):
+        if "/" in e or "\\" in e:
+            print(f"warning: exclude entry {e!r} contains a path separator; "
+                  f"entries are matched as single path components, so this "
+                  f"will never match. Use {e.replace(chr(92), '/').split('/')[-1]!r}.",
+                  file=sys.stderr)
     for root in cfg.index_roots:
         rp = Path(root["path"]).expanduser()
         if not rp.is_dir():
