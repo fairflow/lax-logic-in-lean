@@ -2931,3 +2931,48 @@ and `deCircI` are unchanged and still total; negative-tested by
 injecting an `L⊃ᵢ` variant with no `◯`-goal condition, which makes both
 `soundIC` (`:1415`) and `deCircI` (`:1499`) report "Missing cases" and
 taints `provableGbuC_iff_provableGbu` with `sorryAx`. Restored, green.
+
+## 2026-08-30j — S2 CLEARED: the irregular `◯` goal carries its `Ĝ` ancestor
+
+`NonHatCirc` is gone; `searchO` now takes two supplies, not three, and is
+still sorry-free at `[propext, Quot.sound]`.
+
+**The diagnosis in §h was right but the conclusion was too pessimistic.**
+`L⊃ᵢ`'s second premise `B :: Ψ →g ◯C` puts an arbitrary `B ∈ Sf^L(G)`
+into an irregular context, and there the bare (BSr1) is vacuous — no
+`FRJVi` zone reaches outside `Ĝ`, so nothing can refute such a context
+and `D ⋫ (Ω →g ◯C)` carries no information. What I missed is that the
+licence does not have to come from the PARENT. It comes from the last
+`Ĝ`-context on the branch, which is unrefuted and lies `Clo`-below the
+current one — and `Clo` is transitive, so every left rule preserves it.
+
+    UnrefutedBelow G D Ω C  :=  D ⋫ (Ω →g C)  ∧
+      ∃ Ω₀ ⊆ Ĝ.  Ω₀ ⊆ Cl(Ω)  ∧  D ⋫ (Ω₀ →g C)
+
+Two facts make it the right invariant:
+
+* `unrefutedBelow_of_gHat` — on a `Ĝ` context it IS (BSr1) (take
+  `Ω₀ = Ω`), so nothing is lost where the paper's invariant holds;
+* `unrefutedBelow_step` — at a `◯` goal it survives any context move
+  `Ω ⊆ Cl(Ω')`, because `gbuInv14` turns the ancestor back into (BSr1)
+  at `Ω'`.
+
+With it, `L⊥ᵢ`, `L∧ᵢ` and `L∨ᵢ` are licensed and the non-`Ĝ` branch of
+the search is proved outright, by `sfL_dec` on the offending member.
+`unrefutedBelow_of_gHat` is axiom-free bar `[propext]`.
+
+Negative test: weakening the `Ω₀ ⊆ Cl(Ω)` conjunct to plain membership
+`Ω₀ ⊆ Ω` (same arity, so no shape error) breaks `unrefutedBelow_step` at
+exactly the `clo_trans` transport. Restored, green; whole repo builds.
+
+**Residues remaining: two.**
+
+* **(S1) `BigAnte`** — `L⊃ᵢ` on an antecedent that both carries a `◯`
+  and is too large for the measure.
+* **(S3) `CleanReg`** — the clean-regular search that `R⊃ₙᵢ` releases
+  into from the clean mode; its own residue is a critical context
+  carrying a `◯` at a non-modal goal, where only the fallible joins
+  apply.
+
+The (S2) numbering is kept in the source so the three are still
+distinguishable across the record.

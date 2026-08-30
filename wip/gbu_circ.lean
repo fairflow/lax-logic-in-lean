@@ -2155,6 +2155,50 @@ theorem gbuInv14 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
       have hY' : Y ∈ Th := by simpa using h2 hY
       exact (List.mem_filter.mp ((hThv Y).mp hY')).2
 
+/-! ### The invariant a non-`Ĝ` irregular context needs
+
+`L⊃ᵢ`'s second premise `B :: Ψ →g ◯C` puts an arbitrary `B ∈ Sf^L(G)`
+into an irregular context, breaking (BSr2).  The rules obstruction 2
+added — `L⊥ᵢ`, `L∧ᵢ`, `L∨ᵢ` — decompose that `B` again, but their
+premises cannot be licensed from `D ⋫ (Ω →g ◯C)` alone: `gbuInv14` wants
+`Ω ⊆ Ĝ`, which is exactly what fails there.  And no irregular row can
+cover such a context at all (every `FRJVi` zone is a subset of `Ĝ`), so
+the plain (BSr1) is satisfied vacuously and carries no information.
+
+The repair is to carry the ANCESTOR: the last `Ĝ`-context on the branch,
+which is unrefuted and lies `Clo`-below the current one.  `Clo` is
+transitive, so every left rule preserves it, and `gbuInv14` turns it back
+into (BSr1) at each step. -/
+
+/-- `Ω` is unrefuted at a `◯` goal, WITH a `Ĝ`-witness below it. -/
+def UnrefutedBelow (G : Form) (D : FSeq → Prop) (Ω : List Form) (C : Form) : Prop :=
+  ¬ EvalI D Ω C ∧
+    ∃ Ω₀ : List Form, (∀ X ∈ Ω₀, X ∈ gHat G) ∧ (∀ X ∈ Ω₀, Clo Ω X) ∧
+      ¬ EvalI D Ω₀ C
+
+/-- On a `Ĝ`-context the invariant IS (BSr1). -/
+theorem unrefutedBelow_of_gHat {G : Form} {D : FSeq → Prop} {Ω : List Form}
+    {C : Form} (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (h : ¬ EvalI D Ω C) :
+    UnrefutedBelow G D Ω C :=
+  ⟨h, Ω, hΩ, fun X hX => .base hX, h⟩
+
+/-- …and every left rule preserves it, at a `◯` goal. -/
+theorem unrefutedBelow_step {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
+    (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
+  obtain ⟨-, Ω₀, hΩ₀, hcl₀, hne₀⟩ := h
+  have hcl₀' : ∀ X ∈ Ω₀, Clo Ω' X :=
+    fun X hX => clo_trans hcl (hcl₀ X hX)
+  exact ⟨fun hev => hne₀ (gbuInv14 hsat hΩ₀ hcl₀' hev), Ω₀, hΩ₀, hcl₀', hne₀⟩
+
+/-- info: 'FRJ.Gbu.unrefutedBelow_of_gHat' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms unrefutedBelow_of_gHat
+
+/-- info: 'FRJ.Gbu.unrefutedBelow_step' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms unrefutedBelow_step
+
 /-! ## Pins — the clean-refutation layer -/
 
 /-- info: 'FRJ.Gbu.refutedCleanly_circ' depends on axioms: [propext, Quot.sound] -/
