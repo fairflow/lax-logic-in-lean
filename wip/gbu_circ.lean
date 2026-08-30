@@ -2396,6 +2396,49 @@ on the regular side, of what `⋈^◯` does on the modal one.  That is a
 CALCULUS proposal, not a search fix, and it is the live question for
 FRJV completeness. -/
 
+/-! ### S3 without amending the calculus: carry `¬ D ▷ (Ω ⇒g C)`
+
+The clean mode was carrying `¬ D ▷ᶜ (Ω ⇒g C)`.  Carry the PLAIN regular
+query instead — it is strictly stronger (`evalR_of_evalRC`), so nothing
+is lost — and `R⊃ₙᵢ` closes with a lemma that is already proved:
+
+    gbuInv6 :  D ▷ (A,Ω ⇒g B)  →  D ▷ (Ω ⇒g A ⊃ B)
+
+so `¬ D ▷ (Ω ⇒g A ⊃ B)` hands the REGULAR premise its own (BSr1)
+directly.  No new rule, no changed rule.  Checking the other four:
+
+| rule | premise | propagates `¬ D ▷ (Ω ⇒g ·)` by |
+|---|---|---|
+| `Ax` | — | — |
+| prime `C ∉ Ω` | — | `refutedCleanly_at` + `evalR_of_refutedCleanly` ⇒ ⊥ |
+| `R∧ᵢ` | `Cᵢ` | `gbuInv2` |
+| `R∨ᵢ` | `Cᵢ`, into `irr` | guarded by `EvalI`; `refutedCleanly_or` ⇒ ⊥ |
+| `R⊃ᵢ` | `B` | `gbuInv5` |
+| **`R⊃ₙᵢ`** | `B` at `A :: Ω`, REGULAR | **`gbuInv6`** ✓ |
+| `R◯ᵢ` | `Z` | needs `D ▷ (Ω ⇒g Z) → D ▷ (Ω ⇒g ◯Z)` |
+
+So the residue moves from `R⊃ₙᵢ` — where it needed a new rule — to
+`R◯ᵢ`, where it needs Lemma 9 clause 12.  That clause is REFUTED in
+general (`rcirc_not_invertible`), but its counterexample is `Gtc` with
+`Ψ = {◯p}` — a context CARRYING a `◯`.  In the clean mode `Ω ⊆ Ĝ_at ∪
+Ĝ_imp` is `◯`-free, so the counterexample does not apply, and what is
+needed is only the restricted clause:
+
+**(★) `Ω ⊆ Ĝ_at ∪ Ĝ_imp`, every antecedent of `Ω`'s implications
+refuted, `◯Z ∈ Sf^R(G)`:  `D ▷ (Ω ⇒g Z)` ⟹ `D ▷ (Ω ⇒g ◯Z)`.**
+
+And (★) reduces further.  `refutedCleanly_circIn` already lifts a CLEAN
+row through `◯∈`, so (★) follows from
+
+**(★★) under the same hypotheses,  `D ▷ (Ω ⇒g Z)` ⟹ `D ▷ᶜ (Ω ⇒g Z)`**
+
+— every refutation over a critical `◯`-free context with dead
+implications can be taken CLEAN.  That is plausible for the right
+reason: on such a context the suppliers are `refutedCleanly_at`,
+`refutedCleanly_or` and the shape lifts, and every one of them concludes
+at `barren`.  It is a DATABASE lemma, provable or refutable without
+touching a rule, and it is now the single open point of S3. -/
+
 /-! ## Pins — the clean-refutation layer -/
 
 /-- info: 'FRJ.Gbu.refutedCleanly_circ' depends on axioms: [propext, Quot.sound] -/

@@ -3143,3 +3143,49 @@ proposal, not a search fix, and it is now the live question for FRJV
 completeness. Not implemented: changing a rule's form is Matthew's call,
 and this one needs its own soundness case (the fresh root must force the
 kept context, which is exactly the `Λ*` obligation).
+
+## 2026-08-30n — S3 without amending the calculus: carry the PLAIN query
+
+Matthew: "is there ANY other way to deal with `R⊃ₙᵢ` without amending
+the original calculus?" There is, and it needs no new lemma at all for
+that rule.
+
+**The clean mode should carry `¬ D ▷ (Ω ⇒g C)`, not `¬ D ▷ᶜ (Ω ⇒g C)`.**
+The plain query is strictly stronger (`evalR_of_evalRC`), so nothing is
+lost — and `R⊃ₙᵢ`'s REGULAR premise then gets its own (BSr1) directly
+from a lemma proved back in the IPC layer:
+
+    gbuInv6 :  D ▷ (A,Ω ⇒g B)  →  D ▷ (Ω ⇒g A ⊃ B)
+
+No new rule, no changed rule, no supply. Checking the rest, the plain
+query propagates through every `cirr` rule by an existing inversion —
+`gbuInv2` at `R∧ᵢ`, `gbuInv5` at `R⊃ᵢ`, `gbuInv6` at `R⊃ₙᵢ`; the prime
+and `∨` cases close by contradiction via `refutedCleanly_at`/`_or` —
+with ONE exception: `R◯ᵢ`, which needs
+
+    D ▷ (Ω ⇒g Z)  →  D ▷ (Ω ⇒g ◯Z)
+
+i.e. Lemma 9 clause 12. That clause is REFUTED in general
+(`rcirc_not_invertible`) — **but its counterexample is `Gtc` with
+`Ψ = {◯p}`, a context CARRYING a `◯`**, and the clean mode's contexts
+are `Ω ⊆ Ĝ_at ∪ Ĝ_imp`, `◯`-free. The counterexample does not reach the
+case that is needed. So the residue is the restricted clause:
+
+**(★) `Ω ⊆ Ĝ_at ∪ Ĝ_imp`, every antecedent of `Ω`'s implications
+refuted, `◯Z ∈ Sf^R(G)`: `D ▷ (Ω ⇒g Z)` ⟹ `D ▷ (Ω ⇒g ◯Z)`.**
+
+and since `refutedCleanly_circIn` already lifts a CLEAN row through
+`◯∈`, (★) follows from
+
+**(★★) under the same hypotheses, `D ▷ (Ω ⇒g Z)` ⟹ `D ▷ᶜ (Ω ⇒g Z)`**
+
+— on a critical `◯`-free context with dead implications, every
+refutation can be taken CLEAN. Plausible for the right reason: the
+suppliers available there are `refutedCleanly_at`, `refutedCleanly_or`
+and the shape lifts, and every one of them concludes at `barren`.
+
+So the whole of S3 now rests on ONE database lemma, provable or
+refutable without touching a rule. The amendment I proposed in §m (a
+fresh-barren-root rule) is NOT needed unless (★★) turns out false.
+
+Sweep meanwhile: 205+/462 cells, every banked ⊬ cell HIT, zero MISS.
