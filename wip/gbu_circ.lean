@@ -714,7 +714,140 @@ theorem rcircNI_not_invertible :
   not_evalI_tc (h Gtc (FDerivable Gtc) (saturated_fderivable Gtc)
     [Form.circ pv] pv (by decide) (by decide) evalR_tc)
 
-/-! ## §11  Theorems 8–10
+/-! ## §11  The open question of `docs/gbu-tag-proposal.md` §5, ANSWERED
+
+The question was whether `Ω →g ◯Z` — the IRREGULAR `◯` goal — is always
+discharged when reached, in which case seam 3 evaporates and `R◯ₙᵢ` is
+unnecessary.  **It is not.**  Worse, `R◯ₙᵢ` alone is INCOMPLETE there.
+
+Take
+
+    Ω = { p ,  p ⊃ ◯q },    Z = q,
+    G = p ⊃ ((p ⊃ ◯q) ⊃ (r ∨ ◯q))
+
+so `Ω ⊆ Ĝ` and `◯q ∈ Sf^R(G)` and `◯q ∉ Ω`.  Then
+
+* `Ω ⊨ ◯q` — by the unit and modus ponens — so `Ω →g ◯q` is refutable by
+  NO database (`not_evalI_omegaNI`): it satisfies (BSr1), it is not an
+  axiom, and `Ω` has no top-level `◯`, so `L◯` cannot apply either.
+  Backward search therefore DOES arrive at it, by `R∨₂` from the
+  critical `Ω ⇒g r ∨ ◯q`.
+* But `Ω ⊭ q`: two worlds `a ≤ b`, `Rm = ≤`, `p` everywhere and `q` only
+  at `b`.  So `Ω ⇒g q` — the ONLY premise `R◯ₙᵢ` offers — is not
+  derivable in `Gbu◯` at all, by soundness (`not_gbuR_omegaNI`).
+
+Both horns of the question are therefore closed: `R◯ₙᵢ` is needed, and
+it does not suffice.  What `Ω ⊢ ◯q` actually uses is modus ponens on
+`p ⊃ ◯q`, i.e. `L⊃` — a LEFT rule, which the irregular judgment
+forbids.  So the irregular `◯` goal is a genuine third critical case in
+its own right, and its rule set has to include a left rule.  That is a
+design question for review, not something to settle here. -/
+
+private def qv : Form := .atom "q"
+private def rv : Form := .atom "r"
+
+/-- `Ω = {p, p ⊃ ◯q}`. -/
+def omegaNI : List Form := [pv, .imp pv (.circ qv)]
+
+/-- `G = p ⊃ ((p ⊃ ◯q) ⊃ (r ∨ ◯q))` — valid, and it makes `Ω` a
+legitimate critical context with `◯q ∈ Sf^R(G)`. -/
+def Gni : Form := .imp pv (.imp (.imp pv (.circ qv)) (.or rv (.circ qv)))
+
+theorem omegaNI_critical : ∀ X ∈ omegaNI, X ∈ gHat Gni := by decide
+
+theorem circq_goal : Form.circ qv ∈ sfR Gni := by decide
+
+theorem circq_not_mem : Form.circ qv ∉ omegaNI := by decide
+
+/-- `Ω ⊨ ◯q`: modus ponens, then the unit. -/
+theorem omegaNI_valid {K : Kripke} {a : K.W} (h : K.forces a omegaNI) :
+    K.force a (.circ qv) :=
+  h (.imp pv (.circ qv)) (List.mem_cons_of_mem _ List.mem_cons_self)
+    a (K.le_refl a) (h pv List.mem_cons_self)
+
+/-- Hence `Ω →g ◯q` is refuted by NO database: (BSr1) holds at it. -/
+theorem not_evalI_omegaNI :
+    ¬ EvalI (FDerivable Gni) omegaNI (.circ qv) := by
+  refine not_evalI_circ_of_valid' (G := Gni) (saturated_fderivable Gni).1
+    circq_goal (fun _ _ h => omegaNI_valid h) ?_
+  intro ats hz hsub
+  have hmem := List.mem_filter.mp
+    (hsub (.imp pv (.circ qv)) (List.mem_cons_of_mem _ List.mem_cons_self))
+  have hp := List.mem_filter.mp (hsub pv List.mem_cons_self)
+  have hcf : (!classForce ats pv || classForce ats qv) = true := hmem.2
+  rw [show classForce ats pv = true from hp.2, hz] at hcf
+  exact Bool.noConfusion hcf
+
+/-! ### `Ω ⊭ q`: the countermodel
+
+The same two worlds as `Kmc`, with `p` true everywhere and `q` true only
+above. -/
+
+private def V2 : W2 → String → Prop := fun w s => s = "p" ∨ w = W2.wb
+
+private theorem v2_mono' : ∀ {a b : W2}, le2 a b → ∀ s, V2 a s → V2 b s
+  | .wa, .wa, _, _, h => h
+  | .wa, .wb, _, _, _ => Or.inr rfl
+  | .wb, .wa, h, _, _ => h.elim
+  | .wb, .wb, _, _, h => h
+
+def Kni : Kripke where
+  W := W2
+  elems := [.wa, .wb]
+  complete := fun w => by
+    cases w
+    · exact List.mem_cons_self
+    · exact List.mem_cons_of_mem _ List.mem_cons_self
+  decEq := inferInstance
+  le := le2
+  le_refl := le2_refl
+  le_trans := le2_trans
+  le_antisymm := le2_antisymm
+  root := .wa
+  root_le := fun _ => trivial
+  V := V2
+  V_mono := v2_mono'
+  Rm := le2
+  rm_refl := le2_refl
+  rm_trans := le2_trans
+  sub_mi := fun h => h
+  Fal := fun _ => False
+  fal_mono := fun _ h => h.elim
+  fal_V := fun h _ => h.elim
+  decLe := decLe2
+  decV := fun a s =>
+    inferInstanceAs (Decidable (s = "p" ∨ a = W2.wb))
+  decRm := decLe2
+  decFal := fun _ => isFalse (fun h => h)
+
+theorem Kni_force_circ_q (w : W2) : Kni.force w (.circ qv) := by
+  intro b _
+  refine ⟨W2.wb, le2_wb b, ?_⟩
+  show V2 W2.wb "q"
+  exact Or.inr rfl
+
+theorem Kni_forces_omegaNI : Kni.forces W2.wa omegaNI := by
+  intro X hX
+  rcases List.mem_cons.mp hX with rfl | hX'
+  · show V2 W2.wa "p"
+    exact Or.inl rfl
+  · rcases List.mem_cons.mp hX' with rfl | hX''
+    · exact fun c _ _ => Kni_force_circ_q c
+    · exact absurd hX'' List.not_mem_nil
+
+theorem Kni_not_force_q : ¬ Kni.force W2.wa qv := by
+  intro h
+  rcases (h : V2 W2.wa "q") with h' | h'
+  · exact absurd h' (by decide)
+  · exact W2.noConfusion h'
+
+/-- **`R◯ₙᵢ`'s only premise is not derivable**, while its conclusion must
+be.  So the rule is incomplete at the irregular `◯` goal. -/
+theorem not_gbuR_omegaNI (G : Form) : ¬ Nonempty (GbuR G omegaNI qv) := by
+  rintro ⟨d⟩
+  exact Kni_not_force_q (soundR (K := Kni) d W2.wa Kni_forces_omegaNI)
+
+/-! ## §12  Theorems 8–10
 
 OPEN.  What remains is to rebuild `SearchOk` over the store-carrying
 state `SeqU` of `wip/gbu_measure.lean`, with the three new rules
@@ -777,5 +910,13 @@ cannot lift. -/
 /-- info: 'FRJ.Gbu.rcircNI_not_invertible' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms rcircNI_not_invertible
+
+/-- info: 'FRJ.Gbu.not_evalI_omegaNI' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_evalI_omegaNI
+
+/-- info: 'FRJ.Gbu.not_gbuR_omegaNI' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms not_gbuR_omegaNI
 
 end FRJ.Gbu
