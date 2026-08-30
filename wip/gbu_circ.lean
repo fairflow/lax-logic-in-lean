@@ -1248,6 +1248,19 @@ inductive GbuIC (G : Form) : List Form → Form → Type
       (hsz : A.size < (Form.circ C).size)
       (hgoal : Form.circ C ∈ sfR G) (hΓ : Γ ≐ .imp A B :: Ψ) :
       GbuIC G Γ (.circ C)
+  /-- `L⊥` in the irregular judgment, at a `◯`-shaped goal. -/
+  | lbotI {Γ Ψ : List Form} {C : Form}
+      (hgoal : Form.circ C ∈ sfR G) (hΓ : Γ ≐ .bot :: Ψ) :
+      GbuIC G Γ (.circ C)
+  /-- `L∧` in the irregular judgment, at a `◯`-shaped goal. -/
+  | landLI {Γ Ψ : List Form} {A B C : Form}
+      (d : GbuIC G (A :: B :: Ψ) (.circ C)) (hgoal : Form.circ C ∈ sfR G)
+      (hΓ : Γ ≐ .and A B :: Ψ) : GbuIC G Γ (.circ C)
+  /-- `L∨` in the irregular judgment, at a `◯`-shaped goal. -/
+  | lorLI {Γ Ψ : List Form} {A B C : Form}
+      (d₁ : GbuIC G (A :: Ψ) (.circ C)) (d₂ : GbuIC G (B :: Ψ) (.circ C))
+      (hgoal : Form.circ C ∈ sfR G) (hΓ : Γ ≐ .or A B :: Ψ) :
+      GbuIC G Γ (.circ C)
   /-- `R◯ᵢ`, seam 3.  The premise is IRREGULAR — focus is NOT released.
   `◯∉`'s premise is regular, which is what made `R◯ₙᵢ` the first
   candidate; but `rcircNI_not_invertible` refutes its licence and
@@ -1344,6 +1357,31 @@ theorem soundIC {G : Form} {K : Kripke} :
       rcases List.mem_cons.mp hX with rfl | hX'
       · exact hB
       · exact h' X (List.mem_cons_of_mem _ hX')
+  | _, _, .lbotI _ hΓ, _, h =>
+      K.fal_force _ ((forces_ctxEq hΓ h) .bot List.mem_cons_self)
+  | _, _, .landLI d _ hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have hab := h' _ List.mem_cons_self
+      refine soundIC d w (fun X hX => ?_)
+      rcases List.mem_cons.mp hX with rfl | hX'
+      · exact hab.1
+      rcases List.mem_cons.mp hX' with rfl | hX''
+      · exact hab.2
+      · exact h' X (List.mem_cons_of_mem _ hX'')
+  | _, _, .lorLI d₁ d₂ _ hΓ, w, h => by
+      have h' := forces_ctxEq hΓ h
+      have hor := h' _ List.mem_cons_self
+      have tail : ∀ X ∈ _, K.force w X := fun X hX =>
+        h' X (List.mem_cons_of_mem _ hX)
+      rcases hor with hA | hB
+      · exact soundIC d₁ w (fun X hX => by
+          rcases List.mem_cons.mp hX with rfl | hX'
+          · exact hA
+          · exact tail X hX')
+      · exact soundIC d₂ w (fun X hX => by
+          rcases List.mem_cons.mp hX with rfl | hX'
+          · exact hB
+          · exact tail X hX')
   | _, _, .rcircI d _, w, h =>
       sound_rcirc (fun v hv => soundIC d v hv) w h
 
@@ -1390,6 +1428,9 @@ def deCircI {G : Form} (hG : noCirc G = true) :
   | _, _, .lcircI _ hprin _ => absurd (noCirc_sfL hG _ hprin) (by simp [Form.isCirc])
   | _, _, .limpLI _ _ _ hgoal _ => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
   | _, _, .rcircI _ hgoal => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+  | _, _, .lbotI hgoal _ => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+  | _, _, .landLI _ hgoal _ => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
+  | _, _, .lorLI _ _ hgoal _ => absurd (noCirc_sfR hG _ hgoal) (by simp [Form.isCirc])
 
 end
 
@@ -1493,6 +1534,12 @@ inductive StepO (G : Form) : (Bool × List Form × Form) →
       StepO G (false, B :: Ψ, .circ C) (false, .imp A B :: Ψ, .circ C)
   | rcirc {Ψ Z} : StepO G (false, Ψ, Z) (true, Ψ, .circ Z)
   | rcircI {Ψ Z} : StepO G (false, Ψ, Z) (false, Ψ, .circ Z)
+  | landLI {Ψ A B C} :
+      StepO G (false, A :: B :: Ψ, .circ C) (false, .and A B :: Ψ, .circ C)
+  | lorLI1 {Ψ A B C} :
+      StepO G (false, A :: Ψ, .circ C) (false, .or A B :: Ψ, .circ C)
+  | lorLI2 {Ψ A B C} :
+      StepO G (false, B :: Ψ, .circ C) (false, .or A B :: Ψ, .circ C)
 
 private theorem sqCons {Ψ : List Form} {X C : Form} :
     seqSize (X :: Ψ) C = X.size + seqSize Ψ C := by
@@ -1555,6 +1602,38 @@ theorem wg_stepO {G : Form} {p q : Bool × List Form × Form} (h : StepO G p q) 
   | @rcircI Ψ Z =>
       exact wgOCtx (fun _ h => .base h)
         (sqGoal (show Z.size < (Form.circ Z).size from Nat.lt_succ_self _))
+  | @landLI Ψ A B C =>
+      refine wgOCtx (fun X hX => ?_) ?_
+      · rcases List.mem_cons.mp hX with rfl | hX'
+        · exact .and (.base List.mem_cons_self)
+            (.base (List.mem_cons_of_mem _ List.mem_cons_self))
+        · exact .base (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hX'))
+      · show seqSize (A :: B :: Ψ) (.circ C)
+          < seqSize (Form.and A B :: Ψ) (.circ C)
+        rw [sqCons, sqCons, sqCons]
+        show A.size + (B.size + seqSize Ψ (.circ C))
+          < (A.size + B.size + 1) + seqSize Ψ (.circ C)
+        omega
+  | @lorLI1 Ψ A B C =>
+      refine wgOCtx (fun X hX => ?_) ?_
+      · rcases List.mem_cons.mp hX with rfl | hX'
+        · exact .orL (.base List.mem_cons_self)
+        · exact .base (List.mem_cons_of_mem _ hX')
+      · show seqSize (A :: Ψ) (.circ C) < seqSize (Form.or A B :: Ψ) (.circ C)
+        rw [sqCons, sqCons]
+        show A.size + seqSize Ψ (.circ C)
+          < (A.size + B.size + 1) + seqSize Ψ (.circ C)
+        omega
+  | @lorLI2 Ψ A B C =>
+      refine wgOCtx (fun X hX => ?_) ?_
+      · rcases List.mem_cons.mp hX with rfl | hX'
+        · exact .orR (.base List.mem_cons_self)
+        · exact .base (List.mem_cons_of_mem _ hX')
+      · show seqSize (B :: Ψ) (.circ C) < seqSize (Form.or A B :: Ψ) (.circ C)
+        rw [sqCons, sqCons]
+        show B.size + seqSize Ψ (.circ C)
+          < (A.size + B.size + 1) + seqSize Ψ (.circ C)
+        omega
 
 /-- **Termination of backward search in the redesigned `Gbu◯(G)`** —
 the paper's own weight suffices. -/
@@ -1597,13 +1676,26 @@ the only `FRJVi` rules concluding `◯Z` are `Ax^I◯` and `◯∉`, whose
 premise is REGULAR.  This is the same mismatch `rcircNI_not_invertible`
 exposed, now confined to one case.
 
-**OBSTRUCTION 2 — `L◯ᵢ` breaks the irregular invariant.**  Irregular
-sequents carry `Ω ⊆ Ĝ`, and `L◯ᵢ` replaces `◯Y` by `Y`, which need not
-be an atom, an implication or a `◯`-formula.  The regular judgment
-recovers by `L∧`/`L∨`; the irregular one has neither.  `circ_body_escapes_gHat`
-below is a concrete instance.  The fixes are to admit `L∧ᵢ`/`L∨ᵢ` too —
-a further departure — or to restrict `L◯ᵢ` to bodies in `Ĝ`, whose
-completeness would then have to be checked. -/
+**OBSTRUCTION 2 — CLEARED (2026-08-30).**  `L◯ᵢ` replaces `◯Y` by `Y`,
+which need not lie in `Ĝ` (`circ_body_escapes_gHat`, on
+`G = ◯(p∧q) ⊃ p`).  The regular judgment recovers by `L⊥`/`L∧`/`L∨`;
+the irregular one had none of them.
+
+`sfL_dec` says exactly what is missing: a left subformula outside `Ĝ` is
+`⊥`, a conjunction or a disjunction — nothing else.  So admitting
+`L⊥ᵢ`, `L∧ᵢ`, `L∨ᵢ`, each at a `◯`-shaped goal like the other irregular
+left rules, restores the invariant, and it costs nothing anywhere else:
+
+* soundness — the regular proofs transplant verbatim (`soundIC`);
+* termination — all three shrink `ctxSize`, so the PAPER's weight still
+  decreases (`wg_stepO`);
+* conservativity — each carries `◯C ∈ Sf^R(G)`, so none can fire on a
+  `◯`-free goal and `deCircI` stays total.
+
+The resulting design has a clean statement: **at a `◯`-shaped goal the
+irregular judgment has exactly the regular judgment's rules; elsewhere
+it stays focused.**  That is PLL's `◯`-elimination demanding left access,
+and nothing more. -/
 
 private def qw : Form := .atom "q"
 
@@ -1618,6 +1710,30 @@ theorem circ_body_escapes_gHat :
 /-- info: 'FRJ.Gbu.circ_body_escapes_gHat' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms circ_body_escapes_gHat
+
+/-- **What can escape `Ĝ`, exhaustively.**  A left subformula is an
+atom, an implication or a `◯`-formula — in which case it is already in
+`Ĝ` — or else `⊥`, a conjunction, or a disjunction.  Those three are
+exactly the rules `L⊥ᵢ`, `L∧ᵢ`, `L∨ᵢ` consume, so the irregular
+invariant is restorable. -/
+theorem sfL_dec {G X : Form} (h : X ∈ sfL G) :
+    X ∈ gHat G ∨ X = .bot ∨ (∃ A B, X = .and A B) ∨ (∃ A B, X = .or A B) := by
+  cases X with
+  | atom p =>
+      exact Or.inl (List.mem_append_left _ (List.mem_append_left _
+        (List.mem_filter.mpr ⟨h, rfl⟩)))
+  | bot => exact Or.inr (Or.inl rfl)
+  | and A B => exact Or.inr (Or.inr (Or.inl ⟨A, B, rfl⟩))
+  | or A B => exact Or.inr (Or.inr (Or.inr ⟨A, B, rfl⟩))
+  | imp A B =>
+      exact Or.inl (List.mem_append_left _ (List.mem_append_right _
+        (List.mem_filter.mpr ⟨h, rfl⟩)))
+  | circ Z =>
+      exact Or.inl (List.mem_append_right _ (List.mem_filter.mpr ⟨h, rfl⟩))
+
+/-- info: 'FRJ.Gbu.sfL_dec' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms sfL_dec
 
 /-! ## §12  Theorems 8–10
 

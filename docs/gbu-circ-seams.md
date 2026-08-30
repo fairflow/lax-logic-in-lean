@@ -300,6 +300,28 @@ tag `◯∈` can lift, and **realises every body of `Ω`'s modal zone**
 from PLL's completeness theorem, turned into a database query.
 Negative-tested: dropping it leaves the `hJ5` goal underivable.
 
+## The irregular judgment at a `◯` goal (2026-08-30)
+
+`L◯ᵢ` replaces `◯Y` by `Y`, and `Y` need not lie in `Ĝ` — the invariant
+irregular sequents carry.  `circ_body_escapes_gHat` (`G = ◯(p∧q) ⊃ p`)
+is a kernel-checked instance.  `sfL_dec` says exactly what can escape:
+
+    X ∈ Sf^L(G)  ⟹  X ∈ Ĝ  ∨  X = ⊥  ∨  X = A∧B  ∨  X = A∨B
+
+— nothing else.  So `L⊥ᵢ`, `L∧ᵢ`, `L∨ᵢ`, each at a `◯`-shaped goal like
+the other irregular left rules, restore the invariant, and cost nothing:
+soundness transplants from the regular proofs, all three shrink
+`ctxSize` so the paper's weight still decreases (`wg_stepO`), and each
+carries `◯C ∈ Sf^R(G)` so `deCircI` stays total.
+
+The design then has a clean statement:
+
+> **At a `◯`-shaped goal the irregular judgment has exactly the regular
+> judgment's rules; elsewhere it stays focused.**
+
+That is PLL's `◯`-elimination demanding left access, and nothing more.
+`GbuIC` is 12 constructors, `#slime` 0.
+
 ## Status of the IPC layer
 
 | result | source | Lean | pins |

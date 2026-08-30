@@ -2617,3 +2617,33 @@ automatically, per the standing rule.
 
 **Next**: obstruction 2 first (it is a choice between two rule sets, and
 the answer decides what obstruction 1's success lemma has to cover).
+
+### 2026-08-30e — obstruction 2 CLEARED
+
+`L◯ᵢ` replaces `◯Y` by `Y`, which need not lie in `Ĝ`
+(`circ_body_escapes_gHat`, `G = ◯(p∧q) ⊃ p`).  `sfL_dec` settles what can
+escape, exhaustively: a left subformula is an atom, an implication or a
+`◯`-formula — already in `Ĝ` — or else `⊥`, `∧`, `∨`.  Nothing else.
+
+So `L⊥ᵢ`, `L∧ᵢ`, `L∨ᵢ` were admitted, each at a `◯`-shaped goal like the
+other irregular left rules.  Cost, checked in each direction:
+
+* soundness — the regular proofs transplant verbatim (`soundIC`);
+* termination — all three shrink `ctxSize`, so the PAPER's weight still
+  decreases (`wg_stepO`, `stepO_wf`), no store;
+* conservativity — each carries `◯C ∈ Sf^R(G)`, so none can fire on a
+  `◯`-free goal; `deCircI` stays total.  Negative-tested: injecting
+  `L∧ᵢ` WITHOUT the `◯`-goal condition makes both `soundIC` and
+  `deCircI` report the missing case and taints the pin.
+
+`GbuIC` is now 12 constructors (`GbuRC` 12), `#slime` 0 on both.
+
+The design has a clean statement: **at a `◯`-shaped goal the irregular
+judgment has exactly the regular judgment's rules; elsewhere it stays
+focused.**  That is PLL's `◯`-elimination demanding left access, and
+nothing more.  It also bears on obstruction 1: since the two judgments
+now have the SAME rules at a `◯` goal, the success lemma the irregular
+`◯` goal needs should be `gbuSuccCirc`'s, differing only in whether the
+database query is `EvalR` or `EvalI`.
+
+**Next**: obstruction 1 — the success lemma for `Ω →g ◯Z`.
