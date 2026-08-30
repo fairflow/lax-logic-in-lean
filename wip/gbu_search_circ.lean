@@ -31,6 +31,7 @@ nothing.  Carrying the last `Ĝ` ancestor — unrefuted, and `Clo`-below
 the current context — restores the licence at every left rule.
 -/
 import wip.gbu_circ
+import wip.gbu_weakening
 
 namespace FRJ.Gbu
 
@@ -249,7 +250,7 @@ Everything the modal search cannot close from `Gbu◯(G)`'s current rule
 set is isolated here as an explicit hypothesis, with its displayed
 statement.  Neither is a `sorry`: each is a `Prop` consumed at exactly
 one branch, so the theorem below states precisely what it does and does
-not establish.
+not establish.  (S3) is now known to be FALSE — see `not_cleanReg`.
 
 (S2), the unlicensed `L⊥ᵢ`/`L∧ᵢ`/`L∨ᵢ`, is CLEARED — see
 `UnrefutedBelow` in `wip/gbu_circ.lean`.  The numbering is kept.) -/
@@ -270,9 +271,10 @@ def BigAnte (G : Form) (D : FSeq → Prop) : Prop :=
     Nonempty (GbuIC G Ω (.circ Z))
 
 /-- **(S3)** the CLEAN-regular search, which `R⊃ₙᵢ` in the clean
-irregular mode releases into.  Its own residue is a critical context
-carrying a `◯` at a non-modal goal, where only the FALLIBLE joins apply
-and no clean row exists.
+irregular mode releases into.  **REFUTED** — see `not_cleanReg` at the
+end of this file.  It is kept as a hypothesis so that the shape of the
+obligation stays on the record, but it is FALSE for any `G` with a modal
+subformula, and `searchO` is therefore vacuous there.
 
     Ψ ⊆ Sf^L(G),  C ∈ Sf^R(G),  D ⋫ᶜ (Ψ ⇒g C)  ⟹  Ψ ⇒g C -/
 def CleanReg (G : Form) (D : FSeq → Prop) : Prop :=
@@ -921,5 +923,59 @@ theorem not_evalR_root {G : Form} (h : ¬ ProvableV G) :
 /-- info: 'FRJ.Gbu.not_evalR_root' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms not_evalR_root
+
+/-! ## (S3) is FALSE, and so is the `cirr` clause it serves
+
+`CleanReg` cannot be discharged: it is refuted, and by the sharpest cell
+in the development.
+
+    G = ◯p ⊃ p,    Ψ = { ◯p },    C = p
+
+* `D ⋫ᶜ (Ψ ⇒g p)` — any clean derivation of `Γ ⇒ p` with `◯p ∈ Cl(Γ)`
+  contradicts `not_clean_of_clo_circ`: the root would force `◯p`, hence
+  some `Rm`-successor forces `p`, hence (by `tag_cone`) the root does,
+  contradicting `lemma39R`.  This is `tag_weakening_refuted`'s fact
+  again, now as a database statement.
+* But `Ψ ⇒g p` is NOT derivable in `Gbu◯(G)`: by `soundRC` it would give
+  `◯p ⊨ p`, and `Kmc` refutes that.
+
+So (S3) is not a gap to be filled but a FALSE hypothesis, and `searchO`
+is vacuous wherever it is assumed — which is any `G` with a modal
+subformula.  The fault is upstream, in the `cirr` clause itself. -/
+
+private def pcr : Form := .atom "p"
+private def Gcr : Form := .imp (.circ pcr) pcr
+
+/-- No CLEAN row refutes `◯p ⇒ p`. -/
+theorem not_evalRC_circ_self :
+    ¬ EvalRC (FDerivable Gcr) [Form.circ pcr] pcr := by
+  intro h
+  obtain ⟨Γ, t, ⟨d⟩, htag, hcov⟩ :=
+    (evalRC_iff_refutedCleanly (saturated_fderivable Gcr)).mp h
+  exact FRJ.V.not_clean_of_clo_circ d (hcov _ List.mem_cons_self) htag
+
+/-- …and `◯p ⇒g p` is not derivable, since `◯p ⊭ p`. -/
+theorem not_gbuRC_circ_self : ¬ Nonempty (GbuRC Gcr [Form.circ pcr] pcr) := by
+  rintro ⟨d⟩
+  refine Kmc_not_force_p (soundRC (K := Kmc) d W2.wa ?_)
+  intro X hX
+  rcases List.mem_cons.mp hX with rfl | hX'
+  · exact Kmc_force_circ_p
+  · exact absurd hX' List.not_mem_nil
+
+/-- **(S3) is REFUTED.** -/
+theorem not_cleanReg : ¬ CleanReg Gcr (FDerivable Gcr) := by
+  intro h
+  exact not_gbuRC_circ_self
+    (h [Form.circ pcr] pcr
+      (fun X hX => by
+        rcases List.mem_cons.mp hX with rfl | hX'
+        · exact (by decide : Form.circ pcr ∈ sfL Gcr)
+        · exact absurd hX' List.not_mem_nil)
+      (by decide) not_evalRC_circ_self)
+
+/-- info: 'FRJ.Gbu.not_cleanReg' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_cleanReg
 
 end FRJ.Gbu

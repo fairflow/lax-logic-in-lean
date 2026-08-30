@@ -2976,3 +2976,53 @@ exactly the `clo_trans` transport. Restored, green; whole repo builds.
 
 The (S2) numbering is kept in the source so the three are still
 distinguishable across the record.
+
+## 2026-08-30k — S3 cannot be cleared: it is FALSE
+
+`CleanReg` is not a gap to be filled. It is refuted, kernel-checked
+(`not_cleanReg`, `[propext, Quot.sound]`), by the sharpest cell in the
+development:
+
+    G = ◯p ⊃ p,    Ψ = { ◯p },    C = p
+
+* **`D ⋫ᶜ (Ψ ⇒g p)`** (`not_evalRC_circ_self`). A clean derivation of
+  `Γ ⇒ p` with `◯p ∈ Cl(Γ)` contradicts `not_clean_of_clo_circ`: the root
+  forces `◯p`, so SOME `Rm`-successor forces `p`; `tag_cone` says every
+  PROPER successor refutes it; so that successor is the root, and the
+  root forces `p`, contradicting `lemma39R`. This is exactly
+  `tag_weakening_refuted`'s fact, now stated about the database.
+* **But `Ψ ⇒g p` is not derivable** (`not_gbuRC_circ_self`): `soundRC`
+  would give `◯p ⊨ p`, and `Kmc` refutes it.
+
+**Consequence, stated plainly: Theorem 8◯ is currently VACUOUS for any
+`G` with a modal subformula.** `searchO` takes `CleanReg G D` as a
+hypothesis; that hypothesis is false; so the theorem asserts nothing
+where it matters. §h reported the regular branch as proved, and it is —
+but the theorem it sits in cannot be discharged along this route. The
+correction belongs on the record.
+
+**Where the fault is.** `CleanReg` is consumed at exactly one place:
+`R⊃ₙᵢ` in the `cirr` mode. `cirr` at goal `A ⊃ B` with `¬ Cl(Ω) ∋ A` has
+only `R⊃ₙᵢ`, whose premise is a REGULAR sequent — and the clean query
+does not survive that release, because a clean row for `A :: Ω ⇒ B` need
+not exist even when no clean row for `Ω ⇒ A ⊃ B` does. Putting the
+antecedent into the context can introduce a `◯` whose body is the goal,
+which is precisely the configuration `not_clean_of_clo_circ` forbids.
+
+**What I did NOT settle.** The obvious repair is to have `cirr` carry
+the parent's `D ⋫ (Ω →g ◯C)` alongside the clean query, so that
+`R⊃ₙᵢ`'s premise can go to the PLAIN regular mode via `gbuInv9`. Whether
+that is sound depends on a question I have not answered: is
+`◯(◯p ⊃ p)` PLL-valid? If it is, then `⊢ ◯(◯p ⊃ p)` must be derivable,
+the only applicable rule at `[] ⇒g ◯(◯p⊃p)` is `R◯`, its premise
+`[] →g ◯p ⊃ p` is invalid, and **`Gbu◯` is incomplete** — a much sharper
+finding than S3, and the one worth settling next. Semantic attempts to
+refute `◯(◯p⊃p)` all collapsed (if `b ⊩ ◯p` then some `Rm`-successor
+forces `p` and hence `◯p ⊃ p` by monotonicity; if `b ⊮ ◯p` the
+implication tends to hold vacuously at `b` itself), which is evidence
+FOR validity, but it is evidence, not a proof, and it is recorded here
+as OPEN.
+
+Residues now: **(S1) `BigAnte`** — still a genuine open obligation;
+**(S3) `CleanReg`** — false, kept in the source only so the shape of the
+obligation stays visible.
