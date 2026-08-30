@@ -1,32 +1,32 @@
 {
-  "repo": ".",
+  "repo": "..",
   "corpora": [
-    "prover-toolkit/corpora/laxlogic.json"
+    "corpora/laxlogic.json"
   ],
   "index": {
     "roots": [
       {
-        "path": "LaxLogic",
+        "path": "../LaxLogic",
         "label": "laxlogic"
       },
       {
-        "path": "FRJ",
+        "path": "../FRJ",
         "label": "laxlogic"
       },
       {
-        "path": "FRJO",
+        "path": "../FRJO",
         "label": "laxlogic"
       },
       {
-        "path": "BiLax",
+        "path": "../BiLax",
         "label": "laxlogic"
       },
       {
-        "path": "Reject",
+        "path": "../Reject",
         "label": "laxlogic"
       },
       {
-        "path": "Rewrite",
+        "path": "../Rewrite",
         "label": "laxlogic"
       }
     ],
