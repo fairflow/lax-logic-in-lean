@@ -96,7 +96,19 @@ typecheck for a tagless `◯∉`, so the gate discriminates.
 
 ## 4. The task in hand
 
-In order. Each stage ends when its deliverable is pushed.
+**Before the first build**, in a fresh Claude worktree, clone the Lake cache
+from the repository root — it is an APFS clone, so it is instant, and without
+it the first build recompiles the whole development:
+
+```
+cp -Rc <repo-root>/.lake .lake
+```
+
+The repo root is `lax-logic-in-lean`, not `LaxLogic/`. Push with
+`scripts/campaign-push.sh frjw-dev`; never push the local `claude/…`
+worktree branch name.
+
+Then, in order. Each stage ends when its deliverable is pushed.
 
 **W1 — transcribe.** `FRJ/CalculusW.lean`: copy `FRJVr`/`FRJVi`, add
 `lift`, delete `impNotIn`. `#slime` must report 0; `#rules` must show one
