@@ -146,9 +146,11 @@ result is really about**.
   interpolation for PLL is OPEN and is not claimed**: it needs `CimpAnt`
   discharged, plus the interpolant read-back through `negOfO`.
   **Focalization for PLL — once the other half of this — is PROVED**
-  (2026-08-13): `bridge_iff` in `LaxLogic/LJFOBridge.lean`,
-  `[propext, Quot.sound]`, no choice, on branch
-  `claude/t1-lax-logic-refutation-37c0bf` and not yet merged here. Clause-by-clause detail, with the
+  (2026-08-13): `bridge_iff` in `LJF/OBridge.lean`,
+  `[propext, Quot.sound]`, no choice — MERGED (the LJF split-out of
+  2026-08-22 brought it in; an earlier note here saying "on branch
+  `claude/t1-lax-logic-refutation-37c0bf`, not yet merged" was stale,
+  corrected 2026-08-31). Clause-by-clause detail, with the
   four forced departures from paper practice: `docs/ljfo-fidelity.md`.
 * **Depended on by**: nothing outside its own family — `LJFORows`, `LJFO`,
   `LJFOHeight`, `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`, and the four

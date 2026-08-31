@@ -200,3 +200,86 @@ Stage-W1 gates in `FRJ/CalculusW.lean`: `#slime` pinned by
 `#guard_msgs` at 0 computed indices for both families (13 + 8
 constructors); the pin was watched to fail on an injected mismatch
 before shipping.  `#rules` output inspected and diffed as above.
+
+---
+
+## Route change (2026-08-31, Matthew): completeness via LJF◯ focalisation
+
+**Decision.**  The completeness of `Gbu◯(G)` is NOT to be pursued
+through the FRJ database/search route (the old W5/W6).  That route has
+repeatedly failed at the same focalization-shaped obligations
+(`searchO`/`BigAnte`/`CleanReg` retired by `residues_unsatisfiable`;
+several failed FRJV-completeness campaigns before that).  Instead:
+**go via LJF◯ focalisation**, which is already PROVED —
+
+    bridge_iff : Nonempty (LaxND Γ φ)
+                   ↔ Nonempty (Inv (Γ.map negOfO) [] .tru (negOfO φ))
+
+`LJF/OBridge.lean`, ON `frjw-dev` ALREADY (the calculus map's "unmerged
+branch t1" note was stale; corrected), pins `[propext, Quot.sound]`, no
+choice.  `LaxND ↔ SC` and cut elimination are also mechanised
+(`SC_to_ND`, `ND_to_SC`, `cutElimination`, `LaxLogic/PLLSequent.lean`).
+
+**Target statement** (syntactic end to end; `ofPLL` is the mechanised
+`PLLFormula ≃ Form` of `FRJ/Bridge.lean`):
+
+    gbuC_complete :  Nonempty (LaxND [] φ)  →  ProvableGbuC (ofPLL φ)
+
+by composing `bridge_iff (→)` with a NEW structural translation `T`
+from the four LJF◯ judgments into the two Gbu◯ ones.  Because LJF◯
+derivations are already focused, `T` is a recursion, not a
+focalization proof — the one focalization proof in the repository is
+reused, not re-done.
+
+**Judgment map, first draft (F1 settles it):**
+
+| LJF◯ | Gbu◯ |
+|---|---|
+| `Inv Γ Ω j N` (inversion) | left-invertible spine: `landL`/`lorL`/`lbot`/`lcirc`(+`I`) |
+| `Stab Γ .tru P` | `GbuRC` (re-entry point) |
+| `RFocus Γ j P` (right focus) | `GbuIC` |
+| `LFoc Γ N j P` (left focus) | nested `limpL` / `limpLI` spine |
+| flag `.lax`, `circR`/`laxOf`/`circL` | `rcirc`/`rcircI`/`lcirc`/`lcircI` |
+
+**Risk register — screen these BEFORE building `T` (counterexample
+first, per METHOD.md):**
+
+* **R1 — antecedent hyper-focus.**  `LFoc.impL`'s first premise is a
+  full `Stab Γ .tru Q` (may itself left-focus); Gbu◯'s `limpL` demands
+  the antecedent IRREGULAR (`GbuIC`, no left rules off the `◯`-goal
+  fragment).  Chained modus ponens is handled in Gbu◯ by ORDERING the
+  `limpL`s, so `T` at this case needs either a reordering/permutation
+  lemma or a proof that `focalizeSCO`'s output is already orderly.  If
+  neither holds at some cell, hunt a kernel-checked
+  Gbu◯-underivability witness there — that outcome means Gbu◯ needs a
+  rule amendment, which goes to Matthew as a displayed rule first.
+* **R2 — `limpLI`'s size condition** `A.hasCirc = false ∨ |A| < |◯C|`
+  at the lax flag: a focused derivation may demand an irregular
+  left-implication step with a large modal antecedent.  Same discipline:
+  drive the case, extract the candidate cell on failure, countermodel
+  before any rule change.
+* **R3 — plumbing.**  (i) `Sf^L/Sf^R` threading: Gbu◯'s modal
+  constructors carry membership conditions; supply an LJF◯ subformula
+  invariant (`LJF/OUniverse.lean`) or thread hypotheses through `T`.
+  (ii) `Clo` at `rimpI`/`rimpNI`: LJF◯'s `impR` always extends the
+  context, `rimpI` never does — `T` needs a `Clo`-absorption
+  (weakening-like) admissibility for `GbuRC`/`GbuIC`.
+
+**Stages (replacing the completeness role of W5/W6):**
+
+* **F1 — judgment map + statements.**  The displayed statement of `T`
+  for each judgment, with side-condition threading; put to Matthew
+  before building.
+* **F2 — screen R1–R3** as above; each screen failure is a RESULT
+  (candidate incompleteness cell for Gbu◯), not a blocker.
+* **F3 — build `T`**, mutual recursion, pins.
+* **F4 — compose** `gbuC_complete`; corollary with `soundRC`: Gbu◯ is
+  complete in itself, and the ◯L/◯R admissibility questions of
+  `wip/gbu_ndrules.lean` dissolve (they become corollaries).
+
+**Stood down, not deleted:** the database route (old W5/W6).  FRJW
+W1–W4 are banked and untouched — FRJW remains the disproof/countermodel
+side (`soundnessW`).  Whether to rebuild the FRJW search (decision
+procedure) after F4 is a separate decision for Matthew.  The `Eval*`
+lemmas over FRJV and `wip/gbu_db.lean` stay as they are; nothing new is
+built on them.

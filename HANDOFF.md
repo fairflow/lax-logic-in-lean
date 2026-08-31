@@ -3373,3 +3373,26 @@ means *G has an FRJV disproof*.
 
 Retired, do not inherit: `searchO`, `BigAnte`, `CleanReg`
 (`residues_unsatisfiable`).
+
+## 2026-08-31e — route change: Gbu◯ completeness via LJF◯ focalisation
+
+FRJW W1–W4 are DONE and pushed on `frjw-dev` (family + conservativity +
+fresh soundness `soundnessW` + the duality-gap witness at `◯(◯p ⊃ p)`),
+with the pre-W5 check `wip/gbu_ndrules.lean`: SC's `laxL` is a derived
+rule of Gbu◯ in both judgments; `laxR` over an irregular premise is
+`rcirc`/`rcircI` verbatim; `laxR` at the regular judgment is OPEN and
+is focalization-shaped (sticks at `randR`/`rimpI` polarity, resp.
+`limpLI`'s size condition).
+
+Matthew's decision: do NOT pursue completeness through the FRJ
+database/search route (old W5/W6) — previous attempts kept failing
+there.  Go via **LJF◯ focalisation**: `bridge_iff` in `LJF/OBridge.lean`
+(already on `frjw-dev`; the calculus map's "unmerged t1 branch" note was
+stale and is corrected) gives `LaxND ↔ LJF◯`; the new work is a
+structural translation `T : LJF◯ → Gbu◯`, then
+`gbuC_complete : Nonempty (LaxND [] φ) → ProvableGbuC (ofPLL φ)`.
+
+The full amended plan — chain, judgment map, risk register R1–R3
+(antecedent hyper-focus at `LFoc.impL`; `limpLI`'s size condition;
+`Sf`/`Clo` plumbing), stages F1–F4, and what stands down — is the
+"Route change" section of `docs/frjw-plan.md`.  Read that to continue.
