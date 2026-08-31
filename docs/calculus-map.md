@@ -99,10 +99,22 @@ result is really about**.
 * **Status here**: `derivUNoFall_iff_infallible_valid`, plus results that are
   ours: `varfree_dichotomy` (the variable-free fragment collapses to `{⊥, ⊤}`;
   the proof uses the axiom exactly once, in the `◯` case, and never uses
-  distribution, so it applies verbatim to PLL + `¬◯⊥`), and `exUI` / `allUI`
+  distribution, so it applies verbatim to PLL + `¬◯⊥`), `exUI` / `allUI`
   (uniform interpolation into the variable-free fragment, trivial once that
   fragment is two elements — the ≥ 2-variable problem is deliberately not
-  asserted).
+  asserted), and `derivUNoFall_iff_IPLND` in `PLLNoFallNF.lean`
+  (**conservativity over IPC on the `◯`-free fragment**: on `◯`-free sequents
+  PCLL + `¬◯⊥` proves neither more nor less than IPC — both hypotheses are
+  `isIPL`, so it says nothing about a formula carrying a `◯`.  Ours, not
+  F&M's; it calibrates uniform interpolation, since full UI here contains
+  full UI for IPC by Pitts).
+* **What `¬◯⊥` does NOT do, flagged 2026-08-31**: it does not collapse `◯`.
+  `◯` survives on atoms and implications — that is exactly what the `◯`-normal
+  form of `PLLNoFallNF.lean` is for.  The word "collapse" in this development
+  refers ONLY to the VARIABLE-FREE fragment (`varfree_dichotomy`), infinite in
+  PLL and PCLL because `◯⊥` generates a Rieger–Nishimura-style ladder.
+  Reading "infallible collapse" as "`◯` becomes vacuous" put a false claim
+  into the calculus ledger; the phrase has been removed from the table below.
 * **Naming caveat, flagged 2026-08-07**: the theorem name says
   "infallible_valid" but the model class is *mutually confluent **and***
   infallible, which is strictly smaller than F&M's `F = ∅` class — on the plain
@@ -187,7 +199,9 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | join-primality / visibility proofs | `SC` (Harrop induction) | `wip/visible.lean` |
 | the `◯`-depth hierarchy | `LaxND` + constraint models | `wip/depth*.lean` |
 | distribution, confluence | `DerivU` | `PLLConfluentComplete.lean` |
-| infallible collapse | `DerivUNoFall` | `PLLNoFall.lean` |
+| completeness for `F = ∅` (F&M Thm 4.7, first bullet) | `DerivUNoFall` | `PLLNoFall.lean` |
+| the VARIABLE-FREE collapse to `{⊥, ⊤}` | `DerivUNoFall` | `PLLNoFall.lean` |
+| conservativity over IPC on the `◯`-free fragment | `DerivUNoFall` | `PLLNoFallNF.lean` |
 | strong normalisation | proof terms of `LaxND` | `PLLTopTop.lean` |
 | the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJFOCore.lean` |
 | the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
