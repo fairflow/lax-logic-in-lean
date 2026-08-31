@@ -48,6 +48,10 @@ class Item:
     repo: str
     file: str
     line: int              # 1-indexed line of the `theorem`/`lemma` keyword
+    decl_start: int        # 1-indexed first line of the declaration, attributes
+                           # and doc-comment included -- the start of the span a
+                           # hole-punch must remove
+    decl_end: int          # 1-indexed line AFTER the declaration's last line
     name: str
     prefix: str            # everything before the declaration
     statement: str         # the declaration header, up to but excluding `:=`
@@ -209,6 +213,8 @@ def extract_file(repo: Path, rel: str, group: str, max_proof_lines: int) -> tupl
                 repo=str(repo),
                 file=rel,
                 line=s + 1,
+                decl_start=decl_start + 1,
+                decl_end=end + 1,
                 name=name,
                 prefix=prefix,
                 statement=(attrs + statement).rstrip(),

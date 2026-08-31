@@ -41,8 +41,8 @@ costing 5× less per token proved 8% of attempts against another's 62%.
 
 ```bash
 export AX_PROVER_HOME=~/src/ax-prover-base       # your ax-prover checkout
-python3 prover-toolkit/leansearch/build_index.py
-python3 prover-toolkit/leansearch/server.py --port 8080 &
+python3 prover-toolkit/leansearch/build_index.py    # required on a FRESH worktree
+python3 prover-toolkit/leansearch/server.py &      # port comes from toolkit.json
 python3 prover-toolkit/extract.py --config prover-toolkit/corpora/laxlogic.json \
         -o prover-toolkit/corpora/items.jsonl
 ```
@@ -50,13 +50,24 @@ python3 prover-toolkit/extract.py --config prover-toolkit/corpora/laxlogic.json 
 `toolkit.json` in the project root holds every path; nothing is hardcoded. See
 the docstring in `toolkit_config.py`.
 
-## A Claude Code skill
+## Two Claude Code skills
 
-`skill/prove-lemma/` wraps the above. Install with:
+There are two routes, and they are not ranked. Install either or both:
 
 ```bash
-cp -r prover-toolkit/skill/prove-lemma ~/.claude/skills/
+cp -r prover-toolkit/skill/prove-lemma        ~/.claude/skills/   # hosted API
+cp -r prover-toolkit/skill/prove-lemma-inloop ~/.claude/skills/   # Claude proposes
 ```
+
+- **`prove-lemma`** hands the goal to a hosted model through `ax-prover`. It is
+  unattended and can grind through many lemmas; it costs money per attempt.
+- **`prove-lemma-inloop`** puts Claude in the proposer seat and uses the
+  toolkit only for retrieval, goal states and verification. Free per attempt,
+  and it can bring repository context a fixed prompt cannot carry. **Start
+  here:** [`USING-THE-SKILL.md`](USING-THE-SKILL.md).
+
+The installed copies do **not** track this repository — re-run the `cp` after
+changing anything under `skill/`.
 
 ## Known limitations
 
@@ -71,6 +82,14 @@ cp -r prover-toolkit/skill/prove-lemma ~/.claude/skills/
   generated file compiles with exactly one `sorry` before trusting it.
 - The axiom gate has **no baseline for a genuinely open goal**, and falls back
   to accepting anything `sorry`-free. Check such proofs by hand.
+- **The retrieval ablation has still not been run.** `ablate.sh` sets up both
+  conditions and records results, and `challenge.py retrieval-check` measures
+  the half that needs no agent, but the with/without-index comparison itself
+  needs an agent per target per condition and has not been done. Until it is,
+  "whether the corpus index helps" remains open — see below.
+- `exclude` entries in `toolkit.json` are matched as single **path
+  components**, not relative paths; a path-shaped entry warns since 2026-08-30
+  but still matches nothing.
 - `corpora/items.jsonl` is derived data and not committed. If it is missing the
   gate warns and degrades; rebuild it with `extract.py`.
 
@@ -89,7 +108,37 @@ Reasonably supported: general capability beat Lean-specific training; the
 agentic loop beats one-shot on harder lemmas; ~97% of an agentic round is model
 thinking, not Lean (6 s of 145 s).
 
+A first bound on the index's usefulness, from
+`challenge.py retrieval-check` over the five-target challenge set: of 22
+external citations the targets need, **12 are off-corpus** (Lean core and
+Mathlib, which this index does not cover), and of the 10 in-corpus ones a
+statement-shaped query surfaces **2 at k=10**. For that set the index has
+little to offer, and it is an absence problem rather than a ranking one.
+
 **Not** established: whether the corpus index helps — it is *used*, but never
 ablated; any ranking between models run on different lemmas; or anything
 beyond this one development. One hypothesis was tested and **refuted**:
-truncating the prompt context was *not* suppressing one-shot results.
+truncating the prompt context was *not* suppressing one-shot results.\n
+## The challenge set
+
+`challenge.py` builds a challenge set from the corpus that is not a
+walkthrough ending at the answer. The first set was bare prefix truncation,
+which guarantees that everything the ground-truth proof used sits above the
+cut; of its four files, one had its answer in a sibling file and two more had
+every ingredient in the prefix.
+
+```bash
+python3 prover-toolkit/challenge.py report                       # filter verdicts
+python3 prover-toolkit/challenge.py build --punch -o LaxLogic/ToolkitTest/Challenge
+python3 prover-toolkit/challenge.py score <target>               # closed? on what axioms?
+python3 prover-toolkit/challenge.py retrieval-check              # can the index deliver?
+```
+
+`--punch` writes a copy of each source module with its targets *deleted* under
+`LaxLogic/ToolkitTest/Punched/`, and a short challenge file that imports it —
+so the challenge can be read in full without learning anything. Build the
+punched modules with `lake build ToolkitPunched`.
+
+Rationale, filters and what testing them changed:
+[`../docs/toolkit-test-design.md`](../docs/toolkit-test-design.md).
+
