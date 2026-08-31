@@ -268,6 +268,79 @@ def transportWr {G : Form} : ∀ {t : Tag} {Γ Γ' : List Form} {C : Form},
   | _, _, _, _, .joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ, h =>
       .joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg (h.symm.trans hΓ)
 
+/-! ## Stage W2 — conservativity: FRJV embeds
+
+Every FRJV disproof is an FRJW disproof, at the same indices.  The only
+case that is not the identity on the rule name is `impNotIn`,
+reconstructed as `lift` composed with `⊃∈`: from `d : Γ ⇒ B` and
+`Cl(Γ) ∋ A`, `impIn` gives `Γ ⇒ A ⊃ B`, and `lift` retains the same `Θ`
+(`⊃∉`'s `hTh` is verbatim `lift`'s side condition).  `⊃∉`'s extra
+condition `¬ Cl(Θ) ∋ A` (`hAnot`) is discarded — it is not needed.
+
+This is what licenses reusing the FRJV corpus over FRJW; it is proved
+BEFORE soundness (W3) for exactly that reason. -/
+
+mutual
+
+/-- Every regular FRJV disproof is a regular FRJW disproof. -/
+def toWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
+    FRJVr G t Γ C → FRJWr G t Γ C
+  | _, _, _, .axR F hF hg hΓ => .axR F hF hg hΓ
+  | _, _, _, .andR1 d hg => .andR1 (toWr d) hg
+  | _, _, _, .andR2 d hg => .andR2 (toWr d) hg
+  | _, _, _, .impIn d hA hg => .impIn (toWr d) hA hg
+  | _, _, _, .circIn d htag hg => .circIn (toWr d) htag hg
+  | _, _, _, .joinAt prem hJ1 hJ2 hcirc hkc hF hFnot hg hΓ =>
+      .joinAt (fun j => toWi (prem j)) hJ1 hJ2 hcirc hkc hF hFnot hg hΓ
+  | _, _, _, .joinAtP prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ =>
+      .joinAtP (fun j => toWi (prem j)) (fun i => toWr (dps i))
+        hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ
+  | _, _, _, .joinAtF prem hJ1 hJ2 hF hFnot hg hΓ =>
+      .joinAtF (fun j => toWi (prem j)) hJ1 hJ2 hF hFnot hg hΓ
+  | _, _, _, .joinOr prem hJ1 hJ2 hcirc hkc hC hg hΓ =>
+      .joinOr (fun j => toWi (prem j)) hJ1 hJ2 hcirc hkc hC hg hΓ
+  | _, _, _, .joinOrP prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ =>
+      .joinOrP (fun j => toWi (prem j)) (fun i => toWr (dps i))
+        hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ
+  | _, _, _, .joinOrF prem hJ1 hJ2 hC hg hΓ =>
+      .joinOrF (fun j => toWi (prem j)) hJ1 hJ2 hC hg hΓ
+  | _, _, _, .joinCirc prem hJ1 hJ2 hcirc hkc hZ hg hΓ =>
+      .joinCirc (fun j => toWi (prem j)) hJ1 hJ2 hcirc hkc hZ hg hΓ
+  | _, _, _, .joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ =>
+      .joinCircP (fun j => toWi (prem j)) (fun i => toWr (dps i))
+        hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ
+
+/-- Every irregular FRJV disproof is an irregular FRJW disproof.  The
+`impNotIn` case is the reconstruction `lift (impIn d hA hgoal) hTh`;
+`hAnot` is discarded. -/
+def toWi {G : Form} : ∀ {St Th : List Form} {C : Form},
+    FRJVi G St Th C → FRJWi G St Th C
+  | _, _, _, .axI F hF hg hTh => .axI F hF hg hTh
+  | _, _, _, .andI1 d hg => .andI1 (toWi d) hg
+  | _, _, _, .andI2 d hg => .andI2 (toWi d) hg
+  | _, _, _, .orI d₁ d₂ h₁ h₂ hg hSt hTh =>
+      .orI (toWi d₁) (toWi d₂) h₁ h₂ hg hSt hTh
+  | _, _, _, .impInI d hpre hdisj hA hg hSt hTh =>
+      .impInI (toWi d) hpre hdisj hA hg hSt hTh
+  | _, _, _, .impNotIn d hTh hA _hAnot hg =>
+      .lift (.impIn (toWr d) hA hg) hTh
+  | _, _, _, .circNotIn d htag hTh hg =>
+      .circNotIn (toWr d) htag hTh hg
+  | _, _, _, .axIC F ats hats hFf hg hTh => .axIC F ats hats hFf hg hTh
+
+end
+
+/-- **Conservativity over FRJV**, at the judgment level: whatever FRJV
+disproves, FRJW disproves. -/
+theorem disprovableW_of_provableV {G : Form} (h : ProvableV G) :
+    DisprovableW G := by
+  obtain ⟨t, Γ, ⟨d⟩⟩ := h
+  exact ⟨t, Γ, ⟨toWr d⟩⟩
+
+/-- info: 'FRJ.disprovableW_of_provableV' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms disprovableW_of_provableV
+
 /-! ## Stage-W1 gate: no computed index in any constructor's return type
 
 `#rules FRJWr` / `#rules FRJWi` print the rule tables for inspection
