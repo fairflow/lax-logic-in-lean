@@ -164,16 +164,47 @@ result is really about**.
   `claude/t1-lax-logic-refutation-37c0bf`, not yet merged" was stale,
   corrected 2026-08-31). Clause-by-clause detail, with the
   four forced departures from paper practice: `docs/ljfo-fidelity.md`.
-* **Depended on by**: nothing outside its own family — `LJFORows`, `LJFO`,
-  `LJFOHeight`, `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`, and the four
-  `wip/ljfo_*` probes (`_eval`, `_attack`, `_attack_weights`, `_crosscheck`).
-  No result elsewhere in the repository rests on it.
+* **Depended on by**: its own family — `LJFORows`, `LJFO`, `LJFOHeight`,
+  `LJFOUniverse`, `LJFOSearch`, `LJFOFuel`, and the four `wip/ljfo_*`
+  probes (`_eval`, `_attack`, `_attack_weights`, `_crosscheck`) — and,
+  since 2026-08-31, by `Gbu◯` completeness: `gbuC_complete`
+  (`wip/gbu_ljfo.lean`) rests on `bridge_iff`.  (The earlier claim here
+  that no result elsewhere rests on it is superseded.)
 * **Do not confuse with the θ-chain results.** `thetaStabilises`,
   `thetaNotStrict` and the GZ-candidate-cell analysis (`wip/ljfo_theta_*`) are
   **`LaxND`** statements about PLL formulas — `Nonempty (LaxND Γ φ)` —
   certified by `PLLND.Search.prove?Bounded` and revalidated by the kernel.
   They concern the *cell* the LJF◯ construction was aimed at, not the
   construction, and they would stand unchanged if LJF◯ were abandoned.
+
+### `Gbu◯` — the two-judgment provability calculus, complete for PLL
+
+* **Files**: `wip/gbu.lean` (`Gbu`, `◯`-free), `wip/gbu_circ.lean`
+  (`Gbu◯`: the regular judgment `Ψ ⇒g C` / `GbuRC` and the irregular
+  right-focused judgment `Ψ →g C` / `GbuIC`, with the three `◯` rules),
+  `wip/gbu_ljfo.lean` + `wip/gbu_ljfo_support.lean` +
+  `wip/gbu_ljfo_transport.lean` (the LJF◯ → Gbu◯ translation).
+* **Whose**: `Gbu` is Fiorentini & Ferrari §5; the `◯`-extension is
+  ours, including the licenced `|◯C|` adaptation of `L⊃ᵢ` (2026-08-31:
+  side condition `A ∈ Sf^R G` in place of the size bound; the
+  justifying underivable-but-valid cell is documented at the rule).
+* **Status**: soundness `pll_of_provableGbuC` `[propext]`;
+  conservativity over `Gbu` on `◯`-free `G`
+  (`provableGbuC_iff_provableGbu`, `[propext]`); **completeness for
+  PLL PROVED (2026-08-31)**:
+
+      gbuC_complete : Nonempty (LaxND [] φ) → ProvableGbuC (ofPLL φ)
+
+  `#guard_msgs`-pinned `[propext, Quot.sound]`, in
+  `wip/gbu_ljfo.lean` — composition of `bridge_iff` (LJF◯
+  focalization) with the mode-generic CPS translation `tInv`.  With
+  soundness, `Gbu◯` is complete in itself; the `◯L`/`◯R`
+  admissibility questions of `wip/gbu_ndrules.lean` are corollaries.
+* **Do not confuse**: FRJ-family objects (FRJ / FRJV / FRJW) are
+  DISPROOFS; `Gbu◯` derivations are proofs.  The FRJ database/search
+  route to `Gbu◯` completeness (`searchO`, Theorem 8◯) is RETIRED —
+  its two supplies are jointly unsatisfiable
+  (`residues_unsatisfiable`, `wip/gbu_search_circ.lean`).
 
 ### The term calculus and reduction
 
@@ -206,6 +237,7 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJFOCore.lean` |
 | the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
 | E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |
+| completeness of `Gbu◯` for PLL (`gbuC_complete`) | `Gbu◯`, via `LJF◯` (`bridge_iff` + `tInv`) | `wip/gbu_ljfo.lean` |
 | the θ-chain, the GZ-candidate cell, `thetaStabilises` | `LaxND` (certificates from `G4c` search) | `wip/ljfo_theta_*.lean` |
 | the 1-pv ∃p wrapper: `semExC_upper`/`semExC_adjunction` PROVED; the amalgamation conditional on `ClosedCollapse 6` — REFUTED-in-spirit (no collapse ≤ 7; `R₀ = 5` refuted outright), so the kernels stand OPEN; `SemExC1Definable` OPEN | `DerivU` + confluent constraint models | `wip/pcll1pv_stage*.lean`, `wip/closed_frag*.lean` |
 
