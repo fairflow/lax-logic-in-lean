@@ -23,5 +23,7 @@ __pycache__/
 *.pyc
 
 # challenge.py compiles candidates through a temp file at the repo root; a
-# killed run leaves one behind.
+# killed run leaves one behind.  `_`-prefixed files are scratch probes run
+# against the toolkit; one was committed by mistake at 8faed16.
 tmp*.lean
+_*.lean
