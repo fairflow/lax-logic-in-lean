@@ -1219,4 +1219,132 @@ theorem zones_separate_p_q :
 #guard_msgs in
 #print axioms zones_separate_p_q
 
+/-! ## (★) is not the residue: the `irr` clause itself is FALSE
+
+Two facts, in order.
+
+**First, (★) is not needed.**  It was needed only in the redesign of
+`cirr` that carries the PLAIN regular query `¬ D ▷ (Ω ⇒g C)`, at that
+mode's `R◯ᵢ` case.  But `R◯ᵢ` need not recurse inside `cirr` at all: the
+premise of `rcircI` is an IRREGULAR sequent, and the `irr` mode accepts
+it, because the query transfers by a lemma that is already proved,
+
+    gbuSuccCirc :  D ▷ (Ω →g Z)  ⟹  D ▷ (Ω ⇒g ◯Z)
+
+whose contrapositive is exactly (BSr1) for the premise.  That is
+`cirr_circ_to_irr` below.  With `R⊃ₙᵢ` closed by `gbuInv6` (the plan of
+the previous section) the `cirr` mode then needs no new principle at
+all — neither (S3) nor (★).
+
+**Second, that does not save `searchO`,** because the `irr` clause is
+false at a cell neither mode ever touches:
+
+    G = ◯(◯p ⊃ p),   Ω = ∅,   C = ◯(◯p ⊃ p)
+
+Both sides of the irregular duality are empty there.
+
+* `D ⋫ (∅ →g ◯(◯p ⊃ p))`.  `no_irregular_circ_imp_self` is
+  kernel-checked for every `G`, `Z`, `Σ`, `Θ`: only `◯∉` and `Ax^I◯`
+  conclude a `◯` goal; `◯∉` needs a CLEAN regular row for `◯Z ⊃ Z`,
+  which `not_clean_imp_self` forbids, and `Ax^I◯` needs
+  `classForce ats (◯Z ⊃ Z) = false`, impossible because `◯` is
+  transparent to `classForce` and the body is the classical tautology
+  `¬x ∨ x`.
+* `∅ →g ◯(◯p ⊃ p)` is not derivable in `Gbu◯(G)` — and must not be.
+  `soundIC` gives the irregular judgment the SAME semantic reading as
+  the regular one, `∀ w. w ⊩ Ψ → w ⊩ C`, and `◯(◯p ⊃ p)` is refuted by
+  the model `GccWitness` extracts (`countermodel_Gcc`).
+
+So the fault is on the FRJV side and it is an INCOMPLETENESS of the
+irregular judgment: `⊬ ◯(◯Z ⊃ Z)`, yet `FRJV(G)` has no irregular
+refutation of it.  And it is not confined to the empty context.  The
+regular mode's `∨` case chooses a disjunct by testing `D ▷ (Ω →g Cᵢ)`;
+by `not_evalI_Gcc` — which holds for EVERY `G` and EVERY `Ω` — that test
+can never succeed at `Cᵢ = ◯(◯p ⊃ p)`, so the search commits to such a
+disjunct unconditionally, whatever else is available on the right.  At
+`Ω = ∅` the commitment is provably fatal.
+
+What FRJV lacks is what §2026-08-30n already named: a way to introduce a
+FRESH BARREN ROOT below an existing refutation while keeping a chosen
+`Ĝ`-context.  Its displayed shape would be
+
+    Γ ⇒ C        Θ ⊆ Ĝ,  Θ ⊆ Cl(Γ)
+    ────────────────────────────────  (R^bar)
+    Θ → C                                    at tag `barren`
+
+which is `◯∉` with the cleanliness demand replaced by the CONSTRUCTION
+of a clean root.  Adding it is a CALCULUS proposal, for review, not a
+search fix; the soundness obligation it must discharge is that the fresh
+root forces `Θ`, refutes `C`, and has modal cone `{root}`. -/
+
+/-- **(★) is unnecessary.**  In the `cirr` mode at a `◯` goal the
+premise of `rcircI` may be handed to the `irr` mode: `gbuSuccCirc`
+transfers the query, and the context is a `Ĝ`-context, so (BSr1) and
+`UnrefutedBelow` coincide. -/
+theorem cirr_circ_to_irr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
+    (hgoal : Form.circ Z ∈ sfR G)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
+    (hne : ¬ EvalR D Ω (.circ Z)) : UnrefutedBelow G D Ω Z :=
+  unrefutedBelow_of_gHat (fun X hX => List.mem_append_left _ (hΩ X hX))
+    (fun h => hne (gbuSuccCirc hsat hΩ hgoal himp h))
+
+/-- `∅ →g ◯(◯p ⊃ p)` is not derivable in `Gbu◯(G)`, for any `G` —
+`soundIC` would make it valid, and `GccWitness` refutes it. -/
+theorem not_gbuIC_Gcc {G : Form} : ¬ Nonempty (GbuIC G [] Gcc) := by
+  rintro ⟨d⟩
+  exact FRJ.V.modR_countermodel GccWitness.2
+    (soundIC (K := FRJ.V.modR GccWitness.2) d _
+      (fun X hX => absurd hX List.not_mem_nil))
+
+/-- …and `FRJV(G)` has no irregular refutation of it either — over ANY
+context and for ANY `G`, so the regular mode's `∨` test can never
+succeed at this disjunct. -/
+theorem not_evalI_Gcc {G : Form} {Ω : List Form} :
+    ¬ EvalI (FDerivable G) Ω Gcc := by
+  rintro ⟨St, Th, ⟨d⟩, -, -⟩
+  exact FRJ.V.WCounter.no_irregular_circ_imp_self d
+
+/-- **The `irr` clause of `SearchOkO` is REFUTED.** -/
+theorem not_searchOkO_irr :
+    ¬ SearchOkO Gcc (FDerivable Gcc) (.irr, [], Gcc) := by
+  intro h
+  refine not_gbuIC_Gcc (h (fun X hX => absurd hX List.not_mem_nil)
+    (fun _ X hX => absurd hX List.not_mem_nil) (sfR_self Gcc)
+    ⟨not_evalI_Gcc, [], (fun X hX => absurd hX List.not_mem_nil),
+      (fun X hX => absurd hX List.not_mem_nil), not_evalI_Gcc⟩)
+
+/-- **Corollary.**  The two residues are not merely open — they are
+JOINTLY UNSATISFIABLE at `Gcc`, whatever the decidability suppliers.  So
+no discharge of (S1) or (S3), and no repair of the `cirr` mode, can make
+`searchO` non-vacuous for a modal `G`. -/
+theorem residues_unsatisfiable
+    (decI : ∀ Ω C, Decidable (EvalI (FDerivable Gcc) Ω C))
+    (decRC : ∀ Ψ C, Decidable (EvalRC (FDerivable Gcc) Ψ C)) :
+    ¬ (BigAnte Gcc (FDerivable Gcc) ∧ CleanReg Gcc (FDerivable Gcc)) := by
+  rintro ⟨hb, hc⟩
+  exact not_searchOkO_irr
+    (searchO (saturated_fderivable Gcc) decI decRC hb hc (.irr, [], Gcc))
+
+/-- info: 'FRJ.Gbu.residues_unsatisfiable' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms residues_unsatisfiable
+
+/-- info: 'FRJ.Gbu.cirr_circ_to_irr' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms cirr_circ_to_irr
+
+/-- info: 'FRJ.Gbu.not_gbuIC_Gcc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_gbuIC_Gcc
+
+/-- info: 'FRJ.Gbu.not_evalI_Gcc' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_evalI_Gcc
+
+/-- info: 'FRJ.Gbu.not_searchOkO_irr' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_searchOkO_irr
+
 end FRJ.Gbu

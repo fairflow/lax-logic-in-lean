@@ -3295,3 +3295,66 @@ of ρ12, ρ13, ρ19, ρ20 hits 15–18 other targets. So neither the goal
 shape nor the source alone discriminates: it is the PAIR. The next step
 is data, not another hypothesis — `lake exe frjvrun cell 12 18` dumps
 the saturated database's regular rows for one miss, and that is running.
+
+## 2026-08-31c — (★) resolved by refutation of the specification it served
+
+Directive: "now go back to proving (★)".  (★) is not provable-or-refutable
+as posed, because it is not needed and because the clause it was meant to
+repair is itself false.  Two results, both in `wip/gbu_search_circ.lean`,
+both `[propext, Quot.sound]`.
+
+**1. (★) is unnecessary.**  It arose only in the redesign of the `cirr`
+mode that carries the plain regular query, at `R◯ᵢ`.  But `rcircI`'s
+premise is IRREGULAR, and the `irr` mode accepts it directly — the query
+transfers by the already-proved
+
+    gbuSuccCirc :  D ▷ (Ω →g Z)  ⟹  D ▷ (Ω ⇒g ◯Z)
+
+whose contrapositive IS (BSr1) for the premise.  Recorded as
+
+    cirr_circ_to_irr :  Ω ⊆ Ĝ_at ∪ Ĝ_imp → ◯Z ∈ Sf^R(G) →
+      (∀ A ⊃ B ∈ Ω, D ▷ (Ω →g A)) → ¬ D ▷ (Ω ⇒g ◯Z) →
+      UnrefutedBelow G D Ω Z
+
+With `R⊃ₙᵢ` closed by `gbuInv6` (§2026-08-31a), the `cirr` mode needs
+neither (S3) nor (★).
+
+**2. The `irr` clause of `SearchOkO` is FALSE**, at a cell neither mode
+touches: `G = Ω-goal = Gcc = ◯(◯p ⊃ p)`, `Ω = ∅`.  Both sides of the
+irregular duality are empty.
+
+* `not_evalI_Gcc : ¬ EvalI (FDerivable G) Ω Gcc` — for EVERY `G` and
+  EVERY `Ω`, from `no_irregular_circ_imp_self` (§2026-08-31b).
+* `not_gbuIC_Gcc : ¬ Nonempty (GbuIC G [] Gcc)` — and this is FORCED:
+  `soundIC` gives the irregular judgment the same semantic reading as
+  the regular one, `∀w. w ⊩ Ψ → w ⊩ C`, and `Gcc` is refuted by the
+  model `GccWitness` extracts (`countermodel_Gcc`).
+* hence `not_searchOkO_irr : ¬ SearchOkO Gcc (FDerivable Gcc) (.irr, [], Gcc)`
+* hence `residues_unsatisfiable` : for any decidability suppliers,
+  `¬ (BigAnte Gcc D ∧ CleanReg Gcc D)`.  The residues are not open —
+  they are jointly unsatisfiable, so no discharge of (S1)/(S3) and no
+  repair of `cirr` can make `searchO` non-vacuous for modal `G`.
+
+The `∨` case of the regular mode makes this reachable rather than an
+artefact of the ∀-statement: it picks a disjunct by testing
+`D ▷ (Ω →g Cᵢ)`, and by `not_evalI_Gcc` that test can NEVER succeed at
+`Cᵢ = ◯(◯Z ⊃ Z)`, so the search commits to such a disjunct
+unconditionally, whatever is available on the right.
+
+**Diagnosis.**  The fault is on the FRJV side: an incompleteness of the
+IRREGULAR judgment.  `⊬ ◯(◯Z ⊃ Z)`, yet FRJV has no irregular refutation
+of it, because `◯∉` demands a clean regular row for `◯Z ⊃ Z` and
+`not_clean_imp_self` forbids one.
+
+**Calculus proposal, for review — NOT implemented.**  A fresh barren
+root below an existing refutation, keeping a chosen `Ĝ`-context:
+
+        Γ ⇒ C          Θ ⊆ Ĝ,   Θ ⊆ Cl(Γ)
+    ─────────────────────────────────────────  (R^bar)
+                    Θ → C
+
+i.e. `◯∉` with the cleanliness DEMAND replaced by the CONSTRUCTION of a
+clean root.  Soundness obligation: the fresh root forces `Θ`, refutes
+`C`, and has modal cone `{root}`.  The third conjunct is the one to
+screen first — `◯` refutation at the new root quantifies over the whole
+upper cone, not just the root.
