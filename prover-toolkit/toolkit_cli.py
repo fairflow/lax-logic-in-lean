@@ -132,12 +132,14 @@ def cmd_check(cfg, args) -> int:
         print(f"FAIL — no axiom report for `{full}`. The check did not run; "
               f"do not treat this as a pass.")
         return 1
-    if re.search(r"declaration uses `sorry`", out):
-        print("FAIL — the file still contains `sorry`")
-        for w in re.findall(r"^\S+:(\d+):\d+: warning: declaration uses `sorry`",
-                            out, re.MULTILINE)[:5]:
-            print(f"  line {w}")
-        return 1
+    # OTHER `sorry`s in the file are reported, not fatal.  A plan file with one
+    # theorem per lemma and most of them still open is the normal way to work
+    # here, and refusing to certify the one you just closed made that
+    # impossible.  Soundness does not depend on this gate: `sorryAx` in the
+    # TARGET's own axioms is the authoritative test below, and it catches a
+    # `sorry` reached through a helper too, which a file scan does not.
+    other_sorries = re.findall(
+        r"^\S+:(\d+):\d+: warning: declaration uses `sorry`", out, re.MULTILINE)
 
     if errors:
         print(f"FAIL — {len(errors)} compile error(s)")
@@ -145,10 +147,16 @@ def cmd_check(cfg, args) -> int:
             print("  " + e[:200])
         return 1
     if "sorryAx" in axs:
-        print("FAIL — still contains `sorry` (axioms include sorryAx)")
+        print(f"FAIL — `{full}` still rests on `sorry` (axioms include sorryAx)")
         return 1
-    print(f"OK — compiles, no sorry")
+    print(f"OK — `{full}` compiles, no sorry")
     print(f"  axioms: {axs if axs else 'none'}")
+    if other_sorries:
+        print(f"  NOTE: {len(other_sorries)} other declaration(s) in this file "
+              f"still open, at line(s) {', '.join(other_sorries[:8])}"
+              f"{' ...' if len(other_sorries) > 8 else ''}.")
+        print("  That does not affect this result: the axiom report above is "
+              "for this declaration alone.")
     if args.baseline:
         base = {b.strip() for b in args.baseline.split(",") if b.strip()}
         extra = sorted(set(axs) - base)
