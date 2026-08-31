@@ -120,6 +120,64 @@ Do **not** certify a file with `grep -c sorry`: `grep` here wraps `ugrep -I`
 and silently skips any file containing a NUL byte. Read the bytes, or trust
 `#print axioms`, which catches a `sorry` reached through a helper too.
 
+## Applying the toolkit to a live campaign
+
+The four-lemma challenge set is a fixture, not the intended use. The intended
+use is a campaign: a file of stated lemmas, most of them open, closed one at a
+time.
+
+**You do not need one `sorry` per file.** `goals` reports every open goal in a
+file separately, and `check <file> <name>` judges the named declaration alone —
+other open lemmas are reported and do not fail it. The single-`sorry` rule
+belongs to the *benchmark extractor*, which needs an unambiguous target; it has
+never applied to this loop.
+
+Nor do you need the lemma to be nearly proved. `theorem foo : <statement> := by
+sorry` is a perfectly good starting state, and a file of forty such is a
+perfectly good plan.
+
+### Write the plan by hand first
+
+This is the part that decides whether the rest works, and it is not something
+to delegate. Before any proving:
+
+1. **State every lemma and the main results, in Lean, with `sorry` bodies**, in
+   dependency order. The file must *elaborate* — every statement type-correct,
+   every name in scope. A plan that does not compile is not yet a plan.
+2. **Say what each lemma is for.** A docstring on each is worth more here than
+   anywhere else: retrieval is lexical, so a lemma's own docstring is what makes
+   its neighbours findable later, and 43% of this development's theorems have
+   none.
+3. **Check the statements before the proofs.** The recurring fault in this
+   repository is statement failures, not proof failures. A `sorry`ed lemma
+   *asserts* its statement; a false one will be discovered only after effort has
+   been spent on it, or worse, not at all.
+
+### Then close them one at a time
+
+```bash
+python3 prover-toolkit/toolkit_cli.py goals  <plan.lean>          # every open goal
+python3 prover-toolkit/toolkit_cli.py search "<query>" -n 15
+# ... replace one `sorry` ...
+python3 prover-toolkit/toolkit_cli.py check  <plan.lean> <lemma>  # that lemma alone
+```
+
+`check` passing on a lemma means that lemma is closed *and does not rest on any
+other lemma that is still open* — `sorryAx` propagates through helpers, so a
+lemma proved from a still-`sorry`ed one fails, and correctly. That is what makes
+closing them in any order safe.
+
+### What to expect, and what not to
+
+Retrieval helps when the lemma you need is elsewhere in the development and
+carries a docstring. It does not help when the dependency is a Mathlib lemma —
+the index covers this repository only, and on the challenge set that accounted
+for most of the misses. `grep` beats `search` whenever you can guess a name
+fragment.
+
+Report per lemma: closed or not, the axioms, and where it broke if it did not.
+A campaign with three of forty closed and an honest boundary is a result; the
+same campaign reported as progress is not.
 ## Writing a good search query
 
 Retrieval is lexical BM25 over `name + signature + docstring + module` — there
