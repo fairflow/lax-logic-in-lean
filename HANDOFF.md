@@ -3358,3 +3358,18 @@ clean root.  Soundness obligation: the fresh root forces `Θ`, refutes
 `C`, and has modal cone `{root}`.  The third conjunct is the one to
 screen first — `◯` refutation at the new root quantifies over the whole
 upper cone, not just the root.
+
+## 2026-08-31d — FRJW opens; see `docs/frjw-plan.md`
+
+New campaign, new branch `frjw-dev`. The plan document is
+`docs/frjw-plan.md` and it is self-contained: what FRJW is (FRJV plus
+`Lift`, minus `⊃∉`), why, what is already machine-checked, and stages
+W1–W6 with their obligations. Read that, not this file, to start.
+
+Terminology fixed here: an object of `FRJVr`/`FRJVi` is a **disproof**,
+regular or irregular. "Proof" is reserved for the provability calculi
+— Gbu◯, LaxND, G4c, SC. `ProvableV G` reads the wrong way round: it
+means *G has an FRJV disproof*.
+
+Retired, do not inherit: `searchO`, `BigAnte`, `CleanReg`
+(`residues_unsatisfiable`).
