@@ -139,6 +139,10 @@ python3 prover-toolkit/challenge.py retrieval-check              # can the index
 so the challenge can be read in full without learning anything. Build the
 punched modules with `lake build ToolkitPunched`.
 
+To start a campaign session on real work rather than the fixtures, use the
+template in [`CAMPAIGN-KICKOFF.md`](CAMPAIGN-KICKOFF.md) — plan first, by hand,
+then close the lemmas one at a time.
+
 Rationale, filters and what testing them changed:
 [`../docs/toolkit-test-design.md`](../docs/toolkit-test-design.md).
 
