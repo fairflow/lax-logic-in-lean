@@ -283,3 +283,47 @@ side (`soundnessW`).  Whether to rebuild the FRJW search (decision
 procedure) after F4 is a separate decision for Matthew.  The `Eval*`
 lemmas over FRJV and `wip/gbu_db.lean` stay as they are; nothing new is
 built on them.
+
+### F-stage record (2026-08-31, evening)
+
+**F4 PROVED, kernel-checked, choice-free.**  In
+`wip/gbu_ljfo.lean` (support: `wip/gbu_ljfo_support.lean`, transport:
+`wip/gbu_ljfo_transport.lean`):
+
+    gbuC_complete : Nonempty (LaxND [] φ) → ProvableGbuC (ofPLL φ)
+    -- #guard_msgs-pinned: [propext, Quot.sound]
+
+Composition: `bridge_iff` (LJF◯ focalisation, `LJF/OBridge.lean`) →
+`tInv` (the F3 translation) → `nf_negOfO` goal rewrite.
+
+**F3 architecture as built** (two designs died in F2 screens; the
+surviving one):
+
+* CPS-hoisting: `GbuIC` is not monotone (`gbuIC_not_monotone`) and has
+  no modus ponens (`gbuIC_no_mp`) — both kernel-checked screens in
+  `wip/gbu_ljfo_support.lean` — so every irregular delivery is produced
+  at the exact consumption context and moved only by `≐`-transport.
+* MODE-GENERIC traversal (`Kit`): one mutual recursion serves the
+  regular target (`regKit`: `limpL/lorL/landL/lbot`) and, below any
+  `◯`-opening, the irregular `◯`-goal target (`irrKit`:
+  `limpLI/lorLI/landLI/lbotI`).  A `.lax` left-focus spine builds
+  entirely inside the irregular judgment (`combSpineLaxI`); `lcircI` is
+  its `circL` context bridge — the regular judgment has no bridge at a
+  non-`◯` goal, which forces the mode switch.
+* The licenced `|◯C|` adaptation of `GbuIC.limpLI` (`A ∈ Sf^R G`
+  replacing the size bound; cell and licence comment at the rule in
+  `wip/gbu_circ.lean`) is consumed at exactly one place:
+  `irrKit.impOpen`.
+* `R∧ᵢ`'s two same-context premises: `combPair` retries to a
+  `≐`-stable context, fuel-founded on the count of universe formulas
+  (`U ⊇ Sf^L G`) missing from the context (`satMeasure_lt`).
+* The unsound corner (right focus, lax, on `↓↑P`) is excluded by the
+  `noDUP`/`noDUN` invariant; `negOfO` images satisfy it
+  (`noDUN_negOfO`).
+* Termination: a shallow derivation weight `wS/wRF/wLF/wI` (auto
+  `sizeOf` reduces badly), lexicographic `(2·w, fuel)` with `2·w+1`
+  offsets for the regulariser and the pair.
+
+The ◯L/◯R admissibility questions of `wip/gbu_ndrules.lean` are now
+corollaries, as predicted.  Old W5/W6 database route remains stood
+down.

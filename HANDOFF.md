@@ -3396,3 +3396,17 @@ The full amended plan — chain, judgment map, risk register R1–R3
 (antecedent hyper-focus at `LFoc.impL`; `limpLI`'s size condition;
 `Sf`/`Clo` plumbing), stages F1–F4, and what stands down — is the
 "Route change" section of `docs/frjw-plan.md`.  Read that to continue.
+
+## 2026-08-31f — F4 PROVED: Gbu◯ is complete in itself
+
+    gbuC_complete : Nonempty (LaxND [] φ) → ProvableGbuC (ofPLL φ)
+
+Sorry-free, `#guard_msgs`-pinned **[propext, Quot.sound]** (choice-free),
+in `wip/gbu_ljfo.lean`; support/transport in
+`wip/gbu_ljfo_support.lean` / `wip/gbu_ljfo_transport.lean`.  Route:
+`bridge_iff` (LJF◯ focalisation) → `tInv` (mode-generic CPS translation
+LJF◯ → Gbu◯; the `Kit` two-mode architecture, forced by two
+kernel-checked screens: `GbuIC` non-monotone, no modus ponens) →
+`nf_negOfO`.  The licenced `|◯C|` adaptation of `GbuIC.limpLI` is
+consumed at exactly one site (`irrKit.impOpen`).  Full stage record
+appended to the "Route change" section of `docs/frjw-plan.md`.
