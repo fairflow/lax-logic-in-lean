@@ -194,6 +194,7 @@ predecessor); divergence from the paper is FRJV's own log
 | W2 | `⊃∉` (`impNotIn`) deleted; reconstructed as `lift (impIn d hA hgoal) hTh` — its extra condition `¬ Cl(Θ) ∋ A` is dropped, not reconstructed | CalculusW | redundant given `lift` (§1) |
 | W3 | `DisprovableW` replaces the `ProvableV`-pattern name for `∃ t Γ, Nonempty (FRJWr G t Γ G)` | CalculusW | terminology: an FRJW object is a DISPROOF; `ProvableV G` read the wrong way round |
 | W4 | everything else transcribed verbatim — machine-diffed: the `#rules` tables of the two families are identical modulo the V→W rename outside the `⊃∉`/`lift` swap (2026-08-31) | CalculusW | fidelity gate |
+| W5 | `FRJ.W.RuleName` replaces `impNotIn` by `lift` (the shared `FRJ.RuleName` stays untouched); `lift` takes `⊃∉`'s slot everywhere in the step/occurrence/extraction/soundness layers: exception list of Lemma 3.4(i), `RegIdx = Unit`, `preI = preR d`; the `lemma39I` case is `(R^bar)`'s clause from `wip/rbar.lean`, using none of `lift`'s side conditions | StepW, ExtractW, SoundW | the W3 port (2026-08-31) |
 
 Stage-W1 gates in `FRJ/CalculusW.lean`: `#slime` pinned by
 `#guard_msgs` at 0 computed indices for both families (13 + 8
