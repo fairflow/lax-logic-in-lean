@@ -27,6 +27,7 @@ import FRJ.Erase
 import FRJ.Profile
 import FRJ.Search.Core
 import FRJ.Search.OpsV
+import FRJ.Search.OpsW
 import FRJ.WitnessKit
 import FRJ.CompleteV0
 import FRJ.CompleteV

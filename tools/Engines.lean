@@ -27,6 +27,7 @@ than in the results.
 -/
 import Certified.Register
 import LaxLogic.PLLSearch
+import FRJ.SoundW
 
 open PLLND
 
@@ -171,10 +172,31 @@ def g4cSearch : Engine where
   corpus := "462 ρ-cells in 10629 ms; AND the frjhard ladder, where it beats LJF◯ 300-700x"
   measured := "2026-08-15 (wip/two_sided_corpus_out.txt); ladder 2026-08-22"
 
+/-- **The FRJW refutation engine** — the W-family instance `wOps` of the
+modular saturation core (`FRJ/Search/OpsW.lean`): FRJV's rule set with
+`⊃∉` deleted and `Lift` added (maximal retained zone, riding in the
+`stepNotIn` slot, so the shared loop is untouched).  Rows carry their
+`FRJWr`/`FRJWi` derivations, so a hit IS a `DisprovableW` witness
+(`disprovableW_of_hit`).  Smoke-validated 2026-08-31 on the duality-gap
+cell: on `◯(◯p ⊃ p)` the V-engine has no irregular row (matching the
+kernel-checked `not_evalI_Gcc`) and this engine produces one via
+`Lift`, matching W4's hand witness. -/
+def frjwRefute : Engine where
+  name := "FRJW forward refutation search (FRJ/Search/OpsW.lean, wOps)"
+  version := 1
+  role := .refutes
+  mayDiscover := true
+  soundStmt := ∀ G : FRJ.Form, FRJ.DisprovableW G → ¬ FRJ.PLL G
+  sound := fun _ h => FRJ.soundnessW h
+  pin := "[propext, Quot.sound]"
+  completeness := "OPEN — target is the dichotomy decideGbuW (docs/frjw-plan.md); the exclusion half is banked (wip/gbu_frjw_exclusion.lean)"
+  corpus := "smoke 2026-08-31: Gcc gap cell (irregular row via Lift where V has none); ◯-free agreement with vOps on Peirce; no false hits on p ⊃ p or ◯(p ⊃ ◯p)"
+  measured := "2026-08-31"
+
 /-- Every engine the database may cite.  Anything absent from this list
 is not citable, whatever it can do. -/
 def registered : List Engine :=
-  [ljfoProve, frjRefute, rejectCheck, g4cSearch]
+  [ljfoProve, frjRefute, frjwRefute, rejectCheck, g4cSearch]
 
 /-- The engines that may ORIGINATE a result.  `Evidence` in the database
 must draw from this list, which is how the battery-enumeration ban is
