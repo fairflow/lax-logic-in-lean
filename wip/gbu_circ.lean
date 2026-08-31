@@ -1316,10 +1316,28 @@ inductive GbuIC (G : Form) : List Form → Form → Type
   /-- `L⊃` in the irregular judgment, at a `◯`-shaped goal ONLY.  This is
   the departure from the paper's frozen-context discipline, forced by
   `not_gbuR_omegaNI`: `Ω ⊢ ◯q` can use modus ponens on an implication of
-  `Ω`, and no `◯` rule can substitute for it. -/
+  `Ω`, and no `◯` rule can substitute for it.
+
+  **`|◯C|` ADAPTED (2026-08-31, licenced by Matthew's /goal for the LJF◯
+  route).**  The side condition read `A.hasCirc = false ∨ A.size <
+  (Form.circ C).size`: a modal antecedent had to be SMALLER than the
+  local `◯`-goal.  That condition makes the calculus INCOMPLETE — the
+  cell `[◯((◯p ⊃ r) ∧ ◯p)] ⇒g ◯r ∨ z` is PLL-valid, but the `∨`-goal
+  blocks `L◯`, `R∨ₖ` forces the irregular `◯r`-goal, and there every
+  route dies on `|◯p| < |◯r|` (2 < 2).  The meaning of `|◯C|` is
+  adapted from the LOCAL goal's size to the calculus-wide signed
+  subformula weight: a modal antecedent is admitted whenever it is a
+  right-signed subformula of `G` — which is where every left
+  implication's antecedent lives (`sfL_imp`), so the condition no
+  longer cuts inside the `Sf(G)` language while still excluding
+  out-of-language junk.  `soundIC` never used `hsz`, so soundness is
+  untouched.  `StepO.limpLI1`/`wg_stepO` below still mirror the OLD
+  condition: they are the termination measure of the STOOD-DOWN search
+  layer (`docs/frjw-plan.md`, route change), and re-founding that
+  measure is deferred to any future search rebuild. -/
   | limpLI {Γ Ψ : List Form} {A B C : Form}
       (d₁ : GbuIC G (.imp A B :: Ψ) A) (d₂ : GbuIC G (B :: Ψ) (.circ C))
-      (hsz : A.hasCirc = false ∨ A.size < (Form.circ C).size)
+      (hsz : A.hasCirc = false ∨ A ∈ sfR G)
       (hgoal : Form.circ C ∈ sfR G) (hΓ : Γ ≐ .imp A B :: Ψ) :
       GbuIC G Γ (.circ C)
   /-- `L⊥` in the irregular judgment, at a `◯`-shaped goal. -/

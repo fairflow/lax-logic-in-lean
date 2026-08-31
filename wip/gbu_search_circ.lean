@@ -694,7 +694,11 @@ theorem searchO {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
                                 rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
                                 · exact .imp (.base List.mem_cons_self)
                                 · exact .base (List.mem_cons_of_mem _ hV')) hnb)
-                            exact ⟨.limpLI d₁ d₂ hsz hC hΓ⟩
+                            -- the calculus condition was licence-weakened
+                            -- (2026-08-31, see `GbuIC.limpLI`); the search
+                            -- keeps its own strong size test for its measure
+                            -- and upcasts here
+                            exact ⟨.limpLI d₁ d₂ (hsz.imp id (fun _ => hAsf)) hC hΓ⟩
                           refine byDec
                             (inferInstance : Decidable (A.hasCirc = false))
                             (fun hfree => go (Or.inl hfree)) (fun hnfree => ?_)
