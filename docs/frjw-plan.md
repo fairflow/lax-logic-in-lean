@@ -83,13 +83,13 @@ refutes `C`, so `w` refutes `C`.
 
 | fact | name | file |
 |---|---|---|
-| `Lift`'s `lemma39I` clause | `rbar_lemma39I` | `wip/rbar.lean` |
+| `Lift`'s `lemma39I` clause | `not_force_of_rootAbove` | `wip/rbar.lean` |
 | no irregular FRJV disproof of `◯(◯Z ⊃ Z)` | `no_irregular_circ_imp_self` | `wip/gbu_weakening.lean` |
 | `∅ →g ◯(◯p ⊃ p)` not Gbu◯-provable | `not_gbuIC_Gcc` | `wip/gbu_search_circ.lean` |
 | regular FRJV disproof of `◯(◯p ⊃ p)` | `provableV_Gcc` | `wip/gbu_search_circ.lean` |
 | its extracted countermodel, dumped | `dumpModel` / `countermodel_Gcc` | `wip/gbu_search_circ.lean` |
 
-`rbar_lemma39I` was negative-tested: the same one-line proof does NOT
+`not_force_of_rootAbove` was negative-tested: the same one-line proof does NOT
 typecheck for a tagless `◯∉`, so the gate discriminates.
 
 ---
@@ -110,7 +110,7 @@ The only non-trivial case is `impNotIn`, reconstructed as `lift (impIn d hA _) h
 Do this BEFORE soundness — it is what licenses reusing the FRJV corpus.
 
 **W3 — soundness.** Port `lemma39R` / `lemma39I` with `RegIdx (lift d) := Unit`,
-`preI (lift d) _ := preR d`. The new `lemma39I` case is `rbar_lemma39I`,
+`preI (lift d) _ := preR d`. The new `lemma39I` case is `not_force_of_rootAbove`,
 already proved. **The real obligation is not this case but the joins':**
 each join must still discharge
 

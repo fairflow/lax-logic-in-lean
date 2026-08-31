@@ -26,53 +26,46 @@ namespace FRJ.V.RBar
 
 open FRJ Form
 
-/-! ## The obligation
+/-! ## The lemma
 
 `lemma39I` reads an irregular disproof `Σ ; Θ → C` not as a model but as
 a SCHEMA: in every premodel `P`, at every infallible world `w` whose
 label lies in `Cl(Σ ++ Θ)`, with the disproof's regular components
 grafted above `w`, and with `w ⊩ Σ ∩ sfm C`, the world `w` refutes `C`.
 
-    lemma39I (d : FRJVi G Σ Θ C) (P) (hP : ClosedLbl P) (w) :
-      ¬ P.fal w →
-      (∀ X ∈ P.lbl w, Clo (Σ ++ Θ) X) →
-      (∀ i : RegIdx d, RootAbove P hP w (preI d i) (preI_closed d i)) →
-      (P.toKripke hP).forces w (cap Σ (sfm C)) →
-      ¬ (P.toKripke hP).force w C
+For `(R^bar)` the clause needs none of that apparatus.  What is actually
+true — and the statement below says exactly this and no more — is that
+ANY world below the root of a regular disproof's extracted model refutes
+the same formula. -/
 
-`(R^bar)` designates ONE regular component, the premise `d` itself, so
-its clause is the statement below with `RootAbove P hP w (preR d)` in
-place of the component quantifier. -/
+/-- **A world below the root of a regular disproof refutes its goal.**
 
-/-- **`(R^bar)` is sound.**  The clause `lemma39I` would have to prove
-for the new constructor, discharged from monotonicity of forcing alone.
+`RootAbove` places a world `v ≥ w` whose forcing agrees with the root of
+`preR d`; that root refutes `C` by Lemma 3.9(i); forcing is monotone, so
+`w` refutes `C`.
 
-The component's root `v` sits ABOVE `w`, and `v` refutes `C` by Lemma
-3.9(i) for the regular judgment; forcing is monotone, so `w` refutes `C`
-too.  Neither the infallibility of `w`, nor the label bound, nor the
-`Σ`-forcing hypothesis is used — which is why the rule carries no
-tag condition, no `Υ` condition and no cleanliness condition. -/
-theorem rbar_lemma39I {G : Form} {t : Tag} {Γ Θ : List Form} {C : Form}
+This is the whole of `(R^bar)`'s soundness.  The rule's own hypotheses —
+`w` infallible, `Cl(Θ) ⊇ lbl w`, `Θ ⊆ Cl(Γ) ∩ Ĝ`, `w ⊩ Σ ∩ sfm C` — play
+no part in it, so they are not assumed here; the `lemma39I` case for the
+new constructor is this lemma with those hypotheses discarded. -/
+theorem not_force_of_rootAbove {G : Form} {t : Tag} {Γ : List Form} {C : Form}
     (d : FRJVr G t Γ C)
-    (_hΘ : ∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G)
-    (P : PreModel) (hP : ClosedLbl P) (w : P.W)
-    (_hfal : ¬ P.fal w)
-    (_hlbl : ∀ X ∈ P.lbl w, Clo ([] ++ Θ) X)
-    (hcomp : RootAbove P hP w (preR d) (preR_closed d))
-    (_hst : (P.toKripke hP).forces w (cap [] (sfm C))) :
+    {P : PreModel} {hP : ClosedLbl P} {w : P.W}
+    (hcomp : RootAbove P hP w (preR d) (preR_closed d)) :
     ¬ (P.toKripke hP).force w C := by
   intro hC
   obtain ⟨v, hwv, hiff⟩ := hcomp
   exact (lemma39R d).2 ((hiff C).mp ((P.toKripke hP).force_mono hwv hC))
 
-/-- info: 'FRJ.V.RBar.rbar_lemma39I' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.V.RBar.not_force_of_rootAbove' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
-#print axioms rbar_lemma39I
+#print axioms not_force_of_rootAbove
 
 /-! ## What the side conditions are for
 
-`Θ ⊆ Cl(Γ)` and `Θ ⊆ Ĝ` are NOT used above.  They are the CONSUMER's
-interface: a join that grafts this component above its own new root must
+`Θ ⊆ Cl(Γ)` and `Θ ⊆ Ĝ` are not premises of the lemma above, and that
+is the point: they are the CONSUMER's interface, not the rule's own
+proof obligation. a join that grafts this component above its own new root must
 establish `RootAbove`, and it can do so only when the new root's label
 is contained in `Cl(Γ)`.  Since the join's root label is built from the
 premises' zones, `Θ ⊆ Cl(Γ)` is exactly what makes that containment go
