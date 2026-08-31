@@ -1,5 +1,6 @@
 import FRJ.SoundV
 import FRJ.Fallible
+import wip.gbu_search
 
 /-!
 # Tag-preserving weakening for `FRJV`, REFUTED
@@ -81,6 +82,81 @@ theorem tag_weakening_refuted :
 /-- info: 'FRJ.V.WCounter.tag_weakening_refuted' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms tag_weakening_refuted
+
+/-! ## (★★) is FALSE
+
+(★★) said: over a critical `◯`-free context with all antecedents dead,
+every refutation can be taken CLEAN.  The induction that would prove it
+breaks at the `⊃` case — `⊃∈` hands the sub-derivation the context
+`A :: Ω`, which leaves the hypotheses — and that is exactly where the
+counterexample lives.
+
+    Ω = ∅   (critical, `◯`-free, no implications at all),   Z = ◯p ⊃ p
+
+`∅ ⇒ ◯p ⊃ p` is refutable (`⋈^At_F` then `⊃∈`) but has NO clean
+derivation: `⊃∈` propagates its premise's tag, and the premise's context
+closes `◯p`, which `not_clean_of_clo_circ` makes dirty.  The `chain`
+escape — pledging the GOAL itself — is closed by `tag_cone`: the modal
+successor that `◯p` supplies forces `p`, hence forces `◯p ⊃ p`, so it
+cannot be a proper cone member of a `chain (◯p ⊃ p)` root. -/
+
+theorem not_refutedCleanly_imp_self :
+    ¬ FRJ.Gbu.RefutedCleanly Gw [] (Form.imp (.circ (.atom "p")) (.atom "p")) := by
+  rintro ⟨Γ, t, ⟨d⟩, htag, -⟩
+  cases d with
+  | axR F hF hg hΓ => exact Bool.noConfusion hF
+  | joinAt _ _ _ _ _ hF _ _ _ => exact Bool.noConfusion hF
+  | joinAtP _ _ _ _ _ _ _ hF _ _ _ => exact Bool.noConfusion hF
+  | joinAtF _ _ _ hF _ _ _ => exact Bool.noConfusion hF
+  | impIn d' hA hg =>
+      rcases htag with hb | ⟨W, hch, hcov⟩
+      · exact not_clean_of_clo_circ d' hA (Or.inl hb)
+      · cases hcov with
+        | imp hc _ => exact not_clean_of_clo_circ d' hA (Or.inr ⟨W, hch, hc⟩)
+        | refl =>
+            obtain ⟨hlbl, hnC⟩ := lemma39R d'
+            have hroot : (modR d').force (modR d').root (.circ (.atom "p")) :=
+              clo_forces (fun X hX => hlbl _ X ((preR_root_lbl d').symm.subset hX)) hA
+            obtain ⟨c, hRm, hcp⟩ :=
+              (Kripke.force_circ (K := modR d') _ (Form.atom "p")).mp hroot _ ((modR d').le_refl _)
+            by_cases hc : c = (modR d').root
+            · exact hnC (hc ▸ hcp)
+            · exact tag_cone (FRJVr.impIn d' hA hg) _ (Or.inr ⟨_, hch, .refl⟩) c hRm hc
+                (fun b hb _ => (modR d').force_mono hb hcp)
+
+/-- The other half: `∅ ⇒ ◯p ⊃ p` IS refutable — `⋈^At_F` then `⊃∈`. -/
+theorem evalR_imp_self :
+    FRJ.Gbu.EvalR (FRJ.Gbu.FDerivable Gw) [] (Form.imp (.circ (.atom "p")) (.atom "p")) := by
+  obtain ⟨Γ', t, ⟨d⟩, hclo, -⟩ := dirty_exists
+  exact ⟨Γ', ⟨t, ⟨.impIn d hclo (by decide)⟩⟩, fun X hX => absurd hX List.not_mem_nil⟩
+
+/-- **(★★) is REFUTED.**  Its hypotheses hold at `Ω = ∅`, `Z = ◯p ⊃ p`
+— the context is critical, `◯`-free and has no implications at all, so
+the `Υ` condition is vacuous — and `∅ ⇒ Z` is refutable but not cleanly
+so.  The `⊃` case is exactly where the induction that would prove (★★)
+leaves its own hypotheses. -/
+theorem not_starstar :
+    ¬ (∀ (G : Form) (D : FRJ.Gbu.FSeq → Prop), FRJ.Gbu.Saturated G D →
+        ∀ (Ω : List Form) (Z : Form),
+          (∀ X ∈ Ω, X ∈ gAt G ++ gImp G) →
+          (∀ A B, Form.imp A B ∈ Ω → FRJ.Gbu.EvalI D Ω A) →
+          Z ∈ sfR G → FRJ.Gbu.EvalR D Ω Z → FRJ.Gbu.EvalRC D Ω Z) := by
+  intro h
+  refine not_refutedCleanly_imp_self
+    ((FRJ.Gbu.evalRC_iff_refutedCleanly (FRJ.Gbu.saturated_fderivable Gw)).mp
+      (h Gw (FRJ.Gbu.FDerivable Gw) (FRJ.Gbu.saturated_fderivable Gw) []
+        (Form.imp (.circ (.atom "p")) (.atom "p"))
+        (fun X hX => absurd hX List.not_mem_nil)
+        (fun A B hAB => absurd hAB List.not_mem_nil)
+        (by decide) evalR_imp_self))
+
+/-- info: 'FRJ.V.WCounter.not_starstar' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_starstar
+
+/-- info: 'FRJ.V.WCounter.not_refutedCleanly_imp_self' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_refutedCleanly_imp_self
 
 end WCounter
 end FRJ.V

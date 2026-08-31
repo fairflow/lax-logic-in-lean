@@ -698,3 +698,7 @@ supportInterpreter = true
 name = "rcellsgen"
 root = "tools.RCellsGen"
 supportInterpreter = true
+
+[[lean_exe]]
+name = "frjvrecheck"
+root = "wip.frjv_recheck"

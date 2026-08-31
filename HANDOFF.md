@@ -3189,3 +3189,68 @@ refutable without touching a rule. The amendment I proposed in §m (a
 fresh-barren-root rule) is NOT needed unless (★★) turns out false.
 
 Sweep meanwhile: 205+/462 cells, every banked ⊬ cell HIT, zero MISS.
+
+## 2026-08-31a — (★★) REFUTED; and the sweep finished with SIX misses
+
+### (★★) is false
+
+`not_starstar` (`wip/gbu_weakening.lean`, `[propext, Quot.sound]`).
+Instance: `G = ◯p ⊃ p`, `Ω = ∅`, `Z = ◯p ⊃ p`.
+
+* The hypotheses hold trivially — `∅` is critical, `◯`-free, and has no
+  implications at all, so the `Υ` condition is vacuous.
+* `∅ ⇒ ◯p ⊃ p` IS refutable: `⋈^At_F` then `⊃∈` (`evalR_imp_self`).
+* It is NOT cleanly refutable (`not_refutedCleanly_imp_self`): `⊃∈`
+  propagates its premise's tag, and the premise's context closes `◯p`,
+  which `not_clean_of_clo_circ` makes dirty. The `chain` escape —
+  pledging the GOAL — is closed by `tag_cone`: the modal successor `◯p`
+  supplies forces `p`, hence forces `◯p ⊃ p`, so it cannot be a proper
+  cone member of a `chain (◯p ⊃ p)` root.
+
+The `⊃` case is exactly where an induction proving (★★) would leave its
+own hypotheses, since `⊃∈` hands the sub-derivation the context `A :: Ω`.
+Refute-first found it in the first place I looked.
+
+### (★) survives, and the reduction was the error
+
+Reducing (★) to (★★) through `refutedCleanly_circIn` was too LOSSY: it
+demanded a CLEAN row where (★) needs only a row. At the (★★)
+counterexample (★) is not even in scope (`◯(◯p ⊃ p) ∉ Sf^R(◯p ⊃ p)`),
+and at the `G` where it is — `Gcc = ◯(◯p ⊃ p)` — its conclusion holds
+outright, by `provableV_Gcc`. The corrected target is
+
+**(★′) `D ▷ (Ω ⇒g Z)` ⟹ `D ▷ (Ω →g Z)`** over a critical `◯`-free
+context with dead implications,
+
+after which `gbuSuccCirc` (`⋈^◯`, which concludes at `barren`) gives
+`D ▷ (Ω ⇒g ◯Z)` with no cleanliness demand. (★′) holds at the (★★)
+counterexample by `⊃∉` with an empty moveable zone — step 2 of
+`provableV_Gcc`.
+
+### The sweep finished: SIX candidate incompleteness witnesses
+
+462/462 cells. 280 banked `⊬` cells; **274 HIT, 6 MISS**:
+
+    ρ12 ⊬ ρ18    ρ13 ⊬ ρ18    ρ19 ⊬ ρ18
+    ρ20 ⊬ ρ12    ρ20 ⊬ ρ13    ρ20 ⊬ ρ18
+
+This CORRECTS the interim reports in §m and §n, which said zero misses —
+the misses are concentrated late in the matrix and the partial runs had
+not reached them.
+
+These are not budget artefacts. Every one reports `r=8` against
+`rounds=12` with `lamCapped=false dbCapped=false`, i.e. the saturation
+reached a FIXPOINT before the round cap; re-run at `maxRS/IS=20000` the
+first still misses at `r=8`. A higher-budget pass (rounds=30, lamCap=60)
+is running.
+
+Five of the six target ρ18 = `((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ∨
+(◯¬◯⊥ ∨ ¬¬◯⊥)` — a DISJUNCTION — and three have ρ20 = `q8 ⊃ q7` as
+source. A disjunctive goal is refuted by `⋈^∨`, so the shape to
+interrogate first is the `∨`-join's side conditions.
+
+Standing caveat (TOOLS.md): a MISS is not-found-within-bound, never a
+verdict. But a converged saturation with no binding cap is much stronger
+evidence than a timeout, and six of them clustered on one target is a
+pattern, not noise. **The working assumption that FRJV is complete is no
+longer safe**, and these six cells are the place to settle it.
