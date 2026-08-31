@@ -200,6 +200,9 @@ result is really about**.
   focalization) with the mode-generic CPS translation `tInv`.  With
   soundness, `Gbu◯` is complete in itself; the `◯L`/`◯R`
   admissibility questions of `wip/gbu_ndrules.lean` are corollaries.
+  Sequent form via the `LaxND` deduction theorem
+  (`gbuC_sequent_complete`, same file, same pin):
+  `Nonempty (LaxND Γ φ) → ProvableGbuC (ofPLL (bigAnd Γ ⊃ φ))`.
 * **Do not confuse**: FRJ-family objects (FRJ / FRJV / FRJW) are
   DISPROOFS; `Gbu◯` derivations are proofs.  The FRJ database/search
   route to `Gbu◯` completeness (`searchO`, Theorem 8◯) is RETIRED —

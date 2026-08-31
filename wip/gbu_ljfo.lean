@@ -827,4 +827,72 @@ info: 'FRJ.Gbu.LJFT.gbuC_complete' depends on axioms: [propext, Quot.sound]
 #guard_msgs in
 #print axioms gbuC_complete
 
+/-! ## F4, sequent form
+
+`Gbu◯`'s own judgment is single-formula (`ProvableGbuC G` is `[] ⇒g G`
+at goal universe `G`), so the sequent-level statement folds the
+hypothesis list into the formula.  The deduction theorem for `LaxND` is
+iterated `⊃`-introduction (`dedAll`); `curryToAnd` converts the curried
+form to a single `∧`-antecedent using only `iden`, `⊃I/⊃E`, `∧E` and
+`rename`. -/
+
+/-- Finite conjunction, `⊤ := ⊥ ⊃ ⊥` at the empty end.  Deliberately
+uniform (no singleton case), unlike `PLLND.SemUI.bigAnd` — that file's
+crank bookkeeping is irrelevant here and its import chain is heavy. -/
+def bigAnd : List PLLFormula → PLLFormula
+  | [] => .ifThen .falsePLL .falsePLL
+  | ψ :: Γ => .and ψ (bigAnd Γ)
+
+/-- The deduction theorem for `LaxND`, all hypotheses at once:
+
+    Γ ++ Δ ⊢ φ   ⟹   Δ ⊢ ψ₁ ⊃ ⋯ ⊃ ψₙ ⊃ φ        (Γ = [ψ₁, …, ψₙ]) -/
+def dedAll : ∀ (Γ Δ : List PLLFormula) {φ : PLLFormula},
+    PLLND.LaxND (Γ ++ Δ) φ → PLLND.LaxND Δ (Γ.foldr PLLFormula.ifThen φ)
+  | [], _, _, d => d
+  | ψ :: Γ, Δ, _, d =>
+      .impIntro (dedAll Γ (ψ :: Δ)
+        (d.rename (fun χ hχ =>
+          match List.mem_cons.mp hχ with
+          | Or.inl e => e ▸ List.mem_append.mpr (Or.inr List.mem_cons_self)
+          | Or.inr h' =>
+              match List.mem_append.mp h' with
+              | Or.inl hΓ => List.mem_append.mpr (Or.inl hΓ)
+              | Or.inr hΔ =>
+                  List.mem_append.mpr
+                    (Or.inr (List.mem_cons_of_mem _ hΔ)))))
+
+/-- Curried to conjunctive antecedent, in any context:
+
+    Δ ⊢ ψ₁ ⊃ ⋯ ⊃ ψₙ ⊃ φ   ⟹   Δ ⊢ (ψ₁ ∧ ⋯ ∧ ψₙ ∧ ⊤) ⊃ φ -/
+def curryToAnd : ∀ (Γ : List PLLFormula) {Δ : List PLLFormula}
+    {φ : PLLFormula},
+    PLLND.LaxND Δ (Γ.foldr PLLFormula.ifThen φ) →
+    PLLND.LaxND Δ (.ifThen (bigAnd Γ) φ)
+  | [], _, _, d =>
+      .impIntro (d.rename (fun _ h => List.mem_cons_of_mem _ h))
+  | ψ :: Γ, Δ, φ, d =>
+      let h₁ : PLLND.LaxND (bigAnd (ψ :: Γ) :: Δ) (.and ψ (bigAnd Γ)) :=
+        .iden List.mem_cons_self
+      let dc : PLLND.LaxND (bigAnd (ψ :: Γ) :: Δ)
+          (Γ.foldr PLLFormula.ifThen φ) :=
+        .impElim (d.rename (fun _ h => List.mem_cons_of_mem _ h))
+          (.andElim1 h₁)
+      .impIntro (.impElim (curryToAnd Γ dc) (.andElim2 h₁))
+
+/-- **F4, sequent form** — via the deduction theorem:
+
+    Nonempty (LaxND Γ φ) → Nonempty ([] ⇒g ⌈⋀Γ ⊃ φ⌉)   (G := ⌈⋀Γ ⊃ φ⌉) -/
+theorem gbuC_sequent_complete {Γ : List PLLFormula} {φ : PLLFormula}
+    (h : Nonempty (PLLND.LaxND Γ φ)) :
+    ProvableGbuC (ofPLL (.ifThen (bigAnd Γ) φ)) :=
+  h.elim fun d =>
+    gbuC_complete ⟨curryToAnd Γ (dedAll Γ []
+      (d.rename (fun _ hx => List.mem_append.mpr (Or.inl hx))))⟩
+
+/--
+info: 'FRJ.Gbu.LJFT.gbuC_sequent_complete' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms gbuC_sequent_complete
+
 end FRJ.Gbu.LJFT

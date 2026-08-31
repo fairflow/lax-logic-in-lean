@@ -329,3 +329,14 @@ surviving one):
 The ◯L/◯R admissibility questions of `wip/gbu_ndrules.lean` are now
 corollaries, as predicted.  Old W5/W6 database route remains stood
 down.
+
+**Sequent form** (same evening, Matthew's request): via the deduction
+theorem for `LaxND` (`dedAll`, iterated `⊃`-introduction) and a
+curried-to-`∧` conversion (`curryToAnd`, using only `iden`, `⊃I/⊃E`,
+`∧E`, `rename`):
+
+    gbuC_sequent_complete :
+      Nonempty (LaxND Γ φ) → ProvableGbuC (ofPLL (bigAnd Γ ⊃ φ))
+
+`#guard_msgs`-pinned [propext, Quot.sound] (a first draft's `tauto`
+pulled Classical.choice; replaced by a constructive membership term).
