@@ -158,5 +158,75 @@ theorem not_starstar :
 #guard_msgs in
 #print axioms not_refutedCleanly_imp_self
 
+/-! ## Why the six sweep misses happen: `◯(◯Z ⊃ Z)` is IRREGULARLY irrefutable
+
+The completed ρ-sweep misses six banked `⊬` cells, five of them targeting
+
+    ρ18 = ((◯¬◯⊥ ∨ ¬¬◯⊥) ⊃ (◯⊥ ∨ ¬◯⊥)) ∨ (◯¬◯⊥ ∨ ¬¬◯⊥)
+
+whose right disjunct is `q9 = q5 ∨ q6` with `q5 = ◯¬◯⊥ = ◯(◯⊥ ⊃ ⊥)`.
+That is `◯(◯Z ⊃ Z)` at `Z := ⊥` — and the two theorems below say FRJV
+can never refute that shape IRREGULARLY, for any `Z`.
+
+Since all three `⋈^∨` variants take IRREGULAR premises, a disjunction
+with such a formula as a disjunct cannot be joined, and neither can any
+disjunction built over it.  That is the mechanism. -/
+
+/-- **`◯Z ⊃ Z` has no CLEANLY tagged regular refutation**, for any `Z`.
+`⊃∈` propagates its premise's tag, and the premise's context closes
+`◯Z`; the `chain` escape — pledging the goal itself — is closed by
+`tag_cone`, because the successor `◯Z` supplies forces `Z` and hence
+forces `◯Z ⊃ Z`. -/
+theorem not_clean_imp_self {G : Form} {t : Tag} {Γ : List Form} {Z : Form}
+    (d : FRJVr G t Γ (.imp (.circ Z) Z))
+    (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W (.imp (.circ Z) Z)) :
+    False := by
+  cases d with
+  | axR F hF hg hΓ => exact Bool.noConfusion hF
+  | joinAt _ _ _ _ _ hF _ _ _ => exact Bool.noConfusion hF
+  | joinAtP _ _ _ _ _ _ _ hF _ _ _ => exact Bool.noConfusion hF
+  | joinAtF _ _ _ hF _ _ _ => exact Bool.noConfusion hF
+  | impIn d' hA hg =>
+      rcases htag with hb | ⟨W, hch, hcov⟩
+      · exact not_clean_of_clo_circ d' hA (Or.inl hb)
+      · cases hcov with
+        | imp hc _ => exact not_clean_of_clo_circ d' hA (Or.inr ⟨W, hch, hc⟩)
+        | refl =>
+            obtain ⟨hlbl, hnC⟩ := lemma39R d'
+            have hroot : (modR d').force (modR d').root (.circ Z) :=
+              clo_forces (fun X hX => hlbl _ X ((preR_root_lbl d').symm.subset hX)) hA
+            obtain ⟨c, hRm, hcp⟩ :=
+              (Kripke.force_circ (K := modR d') _ Z).mp hroot _ ((modR d').le_refl _)
+            by_cases hc : c = (modR d').root
+            · exact hnC (hc ▸ hcp)
+            · exact tag_cone (FRJVr.impIn d' hA hg) _ (Or.inr ⟨_, hch, .refl⟩) c hRm hc
+                (fun b hb _ => (modR d').force_mono hb hcp)
+
+/-- **`◯(◯Z ⊃ Z)` has NO irregular refutation at all**, for any `Z`.
+Only `◯∉` and `Ax^I◯` conclude a `◯` goal.  `◯∉` needs a clean regular
+refutation of `◯Z ⊃ Z`, which `not_clean_imp_self` forbids; and
+`Ax^I◯` needs `classForce ats (◯Z ⊃ Z) = false`, which is impossible —
+`◯` is transparent to `classForce`, so the body evaluates to the
+classical tautology `¬x ∨ x`. -/
+theorem no_irregular_circ_imp_self {G : Form} {Z : Form} {St Th : List Form}
+    (d : FRJVi G St Th (.circ (.imp (.circ Z) Z))) : False := by
+  cases d with
+  | axI F hF hg hTh => exact Bool.noConfusion hF
+  | circNotIn dr htag hTh hg => exact not_clean_imp_self dr htag
+  | axIC F ats hats hFf hg hTh =>
+      have htaut : classForce ats (Form.imp (.circ Z) Z) = true := by
+        show (!classForce ats Z || classForce ats Z) = true
+        cases classForce ats Z <;> rfl
+      rw [htaut] at hFf
+      exact Bool.noConfusion hFf
+
+/-- info: 'FRJ.V.WCounter.not_clean_imp_self' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms not_clean_imp_self
+
+/-- info: 'FRJ.V.WCounter.no_irregular_circ_imp_self' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms no_irregular_circ_imp_self
+
 end WCounter
 end FRJ.V

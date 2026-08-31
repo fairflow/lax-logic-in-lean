@@ -3254,3 +3254,44 @@ verdict. But a converged saturation with no binding cap is much stronger
 evidence than a timeout, and six of them clustered on one target is a
 pattern, not noise. **The working assumption that FRJV is complete is no
 longer safe**, and these six cells are the place to settle it.
+
+## 2026-08-31b — the ∨-join hypothesis was WRONG; two true theorems, no explanation yet
+
+I proposed that the six misses come from `⋈^∨`'s irregular premises.
+**The sweep's own data refutes that**, and I should have looked before
+building: `VCELL 1 9 HIT` and `VCELL 1 18 HIT` — FRJV refutes both
+`q9 = ◯¬◯⊥ ∨ ¬¬◯⊥` and `ρ18` from `⊤`. My step "`⋈^∨` needs an
+irregular refutation of each disjunct" is false: the disjunct condition
+is `RefAt`, which is deliberately RELAXED (that is what "`RefAt`-relaxed
+disjunct conditions" means in the rule's own docstring), so a disjunct
+need not be any premise's `rhs`.
+
+Two theorems came out of the attempt. They are TRUE and pinned, and they
+do not explain the misses:
+
+* **`not_clean_imp_self`** — `◯Z ⊃ Z` has no cleanly tagged regular
+  refutation, for ANY `Z`. `⊃∈` propagates its premise's tag and the
+  premise's context closes `◯Z`; the `chain` escape (pledging the goal)
+  is closed by `tag_cone`, since the successor `◯Z` supplies forces `Z`
+  and hence forces `◯Z ⊃ Z`. This generalises
+  `not_refutedCleanly_imp_self` off the atom.
+* **`no_irregular_circ_imp_self`** — `◯(◯Z ⊃ Z)` has no irregular
+  refutation at all. Only `◯∉` and `Ax^I◯` conclude a `◯` goal; `◯∉`
+  needs the clean row the previous theorem forbids, and `Ax^I◯` needs
+  `classForce ats (◯Z ⊃ Z) = false`, impossible because `◯` is
+  transparent to `classForce` and the body is the classical tautology
+  `¬x ∨ x`.
+
+Both `[propext, Quot.sound]`. `q5 = ρ7 = ◯¬◯⊥` is this shape at `Z := ⊥`,
+so `ρ7` is irregularly irrefutable — a real structural fact about FRJV,
+just not the one that explains the sweep.
+
+**What the data actually says.** The six banked misses are
+
+    (12,18) (13,18) (19,18) (20,12) (20,13) (20,18)
+
+Four target ρ18, three have ρ20 as source — but `⊤ ⊃ ρ18` HITs, and each
+of ρ12, ρ13, ρ19, ρ20 hits 15–18 other targets. So neither the goal
+shape nor the source alone discriminates: it is the PAIR. The next step
+is data, not another hypothesis — `lake exe frjvrun cell 12 18` dumps
+the saturated database's regular rows for one miss, and that is running.
