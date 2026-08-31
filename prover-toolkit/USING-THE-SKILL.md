@@ -40,6 +40,36 @@ minutes instead of five seconds:
 /bin/cp -Rc <repo-root>/.lake .lake
 ```
 
+## When port 8081 is already taken
+
+`toolkit.json` pins one port, and every worktree of the clone shares it, so any
+two sessions running the toolkit at once collide. `server.py` then dies with
+`EADDRINUSE`, and from the outside a listener is indistinguishable from a live
+session mid-query.
+
+**Do not kill it before establishing whose it is.** Two checks settle it:
+
+```bash
+lsof -nP -iTCP:8081 -sTCP:LISTEN            # the PID
+lsof -a -p <pid> -d cwd -Fn                 # which worktree it serves
+curl -s localhost:8081/health               # its entry count
+```
+
+A working directory that is not yours, together with an entry count that does
+not match your own `index.jsonl`, means the server belongs to another session:
+ask that session to stop it rather than killing it. A working directory that
+*is* yours makes it a stale server of your own, safe to stop. Kill by **PID**,
+never `pkill -f leansearch/server.py` — that pattern matches every session's
+server, not only your own.
+
+Count your own index with:
+
+```bash
+python3 -c "print(sum(1 for l in open('prover-toolkit/leansearch/index.jsonl') if l.strip()))"
+```
+
+Port 8080 is a launchd service over a different, private corpus. Leave it be.
+
 ## Use it
 
 Say what you want, and name the file:
