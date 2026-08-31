@@ -7,6 +7,7 @@ import FRJ.Sound
 import FRJ.RefAt
 import FRJ.CalculusV
 import FRJ.CalculusVLemmas
+import FRJ.CalculusW
 import FRJ.StepV
 import FRJ.ExtractV
 import FRJ.SoundV

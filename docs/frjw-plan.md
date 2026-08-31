@@ -176,3 +176,26 @@ inherited: `residues_unsatisfiable` shows the pair is contradictory at
 `◯(◯p ⊃ p)`, so the theorem is vacuous for any modal `G`. Do not attempt
 to discharge either. The FRJW search of W6 is built fresh, on the
 invariant `¬ D ▷ (Ω ⇒g C)` that W5's two clauses make propagable.
+
+---
+
+## Fidelity / divergence log
+
+FRJW is a NEW calculus: fresh proofs of everything, soundness included;
+no FRJV theorem migrates by renaming or aliasing; FRJV files stay
+byte-for-byte untouched.  A later merge back into FRJV would produce a
+third name (FRJ◯).  This log records divergence from **FRJV** (the
+predecessor); divergence from the paper is FRJV's own log
+(`docs/refat-plan.md`, V1–V5), which carries over unchanged.
+
+| # | Divergence from FRJV | Where | Why |
+|---|---|---|---|
+| W1 | `lift` added to the irregular family: `Γ ⇒ C` with `Θ ⊆ Ĝ`, `Θ ⊆ Cl(Γ)` yields `∅ ; Θ → C` | CalculusW | ours; the irregular duality hole at `◯(◯Z ⊃ Z)` (§2) |
+| W2 | `⊃∉` (`impNotIn`) deleted; reconstructed as `lift (impIn d hA hgoal) hTh` — its extra condition `¬ Cl(Θ) ∋ A` is dropped, not reconstructed | CalculusW | redundant given `lift` (§1) |
+| W3 | `DisprovableW` replaces the `ProvableV`-pattern name for `∃ t Γ, Nonempty (FRJWr G t Γ G)` | CalculusW | terminology: an FRJW object is a DISPROOF; `ProvableV G` read the wrong way round |
+| W4 | everything else transcribed verbatim — machine-diffed: the `#rules` tables of the two families are identical modulo the V→W rename outside the `⊃∉`/`lift` swap (2026-08-31) | CalculusW | fidelity gate |
+
+Stage-W1 gates in `FRJ/CalculusW.lean`: `#slime` pinned by
+`#guard_msgs` at 0 computed indices for both families (13 + 8
+constructors); the pin was watched to fail on an injected mismatch
+before shipping.  `#rules` output inspected and diffed as above.
