@@ -340,3 +340,39 @@ curried-to-`∧` conversion (`curryToAnd`, using only `iden`, `⊃I/⊃E`,
 
 `#guard_msgs`-pinned [propext, Quot.sound] (a first draft's `tauto`
 pulled Classical.choice; replaced by a constructive membership term).
+
+### FRJW completeness thread (opened 2026-08-31, late evening)
+
+The target is the constructive dichotomy (no declaration exists — OPEN):
+
+    decideGbuW : ∀ G, ProvableGbuC G ⊕ DisprovableW G
+
+which yields FRJW completeness (via `pll_of_provableGbuC`) and the
+exhaustiveness half of the Gbu◯/FRJW duality.  Done so far:
+
+* **Exclusion half BANKED** (`wip/gbu_frjw_exclusion.lean`, both
+  directions, [propext, Quot.sound]): a Gbu◯ proof and an FRJW
+  disproof of the same goal cannot coexist.
+* **W-engine built and registered**: `FRJ/Search/OpsW.lean` (`wOps`),
+  register entry `Engines.frjwRefute`, TOOLS.md row.  Smoke: closes
+  the Gcc gap computationally (irregular row via `Lift` where the
+  V-engine provably has none), ◯-free agreement with `vOps`, no false
+  hits on valid cells.
+
+Next, in order (statement-first, per METHOD.md):
+1. Cell-level dichotomy statement drafted from Theorem 8/9's
+   `SearchOk`/`EvalR`/`EvalI` shapes over a W-database; the old
+   supplies `BigAnte`/`CleanReg` are FRJV-specific and REFUTED — the
+   W-analogues must be drafted fresh (`Lift` is expected to be what
+   discharges the old `BigAnte`-shaped demands).
+2. Extensional attack BEFORE any proof build: corpus + boundary +
+   Gcc family + frontier strata through the W-engine, with the pinned
+   `ProvableGbuC ⇔ PLL` equivalence (via the G4c decider) as
+   ground-truth oracle — every cell now has a definite expected side.
+   Needs a `frjvrun` subcommand (or sibling exe) for compiled runs.
+3. Only then scope `decideGbuW`, templating Theorem 8/9's recursion
+   with the saturation measure (`satMeasure_lt` pattern).
+
+Frame-conditioned FRJV completeness routes (endpoints, cone-grounded):
+judged not worth significant effort (Matthew, 2026-08-31); at most a
+cheap reconnaissance whether `Lift` discharges their condition sites.

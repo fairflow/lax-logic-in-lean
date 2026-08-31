@@ -3410,3 +3410,14 @@ kernel-checked screens: `GbuIC` non-monotone, no modus ponens) →
 `nf_negOfO`.  The licenced `|◯C|` adaptation of `GbuIC.limpLI` is
 consumed at exactly one site (`irrKit.impOpen`).  Full stage record
 appended to the "Route change" section of `docs/frjw-plan.md`.
+
+## 2026-08-31g — exclusion banked; FRJW engine live
+
+Gbu◯/FRJW duality: the exclusion half is banked both ways
+(`wip/gbu_frjw_exclusion.lean`, [propext, Quot.sound]).  The W-engine
+exists: `FRJ/Search/OpsW.lean` (`wOps` = `vOps` − ⊃∉ + Lift), register
+entry `Engines.frjwRefute`, TOOLS.md row; smoke-validated on the Gcc
+gap cell (irregular row via Lift where FRJV provably has none).  The
+open target is the dichotomy `decideGbuW : ∀ G, ProvableGbuC G ⊕
+DisprovableW G` — plan and ordered next steps in the "FRJW completeness
+thread" section of `docs/frjw-plan.md`.
