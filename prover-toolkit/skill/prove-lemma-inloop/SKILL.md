@@ -23,8 +23,16 @@ through many lemmas; this one is free per attempt and can bring judgement.
 # Optional: the config is found automatically by walking up from the
 # working directory. Set it only to override.
 export PROVER_TOOLKIT_CONFIG=/path/to/prover-toolkit/toolkit.json
+
+# `index.jsonl` is derived data and git-ignored, so a FRESH WORKTREE has none
+# and the server dies with FileNotFoundError. Build it first.
+python3 prover-toolkit/leansearch/build_index.py
 python3 prover-toolkit/leansearch/server.py &   # port comes from toolkit.json
+curl -s localhost:$(python3 -c 'import sys;sys.path.insert(0,"prover-toolkit");from toolkit_config import find_config;print(find_config().index_port)')/health
 ```
+
+Port 8080 may be a launchd service over a *different* corpus; always take the
+port from the config, never assume it.
 
 ## The loop
 
