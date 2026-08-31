@@ -1,6 +1,8 @@
 # FRJW — the calculus, and the campaign
 
-**Status:** plan, awaiting review. No Lean written against it yet.
+**Status:** W1–W4 landed — see the divergence log. The completeness
+route changed on 2026-08-31; the old W5/W6 are stood down, see the last
+section.
 **Branch:** `frjw-dev`. **Predecessor:** FRJV (`FRJ/CalculusV.lean`).
 
 Terminology: an object of `FRJWr` / `FRJWi` is a **disproof** (regular /
