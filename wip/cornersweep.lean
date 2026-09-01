@@ -21,6 +21,30 @@ def ya : Form := .atom "y"
 def za : Form := .atom "z"
 
 def nF (A : Form) : Form := .imp A .bot
+def wa : Form := .atom "w"
+def va : Form := .atom "v"
+def ua : Form := .atom "u"
+
+/-- The RELEASE stratum (2026-09-01, on Matthew's testing directive):
+the corner-reachability analysis shows a stuck antecedent's RefAt-test
+dies only at atoms PRESENT at corner-time; a chase resolves trivially
+when its body's atoms are present at CHASE-time — so the residue shape
+is an atom released BETWEEN the two, by a `limpLI` whose ∧-consequent
+splits.  Each cell varies one parameter of that mechanism. -/
+def stratum : List (String × Form) := [
+  ("T1-full",  .imp (.and (nF (.circ wa)) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T2-nestO", .imp (.and (nF (.circ (.and wa (.circ va)))) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T3-part",  .imp (.and (nF (.circ (.and wa va))) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T4-orBody", .imp (.and (nF (.circ (.or wa va))) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T5-casc",  .imp (.and (nF (.circ wa)) (.and (.imp pa (.and wa qa)) (.and (.imp qa (.and va ra)) pa))) (.circ za)),
+  ("T6-goalEnt", .imp (.and (nF (.circ (.and wa (.circ za)))) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T7-modCons", .imp (.and (.imp (.circ (.and wa (.circ za))) (.circ wa)) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T8-orSpine", .imp (.and (nF (.circ (.and wa (.or va (.circ za))))) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T9-dblO",  .imp (.and (nF (.circ (.circ wa))) (.and (.imp pa (.and wa qa)) pa)) (.circ za)),
+  ("T10-orCons", .imp (.and (nF (.circ wa)) (.and (.imp pa (.or wa qa)) pa)) (.circ za)),
+  ("T11-inter", .imp (.and (nF (.circ (.and ua (.circ ya)))) (.and (nF (.circ (.and va (.circ za)))) (.and (.imp pa (.and (.and ua ya) va)) pa))) (.circ za)),
+  ("T12-consCtl", .imp (.and (.imp (.circ wa) ba) (.and (.imp pa (.and wa ba)) pa)) (.circ za))
+]
 
 def corpus : List (String × Form) := [
   ("Gx", .imp (.and (.imp (.circ ra) ba) (nF (nF ra))) (.circ ra)),
@@ -110,6 +134,7 @@ def sweep (G : Form) : List String := Id.run do
               keptOf (upsilon (fun _ : Fin 1 => Z)) base0 (thPool th0)
             let axiCov := Z.isPrime && !(decide (Z ∈ om)) &&
               om.all (fun X => cloB ctx0 X)
+            let cellO := oracleD om (.circ Z)
             let diag := unref.map (fun A =>
               s!"{ppF A}[keepPsi={refAtB true ups om A},{oracleD om A}]")
             let verdict :=
@@ -117,10 +142,16 @@ def sweep (G : Form) : List String := Id.run do
               else if axiCov then "CLOSED(axI-keptOf)"
               else "RESIDUAL"
             out := out ++
-              [s!"  CORNER Ψ={om.map ppF} goal=O{ppF Z} {verdict} stuck={diag}"]
+              [s!"  CORNER Ψ={om.map ppF} goal=O{ppF Z} {verdict} cell={cellO} stuck={diag}"]
   return out
 
 def main : IO Unit := do
+  IO.println "==== the RELEASE stratum ===="
+  for (nm, G) in stratum do
+    IO.println s!"== {nm} : {ppF G}"
+    for l in sweep G do IO.println l
+    (← IO.getStdout).flush
+  IO.println "==== the original corpus ===="
   for (nm, G) in corpus do
     IO.println s!"== {nm} : {ppF G}"
     for l in sweep G do IO.println l

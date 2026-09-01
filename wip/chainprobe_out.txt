@@ -1,0 +1,12 @@
+== A1 chain saboteur — the real keptOf ==
+linear: candidates=16 valid-chains=4 keptOf=3 PASS
+diamond: candidates=65 valid-chains=5 keptOf=4 PASS
+tower+mix: candidates=65 valid-chains=9 keptOf=3 PASS
+duplicates: candidates=16 valid-chains=11 keptOf=2 PASS
+base-mediated: candidates=5 valid-chains=3 keptOf=2 PASS
+== gate-watch: keptOfBroken (must FAIL wherever chains exist) ==
+linear: candidates=16 valid-chains=4 keptOf=0 FAIL missed=3
+diamond: candidates=65 valid-chains=5 keptOf=0 FAIL missed=4
+tower+mix: candidates=65 valid-chains=9 keptOf=0 FAIL missed=3
+duplicates: candidates=16 valid-chains=11 keptOf=0 FAIL missed=2
+base-mediated: candidates=5 valid-chains=3 keptOf=0 FAIL missed=2
