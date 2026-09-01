@@ -1351,4 +1351,272 @@ theorem stored_of_emitted {G : Form} {r : WRow G}
   exact ⟨e, he, subsumes_of_canonSeq_eq (wfSeq_of_wDer r.d)
     (wfSeq_of_wDer e.d) hkey.symm⟩
 
+/-! ## S5: coverage — every clause instance is emitted
+
+First the plumbing: sequent-nodupness of the closure store, membership
+of each emitter in `stepAll`, and the reindexing extraction (the stored
+sublist listing an arbitrary family's row set, with the `SameIrr`/
+`SameReg` relations and pairwise distinctness). -/
+
+theorem sat_nodup {G : Form} :
+    ∀ (fuel : Nat) (db : List (WRow G)), (keysOf G db).Nodup →
+      (keysOf G (sat G fuel db)).Nodup
+  | 0, _, h => h
+  | fuel + 1, db, h => by
+      simp only [sat]
+      by_cases he : (stepNew G db).isEmpty
+      · rw [if_pos he]; exact h
+      · rw [if_neg he]
+        exact sat_nodup fuel _ (insertNew_nodup _ db h)
+
+theorem closureDB_keys_nodup (G : Form) :
+    (keysOf G (closureDB G)).Nodup :=
+  sat_nodup _ _ List.nodup_nil
+
+theorem closureDB_seq_nodup (G : Form) :
+    ((closureDB G).map (·.s)).Nodup := by
+  have h := closureDB_keys_nodup G
+  have heq : keysOf G (closureDB G) =
+      ((closureDB G).map (·.s)).map (canonSeq G) := by
+    simp [keysOf, keyOf, List.map_map]
+  rw [heq] at h
+  exact h.of_map
+
+theorem sub_stepAll_AxR {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitAxR G, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl hx)))))))))))))))))
+
+theorem sub_stepAll_AxI {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitAxI G, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))))))))
+
+theorem sub_stepAll_AxIC {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitAxIC G, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))))))))
+
+theorem sub_stepAll_AndR {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitAndR G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))))))
+
+theorem sub_stepAll_ImpIn {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitImpIn G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))))))
+
+theorem sub_stepAll_CircIn {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitCircIn G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))))
+
+theorem sub_stepAll_AndI {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitAndI G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))))
+
+theorem sub_stepAll_OrI {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitOrI G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))
+
+theorem sub_stepAll_ImpInI {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitImpInI G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))
+
+theorem sub_stepAll_Lift {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitLift G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))
+
+theorem sub_stepAll_CircNotIn {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitCircNotIn G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))
+
+theorem sub_stepAll_JoinAt {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinAt G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))
+
+theorem sub_stepAll_JoinOr {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinOr G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))
+
+theorem sub_stepAll_JoinCirc {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinCirc G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))
+
+theorem sub_stepAll_JoinAtF {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinAtF G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))
+
+theorem sub_stepAll_JoinOrF {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinOrF G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inl (Or.inr hx)))
+
+theorem sub_stepAll_JoinAtP {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinAtP G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inl (Or.inr hx))
+
+theorem sub_stepAll_JoinOrP {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinOrP G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inl (Or.inr hx)
+
+theorem sub_stepAll_JoinCircP {G : Form} {db : List (WRow G)} :
+    ∀ x ∈ emitJoinCircP G db, x ∈ stepAll G db := by
+  intro x hx
+  simp only [stepAll, List.mem_append]
+  exact Or.inr hx
+
+/-- Reindexing extraction, irregular side: the stored sublist listing an
+arbitrary family's row set, nonempty, with the transfer relation and
+pairwise distinctness. -/
+theorem reindex_irr {G : Form} {db : List (WRow G)}
+    (hnd : (db.map (·.s)).Nodup)
+    {n : Nat} {stab th : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form}
+    (hmem : ∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) :
+    ∃ (a : IrrT G) (t : List (IrrT G)),
+      (a :: t) ∈ (irrTs db).sublists ∧
+      SameIrr stab th rhs (fun j => ((a :: t).get j).St)
+        (fun j => ((a :: t).get j).Th) (fun j => ((a :: t).get j).C) ∧
+      (∀ i₁ i₂ : Fin (t.length + 1), i₁ ≠ i₂ →
+        ¬ (((a :: t).get i₁).St = ((a :: t).get i₂).St ∧
+           ((a :: t).get i₁).Th = ((a :: t).get i₂).Th ∧
+           ((a :: t).get i₁).C = ((a :: t).get i₂).C)) := by
+  have hlsub : List.Sublist ((irrTs db).filter (fun tr =>
+      decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)))
+      (irrTs db) := List.filter_sublist
+  have hmem_l : ∀ j, ∃ tr ∈ (irrTs db).filter (fun tr =>
+      decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)),
+      tr.St = stab j ∧ tr.Th = th j ∧ tr.C = rhs j := by
+    intro j
+    obtain ⟨tr, htr, h1, h2, h3⟩ := irrTs_of_mem (hmem j)
+    refine ⟨tr, List.mem_filter.mpr ⟨htr, ?_⟩, h1, h2, h3⟩
+    exact decide_eq_true ⟨j, h1.symm, h2.symm, h3.symm⟩
+  obtain ⟨a, t, hlat⟩ : ∃ a t, (irrTs db).filter (fun tr =>
+      decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)) =
+        a :: t := by
+    cases hl : (irrTs db).filter (fun tr =>
+        decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)) with
+    | nil =>
+        obtain ⟨tr, htr, -⟩ := hmem_l 0
+        rw [hl] at htr
+        exact absurd htr List.not_mem_nil
+    | cons a t => exact ⟨a, t, rfl⟩
+  rw [hlat] at hlsub hmem_l
+  have hseqnd : ((a :: t).map IrrT.seq).Nodup :=
+    ((hlsub.map IrrT.seq).trans (irrTs_seq_sublist db)).nodup hnd
+  refine ⟨a, t, List.mem_sublists.mpr hlsub, ⟨?_, ?_⟩, ?_⟩
+  · intro j
+    obtain ⟨tr, htr, h1, h2, h3⟩ := hmem_l j
+    obtain ⟨i, hi⟩ := List.mem_iff_get.mp htr
+    exact ⟨i, by show ((a :: t).get i).St = stab j; rw [hi]; exact h1,
+      by show ((a :: t).get i).Th = th j; rw [hi]; exact h2,
+      by show ((a :: t).get i).C = rhs j; rw [hi]; exact h3⟩
+  · intro i
+    have hi : (a :: t).get i ∈ List.filter (fun tr =>
+        decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C))
+        (irrTs db) := by
+      rw [hlat]
+      exact List.get_mem (a :: t) i
+    have hi' := (List.mem_filter.mp hi).2
+    rw [decide_eq_true_eq] at hi'
+    obtain ⟨j, h1, h2, h3⟩ := hi'
+    exact ⟨j, h1.symm, h2.symm, h3.symm⟩
+  · rintro i₁ i₂ hne12 ⟨h1, h2, h3⟩
+    have hseq : IrrT.seq ((a :: t).get i₁) = IrrT.seq ((a :: t).get i₂) := by
+      simp only [IrrT.seq, h1, h2, h3]
+    have hlen : ∀ (i : Fin (t.length + 1)),
+        i.val < (List.map IrrT.seq (a :: t)).length := by
+      intro i
+      simpa using i.isLt
+    have hmapeq : (List.map IrrT.seq (a :: t))[i₁.val]'(hlen i₁) =
+        (List.map IrrT.seq (a :: t))[i₂.val]'(hlen i₂) := by
+      simp only [List.getElem_map]
+      simpa [List.get_eq_getElem] using hseq
+    have hpw := List.pairwise_iff_getElem.mp hseqnd
+    have hvne : i₁.val ≠ i₂.val := fun h => hne12 (Fin.ext h)
+    rcases Nat.lt_or_ge i₁.val i₂.val with hlt | hge
+    · exact hpw _ _ (hlen i₁) (hlen i₂) hlt hmapeq
+    · have hlt2 : i₂.val < i₁.val :=
+        Nat.lt_of_le_of_ne hge (Ne.symm hvne)
+      exact hpw _ _ (hlen i₂) (hlen i₁) hlt2 hmapeq.symm
+
+/-- Reindexing extraction, regular (promise) side. -/
+theorem reindex_reg {G : Form} {db : List (WRow G)}
+    {k : Nat} {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form}
+    (hmem : ∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) :
+    ∃ (b : RegT G) (u : List (RegT G)),
+      (b :: u) ∈ (regTs db).sublists ∧
+      SameReg tps Δs Ds (fun i => ((b :: u).get i).t)
+        (fun i => ((b :: u).get i).Γ) (fun i => ((b :: u).get i).C) := by
+  have hlsub : List.Sublist ((regTs db).filter (fun tr =>
+      decide (∃ i, tps i = tr.t ∧ Δs i = tr.Γ ∧ Ds i = tr.C)))
+      (regTs db) := List.filter_sublist
+  have hmem_l : ∀ i, ∃ tr ∈ (regTs db).filter (fun tr =>
+      decide (∃ i, tps i = tr.t ∧ Δs i = tr.Γ ∧ Ds i = tr.C)),
+      tr.t = tps i ∧ tr.Γ = Δs i ∧ tr.C = Ds i := by
+    intro i
+    obtain ⟨tr, htr, h1, h2, h3⟩ := regTs_of_mem (hmem i)
+    refine ⟨tr, List.mem_filter.mpr ⟨htr, ?_⟩, h1, h2, h3⟩
+    exact decide_eq_true ⟨i, h1.symm, h2.symm, h3.symm⟩
+  obtain ⟨b, u, hlat⟩ : ∃ b u, (regTs db).filter (fun tr =>
+      decide (∃ i, tps i = tr.t ∧ Δs i = tr.Γ ∧ Ds i = tr.C)) =
+        b :: u := by
+    cases hl : (regTs db).filter (fun tr =>
+        decide (∃ i, tps i = tr.t ∧ Δs i = tr.Γ ∧ Ds i = tr.C)) with
+    | nil =>
+        obtain ⟨tr, htr, -⟩ := hmem_l 0
+        rw [hl] at htr
+        exact absurd htr List.not_mem_nil
+    | cons b u => exact ⟨b, u, rfl⟩
+  rw [hlat] at hlsub hmem_l
+  refine ⟨b, u, List.mem_sublists.mpr hlsub, ?_, ?_⟩
+  · intro i
+    obtain ⟨tr, htr, h1, h2, h3⟩ := hmem_l i
+    obtain ⟨i', hi'⟩ := List.mem_iff_get.mp htr
+    exact ⟨i', by show ((b :: u).get i').t = tps i; rw [hi']; exact h1,
+      by show ((b :: u).get i').Γ = Δs i; rw [hi']; exact h2,
+      by show ((b :: u).get i').C = Ds i; rw [hi']; exact h3⟩
+  · intro i'
+    have hi : (b :: u).get i' ∈ List.filter (fun tr =>
+        decide (∃ i, tps i = tr.t ∧ Δs i = tr.Γ ∧ Ds i = tr.C))
+        (regTs db) := by
+      rw [hlat]
+      exact List.get_mem (b :: u) i'
+    have hi'' := (List.mem_filter.mp hi).2
+    rw [decide_eq_true_eq] at hi''
+    obtain ⟨i, h1, h2, h3⟩ := hi''
+    exact ⟨i, h1.symm, h2.symm, h3.symm⟩
+
 end FRJ.Gbu.W
