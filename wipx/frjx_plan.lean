@@ -81,14 +81,14 @@ theorem regSound_liftClosure (G : Form) : RegSound (LiftClosure G) := by
 /-- **(X3)** The closure is saturated over itself; `Subsumes` is reflexive,
 so this is where the parametrisation pays. -/
 theorem saturatedOver_liftClosure (G : Form) :
-    SaturatedOver (LiftClosure G) (LiftClosure G) := by
-  sorry
+    SaturatedOver (LiftClosure G) (LiftClosure G) :=
+  saturatedOver_self G
 
 /-- **(X4)** …and lift-closed, by the `lift` constructor. -/
 theorem liftClosed_liftClosure (G : Form) :
     ∀ (Γ Θ : List Form) (C : Form), LiftClosure G (.reg Γ C) →
-      (∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) → LiftClosure G (.irr [] Θ C) := by
-  sorry
+      (∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) → LiftClosure G (.irr [] Θ C) :=
+  fun _ _ _ hreg hΘ => .lift hreg hΘ
 
 /-! ## §2 The inversion that makes the ports mechanical
 
@@ -219,23 +219,18 @@ theorem cirr_circ {G : Form} {D : FSeq → Prop}
     (hne : ¬ EvalR D Ω (.circ Z)) : UnrefutedBelow G D Ω Z := by
   sorry
 
-/-! ### §4.2 The residue the repair does NOT close
+/-! ### §4.2 The residue that was NOT a residue
 
-`L⊃ᵢ` (`limpLI`) carries `A.hasCirc = false ∨ |A| < |◯C|`.  An irregular
-modus ponens whose antecedent both carries a `◯` and is too large falls
-outside the rule.  `(X14)` is the obligation.  It is the one place where the
-campaign may need a CALCULUS change, and **if it is false that is a result**:
-the displayed rule goes to Matthew before anything is edited. -/
+`(X14)` stood here: at a critical context whose implication has an
+undisproved, `◯`-carrying, oversized antecedent, `Ω →g ◯Z` is derivable.
+It is **REFUTED** — `not_X14` in `wipx/frjx_screen.lean`,
+`[propext, Quot.sound]` — and so is its natural correction ("the node is
+never reached"), by the same cell at `Z := p`.
 
-/-- **(X14)** The oversized modal antecedent. -/
-theorem bigAnte_closed {G : Form} {D : FSeq → Prop}
-    (hsat : SaturatedOver (LiftClosure G) D)
-    {Ω : List Form} {A B Z : Form}
-    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G) (hmem : Form.imp A B ∈ Ω)
-    (hgoal : Form.circ Z ∈ sfR G) (hnA : ¬ EvalI D Ω A)
-    (hsz : ¬ (A.hasCirc = false ∨ A.size < (Form.circ Z).size)) :
-    Nonempty (GbuIC G Ω (.circ Z)) := by
-  sorry
+No statement replaces it, because none is needed: the node is discharged by
+`R◯ᵢ` then `Ax` (`gbuIC_omegaX_circp`).  The `hsz` residue was an artefact
+of `searchO` trying the `Υ` queries BEFORE the right rules; reversing that
+order removes it.  No rule changes. -/
 
 /-! ## §5 The search, and completeness -/
 
