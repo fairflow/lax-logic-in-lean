@@ -857,6 +857,73 @@ def joinCircP_mono {G : Form} {n k : Nat}
     (fun i => ⟨(hDs i).1, pledge_of_le (hlep i) (hΔ i) (hDs i).2⟩)
     hZ hgoal (CtxEq.refl _)
 
+/-! ## Wellformedness for the finite universe
+
+`wfR`/`wfI` (FRJ/StepW.lean) bound every derivable context inside `Ĝ`.
+The closure computation's termination argument needs two more bounds:
+the goal and the pledge live in `Sf^R(G)`.  Together the three confine
+every derivable row to a finite canonical universe. -/
+
+mutual
+
+/-- Every derivable regular goal is a right signed subformula. -/
+theorem goalWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
+    FRJWr G t Γ C → C ∈ sfR G
+  | _, _, _, .axR _ _ hg _ => hg
+  | _, _, _, .andR1 _ hg => hg
+  | _, _, _, .andR2 _ hg => hg
+  | _, _, _, .impIn _ _ hg => hg
+  | _, _, _, .circIn _ _ hg => hg
+  | _, _, _, .joinAt _ _ _ _ _ _ _ hg _ => hg
+  | _, _, _, .joinAtP _ _ _ _ _ _ _ _ _ hg _ => hg
+  | _, _, _, .joinAtF _ _ _ _ _ hg _ => hg
+  | _, _, _, .joinOr _ _ _ _ _ _ hg _ => hg
+  | _, _, _, .joinOrP _ _ _ _ _ _ _ _ hg _ => hg
+  | _, _, _, .joinOrF _ _ _ _ hg _ => hg
+  | _, _, _, .joinCirc _ _ _ _ _ _ hg _ => hg
+  | _, _, _, .joinCircP _ _ _ _ _ _ _ _ hg _ => hg
+
+/-- Every derivable irregular goal is a right signed subformula (`lift`
+inherits it from its regular premise — the one rule with no `hgoal`). -/
+theorem goalWi {G : Form} : ∀ {St Th : List Form} {C : Form},
+    FRJWi G St Th C → C ∈ sfR G
+  | _, _, _, .axI _ _ hg _ => hg
+  | _, _, _, .andI1 _ hg => hg
+  | _, _, _, .andI2 _ hg => hg
+  | _, _, _, .orI _ _ _ _ hg _ _ => hg
+  | _, _, _, .impInI _ _ _ _ hg _ _ => hg
+  | _, _, _, .lift d _ => goalWr d
+  | _, _, _, .circNotIn _ _ _ hg => hg
+  | _, _, _, .axIC _ _ _ _ hg _ => hg
+
+end
+
+/-- Every derivable tag is `barren`, `blocked`, or a chain pledged on a
+right signed subformula: the chain producers pledge a promise goal
+(`goalWr` of the promise component) or the join goal's body
+(`sfR_circ`), and the unary rules preserve the tag. -/
+theorem tagWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
+    FRJWr G t Γ C →
+      t = .barren ∨ t = .blocked ∨ ∃ W, t = .chain W ∧ W ∈ sfR G
+  | _, _, _, .axR _ _ _ _ => Or.inl rfl
+  | _, _, _, .andR1 d _ => tagWr d
+  | _, _, _, .andR2 d _ => tagWr d
+  | _, _, _, .impIn d _ _ => tagWr d
+  | _, _, _, .circIn d _ _ => tagWr d
+  | _, _, _, .joinAt _ _ _ _ _ _ _ _ _ => Or.inl rfl
+  | _, _, _, .joinAtP _ dps _ _ _ _ htag _ _ _ _ =>
+      htag.elim (fun h => Or.inr (Or.inl h))
+        (fun h => Or.inr (Or.inr ⟨_, h.1, goalWr (dps 0)⟩))
+  | _, _, _, .joinAtF _ _ _ _ _ _ _ => Or.inr (Or.inl rfl)
+  | _, _, _, .joinOr _ _ _ _ _ _ _ _ => Or.inl rfl
+  | _, _, _, .joinOrP _ dps _ _ _ _ htag _ _ _ =>
+      htag.elim (fun h => Or.inr (Or.inl h))
+        (fun h => Or.inr (Or.inr ⟨_, h.1, goalWr (dps 0)⟩))
+  | _, _, _, .joinOrF _ _ _ _ _ _ => Or.inr (Or.inl rfl)
+  | _, _, _, .joinCirc _ _ _ _ _ _ _ _ => Or.inl rfl
+  | _, _, _, .joinCircP _ _ _ _ _ _ _ _ hg _ =>
+      Or.inr (Or.inr ⟨_, rfl, sfR_circ hg⟩)
+
 /-! ## Pins -/
 
 /-- info: 'FRJ.keptChain_sub_keptOf_of_le' depends on axioms: [propext, Quot.sound] -/
@@ -926,5 +993,17 @@ def joinCircP_mono {G : Form} {n k : Nat}
 /-- info: 'FRJ.joinCircP_mono' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms joinCircP_mono
+
+/-- info: 'FRJ.goalWr' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms goalWr
+
+/-- info: 'FRJ.goalWi' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms goalWi
+
+/-- info: 'FRJ.tagWr' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms tagWr
 
 end FRJ

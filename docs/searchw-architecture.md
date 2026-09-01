@@ -185,16 +185,57 @@ branch are now redundant decidable fast-paths.  Recorded here so the
 exposition can tell the true story: the invariant was a ladder, and
 the theorem kicked it away.
 
-## 10. What remains for `decideGbuW` (OPEN)
+## 10. The instantiation stage (IN PROGRESS, 1 September)
 
 `searchW`/`dichotomyW` are parameterised by a `WSaturated` database
-with deciders.  The concrete instantiation — for each `G`, a
-saturated database (the engine's fixpoint or a by-construction
-closure) with `Decidable` row queries — is the remaining stage.
-`WSaturated.2` (every derivable row subsumed) is the substantive
-half: a fixpoint/closure argument over the finite `≐`-universe.
-Then: `decideGbuW : ∀ G, ProvableGbuC G ⊕ DisprovableW G` via
-`dichotomyW` + the banked exclusion, and FRJW completeness reads off.
+with deciders.  The chosen instantiation (wip/gbu_frjw_closure.lean):
+
+    D := (· ∈ db G)   for a COMPUTED closure db,
+
+so the deciders are finite scans and the whole weight sits in
+`WSaturated.2` — every derivable row subsumed by a stored one — proved
+by induction on the derivation.  Each rule case rides its MONOTONICITY
+lemma (T-B): the rule applied to stored subsumers of its premises
+yields a conclusion subsuming the original's.
+
+PROVED so far (all pinned `[propext, Quot.sound]` or lighter):
+
+* **T-A, kept-chain dominance** — every `KeptChain` link lands in the
+  greedy `keptOf` (via `keptOf_saturated` + `RefAt`-monotonicity), with
+  the parameter-growth form absorbing zone growth.  The A1 attacker had
+  survived 5/5 designed seeds first.
+* **T-B, all 21 rules** — the three barren joins (canonical `keptOf`
+  chain; the relaxed (J2) certificates lift by `refAt_mono` through the
+  context inclusion), the two fallible joins, the three promise joins
+  (double family swap; pledges ride `pledge_of_le` up the retention
+  order `tagLeB`; the restriction filters are monotone in list AND
+  predicate), `⊃∈ᵢ` (the second-zone re-split by membership in the
+  original `Λ`), `Lift`/`◯∉` at the maximal retained zone
+  `maxTh G Γ₂ = Ĝ ∩ Cl(Γ₂)`, and `◯∈`.  Leaf rules inline.
+* **Wellformedness for the universe** — `wfR`/`wfI` (contexts ⊆ `Ĝ`,
+  already banked) plus the new `goalWr`/`goalWi` (goals ∈ `Sf^R`) and
+  `tagWr` (pledges ∈ `Sf^R`): every derivable row lives in a finite
+  canonical universe.
+
+OPEN (the remaining build, design locked):
+
+* rows as DATA: `WRow G` pairs a `WSeq` with its Type-level derivation,
+  so `WSaturated.1` needs no choice and the monotonicity `def`s consume
+  stored derivations directly; the induction extracts stored subsumers
+  through decidable `List.find?` (skolemisation without choice).
+* the step function: apply every rule to every stored-row family
+  (families WLOG duplicate-free, so sublists of the store), conclusions
+  at canonical kept chains and `≐`-normal zones; subsumption-dedup.
+* termination: the covered-universe count strictly grows at every
+  non-fixpoint step and is bounded by the finite canonical universe.
+* `WSaturated.2` by derivation induction over T-B; then the deciders
+  (finite scans + query monotonicity under subsumption), and
+
+      decideGbuW : ∀ G, ProvableGbuC G ⊕ DisprovableW G
+
+  via `dichotomyW`, the banked exclusion, and the two soundness
+  theorems — GBUW and FRJW completeness simultaneously, and a certified
+  PLL decision procedure.
 
 ## 11. Ledger of the day (2026-09-01)
 
@@ -208,3 +249,12 @@ Then: `decideGbuW : ∀ G, ProvableGbuC G ⊕ DisprovableW G` via
 * Testing pivot on Matthew's directive: the release stratum
   (12 curated cells around the residue shape) replaced blind
   sweeping; its analysis produced the dilemma that became totality.
+* 2 September (continuation): the Ledger reverted to its 31-Aug state
+  on Matthew's instruction (campaign status lives in the session report,
+  not the reference ledger) and its HTML source checked into git
+  (docs/pll-calculus-ledger.html).  `#cf_search` added to `Meta/Audit`
+  (TOOLS.md §5): choice-free lemma search at reach time, after
+  `List.eq_nil_iff_forall_not_mem` leaked choice into three closure
+  defs.  Closure stage Parts I–III: T-A proved, T-B proved for all 21
+  rules, universe wellformedness (`goalWr`/`goalWi`/`tagWr`) proved.
+  A2/A3 attackers running in the background.
