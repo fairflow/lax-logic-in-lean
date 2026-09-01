@@ -233,4 +233,31 @@ theorem evalI_omegaX_goal : EvalI (LiftClosure Gx) omegaX (.circ rvx) := by
 #guard_msgs in
 #print axioms evalI_omegaX_goal
 
+
+/-! ### …but the branch is discharged by ORDERING, not by a new lemma
+
+The corrected statement — "at such a cell the database disproves the goal"
+— is refuted by the SAME cell, at `Z := p`: `not_evalI_omegaX_ante` is
+exactly `¬ EvalI (LiftClosure Gx) Ω (◯p)`, and `hsz` holds there too
+(`|◯p| < |◯p|` is false).  So the node IS reachable and the goal is NOT
+disproved.
+
+What discharges it is neither `(X14)` nor its correction: it is `R◯ᵢ`
+followed by `Ax`.  `p ∈ Ω`, so `Ω →g ◯p` is immediate — the search does not
+need `L⊃ᵢ` at this node at all.  The `hsz` residue is therefore an artefact
+of `searchO` trying the `Υ` queries BEFORE the right rules; reversing that
+order removes it.  No rule changes, and `(X14)` is dropped outright. -/
+
+/-- `Γ ≐ A :: Γ` whenever `A ∈ Γ` — the shape `Ax` wants. -/
+theorem ctxEq_dup {Γ : List Form} {A : Form} (h : A ∈ Γ) : Γ ≐ A :: Γ :=
+  fun _ => ⟨fun hx => List.mem_cons_of_mem _ hx,
+    fun hx => (List.mem_cons.mp hx).elim (fun e => e ▸ h) id⟩
+
+theorem gbuIC_omegaX_circp : Nonempty (GbuIC Gx omegaX (.circ pvx)) :=
+  ⟨.rcircI (.ax pvx (ctxEq_dup List.mem_cons_self)) (by decide)⟩
+
+/-- info: 'FRJ.Gbu.X.gbuIC_omegaX_circp' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms gbuIC_omegaX_circp
+
 end FRJ.Gbu.X
