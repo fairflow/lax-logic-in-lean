@@ -118,7 +118,14 @@ theorem evalI_of_evalR {G : Form} {D : FSeq → Prop}
       (∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) → D (.irr [] Θ C))
     {Ω : List Form} {C : Form} (hΩ : ∀ X ∈ Ω, X ∈ gHat G)
     (h : EvalR D Ω C) : EvalI D Ω C := by
-  sorry
+  obtain ⟨Γ, hmem, hcl⟩ := h
+  exact ⟨[], Ω, hlift Γ Ω C hmem (fun X hX => ⟨hcl X hX, hΩ X hX⟩),
+    fun {x} hx => absurd hx List.not_mem_nil,
+    fun {x} hx => List.mem_append_right _ hx⟩
+
+/-- info: 'FRJ.Gbu.X.evalI_of_evalR' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms evalI_of_evalR
 
 /-- **(X7) `(∨-inv)`.**  If both disjuncts are regularly disprovable over a
 critical context with dead antecedents, so is the disjunction — `⋈^∨` on the

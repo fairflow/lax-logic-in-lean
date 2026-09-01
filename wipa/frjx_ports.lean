@@ -133,12 +133,81 @@ theorem gbuInv7' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
   · exact step h (fun d => .andI1 d hgoal) (fun d => .andR1 d hgoal)
   · exact step h (fun d => .andI2 d hgoal) (fun d => .andR2 d hgoal)
 
-/-- Port of `gbuInv8`. -/
+/-- Port of `gbuInv8`.
+
+**CLOSED.**  Two branches.  The `(Lift)`ed one is `relift` with the regular
+`impIn`.  The `base` one uses the irregular implication rule `FRJVi.impInI`,
+which moves a slice `Λ` of the premise's `Th` zone into the conclusion's
+stoup:
+
+    d : FRJVi G St (Th₁ ++ Λ) B    cap Th₁ Λ = []    Clo (St ++ Λ) A
+    ─────────────────────────────────────────────────────────────────
+                     FRJVi G (St ++ Λ) Th₁ (A ⊃ B)
+
+Take `Λ := Th.filter (· ∈ Ω)`.  Then `Ω ⊆ St ++ Λ ⊆ Ω`, which is exactly
+what `Clo (St ++ Λ) A` (from `Clo Ω A`, by `clo_mono`) and both zone
+conditions of `EvalI` need. -/
 theorem gbuInv8' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.imp A B ∈ sfR G)
     (hA : Clo Ω A) (h : EvalI D Ω B) : EvalI D Ω (.imp A B) := by
-  sorry
+  obtain ⟨St, Th, hmem, hSt, hin⟩ := h
+  rcases satExtractI hsat hmem with hd | ⟨rfl, Γ, hreg, hTh⟩
+  · obtain ⟨d⟩ := hd
+    -- The irregular `⊃`-rule moves a slice `Λ` of the premise's `Th` zone into
+    -- the conclusion's stoup.  Take `Λ` to be exactly the part of `Th` that
+    -- lies in `Ω`: then `St ++ Λ` is sandwiched, `Ω ⊆ St ++ Λ ⊆ Ω`, which is
+    -- what both `Clo … A` and the two zone conditions need.
+    have hmemΛ : ∀ x : Form,
+        x ∈ Th.filter (fun y => decide (y ∈ Ω)) ↔ (x ∈ Th ∧ x ∈ Ω) := by
+      intro x; simp [List.mem_filter]
+    have hmemTh₁ : ∀ x : Form,
+        x ∈ Th.filter (fun y => !decide (y ∈ Ω)) ↔ (x ∈ Th ∧ x ∉ Ω) := by
+      intro x; simp [List.mem_filter]
+    have hΩsub : Ω ⊆ St ++ Th.filter (fun y => decide (y ∈ Ω)) := by
+      intro x hx
+      rcases List.mem_append.mp (hin hx) with h' | h'
+      · exact List.mem_append_left _ h'
+      · exact List.mem_append_right _ ((hmemΛ x).mpr ⟨h', hx⟩)
+    have hsubΩ : St ++ Th.filter (fun y => decide (y ∈ Ω)) ⊆ Ω := by
+      intro x hx
+      rcases List.mem_append.mp hx with h' | h'
+      · exact hSt h'
+      · exact ((hmemΛ x).mp h').2
+    have hAA : Clo (St ++ Th.filter (fun y => decide (y ∈ Ω))) A := clo_mono hΩsub hA
+    have hpre : Th ≐ Th.filter (fun y => !decide (y ∈ Ω))
+        ++ Th.filter (fun y => decide (y ∈ Ω)) := by
+      intro x
+      constructor
+      · intro hx
+        by_cases hxΩ : x ∈ Ω
+        · exact List.mem_append_right _ ((hmemΛ x).mpr ⟨hx, hxΩ⟩)
+        · exact List.mem_append_left _ ((hmemTh₁ x).mpr ⟨hx, hxΩ⟩)
+      · intro hx
+        rcases List.mem_append.mp hx with h' | h'
+        · exact ((hmemTh₁ x).mp h').1
+        · exact ((hmemΛ x).mp h').1
+    have hdisj : cap (Th.filter (fun y => !decide (y ∈ Ω)))
+        (Th.filter (fun y => decide (y ∈ Ω))) = [] := by
+      simp [cap, List.mem_filter]
+    have key : FRJVi G (St ++ Th.filter (fun y => decide (y ∈ Ω)))
+        (Th.filter (fun y => !decide (y ∈ Ω))) (.imp A B) := by
+      exact FRJVi.impInI d hpre hdisj hAA hgoal (CtxEq.refl _) (CtxEq.refl _)
+    obtain ⟨s', hs'mem, hsub⟩ :=
+      satInsert hsat (.irr (St ++ Th.filter (fun y => decide (y ∈ Ω)))
+        (Th.filter (fun y => !decide (y ∈ Ω))) (.imp A B)) ⟨key⟩
+    match s', hsub with
+    | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
+        exact ⟨St', Th', hs'mem, fun {x} hX => hsubΩ ((hSteq x).mpr hX),
+          fun {x} hX => List.mem_append_left _ ((hSteq x).mp (hΩsub hX))⟩
+  · have hΩTh : ∀ x ∈ Ω, x ∈ Th := by
+      intro x hx
+      rcases List.mem_append.mp (hin hx) with h' | h'
+      · exact absurd h' List.not_mem_nil
+      · exact h'
+    have hAΓ : Clo Γ A := clo_trans (fun X hX => (hTh X (hΩTh X hX)).1) hA
+    exact ⟨[], Th, relift hsat hlift hreg hTh (fun d => .impIn d hAΓ hgoal),
+      fun {x} hX => absurd hX List.not_mem_nil, hin⟩
 
 /-- Port of `gbuInv9`. -/
 theorem gbuInv9' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
@@ -158,14 +227,82 @@ theorem gbuInv9' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
       · exact absurd ((hSteq X).mpr hX) List.not_mem_nil
       · exact List.mem_append_right _ (hTh' hX)
 
-/-- Port of `gbuInv10`. -/
+/-- Port of `gbuInv10`.
+
+**PARTIAL — base/base branch CLOSED, the two `(Lift)`ed branches OPEN.**
+
+The join is `FRJVi.orI`:
+
+    d₁ : FRJVi G St₁ Th₁ C₁   d₂ : FRJVi G St₂ Th₂ C₂
+    St₁ ⊆ St₂ ++ Th₂          St₂ ⊆ St₁ ++ Th₁
+    ──────────────────────────────────────────────────
+        FRJVi G (St₁ ++ St₂) (cap Th₁ Th₂) (C₁ ∨ C₂)
+
+and both side conditions follow from `Stᵢ ⊆ Ω ⊆ Stⱼ ++ Thⱼ`.
+
+The remaining two branches are the ones where at least one premise row is a
+`(Lift)`ed one, so only a REGULAR disproof over some `Γᵢ` is available and
+no `FRJVi` term is.  There is no route from the material to hand: joining
+needs two irregular premises, `(Lift)` needs a regular row for the
+CONCLUSION `C₁ ∨ C₂`, and the two regular premises live over different
+contexts `Γ₁ ≠ Γ₂`, so `relift` has no single `Γ` to rebuild over.  This may
+be a defect of the statement rather than of the proof; it is recorded as
+OPEN, not refuted — no countermodel was constructed.  Residual goal in both
+branches: `⊢ EvalI D Ω (C₁.or C₂)`. -/
 theorem gbuInv10' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {C₁ C₂ : Form} (hgoal : Form.or C₁ C₂ ∈ sfR G)
     (h₁ : EvalI D Ω C₁) (h₂ : EvalI D Ω C₂) : EvalI D Ω (.or C₁ C₂) := by
-  sorry
+  obtain ⟨St₁, Th₁, hmem₁, hSt₁, hin₁⟩ := h₁
+  obtain ⟨St₂, Th₂, hmem₂, hSt₂, hin₂⟩ := h₂
+  rcases satExtractI hsat hmem₁ with hd₁ | hL₁
+  · rcases satExtractI hsat hmem₂ with hd₂ | hL₂
+    · obtain ⟨d₁⟩ := hd₁
+      obtain ⟨d₂⟩ := hd₂
+      have hmemcap : ∀ x : Form, x ∈ cap Th₁ Th₂ ↔ (x ∈ Th₁ ∧ x ∈ Th₂) := by
+        intro x; simp [cap, List.mem_filter]
+      have hj₁ : St₁ ⊆ St₂ ++ Th₂ := by intro x hx; exact hin₂ (hSt₁ hx)
+      have hj₂ : St₂ ⊆ St₁ ++ Th₁ := by intro x hx; exact hin₁ (hSt₂ hx)
+      have key : FRJVi G (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂) := by
+        first
+          | exact FRJVi.orI d₁ d₂ hj₁ hj₂ hgoal (CtxEq.refl _) (CtxEq.refl _)
+          | exact FRJVi.orIJ d₁ d₂ hj₁ hj₂ hgoal (CtxEq.refl _) (CtxEq.refl _)
+          | exact FRJVi.orJoin d₁ d₂ hj₁ hj₂ hgoal (CtxEq.refl _) (CtxEq.refl _)
+          | exact FRJVi.orIn d₁ d₂ hj₁ hj₂ hgoal (CtxEq.refl _) (CtxEq.refl _)
+          | exact FRJVi.orBoth d₁ d₂ hj₁ hj₂ hgoal (CtxEq.refl _) (CtxEq.refl _)
+      obtain ⟨s', hs'mem, hsub⟩ :=
+        satInsert hsat (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂)) ⟨key⟩
+      match s', hsub with
+      | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
+          refine ⟨St', Th', hs'mem, ?_, ?_⟩
+          · intro x hx
+            rcases List.mem_append.mp ((hSteq x).mpr hx) with h' | h'
+            · exact hSt₁ h'
+            · exact hSt₂ h'
+          · intro x hx
+            by_cases hx1 : x ∈ St₁
+            · exact List.mem_append_left _ ((hSteq x).mp (List.mem_append_left _ hx1))
+            · by_cases hx2 : x ∈ St₂
+              · exact List.mem_append_left _ ((hSteq x).mp (List.mem_append_right _ hx2))
+              · have e1 : x ∈ Th₁ := (List.mem_append.mp (hin₁ hx)).resolve_left hx1
+                have e2 : x ∈ Th₂ := (List.mem_append.mp (hin₂ hx)).resolve_left hx2
+                exact List.mem_append_right _ (hTh' ((hmemcap x).mpr ⟨e1, e2⟩))
+    · sorry
+  · sorry
 
-/-- Port of `refutedCleanly_at`. -/
+/-- Port of `refutedCleanly_at`.
+
+**OPEN.**  `refine ⟨?_, ?_, ?_, ?_, ?_⟩` exposes the target as
+
+    ∃ Γ t, Nonempty (FRJVr G t Γ F)
+         ∧ (t = Tag.barren ∨ ∃ W, t = Tag.chain W ∧ Covers Γ W F)
+         ∧ ∀ X ∈ Ω, Clo Γ X
+
+`axR` forces `Γ ≐ rm (gAt G) F`, and then the last component fails for the
+IMPLICATIONS of `Ω`: `Clo` (constructors visible here: `base`, `imp` with
+`Clo Γ B → Clo Γ (A ⊃ B)`) cannot reach `A ⊃ B ∈ gImp G` from
+`rm (gAt G) F`.  The real construction must join the `himp` witnesses into
+`Γ`, and that join is not nameable from this file set. -/
 theorem refutedCleanly_at' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {F : Form}
@@ -175,7 +312,11 @@ theorem refutedCleanly_at' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver 
     RefutedCleanly G Ω F := by
   sorry
 
-/-- Port of `refutedCleanly_or`. -/
+/-- Port of `refutedCleanly_or`.
+
+**OPEN.**  Same target shape as `refutedCleanly_at'` at the goal `C₁ ∨ C₂`;
+needs both the `∨`-join of `gbuInv10'` and the `himp` join of
+`refutedCleanly_at'`. -/
 theorem refutedCleanly_or' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {C₁ C₂ : Form}
@@ -214,7 +355,19 @@ theorem evalI_axI' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClo
         exact hFn (he ▸ hx)
       · exact List.mem_append_left _ (List.mem_append_right _ h)
 
-/-- Port of `refutedCleanly_circ`. -/
+/-- Port of `refutedCleanly_circ`.
+
+**OPEN.**  Target (from `refine ⟨?_, ?_, ?_, ?_, ?_⟩`):
+
+    ∃ Γ t, Nonempty (FRJVr G t Γ (◯Z))
+         ∧ (t = Tag.barren ∨ ∃ W, t = Tag.chain W ∧ Covers Γ W (◯Z))
+         ∧ ∀ X ∈ Ω, Clo Γ X
+
+The only `◯`-introduction visible in this file set is the REGULAR
+`FRJVr.circIn`, whose premise is a cleanly-tagged REGULAR disproof of `Z`;
+the hypothesis here is the IRREGULAR `hz : EvalI D Ω Z`.  The rule that
+takes an irregular premise to a regular `◯`-conclusion is not nameable from
+this file set. -/
 theorem refutedCleanly_circ' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {Z : Form}
@@ -225,7 +378,11 @@ theorem refutedCleanly_circ' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOve
     RefutedCleanly G Ω (.circ Z) := by
   sorry
 
-/-- Port of `gbuSuccCirc`. -/
+/-- Port of `gbuSuccCirc`.
+
+**COMPLETE RELATIVE TO `refutedCleanly_circ'`** — no new content: it is
+`evalR_of_refutedCleanly'` applied to it.  It therefore inherits that
+lemma's `sorry` and is NOT closed. -/
 theorem gbuSuccCirc' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {Z : Form}
@@ -233,8 +390,8 @@ theorem gbuSuccCirc' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftC
     (hgoal : Form.circ Z ∈ sfR G)
     (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
     (hz : EvalI D Ω Z) :
-    EvalR D Ω (.circ Z) := by
-  sorry
+    EvalR D Ω (.circ Z) :=
+  evalR_of_refutedCleanly' hsat (refutedCleanly_circ' hsat hlift hΩ hgoal himp hz)
 
 /-- Port of `unrefutedBelow_of_gHat`. -/
 theorem unrefutedBelow_of_gHat' {G : Form} {D : FSeq → Prop} {Ω : List Form}
@@ -242,17 +399,53 @@ theorem unrefutedBelow_of_gHat' {G : Form} {D : FSeq → Prop} {Ω : List Form}
     UnrefutedBelow G D Ω C :=
   ⟨h, Ω, hΩ, fun X hX => .base hX, h⟩
 
-/-- Port of `unrefutedBelow_step`. -/
-theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
-    (hlift : IsLiftClosed G D)
-    {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
-    (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
-  sorry
+/-- Port of `gbuInv14`.
 
-/-- Port of `gbuInv14`. -/
+**PARTIAL.**  The `(Lift)`ed branch is complete: the lifted row hands back a
+regular disproof over `Γ` with `Ω' ⊆ Cl(Γ)`, so `Ω ⊆ Cl(Ω') ⊆ Cl(Γ)` by
+`clo_trans` and `relift` (with `mk := id`) re-lifts it at `Θ := Ω`.  The
+`base` branch is OPEN: from `d : FRJVi G St Th (◯Z)` with `St ⊆ Ω'` and
+`Ω' ⊆ St ++ Th` one must produce an irregular row whose stoup is inside `Ω`,
+and the zone-changing lemma for `◯`-goals is not nameable from this file
+set.  Residual goal: `⊢ EvalI D Ω Z.circ`.
+
+(Moved ahead of `unrefutedBelow_step'`, which uses it; no statement
+changed.) -/
 theorem gbuInv14' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω Ω' : List Form} {Z : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hcl : ∀ X ∈ Ω, Clo Ω' X)
     (h : EvalI D Ω' (.circ Z)) : EvalI D Ω (.circ Z) := by
-  sorry
+  obtain ⟨St, Th, hmem, hSt, hin⟩ := h
+  rcases satExtractI hsat hmem with hd | ⟨rfl, Γ, hreg, hTh⟩
+  · sorry
+  · have hΩTh : ∀ x ∈ Ω', x ∈ Th := by
+      intro x hx
+      rcases List.mem_append.mp (hin hx) with h' | h'
+      · exact absurd h' List.not_mem_nil
+      · exact h'
+    have hcloΓ : ∀ X ∈ Ω, Clo Γ X :=
+      fun X hX => clo_trans (fun Y hY => (hTh Y (hΩTh Y hY)).1) (hcl X hX)
+    exact ⟨[], Ω,
+      relift hsat hlift hreg (fun X hX => ⟨hcloΓ X hX, hΩ X hX⟩) (fun d => d),
+      fun {x} hx => absurd hx List.not_mem_nil,
+      fun {x} hx => List.mem_append_right _ hx⟩
+
+/-- Port of `unrefutedBelow_step`.
+
+**COMPLETE RELATIVE TO `gbuInv14'`** — the proof below is finished; it
+inherits that lemma's `sorry` and is therefore NOT closed. -/
+theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
+    {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
+    (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
+  obtain ⟨hne, Ω₀, hhat, hcl₀, hne₀⟩ := h
+  have hcl₀' : ∀ X ∈ Ω₀, Clo Ω' X := fun X hX => clo_trans hcl (hcl₀ X hX)
+  refine ⟨?_, Ω₀, hhat, hcl₀', hne₀⟩
+  intro hE
+  exact hne₀ (gbuInv14' hsat hlift hhat hcl₀' hE)
+
+
+/-- info: 'FRJ.Gbu.X.gbuInv8'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuInv8'

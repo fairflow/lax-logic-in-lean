@@ -138,7 +138,45 @@ theorem gbuInv8' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.imp A B ∈ sfR G)
     (hA : Clo Ω A) (h : EvalI D Ω B) : EvalI D Ω (.imp A B) := by
-  sorry
+  obtain ⟨St, Th, hmem, hSt, hΩ⟩ := h
+  rcases satExtractI hsat hmem with hd | ⟨rfl, Γ, hreg, hTh⟩
+  · obtain ⟨d⟩ := hd
+    have hsub : ∀ x ∈ Ω, x ∈ St ++ cap Th Ω := by
+      intro x hx
+      rcases List.mem_append.mp (hΩ hx) with h' | h'
+      · exact List.mem_append_left _ h'
+      · exact List.mem_append_right _ (mem_cap.mpr ⟨h', hx⟩)
+    have hAst : Clo (St ++ cap Th Ω) A := clo_mono (fun {x} hx => hsub x hx) hA
+    have hzs : Th ≐ sdiff Th (cap Th Ω) ++ cap Th Ω := by
+      intro x
+      constructor
+      · intro hx
+        by_cases hc : x ∈ cap Th Ω
+        · exact List.mem_append_right _ hc
+        · exact List.mem_append_left _ (mem_sdiff.mpr ⟨hx, hc⟩)
+      · intro hx
+        rcases List.mem_append.mp hx with h' | h'
+        · exact (mem_sdiff.mp h').1
+        · exact (mem_cap.mp h').1
+    obtain ⟨s', hs'mem, hsub'⟩ :=
+      satInsert hsat (.irr (St ++ cap Th Ω) (sdiff Th (cap Th Ω)) (.imp A B))
+        ⟨FRJVi.impInI d hzs cap_sdiff_eq_nil hAst hgoal
+          (CtxEq.refl _) (CtxEq.refl _)⟩
+    match s', hsub' with
+    | .irr St'' Th'' _, ⟨rfl, hSteq, _⟩ =>
+        refine ⟨St'', Th'', hs'mem, fun {x} hx => ?_, fun {x} hx => ?_⟩
+        · rcases List.mem_append.mp ((hSteq x).mpr hx) with h' | h'
+          · exact hSt h'
+          · exact (mem_cap.mp h').2
+        · exact List.mem_append_left _ ((hSteq x).mp (hsub x hx))
+  · have hclΓ : ∀ X ∈ Ω, Clo Γ X := by
+      intro X hX
+      have := hΩ hX
+      rw [List.nil_append] at this
+      exact (hTh X this).1
+    exact ⟨[], Th,
+      relift hsat hlift hreg hTh (fun d => .impIn d (clo_trans hclΓ hA) hgoal),
+      fun {x} hx => absurd hx List.not_mem_nil, hΩ⟩
 
 /-- Port of `gbuInv9`. -/
 theorem gbuInv9' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
@@ -242,17 +280,69 @@ theorem unrefutedBelow_of_gHat' {G : Form} {D : FSeq → Prop} {Ω : List Form}
     UnrefutedBelow G D Ω C :=
   ⟨h, Ω, hΩ, fun X hX => .base hX, h⟩
 
-/-- Port of `unrefutedBelow_step`. -/
-theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
-    (hlift : IsLiftClosed G D)
-    {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
-    (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
-  sorry
-
 /-- Port of `gbuInv14`. -/
 theorem gbuInv14' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω Ω' : List Form} {Z : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hcl : ∀ X ∈ Ω, Clo Ω' X)
     (h : EvalI D Ω' (.circ Z)) : EvalI D Ω (.circ Z) := by
-  sorry
+  obtain ⟨St, Th, hmem, _, hsub⟩ := h
+  rcases satExtractI hsat hmem with hd | ⟨rfl, Γ, hreg, hTh⟩
+  · obtain ⟨d⟩ := hd
+    cases d
+    · rename_i hFp hgoal hThx
+      simp [Form.isPrime] at hFp
+    · rename_i t Gc hThc dr htag hgoal
+      have hsub0 : ∀ Y ∈ Ω', Y ∈ Th := fun Y hY => hsub hY
+      obtain ⟨s', hs'mem, hsub'⟩ :=
+        satInsert hsat (.irr [] Ω (.circ Z))
+          ⟨FRJVi.circNotIn dr htag
+            (fun X hX =>
+              ⟨clo_trans (fun Y hY => (hThc Y (hsub0 Y hY)).1) (hcl X hX),
+                hΩ X hX⟩) hgoal⟩
+      match s', hsub' with
+      | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
+          exact ⟨St', Th', hs'mem,
+            fun {x} hx => absurd ((hSteq x).mpr hx) List.not_mem_nil,
+            fun {x} hx => List.mem_append_right _ (hTh' hx)⟩
+    · rename_i ats hats hleft hThz hFf hgoal
+      have hsub0 : ∀ Y ∈ Ω', Y ∈ Th := fun Y hY => hsub hY
+      have hvac : ∀ Y : Form,
+          Y ∈ vacZoneA G ats ↔ (Y ∈ gHat G ∧ classForce ats Y = true) := by
+        intro Y; simp [vacZoneA, List.mem_filter]
+      have hΩvac : ∀ X ∈ Ω, X ∈ vacZoneA G ats := by
+        intro X hX
+        refine (hvac X).mpr ⟨hΩ X hX, clo_classForce (fun Y hY => ?_) (hcl X hX)⟩
+        exact ((hvac Y).mp ((hThz Y).mp (hsub0 Y hY))).2
+      obtain ⟨s', hs'mem, hsub'⟩ :=
+        satInsert hsat (.irr [] (vacZoneA G ats) (.circ Z))
+          ⟨FRJVi.axIC Z ats hats hFf hgoal (CtxEq.refl _)⟩
+      match s', hsub' with
+      | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
+          exact ⟨St', Th', hs'mem,
+            fun {x} hx => absurd ((hSteq x).mpr hx) List.not_mem_nil,
+            fun {x} hx => List.mem_append_right _ (hTh' (hΩvac x hx))⟩
+  · have hsub0 : ∀ Y ∈ Ω', Y ∈ Th := fun Y hY => hsub hY
+    have hclG : ∀ X ∈ Ω, Clo Γ X :=
+      fun X hX => clo_trans (fun Y hY => (hTh Y (hsub0 Y hY)).1) (hcl X hX)
+    exact ⟨[], Ω,
+      relift hsat hlift hreg (fun X hX => ⟨hclG X hX, hΩ X hX⟩) (fun d => d),
+      fun {x} hx => absurd hx List.not_mem_nil,
+      fun {x} hx => List.mem_append_right _ hx⟩
+
+/-- Port of `unrefutedBelow_step`. -/
+theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
+    {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
+    (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
+  obtain ⟨_, Ω₀, hΩ₀, hcl₀, hne₀⟩ := h
+  have hstep : ∀ X ∈ Ω₀, Clo Ω' X := fun X hX => clo_trans hcl (hcl₀ X hX)
+  exact ⟨fun he => hne₀ (gbuInv14' hsat hlift hΩ₀ hstep he), Ω₀, hΩ₀, hstep, hne₀⟩
+
+/-- info: 'FRJ.Gbu.X.gbuInv14'' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuInv14'
+
+/-- info: 'FRJ.Gbu.X.unrefutedBelow_step'' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms unrefutedBelow_step'
