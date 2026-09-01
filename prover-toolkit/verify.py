@@ -66,7 +66,9 @@ def find_decl_start(block: str, name: str) -> int | None:
     """Index of the start of `theorem <name>` / `lemma <name>` in `block`."""
     pat = re.compile(
         rf"^[ \t]*(?:@\[[^\]]*\]\s*)?(?:private\s+|protected\s+|nonrec\s+)?"
-        rf"(?:theorem|lemma)\s+{re.escape(name)}\b",
+        rf"(?:theorem|lemma)\s+{re.escape(name)}(?!['\w])",  # NOT \b: a name
+        # ending in a prime has no word boundary before the space that
+        # follows it, so `\b` silently fails to match `foo'`.
         re.MULTILINE,
     )
     m = pat.search(block)
