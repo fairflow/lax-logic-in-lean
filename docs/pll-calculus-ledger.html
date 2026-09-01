@@ -1,0 +1,572 @@
+<title>PLL Calculus Ledger</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,400;0,600;1,400&family=Public+Sans:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --ground:#f6f7f9; --panel:#ffffff; --panel-2:#fbfbfd;
+  --ink:#13161d; --ink-soft:#4c5364; --ink-faint:#767d8e;
+  --rule:#dcdfe7; --rule-2:#eaecf1;
+  --accent:#2e3a8f; --accent-soft:#eceef8;
+  --proved:#1e6a4d; --proved-bg:#e8f2ec; --proved-line:#bcd9c9;
+  --refuted:#a63c26; --refuted-bg:#f7ebe7; --refuted-line:#e6c6bc;
+  --open:#8a6210; --open-bg:#f7f0e0; --open-line:#e3d2a6;
+  --cond:#5a4a86; --cond-bg:#efecf7; --cond-line:#cfc7e4;
+  --f-display:"Spectral",Georgia,"Times New Roman",serif;
+  --f-body:"Public Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --f-mono:"JetBrains Mono","DejaVu Sans Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --measure:56rem;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#101219; --panel:#161923; --panel-2:#12151d;
+  --ink:#e6e8ef; --ink-soft:#a3aabb; --ink-faint:#7b8296;
+  --rule:#262b3a; --rule-2:#1d2130;
+  --accent:#93a0ff; --accent-soft:#1b2038;
+  --proved:#63c295; --proved-bg:#12261e; --proved-line:#1f4535;
+  --refuted:#e89173; --refuted-bg:#2b1a14; --refuted-line:#4a2c22;
+  --open:#d9ad4d; --open-bg:#2a2210; --open-line:#473a1c;
+  --cond:#b0a4e0; --cond-bg:#1f1b2e; --cond-line:#332c4c;
+}}
+:root[data-theme="dark"]{
+  --ground:#101219; --panel:#161923; --panel-2:#12151d;
+  --ink:#e6e8ef; --ink-soft:#a3aabb; --ink-faint:#7b8296;
+  --rule:#262b3a; --rule-2:#1d2130;
+  --accent:#93a0ff; --accent-soft:#1b2038;
+  --proved:#63c295; --proved-bg:#12261e; --proved-line:#1f4535;
+  --refuted:#e89173; --refuted-bg:#2b1a14; --refuted-line:#4a2c22;
+  --open:#d9ad4d; --open-bg:#2a2210; --open-line:#473a1c;
+  --cond:#b0a4e0; --cond-bg:#1f1b2e; --cond-line:#332c4c;
+}
+*{box-sizing:border-box}
+body{background:var(--ground);color:var(--ink);font-family:var(--f-body);
+  font-size:16px;line-height:1.6;margin:0;-webkit-font-smoothing:antialiased}
+.wrap{max-width:var(--measure);margin:0 auto;padding:3.5rem 1.4rem 6rem}
+code,pre{font-family:var(--f-mono)}
+a{color:var(--accent)}
+header.top{border-bottom:2px solid var(--ink);padding-bottom:1.75rem;margin-bottom:2.5rem}
+.eyebrow{font-family:var(--f-mono);font-size:.7rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-faint);margin:0 0 1rem}
+h1{font-family:var(--f-display);font-weight:600;font-size:2.7rem;line-height:1.08;
+  letter-spacing:-.02em;margin:0 0 .8rem;text-wrap:balance}
+.stand{font-family:var(--f-display);font-size:1.14rem;color:var(--ink-soft);
+  margin:0 0 1.2rem;max-width:44rem;text-wrap:pretty}
+.dateline{font-family:var(--f-mono);font-size:.72rem;color:var(--ink-faint);margin:0}
+.pinkey{background:var(--panel);border:1px solid var(--rule);border-radius:4px;
+  padding:1.15rem 1.25rem;margin:0 0 3rem}
+.pinkey h3{margin:0 0 .6rem;font-size:.78rem;font-family:var(--f-mono);
+  letter-spacing:.09em;text-transform:uppercase;color:var(--ink-faint);font-weight:500}
+.pinkey p{margin:0 0 .55rem;font-size:.92rem;color:var(--ink-soft)}
+.pinkey p:last-child{margin:0}
+.pinkey b{font-family:var(--f-mono);font-size:.83rem;color:var(--ink);font-weight:400}
+section{margin:0 0 3.5rem}
+h2{font-family:var(--f-display);font-size:1.5rem;font-weight:600;letter-spacing:-.012em;
+  margin:0 0 .6rem;display:flex;gap:.75rem;align-items:baseline;text-wrap:balance}
+h2 .num{font-family:var(--f-mono);font-size:.78rem;font-weight:400;color:var(--accent);flex:none}
+.lede{color:var(--ink-soft);margin:0 0 1.4rem;max-width:44rem;font-size:.96rem}
+.cards{display:grid;gap:1rem}
+.res{background:var(--panel);border:1px solid var(--rule);border-radius:4px;
+  padding:1.05rem 1.15rem}
+.rhead{display:flex;gap:.75rem;align-items:baseline;flex-wrap:wrap;margin-bottom:.5rem}
+.nm{font-size:.88rem;font-weight:600;color:var(--ink);word-break:break-word}
+.st{font-family:var(--f-mono);font-size:.64rem;letter-spacing:.09em;text-transform:uppercase;
+  padding:.2rem .48rem;border-radius:2px;border:1px solid;white-space:nowrap;margin-left:auto}
+.st.proved{color:var(--proved);background:var(--proved-bg);border-color:var(--proved-line)}
+.st.ref{color:var(--refuted);background:var(--refuted-bg);border-color:var(--refuted-line)}
+.st.open{color:var(--open);background:var(--open-bg);border-color:var(--open-line)}
+.st.cond{color:var(--cond);background:var(--cond-bg);border-color:var(--cond-line)}
+.claim{margin:0 0 .8rem;font-size:.94rem;color:var(--ink-soft)}
+.claim code{font-size:.85em;background:var(--panel-2);border:1px solid var(--rule-2);
+  border-radius:2px;padding:.05em .28em}
+.res pre{margin:0;padding:.85rem 1rem;background:var(--panel-2);
+  border:1px solid var(--rule-2);border-left:2px solid var(--accent);
+  border-radius:3px;overflow-x:auto}
+.res pre code{font-size:.79rem;line-height:1.62;white-space:pre;color:var(--ink)}
+.res .note{margin:.7rem 0 0;font-size:.83rem;color:var(--ink-faint);font-style:italic}
+.rfoot{display:flex;gap:1rem;flex-wrap:wrap;margin-top:.75rem;padding-top:.6rem;
+  border-top:1px solid var(--rule-2);font-family:var(--f-mono);font-size:.7rem;
+  color:var(--ink-faint)}
+.rfoot .pin{margin-left:auto}
+.rfoot .pin::before{content:"pin  ";color:var(--ink-faint);opacity:.6}
+.sys{display:grid;gap:0;margin:1.4rem 0 0}
+.sys .row{display:grid;grid-template-columns:8.5rem 1fr;gap:1rem;padding:.9rem 0;
+  border-top:1px solid var(--rule-2);align-items:baseline}
+.sys .row:last-child{border-bottom:1px solid var(--rule-2)}
+.sys .k{font-family:var(--f-mono);font-size:.83rem;font-weight:600}
+.sys .k span{display:block;font-weight:400;font-size:.66rem;color:var(--ink-faint);
+  margin-top:.2rem;line-height:1.4;font-family:var(--f-body)}
+.sys .v{font-size:.92rem;color:var(--ink-soft)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:4px;
+  padding:1.15rem 1.25rem;margin:1.4rem 0}
+.panel.warn{border-color:var(--open-line);background:var(--open-bg)}
+.panel h4{margin:0 0 .5rem;font-size:1rem;font-weight:600}
+.panel p{margin:0 0 .7rem;font-size:.94rem;color:var(--ink-soft)}
+.panel p:last-child{margin:0}
+.display{font-family:var(--f-mono);font-size:.8rem;line-height:1.7;white-space:pre;
+  overflow-x:auto;background:var(--panel-2);border:1px solid var(--rule-2);
+  border-radius:3px;padding:.85rem 1rem;margin:1rem 0;color:var(--ink)}
+footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--rule);
+  font-family:var(--f-mono);font-size:.72rem;color:var(--ink-faint);line-height:1.9}
+p{margin:0 0 1rem}
+</style>
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">lax-logic-in-lean · machine-checked status</p>
+  <h1>PLL Calculus Ledger</h1>
+  <p class="stand">Every proof system in the development, and every soundness, completeness and equivalence result relating them — each with its full Lean statement, its file, and the axiom pin actually observed.</p>
+  <p class="dateline">31 August 2026 · branch frjw-dev · pins observed this pass unless a card says otherwise</p>
+</header>
+
+<div class="pinkey">
+  <h3>How to read a pin</h3>
+  <p>A claim is PROVED here only if it is sorry-free with a pinned <b>#print axioms</b>. Three pins occur:</p>
+  <p><b>propext</b> — propositional extensionality only. The cleanest.</p>
+  <p><b>propext, Quot.sound</b> — adds quotient soundness. Still choice-free, so the result survives extraction.</p>
+  <p><b>propext, Classical.choice, Quot.sound</b> — uses classical choice. Fine for a metatheorem, fatal for anything meant to run.</p>
+</div>
+
+<div class="pinkey" style="border-left:2px solid var(--accent)">
+  <h3>Terminology</h3>
+  <p>An object of FRJ / FRJV is a <b>disproof</b> — regular or irregular. “Proof” is reserved for the provability calculi: Gbu◯, LaxND, G4c, SC. <code>ProvableV G</code> reads the wrong way round: it means <em>G has an FRJV disproof</em>.</p>
+</div>
+
+<section>
+  <h2><span class="num">§0</span>The systems</h2>
+  <p class="lede">Ten distinct systems, several of them repairs of one another. Confusing them has caused real errors, so the provenance is part of the record.</p>
+  <div class="sys">
+    <div class="row"><div class="k">LaxND<span>F&amp;M 1997 axioms</span></div><div class="v">Natural deduction. <code>Deriv Γ φ</code> is what “PLL proves” means throughout the repository. The reference notion.</div></div>
+    <div class="row"><div class="k">SC<span>F&amp;M Fig. 2 (Iemhoff’s GPLL)</span></div><div class="v">Cut-free sequent calculus. Carries cut elimination, the subformula property and the disjunction property.</div></div>
+    <div class="row"><div class="k">G4iLL<span>Iemhoff 2022/2024</span></div><div class="v">Contraction-free refinement of G3iLL. <strong>Machine-checked incomplete for PLL here</strong>; contraction is not admissible.</div></div>
+    <div class="row"><div class="k">G4c<span>ours — the repair</span></div><div class="v">The calculus everything computational runs on: decider, countermodel emitter, interpolant tables.</div></div>
+    <div class="row"><div class="k">DerivU<span>F&amp;M — PCLL</span></div><div class="v">PLL plus the distribution scheme. Complete for <em>mutually confluent</em> constraint models.</div></div>
+    <div class="row"><div class="k">DerivUNoFall<span>PCLL (F&amp;M) + ¬◯⊥ (ours)</span></div><div class="v">PCLL plus the single closed axiom ¬◯⊥. It does <em>not</em> collapse ◯ — ◯ survives on atoms and implications, which is what ◯-normal form is for. What collapses is the <em>variable-free</em> fragment: infinite in PLL and PCLL (the ◯⊥ ladder), {⊥, ⊤} here.</div></div>
+    <div class="row"><div class="k">LJF◯<span>ours, after Liang &amp; Miller</span></div><div class="v">Focused calculus carrying the modal interpolant. Zero imports; its own rules throughout.</div></div>
+    <div class="row"><div class="k">FRJ / FRJV<span>Ferrari &amp; Fiorentini + our RefAt repair</span></div><div class="v">Forward <em>refutation</em> calculus — its objects are disproofs. FRJV is the repaired V-family; it builds its countermodel from the disproof.</div></div>
+    <div class="row"><div class="k">Gbu / Gbu◯<span>Fiorentini &amp; Ferrari §5 + our ◯-extension</span></div><div class="v">The dual <em>provability</em> calculus. ◯-free Gbu is backtracking-free by querying a saturated FRJ database; Gbu◯ is <strong>complete for PLL</strong> via the LJF◯ translation (<code>gbuC_complete</code>, §4) — the database route to its completeness is retired.</div></div>
+    <div class="row"><div class="k">Reject<span>ours</span></div><div class="v">Built-tree countermodel certificates; the refutation half of the two-sided engine.</div></div>
+  </div>
+</section>
+<section>
+  <h2><span class="num">§1</span>Semantics: derivability against models</h2>
+  <p class="lede">The four adequacy theorems. Each is an <em>iff</em>, so each fixes a class of models exactly — and each carries <code>Classical.choice</code>, which is expected (they quantify over arbitrary models) and is why none can be the basis of anything extracted.</p>
+  <div class="cards">
+<article class="res">
+  <div class="rhead"><code class="nm">valid_iff_provable</code><span class="st proved">proved</span></div>
+  <p class="claim">LaxND ⟺ validity in all constraint models, fallible worlds included. F&amp;M’s soundness plus completeness.</p>
+  <pre><code>theorem valid_iff_provable {φ : PLLFormula} :
+    (∀ (C : ConstraintModel) (w : C.W), C.force w φ) ↔
+      Nonempty (LaxND [] φ)</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLCompleteness.lean:639</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">consequence_iff_derivable</code><span class="st proved">proved</span></div>
+  <p class="claim">The same at the consequence level.</p>
+  <pre><code>theorem consequence_iff_derivable {Γ : List PLLFormula} {φ : PLLFormula} :
+    Γ ⊨- φ ↔ Nonempty (LaxND Γ φ)</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLCompleteness.lean:634</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">ConfluentU.derivU_iff_confluent_valid</code><span class="st proved">proved</span></div>
+  <p class="claim">PCLL (PLL + distribution) ⟺ validity in mutually confluent models. Confluence <em>is</em> the frame condition for distribution.</p>
+  <pre><code>theorem derivU_iff_confluent_valid {Γ : List PLLFormula} {φ : PLLFormula} :
+    DerivU Γ φ ↔
+      ∀ (C : ConstraintModel), MutuallyConfluent C →
+        ∀ w : C.W, (∀ ψ ∈ Γ, C.force w ψ) → C.force w φ</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLConfluentComplete.lean:484</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">NoFall.derivUNoFall_iff_infallible_valid</code><span class="st proved">proved</span></div>
+  <p class="claim">PCLL + ¬◯⊥ ⟺ validity in mutually confluent <em>infallible</em> models. Note the model class is confluent AND infallible, which is strictly smaller than F&amp;M’s <code>F = ∅</code> class — see docs/calculus-map.md §DerivUNoFall.</p>
+  <pre><code>theorem derivUNoFall_iff_infallible_valid {Γ : List PLLFormula}
+    {φ : PLLFormula} :
+    DerivUNoFall Γ φ ↔
+      ∀ (C : ConstraintModel), MutuallyConfluent C → Infallible C →
+        ∀ w : C.W, (∀ ψ ∈ Γ, C.force w ψ) → C.force w φ</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLNoFall.lean:462</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+</article>
+  </div>
+</section><section>
+  <h2><span class="num">§2</span>Calculus against calculus</h2>
+  <p class="lede">The bridges — the results that let a proof in one system count as a proof in another.</p>
+  <div class="cards">
+<article class="res">
+  <div class="rhead"><code class="nm">NoFall.derivUNoFall_iff_IPLND</code><span class="st proved">proved</span></div>
+  <p class="claim"><strong>Conservativity over IPC on the ◯-free fragment</strong>: on ◯-free sequents PCLL + ¬◯⊥ proves neither more nor less than intuitionistic propositional logic. Note both hypotheses — this says nothing about formulas carrying a ◯, and ◯ does <em>not</em> become vacuous. Ours, not F&amp;M’s; it calibrates the uniform-interpolation problem, since full UI here contains full UI for IPC (Pitts).</p>
+  <pre><code>theorem derivUNoFall_iff_IPLND {Γ : List PLLFormula} {C : PLLFormula}
+    (hC : isIPL C) (hΓ : ∀ ψ ∈ Γ, isIPL ψ) :
+    DerivUNoFall Γ C ↔ IPLND Γ C</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLNoFallNF.lean:328</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">NoFall.varfree_dichotomy</code><span class="st proved">proved</span></div>
+  <p class="claim">What ¬◯⊥ actually collapses: the <em>variable-free</em> fragment becomes {⊥, ⊤} up to interderivability. In PLL and PCLL that fragment is infinite — ◯⊥ generates a Rieger–Nishimura-style ladder.</p>
+  <pre><code>theorem varfree_dichotomy : ∀ {A : PLLFormula}, VarFree A →
+    DerivUNoFall [] A ∨ DerivUNoFall [A] falsePLL</code></pre>
+  <p class="note">Pin not re-checked this pass.</p><div class="rfoot"><span class="loc">LaxLogic/PLLNoFall.lean:190</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">G4c_iff_search</code><span class="st proved">proved</span></div>
+  <p class="claim">G4c derivability ⟺ the verified decider’s answer. What makes the decider a decision procedure and not a heuristic.</p>
+  <pre><code>theorem G4c_iff_search {Γ : List PLLFormula} {C : PLLFormula} :
+    G4c Γ C ↔
+    search (listWeight (C :: Γ)) (listAtoms (C :: Γ))
+      (decideFuel Γ C) ∅ Γ C = true</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLG4Dec.lean:634</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">disjunction_property</code><span class="st proved">proved</span></div>
+  <p class="claim">⊢ A ∨ B implies ⊢ A or ⊢ B, by induction on cut-free SC. F&amp;M Lemma 2.7(i).</p>
+  <pre><code>theorem disjunction_property {A B : PLLFormula}
+    (h : Nonempty (LaxND [] (A.or B))) :
+    Nonempty (LaxND [] A) ∨ Nonempty (LaxND [] B)</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLSequent.lean:630</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.provableGbuC_iff_provableGbu</code><span class="st proved">proved</span></div>
+  <p class="claim">On a ◯-free G, Gbu◯ and Gbu prove the same things. <strong>Conservativity of the modal extension</strong>, and the gate that keeps the ◯ rules honest.</p>
+  <pre><code>theorem provableGbuC_iff_provableGbu {G : Form} (hG : noCirc G = true) :
+    ProvableGbuC G ↔ ProvableGbu G</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_circ.lean:1538</span><span class="pin">propext</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.gbu_frj_duality</code><span class="st proved">proved</span></div>
+  <p class="claim"><strong>Theorem 9.</strong> Gbu(G) proves G ⟺ FRJV(G) has no disproof of G, over a saturated database with decidable queries, on the ◯-free fragment.</p>
+  <pre><code>theorem gbu_frj_duality {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D) (decI : ∀ Ω C, Decidable (EvalI D Ω C))
+    (hcircL : ∀ X ∈ sfL G, X.isCirc = false)
+    (hcircR : ∀ X ∈ sfR G, X.isCirc = false) :
+    ProvableGbu G ↔ ¬ ProvableV G</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search.lean:541</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+  </div>
+</section><section>
+  <h2><span class="num">§3</span>Soundness</h2>
+  <p class="lede">Cheap to state, and the half that carries the content. Every one of these is choice-free.</p>
+  <div class="cards">
+<article class="res">
+  <div class="rhead"><code class="nm">FRJ.soundness</code><span class="st proved">proved</span></div>
+  <p class="claim">A FRJ(G) disproof of G implies G is not PLL-valid.</p>
+  <pre><code>theorem soundness {G : Form} (h : Provable G) : ¬ PLL G</code></pre>
+  <div class="rfoot"><span class="loc">FRJ/Sound.lean:1993</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">FRJ.soundnessV</code><span class="st proved">proved</span></div>
+  <p class="claim">The same for the repaired V-family. The verdict every FRJV countermodel rests on.</p>
+  <pre><code>theorem soundnessV {G : Form} (h : ProvableV G) : ¬ PLL G</code></pre>
+  <div class="rfoot"><span class="loc">FRJ/SoundV.lean:1847</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.pll_of_provableGbu</code><span class="st proved">proved</span></div>
+  <p class="claim"><strong>Theorem 6.</strong> A Gbu(G) proof of G implies G is PLL-valid.</p>
+  <pre><code>theorem pll_of_provableGbu {G : Form} (h : ProvableGbu G) : PLL G</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu.lean:237</span><span class="pin">propext</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.pll_of_provableGbuC</code><span class="st proved">proved</span></div>
+  <p class="claim">The same for Gbu◯ — soundness of the modal extension, with the three ◯ rules discharged.</p>
+  <pre><code>theorem pll_of_provableGbuC {G : Form} (h : ProvableGbuC G) : PLL G</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_circ.lean:1465</span><span class="pin">propext</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Ctx.thm6_soundness</code><span class="st proved">proved</span></div>
+  <p class="claim">Curry’s problem, one direction: PLL ⊢ φ implies IPL ⊢ φ<sup>C</sup> for every standard constraint C.</p>
+  <pre><code>theorem thm6_soundness (C : StdCtx) {φ : PLLFormula}
+    (h : Nonempty (LaxND [] φ)) : Nonempty (LaxND [] (subC C φ))</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLCtxCompleteness.lean:173</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+  </div>
+</section><section>
+  <h2><span class="num">§4</span>Completeness</h2>
+  <p class="lede">Where the development actually stands. Complete for the IPC layer, partial for FRJV — and, since the evening of 31 August, <strong>complete for Gbu◯ over PLL</strong>, by the LJF◯ route.</p>
+  <div class="cards">
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.LJFT.gbuC_complete</code><span class="st proved">proved</span></div>
+  <p class="claim"><strong>Completeness of Gbu◯ for PLL</strong> (31 August, evening): every PLL theorem has a regular Gbu◯ derivation of its own translation. Composition of <code>bridge_iff</code> (LJF◯ focalisation) with <code>tInv</code>, the mode-generic CPS translation LJF◯ → Gbu◯. With <code>pll_of_provableGbuC</code> this makes Gbu◯ complete in itself, and the ◯L/◯R admissibility questions of <code>wip/gbu_ndrules.lean</code> become corollaries.</p>
+  <pre><code>theorem gbuC_complete {φ : PLLFormula} (h : Nonempty (PLLND.LaxND [] φ)) :
+    ProvableGbuC (ofPLL φ)</code></pre>
+  <p class="claim">Sequent form, via the deduction theorem for LaxND (iterated ⊃-introduction, then a curried-to-∧ conversion using only iden, ⊃I/⊃E, ∧E and rename), same pin:</p>
+  <pre><code>theorem gbuC_sequent_complete {Γ : List PLLFormula} {φ : PLLFormula}
+    (h : Nonempty (PLLND.LaxND Γ φ)) :
+    ProvableGbuC (ofPLL (.ifThen (bigAnd Γ) φ))</code></pre>
+  <p class="note">Choice-free by construction: the licenced |◯C| adaptation of L⊃ᵢ is consumed at exactly one site of the translation (<code>irrKit.impOpen</code>), the measure lemmas were re-proved constructively, and a <code>tauto</code> in the deduction-theorem plumbing was replaced by a constructive membership term to keep Classical.choice out.</p>
+  <div class="rfoot"><span class="loc">wip/gbu_ljfo.lean:816</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Ctx.thm6_completeness</code><span class="st proved">proved</span></div>
+  <p class="claim">Curry’s problem, converse. Both directions done — do not re-scope.</p>
+  <pre><code>theorem thm6_completeness {φ : PLLFormula}
+    (h : ∀ C : StdCtx, Nonempty (LaxND [] (subC C φ))) : Nonempty (LaxND [] φ)</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLCtxCompleteness.lean:627</span><span class="pin">propext, Classical.choice, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.search</code><span class="st proved">proved</span></div>
+  <p class="claim"><strong>Theorem 8</strong> — correctness of backtracking-free search in Gbu(G), on the ◯-free fragment. With Theorem 9 this gives completeness of Gbu for IPC.</p>
+  <pre><code>theorem search {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    (decI : ∀ Ω C, Decidable (EvalI D Ω C))
+    (hcircL : ∀ X ∈ sfL G, X.isCirc = false)
+    (hcircR : ∀ X ∈ sfR G, X.isCirc = false) :
+    ∀ p : Bool × List Form × Form, SearchOk G D p</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search.lean:232</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.provableGbu_of_not_provableV</code><span class="st proved">proved</span></div>
+  <p class="claim">The backward half of the duality: the absence of an FRJV disproof yields a Gbu proof.</p>
+  <pre><code>theorem provableGbu_of_not_provableV {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D) (decI : ∀ Ω C, Decidable (EvalI D Ω C))
+    (hcircL : ∀ X ∈ sfL G, X.isCirc = false)
+    (hcircR : ∀ X ∈ sfR G, X.isCirc = false)
+    (h : ¬ ProvableV G) : ProvableGbu G</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search.lean:529</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.provableV_of_not_pll</code><span class="st proved">proved</span></div>
+  <p class="claim">And the loop to semantics: a non-valid ◯-free G has an FRJV disproof.</p>
+  <pre><code>theorem provableV_of_not_pll {G : Form} {D : FSeq → Prop}
+    (hsat : Saturated G D) (decRoot : Decidable (EvalR D [] G))
+    (decI : ∀ Ω C, Decidable (EvalI D Ω C))
+    (hcircL : ∀ X ∈ sfL G, X.isCirc = false)
+    (hcircR : ∀ X ∈ sfR G, X.isCirc = false)
+    (h : ¬ PLL G) : ProvableV G</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search.lean:555</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">completenessV_of_endpoints</code><span class="st cond">frame-conditioned</span></div>
+  <p class="claim">FRJV is complete on <em>endpoint-seeing</em> frames — every modal cone contains a ≤-maximal world.</p>
+  <pre><code>theorem completenessV_of_endpoints {K : Kripke} {G : Form} (hep : K.Endpoints)
+    (hK : ¬ K.valid G) : ProvableV G</code></pre>
+  <div class="rfoot"><span class="loc">FRJ/CompleteV.lean:23</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">completenessV_of_coneGrounded</code><span class="st cond">frame-conditioned</span></div>
+  <p class="claim">Transferred from the FRJ baseline.</p>
+  <pre><code>theorem completenessV_of_coneGrounded {K : Kripke} {G : Form}
+    (hg : K.ConeGrounded) (hK : ¬ K.valid G) : ProvableV G</code></pre>
+  <p class="note">Pin not re-checked this pass.</p><div class="rfoot"><span class="loc">FRJ/CompleteV.lean:28</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">completenessV_of_discrete</code><span class="st cond">frame-conditioned</span></div>
+  <p class="claim">The discrete case — ≤ is the identity.</p>
+  <pre><code>theorem completenessV_of_discrete {K : Kripke} {G : Form}
+    (hdisc : ∀ a u : K.W, K.le a u → u = a)
+    (hK : ¬ K.valid G) : ProvableV G</code></pre>
+  <p class="note">Pin not re-checked this pass.</p><div class="rfoot"><span class="loc">FRJ/CompleteV.lean:33</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">completenessV_of_circAnteFree</code><span class="st cond">goal-guarded</span></div>
+  <p class="claim">Frame-free, but <em>goal-guarded</em>: no left-implication antecedent of G may contain a ◯, and Λ* must be world-wise ◯-free.</p>
+  <pre><code>theorem completenessV_of_circAnteFree {G : Form} (K : Kripke)
+    (hguard : ∀ A B, Form.imp A B ∈ sfL G → ∀ X ∈ sf A, X.isCirc = false)
+    (hloc : ∀ b : K.W, circPart (lamStar K b G) = [])
+    (hinf : K.Infallible)
+    (hK : ¬ K.valid G) : ProvableV G</code></pre>
+  <p class="note">Pin not re-checked this pass.</p><div class="rfoot"><span class="loc">wip/minmodv_seen.lean:513</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.searchO</code><span class="st ref">vacuous</span></div>
+  <p class="claim"><strong>Theorem 8◯</strong> — the modal search over three modes. The regular branch is proved outright, including L◯ and R◯; the irregular branches rest on two named supplies, and those supplies are <em>jointly unsatisfiable</em> (see below). <strong>Retired.</strong></p>
+  <pre><code>theorem searchO {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    (decI : ∀ Ω C, Decidable (EvalI D Ω C))
+    (decRC : ∀ Ψ C, Decidable (EvalRC D Ψ C))
+    (bigAnte : BigAnte G D) (cleanReg : CleanReg G D) :
+    ∀ p : Mode × List Form × Form, SearchOkO G D p</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:286</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+  </div>
+</section><section>
+  <h2><span class="num">§5</span>Refutations</h2>
+  <p class="lede">Negative results are results. Each of these closed a line of work, several of them lines that looked promising right up to the countermodel.</p>
+  <div class="cards">
+<article class="res">
+  <div class="rhead"><code class="nm">PLLG4Gap.cut_not_admissible</code><span class="st ref">refuted</span></div>
+  <p class="claim">Kills Iemhoff’s G4iLL as a route to decidability: incomplete for PLL, contraction not admissible. Howe’s conjecture survives its claimed refutation.</p>
+  <pre><code>theorem cut_not_admissible :
+    G4 [Ga.somehow, Fa] ((prop &quot;p&quot;).somehow) ∧
+    G4 [(prop &quot;p&quot;).somehow, Ga.somehow, Fa] (prop &quot;r&quot;) ∧
+    ¬ G4 [Ga.somehow, Fa] (prop &quot;r&quot;)</code></pre>
+  <div class="rfoot"><span class="loc">LaxLogic/PLLG4Gap.lean:396</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.not_wf_stepC</code><span class="st ref">refuted</span></div>
+  <p class="claim">Kills the naive ◯-extension of backward search.</p>
+  <pre><code>theorem not_wf_stepC (G : Form) :
+    ¬ WellFounded (fun p q : Bool × List Form × Form =&gt; StepC G p q)</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_measure.lean:87</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.no_measure_stepC</code><span class="st ref">refuted</span></div>
+  <p class="claim">The sharp form: <em>no</em> function of the sequent can be a termination measure for that extension.</p>
+  <pre><code>theorem no_measure_stepC (G : Form) {β : Type}
+    (m : (Bool × List Form × Form) → β) {lt : β → β → Prop}
+    (hwf : WellFounded lt)
+    (hm : ∀ p q, StepC G p q → lt (m p) (m q)) : False</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_measure.lean:103</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.rcirc_not_invertible</code><span class="st ref">refuted</span></div>
+  <p class="claim">Lemma 9 clause 12, unconditionally.</p>
+  <pre><code>theorem rcirc_not_invertible :
+    ¬ (∀ (G : Form) (D : FSeq → Prop), Saturated G D →
+        ∀ (Ψ : List Form) (Z : Form), Form.circ Z ∈ sfR G →
+          EvalR D Ψ Z → EvalR D Ψ (.circ Z))</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_circ.lean:737</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.rcircNI_not_invertible</code><span class="st ref">refuted</span></div>
+  <p class="claim">Lemma 9 clause 13, unconditionally.</p>
+  <pre><code>theorem rcircNI_not_invertible :
+    ¬ (∀ (G : Form) (D : FSeq → Prop), Saturated G D →
+        ∀ (Ω : List Form) (Z : Form), Form.circ Z ∈ sfR G →
+          (∀ X ∈ Ω, X ∈ gHat G) → EvalR D Ω Z → EvalI D Ω (.circ Z))</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_circ.lean:746</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">WCounter.tag_weakening_refuted</code><span class="st ref">refuted</span></div>
+  <p class="claim">Tag-preserving weakening for FRJV. Forces the clean stratum to be its own database clause.</p>
+  <pre><code>theorem tag_weakening_refuted :
+    ∃ (Γ Γ&#x27; : List Form) (C : Form),
+      Nonempty (FRJVr Gw .barren Γ C) ∧
+      Γ ⊆ Γ&#x27; ∧
+      (∃ t, Nonempty (FRJVr Gw t Γ&#x27; C)) ∧
+      (∀ (t : Tag), FRJVr Gw t Γ&#x27; C →
+        ¬ (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ&#x27; W C))</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_weakening.lean:71</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.not_wf_stepW</code><span class="st ref">refuted</span></div>
+  <p class="claim">The weakening of L⊃ᵢ’s side condition to <code>A.isCirc = false</code> — a two-cycle survives. The adopted condition is ◯-<em>freeness</em>.</p>
+  <pre><code>theorem not_wf_stepW : ¬ WellFounded (StepW Ωw)</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_circ.lean:2086</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.not_cleanReg</code><span class="st ref">refuted</span></div>
+  <p class="claim">Supply (S3).</p>
+  <pre><code>theorem not_cleanReg : ¬ CleanReg Gcr (FDerivable Gcr)</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:967</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.not_pll_Gcc</code><span class="st ref">refuted</span></div>
+  <p class="claim">◯(◯p ⊃ p) is not PLL-valid — driven out of FRJV, with the countermodel extracted by <code>modR</code> rather than hand-built.</p>
+  <pre><code>theorem not_pll_Gcc : ¬ PLL Gcc</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1061</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+  </div>
+</section><section>
+  <h2><span class="num">§6</span>The irregular duality gap, and FRJW</h2>
+  <p class="lede">The finding of 31 August, in the order it was established. Together these say that the Gbu◯/FRJV duality fails at ◯(◯Z ⊃ Z) with <em>both</em> sides empty, and locate the fault on the FRJV side.</p>
+  <div class="cards">
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.provableV_Gcc</code><span class="st proved">proved</span></div>
+  <p class="claim">FRJV has a <em>regular</em> disproof of ◯(◯p ⊃ p) — the barren ⋈<sup>◯</sup> join.</p>
+  <pre><code>theorem provableV_Gcc : ProvableV Gcc</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1056</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.countermodel_Gcc</code><span class="st proved">proved</span></div>
+  <p class="claim">and its countermodel, extracted from that disproof by <code>modR</code>.</p>
+  <pre><code>theorem countermodel_Gcc : ∃ K : Kripke, Countermodel K Gcc</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1065</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">WCounter.no_irregular_circ_imp_self</code><span class="st ref">refuted</span></div>
+  <p class="claim">But FRJV has no <em>irregular</em> disproof of ◯(◯Z ⊃ Z), for any G, Z, Σ, Θ. ◯∉ needs a clean row that <code>not_clean_imp_self</code> forbids; Ax<sup>I◯</sup> needs a classical tautology to be false.</p>
+  <pre><code>theorem no_irregular_circ_imp_self {G : Form} {Z : Form} {St Th : List Form}
+    (d : FRJVi G St Th (.circ (.imp (.circ Z) Z))) : False</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_weakening.lean:211</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.not_gbuIC_Gcc</code><span class="st ref">refuted</span></div>
+  <p class="claim">And Gbu◯ cannot prove it either — nor may it: <code>soundIC</code> gives the irregular judgment the same reading as the regular one, and the model above refutes the formula.</p>
+  <pre><code>theorem not_gbuIC_Gcc {G : Form} : ¬ Nonempty (GbuIC G [] Gcc)</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1295</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.not_evalI_Gcc</code><span class="st ref">refuted</span></div>
+  <p class="claim">The gap is not confined to the empty context: it holds for every G and every Ω, so the regular mode’s ∨ test can never succeed at this disjunct.</p>
+  <pre><code>theorem not_evalI_Gcc {G : Form} {Ω : List Form} :
+    ¬ EvalI (FDerivable G) Ω Gcc</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1304</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.not_searchOkO_irr</code><span class="st ref">refuted</span></div>
+  <p class="claim">Hence the <code>irr</code> clause of the modal search specification is false at a concrete cell.</p>
+  <pre><code>theorem not_searchOkO_irr :
+    ¬ SearchOkO Gcc (FDerivable Gcc) (.irr, [], Gcc)</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1310</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.residues_unsatisfiable</code><span class="st ref">refuted</span></div>
+  <p class="claim">And hence Theorem 8◯’s two residues are not open but <strong>jointly unsatisfiable</strong>. No discharge of (S1) or (S3), and no repair of the clean mode, can make <code>searchO</code> non-vacuous for a modal G.</p>
+  <pre><code>theorem residues_unsatisfiable
+    (decI : ∀ Ω C, Decidable (EvalI (FDerivable Gcc) Ω C))
+    (decRC : ∀ Ψ C, Decidable (EvalRC (FDerivable Gcc) Ψ C)) :
+    ¬ (BigAnte Gcc (FDerivable Gcc) ∧ CleanReg Gcc (FDerivable Gcc))</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1322</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">Gbu.cirr_circ_to_irr</code><span class="st proved">proved</span></div>
+  <p class="claim">The former single open point (★) is also <em>unnecessary</em>: at a ◯ goal the clean mode hands the premise straight to the irregular mode, since <code>gbuSuccCirc</code> transfers the query.</p>
+  <pre><code>theorem cirr_circ_to_irr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
+    {Ω : List Form} {Z : Form}
+    (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
+    (hgoal : Form.circ Z ∈ sfR G)
+    (himp : ∀ A B, Form.imp A B ∈ Ω → EvalI D Ω A)
+    (hne : ¬ EvalR D Ω (.circ Z)) : UnrefutedBelow G D Ω Z</code></pre>
+  <div class="rfoot"><span class="loc">wip/gbu_search_circ.lean:1284</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+<article class="res">
+  <div class="rhead"><code class="nm">FRJ.V.RBar.not_force_of_rootAbove</code><span class="st proved">proved</span></div>
+  <p class="claim">The proposed repair, FRJW: add <code>Lift</code>, taking a regular disproof to an irregular one over any retained Ĝ-context inside Cl(Γ). This is its whole soundness content — a world below the root of a regular disproof’s extracted model refutes the same formula.</p>
+  <pre><code>theorem not_force_of_rootAbove {G : Form} {t : Tag} {Γ : List Form} {C : Form}
+    (d : FRJVr G t Γ C)
+    {P : PreModel} {hP : ClosedLbl P} {w : P.W}
+    (hcomp : RootAbove P hP w (preR d) (preR_closed d)) :
+    ¬ (P.toKripke hP).force w C</code></pre>
+  <div class="rfoot"><span class="loc">wip/rbar.lean:51</span><span class="pin">propext, Quot.sound</span></div>
+</article>
+  </div>
+</section>
+<section>
+  <h2><span class="num">§7</span>Is Gbu◯ complete?</h2>
+  <p class="lede">Three separate questions. Since the evening of 31 August, all three have answers.</p>
+  <div class="panel">
+    <h4>For IPC formulas — yes.</h4>
+    <p><code>search</code> (Theorem 8) plus <code>gbu_frj_duality</code> (Theorem 9) give <code>ProvableGbu G ↔ ¬ ProvableV G</code> on the ◯-free fragment, and <code>provableV_of_not_pll</code> closes the loop to IPL. <code>provableGbuC_iff_provableGbu</code> then transfers all of it to Gbu◯, since the two calculi coincide on ◯-free G.</p>
+  </div>
+  <div class="panel">
+    <h4>As an equivalence with the other presentations — partly.</h4>
+    <p>The conservativity <code>provableGbuC_iff_provableGbu</code> is proved and pinned at <code>[propext]</code>, and it is enforced as a compiler gate: the erasure functions <code>deCircR</code> / <code>deCircI</code> must stay total, so an ill-formed ◯ rule breaks the build. Negative-tested three times.</p>
+  </div>
+  <div class="panel">
+    <h4>For PLL — yes: <code>gbuC_complete</code>, proved 31 August (evening).</h4>
+    <p>Not by the search route. <code>residues_unsatisfiable</code> had shown <code>searchO</code>’s two supplies to be <em>contradictory</em> — the theorem asserted nothing for any modal G and was retired — and the duality-gap record (§6) stands as the reason the route changed. Completeness goes instead through LJF◯ focalisation: <code>bridge_iff</code> hands every PLL theorem a focused derivation, and <code>tInv</code> (<code>wip/gbu_ljfo.lean</code>) translates it into Gbu◯.</p>
+    <p>The translation’s shape was forced by two kernel-checked screens — <code>GbuIC</code> is not monotone (<code>gbuIC_not_monotone</code>) and has no modus ponens (<code>gbuIC_no_mp</code>) — so it is a CPS hoisting, mode-generic over a step kit: regular left rules above any ◯-opening, the irregular ◯-goal rules below it, with lax spines built entirely inside the irregular judgment and <code>lcircI</code> as the context bridge the regular judgment lacks. The licenced |◯C| adaptation of L⊃ᵢ is consumed at exactly one site, <code>irrKit.impOpen</code>.</p>
+    <p>FRJW W1–W4 remain banked as the disproof side; whether to rebuild an FRJW search on top of the completed calculus is a separate decision.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">§8</span>What the ρ-sweep settled</h2>
+  <p class="lede">All 462 directed ρ-cells were run blind through the V-engine and joined against the RNDB bank (<code>tools/frjv-sweep-check.py</code>). 280 cells carry a kernel-checked <code>¬ Deriv [ρi] ρj</code>; the engine hit 274 and missed six.</p>
+  <div class="panel">
+    <h4>The six are budget artefacts, not incompleteness.</h4>
+    <p>The sweep prints <code>lamCapped</code> and <code>dbCapped</code>, and both were false — which I read as convergence. But <code>Config</code> has two more caps it does <em>not</em> print: <code>jmax := 3</code>, the join arity cap, and <code>pmax := 2</code>, the promise-component cap. Re-running ρ12 ⊃ ρ18 with the flags exposed gives <code>jmaxBinding = true, pmaxBinding = true</code>. The engine only ever formed premise families of total size ≤ 3, out of 60 irregular rows available.</p>
+    <p>So no incompleteness has been found in the closed fragment, and the standing rule holds exactly as written: a miss is not-found-within-bound, never a verdict.</p>
+  </div>
+</section>
+
+<section>
+  <h2><span class="num">§9</span>Open</h2>
+  <p class="lede">What has no declaration, because an open claim gets none.</p>
+  <div class="sys">
+    <div class="row"><div class="k">FRJV<span>completeness</span></div><div class="v">Unrestricted completeness. Partials exist for endpoint-seeing, cone-grounded and discrete frames, and one frame-free result under a goal guard. The ρ-sweep gives no evidence against it.</div></div>
+    <div class="row"><div class="k">FRJW<span>the proposal</span></div><div class="v">W1–W4 have landed on <code>frjw-dev</code>: the FRJW family, conservativity over FRJV, fresh soundness over the W-family, and W4 — an irregular FRJW disproof of ◯(◯p ⊃ p), so the duality gap closes. Banked as the disproof side. Pins on all four are <code>#guard_msgs</code>-enforced and the full build was green on 31 August (evening). F1–F4 have since landed too: <code>gbuC_complete</code> (§4) closed the Gbu◯ completeness question that formerly sat in this table.</div></div>
+    <div class="row"><div class="k">PLL<span>uniform interpolation</span></div><div class="v">LJF◯’s E2/A2 minimality is sorry-free but conditional on <code>CimpAnt</code>. Not claimed.</div></div>
+
+  </div>
+</section>
+
+<footer>
+  Compiled from the repository as it stands on frjw-dev at 5d11096; §4 <code>gbuC_complete</code>, §7 and this table updated at b324d09 (merge 4638b12), 31 August evening.<br>
+  docs/calculus-map.md remains the provenance reference — read it before asserting which system a result belongs to.<br>
+  Statements above were extracted from source; pins were observed by running #print axioms, except where a card says otherwise.
+</footer>
+</div>
