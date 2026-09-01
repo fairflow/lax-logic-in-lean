@@ -8,7 +8,7 @@ unchanged because `(Lift)` adds no regular rows (`liftClosure_reg`).
 Extraction at an irregular row is the one place that genuinely differs, and
 `liftClosure_irr` is where that is handled.
 -/
-import wip.frjx_screen
+import wipx.frjx_screen
 
 namespace FRJ.Gbu.X
 
@@ -135,6 +135,7 @@ theorem gbuInv7' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
 
 /-- Port of `gbuInv8`. -/
 theorem gbuInv8' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.imp A B ∈ sfR G)
     (hA : Clo Ω A) (h : EvalI D Ω B) : EvalI D Ω (.imp A B) := by
   sorry
@@ -159,12 +160,14 @@ theorem gbuInv9' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
 
 /-- Port of `gbuInv10`. -/
 theorem gbuInv10' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω : List Form} {C₁ C₂ : Form} (hgoal : Form.or C₁ C₂ ∈ sfR G)
     (h₁ : EvalI D Ω C₁) (h₂ : EvalI D Ω C₂) : EvalI D Ω (.or C₁ C₂) := by
   sorry
 
 /-- Port of `refutedCleanly_at`. -/
 theorem refutedCleanly_at' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω : List Form} {F : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
     (hFp : F.isPrime) (hFgoal : F ∈ sfR G) (hFmem : F ∉ Ω)
@@ -174,6 +177,7 @@ theorem refutedCleanly_at' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver 
 
 /-- Port of `refutedCleanly_or`. -/
 theorem refutedCleanly_or' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω : List Form} {C₁ C₂ : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
     (hgoal : Form.or C₁ C₂ ∈ sfR G)
@@ -212,6 +216,7 @@ theorem evalI_axI' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClo
 
 /-- Port of `refutedCleanly_circ`. -/
 theorem refutedCleanly_circ' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω : List Form} {Z : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
     (hgoal : Form.circ Z ∈ sfR G)
@@ -222,6 +227,7 @@ theorem refutedCleanly_circ' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOve
 
 /-- Port of `gbuSuccCirc`. -/
 theorem gbuSuccCirc' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω : List Form} {Z : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gAt G ++ gImp G)
     (hgoal : Form.circ Z ∈ sfR G)
@@ -238,12 +244,14 @@ theorem unrefutedBelow_of_gHat' {G : Form} {D : FSeq → Prop} {Ω : List Form}
 
 /-- Port of `unrefutedBelow_step`. -/
 theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
     (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
   sorry
 
 /-- Port of `gbuInv14`. -/
 theorem gbuInv14' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω Ω' : List Form} {Z : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hcl : ∀ X ∈ Ω, Clo Ω' X)
     (h : EvalI D Ω' (.circ Z)) : EvalI D Ω (.circ Z) := by

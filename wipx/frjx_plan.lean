@@ -51,7 +51,7 @@ port mechanical; if §2 is awkward the whole plan should be re-scoped before
 Stage 2 begins.
 -/
 import wip.gbu_search_circ
-import wip.frjx_screen
+import wipx.frjx_screen
 
 namespace FRJ.Gbu.X
 
