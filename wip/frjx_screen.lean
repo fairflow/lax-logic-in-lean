@@ -209,4 +209,28 @@ theorem not_X14 :
 #guard_msgs in
 #print axioms not_X14
 
+
+/-! ### …and the statement that SHOULD have been there does hold
+
+Replace `(X14)`'s conclusion "the node is discharged" by "the node is never
+reached": at such a cell the database disproves the goal, so the branch
+closes by contradiction with the parent query.  At the very cell that
+refutes `(X14)` this is available — and it is available BECAUSE of
+`(Lift)`, from the same regular disproof `not_gbuIC_omegaX` uses. -/
+
+/-- `Ω ▷ ◯r` irregularly, by `(Lift)` on the regular disproof.  Without
+`(Lift)` there is no route: `◯∉` would need a cleanly tagged regular row,
+and `Ax^I◯` is excluded. -/
+theorem evalI_omegaX_goal : EvalI (LiftClosure Gx) omegaX (.circ rvx) := by
+  refine ⟨[], omegaX, LiftClosure.lift (.base ⟨.barren, ⟨FRJVr.circIn
+      (FRJVr.axR rvx (by decide) (by decide) (CtxEq.refl _))
+      (Or.inl rfl) circr_goal⟩⟩) (fun X hX =>
+    ⟨clo_omegaX X hX, List.mem_append_left _ (omegaX_critical X hX)⟩),
+    fun {x} hx => absurd hx List.not_mem_nil,
+    fun {x} hx => List.mem_append_right _ hx⟩
+
+/-- info: 'FRJ.Gbu.X.evalI_omegaX_goal' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms evalI_omegaX_goal
+
 end FRJ.Gbu.X
