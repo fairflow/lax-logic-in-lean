@@ -18,6 +18,9 @@ declaration here (a sorry ASSERTS):
     searchW : WSaturated G D → (∀ Ω C, Decidable (WEvalI D Ω C)) →
               ∀ p : Bool × List Form × Form, WSearchOk G D p
 
+(TYPE-valued after Matthew's 2026-09-01 approval: `searchW` is a `def`
+delivering derivations, not a `Nonempty` certificate)
+
 with NO further hypotheses — the ◯-free Theorem 8 shape, the
 `SearchOkO` reg/irr clauses verbatim, and neither of the old supplies:
 (S1) `BigAnte` is dissolved by the licenced `L⊃ᵢ` adaptation (every
@@ -108,17 +111,22 @@ def WUnrefutedBelow (G : Form) (D : WSeq → Prop) (Ω : List Form)
 
 /-- `WSearchOk G D (reg?, Ψ, C)`: at a well-formed cell, either the
 database refutes it or `Gbu◯` derives it.  The reg and irr clauses of
-`SearchOkO` verbatim, over the W-database, with no supply
-hypotheses. -/
+`SearchOkO`, over the W-database, with no supply hypotheses — and
+TYPE-VALUED (Matthew 2026-09-01): the conclusions are the derivations
+themselves, so `searchW` is a `def` that DELIVERS terms and
+`decideGbuW`'s `⊕` inherits them; the `¬WEval` hypotheses are consumed
+propositionally, so no choice is needed.  Data any consumer inspects
+lives in indices and results; `∃` is reserved for facts consumed
+propositionally. -/
 def WSearchOk (G : Form) (D : WSeq → Prop) :
-    Bool × List Form × Form → Prop
+    Bool × List Form × Form → Type
   | (true, Ψ, C) =>
       (∀ X ∈ Ψ, X ∈ sfL G) → C ∈ sfR G →
-      ¬ WEvalR D Ψ C → Nonempty (GbuRC G Ψ C)
+      ¬ WEvalR D Ψ C → GbuRC G Ψ C
   | (false, Ω, C) =>
       (∀ X ∈ Ω, X ∈ sfL G) →
       (C.isCirc = false → ∀ X ∈ Ω, X ∈ gHat G) →
       C ∈ sfR G →
-      WUnrefutedBelow G D Ω C → Nonempty (GbuIC G Ω C)
+      WUnrefutedBelow G D Ω C → GbuIC G Ω C
 
 end FRJ.Gbu.W

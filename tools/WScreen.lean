@@ -21,6 +21,7 @@ No silent caps: the engine's `Stats` flags are printed per cell.
 -/
 import FRJ.Search.OpsW
 import FRJ.Bridge
+import LaxLogic.RN.Rho
 import LaxLogic.PLLSearch
 import wip.ljfo_link
 
@@ -105,6 +106,23 @@ def main : IO UInt32 := do
     IO.println "no alarms"
     pure 0
 
+/-- The ρ-corpus stratum: all 462 directed cells `ρi ⊃ ρj`, W-engine
+beside the G4c oracle.  Heavier than the curated set — run in the
+background and read the tail. -/
+def rhoMain : IO UInt32 := do
+  IO.println s!"wscreen rho: 462 directed ρ-cells, engine cfg rounds={engineCfg.rounds} lamCap={engineCfg.lamCap}"
+  let mut alarms := 0
+  for i in List.range 22 do
+    for j in List.range 22 do
+      if i ≠ j then
+        let φ : P := .ifThen (RhoOrder.rhoF i) (RhoOrder.rhoF j)
+        let bad ← runCell s!"ρ{i} ⊃ ρ{j}" φ
+        if bad then alarms := alarms + 1
+  IO.println s!"done; alarms={alarms} (PASS/FLAG counts in the lines above)"
+  pure (if alarms > 0 then 1 else 0)
+
 end WScreen
 
-def main : List String → IO UInt32 := fun _ => WScreen.main
+def main : List String → IO UInt32
+  | ["rho"] => WScreen.rhoMain
+  | _ => WScreen.main
