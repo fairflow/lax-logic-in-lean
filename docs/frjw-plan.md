@@ -376,3 +376,14 @@ Next, in order (statement-first, per METHOD.md):
 Frame-conditioned FRJV completeness routes (endpoints, cone-grounded):
 judged not worth significant effort (Matthew, 2026-08-31); at most a
 cheap reconnaissance whether `Lift` discharges their condition sites.
+
+**2026-09-01**: cell-level statement drafted, revised (tag EXPLICIT in
+the regular database sequent — Matthew's call, and the tagless draft
+was defective: the ◯-manufacture needs tag-aware (DB2); the `regC`
+stratum dissolves into the derived pledged query `WEvalRP`), and
+LANDED as `wip/gbu_frjw_dichotomy.lean` (defs only; `searchW` /
+`gbu_frjw_dichotomy` / `decideGbuW` remain OPEN, no declarations).
+Screening runner `lake exe wscreen` (`tools/WScreen.lean`): 18/18 PASS
+including Gcr, Gcc, and the big-antecedent cell; no flags, no alarms.
+NEXT DECISION PENDING (Matthew): Prop-∃ vs Type/Σ packaging of the
+statement layer before the proof build is scoped.
