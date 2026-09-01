@@ -421,3 +421,74 @@ irregular `◯`-critical cell, where V punted to `BigAnte` (false) and
   must carry the `hups` conjunct (a hypothesis-strengthening).  The
   proof will be built against the aux spec; the public irr clause is
   then stated at the strengthened invariant.
+
+### The chase-revisit residual: full mechanism map (2026-09-01)
+
+`searchW` (`wip/gbu_frjw_search.lean`, uncommitted) compiles with ONE
+`sorry`.  The built design replaced the `hups` threading above (which
+is hereby superseded): the `Υ`-loop runs IN the irregular mode with a
+visited-set `V` of chased antecedents, measure
+
+    wgW G reg Ψ C V = (unclosed G Ψ, |Sf^R(G) ∖ V|, tpC reg C, seqSize Ψ C)
+
+The one open branch is the chase-REVISIT corner, with hypotheses:
+critical cell `Ψ ⊆ Ĝ_at ∪ Ĝ_imp`, goal `◯Z ∈ sfR G`, and
+
+    heZ  : WEvalI D Ψ Z                 (a Z-row covers Ψ)
+    hne  : ¬ WEvalI D Ψ (◯Z)            (no ◯Z-row)
+    hnocm: no classical countermodel     (axIC unavailable)
+    hallQ: every A = ante(Y), Y ∈ imp(Ψ): refuted ∨ (hasCirc ∧
+           ¬|A| < |◯Z| ∧ A ∈ V);  some such A unrefuted (stuck)
+    hnrp : ¬ WEvalRP D Ψ Z              (no pledged regular Z-row)
+
+Constructor sweep (kernel fact): irregular `◯`-rhs rows come ONLY from
+`lift`/`◯∉` (both blocked by `hnrp`), `axIC` (blocked by `hnocm`), and
+`⋈^◯` + `lift`.  So the ⋈^◯-join is the unique remaining manufacture.
+
+**The Gx provenance, decoded.**  The engine's row for the constructed
+cell `Gx = ((◯r⊃b) ∧ ¬¬r) ⊃ ◯r` at `Ψ = {◯r⊃b, ¬¬r}` is the join over
+the family `{axI r, impInI(axI ⊥) : ¬r}` with BOTH implications
+retained by the `KeptChain`: `◯r⊃b` because `RefAt` descends `◯r → r ∈
+Υ` (the circ-clause, cone = true), `¬¬r` because `¬r ∈ Υ` (its
+refutation is in the family).  A `Ψ`-implication is covered by the
+join in exactly one of THREE ways:
+
+  (i)  its antecedent is refuted: the antecedent's row joins the
+       family, `.ups` keeps the implication;
+  (ii) its antecedent is `RefAt`-reachable over `Υ` (circ/and/imp
+       descent bottoming in `Υ` or `Clo`);
+  (iii) its CONSEQUENT is `Clo`-available in the join context
+       (`Clo`'s imp-clause; the `b`-mechanism in the Gx row).
+
+**The corner sweep** (`wip/cornersweep.lean`, output `wip/cornersweep_out.txt`, V-free
+overapproximation, 15 adversarial formulas, every critical sub-cell,
+engine + G4c oracle): exactly TWO corner-shaped cells in the whole
+corpus, both the licence cell `Ψ = {p, ◯p⊃r} , ◯r` (in Glic and Glw),
+stuck antecedent `◯p`, with (i),(ii),(iii) ALL false — and the stuck
+antecedent ORACLE-DERIVABLE at `Ψ` (`p ⊢ ◯p`), i.e. resolved by the
+chase at first visit.  ZERO cells with a stuck antecedent
+underivable-and-unrefuted: no counterexample to the dichotomy.
+Licence-shaped cells are derivation-side; the corner is reachable only
+as a REVISIT (stuck antecedent already in `V`), which no corpus
+formula realises.
+
+**Open kernels for closing the sorry** (V carries no invariant, so
+revisit-unreachability is at present unprovable):
+
+  K1  The V-invariant `∀ A ∈ V, RefAt true [C] Ψ A` (goal-path
+      reachability) is preserved by every step of the search EXCEPT
+      descent into a disjunct when BOTH disjuncts are unrefuted
+      (RefAt's or-clause needs both sides).
+  K2  Rebasing the invariant's `Clo Ψ` side conditions onto the join
+      context needs a kept-chain ordering; mutually-referencing stuck
+      implications are not obviously orderable.
+  K3  `hJ2` (Σ-zone implications need `Υ`-antecedents) blocks families
+      with Σ-dirty rows.  For PRIME `Z` the single-row family is
+      Σ-empty (`st_nil_of_prime`: only `axI`/`lift` produce prime
+      rhs), which covers every corner the sweep found.  The general
+      fix would relax `hJ2` to `RefAt`-descent — a CALCULUS change,
+      requiring sign-off and a re-proof of `soundnessW`'s join case.
+
+Decision pending (Matthew): (a) build the V-invariant motive with
+K1/K2 as stated risks; (b) propose the `hJ2` relaxation first (kills
+K3 and most of K2); (c) both.
