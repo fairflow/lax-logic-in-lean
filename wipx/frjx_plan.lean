@@ -78,6 +78,38 @@ extracts a model from an FRJV regular disproof. -/
 theorem regSound_liftClosure (G : Form) : RegSound (LiftClosure G) := by
   sorry
 
+/-! ### (X2) is not discharegable as stated — a statement-level gap
+
+`RegSound` is phrased at `K.root`.  The only extraction available for an
+FRJV regular disproof is
+
+    frjv_countermodel : FRJVr G t Γ C → ∃ (K : Kripke) (a : K.W),
+        K.forces a Γ ∧ ¬ K.force a C
+
+which delivers an ARBITRARY world `a`, not the root.  (Its own doc-comment
+says "a model whose root forces `Γ`", so the two may well coincide by
+construction, but the statement does not expose that.)  So `(X2)` needs
+EITHER a generated-submodel lemma relocating `a` to the root, OR the
+world-existential phrasing below — which is what `(X17)` actually consumes,
+since turning validity into `¬ EvalR` works at any world.  The root-phrasing
+of `RegSound` is gratuitous strength.
+
+`RegSound` is NOT edited here; the weakened form is banked under its own
+name and `(X2)` is left open. -/
+
+/-- `(X2)` in the form the available extraction supplies: a countermodel at
+SOME world, rather than at the root. -/
+theorem regSoundWorld_liftClosure (G : Form) :
+    ∀ (Γ : List Form) (C : Form), LiftClosure G (.reg Γ C) →
+      ∃ (K : Kripke) (a : K.W), K.forces a Γ ∧ ¬ K.force a C := by
+  intro Γ C h
+  obtain ⟨t, ⟨d⟩⟩ := liftClosure_reg h
+  exact frjv_countermodel d
+
+/-- info: 'FRJ.Gbu.X.regSoundWorld_liftClosure' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms regSoundWorld_liftClosure
+
 /-- **(X3)** The closure is saturated over itself; `Subsumes` is reflexive,
 so this is where the parametrisation pays. -/
 theorem saturatedOver_liftClosure (G : Form) :
@@ -103,7 +135,13 @@ theorem liftClosure_irr {G : Form} {St Th : List Form} {C : Form}
     Nonempty (FRJVi G St Th C) ∨
       (St = [] ∧ ∃ Γ, FDerivable G (.reg Γ C) ∧
         ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) := by
-  sorry
+  cases h with
+  | base hb => exact Or.inl hb
+  | lift hreg hTh => exact Or.inr ⟨rfl, _, liftClosure_reg hreg, hTh⟩
+
+/-- info: 'FRJ.Gbu.X.liftClosure_irr' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms liftClosure_irr
 
 /-! ## §3 What the repair buys
 
@@ -118,7 +156,14 @@ theorem evalI_of_evalR {G : Form} {D : FSeq → Prop}
       (∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) → D (.irr [] Θ C))
     {Ω : List Form} {C : Form} (hΩ : ∀ X ∈ Ω, X ∈ gHat G)
     (h : EvalR D Ω C) : EvalI D Ω C := by
-  sorry
+  obtain ⟨Γ, hmem, hcl⟩ := h
+  exact ⟨[], Ω, hlift Γ Ω C hmem (fun X hX => ⟨hcl X hX, hΩ X hX⟩),
+    fun {x} hx => absurd hx List.not_mem_nil,
+    fun {x} hx => List.mem_append_right _ hx⟩
+
+/-- info: 'FRJ.Gbu.X.evalI_of_evalR' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms evalI_of_evalR
 
 /-- **(X7) `(∨-inv)`.**  If both disjuncts are regularly disprovable over a
 critical context with dead antecedents, so is the disjunction — `⋈^∨` on the

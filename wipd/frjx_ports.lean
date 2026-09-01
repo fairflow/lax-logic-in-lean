@@ -138,7 +138,57 @@ theorem gbuInv8' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
     (hlift : IsLiftClosed G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.imp A B ∈ sfR G)
     (hA : Clo Ω A) (h : EvalI D Ω B) : EvalI D Ω (.imp A B) := by
-  sorry
+  obtain ⟨St₀, Th₀, hmem, hSt₀, hΩ⟩ := h
+  rcases satExtractI hsat hmem with hd | ⟨rfl, Γ, hreg, hTh⟩
+  · -- base: the `FRJVi` premise, exactly as `gbuInv8`
+    obtain ⟨d⟩ := hd
+    set Lam := Ω.filter (fun X => !(decide (X ∈ St₀))) with hLamdef
+    set Th := Th₀.filter (fun X => !(decide (X ∈ Lam))) with hThdef
+    have hLamΩ : ∀ X ∈ Lam, X ∈ Ω := fun X hX => (List.mem_filter.mp hX).1
+    have hLamTh₀ : ∀ X ∈ Lam, X ∈ Th₀ := by
+      intro X hX
+      obtain ⟨hXΩ, hXnot⟩ := List.mem_filter.mp hX
+      have := hΩ hXΩ
+      rcases List.mem_append.mp this with h' | h'
+      · exact absurd (by simp [h'] : (!(decide (X ∈ St₀))) = false) (by
+          simp [hXnot])
+      · exact h'
+    have hΩsplit : ∀ X ∈ Ω, X ∈ St₀ ++ Lam := by
+      intro X hX
+      by_cases hs : X ∈ St₀
+      · exact List.mem_append_left _ hs
+      · exact List.mem_append_right _ (List.mem_filter.mpr ⟨hX, by simp [hs]⟩)
+    have hpre : Th₀ ≐ Th ++ Lam := by
+      intro X
+      constructor
+      · intro hX
+        by_cases hl : X ∈ Lam
+        · exact List.mem_append_right _ hl
+        · exact List.mem_append_left _ (List.mem_filter.mpr ⟨hX, by simp [hl]⟩)
+      · intro hX
+        rcases List.mem_append.mp hX with hX' | hX'
+        · exact (List.mem_filter.mp hX').1
+        · exact hLamTh₀ X hX'
+    have hdisj : cap Th Lam = [] := by
+      refine eq_nil_of_forall_not_mem (fun X hX => ?_)
+      obtain ⟨hXTh, hXLam⟩ := mem_cap.mp hX
+      exact absurd (List.mem_filter.mp hXTh).2 (by simp [hXLam])
+    have hAcl : Clo (St₀ ++ Lam) A := clo_trans (fun X hX => .base (hΩsplit X hX)) hA
+    obtain ⟨s', hs'mem, hsub⟩ :=
+      satInsert hsat (.irr (St₀ ++ Lam) Th (.imp A B))
+        ⟨.impInI d hpre hdisj hAcl hgoal (CtxEq.refl _) (CtxEq.refl _)⟩
+    match s', hsub with
+    | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
+        refine ⟨St', Th', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
+        · rcases List.mem_append.mp ((hSteq X).mpr hX) with h' | h'
+          · exact hSt₀ h'
+          · exact hLamΩ X h'
+        · exact List.mem_append_left _ ((hSteq X).mp (hΩsplit X hX))
+  · -- lifted: rebuild on the REGULAR side with `⊃∈`, then lift again
+    have hAΓ : Clo Γ A :=
+      clo_trans (fun X hX => (hTh X (by simpa using hΩ hX)).1) hA
+    exact ⟨[], Th₀, relift hsat hlift hreg hTh (fun d => .impIn d hAΓ hgoal),
+      fun {x} hx => absurd hx List.not_mem_nil, hΩ⟩
 
 /-- Port of `gbuInv9`. -/
 theorem gbuInv9' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
@@ -157,6 +207,66 @@ theorem gbuInv9' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
       refine ⟨St', Th', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
       · exact absurd ((hSteq X).mpr hX) List.not_mem_nil
       · exact List.mem_append_right _ (hTh' hX)
+
+/-! ## The five ports below are BLOCKED, and the obstruction is exact
+
+`satExtractI` returns, in its second branch, only `FRJVr G t Γ C` — a
+REGULAR disproof.  Every remaining port must feed the extracted object into
+a rule whose premises are IRREGULAR:
+
+  * `gbuInv10'`   → `FRJVi.orI`,   `prem : FRJVi …` twice;
+  * `refutedCleanly_at'`   → `FRJVr.joinAt`  / `joinAtP`  / `joinAtF`;
+  * `refutedCleanly_or'`   → `FRJVr.joinOr`  / `joinOrP`  / `joinOrF`;
+  * `refutedCleanly_circ'` → `FRJVr.joinCirc`/ `joinCircP`;
+  * `gbuSuccCirc'`         → via `refutedCleanly_circ'`.
+
+Every `⋈` join takes its family as `prem : ∀ j, FRJVi G (stab j) (th j)
+(rhs j)`.  The `P`-variants additionally take `dps : ∀ i, FRJVr G (tps i)
+(Δs i) (Ds i)`, but those are side derivations pinned by `hJ5`/`htag`/`hDs`
+to the chain body, and they do NOT feed `hJ2 : … → A ∈ upsilon rhs` — the
+dead-antecedent condition, which is fed by `rhs`, i.e. by `prem`, alone.
+
+`relift` is the only bridge, and it works exactly when the target formula is
+reachable from `C` by a REGULAR constructor at the SAME context `Γ`:
+`andR1/andR2` (`gbuInv7'`), `impIn` (`gbuInv8'`), identity (`gbuInv14'`).
+There is no regular `orR1/orR2` — the regular `∨` rules are all joins — so
+the bridge is unavailable above.
+
+A complete case analysis of `FRJVi` settles it: the ONLY constructors taking
+a regular premise are `impNotIn` (`… ⇒ B` ↦ `· ; Th → A ⊃ B`) and
+`circNotIn` (`… ⇒ Z` ↦ `· ; Th → ◯Z`), and BOTH change the conclusion
+formula.  No constructor yields `FRJVi G [] Th C` from `FRJVr G t Γ C` at
+the same `C`.  Hence the blockage is not a missing proof but a missing RULE.
+
+### The diagnosis, and what it costs
+
+The plan's §0 asserts that `(Lift)` "does NOT need a new inductive CALCULUS:
+it is enough to extend the derivable-sequent predicate … and leaves
+`FRJVr`/`FRJVi` untouched."  That is the false step.  `(Lift)` has to be a
+constructor of `FRJVi`:
+
+    | liftI {t : Tag} {Γ Th : List Form} {C : Form}
+        (d : FRJVr G t Γ C)
+        (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
+        FRJVi G [] Th C
+
+which is the missing member of the very family `⊃∉` and `◯∉` belong to —
+regular premise, `Σ = ∅` conclusion — with the formula-changing part
+dropped.  It also sits well in the joins: with `stab = []` the premise has
+`impPart [] = circPart [] = []`, so it contributes nothing to `hJ2`, `hcirc`
+or `hJ5`.
+
+The cost the plan does not price:
+
+  1. `soundnessV` acquires a new case.
+  2. `no_irregular_circ_imp_self` becomes FALSE for the extended `FRJVi`
+     (the regular disproof of `Gcc` lifts), so `not_saturated_liftClosed`
+     in `frjx_screen.lean` must be restated over the extended calculus.
+
+Point 2 is not a defeat: "FRJV has no irregular disproof of `◯(◯Z ⊃ Z)`" is
+precisely the hole the campaign set out to fill.  Putting `(Lift)` in the
+CALCULUS fills it where the joins can see it; putting it in the derivability
+predicate fills it where they cannot. -/
 
 /-- Port of `gbuInv10`. -/
 theorem gbuInv10' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
@@ -242,17 +352,67 @@ theorem unrefutedBelow_of_gHat' {G : Form} {D : FSeq → Prop} {Ω : List Form}
     UnrefutedBelow G D Ω C :=
   ⟨h, Ω, hΩ, fun X hX => .base hX, h⟩
 
-/-- Port of `unrefutedBelow_step`. -/
-theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
-    (hlift : IsLiftClosed G D)
-    {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
-    (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
-  sorry
-
 /-- Port of `gbuInv14`. -/
 theorem gbuInv14' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     (hlift : IsLiftClosed G D)
     {Ω Ω' : List Form} {Z : Form}
     (hΩ : ∀ X ∈ Ω, X ∈ gHat G) (hcl : ∀ X ∈ Ω, Clo Ω' X)
     (h : EvalI D Ω' (.circ Z)) : EvalI D Ω (.circ Z) := by
-  sorry
+  obtain ⟨St, Th, hmem, h1, h2⟩ := h
+  rcases satExtractI hsat hmem with hd | ⟨rfl, Γ, hreg, hTh⟩
+  · obtain ⟨d⟩ := hd
+    cases d with
+    | axI F hF hgoal hTh => exact Bool.noConfusion hF
+    | circNotIn dr htag hTh hgoal =>
+        obtain ⟨s', hs'mem, hsub⟩ :=
+          satInsert hsat (.irr [] (Ω ++ Th) (.circ Z))
+            ⟨.circNotIn dr htag (fun X hX => by
+                rcases List.mem_append.mp hX with hX' | hX'
+                · refine ⟨?_, hΩ X hX'⟩
+                  refine clo_trans (fun Y hY => ?_) (hcl X hX')
+                  exact (hTh Y (by
+                    have := h2 hY
+                    simpa using this)).1
+                · exact hTh X hX') hgoal⟩
+        match s', hsub with
+        | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
+            exact ⟨St', Th', hs'mem,
+              fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+              fun {x} hx => List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
+    | axIC F ats hats hFf hgoal hThv =>
+        refine ⟨[], Th, hmem, fun {x} hx => absurd hx List.not_mem_nil, ?_⟩
+        intro x hx
+        refine List.mem_append_right _ ((hThv x).mpr ?_)
+        refine List.mem_filter.mpr ⟨hΩ x hx, ?_⟩
+        refine clo_classForce (fun Y hY => ?_) (hcl x hx)
+        have hY' : Y ∈ Th := by simpa using h2 hY
+        exact (List.mem_filter.mp ((hThv Y).mp hY')).2
+  · -- lifted: `Ω ⊆ Cl(Ω') ⊆ Cl(Γ)`, so re-lift the SAME regular disproof at `Ω`
+    refine ⟨[], Ω, relift hsat hlift hreg (fun X hX =>
+      ⟨clo_trans (fun Y hY => (hTh Y (by simpa using h2 hY)).1) (hcl X hX),
+        hΩ X hX⟩) (fun d => d),
+      fun {x} hx => absurd hx List.not_mem_nil,
+      fun {x} hx => List.mem_append_right _ hx⟩
+
+/-- Port of `unrefutedBelow_step`. -/
+theorem unrefutedBelow_step' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
+    {Ω Ω' : List Form} {Z : Form} (hcl : ∀ X ∈ Ω, Clo Ω' X)
+    (h : UnrefutedBelow G D Ω (.circ Z)) : UnrefutedBelow G D Ω' (.circ Z) := by
+  obtain ⟨-, Ω₀, hΩ₀, hclΩ₀, hne₀⟩ := h
+  have hcl' : ∀ X ∈ Ω₀, Clo Ω' X := fun X hX => clo_trans hcl (hclΩ₀ X hX)
+  exact ⟨fun hE => hne₀ (gbuInv14' hsat hlift hΩ₀ hcl' hE), Ω₀, hΩ₀, hcl', hne₀⟩
+
+/-! ## Axiom pins for the ports closed in this session -/
+
+/-- info: 'FRJ.Gbu.X.gbuInv8'' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuInv8'
+
+/-- info: 'FRJ.Gbu.X.gbuInv14'' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuInv14'
+
+/-- info: 'FRJ.Gbu.X.unrefutedBelow_step'' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms unrefutedBelow_step'
