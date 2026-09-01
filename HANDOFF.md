@@ -3435,3 +3435,26 @@ manufactures; the goal-set invariant; and the closure by TOTALITY
 duality of RefAt vs the intro rules).  Architecture + innovation
 exposition: docs/searchw-architecture.md.  Remaining for decideGbuW:
 the concrete saturated database per G (engine-fixpoint obligation).
+
+## 2026-09-01 (evening) — closure stage: decideGbuW modulo DBClosed
+
+Main thread per Matthew's directive (disproof attempts backgrounded,
+proofs frontal).  `wip/gbu_frjw_closure.lean`, all pinned
+`[propext, Quot.sound]` or lighter, frjw-dev @ d449957:
+
+* T-A (kept-chain dominance) PROVED, with parameter growth.
+* T-B monotonicity PROVED for all 21 FRJW rules (barren/fallible/
+  promise joins, the ⊃∈ᵢ second-zone split, maximal-Θ Lift/◯∉).
+* Universe wellformedness: goalWr/goalWi/tagWr (+ banked wfR/wfI).
+* The assembly: WRow (derivation-carrying rows), scan deciders,
+  DBClosed (21-clause closedness contract over stored sequents),
+  choice-free skolemisation (findSub/IrrPick/RegPick), the T-C
+  induction tCr/tCi, and
+  `decideGbuW_of_dbClosed : (db) → DBClosed G db → ProvableGbuC G ⊕' DisprovableW G`.
+
+OPEN: the constructor of (db, DBClosed) per G — saturation +
+join extensionality (∀-n clauses reduce to nodup sublists) +
+finite-universe termination.  A2/A3 attackers running in background.
+Also: the Calculus Ledger artifact reverted to its 31-Aug state and its
+source checked into git (docs/pll-calculus-ledger.html); `#cf_search`
+(choice-free lemma search) added to Meta/Audit, TOOLS.md §5.

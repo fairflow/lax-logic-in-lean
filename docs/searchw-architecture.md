@@ -219,23 +219,25 @@ PROVED so far (all pinned `[propext, Quot.sound]` or lighter):
 
 OPEN (the remaining build, design locked):
 
-* rows as DATA: `WRow G` pairs a `WSeq` with its Type-level derivation,
-  so `WSaturated.1` needs no choice and the monotonicity `def`s consume
-  stored derivations directly; the induction extracts stored subsumers
-  through decidable `List.find?` (skolemisation without choice).
-* the step function: apply every rule to every stored-row family
-  (families WLOG duplicate-free, so sublists of the store), conclusions
-  at canonical kept chains and `≐`-normal zones; subsumption-dedup.
-* termination: the covered-universe count strictly grows at every
-  non-fixpoint step and is bounded by the finite canonical universe.
-* `WSaturated.2` by derivation induction over T-B; then the deciders
-  (finite scans + query monotonicity under subsumption), and
+* DONE since: `WRow` (rows as data), the deciders as finite scans,
+  `decideGbuW_of` (decision modulo `WSaturated.2`), the closedness
+  contract `DBClosed` (one clause per rule over STORED premise
+  sequents), choice-free family skolemisation (`findSub`/`IrrPick`/
+  `RegPick`), and the full T-C induction `tCr`/`tCi` — so
 
-      decideGbuW : ∀ G, ProvableGbuC G ⊕ DisprovableW G
+      decideGbuW_of_dbClosed :
+        (db : List (WRow G)) → DBClosed G db →
+        ProvableGbuC G ⊕' DisprovableW G
 
-  via `dichotomyW`, the banked exclusion, and the two soundness
-  theorems — GBUW and FRJW completeness simultaneously, and a certified
-  PLL decision procedure.
+  is PROVED, pinned `[propext, Quot.sound]`.
+* the ONE remaining obligation: per `G`, CONSTRUCT `(db, DBClosed)` —
+  the saturation computation.  Its parts: join extensionality (a join
+  depends on its family only through zone membership, so the `∀ n`
+  clauses reduce to nodup sublists of the store), the rule enumerator
+  with the T-B `_mono` defs carrying the row derivations, and
+  termination by the finite canonical universe (`wfR`/`wfI` +
+  `goalWr`/`goalWi`/`tagWr`).  Then GBUW and FRJW completeness read
+  off simultaneously, plus a certified PLL decision procedure.
 
 ## 11. Ledger of the day (2026-09-01)
 
