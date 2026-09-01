@@ -1,0 +1,1513 @@
+⚠ [8558/8643] Replayed LaxLogic.PLLFormula
+warning: LaxLogic/PLLFormula.lean:99:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:102:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:104:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:107:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:110:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:113:31: This simp argument is unused:
+  subformulasOf
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, s̵u̵b̵f̵o̵r̵m̵u̵l̵a̵s̵O̵f̵,̵ ̵isSomehowFree] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLFormula.lean:113:46: This simp argument is unused:
+  isSomehowFree
+
+Hint: Omit it from the simp argument list.
+  simp [eraseSomehowRaw, subformulasOf,̵ ̵i̵s̵S̵o̵m̵e̵h̵o̵w̵F̵r̵e̵e̵] at Q
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+info: LaxLogic/PLLFormula.lean:159:0: P ⊃ (◯(Q ∧ ⊥))
+info: LaxLogic/PLLFormula.lean:160:0: P
+info: LaxLogic/PLLFormula.lean:161:0: ⊤ ∧ P
+⚠ [8564/8643] Replayed LaxLogic.PLLSequent
+warning: LaxLogic/PLLSequent.lean:216:10: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLSequent.lean:326:58: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:327:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:327:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:335:56: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:336:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:336:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:388:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:389:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:389:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:396:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:397:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:397:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:450:41: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:450:58: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:451:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:457:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:457:56: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:458:36: This simp argument is unused:
+  somehow.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵s̵o̵m̵e̵h̵o̵w̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵]̵i̲f̲T̲h̲e̲n̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲]̲
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:499:39: This simp argument is unused:
+  and.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [̵a̵n̵d̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵[̲o̲r̲.̲s̲i̲z̲e̲O̲f̲_̲s̲p̲e̲c̲,̲ ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:499:56: This simp argument is unused:
+  or.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, o̵r̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ifThen.sizeOf_spec, somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LaxLogic/PLLSequent.lean:500:16: This simp argument is unused:
+  ifThen.sizeOf_spec
+
+Hint: Omit it from the simp argument list.
+  simp only [and.sizeOf_spec, or.sizeOf_spec, i̵f̵T̵h̵e̵n̵.̵s̵i̵z̵e̵O̵f̵_̵s̵p̵e̵c̵,̵ ̵somehow.sizeOf_spec]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [8579/8643] Replayed LaxLogic.PLLFinsetKit
+warning: LaxLogic/PLLFinsetKit.lean:101:17: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:147:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:148:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:347:19: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:399:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:400:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:405:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:406:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:411:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinsetKit.lean:412:9: Variable name `a` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [8580/8643] Replayed LaxLogic.PLLG4Set
+warning: LaxLogic/PLLG4Set.lean:186:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLG4Set.lean:187:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+ℹ [8581/8643] Replayed LaxLogic.PLLG4Term
+info: LaxLogic/PLLG4Term.lean:606:0: some "(→R ⊥L)"
+info: LaxLogic/PLLG4Term.lean:609:0: some "(◯R init)"
+info: LaxLogic/PLLG4Term.lean:612:0: none
+info: LaxLogic/PLLG4Term.lean:616:0: some "(→L◯◯ (→L→ (→R (→L◯◯ (◯R init) init)) (◯L (◯R init))) init)"
+ℹ [8582/8643] Replayed LaxLogic.PLLCountermodelEmit
+info: LaxLogic/PLLCountermodelEmit.lean:617:0: refuting world: w4  (20 worlds)
+  w0: believes []
+  w1: believes [], promises-false [◯p, p]
+  w2: believes [], promises-false [◯q, q]
+  w3: believes [], promises-false [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p, q]
+  w4: believes [◯(p ∨ q)]
+  w5: believes [◯(p ∨ q)], promises-false [◯p, p]
+  w6: believes [◯(p ∨ q)], promises-false [◯q, q]
+  w7: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q)]
+  w8: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q)], promises-false [◯q, q]
+  w9: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q)]
+  w10: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q)], promises-false [◯p, p]
+  w11: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q)]
+  w12: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q), (p ∨ q), p]
+  w13: believes [(◯p ∨ ◯q), ◯p, ◯(p ∨ q), (p ∨ q), p], promises-false [◯q, q]
+  w14: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p]
+  w15: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q), (p ∨ q), q]
+  w16: believes [(◯p ∨ ◯q), ◯q, ◯(p ∨ q), (p ∨ q), q], promises-false [◯p, p]
+  w17: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), q]
+  w18: believes [(◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p, q]
+  w19: believes [⊥, (◯p ∨ ◯q), ◯p, ◯q, ◯(p ∨ q), (p ∨ q), p, q]
+info: LaxLogic/PLLCountermodelEmit.lean:646:0: 'PLLND.FinCM.not_provable_of_check' depends on axioms: [propext, Quot.sound]
+info: LaxLogic/PLLCountermodelEmit.lean:647:0: 'PLLND.somehow_p_not_p' depends on axioms: [propext, Quot.sound]
+⚠ [8584/8643] Replayed LJF.OCore
+warning: LJF/OCore.lean:321:14: try 'simp' instead of 'simpa'
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+warning: LJF/OCore.lean:780:17: Variable name `hb` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:786:17: Variable name `hb` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:822:10: Variable name `hf` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:829:61: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:874:23: Variable name `hb` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:886:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:889:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:892:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:899:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:902:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:905:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:914:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:917:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:920:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:928:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:931:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:934:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:942:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:945:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:948:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:951:25: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:959:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:962:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:965:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:968:25: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:978:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:981:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:984:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:987:25: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:995:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:998:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1001:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1004:25: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1012:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1015:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1018:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1021:25: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1029:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1032:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1035:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1038:25: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1046:34: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1049:45: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1052:43: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1055:25: Variable name `hXr` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1101:14: Variable name `h1` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1102:14: Variable name `h1` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1551:19: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1563:21: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1577:21: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1552:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1552:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1552:60: This simp argument is unused:
+  szI
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL,̵ ̵s̵z̵I̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1564:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1564:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1564:60: This simp argument is unused:
+  szI
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL,̵ ̵s̵z̵I̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1578:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1578:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1578:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1680:33: Variable name `hb` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1681:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1681:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1681:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1745:23: Variable name `hm` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1745:26: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1761:23: Variable name `hm` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1761:26: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1775:26: Variable name `hm` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1775:29: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1795:25: Variable name `hm` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1795:28: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1746:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1746:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1746:60: This simp argument is unused:
+  szI
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL,̵ ̵s̵z̵I̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1762:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1762:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1762:60: This simp argument is unused:
+  szI
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL,̵ ̵s̵z̵I̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1776:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1776:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1776:60: This simp argument is unused:
+  szI
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL,̵ ̵s̵z̵I̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1796:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1796:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1796:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1816:9: Variable name `l` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1960:17: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1971:19: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1984:19: Variable name `hs` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:1961:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1961:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1961:60: This simp argument is unused:
+  szI
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL,̵ ̵s̵z̵I̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1972:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1972:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1972:60: This simp argument is unused:
+  szI
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL,̵ ̵s̵z̵I̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1985:45: This simp argument is unused:
+  szS
+
+Hint: Omit it from the simp argument list.
+  simp only [szS̵,̵ ̵s̵z̵R, szL, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1985:50: This simp argument is unused:
+  szR
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR̵,̵ ̵s̵z̵L, szI]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:1985:55: This simp argument is unused:
+  szL
+
+Hint: Omit it from the simp argument list.
+  simp only [szS, szR, szL̵,̵ ̵s̵z̵I]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2004:19: Variable name `Δ''` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:2008:34: Variable name `Z` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LJF/OCore.lean:2611:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2620:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2885:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2888:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2913:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2916:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2932:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2935:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2940:27: This simp argument is unused:
+  if_false
+
+Hint: Omit it from the simp argument list.
+  simp only [hq,̵ ̵i̵f̵_̵f̵a̵l̵s̵e̵]
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:2997:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3000:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3053:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3056:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3131:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3134:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3194:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3197:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3309:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3312:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3424:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3427:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3562:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3565:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3677:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3680:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3792:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3795:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3907:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+warning: LJF/OCore.lean:3910:21: This simp argument is unused:
+  hf
+
+Hint: Omit it from the simp argument list.
+  simp only ̵[̵h̵f̵]̵
+
+Note: This linter can be disabled with `set_option linter.unusedSimpArgs false`
+⚠ [8587/8643] Replayed LJF.OSearch
+warning: LJF/OSearch.lean:226:23: Try `simp at h` instead of `simpa using h`
+
+Note: This linter can be disabled with `set_option linter.unnecessarySimpa false`
+⚠ [8590/8643] Replayed Reject.Audit
+warning: Reject/Audit.lean:85:6: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+⚠ [8594/8643] Replayed LaxLogic.PLLCompleteness
+warning: LaxLogic/PLLCompleteness.lean:75:2: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: LaxLogic/PLLCompleteness.lean:320:2: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: LaxLogic/PLLCompleteness.lean:342:2: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: LaxLogic/PLLCompleteness.lean:404:2: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+⚠ [8595/8643] Replayed LaxLogic.PLLG4Space
+warning: LaxLogic/PLLG4Space.lean:66:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLG4Space.lean:67:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLG4Space.lean:71:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLG4Space.lean:72:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLG4Space.lean:76:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLG4Space.lean:77:9: Variable name `x` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [8602/8643] Replayed LaxLogic.PLLFiniteModel
+warning: LaxLogic/PLLFiniteModel.lean:280:8: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+warning: LaxLogic/PLLFiniteModel.lean:298:4: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+⚠ [8603/8643] Replayed LaxLogic.PLLG4Dec
+warning: LaxLogic/PLLG4Dec.lean:55:17: instance `PLLND.finDecEq` must be marked with `@[reducible]` or `@[implicit_reducible]`
+⚠ [8604/8643] Replayed LaxLogic.PLLFinComp
+warning: LaxLogic/PLLFinComp.lean:137:9: Variable name `l₁` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinComp.lean:137:12: Variable name `l₂` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinComp.lean:141:28: Variable name `ψ` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: LaxLogic/PLLFinComp.lean:144:28: Variable name `ψ` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+⚠ [8606/8643] Replayed LaxLogic.PLLSemUILayered
+warning: LaxLogic/PLLSemUILayered.lean:821:8: declaration uses `sorry`
+⚠ [8613/8643] Replayed LaxLogic.PLLSemUIHenkin
+warning: LaxLogic/PLLSemUIHenkin.lean:338:8: declaration uses `sorry`
+warning: LaxLogic/PLLSemUIHenkin.lean:349:8: declaration uses `sorry`
+ℹ [8614/8643] Replayed wip.canonFinC
+info: wip/canonFinC.lean:104:0: 'PLLND.FinComp.RmC_trans' depends on axioms: [propext, Quot.sound]
+info: wip/canonFinC.lean:105:0: 'PLLND.FinComp.canonFinC' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/canonFinC.lean:217:0: 'PLLND.FinComp.obInvFT_cons_of_backed' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/canonFinC.lean:272:0: 'PLLND.FinComp.obInvW' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/canonFinC.lean:273:0: 'PLLND.FinComp.rm_obInvW' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/canonFinC.lean:345:0: 'PLLND.FinComp.canonFinC_confluent' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/canonFinC.lean:346:0: 'PLLND.FinComp.restr' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/canonFinC.lean:403:0: 'PLLND.FinComp.imp_fal_successor' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/canonFinC.lean:490:0: 'PLLND.FinComp.truth_lemmaC' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8615/8643] Replayed wip.witTripleC
+info: wip/witTripleC.lean:118:0: 'PLLND.SemUI.trace_backed' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: wip/witTripleC.lean:119:0: 'PLLND.SemUI.traceC_mforth' depends on axioms: [propext, Classical.choice, Quot.sound]
+warning: wip/witTripleC.lean:763:18: `push_neg` has been deprecated. Prefer using `push Not` instead.
+If you'd rather continue using `push_neg` in your project, you can implement it as follows:
+```
+open Lean.Parser.Tactic in
+macro "push_neg" cfg:optConfig loc:(location)? : tactic =>
+  `(tactic| push $cfg:optConfig Not $[$loc]?)
+```
+ℹ [8616/8643] Replayed wip.crankC
+info: wip/crankC.lean:140:0: 'PLLND.force_iff_of_layeredC' depends on axioms: [propext, Classical.choice, Quot.sound]
+⚠ [8618/8643] Replayed LaxLogic.PLLSemUIChar
+warning: LaxLogic/PLLSemUIChar.lean:285:8: declaration uses `sorry`
+⚠ [8638/8643] Replayed FRJ.Extract
+warning: FRJ/Extract.lean:296:26: Variable name `p` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:310:16: Variable name `p` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:513:7: Variable name `Γ` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:514:7: Variable name `Γ` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:520:49: Variable name `tps` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:520:56: Variable name `Ds` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:541:53: Variable name `tps` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:541:60: Variable name `Ds` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:562:49: Variable name `tps` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+warning: FRJ/Extract.lean:562:56: Variable name `Ds` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
+wscreen rho: 462 directed ρ-cells, engine cfg rounds=16 lamCap=24
+PASS  ρ0 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=1 is=1 rounds=1 caps=-
+PASS  ρ0 ⊃ ρ2  oracle=valid  wHit=false  rootIrr=false  rs=2 is=2 rounds=2 caps=-
+PASS  ρ0 ⊃ ρ3  oracle=valid  wHit=false  rootIrr=false  rs=3 is=3 rounds=4 caps=pmax
+PASS  ρ0 ⊃ ρ4  oracle=valid  wHit=false  rootIrr=false  rs=6 is=6 rounds=5 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ5  oracle=valid  wHit=false  rootIrr=false  rs=3 is=5 rounds=4 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ6  oracle=valid  wHit=false  rootIrr=false  rs=6 is=12 rounds=5 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ7  oracle=valid  wHit=false  rootIrr=false  rs=4 is=4 rounds=6 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ8  oracle=valid  wHit=false  rootIrr=false  rs=5 is=8 rounds=8 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ9  oracle=valid  wHit=false  rootIrr=false  rs=7 is=12 rounds=6 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=9 is=20 rounds=9 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ11  oracle=valid  wHit=false  rootIrr=false  rs=12 is=13 rounds=7 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=7 is=17 rounds=7 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ13  oracle=valid  wHit=false  rootIrr=false  rs=7 is=19 rounds=7 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ14  oracle=valid  wHit=false  rootIrr=false  rs=15 is=22 rounds=8 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=14 is=16 rounds=8 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ16  oracle=valid  wHit=false  rootIrr=false  rs=17 is=26 rounds=9 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ17  oracle=valid  wHit=false  rootIrr=false  rs=26 is=36 rounds=8 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=38 rounds=8 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ19  oracle=valid  wHit=false  rootIrr=false  rs=8 is=12 rounds=7 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=false  rs=10 is=25 rounds=7 caps=jmax,pmax
+PASS  ρ0 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=10 is=21 rounds=7 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=2 is=4 rounds=4 caps=jmax
+PASS  ρ1 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=3 is=5 rounds=4 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=4 is=8 rounds=5 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ4  oracle=invalid  wHit=true  rootIrr=true  rs=6 is=10 rounds=7 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=4 is=10 rounds=5 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ6  oracle=invalid  wHit=true  rootIrr=true  rs=7 is=21 rounds=7 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ7  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=8 rounds=7 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ8  oracle=invalid  wHit=true  rootIrr=true  rs=6 is=15 rounds=9 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ9  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=19 rounds=7 caps=jmax,pmax
+FLAG(  ρ1 ⊃ ρ10  oracle=unknown  wHit=true  rootIrr=true  rs=10 is=32 rounds=11 caps=jmax,pmax
+FLAG(  ρ1 ⊃ ρ11  oracle=unknown  wHit=true  rootIrr=true  rs=14 is=22 rounds=8 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ12  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=30 rounds=8 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ13  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=32 rounds=8 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ14  oracle=invalid  wHit=true  rootIrr=true  rs=18 is=39 rounds=9 caps=jmax,pmax
+FLAG(  ρ1 ⊃ ρ15  oracle=unknown  wHit=true  rootIrr=true  rs=15 is=24 rounds=10 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ16  oracle=invalid  wHit=true  rootIrr=true  rs=18 is=41 rounds=9 caps=jmax,pmax
+FLAG(  ρ1 ⊃ ρ17  oracle=unknown  wHit=true  rootIrr=true  rs=30 is=59 rounds=9 caps=jmax,pmax
+FLAG(  ρ1 ⊃ ρ18  oracle=unknown  wHit=true  rootIrr=true  rs=26 is=59 rounds=10 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ19  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=21 rounds=8 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ20  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=44 rounds=8 caps=jmax,pmax
+PASS  ρ1 ⊃ ρ21  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=34 rounds=8 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=3 is=3 rounds=4 caps=pmax
+PASS  ρ2 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=2 is=1 rounds=2 caps=-
+PASS  ρ2 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=4 is=5 rounds=5 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ4  oracle=valid  wHit=false  rootIrr=false  rs=6 is=6 rounds=5 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ5  oracle=valid  wHit=false  rootIrr=true  rs=4 is=7 rounds=4 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ6  oracle=valid  wHit=false  rootIrr=true  rs=6 is=13 rounds=5 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ7  oracle=valid  wHit=false  rootIrr=false  rs=4 is=4 rounds=6 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ8  oracle=valid  wHit=false  rootIrr=false  rs=5 is=8 rounds=8 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ9  oracle=valid  wHit=false  rootIrr=false  rs=7 is=12 rounds=6 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=9 is=20 rounds=9 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ11  oracle=valid  wHit=false  rootIrr=false  rs=12 is=13 rounds=7 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=7 is=17 rounds=7 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ13  oracle=valid  wHit=false  rootIrr=false  rs=7 is=19 rounds=7 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ14  oracle=valid  wHit=false  rootIrr=false  rs=15 is=22 rounds=8 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=14 is=16 rounds=8 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ16  oracle=valid  wHit=false  rootIrr=false  rs=17 is=26 rounds=9 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ17  oracle=valid  wHit=false  rootIrr=false  rs=26 is=36 rounds=8 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=38 rounds=8 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ19  oracle=valid  wHit=false  rootIrr=false  rs=8 is=12 rounds=7 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=true  rs=10 is=27 rounds=7 caps=jmax,pmax
+PASS  ρ2 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=10 is=21 rounds=7 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=3 is=5 rounds=4 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=2 is=3 rounds=2 caps=-
+PASS  ρ3 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=3 is=6 rounds=4 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ4  oracle=valid  wHit=false  rootIrr=false  rs=5 is=9 rounds=5 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=4 is=9 rounds=5 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ6  oracle=valid  wHit=false  rootIrr=true  rs=6 is=15 rounds=5 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ7  oracle=valid  wHit=false  rootIrr=false  rs=5 is=7 rounds=6 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ8  oracle=valid  wHit=false  rootIrr=false  rs=7 is=13 rounds=8 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ9  oracle=valid  wHit=false  rootIrr=false  rs=7 is=14 rounds=6 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=9 is=22 rounds=9 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ11  oracle=valid  wHit=false  rootIrr=false  rs=12 is=15 rounds=7 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=7 is=19 rounds=7 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ13  oracle=valid  wHit=false  rootIrr=false  rs=7 is=21 rounds=7 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ14  oracle=valid  wHit=false  rootIrr=false  rs=15 is=24 rounds=8 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=14 is=18 rounds=8 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ16  oracle=valid  wHit=false  rootIrr=false  rs=17 is=28 rounds=9 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ17  oracle=valid  wHit=false  rootIrr=false  rs=26 is=38 rounds=8 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=40 rounds=8 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ19  oracle=valid  wHit=false  rootIrr=false  rs=8 is=14 rounds=7 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=true  rs=10 is=29 rounds=7 caps=jmax,pmax
+PASS  ρ3 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=10 is=23 rounds=7 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=8 rounds=4 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=3 is=3 rounds=2 caps=pmax
+PASS  ρ4 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=4 is=6 rounds=4 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=9 rounds=5 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=11 rounds=5 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ6  oracle=valid  wHit=false  rootIrr=true  rs=6 is=15 rounds=5 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ7  oracle=valid  wHit=false  rootIrr=false  rs=5 is=7 rounds=6 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ8  oracle=valid  wHit=false  rootIrr=false  rs=7 is=13 rounds=8 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ9  oracle=valid  wHit=false  rootIrr=false  rs=7 is=14 rounds=6 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=9 is=22 rounds=9 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ11  oracle=valid  wHit=false  rootIrr=false  rs=12 is=15 rounds=7 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=7 is=19 rounds=7 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ13  oracle=valid  wHit=false  rootIrr=false  rs=7 is=21 rounds=7 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ14  oracle=valid  wHit=false  rootIrr=false  rs=15 is=24 rounds=8 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=14 is=18 rounds=8 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ16  oracle=valid  wHit=false  rootIrr=false  rs=17 is=28 rounds=9 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ17  oracle=valid  wHit=false  rootIrr=false  rs=26 is=38 rounds=8 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=40 rounds=8 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ19  oracle=valid  wHit=false  rootIrr=false  rs=8 is=14 rounds=7 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=true  rs=10 is=29 rounds=7 caps=jmax,pmax
+PASS  ρ4 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=10 is=23 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=8 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=3 is=5 rounds=6 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=8 rounds=8 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=4 is=8 rounds=6 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ4  oracle=invalid  wHit=true  rootIrr=true  rs=6 is=10 rounds=8 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ6  oracle=valid  wHit=false  rootIrr=true  rs=8 is=20 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ7  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=8 rounds=8 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ8  oracle=invalid  wHit=true  rootIrr=true  rs=6 is=11 rounds=9 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ9  oracle=valid  wHit=false  rootIrr=false  rs=9 is=18 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=9 is=21 rounds=9 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ11  oracle=valid  wHit=false  rootIrr=false  rs=14 is=20 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=10 is=28 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ13  oracle=valid  wHit=false  rootIrr=false  rs=10 is=30 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ14  oracle=invalid  wHit=true  rootIrr=true  rs=16 is=25 rounds=9 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=16 is=23 rounds=8 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ16  oracle=invalid  wHit=true  rootIrr=true  rs=18 is=29 rounds=9 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ17  oracle=valid  wHit=false  rootIrr=false  rs=26 is=37 rounds=8 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=39 rounds=8 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ19  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=22 rounds=9 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=true  rs=10 is=41 rounds=7 caps=jmax,pmax
+PASS  ρ5 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=13 is=32 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=18 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=6 is=10 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=15 rounds=8 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=7 is=15 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ4  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=15 rounds=8 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=22 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ7  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=13 rounds=8 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ8  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=16 rounds=9 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ9  oracle=valid  wHit=false  rootIrr=false  rs=9 is=20 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=9 is=23 rounds=9 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ11  oracle=valid  wHit=false  rootIrr=false  rs=14 is=22 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=10 is=30 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ13  oracle=valid  wHit=false  rootIrr=false  rs=10 is=32 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ14  oracle=invalid  wHit=true  rootIrr=true  rs=16 is=27 rounds=9 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=16 is=25 rounds=8 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ16  oracle=invalid  wHit=true  rootIrr=true  rs=18 is=31 rounds=9 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ17  oracle=valid  wHit=false  rootIrr=false  rs=26 is=39 rounds=8 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=41 rounds=8 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ19  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=24 rounds=9 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=true  rs=10 is=45 rounds=7 caps=jmax,pmax
+PASS  ρ6 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=13 is=34 rounds=7 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=7 rounds=5 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=5 is=3 rounds=3 caps=pmax
+PASS  ρ7 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=8 rounds=4 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=13 rounds=5 caps=jmax,pmax
+FLAG(  ρ7 ⊃ ρ4  oracle=unknown  wHit=true  rootIrr=true  rs=12 is=13 rounds=7 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=17 is=12 rounds=7 caps=jmax,pmax
+FLAG(  ρ7 ⊃ ρ6  oracle=unknown  wHit=true  rootIrr=true  rs=19 is=23 rounds=7 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ8  oracle=valid  wHit=false  rootIrr=false  rs=10 is=17 rounds=8 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ9  oracle=valid  wHit=false  rootIrr=false  rs=14 is=18 rounds=6 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=16 is=30 rounds=9 caps=jmax,pmax
+FLAG(  ρ7 ⊃ ρ11  oracle=unknown  wHit=true  rootIrr=true  rs=14 is=17 rounds=8 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=14 is=27 rounds=7 caps=jmax,pmax
+FLAG(  ρ7 ⊃ ρ13  oracle=unknown  wHit=true  rootIrr=true  rs=23 is=33 rounds=8 caps=jmax,pmax
+FLAG(  ρ7 ⊃ ρ14  oracle=unknown  wHit=true  rootIrr=true  rs=17 is=26 rounds=8 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=14 is=18 rounds=8 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ16  oracle=valid  wHit=false  rootIrr=false  rs=17 is=28 rounds=9 caps=jmax,pmax
+FLAG(  ρ7 ⊃ ρ17  oracle=unknown  wHit=true  rootIrr=true  rs=29 is=40 rounds=9 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=40 rounds=8 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ19  oracle=valid  wHit=false  rootIrr=false  rs=11 is=18 rounds=7 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=true  rs=20 is=45 rounds=7 caps=jmax,pmax
+PASS  ρ7 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=17 is=31 rounds=7 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=6 is=17 rounds=4 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=4 is=9 rounds=4 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=13 rounds=4 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=6 is=20 rounds=5 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ4  oracle=invalid  wHit=true  rootIrr=true  rs=7 is=19 rounds=7 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=5 is=16 rounds=5 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ6  oracle=invalid  wHit=true  rootIrr=true  rs=7 is=24 rounds=7 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ7  oracle=invalid  wHit=true  rootIrr=true  rs=7 is=17 rounds=7 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ9  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=21 rounds=7 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=9 is=31 rounds=9 caps=jmax,pmax
+FLAG(  ρ8 ⊃ ρ11  oracle=unknown  wHit=true  rootIrr=true  rs=22 is=33 rounds=8 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ12  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=22 rounds=8 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ13  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=24 rounds=8 caps=jmax,pmax
+FLAG(  ρ8 ⊃ ρ14  oracle=unknown  wHit=true  rootIrr=true  rs=26 is=54 rounds=8 caps=jmax,pmax
+FLAG(  ρ8 ⊃ ρ15  oracle=unknown  wHit=true  rootIrr=true  rs=22 is=35 rounds=10 caps=jmax,pmax
+FLAG(  ρ8 ⊃ ρ16  oracle=unknown  wHit=true  rootIrr=true  rs=28 is=59 rounds=10 caps=jmax,pmax
+FLAG(  ρ8 ⊃ ρ17  oracle=unknown  wHit=true  rootIrr=true  rs=31 is=60 rounds=9 caps=jmax,pmax
+FLAG(  ρ8 ⊃ ρ18  oracle=unknown  wHit=true  rootIrr=true  rs=28 is=61 rounds=10 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ19  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=32 rounds=8 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ20  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=48 rounds=8 caps=jmax,pmax
+PASS  ρ8 ⊃ ρ21  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=36 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=16 is=30 rounds=7 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=9 is=14 rounds=7 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=13 is=21 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=25 rounds=7 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ4  oracle=invalid  wHit=true  rootIrr=true  rs=15 is=22 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=21 is=35 rounds=7 caps=jmax,pmax
+FLAG(  ρ9 ⊃ ρ6  oracle=unknown  wHit=true  rootIrr=true  rs=21 is=37 rounds=7 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ7  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=17 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ8  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=20 rounds=9 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ10  oracle=valid  wHit=false  rootIrr=false  rs=16 is=31 rounds=9 caps=jmax,pmax
+FLAG(  ρ9 ⊃ ρ11  oracle=unknown  wHit=true  rootIrr=true  rs=16 is=24 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ12  oracle=valid  wHit=false  rootIrr=false  rs=17 is=46 rounds=7 caps=jmax,pmax
+FLAG(  ρ9 ⊃ ρ13  oracle=unknown  wHit=true  rootIrr=true  rs=26 is=52 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ14  oracle=invalid  wHit=true  rootIrr=true  rs=18 is=29 rounds=9 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=16 is=25 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ16  oracle=invalid  wHit=true  rootIrr=true  rs=18 is=31 rounds=9 caps=jmax,pmax
+FLAG(  ρ9 ⊃ ρ17  oracle=unknown  wHit=true  rootIrr=true  rs=29 is=41 rounds=9 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ18  oracle=valid  wHit=false  rootIrr=false  rs=25 is=41 rounds=8 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ19  oracle=invalid  wHit=true  rootIrr=true  rs=12 is=32 rounds=9 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ20  oracle=valid  wHit=false  rootIrr=true  rs=20 is=75 rounds=7 caps=jmax,pmax
+PASS  ρ9 ⊃ ρ21  oracle=valid  wHit=false  rootIrr=false  rs=20 is=50 rounds=7 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=40 rounds=7 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=7 is=24 rounds=7 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=30 rounds=8 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=36 rounds=7 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ4  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=32 rounds=8 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=35 rounds=7 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ6  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=38 rounds=7 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ7  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=30 rounds=8 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ8  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=30 rounds=9 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ9  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=32 rounds=7 caps=jmax,pmax
+FLAG(  ρ10 ⊃ ρ11  oracle=unknown  wHit=true  rootIrr=true  rs=25 is=52 rounds=8 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ12  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=33 rounds=8 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ13  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=35 rounds=8 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ14  oracle=invalid  wHit=true  rootIrr=true  rs=27 is=57 rounds=9 caps=jmax,pmax
+FLAG(  ρ10 ⊃ ρ15  oracle=unknown  wHit=true  rootIrr=true  rs=26 is=55 rounds=10 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ16  oracle=invalid  wHit=true  rootIrr=true  rs=29 is=62 rounds=10 caps=jmax,pmax
+FLAG(  ρ10 ⊃ ρ17  oracle=unknown  wHit=true  rootIrr=true  rs=31 is=61 rounds=9 caps=jmax,pmax
+FLAG(  ρ10 ⊃ ρ18  oracle=unknown  wHit=true  rootIrr=true  rs=28 is=62 rounds=10 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ19  oracle=invalid  wHit=true  rootIrr=true  rs=15 is=57 rounds=9 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ20  oracle=invalid  wHit=true  rootIrr=true  rs=14 is=79 rounds=8 caps=jmax,pmax
+PASS  ρ10 ⊃ ρ21  oracle=invalid  wHit=true  rootIrr=true  rs=14 is=55 rounds=8 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=19 rounds=6 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=7 is=10 rounds=6 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=15 rounds=6 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ3  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=16 rounds=6 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ4  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=15 rounds=7 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ5  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=23 rounds=6 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ6  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=25 rounds=7 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ7  oracle=invalid  wHit=true  rootIrr=true  rs=8 is=12 rounds=7 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ8  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=23 rounds=9 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ9  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=21 rounds=7 caps=jmax,pmax
+FLAG(  ρ11 ⊃ ρ10  oracle=unknown  wHit=true  rootIrr=true  rs=11 is=35 rounds=11 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ12  oracle=invalid  wHit=true  rootIrr=true  rs=10 is=32 rounds=8 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ13  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=35 rounds=8 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ14  oracle=invalid  wHit=true  rootIrr=true  rs=17 is=40 rounds=9 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ15  oracle=valid  wHit=false  rootIrr=false  rs=16 is=24 rounds=8 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ16  oracle=invalid  wHit=true  rootIrr=true  rs=18 is=43 rounds=9 caps=jmax,pmax
+FLAG(  ρ11 ⊃ ρ17  oracle=unknown  wHit=true  rootIrr=true  rs=28 is=63 rounds=11 caps=jmax,pmax
+FLAG(  ρ11 ⊃ ρ18  oracle=unknown  wHit=true  rootIrr=true  rs=26 is=61 rounds=11 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ19  oracle=invalid  wHit=true  rootIrr=true  rs=9 is=17 rounds=8 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ20  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=32 rounds=8 caps=jmax,pmax
+PASS  ρ11 ⊃ ρ21  oracle=invalid  wHit=true  rootIrr=true  rs=11 is=36 rounds=8 caps=jmax,pmax
+PASS  ρ12 ⊃ ρ0  oracle=invalid  wHit=true  rootIrr=true  rs=17 is=57 rounds=8 caps=jmax,pmax
+PASS  ρ12 ⊃ ρ1  oracle=valid  wHit=false  rootIrr=false  rs=10 is=27 rounds=8 caps=jmax,pmax
+PASS  ρ12 ⊃ ρ2  oracle=invalid  wHit=true  rootIrr=true  rs=14 is=39 rounds=8 caps=jmax,pmax
+PASS  ρ12 ⊃ ρ3  oracl
+== RUN STOPPED 2026-09-01 15:40 BST (Matthew's testing directive) ==
+Partial tally: 256/462 cells — 228 PASS, 28 FLAG (all oracle=unknown,
+to re-adjudicate against the RNDB bank), 0 ALARM.  The run spent 2.5h
+wedged on ρ12 ⊃ ρ3 (join-enumeration blowup within caps): that cell
+and the remaining ρ12+ rows need a budget redesign before any rerun —
+or better, per the testing discipline, a curated subset.
