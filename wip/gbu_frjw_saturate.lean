@@ -1619,4 +1619,263 @@ theorem reindex_reg {G : Form} {db : List (WRow G)}
     obtain ⟨i, h1, h2, h3⟩ := hi''
     exact ⟨i, h1.symm, h2.symm, h3.symm⟩
 
+/-! ### Coverage: the leaf and unary clauses -/
+
+section Coverage
+
+variable (G : Form)
+
+theorem cov_axR : ∀ F : Form, F.isPrime → F ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg .barren (rm (gAt G) F) F) r.s := by
+  intro F hF hg
+  have hemit : (⟨.reg .barren (rm (gAt G) F) F,
+      .axR F hF hg (CtxEq.refl _)⟩ : WRow G) ∈ emitAxR G := by
+    refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hF, hg⟩
+  exact stored_of_emitted (sub_stepAll_AxR _ hemit)
+
+theorem cov_axI : ∀ F : Form, F.isPrime → F ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.irr [] (rm (gAt G) F ++ gImp G ++ gCirc G) F) r.s := by
+  intro F hF hg
+  have hemit : (⟨.irr [] (rm (gAt G) F ++ gImp G ++ gCirc G) F,
+      .axI F hF hg (CtxEq.refl _)⟩ : WRow G) ∈ emitAxI G := by
+    refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hF, hg⟩
+  exact stored_of_emitted (sub_stepAll_AxI _ hemit)
+
+/-- `classForce` sees only atom membership. -/
+theorem classForce_congr {ats ats' : List Form}
+    (h : ∀ p : String, Form.atom p ∈ ats ↔ Form.atom p ∈ ats') :
+    ∀ X : Form, classForce ats X = classForce ats' X := by
+  intro X
+  induction X with
+  | atom p =>
+      simp only [classForce]
+      exact decide_eq_decide.mpr (h p)
+  | bot => rfl
+  | and A B ihA ihB => simp [classForce, ihA, ihB]
+  | or A B ihA ihB => simp [classForce, ihA, ihB]
+  | imp A B ihA ihB => simp [classForce, ihA, ihB]
+  | circ A ih => simpa [classForce] using ih
+
+theorem cov_axIC : ∀ (F : Form) (ats : List Form), ats ⊆ gAt G →
+    classForce ats F = false → Form.circ F ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.irr [] (vacZoneA G ats) (.circ F)) r.s := by
+  intro F ats hats hFf hg
+  have hcongr : ∀ X : Form,
+      classForce ((gAt G).filter (fun x => decide (x ∈ ats))) X =
+        classForce ats X := by
+    refine classForce_congr (fun p => ?_)
+    simp only [List.mem_filter, decide_eq_true_eq]
+    exact ⟨fun h => h.2, fun h => ⟨hats h, h⟩⟩
+  have hzone : vacZoneA G ((gAt G).filter (fun x => decide (x ∈ ats))) =
+      vacZoneA G ats := by
+    simp only [vacZoneA]
+    exact List.filter_congr (fun x _ => hcongr x)
+  rw [← hzone]
+  have hc1 : ∀ x ∈ (gAt G).filter (fun x => decide (x ∈ ats)),
+      x ∈ gAt G := fun x hx => (List.mem_filter.mp hx).1
+  have hc2 : classForce ((gAt G).filter (fun x => decide (x ∈ ats)))
+      F = false := (hcongr F).trans hFf
+  have hemit : (⟨.irr []
+      (vacZoneA G ((gAt G).filter (fun x => decide (x ∈ ats)))) (.circ F),
+      .axIC F _ hc1 hc2 hg (CtxEq.refl _)⟩ : WRow G) ∈ emitAxIC G := by
+    refine List.mem_flatMap.mpr ⟨.circ F, mem_goalPool.mpr hg, ?_⟩
+    refine List.mem_filterMap.mpr
+      ⟨(gAt G).filter (fun x => decide (x ∈ ats)),
+       List.mem_sublists.mpr List.filter_sublist, ?_⟩
+    exact dif_pos ⟨hc1, hc2, hg⟩
+  exact stored_of_emitted (sub_stepAll_AxIC _ hemit)
+
+theorem cov_andR1 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
+    (WSeq.reg t Γ A₁) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.reg t Γ (.and A₁ A₂)) r.s := by
+  intro t Γ A₁ A₂ hmem hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := regTs_of_mem hmem
+  have hemit : (⟨.reg tr.t tr.Γ (.and tr.C A₂),
+      .andR1 tr.d hg⟩ : WRow G) ∈ emitAndR G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+    refine List.mem_filterMap.mpr
+      ⟨.and tr.C A₂, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨rfl, hg⟩
+  exact stored_of_emitted (sub_stepAll_AndR _ hemit)
+
+theorem cov_andR2 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
+    (WSeq.reg t Γ A₂) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.reg t Γ (.and A₁ A₂)) r.s := by
+  intro t Γ A₁ A₂ hmem hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := regTs_of_mem hmem
+  by_cases hc : A₁ = tr.C ∧ Form.and A₁ tr.C ∈ sfR G
+  · have hemit : (⟨.reg tr.t tr.Γ (.and A₁ tr.C),
+        .andR1 (hc.1 ▸ tr.d) hc.2⟩ : WRow G) ∈
+          emitAndR G (closureDB G) := by
+      refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+      refine List.mem_filterMap.mpr
+        ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
+      exact dif_pos hc
+    exact stored_of_emitted (sub_stepAll_AndR _ hemit)
+  · have hemit : (⟨.reg tr.t tr.Γ (.and A₁ tr.C),
+        .andR2 tr.d hg⟩ : WRow G) ∈ emitAndR G (closureDB G) := by
+      refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+      refine List.mem_filterMap.mpr
+        ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
+      exact (dif_neg hc).trans (dif_pos ⟨rfl, hg⟩)
+    exact stored_of_emitted (sub_stepAll_AndR _ hemit)
+
+theorem cov_impIn : ∀ (t : Tag) (Γ : List Form) (A B : Form),
+    (WSeq.reg t Γ B) ∈ (closureDB G).map (·.s) → Clo Γ A →
+    Form.imp A B ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.reg t Γ (.imp A B)) r.s := by
+  intro t Γ A B hmem hA hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := regTs_of_mem hmem
+  have hemit : (⟨.reg tr.t tr.Γ (.imp A tr.C),
+      .impIn tr.d hA hg⟩ : WRow G) ∈ emitImpIn G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+    refine List.mem_filterMap.mpr
+      ⟨.imp A tr.C, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨rfl, hA, hg⟩
+  exact stored_of_emitted (sub_stepAll_ImpIn _ hemit)
+
+theorem cov_circIn : ∀ (t : Tag) (Γ : List Form) (Z : Form),
+    (WSeq.reg t Γ Z) ∈ (closureDB G).map (·.s) →
+    (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) →
+    Form.circ Z ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.reg t Γ (.circ Z)) r.s := by
+  intro t Γ Z hmem htag hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := regTs_of_mem hmem
+  have hemit : (⟨.reg tr.t tr.Γ (.circ tr.C),
+      .circIn tr.d htag hg⟩ : WRow G) ∈ emitCircIn G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+    refine List.mem_filterMap.mpr
+      ⟨.circ tr.C, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨rfl, htag, hg⟩
+  exact stored_of_emitted (sub_stepAll_CircIn _ hemit)
+
+theorem cov_andI1 : ∀ (St Th : List Form) (A₁ A₂ : Form),
+    (WSeq.irr St Th A₁) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.irr St Th (.and A₁ A₂)) r.s := by
+  intro St Th A₁ A₂ hmem hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := irrTs_of_mem hmem
+  have hemit : (⟨.irr tr.St tr.Th (.and tr.C A₂),
+      .andI1 tr.d hg⟩ : WRow G) ∈ emitAndI G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+    refine List.mem_filterMap.mpr
+      ⟨.and tr.C A₂, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨rfl, hg⟩
+  exact stored_of_emitted (sub_stepAll_AndI _ hemit)
+
+theorem cov_andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
+    (WSeq.irr St Th A₂) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.irr St Th (.and A₁ A₂)) r.s := by
+  intro St Th A₁ A₂ hmem hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := irrTs_of_mem hmem
+  by_cases hc : A₁ = tr.C ∧ Form.and A₁ tr.C ∈ sfR G
+  · have hemit : (⟨.irr tr.St tr.Th (.and A₁ tr.C),
+        .andI1 (hc.1 ▸ tr.d) hc.2⟩ : WRow G) ∈
+          emitAndI G (closureDB G) := by
+      refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+      refine List.mem_filterMap.mpr
+        ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
+      exact dif_pos hc
+    exact stored_of_emitted (sub_stepAll_AndI _ hemit)
+  · have hemit : (⟨.irr tr.St tr.Th (.and A₁ tr.C),
+        .andI2 tr.d hg⟩ : WRow G) ∈ emitAndI G (closureDB G) := by
+      refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+      refine List.mem_filterMap.mpr
+        ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
+      exact (dif_neg hc).trans (dif_pos ⟨rfl, hg⟩)
+    exact stored_of_emitted (sub_stepAll_AndI _ hemit)
+
+theorem cov_orI : ∀ (St₁ Th₁ St₂ Th₂ : List Form) (C₁ C₂ : Form),
+    (WSeq.irr St₁ Th₁ C₁) ∈ (closureDB G).map (·.s) →
+    (WSeq.irr St₂ Th₂ C₂) ∈ (closureDB G).map (·.s) →
+    St₁ ⊆ St₂ ++ Th₂ → St₂ ⊆ St₁ ++ Th₁ →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂)) r.s := by
+  intro St₁ Th₁ St₂ Th₂ C₁ C₂ hmem₁ hmem₂ h₁ h₂ hg
+  obtain ⟨tr₁, htr₁, rfl, rfl, rfl⟩ := irrTs_of_mem hmem₁
+  obtain ⟨tr₂, htr₂, rfl, rfl, rfl⟩ := irrTs_of_mem hmem₂
+  have hemit : (⟨.irr (tr₁.St ++ tr₂.St) (cap tr₁.Th tr₂.Th)
+      (.or tr₁.C tr₂.C),
+      .orI tr₁.d tr₂.d h₁ h₂ hg (CtxEq.refl _) (CtxEq.refl _)⟩ : WRow G) ∈
+        emitOrI G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨tr₁, htr₁, ?_⟩
+    refine List.mem_flatMap.mpr ⟨tr₂, htr₂, ?_⟩
+    refine List.mem_filterMap.mpr
+      ⟨.or tr₁.C tr₂.C, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨rfl, rfl, h₁, h₂, hg⟩
+  exact stored_of_emitted (sub_stepAll_OrI _ hemit)
+
+theorem cov_lift : ∀ (t₂ : Tag) (Γ₂ : List Form) (C : Form),
+    (WSeq.reg t₂ Γ₂ C) ∈ (closureDB G).map (·.s) →
+    ∃ r ∈ closureDB G, WSubsumes (.irr [] (maxTh G Γ₂) C) r.s := by
+  intro t₂ Γ₂ C hmem
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := regTs_of_mem hmem
+  have hemit : (⟨.irr [] (maxTh G tr.Γ) tr.C,
+      lift_max tr.d⟩ : WRow G) ∈ emitLift G (closureDB G) :=
+    List.mem_map.mpr ⟨tr, htr, rfl⟩
+  exact stored_of_emitted (sub_stepAll_Lift _ hemit)
+
+theorem cov_circNotIn : ∀ (t₂ : Tag) (Γ₂ : List Form) (Z : Form),
+    (WSeq.reg t₂ Γ₂ Z) ∈ (closureDB G).map (·.s) →
+    (t₂ = .barren ∨ ∃ W, t₂ = .chain W ∧ Covers Γ₂ W Z) →
+    Form.circ Z ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.irr [] (maxTh G Γ₂) (.circ Z)) r.s := by
+  intro t₂ Γ₂ Z hmem htag hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := regTs_of_mem hmem
+  have hemit : (⟨.irr [] (maxTh G tr.Γ) (.circ tr.C),
+      circNotIn_max tr.d (fun _ hx => hx) (tagLeB_refl _) htag hg⟩ :
+        WRow G) ∈ emitCircNotIn G (closureDB G) := by
+    refine List.mem_filterMap.mpr ⟨tr, htr, ?_⟩
+    exact dif_pos ⟨htag, hg⟩
+  exact stored_of_emitted (sub_stepAll_CircNotIn _ hemit)
+
+theorem cov_impInI : ∀ (St₂ ThLam₂ Lam : List Form) (A B : Form),
+    (WSeq.irr St₂ ThLam₂ B) ∈ (closureDB G).map (·.s) →
+    Clo (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam))) A →
+    Form.imp A B ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.irr (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)))
+        (ThLam₂.filter (fun x => !decide (x ∈ Lam))) (.imp A B)) r.s := by
+  intro St₂ ThLam₂ Lam A B hmem hA hg
+  obtain ⟨tr, htr, rfl, rfl, rfl⟩ := irrTs_of_mem hmem
+  have hpos : tr.Th.filter (fun x =>
+      decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))) =
+      tr.Th.filter (fun x => decide (x ∈ Lam)) := by
+    refine List.filter_congr (fun x hx => ?_)
+    simp [List.mem_filter, hx]
+  have hneg : tr.Th.filter (fun x =>
+      !decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))) =
+      tr.Th.filter (fun x => !decide (x ∈ Lam)) := by
+    refine List.filter_congr (fun x hx => ?_)
+    simp [List.mem_filter, hx]
+  rw [← hpos, ← hneg]
+  have hA' : Clo (tr.St ++ tr.Th.filter (fun x =>
+      decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam))))) A := by
+    rw [hpos]; exact hA
+  have hemit : (⟨.irr (tr.St ++ tr.Th.filter (fun x =>
+      decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))))
+      (tr.Th.filter (fun x =>
+        !decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))))
+      (.imp A tr.C),
+      .impInI tr.d
+        (filter_split_pre tr.Th (tr.Th.filter (fun y => decide (y ∈ Lam))))
+        (filter_split_disj tr.Th (tr.Th.filter (fun y => decide (y ∈ Lam))))
+        hA' hg (CtxEq.refl _) (CtxEq.refl _)⟩ : WRow G) ∈
+        emitImpInI G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
+    refine List.mem_flatMap.mpr
+      ⟨tr.Th.filter (fun y => decide (y ∈ Lam)),
+       List.mem_sublists.mpr List.filter_sublist, ?_⟩
+    refine List.mem_filterMap.mpr
+      ⟨.imp A tr.C, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨rfl, hA', hg⟩
+  exact stored_of_emitted (sub_stepAll_ImpInI _ hemit)
+
+end Coverage
+
 end FRJ.Gbu.W
