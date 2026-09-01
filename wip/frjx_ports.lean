@@ -26,6 +26,42 @@ theorem satExtractR {G : Form} {D : FSeq → Prop}
     (h : D (.reg Γ C)) : ∃ t, Nonempty (FRJVr G t Γ C) :=
   liftClosure_reg (hsat.1 _ h)
 
+/-- **(X5)** Extraction at an irregular row: EITHER an FRJV disproof as
+before, OR a `(Lift)`ed regular one, in which case the regular disproof and
+its `Ĝ`-context bound are available.  This is the one place the change of
+base relation is visible, and it is what the nine remaining ports consume. -/
+theorem satExtractI {G : Form} {D : FSeq → Prop}
+    (hsat : SaturatedOver (LiftClosure G) D) {St Th : List Form} {C : Form}
+    (h : D (.irr St Th C)) :
+    Nonempty (FRJVi G St Th C) ∨
+      (St = [] ∧ ∃ Γ, (∃ t, Nonempty (FRJVr G t Γ C)) ∧
+        ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) := by
+  cases hsat.1 _ h with
+  | base hb => exact Or.inl hb
+  | lift hreg hΘ => exact Or.inr ⟨rfl, _, liftClosure_reg hreg, hΘ⟩
+
+/-- `LiftClosed`, as the ports consume it. -/
+abbrev IsLiftClosed (G : Form) (D : FSeq → Prop) : Prop :=
+  ∀ (Γ Θ : List Form) (C : Form), D (.reg Γ C) →
+    (∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) → D (.irr [] Θ C)
+
+/-- The uniform shape of every lifted case: rebuild the disproof on the
+REGULAR side, insert it, and lift it again.  `mk` is the regular
+constructor the lemma was using on the irregular side. -/
+theorem relift {G : Form} {D : FSeq → Prop}
+    (hsat : SaturatedOver (LiftClosure G) D) (hlift : IsLiftClosed G D)
+    {Γ Th : List Form} {C C' : Form}
+    (hreg : ∃ t, Nonempty (FRJVr G t Γ C))
+    (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G)
+    (mk : ∀ {t : Tag}, FRJVr G t Γ C → FRJVr G t Γ C') :
+    D (.irr [] Th C') := by
+  obtain ⟨t, ⟨d⟩⟩ := hreg
+  obtain ⟨s', hs'mem, hsub⟩ := satInsert hsat (.reg Γ C') ⟨t, ⟨mk d⟩⟩
+  match s', hsub with
+  | .reg Γ' _, ⟨rfl, hΓ⟩ =>
+      exact hlift Γ' Th C' hs'mem
+        (fun X hX => ⟨clo_mono hΓ (hTh X hX).1, (hTh X hX).2⟩)
+
 /-- Port of `gbuInv2`. -/
 theorem gbuInv2' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
     {Ψ : List Form} {C₁ C₂ : Form} (hgoal : Form.and C₁ C₂ ∈ sfR G)
@@ -71,9 +107,31 @@ theorem gbuInv6' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosu
 
 /-- Port of `gbuInv7`. -/
 theorem gbuInv7' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
+    (hlift : IsLiftClosed G D)
     {Ω : List Form} {C₁ C₂ : Form} (hgoal : Form.and C₁ C₂ ∈ sfR G)
     (h : EvalI D Ω C₁ ∨ EvalI D Ω C₂) : EvalI D Ω (.and C₁ C₂) := by
-  sorry
+  have step : ∀ {C : Form}, EvalI D Ω C →
+      (∀ {St Th : List Form}, FRJVi G St Th C →
+        FRJVi G St Th (.and C₁ C₂)) →
+      (∀ {t : Tag} {Γ : List Form}, FRJVr G t Γ C → FRJVr G t Γ (.and C₁ C₂)) →
+      EvalI D Ω (.and C₁ C₂) := by
+    rintro C ⟨St, Th, hmem, hSt, hΩ⟩ mk mkR
+    rcases satExtractI hsat hmem with hd | ⟨rfl, Γ, hreg, hTh⟩
+    · obtain ⟨d⟩ := hd
+      obtain ⟨s', hs'mem, hsub⟩ :=
+        satInsert hsat (.irr St Th (.and C₁ C₂)) ⟨mk d⟩
+      match s', hsub with
+      | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
+          refine ⟨St', Th', hs'mem, fun {x} hX => hSt ((hSteq x).mpr hX),
+            fun {x} hX => ?_⟩
+          rcases List.mem_append.mp (hΩ hX) with hX' | hX'
+          · exact List.mem_append_left _ ((hSteq x).mp hX')
+          · exact List.mem_append_right _ (hTh' hX')
+    · exact ⟨[], Th, relift hsat hlift hreg hTh mkR,
+        fun {x} hX => absurd hX List.not_mem_nil, hΩ⟩
+  rcases h with h | h
+  · exact step h (fun d => .andI1 d hgoal) (fun d => .andR1 d hgoal)
+  · exact step h (fun d => .andI2 d hgoal) (fun d => .andR2 d hgoal)
 
 /-- Port of `gbuInv8`. -/
 theorem gbuInv8' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClosure G) D)
