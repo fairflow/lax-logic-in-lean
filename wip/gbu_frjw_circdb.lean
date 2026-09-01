@@ -20,6 +20,8 @@ namespace FRJ.Gbu.W
 
 open FRJ Form FRJ.Gbu FRJ.Search
 
+variable {G : Form}
+
 theorem gbuInv11 {D : WSeq → Prop} {Ψ : List Form} {Z C : Form}
     (h : WEvalR D (Z :: Ψ) C) : WEvalR D (.circ Z :: Ψ) C := by
   obtain ⟨t, Γ, hmem, hcl⟩ := h
