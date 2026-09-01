@@ -43,6 +43,7 @@ bound, `WSaturated` for it, and the assembly `decideGbuW`.
 -/
 import FRJ.CalculusW
 import FRJ.Search.Engine
+import wip.gbu_frjw_search
 
 namespace FRJ
 
@@ -924,6 +925,171 @@ theorem tagWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
   | _, _, _, .joinCircP _ _ _ _ _ _ _ _ hg _ =>
       Or.inr (Or.inr ⟨_, rfl, sfR_circ hg⟩)
 
+/-! ## The assembly: `decideGbuW` modulo the closed database
+
+Everything below reduces `decideGbuW` to ONE hypothesis: a
+derivation-carrying row list subsuming every derivable row
+(`WSaturated.2` for its membership predicate).  Rows carry their
+derivations as DATA (`WRow`), so `WSaturated.1` needs no choice; the
+deciders are finite scans over the list. -/
+
+namespace Gbu.W
+
+/-- The derivation of a database sequent, as data. -/
+def WDer (G : Form) : WSeq → Type
+  | .reg t Γ C => FRJWr G t Γ C
+  | .irr St Th C => FRJWi G St Th C
+
+/-- A stored row: the sequent with its derivation. -/
+structure WRow (G : Form) where
+  s : WSeq
+  d : WDer G s
+
+theorem wDerivable_of_wDer {G : Form} :
+    ∀ {s : WSeq}, WDer G s → WDerivable G s
+  | .reg _ _ _, d => ⟨d⟩
+  | .irr _ _ _, d => ⟨d⟩
+
+/-- Subsumption is reflexive (`tagLeB_refl` at the tag). -/
+theorem wSubsumes_refl : ∀ s : WSeq, WSubsumes s s
+  | .reg t _ _ => ⟨rfl, tagLeB_refl t, fun _ h => h⟩
+  | .irr _ _ _ => ⟨rfl, CtxEq.refl _, fun _ h => h⟩
+
+theorem tagLeB_trans : ∀ {t₁ t₂ t₃ : Tag}, tagLeB t₁ t₂ = true →
+    tagLeB t₂ t₃ = true → tagLeB t₁ t₃ = true := by
+  intro t₁ t₂ t₃ h₁ h₂
+  cases t₁ <;> cases t₂ <;> cases t₃ <;> simp_all [tagLeB]
+
+/-- Subsumption is transitive. -/
+theorem wSubsumes_trans {s₁ s₂ s₃ : WSeq} (h₁ : WSubsumes s₁ s₂)
+    (h₂ : WSubsumes s₂ s₃) : WSubsumes s₁ s₃ := by
+  cases s₁ with
+  | reg t₁ Γ₁ C₁ =>
+      cases s₂ with
+      | reg t₂ Γ₂ C₂ =>
+          cases s₃ with
+          | reg t₃ Γ₃ C₃ =>
+              obtain ⟨e₁, l₁, g₁⟩ := h₁
+              obtain ⟨e₂, l₂, g₂⟩ := h₂
+              exact ⟨e₁.trans e₂, tagLeB_trans l₁ l₂, fun _ hx => g₂ (g₁ hx)⟩
+          | irr _ _ _ => exact h₂.elim
+      | irr _ _ _ => exact h₁.elim
+  | irr St₁ Th₁ C₁ =>
+      cases s₂ with
+      | reg _ _ _ => exact h₁.elim
+      | irr St₂ Th₂ C₂ =>
+          cases s₃ with
+          | reg _ _ _ => exact h₂.elim
+          | irr St₃ Th₃ C₃ =>
+              obtain ⟨e₁, q₁, g₁⟩ := h₁
+              obtain ⟨e₂, q₂, g₂⟩ := h₂
+              exact ⟨e₁.trans e₂, q₁.trans q₂, fun _ hx => g₂ (g₁ hx)⟩
+
+/-! ### The deciders: finite scans over the stored list -/
+
+/-- The irregular query is decidable over a stored list. -/
+def decWEvalI (rows : List WSeq) (Ω : List Form) (C : Form) :
+    Decidable (WEvalI (· ∈ rows) Ω C) :=
+  decidable_of_iff (rows.any (fun s =>
+      match s with
+      | .irr St Th C' =>
+          decide (C' = C) && subB St Ω && subB Ω (St ++ Th)
+      | _ => false) = true) (by
+    simp only [List.any_eq_true]
+    constructor
+    · rintro ⟨s, hs, hp⟩
+      match s, hp with
+      | .irr St Th C', hp =>
+          simp only [Bool.and_eq_true, decide_eq_true_eq, subB,
+            List.all_eq_true, decide_eq_true_eq] at hp
+          obtain ⟨⟨hC, hSt⟩, hΩ⟩ := hp
+          subst hC
+          exact ⟨St, Th, hs, fun x hx => hSt x hx, fun x hx => hΩ x hx⟩
+    · rintro ⟨St, Th, hmem, hSt, hΩ⟩
+      refine ⟨.irr St Th C, hmem, ?_⟩
+      simp only [Bool.and_eq_true, decide_eq_true_eq, subB,
+        List.all_eq_true, decide_eq_true_eq]
+      exact ⟨⟨trivial, fun x hx => hSt hx⟩, fun x hx => hΩ hx⟩)
+
+/-- The plain regular query is decidable over a stored list. -/
+def decWEvalR (rows : List WSeq) (Ψ : List Form) (C : Form) :
+    Decidable (WEvalR (· ∈ rows) Ψ C) :=
+  decidable_of_iff (rows.any (fun s =>
+      match s with
+      | .reg _ Γ C' => decide (C' = C) && Ψ.all (cloB Γ)
+      | _ => false) = true) (by
+    simp only [List.any_eq_true]
+    constructor
+    · rintro ⟨s, hs, hp⟩
+      match s, hp with
+      | .reg t Γ C', hp =>
+          simp only [Bool.and_eq_true, decide_eq_true_eq,
+            List.all_eq_true] at hp
+          obtain ⟨hC, hclo⟩ := hp
+          subst hC
+          exact ⟨t, Γ, hs, fun X hX => cloB_iff.mp (hclo X hX)⟩
+    · rintro ⟨t, Γ, hmem, hclo⟩
+      refine ⟨.reg t Γ C, hmem, ?_⟩
+      simp only [Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true]
+      exact ⟨trivial, fun X hX => cloB_iff.mpr (hclo X hX)⟩)
+
+/-- The pledged regular query is decidable over a stored list
+(`decPledge` supplies the tag test). -/
+def decWEvalRP (rows : List WSeq) (Ψ : List Form) (C : Form) :
+    Decidable (WEvalRP (· ∈ rows) Ψ C) :=
+  decidable_of_iff (rows.any (fun s =>
+      match s with
+      | .reg t Γ C' =>
+          decide (C' = C) && Ψ.all (cloB Γ) &&
+            decide (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W C)
+      | _ => false) = true) (by
+    simp only [List.any_eq_true]
+    constructor
+    · rintro ⟨s, hs, hp⟩
+      match s, hp with
+      | .reg t Γ C', hp =>
+          simp only [Bool.and_eq_true, decide_eq_true_eq,
+            List.all_eq_true] at hp
+          obtain ⟨⟨hC, hclo⟩, htag⟩ := hp
+          subst hC
+          exact ⟨t, Γ, hs, htag, fun X hX => cloB_iff.mp (hclo X hX)⟩
+    · rintro ⟨t, Γ, hmem, htag, hclo⟩
+      refine ⟨.reg t Γ C, hmem, ?_⟩
+      simp only [Bool.and_eq_true, decide_eq_true_eq, List.all_eq_true]
+      exact ⟨⟨trivial, fun X hX => cloB_iff.mpr (hclo X hX)⟩, htag⟩)
+
+/-! ### The assembly -/
+
+/-- A stored row list whose membership predicate subsumes every
+derivable row is a saturated database. -/
+theorem wsat_of_closed {G : Form} (db : List (WRow G))
+    (h2 : ∀ s, WDerivable G s → ∃ r ∈ db, WSubsumes s r.s) :
+    WSaturated G (fun s => s ∈ db.map (·.s)) := by
+  constructor
+  · intro s hs
+    obtain ⟨r, _, hrs⟩ := List.mem_map.mp hs
+    exact hrs ▸ wDerivable_of_wDer r.d
+  · intro s hs
+    obtain ⟨r, hr, hsub⟩ := h2 s hs
+    exact ⟨r.s, List.mem_map.mpr ⟨r, hr, rfl⟩, hsub⟩
+
+/-- **`decideGbuW`, modulo the closed database.**  From any
+derivation-carrying row list subsuming every derivable row, the
+simultaneous decision follows through `dichotomyW`.  The construction
+of such a list per `G` (the computed closure, T-C) is the ONLY
+remaining obligation. -/
+def decideGbuW_of {G : Form} (db : List (WRow G))
+    (h2 : ∀ s, WDerivable G s → ∃ r ∈ db, WSubsumes s r.s) :
+    ProvableGbuC G ⊕' DisprovableW G :=
+  match dichotomyW (wsat_of_closed db h2)
+      (fun Ω C => decWEvalI (db.map (·.s)) Ω C)
+      (fun Ψ C => decWEvalRP (db.map (·.s)) Ψ C)
+      (decWEvalR (db.map (·.s)) [] G) with
+  | .inl hdis => .inr hdis
+  | .inr d => .inl ⟨d⟩
+
+end Gbu.W
+
 /-! ## Pins -/
 
 /-- info: 'FRJ.keptChain_sub_keptOf_of_le' depends on axioms: [propext, Quot.sound] -/
@@ -1005,5 +1171,21 @@ theorem tagWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
 /-- info: 'FRJ.tagWr' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms tagWr
+
+/-- info: 'FRJ.Gbu.W.wSubsumes_refl' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms Gbu.W.wSubsumes_refl
+
+/-- info: 'FRJ.Gbu.W.wSubsumes_trans' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms Gbu.W.wSubsumes_trans
+
+/-- info: 'FRJ.Gbu.W.wsat_of_closed' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms Gbu.W.wsat_of_closed
+
+/-- info: 'FRJ.Gbu.W.decideGbuW_of' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms Gbu.W.decideGbuW_of
 
 end FRJ
