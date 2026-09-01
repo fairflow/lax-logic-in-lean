@@ -700,4 +700,478 @@ theorem circGuard_intro {pool : List Form} {P : Form → Prop}
     ∀ x ∈ pool, ∀ Y, x = Form.circ Y → P Y :=
   fun _ hx Y he => h Y (he ▸ hx)
 
+/-! ## S4: the emitters
+
+Each emitter fires one rule at every stored premise combination,
+guarded by a `dite` on the rule's OWN hypotheses (all decidable), so
+the emitted row carries its derivation by the constructor.  Coverage
+(S5) will show each `DBClosed` clause instance, reindexed to stored
+sublists, is emitted. -/
+
+/-- The two-sided filter split of a zone by a parameter list. -/
+theorem filter_split_pre (L Lam : List Form) :
+    L ≐ L.filter (fun x => !decide (x ∈ Lam)) ++
+      L.filter (fun x => decide (x ∈ Lam)) := by
+  intro x
+  simp only [List.mem_append, List.mem_filter, Bool.not_eq_eq_eq_not,
+    Bool.not_true, decide_eq_true_eq, decide_eq_false_iff_not]
+  constructor
+  · intro hx
+    by_cases hL : x ∈ Lam
+    · exact Or.inr ⟨hx, hL⟩
+    · exact Or.inl ⟨hx, hL⟩
+  · rintro (⟨hx, -⟩ | ⟨hx, -⟩) <;> exact hx
+
+theorem filter_split_disj (L Lam : List Form) :
+    cap (L.filter (fun x => !decide (x ∈ Lam)))
+      (L.filter (fun x => decide (x ∈ Lam))) = [] := by
+  refine List.eq_nil_of_subset_nil (fun x hx => ?_)
+  have h := mem_cap.mp hx
+  have h₁ := List.mem_filter.mp h.1
+  have h₂ := List.mem_filter.mp h.2
+  rw [Bool.not_eq_eq_eq_not, Bool.not_true, decide_eq_false_iff_not] at h₁
+  rw [decide_eq_true_eq] at h₂
+  exact absurd h₂.2 h₁.2
+
+section Emitters
+
+variable (G : Form)
+
+/-- `Ax^R`. -/
+def emitAxR : List (WRow G) :=
+  (goalPool G).filterMap (fun F =>
+    if h : F.isPrime = true ∧ F ∈ sfR G then
+      some ⟨.reg .barren (rm (gAt G) F) F, .axR F h.1 h.2 (CtxEq.refl _)⟩
+    else none)
+
+/-- `Ax^I`. -/
+def emitAxI : List (WRow G) :=
+  (goalPool G).filterMap (fun F =>
+    if h : F.isPrime = true ∧ F ∈ sfR G then
+      some ⟨.irr [] (rm (gAt G) F ++ gImp G ++ gCirc G) F,
+        .axI F h.1 h.2 (CtxEq.refl _)⟩
+    else none)
+
+/-- `Ax^I◯`, over the canonical valuations. -/
+def emitAxIC : List (WRow G) :=
+  (goalPool G).flatMap (fun X =>
+    match X with
+    | .circ F =>
+        (gAt G).sublists.filterMap (fun ats =>
+          if h : (∀ x ∈ ats, x ∈ gAt G) ∧ classForce ats F = false ∧
+              Form.circ F ∈ sfR G then
+            some ⟨.irr [] (vacZoneA G ats) (.circ F),
+              .axIC F ats h.1 h.2.1 h.2.2 (CtxEq.refl _)⟩
+          else none)
+    | _ => [])
+
+variable (db : List (WRow G))
+
+/-- `∧R` (both sides). -/
+def emitAndR : List (WRow G) :=
+  (regTs db).flatMap (fun tr =>
+    (goalPool G).filterMap (fun X =>
+      match X with
+      | .and A₁ A₂ =>
+          if h : A₁ = tr.C ∧ Form.and A₁ A₂ ∈ sfR G then
+            some ⟨.reg tr.t tr.Γ (.and A₁ A₂), .andR1 (h.1 ▸ tr.d) h.2⟩
+          else if h : A₂ = tr.C ∧ Form.and A₁ A₂ ∈ sfR G then
+            some ⟨.reg tr.t tr.Γ (.and A₁ A₂), .andR2 (h.1 ▸ tr.d) h.2⟩
+          else none
+      | _ => none))
+
+/-- `⊃∈`. -/
+def emitImpIn : List (WRow G) :=
+  (regTs db).flatMap (fun tr =>
+    (goalPool G).filterMap (fun X =>
+      match X with
+      | .imp A B =>
+          if h : B = tr.C ∧ Clo tr.Γ A ∧ Form.imp A B ∈ sfR G then
+            some ⟨.reg tr.t tr.Γ (.imp A B),
+              .impIn (h.1 ▸ tr.d) h.2.1 h.2.2⟩
+          else none
+      | _ => none))
+
+/-- `◯∈`. -/
+def emitCircIn : List (WRow G) :=
+  (regTs db).flatMap (fun tr =>
+    (goalPool G).filterMap (fun X =>
+      match X with
+      | .circ Z =>
+          if h : Z = tr.C ∧
+              (tr.t = .barren ∨ ∃ W, tr.t = .chain W ∧ Covers tr.Γ W Z) ∧
+              Form.circ Z ∈ sfR G then
+            some ⟨.reg tr.t tr.Γ (.circ Z),
+              .circIn (h.1 ▸ tr.d) h.2.1 h.2.2⟩
+          else none
+      | _ => none))
+
+/-- `∧I` (both sides). -/
+def emitAndI : List (WRow G) :=
+  (irrTs db).flatMap (fun tr =>
+    (goalPool G).filterMap (fun X =>
+      match X with
+      | .and A₁ A₂ =>
+          if h : A₁ = tr.C ∧ Form.and A₁ A₂ ∈ sfR G then
+            some ⟨.irr tr.St tr.Th (.and A₁ A₂), .andI1 (h.1 ▸ tr.d) h.2⟩
+          else if h : A₂ = tr.C ∧ Form.and A₁ A₂ ∈ sfR G then
+            some ⟨.irr tr.St tr.Th (.and A₁ A₂), .andI2 (h.1 ▸ tr.d) h.2⟩
+          else none
+      | _ => none))
+
+/-- `∨I`. -/
+def emitOrI : List (WRow G) :=
+  (irrTs db).flatMap (fun tr₁ =>
+    (irrTs db).flatMap (fun tr₂ =>
+      (goalPool G).filterMap (fun X =>
+        match X with
+        | .or C₁ C₂ =>
+            if h : C₁ = tr₁.C ∧ C₂ = tr₂.C ∧
+                tr₁.St ⊆ tr₂.St ++ tr₂.Th ∧ tr₂.St ⊆ tr₁.St ++ tr₁.Th ∧
+                Form.or C₁ C₂ ∈ sfR G then
+              some ⟨.irr (tr₁.St ++ tr₂.St) (cap tr₁.Th tr₂.Th)
+                  (.or C₁ C₂),
+                .orI (h.1 ▸ tr₁.d) (h.2.1 ▸ tr₂.d) h.2.2.1 h.2.2.2.1
+                  h.2.2.2.2 (CtxEq.refl _) (CtxEq.refl _)⟩
+            else none
+        | _ => none)))
+
+/-- `⊃∈ᵢ`, over the canonical second-zone splits. -/
+def emitImpInI : List (WRow G) :=
+  (irrTs db).flatMap (fun tr =>
+    tr.Th.sublists.flatMap (fun Lam =>
+      (goalPool G).filterMap (fun X =>
+        match X with
+        | .imp A B =>
+            if h : B = tr.C ∧
+                Clo (tr.St ++ tr.Th.filter (fun x => decide (x ∈ Lam))) A ∧
+                Form.imp A B ∈ sfR G then
+              some ⟨.irr (tr.St ++ tr.Th.filter (fun x => decide (x ∈ Lam)))
+                  (tr.Th.filter (fun x => !decide (x ∈ Lam))) (.imp A B),
+                .impInI (h.1 ▸ tr.d) (filter_split_pre tr.Th Lam)
+                  (filter_split_disj tr.Th Lam) h.2.1 h.2.2
+                  (CtxEq.refl _) (CtxEq.refl _)⟩
+            else none
+        | _ => none)))
+
+/-- `Lift`, at the maximal retained zone. -/
+def emitLift : List (WRow G) :=
+  (regTs db).map (fun tr => ⟨.irr [] (maxTh G tr.Γ) tr.C, lift_max tr.d⟩)
+
+/-- `◯∉`, at the maximal retained zone. -/
+def emitCircNotIn : List (WRow G) :=
+  (regTs db).filterMap (fun tr =>
+    if h : (tr.t = .barren ∨ ∃ W, tr.t = .chain W ∧ Covers tr.Γ W tr.C) ∧
+        Form.circ tr.C ∈ sfR G then
+      some ⟨.irr [] (maxTh G tr.Γ) (.circ tr.C),
+        circNotIn_max tr.d (fun _ hx => hx) (tagLeB_refl _) h.1 h.2⟩
+    else none)
+
+end Emitters
+
+/-- Decidable list inclusion (via `subB`), kept local to avoid instance
+surprises. -/
+instance decListSubset (l m : List Form) : Decidable (l ⊆ m) :=
+  decidable_of_iff (∀ x ∈ l, x ∈ m)
+    ⟨fun h _ hx => h _ hx, fun h _ hx => h hx⟩
+
+section JoinEmitters
+
+variable (G : Form) (db : List (WRow G))
+
+/-- Barren `⋈^◯`. -/
+def emitJoinCirc : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        let base := joinCtxOrVBase stabF thF
+        let kept := keptOf (upsilon rhsF) base (thPool thF)
+        (goalPool G).filterMap (fun X =>
+          match X with
+          | .circ Z =>
+              if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+                  (∀ x ∈ unionAll (fun j => impPart (stabF j)), ∀ A B : Form,
+                    x = Form.imp A B →
+                    RefAt true (upsilon rhsF) (base ++ kept) A) ∧
+                  unionAll (fun j => circPart (stabF j)) = [] ∧
+                  RefAt true (upsilon rhsF) (base ++ kept) Z ∧
+                  Form.circ Z ∈ sfR G then
+                some ⟨.reg .barren (base ++ kept) (.circ Z),
+                  .joinCirc (fun j => ((a :: t).get j).d) h.1
+                    (impGuard_elim h.2.1) h.2.2.1 (keptOf_ok _ _ _)
+                    h.2.2.2.1 h.2.2.2.2 (CtxEq.refl _)⟩
+              else none
+          | _ => none))
+
+/-- Barren `⋈^∨`. -/
+def emitJoinOr : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        let base := joinCtxOrVBase stabF thF
+        let kept := keptOf (upsilon rhsF) base (thPool thF)
+        (goalPool G).filterMap (fun X =>
+          match X with
+          | .or C₁ C₂ =>
+              if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+                  (∀ x ∈ unionAll (fun j => impPart (stabF j)), ∀ A B : Form,
+                    x = Form.imp A B → A ∈ upsilon rhsF) ∧
+                  unionAll (fun j => circPart (stabF j)) = [] ∧
+                  (RefAt true (upsilon rhsF) (base ++ kept) C₁ ∧
+                    RefAt true (upsilon rhsF) (base ++ kept) C₂) ∧
+                  Form.or C₁ C₂ ∈ sfR G then
+                some ⟨.reg .barren (base ++ kept) (.or C₁ C₂),
+                  .joinOr (fun j => ((a :: t).get j).d) h.1
+                    (impGuard_elim h.2.1) h.2.2.1 (keptOf_ok _ _ _)
+                    h.2.2.2.1 h.2.2.2.2 (CtxEq.refl _)⟩
+              else none
+          | _ => none))
+
+/-- Barren `⋈^At`. -/
+def emitJoinAt : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        (goalPool G).filterMap (fun F =>
+          let base := joinCtxAtVBase stabF thF F
+          let kept := keptOf (upsilon rhsF) base (thPool thF)
+          if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+              (∀ x ∈ unionAll (fun j => impPart (stabF j)), ∀ A B : Form,
+                x = Form.imp A B → A ∈ upsilon rhsF) ∧
+              unionAll (fun j => circPart (stabF j)) = [] ∧
+              F.isPrime = true ∧
+              F ∉ unionAll (fun j => atPart (stabF j)) ∧
+              F ∈ sfR G then
+            some ⟨.reg .barren (base ++ kept) F,
+              .joinAt (fun j => ((a :: t).get j).d) h.1
+                (impGuard_elim h.2.1) h.2.2.1 (keptOf_ok _ _ _)
+                h.2.2.2.1 h.2.2.2.2.1 h.2.2.2.2.2 (CtxEq.refl _)⟩
+          else none))
+
+/-- Fallible `⋈^At`. -/
+def emitJoinAtF : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        (goalPool G).filterMap (fun F =>
+          if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+              (∀ x ∈ unionAll (fun j => impPart (stabF j)), ∀ A B : Form,
+                x = Form.imp A B → A ∈ upsilon rhsF) ∧
+              F.isPrime = true ∧
+              F ∉ unionAll (fun j => atPart (stabF j)) ∧
+              F ∈ sfR G then
+            some ⟨.reg .blocked (joinCtxAtF stabF thF rhsF F) F,
+              .joinAtF (fun j => ((a :: t).get j).d) h.1
+                (impGuard_elim h.2.1) h.2.2.1 h.2.2.2.1 h.2.2.2.2
+                (CtxEq.refl _)⟩
+          else none))
+
+/-- Fallible `⋈^∨`. -/
+def emitJoinOrF : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        (goalPool G).filterMap (fun X =>
+          match X with
+          | .or C₁ C₂ =>
+              if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+                  (∀ x ∈ unionAll (fun j => impPart (stabF j)), ∀ A B : Form,
+                    x = Form.imp A B → A ∈ upsilon rhsF) ∧
+                  (C₁ ∈ upsilon rhsF ∧ C₂ ∈ upsilon rhsF) ∧
+                  Form.or C₁ C₂ ∈ sfR G then
+                some ⟨.reg .blocked (joinCtxOrF stabF thF rhsF) (.or C₁ C₂),
+                  .joinOrF (fun j => ((a :: t).get j).d) h.1
+                    (impGuard_elim h.2.1) h.2.2.1 h.2.2.2 (CtxEq.refl _)⟩
+              else none
+          | _ => none))
+
+/-- Promise `⋈^At` (chain branch; the blocked branch is subsumed by the
+fallible join). -/
+def emitJoinAtP : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        (regTs db).sublists.flatMap (fun lr =>
+          match lr with
+          | [] => []
+          | b :: u =>
+              let tpsF : Fin (u.length + 1) → Tag :=
+                fun i => ((b :: u).get i).t
+              let ΔsF : Fin (u.length + 1) → List Form :=
+                fun i => ((b :: u).get i).Γ
+              let DsF : Fin (u.length + 1) → Form :=
+                fun i => ((b :: u).get i).C
+              (goalPool G).filterMap (fun F =>
+                if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+                    (∀ x ∈ unionAll (fun j => impPart (stabF j)),
+                      ∀ A B : Form, x = Form.imp A B → A ∈ upsilon rhsF) ∧
+                    (∀ x ∈ unionAll (fun j => circPart (stabF j)),
+                      ∀ Y : Form, x = Form.circ Y → ∃ i, Clo (ΔsF i) Y) ∧
+                    (∀ i j, ∀ X ∈ stabF j, Clo (ΔsF i) X) ∧
+                    (∀ i, DsF i = DsF 0 ∧
+                      (tpsF i = .barren ∨ ∃ W, tpsF i = .chain W ∧
+                        Covers (ΔsF i) W (DsF 0))) ∧
+                    F.isPrime = true ∧
+                    F ∉ unionAll (fun j => atPart (stabF j)) ∧
+                    F ∈ sfR G then
+                  some ⟨.reg (.chain (DsF 0))
+                      (joinCtxAtP stabF thF rhsF F ΔsF) F,
+                    .joinAtP (fun j => ((a :: t).get j).d)
+                      (fun i => ((b :: u).get i).d) h.1
+                      (impGuard_elim h.2.1) (circGuard_elim h.2.2.1)
+                      h.2.2.2.1 (Or.inr ⟨rfl, h.2.2.2.2.1⟩)
+                      h.2.2.2.2.2.1 h.2.2.2.2.2.2.1 h.2.2.2.2.2.2.2
+                      (CtxEq.refl _)⟩
+                else none)))
+
+/-- Promise `⋈^∨` (chain branch). -/
+def emitJoinOrP : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        (regTs db).sublists.flatMap (fun lr =>
+          match lr with
+          | [] => []
+          | b :: u =>
+              let tpsF : Fin (u.length + 1) → Tag :=
+                fun i => ((b :: u).get i).t
+              let ΔsF : Fin (u.length + 1) → List Form :=
+                fun i => ((b :: u).get i).Γ
+              let DsF : Fin (u.length + 1) → Form :=
+                fun i => ((b :: u).get i).C
+              (goalPool G).filterMap (fun X =>
+                match X with
+                | .or C₁ C₂ =>
+                    if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+                        (∀ x ∈ unionAll (fun j => impPart (stabF j)),
+                          ∀ A B : Form, x = Form.imp A B →
+                            A ∈ upsilon rhsF) ∧
+                        (∀ x ∈ unionAll (fun j => circPart (stabF j)),
+                          ∀ Y : Form, x = Form.circ Y →
+                            ∃ i, Clo (ΔsF i) Y) ∧
+                        (∀ i j, ∀ X ∈ stabF j, Clo (ΔsF i) X) ∧
+                        (∀ i, DsF i = DsF 0 ∧
+                          (tpsF i = .barren ∨ ∃ W, tpsF i = .chain W ∧
+                            Covers (ΔsF i) W (DsF 0))) ∧
+                        (C₁ ∈ upsilon rhsF ∧ C₂ ∈ upsilon rhsF) ∧
+                        Form.or C₁ C₂ ∈ sfR G then
+                      some ⟨.reg (.chain (DsF 0))
+                          (joinCtxOrP stabF thF rhsF ΔsF) (.or C₁ C₂),
+                        .joinOrP (fun j => ((a :: t).get j).d)
+                          (fun i => ((b :: u).get i).d) h.1
+                          (impGuard_elim h.2.1) (circGuard_elim h.2.2.1)
+                          h.2.2.2.1 (Or.inr ⟨rfl, h.2.2.2.2.1⟩)
+                          h.2.2.2.2.2.1 h.2.2.2.2.2.2 (CtxEq.refl _)⟩
+                    else none
+                | _ => none)))
+
+/-- Promise `⋈^◯`. -/
+def emitJoinCircP : List (WRow G) :=
+  (irrTs db).sublists.flatMap (fun l =>
+    match l with
+    | [] => []
+    | a :: t =>
+        let stabF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).St
+        let thF : Fin (t.length + 1) → List Form :=
+          fun j => ((a :: t).get j).Th
+        let rhsF : Fin (t.length + 1) → Form :=
+          fun j => ((a :: t).get j).C
+        (regTs db).sublists.flatMap (fun lr =>
+          match lr with
+          | [] => []
+          | b :: u =>
+              let tpsF : Fin (u.length + 1) → Tag :=
+                fun i => ((b :: u).get i).t
+              let ΔsF : Fin (u.length + 1) → List Form :=
+                fun i => ((b :: u).get i).Γ
+              let DsF : Fin (u.length + 1) → Form :=
+                fun i => ((b :: u).get i).C
+              (goalPool G).filterMap (fun X =>
+                match X with
+                | .circ Z =>
+                    if h : (∀ i j, i ≠ j → stabF i ⊆ stabF j ++ thF j) ∧
+                        (∀ x ∈ unionAll (fun j => impPart (stabF j)),
+                          ∀ A B : Form, x = Form.imp A B →
+                            A ∈ upsilon rhsF) ∧
+                        (∀ x ∈ unionAll (fun j => circPart (stabF j)),
+                          ∀ Y : Form, x = Form.circ Y →
+                            ∃ i, Clo (ΔsF i) Y) ∧
+                        (∀ i j, ∀ X ∈ stabF j, Clo (ΔsF i) X) ∧
+                        (∀ i, DsF i = Z ∧
+                          (tpsF i = .barren ∨ ∃ W, tpsF i = .chain W ∧
+                            Covers (ΔsF i) W Z)) ∧
+                        Z ∈ upsilon rhsF ∧
+                        Form.circ Z ∈ sfR G then
+                      some ⟨.reg (.chain Z)
+                          (joinCtxOrP stabF thF rhsF ΔsF) (.circ Z),
+                        .joinCircP (fun j => ((a :: t).get j).d)
+                          (fun i => ((b :: u).get i).d) h.1
+                          (impGuard_elim h.2.1) (circGuard_elim h.2.2.1)
+                          h.2.2.2.1 h.2.2.2.2.1
+                          h.2.2.2.2.2.1 h.2.2.2.2.2.2 (CtxEq.refl _)⟩
+                    else none
+                | _ => none)))
+
+end JoinEmitters
+
+/-- One saturation step: every rule fired at every stored combination. -/
+def stepAll (G : Form) (db : List (WRow G)) : List (WRow G) :=
+  emitAxR G ++ emitAxI G ++ emitAxIC G ++
+    emitAndR G db ++ emitImpIn G db ++ emitCircIn G db ++
+    emitAndI G db ++ emitOrI G db ++ emitImpInI G db ++
+    emitLift G db ++ emitCircNotIn G db ++
+    emitJoinAt G db ++ emitJoinOr G db ++ emitJoinCirc G db ++
+    emitJoinAtF G db ++ emitJoinOrF G db ++
+    emitJoinAtP G db ++ emitJoinOrP G db ++ emitJoinCircP G db
+
 end FRJ.Gbu.W
