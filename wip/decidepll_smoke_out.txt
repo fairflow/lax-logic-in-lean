@@ -1,0 +1,7 @@
+# decidePLL smoke probe — 2026-09-01 21:15 BST — interpreted, untrusted evidence
+# gate-watch: atom cell run with expected=true first -> FAIL observed, then restored
+atom: decidePLL=false expected=false PASS
+bot: decidePLL=false expected=false PASS
+circbot: decidePLL=false expected=false PASS
+impid: decidePLL=true expected=true PASS
+unit: decidePLL=true expected=true PASS
