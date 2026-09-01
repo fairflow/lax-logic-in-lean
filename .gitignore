@@ -27,3 +27,4 @@ __pycache__/
 # against the toolkit; one was committed by mistake at 8faed16.
 tmp*.lean
 _*.lean
+runs/
