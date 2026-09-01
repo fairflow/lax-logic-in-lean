@@ -1088,6 +1088,600 @@ def decideGbuW_of {G : Form} (db : List (WRow G))
   | .inl hdis => .inr hdis
   | .inr d => .inl ⟨d⟩
 
+/-! ### Decidable subsumption and choice-free subsumer extraction
+
+The T-C induction turns per-premise existence of stored subsumers into
+FAMILIES (functions into zones) without choice: `List.find?` over the
+decidable subsumption test skolemises. -/
+
+/-- Decision procedure for `WSubsumes`. -/
+def subsumesB : WSeq → WSeq → Bool
+  | .reg t₁ Γ₁ C₁, .reg t₂ Γ₂ C₂ =>
+      decide (C₁ = C₂) && tagLeB t₁ t₂ && subB Γ₁ Γ₂
+  | .irr St₁ Th₁ C₁, .irr St₂ Th₂ C₂ =>
+      decide (C₁ = C₂) && subB St₁ St₂ && subB St₂ St₁ && subB Th₁ Th₂
+  | _, _ => false
+
+theorem subsumesB_iff : ∀ {s₁ s₂ : WSeq},
+    subsumesB s₁ s₂ = true ↔ WSubsumes s₁ s₂ := by
+  intro s₁ s₂
+  cases s₁ with
+  | reg t₁ Γ₁ C₁ =>
+      cases s₂ with
+      | reg t₂ Γ₂ C₂ =>
+          simp only [subsumesB, WSubsumes, Bool.and_eq_true,
+            decide_eq_true_eq, subB, List.all_eq_true, decide_eq_true_eq]
+          constructor
+          · rintro ⟨⟨hC, hle⟩, hsub⟩
+            exact ⟨hC, hle, fun x hx => hsub x hx⟩
+          · rintro ⟨hC, hle, hsub⟩
+            exact ⟨⟨hC, hle⟩, fun x hx => hsub hx⟩
+      | irr _ _ _ =>
+          simp only [subsumesB, WSubsumes]
+          exact ⟨fun h => Bool.noConfusion h, False.elim⟩
+  | irr St₁ Th₁ C₁ =>
+      cases s₂ with
+      | reg _ _ _ =>
+          simp only [subsumesB, WSubsumes]
+          exact ⟨fun h => Bool.noConfusion h, False.elim⟩
+      | irr St₂ Th₂ C₂ =>
+          simp only [subsumesB, WSubsumes, Bool.and_eq_true,
+            decide_eq_true_eq, subB, List.all_eq_true, decide_eq_true_eq]
+          constructor
+          · rintro ⟨⟨⟨hC, h₁⟩, h₂⟩, hTh⟩
+            exact ⟨hC, fun x => ⟨fun hx => h₁ x hx, fun hx => h₂ x hx⟩,
+              fun x hx => hTh x hx⟩
+          · rintro ⟨hC, hq, hTh⟩
+            exact ⟨⟨⟨hC, fun x hx => (hq x).mp hx⟩,
+              fun x hx => (hq x).mpr hx⟩, fun x hx => hTh hx⟩
+
+instance decWSubsumes (s₁ s₂ : WSeq) : Decidable (WSubsumes s₁ s₂) :=
+  decidable_of_iff _ subsumesB_iff
+
+/-- The first stored subsumer of `s`, if any. -/
+def findSub {G : Form} (db : List (WRow G)) (s : WSeq) : Option (WRow G) :=
+  db.find? (fun r => subsumesB s r.s)
+
+theorem findSub_isSome_of_exists {G : Form} {db : List (WRow G)} {s : WSeq}
+    (h : ∃ r ∈ db, WSubsumes s r.s) : (findSub db s).isSome := by
+  obtain ⟨r, hr, hsub⟩ := h
+  simp only [findSub]
+  exact List.find?_isSome.mpr ⟨r, hr, subsumesB_iff.mpr hsub⟩
+
+theorem findSub_mem {G : Form} {db : List (WRow G)} {s : WSeq} {r : WRow G}
+    (h : findSub db s = some r) : r ∈ db := by
+  have h' : db.find? (fun r => subsumesB s r.s) = some r := by
+    simpa [findSub] using h
+  exact List.mem_of_find?_eq_some h'
+
+theorem findSub_sub {G : Form} {db : List (WRow G)} {s : WSeq} {r : WRow G}
+    (h : findSub db s = some r) : WSubsumes s r.s := by
+  have h' : db.find? (fun r => subsumesB s r.s) = some r := by
+    simpa [findSub] using h
+  exact subsumesB_iff.mp (by simpa using List.find?_some h')
+
+
+/-! ### The closedness interface: one clause per rule
+
+`DBClosed G db` says: every rule fired at STORED premise sequents, with
+its canonical kept chain and canonical conclusion context, has a stored
+subsumer.  The T-C induction below turns this into `WSaturated.2`; the
+closure computation's job (the last open layer) is to construct a `db`
+satisfying it, using the T-B `_mono` defs to carry the derivations. -/
+
+structure DBClosed (G : Form) (db : List (WRow G)) : Prop where
+  axR : ∀ F : Form, F.isPrime → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg .barren (rm (gAt G) F) F) r.s
+  andR1 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
+    (WSeq.reg t Γ A₁) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t Γ (.and A₁ A₂)) r.s
+  andR2 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
+    (WSeq.reg t Γ A₂) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t Γ (.and A₁ A₂)) r.s
+  impIn : ∀ (t : Tag) (Γ : List Form) (A B : Form),
+    (WSeq.reg t Γ B) ∈ db.map (·.s) → Clo Γ A → Form.imp A B ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t Γ (.imp A B)) r.s
+  circIn : ∀ (t : Tag) (Γ : List Form) (Z : Form),
+    (WSeq.reg t Γ Z) ∈ db.map (·.s) →
+    (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) →
+    Form.circ Z ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t Γ (.circ Z)) r.s
+  joinAt : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (F : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    unionAll (fun j => circPart (stab j)) = [] →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.reg .barren (joinCtxAtVBase stab th F ++
+        keptOf (upsilon rhs) (joinCtxAtVBase stab th F) (thPool th)) F) r.s
+  joinOr : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    unionAll (fun j => circPart (stab j)) = [] →
+    (RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₁ ∧
+      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₂) →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.reg .barren (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+        (.or C₁ C₂)) r.s
+  joinCirc : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (Z : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) A) →
+    unionAll (fun j => circPart (stab j)) = [] →
+    RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+      keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) Z →
+    Form.circ Z ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.reg .barren (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+        (.circ Z)) r.s
+  joinAtP : ∀ {n k : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (F : Form) (t' : Tag)
+    (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form)
+    (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxAtP stab th rhs F Δs) F) r.s
+  joinOrP : ∀ {n k : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form) (t' : Tag)
+    (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form)
+    (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxOrP stab th rhs Δs) (.or C₁ C₂)) r.s
+  joinCircP : ∀ {n k : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (Z : Form)
+    (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form)
+    (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i, Ds i = Z ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z)) →
+    Z ∈ upsilon rhs → Form.circ Z ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.reg (.chain Z) (joinCtxOrP stab th rhs Δs) (.circ Z)) r.s
+  joinAtF : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (F : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg .blocked (joinCtxAtF stab th rhs F) F) r.s
+  joinOrF : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.reg .blocked (joinCtxOrF stab th rhs) (.or C₁ C₂)) r.s
+  axI : ∀ F : Form, F.isPrime → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.irr [] (rm (gAt G) F ++ gImp G ++ gCirc G) F) r.s
+  andI1 : ∀ (St Th : List Form) (A₁ A₂ : Form),
+    (WSeq.irr St Th A₁) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.irr St Th (.and A₁ A₂)) r.s
+  andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
+    (WSeq.irr St Th A₂) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.irr St Th (.and A₁ A₂)) r.s
+  orI : ∀ (St₁ Th₁ St₂ Th₂ : List Form) (C₁ C₂ : Form),
+    (WSeq.irr St₁ Th₁ C₁) ∈ db.map (·.s) →
+    (WSeq.irr St₂ Th₂ C₂) ∈ db.map (·.s) →
+    St₁ ⊆ St₂ ++ Th₂ → St₂ ⊆ St₁ ++ Th₁ →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂)) r.s
+  impInI : ∀ (St₂ ThLam₂ Lam : List Form) (A B : Form),
+    (WSeq.irr St₂ ThLam₂ B) ∈ db.map (·.s) →
+    Clo (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam))) A →
+    Form.imp A B ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.irr (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)))
+        (ThLam₂.filter (fun x => !decide (x ∈ Lam))) (.imp A B)) r.s
+  lift : ∀ (t₂ : Tag) (Γ₂ : List Form) (C : Form),
+    (WSeq.reg t₂ Γ₂ C) ∈ db.map (·.s) →
+    ∃ r ∈ db, WSubsumes (.irr [] (maxTh G Γ₂) C) r.s
+  circNotIn : ∀ (t₂ : Tag) (Γ₂ : List Form) (Z : Form),
+    (WSeq.reg t₂ Γ₂ Z) ∈ db.map (·.s) →
+    (t₂ = .barren ∨ ∃ W, t₂ = .chain W ∧ Covers Γ₂ W Z) →
+    Form.circ Z ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.irr [] (maxTh G Γ₂) (.circ Z)) r.s
+  axIC : ∀ (F : Form) (ats : List Form), ats ⊆ gAt G →
+    classForce ats F = false → Form.circ F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.irr [] (vacZoneA G ats) (.circ F)) r.s
+
+/-! ### Shape extraction from a subsumption -/
+
+def tagOf : WSeq → Tag
+  | .reg t _ _ => t
+  | .irr _ _ _ => .blocked
+
+def ctxOf : WSeq → List Form
+  | .reg _ Γ _ => Γ
+  | .irr St Th _ => St ++ Th
+
+def stabOf : WSeq → List Form
+  | .irr St _ _ => St
+  | .reg _ Γ _ => Γ
+
+def thOf : WSeq → List Form
+  | .irr _ Th _ => Th
+  | .reg _ _ _ => []
+
+theorem irr_shape {St Th : List Form} {C : Form} :
+    ∀ {s : WSeq}, WSubsumes (.irr St Th C) s →
+      s = .irr (stabOf s) (thOf s) C ∧ stabOf s ≐ St ∧ Th ⊆ thOf s
+  | .reg _ _ _, h => h.elim
+  | .irr St' Th' C', h => by
+      obtain ⟨hC, hq, hTh⟩ := h
+      subst hC
+      exact ⟨rfl, hq.symm, hTh⟩
+
+theorem reg_shape {t : Tag} {Γ : List Form} {C : Form} :
+    ∀ {s : WSeq}, WSubsumes (.reg t Γ C) s →
+      s = .reg (tagOf s) (ctxOf s) C ∧ tagLeB t (tagOf s) = true ∧
+        Γ ⊆ ctxOf s
+  | .irr _ _ _, h => h.elim
+  | .reg t' Γ' C', h => by
+      obtain ⟨hC, hle, hΓ⟩ := h
+      subst hC
+      exact ⟨rfl, hle, hΓ⟩
+
+
+/-! ### Family skolemisation
+
+The induction hypothesis delivers, per premise, a Prop-level stored
+subsumer; the join clauses need FAMILIES (functions into zones).
+`List.find?` over the decidable subsumption test extracts them with no
+choice. -/
+
+structure IrrPick (G : Form) (db : List (WRow G)) {n : Nat}
+    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) where
+  stab' : Fin (n + 1) → List Form
+  th' : Fin (n + 1) → List Form
+  mem : ∀ j, (WSeq.irr (stab' j) (th' j) (rhs j)) ∈ db.map (·.s)
+  hst : ∀ j, stab' j ≐ stab j
+  hth : ∀ j, th j ⊆ th' j
+
+def irrPick {G : Form} {db : List (WRow G)} {n : Nat}
+    {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
+    (hex : ∀ j, ∃ r ∈ db, WSubsumes (.irr (stab j) (th j) (rhs j)) r.s) :
+    IrrPick G db stab th rhs :=
+  let pk := fun j => (findSub db (.irr (stab j) (th j) (rhs j))).get
+    (findSub_isSome_of_exists (hex j))
+  have hfs : ∀ j, findSub db (.irr (stab j) (th j) (rhs j)) = some (pk j) :=
+    fun j => (Option.some_get _).symm
+  have hshape := fun j => irr_shape (findSub_sub (hfs j))
+  { stab' := fun j => stabOf (pk j).s
+    th' := fun j => thOf (pk j).s
+    mem := fun j => by
+      rw [← (hshape j).1]
+      exact List.mem_map.mpr ⟨pk j, findSub_mem (hfs j), rfl⟩
+    hst := fun j => (hshape j).2.1
+    hth := fun j => (hshape j).2.2 }
+
+structure RegPick (G : Form) (db : List (WRow G)) {k : Nat}
+    (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form)
+    (Ds : Fin (k + 1) → Form) where
+  tps' : Fin (k + 1) → Tag
+  Δs' : Fin (k + 1) → List Form
+  mem : ∀ i, (WSeq.reg (tps' i) (Δs' i) (Ds i)) ∈ db.map (·.s)
+  hle : ∀ i, tagLeB (tps i) (tps' i) = true
+  hΔ : ∀ i, Δs i ⊆ Δs' i
+
+def regPick {G : Form} {db : List (WRow G)} {k : Nat}
+    {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form}
+    (hex : ∀ i, ∃ r ∈ db, WSubsumes (.reg (tps i) (Δs i) (Ds i)) r.s) :
+    RegPick G db tps Δs Ds :=
+  let pk := fun i => (findSub db (.reg (tps i) (Δs i) (Ds i))).get
+    (findSub_isSome_of_exists (hex i))
+  have hfs : ∀ i, findSub db (.reg (tps i) (Δs i) (Ds i)) = some (pk i) :=
+    fun i => (Option.some_get _).symm
+  have hshape := fun i => reg_shape (findSub_sub (hfs i))
+  { tps' := fun i => tagOf (pk i).s
+    Δs' := fun i => ctxOf (pk i).s
+    mem := fun i => by
+      rw [← (hshape i).1]
+      exact List.mem_map.mpr ⟨pk i, findSub_mem (hfs i), rfl⟩
+    hle := fun i => (hshape i).2.1
+    hΔ := fun i => (hshape i).2.2 }
+
+/-- Introduction forms of `WSubsumes` at known shapes (the match-Prop
+does not elaborate through `⟨…⟩` while a side is a metavariable). -/
+theorem wSubsumes_reg {t₁ t₂ : Tag} {Γ₁ Γ₂ : List Form} {C : Form}
+    (hle : tagLeB t₁ t₂ = true) (hΓ : Γ₁ ⊆ Γ₂) :
+    WSubsumes (.reg t₁ Γ₁ C) (.reg t₂ Γ₂ C) := ⟨rfl, hle, hΓ⟩
+
+theorem wSubsumes_irr {St₁ St₂ Th₁ Th₂ : List Form} {C : Form}
+    (hq : St₁ ≐ St₂) (hTh : Th₁ ⊆ Th₂) :
+    WSubsumes (.irr St₁ Th₁ C) (.irr St₂ Th₂ C) := ⟨rfl, hq, hTh⟩
+
+/-! ### The T-C induction
+
+`DBClosed` plus the T-B transfer lemmas turn every derivation into a
+stored subsumer, by structural induction. -/
+
+mutual
+
+theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
+    ∀ {t : Tag} {Γ : List Form} {C : Form},
+      FRJWr G t Γ C → ∃ r ∈ db, WSubsumes (.reg t Γ C) r.s
+  | _, _, _, .axR F hF hg hΓ => by
+      obtain ⟨r, hr, hsub⟩ := hcl.axR F hF hg
+      exact ⟨r, hr, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hΓ.subset) hsub⟩
+  | _, _, _, .andR1 (A₁ := A₁) (A₂ := A₂) d hg => by
+      obtain ⟨r, hr, hsub⟩ := tCr hcl d
+      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andR1 (tagOf r.s) (ctxOf r.s) A₁ A₂
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
+      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+  | _, _, _, .andR2 (A₁ := A₁) (A₂ := A₂) d hg => by
+      obtain ⟨r, hr, hsub⟩ := tCr hcl d
+      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andR2 (tagOf r.s) (ctxOf r.s) A₁ A₂
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
+      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+  | _, _, _, .impIn (A := A) (B := B) d hA hg => by
+      obtain ⟨r, hr, hsub⟩ := tCr hcl d
+      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.impIn (tagOf r.s) (ctxOf r.s) A B
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
+        (clo_mono hΓ hA) hg
+      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+  | _, _, _, .circIn (Z := Z) d htag hg => by
+      obtain ⟨r, hr, hsub⟩ := tCr hcl d
+      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.circIn (tagOf r.s) (ctxOf r.s) Z
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
+        (pledge_of_le hle hΓ htag) hg
+      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+  | _, _, _, .joinAt (stab := stab) (th := th) (rhs := rhs) (F := F)
+      (kept := kept) prem hJ1 hJ2 hcirc hkc hF hFnot hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      have hsubctx := joinAt_ctx_sub pk.hst pk.hth hkc
+      obtain ⟨r, hr, hsub⟩ := hcl.joinAt pk.stab' pk.th' rhs F pk.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (hJ2_strict_of_swap pk.hst hJ2)
+        (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
+        hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+  | _, _, _, .joinAtP (stab := stab) (th := th) (rhs := rhs) (F := F)
+      (t' := t') (tps := tps) (Δs := Δs) (Ds := Ds)
+      prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      let rp := regPick (fun i => tCr hcl (dps i))
+      have hsubctx : joinCtxAtP stab th rhs F Δs ⊆
+          joinCtxAtP pk.stab' pk.th' rhs F rp.Δs' :=
+        joinCtxAtP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
+      obtain ⟨r, hr, hsub⟩ := hcl.joinAtP pk.stab' pk.th' rhs F t'
+        rp.tps' rp.Δs' Ds pk.mem rp.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (hJ2_strict_of_swap pk.hst hJ2)
+        (hJ5_of_swap pk.hst rp.hΔ hJ5)
+        (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
+        (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
+          pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
+        hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+  | _, _, _, .joinAtF (stab := stab) (th := th) (rhs := rhs) (F := F)
+      prem hJ1 hJ2 hF hFnot hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      have hsubctx : joinCtxAtF stab th rhs F ⊆
+          joinCtxAtF pk.stab' pk.th' rhs F :=
+        joinCtxAtF_mono (fun j => (pk.hst j).symm) pk.hth
+      obtain ⟨r, hr, hsub⟩ := hcl.joinAtF pk.stab' pk.th' rhs F pk.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (hJ2_strict_of_swap pk.hst hJ2)
+        hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+  | _, _, _, .joinOr (stab := stab) (th := th) (rhs := rhs)
+      (C₁ := C₁) (C₂ := C₂) (kept := kept)
+      prem hJ1 hJ2 hcirc hkc hC hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      have hsubctx := joinOr_ctx_sub pk.hst pk.hth hkc
+      obtain ⟨r, hr, hsub⟩ := hcl.joinOr pk.stab' pk.th' rhs C₁ C₂ pk.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (hJ2_strict_of_swap pk.hst hJ2)
+        (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
+        ⟨refAt_mono (fun _ h => h) hsubctx hC.1,
+         refAt_mono (fun _ h => h) hsubctx hC.2⟩ hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+  | _, _, _, .joinOrP (stab := stab) (th := th) (rhs := rhs)
+      (C₁ := C₁) (C₂ := C₂) (t' := t') (tps := tps) (Δs := Δs) (Ds := Ds)
+      prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      let rp := regPick (fun i => tCr hcl (dps i))
+      have hsubctx : joinCtxOrP stab th rhs Δs ⊆
+          joinCtxOrP pk.stab' pk.th' rhs rp.Δs' :=
+        joinCtxOrP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
+      obtain ⟨r, hr, hsub⟩ := hcl.joinOrP pk.stab' pk.th' rhs C₁ C₂ t'
+        rp.tps' rp.Δs' Ds pk.mem rp.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (hJ2_strict_of_swap pk.hst hJ2)
+        (hJ5_of_swap pk.hst rp.hΔ hJ5)
+        (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
+        (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
+          pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
+        hC hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+  | _, _, _, .joinOrF (stab := stab) (th := th) (rhs := rhs)
+      (C₁ := C₁) (C₂ := C₂) prem hJ1 hJ2 hC hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      have hsubctx : joinCtxOrF stab th rhs ⊆
+          joinCtxOrF pk.stab' pk.th' rhs :=
+        joinCtxOrF_mono (fun j => (pk.hst j).symm) pk.hth
+      obtain ⟨r, hr, hsub⟩ := hcl.joinOrF pk.stab' pk.th' rhs C₁ C₂ pk.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (hJ2_strict_of_swap pk.hst hJ2)
+        hC hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+  | _, _, _, .joinCirc (stab := stab) (th := th) (rhs := rhs) (Z := Z)
+      (kept := kept) prem hJ1 hJ2 hcirc hkc hZ hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      have hsubctx := joinOr_ctx_sub pk.hst pk.hth hkc
+      obtain ⟨r, hr, hsub⟩ := hcl.joinCirc pk.stab' pk.th' rhs Z pk.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (fun A B hAB => refAt_mono (fun _ h => h) hsubctx
+          (hJ2 A B (mem_unionAll_filter_of_ctxEq _ pk.hst hAB)))
+        (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
+        (refAt_mono (fun _ h => h) hsubctx hZ)
+        hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+  | _, _, _, .joinCircP (stab := stab) (th := th) (rhs := rhs) (Z := Z)
+      (tps := tps) (Δs := Δs) (Ds := Ds)
+      prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ => by
+      let pk := irrPick (fun j => tCi hcl (prem j))
+      let rp := regPick (fun i => tCr hcl (dps i))
+      have hsubctx : joinCtxOrP stab th rhs Δs ⊆
+          joinCtxOrP pk.stab' pk.th' rhs rp.Δs' :=
+        joinCtxOrP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
+      obtain ⟨r, hr, hsub⟩ := hcl.joinCircP pk.stab' pk.th' rhs Z
+        rp.tps' rp.Δs' Ds pk.mem rp.mem
+        (hJ1_of_swap pk.hst pk.hth hJ1)
+        (hJ2_strict_of_swap pk.hst hJ2)
+        (hJ5_of_swap pk.hst rp.hΔ hJ5)
+        (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
+        (fun i => ⟨(hDs i).1,
+          pledge_of_le (rp.hle i) (rp.hΔ i) (hDs i).2⟩)
+        hZ hg
+      exact ⟨r, hr, wSubsumes_trans
+        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+
+theorem tCi {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
+    ∀ {St Th : List Form} {C : Form},
+      FRJWi G St Th C → ∃ r ∈ db, WSubsumes (.irr St Th C) r.s
+  | _, _, _, .axI F hF hg hTh => by
+      obtain ⟨r, hr, hsub⟩ := hcl.axI F hF hg
+      exact ⟨r, hr, wSubsumes_trans (wSubsumes_irr (CtxEq.refl _) hTh.subset) hsub⟩
+  | _, _, _, .andI1 (A₁ := A₁) (A₂ := A₂) d hg => by
+      obtain ⟨r, hr, hsub⟩ := tCi hcl d
+      obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andI1 (stabOf r.s) (thOf r.s) A₁ A₂
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
+      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_irr hst.symm hth) hsub₂⟩
+  | _, _, _, .andI2 (A₁ := A₁) (A₂ := A₂) d hg => by
+      obtain ⟨r, hr, hsub⟩ := tCi hcl d
+      obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andI2 (stabOf r.s) (thOf r.s) A₁ A₂
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
+      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_irr hst.symm hth) hsub₂⟩
+  | _, _, _, .orI (C₁ := C₁) (C₂ := C₂) d₁ d₂ h₁ h₂ hg hSt hTh => by
+      obtain ⟨r₁, hr₁, hsub₁⟩ := tCi hcl d₁
+      obtain ⟨hshape₁, hst₁, hth₁⟩ := irr_shape hsub₁
+      obtain ⟨r₂, hr₂, hsub₂⟩ := tCi hcl d₂
+      obtain ⟨hshape₂, hst₂, hth₂⟩ := irr_shape hsub₂
+      obtain ⟨r₃, hr₃, hsub₃⟩ := hcl.orI (stabOf r₁.s) (thOf r₁.s)
+        (stabOf r₂.s) (thOf r₂.s) C₁ C₂
+        (by rw [← hshape₁]; exact List.mem_map.mpr ⟨r₁, hr₁, rfl⟩)
+        (by rw [← hshape₂]; exact List.mem_map.mpr ⟨r₂, hr₂, rfl⟩)
+        (fun x hx => by
+          rcases List.mem_append.mp (h₁ ((hst₁ x).mp hx)) with h | h
+          · exact List.mem_append_left _ ((hst₂ x).mpr h)
+          · exact List.mem_append_right _ (hth₂ h))
+        (fun x hx => by
+          rcases List.mem_append.mp (h₂ ((hst₂ x).mp hx)) with h | h
+          · exact List.mem_append_left _ ((hst₁ x).mpr h)
+          · exact List.mem_append_right _ (hth₁ h))
+        hg
+      have hpair := orI_mono_sub hst₁ hth₁ hst₂ hth₂ hSt hTh
+      exact ⟨r₃, hr₃, wSubsumes_trans (wSubsumes_irr hpair.1 hpair.2) hsub₃⟩
+  | _, _, _, .impInI (Lam := Lam) (A := A) (B := B) d hpre hdisj hA hg
+      hSt hTh => by
+      obtain ⟨r, hr, hsub⟩ := tCi hcl d
+      obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.impInI (stabOf r.s) (thOf r.s) Lam A B
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
+        (by
+          refine clo_mono (fun x hx => ?_) hA
+          rcases List.mem_append.mp hx with h | h
+          · exact List.mem_append_left _ ((hst x).mpr h)
+          · refine List.mem_append_right _ (List.mem_filter.mpr ⟨?_, by simpa using h⟩)
+            exact hth ((hpre x).mpr (List.mem_append_right _ h)))
+        hg
+      have hpair := impInI_mono_sub hst hth hpre hdisj hSt hTh
+      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_irr hpair.1 hpair.2) hsub₂⟩
+  | _, _, _, .lift d hTh => by
+      obtain ⟨r, hr, hsub⟩ := tCr hcl d
+      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.lift (tagOf r.s) (ctxOf r.s) _
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
+      exact ⟨r₂, hr₂, wSubsumes_trans
+        (wSubsumes_irr (CtxEq.refl _) (maxTh_sub hΓ hTh)) hsub₂⟩
+  | _, _, _, .circNotIn (Z := Z) d htag hTh hg => by
+      obtain ⟨r, hr, hsub⟩ := tCr hcl d
+      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
+      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.circNotIn (tagOf r.s) (ctxOf r.s) Z
+        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
+        (pledge_of_le hle hΓ htag) hg
+      exact ⟨r₂, hr₂, wSubsumes_trans
+        (wSubsumes_irr (CtxEq.refl _) (maxTh_sub hΓ hTh)) hsub₂⟩
+  | _, _, _, .axIC F ats hats hFf hg hTh => by
+      obtain ⟨r, hr, hsub⟩ := hcl.axIC F ats hats hFf hg
+      exact ⟨r, hr, wSubsumes_trans (wSubsumes_irr (CtxEq.refl _) hTh.subset) hsub⟩
+
+end
+
+/-- **T-C modulo closedness**: a `DBClosed` database subsumes every
+derivable row — `WSaturated.2` for its membership predicate. -/
+theorem tC_of_closed {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
+    ∀ s, WDerivable G s → ∃ r ∈ db, WSubsumes s r.s
+  | .reg _ _ _, ⟨d⟩ => tCr hcl d
+  | .irr _ _ _, ⟨d⟩ => tCi hcl d
+
+/-- **`decideGbuW` modulo `DBClosed`**: the decision follows from any
+derivation-carrying row list closed under the rules. -/
+def decideGbuW_of_dbClosed {G : Form} (db : List (WRow G))
+    (hcl : DBClosed G db) : ProvableGbuC G ⊕' DisprovableW G :=
+  decideGbuW_of db (tC_of_closed hcl)
+
 end Gbu.W
 
 /-! ## Pins -/
@@ -1187,5 +1781,17 @@ end Gbu.W
 /-- info: 'FRJ.Gbu.W.decideGbuW_of' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms Gbu.W.decideGbuW_of
+
+/-- info: 'FRJ.Gbu.W.subsumesB_iff' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms Gbu.W.subsumesB_iff
+
+/-- info: 'FRJ.Gbu.W.tC_of_closed' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms Gbu.W.tC_of_closed
+
+/-- info: 'FRJ.Gbu.W.decideGbuW_of_dbClosed' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms Gbu.W.decideGbuW_of_dbClosed
 
 end FRJ
