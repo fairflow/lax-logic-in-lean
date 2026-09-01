@@ -40,37 +40,40 @@ def LiftClosed (G : Form) (D : FSeq → Prop) : Prop :=
   ∀ (Γ Θ : List Form) (C : Form), D (.reg Γ C) →
     (∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) → D (.irr [] Θ C)
 
-/-! ## The repair cannot be a property of a database over FRJV
+/-! ## The repair had to be a rule, and now it is one
 
 The first plan draft made `(Lift)` a closure condition on the database and
-kept `Saturated G D`.  That is CONTRADICTORY, and the witness is the cell
-the whole campaign is about.
+kept `Saturated G D`.  Over `FRJV` as it stood that was CONTRADICTORY, and
+the witness was the cell the whole campaign is about: `Saturated G D`
+carries `IsDatabase G D : ∀ s, D s → FDerivable G s`, so saturation forces
+a regular row for `Gcc = ◯(◯p ⊃ p)` (`provableV_Gcc`), lift-closure then
+forces the irregular row `∅ ; ∅ → Gcc`, and the old
+`no_irregular_circ_imp_self` said no such FRJV disproof existed.  That
+argument was `not_saturated_liftClosed`.
 
-`Saturated G D` carries `IsDatabase G D : ∀ s, D s → FDerivable G s`, so
-every member must be FRJV-derivable.  Saturation forces a regular row for
-`Gcc = ◯(◯p ⊃ p)` (`provableV_Gcc`); lift-closure then forces the irregular
-row `∅ ; ∅ → Gcc`; and `no_irregular_circ_imp_self` says no such FRJV
-disproof exists.
+On 2026-09-01 `(Lift)` was added to `FRJVi` as the constructor `liftI`, and
+the argument inverts: the derivability relation is now lift-closed by the
+rule, so the hypothesis pair is satisfied rather than contradicted, with
+`FDerivable Gcc` itself as the witness.  `not_saturated_liftClosed` is
+therefore withdrawn — REFUTED by `saturated_and_liftClosed` below — and the
+campaign's design question is settled in the direction the screen predicted:
+`(Lift)` belongs in the calculus, and once there it costs nothing here. -/
 
-So `(Lift)` must extend the DERIVABILITY relation, not merely the database:
-a campaign that keeps `Saturated` unchanged has an unsatisfiable hypothesis
-and asserts nothing — the `CleanReg` failure again, one level up. -/
+/-- Derivability is lift-closed, by the rule. -/
+theorem liftClosed_fderivable (G : Form) : LiftClosed G (FDerivable G) := by
+  intro Γ Θ C hd hΘ
+  obtain ⟨t, ⟨d⟩⟩ := hd
+  exact ⟨.liftI d hΘ⟩
 
-theorem not_saturated_liftClosed :
-    ¬ ∃ D : FSeq → Prop, Saturated Gcc D ∧ LiftClosed Gcc D := by
-  rintro ⟨D, hsat, hlift⟩
-  obtain ⟨t, Γ, hd⟩ := provableV_Gcc
-  obtain ⟨s', hs'mem, hsub⟩ := hsat.2 (.reg Γ Gcc) ⟨t, hd⟩
-  match s', hsub with
-  | .reg Γ' _, ⟨rfl, _⟩ =>
-      have hirr : D (.irr [] [] Gcc) :=
-        hlift Γ' [] Gcc hs'mem (fun X hX => absurd hX List.not_mem_nil)
-      obtain ⟨d⟩ := hsat.1 _ hirr
-      exact FRJ.V.WCounter.no_irregular_circ_imp_self d
+/-- **`not_saturated_liftClosed` is REFUTED.**  The pair it declared
+unsatisfiable is satisfied by `FDerivable Gcc`. -/
+theorem saturated_and_liftClosed :
+    ∃ D : FSeq → Prop, Saturated Gcc D ∧ LiftClosed Gcc D :=
+  ⟨FDerivable Gcc, saturated_fderivable Gcc, liftClosed_fderivable Gcc⟩
 
-/-- info: 'FRJ.Gbu.X.not_saturated_liftClosed' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.X.saturated_and_liftClosed' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
-#print axioms not_saturated_liftClosed
+#print axioms saturated_and_liftClosed
 
 
 /-! ## X14 is REFUTED

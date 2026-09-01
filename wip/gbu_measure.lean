@@ -423,10 +423,10 @@ theorem not_evalR_of_valid {G : Form} {D : FSeq → Prop} (hD : IsDatabase G D)
   obtain ⟨K, a, hf, hnf⟩ := frjv_countermodel d
   exact hnf (hval K a (fun X hX => clo_forces hf (hcl X hX)))
 
-/-- The same for a `◯` goal in the irregular judgment.  Only two `FRJVi`
-rules can conclude `◯Z`: `circNotIn`, whose regular premise gives a
-countermodel and so contradicts validity, and `axIC`, which is excluded
-by the `classForce` computation `hax`. -/
+/-- The same for a `◯` goal in the irregular judgment.  Three `FRJVi`
+rules can conclude `◯Z`: `circNotIn` and `liftI`, whose regular premise
+gives a countermodel and so contradicts validity, and `axIC`, which is
+excluded by the `classForce` computation `hax`. -/
 theorem not_evalI_circ_of_valid {G : Form} {D : FSeq → Prop}
     (hD : IsDatabase G D) {Ω : List Form} {Z : Form}
     (hval : ∀ (K : Kripke) (a : K.W), K.forces a Ω → K.force a Z)
@@ -445,6 +445,15 @@ theorem not_evalI_circ_of_valid {G : Form} {D : FSeq → Prop}
   | circNotIn d' htag hTh hgoal =>
       obtain ⟨K, a, hf, hnf⟩ := frjv_countermodel d'
       refine hnf (hval K a (fun X hX => ?_))
+      have h := hΩ hX
+      rw [List.nil_append] at h
+      exact clo_forces hf (hTh X h).1
+  | liftI d' hTh =>
+      -- (Lift) concludes ANY goal from a regular row, `◯Z` included, so it
+      -- joins `◯∉` here.  Its premise refutes `◯Z` rather than `Z`, so the
+      -- validity hypothesis is transported across the unit `Z ⊨ ◯Z`.
+      obtain ⟨K, a, hf, hnf⟩ := frjv_countermodel d'
+      refine hnf (force_circ_of_force (hval K a (fun X hX => ?_)))
       have h := hΩ hX
       rw [List.nil_append] at h
       exact clo_forces hf (hTh X h).1

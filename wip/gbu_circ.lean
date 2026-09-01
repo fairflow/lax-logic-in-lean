@@ -697,6 +697,14 @@ theorem not_evalI_circ_of_valid' {G : Form} {D : FSeq → Prop}
       have h := hΩ hX
       rw [List.nil_append] at h
       exact clo_forces hf (hTh X h).1
+  | liftI d' hTh =>
+      -- (Lift): the premise is a row for `◯Z` itself, so no `◯∈` step is
+      -- needed and the tag condition is not consulted.
+      obtain ⟨K, a, hf, hnf⟩ := frjv_countermodel d'
+      refine hnf (hval K a (fun X hX => ?_))
+      have h := hΩ hX
+      rw [List.nil_append] at h
+      exact clo_forces hf (hTh X h).1
 
 /-! ### The cell
 
@@ -2145,6 +2153,24 @@ theorem gbuInv14 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
           exact ⟨St', Th', hs'mem,
             fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
             fun {x} hx => List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
+  | liftI dr hTh =>
+      -- (Lift): the same zone enlargement; the rule has no tag or goal
+      -- side condition to re-supply.
+      obtain ⟨s', hs'mem, hsub⟩ :=
+        hsat.2 (.irr [] (Ω ++ Th) (.circ Z))
+          ⟨.liftI dr (fun X hX => by
+              rcases List.mem_append.mp hX with hX' | hX'
+              · refine ⟨?_, hΩ X hX'⟩
+                refine clo_trans (fun Y hY => ?_) (hcl X hX')
+                exact (hTh Y (by
+                  have := h2 hY
+                  simpa using this)).1
+              · exact hTh X hX')⟩
+      match s', hsub with
+      | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
+          exact ⟨St', Th', hs'mem,
+            fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+            fun {x} hx => List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
   | axIC F ats hats hFf hgoal hThv =>
       -- `Ax^I◯`: the zone already contains `Ω`, classically
       refine ⟨[], Th, hmem, fun {x} hx => absurd hx List.not_mem_nil, ?_⟩
@@ -2289,6 +2315,8 @@ private theorem evalI_circ_lift {G : Form} {D : FSeq → Prop} (hsat : Saturated
       PProd (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W C) (FRJVr G t Γ C))
     (hcf : ∀ ats : List Form, (∀ Y ∈ Ω, classForce ats Y = true) →
       classForce ats C' = false → classForce ats C = false)
+    (hlift : ∀ {t : Tag} {Γ : List Form}, FRJVr G t Γ (.circ C') →
+      (∀ X ∈ Ω, Clo Γ X) → Nonempty (FRJVr G t Γ (.circ C)))
     (h : EvalI D Ω (.circ C')) : EvalI D Ω (.circ C) := by
   obtain ⟨St, Th, hmem, h1, h2⟩ := h
   obtain ⟨d⟩ := hsat.1 (.irr St Th (.circ C')) hmem
@@ -2299,6 +2327,18 @@ private theorem evalI_circ_lift {G : Form} {D : FSeq → Prop} (hsat : Saturated
       obtain ⟨htag', dr'⟩ := hder dr htag hcov
       obtain ⟨s', hs'mem, hsub⟩ :=
         hsat.2 (.irr [] Th (.circ C)) ⟨.circNotIn dr' htag' hTh hgoal⟩
+      match s', hsub with
+      | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
+          exact ⟨St', Th', hs'mem,
+            fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+            fun {x} hx => List.mem_append_right _ (hTh' (by simpa using h2 hx))⟩
+  | liftI dr hTh =>
+      -- (Lift): the premise is a row for `◯C'`, not for `C'`, so `hder`
+      -- does not reach it and a SECOND supply is needed — see `hlift`.
+      have hcov : ∀ X ∈ Ω, Clo _ X := fun X hX => (hTh X (by simpa using h2 hX)).1
+      obtain ⟨dr'⟩ := hlift dr hcov
+      obtain ⟨s', hs'mem, hsub⟩ :=
+        hsat.2 (.irr [] Th (.circ C)) ⟨.liftI dr' hTh⟩
       match s', hsub with
       | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
           exact ⟨St', Th', hs'mem,
@@ -2317,28 +2357,45 @@ private theorem evalI_circ_lift {G : Form} {D : FSeq → Prop} (hsat : Saturated
             fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
             fun {x} hx => List.mem_append_right _ (hTh' (by simpa using h2 hx))⟩
 
+/-! ### The four `cirr` inversions, now conditional on `(Lift)` transfer
+
+The `hlift` supply is the `(Lift)` branch, OPEN since 2026-09-01: no
+`FRJVr` rule builds a row for `◯C` out of a row for `◯C'` (the thirteen
+constructors are `axR andR1 andR2 impIn circIn joinAt joinAtP joinAtF
+joinOr joinOrP joinOrF joinCirc joinCircP`, and `circIn` — the only
+non-join rule concluding a `◯` goal — consumes the BODY).  So the four
+lemmas below are stated conditionally on it rather than proved outright.
+-/
+
 /-- `R∧ᵢ`, left conjunct. -/
 theorem evalI_circ_and1 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.circ (.and A B) ∈ sfR G)
+    (hlift : ∀ {t : Tag} {Γ : List Form}, FRJVr G t Γ (.circ A) →
+      (∀ X ∈ Ω, Clo Γ X) → Nonempty (FRJVr G t Γ (.circ (.and A B))))
     (h : EvalI D Ω (.circ A)) : EvalI D Ω (.circ (.and A B)) :=
   evalI_circ_lift hsat hgoal
     (fun dr htag _ => ⟨htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .andL hc⟩),
       .andR1 dr (sfR_circ hgoal)⟩)
-    (fun _ _ hf => by simp [classForce, hf]) h
+    (fun _ _ hf => by simp [classForce, hf]) hlift h
 
 /-- `R∧ᵢ`, right conjunct. -/
 theorem evalI_circ_and2 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.circ (.and A B) ∈ sfR G)
+    (hlift : ∀ {t : Tag} {Γ : List Form}, FRJVr G t Γ (.circ B) →
+      (∀ X ∈ Ω, Clo Γ X) → Nonempty (FRJVr G t Γ (.circ (.and A B))))
     (h : EvalI D Ω (.circ B)) : EvalI D Ω (.circ (.and A B)) :=
   evalI_circ_lift hsat hgoal
     (fun dr htag _ => ⟨htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .andR hc⟩),
       .andR2 dr (sfR_circ hgoal)⟩)
-    (fun _ _ hf => by simp [classForce, hf]) h
+    (fun _ _ hf => by simp [classForce, hf]) hlift h
 
 /-- `R⊃ᵢ` (the `Clo` branch). -/
 theorem evalI_circ_imp {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.circ (.imp A B) ∈ sfR G)
-    (hA : Clo Ω A) (h : EvalI D Ω (.circ B)) : EvalI D Ω (.circ (.imp A B)) :=
+    (hA : Clo Ω A)
+    (hlift : ∀ {t : Tag} {Γ : List Form}, FRJVr G t Γ (.circ B) →
+      (∀ X ∈ Ω, Clo Γ X) → Nonempty (FRJVr G t Γ (.circ (.imp A B))))
+    (h : EvalI D Ω (.circ B)) : EvalI D Ω (.circ (.imp A B)) :=
   evalI_circ_lift hsat hgoal
     (fun dr htag hcov =>
       let hAΓ : Clo _ A := clo_trans hcov hA
@@ -2346,16 +2403,18 @@ theorem evalI_circ_imp {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
         .impIn dr hAΓ (sfR_circ hgoal)⟩)
     (fun ats hall hf => by
       have : classForce ats A = true := clo_classForce hall hA
-      simp [classForce, this, hf]) h
+      simp [classForce, this, hf]) hlift h
 
 /-- `R◯ᵢ`. -/
 theorem evalI_circ_circ {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     {Ω : List Form} {Z : Form} (hgoal : Form.circ (.circ Z) ∈ sfR G)
+    (hlift : ∀ {t : Tag} {Γ : List Form}, FRJVr G t Γ (.circ Z) →
+      (∀ X ∈ Ω, Clo Γ X) → Nonempty (FRJVr G t Γ (.circ (.circ Z))))
     (h : EvalI D Ω (.circ Z)) : EvalI D Ω (.circ (.circ Z)) :=
   evalI_circ_lift hsat hgoal
     (fun dr htag _ => ⟨htag.elim Or.inl (fun ⟨W, hg, hc⟩ => Or.inr ⟨W, hg, .circ hc⟩),
       .circIn dr htag (sfR_circ hgoal)⟩)
-    (fun _ _ hf => hf) h
+    (fun _ _ hf => hf) hlift h
 
 /-! ### S3, re-framed
 

@@ -379,6 +379,24 @@ theorem gbuInv14' {G : Form} {D : FSeq → Prop} (hsat : SaturatedOver (LiftClos
             exact ⟨St', Th', hs'mem,
               fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
               fun {x} hx => List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
+    | liftI dr hTh =>
+        -- (Lift) as a RULE: the same zone enlargement as `◯∉`, with no tag
+        -- or goal side condition to re-supply.
+        obtain ⟨s', hs'mem, hsub⟩ :=
+          satInsert hsat (.irr [] (Ω ++ Th) (.circ Z))
+            ⟨.liftI dr (fun X hX => by
+                rcases List.mem_append.mp hX with hX' | hX'
+                · refine ⟨?_, hΩ X hX'⟩
+                  refine clo_trans (fun Y hY => ?_) (hcl X hX')
+                  exact (hTh Y (by
+                    have := h2 hY
+                    simpa using this)).1
+                · exact hTh X hX')⟩
+        match s', hsub with
+        | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
+            exact ⟨St', Th', hs'mem,
+              fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
+              fun {x} hx => List.mem_append_right _ (hTh' (List.mem_append_left _ hx))⟩
     | axIC F ats hats hFf hgoal hThv =>
         refine ⟨[], Th, hmem, fun {x} hx => absurd hx List.not_mem_nil, ?_⟩
         intro x hx

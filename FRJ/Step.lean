@@ -60,7 +60,7 @@ none, so they generate no instance of `↦`. -/
 inductive RuleName where
   | andR1 | andR2 | impIn | circIn | joinAt | joinAtP | joinAtF | joinOr
   | joinOrP | joinOrF | joinCirc | joinCircP | promAt | promOr | promCirc
-  | andI1 | andI2 | orI | impInI | impNotIn | circNotIn
+  | andI1 | andI2 | orI | impInI | impNotIn | circNotIn | liftI
   deriving DecidableEq
 
 /-! ## `↦_R`, `↦₀`, `↦`, `↦*` -/

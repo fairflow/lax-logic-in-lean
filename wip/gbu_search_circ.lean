@@ -1298,38 +1298,53 @@ theorem not_gbuIC_Gcc {G : Form} : ¬ Nonempty (GbuIC G [] Gcc) := by
     (soundIC (K := FRJ.V.modR GccWitness.2) d _
       (fun X hX => absurd hX List.not_mem_nil))
 
-/-- …and `FRJV(G)` has no irregular refutation of it either — over ANY
-context and for ANY `G`, so the regular mode's `∨` test can never
-succeed at this disjunct. -/
-theorem not_evalI_Gcc {G : Form} {Ω : List Form} :
-    ¬ EvalI (FDerivable G) Ω Gcc := by
-  rintro ⟨St, Th, ⟨d⟩, -, -⟩
-  exact FRJ.V.WCounter.no_irregular_circ_imp_self d
+/-- **`FRJV(Gcc)` DOES have an irregular disproof of `◯(◯p ⊃ p)`.**
 
-/-- **The `irr` clause of `SearchOkO` is REFUTED.** -/
-theorem not_searchOkO_irr :
-    ¬ SearchOkO Gcc (FDerivable Gcc) (.irr, [], Gcc) := by
-  intro h
-  refine not_gbuIC_Gcc (h (fun X hX => absurd hX List.not_mem_nil)
-    (fun _ X hX => absurd hX List.not_mem_nil) (sfR_self Gcc)
-    ⟨not_evalI_Gcc, [], (fun X hX => absurd hX List.not_mem_nil),
-      (fun X hX => absurd hX List.not_mem_nil), not_evalI_Gcc⟩)
+`GccWitness` is a regular disproof of `Gcc` at tag `barren`; `(Lift)`
+turns it into an irregular one with both zones empty.  So the hole
+diagnosed above — "FRJV has no irregular refutation of `◯(◯Z ⊃ Z)`,
+yet `⊬ ◯(◯Z ⊃ Z)`" — is closed by the rule the same section proposed
+under the name `(R^bar)`, now `FRJVi.liftI`. -/
+theorem irregular_Gcc : Nonempty (FRJVi Gcc [] [] Gcc) :=
+  ⟨.liftI GccWitness.2 (fun _ hX => absurd hX List.not_mem_nil)⟩
 
-/-- **Corollary.**  The two residues are not merely open — they are
-JOINTLY UNSATISFIABLE at `Gcc`, whatever the decidability suppliers.  So
-no discharge of (S1) or (S3), and no repair of the `cirr` mode, can make
-`searchO` non-vacuous for a modal `G`. -/
-theorem residues_unsatisfiable
-    (decI : ∀ Ω C, Decidable (EvalI (FDerivable Gcc) Ω C))
-    (decRC : ∀ Ψ C, Decidable (EvalRC (FDerivable Gcc) Ψ C)) :
-    ¬ (BigAnte Gcc (FDerivable Gcc) ∧ CleanReg Gcc (FDerivable Gcc)) := by
-  rintro ⟨hb, hc⟩
-  exact not_searchOkO_irr
-    (searchO (saturated_fderivable Gcc) decI decRC hb hc (.irr, [], Gcc))
+/-- **…and therefore `not_evalI_Gcc` is REFUTED.**  `EvalI` asks for
+`St ⊆ Ω` and `Ω ⊆ St ++ Th`, both vacuous at `Ω = St = Th = []`. -/
+theorem evalI_Gcc : EvalI (FDerivable Gcc) [] Gcc :=
+  ⟨[], [], irregular_Gcc, List.Subset.refl _, List.Subset.refl _⟩
 
-/-- info: 'FRJ.Gbu.residues_unsatisfiable' depends on axioms: [propext, Quot.sound] -/
+/-! ### Superseded on 2026-09-01 by `FRJVi.liftI`
+
+Three results are withdrawn here, all of them consequences of the
+FRJV incompleteness that `(Lift)` was added to repair.  They are true of
+`FRJV` as it stood before 2026-09-01 and false, or unfounded, of the
+extended calculus; `evalI_Gcc` above is the kernel-checked refutation of
+the first.  The statements are kept in the record rather than deleted.
+
+    theorem not_evalI_Gcc {G : Form} {Ω : List Form} :
+        ¬ EvalI (FDerivable G) Ω Gcc
+      -- REFUTED at G = Gcc, Ω = [] by `evalI_Gcc`.
+
+    theorem not_searchOkO_irr :
+        ¬ SearchOkO Gcc (FDerivable Gcc) (.irr, [], Gcc)
+      -- its proof fed `not_evalI_Gcc` to the `irr` clause twice; with
+      -- `evalI_Gcc` available the clause is satisfied instead of
+      -- violated, so the refutation is gone.  Whether `SearchOkO`'s
+      -- `irr` clause now HOLDS at this cell is OPEN.
+
+    theorem residues_unsatisfiable
+        (decI : ∀ Ω C, Decidable (EvalI (FDerivable Gcc) Ω C))
+        (decRC : ∀ Ψ C, Decidable (EvalRC (FDerivable Gcc) Ψ C)) :
+        ¬ (BigAnte Gcc (FDerivable Gcc) ∧ CleanReg Gcc (FDerivable Gcc))
+      -- rested entirely on `not_searchOkO_irr`.  `searchO` was retired
+      -- on the strength of this corollary; with the corollary withdrawn
+      -- that retirement is no longer justified, and whether the two
+      -- residues are jointly satisfiable at `Gcc` is OPEN again.
+-/
+
+/-- info: 'FRJ.Gbu.evalI_Gcc' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
-#print axioms residues_unsatisfiable
+#print axioms evalI_Gcc
 
 /-- info: 'FRJ.Gbu.cirr_circ_to_irr' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
@@ -1338,13 +1353,5 @@ theorem residues_unsatisfiable
 /-- info: 'FRJ.Gbu.not_gbuIC_Gcc' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms not_gbuIC_Gcc
-
-/-- info: 'FRJ.Gbu.not_evalI_Gcc' depends on axioms: [propext, Quot.sound] -/
-#guard_msgs in
-#print axioms not_evalI_Gcc
-
-/-- info: 'FRJ.Gbu.not_searchOkO_irr' depends on axioms: [propext, Quot.sound] -/
-#guard_msgs in
-#print axioms not_searchOkO_irr
 
 end FRJ.Gbu

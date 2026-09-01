@@ -41,6 +41,7 @@ def RegIdx {G : Form} : {St Th : List Form} → {C : Form} → FRJVi G St Th C �
   | _, _, _, .impInI d _ _ _ _ _ _ => RegIdx d
   | _, _, _, .impNotIn _ _ _ _ _ => Unit
   | _, _, _, .circNotIn _ _ _ _ => Unit
+  | _, _, _, .liftI _ _ => Unit
   | _, _, _, .axIC _ _ _ _ _ _ => Unit
 
 /-- `RegIdx` has decidable equality, constructively. -/
@@ -56,6 +57,7 @@ instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ _ _ _ => regIdxDecEq d
   | _, _, _, .impNotIn _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
   | _, _, _, .circNotIn _ _ _ _ => inferInstanceAs (DecidableEq Unit)
+  | _, _, _, .liftI _ _ => inferInstanceAs (DecidableEq Unit)
   | _, _, _, .axIC _ _ _ _ _ _ => inferInstanceAs (DecidableEq Unit)
 
 /-- An enumeration of `RegIdx`, constructively (no `Fintype.ofFinite`,
@@ -70,6 +72,7 @@ def regIdxElems {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ _ _ _ => regIdxElems d
   | _, _, _, .impNotIn _ _ _ _ _ => [()]
   | _, _, _, .circNotIn _ _ _ _ => [()]
+  | _, _, _, .liftI _ _ => [()]
   | _, _, _, .axIC _ _ _ _ _ _ => [()]
 
 theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
@@ -86,6 +89,7 @@ theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ _ _ _, i => regIdxComplete d i
   | _, _, _, .impNotIn _ _ _ _ _, _ => List.mem_cons_self
   | _, _, _, .circNotIn _ _ _ _, _ => List.mem_cons_self
+  | _, _, _, .liftI _ _, _ => List.mem_cons_self
   | _, _, _, .axIC _ _ _ _ _ _, _ => List.mem_cons_self
 
 /-! ### The index set of a join
@@ -204,6 +208,7 @@ def preI {G : Form} : {St Th : List Form} → {C : Form} →
   | _, _, _, .impInI d _ _ _ _ _ _, i => preI d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR d
   | _, _, _, .circNotIn d _ _ _, _ => preR d
+  | _, _, _, .liftI d _, _ => preR d
   | _, Th, _, .axIC _ _ _ _ _ _, _ => PreModel.leaf Th
 
 end
@@ -267,6 +272,8 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
       ⟨_, .impNotIn (.root d), preR_root_lbl d⟩
   | _, _, _, .circNotIn d _ _ _, _ =>
       ⟨_, .circNotIn (.root d), preR_root_lbl d⟩
+  | _, _, _, .liftI d _, _ =>
+      ⟨_, .liftI (.root d), preR_root_lbl d⟩
   | _, Th, _, .axIC F _ _ _ _ _, _ =>
       ⟨.irr [] Th (.circ F), .root _, CtxEq.refl _⟩
 
@@ -475,6 +482,7 @@ theorem preI_closed {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .impInI d _ _ _ _ _ _, i => preI_closed d i
   | _, _, _, .impNotIn d _ _ _ _, _ => preR_closed d
   | _, _, _, .circNotIn d _ _ _, _ => preR_closed d
+  | _, _, _, .liftI d _, _ => preR_closed d
   | _, _, _, .axIC _ _ _ _ _ _, _ => fun _ _ _ X hX => .base hX
 
 end
