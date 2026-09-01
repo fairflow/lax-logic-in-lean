@@ -484,7 +484,7 @@ inductive OccR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} →
       {prem : ∀ j, FRJWi G (stab j) (th j) (rhs j)}
       {hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j}
       {hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        A ∈ upsilon rhs}
+        RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) A}
       {hcirc : unionAll (fun j => circPart (stab j)) = []}
       {hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
         (thPool th) kept}

@@ -157,13 +157,20 @@ inductive FRJWr (G : Form) : Tag → List Form → Form → Type
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
       {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrF stab th rhs) :
       FRJWr G .blocked Γ' (.or C₁ C₂)
-  /-- `⋈^◯` with the kept zone and the `RefAt`-relaxed body condition. -/
+  /-- `⋈^◯` with the kept zone, the `RefAt`-relaxed body condition, and
+      the `RefAt`-relaxed barren (J2): a stable-zone implication needs
+      its antecedent refuted at the root, and `RefAt` over the
+      conclusion context certifies exactly that (sound by
+      `refAt_refutes_sf`; the strict `A ∈ Υ` is the `.ups` instance).
+      Relaxed 2026-09-01 with Matthew's sign-off — the FRJW joins may
+      diverge from FRJV here; `⋈^At`/`⋈^∨` keep the strict (J2) until
+      a manufacture needs more. -/
   | joinCirc {n : Nat} {stab th : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form} {kept : List Form}
       (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
       (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
       (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        A ∈ upsilon rhs)
+        RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) A)
       (hcirc : unionAll (fun j => circPart (stab j)) = [])
       (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
         (thPool th) kept)
@@ -305,7 +312,8 @@ def toWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
   | _, _, _, .joinOrF prem hJ1 hJ2 hC hg hΓ =>
       .joinOrF (fun j => toWi (prem j)) hJ1 hJ2 hC hg hΓ
   | _, _, _, .joinCirc prem hJ1 hJ2 hcirc hkc hZ hg hΓ =>
-      .joinCirc (fun j => toWi (prem j)) hJ1 hJ2 hcirc hkc hZ hg hΓ
+      .joinCirc (fun j => toWi (prem j)) hJ1
+        (fun A B h => .ups (hJ2 A B h)) hcirc hkc hZ hg hΓ
   | _, _, _, .joinCircP prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ =>
       .joinCircP (fun j => toWi (prem j)) (fun i => toWr (dps i))
         hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ

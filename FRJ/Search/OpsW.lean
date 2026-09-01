@@ -288,7 +288,8 @@ def mkJoinBarrenW (G : Form) (a : WIS G) (rest : List (WIS G)) : List (WRS G) :=
                     keptOf (upsilon (rhsFW a rest))
                       (joinCtxOrVBase (stabFW a rest) (thFW a rest))
                       (thPool (thFW a rest)), .circ Z,
-                  .joinCirc (premFW a rest) h1 (hJ2_of_checkW h2) hcirc
+                  .joinCirc (premFW a rest) h1
+                    (fun A B h => .ups (hJ2_of_checkW h2 A B h)) hcirc
                     (keptOf_ok _ _ _) hZ hg (CtxEq.refl _)⟩
               else none
           | _, _ => none

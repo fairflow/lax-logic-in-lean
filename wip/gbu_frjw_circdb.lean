@@ -345,7 +345,8 @@ theorem refutedCleanly_circ {G : Form} {D : WSeq → Prop} (hsat : WSaturated G 
       rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
       exact fun h => Bool.noConfusion h)
   refine ⟨_, .barren,
-    ⟨.joinCirc (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Th)
+    ⟨.joinCirc (fun j => d j) hJ1 (fun A B h => .ups (hJ2 A B h)) hcirc
+      (keptChainRestrict _ Th)
       (.ups ((E.spec Z).mpr List.mem_cons_self)) hgoal (CtxEq.refl _)⟩,
     Or.inl rfl, fun X hX => .base ?_⟩
   by_cases hin : ∃ j, X ∈ St j

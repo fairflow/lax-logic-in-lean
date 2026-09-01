@@ -402,17 +402,43 @@ theorem joinOr_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     · exact refAt_refutes hups hctxV hcone (fun h => h) hC.1 h
     · exact refAt_refutes hups hctxV hcone (fun h => h) hC.2 h
 
-/-- `⋈^◯`, the barren modal join, with the kept zone and the
-`RefAt`-relaxed body condition: label-forcing as `⋈^∨`; the root refutes
-`◯Z` because its modal cone is itself and it refutes `Z` — now by
-`refAt_refutes` on the rule's `RefAt` certificate rather than only
-through a premise slot. -/
+/-- Each kept-chain member's antecedent has a `RefAt` certificate over
+the FULL conclusion context: the chain certifies it over the base plus
+the earlier links, and `RefAt` is context-monotone. -/
+theorem keptChain_refAt_mem {Υ base pool : List Form} :
+    ∀ {kept : List Form}, KeptChain Υ base pool kept →
+      ∀ {Y B : Form}, Form.imp Y B ∈ kept →
+        RefAt true Υ (base ++ kept) Y := by
+  intro kept hkc
+  induction hkc with
+  | nil => intro _ _ h; exact absurd h List.not_mem_nil
+  | @cons Y' B' rest hrest hpool hY' ih =>
+      intro Y B hmem
+      have hgrow : base ++ rest ⊆ base ++ (Form.imp Y' B' :: rest) := by
+        intro x hx
+        rcases List.mem_append.mp hx with h | h
+        · exact List.mem_append_left _ h
+        · exact List.mem_append_right _ (List.mem_cons_of_mem _ h)
+      rcases List.mem_cons.mp hmem with heq | hmem'
+      · cases heq
+        exact refAt_mono (fun _ h => h) hgrow hY'
+      · exact refAt_mono (fun _ h => h) hgrow (ih hmem')
+
+/-- `⋈^◯`, the barren modal join, with the kept zone, the
+`RefAt`-relaxed body condition, AND the `RefAt`-relaxed barren (J2)
+(2026-09-01): label-forcing as `⋈^∨`; the root refutes `◯Z` because its
+modal cone is itself and it refutes `Z`.  The stable-zone implications'
+antecedents now carry `RefAt` certificates instead of `Υ`-membership;
+the size-mutual induction stays founded because both the `ups`- and the
+`Clo`-leaves of a certificate are subformulas of its target
+(`refAt_refutes_sf`), and the kept zone joins the same induction
+through `keptChain_refAt_mem`. -/
 theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {Z : Form} {kept : List Form}
     (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
     (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
     (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      A ∈ upsilon rhs)
+      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) A)
     (hcirc : unionAll (fun j => circPart (stab j)) = [])
     (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
       (thPool th) kept)
@@ -442,8 +468,15 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     intro ji x A hA
     exact (join_force_comp hPJ (preI_closed (prem ji.1) ji.2) A x).mpr
       (ihI0 ji.1 ji.2 x A hA)
+  have hcone : ∀ c, (modR d).Rm none c → c = none := by
+    intro c hc
+    have hc' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
+        (joinCtxOrVBase stab th ++ kept)
+        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
+        (fun _ => false)).rm none c := hc
+    exact PreModel.join_rm_root_barren (fun _ => rfl) hc'
   have key : ∀ (k : Nat) (H : Form), H.size ≤ k →
-      (H ∈ impPart (joinCtxOrVBase stab th) →
+      (H ∈ impPart (joinCtxOrVBase stab th ++ kept) →
         (modR d).force none H) ∧
       (∀ j : Fin (n + 1), rhs j = H →
         ¬ (modR d).force none H) := by
@@ -457,10 +490,31 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
           obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
           match H, hHsh with
           | .imp A B, _ =>
-              have hAu : A ∈ upsilon rhs := baseOrV_imp_head hJ2 hHmem
-              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
+              have hrA : RefAt true (upsilon rhs)
+                  (joinCtxOrVBase stab th ++ kept) A := by
+                rcases List.mem_append.mp hHmem with hb | hk
+                · exact hJ2 A B (baseOrV_imp hb)
+                · exact keptChain_refAt_mem hkc hk
               have hsz : A.size ≤ k := by simp only [Form.size] at hH; omega
-              have hnA := (ih A hsz).2 j hj
+              have hnA : ¬ (modR d).force none A := by
+                refine refAt_refutes_sf hcone (fun h => h) hrA ?_ ?_
+                · intro C hC hCs
+                  obtain ⟨j, -, hj⟩ := List.mem_map.mp hC
+                  exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).2 j hj
+                · intro C hC hCs
+                  have hCG : C ∈ gHat G := wfR d ((hΓ C).mpr hC)
+                  simp only [gHat, List.mem_append] at hCG
+                  rcases hCG with (h | h) | h
+                  · match C, (List.mem_filter.mp h).2 with
+                    | .atom p, _ => exact Or.inl hC
+                  · exact (ih C (Nat.le_trans (size_le_of_mem_sf hCs) hsz)).1
+                      (List.mem_filter.mpr ⟨hC, (List.mem_filter.mp h).2⟩)
+                  · match C, (List.mem_filter.mp h).2 with
+                    | .circ Y, _ =>
+                        rcases List.mem_append.mp hC with hb | hk
+                        · exact absurd hb circ_not_mem_baseOrV
+                        · exact absurd (keptChain_isImp hkc _ hk)
+                            (by simp [Form.isImp])
               intro v hv hAv
               cases v with
               | none => exact absurd hAv hnA
@@ -469,8 +523,7 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
                   have hlblv : ∀ Y ∈ (preI (prem ji.1) ji.2).lbl x,
                       (modR d).force (some ⟨ji, x⟩) Y :=
                     fun Y hY => hcomp ji x Y hY
-                  have hmem : Form.imp A B ∈ (preR d).lbl none :=
-                    List.mem_append_left _ hHmem
+                  have hmem : Form.imp A B ∈ (preR d).lbl none := hHmem
                   have hclo := hPJ none (some ⟨ji, x⟩) hv (.imp A B) hmem
                   have hfv : (modR d).force
                       (some ⟨ji, x⟩) (.imp A B) := clo_forces hlblv hclo
@@ -495,9 +548,10 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
               | .atom p, _ =>
                   exact Or.inl (List.mem_append_left _
                     (stab_mem_baseOrV (G := G) (th := th) hcirc hK.1 hKG))
-            · have hmem : K ∈ impPart (joinCtxOrVBase stab th) :=
+            · have hmem : K ∈ impPart (joinCtxOrVBase stab th ++ kept) :=
                 List.mem_filter.mpr
-                  ⟨stab_mem_baseOrV (G := G) (th := th) hcirc hK.1 hKG,
+                  ⟨List.mem_append_left _
+                    (stab_mem_baseOrV (G := G) (th := th) hcirc hK.1 hKG),
                     (List.mem_filter.mp h).2⟩
               have hsz : K.size ≤ k := by
                 have := size_lt_of_mem_sfm hK.2
@@ -518,7 +572,8 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
       match X, hpv with
       | .atom p, _ => exact Or.inl (List.mem_append_left _ hX)
     · have himp : X.isImp := (List.mem_filter.mp h).2
-      exact (key X.size X (Nat.le_refl _)).1 (List.mem_filter.mpr ⟨hX, himp⟩)
+      exact (key X.size X (Nat.le_refl _)).1
+        (List.mem_filter.mpr ⟨List.mem_append_left _ hX, himp⟩)
     · have hcx : X.isCirc := (List.mem_filter.mp h).2
       match X, hcx with
       | .circ Y, _ => exact absurd hX circ_not_mem_baseOrV
@@ -526,43 +581,15 @@ theorem joinCirc_case {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
     intro C hC
     obtain ⟨j, -, hj⟩ := List.mem_map.mp hC
     exact (key C.size C (Nat.le_refl _)).2 j hj
-  have hcone : ∀ c, (modR d).Rm none c → c = none := by
-    intro c hc
-    have hc' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxOrVBase stab th ++ kept)
-        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-        (fun _ => false)).rm none c := hc
-    exact PreModel.join_rm_root_barren (fun _ => rfl) hc'
-  have kept_forced : ∀ (ks : List Form),
-      KeptChain (upsilon rhs) (joinCtxOrVBase stab th) (thPool th) ks →
-      (∀ K ∈ ks, K ∈ kept) →
-      ∀ K ∈ ks, (modR d).force none K := by
-    intro ks hks
-    induction hks with
-    | nil => intro _ K hK; exact absurd hK List.not_mem_nil
-    | @cons Y B rest hrest hpool hY ih =>
-        intro hsub K hK
-        rcases List.mem_cons.mp hK with heq | hKmem
-        · subst heq
-          intro v hv hYv
-          cases v with
-          | none =>
-              exact absurd hYv (refAt_refutes hups
-                (fun X hX => (List.mem_append.mp hX).elim (base_forced X)
-                  (fun hX' => ih
-                    (fun K' hK' => hsub K' (List.mem_cons_of_mem _ hK')) X hX'))
-                hcone (fun h => h) hY)
-          | some jx =>
-              obtain ⟨ji, x⟩ := jx
-              have hmem : Form.imp Y B ∈ (preR d).lbl none :=
-                List.mem_append_right _ (hsub _ List.mem_cons_self)
-              have hclo := hPJ none (some ⟨ji, x⟩) hv (.imp Y B) hmem
-              exact clo_forces (fun X hX => hcomp ji x X hX) hclo _
-                ((modR d).le_refl _) hYv
-        · exact ih (fun K' hK' => hsub K' (List.mem_cons_of_mem _ hK')) K hKmem
+  have kept_forced : ∀ K ∈ kept, (modR d).force none K := by
+    intro K hK
+    have hKi : K.isImp = true := keptChain_isImp hkc _ hK
+    match K, hKi with
+    | .imp Y B, _ =>
+        exact (key (Form.imp Y B).size _ (Nat.le_refl _)).1
+          (List.mem_filter.mpr ⟨List.mem_append_right _ hK, rfl⟩)
   have hctxV : (modR d).forces none (joinCtxOrVBase stab th ++ kept) :=
-    fun X hX => (List.mem_append.mp hX).elim (base_forced X)
-      (kept_forced kept hkc (fun _ h => h) X)
+    fun X hX => (List.mem_append.mp hX).elim (base_forced X) (kept_forced X)
   constructor
   · intro w
     cases w with
