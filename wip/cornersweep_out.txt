@@ -1,9 +1,14 @@
+wip/cornersweep.lean:94:14: warning: Variable name `refuted` is not explicitly referenced.
+
+The binding can be removed (if unused) or named `_` (if used implicitly).
+
+Note: This linter can be disabled with `set_option linter.unusedVariables false`
 == Gx : (((Or>b)&((r>F)>F))>Or)
 == Glic : (((Op>r)&p)>Or)
-  CORNER Ψ=[p, (Op>r)] goal=Or RESIDUAL stuck=[Op[keepOm0=false,derivable]]
+  CORNER Ψ=[p, (Op>r)] goal=Or RESIDUAL stuck=[Op[keepPsi=false,derivable]]
 == Gba : (O((Op>q)&Op)>Or)
 == Glw : (O((Op>r)&Op)>(Or|z))
-  CORNER Ψ=[p, (Op>r)] goal=Or RESIDUAL stuck=[Op[keepOm0=false,derivable]]
+  CORNER Ψ=[p, (Op>r)] goal=Or RESIDUAL stuck=[Op[keepPsi=false,derivable]]
 == Gdp : (O(p|q)>(Op|Oq))
 == Gcc : O(Op>p)
 == Gcr : (Op>p)

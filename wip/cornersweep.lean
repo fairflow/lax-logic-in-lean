@@ -96,13 +96,12 @@ def sweep (G : Form) : List String := Id.run do
           let stuckOK := unref.all (fun A =>
             A.hasCirc && !(decide (A.size < (Form.circ Z).size)))
           if stuckOK && !unref.isEmpty then
-            let ups := Z :: refuted
-            -- the two NEW decidable closures (2026-09-01):
-            -- (ii) RefAt over the non-stuck part Ω₀
-            let om0 := om.filter (fun X => !X.isImp) ++
-              (impPart om).filter (fun Y => decide (ante Y ∈ refuted))
+            -- the corner's decidable closures (2026-09-01, afternoon):
+            -- (ii) RefAt over Ψ ITSELF with R₀ = ALL refuted Sf^R-forms
+            let r0 := (sfR G).filter (fun A => evalIb db om A)
+            let ups := Z :: r0
             let keptClosed := (impPart om).all (fun Y =>
-              decide (ante Y ∈ refuted) || refAtB true ups om0 (ante Y))
+              decide (ante Y ∈ r0) || refAtB true ups om (ante Y))
             -- prime-Z axI-family cover through the engine's keptOf
             let th0 : Fin 1 → List Form :=
               fun _ => rm (gAt G) Z ++ gImp G ++ gCirc G
@@ -112,7 +111,7 @@ def sweep (G : Form) : List String := Id.run do
             let axiCov := Z.isPrime && !(decide (Z ∈ om)) &&
               om.all (fun X => cloB ctx0 X)
             let diag := unref.map (fun A =>
-              s!"{ppF A}[keepOm0={refAtB true ups om0 A},{oracleD om A}]")
+              s!"{ppF A}[keepPsi={refAtB true ups om A},{oracleD om A}]")
             let verdict :=
               if keptClosed then "CLOSED(kept-chain)"
               else if axiCov then "CLOSED(axI-keptOf)"

@@ -549,3 +549,70 @@ on such a path, leaving only ∨-nodes with an unrefuted other disjunct
 corpus remain the licence type, RESIDUAL-classified but with the stuck
 antecedent oracle-DERIVABLE (first-visit chase resolves them); zero
 dichotomy alarms.
+
+### The goal-set invariant landed (2026-09-01, late afternoon)
+
+Matthew's "try the goal-set invariant for K1" — built and consumed.
+
+**The certificate kit** (`wip/gbu_frjw_corner.lean`, committed with
+pins `[propext, Quot.sound]`):
+
+    RefAtG Ψ C P A  —  goal-relative refutation certificate:
+      goal   : bottoms at the CURRENT goal C
+      pend   : bottoms at a pending form in P (an abandoned ∨-sibling
+               or a frozen goal)
+      bot / imp (with Clo Ψ) / circ / or / andL / andR
+
+with `refAtG_subst` (goal substitution), `refAtG_clo` (context
+growth), `refAtG_to_refAt` (the corner conversion into `RefAt` over
+`Z :: R` at the SAME context), `sf_trans`, `clo_sf_support` (Clo
+leaves are subformulas), `refAt_clo_mono_sf` (subformula-graded
+rebase), and the manufacture
+
+    refutedCleanly_circ_certs : certificates over Ω ITSELF; the kept
+    chain is built LEVEL BY LEVEL on link size — sound because a
+    certificate's Clo-leaves are subformulas of its target, hence
+    strictly smaller than its implication, so every stuck leaf is
+    already in the chain.  This retires the K2 ordering problem
+    entirely (no sorting; strong induction on a size bound).
+
+**The threading** (`wip/gbu_frjw_search.lean`, still OPEN): the motive
+carries `(reg = true → V = [])` and `(reg = false → WVinv Ψ C V)`
+where `WVinv` gives each visited (antecedent, goal) pair a
+Σ'-certificate.  All ~30 recursion sites transfer:
+goal-descents substitute (`∧` via andL/andR, `⊃` via the rimpII
+`Clo`-guard, `◯` via circ), `∨`-descents record the abandoned sibling
+as a PENDING leaf — no sibling test needed, the corner re-tests at
+corner time, which is what dissolves K1's both-unrefuted case
+structurally — chase entries freeze the old goal into `P` and give the
+new pair the pure `.goal` certificate, context growth uses each site's
+existing `Clo`-cover, and `R⊃ₙ` (the only entry to the regular mode)
+resets `V := []` on its `unclosed`-drop.
+
+**The corner now**: `R₀ :=` ALL refuted `Sf^R`-forms (decidable);
+test each antecedent by `refuted ∨ RefAt true (Z :: R₀) Ψ ·`; all pass
+→ `refutedCleanly_circ_certs` manufactures the row, contradiction.  A
+failing antecedent is itself stuck (`hallQ`), so the INVARIANT hands
+its certificate: if every pending leaf is refuted-or-goal the
+certificate converts and CONTRADICTS the failed test — so the residual
+carries a LIVE pending leaf `L₀ ∉ R₀`, `L₀ ≠ ◯Z`.  Then the prime-body
+axI-keptOf escape as before.
+
+**The FINAL residual** (two `sorry` sites, one declaration): a
+critical `◯Z`-cell with `heZ`, no `◯Z`-row, no pledge, no classical
+countermodel, every antecedent refuted or exact-pair-visited-stuck,
+the failing antecedent's certificate showing a live pending leaf
+`L₀` — a recorded ∨-sibling or frozen goal, unrefuted at THIS cell —
+and (prime `Z`) the full engine-strength cover failing.  Reachability
+needs a nested-chase interleaving in which a goal recurs across an
+unresolved intermediate chase with an alien frozen goal.  The updated
+sweep (`wip/cornersweep.lean`, now testing the Ψ-context closure with
+the full `R₀`): corpus-wide, still only the licence cells, correctly
+row-less, stuck antecedent derivable.
+
+Verification note (Matthew's question): after the (J2) relaxation the
+FULL project rebuilds green (8678 jobs, every `#guard_msgs` pin
+re-checked), and the change surface is confined to the W-family
+(`CalculusW`/`StepW`/`SoundW`/`ExtractW`/`OpsW` + W-side wip files):
+no FRJV file and no Gbu◯ file is touched; the Gbu◯ chain
+(`gbuC_complete`) imports no W-calculus module and conversely.
