@@ -51,6 +51,7 @@ port mechanical; if §2 is awkward the whole plan should be re-scoped before
 Stage 2 begins.
 -/
 import wip.gbu_search_circ
+import wip.frjx_screen
 
 namespace FRJ.Gbu.X
 
@@ -62,26 +63,6 @@ open FRJ FRJ.Gbu
 `(Lift)`.  `SaturatedOver` is `Saturated` with its base relation made a
 parameter — the ONLY change, and the one `not_saturated_liftClosed` forces. -/
 
-/-- Derivability extended by `(Lift)`.  The new clause produces `.irr` rows
-only, which is why §1.1 below is available. -/
-inductive LiftClosure (G : Form) : FSeq → Prop
-  | base {s : FSeq} : FDerivable G s → LiftClosure G s
-  | lift {Γ Θ : List Form} {C : Form} :
-      LiftClosure G (.reg Γ C) →
-      (∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) →
-      LiftClosure G (.irr [] Θ C)
-
-/-- `Saturated`, with the base derivability relation a parameter. -/
-def SaturatedOver (Base D : FSeq → Prop) : Prop :=
-  (∀ s, D s → Base s) ∧ ∀ s, Base s → ∃ s', D s' ∧ Subsumes s s'
-
-/-- Soundness of the database, regular rows only.  This is the only
-soundness the completeness theorem consumes: it is what turns `PLL G` into
-`¬ D ▷ (∅ ⇒g G)`. -/
-def RegSound (D : FSeq → Prop) : Prop :=
-  ∀ (Γ : List Form) (C : Form), D (.reg Γ C) →
-    ∃ K : Kripke, (∀ X ∈ Γ, K.force K.root X) ∧ ¬ K.force K.root C
-
 /-! ## §1 Anti-vacuity — discharge this FIRST
 
 Four statements.  Together they say the hypotheses of every theorem below
@@ -89,12 +70,8 @@ are jointly satisfiable, which is what `CleanReg` and the refuted first
 draft both failed.  If any of the four is false the campaign stops and that
 is the result. -/
 
-/-- **(X1)** `(Lift)` adds no REGULAR rows: its conclusion is always `.irr`,
-so a regular row of the closure is an FRJV row.  Everything in §1 rests on
-this, and it is a two-case induction. -/
-theorem liftClosure_reg {G : Form} {Γ : List Form} {C : Form}
-    (h : LiftClosure G (.reg Γ C)) : FDerivable G (.reg Γ C) := by
-  sorry
+-- (X1) `liftClosure_reg` is PROVED in `wip/frjx_screen.lean` — the screen
+-- needed it, so it is banked rather than planned.
 
 /-- **(X2)** The closure is regular-sound — by `(X1)` and `lemma39R`, which
 extracts a model from an FRJV regular disproof. -/
