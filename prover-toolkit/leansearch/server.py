@@ -5,7 +5,7 @@ Speaks the same contract as leansearch.net, so ax-prover's existing
 `search_lean_search` tool works against it with only a `server_url` change:
 
     POST /search   {"query": ["..."], "num_results": 6}
-    ->  [[ {"result": {"name", "kind", "signature", "docstring"}}, ... ]]
+    ->  [[ {"result": {"name", "kind", "signature", "constructors", "docstring"}}, ... ]]
 
 Stdlib only -- no FastAPI, no uvicorn, nothing to install.
 
@@ -88,7 +88,12 @@ class Index:
             blob = f"{e['name']} {e['signature']} {e.get('docstring','')} {e['module']}"
             toks = tokenize(blob)
             self.docs.append(toks)
-            self.name_toks.append(set(tokenize(e["name"] + " " + e.get("short", ""))))
+            # constructor names count as NAMES: `liftI` is a real declaration
+            # (`FRJVi.liftI`), so a query naming one should get the name boost
+            # on its type rather than only a body-text hit.
+            self.name_toks.append(set(tokenize(
+                e["name"] + " " + e.get("short", "")
+                + " " + " ".join(e.get("constructors") or []))))
             for t in set(toks):
                 df[t] += 1
         n = len(entries)
@@ -100,6 +105,17 @@ class Index:
                 d[t] += 1
             self.tf.append(d)
         self.avglen = sum(len(d) for d in self.docs) / max(n, 1)
+        # Length normalisation against a single global average buries the
+        # inductives: a type indexed WHOLE runs 10-40x the length of a theorem
+        # statement, so BM25 charged it a penalty for being the kind of
+        # document it is.  A query naming a constructor was answered with a
+        # 5-line enum that mentions the name instead of the 200-line family
+        # that declares it.  Normalise each entry against the average length
+        # of its OWN kind (the BM25F move), so length only counts within kind.
+        per: dict[str, list[int]] = defaultdict(list)
+        for e, d in zip(entries, self.docs):
+            per[e["kind"]].append(len(d))
+        self.avglen_kind = {k: sum(v) / len(v) for k, v in per.items()}
 
     def search(self, query: str, k: int) -> list[dict]:
         q = [t for t in tokenize(query)
@@ -113,6 +129,7 @@ class Index:
         k1, b = 1.5, 0.75
         for i, tf in enumerate(self.tf):
             dl = len(self.docs[i]) or 1
+            avg = self.avglen_kind.get(self.entries[i]["kind"], self.avglen) or self.avglen
             s = 0.0
             for t in qset:
                 f = tf.get(t, 0)
@@ -120,7 +137,7 @@ class Index:
                     continue
                 idf = self.idf.get(t, 0.0)
                 w = 3.0 if _is_symbol(t) else 1.0   # symbols are the discriminative tokens
-                s += w * idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * dl / self.avglen))
+                s += w * idf * (f * (k1 + 1)) / (f + k1 * (1 - b + b * dl / avg))
             if s <= 0:
                 continue
             overlap = len(qset & self.name_toks[i])
@@ -136,6 +153,7 @@ class Index:
                     "name": e["name"],
                     "kind": e["kind"],
                     "signature": e["signature"],
+                    "constructors": e.get("constructors") or [],
                     "docstring": (
                         (e.get("docstring") or "")
                         + f"\n[{e['repo']}: {e['file']}:{e['line']}]"

@@ -1,4 +1,6 @@
-# prover-toolkit
+# ax-prover-cascade
+
+*(directory name: `prover-toolkit`)*
 
 A repository-independent toolkit for attempting Lean 4 goals with a language
 model and **verifying the result properly**. Developed alongside
@@ -8,6 +10,10 @@ repository: point `toolkit.json` at any Lean project.
 It is not a prover. The proving is done by
 [ax-prover](https://github.com/Axiomatic-AI/ax-prover-base); this supplies the
 parts that make its output trustworthy on a bespoke development.
+
+The name is for the shape that came out of the field test below: retrieval is
+not one lookup but a **cascade of three gates** over a private corpus, each
+narrower and more expensive than the last, with an axiom check at the end.
 
 ## What it adds
 
@@ -36,6 +42,43 @@ must be rejected.
 **A cost model.** `theorem_cost_model.py` reports cost per *verified theorem*
 with Wilson intervals, not cost per token. The two disagree: in testing a model
 costing 5× less per token proved 8% of attempts against another's 62%.
+
+## The cascade
+
+Retrieval runs as three gates, cheapest first. The point is that gate 1 is
+paid for every candidate and gates 2-3 only for survivors, so the context a
+proof attempt carries is the *judged* subset rather than everything that
+matched.
+
+| gate | command | returns | cost |
+|---|---|---|---|
+| 1 | `toolkit_cli.py search "<query>"` | names, signatures, **constructor lists**, docstrings | ~1 line/hit |
+| 2 | (judgement — no tool) | which hits are worth opening | free |
+| 3 | `toolkit_cli.py source <name>` | the declaration's body | tens of lines |
+| — | `toolkit_cli.py check <file> <lemma>` | closed? on which axioms? | a Lean run |
+
+Gate 1 indexes inductives, structures and classes **whole**, with their
+constructor names lifted into a `constructors` field. That is the one thing
+this index can report as an *absence*: "there is no rule of this shape" is
+decidable from a complete constructor list and from nothing else retrieval
+returns, and it is the question a stuck campaign turns on. Sorried
+declarations are dropped from the corpus — a `sorry` asserts its statement, so
+offering one as an available lemma presents an OPEN conjecture as a proved
+one.
+
+Measured on the FRJX campaign, four arms over the same eight open goals, same
+model, same budget (`../docs/frjx-round3-three-arms.md`):
+
+| arm | retrieval | goals closed | context consumed |
+|---|---|---|---|
+| A | none | 2/8 | — |
+| B | gate 1 only | 4/8 | small |
+| C | free `grep` of the sources | 4/8 | 3,625 lines |
+| C′ | the full cascade | **6/8** | **413 lines** |
+
+So on this one campaign the cascade closed the most goals on ~13× less
+context than reading the sources directly. One arm, one development: it is
+evidence, not a result.
 
 ## Setup
 
@@ -82,11 +125,12 @@ changing anything under `skill/`.
   generated file compiles with exactly one `sorry` before trusting it.
 - The axiom gate has **no baseline for a genuinely open goal**, and falls back
   to accepting anything `sorry`-free. Check such proofs by hand.
-- **The retrieval ablation has still not been run.** `ablate.sh` sets up both
-  conditions and records results, and `challenge.py retrieval-check` measures
-  the half that needs no agent, but the with/without-index comparison itself
-  needs an agent per target per condition and has not been done. Until it is,
-  "whether the corpus index helps" remains open — see below.
+- **The retrieval ablation has not been run on the fixtures.** `ablate.sh`
+  sets up both conditions and `challenge.py retrieval-check` measures the half
+  that needs no agent, but the with/without comparison over the challenge set
+  needs an agent per target per condition and has not been done. It *has* been
+  run once on a live campaign, four arms over eight open goals — the table
+  under "The cascade" above. That is one development and one model.
 - `exclude` entries in `toolkit.json` are matched as single **path
   components**, not relative paths; a path-shaped entry warns since 2026-08-30
   but still matches nothing.
@@ -115,10 +159,12 @@ Mathlib, which this index does not cover), and of the 10 in-corpus ones a
 statement-shaped query surfaces **2 at k=10**. For that set the index has
 little to offer, and it is an absence problem rather than a ranking one.
 
-**Not** established: whether the corpus index helps — it is *used*, but never
-ablated; any ranking between models run on different lemmas; or anything
-beyond this one development. One hypothesis was tested and **refuted**:
-truncating the prompt context was *not* suppressing one-shot results.\n
+**Not** established: any ranking between models run on different lemmas, or
+anything beyond this one development. Whether the corpus index helps was open
+here until the FRJX field test; the four-arm table above is the only
+measurement, and it is n=1. One hypothesis was tested and **refuted**:
+truncating the prompt context was *not* suppressing one-shot results.
+
 ## The challenge set
 
 `challenge.py` builds a challenge set from the corpus that is not a

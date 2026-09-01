@@ -87,6 +87,47 @@ def find_sig_end(decl_text: str) -> int:
 
 
 SORRY_RE = re.compile(r"\bsorry\b")
+
+# A type is only usable if you can see what CONSTRUCTS it.  Retrieval returns
+# presences and never absences, so "no rule of this shape exists" -- the
+# question a stuck campaign turns on -- is answerable only from a COMPLETE
+# constructor list.  Inductives, structures and classes are therefore indexed
+# whole, never truncated at the signature, and their constructor names are
+# lifted into their own field so a query can hit them directly.
+WHOLE_KINDS = {"inductive", "structure", "class"}
+# The chunker starts a new chunk at ANY column-0 line, so a `--` comment
+# between constructors truncates the type and its constructor list is lost
+# (`PLLAxiom` lost all 13 that way).  For a type we therefore re-derive the
+# extent ourselves, stopping only at something that really begins a new
+# declaration -- a doc comment or a keyword, never a line comment.
+NEXT_DECL_RE = re.compile(
+    r"^(?:/--|/-!|@\[|theorem\b|lemma\b|def\b|abbrev\b|inductive\b|structure\b|"
+    r"class\b|instance\b|opaque\b|axiom\b|example\b|noncomputable\b|private\b|"
+    r"protected\b|partial\b|unsafe\b|namespace\b|end\b|section\b|open\b|"
+    r"variable\b|universe\b|macro\b|notation\b|syntax\b|elab\b|deriving\b|"
+    r"#[a-z]|attribute\b|set_option\b|import\b)")
+
+
+def type_extent(lines: list[str], start: int, chunk_end: int) -> int:
+    """Where a type declaration really ends."""
+    j = start + 1
+    while j < len(lines) and not NEXT_DECL_RE.match(lines[j]):
+        j += 1
+    return max(j, chunk_end)
+CTOR_RE = re.compile(r"\|\s*([A-Za-z_\u03b1-\u03c9][A-Za-z0-9_'\u2080-\u2089]*)")
+FIELD_RE = re.compile(r"^\s{2,}([a-zA-Z_][A-Za-z0-9_'!?]*)\s*:", re.M)
+
+
+def constructors_of(kind: str, body: str) -> list[str]:
+    """Constructor names for an inductive, field names for a structure."""
+    names = [m.group(1) for m in CTOR_RE.finditer(strip_comments_for_scan(body))]
+    if not names and kind in ("structure", "class"):
+        names = [m.group(1) for m in FIELD_RE.finditer(strip_comments_for_scan(body))]
+    seen, out = set(), []
+    for n in names:
+        if n not in seen:
+            seen.add(n); out.append(n)
+    return out
 BLOCK_COMMENT_RE = re.compile(r"/-.*?-/", re.S)
 LINE_COMMENT_RE = re.compile(r"--[^\n]*")
 
@@ -112,7 +153,18 @@ def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
         except (UnicodeDecodeError, OSError):
             continue
         lines = text.splitlines(keepends=True)
-        chunks = split_chunks(lines)
+        # Column-0 prose inside a block comment ("class because the fallible
+        # join builds a model...") was being read as a declaration and indexed
+        # as one.  Mask the comment interior before chunking.
+        in_comment: list[bool] = []
+        depth = 0
+        for l in lines:
+            in_comment.append(depth > 0)
+            depth += l.count("/-") - l.count("-/")
+            depth = max(depth, 0)
+        chunks = [(a, b) for (a, b) in split_chunks(lines) if not in_comment[a]]
+        chunks = [(a, chunks[k + 1][0] if k + 1 < len(chunks) else len(lines))
+                  for k, (a, _b) in enumerate(chunks)]
         mod = module_name(root, path)
         rel = str(path.relative_to(root))
 
@@ -150,8 +202,14 @@ def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
                     skipped_sorry.append(m.group(2))
                     continue
                 kind, name = m.group(1), m.group(2)
-                sig = body[: find_sig_end(body)].rstrip()
-                sig = re.sub(r"\n\s*\n.*", "", sig, flags=re.S).strip()
+                if kind in WHOLE_KINDS:
+                    # never truncate a type: the constructor list IS the content
+                    body = "".join(lines[s:type_extent(lines, s, e)])
+                    sig = body.rstrip()
+                else:
+                    sig = body[: find_sig_end(body)].rstrip()
+                    sig = re.sub(r"\n\s*\n.*", "", sig, flags=re.S).strip()
+                ctors = constructors_of(kind, body) if kind in WHOLE_KINDS else []
                 prefix = ".".join(ns_at_line.get(s, []))
                 full = f"{prefix}.{name}" if prefix else name
                 entries.append({
@@ -159,6 +217,7 @@ def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
                     "short": name,
                     "kind": kind,
                     "signature": sig,
+                    "constructors": ctors,
                     "docstring": doc,
                     "module": mod,
                     "repo": repo_label,

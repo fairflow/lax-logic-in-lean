@@ -53,6 +53,12 @@ def cmd_search(cfg, args) -> int:
         res = item.get("result", {})
         print(f"\n[{res.get('kind')}] {res.get('name')}")
         print(f"  {res.get('signature','')}")
+        # The constructor list is the one thing retrieval can report as an
+        # ABSENCE: "no rule of this shape exists" is decidable from a complete
+        # list and from nothing else the index returns.
+        ctors = res.get("constructors") or []
+        if ctors:
+            print(f"  constructors ({len(ctors)}): {', '.join(ctors)}")
         doc = (res.get("docstring") or "").strip()
         if doc:
             print(f"  {doc[:400]}")
