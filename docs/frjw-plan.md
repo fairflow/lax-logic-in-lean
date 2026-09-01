@@ -387,3 +387,37 @@ Screening runner `lake exe wscreen` (`tools/WScreen.lean`): 18/18 PASS
 including Gcr, Gcc, and the big-antecedent cell; no flags, no alarms.
 NEXT DECISION PENDING (Matthew): Prop-∃ vs Type/Σ packaging of the
 statement layer before the proof build is scoped.
+
+### searchW proof architecture (2026-09-01, from the searchO survey)
+
+The W-database lemma stack is COMPLETE and green
+(`wip/gbu_frjw_db.lean`, `wip/gbu_frjw_circdb.lean`): Lemmas 9(i–xiv),
+11, 12, 13/14, with `gbuInv9` Lift-based (stronger), `gbuInv12/13` on
+the pledged query `WEvalRP` (no `TagClean` supply), `gbuInvLift` (the
+general regular→irregular transfer), and `gbuInv14` extended by the
+`lift` case.
+
+The searchO transcription is mechanical EXCEPT at one seam, the
+irregular `◯`-critical cell, where V punted to `BigAnte` (false) and
+`cirr`/`CleanReg` (false).  The W-resolution, from the survey:
+
+* All `◯`-row manufacture now goes through `refutedCleanly_circ`
+  (barren `⋈^◯`) + `Lift`/`◯∉` — no pledged query is NEEDED by any
+  caller, so the clean mode stays dead.
+* The `Υ`-loop (antecedent queries) has a MEASURE problem only in the
+  irregular mode (no mode to drop).  Resolution: run the `Υ`-loop in
+  the REGULAR mode before every reg→irr entry (mode-drop pays for the
+  antecedent recursions), and THREAD the `Υ`-facts through the
+  irregular invariant at the `Ĝ`-ancestor:
+
+      WIrrInvU G D Ω C := ¬ WEvalI D Ω C ∧
+        ∃ Ω₀ ⊆ Ĝ, cover ∧ ¬ WEvalI D Ω₀ C ∧
+          (∀ A B, imp A B ∈ Ω₀ → WEvalI D Ω₀ A)      -- hups, NEW
+
+  Goal-steps keep `Ω₀` verbatim; left-openings ride the ancestor; the
+  `◯`-critical manufacture happens AT `Ω₀` with `hups(Ω₀)` in hand.
+* PUBLIC STATEMENT DELTA (for Matthew): the reg clause of `WSearchOk`
+  and the root dichotomy are UNTOUCHED; the irr clause's invariant
+  must carry the `hups` conjunct (a hypothesis-strengthening).  The
+  proof will be built against the aux spec; the public irr clause is
+  then stated at the strengthened invariant.
