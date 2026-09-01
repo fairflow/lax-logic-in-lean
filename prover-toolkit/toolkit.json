@@ -39,6 +39,9 @@
   "exclude": [
     "ToolkitTest",
     "wipx",
+    "wipa",
+    "wipb",
+    "wipc",
     "Archive",
     "archive",
     ".claude",

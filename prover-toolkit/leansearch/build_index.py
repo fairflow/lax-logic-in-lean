@@ -40,7 +40,8 @@ NOTATION_RE = re.compile(
 
 DOC_OPEN = ("/--",)
 
-SKIP_DIRS = {".lake", ".git", ".claude", "wipx", "Archive", "archive"}
+SKIP_DIRS = {".lake", ".git", ".claude", "wipx", "wipa", "wipb", "wipc",
+             "Archive", "archive"}
 # `wip` is now INDEXED (the campaigns live there); `wipx` holds the files a
 # campaign is currently working from and must stay OUT of the corpus, or the
 # answer is in the index.
