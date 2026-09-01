@@ -62,7 +62,7 @@ kernel-pinned theorem, and the catalogue page is updated.
 
 | tool | use | version |
 |---|---|---|
-| `#cf_search "pat" ["pat2" …]`, with `#choice_path` / `#choice_sources` / `#axiom_path` / `#axiom_pin` | Axiom hygiene at REACH time, not just pin time. `#cf_search` lists every environment constant whose name contains all the patterns and whose axiom closure is `Classical.choice`-free, with module of origin; tainted matches are counted in the header, never silently dropped. Use it before adopting a library lemma inside an extraction-bound proof — the 2026-09-01 instance: `List.eq_nil_iff_forall_not_mem` is tainted and leaked choice into three closure defs; `#cf_search "List.eq_nil"` shows 11 clean alternatives. The path/sources commands localise any leak that still lands; `#axiom_pin` generates the `#guard_msgs` block so pins are never retyped. | `8a4c1a9 · 2026-09-01` |
+| `#cf_search "pat" ["pat2" …]`, with `#choice_path` / `#choice_sources` / `#axiom_path` / `#axiom_pin` | Axiom hygiene at REACH time, not just pin time. `#cf_search` lists every environment constant whose name contains all the patterns and whose axiom closure is `Classical.choice`-free, with module of origin; tainted matches are counted in the header, never silently dropped. Use it before adopting a library lemma inside an extraction-bound proof — the 2026-09-01 instance: `List.eq_nil_iff_forall_not_mem` is tainted and leaked choice into three closure defs; `#cf_search "List.eq_nil"` shows 11 clean alternatives. The path/sources commands localise any leak that still lands; `#axiom_pin` generates the `#guard_msgs` block so pins are never retyped. | `79bc324 · 2026-09-01` |
 
 ## Superseded / dormant (pointers, not deletions)
 
