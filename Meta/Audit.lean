@@ -161,4 +161,51 @@ syntax (name := axiomPinCmd) "#axiom_pin " ident : command
       logInfo m!"/-- info: {body} -/\n#guard_msgs in\n#print axioms {n}"
   | _ => throwUnsupportedSyntax
 
+/-! ## Choice-free search
+
+`#print axioms` audits a lemma you already chose; the recurring loss is
+upstream of that — REACHING for a library lemma that smuggles
+`Classical.choice` into an otherwise clean def, and finding out only at
+pin time (`List.eq_nil_iff_forall_not_mem` was the 2026-09-01 instance).
+`#cf_search` answers "give me the choice-free one" directly. -/
+
+/-- Every pattern occurs in `s` (empty patterns match nothing). -/
+private def matchesAll (pats : List String) (s : String) : Bool :=
+  pats.all (fun p => !p.isEmpty && (s.splitOn p).length > 1)
+
+/-- `#cf_search "pat1" "pat2" …` — every environment constant whose full
+name contains all the patterns AND whose axiom closure avoids
+`Classical.choice`, each with its module of origin.  Tainted matches are
+counted in the header, never silently dropped; an overflow past the
+display cap is reported as a count. -/
+syntax (name := cfSearchCmd) "#cf_search " str+ : command
+
+@[command_elab cfSearchCmd] def elabCfSearch : CommandElab
+  | `(#cf_search $pats*) => do
+      let ps := pats.toList.map (·.getString)
+      let env ← getEnv
+      let mut cands := #[]
+      for (n, _) in env.constants.toList do
+        unless n.isInternal do
+          if matchesAll ps n.toString then
+            cands := cands.push n
+      let sorted := cands.qsort Name.lt
+      let mut clean := #[]
+      let mut tainted : Nat := 0
+      for n in sorted do
+        if ← dependsOn ``Classical.choice n then
+          tainted := tainted + 1
+        else
+          clean := clean.push n
+      let cap := 40
+      let shown := clean.extract 0 cap
+      let mut msg :=
+        m!"{clean.size} choice-free matches ({tainted} tainted suppressed):"
+      for n in shown do
+        msg := msg ++ m!"\n  {MessageData.ofConstName n}    [{originOf env n}]"
+      if clean.size > cap then
+        msg := msg ++ m!"\n  … {clean.size - cap} more not shown"
+      logInfo msg
+  | _ => throwUnsupportedSyntax
+
 end Audit

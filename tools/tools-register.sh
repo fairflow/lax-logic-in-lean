@@ -19,6 +19,7 @@ for p in \
   tools/rho-hasse-svg.py \
   tools/Cert.lean \
   docs/rn-catalogue.html \
+  Meta/Audit.lean \
 ; do
   printf '%-36s %s\n' "$p" "$(git log -1 --format='%h · %ad' --date=short -- "$p")"
 done
