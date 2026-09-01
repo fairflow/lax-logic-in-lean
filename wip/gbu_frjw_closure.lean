@@ -36,10 +36,18 @@ The re-fired join takes the canonical kept chain `keptOf` over the new
 base and pool; T-A places the old chain inside it, so the new conclusion
 context CONTAINS the old one and the new row subsumes the old row.
 
-Still OPEN (later parts): the promise/fallible join cases, `⊃∈ᵢ`
-(`impInI`, the second-zone split), the maximal-`Θ` treatment of
-`lift`/`circNotIn`, the computed closure itself with its termination
-bound, `WSaturated` for it, and the assembly `decideGbuW`.
+All parts have since landed (Parts II-V in this file; the saturation
+and assembly in wip/gbu_frjw_saturate.lean) and the goal is closed.
+
+ARCHIVE NOTE (2026-09-01 compaction, docs/frjw-compaction.md): the nine
+standalone T-B `_mono` defs (`joinCirc_mono`, `joinOr_mono`,
+`joinAt_mono`, `joinAtP_mono`, `joinOrP_mono`, `joinCircP_mono`,
+`circIn_mono`, `orI_mono`, `impInI_mono`) have NO code consumer — the
+saturation emitters fire the constructors directly and the T-C
+induction uses the `_of_swap` transfer lemmas.  They are kept compiled
+and pinned as the standalone T-B record (archive, not deletion).  The
+live pieces are the transfer lemmas, the `ctx_sub` lemmas, `lift_max`,
+`circNotIn_max`, `orI_mono_sub`, and `impInI_mono_sub`.
 -/
 import FRJ.CalculusW
 import FRJ.Search.Engine
