@@ -40,7 +40,10 @@ NOTATION_RE = re.compile(
 
 DOC_OPEN = ("/--",)
 
-SKIP_DIRS = {".lake", ".git", ".claude", "wip", "Archive", "archive"}
+SKIP_DIRS = {".lake", ".git", ".claude", "wipx", "Archive", "archive"}
+# `wip` is now INDEXED (the campaigns live there); `wipx` holds the files a
+# campaign is currently working from and must stay OUT of the corpus, or the
+# answer is in the index.
 
 
 def iter_lean_files(root: Path, skip_extra: set[str]) -> list[Path]:
@@ -82,8 +85,12 @@ def find_sig_end(decl_text: str) -> int:
     return len(decl_text)
 
 
+SORRY_RE = re.compile(r"\bsorry\b")
+
+
 def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
     entries: list[dict] = []
+    skipped_sorry: list[str] = []
     for path in iter_lean_files(root, skip_extra):
         try:
             text = path.read_text(encoding="utf-8")
@@ -119,6 +126,14 @@ def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
 
             m = DECL_RE.match(head)
             if m:
+                # A `sorry`ed declaration ASSERTS its statement and proves
+                # nothing.  Retrieval that offers one presents an OPEN
+                # conjecture as an available lemma, so drop it from the corpus
+                # rather than index it indistinguishably from a proved one.
+                # The count is reported, never silently dropped.
+                if SORRY_RE.search(body):
+                    skipped_sorry.append(m.group(2))
+                    continue
                 kind, name = m.group(1), m.group(2)
                 sig = body[: find_sig_end(body)].rstrip()
                 sig = re.sub(r"\n\s*\n.*", "", sig, flags=re.S).strip()
@@ -150,6 +165,9 @@ def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
                     "file": rel,
                     "line": s + 1,
                 })
+    if skipped_sorry:
+        print(f"  {root}: dropped {len(skipped_sorry)} `sorry`ed declaration(s)",
+              file=sys.stderr)
     return entries
 
 
