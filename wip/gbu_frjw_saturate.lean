@@ -30,6 +30,8 @@ Everything is choice-free; the target pins are `[propext, Quot.sound]`.
 -/
 import wip.gbu_frjw_closure
 import FRJ.StepW
+import FRJ.SoundW
+import wip.gbu_frjw_exclusion
 
 namespace FRJ.Gbu.W
 
@@ -69,17 +71,38 @@ theorem canonCtx_congr {pool Γ Γ' : List Form} (h : Γ ≐ Γ') :
     simp only [decide_eq_decide]
     exact h x)
 
-/-- The deduplicated `Ĝ` pool. -/
-def gPool (G : Form) : List Form := (gHat G).dedup
+/-- Hand-rolled deduplication (mathlib's `List.mem_dedup` carries
+`Classical.choice`). -/
+def dedupF : List Form → List Form
+  | [] => []
+  | x :: xs => if x ∈ xs then dedupF xs else x :: dedupF xs
 
-theorem mem_gPool {G : Form} {x : Form} : x ∈ gPool G ↔ x ∈ gHat G := by
-  simp [gPool, List.mem_dedup]
+theorem mem_dedupF : ∀ {l : List Form} {x : Form}, x ∈ dedupF l ↔ x ∈ l := by
+  intro l
+  induction l with
+  | nil => intro x; exact Iff.rfl
+  | cons y ys ih =>
+      intro x
+      simp only [dedupF]
+      by_cases hy : y ∈ ys
+      · rw [if_pos hy]
+        simp only [List.mem_cons, ih]
+        exact ⟨fun h => Or.inr h,
+          fun h => h.elim (fun he => he ▸ hy) id⟩
+      · rw [if_neg hy]
+        simp only [List.mem_cons, ih]
+
+/-- The deduplicated `Ĝ` pool. -/
+def gPool (G : Form) : List Form := dedupF (gHat G)
+
+theorem mem_gPool {G : Form} {x : Form} : x ∈ gPool G ↔ x ∈ gHat G :=
+  mem_dedupF
 
 /-- The deduplicated right-subformula list. -/
-def goalPool (G : Form) : List Form := (sfR G).dedup
+def goalPool (G : Form) : List Form := dedupF (sfR G)
 
-theorem mem_goalPool {G : Form} {x : Form} : x ∈ goalPool G ↔ x ∈ sfR G := by
-  simp [goalPool, List.mem_dedup]
+theorem mem_goalPool {G : Form} {x : Form} : x ∈ goalPool G ↔ x ∈ sfR G :=
+  mem_dedupF
 
 /-- The canonical form of a sequent: zones filtered through the pool;
 tag and goal untouched. -/
@@ -660,23 +683,38 @@ instance decCircGuard (P : Form → Prop) [∀ Y, Decidable (P Y)]
   | .or _ _ => isTrue (fun _ he => Form.noConfusion he)
   | .imp _ _ => isTrue (fun _ he => Form.noConfusion he)
 
-/-- `∀` over `Fin` decided through `List.finRange` (mathlib's `Fin`
-instances are avoided for the choice-free pins). -/
-def decForallFin {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
-    Decidable (∀ i, p i) :=
-  decidable_of_iff (∀ i ∈ List.finRange n, p i)
-    ⟨fun h i => h i (List.mem_finRange i), fun h i _ => h i⟩
+/-- `∀` over `Fin` decided by structural recursion — no `finRange`, no
+mathlib `Fin` order instances (the recurring `Classical.choice` trap). -/
+def decForallFin : ∀ {n : Nat} (p : Fin n → Prop), DecidablePred p →
+    Decidable (∀ i, p i)
+  | 0, _, _ => isTrue (fun i => i.elim0)
+  | n + 1, p, inst =>
+      match inst 0, decForallFin (fun i : Fin n => p i.succ)
+          (fun i => inst i.succ) with
+      | isTrue h0, isTrue hs => isTrue (fun i => Fin.cases h0 hs i)
+      | isFalse h0, _ => isFalse (fun hall => h0 (hall 0))
+      | _, isFalse hs => isFalse (fun hall => hs (fun i => hall i.succ))
 
-def decExistsFin {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
-    Decidable (∃ i, p i) :=
-  decidable_of_iff (∃ i ∈ List.finRange n, p i)
-    ⟨fun ⟨i, _, h⟩ => ⟨i, h⟩, fun ⟨i, h⟩ => ⟨i, List.mem_finRange i, h⟩⟩
+def decExistsFin : ∀ {n : Nat} (p : Fin n → Prop), DecidablePred p →
+    Decidable (∃ i, p i)
+  | 0, _, _ => isFalse (fun h => match h with | ⟨i, _⟩ => i.elim0)
+  | n + 1, p, inst =>
+      match inst 0, decExistsFin (fun i : Fin n => p i.succ)
+          (fun i => inst i.succ) with
+      | isTrue h0, _ => isTrue ⟨0, h0⟩
+      | isFalse _, isTrue hs =>
+          isTrue (match hs with | ⟨i, hi⟩ => ⟨i.succ, hi⟩)
+      | isFalse h0, isFalse hs => isFalse (fun h =>
+          match h with
+          | ⟨i, hi⟩ =>
+              Fin.cases (motive := fun i => p i → False)
+                (fun hp => h0 hp) (fun j hp => hs ⟨j, hp⟩) i hi)
 
-instance {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
-    Decidable (∀ i, p i) := decForallFin p
+instance {n : Nat} (p : Fin n → Prop) [inst : DecidablePred p] :
+    Decidable (∀ i, p i) := decForallFin p inst
 
-instance {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
-    Decidable (∃ i, p i) := decExistsFin p
+instance {n : Nat} (p : Fin n → Prop) [inst : DecidablePred p] :
+    Decidable (∃ i, p i) := decExistsFin p inst
 
 /-- Shape-bounded to unbounded: the implication guard. -/
 theorem impGuard_elim {pool : List Form} {P : Form → Form → Prop}
@@ -1558,7 +1596,8 @@ theorem reindex_irr {G : Form} {db : List (WRow G)}
     have hlen : ∀ (i : Fin (t.length + 1)),
         i.val < (List.map IrrT.seq (a :: t)).length := by
       intro i
-      simpa using i.isLt
+      rw [List.length_map]
+      exact i.isLt
     have hmapeq : (List.map IrrT.seq (a :: t))[i₁.val]'(hlen i₁) =
         (List.map IrrT.seq (a :: t))[i₂.val]'(hlen i₂) := by
       simp only [List.getElem_map]
@@ -1877,5 +1916,556 @@ theorem cov_impInI : ∀ (St₂ ThLam₂ Lam : List Form) (A B : Form),
   exact stored_of_emitted (sub_stepAll_ImpInI _ hemit)
 
 end Coverage
+
+/-! ### Coverage: the join clauses -/
+
+/-- The promise context sits inside the fallible one (same family). -/
+theorem ctxAtP_sub_ctxAtF {n k : Nat}
+    {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
+    {F : Form} {Δs : Fin (k + 1) → List Form} :
+    joinCtxAtP stab th rhs F Δs ⊆ joinCtxAtF stab th rhs F := by
+  intro x hx
+  have h1 := restrictP_subset hx
+  rcases List.mem_append.mp h1 with h | h
+  · exact List.mem_append_left _ h
+  · refine List.mem_append_right _ ?_
+    simp only [joinCtxCircP, joinCtxCircF, restrictC,
+      List.mem_append] at h ⊢
+    rcases h with h | h
+    · exact Or.inl h
+    · exact Or.inr (List.mem_filter.mp h).1
+
+theorem ctxOrP_sub_ctxOrF {n k : Nat}
+    {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
+    {Δs : Fin (k + 1) → List Form} :
+    joinCtxOrP stab th rhs Δs ⊆ joinCtxOrF stab th rhs := by
+  intro x hx
+  have h1 := restrictP_subset hx
+  rcases List.mem_append.mp h1 with h | h
+  · exact List.mem_append_left _ h
+  · refine List.mem_append_right _ ?_
+    simp only [joinCtxCircP, joinCtxCircF, restrictC,
+      List.mem_append] at h ⊢
+    rcases h with h | h
+    · exact Or.inl h
+    · exact Or.inr (List.mem_filter.mp h).1
+
+theorem cov_joinCirc (G : Form) : ∀ {n : Nat}
+    (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (Z : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) A) →
+    unionAll (fun j => circPart (stab j)) = [] →
+    RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+      keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) Z →
+    Form.circ Z ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg .barren (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+        (.circ Z)) r.s := by
+  intro n stab th rhs Z hmem hJ1 hJ2 hcirc hZ hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmem
+  have hctx := hsame.orCtx_sub
+  have hJ2' : ∀ A B : Form, Form.imp A B ∈
+      unionAll (fun j => impPart (((a :: t).get j).St)) →
+      RefAt true (upsilon fun j => ((a :: t).get j).C)
+        (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th) ++
+          keptOf (upsilon fun j => ((a :: t).get j).C)
+            (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+              (fun j => ((a :: t).get j).Th))
+            (thPool fun j => ((a :: t).get j).Th)) A :=
+    fun A B hAB => refAt_mono hsame.upsilon_eq.subset hctx
+      (hJ2 A B ((hsame.unionAll_filter _ _).mpr hAB))
+  have hemit : (⟨.reg .barren
+      (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+          (fun j => ((a :: t).get j).Th) ++
+        keptOf (upsilon fun j => ((a :: t).get j).C)
+          (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th))
+          (thPool fun j => ((a :: t).get j).Th)) (.circ Z),
+      .joinCirc (fun j => ((a :: t).get j).d)
+        (hsame.hJ1 hnd hJ1) hJ2' (hsame.hcirc hcirc) (keptOf_ok _ _ _)
+        (refAt_mono hsame.upsilon_eq.subset hctx hZ) hg
+        (CtxEq.refl _)⟩ : WRow G) ∈ emitJoinCirc G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+    refine List.mem_filterMap.mpr ⟨.circ Z, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hsame.hJ1 hnd hJ1, impGuard_intro hJ2',
+      hsame.hcirc hcirc,
+      refAt_mono hsame.upsilon_eq.subset hctx hZ, hg⟩
+  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinCirc _ hemit)
+  exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
+
+theorem cov_joinOr (G : Form) : ∀ {n : Nat}
+    (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    unionAll (fun j => circPart (stab j)) = [] →
+    (RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₁ ∧
+      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₂) →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg .barren (joinCtxOrVBase stab th ++
+        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+        (.or C₁ C₂)) r.s := by
+  intro n stab th rhs C₁ C₂ hmem hJ1 hJ2 hcirc hC hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmem
+  have hctx := hsame.orCtx_sub
+  have hC' : RefAt true (upsilon fun j => ((a :: t).get j).C)
+      (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+          (fun j => ((a :: t).get j).Th) ++
+        keptOf (upsilon fun j => ((a :: t).get j).C)
+          (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th))
+          (thPool fun j => ((a :: t).get j).Th)) C₁ ∧
+      RefAt true (upsilon fun j => ((a :: t).get j).C)
+        (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th) ++
+          keptOf (upsilon fun j => ((a :: t).get j).C)
+            (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+              (fun j => ((a :: t).get j).Th))
+            (thPool fun j => ((a :: t).get j).Th)) C₂ :=
+    ⟨refAt_mono hsame.upsilon_eq.subset hctx hC.1,
+     refAt_mono hsame.upsilon_eq.subset hctx hC.2⟩
+  have hemit : (⟨.reg .barren
+      (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+          (fun j => ((a :: t).get j).Th) ++
+        keptOf (upsilon fun j => ((a :: t).get j).C)
+          (joinCtxOrVBase (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th))
+          (thPool fun j => ((a :: t).get j).Th)) (.or C₁ C₂),
+      .joinOr (fun j => ((a :: t).get j).d)
+        (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) (hsame.hcirc hcirc)
+        (keptOf_ok _ _ _) hC' hg (CtxEq.refl _)⟩ : WRow G) ∈
+        emitJoinOr G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+    refine List.mem_filterMap.mpr ⟨.or C₁ C₂, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+      impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+      hsame.hcirc hcirc, hC', hg⟩
+  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinOr _ hemit)
+  exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
+
+theorem cov_joinAt (G : Form) : ∀ {n : Nat}
+    (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (F : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    unionAll (fun j => circPart (stab j)) = [] →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg .barren (joinCtxAtVBase stab th F ++
+        keptOf (upsilon rhs) (joinCtxAtVBase stab th F) (thPool th))
+        F) r.s := by
+  intro n stab th rhs F hmem hJ1 hJ2 hcirc hF hFnot hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmem
+  have hctx := hsame.atCtx_sub (F := F)
+  have hemit : (⟨.reg .barren
+      (joinCtxAtVBase (fun j => ((a :: t).get j).St)
+          (fun j => ((a :: t).get j).Th) F ++
+        keptOf (upsilon fun j => ((a :: t).get j).C)
+          (joinCtxAtVBase (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th) F)
+          (thPool fun j => ((a :: t).get j).Th)) F,
+      .joinAt (fun j => ((a :: t).get j).d)
+        (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) (hsame.hcirc hcirc)
+        (keptOf_ok _ _ _) hF (hsame.hFnot hFnot) hg
+        (CtxEq.refl _)⟩ : WRow G) ∈ emitJoinAt G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+    refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+      impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+      hsame.hcirc hcirc, hF, hsame.hFnot hFnot, hg⟩
+  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinAt _ hemit)
+  exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
+
+theorem cov_joinAtF (G : Form) : ∀ {n : Nat}
+    (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (F : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg .blocked (joinCtxAtF stab th rhs F) F) r.s := by
+  intro n stab th rhs F hmem hJ1 hJ2 hF hFnot hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmem
+  have hemit : (⟨.reg .blocked
+      (joinCtxAtF (fun j => ((a :: t).get j).St)
+        (fun j => ((a :: t).get j).Th)
+        (fun j => ((a :: t).get j).C) F) F,
+      .joinAtF (fun j => ((a :: t).get j).d)
+        (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hF
+        (hsame.hFnot hFnot) hg (CtxEq.refl _)⟩ : WRow G) ∈
+        emitJoinAtF G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+    refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+      impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+      hF, hsame.hFnot hFnot, hg⟩
+  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinAtF _ hemit)
+  exact ⟨e, he, wSubsumes_trans
+    (wSubsumes_reg (tagLeB_refl _) (hsame.ctxAtF (F := F)).subset) hsub⟩
+
+theorem cov_joinOrF (G : Form) : ∀ {n : Nat}
+    (stab th : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg .blocked (joinCtxOrF stab th rhs) (.or C₁ C₂)) r.s := by
+  intro n stab th rhs C₁ C₂ hmem hJ1 hJ2 hC hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmem
+  have hC' : C₁ ∈ (upsilon fun j => ((a :: t).get j).C) ∧
+      C₂ ∈ (upsilon fun j => ((a :: t).get j).C) :=
+    ⟨(hsame.upsilon_eq C₁).mp hC.1, (hsame.upsilon_eq C₂).mp hC.2⟩
+  have hemit : (⟨.reg .blocked
+      (joinCtxOrF (fun j => ((a :: t).get j).St)
+        (fun j => ((a :: t).get j).Th)
+        (fun j => ((a :: t).get j).C)) (.or C₁ C₂),
+      .joinOrF (fun j => ((a :: t).get j).d)
+        (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hC' hg
+        (CtxEq.refl _)⟩ : WRow G) ∈ emitJoinOrF G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+    refine List.mem_filterMap.mpr ⟨.or C₁ C₂, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+      impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+      hC', hg⟩
+  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinOrF _ hemit)
+  exact ⟨e, he, wSubsumes_trans
+    (wSubsumes_reg (tagLeB_refl _) hsame.ctxOrF.subset) hsub⟩
+
+theorem cov_joinAtP (G : Form) : ∀ {n k : Nat}
+    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
+    (F : Form) (t' : Tag) (tps : Fin (k + 1) → Tag)
+    (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg t' (joinCtxAtP stab th rhs F Δs) F) r.s := by
+  intro n k stab th rhs F t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ7s
+    htag hF hFnot hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmemI
+  rcases htag with h0 | hchain
+  · -- blocked branch: covered by the fallible join
+    subst h0
+    have hemit : (⟨.reg .blocked
+        (joinCtxAtF (fun j => ((a :: t).get j).St)
+          (fun j => ((a :: t).get j).Th)
+          (fun j => ((a :: t).get j).C) F) F,
+        .joinAtF (fun j => ((a :: t).get j).d)
+          (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hF
+          (hsame.hFnot hFnot) hg (CtxEq.refl _)⟩ : WRow G) ∈
+          emitJoinAtF G (closureDB G) := by
+      refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+      refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
+      exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+        impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+        hF, hsame.hFnot hFnot, hg⟩
+    obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinAtF _ hemit)
+    refine ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
+      (fun x hx => (hsame.ctxAtF (F := F)).subset
+        (ctxAtP_sub_ctxAtF hx))) hsub⟩
+  · -- chain branch
+    obtain ⟨b, u, hsublR, hsameR⟩ := reindex_reg hmemR
+    have htagG := htagP_re hsameR (Or.inr hchain)
+    rcases htagG with hbad | ⟨h0G, hallG⟩
+    · rw [hchain.1] at hbad
+      exact absurd hbad (by simp)
+    · have hemit : (⟨.reg (.chain (((b :: u).get 0).C))
+          (joinCtxAtP (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th)
+            (fun j => ((a :: t).get j).C) F
+            (fun i => ((b :: u).get i).Γ)) F,
+          .joinAtP (fun j => ((a :: t).get j).d)
+            (fun i => ((b :: u).get i).d)
+            (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2)
+            (hJ5_re hsame hsameR hJ5) (hJ7s_re hsame hsameR hJ7s)
+            (Or.inr ⟨rfl, hallG⟩) hF (hsame.hFnot hFnot) hg
+            (CtxEq.refl _)⟩ : WRow G) ∈ emitJoinAtP G (closureDB G) := by
+        refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+        refine List.mem_flatMap.mpr ⟨b :: u, hsublR, ?_⟩
+        refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
+        exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+          impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+          circGuard_intro (hJ5_re hsame hsameR hJ5),
+          hJ7s_re hsame hsameR hJ7s, hallG, hF,
+          hsame.hFnot hFnot, hg⟩
+      obtain ⟨e, he, hsub⟩ :=
+        stored_of_emitted (sub_stepAll_JoinAtP _ hemit)
+      rw [h0G]
+      exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
+        (ctxAtP_eq hsame hsameR).subset) hsub⟩
+
+theorem cov_joinOrP (G : Form) : ∀ {n k : Nat}
+    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
+    (C₁ C₂ : Form) (t' : Tag) (tps : Fin (k + 1) → Tag)
+    (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg t' (joinCtxOrP stab th rhs Δs) (.or C₁ C₂)) r.s := by
+  intro n k stab th rhs C₁ C₂ t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5
+    hJ7s htag hC hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmemI
+  have hC' : C₁ ∈ (upsilon fun j => ((a :: t).get j).C) ∧
+      C₂ ∈ (upsilon fun j => ((a :: t).get j).C) :=
+    ⟨(hsame.upsilon_eq C₁).mp hC.1, (hsame.upsilon_eq C₂).mp hC.2⟩
+  rcases htag with h0 | hchain
+  · subst h0
+    have hemit : (⟨.reg .blocked
+        (joinCtxOrF (fun j => ((a :: t).get j).St)
+          (fun j => ((a :: t).get j).Th)
+          (fun j => ((a :: t).get j).C)) (.or C₁ C₂),
+        .joinOrF (fun j => ((a :: t).get j).d)
+          (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hC' hg
+          (CtxEq.refl _)⟩ : WRow G) ∈ emitJoinOrF G (closureDB G) := by
+      refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+      refine List.mem_filterMap.mpr ⟨.or C₁ C₂, mem_goalPool.mpr hg, ?_⟩
+      exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+        impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+        hC', hg⟩
+    obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinOrF _ hemit)
+    refine ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
+      (fun x hx => hsame.ctxOrF.subset (ctxOrP_sub_ctxOrF hx))) hsub⟩
+  · obtain ⟨b, u, hsublR, hsameR⟩ := reindex_reg hmemR
+    have htagG := htagP_re hsameR (Or.inr hchain)
+    rcases htagG with hbad | ⟨h0G, hallG⟩
+    · rw [hchain.1] at hbad
+      exact absurd hbad (by simp)
+    · have hemit : (⟨.reg (.chain (((b :: u).get 0).C))
+          (joinCtxOrP (fun j => ((a :: t).get j).St)
+            (fun j => ((a :: t).get j).Th)
+            (fun j => ((a :: t).get j).C)
+            (fun i => ((b :: u).get i).Γ)) (.or C₁ C₂),
+          .joinOrP (fun j => ((a :: t).get j).d)
+            (fun i => ((b :: u).get i).d)
+            (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2)
+            (hJ5_re hsame hsameR hJ5) (hJ7s_re hsame hsameR hJ7s)
+            (Or.inr ⟨rfl, hallG⟩) hC' hg
+            (CtxEq.refl _)⟩ : WRow G) ∈ emitJoinOrP G (closureDB G) := by
+        refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+        refine List.mem_flatMap.mpr ⟨b :: u, hsublR, ?_⟩
+        refine List.mem_filterMap.mpr
+          ⟨.or C₁ C₂, mem_goalPool.mpr hg, ?_⟩
+        exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+          impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+          circGuard_intro (hJ5_re hsame hsameR hJ5),
+          hJ7s_re hsame hsameR hJ7s, hallG, hC', hg⟩
+      obtain ⟨e, he, hsub⟩ :=
+        stored_of_emitted (sub_stepAll_JoinOrP _ hemit)
+      rw [h0G]
+      exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
+        (ctxOrP_eq hsame hsameR).subset) hsub⟩
+
+theorem cov_joinCircP (G : Form) : ∀ {n k : Nat}
+    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
+    (Z : Form) (tps : Fin (k + 1) → Tag)
+    (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i, Ds i = Z ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z)) →
+    Z ∈ upsilon rhs → Form.circ Z ∈ sfR G →
+    ∃ r ∈ closureDB G,
+      WSubsumes (.reg (.chain Z) (joinCtxOrP stab th rhs Δs)
+        (.circ Z)) r.s := by
+  intro n k stab th rhs Z tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ7s
+    hDs hZ hg
+  obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
+    reindex_irr (closureDB_seq_nodup G) hmemI
+  obtain ⟨b, u, hsublR, hsameR⟩ := reindex_reg hmemR
+  have hZ' : Z ∈ (upsilon fun j => ((a :: t).get j).C) :=
+    (hsame.upsilon_eq Z).mp hZ
+  have hDsG := hDsZ_re hsameR hDs
+  have hemit : (⟨.reg (.chain Z)
+      (joinCtxOrP (fun j => ((a :: t).get j).St)
+        (fun j => ((a :: t).get j).Th)
+        (fun j => ((a :: t).get j).C)
+        (fun i => ((b :: u).get i).Γ)) (.circ Z),
+      .joinCircP (fun j => ((a :: t).get j).d)
+        (fun i => ((b :: u).get i).d)
+        (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2)
+        (hJ5_re hsame hsameR hJ5) (hJ7s_re hsame hsameR hJ7s)
+        hDsG hZ' hg (CtxEq.refl _)⟩ : WRow G) ∈
+        emitJoinCircP G (closureDB G) := by
+    refine List.mem_flatMap.mpr ⟨a :: t, hsubl, ?_⟩
+    refine List.mem_flatMap.mpr ⟨b :: u, hsublR, ?_⟩
+    refine List.mem_filterMap.mpr ⟨.circ Z, mem_goalPool.mpr hg, ?_⟩
+    exact dif_pos ⟨hsame.hJ1 hnd hJ1,
+      impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
+      circGuard_intro (hJ5_re hsame hsameR hJ5),
+      hJ7s_re hsame hsameR hJ7s, hDsG, hZ', hg⟩
+  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinCircP _ hemit)
+  exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
+    (ctxOrP_eq hsame hsameR).subset) hsub⟩
+
+/-! ## S7: the assembly -/
+
+/-- **The closed database exists**: `closureDB G` satisfies every
+clause. -/
+theorem closureDB_closed (G : Form) : DBClosed G (closureDB G) where
+  axR := cov_axR G
+  andR1 := cov_andR1 G
+  andR2 := cov_andR2 G
+  impIn := cov_impIn G
+  circIn := cov_circIn G
+  joinAt := fun stab th rhs F => cov_joinAt G stab th rhs F
+  joinOr := fun stab th rhs C₁ C₂ => cov_joinOr G stab th rhs C₁ C₂
+  joinCirc := fun stab th rhs Z => cov_joinCirc G stab th rhs Z
+  joinAtP := fun stab th rhs F t' tps Δs Ds =>
+    cov_joinAtP G stab th rhs F t' tps Δs Ds
+  joinOrP := fun stab th rhs C₁ C₂ t' tps Δs Ds =>
+    cov_joinOrP G stab th rhs C₁ C₂ t' tps Δs Ds
+  joinCircP := fun stab th rhs Z tps Δs Ds =>
+    cov_joinCircP G stab th rhs Z tps Δs Ds
+  joinAtF := fun stab th rhs F => cov_joinAtF G stab th rhs F
+  joinOrF := fun stab th rhs C₁ C₂ => cov_joinOrF G stab th rhs C₁ C₂
+  axI := cov_axI G
+  andI1 := cov_andI1 G
+  andI2 := cov_andI2 G
+  orI := cov_orI G
+  impInI := cov_impInI G
+  lift := cov_lift G
+  circNotIn := cov_circNotIn G
+  axIC := cov_axIC G
+
+/-- The constructive existence statement. -/
+theorem dbClosed_exists (G : Form) :
+    ∃ db : List (WRow G), DBClosed G db :=
+  ⟨closureDB G, closureDB_closed G⟩
+
+/-- **`decideGbuW`** — for every PLL formula `G`, either a `Gbu◯`
+derivation of `G` or an FRJW disproof of `G`, as data. -/
+def decideGbuW (G : Form) : ProvableGbuC G ⊕' DisprovableW G :=
+  decideGbuW_of_dbClosed (closureDB G) (closureDB_closed G)
+
+/-! ## The crown: the simultaneous completeness pair, and PLL decided -/
+
+/-- The dichotomy at the judgment level: every PLL formula is
+`Gbu◯`-provable or FRJW-disprovable. -/
+theorem provable_or_disprovable (G : Form) :
+    ProvableGbuC G ∨ DisprovableW G :=
+  match decideGbuW G with
+  | .inl h => Or.inl h
+  | .inr h => Or.inr h
+
+/-- **FRJW completeness**: whatever `Gbu◯` does not prove, FRJW
+disproves. -/
+theorem frjw_complete {G : Form} (h : ¬ ProvableGbuC G) :
+    DisprovableW G :=
+  (provable_or_disprovable G).resolve_left h
+
+/-- **GBUW completeness, the dichotomy route**: whatever FRJW does not
+disprove, `Gbu◯` proves.  Independent of the LJF◯ translation route
+(`gbuC_complete`). -/
+theorem gbuw_complete {G : Form} (h : ¬ DisprovableW G) :
+    ProvableGbuC G :=
+  (provable_or_disprovable G).resolve_right h
+
+/-- **Provability is validity.** -/
+theorem provableGbuC_iff_pll {G : Form} : ProvableGbuC G ↔ PLL G :=
+  ⟨FRJ.Gbu.pll_of_provableGbuC, fun hv =>
+    (provable_or_disprovable G).resolve_right
+      (fun hd => FRJ.soundnessW hd hv)⟩
+
+/-- **Disprovability is invalidity.** -/
+theorem disprovableW_iff_not_pll {G : Form} : DisprovableW G ↔ ¬ PLL G :=
+  ⟨FRJ.soundnessW, fun hnv =>
+    (provable_or_disprovable G).resolve_left
+      (fun hp => hnv (FRJ.Gbu.pll_of_provableGbuC hp))⟩
+
+/-- **PLL is decidable**, by a certified procedure: the dichotomy
+computes the split and the two soundness theorems read it
+semantically. -/
+def decidePLL (G : Form) : Decidable (PLL G) :=
+  match decideGbuW G with
+  | .inl h => isTrue (FRJ.Gbu.pll_of_provableGbuC h)
+  | .inr h => isFalse (FRJ.soundnessW h)
+
+/-! ## Pins -/
+
+/-- info: 'FRJ.Gbu.W.closureDB_closed' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms closureDB_closed
+
+/-- info: 'FRJ.Gbu.W.dbClosed_exists' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms dbClosed_exists
+
+/-- info: 'FRJ.Gbu.W.decideGbuW' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms decideGbuW
+
+/-- info: 'FRJ.Gbu.W.provable_or_disprovable' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provable_or_disprovable
+
+/-- info: 'FRJ.Gbu.W.frjw_complete' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms frjw_complete
+
+/-- info: 'FRJ.Gbu.W.gbuw_complete' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms gbuw_complete
+
+/-- info: 'FRJ.Gbu.W.provableGbuC_iff_pll' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms provableGbuC_iff_pll
+
+/-- info: 'FRJ.Gbu.W.disprovableW_iff_not_pll' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms disprovableW_iff_not_pll
+
+/-- info: 'FRJ.Gbu.W.decidePLL' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms decidePLL
 
 end FRJ.Gbu.W
