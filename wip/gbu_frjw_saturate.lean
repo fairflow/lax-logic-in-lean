@@ -1174,4 +1174,181 @@ def stepAll (G : Form) (db : List (WRow G)) : List (WRow G) :=
     emitJoinAtF G db ++ emitJoinOrF G db ++
     emitJoinAtP G db ++ emitJoinOrP G db ++ emitJoinCircP G db
 
+/-! ## S6: saturation, and the pigeonhole that ends it
+
+Rows are only ever PREPENDED, keyed by canonical sequent; a round that
+adds nothing is a fixpoint; a round that adds something grows the
+key-nodup store, which lives inside the finite wellformed universe.
+So `univList.length + 1` rounds reach the fixpoint from the empty
+store. -/
+
+variable {G : Form}
+
+/-- The canonical key of a row. -/
+def keyOf (G : Form) (r : WRow G) : WSeq := canonSeq G r.s
+
+def keysOf (G : Form) (db : List (WRow G)) : List WSeq :=
+  db.map (keyOf G)
+
+/-- Insert the rows whose canonical key is not yet present. -/
+def insertNew (G : Form) (new db : List (WRow G)) : List (WRow G) :=
+  new.foldl (fun acc r =>
+    if keyOf G r ∈ keysOf G acc then acc else r :: acc) db
+
+/-- The store only grows. -/
+theorem insertNew_sup {G : Form} :
+    ∀ (new db : List (WRow G)), db ⊆ insertNew G new db := by
+  intro new
+  induction new with
+  | nil => exact fun db _ h => h
+  | cons r rest ih =>
+      intro db x hx
+      simp only [insertNew, List.foldl_cons]
+      by_cases hk : keyOf G r ∈ keysOf G db
+      · rw [if_pos hk]
+        exact ih db hx
+      · rw [if_neg hk]
+        exact ih (r :: db) (List.mem_cons_of_mem _ hx)
+
+theorem insertNew_length_le {G : Form} :
+    ∀ (new db : List (WRow G)),
+      db.length ≤ (insertNew G new db).length := by
+  intro new
+  induction new with
+  | nil => exact fun _ => Nat.le_refl _
+  | cons r rest ih =>
+      intro db
+      simp only [insertNew, List.foldl_cons]
+      by_cases hk : keyOf G r ∈ keysOf G db
+      · rw [if_pos hk]; exact ih db
+      · rw [if_neg hk]
+        exact Nat.le_trans (Nat.le_succ _) (ih (r :: db))
+
+/-- A round holding a genuinely fresh key strictly grows the store. -/
+theorem insertNew_length_lt {G : Form} :
+    ∀ (new db : List (WRow G)),
+      (∃ r ∈ new, keyOf G r ∉ keysOf G db) →
+      db.length < (insertNew G new db).length := by
+  intro new
+  induction new with
+  | nil => rintro db ⟨r, hr, -⟩; exact absurd hr List.not_mem_nil
+  | cons r rest ih =>
+      rintro db ⟨w, hw, hfresh⟩
+      simp only [insertNew, List.foldl_cons]
+      by_cases hk : keyOf G r ∈ keysOf G db
+      · rw [if_pos hk]
+        rcases List.mem_cons.mp hw with rfl | hw'
+        · exact absurd hk hfresh
+        · exact ih db ⟨w, hw', hfresh⟩
+      · rw [if_neg hk]
+        exact Nat.lt_of_lt_of_le (Nat.lt_succ_self _)
+          (insertNew_length_le rest (r :: db))
+
+/-- Key-nodupness survives insertion. -/
+theorem insertNew_nodup {G : Form} :
+    ∀ (new db : List (WRow G)), (keysOf G db).Nodup →
+      (keysOf G (insertNew G new db)).Nodup := by
+  intro new
+  induction new with
+  | nil => exact fun _ h => h
+  | cons r rest ih =>
+      intro db hnd
+      simp only [insertNew, List.foldl_cons]
+      by_cases hk : keyOf G r ∈ keysOf G db
+      · rw [if_pos hk]; exact ih db hnd
+      · rw [if_neg hk]
+        exact ih (r :: db) (List.nodup_cons.mpr ⟨hk, hnd⟩)
+
+/-- The new rows of a round. -/
+def stepNew (G : Form) (db : List (WRow G)) : List (WRow G) :=
+  (stepAll G db).filter (fun r => decide (keyOf G r ∉ keysOf G db))
+
+def sat (G : Form) : Nat → List (WRow G) → List (WRow G)
+  | 0, db => db
+  | fuel + 1, db =>
+      let new := stepNew G db
+      if new.isEmpty then db else sat G fuel (insertNew G new db)
+
+theorem sat_sup {G : Form} :
+    ∀ (fuel : Nat) (db : List (WRow G)), db ⊆ sat G fuel db := by
+  intro fuel
+  induction fuel with
+  | zero => exact fun _ _ h => h
+  | succ fuel ih =>
+      intro db
+      simp only [sat]
+      by_cases he : (stepNew G db).isEmpty
+      · rw [if_pos he]; exact fun _ h => h
+      · rw [if_neg he]
+        exact fun x hx => ih _ (insertNew_sup _ db hx)
+
+/-- Every stored key lies in the wellformed universe. -/
+theorem keys_sub_univ {G : Form} (db : List (WRow G)) :
+    ∀ k ∈ keysOf G db, k ∈ univList G := by
+  intro k hk
+  obtain ⟨r, -, rfl⟩ := List.mem_map.mp hk
+  exact canonSeq_mem_univ (wfSeq_of_wDer r.d)
+
+/-- The pigeonhole: with enough fuel the round adds nothing. -/
+theorem sat_fixed {G : Form} :
+    ∀ (fuel : Nat) (db : List (WRow G)), (keysOf G db).Nodup →
+      (univList G).length + 1 ≤ db.length + fuel →
+      (stepNew G (sat G fuel db)).isEmpty = true := by
+  intro fuel
+  induction fuel with
+  | zero =>
+      intro db hnd hlen
+      exfalso
+      have hbound : db.length ≤ (univList G).length := by
+        have := length_le_of_nodup_subset hnd (keys_sub_univ db)
+        simpa [keysOf] using this
+      omega
+  | succ fuel ih =>
+      intro db hnd hlen
+      simp only [sat]
+      by_cases he : (stepNew G db).isEmpty
+      · rw [if_pos he]; exact he
+      · rw [if_neg he]
+        have hne : stepNew G db ≠ [] := by
+          intro h
+          rw [h] at he
+          exact he rfl
+        obtain ⟨w, hw⟩ := List.exists_mem_of_ne_nil _ hne
+        have hfresh : keyOf G w ∉ keysOf G db := by
+          have := (List.mem_filter.mp hw).2
+          simpa using this
+        have hlt := insertNew_length_lt (stepNew G db) db
+          ⟨w, hw, hfresh⟩
+        exact ih (insertNew G (stepNew G db) db)
+          (insertNew_nodup _ db hnd) (by omega)
+
+/-- **The closed database.** -/
+def closureDB (G : Form) : List (WRow G) :=
+  sat G ((univList G).length + 1) []
+
+/-- At the fixpoint, every emitted row's canonical key is stored. -/
+theorem closureDB_fixed (G : Form) :
+    ∀ r ∈ stepAll G (closureDB G),
+      canonSeq G r.s ∈ keysOf G (closureDB G) := by
+  intro r hr
+  have hfix : (stepNew G (closureDB G)).isEmpty = true := by
+    have := sat_fixed (G := G) ((univList G).length + 1) []
+      List.nodup_nil (by simp)
+    simpa [closureDB] using this
+  by_contra hnot
+  have hmem : r ∈ stepNew G (closureDB G) :=
+    List.mem_filter.mpr ⟨hr, by simpa [keyOf] using hnot⟩
+  rw [List.isEmpty_iff] at hfix
+  rw [hfix] at hmem
+  exact absurd hmem List.not_mem_nil
+
+/-- Fixpoint presence, packaged for the closedness clauses: an emitted
+row is subsumed by a stored one. -/
+theorem stored_of_emitted {G : Form} {r : WRow G}
+    (h : r ∈ stepAll G (closureDB G)) :
+    ∃ e ∈ closureDB G, WSubsumes r.s e.s := by
+  obtain ⟨e, he, hkey⟩ := List.mem_map.mp (closureDB_fixed G r h)
+  exact ⟨e, he, subsumes_of_canonSeq_eq (wfSeq_of_wDer r.d)
+    (wfSeq_of_wDer e.d) hkey.symm⟩
+
 end FRJ.Gbu.W
