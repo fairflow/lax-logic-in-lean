@@ -616,3 +616,35 @@ re-checked), and the change surface is confined to the W-family
 (`CalculusW`/`StepW`/`SoundW`/`ExtractW`/`OpsW` + W-side wip files):
 no FRJV file and no Gbu◯ file is touched; the Gbu◯ chain
 (`gbuC_complete`) imports no W-calculus module and conversely.
+
+### searchW COMPLETE (2026-09-01, 15:30)
+
+The induction is closed.  The corner fell to TOTALITY:
+
+    totalityW : at a critical cell, every X ∈ Sf^R(G) is
+      RefAt-refutable over Z :: R₀ (R₀ = all refuted forms)
+      ⊕' Gbu◯-derivable
+
+by structural induction — RefAt's clauses and the irregular
+introduction rules are De Morgan duals; atoms split by context
+membership (`evalI_axI_gHat`); the `¬Clo`-antecedent implication is
+refuted as a form (`gbuInv9`) or recurses into the regular stratum on
+an `unclosed`-drop.  A stuck antecedent failing the corner's RefAt
+test is unrefuted, hence DERIVABLE, and `L⊃ᵢ` steps through it.
+
+BANKED (frjw-dev de3c47a):
+  searchW    [propext, Quot.sound]   (sorry-free, #guard_msgs pin)
+  dichotomyW : DisprovableW G ⊕' GbuRC G [] G   (same pin)
+over any WSaturated database with deciders.  `findCMT`
+constructivised (`Decidable.of_not_not`) — no Classical.choice.
+
+REMAINING for decideGbuW: the concrete saturated database per G
+(WSaturated.2 = the engine-fixpoint/closure obligation) with its
+deciders; then ProvableGbuC G ⊕ DisprovableW G via dichotomyW + the
+banked exclusion, and FRJW completeness reads off.
+
+CLEANUP owed: the goal-set invariant threading (~200 lines) is
+vestigial in the final proof (scaffolding that produced the totality
+insight); likewise the certificate-conversion and prime-axI corner
+fast-paths.  Strip as a separate commit.  Exposition:
+docs/searchw-architecture.md carries the full story.

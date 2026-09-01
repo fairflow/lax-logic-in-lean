@@ -3421,3 +3421,17 @@ gap cell (irregular row via Lift where FRJV provably has none).  The
 open target is the dichotomy `decideGbuW : ∀ G, ProvableGbuC G ⊕
 DisprovableW G` — plan and ordered next steps in the "FRJW completeness
 thread" section of `docs/frjw-plan.md`.
+
+## 2026-09-01h — searchW complete: the Gbu◯/FRJW cell dichotomy is PROVED
+
+`searchW` (wip/gbu_frjw_search.lean) is sorry-free and pinned
+[propext, Quot.sound], with the root corollary `dichotomyW :
+DisprovableW G ⊕' GbuRC G [] G` over any saturated database with
+deciders.  The day's arc: RefAt-relaxed barren (J2) on ⋈^◯ (Matthew-
+approved calculus change; soundnessW re-proved, Classical.choice-
+free); the (antecedent, goal) pair-V chase measure; the kept-chain
+manufactures; the goal-set invariant; and the closure by TOTALITY
+(every Sf^R-form refutable-or-derivable at a critical cell, De Morgan
+duality of RefAt vs the intro rules).  Architecture + innovation
+exposition: docs/searchw-architecture.md.  Remaining for decideGbuW:
+the concrete saturated database per G (engine-fixpoint obligation).
