@@ -86,6 +86,20 @@ def find_sig_end(decl_text: str) -> int:
 
 
 SORRY_RE = re.compile(r"\bsorry\b")
+BLOCK_COMMENT_RE = re.compile(r"/-.*?-/", re.S)
+LINE_COMMENT_RE = re.compile(r"--[^\n]*")
+
+
+def is_sorried(body: str) -> bool:
+    """Does the declaration's CODE contain `sorry`?
+
+    Comments are stripped first: a proved lemma whose docstring says
+    "sorry-free" must stay in the corpus, and dropping it would degrade
+    exactly the retrieval this index exists to provide.
+    """
+    code = BLOCK_COMMENT_RE.sub(" ", body)
+    code = LINE_COMMENT_RE.sub(" ", code)
+    return SORRY_RE.search(code) is not None
 
 
 def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
@@ -131,7 +145,7 @@ def harvest(root: Path, repo_label: str, skip_extra: set[str]) -> list[dict]:
                 # conjecture as an available lemma, so drop it from the corpus
                 # rather than index it indistinguishably from a proved one.
                 # The count is reported, never silently dropped.
-                if SORRY_RE.search(body):
+                if is_sorried(body):
                     skipped_sorry.append(m.group(2))
                     continue
                 kind, name = m.group(1), m.group(2)
