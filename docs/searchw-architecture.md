@@ -185,7 +185,7 @@ branch are now redundant decidable fast-paths.  Recorded here so the
 exposition can tell the true story: the invariant was a ladder, and
 the theorem kicked it away.
 
-## 10. The instantiation stage (IN PROGRESS, 1 September)
+## 10. The instantiation stage (CLOSED, 1 September evening)
 
 `searchW`/`dichotomyW` are parameterised by a `WSaturated` database
 with deciders.  The chosen instantiation (wip/gbu_frjw_closure.lean):
@@ -260,3 +260,41 @@ OPEN (the remaining build, design locked):
   defs.  Closure stage Parts I–III: T-A proved, T-B proved for all 21
   rules, universe wellformedness (`goalWr`/`goalWi`/`tagWr`) proved.
   A2/A3 attackers running in the background.
+
+## 12. The goal closed (1 September, evening)
+
+`wip/gbu_frjw_saturate.lean`: for EVERY PLL formula `G`, the saturated
+derivation-carrying database exists and is closed —
+
+    closureDB G, closureDB_closed : DBClosed G (closureDB G)
+
+by: canonical keying (`canonSeq` through the deduplicated `Ĝ` pool),
+the 19 rule emitters guarded by their own decidable hypotheses, the
+prepend-only saturation with the pigeonhole over the finite wellformed
+universe, and the coverage layer (arbitrary families reindexed to
+stored sublists through the membership-determined aggregates; promise
+blocked branches subsumed by the fallible joins).  Composed with the
+T-C induction and `dichotomyW`:
+
+    decideGbuW G : ProvableGbuC G ⊕' DisprovableW G      (data)
+    frjw_complete : ¬ ProvableGbuC G → DisprovableW G
+    gbuw_complete : ¬ DisprovableW G → ProvableGbuC G
+    provableGbuC_iff_pll : ProvableGbuC G ↔ PLL G
+    disprovableW_iff_not_pll : DisprovableW G ↔ ¬ PLL G
+    decidePLL G : Decidable (PLL G)
+
+All PROVED, sorry-free, `[propext, Quot.sound]`, `#guard_msgs`-pinned.
+Choice leaks were driven out with `#choice_path` (three sources: the
+`finRange` `Ord` chain in the Fin deciders, mathlib's `mem_dedup`, a
+`simpa` through `Order.lt_add_one_iff`).
+
+Matthew's observation on banking (recorded for the compaction pass):
+the closure stage is a completeness-shaped argument of its own, and
+the development now carries deliberate redundancy — the searchW
+goal-set invariant (~200 lines, vestigial), the T-B `_mono` defs
+(design scaffolding; the emitters fire constructors directly and the
+T-C induction uses the `_of_swap` transfer lemmas), and two
+independent GBUW completeness routes (LJF◯ translation vs the
+dichotomy).  A compaction can strip the vestiges and possibly fuse
+searchW's manufacture layer with the closure's emitters; the
+mathematics will not change.

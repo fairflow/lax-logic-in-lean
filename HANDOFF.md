@@ -3458,3 +3458,17 @@ finite-universe termination.  A2/A3 attackers running in background.
 Also: the Calculus Ledger artifact reverted to its 31-Aug state and its
 source checked into git (docs/pll-calculus-ledger.html); `#cf_search`
 (choice-free lemma search) added to Meta/Audit, TOOLS.md §5.
+
+## 2026-09-01 (late evening) — GOAL CLOSED: decideGbuW for every PLL formula
+
+`wip/gbu_frjw_saturate.lean` (frjw-dev @ a97787b), all sorry-free,
+choice-free, [propext, Quot.sound], #guard_msgs-pinned:
+closureDB G + closureDB_closed (the saturated closed database, per G,
+by canonical-key saturation with a pigeonhole over the finite
+wellformed universe); decideGbuW G : ProvableGbuC G ⊕' DisprovableW G;
+the simultaneous completeness pair frjw_complete / gbuw_complete; the
+semantic crown provableGbuC_iff_pll / disprovableW_iff_not_pll; and
+decidePLL G : Decidable (PLL G).  Full project build green.
+Compaction owed (Matthew): strip the vestigial searchW invariant and
+the T-B _mono scaffolding; consider fusing the manufacture layers.
+A2/A3 attackers (engine-side, still-open targets) run in background.
