@@ -337,6 +337,26 @@ def joinAt_mono {G : Form} {n : Nat}
     hgoal
     (CtxEq.refl _)
 
+/-- The pledge side condition of `◯∈`/`◯∉` and the promise joins rides
+up the retention order: a subsumer's tag can only move from `blocked`
+towards `barren` (`chain` only at equal pledge), and each move
+preserves the demand. -/
+theorem pledge_of_le {t t₂ : Tag} {Γ Γ₂ : List Form} {Z : Form}
+    (hle : tagLeB t t₂ = true) (hΓ : Γ ⊆ Γ₂)
+    (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) :
+    t₂ = .barren ∨ ∃ W, t₂ = .chain W ∧ Covers Γ₂ W Z := by
+  rcases htag with rfl | ⟨W, rfl, hcov⟩
+  · cases t₂ with
+    | barren => exact Or.inl rfl
+    | chain D => exact absurd hle (by simp [tagLeB])
+    | blocked => exact absurd hle (by simp [tagLeB])
+  · cases t₂ with
+    | barren => exact Or.inl rfl
+    | chain D =>
+        have hWD : W = D := by simpa [tagLeB] using hle
+        exact Or.inr ⟨D, rfl, hWD ▸ covers_mono hΓ hcov⟩
+    | blocked => exact absurd hle (by simp [tagLeB])
+
 /-! ## T-B: `◯∈` under premise swap — the first tag interaction
 
 `tagLeB` (blocked ≤ chain at equal pledge ≤ barren) is the engine's
@@ -349,20 +369,493 @@ def circIn_mono {G : Form} {t t₂ : Tag} {Γ Γ₂ : List Form} {Z : Form}
     (hle : tagLeB t t₂ = true)
     (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z)
     (hgoal : Form.circ Z ∈ sfR G) :
-    FRJWr G t₂ Γ₂ (.circ Z) := by
-  refine .circIn d₂ ?_ hgoal
-  rcases htag with rfl | ⟨W, rfl, hcov⟩
-  · cases t₂ with
-    | barren => exact Or.inl rfl
-    | chain D => exact absurd hle (by simp [tagLeB])
-    | blocked => exact absurd hle (by simp [tagLeB])
-  · cases t₂ with
-    | barren => exact Or.inl rfl
-    | chain D =>
-        have hWD : W = D := by
-          simpa [tagLeB] using hle
-        exact Or.inr ⟨D, rfl, hWD ▸ covers_mono hΓ hcov⟩
-    | blocked => exact absurd hle (by simp [tagLeB])
+    FRJWr G t₂ Γ₂ (.circ Z) :=
+  .circIn d₂ (pledge_of_le hle hΓ htag) hgoal
+
+/-! ## Part II helpers -/
+
+/-- `≐` is a congruence for `++`. -/
+theorem ctxEq_append {l₁ l₂ m₁ m₂ : List Form} (h₁ : l₁ ≐ l₂)
+    (h₂ : m₁ ≐ m₂) : l₁ ++ m₁ ≐ l₂ ++ m₂ := by
+  intro x
+  simp only [List.mem_append]
+  exact ⟨fun h => h.imp (h₁ x).mp (h₂ x).mp,
+         fun h => h.imp (h₁ x).mpr (h₂ x).mpr⟩
+
+/-- Filters are monotone in the list AND in a pointwise-implied
+predicate (the shape all three `restrict` operators share). -/
+theorem mem_filter_mono' {l m : List Form} {p q : Form → Bool}
+    (hl : l ⊆ m) (hpq : ∀ x, p x = true → q x = true) :
+    l.filter p ⊆ m.filter q := by
+  intro x hx
+  have h := List.mem_filter.mp hx
+  exact List.mem_filter.mpr ⟨hl h.1, hpq x h.2⟩
+
+/-! ## T-B: the structural irregular rules -/
+
+/-- **T-B for `∨ᵢ`.**  The cross conditions and both conclusion zones
+are monotone: `Σ`-zones transfer along `≐`, `Θ`-zones along `⊆` and
+`cap`-monotonicity. -/
+def orI_mono {G : Form} {St₁ Th₁ St₂ Th₂ St₁' Th₁' St₂' Th₂' : List Form}
+    {C₁ C₂ : Form}
+    (d₁ : FRJWi G St₁' Th₁' C₁) (d₂ : FRJWi G St₂' Th₂' C₂)
+    (h₁e : St₁' ≐ St₁) (h₁s : Th₁ ⊆ Th₁')
+    (h₂e : St₂' ≐ St₂) (h₂s : Th₂ ⊆ Th₂')
+    (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁)
+    (hgoal : Form.or C₁ C₂ ∈ sfR G) :
+    FRJWi G (St₁' ++ St₂') (cap Th₁' Th₂') (.or C₁ C₂) :=
+  .orI d₁ d₂
+    (fun x hx => by
+      rcases List.mem_append.mp (h₁ ((h₁e x).mp hx)) with h | h
+      · exact List.mem_append_left _ ((h₂e x).mpr h)
+      · exact List.mem_append_right _ (h₂s h))
+    (fun x hx => by
+      rcases List.mem_append.mp (h₂ ((h₂e x).mp hx)) with h | h
+      · exact List.mem_append_left _ ((h₁e x).mpr h)
+      · exact List.mem_append_right _ (h₁s h))
+    hgoal (CtxEq.refl _) (CtxEq.refl _)
+
+/-- Subsumption side of `orI_mono`: the old conclusion zones sit inside
+the new ones (`Σ` by `≐`, `Θ` by `⊆`). -/
+theorem orI_mono_sub {St₁ Th₁ St₂ Th₂ St₁' Th₁' St₂' Th₂' St' Th' : List Form}
+    (h₁e : St₁' ≐ St₁) (h₁s : Th₁ ⊆ Th₁')
+    (h₂e : St₂' ≐ St₂) (h₂s : Th₂ ⊆ Th₂')
+    (hSt : St' ≐ St₁ ++ St₂) (hTh : Th' ≐ cap Th₁ Th₂) :
+    St' ≐ St₁' ++ St₂' ∧ Th' ⊆ cap Th₁' Th₂' :=
+  ⟨hSt.trans (ctxEq_append h₁e.symm h₂e.symm),
+   fun x hx => by
+    have h := mem_cap.mp ((hTh x).mp hx)
+    exact mem_cap.mpr ⟨h₁s h.1, h₂s h.2⟩⟩
+
+/-- **T-B for `⊃∈ᵢ`** — the second-zone split.  The subsumer's larger
+combined zone `ΘΛ₂` re-splits by membership in the ORIGINAL `Λ`: the
+`Λ`-side filter is set-equal to `Λ` (every `Λ`-member survives into
+`ΘΛ₂`), so the new stable zone is `≐` the old, and the new second zone
+keeps every old `Θ`-member (disjointness sends them to the right side
+of the split). -/
+def impInI_mono {G : Form} {St St₂ Th Lam ThLam ThLam₂ : List Form}
+    {A B : Form}
+    (d₂ : FRJWi G St₂ ThLam₂ B)
+    (hSt₂ : St₂ ≐ St) (hTL : ThLam ⊆ ThLam₂)
+    (hpre : ThLam ≐ Th ++ Lam)
+    (hA : Clo (St ++ Lam) A) (hgoal : Form.imp A B ∈ sfR G) :
+    FRJWi G (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)))
+      (ThLam₂.filter (fun x => !decide (x ∈ Lam))) (.imp A B) := by
+  have hLamSub : Lam ⊆ ThLam₂ := fun x hx =>
+    hTL ((hpre x).mpr (List.mem_append_right _ hx))
+  refine .impInI d₂ ?_ ?_ ?_ hgoal (CtxEq.refl _) (CtxEq.refl _)
+  · -- the split partitions ΘΛ₂
+    intro x
+    simp only [List.mem_append, List.mem_filter, Bool.not_eq_eq_eq_not,
+      Bool.not_true, decide_eq_true_eq, decide_eq_false_iff_not]
+    constructor
+    · intro hx
+      by_cases hL : x ∈ Lam
+      · exact Or.inr ⟨hx, hL⟩
+      · exact Or.inl ⟨hx, hL⟩
+    · rintro (⟨hx, -⟩ | ⟨hx, -⟩) <;> exact hx
+  · -- disjointness of the split
+    refine List.eq_nil_of_subset_nil (fun x hx => ?_)
+    have h := mem_cap.mp hx
+    have h₁ := List.mem_filter.mp h.1
+    have h₂ := List.mem_filter.mp h.2
+    rw [Bool.not_eq_eq_eq_not, Bool.not_true, decide_eq_false_iff_not] at h₁
+    rw [decide_eq_true_eq] at h₂
+    exact absurd h₂.2 h₁.2
+  · -- the antecedent stays closure-available
+    refine clo_mono (fun x hx => ?_) hA
+    rcases List.mem_append.mp hx with h | h
+    · exact List.mem_append_left _ ((hSt₂ x).mpr h)
+    · exact List.mem_append_right _
+        (List.mem_filter.mpr ⟨hLamSub h, by simpa using h⟩)
+
+/-- Subsumption side of `impInI_mono`: the old conclusion zones sit
+inside the new split. -/
+theorem impInI_mono_sub {St St₂ Th Lam ThLam ThLam₂ St' Th' : List Form}
+    (hSt₂ : St₂ ≐ St) (hTL : ThLam ⊆ ThLam₂)
+    (hpre : ThLam ≐ Th ++ Lam) (hdisj : cap Th Lam = [])
+    (hSt : St' ≐ St ++ Lam) (hTh : Th' ≐ Th) :
+    St' ≐ St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)) ∧
+      Th' ⊆ ThLam₂.filter (fun x => !decide (x ∈ Lam)) := by
+  have hLamSub : Lam ⊆ ThLam₂ := fun x hx =>
+    hTL ((hpre x).mpr (List.mem_append_right _ hx))
+  constructor
+  · refine hSt.trans (ctxEq_append hSt₂.symm (fun x => ?_))
+    simp only [List.mem_filter, decide_eq_true_eq]
+    exact ⟨fun hx => ⟨hLamSub hx, hx⟩, fun hx => hx.2⟩
+  · intro x hx
+    have hxTh : x ∈ Th := (hTh x).mp hx
+    have hxNotLam : x ∉ Lam := fun hL =>
+      absurd (mem_cap.mpr ⟨hxTh, hL⟩) (by simp [hdisj])
+    refine List.mem_filter.mpr ⟨hTL ((hpre x).mpr (List.mem_append_left _ hxTh)), ?_⟩
+    simpa using hxNotLam
+
+/-! ## T-B: `Lift` and `◯∉` at the maximal second zone
+
+Both rules retain an ARBITRARY `Θ ⊆ Ĝ ∩ Cl(Γ)`.  The closure stores the
+MAXIMAL choice over the stored regular row; every other choice over any
+subsumed premise is subsumed by it. -/
+
+/-- The maximal retained zone of a `lift`/`◯∉` over context `Γ₂`. -/
+def maxTh (G : Form) (Γ₂ : List Form) : List Form :=
+  (gHat G).filter (fun X => cloB Γ₂ X)
+
+/-- Any admissible retained zone over a smaller context sits inside the
+maximal one over the larger. -/
+theorem maxTh_sub {G : Form} {Γ Γ₂ Th : List Form} (hΓ : Γ ⊆ Γ₂)
+    (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) : Th ⊆ maxTh G Γ₂ :=
+  fun X hX => List.mem_filter.mpr
+    ⟨(hTh X hX).2, cloB_iff.mpr (clo_mono hΓ (hTh X hX).1)⟩
+
+/-- **T-B for `Lift`**: the maximal lift of a stored regular row. -/
+def lift_max {G : Form} {t₂ : Tag} {Γ₂ : List Form} {C : Form}
+    (d₂ : FRJWr G t₂ Γ₂ C) : FRJWi G [] (maxTh G Γ₂) C :=
+  .lift d₂ (fun X hX => by
+    have h := List.mem_filter.mp hX
+    exact ⟨cloB_iff.mp h.2, h.1⟩)
+
+/-- **T-B for `◯∉`**: the maximal `circNotIn` of a stored regular row;
+the pledge rides up the retention order. -/
+def circNotIn_max {G : Form} {t t₂ : Tag} {Γ Γ₂ : List Form} {Z : Form}
+    (d₂ : FRJWr G t₂ Γ₂ Z) (hΓ : Γ ⊆ Γ₂) (hle : tagLeB t t₂ = true)
+    (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z)
+    (hgoal : Form.circ Z ∈ sfR G) :
+    FRJWi G [] (maxTh G Γ₂) (.circ Z) :=
+  .circNotIn d₂ (pledge_of_le hle hΓ htag)
+    (fun X hX => by
+      have h := List.mem_filter.mp hX
+      exact ⟨cloB_iff.mp h.2, h.1⟩)
+    hgoal
+
+/-! ## T-B: the fallible joins
+
+No kept zone and no `RefAt` certificate: everything transfers by the
+zone toolkit, and the full conclusion contexts (with their restricted
+`Θ`-implication and `◯`-components) are monotone by
+`mem_filter_mono'`. -/
+
+/-- The full `⋈^At` context is monotone under premise swap. -/
+theorem joinCtxAt_mono {n : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {F : Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
+    joinCtxAt stab th rhs F ⊆ joinCtxAt stab' th' rhs F := by
+  intro x hx
+  simp only [joinCtxAt, List.mem_append] at hx ⊢
+  rcases hx with ((h | h) | h) | h
+  · exact Or.inl (Or.inl (Or.inl (mem_unionAll_filter_of_ctxEq _ hst h)))
+  · refine Or.inl (Or.inl (Or.inr ?_))
+    have h' := mem_rm.mp h
+    have hall := mem_interAll.mp h'.2
+    refine mem_rm.mpr ⟨h'.1, mem_interAll.mpr (fun j => ?_)⟩
+    have h'' := mem_atPart.mp (hall j)
+    exact mem_atPart.mpr ⟨hth j h''.1, h''.2⟩
+  · exact Or.inl (Or.inr (mem_unionAll_filter_of_ctxEq _ hst h))
+  · refine Or.inr (mem_filter_mono' (fun y hy => ?_) (fun _ h => h) h)
+    have hall := mem_interAll.mp hy
+    refine mem_interAll.mpr (fun j => ?_)
+    have h'' := mem_impPart.mp (hall j)
+    exact mem_impPart.mpr ⟨hth j h''.1, h''.2⟩
+
+/-- The full `⋈^∨` context is monotone under premise swap. -/
+theorem joinCtxOr_mono {n : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
+    joinCtxOr stab th rhs ⊆ joinCtxOr stab' th' rhs := by
+  intro x hx
+  simp only [joinCtxOr, List.mem_append] at hx ⊢
+  rcases hx with ((h | h) | h) | h
+  · exact Or.inl (Or.inl (Or.inl (mem_unionAll_filter_of_ctxEq _ hst h)))
+  · refine Or.inl (Or.inl (Or.inr ?_))
+    have hall := mem_interAll.mp h
+    refine mem_interAll.mpr (fun j => ?_)
+    have h' := mem_atPart.mp (hall j)
+    exact mem_atPart.mpr ⟨hth j h'.1, h'.2⟩
+  · exact Or.inl (Or.inr (mem_unionAll_filter_of_ctxEq _ hst h))
+  · refine Or.inr (mem_filter_mono' (fun y hy => ?_) (fun _ h => h) h)
+    have hall := mem_interAll.mp hy
+    refine mem_interAll.mpr (fun j => ?_)
+    have h'' := mem_impPart.mp (hall j)
+    exact mem_impPart.mpr ⟨hth j h''.1, h''.2⟩
+
+/-- The fallible modal component is monotone under premise swap. -/
+theorem joinCtxCircF_mono {n : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
+    joinCtxCircF stab th ⊆ joinCtxCircF stab' th' := by
+  intro x hx
+  simp only [joinCtxCircF, List.mem_append] at hx ⊢
+  rcases hx with h | h
+  · exact Or.inl (mem_unionAll_filter_of_ctxEq _ hst h)
+  · refine Or.inr ?_
+    have hall := mem_interAll.mp h
+    refine mem_interAll.mpr (fun j => ?_)
+    have h' := mem_circPart.mp (hall j)
+    exact mem_circPart.mpr ⟨hth j h'.1, h'.2⟩
+
+/-- **T-B for the fallible `⋈^At`.** -/
+def joinAtF_mono {G : Form} {n : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {F : Form}
+    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ2 : ∀ A B : Form,
+      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs)
+    (hF : F.isPrime)
+    (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+    (hgoal : F ∈ sfR G) :
+    FRJWr G .blocked (joinCtxAtF stab' th' rhs F) F :=
+  .joinAtF prem' (hJ1_of_swap hst hth hJ1) (hJ2_strict_of_swap hst hJ2)
+    hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ hst hmem))
+    hgoal (CtxEq.refl _)
+
+/-- Subsumption side of `joinAtF_mono`. -/
+theorem joinCtxAtF_mono {n : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {F : Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
+    joinCtxAtF stab th rhs F ⊆ joinCtxAtF stab' th' rhs F := by
+  intro x hx
+  rcases List.mem_append.mp hx with h | h
+  · exact List.mem_append_left _ (joinCtxAt_mono hst hth h)
+  · exact List.mem_append_right _ (joinCtxCircF_mono hst hth h)
+
+/-- **T-B for the fallible `⋈^∨`.** -/
+def joinOrF_mono {G : Form} {n : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form}
+    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ2 : ∀ A B : Form,
+      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs)
+    (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
+    (hgoal : Form.or C₁ C₂ ∈ sfR G) :
+    FRJWr G .blocked (joinCtxOrF stab' th' rhs) (.or C₁ C₂) :=
+  .joinOrF prem' (hJ1_of_swap hst hth hJ1) (hJ2_strict_of_swap hst hJ2)
+    hC hgoal (CtxEq.refl _)
+
+/-- Subsumption side of `joinOrF_mono`. -/
+theorem joinCtxOrF_mono {n : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
+    joinCtxOrF stab th rhs ⊆ joinCtxOrF stab' th' rhs := by
+  intro x hx
+  rcases List.mem_append.mp hx with h | h
+  · exact List.mem_append_left _ (joinCtxOr_mono hst hth h)
+  · exact List.mem_append_right _ (joinCtxCircF_mono hst hth h)
+
+/-! ## T-B: the promise joins
+
+The double swap: the irregular family moves to subsumers (`≐` stable
+zones, larger second zones) AND the promise family moves to subsumers
+(larger contexts, tags up the retention order at the same goals `Dᵢ`).
+The restriction filters `Θ^◯/Cl(Δ⃗)` and `·/Cl(Δ⃗)` are monotone in the
+list and in the predicate (`mem_filter_mono'`), the pledges ride
+`pledge_of_le`, and the conclusion keeps its tag, so subsumption closes
+by `tagLeB` reflexivity. -/
+
+theorem tagLeB_refl : ∀ t : Tag, tagLeB t t = true
+  | .barren => rfl
+  | .chain _ => by simp [tagLeB]
+  | .blocked => rfl
+
+theorem inRestrictC_mono {k : Nat} {Δs Δs' : Fin (k + 1) → List Form}
+    (hΔ : ∀ i, Δs i ⊆ Δs' i) :
+    ∀ f, inRestrictC Δs f = true → inRestrictC Δs' f = true := by
+  intro f hf
+  cases f with
+  | circ Y =>
+      simp only [inRestrictC, List.any_eq_true] at hf ⊢
+      obtain ⟨i, hi, hb⟩ := hf
+      exact ⟨i, hi, cloB_iff.mpr (clo_mono (hΔ i) (cloB_iff.mp hb))⟩
+  | atom p => simp [inRestrictC] at hf
+  | bot => simp [inRestrictC] at hf
+  | and Z₁ Z₂ => simp [inRestrictC] at hf
+  | or Z₁ Z₂ => simp [inRestrictC] at hf
+  | imp A B => simp [inRestrictC] at hf
+
+theorem cloAllB_mono {k : Nat} {Δs Δs' : Fin (k + 1) → List Form}
+    (hΔ : ∀ i, Δs i ⊆ Δs' i) :
+    ∀ x, cloAllB Δs x = true → cloAllB Δs' x = true := by
+  intro x hx
+  simp only [cloAllB, List.all_eq_true] at hx ⊢
+  exact fun i hi => cloB_iff.mpr (clo_mono (hΔ i) (cloB_iff.mp (hx i hi)))
+
+/-- The promise modal component is monotone under the double swap. -/
+theorem joinCtxCircP_mono {n k : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Δs Δs' : Fin (k + 1) → List Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j)
+    (hΔ : ∀ i, Δs i ⊆ Δs' i) :
+    joinCtxCircP stab th Δs ⊆ joinCtxCircP stab' th' Δs' := by
+  intro x hx
+  simp only [joinCtxCircP, restrictC, List.mem_append] at hx ⊢
+  rcases hx with h | h
+  · exact Or.inl (mem_unionAll_filter_of_ctxEq _ hst h)
+  · refine Or.inr (mem_filter_mono' (fun y hy => ?_) (inRestrictC_mono hΔ) h)
+    have hall := mem_interAll.mp hy
+    refine mem_interAll.mpr (fun j => ?_)
+    have h' := mem_circPart.mp (hall j)
+    exact mem_circPart.mpr ⟨hth j h'.1, h'.2⟩
+
+/-- The promise `⋈^At` conclusion context is monotone under the double
+swap. -/
+theorem joinCtxAtP_mono {n k : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {F : Form}
+    {Δs Δs' : Fin (k + 1) → List Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j)
+    (hΔ : ∀ i, Δs i ⊆ Δs' i) :
+    joinCtxAtP stab th rhs F Δs ⊆ joinCtxAtP stab' th' rhs F Δs' := by
+  simp only [joinCtxAtP, restrictP]
+  refine mem_filter_mono' (fun y hy => ?_) (cloAllB_mono hΔ)
+  rcases List.mem_append.mp hy with h | h
+  · exact List.mem_append_left _ (joinCtxAt_mono hst hth h)
+  · exact List.mem_append_right _ (joinCtxCircP_mono hst hth hΔ h)
+
+/-- The promise `⋈^∨` conclusion context is monotone under the double
+swap. -/
+theorem joinCtxOrP_mono {n k : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form}
+    {Δs Δs' : Fin (k + 1) → List Form}
+    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j)
+    (hΔ : ∀ i, Δs i ⊆ Δs' i) :
+    joinCtxOrP stab th rhs Δs ⊆ joinCtxOrP stab' th' rhs Δs' := by
+  simp only [joinCtxOrP, restrictP]
+  refine mem_filter_mono' (fun y hy => ?_) (cloAllB_mono hΔ)
+  rcases List.mem_append.mp hy with h | h
+  · exact List.mem_append_left _ (joinCtxOr_mono hst hth h)
+  · exact List.mem_append_right _ (joinCtxCircP_mono hst hth hΔ h)
+
+/-- (J5) transfers to the double swap. -/
+theorem hJ5_of_swap {n k : Nat}
+    {stab stab' : Fin (n + 1) → List Form}
+    {Δs Δs' : Fin (k + 1) → List Form}
+    (hst : ∀ j, stab' j ≐ stab j) (hΔ : ∀ i, Δs i ⊆ Δs' i)
+    (hJ5 : ∀ Y : Form,
+      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y) :
+    ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab' j)) →
+      ∃ i, Clo (Δs' i) Y := by
+  intro Y hY
+  obtain ⟨i, hi⟩ := hJ5 Y (mem_unionAll_filter_of_ctxEq _ hst hY)
+  exact ⟨i, clo_mono (hΔ i) hi⟩
+
+/-- (J7) transfers to the double swap. -/
+theorem hJ7s_of_swap {n k : Nat}
+    {stab stab' : Fin (n + 1) → List Form}
+    {Δs Δs' : Fin (k + 1) → List Form}
+    (hst : ∀ j, stab' j ≐ stab j) (hΔ : ∀ i, Δs i ⊆ Δs' i)
+    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) :
+    ∀ i j, ∀ X ∈ stab' j, Clo (Δs' i) X :=
+  fun i j X hX => clo_mono (hΔ i) (hJ7s i j X ((hst j X).mp hX))
+
+/-- **T-B for the promise `⋈^At`.**  The conclusion keeps its tag `t'`;
+the blocked branch needs nothing, the chain branch sends each
+component's pledge through `pledge_of_le`. -/
+def joinAtP_mono {G : Form} {n k : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {F : Form} {t' : Tag}
+    {tps tps' : Fin (k + 1) → Tag} {Δs Δs' : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form}
+    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (dps' : ∀ i, FRJWr G (tps' i) (Δs' i) (Ds i))
+    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hΔ : ∀ i, Δs i ⊆ Δs' i)
+    (hlep : ∀ i, tagLeB (tps i) (tps' i) = true)
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ2 : ∀ A B : Form,
+      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs)
+    (hJ5 : ∀ Y : Form,
+      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y)
+    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+    (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
+    (hF : F.isPrime)
+    (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+    (hgoal : F ∈ sfR G) :
+    FRJWr G t' (joinCtxAtP stab' th' rhs F Δs') F :=
+  .joinAtP prem' dps' (hJ1_of_swap hst hth hJ1)
+    (hJ2_strict_of_swap hst hJ2)
+    (hJ5_of_swap hst hΔ hJ5) (hJ7s_of_swap hst hΔ hJ7s)
+    (htag.imp id (fun ⟨h0, hall⟩ =>
+      ⟨h0, fun i => ⟨(hall i).1,
+        pledge_of_le (hlep i) (hΔ i) (hall i).2⟩⟩))
+    hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ hst hmem))
+    hgoal (CtxEq.refl _)
+
+/-- **T-B for the promise `⋈^∨`.** -/
+def joinOrP_mono {G : Form} {n k : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {t' : Tag}
+    {tps tps' : Fin (k + 1) → Tag} {Δs Δs' : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form}
+    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (dps' : ∀ i, FRJWr G (tps' i) (Δs' i) (Ds i))
+    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hΔ : ∀ i, Δs i ⊆ Δs' i)
+    (hlep : ∀ i, tagLeB (tps i) (tps' i) = true)
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ2 : ∀ A B : Form,
+      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs)
+    (hJ5 : ∀ Y : Form,
+      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y)
+    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+    (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
+    (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
+    (hgoal : Form.or C₁ C₂ ∈ sfR G) :
+    FRJWr G t' (joinCtxOrP stab' th' rhs Δs') (.or C₁ C₂) :=
+  .joinOrP prem' dps' (hJ1_of_swap hst hth hJ1)
+    (hJ2_strict_of_swap hst hJ2)
+    (hJ5_of_swap hst hΔ hJ5) (hJ7s_of_swap hst hΔ hJ7s)
+    (htag.imp id (fun ⟨h0, hall⟩ =>
+      ⟨h0, fun i => ⟨(hall i).1,
+        pledge_of_le (hlep i) (hΔ i) (hall i).2⟩⟩))
+    hC hgoal (CtxEq.refl _)
+
+/-- **T-B for the promise `⋈^◯`.**  The conclusion tag `chain Z` is
+forced by the rule and shared by old and new, so subsumption closes at
+equal pledge. -/
+def joinCircP_mono {G : Form} {n k : Nat}
+    {stab th stab' th' : Fin (n + 1) → List Form}
+    {rhs : Fin (n + 1) → Form} {Z : Form}
+    {tps tps' : Fin (k + 1) → Tag} {Δs Δs' : Fin (k + 1) → List Form}
+    {Ds : Fin (k + 1) → Form}
+    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (dps' : ∀ i, FRJWr G (tps' i) (Δs' i) (Ds i))
+    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hΔ : ∀ i, Δs i ⊆ Δs' i)
+    (hlep : ∀ i, tagLeB (tps i) (tps' i) = true)
+    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ2 : ∀ A B : Form,
+      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      A ∈ upsilon rhs)
+    (hJ5 : ∀ Y : Form,
+      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      ∃ i, Clo (Δs i) Y)
+    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+    (hDs : ∀ i, Ds i = Z ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z))
+    (hZ : Z ∈ upsilon rhs)
+    (hgoal : Form.circ Z ∈ sfR G) :
+    FRJWr G (.chain Z) (joinCtxOrP stab' th' rhs Δs') (.circ Z) :=
+  .joinCircP prem' dps' (hJ1_of_swap hst hth hJ1)
+    (hJ2_strict_of_swap hst hJ2)
+    (hJ5_of_swap hst hΔ hJ5) (hJ7s_of_swap hst hΔ hJ7s)
+    (fun i => ⟨(hDs i).1, pledge_of_le (hlep i) (hΔ i) (hDs i).2⟩)
+    hZ hgoal (CtxEq.refl _)
 
 /-! ## Pins -/
 
@@ -389,5 +882,49 @@ def circIn_mono {G : Form} {t t₂ : Tag} {Γ Γ₂ : List Form} {Z : Form}
 /-- info: 'FRJ.circIn_mono' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms circIn_mono
+
+/-- info: 'FRJ.pledge_of_le' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms pledge_of_le
+
+/-- info: 'FRJ.orI_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms orI_mono
+
+/-- info: 'FRJ.impInI_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms impInI_mono
+
+/-- info: 'FRJ.impInI_mono_sub' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms impInI_mono_sub
+
+/-- info: 'FRJ.lift_max' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms lift_max
+
+/-- info: 'FRJ.circNotIn_max' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms circNotIn_max
+
+/-- info: 'FRJ.joinAtF_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms joinAtF_mono
+
+/-- info: 'FRJ.joinOrF_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms joinOrF_mono
+
+/-- info: 'FRJ.joinAtP_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms joinAtP_mono
+
+/-- info: 'FRJ.joinOrP_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms joinOrP_mono
+
+/-- info: 'FRJ.joinCircP_mono' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms joinCircP_mono
 
 end FRJ
