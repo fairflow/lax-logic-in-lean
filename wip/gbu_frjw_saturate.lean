@@ -526,4 +526,178 @@ end RegReindex
 
 end Reindex
 
+/-! ## S3: stored triples, sublist families, decidability guards -/
+
+/-- A stored irregular row, unpacked with its derivation. -/
+structure IrrT (G : Form) where
+  St : List Form
+  Th : List Form
+  C : Form
+  d : FRJWi G St Th C
+
+/-- A stored regular row, unpacked with its derivation. -/
+structure RegT (G : Form) where
+  t : Tag
+  Γ : List Form
+  C : Form
+  d : FRJWr G t Γ C
+
+def rowIrr? {G : Form} : WRow G → Option (IrrT G)
+  | ⟨.irr St Th C, d⟩ => some ⟨St, Th, C, d⟩
+  | ⟨.reg _ _ _, _⟩ => none
+
+def rowReg? {G : Form} : WRow G → Option (RegT G)
+  | ⟨.reg t Γ C, d⟩ => some ⟨t, Γ, C, d⟩
+  | ⟨.irr _ _ _, _⟩ => none
+
+def irrTs {G : Form} (db : List (WRow G)) : List (IrrT G) :=
+  db.filterMap rowIrr?
+
+def regTs {G : Form} (db : List (WRow G)) : List (RegT G) :=
+  db.filterMap rowReg?
+
+def IrrT.seq {G : Form} (tr : IrrT G) : WSeq := .irr tr.St tr.Th tr.C
+def RegT.seq {G : Form} (tr : RegT G) : WSeq := .reg tr.t tr.Γ tr.C
+
+/-- Every stored irregular sequent has a triple. -/
+theorem irrTs_of_mem {G : Form} {db : List (WRow G)}
+    {St Th : List Form} {C : Form}
+    (h : (WSeq.irr St Th C) ∈ db.map (·.s)) :
+    ∃ tr ∈ irrTs db, tr.St = St ∧ tr.Th = Th ∧ tr.C = C := by
+  obtain ⟨r, hr, hrs⟩ := List.mem_map.mp h
+  match r, hrs with
+  | ⟨.irr St' Th' C', d⟩, hrs =>
+      injection hrs with h1 h2 h3
+      exact ⟨⟨St', Th', C', d⟩, List.mem_filterMap.mpr ⟨_, hr, rfl⟩,
+        h1, h2, h3⟩
+
+theorem regTs_of_mem {G : Form} {db : List (WRow G)}
+    {t : Tag} {Γ : List Form} {C : Form}
+    (h : (WSeq.reg t Γ C) ∈ db.map (·.s)) :
+    ∃ tr ∈ regTs db, tr.t = t ∧ tr.Γ = Γ ∧ tr.C = C := by
+  obtain ⟨r, hr, hrs⟩ := List.mem_map.mp h
+  match r, hrs with
+  | ⟨.reg t' Γ' C', d⟩, hrs =>
+      injection hrs with h1 h2 h3
+      exact ⟨⟨t', Γ', C', d⟩, List.mem_filterMap.mpr ⟨_, hr, rfl⟩,
+        h1, h2, h3⟩
+
+/-- Every triple's sequent is stored. -/
+theorem mem_of_irrTs {G : Form} {db : List (WRow G)} {tr : IrrT G}
+    (h : tr ∈ irrTs db) : tr.seq ∈ db.map (·.s) := by
+  obtain ⟨r, hr, hrt⟩ := List.mem_filterMap.mp h
+  match r, hrt with
+  | ⟨.irr St' Th' C', d⟩, hrt =>
+      refine List.mem_map.mpr ⟨_, hr, ?_⟩
+      injection hrt with h1
+      subst h1
+      rfl
+
+theorem mem_of_regTs {G : Form} {db : List (WRow G)} {tr : RegT G}
+    (h : tr ∈ regTs db) : tr.seq ∈ db.map (·.s) := by
+  obtain ⟨r, hr, hrt⟩ := List.mem_filterMap.mp h
+  match r, hrt with
+  | ⟨.reg t' Γ' C', d⟩, hrt =>
+      refine List.mem_map.mpr ⟨_, hr, ?_⟩
+      injection hrt with h1
+      subst h1
+      rfl
+
+/-- The triples' sequent image is a sublist of the store's. -/
+theorem irrTs_seq_sublist {G : Form} (db : List (WRow G)) :
+    List.Sublist ((irrTs db).map IrrT.seq) (db.map (·.s)) := by
+  induction db with
+  | nil => exact .slnil
+  | cons r rest ih =>
+      match r with
+      | ⟨.irr St Th C, d⟩ =>
+          simpa [irrTs, List.filterMap_cons, rowIrr?, IrrT.seq]
+            using ih.cons_cons (WSeq.irr St Th C)
+      | ⟨.reg t Γ C, d⟩ =>
+          simpa [irrTs, List.filterMap_cons, rowIrr?]
+            using ih.cons (WSeq.reg t Γ C)
+
+theorem regTs_seq_sublist {G : Form} (db : List (WRow G)) :
+    List.Sublist ((regTs db).map RegT.seq) (db.map (·.s)) := by
+  induction db with
+  | nil => exact .slnil
+  | cons r rest ih =>
+      match r with
+      | ⟨.reg t Γ C, d⟩ =>
+          simpa [regTs, List.filterMap_cons, rowReg?, RegT.seq]
+            using ih.cons_cons (WSeq.reg t Γ C)
+      | ⟨.irr St Th C, d⟩ =>
+          simpa [regTs, List.filterMap_cons, rowReg?]
+            using ih.cons (WSeq.irr St Th C)
+
+/-! Decidability guards for the shape-bounded join conditions. -/
+
+instance decImpGuard (P : Form → Form → Prop) [∀ A B, Decidable (P A B)]
+    (x : Form) : Decidable (∀ A B, x = Form.imp A B → P A B) :=
+  match x with
+  | .imp A B =>
+      if h : P A B then
+        isTrue (fun A' B' he => by
+          injection he with h1 h2
+          exact h1 ▸ h2 ▸ h)
+      else isFalse (fun hall => h (hall A B rfl))
+  | .atom _ => isTrue (fun _ _ he => Form.noConfusion he)
+  | .bot => isTrue (fun _ _ he => Form.noConfusion he)
+  | .and _ _ => isTrue (fun _ _ he => Form.noConfusion he)
+  | .or _ _ => isTrue (fun _ _ he => Form.noConfusion he)
+  | .circ _ => isTrue (fun _ _ he => Form.noConfusion he)
+
+instance decCircGuard (P : Form → Prop) [∀ Y, Decidable (P Y)]
+    (x : Form) : Decidable (∀ Y, x = Form.circ Y → P Y) :=
+  match x with
+  | .circ Y =>
+      if h : P Y then
+        isTrue (fun Y' he => by injection he with h1; exact h1 ▸ h)
+      else isFalse (fun hall => h (hall Y rfl))
+  | .atom _ => isTrue (fun _ he => Form.noConfusion he)
+  | .bot => isTrue (fun _ he => Form.noConfusion he)
+  | .and _ _ => isTrue (fun _ he => Form.noConfusion he)
+  | .or _ _ => isTrue (fun _ he => Form.noConfusion he)
+  | .imp _ _ => isTrue (fun _ he => Form.noConfusion he)
+
+/-- `∀` over `Fin` decided through `List.finRange` (mathlib's `Fin`
+instances are avoided for the choice-free pins). -/
+def decForallFin {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
+    Decidable (∀ i, p i) :=
+  decidable_of_iff (∀ i ∈ List.finRange n, p i)
+    ⟨fun h i => h i (List.mem_finRange i), fun h i _ => h i⟩
+
+def decExistsFin {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
+    Decidable (∃ i, p i) :=
+  decidable_of_iff (∃ i ∈ List.finRange n, p i)
+    ⟨fun ⟨i, _, h⟩ => ⟨i, h⟩, fun ⟨i, h⟩ => ⟨i, List.mem_finRange i, h⟩⟩
+
+instance {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
+    Decidable (∀ i, p i) := decForallFin p
+
+instance {n : Nat} (p : Fin n → Prop) [DecidablePred p] :
+    Decidable (∃ i, p i) := decExistsFin p
+
+/-- Shape-bounded to unbounded: the implication guard. -/
+theorem impGuard_elim {pool : List Form} {P : Form → Form → Prop}
+    (h : ∀ x ∈ pool, ∀ A B, x = Form.imp A B → P A B) :
+    ∀ A B, Form.imp A B ∈ pool → P A B :=
+  fun A B hmem => h _ hmem A B rfl
+
+theorem circGuard_elim {pool : List Form} {P : Form → Prop}
+    (h : ∀ x ∈ pool, ∀ Y, x = Form.circ Y → P Y) :
+    ∀ Y, Form.circ Y ∈ pool → P Y :=
+  fun Y hmem => h _ hmem Y rfl
+
+/-- The bounded forms hold whenever the unbounded do (coverage side). -/
+theorem impGuard_intro {pool : List Form} {P : Form → Form → Prop}
+    (h : ∀ A B, Form.imp A B ∈ pool → P A B) :
+    ∀ x ∈ pool, ∀ A B, x = Form.imp A B → P A B :=
+  fun _ hx A B he => h A B (he ▸ hx)
+
+theorem circGuard_intro {pool : List Form} {P : Form → Prop}
+    (h : ∀ Y, Form.circ Y ∈ pool → P Y) :
+    ∀ x ∈ pool, ∀ Y, x = Form.circ Y → P Y :=
+  fun _ hx Y he => h Y (he ▸ hx)
+
 end FRJ.Gbu.W
