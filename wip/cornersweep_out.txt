@@ -1,9 +1,9 @@
 == Gx : (((Or>b)&((r>F)>F))>Or)
 == Glic : (((Op>r)&p)>Or)
-  CORNER Ψ=[p, (Op>r)] goal=Or stuck=[Op[keep0=false,keepP=false,derivable]]
+  CORNER Ψ=[p, (Op>r)] goal=Or RESIDUAL stuck=[Op[keepOm0=false,derivable]]
 == Gba : (O((Op>q)&Op)>Or)
 == Glw : (O((Op>r)&Op)>(Or|z))
-  CORNER Ψ=[p, (Op>r)] goal=Or stuck=[Op[keep0=false,keepP=false,derivable]]
+  CORNER Ψ=[p, (Op>r)] goal=Or RESIDUAL stuck=[Op[keepOm0=false,derivable]]
 == Gdp : (O(p|q)>(Op|Oq))
 == Gcc : O(Op>p)
 == Gcr : (Op>p)

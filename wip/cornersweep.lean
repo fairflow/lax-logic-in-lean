@@ -97,10 +97,28 @@ def sweep (G : Form) : List String := Id.run do
             A.hasCirc && !(decide (A.size < (Form.circ Z).size)))
           if stuckOK && !unref.isEmpty then
             let ups := Z :: refuted
+            -- the two NEW decidable closures (2026-09-01):
+            -- (ii) RefAt over the non-stuck part Ω₀
+            let om0 := om.filter (fun X => !X.isImp) ++
+              (impPart om).filter (fun Y => decide (ante Y ∈ refuted))
+            let keptClosed := (impPart om).all (fun Y =>
+              decide (ante Y ∈ refuted) || refAtB true ups om0 (ante Y))
+            -- prime-Z axI-family cover through the engine's keptOf
+            let th0 : Fin 1 → List Form :=
+              fun _ => rm (gAt G) Z ++ gImp G ++ gCirc G
+            let base0 := joinCtxOrVBase (fun _ : Fin 1 => []) th0
+            let ctx0 := base0 ++
+              keptOf (upsilon (fun _ : Fin 1 => Z)) base0 (thPool th0)
+            let axiCov := Z.isPrime && !(decide (Z ∈ om)) &&
+              om.all (fun X => cloB ctx0 X)
             let diag := unref.map (fun A =>
-              s!"{ppF A}[keep0={refAtB true ups [] A},keepP={refAtB true ups om A},{oracleD om A}]")
+              s!"{ppF A}[keepOm0={refAtB true ups om0 A},{oracleD om A}]")
+            let verdict :=
+              if keptClosed then "CLOSED(kept-chain)"
+              else if axiCov then "CLOSED(axI-keptOf)"
+              else "RESIDUAL"
             out := out ++
-              [s!"  CORNER Ψ={om.map ppF} goal=O{ppF Z} stuck={diag}"]
+              [s!"  CORNER Ψ={om.map ppF} goal=O{ppF Z} {verdict} stuck={diag}"]
   return out
 
 def main : IO Unit := do

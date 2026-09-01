@@ -492,3 +492,60 @@ revisit-unreachability is at present unprovable):
 Decision pending (Matthew): (a) build the V-invariant motive with
 K1/K2 as stated risks; (b) propose the `hJ2` relaxation first (kills
 K3 and most of K2); (c) both.
+
+### (b) + (a) landed: the relaxed (J2) and the pair-V chase (2026-09-01, afternoon)
+
+Matthew approved "(b) first, then (a)".  Both are in.
+
+**(b) — the `RefAt`-relaxed barren (J2) on `⋈^◯`** (frjw-dev, commit
+"frjw(b)"): `joinCirc`'s
+
+    hJ2  : A⊃B ∈ ⋃ⱼ Σⱼ^⊃ → A ∈ Υ
+
+is now
+
+    hJ2' : A⊃B ∈ ⋃ⱼ Σⱼ^⊃ → RefAt true Υ (base ++ kept) A
+
+`soundnessW` re-proved — `keptChain_refAt_mem` (chain certificates are
+context-monotone) plus a reworked `joinCirc_case` in which the base and
+kept implications share ONE size-mutual induction, founded by
+`refAt_refutes_sf` (the Round-3 subformula bounds anticipated exactly
+this).  Pins: `soundnessW` at `[propext, Quot.sound]`.  `⋈^At`/`⋈^∨`
+keep the strict (J2).  Engine generation unchanged; wscreen 18/18.
+
+**(a) — the corner closures in `searchW`** (uncommitted, still OPEN):
+
+1. `refutedCleanly_circ_kept` (PROVED): the `⋈^◯` manufacture over the
+   family `Z :: R` (`R` = refuted forms) where an `Ω`-implication is
+   retained by `.ups` (antecedent in `R`) or by a `RefAt` certificate
+   over the non-stuck part `Ω₀ = atoms ++ refuted implications`.  `Ω₀`
+   is `Clo`-derived by the join context before any stuck link enters,
+   so the chain extension is order-free — this kills K2 and K3
+   simultaneously (no size-ordering, no Σ-dirt: Σ-implications
+   discharge the relaxed (J2) by the same refuted-or-certified split).
+2. `refutedCleanly_circ_axI` (PROVED): for PRIME `Z`, the single-row
+   family over the CONCRETE `axI` row — Σ-zones empty, kept chain =
+   the engine's own greedy `keptOf`, cover decidable by `cloB`.  Full
+   engine-strength manufacture as one decidable test.
+3. `Z ∈ Ψ` closes positively: `.rcircI (.ax Z …)`.
+4. **The pair-V chase**: the visited set now holds (antecedent, goal)
+   PAIRS; component 2 of the measure counts `Sf^R × Sf^R ∖ V`.
+   Re-chasing an antecedent under a NEW goal is measure-payable; only
+   the exact (antecedent, goal) revisit is blocked.  Consequence
+   (analysis, not yet mechanised): at any chase-entry cell the chased
+   antecedent's own implication is always (ii)-covered — its `RefAt`
+   descent hits the goal body, which is its own body — so the Gx
+   pattern generalises to every chase entry.
+
+**The remaining residual** (two `sorry` sites, one declaration): the
+corner now fires only when a stuck antecedent `A` has the EXACT pair
+`(A, ◯Z)` already visited AND fails the `Ω₀`-certificate test AND (for
+prime `Z`) the full `keptOf` cover fails.  Reachability requires the
+goal `◯Z` to recur inside `A`'s own chase with `A` stuck again — the
+goal-path analysis shows the `RefAt` descent closes every ∧/◯/⊃-node
+on such a path, leaving only ∨-nodes with an unrefuted other disjunct
+(K1) as the potential gap.  The updated sweep
+(`wip/cornersweep.lean`): the only V-free corner-shaped cells in the
+corpus remain the licence type, RESIDUAL-classified but with the stuck
+antecedent oracle-DERIVABLE (first-visit chase resolves them); zero
+dichotomy alarms.
