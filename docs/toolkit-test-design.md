@@ -3,7 +3,7 @@
 **Status:** steps 1–3 of §6 are **built** (2026-08-30); steps 4–5 are not.
 See §6a for what building them changed about the proposal itself.
 **Written:** 2026-08-30, after running the four `LaxLogic/ToolkitTest/Challenge`
-files end to end with `prove-lemma-inloop`.
+files end to end with `prove-lemma-agent`.
 
 ## 1. The problem: prefix truncation guarantees contamination
 

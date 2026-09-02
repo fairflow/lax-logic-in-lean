@@ -99,12 +99,12 @@ There are two routes, and they are not ranked. Install either or both:
 
 ```bash
 cp -r prover-toolkit/skill/prove-lemma        ~/.claude/skills/   # hosted API
-cp -r prover-toolkit/skill/prove-lemma-inloop ~/.claude/skills/   # Claude proposes
+cp -r prover-toolkit/skill/prove-lemma-agent ~/.claude/skills/   # Claude proposes
 ```
 
 - **`prove-lemma`** hands the goal to a hosted model through `ax-prover`. It is
   unattended and can grind through many lemmas; it costs money per attempt.
-- **`prove-lemma-inloop`** puts Claude in the proposer seat and uses the
+- **`prove-lemma-agent`** puts Claude in the proposer seat and uses the
   toolkit only for retrieval, goal states and verification. Free per attempt,
   and it can bring repository context a fixed prompt cannot carry. **Start
   here:** [`USING-THE-SKILL.md`](USING-THE-SKILL.md).

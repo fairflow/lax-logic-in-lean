@@ -1,6 +1,6 @@
 # Kickoff instruction — applying the toolkit to a live campaign
 
-A template for starting a new session that will use `prove-lemma-inloop` on real
+A template for starting a new session that will use `prove-lemma-agent` on real
 work rather than on the benchmark fixtures. Fill in the four bracketed fields
 and paste the whole thing as the session's first message.
 
@@ -51,7 +51,7 @@ statement costs more than a hard proof.
 >
 > ### Stage 2 — close them, one at a time
 >
-> Use the `prove-lemma-inloop` skill. Read
+> Use the `prove-lemma-agent` skill. Read
 > `prover-toolkit/USING-THE-SKILL.md` first; it has the setup, the three
 > commands, and how to write a query the index can serve.
 >
