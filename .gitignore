@@ -39,3 +39,10 @@ _out/
 # Built papers (scripts/clp-paper.sh): HTML + PDF are build artefacts
 docs/clp-paper/
 docs/clp-paper.pdf
+
+# extract.py's benchmark corpora are DERIVED data carrying absolute paths to
+# whichever worktree generated them; regenerate, never commit.  (Cherry-picked
+# from tooling@c829aa8.  It covers FUTURE corpora only: `frjx_items.jsonl` is
+# already tracked in `main`, and `.gitignore` does not untrack — removing it is
+# a separate decision.)
+*_items.jsonl
