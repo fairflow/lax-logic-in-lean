@@ -212,19 +212,36 @@ def cmd_source(cfg, args) -> int:
             print("--   (it may be `sorry`ed, or outside the indexed roots;")
             print("--    either way gate 3 does not serve it)\n")
             continue
-        hits = list(cfg.repo.rglob(d["file"]))
-        hits = [h for h in hits if ".lake" not in h.parts]
-        if not hits:
-            print(f"-- {w}: index names {d['file']}, not found on disk\n")
+        # `d["file"]` is relative to the ROOT that harvested it, not to the
+        # repo, so resolve it against the configured roots in order.  It was
+        # `cfg.repo.rglob(d["file"])`, which in a clone with sibling worktrees
+        # matched 63 copies of one file, discarded none of them (the duplicates
+        # are worktrees, not `.lake`), and took `hits[0]` in filesystem order --
+        # so gate 3 could print a body from another campaign's worktree at a
+        # different commit, and say nothing about it.  It also walked `.lake`,
+        # costing 11s a call.
+        src = None
+        for r in cfg.index_roots:
+            cand = Path(r["path"]) / d["file"]
+            if cand.is_file():
+                src = cand
+                break
+        if src is None:
+            print(f"-- {w}: index names {d['file']}, not found under any "
+                  f"indexed root\n")
             continue
-        lines = hits[0].read_text(encoding="utf-8", errors="replace").split("\n")
+        try:
+            shown = src.relative_to(cfg.repo)
+        except ValueError:
+            shown = src
+        lines = src.read_text(encoding="utf-8", errors="replace").split("\n")
         i = d["line"] - 1
         j = i + 1
         while j < len(lines) and not DECL_START.match(lines[j]):
             j += 1
         body = "\n".join(lines[i:j]).rstrip()
         total += j - i
-        print(f"-- {d['name']}  [{d['file']}:{d['line']}, {j - i} lines]")
+        print(f"-- {d['name']}  [{shown}:{d['line']}, {j - i} lines]")
         print(body)
         print()
     print(f"-- gate 3: {len(wanted)} requested, "

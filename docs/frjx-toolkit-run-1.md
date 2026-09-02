@@ -4,6 +4,11 @@
 seat of a hosted prover, via `prover-toolkit/claude_shim.py`.
 **Items** `prover-toolkit/frjx_items.jsonl` — the 8 open ports of
 `wip/frjx_ports.lean`, prefix blinded of every already-proved sibling port.
+That file is **derived data and is not committed**: it carried absolute paths
+to the worktree that generated it, so it was dropped before this record
+reached `tooling`. Regenerate it with `extract.py` against
+`wip/frjx_ports.lean` on a branch that has it; the numbers below were taken
+against the generated copy described here.
 **Command**
 
     harness.py --items prover-toolkit/frjx_items.jsonl --out runs/frjx-pass1.jsonl \

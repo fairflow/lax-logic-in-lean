@@ -28,3 +28,7 @@ __pycache__/
 tmp*.lean
 _*.lean
 runs/
+
+# extract.py's benchmark corpora are DERIVED data carrying absolute paths to
+# whichever worktree generated them; regenerate, never commit.
+*_items.jsonl
