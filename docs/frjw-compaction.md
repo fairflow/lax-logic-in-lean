@@ -140,3 +140,21 @@ What is left of the measure is exactly what `searchO` (the retired
 of its own.  Termination is bought by `unclosed` (context growth),
 `tpC` (mode release) and `seqSize` (structure), and by `totalityW`'s
 structural recursion on the goal formula.
+
+# The C-items (2026-09-02, late morning) — reusable combinators
+
+From the Opus survey (docs/frjw-recursion-explainer-plan.md, Part C),
+executed on Matthew's instruction ("Do C.3, C.7 and C.6 while Opus
+runs").  These are re-expressions of proof text, not retirements: no
+statement, no pin, no rule changes; the supersession check therefore
+degenerates to one row each (the constraint that the proof text keep
+naming what it does), recorded inline.
+
+| item | file | before → after | what | verified |
+|---|---|---|---|---|
+| C.3 | `wip/gbu_frjw_search.lean` | 852 → 737 | `Focus`/`focusCtx` (split at a member with its `≐`, rest-membership and size equation), `clo_focus` (the `Clo`-coverage of a descended context; auto-param finds the one-/two-cons rest inclusion), `forall_cons` (`sfL`/`gHat` preservation member by member), `Focus.lt1`/`lt2` (the size drops).  Six focus sites (corner `L⊃ᵢ`, both `L◯`, the non-`Ĝ` member, `limpStep`, the non-critical left rules) and three `A :: Ψ` lambdas rewritten.  Every left rule now reads "focus, cover, descend, apply the constructor". | elaborated clean first time; chain rebuilt; pins unchanged; smoke 7/7 |
+| C.7 | `wip/gbu_frjw_saturate.lean` | 2531 → 2434 | `emitters G db : List (List (WRow G))`, `stepAll := (emitters G db).flatten`, one `sub_stepAll (hl : l ∈ emitters G db)` via `List.mem_flatten` (checked choice-free) replaces the nineteen `Or.inl`-chain lemmas; 25 call sites read `sub_stepAll (by simp [emitters]) _ hemit`.  Nothing else unfolds `stepAll` (`stepNew`, `closureDB_fixed`, `stored_of_emitted` use it opaquely).  Constraint "each coverage site names the rule it fires": DISCHARGED, `hemit` names the emitter. | build green; pins unchanged; smoke PASS (Opus subagent, cherry-picked as `60aee6d`) |
+
+C.3 also removes the `subst hsplit` at the non-critical left rules: the
+member is recovered from the split and focused like every other site,
+so `Ψ` stays a variable throughout `searchW`.

@@ -3507,3 +3507,15 @@ strategy, with the inversion-lemma bank presented as STRATEGY (rule by
 rule, proved once) and its uniform consumption in `searchW` as the
 tactic-shaped part (decide a store query; positive side absurd by
 "the store would have had a row").
+
+## 2026-09-02 (late morning) — the C-items land while the stage-4 brief is written
+
+Matthew: "Do C.3, C.7 and C.6 while Opus runs."  C.3 (`d633a37`):
+`Focus`/`focusCtx`, `clo_focus`, `forall_cons`, `Focus.lt1`/`lt2` in
+`wip/gbu_frjw_search.lean`, 852 → 737; every left rule now "focus,
+cover, descend, apply".  C.7 (`60aee6d`, Opus subagent): `stepAll` as
+`(emitters G db).flatten`, one `sub_stepAll` for nineteen `Or.inl`
+chains, `wip/gbu_frjw_saturate.lean` 2531 → 2434.  Both: chain rebuilt
+by explicit target, pins unchanged, smoke 7/7 PASS, pushed to frjw-dev.
+Table in docs/frjw-compaction.md ("The C-items").  C.6 (closure T-C
+closers) in flight with a second subagent.
