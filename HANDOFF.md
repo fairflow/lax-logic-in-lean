@@ -3714,3 +3714,29 @@ untrusted engine arrives."
 * **Not verified by the agent**: whether the two views ever differ on
   a reachable cell (its batch produced nothing in 15 min); the arity
   claim (taken from my brief; now `docs/a2-arity.md`).
+
+## 2026-09-02 (night) — the B1/B2 designed cells: B1 survives, B2 refuted and corrected to B2′
+
+Matthew: "Do the B1 and B2 designed cells next"; and on `⊕'` in the
+explainer: answered, `decideGbuW`'s sides are `Prop`s so `⊕'` (`PSum`)
+is forced; the `⊕` form is `decideGbuWData` (bare derivations).
+
+The join conclusion contexts are pure list functions of the family,
+so a designed cell is an explicit family decided by the kernel, no
+saturation: `wip/b1b2_cells.lean` (in `wipshared`), ten cells and two
+controls, all `decide`, pins `[propext, Quot.sound]`.
+* **B1** (a premise sharing another's goal is redundant): SURVIVES.
+  Barren `⋈^At` with goals c₁, c₁, c₂ and the kept chain through
+  `RefAt.imp`: dropping either duplicate subsumes; the control
+  (dropping the unique-goal premise) fails and loses exactly the kept
+  `c₂ ⊃ w`.  The same family under a promise world in the promise
+  `⋈^At`, modal part live: both drops subsume.
+* **B2** (promise family cut to a hitting set for `⋃Ξ^◯`): REFUTED
+  by design before the cell, then by the cell: `restrictC` keeps
+  `◯Y ∈ ⋂Θ^◯` only with a witness world, and the hitting set may drop
+  it (`b2_naive_refuted`, lost formula `◯m₂`).
+* **B2′** (hitting set for the modal formulas of `⋃Ξ^◯` and the
+  witnessed part of `⋂Θ^◯`, so arity ≤ |Ĝ^◯|): SURVIVES its cell.
+Record in `docs/a2-arity.md` §5.  Next: the general lemmas (B1),
+(B2′) about `WSubsumes` and the join contexts, then `checkClosed`'s
+join clauses as a distinct-goal clique enumeration.

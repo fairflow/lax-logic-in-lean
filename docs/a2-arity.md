@@ -126,39 +126,63 @@ verdict).
   enumeration of `⊃∈ᵢ` and the key-not-subsumption retention.  A
   checker should run against the engine's reduced store.
 
-## 5. What replaces A2 (OPEN, designed, not yet tested)
+## 5. What replaces A2: the designed cells (2026-09-02, later)
 
 The bound is not absolute but it need not be: the argument of §2
-bounds the USEFUL arity by the number of distinct goals.
+bounds the USEFUL arity by the number of distinct goals.  The join
+conclusion contexts are pure list functions of the family
+(`joinCtxAtVBase`, `keptOf`, `joinCtxAtP`, …), so a designed cell is an
+explicit family and the kernel decides it: `wip/b1b2_cells.lean`, ten
+cells and two controls, every claim `decide`d, pins
+`[propext, Quot.sound]`.
 
     (B1)  A family with two premises of the same goal is subsumed by
-          the sub-family dropping one of them.
+          the sub-family dropping either of them, and the sub-family
+          satisfies the side conditions.
 
-Sketch: same `Υ`; by (J1) the dropped premise's `Ξ^at`, `Ξ^⊃` lie in
+Argument: same `Υ`; by (J1) the dropped premise's `Ξ^at`, `Ξ^⊃` lie in
 `Ξⱼ ∪ Θⱼ` of every kept premise, so the atom part is covered by
 `⋃Ξ^at ∪ ⋂Θ^at` of the sub-family and the implication part by
-`⋃Ξ^⊃ ∪ kept` (`refAt_mono`, `FRJ/RefAt.lean`, and the pool of the
-sub-family is larger).  Hence join families can be taken with
+`⋃Ξ^⊃ ∪ kept` (`refAt_mono`, and `keptOf` is closed under its own
+rule with the sub-family's larger pool).  Cell B1-a (barren `⋈^At`,
+goals c₁, c₁, c₂, the kept chain exercised through `RefAt.imp`):
+dropping either duplicate subsumes (`b1a_drop1`, `b1a_drop0`); the
+control, dropping the unique-goal premise, does not (`b1a_control`),
+and the lost formula is exactly the kept implication `c₂ ⊃ w`
+(`b1a_control_witness`).  Cell B1-b, the same family under a promise
+world in the promise `⋈^At` with a live modal part: both drops subsume
+(`b1b_drop1`, `b1b_drop0`).  Hence join families can be taken with
 pairwise distinct goals: arity ≤ number of distinct goals of stored
-irregular rows ≤ |Sf^R G|.
+irregular rows ≤ |Sf^R G|.  (B1) SURVIVES its cells; the general
+lemma is the next build.
 
-    (B2)  A promise family can be taken with one regular premise per
-          modal formula of ⋃Ξ^◯ (a hitting set for (J5)): arity ≤
-          |⋃ⱼ Ξⱼ^◯|.
+    (B2, as first sketched)  A promise family can be cut to a hitting
+          set for ⋃Ξ^◯ alone.   REFUTED.
 
-Sketch: (J5) asks `∃ i, Y ∈ Cl(Δᵢ)` per `◯Y`; the restriction
-`restrictP` and the modal part `restrictC` only shrink with more
-premises.
+The modal part of a promise conclusion is `⋃Ξ^◯ ++ restrictC (⋂Θ^◯) Δs`
+under `restrictP`, and `restrictC` keeps `◯Y ∈ ⋂Θ^◯` only with a
+witness world `Y ∈ Cl(Δᵢ)`; a hitting set for `⋃Ξ^◯` may drop that
+witness.  Cell B2-refute: `[◯m₁] ; [◯m₂, a₁] → c₁` under
+`Δ₀ = [m₁, m₂, ◯m₂]`, `Δ₁ = [m₁, ◯m₂]`: the full family keeps `◯m₂`;
+the hitting set `{Δ₁}` for `⋃Ξ^◯ = {◯m₁}` loses it
+(`b2_naive_refuted`, `b2_naive_witness`).
 
-Both are lemmas about `WSubsumes` and the join contexts, each to be
-tested on ONE designed cell (a store with two irregular rows sharing
-a goal but with different zones; a family needing two promise worlds)
-and then proved.  With (B1)/(B2) the checker's join clauses become a
-G-dependent bounded enumeration: cliques of the (J1)-compatibility
-graph with distinct goals, which `famsUpToC` in `FRJ/Search/Fast.lean`
-already enumerates.  Whether the resulting check is polynomial in the
-store is a separate question; the `Gₙ` family shows the arity itself
-grows with the formula.
+    (B2′) A promise family can be cut to a hitting set for the modal
+          formulas of ⋃Ξ^◯ and of ⋂Θ^◯ that the full family
+          witnesses: arity ≤ number of distinct modal formulas of Ĝ.
+
+Argument: (J5′) and `restrictC` need one witness per modal formula;
+`restrictP` and (J6), (J7) only weaken with fewer worlds; the pledge
+`D` is common to all.  Cell B2′: the hitting set `{Δ₀}` subsumes
+(`b2_corrected`).  SURVIVES its cell.
+
+With (B1)/(B2′) the checker's join clauses become a G-dependent
+bounded enumeration: irregular families = cliques of the
+(J1)-compatibility graph with distinct goals (`famsUpToC` in
+`FRJ/Search/Fast.lean` already enumerates cliques), promise families
+= hitting sets over at most |Ĝ^◯| modal formulas.  Whether the
+resulting check is polynomial in the store is a separate question;
+the `Gₙ` family shows the arity itself grows with the formula.
 
 ## 6. Not claimed
 
@@ -166,7 +190,8 @@ grows with the formula.
   probe's evidence at n ≤ 4.  The kernel-level statement, "every
   FRJW disproof of `Gₙ` contains a join of arity ≥ n", is OPEN and no
   declaration asserts it.
-* (B1), (B2) are OPEN.
+* (B1), (B2′) as general lemmas are OPEN; only their designed cells
+  are kernel-decided.  (B2) as first sketched is REFUTED.
 * Closedness of the k = n store for n ≥ 3 is unverified (the full
   check is infeasible at 2³⁴ families); only n = 2 is CLOSED.
 * The engine agreement of §4 holds on the cells run, nothing more.
