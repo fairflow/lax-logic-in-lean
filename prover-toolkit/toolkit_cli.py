@@ -7,6 +7,7 @@ YOU are the proposer -- a person, or a coding agent with its own tools -- and
 the toolkit supplies only the parts that are tedious or easy to get wrong.
 
     search   query the corpus index (what ax-prover's LeanSearch tool does)
+    source   fetch the body of a declaration `search` named -- gate 3
     goals    show the open goal at each `sorry`, as Lean reports it
     check    compile and report axioms: the verification that actually matters
 
@@ -52,6 +53,12 @@ def cmd_search(cfg, args) -> int:
         res = item.get("result", {})
         print(f"\n[{res.get('kind')}] {res.get('name')}")
         print(f"  {res.get('signature','')}")
+        # The constructor list is the one thing retrieval can report as an
+        # ABSENCE: "no rule of this shape exists" is decidable from a complete
+        # list and from nothing else the index returns.
+        ctors = res.get("constructors") or []
+        if ctors:
+            print(f"  constructors ({len(ctors)}): {', '.join(ctors)}")
         doc = (res.get("docstring") or "").strip()
         if doc:
             print(f"  {doc[:400]}")
@@ -167,6 +174,82 @@ def cmd_check(cfg, args) -> int:
     return 0
 
 
+
+DECL_START = re.compile(
+    r"^(?:@\[|/--|/-!|theorem |lemma |def |abbrev |inductive |structure |"
+    r"instance |class |notation |end |private |protected |noncomputable |opaque )")
+
+
+def cmd_source(cfg, args) -> int:
+    """Gate 3: fetch the BODY of a declaration the index already named.
+
+    `search` answers "what might help?" with names, signatures and docstrings;
+    this answers "show me that one", and only that one.  Fetching a whole file
+    is the thing it exists to avoid, so the output is the single declaration
+    and its line cost is printed -- context, not tokens, is the binding
+    constraint, and a cascade is only worth having if it is cheap in context.
+
+    Only INDEXED declarations are fetchable, which is the point: gate 3
+    operates on gate-1/2 survivors, and `sorry`ed declarations were already
+    dropped at harvest, so a body returned here is a body that was proved.
+    """
+    idx = cfg.repo / "prover-toolkit" / "leansearch" / "index.jsonl"
+    if not idx.exists():
+        print(f"no index at {idx}; run leansearch/build_index.py", file=sys.stderr)
+        return 2
+    wanted = list(args.name)
+    entries = {}
+    for line in idx.open(encoding="utf-8"):
+        d = json.loads(line)
+        for w in wanted:
+            if d.get("name") == w or d.get("short") == w:
+                entries.setdefault(w, d)
+    total = 0
+    for w in wanted:
+        d = entries.get(w)
+        if d is None:
+            print(f"-- {w}: NOT IN THE INDEX")
+            print("--   (it may be `sorry`ed, or outside the indexed roots;")
+            print("--    either way gate 3 does not serve it)\n")
+            continue
+        # `d["file"]` is relative to the ROOT that harvested it, not to the
+        # repo, so resolve it against the configured roots in order.  It was
+        # `cfg.repo.rglob(d["file"])`, which in a clone with sibling worktrees
+        # matched 63 copies of one file, discarded none of them (the duplicates
+        # are worktrees, not `.lake`), and took `hits[0]` in filesystem order --
+        # so gate 3 could print a body from another campaign's worktree at a
+        # different commit, and say nothing about it.  It also walked `.lake`,
+        # costing 11s a call.
+        src = None
+        for r in cfg.index_roots:
+            cand = Path(r["path"]) / d["file"]
+            if cand.is_file():
+                src = cand
+                break
+        if src is None:
+            print(f"-- {w}: index names {d['file']}, not found under any "
+                  f"indexed root\n")
+            continue
+        try:
+            shown = src.relative_to(cfg.repo)
+        except ValueError:
+            shown = src
+        lines = src.read_text(encoding="utf-8", errors="replace").split("\n")
+        i = d["line"] - 1
+        j = i + 1
+        while j < len(lines) and not DECL_START.match(lines[j]):
+            j += 1
+        body = "\n".join(lines[i:j]).rstrip()
+        total += j - i
+        print(f"-- {d['name']}  [{shown}:{d['line']}, {j - i} lines]")
+        print(body)
+        print()
+    print(f"-- gate 3: {len(wanted)} requested, "
+          f"{sum(1 for w in wanted if w in entries)} served, {total} lines",
+          file=sys.stderr)
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -179,6 +262,10 @@ def main() -> int:
 
     g = sub.add_parser("goals", help="show the goal at each `sorry`")
     g.add_argument("file"); g.set_defaults(fn=cmd_goals)
+
+    src = sub.add_parser("source", help="fetch a named declaration's body")
+    src.add_argument("name", nargs="+", help="declaration name(s) from `search`")
+    src.set_defaults(fn=cmd_source)
 
     c = sub.add_parser("check", help="compile and report axioms")
     c.add_argument("file"); c.add_argument("name")
