@@ -55,8 +55,10 @@ byte-for-byte untouched (standing rule), so `FRJ/CalculusV.lean` keeps
 `St`/`Th`; the register applies to the W family and to the `Gbu◯`
 chain.
 
-Three places where the mechanical rule could not be applied, each FOR
-REVIEW by Matthew:
+Three places where the mechanical rule could not be applied.  Reviewed
+and ACCEPTED as they stand by Matthew, 2026-09-02 ("the notation is
+fine as it is; it's never perfect but now it's good"): none of the
+three is to be changed.
 
 1. **Six V-family named arguments** in `FRJ/SoundW.lean` (lines 132,
    139, 320, 323, 550, 554) call `stab_mem_baseAtV` /
@@ -73,8 +75,7 @@ REVIEW by Matthew:
    j`), not single zones; the table's `St → Ξ`, `Th → Θ` was applied
    verbatim, so they now read `Ξ`/`Θ` where the Families section wants
    `Ξs`/`Θs`.  Telling the two apart is not mechanical (it needs the
-   binder's type); a by-hand pass over those three files is the fix if
-   Matthew wants it.
+   binder's type).  Accepted as is; no by-hand pass.
 
 Other developments in the repository that carry the same mix (Matthew:
 "wrt other formalisations elsewhere in this repo") are to be swept

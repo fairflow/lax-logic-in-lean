@@ -3649,5 +3649,9 @@ when files move".
 * **Not done**: the register sweep of the rest of the repository
   (Matthew: the Greek/Roman mix occurs elsewhere); the deferred
   compaction items (archive FRJ◯/FRJV physically, retire the corner's
-  dead kit and `SaturateV`, `W/Exclusion` namespace); the by-hand
-  family rename.  Each needs its supersession check first.
+  dead kit and `SaturateV`, `W/Exclusion` namespace).  Each needs its
+  supersession check first.
+* **Ruling** (Matthew, after the report): "The notation is fine as it
+  is.  It's never perfect but now it's good."  The three residues are
+  accepted as they stand; no family rename pass.  Recorded in
+  `docs/notation.md`.

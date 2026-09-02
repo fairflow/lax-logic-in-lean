@@ -272,4 +272,6 @@ Re-opened constraints: none.
   `refutedCleanly_circ_axI`) and `SaturateV`.
 * `W/Exclusion.lean` namespace `FRJ.Gbu.LJFT → FRJ.Gbu.W` (changes
   pinned names).
-* The by-hand family rename (`docs/notation.md`, residue 3).
+
+Not deferred: the three rename residues of `docs/notation.md` were
+accepted as they stand by Matthew on 2026-09-02; no family rename pass.
