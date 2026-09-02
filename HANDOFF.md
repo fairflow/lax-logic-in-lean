@@ -3740,3 +3740,42 @@ controls, all `decide`, pins `[propext, Quot.sound]`.
 Record in `docs/a2-arity.md` §5.  Next: the general lemmas (B1),
 (B2′) about `WSubsumes` and the join contexts, then `checkClosed`'s
 join clauses as a distinct-goal clique enumeration.
+
+## 2026-09-02 (late night) — B1 and B2′ PROVED as general lemmas; the output-layer decisions taken
+
+Matthew: "Prove the general B1 and B2′ lemmas next", with three
+questions answered in the reply (why decidability survives unbounded
+arity: finiteness of the canonical universe plus closure, no search;
+`Gbu◯` is G3-style with contraction absorbed, not G4-contraction-free;
+the L⊃ loop is cut by `totalityW`'s structural pass with `reccall`
+paid by `unclosed`), and on `⊕'`: forced for `decideGbuW` (both sides
+`Prop`), the `⊕` form is `decideGbuWData`.
+
+* **`wip/b1b2_lemmas.lean`** (in `wipshared`), all pins
+  `[propext, Quot.sound]`: under a reindexing `e` of the irregular
+  family that is injective off the dropped index, surjective onto the
+  rest and goal-covering, the six conclusion-context functions
+  (`ctxAt`, `ctxOr`, `joinCtxAtF`, `joinCtxOrF`, `joinCtxAtP`,
+  `joinCtxOrP`) are monotone (`*_sub`) and the side conditions
+  transfer (`j1_comp` … `j6_comp`); `b1_joinAt` packages the
+  duplicated-goal drop with `Fin.succAbove`; `b1_joinAt_subsumes`,
+  `b1_joinAtP_subsumes` give the `WSubsumes` forms.  B2′: under a
+  reindexing of the promise family hitting every witnessed modal
+  formula of `⋃Ξ^◯ ++ ⋂Θ^◯`, `joinCtxAtP_cut`, `joinCtxOrP_cut`,
+  `j5_cut`–`j7_cut`, `b2_joinAtP_subsumes`.  Proof = aggregate
+  monotonicity + the (J1) cover (`cover_of_j1` via the constructive
+  `exists_or_forall`) + `keptOf_mono` (from `keptOf_saturated` and
+  `refAt_mono`).  One choice leak found and removed: Mathlib's
+  `Fin.succAbove_ne` carries `Classical.choice`; `succAbove_ne'` is a
+  hand proof over values.
+* **Decisions taken** on `docs/decider-outputs-design.md` (recorded
+  there): D1 `Tm`; D2 `ndToTm` (his remark about a direct route from
+  the `⊕` decider answered: a direct `GbuRC → Tm` is the 24-case copy
+  of `laxOfR` with term formers; `ndToTm` reuses it); D3
+  untrusted-but-checked; D4 hoist and extend `tools/Cert.lean`'s
+  renderer; D5 `Tools/Decide.lean`, `lean_exe pll`, `#decide`; D6 as
+  recommended.  SVG convention amended: arrowheads on both relations,
+  `≤` dashed, `Rm` solid (a subrelation, a filling-in).
+* **Next**: the checker-level corollary (join clauses of `DBClosed`
+  reduce to distinct-goal, witness-minimal families, via the
+  reindexing pack of `W/Saturate.lean`), then `checkClosed`.

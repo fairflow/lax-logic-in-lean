@@ -588,12 +588,17 @@ The extension, `svgOfTab (T : Tab) (G : Form) (o : SvgOpts) : String`:
   marker.  A hover `<title>` can carry the full forced set, as
   `PLLDiagram` already does (`:178`).
 * **order**: Hasse diagram of `≤` (transitive reduction), which
-  `FrjCert.hasse` (`tools/Cert.lean:230`) already computes; plain grey
-  lines, no arrowheads (the direction is up the page).
-* **modal relation**: every non-reflexive `Rm` pair, dashed, in a
-  distinct colour, with an arrowhead.  Keep `Rm` pairs that coincide
-  with a Hasse edge as a SECOND, offset dashed edge rather than a
-  restyle, so `Rm` is always legible as its own relation.
+  `FrjCert.hasse` (`tools/Cert.lean:230`) already computes; DASHED
+  lines WITH arrowheads.  (Matthew's ruling, 2026-09-02, replacing the
+  draft's "plain grey, no arrowheads": "arrowheads on both `Ri` and
+  `Rm`, and `Ri` dashed and `Rm` solid: it's a subrelation, i.e. a
+  filling-in".)
+* **modal relation**: every non-reflexive `Rm` pair, SOLID, in a
+  distinct colour, with an arrowhead (the ruling above: `Rm ⊆ ≤` is the
+  filled-in part of the order, so it is drawn solid inside the dashed
+  order).  Keep `Rm` pairs that coincide with a Hasse edge as a SECOND,
+  offset solid edge rather than a restyle, so `Rm` is always legible as
+  its own relation.
 * **root**: the existing red node, plus the word `root` in the label.
 * **caption**: the formula, the verdict, the refuting world (always the
   root here, by `modR_countermodel`), the view (`minimised` /
@@ -901,6 +906,28 @@ hours**, and it is independent of the checker.
 ---
 
 ## 6. Decisions for Matthew
+
+**Taken (Matthew, 2026-09-02, evening):** D1 `PLLND.Tm` ("what I meant
+anyway"); D2 `ndToTm`, with the remark "not sure why we had to go
+through ND as a more direct route from the `⊕` decider ought to be
+possible" -- answered below; D3 untrusted-but-checked; D4 yes, hoist and
+extend; D5 yes; D6 as recommended.  Also the SVG convention of §7.6:
+arrowheads on both relations, `≤` dashed, `Rm` solid (a subrelation, a
+filling-in); the layout bullets above are amended.
+
+*On D2's remark.*  The `⊕` decider returns a `Gbu◯` derivation
+`GbuRC G [] G`.  `Tm` is typed by natural-deduction contexts and
+formulas (`Tm Γ φ`), so SOME translation from `Gbu◯` derivations to terms
+is needed either way.  The direct route would be a 24-case mutual
+recursion `GbuRC/GbuIC → Tm` mirroring `laxOfR`/`laxOfI` case for case
+(each `Gbu◯` rule becomes the same term former as its `LaxND` image,
+with `cut` as `(λx.q) p`).  Since `laxOfR` exists and is verified, the
+cheaper path is to keep it and add the structural `ndToTm : LaxND Γ φ →
+Tm Γ φ` (about thirteen cases, one per `LaxND` constructor), whose only
+real content is `varOfMem`; the composite is the direct route with the
+24 cases already paid for.  If a term is ever wanted WITHOUT the `LaxND`
+detour, the direct translation is a mechanical copy of `laxOfR` with
+term constructors and can be added then.
 
 **D1. Which term calculus?**  `PLLND.Tm` (`LaxLogic/PLLTerms.lean:60`),
 not `G4cTm` and not raw `LaxND`.

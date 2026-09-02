@@ -176,6 +176,36 @@ Argument: (J5′) and `restrictC` need one witness per modal formula;
 `D` is common to all.  Cell B2′: the hitting set `{Δ₀}` subsumes
 (`b2_corrected`).  SURVIVES its cell.
 
+**Both PROVED as general lemmas (2026-09-02, night)**,
+`wip/b1b2_lemmas.lean`, pins `[propext, Quot.sound]`, no choice (the
+one Mathlib lemma that carried choice, `Fin.succAbove_ne`, is replaced
+by a hand proof).  The statements are about the conclusion-context
+functions under a reindexing `e : Fin (m+1) → Fin (n+1)` of the family:
+
+    ctxAt_sub, ctxOr_sub, joinCtxAtF_sub, joinCtxOrF_sub,
+    joinCtxAtP_sub, joinCtxOrP_sub
+      : e injective away from the dropped index p, surjective onto the
+        rest, goal-covering (∀ j, ∃ k, rhs (e k) = rhs j), and the family
+        satisfying (J1), (J2) (and F ∉ ⋃Ξ^at, (J5′) where the rule has
+        them)  ⟹  the family's conclusion context ⊆ the sub-family's;
+    j1_comp, j2_comp, j3_comp, fNot_comp, j5_comp, j6_comp
+      : the side conditions transfer to the sub-family;
+    b1_joinAt : the package for a duplicated goal, e = Fin.succAbove p;
+    b1_joinAt_subsumes, b1_joinAtP_subsumes : the WSubsumes forms;
+
+    joinCtxAtP_cut, joinCtxOrP_cut
+      : e : Fin (m+1) → Fin (k+1) hitting every witnessed modal formula
+        of ⋃Ξ^◯ ++ ⋂Θ^◯  ⟹  the promise conclusion context ⊆ the cut
+        family's;
+    j5_cut, j6_cut, j7_cut : the promise side conditions transfer;
+    b2_joinAtP_subsumes : the WSubsumes form.
+
+The proof is the monotonicity of the aggregates plus the (J1) cover
+(`cover_of_j1`, through a constructive finite case split
+`exists_or_forall`), with kept implications transferred by
+`keptOf_mono` (itself `keptOf_saturated` + `refAt_mono` along the
+kept chain).
+
 With (B1)/(B2′) the checker's join clauses become a G-dependent
 bounded enumeration: irregular families = cliques of the
 (J1)-compatibility graph with distinct goals (`famsUpToC` in
@@ -190,8 +220,12 @@ the `Gₙ` family shows the arity itself grows with the formula.
   probe's evidence at n ≤ 4.  The kernel-level statement, "every
   FRJW disproof of `Gₙ` contains a join of arity ≥ n", is OPEN and no
   declaration asserts it.
-* (B1), (B2′) as general lemmas are OPEN; only their designed cells
-  are kernel-decided.  (B2) as first sketched is REFUTED.
+* (B1), (B2′) are PROVED at the level of the join-context functions
+  and side conditions (`wip/b1b2_lemmas.lean`); what is NOT yet
+  stated is the checker-level corollary, "the join clauses of
+  `DBClosed` hold iff they hold on distinct-goal, witness-minimal
+  families", which needs the reindexing pack of `W/Saturate.lean` and
+  is the next build.  (B2) as first sketched is REFUTED.
 * Closedness of the k = n store for n ≥ 3 is unverified (the full
   check is infeasible at 2³⁴ families); only n = 2 is CLOSED.
 * The engine agreement of §4 holds on the cells run, nothing more.
