@@ -31,9 +31,11 @@ Re-opened constraints: **none**.
 
 ## Supersession check: T-B `_mono` defs → emitters + transfer lemmas
 
-Scope: `joinCirc_mono`, `joinOr_mono`, `joinAt_mono`, `joinAtP_mono`,
-`joinOrP_mono`, `joinCircP_mono`, `circIn_mono`, `orI_mono`,
-`impInI_mono`.  NOT retired (still live): the `_of_swap` transfer
+Scope (eleven defs; the count "nine" given here until 2026-09-02 was
+wrong, corrected on the complexity comparison's finding):
+`joinCirc_mono`, `joinOr_mono`, `joinAt_mono`, `joinAtP_mono`,
+`joinOrP_mono`, `joinCircP_mono`, `joinAtF_mono`, `joinOrF_mono`,
+`circIn_mono`, `orI_mono`, `impInI_mono`.  NOT retired (still live): the `_of_swap` transfer
 lemmas, the `ctx_sub` lemmas, `lift_max`, `circNotIn_max`,
 `orI_mono_sub`, `impInI_mono_sub`.
 

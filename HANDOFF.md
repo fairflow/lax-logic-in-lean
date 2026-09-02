@@ -3527,3 +3527,52 @@ archived under docs/archive/); its §C.10 dead-declaration sweep done
 Part E of the plan is the spine (seven items, E.iii "how the two
 calculi meet: the inversion-lemma bank as a table" first).  The plan
 rejects a `first`-over-the-bank tactic and `byDecNeg` with reasons.
+
+## 2026-09-02 (afternoon) — stage 4 delivered: the explainer, the traces, the complexity comparison
+
+Matthew's six comments on the brief (motive to be explained; B.3
+proof-state trace preferred over B.2, then E.iii, E.iv; the search
+state correlated with the proof state on two concrete runs, a proof
+and a disproof; "cell" to be defined; the calculi presented first; as
+much detail as possible; a complexity comparison with the IPC paper
+and the extra `◯` components).  Delivered, all against `b2f2525`:
+
+* **docs/frjw-explainer.md** (≈ 2400 lines): §1 the two calculi
+  (`Gbu◯` 24 rules, `FRJW` 21 rules with the join side conditions
+  tabulated, `Cl`, `≐`, tags, `Covers`, `RefAt`, `KeptChain`, the
+  store, the queries, the invariant, the cell statement); §2 cells;
+  §3 motives (the three of the development, and how they appear
+  interactively); §4 the 22-snapshot proof-state trace of `searchW`
+  by the method of docs/annotated/README.md (raw transcript at
+  docs/annotated/frjw-searchW-transcript.txt); §5 the inversion bank
+  (23 lemmas, 39 sites, `gbuInv5` in full); §6 the corner and
+  `totalityW` (De Morgan table, the atom dilemma, the two-level
+  diagram); §7 the two runs `p ⊃ ◯p` (proof) and `◯p ⊃ p` (disproof)
+  plus `◯p ⊃ (◯p ∧ ◯p)`, cell by cell against the snapshots, with four
+  T-C snapshots for the disproof tree
+  (docs/annotated/frjw-tC-transcript.txt); §8 the comparison digest;
+  §9 what is not claimed.
+* **wip/frjw_trace.lean + wip/frjw_trace_out.txt** (Opus subagent,
+  `8c86301`): store round by round, root scan, and the returned
+  derivation/disproof printed as a tree off the term
+  `decideGbuWData` returned; `roundsEq … := rfl` pins the driver's
+  round decomposition to `stepNew`.  The strength law does not compute
+  in eight minutes; `p ⊃ ◯p`, `◯p ⊃ p`, `◯p ⊃ (◯p ∧ ◯p)` do in 12–17 s.
+* **docs/frjw-complexity-comparison.md** (Opus subagent, 904 lines):
+  paper source read directly; IPC baseline at `05994d5` (3712 lines);
+  the orbit at `b2f2525` 39 567 lines, ≈ 34 730 `◯`-attributable;
+  split intrinsic ≈ 40% / overhead ≈ 6% (floor) / residue ≈ 41% /
+  unclassified ≈ 13%; the dominant driver is that the paper's cheap §6
+  completeness route is unavailable for `◯` (documented argument,
+  UNCERTAIN as a formal claim).  Recommendations: archive the FRJ◯ and
+  FRJV lines physically, promote the W-chain out of wip/, retire the
+  corner's dead kit and `SaturateV` after checks.
+* **Stale records fixed** on the comparison's findings, all verified
+  before editing: `wip/gbu_circ.lean` "six new constructors" → eight;
+  its ledger rows Thm 8/9/10 OPEN → CLOSED for FRJW; its "Lemma 9, 10
+  clauses" → 9 (checked in frj-corr.tex: `lemma:gbuInv:1`–`:9`);
+  docs/frjw-compaction.md's "nine `_mono` defs" → eleven.
+
+Matthew (mid-session): "do the promotion when it feels right to you":
+the wip/ → FRJ/ promotion is authorised at my discretion; planned
+after this delivery, with the core-admission gate.

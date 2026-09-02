@@ -12,13 +12,13 @@ also the reading order of this file.
 | Thm 6 | 3107 | `⊢_Gbu(G) G → G ∈ IPL` | composes; nothing new |
 | Lemma 8 | 3200 | the weight `Wg` | **REPLACED** — `wip/gbu_measure.lean` |
 | Thm 7 | 3222 | termination | **REPLACED** — `stepU_wf`; the naive one is REFUTED (`no_measure_stepC`) |
-| Lemma 9 | 3300 | invertibility, 10 clauses | **EXTENDED** — `gbuInv11` free; `gbuInv12`, `gbuInv13` from the kit |
+| Lemma 9 | 3300 | invertibility, 9 clauses (`lemma:gbuInv:1`–`:9` in the arXiv source; this row read "10" until 2026-09-02) | **EXTENDED** — `gbuInv11` free; `gbuInv12`, `gbuInv13` from the kit (archive since compaction stage 2) |
 | Lemma 10 | 4130 | `∨`-closure | ports unchanged (`gbuInv10` has no `◯` side condition) |
 | Lemma 11 | 4160 | the `At` success lemma | **EXTENDED** — `gbuSuccAtF` |
 | Lemma 12 | 4193 | the `∨` success lemma | **EXTENDED** — `gbuSuccOrF` |
-| Thm 8 | 4215 | correctness of `BSearch` | OPEN — needs the store-carrying recursion of `wip/gbu_measure.lean` |
-| Thm 9 | 4320 | the duality | OPEN — follows Thm 8 |
-| Thm 10 | 4353 | completeness of both | OPEN — follows Thm 9 |
+| Thm 8 | 4215 | correctness of `BSearch` | **CLOSED for FRJW** (2026-09-01): `searchW`/`dichotomyW`, `wip/gbu_frjw_search.lean` (this row read OPEN until 2026-09-02) |
+| Thm 9 | 4320 | the duality | **CLOSED for FRJW**: `decideGbuW`, `wip/gbu_frjw_saturate.lean` |
+| Thm 10 | 4353 | completeness of both | **CLOSED for FRJW**: `frjw_complete`, `gbuw_complete`, and beyond the paper `decidePLL` |
 
 ## The two re-run points
 
@@ -1239,7 +1239,9 @@ total translation of `Gbu◯(G)` into `Gbu(G)` for `◯`-free `G`.  Add a
 rule that can fire on `◯`-free input and that translation stops
 compiling.  It is the gate, not a remark.
 
-Six new constructors, all carrying the blanket sequent-language
+Eight new constructors (the six displayed below, plus the `◯`-goal
+left rules `L⊥ᵢ`, `L∧ᵢ`, `L∨ᵢ` that `L⊃ᵢ` brought with it; the count
+read "six" until 2026-09-02), all carrying the blanket sequent-language
 condition on their `◯`-formula (**divergence D9**: `Gbu(G)`'s own
 constructors do not carry it — see D2 — but the new ones must, since
 that condition is exactly what makes them inapplicable on a `◯`-free

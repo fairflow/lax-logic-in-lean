@@ -2197,6 +2197,111 @@ store's `p`-rows have empty zones").
 
 ---
 
+## 8. The complexity comparison with Fiorentini–Ferrari
+
+The full comparison is `docs/frjw-complexity-comparison.md` (904
+lines; the paper's arXiv source read directly, the IPC baseline
+recovered at `05994d5`, every number with its method).  What follows
+is its content in the form this document needs; the details, the
+per-file tables and the sources are there.
+
+### 8.1 The two fixed points
+
+The paper: thirty printed pages for the duality route (§2–§5),
+thirty-eight numbered items, ten FRJ(G) rule schemas and fourteen
+GBU(G) rule schemas, two termination measures of three components
+each.  The IPC mechanisation here (`05994d5`, nine files, 3712 lines):
+FRJ(G) transcribed in twelve constructors, soundness and completeness
+PROVED, with completeness taken by the paper's cheap §6 route (a
+direct construction from a countermodel, 746 lines) rather than
+through the duality, so GBU(G), the saturated database and `Search`
+were never built for IPC.
+
+### 8.2 What `◯` adds, by layer
+
+| layer | IPC here | `◯` here | ratio | what forces it |
+|---|---|---|---|---|
+| syntax, closure, models | 1044 | 1298 + `RefAt` 510 | 1.7× | constraint models (`Rm`, fallible worlds), certificates |
+| the disproof calculus | 191 (12 rules) | 374 (21 rules; definition closure ≈ 1610) | 2.0× | nine new rules: `◯∈`, `⋈^◯`, `⋈^◯_P`, `◯∉`, `Ax^I◯`, `Lift`, and the promise/fallible join pairs; tags, `Covers`, `RefAt`, `KeptChain` |
+| soundness | 515 | 1906 | 3.7× | the modal cone, `tag_cone`, a second size induction inside the join case founded on `refAt_refutes_sf` |
+| completeness of the disproof calculus | 746 (direct route) | 9954 (the whole duality: search 2671 + closure/saturation 4237 + `Gbu◯` 3046) | 13.3× | **the direct route is unavailable for `◯`** |
+| the proof calculus | 523 (16 rules) | 2524 (24 rules) | 2.7× | `L◯`, `L◯ᵢ`, `R◯`, `R◯ᵢ`, `L⊃ᵢ` and the three `◯`-goal left rules |
+| termination of backward search | ~70 lines | REFUTED for the naive extension, then re-won with the store | | `not_wf_stepC`: a two-cycle `Γ ⇒g Z ↦ Γ →g ◯Z ↦ Γ ⇒g Z` |
+
+The single largest cost is the second-to-last row, and its cause is
+the first thing to say about `◯`: the paper's cheap completeness
+route is a triple induction on (height of the world, sequent phase,
+goal size), and for `◯` no lexicographic order of those three works.
+The `◯`-body edge (`I(◯Z) → R(Z)` at the same world, forced when the
+root's cone is the root itself) needs regular-after-irregular; the
+Υ-edge of the joins (antecedents of stable implications, of unbounded
+size relative to the goal) needs irregular-before-regular; and the
+call graph at a fixed world has the cycle `I(◯Z) → R(Z) → I(Y) →
+I(◯Z)`.  The resolving order depends on the model, "and that is
+precisely what saturation is" (`docs/frj-w4.md` §10).  This is a
+documented argument, not a kernel-checked theorem (UNCERTAIN as a
+formal claim; what would settle it is a `no_measure_stepC`-shaped
+statement for the completeness visit's call relation).  What IS
+kernel-checked on this route: the paper's theorem survives only under
+a `◯`-freeness gate (`FRJ/Minimal.lean:483`), and the naive `◯`
+extension of FRJ(G) is REFUTED outright (`frj_incompleteness_80/81`).
+
+The other forcing facts are all kernel-checked and are listed in
+§5.1 of the comparison: `no_measure_stepC` (no function of the
+sequent, into any well-founded order, measures backward `Gbu◯`
+search), `rcircNI_not_invertible` and `not_gbuR_omegaNI` (which put
+`L⊃ᵢ` into the irregular judgment and so created the corner of §6),
+`valid_neg_circ_bot_of_infallible` (fallible worlds are needed),
+`no_irregular_circ_imp_self` (the hole that `Lift` fills).
+
+### 8.3 The split of the modal development
+
+At `b2f2525` the orbit is 39 567 lines, of which ≈ 34 730 are
+`◯`-attributable (7.2× the IPC baseline of 4837).  By the
+comparison's measurement (whole files assigned where a file has one
+role, blocks measured where it does not, estimates flagged):
+
+| bucket | lines | share |
+|---|---|---|
+| intrinsic to `◯` (rules and soundness 4051, `Gbu◯` and measure 3046, searcher and bank 2671, closure and saturation 4237) | ≈ 14 000 | ≈ 40% |
+| formalisation overhead (lists not `Finset`s and the `≐` transports, `Fin` families and their reindexing, choice avoidance, the `Clo` decider) | ≈ 2 000 | ≈ 6%, a floor |
+| historical residue (the FRJ◯ line's dead theorems, the superseded FRJV line, `searchO`, the store measure, the `_mono` archive, the corner's dead kit, the second completeness route) | ≈ 14 150 | ≈ 41% |
+| unclassified (engine infrastructure, probes, the LJF◯ dependency) | ≈ 4 600 | ≈ 13% |
+
+So Matthew's impression is supported by the numbers, and the reason
+is not that the simplification failed.  Stages 1–3 and the C-items
+cut the three core files from 5465 to 4962 lines and the search file
+by 39%; what they did not touch is the larger residue, two superseded
+calculi (16 633 lines together), a retired search apparatus and a
+second completeness route, each retained for a stated reason (FRJ◯
+is the subject of the #80/#81 incompleteness theorems; FRJV holds the
+ρ12⊬ρ15 banked result and is imported by `gbu_search`; `searchO`
+holds the `Gcc` countermodel; the LJF◯ route's independence is
+evidence).  The intrinsic part, ≈ 14 000 lines, is 2.9× the whole IPC
+baseline and 19× the IPC completeness proof; that, rather than the
+7.2× headline, is what `◯` costs.  The comparison's recommendations
+for readability, in order: separate the FRJ◯ and FRJV lines
+physically into an archive subtree with pins intact (≈ 16 600 lines
+out of the reader's way, no mathematical change, one supersession
+check per file); promote the W-chain out of `wip/`; fix the stale
+records it found (done at this commit: the "six new constructors"
+docstring, the OPEN ledger rows for Theorems 8–10, the nine-vs-eleven
+`_mono` count; the fourth, "Lemma 9 has 10 clauses", is checked in
+§8.4); retire the corner's dead kit and `SaturateV` after their
+checks.
+
+### 8.4 One record checked against the source
+
+The comparison reports that the paper's invertibility lemma
+(`lemma:gbuInv`, the journal's Lemma 9) has nine clauses where the
+ledger in `wip/gbu_circ.lean` said ten.  Checked against
+`frj-corr.tex` (the label is at source line 3828; the enumerate that
+follows carries `\item\label{lemma:gbuInv:1}` through
+`\label{lemma:gbuInv:9}` and then `\end{enumerate}`): nine.  The
+mechanisation's `gbuInv1`–`gbuInv10` are ten names because clause
+(iii), the `∨`-left inversion, is split by disjunct into `gbuInv3L`
+and `gbuInv3R`.  The ledger row is corrected at this commit.
+
 ## 9. What is not claimed
 
 1. **A proof object, not a practical procedure.**  `decidePLL` and
