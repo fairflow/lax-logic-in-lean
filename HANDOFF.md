@@ -3485,3 +3485,8 @@ docs/frjw-compaction.md (no re-opened constraints).  STAGE 3 PROPOSED,
 awaiting Matthew: retire the pair-V measure (V is never pushed; revert
 to wgC = (unclosed, tpC, seqSize)).  An Opus plan for the recursion
 explainer + reusable-tactic survey is in flight.
+Later 2026-09-02: `decideGbuWData G : GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G)`
+(Matthew's bare-calculi form, both sides as derivation objects) added
+in wip/gbu_frjw_saturate.lean, pinned [propext, Quot.sound]; smoke
+cells atom/unit exercise it.  Stage-3 dry run (retire the pair-V
+measure) compiles at 852 lines in scratch, awaiting Matthew's go.

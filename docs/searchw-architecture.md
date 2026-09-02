@@ -302,3 +302,11 @@ mathematics will not change.
   (totality makes it redundant), `decRP` dropped from the chain,
   search file 1189 → 939 lines; stage 3 (retire the pair-V measure,
   `V` is never pushed) proposed for review.
+* 2 September (later): Matthew's observation — the bare calculi on both
+  sides, into Type.  Added `decideGbuWData G : GbuRC G [] G ⊕
+  (Σ' t Γ, FRJWr G t Γ G)` (plain `⊕`, no `Nonempty`/`∃` truncation):
+  the proof object or the disproof object, via a Type-valued root scan
+  `rootDisproof?` over the closed store; `[propext, Quot.sound]`.
+  The truncation in `decideGbuW` was an artefact of the abstract
+  `WSaturated` interface (Prop-level derivability), not of the
+  mathematics.  Smoke: `atom` → disproof object, `unit` → proof object.

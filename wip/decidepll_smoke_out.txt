@@ -5,3 +5,5 @@ bot: decidePLL=false expected=false PASS
 circbot: decidePLL=false expected=false PASS
 impid: decidePLL=true expected=true PASS
 unit: decidePLL=true expected=true PASS
+  [apply] `CategoryTheory.Limits.WalkingCospan.Hom.inl`
+  [apply] `CategoryTheory.Limits.WalkingCospan.Hom.inl`

@@ -27,8 +27,21 @@ def runCell (name : String) (G : Form) (expected : Bool) : IO Unit := do
   let mark := if verdict == expected then "PASS" else "FAIL"
   IO.println s!"{name}: decidePLL={verdict} expected={expected} {mark}"
 
+/-- The bare decision: which object came back. -/
+def runData (name : String) (G : Form) (expected : Bool) : IO Unit := do
+  let side := match decideGbuWData G with
+    | .inl _ => "proof"
+    | .inr ⟨t, Γ, _⟩ => s!"disproof(tag={repr t}, |Γ|={Γ.length})"
+  let verdict := match decideGbuWData G with | .inl _ => true | .inr _ => false
+  let mark := if verdict == expected then "PASS" else "FAIL"
+  IO.println s!"{name}: decideGbuWData={side} expected-proof={expected} {mark}"
+
 def main (args : List String) : IO Unit := do
   match args with
+  | ["data", name] =>
+      match cells.find? (fun c => c.1 == name) with
+      | some (n, G, e) => runData n G e
+      | none => IO.println s!"unknown cell {name}"
   | [name] =>
       match cells.find? (fun c => c.1 == name) with
       | some (n, G, e) => runCell n G e

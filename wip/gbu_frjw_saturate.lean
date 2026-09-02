@@ -2430,6 +2430,62 @@ def decidePLL (G : Form) : Decidable (PLL G) :=
   | .inl h => isTrue (FRJ.Gbu.pll_of_provableGbuC h)
   | .inr h => isFalse (FRJ.soundnessW h)
 
+/-! ## The bare form: derivation objects on both sides
+
+`decideGbuW` truncates the negative side to the Prop `DisprovableW G`
+because the abstract interface stores derivability as `Nonempty`.  At
+the instantiation the rows carry their derivations as DATA, so the
+decision can hand out the bare objects of both calculi with a plain
+`⊕`: the `Gbu◯` proof of `G`, or the FRJW disproof (its tag, context
+and derivation). -/
+
+/-- Scan the store for a regular root row of goal `G`, returning its
+derivation as data. -/
+def rootDisproof? {G : Form} : List (WRow G) → Option (Σ' t Γ, FRJWr G t Γ G)
+  | [] => none
+  | ⟨.reg t Γ C, d⟩ :: rest =>
+      if h : C = G then some ⟨t, Γ, h ▸ d⟩ else rootDisproof? rest
+  | ⟨.irr _ _ _, _⟩ :: rest => rootDisproof? rest
+
+/-- No root row found ⇒ the root regular query fails. -/
+theorem rootDisproof?_none {G : Form} : ∀ {db : List (WRow G)},
+    rootDisproof? db = none → ¬ WEvalR (· ∈ db.map (·.s)) [] G
+  | [], _, ⟨_, _, hmem, _⟩ => absurd hmem List.not_mem_nil
+  | ⟨.reg t Γ C, d⟩ :: rest, h, ⟨t', Γ', hmem, hclo⟩ => by
+      simp only [rootDisproof?] at h
+      by_cases hC : C = G
+      · rw [dif_pos hC] at h
+        exact absurd h (Option.some_ne_none _)
+      · rw [dif_neg hC] at h
+        rcases List.mem_cons.mp hmem with heq | hmem'
+        · injection heq with _ _ hCG
+          exact hC hCG.symm
+        · exact rootDisproof?_none h ⟨t', Γ', hmem', hclo⟩
+  | ⟨.irr _ _ _, _⟩ :: rest, h, ⟨t', Γ', hmem, hclo⟩ => by
+      simp only [rootDisproof?] at h
+      rcases List.mem_cons.mp hmem with heq | hmem'
+      · exact WSeq.noConfusion heq
+      · exact rootDisproof?_none h ⟨t', Γ', hmem', hclo⟩
+
+/-- The bare decision over any closed store (the store abstracted, so
+elaboration never reduces the saturation). -/
+def decideOfStore {G : Form} (db : List (WRow G)) (hcl : DBClosed G db) :
+    GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G) :=
+  match h : rootDisproof? db with
+  | some d => .inr d
+  | none =>
+      .inl (searchW (wsat_of_closed db (tC_of_closed hcl))
+        (fun Ω C => decWEvalI (db.map (·.s)) Ω C)
+        (true, ([] : List Form), G) (fun _ h => absurd h List.not_mem_nil)
+        (sfR_self G) (rootDisproof?_none h))
+
+/-- **The bare decision**: for every PLL formula `G`, either a `Gbu◯`
+derivation of `G` or an FRJW disproof of `G`, both as objects of their
+calculi (plain `⊕`, no truncation). -/
+def decideGbuWData (G : Form) :
+    GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G) :=
+  decideOfStore (closureDB G) (closureDB_closed G)
+
 /-! ## Pins -/
 
 /-- info: 'FRJ.Gbu.W.closureDB_closed' depends on axioms: [propext, Quot.sound] -/
@@ -2467,5 +2523,9 @@ def decidePLL (G : Form) : Decidable (PLL G) :=
 /-- info: 'FRJ.Gbu.W.decidePLL' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms decidePLL
+
+/-- info: 'FRJ.Gbu.W.decideGbuWData' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms decideGbuWData
 
 end FRJ.Gbu.W
