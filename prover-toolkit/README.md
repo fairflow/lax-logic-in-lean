@@ -98,18 +98,18 @@ the docstring in `toolkit_config.py`.
 There are two routes, and they are not ranked. Install either or both:
 
 ```bash
-cp -r prover-toolkit/skill/prove-lemma        ~/.claude/skills/   # hosted API
-cp -r prover-toolkit/skill/prove-lemma-inloop ~/.claude/skills/   # Claude proposes
+cp -r prover-toolkit/skill/prove-lemma       ~/.claude/skills/   # hosted API, costs money
+cp -r prover-toolkit/skill/prove-lemma-agent ~/.claude/skills/   # Claude proves it, with tools
 ```
 
 - **`prove-lemma`** hands the goal to a hosted model through `ax-prover`. It is
   unattended and can grind through many lemmas; it costs money per attempt.
-- **`prove-lemma-inloop`** puts Claude in the proposer seat and uses the
+- **`prove-lemma-agent`** puts Claude in the proposer seat and uses the
   toolkit only for retrieval, goal states and verification. Free per attempt,
   and it can bring repository context a fixed prompt cannot carry. **Start
   here:** [`USING-THE-SKILL.md`](USING-THE-SKILL.md).
 
-**`prove-lemma-inloop` is not a cheap way of measuring `prove-lemma`**, and it
+**`prove-lemma-agent` is not a cheap way of measuring `prove-lemma`**, and it
 was never wired to be. The two share only the index server — not the harness,
 not the prompt, not the sampling — and the in-loop skill is an agent with
 tools, which greps, reads whole files and iterates against `check`. Its numbers
@@ -131,7 +131,7 @@ the model behind the endpoint changes. `harness.py --url` already defaults to
 **nothing in the harness changes**.
 
 This is the cheap substitute for a `prove-lemma` run. It is *not* what
-`prove-lemma-inloop` does: that skill is an agent with tools — it greps, reads
+`prove-lemma-agent` does: that skill is an agent with tools — it greps, reads
 whole files and iterates against `check` — so its results are not comparable
 with a one-shot hosted prover in either direction. If you want to know how the
 harness would score, use the shim; if you want a lemma closed, use the skill.

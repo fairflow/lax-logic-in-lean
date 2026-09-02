@@ -1,9 +1,9 @@
 ---
-name: prove-lemma-inloop
-description: Prove a Lean 4 `sorry` yourself, using the prover toolkit for corpus search, goal states, and axiom-checked verification. Use when asked to prove or close a `sorry` without spending on a hosted prover API, or when the goal needs judgement, repository context, or reading more than one file.
+name: prove-lemma-agent
+description: Prove a Lean 4 `sorry` yourself — you are the proving agent, with grep, whole-file reading and repeated `check` — using the prover toolkit for corpus search, goal states and axiom-checked verification. Use when asked to prove or close a `sorry` without spending on a hosted prover API, or when the goal needs judgement, repository context, or reading more than one file. NOT a measurement of `prove-lemma`: for that use `claude_shim.py`, which runs the real harness.
 ---
 
-# prove-lemma-inloop
+# prove-lemma-agent
 
 **You are the proposer.** The toolkit supplies retrieval, goal states, and
 verification; the mathematics is yours.
@@ -16,6 +16,15 @@ simply when you would rather not spend per attempt.
 
 Neither route is better in general. The API route is unattended and can grind
 through many lemmas; this one is free per attempt and can bring judgement.
+
+**This is not a cheap way of measuring `prove-lemma`.** The two share only the
+index server — not the harness, not the prompt, not the sampling — and you here
+are an agent with tools, so the numbers are not comparable in either direction.
+To measure the harness cheaply, put Claude behind its endpoint with
+`prover-toolkit/claude_shim.py`; see the toolkit README.
+
+*(Named `prove-lemma-inloop` until 2026-09-02. Renamed because "in loop" read
+as "the same thing, cheaply", which is exactly what it is not.)*
 
 ## Setup
 

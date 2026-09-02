@@ -1,4 +1,4 @@
-# Using `prove-lemma-inloop` — the five-minute version
+# Using `prove-lemma-agent` — the five-minute version
 
 You will not remember this. That is what this file is for. It documents the
 **in-loop** route, where Claude is the proposer and the toolkit only supplies
@@ -8,7 +8,7 @@ retrieval, goal states and verification. For the hosted-API route
 ## Install the skill, once per machine
 
 ```bash
-cp -r prover-toolkit/skill/prove-lemma-inloop ~/.claude/skills/
+cp -r prover-toolkit/skill/prove-lemma-agent ~/.claude/skills/
 ```
 
 Re-run that after any change to `prover-toolkit/skill/` — the installed copy
@@ -74,9 +74,9 @@ Port 8080 is a launchd service over a different, private corpus. Leave it be.
 
 Say what you want, and name the file:
 
-> Prove the `sorry` in `LaxLogic/Foo.lean` using the prove-lemma-inloop skill.
+> Prove the `sorry` in `LaxLogic/Foo.lean` using the prove-lemma-agent skill.
 
-or invoke it by name: `/prove-lemma-inloop LaxLogic/Foo.lean`.
+or invoke it by name: `/prove-lemma-agent LaxLogic/Foo.lean`.
 
 ## The three commands it runs
 

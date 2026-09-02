@@ -5,7 +5,7 @@ import LaxLogic.PLLKripke
 Five statements about `ConstraintModel.force` that are true but not proved
 anywhere in the development. Graded from trivial to needing two frame
 properties at once. Nothing here is used elsewhere; the file exists to test
-the prove-lemma-inloop workflow on goals of sensible difficulty.
+the prove-lemma-agent workflow on goals of sensible difficulty.
 -/
 
 namespace PLLND

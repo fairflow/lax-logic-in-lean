@@ -1,6 +1,6 @@
 ---
 name: iterate-to-goal
-description: Run a mechanisation campaign as a loop that converges on one stated goal — plan in Lean, screen the statements for refutation, close them with prove-lemma-inloop, report the denominator, re-frame from what the round found, repeat. Use when a proof effort is too large for one pass, when a goal needs many lemmas whose shapes are not yet known, or when asked to prove, mechanise or complete something that will take rounds rather than a sitting.
+description: Run a mechanisation campaign as a loop that converges on one stated goal — plan in Lean, screen the statements for refutation, close them with prove-lemma-agent, report the denominator, re-frame from what the round found, repeat. Use when a proof effort is too large for one pass, when a goal needs many lemmas whose shapes are not yet known, or when asked to prove, mechanise or complete something that will take rounds rather than a sitting.
 ---
 
 # Iterate to a goal
@@ -53,7 +53,7 @@ committing a round's proof effort, attack the statements:
 * Screening that refutes a statement has saved the whole round. Screening
   that finds nothing costs one lemma's effort.
 
-### 3. Close them, one at a time, with `prove-lemma-inloop`
+### 3. Close them, one at a time, with `prove-lemma-agent`
 
 Read `prover-toolkit/USING-THE-SKILL.md`, then work the cascade:
 
