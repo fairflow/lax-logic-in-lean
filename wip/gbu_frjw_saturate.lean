@@ -1202,15 +1202,19 @@ def emitJoinCircP : List (WRow G) :=
 
 end JoinEmitters
 
+/-- The emitters, one entry per rule. -/
+def emitters (G : Form) (db : List (WRow G)) : List (List (WRow G)) :=
+  [emitAxR G, emitAxI G, emitAxIC G,
+    emitAndR G db, emitImpIn G db, emitCircIn G db,
+    emitAndI G db, emitOrI G db, emitImpInI G db,
+    emitLift G db, emitCircNotIn G db,
+    emitJoinAt G db, emitJoinOr G db, emitJoinCirc G db,
+    emitJoinAtF G db, emitJoinOrF G db,
+    emitJoinAtP G db, emitJoinOrP G db, emitJoinCircP G db]
+
 /-- One saturation step: every rule fired at every stored combination. -/
 def stepAll (G : Form) (db : List (WRow G)) : List (WRow G) :=
-  emitAxR G ++ emitAxI G ++ emitAxIC G ++
-    emitAndR G db ++ emitImpIn G db ++ emitCircIn G db ++
-    emitAndI G db ++ emitOrI G db ++ emitImpInI G db ++
-    emitLift G db ++ emitCircNotIn G db ++
-    emitJoinAt G db ++ emitJoinOr G db ++ emitJoinCirc G db ++
-    emitJoinAtF G db ++ emitJoinOrF G db ++
-    emitJoinAtP G db ++ emitJoinOrP G db ++ emitJoinCircP G db
+  (emitters G db).flatten
 
 /-! ## S6: saturation, and the pigeonhole that ends it
 
@@ -1420,119 +1424,10 @@ theorem closureDB_seq_nodup (G : Form) :
   rw [heq] at h
   exact h.of_map
 
-theorem sub_stepAll_AxR {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitAxR G, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl hx)))))))))))))))))
-
-theorem sub_stepAll_AxI {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitAxI G, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))))))))
-
-theorem sub_stepAll_AxIC {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitAxIC G, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))))))))
-
-theorem sub_stepAll_AndR {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitAndR G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))))))
-
-theorem sub_stepAll_ImpIn {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitImpIn G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))))))
-
-theorem sub_stepAll_CircIn {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitCircIn G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))))
-
-theorem sub_stepAll_AndI {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitAndI G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))))
-
-theorem sub_stepAll_OrI {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitOrI G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))))
-
-theorem sub_stepAll_ImpInI {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitImpInI G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))))
-
-theorem sub_stepAll_Lift {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitLift G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))))
-
-theorem sub_stepAll_CircNotIn {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitCircNotIn G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))))
-
-theorem sub_stepAll_JoinAt {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinAt G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))))
-
-theorem sub_stepAll_JoinOr {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinOr G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))))
-
-theorem sub_stepAll_JoinCirc {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinCirc G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx)))))
-
-theorem sub_stepAll_JoinAtF {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinAtF G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inl (Or.inr hx))))
-
-theorem sub_stepAll_JoinOrF {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinOrF G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inl (Or.inr hx)))
-
-theorem sub_stepAll_JoinAtP {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinAtP G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inl (Or.inr hx))
-
-theorem sub_stepAll_JoinOrP {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinOrP G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inl (Or.inr hx)
-
-theorem sub_stepAll_JoinCircP {G : Form} {db : List (WRow G)} :
-    ∀ x ∈ emitJoinCircP G db, x ∈ stepAll G db := by
-  intro x hx
-  simp only [stepAll, List.mem_append]
-  exact Or.inr hx
+/-- Membership in `stepAll`: an emitter's rows are emitted. -/
+theorem sub_stepAll {G : Form} {db : List (WRow G)} {l : List (WRow G)}
+    (hl : l ∈ emitters G db) : ∀ x ∈ l, x ∈ stepAll G db :=
+  fun _ hx => List.mem_flatten.mpr ⟨l, hl, hx⟩
 
 /-- Reindexing extraction, irregular side: the stored sublist listing an
 arbitrary family's row set, nonempty, with the transfer relation and
@@ -1672,7 +1567,7 @@ theorem cov_axR : ∀ F : Form, F.isPrime → F ∈ sfR G →
       .axR F hF hg (CtxEq.refl _)⟩ : WRow G) ∈ emitAxR G := by
     refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨hF, hg⟩
-  exact stored_of_emitted (sub_stepAll_AxR _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_axI : ∀ F : Form, F.isPrime → F ∈ sfR G →
     ∃ r ∈ closureDB G,
@@ -1682,7 +1577,7 @@ theorem cov_axI : ∀ F : Form, F.isPrime → F ∈ sfR G →
       .axI F hF hg (CtxEq.refl _)⟩ : WRow G) ∈ emitAxI G := by
     refine List.mem_filterMap.mpr ⟨F, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨hF, hg⟩
-  exact stored_of_emitted (sub_stepAll_AxI _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 /-- `classForce` sees only atom membership. -/
 theorem classForce_congr {ats ats' : List Form}
@@ -1727,7 +1622,7 @@ theorem cov_axIC : ∀ (F : Form) (ats : List Form), ats ⊆ gAt G →
       ⟨(gAt G).filter (fun x => decide (x ∈ ats)),
        List.mem_sublists.mpr List.filter_sublist, ?_⟩
     exact dif_pos ⟨hc1, hc2, hg⟩
-  exact stored_of_emitted (sub_stepAll_AxIC _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_andR1 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
     (WSeq.reg t Γ A₁) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
@@ -1740,7 +1635,7 @@ theorem cov_andR1 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
     refine List.mem_filterMap.mpr
       ⟨.and tr.C A₂, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨rfl, hg⟩
-  exact stored_of_emitted (sub_stepAll_AndR _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_andR2 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
     (WSeq.reg t Γ A₂) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
@@ -1755,14 +1650,14 @@ theorem cov_andR2 : ∀ (t : Tag) (Γ : List Form) (A₁ A₂ : Form),
       refine List.mem_filterMap.mpr
         ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
       exact dif_pos hc
-    exact stored_of_emitted (sub_stepAll_AndR _ hemit)
+    exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   · have hemit : (⟨.reg tr.t tr.Γ (.and A₁ tr.C),
         .andR2 tr.d hg⟩ : WRow G) ∈ emitAndR G (closureDB G) := by
       refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
       refine List.mem_filterMap.mpr
         ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
       exact (dif_neg hc).trans (dif_pos ⟨rfl, hg⟩)
-    exact stored_of_emitted (sub_stepAll_AndR _ hemit)
+    exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_impIn : ∀ (t : Tag) (Γ : List Form) (A B : Form),
     (WSeq.reg t Γ B) ∈ (closureDB G).map (·.s) → Clo Γ A →
@@ -1776,7 +1671,7 @@ theorem cov_impIn : ∀ (t : Tag) (Γ : List Form) (A B : Form),
     refine List.mem_filterMap.mpr
       ⟨.imp A tr.C, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨rfl, hA, hg⟩
-  exact stored_of_emitted (sub_stepAll_ImpIn _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_circIn : ∀ (t : Tag) (Γ : List Form) (Z : Form),
     (WSeq.reg t Γ Z) ∈ (closureDB G).map (·.s) →
@@ -1791,7 +1686,7 @@ theorem cov_circIn : ∀ (t : Tag) (Γ : List Form) (Z : Form),
     refine List.mem_filterMap.mpr
       ⟨.circ tr.C, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨rfl, htag, hg⟩
-  exact stored_of_emitted (sub_stepAll_CircIn _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_andI1 : ∀ (St Th : List Form) (A₁ A₂ : Form),
     (WSeq.irr St Th A₁) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
@@ -1804,7 +1699,7 @@ theorem cov_andI1 : ∀ (St Th : List Form) (A₁ A₂ : Form),
     refine List.mem_filterMap.mpr
       ⟨.and tr.C A₂, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨rfl, hg⟩
-  exact stored_of_emitted (sub_stepAll_AndI _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
     (WSeq.irr St Th A₂) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
@@ -1819,14 +1714,14 @@ theorem cov_andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
       refine List.mem_filterMap.mpr
         ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
       exact dif_pos hc
-    exact stored_of_emitted (sub_stepAll_AndI _ hemit)
+    exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   · have hemit : (⟨.irr tr.St tr.Th (.and A₁ tr.C),
         .andI2 tr.d hg⟩ : WRow G) ∈ emitAndI G (closureDB G) := by
       refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
       refine List.mem_filterMap.mpr
         ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
       exact (dif_neg hc).trans (dif_pos ⟨rfl, hg⟩)
-    exact stored_of_emitted (sub_stepAll_AndI _ hemit)
+    exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_orI : ∀ (St₁ Th₁ St₂ Th₂ : List Form) (C₁ C₂ : Form),
     (WSeq.irr St₁ Th₁ C₁) ∈ (closureDB G).map (·.s) →
@@ -1847,7 +1742,7 @@ theorem cov_orI : ∀ (St₁ Th₁ St₂ Th₂ : List Form) (C₁ C₂ : Form),
     refine List.mem_filterMap.mpr
       ⟨.or tr₁.C tr₂.C, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨rfl, rfl, h₁, h₂, hg⟩
-  exact stored_of_emitted (sub_stepAll_OrI _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_lift : ∀ (t₂ : Tag) (Γ₂ : List Form) (C : Form),
     (WSeq.reg t₂ Γ₂ C) ∈ (closureDB G).map (·.s) →
@@ -1857,7 +1752,7 @@ theorem cov_lift : ∀ (t₂ : Tag) (Γ₂ : List Form) (C : Form),
   have hemit : (⟨.irr [] (maxTh G tr.Γ) tr.C,
       lift_max tr.d⟩ : WRow G) ∈ emitLift G (closureDB G) :=
     List.mem_map.mpr ⟨tr, htr, rfl⟩
-  exact stored_of_emitted (sub_stepAll_Lift _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_circNotIn : ∀ (t₂ : Tag) (Γ₂ : List Form) (Z : Form),
     (WSeq.reg t₂ Γ₂ Z) ∈ (closureDB G).map (·.s) →
@@ -1871,7 +1766,7 @@ theorem cov_circNotIn : ∀ (t₂ : Tag) (Γ₂ : List Form) (Z : Form),
         WRow G) ∈ emitCircNotIn G (closureDB G) := by
     refine List.mem_filterMap.mpr ⟨tr, htr, ?_⟩
     exact dif_pos ⟨htag, hg⟩
-  exact stored_of_emitted (sub_stepAll_CircNotIn _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 theorem cov_impInI : ∀ (St₂ ThLam₂ Lam : List Form) (A B : Form),
     (WSeq.irr St₂ ThLam₂ B) ∈ (closureDB G).map (·.s) →
@@ -1913,7 +1808,7 @@ theorem cov_impInI : ∀ (St₂ ThLam₂ Lam : List Form) (A B : Form),
     refine List.mem_filterMap.mpr
       ⟨.imp A tr.C, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨rfl, hA', hg⟩
-  exact stored_of_emitted (sub_stepAll_ImpInI _ hemit)
+  exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
 end Coverage
 
@@ -1997,7 +1892,8 @@ theorem cov_joinCirc (G : Form) : ∀ {n : Nat}
     exact dif_pos ⟨hsame.hJ1 hnd hJ1, impGuard_intro hJ2',
       hsame.hcirc hcirc,
       refAt_mono hsame.upsilon_eq.subset hctx hZ, hg⟩
-  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinCirc _ hemit)
+  obtain ⟨e, he, hsub⟩ :=
+    stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
 
 theorem cov_joinOr (G : Form) : ∀ {n : Nat}
@@ -2053,7 +1949,8 @@ theorem cov_joinOr (G : Form) : ∀ {n : Nat}
     exact dif_pos ⟨hsame.hJ1 hnd hJ1,
       impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
       hsame.hcirc hcirc, hC', hg⟩
-  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinOr _ hemit)
+  obtain ⟨e, he, hsub⟩ :=
+    stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
 
 theorem cov_joinAt (G : Form) : ∀ {n : Nat}
@@ -2089,7 +1986,8 @@ theorem cov_joinAt (G : Form) : ∀ {n : Nat}
     exact dif_pos ⟨hsame.hJ1 hnd hJ1,
       impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
       hsame.hcirc hcirc, hF, hsame.hFnot hFnot, hg⟩
-  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinAt _ hemit)
+  obtain ⟨e, he, hsub⟩ :=
+    stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
 
 theorem cov_joinAtF (G : Form) : ∀ {n : Nat}
@@ -2118,7 +2016,8 @@ theorem cov_joinAtF (G : Form) : ∀ {n : Nat}
     exact dif_pos ⟨hsame.hJ1 hnd hJ1,
       impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
       hF, hsame.hFnot hFnot, hg⟩
-  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinAtF _ hemit)
+  obtain ⟨e, he, hsub⟩ :=
+    stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   exact ⟨e, he, wSubsumes_trans
     (wSubsumes_reg (tagLeB_refl _) (hsame.ctxAtF (F := F)).subset) hsub⟩
 
@@ -2151,7 +2050,8 @@ theorem cov_joinOrF (G : Form) : ∀ {n : Nat}
     exact dif_pos ⟨hsame.hJ1 hnd hJ1,
       impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
       hC', hg⟩
-  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinOrF _ hemit)
+  obtain ⟨e, he, hsub⟩ :=
+    stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   exact ⟨e, he, wSubsumes_trans
     (wSubsumes_reg (tagLeB_refl _) hsame.ctxOrF.subset) hsub⟩
 
@@ -2192,7 +2092,8 @@ theorem cov_joinAtP (G : Form) : ∀ {n k : Nat}
       exact dif_pos ⟨hsame.hJ1 hnd hJ1,
         impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
         hF, hsame.hFnot hFnot, hg⟩
-    obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinAtF _ hemit)
+    obtain ⟨e, he, hsub⟩ :=
+      stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
     refine ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
       (fun x hx => (hsame.ctxAtF (F := F)).subset
         (ctxAtP_sub_ctxAtF hx))) hsub⟩
@@ -2222,7 +2123,7 @@ theorem cov_joinAtP (G : Form) : ∀ {n k : Nat}
           hJ7s_re hsame hsameR hJ7s, hallG, hF,
           hsame.hFnot hFnot, hg⟩
       obtain ⟨e, he, hsub⟩ :=
-        stored_of_emitted (sub_stepAll_JoinAtP _ hemit)
+        stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
       rw [h0G]
       exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
         (ctxAtP_eq hsame hsameR).subset) hsub⟩
@@ -2266,7 +2167,8 @@ theorem cov_joinOrP (G : Form) : ∀ {n k : Nat}
       exact dif_pos ⟨hsame.hJ1 hnd hJ1,
         impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
         hC', hg⟩
-    obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinOrF _ hemit)
+    obtain ⟨e, he, hsub⟩ :=
+      stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
     refine ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
       (fun x hx => hsame.ctxOrF.subset (ctxOrP_sub_ctxOrF hx))) hsub⟩
   · obtain ⟨b, u, hsublR, hsameR⟩ := reindex_reg hmemR
@@ -2294,7 +2196,7 @@ theorem cov_joinOrP (G : Form) : ∀ {n k : Nat}
           circGuard_intro (hJ5_re hsame hsameR hJ5),
           hJ7s_re hsame hsameR hJ7s, hallG, hC', hg⟩
       obtain ⟨e, he, hsub⟩ :=
-        stored_of_emitted (sub_stepAll_JoinOrP _ hemit)
+        stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
       rw [h0G]
       exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
         (ctxOrP_eq hsame hsameR).subset) hsub⟩
@@ -2343,7 +2245,8 @@ theorem cov_joinCircP (G : Form) : ∀ {n k : Nat}
       impGuard_intro (fun A B hAB => hsame.hJ2_strict hJ2 A B hAB),
       circGuard_intro (hJ5_re hsame hsameR hJ5),
       hJ7s_re hsame hsameR hJ7s, hDsG, hZ', hg⟩
-  obtain ⟨e, he, hsub⟩ := stored_of_emitted (sub_stepAll_JoinCircP _ hemit)
+  obtain ⟨e, he, hsub⟩ :=
+    stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
   exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _)
     (ctxOrP_eq hsame hsameR).subset) hsub⟩
 
