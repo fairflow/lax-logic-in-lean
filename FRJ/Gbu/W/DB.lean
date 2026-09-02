@@ -143,15 +143,15 @@ theorem gbuInv7 (hsat : WSaturated G D)
     {Ω : List Form} {C₁ C₂ : Form} (hgoal : Form.and C₁ C₂ ∈ sfR G)
     (h : WEvalI D Ω C₁ ∨ WEvalI D Ω C₂) : WEvalI D Ω (.and C₁ C₂) := by
   have step : ∀ {C : Form}, WEvalI D Ω C →
-      (∀ {St Th : List Form}, FRJWi G St Th C →
-        FRJWi G St Th (.and C₁ C₂)) → WEvalI D Ω (.and C₁ C₂) := by
-    rintro C ⟨St, Th, hmem, hSt, hΩ⟩ mk
+      (∀ {Ξ Θ : List Form}, FRJWi G Ξ Θ C →
+        FRJWi G Ξ Θ (.and C₁ C₂)) → WEvalI D Ω (.and C₁ C₂) := by
+    rintro C ⟨Ξ, Θ, hmem, hSt, hΩ⟩ mk
     obtain ⟨d⟩ := hsat.1 _ hmem
     obtain ⟨s', hs'mem, hsub⟩ :=
-      hsat.2 (.irr St Th (.and C₁ C₂)) ⟨mk d⟩
+      hsat.2 (.irr Ξ Θ (.and C₁ C₂)) ⟨mk d⟩
     match s', hsub with
-    | .irr St' Th' _, ⟨rfl, hSteq, hTh⟩ =>
-        refine ⟨St', Th', hs'mem, fun X hX => hSt ((hSteq X).mpr hX),
+    | .irr Ξ' Θ' _, ⟨rfl, hSteq, hTh⟩ =>
+        refine ⟨Ξ', Θ', hs'mem, fun X hX => hSt ((hSteq X).mpr hX),
           fun X hX => ?_⟩
         rcases List.mem_append.mp (hΩ hX) with hX' | hX'
         · exact List.mem_append_left _ ((hSteq X).mp hX')
@@ -165,46 +165,46 @@ theorem gbuInv7 (hsat : WSaturated G D)
 theorem gbuInv8 (hsat : WSaturated G D)
     {Ω : List Form} {A B : Form} (hgoal : Form.imp A B ∈ sfR G)
     (hA : Clo Ω A) (h : WEvalI D Ω B) : WEvalI D Ω (.imp A B) := by
-  obtain ⟨St₀, Th₀, hmem, hSt₀, hΩ⟩ := h
+  obtain ⟨Ξ₀, Θ₀, hmem, hSt₀, hΩ⟩ := h
   obtain ⟨d⟩ := hsat.1 _ hmem
-  set Lam := Ω.filter (fun X => !(decide (X ∈ St₀))) with hLamdef
-  set Th := Th₀.filter (fun X => !(decide (X ∈ Lam))) with hThdef
-  have hLamΩ : ∀ X ∈ Lam, X ∈ Ω := fun X hX => (List.mem_filter.mp hX).1
-  have hLamTh₀ : ∀ X ∈ Lam, X ∈ Th₀ := by
+  set Λ := Ω.filter (fun X => !(decide (X ∈ Ξ₀))) with hLamdef
+  set Θ := Θ₀.filter (fun X => !(decide (X ∈ Λ))) with hThdef
+  have hLamΩ : ∀ X ∈ Λ, X ∈ Ω := fun X hX => (List.mem_filter.mp hX).1
+  have hLamTh₀ : ∀ X ∈ Λ, X ∈ Θ₀ := by
     intro X hX
     obtain ⟨hXΩ, hXnot⟩ := List.mem_filter.mp hX
     have := hΩ hXΩ
     rcases List.mem_append.mp this with h' | h'
-    · exact absurd (by simp [h'] : (!(decide (X ∈ St₀))) = false) (by
+    · exact absurd (by simp [h'] : (!(decide (X ∈ Ξ₀))) = false) (by
         simp [hXnot])
     · exact h'
-  have hΩsplit : ∀ X ∈ Ω, X ∈ St₀ ++ Lam := by
+  have hΩsplit : ∀ X ∈ Ω, X ∈ Ξ₀ ++ Λ := by
     intro X hX
-    by_cases hs : X ∈ St₀
+    by_cases hs : X ∈ Ξ₀
     · exact List.mem_append_left _ hs
     · exact List.mem_append_right _ (List.mem_filter.mpr ⟨hX, by simp [hs]⟩)
-  have hpre : Th₀ ≐ Th ++ Lam := by
+  have hpre : Θ₀ ≐ Θ ++ Λ := by
     intro X
     constructor
     · intro hX
-      by_cases hl : X ∈ Lam
+      by_cases hl : X ∈ Λ
       · exact List.mem_append_right _ hl
       · exact List.mem_append_left _ (List.mem_filter.mpr ⟨hX, by simp [hl]⟩)
     · intro hX
       rcases List.mem_append.mp hX with hX' | hX'
       · exact (List.mem_filter.mp hX').1
       · exact hLamTh₀ X hX'
-  have hdisj : cap Th Lam = [] := by
+  have hdisj : cap Θ Λ = [] := by
     refine eq_nil_of_forall_not_mem (fun X hX => ?_)
     obtain ⟨hXTh, hXLam⟩ := mem_cap.mp hX
     exact absurd (List.mem_filter.mp hXTh).2 (by simp [hXLam])
-  have hAcl : Clo (St₀ ++ Lam) A := clo_trans (fun X hX => .base (hΩsplit X hX)) hA
+  have hAcl : Clo (Ξ₀ ++ Λ) A := clo_trans (fun X hX => .base (hΩsplit X hX)) hA
   obtain ⟨s', hs'mem, hsub⟩ :=
-    hsat.2 (.irr (St₀ ++ Lam) Th (.imp A B))
+    hsat.2 (.irr (Ξ₀ ++ Λ) Θ (.imp A B))
       ⟨.impInI d hpre hdisj hAcl hgoal (CtxEq.refl _) (CtxEq.refl _)⟩
   match s', hsub with
-  | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
-      refine ⟨St', Th', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
+  | .irr Ξ' Θ' _, ⟨rfl, hSteq, hTh'⟩ =>
+      refine ⟨Ξ', Θ', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
       · rcases List.mem_append.mp ((hSteq X).mpr hX) with h' | h'
         · exact hSt₀ h'
         · exact hLamΩ X h'
@@ -224,8 +224,8 @@ theorem gbuInv9 (hsat : WSaturated G D)
       ⟨.lift (.impIn d (hcl A List.mem_cons_self) hgoal)
         (fun X hX => ⟨hcl X (List.mem_cons_of_mem _ hX), hΩ X hX⟩)⟩
   match s', hsub with
-  | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
-      refine ⟨St', Th', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
+  | .irr Ξ' Θ' _, ⟨rfl, hSteq, hTh'⟩ =>
+      refine ⟨Ξ', Θ', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
       · exact absurd ((hSteq X).mpr hX) List.not_mem_nil
       · exact List.mem_append_right _ (hTh' hX)
 
@@ -234,22 +234,22 @@ theorem gbuInv9 (hsat : WSaturated G D)
 theorem gbuInv10 (hsat : WSaturated G D)
     {Ω : List Form} {C₁ C₂ : Form} (hgoal : Form.or C₁ C₂ ∈ sfR G)
     (h₁ : WEvalI D Ω C₁) (h₂ : WEvalI D Ω C₂) : WEvalI D Ω (.or C₁ C₂) := by
-  obtain ⟨St₁, Th₁, hmem₁, hSt₁, hΩ₁⟩ := h₁
-  obtain ⟨St₂, Th₂, hmem₂, hSt₂, hΩ₂⟩ := h₂
+  obtain ⟨Ξ₁, Θ₁, hmem₁, hSt₁, hΩ₁⟩ := h₁
+  obtain ⟨Ξ₂, Θ₂, hmem₂, hSt₂, hΩ₂⟩ := h₂
   obtain ⟨d₁⟩ := hsat.1 _ hmem₁
   obtain ⟨d₂⟩ := hsat.1 _ hmem₂
-  have hj₁ : St₁ ⊆ St₂ ++ Th₂ := fun {_} hX => hΩ₂ (hSt₁ hX)
-  have hj₂ : St₂ ⊆ St₁ ++ Th₁ := fun {_} hX => hΩ₁ (hSt₂ hX)
+  have hj₁ : Ξ₁ ⊆ Ξ₂ ++ Θ₂ := fun {_} hX => hΩ₂ (hSt₁ hX)
+  have hj₂ : Ξ₂ ⊆ Ξ₁ ++ Θ₁ := fun {_} hX => hΩ₁ (hSt₂ hX)
   obtain ⟨s', hs'mem, hsub⟩ :=
-    hsat.2 (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂))
+    hsat.2 (.irr (Ξ₁ ++ Ξ₂) (cap Θ₁ Θ₂) (.or C₁ C₂))
       ⟨.orI d₁ d₂ hj₁ hj₂ hgoal (CtxEq.refl _) (CtxEq.refl _)⟩
   match s', hsub with
-  | .irr St' Th' _, ⟨rfl, hSteq, hTh'⟩ =>
-      refine ⟨St', Th', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
+  | .irr Ξ' Θ' _, ⟨rfl, hSteq, hTh'⟩ =>
+      refine ⟨Ξ', Θ', hs'mem, fun X hX => ?_, fun X hX => ?_⟩
       · rcases List.mem_append.mp ((hSteq X).mpr hX) with h' | h'
         · exact hSt₁ h'
         · exact hSt₂ h'
-      · by_cases hs : X ∈ St₁ ++ St₂
+      · by_cases hs : X ∈ Ξ₁ ++ Ξ₂
         · exact List.mem_append_left _ ((hSteq X).mp hs)
         · refine List.mem_append_right _ (hTh' (mem_cap.mpr ⟨?_, ?_⟩))
           · rcases List.mem_append.mp (hΩ₁ hX) with h' | h'
@@ -343,41 +343,41 @@ theorem refutedCleanly_at (hsat : WSaturated G D)
         D (.irr p.1 p.2 (f j)) ∧ p.1 ⊆ Ω ∧ Ω ⊆ p.1 ++ p.2 := by
       intro j
       obtain ⟨B, hB⟩ := hfmem j
-      obtain ⟨St, Th, h₁, h₂, h₃⟩ := himp (f j) B hB
-      exact ⟨(St, Th), h₁, h₂, h₃⟩
+      obtain ⟨Ξ, Θ, h₁, h₂, h₃⟩ := himp (f j) B hB
+      exact ⟨(Ξ, Θ), h₁, h₂, h₃⟩
     obtain ⟨g, hg⟩ := finEx hwit
-    set St : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
-    set Th : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
-    have hStTh : ∀ j, D (.irr (St j) (Th j) (f j)) := fun j => (hg j).1
-    have hStΩ : ∀ j, St j ⊆ Ω := fun j => (hg j).2.1
-    have hΩSt : ∀ j, Ω ⊆ St j ++ Th j := fun j => (hg j).2.2
-    have hder : ∀ j, Nonempty (FRJWi G (St j) (Th j) (f j)) :=
+    set Ξ : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
+    set Θ : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
+    have hStTh : ∀ j, D (.irr (Ξ j) (Θ j) (f j)) := fun j => (hg j).1
+    have hStΩ : ∀ j, Ξ j ⊆ Ω := fun j => (hg j).2.1
+    have hΩΞ : ∀ j, Ω ⊆ Ξ j ++ Θ j := fun j => (hg j).2.2
+    have hder : ∀ j, Nonempty (FRJWi G (Ξ j) (Θ j) (f j)) :=
       fun j => hsat.1 _ (hStTh j)
     obtain ⟨d⟩ := finPi hder
-    have hJ1 : ∀ i j, i ≠ j → St i ⊆ St j ++ Th j :=
-      fun i j _ => fun {_} hX => hΩSt j (hStΩ i hX)
+    have hJ1 : ∀ i j, i ≠ j → Ξ i ⊆ Ξ j ++ Θ j :=
+      fun i j _ => fun {_} hX => hΩΞ j (hStΩ i hX)
     have hJ2 : ∀ A B : Form,
-        Form.imp A B ∈ unionAll (fun j => impPart (St j)) → A ∈ upsilon f := by
+        Form.imp A B ∈ unionAll (fun j => impPart (Ξ j)) → A ∈ upsilon f := by
       intro A B hmem
       obtain ⟨j, hj⟩ := mem_unionAll.mp hmem
       have hAB : Form.imp A B ∈ Ω := hStΩ j (List.mem_filter.mp hj).1
       exact (E.spec A).mpr
         (List.mem_map.mpr ⟨.imp A B, List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩)
-    have hcirc : unionAll (fun j => circPart (St j)) = [] := by
+    have hcirc : unionAll (fun j => circPart (Ξ j)) = [] := by
       refine eq_nil_of_forall_not_mem (fun X hX => ?_)
       obtain ⟨j, hj⟩ := mem_unionAll.mp hX
       obtain ⟨hmem, hc⟩ := List.mem_filter.mp hj
       exact absurd hc (by
         rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
         exact fun h => Bool.noConfusion h)
-    have hFn : F ∉ unionAll (fun j => atPart (St j)) := by
+    have hFn : F ∉ unionAll (fun j => atPart (Ξ j)) := by
       intro hX
       obtain ⟨j, hj⟩ := mem_unionAll.mp hX
       exact hFmem (hStΩ j (List.mem_filter.mp hj).1)
     refine ⟨_, .barren, ⟨.joinAt (fun j => d j) hJ1 hJ2 hcirc
-          (keptChainRestrict _ Th) hFp hFn hFgoal (CtxEq.refl _)⟩,
+          (keptChainRestrict _ Θ) hFp hFn hFgoal (CtxEq.refl _)⟩,
       Or.inl rfl, fun X hX => .base (?_)⟩
-    by_cases hin : ∃ j, X ∈ St j
+    by_cases hin : ∃ j, X ∈ Ξ j
     · obtain ⟨j, hj⟩ := hin
       refine List.mem_append_left _ ?_
       by_cases hi : X.isImp
@@ -387,9 +387,9 @@ theorem refutedCleanly_at (hsat : WSaturated G D)
           (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
         have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
         exact (List.mem_filter.mp this).2
-    · have hall : ∀ j, X ∈ Th j := by
+    · have hall : ∀ j, X ∈ Θ j := by
         intro j
-        rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+        rcases List.mem_append.mp (hΩΞ j hX) with h' | h'
         · exact absurd ⟨j, h'⟩ hin
         · exact h'
       by_cases hi : X.isImp
@@ -451,37 +451,37 @@ theorem refutedCleanly_or (hsat : WSaturated G D)
       | .imp A B, _ =>
           have hA : A = f j := hante
           exact hA ▸ himp A B hXΩ
-    obtain ⟨St, Th, k₁, k₂, k₃⟩ := hev
-    exact ⟨(St, Th), k₁, k₂, k₃⟩
+    obtain ⟨Ξ, Θ, k₁, k₂, k₃⟩ := hev
+    exact ⟨(Ξ, Θ), k₁, k₂, k₃⟩
   obtain ⟨g, hg⟩ := finEx hwit
-  set St : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
-  set Th : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
-  have hStTh : ∀ j, D (.irr (St j) (Th j) (f j)) := fun j => (hg j).1
-  have hStΩ : ∀ j, St j ⊆ Ω := fun j => (hg j).2.1
-  have hΩSt : ∀ j, Ω ⊆ St j ++ Th j := fun j => (hg j).2.2
+  set Ξ : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
+  set Θ : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
+  have hStTh : ∀ j, D (.irr (Ξ j) (Θ j) (f j)) := fun j => (hg j).1
+  have hStΩ : ∀ j, Ξ j ⊆ Ω := fun j => (hg j).2.1
+  have hΩΞ : ∀ j, Ω ⊆ Ξ j ++ Θ j := fun j => (hg j).2.2
   obtain ⟨d⟩ := finPi (fun j => hsat.1 _ (hStTh j))
-  have hJ1 : ∀ i j, i ≠ j → St i ⊆ St j ++ Th j :=
-    fun i j _ => fun {_} hX => hΩSt j (hStΩ i hX)
+  have hJ1 : ∀ i j, i ≠ j → Ξ i ⊆ Ξ j ++ Θ j :=
+    fun i j _ => fun {_} hX => hΩΞ j (hStΩ i hX)
   have hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (St j)) → A ∈ upsilon f := by
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξ j)) → A ∈ upsilon f := by
     intro A B hmem
     obtain ⟨j, hj⟩ := mem_unionAll.mp hmem
     have hAB : Form.imp A B ∈ Ω := hStΩ j (List.mem_filter.mp hj).1
     exact (E.spec A).mpr (List.mem_cons_of_mem _ (List.mem_cons_of_mem _
       (List.mem_map.mpr ⟨.imp A B, List.mem_filter.mpr ⟨hAB, rfl⟩, rfl⟩)))
-  have hcirc : unionAll (fun j => circPart (St j)) = [] := by
+  have hcirc : unionAll (fun j => circPart (Ξ j)) = [] := by
     refine eq_nil_of_forall_not_mem (fun X hX => ?_)
     obtain ⟨j, hj⟩ := mem_unionAll.mp hX
     obtain ⟨hmem, hc⟩ := List.mem_filter.mp hj
     exact absurd hc (by
       rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
       exact fun h => Bool.noConfusion h)
-  refine ⟨_, .barren, ⟨.joinOr (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Th)
+  refine ⟨_, .barren, ⟨.joinOr (fun j => d j) hJ1 hJ2 hcirc (keptChainRestrict _ Θ)
         ⟨.ups ((E.spec C₁).mpr List.mem_cons_self),
          .ups ((E.spec C₂).mpr (List.mem_cons_of_mem _ List.mem_cons_self))⟩
         hgoal (CtxEq.refl _)⟩,
     Or.inl rfl, fun X hX => .base (?_)⟩
-  by_cases hin : ∃ j, X ∈ St j
+  by_cases hin : ∃ j, X ∈ Ξ j
   · obtain ⟨j, hj⟩ := hin
     refine List.mem_append_left _ ?_
     by_cases hi : X.isImp
@@ -491,9 +491,9 @@ theorem refutedCleanly_or (hsat : WSaturated G D)
         (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hj, ?_⟩⟩))
       have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
       exact (List.mem_filter.mp this).2
-  · have hall : ∀ j, X ∈ Th j := by
+  · have hall : ∀ j, X ∈ Θ j := by
       intro j
-      rcases List.mem_append.mp (hΩSt j hX) with h' | h'
+      rcases List.mem_append.mp (hΩΞ j hX) with h' | h'
       · exact absurd ⟨j, h'⟩ hin
       · exact h'
     by_cases hi : X.isImp

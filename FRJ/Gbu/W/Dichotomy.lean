@@ -57,12 +57,12 @@ lemmas branch on it.  No clean stratum: `Lift` is tag-free, so the
 `regC` workaround of `FSeq` has no W-analogue. -/
 inductive WSeq where
   | reg (t : Tag) (Γ : List Form) (C : Form)
-  | irr (St Th : List Form) (C : Form)
+  | irr (Ξ Θ : List Form) (C : Form)
 
 /-- Derivability of a database sequent in the W-family. -/
 def WDerivable (G : Form) : WSeq → Prop
   | .reg t Γ C => Nonempty (FRJWr G t Γ C)
-  | .irr St Th C => Nonempty (FRJWi G St Th C)
+  | .irr Ξ Θ C => Nonempty (FRJWi G Ξ Θ C)
 
 /-- `s₁ ⊑ s₂`: tag-aware on the regular stratum, following the
 engine's retention order `tagLeB` (`blocked ≤ chain D ≤ barren`;
@@ -70,8 +70,8 @@ engine's retention order `tagLeB` (`blocked ≤ chain D ≤ barren`;
 def WSubsumes : WSeq → WSeq → Prop
   | .reg t₁ Γ₁ C₁, .reg t₂ Γ₂ C₂ =>
       C₁ = C₂ ∧ tagLeB t₁ t₂ = true ∧ Γ₁ ⊆ Γ₂
-  | .irr St₁ Th₁ C₁, .irr St₂ Th₂ C₂ =>
-      C₁ = C₂ ∧ St₁ ≐ St₂ ∧ Th₁ ⊆ Th₂
+  | .irr Ξ₁ Θ₁ C₁, .irr Ξ₂ Θ₂ C₂ =>
+      C₁ = C₂ ∧ Ξ₁ ≐ Ξ₂ ∧ Θ₁ ⊆ Θ₂
   | _, _ => False
 
 /-- (DB1) + tag-aware (DB2). -/
@@ -96,7 +96,7 @@ def WEvalRP (D : WSeq → Prop) (Ψ : List Form) (C : Form) : Prop :=
 
 /-- The irregular query. -/
 def WEvalI (D : WSeq → Prop) (Ω : List Form) (C : Form) : Prop :=
-  ∃ St Th, D (.irr St Th C) ∧ St ⊆ Ω ∧ Ω ⊆ St ++ Th
+  ∃ Ξ Θ, D (.irr Ξ Θ C) ∧ Ξ ⊆ Ω ∧ Ω ⊆ Ξ ++ Θ
 
 /-- (BSr1) with the `Ĝ` ancestor: every irregular W-row has `Ĝ`-bounded
 zones, so bare `¬ WEvalI` is vacuous at a non-`Ĝ` context; the ancestor

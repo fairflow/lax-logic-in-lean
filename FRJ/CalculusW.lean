@@ -71,91 +71,91 @@ inductive FRJWr (G : Form) : Tag → List Form → Form → Type
       (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z)
       (hgoal : Form.circ Z ∈ sfR G) :
       FRJWr G t Γ (.circ Z)
-  /-- `⋈^At` with the kept zone: `Σ^at, Θ^at \ {F}, Σ^imp, kept` where
+  /-- `⋈^At` with the kept zone: `Ξ^at, Θ^at \ {F}, Ξ^imp, kept` where
       `kept` is a `KeptChain` over the base context. -/
-  | joinAt {n : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinAt {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} {kept : List Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
         A ∈ upsilon rhs)
-      (hcirc : unionAll (fun j => circPart (stab j)) = [])
-      (hkc : KeptChain (upsilon rhs) (joinCtxAtVBase stab th F)
-        (thPool th) kept)
-      (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+      (hcirc : unionAll (fun j => circPart (Ξs j)) = [])
+      (hkc : KeptChain (upsilon rhs) (joinCtxAtVBase Ξs Θs F)
+        (thPool Θs) kept)
+      (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (Ξs j)))
       (hgoal : F ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtVBase stab th F ++ kept) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtVBase Ξs Θs F ++ kept) :
       FRJWr G .barren Γ' F
-  | joinAtP {n k : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinAtP {n k : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form} {t' : Tag}
       {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
       {Ds : Fin (k + 1) → Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
       (dps : ∀ i, FRJWr G (tps i) (Δs i) (Ds i))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
         A ∈ upsilon rhs)
-      (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
         ∃ i, Clo (Δs i) Y)
-      (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+      (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X)
       (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
-      (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+      (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (Ξs j)))
       (hgoal : F ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtP stab th rhs F Δs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtP Ξs Θs rhs F Δs) :
       FRJWr G t' Γ' F
-  | joinAtF {n : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinAtF {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {F : Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
         A ∈ upsilon rhs)
-      (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+      (hF : F.isPrime) (hFnot : F ∉ unionAll (fun j => atPart (Ξs j)))
       (hgoal : F ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtF stab th rhs F) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxAtF Ξs Θs rhs F) :
       FRJWr G .blocked Γ' F
   /-- `⋈^∨` with the kept zone and `RefAt`-relaxed disjunct conditions. -/
-  | joinOr {n : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinOr {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {kept : List Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
         A ∈ upsilon rhs)
-      (hcirc : unionAll (fun j => circPart (stab j)) = [])
-      (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
-        (thPool th) kept)
-      (hC : RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) C₁ ∧
-        RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) C₂)
+      (hcirc : unionAll (fun j => circPart (Ξs j)) = [])
+      (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase Ξs Θs)
+        (thPool Θs) kept)
+      (hC : RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) C₁ ∧
+        RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) C₂)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrVBase stab th ++ kept) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrVBase Ξs Θs ++ kept) :
       FRJWr G .barren Γ' (.or C₁ C₂)
-  | joinOrP {n k : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinOrP {n k : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {t' : Tag}
       {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
       {Ds : Fin (k + 1) → Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
       (dps : ∀ i, FRJWr G (tps i) (Δs i) (Ds i))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
         A ∈ upsilon rhs)
-      (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
         ∃ i, Clo (Δs i) Y)
-      (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+      (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X)
       (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
       (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP Ξs Θs rhs Δs) :
       FRJWr G t' Γ' (.or C₁ C₂)
-  | joinOrF {n : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinOrF {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
         A ∈ upsilon rhs)
       (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrF stab th rhs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrF Ξs Θs rhs) :
       FRJWr G .blocked Γ' (.or C₁ C₂)
   /-- `⋈^◯` with the kept zone, the `RefAt`-relaxed body condition, and
       the `RefAt`-relaxed barren (J2): a stable-zone implication needs
@@ -165,78 +165,78 @@ inductive FRJWr (G : Form) : Tag → List Form → Form → Type
       Relaxed 2026-09-01 with Matthew's sign-off — the FRJW joins may
       diverge from FRJV here; `⋈^At`/`⋈^∨` keep the strict (J2) until
       a manufacture needs more. -/
-  | joinCirc {n : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinCirc {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form} {kept : List Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-        RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) A)
-      (hcirc : unionAll (fun j => circPart (stab j)) = [])
-      (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
-        (thPool th) kept)
-      (hZ : RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) Z)
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+        RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) A)
+      (hcirc : unionAll (fun j => circPart (Ξs j)) = [])
+      (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase Ξs Θs)
+        (thPool Θs) kept)
+      (hZ : RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) Z)
       (hgoal : Form.circ Z ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrVBase stab th ++ kept) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrVBase Ξs Θs ++ kept) :
       FRJWr G .barren Γ' (.circ Z)
-  | joinCircP {n k : Nat} {stab th : Fin (n + 1) → List Form}
+  | joinCircP {n k : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       {rhs : Fin (n + 1) → Form} {Z : Form}
       {tps : Fin (k + 1) → Tag} {Δs : Fin (k + 1) → List Form}
       {Ds : Fin (k + 1) → Form}
-      (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
+      (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
       (dps : ∀ i, FRJWr G (tps i) (Δs i) (Ds i))
-      (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
-      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
+      (hJ2 : ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
         A ∈ upsilon rhs)
-      (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      (hJ5 : ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
         ∃ i, Clo (Δs i) Y)
-      (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+      (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X)
       (hDs : ∀ i, Ds i = Z ∧
         (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z))
       (hZ : Z ∈ upsilon rhs)
       (hgoal : Form.circ Z ∈ sfR G)
-      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP stab th rhs Δs) :
+      {Γ' : List Form} (hΓ : Γ' ≐ joinCtxOrP Ξs Θs rhs Δs) :
       FRJWr G (.chain Z) Γ' (.circ Z)
 
 /-- Irregular disproofs of FRJW: the `FRJVi` rules with `⊃∉`
 (`impNotIn`) deleted and `lift` added in its place. -/
 inductive FRJWi (G : Form) : List Form → List Form → Form → Type
   | axI (F : Form) (hF : F.isPrime) (hgoal : F ∈ sfR G)
-      {Th' : List Form} (hTh : Th' ≐ (rm (gAt G) F) ++ gImp G ++ gCirc G) :
-      FRJWi G [] Th' F
-  | andI1 {St Th : List Form} {A₁ A₂ : Form}
-      (d : FRJWi G St Th A₁) (hgoal : Form.and A₁ A₂ ∈ sfR G) :
-      FRJWi G St Th (.and A₁ A₂)
-  | andI2 {St Th : List Form} {A₁ A₂ : Form}
-      (d : FRJWi G St Th A₂) (hgoal : Form.and A₁ A₂ ∈ sfR G) :
-      FRJWi G St Th (.and A₁ A₂)
-  | orI {St₁ Th₁ St₂ Th₂ : List Form} {C₁ C₂ : Form}
-      (d₁ : FRJWi G St₁ Th₁ C₁) (d₂ : FRJWi G St₂ Th₂ C₂)
-      (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁)
+      {Θ' : List Form} (hTh : Θ' ≐ (rm (gAt G) F) ++ gImp G ++ gCirc G) :
+      FRJWi G [] Θ' F
+  | andI1 {Ξ Θ : List Form} {A₁ A₂ : Form}
+      (d : FRJWi G Ξ Θ A₁) (hgoal : Form.and A₁ A₂ ∈ sfR G) :
+      FRJWi G Ξ Θ (.and A₁ A₂)
+  | andI2 {Ξ Θ : List Form} {A₁ A₂ : Form}
+      (d : FRJWi G Ξ Θ A₂) (hgoal : Form.and A₁ A₂ ∈ sfR G) :
+      FRJWi G Ξ Θ (.and A₁ A₂)
+  | orI {Ξ₁ Θ₁ Ξ₂ Θ₂ : List Form} {C₁ C₂ : Form}
+      (d₁ : FRJWi G Ξ₁ Θ₁ C₁) (d₂ : FRJWi G Ξ₂ Θ₂ C₂)
+      (h₁ : Ξ₁ ⊆ Ξ₂ ++ Θ₂) (h₂ : Ξ₂ ⊆ Ξ₁ ++ Θ₁)
       (hgoal : Form.or C₁ C₂ ∈ sfR G)
-      {St' Th' : List Form} (hSt : St' ≐ St₁ ++ St₂) (hTh : Th' ≐ cap Th₁ Th₂) :
-      FRJWi G St' Th' (.or C₁ C₂)
-  | impInI {St Th Lam ThLam : List Form} {A B : Form}
-      (d : FRJWi G St ThLam B) (hpre : ThLam ≐ Th ++ Lam)
-      (hdisj : cap Th Lam = []) (hA : Clo (St ++ Lam) A)
+      {Ξ' Θ' : List Form} (hSt : Ξ' ≐ Ξ₁ ++ Ξ₂) (hTh : Θ' ≐ cap Θ₁ Θ₂) :
+      FRJWi G Ξ' Θ' (.or C₁ C₂)
+  | impInI {Ξ Θ Λ ΘΛ : List Form} {A B : Form}
+      (d : FRJWi G Ξ ΘΛ B) (hpre : ΘΛ ≐ Θ ++ Λ)
+      (hdisj : cap Θ Λ = []) (hA : Clo (Ξ ++ Λ) A)
       (hgoal : Form.imp A B ∈ sfR G)
-      {St' Th' : List Form} (hSt : St' ≐ St ++ Lam) (hTh : Th' ≐ Th) :
-      FRJWi G St' Th' (.imp A B)
+      {Ξ' Θ' : List Form} (hSt : Ξ' ≐ Ξ ++ Λ) (hTh : Θ' ≐ Θ) :
+      FRJWi G Ξ' Θ' (.imp A B)
   /-- `Lift`: a regular disproof becomes an irregular one over any
       retained `Ĝ`-context inside the closure of its own context. -/
-  | lift {t : Tag} {Γ Th : List Form} {C : Form}
+  | lift {t : Tag} {Γ Θ : List Form} {C : Form}
       (d : FRJWr G t Γ C)
-      (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) :
-      FRJWi G [] Th C
-  | circNotIn {t : Tag} {Γ Th : List Form} {Z : Form}
+      (hTh : ∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) :
+      FRJWi G [] Θ C
+  | circNotIn {t : Tag} {Γ Θ : List Form} {Z : Form}
       (d : FRJWr G t Γ Z)
       (htag : t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z)
-      (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G)
+      (hTh : ∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G)
       (hgoal : Form.circ Z ∈ sfR G) :
-      FRJWi G [] Th (.circ Z)
+      FRJWi G [] Θ (.circ Z)
   | axIC (F : Form) (ats : List Form) (hats : ats ⊆ gAt G)
       (hFf : classForce ats F = false) (hgoal : Form.circ F ∈ sfR G)
-      {Th' : List Form} (hTh : Th' ≐ vacZoneA G ats) :
-      FRJWi G [] Th' (.circ F)
+      {Θ' : List Form} (hTh : Θ' ≐ vacZoneA G ats) :
+      FRJWi G [] Θ' (.circ F)
 
 end
 
@@ -321,8 +321,8 @@ def toWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
 /-- Every irregular FRJV disproof is an irregular FRJW disproof.  The
 `impNotIn` case is the reconstruction `lift (impIn d hA hgoal) hTh`;
 `hAnot` is discarded. -/
-def toWi {G : Form} : ∀ {St Th : List Form} {C : Form},
-    FRJVi G St Th C → FRJWi G St Th C
+def toWi {G : Form} : ∀ {Ξ Θ : List Form} {C : Form},
+    FRJVi G Ξ Θ C → FRJWi G Ξ Θ C
   | _, _, _, .axI F hF hg hTh => .axI F hF hg hTh
   | _, _, _, .andI1 d hg => .andI1 (toWi d) hg
   | _, _, _, .andI2 d hg => .andI2 (toWi d) hg

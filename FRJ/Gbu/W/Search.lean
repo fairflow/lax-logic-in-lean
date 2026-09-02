@@ -124,8 +124,8 @@ private theorem wEvalR_ctxEq {D : WSeq → Prop} {Ψ Ψ' : List Form} {C : Form}
 
 private theorem wEvalI_ctxEq {D : WSeq → Prop} {Ω Ω' : List Form} {C : Form}
     (h : Ω ≐ Ω') (he : WEvalI D Ω C) : WEvalI D Ω' C :=
-  let ⟨St, Th, hmem, hSt, hΩ⟩ := he
-  ⟨St, Th, hmem, fun {x} hx => (h x).mp (hSt hx),
+  let ⟨Ξ, Θ, hmem, hSt, hΩ⟩ := he
+  ⟨Ξ, Θ, hmem, fun {x} hx => (h x).mp (hSt hx),
     fun {x} hx => hΩ ((h x).mpr hx)⟩
 
 private theorem seqSize_cons {Ψ : List Form} {X C : Form} :
@@ -240,8 +240,8 @@ theorem wEvalI_axIC {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
     hsat.2 (.irr [] (vacZoneA G ats) (.circ F))
       ⟨.axIC F ats hats hFf hgoal (CtxEq.refl _)⟩
   match s', hsub with
-  | .irr St' Th' _, ⟨rfl, hSt, hTh⟩ =>
-      exact ⟨St', Th', hs'mem,
+  | .irr Ξ' Θ' _, ⟨rfl, hSt, hTh⟩ =>
+      exact ⟨Ξ', Θ', hs'mem,
         fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil,
         fun {x} hx => List.mem_append_right _
           (hTh (List.mem_filter.mpr ⟨hΩ x hx, hΩf x hx⟩))⟩

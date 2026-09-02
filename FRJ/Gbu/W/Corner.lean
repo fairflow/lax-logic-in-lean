@@ -6,7 +6,7 @@ the still-open induction)
 On the RefAt-relaxed barren (J2) of `⋈^◯` (2026-09-01): the kept-chain
 manufacture over the non-stuck part, the prime-body `axI`-family
 manufacture with the engine's greedy `keptOf` as a decidable cover,
-and the Σ-emptiness of prime-rhs irregular rows.
+and the Ξ-emptiness of prime-rhs irregular rows.
 -/
 import FRJ.Gbu.W.CircDB
 
@@ -14,13 +14,13 @@ namespace FRJ.Gbu.W
 
 open FRJ Form FRJ.Gbu FRJ.Search
 
-/-- Σ-emptiness at prime rhs: of the `FRJWi` constructors only `axI`
+/-- Ξ-emptiness at prime rhs: of the `FRJWi` constructors only `axI`
 and `lift` produce a prime right-hand side, and both have an empty
 stable zone.  Consequence: at a `◯`-critical corner with PRIME `Z`,
-the single-row `⋈^◯` family drawn from `WEvalI D Ψ Z` is Σ-empty, so
+the single-row `⋈^◯` family drawn from `WEvalI D Ψ Z` is Ξ-empty, so
 the join's side conditions `hJ1`/`hJ2`/`hcirc` are vacuous. -/
-theorem st_nil_of_prime {G : Form} {St Th : List Form} {F : Form}
-    (d : FRJWi G St Th F) (hF : F.isPrime = true) : St = [] := by
+theorem st_nil_of_prime {G : Form} {Ξ Θ : List Form} {F : Form}
+    (d : FRJWi G Ξ Θ F) (hF : F.isPrime = true) : Ξ = [] := by
   cases d with
   | axI _ _ _ _ => rfl
   | lift _ _ => rfl
@@ -112,19 +112,19 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
       rcases List.mem_cons.mp (hfmem j) with e | hmem
       · exact e ▸ hz
       · exact hR _ hmem
-    obtain ⟨St, Th, k₁, k₂, k₃⟩ := hev
-    exact ⟨(St, Th), k₁, k₂, k₃⟩
+    obtain ⟨Ξ, Θ, k₁, k₂, k₃⟩ := hev
+    exact ⟨(Ξ, Θ), k₁, k₂, k₃⟩
   obtain ⟨g, hg⟩ := finEx hwit
-  set St : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
-  set Th : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
-  have hStTh : ∀ j, D (.irr (St j) (Th j) (f j)) := fun j => (hg j).1
-  have hStΩ : ∀ j, St j ⊆ Ω := fun j => (hg j).2.1
-  have hΩSt : ∀ j, Ω ⊆ St j ++ Th j := fun j => (hg j).2.2
+  set Ξ : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
+  set Θ : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
+  have hStTh : ∀ j, D (.irr (Ξ j) (Θ j) (f j)) := fun j => (hg j).1
+  have hStΩ : ∀ j, Ξ j ⊆ Ω := fun j => (hg j).2.1
+  have hΩΞ : ∀ j, Ω ⊆ Ξ j ++ Θ j := fun j => (hg j).2.2
   obtain ⟨d⟩ := finPi (fun j => hsat.1 _ (hStTh j))
   have hups_sub : ∀ x ∈ U, x ∈ upsilon f := fun x hx => (E.spec x).mpr hx
-  have hJ1 : ∀ i j, i ≠ j → St i ⊆ St j ++ Th j :=
-    fun i j _ => fun {_} hX => hΩSt j (hStΩ i hX)
-  have hcirc : unionAll (fun j => circPart (St j)) = [] := by
+  have hJ1 : ∀ i j, i ≠ j → Ξ i ⊆ Ξ j ++ Θ j :=
+    fun i j _ => fun {_} hX => hΩΞ j (hStΩ i hX)
+  have hcirc : unionAll (fun j => circPart (Ξ j)) = [] := by
     refine eq_nil_of_forall_not_mem (fun X hX => ?_)
     obtain ⟨j, hj⟩ := mem_unionAll.mp hX
     obtain ⟨hmem, hc⟩ := List.mem_filter.mp hj
@@ -132,27 +132,27 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
       rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
       exact fun h => Bool.noConfusion h)
   -- the zones
-  set base := joinCtxOrVBase St Th with hbase
-  set tail := restrict (thPool Th) (upsilon f) with htail
-  set stuckL := (thPool Th).filter
+  set base := joinCtxOrVBase Ξ Θ with hbase
+  set tail := restrict (thPool Θ) (upsilon f) with htail
+  set stuckL := (thPool Θ).filter
     (fun Y => decide (Y ∈ Ω) && !decide (ante Y ∈ R)) with hstuckL
-  have pool_isImp : ∀ X ∈ thPool Th, X.isImp = true :=
+  have pool_isImp : ∀ X ∈ thPool Θ, X.isImp = true :=
     fun X hX => (List.mem_filter.mp hX).2
   -- membership combinators for the cover
-  have hStabAt : ∀ {X : Form} {j}, X ∈ St j → X.isPV = true → X ∈ base := by
+  have hStabAt : ∀ {X : Form} {j}, X ∈ Ξ j → X.isPV = true → X ∈ base := by
     intro X j hX hpv
     exact List.mem_append_left _ (List.mem_append_left _
       (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hX, hpv⟩⟩))
-  have hStabImp : ∀ {X : Form} {j}, X ∈ St j → X.isImp = true → X ∈ base := by
+  have hStabImp : ∀ {X : Form} {j}, X ∈ Ξ j → X.isImp = true → X ∈ base := by
     intro X j hX hi
     exact List.mem_append_right _
       (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hX, hi⟩⟩)
-  have hΘat : ∀ {X : Form}, (∀ j, X ∈ Th j) → X.isPV = true → X ∈ base := by
+  have hΘat : ∀ {X : Form}, (∀ j, X ∈ Θ j) → X.isPV = true → X ∈ base := by
     intro X hall hpv
     exact List.mem_append_left _ (List.mem_append_right _
       (mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, hpv⟩)))
-  have hpool : ∀ {X : Form}, (∀ j, X ∈ Th j) → X.isImp = true →
-      X ∈ thPool Th := by
+  have hpool : ∀ {X : Form}, (∀ j, X ∈ Θ j) → X.isImp = true →
+      X ∈ thPool Θ := by
     intro X hall hi
     exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, hi⟩
   -- `Ω₀` is `Clo`-derived by `base ++ tail`
@@ -162,24 +162,24 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
     intro w hw
     rcases List.mem_append.mp hw with hat | himpf
     · obtain ⟨hwΩ, hpv⟩ := List.mem_filter.mp hat
-      by_cases hin : ∃ j, w ∈ St j
+      by_cases hin : ∃ j, w ∈ Ξ j
       · obtain ⟨j, hj⟩ := hin
         exact .base (List.mem_append_left _ (hStabAt hj hpv))
-      · have hall : ∀ j, w ∈ Th j := fun j =>
-          (List.mem_append.mp (hΩSt j hwΩ)).resolve_left (fun h => hin ⟨j, h⟩)
+      · have hall : ∀ j, w ∈ Θ j := fun j =>
+          (List.mem_append.mp (hΩΞ j hwΩ)).resolve_left (fun h => hin ⟨j, h⟩)
         exact .base (List.mem_append_left _ (hΘat hall hpv))
     · obtain ⟨hwi, hante⟩ := List.mem_filter.mp himpf
       obtain ⟨hwΩ, hi⟩ := List.mem_filter.mp hwi
       have hanteR : ante w ∈ R := of_decide_eq_true hante
-      by_cases hin : ∃ j, w ∈ St j
+      by_cases hin : ∃ j, w ∈ Ξ j
       · obtain ⟨j, hj⟩ := hin
         exact .base (List.mem_append_left _ (hStabImp hj hi))
-      · have hall : ∀ j, w ∈ Th j := fun j =>
-          (List.mem_append.mp (hΩSt j hwΩ)).resolve_left (fun h => hin ⟨j, h⟩)
+      · have hall : ∀ j, w ∈ Θ j := fun j =>
+          (List.mem_append.mp (hΩΞ j hwΩ)).resolve_left (fun h => hin ⟨j, h⟩)
         match w, hi, hanteR, hall with
         | .imp A B, _, hanteR, hall =>
             refine .base (List.mem_append_right _ ?_)
-            show Form.imp A B ∈ restrict (thPool Th) (upsilon f)
+            show Form.imp A B ∈ restrict (thPool Θ) (upsilon f)
             exact mem_restrict.mpr ⟨hpool hall rfl,
               hups_sub _ (List.mem_cons_of_mem _ hanteR)⟩
   -- lift a certificate over `Ω₀` to the join context
@@ -190,8 +190,8 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
     intro A hc
     exact refAt_clo_mono hΩ₀clo (refAt_mono hups_sub (fun _ h => h) hc)
   -- the chain: stuck links over the restrict tail
-  have hkc : KeptChain (upsilon f) base (thPool Th) (stuckL ++ tail) := by
-    refine keptChain_extend stuckL (keptChainRestrict base Th)
+  have hkc : KeptChain (upsilon f) base (thPool Θ) (stuckL ++ tail) := by
+    refine keptChain_extend stuckL (keptChainRestrict base Θ)
       (fun x hx => (List.mem_filter.mp hx).1)
       (fun x hx => pool_isImp x (List.mem_filter.mp hx).1) ?_
     intro Y B hYmem
@@ -205,7 +205,7 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
     ⟨.joinCirc (fun j => d j) hJ1 ?_ hcirc hkc
       (.ups (hups_sub _ List.mem_cons_self)) hgoal (CtxEq.refl _)⟩,
     Or.inl rfl, ?_⟩
-  · -- the relaxed (J2): Σ-implications, refuted or certified
+  · -- the relaxed (J2): Ξ-implications, refuted or certified
     intro A B hmem
     obtain ⟨j, hj⟩ := mem_unionAll.mp hmem
     have hAB : Form.imp A B ∈ Ω := hStΩ j (List.mem_filter.mp hj).1
@@ -219,22 +219,22 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
     · exact refAt_mono (fun _ h => h) hgrow (hlift hAcert)
   · -- the cover
     intro X hX
-    by_cases hin : ∃ j, X ∈ St j
+    by_cases hin : ∃ j, X ∈ Ξ j
     · obtain ⟨j, hj⟩ := hin
       by_cases hi : X.isImp
       · exact .base (List.mem_append_left _ (hStabImp hj hi))
       · have := mem_gAt_of_not_imp (hΩ X hX) (by simpa using hi)
         exact .base (List.mem_append_left _
           (hStabAt hj (List.mem_filter.mp this).2))
-    · have hall : ∀ j, X ∈ Th j := fun j =>
-        (List.mem_append.mp (hΩSt j hX)).resolve_left (fun h => hin ⟨j, h⟩)
+    · have hall : ∀ j, X ∈ Θ j := fun j =>
+        (List.mem_append.mp (hΩΞ j hX)).resolve_left (fun h => hin ⟨j, h⟩)
       by_cases hi : X.isImp
       · by_cases hante : ante X ∈ R
         · match X, hi, hante, hall with
           | .imp A B, _, hante, hall =>
               refine .base (List.mem_append_right _
                 (List.mem_append_right _ ?_))
-              show Form.imp A B ∈ restrict (thPool Th) (upsilon f)
+              show Form.imp A B ∈ restrict (thPool Θ) (upsilon f)
               exact mem_restrict.mpr ⟨hpool hall rfl,
                 hups_sub _ (List.mem_cons_of_mem _ hante)⟩
         · refine .base (List.mem_append_right _ (List.mem_append_left _ ?_))
@@ -245,7 +245,7 @@ theorem refutedCleanly_circ_kept {G : Form} {D : WSeq → Prop}
           (hΘat hall (List.mem_filter.mp this).2))
 
 /-- The corner manufacture at a PRIME body: the single-row `⋈^◯` family
-over the CONCRETE `axI` row, whose Σ-zones are empty and whose kept
+over the CONCRETE `axI` row, whose Ξ-zones are empty and whose kept
 chain is the engine's greedy `keptOf` — so the cover hypothesis is the
 full engine-strength retention, and it is decidable (`cloB`). -/
 theorem refutedCleanly_circ_axI {G : Form} {Ω : List Form} {Z : Form}
@@ -489,56 +489,56 @@ theorem refutedCleanly_circ_certs {G : Form} {D : WSeq → Prop}
       rcases List.mem_cons.mp (hfmem j) with e | hmem
       · exact e ▸ hz
       · exact hR _ hmem
-    obtain ⟨St, Th, k₁, k₂, k₃⟩ := hev
-    exact ⟨(St, Th), k₁, k₂, k₃⟩
+    obtain ⟨Ξ, Θ, k₁, k₂, k₃⟩ := hev
+    exact ⟨(Ξ, Θ), k₁, k₂, k₃⟩
   obtain ⟨g, hg⟩ := finEx hwit
-  set St : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
-  set Th : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
-  have hStTh : ∀ j, D (.irr (St j) (Th j) (f j)) := fun j => (hg j).1
-  have hStΩ : ∀ j, St j ⊆ Ω := fun j => (hg j).2.1
-  have hΩSt : ∀ j, Ω ⊆ St j ++ Th j := fun j => (hg j).2.2
+  set Ξ : Fin (E.n + 1) → List Form := fun j => (g j).1 with hStdef
+  set Θ : Fin (E.n + 1) → List Form := fun j => (g j).2 with hThdef
+  have hStTh : ∀ j, D (.irr (Ξ j) (Θ j) (f j)) := fun j => (hg j).1
+  have hStΩ : ∀ j, Ξ j ⊆ Ω := fun j => (hg j).2.1
+  have hΩΞ : ∀ j, Ω ⊆ Ξ j ++ Θ j := fun j => (hg j).2.2
   obtain ⟨d⟩ := finPi (fun j => hsat.1 _ (hStTh j))
   have hups_sub : ∀ x ∈ U, x ∈ upsilon f := fun x hx => (E.spec x).mpr hx
-  have hJ1 : ∀ i j, i ≠ j → St i ⊆ St j ++ Th j :=
-    fun i j _ => fun {_} hX => hΩSt j (hStΩ i hX)
-  have hcirc : unionAll (fun j => circPart (St j)) = [] := by
+  have hJ1 : ∀ i j, i ≠ j → Ξ i ⊆ Ξ j ++ Θ j :=
+    fun i j _ => fun {_} hX => hΩΞ j (hStΩ i hX)
+  have hcirc : unionAll (fun j => circPart (Ξ j)) = [] := by
     refine eq_nil_of_forall_not_mem (fun X hX => ?_)
     obtain ⟨j, hj⟩ := mem_unionAll.mp hX
     obtain ⟨hmem, hc⟩ := List.mem_filter.mp hj
     exact absurd hc (by
       rw [not_isCirc_of_gHatAtImp (hΩ X (hStΩ j hmem))]
       exact fun h => Bool.noConfusion h)
-  set base := joinCtxOrVBase St Th with hbase
-  set tail := restrict (thPool Th) (upsilon f) with htail
-  set stuckL := (thPool Th).filter
+  set base := joinCtxOrVBase Ξ Θ with hbase
+  set tail := restrict (thPool Θ) (upsilon f) with htail
+  set stuckL := (thPool Θ).filter
     (fun Y => decide (Y ∈ Ω) && !decide (ante Y ∈ R)) with hstuckL
-  have pool_isImp : ∀ X ∈ thPool Th, X.isImp = true :=
+  have pool_isImp : ∀ X ∈ thPool Θ, X.isImp = true :=
     fun X hX => (List.mem_filter.mp hX).2
-  have hStabAt : ∀ {X : Form} {j}, X ∈ St j → X.isPV = true → X ∈ base := by
+  have hStabAt : ∀ {X : Form} {j}, X ∈ Ξ j → X.isPV = true → X ∈ base := by
     intro X j hX hpv
     exact List.mem_append_left _ (List.mem_append_left _
       (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hX, hpv⟩⟩))
-  have hStabImp : ∀ {X : Form} {j}, X ∈ St j → X.isImp = true → X ∈ base := by
+  have hStabImp : ∀ {X : Form} {j}, X ∈ Ξ j → X.isImp = true → X ∈ base := by
     intro X j hX hi
     exact List.mem_append_right _
       (mem_unionAll.mpr ⟨j, List.mem_filter.mpr ⟨hX, hi⟩⟩)
-  have hThAt : ∀ {X : Form}, (∀ j, X ∈ Th j) → X.isPV = true → X ∈ base := by
+  have hThAt : ∀ {X : Form}, (∀ j, X ∈ Θ j) → X.isPV = true → X ∈ base := by
     intro X hall hpv
     exact List.mem_append_left _ (List.mem_append_right _
       (mem_interAll.mpr (fun j => List.mem_filter.mpr ⟨hall j, hpv⟩)))
-  have hpool : ∀ {X : Form}, (∀ j, X ∈ Th j) → X.isImp = true →
-      X ∈ thPool Th := by
+  have hpool : ∀ {X : Form}, (∀ j, X ∈ Θ j) → X.isImp = true →
+      X ∈ thPool Θ := by
     intro X hall hi
     exact List.mem_filter.mpr ⟨mem_interAll.mpr hall, hi⟩
-  have hallTh : ∀ {X : Form}, X ∈ Ω → (¬ ∃ j, X ∈ St j) → ∀ j, X ∈ Th j :=
+  have hallTh : ∀ {X : Form}, X ∈ Ω → (¬ ∃ j, X ∈ Ξ j) → ∀ j, X ∈ Θ j :=
     fun {X} hX hin j =>
-      (List.mem_append.mp (hΩSt j hX)).resolve_left (fun h => hin ⟨j, h⟩)
+      (List.mem_append.mp (hΩΞ j hX)).resolve_left (fun h => hin ⟨j, h⟩)
   -- an Ω-member inside any kept superset of the stuck links of its size
   have hΩmem : ∀ {ks : List Form} {w : Form}, w ∈ Ω →
       (∀ v ∈ stuckL, v.size ≤ w.size → v ∈ ks) →
       Clo (base ++ (ks ++ tail)) w := by
     intro ks w hw hks
-    by_cases hin : ∃ j, w ∈ St j
+    by_cases hin : ∃ j, w ∈ Ξ j
     · obtain ⟨j, hj⟩ := hin
       by_cases hi : w.isImp
       · exact .base (List.mem_append_left _ (hStabImp hj hi))
@@ -552,7 +552,7 @@ theorem refutedCleanly_circ_certs {G : Form} {D : WSeq → Prop}
           | .imp A B, _, hante, hall =>
               refine .base (List.mem_append_right _
                 (List.mem_append_right _ ?_))
-              show Form.imp A B ∈ restrict (thPool Th) (upsilon f)
+              show Form.imp A B ∈ restrict (thPool Θ) (upsilon f)
               exact mem_restrict.mpr ⟨hpool hall rfl,
                 hups_sub _ (List.mem_cons_of_mem _ hante)⟩
         · refine .base (List.mem_append_right _ (List.mem_append_left _ ?_))
@@ -563,13 +563,13 @@ theorem refutedCleanly_circ_certs {G : Form} {D : WSeq → Prop}
           (hThAt hall (List.mem_filter.mp this).2))
   -- the chain, level by level on the link size
   have chain : ∀ n : Nat, ∃ ks : List Form,
-      KeptChain (upsilon f) base (thPool Th) (ks ++ tail) ∧
+      KeptChain (upsilon f) base (thPool Θ) (ks ++ tail) ∧
       (∀ x ∈ ks, x ∈ stuckL) ∧
       (∀ w ∈ stuckL, w.size ≤ n → w ∈ ks) := by
     intro n
     induction n with
     | zero =>
-        refine ⟨[], keptChainRestrict base Th,
+        refine ⟨[], keptChainRestrict base Θ,
           fun _ h => absurd h List.not_mem_nil, fun w _ h0 => ?_⟩
         exact absurd h0 (by cases w <;> simp [Form.size])
     | succ n ih =>

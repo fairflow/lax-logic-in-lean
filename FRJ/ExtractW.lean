@@ -13,12 +13,12 @@ reused from `FRJ.Extract` verbatim.  Only the extraction functions and
 their lemmas, which recurse over derivations, are re-defined here.
 
 The three V-joins label their fresh root with the constructor's own
-conclusion context `joinCtxAtVBase stab th F ++ kept` (resp.
-`joinCtxOrVBase stab th ++ kept`), which is exactly what `hΓ` says `Γ'`
+conclusion context `joinCtxAtVBase Ξs Θs F ++ kept` (resp.
+`joinCtxOrVBase Ξs Θs ++ kept`), which is exactly what `hΓ` says `Γ'`
 denotes, so `preR_root_lbl` closes as before.  `preR_closed` routes
 through the `FRJ.V` step relation: the base-vs-kept split is discharged
 once and for all inside `FRJ.V.lhs_subset_of_step` (every kept member
-lies in `Θ^⊃∩ ⊆ th j`), so the closure argument here is verbatim the
+lies in `Θ^⊃∩ ⊆ Θs j`), so the closure argument here is verbatim the
 paper one, with the `KeptChain` certificate handed to the step.
 -/
 import FRJ.StepW
@@ -35,7 +35,7 @@ mounts a leaf), so these are exactly those nodes.  They index the worlds
 an irregular disproof contributes to the model built below it. -/
 
 /-- The index of the regular sub-disproofs of an irregular disproof. -/
-def RegIdx {G : Form} : {St Th : List Form} → {C : Form} → FRJWi G St Th C → Type
+def RegIdx {G : Form} : {Ξ Θ : List Form} → {C : Form} → FRJWi G Ξ Θ C → Type
   | _, _, _, .axI _ _ _ _ => Empty
   | _, _, _, .andI1 d _ => RegIdx d
   | _, _, _, .andI2 d _ => RegIdx d
@@ -46,8 +46,8 @@ def RegIdx {G : Form} : {St Th : List Form} → {C : Form} → FRJWi G St Th C �
   | _, _, _, .axIC _ _ _ _ _ _ => Unit
 
 /-- `RegIdx` has decidable equality, constructively. -/
-instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
-    (d : FRJWi G St Th C), DecidableEq (RegIdx d)
+instance regIdxDecEq {G : Form} : ∀ {Ξ Θ : List Form} {C : Form}
+    (d : FRJWi G Ξ Θ C), DecidableEq (RegIdx d)
   | _, _, _, .axI _ _ _ _ => fun a _ => a.elim
   | _, _, _, .andI1 d _ => regIdxDecEq d
   | _, _, _, .andI2 d _ => regIdxDecEq d
@@ -62,8 +62,8 @@ instance regIdxDecEq {G : Form} : ∀ {St Th : List Form} {C : Form}
 
 /-- An enumeration of `RegIdx`, constructively (no `Fintype.ofFinite`,
 hence no `Classical.choice`). -/
-def regIdxElems {G : Form} : ∀ {St Th : List Form} {C : Form}
-    (d : FRJWi G St Th C), List (RegIdx d)
+def regIdxElems {G : Form} : ∀ {Ξ Θ : List Form} {C : Form}
+    (d : FRJWi G Ξ Θ C), List (RegIdx d)
   | _, _, _, .axI _ _ _ _ => []
   | _, _, _, .andI1 d _ => regIdxElems d
   | _, _, _, .andI2 d _ => regIdxElems d
@@ -74,8 +74,8 @@ def regIdxElems {G : Form} : ∀ {St Th : List Form} {C : Form}
   | _, _, _, .circNotIn _ _ _ _ => [()]
   | _, _, _, .axIC _ _ _ _ _ _ => [()]
 
-theorem regIdxComplete {G : Form} : ∀ {St Th : List Form} {C : Form}
-    (d : FRJWi G St Th C) (i : RegIdx d), i ∈ regIdxElems d
+theorem regIdxComplete {G : Form} : ∀ {Ξ Θ : List Form} {C : Form}
+    (d : FRJWi G Ξ Θ C) (i : RegIdx d), i ∈ regIdxElems d
   | _, _, _, .axI _ _ _ _, i => i.elim
   | _, _, _, .andI1 d _, i => regIdxComplete d i
   | _, _, _, .andI2 d _, i => regIdxComplete d i
@@ -99,16 +99,16 @@ without `Fintype`, hence without `Classical.choice`. -/
 
 /-- Every `⟨j, i⟩` with `j` a premise and `i` a regular sub-derivation
 of it. -/
-def premIdxElems {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
+def premIdxElems {G : Form} {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form}
-    (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j)) :
+    (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j)) :
     List ((j : Fin (n + 1)) × RegIdx (prem j)) :=
   (List.finRange (n + 1)).flatMap
     (fun j => (regIdxElems (prem j)).map (fun i => ⟨j, i⟩))
 
-theorem premIdxComplete {G : Form} {n : Nat} {stab th : Fin (n + 1) → List Form}
+theorem premIdxComplete {G : Form} {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form}
-    (prem : ∀ j, FRJWi G (stab j) (th j) (rhs j))
+    (prem : ∀ j, FRJWi G (Ξs j) (Θs j) (rhs j))
     (ji : (j : Fin (n + 1)) × RegIdx (prem j)) : ji ∈ premIdxElems prem := by
   obtain ⟨j, i⟩ := ji
   exact List.mem_flatMap.mpr ⟨j, List.mem_finRange j,
@@ -136,57 +136,57 @@ def preR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} → FRJWr G 
   | _, _, _, .andR2 d _ => preR d
   | _, Γ, _, .impIn d _ _ => preR d
   | _, Γ, _, .circIn d _ _ => preR d
-  | _, _, _, @FRJWr.joinAt _ n stab th _ F kept prem _ _ _ _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinAt _ n Ξs Θs _ F kept prem _ _ _ _ _ _ _ _ _ =>
       PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxAtVBase stab th F ++ kept)
+        (joinCtxAtVBase Ξs Θs F ++ kept)
         (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
         (fun _ => false)
-  | _, _, _, @FRJWr.joinAtP _ n k stab th rhs F _ tps Δs Ds prem dps _ _ _ _ _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinAtP _ n k Ξs Θs rhs F _ tps Δs Ds prem dps _ _ _ _ _ _ _ _ _ _ =>
       PreModel.join (sumElems (premIdxElems prem) (List.finRange (k + 1)))
         (sumElems_complete (premIdxComplete prem) List.mem_finRange)
-        (joinCtxAtP stab th rhs F Δs)
+        (joinCtxAtP Ξs Θs rhs F Δs)
         (Sum.elim
           (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
           (fun i => preR (dps i)))
         (Sum.elim (fun _ => false) (fun _ => true))
-  | _, _, _, @FRJWr.joinAtF _ n stab th rhs F prem _ _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinAtF _ n Ξs Θs rhs F prem _ _ _ _ _ _ _ =>
       PreModel.join (sumElems (premIdxElems prem) [()])
         (sumElems_complete (premIdxComplete prem) (fun _ => List.mem_cons_self))
-        (joinCtxAtF stab th rhs F)
+        (joinCtxAtF Ξs Θs rhs F)
         (Sum.elim
           (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-          (fun _ : Unit => PreModel.leafF (joinCtxAtF stab th rhs F)))
+          (fun _ : Unit => PreModel.leafF (joinCtxAtF Ξs Θs rhs F)))
         (Sum.elim (fun _ => false) (fun _ => true))
-  | _, _, _, @FRJWr.joinOr _ n stab th _ C₁ C₂ kept prem _ _ _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinOr _ n Ξs Θs _ C₁ C₂ kept prem _ _ _ _ _ _ _ _ =>
       PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxOrVBase stab th ++ kept)
+        (joinCtxOrVBase Ξs Θs ++ kept)
         (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
         (fun _ => false)
-  | _, _, _, @FRJWr.joinOrP _ n k stab th rhs C₁ C₂ _ tps Δs Ds prem dps _ _ _ _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinOrP _ n k Ξs Θs rhs C₁ C₂ _ tps Δs Ds prem dps _ _ _ _ _ _ _ _ _ =>
       PreModel.join (sumElems (premIdxElems prem) (List.finRange (k + 1)))
         (sumElems_complete (premIdxComplete prem) List.mem_finRange)
-        (joinCtxOrP stab th rhs Δs)
+        (joinCtxOrP Ξs Θs rhs Δs)
         (Sum.elim
           (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
           (fun i => preR (dps i)))
         (Sum.elim (fun _ => false) (fun _ => true))
-  | _, _, _, @FRJWr.joinOrF _ n stab th rhs C₁ C₂ prem _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinOrF _ n Ξs Θs rhs C₁ C₂ prem _ _ _ _ _ _ =>
       PreModel.join (sumElems (premIdxElems prem) [()])
         (sumElems_complete (premIdxComplete prem) (fun _ => List.mem_cons_self))
-        (joinCtxOrF stab th rhs)
+        (joinCtxOrF Ξs Θs rhs)
         (Sum.elim
           (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-          (fun _ : Unit => PreModel.leafF (joinCtxOrF stab th rhs)))
+          (fun _ : Unit => PreModel.leafF (joinCtxOrF Ξs Θs rhs)))
         (Sum.elim (fun _ => false) (fun _ => true))
-  | _, _, _, @FRJWr.joinCirc _ n stab th _ Z kept prem _ _ _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinCirc _ n Ξs Θs _ Z kept prem _ _ _ _ _ _ _ _ =>
       PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxOrVBase stab th ++ kept)
+        (joinCtxOrVBase Ξs Θs ++ kept)
         (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
         (fun _ => false)
-  | _, _, _, @FRJWr.joinCircP _ n k stab th rhs Z tps Δs Ds prem dps _ _ _ _ _ _ _ _ _ =>
+  | _, _, _, @FRJWr.joinCircP _ n k Ξs Θs rhs Z tps Δs Ds prem dps _ _ _ _ _ _ _ _ _ =>
       PreModel.join (sumElems (premIdxElems prem) (List.finRange (k + 1)))
         (sumElems_complete (premIdxComplete prem) List.mem_finRange)
-        (joinCtxOrP stab th rhs Δs)
+        (joinCtxOrP Ξs Θs rhs Δs)
         (Sum.elim
           (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
           (fun i => preR (dps i)))
@@ -194,8 +194,8 @@ def preR {G : Form} : {t : Tag} → {Γ : List Form} → {C : Form} → FRJWr G 
 
 /-- The pre-models an irregular disproof contributes, one per
 regular-premise (`lift`/`◯∉`) or `Ax^I◯` node. -/
-def preI {G : Form} : {St Th : List Form} → {C : Form} →
-    (d : FRJWi G St Th C) → RegIdx d → PreModel
+def preI {G : Form} : {Ξ Θ : List Form} → {C : Form} →
+    (d : FRJWi G Ξ Θ C) → RegIdx d → PreModel
   | _, _, _, .axI _ _ _ _, i => (i : Empty).elim
   | _, _, _, .andI1 d _, i => preI d i
   | _, _, _, .andI2 d _, i => preI d i
@@ -206,7 +206,7 @@ def preI {G : Form} : {St Th : List Form} → {C : Form} →
   | _, _, _, .impInI d _ _ _ _ _ _, i => preI d i
   | _, _, _, .lift d _, _ => preR d
   | _, _, _, .circNotIn d _ _ _, _ => preR d
-  | _, Th, _, .axIC _ _ _ _ _ _, _ => PreModel.leaf Th
+  | _, Θ, _, .axIC _ _ _ _ _ _, _ => PreModel.leaf Θ
 
 end
 
@@ -243,8 +243,8 @@ sequent occurring in it, and its root carries that sequent's left
 formulas.  For the `lift`/`◯∉` nodes the sequent is the regular premise;
 for `Ax^I◯` (which has no premise) it is the axiom's own irregular
 sequent — its zone IS the mounted world's label. -/
-theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
-    (d : FRJWi G St Th C) (i : RegIdx d),
+theorem preI_spec {G : Form} : ∀ {Ξ Θ : List Form} {C : Form}
+    (d : FRJWi G Ξ Θ C) (i : RegIdx d),
     ∃ s : Sequent, OccI d s ∧
       (preI d i).lbl (preI d i).root ≐ s.lhs
   | _, _, _, .axI _ _ _ _, i => (i : Empty).elim
@@ -269,8 +269,8 @@ theorem preI_spec {G : Form} : ∀ {St Th : List Form} {C : Form}
       ⟨_, .lift (.root d), preR_root_lbl d⟩
   | _, _, _, .circNotIn d _ _ _, _ =>
       ⟨_, .circNotIn (.root d), preR_root_lbl d⟩
-  | _, Th, _, .axIC F _ _ _ _ _, _ =>
-      ⟨.irr [] Th (.circ F), .root _, CtxEq.refl _⟩
+  | _, Θ, _, .axIC F _ _ _ _ _, _ =>
+      ⟨.irr [] Θ (.circ F), .root _, CtxEq.refl _⟩
 
 mutual
 
@@ -281,7 +281,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
   | _, _, _, .andR2 d _ => preR_closed d
   | _, _, _, .impIn d _ _ => preR_closed d
   | _, _, _, .circIn d _ _ => preR_closed d
-  | _, _, _, @FRJWr.joinAtP _ n k stab th rhs F t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ _ _ _ => by
+  | _, _, _, @FRJWr.joinAtP _ n k Ξs Θs rhs F t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -308,7 +308,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
               | inr i => exact preR_closed (dps i) _ _ hab X hX
-  | _, _, _, @FRJWr.joinAtF _ n stab th rhs F prem hJ1 _ _ _ _ _ _ => by
+  | _, _, _, @FRJWr.joinAtF _ n Ξs Θs rhs F prem hJ1 _ _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -332,7 +332,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
               | inr _ => exact .base hX
-  | _, _, _, @FRJWr.joinOrP _ n k stab th rhs C₁ C₂ t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ _ _ => by
+  | _, _, _, @FRJWr.joinOrP _ n k Ξs Θs rhs C₁ C₂ t' tps Δs Ds prem dps hJ1 _ _ hJ7 _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -359,7 +359,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
               | inr i => exact preR_closed (dps i) _ _ hab X hX
-  | _, _, _, @FRJWr.joinOrF _ n stab th rhs C₁ C₂ prem hJ1 _ _ _ _ _ => by
+  | _, _, _, @FRJWr.joinOrF _ n Ξs Θs rhs C₁ C₂ prem hJ1 _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -383,7 +383,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
               | inr _ => exact .base hX
-  | _, _, _, @FRJWr.joinCircP _ n k stab th rhs Z tps Δs Ds prem dps hJ1 _ _ _ _ _ _ _ _ => by
+  | _, _, _, @FRJWr.joinCircP _ n k Ξs Θs rhs Z tps Δs Ds prem dps hJ1 _ _ _ _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -410,7 +410,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               cases x with
               | inl ji => exact preI_closed (prem ji.1) ji.2 _ _ hab X hX
               | inr i => exact preR_closed (dps i) _ _ hab X hX
-  | _, _, _, @FRJWr.joinCirc _ n stab th rhs Z kept prem hJ1 _ _ hkc _ _ _ _ => by
+  | _, _, _, @FRJWr.joinCirc _ n Ξs Θs rhs Z kept prem hJ1 _ _ hkc _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -428,7 +428,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                 ((preI (prem ji.1) ji.2).root_le b) Y ?_
               rw [hlbl]; exact hY
           | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
-  | _, _, _, @FRJWr.joinAt _ n stab th rhs F kept prem hJ1 _ _ hkc _ _ _ _ _ => by
+  | _, _, _, @FRJWr.joinAt _ n Ξs Θs rhs F kept prem hJ1 _ _ hkc _ _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -446,7 +446,7 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
                 ((preI (prem ji.1) ji.2).root_le b) Y ?_
               rw [hlbl]; exact hY
           | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
-  | _, _, _, @FRJWr.joinOr _ n stab th rhs C₁ C₂ kept prem hJ1 _ _ hkc _ _ _ _ => by
+  | _, _, _, @FRJWr.joinOr _ n Ξs Θs rhs C₁ C₂ kept prem hJ1 _ _ hkc _ _ _ _ => by
       intro w v hle X hX
       cases v with
       | none => cases hle with
@@ -465,8 +465,8 @@ theorem preR_closed {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form}
               rw [hlbl]; exact hY
           | comp hab => exact preI_closed (prem _) _ _ _ hab X hX
 
-theorem preI_closed {G : Form} : ∀ {St Th : List Form} {C : Form}
-    (d : FRJWi G St Th C) (i : RegIdx d), ClosedLbl (preI d i)
+theorem preI_closed {G : Form} : ∀ {Ξ Θ : List Form} {C : Form}
+    (d : FRJWi G Ξ Θ C) (i : RegIdx d), ClosedLbl (preI d i)
   | _, _, _, .axI _ _ _ _, i => (i : Empty).elim
   | _, _, _, .andI1 d _, i => preI_closed d i
   | _, _, _, .andI2 d _, i => preI_closed d i

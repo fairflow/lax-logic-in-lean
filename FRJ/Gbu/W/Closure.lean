@@ -29,8 +29,8 @@ This file proves the foundation layer:
     (`joinAt_mono`), and for `◯∈` (`circIn_mono`, the first
     tag-interaction case).
 
-Premise swap means: each irregular premise row `(Σⱼ, Θⱼ, Aⱼ)` is
-replaced by a stored subsumer `(Σ'ⱼ, Θ'ⱼ, Aⱼ)` with `Σ'ⱼ ≐ Σⱼ` and
+Premise swap means: each irregular premise row `(Ξⱼ, Θⱼ, Aⱼ)` is
+replaced by a stored subsumer `(Ξ'ⱼ, Θ'ⱼ, Aⱼ)` with `Ξ'ⱼ ≐ Ξⱼ` and
 `Θⱼ ⊆ Θ'ⱼ` (`WSubsumes` on the irregular stratum, same right formula).
 The re-fired join takes the canonical kept chain `keptOf` over the new
 base and pool; T-A places the old chain inside it, so the new conclusion
@@ -117,26 +117,26 @@ theorem mem_unionAll_filter_of_ctxEq {n : Nat}
 an empty filter means no member passes, and membership is all `≐`
 preserves or needs. -/
 theorem unionAll_circPart_nil_of_ctxEq {n : Nat}
-    {stab stab' : Fin (n + 1) → List Form}
-    (hst : ∀ j, stab' j ≐ stab j)
-    (h : unionAll (fun j => circPart (stab j)) = []) :
-    unionAll (fun j => circPart (stab' j)) = [] := by
-  cases hcase : unionAll (fun j => circPart (stab' j)) with
+    {Ξs Ξs' : Fin (n + 1) → List Form}
+    (hst : ∀ j, Ξs' j ≐ Ξs j)
+    (h : unionAll (fun j => circPart (Ξs j)) = []) :
+    unionAll (fun j => circPart (Ξs' j)) = [] := by
+  cases hcase : unionAll (fun j => circPart (Ξs' j)) with
   | nil => rfl
   | cons y ys =>
       exfalso
-      have hy : y ∈ unionAll (fun j => circPart (stab' j)) :=
+      have hy : y ∈ unionAll (fun j => circPart (Ξs' j)) :=
         hcase ▸ List.mem_cons_self
       obtain ⟨j, hj⟩ := mem_unionAll.mp hy
       have h' := mem_circPart.mp hj
-      have : y ∈ unionAll (fun j => circPart (stab j)) :=
+      have : y ∈ unionAll (fun j => circPart (Ξs j)) :=
         mem_unionAll.mpr ⟨j, mem_circPart.mpr ⟨(hst j y).mp h'.1, h'.2⟩⟩
       rw [h] at this
       exact absurd this List.not_mem_nil
 
 /-- The retention pool grows with the second zones. -/
-theorem thPool_mono {n : Nat} {th th' : Fin (n + 1) → List Form}
-    (hth : ∀ j, th j ⊆ th' j) : thPool th ⊆ thPool th' := by
+theorem thPool_mono {n : Nat} {Θs Θs' : Fin (n + 1) → List Form}
+    (hth : ∀ j, Θs j ⊆ Θs' j) : thPool Θs ⊆ thPool Θs' := by
   intro x hx
   have h' := mem_impPart.mp hx
   have hall := mem_interAll.mp h'.1
@@ -145,9 +145,9 @@ theorem thPool_mono {n : Nat} {th th' : Fin (n + 1) → List Form}
 /-- The `⋈^∨`/`⋈^◯` base context is monotone under premise swap:
 set-equal stable zones, larger second zones. -/
 theorem joinCtxOrVBase_mono {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
-    joinCtxOrVBase stab th ⊆ joinCtxOrVBase stab' th' := by
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j) :
+    joinCtxOrVBase Ξs Θs ⊆ joinCtxOrVBase Ξs' Θs' := by
   intro x hx
   simp only [joinCtxOrVBase, List.mem_append] at hx ⊢
   rcases hx with (h | h) | h
@@ -161,9 +161,9 @@ theorem joinCtxOrVBase_mono {n : Nat}
 
 /-- The `⋈^At` base context is monotone under premise swap. -/
 theorem joinCtxAtVBase_mono {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form} {F : Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
-    joinCtxAtVBase stab th F ⊆ joinCtxAtVBase stab' th' F := by
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form} {F : Form}
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j) :
+    joinCtxAtVBase Ξs Θs F ⊆ joinCtxAtVBase Ξs' Θs' F := by
   intro x hx
   simp only [joinCtxAtVBase, List.mem_append] at hx ⊢
   rcases hx with (h | h) | h
@@ -179,10 +179,10 @@ theorem joinCtxAtVBase_mono {n : Nat}
 
 /-- (J1) transfers to the swapped family. -/
 theorem hJ1_of_swap {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-    ∀ i j, i ≠ j → stab' i ⊆ stab' j ++ th' j := by
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) :
+    ∀ i j, i ≠ j → Ξs' i ⊆ Ξs' j ++ Θs' j := by
   intro i j hij x hx
   rcases List.mem_append.mp (hJ1 i j hij ((hst i x).mp hx)) with h | h
   · exact List.mem_append_left _ ((hst j x).mpr h)
@@ -191,12 +191,12 @@ theorem hJ1_of_swap {n : Nat}
 /-- The strict (J2) transfers to the swapped family (`Υ` is unchanged —
 subsumers keep the right formula). -/
 theorem hJ2_strict_of_swap {n : Nat}
-    {stab stab' : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
-    (hst : ∀ j, stab' j ≐ stab j)
+    {Ξs Ξs' : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
+    (hst : ∀ j, Ξs' j ≐ Ξs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) :
-    ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab' j)) →
+    ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs' j)) →
       A ∈ upsilon rhs :=
   fun A B hAB => hJ2 A B (mem_unionAll_filter_of_ctxEq _ hst hAB)
 
@@ -211,14 +211,14 @@ certified by `keptOf_ok`. -/
 /-- The old `⋈^∨`/`⋈^◯` conclusion context sits inside the new
 canonical one. -/
 theorem joinOr_ctx_sub {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {kept : List Form}
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
-      (thPool th) kept) :
-    joinCtxOrVBase stab th ++ kept ⊆
-      joinCtxOrVBase stab' th' ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab' th') (thPool th') := by
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase Ξs Θs)
+      (thPool Θs) kept) :
+    joinCtxOrVBase Ξs Θs ++ kept ⊆
+      joinCtxOrVBase Ξs' Θs' ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs' Θs') (thPool Θs') := by
   intro x hx
   rcases List.mem_append.mp hx with h | h
   · exact List.mem_append_left _
@@ -233,22 +233,22 @@ to stored subsumers re-fires the join at the canonical kept chain; the
 conclusion context contains the old one (`joinOr_ctx_sub`), so the new
 row subsumes the old (`barren` tag and goal unchanged). -/
 def joinCirc_mono {G : Form} {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {Z : Form} {kept : List Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) A)
-    (hcirc : unionAll (fun j => circPart (stab j)) = [])
-    (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
-      (thPool th) kept)
-    (hZ : RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) Z)
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+      RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) A)
+    (hcirc : unionAll (fun j => circPart (Ξs j)) = [])
+    (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase Ξs Θs)
+      (thPool Θs) kept)
+    (hZ : RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) Z)
     (hgoal : Form.circ Z ∈ sfR G) :
     FRJWr G .barren
-      (joinCtxOrVBase stab' th' ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab' th') (thPool th'))
+      (joinCtxOrVBase Ξs' Θs' ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs' Θs') (thPool Θs'))
       (.circ Z) :=
   have hsub := joinOr_ctx_sub hst hth hkc
   .joinCirc prem'
@@ -265,23 +265,23 @@ def joinCirc_mono {G : Form} {n : Nat}
 /-- **T-B for the barren `⋈^∨`.**  Same shape; the disjunct certificates
 lift by `refAt_mono`, and (J2) stays strict. -/
 def joinOr_mono {G : Form} {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {kept : List Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs)
-    (hcirc : unionAll (fun j => circPart (stab j)) = [])
-    (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase stab th)
-      (thPool th) kept)
-    (hC : RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) C₁ ∧
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++ kept) C₂)
+    (hcirc : unionAll (fun j => circPart (Ξs j)) = [])
+    (hkc : KeptChain (upsilon rhs) (joinCtxOrVBase Ξs Θs)
+      (thPool Θs) kept)
+    (hC : RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) C₁ ∧
+      RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++ kept) C₂)
     (hgoal : Form.or C₁ C₂ ∈ sfR G) :
     FRJWr G .barren
-      (joinCtxOrVBase stab' th' ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab' th') (thPool th'))
+      (joinCtxOrVBase Ξs' Θs' ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs' Θs') (thPool Θs'))
       (.or C₁ C₂) :=
   have hsub := joinOr_ctx_sub hst hth hkc
   .joinOr prem'
@@ -297,14 +297,14 @@ def joinOr_mono {G : Form} {n : Nat}
 /-- The old `⋈^At` conclusion context sits inside the new canonical
 one. -/
 theorem joinAt_ctx_sub {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form} {kept : List Form}
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hkc : KeptChain (upsilon rhs) (joinCtxAtVBase stab th F)
-      (thPool th) kept) :
-    joinCtxAtVBase stab th F ++ kept ⊆
-      joinCtxAtVBase stab' th' F ++
-        keptOf (upsilon rhs) (joinCtxAtVBase stab' th' F) (thPool th') := by
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hkc : KeptChain (upsilon rhs) (joinCtxAtVBase Ξs Θs F)
+      (thPool Θs) kept) :
+    joinCtxAtVBase Ξs Θs F ++ kept ⊆
+      joinCtxAtVBase Ξs' Θs' F ++
+        keptOf (upsilon rhs) (joinCtxAtVBase Ξs' Θs' F) (thPool Θs') := by
   intro x hx
   rcases List.mem_append.mp hx with h | h
   · exact List.mem_append_left _
@@ -315,26 +315,26 @@ theorem joinAt_ctx_sub {n : Nat}
         (thPool_mono hth) hkc x h)
 
 /-- **T-B for the barren `⋈^At`.**  The removed goal atom `F` is fixed,
-so `rm`-monotonicity rides along; `F ∉ Σ^at` transfers across the
+so `rm`-monotonicity rides along; `F ∉ Ξ^at` transfers across the
 `≐`-swap by contraposition.  No `RefAt` certificate needs lifting here
 (strict (J2), no disjunct/body condition), so the old kept chain enters
 only through `joinAt_ctx_sub` on the subsumption side. -/
 def joinAt_mono {G : Form} {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs)
-    (hcirc : unionAll (fun j => circPart (stab j)) = [])
+    (hcirc : unionAll (fun j => circPart (Ξs j)) = [])
     (hF : F.isPrime)
-    (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+    (hFnot : F ∉ unionAll (fun j => atPart (Ξs j)))
     (hgoal : F ∈ sfR G) :
     FRJWr G .barren
-      (joinCtxAtVBase stab' th' F ++
-        keptOf (upsilon rhs) (joinCtxAtVBase stab' th' F) (thPool th'))
+      (joinCtxAtVBase Ξs' Θs' F ++
+        keptOf (upsilon rhs) (joinCtxAtVBase Ξs' Θs' F) (thPool Θs'))
       F :=
   .joinAt prem'
     (hJ1_of_swap hst hth hJ1)
@@ -403,16 +403,16 @@ theorem mem_filter_mono' {l m : List Form} {p q : Form → Bool}
 /-! ## T-B: the structural irregular rules -/
 
 /-- **T-B for `∨ᵢ`.**  The cross conditions and both conclusion zones
-are monotone: `Σ`-zones transfer along `≐`, `Θ`-zones along `⊆` and
+are monotone: `Ξ`-zones transfer along `≐`, `Θ`-zones along `⊆` and
 `cap`-monotonicity. -/
-def orI_mono {G : Form} {St₁ Th₁ St₂ Th₂ St₁' Th₁' St₂' Th₂' : List Form}
+def orI_mono {G : Form} {Ξ₁ Θ₁ Ξ₂ Θ₂ Ξ₁' Θ₁' Ξ₂' Θ₂' : List Form}
     {C₁ C₂ : Form}
-    (d₁ : FRJWi G St₁' Th₁' C₁) (d₂ : FRJWi G St₂' Th₂' C₂)
-    (h₁e : St₁' ≐ St₁) (h₁s : Th₁ ⊆ Th₁')
-    (h₂e : St₂' ≐ St₂) (h₂s : Th₂ ⊆ Th₂')
-    (h₁ : St₁ ⊆ St₂ ++ Th₂) (h₂ : St₂ ⊆ St₁ ++ Th₁)
+    (d₁ : FRJWi G Ξ₁' Θ₁' C₁) (d₂ : FRJWi G Ξ₂' Θ₂' C₂)
+    (h₁e : Ξ₁' ≐ Ξ₁) (h₁s : Θ₁ ⊆ Θ₁')
+    (h₂e : Ξ₂' ≐ Ξ₂) (h₂s : Θ₂ ⊆ Θ₂')
+    (h₁ : Ξ₁ ⊆ Ξ₂ ++ Θ₂) (h₂ : Ξ₂ ⊆ Ξ₁ ++ Θ₁)
     (hgoal : Form.or C₁ C₂ ∈ sfR G) :
-    FRJWi G (St₁' ++ St₂') (cap Th₁' Th₂') (.or C₁ C₂) :=
+    FRJWi G (Ξ₁' ++ Ξ₂') (cap Θ₁' Θ₂') (.or C₁ C₂) :=
   .orI d₁ d₂
     (fun x hx => by
       rcases List.mem_append.mp (h₁ ((h₁e x).mp hx)) with h | h
@@ -425,12 +425,12 @@ def orI_mono {G : Form} {St₁ Th₁ St₂ Th₂ St₁' Th₁' St₂' Th₂' : L
     hgoal (CtxEq.refl _) (CtxEq.refl _)
 
 /-- Subsumption side of `orI_mono`: the old conclusion zones sit inside
-the new ones (`Σ` by `≐`, `Θ` by `⊆`). -/
-theorem orI_mono_sub {St₁ Th₁ St₂ Th₂ St₁' Th₁' St₂' Th₂' St' Th' : List Form}
-    (h₁e : St₁' ≐ St₁) (h₁s : Th₁ ⊆ Th₁')
-    (h₂e : St₂' ≐ St₂) (h₂s : Th₂ ⊆ Th₂')
-    (hSt : St' ≐ St₁ ++ St₂) (hTh : Th' ≐ cap Th₁ Th₂) :
-    St' ≐ St₁' ++ St₂' ∧ Th' ⊆ cap Th₁' Th₂' :=
+the new ones (`Ξ` by `≐`, `Θ` by `⊆`). -/
+theorem orI_mono_sub {Ξ₁ Θ₁ Ξ₂ Θ₂ Ξ₁' Θ₁' Ξ₂' Θ₂' Ξ' Θ' : List Form}
+    (h₁e : Ξ₁' ≐ Ξ₁) (h₁s : Θ₁ ⊆ Θ₁')
+    (h₂e : Ξ₂' ≐ Ξ₂) (h₂s : Θ₂ ⊆ Θ₂')
+    (hSt : Ξ' ≐ Ξ₁ ++ Ξ₂) (hTh : Θ' ≐ cap Θ₁ Θ₂) :
+    Ξ' ≐ Ξ₁' ++ Ξ₂' ∧ Θ' ⊆ cap Θ₁' Θ₂' :=
   ⟨hSt.trans (ctxEq_append h₁e.symm h₂e.symm),
    fun x hx => by
     have h := mem_cap.mp ((hTh x).mp hx)
@@ -442,15 +442,15 @@ combined zone `ΘΛ₂` re-splits by membership in the ORIGINAL `Λ`: the
 `ΘΛ₂`), so the new stable zone is `≐` the old, and the new second zone
 keeps every old `Θ`-member (disjointness sends them to the right side
 of the split). -/
-def impInI_mono {G : Form} {St St₂ Th Lam ThLam ThLam₂ : List Form}
+def impInI_mono {G : Form} {Ξ Ξ₂ Θ Λ ΘΛ ΘΛ₂ : List Form}
     {A B : Form}
-    (d₂ : FRJWi G St₂ ThLam₂ B)
-    (hSt₂ : St₂ ≐ St) (hTL : ThLam ⊆ ThLam₂)
-    (hpre : ThLam ≐ Th ++ Lam)
-    (hA : Clo (St ++ Lam) A) (hgoal : Form.imp A B ∈ sfR G) :
-    FRJWi G (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)))
-      (ThLam₂.filter (fun x => !decide (x ∈ Lam))) (.imp A B) := by
-  have hLamSub : Lam ⊆ ThLam₂ := fun x hx =>
+    (d₂ : FRJWi G Ξ₂ ΘΛ₂ B)
+    (hSt₂ : Ξ₂ ≐ Ξ) (hTL : ΘΛ ⊆ ΘΛ₂)
+    (hpre : ΘΛ ≐ Θ ++ Λ)
+    (hA : Clo (Ξ ++ Λ) A) (hgoal : Form.imp A B ∈ sfR G) :
+    FRJWi G (Ξ₂ ++ ΘΛ₂.filter (fun x => decide (x ∈ Λ)))
+      (ΘΛ₂.filter (fun x => !decide (x ∈ Λ))) (.imp A B) := by
+  have hLamSub : Λ ⊆ ΘΛ₂ := fun x hx =>
     hTL ((hpre x).mpr (List.mem_append_right _ hx))
   refine .impInI d₂ ?_ ?_ ?_ hgoal (CtxEq.refl _) (CtxEq.refl _)
   · -- the split partitions ΘΛ₂
@@ -459,7 +459,7 @@ def impInI_mono {G : Form} {St St₂ Th Lam ThLam ThLam₂ : List Form}
       Bool.not_true, decide_eq_true_eq, decide_eq_false_iff_not]
     constructor
     · intro hx
-      by_cases hL : x ∈ Lam
+      by_cases hL : x ∈ Λ
       · exact Or.inr ⟨hx, hL⟩
       · exact Or.inl ⟨hx, hL⟩
     · rintro (⟨hx, -⟩ | ⟨hx, -⟩) <;> exact hx
@@ -480,21 +480,21 @@ def impInI_mono {G : Form} {St St₂ Th Lam ThLam ThLam₂ : List Form}
 
 /-- Subsumption side of `impInI_mono`: the old conclusion zones sit
 inside the new split. -/
-theorem impInI_mono_sub {St St₂ Th Lam ThLam ThLam₂ St' Th' : List Form}
-    (hSt₂ : St₂ ≐ St) (hTL : ThLam ⊆ ThLam₂)
-    (hpre : ThLam ≐ Th ++ Lam) (hdisj : cap Th Lam = [])
-    (hSt : St' ≐ St ++ Lam) (hTh : Th' ≐ Th) :
-    St' ≐ St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)) ∧
-      Th' ⊆ ThLam₂.filter (fun x => !decide (x ∈ Lam)) := by
-  have hLamSub : Lam ⊆ ThLam₂ := fun x hx =>
+theorem impInI_mono_sub {Ξ Ξ₂ Θ Λ ΘΛ ΘΛ₂ Ξ' Θ' : List Form}
+    (hSt₂ : Ξ₂ ≐ Ξ) (hTL : ΘΛ ⊆ ΘΛ₂)
+    (hpre : ΘΛ ≐ Θ ++ Λ) (hdisj : cap Θ Λ = [])
+    (hSt : Ξ' ≐ Ξ ++ Λ) (hTh : Θ' ≐ Θ) :
+    Ξ' ≐ Ξ₂ ++ ΘΛ₂.filter (fun x => decide (x ∈ Λ)) ∧
+      Θ' ⊆ ΘΛ₂.filter (fun x => !decide (x ∈ Λ)) := by
+  have hLamSub : Λ ⊆ ΘΛ₂ := fun x hx =>
     hTL ((hpre x).mpr (List.mem_append_right _ hx))
   constructor
   · refine hSt.trans (ctxEq_append hSt₂.symm (fun x => ?_))
     simp only [List.mem_filter, decide_eq_true_eq]
     exact ⟨fun hx => ⟨hLamSub hx, hx⟩, fun hx => hx.2⟩
   · intro x hx
-    have hxTh : x ∈ Th := (hTh x).mp hx
-    have hxNotLam : x ∉ Lam := fun hL =>
+    have hxTh : x ∈ Θ := (hTh x).mp hx
+    have hxNotLam : x ∉ Λ := fun hL =>
       absurd (mem_cap.mpr ⟨hxTh, hL⟩) (by simp [hdisj])
     refine List.mem_filter.mpr ⟨hTL ((hpre x).mpr (List.mem_append_left _ hxTh)), ?_⟩
     simpa using hxNotLam
@@ -511,8 +511,8 @@ def maxTh (G : Form) (Γ₂ : List Form) : List Form :=
 
 /-- Any admissible retained zone over a smaller context sits inside the
 maximal one over the larger. -/
-theorem maxTh_sub {G : Form} {Γ Γ₂ Th : List Form} (hΓ : Γ ⊆ Γ₂)
-    (hTh : ∀ X ∈ Th, Clo Γ X ∧ X ∈ gHat G) : Th ⊆ maxTh G Γ₂ :=
+theorem maxTh_sub {G : Form} {Γ Γ₂ Θ : List Form} (hΓ : Γ ⊆ Γ₂)
+    (hTh : ∀ X ∈ Θ, Clo Γ X ∧ X ∈ gHat G) : Θ ⊆ maxTh G Γ₂ :=
   fun X hX => List.mem_filter.mpr
     ⟨(hTh X hX).2, cloB_iff.mpr (clo_mono hΓ (hTh X hX).1)⟩
 
@@ -545,10 +545,10 @@ zone toolkit, and the full conclusion contexts (with their restricted
 
 /-- The full `⋈^At` context is monotone under premise swap. -/
 theorem joinCtxAt_mono {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
-    joinCtxAt stab th rhs F ⊆ joinCtxAt stab' th' rhs F := by
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j) :
+    joinCtxAt Ξs Θs rhs F ⊆ joinCtxAt Ξs' Θs' rhs F := by
   intro x hx
   simp only [joinCtxAt, List.mem_append] at hx ⊢
   rcases hx with ((h | h) | h) | h
@@ -568,10 +568,10 @@ theorem joinCtxAt_mono {n : Nat}
 
 /-- The full `⋈^∨` context is monotone under premise swap. -/
 theorem joinCtxOr_mono {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
-    joinCtxOr stab th rhs ⊆ joinCtxOr stab' th' rhs := by
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j) :
+    joinCtxOr Ξs Θs rhs ⊆ joinCtxOr Ξs' Θs' rhs := by
   intro x hx
   simp only [joinCtxOr, List.mem_append] at hx ⊢
   rcases hx with ((h | h) | h) | h
@@ -590,9 +590,9 @@ theorem joinCtxOr_mono {n : Nat}
 
 /-- The fallible modal component is monotone under premise swap. -/
 theorem joinCtxCircF_mono {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
-    joinCtxCircF stab th ⊆ joinCtxCircF stab' th' := by
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j) :
+    joinCtxCircF Ξs Θs ⊆ joinCtxCircF Ξs' Θs' := by
   intro x hx
   simp only [joinCtxCircF, List.mem_append] at hx ⊢
   rcases hx with h | h
@@ -605,28 +605,28 @@ theorem joinCtxCircF_mono {n : Nat}
 
 /-- **T-B for the fallible `⋈^At`.** -/
 def joinAtF_mono {G : Form} {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs)
     (hF : F.isPrime)
-    (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+    (hFnot : F ∉ unionAll (fun j => atPart (Ξs j)))
     (hgoal : F ∈ sfR G) :
-    FRJWr G .blocked (joinCtxAtF stab' th' rhs F) F :=
+    FRJWr G .blocked (joinCtxAtF Ξs' Θs' rhs F) F :=
   .joinAtF prem' (hJ1_of_swap hst hth hJ1) (hJ2_strict_of_swap hst hJ2)
     hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ hst hmem))
     hgoal (CtxEq.refl _)
 
 /-- Subsumption side of `joinAtF_mono`. -/
 theorem joinCtxAtF_mono {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
-    joinCtxAtF stab th rhs F ⊆ joinCtxAtF stab' th' rhs F := by
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j) :
+    joinCtxAtF Ξs Θs rhs F ⊆ joinCtxAtF Ξs' Θs' rhs F := by
   intro x hx
   rcases List.mem_append.mp hx with h | h
   · exact List.mem_append_left _ (joinCtxAt_mono hst hth h)
@@ -634,26 +634,26 @@ theorem joinCtxAtF_mono {n : Nat}
 
 /-- **T-B for the fallible `⋈^∨`.** -/
 def joinOrF_mono {G : Form} {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs)
     (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
     (hgoal : Form.or C₁ C₂ ∈ sfR G) :
-    FRJWr G .blocked (joinCtxOrF stab' th' rhs) (.or C₁ C₂) :=
+    FRJWr G .blocked (joinCtxOrF Ξs' Θs' rhs) (.or C₁ C₂) :=
   .joinOrF prem' (hJ1_of_swap hst hth hJ1) (hJ2_strict_of_swap hst hJ2)
     hC hgoal (CtxEq.refl _)
 
 /-- Subsumption side of `joinOrF_mono`. -/
 theorem joinCtxOrF_mono {n : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j) :
-    joinCtxOrF stab th rhs ⊆ joinCtxOrF stab' th' rhs := by
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j) :
+    joinCtxOrF Ξs Θs rhs ⊆ joinCtxOrF Ξs' Θs' rhs := by
   intro x hx
   rcases List.mem_append.mp hx with h | h
   · exact List.mem_append_left _ (joinCtxOr_mono hst hth h)
@@ -698,11 +698,11 @@ theorem cloAllB_mono {k : Nat} {Δs Δs' : Fin (k + 1) → List Form}
 
 /-- The promise modal component is monotone under the double swap. -/
 theorem joinCtxCircP_mono {n k : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {Δs Δs' : Fin (k + 1) → List Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j)
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j)
     (hΔ : ∀ i, Δs i ⊆ Δs' i) :
-    joinCtxCircP stab th Δs ⊆ joinCtxCircP stab' th' Δs' := by
+    joinCtxCircP Ξs Θs Δs ⊆ joinCtxCircP Ξs' Θs' Δs' := by
   intro x hx
   simp only [joinCtxCircP, restrictC, List.mem_append] at hx ⊢
   rcases hx with h | h
@@ -716,12 +716,12 @@ theorem joinCtxCircP_mono {n k : Nat}
 /-- The promise `⋈^At` conclusion context is monotone under the double
 swap. -/
 theorem joinCtxAtP_mono {n k : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form}
     {Δs Δs' : Fin (k + 1) → List Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j)
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j)
     (hΔ : ∀ i, Δs i ⊆ Δs' i) :
-    joinCtxAtP stab th rhs F Δs ⊆ joinCtxAtP stab' th' rhs F Δs' := by
+    joinCtxAtP Ξs Θs rhs F Δs ⊆ joinCtxAtP Ξs' Θs' rhs F Δs' := by
   simp only [joinCtxAtP, restrictP]
   refine mem_filter_mono' (fun y hy => ?_) (cloAllB_mono hΔ)
   rcases List.mem_append.mp hy with h | h
@@ -731,12 +731,12 @@ theorem joinCtxAtP_mono {n k : Nat}
 /-- The promise `⋈^∨` conclusion context is monotone under the double
 swap. -/
 theorem joinCtxOrP_mono {n k : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form}
     {Δs Δs' : Fin (k + 1) → List Form}
-    (hst : ∀ j, stab j ≐ stab' j) (hth : ∀ j, th j ⊆ th' j)
+    (hst : ∀ j, Ξs j ≐ Ξs' j) (hth : ∀ j, Θs j ⊆ Θs' j)
     (hΔ : ∀ i, Δs i ⊆ Δs' i) :
-    joinCtxOrP stab th rhs Δs ⊆ joinCtxOrP stab' th' rhs Δs' := by
+    joinCtxOrP Ξs Θs rhs Δs ⊆ joinCtxOrP Ξs' Θs' rhs Δs' := by
   simp only [joinCtxOrP, restrictP]
   refine mem_filter_mono' (fun y hy => ?_) (cloAllB_mono hΔ)
   rcases List.mem_append.mp hy with h | h
@@ -745,13 +745,13 @@ theorem joinCtxOrP_mono {n k : Nat}
 
 /-- (J5) transfers to the double swap. -/
 theorem hJ5_of_swap {n k : Nat}
-    {stab stab' : Fin (n + 1) → List Form}
+    {Ξs Ξs' : Fin (n + 1) → List Form}
     {Δs Δs' : Fin (k + 1) → List Form}
-    (hst : ∀ j, stab' j ≐ stab j) (hΔ : ∀ i, Δs i ⊆ Δs' i)
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hΔ : ∀ i, Δs i ⊆ Δs' i)
     (hJ5 : ∀ Y : Form,
-      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) :
-    ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab' j)) →
+    ∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs' j)) →
       ∃ i, Clo (Δs' i) Y := by
   intro Y hY
   obtain ⟨i, hi⟩ := hJ5 Y (mem_unionAll_filter_of_ctxEq _ hst hY)
@@ -759,40 +759,40 @@ theorem hJ5_of_swap {n k : Nat}
 
 /-- (J7) transfers to the double swap. -/
 theorem hJ7s_of_swap {n k : Nat}
-    {stab stab' : Fin (n + 1) → List Form}
+    {Ξs Ξs' : Fin (n + 1) → List Form}
     {Δs Δs' : Fin (k + 1) → List Form}
-    (hst : ∀ j, stab' j ≐ stab j) (hΔ : ∀ i, Δs i ⊆ Δs' i)
-    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) :
-    ∀ i j, ∀ X ∈ stab' j, Clo (Δs' i) X :=
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hΔ : ∀ i, Δs i ⊆ Δs' i)
+    (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) :
+    ∀ i j, ∀ X ∈ Ξs' j, Clo (Δs' i) X :=
   fun i j X hX => clo_mono (hΔ i) (hJ7s i j X ((hst j X).mp hX))
 
 /-- **T-B for the promise `⋈^At`.**  The conclusion keeps its tag `t'`;
 the blocked branch needs nothing, the chain branch sends each
 component's pledge through `pledge_of_le`. -/
 def joinAtP_mono {G : Form} {n k : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {F : Form} {t' : Tag}
     {tps tps' : Fin (k + 1) → Tag} {Δs Δs' : Fin (k + 1) → List Form}
     {Ds : Fin (k + 1) → Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
     (dps' : ∀ i, FRJWr G (tps' i) (Δs' i) (Ds i))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
     (hΔ : ∀ i, Δs i ⊆ Δs' i)
     (hlep : ∀ i, tagLeB (tps i) (tps' i) = true)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs)
     (hJ5 : ∀ Y : Form,
-      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y)
-    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+    (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X)
     (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
     (hF : F.isPrime)
-    (hFnot : F ∉ unionAll (fun j => atPart (stab j)))
+    (hFnot : F ∉ unionAll (fun j => atPart (Ξs j)))
     (hgoal : F ∈ sfR G) :
-    FRJWr G t' (joinCtxAtP stab' th' rhs F Δs') F :=
+    FRJWr G t' (joinCtxAtP Ξs' Θs' rhs F Δs') F :=
   .joinAtP prem' dps' (hJ1_of_swap hst hth hJ1)
     (hJ2_strict_of_swap hst hJ2)
     (hJ5_of_swap hst hΔ hJ5) (hJ7s_of_swap hst hΔ hJ7s)
@@ -804,28 +804,28 @@ def joinAtP_mono {G : Form} {n k : Nat}
 
 /-- **T-B for the promise `⋈^∨`.** -/
 def joinOrP_mono {G : Form} {n k : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {t' : Tag}
     {tps tps' : Fin (k + 1) → Tag} {Δs Δs' : Fin (k + 1) → List Form}
     {Ds : Fin (k + 1) → Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
     (dps' : ∀ i, FRJWr G (tps' i) (Δs' i) (Ds i))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
     (hΔ : ∀ i, Δs i ⊆ Δs' i)
     (hlep : ∀ i, tagLeB (tps i) (tps' i) = true)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs)
     (hJ5 : ∀ Y : Form,
-      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y)
-    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+    (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X)
     (htag : t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0))))
     (hC : C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs)
     (hgoal : Form.or C₁ C₂ ∈ sfR G) :
-    FRJWr G t' (joinCtxOrP stab' th' rhs Δs') (.or C₁ C₂) :=
+    FRJWr G t' (joinCtxOrP Ξs' Θs' rhs Δs') (.or C₁ C₂) :=
   .joinOrP prem' dps' (hJ1_of_swap hst hth hJ1)
     (hJ2_strict_of_swap hst hJ2)
     (hJ5_of_swap hst hΔ hJ5) (hJ7s_of_swap hst hΔ hJ7s)
@@ -838,28 +838,28 @@ def joinOrP_mono {G : Form} {n k : Nat}
 forced by the rule and shared by old and new, so subsumption closes at
 equal pledge. -/
 def joinCircP_mono {G : Form} {n k : Nat}
-    {stab th stab' th' : Fin (n + 1) → List Form}
+    {Ξs Θs Ξs' Θs' : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {Z : Form}
     {tps tps' : Fin (k + 1) → Tag} {Δs Δs' : Fin (k + 1) → List Form}
     {Ds : Fin (k + 1) → Form}
-    (prem' : ∀ j, FRJWi G (stab' j) (th' j) (rhs j))
+    (prem' : ∀ j, FRJWi G (Ξs' j) (Θs' j) (rhs j))
     (dps' : ∀ i, FRJWr G (tps' i) (Δs' i) (Ds i))
-    (hst : ∀ j, stab' j ≐ stab j) (hth : ∀ j, th j ⊆ th' j)
+    (hst : ∀ j, Ξs' j ≐ Ξs j) (hth : ∀ j, Θs j ⊆ Θs' j)
     (hΔ : ∀ i, Δs i ⊆ Δs' i)
     (hlep : ∀ i, tagLeB (tps i) (tps' i) = true)
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j)
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j)
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs)
     (hJ5 : ∀ Y : Form,
-      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y)
-    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X)
+    (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X)
     (hDs : ∀ i, Ds i = Z ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z))
     (hZ : Z ∈ upsilon rhs)
     (hgoal : Form.circ Z ∈ sfR G) :
-    FRJWr G (.chain Z) (joinCtxOrP stab' th' rhs Δs') (.circ Z) :=
+    FRJWr G (.chain Z) (joinCtxOrP Ξs' Θs' rhs Δs') (.circ Z) :=
   .joinCircP prem' dps' (hJ1_of_swap hst hth hJ1)
     (hJ2_strict_of_swap hst hJ2)
     (hJ5_of_swap hst hΔ hJ5) (hJ7s_of_swap hst hΔ hJ7s)
@@ -894,8 +894,8 @@ theorem goalWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
 
 /-- Every derivable irregular goal is a right signed subformula (`lift`
 inherits it from its regular premise — the one rule with no `hgoal`). -/
-theorem goalWi {G : Form} : ∀ {St Th : List Form} {C : Form},
-    FRJWi G St Th C → C ∈ sfR G
+theorem goalWi {G : Form} : ∀ {Ξ Θ : List Form} {C : Form},
+    FRJWi G Ξ Θ C → C ∈ sfR G
   | _, _, _, .axI _ _ hg _ => hg
   | _, _, _, .andI1 _ hg => hg
   | _, _, _, .andI2 _ hg => hg
@@ -946,7 +946,7 @@ namespace Gbu.W
 /-- The derivation of a database sequent, as data. -/
 def WDer (G : Form) : WSeq → Type
   | .reg t Γ C => FRJWr G t Γ C
-  | .irr St Th C => FRJWi G St Th C
+  | .irr Ξ Θ C => FRJWi G Ξ Θ C
 
 /-- A stored row: the sequent with its derivation. -/
 structure WRow (G : Form) where
@@ -982,13 +982,13 @@ theorem wSubsumes_trans {s₁ s₂ s₃ : WSeq} (h₁ : WSubsumes s₁ s₂)
               exact ⟨e₁.trans e₂, tagLeB_trans l₁ l₂, fun _ hx => g₂ (g₁ hx)⟩
           | irr _ _ _ => exact h₂.elim
       | irr _ _ _ => exact h₁.elim
-  | irr St₁ Th₁ C₁ =>
+  | irr Ξ₁ Θ₁ C₁ =>
       cases s₂ with
       | reg _ _ _ => exact h₁.elim
-      | irr St₂ Th₂ C₂ =>
+      | irr Ξ₂ Θ₂ C₂ =>
           cases s₃ with
           | reg _ _ _ => exact h₂.elim
-          | irr St₃ Th₃ C₃ =>
+          | irr Ξ₃ Θ₃ C₃ =>
               obtain ⟨e₁, q₁, g₁⟩ := h₁
               obtain ⟨e₂, q₂, g₂⟩ := h₂
               exact ⟨e₁.trans e₂, q₁.trans q₂, fun _ hx => g₂ (g₁ hx)⟩
@@ -1000,21 +1000,21 @@ def decWEvalI (rows : List WSeq) (Ω : List Form) (C : Form) :
     Decidable (WEvalI (· ∈ rows) Ω C) :=
   decidable_of_iff (rows.any (fun s =>
       match s with
-      | .irr St Th C' =>
-          decide (C' = C) && subB St Ω && subB Ω (St ++ Th)
+      | .irr Ξ Θ C' =>
+          decide (C' = C) && subB Ξ Ω && subB Ω (Ξ ++ Θ)
       | _ => false) = true) (by
     simp only [List.any_eq_true]
     constructor
     · rintro ⟨s, hs, hp⟩
       match s, hp with
-      | .irr St Th C', hp =>
+      | .irr Ξ Θ C', hp =>
           simp only [Bool.and_eq_true, decide_eq_true_eq, subB,
             List.all_eq_true, decide_eq_true_eq] at hp
           obtain ⟨⟨hC, hSt⟩, hΩ⟩ := hp
           subst hC
-          exact ⟨St, Th, hs, fun x hx => hSt x hx, fun x hx => hΩ x hx⟩
-    · rintro ⟨St, Th, hmem, hSt, hΩ⟩
-      refine ⟨.irr St Th C, hmem, ?_⟩
+          exact ⟨Ξ, Θ, hs, fun x hx => hSt x hx, fun x hx => hΩ x hx⟩
+    · rintro ⟨Ξ, Θ, hmem, hSt, hΩ⟩
+      refine ⟨.irr Ξ Θ C, hmem, ?_⟩
       simp only [Bool.and_eq_true, decide_eq_true_eq, subB,
         List.all_eq_true, decide_eq_true_eq]
       exact ⟨⟨trivial, fun x hx => hSt hx⟩, fun x hx => hΩ hx⟩)
@@ -1105,8 +1105,8 @@ decidable subsumption test skolemises. -/
 def subsumesB : WSeq → WSeq → Bool
   | .reg t₁ Γ₁ C₁, .reg t₂ Γ₂ C₂ =>
       decide (C₁ = C₂) && tagLeB t₁ t₂ && subB Γ₁ Γ₂
-  | .irr St₁ Th₁ C₁, .irr St₂ Th₂ C₂ =>
-      decide (C₁ = C₂) && subB St₁ St₂ && subB St₂ St₁ && subB Th₁ Th₂
+  | .irr Ξ₁ Θ₁ C₁, .irr Ξ₂ Θ₂ C₂ =>
+      decide (C₁ = C₂) && subB Ξ₁ Ξ₂ && subB Ξ₂ Ξ₁ && subB Θ₁ Θ₂
   | _, _ => false
 
 theorem subsumesB_iff : ∀ {s₁ s₂ : WSeq},
@@ -1126,12 +1126,12 @@ theorem subsumesB_iff : ∀ {s₁ s₂ : WSeq},
       | irr _ _ _ =>
           simp only [subsumesB, WSubsumes]
           exact ⟨fun h => Bool.noConfusion h, False.elim⟩
-  | irr St₁ Th₁ C₁ =>
+  | irr Ξ₁ Θ₁ C₁ =>
       cases s₂ with
       | reg _ _ _ =>
           simp only [subsumesB, WSubsumes]
           exact ⟨fun h => Bool.noConfusion h, False.elim⟩
-      | irr St₂ Th₂ C₂ =>
+      | irr Ξ₂ Θ₂ C₂ =>
           simp only [subsumesB, WSubsumes, Bool.and_eq_true,
             decide_eq_true_eq, subB, List.all_eq_true, decide_eq_true_eq]
           constructor
@@ -1193,138 +1193,138 @@ structure DBClosed (G : Form) (db : List (WRow G)) : Prop where
     (t = .barren ∨ ∃ W, t = .chain W ∧ Covers Γ W Z) →
     Form.circ Z ∈ sfR G →
     ∃ r ∈ db, WSubsumes (.reg t Γ (.circ Z)) r.s
-  joinAt : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+  joinAt : ∀ {n : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (F : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    unionAll (fun j => circPart (stab j)) = [] →
-    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    unionAll (fun j => circPart (Ξs j)) = [] →
+    F.isPrime → F ∉ unionAll (fun j => atPart (Ξs j)) → F ∈ sfR G →
     ∃ r ∈ db, WSubsumes
-      (.reg .barren (joinCtxAtVBase stab th F ++
-        keptOf (upsilon rhs) (joinCtxAtVBase stab th F) (thPool th)) F) r.s
-  joinOr : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+      (.reg .barren (joinCtxAtVBase Ξs Θs F ++
+        keptOf (upsilon rhs) (joinCtxAtVBase Ξs Θs F) (thPool Θs)) F) r.s
+  joinOr : ∀ {n : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    unionAll (fun j => circPart (stab j)) = [] →
-    (RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₁ ∧
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₂) →
+    unionAll (fun j => circPart (Ξs j)) = [] →
+    (RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) C₁ ∧
+      RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) C₂) →
     Form.or C₁ C₂ ∈ sfR G →
     ∃ r ∈ db, WSubsumes
-      (.reg .barren (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+      (.reg .barren (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs))
         (.or C₁ C₂)) r.s
-  joinCirc : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+  joinCirc : ∀ {n : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (Z : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) A) →
-    unionAll (fun j => circPart (stab j)) = [] →
-    RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-      keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) Z →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+      RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) A) →
+    unionAll (fun j => circPart (Ξs j)) = [] →
+    RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+      keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) Z →
     Form.circ Z ∈ sfR G →
     ∃ r ∈ db, WSubsumes
-      (.reg .barren (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+      (.reg .barren (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs))
         (.circ Z)) r.s
-  joinAtP : ∀ {n k : Nat} (stab th : Fin (n + 1) → List Form)
+  joinAtP : ∀ {n k : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (F : Form) (t' : Tag)
     (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form)
     (Ds : Fin (k + 1) → Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
     (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) →
-    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
     (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
-    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
-    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxAtP stab th rhs F Δs) F) r.s
-  joinOrP : ∀ {n k : Nat} (stab th : Fin (n + 1) → List Form)
+    F.isPrime → F ∉ unionAll (fun j => atPart (Ξs j)) → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxAtP Ξs Θs rhs F Δs) F) r.s
+  joinOrP : ∀ {n k : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form) (t' : Tag)
     (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form)
     (Ds : Fin (k + 1) → Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
     (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) →
-    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
     (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
     (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
     Form.or C₁ C₂ ∈ sfR G →
-    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxOrP stab th rhs Δs) (.or C₁ C₂)) r.s
-  joinCircP : ∀ {n k : Nat} (stab th : Fin (n + 1) → List Form)
+    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxOrP Ξs Θs rhs Δs) (.or C₁ C₂)) r.s
+  joinCircP : ∀ {n k : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (Z : Form)
     (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form)
     (Ds : Fin (k + 1) → Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
     (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) →
-    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
     (∀ i, Ds i = Z ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z)) →
     Z ∈ upsilon rhs → Form.circ Z ∈ sfR G →
     ∃ r ∈ db, WSubsumes
-      (.reg (.chain Z) (joinCtxOrP stab th rhs Δs) (.circ Z)) r.s
-  joinAtF : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+      (.reg (.chain Z) (joinCtxOrP Ξs Θs rhs Δs) (.circ Z)) r.s
+  joinAtF : ∀ {n : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (F : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
-    ∃ r ∈ db, WSubsumes (.reg .blocked (joinCtxAtF stab th rhs F) F) r.s
-  joinOrF : ∀ {n : Nat} (stab th : Fin (n + 1) → List Form)
+    F.isPrime → F ∉ unionAll (fun j => atPart (Ξs j)) → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg .blocked (joinCtxAtF Ξs Θs rhs F) F) r.s
+  joinOrF : ∀ {n : Nat} (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
     (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
     Form.or C₁ C₂ ∈ sfR G →
     ∃ r ∈ db, WSubsumes
-      (.reg .blocked (joinCtxOrF stab th rhs) (.or C₁ C₂)) r.s
+      (.reg .blocked (joinCtxOrF Ξs Θs rhs) (.or C₁ C₂)) r.s
   axI : ∀ F : Form, F.isPrime → F ∈ sfR G →
     ∃ r ∈ db, WSubsumes
       (.irr [] (rm (gAt G) F ++ gImp G ++ gCirc G) F) r.s
-  andI1 : ∀ (St Th : List Form) (A₁ A₂ : Form),
-    (WSeq.irr St Th A₁) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
-    ∃ r ∈ db, WSubsumes (.irr St Th (.and A₁ A₂)) r.s
-  andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
-    (WSeq.irr St Th A₂) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
-    ∃ r ∈ db, WSubsumes (.irr St Th (.and A₁ A₂)) r.s
-  orI : ∀ (St₁ Th₁ St₂ Th₂ : List Form) (C₁ C₂ : Form),
-    (WSeq.irr St₁ Th₁ C₁) ∈ db.map (·.s) →
-    (WSeq.irr St₂ Th₂ C₂) ∈ db.map (·.s) →
-    St₁ ⊆ St₂ ++ Th₂ → St₂ ⊆ St₁ ++ Th₁ →
+  andI1 : ∀ (Ξ Θ : List Form) (A₁ A₂ : Form),
+    (WSeq.irr Ξ Θ A₁) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.irr Ξ Θ (.and A₁ A₂)) r.s
+  andI2 : ∀ (Ξ Θ : List Form) (A₁ A₂ : Form),
+    (WSeq.irr Ξ Θ A₂) ∈ db.map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.irr Ξ Θ (.and A₁ A₂)) r.s
+  orI : ∀ (Ξ₁ Θ₁ Ξ₂ Θ₂ : List Form) (C₁ C₂ : Form),
+    (WSeq.irr Ξ₁ Θ₁ C₁) ∈ db.map (·.s) →
+    (WSeq.irr Ξ₂ Θ₂ C₂) ∈ db.map (·.s) →
+    Ξ₁ ⊆ Ξ₂ ++ Θ₂ → Ξ₂ ⊆ Ξ₁ ++ Θ₁ →
     Form.or C₁ C₂ ∈ sfR G →
-    ∃ r ∈ db, WSubsumes (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂)) r.s
-  impInI : ∀ (St₂ ThLam₂ Lam : List Form) (A B : Form),
-    (WSeq.irr St₂ ThLam₂ B) ∈ db.map (·.s) →
-    Clo (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam))) A →
+    ∃ r ∈ db, WSubsumes (.irr (Ξ₁ ++ Ξ₂) (cap Θ₁ Θ₂) (.or C₁ C₂)) r.s
+  impInI : ∀ (Ξ₂ ΘΛ₂ Λ : List Form) (A B : Form),
+    (WSeq.irr Ξ₂ ΘΛ₂ B) ∈ db.map (·.s) →
+    Clo (Ξ₂ ++ ΘΛ₂.filter (fun x => decide (x ∈ Λ))) A →
     Form.imp A B ∈ sfR G →
     ∃ r ∈ db, WSubsumes
-      (.irr (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)))
-        (ThLam₂.filter (fun x => !decide (x ∈ Lam))) (.imp A B)) r.s
+      (.irr (Ξ₂ ++ ΘΛ₂.filter (fun x => decide (x ∈ Λ)))
+        (ΘΛ₂.filter (fun x => !decide (x ∈ Λ))) (.imp A B)) r.s
   lift : ∀ (t₂ : Tag) (Γ₂ : List Form) (C : Form),
     (WSeq.reg t₂ Γ₂ C) ∈ db.map (·.s) →
     ∃ r ∈ db, WSubsumes (.irr [] (maxTh G Γ₂) C) r.s
@@ -1345,21 +1345,21 @@ def tagOf : WSeq → Tag
 
 def ctxOf : WSeq → List Form
   | .reg _ Γ _ => Γ
-  | .irr St Th _ => St ++ Th
+  | .irr Ξ Θ _ => Ξ ++ Θ
 
 def stabOf : WSeq → List Form
-  | .irr St _ _ => St
+  | .irr Ξ _ _ => Ξ
   | .reg _ Γ _ => Γ
 
 def thOf : WSeq → List Form
-  | .irr _ Th _ => Th
+  | .irr _ Θ _ => Θ
   | .reg _ _ _ => []
 
-theorem irr_shape {St Th : List Form} {C : Form} :
-    ∀ {s : WSeq}, WSubsumes (.irr St Th C) s →
-      s = .irr (stabOf s) (thOf s) C ∧ stabOf s ≐ St ∧ Th ⊆ thOf s
+theorem irr_shape {Ξ Θ : List Form} {C : Form} :
+    ∀ {s : WSeq}, WSubsumes (.irr Ξ Θ C) s →
+      s = .irr (stabOf s) (thOf s) C ∧ stabOf s ≐ Ξ ∧ Θ ⊆ thOf s
   | .reg _ _ _, h => h.elim
-  | .irr St' Th' C', h => by
+  | .irr Ξ' Θ' C', h => by
       obtain ⟨hC, hq, hTh⟩ := h
       subst hC
       exact ⟨rfl, hq.symm, hTh⟩
@@ -1383,24 +1383,24 @@ subsumer; the join clauses need FAMILIES (functions into zones).
 choice. -/
 
 structure IrrPick (G : Form) (db : List (WRow G)) {n : Nat}
-    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) where
-  stab' : Fin (n + 1) → List Form
-  th' : Fin (n + 1) → List Form
-  mem : ∀ j, (WSeq.irr (stab' j) (th' j) (rhs j)) ∈ db.map (·.s)
-  hst : ∀ j, stab' j ≐ stab j
-  hth : ∀ j, th j ⊆ th' j
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) where
+  Ξs' : Fin (n + 1) → List Form
+  Θs' : Fin (n + 1) → List Form
+  mem : ∀ j, (WSeq.irr (Ξs' j) (Θs' j) (rhs j)) ∈ db.map (·.s)
+  hst : ∀ j, Ξs' j ≐ Ξs j
+  hth : ∀ j, Θs j ⊆ Θs' j
 
 def irrPick {G : Form} {db : List (WRow G)} {n : Nat}
-    {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
-    (hex : ∀ j, ∃ r ∈ db, WSubsumes (.irr (stab j) (th j) (rhs j)) r.s) :
-    IrrPick G db stab th rhs :=
-  let pk := fun j => (findSub db (.irr (stab j) (th j) (rhs j))).get
+    {Ξs Θs : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
+    (hex : ∀ j, ∃ r ∈ db, WSubsumes (.irr (Ξs j) (Θs j) (rhs j)) r.s) :
+    IrrPick G db Ξs Θs rhs :=
+  let pk := fun j => (findSub db (.irr (Ξs j) (Θs j) (rhs j))).get
     (findSub_isSome_of_exists (hex j))
-  have hfs : ∀ j, findSub db (.irr (stab j) (th j) (rhs j)) = some (pk j) :=
+  have hfs : ∀ j, findSub db (.irr (Ξs j) (Θs j) (rhs j)) = some (pk j) :=
     fun j => (Option.some_get _).symm
   have hshape := fun j => irr_shape (findSub_sub (hfs j))
-  { stab' := fun j => stabOf (pk j).s
-    th' := fun j => thOf (pk j).s
+  { Ξs' := fun j => stabOf (pk j).s
+    Θs' := fun j => thOf (pk j).s
     mem := fun j => by
       rw [← (hshape j).1]
       exact List.mem_map.mpr ⟨pk j, findSub_mem (hfs j), rfl⟩
@@ -1440,9 +1440,9 @@ theorem wSubsumes_reg {t₁ t₂ : Tag} {Γ₁ Γ₂ : List Form} {C : Form}
     (hle : tagLeB t₁ t₂ = true) (hΓ : Γ₁ ⊆ Γ₂) :
     WSubsumes (.reg t₁ Γ₁ C) (.reg t₂ Γ₂ C) := ⟨rfl, hle, hΓ⟩
 
-theorem wSubsumes_irr {St₁ St₂ Th₁ Th₂ : List Form} {C : Form}
-    (hq : St₁ ≐ St₂) (hTh : Th₁ ⊆ Th₂) :
-    WSubsumes (.irr St₁ Th₁ C) (.irr St₂ Th₂ C) := ⟨rfl, hq, hTh⟩
+theorem wSubsumes_irr {Ξ₁ Ξ₂ Θ₁ Θ₂ : List Form} {C : Form}
+    (hq : Ξ₁ ≐ Ξ₂) (hTh : Θ₁ ⊆ Θ₂) :
+    WSubsumes (.irr Ξ₁ Θ₁ C) (.irr Ξ₂ Θ₂ C) := ⟨rfl, hq, hTh⟩
 
 /-! ### The two halves of a T-C case: ascent to the stored premise a
 `DBClosed` clause consumes (`regUp`/`irrUp`), descent from that clause's
@@ -1460,11 +1460,11 @@ private theorem regUp {G : Form} {db : List (WRow G)} {t : Tag}
   exact ⟨tagOf r.s, ctxOf r.s,
     by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩, hle, hΓ⟩
 
-/-- Ascent, irregular stratum: `Σ` moves by `≐`, `Θ` by `⊆`. -/
-private theorem irrUp {G : Form} {db : List (WRow G)} {St Th : List Form}
-    {C : Form} (h : ∃ r ∈ db, WSubsumes (.irr St Th C) r.s) :
-    ∃ St' Th', (WSeq.irr St' Th' C) ∈ db.map (·.s) ∧ St' ≐ St ∧
-      Th ⊆ Th' := by
+/-- Ascent, irregular stratum: `Ξ` moves by `≐`, `Θ` by `⊆`. -/
+private theorem irrUp {G : Form} {db : List (WRow G)} {Ξ Θ : List Form}
+    {C : Form} (h : ∃ r ∈ db, WSubsumes (.irr Ξ Θ C) r.s) :
+    ∃ Ξ' Θ', (WSeq.irr Ξ' Θ' C) ∈ db.map (·.s) ∧ Ξ' ≐ Ξ ∧
+      Θ ⊆ Θ' := by
   obtain ⟨r, hr, hsub⟩ := h
   obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
   exact ⟨stabOf r.s, thOf r.s,
@@ -1480,9 +1480,9 @@ private theorem downReg {G : Form} {db : List (WRow G)} {t₁ t₂ : Tag}
 
 /-- Descent, irregular stratum. -/
 private theorem downIrr {G : Form} {db : List (WRow G)}
-    {St₁ St₂ Th₁ Th₂ : List Form} {C : Form} (hq : St₁ ≐ St₂)
-    (hTh : Th₁ ⊆ Th₂) (h : ∃ r ∈ db, WSubsumes (.irr St₂ Th₂ C) r.s) :
-    ∃ r ∈ db, WSubsumes (.irr St₁ Th₁ C) r.s := by
+    {Ξ₁ Ξ₂ Θ₁ Θ₂ : List Form} {C : Form} (hq : Ξ₁ ≐ Ξ₂)
+    (hTh : Θ₁ ⊆ Θ₂) (h : ∃ r ∈ db, WSubsumes (.irr Ξ₂ Θ₂ C) r.s) :
+    ∃ r ∈ db, WSubsumes (.irr Ξ₁ Θ₁ C) r.s := by
   obtain ⟨r, hr, hsub⟩ := h
   exact ⟨r, hr, wSubsumes_trans (wSubsumes_irr hq hTh) hsub⟩
 
@@ -1511,26 +1511,26 @@ theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
       obtain ⟨t', Γ', hmem, hle, hΓ⟩ := regUp (tCr hcl d)
       exact downReg hle hΓ
         (hcl.circIn t' Γ' Z hmem (pledge_of_le hle hΓ htag) hg)
-  | _, _, _, .joinAt (stab := stab) (th := th) (rhs := rhs) (F := F)
+  | _, _, _, .joinAt (Ξs := Ξs) (Θs := Θs) (rhs := rhs) (F := F)
       (kept := kept) prem hJ1 hJ2 hcirc hkc hF hFnot hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx := joinAt_ctx_sub pk.hst pk.hth hkc
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinAt pk.stab' pk.th' rhs F pk.mem
+        (hcl.joinAt pk.Ξs' pk.Θs' rhs F pk.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (hJ2_strict_of_swap pk.hst hJ2)
           (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
           hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg)
-  | _, _, _, .joinAtP (stab := stab) (th := th) (rhs := rhs) (F := F)
+  | _, _, _, .joinAtP (Ξs := Ξs) (Θs := Θs) (rhs := rhs) (F := F)
       (t' := t') (tps := tps) (Δs := Δs) (Ds := Ds)
       prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       let rp := regPick (fun i => tCr hcl (dps i))
-      have hsubctx : joinCtxAtP stab th rhs F Δs ⊆
-          joinCtxAtP pk.stab' pk.th' rhs F rp.Δs' :=
+      have hsubctx : joinCtxAtP Ξs Θs rhs F Δs ⊆
+          joinCtxAtP pk.Ξs' pk.Θs' rhs F rp.Δs' :=
         joinCtxAtP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinAtP pk.stab' pk.th' rhs F t'
+        (hcl.joinAtP pk.Ξs' pk.Θs' rhs F t'
           rp.tps' rp.Δs' Ds pk.mem rp.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (hJ2_strict_of_swap pk.hst hJ2)
@@ -1539,39 +1539,39 @@ theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
           (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
             pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
           hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg)
-  | _, _, _, .joinAtF (stab := stab) (th := th) (rhs := rhs) (F := F)
+  | _, _, _, .joinAtF (Ξs := Ξs) (Θs := Θs) (rhs := rhs) (F := F)
       prem hJ1 hJ2 hF hFnot hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
-      have hsubctx : joinCtxAtF stab th rhs F ⊆
-          joinCtxAtF pk.stab' pk.th' rhs F :=
+      have hsubctx : joinCtxAtF Ξs Θs rhs F ⊆
+          joinCtxAtF pk.Ξs' pk.Θs' rhs F :=
         joinCtxAtF_mono (fun j => (pk.hst j).symm) pk.hth
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinAtF pk.stab' pk.th' rhs F pk.mem
+        (hcl.joinAtF pk.Ξs' pk.Θs' rhs F pk.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (hJ2_strict_of_swap pk.hst hJ2)
           hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg)
-  | _, _, _, .joinOr (stab := stab) (th := th) (rhs := rhs)
+  | _, _, _, .joinOr (Ξs := Ξs) (Θs := Θs) (rhs := rhs)
       (C₁ := C₁) (C₂ := C₂) (kept := kept)
       prem hJ1 hJ2 hcirc hkc hC hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx := joinOr_ctx_sub pk.hst pk.hth hkc
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinOr pk.stab' pk.th' rhs C₁ C₂ pk.mem
+        (hcl.joinOr pk.Ξs' pk.Θs' rhs C₁ C₂ pk.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (hJ2_strict_of_swap pk.hst hJ2)
           (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
           ⟨refAt_mono (fun _ h => h) hsubctx hC.1,
            refAt_mono (fun _ h => h) hsubctx hC.2⟩ hg)
-  | _, _, _, .joinOrP (stab := stab) (th := th) (rhs := rhs)
+  | _, _, _, .joinOrP (Ξs := Ξs) (Θs := Θs) (rhs := rhs)
       (C₁ := C₁) (C₂ := C₂) (t' := t') (tps := tps) (Δs := Δs) (Ds := Ds)
       prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       let rp := regPick (fun i => tCr hcl (dps i))
-      have hsubctx : joinCtxOrP stab th rhs Δs ⊆
-          joinCtxOrP pk.stab' pk.th' rhs rp.Δs' :=
+      have hsubctx : joinCtxOrP Ξs Θs rhs Δs ⊆
+          joinCtxOrP pk.Ξs' pk.Θs' rhs rp.Δs' :=
         joinCtxOrP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinOrP pk.stab' pk.th' rhs C₁ C₂ t'
+        (hcl.joinOrP pk.Ξs' pk.Θs' rhs C₁ C₂ t'
           rp.tps' rp.Δs' Ds pk.mem rp.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (hJ2_strict_of_swap pk.hst hJ2)
@@ -1580,39 +1580,39 @@ theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
           (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
             pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
           hC hg)
-  | _, _, _, .joinOrF (stab := stab) (th := th) (rhs := rhs)
+  | _, _, _, .joinOrF (Ξs := Ξs) (Θs := Θs) (rhs := rhs)
       (C₁ := C₁) (C₂ := C₂) prem hJ1 hJ2 hC hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
-      have hsubctx : joinCtxOrF stab th rhs ⊆
-          joinCtxOrF pk.stab' pk.th' rhs :=
+      have hsubctx : joinCtxOrF Ξs Θs rhs ⊆
+          joinCtxOrF pk.Ξs' pk.Θs' rhs :=
         joinCtxOrF_mono (fun j => (pk.hst j).symm) pk.hth
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinOrF pk.stab' pk.th' rhs C₁ C₂ pk.mem
+        (hcl.joinOrF pk.Ξs' pk.Θs' rhs C₁ C₂ pk.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (hJ2_strict_of_swap pk.hst hJ2)
           hC hg)
-  | _, _, _, .joinCirc (stab := stab) (th := th) (rhs := rhs) (Z := Z)
+  | _, _, _, .joinCirc (Ξs := Ξs) (Θs := Θs) (rhs := rhs) (Z := Z)
       (kept := kept) prem hJ1 hJ2 hcirc hkc hZ hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx := joinOr_ctx_sub pk.hst pk.hth hkc
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinCirc pk.stab' pk.th' rhs Z pk.mem
+        (hcl.joinCirc pk.Ξs' pk.Θs' rhs Z pk.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (fun A B hAB => refAt_mono (fun _ h => h) hsubctx
             (hJ2 A B (mem_unionAll_filter_of_ctxEq _ pk.hst hAB)))
           (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
           (refAt_mono (fun _ h => h) hsubctx hZ)
           hg)
-  | _, _, _, .joinCircP (stab := stab) (th := th) (rhs := rhs) (Z := Z)
+  | _, _, _, .joinCircP (Ξs := Ξs) (Θs := Θs) (rhs := rhs) (Z := Z)
       (tps := tps) (Δs := Δs) (Ds := Ds)
       prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       let rp := regPick (fun i => tCr hcl (dps i))
-      have hsubctx : joinCtxOrP stab th rhs Δs ⊆
-          joinCtxOrP pk.stab' pk.th' rhs rp.Δs' :=
+      have hsubctx : joinCtxOrP Ξs Θs rhs Δs ⊆
+          joinCtxOrP pk.Ξs' pk.Θs' rhs rp.Δs' :=
         joinCtxOrP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
       exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
-        (hcl.joinCircP pk.stab' pk.th' rhs Z
+        (hcl.joinCircP pk.Ξs' pk.Θs' rhs Z
           rp.tps' rp.Δs' Ds pk.mem rp.mem
           (hJ1_of_swap pk.hst pk.hth hJ1)
           (hJ2_strict_of_swap pk.hst hJ2)
@@ -1623,22 +1623,22 @@ theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
           hZ hg)
 
 theorem tCi {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
-    ∀ {St Th : List Form} {C : Form},
-      FRJWi G St Th C → ∃ r ∈ db, WSubsumes (.irr St Th C) r.s
+    ∀ {Ξ Θ : List Form} {C : Form},
+      FRJWi G Ξ Θ C → ∃ r ∈ db, WSubsumes (.irr Ξ Θ C) r.s
   | _, _, _, .axI F hF hg hTh =>
       downIrr (CtxEq.refl _) hTh.subset (hcl.axI F hF hg)
   | _, _, _, .andI1 (A₁ := A₁) (A₂ := A₂) d hg => by
-      obtain ⟨St', Th', hmem, hst, hth⟩ := irrUp (tCi hcl d)
-      exact downIrr hst.symm hth (hcl.andI1 St' Th' A₁ A₂ hmem hg)
+      obtain ⟨Ξ', Θ', hmem, hst, hth⟩ := irrUp (tCi hcl d)
+      exact downIrr hst.symm hth (hcl.andI1 Ξ' Θ' A₁ A₂ hmem hg)
   | _, _, _, .andI2 (A₁ := A₁) (A₂ := A₂) d hg => by
-      obtain ⟨St', Th', hmem, hst, hth⟩ := irrUp (tCi hcl d)
-      exact downIrr hst.symm hth (hcl.andI2 St' Th' A₁ A₂ hmem hg)
+      obtain ⟨Ξ', Θ', hmem, hst, hth⟩ := irrUp (tCi hcl d)
+      exact downIrr hst.symm hth (hcl.andI2 Ξ' Θ' A₁ A₂ hmem hg)
   | _, _, _, .orI (C₁ := C₁) (C₂ := C₂) d₁ d₂ h₁ h₂ hg hSt hTh => by
-      obtain ⟨St₁', Th₁', hmem₁, hst₁, hth₁⟩ := irrUp (tCi hcl d₁)
-      obtain ⟨St₂', Th₂', hmem₂, hst₂, hth₂⟩ := irrUp (tCi hcl d₂)
+      obtain ⟨Ξ₁', Θ₁', hmem₁, hst₁, hth₁⟩ := irrUp (tCi hcl d₁)
+      obtain ⟨Ξ₂', Θ₂', hmem₂, hst₂, hth₂⟩ := irrUp (tCi hcl d₂)
       have hpair := orI_mono_sub hst₁ hth₁ hst₂ hth₂ hSt hTh
       exact downIrr hpair.1 hpair.2
-        (hcl.orI St₁' Th₁' St₂' Th₂' C₁ C₂ hmem₁ hmem₂
+        (hcl.orI Ξ₁' Θ₁' Ξ₂' Θ₂' C₁ C₂ hmem₁ hmem₂
           (fun x hx => by
             rcases List.mem_append.mp (h₁ ((hst₁ x).mp hx)) with h | h
             · exact List.mem_append_left _ ((hst₂ x).mpr h)
@@ -1648,12 +1648,12 @@ theorem tCi {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
             · exact List.mem_append_left _ ((hst₁ x).mpr h)
             · exact List.mem_append_right _ (hth₁ h))
           hg)
-  | _, _, _, .impInI (Lam := Lam) (A := A) (B := B) d hpre hdisj hA hg
+  | _, _, _, .impInI (Λ := Λ) (A := A) (B := B) d hpre hdisj hA hg
       hSt hTh => by
-      obtain ⟨St', Th', hmem, hst, hth⟩ := irrUp (tCi hcl d)
+      obtain ⟨Ξ', Θ', hmem, hst, hth⟩ := irrUp (tCi hcl d)
       have hpair := impInI_mono_sub hst hth hpre hdisj hSt hTh
       exact downIrr hpair.1 hpair.2
-        (hcl.impInI St' Th' Lam A B hmem
+        (hcl.impInI Ξ' Θ' Λ A B hmem
           (by
             refine clo_mono (fun x hx => ?_) hA
             rcases List.mem_append.mp hx with h | h

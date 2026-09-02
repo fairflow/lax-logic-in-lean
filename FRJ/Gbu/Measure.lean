@@ -433,7 +433,7 @@ theorem not_evalI_circ_of_valid {G : Form} {D : FSeq → Prop}
     (hax : ∀ ats : List Form, classForce ats Z = false →
       ¬ (∀ X ∈ Ω, X ∈ vacZoneA G ats)) :
     ¬ EvalI D Ω (.circ Z) := by
-  rintro ⟨St, Th, hmem, hSt, hΩ⟩
+  rintro ⟨Ξ, Θ, hmem, hSt, hΩ⟩
   obtain ⟨d⟩ := hD _ hmem
   cases d with
   | axI F hF _ _ => exact Bool.noConfusion hF

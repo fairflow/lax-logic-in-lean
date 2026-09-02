@@ -147,8 +147,8 @@ private theorem evalR_ctxEq {D : FSeq → Prop} {Ψ Ψ' : List Form} {C : Form}
 
 private theorem evalI_ctxEq {D : FSeq → Prop} {Ω Ω' : List Form} {C : Form}
     (h : Ω ≐ Ω') (he : EvalI D Ω C) : EvalI D Ω' C := by
-  obtain ⟨St, Th, hm, h1, h2⟩ := he
-  exact ⟨St, Th, hm, fun {x} hx => (h x).mp (h1 hx), fun {x} hx => h2 ((h x).mpr hx)⟩
+  obtain ⟨Ξ, Θ, hm, h1, h2⟩ := he
+  exact ⟨Ξ, Θ, hm, fun {x} hx => (h x).mp (h1 hx), fun {x} hx => h2 ((h x).mpr hx)⟩
 
 /-! ## Size arithmetic -/
 
@@ -206,8 +206,8 @@ theorem evalI_axI {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
     hsat.2 (.irr [] (rm (gAt G) F ++ gImp G ++ gCirc G) F)
       ⟨.axI F hFp hF (CtxEq.refl _)⟩
   match s', hsub with
-  | .irr St' Th' _, ⟨rfl, hSt, hTh⟩ =>
-      refine ⟨St', Th', hs'mem, fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil, ?_⟩
+  | .irr Ξ' Θ' _, ⟨rfl, hSt, hTh⟩ =>
+      refine ⟨Ξ', Θ', hs'mem, fun {x} hx => absurd ((hSt x).mpr hx) List.not_mem_nil, ?_⟩
       intro x hx
       refine List.mem_append_right _ (hTh ?_)
       rcases List.mem_append.mp (hΩ x hx) with h | h
@@ -511,7 +511,7 @@ theorem saturated_fderivable (G : Form) : Saturated G (FDerivable G) := by
   cases s with
   | reg Γ C => exact ⟨rfl, fun {_} h => h⟩
   | regC Γ C => exact ⟨rfl, fun {_} h => h⟩
-  | irr St Th C => exact ⟨rfl, fun _ => Iff.rfl, fun {_} h => h⟩
+  | irr Ξ Θ C => exact ⟨rfl, fun _ => Iff.rfl, fun {_} h => h⟩
 
 /-! ## Theorem 9 (`theo:GBU-FRJ`, source 4320) — the duality
 

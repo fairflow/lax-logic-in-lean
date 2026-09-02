@@ -108,7 +108,7 @@ theorem mem_goalPool {G : Form} {x : Form} : x ∈ goalPool G ↔ x ∈ sfR G :=
 tag and goal untouched. -/
 def canonSeq (G : Form) : WSeq → WSeq
   | .reg t Γ C => .reg t (canonCtx (gPool G) Γ) C
-  | .irr St Th C => .irr (canonCtx (gPool G) St) (canonCtx (gPool G) Th) C
+  | .irr Ξ Θ C => .irr (canonCtx (gPool G) Ξ) (canonCtx (gPool G) Θ) C
 
 /-- The finite wellformed canonical universe. -/
 def univList (G : Form) : List WSeq :=
@@ -116,14 +116,14 @@ def univList (G : Form) : List WSeq :=
       (fun t => (gPool G).sublists.flatMap
         (fun Γ => (goalPool G).map (fun C => WSeq.reg t Γ C))) ++
     (gPool G).sublists.flatMap
-      (fun St => (gPool G).sublists.flatMap
-        (fun Th => (goalPool G).map (fun C => WSeq.irr St Th C)))
+      (fun Ξ => (gPool G).sublists.flatMap
+        (fun Θ => (goalPool G).map (fun C => WSeq.irr Ξ Θ C)))
 
 /-- Wellformedness of a sequent, as the universe needs it. -/
 def WfSeq (G : Form) : WSeq → Prop
   | .reg t Γ C => Γ ⊆ gHat G ∧ C ∈ sfR G ∧
       (t = .barren ∨ t = .blocked ∨ ∃ W, t = .chain W ∧ W ∈ sfR G)
-  | .irr St Th C => St ⊆ gHat G ∧ Th ⊆ gHat G ∧ C ∈ sfR G
+  | .irr Ξ Θ C => Ξ ⊆ gHat G ∧ Θ ⊆ gHat G ∧ C ∈ sfR G
 
 /-- Every stored row is wellformed — from its own derivation. -/
 theorem wfSeq_of_wDer {G : Form} : ∀ {s : WSeq}, WDer G s → WfSeq G s
@@ -146,12 +146,12 @@ theorem canonSeq_mem_univ {G : Form} {s : WSeq} (h : WfSeq G s) :
       · exact Or.inl rfl
       · exact Or.inr (Or.inl rfl)
       · exact Or.inr (Or.inr ⟨W, mem_goalPool.mpr hW, rfl⟩)
-  | irr St Th C =>
+  | irr Ξ Θ C =>
       obtain ⟨hSt, hTh, hC⟩ := h
       simp only [univList, canonSeq, List.mem_append, List.mem_flatMap,
         List.mem_map, List.mem_sublists]
-      exact Or.inr ⟨canonCtx (gPool G) St, canonCtx_sublist,
-        canonCtx (gPool G) Th, canonCtx_sublist,
+      exact Or.inr ⟨canonCtx (gPool G) Ξ, canonCtx_sublist,
+        canonCtx (gPool G) Θ, canonCtx_sublist,
         C, mem_goalPool.mpr hC, rfl⟩
 
 /-- Equal canonical sequents of wellformed rows subsume each other; this
@@ -172,27 +172,27 @@ theorem subsumes_of_canonSeq_eq {G : Form} {s e : WSeq}
           rw [hctx] at h1
           exact (mem_canonCtx.mp h1).2
       | irr _ _ _ => exact absurd h (by simp [canonSeq])
-  | irr St Th C =>
+  | irr Ξ Θ C =>
       cases e with
       | reg _ _ _ => exact absurd h (by simp [canonSeq])
-      | irr St' Th' C' =>
+      | irr Ξ' Θ' C' =>
           simp only [canonSeq, WSeq.irr.injEq] at h
           obtain ⟨hst, hth, rfl⟩ := h
           refine ⟨rfl, ?_, ?_⟩
           · intro x
             constructor
             · intro hx
-              have h1 : x ∈ canonCtx (gPool G) St :=
+              have h1 : x ∈ canonCtx (gPool G) Ξ :=
                 mem_canonCtx.mpr ⟨mem_gPool.mpr (hs.1 hx), hx⟩
               rw [hst] at h1
               exact (mem_canonCtx.mp h1).2
             · intro hx
-              have h1 : x ∈ canonCtx (gPool G) St' :=
+              have h1 : x ∈ canonCtx (gPool G) Ξ' :=
                 mem_canonCtx.mpr ⟨mem_gPool.mpr (he.1 hx), hx⟩
               rw [← hst] at h1
               exact (mem_canonCtx.mp h1).2
           · intro x hx
-            have h1 : x ∈ canonCtx (gPool G) Th :=
+            have h1 : x ∈ canonCtx (gPool G) Θ :=
               mem_canonCtx.mpr ⟨mem_gPool.mpr (hs.2.1 hx), hx⟩
             rw [hth] at h1
             exact (mem_canonCtx.mp h1).2
@@ -211,11 +211,11 @@ theorem mem_upsilon {n : Nat} {rhs : Fin (n + 1) → Form} {x : Form} :
   simp [upsilon, List.mem_map, List.mem_finRange]
 
 /-- Two irregular families listing the same row set. -/
-def SameIrr {n m : Nat} (stab th : Fin (n + 1) → List Form)
-    (rhs : Fin (n + 1) → Form) (stab' th' : Fin (m + 1) → List Form)
+def SameIrr {n m : Nat} (Ξs Θs : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) (Ξs' Θs' : Fin (m + 1) → List Form)
     (rhs' : Fin (m + 1) → Form) : Prop :=
-  (∀ j, ∃ i, stab' i = stab j ∧ th' i = th j ∧ rhs' i = rhs j) ∧
-  (∀ i, ∃ j, stab' i = stab j ∧ th' i = th j ∧ rhs' i = rhs j)
+  (∀ j, ∃ i, Ξs' i = Ξs j ∧ Θs' i = Θs j ∧ rhs' i = rhs j) ∧
+  (∀ i, ∃ j, Ξs' i = Ξs j ∧ Θs' i = Θs j ∧ rhs' i = rhs j)
 
 /-- Two regular (promise) families listing the same row set. -/
 def SameReg {k m : Nat} (tps : Fin (k + 1) → Tag)
@@ -227,14 +227,14 @@ def SameReg {k m : Nat} (tps : Fin (k + 1) → Tag)
 
 section Reindex
 
-variable {n m : Nat} {stab th : Fin (n + 1) → List Form}
-  {rhs : Fin (n + 1) → Form} {stab' th' : Fin (m + 1) → List Form}
+variable {n m : Nat} {Ξs Θs : Fin (n + 1) → List Form}
+  {rhs : Fin (n + 1) → Form} {Ξs' Θs' : Fin (m + 1) → List Form}
   {rhs' : Fin (m + 1) → Form}
 
-theorem SameIrr.unionAll_filter (h : SameIrr stab th rhs stab' th' rhs')
+theorem SameIrr.unionAll_filter (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (P : Form → Bool) :
-    (unionAll fun j => (stab j).filter P) ≐
-      (unionAll fun i => (stab' i).filter P) := by
+    (unionAll fun j => (Ξs j).filter P) ≐
+      (unionAll fun i => (Ξs' i).filter P) := by
   intro x
   simp only [mem_unionAll]
   constructor
@@ -245,10 +245,10 @@ theorem SameIrr.unionAll_filter (h : SameIrr stab th rhs stab' th' rhs')
     obtain ⟨j, hj, -, -⟩ := h.2 i
     exact ⟨j, hj ▸ hi⟩
 
-theorem SameIrr.interAll_filter (h : SameIrr stab th rhs stab' th' rhs')
+theorem SameIrr.interAll_filter (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (P : Form → Bool) :
-    (interAll fun j => (th j).filter P) ≐
-      (interAll fun i => (th' i).filter P) := by
+    (interAll fun j => (Θs j).filter P) ≐
+      (interAll fun i => (Θs' i).filter P) := by
   intro x
   simp only [mem_interAll]
   constructor
@@ -259,8 +259,8 @@ theorem SameIrr.interAll_filter (h : SameIrr stab th rhs stab' th' rhs')
     obtain ⟨i, -, hi, -⟩ := h.1 j
     exact hi ▸ hall i
 
-theorem SameIrr.interAll_th (h : SameIrr stab th rhs stab' th' rhs') :
-    interAll th ≐ interAll th' := by
+theorem SameIrr.interAll_th (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
+    interAll Θs ≐ interAll Θs' := by
   intro x
   simp only [mem_interAll]
   constructor
@@ -271,7 +271,7 @@ theorem SameIrr.interAll_th (h : SameIrr stab th rhs stab' th' rhs') :
     obtain ⟨i, -, hi, -⟩ := h.1 j
     exact hi ▸ hall i
 
-theorem SameIrr.upsilon_eq (h : SameIrr stab th rhs stab' th' rhs') :
+theorem SameIrr.upsilon_eq (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
     upsilon rhs ≐ upsilon rhs' := by
   intro x
   simp only [mem_upsilon]
@@ -283,22 +283,22 @@ theorem SameIrr.upsilon_eq (h : SameIrr stab th rhs stab' th' rhs') :
     obtain ⟨j, -, -, hj⟩ := h.2 i
     exact ⟨j, hj.symm.trans hi⟩
 
-theorem SameIrr.thPool_eq (h : SameIrr stab th rhs stab' th' rhs') :
-    thPool th ≐ thPool th' := by
+theorem SameIrr.thPool_eq (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
+    thPool Θs ≐ thPool Θs' := by
   intro x
   simp only [thPool, mem_impPart]
   exact and_congr_left' (h.interAll_th x)
 
-theorem SameIrr.orVBase (h : SameIrr stab th rhs stab' th' rhs') :
-    joinCtxOrVBase stab th ≐ joinCtxOrVBase stab' th' := by
+theorem SameIrr.orVBase (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
+    joinCtxOrVBase Ξs Θs ≐ joinCtxOrVBase Ξs' Θs' := by
   intro x
   simp only [joinCtxOrVBase, List.mem_append]
   exact or_congr (or_congr (h.unionAll_filter _ x) (h.interAll_filter _ x))
     (h.unionAll_filter _ x)
 
-theorem SameIrr.atVBase (h : SameIrr stab th rhs stab' th' rhs')
+theorem SameIrr.atVBase (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     {F : Form} :
-    joinCtxAtVBase stab th F ≐ joinCtxAtVBase stab' th' F := by
+    joinCtxAtVBase Ξs Θs F ≐ joinCtxAtVBase Ξs' Θs' F := by
   intro x
   simp only [joinCtxAtVBase, List.mem_append, mem_rm]
   exact or_congr (or_congr (h.unionAll_filter _ x)
@@ -306,11 +306,11 @@ theorem SameIrr.atVBase (h : SameIrr stab th rhs stab' th' rhs')
 
 /-- The kept-chain context transfers: base and pool are `≐`, `Υ` is
 `≐`, so every link of the f-side `keptOf` lands in the g-side one. -/
-theorem SameIrr.orCtx_sub (h : SameIrr stab th rhs stab' th' rhs') :
-    joinCtxOrVBase stab th ++
-      keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th) ⊆
-    joinCtxOrVBase stab' th' ++
-      keptOf (upsilon rhs') (joinCtxOrVBase stab' th') (thPool th') := by
+theorem SameIrr.orCtx_sub (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
+    joinCtxOrVBase Ξs Θs ++
+      keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs) ⊆
+    joinCtxOrVBase Ξs' Θs' ++
+      keptOf (upsilon rhs') (joinCtxOrVBase Ξs' Θs') (thPool Θs') := by
   intro x hx
   rcases List.mem_append.mp hx with h1 | h1
   · exact List.mem_append_left _ ((h.orVBase x).mp h1)
@@ -318,12 +318,12 @@ theorem SameIrr.orCtx_sub (h : SameIrr stab th rhs stab' th' rhs') :
       (keptChain_sub_keptOf_of_le h.upsilon_eq.subset h.orVBase.subset
         h.thPool_eq.subset (keptOf_ok _ _ _) x h1)
 
-theorem SameIrr.atCtx_sub (h : SameIrr stab th rhs stab' th' rhs')
+theorem SameIrr.atCtx_sub (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     {F : Form} :
-    joinCtxAtVBase stab th F ++
-      keptOf (upsilon rhs) (joinCtxAtVBase stab th F) (thPool th) ⊆
-    joinCtxAtVBase stab' th' F ++
-      keptOf (upsilon rhs') (joinCtxAtVBase stab' th' F) (thPool th') := by
+    joinCtxAtVBase Ξs Θs F ++
+      keptOf (upsilon rhs) (joinCtxAtVBase Ξs Θs F) (thPool Θs) ⊆
+    joinCtxAtVBase Ξs' Θs' F ++
+      keptOf (upsilon rhs') (joinCtxAtVBase Ξs' Θs' F) (thPool Θs') := by
   intro x hx
   rcases List.mem_append.mp hx with h1 | h1
   · exact List.mem_append_left _ ((h.atVBase x).mp h1)
@@ -334,11 +334,11 @@ theorem SameIrr.atCtx_sub (h : SameIrr stab th rhs stab' th' rhs')
 /-! Condition transfers, f-side to g-side.  `hnd` says the g-family has
 pairwise-distinct rows (it is enumerated from a `Nodup` sublist). -/
 
-theorem SameIrr.hJ1 (h : SameIrr stab th rhs stab' th' rhs')
+theorem SameIrr.hJ1 (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (hnd : ∀ i₁ i₂ : Fin (m + 1), i₁ ≠ i₂ →
-      ¬ (stab' i₁ = stab' i₂ ∧ th' i₁ = th' i₂ ∧ rhs' i₁ = rhs' i₂))
-    (hJ1 : ∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) :
-    ∀ i j, i ≠ j → stab' i ⊆ stab' j ++ th' j := by
+      ¬ (Ξs' i₁ = Ξs' i₂ ∧ Θs' i₁ = Θs' i₂ ∧ rhs' i₁ = rhs' i₂))
+    (hJ1 : ∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) :
+    ∀ i j, i ≠ j → Ξs' i ⊆ Ξs' j ++ Θs' j := by
   intro i₁ i₂ hne
   obtain ⟨j₁, hs₁, ht₁, hr₁⟩ := h.2 i₁
   obtain ⟨j₂, hs₂, ht₂, hr₂⟩ := h.2 i₂
@@ -349,32 +349,32 @@ theorem SameIrr.hJ1 (h : SameIrr stab th rhs stab' th' rhs')
   rw [hs₁, hs₂, ht₂]
   exact hJ1 j₁ j₂ hjne
 
-theorem SameIrr.hJ2_strict (h : SameIrr stab th rhs stab' th' rhs')
+theorem SameIrr.hJ2_strict (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (hJ2 : ∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+      Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) :
-    ∀ A B : Form, Form.imp A B ∈ unionAll (fun i => impPart (stab' i)) →
+    ∀ A B : Form, Form.imp A B ∈ unionAll (fun i => impPart (Ξs' i)) →
       A ∈ upsilon rhs' :=
   fun A B hAB => (h.upsilon_eq _).mp
     (hJ2 A B ((h.unionAll_filter _ _).mpr hAB))
 
-theorem SameIrr.hcirc (h : SameIrr stab th rhs stab' th' rhs')
-    (hcirc : unionAll (fun j => circPart (stab j)) = []) :
-    unionAll (fun i => circPart (stab' i)) = [] := by
-  cases hcase : unionAll (fun i => circPart (stab' i)) with
+theorem SameIrr.hcirc (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
+    (hcirc : unionAll (fun j => circPart (Ξs j)) = []) :
+    unionAll (fun i => circPart (Ξs' i)) = [] := by
+  cases hcase : unionAll (fun i => circPart (Ξs' i)) with
   | nil => rfl
   | cons y ys =>
       exfalso
-      have hy : y ∈ unionAll (fun i => circPart (stab' i)) :=
+      have hy : y ∈ unionAll (fun i => circPart (Ξs' i)) :=
         hcase ▸ List.mem_cons_self
-      have : y ∈ unionAll (fun j => circPart (stab j)) :=
+      have : y ∈ unionAll (fun j => circPart (Ξs j)) :=
         (h.unionAll_filter _ y).mpr hy
       rw [hcirc] at this
       exact absurd this List.not_mem_nil
 
-theorem SameIrr.hFnot (h : SameIrr stab th rhs stab' th' rhs') {F : Form}
-    (hFnot : F ∉ unionAll (fun j => atPart (stab j))) :
-    F ∉ unionAll (fun i => atPart (stab' i)) :=
+theorem SameIrr.hFnot (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') {F : Form}
+    (hFnot : F ∉ unionAll (fun j => atPart (Ξs j))) :
+    F ∉ unionAll (fun i => atPart (Ξs' i)) :=
   fun hmem => hFnot ((h.unionAll_filter _ F).mpr hmem)
 
 /-! Full-context congruences (fallible and promise joins). -/
@@ -396,8 +396,8 @@ theorem restrict_ctxEq {X X' Υ Υ' : List Form} (hX : X ≐ X')
   simp only [restrict, List.mem_filter]
   exact and_congr (hX x) (inRestrict_congr hu x)
 
-theorem SameIrr.ctxAt (h : SameIrr stab th rhs stab' th' rhs') {F : Form} :
-    joinCtxAt stab th rhs F ≐ joinCtxAt stab' th' rhs' F := by
+theorem SameIrr.ctxAt (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') {F : Form} :
+    joinCtxAt Ξs Θs rhs F ≐ joinCtxAt Ξs' Θs' rhs' F := by
   intro x
   simp only [joinCtxAt, List.mem_append, mem_rm]
   exact or_congr (or_congr (or_congr (h.unionAll_filter _ x)
@@ -405,8 +405,8 @@ theorem SameIrr.ctxAt (h : SameIrr stab th rhs stab' th' rhs') {F : Form} :
     (h.unionAll_filter _ x))
     (restrict_ctxEq (h.interAll_filter _) h.upsilon_eq x)
 
-theorem SameIrr.ctxOr (h : SameIrr stab th rhs stab' th' rhs') :
-    joinCtxOr stab th rhs ≐ joinCtxOr stab' th' rhs' := by
+theorem SameIrr.ctxOr (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
+    joinCtxOr Ξs Θs rhs ≐ joinCtxOr Ξs' Θs' rhs' := by
   intro x
   simp only [joinCtxOr, List.mem_append]
   exact or_congr (or_congr (or_congr (h.unionAll_filter _ x)
@@ -414,20 +414,20 @@ theorem SameIrr.ctxOr (h : SameIrr stab th rhs stab' th' rhs') :
     (h.unionAll_filter _ x))
     (restrict_ctxEq (h.interAll_filter _) h.upsilon_eq x)
 
-theorem SameIrr.ctxCircF (h : SameIrr stab th rhs stab' th' rhs') :
-    joinCtxCircF stab th ≐ joinCtxCircF stab' th' := by
+theorem SameIrr.ctxCircF (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
+    joinCtxCircF Ξs Θs ≐ joinCtxCircF Ξs' Θs' := by
   intro x
   simp only [joinCtxCircF, List.mem_append]
   exact or_congr (h.unionAll_filter _ x) (h.interAll_filter _ x)
 
-theorem SameIrr.ctxAtF (h : SameIrr stab th rhs stab' th' rhs') {F : Form} :
-    joinCtxAtF stab th rhs F ≐ joinCtxAtF stab' th' rhs' F := by
+theorem SameIrr.ctxAtF (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') {F : Form} :
+    joinCtxAtF Ξs Θs rhs F ≐ joinCtxAtF Ξs' Θs' rhs' F := by
   intro x
   simp only [joinCtxAtF, List.mem_append]
   exact or_congr (h.ctxAt x) (h.ctxCircF x)
 
-theorem SameIrr.ctxOrF (h : SameIrr stab th rhs stab' th' rhs') :
-    joinCtxOrF stab th rhs ≐ joinCtxOrF stab' th' rhs' := by
+theorem SameIrr.ctxOrF (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs') :
+    joinCtxOrF Ξs Θs rhs ≐ joinCtxOrF Ξs' Θs' rhs' := by
   intro x
   simp only [joinCtxOrF, List.mem_append]
   exact or_congr (h.ctxOr x) (h.ctxCircF x)
@@ -470,46 +470,46 @@ theorem cloAllB_congr (h' : SameReg tps Δs Ds tps' Δs' Ds') :
     obtain ⟨i, -, hi, -⟩ := h'.1 j
     exact hi ▸ hall i (List.mem_finRange i)
 
-theorem ctxCircP_eq (h : SameIrr stab th rhs stab' th' rhs')
+theorem ctxCircP_eq (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (h' : SameReg tps Δs Ds tps' Δs' Ds') :
-    joinCtxCircP stab th Δs ≐ joinCtxCircP stab' th' Δs' := by
+    joinCtxCircP Ξs Θs Δs ≐ joinCtxCircP Ξs' Θs' Δs' := by
   intro x
   simp only [joinCtxCircP, restrictC, List.mem_append, List.mem_filter]
   exact or_congr (h.unionAll_filter _ x)
     (and_congr (h.interAll_filter _ x) (inRestrictC_congr h' x))
 
-theorem ctxAtP_eq (h : SameIrr stab th rhs stab' th' rhs')
+theorem ctxAtP_eq (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (h' : SameReg tps Δs Ds tps' Δs' Ds') {F : Form} :
-    joinCtxAtP stab th rhs F Δs ≐ joinCtxAtP stab' th' rhs' F Δs' := by
+    joinCtxAtP Ξs Θs rhs F Δs ≐ joinCtxAtP Ξs' Θs' rhs' F Δs' := by
   intro x
   simp only [joinCtxAtP, restrictP, List.mem_filter, List.mem_append]
   exact and_congr (or_congr (h.ctxAt x) (ctxCircP_eq h h' x))
     (cloAllB_congr h' x)
 
-theorem ctxOrP_eq (h : SameIrr stab th rhs stab' th' rhs')
+theorem ctxOrP_eq (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (h' : SameReg tps Δs Ds tps' Δs' Ds') :
-    joinCtxOrP stab th rhs Δs ≐ joinCtxOrP stab' th' rhs' Δs' := by
+    joinCtxOrP Ξs Θs rhs Δs ≐ joinCtxOrP Ξs' Θs' rhs' Δs' := by
   intro x
   simp only [joinCtxOrP, restrictP, List.mem_filter, List.mem_append]
   exact and_congr (or_congr (h.ctxOr x) (ctxCircP_eq h h' x))
     (cloAllB_congr h' x)
 
-theorem hJ5_re (h : SameIrr stab th rhs stab' th' rhs')
+theorem hJ5_re (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (h' : SameReg tps Δs Ds tps' Δs' Ds')
     (hJ5 : ∀ Y : Form,
-      Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+      Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) :
-    ∀ Y : Form, Form.circ Y ∈ unionAll (fun i => circPart (stab' i)) →
+    ∀ Y : Form, Form.circ Y ∈ unionAll (fun i => circPart (Ξs' i)) →
       ∃ i, Clo (Δs' i) Y := by
   intro Y hY
   obtain ⟨j, hj⟩ := hJ5 Y ((h.unionAll_filter _ _).mpr hY)
   obtain ⟨i, -, hi, -⟩ := h'.1 j
   exact ⟨i, hi ▸ hj⟩
 
-theorem hJ7s_re (h : SameIrr stab th rhs stab' th' rhs')
+theorem hJ7s_re (h : SameIrr Ξs Θs rhs Ξs' Θs' rhs')
     (h' : SameReg tps Δs Ds tps' Δs' Ds')
-    (hJ7s : ∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) :
-    ∀ i j, ∀ X ∈ stab' j, Clo (Δs' i) X := by
+    (hJ7s : ∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) :
+    ∀ i j, ∀ X ∈ Ξs' j, Clo (Δs' i) X := by
   intro i j X hX
   obtain ⟨jΔ, -, hiΔ, -⟩ := h'.2 i
   obtain ⟨jf, hjf, -, -⟩ := h.2 j
@@ -553,10 +553,10 @@ end Reindex
 
 /-- A stored irregular row, unpacked with its derivation. -/
 structure IrrT (G : Form) where
-  St : List Form
-  Th : List Form
+  Ξ : List Form
+  Θ : List Form
   C : Form
-  d : FRJWi G St Th C
+  d : FRJWi G Ξ Θ C
 
 /-- A stored regular row, unpacked with its derivation. -/
 structure RegT (G : Form) where
@@ -566,7 +566,7 @@ structure RegT (G : Form) where
   d : FRJWr G t Γ C
 
 def rowIrr? {G : Form} : WRow G → Option (IrrT G)
-  | ⟨.irr St Th C, d⟩ => some ⟨St, Th, C, d⟩
+  | ⟨.irr Ξ Θ C, d⟩ => some ⟨Ξ, Θ, C, d⟩
   | ⟨.reg _ _ _, _⟩ => none
 
 def rowReg? {G : Form} : WRow G → Option (RegT G)
@@ -579,19 +579,19 @@ def irrTs {G : Form} (db : List (WRow G)) : List (IrrT G) :=
 def regTs {G : Form} (db : List (WRow G)) : List (RegT G) :=
   db.filterMap rowReg?
 
-def IrrT.seq {G : Form} (tr : IrrT G) : WSeq := .irr tr.St tr.Th tr.C
+def IrrT.seq {G : Form} (tr : IrrT G) : WSeq := .irr tr.Ξ tr.Θ tr.C
 def RegT.seq {G : Form} (tr : RegT G) : WSeq := .reg tr.t tr.Γ tr.C
 
 /-- Every stored irregular sequent has a triple. -/
 theorem irrTs_of_mem {G : Form} {db : List (WRow G)}
-    {St Th : List Form} {C : Form}
-    (h : (WSeq.irr St Th C) ∈ db.map (·.s)) :
-    ∃ tr ∈ irrTs db, tr.St = St ∧ tr.Th = Th ∧ tr.C = C := by
+    {Ξ Θ : List Form} {C : Form}
+    (h : (WSeq.irr Ξ Θ C) ∈ db.map (·.s)) :
+    ∃ tr ∈ irrTs db, tr.Ξ = Ξ ∧ tr.Θ = Θ ∧ tr.C = C := by
   obtain ⟨r, hr, hrs⟩ := List.mem_map.mp h
   match r, hrs with
-  | ⟨.irr St' Th' C', d⟩, hrs =>
+  | ⟨.irr Ξ' Θ' C', d⟩, hrs =>
       injection hrs with h1 h2 h3
-      exact ⟨⟨St', Th', C', d⟩, List.mem_filterMap.mpr ⟨_, hr, rfl⟩,
+      exact ⟨⟨Ξ', Θ', C', d⟩, List.mem_filterMap.mpr ⟨_, hr, rfl⟩,
         h1, h2, h3⟩
 
 theorem regTs_of_mem {G : Form} {db : List (WRow G)}
@@ -610,7 +610,7 @@ theorem mem_of_irrTs {G : Form} {db : List (WRow G)} {tr : IrrT G}
     (h : tr ∈ irrTs db) : tr.seq ∈ db.map (·.s) := by
   obtain ⟨r, hr, hrt⟩ := List.mem_filterMap.mp h
   match r, hrt with
-  | ⟨.irr St' Th' C', d⟩, hrt =>
+  | ⟨.irr Ξ' Θ' C', d⟩, hrt =>
       refine List.mem_map.mpr ⟨_, hr, ?_⟩
       injection hrt with h1
       subst h1
@@ -633,9 +633,9 @@ theorem irrTs_seq_sublist {G : Form} (db : List (WRow G)) :
   | nil => exact .slnil
   | cons r rest ih =>
       match r with
-      | ⟨.irr St Th C, d⟩ =>
+      | ⟨.irr Ξ Θ C, d⟩ =>
           simpa [irrTs, List.filterMap_cons, rowIrr?, IrrT.seq]
-            using ih.cons_cons (WSeq.irr St Th C)
+            using ih.cons_cons (WSeq.irr Ξ Θ C)
       | ⟨.reg t Γ C, d⟩ =>
           simpa [irrTs, List.filterMap_cons, rowIrr?]
             using ih.cons (WSeq.reg t Γ C)
@@ -649,9 +649,9 @@ theorem regTs_seq_sublist {G : Form} (db : List (WRow G)) :
       | ⟨.reg t Γ C, d⟩ =>
           simpa [regTs, List.filterMap_cons, rowReg?, RegT.seq]
             using ih.cons_cons (WSeq.reg t Γ C)
-      | ⟨.irr St Th C, d⟩ =>
+      | ⟨.irr Ξ Θ C, d⟩ =>
           simpa [regTs, List.filterMap_cons, rowReg?]
-            using ih.cons (WSeq.irr St Th C)
+            using ih.cons (WSeq.irr Ξ Θ C)
 
 /-! Decidability guards for the shape-bounded join conditions. -/
 
@@ -747,22 +747,22 @@ the emitted row carries its derivation by the constructor.  Coverage
 sublists, is emitted. -/
 
 /-- The two-sided filter split of a zone by a parameter list. -/
-theorem filter_split_pre (L Lam : List Form) :
-    L ≐ L.filter (fun x => !decide (x ∈ Lam)) ++
-      L.filter (fun x => decide (x ∈ Lam)) := by
+theorem filter_split_pre (L Λ : List Form) :
+    L ≐ L.filter (fun x => !decide (x ∈ Λ)) ++
+      L.filter (fun x => decide (x ∈ Λ)) := by
   intro x
   simp only [List.mem_append, List.mem_filter, Bool.not_eq_eq_eq_not,
     Bool.not_true, decide_eq_true_eq, decide_eq_false_iff_not]
   constructor
   · intro hx
-    by_cases hL : x ∈ Lam
+    by_cases hL : x ∈ Λ
     · exact Or.inr ⟨hx, hL⟩
     · exact Or.inl ⟨hx, hL⟩
   · rintro (⟨hx, -⟩ | ⟨hx, -⟩) <;> exact hx
 
-theorem filter_split_disj (L Lam : List Form) :
-    cap (L.filter (fun x => !decide (x ∈ Lam)))
-      (L.filter (fun x => decide (x ∈ Lam))) = [] := by
+theorem filter_split_disj (L Λ : List Form) :
+    cap (L.filter (fun x => !decide (x ∈ Λ)))
+      (L.filter (fun x => decide (x ∈ Λ))) = [] := by
   refine List.eq_nil_of_subset_nil (fun x hx => ?_)
   have h := mem_cap.mp hx
   have h₁ := List.mem_filter.mp h.1
@@ -851,9 +851,9 @@ def emitAndI : List (WRow G) :=
       match X with
       | .and A₁ A₂ =>
           if h : A₁ = tr.C ∧ Form.and A₁ A₂ ∈ sfR G then
-            some ⟨.irr tr.St tr.Th (.and A₁ A₂), .andI1 (h.1 ▸ tr.d) h.2⟩
+            some ⟨.irr tr.Ξ tr.Θ (.and A₁ A₂), .andI1 (h.1 ▸ tr.d) h.2⟩
           else if h : A₂ = tr.C ∧ Form.and A₁ A₂ ∈ sfR G then
-            some ⟨.irr tr.St tr.Th (.and A₁ A₂), .andI2 (h.1 ▸ tr.d) h.2⟩
+            some ⟨.irr tr.Ξ tr.Θ (.and A₁ A₂), .andI2 (h.1 ▸ tr.d) h.2⟩
           else none
       | _ => none))
 
@@ -865,9 +865,9 @@ def emitOrI : List (WRow G) :=
         match X with
         | .or C₁ C₂ =>
             if h : C₁ = tr₁.C ∧ C₂ = tr₂.C ∧
-                tr₁.St ⊆ tr₂.St ++ tr₂.Th ∧ tr₂.St ⊆ tr₁.St ++ tr₁.Th ∧
+                tr₁.Ξ ⊆ tr₂.Ξ ++ tr₂.Θ ∧ tr₂.Ξ ⊆ tr₁.Ξ ++ tr₁.Θ ∧
                 Form.or C₁ C₂ ∈ sfR G then
-              some ⟨.irr (tr₁.St ++ tr₂.St) (cap tr₁.Th tr₂.Th)
+              some ⟨.irr (tr₁.Ξ ++ tr₂.Ξ) (cap tr₁.Θ tr₂.Θ)
                   (.or C₁ C₂),
                 .orI (h.1 ▸ tr₁.d) (h.2.1 ▸ tr₂.d) h.2.2.1 h.2.2.2.1
                   h.2.2.2.2 (CtxEq.refl _) (CtxEq.refl _)⟩
@@ -877,17 +877,17 @@ def emitOrI : List (WRow G) :=
 /-- `⊃∈ᵢ`, over the canonical second-zone splits. -/
 def emitImpInI : List (WRow G) :=
   (irrTs db).flatMap (fun tr =>
-    tr.Th.sublists.flatMap (fun Lam =>
+    tr.Θ.sublists.flatMap (fun Λ =>
       (goalPool G).filterMap (fun X =>
         match X with
         | .imp A B =>
             if h : B = tr.C ∧
-                Clo (tr.St ++ tr.Th.filter (fun x => decide (x ∈ Lam))) A ∧
+                Clo (tr.Ξ ++ tr.Θ.filter (fun x => decide (x ∈ Λ))) A ∧
                 Form.imp A B ∈ sfR G then
-              some ⟨.irr (tr.St ++ tr.Th.filter (fun x => decide (x ∈ Lam)))
-                  (tr.Th.filter (fun x => !decide (x ∈ Lam))) (.imp A B),
-                .impInI (h.1 ▸ tr.d) (filter_split_pre tr.Th Lam)
-                  (filter_split_disj tr.Th Lam) h.2.1 h.2.2
+              some ⟨.irr (tr.Ξ ++ tr.Θ.filter (fun x => decide (x ∈ Λ)))
+                  (tr.Θ.filter (fun x => !decide (x ∈ Λ))) (.imp A B),
+                .impInI (h.1 ▸ tr.d) (filter_split_pre tr.Θ Λ)
+                  (filter_split_disj tr.Θ Λ) h.2.1 h.2.2
                   (CtxEq.refl _) (CtxEq.refl _)⟩
             else none
         | _ => none)))
@@ -924,9 +924,9 @@ def emitJoinCirc : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         let base := joinCtxOrVBase stabF thF
@@ -955,9 +955,9 @@ def emitJoinOr : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         let base := joinCtxOrVBase stabF thF
@@ -986,9 +986,9 @@ def emitJoinAt : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         (goalPool G).filterMap (fun F =>
@@ -1014,9 +1014,9 @@ def emitJoinAtF : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         (goalPool G).filterMap (fun F =>
@@ -1039,9 +1039,9 @@ def emitJoinOrF : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         (goalPool G).filterMap (fun X =>
@@ -1066,9 +1066,9 @@ def emitJoinAtP : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         (regTs db).sublists.flatMap (fun lr =>
@@ -1111,9 +1111,9 @@ def emitJoinOrP : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         (regTs db).sublists.flatMap (fun lr =>
@@ -1159,9 +1159,9 @@ def emitJoinCircP : List (WRow G) :=
     | [] => []
     | a :: t =>
         let stabF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).St
+          fun j => ((a :: t).get j).Ξ
         let thF : Fin (t.length + 1) → List Form :=
-          fun j => ((a :: t).get j).Th
+          fun j => ((a :: t).get j).Θ
         let rhsF : Fin (t.length + 1) → Form :=
           fun j => ((a :: t).get j).C
         (regTs db).sublists.flatMap (fun lr =>
@@ -1434,32 +1434,32 @@ arbitrary family's row set, nonempty, with the transfer relation and
 pairwise distinctness. -/
 theorem reindex_irr {G : Form} {db : List (WRow G)}
     (hnd : (db.map (·.s)).Nodup)
-    {n : Nat} {stab th : Fin (n + 1) → List Form}
+    {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form}
-    (hmem : ∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ db.map (·.s)) :
+    (hmem : ∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) :
     ∃ (a : IrrT G) (t : List (IrrT G)),
       (a :: t) ∈ (irrTs db).sublists ∧
-      SameIrr stab th rhs (fun j => ((a :: t).get j).St)
-        (fun j => ((a :: t).get j).Th) (fun j => ((a :: t).get j).C) ∧
+      SameIrr Ξs Θs rhs (fun j => ((a :: t).get j).Ξ)
+        (fun j => ((a :: t).get j).Θ) (fun j => ((a :: t).get j).C) ∧
       (∀ i₁ i₂ : Fin (t.length + 1), i₁ ≠ i₂ →
-        ¬ (((a :: t).get i₁).St = ((a :: t).get i₂).St ∧
-           ((a :: t).get i₁).Th = ((a :: t).get i₂).Th ∧
+        ¬ (((a :: t).get i₁).Ξ = ((a :: t).get i₂).Ξ ∧
+           ((a :: t).get i₁).Θ = ((a :: t).get i₂).Θ ∧
            ((a :: t).get i₁).C = ((a :: t).get i₂).C)) := by
   have hlsub : List.Sublist ((irrTs db).filter (fun tr =>
-      decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)))
+      decide (∃ j, Ξs j = tr.Ξ ∧ Θs j = tr.Θ ∧ rhs j = tr.C)))
       (irrTs db) := List.filter_sublist
   have hmem_l : ∀ j, ∃ tr ∈ (irrTs db).filter (fun tr =>
-      decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)),
-      tr.St = stab j ∧ tr.Th = th j ∧ tr.C = rhs j := by
+      decide (∃ j, Ξs j = tr.Ξ ∧ Θs j = tr.Θ ∧ rhs j = tr.C)),
+      tr.Ξ = Ξs j ∧ tr.Θ = Θs j ∧ tr.C = rhs j := by
     intro j
     obtain ⟨tr, htr, h1, h2, h3⟩ := irrTs_of_mem (hmem j)
     refine ⟨tr, List.mem_filter.mpr ⟨htr, ?_⟩, h1, h2, h3⟩
     exact decide_eq_true ⟨j, h1.symm, h2.symm, h3.symm⟩
   obtain ⟨a, t, hlat⟩ : ∃ a t, (irrTs db).filter (fun tr =>
-      decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)) =
+      decide (∃ j, Ξs j = tr.Ξ ∧ Θs j = tr.Θ ∧ rhs j = tr.C)) =
         a :: t := by
     cases hl : (irrTs db).filter (fun tr =>
-        decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C)) with
+        decide (∃ j, Ξs j = tr.Ξ ∧ Θs j = tr.Θ ∧ rhs j = tr.C)) with
     | nil =>
         obtain ⟨tr, htr, -⟩ := hmem_l 0
         rw [hl] at htr
@@ -1472,12 +1472,12 @@ theorem reindex_irr {G : Form} {db : List (WRow G)}
   · intro j
     obtain ⟨tr, htr, h1, h2, h3⟩ := hmem_l j
     obtain ⟨i, hi⟩ := List.mem_iff_get.mp htr
-    exact ⟨i, by show ((a :: t).get i).St = stab j; rw [hi]; exact h1,
-      by show ((a :: t).get i).Th = th j; rw [hi]; exact h2,
+    exact ⟨i, by show ((a :: t).get i).Ξ = Ξs j; rw [hi]; exact h1,
+      by show ((a :: t).get i).Θ = Θs j; rw [hi]; exact h2,
       by show ((a :: t).get i).C = rhs j; rw [hi]; exact h3⟩
   · intro i
     have hi : (a :: t).get i ∈ List.filter (fun tr =>
-        decide (∃ j, stab j = tr.St ∧ th j = tr.Th ∧ rhs j = tr.C))
+        decide (∃ j, Ξs j = tr.Ξ ∧ Θs j = tr.Θ ∧ rhs j = tr.C))
         (irrTs db) := by
       rw [hlat]
       exact List.get_mem (a :: t) i
@@ -1688,12 +1688,12 @@ theorem cov_circIn : ∀ (t : Tag) (Γ : List Form) (Z : Form),
     exact dif_pos ⟨rfl, htag, hg⟩
   exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
-theorem cov_andI1 : ∀ (St Th : List Form) (A₁ A₂ : Form),
-    (WSeq.irr St Th A₁) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
-    ∃ r ∈ closureDB G, WSubsumes (.irr St Th (.and A₁ A₂)) r.s := by
-  intro St Th A₁ A₂ hmem hg
+theorem cov_andI1 : ∀ (Ξ Θ : List Form) (A₁ A₂ : Form),
+    (WSeq.irr Ξ Θ A₁) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.irr Ξ Θ (.and A₁ A₂)) r.s := by
+  intro Ξ Θ A₁ A₂ hmem hg
   obtain ⟨tr, htr, rfl, rfl, rfl⟩ := irrTs_of_mem hmem
-  have hemit : (⟨.irr tr.St tr.Th (.and tr.C A₂),
+  have hemit : (⟨.irr tr.Ξ tr.Θ (.and tr.C A₂),
       .andI1 tr.d hg⟩ : WRow G) ∈ emitAndI G (closureDB G) := by
     refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
     refine List.mem_filterMap.mpr
@@ -1701,13 +1701,13 @@ theorem cov_andI1 : ∀ (St Th : List Form) (A₁ A₂ : Form),
     exact dif_pos ⟨rfl, hg⟩
   exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
-theorem cov_andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
-    (WSeq.irr St Th A₂) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
-    ∃ r ∈ closureDB G, WSubsumes (.irr St Th (.and A₁ A₂)) r.s := by
-  intro St Th A₁ A₂ hmem hg
+theorem cov_andI2 : ∀ (Ξ Θ : List Form) (A₁ A₂ : Form),
+    (WSeq.irr Ξ Θ A₂) ∈ (closureDB G).map (·.s) → Form.and A₁ A₂ ∈ sfR G →
+    ∃ r ∈ closureDB G, WSubsumes (.irr Ξ Θ (.and A₁ A₂)) r.s := by
+  intro Ξ Θ A₁ A₂ hmem hg
   obtain ⟨tr, htr, rfl, rfl, rfl⟩ := irrTs_of_mem hmem
   by_cases hc : A₁ = tr.C ∧ Form.and A₁ tr.C ∈ sfR G
-  · have hemit : (⟨.irr tr.St tr.Th (.and A₁ tr.C),
+  · have hemit : (⟨.irr tr.Ξ tr.Θ (.and A₁ tr.C),
         .andI1 (hc.1 ▸ tr.d) hc.2⟩ : WRow G) ∈
           emitAndI G (closureDB G) := by
       refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
@@ -1715,7 +1715,7 @@ theorem cov_andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
         ⟨.and A₁ tr.C, mem_goalPool.mpr hg, ?_⟩
       exact dif_pos hc
     exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
-  · have hemit : (⟨.irr tr.St tr.Th (.and A₁ tr.C),
+  · have hemit : (⟨.irr tr.Ξ tr.Θ (.and A₁ tr.C),
         .andI2 tr.d hg⟩ : WRow G) ∈ emitAndI G (closureDB G) := by
       refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
       refine List.mem_filterMap.mpr
@@ -1723,17 +1723,17 @@ theorem cov_andI2 : ∀ (St Th : List Form) (A₁ A₂ : Form),
       exact (dif_neg hc).trans (dif_pos ⟨rfl, hg⟩)
     exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
-theorem cov_orI : ∀ (St₁ Th₁ St₂ Th₂ : List Form) (C₁ C₂ : Form),
-    (WSeq.irr St₁ Th₁ C₁) ∈ (closureDB G).map (·.s) →
-    (WSeq.irr St₂ Th₂ C₂) ∈ (closureDB G).map (·.s) →
-    St₁ ⊆ St₂ ++ Th₂ → St₂ ⊆ St₁ ++ Th₁ →
+theorem cov_orI : ∀ (Ξ₁ Θ₁ Ξ₂ Θ₂ : List Form) (C₁ C₂ : Form),
+    (WSeq.irr Ξ₁ Θ₁ C₁) ∈ (closureDB G).map (·.s) →
+    (WSeq.irr Ξ₂ Θ₂ C₂) ∈ (closureDB G).map (·.s) →
+    Ξ₁ ⊆ Ξ₂ ++ Θ₂ → Ξ₂ ⊆ Ξ₁ ++ Θ₁ →
     Form.or C₁ C₂ ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.irr (St₁ ++ St₂) (cap Th₁ Th₂) (.or C₁ C₂)) r.s := by
-  intro St₁ Th₁ St₂ Th₂ C₁ C₂ hmem₁ hmem₂ h₁ h₂ hg
+      WSubsumes (.irr (Ξ₁ ++ Ξ₂) (cap Θ₁ Θ₂) (.or C₁ C₂)) r.s := by
+  intro Ξ₁ Θ₁ Ξ₂ Θ₂ C₁ C₂ hmem₁ hmem₂ h₁ h₂ hg
   obtain ⟨tr₁, htr₁, rfl, rfl, rfl⟩ := irrTs_of_mem hmem₁
   obtain ⟨tr₂, htr₂, rfl, rfl, rfl⟩ := irrTs_of_mem hmem₂
-  have hemit : (⟨.irr (tr₁.St ++ tr₂.St) (cap tr₁.Th tr₂.Th)
+  have hemit : (⟨.irr (tr₁.Ξ ++ tr₂.Ξ) (cap tr₁.Θ tr₂.Θ)
       (.or tr₁.C tr₂.C),
       .orI tr₁.d tr₂.d h₁ h₂ hg (CtxEq.refl _) (CtxEq.refl _)⟩ : WRow G) ∈
         emitOrI G (closureDB G) := by
@@ -1768,42 +1768,42 @@ theorem cov_circNotIn : ∀ (t₂ : Tag) (Γ₂ : List Form) (Z : Form),
     exact dif_pos ⟨htag, hg⟩
   exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
-theorem cov_impInI : ∀ (St₂ ThLam₂ Lam : List Form) (A B : Form),
-    (WSeq.irr St₂ ThLam₂ B) ∈ (closureDB G).map (·.s) →
-    Clo (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam))) A →
+theorem cov_impInI : ∀ (Ξ₂ ΘΛ₂ Λ : List Form) (A B : Form),
+    (WSeq.irr Ξ₂ ΘΛ₂ B) ∈ (closureDB G).map (·.s) →
+    Clo (Ξ₂ ++ ΘΛ₂.filter (fun x => decide (x ∈ Λ))) A →
     Form.imp A B ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.irr (St₂ ++ ThLam₂.filter (fun x => decide (x ∈ Lam)))
-        (ThLam₂.filter (fun x => !decide (x ∈ Lam))) (.imp A B)) r.s := by
-  intro St₂ ThLam₂ Lam A B hmem hA hg
+      WSubsumes (.irr (Ξ₂ ++ ΘΛ₂.filter (fun x => decide (x ∈ Λ)))
+        (ΘΛ₂.filter (fun x => !decide (x ∈ Λ))) (.imp A B)) r.s := by
+  intro Ξ₂ ΘΛ₂ Λ A B hmem hA hg
   obtain ⟨tr, htr, rfl, rfl, rfl⟩ := irrTs_of_mem hmem
-  have hpos : tr.Th.filter (fun x =>
-      decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))) =
-      tr.Th.filter (fun x => decide (x ∈ Lam)) := by
+  have hpos : tr.Θ.filter (fun x =>
+      decide (x ∈ tr.Θ.filter (fun y => decide (y ∈ Λ)))) =
+      tr.Θ.filter (fun x => decide (x ∈ Λ)) := by
     refine List.filter_congr (fun x hx => ?_)
     simp [List.mem_filter, hx]
-  have hneg : tr.Th.filter (fun x =>
-      !decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))) =
-      tr.Th.filter (fun x => !decide (x ∈ Lam)) := by
+  have hneg : tr.Θ.filter (fun x =>
+      !decide (x ∈ tr.Θ.filter (fun y => decide (y ∈ Λ)))) =
+      tr.Θ.filter (fun x => !decide (x ∈ Λ)) := by
     refine List.filter_congr (fun x hx => ?_)
     simp [List.mem_filter, hx]
   rw [← hpos, ← hneg]
-  have hA' : Clo (tr.St ++ tr.Th.filter (fun x =>
-      decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam))))) A := by
+  have hA' : Clo (tr.Ξ ++ tr.Θ.filter (fun x =>
+      decide (x ∈ tr.Θ.filter (fun y => decide (y ∈ Λ))))) A := by
     rw [hpos]; exact hA
-  have hemit : (⟨.irr (tr.St ++ tr.Th.filter (fun x =>
-      decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))))
-      (tr.Th.filter (fun x =>
-        !decide (x ∈ tr.Th.filter (fun y => decide (y ∈ Lam)))))
+  have hemit : (⟨.irr (tr.Ξ ++ tr.Θ.filter (fun x =>
+      decide (x ∈ tr.Θ.filter (fun y => decide (y ∈ Λ)))))
+      (tr.Θ.filter (fun x =>
+        !decide (x ∈ tr.Θ.filter (fun y => decide (y ∈ Λ)))))
       (.imp A tr.C),
       .impInI tr.d
-        (filter_split_pre tr.Th (tr.Th.filter (fun y => decide (y ∈ Lam))))
-        (filter_split_disj tr.Th (tr.Th.filter (fun y => decide (y ∈ Lam))))
+        (filter_split_pre tr.Θ (tr.Θ.filter (fun y => decide (y ∈ Λ))))
+        (filter_split_disj tr.Θ (tr.Θ.filter (fun y => decide (y ∈ Λ))))
         hA' hg (CtxEq.refl _) (CtxEq.refl _)⟩ : WRow G) ∈
         emitImpInI G (closureDB G) := by
     refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
     refine List.mem_flatMap.mpr
-      ⟨tr.Th.filter (fun y => decide (y ∈ Lam)),
+      ⟨tr.Θ.filter (fun y => decide (y ∈ Λ)),
        List.mem_sublists.mpr List.filter_sublist, ?_⟩
     refine List.mem_filterMap.mpr
       ⟨.imp A tr.C, mem_goalPool.mpr hg, ?_⟩
@@ -1816,9 +1816,9 @@ end Coverage
 
 /-- The promise context sits inside the fallible one (same family). -/
 theorem ctxAtP_sub_ctxAtF {n k : Nat}
-    {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
+    {Ξs Θs : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
     {F : Form} {Δs : Fin (k + 1) → List Form} :
-    joinCtxAtP stab th rhs F Δs ⊆ joinCtxAtF stab th rhs F := by
+    joinCtxAtP Ξs Θs rhs F Δs ⊆ joinCtxAtF Ξs Θs rhs F := by
   intro x hx
   have h1 := restrictP_subset hx
   rcases List.mem_append.mp h1 with h | h
@@ -1831,9 +1831,9 @@ theorem ctxAtP_sub_ctxAtF {n k : Nat}
     · exact Or.inr (List.mem_filter.mp h).1
 
 theorem ctxOrP_sub_ctxOrF {n k : Nat}
-    {stab th : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
+    {Ξs Θs : Fin (n + 1) → List Form} {rhs : Fin (n + 1) → Form}
     {Δs : Fin (k + 1) → List Form} :
-    joinCtxOrP stab th rhs Δs ⊆ joinCtxOrF stab th rhs := by
+    joinCtxOrP Ξs Θs rhs Δs ⊆ joinCtxOrF Ξs Θs rhs := by
   intro x hx
   have h1 := restrictP_subset hx
   rcases List.mem_append.mp h1 with h | h
@@ -1846,43 +1846,43 @@ theorem ctxOrP_sub_ctxOrF {n k : Nat}
     · exact Or.inr (List.mem_filter.mp h).1
 
 theorem cov_joinCirc (G : Form) : ∀ {n : Nat}
-    (stab th : Fin (n + 1) → List Form)
+    (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (Z : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) A) →
-    unionAll (fun j => circPart (stab j)) = [] →
-    RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-      keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) Z →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+      RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) A) →
+    unionAll (fun j => circPart (Ξs j)) = [] →
+    RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+      keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) Z →
     Form.circ Z ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg .barren (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+      WSubsumes (.reg .barren (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs))
         (.circ Z)) r.s := by
-  intro n stab th rhs Z hmem hJ1 hJ2 hcirc hZ hg
+  intro n Ξs Θs rhs Z hmem hJ1 hJ2 hcirc hZ hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmem
   have hctx := hsame.orCtx_sub
   have hJ2' : ∀ A B : Form, Form.imp A B ∈
-      unionAll (fun j => impPart (((a :: t).get j).St)) →
+      unionAll (fun j => impPart (((a :: t).get j).Ξ)) →
       RefAt true (upsilon fun j => ((a :: t).get j).C)
-        (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th) ++
+        (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ) ++
           keptOf (upsilon fun j => ((a :: t).get j).C)
-            (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-              (fun j => ((a :: t).get j).Th))
-            (thPool fun j => ((a :: t).get j).Th)) A :=
+            (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+              (fun j => ((a :: t).get j).Θ))
+            (thPool fun j => ((a :: t).get j).Θ)) A :=
     fun A B hAB => refAt_mono hsame.upsilon_eq.subset hctx
       (hJ2 A B ((hsame.unionAll_filter _ _).mpr hAB))
   have hemit : (⟨.reg .barren
-      (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-          (fun j => ((a :: t).get j).Th) ++
+      (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+          (fun j => ((a :: t).get j).Θ) ++
         keptOf (upsilon fun j => ((a :: t).get j).C)
-          (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th))
-          (thPool fun j => ((a :: t).get j).Th)) (.circ Z),
+          (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ))
+          (thPool fun j => ((a :: t).get j).Θ)) (.circ Z),
       .joinCirc (fun j => ((a :: t).get j).d)
         (hsame.hJ1 hnd hJ1) hJ2' (hsame.hcirc hcirc) (keptOf_ok _ _ _)
         (refAt_mono hsame.upsilon_eq.subset hctx hZ) hg
@@ -1897,49 +1897,49 @@ theorem cov_joinCirc (G : Form) : ∀ {n : Nat}
   exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
 
 theorem cov_joinOr (G : Form) : ∀ {n : Nat}
-    (stab th : Fin (n + 1) → List Form)
+    (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    unionAll (fun j => circPart (stab j)) = [] →
-    (RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₁ ∧
-      RefAt true (upsilon rhs) (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th)) C₂) →
+    unionAll (fun j => circPart (Ξs j)) = [] →
+    (RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) C₁ ∧
+      RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) C₂) →
     Form.or C₁ C₂ ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg .barren (joinCtxOrVBase stab th ++
-        keptOf (upsilon rhs) (joinCtxOrVBase stab th) (thPool th))
+      WSubsumes (.reg .barren (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs))
         (.or C₁ C₂)) r.s := by
-  intro n stab th rhs C₁ C₂ hmem hJ1 hJ2 hcirc hC hg
+  intro n Ξs Θs rhs C₁ C₂ hmem hJ1 hJ2 hcirc hC hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmem
   have hctx := hsame.orCtx_sub
   have hC' : RefAt true (upsilon fun j => ((a :: t).get j).C)
-      (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-          (fun j => ((a :: t).get j).Th) ++
+      (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+          (fun j => ((a :: t).get j).Θ) ++
         keptOf (upsilon fun j => ((a :: t).get j).C)
-          (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th))
-          (thPool fun j => ((a :: t).get j).Th)) C₁ ∧
+          (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ))
+          (thPool fun j => ((a :: t).get j).Θ)) C₁ ∧
       RefAt true (upsilon fun j => ((a :: t).get j).C)
-        (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th) ++
+        (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ) ++
           keptOf (upsilon fun j => ((a :: t).get j).C)
-            (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-              (fun j => ((a :: t).get j).Th))
-            (thPool fun j => ((a :: t).get j).Th)) C₂ :=
+            (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+              (fun j => ((a :: t).get j).Θ))
+            (thPool fun j => ((a :: t).get j).Θ)) C₂ :=
     ⟨refAt_mono hsame.upsilon_eq.subset hctx hC.1,
      refAt_mono hsame.upsilon_eq.subset hctx hC.2⟩
   have hemit : (⟨.reg .barren
-      (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-          (fun j => ((a :: t).get j).Th) ++
+      (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+          (fun j => ((a :: t).get j).Θ) ++
         keptOf (upsilon fun j => ((a :: t).get j).C)
-          (joinCtxOrVBase (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th))
-          (thPool fun j => ((a :: t).get j).Th)) (.or C₁ C₂),
+          (joinCtxOrVBase (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ))
+          (thPool fun j => ((a :: t).get j).Θ)) (.or C₁ C₂),
       .joinOr (fun j => ((a :: t).get j).d)
         (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) (hsame.hcirc hcirc)
         (keptOf_ok _ _ _) hC' hg (CtxEq.refl _)⟩ : WRow G) ∈
@@ -1954,29 +1954,29 @@ theorem cov_joinOr (G : Form) : ∀ {n : Nat}
   exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
 
 theorem cov_joinAt (G : Form) : ∀ {n : Nat}
-    (stab th : Fin (n + 1) → List Form)
+    (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (F : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    unionAll (fun j => circPart (stab j)) = [] →
-    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    unionAll (fun j => circPart (Ξs j)) = [] →
+    F.isPrime → F ∉ unionAll (fun j => atPart (Ξs j)) → F ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg .barren (joinCtxAtVBase stab th F ++
-        keptOf (upsilon rhs) (joinCtxAtVBase stab th F) (thPool th))
+      WSubsumes (.reg .barren (joinCtxAtVBase Ξs Θs F ++
+        keptOf (upsilon rhs) (joinCtxAtVBase Ξs Θs F) (thPool Θs))
         F) r.s := by
-  intro n stab th rhs F hmem hJ1 hJ2 hcirc hF hFnot hg
+  intro n Ξs Θs rhs F hmem hJ1 hJ2 hcirc hF hFnot hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmem
   have hctx := hsame.atCtx_sub (F := F)
   have hemit : (⟨.reg .barren
-      (joinCtxAtVBase (fun j => ((a :: t).get j).St)
-          (fun j => ((a :: t).get j).Th) F ++
+      (joinCtxAtVBase (fun j => ((a :: t).get j).Ξ)
+          (fun j => ((a :: t).get j).Θ) F ++
         keptOf (upsilon fun j => ((a :: t).get j).C)
-          (joinCtxAtVBase (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th) F)
-          (thPool fun j => ((a :: t).get j).Th)) F,
+          (joinCtxAtVBase (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ) F)
+          (thPool fun j => ((a :: t).get j).Θ)) F,
       .joinAt (fun j => ((a :: t).get j).d)
         (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) (hsame.hcirc hcirc)
         (keptOf_ok _ _ _) hF (hsame.hFnot hFnot) hg
@@ -1991,21 +1991,21 @@ theorem cov_joinAt (G : Form) : ∀ {n : Nat}
   exact ⟨e, he, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hctx) hsub⟩
 
 theorem cov_joinAtF (G : Form) : ∀ {n : Nat}
-    (stab th : Fin (n + 1) → List Form)
+    (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (F : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    F.isPrime → F ∉ unionAll (fun j => atPart (Ξs j)) → F ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg .blocked (joinCtxAtF stab th rhs F) F) r.s := by
-  intro n stab th rhs F hmem hJ1 hJ2 hF hFnot hg
+      WSubsumes (.reg .blocked (joinCtxAtF Ξs Θs rhs F) F) r.s := by
+  intro n Ξs Θs rhs F hmem hJ1 hJ2 hF hFnot hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmem
   have hemit : (⟨.reg .blocked
-      (joinCtxAtF (fun j => ((a :: t).get j).St)
-        (fun j => ((a :: t).get j).Th)
+      (joinCtxAtF (fun j => ((a :: t).get j).Ξ)
+        (fun j => ((a :: t).get j).Θ)
         (fun j => ((a :: t).get j).C) F) F,
       .joinAtF (fun j => ((a :: t).get j).d)
         (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hF
@@ -2022,25 +2022,25 @@ theorem cov_joinAtF (G : Form) : ∀ {n : Nat}
     (wSubsumes_reg (tagLeB_refl _) (hsame.ctxAtF (F := F)).subset) hsub⟩
 
 theorem cov_joinOrF (G : Form) : ∀ {n : Nat}
-    (stab th : Fin (n + 1) → List Form)
+    (Ξs Θs : Fin (n + 1) → List Form)
     (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
     (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
     Form.or C₁ C₂ ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg .blocked (joinCtxOrF stab th rhs) (.or C₁ C₂)) r.s := by
-  intro n stab th rhs C₁ C₂ hmem hJ1 hJ2 hC hg
+      WSubsumes (.reg .blocked (joinCtxOrF Ξs Θs rhs) (.or C₁ C₂)) r.s := by
+  intro n Ξs Θs rhs C₁ C₂ hmem hJ1 hJ2 hC hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmem
   have hC' : C₁ ∈ (upsilon fun j => ((a :: t).get j).C) ∧
       C₂ ∈ (upsilon fun j => ((a :: t).get j).C) :=
     ⟨(hsame.upsilon_eq C₁).mp hC.1, (hsame.upsilon_eq C₂).mp hC.2⟩
   have hemit : (⟨.reg .blocked
-      (joinCtxOrF (fun j => ((a :: t).get j).St)
-        (fun j => ((a :: t).get j).Th)
+      (joinCtxOrF (fun j => ((a :: t).get j).Ξ)
+        (fun j => ((a :: t).get j).Θ)
         (fun j => ((a :: t).get j).C)) (.or C₁ C₂),
       .joinOrF (fun j => ((a :: t).get j).d)
         (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hC' hg
@@ -2056,23 +2056,23 @@ theorem cov_joinOrF (G : Form) : ∀ {n : Nat}
     (wSubsumes_reg (tagLeB_refl _) hsame.ctxOrF.subset) hsub⟩
 
 theorem cov_joinAtP (G : Form) : ∀ {n k : Nat}
-    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
     (F : Form) (t' : Tag) (tps : Fin (k + 1) → Tag)
     (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
     (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) →
-    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
     (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
-    F.isPrime → F ∉ unionAll (fun j => atPart (stab j)) → F ∈ sfR G →
+    F.isPrime → F ∉ unionAll (fun j => atPart (Ξs j)) → F ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg t' (joinCtxAtP stab th rhs F Δs) F) r.s := by
-  intro n k stab th rhs F t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ7s
+      WSubsumes (.reg t' (joinCtxAtP Ξs Θs rhs F Δs) F) r.s := by
+  intro n k Ξs Θs rhs F t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ7s
     htag hF hFnot hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmemI
@@ -2080,8 +2080,8 @@ theorem cov_joinAtP (G : Form) : ∀ {n k : Nat}
   · -- blocked branch: covered by the fallible join
     subst h0
     have hemit : (⟨.reg .blocked
-        (joinCtxAtF (fun j => ((a :: t).get j).St)
-          (fun j => ((a :: t).get j).Th)
+        (joinCtxAtF (fun j => ((a :: t).get j).Ξ)
+          (fun j => ((a :: t).get j).Θ)
           (fun j => ((a :: t).get j).C) F) F,
         .joinAtF (fun j => ((a :: t).get j).d)
           (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hF
@@ -2104,8 +2104,8 @@ theorem cov_joinAtP (G : Form) : ∀ {n k : Nat}
     · rw [hchain.1] at hbad
       exact absurd hbad (by simp)
     · have hemit : (⟨.reg (.chain (((b :: u).get 0).C))
-          (joinCtxAtP (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th)
+          (joinCtxAtP (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ)
             (fun j => ((a :: t).get j).C) F
             (fun i => ((b :: u).get i).Γ)) F,
           .joinAtP (fun j => ((a :: t).get j).d)
@@ -2129,24 +2129,24 @@ theorem cov_joinAtP (G : Form) : ∀ {n k : Nat}
         (ctxAtP_eq hsame hsameR).subset) hsub⟩
 
 theorem cov_joinOrP (G : Form) : ∀ {n k : Nat}
-    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
     (C₁ C₂ : Form) (t' : Tag) (tps : Fin (k + 1) → Tag)
     (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
     (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) →
-    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
     (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
     (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
     Form.or C₁ C₂ ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg t' (joinCtxOrP stab th rhs Δs) (.or C₁ C₂)) r.s := by
-  intro n k stab th rhs C₁ C₂ t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5
+      WSubsumes (.reg t' (joinCtxOrP Ξs Θs rhs Δs) (.or C₁ C₂)) r.s := by
+  intro n k Ξs Θs rhs C₁ C₂ t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5
     hJ7s htag hC hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmemI
@@ -2156,8 +2156,8 @@ theorem cov_joinOrP (G : Form) : ∀ {n k : Nat}
   rcases htag with h0 | hchain
   · subst h0
     have hemit : (⟨.reg .blocked
-        (joinCtxOrF (fun j => ((a :: t).get j).St)
-          (fun j => ((a :: t).get j).Th)
+        (joinCtxOrF (fun j => ((a :: t).get j).Ξ)
+          (fun j => ((a :: t).get j).Θ)
           (fun j => ((a :: t).get j).C)) (.or C₁ C₂),
         .joinOrF (fun j => ((a :: t).get j).d)
           (hsame.hJ1 hnd hJ1) (hsame.hJ2_strict hJ2) hC' hg
@@ -2177,8 +2177,8 @@ theorem cov_joinOrP (G : Form) : ∀ {n k : Nat}
     · rw [hchain.1] at hbad
       exact absurd hbad (by simp)
     · have hemit : (⟨.reg (.chain (((b :: u).get 0).C))
-          (joinCtxOrP (fun j => ((a :: t).get j).St)
-            (fun j => ((a :: t).get j).Th)
+          (joinCtxOrP (fun j => ((a :: t).get j).Ξ)
+            (fun j => ((a :: t).get j).Θ)
             (fun j => ((a :: t).get j).C)
             (fun i => ((b :: u).get i).Γ)) (.or C₁ C₂),
           .joinOrP (fun j => ((a :: t).get j).d)
@@ -2202,24 +2202,24 @@ theorem cov_joinOrP (G : Form) : ∀ {n k : Nat}
         (ctxOrP_eq hsame hsameR).subset) hsub⟩
 
 theorem cov_joinCircP (G : Form) : ∀ {n k : Nat}
-    (stab th : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form)
     (Z : Form) (tps : Fin (k + 1) → Tag)
     (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
-    (∀ j, (WSeq.irr (stab j) (th j) (rhs j)) ∈ (closureDB G).map (·.s)) →
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ (closureDB G).map (·.s)) →
     (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ (closureDB G).map (·.s)) →
-    (∀ i j, i ≠ j → stab i ⊆ stab j ++ th j) →
-    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (stab j)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
       A ∈ upsilon rhs) →
-    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (stab j)) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
       ∃ i, Clo (Δs i) Y) →
-    (∀ i j, ∀ X ∈ stab j, Clo (Δs i) X) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
     (∀ i, Ds i = Z ∧
       (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z)) →
     Z ∈ upsilon rhs → Form.circ Z ∈ sfR G →
     ∃ r ∈ closureDB G,
-      WSubsumes (.reg (.chain Z) (joinCtxOrP stab th rhs Δs)
+      WSubsumes (.reg (.chain Z) (joinCtxOrP Ξs Θs rhs Δs)
         (.circ Z)) r.s := by
-  intro n k stab th rhs Z tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ7s
+  intro n k Ξs Θs rhs Z tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ7s
     hDs hZ hg
   obtain ⟨a, t, hsubl, hsame, hnd⟩ :=
     reindex_irr (closureDB_seq_nodup G) hmemI
@@ -2228,8 +2228,8 @@ theorem cov_joinCircP (G : Form) : ∀ {n k : Nat}
     (hsame.upsilon_eq Z).mp hZ
   have hDsG := hDsZ_re hsameR hDs
   have hemit : (⟨.reg (.chain Z)
-      (joinCtxOrP (fun j => ((a :: t).get j).St)
-        (fun j => ((a :: t).get j).Th)
+      (joinCtxOrP (fun j => ((a :: t).get j).Ξ)
+        (fun j => ((a :: t).get j).Θ)
         (fun j => ((a :: t).get j).C)
         (fun i => ((b :: u).get i).Γ)) (.circ Z),
       .joinCircP (fun j => ((a :: t).get j).d)
@@ -2260,17 +2260,17 @@ theorem closureDB_closed (G : Form) : DBClosed G (closureDB G) where
   andR2 := cov_andR2 G
   impIn := cov_impIn G
   circIn := cov_circIn G
-  joinAt := fun stab th rhs F => cov_joinAt G stab th rhs F
-  joinOr := fun stab th rhs C₁ C₂ => cov_joinOr G stab th rhs C₁ C₂
-  joinCirc := fun stab th rhs Z => cov_joinCirc G stab th rhs Z
-  joinAtP := fun stab th rhs F t' tps Δs Ds =>
-    cov_joinAtP G stab th rhs F t' tps Δs Ds
-  joinOrP := fun stab th rhs C₁ C₂ t' tps Δs Ds =>
-    cov_joinOrP G stab th rhs C₁ C₂ t' tps Δs Ds
-  joinCircP := fun stab th rhs Z tps Δs Ds =>
-    cov_joinCircP G stab th rhs Z tps Δs Ds
-  joinAtF := fun stab th rhs F => cov_joinAtF G stab th rhs F
-  joinOrF := fun stab th rhs C₁ C₂ => cov_joinOrF G stab th rhs C₁ C₂
+  joinAt := fun Ξs Θs rhs F => cov_joinAt G Ξs Θs rhs F
+  joinOr := fun Ξs Θs rhs C₁ C₂ => cov_joinOr G Ξs Θs rhs C₁ C₂
+  joinCirc := fun Ξs Θs rhs Z => cov_joinCirc G Ξs Θs rhs Z
+  joinAtP := fun Ξs Θs rhs F t' tps Δs Ds =>
+    cov_joinAtP G Ξs Θs rhs F t' tps Δs Ds
+  joinOrP := fun Ξs Θs rhs C₁ C₂ t' tps Δs Ds =>
+    cov_joinOrP G Ξs Θs rhs C₁ C₂ t' tps Δs Ds
+  joinCircP := fun Ξs Θs rhs Z tps Δs Ds =>
+    cov_joinCircP G Ξs Θs rhs Z tps Δs Ds
+  joinAtF := fun Ξs Θs rhs F => cov_joinAtF G Ξs Θs rhs F
+  joinOrF := fun Ξs Θs rhs C₁ C₂ => cov_joinOrF G Ξs Θs rhs C₁ C₂
   axI := cov_axI G
   andI1 := cov_andI1 G
   andI2 := cov_andI2 G
