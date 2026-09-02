@@ -1,0 +1,62 @@
+# Raw trace_state transcript of wip/gbu_frjw_closure.lean at b2f2525 (tCr impIn/joinAtF, tCi axI), produced 2026-09-02 16:05 BST
+# Method: docs/annotated/README.md; the traced copy lived outside the repository; linter warnings for the inserted 'trace' tactics removed.
+== T-C impIn (before regUp): the premise's stored subsumer is still to be found
+== T-C impIn (after regUp): ascend done; refire ⊃∈ at the subsumer, then descend
+== T-C joinAtF (after irrPick and the context inclusion): refire ⋈^At_F at the stored family, then descend
+== T-C axI: no premise; the DBClosed clause supplies the stored row, descend to the ≐-variant
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝¹ : Tag
+x✝ : List Form
+A B : Form
+d : FRJWr G x✝¹ x✝ B
+hA : Clo x✝ A
+hg : A.imp B ∈ sfR G
+⊢ ∃ r ∈ db, WSubsumes (WSeq.reg x✝¹ x✝ (A.imp B)) r.s
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝¹ : Tag
+x✝ : List Form
+A B : Form
+d : FRJWr G x✝¹ x✝ B
+hA : Clo x✝ A
+hg : A.imp B ∈ sfR G
+t' : Tag
+Γ' : List Form
+hmem : WSeq.reg t' Γ' B ∈ List.map (fun x => x.s) db
+hle : tagLeB x✝¹ t' = true
+hΓ : x✝ ⊆ Γ'
+⊢ ∃ r ∈ db, WSubsumes (WSeq.reg x✝¹ x✝ (A.imp B)) r.s
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝ : List Form
+F : Form
+n✝ : ℕ
+stab th : Fin (n✝ + 1) → List Form
+rhs : Fin (n✝ + 1) → Form
+prem : (j : Fin (n✝ + 1)) → FRJWi G (stab j) (th j) (rhs j)
+hJ1 : ∀ (i j : Fin (n✝ + 1)), i ≠ j → stab i ⊆ stab j ++ th j
+hJ2 : ∀ (A B : Form), (A.imp B ∈ unionAll fun j => impPart (stab j)) → A ∈ upsilon rhs
+hF : F.isPrime = true
+hFnot : F ∉ unionAll fun j => atPart (stab j)
+hg : F ∈ sfR G
+hΓ : x✝ ≐ joinCtxAtF stab th rhs F
+pk : IrrPick G db stab th rhs := irrPick ⋯
+hsubctx : joinCtxAtF stab th rhs F ⊆ joinCtxAtF pk.stab' pk.th' rhs F
+⊢ ∃ r ∈ db, WSubsumes (WSeq.reg Tag.blocked x✝ F) r.s
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝ : List Form
+F : Form
+hF : F.isPrime = true
+hg : F ∈ sfR G
+hTh : x✝ ≐ rm (gAt G) F ++ gImp G ++ gCirc G
+⊢ ∃ r ∈ db, WSubsumes (WSeq.irr [] x✝ F) r.s
+
+
+
+

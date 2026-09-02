@@ -1862,6 +1862,341 @@ and the certificate test is the fork between them.
 
 ---
 
+## 7. Two runs through the loop, correlated with the proof states
+
+### 7.0 Sources and what they certify
+
+The search-state side of this section is `wip/frjw_trace.lean`
+(commit `8c86301`), an `#eval`-only driver that (i) re-runs the
+saturation one round at a time, printing each round's new rows with
+the FRJW rule that produced them, (ii) runs the root scan
+`rootDisproof?`, and (iii) prints the object `decideGbuWData G`
+RETURNED, as a tree, by pattern-matching on it: a `Gbu◯` derivation
+node prints as `rule | cell | wgC | guards`, an FRJW disproof node as
+`rule | sequent`.  Its verbatim output is `wip/frjw_trace_out.txt`.
+Two provisos.  The printed trees are the returned terms, nothing is
+reconstructed; and the driver's round decomposition is certified
+against `stepNew`'s definition by a kernel-checked `rfl` in the file
+(`roundsEq`).  Everything else it prints is interpreter-level
+evidence, tainting nothing and proving nothing; the pins are the
+gates.  (The printer names the irregular axiom of `Gbu◯`, `GbuIC.ax`,
+as `axI`.)
+
+The proof-state side is §4 for `searchW` and, for the disproof run,
+four further snapshots of the T-C induction (`tCr`/`tCi`,
+`wip/gbu_frjw_closure.lean:1496–1676`), taken by the same method
+(raw transcript: `docs/annotated/frjw-tC-transcript.txt`).
+
+Both runs are at the bottom of the scale: `|Sf^R(G)| ≤ 3`, stores of
+8 and 9 rows, 12 s each in the interpreter.
+
+### 7.1 The proof run: `G = p ⊃ ◯p`
+
+**The universe.**
+
+    Sf^L G = [p]        Sf^R G = [p ⊃ ◯p, ◯p, p]        Ĝ = [p]
+
+**The store, round by round** (`frjw_trace_out.txt`, `unit store`):
+
+| round | emitted / fresh / stored | new rows |
+|---|---|---|
+| 1 | 3 / 3 / 3 | `barren : [] ⇒ p` (`Ax^R`); `[] ; [] → p` (`Ax^I`); `[] ; [] → ◯p` (`Ax^I◯`) |
+| 2 | 19 / 11 / 4 | `barren : [] ⇒ ◯p` (`◯∈`); `blocked : [] ⇒ p` (`⋈^At_F`); `chain p : [] ⇒ p` (`⋈^At_P`); `chain p : [] ⇒ ◯p` (`⋈^◯_P`) |
+| 3 | 44 / 9 / 1 | `chain ◯p : [] ⇒ p` (`⋈^At_P`) |
+| 4 | 45 / 0 | fixpoint: 8 rows, identical to `closureDB G` |
+
+("fresh" counts rows whose canonical key is new; "stored" is smaller
+when several fresh rows share a key, since `insertNew` deduplicates
+within the round.)  Read the rows against §1.5: `Ax^I`'s zone is
+`(Ĝ_at ∖ p) ++ Ĝ_imp ++ Ĝ_◯ = []`; `Ax^I◯` fires with the empty
+valuation, under which `p` is classically false and `vacZone = []`;
+the disproofs of `◯p` at the EMPTY context (rounds 1 and 2) are
+countermodels to `◯p` alone.  There is no regular row for the goal
+`p ⊃ ◯p`, and there cannot be: to get one by `⊃∈` the store would
+need a row for `◯p` whose context closure contains `p`, and every
+`◯p`-row has context `[]`.
+
+**The root scan**: `rootDisproof? = none`, so `decideOfStore` runs
+`searchW` at `(true, [], p ⊃ ◯p)` with the negative fact
+`rootDisproof?_none` supplies.
+
+**The derivation returned**, as printed:
+
+```
+rimpNI | (reg, [], p ⊃ ◯p) | wgC=(1, 2, 4) | cloB Ψ p=false  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=-
+  rcirc | (reg, [p], ◯p) | wgC=(0, 2, 3) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=-
+    axI | (irr, [p], p) | wgC=(0, 0, 2) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=p
+```
+
+i.e. the `Gbu◯` derivation
+
+```
+    ────────── ax
+     p →g p
+    ────────── R◯   [◯p ∈ Sf^R(G)]
+     p ⇒g ◯p
+    ─────────── R⊃ₙ   [p ∉ Cl([])]
+     ⇒g p ⊃ ◯p
+```
+
+**The correlation, cell by cell.**  Each row gives the cell, its
+measure (from the trace), the snapshots of §4 the searcher passes
+through at it, what the store answered, and the rule applied.
+
+| step | cell | `wgC` | proof states passed (§4) | the store's answers | rule |
+|---|---|---|---|---|---|
+| 1 | `(true, [], p ⊃ ◯p)` | `(1, 2, 4)` | S0a with `x = (1,2,4)`; S0b; `cases reg` → S8 (`hne : ¬ WEvalR D [] (p ⊃ ◯p)`, true: no root row); `splitHatT []` → `hall` vacuously → S8-crit; `cases C` = `imp p (◯p)`; `decClo [] p` → `false` (the trace's `cloB Ψ p=false`) → S8b(⊃) | `WEvalR D [] (p ⊃ ◯p)`: no.  The premise's negative fact, by `gbuInv6` contraposed: were `[p] ⇒g ◯p` refuted, `⊃∈` would give a root row; the two stored `◯p`-rows have context `[]` and `p ∉ Cl([])`, so they do not answer `WEvalR D [p] ◯p` | `R⊃ₙ`, paid by component 1: `unclosed` 1 → 0 (`p` enters `Cl(Ψ)`) |
+| 2 | `(true, [p], ◯p)` | `(0, 2, 3)` | S0b (fresh instance, `x = (0,2,3)`); S8 (`hax : ◯p ∉ [p]`); `splitHatT [p]` → `hall` (`p` is `Ĝ`-shaped) → S8-crit; `cases C` = `circ p`; the modal-member scan → `hnoc`; `hΩai` → S8b(◯)-crit; `decI [p] p` → `false` → S8b(◯)-R◯ | `WEvalI D [p] p`: no.  The only irregular `p`-row is `[] ; [] → p`, and `[p] ⊆ [] ++ []` fails.  So `heZ : ¬ WEvalI D [p] p`, lifted to the invariant by `unrefutedBelow_of_gHat` | `R◯`, paid by component 2: `tpC` 2 → 0 (regular → irregular with a `◯`-free goal); context unchanged |
+| 3 | `(false, [p], p)` | `(0, 0, 2)` | S0b (`x = (0,0,2)`); `cases reg` = `false`; `intro hΨ hΩc hC hnb`; `byDec (p ∈ [p])` → positive: `.ax p (ctxEq_cons_self hax)`.  S2 is NOT reached | none needed | `ax` |
+
+Three cells, three rules, and the three measure components in order:
+component 1 pays the first descent, component 2 the second, and the
+third cell is a leaf.  Note what the trace adds to §4: the snapshots
+are generic in `Ψ`, `C`; the run says which branch each decision took
+and why (`cloB [] p = false`; no `◯`-member; `p` unrefuted at `[p]`
+because the store's `p`-rows all have empty zones).  Note also what
+the two `◯p`-rows in the store are doing: they are the disproofs the
+bank lemma `gbuInv6` would have used had the premise been refuted,
+and their contexts are exactly why it was not.
+
+### 7.2 The disproof run: `G = ◯p ⊃ p`
+
+**The universe.**
+
+    Sf^L G = [◯p, p]        Sf^R G = [◯p ⊃ p, p]        Ĝ = [p, ◯p]
+
+**The store, round by round** (`circp_p store`):
+
+| round | emitted / fresh / stored | new rows |
+|---|---|---|
+| 1 | 2 / 2 / 2 | `barren : [] ⇒ p` (`Ax^R`); `[] ; [◯p] → p` (`Ax^I`) |
+| 2 | 7 / 4 / 4 | `[◯p] ; [] → ◯p ⊃ p` (`⊃∈ᵢ`); `[] ; [] → p` (`Lift`); `blocked : [◯p] ⇒ p` (`⋈^At_F`); `chain p : [] ⇒ p` (`⋈^At_P`) |
+| 3 | 24 / 3 / 2 | **`blocked : [◯p] ⇒ ◯p ⊃ p` (`⊃∈`)**; `blocked : [] ⇒ p` (`⋈^At_F`) |
+| 4 | 26 / 1 / 1 | `[] ; [◯p] → ◯p ⊃ p` (`Lift`) |
+| 5 | 48 / 0 | fixpoint: 9 rows, identical to `closureDB G` |
+
+Reading the rows.  Round 1: `Ax^I`'s zone is now `(Ĝ_at ∖ p) ++ Ĝ_imp
+++ Ĝ_◯ = [◯p]`, so the axiom row says "a root refuting `p` may force
+`◯p`".  Round 2: `⊃∈ᵢ` moves `◯p` from the `Θ`-zone to the stable zone
+(`Λ = [◯p]`, `◯p ∈ Cl([] ++ [◯p])`) and puts `◯p` in front of `p`;
+`Lift` turns the regular axiom row into an irregular one; the fallible
+atomic join `⋈^At_F` with the single premise `[] ; [◯p] → p` makes the
+REGULAR row `blocked : [◯p] ⇒ p` (tag `blocked`: no claim about the
+root's modal cone, which is what a fallible join is); `⋈^At_P` with no
+regular premises makes a `chain p` row at the empty context.  Round 3:
+`⊃∈` applied to `blocked : [◯p] ⇒ p` with `◯p ∈ Cl([◯p])` gives the
+ROOT ROW `blocked : [◯p] ⇒ ◯p ⊃ p`.  Rounds 4 and 5: one more `Lift`,
+then nothing new.  The new rule `Lift` fires twice in this store
+(rounds 2 and 4), though not inside the root's own disproof.
+
+**The root scan**: `rootDisproof? = some`, tag `blocked`, `Γ = [◯p]`,
+head rule `⊃∈`.  `decideOfStore` returns `.inr` at once; `searchW` is
+never entered.  This is the asymmetry the stage-4 brief warns about:
+a PLL-invalid formula is decided by the store alone, so it is the
+wrong example for tracing the search and the right one for tracing
+the saturation.
+
+**The disproof returned**, as printed:
+
+```
+impIn | blocked : [◯p] ⇒ ◯p ⊃ p
+  joinAtF[irr 1] | blocked : [◯p] ⇒ p
+    · irr premise j=0
+      axI | [] ; [◯p] → p
+```
+
+i.e. the FRJW disproof
+
+```
+    ─────────────────── Ax^I   [p prime;  Θ = (Ĝ_at ∖ p) ++ Ĝ_imp ++ Ĝ_◯ = [◯p]]
+     [] ; [◯p] → p
+    ─────────────────── ⋈^At_F   [one premise; p ∉ Σ^at = []; (J1) vacuous; (J2) vacuous]
+     blocked : [◯p] ⇒ p
+    ───────────────────────── ⊃∈   [◯p ∈ Cl([◯p])]
+     blocked : [◯p] ⇒ ◯p ⊃ p
+```
+
+By `soundnessW` this is a Kripke countermodel to `◯p ⊃ p`: a root
+forcing `◯p` and refuting `p`.
+
+**The correlation with the proof side.**  On the disproof side the
+"proof loop" is the saturation, and the proof states that matter are
+those of the theorems that certify the store, not of `searchW`.  Three
+layers, for this tree:
+
+1. *Each row carries its disproof.*  The emitters fire FRJW
+   constructors at stored premises under `dite`-guards on the rule's
+   side conditions, so `blocked : [◯p] ⇒ ◯p ⊃ p` is stored WITH the
+   three-node term above as its `d` field; the printer read it off.
+   No search, no reconstruction.
+2. *The store is closed* (`closureDB_closed G : DBClosed G (closureDB
+   G)`, `wip/gbu_frjw_saturate.lean:2354–2378`): for each of the 21
+   FRJW rules, the rule fired at STORED premises has a stored subsumer.
+   For this tree the three clauses used are `DBClosed.axI`,
+   `DBClosed.joinAtF`, `DBClosed.impIn`, each discharged by the
+   coverage lemma of its emitter (`cov_axI`, `cov_joinAtF`, `cov_impIn`)
+   through `stored_of_emitted` and the pigeonhole `sat_fixed`.
+3. *Closed implies complete up to subsumption* (`tC_of_closed`), by the
+   T-C induction on the disproof.  For this tree the induction visits
+   exactly the three cases below, innermost first.
+
+The four T-C snapshots (method as §4; anchors
+`wip/gbu_frjw_closure.lean`, at `b2f2525`; the `x✝` names are the
+tag and context indices the pattern match left unnamed):
+
+**`tCi`, case `axI`** (anchor `closure:1628`, on entry):
+
+```
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝ : List Form
+F : Form
+hF : F.isPrime = true
+hg : F ∈ sfR G
+hTh : x✝ ≐ rm (gAt G) F ++ gImp G ++ gCirc G
+⊢ ∃ r ∈ db, WSubsumes (WSeq.irr [] x✝ F) r.s
+```
+
+No premise, so no ascent: `hcl.axI F hF hg` gives the stored row for
+`[] ; (Ĝ_at ∖ F) ++ Ĝ_imp ++ Ĝ_◯ → F` directly, and `downIrr (CtxEq.refl
+_) hTh.subset` transports it to the `≐`-variant `x✝`.  On the run:
+`F = p`, `x✝ = [◯p]`.
+
+**`tCr`, case `joinAtF`** (anchor `closure:1547`, after the context
+inclusion):
+
+```
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝ : List Form
+F : Form
+n✝ : ℕ
+stab th : Fin (n✝ + 1) → List Form
+rhs : Fin (n✝ + 1) → Form
+prem : (j : Fin (n✝ + 1)) → FRJWi G (stab j) (th j) (rhs j)
+hJ1 : ∀ (i j : Fin (n✝ + 1)), i ≠ j → stab i ⊆ stab j ++ th j
+hJ2 : ∀ (A B : Form), (A.imp B ∈ unionAll fun j => impPart (stab j)) → A ∈ upsilon rhs
+hF : F.isPrime = true
+hFnot : F ∉ unionAll fun j => atPart (stab j)
+hg : F ∈ sfR G
+hΓ : x✝ ≐ joinCtxAtF stab th rhs F
+pk : IrrPick G db stab th rhs := irrPick ⋯
+hsubctx : joinCtxAtF stab th rhs F ⊆ joinCtxAtF pk.stab' pk.th' rhs F
+⊢ ∃ r ∈ db, WSubsumes (WSeq.reg Tag.blocked x✝ F) r.s
+```
+
+The ascent for a FAMILY of premises: `pk := irrPick (fun j => tCi hcl
+(prem j))` packages, for every `j`, a stored subsumer of premise `j`
+(`pk.stab'`, `pk.th'`, `pk.mem`, and the zone relations `pk.hst`,
+`pk.hth`), skolemised without choice through `List.find?` over the
+decidable subsumption test.  `hsubctx` is the T-B fact that the join's
+context at the stored family contains the original's.  The `exact`
+that follows refires `⋈^At_F` at the stored family
+(`hcl.joinAtF pk.stab' pk.th' rhs F pk.mem …`), transferring (J1) and
+(J2) across the premise swap with `hJ1_of_swap`, `hJ2_strict_of_swap`,
+and descends with `downReg`.  On the run: `n✝ = 0`, one premise,
+`stab 0 = []`, `th 0 = [◯p]`, `rhs 0 = p`, `F = p`, `x✝ = [◯p]`.
+
+**`tCr`, case `impIn`, before and after the ascent** (anchors
+`closure:1507` on entry, `closure:1508` after `regUp`):
+
+```
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝¹ : Tag
+x✝ : List Form
+A B : Form
+d : FRJWr G x✝¹ x✝ B
+hA : Clo x✝ A
+hg : A.imp B ∈ sfR G
+⊢ ∃ r ∈ db, WSubsumes (WSeq.reg x✝¹ x✝ (A.imp B)) r.s
+```
+
+```
+G : Form
+db : List (WRow G)
+hcl : DBClosed G db
+x✝¹ : Tag
+x✝ : List Form
+A B : Form
+d : FRJWr G x✝¹ x✝ B
+hA : Clo x✝ A
+hg : A.imp B ∈ sfR G
+t' : Tag
+Γ' : List Form
+hmem : WSeq.reg t' Γ' B ∈ List.map (fun x => x.s) db
+hle : tagLeB x✝¹ t' = true
+hΓ : x✝ ⊆ Γ'
+⊢ ∃ r ∈ db, WSubsumes (WSeq.reg x✝¹ x✝ (A.imp B)) r.s
+```
+
+Between the two: `regUp (tCr hcl d)`, the induction hypothesis at the
+premise (the `joinAtF` node) unpacked into a stored subsumer `t' : Γ'
+⇒ B` with `hle`, `hΓ`.  After: refire `⊃∈` at the subsumer,
+`hcl.impIn t' Γ' A B hmem (clo_mono hΓ hA) hg` (the side condition `A
+∈ Cl(x✝)` is transported to `Cl(Γ')` by monotonicity), and descend
+with `downReg hle hΓ`.  On the run: `x✝¹ = blocked`, `x✝ = [◯p]`, `A =
+◯p`, `B = p`, and the subsumer found is the round-2 row `blocked : [◯p]
+⇒ p` itself (`t' = blocked`, `Γ' = [◯p]`).
+
+So the disproof run's "loop" is: rounds 1–3 of the saturation
+manufacture the tree bottom-up (`Ax^I` in round 1, `⋈^At_F` in round
+2, `⊃∈` in round 3), the root scan finds the top node, and the T-C
+induction, read top-down, is the proof that nothing derivable was
+missed: each node's premise has a stored subsumer (`regUp`/`irrPick`),
+the rule refired there is a `DBClosed` clause, and subsumption
+transports the result back.
+
+### 7.3 A second proof run: `G₂ = ◯p ⊃ (◯p ∧ ◯p)`
+
+Included because it exercises the third measure component and the
+axiom at a cell with a modal member.  Store: 5 rounds, 14 rows, root
+scan `none`.  Derivation:
+
+```
+rimpNI | (reg, [], ◯p ⊃ ◯p ∧ ◯p) | wgC=(2, 2, 8) | cloB Ψ ◯p=false  Ψ⊆Ĝ=true  ◯∈Ψ=false  focus=-
+  randR | (reg, [◯p], ◯p ∧ ◯p) | wgC=(1, 2, 7) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=true  focus=-
+    ax | (reg, [◯p], ◯p) | wgC=(1, 2, 4) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=true  focus=◯p
+    ax | (reg, [◯p], ◯p) | wgC=(1, 2, 4) | cloB=n/a  Ψ⊆Ĝ=true  ◯∈Ψ=true  focus=◯p
+```
+
+| step | cell | `wgC` | proof states (§4) | rule, payment |
+|---|---|---|---|---|
+| 1 | `(true, [], G₂)` | `(2, 2, 8)` | S8 → S8-crit → S8b(⊃), `cloB [] ◯p = false` | `R⊃ₙ`, component 1: 2 → 1 |
+| 2 | `(true, [◯p], ◯p ∧ ◯p)` | `(1, 2, 7)` | S8 (`hax`: the goal is not in `[◯p]`); `splitHatT` → `hall` (`◯p` is `Ĝ`-shaped); S8-crit; `cases C` = `and` → S8b(∧) | `R∧`, component 3 twice: 7 → 4, with `gbuInv2` for both premises' negative facts |
+| 3, 3′ | `(true, [◯p], ◯p)` | `(1, 2, 4)` | S0b; `cases reg` = `true`; `intro`; `byDec (◯p ∈ [◯p])` positive: `ax`.  S8 is NOT reached | `ax` |
+
+At step 2 the modal member `◯p` is in the context but the goal is a
+conjunction, so the `L◯` scan (which runs only under `cases C = circ`)
+is never consulted; at step 3 the axiom test precedes every scan.
+`unclosed` stays at 1 from step 2 on: `Sf^L G₂ = [◯p, p]`, and `p` is
+never captured by `Cl([◯p])`.
+
+### 7.4 What the runs certify, and what is reading
+
+Checked by the runs (interpreter level): the per-round row sets and
+rule names; the round counts (4, 5, 5) and store sizes (8, 9, 14); that
+the driver's loop reaches a `stepNew`-empty fixpoint whose sequent
+list equals `closureDB G`'s in all three cases; the root-scan verdicts;
+which side `decideGbuWData` returned and the whole returned tree; the
+`wgC` triples and guard columns, computed by the repository's own
+`unclosed`, `tpC`, `seqSize`, `cloB`, `gHat`, `isCirc`.  Kernel-checked
+in the trace file: `roundsEq`, that the driver's round decomposition
+is `stepNew`'s definition.  Kernel-checked in the repository: every
+statement of §1.7.
+
+My reading, not established by any run: the "proof states passed"
+columns (the correspondence between a trace row and the §4 snapshot
+is by inspection of the branch conditions, which the guards column
+makes checkable but does not itself assert); the attribution of each
+drop to a lexicographic component; the causal glosses ("because the
+store's `p`-rows have empty zones").
+
+---
+
 ## 9. What is not claimed
 
 1. **A proof object, not a practical procedure.**  `decidePLL` and
