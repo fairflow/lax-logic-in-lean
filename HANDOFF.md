@@ -3576,3 +3576,29 @@ and the extra `◯` components).  Delivered, all against `b2f2525`:
 Matthew (mid-session): "do the promotion when it feels right to you":
 the wip/ → FRJ/ promotion is authorised at my discretion; planned
 after this delivery, with the core-admission gate.
+
+## 2026-09-02 (late afternoon) — the syntactic bridge: the crown decides LaxND provability
+
+Matthew: "Prove the FRJ.Kripke bridge to finite_model_property next."
+Statement-level check first (METHOD): the crown's `PLL` is SEMANTIC
+(`∀ K : FRJ.Kripke, K.valid A`, finite rooted POSETS); the FMP's finite
+models are preorders; the ≤-quotient does not preserve `◯`-forcing,
+REFUTED by the four-world model `wip/quot_cm.lean` (kernel-checked,
+`[propext]`: `b ≈ b'`, `b ⊨ ◯p`, no common `Rm`-successor of `b`, `b'`
+forcing `p`).  Route taken instead: syntactic soundness of `Gbu◯` for
+natural deduction, `laxOfR`/`laxOfI : GbuRC/GbuIC G Γ C → LaxND (Γ.map
+toPLL) (toPLL C)` (`wip/gbu_laxnd.lean`, 24 cases, compiled first
+time), then (`wip/gbu_frjw_laxnd.lean`) `laxND_of_PLL`,
+`PLL_iff_laxND : PLL (ofPLL φ) ↔ Nonempty (LaxND [] φ)`,
+`finite_poset_model_property`, and `decideLaxND : Decidable (Nonempty
+(LaxND [] φ))`, ALL `[propext, Quot.sound]`.  So the crown decides
+natural-deduction provability choice-free, PLL has the finite POSET
+model property (stronger than `finite_model_property`), and
+`laxND_of_provableGbuC` is the syntactic partner of the LJF◯ route's
+`gbuC_complete` (Matthew's condition for that route's publishability).
+Both new modules are in the `wipshared` globs; they import
+`wip.gbu_circ`/`wip.gbu_frjw_saturate` and move with the promotion.
+Explainer §10.  Also this afternoon: notation ruling (Ξ for the FRJW
+stable zone, `docs/notation.md`), and the promotion+rename subagent
+redirected to leave the LJF◯ route in wip/ (core = 13 files + the
+hoisted `Transport`).

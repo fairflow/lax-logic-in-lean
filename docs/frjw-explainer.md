@@ -2341,3 +2341,115 @@ and `gbuInv3R`.  The ledger row is corrected at this commit.
 7. **The snapshots of §4 are of the proof at `b2f2525`.**  The
    compaction may continue (the stage-4 brief lists further items);
    the anchors move with it, the names do not.
+
+---
+
+## 10. The syntactic bridge: the crown decides natural-deduction provability
+
+*Added 2026-09-02 (late afternoon), on Matthew's instruction "prove the
+FRJ.Kripke bridge to `finite_model_property` next".  Item 1 of §9 is
+unchanged; item 4 is now sharper.*
+
+### 10.1 What the crown's `PLL` is
+
+`PLL` in the crown is semantic: `PLL A := ∀ K : Kripke, K.valid A`
+(`FRJ/Basic.lean:567`), validity at the root of every `FRJ.Kripke`
+model, and those are finite rooted POSETS (`le_antisymm` is a field)
+with `Rm ⊆ ≤` and fallible worlds.  Natural-deduction provability,
+`Nonempty (LaxND [] φ)` (`LaxLogic/PLLNDCore.lean:72`), is connected to
+it in one direction by `FRJ.Bridge.valid_of_derivable`: a `LaxND`
+theorem is valid in every `FRJ.Kripke`.  The other direction, from
+semantic `PLL` to a derivation, is what makes `decidePLL` a decision
+procedure for the logic rather than for a model class.
+
+### 10.2 The FMP route, and why it was not taken
+
+The finite model property on the LaxLogic side,
+
+    finite_model_property : Nonempty (LaxND [] φ) ↔
+        ∀ C : ConstraintModel, Finite C.W → ∀ w, C.force w φ     -- PLLFiniteModel.lean:288
+
+gives, for an unprovable `φ`, a finite countermodel `C`.  To reach
+`FRJ.PLL` one would have to present `C` as an `FRJ.Kripke`, and `C`'s
+order is only a preorder (the filtration's `Ri` is inclusion of the
+`T`-component alone, `PLLFiniteModel.lean:171`, and the canonical
+model's order has the same shape).  The natural repair, quotienting by
+`≤`-equivalence, does NOT preserve `◯`-forcing.  The witness is a
+four-world constraint model, kernel-checked at `wip/quot_cm.lean`
+(pins `[propext]`):
+
+    worlds  b ≈ b'  (≤ both ways), both below t and t' (incomparable, maximal)
+    Rm      reflexive, b → t, b' → t'
+    V p     = {t, t'}
+
+    fact1 : C4.Ri b b' ∧ C4.Ri b' b
+    fact2 : C4.force b (◯p)
+    fact3 : ¬ ∃ c, C4.Rm b c ∧ C4.Rm b' c ∧ C4.force c p
+
+`b` forces `◯p` (each of `b, b', t, t'` has an `Rm`-successor forcing
+`p`), but `b` and `b'` have no common `Rm`-successor forcing `p`, so in
+the quotient the class `[b]` has no `Rm`-witness class at all under the
+`∀∃` lift of `Rm` (the only lift that is transitive), and `[b]` refutes
+`◯p`.  The quotient forces less than the model it came from; a
+correspondence lemma cannot hold, and the implication clause needs the
+correspondence in both directions.  Whether SOME finite poset model
+always exists was, at that point, a genuine question; the route below
+answers it as a corollary.
+
+### 10.3 The route taken: `Gbu◯` is sound for natural deduction
+
+Every rule of `Gbu◯(G)` (§1.4) is admissible in `LaxND`: the
+intuitionistic rules are the natural-deduction rules under the
+membership-based `iden`, `L⊃` is `⊃E` followed by a cut (`⊃I` then
+`⊃E`), the `◯`-goal restriction of `L◯` is exactly `laxElim`'s
+restriction (its conclusion is `◯ψ`), `R◯` is `laxIntro`, and the
+`≐`-contexts are handled by `LaxND.rename`.  So there is a total
+translation, constructor for constructor:
+
+```lean
+mutual
+def laxOfR {G : Form} : ∀ {Γ : List Form} {C : Form},
+    GbuRC G Γ C → LaxND (Γ.map toPLL) (toPLL C)
+def laxOfI {G : Form} : ∀ {Γ : List Form} {C : Form},
+    GbuIC G Γ C → LaxND (Γ.map toPLL) (toPLL C)
+end                                                          -- wip/gbu_laxnd.lean
+
+theorem laxND_of_provableGbuC (h : ProvableGbuC G) : Nonempty (LaxND [] (toPLL G))
+```
+
+24 cases, 150 lines, compiled first time, pinned `[propext, Quot.sound]`.
+Composed with the dichotomy and FRJW soundness
+(`wip/gbu_frjw_laxnd.lean`, all pinned `[propext, Quot.sound]`):
+
+```lean
+theorem laxND_of_PLL (h : PLL (ofPLL φ)) : Nonempty (LaxND [] φ)
+  -- PLL ⟹ no FRJW disproof (soundnessW) ⟹ Gbu◯ proof (gbuw_complete) ⟹ LaxND (laxOfR)
+
+theorem PLL_iff_laxND : PLL (ofPLL φ) ↔ Nonempty (LaxND [] φ)
+theorem PLL_iff_laxND' : PLL A ↔ Nonempty (LaxND [] (toPLL A))
+
+theorem finite_poset_model_property :
+    Nonempty (LaxND [] φ) ↔ ∀ K : Kripke, K.valid (ofPLL φ)
+
+def decideLaxND (φ : PLLFormula) : Decidable (Nonempty (LaxND [] φ))
+  -- decidePLL (ofPLL φ) transported along PLL_iff_laxND
+```
+
+So the crown decides natural-deduction provability, choice-free, and
+PLL has the finite POSET model property, which the filtration proof of
+`finite_model_property` does not give.  The FMP bridge Matthew asked for
+is therefore obtained, in the stronger form, from the syntactic side.
+
+### 10.4 What this says about the LJF◯ route
+
+`gbuC_complete : Nonempty (LaxND [] φ) → ProvableGbuC (ofPLL φ)`
+(`wip/gbu_ljfo.lean:816`) is the direction natural deduction → `Gbu◯`
+through focusing.  `laxND_of_provableGbuC` is its converse, `Gbu◯` →
+natural deduction, by direct translation.  Together they are a
+purely syntactic proof that `Gbu◯` characterises PLL, with no model in
+sight; the dichotomy gives the same characterisation through the FRJ
+models.  That is the partner Matthew asked for before the LJF◯ route
+could be publishable: it exists, it is 150 lines, and it was the
+missing direction all along.  The LJF◯ route itself stays in `wip/`,
+as decided; it is not needed by the crown for anything, and this
+bridge does not use it.
