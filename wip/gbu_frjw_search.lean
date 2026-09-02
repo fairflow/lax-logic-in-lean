@@ -140,6 +140,71 @@ private theorem seqSize_goal {Ψ : List Form} {C C' : Form}
     (h : C'.size < C.size) : seqSize Ψ C' < seqSize Ψ C := by
   simp [seqSize]; omega
 
+/-! ### The principal-formula step
+
+Every left rule focuses on a context member `X`: split the context at
+`X`, and carry the three consequences every such step needs (the `≐`
+with `X` moved to the front, membership of the rest, and the size
+equation).  `Focus` packages them; `clo_focus` and `forall_cons` are the
+two per-member arguments (`Clo`-coverage and predicate preservation)
+that every descent discharges. -/
+
+/-- A context `Ψ` focused on a member `X`. -/
+structure Focus (Ψ : List Form) (X : Form) where
+  rest : List Form
+  ctxEq : Ψ ≐ X :: rest
+  memsub : ∀ W ∈ rest, W ∈ Ψ
+  size : ∀ C, seqSize Ψ C = seqSize rest C + X.size
+
+/-- Constructive focus at a member. -/
+def focusCtx {Ψ : List Form} {X : Form} (hX : X ∈ Ψ) : Focus Ψ X :=
+  match splitOfMem hX with
+  | ⟨l, r, hsplit⟩ =>
+    have hΓ : Ψ ≐ X :: (l ++ r) := by rw [hsplit]; exact ctxEq_split
+    { rest := l ++ r
+      ctxEq := hΓ
+      memsub := fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
+      size := fun C => by rw [hsplit, seqSize_split] }
+
+/-- A predicate holding on `Ψ` holds on the rest. -/
+theorem Focus.restP {Ψ : List Form} {X : Form} (f : Focus Ψ X) {P : Form → Prop}
+    (h : ∀ W ∈ Ψ, P W) : ∀ W ∈ f.rest, P W :=
+  fun W hW => h W (f.memsub W hW)
+
+/-- Replacing the focused member by one smaller formula drops the size. -/
+theorem Focus.lt1 {Ψ : List Form} {X : Form} (f : Focus Ψ X) {Y C : Form}
+    (h : Y.size < X.size) : seqSize (Y :: f.rest) C < seqSize Ψ C := by
+  rw [f.size, seqSize_cons]; omega
+
+/-- Replacing the focused member by two formulas of smaller total size. -/
+theorem Focus.lt2 {Ψ : List Form} {X : Form} (f : Focus Ψ X) {Y₁ Y₂ C : Form}
+    (h : Y₁.size + Y₂.size < X.size) :
+    seqSize (Y₁ :: Y₂ :: f.rest) C < seqSize Ψ C := by
+  rw [f.size, seqSize_cons, seqSize_cons]; omega
+
+/-- `Clo`-coverage of a focused context by the descended one: the
+focused member is covered by `hX`, the rest by membership (one or two
+formulas prepended, found by the auto-param). -/
+theorem clo_focus {Ψ rest Ψ' : List Form} {X : Form}
+    (hΓ : Ψ ≐ X :: rest) (hX : Clo Ψ' X)
+    (hrest : ∀ W ∈ rest, W ∈ Ψ' := by
+      first
+        | exact fun _ h => List.mem_cons_of_mem _ h
+        | exact fun _ h => List.mem_cons_of_mem _ (List.mem_cons_of_mem _ h)) :
+    ∀ W ∈ Ψ, Clo Ψ' W := by
+  intro W hW
+  rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
+  · exact hX
+  · exact .base (hrest W hW')
+
+/-- A predicate on a cons context, member by member. -/
+theorem forall_cons {P : Form → Prop} {X : Form} {l : List Form}
+    (hX : P X) (h : ∀ W ∈ l, P W) : ∀ W ∈ X :: l, P W := by
+  intro W hW
+  rcases List.mem_cons.mp hW with rfl | hW'
+  · exact hX
+  · exact h W hW'
+
 private theorem wgKeep {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
     (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (hs : seqSize Ψ' C' < seqSize Ψ C)
     (htp : tpC r C' ≤ tpC r C := by
@@ -341,11 +406,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
               exact .rimpII d hcl
             · have d := IHW (true, A :: Ψ, B)
                 (wgDrop (unclosed_lt hA hcl))
-                (by
-                  intro Y hY
-                  rcases List.mem_cons.mp hY with rfl | hY'
-                  · exact hA
-                  · exact hΨ Y hY')
+                (forall_cons hA hΨ)
                 hB (fun h => hne (gbuInv9 hsat hC hg h))
               exact .rimpNII d hcl
         | circ Z =>
@@ -399,50 +460,22 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                             IHW (true, A' :: Ψ, B')
                               (wgDrop
                                 (unclosed_lt (sfR_imp hXsf).1 hncl))
-                              (by
-                                intro W hW
-                                rcases List.mem_cons.mp hW with rfl | hW'
-                                · exact (sfR_imp hXsf).1
-                                · exact hΨ W hW')
+                              (forall_cons (sfR_imp hXsf).1 hΨ)
                               (sfR_imp hXsf).2 hnR)
                           A₂ hA₂sf with hRef | hDer
                         · exact absurd hRef (fun h => hnK (Or.inr h))
                         · -- `L⊃ᵢ` through `Y₂`
-                          obtain ⟨l₂, r₂, hsplit₂⟩ := splitOfMem hY₂Ψ
-                          have hΓ₂ : Ψ ≐ .imp A₂ B₂ :: (l₂ ++ r₂) := by
-                            rw [hsplit₂]; exact ctxEq_split
-                          have hclB₂ : ∀ W ∈ Ψ,
-                              Clo (B₂ :: (l₂ ++ r₂)) W := by
-                            intro W hW
-                            rcases List.mem_cons.mp ((hΓ₂ W).mp hW) with
-                              rfl | hW'
-                            · exact .imp (.base List.mem_cons_self)
-                            · exact .base (List.mem_cons_of_mem _ hW')
-                          have hmemsub₂ : ∀ W ∈ l₂ ++ r₂, W ∈ Ψ :=
-                            fun W hW =>
-                              (hΓ₂ W).mpr (List.mem_cons_of_mem _ hW)
-                          have d₂ := IH (false, B₂ :: (l₂ ++ r₂),
-                              Form.circ Z)
-                            (by
-                              refine wgKeep hclB₂ ?_
-                              show seqSize (B₂ :: (l₂ ++ r₂))
-                                  (Form.circ Z)
-                                < seqSize Ψ (Form.circ Z)
-                              rw [hsplit₂, seqSize_split, seqSize_cons]
-                              have hb : B₂.size <
-                                  (Form.imp A₂ B₂).size :=
-                                Nat.lt_succ_of_le (Nat.le_add_left _ _)
-                              omega)
-
-                            (by
-                              intro W hW
-                              rcases List.mem_cons.mp hW with rfl | hW'
-                              · exact hB₂sf
-                              · exact hΨ W (hmemsub₂ W hW'))
-                             (fun h => Bool.noConfusion h) hC
+                          have f := focusCtx hY₂Ψ
+                          have hclB₂ : ∀ W ∈ Ψ, Clo (B₂ :: f.rest) W :=
+                            clo_focus f.ctxEq (.imp (.base List.mem_cons_self))
+                          have d₂ := IH (false, B₂ :: f.rest, Form.circ Z)
+                            (wgKeep hclB₂
+                              (f.lt1 (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                            (forall_cons hB₂sf (f.restP hΨ))
+                            (fun h => Bool.noConfusion h) hC
                             (unrefutedBelow_step hsat hclB₂ hnb)
-                          exact .limpLI (FRJ.Gbu.LJFT.transportIC hDer hΓ₂) d₂
-                            (Or.inr hA₂sf) hC hΓ₂
+                          exact .limpLI (FRJ.Gbu.LJFT.transportIC hDer f.ctxEq) d₂
+                            (Or.inr hA₂sf) hC f.ctxEq
                 · -- `Z` unrefuted: `R◯ᵢ`
                   have d := IH (false, Ψ, Z)
                     (wgKeep (fun _ h => .base h)
@@ -457,40 +490,18 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   | false => exact absurd hb hYc
                 match Y, hYc' with
                 | .circ Y', _ =>
-                    obtain ⟨lY, rY, hYsplit⟩ := splitOfMem hYΨ
-                    have hΓ : Ψ ≐ .circ Y' :: (lY ++ rY) := by
-                      rw [hYsplit]; exact ctxEq_split
-                    have hmemsub : ∀ V ∈ lY ++ rY, V ∈ Ψ :=
-                      fun V hV => (hΓ V).mpr (List.mem_cons_of_mem _ hV)
+                    have f := focusCtx hYΨ
                     have hY'sf : Y' ∈ sfL G := sfL_circ (hΨ _ hYΨ)
-                    have hcov : ∀ V ∈ Ψ, Clo (Y' :: (lY ++ rY)) V := by
-                      intro V hV
-                      rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
-                      · exact .circ (.base List.mem_cons_self)
-                      · exact .base (List.mem_cons_of_mem _ hV')
-                    have d := IH (false, Y' :: (lY ++ rY), Form.circ Z)
-                      (by
-                        refine wgKeep hcov ?_
-                        show seqSize (Y' :: (lY ++ rY)) (Form.circ Z)
-                          < seqSize Ψ (Form.circ Z)
-                        rw [hYsplit, seqSize_split, seqSize_cons]
-                        have : Y'.size < (Form.circ Y').size := Nat.lt_succ_self _
-                        omega)
-
-                      (by
-                        intro V hV
-                        rcases List.mem_cons.mp hV with rfl | hV'
-                        · exact hY'sf
-                        · exact hΨ V (hmemsub V hV'))
-                       (fun h => Bool.noConfusion h) hC
+                    have hcov : ∀ V ∈ Ψ, Clo (Y' :: f.rest) V :=
+                      clo_focus f.ctxEq (.circ (.base List.mem_cons_self))
+                    have d := IH (false, Y' :: f.rest, Form.circ Z)
+                      (wgKeep hcov (f.lt1 (Nat.lt_succ_self _)))
+                      (forall_cons hY'sf (f.restP hΨ))
+                      (fun h => Bool.noConfusion h) hC
                       (unrefutedBelow_step hsat hcov hnb)
-                    exact .lcircI d (hΨ _ hYΨ) hΓ
+                    exact .lcircI d (hΨ _ hYΨ) f.ctxEq
             · -- a NON-`Ĝ` member: `⊥`, `∧` or `∨`
-              obtain ⟨lX, rX, hXsplit⟩ := splitOfMem hXΨ
-              have hΓ : Ψ ≐ X :: (lX ++ rX) := by
-                rw [hXsplit]; exact ctxEq_split
-              have hmemsub : ∀ V ∈ lX ++ rX, V ∈ Ψ :=
-                fun V hV => (hΓ V).mpr (List.mem_cons_of_mem _ hV)
+              have f := focusCtx hXΨ
               cases X with
               | atom a =>
                   exact absurd (mem_gHat_of_isHat (hΨ _ hXΨ) rfl) hXn
@@ -498,74 +509,35 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   exact absurd (mem_gHat_of_isHat (hΨ _ hXΨ) rfl) hXn
               | circ Y =>
                   exact absurd (mem_gHat_of_isHat (hΨ _ hXΨ) rfl) hXn
-              | bot => exact .lbotI hC hΓ
+              | bot => exact .lbotI hC f.ctxEq
               | and A B =>
                   obtain ⟨hA, hB⟩ := sfL_and (hΨ _ hXΨ)
-                  have hcov : ∀ V ∈ Ψ, Clo (A :: B :: (lX ++ rX)) V := by
-                    intro V hV
-                    rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
-                    · exact .and (.base List.mem_cons_self)
-                        (.base (List.mem_cons_of_mem _ List.mem_cons_self))
-                    · exact .base (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hV'))
-                  have d := IH (false, A :: B :: (lX ++ rX), Form.circ Z)
-                    (by
-                      refine wgKeep hcov ?_
-                      show seqSize (A :: B :: (lX ++ rX)) (Form.circ Z)
-                        < seqSize Ψ (Form.circ Z)
-                      rw [hXsplit, seqSize_split, seqSize_cons, seqSize_cons]
-                      show A.size + (B.size + seqSize (lX ++ rX) (Form.circ Z))
-                        < seqSize (lX ++ rX) (Form.circ Z) + (A.size + B.size + 1)
-                      omega)
-
-                    (by
-                      intro V hV
-                      rcases List.mem_cons.mp hV with rfl | hV'
-                      · exact hA
-                      · rcases List.mem_cons.mp hV' with rfl | hV''
-                        · exact hB
-                        · exact hΨ V (hmemsub V hV''))
-                     (fun h => Bool.noConfusion h) hC
+                  have hcov : ∀ V ∈ Ψ, Clo (A :: B :: f.rest) V :=
+                    clo_focus f.ctxEq (.and (.base List.mem_cons_self)
+                      (.base (List.mem_cons_of_mem _ List.mem_cons_self)))
+                  have d := IH (false, A :: B :: f.rest, Form.circ Z)
+                    (wgKeep hcov (f.lt2 (Nat.lt_succ_self _)))
+                    (forall_cons hA (forall_cons hB (f.restP hΨ)))
+                    (fun h => Bool.noConfusion h) hC
                     (unrefutedBelow_step hsat hcov hnb)
-                  exact .landLI d hC hΓ
+                  exact .landLI d hC f.ctxEq
               | or A B =>
                   obtain ⟨hA, hB⟩ := sfL_or (hΨ _ hXΨ)
-                  have hszo : ∀ Y : Form, Y.size < (Form.or A B).size →
-                      seqSize (Y :: (lX ++ rX)) (Form.circ Z)
-                        < seqSize Ψ (Form.circ Z) := by
-                    intro Y hY
-                    rw [hXsplit, seqSize_split, seqSize_cons]
-                    omega
-                  have hcovL : ∀ V ∈ Ψ, Clo (A :: (lX ++ rX)) V := by
-                    intro V hV
-                    rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
-                    · exact .orL (.base List.mem_cons_self)
-                    · exact .base (List.mem_cons_of_mem _ hV')
-                  have hcovR : ∀ V ∈ Ψ, Clo (B :: (lX ++ rX)) V := by
-                    intro V hV
-                    rcases List.mem_cons.mp ((hΓ V).mp hV) with rfl | hV'
-                    · exact .orR (.base List.mem_cons_self)
-                    · exact .base (List.mem_cons_of_mem _ hV')
-                  have d₁ := IH (false, A :: (lX ++ rX), Form.circ Z)
-                    (wgKeep hcovL (hszo A (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
-
-                    (by
-                      intro V hV
-                      rcases List.mem_cons.mp hV with rfl | hV'
-                      · exact hA
-                      · exact hΨ V (hmemsub V hV'))
-                     (fun h => Bool.noConfusion h) hC
+                  have hcovL : ∀ V ∈ Ψ, Clo (A :: f.rest) V :=
+                    clo_focus f.ctxEq (.orL (.base List.mem_cons_self))
+                  have hcovR : ∀ V ∈ Ψ, Clo (B :: f.rest) V :=
+                    clo_focus f.ctxEq (.orR (.base List.mem_cons_self))
+                  have d₁ := IH (false, A :: f.rest, Form.circ Z)
+                    (wgKeep hcovL (f.lt1 (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                    (forall_cons hA (f.restP hΨ))
+                    (fun h => Bool.noConfusion h) hC
                     (unrefutedBelow_step hsat hcovL hnb)
-                  have d₂ := IH (false, B :: (lX ++ rX), Form.circ Z)
-                    (wgKeep hcovR (hszo B (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-
-                    (by
-                      intro V hV
-                      rcases List.mem_cons.mp hV with rfl | hV'
-                      · exact hB
-                      · exact hΨ V (hmemsub V hV'))
-                     (fun h => Bool.noConfusion h) hC
+                  have d₂ := IH (false, B :: f.rest, Form.circ Z)
+                    (wgKeep hcovR (f.lt1 (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                    (forall_cons hB (f.restP hΨ))
+                    (fun h => Bool.noConfusion h) hC
                     (unrefutedBelow_step hsat hcovR hnb)
-                  exact .lorLI d₁ d₂ hC hΓ
+                  exact .lorLI d₁ d₂ hC f.ctxEq
       · -- ==================== REGULAR: `Ψ ⇒g C` ====================
         show (∀ X ∈ Ψ, X ∈ sfL G) → C ∈ sfR G → ¬ WEvalR D Ψ C →
           GbuRC G Ψ C
@@ -579,51 +551,22 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
           have limpStep : ∀ A B : Form, Form.imp A B ∈ Ψ → ¬ WEvalI D Ψ A →
               GbuRC G Ψ C := by
             intro A B hYΨ hnA
-            obtain ⟨lY, rY, hYsplit⟩ := splitOfMem hYΨ
+            have f := focusCtx hYΨ
             obtain ⟨hAsf, hBsf⟩ := sfL_imp (hΨ _ hYΨ)
-            have hΓ : Ψ ≐ .imp A B :: (lY ++ rY) := by
-              rw [hYsplit]; exact ctxEq_split
-            have hmemsub : ∀ W ∈ lY ++ rY, W ∈ Ψ :=
-              fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
-            have d₁ := IH (false, .imp A B :: (lY ++ rY), A)
-              (wgFocus (fun W hW => .base ((hΓ W).mp hW)))
-
-              (by
-                intro W hW
-                rcases List.mem_cons.mp hW with rfl | hW'
-                · exact hΨ _ hYΨ
-                · exact hΨ W (hmemsub W hW'))
-              (by
-                intro _ W hW
-                rcases List.mem_cons.mp hW with rfl | hW'
-                · exact hΩ _ hYΨ
-                · exact hΩ W (hmemsub W hW'))
-              hAsf (unrefutedBelow_of_gHat
-                (by
-                  intro W hW
-                  rcases List.mem_cons.mp hW with rfl | hW'
-                  · exact hΩ _ hYΨ
-                  · exact hΩ W (hmemsub W hW'))
-                (fun h => hnA (wEvalI_ctxEq (ctxEq_symm hΓ) h)))
-            have d₂ := IH (true, B :: (lY ++ rY), C)
-              (by
-                refine wgKeep (fun W hW => ?_) ?_
-                · rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
-                  · exact .imp (.base List.mem_cons_self)
-                  · exact .base (List.mem_cons_of_mem _ hW')
-                · show seqSize (B :: (lY ++ rY)) C < seqSize Ψ C
-                  rw [hYsplit, seqSize_split, seqSize_cons]
-                  have hb : B.size < (Form.imp A B).size :=
-                    Nat.lt_succ_of_le (Nat.le_add_left _ _)
-                  omega)
-
-              (by
-                intro W hW
-                rcases List.mem_cons.mp hW with rfl | hW'
-                · exact hBsf
-                · exact hΨ W (hmemsub W hW'))
-              hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm hΓ) (gbuInv4 h)))
-            exact .limpL d₁ d₂ hΓ
+            have hΩ' : ∀ W ∈ .imp A B :: f.rest, W ∈ gHat G :=
+              forall_cons (hΩ _ hYΨ) (f.restP hΩ)
+            have d₁ := IH (false, .imp A B :: f.rest, A)
+              (wgFocus (fun W hW => .base ((f.ctxEq W).mp hW)))
+              (forall_cons (hΨ _ hYΨ) (f.restP hΨ))
+              (fun _ => hΩ')
+              hAsf (unrefutedBelow_of_gHat hΩ'
+                (fun h => hnA (wEvalI_ctxEq (ctxEq_symm f.ctxEq) h)))
+            have d₂ := IH (true, B :: f.rest, C)
+              (wgKeep (clo_focus f.ctxEq (.imp (.base List.mem_cons_self)))
+                (f.lt1 (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+              (forall_cons hBsf (f.restP hΨ))
+              hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm f.ctxEq) (gbuInv4 h)))
+            exact .limpL d₁ d₂ f.ctxEq
           have fromImp : ∀ Y : Form, Y ∈ impPart Ψ →
               ¬ WEvalI D Ψ (ante Y) → GbuRC G Ψ C := by
             intro Y hY hnY
@@ -669,12 +612,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   hΨ hB (fun h => hne (gbuInv5 hsat hC hcl h))
                 exact .rimpI d hcl
               · have d := IH (true, A :: Ψ, B) (wgDrop (unclosed_lt hA hcl))
-
-                  (by
-                    intro Y hY
-                    rcases List.mem_cons.mp hY with rfl | hY'
-                    · exact hA
-                    · exact hΨ Y hY')
+                  (forall_cons hA hΨ)
                   hB (fun h => hne (gbuInv6 hsat hC h))
                 exact .rimpNI d hcl
           | or C₁ C₂ =>
@@ -722,36 +660,18 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   | false => exact absurd hb hYc
                 match Y, hYc' with
                 | .circ Y', _ =>
-                    obtain ⟨lY, rY, hYsplit⟩ := splitOfMem hYΨ
-                    have hΓ : Ψ ≐ .circ Y' :: (lY ++ rY) := by
-                      rw [hYsplit]; exact ctxEq_split
-                    have hmemsub : ∀ W ∈ lY ++ rY, W ∈ Ψ :=
-                      fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
+                    have f := focusCtx hYΨ
                     have hY'sf : Y' ∈ sfL G := sfL_circ (hΨ _ hYΨ)
-                    have d := IH (true, Y' :: (lY ++ rY), Form.circ Z)
-                      (by
-                        refine wgKeep (fun W hW => ?_) ?_
-                        · rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
-                          · exact .circ (.base List.mem_cons_self)
-                          · exact .base (List.mem_cons_of_mem _ hW')
-                        · show seqSize (Y' :: (lY ++ rY)) (Form.circ Z) < seqSize Ψ _
-                          rw [hYsplit, seqSize_split, seqSize_cons]
-                          have : Y'.size < (Form.circ Y').size := Nat.lt_succ_self _
-                          omega)
-
-                      (by
-                        intro W hW
-                        rcases List.mem_cons.mp hW with rfl | hW'
-                        · exact hY'sf
-                        · exact hΨ W (hmemsub W hW'))
-                      hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm hΓ) (gbuInv11 h)))
-                    exact .lcirc d (hΨ _ hYΨ) hΓ
+                    have d := IH (true, Y' :: f.rest, Form.circ Z)
+                      (wgKeep (clo_focus f.ctxEq (.circ (.base List.mem_cons_self)))
+                        (f.lt1 (Nat.lt_succ_self _)))
+                      (forall_cons hY'sf (f.restP hΨ))
+                      hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm f.ctxEq) (gbuInv11 h)))
+                    exact .lcirc d (hΨ _ hYΨ) f.ctxEq
         · -- non-critical: an invertible LEFT rule
-          subst hsplit
-          have hXmem : X ∈ l ++ X :: r := List.mem_append_right _ List.mem_cons_self
-          have hΓ : (l ++ X :: r) ≐ X :: (l ++ r) := ctxEq_split
-          have hmemsub : ∀ W ∈ l ++ r, W ∈ l ++ X :: r :=
-            fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
+          have hXmem : X ∈ Ψ := by
+            rw [hsplit]; exact List.mem_append_right _ List.mem_cons_self
+          have f := focusCtx hXmem
           cases X with
           | atom a => exact Bool.noConfusion hX
           | imp A B => exact Bool.noConfusion hX
@@ -759,61 +679,26 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
           | bot => exact .lbot C (ctxEq_cons_self hXmem)
           | and A B =>
               obtain ⟨hA, hB⟩ := sfL_and (hΨ _ hXmem)
-              have d := IH (true, A :: B :: (l ++ r), C)
-                (by
-                  refine wgKeep (fun W hW => ?_) ?_
-                  · rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
-                    · exact .and (.base List.mem_cons_self)
-                        (.base (List.mem_cons_of_mem _ List.mem_cons_self))
-                    · exact .base (List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hW'))
-                  · rw [seqSize_split, seqSize_cons, seqSize_cons]
-                    show A.size + (B.size + seqSize (l ++ r) C)
-                      < seqSize (l ++ r) C + (A.size + B.size + 1)
-                    omega)
-
-                (by
-                  intro W hW
-                  rcases List.mem_cons.mp hW with rfl | hW'
-                  · exact hA
-                  · rcases List.mem_cons.mp hW' with rfl | hW''
-                    · exact hB
-                    · exact hΨ W (hmemsub W hW''))
-                hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm hΓ) (gbuInv1 h)))
-              exact .landL d hΓ
+              have d := IH (true, A :: B :: f.rest, C)
+                (wgKeep (clo_focus f.ctxEq (.and (.base List.mem_cons_self)
+                    (.base (List.mem_cons_of_mem _ List.mem_cons_self))))
+                  (f.lt2 (Nat.lt_succ_self _)))
+                (forall_cons hA (forall_cons hB (f.restP hΨ)))
+                hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm f.ctxEq) (gbuInv1 h)))
+              exact .landL d f.ctxEq
           | or A B =>
               obtain ⟨hA, hB⟩ := sfL_or (hΨ _ hXmem)
-              have hsz : ∀ Y : Form, Y.size < (Form.or A B).size →
-                  seqSize (Y :: (l ++ r)) C < seqSize (l ++ Form.or A B :: r) C := by
-                intro Y hY
-                rw [seqSize_split, seqSize_cons]
-                omega
-              have d₁ := IH (true, A :: (l ++ r), C)
-                (wgKeep (fun W hW => by
-                    rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
-                    · exact .orL (.base List.mem_cons_self)
-                    · exact .base (List.mem_cons_of_mem _ hW'))
-                  (hsz A (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
-
-                (by
-                  intro W hW
-                  rcases List.mem_cons.mp hW with rfl | hW'
-                  · exact hA
-                  · exact hΨ W (hmemsub W hW'))
-                hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm hΓ) (gbuInv3L h)))
-              have d₂ := IH (true, B :: (l ++ r), C)
-                (wgKeep (fun W hW => by
-                    rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
-                    · exact .orR (.base List.mem_cons_self)
-                    · exact .base (List.mem_cons_of_mem _ hW'))
-                  (hsz B (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-
-                (by
-                  intro W hW
-                  rcases List.mem_cons.mp hW with rfl | hW'
-                  · exact hB
-                  · exact hΨ W (hmemsub W hW'))
-                hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm hΓ) (gbuInv3R h)))
-              exact .lorL d₁ d₂ hΓ
+              have d₁ := IH (true, A :: f.rest, C)
+                (wgKeep (clo_focus f.ctxEq (.orL (.base List.mem_cons_self)))
+                  (f.lt1 (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
+                (forall_cons hA (f.restP hΨ))
+                hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm f.ctxEq) (gbuInv3L h)))
+              have d₂ := IH (true, B :: f.rest, C)
+                (wgKeep (clo_focus f.ctxEq (.orR (.base List.mem_cons_self)))
+                  (f.lt1 (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
+                (forall_cons hB (f.restP hΨ))
+                hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm f.ctxEq) (gbuInv3R h)))
+              exact .lorL d₁ d₂ f.ctxEq
   exact fun p => main _ p rfl
 
 /-! ## The root dichotomy
