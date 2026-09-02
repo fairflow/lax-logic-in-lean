@@ -1444,6 +1444,48 @@ theorem wSubsumes_irr {St₁ St₂ Th₁ Th₂ : List Form} {C : Form}
     (hq : St₁ ≐ St₂) (hTh : Th₁ ⊆ Th₂) :
     WSubsumes (.irr St₁ Th₁ C) (.irr St₂ Th₂ C) := ⟨rfl, hq, hTh⟩
 
+/-! ### The two halves of a T-C case: ascent to the stored premise a
+`DBClosed` clause consumes (`regUp`/`irrUp`), descent from that clause's
+stored subsumer to the sequent under proof (`downReg`/`downIrr`).  The
+join cases reuse the descent half, their ascent being `irrPick`/`regPick`. -/
+
+/-- Ascent, regular stratum: a stored subsumer of `(t, Γ, C)` IS a stored
+row `(t', Γ', C)` with `t ≤ t'` and `Γ ⊆ Γ'`. -/
+private theorem regUp {G : Form} {db : List (WRow G)} {t : Tag}
+    {Γ : List Form} {C : Form} (h : ∃ r ∈ db, WSubsumes (.reg t Γ C) r.s) :
+    ∃ t' Γ', (WSeq.reg t' Γ' C) ∈ db.map (·.s) ∧ tagLeB t t' = true ∧
+      Γ ⊆ Γ' := by
+  obtain ⟨r, hr, hsub⟩ := h
+  obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
+  exact ⟨tagOf r.s, ctxOf r.s,
+    by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩, hle, hΓ⟩
+
+/-- Ascent, irregular stratum: `Σ` moves by `≐`, `Θ` by `⊆`. -/
+private theorem irrUp {G : Form} {db : List (WRow G)} {St Th : List Form}
+    {C : Form} (h : ∃ r ∈ db, WSubsumes (.irr St Th C) r.s) :
+    ∃ St' Th', (WSeq.irr St' Th' C) ∈ db.map (·.s) ∧ St' ≐ St ∧
+      Th ⊆ Th' := by
+  obtain ⟨r, hr, hsub⟩ := h
+  obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
+  exact ⟨stabOf r.s, thOf r.s,
+    by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩, hst, hth⟩
+
+/-- Descent, regular stratum (`wSubsumes_trans` at the conclusion). -/
+private theorem downReg {G : Form} {db : List (WRow G)} {t₁ t₂ : Tag}
+    {Γ₁ Γ₂ : List Form} {C : Form} (hle : tagLeB t₁ t₂ = true)
+    (hΓ : Γ₁ ⊆ Γ₂) (h : ∃ r ∈ db, WSubsumes (.reg t₂ Γ₂ C) r.s) :
+    ∃ r ∈ db, WSubsumes (.reg t₁ Γ₁ C) r.s := by
+  obtain ⟨r, hr, hsub⟩ := h
+  exact ⟨r, hr, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub⟩
+
+/-- Descent, irregular stratum. -/
+private theorem downIrr {G : Form} {db : List (WRow G)}
+    {St₁ St₂ Th₁ Th₂ : List Form} {C : Form} (hq : St₁ ≐ St₂)
+    (hTh : Th₁ ⊆ Th₂) (h : ∃ r ∈ db, WSubsumes (.irr St₂ Th₂ C) r.s) :
+    ∃ r ∈ db, WSubsumes (.irr St₁ Th₁ C) r.s := by
+  obtain ⟨r, hr, hsub⟩ := h
+  exact ⟨r, hr, wSubsumes_trans (wSubsumes_irr hq hTh) hsub⟩
+
 /-! ### The T-C induction
 
 `DBClosed` plus the T-B transfer lemmas turn every derivation into a
@@ -1454,46 +1496,31 @@ mutual
 theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
     ∀ {t : Tag} {Γ : List Form} {C : Form},
       FRJWr G t Γ C → ∃ r ∈ db, WSubsumes (.reg t Γ C) r.s
-  | _, _, _, .axR F hF hg hΓ => by
-      obtain ⟨r, hr, hsub⟩ := hcl.axR F hF hg
-      exact ⟨r, hr, wSubsumes_trans (wSubsumes_reg (tagLeB_refl _) hΓ.subset) hsub⟩
+  | _, _, _, .axR F hF hg hΓ =>
+      downReg (tagLeB_refl _) hΓ.subset (hcl.axR F hF hg)
   | _, _, _, .andR1 (A₁ := A₁) (A₂ := A₂) d hg => by
-      obtain ⟨r, hr, hsub⟩ := tCr hcl d
-      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andR1 (tagOf r.s) (ctxOf r.s) A₁ A₂
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
-      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+      obtain ⟨t', Γ', hmem, hle, hΓ⟩ := regUp (tCr hcl d)
+      exact downReg hle hΓ (hcl.andR1 t' Γ' A₁ A₂ hmem hg)
   | _, _, _, .andR2 (A₁ := A₁) (A₂ := A₂) d hg => by
-      obtain ⟨r, hr, hsub⟩ := tCr hcl d
-      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andR2 (tagOf r.s) (ctxOf r.s) A₁ A₂
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
-      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+      obtain ⟨t', Γ', hmem, hle, hΓ⟩ := regUp (tCr hcl d)
+      exact downReg hle hΓ (hcl.andR2 t' Γ' A₁ A₂ hmem hg)
   | _, _, _, .impIn (A := A) (B := B) d hA hg => by
-      obtain ⟨r, hr, hsub⟩ := tCr hcl d
-      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.impIn (tagOf r.s) (ctxOf r.s) A B
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
-        (clo_mono hΓ hA) hg
-      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+      obtain ⟨t', Γ', hmem, hle, hΓ⟩ := regUp (tCr hcl d)
+      exact downReg hle hΓ (hcl.impIn t' Γ' A B hmem (clo_mono hΓ hA) hg)
   | _, _, _, .circIn (Z := Z) d htag hg => by
-      obtain ⟨r, hr, hsub⟩ := tCr hcl d
-      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.circIn (tagOf r.s) (ctxOf r.s) Z
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
-        (pledge_of_le hle hΓ htag) hg
-      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_reg hle hΓ) hsub₂⟩
+      obtain ⟨t', Γ', hmem, hle, hΓ⟩ := regUp (tCr hcl d)
+      exact downReg hle hΓ
+        (hcl.circIn t' Γ' Z hmem (pledge_of_le hle hΓ htag) hg)
   | _, _, _, .joinAt (stab := stab) (th := th) (rhs := rhs) (F := F)
       (kept := kept) prem hJ1 hJ2 hcirc hkc hF hFnot hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx := joinAt_ctx_sub pk.hst pk.hth hkc
-      obtain ⟨r, hr, hsub⟩ := hcl.joinAt pk.stab' pk.th' rhs F pk.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (hJ2_strict_of_swap pk.hst hJ2)
-        (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
-        hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinAt pk.stab' pk.th' rhs F pk.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (hJ2_strict_of_swap pk.hst hJ2)
+          (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
+          hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg)
   | _, _, _, .joinAtP (stab := stab) (th := th) (rhs := rhs) (F := F)
       (t' := t') (tps := tps) (Δs := Δs) (Ds := Ds)
       prem dps hJ1 hJ2 hJ5 hJ7s htag hF hFnot hg hΓ => by
@@ -1502,42 +1529,39 @@ theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
       have hsubctx : joinCtxAtP stab th rhs F Δs ⊆
           joinCtxAtP pk.stab' pk.th' rhs F rp.Δs' :=
         joinCtxAtP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
-      obtain ⟨r, hr, hsub⟩ := hcl.joinAtP pk.stab' pk.th' rhs F t'
-        rp.tps' rp.Δs' Ds pk.mem rp.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (hJ2_strict_of_swap pk.hst hJ2)
-        (hJ5_of_swap pk.hst rp.hΔ hJ5)
-        (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
-        (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
-          pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
-        hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinAtP pk.stab' pk.th' rhs F t'
+          rp.tps' rp.Δs' Ds pk.mem rp.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (hJ2_strict_of_swap pk.hst hJ2)
+          (hJ5_of_swap pk.hst rp.hΔ hJ5)
+          (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
+          (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
+            pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
+          hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg)
   | _, _, _, .joinAtF (stab := stab) (th := th) (rhs := rhs) (F := F)
       prem hJ1 hJ2 hF hFnot hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx : joinCtxAtF stab th rhs F ⊆
           joinCtxAtF pk.stab' pk.th' rhs F :=
         joinCtxAtF_mono (fun j => (pk.hst j).symm) pk.hth
-      obtain ⟨r, hr, hsub⟩ := hcl.joinAtF pk.stab' pk.th' rhs F pk.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (hJ2_strict_of_swap pk.hst hJ2)
-        hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinAtF pk.stab' pk.th' rhs F pk.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (hJ2_strict_of_swap pk.hst hJ2)
+          hF (fun hmem => hFnot (mem_unionAll_filter_of_ctxEq _ pk.hst hmem)) hg)
   | _, _, _, .joinOr (stab := stab) (th := th) (rhs := rhs)
       (C₁ := C₁) (C₂ := C₂) (kept := kept)
       prem hJ1 hJ2 hcirc hkc hC hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx := joinOr_ctx_sub pk.hst pk.hth hkc
-      obtain ⟨r, hr, hsub⟩ := hcl.joinOr pk.stab' pk.th' rhs C₁ C₂ pk.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (hJ2_strict_of_swap pk.hst hJ2)
-        (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
-        ⟨refAt_mono (fun _ h => h) hsubctx hC.1,
-         refAt_mono (fun _ h => h) hsubctx hC.2⟩ hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinOr pk.stab' pk.th' rhs C₁ C₂ pk.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (hJ2_strict_of_swap pk.hst hJ2)
+          (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
+          ⟨refAt_mono (fun _ h => h) hsubctx hC.1,
+           refAt_mono (fun _ h => h) hsubctx hC.2⟩ hg)
   | _, _, _, .joinOrP (stab := stab) (th := th) (rhs := rhs)
       (C₁ := C₁) (C₂ := C₂) (t' := t') (tps := tps) (Δs := Δs) (Ds := Ds)
       prem dps hJ1 hJ2 hJ5 hJ7s htag hC hg hΓ => by
@@ -1546,42 +1570,39 @@ theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
       have hsubctx : joinCtxOrP stab th rhs Δs ⊆
           joinCtxOrP pk.stab' pk.th' rhs rp.Δs' :=
         joinCtxOrP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
-      obtain ⟨r, hr, hsub⟩ := hcl.joinOrP pk.stab' pk.th' rhs C₁ C₂ t'
-        rp.tps' rp.Δs' Ds pk.mem rp.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (hJ2_strict_of_swap pk.hst hJ2)
-        (hJ5_of_swap pk.hst rp.hΔ hJ5)
-        (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
-        (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
-          pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
-        hC hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinOrP pk.stab' pk.th' rhs C₁ C₂ t'
+          rp.tps' rp.Δs' Ds pk.mem rp.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (hJ2_strict_of_swap pk.hst hJ2)
+          (hJ5_of_swap pk.hst rp.hΔ hJ5)
+          (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
+          (htag.imp id (fun h => ⟨h.1, fun i => ⟨(h.2 i).1,
+            pledge_of_le (rp.hle i) (rp.hΔ i) (h.2 i).2⟩⟩))
+          hC hg)
   | _, _, _, .joinOrF (stab := stab) (th := th) (rhs := rhs)
       (C₁ := C₁) (C₂ := C₂) prem hJ1 hJ2 hC hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx : joinCtxOrF stab th rhs ⊆
           joinCtxOrF pk.stab' pk.th' rhs :=
         joinCtxOrF_mono (fun j => (pk.hst j).symm) pk.hth
-      obtain ⟨r, hr, hsub⟩ := hcl.joinOrF pk.stab' pk.th' rhs C₁ C₂ pk.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (hJ2_strict_of_swap pk.hst hJ2)
-        hC hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinOrF pk.stab' pk.th' rhs C₁ C₂ pk.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (hJ2_strict_of_swap pk.hst hJ2)
+          hC hg)
   | _, _, _, .joinCirc (stab := stab) (th := th) (rhs := rhs) (Z := Z)
       (kept := kept) prem hJ1 hJ2 hcirc hkc hZ hg hΓ => by
       let pk := irrPick (fun j => tCi hcl (prem j))
       have hsubctx := joinOr_ctx_sub pk.hst pk.hth hkc
-      obtain ⟨r, hr, hsub⟩ := hcl.joinCirc pk.stab' pk.th' rhs Z pk.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (fun A B hAB => refAt_mono (fun _ h => h) hsubctx
-          (hJ2 A B (mem_unionAll_filter_of_ctxEq _ pk.hst hAB)))
-        (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
-        (refAt_mono (fun _ h => h) hsubctx hZ)
-        hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinCirc pk.stab' pk.th' rhs Z pk.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (fun A B hAB => refAt_mono (fun _ h => h) hsubctx
+            (hJ2 A B (mem_unionAll_filter_of_ctxEq _ pk.hst hAB)))
+          (unionAll_circPart_nil_of_ctxEq pk.hst hcirc)
+          (refAt_mono (fun _ h => h) hsubctx hZ)
+          hg)
   | _, _, _, .joinCircP (stab := stab) (th := th) (rhs := rhs) (Z := Z)
       (tps := tps) (Δs := Δs) (Ds := Ds)
       prem dps hJ1 hJ2 hJ5 hJ7s hDs hZ hg hΓ => by
@@ -1590,89 +1611,67 @@ theorem tCr {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
       have hsubctx : joinCtxOrP stab th rhs Δs ⊆
           joinCtxOrP pk.stab' pk.th' rhs rp.Δs' :=
         joinCtxOrP_mono (fun j => (pk.hst j).symm) pk.hth rp.hΔ
-      obtain ⟨r, hr, hsub⟩ := hcl.joinCircP pk.stab' pk.th' rhs Z
-        rp.tps' rp.Δs' Ds pk.mem rp.mem
-        (hJ1_of_swap pk.hst pk.hth hJ1)
-        (hJ2_strict_of_swap pk.hst hJ2)
-        (hJ5_of_swap pk.hst rp.hΔ hJ5)
-        (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
-        (fun i => ⟨(hDs i).1,
-          pledge_of_le (rp.hle i) (rp.hΔ i) (hDs i).2⟩)
-        hZ hg
-      exact ⟨r, hr, wSubsumes_trans
-        (wSubsumes_reg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)) hsub⟩
+      exact downReg (tagLeB_refl _) (subset_of_ctxEq_left hΓ hsubctx)
+        (hcl.joinCircP pk.stab' pk.th' rhs Z
+          rp.tps' rp.Δs' Ds pk.mem rp.mem
+          (hJ1_of_swap pk.hst pk.hth hJ1)
+          (hJ2_strict_of_swap pk.hst hJ2)
+          (hJ5_of_swap pk.hst rp.hΔ hJ5)
+          (hJ7s_of_swap pk.hst rp.hΔ hJ7s)
+          (fun i => ⟨(hDs i).1,
+            pledge_of_le (rp.hle i) (rp.hΔ i) (hDs i).2⟩)
+          hZ hg)
 
 theorem tCi {G : Form} {db : List (WRow G)} (hcl : DBClosed G db) :
     ∀ {St Th : List Form} {C : Form},
       FRJWi G St Th C → ∃ r ∈ db, WSubsumes (.irr St Th C) r.s
-  | _, _, _, .axI F hF hg hTh => by
-      obtain ⟨r, hr, hsub⟩ := hcl.axI F hF hg
-      exact ⟨r, hr, wSubsumes_trans (wSubsumes_irr (CtxEq.refl _) hTh.subset) hsub⟩
+  | _, _, _, .axI F hF hg hTh =>
+      downIrr (CtxEq.refl _) hTh.subset (hcl.axI F hF hg)
   | _, _, _, .andI1 (A₁ := A₁) (A₂ := A₂) d hg => by
-      obtain ⟨r, hr, hsub⟩ := tCi hcl d
-      obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andI1 (stabOf r.s) (thOf r.s) A₁ A₂
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
-      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_irr hst.symm hth) hsub₂⟩
+      obtain ⟨St', Th', hmem, hst, hth⟩ := irrUp (tCi hcl d)
+      exact downIrr hst.symm hth (hcl.andI1 St' Th' A₁ A₂ hmem hg)
   | _, _, _, .andI2 (A₁ := A₁) (A₂ := A₂) d hg => by
-      obtain ⟨r, hr, hsub⟩ := tCi hcl d
-      obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.andI2 (stabOf r.s) (thOf r.s) A₁ A₂
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩) hg
-      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_irr hst.symm hth) hsub₂⟩
+      obtain ⟨St', Th', hmem, hst, hth⟩ := irrUp (tCi hcl d)
+      exact downIrr hst.symm hth (hcl.andI2 St' Th' A₁ A₂ hmem hg)
   | _, _, _, .orI (C₁ := C₁) (C₂ := C₂) d₁ d₂ h₁ h₂ hg hSt hTh => by
-      obtain ⟨r₁, hr₁, hsub₁⟩ := tCi hcl d₁
-      obtain ⟨hshape₁, hst₁, hth₁⟩ := irr_shape hsub₁
-      obtain ⟨r₂, hr₂, hsub₂⟩ := tCi hcl d₂
-      obtain ⟨hshape₂, hst₂, hth₂⟩ := irr_shape hsub₂
-      obtain ⟨r₃, hr₃, hsub₃⟩ := hcl.orI (stabOf r₁.s) (thOf r₁.s)
-        (stabOf r₂.s) (thOf r₂.s) C₁ C₂
-        (by rw [← hshape₁]; exact List.mem_map.mpr ⟨r₁, hr₁, rfl⟩)
-        (by rw [← hshape₂]; exact List.mem_map.mpr ⟨r₂, hr₂, rfl⟩)
-        (fun x hx => by
-          rcases List.mem_append.mp (h₁ ((hst₁ x).mp hx)) with h | h
-          · exact List.mem_append_left _ ((hst₂ x).mpr h)
-          · exact List.mem_append_right _ (hth₂ h))
-        (fun x hx => by
-          rcases List.mem_append.mp (h₂ ((hst₂ x).mp hx)) with h | h
-          · exact List.mem_append_left _ ((hst₁ x).mpr h)
-          · exact List.mem_append_right _ (hth₁ h))
-        hg
+      obtain ⟨St₁', Th₁', hmem₁, hst₁, hth₁⟩ := irrUp (tCi hcl d₁)
+      obtain ⟨St₂', Th₂', hmem₂, hst₂, hth₂⟩ := irrUp (tCi hcl d₂)
       have hpair := orI_mono_sub hst₁ hth₁ hst₂ hth₂ hSt hTh
-      exact ⟨r₃, hr₃, wSubsumes_trans (wSubsumes_irr hpair.1 hpair.2) hsub₃⟩
+      exact downIrr hpair.1 hpair.2
+        (hcl.orI St₁' Th₁' St₂' Th₂' C₁ C₂ hmem₁ hmem₂
+          (fun x hx => by
+            rcases List.mem_append.mp (h₁ ((hst₁ x).mp hx)) with h | h
+            · exact List.mem_append_left _ ((hst₂ x).mpr h)
+            · exact List.mem_append_right _ (hth₂ h))
+          (fun x hx => by
+            rcases List.mem_append.mp (h₂ ((hst₂ x).mp hx)) with h | h
+            · exact List.mem_append_left _ ((hst₁ x).mpr h)
+            · exact List.mem_append_right _ (hth₁ h))
+          hg)
   | _, _, _, .impInI (Lam := Lam) (A := A) (B := B) d hpre hdisj hA hg
       hSt hTh => by
-      obtain ⟨r, hr, hsub⟩ := tCi hcl d
-      obtain ⟨hshape, hst, hth⟩ := irr_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.impInI (stabOf r.s) (thOf r.s) Lam A B
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
-        (by
-          refine clo_mono (fun x hx => ?_) hA
-          rcases List.mem_append.mp hx with h | h
-          · exact List.mem_append_left _ ((hst x).mpr h)
-          · refine List.mem_append_right _ (List.mem_filter.mpr ⟨?_, by simpa using h⟩)
-            exact hth ((hpre x).mpr (List.mem_append_right _ h)))
-        hg
+      obtain ⟨St', Th', hmem, hst, hth⟩ := irrUp (tCi hcl d)
       have hpair := impInI_mono_sub hst hth hpre hdisj hSt hTh
-      exact ⟨r₂, hr₂, wSubsumes_trans (wSubsumes_irr hpair.1 hpair.2) hsub₂⟩
+      exact downIrr hpair.1 hpair.2
+        (hcl.impInI St' Th' Lam A B hmem
+          (by
+            refine clo_mono (fun x hx => ?_) hA
+            rcases List.mem_append.mp hx with h | h
+            · exact List.mem_append_left _ ((hst x).mpr h)
+            · refine List.mem_append_right _
+                (List.mem_filter.mpr ⟨?_, by simpa using h⟩)
+              exact hth ((hpre x).mpr (List.mem_append_right _ h)))
+          hg)
   | _, _, _, .lift d hTh => by
-      obtain ⟨r, hr, hsub⟩ := tCr hcl d
-      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.lift (tagOf r.s) (ctxOf r.s) _
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
-      exact ⟨r₂, hr₂, wSubsumes_trans
-        (wSubsumes_irr (CtxEq.refl _) (maxTh_sub hΓ hTh)) hsub₂⟩
+      obtain ⟨t', Γ', hmem, _, hΓ⟩ := regUp (tCr hcl d)
+      exact downIrr (CtxEq.refl _) (maxTh_sub hΓ hTh)
+        (hcl.lift t' Γ' _ hmem)
   | _, _, _, .circNotIn (Z := Z) d htag hTh hg => by
-      obtain ⟨r, hr, hsub⟩ := tCr hcl d
-      obtain ⟨hshape, hle, hΓ⟩ := reg_shape hsub
-      obtain ⟨r₂, hr₂, hsub₂⟩ := hcl.circNotIn (tagOf r.s) (ctxOf r.s) Z
-        (by rw [← hshape]; exact List.mem_map.mpr ⟨r, hr, rfl⟩)
-        (pledge_of_le hle hΓ htag) hg
-      exact ⟨r₂, hr₂, wSubsumes_trans
-        (wSubsumes_irr (CtxEq.refl _) (maxTh_sub hΓ hTh)) hsub₂⟩
-  | _, _, _, .axIC F ats hats hFf hg hTh => by
-      obtain ⟨r, hr, hsub⟩ := hcl.axIC F ats hats hFf hg
-      exact ⟨r, hr, wSubsumes_trans (wSubsumes_irr (CtxEq.refl _) hTh.subset) hsub⟩
+      obtain ⟨t', Γ', hmem, hle, hΓ⟩ := regUp (tCr hcl d)
+      exact downIrr (CtxEq.refl _) (maxTh_sub hΓ hTh)
+        (hcl.circNotIn t' Γ' Z hmem (pledge_of_le hle hΓ htag) hg)
+  | _, _, _, .axIC F ats hats hFf hg hTh =>
+      downIrr (CtxEq.refl _) hTh.subset (hcl.axIC F ats hats hFf hg)
 
 end
 
