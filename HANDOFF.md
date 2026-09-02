@@ -3602,3 +3602,52 @@ Explainer §10.  Also this afternoon: notation ruling (Ξ for the FRJW
 stable zone, `docs/notation.md`), and the promotion+rename subagent
 redirected to leave the LJF◯ route in wip/ (core = 13 files + the
 hoisted `Transport`).
+
+## 2026-09-02 (evening) — promotion landed: the chain is core, the register applied, the residue packed
+
+Matthew: "do the promotion when it feels right to you"; "promote the
+core, which I think excludes LJF◯ route to GBUW completeness"; "we need
+to pack up the residue, left in wip I suppose; compilation is tricky
+when files move".
+
+* **Promotion** (subagent's commit, cherry-picked): fourteen modules
+  `wip/gbu*.lean` → `FRJ/Gbu/{Base, DB, Search, Measure, Circ,
+  Transport, W/Dichotomy, W/DB, W/CircDB, W/Corner, W/Search,
+  W/Closure, W/Exclusion, W/Saturate}.lean`; `transportRC`/`transportIC`
+  hoisted out of the LJF◯ support into `FRJ/Gbu/Transport.lean`;
+  `W/Exclusion`'s stray import of the LJF◯ route removed
+  (`pll_of_provableGbuC` was in `gbu_circ` all along).  Then the two
+  bridge modules moved by hand: `FRJ/Gbu/LaxND.lean`,
+  `FRJ/Gbu/W/LaxND.lean`.  New lakefile library `FRJGbu` (sixteen
+  modules, explicit list: the `"FRJ.Gbu.*"` glob fails with "bad
+  imports" on v4.31.0, recorded not diagnosed) in `defaultTargets`, so
+  a bare `lake build` now verifies the chain.  Closure of the crown:
+  36 modules, no `wip.`, no `LJF.`.  LJF◯ route stays in `wip/`.
+* **The Greek rename** (subagent's second commit): `St Th stab th Lam
+  → Ξ Θ Ξs Θs Λ`, 3194 occurrences across the W family and
+  `FRJ/Gbu/`, no proof text changed.  Three residues FOR MATTHEW'S
+  REVIEW, recorded in `docs/notation.md`: `ThLam → ΘΛ` (compound zone,
+  not in the table); `Fin`-indexed families in `W/Corner`, `W/Closure`,
+  `W/Saturate` read `Ξ`/`Θ` where the register wants `Ξs`/`Θs` (not
+  mechanical, a by-hand pass if wanted); six V-family named arguments
+  in `FRJ/SoundW.lean` keep the Roman label `(th := Θs)`.
+* **Verification**: bare `lake build` green (8718 jobs); the nine
+  residual wip modules green by explicit name (8603 jobs); 131 pin
+  lines of the sixteen moved files byte-identical to the originals at
+  `0a4d8f3`; smoke 7/7 PASS (dated block in
+  `wip/decidepll_smoke_out.txt`); `frjw_trace.lean unit tree` prints;
+  V-family diff empty.
+* **Record**: `docs/frjw-compaction.md` "Promotion" (table, closure,
+  supersession check: none re-opened; the "build wip by explicit
+  name" discipline LAPSES for the chain and STANDS for the residue);
+  `docs/calculus-map.md` now has a `FRJW` section with the crown's
+  statements and the syntactic bridge, and the `Gbu◯` section's file
+  list updated; `wip/README-gbu-residue.md` is the packed residue (per
+  file: what, status, build command, importers); file-map notes at the
+  head of `docs/frjw-explainer.md` and `docs/searchw-architecture.md`
+  (anchors stay hash-pinned at `b2f2525`).
+* **Not done**: the register sweep of the rest of the repository
+  (Matthew: the Greek/Roman mix occurs elsewhere); the deferred
+  compaction items (archive FRJ◯/FRJV physically, retire the corner's
+  dead kit and `SaturateV`, `W/Exclusion` namespace); the by-hand
+  family rename.  Each needs its supersession check first.

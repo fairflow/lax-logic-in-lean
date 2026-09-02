@@ -179,11 +179,15 @@ result is really about**.
 
 ### `Gbu◯` — the two-judgment provability calculus, complete for PLL
 
-* **Files**: `wip/gbu.lean` (`Gbu`, `◯`-free), `wip/gbu_circ.lean`
+* **Files** (promoted out of `wip/` on 2026-09-02, lakefile library
+  `FRJGbu`): `FRJ/Gbu/Base.lean` (`Gbu`, `◯`-free), `FRJ/Gbu/Circ.lean`
   (`Gbu◯`: the regular judgment `Ψ ⇒g C` / `GbuRC` and the irregular
   right-focused judgment `Ψ →g C` / `GbuIC`, with the three `◯` rules),
+  `FRJ/Gbu/Transport.lean` (`≐`-transport of derivations),
+  `FRJ/Gbu/LaxND.lean` (the translation into `LaxND`); still in `wip/`:
   `wip/gbu_ljfo.lean` + `wip/gbu_ljfo_support.lean` +
-  `wip/gbu_ljfo_transport.lean` (the LJF◯ → Gbu◯ translation).
+  `wip/gbu_ljfo_transport.lean` (the LJF◯ → Gbu◯ translation; not core
+  by Matthew's ruling of 2026-09-02, see `wip/README-gbu-residue.md`).
 * **Whose**: `Gbu` is Fiorentini & Ferrari §5; the `◯`-extension is
   ours, including the licenced `|◯C|` adaptation of `L⊃ᵢ` (2026-08-31:
   side condition `A ∈ Sf^R G` in place of the size bound; the
@@ -203,11 +207,68 @@ result is really about**.
   Sequent form via the `LaxND` deduction theorem
   (`gbuC_sequent_complete`, same file, same pin):
   `Nonempty (LaxND Γ φ) → ProvableGbuC (ofPLL (bigAnd Γ ⊃ φ))`.
+  **Syntactic soundness for `LaxND` PROVED (2026-09-02)**, the partner
+  of `gbuC_complete` in the other direction:
+
+      laxND_of_provableGbuC : ProvableGbuC G → Nonempty (LaxND [] (toPLL G))
+
+  `[propext, Quot.sound]`, `FRJ/Gbu/LaxND.lean` (`laxOfR`/`laxOfI`, a
+  mutual structural translation of the 24 constructors, cut written as
+  `impElim (impIntro q) p`).  A second, independent completeness proof
+  comes from the FRJW side (`gbuw_complete` + `soundnessW`, next
+  section).
 * **Do not confuse**: FRJ-family objects (FRJ / FRJV / FRJW) are
   DISPROOFS; `Gbu◯` derivations are proofs.  The FRJ database/search
   route to `Gbu◯` completeness (`searchO`, Theorem 8◯) is RETIRED —
   its two supplies are jointly unsatisfiable
   (`residues_unsatisfiable`, `wip/gbu_search_circ.lean`).
+
+### `FRJW` — the modal forward refutation calculus, and the decision chain
+
+* **Files**: `FRJ/CalculusW.lean` (the two judgments, regular
+  `t : Γ ⇒ C` / `FRJWr` and irregular `Ξ ; Θ → C` / `FRJWi`, and
+  `DisprovableW`), `FRJ/StepW.lean`, `FRJ/ExtractW.lean`,
+  `FRJ/SoundW.lean` (`soundnessW : DisprovableW G → ¬ PLL G`); the
+  decision chain `FRJ/Gbu/W/{Dichotomy, DB, CircDB, Corner, Search,
+  Closure, Exclusion, Saturate}.lean` (promoted from `wip/` on
+  2026-09-02, library `FRJGbu`); the syntactic bridge
+  `FRJ/Gbu/W/LaxND.lean`.  Notation: `docs/notation.md`.
+* **Whose**: FRJ(G) is Fiorentini–Ferrari (TOCL 2020); the `◯`
+  extensions (FRJ◯, its RefAt repair FRJV, and FRJW, the calculus
+  paired with `Gbu◯`) are ours.
+* **Status** (all `[propext, Quot.sound]`, no choice; in
+  `FRJ/Gbu/W/Saturate.lean` unless said):
+
+      decideGbuW G     : ProvableGbuC G ⊕' DisprovableW G
+      frjw_complete    : ¬ ProvableGbuC G → DisprovableW G
+      gbuw_complete    : ¬ DisprovableW G → ProvableGbuC G
+      provableGbuC_iff_pll : ProvableGbuC G ↔ PLL G
+      disprovableW_iff_not_pll : DisprovableW G ↔ ¬ PLL G
+      decidePLL G      : Decidable (PLL G)
+      decideGbuWData G : GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G)
+
+  and, composing with `laxOfR` (`FRJ/Gbu/LaxND.lean`), in
+  `FRJ/Gbu/W/LaxND.lean`:
+
+      PLL_iff_laxND : PLL (ofPLL φ) ↔ Nonempty (LaxND [] φ)
+      finite_poset_model_property :
+        Nonempty (LaxND [] φ) ↔ ∀ K : Kripke, K.valid (ofPLL φ)
+      decideLaxND φ : Decidable (Nonempty (LaxND [] φ))
+
+* **Do not confuse**: (i) `FRJ.PLL A` (`FRJ/Basic.lean:567`) is
+  SEMANTIC, validity in every finite rooted POSET constraint model
+  (`FRJ.Kripke`, antisymmetric order); it coincides with `LaxND`
+  provability only through `PLL_iff_laxND`, and the finite POSET model
+  property is strictly more than `finite_model_property`
+  (`LaxLogic/PLLFiniteModel.lean`), whose filtration models are
+  preorders; the ≤-quotient of a preorder model does NOT preserve
+  `◯`-forcing (`wip/quot_cm.lean`, four worlds, `[propext]`).
+  (ii) FRJW objects are DISPROOFS.  (iii) `decideGbuW` is a proof
+  object, not a practical algorithm: the search is `searchW`, the
+  fuel is the pigeonhole over canonical keys.
+* **Exposition**: `docs/frjw-explainer.md` (the proof strategy, with
+  proof-state traces), `docs/searchw-architecture.md`,
+  `docs/frjw-compaction.md`, `docs/frjw-complexity-comparison.md`.
 
 ### The term calculus and reduction
 
@@ -241,6 +302,9 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 | the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
 | E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |
 | completeness of `Gbu◯` for PLL (`gbuC_complete`) | `Gbu◯`, via `LJF◯` (`bridge_iff` + `tInv`) | `wip/gbu_ljfo.lean` |
+| soundness of `Gbu◯` for natural deduction (`laxND_of_provableGbuC`) | `Gbu◯` → `LaxND` | `FRJ/Gbu/LaxND.lean` |
+| PLL decidable by simultaneous completeness (`decideGbuW`, `decidePLL`) | `Gbu◯` + `FRJW`, over the finite rooted poset models `FRJ.Kripke` | `FRJ/Gbu/W/Saturate.lean` |
+| `LaxND` provability decidable choice-free; the finite POSET model property (`PLL_iff_laxND`, `decideLaxND`) | `LaxND`, via `Gbu◯` → `LaxND` and `FRJ.Kripke` | `FRJ/Gbu/W/LaxND.lean` |
 | the θ-chain, the GZ-candidate cell, `thetaStabilises` | `LaxND` (certificates from `G4c` search) | `wip/ljfo_theta_*.lean` |
 | the 1-pv ∃p wrapper: `semExC_upper`/`semExC_adjunction` PROVED; the amalgamation conditional on `ClosedCollapse 6` — REFUTED-in-spirit (no collapse ≤ 7; `R₀ = 5` refuted outright), so the kernels stand OPEN; `SemExC1Definable` OPEN | `DerivU` + confluent constraint models | `wip/pcll1pv_stage*.lean`, `wip/closed_frag*.lean` |
 

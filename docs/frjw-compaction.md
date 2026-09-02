@@ -173,3 +173,103 @@ fits one site (re-costed), and a `first`-over-the-inversion-bank tactic
 saves nothing, destroys the per-site documentation of which duality
 clause is used, and risks build time.  The bank is the strategy; the
 sites stay named.
+
+# Promotion (2026-09-02, evening) — the chain leaves `wip/`
+
+Matthew: "do the promotion when it feels right to you" and, on scope,
+"promote the core, which I think excludes LJF◯ route to GBUW
+completeness.  Interesting, not for publication, not unless we find a
+parallel to FRJ◯ to partner with LJF◯."  Executed by a subagent in its
+own worktree (branch `promote-gbu`, cut from `ef9e131`), cherry-picked
+here on top of the syntactic bridge (`0a4d8f3`), then the two bridge
+modules moved into the promoted tree.
+
+## What moved
+
+| from | to |
+|---|---|
+| `wip/gbu.lean`                | `FRJ/Gbu/Base.lean` |
+| `wip/gbu_db.lean`             | `FRJ/Gbu/DB.lean` |
+| `wip/gbu_search.lean`         | `FRJ/Gbu/Search.lean` |
+| `wip/gbu_measure.lean`        | `FRJ/Gbu/Measure.lean` |
+| `wip/gbu_circ.lean`           | `FRJ/Gbu/Circ.lean` |
+| (hoisted out of `wip/gbu_ljfo_transport.lean`) | `FRJ/Gbu/Transport.lean` |
+| `wip/gbu_frjw_dichotomy.lean` | `FRJ/Gbu/W/Dichotomy.lean` |
+| `wip/gbu_frjw_db.lean`        | `FRJ/Gbu/W/DB.lean` |
+| `wip/gbu_frjw_circdb.lean`    | `FRJ/Gbu/W/CircDB.lean` |
+| `wip/gbu_frjw_corner.lean`    | `FRJ/Gbu/W/Corner.lean` |
+| `wip/gbu_frjw_search.lean`    | `FRJ/Gbu/W/Search.lean` |
+| `wip/gbu_frjw_closure.lean`   | `FRJ/Gbu/W/Closure.lean` |
+| `wip/gbu_frjw_exclusion.lean` | `FRJ/Gbu/W/Exclusion.lean` |
+| `wip/gbu_frjw_saturate.lean`  | `FRJ/Gbu/W/Saturate.lean` |
+| `wip/gbu_laxnd.lean`          | `FRJ/Gbu/LaxND.lean` |
+| `wip/gbu_frjw_laxnd.lean`     | `FRJ/Gbu/W/LaxND.lean` |
+
+The hoist: `transportRC`/`transportIC` with `ctxEq_cons`/`clo_ctxEq`
+are `≐`-transports of `Gbu◯` derivations, a property of the calculus
+and not of the LJF◯ route; they now live in `FRJ/Gbu/Transport.lean`
+(imports `FRJ.Gbu.Circ` only, namespace `FRJ.Gbu`), and
+`wip/gbu_ljfo_transport.lean` imports them.  `W/Exclusion.lean` had
+imported `wip.gbu_ljfo` for `pll_of_provableGbuC`, which in fact lives
+at `FRJ/Gbu/Circ.lean:1485`; its import is now `FRJ.Gbu.Circ` +
+`FRJ.SoundW`.  Nothing in `FRJ/Gbu/` reaches the LJF◯ route.
+
+**The core-admission gate, measured.**  Transitive import closure of
+the crown `FRJ.Gbu.W.Saturate`, repo-local: 36 modules, namely the 14
+`FRJ.Gbu.*` modules, 21 `FRJ.*` core modules and `Meta.Slime`; no
+`wip.` module, no `LJF.` module, and `FRJ.Bridge` is not reached.  The
+bridge module `FRJ.Gbu.W.LaxND` additionally reaches `FRJ.Bridge` and
+the `LaxLogic` natural-deduction core, by design.
+
+**Lakefile.**  New `[[lean_lib]] FRJGbu` with the sixteen modules,
+added to `defaultTargets` beside `LaxLogic`, so a bare `lake build`
+now covers the chain.  The globs are an explicit list: on this
+toolchain (v4.31.0) `globs = ["FRJ.Gbu.*"]` (and `["FRJ.Gbu.W.*"]`,
+and `["FRJ.Search.*"]`) makes `lake build FRJGbu` fail with `some
+modules have bad imports` although every module builds and the
+explicit list is green; `["Meta.*"]` is green.  Recorded, not
+diagnosed.  The `wipshared` globs lose the sixteen moved entries and
+keep the residue (`wip.gbu_weakening`, `wip.gbu_search_circ`,
+`wip.rbar`, `wip.frjw_gcc`, `wip.gbu_ndrules`, the three LJF◯ files,
+`wip.quot_cm`).
+
+**The Greek rename** (`docs/notation.md`) followed in the next commit:
+3194 identifier occurrences, no proof text changed, three flagged
+residues recorded in the register.
+
+## Verification
+
+* bare `lake build`: green, 8718 jobs (the FRJGbu library included).
+* `lake build` of the nine residual wip modules by explicit name:
+  green (8603 jobs).
+* Pins: the `#guard_msgs`-checked `#print axioms` lines of the sixteen
+  moved files, 131 lines, compared as sets against the `wip/` originals
+  at `0a4d8f3`: identical both ways.
+* Smoke, `lake env lean --run wip/decidepll_smoke.lean`: 7/7 PASS
+  (`wip/decidepll_smoke_out.txt`, dated block).
+* `lake env lean --run wip/frjw_trace.lean unit tree` prints the `Gbu◯`
+  proof tree.
+* `git diff --stat 0a4d8f3 HEAD` over the V-family files: empty.
+
+## Supersession check: the `wip/` placement → the `FRJGbu` library
+
+| constraint | source | `wip/` placement | `FRJ/Gbu/` placement | verdict |
+|---|---|---|---|---|
+| every importer compiles after the move ("compilation is tricky when files move") | Matthew, 2026-09-02 | n/a | all importers re-pointed; bare build + explicit residue build green | DISCHARGED |
+| core-admission gate: never exclude a finished result for its campaign; measure the closure; hoist stranded shared definitions | memory `core-admission-gate` | — | closure measured (36 modules, no `wip.`/`LJF.`); `transportIC` hoisted; the LJF◯ route is excluded on Matthew's ruling as a second route whose publishability is pending, not for its campaign | DISCHARGED |
+| the explainer's and the architecture notes' `file:line` anchors stay resolvable | `docs/frjw-explainer.md` Provenance | paths existed | anchors are hash-pinned (`git show b2f2525:wip/gbu_frjw_search.lean`); a file-map note added at the head of both documents | DISCHARGED |
+| pins byte-identical across the move | CLAUDE.md rule 1 | 131 lines | 131 lines, set difference empty both ways | DISCHARGED |
+| FRJV files byte-for-byte untouched | memory `frjw-naming-discipline` | — | V-family diff empty | DISCHARGED |
+| build wip modules by explicit name before trusting dependents | memory `bare-lake-build-skips-wip` | the only way to build the chain | the chain is in `defaultTargets`: a bare `lake build` is now a verification of it | LAPSED for the chain (the requirement is met by the build system); STANDS for the residue in `wip/` |
+
+Re-opened constraints: none.
+
+## Deferred (each needs its own supersession check before it is done)
+
+* Archive the FRJ◯ and FRJV lines physically (comparison doc's
+  recommendation).
+* Retire the corner's dead kit (`RefAtG`, `refutedCleanly_circ_kept`,
+  `refutedCleanly_circ_axI`) and `SaturateV`.
+* `W/Exclusion.lean` namespace `FRJ.Gbu.LJFT → FRJ.Gbu.W` (changes
+  pinned names).
+* The by-hand family rename (`docs/notation.md`, residue 3).

@@ -11,7 +11,7 @@ directions, without choice:
     PLL (ofPLL φ)  ⟹  LaxND ⊢ φ         this file: PLL ⟹ no FRJW disproof
                                           (`soundnessW`) ⟹ `Gbu◯` proof
                                           (`gbuw_complete`) ⟹ `LaxND`
-                                          (`laxOfR`, wip/gbu_laxnd.lean)
+                                          (`laxOfR`, FRJ/Gbu/LaxND.lean)
 
 Two corollaries follow at once: natural-deduction provability is
 decidable by the same procedure (`decideLaxND`), and PLL has the finite
@@ -20,8 +20,8 @@ antisymmetric, already characterises theoremhood), which the filtration
 proof of `finite_model_property` does not give, its models being
 preorders.
 -/
-import wip.gbu_frjw_saturate
-import wip.gbu_laxnd
+import FRJ.Gbu.W.Saturate
+import FRJ.Gbu.LaxND
 
 namespace FRJ.Gbu.W
 

@@ -6,6 +6,12 @@ when complete or when I need to review what went wrong."  Maintained
 alongside the build; every claim below is labelled PROVED / OPEN, and
 the section "Where the quicksand would be" is kept current.
 
+*File map (2026-09-02, evening): the chain was promoted out of `wip/`
+into `FRJ/Gbu/` (lakefile library `FRJGbu`, in `defaultTargets`) and
+the zone binders renamed to Greek per `docs/notation.md`; the `wip/`
+paths below are historical and resolve at the hashes cited.  The
+from → to table is in `docs/frjw-compaction.md`, "Promotion".*
+
 ## 1. What is being proved
 
 The cell-level dichotomy behind `decideGbuW`:

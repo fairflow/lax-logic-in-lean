@@ -24,6 +24,21 @@ pins of every result cited are `[propext, Quot.sound]` unless said
 otherwise; `#print axioms` (the `collectAxioms` oracle) is the only
 checker recognised here.
 
+**File map (added 2026-09-02, evening).**  After this document was
+written the chain was promoted out of `wip/` and the zone binders were
+renamed to Greek (`docs/notation.md`).  Every anchor below still
+resolves at `b2f2525` (`git show b2f2525:wip/gbu_frjw_search.lean`);
+the current locations are `wip/gbu_frjw_{dichotomy, db, circdb, corner,
+search, closure, exclusion, saturate}.lean` → `FRJ/Gbu/W/{Dichotomy,
+DB, CircDB, Corner, Search, Closure, Exclusion, Saturate}.lean`,
+`wip/gbu{,_db,_search,_measure,_circ}.lean` → `FRJ/Gbu/{Base, DB,
+Search, Measure, Circ}.lean`, and the §10 modules `wip/gbu_laxnd.lean`,
+`wip/gbu_frjw_laxnd.lean` → `FRJ/Gbu/LaxND.lean`, `FRJ/Gbu/W/LaxND.lean`.
+In the snapshots of §4 and §7 the binders `St`/`Th`/`stab`/`th`/`Lam`
+now read `Ξ`/`Θ`/`Ξs`/`Θs`/`Λ` in the sources; the transcripts are left
+as taken.  The full table is in `docs/frjw-compaction.md`,
+"Promotion".
+
 **Register.**  An object of `FRJWr`/`FRJWi` is a DISPROOF; "proof" and
 "derivation" are reserved for `Gbu◯` (and for `LaxND`, `G4c`, `SC`
 elsewhere in the repository).  PROVED, REFUTED and OPEN are kept

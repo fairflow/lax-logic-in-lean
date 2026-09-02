@@ -16,3 +16,12 @@ impid: decidePLL=true expected=true PASS
 unit: decidePLL=true expected=true PASS
 atom: decideGbuWData=disproof(tag=FRJ.Tag.chain (FRJ.Form.atom "p"), |Γ|=0) expected-proof=false PASS
 unit: decideGbuWData=proof expected-proof=true PASS
+# regression after promotion wip/ -> FRJ/Gbu/ + Greek rename + bridge modules moved — 2026-09-02 17:30 BST
+# bare lake build green (8718 jobs, FRJGbu in defaultTargets); 131 pins byte-identical
+atom: decidePLL=false expected=false PASS
+bot: decidePLL=false expected=false PASS
+circbot: decidePLL=false expected=false PASS
+impid: decidePLL=true expected=true PASS
+unit: decidePLL=true expected=true PASS
+atom: decideGbuWData=disproof(tag=FRJ.Tag.chain (FRJ.Form.atom "p"), |Γ|=0) expected-proof=false PASS
+unit: decideGbuWData=proof expected-proof=true PASS

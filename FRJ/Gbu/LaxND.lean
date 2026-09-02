@@ -21,7 +21,7 @@ the ≤-quotient does not preserve `◯`-forcing (four-world witness,
 kernel-checked).  This route is choice-free and yields the finite POSET
 model property as a corollary.
 -/
-import wip.gbu_circ
+import FRJ.Gbu.Circ
 import FRJ.Bridge
 
 namespace FRJ.Gbu
