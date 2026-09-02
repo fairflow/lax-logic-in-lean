@@ -19,6 +19,8 @@ for p in \
   tools/rho-hasse-svg.py \
   tools/Cert.lean \
   tools/A2Probe.lean \
+  tools/CheckProbe.lean \
+  wip/check_closed.lean \
   docs/rn-catalogue.html \
   Meta/Audit.lean \
 ; do

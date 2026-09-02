@@ -296,6 +296,63 @@ def mkJoinBarrenW (G : Form) (a : WIS G) (rest : List (WIS G)) : List (WRS G) :=
         else none))
     else []
 
+/-- The RefAt-relaxed (J2) of `⋈^◯` as a Boolean over the stable
+implications. -/
+def relaxedJ2B (Υ ctx : List Form) (imps : List Form) : Bool :=
+  imps.all (fun X =>
+    match X with
+    | .imp A _ => refAtB true Υ ctx A
+    | _ => true)
+
+theorem relaxedJ2_of_B {Υ ctx imps : List Form} (h : relaxedJ2B Υ ctx imps = true) :
+    ∀ A B : Form, Form.imp A B ∈ imps → RefAt true Υ ctx A := by
+  intro A B hmem
+  have := List.all_eq_true.mp h _ hmem
+  exact refAtB_iff.mp this
+
+/-- **`⋈^◯` under the RefAt-relaxed (J2), when the strict one fails.**
+The A3 repair (2026-09-02, `docs/checkclosed-checks.md` §5): the
+calculus (`FRJWr.joinCirc`) and the closedness contract
+(`DBClosed.joinCirc`) admit a stable implication whose antecedent is
+`RefAt`-refuted over the conclusion context; `mkJoinBarrenW` fires only
+under the strict `A ∈ Υ`, so an engine store could lack exactly the rows
+the contract demands.  This fires the remaining instances; when the
+strict guard holds the rows are already produced above, so this returns
+nothing then. -/
+def mkJoinCircRelaxedW (G : Form) (a : WIS G) (rest : List (WIS G)) : List (WRS G) :=
+  match j1j2CheckW a rest with
+  | some _ => []
+  | none =>
+    if h1 : ∀ i j, i ≠ j → stabFW a rest i ⊆ stabFW a rest j ++ thFW a rest j then
+      if hcirc : unionAll (fun j => circPart (stabFW a rest j)) = [] then
+        if h2r : relaxedJ2B (upsilon (rhsFW a rest))
+            (joinCtxOrVBase (stabFW a rest) (thFW a rest) ++
+              keptOf (upsilon (rhsFW a rest))
+                (joinCtxOrVBase (stabFW a rest) (thFW a rest)) (thPool (thFW a rest)))
+            (unionAll (fun j => impPart (stabFW a rest j))) = true then
+          (sfR G).filterMap (fun T =>
+            if hg : T ∈ sfR G then
+              match T, hg with
+              | .circ Z, hg =>
+                  if hZ : RefAt true (upsilon (rhsFW a rest))
+                        (joinCtxOrVBase (stabFW a rest) (thFW a rest) ++
+                          keptOf (upsilon (rhsFW a rest))
+                            (joinCtxOrVBase (stabFW a rest) (thFW a rest))
+                            (thPool (thFW a rest))) Z then
+                    some ⟨.barren,
+                      joinCtxOrVBase (stabFW a rest) (thFW a rest) ++
+                        keptOf (upsilon (rhsFW a rest))
+                          (joinCtxOrVBase (stabFW a rest) (thFW a rest))
+                          (thPool (thFW a rest)), .circ Z,
+                      .joinCirc (premFW a rest) h1 (relaxedJ2_of_B h2r) hcirc
+                        (keptOf_ok _ _ _) hZ hg (CtxEq.refl _)⟩
+                  else none
+              | _, _ => none
+            else none)
+        else []
+      else []
+    else []
+
 /-- The fallible joins — the paper rules, V-typed. -/
 def mkJoinFW (G : Form) (a : WIS G) (rest : List (WIS G)) : List (WRS G) :=
   match j1j2CheckW a rest with
@@ -410,7 +467,7 @@ def wOps (G : Form) : Ops G where
   stepOrI := stepOrIW G
   stepImpInI := fun cap i => stepImpInIW G cap i
   stepNotIn := stepNotInW G
-  mkJoinBarren := fun a rest => mkJoinBarrenW G a rest
+  mkJoinBarren := fun a rest => mkJoinBarrenW G a rest ++ mkJoinCircRelaxedW G a rest
   mkJoinF := fun a rest => mkJoinFW G a rest
   mkJoinP := fun a rest p prest => mkJoinPW G a rest p prest
 

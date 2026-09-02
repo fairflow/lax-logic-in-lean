@@ -151,3 +151,59 @@ checked one by one (`Fin.succAbove_ne` already caught).
 * The G-exponential factors of `impInI` and `axIC` are intrinsic to
   the contract as designed; a contract with fewer Λ or fewer `ats`
   would need a new completeness proof and is not proposed.
+
+## 8. Build status (2026-09-02, night): BUILT
+
+All six items of §6 are built, sorry-free, pins `[propext, Quot.sound]`
+throughout (`#guard_msgs`-guarded `#print axioms` in every file).
+
+| # | item | where | status |
+|---|---|---|---|
+| 1 | B1 for the relaxed `joinCirc` (`ctxOr_sub_relaxed`, `j2r_comp`), by formula-size induction with `Clo`/`RefAt` certificate transfer | `wip/b1b2_relaxed.lean` | PROVED |
+| 2 | `Shape.toDistinct`: one reindexing lemma over a clause *shape* (context map + hypothesis + one B1 step), iterated to an injective `e` with pairwise distinct goals | `wip/dbclosed_dg.lean` | PROVED |
+| 3 | `hittingCut`: the promise sub-family of size ≤ `(dedupF (gCirc G)).length` | `wip/b1b2_hitting.lean` | PROVED |
+| 4 | `DBClosedDG` (21 fields: the eight join clauses restricted to distinct goals / bounded promise arity, the thirteen others verbatim) and `dbClosed_of_dg : DBClosedDG G db → DBClosed G db` | `wip/dbclosed_dg.lean` | PROVED |
+| 5 | `chkScan` (thirteen non-join checks + `chkScan_sound`), `chkJoins` (eight join checks over `famsDG`/`pfams` + soundness, needing `(db.map (·.s)).Nodup`), `checkClosed := Nodup && chkScan && chkJoins`, `checkClosed_sound : checkClosed G db = true → DBClosedDG G db`, `dbClosed_of_check` | `wip/check_scan.lean`, `wip/check_join.lean`, `wip/check_closed.lean` | PROVED |
+| 6 | `decideGbuW_of_check (db) (h : checkClosed G db = true) : ProvableGbuC G ⊕' DisprovableW G`; `rowsOfDBO`, `engineRows`, `decideByEngine : Form → Config → Option (…)`; the engine's relaxed `⋈^◯` (`mkJoinCircRelaxedW`, fired when the strict guard fails) | `wip/check_closed.lean`, `FRJ/Search/OpsW.lean` | BUILT |
+
+The statement, displayed:
+
+    checkClosed G db = true  →  DBClosed G db                 (dbClosed_of_check)
+    checkClosed G db = true  →  ProvableGbuC G ⊕' DisprovableW G   (decideGbuW_of_check)
+
+### The gate watch (`lake exe checkprobe`, `tools/CheckProbe.lean`)
+
+Twenty cells (the `wscreen` set plus `G₂`, `G₃`), engine at `rounds 16,
+jmax 3, pmax 2, lamCap 24`.  Per cell: engine store → `rowsOfDBO` →
+`checkClosed` → `decideGbuW_of_check`, beside the G4c oracle; then the
+gate watch on the certified store: delete every join-built row and
+require `false`; delete the first row and require `false`.  Output in
+`wip/checkprobe_out.txt`.
+
+| outcome | cells |
+|---|---|
+| store certified, decision agrees with the oracle (PASS) | 20 / 20 |
+| ALARM (certified store, decision ≠ oracle) | 0 |
+| FLAG (store not certified at this budget) | 0 |
+| gate-join went `false` (stores with join rows) | 14 / 14 |
+| gate-drop went `false` | 20 / 20 |
+
+Notably every cell with `caps=jmax,pmax` (the engine's arity cap was
+binding, so families were omitted) still certifies: the restricted
+contract of §1 asks only for the arities B1/B2′ leave, which is the
+point of the corollary.  Timings: engine ≤ 2 s per cell (big-ante
+variant), `checkClosed` under a millisecond on these stores (≤ 49
+rows).
+
+### What §7 said, now
+
+* B1 for the relaxed `joinCirc`: PROVED (item 1).
+* `DBClosedDG → DBClosed`: PROVED (item 4).
+* The A3 repair is in and the corpus question is answered on the
+  twenty cells above (no FLAG); larger cells remain an empirical
+  question, and a FLAG is still not a verdict.
+* The G-exponential factors stand as designed.
+
+Not promoted yet: the files sit under `wip/` (module list in
+`lakefile.toml`); promotion to `FRJ/Gbu/W/Arity.lean` + `Check.lean`
+is a mechanical move for a later commit.

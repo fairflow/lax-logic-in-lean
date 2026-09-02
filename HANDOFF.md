@@ -3815,3 +3815,45 @@ report when ready to build".  Record: `docs/checkclosed-checks.md`.
 * **Build plan** (§6 of the record): six items, 33–54 h un-corrected;
   gate watch for the checker = delete one join-built row from a closed
   store and see `false`.
+
+## 2026-09-02 (night, last) — `checkClosed` BUILT: the practical decider certifies engine stores
+
+Matthew `/goal`: "build it."  The six items of `docs/checkclosed-checks.md`
+§6 are built (status table in its new §8), sorry-free, pins
+`[propext, Quot.sound]` throughout.  The statement:
+
+    checkClosed G db = true  →  DBClosed G db                          (dbClosed_of_check)
+    checkClosed G db = true  →  ProvableGbuC G ⊕' DisprovableW G       (decideGbuW_of_check)
+
+* **Files** (all `wip/`, registered in `lakefile.toml`, build by name):
+  `b1b2_relaxed.lean` (B1 for the relaxed `joinCirc`, by formula-size
+  induction; Opus), `b1b2_hitting.lean` (`hittingCut`, B2′; Opus),
+  `dbclosed_dg.lean` (`Shape.toDistinct`, `DBClosedDG`,
+  `dbClosed_of_dg`), `check_scan.lean` (thirteen `chkX` + soundness;
+  Opus), `check_join.lean` (eight join checks over `famsDG`/`pfams`
+  with `findSub`, soundness by the S5 reindexing pack),
+  `check_closed.lean` (`checkClosed`, `checkClosed_sound`,
+  `dbClosed_of_check`, `decideGbuW_of_check`, `rowsOfDBO`,
+  `engineRows`, `decideByEngine`).
+* **A3 repaired** (`FRJ/Search/OpsW.lean`): `mkJoinCircRelaxedW` fires
+  `⋈^◯` under the RefAt-relaxed (J2) when the strict guard fails
+  (`relaxedJ2B` / `relaxedJ2_of_B`), wired into `wOps.mkJoinBarren`;
+  `⋈At`/`⋈∨` stay strict, matching their clauses.  No change to any
+  rule's form.
+* **Gate watched failing** (`lake exe checkprobe`, `tools/CheckProbe.lean`,
+  output `wip/checkprobe_out.txt`): 20 cells (the `wscreen` set + `G₂`,
+  `G₃`), engine at `jmax 3, pmax 2`: every store certified, every
+  decision agrees with the G4c oracle (0 ALARM, 0 FLAG); deleting the
+  join-built rows → `false` on all 14 stores that have them; deleting
+  the first row → `false` on 20/20.  Cells whose arity cap was binding
+  (`caps=jmax,pmax`) still certify — the B1/B2′ corollary doing its
+  job.  `checkClosed` runs under a millisecond on these stores; the
+  engine ≤ 2 s.
+* **Choice-leak lesson, again**: `simp`/`simpa` proofs under this import
+  set pull `Classical.choice` (four times in `check_join.lean`); term
+  proofs throughout.  Mathlib's `Fin.succAbove_ne` leaks; hand proof
+  `succAbove_ne'`.
+* **Not done**: promotion of the `wip/` files to `FRJ/Gbu/W/Arity.lean`
+  + `Check.lean`; the output layer (`ndToTm`, countermodel SVGs,
+  docs/decider-outputs-design.md) is next; larger cells than the
+  twenty are an empirical question (a FLAG is never a verdict).
