@@ -3519,3 +3519,11 @@ chains, `wip/gbu_frjw_saturate.lean` 2531 → 2434.  Both: chain rebuilt
 by explicit target, pins unchanged, smoke 7/7 PASS, pushed to frjw-dev.
 Table in docs/frjw-compaction.md ("The C-items").  C.6 (closure T-C
 closers) in flight with a second subagent.
+Later: C.6 landed (`1fbdef7`, closure 1804 → 1803, but the `mutual`
+block 226 → 183 and `wSubsumes_trans` 21 → 0 inside it); the stage-4
+plan arrived (Opus, against `aa13537`; 1913 lines; first version
+archived under docs/archive/); its §C.10 dead-declaration sweep done
+(search 737 → 725).  Core now 4962 lines.  STAGE 4 = the explanation:
+Part E of the plan is the spine (seven items, E.iii "how the two
+calculi meet: the inversion-lemma bank as a table" first).  The plan
+rejects a `first`-over-the-bank tactic and `byDecNeg` with reasons.

@@ -154,7 +154,20 @@ naming what it does), recorded inline.
 |---|---|---|---|---|
 | C.3 | `wip/gbu_frjw_search.lean` | 852 → 737 | `Focus`/`focusCtx` (split at a member with its `≐`, rest-membership and size equation), `clo_focus` (the `Clo`-coverage of a descended context; auto-param finds the one-/two-cons rest inclusion), `forall_cons` (`sfL`/`gHat` preservation member by member), `Focus.lt1`/`lt2` (the size drops).  Six focus sites (corner `L⊃ᵢ`, both `L◯`, the non-`Ĝ` member, `limpStep`, the non-critical left rules) and three `A :: Ψ` lambdas rewritten.  Every left rule now reads "focus, cover, descend, apply the constructor". | elaborated clean first time; chain rebuilt; pins unchanged; smoke 7/7 |
 | C.7 | `wip/gbu_frjw_saturate.lean` | 2531 → 2434 | `emitters G db : List (List (WRow G))`, `stepAll := (emitters G db).flatten`, one `sub_stepAll (hl : l ∈ emitters G db)` via `List.mem_flatten` (checked choice-free) replaces the nineteen `Or.inl`-chain lemmas; 25 call sites read `sub_stepAll (by simp [emitters]) _ hemit`.  Nothing else unfolds `stepAll` (`stepNew`, `closureDB_fixed`, `stored_of_emitted` use it opaquely).  Constraint "each coverage site names the rule it fires": DISCHARGED, `hemit` names the emitter. | build green; pins unchanged; smoke PASS (Opus subagent, cherry-picked as `60aee6d`) |
+| C.6 | `wip/gbu_frjw_closure.lean` | 1804 → 1803 | `regUp`/`irrUp` (a stored subsumer's shape, as an existential over tag and context / over the two zones) and `downReg`/`downIrr` (subsumption transport) close all 21 T-C cases: 9 unary cases take the two-line "ascend, refire, descend" form, the 8 join cases keep `irrPick`/`regPick` for their families and use the descent half, the 3 axiom cases are one-line term-mode entries.  Net line count is flat because the four lemmas with docstrings cost what the scaffold saved; the effect is deduplication: inside the `mutual` block `wSubsumes_trans` 21 → 0, `reg_shape`/`irr_shape` 9 → 0, the `rw [← hshape]; exact List.mem_map.mpr …` incantation 9 → 0, block 226 → 183 lines. | build green; `tCr`/`tCi`/`tC_of_closed`/`decideGbuW_of_dbClosed` pins re-checked in scratch, unchanged; smoke PASS (Opus subagent, cherry-picked as `1fbdef7`) |
+
+| sweep | `wip/gbu_frjw_search.lean` | 737 → 725 | The stage-3 residue found by the stage-4 plan (§C.10): `wgTpLt` and `tpC_free_lt_circ` (both private, zero consumers; they paid for the chase's `◯`-free-antecedent release) deleted, the bare alias `have IHW := IH` removed and its two uses read `IH`. | build green; pins unchanged; smoke 7/7 |
 
 C.3 also removes the `subst hsplit` at the non-critical left rules: the
 member is recovered from the split and focused like every other site,
 so `Ψ` stays a variable throughout `searchW`.
+
+Core after the C-items: search 725 + closure 1803 + saturate 2434 =
+4962 lines (goal-closed state: 1189 + 1805 + 2471 = 5465; −9%
+overall, −39% on the search file).  The stage-4 plan
+(docs/frjw-recursion-explainer-plan.md, written against `aa13537`)
+recommends AGAINST the remaining tactic-shaped candidates: `byDecNeg`
+fits one site (re-costed), and a `first`-over-the-inversion-bank tactic
+saves nothing, destroys the per-site documentation of which duality
+clause is used, and risks build time.  The bank is the strategy; the
+sites stay named.

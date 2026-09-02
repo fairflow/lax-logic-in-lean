@@ -221,17 +221,6 @@ private theorem wgFocus {G : Form} {Ψ Ψ' : List Form} {C C' : Form}
     WgLt (wgC G false Ψ' C') (wgC G true Ψ C) :=
   wgCFocus (fun _ hX => clo_trans hcl hX) (tpC_false_lt_true C C')
 
-private theorem wgTpLt {G : Form} {r : Bool} {Ψ Ψ' : List Form} {C C' : Form}
-    (hcl : ∀ X ∈ Ψ, Clo Ψ' X) (htp : tpC false C' < tpC r C) :
-    WgLt (wgC G false Ψ' C') (wgC G r Ψ C) :=
-  wgCFocus (fun _ hX => clo_trans hcl hX) htp
-
-private theorem tpC_free_lt_circ {A Z : Form} (h : A.hasCirc = false) :
-    tpC false A < tpC false (Form.circ Z) := by
-  show (if A.hasCirc = true then 1 else 0) < 1
-  rw [h]
-  exact Nat.zero_lt_one
-
 private theorem wgDrop {G : Form} {r r' : Bool} {Ψ Ψ' : List Form} {C C' : Form}
     (h : unclosed G Ψ' < unclosed G Ψ) : WgLt (wgC G r' Ψ' C') (wgC G r Ψ C) :=
   Or.inl h
@@ -347,7 +336,6 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
           WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G reg Ψ C) →
           WSearchOk G D q :=
         fun q hq => ihW _ (hx ▸ hq) q rfl
-      have IHW := IH
       cases reg
       · -- ==================== IRREGULAR ====================
         show (∀ X ∈ Ψ, X ∈ sfL G) → (C.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G) →
@@ -404,7 +392,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                 hΨ (fun _ => hg) hB (unrefutedBelow_of_gHat hg
                   (fun h => hne (gbuInv8 hsat hC hcl h)))
               exact .rimpII d hcl
-            · have d := IHW (true, A :: Ψ, B)
+            · have d := IH (true, A :: Ψ, B)
                 (wgDrop (unclosed_lt hA hcl))
                 (forall_cons hA hΨ)
                 hB (fun h => hne (gbuInv9 hsat hC hg h))
@@ -457,7 +445,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                           (fun X hXsf hI => List.mem_filter.mpr
                             ⟨hXsf, @decide_eq_true _ (decI Ψ X) hI⟩)
                           (fun A' B' hXsf hncl hnR =>
-                            IHW (true, A' :: Ψ, B')
+                            IH (true, A' :: Ψ, B')
                               (wgDrop
                                 (unclosed_lt (sfR_imp hXsf).1 hncl))
                               (forall_cons (sfR_imp hXsf).1 hΨ)
