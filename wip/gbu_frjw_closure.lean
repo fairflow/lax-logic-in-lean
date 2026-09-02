@@ -1091,7 +1091,6 @@ def decideGbuW_of {G : Form} (db : List (WRow G))
     ProvableGbuC G ⊕' DisprovableW G :=
   match dichotomyW (wsat_of_closed db h2)
       (fun Ω C => decWEvalI (db.map (·.s)) Ω C)
-      (fun Ψ C => decWEvalRP (db.map (·.s)) Ψ C)
       (decWEvalR (db.map (·.s)) [] G) with
   | .inl hdis => .inr hdis
   | .inr d => .inl ⟨d⟩

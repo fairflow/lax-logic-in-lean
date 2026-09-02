@@ -58,3 +58,51 @@ Re-opened constraints: **none**.
   the closure primary.  A design note first, not surgery — stage 2.
 * **Promotion** wip/ → FRJ/ (core admission): after stage 2, with the
   closure-measurement discipline.
+
+# Stage 2 (2026-09-02) — the corner runs straight through totality
+
+## Actions
+
+1. **Stripped the chase apparatus at the corner** of `searchW`: the
+   `QD` decision (refuted-or-chase-blocked), `findNotT QD`, the
+   all-refuted fast path (`refutedCleanly_circ` strict), `hstuck`, the
+   unused `decRP` test, and the whole chase branch (`L⊃ᵢ` into an
+   unrefuted antecedent with pair-`V` bookkeeping, `wgW_chase`).  The
+   corner now goes: `findCMT` → `R₀` → the certificate test →
+   `refutedCleanly_circ_certs` or `totalityW` → `L⊃ᵢ` by size-drop.
+   Compiled first time; pins byte-identical; full build green; smoke
+   cells `impid`/`unit` re-run PASS.
+2. **`decRP` removed from the chain**: the linter showed `searchW` no
+   longer references its pledged-query supply; removed from `searchW`,
+   `dichotomyW`, and the `decideGbuW_of` call.  `decWEvalRP`/`WEvalRP`
+   stay defined (archive); nothing in the decision chain consumes them.
+3. **Orphans deleted**: `wgW_chase`, `unclosed_ctxEq`, the
+   irregular-corner `upsToImp`.
+4. Sizes: `wip/gbu_frjw_search.lean` 1189 (goal closed) → 1092 (stage 1)
+   → 939 (stage 2), −21%.
+
+## Supersession check: the chase → the totality tail
+
+| constraint | source | the chase | totality tail | verdict |
+|---|---|---|---|---|
+| a critical `◯Z`-cell with an unrefuted, non-small, modal context antecedent must still be decided (derive `◯Z` or exhibit the row) | architecture §3 (the corner), §4 | `L⊃ᵢ` into the antecedent, paid by the visited-pair measure | `totalityW` decides EVERY `Sf^R`-form at a critical cell structurally (refuted-or-derivable); a derivable antecedent feeds `L⊃ᵢ` with the consequent recursion paid by `seqSize`; a refuted one enters the certificate test.  Mechanically verified: the chase branch deleted, `searchW` compiles sorry-free with pins unchanged | DISCHARGED |
+| re-chasing the same antecedent under a different goal must be measure-payable (why PAIRS, not antecedents) | §4 | the pair set `V` | no chase, nothing to pay; `V` is never pushed at any remaining call site (verified by grep: every `IHW` call passes `[]`) | LAPSED |
+| a `V`-revisit certifies an open ancestor frame (the §4 "consequence") | §4 | analysis load-bearing for the invariant | no revisits exist | LAPSED |
+| the all-refuted fast path (`refutedCleanly_circ`, strict `.ups` chain) | the pre-J2 corner | separate manufacture when every antecedent is refuted | subsumed: every refuted antecedent is in `R₀`, so the certificate test passes on the left disjunct and `refutedCleanly_circ_certs` fires | DISCHARGED |
+| the pledged-row exclusion at the corner (`gbuInv13` via `decRP`) | the pre-totality corner | needed by the old certificate-conversion branch | that branch is gone; no remaining step consumes a pledged-row fact (linter: `decRP` unreferenced) | LAPSED |
+| the true story (§4 pair-V as "Innovation 1") | proof-state observability; §4, §9 | the code | §4 stays as history with a note; git history holds the code; this table holds the verdict | DISCHARGED |
+
+Re-opened constraints: **none**.
+
+## Stage 3 — PROPOSAL (awaiting Matthew's review before surgery)
+
+Evidence: `V` is constant `[]` through the whole recursion.  Proposal:
+revert the measure to the original triple `wgC = (unclosed, tpC,
+seqSize)` with `WgLt`, deleting `sfPairs`, `vRem`, `wgW`, `WgLtW`,
+`wgLtW_wf`, `wgW_of_wgC`, `wgW_drop`, and the `V`/`hVsf`/`hregV`
+plumbing at every call site (~20 payload arguments).  Expected: a
+further ≈ −100 lines and a measure with three components, all
+structural.  Supersession: the pair-`V` measure discharged exactly the
+chase's termination (LAPSED above); nothing else cites it.  The
+architecture doc's §4 becomes history.  This retires an announced
+innovation, hence the pause for review.

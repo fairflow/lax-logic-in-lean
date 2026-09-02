@@ -264,28 +264,7 @@ theorem wgW_of_wgC {G : Form} {r r' : Bool} {Ψ Ψ' : List Form}
   · exact Or.inl h
   · exact Or.inr ⟨he, Or.inr ⟨rfl, h⟩⟩
 
-/-- A chase step: same `unclosed` level, `V` strictly grows inside
-`Sf^R(G) × Sf^R(G)`. -/
-theorem wgW_chase {G : Form} {r r' : Bool} {Ψ Ψ' : List Form}
-    {C C' : Form} {V : List (Form × Form)} {A C₀ : Form}
-    (hun : unclosed G Ψ' = unclosed G Ψ)
-    (hA : A ∈ sfR G) (hC₀ : C₀ ∈ sfR G) (hAV : (A, C₀) ∉ V) :
-    WgLtW (wgW G r' Ψ' C' ((A, C₀) :: V)) (wgW G r Ψ C V) := by
-  refine Or.inr ⟨hun, Or.inl ?_⟩
-  show vRem G ((A, C₀) :: V) < vRem G V
-  refine FRJ.Gbu.LJFT.length_filter_lt_of_imp _ _ _ (fun a ha => ?_)
-    (List.mem_flatMap.mpr ⟨A, hA, List.mem_map.mpr ⟨C₀, hC₀, rfl⟩⟩) ?_ ?_
-  · simp only [decide_eq_true_eq] at ha ⊢
-    intro hmem
-    exact ha (List.mem_cons_of_mem _ hmem)
-  · exact decide_eq_false (by simp)
-  · exact decide_eq_true hAV
 
-private theorem unclosed_ctxEq {G : Form} {Ψ Ψ' : List Form}
-    (h : Ψ ≐ Ψ') : unclosed G Ψ' = unclosed G Ψ :=
-  Nat.le_antisymm
-    (unclosed_mono (fun X hX => clo_mono (fun {a} ha => (h a).mp ha) hX))
-    (unclosed_mono (fun X hX => clo_mono (fun {a} ha => (h a).mpr ha) hX))
 
 /-- An `unclosed` drop resets `V` freely. -/
 theorem wgW_drop {G : Form} {r r' : Bool} {Ψ Ψ' : List Form}
@@ -366,8 +345,7 @@ set_option maxHeartbeats 3200000 in
 /-- **`searchW`** — the Gbu◯/FRJW dichotomy at cell level: TYPE-valued,
 delivering derivations; no supply hypotheses. -/
 def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
-    (decI : ∀ Ω C, Decidable (WEvalI D Ω C))
-    (decRP : ∀ Ω C, Decidable (WEvalRP D Ω C)) :
+    (decI : ∀ Ω C, Decidable (WEvalI D Ω C)) :
     ∀ p : Bool × List Form × Form, WSearchOk G D p := by
   have main : ∀ x : Nat × Nat × Nat × Nat, ∀ p : Bool × List Form × Form,
       ∀ V : List (Form × Form), (∀ q ∈ V, q.1 ∈ sfR G ∧ q.2 ∈ sfR G) →
@@ -468,218 +446,88 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   · exact List.mem_append_left _ h
                   · exact List.mem_append_right _ h
                   · exact absurd hc (by simpa using hnoc W hW)
-                have upsToImp : (∀ Y ∈ impPart Ψ, WEvalI D Ψ (ante Y)) →
-                    ∀ A B : Form, Form.imp A B ∈ Ψ → WEvalI D Ψ A := by
-                  intro hallI A B hAB
-                  exact hallI (.imp A B) (List.mem_filter.mpr ⟨hAB, rfl⟩)
                 refine byDec (decI Ψ Z) (fun heZ => ?_) (fun heZ => ?_)
                 · -- `Z` refuted at `Ψ`: manufacture the `◯Z`-row
                   rcases findCMT G Ψ Z with ⟨ats, hsub, hFf, hall⟩ | hnocm
                   · exact absurd (wEvalI_axIC hsat hsub hFf hC hg hall) hne
-                  have QD : ∀ Y : Form, Decidable (WEvalI D Ψ (ante Y) ∨
-                      ((ante Y).hasCirc = true ∧
-                        ¬ (ante Y).size < (Form.circ Z).size ∧
-                        (ante Y, Form.circ Z) ∈ V)) :=
-                    fun Y =>
-                      have : Decidable (WEvalI D Ψ (ante Y)) := decI Ψ (ante Y)
-                      inferInstance
-                  rcases findNotT QD (impPart Ψ) with hallQ | ⟨Y, hY, hnQ⟩
-                  · -- every antecedent refuted or chase-blocked
-                    rcases findNotT (fun Y => decI Ψ (ante Y)) (impPart Ψ) with
-                      hallI | ⟨Y, hY, hnY⟩
-                    · exact absurd (gbuInvLift hsat hg
-                        (wEvalR_of_refutedCleanly hsat
-                          (refutedCleanly_circ hsat hΩai hC
-                            (upsToImp hallI) heZ))) hne
-                    · -- an UNREFUTED antecedent, already on the chase
-                      have hstuck : (ante Y).hasCirc = true ∧
-                          ¬ (ante Y).size < (Form.circ Z).size ∧
-                          (ante Y, Form.circ Z) ∈ V :=
-                        (hallQ Y hY).resolve_left hnY
-                      refine byDec (decRP Ψ Z) (fun hrp => ?_) (fun hnrp => ?_)
-                      · exact absurd (gbuInv13 hsat hC hg hrp) hne
-                      · -- the kept-chain manufacture: `R₀` = ALL refuted
-                        -- `Sf^R`-forms, certificates over `Ψ` ITSELF (the
-                        -- level-by-level chain of `refutedCleanly_circ_certs`)
-                        set R₀ : List Form := (sfR G).filter
-                          (fun A => @decide (WEvalI D Ψ A) (decI Ψ A)) with hR₀def
-                        have hR₀ok : ∀ A ∈ R₀, WEvalI D Ψ A := by
-                          intro A hA
-                          exact of_decide_eq_true (List.mem_filter.mp hA).2
-                        rcases findNotT (P := fun Y' => ante Y' ∈ R₀ ∨
-                            RefAt true (Z :: R₀) Ψ (ante Y'))
-                            (fun Y' => inferInstance) (impPart Ψ) with
-                          hallK | ⟨Y₂, hY₂, hnK⟩
-                        · refine absurd (gbuInvLift hsat hg
-                            (wEvalR_of_refutedCleanly hsat
-                              (refutedCleanly_circ_certs hsat hΩai hC heZ
-                                hR₀ok ?_))) hne
-                          intro A B hAB
-                          exact hallK (.imp A B) (List.mem_filter.mpr ⟨hAB, rfl⟩)
-                        · -- TOTALITY closes the corner: the failing
-                          -- antecedent is unrefuted (else `.ups` would have
-                          -- discharged the test), so it is DERIVABLE by the
-                          -- structural totality, and `L⊃ᵢ` steps through it
-                          have hY₂i : Y₂.isImp = true :=
-                            (List.mem_filter.mp hY₂).2
-                          have hY₂Ψ : Y₂ ∈ Ψ := (List.mem_filter.mp hY₂).1
-                          match Y₂, hY₂i, hY₂Ψ, hnK with
-                          | .imp A₂ B₂, _, hY₂Ψ, hnK =>
-                              obtain ⟨hA₂sf, hB₂sf⟩ := sfL_imp (hΨ _ hY₂Ψ)
-                              rcases totalityW hsat decI hg
-                                (fun X hXsf hI => List.mem_filter.mpr
-                                  ⟨hXsf, @decide_eq_true _ (decI Ψ X) hI⟩)
-                                (fun A' B' hXsf hncl hnR =>
-                                  IHW (true, A' :: Ψ, B') []
-                                    (fun _ h => absurd h List.not_mem_nil)
-                                    (fun _ => rfl)
-                                    (wgW_drop
-                                      (unclosed_lt (sfR_imp hXsf).1 hncl))
-                                    (by
-                                      intro W hW
-                                      rcases List.mem_cons.mp hW with rfl | hW'
-                                      · exact (sfR_imp hXsf).1
-                                      · exact hΨ W hW')
-                                    (sfR_imp hXsf).2 hnR)
-                                A₂ hA₂sf with hRef | hDer
-                              · exact absurd hRef (fun h => hnK (Or.inr h))
-                              · -- `L⊃ᵢ` through `Y₂`
-                                obtain ⟨l₂, r₂, hsplit₂⟩ := splitOfMem hY₂Ψ
-                                have hΓ₂ : Ψ ≐ .imp A₂ B₂ :: (l₂ ++ r₂) := by
-                                  rw [hsplit₂]; exact ctxEq_split
-                                have hclB₂ : ∀ W ∈ Ψ,
-                                    Clo (B₂ :: (l₂ ++ r₂)) W := by
-                                  intro W hW
-                                  rcases List.mem_cons.mp ((hΓ₂ W).mp hW) with
-                                    rfl | hW'
-                                  · exact .imp (.base List.mem_cons_self)
-                                  · exact .base (List.mem_cons_of_mem _ hW')
-                                have hmemsub₂ : ∀ W ∈ l₂ ++ r₂, W ∈ Ψ :=
-                                  fun W hW =>
-                                    (hΓ₂ W).mpr (List.mem_cons_of_mem _ hW)
-                                have d₂ := IH (false, B₂ :: (l₂ ++ r₂),
-                                    Form.circ Z)
-                                  (by
-                                    refine wgKeep hclB₂ ?_
-                                    show seqSize (B₂ :: (l₂ ++ r₂))
-                                        (Form.circ Z)
-                                      < seqSize Ψ (Form.circ Z)
-                                    rw [hsplit₂, seqSize_split, seqSize_cons]
-                                    have hb : B₂.size <
-                                        (Form.imp A₂ B₂).size :=
-                                      Nat.lt_succ_of_le (Nat.le_add_left _ _)
-                                    omega)
-                                  (fun h => Bool.noConfusion h) 
-                                  (by
-                                    intro W hW
-                                    rcases List.mem_cons.mp hW with rfl | hW'
-                                    · exact hB₂sf
-                                    · exact hΨ W (hmemsub₂ W hW'))
-                                  (fun h => Bool.noConfusion h) hC
-                                  (unrefutedBelow_step hsat hclB₂ hnb)
-                                exact .limpLI (FRJ.Gbu.LJFT.transportIC hDer hΓ₂) d₂
-                                  (Or.inr hA₂sf) hC hΓ₂
-                  · -- an unrefuted, chaseable antecedent: `L⊃ᵢ`
-                    have hnA : ¬ WEvalI D Ψ (ante Y) :=
-                      fun h => hnQ (Or.inl h)
-                    have hYi : Y.isImp = true := (List.mem_filter.mp hY).2
-                    have hYΨ : Y ∈ Ψ := (List.mem_filter.mp hY).1
-                    match Y, hYi, hYΨ, hnA, hnQ with
-                    | .imp A B, _, hYΨ, hnA, hnQ =>
-                        obtain ⟨lY, rY, hYsplit⟩ := splitOfMem hYΨ
-                        obtain ⟨hAsf, hBsf⟩ := sfL_imp (hΨ _ hYΨ)
-                        have hΓ : Ψ ≐ .imp A B :: (lY ++ rY) := by
-                          rw [hYsplit]; exact ctxEq_split
-                        have hmemsub : ∀ V' ∈ lY ++ rY, V' ∈ Ψ :=
-                          fun V' hV => (hΓ V').mpr (List.mem_cons_of_mem _ hV)
-                        have hclA : ∀ V' ∈ Ψ, Clo (Form.imp A B :: (lY ++ rY)) V' :=
-                          fun V' hV => .base ((hΓ V').mp hV)
-                        have hsfC : ∀ V' ∈ Form.imp A B :: (lY ++ rY), V' ∈ sfL G := by
-                          intro V' hV
-                          rcases List.mem_cons.mp hV with rfl | hV'
-                          · exact hΨ _ hYΨ
-                          · exact hΨ V' (hmemsub V' hV')
-                        have hgC : ∀ V' ∈ Form.imp A B :: (lY ++ rY), V' ∈ gHat G := by
-                          intro V' hV
-                          rcases List.mem_cons.mp hV with rfl | hV'
-                          · exact hg _ hYΨ
-                          · exact hg V' (hmemsub V' hV')
-                        have hub : WUnrefutedBelow G D
-                            (Form.imp A B :: (lY ++ rY)) A :=
-                          unrefutedBelow_of_gHat hgC
-                            (fun h => hnA (wEvalI_ctxEq (ctxEq_symm hΓ) h))
-                        have finish : GbuIC G (.imp A B :: (lY ++ rY)) A →
-                            GbuIC G Ψ (Form.circ Z) := by
-                          intro d₁
-                          have hclB : ∀ W ∈ Ψ, Clo (B :: (lY ++ rY)) W := by
+                  set R₀ : List Form := (sfR G).filter
+                    (fun A => @decide (WEvalI D Ψ A) (decI Ψ A)) with hR₀def
+                  have hR₀ok : ∀ A ∈ R₀, WEvalI D Ψ A := by
+                    intro A hA
+                    exact of_decide_eq_true (List.mem_filter.mp hA).2
+                  rcases findNotT (P := fun Y' => ante Y' ∈ R₀ ∨
+                      RefAt true (Z :: R₀) Ψ (ante Y'))
+                      (fun Y' => inferInstance) (impPart Ψ) with
+                    hallK | ⟨Y₂, hY₂, hnK⟩
+                  · refine absurd (gbuInvLift hsat hg
+                      (wEvalR_of_refutedCleanly hsat
+                        (refutedCleanly_circ_certs hsat hΩai hC heZ
+                          hR₀ok ?_))) hne
+                    intro A B hAB
+                    exact hallK (.imp A B) (List.mem_filter.mpr ⟨hAB, rfl⟩)
+                  · -- TOTALITY closes the corner: the failing
+                    -- antecedent is unrefuted (else `.ups` would have
+                    -- discharged the test), so it is DERIVABLE by the
+                    -- structural totality, and `L⊃ᵢ` steps through it
+                    have hY₂i : Y₂.isImp = true :=
+                      (List.mem_filter.mp hY₂).2
+                    have hY₂Ψ : Y₂ ∈ Ψ := (List.mem_filter.mp hY₂).1
+                    match Y₂, hY₂i, hY₂Ψ, hnK with
+                    | .imp A₂ B₂, _, hY₂Ψ, hnK =>
+                        obtain ⟨hA₂sf, hB₂sf⟩ := sfL_imp (hΨ _ hY₂Ψ)
+                        rcases totalityW hsat decI hg
+                          (fun X hXsf hI => List.mem_filter.mpr
+                            ⟨hXsf, @decide_eq_true _ (decI Ψ X) hI⟩)
+                          (fun A' B' hXsf hncl hnR =>
+                            IHW (true, A' :: Ψ, B') []
+                              (fun _ h => absurd h List.not_mem_nil)
+                              (fun _ => rfl)
+                              (wgW_drop
+                                (unclosed_lt (sfR_imp hXsf).1 hncl))
+                              (by
+                                intro W hW
+                                rcases List.mem_cons.mp hW with rfl | hW'
+                                · exact (sfR_imp hXsf).1
+                                · exact hΨ W hW')
+                              (sfR_imp hXsf).2 hnR)
+                          A₂ hA₂sf with hRef | hDer
+                        · exact absurd hRef (fun h => hnK (Or.inr h))
+                        · -- `L⊃ᵢ` through `Y₂`
+                          obtain ⟨l₂, r₂, hsplit₂⟩ := splitOfMem hY₂Ψ
+                          have hΓ₂ : Ψ ≐ .imp A₂ B₂ :: (l₂ ++ r₂) := by
+                            rw [hsplit₂]; exact ctxEq_split
+                          have hclB₂ : ∀ W ∈ Ψ,
+                              Clo (B₂ :: (l₂ ++ r₂)) W := by
                             intro W hW
-                            rcases List.mem_cons.mp ((hΓ W).mp hW) with rfl | hW'
+                            rcases List.mem_cons.mp ((hΓ₂ W).mp hW) with
+                              rfl | hW'
                             · exact .imp (.base List.mem_cons_self)
                             · exact .base (List.mem_cons_of_mem _ hW')
-                          have d₂ := IH (false, B :: (lY ++ rY), Form.circ Z)
+                          have hmemsub₂ : ∀ W ∈ l₂ ++ r₂, W ∈ Ψ :=
+                            fun W hW =>
+                              (hΓ₂ W).mpr (List.mem_cons_of_mem _ hW)
+                          have d₂ := IH (false, B₂ :: (l₂ ++ r₂),
+                              Form.circ Z)
                             (by
-                              refine wgKeep hclB ?_
-                              show seqSize (B :: (lY ++ rY)) (Form.circ Z)
-                                  < seqSize Ψ (Form.circ Z)
-                              rw [hYsplit, seqSize_split, seqSize_cons]
-                              have hb : B.size < (Form.imp A B).size :=
+                              refine wgKeep hclB₂ ?_
+                              show seqSize (B₂ :: (l₂ ++ r₂))
+                                  (Form.circ Z)
+                                < seqSize Ψ (Form.circ Z)
+                              rw [hsplit₂, seqSize_split, seqSize_cons]
+                              have hb : B₂.size <
+                                  (Form.imp A₂ B₂).size :=
                                 Nat.lt_succ_of_le (Nat.le_add_left _ _)
                               omega)
                             (fun h => Bool.noConfusion h) 
                             (by
-                              intro V' hV
-                              rcases List.mem_cons.mp hV with rfl | hV'
-                              · exact hBsf
-                              · exact hΨ V' (hmemsub V' hV'))
+                              intro W hW
+                              rcases List.mem_cons.mp hW with rfl | hW'
+                              · exact hB₂sf
+                              · exact hΨ W (hmemsub₂ W hW'))
                             (fun h => Bool.noConfusion h) hC
-                            (unrefutedBelow_step hsat (fun V' hV => by
-                              rcases List.mem_cons.mp ((hΓ V').mp hV) with rfl | hV'
-                              · exact .imp (.base List.mem_cons_self)
-                              · exact .base (List.mem_cons_of_mem _ hV')) hnb)
-                          exact .limpLI d₁ d₂ (Or.inr hAsf) hC hΓ
-                        refine byDec
-                          (inferInstance : Decidable (A.hasCirc = false))
-                          (fun hfree => ?_) (fun hnfree => ?_)
-                        · exact finish (IH (false, .imp A B :: (lY ++ rY), A)
-                            (wgTpLt hclA (tpC_free_lt_circ hfree))
-                            (fun h => Bool.noConfusion h) 
-                            hsfC (fun _ => hgC) hAsf hub)
-                        refine byDec
-                          (inferInstance : Decidable (A.size < (Form.circ Z).size))
-                          (fun hlt => ?_) (fun hnlt => ?_)
-                        · exact finish (IH (false, .imp A B :: (lY ++ rY), A)
-                            (by
-                              refine wgKeep hclA ?_ (tpC_le_circ _ _)
-                              show seqSize (Form.imp A B :: (lY ++ rY)) A
-                                < seqSize Ψ (Form.circ Z)
-                              rw [hYsplit, seqSize_split, seqSize_cons]
-                              have := seqSize_goal (Ψ := lY ++ rY) hlt
-                              omega)
-                            (fun h => Bool.noConfusion h) 
-                            hsfC (fun _ => hgC) hAsf hub)
-                        · -- the CHASE step: `A` modal and unbounded — consume
-                          -- the (antecedent, goal) pair
-                          have hAnotV : (A, Form.circ Z) ∉ V := by
-                            intro hmem
-                            refine hnQ (Or.inr ⟨?_, ?_, ?_⟩)
-                            · show A.hasCirc = true
-                              cases hc : A.hasCirc with
-                              | true => rfl
-                              | false => exact absurd hc hnfree
-                            · show ¬ A.size < (Form.circ Z).size
-                              exact hnlt
-                            · show (A, Form.circ Z) ∈ V
-                              exact hmem
-                          exact finish (IHW (false, .imp A B :: (lY ++ rY), A)
-                            ((A, Form.circ Z) :: V)
-                            (by
-                              intro x hx
-                              rcases List.mem_cons.mp hx with rfl | hx'
-                              · exact ⟨hAsf, hC⟩
-                              · exact hVsf x hx')
-                            (fun h => Bool.noConfusion h) 
-                            (wgW_chase (unclosed_ctxEq hΓ) hAsf hC hAnotV)
-                            hsfC (fun _ => hgC) hAsf hub)
+                            (unrefutedBelow_step hsat hclB₂ hnb)
+                          exact .limpLI (FRJ.Gbu.LJFT.transportIC hDer hΓ₂) d₂
+                            (Or.inr hA₂sf) hC hΓ₂
                 · -- `Z` unrefuted: `R◯ᵢ`
                   have d := IH (false, Ψ, Z)
                     (wgKeep (fun _ h => .base h)
@@ -1067,7 +915,6 @@ instantiation: a saturated database for each `G` with its deciders —
 the engine-fixpoint obligation, a separate stage. -/
 def dichotomyW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
     (decI : ∀ Ω C, Decidable (WEvalI D Ω C))
-    (decRP : ∀ Ω C, Decidable (WEvalRP D Ω C))
     (decR : Decidable (WEvalR D [] G)) :
     DisprovableW G ⊕' GbuRC G [] G :=
   byDec decR
@@ -1076,7 +923,7 @@ def dichotomyW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
       obtain ⟨d⟩ := hsat.1 _ hmem
       exact ⟨t, Γ, ⟨d⟩⟩))
     (fun hn =>
-      .inr (searchW hsat decI decRP (true, [], G)
+      .inr (searchW hsat decI (true, [], G)
         (fun _ h => absurd h List.not_mem_nil) (sfR_self G) hn))
 
 /-! ## Pins -/

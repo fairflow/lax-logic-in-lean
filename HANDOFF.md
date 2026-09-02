@@ -3472,3 +3472,16 @@ decidePLL G : Decidable (PLL G).  Full project build green.
 Compaction owed (Matthew): strip the vestigial searchW invariant and
 the T-B _mono scaffolding; consider fusing the manufacture layers.
 A2/A3 attackers (engine-side, still-open targets) run in background.
+
+## 2026-09-02 — compaction stages 1–2 (frjw-dev); stage 3 proposed
+
+Stage 1: searchW goal-set invariant stripped (consumed nowhere), the
+nine T-B `_mono` defs archived in place.  Stage 2: the corner's chase
+apparatus stripped — totality makes it redundant; `decRP` dropped from
+searchW/dichotomyW/decideGbuW_of; orphans removed.  Search file
+1189 → 939 lines; pins byte-identical; full build green; smoke cells
+re-run PASS.  Every retirement carries its supersession table in
+docs/frjw-compaction.md (no re-opened constraints).  STAGE 3 PROPOSED,
+awaiting Matthew: retire the pair-V measure (V is never pushed; revert
+to wgC = (unclosed, tpC, seqSize)).  An Opus plan for the recursion
+explainer + reusable-tactic survey is in flight.

@@ -56,7 +56,7 @@ Derivation-side, the only route through a critical `◯Z`-cell is
 modus ponens on a context implication (`L⊃ᵢ`), which needs the
 antecedent DERIVED first — the chase.
 
-## 4. Innovation 1: the (antecedent, goal) visited-pair chase
+## 4. Innovation 1 (HISTORICAL since stage 2 of the compaction, 2026-09-02 — the chase is gone; see docs/frjw-compaction.md): the (antecedent, goal) visited-pair chase
 
 The chase recurses from goal `◯Z` into an antecedent `A` whose size
 the goal does not bound.  What pays is the visited set `V` of PAIRS
@@ -298,3 +298,7 @@ independent GBUW completeness routes (LJF◯ translation vs the
 dichotomy).  A compaction can strip the vestiges and possibly fuse
 searchW's manufacture layer with the closure's emitters; the
 mathematics will not change.
+* 2 September: compaction stage 2 — the corner chase apparatus stripped
+  (totality makes it redundant), `decRP` dropped from the chain,
+  search file 1189 → 939 lines; stage 3 (retire the pair-V measure,
+  `V` is never pushed) proposed for review.
