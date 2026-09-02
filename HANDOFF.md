@@ -3655,3 +3655,62 @@ when files move".
   is.  It's never perfect but now it's good."  The three residues are
   accepted as they stand; no family rename pass.  Recorded in
   `docs/notation.md`.
+
+## 2026-09-02 (evening, later) — the practical decider campaign opens: A2 REFUTED by design; the output layer designed
+
+Matthew: item 3 of the campaign list is outstanding; "I meant the
+untrusted but efficient engine and checker.  We already have something
+similar since early PLL efforts"; "Go ahead with the A2 probe"; then
+the correction "design design design rather than brute force.  Do not
+use the ρ-tables to check new designs.  Inappropriate.  We'll rewrite
+all the CLAUDE and AGENTS files to make this behaviour less rigid";
+and the output request: "for a proof, a TM proof term and its Lax
+type … for a countermodel, a nicely formatted svg of the countermodel,
+minimised and also generated from the calculus (an easy switch …).
+can you delegate this design to Opus please and wire in when the
+untrusted engine arrives."
+
+* **The correction, applied.**  A 19-cell sweep of the wscreen corpus
+  had been launched; stopped after five trivial cells, discarded.
+  Memory `design-not-brute-force` records the rule: derive the answer
+  or the witness from the rule's structure, check ONE designed cell,
+  never feed ρ-cells to a new design.
+* **A2 REFUTED** (`docs/a2-arity.md`).  The restriction `Θ^⊃/Υ` of
+  `⋈^At` and `RefAt.ups` admit an implication `pⱼ ⊃ q` into a join
+  conclusion only when some premise has goal `pⱼ`; one goal per
+  premise; so `Gₙ := (⋀ⱼ (pⱼ ⊃ q)) ⊃ q` needs an n-ary join at the
+  root.  Checked on the designed cells n = 2, 3, 4 with
+  `tools/A2Probe.lean` (`lake exe a2probe`; gate watched failing with
+  `--dropjoins=1`): at every bound k < n the k-bounded store has an
+  unsubsumed arity-(k+1) `⋈At` row and no root disproof; the root
+  appears exactly at k = n; the n = 2 store at k = 2 is closed under
+  all arities (full check).  A fact about F&F's own `⋈^At`, not the
+  `◯` extension.  With `jmax = 3` the engine cannot refute `G₄`.
+  Side findings: the engine at `jmax = pmax = k` and the verified
+  k-bounded saturation subsume each other on these cells (A3 gap
+  empty there); the verified emitters are far too slow to be an
+  engine (299 keys in 149 s vs 26 rows in 2 rounds).
+* **What replaces A2** (OPEN, designed): (B1) same-goal premises are
+  redundant, so join arity ≤ number of distinct irregular goals ≤
+  |Sf^R G|; (B2) promise arity ≤ |⋃Ξ^◯|.  Each to be tested on one
+  designed cell, then proved; they make the checker's join clauses a
+  G-dependent clique enumeration.
+* **Output layer designed** (Opus subagent, cherry-picked as
+  `docs/decider-outputs-design.md`, 1015 lines): "TM proof term" =
+  `PLLND.Tm` (`LaxLogic/PLLTerms.lean`, `val`/`bind`, printer
+  `Tm.pretty`), lax type = the term's index, so agreement with the
+  checked formula is definitional; blocking gap: every route into `Tm`
+  is `Nonempty`-valued because `LaxND.iden` carries `Prop`
+  membership; fix `varOfMem` + `ndToTm : LaxND Γ φ → Tm Γ φ`
+  (compiled in scratch, `[propext]`, 1–2 h).  Countermodels:
+  `modR → tabOf → Tab.minimise` exist; minimisation
+  untrusted-but-checked by `Kripke.decForce`; no bisimulation
+  quotient (the ≤-quotient is refuted, `wip/quot_cm.lean`); SVG by
+  hoisting `tools/Cert.lean`'s `Tab` renderer, not `PLLDiagram`;
+  switch `--view=min|calc|both` default `min`, `both` = two files.
+  The layer attaches to the decider's RESULT type, so it can be built
+  now against `decideGbuWData` and switched to the fast route later.
+  Six decisions for Matthew in its §5; effort 17–26 h for the layer.
+* **Not verified by the agent**: whether the two views ever differ on
+  a reachable cell (its batch produced nothing in 15 min); the arity
+  claim (taken from my brief; now `docs/a2-arity.md`).

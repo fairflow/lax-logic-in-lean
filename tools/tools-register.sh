@@ -18,6 +18,7 @@ for p in \
   tools/Cover.lean \
   tools/rho-hasse-svg.py \
   tools/Cert.lean \
+  tools/A2Probe.lean \
   docs/rn-catalogue.html \
   Meta/Audit.lean \
 ; do

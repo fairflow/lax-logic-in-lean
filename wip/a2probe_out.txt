@@ -1,0 +1,91 @@
+# a2probe — the arity question (A2) — 2026-09-02 evening — untrusted engineering evidence
+# Tool: tools/A2Probe.lean, binary .lake/build/bin/a2probe, run directly under `perl -e 'alarm N; exec @ARGV' --`.
+# The record and the argument: docs/a2-arity.md.
+#
+# A corpus sweep over the 19 wscreen cells was started at 19:0x and STOPPED on Matthew's
+# correction ("design rather than brute force"); its five completed cells (0-4, all PASS k=1,
+# trivial stores) are not evidence and are not kept.
+
+# ---- gate watch: join-built rows removed from the store (--dropjoins=1); the checks must fail
+cell 11: ◯p ⊃ p (Gcr) [inv]  [GATE WATCH: join rows dropped from the store]
+  k=1: rounds=4 |reg|=2 |irr|=4 keys=6 sat=1ms
+    ladder irr-arity=2 (C(4,2)=6 families): emitted=11 unsubsumed=1 0ms
+    ladder irr-arity=3 (C(4,3)=4 families): emitted=4 unsubsumed=1 0ms
+    full check: families 2^4·(1+2^2) emitted=30 unsubsumed=1 0ms
+    WITNESS at k=1, arity=2: ⋈AtF gives blocked : [◯p] ⇒ p
+VERDICT ◯p ⊃ p (Gcr) [inv]: FAIL k=1 arity=2 (see WITNESS)
+cell 15: p ∨ ¬p [inv]  [GATE WATCH: join rows dropped from the store]
+  k=1: rounds=4 |reg|=6 |irr|=6 keys=12 sat=3ms
+    ladder irr-arity=2 (C(6,2)=15 families): emitted=159 unsubsumed=5 0ms
+    full check: families 2^6·(1+2^6) emitted=823 unsubsumed=5 0ms
+    WITNESS at k=1, arity=2: ⋈∨ gives barren : [] ⇒ p ∨ (p ⊃ ⊥)
+VERDICT p ∨ ¬p [inv]: FAIL k=1 arity=2 (see WITNESS)
+cell 16: Peirce [inv]  [GATE WATCH: join rows dropped from the store]
+  k=1: rounds=7 |reg|=16 |irr|=10 keys=26 sat=34ms
+    ladder irr-arity=2 (C(10,2)=45 families): emitted=615 unsubsumed=14 0ms
+    ladder promise-arity=2 (C(16,2)=120 families): emitted=282 unsubsumed=4 0ms
+    WITNESS at k=1, arity=2: ⋈At gives barren : [(p ⊃ q) ⊃ p] ⇒ q
+VERDICT Peirce [inv]: FAIL k=1 arity=2 (see WITNESS)
+
+# ---- the designed family G_n = (⋀_{j≤n} (p_j ⊃ q)) ⊃ q, promise joins off (--nopromise=1), budget 2^22
+# a2probe 19 --K=2 --M=3 --budget=22 --nopromise=1
+cell 19: A2 witness n=2: (p₁⊃q ∧ p₂⊃q) ⊃ q [inv]  [promise joins OFF]
+  G = (p1 ⊃ q) ∧ (p2 ⊃ q) ⊃ q
+  |Ĝ| = 3  |Sf^R| = 4  |univ| ≈ 480
+  k=1: rounds=3 |reg|=20 |irr|=9 keys=29 sat=3ms  root-disproof-present=false
+    ladder irr-arity=2 (C(9,2)=36 families × 1): emitted=168 unsubsumed=6 0ms
+    ladder irr-arity=3 (C(9,3)=84 families × 1): emitted=342 unsubsumed=6 0ms
+    full check (no promise joins): families 2^9 emitted=1569 unsubsumed=10 6ms
+    engine@jmax=pmax=1: rows=10 rounds=2 caps=jmax,pmax  engine-rows-unsubsumed-by-probe=0  probe-rows-unsubsumed-by-engine=0
+    WITNESS at k=1, arity=2: ⋈At gives barren : [q, q, p2 ⊃ q, p1 ⊃ q] ⇒ p1
+  k=2: rounds=4 |reg|=36 |irr|=14 keys=50 sat=33ms  root-disproof-present=true
+    ladder irr-arity=3 (C(14,3)=364 families × 1): emitted=1722 unsubsumed=0 0ms
+    full check (no promise joins): families 2^14 emitted=49215 unsubsumed=0 412ms
+    engine@jmax=pmax=2: rows=9 rounds=4 caps=jmax,pmax  engine-rows-unsubsumed-by-probe=0  probe-rows-unsubsumed-by-engine=0
+VERDICT A2 witness n=2: (p₁⊃q ∧ p₂⊃q) ⊃ q [inv]: PASS k=2 (bounded closure at k is closed under all arities)
+
+# a2probe 20 --K=3 --M=4 --budget=22 --nopromise=1
+cell 20: A2 witness n=3: (⋀ⱼ pⱼ⊃q) ⊃ q [inv]  [promise joins OFF]
+  G = (p1 ⊃ q) ∧ (p2 ⊃ q) ∧ (p3 ⊃ q) ⊃ q
+  |Ĝ| = 4  |Sf^R| = 5  |univ| ≈ 1920
+  k=1: rounds=3 |reg|=35 |irr|=12 keys=47 sat=10ms  root-disproof-present=false
+    ladder irr-arity=2 (C(12,2)=66 families × 1): emitted=440 unsubsumed=24 0ms
+    ladder irr-arity=3 (C(12,3)=220 families × 1): emitted=1320 unsubsumed=32 0ms
+    ladder irr-arity=4 (C(12,4)=495 families × 1): emitted=2648 unsubsumed=8 0ms
+    full check (no promise joins): families 2^12 emitted=16436 unsubsumed=56 92ms
+    engine@jmax=pmax=1: rows=17 rounds=2 caps=jmax,pmax  engine-rows-unsubsumed-by-probe=0  probe-rows-unsubsumed-by-engine=0
+    WITNESS at k=1, arity=2: ⋈At gives barren : [q, q, q, p3 ⊃ q, p2 ⊃ q] ⇒ p1
+  k=2: rounds=3 |reg|=77 |irr|=24 keys=101 sat=210ms  root-disproof-present=false
+    ladder irr-arity=3 (C(24,3)=2024 families × 1): emitted=14168 unsubsumed=8 0ms
+    ladder irr-arity=4 (C(24,4)=10626 families × 1): emitted=70848 unsubsumed=8 0ms
+    full check SKIPPED: family count 2^24 / 2^24·2^77 exceeds budget 2^22
+    engine@jmax=pmax=2: rows=17 rounds=2 caps=jmax,pmax  engine-rows-unsubsumed-by-probe=0  probe-rows-unsubsumed-by-engine=0
+    WITNESS at k=2, arity=3: ⋈At gives barren : [q, q, q, p3 ⊃ q, p2 ⊃ q, p1 ⊃ q] ⇒ p1
+  k=3: rounds=4 |reg|=105 |irr|=34 keys=139 sat=10548ms  root-disproof-present=true
+    ladder irr-arity=4 (C(34,4)=46376 families × 1): emitted=327368 unsubsumed=0 0ms
+    full check SKIPPED: family count 2^34 / 2^34·2^105 exceeds budget 2^22
+VERDICT A2 witness n=3: (⋀ⱼ pⱼ⊃q) ⊃ q [inv]: FAIL k=2 arity=3 (see WITNESS)
+
+# a2probe 21 --K=3 --M=4 --budget=22 --nopromise=1
+cell 21: A2 witness n=4: (⋀ⱼ pⱼ⊃q) ⊃ q [inv]  [promise joins OFF]
+  G = (p1 ⊃ q) ∧ (p2 ⊃ q) ∧ (p3 ⊃ q) ∧ (p4 ⊃ q) ⊃ q
+  |Ĝ| = 5  |Sf^R| = 6  |univ| ≈ 7872
+  k=1: rounds=3 |reg|=54 |irr|=15 keys=69 sat=31ms  root-disproof-present=false
+    ladder irr-arity=2 (C(15,2)=105 families × 1): emitted=910 unsubsumed=60 0ms
+    ladder irr-arity=3 (C(15,3)=455 families × 1): emitted=3640 unsubsumed=100 0ms
+    ladder irr-arity=4 (C(15,4)=1365 families × 1): emitted=10010 unsubsumed=50 0ms
+    full check (no promise joins): families 2^15 emitted=163915 unsubsumed=198 1302ms
+    engine@jmax=pmax=1: rows=26 rounds=2 caps=jmax,pmax  engine-rows-unsubsumed-by-probe=0  probe-rows-unsubsumed-by-engine=0
+    WITNESS at k=1, arity=2: ⋈At gives barren : [q, q, q, q, p4 ⊃ q, p3 ⊃ q] ⇒ p1
+  k=2: rounds=3 |reg|=146 |irr|=37 keys=183 sat=1456ms  root-disproof-present=false
+    ladder irr-arity=3 (C(37,3)=7770 families × 1): emitted=71400 unsubsumed=40 0ms
+    ladder irr-arity=4 (C(37,4)=66045 families × 1): emitted=589050 unsubsumed=50 0ms
+    full check SKIPPED: family count 2^37 / 2^37·2^146 exceeds budget 2^22
+    engine@jmax=pmax=2: rows=36 rounds=2 caps=jmax,pmax  engine-rows-unsubsumed-by-probe=0  probe-rows-unsubsumed-by-engine=0
+    WITNESS at k=2, arity=3: ⋈At gives barren : [q, q, q, q, p4 ⊃ q, p3 ⊃ q, p2 ⊃ q] ⇒ p1
+  k=3: rounds=3 |reg|=234 |irr|=65 keys=299 sat=148856ms  root-disproof-present=false
+    ladder irr-arity=4 (C(65,4)=677040 families × 1): emitted=6353760 unsubsumed=10 0ms
+    full check SKIPPED: family count 2^65 / 2^65·2^234 exceeds budget 2^22
+    engine@jmax=pmax=3: rows=26 rounds=2 caps=jmax,pmax  engine-rows-unsubsumed-by-probe=0  probe-rows-unsubsumed-by-engine=0
+    WITNESS at k=3, arity=4: ⋈At gives barren : [q, q, q, q, p4 ⊃ q, p3 ⊃ q, p2 ⊃ q, p1 ⊃ q] ⇒ p1
+VERDICT A2 witness n=4: (⋀ⱼ pⱼ⊃q) ⊃ q [inv]: FAIL k=3 arity=4 (see WITNESS)

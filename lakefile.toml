@@ -92,6 +92,13 @@ root = "BiLax.Screens"
 name = "wscreen"
 root = "tools.WScreen"
 
+# a2probe: the arity question of the practical decision-procedure
+# campaign — is the k-bounded join saturation closed under all arities?
+# One cell per invocation.  (2026-09-02)
+[[lean_exe]]
+name = "a2probe"
+root = "tools.A2Probe"
+
 
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup
 # (cache-shipped C IR miscompile in Mathlib.Data.Set.Basic; full analysis in

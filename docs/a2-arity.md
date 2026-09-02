@@ -1,0 +1,172 @@
+# The arity question (A2): bounded join arity does not suffice
+
+*2026-09-02, evening.  The first question of the practical
+decision-procedure campaign, answered by the shape of the join rule and
+confirmed on one designed family of cells.  Matthew's correction that
+day governs the method: "design design design rather than brute
+force"; a corpus sweep launched earlier the same evening was stopped
+and is not evidence here.*
+
+## 1. The question
+
+The verified decider `decideGbuW` (`FRJ/Gbu/W/Saturate.lean`) rests on
+`decideGbuW_of_dbClosed db (h : DBClosed G db)` (`FRJ/Gbu/W/Closure.lean`).
+`DBClosed` has eight join clauses, each quantifying over families of
+stored irregular rows of EVERY arity (`Ξs Θs : Fin (n + 1) → List Form`,
+`n` free).  The planned efficient route (untrusted engine, verified
+Boolean checker `checkClosed`, the verified consumer) needs the
+checker to decide those clauses.  The engine already caps the family
+arity (`Config.jmax = 3`, `pmax = 2`, `FRJ/Search/Engine.lean`).  So:
+
+    A2.  Is there a k such that, for every G, a store closed under the
+         non-join rules and under the join clauses at families of
+         arity ≤ k is closed under the join clauses at every arity?
+
+Equivalently: is every higher-arity join conclusion subsumed
+(`WSubsumes`, `FRJ/Gbu/W/Dichotomy.lean`) by a row of the k-bounded
+closure?
+
+## 2. The answer from the rule
+
+Take the barren `⋈^At` (`FRJWr.joinAt`, `FRJ/CalculusW.lean`).  From
+premises `Ξⱼ ; Θⱼ → Cⱼ` (j = 0..n) with
+
+    (J1)  Ξᵢ ⊆ Ξⱼ ++ Θⱼ            for i ≠ j
+    (J2)  A ⊃ B ∈ ⋃ⱼ Ξⱼ^⊃  ⟹  A ∈ Υ,   Υ = {C₀, …, Cₙ}
+    (J3)  ⋃ⱼ Ξⱼ^◯ = ∅,   F prime,  F ∉ ⋃ⱼ Ξⱼ^at,  F ∈ Sf^R G
+
+it concludes
+
+    barren :  ⋃ⱼ Ξⱼ^at,  ⋂ⱼ Θⱼ^at ∖ F,  ⋃ⱼ Ξⱼ^⊃,  kept(Υ, base, ⋂ⱼ Θⱼ^⊃)  ⇒  F
+
+where `kept` (`keptOf`, `FRJ/RefAt.lean`) retains an implication
+`Y ⊃ Z` of the pool exactly when `Y` is `RefAt`-refuted relative to `Υ`
+and the context, and for an ATOM `Y` the only `RefAt` clause is
+`ups : Y ∈ Υ`.
+
+So an implication `pⱼ ⊃ q` with atomic antecedent enters a join
+conclusion in one of two ways, through `⋃Ξ^⊃` under (J2) or through
+`kept` under `RefAt.ups`, and both require `pⱼ ∈ Υ`: some premise has
+goal `pⱼ`.  A premise has one goal.  Hence:
+
+    a join whose conclusion context contains p₁ ⊃ q, …, pₙ ⊃ q with
+    distinct atoms pⱼ has at least n premises.
+
+In the `◯`-free fragment the context of a regular row is created only
+by a join (`Ax^R` gives atoms only; `∧R`, `⊃∈`, `∨`-rules and the
+promise rules keep or restrict the context).  Now let
+
+    Gₙ  :=  (⋀_{j=1}^{n} (pⱼ ⊃ q)) ⊃ q .
+
+`Gₙ` is not intuitionistically valid (all atoms false).  Its FRJW
+disproof ends with `⊃∈` at the root, `barren : Γ ⇒ Gₙ` from
+`barren : Γ ⇒ q` with `Clo Γ (⋀ⱼ (pⱼ ⊃ q))`, and `Cl(Γ)` contains an
+implication `pⱼ ⊃ q` only if `Γ` does (`cloB`, `FRJ/Basic.lean`: the
+`imp` case is membership or `Cl(Γ) ∋ q`, and `q` is refuted).  So `Γ`
+holds all n implications and comes from a join of arity ≥ n.  The
+premises that do it are the n seeds `Ax^I`: `[] ; Θⱼ → pⱼ` with
+`Θⱼ = gAt ∖ pⱼ ++ gImp`.
+
+Therefore the bound k of A2 does not exist: **A2 is REFUTED** by the
+family `Gₙ` with witness arity n.  This is a fact about the paper's
+IPC calculus FRJ(G) (Fiorentini–Ferrari, TOCL 2020), not about the
+`◯` extension: the restriction `Θ^⊃/Υ` of their `⋈^At` is exactly the
+mechanism.
+
+## 3. The designed check
+
+`tools/A2Probe.lean` (`lake exe a2probe <cell> --K= --M= --budget=
+--nopromise= --dropjoins=`): per bound k it saturates the store with
+the CORE non-join emitters and verbatim copies of the eight join
+emitters restricted to families of size ≤ k (every row still carries
+its `FRJW` derivation), then fires the join emitters at families of
+exact size k+1..M over that store and reports the rows no stored row
+subsumes; the full check (all arities, the core `stepAll`) runs when
+its family count is within the budget.  `--nopromise=1` drops the
+promise joins, exact for `◯`-free `G` (their `chain`-tagged rows
+subsume no `barren` row and are consumed only by `◯∈` and by
+themselves).  The gate was watched failing first: with `--dropjoins=1`
+(join-built rows removed from the store) three cells report
+unsubsumed rows and FAIL.  Transcript: `wip/a2probe_out.txt`.
+
+The designed cells are `Gₙ` for n = 2, 3, 4 (probe indices 19–21).
+
+| n | bound k | root disproof `Γ ⇒ Gₙ` stored? | smallest unsubsumed join over the k-store | verdict at k |
+|---|---|---|---|---|
+| 2 | 1 | no  | arity 2: `⋈At` `[q, q, p₂⊃q, p₁⊃q] ⇒ p₁` | not closed |
+| 2 | 2 | yes | none; full check 2¹⁴ families, 0 unsubsumed | CLOSED (all arities) |
+| 3 | 1 | no  | arity 2 | not closed |
+| 3 | 2 | no  | arity 3: `⋈At` `[q, q, q, p₃⊃q, p₂⊃q, p₁⊃q] ⇒ p₁` | not closed |
+| 3 | 3 | yes | none at arity 4 (C(34,4) families); full check 2³⁴ infeasible | root present, closedness FLAG |
+| 4 | 1 | no  | arity 2 | not closed |
+| 4 | 2 | no  | arity 3 | not closed |
+| 4 | 3 | no  | arity 4: `⋈At` `[q, q, q, q, p₄⊃q, …, p₁⊃q] ⇒ p₁` | not closed |
+
+The root disproof appears exactly at k = n (n = 2, 3; absent through
+k = 3 for n = 4), and at every k < n the store lacks an arity-(k+1)
+join, as §2 predicts.  (The duplicated `q`s are former-shaped
+contexts: `gAt` lists `q` once per occurrence in `Sf^L`.)
+
+Consequence for the engine as it stands: with `jmax = 3` the W-engine
+cannot refute `G₄`, and `Stats.jmaxBinding` flags it (the flag fires
+whenever the irregular store exceeds `jmax`, so it is a FLAG, never a
+verdict).
+
+## 4. Two side findings
+
+* **The engine matches the verified bounded closure.**  At every
+  (cell, k) above, `wOps` at `jmax = pmax = k` with the other caps
+  lifted and the verified k-bounded saturation subsume each other
+  row for row (`engine-rows-unsubsumed-by-probe = 0`,
+  `probe-rows-unsubsumed-by-engine = 0`).  On these cells the
+  strict-vs-relaxed gap (A3) is empty.  Not a general result.
+* **The verified emitters are not an engine.**  At n = 4, k = 3 the
+  saturation stores 299 canonical keys in 149 s where the engine keeps
+  26 subsumption-reduced rows in 2 rounds; the cost is the `Λ`-sublist
+  enumeration of `⊃∈ᵢ` and the key-not-subsumption retention.  A
+  checker should run against the engine's reduced store.
+
+## 5. What replaces A2 (OPEN, designed, not yet tested)
+
+The bound is not absolute but it need not be: the argument of §2
+bounds the USEFUL arity by the number of distinct goals.
+
+    (B1)  A family with two premises of the same goal is subsumed by
+          the sub-family dropping one of them.
+
+Sketch: same `Υ`; by (J1) the dropped premise's `Ξ^at`, `Ξ^⊃` lie in
+`Ξⱼ ∪ Θⱼ` of every kept premise, so the atom part is covered by
+`⋃Ξ^at ∪ ⋂Θ^at` of the sub-family and the implication part by
+`⋃Ξ^⊃ ∪ kept` (`refAt_mono`, `FRJ/RefAt.lean`, and the pool of the
+sub-family is larger).  Hence join families can be taken with
+pairwise distinct goals: arity ≤ number of distinct goals of stored
+irregular rows ≤ |Sf^R G|.
+
+    (B2)  A promise family can be taken with one regular premise per
+          modal formula of ⋃Ξ^◯ (a hitting set for (J5)): arity ≤
+          |⋃ⱼ Ξⱼ^◯|.
+
+Sketch: (J5) asks `∃ i, Y ∈ Cl(Δᵢ)` per `◯Y`; the restriction
+`restrictP` and the modal part `restrictC` only shrink with more
+premises.
+
+Both are lemmas about `WSubsumes` and the join contexts, each to be
+tested on ONE designed cell (a store with two irregular rows sharing
+a goal but with different zones; a family needing two promise worlds)
+and then proved.  With (B1)/(B2) the checker's join clauses become a
+G-dependent bounded enumeration: cliques of the (J1)-compatibility
+graph with distinct goals, which `famsUpToC` in `FRJ/Search/Fast.lean`
+already enumerates.  Whether the resulting check is polynomial in the
+store is a separate question; the `Gₙ` family shows the arity itself
+grows with the formula.
+
+## 6. Not claimed
+
+* The lower bound of §2 is a hand argument about the rules plus the
+  probe's evidence at n ≤ 4.  The kernel-level statement, "every
+  FRJW disproof of `Gₙ` contains a join of arity ≥ n", is OPEN and no
+  declaration asserts it.
+* (B1), (B2) are OPEN.
+* Closedness of the k = n store for n ≥ 3 is unverified (the full
+  check is infeasible at 2³⁴ families); only n = 2 is CLOSED.
+* The engine agreement of §4 holds on the cells run, nothing more.
