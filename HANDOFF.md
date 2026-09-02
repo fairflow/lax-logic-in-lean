@@ -3779,3 +3779,39 @@ paid by `unclosed`), and on `⊕'`: forced for `decideGbuW` (both sides
 * **Next**: the checker-level corollary (join clauses of `DBClosed`
   reduce to distinct-goal, witness-minimal families, via the
   reindexing pack of `W/Saturate.lean`), then `checkClosed`.
+
+## 2026-09-02 (night, later) — the pre-build checks for `checkClosed`: READY TO BUILD
+
+Matthew `/goal`: "complete the checks in preparation for the build;
+report when ready to build".  Record: `docs/checkclosed-checks.md`.
+
+* **Statement to build**: `DBClosedDG` (join clauses over irregular
+  families with pairwise distinct goals and promise families of size
+  ≤ |dedupF (gCirc G)|), `dbClosed_of_dg : DBClosedDG → DBClosed`,
+  `checkClosed : Bool` with `checkClosed_sound`, `decideGbuW_of_check`.
+  The full contract stays the consumer's interface: `tCr`/`tCi`
+  instantiate the join clauses at the derivation's own arity (with
+  duplicate goals) and `impInI`/`axIC` at the derivation's own Λ/`ats`.
+* **All 21 clauses classified**: eleven are store-polynomial scans;
+  `impInI` (2^|Θ|) and `axIC` (2^|gAt|) are G-exponential and
+  intrinsic (rows with different Λ are `WSubsumes`-incomparable;
+  `vacZoneA` not monotone in `ats`); the eight join clauses reduce by
+  B1/B2′ to arity ≤ |Sf^R| and promise arity ≤ |Ĝ^◯|.  After the
+  reductions the checker is store-polynomial, G-exponential: the
+  class of the universe itself.
+* **The one gap found**: `joinCirc` carries the RefAt-RELAXED (J2)
+  (essential: the corner discharges it with certificates,
+  `Corner.lean:205–215`), and the proved B1 assumes the strict one.  A
+  2-cycle refutation (`x` owes link `L`, `L` owes `x`) cannot be
+  written because `Cl` sees an implication only through its
+  consequent, so certificates descend in formula size: B1 holds there
+  by size induction, PLAUSIBLE, not proved (build item 1); the shape
+  is kernel-decided in `wip/b1b2_cells.lean` (`b1_relaxed_dropA/B`:
+  strict (J2) false, relaxed true, both drops subsume).
+* **A3 finding**: the engine's `⋈^◯` fires with the strict guard
+  lifted by `.ups` (`OpsW.lean:292`); an engine store can miss relaxed
+  instances and fail the check.  Repair = `refAtB` guard in the engine
+  (build item 6).
+* **Build plan** (§6 of the record): six items, 33–54 h un-corrected;
+  gate watch for the checker = delete one join-built row from a closed
+  store and see `false`.

@@ -258,6 +258,78 @@ theorem b2_naive_witness :
 /-- **B2'**: the hitting set `{Δ₀}` for `⋃Ξ^◯ ∪ (⋂Θ^◯ witnessed)` subsumes. -/
 theorem b2_corrected : subB ctxB2Full (joinCtxAtP ΞP ΘP rhsP f ΔsOnly0) = true := by decide
 
+/-! ## B1 under the RefAt-RELAXED (J2) of the barren `⋈^◯` (2026-09-02, night)
+
+`DBClosed.joinCirc` (and `FRJWr.joinCirc`) guard a stable implication
+`A ⊃ B` not by `A ∈ Υ` but by `RefAt true Υ (base ++ kept) A`, so a
+dropped premise's stable implication may owe its licence to a KEPT link,
+which the sub-family must first re-derive.  A 2-cycle (x owes L, L owes
+x) would refute B1 here -- but it cannot be written: `Cl` sees an
+implication only through its consequent, so every dependency descends
+in formula size, and the transfer goes through by induction on size.
+This cell is the shape that induction must handle: `xa`'s antecedent is
+refuted only via the kept link `L`, whose own antecedent is refuted via
+the atom `g` and `⊥`.
+
+    P_a : [xa] ; [g, L]      → c        xa := ((w ⊃ L) ⊃ c) ⊃ da
+    P_b : []   ; [g, L, xa]  → c        L  := (g ⊃ ⊥) ⊃ f
+
+Strict (J2) FAILS for the family (`(w ⊃ L) ⊃ c ∉ Υ`), the relaxed one
+holds; dropping either duplicate subsumes. -/
+
+def g : Form := .atom "g"
+def wv : Form := .atom "w"
+def da : Form := .atom "da"
+def fv : Form := .atom "f"
+def cc : Form := .atom "c"
+def Lk : Form := .imp (.imp g .bot) fv
+def xa : Form := .imp (.imp (.imp wv Lk) cc) da
+
+def ΞR := famOf [[xa], []] 1
+def ΘR := famOf [[g, Lk], [g, Lk, xa]] 1
+def rhsR := rhsOf [cc, cc] 1
+
+/-- The barren `⋈^◯` conclusion context (`FRJWr.joinCirc`). -/
+def ctxOr {n : Nat} (Ξs Θs : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) : List Form :=
+  joinCtxOrVBase Ξs Θs ++
+    keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)
+
+/-- The relaxed (J2) of `joinCirc`, as a Boolean. -/
+def j2RelaxedB {n : Nat} (Ξs Θs : Fin (n + 1) → List Form)
+    (rhs : Fin (n + 1) → Form) : Bool :=
+  (unionAll fun j => impPart (Ξs j)).all fun x =>
+    match x with
+    | .imp A _ => refAtB true (upsilon rhs) (ctxOr Ξs Θs rhs) A
+    | _ => true
+
+example : j1B ΞR ΘR = true := by decide
+example : j3B ΞR = true := by decide
+/-- The family is a genuinely relaxed instance: strict (J2) fails … -/
+example : j2B ΞR rhsR = false := by decide
+/-- … and the relaxed (J2) holds. -/
+example : j2RelaxedB ΞR ΘR rhsR = true := by decide
+
+def ctxRFull : List Form := ctxOr ΞR ΘR rhsR
+
+example : xa ∈ ctxRFull := by decide
+example : Lk ∈ ctxRFull := by decide
+
+/-- **B1 under relaxed (J2), drop `P_a`**: the sub-family re-derives `L`,
+then `xa`, through its kept chain. -/
+theorem b1_relaxed_dropA :
+    subB ctxRFull (ctxOr (famOf [[]] 0) (famOf [[g, Lk, xa]] 0) (rhsOf [cc] 0)) = true := by
+  decide
+
+/-- **B1 under relaxed (J2), drop `P_b`.** -/
+theorem b1_relaxed_dropB :
+    subB ctxRFull (ctxOr (famOf [[xa]] 0) (famOf [[g, Lk]] 0) (rhsOf [cc] 0)) = true := by
+  decide
+
+/-- info: 'B1B2.b1_relaxed_dropA' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms b1_relaxed_dropA
+
 /-! ## Pins (kernel-decided cells: `[propext, Quot.sound]`, no choice) -/
 
 /-- info: 'B1B2.b1a_drop1' depends on axioms: [propext, Quot.sound] -/
