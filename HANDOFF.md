@@ -3490,3 +3490,20 @@ Later 2026-09-02: `decideGbuWData G : GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G
 in wip/gbu_frjw_saturate.lean, pinned [propext, Quot.sound]; smoke
 cells atom/unit exercise it.  Stage-3 dry run (retire the pair-V
 measure) compiles at 852 lines in scratch, awaiting Matthew's go.
+
+## 2026-09-02 (mid-morning) — compaction stage 3 landed; stage 4 = the explanation
+
+Matthew: "Continue to stage 3 and once that's done, get the Opus
+agent to rerun the presentation plan: this is a feed in to stage 4 as
+explaining the proof strategy is key."  Stage 3 executed: the pair-V
+measure retired, `searchW` back on `wgC = (unclosed, tpC, seqSize)`
+with `wgLt_wf`; search file 939 → 852 (1189 → 852 overall, −28%);
+wip chain rebuilt by explicit target, pins unchanged, smoke cells
+PASS; supersession table in docs/frjw-compaction.md (no re-opened
+constraints); architecture doc §2/§4 annotated.  The Opus plan
+(docs/frjw-recursion-explainer-plan.md, written against stage 1) is
+being rerun against this HEAD as the stage-4 brief: explain the proof
+strategy, with the inversion-lemma bank presented as STRATEGY (rule by
+rule, proved once) and its uniform consumption in `searchW` as the
+tactic-shaped part (decide a store query; positive side absurd by
+"the store would have had a row").

@@ -209,79 +209,6 @@ private def findCMT (G : Form) (Ω : List Form) (F : Form) :
 
 
 
-/-! ## The chase measure: `wgC` extended by the visited-pair count
-
-The `Υ`-chase at a critical cell recurses into antecedents whose size
-the goal does not bound (the licence cell: `A = ◯p` against goal `◯r`).
-What pays is a VISITED set `V` of (antecedent, goal) PAIRS: component 2
-counts `Sf^R(G) × Sf^R(G) ∖ V`, so a chase step strictly drops it,
-while re-chasing the SAME antecedent under a NEW goal stays payable —
-only the exact (antecedent, goal) revisit is blocked.  Every other step
-keeps `V` (component 2 equal, the old 3-lex pays), or strictly drops
-`unclosed` (component 1), where `V` may reset. -/
-
-def sfPairs (G : Form) : List (Form × Form) :=
-  (sfR G).flatMap (fun A => (sfR G).map (fun C => (A, C)))
-
-def vRem (G : Form) (V : List (Form × Form)) : Nat :=
-  ((sfPairs G).filter (fun q => decide (q ∉ V))).length
-
-def wgW (G : Form) (reg : Bool) (Ψ : List Form) (C : Form)
-    (V : List (Form × Form)) : Nat × Nat × Nat × Nat :=
-  (unclosed G Ψ, vRem G V, tpC reg C, seqSize Ψ C)
-
-/-- Lex on 4-tuples, layered over the 3-lex `WgLt`. -/
-def WgLtW (x y : Nat × Nat × Nat × Nat) : Prop :=
-  x.1 < y.1 ∨ (x.1 = y.1 ∧ WgLt x.2 y.2)
-
-theorem wgLtW_wf : WellFounded WgLtW := by
-  have : WgLtW = fun x y =>
-      Prod.Lex (· < ·) WgLt x y := by
-    funext x y
-    show _ = Prod.Lex _ _ _ _
-    cases x with
-    | mk a x' => cases y with
-      | mk b y' =>
-          apply propext
-          constructor
-          · rintro (h | ⟨rfl, h⟩)
-            · exact .left _ _ h
-            · exact .right _ h
-          · rintro (h | h)
-            · exact Or.inl (by assumption)
-            · exact Or.inr ⟨rfl, by assumption⟩
-  rw [this]
-  exact (WellFounded.prod_lex (Nat.lt_wfRel.wf) wgLt_wf)
-
-/-- A 3-lex drop at unchanged `V` is a 4-lex drop: the first components
-agree or drop, and the tail is the old 3-lex with `vRem` inserted as an
-equal second coordinate. -/
-theorem wgW_of_wgC {G : Form} {r r' : Bool} {Ψ Ψ' : List Form}
-    {C C' : Form} {V : List (Form × Form)}
-    (h : WgLt (wgC G r' Ψ' C') (wgC G r Ψ C)) :
-    WgLtW (wgW G r' Ψ' C' V) (wgW G r Ψ C V) := by
-  rcases h with h | ⟨he, h⟩
-  · exact Or.inl h
-  · exact Or.inr ⟨he, Or.inr ⟨rfl, h⟩⟩
-
-
-
-/-- An `unclosed` drop resets `V` freely. -/
-theorem wgW_drop {G : Form} {r r' : Bool} {Ψ Ψ' : List Form}
-    {C C' : Form} {V V' : List (Form × Form)}
-    (h : unclosed G Ψ' < unclosed G Ψ) :
-    WgLtW (wgW G r' Ψ' C' V') (wgW G r Ψ C V) :=
-  Or.inl h
-
-/-! ## The goal-set invariant (K1)
-
-One certificate per visited (antecedent, goal) pair, relative to the
-CURRENT cell: goal-descents substitute at the `goal`-leaves,
-`∨`-descents record the abandoned sibling as a pending leaf, chase
-entries freeze the old goal, context growth is `Clo`-monotone.  The
-regular mode carries `V = []` instead (its only entry, `R⊃ₙ`, drops
-`unclosed` and resets `V`). -/
-
 /-- **Totality at a critical cell** — the corner's closure.  Every
 `Sf^R`-form either carries a `RefAt` certificate over `Z :: R₀` (with
 `R₀` absorbing every refuted form) or is `Gbu◯`-DERIVABLE, by
@@ -347,23 +274,15 @@ delivering derivations; no supply hypotheses. -/
 def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
     (decI : ∀ Ω C, Decidable (WEvalI D Ω C)) :
     ∀ p : Bool × List Form × Form, WSearchOk G D p := by
-  have main : ∀ x : Nat × Nat × Nat × Nat, ∀ p : Bool × List Form × Form,
-      ∀ V : List (Form × Form), (∀ q ∈ V, q.1 ∈ sfR G ∧ q.2 ∈ sfR G) →
-      (p.1 = true → V = []) →
-      wgW G p.1 p.2.1 p.2.2 V = x → WSearchOk G D p := by
-    refine wgLtW_wf.fix (fun x ihW => ?_)
-    · rintro ⟨reg, Ψ, C⟩ V hVsf hregV hx
-      have IHW : ∀ (q : Bool × List Form × Form) (V' : List (Form × Form)),
-          (∀ q' ∈ V', q'.1 ∈ sfR G ∧ q'.2 ∈ sfR G) →
-          (q.1 = true → V' = []) →
-          WgLtW (wgW G q.1 q.2.1 q.2.2 V') (wgW G reg Ψ C V) →
-          WSearchOk G D q :=
-        fun q V' hV' hr' hq => ihW _ (hx ▸ hq) q V' hV' hr' rfl
+  have main : ∀ x : Nat × Nat × Nat, ∀ p : Bool × List Form × Form,
+      wgC G p.1 p.2.1 p.2.2 = x → WSearchOk G D p := by
+    refine wgLt_wf.fix (fun x ihW => ?_)
+    · rintro ⟨reg, Ψ, C⟩ hx
       have IH : ∀ q : Bool × List Form × Form,
           WgLt (wgC G q.1 q.2.1 q.2.2) (wgC G reg Ψ C) →
-          (q.1 = true → V = []) →
           WSearchOk G D q :=
-        fun q hq hr' => IHW q V hVsf hr' (wgW_of_wgC hq)
+        fun q hq => ihW _ (hx ▸ hq) q rfl
+      have IHW := IH
       cases reg
       · -- ==================== IRREGULAR ====================
         show (∀ X ∈ Ψ, X ∈ sfL G) → (C.isCirc = false → ∀ X ∈ Ψ, X ∈ gHat G) →
@@ -381,13 +300,13 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
             have d₁ := IH (false, Ψ, C₁)
               (wgKeep (fun _ h => .base h) (seqSize_goal
                 (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
-              (fun h => Bool.noConfusion h) 
+
               hΨ (fun _ => hg) h₁ (unrefutedBelow_of_gHat hg
                 (fun h => hne (gbuInv7 hsat hC (Or.inl h))))
             have d₂ := IH (false, Ψ, C₂)
               (wgKeep (fun _ h => .base h) (seqSize_goal
                 (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-              (fun h => Bool.noConfusion h) 
+
               hΨ (fun _ => hg) h₂ (unrefutedBelow_of_gHat hg
                 (fun h => hne (gbuInv7 hsat hC (Or.inr h))))
             exact .randI d₁ d₂
@@ -400,13 +319,13 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
               · have d := IH (false, Ψ, C₂)
                   (wgKeep (fun _ h => .base h) (seqSize_goal
                     (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-                  (fun h => Bool.noConfusion h) 
+
                   hΨ (fun _ => hg) h₂ (unrefutedBelow_of_gHat hg he₂)
                 exact .rorI2 d
             · have d := IH (false, Ψ, C₁)
                 (wgKeep (fun _ h => .base h) (seqSize_goal
                   (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
-                (fun h => Bool.noConfusion h) 
+
                 hΨ (fun _ => hg) h₁ (unrefutedBelow_of_gHat hg he₁)
               exact .rorI1 d
         | imp A B =>
@@ -416,14 +335,12 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
             · have d := IH (false, Ψ, B)
                 (wgKeep (fun _ h => .base h) (seqSize_goal
                   (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-                (fun h => Bool.noConfusion h) 
+
                 hΨ (fun _ => hg) hB (unrefutedBelow_of_gHat hg
                   (fun h => hne (gbuInv8 hsat hC hcl h)))
               exact .rimpII d hcl
-            · have d := IHW (true, A :: Ψ, B) []
-                (fun _ h => absurd h List.not_mem_nil)
-                (fun _ => rfl)
-                (wgW_drop (unclosed_lt hA hcl))
+            · have d := IHW (true, A :: Ψ, B)
+                (wgDrop (unclosed_lt hA hcl))
                 (by
                   intro Y hY
                   rcases List.mem_cons.mp hY with rfl | hY'
@@ -479,10 +396,8 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                           (fun X hXsf hI => List.mem_filter.mpr
                             ⟨hXsf, @decide_eq_true _ (decI Ψ X) hI⟩)
                           (fun A' B' hXsf hncl hnR =>
-                            IHW (true, A' :: Ψ, B') []
-                              (fun _ h => absurd h List.not_mem_nil)
-                              (fun _ => rfl)
-                              (wgW_drop
+                            IHW (true, A' :: Ψ, B')
+                              (wgDrop
                                 (unclosed_lt (sfR_imp hXsf).1 hncl))
                               (by
                                 intro W hW
@@ -518,13 +433,13 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                                   (Form.imp A₂ B₂).size :=
                                 Nat.lt_succ_of_le (Nat.le_add_left _ _)
                               omega)
-                            (fun h => Bool.noConfusion h) 
+
                             (by
                               intro W hW
                               rcases List.mem_cons.mp hW with rfl | hW'
                               · exact hB₂sf
                               · exact hΨ W (hmemsub₂ W hW'))
-                            (fun h => Bool.noConfusion h) hC
+                             (fun h => Bool.noConfusion h) hC
                             (unrefutedBelow_step hsat hclB₂ hnb)
                           exact .limpLI (FRJ.Gbu.LJFT.transportIC hDer hΓ₂) d₂
                             (Or.inr hA₂sf) hC hΓ₂
@@ -532,7 +447,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   have d := IH (false, Ψ, Z)
                     (wgKeep (fun _ h => .base h)
                       (seqSize_goal (Nat.lt_succ_self _)))
-                    (fun h => Bool.noConfusion h) 
+
                     hΨ (fun _ => hg) hZsf (unrefutedBelow_of_gHat hg heZ)
                   exact .rcircI d hC
               · -- a modal member: `L◯ᵢ`
@@ -561,13 +476,13 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                         rw [hYsplit, seqSize_split, seqSize_cons]
                         have : Y'.size < (Form.circ Y').size := Nat.lt_succ_self _
                         omega)
-                      (fun h => Bool.noConfusion h) 
+
                       (by
                         intro V hV
                         rcases List.mem_cons.mp hV with rfl | hV'
                         · exact hY'sf
                         · exact hΨ V (hmemsub V hV'))
-                      (fun h => Bool.noConfusion h) hC
+                       (fun h => Bool.noConfusion h) hC
                       (unrefutedBelow_step hsat hcov hnb)
                     exact .lcircI d (hΨ _ hYΨ) hΓ
             · -- a NON-`Ĝ` member: `⊥`, `∧` or `∨`
@@ -601,7 +516,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                       show A.size + (B.size + seqSize (lX ++ rX) (Form.circ Z))
                         < seqSize (lX ++ rX) (Form.circ Z) + (A.size + B.size + 1)
                       omega)
-                    (fun h => Bool.noConfusion h) 
+
                     (by
                       intro V hV
                       rcases List.mem_cons.mp hV with rfl | hV'
@@ -609,7 +524,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                       · rcases List.mem_cons.mp hV' with rfl | hV''
                         · exact hB
                         · exact hΨ V (hmemsub V hV''))
-                    (fun h => Bool.noConfusion h) hC
+                     (fun h => Bool.noConfusion h) hC
                     (unrefutedBelow_step hsat hcov hnb)
                   exact .landLI d hC hΓ
               | or A B =>
@@ -632,30 +547,29 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                     · exact .base (List.mem_cons_of_mem _ hV')
                   have d₁ := IH (false, A :: (lX ++ rX), Form.circ Z)
                     (wgKeep hcovL (hszo A (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
-                    (fun h => Bool.noConfusion h) 
+
                     (by
                       intro V hV
                       rcases List.mem_cons.mp hV with rfl | hV'
                       · exact hA
                       · exact hΨ V (hmemsub V hV'))
-                    (fun h => Bool.noConfusion h) hC
+                     (fun h => Bool.noConfusion h) hC
                     (unrefutedBelow_step hsat hcovL hnb)
                   have d₂ := IH (false, B :: (lX ++ rX), Form.circ Z)
                     (wgKeep hcovR (hszo B (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-                    (fun h => Bool.noConfusion h) 
+
                     (by
                       intro V hV
                       rcases List.mem_cons.mp hV with rfl | hV'
                       · exact hB
                       · exact hΨ V (hmemsub V hV'))
-                    (fun h => Bool.noConfusion h) hC
+                     (fun h => Bool.noConfusion h) hC
                     (unrefutedBelow_step hsat hcovR hnb)
                   exact .lorLI d₁ d₂ hC hΓ
       · -- ==================== REGULAR: `Ψ ⇒g C` ====================
         show (∀ X ∈ Ψ, X ∈ sfL G) → C ∈ sfR G → ¬ WEvalR D Ψ C →
           GbuRC G Ψ C
         intro hΨ hC hne
-        have hV0 : V = [] := hregV rfl
         refine byDec (inferInstance : Decidable (C ∈ Ψ))
           (fun hax => .ax C (ctxEq_cons_self hax)) (fun hax => ?_)
         rcases splitHatT Ψ with hall | ⟨l, r, X, hsplit, hX⟩
@@ -673,7 +587,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
               fun W hW => (hΓ W).mpr (List.mem_cons_of_mem _ hW)
             have d₁ := IH (false, .imp A B :: (lY ++ rY), A)
               (wgFocus (fun W hW => .base ((hΓ W).mp hW)))
-                         (fun h => Bool.noConfusion h) 
+
               (by
                 intro W hW
                 rcases List.mem_cons.mp hW with rfl | hW'
@@ -702,7 +616,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   have hb : B.size < (Form.imp A B).size :=
                     Nat.lt_succ_of_le (Nat.le_add_left _ _)
                   omega)
-                         (fun _ => hV0)
+
               (by
                 intro W hW
                 rcases List.mem_cons.mp hW with rfl | hW'
@@ -737,12 +651,12 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
               have d₁ := IH (true, Ψ, C₁)
                 (wgKeep (fun _ h => .base h) (seqSize_goal
                   (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
-                           (fun _ => hV0)
+
                 hΨ h₁ (fun h => hne (gbuInv2 hsat hC (Or.inl h)))
               have d₂ := IH (true, Ψ, C₂)
                 (wgKeep (fun _ h => .base h) (seqSize_goal
                   (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-                           (fun _ => hV0)
+
                 hΨ h₂ (fun h => hne (gbuInv2 hsat hC (Or.inr h)))
               exact .randR d₁ d₂
           | imp A B =>
@@ -751,11 +665,11 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
               · have d := IH (true, Ψ, B)
                   (wgKeep (fun _ h => .base h) (seqSize_goal
                     (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-                            (fun _ => hV0)
+
                   hΨ hB (fun h => hne (gbuInv5 hsat hC hcl h))
                 exact .rimpI d hcl
               · have d := IH (true, A :: Ψ, B) (wgDrop (unclosed_lt hA hcl))
-                            (fun _ => hV0)
+
                   (by
                     intro Y hY
                     rcases List.mem_cons.mp hY with rfl | hY'
@@ -773,12 +687,12 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   · exact fromImp Y hY hnY
                 · have d := IH (false, Ψ, C₂)
                     (wgFocus (fun _ h => .base h))
-                              (fun h => Bool.noConfusion h) 
+
                     hΨ (fun _ => hΩ) h₂ (unrefutedBelow_of_gHat hΩ he₂)
                   exact .rorR2 d
               · have d := IH (false, Ψ, C₁)
                   (wgFocus (fun _ h => .base h))
-                            (fun h => Bool.noConfusion h) 
+
                   hΨ (fun _ => hΩ) h₁ (unrefutedBelow_of_gHat hΩ he₁)
                 exact .rorR1 d
           | circ Z =>
@@ -798,7 +712,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   · exact fromImp Y hY hnY
                 · have d := IH (false, Ψ, Z)
                     (wgFocus (fun _ h => .base h))
-                              (fun h => Bool.noConfusion h) 
+
                     hΨ (fun _ => hΩ) (sfR_circ hC)
                     (unrefutedBelow_of_gHat hΩ heZ)
                   exact .rcirc d hC
@@ -824,7 +738,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                           rw [hYsplit, seqSize_split, seqSize_cons]
                           have : Y'.size < (Form.circ Y').size := Nat.lt_succ_self _
                           omega)
-                                (fun _ => hV0)
+
                       (by
                         intro W hW
                         rcases List.mem_cons.mp hW with rfl | hW'
@@ -856,7 +770,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                     show A.size + (B.size + seqSize (l ++ r) C)
                       < seqSize (l ++ r) C + (A.size + B.size + 1)
                     omega)
-                          (fun _ => hV0)
+
                 (by
                   intro W hW
                   rcases List.mem_cons.mp hW with rfl | hW'
@@ -879,7 +793,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                     · exact .orL (.base List.mem_cons_self)
                     · exact .base (List.mem_cons_of_mem _ hW'))
                   (hsz A (Nat.lt_succ_of_le (Nat.le_add_right _ _))))
-                           (fun _ => hV0)
+
                 (by
                   intro W hW
                   rcases List.mem_cons.mp hW with rfl | hW'
@@ -892,7 +806,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                     · exact .orR (.base List.mem_cons_self)
                     · exact .base (List.mem_cons_of_mem _ hW'))
                   (hsz B (Nat.lt_succ_of_le (Nat.le_add_left _ _))))
-                           (fun _ => hV0)
+
                 (by
                   intro W hW
                   rcases List.mem_cons.mp hW with rfl | hW'
@@ -900,8 +814,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                   · exact hΨ W (hmemsub W hW'))
                 hC (fun h => hne (wEvalR_ctxEq (ctxEq_symm hΓ) (gbuInv3R h)))
               exact .lorL d₁ d₂ hΓ
-  exact fun p => main _ p [] (fun _ h => absurd h List.not_mem_nil)
-    (fun _ => rfl)  rfl
+  exact fun p => main _ p rfl
 
 /-! ## The root dichotomy
 

@@ -24,13 +24,16 @@ and the exclusion half (both directions) is already banked.
 Naive backward Gbu◯ search has NO termination measure
 (`not_wf_stepC`, kernel-checked).  `searchW` instead recurses on
 
-    wgW (reg, Ψ, C, V) = (unclosed G Ψ,  |Sf^R × Sf^R ∖ V|,  tpC,  seqSize)
+    wgC (reg, Ψ, C) = (unclosed G Ψ,  tpC,  seqSize)
+
+(since stage 3 of the compaction, 2026-09-02; from the goal-closed
+state up to stage 2 the measure carried a second component, the
+visited-pair count `|Sf^R × Sf^R ∖ V|`, which paid for the chase of §4
+and was retired with it — see docs/frjw-compaction.md, stage 3).
 
 * `unclosed` — how much of the finite `≐`-universe the context has
   not yet `Clo`-captured; every `R⊃ₙ`-step (adding a genuinely new
   antecedent) strictly drops it, and everything else may reset below.
-* the VISITED-PAIR count — the innovation that pays for the `Υ`-chase
-  (§4).
 * `tpC` — the mode/goal-shape rank (irregular ◯-free < irregular
   modal < regular).
 * `seqSize` — plain sequent size for the structural descents.
@@ -56,7 +59,7 @@ Derivation-side, the only route through a critical `◯Z`-cell is
 modus ponens on a context implication (`L⊃ᵢ`), which needs the
 antecedent DERIVED first — the chase.
 
-## 4. Innovation 1 (HISTORICAL since stage 2 of the compaction, 2026-09-02 — the chase is gone; see docs/frjw-compaction.md): the (antecedent, goal) visited-pair chase
+## 4. Innovation 1 (HISTORICAL since stages 2–3 of the compaction, 2026-09-02 — the chase went at stage 2, its pair-`V` measure at stage 3; see docs/frjw-compaction.md): the (antecedent, goal) visited-pair chase
 
 The chase recurses from goal `◯Z` into an antecedent `A` whose size
 the goal does not bound.  What pays is the visited set `V` of PAIRS

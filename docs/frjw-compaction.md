@@ -94,15 +94,49 @@ Re-opened constraints: **none**.
 
 Re-opened constraints: **none**.
 
-## Stage 3 — PROPOSAL (awaiting Matthew's review before surgery)
+# Stage 3 (2026-09-02) — the pair-`V` measure retired
 
-Evidence: `V` is constant `[]` through the whole recursion.  Proposal:
-revert the measure to the original triple `wgC = (unclosed, tpC,
-seqSize)` with `WgLt`, deleting `sfPairs`, `vRem`, `wgW`, `WgLtW`,
-`wgLtW_wf`, `wgW_of_wgC`, `wgW_drop`, and the `V`/`hVsf`/`hregV`
-plumbing at every call site (~20 payload arguments).  Expected: a
-further ≈ −100 lines and a measure with three components, all
-structural.  Supersession: the pair-`V` measure discharged exactly the
-chase's termination (LAPSED above); nothing else cites it.  The
-architecture doc's §4 becomes history.  This retires an announced
-innovation, hence the pause for review.
+Proposed after stage 2 (evidence: `V` is constant `[]` through the
+whole recursion — both surviving `IHW` sites pass `[]`), dry-run in
+scratch, and executed on Matthew's go ("Continue to stage 3").
+
+## Actions
+
+1. **Measure reverted** to the original triple `wgC = (unclosed, tpC,
+   seqSize)` with `WgLt`/`wgLt_wf` (from `wip/gbu.lean`).  Deleted:
+   `sfPairs`, `vRem`, `wgW`, `WgLtW`, `wgLtW_wf`, `wgW_of_wgC`,
+   `wgW_drop`, and the `V`/`hVsf`/`hregV` plumbing at every call site.
+   The two induction hypotheses `IH`/`IHW` collapse into one; the
+   fixpoint is `wgLt_wf.fix` over `main : ∀ x, ∀ p, wgC G p.1 p.2.1
+   p.2.2 = x → WSearchOk G D p`.
+2. **A strip hazard, recorded**: the vacuous payload
+   `(fun h => Bool.noConfusion h)` served two masters — the `hregV`
+   side condition AND the `hΩc` clause of `WSearchOk` at a `◯`-shaped
+   goal.  A blanket deletion broke five sites; the five `hΩc` lambdas
+   were re-inserted.  (Opus's plan §C.2 counted these six sites
+   separately for the same reason.)
+3. Sizes: `wip/gbu_frjw_search.lean` 939 (stage 2) → 852 (stage 3);
+   1189 → 852 overall, −28%.
+4. **Verified** (see the commit): `lake build wip.gbu_frjw_search
+   wip.gbu_frjw_closure wip.gbu_frjw_saturate` green (the wip library
+   is NOT in `defaultTargets`; bare `lake build` proves nothing about
+   it), every `#guard_msgs` pin unchanged, smoke cells re-run PASS.
+
+## Supersession check: the pair-`V` measure → `wgC`
+
+| constraint | source | pair-`V` measure | `wgC` | verdict |
+|---|---|---|---|---|
+| termination of the chase (`L⊃ᵢ` from goal `◯Z` into an antecedent `A` whose size the goal does not bound) | architecture §2, §4 | `\|Sf^R × Sf^R ∖ V\|` strictly drops on every chase | the chase was retired at stage 2 (its own table above); no remaining step descends into an unbounded antecedent — the `L⊃ᵢ` sites are paid by `seqSize` (the consequent recursion) or by `unclosed` (the `R⊃ₙ` callback from `totalityW`) | LAPSED |
+| re-chasing the same antecedent under a different goal must be measure-payable | §4 | pairs rather than antecedents | no chase | LAPSED |
+| `V` confined to irregular mode, reset for free at `R⊃ₙ` (`hregV`, `wgW_drop`) | search file, the fixpoint's side conditions | side conditions carried by every recursive call | no `V` | LAPSED |
+| the `unclosed`-first ordering of the measure (an `R⊃ₙ` step grows the context, so nothing else can pay for it) | §2 | first component | unchanged: still the first component of `wgC` | DISCHARGED |
+| the `tpC` grading by `hasCirc`, not `isCirc` (`R∧ᵢ` at `C₁ ∧ ◯C₂`) | gbu_circ.lean, the `tpC` comment | third component | unchanged: second component of `wgC` | DISCHARGED |
+| the true story: §4 was announced as "Innovation 1" | proof-state observability; architecture §4, §9 | the code | §2/§4 of the architecture doc carry a dated note; git history holds the code (commits a97787b … dd88424); this table holds the verdict | DISCHARGED |
+
+Re-opened constraints: **none**.
+
+What is left of the measure is exactly what `searchO` (the retired
+`◯`-free predecessor) used; the FRJW search adds no measure component
+of its own.  Termination is bought by `unclosed` (context growth),
+`tpC` (mode release) and `seqSize` (structure), and by `totalityW`'s
+structural recursion on the goal formula.
