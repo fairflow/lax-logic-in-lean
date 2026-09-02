@@ -210,7 +210,15 @@ Two strata, again indexed by `G` (`FRJ/CalculusW.lean:52–241`, mutual,
 Type-valued):
 
     FRJWr G t Γ C     written   t : Γ ⇒ C        regular disproofs, tagged
-    FRJWi G St Th C   written   Σ ; Θ → C        irregular disproofs, two zones
+    FRJWi G Ξ Θ C     written   Ξ ; Θ → C        irregular disproofs, two zones
+
+(Notation, Matthew's ruling of 2026-09-02, `docs/notation.md`: the
+paper writes the stable zone `Σ`, which is not a Lean identifier, so
+it is `Ξ` here in the text and in the binders; `Θ` is the paper's; `Ψ`
+stays with `Gbu◯` as in the paper.  The Lean quoted in this document
+is the code at `b2f2525`, where the binders still read `St`/`Th`, and
+`stab`/`th` for the join families; the rename to `Ξ`/`Θ`, `Ξs`/`Θs` is
+scheduled with the promotion of the chain out of `wip/`.)
 
 An object of either family is a DISPROOF of its goal at its context:
 soundness (`soundnessW`, `FRJ/CalculusW.lean:290–339` and the
@@ -218,8 +226,8 @@ countermodel construction it rests on) turns a root disproof
 `t : Γ ⇒ G` into a Kripke countermodel of `G`, so
 `DisprovableW G := ∃ t Γ, Nonempty (FRJWr G t Γ G)`
 (`FRJ/CalculusW.lean:246–247`) implies `¬ PLL G`.  The paper's reading
-of an irregular sequent `Σ ; Θ → C` is that the countermodel's root
-forces both zones and refutes `C`, with `Σ` the *stable* zone that
+of an irregular sequent `Ξ ; Θ → C` is that the countermodel's root
+forces both zones and refutes `C`, with `Ξ` the *stable* zone that
 survives when the sequent enters a join and `Θ` the zone that may be
 lost; the join side condition (J1) below is what that reading needs.
 The precise semantic clauses are in `FRJ/Model.lean` and the fidelity
@@ -296,30 +304,30 @@ goal, which I omit.
  ──────────────── ◯∈   [t = barren, or t = chain W with Covers Γ W Z]
    t : Γ ⇒ ◯Z
 
-   { Σⱼ ; Θⱼ → Cⱼ }ⱼ₌₀…ₙ
- ─────────────────────────────── ⋈^At   [F prime, F ∉ ⋃ⱼ Σⱼ^at; (J1), (J2), no ◯ in any Σⱼ;
+   { Ξⱼ ; Θⱼ → Cⱼ }ⱼ₌₀…ₙ
+ ─────────────────────────────── ⋈^At   [F prime, F ∉ ⋃ⱼ Ξⱼ^at; (J1), (J2), no ◯ in any Ξⱼ;
    barren : Γ' ⇒ F                        kept a KeptChain over Υ = {Cⱼ}, base ⋈ctx^At, pool Θ;
-                                          Γ' ≐ ⋈ctx^At(Σ, Θ, F) ++ kept]
+                                          Γ' ≐ ⋈ctx^At(Ξ, Θ, F) ++ kept]
 
-   { Σⱼ ; Θⱼ → Cⱼ }ⱼ
- ─────────────────────────────── ⋈^∨    [(J1), (J2), no ◯ in any Σⱼ; kept as above;
+   { Ξⱼ ; Θⱼ → Cⱼ }ⱼ
+ ─────────────────────────────── ⋈^∨    [(J1), (J2), no ◯ in any Ξⱼ; kept as above;
    barren : Γ' ⇒ C₁ ∨ C₂                  RefAt true Υ (base ++ kept) C₁ and C₂;  Γ' ≐ base ++ kept]
 
-   { Σⱼ ; Θⱼ → Cⱼ }ⱼ
- ─────────────────────────────── ⋈^◯    [(J1), (J2′): every A ⊃ B ∈ ⋃ⱼ Σⱼ^imp has RefAt true Υ (base ++ kept) A;
-   barren : Γ' ⇒ ◯Z                       no ◯ in any Σⱼ; kept as above; RefAt true Υ (base ++ kept) Z;
+   { Ξⱼ ; Θⱼ → Cⱼ }ⱼ
+ ─────────────────────────────── ⋈^◯    [(J1), (J2′): every A ⊃ B ∈ ⋃ⱼ Ξⱼ^imp has RefAt true Υ (base ++ kept) A;
+   barren : Γ' ⇒ ◯Z                       no ◯ in any Ξⱼ; kept as above; RefAt true Υ (base ++ kept) Z;
                                           Γ' ≐ base ++ kept]
 
-   { Σⱼ ; Θⱼ → Cⱼ }ⱼ     { tᵢ : Δᵢ ⇒ Dᵢ }ᵢ₌₀…ₖ
+   { Ξⱼ ; Θⱼ → Cⱼ }ⱼ     { tᵢ : Δᵢ ⇒ Dᵢ }ᵢ₌₀…ₖ
  ────────────────────────────────────────── ⋈^At_P / ⋈^∨_P    [(J1), (J2), (J5), (J7s), the tag clause htag;
-   t' : Γ' ⇒ F  /  C₁ ∨ C₂                                    F ∉ ⋃ Σ^at  /  C₁, C₂ ∈ Υ;  Γ' ≐ ⋈ctx_P(Σ, Θ, Υ, Δ)]
+   t' : Γ' ⇒ F  /  C₁ ∨ C₂                                    F ∉ ⋃ Ξ^at  /  C₁, C₂ ∈ Υ;  Γ' ≐ ⋈ctx_P(Ξ, Θ, Υ, Δ)]
 
-   { Σⱼ ; Θⱼ → Cⱼ }ⱼ     { tᵢ : Δᵢ ⇒ Dᵢ }ᵢ
+   { Ξⱼ ; Θⱼ → Cⱼ }ⱼ     { tᵢ : Δᵢ ⇒ Dᵢ }ᵢ
  ────────────────────────────────────────── ⋈^◯_P   [(J1), (J2), (J5), (J7s); every Dᵢ = Z with the pledge;
-   chain Z : Γ' ⇒ ◯Z                                  Z ∈ Υ;  Γ' ≐ ⋈ctx_P(Σ, Θ, Υ, Δ)]
+   chain Z : Γ' ⇒ ◯Z                                  Z ∈ Υ;  Γ' ≐ ⋈ctx_P(Ξ, Θ, Υ, Δ)]
 
-   { Σⱼ ; Θⱼ → Cⱼ }ⱼ
- ─────────────────────────────── ⋈^At_F / ⋈^∨_F   [(J1), (J2); F ∉ ⋃ Σ^at  /  C₁, C₂ ∈ Υ;  Γ' ≐ ⋈ctx_F(Σ, Θ, Υ)]
+   { Ξⱼ ; Θⱼ → Cⱼ }ⱼ
+ ─────────────────────────────── ⋈^At_F / ⋈^∨_F   [(J1), (J2); F ∉ ⋃ Ξ^at  /  C₁, C₂ ∈ Υ;  Γ' ≐ ⋈ctx_F(Ξ, Θ, Υ)]
    blocked : Γ' ⇒ F  /  C₁ ∨ C₂
 ```
 
@@ -328,13 +336,13 @@ The join side conditions, by the names used in the constructors
 
 | name | statement | role |
 |---|---|---|
-| (J1) `hJ1` | `∀ i ≠ j, Σᵢ ⊆ Σⱼ ++ Θⱼ` | each stable zone is forced at every other premise's root |
-| (J2) `hJ2` | `∀ A ⊃ B ∈ ⋃ⱼ Σⱼ^imp, A ∈ Υ` where `Υ = upsilon rhs = {Cⱼ}` | every stable implication's antecedent is one of the refuted goals (strict form) |
+| (J1) `hJ1` | `∀ i ≠ j, Ξᵢ ⊆ Ξⱼ ++ Θⱼ` | each stable zone is forced at every other premise's root |
+| (J2) `hJ2` | `∀ A ⊃ B ∈ ⋃ⱼ Ξⱼ^imp, A ∈ Υ` where `Υ = upsilon rhs = {Cⱼ}` | every stable implication's antecedent is one of the refuted goals (strict form) |
 | (J2′) | `… RefAt true Υ (base ++ kept) A` | the `RefAt`-relaxed form, in `⋈^◯` only (relaxed 2026-09-01 with Matthew's sign-off) |
-| `hcirc` | `⋃ⱼ Σⱼ^◯ = []` | barren joins take no modal stable formula |
+| `hcirc` | `⋃ⱼ Ξⱼ^◯ = []` | barren joins take no modal stable formula |
 | `hkc` | `KeptChain Υ base (thPool th) kept` | the retained implications, certified link by link |
-| (J5) `hJ5` | `∀ ◯Y ∈ ⋃ⱼ Σⱼ^◯, ∃ i, Y ∈ Cl(Δᵢ)` | a promise join may take modal stable formulas if some regular premise covers the body |
-| (J7s) `hJ7s` | `∀ i j, ∀ X ∈ Σⱼ, X ∈ Cl(Δᵢ)` | every stable formula is closure-available at every regular premise |
+| (J5) `hJ5` | `∀ ◯Y ∈ ⋃ⱼ Ξⱼ^◯, ∃ i, Y ∈ Cl(Δᵢ)` | a promise join may take modal stable formulas if some regular premise covers the body |
+| (J7s) `hJ7s` | `∀ i j, ∀ X ∈ Ξⱼ, X ∈ Cl(Δᵢ)` | every stable formula is closure-available at every regular premise |
 | `htag` | `t' = blocked ∨ (t' = chain (D 0) ∧ ∀ i, Dᵢ = D 0 ∧ pledge(tᵢ, Δᵢ, D 0))` | the promise chain's tag, or no claim |
 
 The context formers `joinCtxAtVBase`, `joinCtxOrVBase`, `joinCtxAtP`,
@@ -348,13 +356,13 @@ definitions imported from `FRJ/Calculus.lean` and `FRJ/CalculusV.lean`
  ──────────────────────────────────────── Ax^I   [F prime;  Θ' ≐ (Ĝ_at ∖ F) ++ Ĝ_imp ++ Ĝ_◯]
    [] ; Θ' → F
 
-   Σ ; Θ → Aₖ                          Σ₁ ; Θ₁ → C₁     Σ₂ ; Θ₂ → C₂
- ────────────────── ∧∈ᵢₖ              ───────────────────────────────── ∨∈  [Σ₁ ⊆ Σ₂ ++ Θ₂, Σ₂ ⊆ Σ₁ ++ Θ₁;
-   Σ ; Θ → A₁ ∧ A₂                      Σ' ; Θ' → C₁ ∨ C₂                  Σ' ≐ Σ₁ ++ Σ₂, Θ' ≐ Θ₁ ∩ Θ₂]
+   Ξ ; Θ → Aₖ                          Ξ₁ ; Θ₁ → C₁     Ξ₂ ; Θ₂ → C₂
+ ────────────────── ∧∈ᵢₖ              ───────────────────────────────── ∨∈  [Ξ₁ ⊆ Ξ₂ ++ Θ₂, Ξ₂ ⊆ Ξ₁ ++ Θ₁;
+   Ξ ; Θ → A₁ ∧ A₂                      Ξ' ; Θ' → C₁ ∨ C₂                  Ξ' ≐ Ξ₁ ++ Ξ₂, Θ' ≐ Θ₁ ∩ Θ₂]
 
-   Σ ; Θ ++ Λ → B
- ─────────────────── ⊃∈ᵢ   [Θ ∩ Λ = ∅;  A ∈ Cl(Σ ++ Λ);  Σ' ≐ Σ ++ Λ, Θ' ≐ Θ]
-   Σ' ; Θ' → A ⊃ B
+   Ξ ; Θ ++ Λ → B
+ ─────────────────── ⊃∈ᵢ   [Θ ∩ Λ = ∅;  A ∈ Cl(Ξ ++ Λ);  Ξ' ≐ Ξ ++ Λ, Θ' ≐ Θ]
+   Ξ' ; Θ' → A ⊃ B
 
    t : Γ ⇒ C                            t : Γ ⇒ Z
  ──────────────── Lift  [Θ ⊆ Ĝ ∩ Cl(Γ)] ──────────────── ◯∉  [pledge(t, Γ, Z);  Θ ⊆ Ĝ ∩ Cl(Γ)]
@@ -2010,7 +2018,7 @@ i.e. the FRJW disproof
 ```
     ─────────────────── Ax^I   [p prime;  Θ = (Ĝ_at ∖ p) ++ Ĝ_imp ++ Ĝ_◯ = [◯p]]
      [] ; [◯p] → p
-    ─────────────────── ⋈^At_F   [one premise; p ∉ Σ^at = []; (J1) vacuous; (J2) vacuous]
+    ─────────────────── ⋈^At_F   [one premise; p ∉ Ξ^at = []; (J1) vacuous; (J2) vacuous]
      blocked : [◯p] ⇒ p
     ───────────────────────── ⊃∈   [◯p ∈ Cl([◯p])]
      blocked : [◯p] ⇒ ◯p ⊃ p

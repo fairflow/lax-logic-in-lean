@@ -1,5 +1,14 @@
 # The Fiorentini–Ferrari duality: paper, IPC mechanisation, and the `◯` extension
 
+> **Notation note (2026-09-02, after this document was written).**
+> The stable zone of an irregular disproof is written `Σ` below
+> wherever the PAPER's rules and conditions are quoted, because that is
+> the paper's letter; in this repository's own presentation it is `Ξ`
+> (`Ξ ; Θ → C`), since `Σ` is not a Lean identifier, and the binders
+> `St`/`Th`/`stab`/`th` that this document quotes from the code at
+> `b2f2525` are to be renamed `Ξ`/`Θ`/`Ξs`/`Θs` in the promotion.  See
+> `docs/notation.md`.
+
 *A complexity comparison, written 2026-09-02 on Matthew's question: "a
 comparison in complexity between the original IPC paper and its proof
 here and the extra components required for the ◯ rules would be useful;
