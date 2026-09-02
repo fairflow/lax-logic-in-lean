@@ -3,7 +3,7 @@
 
 Check requested 2026-08-31, before stage W5: are SC's `laxL`/`laxR`
 (`LaxLogic/PLLSequent.lean`, F&M Figure 2) derivable in `Gbu◯(G)`
-(`wip/gbu_circ.lean` §11b)?  `LaxND ↔ SC` is mechanised (`SC_to_ND`,
+(`FRJ/Gbu/Circ.lean` §11b)?  `LaxND ↔ SC` is mechanised (`SC_to_ND`,
 `ND_to_SC`, with `cutElimination`), so cut-free SC is the right source:
 if every SC rule is admissible in `GbuRC` then `Gbu◯(G)` is complete in
 itself, with no route through the FRJ database.
@@ -31,7 +31,7 @@ mirrors of stage W5's database clauses `(∨-inv)` and `(★)`), and the
 same holds for SC's `R∨` against `rorR1`/`rorR2`.  They are not rule
 derivabilities and are not attempted here.
 -/
-import wip.gbu_circ
+import FRJ.Gbu.Circ
 
 namespace FRJ.Gbu
 

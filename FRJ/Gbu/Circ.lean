@@ -10,14 +10,14 @@ also the reading order of this file.
 |---|---|---|---|
 | Lemma 7 | 3122 | soundness of the rules | **EXTENDED** — `sound_lcirc`, `sound_rcirc` |
 | Thm 6 | 3107 | `⊢_Gbu(G) G → G ∈ IPL` | composes; nothing new |
-| Lemma 8 | 3200 | the weight `Wg` | **REPLACED** — `wip/gbu_measure.lean` |
+| Lemma 8 | 3200 | the weight `Wg` | **REPLACED** — `FRJ/Gbu/Measure.lean` |
 | Thm 7 | 3222 | termination | **REPLACED** — `stepU_wf`; the naive one is REFUTED (`no_measure_stepC`) |
 | Lemma 9 | 3300 | invertibility, 9 clauses (`lemma:gbuInv:1`–`:9` in the arXiv source; this row read "10" until 2026-09-02) | **EXTENDED** — `gbuInv11` free; `gbuInv12`, `gbuInv13` from the kit (archive since compaction stage 2) |
 | Lemma 10 | 4130 | `∨`-closure | ports unchanged (`gbuInv10` has no `◯` side condition) |
 | Lemma 11 | 4160 | the `At` success lemma | **EXTENDED** — `gbuSuccAtF` |
 | Lemma 12 | 4193 | the `∨` success lemma | **EXTENDED** — `gbuSuccOrF` |
-| Thm 8 | 4215 | correctness of `BSearch` | **CLOSED for FRJW** (2026-09-01): `searchW`/`dichotomyW`, `wip/gbu_frjw_search.lean` (this row read OPEN until 2026-09-02) |
-| Thm 9 | 4320 | the duality | **CLOSED for FRJW**: `decideGbuW`, `wip/gbu_frjw_saturate.lean` |
+| Thm 8 | 4215 | correctness of `BSearch` | **CLOSED for FRJW** (2026-09-01): `searchW`/`dichotomyW`, `FRJ/Gbu/W/Search.lean` (this row read OPEN until 2026-09-02) |
+| Thm 9 | 4320 | the duality | **CLOSED for FRJW**: `decideGbuW`, `FRJ/Gbu/W/Saturate.lean` |
 | Thm 10 | 4353 | completeness of both | **CLOSED for FRJW**: `frjw_complete`, `gbuw_complete`, and beyond the paper `decidePLL` |
 
 ## The two re-run points
@@ -59,8 +59,8 @@ rules with matching conclusions:
 
 `L◯`'s goal MUST be `◯`-shaped: unrestricted the rule is unsound.
 -/
-import wip.gbu_search
-import wip.gbu_measure
+import FRJ.Gbu.Search
+import FRJ.Gbu.Measure
 import FRJ.Erase
 
 namespace FRJ.Gbu
@@ -264,7 +264,7 @@ every rule is sound, and §1 supplies the three missing cases. -/
 
 /-! ## §3–4  Lemma 8 and Theorem 7 (source 3200, 3222)
 
-The weight and termination are settled in `wip/gbu_measure.lean`, and
+The weight and termination are settled in `FRJ/Gbu/Measure.lean`, and
 the answer is not the paper's.  `R◯ₙᵢ` releases focus, so the paper's
 `Wg = ⟨unclosed, tp, size⟩` increases along it; worse, the extended step
 relation has a two-cycle, both of whose nodes satisfy (BSr1)
@@ -278,7 +278,7 @@ with `wgo_step` and `stepU_wf`.  `tp` disappears; `ctxSize` replaces it. -/
 
 /-! ## §5  Lemma 9 (source 3300) — the invertibility clauses
 
-Clauses 1–10 are in `wip/gbu_db.lean` and port unchanged.  Three modal
+Clauses 1–10 are in `FRJ/Gbu/DB.lean` and port unchanged.  Three modal
 clauses are added here, in the order the rules were derived. -/
 
 /-- **Lemma 9, clause 11** — `L◯`.  FREE, exactly as clauses 1, 3 and 4:
@@ -669,7 +669,7 @@ So refuting `◯Z` at a root is STRICTLY STRONGER than refuting `Z`, and
 `R◯`/`R◯ₙᵢ` with a REGULAR premise cannot be invertible. -/
 
 /-- Refuting `◯Z` is refuted by validity of `◯Z` — the sharp form.  The
-lemma in `wip/gbu_measure.lean` asks for validity of the BODY, which is
+lemma in `FRJ/Gbu/Measure.lean` asks for validity of the BODY, which is
 strictly stronger and unusable here (`◯p ⊨ p` is false).  Only two
 `FRJVi` rules conclude `◯Z`: `Ax^I◯`, excluded by `classForce`; and
 `◯∉`, whose regular premise can be lifted by `◯∈` — the tag condition
@@ -1207,7 +1207,7 @@ language rather than anything about the rules: every sequent of
 * no sequent has a `◯` in the left zone, so `L◯` is inapplicable.
 
 So `Gbu◯(G)` and `Gbu(G)` coincide as RULE SETS, not merely in what they
-prove, and the results of §§1–12 of `wip/gbu_search.lean` are untouched.
+prove, and the results of §§1–12 of `FRJ/Gbu/Search.lean` are untouched.
 The two `◯`-freeness hypotheses of Theorem 8 become automatic. -/
 
 theorem noCirc_sfR {G : Form} (hG : noCirc G = true) :
@@ -1258,7 +1258,7 @@ goal, and so what makes the gate mechanical).
 `L⊃ᵢ` carries `|A| < |◯C|`, and `R◯ᵢ`'s premise is IRREGULAR: those two
 choices are what make the PAPER's weight `⟨unclosed, tp, |τ|⟩` decrease
 on every step (`wg_stepO`), with no store.  The store-carrying `Wg◯` of
-`wip/gbu_measure.lean` — and `no_measure_stepC`, which forced it —
+`FRJ/Gbu/Measure.lean` — and `no_measure_stepC`, which forced it —
 remain as the record of why `R◯ₙᵢ` was abandoned.
 
 `L◯`'s goal must be `◯`-shaped (`lcirc_goal_must_be_circ`); `L⊃ᵢ` is
@@ -1578,7 +1578,7 @@ it can be written at all.  Two facts, and they point in opposite
 directions.
 
 **With `R◯ₙᵢ` (regular premise) the paper's weight is unusable** — that
-is `no_measure_stepC` and `cyc_notRefuted` in `wip/gbu_measure.lean`:
+is `no_measure_stepC` and `cyc_notRefuted` in `FRJ/Gbu/Measure.lean`:
 the step relation has a two-cycle both of whose nodes satisfy (BSr1), so
 no measure on sequents works, and the store-carrying `Wg◯` is forced.
 
@@ -1952,7 +1952,7 @@ theorem sfL_dec {G X : Form} (h : X ∈ sfL G) :
 /-! ## §12  Theorems 8–10
 
 OPEN.  What remains is to rebuild `SearchOk` over the store-carrying
-state `SeqU` of `wip/gbu_measure.lean`, with the three new rules
+state `SeqU` of `FRJ/Gbu/Measure.lean`, with the three new rules
 dispatched to §1's soundness lemmas and §5's invertibility clauses, and
 `gbuSuccAtF`/`gbuSuccOrF` in place of the `◯`-free success lemmas.  The
 one obligation left standing is `TagClean`, and the sharp form of it is:

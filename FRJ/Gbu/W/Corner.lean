@@ -8,7 +8,7 @@ manufacture over the non-stuck part, the prime-body `axI`-family
 manufacture with the engine's greedy `keptOf` as a decidable cover,
 and the Σ-emptiness of prime-rhs irregular rows.
 -/
-import wip.gbu_frjw_circdb
+import FRJ.Gbu.W.CircDB
 
 namespace FRJ.Gbu.W
 

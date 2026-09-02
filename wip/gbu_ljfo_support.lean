@@ -34,7 +34,7 @@ refutations:
 -/
 import LJF.OBridge
 import FRJ.Bridge
-import wip.gbu_circ
+import FRJ.Gbu.Circ
 
 namespace FRJ.Gbu.LJFT
 

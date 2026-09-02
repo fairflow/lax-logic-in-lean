@@ -15,7 +15,7 @@ constructive form is the dichotomy
 (the W-successor of the stood-down W5/W6 database route); no
 declaration for it exists, per the open-status rule.
 -/
-import wip.gbu_ljfo
+import FRJ.Gbu.Circ
 import FRJ.SoundW
 
 namespace FRJ.Gbu.LJFT

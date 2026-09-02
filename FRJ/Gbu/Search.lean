@@ -44,7 +44,7 @@ procedure and not an appeal to excluded middle.
   discharge) at each, and nowhere else.  This is the deliverable of the
   present stage — the rules are read off the gaps rather than guessed.
 -/
-import wip.gbu_db
+import FRJ.Gbu.DB
 import FRJ.SoundV
 
 namespace FRJ.Gbu

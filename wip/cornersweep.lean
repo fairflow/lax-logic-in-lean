@@ -7,7 +7,7 @@ the stuck antecedent at Ψ (chase-resolvable vs REAL alarm). -/
 import FRJ.Search.OpsW
 import FRJ.Bridge
 import FRJ.Minimal
-import wip.gbu_circ
+import FRJ.Gbu.Circ
 import LaxLogic.PLLSearch
 open FRJ FRJ.Search Form
 

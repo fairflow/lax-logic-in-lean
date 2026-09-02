@@ -1,10 +1,10 @@
 /-
 # The W-database lemma layer — Lemma 9/11/12 over `WSeq`
 
-The `wip/gbu_db.lean` layer (F&F Lemmas 9–12) transcribed to the
-W-database of `wip/gbu_frjw_dichotomy.lean`.  Family-independent
+The `FRJ/Gbu/DB.lean` layer (F&F Lemmas 9–12) transcribed to the
+W-database of `FRJ/Gbu/W/Dichotomy.lean`.  Family-independent
 helpers (`finPi`, `finEx`, `keptChainRestrict`, the `Ĝ`-zone facts and
-the `enumOf` machinery) are imported from `wip/gbu_db.lean`, not
+the `enumOf` machinery) are imported from `FRJ/Gbu/DB.lean`, not
 duplicated.  Three real changes:
 
 * **(ix) is Lift-based and STRONGER.**  The V-version went through
@@ -21,8 +21,8 @@ duplicated.  Three real changes:
 * Regular rows are tag-indexed throughout: `hsat.1` yields the
   derivation directly, and (DB2) is queried at the witness's own tag.
 -/
-import wip.gbu_frjw_dichotomy
-import wip.gbu_db
+import FRJ.Gbu.W.Dichotomy
+import FRJ.Gbu.DB
 
 namespace FRJ.Gbu.W
 

@@ -1,7 +1,7 @@
 /-
 # §4: saturated databases, and Lemma 9 — the bridge from `FRJ` to `Gbu`
 
-Stage 3 of `docs/gbu-adoption-plan.md`, continuing `wip/gbu.lean`.
+Stage 3 of `docs/gbu-adoption-plan.md`, continuing `FRJ/Gbu/Base.lean`.
 Source lines are `LaxLogic/papers/frj-corr-arxiv-1804.06689.tex`.
 
 The three §4 notions (source 2660, 2827, 2830) and the EVALUATION
@@ -23,7 +23,7 @@ existentially quantified.  The paper's `FRJ(G)` is the IPC calculus and
 carries no tag; `FRJV` is the calculus this campaign is actually about,
 and Lemma 9's proofs use only rules the two families share.
 -/
-import wip.gbu
+import FRJ.Gbu.Base
 import FRJ.CalculusV
 import FRJ.Minimal
 

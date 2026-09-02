@@ -5,9 +5,9 @@ Templated from `searchO` (`wip/gbu_search_circ.lean`), Type-valued
 (delivers derivations), two public modes, no supply hypotheses.
 Divergences from the template are documented case by case.
 -/
-import wip.gbu_frjw_circdb
-import wip.gbu_frjw_corner
-import wip.gbu_ljfo_transport
+import FRJ.Gbu.W.CircDB
+import FRJ.Gbu.W.Corner
+import FRJ.Gbu.Transport
 
 namespace FRJ.Gbu.W
 
@@ -462,7 +462,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
                             (forall_cons hB₂sf (f.restP hΨ))
                             (fun h => Bool.noConfusion h) hC
                             (unrefutedBelow_step hsat hclB₂ hnb)
-                          exact .limpLI (FRJ.Gbu.LJFT.transportIC hDer f.ctxEq) d₂
+                          exact .limpLI (FRJ.Gbu.transportIC hDer f.ctxEq) d₂
                             (Or.inr hA₂sf) hC f.ctxEq
                 · -- `Z` unrefuted: `R◯ᵢ`
                   have d := IH (false, Ψ, Z)
@@ -694,7 +694,7 @@ def searchW {G : Form} {D : WSeq → Prop} (hsat : WSaturated G D)
 `searchW` at the root cell, with the regular root query decided:
 either `G` has an FRJW disproof, or `Gbu◯(G)` derives `G` — and the
 positive side carries the DERIVATION.  Together with the exclusion
-corollary (`wip/gbu_frjw_exclusion.lean`, both directions), this is
+corollary (`FRJ/Gbu/W/Exclusion.lean`, both directions), this is
 the cell-level form of `Γ ⊢_Gbu◯ φ ⇔ Γ ⊬_FRJW φ` over any saturated
 database.  What remains for `decideGbuW` proper is the CONCRETE
 instantiation: a saturated database for each `G` with its deciders —

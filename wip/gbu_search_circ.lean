@@ -2,7 +2,7 @@
 # `Gbu◯(G)`: Theorem 8◯, the correctness of `BSearch` in the modal calculus
 
 Stage 3 of the adoption, modal layer.  The IPC original is
-`wip/gbu_search.lean`; this file follows it clause by clause, adding the
+`FRJ/Gbu/Search.lean`; this file follows it clause by clause, adding the
 `◯` cases and nothing else, per the extension discipline.
 
 ## Modes
@@ -30,7 +30,7 @@ satisfied vacuously (no `FRJVi` zone reaches outside `Ĝ`) and licenses
 nothing.  Carrying the last `Ĝ` ancestor — unrefuted, and `Clo`-below
 the current context — restores the licence at every left rule.
 -/
-import wip.gbu_circ
+import FRJ.Gbu.Circ
 import wip.gbu_weakening
 
 namespace FRJ.Gbu
@@ -253,7 +253,7 @@ one branch, so the theorem below states precisely what it does and does
 not establish.  (S3) is now known to be FALSE — see `not_cleanReg`.
 
 (S2), the unlicensed `L⊥ᵢ`/`L∧ᵢ`/`L∨ᵢ`, is CLEARED — see
-`UnrefutedBelow` in `wip/gbu_circ.lean`.  The numbering is kept.) -/
+`UnrefutedBelow` in `FRJ/Gbu/Circ.lean`.  The numbering is kept.) -/
 
 /-- **(S1)** `L⊃ᵢ` admits any `◯`-FREE antecedent, and otherwise needs
 `|A| < |◯C|`.  What is left out is modus ponens on an implication whose

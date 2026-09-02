@@ -1,7 +1,7 @@
 /-
 # The W-database lemma layer, `◯` cases — Lemma 9 (11–14) and 13/14
 
-The `◯`-layer of `wip/gbu_circ.lean`'s database lemmas, transcribed to
+The `◯`-layer of `FRJ/Gbu/Circ.lean`'s database lemmas, transcribed to
 the W-database.  Genuinely NEW content, beyond renaming:
 
 * `gbuInv12`/`gbuInv13` take the PLEDGED lookup `WEvalRP` where the
@@ -14,7 +14,7 @@ the W-database.  Genuinely NEW content, beyond renaming:
   case: the W-family has a fourth producer of irregular `◯`-rows, and
   re-admission at the enlarged zone goes through `Lift` itself.
 -/
-import wip.gbu_frjw_db
+import FRJ.Gbu.W.DB
 
 namespace FRJ.Gbu.W
 

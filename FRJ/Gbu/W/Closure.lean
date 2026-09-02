@@ -1,7 +1,7 @@
 /-
 # The `decideGbuW` instantiation — Part I: kept-chain dominance and join monotonicity
 
-`searchW`/`dichotomyW` (wip/gbu_frjw_search.lean) are parameterised by a
+`searchW`/`dichotomyW` (FRJ/Gbu/W/Search.lean) are parameterised by a
 `WSaturated G D` with decidable row queries.  The instantiation route:
 
     D := (· ∈ db G)   for a COMPUTED closure `db`,
@@ -37,7 +37,7 @@ base and pool; T-A places the old chain inside it, so the new conclusion
 context CONTAINS the old one and the new row subsumes the old row.
 
 All parts have since landed (Parts II-V in this file; the saturation
-and assembly in wip/gbu_frjw_saturate.lean) and the goal is closed.
+and assembly in FRJ/Gbu/W/Saturate.lean) and the goal is closed.
 
 ARCHIVE NOTE (2026-09-01 compaction, docs/frjw-compaction.md): the nine
 standalone T-B `_mono` defs (`joinCirc_mono`, `joinOr_mono`,
@@ -51,7 +51,7 @@ live pieces are the transfer lemmas, the `ctx_sub` lemmas, `lift_max`,
 -/
 import FRJ.CalculusW
 import FRJ.Search.Engine
-import wip.gbu_frjw_search
+import FRJ.Gbu.W.Search
 
 namespace FRJ
 

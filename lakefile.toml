@@ -1,7 +1,7 @@
 name = "lax-logic"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["LaxLogic"]
+defaultTargets = ["LaxLogic", "FRJGbu"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -69,7 +69,20 @@ name = "Meta"
 [[lean_lib]]
 name = "FRJ"
 
-
+# FRJGbu: the Gbu◯/FRJW decision chain, promoted out of wip/ on
+# 2026-09-02 (core admission: the closure of the crown
+# `FRJ.Gbu.W.Saturate` — `decideGbuW`, the completeness pair,
+# `decidePLL`).  The LJF◯ route to Gbu◯ completeness is NOT core and
+# stays in wip/ (`wip.gbu_ljfo_support`, `wip.gbu_ljfo_transport`,
+# `wip.gbu_ljfo`).
+#
+# The globs are an explicit `one` list, as everywhere else in this file:
+# a `submodules` glob (`FRJ.Gbu.*`, and equally `FRJ.Gbu.W.*`) makes
+# `lake build FRJGbu` fail with "FRJGbu: some modules have bad imports"
+# on this toolchain, while the identical explicit list is green.
+[[lean_lib]]
+name = "FRJGbu"
+globs = ["FRJ.Gbu.Base", "FRJ.Gbu.DB", "FRJ.Gbu.Search", "FRJ.Gbu.Measure", "FRJ.Gbu.Circ", "FRJ.Gbu.Transport", "FRJ.Gbu.W.Dichotomy", "FRJ.Gbu.W.DB", "FRJ.Gbu.W.CircDB", "FRJ.Gbu.W.Corner", "FRJ.Gbu.W.Search", "FRJ.Gbu.W.Closure", "FRJ.Gbu.W.Exclusion", "FRJ.Gbu.W.Saturate"]
 
 [[lean_exe]]
 name = "bilaxscreen"
@@ -134,7 +147,7 @@ root = "Tools.BankRho"
 
 [[lean_lib]]
 name = "wipshared"
-globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test", "wip.minmodv_seen", "wip.minmodv_residue", "wip.minmodv_round3_demo", "wip.minmodv_flight", "wip.minmodv_assembly", "wip.minmodv_lift", "wip.minmodv_port", "wip.minmodv_liftmain", "wip.tagleaf_refute", "wip.endpoint_refute", "wip.gbu", "wip.gbu_db", "wip.gbu_search", "wip.gbu_measure", "wip.gbu_circ", "wip.gbu_weakening", "wip.gbu_search_circ", "wip.rbar", "wip.frjw_gcc", "wip.gbu_ndrules", "wip.gbu_ljfo_support", "wip.gbu_ljfo_transport", "wip.gbu_ljfo", "wip.gbu_frjw_exclusion", "wip.gbu_frjw_dichotomy", "wip.gbu_frjw_db", "wip.gbu_frjw_circdb", "wip.gbu_frjw_corner", "wip.gbu_frjw_search", "wip.gbu_frjw_closure", "wip.gbu_frjw_saturate", "wip.gbu_laxnd", "wip.gbu_frjw_laxnd", "wip.quot_cm", "wip.oracle2", "wip.semui_ctx_core", "wip.samval_probe",
+globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test", "wip.minmodv_seen", "wip.minmodv_residue", "wip.minmodv_round3_demo", "wip.minmodv_flight", "wip.minmodv_assembly", "wip.minmodv_lift", "wip.minmodv_port", "wip.minmodv_liftmain", "wip.tagleaf_refute", "wip.endpoint_refute", "wip.gbu_weakening", "wip.gbu_search_circ", "wip.rbar", "wip.frjw_gcc", "wip.gbu_ndrules", "wip.gbu_ljfo_support", "wip.gbu_ljfo_transport", "wip.gbu_ljfo", "wip.gbu_laxnd", "wip.gbu_frjw_laxnd", "wip.quot_cm", "wip.oracle2","wip.semui_ctx_core", "wip.samval_probe",
          "wip.mforth_probe", "wip.confl_core", "wip.G4conf", "wip.crankC", "wip.witTripleC", "wip.canonFinC", "wip.residueGrowth", "wip.stabilise", "wip.rnDictBase", "wip.rnDict", "wip.rho_order", "wip.rho_engines", "wip.ljfo_link", "wip.two_sided", "wip.ljfo_unravel", "wip.rnDictRefute", "wip.bandStabilise", "wip.bandM", "wip.rnc_probe", "wip.rncCert", "wip.rncCertPos",
          "wip.rnSep", "wip.rnSepColl", "wip.rnDict2Hand", "wip.rnDict2", "wip.rnDictRefute2", "wip.rnSpawnColl",
          "wip.witOut", "wip.bandW", "wip.rankedM", "wip.rnEmbed", "wip.visible", "wip.bandRefute", "wip.semSpecW", "wip.rankedResidue", "wip.rankGapPoint", "wip.mwit_complete", "wip.starve", "wip.g4confGap", "wip.cascadeBox", "wip.ascRefute", "wip.descent2",

@@ -1,7 +1,7 @@
 /-
 # The closed database exists — `∀ G, DBClosed G (closureDB G)`
 
-The last object of the `decideGbuW` chain (wip/gbu_frjw_closure.lean):
+The last object of the `decideGbuW` chain (FRJ/Gbu/W/Closure.lean):
 for every PLL formula `G`, a derivation-carrying row list closed under
 the FRJW rules over its own stored sequents.  The construction is a
 saturation:
@@ -28,10 +28,10 @@ saturation:
 
 Everything is choice-free; the target pins are `[propext, Quot.sound]`.
 -/
-import wip.gbu_frjw_closure
+import FRJ.Gbu.W.Closure
 import FRJ.StepW
 import FRJ.SoundW
-import wip.gbu_frjw_exclusion
+import FRJ.Gbu.W.Exclusion
 
 namespace FRJ.Gbu.W
 

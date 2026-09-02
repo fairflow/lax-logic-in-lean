@@ -4,14 +4,14 @@
 This file is `#eval`-level engineering evidence for the stage-4
 explainer.  It TAINTS NOTHING and PROVES NOTHING: the kernel gates of
 this development are the `#guard_msgs` axiom pins in
-`wip/gbu_frjw_saturate.lean` (`decideGbuWData`, `decideGbuW`,
+`FRJ/Gbu/W/Saturate.lean` (`decideGbuWData`, `decideGbuW`,
 `decidePLL`, `closureDB_closed`, all `[propext, Quot.sound]`).  What is
 below is printing machinery, run through the interpreter.  Its printers
 are free to leak `Classical.choice`; nothing downstream depends on them.
 
 Two traces are provided, for the two sides of the dichotomy.
 
-* `store` re-runs the saturation of `wip/gbu_frjw_saturate.lean` one
+* `store` re-runs the saturation of `FRJ/Gbu/W/Saturate.lean` one
   ROUND at a time, from the empty store, printing the rows each round
   adds with the FRJW rule (constructor) that produced them, then the
   root scan `rootDisproof?` and, when it hits, the whole FRJW disproof
@@ -28,7 +28,7 @@ Two traces are provided, for the two sides of the dichotomy.
   returned term.
 
 Gbu◯ nodes carry the search state the well-founded recursion of
-`searchW` (`wip/gbu_frjw_search.lean`) runs on: the cell `(reg?, Ψ, C)`,
+`searchW` (`FRJ/Gbu/W/Search.lean`) runs on: the cell `(reg?, Ψ, C)`,
 the measure `wgC G reg Ψ C = (unclosed G Ψ, tpC reg C, seqSize Ψ C)`
 computed by the repository's own functions, and the guards the searcher
 branches on: `cloB Ψ A` at an `⊃`-goal, whether `Ψ ⊆ Ĝ` (the critical
@@ -37,7 +37,7 @@ context member the rule focused on.
 
 Usage:  `lake env lean --run wip/frjw_trace.lean <unit|circp_p|G2> <store|tree>`
 -/
-import wip.gbu_frjw_saturate
+import FRJ.Gbu.W.Saturate
 
 open FRJ FRJ.Gbu FRJ.Gbu.W
 

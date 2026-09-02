@@ -36,7 +36,7 @@ translates into `Gbu◯(G)`, so with `bridge_iff` (focalization for PLL,
   `posOfO`/`negOfO` images satisfy (`noDUN_negOfO`).
 
 The licenced `|◯C|` adaptation of `GbuIC.limpLI` (see the rule in
-`wip/gbu_circ.lean`) is consumed at exactly one place: `irrKit.impOpen`
+`FRJ/Gbu/Circ.lean`) is consumed at exactly one place: `irrKit.impOpen`
 supplies the side condition from `A ∈ Sf^R G` — the OLD size condition
 is not available for hoisted implications below a `◯`-opening.
 -/

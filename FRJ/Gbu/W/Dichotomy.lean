@@ -31,7 +31,7 @@ tag-free, so the `R⊃ₙᵢ` release goes to the PLAIN regular mode; the
 
     gbu_frjw_dichotomy : … → ProvableGbuC G ∨ DisprovableW G
 
-exclusive by `wip/gbu_frjw_exclusion.lean`; the Type-level
+exclusive by `FRJ/Gbu/W/Exclusion.lean`; the Type-level
 `decideGbuW : ∀ G, ProvableGbuC G ⊕ DisprovableW G` further needs the
 engine-completeness lemma (`wOps` saturation reaches a `WSaturated`
 fixpoint with decidable queries) — deliberately not part of this layer.
@@ -43,7 +43,7 @@ never dropped); a hit on a PLL-valid cell is a soundness ALARM.
 -/
 import FRJ.CalculusW
 import FRJ.Search.Engine
-import wip.gbu_circ
+import FRJ.Gbu.Circ
 
 namespace FRJ.Gbu.W
 

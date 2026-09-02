@@ -1,6 +1,6 @@
 import FRJ.SoundV
 import FRJ.Fallible
-import wip.gbu_search
+import FRJ.Gbu.Search
 
 /-!
 # Tag-preserving weakening for `FRJV`, REFUTED

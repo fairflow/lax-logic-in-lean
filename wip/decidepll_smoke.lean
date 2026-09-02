@@ -1,7 +1,7 @@
 /-
 # `decidePLL` smoke probe — untrusted engineering evidence
 
-Runs `decidePLL` (wip/gbu_frjw_saturate.lean) on tiny formulas with
+Runs `decidePLL` (FRJ/Gbu/W/Saturate.lean) on tiny formulas with
 verdicts fixed IN ADVANCE.  This is `#eval`-level evidence that the
 construction computes at the bottom of the scale — it taints nothing
 and proves nothing (the `#guard_msgs` axiom pins are the kernel gates);
@@ -10,7 +10,7 @@ procedure), never a verdict.
 
 Run one cell per invocation:  `lake env lean --run wip/decidepll_smoke.lean <name>`
 -/
-import wip.gbu_frjw_saturate
+import FRJ.Gbu.W.Saturate
 
 open FRJ FRJ.Gbu.W Form
 

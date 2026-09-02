@@ -46,8 +46,8 @@ Two things are worth recording about that measure.
   whenever the context changes — `L∧` can expose implications that were
   not in `Ψ^⊃` before, so the store count is not monotone on its own.
 -/
-import wip.gbu
-import wip.gbu_db
+import FRJ.Gbu.Base
+import FRJ.Gbu.DB
 import FRJ.SoundV
 
 namespace FRJ.Gbu
