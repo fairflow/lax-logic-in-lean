@@ -66,6 +66,17 @@ def retrieve(url: str, query: str, k: int) -> str:
         res = item.get("result", {})
         lines.append(f"-- {res.get('name','?')}  [{res.get('kind','')}]")
         lines.append(res.get("signature", ""))
+        # The constructor list is the one thing retrieval can report as an
+        # ABSENCE -- "no rule of this shape exists" is decidable from a
+        # COMPLETE list and from nothing else the index returns -- so it is
+        # never truncated: a shortened list cannot establish an absence.
+        # The server has returned this field since the constructor index
+        # landed; `toolkit_cli.py search` printed it and this did not, so the
+        # header below promised object-level constructors that the body never
+        # supplied, and a harness measurement understated the index.
+        ctors = res.get("constructors") or []
+        if ctors:
+            lines.append(f"-- constructors ({len(ctors)}): {', '.join(ctors)}")
         doc = (res.get("docstring") or "").strip()
         if doc:
             lines.append("-- " + doc.splitlines()[0][:200])
