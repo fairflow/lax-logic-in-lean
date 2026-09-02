@@ -20,6 +20,8 @@ irregular families of arity ≤ |Sf^R|, promise families of arity
 -/
 import FRJ.Gbu.W.Saturate
 import wip.b1b2_lemmas
+import wip.b1b2_relaxed
+import wip.b1b2_hitting
 
 open FRJ Form FRJ.Arity
 
@@ -170,6 +172,25 @@ def shapeOr : Shape where
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1, step_j2 f p i hip hgoal h.2.1, step_j3 f p h.2.2⟩,
      ctxOr_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+       (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1⟩
+
+/-- The RefAt-relaxed (J2) of the barren `⋈^◯`. -/
+def J2r {n : Nat} (f : Fam n) : Prop :=
+  ∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (f.Ξs j)) →
+    RefAt true (upsilon f.rhs) (ctxOr f.Ξs f.Θs f.rhs) A
+
+/-- The barren `⋈^◯` shape, with the relaxed (J2): the step is
+`ctxOr_sub_relaxed` (`wip/b1b2_relaxed.lean`, by induction on formula
+size). -/
+def shapeCirc : Shape where
+  ctx f := ctxOr f.Ξs f.Θs f.rhs
+  Hyp f := J1 f ∧ J2r f ∧ J3 f
+  step f p i hip hgoal h :=
+    ⟨⟨step_j1 f p h.1,
+      j2r_comp (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1,
+      step_j3 f p h.2.2⟩,
+     ctxOr_sub_relaxed (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1⟩
 
 /-- The fallible `⋈^At` shape. -/
@@ -447,6 +468,30 @@ theorem dg_joinOr (hdg : DBClosedDG G db) : ∀ {n : Nat}
     ⟨refAt_mono hΥ hctx hC.1, refAt_mono hΥ hctx hC.2⟩ hg
   exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx) hsub⟩
 
+theorem dg_joinCirc (hdg : DBClosedDG G db) : ∀ {n : Nat}
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) (Z : Form),
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+      RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) A) →
+    unionAll (fun j => circPart (Ξs j)) = [] →
+    RefAt true (upsilon rhs) (joinCtxOrVBase Ξs Θs ++
+      keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs)) Z →
+    Form.circ Z ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.reg .barren (joinCtxOrVBase Ξs Θs ++
+        keptOf (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs))
+        (.circ Z)) r.s := by
+  intro n Ξs Θs rhs Z hmem hJ1 hJ2r hJ3 hZ hg
+  obtain ⟨m, e, -, hdist, hcov, hHyp, hctx⟩ :=
+    shapeCirc.toDistinct n ⟨Ξs, Θs, rhs⟩ ⟨hJ1, hJ2r, hJ3⟩
+  have hΥ := upsilon_sub_comp e rhs hcov
+  obtain ⟨r, hr, hsub⟩ := hdg.joinCirc (fun k => Ξs (e k)) (fun k => Θs (e k))
+    (fun k => rhs (e k)) Z hdist (fun k => hmem (e k)) hHyp.1 hHyp.2.1 hHyp.2.2
+    (refAt_mono hΥ hctx hZ) hg
+  exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx) hsub⟩
+
 theorem dg_joinAtF (hdg : DBClosedDG G db) : ∀ {n : Nat}
     (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) (F : Form),
     (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
@@ -481,9 +526,168 @@ theorem dg_joinOrF (hdg : DBClosedDG G db) : ∀ {n : Nat}
     ⟨hΥ hC.1, hΥ hC.2⟩ hg
   exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx) hsub⟩
 
+/-! ### The promise clauses: B1 on the irregular family, then B2′ on the promise family -/
+
+/-- Stored irregular rows have `Ĝ`-bounded zones. -/
+theorem wf_of_mem {Ξ Θ : List Form} {C : Form}
+    (h : (WSeq.irr Ξ Θ C) ∈ db.map (·.s)) : Ξ ⊆ gHat G ∧ Θ ⊆ gHat G := by
+  obtain ⟨r, -, hrs⟩ := List.mem_map.mp h
+  have hw : WfSeq G r.s := wfSeq_of_wDer r.d
+  rw [hrs] at hw
+  have hw' : Ξ ⊆ gHat G ∧ Θ ⊆ gHat G ∧ C ∈ sfR G := hw
+  exact ⟨hw'.1, hw'.2.1⟩
+
+theorem dg_joinAtP (hdg : DBClosedDG G db) : ∀ {n k : Nat}
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) (F : Form) (t' : Tag)
+    (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    F.isPrime → F ∉ unionAll (fun j => atPart (Ξs j)) → F ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxAtP Ξs Θs rhs F Δs) F) r.s := by
+  intro n k Ξs Θs rhs F t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ6 htag hF hFnot hg
+  obtain ⟨m, e, -, hdist, -, hHyp, hctx⟩ :=
+    (shapeAtP F Δs).toDistinct n ⟨Ξs, Θs, rhs⟩ ⟨hJ1, hJ2, hJ5, hJ6, hFnot⟩
+  have hwf : ∀ j, Ξs (e j) ⊆ gHat G ∧ Θs (e j) ⊆ gHat G :=
+    fun j => wf_of_mem (hmemI (e j))
+  obtain ⟨m', e', hm', hhit⟩ := hittingCut G (Ξs := fun j => Ξs (e j))
+    (Θs := fun j => Θs (e j)) (Δs := Δs) hwf
+  have hctx' : joinCtxAtP Ξs Θs rhs F Δs ⊆
+      joinCtxAtP (fun j => Ξs (e j)) (fun j => Θs (e j)) (fun j => rhs (e j)) F
+        (fun i' => Δs (e' i')) :=
+    fun x hx => joinCtxAtP_cut e' hhit (hctx hx)
+  have hJ5' := j5_cut e' hhit hHyp.2.2.1
+  have hJ6' := j6_cut e' hHyp.2.2.2.1
+  rcases htag with h0 | ⟨ht', hJ7⟩
+  · obtain ⟨r, hr, hsub⟩ := hdg.joinAtP (fun j => Ξs (e j)) (fun j => Θs (e j))
+      (fun j => rhs (e j)) F t' (fun i' => tps (e' i')) (fun i' => Δs (e' i'))
+      (fun i' => Ds (e' i')) hdist hm' (fun j => hmemI (e j)) (fun i' => hmemR (e' i'))
+      hHyp.1 hHyp.2.1 hJ5' hJ6' (Or.inl h0) hF hHyp.2.2.2.2 hg
+    exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx') hsub⟩
+  · obtain ⟨hJ7', h0'⟩ := j7_cut e' hJ7
+    obtain ⟨r, hr, hsub⟩ := hdg.joinAtP (fun j => Ξs (e j)) (fun j => Θs (e j))
+      (fun j => rhs (e j)) F t' (fun i' => tps (e' i')) (fun i' => Δs (e' i'))
+      (fun i' => Ds (e' i')) hdist hm' (fun j => hmemI (e j)) (fun i' => hmemR (e' i'))
+      hHyp.1 hHyp.2.1 hJ5' hJ6' (Or.inr ⟨by rw [ht', h0'], hJ7'⟩) hF hHyp.2.2.2.2 hg
+    exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx') hsub⟩
+
+theorem dg_joinOrP (hdg : DBClosedDG G db) : ∀ {n k : Nat}
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) (C₁ C₂ : Form) (t' : Tag)
+    (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
+    (t' = .blocked ∨ (t' = .chain (Ds 0) ∧ ∀ i, Ds i = Ds 0 ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W (Ds 0)))) →
+    (C₁ ∈ upsilon rhs ∧ C₂ ∈ upsilon rhs) →
+    Form.or C₁ C₂ ∈ sfR G →
+    ∃ r ∈ db, WSubsumes (.reg t' (joinCtxOrP Ξs Θs rhs Δs) (.or C₁ C₂)) r.s := by
+  intro n k Ξs Θs rhs C₁ C₂ t' tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ6 htag hC hg
+  obtain ⟨m, e, -, hdist, hcov, hHyp, hctx⟩ :=
+    (shapeOrP Δs).toDistinct n ⟨Ξs, Θs, rhs⟩ ⟨hJ1, hJ2, hJ5, hJ6⟩
+  have hΥ := upsilon_sub_comp e rhs hcov
+  have hwf : ∀ j, Ξs (e j) ⊆ gHat G ∧ Θs (e j) ⊆ gHat G :=
+    fun j => wf_of_mem (hmemI (e j))
+  obtain ⟨m', e', hm', hhit⟩ := hittingCut G (Ξs := fun j => Ξs (e j))
+    (Θs := fun j => Θs (e j)) (Δs := Δs) hwf
+  have hctx' : joinCtxOrP Ξs Θs rhs Δs ⊆
+      joinCtxOrP (fun j => Ξs (e j)) (fun j => Θs (e j)) (fun j => rhs (e j))
+        (fun i' => Δs (e' i')) :=
+    fun x hx => joinCtxOrP_cut e' hhit (hctx hx)
+  have hJ5' := j5_cut e' hhit hHyp.2.2.1
+  have hJ6' := j6_cut e' hHyp.2.2.2
+  rcases htag with h0 | ⟨ht', hJ7⟩
+  · obtain ⟨r, hr, hsub⟩ := hdg.joinOrP (fun j => Ξs (e j)) (fun j => Θs (e j))
+      (fun j => rhs (e j)) C₁ C₂ t' (fun i' => tps (e' i')) (fun i' => Δs (e' i'))
+      (fun i' => Ds (e' i')) hdist hm' (fun j => hmemI (e j)) (fun i' => hmemR (e' i'))
+      hHyp.1 hHyp.2.1 hJ5' hJ6' (Or.inl h0) ⟨hΥ hC.1, hΥ hC.2⟩ hg
+    exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx') hsub⟩
+  · obtain ⟨hJ7', h0'⟩ := j7_cut e' hJ7
+    obtain ⟨r, hr, hsub⟩ := hdg.joinOrP (fun j => Ξs (e j)) (fun j => Θs (e j))
+      (fun j => rhs (e j)) C₁ C₂ t' (fun i' => tps (e' i')) (fun i' => Δs (e' i'))
+      (fun i' => Ds (e' i')) hdist hm' (fun j => hmemI (e j)) (fun i' => hmemR (e' i'))
+      hHyp.1 hHyp.2.1 hJ5' hJ6' (Or.inr ⟨by rw [ht', h0'], hJ7'⟩) ⟨hΥ hC.1, hΥ hC.2⟩ hg
+    exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx') hsub⟩
+
+theorem dg_joinCircP (hdg : DBClosedDG G db) : ∀ {n k : Nat}
+    (Ξs Θs : Fin (n + 1) → List Form) (rhs : Fin (n + 1) → Form) (Z : Form)
+    (tps : Fin (k + 1) → Tag) (Δs : Fin (k + 1) → List Form) (Ds : Fin (k + 1) → Form),
+    (∀ j, (WSeq.irr (Ξs j) (Θs j) (rhs j)) ∈ db.map (·.s)) →
+    (∀ i, (WSeq.reg (tps i) (Δs i) (Ds i)) ∈ db.map (·.s)) →
+    (∀ i j, i ≠ j → Ξs i ⊆ Ξs j ++ Θs j) →
+    (∀ A B : Form, Form.imp A B ∈ unionAll (fun j => impPart (Ξs j)) →
+      A ∈ upsilon rhs) →
+    (∀ Y : Form, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) →
+      ∃ i, Clo (Δs i) Y) →
+    (∀ i j, ∀ X ∈ Ξs j, Clo (Δs i) X) →
+    (∀ i, Ds i = Z ∧
+      (tps i = .barren ∨ ∃ W, tps i = .chain W ∧ Covers (Δs i) W Z)) →
+    Z ∈ upsilon rhs → Form.circ Z ∈ sfR G →
+    ∃ r ∈ db, WSubsumes
+      (.reg (.chain Z) (joinCtxOrP Ξs Θs rhs Δs) (.circ Z)) r.s := by
+  intro n k Ξs Θs rhs Z tps Δs Ds hmemI hmemR hJ1 hJ2 hJ5 hJ6 hDs hZ hg
+  obtain ⟨m, e, -, hdist, hcov, hHyp, hctx⟩ :=
+    (shapeOrP Δs).toDistinct n ⟨Ξs, Θs, rhs⟩ ⟨hJ1, hJ2, hJ5, hJ6⟩
+  have hΥ := upsilon_sub_comp e rhs hcov
+  have hwf : ∀ j, Ξs (e j) ⊆ gHat G ∧ Θs (e j) ⊆ gHat G :=
+    fun j => wf_of_mem (hmemI (e j))
+  obtain ⟨m', e', hm', hhit⟩ := hittingCut G (Ξs := fun j => Ξs (e j))
+    (Θs := fun j => Θs (e j)) (Δs := Δs) hwf
+  have hctx' : joinCtxOrP Ξs Θs rhs Δs ⊆
+      joinCtxOrP (fun j => Ξs (e j)) (fun j => Θs (e j)) (fun j => rhs (e j))
+        (fun i' => Δs (e' i')) :=
+    fun x hx => joinCtxOrP_cut e' hhit (hctx hx)
+  have hJ5' := j5_cut e' hhit hHyp.2.2.1
+  have hJ6' := j6_cut e' hHyp.2.2.2
+  obtain ⟨r, hr, hsub⟩ := hdg.joinCircP (fun j => Ξs (e j)) (fun j => Θs (e j))
+    (fun j => rhs (e j)) Z (fun i' => tps (e' i')) (fun i' => Δs (e' i'))
+    (fun i' => Ds (e' i')) hdist hm' (fun j => hmemI (e j)) (fun i' => hmemR (e' i'))
+    hHyp.1 hHyp.2.1 hJ5' hJ6' (fun i' => hDs (e' i')) (hΥ hZ) hg
+  exact ⟨r, hr, wSubsumes_trans (wsub_reg_of_sub hctx') hsub⟩
+
+/-- **The corollary**: the restricted contract implies the full one. -/
+theorem dbClosed_of_dg (h : DBClosedDG G db) : DBClosed G db where
+  axR := h.axR
+  andR1 := h.andR1
+  andR2 := h.andR2
+  impIn := h.impIn
+  circIn := h.circIn
+  joinAt := dg_joinAt h
+  joinOr := dg_joinOr h
+  joinCirc := dg_joinCirc h
+  joinAtP := dg_joinAtP h
+  joinOrP := dg_joinOrP h
+  joinCircP := dg_joinCircP h
+  joinAtF := dg_joinAtF h
+  joinOrF := dg_joinOrF h
+  axI := h.axI
+  andI1 := h.andI1
+  andI2 := h.andI2
+  orI := h.orI
+  impInI := h.impInI
+  lift := h.lift
+  circNotIn := h.circNotIn
+  axIC := h.axIC
+
 end Corollary
 
 /-! ## Pins -/
+
+/-- info: 'FRJ.Arity.dbClosed_of_dg' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms dbClosed_of_dg
 
 /-- info: 'FRJ.Arity.dg_joinAt' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
