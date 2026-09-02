@@ -109,8 +109,80 @@ cp -r prover-toolkit/skill/prove-lemma-inloop ~/.claude/skills/   # Claude propo
   and it can bring repository context a fixed prompt cannot carry. **Start
   here:** [`USING-THE-SKILL.md`](USING-THE-SKILL.md).
 
+**`prove-lemma-inloop` is not a cheap way of measuring `prove-lemma`**, and it
+was never wired to be. The two share only the index server — not the harness,
+not the prompt, not the sampling — and the in-loop skill is an agent with
+tools, which greps, reads whole files and iterates against `check`. Its numbers
+are not comparable with a one-shot hosted prover in either direction. For a
+cheap measurement of the harness itself, use `claude_shim.py`: same harness,
+same prompt, same retrieval, Claude behind the endpoint. See
+[Measuring the harness with Claude instead of a paid
+API](#measuring-the-harness-with-claude-instead-of-a-paid-api) below.
+
 The installed copies do **not** track this repository — re-run the `cp` after
 changing anything under `skill/`.
+
+## Measuring the harness with Claude instead of a paid API
+
+`claude_shim.py` puts Claude Code in the seat of the hosted prover, so the
+**same harness, the same prompt and the same retrieval** are measured — only
+the model behind the endpoint changes. `harness.py --url` already defaults to
+`http://127.0.0.1:8088` because that is how it measures local GGUF models, so
+**nothing in the harness changes**.
+
+This is the cheap substitute for a `prove-lemma` run. It is *not* what
+`prove-lemma-inloop` does: that skill is an agent with tools — it greps, reads
+whole files and iterates against `check` — so its results are not comparable
+with a one-shot hosted prover in either direction. If you want to know how the
+harness would score, use the shim; if you want a lemma closed, use the skill.
+
+### It is a two-pass batch protocol, not a live endpoint
+
+Someone has to produce the answers between the passes. In practice that is one
+fresh Claude Code subagent per prompt, which is what makes the k samples blind
+and independent.
+
+**Pass 1 — harvest the prompts.** Every request misses and is written to
+`pending/`:
+
+```bash
+python3 prover-toolkit/claude_shim.py --collect &
+python3 prover-toolkit/harness.py --items <items.jsonl> --out runs/pass1.jsonl \
+    --model claude-code-opus-5 --url http://127.0.0.1:8088 -k 1 \
+    --leansearch-url http://localhost:8081
+```
+
+Each `runs/shim/pending/<key>.json` holds the exact prompt the harness built,
+`<key>` being the first 16 hex of its sha256.
+
+**Pass 2 — answer, then serve.** Write each completion to
+`runs/shim/answers/<key>-<n>.txt`, where `<n>` is the sample index from 0: the
+*n*-th request for a prompt is served the *n*-th answer, so k samples are
+independent rather than one answer repeated. Then run the shim without
+`--collect` and re-run the same harness command. A miss is now an error, and
+because answers are keyed by hash of the prompt, a served answer is provably
+the answer to *that* prompt.
+
+### Containment
+
+Enforced by the shim, not merely reported — exceeding a limit returns an error
+the harness records as a failed sample, so a runaway cannot spend anything.
+
+| flag | default | |
+|---|---|---|
+| `--max-requests` | 32 | total requests served |
+| `--max-answer-bytes` | 20000 | per answer |
+| `--max-total-bytes` | 400000 | across the run |
+| `--killswitch` | `runs/shim/STOP` | create the file to stop at once |
+| `--port` | 8088 | matches `harness.py --url` |
+| `--workdir` | `runs/shim` | holds `pending/`, `answers/`, `ledger.jsonl` |
+
+Every request appends to `ledger.jsonl`. `runs/` is git-ignored.
+
+Two runs done this way are recorded in
+[`../docs/frjx-toolkit-run-1.md`](../docs/frjx-toolkit-run-1.md) and
+[`run-2`](../docs/frjx-toolkit-run-2.md). The benchmark items they used are
+derived data and are not committed — regenerate with `extract.py`.
 
 ## Known limitations
 
