@@ -32,6 +32,8 @@ import FRJ.Gbu.W.Closure
 import FRJ.StepW
 import FRJ.SoundW
 import FRJ.Gbu.W.Exclusion
+-- 2026-09-03: `List.mem_sublists` from the local Mathlib-free kit.
+import Meta.Portable
 
 namespace FRJ.Gbu.W
 

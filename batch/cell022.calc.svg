@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="775" height="204" viewBox="0 0 775 204">
+<rect width="100%" height="100%" fill="white"/>
+<defs><marker id="aLe" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#999"/></marker><marker id="aRm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2266cc"/></marker></defs>
+<g><title>w0 forces: </title><circle cx="70" cy="70" r="9" fill="white" stroke="#cc2222" stroke-width="2.5" /><text x="85" y="65" font-family="sans-serif" font-size="13" font-weight="bold" fill="#cc2222">w0 (root)</text><text x="85" y="83" font-family="sans-serif" font-size="12" fill="#444">∅</text></g>
+<text x="20" y="154" font-family="sans-serif" font-size="12" fill="#666">dashed grey = ≤ (Hasse); solid blue = Rm ⊆ ≤ (a cover edge carrying Rm is drawn as Rm only); ⊥ = fallible</text>
+<text x="20" y="172" font-family="sans-serif" font-size="12" fill="#666">p  —  REFUTED at w0 (root), over a finite rooted poset model.</text>
+<text x="20" y="190" font-family="sans-serif" font-size="12" fill="#666">View: from the calculus, 1 worlds.</text>
+</svg>

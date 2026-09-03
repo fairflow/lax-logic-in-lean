@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="775" height="424" viewBox="0 0 775 424">
+<rect width="100%" height="100%" fill="white"/>
+<defs><marker id="aLe" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#999"/></marker><marker id="aRm" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2266cc"/></marker></defs>
+<line x1="70.000000" y1="276.000000" x2="70.000000" y2="194.000000" stroke="#999" stroke-width="1.4" stroke-dasharray="6,4" marker-end="url(#aLe)" />
+<line x1="70.000000" y1="166.000000" x2="70.000000" y2="84.000000" stroke="#2266cc" stroke-width="2" marker-end="url(#aRm)" />
+<g><title>w0 forces: ((◯p ⊃ p) ⊃ ◯p)</title><circle cx="70" cy="290" r="9" fill="white" stroke="#cc2222" stroke-width="2.5" /><text x="85" y="285" font-family="sans-serif" font-size="13" font-weight="bold" fill="#cc2222">w0 (root)</text><text x="85" y="303" font-family="sans-serif" font-size="12" fill="#444">∅</text></g>
+<g><title>w1 forces: (((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p), ((◯p ⊃ p) ⊃ ◯p), ◯p</title><circle cx="70" cy="180" r="9" fill="white" stroke="#333" stroke-width="2.5" /><text x="85" y="175" font-family="sans-serif" font-size="13" font-weight="bold">w1</text><text x="85" y="193" font-family="sans-serif" font-size="12" fill="#444">∅</text></g>
+<g><title>w2 forces: (((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p), ((◯p ⊃ p) ⊃ ◯p), (◯p ⊃ p), ◯p, p</title><circle cx="70" cy="70" r="9" fill="#333" stroke="#333" stroke-width="2.5" /><text x="85" y="65" font-family="sans-serif" font-size="13" font-weight="bold">w2</text><text x="85" y="83" font-family="sans-serif" font-size="12" fill="#444">⊥, p</text></g>
+<text x="20" y="374" font-family="sans-serif" font-size="12" fill="#666">dashed grey = ≤ (Hasse); solid blue = Rm ⊆ ≤ (a cover edge carrying Rm is drawn as Rm only); ⊥ = fallible</text>
+<text x="20" y="392" font-family="sans-serif" font-size="12" fill="#666">(((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p)  —  REFUTED at w0 (root), over a finite rooted poset model.</text>
+<text x="20" y="410" font-family="sans-serif" font-size="12" fill="#666">View: from the calculus, 3 worlds.</text>
+</svg>

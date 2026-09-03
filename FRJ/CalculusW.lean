@@ -345,7 +345,7 @@ theorem disprovableW_of_provableV {G : Form} (h : ProvableV G) :
   obtain ⟨t, Γ, ⟨d⟩⟩ := h
   exact ⟨t, Γ, ⟨toWr d⟩⟩
 
-/-- info: 'FRJ.disprovableW_of_provableV' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.disprovableW_of_provableV' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms disprovableW_of_provableV
 

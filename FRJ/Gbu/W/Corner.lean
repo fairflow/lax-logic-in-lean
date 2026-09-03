@@ -643,7 +643,7 @@ theorem refutedCleanly_circ_certs {G : Form} {D : WSeq → Prop}
 #guard_msgs in
 #print axioms refutedCleanly_circ_axI
 
-/-- info: 'FRJ.Gbu.W.st_nil_of_prime' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.W.st_nil_of_prime' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms st_nil_of_prime
 

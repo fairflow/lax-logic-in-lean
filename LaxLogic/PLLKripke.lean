@@ -1,4 +1,6 @@
 import LaxLogic.PLLNDCore
+-- Explicit since 2026-09-03 (PLLFormula no longer re-exports Mathlib).
+import Mathlib.Data.Set.Basic
 
 /-!
 # Kripke constraint models for PLL, and soundness

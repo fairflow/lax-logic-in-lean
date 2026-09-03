@@ -10,6 +10,7 @@ import LaxLogic.PLLFrames
 import LaxLogic.PLLHilbert
 import LaxLogic.PLLSequent
 import LaxLogic.PLLFiniteModel
+import LaxLogic.PLLSubformulaSet
 import LaxLogic.PLLTerms
 import LaxLogic.PLLConstraints
 import LaxLogic.PLLSubst

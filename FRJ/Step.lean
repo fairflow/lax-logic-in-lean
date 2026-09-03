@@ -24,6 +24,10 @@ tied together by `occR_steps`/`occI_steps`: every sequent occurring in
 soundness proof consumes Lemma 3.4(iii).
 -/
 import FRJ.Calculus
+-- Explicit since 2026-09-03: `FRJ.Basic` no longer carries `import
+-- Mathlib` (it is Batteries-only now); `Relation.ReflTransGen` is the
+-- one Mathlib notion this file uses.
+import Mathlib.Logic.Relation
 
 namespace FRJ
 

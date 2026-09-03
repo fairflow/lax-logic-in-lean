@@ -1977,15 +1977,15 @@ cannot lift. -/
 #guard_msgs in
 #print axioms gbuInv11
 
-/-- info: 'FRJ.Gbu.gbuInv12' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv12' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv12
 
-/-- info: 'FRJ.Gbu.gbuInv13' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv13' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv13
 
-/-- info: 'FRJ.Gbu.frjCircKit_of_tagClean' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.frjCircKit_of_tagClean' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms frjCircKit_of_tagClean
 
@@ -2215,7 +2215,7 @@ theorem unrefutedBelow_step {G : Form} {D : FSeq → Prop} (hsat : Saturated G D
 #guard_msgs in
 #print axioms unrefutedBelow_of_gHat
 
-/-- info: 'FRJ.Gbu.unrefutedBelow_step' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.unrefutedBelow_step' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms unrefutedBelow_step
 
@@ -2465,39 +2465,39 @@ touching a rule, and it is now the single open point of S3. -/
 #guard_msgs in
 #print axioms refutedCleanly_circ
 
-/-- info: 'FRJ.Gbu.refutedCleanly_and1' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.refutedCleanly_and1' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms refutedCleanly_and1
 
-/-- info: 'FRJ.Gbu.refutedCleanly_and2' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.refutedCleanly_and2' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms refutedCleanly_and2
 
-/-- info: 'FRJ.Gbu.refutedCleanly_imp' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.refutedCleanly_imp' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms refutedCleanly_imp
 
-/-- info: 'FRJ.Gbu.refutedCleanly_circIn' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.refutedCleanly_circIn' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms refutedCleanly_circIn
 
-/-- info: 'FRJ.Gbu.gbuSuccCircI' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuSuccCircI' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuSuccCircI
 
-/-- info: 'FRJ.Gbu.evalR_of_evalRC' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalR_of_evalRC' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalR_of_evalRC
 
-/-- info: 'FRJ.Gbu.gbuSuccCircIC' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuSuccCircIC' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuSuccCircIC
 
-/-- info: 'FRJ.Gbu.not_evalRC_of_not_evalI_circ' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.not_evalRC_of_not_evalI_circ' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms not_evalRC_of_not_evalI_circ
 
-/-- info: 'FRJ.Gbu.evalRC_of_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalRC_of_refutedCleanly' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalRC_of_refutedCleanly
 
@@ -2505,19 +2505,19 @@ touching a rule, and it is now the single open point of S3. -/
 #guard_msgs in
 #print axioms gbu_of_clo
 
-/-- info: 'FRJ.Gbu.evalI_circ_and1' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalI_circ_and1' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalI_circ_and1
 
-/-- info: 'FRJ.Gbu.evalI_circ_and2' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalI_circ_and2' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalI_circ_and2
 
-/-- info: 'FRJ.Gbu.evalI_circ_imp' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalI_circ_imp' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalI_circ_imp
 
-/-- info: 'FRJ.Gbu.evalI_circ_circ' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalI_circ_circ' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalI_circ_circ
 

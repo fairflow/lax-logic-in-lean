@@ -3901,3 +3901,65 @@ fast.
 * **Deferred**: named-variable printer (`Tm.pretty` stays de Bruijn),
   `--normalize` (the strength term shows the un-normalised cut redex;
   `Tm.normalize` exists), the external-trace `reconstruct` layer.
+
+## 2026-09-03 (afternoon) — the import diet, the pin ratchet, and the 99-cell batch
+
+Matthew ran `lake exe pll "◯p ⊃ p"` from a CLI and hit two defects of
+the output layer: the whole of Mathlib building first, and the tool then
+sitting silently on `checking … (pass 1)`.  Both measured and fixed;
+record in `docs/decider-outputs-design.md` §9.
+
+* **A — `--check` is now OPT-IN** (revising D6).  The verdict is already
+  certified in-process (`checkClosed` runs; `checkClosed_sound` /
+  `decideGbuW_of_check` are compiled theorems); the two-pass re-check
+  validates the emitted FILE, which matters before banking a cell, not
+  on every run.  **B — checking spawns `lean` directly**, inheriting
+  `LEAN_PATH`, instead of re-entering Lake (measured: 10.85 s per pass
+  warm, 8.2 s of it Lake overhead, for 1.8 s of Lean work).
+* **C — the import diet.**  `FRJ/Basic.lean` carried a blanket
+  `import Mathlib` and `LaxLogic/PLLFormula.lean` an
+  `import Mathlib.Tactic`; every FRJ/LaxLogic consumer inherited the
+  library.  `FRJ.Basic` now needs **Batteries only** (its every `Finset`
+  mention is a comment saying Finset was AVOIDED for `Classical.choice`);
+  `PLLFormula` is Mathlib-free, its legacy `Set`-valued island split to
+  `LaxLogic/PLLSubformulaSet.lean` (used nowhere else in the
+  development).  New `Meta/Tactics.lean` (the tactic bundle, one
+  auditable line per tactic) and `Meta/Portable.lean` (`Fin.succAbove`,
+  `exists_succAbove_eq`, `succ_injective`, `succAbove_right_injective`,
+  `List.mem_sublists`, `sublistsLen`, `mem_sublistsLen` — proved
+  locally, choice-free).
+  **Mathlib 8169 → 1309 modules (100% → 16%)**; CategoryTheory,
+  MeasureTheory, NumberTheory gone entirely.
+  **STOPPED at 16% on Matthew's ruling** — `Mathlib.Init` alone is 1307,
+  so the rest is all-or-nothing and would need `Set` out of `PLLKripke`
+  (379 sites).  The policy is about the RUNTIME CLOSURE, not a ban:
+  `PLLFinsetKit` took `import Mathlib` straight back, being outside it.
+* **The pin ratchet** (a pin may LOSE axioms, never gain them):
+  **36 pins weakened** `[propext, Quot.sound]` → `[propext]`
+  (`Quot.sound` came from Mathlib simp lemmas, not the mathematics), and
+  **three candidate updates REFUSED** — two `sorryAx` (broken proofs
+  after a lemma went missing) and one `Classical.choice` from a `simp`
+  in my own new `Meta/Portable.lean`, which would have landed inside
+  `checkClosed_sound`.
+* **SVG + printer** (Matthew's requests): `≤` cover edges carrying `Rm`
+  are drawn as the `Rm` arrow ONLY, default on
+  (`SvgOpts.elideCoveredRi`); `Tm` printing moved into the tool with
+  `λ'` for the monadic binder — `bind t u` prints `((λ'. u) t)`,
+  dropping `let val•` (the blob is U+2022).  Dropping the `PLLRun`
+  import also cut 25 modules from the closure.
+* **The 99-cell batch** (`batch/`, Matthew's spec: graded ◯/⊃
+  complexity, ∨ and ∧ throughout, 0/1/2 variables, 10 s each, checks
+  off): **57 PROVED, 40 REFUTED, 2 undecided**; 80 SVGs, 97 `.lean`
+  certificates kept for a later batch check.  It found TWO defects:
+  (i) 16 cells `NOT CLOSED` at any budget — diagnosed as **all 21
+  clauses passing and `nodup` failing** (the engine dedupes by
+  subsumption, leaving equal sequents), fixed by `dedupRows`;
+  (ii) a **100× regression I introduced** — the first `sublistsLen`
+  filtered `2^|l|` sublists per call, taking
+  `(◯p ∧ ◯q) ⊃ ◯(p ∧ q)` from 1442 ms to >120 s, restored to 1453 ms by
+  the direct recursion.  **Method point: substituting a local definition
+  for a Mathlib one is a PERFORMANCE change as well as a proof
+  obligation; only a timed corpus catches it.**
+* **Not done**: engine efficiency (untouched; the 2 undecided cells and
+  the 8.2 s worst case are its frontier), `Set` out of `PLLKripke`,
+  named-variable printer, `--normalize`.

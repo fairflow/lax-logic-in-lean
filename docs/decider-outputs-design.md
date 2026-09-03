@@ -1092,3 +1092,155 @@ smoke and gate evidence at the end.
 **Still open from §7**: the named-variable printer (7.5) — `Tm.pretty`
 stays de Bruijn; the `reconstruct` replay layer of §4.1 (external-engine
 traces).  Neither blocks the layer.
+
+---
+
+## 9. The import diet and the check default (2026-09-03)
+
+Matthew ran `lake exe pll "◯p ⊃ p"` from a CLI in a cold clone and saw
+(a) the whole of Mathlib being built — `CategoryTheory`, `MeasureTheory`,
+`NumberTheory`, `Analysis` — and (b) the tool then sitting on
+`checking pll_out.lean with Lean (pass 1 …)` with no output.  Both were
+defects of this layer, not of the decision procedure.  Measured, then
+fixed.
+
+### 9.1 What was actually wrong
+
+| defect | measurement | cause |
+|---|---|---|
+| the Mathlib storm | closure was 80 local modules, 6 with Mathlib edges | `FRJ/Basic.lean` carried a blanket `import Mathlib` and `LaxLogic/PLLFormula.lean` an `import Mathlib.Tactic`; every FRJ and LaxLogic consumer inherited the library |
+| the frozen line | `lake env lean` costs **10.85 s wall warm**, of which **8.2 s is Lake overhead** (config elaboration + filesystem scan) for 1.8 s of Lean work; two passes per refutation, output captured not streamed | `--check` defaulted ON (D6) and shelled out through `lake` |
+| `PLLRun` in the closure | 80 → 55 modules on removing one import | the tool imported `LaxLogic.PLLRun` for `Tm.pretty` (20 lines), which drags `PLLTopTop` → `Mathlib.SetTheory.Ordinal.Rank` |
+
+### 9.2 What was done
+
+* **A — `--check` is now OPT-IN** (revising D6).  The VERDICT is already
+  certified in-process: `checkClosed` runs and `checkClosed_sound` /
+  `decideGbuW_of_check` are compiled theorems.  The two-pass re-check
+  validates the emitted FILE as a standalone kernel artefact, which is
+  what you want before committing a cell to the record, not on every
+  interactive run.  The tool now prints the one-line command instead.
+* **B — checking spawns `lean` directly**, inheriting `LEAN_PATH` from
+  the `lake exe` environment rather than re-entering Lake, and reports
+  per-pass timings.  No `LEAN_PATH` (tool launched outside `lake env`)
+  is reported and skipped, never a silent rebuild.
+* **C1 — the foundations lost their blanket imports.**
+  `FRJ/Basic.lean` now imports **Batteries only** (its every `Finset`
+  mention is a comment explaining that Finset was avoided because it
+  carries `Classical.choice`); one proof needed an explicit
+  `Nat.le_refl` where Mathlib's simp set had been closing `f x ≤ f x`.
+  `LaxLogic/PLLFormula.lean` is now **Mathlib-free**.
+* **C2 — the def/proof split, applied where the closure needed it.**
+  `PLLFormula`'s only Mathlib use was a legacy `Set`-valued island
+  (`subformulasOf`, `isSomehowFree`, `SomehowFree`, `eraseSomehow`),
+  used nowhere else in the development — `PLLNDCore` mentions
+  `eraseSomehow` in a comment only.  Split into
+  `LaxLogic/PLLSubformulaSet.lean`, which keeps its `Mathlib.Tactic`
+  import.  Nothing deleted.  Modules whose PROOFS need Mathlib tactics
+  now say so through **`Meta/Tactics.lean`**, a single auditable bundle
+  naming each tactic it imports; definitions, engines and executables do
+  not import it.
+
+### 9.3 An axiom-hygiene gain, unlooked for
+
+Dropping the blanket import changed a pin in the SAFE direction:
+
+    FRJ.disprovableW_of_provableV
+      before:  [propext, Quot.sound]
+      after:   [propext]
+
+`Quot.sound` was arriving through Mathlib simp lemmas, not through the
+mathematics.  The `#guard_msgs` guard is what surfaced it; the pin in
+`FRJ/CalculusW.lean` is updated to the weaker (better) line.
+
+### 9.4 Where it settled, and why not lower
+
+Matthew's ruling (2026-09-03): **stop at 16%, do not chase 0%** — "no
+advantage, might produce a more fragile codebase anyway".  The
+measurement supports it: `Mathlib.Init` alone is 1307 of the 1309
+modules, so every entry point except `Mathlib.Tactic.Lemma` costs the
+same foundation and the last step is all-or-nothing.  Reaching zero
+would need `Set W` out of `LaxLogic/PLLKripke.lean` — 379 downstream
+sites across `Reject/`, `FRJO/`, `BiLax/` — and a locally defined `Set`
+would collide with Mathlib's in any file importing both.
+
+The five remaining Mathlib edges in the closure are `FRJ.Minimal`
+(`push_neg`), `LaxLogic.PLLNDCore` (`tauto`), `FRJ.Step`
+(`Relation.ReflTransGen`), `LaxLogic.PLLKripke` (`Set`), and
+`Meta.Tactics` (imported only by `FRJ.Gbu.DB`, for `set`/`use`).
+
+**This is a policy about the runtime closure, not a ban** (Matthew,
+2026-09-03: "when we apply further simplifications to the lengths of
+proofs, we may find it more efficient to ask for Mathlib again: but
+nothing prevents us from doing this").  A proof module may take Mathlib
+back whenever a shorter proof is worth it; `Meta/Tactics.lean` exists so
+that asking is one auditable line.  `LaxLogic/PLLFinsetKit.lean` did
+exactly that in this pass — it genuinely uses `Finset`, sits outside the
+closure, and so simply kept `import Mathlib` at no cost to the decider.
+
+### 9.5 The pin ratchet, and what it caught
+
+Pin updates were applied mechanically under one rule: **a pin may LOSE
+axioms, never gain them.**  Result: **36 pins weakened** from
+`[propext, Quot.sound]` to `[propext]` across `CalculusW`, `Gbu/DB`
+(10), `Gbu/Search`, `Gbu/Circ` (17), `Gbu/W/DB`, `Gbu/W/Corner`,
+`Gbu/W/Closure` (8), `b1b2_lemmas`, `b1b2_hitting`, `check_scan`.
+`Quot.sound` was arriving through Mathlib simp lemmas, not the
+mathematics.
+
+The rule refused three candidate updates, each a REAL regression wearing
+a pin's clothing:
+
+| refused | cause |
+|---|---|
+| `FRJ.Gbu.W.searchW` gaining `sorryAx` | `List.mem_sublists` had gone missing; the proof fell through to `sorry` |
+| `PLLND.CandOr.cθ_circL` gaining `sorryAx` | `aesop` unavailable; same mechanism |
+| `FRJ.Arity.chkJoinAt_sound` gaining `Classical.choice` | a `simp` in the NEW `Meta/Portable.lean` — it would have landed inside `checkClosed_sound` itself |
+
+Without the rule, "update the pins to what Lean now prints" would have
+written sorried theorems into the record as checked.
+
+### 9.6 The 99-cell batch (`batch/`)
+
+Matthew's spec: varied ◯- and ⊃-complexity, ∨ and ∧ well represented,
+0/1/2 variables, 10 s per cell, checking off, artefacts kept.
+`batch/formulas.txt` (99 cells: 20 with no variables, 40 with one, 39
+with two; ◯-depth 0–3, ⊃-nesting 0–3), `batch/run.sh`,
+`batch/results.tsv`, 80 SVGs and 97 `.lean` certificates.
+
+| outcome | cells |
+|---|---|
+| PROVED | 57 |
+| REFUTED | 40 |
+| undecided at 10 s | 2 |
+
+Undecided: `(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)` and `◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)`
+— both 2-variable with nested ◯; the engine's performance frontier, not
+a verdict.  Slowest decided: `(◯p ⊃ ◯◯q) ⊃ (◯p ⊃ ◯q)` 8.2 s.
+Spot-checks agree with the known facts throughout (`p ⊃ ◯p` proved,
+`◯p ⊃ p` refuted, `◯◯p ⊃ ◯p` proved, `p ∨ ¬p` / `¬¬p ⊃ p` / Peirce /
+`¬(p∧q) ⊃ (¬p∨¬q)` refuted).
+
+**Two defects the batch found, both in this layer, both mine.**
+
+1. **16 cells `NOT CLOSED`, including `⊥ ∨ ⊤`** — and raising
+   `rounds`/`jmax`/`pmax`/`lamCap` changed nothing.  Diagnosed by
+   evaluating the clauses one at a time: **all 21 passed; `nodup`
+   failed.**  The engine dedupes by SUBSUMPTION, which can leave two
+   rows carrying the same sequent, while `checkClosed` requires distinct
+   sequents (the join half's reindexing).  Fixed by `dedupRows` in
+   `engineRows` (`wip/check_closed.lean`) — sound because every clause
+   asks only that SOME stored row subsume a sequent, and the survivor
+   has the same sequent.  All 16 became verdicts.
+2. **A 100× performance regression I introduced.**  The first
+   `List.sublistsLen` in `Meta/Portable.lean` filtered `l.sublists` by
+   length — correct, but `2^|l|` per call, and `famsDG`/`pfams` call it
+   per length.  `(◯p ∧ ◯q) ⊃ ◯(p ∧ q)` went from 1442 ms to not
+   finishing in 120 s.  Caught only because that timing had been
+   recorded earlier in the session.  The direct recursion restores
+   1453 ms.
+
+   **Method point**: replacing a Mathlib definition with a local one is a
+   PERFORMANCE change as well as a proof obligation.  `mem_sublistsLen`
+   certifies the meaning and says nothing about the cost; only re-running
+   a timed corpus catches it.

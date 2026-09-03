@@ -575,7 +575,7 @@ theorem provableGbu_of_pll {G : Form} {D : FSeq → Prop}
 
 /-! ## Axiom pins -/
 
-/-- info: 'FRJ.Gbu.evalI_axI' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalI_axI' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalI_axI
 
@@ -583,7 +583,7 @@ theorem provableGbu_of_pll {G : Form} {D : FSeq → Prop}
 #guard_msgs in
 #print axioms search
 
-/-- info: 'FRJ.Gbu.saturated_fderivable' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.saturated_fderivable' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms saturated_fderivable
 

@@ -209,7 +209,7 @@ list-only helpers land strictly below it, on `[propext]` alone. -/
 #guard_msgs in
 #print axioms clo_witIdx
 
-/-- info: 'FRJ.Arity.exists_reindex' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Arity.exists_reindex' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms exists_reindex
 

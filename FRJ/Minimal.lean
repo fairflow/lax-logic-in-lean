@@ -15,6 +15,8 @@ algorithm taking a countermodel to a derivation, which is what the whole
 development is for.
 -/
 import FRJ.Complete
+-- Explicit since 2026-09-03 (FRJ.Basic is Batteries-only now): `push_neg`.
+import Mathlib.Tactic.Push
 
 namespace FRJ
 

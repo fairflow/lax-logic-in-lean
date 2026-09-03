@@ -1,6 +1,9 @@
 import LaxLogic.FormattingUtils
 import LaxLogic.PLLFormula
 import LaxLogic.PLLAxiom
+-- Explicit since 2026-09-03: the foundation modules no longer
+-- re-export Mathlib (see Meta/Tactics.lean).
+import Meta.Tactics
 -- import Mathlib.Tactic
 
 open PLLFormula

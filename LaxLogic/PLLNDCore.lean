@@ -1,4 +1,10 @@
 import LaxLogic.PLLFormula
+-- Explicit since 2026-09-03: `PLLFormula` no longer re-exports Mathlib
+-- (it was carrying `import Mathlib.Tactic` for a legacy `Set`-valued
+-- island, now `LaxLogic/PLLSubformulaSet.lean`).  These are the proof
+-- tactics THIS file uses; the definitions need nothing.
+import Batteries
+import Mathlib.Tactic.Tauto
 
 /-!
 # A slime-free core ND system for PLL, with conservativity over IPL

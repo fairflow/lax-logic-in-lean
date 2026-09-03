@@ -1,4 +1,8 @@
 import LaxLogic.PLLFormula
+-- Explicit since 2026-09-03: this module genuinely uses `Finset`, and
+-- `PLLFormula` no longer re-exports Mathlib.  It is OUTSIDE the runtime
+-- closure of `lake exe pll`, so the import costs the decider nothing.
+import Mathlib
 
 /-!
 # A choice-free `Finset` toolkit

@@ -92,9 +92,27 @@ def rowsOfDBO (G : Form) (db : DBO (wOps G)) : List (WRow G) :=
   db.rs.map (fun (r : WRS G) => ⟨.reg r.t r.ctx r.rhs, r.der⟩) ++
     db.is.map (fun (i : WIS G) => ⟨.irr i.stab i.th i.rhs, i.der⟩)
 
-/-- The untrusted engine's store for `G` under `cfg`, as contract rows. -/
+/-- Keep one row per SEQUENT.
+
+`checkClosed` requires `(db.map (·.s)).Nodup` — the join half's
+reindexing (`reindex_irr`/`reindex_reg`) needs distinct sequents.  The
+engine dedupes by SUBSUMPTION, which can still leave two rows carrying
+the same sequent with different derivations, and such a store failed the
+check while satisfying all 21 closure clauses (diagnosed 2026-09-03 on
+`⊥ ∨ ⊤`: every clause `true`, `nodup` `false`).
+
+Dropping a duplicate is harmless: every clause asks only for the
+EXISTENCE of a stored row subsuming a sequent, and the surviving row has
+the same sequent, so the set of sequents — hence every clause — is
+unchanged. -/
+def dedupRows {G : Form} (rs : List (WRow G)) : List (WRow G) :=
+  rs.foldl (fun acc r =>
+    if acc.any (fun e => decide (e.s = r.s)) then acc else acc ++ [r]) []
+
+/-- The untrusted engine's store for `G` under `cfg`, as contract rows,
+one row per sequent. -/
 def engineRows (G : Form) (cfg : Config) : List (WRow G) :=
-  rowsOfDBO G (saturateO (wOps G) cfg).1
+  dedupRows (rowsOfDBO G (saturateO (wOps G) cfg).1)
 
 /-- **End to end**: run the untrusted engine, certify its store, decide.
 `none` means the engine's store did not pass the check within `cfg`

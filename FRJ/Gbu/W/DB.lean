@@ -529,15 +529,15 @@ theorem gbuSuccOr (hsat : WSaturated G D)
 #guard_msgs in
 #print axioms gbuInv1
 
-/-- info: 'FRJ.Gbu.W.gbuInv2' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.W.gbuInv2' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv2
 
-/-- info: 'FRJ.Gbu.W.gbuInv9' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.W.gbuInv9' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv9
 
-/-- info: 'FRJ.Gbu.W.gbuInv10' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.W.gbuInv10' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv10
 
@@ -545,7 +545,7 @@ theorem gbuSuccOr (hsat : WSaturated G D)
 #guard_msgs in
 #print axioms pledge_of_le
 
-/-- info: 'FRJ.Gbu.W.wEvalRP_of_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.W.wEvalRP_of_refutedCleanly' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms wEvalRP_of_refutedCleanly
 

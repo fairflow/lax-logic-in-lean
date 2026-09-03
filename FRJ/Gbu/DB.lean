@@ -26,6 +26,9 @@ and Lemma 9's proofs use only rules the two families share.
 import FRJ.Gbu.Base
 import FRJ.CalculusV
 import FRJ.Minimal
+-- Explicit since 2026-09-03: the foundation modules no longer
+-- re-export Mathlib (see Meta/Tactics.lean).
+import Meta.Tactics
 
 namespace FRJ.Gbu
 
@@ -663,27 +666,27 @@ theorem gbuSuccOr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
 #guard_msgs in
 #print axioms gbuInv1
 
-/-- info: 'FRJ.Gbu.gbuInv2' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv2' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv2
 
-/-- info: 'FRJ.Gbu.gbuInv5' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv5' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv5
 
-/-- info: 'FRJ.Gbu.gbuInv7' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv7' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv7
 
-/-- info: 'FRJ.Gbu.gbuInv8' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv8' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv8
 
-/-- info: 'FRJ.Gbu.gbuInv9' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv9' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv9
 
-/-- info: 'FRJ.Gbu.gbuInv10' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.gbuInv10' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms gbuInv10
 
@@ -695,19 +698,19 @@ theorem gbuSuccOr {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
 #guard_msgs in
 #print axioms gbuSuccOr
 
-/-- info: 'FRJ.Gbu.evalR_of_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalR_of_refutedCleanly' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalR_of_refutedCleanly
 
-/-- info: 'FRJ.Gbu.evalRC_iff_refutedCleanly' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.evalRC_iff_refutedCleanly' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms evalRC_iff_refutedCleanly
 
-/-- info: 'FRJ.Gbu.refutedCleanly_mono' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.refutedCleanly_mono' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms refutedCleanly_mono
 
-/-- info: 'FRJ.Gbu.refutedCleanly_clo' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.refutedCleanly_clo' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms refutedCleanly_clo
 

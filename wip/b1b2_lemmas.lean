@@ -27,6 +27,11 @@ and `refAt_mono`.
 import FRJ.CalculusV
 import FRJ.RefAt
 import FRJ.Gbu.W.Dichotomy
+-- 2026-09-03: `Fin.succAbove` and friends come from the local,
+-- Mathlib-free kit (Meta/Portable.lean).  Mathlib's `Fin.succAbove_ne`
+-- leaks Classical.choice here, which is why `succAbove_ne'` below is
+-- proved by hand; the kit's definition is the same function.
+import Meta.Portable
 
 open FRJ Form
 
@@ -807,7 +812,7 @@ theorem b2_joinAtP_subsumes {n k m : Nat} {Ξs Θs : Fin (n + 1) → List Form}
 #guard_msgs in
 #print axioms joinCtxOrP_cut
 
-/-- info: 'FRJ.Arity.j7_cut' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Arity.j7_cut' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms j7_cut
 

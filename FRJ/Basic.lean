@@ -21,7 +21,7 @@ results in scope (soundness and completeness of FRJ(G)) are therefore
 statements about Kripke semantics alone, and no proof system for IPC is
 needed anywhere in this development.
 -/
-import Mathlib
+import Batteries
 
 namespace FRJ
 
@@ -122,7 +122,7 @@ theorem le_maxOn {α : Type} (f : α → Nat) :
     ∀ (a : α) (l : List α), ∀ x ∈ a :: l, f x ≤ f (maxOn f a l)
   | a, [], x, hx => by
       rcases List.mem_cons.mp hx with rfl | h
-      · rw [maxOn]
+      · rw [maxOn]; exact Nat.le_refl _
       · exact absurd h List.not_mem_nil
   | a, b :: l, x, hx => by
       by_cases h : f a < f b

@@ -497,7 +497,7 @@ end Scan
 #guard_msgs in
 #print axioms chkAxIC_sound
 
-/-- info: 'FRJ.Arity.chkScan_parts' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Arity.chkScan_parts' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms chkScan_parts
 

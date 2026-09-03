@@ -35,6 +35,10 @@ structure SvgOpts where
   /-- Label worlds with every forced subformula of the goal instead of
   the atom label (longer; the certificate style). -/
   subformulaLabels : Bool := false
+  /-- Where a `≤`-cover edge also carries `Rm`, draw ONLY the `Rm`
+  arrow: `Rm ⊆ ≤`, so the order edge is implied (Matthew, 2026-09-03).
+  Set `false` to draw both (the `Rm` edge then offset sideways). -/
+  elideCoveredRi : Bool := true
   caption : List String := []
 
 def esc (s : String) : String :=
@@ -140,11 +144,16 @@ def svgOfTab (T : Tab) (G : Form) (o : SvgOpts := {}) : String :=
     let k := peers.idxOf w
     (70 + k * colW, 70 + (maxL - l) * rowH)
   let labels := (List.range T.n).map (fun w => labelOf T G o w)
-  let width := (List.range T.n).foldl (fun acc w =>
-      Nat.max acc ((posOf w).1 + 40 + 8 * (labels.getD w "").length)) 560
   let capLines :=
-    s!"dashed grey = ≤ (Hasse), solid blue = Rm (⊆ ≤, the filled-in part); ⊥ marks a fallible world" ::
+    (if o.elideCoveredRi then
+      s!"dashed grey = ≤ (Hasse); solid blue = Rm ⊆ ≤ (a cover edge carrying Rm is drawn as Rm only); ⊥ = fallible"
+     else
+      s!"dashed grey = ≤ (Hasse), solid blue = Rm (⊆ ≤, the filled-in part); ⊥ marks a fallible world") ::
     o.caption
+  let width := Nat.max
+    ((List.range T.n).foldl (fun acc w =>
+      Nat.max acc ((posOf w).1 + 40 + 8 * (labels.getD w "").length)) 560)
+    (capLines.foldl (fun acc l => Nat.max acc (40 + 7 * l.length)) 0)
   let height := 150 + rowH * maxL + 18 * capLines.length
   let defs :=
     "<defs>" ++
@@ -152,14 +161,19 @@ def svgOfTab (T : Tab) (G : Form) (o : SvgOpts := {}) : String :=
     "<marker id=\"aRm\" viewBox=\"0 0 10 10\" refX=\"9\" refY=\"5\" markerWidth=\"7\" markerHeight=\"7\" orient=\"auto-start-reverse\"><path d=\"M 0 0 L 10 5 L 0 10 z\" fill=\"#2266cc\"/></marker>" ++
     "</defs>"
   let fl := fun (n : Nat) => Float.ofNat n
-  let les := (hasse T).map (fun (a, b) =>
-    let (x1, y1) := posOf a
-    let (x2, y2) := posOf b
-    edgeSvg (fl x1) (fl y1) (fl x2) (fl y2) "#999" true "aLe" 0)
+  let rmB := fun (a b : Nat) => (T.rmT.getD a []).getD b false
+  let hasseEdges := hasse T
+  let les := (hasseEdges.filter (fun (a, b) => !(o.elideCoveredRi && rmB a b))).map
+    (fun (a, b) =>
+      let (x1, y1) := posOf a
+      let (x2, y2) := posOf b
+      edgeSvg (fl x1) (fl y1) (fl x2) (fl y2) "#999" true "aLe" 0)
   let rms := (rmPairs T).map (fun (a, b) =>
     let (x1, y1) := posOf a
     let (x2, y2) := posOf b
-    edgeSvg (fl x1) (fl y1) (fl x2) (fl y2) "#2266cc" false "aRm" 7)
+    let off : Float :=
+      if o.elideCoveredRi && hasseEdges.any (fun e => e == (a, b)) then 0 else 7
+    edgeSvg (fl x1) (fl y1) (fl x2) (fl y2) "#2266cc" false "aRm" off)
   let nodes := (List.range T.n).map fun w =>
     let (x, y) := posOf w
     let isRoot := w == T.root

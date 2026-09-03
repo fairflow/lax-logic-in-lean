@@ -1,4 +1,7 @@
 import LaxLogic.PLLTerms
+-- Explicit since 2026-09-03: the foundation modules no longer
+-- re-export Mathlib (see Meta/Tactics.lean).
+import Meta.Tactics
 
 /-!
 # Proof terms compute constraints (F&M §1(6): timing analysis)

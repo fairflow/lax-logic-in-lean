@@ -1712,7 +1712,7 @@ end Gbu.W
 #guard_msgs in
 #print axioms joinAt_mono
 
-/-- info: 'FRJ.circIn_mono' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.circIn_mono' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms circIn_mono
 
@@ -1720,11 +1720,11 @@ end Gbu.W
 #guard_msgs in
 #print axioms pledge_of_le
 
-/-- info: 'FRJ.orI_mono' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.orI_mono' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms orI_mono
 
-/-- info: 'FRJ.impInI_mono' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.impInI_mono' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms impInI_mono
 
@@ -1732,11 +1732,11 @@ end Gbu.W
 #guard_msgs in
 #print axioms impInI_mono_sub
 
-/-- info: 'FRJ.lift_max' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.lift_max' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms lift_max
 
-/-- info: 'FRJ.circNotIn_max' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.circNotIn_max' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms circNotIn_max
 
@@ -1760,15 +1760,15 @@ end Gbu.W
 #guard_msgs in
 #print axioms joinCircP_mono
 
-/-- info: 'FRJ.goalWr' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.goalWr' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms goalWr
 
-/-- info: 'FRJ.goalWi' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.goalWi' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms goalWi
 
-/-- info: 'FRJ.tagWr' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.tagWr' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms tagWr
 

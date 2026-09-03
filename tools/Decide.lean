@@ -15,9 +15,12 @@ The pipeline of `docs/decider-outputs-design.md`, at the seam of §4.4:
   * REFUTED: FRJW disproof → `modR` → `tabOf` → `Tab.minimise`
     (untrusted-but-checked) → SVG (`tools/Svg.lean`) + a kernel
     certificate: `okB`/`root`/`¬ force` by `decide` and
-    `not_derivable_of_countermodel`.  `--check` (DEFAULT ON) runs Lean on
-    the certificate and re-emits it pin-guarded: the `decide` is the only
-    thing standing between a display bug and a wrong verdict.
+    `not_derivable_of_countermodel`.  The VERDICT itself is already
+    certified in-process (`checkClosed` ran; `checkClosed_sound` and
+    `decideGbuW_of_check` are compiled theorems), so `--check` is OPT-IN
+    (default OFF since 2026-09-03, revising D6): it re-checks the emitted
+    FILE as a standalone kernel artefact, which is what you want before
+    committing a cell to the record, not on every interactive run.
 
 FRJW objects are DISPROOFS.  A `none` from the engine route is
 `not-closed-within-bound`, never a verdict (raise `--rounds`/`--jmax`/
@@ -25,7 +28,7 @@ FRJW objects are DISPROOFS.  A `none` from the engine route is
 infeasible beyond tiny formulas).
 
     lake exe pll "◯p ⊃ p" [--out=NAME] [--view=min|calc|both]
-        [--no-check] [--check-term] [--proof-object]
+        [--check] [--check-term] [--proof-object]
         [--rounds=N] [--jmax=N] [--pmax=N] [--lamCap=N] [--maxRS=N] [--maxIS=N]
 
 Exit codes (the `frjcert` convention):
@@ -38,7 +41,6 @@ Exit codes (the `frjcert` convention):
 import wip.check_closed
 import FRJ.Gbu.LaxND
 import LaxLogic.PLLTerms
-import LaxLogic.PLLRun
 import tools.Svg
 
 open FRJ FRJ.Gbu FRJ.Search FRJ.Gbu.W PLLND
@@ -132,6 +134,32 @@ def srcOfP : PLLFormula → String
   | .ifThen A B  => s!"({srcOfP A}.ifThen {srcOfP B})"
   | .somehow A   => s!"({srcOfP A}.somehow)"
 
+/-- de Bruijn index of a variable (as `PLLND.Var.idx`, kept local so the
+tool does not import `LaxLogic.PLLRun` — that module drags
+`PLLTopTop`/Mathlib ordinals into the closure for a printer). -/
+def varIdx : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, Var Γ φ → Nat
+  | _, _, .here => 0
+  | _, _, .there v => varIdx v + 1
+
+/-- Compact λ-syntax: de Bruijn `#n`; `λ` is the `⊃`-intro binder and
+`λ'` the MONADIC one — `bind t u` prints as `((λ'. u) t)`, replacing
+`PLLRun`'s `let val• := t in u` (the `•` is U+2022; dropped as
+unnecessary, Matthew 2026-09-03).  `λ'` occurs nowhere else, so the
+form is unambiguous. -/
+def tmPretty : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, Tm Γ φ → String
+  | _, _, .var v => s!"#{varIdx v}"
+  | _, _, .abort _ t => s!"abort {tmPretty t}"
+  | _, _, .lam b => s!"(λ. {tmPretty b})"
+  | _, _, .app f a => s!"({tmPretty f} {tmPretty a})"
+  | _, _, .pair a b => s!"⟨{tmPretty a}, {tmPretty b}⟩"
+  | _, _, .fst t => s!"{tmPretty t}.1"
+  | _, _, .snd t => s!"{tmPretty t}.2"
+  | _, _, .inl t => s!"(inl {tmPretty t})"
+  | _, _, .inr t => s!"(inr {tmPretty t})"
+  | _, _, .case t u v => s!"(case {tmPretty t} of {tmPretty u} | {tmPretty v})"
+  | _, _, .val t => s!"val {tmPretty t}"
+  | _, _, .bind t u => s!"((λ'. {tmPretty u}) {tmPretty t})"
+
 /-- A variable as elaborable source. -/
 def varSrc : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, Var Γ φ → String
   | _, _, .here => "PLLND.Var.here"
@@ -222,37 +250,60 @@ def axiomPayload (l : String) : Option String :=
     | _ => none
   else none
 
+/-- Run Lean on one file.  **Direct `lean`, not `lake env lean`**: this
+process already runs inside the environment Lake set up, so `LEAN_PATH`
+is inherited and re-entering Lake costs ~8 s of config elaboration and
+filesystem scan per pass, warm, for ~1.8 s of actual Lean work
+(measured 2026-09-03).  `LEAN_PATH` absent means the tool was launched
+outside `lake env`; say so rather than hanging in a rebuild. -/
+def runLean (path : String) : IO (Option (UInt32 × String)) := do
+  match ← IO.getEnv "LEAN_PATH" with
+  | none =>
+      IO.println "SKIPPED   no LEAN_PATH in the environment — run under `lake exe pll` \
+(or `lake env`) for checking, or check the emitted file yourself."
+      return none
+  | some _ =>
+      let r ← IO.Process.output { cmd := "lean", args := #[path] }
+      return some (r.exitCode, r.stdout ++ r.stderr)
+
 /-- Two-pass check: run Lean on the emitted file; on success re-emit with
 the axiom line Lean itself printed, guarded, and run again.  Returns
-`some exitCode`; `none` means no axiom line was found (a tool defect). -/
+`some exitCode`; `none` means the check could not run or no axiom line
+was found. -/
 def twoPass (path : String) (reEmit : String → String) : IO (Option UInt32) := do
-  IO.println s!"checking {path} with Lean (pass 1: unguarded pin) …"
-  let r ← IO.Process.output { cmd := "lake", args := #["env", "lean", path] }
-  let txt := r.stdout ++ r.stderr
-  for l in txt.splitOn "\n" do
-    if !l.isEmpty then IO.println s!"  | {l}"
-  if r.exitCode != 0 then
-    IO.println s!"VERDICT   LEAN REJECTED {path} (exit {r.exitCode}) — a TOOL/ENGINE DEFECT."
-    return some 1
-  match (txt.splitOn "\n").filterMap axiomPayload with
-  | p :: _ =>
-      IO.FS.writeFile path (reEmit p)
-      IO.println "checking (pass 2: #guard_msgs-guarded pin) …"
-      let r2 ← IO.Process.output { cmd := "lake", args := #["env", "lean", path] }
-      if r2.exitCode == 0 then
-        IO.println s!"CHECKED   {path} — accepted, pin GUARDED: {p}"
-        return some 0
-      else
-        for l in (r2.stdout ++ r2.stderr).splitOn "\n" do
-          if !l.isEmpty then IO.println s!"  | {l}"
-        IO.println "VERDICT   the guarded pin did not match — a TOOL defect."
-        return some 1
-  | [] => return none
+  IO.println s!"checking   {path} (pass 1: unguarded pin) …"
+  let t0 ← IO.monoMsNow
+  match ← runLean path with
+  | none => return some 0
+  | some (code, txt) =>
+    let t1 ← IO.monoMsNow
+    for l in txt.splitOn "\n" do
+      if !l.isEmpty then IO.println s!"  | {l}"
+    if code != 0 then
+      IO.println s!"VERDICT   LEAN REJECTED {path} (exit {code}) — a TOOL/ENGINE DEFECT."
+      return some 1
+    match (txt.splitOn "\n").filterMap axiomPayload with
+    | p :: _ =>
+        IO.FS.writeFile path (reEmit p)
+        IO.println s!"checking   (pass 2: #guard_msgs-guarded pin) … [pass 1 took {t1 - t0} ms]"
+        match ← runLean path with
+        | none => return some 0
+        | some (code2, txt2) =>
+          if code2 == 0 then
+            let t2 ← IO.monoMsNow
+            IO.println s!"CHECKED   {path} — accepted [{t2 - t1} ms], pin GUARDED: {p}"
+            return some 0
+          else
+            for l in txt2.splitOn "\n" do
+              if !l.isEmpty then IO.println s!"  | {l}"
+            IO.println "VERDICT   the guarded pin did not match — a TOOL defect."
+            return some 1
+    | [] => return none
 
 structure Args where
   out : String := "pll_out"
   view : String := "min"
-  check : Bool := true
+  check : Bool := false
   checkTerm : Bool := false
   proofObject : Bool := false
   cfg : Config :=
@@ -267,6 +318,7 @@ def parseArgs (l : List String) : Except String (String × Args) := do
       let v := (s.drop 7).toString
       if v == "min" || v == "calc" || v == "both" then a := { a with view := v }
       else throw s!"--view must be min|calc|both, got {v}"
+    else if s == "--check" then a := { a with check := true }
     else if s == "--no-check" then a := { a with check := false }
     else if s == "--check-term" then a := { a with checkTerm := true }
     else if s == "--proof-object" then a := { a with proofObject := true }
@@ -317,11 +369,13 @@ frame-ok={min.okB}, refutes={min.refutes (ofPLL φ)}"
     | some c => return c
     | none => IO.println "VERDICT   no axiom line found — a TOOL defect."; return 1
   else
-    IO.println "NOTE      --no-check: the certificate was NOT run; the picture is unverified."
+    IO.println s!"re-check   lean {a.out}.lean      (or pass --check; the VERDICT above is \
+already certified in-process by checkClosed — this re-checks the FILE as a standalone \
+kernel artefact)"
     return 0
 
 def emitProved (φ : PLLFormula) (t : Tm [] φ) (a : Args) : IO UInt32 := do
-  IO.println s!"term      {t.pretty}"
+  IO.println s!"term      {tmPretty t}"
   IO.println s!"type      {PLLSvg.ppF (ofPLL φ)}   (the term's index, by construction)"
   let nm := ((a.out.splitOn "/").getLastD a.out).replace "-" "_"
   let leanPath := s!"{a.out}.lean"
@@ -375,7 +429,7 @@ a frontier marker, not a verdict.  Use `lake exe pll` with a raised budget."
   | some d =>
       match answerOf φ d with
       | .proved t =>
-          return s!"formula  {PLLSvg.ppF (ofPLL φ)}\nverdict  PROVED\nterm     {t.pretty}\n\
+          return s!"formula  {PLLSvg.ppF (ofPLL φ)}\nverdict  PROVED\nterm     {tmPretty t}\n\
 type     {PLLSvg.ppF (ofPLL φ)}\n(nothing drawn: proved formulas have no countermodel)"
       | .refuted raw min =>
           let base := if path.endsWith ".svg" then String.ofList (path.toList.take (path.toList.length - 4)) else path
@@ -399,7 +453,7 @@ def main (args : List String) : IO UInt32 := do
   | .error e =>
       IO.println s!"error: {e}"
       IO.println "usage: lake exe pll \"◯p ⊃ p\" [--out=NAME] [--view=min|calc|both] \
-[--no-check] [--check-term] [--proof-object] [--rounds=N] [--jmax=N] [--pmax=N] \
+[--check] [--check-term] [--proof-object] [--rounds=N] [--jmax=N] [--pmax=N] \
 [--lamCap=N] [--maxRS=N] [--maxIS=N]"
       return 2
   | .ok (f, a) => PLLTools.run f a
