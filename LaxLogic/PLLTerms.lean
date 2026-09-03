@@ -299,4 +299,47 @@ theorem curry_howard {Γ : List PLLFormula} {φ : PLLFormula} :
     Nonempty (Tm Γ φ) ↔ Nonempty (LaxND Γ φ) :=
   ⟨fun ⟨t⟩ => ⟨t.toND⟩, fun ⟨p⟩ => exists_tm p⟩
 
+/-! ### The computable direction (the decider's output layer)
+
+`exists_var`/`exists_tm` above are `Nonempty`-valued because a
+`Prop`-membership carries no occurrence data.  But `PLLFormula` has
+decidable equality, so the FIRST occurrence can be computed, which makes
+the whole translation a plain function. -/
+
+/-- The first occurrence of `φ` in `Γ`, as a de Bruijn variable.  A
+`LaxND` derivation that "meant" a later occurrence yields a different but
+equally well-typed term; the result proves the same sequent, so this is
+harmless — it does mean `ndToTm ∘ Tm.toND` is not the identity on `Tm`. -/
+def varOfMem : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, φ ∈ Γ → Var Γ φ
+  | [], _, h => nomatch h
+  | ψ :: _, φ, h =>
+      if e : φ = ψ then match e with | rfl => .here
+      else .there (varOfMem (List.mem_of_ne_of_mem e h))
+
+/-- Every natural deduction derivation, as a proof term — the computable
+Curry–Howard direction (`exists_tm` is its `Nonempty` shadow). -/
+def ndToTm : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, LaxND Γ φ → Tm Γ φ
+  | _, _, .iden h => .var (varOfMem h)
+  | _, _, .falsoElim φ p => .abort φ (ndToTm p)
+  | _, _, .impIntro p => .lam (ndToTm p)
+  | _, _, .impElim p₁ p₂ => .app (ndToTm p₁) (ndToTm p₂)
+  | _, _, .andIntro p₁ p₂ => .pair (ndToTm p₁) (ndToTm p₂)
+  | _, _, .andElim1 p => .fst (ndToTm p)
+  | _, _, .andElim2 p => .snd (ndToTm p)
+  | _, _, .orIntro1 p => .inl (ndToTm p)
+  | _, _, .orIntro2 p => .inr (ndToTm p)
+  | _, _, .orElim p₀ p₁ p₂ => .case (ndToTm p₀) (ndToTm p₁) (ndToTm p₂)
+  | _, _, .laxIntro p => .val (ndToTm p)
+  | _, _, .laxElim p₁ p₂ => .bind (ndToTm p₁) (ndToTm p₂)
+
+/-! ### Pins -/
+
+/-- info: 'PLLND.varOfMem' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms varOfMem
+
+/-- info: 'PLLND.ndToTm' depends on axioms: [propext] -/
+#guard_msgs in
+#print axioms ndToTm
+
 end PLLND

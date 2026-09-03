@@ -105,6 +105,17 @@ def decideByEngine (G : Form) (cfg : Config) :
   let db := engineRows G cfg
   if h : checkClosed G db = true then some (decideGbuW_of_check db h) else none
 
+/-- The DATA decision from a certified engine store (`decideOfStore` at
+the certificate): the derivations themselves, which is what the output
+layer (proof terms, countermodels) consumes.  `none` as in
+`decideByEngine`. -/
+def decideDataByEngine (G : Form) (cfg : Config) :
+    Option (GbuRC G [] G ⊕ (Σ' t Γ, FRJWr G t Γ G)) :=
+  let db := engineRows G cfg
+  if h : checkClosed G db = true then
+    some (decideOfStore db (dbClosed_of_check h))
+  else none
+
 /-! ## Pins -/
 
 /-- info: 'FRJ.Arity.checkClosed_sound' depends on axioms: [propext, Quot.sound] -/
@@ -122,5 +133,9 @@ def decideByEngine (G : Form) (cfg : Config) :
 /-- info: 'FRJ.Arity.decideByEngine' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in
 #print axioms decideByEngine
+
+/-- info: 'FRJ.Arity.decideDataByEngine' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms decideDataByEngine
 
 end FRJ.Arity

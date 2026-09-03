@@ -3857,3 +3857,47 @@ Matthew `/goal`: "build it."  The six items of `docs/checkclosed-checks.md`
   + `Check.lean`; the output layer (`ndToTm`, countermodel SVGs,
   docs/decider-outputs-design.md) is next; larger cells than the
   twenty are an empirical question (a FLAG is never a verdict).
+
+## 2026-09-03 (morning) — the output layer BUILT: `lake exe pll` with proof terms, minimised countermodels, SVGs
+
+Matthew `/goal`: "build the output layer ndToTm the minimised counter
+model and the SVG displays".  Every BUILD item of
+`docs/decider-outputs-design.md` §5's output layer is in (status table
+in its new §8), wired to the engine + verified checker, so the tool is
+fast.
+
+* **`varOfMem` + `ndToTm`** (`LaxLogic/PLLTerms.lean`, appended,
+  `#guard_msgs`-pinned `[propext]`): the computable Curry–Howard
+  direction; `iden h ↦ .var (varOfMem h)` at the first occurrence.
+* **`tools/Svg.lean`** (`PLLSvg.svgOfTab`): the shared renderer, hoisted
+  from `FrjCert.toSvg` (left in place for ρ-certificates) and extended
+  per Matthew's convention: `≤` Hasse DASHED grey, `Rm` (every
+  non-reflexive pair) SOLID blue and offset, arrowheads on both,
+  longest-chain layering, filled node + `⊥` = fallible, root red,
+  atom labels with a full-forced-set hover, caption block, white
+  background.
+* **`tools/Decide.lean`** (`lean_exe pll`, lib `DecideTools`): parser →
+  `FRJ.Arity.decideDataByEngine` (new, `wip/check_closed.lean`,
+  `[propext, Quot.sound]`: engine store → `checkClosed` →
+  `decideOfStore`) → `Answer φ`/`answerOf` (the §4.4 seam).  PROVED:
+  `Tm` term printed and emitted as a re-elaboration snippet (`tmSrc`
+  with named implicits; `--check-term` = the frjcert two-pass guard).
+  REFUTED: raw + minimised `Tab`, SVG per `--view=min|calc|both`, and a
+  kernel certificate two-pass checked BY DEFAULT.  Exit codes
+  0/1/2/3 = checked / Lean-rejected defect / parse error /
+  not-closed-within-bound (frontier, never a verdict).
+* **`tools/DecideCmd.lean`**: `#decide φ to "out.svg" [view …]`,
+  modelled on `#draw`; interpreted engine, for small formulas.
+* **Evidence**: `◯p ⊃ p` REFUTED with a CHECKED certificate
+  (`[propext, Quot.sound]` guarded); `◯◯p ⊃ ◯p` PROVED with the
+  design's own worked term `(λ. (let val• := #0 in #0))`, snippet
+  axiom-FREE; the strength law `(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)` — > 8 min as a
+  proof object — PROVED in 301 ms; ten further cells all with known
+  verdicts.  §7.4 MEASURED: the views differ on `◯(p∨q) ⊃ ◯p∨◯q`
+  (7 → 3 worlds) and `◯p ∨ ¬◯p` (3 → 2).
+* **Gates watched failing**: certificate with the formula swapped to
+  provable `p ⊃ p` → Lean REJECTS (decide disproves); term snippet
+  with the type index altered → elaborator REJECTS.  Both exit 1.
+* **Deferred**: named-variable printer (`Tm.pretty` stays de Bruijn),
+  `--normalize` (the strength term shows the un-normalised cut redex;
+  `Tm.normalize` exists), the external-trace `reconstruct` layer.

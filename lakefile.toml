@@ -106,6 +106,18 @@ root = "tools.A2Probe"
 name = "checkprobe"
 root = "tools.CheckProbe"
 
+# pll: the user-facing decider with its output layer — engine + verified
+# checkClosed + decideOfStore; PROVED → Tm proof term + snippet,
+# REFUTED → minimised countermodel SVG + kernel certificate (two-pass
+# checked by default).  #decide command in tools/DecideCmd.lean.  (2026-09-02)
+[[lean_lib]]
+name = "DecideTools"
+globs = ["tools.Svg", "tools.Decide", "tools.DecideCmd"]
+
+[[lean_exe]]
+name = "pll"
+root = "tools.Decide"
+
 
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup
 # (cache-shipped C IR miscompile in Mathlib.Data.Set.Basic; full analysis in

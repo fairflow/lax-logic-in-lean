@@ -1040,3 +1040,55 @@ verdict; the proof term's type is already the elaborator's business.
    makes the transfer exact (`FRJ/Bridge.lean:78,95`); it is worth
    saying in the caption, and it is why `finite_poset_model_property`
    (`FRJ/Gbu/W/LaxND.lean:50`) holds.
+
+---
+
+## 8. Build status (2026-09-03): BUILT
+
+Every BUILD item of §5's output layer is built; the wiring runs through
+the engine + verified checker of `docs/checkclosed-checks.md` §8 (which
+§4 could only anticipate), so the CLI is fast.  Pins as stated below;
+smoke and gate evidence at the end.
+
+| item | where | status |
+|---|---|---|
+| `varOfMem`, `ndToTm` | `LaxLogic/PLLTerms.lean` (appended, `#guard_msgs`-pinned `[propext]`) | PROVED/BUILT |
+| `Tm.src` (as `tmSrc`, with `varSrc`) — named implicits for `app`/`fst`/`snd`/`case`/`bind` | `tools/Decide.lean` (not `PLLRun.lean`: `srcOf`-style printing needs no library rebuild) | BUILT |
+| `tmSnippet` + two-pass re-check | `tools/Decide.lean` (`twoPass`, the `frjcert` discipline) | BUILT |
+| shared SVG renderer | `tools/Svg.lean` (`PLLSvg.svgOfTab`; `FrjCert.toSvg` left in place as the ρ-certificate renderer) | BUILT |
+| `svgOfTab` extensions: longest-chain layering, `Rm` as its own edge set (solid blue, arrowheads, offset), `≤` Hasse dashed grey with arrowheads, fallible marker (filled node, `⊥` label), atom labels + `<title>` hover, caption block, white background | `tools/Svg.lean` | BUILT (per the §6 ruling) |
+| `Answer` + `answerOf` | `tools/Decide.lean` | BUILT |
+| CLI `lake exe pll` with `--view=min\|calc\|both`, `--check` default ON, `--check-term`, `--proof-object`, engine budget flags | `tools/Decide.lean` + `lakefile.toml` (`DecideTools` lib, `pll` exe) | BUILT |
+| `#decide φ to "out.svg" [view min\|calc\|both]` | `tools/DecideCmd.lean` (interpreted engine: small formulas; the CLI is the certified tool) | BUILT |
+| decision source | `FRJ.Arity.decideDataByEngine` (`wip/check_closed.lean`, `[propext, Quot.sound]`): engine store → `checkClosed` → `decideOfStore`; `--proof-object` falls back to `decideGbuWData` | BUILT |
+
+**Evidence.**
+
+* `◯p ⊃ p` → REFUTED; certificate two-pass CHECKED, pin
+  `[propext, Quot.sound]` guarded.  The SVG is §3.6's picture as drawn.
+* `◯◯p ⊃ ◯p` → PROVED, term `(λ. (let val• := #0 in #0))` (§2.6's first
+  worked example, now machine-produced); snippet re-elaborates, pin
+  guarded — `does not depend on any axioms` (a closed term is pure data).
+* The strength law `(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)` — which the proof object
+  could not finish in eight minutes (§7.3) — PROVED in **301 ms** through
+  the engine route; its term
+  `(λ. (λ. (let val• := #0 in ((λ. #0) (#2 #0)))))` re-elaborates
+  (the β-redex is the un-normalised image of the `Gbu◯` cut;
+  `Tm.normalize` exists if a `--normalize` flag is ever wanted).
+* Ten further cells (`p`, `⊥`, `◯⊥`, `¬◯⊥`, `p ∨ ¬p`, `◯p ∨ ¬◯p`,
+  `(◯p∧◯q) ⊃ ◯(p∧q)`, `p ⊃ ◯p`, `◯(◯p ⊃ p)`, `((◯p ⊃ q) ⊃ ◯p) ⊃ ◯p`)
+  all decide with the known verdicts at the default budget.
+* **§7.4 is now MEASURED**: the two views differ on reachable cells —
+  `◯(p∨q) ⊃ ◯p∨◯q` extracts 7 worlds and minimises to 3;
+  `◯p ∨ ¬◯p` extracts 3 and minimises to 2.  The `--view` switch has
+  real work to do.
+* **Gates watched failing** (scratch copies, originals untouched): the
+  certificate with its formula swapped to the provable `p ⊃ p` is
+  REJECTED by Lean (`decide` disproves the claimed refutation); the
+  term snippet with its type index altered is REJECTED by the
+  elaborator (application type mismatch).  Both exit 1 — a defect
+  cannot mis-certify.
+
+**Still open from §7**: the named-variable printer (7.5) — `Tm.pretty`
+stays de Bruijn; the `reconstruct` replay layer of §4.1 (external-engine
+traces).  Neither blocks the layer.
