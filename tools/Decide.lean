@@ -141,13 +141,15 @@ def varIdx : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, Var Γ φ → Nat
   | _, _, .here => 0
   | _, _, .there v => varIdx v + 1
 
-/-- Compact λ-syntax: de Bruijn `#n`; `λ` is the `⊃`-intro binder and
-`λ'` the MONADIC one — `bind t u` prints as `((λ'. u) t)`, replacing
-`PLLRun`'s `let val• := t in u` (the `•` is U+2022; dropped as
-unnecessary, Matthew 2026-09-03).  `λ'` occurs nowhere else, so the
-form is unambiguous. -/
+/-- Compact λ-syntax.  A de Bruijn index prints as the bare numeral —
+the `#` of `PLLRun`'s printer is redundant here and reads as
+contradiction in a mathematical context (Matthew, 2026-09-03); the term
+language has no numeric literals, so a bare index is unambiguous.  `λ`
+is the `⊃`-intro binder and `λ'` the MONADIC one: `bind t u` prints as
+`((λ'. u) t)`, replacing `let val• := t in u` (the `•` is U+2022,
+dropped as unnecessary). -/
 def tmPretty : ∀ {Γ : List PLLFormula} {φ : PLLFormula}, Tm Γ φ → String
-  | _, _, .var v => s!"#{varIdx v}"
+  | _, _, .var v => s!"{varIdx v}"
   | _, _, .abort _ t => s!"abort {tmPretty t}"
   | _, _, .lam b => s!"(λ. {tmPretty b})"
   | _, _, .app f a => s!"({tmPretty f} {tmPretty a})"
