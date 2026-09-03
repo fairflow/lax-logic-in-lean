@@ -204,23 +204,45 @@ The standing requirement is to run **ax-prover itself** with Claude Code as its
 model, so that the agentic harness is tested without spending on gpt-5. Nothing
 in this toolkit does that. Two obstacles, both real:
 
-1. **The shim is a batch protocol and an agent loop is not batchable.**
-   `--collect` harvests the prompts, you answer them, then they are served. That
-   works when the set of prompts is fixed in advance. ax-prover's prompt *n+1*
-   depends on its answer to prompt *n*, so there is nothing to harvest. The shim
-   needs a **live mode** — block the request, obtain an answer, return it —
-   which it does not have.
-2. **ax-prover must be pointed at the shim.** `constructive_prove.py` shells out
-   to `$AX_PROVER_HOME/.venv/bin/ax-prover --config configs/<name>.yaml`, and
-   the config lives in the ax-prover checkout, not here. Whether it accepts an
-   OpenAI-compatible `base_url` is a question about ax-prover-base, not about
-   this repository.
+**Pointing ax-prover at the shim is SOLVED and needs no code.** ax-prover
+accepts an OpenAI-compatible endpoint:
 
-`ax-prover-base` is **not installed on this machine** (`AX_PROVER_HOME` unset,
-no checkout found), so the agentic route has never been runnable here at all.
-That is why the shim was built for the harness that *could* be run — but it does
-not satisfy the requirement, and calling it "the harness" has caused that
-confusion more than once.
+```yaml
+llm_configs:
+  <name>:
+    model: "<id>"
+    provider_config:
+      model_provider: "openai"        # set it explicitly: init_chat_model
+      base_url: "http://127.0.0.1:8088/v1"   # otherwise splits the id on ":"
+      api_key: "local-no-key-needed"
+```
+
+That is a working, verified pattern — it is how a local llama-server was wired
+in — and `8088` is already `claude_shim.py`'s default port. The two were built
+to meet.
+
+So only two obstacles remain, both in the shim:
+
+1. **It is a batch protocol, and an agent loop is not batchable.** `--collect`
+   harvests the prompts, you answer them, they are served. That works when the
+   prompt set is fixed in advance. ax-prover's prompt *n+1* depends on its answer
+   to prompt *n*, so there is nothing to harvest. The shim needs a **live
+   mode** — block the request, obtain an answer, return it.
+2. **It cannot express a tool call.** It always returns
+   `finish_reason: "stop"` with a text message. The agentic loop's value *is*
+   the tools, so a faithful substitution needs the shim to pass the request's
+   `tools` through to whoever answers and to return `tool_calls` with
+   `finish_reason: "tool_calls"`. This is the real work, and it is why "swap
+   Claude Code in" is not a config change.
+
+**A cheaper first step exists:** run ax-prover with `proposer_tools: {}` and a
+memoryless processor, as the local-model config does. That exercises the agent
+loop's compiler feedback, reviewer and retry — strictly more of the harness than
+`harness.py` tests — while needing only the live mode, not tool calls.
+
+Note that configuring ax-prover with an *Anthropic* model is already possible
+and is not this requirement: it bills `ANTHROPIC_API_KEY`. The point of the shim
+is to spend a Claude Code subscription instead.
 
 ## Known limitations
 
