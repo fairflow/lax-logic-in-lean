@@ -30,6 +30,10 @@ strength the calculus needs: the join rules conclude
 determined up to `CtxEq` in the first place.
 -/
 import FRJ.Calculus
+-- Explicit since 2026-09-03: uses `Fin.cons` and its lemmas; the
+-- foundation modules no longer re-export Mathlib.  OUTSIDE the runtime
+-- closure of `lake exe pll`, so the decider pays nothing.
+import Mathlib
 
 namespace FRJ
 namespace Profile

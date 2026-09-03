@@ -1,0 +1,83 @@
+# pllbench: 129 cells; frjw cfg rounds=16 jmax=3 pmax=2 lamCap=24
+id	class	formula	frjw	frjw_ms	g4c	g4c_ms	note
+001	0v ◯0	⊥ ⊃ ⊥	valid	0	valid	0	
+002	0v ◯0	⊤	valid	0	valid	0	
+003	0v ◯0	⊥ ∨ ⊤	valid	0	valid	0	
+004	0v ◯0	⊥ ∧ ⊤	invalid	0	invalid	0	
+005	0v ◯1	◯⊥	invalid	0	invalid	0	
+006	0v ◯1	¬◯⊥	invalid	0	invalid	0	
+007	0v ◯1	◯⊤	valid	0	valid	0	
+008	0v ◯1	◯⊥ ⊃ ⊥	invalid	0	invalid	0	
+009	0v ◯1	◯⊥ ∨ ¬◯⊥	invalid	0	invalid	0	
+010	0v ◯1	◯⊥ ∧ ⊤	invalid	0	invalid	0	
+011	0v ◯1	⊥ ⊃ ◯⊥	valid	0	valid	0	
+012	0v ◯1	◯(⊥ ∨ ⊤)	valid	0	valid	0	
+013	0v ◯2	◯◯⊥	invalid	0	invalid	0	
+014	0v ◯2	◯◯⊥ ⊃ ◯⊥	valid	0	valid	0	
+015	0v ◯2	◯⊥ ⊃ ◯◯⊥	valid	0	valid	0	
+016	0v ◯2	◯(◯⊥ ⊃ ⊥)	invalid	0	invalid	0	
+017	0v ◯2	(◯⊥ ∧ ◯⊤) ⊃ ◯(⊥ ∧ ⊤)	valid	0	valid	0	
+018	0v ◯2	◯(⊥ ∨ ⊤) ⊃ (◯⊥ ∨ ◯⊤)	valid	0	valid	0	
+019	0v ◯3	◯◯◯⊥	invalid	0	invalid	0	
+020	0v ◯3	◯◯◯⊥ ⊃ ◯⊥	valid	0	valid	0	
+021	1v ◯0	p ⊃ p	valid	0	valid	0	
+022	1v ◯0	p	invalid	0	invalid	0	
+023	1v ◯0	p ∨ ¬p	invalid	0	invalid	0	
+024	1v ◯0	p ∧ p ⊃ p	valid	0	valid	0	
+025	1v ◯0	¬¬p ⊃ p	invalid	0	invalid	0	
+026	1v ◯0	p ⊃ ¬¬p	valid	0	valid	0	
+027	1v ◯0	(p ⊃ ⊥) ∨ p	invalid	0	invalid	0	
+028	1v ◯0	p ∨ (p ⊃ ⊥)	invalid	0	invalid	0	
+029	1v ◯1	p ⊃ ◯p	valid	0	valid	0	
+030	1v ◯1	◯p ⊃ p	invalid	0	invalid	0	
+031	1v ◯1	◯p	invalid	0	invalid	0	
+032	1v ◯1	◯p ∨ ¬◯p	invalid	0	invalid	0	
+033	1v ◯1	◯p ∧ p ⊃ p	valid	0	valid	0	
+034	1v ◯1	◯(p ∨ ¬p)	invalid	0	invalid	0	
+035	1v ◯1	◯p ⊃ ◯(p ∨ p)	valid	0	valid	0	
+036	1v ◯1	◯(p ∧ p) ⊃ ◯p	valid	0	valid	0	
+037	1v ◯1	◯p ⊃ (◯p ∨ ◯p)	valid	0	valid	0	
+038	1v ◯1	(◯p ∧ ◯p) ⊃ ◯p	valid	0	valid	0	
+039	1v ◯1	¬◯p ⊃ ¬p	valid	0	valid	0	
+040	1v ◯1	¬p ⊃ ¬◯p	invalid	0	invalid	0	
+041	1v ◯2	◯◯p ⊃ ◯p	valid	0	valid	0	
+042	1v ◯2	◯p ⊃ ◯◯p	valid	0	valid	0	
+043	1v ◯2	◯(◯p ⊃ p)	invalid	0	invalid	0	
+044	1v ◯2	◯◯p	invalid	0	invalid	0	
+045	1v ◯2	◯(◯p ∨ p)	invalid	0	invalid	0	
+046	1v ◯2	◯(◯p ∧ p) ⊃ ◯p	valid	0	valid	0	
+047	1v ◯2	(◯◯p ∨ ◯p) ⊃ ◯p	valid	0	valid	0	
+048	1v ◯2	◯◯p ⊃ (◯p ∧ ◯◯p)	valid	0	valid	0	
+049	1v ◯2	¬◯◯p ⊃ ¬◯p	valid	0	valid	0	
+050	1v ⊃2	((p ⊃ ⊥) ⊃ p) ⊃ p	invalid	0	invalid	0	
+051	1v ⊃2	((◯p ⊃ ⊥) ⊃ ◯p) ⊃ ◯p	invalid	0	invalid	0	
+052	1v ⊃3	(((p ⊃ ⊥) ⊃ ⊥) ⊃ p)	invalid	0	invalid	0	
+053	1v ⊃3	(((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p)	invalid	0	invalid	0	
+054	1v ⊃3	((p ⊃ ◯p) ⊃ p) ⊃ p	valid	0	valid	0	
+055	1v ⊃3	(p ⊃ (p ⊃ ◯p)) ⊃ (p ⊃ ◯p)	valid	0	valid	0	
+056	1v ◯3	◯◯◯p ⊃ ◯p	valid	0	valid	0	
+057	1v ◯3	◯p ⊃ ◯◯◯p	valid	0	valid	0	
+058	1v ◯3	◯◯◯p	invalid	0	invalid	0	
+059	1v ◯3	◯(◯(◯p ⊃ p) ⊃ p)	invalid	0	invalid	0	
+060	2v ◯0	p ⊃ (q ⊃ p)	valid	0	valid	0	
+061	2v ◯0	(p ∧ q) ⊃ p	valid	0	valid	0	
+062	2v ◯0	(p ∧ q) ⊃ q	valid	0	valid	0	
+063	2v ◯0	p ⊃ (p ∨ q)	valid	0	valid	0	
+064	2v ◯0	(p ∨ q) ⊃ (q ∨ p)	valid	0	valid	0	
+065	2v ◯0	(p ∧ q) ⊃ (q ∧ p)	valid	0	valid	0	
+066	2v ◯0	(p ⊃ q) ∨ (q ⊃ p)	invalid	0	invalid	0	
+067	2v ◯0	((p ⊃ q) ⊃ p) ⊃ p	invalid	0	invalid	0	
+068	2v ◯0	(p ∨ q) ⊃ (p ∧ q)	invalid	0	invalid	0	
+069	2v ◯0	¬(p ∧ q) ⊃ (¬p ∨ ¬q)	invalid	0	invalid	0	
+070	2v ◯1	(◯p ∧ ◯q) ⊃ ◯(p ∧ q)	valid	0	valid	0	
+071	2v ◯1	◯(p ∧ q) ⊃ (◯p ∧ ◯q)	valid	0	valid	0	
+072	2v ◯1	◯(p ∨ q) ⊃ (◯p ∨ ◯q)	invalid	0	invalid	0	
+073	2v ◯1	(◯p ∨ ◯q) ⊃ ◯(p ∨ q)	valid	0	valid	0	
+074	2v ◯1	(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	
+075	2v ◯1	◯(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	
+076	2v ◯1	(◯p ⊃ ◯q) ⊃ ◯(p ⊃ q)	invalid	0	invalid	0	
+077	2v ◯1	◯p ⊃ (q ⊃ ◯p)	valid	0	valid	0	
+078	2v ◯1	(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	
+079	2v ◯1	◯(p ∧ q) ⊃ ◯(q ∧ p)	valid	0	valid	0	
+080	2v ◯2	◯◯(p ∧ q) ⊃ ◯(p ∧ q)	valid	0	valid	0	
+081	2v ◯2	◯(◯p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	

@@ -8,7 +8,7 @@ Divergences from the template are documented case by case.
 import FRJ.Gbu.W.CircDB
 import FRJ.Gbu.W.Corner
 import FRJ.Gbu.Transport
--- 2026-09-03: `List.mem_sublists` comes from the local, Mathlib-free
+-- 2026-09-03: `List.memSublistsP` comes from the local, Mathlib-free
 -- kit (Meta/Portable.lean), not Mathlib.
 import Meta.Portable
 
@@ -261,7 +261,7 @@ private def findCMT (G : Form) (Ω : List Form) (F : Form) :
     (fun _ => inferInstance) (gAt G).sublists with
   | .inl hall => .inr hall
   | .inr ⟨ats, hmem, hnn⟩ =>
-      .inl ⟨ats, List.mem_sublists_subset hmem,
+      .inl ⟨ats, List.memSublistsP_subset hmem,
         (Decidable.of_not_not hnn).1, (Decidable.of_not_not hnn).2⟩
 
 

@@ -27,7 +27,7 @@ and `refAt_mono`.
 import FRJ.CalculusV
 import FRJ.RefAt
 import FRJ.Gbu.W.Dichotomy
--- 2026-09-03: `Fin.succAbove` and friends come from the local,
+-- 2026-09-03: `Fin.succAboveP` and friends come from the local,
 -- Mathlib-free kit (Meta/Portable.lean).  Mathlib's `Fin.succAbove_ne`
 -- leaks Classical.choice here, which is why `succAbove_ne'` below is
 -- proved by hand; the kit's definition is the same function.
@@ -306,10 +306,10 @@ theorem fNot_comp {n m : Nat} {Ξs : Fin (n + 1) → List Form} {F : Form}
 
 /-- Mathlib's `Fin.succAbove_ne` carries `Classical.choice`; this one does
 not. -/
-theorem succAbove_ne' {n : Nat} (p : Fin (n + 1)) (k : Fin n) : p.succAbove k ≠ p := by
+theorem succAbove_ne' {n : Nat} (p : Fin (n + 1)) (k : Fin n) : p.succAboveP k ≠ p := by
   intro h
   have hv := congrArg Fin.val h
-  unfold Fin.succAbove at hv
+  unfold Fin.succAboveP at hv
   split at hv
   · rename_i hlt
     rw [Fin.lt_def] at hlt
@@ -321,22 +321,22 @@ theorem succAbove_ne' {n : Nat} (p : Fin (n + 1)) (k : Fin n) : p.succAbove k �
     omega
 
 theorem succAbove_surj {n : Nat} (p : Fin (n + 2)) :
-    ∀ j, j ≠ p → ∃ k, p.succAbove k = j :=
-  fun _ hj => Fin.exists_succAbove_eq hj
+    ∀ j, j ≠ p → ∃ k, p.succAboveP k = j :=
+  fun _ hj => Fin.exists_succAboveP_eq hj
 
 theorem succAbove_inj {n : Nat} (p : Fin (n + 2)) :
-    ∀ k l, p.succAbove k = p.succAbove l → k = l :=
-  fun _ _ h => Fin.succAbove_right_injective h
+    ∀ k l, p.succAboveP k = p.succAboveP l → k = l :=
+  fun _ _ h => Fin.succAboveP_right_injective h
 
 /-- A duplicate goal makes the drop goal-covering. -/
 theorem cov_of_dup {n : Nat} {rhs : Fin (n + 2) → Form} (p i : Fin (n + 2))
     (hip : i ≠ p) (hgoal : rhs i = rhs p) :
-    ∀ j, ∃ k, rhs (p.succAbove k) = rhs j := by
+    ∀ j, ∃ k, rhs (p.succAboveP k) = rhs j := by
   intro j
   by_cases hjp : j = p
-  · obtain ⟨k, hk⟩ := Fin.exists_succAbove_eq hip
+  · obtain ⟨k, hk⟩ := Fin.exists_succAboveP_eq hip
     exact ⟨k, by rw [hk, hgoal, hjp]⟩
-  · obtain ⟨k, hk⟩ := Fin.exists_succAbove_eq hjp
+  · obtain ⟨k, hk⟩ := Fin.exists_succAboveP_eq hjp
     exact ⟨k, by rw [hk]⟩
 
 /-- **B1 for the barren `⋈^At`** (`FRJWr.joinAt`): in a family in which
@@ -351,19 +351,19 @@ theorem b1_joinAt {n : Nat} {Ξs Θs : Fin (n + 2) → List Form}
       A ∈ upsilon rhs)
     (hJ3 : unionAll (fun j => circPart (Ξs j)) = [])
     (hF : F ∉ unionAll (fun j => atPart (Ξs j))) :
-    (∀ k l, k ≠ l → Ξs (p.succAbove k) ⊆ Ξs (p.succAbove l) ++ Θs (p.succAbove l)) ∧
+    (∀ k l, k ≠ l → Ξs (p.succAboveP k) ⊆ Ξs (p.succAboveP l) ++ Θs (p.succAboveP l)) ∧
     (∀ A B : Form,
-      Form.imp A B ∈ unionAll (fun k => impPart (Ξs (p.succAbove k))) →
-      A ∈ upsilon (fun k => rhs (p.succAbove k))) ∧
-    unionAll (fun k => circPart (Ξs (p.succAbove k))) = [] ∧
-    F ∉ unionAll (fun k => atPart (Ξs (p.succAbove k))) ∧
+      Form.imp A B ∈ unionAll (fun k => impPart (Ξs (p.succAboveP k))) →
+      A ∈ upsilon (fun k => rhs (p.succAboveP k))) ∧
+    unionAll (fun k => circPart (Ξs (p.succAboveP k))) = [] ∧
+    F ∉ unionAll (fun k => atPart (Ξs (p.succAboveP k))) ∧
     ctxAt Ξs Θs rhs F ⊆
-      ctxAt (fun k => Ξs (p.succAbove k)) (fun k => Θs (p.succAbove k))
-        (fun k => rhs (p.succAbove k)) F := by
+      ctxAt (fun k => Ξs (p.succAboveP k)) (fun k => Θs (p.succAboveP k))
+        (fun k => rhs (p.succAboveP k)) F := by
   have hcov := cov_of_dup (rhs := rhs) p i hip hgoal
   exact ⟨j1_comp _ (succAbove_inj p) hJ1, j2_comp _ hcov hJ2, j3_comp _ hJ3,
     fNot_comp _ hF,
-    ctxAt_sub (Fin.succAbove p) p (succAbove_ne' p)
+    ctxAt_sub (Fin.succAboveP p) p (succAbove_ne' p)
       (succAbove_surj p) hcov hJ1 hJ2 hF⟩
 
 /-! ## 6. The generic pieces for the other five contexts -/
@@ -742,9 +742,9 @@ theorem b1_joinAt_subsumes {n : Nat} {Ξs Θs : Fin (n + 2) → List Form}
       A ∈ upsilon rhs)
     (hF : F ∉ unionAll (fun j => atPart (Ξs j))) :
     Gbu.W.WSubsumes (.reg .barren (ctxAt Ξs Θs rhs F) F)
-      (.reg .barren (ctxAt (fun k => Ξs (p.succAbove k)) (fun k => Θs (p.succAbove k))
-        (fun k => rhs (p.succAbove k)) F) F) :=
-  ⟨rfl, rfl, ctxAt_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+      (.reg .barren (ctxAt (fun k => Ξs (p.succAboveP k)) (fun k => Θs (p.succAboveP k))
+        (fun k => rhs (p.succAboveP k)) F) F) :=
+  ⟨rfl, rfl, ctxAt_sub (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
     (cov_of_dup (rhs := rhs) p i hip hgoal) hJ1 hJ2 hF⟩
 
 /-- **B1, subsumption form, promise `⋈^At`.** -/
@@ -757,9 +757,9 @@ theorem b1_joinAtP_subsumes {n k : Nat} {Ξs Θs : Fin (n + 2) → List Form}
     (hF : F ∉ unionAll (fun j => atPart (Ξs j)))
     (hJ5 : ∀ Y, Form.circ Y ∈ unionAll (fun j => circPart (Ξs j)) → ∃ i, Clo (Δs i) Y) :
     Gbu.W.WSubsumes (.reg (.chain D) (joinCtxAtP Ξs Θs rhs F Δs) F)
-      (.reg (.chain D) (joinCtxAtP (fun k => Ξs (p.succAbove k)) (fun k => Θs (p.succAbove k))
-        (fun k => rhs (p.succAbove k)) F Δs) F) :=
-  ⟨rfl, tagLeB_refl' _, joinCtxAtP_sub (Fin.succAbove p) p (succAbove_ne' p)
+      (.reg (.chain D) (joinCtxAtP (fun k => Ξs (p.succAboveP k)) (fun k => Θs (p.succAboveP k))
+        (fun k => rhs (p.succAboveP k)) F Δs) F) :=
+  ⟨rfl, tagLeB_refl' _, joinCtxAtP_sub (Fin.succAboveP p) p (succAbove_ne' p)
     (succAbove_surj p) (cov_of_dup (rhs := rhs) p i hip hgoal) hJ1 hJ2 hF hJ5⟩
 
 /-- **B2′, subsumption form, promise `⋈^At`**: cutting the promise family

@@ -275,7 +275,7 @@ theorem chkImpInI_sound (h : chkImpInI G db = true) :
     rw [hpos]; exact hA
   have h1 := List.all_eq_true.mp h tr htr
   have h2 := List.all_eq_true.mp h1 (tr.Θ.filter (fun y => decide (y ∈ Λ)))
-    (List.mem_sublists.mpr List.filter_sublist)
+    (List.memSublistsP.mpr List.filter_sublist)
   have h3 := List.all_eq_true.mp h2 (Form.imp A tr.C) (mem_goalPool.mpr hg)
   exact chkOne_sound (gate_true h3 ⟨rfl, hA'⟩)
 
@@ -342,7 +342,7 @@ theorem chkAxIC_sound (h : chkAxIC G db = true) :
   have h1 := List.all_eq_true.mp h (Form.circ F) (mem_goalPool.mpr hg)
   have h2 := List.all_eq_true.mp h1
     ((gAt G).filter (fun x => decide (x ∈ ats)))
-    (List.mem_sublists.mpr List.filter_sublist)
+    (List.memSublistsP.mpr List.filter_sublist)
   exact chkOne_sound (gate_true h2 ((hcongr F).trans hFf))
 
 end Irregular

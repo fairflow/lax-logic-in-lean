@@ -61,7 +61,7 @@ structure Shape where
   Hyp : ∀ {n : Nat}, Fam n → Prop
   step : ∀ {n : Nat} (f : Fam (n + 1)) (p i : Fin (n + 2)), i ≠ p →
     f.rhs i = f.rhs p → Hyp f →
-    Hyp (f.reindex (Fin.succAbove p)) ∧ ctx f ⊆ ctx (f.reindex (Fin.succAbove p))
+    Hyp (f.reindex (Fin.succAboveP p)) ∧ ctx f ⊆ ctx (f.reindex (Fin.succAboveP p))
 
 /-- **Iterated B1.**  Every family with the hypothesis reduces to a
 sub-family with pairwise distinct goals, along an injective,
@@ -82,23 +82,23 @@ theorem Shape.toDistinct (S : Shape) : ∀ (n : Nat) (f : Fam n), S.Hyp f →
         obtain ⟨i, p, hip, hgoal⟩ := hdup
         obtain ⟨hHyp', hctx'⟩ := S.step f p i hip hgoal hf
         obtain ⟨m, e', hinj', hdist', hcov', hHyp'', hctx''⟩ :=
-          S.toDistinct n (f.reindex (Fin.succAbove p)) hHyp'
-        refine ⟨m, fun k => p.succAbove (e' k), ?_, ?_, ?_, hHyp'', ?_⟩
-        · exact fun k l h => hinj' k l (Fin.succAbove_right_injective h)
+          S.toDistinct n (f.reindex (Fin.succAboveP p)) hHyp'
+        refine ⟨m, fun k => p.succAboveP (e' k), ?_, ?_, ?_, hHyp'', ?_⟩
+        · exact fun k l h => hinj' k l (Fin.succAboveP_right_injective h)
         · exact hdist'
         · intro j
           by_cases hjp : j = p
-          · obtain ⟨k₀, hk₀⟩ := Fin.exists_succAbove_eq hip
+          · obtain ⟨k₀, hk₀⟩ := Fin.exists_succAboveP_eq hip
             obtain ⟨k, hk⟩ := hcov' k₀
             exact ⟨k, by
-              show f.rhs (p.succAbove (e' k)) = f.rhs j
-              have : f.rhs (p.succAbove (e' k)) = f.rhs (p.succAbove k₀) := hk
+              show f.rhs (p.succAboveP (e' k)) = f.rhs j
+              have : f.rhs (p.succAboveP (e' k)) = f.rhs (p.succAboveP k₀) := hk
               rw [this, hk₀, hgoal, hjp]⟩
-          · obtain ⟨k₀, hk₀⟩ := Fin.exists_succAbove_eq hjp
+          · obtain ⟨k₀, hk₀⟩ := Fin.exists_succAboveP_eq hjp
             obtain ⟨k, hk⟩ := hcov' k₀
             exact ⟨k, by
-              show f.rhs (p.succAbove (e' k)) = f.rhs j
-              have : f.rhs (p.succAbove (e' k)) = f.rhs (p.succAbove k₀) := hk
+              show f.rhs (p.succAboveP (e' k)) = f.rhs j
+              have : f.rhs (p.succAboveP (e' k)) = f.rhs (p.succAboveP k₀) := hk
               rw [this, hk₀]⟩
         · exact fun x hx => hctx'' (hctx' hx)
       else
@@ -132,26 +132,26 @@ section Steps
 variable {n : Nat} (f : Fam (n + 1)) (p i : Fin (n + 2)) (hip : i ≠ p)
   (hgoal : f.rhs i = f.rhs p)
 
-theorem step_j1 (h : J1 f) : J1 (f.reindex (Fin.succAbove p)) :=
-  j1_comp (Fin.succAbove p) (succAbove_inj p) h
+theorem step_j1 (h : J1 f) : J1 (f.reindex (Fin.succAboveP p)) :=
+  j1_comp (Fin.succAboveP p) (succAbove_inj p) h
 
 include hip hgoal in
-theorem step_j2 (h : J2 f) : J2 (f.reindex (Fin.succAbove p)) :=
-  j2_comp (Fin.succAbove p) (cov_of_dup (rhs := f.rhs) p i hip hgoal) h
+theorem step_j2 (h : J2 f) : J2 (f.reindex (Fin.succAboveP p)) :=
+  j2_comp (Fin.succAboveP p) (cov_of_dup (rhs := f.rhs) p i hip hgoal) h
 
-theorem step_j3 (h : J3 f) : J3 (f.reindex (Fin.succAbove p)) :=
-  j3_comp (Fin.succAbove p) h
+theorem step_j3 (h : J3 f) : J3 (f.reindex (Fin.succAboveP p)) :=
+  j3_comp (Fin.succAboveP p) h
 
-theorem step_fnot {F : Form} (h : FNot f F) : FNot (f.reindex (Fin.succAbove p)) F :=
-  fNot_comp (Fin.succAbove p) h
+theorem step_fnot {F : Form} (h : FNot f F) : FNot (f.reindex (Fin.succAboveP p)) F :=
+  fNot_comp (Fin.succAboveP p) h
 
 theorem step_j5 {k : Nat} {Δs : Fin (k + 1) → List Form} (h : J5 f Δs) :
-    J5 (f.reindex (Fin.succAbove p)) Δs :=
-  j5_comp (Fin.succAbove p) h
+    J5 (f.reindex (Fin.succAboveP p)) Δs :=
+  j5_comp (Fin.succAboveP p) h
 
 theorem step_j6 {k : Nat} {Δs : Fin (k + 1) → List Form} (h : J6 f Δs) :
-    J6 (f.reindex (Fin.succAbove p)) Δs :=
-  j6_comp (Fin.succAbove p) h
+    J6 (f.reindex (Fin.succAboveP p)) Δs :=
+  j6_comp (Fin.succAboveP p) h
 
 end Steps
 
@@ -162,7 +162,7 @@ def shapeAt (F : Form) : Shape where
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1, step_j2 f p i hip hgoal h.2.1, step_j3 f p h.2.2.1,
       step_fnot f p h.2.2.2⟩,
-     ctxAt_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+     ctxAt_sub (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1 h.2.2.2⟩
 
 /-- The barren `⋈^∨` shape. -/
@@ -171,7 +171,7 @@ def shapeOr : Shape where
   Hyp f := J1 f ∧ J2 f ∧ J3 f
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1, step_j2 f p i hip hgoal h.2.1, step_j3 f p h.2.2⟩,
-     ctxOr_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+     ctxOr_sub (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1⟩
 
 /-- The RefAt-relaxed (J2) of the barren `⋈^◯`. -/
@@ -187,10 +187,10 @@ def shapeCirc : Shape where
   Hyp f := J1 f ∧ J2r f ∧ J3 f
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1,
-      j2r_comp (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+      j2r_comp (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
         (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1,
       step_j3 f p h.2.2⟩,
-     ctxOr_sub_relaxed (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+     ctxOr_sub_relaxed (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1⟩
 
 /-- The fallible `⋈^At` shape. -/
@@ -199,7 +199,7 @@ def shapeAtF (F : Form) : Shape where
   Hyp f := J1 f ∧ J2 f ∧ FNot f F
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1, step_j2 f p i hip hgoal h.2.1, step_fnot f p h.2.2⟩,
-     joinCtxAtF_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+     joinCtxAtF_sub (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1 h.2.2⟩
 
 /-- The fallible `⋈^∨` shape. -/
@@ -208,7 +208,7 @@ def shapeOrF : Shape where
   Hyp f := J1 f ∧ J2 f
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1, step_j2 f p i hip hgoal h.2⟩,
-     joinCtxOrF_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+     joinCtxOrF_sub (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2⟩
 
 /-- The promise `⋈^At` shape, under a fixed promise family `Δs`. -/
@@ -218,7 +218,7 @@ def shapeAtP {k : Nat} (F : Form) (Δs : Fin (k + 1) → List Form) : Shape wher
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1, step_j2 f p i hip hgoal h.2.1, step_j5 f p h.2.2.1,
       step_j6 f p h.2.2.2.1, step_fnot f p h.2.2.2.2⟩,
-     joinCtxAtP_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+     joinCtxAtP_sub (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1 h.2.2.2.2 h.2.2.1⟩
 
 /-- The promise `⋈^∨`/`⋈^◯` shape, under a fixed promise family `Δs`. -/
@@ -228,7 +228,7 @@ def shapeOrP {k : Nat} (Δs : Fin (k + 1) → List Form) : Shape where
   step f p i hip hgoal h :=
     ⟨⟨step_j1 f p h.1, step_j2 f p i hip hgoal h.2.1, step_j5 f p h.2.2.1,
       step_j6 f p h.2.2.2⟩,
-     joinCtxOrP_sub (Fin.succAbove p) p (succAbove_ne' p) (succAbove_surj p)
+     joinCtxOrP_sub (Fin.succAboveP p) p (succAbove_ne' p) (succAbove_surj p)
        (cov_of_dup (rhs := f.rhs) p i hip hgoal) h.1 h.2.1 h.2.2.1⟩
 
 /-! ## 4. The restricted contract

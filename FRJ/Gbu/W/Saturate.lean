@@ -32,7 +32,7 @@ import FRJ.Gbu.W.Closure
 import FRJ.StepW
 import FRJ.SoundW
 import FRJ.Gbu.W.Exclusion
--- 2026-09-03: `List.mem_sublists` from the local Mathlib-free kit.
+-- 2026-09-03: `List.memSublistsP` from the local Mathlib-free kit.
 import Meta.Portable
 
 namespace FRJ.Gbu.W
@@ -141,7 +141,7 @@ theorem canonSeq_mem_univ {G : Form} {s : WSeq} (h : WfSeq G s) :
   | reg t Γ C =>
       obtain ⟨hΓ, hC, ht⟩ := h
       simp only [univList, canonSeq, List.mem_append, List.mem_flatMap,
-        List.mem_map, List.mem_cons, List.mem_sublists]
+        List.mem_map, List.mem_cons, List.memSublistsP]
       refine Or.inl ⟨t, ?_, canonCtx (gPool G) Γ, canonCtx_sublist,
         C, mem_goalPool.mpr hC, rfl⟩
       rcases ht with rfl | rfl | ⟨W, rfl, hW⟩
@@ -151,7 +151,7 @@ theorem canonSeq_mem_univ {G : Form} {s : WSeq} (h : WfSeq G s) :
   | irr Ξ Θ C =>
       obtain ⟨hSt, hTh, hC⟩ := h
       simp only [univList, canonSeq, List.mem_append, List.mem_flatMap,
-        List.mem_map, List.mem_sublists]
+        List.mem_map, List.memSublistsP]
       exact Or.inr ⟨canonCtx (gPool G) Ξ, canonCtx_sublist,
         canonCtx (gPool G) Θ, canonCtx_sublist,
         C, mem_goalPool.mpr hC, rfl⟩
@@ -1470,7 +1470,7 @@ theorem reindex_irr {G : Form} {db : List (WRow G)}
   rw [hlat] at hlsub hmem_l
   have hseqnd : ((a :: t).map IrrT.seq).Nodup :=
     ((hlsub.map IrrT.seq).trans (irrTs_seq_sublist db)).nodup hnd
-  refine ⟨a, t, List.mem_sublists.mpr hlsub, ⟨?_, ?_⟩, ?_⟩
+  refine ⟨a, t, List.memSublistsP.mpr hlsub, ⟨?_, ?_⟩, ?_⟩
   · intro j
     obtain ⟨tr, htr, h1, h2, h3⟩ := hmem_l j
     obtain ⟨i, hi⟩ := List.mem_iff_get.mp htr
@@ -1537,7 +1537,7 @@ theorem reindex_reg {G : Form} {db : List (WRow G)}
         exact absurd htr List.not_mem_nil
     | cons b u => exact ⟨b, u, rfl⟩
   rw [hlat] at hlsub hmem_l
-  refine ⟨b, u, List.mem_sublists.mpr hlsub, ?_, ?_⟩
+  refine ⟨b, u, List.memSublistsP.mpr hlsub, ?_, ?_⟩
   · intro i
     obtain ⟨tr, htr, h1, h2, h3⟩ := hmem_l i
     obtain ⟨i', hi'⟩ := List.mem_iff_get.mp htr
@@ -1622,7 +1622,7 @@ theorem cov_axIC : ∀ (F : Form) (ats : List Form), ats ⊆ gAt G →
     refine List.mem_flatMap.mpr ⟨.circ F, mem_goalPool.mpr hg, ?_⟩
     refine List.mem_filterMap.mpr
       ⟨(gAt G).filter (fun x => decide (x ∈ ats)),
-       List.mem_sublists.mpr List.filter_sublist, ?_⟩
+       List.memSublistsP.mpr List.filter_sublist, ?_⟩
     exact dif_pos ⟨hc1, hc2, hg⟩
   exact stored_of_emitted (sub_stepAll (by simp [emitters]) _ hemit)
 
@@ -1806,7 +1806,7 @@ theorem cov_impInI : ∀ (Ξ₂ ΘΛ₂ Λ : List Form) (A B : Form),
     refine List.mem_flatMap.mpr ⟨tr, htr, ?_⟩
     refine List.mem_flatMap.mpr
       ⟨tr.Θ.filter (fun y => decide (y ∈ Λ)),
-       List.mem_sublists.mpr List.filter_sublist, ?_⟩
+       List.memSublistsP.mpr List.filter_sublist, ?_⟩
     refine List.mem_filterMap.mpr
       ⟨.imp A tr.C, mem_goalPool.mpr hg, ?_⟩
     exact dif_pos ⟨rfl, hA', hg⟩

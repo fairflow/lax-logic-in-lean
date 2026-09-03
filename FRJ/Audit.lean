@@ -59,7 +59,7 @@ namespace FRJ
 #guard_msgs in
 #print axioms completeness_of_discrete
 
-/-- info: 'FRJ.completeness_of_allMet' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.completeness_of_allMet' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms completeness_of_allMet
 
@@ -128,7 +128,7 @@ namespace FRJ
 -- **Contexts are sets.**  The transport `Σ ≐ Σ' → Θ ≐ Θ' →
 -- FRJi G Σ Θ C → FRJi G Σ' Θ' C` — declared FALSE for this family while
 -- `Ax^I` pinned its own zone, a theorem since the deslime.
-/-- info: 'FRJ.transportI' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.transportI' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms transportI
 
@@ -139,7 +139,7 @@ namespace FRJ
 #guard_msgs in
 #print axioms covers_mono
 
-/-- info: 'FRJ.transportR' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.transportR' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms transportR
 

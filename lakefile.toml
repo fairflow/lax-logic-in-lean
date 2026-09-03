@@ -112,11 +112,18 @@ root = "tools.CheckProbe"
 # checked by default).  #decide command in tools/DecideCmd.lean.  (2026-09-02)
 [[lean_lib]]
 name = "DecideTools"
-globs = ["tools.Svg", "tools.Decide", "tools.DecideCmd"]
+globs = ["tools.Svg", "tools.Decide", "tools.DecideCmd", "tools.PllMain"]
 
 [[lean_exe]]
 name = "pll"
-root = "tools.Decide"
+root = "tools.PllMain"
+
+# pllbench: like-for-like comparison of PLL decision procedures over a
+# cell file — FRJW+checkClosed against the G4c oracle, per-cell timings,
+# disagreements flagged.  (2026-09-03, Matthew's modularity point.)
+[[lean_exe]]
+name = "pllbench"
+root = "tools.Bench"
 
 
 # Historical note: on v4.22.0-rc3 the `laxrun` binary segfaulted at startup

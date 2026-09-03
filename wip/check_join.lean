@@ -42,12 +42,12 @@ theorem distinctB_cons {G : Form} {a : IrrT G} {t : List (IrrT G)} :
 with pairwise distinct goals. -/
 def famsDG (G : Form) (db : List (WRow G)) : List (List (IrrT G)) :=
   ((List.range (goalPool G).length).flatMap
-    (fun m => List.sublistsLen (m + 1) (irrTs db))).filter distinctB
+    (fun m => List.sublistsLenP (m + 1) (irrTs db))).filter distinctB
 
 /-- Promise families: sublists of the regular store of length `1 .. |Ĝ^◯| + 1`. -/
 def pfams (G : Form) (db : List (WRow G)) : List (List (RegT G)) :=
   (List.range ((dedupF (gCirc G)).length + 1)).flatMap
-    (fun m => List.sublistsLen (m + 1) (regTs db))
+    (fun m => List.sublistsLenP (m + 1) (regTs db))
 
 theorem mem_famsDG {G : Form} {db : List (WRow G)} {l : List (IrrT G)}
     (hsub : l.Sublist (irrTs db)) (hlen : 1 ≤ l.length)
@@ -56,7 +56,7 @@ theorem mem_famsDG {G : Form} {db : List (WRow G)} {l : List (IrrT G)}
   refine List.mem_filter.mpr ⟨?_, hd⟩
   refine List.mem_flatMap.mpr ⟨l.length - 1, ?_, ?_⟩
   · exact List.mem_range.mpr (by omega)
-  · exact List.mem_sublistsLen.mpr ⟨hsub, by omega⟩
+  · exact List.memSublistsLenP.mpr ⟨hsub, by omega⟩
 
 theorem mem_pfams {G : Form} {db : List (WRow G)} {l : List (RegT G)}
     (hsub : l.Sublist (regTs db)) (hlen : 1 ≤ l.length)
@@ -64,7 +64,7 @@ theorem mem_pfams {G : Form} {db : List (WRow G)} {l : List (RegT G)}
     l ∈ pfams G db := by
   refine List.mem_flatMap.mpr ⟨l.length - 1, ?_, ?_⟩
   · exact List.mem_range.mpr (by omega)
-  · exact List.mem_sublistsLen.mpr ⟨hsub, by omega⟩
+  · exact List.memSublistsLenP.mpr ⟨hsub, by omega⟩
 
 /-! ## 2. The bounds, from distinct goals and distinct rows -/
 
@@ -124,7 +124,7 @@ theorem distinctB_of_get {G : Form} : ∀ (l : List (IrrT G)),
         apply this
         change (t.get i).C = a.C
         rw [hi, hbc]
-      · have := h i.succ j.succ (fun e => hij (Fin.succ_injective _ e))
+      · have := h i.succ j.succ (fun e => hij (Fin.succP_injective _ e))
         simpa [List.get_cons_succ] using this
 
 /-- The reindexed stored family of a distinct-goal clause instance has
@@ -197,7 +197,7 @@ theorem famsDG_of_reindex {G : Form} {db : List (WRow G)} {n : Nat}
          ((a :: t).get i₁).Θ = ((a :: t).get i₂).Θ ∧
          ((a :: t).get i₁).C = ((a :: t).get i₂).C)) :
     (a :: t) ∈ famsDG G db :=
-  have hsub := List.mem_sublists.mp hsubl
+  have hsub := List.memSublistsP.mp hsubl
   have hd := distinctB_of_reindex hdist hsame hnd
   mem_famsDG hsub (Nat.succ_le_succ (Nat.zero_le _)) (length_le_goalPool hsub hd) hd
 
@@ -209,7 +209,7 @@ theorem pfams_of_reindex {G : Form} {db : List (WRow G)} (hnd : (db.map (·.s)).
     (hsame : SameReg tps Δs Ds (fun i => ((b :: u).get i).t)
       (fun i => ((b :: u).get i).Γ) (fun i => ((b :: u).get i).C)) :
     (b :: u) ∈ pfams G db :=
-  have hsub := List.mem_sublists.mp hsubl
+  have hsub := List.memSublistsP.mp hsubl
   mem_pfams hsub (Nat.succ_le_succ (Nat.zero_le _))
     (Nat.le_trans (length_le_of_reindex_reg hnd hsub hsame) (by omega))
 

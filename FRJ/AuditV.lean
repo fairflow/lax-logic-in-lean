@@ -44,7 +44,7 @@ namespace FRJ
 
 /-! ## The embedding: paper ⊆ repaired -/
 
-/-- info: 'FRJ.provableV_of_provable' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.provableV_of_provable' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms provableV_of_provable
 

@@ -709,7 +709,7 @@ theorem not_PLL_nn_circ_bot_by_calculus :
 #guard_msgs in
 #print axioms not_PLL_neg_circ_bot_via_calculus
 
-/-- info: 'FRJ.provable_circ_atom' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.provable_circ_atom' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms provable_circ_atom
 
