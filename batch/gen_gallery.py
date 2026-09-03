@@ -6,7 +6,9 @@ for line in rd('batch/results.tsv').split('\n'):
     if len(p)<5: continue
     n,tag,f,v,ms = p[0],p[1],p[2],p[3],p[4]
     d=(p[5] if len(p)>5 else '').strip().replace('�','')
+    nf=(p[6] if len(p)>6 else '').strip().replace('�','')
     rec={'n':n,'tag':tag,'f':f,'v':v,'ms':int(ms)}
+    if nf and nf != f: rec['norm']=nf
     if d.startswith('term'): rec['term']=d[4:].strip()
     elif d.startswith('model'):
         m=re.search(r'(\d+) worlds .* minimised (\d+)', d)
@@ -23,6 +25,9 @@ diff=[r for r in d if r.get('raw') and r.get('min') and r['raw']!=r['min']]
 # Rm usage: how many refuted cells need no non-reflexive Rm edge
 def rmc(s): return len(re.findall(r'marker-end="url\(#aRm\)"', s or ''))
 nofm=[r for r in d if 'svg_min' in r and rmc(r['svg_min'])==0]
+normd=[r for r in d if 'norm' in r]
+TOP='(⊥ ⊃ ⊥)'
+normTop=[r for r in normd if r['norm'].strip() in (TOP,'⊤')]
 
 head = '''<title>PLL Decider Batch</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -88,6 +93,8 @@ td.detail{font-size:.8rem;color:var(--muted);max-width:330px;overflow-wrap:anywh
  box-shadow:var(--shadow);display:flex;flex-direction:column}
 .card header{padding:13px 15px 11px;border-bottom:1px solid var(--line)}
 .card .cf{font-size:.93rem;overflow-wrap:anywhere;margin-bottom:7px}
+.nf{font-family:"IBM Plex Mono","DejaVu Sans Mono",ui-monospace,monospace;font-size:.82rem;
+ color:var(--accent);margin-top:3px}
 .meta{display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:.75rem;color:var(--muted)}
 .pic{background:#fff;padding:8px;overflow-x:auto;min-height:90px}
 .pic svg{display:block;max-width:100%;height:auto}
@@ -119,8 +126,10 @@ for r in d:
     elif r.get('raw'): det=f"{r['raw']} worlds &rarr; {r['min']} minimised"
     else: det='&mdash;'
     nv=r['tag'].split()[0]
-    rowsH.append(f'<tr data-v="{cls}" data-nv="{nv}"><td class="num">{r["n"]}</td>'
-      f'<td class="tag">{esc(r["tag"])}</td><td class="f">{esc(r["f"])}</td>'
+    rowsH.append(f'<tr data-v="{cls}" data-nv="{nv}" data-nm="{"norm" if "norm" in r else ""}"><td class="num">{r["n"]}</td>'
+      f'<td class="tag">{esc(r["tag"])}</td><td class="f">{esc(r["f"])}'
+      + (f'<div class="nf">&rarr; {esc(r["norm"])}</div>' if 'norm' in r else '')
+      + '</td>'
       f'<td><span class="pill {cls}">{lbl}</span></td><td class="ms">{r["ms"]}&thinsp;ms</td>'
       f'<td class="detail">{det}</td></tr>')
 
@@ -141,6 +150,7 @@ for r in d:
     norm = ' &middot; no R<sub>m</sub>' if rmc(r['svg_min'])==0 else ''
     cards.append(f'''<article class="card" data-nv="{r['tag'].split()[0]}">
 <header><div class="cf">{esc(r['f'])}</div>
+{('<div class="nf">&rarr; ' + esc(r['norm']) + '</div>') if 'norm' in r else ''}
 <div class="meta"><span class="pill REFUTED">refuted</span><span>{wc}{norm}</span>
 <span>{r['ms']}&thinsp;ms</span></div></header>
 <div class="pic" id="pic{n}">{r['svg_min']}</div>{tog}</article>''')
@@ -158,8 +168,9 @@ body=f'''<div class="wrap">
 <div class="stat"><b>{len(d)}</b><span>cells</span></div>
 <div class="stat"><b>{len(diff)}</b><span>views differ</span></div>
 <div class="stat"><b>{len(nofm)}</b><span>no R<sub>m</sub> needed</span></div>
+<div class="stat"><b>{len(normd)}</b><span>simplified</span></div>
 </div>
-<p class="note">Every verdict is certified in-process: the engine's store passed <span class="mono">checkClosed</span>, whose soundness theorem pins <span class="mono">[propext, Quot.sound]</span>. Undecided means <em>not-closed-within-bound</em> at this budget — a frontier marker, never a verdict about the formula. Proof terms print de&nbsp;Bruijn indices bare; <span class="mono">λ</span> is the ⊃-intro binder and <span class="mono">λ'</span> the monadic one, so <span class="mono">bind&nbsp;t&nbsp;u</span> shows as <span class="mono">((λ'.&nbsp;u)&nbsp;t)</span>.</p>
+<p class="note">Every verdict is certified in-process: the engine's store passed <span class="mono">checkClosed</span>, whose soundness theorem pins <span class="mono">[propext, Quot.sound]</span>. Undecided means <em>not-closed-within-bound</em> at this budget — a frontier marker, never a verdict about the formula. Formulas are first normalised by the CERTIFIED simpset (`Rewrite.simplifyWith`), so `C[◯◯φ]` becomes `C[◯φ]` in every context; where that changed the formula the normal form is shown in blue under it, and the verdict transfers back by `Interd.closed_iff`. Proof terms print de&nbsp;Bruijn indices bare; <span class="mono">λ</span> is the ⊃-intro binder and <span class="mono">λ'</span> the monadic one, so <span class="mono">bind&nbsp;t&nbsp;u</span> shows as <span class="mono">((λ'.&nbsp;u)&nbsp;t)</span>.</p>
 
 <h2>All {len(d)} cells</h2>
 <p class="h2sub">Graded by variable count, ◯-depth and ⊃-nesting, to ◯-depth 4 and ⊃-nesting 4. The last column carries the proof term for proved cells and the world counts for refuted ones.</p>
@@ -172,6 +183,7 @@ body=f'''<div class="wrap">
 <button aria-pressed="false" data-f="1v">1 variable</button>
 <button aria-pressed="false" data-f="2v">2 variables</button>
 <button aria-pressed="false" data-f="3v">3 variables</button>
+<button aria-pressed="false" data-f="norm">simplified</button>
 </div>
 <div class="tablewrap"><table><thead><tr><th>#</th><th>class</th><th>formula</th><th>verdict</th><th>time</th><th>term / model</th></tr></thead>
 <tbody id="tb">{''.join(rowsH)}</tbody></table></div>
@@ -205,7 +217,7 @@ function wire(id,sel){{
       x.setAttribute('aria-pressed',x===b?'true':'false');}});
     var f=b.dataset.f;
     [].forEach.call(document.querySelectorAll(sel),function(el){{
-      el.hidden = !(f==='all'||el.dataset.v===f||el.dataset.nv===f);}});
+      el.hidden = !(f==='all'||el.dataset.v===f||el.dataset.nv===f||el.dataset.nm===f);}});
   }});
 }}
 wire('tf','#tb tr'); wire('cf','#cg .card');

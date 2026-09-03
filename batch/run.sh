@@ -20,6 +20,7 @@ while IFS=$'\t' read -r n tag f; do
     [ -z "$verdict" ] && verdict="UNKNOWN"
     detail=$(echo "$res" | grep -E '^model|^term' | head -1 | cut -c1-80)
   fi
-  printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$n" "$tag" "$f" "$verdict" "$ms" "$detail" >> $OUT/results.tsv
+  norm=$(echo "$res" | grep '^normalised' | head -1 | sed 's/^normalised *//; s/   *(certified.*//')
+  printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\n' "$n" "$tag" "$f" "$verdict" "$ms" "$detail" "$norm" >> $OUT/results.tsv
   echo "$n $verdict ${ms}ms  $f"
 done < $OUT/formulas.txt

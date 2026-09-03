@@ -1,129 +1,129 @@
-001	0v ◯0	⊥ ⊃ ⊥	PROVED	206	term      (λ. 0)
-002	0v ◯0	⊤	PROVED	49	term      (λ. 0)
-003	0v ◯0	⊥ ∨ ⊤	PROVED	51	term      (λ. 0)
-004	0v ◯0	⊥ ∧ ⊤	REFUTED	49	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-005	0v ◯1	◯⊥	REFUTED	50	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-006	0v ◯1	¬◯⊥	REFUTED	48	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-007	0v ◯1	◯⊤	PROVED	48	term      (λ. 0)
-008	0v ◯1	◯⊥ ⊃ ⊥	REFUTED	50	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-009	0v ◯1	◯⊥ ∨ ¬◯⊥	REFUTED	54	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-010	0v ◯1	◯⊥ ∧ ⊤	REFUTED	51	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-011	0v ◯1	⊥ ⊃ ◯⊥	PROVED	54	term      (λ. 0)
-012	0v ◯1	◯(⊥ ∨ ⊤)	PROVED	54	term      (λ. 0)
-013	0v ◯2	◯◯⊥	REFUTED	50	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-014	0v ◯2	◯◯⊥ ⊃ ◯⊥	PROVED	49	term      (λ. 0)
-015	0v ◯2	◯⊥ ⊃ ◯◯⊥	PROVED	50	term      (λ. 0)
-016	0v ◯2	◯(◯⊥ ⊃ ⊥)	REFUTED	51	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-017	0v ◯2	(◯⊥ ∧ ◯⊤) ⊃ ◯(⊥ ∧ ⊤)	PROVED	50	term      (λ. 0)
-018	0v ◯2	◯(⊥ ∨ ⊤) ⊃ (◯⊥ ∨ ◯⊤)	PROVED	49	term      (λ. 0)
-019	0v ◯3	◯◯◯⊥	REFUTED	48	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-020	0v ◯3	◯◯◯⊥ ⊃ ◯⊥	PROVED	55	term      (λ. 0)
-021	1v ◯0	p ⊃ p	PROVED	55	term      (λ. 0)
-022	1v ◯0	p	REFUTED	49	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-023	1v ◯0	p ∨ ¬p	REFUTED	49	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-024	1v ◯0	p ∧ p ⊃ p	PROVED	47	term      (λ. 0)
-025	1v ◯0	¬¬p ⊃ p	REFUTED	49	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-026	1v ◯0	p ⊃ ¬¬p	PROVED	48	term      (λ. (λ. ((λ. 0) (0 1))))
-027	1v ◯0	(p ⊃ ⊥) ∨ p	REFUTED	49	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-028	1v ◯0	p ∨ (p ⊃ ⊥)	REFUTED	49	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-029	1v ◯1	p ⊃ ◯p	PROVED	48	term      (λ. val 0)
-030	1v ◯1	◯p ⊃ p	REFUTED	48	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-031	1v ◯1	◯p	REFUTED	54	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-032	1v ◯1	◯p ∨ ¬◯p	REFUTED	84	model     3 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-033	1v ◯1	◯p ∧ p ⊃ p	PROVED	47	term      (λ. ((λ. ((λ. 0) 1.1)) 0.2))
-034	1v ◯1	◯(p ∨ ¬p)	REFUTED	48	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-035	1v ◯1	◯p ⊃ ◯(p ∨ p)	PROVED	47	term      (λ. 0)
-036	1v ◯1	◯(p ∧ p) ⊃ ◯p	PROVED	47	term      (λ. 0)
-037	1v ◯1	◯p ⊃ (◯p ∨ ◯p)	PROVED	48	term      (λ. 0)
-038	1v ◯1	(◯p ∧ ◯p) ⊃ ◯p	PROVED	48	term      (λ. 0)
-039	1v ◯1	¬◯p ⊃ ¬p	PROVED	54	term      (λ. (λ. ((λ. 0) (1 val 0))))
-040	1v ◯1	¬p ⊃ ¬◯p	REFUTED	231	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-041	1v ◯2	◯◯p ⊃ ◯p	PROVED	48	term      (λ. 0)
-042	1v ◯2	◯p ⊃ ◯◯p	PROVED	48	term      (λ. 0)
-043	1v ◯2	◯(◯p ⊃ p)	REFUTED	49	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-044	1v ◯2	◯◯p	REFUTED	49	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-045	1v ◯2	◯(◯p ∨ p)	REFUTED	49	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-046	1v ◯2	◯(◯p ∧ p) ⊃ ◯p	PROVED	48	term      (λ. ((λ'. ((λ. ((λ. 1) 1.1)) 0.2)) 0))
-047	1v ◯2	(◯◯p ∨ ◯p) ⊃ ◯p	PROVED	47	term      (λ. 0)
-048	1v ◯2	◯◯p ⊃ (◯p ∧ ◯◯p)	PROVED	48	term      (λ. 0)
-049	1v ◯2	¬◯◯p ⊃ ¬◯p	PROVED	54	term      (λ. 0)
-050	1v ⊃2	((p ⊃ ⊥) ⊃ p) ⊃ p	REFUTED	55	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-051	1v ⊃2	((◯p ⊃ ⊥) ⊃ ◯p) ⊃ ◯p	REFUTED	199	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-052	1v ⊃3	(((p ⊃ ⊥) ⊃ ⊥) ⊃ p)	REFUTED	50	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-053	1v ⊃3	(((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p)	REFUTED	55	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-054	1v ⊃3	((p ⊃ ◯p) ⊃ p) ⊃ p	PROVED	48	term      (λ. ((λ. 0) (0 (λ. val 0))))
-055	1v ⊃3	(p ⊃ (p ⊃ ◯p)) ⊃ (p ⊃ ◯p)	PROVED	50	term      (λ. (λ. val 0))
-056	1v ◯3	◯◯◯p ⊃ ◯p	PROVED	54	term      (λ. 0)
-057	1v ◯3	◯p ⊃ ◯◯◯p	PROVED	50	term      (λ. 0)
-058	1v ◯3	◯◯◯p	REFUTED	48	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-059	1v ◯3	◯(◯(◯p ⊃ p) ⊃ p)	REFUTED	160	model     3 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-060	2v ◯0	p ⊃ (q ⊃ p)	PROVED	48	term      (λ. (λ. 1))
-061	2v ◯0	(p ∧ q) ⊃ p	PROVED	48	term      (λ. ((λ. ((λ. 0) 1.1)) 0.2))
-062	2v ◯0	(p ∧ q) ⊃ q	PROVED	49	term      (λ. ((λ. ((λ. 1) 1.1)) 0.2))
-063	2v ◯0	p ⊃ (p ∨ q)	PROVED	47	term      (λ. (inl 0))
-064	2v ◯0	(p ∨ q) ⊃ (q ∨ p)	PROVED	48	term      (λ. 0)
-065	2v ◯0	(p ∧ q) ⊃ (q ∧ p)	PROVED	51	term      (λ. 0)
-066	2v ◯0	(p ⊃ q) ∨ (q ⊃ p)	REFUTED	57	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-067	2v ◯0	((p ⊃ q) ⊃ p) ⊃ p	REFUTED	52	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-068	2v ◯0	(p ∨ q) ⊃ (p ∧ q)	REFUTED	49	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-069	2v ◯0	¬(p ∧ q) ⊃ (¬p ∨ ¬q)	REFUTED	6026	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-070	2v ◯1	(◯p ∧ ◯q) ⊃ ◯(p ∧ q)	PROVED	1520	term      (λ. ((λ. ((λ. ((λ'. ((λ'. val ⟨1, 0⟩) 2)) 0)) 1.1)) 0.2))
-071	2v ◯1	◯(p ∧ q) ⊃ (◯p ∧ ◯q)	PROVED	83	term      (λ. ⟨((λ'. ((λ. ((λ. val 0) 1.1)) 0.2)) 0), ((λ'. ((λ. ((λ. v
-072	2v ◯1	◯(p ∨ q) ⊃ (◯p ∨ ◯q)	REFUTED	687	model     7 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-073	2v ◯1	(◯p ∨ ◯q) ⊃ ◯(p ∨ q)	PROVED	82	term      (λ. (case 0 of ((λ'. val (inl 0)) 0) | ((λ'. val (inr 0)) 0)))
-074	2v ◯1	(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	PROVED	363	term      (λ. (λ. ((λ'. ((λ. 0) (2 0))) 0)))
-075	2v ◯1	◯(p ⊃ q) ⊃ (◯p ⊃ ◯q)	PROVED	642	term      (λ. (λ. ((λ'. ((λ'. ((λ. val 0) (0 1))) 2)) 0)))
-076	2v ◯1	(◯p ⊃ ◯q) ⊃ ◯(p ⊃ q)	REFUTED	508	model     4 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-077	2v ◯1	◯p ⊃ (q ⊃ ◯p)	PROVED	49	term      (λ. (λ. 1))
-078	2v ◯1	(p ⊃ q) ⊃ (◯p ⊃ ◯q)	PROVED	115	term      (λ. (λ. ((λ'. ((λ. val 0) (2 0))) 0)))
-079	2v ◯1	◯(p ∧ q) ⊃ ◯(q ∧ p)	PROVED	47	term      (λ. 0)
-080	2v ◯2	◯◯(p ∧ q) ⊃ ◯(p ∧ q)	PROVED	48	term      (λ. 0)
-081	2v ◯2	◯(◯p ⊃ q) ⊃ (◯p ⊃ ◯q)	PROVED	3005	term      (λ. (λ. ((λ'. ((λ'. ((λ. val 0) (0 val 1))) 2)) 0)))
-082	2v ◯2	(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)	TIMEOUT/ERR	10031	
-083	2v ◯2	◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)	TIMEOUT/ERR	10029	
-084	2v ◯2	(◯p ⊃ ◯◯q) ⊃ (◯p ⊃ ◯q)	PROVED	50	term      (λ. 0)
-085	2v ◯2	◯((p ∨ q) ∧ ◯p) ⊃ ◯p	PROVED	50	term      (λ. ((λ'. ((λ. ((λ. 1) 1.1)) 0.2)) 0))
-086	2v ◯2	◯(p ⊃ ◯q) ⊃ (p ⊃ ◯q)	PROVED	128	term      (λ. (λ. ((λ'. ((λ. 0) (0 1))) 1)))
-087	2v ◯2	((◯p ⊃ q) ⊃ ◯p) ⊃ ◯p	REFUTED	229	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-088	2v ⊃2	((p ⊃ q) ⊃ q) ⊃ (p ∨ q)	REFUTED	80	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-089	2v ⊃2	(p ∨ q) ⊃ ((p ⊃ q) ⊃ q)	PROVED	66	term      (λ. (case 0 of (λ. ((λ. 0) (0 1))) | (λ. 1)))
-090	2v ⊃2	((◯p ⊃ q) ⊃ q) ⊃ (◯p ∨ q)	REFUTED	700	model     3 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-091	2v ⊃2	(p ⊃ (q ⊃ ⊥)) ⊃ ((p ∧ q) ⊃ ⊥)	PROVED	64	term      (λ. (λ. ((λ. ((λ. ((λ. ((λ. 0) (0 2))) (3 0))) 1.1)) 0.2)))
-092	2v ⊃3	((p ⊃ q) ⊃ (q ⊃ p)) ⊃ (q ⊃ p)	PROVED	69	term      (λ. (λ. ((λ. ((λ. 0) (0 1))) (1 (λ. 1)))))
-093	2v ⊃3	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (p ∨ ¬p)	REFUTED	538	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-094	2v ⊃3	((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p	REFUTED	952	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-095	2v ⊃3	(p ⊃ (q ⊃ ◯p)) ⊃ ((p ∧ q) ⊃ ◯p)	PROVED	63	term      (λ. (λ. ((λ. ((λ. val 0) 1.1)) 0.2)))
-096	2v mix	(◯(p ∨ q) ∧ ¬◯p) ⊃ ◯q	PROVED	103	term      (λ. ((λ. ((λ. ((λ'. (case 0 of ((λ. abort 0) (2 val 0)) | val 0))
-097	2v mix	◯((p ⊃ q) ∨ (q ⊃ p))	REFUTED	60	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t
-098	2v mix	(◯p ∧ (p ⊃ q)) ⊃ ◯q	PROVED	66	term      (λ. ((λ. ((λ. ((λ'. ((λ. val 0) (1 0))) 1)) 1.1)) 0.2))
-099	2v mix	◯(p ∧ ¬p) ⊃ ◯q	PROVED	60	term      (λ. ((λ'. ((λ. ((λ. ((λ. abort 0) (0 1))) 1.1)) 0.2)) 0))
-100	2v ◯3	◯◯◯(p ∧ q) ⊃ ◯(p ∧ q)	PROVED	54	term      (λ. 0)
-101	2v ◯3	◯(p ∧ q) ⊃ ◯◯◯(p ∧ q)	PROVED	52	term      (λ. 0)
-102	2v ◯3	◯◯(◯p ∨ q) ⊃ ◯(◯p ∨ q)	PROVED	52	term      (λ. 0)
-103	2v ◯3	◯(◯(◯p ∧ q) ⊃ q) ⊃ ◯q	TIMEOUT/ERR	10032	
-104	2v ◯3	(◯◯◯p ∧ ◯◯q) ⊃ ◯◯(◯p ∧ q)	TIMEOUT/ERR	10031	
-105	2v ◯3	◯◯(p ⊃ q) ⊃ (◯◯p ⊃ ◯◯q)	PROVED	665	term      (λ. (λ. ((λ'. ((λ'. ((λ. val 0) (0 1))) 2)) 0)))
-106	2v ◯4	◯◯◯◯p ⊃ ◯◯p	PROVED	51	term      (λ. 0)
-107	2v ◯4	◯◯(◯◯p ∨ ◯◯q) ⊃ (◯◯p ∨ ◯◯q)	TIMEOUT/ERR	10029	
-108	2v ⊃4	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (((q ⊃ p) ⊃ q) ⊃ q)	REFUTED	9306	model     3 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t
-109	2v ⊃4	((((p ⊃ q) ⊃ q) ⊃ p) ⊃ p)	REFUTED	61	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-110	2v ⊃4	((((◯p ⊃ q) ⊃ q) ⊃ ◯p) ⊃ ◯p)	REFUTED	286	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t
-111	2v ⊃4	(((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p) ⊃ (◯p ∨ ¬◯p)	TIMEOUT/ERR	10034	
-112	2v ⊃4	((p ⊃ q) ⊃ (q ⊃ r)) ⊃ ((p ⊃ q) ⊃ (p ⊃ r))	TIMEOUT/ERR	10422	
-113	2v ⊃4	(¬¬(p ∨ ¬p)) ⊃ ((p ⊃ q) ∨ (q ⊃ p))	TIMEOUT/ERR	10049	
-114	3v ◯1	(◯p ∧ (q ∨ r)) ⊃ ((◯p ∧ q) ∨ (◯p ∧ r))	TIMEOUT/ERR	10032	
-115	3v ◯1	((p ∨ q) ⊃ r) ⊃ ((p ⊃ r) ∧ (q ⊃ r))	PROVED	2820	term      (λ. ⟨(λ. ((λ. 0) (1 (inl 0)))), (λ. ((λ. 0) (1 (inr 0))))⟩)
-116	3v ◯1	((p ⊃ r) ∧ (q ⊃ r)) ⊃ ((p ∨ q) ⊃ r)	PROVED	113	term      (λ. ((λ. ((λ. (λ. (case 0 of ((λ. 0) (2 0)) | ((λ. 0) (3 0))))) 
-117	3v ◯2	(◯(p ∨ q) ∧ (p ⊃ r) ∧ (q ⊃ r)) ⊃ ◯r	PROVED	726	term      (λ. ((λ. ((λ. ((λ. ((λ. ((λ'. (case 0 of ((λ. val 0) (4 0)) | (
-118	3v ◯2	◯(p ⊃ (q ⊃ r)) ⊃ (◯p ⊃ (◯q ⊃ ◯r))	TIMEOUT/ERR	10028	
-119	3v ◯2	(◯◯p ∨ ◯q ∨ r) ⊃ ◯(◯p ∨ q ∨ r)	TIMEOUT/ERR	10029	
-120	3v ◯2	◯((p ∧ q) ∨ (q ∧ r) ∨ (r ∧ p)) ⊃ (◯p ∨ ◯q ∨ ◯r)	TIMEOUT/ERR	10031	
-121	3v ⊃3	(p ⊃ (q ⊃ r)) ⊃ ((p ∧ q) ⊃ r)	PROVED	64	term      (λ. (λ. ((λ. ((λ. ((λ. ((λ. 0) (0 2))) (3 0))) 1.1)) 0.2)))
-122	3v ⊃3	((p ∧ q) ⊃ r) ⊃ (p ⊃ (q ⊃ r))	PROVED	162	term      (λ. (λ. (λ. ((λ. 0) (2 ⟨1, 0⟩)))))
-123	3v ⊃3	((◯p ⊃ q) ⊃ r) ⊃ ((q ⊃ r) ⊃ (◯p ⊃ r))	TIMEOUT/ERR	10031	
-124	2v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (p ⊃ ◯r)	TIMEOUT/ERR	10027	
-125	3v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (◯p ⊃ ◯r)	TIMEOUT/ERR	10028	
-126	2v lax	◯(◯p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	TIMEOUT/ERR	10031	
-127	2v lax	(◯p ⊃ ◯q) ⊃ ◯(◯p ⊃ ◯q)	PROVED	8405	term      (λ. val 0)
-128	2v lax	◯(p ∧ ◯q) ⊃ (◯p ∧ ◯q)	PROVED	684	term      (λ. ⟨((λ'. ((λ. ((λ. ((λ'. val 1) 1)) 1.1)) 0.2)) 0), ((λ'. ((
-129	2v lax	(◯p ∧ ◯◯q) ⊃ ◯(p ∧ ◯q)	TIMEOUT/ERR	10028	
+001	0v ◯0	⊥ ⊃ ⊥	PROVED	331	term      (λ. 0)	
+002	0v ◯0	⊤	PROVED	55	term      (λ. 0)	
+003	0v ◯0	⊥ ∨ ⊤	PROVED	57	term      (λ. 0)	⊤
+004	0v ◯0	⊥ ∧ ⊤	REFUTED	56	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	⊥
+005	0v ◯1	◯⊥	REFUTED	56	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	
+006	0v ◯1	¬◯⊥	REFUTED	56	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+007	0v ◯1	◯⊤	PROVED	56	term      (λ. 0)	⊤
+008	0v ◯1	◯⊥ ⊃ ⊥	REFUTED	56	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+009	0v ◯1	◯⊥ ∨ ¬◯⊥	REFUTED	60	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	(¬◯⊥ ∨ ◯⊥)
+010	0v ◯1	◯⊥ ∧ ⊤	REFUTED	56	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	◯⊥
+011	0v ◯1	⊥ ⊃ ◯⊥	PROVED	57	term      (λ. 0)	⊤
+012	0v ◯1	◯(⊥ ∨ ⊤)	PROVED	56	term      (λ. 0)	⊤
+013	0v ◯2	◯◯⊥	REFUTED	55	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	◯⊥
+014	0v ◯2	◯◯⊥ ⊃ ◯⊥	PROVED	54	term      (λ. 0)	⊤
+015	0v ◯2	◯⊥ ⊃ ◯◯⊥	PROVED	54	term      (λ. 0)	⊤
+016	0v ◯2	◯(◯⊥ ⊃ ⊥)	REFUTED	56	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+017	0v ◯2	(◯⊥ ∧ ◯⊤) ⊃ ◯(⊥ ∧ ⊤)	PROVED	52	term      (λ. 0)	⊤
+018	0v ◯2	◯(⊥ ∨ ⊤) ⊃ (◯⊥ ∨ ◯⊤)	PROVED	53	term      (λ. 0)	⊤
+019	0v ◯3	◯◯◯⊥	REFUTED	53	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	◯⊥
+020	0v ◯3	◯◯◯⊥ ⊃ ◯⊥	PROVED	52	term      (λ. 0)	⊤
+021	1v ◯0	p ⊃ p	PROVED	51	term      (λ. 0)	⊤
+022	1v ◯0	p	REFUTED	52	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	
+023	1v ◯0	p ∨ ¬p	REFUTED	53	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	(¬p ∨ p)
+024	1v ◯0	p ∧ p ⊃ p	PROVED	54	term      (λ. 0)	⊤
+025	1v ◯0	¬¬p ⊃ p	REFUTED	55	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+026	1v ◯0	p ⊃ ¬¬p	PROVED	53	term      (λ. (λ. ((λ. 0) (0 1))))	
+027	1v ◯0	(p ⊃ ⊥) ∨ p	REFUTED	53	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+028	1v ◯0	p ∨ (p ⊃ ⊥)	REFUTED	54	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	(¬p ∨ p)
+029	1v ◯1	p ⊃ ◯p	PROVED	54	term      (λ. val 0)	
+030	1v ◯1	◯p ⊃ p	REFUTED	54	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+031	1v ◯1	◯p	REFUTED	54	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	
+032	1v ◯1	◯p ∨ ¬◯p	REFUTED	88	model     3 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	(¬◯p ∨ ◯p)
+033	1v ◯1	◯p ∧ p ⊃ p	PROVED	54	term      (λ. ((λ. ((λ. 0) 1.1)) 0.2))	((p ∧ ◯p) ⊃ p)
+034	1v ◯1	◯(p ∨ ¬p)	REFUTED	55	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	◯(¬p ∨ p)
+035	1v ◯1	◯p ⊃ ◯(p ∨ p)	PROVED	52	term      (λ. 0)	⊤
+036	1v ◯1	◯(p ∧ p) ⊃ ◯p	PROVED	53	term      (λ. 0)	⊤
+037	1v ◯1	◯p ⊃ (◯p ∨ ◯p)	PROVED	52	term      (λ. 0)	⊤
+038	1v ◯1	(◯p ∧ ◯p) ⊃ ◯p	PROVED	51	term      (λ. 0)	⊤
+039	1v ◯1	¬◯p ⊃ ¬p	PROVED	54	term      (λ. (λ. ((λ. 0) (1 val 0))))	
+040	1v ◯1	¬p ⊃ ¬◯p	REFUTED	240	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+041	1v ◯2	◯◯p ⊃ ◯p	PROVED	53	term      (λ. 0)	⊤
+042	1v ◯2	◯p ⊃ ◯◯p	PROVED	55	term      (λ. 0)	⊤
+043	1v ◯2	◯(◯p ⊃ p)	REFUTED	55	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+044	1v ◯2	◯◯p	REFUTED	53	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	◯p
+045	1v ◯2	◯(◯p ∨ p)	REFUTED	55	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	◯(p ∨ ◯p)
+046	1v ◯2	◯(◯p ∧ p) ⊃ ◯p	PROVED	53	term      (λ. ((λ'. ((λ. ((λ. 1) 1.1)) 0.2)) 0))	(◯(p ∧ ◯p) ⊃ ◯p)
+047	1v ◯2	(◯◯p ∨ ◯p) ⊃ ◯p	PROVED	54	term      (λ. 0)	⊤
+048	1v ◯2	◯◯p ⊃ (◯p ∧ ◯◯p)	PROVED	54	term      (λ. 0)	⊤
+049	1v ◯2	¬◯◯p ⊃ ¬◯p	PROVED	56	term      (λ. 0)	⊤
+050	1v ⊃2	((p ⊃ ⊥) ⊃ p) ⊃ p	REFUTED	60	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+051	1v ⊃2	((◯p ⊃ ⊥) ⊃ ◯p) ⊃ ◯p	REFUTED	208	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+052	1v ⊃3	(((p ⊃ ⊥) ⊃ ⊥) ⊃ p)	REFUTED	56	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+053	1v ⊃3	(((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p)	REFUTED	62	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+054	1v ⊃3	((p ⊃ ◯p) ⊃ p) ⊃ p	PROVED	53	term      (λ. ((λ. 0) (0 (λ. val 0))))	
+055	1v ⊃3	(p ⊃ (p ⊃ ◯p)) ⊃ (p ⊃ ◯p)	PROVED	53	term      (λ. (λ. val 0))	
+056	1v ◯3	◯◯◯p ⊃ ◯p	PROVED	53	term      (λ. 0)	⊤
+057	1v ◯3	◯p ⊃ ◯◯◯p	PROVED	51	term      (λ. 0)	⊤
+058	1v ◯3	◯◯◯p	REFUTED	52	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	◯p
+059	1v ◯3	◯(◯(◯p ⊃ p) ⊃ p)	REFUTED	173	model     3 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	
+060	2v ◯0	p ⊃ (q ⊃ p)	PROVED	59	term      (λ. (λ. 1))	
+061	2v ◯0	(p ∧ q) ⊃ p	PROVED	71	term      (λ. ((λ. ((λ. 0) 1.1)) 0.2))	
+062	2v ◯0	(p ∧ q) ⊃ q	PROVED	57	term      (λ. ((λ. ((λ. 1) 1.1)) 0.2))	
+063	2v ◯0	p ⊃ (p ∨ q)	PROVED	59	term      (λ. (inl 0))	
+064	2v ◯0	(p ∨ q) ⊃ (q ∨ p)	PROVED	55	term      (λ. 0)	⊤
+065	2v ◯0	(p ∧ q) ⊃ (q ∧ p)	PROVED	55	term      (λ. 0)	⊤
+066	2v ◯0	(p ⊃ q) ∨ (q ⊃ p)	REFUTED	58	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+067	2v ◯0	((p ⊃ q) ⊃ p) ⊃ p	REFUTED	59	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+068	2v ◯0	(p ∨ q) ⊃ (p ∧ q)	REFUTED	57	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	
+069	2v ◯0	¬(p ∧ q) ⊃ (¬p ∨ ¬q)	REFUTED	6219	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+070	2v ◯1	(◯p ∧ ◯q) ⊃ ◯(p ∧ q)	PROVED	1594	term      (λ. ((λ. ((λ. ((λ'. ((λ'. val ⟨1, 0⟩) 2)) 0)) 1.1)) 0.2))	
+071	2v ◯1	◯(p ∧ q) ⊃ (◯p ∧ ◯q)	PROVED	89	term      (λ. ⟨((λ'. ((λ. ((λ. val 0) 1.1)) 0.2)) 0), ((λ'. ((λ. ((λ. v	
+072	2v ◯1	◯(p ∨ q) ⊃ (◯p ∨ ◯q)	REFUTED	735	model     7 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+073	2v ◯1	(◯p ∨ ◯q) ⊃ ◯(p ∨ q)	PROVED	88	term      (λ. (case 0 of ((λ'. val (inl 0)) 0) | ((λ'. val (inr 0)) 0)))	
+074	2v ◯1	(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	PROVED	376	term      (λ. (λ. ((λ'. ((λ. 0) (2 0))) 0)))	
+075	2v ◯1	◯(p ⊃ q) ⊃ (◯p ⊃ ◯q)	PROVED	661	term      (λ. (λ. ((λ'. ((λ'. ((λ. val 0) (0 1))) 2)) 0)))	
+076	2v ◯1	(◯p ⊃ ◯q) ⊃ ◯(p ⊃ q)	REFUTED	527	model     4 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+077	2v ◯1	◯p ⊃ (q ⊃ ◯p)	PROVED	53	term      (λ. (λ. 1))	
+078	2v ◯1	(p ⊃ q) ⊃ (◯p ⊃ ◯q)	PROVED	122	term      (λ. (λ. ((λ'. ((λ. val 0) (2 0))) 0)))	
+079	2v ◯1	◯(p ∧ q) ⊃ ◯(q ∧ p)	PROVED	52	term      (λ. 0)	⊤
+080	2v ◯2	◯◯(p ∧ q) ⊃ ◯(p ∧ q)	PROVED	53	term      (λ. 0)	⊤
+081	2v ◯2	◯(◯p ⊃ q) ⊃ (◯p ⊃ ◯q)	PROVED	3144	term      (λ. (λ. ((λ'. ((λ'. ((λ. val 0) (0 val 1))) 2)) 0)))	
+082	2v ◯2	(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)	TIMEOUT/ERR	10026		
+083	2v ◯2	◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)	TIMEOUT/ERR	10024		
+084	2v ◯2	(◯p ⊃ ◯◯q) ⊃ (◯p ⊃ ◯q)	PROVED	53	term      (λ. 0)	⊤
+085	2v ◯2	◯((p ∨ q) ∧ ◯p) ⊃ ◯p	PROVED	53	term      (λ. ((λ'. ((λ. ((λ. 1) 1.1)) 0.2)) 0))	
+086	2v ◯2	◯(p ⊃ ◯q) ⊃ (p ⊃ ◯q)	PROVED	127	term      (λ. (λ. ((λ'. ((λ. 0) (0 1))) 1)))	
+087	2v ◯2	((◯p ⊃ q) ⊃ ◯p) ⊃ ◯p	REFUTED	208	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+088	2v ⊃2	((p ⊃ q) ⊃ q) ⊃ (p ∨ q)	REFUTED	61	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+089	2v ⊃2	(p ∨ q) ⊃ ((p ⊃ q) ⊃ q)	PROVED	54	term      (λ. (case 0 of (λ. ((λ. 0) (0 1))) | (λ. 1)))	
+090	2v ⊃2	((◯p ⊃ q) ⊃ q) ⊃ (◯p ∨ q)	REFUTED	691	model     3 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	(((◯p ⊃ q) ⊃ q) ⊃ (q ∨ ◯p))
+091	2v ⊃2	(p ⊃ (q ⊃ ⊥)) ⊃ ((p ∧ q) ⊃ ⊥)	PROVED	60	term      (λ. (λ. ((λ. ((λ. ((λ. ((λ. 0) (0 2))) (3 0))) 1.1)) 0.2)))	
+092	2v ⊃3	((p ⊃ q) ⊃ (q ⊃ p)) ⊃ (q ⊃ p)	PROVED	68	term      (λ. (λ. ((λ. ((λ. 0) (0 1))) (1 (λ. 1)))))	
+093	2v ⊃3	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (p ∨ ¬p)	REFUTED	543	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	((((p ⊃ q) ⊃ p) ⊃ p) ⊃ (¬p ∨ p))
+094	2v ⊃3	((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p	REFUTED	949	model     2 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+095	2v ⊃3	(p ⊃ (q ⊃ ◯p)) ⊃ ((p ∧ q) ⊃ ◯p)	PROVED	64	term      (λ. (λ. ((λ. ((λ. val 0) 1.1)) 0.2)))	
+096	2v mix	(◯(p ∨ q) ∧ ¬◯p) ⊃ ◯q	PROVED	105	term      (λ. ((λ. ((λ. ((λ'. (case 0 of ((λ. abort 0) (2 val 0)) | val 0))	((¬◯p ∧ ◯(p ∨ q)) ⊃ ◯q)
+097	2v mix	◯((p ⊃ q) ∨ (q ⊃ p))	REFUTED	63	model     3 worlds (from the calculus) → minimised 3; frame-ok=true, refutes=t	
+098	2v mix	(◯p ∧ (p ⊃ q)) ⊃ ◯q	PROVED	63	term      (λ. ((λ. ((λ. ((λ'. ((λ. val 0) (1 0))) 1)) 1.1)) 0.2))	(((p ⊃ q) ∧ ◯p) ⊃ ◯q)
+099	2v mix	◯(p ∧ ¬p) ⊃ ◯q	PROVED	57	term      (λ. ((λ'. ((λ. ((λ. ((λ. abort 0) (0 1))) 1.1)) 0.2)) 0))	(◯(¬p ∧ p) ⊃ ◯q)
+100	2v ◯3	◯◯◯(p ∧ q) ⊃ ◯(p ∧ q)	PROVED	53	term      (λ. 0)	⊤
+101	2v ◯3	◯(p ∧ q) ⊃ ◯◯◯(p ∧ q)	PROVED	54	term      (λ. 0)	⊤
+102	2v ◯3	◯◯(◯p ∨ q) ⊃ ◯(◯p ∨ q)	PROVED	54	term      (λ. 0)	⊤
+103	2v ◯3	◯(◯(◯p ∧ q) ⊃ q) ⊃ ◯q	TIMEOUT/ERR	10027		
+104	2v ◯3	(◯◯◯p ∧ ◯◯q) ⊃ ◯◯(◯p ∧ q)	TIMEOUT/ERR	10024		
+105	2v ◯3	◯◯(p ⊃ q) ⊃ (◯◯p ⊃ ◯◯q)	PROVED	666	term      (λ. (λ. ((λ'. ((λ'. ((λ. val 0) (0 1))) 2)) 0)))	(◯(p ⊃ q) ⊃ (◯p ⊃ ◯q))
+106	2v ◯4	◯◯◯◯p ⊃ ◯◯p	PROVED	53	term      (λ. 0)	⊤
+107	2v ◯4	◯◯(◯◯p ∨ ◯◯q) ⊃ (◯◯p ∨ ◯◯q)	TIMEOUT/ERR	10022		
+108	2v ⊃4	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (((q ⊃ p) ⊃ q) ⊃ q)	REFUTED	9645	model     3 worlds (from the calculus) → minimised 2; frame-ok=true, refutes=t	
+109	2v ⊃4	((((p ⊃ q) ⊃ q) ⊃ p) ⊃ p)	REFUTED	64	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	
+110	2v ⊃4	((((◯p ⊃ q) ⊃ q) ⊃ ◯p) ⊃ ◯p)	REFUTED	305	model     1 worlds (from the calculus) → minimised 1; frame-ok=true, refutes=t	
+111	2v ⊃4	(((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p) ⊃ (◯p ∨ ¬◯p)	TIMEOUT/ERR	10027		
+112	2v ⊃4	((p ⊃ q) ⊃ (q ⊃ r)) ⊃ ((p ⊃ q) ⊃ (p ⊃ r))	TIMEOUT/ERR	10226		
+113	2v ⊃4	(¬¬(p ∨ ¬p)) ⊃ ((p ⊃ q) ∨ (q ⊃ p))	TIMEOUT/ERR	10049		
+114	3v ◯1	(◯p ∧ (q ∨ r)) ⊃ ((◯p ∧ q) ∨ (◯p ∧ r))	TIMEOUT/ERR	10026		
+115	3v ◯1	((p ∨ q) ⊃ r) ⊃ ((p ⊃ r) ∧ (q ⊃ r))	PROVED	2905	term      (λ. ⟨(λ. ((λ. 0) (1 (inl 0)))), (λ. ((λ. 0) (1 (inr 0))))⟩)	
+116	3v ◯1	((p ⊃ r) ∧ (q ⊃ r)) ⊃ ((p ∨ q) ⊃ r)	PROVED	114	term      (λ. ((λ. ((λ. (λ. (case 0 of ((λ. 0) (2 0)) | ((λ. 0) (3 0))))) 	
+117	3v ◯2	(◯(p ∨ q) ∧ (p ⊃ r) ∧ (q ⊃ r)) ⊃ ◯r	PROVED	758	term      (λ. ((λ. ((λ. ((λ. ((λ. ((λ'. (case 0 of ((λ. val 0) (4 0)) | (	(((p ⊃ r) ∧ ((q ⊃ r) ∧ ◯(p ∨ q))) ⊃ ◯r)
+118	3v ◯2	◯(p ⊃ (q ⊃ r)) ⊃ (◯p ⊃ (◯q ⊃ ◯r))	TIMEOUT/ERR	10025		
+119	3v ◯2	(◯◯p ∨ ◯q ∨ r) ⊃ ◯(◯p ∨ q ∨ r)	TIMEOUT/ERR	10023		
+120	3v ◯2	◯((p ∧ q) ∨ (q ∧ r) ∨ (r ∧ p)) ⊃ (◯p ∨ ◯q ∨ ◯r)	TIMEOUT/ERR	10028		
+121	3v ⊃3	(p ⊃ (q ⊃ r)) ⊃ ((p ∧ q) ⊃ r)	PROVED	62	term      (λ. (λ. ((λ. ((λ. ((λ. ((λ. 0) (0 2))) (3 0))) 1.1)) 0.2)))	
+122	3v ⊃3	((p ∧ q) ⊃ r) ⊃ (p ⊃ (q ⊃ r))	PROVED	165	term      (λ. (λ. (λ. ((λ. 0) (2 ⟨1, 0⟩)))))	
+123	3v ⊃3	((◯p ⊃ q) ⊃ r) ⊃ ((q ⊃ r) ⊃ (◯p ⊃ r))	TIMEOUT/ERR	10026		
+124	2v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (p ⊃ ◯r)	TIMEOUT/ERR	10025		
+125	3v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (◯p ⊃ ◯r)	TIMEOUT/ERR	10026		
+126	2v lax	◯(◯p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	TIMEOUT/ERR	10025		
+127	2v lax	(◯p ⊃ ◯q) ⊃ ◯(◯p ⊃ ◯q)	PROVED	8387	term      (λ. val 0)	
+128	2v lax	◯(p ∧ ◯q) ⊃ (◯p ∧ ◯q)	PROVED	686	term      (λ. ⟨((λ'. ((λ. ((λ. ((λ'. val 1) 1)) 1.1)) 0.2)) 0), ((λ'. ((	
+129	2v lax	(◯p ∧ ◯◯q) ⊃ ◯(p ∧ ◯q)	TIMEOUT/ERR	10021		
