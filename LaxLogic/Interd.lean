@@ -38,6 +38,21 @@ theorem trans {φ ψ χ : PLLFormula} (h₁ : Interd φ ψ) (h₂ : Interd ψ χ
     Interd φ χ :=
   ⟨Deriv.cutHead h₁.1 h₂.1, Deriv.cutHead h₂.2 h₁.2⟩
 
+/-- **Interderivable formulas are derivable together from the empty
+context.**  This is what lets a decision procedure work on a NORMALISED
+formula and report the verdict about the ORIGINAL: with
+`Rewrite.simplifyWith_interd` it gives
+`Nonempty (LaxND [] φ) ↔ Nonempty (LaxND [] (simplifyWith rs n φ))`.
+
+Note it transfers PROVABILITY, not proof TERMS: `Interd` is `Prop`-valued
+(a pair of `Nonempty`s), so a `Tm` for the normal form does not yield a
+`Tm` for the original.  A tool may print the term it actually has — the
+one for the normal form — and prove the original by this lemma. -/
+theorem closed_iff {φ ψ : PLLFormula} (h : Interd φ ψ) :
+    Nonempty (LaxND [] φ) ↔ Nonempty (LaxND [] ψ) :=
+  ⟨fun ⟨d⟩ => h.1.elim fun e => ⟨.impElim (.impIntro e) d⟩,
+   fun ⟨d⟩ => h.2.elim fun e => ⟨.impElim (.impIntro e) d⟩⟩
+
 theorem and_congr {φ φ' ψ ψ' : PLLFormula} (h₁ : Interd φ φ') (h₂ : Interd ψ ψ') :
     Interd (φ.and ψ) (φ'.and ψ') :=
   ⟨Deriv.andIntro (Deriv.cutHead (Deriv.andElim1 (Deriv.iden (.head _))) h₁.1)

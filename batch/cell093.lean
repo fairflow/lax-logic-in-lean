@@ -18,10 +18,10 @@ def K_cell093 : Kripke := (cm_cell093).toKripke cm_cell093_ok cm_cell093_root
 
 set_option maxRecDepth 1000000 in
 theorem cell093_force :
-    ¬ (K_cell093).force (K_cell093).root (ofPLL (((((PLLFormula.prop "p").ifThen (PLLFormula.prop "q")).ifThen (PLLFormula.prop "p")).ifThen (PLLFormula.prop "p")).ifThen ((PLLFormula.prop "p").or ((PLLFormula.prop "p").ifThen PLLFormula.falsePLL)))) := by decide
+    ¬ (K_cell093).force (K_cell093).root (ofPLL (((((PLLFormula.prop "p").ifThen (PLLFormula.prop "q")).ifThen (PLLFormula.prop "p")).ifThen (PLLFormula.prop "p")).ifThen (((PLLFormula.prop "p").ifThen PLLFormula.falsePLL).or (PLLFormula.prop "p")))) := by decide
 
-/-- **⊬ ((((p ⊃ q) ⊃ p) ⊃ p) ⊃ (p ∨ ¬p))** — refuted by the finite rooted poset model above. -/
-theorem cell093 : ¬ Nonempty (PLLND.LaxND [] (((((PLLFormula.prop "p").ifThen (PLLFormula.prop "q")).ifThen (PLLFormula.prop "p")).ifThen (PLLFormula.prop "p")).ifThen ((PLLFormula.prop "p").or ((PLLFormula.prop "p").ifThen PLLFormula.falsePLL)))) :=
+/-- **⊬ ((((p ⊃ q) ⊃ p) ⊃ p) ⊃ (¬p ∨ p))** — refuted by the finite rooted poset model above. -/
+theorem cell093 : ¬ Nonempty (PLLND.LaxND [] (((((PLLFormula.prop "p").ifThen (PLLFormula.prop "q")).ifThen (PLLFormula.prop "p")).ifThen (PLLFormula.prop "p")).ifThen (((PLLFormula.prop "p").ifThen PLLFormula.falsePLL).or (PLLFormula.prop "p")))) :=
   not_derivable_of_countermodel K_cell093 cell093_force
 
 /-- Control: the model is not degenerate — it still forces `⊤`. -/

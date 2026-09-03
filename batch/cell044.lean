@@ -18,10 +18,10 @@ def K_cell044 : Kripke := (cm_cell044).toKripke cm_cell044_ok cm_cell044_root
 
 set_option maxRecDepth 1000000 in
 theorem cell044_force :
-    ¬ (K_cell044).force (K_cell044).root (ofPLL (((PLLFormula.prop "p").somehow).somehow)) := by decide
+    ¬ (K_cell044).force (K_cell044).root (ofPLL ((PLLFormula.prop "p").somehow)) := by decide
 
-/-- **⊬ ◯◯p** — refuted by the finite rooted poset model above. -/
-theorem cell044 : ¬ Nonempty (PLLND.LaxND [] (((PLLFormula.prop "p").somehow).somehow)) :=
+/-- **⊬ ◯p** — refuted by the finite rooted poset model above. -/
+theorem cell044 : ¬ Nonempty (PLLND.LaxND [] ((PLLFormula.prop "p").somehow)) :=
   not_derivable_of_countermodel K_cell044 cell044_force
 
 /-- Control: the model is not degenerate — it still forces `⊤`. -/

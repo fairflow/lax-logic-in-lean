@@ -1,83 +1,131 @@
-# pllbench: 129 cells; frjw cfg rounds=16 jmax=3 pmax=2 lamCap=24
+# pllbench: one engine per process, 20s wall cap each; process startup ~52ms (identical for both engines, NOT subtracted)
 id	class	formula	frjw	frjw_ms	g4c	g4c_ms	note
-001	0v ◯0	⊥ ⊃ ⊥	valid	0	valid	0	
-002	0v ◯0	⊤	valid	0	valid	0	
-003	0v ◯0	⊥ ∨ ⊤	valid	0	valid	0	
-004	0v ◯0	⊥ ∧ ⊤	invalid	0	invalid	0	
-005	0v ◯1	◯⊥	invalid	0	invalid	0	
-006	0v ◯1	¬◯⊥	invalid	0	invalid	0	
-007	0v ◯1	◯⊤	valid	0	valid	0	
-008	0v ◯1	◯⊥ ⊃ ⊥	invalid	0	invalid	0	
-009	0v ◯1	◯⊥ ∨ ¬◯⊥	invalid	0	invalid	0	
-010	0v ◯1	◯⊥ ∧ ⊤	invalid	0	invalid	0	
-011	0v ◯1	⊥ ⊃ ◯⊥	valid	0	valid	0	
-012	0v ◯1	◯(⊥ ∨ ⊤)	valid	0	valid	0	
-013	0v ◯2	◯◯⊥	invalid	0	invalid	0	
-014	0v ◯2	◯◯⊥ ⊃ ◯⊥	valid	0	valid	0	
-015	0v ◯2	◯⊥ ⊃ ◯◯⊥	valid	0	valid	0	
-016	0v ◯2	◯(◯⊥ ⊃ ⊥)	invalid	0	invalid	0	
-017	0v ◯2	(◯⊥ ∧ ◯⊤) ⊃ ◯(⊥ ∧ ⊤)	valid	0	valid	0	
-018	0v ◯2	◯(⊥ ∨ ⊤) ⊃ (◯⊥ ∨ ◯⊤)	valid	0	valid	0	
-019	0v ◯3	◯◯◯⊥	invalid	0	invalid	0	
-020	0v ◯3	◯◯◯⊥ ⊃ ◯⊥	valid	0	valid	0	
-021	1v ◯0	p ⊃ p	valid	0	valid	0	
-022	1v ◯0	p	invalid	0	invalid	0	
-023	1v ◯0	p ∨ ¬p	invalid	0	invalid	0	
-024	1v ◯0	p ∧ p ⊃ p	valid	0	valid	0	
-025	1v ◯0	¬¬p ⊃ p	invalid	0	invalid	0	
-026	1v ◯0	p ⊃ ¬¬p	valid	0	valid	0	
-027	1v ◯0	(p ⊃ ⊥) ∨ p	invalid	0	invalid	0	
-028	1v ◯0	p ∨ (p ⊃ ⊥)	invalid	0	invalid	0	
-029	1v ◯1	p ⊃ ◯p	valid	0	valid	0	
-030	1v ◯1	◯p ⊃ p	invalid	0	invalid	0	
-031	1v ◯1	◯p	invalid	0	invalid	0	
-032	1v ◯1	◯p ∨ ¬◯p	invalid	0	invalid	0	
-033	1v ◯1	◯p ∧ p ⊃ p	valid	0	valid	0	
-034	1v ◯1	◯(p ∨ ¬p)	invalid	0	invalid	0	
-035	1v ◯1	◯p ⊃ ◯(p ∨ p)	valid	0	valid	0	
-036	1v ◯1	◯(p ∧ p) ⊃ ◯p	valid	0	valid	0	
-037	1v ◯1	◯p ⊃ (◯p ∨ ◯p)	valid	0	valid	0	
-038	1v ◯1	(◯p ∧ ◯p) ⊃ ◯p	valid	0	valid	0	
-039	1v ◯1	¬◯p ⊃ ¬p	valid	0	valid	0	
-040	1v ◯1	¬p ⊃ ¬◯p	invalid	0	invalid	0	
-041	1v ◯2	◯◯p ⊃ ◯p	valid	0	valid	0	
-042	1v ◯2	◯p ⊃ ◯◯p	valid	0	valid	0	
-043	1v ◯2	◯(◯p ⊃ p)	invalid	0	invalid	0	
-044	1v ◯2	◯◯p	invalid	0	invalid	0	
-045	1v ◯2	◯(◯p ∨ p)	invalid	0	invalid	0	
-046	1v ◯2	◯(◯p ∧ p) ⊃ ◯p	valid	0	valid	0	
-047	1v ◯2	(◯◯p ∨ ◯p) ⊃ ◯p	valid	0	valid	0	
-048	1v ◯2	◯◯p ⊃ (◯p ∧ ◯◯p)	valid	0	valid	0	
-049	1v ◯2	¬◯◯p ⊃ ¬◯p	valid	0	valid	0	
-050	1v ⊃2	((p ⊃ ⊥) ⊃ p) ⊃ p	invalid	0	invalid	0	
-051	1v ⊃2	((◯p ⊃ ⊥) ⊃ ◯p) ⊃ ◯p	invalid	0	invalid	0	
-052	1v ⊃3	(((p ⊃ ⊥) ⊃ ⊥) ⊃ p)	invalid	0	invalid	0	
-053	1v ⊃3	(((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p)	invalid	0	invalid	0	
-054	1v ⊃3	((p ⊃ ◯p) ⊃ p) ⊃ p	valid	0	valid	0	
-055	1v ⊃3	(p ⊃ (p ⊃ ◯p)) ⊃ (p ⊃ ◯p)	valid	0	valid	0	
-056	1v ◯3	◯◯◯p ⊃ ◯p	valid	0	valid	0	
-057	1v ◯3	◯p ⊃ ◯◯◯p	valid	0	valid	0	
-058	1v ◯3	◯◯◯p	invalid	0	invalid	0	
-059	1v ◯3	◯(◯(◯p ⊃ p) ⊃ p)	invalid	0	invalid	0	
-060	2v ◯0	p ⊃ (q ⊃ p)	valid	0	valid	0	
-061	2v ◯0	(p ∧ q) ⊃ p	valid	0	valid	0	
-062	2v ◯0	(p ∧ q) ⊃ q	valid	0	valid	0	
-063	2v ◯0	p ⊃ (p ∨ q)	valid	0	valid	0	
-064	2v ◯0	(p ∨ q) ⊃ (q ∨ p)	valid	0	valid	0	
-065	2v ◯0	(p ∧ q) ⊃ (q ∧ p)	valid	0	valid	0	
-066	2v ◯0	(p ⊃ q) ∨ (q ⊃ p)	invalid	0	invalid	0	
-067	2v ◯0	((p ⊃ q) ⊃ p) ⊃ p	invalid	0	invalid	0	
-068	2v ◯0	(p ∨ q) ⊃ (p ∧ q)	invalid	0	invalid	0	
-069	2v ◯0	¬(p ∧ q) ⊃ (¬p ∨ ¬q)	invalid	0	invalid	0	
-070	2v ◯1	(◯p ∧ ◯q) ⊃ ◯(p ∧ q)	valid	0	valid	0	
-071	2v ◯1	◯(p ∧ q) ⊃ (◯p ∧ ◯q)	valid	0	valid	0	
-072	2v ◯1	◯(p ∨ q) ⊃ (◯p ∨ ◯q)	invalid	0	invalid	0	
-073	2v ◯1	(◯p ∨ ◯q) ⊃ ◯(p ∨ q)	valid	0	valid	0	
-074	2v ◯1	(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	
-075	2v ◯1	◯(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	
-076	2v ◯1	(◯p ⊃ ◯q) ⊃ ◯(p ⊃ q)	invalid	0	invalid	0	
-077	2v ◯1	◯p ⊃ (q ⊃ ◯p)	valid	0	valid	0	
-078	2v ◯1	(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	
-079	2v ◯1	◯(p ∧ q) ⊃ ◯(q ∧ p)	valid	0	valid	0	
-080	2v ◯2	◯◯(p ∧ q) ⊃ ◯(p ∧ q)	valid	0	valid	0	
-081	2v ◯2	◯(◯p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	0	valid	0	
+001	0v ◯0	⊥ ⊃ ⊥	valid	56	valid	57	FRJW FASTER
+002	0v ◯0	⊤	valid	55	valid	55	
+003	0v ◯0	⊥ ∨ ⊤	valid	55	valid	57	FRJW FASTER
+004	0v ◯0	⊥ ∧ ⊤	invalid	57	invalid	55	
+005	0v ◯1	◯⊥	invalid	56	invalid	56	
+006	0v ◯1	¬◯⊥	invalid	57	invalid	54	
+007	0v ◯1	◯⊤	valid	57	valid	55	
+008	0v ◯1	◯⊥ ⊃ ⊥	invalid	55	invalid	55	
+009	0v ◯1	◯⊥ ∨ ¬◯⊥	invalid	58	invalid	53	
+010	0v ◯1	◯⊥ ∧ ⊤	invalid	53	invalid	60	FRJW FASTER
+011	0v ◯1	⊥ ⊃ ◯⊥	valid	53	valid	53	
+012	0v ◯1	◯(⊥ ∨ ⊤)	valid	53	valid	53	
+013	0v ◯2	◯◯⊥	invalid	53	invalid	56	FRJW FASTER
+014	0v ◯2	◯◯⊥ ⊃ ◯⊥	valid	55	valid	59	FRJW FASTER
+015	0v ◯2	◯⊥ ⊃ ◯◯⊥	valid	54	valid	52	
+016	0v ◯2	◯(◯⊥ ⊃ ⊥)	invalid	53	invalid	52	
+017	0v ◯2	(◯⊥ ∧ ◯⊤) ⊃ ◯(⊥ ∧ ⊤)	valid	52	valid	52	
+018	0v ◯2	◯(⊥ ∨ ⊤) ⊃ (◯⊥ ∨ ◯⊤)	valid	54	valid	53	
+019	0v ◯3	◯◯◯⊥	invalid	52	invalid	54	FRJW FASTER
+020	0v ◯3	◯◯◯⊥ ⊃ ◯⊥	valid	57	valid	56	
+021	1v ◯0	p ⊃ p	valid	52	valid	56	FRJW FASTER
+022	1v ◯0	p	invalid	54	invalid	55	FRJW FASTER
+023	1v ◯0	p ∨ ¬p	invalid	55	invalid	53	
+024	1v ◯0	p ∧ p ⊃ p	valid	53	valid	53	
+025	1v ◯0	¬¬p ⊃ p	invalid	54	invalid	53	
+026	1v ◯0	p ⊃ ¬¬p	valid	55	valid	55	
+027	1v ◯0	(p ⊃ ⊥) ∨ p	invalid	53	invalid	55	FRJW FASTER
+028	1v ◯0	p ∨ (p ⊃ ⊥)	invalid	55	invalid	53	
+029	1v ◯1	p ⊃ ◯p	valid	56	valid	52	
+030	1v ◯1	◯p ⊃ p	invalid	57	invalid	56	
+031	1v ◯1	◯p	invalid	57	invalid	56	
+032	1v ◯1	◯p ∨ ¬◯p	invalid	88	invalid	56	
+033	1v ◯1	◯p ∧ p ⊃ p	valid	56	valid	59	FRJW FASTER
+034	1v ◯1	◯(p ∨ ¬p)	invalid	59	invalid	58	
+035	1v ◯1	◯p ⊃ ◯(p ∨ p)	valid	54	valid	52	
+036	1v ◯1	◯(p ∧ p) ⊃ ◯p	valid	55	valid	56	FRJW FASTER
+037	1v ◯1	◯p ⊃ (◯p ∨ ◯p)	valid	57	valid	58	FRJW FASTER
+038	1v ◯1	(◯p ∧ ◯p) ⊃ ◯p	valid	55	valid	56	FRJW FASTER
+039	1v ◯1	¬◯p ⊃ ¬p	valid	56	valid	53	
+040	1v ◯1	¬p ⊃ ¬◯p	invalid	241	invalid	57	
+041	1v ◯2	◯◯p ⊃ ◯p	valid	53	valid	53	
+042	1v ◯2	◯p ⊃ ◯◯p	valid	56	valid	54	
+043	1v ◯2	◯(◯p ⊃ p)	invalid	53	invalid	57	FRJW FASTER
+044	1v ◯2	◯◯p	invalid	58	invalid	55	
+045	1v ◯2	◯(◯p ∨ p)	invalid	55	invalid	53	
+046	1v ◯2	◯(◯p ∧ p) ⊃ ◯p	valid	57	valid	54	
+047	1v ◯2	(◯◯p ∨ ◯p) ⊃ ◯p	valid	53	valid	57	FRJW FASTER
+048	1v ◯2	◯◯p ⊃ (◯p ∧ ◯◯p)	valid	52	valid	52	
+049	1v ◯2	¬◯◯p ⊃ ¬◯p	valid	54	valid	58	FRJW FASTER
+050	1v ⊃2	((p ⊃ ⊥) ⊃ p) ⊃ p	invalid	54	invalid	56	FRJW FASTER
+051	1v ⊃2	((◯p ⊃ ⊥) ⊃ ◯p) ⊃ ◯p	invalid	212	invalid	53	
+052	1v ⊃3	(((p ⊃ ⊥) ⊃ ⊥) ⊃ p)	invalid	57	invalid	53	
+053	1v ⊃3	(((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p)	invalid	64	invalid	54	
+054	1v ⊃3	((p ⊃ ◯p) ⊃ p) ⊃ p	valid	53	valid	54	FRJW FASTER
+055	1v ⊃3	(p ⊃ (p ⊃ ◯p)) ⊃ (p ⊃ ◯p)	valid	56	valid	55	
+056	1v ◯3	◯◯◯p ⊃ ◯p	valid	55	valid	53	
+057	1v ◯3	◯p ⊃ ◯◯◯p	valid	56	valid	54	
+058	1v ◯3	◯◯◯p	invalid	53	invalid	53	
+059	1v ◯3	◯(◯(◯p ⊃ p) ⊃ p)	invalid	170	invalid	56	
+060	2v ◯0	p ⊃ (q ⊃ p)	valid	56	valid	55	
+061	2v ◯0	(p ∧ q) ⊃ p	valid	56	valid	53	
+062	2v ◯0	(p ∧ q) ⊃ q	valid	54	valid	52	
+063	2v ◯0	p ⊃ (p ∨ q)	valid	56	valid	53	
+064	2v ◯0	(p ∨ q) ⊃ (q ∨ p)	valid	54	valid	54	
+065	2v ◯0	(p ∧ q) ⊃ (q ∧ p)	valid	51	valid	53	FRJW FASTER
+066	2v ◯0	(p ⊃ q) ∨ (q ⊃ p)	invalid	60	invalid	52	
+067	2v ◯0	((p ⊃ q) ⊃ p) ⊃ p	invalid	54	invalid	55	FRJW FASTER
+068	2v ◯0	(p ∨ q) ⊃ (p ∧ q)	invalid	60	invalid	52	
+069	2v ◯0	¬(p ∧ q) ⊃ (¬p ∨ ¬q)	invalid	6284	invalid	58	
+070	2v ◯1	(◯p ∧ ◯q) ⊃ ◯(p ∧ q)	valid	1609	valid	57	
+071	2v ◯1	◯(p ∧ q) ⊃ (◯p ∧ ◯q)	valid	90	valid	58	
+072	2v ◯1	◯(p ∨ q) ⊃ (◯p ∨ ◯q)	invalid	723	invalid	669	
+073	2v ◯1	(◯p ∨ ◯q) ⊃ ◯(p ∨ q)	valid	89	valid	55	
+074	2v ◯1	(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	valid	379	valid	54	
+075	2v ◯1	◯(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	679	valid	57	
+076	2v ◯1	(◯p ⊃ ◯q) ⊃ ◯(p ⊃ q)	invalid	534	invalid	57	
+077	2v ◯1	◯p ⊃ (q ⊃ ◯p)	valid	55	valid	55	
+078	2v ◯1	(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	125	valid	54	
+079	2v ◯1	◯(p ∧ q) ⊃ ◯(q ∧ p)	valid	55	valid	54	
+080	2v ◯2	◯◯(p ∧ q) ⊃ ◯(p ∧ q)	valid	53	valid	52	
+081	2v ◯2	◯(◯p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	3155	valid	57	
+082	2v ◯2	(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)	valid	10938	valid	54	
+083	2v ◯2	◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)	timeout	20024	invalid	805	g4c decided, frjw did not
+084	2v ◯2	(◯p ⊃ ◯◯q) ⊃ (◯p ⊃ ◯q)	valid	55	valid	52	
+085	2v ◯2	◯((p ∨ q) ∧ ◯p) ⊃ ◯p	valid	52	valid	54	FRJW FASTER
+086	2v ◯2	◯(p ⊃ ◯q) ⊃ (p ⊃ ◯q)	valid	128	valid	53	
+087	2v ◯2	((◯p ⊃ q) ⊃ ◯p) ⊃ ◯p	invalid	208	invalid	51	
+088	2v ⊃2	((p ⊃ q) ⊃ q) ⊃ (p ∨ q)	invalid	61	invalid	53	
+089	2v ⊃2	(p ∨ q) ⊃ ((p ⊃ q) ⊃ q)	valid	57	valid	55	
+090	2v ⊃2	((◯p ⊃ q) ⊃ q) ⊃ (◯p ∨ q)	invalid	687	invalid	53	
+091	2v ⊃2	(p ⊃ (q ⊃ ⊥)) ⊃ ((p ∧ q) ⊃ ⊥)	valid	61	valid	54	
+092	2v ⊃3	((p ⊃ q) ⊃ (q ⊃ p)) ⊃ (q ⊃ p)	valid	72	valid	55	
+093	2v ⊃3	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (p ∨ ¬p)	invalid	542	invalid	51	
+094	2v ⊃3	((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p	invalid	953	invalid	53	
+095	2v ⊃3	(p ⊃ (q ⊃ ◯p)) ⊃ ((p ∧ q) ⊃ ◯p)	valid	62	valid	54	
+096	2v mix	(◯(p ∨ q) ∧ ¬◯p) ⊃ ◯q	valid	106	valid	53	
+097	2v mix	◯((p ⊃ q) ∨ (q ⊃ p))	invalid	60	invalid	53	
+098	2v mix	(◯p ∧ (p ⊃ q)) ⊃ ◯q	valid	59	valid	53	
+099	2v mix	◯(p ∧ ¬p) ⊃ ◯q	valid	56	valid	52	
+100	2v ◯3	◯◯◯(p ∧ q) ⊃ ◯(p ∧ q)	valid	51	valid	53	FRJW FASTER
+101	2v ◯3	◯(p ∧ q) ⊃ ◯◯◯(p ∧ q)	valid	53	valid	55	FRJW FASTER
+102	2v ◯3	◯◯(◯p ∨ q) ⊃ ◯(◯p ∨ q)	valid	54	valid	52	
+103	2v ◯3	◯(◯(◯p ∧ q) ⊃ q) ⊃ ◯q	invalid	10785	invalid	51	
+104	2v ◯3	(◯◯◯p ∧ ◯◯q) ⊃ ◯◯(◯p ∧ q)	valid	10751	valid	57	
+105	2v ◯3	◯◯(p ⊃ q) ⊃ (◯◯p ⊃ ◯◯q)	valid	658	valid	54	
+106	2v ◯4	◯◯◯◯p ⊃ ◯◯p	valid	53	valid	52	
+107	2v ◯4	◯◯(◯◯p ∨ ◯◯q) ⊃ (◯◯p ∨ ◯◯q)	timeout	20028	invalid	802	g4c decided, frjw did not
+108	2v ⊃4	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (((q ⊃ p) ⊃ q) ⊃ q)	invalid	9472	invalid	54	
+109	2v ⊃4	((((p ⊃ q) ⊃ q) ⊃ p) ⊃ p)	invalid	61	invalid	55	
+110	2v ⊃4	((((◯p ⊃ q) ⊃ q) ⊃ ◯p) ⊃ ◯p)	invalid	298	invalid	52	
+111	2v ⊃4	(((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p) ⊃ (◯p ∨ ¬◯p)	timeout	20033	invalid	56	g4c decided, frjw did not
+112	2v ⊃4	((p ⊃ q) ⊃ (q ⊃ r)) ⊃ ((p ⊃ q) ⊃ (p ⊃ r))	timeout	20938	valid	66	g4c decided, frjw did not
+113	2v ⊃4	(¬¬(p ∨ ¬p)) ⊃ ((p ⊃ q) ∨ (q ⊃ p))	invalid	13697	invalid	54	
+114	3v ◯1	(◯p ∧ (q ∨ r)) ⊃ ((◯p ∧ q) ∨ (◯p ∧ r))	valid	15559	valid	59	
+115	3v ◯1	((p ∨ q) ⊃ r) ⊃ ((p ⊃ r) ∧ (q ⊃ r))	valid	2836	valid	56	
+116	3v ◯1	((p ⊃ r) ∧ (q ⊃ r)) ⊃ ((p ∨ q) ⊃ r)	valid	110	valid	54	
+117	3v ◯2	(◯(p ∨ q) ∧ (p ⊃ r) ∧ (q ⊃ r)) ⊃ ◯r	valid	760	valid	57	
+118	3v ◯2	◯(p ⊃ (q ⊃ r)) ⊃ (◯p ⊃ (◯q ⊃ ◯r))	timeout	20028	valid	60	g4c decided, frjw did not
+119	3v ◯2	(◯◯p ∨ ◯q ∨ r) ⊃ ◯(◯p ∨ q ∨ r)	timeout	20027	valid	55	g4c decided, frjw did not
+120	3v ◯2	◯((p ∧ q) ∨ (q ∧ r) ∨ (r ∧ p)) ⊃ (◯p ∨ ◯q ∨ ◯r)	timeout	20029	don't-know	56	g4c decided, frjw did not
+121	3v ⊃3	(p ⊃ (q ⊃ r)) ⊃ ((p ∧ q) ⊃ r)	valid	59	valid	53	
+122	3v ⊃3	((p ∧ q) ⊃ r) ⊃ (p ⊃ (q ⊃ r))	valid	163	valid	55	
+123	3v ⊃3	((◯p ⊃ q) ⊃ r) ⊃ ((q ⊃ r) ⊃ (◯p ⊃ r))	timeout	20031	invalid	50	g4c decided, frjw did not
+124	2v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (p ⊃ ◯r)	timeout	20034	valid	64	g4c decided, frjw did not
+125	3v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (◯p ⊃ ◯r)	timeout	20031	valid	60	g4c decided, frjw did not
+126	2v lax	◯(◯p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	valid	19773	valid	51	
+127	2v lax	(◯p ⊃ ◯q) ⊃ ◯(◯p ⊃ ◯q)	valid	8347	valid	53	
+128	2v lax	◯(p ∧ ◯q) ⊃ (◯p ∧ ◯q)	valid	687	valid	55	
+129	2v lax	(◯p ∧ ◯◯q) ⊃ ◯(p ∧ ◯q)	valid	10683	valid	53	

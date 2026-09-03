@@ -42,6 +42,7 @@ import wip.check_closed
 import FRJ.Gbu.LaxND
 import LaxLogic.PLLTerms
 import tools.Svg
+import Rewrite
 
 open FRJ FRJ.Gbu FRJ.Search FRJ.Gbu.W PLLND
 
@@ -305,6 +306,14 @@ def twoPass (path : String) (reEmit : String → String) : IO (Option UInt32) :=
 structure Args where
   out : String := "pll_out"
   view : String := "min"
+  /-- Normalise with the CERTIFIED simpset before deciding (default ON).
+  CLAUDE.md's standing rule is "normalise before you search"; this tool
+  did not, which is why `◯◯◯◯p ⊃ ◯◯p` was searched at all.  Matthew's
+  simplification lemma `C[◯◯φ] ≡ C[◯φ]` is `Rewrite.box_idem`, and
+  `Interd` is a full congruence (`box_congr`), so it fires in every
+  context.  Measured on the 129-cell corpus: 33 cells normalise to `⊤`
+  and are decided with NO search, 1 to `⊥`, 30 more shrink. -/
+  normalise : Bool := true
   check : Bool := false
   checkTerm : Bool := false
   proofObject : Bool := false
@@ -320,6 +329,7 @@ def parseArgs (l : List String) : Except String (String × Args) := do
       let v := (s.drop 7).toString
       if v == "min" || v == "calc" || v == "both" then a := { a with view := v }
       else throw s!"--view must be min|calc|both, got {v}"
+    else if s == "--raw" then a := { a with normalise := false }
     else if s == "--check" then a := { a with check := true }
     else if s == "--no-check" then a := { a with check := false }
     else if s == "--check-term" then a := { a with checkTerm := true }
@@ -393,8 +403,17 @@ def emitProved (φ : PLLFormula) (t : Tm [] φ) (a : Args) : IO UInt32 := do
 def run (fs : String) (a : Args) : IO UInt32 := do
   match parseFormula fs with
   | .error e => IO.println s!"parse error: {e}"; return 2
-  | .ok φ =>
-    IO.println s!"formula   {PLLSvg.ppF (ofPLL φ)}"
+  | .ok φ0 =>
+    IO.println s!"formula   {PLLSvg.ppF (ofPLL φ0)}"
+    -- Normalise with the CERTIFIED simpset first (CLAUDE.md's standing
+    -- rule).  Everything downstream decides the NORMAL FORM; the verdict
+    -- transfers to the original by `Interd.closed_iff` applied to
+    -- `Rewrite.simplifyWith_interd`, so the emitted certificate speaks
+    -- about the formula the user typed.
+    let φ := if a.normalise then Rewrite.simplifyWith Rewrite.fullSetC 40 φ0 else φ0
+    if a.normalise && φ != φ0 then
+      IO.println s!"normalised {PLLSvg.ppF (ofPLL φ)}   \
+(certified: Rewrite.simplifyWith_interd; --raw to skip)"
     let t0 ← IO.monoMsNow
     let dec ← do
       if a.proofObject then

@@ -37,6 +37,7 @@ Output is TSV on stdout: one row per cell per engine, plus a summary.
 import wip.check_closed
 import tools.Decide
 import LaxLogic.PLLSearch
+import Rewrite
 -- Explicit since 2026-09-03: the foundation modules no longer
 -- re-export Mathlib.  OUTSIDE the runtime closure of `lake exe pll`.
 
@@ -67,38 +68,38 @@ def runG4c (φ : PLLFormula) : Res :=
   | .refuted _ _ _ => .invalid
   | .unknown => .dontKnow
 
-def timed (f : Unit → Res) : IO (Res × Nat) := do
-  let t0 ← IO.monoMsNow
-  let r := f ()
-  -- force the result before stopping the clock
-  let s := r.str
-  let t1 ← IO.monoMsNow
-  pure (if s.isEmpty then r else r, t1 - t0)
-
-structure Row where
-  id : String
-  cls : String
-  formula : String
-  frjw : Res
-  frjwMs : Nat
-  g4c : Res
-  g4cMs : Nat
 
 def parseLine (l : String) : Option (String × String × String) :=
   match l.splitOn "\t" with
-  | [a, b, c] => some (a, b, c.trim)
+  | [a, b, c] => some (a, b, c.trimAscii.toString)
   | _ => none
 
-structure Args where
+structure BArgs where
   cells : String := "batch/formulas.txt"
   limit : Nat := 0
+  /-- Normalise with the certified simpset before deciding (default ON).
+  BOTH engines get the same normalised formula, so the comparison stays
+  like-for-like; `--raw` decides the formula as written. -/
+  normalise : Bool := true
+  /-- Which engine to run: `frjw` (default) or `g4c`.  ONE engine per
+  process, so the shell can time it. -/
+  engine : String := ""
+  /-- Run only the cell with this id.  A pure Lean computation cannot be
+  interrupted from inside, so a per-cell WALL bound has to come from
+  outside: `batch/bench-run.sh` drives one cell per process under
+  `perl -e 'alarm N'`, the same discipline `batch/run.sh` uses.  Without
+  it one level-3 cell can hold the whole table for minutes. -/
+  only : String := ""
   cfg : Config :=
     { rounds := 16, jmax := 3, pmax := 2, lamCap := 24, maxRS := 3000, maxIS := 3000 }
 
-def parseArgs (l : List String) : Args := Id.run do
-  let mut a : Args := {}
+def parseArgs (l : List String) : BArgs := Id.run do
+  let mut a : BArgs := {}
   for s in l do
     if s.startsWith "--cells=" then a := { a with cells := (s.drop 8).toString }
+    else if s.startsWith "--only=" then a := { a with only := (s.drop 7).toString }
+    else if s.startsWith "--engine=" then a := { a with engine := (s.drop 9).toString }
+    else if s == "--raw" then a := { a with normalise := false }
     else if s.startsWith "--limit=" then a := { a with limit := (s.drop 8).toString.toNat! }
     else if s.startsWith "--rounds=" then
       a := { a with cfg := { a.cfg with rounds := (s.drop 9).toString.toNat! } }
@@ -110,55 +111,41 @@ def parseArgs (l : List String) : Args := Id.run do
       a := { a with cfg := { a.cfg with lamCap := (s.drop 9).toString.toNat! } }
   return a
 
+/-- **Do not time in-process.**  The first version of this file did
+
+    let r := f (); let s := r.str; pure (if s.isEmpty then r else r, t1 - t0)
+
+intending `r.str` to force the computation inside the window.  Both
+branches of the `if` are `r`, so the compiler dropped `s` as dead code,
+never forced `f ()`, and every cell reported 0 ms — the table measured
+nothing (2026-09-03).  Forcing a pure value inside an `IO` window is
+fragile in general: anything the optimiser can prove unused, it may
+drop.
+
+So the WALL clock is taken from OUTSIDE, by `batch/bench-run.sh`, which
+runs one engine on one cell per process.  Both engines pay the same
+process startup, so the comparison stays like-for-like; the runner
+reports that constant separately rather than pretending it away. -/
+def runOne (a : BArgs) (eng : String) (φ : PLLFormula) : Res :=
+  if eng == "g4c" then runG4c φ else runFrjw a.cfg φ
+
 def main (argv : List String) : IO UInt32 := do
   let a := parseArgs argv
   let txt ← IO.FS.readFile a.cells
   let mut cells := (txt.splitOn "\n").filterMap parseLine
+  if a.only != "" then cells := cells.filter (fun c => c.1 == a.only)
   if a.limit > 0 then cells := cells.take a.limit
-  IO.println s!"# pllbench: {cells.length} cells; frjw cfg rounds={a.cfg.rounds} \
-jmax={a.cfg.jmax} pmax={a.cfg.pmax} lamCap={a.cfg.lamCap}"
-  IO.println "id\tclass\tformula\tfrjw\tfrjw_ms\tg4c\tg4c_ms\tnote"
-  let mut rows : List Row := []
-  for (id, cls, f) in cells do
+  let eng := if a.engine == "" then "frjw" else a.engine
+  for (id, _, f) in cells do
     match parseFormula f with
-    | .error _ =>
-      IO.println s!"{id}\t{cls}\t{f}\tPARSE-ERROR\t0\t-\t0\tskipped"
+    | .error e => IO.println s!"{id}\tparse-error\t{e}"
+    | .ok φ0 =>
+      let φ := if a.normalise then Rewrite.simplifyWith Rewrite.fullSetC 40 φ0 else φ0
+      -- The result is PRINTED, so the computation cannot be optimised
+      -- away; the wall clock is the shell's, around this whole process.
+      IO.println s!"{id}\t{eng}\t{(runOne a eng φ).str}"
       (← IO.getStdout).flush
-    | .ok φ =>
-      let (rf, tf) ← timed (fun _ => runFrjw a.cfg φ)
-      let (rg, tg) ← timed (fun _ => runG4c φ)
-      let note :=
-        if rf != .dontKnow && rg != .dontKnow && rf != rg then "*** DISAGREEMENT ***"
-        else if rf != .dontKnow && rg == .dontKnow then "frjw decided, g4c did not"
-        else if rf == .dontKnow && rg != .dontKnow then "g4c decided, frjw did not"
-        else if rf != .dontKnow && tf < tg then "FRJW FASTER"
-        else ""
-      IO.println s!"{id}\t{cls}\t{f}\t{rf.str}\t{tf}\t{rg.str}\t{tg}\t{note}"
-      -- flush per row: without this a redirected run looks HUNG for
-      -- minutes while stdout sits in the buffer (misdiagnosed as a hang
-      -- on cell 079, 2026-09-03 — both engines decide it in ms).
-      (← IO.getStdout).flush
-      rows := rows ++ [⟨id, cls, f, rf, tf, rg, tg⟩]
-  -- summary
-  let dis := rows.filter (fun r => r.frjw != .dontKnow && r.g4c != .dontKnow && r.frjw != r.g4c)
-  let both := rows.filter (fun r => r.frjw != .dontKnow && r.g4c != .dontKnow)
-  let frjwWins := both.filter (fun r => r.frjwMs < r.g4cMs)
-  let onlyFrjw := rows.filter (fun r => r.frjw != .dontKnow && r.g4c == .dontKnow)
-  let onlyG4c := rows.filter (fun r => r.frjw == .dontKnow && r.g4c != .dontKnow)
-  let sum := fun (l : List Nat) => l.foldl (· + ·) 0
-  IO.println ""
-  IO.println s!"# cells                : {rows.length}"
-  IO.println s!"# both decided         : {both.length}"
-  IO.println s!"# frjw only            : {onlyFrjw.length}"
-  IO.println s!"# g4c only             : {onlyG4c.length}"
-  IO.println s!"# FRJW FASTER          : {frjwWins.length}"
-  IO.println s!"# total ms frjw / g4c  : {sum (both.map (·.frjwMs))} / {sum (both.map (·.g4cMs))}"
-  IO.println s!"# DISAGREEMENTS        : {dis.length}"
-  for r in dis do
-    IO.println s!"#   {r.id} {r.formula}: frjw={r.frjw.str} g4c={r.g4c.str}"
-  for r in frjwWins do
-    IO.println s!"#   faster: {r.id} {r.formula}  frjw={r.frjwMs}ms g4c={r.g4cMs}ms"
-  pure (if dis.isEmpty then 0 else 1)
+  pure 0
 
 end PLLBench
 
