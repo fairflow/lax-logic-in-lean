@@ -352,7 +352,58 @@ def gCirc : Neg := .circ (.atom "p")
 `s ∨ r` is, and `ψ₀ ⊬ s ∨ r`. -/
 def NEXT : List Neg := [Hs, .imp (.atom "s") (.circ (.atom "p"))]
 
+/-! The §4.11 candidate family (instance-screened first, `wip/ui_screen/`):
+a ◯-implication with a Dyckhoff-shaped antecedent, an atom-implication,
+`p` in both polarities, an unboxed goal. -/
+def dImpP : Neg := .imp (.down (.circ (.down (.imp (.atom "d") (.up (.atom "p")))))) (.up (.atom "a"))
+def dImpC_p : Neg := .imp (.down (.circ (.down (.imp (.atom "d") (.up (.atom "c")))))) (.up (.atom "p"))
+def cBoxP : Neg := .imp (.atom "c") (.circ (.atom "p"))
+def cP : Neg := .imp (.atom "c") (.up (.atom "p"))
+def boxcP : Neg := .imp (.down (.circ (.atom "c"))) (.up (.atom "p"))
+def dykE : Neg := .imp (.down (.imp (.atom "d") (.up (.atom "c")))) (.up (.atom "e"))
+def goalA : Neg := .up (.atom "a")
+def goalAC : Neg := .up (.or (.atom "a") (.atom "c"))
+def goalPQ : Neg := .up (.or (.down (.imp (.atom "p") (.up (.atom "q"))))
+                            (.down (.imp (.atom "q") (.up (.atom "p")))))
+/-- The retained guard's own goal at S1: `↑↓◯(d ⊃ p)`. -/
+def goalGuard : Neg := .up (.down (.circ (.down (.imp (.atom "d") (.up (.atom "p"))))))
+def CAND : List (String × List Neg × Neg) :=
+  [ ("S1g", [dImpP, cBoxP], goalGuard),
+    ("S1", [dImpP, cBoxP], goalA),
+    ("S2", [dImpP, cP], goalA),
+    ("S3", [dImpP, boxcP], goalA),
+    ("S5", [dImpC_p, cP], goalPQ),
+    ("S6", [dImpP, cBoxP, dykE], goalA),
+    ("S7", [dImpP, cBoxP], goalAC) ]
+
+/-- Focused kernel search (`LJFO.search`, sound by `search_sound`) on the
+E-cofinality instance `E_f, ↑c ⊢ ↑a` at S1: `uifs esearch <evalfuel> <sfuel>…`.
+A `true` is a derivation; a `false` certifies nothing. -/
+def esearch (f : Nat) (sfuels : List Nat) : IO Unit := do
+  let E := interpFS "p" f [dImpP, cBoxP] [] none
+  let seq : LSeq := .inv [E, .up (.atom "c")] [] .tru (.up (.atom "a"))
+  for sf in sfuels do
+    let t0 ← IO.monoMsNow
+    let r := search sf seq
+    let t1 ← IO.monoMsNow
+    IO.println s!"esearch S1 evalfuel={f} sfuel={sf} result={r} ms={t1 - t0}"
+    (← IO.getStdout).flush
+
 def main (args : List String) : IO Unit := do
+  if args.head? == some "esearch" then
+    let ns := (args.drop 1).map String.toNat!
+    match ns with
+    | f :: sfs => esearch f sfs
+    | [] => esearch 16 [16, 24]
+    return
+  if args.head? == some "cand" then
+    let fuels := (args.drop 1).map String.toNat!
+    let fuels := if fuels.isEmpty then [8, 12, 16, 20] else fuels
+    for n in fuels do
+      for (tag, Γ, g) in CAND do
+        row s!"{tag}_E" n Γ none
+        row s!"{tag}_A" n Γ (some g)
+    return
   let fuels := if args.isEmpty then [8, 12, 16, 20, 24] else args.map String.toNat!
   for n in fuels do
     row "SEP_E" n SEP none

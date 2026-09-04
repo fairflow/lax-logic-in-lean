@@ -1372,6 +1372,81 @@ and the cofinality instances at station fuels 6/10/14 — before any
 height-founded refactor is scoped.  OPEN, both ways: no refutation, no
 proof; the obstruction is exact.
 
+### 4.12 The candidate family screened (2026-09-04/05, Matthew's (i))
+
+**The grid** (`wip/ui_screen/gen.py`, seven stations, not a
+sweep): the base cell `S1 = [◯(d ⊃ p) ⊃ a, c ⊃ ◯p] ⇒ a` — the box on
+`◯p` is what stops the composite `c ⊃ … ⊃ a` from being derivable,
+which had closed every earlier cell — with its unboxed twin `S2`
+(control), the box moved to the atom-implication's antecedent `S3`, the
+disjunctive goal `S5 = [◯(d ⊃ c) ⊃ p, c ⊃ p] ⇒ (p ⊃ q) ∨ (q ⊃ p)`, a
+Dyckhoff hypothesis added `S6 = S1 + (d ⊃ c) ⊃ e`, the goal `a ∨ c`
+`S7`, and `p` only positive `S8` (control).  Instance screen: fourteen
+`χ` (`⊥`, `⊤`, the atoms, their boxes, `¬d`, `◯¬d`, `¬c`, `¬q`), one
+G4c process per cell under a 60 s alarm, 105 cells in one minute.
+
+| station | `Γ ⊢ G` | closing instance | survivors |
+|---|---|---|---|
+| S1 | invalid | none of 14 | **survives** |
+| S2 | invalid | `χ = c` (as designed) | — |
+| S3 | invalid | `χ = ◯c` | — |
+| S5 | invalid | none of 10; four "don't-know" (engine budget) | survives, unsettled |
+| S6 | invalid | none of 14 | **survives** |
+| S7 | invalid | none of 14 | **survives** |
+| S8 | invalid | `χ = ⊤` (as designed) | — |
+
+At S1 the conjunction of eight instance bounds is not sufficient
+either.  So S1 is the first cell of the campaign whose `∀p` is neither
+an instance nor a finite conjunction of instances.
+
+**S1's interpolants, by hand and oracle.**  Sufficient p-free formulas:
+`a`, `c` (through `c → ◯p → ◯(d ⊃ p)`, monotonicity), `◯c`, `◯⊥`,
+`◯¬d`, `X := ◯(c ∨ ¬d)`; not sufficient: `◯(d ⊃ c)`, `◯(d ⊃ ◯⊥)`.
+For a p-free goal the `∀p` is `(∃p.Γ) ⊃ a` (a sufficient `Δ` has
+`Δ, E ⊢ a` by E-minimality, and conversely), and the weakest sufficient
+formula in hand is
+
+    T := (X ⊃ a) ⊃ a,    X = ◯(c ∨ ¬d),
+
+with `Γ ⊢ X ⊃ a` valid, `T` sufficient, and `T` strictly weaker than
+`a ∨ X` (both oracle-settled).  Whether `T` is the `∀p` is whether
+`∃p.Γ ⟛ X ⊃ a`.
+
+**The chains** (`lake exe uifs cand`, station fuels 6/10/14/18): S1
+`E` 20 / 290 / 2987 / 37,632, `A` 16 / 274 / 2973 / 37,618, growth ×12
+per four units; S6 `E` up to 176,412, S3 up to 861,870.  `A₆ ⟛ a ∨ ◯⊥`
+up to absorption.  The retained guard's own chain (`S1g`, goal
+`↑↓◯(d ⊃ p)`): `(c ∧ ◯⊥) ∨ ◯¬d` at 6, then 454 / 5687 / 70,575.
+
+**Cofinality instances at S1 (G4c, 300 s each):**
+
+| instance | fuel 6 | fuel 10 | fuel 14 |
+|---|---|---|---|
+| `E_f ∧ c ⊢ a` (E-side, Δ = c) | invalid | invalid | unsettled |
+| `E_f ∧ X ⊢ a` (E-side, Δ = X) | invalid | invalid | unsettled |
+| `E_f ∧ T ⊢ A_f` | invalid | invalid | unsettled |
+| `E_f ∧ (a ∨ X) ⊢ A_f` | invalid | invalid | unsettled |
+| `E_f ∧ c ⊢ A_f` | invalid | invalid | unsettled |
+| `A_f ⊢ T` (fails only if `T` is not the `∀p`) | valid | unsettled | unsettled |
+| `A_f ⊢ a ∨ X` | valid | invalid | invalid |
+
+S6 and S7 show the same pattern (all invalid at 6 and 10, unsettled at
+14; at S6 `A₁₀ ⊬ T`, so `T` is not S6's `∀p`, as expected with the
+extra hypothesis).
+
+**What the forms say.**  `E₁₀` at S1 is
+`(G ⊃ ((c ⊃ a ∧ ◯a) ∧ a)) ∧ (c ⊃ ((G′ ⊃ a ∧ ◯a) ∧ ◯(◯⊥ ⊃ a)))` with
+`G`, `G′` the retained guards, and every disjunct of `G′` pairs `c`
+with a BOXED residue — the guard is the `∀p` of a ◯-goal, computed as
+`◯(…)` by the ◯-goal rows, and its inner box row `↓E([↑p] rest) ⊃ A(…)`
+collapses to `⊤` only once the sub-station's `E` has itself reached
+`a`: one nesting level per parked box, about ten fuel units.  So the
+four-step consequence `c ⊃ a` is expected to appear in `E_f` at station
+fuel 12–14, exactly where the G4c oracle's reach ends.  The escalation
+is the focused kernel search (`LJFO.search`, sound by `search_sound`)
+on `E_f, ↑c ⊢ ↑a` — `lake exe uifs esearch <evalfuel> <sfuel>` — whose
+result is recorded below.
+
 ---
 
 ## 5 · OPEN list
