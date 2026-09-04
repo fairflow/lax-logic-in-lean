@@ -320,12 +320,32 @@ def goalR : Neg := .up (.atom "r")
 def GZ : List Neg := [Hs, .circ (.atom "q")]
 def gUp : Neg := .up (.down (.circ (.atom "p")))
 
+/-! The cofinality reduction at the cell `{◯p ⊃ r, ◯q} ⇒ ◯p`
+(docs/ui-ljfo-clause-table.md §4.10).  With `θmax = ((◯⊥ ⊃ r) ∧ ◯q) ⊃ ◯⊥`
+the cell's ∀p (plan, 2026-08-11), every p-free Δ with Δ, Γ ⊢ ◯p has
+Δ ⊢ θmax (substitution p := ⊥), so `E_f, Δ ⊢ A_f` follows from
+  (b) E_f ⊢ (◯⊥ ⊃ r) ∧ ◯q      and      (d) ◯⊥ ⊢ A_f,
+since (◯⊥ ⊃ r) ∧ ◯q ∧ θmax ⊢ ◯⊥.  The three flags below are syntactic
+SUFFICIENT tests for (b) and (d). -/
+partial def conjs : PLLFormula → List PLLFormula
+  | .and a b => conjs a ++ conjs b
+  | c => [c]
+def hasConj (P : PLLFormula → Bool) (φ : PLLFormula) : Bool := (conjs φ).any P
+def isBoxQ : PLLFormula → Bool
+  | .somehow (.prop "q") => true
+  | _ => false
+def boxBotImpR : PLLFormula → Bool
+  | .ifThen X Y => Rewrite.absorbsBoxBot X && hasConj (· == .prop "r") Y
+  | _ => false
+
 def row (tag : String) (n : Nat) (Γ : List Neg) (g : Option Neg) : IO Unit := do
   let t0 ← IO.monoMsNow
   let φ := eraseNeg (interpFS "p" n Γ [] g)
   let t1 ← IO.monoMsNow
-  IO.println s!"{tag} fuel={n} size={size φ} ms={t1 - t0}  {pp φ}"
+  IO.println s!"{tag} fuel={n} size={size φ} ms={t1 - t0} boxQ={hasConj isBoxQ φ} bbImpR={hasConj boxBotImpR φ} absorbsBoxBot={Rewrite.absorbsBoxBot φ}  {pp φ}"
   (← IO.getStdout).flush
+
+def gCirc : Neg := .circ (.atom "p")
 
 def main (args : List String) : IO Unit := do
   let fuels := if args.isEmpty then [8, 12, 16, 20, 24] else args.map String.toNat!
@@ -333,4 +353,5 @@ def main (args : List String) : IO Unit := do
     row "SEP_E" n SEP none
     row "SEP_A" n SEP (some goalR)
     row "GZ_E"  n GZ none
+    row "GZ_A"  n GZ (some gCirc)
     row "GZ_Au" n GZ (some gUp)

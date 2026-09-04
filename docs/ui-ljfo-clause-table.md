@@ -1064,9 +1064,19 @@ fuel 14 and reaches the true `∀p` at 18; `E` reaches the true `∃p` at
 the limit identified.  The cost: raw sizes grow about ×20 per four fuel
 units; the simplifier recovers the small answer only after the fact.
 
-**Station [◯p ⊃ r, ◯q], goal ◯p (the GZ-candidate cell of
-`docs/ljfo-plan.md`; `(◯p ⊃ r) ∧ ◯q ⊬ ◯p` by the oracle, so the true
-`∀p` is not `⊤` and is unknown):** the normal forms do not collapse.
+**Station [◯p ⊃ r, ◯q], goal ◯p:** the normal forms do not collapse.
+*CORRECTED 2026-09-04 22:00.*  This paragraph originally called the
+cell "the GZ-candidate cell" with its `∀p` "unknown".  Both are wrong
+against the record: `docs/ljfo-plan.md` named it a candidate on the
+morning of 2026-08-11 and RESOLVED it that afternoon from both prongs
+— its `∀p` is `θmax = ((◯⊥ ⊃ r) ∧ ◯q) ⊃ ◯⊥` (the station's
+⊥-instance ⊃ `◯⊥`, maximal because `◯⊥ ⊢ ◯p` re-derives the goal),
+and the chain of that day was proved logically stationary from f = 6
+(`A₆ ⟛ A₇ ⟛ A₈ ⟛ θmax` on the raw values).  The record's own warning:
+"stabilisation testing must be LOGICAL, never syntactic".  What the
+table below measures is the syntactic size of the new `interpF`
+chain; §4.10 does the logical test by the reduction the record's
+mechanism gives.
 
 | station fuel | `E` (nodes) | `A`, goal `◯p` | `A`, goal `↑↓◯p` (the plan's form) |
 |---|---|---|---|
@@ -1187,6 +1197,69 @@ collapse the ladder or only thin it is untested, and no oracle can
 answer for the raw elements: the FRJW control on the fuel-6/10 `E`
 cells was unsettled at 600 s, and `LSeq.search` at search fuel 16, 24
 and 32 returned `false` in both directions, which certifies nothing.
+*Addendum 22:00: §4.10 shows the logical question at this cell never
+needed those oracles — the record's ⊥-instance mechanism reduces it to
+two small facts.*
+
+### 4.10 The cofinality refutation attempt on `{◯p ⊃ r, ◯q} ⇒ ◯p` — VALIDATED, not refuted (2026-09-04)
+
+The two route-(B) cofinality statements (`wip/ui_routeB_statements.lean`),
+instantiated at the cell with `done` the parked station and `Γ` its
+formulas:
+
+    ACofinalF:  ∀ p-free Δ,  Δ, Γ ⊢ ◯p  →  ∃ f.  E_f, Δ ⊢ A_f
+    ECofinalF:  ∀ p-free Δ ψ,  Δ, Γ ⊢ ψ  →  ∃ f.  E_f, Δ ⊢ ψ
+
+**The reduction (the record's mechanism, `docs/ljfo-plan.md` "closed
+from the proof side").**  Substituting `p := ⊥` in a derivation of
+`Δ, Γ ⊢ ◯p` gives `Δ, Γ[⊥] ⊢ ◯⊥`, i.e. `Δ ⊢ θmax` with
+`θmax = ((◯⊥ ⊃ r) ∧ ◯q) ⊃ ◯⊥`; and `Δ, Γ ⊢ ψ` gives `Δ, Γ[⊥] ⊢ ψ`.  So
+both statements hold at fuel `f` as soon as
+
+    (b)  E_f ⊢ (◯⊥ ⊃ r) ∧ ◯q          (E_f is at least the ⊥-instance)
+    (d)  ◯⊥ ⊢ A_f                     (A_f is ◯⊥-absorbing)
+
+since `(◯⊥ ⊃ r) ∧ ◯q ∧ θmax ⊢ ◯⊥`.  (b) and (d) are properties of the
+chain elements alone, so they can be tested at every fuel.
+
+**Syntactic prong (`lake exe uifs`, sufficient tests, every station
+fuel 6–22):** `E_f` has `◯q` as a conjunct and a conjunct `X ⊃ Y` with
+`X` ◯⊥-absorbing and `r` a conjunct of `Y` — true at 6, 10, 14, 18,
+22; `A_f` is ◯⊥-absorbing (`Rewrite.absorbsBoxBot`, whose certificate
+`boxBot_deriv` is a `LaxND` derivation of `◯⊥ ⊢ A_f`) — true at every
+fuel for BOTH goal forms, `◯p` and `↑↓◯p`.
+
+**Oracle prong (`pllbench --engine=g4c`, seven cells, 7 s in all):**
+
+| cell | verdict |
+|---|---|
+| `(◯⊥ ⊃ r) ∧ ◯q ∧ θmax ⊢ ◯⊥` | valid |
+| `θmax ∧ Γ ⊢ ◯p` (θmax sufficient) | valid |
+| `Γ ⊢ ◯p` (control: the cell is not trivial) | **invalid** |
+| (b) at station fuel 6 (`E` 25 nodes) and 10 (226 nodes) | valid, valid |
+| (d) at station fuel 6 (`A` 38 nodes) and 10 (339 nodes) | valid, valid |
+
+**Verdict.**  Neither cofinality statement can be refuted at this cell:
+for every p-free `Δ` the derivation goes `E_f, Δ ⊢ ◯⊥ ⊢ A_f` at every
+measured fuel.  Read with soundness (§O8: `A_f, Γ ⊢ ◯p`, hence
+`A_f ⊢ θmax` by the same substitution), the new `interpF` chain is
+LOGICALLY STATIONARY modulo `E_f` from station fuel 6 — `E_f ∧ A_f ⟛
+E_f ∧ θmax` — while its syntax grows ×6.8 per four fuel units.  This is
+the record's 2026-08-11 finding reproduced on the retaining chain, and
+its filter confirmed: a cell whose goal is settled by `◯⊥` cannot be a
+Ghilardi–Zawadowski witness.  What is NOT certified here: substitution
+admissibility (`Deriv Γ C → Deriv Γ[p:=χ] C[p:=χ]`, the plan's named
+adjunct, still without a term), and the per-fuel `absorbsBoxBot A_f =
+true` as kernel `decide`s rather than native evaluation.
+
+**The next stratum**, per the record's double filter (crank with no
+X-free disjunct; goal not settled by `◯⊥`): the goal must be unboxed
+and `p` must occur with both polarities on the hypothesis side, so
+that neither the `⊥`- nor the `⊤`-instance is extremal.  The smallest
+such shape is `{◯p ⊃ r, s ⊃ ◯p} ⇒ r`; its instance-bounds are
+`ψ₀ = ((◯⊥ ⊃ r) ∧ (s ⊃ ◯⊥)) ⊃ r` from below and `s ∨ r` from above,
+and whether either is the `∀p` is the first oracle question (results
+in the session record).
 
 ---
 
