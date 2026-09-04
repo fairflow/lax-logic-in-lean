@@ -29,6 +29,7 @@ away.
 
     lake exe pllbench [--cells=FILE] [--limit=N] [--engines=frjw,g4c]
                       [--rounds=N] [--jmax=N] [--pmax=N] [--lamCap=N]
+                      [--semi-naive|--naive]
 
 `--cells` is a TSV as produced for `batch/formulas.txt`
 (`id <TAB> class <TAB> formula`); default `batch/formulas.txt`.
@@ -109,6 +110,12 @@ def parseArgs (l : List String) : BArgs := Id.run do
       a := { a with cfg := { a.cfg with pmax := (s.drop 7).toString.toNat! } }
     else if s.startsWith "--lamCap=" then
       a := { a with cfg := { a.cfg with lamCap := (s.drop 9).toString.toNat! } }
+    -- The engine's differential round (`Config.semiNaive`); DEFAULT OFF.
+    -- Only the FRJW route reads it; `--engine=g4c` ignores it.
+    else if s == "--semi-naive" then
+      a := { a with cfg := { a.cfg with semiNaive := true } }
+    else if s == "--naive" then
+      a := { a with cfg := { a.cfg with semiNaive := false } }
   return a
 
 /-- **Do not time in-process.**  The first version of this file did

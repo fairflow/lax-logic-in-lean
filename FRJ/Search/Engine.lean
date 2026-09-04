@@ -584,6 +584,93 @@ def famsUpTo {α : Type} (l : List α) (k : Nat) : List (α × List α) :=
   | [] => []
   | a :: as => ((combosLe (k - 1) as).map (fun rest => (a, rest))) ++ famsUpTo as k
 
+/-- **The differential of `famsUpTo`**: the families of total size `≤ k`
+over `new ++ old` that CONTAIN AT LEAST ONE element of `new`.  A family
+is split as `s ⊆ new` (nonempty) and `t ⊆ old`, headed by `s`'s first
+element — which is exactly the head `famsUpTo (new ++ old) k` gives that
+subset, `new` coming first.  Hence
+
+    famsDeltaUpTo new old k ++ famsUpTo old k  =  famsUpTo (new ++ old) k
+
+as sets of families — `#guard`ed below on eight shapes, both degenerate
+ends included, together with the ONE shape (`k = 0`) where it fails and
+the `max k 1` that callers owe it.  This is the enumerator semi-naive
+evaluation runs on
+(`Config.semiNaive`, `FRJ/Search/Core.lean`): a family drawn entirely
+from `old` was fired in an earlier round and cannot yield a fresh row. -/
+def famsDeltaUpTo {α : Type} (new old : List α) (k : Nat) : List (α × List α) :=
+  (combosLe k new).flatMap (fun s =>
+    match s with
+    | [] => []
+    | a :: srest => (combosLe (k - s.length) old).map (fun t => (a, srest ++ t)))
+
+section FamsDeltaCheck
+
+/-- A family as a plain list, for the set comparison below. -/
+private def famList (f : Nat × List Nat) : List Nat := f.1 :: f.2
+
+private def famSubsetB (a b : List (Nat × List Nat)) : Bool :=
+  a.all (fun f => b.any (fun g =>
+    let l := famList f; let m := famList g
+    l.all (· ∈ m) && m.all (· ∈ l)))
+
+/-- `famsDeltaUpTo new old k ++ famsUpTo old k = famsUpTo (new ++ old) k`,
+as sets of families. -/
+private def deltaOK (new old : List Nat) (k : Nat) : Bool :=
+  let lhs := famsDeltaUpTo new old k ++ famsUpTo old k
+  let rhs := famsUpTo (new ++ old) k
+  famSubsetB lhs rhs && famSubsetB rhs lhs
+    && decide (lhs.length = rhs.length)
+
+-- both degenerate ends, and the shapes the engine actually meets
+#guard deltaOK [] [] 3
+#guard deltaOK [] [1, 2, 3] 3
+#guard deltaOK [1, 2, 3] [] 3
+#guard deltaOK [1] [2, 3, 4, 5] 2
+#guard deltaOK [1, 2] [3, 4, 5, 6, 7] 3
+#guard deltaOK [1, 2, 3] [4, 5, 6] 1
+#guard deltaOK [1, 2, 3, 4] [5, 6, 7, 8] 4
+-- `k` past the total length: nothing truncates on either side
+#guard deltaOK [1, 2] [3] 5
+
+/-! `k = 0` is the ONE shape where the identity fails, and it fails in
+the unsafe direction — the differential is EMPTY while `famsUpTo` is
+not.  `famsUpTo` reaches `combosLe (k - 1)` with `k = 0` truncating to
+`0`, so `famsUpTo l 0 = famsUpTo l 1` = all singletons, whereas
+`combosLe 0 new = [[]]` makes every `s` empty and `famsDeltaUpTo _ _ 0 =
+[]`.  Callers must therefore pass `max k 1`; `roundStepG` does. -/
+#guard !(deltaOK [1, 2] [3, 4, 5] 0)
+#guard deltaOK [1, 2] [3, 4, 5] 1
+#guard decide (famsUpTo [1, 2, 3] 0 = famsUpTo [1, 2, 3] 1)
+
+/-- **The shape `roundStepG` actually calls**: the differential at
+`max k 1`, the old-only half and the naive reference at the caller's
+RAW `k`.  `deltaOK` above states the identity at a single `k` and so
+does not cover the `max` compensation at all — until this was added the
+compensation was asserted only in the prose above it, and `k = 0` is
+precisely where the two enumerators disagree.  `jmax = 0` and
+`pmax = 0` are admissible `Config` values, so the corner is reachable,
+not hypothetical. -/
+private def deltaOKmax (new old : List Nat) (k : Nat) : Bool :=
+  let lhs := famsDeltaUpTo new old (max k 1) ++ famsUpTo old k
+  let rhs := famsUpTo (new ++ old) k
+  famSubsetB lhs rhs && famSubsetB rhs lhs
+    && decide (lhs.length = rhs.length)
+
+-- the corner the compensation exists for, at every delta shape
+-- (GATE WATCHED 2026-09-04: `max k 1` → `k` here turns the two `k = 0`
+-- lines with a NON-EMPTY delta red, and only those.)
+#guard deltaOKmax [1, 2] [3, 4, 5] 0
+#guard deltaOKmax [] [1, 2, 3] 0
+#guard deltaOKmax [1, 2, 3] [] 0
+#guard deltaOKmax [] [] 0
+-- and the budgets the engine runs on (`pmax = 2`, `jmax = 3`)
+#guard deltaOKmax [1, 2] [3, 4, 5] 1
+#guard deltaOKmax [1] [2, 3, 4, 5] 2
+#guard deltaOKmax [1, 2] [3, 4, 5, 6, 7] 3
+
+end FamsDeltaCheck
+
 /-- Does a premise family carry any modal content for a `P`/`F` join to
 keep? -/
 def modalContent {G : Form} (a : IS G) (rest : List (IS G)) : Bool :=
@@ -599,6 +686,24 @@ structure Config where
   lamCap : Nat := 10
   maxRS : Nat := 800
   maxIS : Nat := 800
+  /-- **Semi-naive (differential) evaluation**, in the `Ops` loop only
+  (`saturateO`, `FRJ/Search/Core.lean`): fire a rule instance only when
+  one of its premises is a row NEW since the previous round.
+
+  DEFAULT `false`, and every other engine ignores the field entirely —
+  the legacy `saturate`/`roundStep` here, `saturateFast`, `saturateProf`.
+  With `false` the `Ops` loop is what it was, candidate for candidate and
+  row for row, so `paperOps` (checked against `saturate` by
+  `lake exe frjvrun diff`) and `vOps` are untouched.
+
+  With `true` the FIXPOINT is the same but the ROW ORDER need not be:
+  insertion keeps `rsLeO`/`isLeO`-maximal rows, and among rows that
+  subsume each other mutually the one that survives is the one offered
+  first.  Semi-naive offers the same candidates in a different order, so
+  a different representative of a mutual-subsumption class may be the
+  one stored.  `lake exe wscreen snd` compares the two stores per cell
+  and is what licenses turning this on. -/
+  semiNaive : Bool := false
 
 structure Stats where
   roundsUsed : Nat := 0

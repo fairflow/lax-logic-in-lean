@@ -13,6 +13,6 @@ def main (args : List String) : IO UInt32 := do
       IO.println s!"error: {e}"
       IO.println "usage: lake exe pll \"◯p ⊃ p\" [--out=NAME] [--view=min|calc|both] \
 [--check] [--check-term] [--proof-object] [--rounds=N] [--jmax=N] [--pmax=N] \
-[--lamCap=N] [--maxRS=N] [--maxIS=N]"
+[--lamCap=N] [--maxRS=N] [--maxIS=N] [--semi-naive|--naive]"
       return 2
   | .ok (f, a) => PLLTools.run f a

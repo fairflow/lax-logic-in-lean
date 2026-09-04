@@ -1,0 +1,131 @@
+# naive vs semi-naive, frjw only, 20s wall cap each; warm process startup ~46ms (identical both modes, NOT subtracted)
+id	class	formula	naive	naive_ms	semi	semi_ms	note
+001	0v ◯0	⊥ ⊃ ⊥	valid	51	valid	51	
+002	0v ◯0	⊤	valid	53	valid	53	
+003	0v ◯0	⊥ ∨ ⊤	valid	52	valid	53	
+004	0v ◯0	⊥ ∧ ⊤	invalid	49	invalid	51	
+005	0v ◯1	◯⊥	invalid	50	invalid	55	
+006	0v ◯1	¬◯⊥	invalid	49	invalid	51	
+007	0v ◯1	◯⊤	valid	51	valid	50	
+008	0v ◯1	◯⊥ ⊃ ⊥	invalid	53	invalid	54	
+009	0v ◯1	◯⊥ ∨ ¬◯⊥	invalid	54	invalid	57	
+010	0v ◯1	◯⊥ ∧ ⊤	invalid	58	invalid	58	
+011	0v ◯1	⊥ ⊃ ◯⊥	valid	59	valid	58	
+012	0v ◯1	◯(⊥ ∨ ⊤)	valid	60	valid	58	
+013	0v ◯2	◯◯⊥	invalid	60	invalid	56	
+014	0v ◯2	◯◯⊥ ⊃ ◯⊥	valid	56	valid	50	
+015	0v ◯2	◯⊥ ⊃ ◯◯⊥	valid	57	valid	57	
+016	0v ◯2	◯(◯⊥ ⊃ ⊥)	invalid	59	invalid	55	
+017	0v ◯2	(◯⊥ ∧ ◯⊤) ⊃ ◯(⊥ ∧ ⊤)	valid	54	valid	53	
+018	0v ◯2	◯(⊥ ∨ ⊤) ⊃ (◯⊥ ∨ ◯⊤)	valid	56	valid	52	
+019	0v ◯3	◯◯◯⊥	invalid	52	invalid	52	
+020	0v ◯3	◯◯◯⊥ ⊃ ◯⊥	valid	58	valid	56	
+021	1v ◯0	p ⊃ p	valid	56	valid	57	
+022	1v ◯0	p	invalid	57	invalid	59	
+023	1v ◯0	p ∨ ¬p	invalid	61	invalid	59	
+024	1v ◯0	p ∧ p ⊃ p	valid	59	valid	54	
+025	1v ◯0	¬¬p ⊃ p	invalid	54	invalid	54	
+026	1v ◯0	p ⊃ ¬¬p	valid	53	valid	55	
+027	1v ◯0	(p ⊃ ⊥) ∨ p	invalid	56	invalid	53	
+028	1v ◯0	p ∨ (p ⊃ ⊥)	invalid	50	invalid	50	
+029	1v ◯1	p ⊃ ◯p	valid	49	valid	52	
+030	1v ◯1	◯p ⊃ p	invalid	51	invalid	52	
+031	1v ◯1	◯p	invalid	52	invalid	54	
+032	1v ◯1	◯p ∨ ¬◯p	invalid	89	invalid	87	
+033	1v ◯1	◯p ∧ p ⊃ p	valid	60	valid	60	
+034	1v ◯1	◯(p ∨ ¬p)	invalid	60	invalid	60	
+035	1v ◯1	◯p ⊃ ◯(p ∨ p)	valid	59	valid	51	
+036	1v ◯1	◯(p ∧ p) ⊃ ◯p	valid	50	valid	50	
+037	1v ◯1	◯p ⊃ (◯p ∨ ◯p)	valid	50	valid	51	
+038	1v ◯1	(◯p ∧ ◯p) ⊃ ◯p	valid	52	valid	50	
+039	1v ◯1	¬◯p ⊃ ¬p	valid	55	valid	53	
+040	1v ◯1	¬p ⊃ ¬◯p	invalid	235	invalid	170	
+041	1v ◯2	◯◯p ⊃ ◯p	valid	61	valid	53	
+042	1v ◯2	◯p ⊃ ◯◯p	valid	51	valid	53	
+043	1v ◯2	◯(◯p ⊃ p)	invalid	55	invalid	54	
+044	1v ◯2	◯◯p	invalid	54	invalid	51	
+045	1v ◯2	◯(◯p ∨ p)	invalid	50	invalid	54	
+046	1v ◯2	◯(◯p ∧ p) ⊃ ◯p	valid	51	valid	52	
+047	1v ◯2	(◯◯p ∨ ◯p) ⊃ ◯p	valid	51	valid	52	
+048	1v ◯2	◯◯p ⊃ (◯p ∧ ◯◯p)	valid	50	valid	50	
+049	1v ◯2	¬◯◯p ⊃ ¬◯p	valid	51	valid	51	
+050	1v ⊃2	((p ⊃ ⊥) ⊃ p) ⊃ p	invalid	53	invalid	51	
+051	1v ⊃2	((◯p ⊃ ⊥) ⊃ ◯p) ⊃ ◯p	invalid	207	invalid	139	
+052	1v ⊃3	(((p ⊃ ⊥) ⊃ ⊥) ⊃ p)	invalid	55	invalid	56	
+053	1v ⊃3	(((◯p ⊃ p) ⊃ ◯p) ⊃ ◯p)	invalid	67	invalid	63	
+054	1v ⊃3	((p ⊃ ◯p) ⊃ p) ⊃ p	valid	54	valid	50	
+055	1v ⊃3	(p ⊃ (p ⊃ ◯p)) ⊃ (p ⊃ ◯p)	valid	52	valid	52	
+056	1v ◯3	◯◯◯p ⊃ ◯p	valid	51	valid	51	
+057	1v ◯3	◯p ⊃ ◯◯◯p	valid	52	valid	51	
+058	1v ◯3	◯◯◯p	invalid	52	invalid	53	
+059	1v ◯3	◯(◯(◯p ⊃ p) ⊃ p)	invalid	168	invalid	125	
+060	2v ◯0	p ⊃ (q ⊃ p)	valid	58	valid	52	
+061	2v ◯0	(p ∧ q) ⊃ p	valid	58	valid	57	
+062	2v ◯0	(p ∧ q) ⊃ q	valid	56	valid	53	
+063	2v ◯0	p ⊃ (p ∨ q)	valid	55	valid	53	
+064	2v ◯0	(p ∨ q) ⊃ (q ∨ p)	valid	54	valid	53	
+065	2v ◯0	(p ∧ q) ⊃ (q ∧ p)	valid	54	valid	56	
+066	2v ◯0	(p ⊃ q) ∨ (q ⊃ p)	invalid	55	invalid	54	
+067	2v ◯0	((p ⊃ q) ⊃ p) ⊃ p	invalid	53	invalid	54	
+068	2v ◯0	(p ∨ q) ⊃ (p ∧ q)	invalid	54	invalid	53	
+069	2v ◯0	¬(p ∧ q) ⊃ (¬p ∨ ¬q)	invalid	6022	invalid	6143	
+070	2v ◯1	(◯p ∧ ◯q) ⊃ ◯(p ∧ q)	valid	1548	valid	1451	
+071	2v ◯1	◯(p ∧ q) ⊃ (◯p ∧ ◯q)	valid	86	valid	82	
+072	2v ◯1	◯(p ∨ q) ⊃ (◯p ∨ ◯q)	invalid	688	invalid	631	
+073	2v ◯1	(◯p ∨ ◯q) ⊃ ◯(p ∨ q)	valid	83	valid	83	
+074	2v ◯1	(p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	valid	370	valid	338	
+075	2v ◯1	◯(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	637	valid	602	
+076	2v ◯1	(◯p ⊃ ◯q) ⊃ ◯(p ⊃ q)	invalid	511	invalid	461	
+077	2v ◯1	◯p ⊃ (q ⊃ ◯p)	valid	51	valid	51	
+078	2v ◯1	(p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	121	valid	104	
+079	2v ◯1	◯(p ∧ q) ⊃ ◯(q ∧ p)	valid	52	valid	51	
+080	2v ◯2	◯◯(p ∧ q) ⊃ ◯(p ∧ q)	valid	51	valid	53	
+081	2v ◯2	◯(◯p ⊃ q) ⊃ (◯p ⊃ ◯q)	valid	3028	valid	2947	
+082	2v ◯2	(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)	valid	10520	valid	10155	
+083	2v ◯2	◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)	timeout	20024	timeout	20024	
+084	2v ◯2	(◯p ⊃ ◯◯q) ⊃ (◯p ⊃ ◯q)	valid	49	valid	48	
+085	2v ◯2	◯((p ∨ q) ∧ ◯p) ⊃ ◯p	valid	51	valid	50	
+086	2v ◯2	◯(p ⊃ ◯q) ⊃ (p ⊃ ◯q)	valid	124	valid	116	
+087	2v ◯2	((◯p ⊃ q) ⊃ ◯p) ⊃ ◯p	invalid	203	invalid	144	
+088	2v ⊃2	((p ⊃ q) ⊃ q) ⊃ (p ∨ q)	invalid	57	invalid	56	
+089	2v ⊃2	(p ∨ q) ⊃ ((p ⊃ q) ⊃ q)	valid	51	valid	53	
+090	2v ⊃2	((◯p ⊃ q) ⊃ q) ⊃ (◯p ∨ q)	invalid	668	invalid	466	
+091	2v ⊃2	(p ⊃ (q ⊃ ⊥)) ⊃ ((p ∧ q) ⊃ ⊥)	valid	56	valid	57	
+092	2v ⊃3	((p ⊃ q) ⊃ (q ⊃ p)) ⊃ (q ⊃ p)	valid	68	valid	66	
+093	2v ⊃3	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (p ∨ ¬p)	invalid	524	invalid	498	
+094	2v ⊃3	((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p	invalid	950	invalid	521	
+095	2v ⊃3	(p ⊃ (q ⊃ ◯p)) ⊃ ((p ∧ q) ⊃ ◯p)	valid	58	valid	59	
+096	2v mix	(◯(p ∨ q) ∧ ¬◯p) ⊃ ◯q	valid	100	valid	93	
+097	2v mix	◯((p ⊃ q) ∨ (q ⊃ p))	invalid	56	invalid	58	
+098	2v mix	(◯p ∧ (p ⊃ q)) ⊃ ◯q	valid	60	valid	55	
+099	2v mix	◯(p ∧ ¬p) ⊃ ◯q	valid	52	valid	52	
+100	2v ◯3	◯◯◯(p ∧ q) ⊃ ◯(p ∧ q)	valid	49	valid	49	
+101	2v ◯3	◯(p ∧ q) ⊃ ◯◯◯(p ∧ q)	valid	49	valid	51	
+102	2v ◯3	◯◯(◯p ∨ q) ⊃ ◯(◯p ∨ q)	valid	49	valid	49	
+103	2v ◯3	◯(◯(◯p ∧ q) ⊃ q) ⊃ ◯q	invalid	10538	invalid	8772	
+104	2v ◯3	(◯◯◯p ∧ ◯◯q) ⊃ ◯◯(◯p ∧ q)	valid	10455	valid	10273	
+105	2v ◯3	◯◯(p ⊃ q) ⊃ (◯◯p ⊃ ◯◯q)	valid	639	valid	602	
+106	2v ◯4	◯◯◯◯p ⊃ ◯◯p	valid	47	valid	49	
+107	2v ◯4	◯◯(◯◯p ∨ ◯◯q) ⊃ (◯◯p ∨ ◯◯q)	timeout	20023	timeout	20023	
+108	2v ⊃4	(((p ⊃ q) ⊃ p) ⊃ p) ⊃ (((q ⊃ p) ⊃ q) ⊃ q)	invalid	9252	invalid	8985	
+109	2v ⊃4	((((p ⊃ q) ⊃ q) ⊃ p) ⊃ p)	invalid	65	invalid	60	
+110	2v ⊃4	((((◯p ⊃ q) ⊃ q) ⊃ ◯p) ⊃ ◯p)	invalid	295	invalid	234	
+111	2v ⊃4	(((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p) ⊃ (◯p ∨ ¬◯p)	timeout	20025	timeout	20029	
+112	2v ⊃4	((p ⊃ q) ⊃ (q ⊃ r)) ⊃ ((p ⊃ q) ⊃ (p ⊃ r))	timeout	21290	timeout	20862	
+113	2v ⊃4	(¬¬(p ∨ ¬p)) ⊃ ((p ⊃ q) ∨ (q ⊃ p))	invalid	13319	invalid	13183	
+114	3v ◯1	(◯p ∧ (q ∨ r)) ⊃ ((◯p ∧ q) ∨ (◯p ∧ r))	valid	14958	valid	14407	
+115	3v ◯1	((p ∨ q) ⊃ r) ⊃ ((p ⊃ r) ∧ (q ⊃ r))	valid	2765	valid	2773	
+116	3v ◯1	((p ⊃ r) ∧ (q ⊃ r)) ⊃ ((p ∨ q) ⊃ r)	valid	106	valid	98	
+117	3v ◯2	(◯(p ∨ q) ∧ (p ⊃ r) ∧ (q ⊃ r)) ⊃ ◯r	valid	721	valid	580	
+118	3v ◯2	◯(p ⊃ (q ⊃ r)) ⊃ (◯p ⊃ (◯q ⊃ ◯r))	timeout	20025	timeout	20027	
+119	3v ◯2	(◯◯p ∨ ◯q ∨ r) ⊃ ◯(◯p ∨ q ∨ r)	timeout	20022	timeout	20022	
+120	3v ◯2	◯((p ∧ q) ∨ (q ∧ r) ∨ (r ∧ p)) ⊃ (◯p ∨ ◯q ∨ ◯r)	timeout	20024	timeout	20023	
+121	3v ⊃3	(p ⊃ (q ⊃ r)) ⊃ ((p ∧ q) ⊃ r)	valid	55	valid	56	
+122	3v ⊃3	((p ∧ q) ⊃ r) ⊃ (p ⊃ (q ⊃ r))	valid	157	valid	154	
+123	3v ⊃3	((◯p ⊃ q) ⊃ r) ⊃ ((q ⊃ r) ⊃ (◯p ⊃ r))	timeout	20026	timeout	20029	
+124	2v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (p ⊃ ◯r)	timeout	20023	timeout	20022	
+125	3v lax	((p ⊃ ◯q) ∧ (q ⊃ ◯r)) ⊃ (◯p ⊃ ◯r)	timeout	20024	timeout	20027	
+126	2v lax	◯(◯p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)	valid	18846	valid	18860	
+127	2v lax	(◯p ⊃ ◯q) ⊃ ◯(◯p ⊃ ◯q)	valid	8034	valid	7939	
+128	2v lax	◯(p ∧ ◯q) ⊃ (◯p ∧ ◯q)	valid	659	valid	646	
+129	2v lax	(◯p ∧ ◯◯q) ⊃ ◯(p ∧ ◯q)	valid	10306	valid	10267	
