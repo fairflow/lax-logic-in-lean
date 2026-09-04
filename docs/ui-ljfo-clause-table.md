@@ -1080,8 +1080,31 @@ Growth after the certified simplifier is about ×7 per four fuel units
 on every chain, and every element still carries `◯⊥` blocks — the
 fuel-exhaustion default under a box, replaced level by level.  This
 reproduces the plan's certified strict ascent (station fuels 3→4, 5→6)
-and extends the non-collapse to station fuel 18.  Whether consecutive
-levels become interderivable is the oracle question recorded next.
+and extends the non-collapse to station fuel 18.
+
+**Interderivability on the GZ chains: UNSETTLED at the G4c oracle's
+reach.**  Twenty-six cells were put to `pllbench --engine=g4c`:
+consecutive-level interderivability at station fuels 6↔10, 10↔14, 14↔18
+for all three chains (both directions), and sufficiency
+`A_f ∧ (◯p ⊃ r) ∧ ◯q ⊢ ◯p` for both `A` chains at 6, 10, 14, 18 —
+formulas of 43 to 29,504 nodes.  The oracle settled NONE of them; the
+first cell (`E` at fuel 6 versus fuel 10, 43 and 378 nodes) ran
+46 min 14 s without a verdict and was killed.  The 1314-node `E` cell
+of the separating station at station fuel 14 was likewise unsettled
+after more than ten minutes.  This is the reach limit
+`docs/ljfo-review-2026-08-11.md` §5c recorded ("the unfocused prover
+cannot practically decide the box-wrapped aggregates at p-carrying
+stations"), reproduced on the chain elements themselves.  So the
+statement W on the GZ cell — strict ascent or eventual stabilisation up
+to interderivability — is OPEN past station fuel 6, where
+`wip/ljfo_stab.lean`'s kernel search certified strict steps at 3→4 and
+5→6.  Two tools would reach further, and both are prerequisites for the
+refutation prong: the kernel-search engine (`LJF/OSearch.lean`) applied
+to the chain elements, and a certified simplifier inside the `interpF`
+iteration so the elements stay small enough to search.  What the
+measurement DOES establish is the contrast with the separating station:
+same pipeline, same fuels, one cell collapses to its known limit and
+the other grows ×7 per level with `◯⊥` blocks persisting.
 
 **A tooling defect found on the way, with its fix.**  Bounding a run by
 `perl -e 'alarm N; exec @ARGV' -- lake exe X …` bounds `lake`, not the
