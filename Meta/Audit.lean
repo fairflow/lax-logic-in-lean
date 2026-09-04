@@ -161,6 +161,70 @@ syntax (name := axiomPinCmd) "#axiom_pin " ident : command
       logInfo m!"/-- info: {body} -/\n#guard_msgs in\n#print axioms {n}"
   | _ => throwUnsupportedSyntax
 
+/-! ## Bounded pins: declare what is ACCEPTABLE, not what is used
+
+`#guard_msgs in #print axioms f` compares a rendered *string*, so it fails
+in both directions.  A declaration that gets CLEANER breaks its own pin —
+on 2026-09-04 that was eight of the ten stale pins in `wip/`, every one of
+them an improvement nobody had recorded.  Exact match also dates badly:
+the pin has to be rewritten whenever a proof is retuned, whether or not
+anything of interest changed.
+
+`#axioms_within` states an upper bound instead.  The declared axioms are
+the ones that would be ACCEPTABLE; they need not all be used, and using
+fewer is never a failure.  The check fires only when an axiom appears that
+was not declared — the direction that actually carries information.
+
+    #axioms_within foo [propext, Quot.sound]
+
+`sorryAx` gets no special case.  A file built against a harness that
+legitimately carries sorries writes them into the bound:
+
+    #axioms_within partial_result [propext, sorryAx]
+
+which is explicit at the site, greppable across the tree, and needs no
+directory convention to interpret.
+
+What a bound cannot do is police a declaration that carries no bound at
+all: bounds are opt-in, so silence is not evidence.  Enforcing "no
+`sorryAx` anywhere in this estate" therefore needs a sweep over every
+declaration in a named library, independent of whether anyone wrote a
+pin.  That sweep is NOT BUILT as of 2026-09-04; until it is, a
+sorry-free claim about a whole library rests on `lake build` plus the
+bounds that happen to exist, which is weaker than it sounds. -/
+
+/-- `#axioms_within foo [propext, Quot.sound]` — succeeds iff every axiom
+`foo` actually depends on appears in the declared list.  Unused declared
+axioms are fine: the list is a permission, not a transcript. -/
+syntax (name := axiomsWithinCmd) "#axioms_within " ident "[" ident,* "]" : command
+
+@[command_elab axiomsWithinCmd] def elabAxiomsWithin : CommandElab
+  | `(#axioms_within $id [$axs,*]) => do
+      let n ← resolve id
+      let allowed ← axs.getElems.mapM resolve
+      let actual ← collectAxioms n
+      let extra := actual.filter (fun a => !allowed.contains a)
+      unless extra.isEmpty do
+        let names := (extra.qsort Name.lt).toList.map toString
+        let decl := (allowed.qsort Name.lt).toList.map toString
+        throwError m!"'{n}' depends on {String.intercalate ", " names}, \
+which the bound does not allow.\n  declared: [{String.intercalate ", " decl}]\n\
+  Locate the entry with:  #axiom_path {names.headD "propext"} {n}"
+  | _ => throwUnsupportedSyntax
+
+/-- `#axioms_within_pin foo` — emit the `#axioms_within` line for `foo`'s
+CURRENT axioms, ready to paste.  Generated, never retyped.  Widen the
+emitted list by hand if a bound looser than today's fact is wanted. -/
+syntax (name := axiomsWithinPinCmd) "#axioms_within_pin " ident : command
+
+@[command_elab axiomsWithinPinCmd] def elabAxiomsWithinPin : CommandElab
+  | `(#axioms_within_pin $id) => do
+      let n ← resolve id
+      let axs ← collectAxioms n
+      let names := (axs.qsort Name.lt).toList.map toString
+      logInfo m!"#axioms_within {n} [{String.intercalate ", " names}]"
+  | _ => throwUnsupportedSyntax
+
 /-! ## Choice-free search
 
 `#print axioms` audits a lemma you already chose; the recurring loss is
