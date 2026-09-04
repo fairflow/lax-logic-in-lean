@@ -1467,6 +1467,28 @@ no instance closes, and against the §4.11 family as a refutation
 candidate; the kernel pin of the fuel-14 derivation (a `decide` on a
 2987-node context) is not attempted here.
 
+**The other instances by the same engine** (`wip/ui_screen/esearch-run.sh`,
+search fuels 16 and 32 agree in every cell; `false` certifies nothing):
+
+| instance | station fuel 10 | 14 | 18 |
+|---|---|---|---|
+| `E_f ∧ c ⊢ a` (E-side, Δ = c) | false | **true** | true |
+| `E_f ∧ c ⊢ A_f` (A-side, Δ = c) | false | **true** | true |
+| `E_f ∧ X ⊢ a` (E-side, Δ = X = ◯(c ∨ ¬d)) | false | false | false |
+| `E_f ∧ T ⊢ A_f` (A-side, Δ = T) | false | false | false |
+
+So cofinality holds for the sufficient formula `c` on both sides from
+station fuel 14, and for the weaker `X` and `T` at no fuel through 18
+(37,632-node `E`).  The row analysis says why, with a number: `X ⊢
+guard` must go through the boxed disjunct `A(done ⇒ ◯↓(d ⊃ p))`, whose
+`c`-branch sits one parked-box level deeper than the outer `c`-branch
+that Δ = c uses, so the `X` instances are predicted about ten fuel
+units later, station fuel 22–24.  Station fuel 22 (`E` about 450,000
+nodes) is the last point the tools can reach; its verdict is recorded
+below.  What the `X`/`T` instances test is the E-chain's convergence
+to `∃p.Γ` itself (the `∀p` is `(∃p.Γ) ⊃ a`, and `T = (X ⊃ a) ⊃ a` is
+the `∀p` iff `∃p.Γ ⟛ X ⊃ a`).
+
 ---
 
 ## 5 · OPEN list
