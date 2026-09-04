@@ -686,9 +686,3 @@ def phaseP (cells : List (Nat × Nat)) : IO Unit := do
 end RNC
 end PLLND
 
-def main (args : List String) : IO Unit :=
-  match args with
-  | "c" :: rest :: _ => PLLND.RNC.phaseC (PLLND.RNC.parseIdx rest)
-  | "r" :: rest :: _ => PLLND.RNC.phaseR (PLLND.RNC.parseCells rest)
-  | "p" :: rest :: _ => PLLND.RNC.phaseP (PLLND.RNC.parseCells rest)
-  | _ => PLLND.RNC.mainLoop

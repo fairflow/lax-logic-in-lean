@@ -42,17 +42,17 @@ import wip.b1b2_cells
 import wip.gbu_search_circ
 import wip.schemeext
 import wip.coverfail
--- NOT `wip.coverprobe`, and not for any reason to do with axioms: it
--- declares `main`, as several `wip/` probes do, and two `main`s cannot
--- share one environment —
---   "import wip.coverprobe failed, environment already contains 'main'
---    from wip.rnc_probe"
--- This is a limit of auditing an estate by IMPORTING it: every
--- executable-shaped module is unreachable this way, and there are
--- several.  Reaching them needs the sweep driven as an executable over
--- `importModules`, one module (or one compatible group) at a time,
--- rather than as a command inside one module that imports everything.
--- `wip.coverprobe` builds on its own; it is simply unswept.
+-- NOT `wip.coverprobe`: it declares a root-level `main`, so it is an
+-- EXECUTABLE, not library content, and an audit of the library correctly
+-- does not reach it.  Its `lean_exe` entry builds it.
+--
+-- That distinction was not being kept.  Importing it here first failed
+-- with "environment already contains 'main' from wip.rnc_probe", and the
+-- reflex was to make the sweep tolerate it; the actual defect was that
+-- `wipshared` declared executables as library modules.  Repaired
+-- 2026-09-04, and the invariant now holds: no module in `wipshared`
+-- declares a root-level `main`.  A probe carrying content others import
+-- splits, as `wip.rnc_probe` did.
 
 #axiom_sweep [wip]
   allowing [propext, Classical.choice, Quot.sound, sorryAx]
