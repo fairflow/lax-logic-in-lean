@@ -215,9 +215,10 @@ def eSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg),
 
                   | circ Q' =>
                       -- the modal Dyckhoff pair: the fire guarded by the ∀p
-                      -- of (rest ⇒ ◯Q′), PAIRED with the ∃p of rest; the
-                      -- argument comes from aSound at the ◯-goal — the
-                      -- E1/A1 interlock
+                      -- of (done ⇒ ◯Q′) — the RETAINED station, where
+                      -- `interp` guards at (rest ⇒ ◯Q′) — PAIRED with the
+                      -- ∃p of rest; the argument comes from aSoundF at the
+                      -- ◯-goal — the E1/A1 interlock
                       refine .andR (.impR (.downL ?_))
                         ((eSoundF p f [] rest).wk (splits_sub hXr))
                       -- RETENTION: the guard is `A(done ⇒ ↑↓◯Q′)`, at the FULL
@@ -552,7 +553,8 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.up (.atom q))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.up (.atom q))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
   | f+1, [], done, .up .fls => by
@@ -608,7 +610,8 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.up .fls)).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.up .fls)).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
   | f+1, [], done, .up (.or P₁ P₂) => by
@@ -686,7 +689,8 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.up (.or P₁ P₂))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.up (.or P₁ P₂))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
   | f+1, [], done, .up (.down M) => by
@@ -748,7 +752,8 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.up (.down M))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.up (.down M))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ _ => exact nBotElim _ (List.mem_cons_self ..)
 
@@ -817,13 +822,14 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.circ (.atom q))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.circ (.atom q))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
               -- circR into the lax phase; open the station box; per branch of R,
-              -- derive E at the opened station (extract-mediated eSound), feed the
-              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- derive E at the opened station (extract-mediated eSoundF), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSoundF there, and
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
@@ -932,13 +938,14 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.circ .fls)).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.circ .fls)).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
               -- circR into the lax phase; open the station box; per branch of R,
-              -- derive E at the opened station (extract-mediated eSound), feed the
-              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- derive E at the opened station (extract-mediated eSoundF), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSoundF there, and
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
@@ -1070,13 +1077,14 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.circ (.or P₁ P₂))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.circ (.or P₁ P₂))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
               -- circR into the lax phase; open the station box; per branch of R,
-              -- derive E at the opened station (extract-mediated eSound), feed the
-              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- derive E at the opened station (extract-mediated eSoundF), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSoundF there, and
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
@@ -1185,13 +1193,14 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.circ (.down (.up P')))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.circ (.down (.up P')))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
               -- circR into the lax phase; open the station box; per branch of R,
-              -- derive E at the opened station (extract-mediated eSound), feed the
-              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- derive E at the opened station (extract-mediated eSoundF), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSoundF there, and
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
@@ -1300,13 +1309,14 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.circ (.down (.circ P')))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.circ (.down (.circ P')))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
               -- circR into the lax phase; open the station box; per branch of R,
-              -- derive E at the opened station (extract-mediated eSound), feed the
-              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- derive E at the opened station (extract-mediated eSoundF), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSoundF there, and
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
@@ -1415,13 +1425,14 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.circ (.down (.and M₁ M₂)))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.circ (.down (.and M₁ M₂)))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
               -- circR into the lax phase; open the station box; per branch of R,
-              -- derive E at the opened station (extract-mediated eSound), feed the
-              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- derive E at the opened station (extract-mediated eSoundF), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSoundF there, and
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
@@ -1530,13 +1541,14 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
                         (aSoundF p f [] done (.up (.down (.circ Q'))))
-                        ((aSoundF p f [N] rest (.circ (.down (.imp Q₀ N₀)))).wk (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
+                        ((aSoundF p f [N] rest (.circ (.down (.imp Q₀ N₀)))).wk
+                          (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
           | and _ _ => exact nBotElim _ (List.mem_cons_self ..)
           | circ R =>
               -- THE E-GUARDED BOX-OPENING ROW, x = ↓E(↑R::rest) ⊃ A(↑R::rest ⇒ ◯Q):
               -- circR into the lax phase; open the station box; per branch of R,
-              -- derive E at the opened station (extract-mediated eSound), feed the
-              -- row to get the opened-station ∀p, close ◯Q by aSound there, and
+              -- derive E at the opened station (extract-mediated eSoundF), feed the
+              -- row to get the opened-station ∀p, close ◯Q by aSoundF there, and
               -- re-enter the lax phase through circROf.
               refine .circR (.stable (.lfoc
                 (List.mem_cons_of_mem _
@@ -1608,12 +1620,23 @@ def aSoundFWitness (p : String) : ASoundF' p := aSoundF p
 
 /-! ## Pins
 
-The bound is `eSound`/`aSound`'s own pinned set (`LJF/OAudit.lean`).  A
-proof needing anything beyond it would be wrong. -/
+The commissioned bound is `eSound`/`aSound`'s own pinned set
+(`LJF/OAudit.lean`): a proof needing anything beyond it would be wrong. -/
 
 #axioms_within eSoundF [propext, Classical.choice, Quot.sound]
 #axioms_within aSoundF [propext, Classical.choice, Quot.sound]
 #axioms_within eSoundFWitness [propext, Classical.choice, Quot.sound]
 #axioms_within aSoundFWitness [propext, Classical.choice, Quot.sound]
+
+/-! The MEASURED set is strictly smaller: `[propext, Quot.sound]`.
+`Classical.choice` enters `eSound`/`aSound` through the well-founded
+recursion on `2 * sum3 todo + sum3 done + goalW goal`; the fuel recursion
+does not use it.  Pinned tightly here, so a regression that re-introduces
+choice is an error rather than a silent widening. -/
+
+#axioms_within eSoundF [propext, Quot.sound]
+#axioms_within aSoundF [propext, Quot.sound]
+#axioms_within eSoundFWitness [propext, Quot.sound]
+#axioms_within aSoundFWitness [propext, Quot.sound]
 
 end LJFO

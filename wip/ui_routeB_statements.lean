@@ -14,6 +14,7 @@ finite and computable from the derivation, not from the station — hence
 -/
 import LJF.O
 import LJF.OFuel
+import LJF.OFuelSound
 
 namespace LJFO
 
@@ -26,6 +27,15 @@ def ESoundF (p : String) : Type :=
 def ASoundF (p : String) : Type :=
   ∀ (f : Nat) (todo done : List Neg) (G : Neg),
     Inv (interpF p f todo done (some G) :: (todo ++ done)) [] .tru G
+
+/-! Both soundness statements are INHABITED (`LJF/OFuelSound.lean`,
+2026-09-04), each `[propext, Quot.sound]`. -/
+
+/-- `ESoundF` holds. -/
+def esoundF (p : String) : ESoundF p := eSoundF p
+
+/-- `ASoundF` holds. -/
+def asoundF (p : String) : ASoundF p := aSoundF p
 
 /-- Cofinality, ∃ side: a `p`-free consequence of a saturated station is a
 consequence of the approximant at the derivation's height. -/
