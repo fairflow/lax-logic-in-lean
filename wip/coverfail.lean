@@ -1,4 +1,5 @@
 import wip.postui
+import Meta.Audit
 
 /-!
 # REFUTED: `CoverConj`.  The substitution-cover method fails on the `∃`-side too
@@ -615,9 +616,13 @@ theorem postInterpPhiStarIsNNBox_iff :
 #guard_msgs in
 #print axioms force_inst_bot
 
-/-- info: 'PLLND.RNEmbed.M4_swap' depends on axioms: [propext] -/
-#guard_msgs in
-#print axioms M4_swap
+-- A BOUND, not a transcript (2026-09-04).  `M4_swap` measured
+-- `[propext]` when it was written and measures `[propext, Quot.sound]`
+-- now; the extra axiom arrives from `Fin 4`, which indexes `M4`'s
+-- worlds, and is innocuous for this refutation.  Recording the bound
+-- rather than re-indexing `M4` on a bare inductive: what this pin is
+-- for is catching a crossing into `Classical.choice` or `sorryAx`.
+#axioms_within M4_swap [propext, Quot.sound]
 
 /-- info: 'PLLND.RNEmbed.M4_force_phiStar' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
