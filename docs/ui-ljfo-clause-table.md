@@ -1034,6 +1034,64 @@ nodes before normalising to 181), which any future `#guard` against
 retention gap is a fact about `LJFO.interp`, not about the paper
 reconstruction.
 
+### 4.8 The fuel-founded chains, measured against known limits (2026-09-04)
+
+`LJFO.interpF` (`LJF/OFuel.lean`, route (B)'s retaining interpolant,
+definition only, no theorems) was evaluated on two stations with the
+same pipeline as §4.7 (`wip/ui_fuelchain_interpF.lean`,
+`wip/ui_gz_fuelchain_interpF.lean`: erase, then the certified simpset,
+then the G4c oracle).  Every fuel level is sound by construction — `A`
+ascends from `⊥`, `E` descends from `⊤` — so what is measured is
+convergence, and the new element is that on the first station the
+LIMIT IS KNOWN, so distance-to-target can be measured rather than only
+consecutive-level equality (the method of `wip/ljfo_stab.lean`).
+Hypotheses were fed through `todo`, and each parking step costs one
+unit, so "station fuel" below is the eval's fuel minus 2.
+
+**Station [G₁, H] (the separating sequent; true `∀p = ⊤` since Γ₁ ⊢ r,
+true `∃p = r` by §4.7):**
+
+| station fuel | `A` normal form | ⊢ A ? | ◯r ⊢ A ? | `E` normal form | E ⊣⊢ r ? |
+|---|---|---|---|---|---|
+| 2 | `r` | no | no | `⊤` | no |
+| 6 | `r ∨ ◯⊥` | no | no | 13 nodes | no |
+| 14 | 1058 nodes (raw 119,015) | **no** | **yes** | 1314 nodes (raw 159,115) | unsettled at the oracle's cap |
+| 18 | **`⊤`** (raw 2,290,162) | **yes** | yes | 528 nodes (raw 3,064,714) | **yes** |
+
+So the retaining chain passes `interp`'s value `◯r` (§4.7) at station
+fuel 14 and reaches the true `∀p` at 18; `E` reaches the true `∃p` at
+18.  On the ①/② double-use station, the plan's statement W holds with
+the limit identified.  The cost: raw sizes grow about ×20 per four fuel
+units; the simplifier recovers the small answer only after the fact.
+
+**Station [◯p ⊃ r, ◯q], goal ◯p (the GZ-candidate cell of
+`docs/ljfo-plan.md`; `(◯p ⊃ r) ∧ ◯q ⊬ ◯p` by the oracle, so the true
+`∀p` is not `⊤` and is unknown):** the normal forms do not collapse.
+
+| station fuel | `E` (nodes) | `A`, goal `◯p` | `A`, goal `↑↓◯p` (the plan's form) |
+|---|---|---|---|
+| 2 | 3 | `◯⊥` | `◯⊥` |
+| 6 | 43 | 44 | 64 |
+| 10 | 378 | 379 | 599 |
+| 14 | 2653 | 2654 | 4279 |
+| 18 | 18,243 (raw 1.5 M) | 18,244 (raw 2.5 M) | 29,504 (raw 2.7 M) |
+
+Growth after the certified simplifier is about ×7 per four fuel units
+on every chain, and every element still carries `◯⊥` blocks — the
+fuel-exhaustion default under a box, replaced level by level.  This
+reproduces the plan's certified strict ascent (station fuels 3→4, 5→6)
+and extends the non-collapse to station fuel 18.  Whether consecutive
+levels become interderivable is the oracle question recorded next.
+
+**A tooling defect found on the way, with its fix.**  Bounding a run by
+`perl -e 'alarm N; exec @ARGV' -- lake exe X …` bounds `lake`, not the
+binary `X` it spawns: on SIGALRM `lake` dies and `X` is orphaned and
+runs on.  That is what the "19 min 32 s" `pll` run of
+`docs/engine-profile.md` §9 was (under a 60 s alarm), and what held an
+oracle job open past its cap here.  `batch/run.sh` and
+`batch/bench-run.sh` were already right — they exec `.lake/build/bin/…`
+directly; ad-hoc checks must do the same.
+
 ---
 
 ## 5 · OPEN list

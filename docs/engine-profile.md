@@ -278,4 +278,7 @@ the kind of claim the UI work will keep generating.
 
 The practical rule that follows: a single validity check of a
 hand-crafted sequent goes to the G4c oracle via a two-column TSV and
-`lake exe pllbench --engine=g4c --cells=<file>`, never to `lake exe pll`.
+`.lake/build/bin/pllbench --engine=g4c --cells=<file>` under the alarm —
+the BINARY, never `lake exe`, which spawns it as a child the alarm does
+not reach (that is what the 19 min 32 s above was: a `pll` orphaned by
+a 60 s alarm on `lake`).  And never to `pll` for a validity question.
