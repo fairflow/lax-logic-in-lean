@@ -386,27 +386,35 @@ def negD : Pos := .down (.imp (.atom "d") (.up .fls))
 def Xs1 : Neg := .circ (.or (.atom "c") negD)
 def Ts1 : Neg := .imp (.down (.imp (.down Xs1) (.up (.atom "a")))) (.up (.atom "a"))
 
-def esearch (f : Nat) (sfuels : List Nat) (delta : String) (side : String) : IO Unit := do
-  let Γ := [dImpP, cBoxP]
+def esearch (station : String) (f : Nat) (sfuels : List Nat) (delta : String) (side : String) : IO Unit := do
+  let (Γ, G) : List Neg × Neg := match station with
+    | "S6" => ([dImpP, cBoxP, dykE], goalA)
+    | "S7" => ([dImpP, cBoxP], goalAC)
+    | _ => ([dImpP, cBoxP], goalA)
   let E := interpFS "p" f Γ [] none
   let Δ : Neg := match delta with
     | "X" => Xs1 | "T" => Ts1 | _ => .up (.atom "c")
+  -- E-side goal is always `a` (Γ ⊢ c ⊃ a at every station of the family)
   let goal : Neg := match side with
-    | "A" => interpFS "p" f Γ [] (some goalA) | _ => .up (.atom "a")
+    | "A" => interpFS "p" f Γ [] (some G) | _ => .up (.atom "a")
   let seq : LSeq := .inv [E, Δ] [] .tru goal
   for sf in sfuels do
     let t0 ← IO.monoMsNow
     let r := LSeq.search sf seq
     let t1 ← IO.monoMsNow
-    IO.println s!"esearch S1 delta={delta} side={side} evalfuel={f} sfuel={sf} result={r} ms={t1 - t0}"
+    IO.println s!"esearch {station} delta={delta} side={side} evalfuel={f} sfuel={sf} result={r} ms={t1 - t0}"
     (← IO.getStdout).flush
 
 def main (args : List String) : IO Unit := do
   if args.head? == some "esearch" then
-    -- uifs esearch <delta: c|X|T> <side: E|A> <evalfuel> <sfuel>…
+    -- uifs esearch <delta: c|X|T> <side: E|A> <evalfuel> <sfuel>…   (station S1)
+    -- uifs esearch <station: S1|S6|S7> <delta> <side> <evalfuel> <sfuel>…
     match args.drop 1 with
-    | delta :: side :: f :: sfs => esearch f.toNat! (sfs.map String.toNat!) delta side
-    | _ => esearch 16 [16, 24] "c" "E"
+    | st :: delta :: side :: f :: sfs =>
+        if st.startsWith "S" then esearch st f.toNat! (sfs.map String.toNat!) delta side
+        else esearch "S1" side.toNat! ((f :: sfs).map String.toNat!) st delta
+    | delta :: side :: f :: sfs => esearch "S1" f.toNat! (sfs.map String.toNat!) delta side
+    | _ => esearch "S1" 16 [16, 24] "c" "E"
     return
   if args.head? == some "cand" then
     let fuels := (args.drop 1).map String.toNat!
