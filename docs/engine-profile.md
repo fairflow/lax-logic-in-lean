@@ -249,3 +249,33 @@ cell; the 129-cell batch re-run of §7 agreeing verdict for verdict; and
 engine unchanged.  The remaining decision — whether the flag ever
 becomes the DEFAULT — is Matthew's, and §7 is the argument for taking
 it slowly: the gain is 1.04× at the batch's own budget.
+
+## 9. A family where the engines reverse (2026-09-04)
+
+Two hand-crafted sequents from the uniform-interpolation analysis
+(`docs/ui-ljfo-clause-table.md`, in preparation): the separating sequent
+of `PLLG4Gap.lean`, which needs two uses of `◯p ⊃ r` in G4-style search,
+and its one-deeper nesting, which needs three —
+
+    sep2   ◯((◯p ⊃ r) ⊃ ◯p) ⊃ ((◯p ⊃ r) ⊃ r)
+    sep3   ◯((◯p ⊃ r) ⊃ ◯((◯p ⊃ r) ⊃ ◯p)) ⊃ ((◯p ⊃ r) ⊃ r)
+
+| cell | `pll` (FRJW, default `Config`) | `pllbench --engine=g4c` |
+|---|---|---|
+| sep2 | **unsettled**: one run killed at 19 min 32 s, a second at 172 s | `valid`, ms |
+| sep3 | **unsettled after the full 900 s alarm** | `valid`, ms |
+
+Both G4c verdicts are `.proved` with a proof object behind them, so
+they are sound as validity claims (13 s wall for the pair, all of it
+process startup).  §7 measured FRJW at 1.04× of itself and G4c as the
+faster oracle on most cells; this family is the sharp end of that: a
+provable sequent whose proof needs repeated use of one hypothesis is
+exactly what a refutation engine cannot short-cut — it must exhaust the
+store — and exactly what goal-directed search finds at once.  Recorded
+because the batch's 20 s cap would have filed sep2 as a mere timeout,
+and because "needs three uses" (a hand argument, OPEN as a theorem) is
+the kind of claim the UI work will keep generating.
+
+The practical rule that follows: a single validity check of a
+hand-crafted sequent goes to the G4c oracle via a two-column TSV and
+`lake exe pllbench --engine=g4c --cells=<file>`, never to `lake exe pll`.
