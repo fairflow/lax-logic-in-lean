@@ -1,33 +1,22 @@
-# Blueprint Pages — deliberately NARROW triggers.
+# Blueprint Pages — PUBLISHING IS MANUAL ONLY.
 #
-# This workflow must not fire on campaign work.  It runs only when the
-# blueprint itself, its build inputs, or the dependency set change, and on
-# manual dispatch.  It does NOT watch '**/*.lean': the blueprint imports
-# FRJ/ and wip/ modules, so watching those would fire on nearly every
-# commit.  After a campaign merge that changes proof status, re-run this
-# by hand from the Actions tab.
+# There is deliberately NO `push:` trigger.  No commit to any branch can
+# publish this site; deploying is an explicit act via "Run workflow" in the
+# Actions tab (or `gh workflow run pages.yml --ref <branch>`).  That keeps a
+# routine campaign commit from putting a work-in-progress state on the public
+# site, and it means the published site always reflects a moment someone
+# chose.
+#
+# `pull_request` is kept because it BUILDS without deploying: the deploy job
+# is guarded by `github.event_name != 'pull_request'`, so a PR run is a free
+# check that the blueprint still compiles and renders.  Drop it too if even
+# that is unwanted.
+#
+# The ref you dispatch against must (a) contain the blueprint and (b) be
+# listed in the github-pages environment's deployment branch policy.
 #
 # lean_action_ci.yml is untouched and shares no trigger with this file.
-name: Blueprint Pages
-
 on:
-  push:
-    branches:
-      # NOT main: FRJ/CalculusW.lean, FRJ/SoundW.lean and the wip/ modules the
-      # blueprint names by string do not exist on main, so it cannot build
-      # there.  main carries only the lakefile require.
-      - frjw-dev
-      - publication/core
-      - verso-blueprint
-    paths:
-      - 'LaxBlueprint/**'
-      - 'LaxBlueprintMain.lean'
-      - 'scripts/ci-pages.sh'
-      - 'lakefile.toml'
-      - 'lake-manifest.json'
-      - 'lean-toolchain'
-      - '.github/workflows/pages.yml'
-      - '.github/workflows/blueprint-pages.yml'
   pull_request:
     paths:
       - 'LaxBlueprint/**'
