@@ -115,10 +115,10 @@ def decisionOf (G : Form) (rows : List (WRow G)) : String :=
   else "NOT-CLOSED"
 
 /-- Returns (alarm?, gate-failed?). -/
-def runCell (nm : String) (φ : P) : IO (Bool × Bool) := do
+def runCell (cfg : Config) (nm : String) (φ : P) : IO (Bool × Bool) := do
   let G := ofPLL φ
   let t0 ← IO.monoMsNow
-  let (db, st) := saturateO (W.wOps G) engineCfg
+  let (db, st) := saturateO (W.wOps G) cfg
   let rows := rowsOfDBO G db
   let t1 ← IO.monoMsNow
   let chk := checkClosed G rows
@@ -150,12 +150,21 @@ def runCell (nm : String) (φ : P) : IO (Bool × Bool) := do
   IO.println s!"{verdict}  {nm}  oracle={ov}  decision={dec}  rows={rows.length} (reg {db.rs.length}, irr {db.is.length}, join-built {joinRows.length})  engine={t1 - t0}ms check={t2 - t1}ms rounds={st.roundsUsed} caps={flags st}  gate-join={gateJoin} gate-drop={gateDrop}"
   pure (verdict == "ALARM", gateFail)
 
-def main : IO UInt32 := do
-  IO.println s!"checkprobe: {cells.length} cells, engine cfg rounds={engineCfg.rounds} jmax={engineCfg.jmax} pmax={engineCfg.pmax} lamCap={engineCfg.lamCap}"
+/-- `--semi-naive` runs the engine's differential round
+(`Config.semiNaive`, `FRJ/Search/Core.lean`); DEFAULT OFF, as the field
+itself is.  The certificate does not depend on it — `checkClosed`
+verifies whatever store the engine produced — so the flag can only
+change the ENGINE column and, if the delta logic were incomplete, turn a
+`PASS` into a `FLAG` (`NOT-CLOSED`).  It can never turn one into an
+`ALARM` without `checkClosed` being wrong too. -/
+def main (argv : List String) : IO UInt32 := do
+  let cfg := if argv.contains "--semi-naive" then { engineCfg with semiNaive := true }
+             else engineCfg
+  IO.println s!"checkprobe: {cells.length} cells, engine cfg rounds={cfg.rounds} jmax={cfg.jmax} pmax={cfg.pmax} lamCap={cfg.lamCap} semiNaive={cfg.semiNaive}"
   let mut alarms := 0
   let mut gateFails := 0
   for (nm, φ) in cells do
-    let (a, g) ← runCell nm φ
+    let (a, g) ← runCell cfg nm φ
     if a then alarms := alarms + 1
     if g then gateFails := gateFails + 1
   IO.println s!"checkprobe: alarms={alarms} gate-failures={gateFails}"
@@ -163,4 +172,4 @@ def main : IO UInt32 := do
 
 end CheckProbe
 
-def main : IO UInt32 := CheckProbe.main
+def main (argv : List String) : IO UInt32 := CheckProbe.main argv

@@ -30,6 +30,14 @@ infeasible beyond tiny formulas).
     lake exe pll "◯p ⊃ p" [--out=NAME] [--view=min|calc|both]
         [--check] [--check-term] [--proof-object]
         [--rounds=N] [--jmax=N] [--pmax=N] [--lamCap=N] [--maxRS=N] [--maxIS=N]
+        [--semi-naive]
+
+`--semi-naive` turns on differential evaluation in the engine's round
+(`Config.semiNaive`, `FRJ/Search/Core.lean`): a rule instance fires only
+when one of its premises is new since the previous round.  Default OFF.
+The verdict is certified by `checkClosed` either way, so the flag can
+only change how long the engine takes and which of several
+mutually-subsuming rows it stores.
 
 Exit codes (the `frjcert` convention):
     0  done (and, where checking ran, Lean ACCEPTED the artefacts)
@@ -346,6 +354,10 @@ def parseArgs (l : List String) : Except String (String × Args) := do
       a := { a with cfg := { a.cfg with maxRS := (s.drop 8).toString.toNat! } }
     else if s.startsWith "--maxIS=" then
       a := { a with cfg := { a.cfg with maxIS := (s.drop 8).toString.toNat! } }
+    else if s == "--semi-naive" then
+      a := { a with cfg := { a.cfg with semiNaive := true } }
+    else if s == "--naive" then
+      a := { a with cfg := { a.cfg with semiNaive := false } }
     else if s.startsWith "--" then throw s!"unknown flag {s}"
     else if φ?.isNone then φ? := some s
     else throw s!"two formulas given: {φ?.get!} and {s}"
