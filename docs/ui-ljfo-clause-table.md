@@ -1300,6 +1300,78 @@ interpolant, if it exists, is not a substitution instance (in IPC:
 admissibility lemma makes this instance screen a certificate; until
 then it is an oracle screen, run before any chain is measured.
 
+### 4.11 The cofinality proof build — STOPPED at the founding of the recursion (2026-09-04, late)
+
+Matthew's direction: stop refuting, prove cofinality in general; if
+the proof does not go through, the stopping point defines the next
+candidates.  An Opus agent templated the weight-founded minimality
+family (`TInv`/`UEntry` and auxiliaries, `LJF/O.lean`, conditional on
+`CimpAnt`) onto `interpF`.  Result, all in `LJF/OFuelMin.lean`
+(755 lines, no `sorry`, merged as `10ffa22`):
+
+* **PROVED**: the ten aggregate equations and nine row memberships at
+  fuel `f+1` (`[propext]`); the processing phase `eMinFF`/`aMinFF` —
+  cofinality at a saturated station implies cofinality at every
+  station (`[propext, Classical.choice, Quot.sound]`); the reductions
+  `ecofinalF_of_satE2F`, `acofinalF_of_satA2F` from the saturated
+  forms `SatE2F`/`SatA2F` to the approved statements.
+* **The obligation, and what it is**: `CimpAntF` (the retention form of
+  `CimpAnt`, `rest` replaced by `done`) and
+  `cimpAntF_of_satA2F : SatA2F p → CimpAntF p` — every one of the four
+  `cAnt` sites type-checks as the predicted native call of `∀p`-
+  cofinality at the FULL station on the antecedent's subderivation.
+  So the obligation is an instance of the statement being proved; a
+  conditional port would be near-vacuous.
+* **STOPPED**: `TInvF`/`UEntryF` themselves, hence `ecofinalF`/
+  `acofinalF`.  The reason is the founding.  The weight-founded family
+  is ordered lexicographically by (station-and-goal weight, derivation
+  size).  Taking the retention discharge as a recursive call adds the
+  edge `E@done → A@done(↑↓◯Q′)`, which raises the goal weight; but the
+  family already has the opposite cross-edge `A@done(c) → E@done` (the
+  `↑c` conjunct of the `c ⊃ N` attack row, `LJF/O.lean:1580`).  Round
+  the cycle
+
+      A@done(↑c) → A@done c → E@done → A@done(↑↓◯c) → A@done(↓◯c)
+        → A@done(◯c) → A@done(↑c)
+
+  every edge is a strict subderivation, so a station-first measure must
+  be constant round it, hence goal-blind at `done`; a goal-blind
+  measure cannot pay for goal inversion `A@done(Q ⊃ N) → A@(b ++ done)(N)`
+  (derivation rebuilt by `extract`, station grown), and iterating that
+  edge from the retention goal `↑↓◯(↓(↑d ⊃ ↑c))` gives stations
+  `done, ↑d :: done, ↑d :: ↑d :: done, …` each carrying the cycle.  The
+  agent checked the arithmetic escapes (inflating the `∃p` side by
+  `max` over the ◯-goals, by `σ`, by `Σ 3^goal`; three-component
+  orders; scaling): all fail on `μ_A(done, small goal) ≥ μ_E(done) ≥
+  μ_A(done, large ◯-goal)`.
+* **The cell** (`wip/ui_retention_cell.lean`, kernel-checked at every
+  fuel): station `[↓◯c ⊃ ↑a, c ⊃ ↑a]` with `p ≠ c, a`; its `∃p` row
+  of the ◯-implication carries the retained guard at `done`, its `∀p`
+  attack row at goal `↑c` carries `↑c` — the two cross-edges, in the
+  aggregates themselves.
+
+**What survives, and the question it opens.**  The opposite order —
+derivation height first, station weight second — drops on every cycle
+edge; the station-changing edges use rebuilt derivations, so it needs
+height bounds for `wk`, `simInv`/`simHyp`/`simStab`, `routeStabT`,
+`extract`, `invBranches`, `relStab`, `negOfDownStab`, `dykCommute`.
+The last two raise the height by the size of the formula they rewrite,
+and that is not bookkeeping only: on a path that alternates a
+retention edge (height down by one) with a Dyckhoff fire (height up by
+`|φ|`), derivation-founded recursion is not obviously well-founded
+either.  Whether the fuel a derivation needs is finite is then a
+mathematical question, and it defines the refined candidate family:
+
+    a saturated station holding a ◯-implication `↓◯Q′ ⊃ N` whose
+    antecedent `Q′` contains a Dyckhoff implication, together with an
+    atom-implication `c ⊃ N′`, with `p` occurring in both polarities
+    (no instance `Γ[χ] ⊃ G[χ]` sufficient) and an unboxed goal.
+
+Screen it as §4.10 did — instance screen first, then the chain probe
+and the cofinality instances at station fuels 6/10/14 — before any
+height-founded refactor is scoped.  OPEN, both ways: no refutation, no
+proof; the obstruction is exact.
+
 ---
 
 ## 5 · OPEN list
@@ -1361,7 +1433,9 @@ which take `Classical.choice` from the weight-founded recursion):
 The twelve modal rows went through by weakening (`atkCimp` at
 `rest := done`), the `∃p` aggregate row easier than its original.  What
 remains OPEN for route (B) is cofinality (`ECofinalF`/`ACofinalF` in
-`wip/ui_routeB_statements.lean`, typed statements with no declaration).
+`wip/ui_routeB_statements.lean`, typed statements with no declaration):
+the proof build STOPPED at the founding of the recursion, with the
+obstruction exact and a candidate family defined — §4.11.
 
 **O9.  The decide counts of §4.2.**  Two decides on `H` for Γ₁ and three
 for Γ₂ are the counts of the derivations I wrote down; **minimality of
