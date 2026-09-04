@@ -1,6 +1,14 @@
 import Verso
 import VersoManual
 import VersoBlueprint
+-- The import runs ONE WAY: this chapter imports the development; no file of
+-- the development imports verso.  That is what keeps verso out of the
+-- ordinary build graph.
+import FRJ.CalculusW
+import FRJ.SoundW
+import wip.gbu_weakening
+import wip.gbu_search_circ
+import wip.rbar
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -26,7 +34,7 @@ $`◯∉` is kept, since its premise is a regular disproof of $`Z` rather than
 of $`◯Z`, so it climbs the modality and Lift does not.
 :::
 
-:::theorem "duality_hole" (parent := "frjw") (tags := "proved, motivation")
+:::theorem "duality_hole" (parent := "frjw") (tags := "proved, motivation") (lean := "FRJ.V.WCounter.no_irregular_circ_imp_self")
 FRJV has *no* irregular disproof of $`◯(◯Z ⊃ Z)`, for any $`G`, $`Z`,
 $`Σ`, $`Θ`.  Only $`◯∉` and $`Ax^{I◯}` conclude a $`◯` goal; the former needs
 a cleanly tagged regular disproof of $`◯Z ⊃ Z`, and the latter needs
@@ -39,7 +47,7 @@ Machine-checked as `FRJ.V.WCounter.no_irregular_circ_imp_self`
 `FRJ.V.WCounter.not_clean_imp_self` for the $`◯∉` branch.
 :::
 
-:::theorem "gbu_gap" (parent := "frjw") (tags := "proved, motivation")
+:::theorem "gbu_gap" (parent := "frjw") (tags := "proved, motivation") (lean := "FRJ.Gbu.not_gbuIC_Gcc")
 Gbu$`◯` cannot fill the hole: $`∅ →_g ◯(◯p ⊃ p)` is not derivable.
 :::
 
@@ -49,7 +57,7 @@ irregular judgment the same reading as the regular one, and $`◯(◯p ⊃ p)` i
 refuted by the model `GccWitness` extracts.
 :::
 
-:::theorem "provable_gcc" (parent := "frjw") (tags := "proved, motivation")
+:::theorem "provable_gcc" (parent := "frjw") (tags := "proved, motivation") (lean := "FRJ.Gbu.provableV_Gcc, FRJ.V.RBar.not_force_of_rootAbove")
 A *regular* FRJV disproof of $`◯(◯p ⊃ p)` does exist, by the barren
 $`⋈^◯` join, but it cannot be used where an irregular disproof is required.
 Together with {uses "duality_hole"}[] and {uses "gbu_gap"}[] this is the
@@ -66,7 +74,7 @@ not typecheck for a tagless $`◯∉`, so the gate discriminates.
 
 # Stages
 
-:::theorem "w1_calculus" (parent := "frjw") (tags := "proved, stage-W1")
+:::theorem "w1_calculus" (parent := "frjw") (tags := "proved, stage-W1") (lean := "FRJ.FRJWr, FRJ.FRJWi, FRJ.DisprovableW")
 *W1, transcribe.*  The two FRJW families and the disprovability judgment
 are defined: `FRJ.FRJWr`, `FRJ.FRJWi`, `FRJ.DisprovableW`, obtained from
 FRJV by adding {uses "lift_rule"}[] and deleting $`⊃∉`.  The stage gate is
@@ -78,7 +86,7 @@ constructor of both families.
 `FRJ/CalculusW.lean`, 366 lines, sorry-free.
 :::
 
-:::theorem "w2_conservativity" (parent := "frjw") (tags := "proved, stage-W2")
+:::theorem "w2_conservativity" (parent := "frjw") (tags := "proved, stage-W2") (lean := "FRJ.disprovableW_of_provableV")
 *W2, conservativity.*  Every FRJV disproof is an FRJW disproof:
 $$`\mathrm{FRJVr}\ G\ t\ Γ\ C → \mathrm{FRJWr}\ G\ t\ Γ\ C, \qquad
 \mathrm{FRJVi}\ G\ Σ\ Θ\ C → \mathrm{FRJWi}\ G\ Σ\ Θ\ C`
@@ -93,7 +101,7 @@ so it is proved before soundness.
 `#guard_msgs`-checked `#print axioms`.
 :::
 
-:::theorem "w3_soundness" (parent := "frjw") (tags := "proved, stage-W3")
+:::theorem "w3_soundness" (parent := "frjw") (tags := "proved, stage-W3") (lean := "FRJ.soundnessW")
 *W3, soundness.*  A disproof yields a refutation:
 $$`\mathrm{DisprovableW}\ G → ¬\,\mathrm{PLL}\ G`
 The Lift case of `lemma39I` was already available; the real obligation was
@@ -102,7 +110,12 @@ components now supplied by {uses "lift_rule"}[].
 :::
 
 :::proof "w3_soundness"
-`FRJ.soundnessW` (`FRJ/SoundW.lean`, 1879 lines, sorry-free), through
+The declaration's own docstring, pulled verbatim out of the environment, so
+the text is written once and lives with the theorem:
+
+{docstring FRJ.soundnessW}
+
+Proved through
 `FRJ.W.lemma39R`, `FRJ.W.lemma39I` and `FRJ.W.modR_countermodel`, with
 `RegIdx (lift d) := Unit` and `preI (lift d) _ := preR d`
 (`FRJ/ExtractW.lean`).  The conclusion is against the wider fallible class,
