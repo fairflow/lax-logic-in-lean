@@ -15,6 +15,7 @@ finite and computable from the derivation, not from the station — hence
 import LJF.O
 import LJF.OFuel
 import LJF.OFuelSound
+import LJF.OFuelMin
 
 namespace LJFO
 
@@ -54,4 +55,40 @@ def ACofinalF (p : String) : Type :=
       Σ f : Nat, Inv (interpF p f [] done none :: Δ) [] .tru
         (interpF p f [] done (some (jGoal j G)))
 
+/-! ## Status of the two cofinality statements (2026-09-04)
+
+Both are OPEN: neither is inhabited, and per the machine-checked mandate
+neither gets a sorried declaration.  What IS proved sits in
+`LJF/OFuelMin.lean`:
+
+* the row layer of `interpF` at fuel `f+1` (the nine aggregate equations
+  and the nine row memberships), all `[propext]`;
+* `SatE2F` / `SatA2F`, the same two statements at a SATURATED station in
+  upward-closed fuel form (`UpFrom` / `UpFrom2`), from which
+  `ECofinalF` / `ACofinalF` follow by the projections below;
+* `eMinFF` / `aMinFF`: the processing phase, unconditionally — cofinality
+  at a saturated station implies cofinality at every station;
+* `CimpAntF`, the isolated obligation of the twelve retention rows, and
+  `cimpAntF_of_satA2F : SatA2F p → CimpAntF p` — the obligation is an
+  instance of `SatA2F` itself, at the SAME station, applied to the
+  antecedent's own subderivation.  That last is the content of the
+  retention design and the reason it cannot simply be taken as a
+  recursive call: see the termination note in `LJF/OFuelMin.lean`. -/
+
+/-- `ECofinalF` follows from cofinality at a saturated station: read the
+upward-closed witness at its own threshold. -/
+def ecofinalF_of_satE2F {p : String} (s2 : SatE2F p) : ECofinalF p :=
+  fun done Δ ψ hsat hP hΔ hψ _ d =>
+    let w := s2 done Δ ψ hsat hP hΔ hψ d
+    ⟨w.1, w.here⟩
+
+/-- `ACofinalF` follows likewise, on the diagonal of the two fuels. -/
+def acofinalF_of_satA2F {p : String} (a2 : SatA2F p) : ACofinalF p :=
+  fun done Δ G hsat hP hΔ _ d =>
+    let w := a2 done Δ G hsat hP hΔ d
+    ⟨w.1, w.here⟩
+
 end LJFO
+
+#axioms_within LJFO.ecofinalF_of_satE2F [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.acofinalF_of_satA2F [propext, Classical.choice, Quot.sound]
