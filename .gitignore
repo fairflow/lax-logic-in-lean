@@ -29,3 +29,6 @@ tmp*.lean
 _*.lean
 /_out/
 blueprint/
+generalPapers/AiML26-Arxiv.pdf
+generalPapers/mendler-et-al-ckd.pdf
+generalPapers/qckd.pdf

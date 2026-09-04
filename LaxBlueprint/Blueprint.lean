@@ -4,8 +4,9 @@ import VersoBlueprint
 import VersoBlueprint.Commands.Graph
 import VersoBlueprint.Commands.Summary
 import LaxBlueprint.Chapters.Overview
-import LaxBlueprint.Chapters.FRJW
 import LaxBlueprint.Chapters.Development
+import LaxBlueprint.Chapters.FRJW
+
 
 open Verso.Genre
 open Verso.Genre.Manual
