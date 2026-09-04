@@ -76,8 +76,6 @@ def eSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg),
   | 0, _, _ => by
       rw [interpF]
       exact nTopIntro
-def eSound (p : String) : ∀ (todo done : List Neg),
-    Inv (todo ++ done) [] .tru (interpF p f todo done none)
   | f+1, .up (.atom a) :: todo, done => by
       rw [interpF]
       exact (eSoundF p f todo (.up (.atom a) :: done)).wk subPark
@@ -284,7 +282,7 @@ def eSound (p : String) : ∀ (todo done : List Neg),
                 (eSoundF p f [.up Q] rest)
 
   termination_by f _ _ => f
-  decreasing_by all_goals (simp_wf; omega)
+  decreasing_by all_goals (simp_wf; try omega)
 
 /-- **A1 at every fuel.**  The `∀p`-approximant beside the station derives
 the goal:
@@ -297,8 +295,6 @@ def aSoundF (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
   | 0, _, _, G => by
       rw [interpF]
       exact nBotElim G (List.mem_cons_self ..)
-def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
-    Inv (interpF p f todo done (some G) :: (todo ++ done)) [] .tru G
   | f+1, .up (.atom a) :: todo, done, G => by
       rw [interpF]
       exact (aSoundF p f todo (.up (.atom a) :: done) G).wk (Sub.cons _ subPark)
@@ -1584,7 +1580,7 @@ def aSound (p : String) : ∀ (todo done : List Neg) (G : Neg),
                   (circROf D))))
 
   termination_by f _ _ _ => f
-  decreasing_by all_goals (simp_wf; omega)
+  decreasing_by all_goals (simp_wf; try omega)
 
 end
 
@@ -1610,8 +1606,6 @@ def eSoundFWitness (p : String) : ESoundF' p := eSoundF p
 /-- `ASoundF` is inhabited. -/
 def aSoundFWitness (p : String) : ASoundF' p := aSoundF p
 
-end LJFO
-
 /-! ## Pins
 
 The bound is `eSound`/`aSound`'s own pinned set (`LJF/OAudit.lean`).  A
@@ -1621,3 +1615,5 @@ proof needing anything beyond it would be wrong. -/
 #axioms_within aSoundF [propext, Classical.choice, Quot.sound]
 #axioms_within eSoundFWitness [propext, Classical.choice, Quot.sound]
 #axioms_within aSoundFWitness [propext, Classical.choice, Quot.sound]
+
+end LJFO
