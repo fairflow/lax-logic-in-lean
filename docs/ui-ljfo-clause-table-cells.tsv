@@ -1,0 +1,8 @@
+c1	chk	◯r
+c2	chk	◯((◯p ⊃ r) ⊃ ◯p) ⊃ ◯p
+c3	chk	(◯((◯p ⊃ r) ⊃ ◯p) ∧ ◯r) ⊃ ◯p
+c4	chk	(◯((◯p ⊃ r) ⊃ ◯p) ∧ (◯p ⊃ r)) ⊃ (◯r ∧ (◯r ⊃ r))
+c5	chk	((◯r ⊃ r) ∧ ◯r) ⊃ r
+c6	chk	◯((◯p ⊃ r) ⊃ ◯p) ⊃ ((◯p ⊃ r) ⊃ r)
+c7	chk	◯((◯p ⊃ r) ⊃ ◯((◯p ⊃ r) ⊃ ◯p)) ⊃ ((◯p ⊃ r) ⊃ r)
+c8	chk	(◯((◯p ⊃ r) ⊃ ◯((◯p ⊃ r) ⊃ ◯p)) ∧ (◯p ⊃ r)) ⊃ (◯r ∧ (◯r ⊃ r))
