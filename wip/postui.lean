@@ -1209,29 +1209,71 @@ This refutes the METHOD on the `∀`-side, not `∀p` itself: whether
 `p ∨ ¬p` has a uniform pre-interpolant (`⊥` is the natural candidate)
 is left OPEN here. -/
 
-theorem Fin2_cases : ∀ v : Fin 2, v = 0 ∨ v = 1 := by decide
-theorem Fin2_hered_V : ∀ x y : Fin 2, x ≤ y → 1 ≤ x → 1 ≤ y := by decide
+/-- The two-element index type of the models `N` and `dbl` below,
+`lo ⊑ hi`.  A bare inductive rather than `Fin 2`: `Fin` numerals and
+`decide` over a `Fin` quantifier both route through `Fintype`/`Multiset`
+and so charge `Quot.sound` to every lemma that mentions them, whereas
+this type and its order are axiom-free. -/
+inductive Two where
+  | lo
+  | hi
+
+/-- The order `lo ⊑ hi` as a boolean. -/
+def Two.leB : Two → Two → Bool
+  | .lo, _ => true
+  | .hi, .hi => true
+  | .hi, .lo => false
+
+/-- The order `lo ⊑ hi`. -/
+def Two.le (x y : Two) : Prop := Two.leB x y = true
+
+theorem two_cases : ∀ v : Two, v = Two.lo ∨ v = Two.hi
+  | .lo => Or.inl rfl
+  | .hi => Or.inr rfl
+
+theorem two_le_refl : ∀ x : Two, Two.le x x
+  | .lo => rfl
+  | .hi => rfl
+
+theorem two_le_trans : ∀ {x y z : Two}, Two.le x y → Two.le y z → Two.le x z
+  | .lo, _, _, _, _ => rfl
+  | .hi, .hi, .hi, _, _ => rfl
+  | .hi, .hi, .lo, _, h2 => Bool.noConfusion h2
+  | .hi, .lo, _, h1, _ => Bool.noConfusion h1
+
+theorem two_le_of_eq : ∀ {x y : Two}, x = y → Two.le x y
+  | .lo, _, rfl => rfl
+  | .hi, _, rfl => rfl
+
+theorem two_lo_le_hi : Two.le Two.lo Two.hi := rfl
+
+/-- `{hi}` is upward closed — the heredity step for the atom in `N` and
+in `dbl`. -/
+theorem two_up : ∀ (i j : Two), Two.le i j → i = Two.hi → j = Two.hi
+  | .lo, _, _, h => Two.noConfusion h
+  | .hi, .hi, _, _ => rfl
+  | .hi, .lo, h, _ => Bool.noConfusion h
 
 /-- The two-world fallible-free model. -/
 @[reducible] def N : ConstraintModel where
-  W := Fin 2
-  Ri x y := x ≤ y
+  W := Two
+  Ri x y := Two.le x y
   Rm x y := x = y
   F := {_x | False}
-  V _ := {x | 1 ≤ x}
-  refl_i x := le_refl x
-  trans_i {x y z} h1 h2 := le_trans h1 h2
+  V _ := {x | x = Two.hi}
+  refl_i x := two_le_refl x
+  trans_i {_ _ _} h1 h2 := two_le_trans h1 h2
   refl_m _ := rfl
   trans_m {_ _ _} h1 h2 := h1.trans h2
-  sub_mi {x y} h := le_of_eq h
+  sub_mi {_ _} h := two_le_of_eq h
   hered_F {_ _} _ hx := hx
-  hered_V {_ x y} h hx := Fin2_hered_V x y h hx
+  hered_V {_ x y} h hx := two_up x y h hx
   full_F {_ _} hx := hx.elim
 
 /-- **The two worlds of `N` are indistinguishable to the variable-free
 fragment.** -/
 theorem N_uniform : ∀ {A : PLLFormula}, atomFree A = true →
-    (N.force (0 : Fin 2) A ↔ N.force (1 : Fin 2) A) := by
+    (N.force Two.lo A ↔ N.force Two.hi A) := by
   intro A
   induction A with
   | prop a => intro h; exact absurd h (by simp [atomFree])
@@ -1252,23 +1294,23 @@ theorem N_uniform : ∀ {A : PLLFormula}, atomFree A = true →
         simpa [atomFree, Bool.and_eq_true] using h
       constructor
       · intro hh
-        exact N.force_hered (show N.Ri 0 1 by decide) hh
+        exact N.force_hered (show N.Ri Two.lo Two.hi from two_lo_le_hi) hh
       · intro hh u hu hA
-        rcases Fin2_cases u with rfl | rfl
-        · exact (ihB h'.2).mpr (hh 1 (le_refl (1 : Fin 2)) ((ihA h'.1).mp hA))
-        · exact hh 1 (le_refl (1 : Fin 2)) hA
+        rcases two_cases u with rfl | rfl
+        · exact (ihB h'.2).mpr (hh Two.hi (two_le_refl Two.hi) ((ihA h'.1).mp hA))
+        · exact hh Two.hi (two_le_refl Two.hi) hA
   | somehow A ih =>
       intro h
       constructor
       · intro hh
-        exact N.force_hered (show N.Ri 0 1 by decide) hh
+        exact N.force_hered (show N.Ri Two.lo Two.hi from two_lo_le_hi) hh
       · intro hh u _
-        rcases Fin2_cases u with rfl | rfl
-        · obtain ⟨y, hy, hfy⟩ := hh 1 (le_refl (1 : Fin 2))
-          have hy1 : (1 : Fin 2) = y := hy
+        rcases two_cases u with rfl | rfl
+        · obtain ⟨y, hy, hfy⟩ := hh Two.hi (two_le_refl Two.hi)
+          have hy1 : Two.hi = y := hy
           subst hy1
-          exact ⟨0, rfl, (ih h).mpr hfy⟩
-        · exact hh 1 (le_refl (1 : Fin 2))
+          exact ⟨Two.lo, rfl, (ih h).mpr hfy⟩
+        · exact hh Two.hi (two_le_refl Two.hi)
 
 /-- Weak excluded middle for the variable, `p ∨ ¬p`. -/
 def wemP : PLLFormula := (PLLFormula.prop pv).or (nt (PLLFormula.prop pv))
@@ -1283,29 +1325,29 @@ theorem inst_wemP (θ : PLLFormula) : inst θ wemP = θ.or (nt θ) := by
 
 /-- Every variable-free instance `θ ∨ ¬θ` holds at the root of `N`. -/
 theorem N_force_inst_wemP {θ : PLLFormula} (hθ : atomFree θ = true) :
-    N.force (0 : Fin 2) (inst θ wemP) := by
+    N.force Two.lo (inst θ wemP) := by
   classical
   rw [inst_wemP]
-  by_cases h0 : N.force (0 : Fin 2) θ
+  by_cases h0 : N.force Two.lo θ
   · exact Or.inl h0
   · refine Or.inr ?_
     intro u _ hθu
-    rcases Fin2_cases u with rfl | rfl
+    rcases two_cases u with rfl | rfl
     · exact absurd hθu h0
     · exact absurd ((N_uniform hθ).mpr hθu) h0
 
 /-- `p ∨ ¬p` fails at the root of `N`. -/
-theorem N_not_wemP : ¬ N.force (0 : Fin 2) wemP := by
+theorem N_not_wemP : ¬ N.force Two.lo wemP := by
   intro h
   rcases h with hp | hn
-  · have h' : (1 : Fin 2) ≤ 0 := hp
-    exact absurd h' (by decide)
-  · exact hn 1 (show N.Ri 0 1 by decide) (le_refl (1 : Fin 2))
+  · exact Two.noConfusion (hp : Two.lo = Two.hi)
+  · exact hn Two.hi (show N.Ri Two.lo Two.hi from two_lo_le_hi)
+      (show N.force Two.hi (PLLFormula.prop pv) from rfl)
 
 /-- **`p ∨ ¬p` has NO finite variable-free substitution meet-cover.** -/
 theorem wemP_no_meetCover : ¬ HasMeetCover wemP := by
   rintro ⟨S, hS, ⟨d⟩⟩
-  refine N_not_wemP (soundness d N 0 ?_)
+  refine N_not_wemP (soundness d N Two.lo ?_)
   intro ψ hψ
   have e : ψ = bigAnd (instList S wemP) := by
     cases hψ with
@@ -1330,7 +1372,7 @@ The proof is a DOUBLING construction.  Given a variable-free `χ` with
 `χ ⊬ ⊥`, take a model world `w ⊩ χ`, `w ∉ F`, and replace the model by
 two vertical copies of itself,
 
-    dbl C :  W × Fin 2,  Rᵢ = Rᵢ × (≤),  Rₘ = Rₘ × (=),  F = F × Fin 2,
+    dbl C :  W × Two,  Rᵢ = Rᵢ × (⊑),  Rₘ = Rₘ × (=),  F = F × Two,
              V(a) = upper copy ∪ F.
 
 Variable-free formulas cannot see the second coordinate
@@ -1339,31 +1381,29 @@ but the layer index can always be instantiated at its own value), so
 `χ` still holds at `(w,0)`.  But `p` now holds at `(w,1)` and not at
 `(w,0)`, so `p ∨ ¬p` fails at `(w,0)`.  Hence `χ ⊬ p ∨ ¬p`. -/
 
-theorem Fin2_up : ∀ i j : Fin 2, i ≤ j → i = 1 → j = 1 := by decide
-
 /-- The doubling of a constraint model, with `p` decorated to hold
 exactly on the upper copy (plus the fallible worlds). -/
 @[reducible] def dbl (C : ConstraintModel) : ConstraintModel where
-  W := C.W × Fin 2
-  Ri a b := C.Ri a.1 b.1 ∧ a.2 ≤ b.2
+  W := C.W × Two
+  Ri a b := C.Ri a.1 b.1 ∧ Two.le a.2 b.2
   Rm a b := C.Rm a.1 b.1 ∧ a.2 = b.2
   F := {a | a.1 ∈ C.F}
-  V _ := {a | a.2 = 1 ∨ a.1 ∈ C.F}
-  refl_i a := ⟨C.refl_i a.1, le_refl a.2⟩
-  trans_i {_ _ _} h1 h2 := ⟨C.trans_i h1.1 h2.1, le_trans h1.2 h2.2⟩
+  V _ := {a | a.2 = Two.hi ∨ a.1 ∈ C.F}
+  refl_i a := ⟨C.refl_i a.1, two_le_refl a.2⟩
+  trans_i {_ _ _} h1 h2 := ⟨C.trans_i h1.1 h2.1, two_le_trans h1.2 h2.2⟩
   refl_m a := ⟨C.refl_m a.1, rfl⟩
   trans_m {_ _ _} h1 h2 := ⟨C.trans_m h1.1 h2.1, h1.2.trans h2.2⟩
-  sub_mi {_ _} h := ⟨C.sub_mi h.1, le_of_eq h.2⟩
+  sub_mi {_ _} h := ⟨C.sub_mi h.1, two_le_of_eq h.2⟩
   hered_F {_ _} h hx := C.hered_F h.1 hx
   hered_V {_ x y} h hx :=
-    hx.elim (fun h1 => Or.inl (Fin2_up x.2 y.2 h.2 h1))
+    hx.elim (fun h1 => Or.inl (two_up x.2 y.2 h.2 h1))
       (fun h1 => Or.inr (C.hered_F h.1 h1))
   full_F {_ _} hx := Or.inr hx
 
 /-- **Variable-free formulas cannot see the doubling.** -/
 theorem dbl_transfer {C : ConstraintModel} :
     ∀ {A : PLLFormula}, atomFree A = true →
-      ∀ (x : C.W) (i : Fin 2), ((dbl C).force (x, i) A ↔ C.force x A) := by
+      ∀ (x : C.W) (i : Two), ((dbl C).force (x, i) A ↔ C.force x A) := by
   intro A
   induction A with
   | prop a => intro h; exact absurd h (by simp [atomFree])
@@ -1382,24 +1422,24 @@ theorem dbl_transfer {C : ConstraintModel} :
       intro h x i
       have h' : atomFree A = true ∧ atomFree B = true := by
         simpa [atomFree, Bool.and_eq_true] using h
-      show (∀ b : C.W × Fin 2, (dbl C).Ri (x, i) b →
+      show (∀ b : C.W × Two, (dbl C).Ri (x, i) b →
             (dbl C).force b A → (dbl C).force b B) ↔
         (∀ v : C.W, C.Ri x v → C.force v A → C.force v B)
       constructor
       · intro hh v hv hA
         exact (ihB h'.2 v i).mp
-          (hh (v, i) ⟨hv, le_refl i⟩ ((ihA h'.1 v i).mpr hA))
+          (hh (v, i) ⟨hv, two_le_refl i⟩ ((ihA h'.1 v i).mpr hA))
       · intro hh b hb hA
         exact (ihB h'.2 b.1 b.2).mpr
           (hh b.1 hb.1 ((ihA h'.1 b.1 b.2).mp hA))
   | somehow A ih =>
       intro h x i
-      show (∀ b : C.W × Fin 2, (dbl C).Ri (x, i) b →
+      show (∀ b : C.W × Two, (dbl C).Ri (x, i) b →
             ∃ u, (dbl C).Rm b u ∧ (dbl C).force u A) ↔
         (∀ v : C.W, C.Ri x v → ∃ u, C.Rm v u ∧ C.force u A)
       constructor
       · intro hh v hv
-        obtain ⟨u, hu, hfu⟩ := hh (v, i) ⟨hv, le_refl i⟩
+        obtain ⟨u, hu, hfu⟩ := hh (v, i) ⟨hv, two_le_refl i⟩
         exact ⟨u.1, hu.1, (ih h u.1 u.2).mp hfu⟩
       · intro hh b hb
         obtain ⟨u, hu, hfu⟩ := hh b.1 hb.1
@@ -1408,15 +1448,13 @@ theorem dbl_transfer {C : ConstraintModel} :
 /-- `p ∨ ¬p` fails at the lower copy of a non-fallible world. -/
 theorem dbl_not_wemP {C : ConstraintModel} {w : C.W}
     (hw : ¬ C.force w PLLFormula.falsePLL) :
-    ¬ (dbl C).force ((w, 0) : C.W × Fin 2) wemP := by
+    ¬ (dbl C).force ((w, Two.lo) : C.W × Two) wemP := by
   intro h
   rcases h with hp | hn
-  · rcases (hp : ((0 : Fin 2) = 1 ∨ w ∈ C.F)) with h0 | hF
-    · have h0' : (0 : Fin 2) = 1 := h0
-      exact absurd h0' (by decide)
+  · rcases (hp : (Two.lo = Two.hi ∨ w ∈ C.F)) with h0 | hF
+    · exact Two.noConfusion h0
     · exact hw hF
-  · have hle : (0 : Fin 2) ≤ 1 := by decide
-    refine hw (hn (w, 1) ⟨C.refl_i w, hle⟩ ?_)
+  · refine hw (hn (w, Two.hi) ⟨C.refl_i w, two_lo_le_hi⟩ ?_)
     exact Or.inl rfl
 
 /-- **`∀p.(p ∨ ¬p) = ⊥`.**  So the `∀`-side uniform interpolant of
@@ -1430,14 +1468,14 @@ theorem preInterp_wemP : IsPreInterp wemP PLLFormula.falsePLL := by
   by_contra hcon
   obtain ⟨C, -, w, hw, hwF⟩ := countermodel_of_not_deriv hcon
   obtain ⟨d⟩ := hd
-  refine dbl_not_wemP hwF (soundness d (dbl C) (w, 0) ?_)
+  refine dbl_not_wemP hwF (soundness d (dbl C) (w, Two.lo) ?_)
   intro ψ hψ
   have e : ψ = χ := by
     cases hψ with
     | head => rfl
     | tail _ h => cases h
   subst e
-  exact (dbl_transfer hχ w 0).mpr hw
+  exact (dbl_transfer hχ w Two.lo).mpr hw
 
 /-! ## 12.  The `∃`-side conjecture survives both countermodels
 
