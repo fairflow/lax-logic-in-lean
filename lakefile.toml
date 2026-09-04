@@ -17,6 +17,12 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.31.0"
 
+# LaxBlueprint: the Verso Blueprint.  Deliberately NOT in defaultTargets —
+# it is the only target that pulls verso into the import graph, and it is
+# built occasionally, by hand or by the Pages workflow.
+[[lean_lib]]
+name = "LaxBlueprint"
+
 [[lean_lib]]
 name = "LaxLogic"
 

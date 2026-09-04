@@ -1,0 +1,48 @@
+# Blueprint Pages — deliberately NARROW triggers.
+#
+# This workflow must not fire on campaign work.  It runs only when the
+# blueprint itself, its build inputs, or the dependency set change, and on
+# manual dispatch.  It does NOT watch '**/*.lean': the blueprint imports
+# FRJ/ and wip/ modules, so watching those would fire on nearly every
+# commit.  After a campaign merge that changes proof status, re-run this
+# by hand from the Actions tab.
+#
+# lean_action_ci.yml is untouched and shares no trigger with this file.
+name: Blueprint Pages
+
+on:
+  push:
+    branches:
+      # NOT main: FRJ/CalculusW.lean, FRJ/SoundW.lean and the wip/ modules the
+      # blueprint names by string do not exist on main, so it cannot build
+      # there.  main carries only the lakefile require.
+      - frjw-dev
+      - publication/core
+      - verso-blueprint
+    paths:
+      - 'LaxBlueprint/**'
+      - 'LaxBlueprintMain.lean'
+      - 'scripts/ci-pages.sh'
+      - 'lakefile.toml'
+      - 'lake-manifest.json'
+      - 'lean-toolchain'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/blueprint-pages.yml'
+  pull_request:
+    paths:
+      - 'LaxBlueprint/**'
+      - 'LaxBlueprintMain.lean'
+      - 'scripts/ci-pages.sh'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/blueprint-pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  pages:
+    uses: ./.github/workflows/blueprint-pages.yml
+    secrets: inherit
