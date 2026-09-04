@@ -728,8 +728,10 @@ end LJFO
 
 /-! ### Axiom audit
 
-The standard bound first, then the measured set, which is smaller: every
-declaration of this module is `[propext]`.  `sorryAx` appears nowhere. -/
+The standard bound first, then the measured set, which is smaller: the
+row layer and the two reductions measure `[propext]`; `eMinFF`/`aMinFF`
+measure the full bound, as their weight-founded originals do (the
+well-founded recursion). Nothing here depends on `sorryAx`. -/
 
 #axioms_within LJFO.interpFE_eq [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.interpF_circ_laxRows [propext, Classical.choice, Quot.sound]
