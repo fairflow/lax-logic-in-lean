@@ -752,3 +752,17 @@ supportInterpreter = true
 [[lean_exe]]
 name = "frjvrecheck"
 root = "wip.frjv_recheck"
+
+# The two ESTATES (2026-09-04).  Membership is declared here, not
+# inferred from a directory: `Audit/Production.lean` imports what must
+# stay sorry-free and sweeps it; `Audit/Experimental.lean` imports the
+# harness estate, where `sorryAx` is allowed.  `lake build Production`
+# is the gate; `lake build` alone only covers defaultTargets and checks
+# no axioms at all.
+[[lean_lib]]
+name = "Production"
+globs = ["Audit.Production"]
+
+[[lean_lib]]
+name = "Experimental"
+globs = ["Audit.Experimental"]
