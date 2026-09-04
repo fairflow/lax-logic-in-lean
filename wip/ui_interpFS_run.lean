@@ -377,25 +377,36 @@ def CAND : List (String × List Neg × Neg) :=
     ("S6", [dImpP, cBoxP, dykE], goalA),
     ("S7", [dImpP, cBoxP], goalAC) ]
 
-/-- Focused kernel search (`LJFO.search`, sound by `search_sound`) on the
-E-cofinality instance `E_f, ↑c ⊢ ↑a` at S1: `uifs esearch <evalfuel> <sfuel>…`.
+/-! Focused kernel search (`LJFO.LSeq.search`, sound by `search_sound`) on
+the cofinality instances at S1: `uifs esearch <delta> <side> <evalfuel> <sfuel>…`.
 A `true` is a derivation; a `false` certifies nothing. -/
-def esearch (f : Nat) (sfuels : List Nat) : IO Unit := do
-  let E := interpFS "p" f [dImpP, cBoxP] [] none
-  let seq : LSeq := .inv [E, .up (.atom "c")] [] .tru (.up (.atom "a"))
+
+/-- `X = ◯(c ∨ ¬d)` and `T = (X ⊃ a) ⊃ a` at S1, polarised. -/
+def negD : Pos := .down (.imp (.atom "d") (.up .fls))
+def Xs1 : Neg := .circ (.or (.atom "c") negD)
+def Ts1 : Neg := .imp (.down (.imp (.down Xs1) (.up (.atom "a")))) (.up (.atom "a"))
+
+def esearch (f : Nat) (sfuels : List Nat) (delta : String) (side : String) : IO Unit := do
+  let Γ := [dImpP, cBoxP]
+  let E := interpFS "p" f Γ [] none
+  let Δ : Neg := match delta with
+    | "X" => Xs1 | "T" => Ts1 | _ => .up (.atom "c")
+  let goal : Neg := match side with
+    | "A" => interpFS "p" f Γ [] (some goalA) | _ => .up (.atom "a")
+  let seq : LSeq := .inv [E, Δ] [] .tru goal
   for sf in sfuels do
     let t0 ← IO.monoMsNow
     let r := LSeq.search sf seq
     let t1 ← IO.monoMsNow
-    IO.println s!"esearch S1 evalfuel={f} sfuel={sf} result={r} ms={t1 - t0}"
+    IO.println s!"esearch S1 delta={delta} side={side} evalfuel={f} sfuel={sf} result={r} ms={t1 - t0}"
     (← IO.getStdout).flush
 
 def main (args : List String) : IO Unit := do
   if args.head? == some "esearch" then
-    let ns := (args.drop 1).map String.toNat!
-    match ns with
-    | f :: sfs => esearch f sfs
-    | [] => esearch 16 [16, 24]
+    -- uifs esearch <delta: c|X|T> <side: E|A> <evalfuel> <sfuel>…
+    match args.drop 1 with
+    | delta :: side :: f :: sfs => esearch f.toNat! (sfs.map String.toNat!) delta side
+    | _ => esearch 16 [16, 24] "c" "E"
     return
   if args.head? == some "cand" then
     let fuels := (args.drop 1).map String.toNat!
