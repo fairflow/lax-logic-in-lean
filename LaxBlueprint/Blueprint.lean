@@ -5,6 +5,7 @@ import VersoBlueprint.Commands.Graph
 import VersoBlueprint.Commands.Summary
 import LaxBlueprint.Chapters.Overview
 import LaxBlueprint.Chapters.FRJW
+import LaxBlueprint.Chapters.Development
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -20,6 +21,7 @@ here.
 
 {include 0 LaxBlueprint.Chapters.Overview}
 {include 0 LaxBlueprint.Chapters.FRJW}
+{include 0 LaxBlueprint.Chapters.Development}
 
 {blueprint_graph}
 {blueprint_summary}
