@@ -1115,6 +1115,79 @@ oracle job open past its cap here.  `batch/run.sh` and
 `batch/bench-run.sh` were already right — they exec `.lake/build/bin/…`
 directly; ad-hoc checks must do the same.
 
+### 4.9 The certified simplifier inside the iteration (2026-09-04)
+
+§4.8 named an in-iteration simplifier as a prerequisite; this section
+builds it and reports what it does and does not change.
+`wip/ui_interpFS.lean` is `interpF` with every clause's return wrapped
+in `simpN X := negOfO (Rewrite.simplifyWith Rewrite.fullSetC 40 (eraseNeg X))`
+(the certified pipeline, so every level is still interderivable with
+`interpF`'s), evaluated natively by `lake exe uifs`
+(`wip/ui_interpFS_run.lean`); eval fuel 8, 12, 16, 20, 24 = station fuel
+6, 10, 14, 18, 22 in §4.8's convention.  Node counts of the normal forms:
+
+| station fuel | `[G₁,H]` E | `[G₁,H]` A, goal r | GZ E | GZ A, goal `↑↓◯p` |
+|---|---|---|---|---|
+| 6 | 13 | 4 | 25 | 38 |
+| 10 | 83 | 53 | 226 | 339 |
+| 14 | 620 | 553 | 1475 | 2355 |
+| 18 | **45** | **`⊤`** | 9,989 | 16,126 |
+| 22 | **45** (same form) | **`⊤`** | 68,298 | 110,467 |
+
+Three findings, in the order they were forced.
+
+**(i) Placement changes nothing; the rule set is the limit.**  With the
+simpset as it stood, the in-iteration normal forms were node-for-node
+the sizes of §4.8's after-the-fact ones (GZ `A` 64 / 599 / 4279 /
+29,504) — wrapping each level buys speed (the whole sweep runs in 9 s
+against minutes of raw evaluation) and not one node of size.  The
+surviving blocks were `◯⊥ ∨ ◯((q ⊃ ◯⊥) ∨ ◯⊥)`: an inner box under a
+box, which `fullSetC` folds only when the two boxes are adjacent.
+
+**(ii) The absorption family, refuted before it was built.**  The
+candidate laws were put to the G4c oracle first
+(`pllbench --engine=g4c`, eight cells, all settled):
+
+| under an outer `◯` | → | ← |
+|---|---|---|
+| `◯(a ∨ ◯b)` vs `◯(a ∨ b)` | valid | valid |
+| `◯(a ∧ ◯b)` vs `◯(a ∧ b)` | valid | valid |
+| `◯(a ⊃ ◯b)` vs `◯(a ⊃ b)` | **invalid** | valid |
+| `◯(◯a ⊃ b)` vs `◯(a ⊃ b)` | valid | **invalid** |
+
+So an inner box absorbs through `∧`/`∨` and through neither position of
+`⊃`: an implication goal under a box is proved in true mode, where the
+inner box cannot be opened.  What went into `Rewrite/Canon.lean`, each
+with its `Interd` certificate (`canon_interd`, `simplifyWith_interd`
+still pinned at `[propext, Classical.choice, Quot.sound]`): `stripBox`
+— under a box, delete every `◯` reachable through `∧`/`∨`
+(`box_strip`, one induction; subsumes `◯◯φ = ◯φ`); `◯⊥ ∨ ◯ψ = ◯ψ` and
+`◯⊥ ∧ ◯ψ = ◯⊥` through the syntactic absorber test `absorbsBoxBot`
+(`boxBot_deriv`, `dropBoxBot_interd`, `collapseBoxBotAnd_interd`);
+`simpRounds` 4 → 32, because each round strips one box level and folds
+the constants it exposes, so the fixpoint needs about the box-nesting
+depth.  And a defect in the pre-existing chain machinery, found because
+the output showed `r ∨ (r ∨ (r ∨ …`: `insOr`/`insAnd` compared the new
+element with the whole chain and never with its head, so a duplicate
+head survived; fixed with `or_head_idem`/`and_head_idem`.
+
+**(iii) What the strengthened simplifier settles and what it does not.**
+On the separating station both chains now reach a SYNTACTIC fixpoint at
+station fuel 18 and hold it at 22: `A` is `⊤`, `E` is one 45-node form
+(provably `r` by §4.7, not syntactically).  On the GZ cell the `◯⊥`
+blocks are gone and the sizes fall by about a third, but the growth
+rate does not move: ×6.8 per four fuel units through station fuel 22.
+The residue is an `∧`/`∨` ladder of boxed implications,
+`((◯A ∧ ◯B) ∨ ◯((A ∧ B) ∨ C)) ∧ ◯D) ∨ …`, built by the aggregate
+clauses level by level.  The laws that would act on it are not modal
+absorption but `◯A ∧ ◯B = ◯(A ∧ B)` (the strength; a three-line
+certificate) and monotone absorption `◯X ∨ ◯Y = ◯Y` when `X` is a
+sub-conjunction of `Y` (a syntactic entailment test); whether they
+collapse the ladder or only thin it is untested, and no oracle can
+answer for the raw elements: the FRJW control on the fuel-6/10 `E`
+cells was unsettled at 600 s, and `LSeq.search` at search fuel 16, 24
+and 32 returned `false` in both directions, which certifies nothing.
+
 ---
 
 ## 5 · OPEN list

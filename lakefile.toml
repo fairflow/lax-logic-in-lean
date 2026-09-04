@@ -777,3 +777,8 @@ globs = ["Audit.Production"]
 [[lean_lib]]
 name = "Experimental"
 globs = ["Audit.Experimental"]
+
+# in-iteration-simplifier chain probe (2026-09-04); a probe, not a library module
+[[lean_exe]]
+name = "uifs"
+root = "wip.ui_interpFS_run"
