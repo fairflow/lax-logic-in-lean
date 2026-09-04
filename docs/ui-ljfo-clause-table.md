@@ -994,6 +994,46 @@ No clause was refuted against the statement the construction targets.
 One clause, C3, is refuted against the stronger unrelativised statement,
 and that refutation is the measurement of the retention gap.
 
+### 4.7 Machine check of §4.3–4.4 (O10, settled 2026-09-04)
+
+The hand values above were checked against the mechanised construction.
+`wip/ui_o10_interp.lean` evaluates `LJFO.interp "p" Σ [] none` (the ∃
+side) and `LJFO.interp "p" Σ [] (some ↑r)` (the ∀ side) on the polarised
+Γ₁ = [G₁, H] and Γ₂ = [G₂, H] of §4.0, erases to `PLLFormula` by
+`eraseNeg`, and normalises with the certified simpset
+(`Rewrite.simplifyWith Rewrite.fullSetC 200`, interderivability-preserving
+by `simplifyWith_interd`).  Run: `lake env lean wip/ui_o10_interp.lean`.
+
+| value | raw `interp` size | normal form (size) |
+|---|---|---|
+| `E([G₁, H])` | 3406 nodes | `((◯r ⊃ (r ∧ ◯(r ∧ (r ∧ (r ∧ ◯r))))) ∧ ◯(((r ∨ ◯r) ⊃ (r ∧ (r ∧ (r ∧ ◯r)))) ∧ (((r ∨ ◯r) ⊃ (r ∧ ◯r)) ∧ ((r ⊃ (r ∧ ◯r)) ∧ (r ∧ ◯r)))))` (51) |
+| `A([G₁, H] ⇒ ↑r)` | 407 | `(r ∨ ◯r)` (4) |
+| `E([G₂, H])` | 76049 | 181 nodes; printed by the eval file |
+| `A([G₂, H] ⇒ ↑r)` | 4642 | `(r ∨ ◯(r ∧ ◯r))` (7) |
+
+Each normal form was then put to the G4c oracle against the hand value
+in both directions (`docs/ui-ljfo-clause-table-o10.tsv`, eight cells,
+`lake exe pllbench --engine=g4c --cells=…`, 5 s wall):
+
+| computed ⊣⊢ hand value | fwd | bwd |
+|---|---|---|
+| `E([G₁, H]) ⊣⊢ r` | valid | valid |
+| `A([G₁, H] ⇒ ↑r) ⊣⊢ ◯r` | valid | valid |
+| `E([G₂, H]) ⊣⊢ r` | valid | valid |
+| `A([G₂, H] ⇒ ↑r) ⊣⊢ ◯r` | valid | valid |
+
+So every displayed value of §4.3, §4.3b and §4.4 is the mechanised
+interpolant up to provable equivalence.  Status, stated exactly: the
+normalisation is kernel-certified; the eight equivalences are
+engine-certified (G4c `.proved`, proof objects behind each verdict), not
+kernel-pinned theorems.  Two things the check adds beyond confirmation:
+the raw interpolants are large (`E` on the nested station is 76,049
+nodes before normalising to 181), which any future `#guard` against
+`interp` must budget for; and `A([G₁, H] ⇒ ↑r)` computes to
+`r ∨ ◯r ≡ ◯r` on the mechanised object too, so §4.4's measurement of the
+retention gap is a fact about `LJFO.interp`, not about the paper
+reconstruction.
+
 ---
 
 ## 5 · OPEN list
@@ -1054,15 +1094,12 @@ decides" is not established for LJF◯.  For `G4` the analogous copy count
 on the `K n` family is REFUTED as unbounded (measured 1, 2, 2, 2), but
 that is a different quantity in a different, incomplete calculus.
 
-**O10.  The hand computations of §4** are hand computations.  Every
-displayed interpolant value (`E(Σ₁) ≡ r`, `A(Σ₁ ⇒ ↑r) ≡ ◯r`, and the
-sub-values) is asserted at that strength.  What is oracle-checked is
-only the eight PLL validity questions of §4.0, and the oracle is
-compiled code, not the kernel.  An `#eval` of `LJFO.interp` on the
-polarised Γ₁ and Γ₂, compared against these values up to provable
-equivalence, would settle the whole of §4; `LJF/OSearch.lean` exists for
-exactly that kind of check and was used this way once before (the φ★
-value, at fuel 32).
+**O10.  The hand computations of §4** — SETTLED at oracle level on
+2026-09-04, §4.7: `LJFO.interp` evaluated on the polarised Γ₁, Γ₂,
+normalised by the certified simpset, agrees with every displayed value
+up to provable equivalence (eight G4c cells, all valid).  What remains
+OPEN is only the last rung: the eight equivalences are engine-certified,
+not kernel-pinned.
 
 **O11.  Two stale docstrings observed in passing**, worth a one-line fix
 in some later commit: `LJF/OCore.lean:752` and `LJF/O.lean:236` both say
