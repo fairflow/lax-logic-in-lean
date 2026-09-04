@@ -16,6 +16,8 @@
 # listed in the github-pages environment's deployment branch policy.
 #
 # lean_action_ci.yml is untouched and shares no trigger with this file.
+name: Blueprint Pages
+
 on:
   pull_request:
     paths:
