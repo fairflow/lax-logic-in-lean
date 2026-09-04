@@ -68,6 +68,21 @@ kernel-pinned theorem, and the catalogue page is updated.
 |---|---|---|
 | `#cf_search "pat" ["pat2" …]`, with `#choice_path` / `#choice_sources` / `#axiom_path` / `#axiom_pin` | Axiom hygiene at REACH time, not just pin time. `#cf_search` lists every environment constant whose name contains all the patterns and whose axiom closure is `Classical.choice`-free, with module of origin; tainted matches are counted in the header, never silently dropped. Use it before adopting a library lemma inside an extraction-bound proof — the 2026-09-01 instance: `List.eq_nil_iff_forall_not_mem` is tainted and leaked choice into three closure defs; `#cf_search "List.eq_nil"` shows 11 clean alternatives. The path/sources commands localise any leak that still lands; `#axiom_pin` generates the `#guard_msgs` block so pins are never retyped. | `79bc324 · 2026-09-01` |
 
+## 6 · Axiom BOUNDS and estate sweeps (`Meta/Audit.lean`, `Meta/Sweep.lean`)
+
+| tool | use | version |
+|---|---|---|
+| `#axioms_within f [propext, Quot.sound]`, with `#axioms_within_pin f` | A pin as an UPPER BOUND: the declared axioms are what would be ACCEPTABLE, need not all be used, and using fewer is never a failure. Replaces exact-match `#guard_msgs in #print axioms`, which compares a rendered string and so fails in both directions — on 2026-09-04, eight of ten stale `wip/` pins had failed because the declaration got CLEANER. `sorryAx` gets no special case: a harness result carrying a deliberate sorry writes `[propext, sorryAx]`, explicit at the site and greppable, rather than being licensed by the directory it sits in. `#axioms_within_pin` generates the line from current facts. | `ca3c5f1 · 2026-09-04` |
+| `#axiom_sweep [LaxLogic, FRJ] except [M₁ …] allowing [a₁ …]` | The ESTATE check, because bounds are opt-in and silence is not evidence: it walks EVERY declaration of every module under the named prefixes, pin or no pin, so a declaration nobody bounded is still caught. Membership is by module name — what the lakefile globs already declare — not by directory. `except` names modules held out by hand: recorded debt, one reviewable line each, and every other declaration stays swept. NEVER widen `allowing` to admit a known violation; that disables the check for the whole estate. | `ca3c5f1 · 2026-09-04` |
+| `lake build Production` / `lake build Experimental` | The two estates (`Audit/Production.lean`, `Audit/Experimental.lean`). Production FORBIDS `sorryAx`; promotion into it is mechanical — import the module and survive the sweep. Experimental ALLOWS it, and is where the ax-prover harness lives. Note `lake build` alone covers only `defaultTargets` and checks no axioms at all: that gap is why five `wip/` modules sat broken for weeks, and why a UI-line refutation (`wip/coverfail.lean`) was silently unverified. Held out of Production as of 2026-09-04: `LaxLogic.BeliefExamples` (two `native_decide` cardinalities) and the three `PLLSemUI*` modules (five sorried declarations from the shelved semantic-UI route). | `ca3c5f1 · 2026-09-04` |
+
+Standing rule for a library module: it must NOT declare a root-level
+`main`. Two of those cannot share an environment, so one such module
+makes the estate unimportable and therefore unauditable. A probe carrying
+content others import splits — content in the library module, entry point
+in a thin `_run` root beside it (`oracle2_run`, `rho_order_run`,
+`rnc_probe_run`).
+
 ## Superseded / dormant (pointers, not deletions)
 
 - The D₁₅/D₁₆ representative dictionary and its open-cell lists — the
