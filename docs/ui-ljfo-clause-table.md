@@ -1,0 +1,1073 @@
+# A Pitts-style uniform-interpolant clause table for LJF◯
+
+Drafted 2026-09-04, worktree branch `worktree-agent-a4ac0cff1695042a1`,
+base `a6ea18a` (the `LJF/` tree is byte-identical to `origin/frjw-dev`).
+
+**Status of this document.  Nothing in it is machine-checked.**  It is a
+paper reconstruction: the clause table, the termination analysis and the
+two hand-computations of §4 were done by hand and are asserted at the
+strength of a hand argument, which under `CLAUDE.md` rule 1 is OPEN, not
+PROVED.  Three kinds of external support are cited, and each citation
+says which kind it is:
+
+* **PROVED**: a sorry-free Lean result with a `#print axioms` pin.  Used
+  for `LJFO.eSound`, `LJFO.aSound`, `LJFIPC.uniform_interpolation_IPC`,
+  the totality of `LJFO.interp`, and `PLLND.box_right_not_invertible`.
+* **CONDITIONAL**: sorry-free but parameterised by an undischarged typed
+  obligation.  Used for `LJFO.satE2` / `LJFO.satA2`, both conditional on
+  `LJFO.CimpAnt`, for which no term exists anywhere in the repository.
+* **ORACLE-CHECKED**: a verdict of the G4c decision procedure
+  (`PLLND.Search.settle`, run through `lake exe pllbench --engine=g4c`),
+  which returns a derivation on `valid` and a countermodel on `invalid`
+  but is compiled code, not a kernel-checked theorem.  Eight such
+  verdicts are used, listed in §4.0.
+
+Nothing here is a `sorry`; no declaration is added anywhere; the open
+items are recorded as data in §5, per rule 1.
+
+---
+
+## 0 · Scope, sources, and two corrections to the brief
+
+### 0.1 What the document is for
+
+The uniform interpolants for a logic with entailment ⊢, an atom `p` and a
+formula `φ` are the `p`-free formulas `∃p.φ` and `∀p.φ` satisfying, for
+every `p`-free ψ,
+
+        φ ⊢ ψ   ⟺   ∃p.φ ⊢ ψ                    ψ ⊢ φ   ⟺   ψ ⊢ ∀p.φ
+
+Pitts (JSL 57(1), 1992) constructs them by a simultaneous recursion over
+backward proof search in Dyckhoff's contraction-free G4ip: a formula
+`E_p(Γ)` recursing on left rules only, and `A_p(Γ ⇒ φ)` recursing on
+(Γ, φ) jointly, one clause per rule, with an outer conjunction (for `E`)
+or disjunction (for `A`) over all applicable rule instances.  The method
+needs the calculus to be (R1) terminating in backward search, (R2)
+complete, (R3) with the applicable rule instances determined by the
+sequent alone, and (R4) closed enough that each clause is provable.
+
+This document does that for LJF◯, the lax-flagged focused calculus of
+`LJF/OCore.lean`.
+
+### 0.2 The record this builds on (searched first, per `METHOD.md` §0)
+
+The clause table below is **not new**.  A mechanised version of it exists
+and has existed since August 2026:
+
+| object | where | status |
+|---|---|---|
+| `LJFO.interp p todo done goal` | `LJF/OCore.lean:768–1104` | total, `termination_by 2 * sum3 todo + sum3 done + goalW goal` |
+| `LJFO.eSound` (E1) | `LJF/OCore.lean:2519` | **PROVED**, pinned `[propext, Classical.choice, Quot.sound]` |
+| `LJFO.aSound` (A1) | `LJF/OCore.lean:2731` | **PROVED**, pinned, same axioms |
+| `LJFO.satE2` (E2), `LJFO.satA2` (A2) | `LJF/O.lean:2068`, `:2074` | **CONDITIONAL** on `LJFO.CimpAnt` |
+| `LJFO.CimpAnt` | `LJF/O.lean:904–920` | **undischarged**; no term of that type in the repository |
+| `LJFO.interpF` (the retaining variant) | `LJF/OFuel.lean:17` | definition only, nothing proved about it |
+| the station row maps | `LJF/ORows.lean:81`, `:168`, `:262` | the read-off rows, factored |
+| the IPC baseline `LJF.interp` | `LJF/Base.lean:710` | its UI theorem `LJFIPC.uniform_interpolation_IPC` **PROVED**, `LJF/Complete.lean:591`, pinned |
+
+So the value of a fresh paper table is not the clauses.  It is (i) the
+provenance marking of §2, which says of each clause whether it is
+Pitts's, Pitts's modified, or ours, (ii) the termination analysis of §3
+written out at the one place the mechanised measure does not reach, and
+(iii) the two hand-computations of §4, which are the first worked
+evaluations of the ◯-rows on the calculus's own separating sequents.
+
+`docs/ljfo-fidelity.md` §§3–4 is the nearest existing prose table and
+should be read beside this one; where they differ, that file is about
+the mechanised `interp` and this one is about the paper reconstruction.
+
+### 0.3 Uniform interpolation for PLL is OPEN
+
+Standing claim discipline, repeated in `docs/ljfo-fidelity.md`,
+`docs/ljfo-plan.md`, `docs/ui-two-routes.md` and `HANDOFF.md` §8:
+**uniform interpolation for PLL is OPEN**, in neither direction settled,
+and nothing in this document changes that.  Iemhoff's published proof
+rests on G4iLL, which is REFUTED in this repository
+(`PLLND.sep_not_G4`, `[propext]`), so no external proof stands either.
+
+### 0.4 Correction 1: the multiplicity claim in the brief is not established
+
+The brief states that
+
+        ◯((◯p ⊃ r) ⊃ ◯((◯p ⊃ r) ⊃ ◯p)),  ◯p ⊃ r  ⇒  r
+
+"needs three decides on `◯p ⊃ r`, and the pattern iterates, so there is
+NO constant bound on decides".  Two separate things must be said.
+
+* **The iteration claim is REFUTED as stated, for the calculus in which
+  it was measured.**  The family is `wip/multiplicity.lean`'s
+  `K 0 = ◯p`, `K (n+1) = ◯(F ⊃ K n)` with `F = ◯p ⊃ r`.  Its conjecture
+  ("the least number of copies is `n+1`") was refuted by computation:
+  `docs/ui-two-routes.md` §3.1 records the measured least copy count as
+  `K 0 ↦ 1`, `K 1 ↦ 2`, `K 2 ↦ 2`, `K 3 ↦ 2`.  The reason given there:
+  once inside the modal phase the goal stays ◯-shaped, so no further
+  goal conversion is demanded, and the copies inside are shared across
+  layers.
+* **But those numbers are about `G4`, not LJF◯**, as `docs/ui-two-routes.md`
+  §3.1a insists: `PLLDecide` decides `G4`, Iemhoff's naive and
+  *incomplete* calculus, and in the retention-repaired `G4c` contraction
+  is already admissible, so "how many copies" is not the right question
+  there at all.  In LJF◯ the context is persistent (`Stab.lfoc` selects
+  by membership), so "copies" is likewise the wrong quantity; the right
+  one is **the number of `lfoc` decides on the hypothesis along one
+  branch**.  Those are different numbers and there is no contradiction.
+
+My own hand derivation in LJF◯ (§4.2) uses **three** decides on
+`↓◯p ⊃ ↑r` for the nested sequent and **two** for the single one.
+Whether fewer suffice in LJF◯ is **OPEN**: I did not machine-check
+minimality of either derivation, and no such measurement exists in the
+record.  The brief's "no constant bound on decides" is therefore
+recorded here as OPEN for LJF◯ and REFUTED for `G4`'s copy count on the
+`K n` family.
+
+### 0.5 Correction 2: "retention is forced" needs splitting in two
+
+The brief says retention is forced.  That is right at the level of the
+**rule** and needs care at the level of the **clause**.
+
+* At the rule: the antecedent premise of the derived ◯-implication left
+  rule is `Γ ⊢_lax Q'` over the *full* Γ, and the G4ip residual `Q' ⊃ N`
+  does not serve, because the hypothesis the inner subproof has is `◯Q'`,
+  not `Q'`.  §1.3 gives the derivation; the diagnosis is not new
+  (`docs/iemhoff-note.md` §2, `docs/lax-logic-interpolation-handoff.md`).
+* At the clause: the drafted non-retaining ◯-implication rows survive
+  both hand-checks of §4 on the E side, because the outer conjunction
+  over the station repairs what the row drops.  On the A side the
+  non-retaining row is strictly weaker than the retaining one, by exactly
+  the formula `◯r` at the first frontier sequent.  §4.4 measures that
+  gap, and §4.5 shows the retaining row closes it.
+
+So retention is forced on the A row for the *unrelativised* ∀-equation,
+and is not demonstrated to be needed on the E row.
+
+---
+
+## 1 · LJF◯ restated on paper
+
+Transcribed from `LJF/OCore.lean:46–117`.  Lean constructor names appear
+after each rule in a comment so the paper form cannot drift from the
+mechanised one.
+
+### 1.1 Syntax and judgments
+
+        Positive   P, Q  ::=  a  |  ⊥  |  P ∨ Q  |  ↓N
+        Negative   M, N  ::=  ↑P  |  Q ⊃ N  |  M ∧ N  |  ◯P
+        Flag       j     ::=  tru  |  lax
+
+`◯` is **negative with a positive body**; implication has a positive
+antecedent and a negative consequent.  Contexts Γ are lists of negatives
+and are **persistent**: no rule removes a hypothesis.  Ω is the list of
+positives under inversion.
+
+Four judgment forms:
+
+        Γ ⊢_j P            stable                 (Stab Γ j P)
+        Γ ⊢_j [P]          right focus            (RFocus Γ j P)
+        Γ ; [N] ⊢_j P      left focus on N        (LFoc Γ N j P)
+        Γ ; Ω ⊢_j N        inversion              (Inv Γ Ω j N)
+
+### 1.2 The rules
+
+Stable:
+
+        Γ ⊢_j [P]  ⟹  Γ ⊢_j P                                          -- Stab.rfoc
+        N ∈ Γ,  Γ ; [N] ⊢_j P  ⟹  Γ ⊢_j P                              -- Stab.lfoc     (DECIDE)
+        Γ ⊢_tru P  ⟹  Γ ⊢_lax P                                        -- Stab.laxOf
+
+Right focus:
+
+        ↑a ∈ Γ  ⟹  Γ ⊢_j [a]                                           -- RFocus.init
+        Γ ⊢_j [P]  ⟹  Γ ⊢_j [P ∨ Q]                                    -- RFocus.or1
+        Γ ⊢_j [Q]  ⟹  Γ ⊢_j [P ∨ Q]                                    -- RFocus.or2
+        Γ ; · ⊢_j N  ⟹  Γ ⊢_j [↓N]                                     -- RFocus.rel
+
+Left focus:
+
+        Γ ; Q ⊢_j ↑P  ⟹  Γ ; [↑Q] ⊢_j P                                -- LFoc.rel
+        Γ ⊢_tru Q,  Γ ; [N] ⊢_j P  ⟹  Γ ; [Q ⊃ N] ⊢_j P                -- LFoc.impL
+        Γ ; [M] ⊢_j P  ⟹  Γ ; [M ∧ N] ⊢_j P                            -- LFoc.and1
+        Γ ; [N] ⊢_j P  ⟹  Γ ; [M ∧ N] ⊢_j P                            -- LFoc.and2
+        Γ ; Q ⊢_lax ↑P  ⟹  Γ ; [◯Q] ⊢_lax P                            -- LFoc.circL
+
+Inversion:
+
+        Γ ; Q, Ω ⊢_tru N  ⟹  Γ ; Ω ⊢_tru Q ⊃ N                         -- Inv.impR
+        Γ ; Ω ⊢_tru M,  Γ ; Ω ⊢_tru N  ⟹  Γ ; Ω ⊢_tru M ∧ N            -- Inv.andR
+        Γ ; Ω ⊢_lax ↑P  ⟹  Γ ; Ω ⊢_j ◯P                                -- Inv.circR
+        Γ ⊢_j P  ⟹  Γ ; · ⊢_j ↑P                                       -- Inv.stable
+        Γ ; P, Ω ⊢_j N,  Γ ; Q, Ω ⊢_j N  ⟹  Γ ; P ∨ Q, Ω ⊢_j N         -- Inv.orL
+        Γ ; ⊥, Ω ⊢_j N                                                 -- Inv.flsL
+        M, Γ ; Ω ⊢_j N  ⟹  Γ ; ↓M, Ω ⊢_j N                             -- Inv.downL
+        ↑a, Γ ; Ω ⊢_j N  ⟹  Γ ; a, Ω ⊢_j N                             -- Inv.atomL
+
+Four facts about the flag carry the whole modal content.
+
+1. `circL` is **lax only**.  A box hypothesis is unusable at a `tru`
+   goal.  This is F&M's `SC` side condition ("the succedent must be
+   ◯-shaped") recast as a phase condition.
+2. `circR` fires at **either** flag and sets its premise to `lax`.  So
+   the ◯-right rule is invertible here, which the single-judgment
+   calculus cannot have: `PLLND.box_right_not_invertible : [◯p] ⊬ p`,
+   PROVED, `wip/polarity.lean:68`, pinned `[propext, Quot.sound]`.
+3. `impL` proves its antecedent at **tru** whatever the ambient flag.
+   This is the only rule that switches `lax` back to `tru`.
+4. `impR` and `andR` are **tru only**; at `lax` they would assert the
+   converse of K.
+
+### 1.3 The derived ◯-implication left rule, and why the residual trick fails
+
+Composing `lfoc`, `impL`, `rfoc`, `RFocus.rel`, `circR` and `Inv.stable`
+gives, for `↓◯Q' ⊃ N ∈ Γ`,
+
+        Γ ⊢_lax Q'          Γ ; [N] ⊢_j P
+        ─────────────────────────────────────  (L◯⊃)
+                    Γ ⊢_j P
+
+**Both premises see the full Γ**, including the principal formula, since
+`lfoc` selects by membership.  The left premise is the site of the whole
+difficulty.
+
+In G4ip the corresponding rule `L⊃⊃` lightens its left premise: from
+`Γ, D⊃B, C ⇒ D` and `Γ, B ⇒ E` infer `Γ, (C⊃D)⊃B ⇒ E`, justified by the
+identity `C ⊢ ((C⊃D)⊃B) ↔ (D⊃B)`.  The lightening is licensed by the
+premise's *assumption* `C`.
+
+(L◯⊃) has no such assumption.  Its left premise is a **mode switch**, not
+a context extension: nothing is added to Γ, only `j` moves to `lax`.
+There is therefore nothing for a Dyckhoff-style identity to bite on, and
+the residual is forced to be the principal formula itself.  Concretely,
+with `Q' = p` and `N = ↑r` the naive residual would be `p ⊃ r`, and
+
+        ◯((◯p ⊃ r) ⊃ ◯p),  p ⊃ r  ⊬_lax  p
+
+because the hypothesis reached inside the box is `◯p`, not `p`, and
+`p ⊃ r` does not yield `◯p ⊃ r`.  (Hand argument; the rule-level
+diagnosis is the one recorded at `docs/iemhoff-note.md` §2, where the
+same phenomenon refutes contraction-admissibility for G4iLL.)
+
+---
+
+## 2 · The clause table
+
+### 2.1 The recursion's state
+
+Following the mechanised design, the recursion carries a context split
+into an unprocessed part Θ and a **station** Σ of parked hypotheses, plus
+an optional goal:
+
+        E(Θ | Σ)             the ∃p mode:  the strongest p-free consequence of Θ ++ Σ
+        A(Θ | Σ ⇒ G)         the ∀p mode:  the weakest p-free hypothesis that,
+                             beside Θ ++ Σ, suffices for G
+
+with `E(Σ)` and `A(Σ ⇒ G)` abbreviating the Θ = · cases.  `p` is fixed
+throughout and suppressed.
+
+**The recursion carries no flag.**  This is load-bearing and is the
+design's own decision (`LJF/OCore.lean:35–37`): the lax judgment is
+definable, `Γ ⊢_lax P` iff `Γ ⊢_tru ↓◯P`, so the interpolant of a lax
+sequent is the interpolant at the ◯-goal, and only the derivation
+traversals carry `j`.  A flag-indexed clause table would be a different
+(and larger) object.
+
+Interpolant connectives, all inside the same syntax:
+
+        ⊤ := ⊥ ⊃ ↑⊥        ⊥ := ↑⊥        M ∧ N        M ∨ N := ↑(↓M ∨ ↓N)
+
+with ⋀ and ⋁ their finite folds (units ⊤ and ⊥).  `inv(Q)` is the list
+of branches of the full left inversion of a positive:
+
+        inv(a) = [[↑a]]      inv(⊥) = []      inv(P ∨ Q) = inv P ++ inv Q      inv(↓M) = [[M]]
+
+**Provenance convention.**  A clause is marked
+
+* **TRANSCRIBED** when it is clause-for-clause the corresponding clause
+  of `LJF.interp` (`LJF/Base.lean:710`), the ◯-free interpolant whose
+  uniform-interpolation theorem `LJFIPC.uniform_interpolation_IPC` is
+  PROVED and pinned.  That is a checkable statement about this
+  repository; I did not re-read Pitts 1992 while drafting, so the
+  attribution to Pitts is through that file's own attribution and
+  through Iemhoff (APAL 170(11), 2019), and is flagged where the
+  rendering is disputable.
+* **ADAPTED** when it is a Pitts clause modified for polarisation or for
+  the two judgments, with the modification named.
+* **NEW** when it has no ◯-free counterpart.
+
+### 2.2 Processing clauses: consume the head of Θ
+
+Both modes unless the modes are displayed separately.
+
+| # | head of Θ | E and A | mark |
+|---|---|---|---|
+| P1 | `↑a` | `E/A(Θ \| ↑a, Σ)` | ADAPTED: bookkeeping.  Pitts classifies Γ by inspection; the Θ/Σ split makes the classification a recursion step. |
+| P2 | `↑⊥` | `E = ⊥`, `A = ⊤` | TRANSCRIBED (L⊥: the sequent is an axiom; ⋁ over no branches is ⊥, ⋀ over none is ⊤). |
+| P3 | `↑(P ∨ Q)` | `E = ⋁_{b ∈ inv(P∨Q)} E(b·Θ \| Σ)`;  `A = ⋀_b ( ↓E(b·Θ \| Σ) ⊃ A(b·Θ \| Σ ⇒ G) )` | E TRANSCRIBED (L∨).  A ADAPTED: each branch conjunct is **E-guarded**.  Without the guard minimality would demand `E(Γ) ⊢ E(Γ + b)`, which is false. |
+| P4 | `↑↓M` | `E/A(M, Θ \| Σ)` | ADAPTED: pure shift bookkeeping, no ◯-free counterpart because IPC is unpolarised. |
+| P5 | `M ∧ N` | `E/A(M, N, Θ \| Σ)` | TRANSCRIBED (L∧). |
+| P6 | `⊥ ⊃ N` | `E/A(Θ \| Σ)` | TRANSCRIBED (the hypothesis is inert). |
+| P7 | `a ⊃ N` | `E/A(Θ \| a ⊃ N, Σ)` | ADAPTED: bookkeeping; parks until its atom arrives. |
+| P8 | `(Q₁ ∨ Q₂) ⊃ N` | `E/A(Q₁⊃N, Q₂⊃N, Θ \| Σ)` | TRANSCRIBED (L⊃∨). |
+| P9 | `↓↑P' ⊃ N` | `E/A(P'⊃N, Θ \| Σ)` | ADAPTED: shift-strip, polarisation only. |
+| P10 | `↓(M₁ ∧ M₂) ⊃ N` | `E/A(↓M₁ ⊃ (↓M₂ ⊃ N), Θ \| Σ)` | TRANSCRIBED (L⊃∧, currying). |
+| P11 | `↓(Q' ⊃ N') ⊃ N` | `E/A(Θ \| ↓(Q'⊃N')⊃N, Σ)` | ADAPTED: bookkeeping; the Dyckhoff implication parks. |
+| P12 | `◯Q` | `E/A(Θ \| ◯Q, Σ)` | **NEW.**  A box is not left-invertible: `circL` needs a lax goal, so nothing can be done with `◯Q` until the goal is known.  Parking is the only option. |
+| P13 | `↓◯Q' ⊃ N` | `E/A(Θ \| ↓◯Q'⊃N, Σ)` | **NEW.**  The modal Dyckhoff shape.  Its left rule is (L◯⊃), whose left premise is goal-independent but whose right premise is not, so it too must wait. |
+
+The thirteen clauses are exhaustive over `Neg` once P8–P13 have split
+`Q ⊃ N` by the shape of `Q` (P8: `Q = Q₁∨Q₂`; P9/P10/P11/P13: `Q = ↓M`
+by the shape of `M`; P7: `Q = a`; P6: `Q = ⊥`).
+
+### 2.3 Firing and saturation
+
+With Θ exhausted, a parked `a ⊃ N` whose atom has arrived fires:
+
+        if  ↑a ∈ Σ  and  (a ⊃ N) ∈ Σ:      E/A(· | Σ)  =  E/A(N | Σ ∖ (a⊃N))
+
+TRANSCRIBED (G4ip's `L⊃atom`).  Σ is **saturated** when no such pair
+exists.  A saturated station holds exactly five shapes:
+
+        ↑a          a ⊃ N (a absent)          ↓(Q'⊃N') ⊃ N          ◯Q          ↓◯Q' ⊃ N
+
+the last two NEW.  (`LJFO.ParkedN`, `LJF/O.lean:241–246`.  Note that the
+docstrings of both `LJF/OCore.lean:752` and `LJF/O.lean:236` still say
+"exactly three shapes", prose left over from the ◯-free development; the
+inductive says five.  A documentation defect, not a code defect.)
+
+### 2.4 The E read-off at a saturated station
+
+        E(Σ)  =  ⋀_{X ∈ Σ}  e(X, Σ ∖ X)
+
+| # | X | `e(X, Σ∖X)` | mark |
+|---|---|---|---|
+| E1 | `↑a` | `↑a` if `a ≠ p`, else `⊤` | TRANSCRIBED. |
+| E2 | `a ⊃ N` | `a ⊃ E(N \| Σ∖X)` if `a ≠ p`, else `⊤` | TRANSCRIBED. |
+| E3 | `↓(Q'⊃N') ⊃ N` | `( ↓A(↓N'⊃N \| Σ∖X ⇒ Q'⊃N') ⊃ E(N \| Σ∖X) ) ∧ E(↓N'⊃N \| Σ∖X)` | TRANSCRIBED (Pitts's `L⊃⊃` clause: what the implication yields, guarded by what its antecedent demands, paired with the ∃p of the residual station).  The residual `↓N' ⊃ N` is the G4ip `D ⊃ B`. |
+| E4 | `◯Q` | `◯ ↓ E(↑Q \| Σ∖X)` | **NEW.** |
+| E5 | `↓◯Q' ⊃ N` | `( ↓A(· \| Σ∖X ⇒ ↑↓◯Q') ⊃ E(N \| Σ∖X) ) ∧ E(· \| Σ∖X)` | **NEW.** |
+
+**E4, the reasoning.**  A box hypothesis `◯Q` is usable only under a lax
+goal, and under a lax goal `circL` puts `Q` into the context.  So
+everything the *opened* station yields is available, but only inside the
+modality.  Hence: take the ∃p interpolant of the opened station
+`↑Q, Σ∖X` and box it.  The clause is exactly the ◯-monotonicity of PLL
+composed with the induction hypothesis, `Γ ⊢ ψ ⟹ ◯Γ ⊢ ◯ψ`.  What I am
+unsure of: whether `◯↓E(↑Q | Σ∖X)` is the *strongest* p-free
+consequence, i.e. whether all p-free content extractable from a box is
+boxed.  It is not obviously so, since PLL has p-free theorems mixing
+boxed and unboxed material; but I found no candidate for extra content
+and the clause is the one the mechanised development uses.
+
+**E5, the reasoning, and the contested part.**  The left rule (L◯⊃) has
+two premises, and the clause mirrors them: the second premise's
+contribution is `E(N | Σ∖X)`, and it is available only once the first
+premise is discharged, so it is *guarded* by whatever the first premise
+demands.  The first premise demands `⊢_lax Q'`, i.e. `⊢_tru ↓◯Q'`, so
+its demand is the ∀p interpolant at that goal, and the guard reads
+`A(· | ? ⇒ ↑↓◯Q')`.  The third component `E(· | Σ∖X)` is the analogue of
+E3's residual component, forced there by the same induction.
+
+The contested part is `?`.  Two candidates:
+
+        (E5-r)  ? = Σ ∖ X       the residual station.  Terminating; what LJF◯ has.
+        (E5-f)  ? = Σ           the full station.  Faithful to (L◯⊃); what
+                                `LJF/OFuel.lean`'s `interpF` has; not terminating
+                                on the additive measure (§3.4).
+
+I draft (E5-r) as the table's clause, following the mechanised design,
+and record (E5-f) as its repair.  §4 evaluates both.
+
+Two shapes contribute nothing to `E(Σ)`: a `↑a` with `a = p` (E1) and a
+`a ⊃ N` with `a = p` (E2), both ⊤ under the `p`-guard.
+
+### 2.5 The A read-off, by the shape of the goal
+
+Write `atk(Σ, G)` for the **station attacks**, the ways a saturated
+station can advance a non-invertible goal:
+
+| # | X ∈ Σ | disjunct of `atk(Σ, G)` | mark |
+|---|---|---|---|
+| C1 | `a ⊃ N` | `↑a ∧ A(N \| Σ∖X ⇒ G)` if `a ≠ p`, else `⊥` | TRANSCRIBED. |
+| C2 | `↓(Q'⊃N') ⊃ N` | `A(↓N'⊃N \| Σ∖X ⇒ Q'⊃N') ∧ A(N \| Σ∖X ⇒ G)` | TRANSCRIBED (`L⊃⊃`). |
+| C3 | `↓◯Q' ⊃ N` | `A(· \| Σ∖X ⇒ ↑↓◯Q') ∧ A(N \| Σ∖X ⇒ G)` | **NEW**; carries the same contested `?` as E5, drafted at `Σ ∖ X`. |
+| C4 | `↑a`, `◯Q` | `⊥` | `↑a` TRANSCRIBED (an atom is not a left rule).  `◯Q` **NEW**: a box cannot be decided at a non-lax goal, so it contributes no attack here.  Its attack exists only at a ◯-goal, A7. |
+
+The goal clauses:
+
+| # | G | `A(Σ ⇒ G)` | mark |
+|---|---|---|---|
+| A1 | `Q ⊃ N` | `⋀_{b ∈ inv Q} ( ↓E(b \| Σ) ⊃ A(b \| Σ ⇒ N) )` | ADAPTED: **E-guarded**, as P3.  Pitts's `R⊃` clause is the unguarded `A(Γ, Q ⇒ N)`; the guard is needed because minimality would otherwise demand `E(Γ) ⊢ E(Γ+b)`.  This is the departure `docs/ljfo-fidelity.md` §4.1 calls forced change #1. |
+| A2 | `M ∧ N` | `A(Σ ⇒ M) ∧ A(Σ ⇒ N)` | TRANSCRIBED (`R∧`). |
+| A3 | `↑a` | `⊤` if `↑a ∈ Σ`; else `⋁ ( head(a) ∪ atk(Σ, ↑a) )`, where `head(a) = {↑a}` if `a ≠ p` and `∅` if `a = p` | TRANSCRIBED.  `head` is the axiom/right disjunct; it is dropped when `a = p` because the interpolant must be p-free. |
+| A4 | `↑⊥` | `⋁ atk(Σ, ↑⊥)` | TRANSCRIBED. |
+| A5 | `↑(P₁ ∨ P₂)` | `⋁ ( {A(Σ ⇒ ↑P₁), A(Σ ⇒ ↑P₂)} ∪ atk(Σ, ↑(P₁∨P₂)) )` | TRANSCRIBED (`R∨`, non-invertible, so both disjuncts appear). |
+| A6 | `↑↓M` | `⋁ ( {A(Σ ⇒ M)} ∪ atk(Σ, ↑↓M) )` | ADAPTED: shift. |
+| A7 | `◯P` | `◯ ↓ ⋁ ( pre(Σ, P) ∪ atk(Σ, ◯P) ∪ box(Σ, ◯P) )` | **NEW**, three separate departures, below. |
+
+with
+
+        box(Σ, ◯P)  =  { ↓E(↑R | Σ∖X) ⊃ A(↑R | Σ∖X ⇒ ◯P)   :   X = ◯R ∈ Σ }
+
+and `pre(Σ, P)` the **goal-inversion prefix**, one family per shape of
+the body, because `◯` does not distribute over `∨`:
+
+        P = a          pre = { A(Σ ⇒ ↑a) }
+        P = ⊥          pre = { A(Σ ⇒ ↑⊥) }
+        P = P₁ ∨ P₂    pre = { A(Σ ⇒ ◯P₁), A(Σ ⇒ ◯P₂), A(Σ ⇒ ↑(P₁∨P₂)) }
+        P = ↓↑P'       pre = { A(Σ ⇒ ◯P') }
+        P = ↓◯P'       pre = { A(Σ ⇒ ◯P') }
+        P = ↓(M₁∧M₂)   pre = { A(Σ ⇒ ↑↓(M₁∧M₂)) }
+        P = ↓(Q₀⊃N₀)   pre = { A(Σ ⇒ ↑↓(Q₀⊃N₀)) }
+
+**A7, the three departures, and the reasoning for each.**
+
+1. *Box-wrapping.*  The aggregate is `◯↓(⋁ rows)`, not `⋁ rows`.
+   Reason: the interpolant must be a `tru`-usable formula, but the rows
+   are the ways of establishing a *lax* goal, and lax content is only
+   recoverable under `◯`.  The countermodel that forces this is on
+   record (`docs/ljfo-plan.md`, forced change #3): with `Σ = ·`,
+   `Δ = [◯q]` and goal `↑q` at lax, `◯q ⊢_lax q` holds while
+   `◯q ⊬_tru q`, so an unwrapped `A(· ⇒ ◯q) ≈ ↑q` would be wrong.
+2. *The goal-inversion prefix.*  Since `◯` does not distribute over `∨`,
+   the ways of proving `◯(P₁ ∨ P₂)` are not the union of the ways of
+   proving `◯P₁` and `◯P₂`; the disjunctive body itself must appear as a
+   row.  Hence the seven-way family.  `docs/ljfo-fidelity.md` §3.3
+   records that this split is irreducible in the mechanisation.
+3. *The box attacks.*  `box(Σ, ◯P)` is the entire modal content of the A
+   aggregate: it is the only place `circL` can fire, and it is present
+   only at a ◯-goal.  Each row opens one box and is **E-guarded** for the
+   same reason as A1: the opened station is strictly larger, so its ∀p
+   may legitimately depend on its own ∃p.
+
+What I am unsure of in A7: whether `pre` is complete for every body
+shape.  I checked `a`, `⊥`, `P₁∨P₂` and `↓◯P'` by hand and found no
+missing row, but the `↓(Q₀⊃N₀)` case, where the body is an implication
+under a box, is the one where a missing row would be hardest to notice,
+and I did not check it.  Recorded as OPEN.
+
+### 2.6 What is NEW, in one list
+
+Six clauses have no ◯-free counterpart: **P12** (park a box), **P13**
+(park a ◯-implication), **E4** (the box E-row), **E5** (the
+◯-implication E-row), **C3** (the ◯-implication attack), **A7** (the
+◯-goal, with its box-wrapping, its prefix family and `box(Σ, ◯P)`).
+Two further clauses, **P3-A** and **A1**, are ADAPTED in the same
+direction (E-guarding) and are the mechanised development's own
+documented departures from Pitts.
+
+`docs/ljfo-fidelity.md` §3.1 puts it the same way: clauses 11 to 13 are
+the whole difficulty, and 13 is where `CimpAnt` sits.
+
+---
+
+## 3 · The termination measure
+
+### 3.1 Weights
+
+        w(a) = w(⊥) = 1            w(P ∨ Q) = w P + w Q + 1        w(↓N) = w N + 1
+        w(↑P) = w P                w(Q ⊃ N) = w Q + w N + 1
+        w(M ∧ N) = w M + w N + 3   w(◯P)    = w P + 1
+
+The `+3` on `∧` is not decoration: it is exactly what pays for currying
+(P10), where `w(↓M₁ ⊃ (↓M₂ ⊃ N)) = wM₁ + wM₂ + wN + 4` must be strictly
+below `w(↓(M₁∧M₂) ⊃ N) = wM₁ + wM₂ + wN + 5`.  The `+1` on `◯` is what
+pays for opening a box, below.
+
+        Σ₃(Γ) = Σ_{N ∈ Γ} 3^{w N}        g(none) = 0        g(some G) = 3^{w G}
+
+        μ(Θ, Σ, γ)  =  2·Σ₃(Θ)  +  Σ₃(Σ)  +  g(γ)
+
+This is a well-founded order on the recursion's state (a single natural
+number, no lexicographic product).  It is **PROVED** to work for the
+table of §2 as drafted: `LJFO.interp` is total, `LJF/OCore.lean:1059`,
+with the thirty descent lemmas `dec_*` at `LJF/OCore.lean:548–739`
+discharging every clause.
+
+The doubling of Θ is what makes parking strict: a park moves `3^{w X}`
+from the doubled side to the single side, so `μ` drops by `3^{w X}` even
+though nothing was consumed.
+
+### 3.2 The case analysis
+
+Base inequalities, all instances of `3^a + 3^b < 3^c` for `a, b < c`
+(`p3_add`), `2·3^a < 3^c` for `a < c` (`p3_2`), and `2·3^a + 3^b < 3^c`
+for `a+2 ≤ c`, `b+1 ≤ c` (`p3_21`).
+
+| clause | why the premises are smaller | lemma |
+|---|---|---|
+| P1, P7, P11, P12, P13 (park) | `2Σ₃Θ + (3^{wX} + Σ₃Σ) < 2(3^{wX} + Σ₃Θ) + Σ₃Σ` | `dec_park` |
+| P2 | no premise | — |
+| P3 (context split) | `Σ₃(b) < 3^{w(P∨Q)}` for every branch `b` | `invertPos_lt`, `dec_orctx`, `dec_orA` |
+| P4 (shift in) | `3^{wM} < 3^{wM + 1}` | `dec_shift1` |
+| P5 (∧ split) | `3^{wM} + 3^{wN} < 3^{wM+wN+3}` | `dec_and` |
+| P6 (drop) | `Σ₃Θ < 3^{wX} + Σ₃Θ` | `dec_drop` |
+| P8 (⊃∨ split) | `3^{wQ₁+wN+1} + 3^{wQ₂+wN+1} < 3^{wQ₁+wQ₂+1+wN+1}`, using `wQᵢ ≥ 1` | `dec_impor` |
+| P9 (strip) | `3^{wP'+wN+1} < 3^{wP'+1+wN+1}` | `dec_stripshift` |
+| P10 (curry) | the `∧`-cost inequality above | `dec_curry` |
+| fire | `2·3^{wN} < 3^{1+wN+1}` | `dec_fire` |
+| E2 | `2·3^{wN} < 3^{w(a⊃N)}` | `dec_qimp` |
+| E3 / C2 | `2·3^{w(↓N'⊃N)} + 3^{w(Q'⊃N')} < 3^{w X}` and `2·3^{wN} < 3^{wX}` | `dec_dyk0/1/2` |
+| **E4 / box(Σ,·)** | `2·3^{wQ} < 3^{wQ+1} = 3^{w(◯Q)}` | `dec_boxE`, `dec_boxA_g`, `dec_boxE_g` |
+| **E5 / C3** guard | `3^{w(↑↓◯Q')} = 3^{wQ'+2} < 3^{wQ'+2+wN+1} = 3^{w X}` | `dec_cimp1`, `dec_cimp1_g` |
+| **E5 / C3** fire | `2·3^{wN} < 3^{w X}` | `dec_cimp2`, `dec_cimp2_g` |
+| **E5 / C3** residual | `Σ₃(Σ∖X) < Σ₃(Σ)` | `dec_cimp3` |
+| A1 | `2·Σ₃(b) + 3^{wN} < 3^{wQ+wN+1}`; guard component with `g = 0` | `dec_ainv`, `dec_ainv0` |
+| A7 direct row | `3^{wP} < 3^{wP+1}` | `dec_circDirect` |
+
+Two entries deserve emphasis, because §3.4 turns on their margins.
+
+* **The box row has margin exactly `3^{w R}`.**  Opening `◯R ∈ Σ`
+  removes `3^{wR+1}` from the station and puts `↑R` on the doubled side
+  at cost `2·3^{wR}`.  The drop is `3^{wR+1} − 2·3^{wR} = 3^{wR}`, and
+  not one unit more.  This is the same inequality that pays for the atom
+  fire, one level up, which is exactly why `w(◯P) = w P + 1` and not more.
+* **The E5/C3 guard is affordable only because the principal formula is
+  consumed.**  The goal `↑↓◯Q'` weighs `3^{wQ'+2}`; the principal `X`
+  weighs `3^{wQ'+2+wN+1}`, at least `3^2 = 9` times more.  The guard is
+  paid for out of `X`.  If `X` stays in the station, nothing pays.
+
+### 3.3 The retained-formula case: what retention would be
+
+The clause faithful to (L◯⊃) computes its guard at the **full** station:
+
+        (E5-f)   e(X, Σ∖X) = ( ↓A(· | Σ ⇒ ↑↓◯Q') ⊃ E(N | Σ∖X) ) ∧ E(· | Σ∖X)
+        (C3-f)   disjunct  =   A(· | Σ ⇒ ↑↓◯Q') ∧ A(N | Σ∖X ⇒ G)
+
+for `X = ↓◯Q' ⊃ N ∈ Σ`.  This is exactly `LJF/OFuel.lean`'s `interpF`,
+whose module header calls it "the `L◯→″` retention discipline that
+dissolves the crossed-station obstruction"; `interpF` is founded on
+structural fuel and nothing is proved about it.
+
+Under `μ` the retained call is not a descent:
+
+        μ(·, Σ, ↑↓◯Q')  =  Σ₃(Σ) + 3^{wQ'+2}     vs     μ(·, Σ, γ₀)  =  Σ₃(Σ) + g(γ₀)
+
+which increases whenever `3^{wQ'+2} > g(γ₀)`, and in particular in the E
+mode where `g(none) = 0`.  Worse, the retaining table is not a definition
+at all without a further device: `A(· | Σ ⇒ ↑↓◯Q')` unfolds by A6 to a
+disjunction containing `A(Σ ⇒ ◯Q')`, whose A7 row set contains
+`atk(Σ, ◯Q')`, which contains (C3-f) at the same `X`, whose first
+component is `A(· | Σ ⇒ ↑↓◯Q')` again.  The retained formula loops on
+itself immediately.
+
+### 3.4 The mode-switch financing argument, and where it stops
+
+The loop above is not a real proof-search loop, and saying why is the
+financing argument.
+
+**The loop cut (claim, OPEN).**  Suppose a derivation of `Γ' ⊢_lax Q'`
+contains a decide on `X = ↓◯Q' ⊃ N` whose `impL` antecedent premise is
+`Γ' ⊢_tru ↓◯Q'`.  By definability that premise is the sequent being
+derived, so the decide can be pruned and completeness is not lost.  The
+same argument applies to an ancestor: within a derivation of
+`Σ ⊢_tru ↓◯Q'`, a nested demand for `Σ ⊢_tru ↓◯Q'` at the same station
+is redundant.
+
+**What a genuine second use costs.**  A use of `X` that is *not*
+redundant must have changed the goal in between, and the only rule that
+returns from `lax` to `tru` is `impL`, whose principal formula must
+itself be decomposed.  So every genuine re-use of `X` is separated by
+the consumption of a *different* station member.  §4.2's derivation
+exhibits this: the second decide on `↓◯p ⊃ ↑r` happens only after
+`◯((◯p⊃r)⊃◯p)` has been opened by `circL` and the resulting
+`(◯p⊃r) ⊃ ◯p` has been decided, and it happens at goal `↑r`, not at
+goal `◯p`.  Each mode switch consumes Γ-structure.
+
+**The candidate order.**  Index the recursion by a visited set
+`V ⊆ M(Σ)`, where `M(Σ)` is the set of ◯-implications in the station;
+let (E5-f)/(C3-f) be available only for `X ∈ M(Σ) ∖ V`, passing
+`V ∪ {X}`; let every clause that changes the station reset `V` to ∅.
+Discount the visited members from the station:
+
+        μᵥ(Θ, Σ, γ, V)  =  2·Σ₃(Θ)  +  Σ₃(Σ ∖ V)  +  g(γ)
+
+*The retained call descends.*  Before: `Σ₃(Σ∖V) + g(γ₀)`.  After:
+`Σ₃(Σ∖V) − 3^{w X} + 3^{wQ'+2}`.  Since `w X = wQ' + 2 + w N + 1 > wQ' + 2`,
+
+        3^{wQ'+2}  <  3^{w X}
+
+so `μᵥ` strictly drops, whatever `γ₀` was.  This is the same inequality
+`dec_cimp1` already spends; the only change is that the visited set,
+rather than the sub-call's context, is what records the spending.
+
+*Where it stops: the reset.*  When a clause consumes a station member,
+`V` must be reset, or the discipline is incomplete.  §4.5 shows it must:
+in the repaired computation of `A(Γ₁ ⇒ ↑r)` the hypothesis `↓◯p ⊃ ↑r` is
+selected again after the station has changed to `◯p, r ⊃ ◯p, ↓◯p ⊃ ↑r`,
+and with `V` still holding it the value drops from ⊤ to a strictly
+weaker formula.  But the reset restores `Σ₃(V)` to the measure, so a
+station-consuming step descends only if its own margin exceeds `Σ₃(V)`.
+The tightest margin is the box row, computed in §3.2 as exactly
+`3^{w R}`.  So `μᵥ` is well-founded if and only if
+
+        Σ₃(V)  <  3^{w R}     at every box opening of `◯R` after visiting `V`
+
+which is **false in general**: take `R` an atom, so `3^{wR} = 3`, and any
+visited `X = ↓◯s ⊃ N`, whose weight is at least 5.
+
+This lands on the place the record already names.  `docs/ljfo-plan.md`'s
+terminus (I) says the same-station reference is "unpayable at the
+box-row's crossing (the box's weight is spent exactly, `2·3^{wR}` vs
+`3^{wR+1}`, leaving no margin)".  Reached from a different direction, the
+discounted-station order fails at exactly that crossing.  I take the
+agreement as confirmation rather than as a new finding.
+
+### 3.5 Status of §3
+
+* The measure `μ` for the table **as drafted** (with E5-r, C3-r):
+  **PROVED**, `LJF/OCore.lean:1059`.
+* The loop cut: **OPEN**, a claim with a plausibility argument, not a
+  proof.
+* The discounted-station order `μᵥ`: **REFUTED as a well-founded order**
+  by the box-row margin computation above (hand argument), unless the
+  reset can be avoided, which §4.5 says it cannot.
+* Options on record for founding the retaining table: fuel
+  (`LJF/OFuel.lean`, built, nothing proved), a non-additive order (route
+  A′ of `docs/ljfo-plan.md`, research), or the finite-space and history
+  discipline (route B, `LJF/OHeight.lean`, `LJF/OUniverse.lean`,
+  `LJF/OSearch.lean`, all green, Matthew's chosen route).
+
+---
+
+## 4 · Hand-checks on the two frontier sequents
+
+### 4.0 The instances, the eliminated variable, and the oracle checks
+
+Abbreviations, all in LJF◯'s polarised syntax:
+
+        H   :=  ↓◯p ⊃ ↑r                          the ◯-implication      ( ◯p ⊃ r )
+        K   :=  ↓H ⊃ ◯p                                                  ( (◯p ⊃ r) ⊃ ◯p )
+        G₁  :=  ◯↓K                                                      ( ◯((◯p ⊃ r) ⊃ ◯p) )
+        K₂  :=  ↓H ⊃ ◯↓K
+        G₂  :=  ◯↓K₂                                                     ( ◯((◯p⊃r) ⊃ ◯((◯p⊃r) ⊃ ◯p)) )
+        D   :=  r ⊃ ◯p                            the Dyckhoff residual of K under H
+
+`K` and `K₂` are ordinary Dyckhoff implications (`↓(Q'⊃N') ⊃ N` with
+`Q' = ↓◯p`, `N' = ↑r`), so their residual `↓N' ⊃ N = ↓↑r ⊃ ◯p` strips by
+P9 to `D`.  `H` is the modal Dyckhoff shape.  The two sequents are
+
+        Γ₁  =  G₁, H  ⊢_tru  r                    Γ₂  =  G₂, H  ⊢_tru  r
+
+**Which variable to eliminate, and why `p`.**  Take `p`, the atom under
+the box.  Then (i) every hypothesis in play is `p`-carrying, so E4, E5,
+C3 and A7 all fire, which is where the checks must bite; (ii) `r` is
+`p`-free and `Γᵢ ⊢ r`, so the two UI equations both reduce to a single
+test formula, and it is the goal of the frontier sequents themselves,
+i.e. the derivation that forces the repeated decides on `H`.  Eliminating
+`r` instead would leave the sharpest available test formula as `◯p`,
+whose derivation does not exercise the outer decide on `H` at all, so it
+is a weaker probe.
+
+**Oracle checks.**  Eight PLL validity questions used below were put to
+the G4c oracle, `lake exe pllbench --engine=g4c`, from
+`docs/ui-ljfo-clause-table-cells.tsv`.  All eight settled in seconds;
+none returned don't-know.  (`c1` and `c2` were independently returned
+`invalid` by the certificate-carrying FRJW engine as well.)
+
+| id | formula | verdict |
+|---|---|---|
+| c1 | `◯r` | **invalid** |
+| c2 | `◯((◯p ⊃ r) ⊃ ◯p) ⊃ ◯p` | **invalid** |
+| c3 | `(◯((◯p ⊃ r) ⊃ ◯p) ∧ ◯r) ⊃ ◯p` | valid |
+| c4 | `(◯((◯p ⊃ r) ⊃ ◯p) ∧ (◯p ⊃ r)) ⊃ (◯r ∧ (◯r ⊃ r))` | valid |
+| c5 | `((◯r ⊃ r) ∧ ◯r) ⊃ r` | valid |
+| c6 | `◯((◯p ⊃ r) ⊃ ◯p) ⊃ ((◯p ⊃ r) ⊃ r)` | valid |
+| c7 | `◯((◯p⊃r) ⊃ ◯((◯p⊃r) ⊃ ◯p)) ⊃ ((◯p ⊃ r) ⊃ r)` | valid |
+| c8 | `(◯((◯p⊃r) ⊃ ◯((◯p⊃r) ⊃ ◯p)) ∧ (◯p ⊃ r)) ⊃ (◯r ∧ (◯r ⊃ r))` | valid |
+
+c6 and c7 are the two frontier sequents; c1 is what the A-side check
+turns on; c4, c5 and c8 are the E-side answers computed below, checked
+against the sequents they must interpolate.
+
+### 4.1 The two UI equations, stated exactly
+
+For a station Σ and a `p`-free ψ:
+
+        (∃-eq)      Σ ⊢ ψ            ⟺   E(Σ) ⊢ ψ
+        (∀-eq)      Σ, ψ ⊢ φ         ⟹   ψ ⊢ A(Σ ⇒ φ)
+        (∀-eq-E)    Σ, ψ ⊢ φ         ⟹   E(Σ), ψ ⊢ A(Σ ⇒ φ)
+
+(∀-eq-E) is the statement the construction actually targets, both in the
+proved IPC theorem and in the LJF◯ development.  `LJF/Complete.lean:578–585`
+says so in as many words, and calls (∀-eq) "a different (and false)
+statement, since a `p`-free Δ need not prove `exI p Γ`"; the
+corresponding LJF◯ statement is `LJFO.SatA2`, `LJF/O.lean:339–344`, whose
+conclusion carries `interp p [] done none` on the left.  At the top
+level, where `∀p.φ := A(· ⇒ φ)` is read off, `Σ = ·` and `E(·) = ⊤`, so
+the two coincide and the theorem is unaffected.
+
+I check (∃-eq) and both A-statements.
+
+### 4.2 The derivation being interpolated
+
+For Γ₁ ⊢_tru r (oracle: c6 valid), a derivation with **two** decides on
+`H`:
+
+1. `lfoc` on `H`, `impL`.  Right premise: `Γ₁ ; [↑r] ⊢_tru r`, closed by
+   `LFoc.rel`, `atomL`, `stable`, `init`.  Left premise: `Γ₁ ⊢_tru ↓◯p`,
+   i.e. by `rfoc`/`rel`/`circR`/`stable`, `Γ₁ ⊢_lax p`.
+2. `lfoc` on `G₁`, `circL` (legal: the flag is `lax`), then `downL`:
+   `K, Γ₁ ⊢_lax p`.
+3. `lfoc` on `K`, `impL`.  Right premise: `K, Γ₁ ; [◯p] ⊢_lax p`, closed
+   by `circL`.  Left premise: `K, Γ₁ ⊢_tru ↓H`, i.e. by
+   `rel`/`impR`/`downL`, `◯p, K, Γ₁ ⊢_tru r`.
+4. **`lfoc` on `H` again**, at station `◯p, K, G₁, H` and goal `r`.  Its
+   left premise `⊢_tru ↓◯p` is now immediate from the hypothesis `◯p`.
+
+The second decide on `H` is at a `tru` goal reached *through* the lax
+phase, in a context holding `◯p` and not `p`, which is what kills the
+lighter residual (§1.3).  For Γ₂ the same shape with one more layer gives
+**three** decides on `H`.  Whether two (resp. three) is least is OPEN,
+per §0.4.
+
+### 4.3 Check 1, the ∃ side
+
+Both hypotheses park (P12, P13), giving the saturated station
+`Σ₁ = [H, G₁]`, which does not fire.  So
+
+        E(Σ₁)  =  e(H, [G₁])  ∧  e(G₁, [H])
+
+**The `G₁` conjunct** is E4: `◯↓ E(↑↓K | H)`.  Processing `↑↓K` by P4 and
+parking `K` by P11 gives the station `[K, H]`, so
+
+        E(↑↓K | H)  =  e(K, [H])  ∧  e(H, [K])
+
+`e(K, [H])` is E3 with residual `D`:
+
+        ( ↓A(D | H ⇒ H)  ⊃  E(◯p | H) )  ∧  E(D | H)
+
+sub-values, each computed by the same clauses:
+
+* `E(◯p | H)`: `◯p` parks; the station is `[◯p, H]`; E4 gives
+  `◯↓E(↑p | H)` and E5 gives, at `Σ∖X = [◯p]`,
+  `( ↓A(· | [◯p] ⇒ ↑↓◯p) ⊃ E(↑r | [◯p]) ) ∧ E(· | [◯p])`.
+  Now `A(· | [◯p] ⇒ ↑↓◯p) = A([◯p] ⇒ ◯p) ∨ ⊥` by A6 and C4, and
+  `A([◯p] ⇒ ◯p) = ◯↓( A([◯p] ⇒ ↑p) ∨ box-row )` by A7 with
+  `A([◯p] ⇒ ↑p) = ⊥` (A3, `head(p) = ∅`, `atk` empty by C4) and the box
+  row `↓E(↑p | ·) ⊃ A(↑p | · ⇒ ◯p) = ⊤ ⊃ ◯⊤ ≡ ⊤`; so the guard is ⊤.
+  And `E(↑r | [◯p]) ≡ r ∧ ◯r ≡ r`, `E(· | [◯p]) = ◯↓E(↑p | ·) = ◯⊤ ≡ ⊤`.
+  Also `E(↑p | H) ≡ r` by the same E5 row.  Hence
+
+        E(◯p | H)  ≡  ◯r ∧ r  ≡  r
+
+* `E(D | H)`: `D = r ⊃ ◯p` parks (P7), the station is `[D, H]`, no fire
+  (`r` absent).  E2 gives `r ⊃ E(◯p | H) = r ⊃ r ≡ ⊤`, and E5 at
+  `Σ∖X = [D]` gives `( ↓A(· | [D] ⇒ ↑↓◯p) ⊃ E(↑r | [D]) ) ∧ E(· | [D])`.
+  Here `A(· | [D] ⇒ ↑↓◯p) ≡ ◯r ∨ r ≡ ◯r` (A6, then A7 whose only row is
+  the C1 attack `r ∧ A(◯p | · ⇒ ◯p) ≡ r`), `E(↑r | [D]) ≡ r` (the atom
+  `r` arrives, `D` fires, `E(◯p | [↑r]) ≡ ◯r ∧ r ≡ r`), and
+  `E(· | [D]) = r ⊃ ◯⊤ ≡ ⊤`.  Hence
+
+        E(D | H)  ≡  ◯r ⊃ r
+
+* `A(D | H ⇒ H)`: parks `D`, no fire; goal `H = ↓◯p ⊃ ↑r` is A1 with the
+  single branch `b = [◯p]`, giving `↓E(◯p | D, H) ⊃ A(◯p | D, H ⇒ ↑r)`,
+  and the second component is ⊤ by the C3 attack on `H` at
+  `Σ∖X = [◯p, D]`, whose guard `A(· | [◯p, D] ⇒ ↑↓◯p) ≡ ⊤` and whose
+  fire component `A(↑r | [◯p, D] ⇒ ↑r) ≡ ⊤` (the atom is present, A3).
+  Hence `A(D | H ⇒ H) ≡ ⊤`.
+
+So `e(K, [H]) ≡ (⊤ ⊃ r) ∧ (◯r ⊃ r) ≡ r`, and `e(H, [K])`, computed the
+same way, is `(A([K] ⇒ ↑↓◯p) ⊃ E(↑r | K)) ∧ E(· | K) ≡ (◯r ⊃ r) ∧ ⊤`.
+Therefore
+
+        E(↑↓K | H)  ≡  r ∧ (◯r ⊃ r)  ≡  r          and      e(G₁, [H])  ≡  ◯r
+
+**The `H` conjunct** is E5 at `Σ∖X = [G₁]`:
+
+        ( ↓A(· | [G₁] ⇒ ↑↓◯p)  ⊃  E(↑r | [G₁]) )  ∧  E(· | [G₁])
+
+The guard `A(· | [G₁] ⇒ ↑↓◯p)` is A6 followed by A7.  `atk([G₁], ·)` is
+⊥ by C4 (a box gives no attack at a `↑`-goal), `pre([G₁], p)` is
+`A([G₁] ⇒ ↑p) = ⊥` (A3: `head(p) = ∅` and again no attack), and the one
+surviving row is the box attack on `G₁`:
+
+        ↓E(↑↓K | ·)  ⊃  A(↑↓K | · ⇒ ◯p)
+
+whose two components are computed at the empty residual station:
+
+* `E({K})`: the only row is E3, giving
+  `(↓A(D | · ⇒ H) ⊃ E(◯p | ·)) ∧ E(D | ·)` with `E(◯p | ·) = ◯↓E(↑p | ·) = ◯⊤`,
+  `E(D | ·) = r ⊃ ◯⊤`, and `A(D | · ⇒ H) ≡ ◯⊤ ⊃ r ≡ r`.  Since `⊢ ◯⊤`,
+  both conjuncts are provable, so `E({K}) ≡ ⊤`.  (Cross-check by
+  substitution: `K[⊤/p] = (◯⊤ → r) → ◯⊤` is provable, so `K` has no
+  non-trivial `p`-free consequence.)
+* `A({K} ⇒ ◯p)`: A7 with `pre = { A({K} ⇒ ↑p) }` and `atk` the C2 attack
+  on `K`.  `A({K} ⇒ ↑p) = ⊥` (its C2 attack has second component
+  `A(◯p | · ⇒ ↑p) = ⊥`, a box at a `↑`-goal).  The C2 attack at the
+  ◯-goal is `A(D | · ⇒ H) ∧ A(◯p | · ⇒ ◯p) ≡ r ∧ ⊤ ≡ r`.  So
+  `A({K} ⇒ ◯p) = ◯↓(⊥ ∨ r) ≡ ◯r`.  (Sanity: `◯r` does suffice,
+  oracle c3 valid; and ⊤ does not, oracle c2 invalid.)
+
+So the box attack is `⊤ ⊃ ◯r ≡ ◯r`, giving `A(· | [G₁] ⇒ ↑↓◯p) ≡ ◯r`.
+With `E(↑r | [G₁]) ≡ r ∧ ◯r ≡ r` and
+`E(· | [G₁]) = ◯↓E({K}) ≡ ⊤`, the `H` conjunct is `◯r ⊃ r`, and
+
+        **E(Σ₁)  ≡  ◯r  ∧  (◯r ⊃ r)  ≡  r**
+
+**Verdict.**  (∃-eq) is satisfied on this instance: `Γ₁ ⊢ E(Σ₁)` is c4
+(valid) and `E(Σ₁) ⊢ r` is c5 (valid), and `r` is `p`-free, so the test
+formula ψ = r passes both directions.  Independently: substituting
+`p := ⊤` turns Γ₁ into `◯((◯⊤→r)→◯⊤), ◯⊤→r`, which is `⊣⊢ r` since
+`⊢ ◯⊤`, so every `p`-free consequence of Γ₁ follows from `r` and `E(Σ₁)`
+is not merely sufficient but exactly right.  **PASSES.**
+
+**The mechanism, and why it is worth banking.**  The `H` row dropped `H`
+from its own guard and paid for it: the guard came out `◯r` rather than
+⊤, and `◯((◯p⊃r)⊃◯p) ⊬ ◯p` (oracle c2), so the demand is real.  What
+discharged it was the *sibling* conjunct `e(G₁, [H])`, which retains `H`
+and yields exactly `◯r`.  The outer conjunction over the station repairs
+what the row loses.
+
+That is precisely the shape of the undischarged obligation.
+`LJFO.CimpAnt` (`LJF/O.lean:904–920`) asks, for a station `done`
+containing `X = ↓◯Q' ⊃ N` with residual `rest`, that
+
+        E(done),  K   ⊢   A(· | rest ⇒ ↑↓◯Q')
+
+whenever the mixed context proves `↓◯Q'`.  At this instance, with
+`K = ·`, that reads `r ⊢ ◯r`, which holds.  **So Γ₁ and Γ₂ are
+validating instances of `CimpAnt`**, and they are validating instances of
+exactly the configuration the obligation exists for.  Banked as
+validation in the sense of `METHOD.md` §3; they are not evidence that
+`CimpAnt` is provable.
+
+### 4.3b The same check on the nested sequent
+
+`Σ₂ = [H, G₂]` is saturated for the same reason, and
+`E(Σ₂) = e(H, [G₂]) ∧ e(G₂, [H])`.  The computation has the shape of
+§4.3 with one extra layer, and the extra layer changes nothing, which is
+the point.
+
+**The `G₂` conjunct**, E4, is `◯↓E(↑↓K₂ | H)`, at station `[K₂, H]`.
+The `K₂` row is E3 with residual `r ⊃ ◯↓K` (the same P9 strip, one
+`◯↓K` in place of `◯p`):
+
+        ( ↓A(r ⊃ ◯↓K | H ⇒ H)  ⊃  E(◯↓K | H) )  ∧  E(r ⊃ ◯↓K | H)
+
+* `E(◯↓K | H)`: station `[◯↓K, H]`.  E4 gives `◯↓E(↑↓K | H) ≡ ◯r` by
+  §4.3's inner computation, unchanged.  E5 on `H` at `Σ∖X = [◯↓K]` gives
+  `(↓A(· | [◯↓K] ⇒ ↑↓◯p) ⊃ E(↑r | [◯↓K])) ∧ E(· | [◯↓K])`, whose guard
+  is `◯r` (the box attack on `◯↓K` opens it, and the opened station's
+  `A({K} ⇒ ◯p)` is `◯r` again), whose fire component is `r`, and whose
+  residual component is ⊤.  So `E(◯↓K | H) ≡ ◯r ∧ (◯r ⊃ r) ≡ r`.
+* `A(r ⊃ ◯↓K | H ⇒ H) ≡ ⊤`, by A1's single branch `[◯p]` and then the
+  C3 attack on `H` at the deeper station, exactly as in §4.3.
+* `E(r ⊃ ◯↓K | H) ≡ ⊤ ∧ (◯r ⊃ r) ≡ ◯r ⊃ r`, the atom row giving
+  `r ⊃ E(◯↓K | H) = r ⊃ r ≡ ⊤` and the E5 row on `H` giving `◯r ⊃ r`.
+
+So the `K₂` row is `(⊤ ⊃ r) ∧ (◯r ⊃ r) ≡ r`; the `H` row at
+`Σ∖X = [K₂]` is again of the form `(… ⊃ r) ∧ …`; and
+`E(↑↓K₂ | H) ≡ r`, so `e(G₂, [H]) ≡ ◯r`.
+
+**The `H` conjunct**, E5 at `Σ∖X = [G₂]`, is
+`(↓A(· | [G₂] ⇒ ↑↓◯p) ⊃ E(↑r | [G₂])) ∧ E(· | [G₂])` with guard `◯r`
+(the box attack on `G₂` opens it and reduces, one layer down, to
+`A({K} ⇒ ◯p) ≡ ◯r`), fire component `r`, residual ⊤.  Hence
+
+        **E(Σ₂)  ≡  ◯r  ∧  (◯r ⊃ r)  ≡  r**
+
+the same value as for Σ₁.  (∃-eq) holds: `Γ₂ ⊢ E(Σ₂)` is oracle c8
+(valid), `E(Σ₂) ⊢ r` is oracle c5 (valid).  **PASSES.**
+
+The nesting is absorbed because the extra layer is consumed by the box
+row, not by the ◯-implication row: opening `G₂` yields `K₂`, whose
+Dyckhoff residual carries `◯↓K`, whose own box row opens to the §4.3
+computation.  Each layer costs one box opening, which the measure pays
+for, and none of them costs an extra guard.  This is the interpolant-side
+counterpart of the observation in `docs/ui-two-routes.md` §3.1 that once
+inside the modal phase the goal stays ◯-shaped and the layers share
+their uses.
+
+### 4.4 Check 2, the ∀ side, and where the drafted clause stops
+
+The station is again `Σ₁ = [H, G₁]`, saturated; the goal is `↑r` with
+`r ≠ p` and `↑r ∉ Σ₁`, so A3 applies:
+
+        A(Σ₁ ⇒ ↑r)  =  ↑r  ∨  atk(H, [G₁])  ∨  atk(G₁, [H])
+
+* `atk(G₁, [H]) = ⊥` by C4: `G₁` is a box and the goal is not a ◯-goal,
+  so `circL` cannot fire.  There is no row here at all.
+* `atk(H, [G₁])` is C3: `A(· | [G₁] ⇒ ↑↓◯p) ∧ A(↑r | [G₁] ⇒ ↑r)`.  The
+  second component is ⊤ (the atom parks and A3's `↑a ∈ Σ` case fires).
+  The first is `◯r`, computed in §4.3.
+
+Hence
+
+        **A(Σ₁ ⇒ ↑r)  ≡  r ∨ ◯r  ≡  ◯r**
+
+**Verdict against (∀-eq): REFUTED as drafted.**  Take ψ = ⊤, which is
+`p`-free.  `Γ₁, ⊤ ⊢ r` holds (c6, valid).  (∀-eq) demands
+`⊤ ⊢ A(Σ₁ ⇒ ↑r)`, i.e. `⊢ ◯r`, and `◯r` is **invalid** (c1).  So the
+drafted C3 does not support (∀-eq) at a non-empty station.
+
+**Verdict against (∀-eq-E): PASSES.**  `E(Σ₁) ≡ r` and `r ⊢ ◯r`, so
+`E(Σ₁), ⊤ ⊢ A(Σ₁ ⇒ ↑r)`.  The same holds at `j = lax`, where
+`jGoal lax ↑r = ◯r` and `A(Σ₁ ⇒ ◯r) ≡ ⊤` because A7's box row opens `G₁`
+and the opened station settles the goal.
+
+**The nested sequent behaves identically.**  `Σ₂ = [H, G₂]` gives
+`A(Σ₂ ⇒ ↑r) = ↑r ∨ atk(H, [G₂]) ∨ ⊥`, and `atk(H, [G₂])` is C3 with
+guard `A(· | [G₂] ⇒ ↑↓◯p) ≡ ◯r` (§4.3b) and fire component ⊤, so
+`A(Σ₂ ⇒ ↑r) ≡ ◯r` as well.  Same refutation of (∀-eq), same pass of
+(∀-eq-E) since `E(Σ₂) ≡ r`.  The extra layer neither helps nor hurts:
+the gap is created at the outermost C3 row and is one `◯` deep however
+deep the nesting is.
+
+**What the check therefore establishes.**  Not a defect in the
+development: (∀-eq-E) is what `SatA2` and the proved IPC theorem state,
+and (∀-eq) is known to be false in general, for the ◯-free calculus
+already.  What is new is the *measurement*: at a station whose only
+non-modal hypothesis is a ◯-implication, the gap between (∀-eq) and
+(∀-eq-E) is exactly the retention gap of §1.3, and it is the formula
+`◯r`.  The E-relativisation is doing the work that retention would
+otherwise do, and it is doing it at the ◯-implication row specifically.
+Two consequences worth recording:
+
+1. The E-guard is **not optional** in the modal case.  If a future
+   variant of the table drops the relativisation anywhere on a path to a
+   C3 row, this instance refutes it.
+2. Because `E(·) = ⊤`, the top-level read-off `∀p.φ = A(· ⇒ φ)` is not
+   touched.  The gap is an artefact of nonempty stations, that is, of
+   the induction, not of the theorem.
+
+### 4.5 The repair, and what it costs
+
+Replace C3 by (C3-f) of §3.3, retaining the station in the guard, with
+the visited-set discipline of §3.4.  Recomputing:
+
+        A(Σ₁ ⇒ ↑r)  =  ↑r  ∨  ( A^{H}(· | Σ₁ ⇒ ↑↓◯p)  ∧  ⊤ )  ∨  ⊥
+
+`A^{H}(· | Σ₁ ⇒ ↑↓◯p)` is A6 to A7 at station `Σ₁` with `H` visited.  The
+C3 row for `H` is now forbidden (⊥), the A3 row `A^{H}(Σ₁ ⇒ ↑p)` is ⊥,
+and the box row for `G₁` fires, resetting the visited set because the
+station changes:
+
+        ↓E(↑↓K | H)  ⊃  A(↑↓K | H ⇒ ◯p)      ≡   r ⊃ A([K, H] ⇒ ◯p)
+
+and `A([K, H] ⇒ ◯p) ≡ ⊤`: its A7 row set contains the C2 attack on `K`,
+whose components are `A(D | H ⇒ H) ≡ ⊤` (§4.3) and
+`A(◯p | H ⇒ ◯p) ≡ ⊤` (A7's box row on `◯p` at station `[◯p, H]`, whose
+guard `E(↑p | H) ≡ r` and whose body `A(↑p | H ⇒ ◯p) ≡ ⊤` because the
+atom `p` is now present).  So the box row is `r ⊃ ⊤ ≡ ⊤` and
+
+        **A(Σ₁ ⇒ ↑r)  ≡  ⊤**       under (C3-f)
+
+which satisfies (∀-eq).  The same computation on Γ₂ gives ⊤ as well, via
+`A^{H}(· | Σ₂ ⇒ ↑↓◯p)`'s box row on `G₂`, whose body reduces through the
+two-layer Dyckhoff attack to ⊤.  And on the E side the repair only
+improves matters: with the guard at the full station, `A(· | Σ₁ ⇒ ↑↓◯p)`
+becomes ⊤ and `e(H, [G₁])` becomes `⊤ ⊃ r ≡ r`, so `E(Σ₁) ≡ r` directly
+rather than through the sibling conjunct.
+
+**The reset is not optional.**  The *genuine* second decide on `H`, step
+4 of §4.2, appears in the interpolant as the C3 row on `H` at the deeper
+station `[◯p, D, H]`, reached after `G₁` has been opened and `K`
+decomposed.  At that station the row's guard is ⊤ (the hypothesis `◯p`
+is present, so the box goal is immediate) and the row delivers
+`A(◯p | D, H ⇒ ↑r) ≡ ⊤`, which is what carries ⊤ up the chain through
+`A(D | H ⇒ H)` to the root.  If `H` were still marked visited from the
+root, that row is ⊥, the value falls to `r`, and the root value falls
+back below ⊤, losing (∀-eq) again.  I checked the same thing for the
+variant that gates only C3 and leaves E5 ungated: it fails too, at the
+same node.
+
+So the visited set must be reset when the station changes, and §3.4's
+measure then fails at the box row.  **This is the cost of the repair,
+and it is unpaid.**  Restated as the sharpest form of the obstruction
+this document reaches: *the discipline that makes retention definable
+must forget its history exactly when the station changes, and the
+station's cheapest change, opening a box, has margin `3^{w R}` and no
+more.*
+
+### 4.6 Summary of the checks
+
+| check | instance | statement | verdict |
+|---|---|---|---|
+| ∃, sequent 1 | `E([H, G₁]) ≡ ◯r ∧ (◯r ⊃ r) ≡ r` | (∃-eq) at ψ = r | **PASSES** |
+| ∃, sequent 2 | `E([H, G₂]) ≡ ◯r ∧ (◯r ⊃ r) ≡ r` | (∃-eq) at ψ = r | **PASSES** |
+| ∀, sequent 1, drafted C3 | `A([H, G₁] ⇒ ↑r) ≡ ◯r` | (∀-eq) at ψ = ⊤ | **REFUTED as drafted** |
+| ∀, sequent 1, drafted C3 | same | (∀-eq-E) at ψ = ⊤ | **PASSES** |
+| ∀, sequent 2, drafted C3 | `A([H, G₂] ⇒ ↑r) ≡ ◯r` | (∀-eq) / (∀-eq-E) | **REFUTED / PASSES** |
+| ∀, both, repaired C3-f | `≡ ⊤` | (∀-eq) | **PASSES**, at the cost of §3.4 |
+| `CimpAnt` at both instances | `r ⊢ ◯r` | the obligation's conclusion | **holds** (validation, not proof) |
+
+No clause was refuted against the statement the construction targets.
+One clause, C3, is refuted against the stronger unrelativised statement,
+and that refutation is the measurement of the retention gap.
+
+---
+
+## 5 · OPEN list
+
+Everything in this document that is not established, in one place.  Each
+item says what would settle it.
+
+**O1.  Uniform interpolation for PLL.**  OPEN, in neither direction.
+Unchanged by this document.  (Standing claim discipline,
+`docs/ljfo-fidelity.md`, `HANDOFF.md` §8.)
+
+**O2.  `LJFO.CimpAnt`.**  Undischarged; no term of that type exists in
+the repository.  `LJFO.satE2` and `LJFO.satA2` are sorry-free but
+conditional on it, so **E2/A2 minimality for LJF◯ is not claimed**.
+§4.3 adds two validating instances; that is validation, not discharge.
+
+**O3.  The clause table of §2 is unverified as a paper object.**  It is
+a reconstruction, believed to agree clause for clause with
+`LJFO.interp`, but I did not machine-check the agreement.  A `#guard`
+comparing the two on a corpus of stations would settle it.
+
+**O4.  The provenance marks.**  TRANSCRIBED is checkable (it means
+"identical to the corresponding clause of `LJF.interp`") and I did check
+it by reading `LJF/Base.lean:710–824`, which covers the processing
+clauses, the fire scan, the whole ∃p read-off and the ∀p clauses through
+the `↑⊥` goal; I did not read the remaining ∀p goal shapes there, so the
+marks on A5 and A6 are by pattern, not by inspection.  The attribution of those clauses
+to *Pitts 1992* is second-hand: I did not read the 1992 paper while
+drafting.  Anyone using this table in a paper must verify the
+attribution against the source, in particular for E3/C2 (the `L⊃⊃`
+clause) and for A3's `head` disjunct.
+
+**O5.  Whether `pre(Σ, P)` in A7 is complete** for the body shape
+`↓(Q₀ ⊃ N₀)`, an implication under a box.  I checked `a`, `⊥`,
+`P₁ ∨ P₂` and `↓◯P'` by hand; I did not check that one, and it is where
+a missing row would be hardest to see.
+
+**O6.  Whether E4 is the strongest box row**, i.e. whether all `p`-free
+content extractable from a box hypothesis is itself boxed.  I found no
+candidate for extra content and no argument that none exists.
+
+**O7.  The loop cut** of §3.4 ("a decide on `X` whose antecedent premise
+is the sequent being derived can be pruned").  Stated with a
+plausibility argument; not proved.  It is what would make the retaining
+table a definition at all.
+
+**O8.  Termination of the retaining table.**  §3.4's discounted-station
+order `μᵥ` is refuted at the box row by a hand computation, and §4.5
+shows the reset that breaks it is required.  Whether *some* well-founded
+order founds the retaining table is OPEN; the record's route A′.  The
+fuel-founded variant `LJFO.interpF` exists (`LJF/OFuel.lean`) with
+nothing proved about it.
+
+**O9.  The decide counts of §4.2.**  Two decides on `H` for Γ₁ and three
+for Γ₂ are the counts of the derivations I wrote down; **minimality of
+either count is not established**, and the brief's "no constant bound on
+decides" is not established for LJF◯.  For `G4` the analogous copy count
+on the `K n` family is REFUTED as unbounded (measured 1, 2, 2, 2), but
+that is a different quantity in a different, incomplete calculus.
+
+**O10.  The hand computations of §4** are hand computations.  Every
+displayed interpolant value (`E(Σ₁) ≡ r`, `A(Σ₁ ⇒ ↑r) ≡ ◯r`, and the
+sub-values) is asserted at that strength.  What is oracle-checked is
+only the eight PLL validity questions of §4.0, and the oracle is
+compiled code, not the kernel.  An `#eval` of `LJFO.interp` on the
+polarised Γ₁ and Γ₂, compared against these values up to provable
+equivalence, would settle the whole of §4; `LJF/OSearch.lean` exists for
+exactly that kind of check and was used this way once before (the φ★
+value, at fuel 32).
+
+**O11.  Two stale docstrings observed in passing**, worth a one-line fix
+in some later commit: `LJF/OCore.lean:752` and `LJF/O.lean:236` both say
+the station has "exactly three shapes" where `LJFO.ParkedN` has five
+(the two modal ones were added later); and `LJF/OCore.lean:4096` and
+`LJF/O.lean:2087` point at `LaxLogic/LJFOAudit.lean`, a path that no
+longer exists (the pins are in `LJF/OAudit.lean` after the 2026-08-22
+split).
