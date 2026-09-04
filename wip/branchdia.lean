@@ -1,4 +1,5 @@
 import wip.mixedfail
+import Meta.Audit
 
 /-!
 # PROVED: `∃p.φ♦ = ¬¬◯⊥` — the BRANCHING stretch
@@ -633,14 +634,15 @@ theorem BLo_pv : BLo oBot (PLLFormula.prop pv) = oBot := rfl
 the stretch method is — `BLo ◯⊥ p = ◯⊥` and `p ⊬ ◯⊥`. -/
 theorem p_not_oBot : [PLLFormula.prop pv] ⊬ oBot := by
   rintro ⟨d⟩
-  have hs := soundness d N (1 : Fin 2) (fun ψ hψ => by
+  have hs := soundness d N Two.hi (fun ψ hψ => by
     have e : ψ = PLLFormula.prop pv := by
       cases hψ with
       | head => rfl
       | tail _ h => cases h
     subst e
-    exact (le_refl (1 : Fin 2)))
-  exact N_not_oBot 1 hs
+    -- `V _ = {x | x = Two.hi}` since the postui de-Fin: `rfl`, not an order fact.
+    exact rfl)
+  exact N_not_oBot Two.hi hs
 
 def BranchCoverConj : Prop :=
   ∀ φ : PLLFormula, onlyPv φ = true → HasBranchCover oBot φ
@@ -1018,9 +1020,10 @@ hierarchy in `k` — is the live question. -/
 #guard_msgs in
 #print axioms not_hasBranchMixedCover_of_model
 
-/-- info: 'PLLND.RNEmbed.bstretch_M3_not_phiStar' depends on axioms: [propext] -/
-#guard_msgs in
-#print axioms bstretch_M3_not_phiStar
+-- A BOUND (2026-09-04): `Quot.sound` arrives from `Fin`, which indexes
+-- `M3`'s worlds.  Innocuous; the check is for a crossing into
+-- `Classical.choice` or `sorryAx`.
+#axioms_within bstretch_M3_not_phiStar [propext, Quot.sound]
 
 /-- info: 'PLLND.RNEmbed.not_hasBranchCover_phiStar' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in

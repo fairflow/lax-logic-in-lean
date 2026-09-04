@@ -38,6 +38,19 @@ open Form
 
 /-! ## Small corner facts -/
 
+/-- `andElimLeft` / `_right` were removed from core; these are the
+same two eliminations, in term mode so no tactic can smuggle an axiom in
+(2026-09-04).  `(false && b)` and `(true && false)` both reduce to
+`false`, so the impossible branches are discharged by `Bool.noConfusion`. -/
+theorem andElimLeft : ∀ {a b : Bool}, (a && b) = true → a = true
+  | true,  _, _ => rfl
+  | false, _, h => Bool.noConfusion h
+
+theorem andElimRight : ∀ {a b : Bool}, (a && b) = true → b = true
+  | true,  true,  _ => rfl
+  | true,  false, h => Bool.noConfusion h
+  | false, _,     h => Bool.noConfusion h
+
 theorem gHat_subset_sfL {G : Form} : gHat G ⊆ sfL G := by
   intro X hX
   simp only [gHat, List.mem_append] at hX
@@ -549,13 +562,13 @@ def minModF (K : Kripke) (G : Form)
                       cloB w.ctx X && decide (K.force a X)), .imp A B,
                     .impNotIn w.der
                       (fun X hX => ⟨cloB_iff.mp
-                          (Bool.and_elim_left ((List.mem_filter.mp hX).2)),
+                          (andElimLeft ((List.mem_filter.mp hX).2)),
                         (List.mem_filter.mp hX).1⟩)
                       (clo_mono w.cov (mem_clo_lamStar (hinf _)
                         (sfR_imp hsf).1 (K.force_mono w.wle m.fA)))
                       (fun hc => hnA (clo_forces
                         (fun X hX => of_decide_eq_true
-                          (Bool.and_elim_right ((List.mem_filter.mp hX).2)))
+                          (andElimRight ((List.mem_filter.mp hX).2)))
                         hc))
                       hsf⟩,
                   rfl, hthg⟩, rfl⟩)

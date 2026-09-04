@@ -322,17 +322,17 @@ theorem postInterp_phiStar_ne_bot : [nt (nt oBot)] ⊬ PLLFormula.falsePLL :=
   fun h => phiStar_consistent (Deriv.cutHead phiStar_nnbox h)
 
 /-- In the fallible-free two-world model `N`, `◯⊥` fails everywhere. -/
-theorem N_not_oBot (x : Fin 2) : ¬ N.force x oBot := by
+theorem N_not_oBot (x : Two) : ¬ N.force x oBot := by
   intro h
-  obtain ⟨_, _, hy⟩ := h x (le_refl x)
+  obtain ⟨_, _, hy⟩ := h x (two_le_refl x)
   exact hy
 
 /-- … and not `⊤`: `¬¬◯⊥` is not a theorem (it fails at the root of the
 fallible-free model `N`, where `¬◯⊥` holds vacuously). -/
 theorem postInterp_phiStar_ne_top : [] ⊬ nt (nt oBot) := by
   rintro ⟨d⟩
-  have hs := soundness d N (0 : Fin 2) (fun ψ hψ => by cases hψ)
-  exact hs 0 (le_refl (0 : Fin 2)) (fun v _ hv => absurd hv (N_not_oBot v))
+  have hs := soundness d N Two.lo (fun ψ hψ => by cases hψ)
+  exact hs Two.lo (two_le_refl Two.lo) (fun v _ hv => absurd hv (N_not_oBot v))
 
 /-! ## 5.  The general method behind the proof: the STRETCH TRANSLATION
 
@@ -636,13 +636,15 @@ theorem Lo_pv : Lo (PLLFormula.prop pv) = PLLFormula.falsePLL := rfl
 
 theorem p_consistent : [PLLFormula.prop pv] ⊬ PLLFormula.falsePLL := by
   rintro ⟨d⟩
-  have hs := soundness d N (1 : Fin 2) (fun ψ hψ => by
+  have hs := soundness d N Two.hi (fun ψ hψ => by
     have e : ψ = PLLFormula.prop pv := by
       cases hψ with
       | head => rfl
       | tail _ h => cases h
     subst e
-    exact (le_refl (1 : Fin 2)))
+    -- `V _ = {x | x = Two.hi}` since the postui de-Fin, so forcing the
+    -- atom at the top world is `rfl`, not an order fact.
+    exact rfl)
   exact hs
 
 theorem stretchCoverConj_false : ¬ StretchCoverConj := by

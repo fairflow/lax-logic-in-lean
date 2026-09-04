@@ -1,4 +1,5 @@
 import wip.guardstretch
+import Meta.Audit
 
 /-!
 # REFUTED: `MixedCoverConj`, and `GuardedMixedConj` with it
@@ -438,13 +439,14 @@ theorem postInterpPhiDiaIsTop_iff :
 
 /-! ## 8.  Axiom audit -/
 
-/-- info: 'PLLND.RNEmbed.Md_swap' depends on axioms: [propext] -/
-#guard_msgs in
-#print axioms Md_swap
+-- BOUNDS, not transcripts (2026-09-04).  These three measured
+-- `[propext]` when written and measure `[propext, Quot.sound]` now: the
+-- extra axiom comes from `Fin`, which indexes `Md`'s worlds.  Innocuous
+-- here; what the check is for is a crossing into `Classical.choice` or
+-- `sorryAx`.
+#axioms_within Md_swap [propext, Quot.sound]
 
-/-- info: 'PLLND.RNEmbed.Md_force_phiDia' depends on axioms: [propext] -/
-#guard_msgs in
-#print axioms Md_force_phiDia
+#axioms_within Md_force_phiDia [propext, Quot.sound]
 
 /-- info: 'PLLND.RNEmbed.Md_inst_fails' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
@@ -470,9 +472,7 @@ theorem postInterpPhiDiaIsTop_iff :
 #guard_msgs in
 #print axioms mixedCoverConj_false
 
-/-- info: 'PLLND.RNEmbed.phiDia_consistent' depends on axioms: [propext] -/
-#guard_msgs in
-#print axioms phiDia_consistent
+#axioms_within phiDia_consistent [propext, Quot.sound]
 
 /-! ## Integration addendum: `⊤` is EXCLUDED, not forced — the successor
 question is `∃p.φ♦ =? ¬¬◯⊥`

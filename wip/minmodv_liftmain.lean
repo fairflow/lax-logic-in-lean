@@ -220,13 +220,13 @@ def minModL (K : Kripke) (G : Form)
                       cloB w.ctx X && decide (K.force a X)), .imp A B,
                     .impNotIn w.der
                       (fun X hX => ⟨cloB_iff.mp
-                          (Bool.and_elim_left ((List.mem_filter.mp hX).2)),
+                          (andElimLeft ((List.mem_filter.mp hX).2)),
                         (List.mem_filter.mp hX).1⟩)
                       (clo_mono w.cov (mem_clo_lamStar (hinf _)
                         (sfR_imp hsf).1 (K.force_mono w.wle m.fA)))
                       (fun hc => hnA (clo_forces
                         (fun X hX => of_decide_eq_true
-                          (Bool.and_elim_right ((List.mem_filter.mp hX).2)))
+                          (andElimRight ((List.mem_filter.mp hX).2)))
                         hc))
                       hsf⟩,
                   rfl, hthg⟩, rfl⟩)
@@ -521,13 +521,13 @@ def minModL (K : Kripke) (G : Form)
                 cloB w.ctx X && decide (K.force b X)), .imp A B,
               .impNotIn w.der
                 (fun X hX => ⟨cloB_iff.mp
-                    (Bool.and_elim_left ((List.mem_filter.mp hX).2)),
+                    (andElimLeft ((List.mem_filter.mp hX).2)),
                   (List.mem_filter.mp hX).1⟩)
                 (clo_mono w.cov (mem_clo_lamStar (hinf _)
                   (sfR_imp hsf).1 (K.force_mono w.wle m.fA)))
                 (fun hc => hnA (clo_forces
                   (fun X hX => of_decide_eq_true
-                    (Bool.and_elim_right ((List.mem_filter.mp hX).2)))
+                    (andElimRight ((List.mem_filter.mp hX).2)))
                   hc))
                 hsf⟩,
             rfl, hthg⟩, rfl⟩)
@@ -613,13 +613,13 @@ def minModL (K : Kripke) (G : Form)
                 cloB w.ctx X && decide (K.force b X)), .imp A B,
               .impNotIn w.der
                 (fun X hX => ⟨cloB_iff.mp
-                    (Bool.and_elim_left ((List.mem_filter.mp hX).2)),
+                    (andElimLeft ((List.mem_filter.mp hX).2)),
                   (List.mem_filter.mp hX).1⟩)
                 (clo_mono w.cov (mem_clo_lamStar (hinf _)
                   (sfR_imp hsf).1 (K.force_mono w.wle m.fA)))
                 (fun hc => hnA (clo_forces
                   (fun X hX => of_decide_eq_true
-                    (Bool.and_elim_right ((List.mem_filter.mp hX).2)))
+                    (andElimRight ((List.mem_filter.mp hX).2)))
                   hc))
                 hsf⟩,
             rfl, hthg⟩, rfl⟩)).toFree

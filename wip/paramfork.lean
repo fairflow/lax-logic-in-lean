@@ -1,4 +1,5 @@
 import wip.branchdia
+import Meta.Audit
 
 /-!
 # `φ♣`, the PARAMETERISED fork, and `∃p.φ♣ = ¬¬◯⊥ ⊃ ◯⊥`
@@ -1949,9 +1950,9 @@ def PostInterpPhiSpadeExists : Prop := ∃ ψ, IsPostInterp phiSpade ψ
 #guard_msgs in
 #print axioms Cclub_force_phiClub
 
-/-- info: 'PLLND.RNEmbed.Cclub_swap' depends on axioms: [propext] -/
-#guard_msgs in
-#print axioms Cclub_swap
+-- A BOUND (2026-09-04): `Quot.sound` from `Fin`, which indexes the
+-- worlds.  The check is for a crossing into `Classical.choice` or `sorryAx`.
+#axioms_within Cclub_swap [propext, Quot.sound]
 
 /-- info: 'PLLND.RNEmbed.Cclub_inst_fails' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
