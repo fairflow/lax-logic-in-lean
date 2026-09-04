@@ -1447,6 +1447,26 @@ is the focused kernel search (`LJFO.search`, sound by `search_sound`)
 on `E_f, ↑c ⊢ ↑a` — `lake exe uifs esearch <evalfuel> <sfuel>` — whose
 result is recorded below.
 
+**The focused search settles it — E-cofinality at S1 VALIDATED at
+station fuel 14.**  `LJFO.LSeq.search` on `E_f, ↑c ⊢ ↑a` (native
+evaluation of a search that is sound by `search_sound`; a `true` is a
+derivation):
+
+| station fuel | search fuel 16 | 24 | 32 |
+|---|---|---|---|
+| 10 (`E` 290 nodes) | false | false | false |
+| 14 (`E` 2987 nodes) | **true** | true | true |
+| 18 (`E` 37,632 nodes) | **true** | true | true |
+
+So the consequence `c ⊃ a` (derivation height about 4) enters the
+E-chain at station fuel 14, where the row analysis put it, and stays.
+The fuel is about 3.5 times the derivation height — the shape the
+proof's fuel function must have (a nesting level per parked box, not a
+step per rule).  This is evidence FOR cofinality on the first cell that
+no instance closes, and against the §4.11 family as a refutation
+candidate; the kernel pin of the fuel-14 derivation (a `decide` on a
+2987-node context) is not attempted here.
+
 ---
 
 ## 5 · OPEN list

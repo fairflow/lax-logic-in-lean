@@ -1,5 +1,6 @@
 import LJF.OFuel
 import LJF.OBridge
+import LJF.OSearch
 import Rewrite
 namespace LJFO
 
@@ -384,7 +385,7 @@ def esearch (f : Nat) (sfuels : List Nat) : IO Unit := do
   let seq : LSeq := .inv [E, .up (.atom "c")] [] .tru (.up (.atom "a"))
   for sf in sfuels do
     let t0 ← IO.monoMsNow
-    let r := search sf seq
+    let r := LSeq.search sf seq
     let t1 ← IO.monoMsNow
     IO.println s!"esearch S1 evalfuel={f} sfuel={sf} result={r} ms={t1 - t0}"
     (← IO.getStdout).flush
