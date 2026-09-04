@@ -91,7 +91,141 @@ On the shape round 4 actually hits (2 new regular rows against 35 old,
 Projected on the round data above: **6.6 s → ~1.2 s, about 5×**, and the
 saving grows with store size, the waste being quadratic in it.
 
-## 6. The open design decision
+## 6. BUILT (2026-09-03): `Config.semiNaive`, default OFF
+
+`FRJ/Search/Core.lean` now carries a differential round, `roundStepG`,
+selected by `Config.semiNaive` (`FRJ/Search/Engine.lean`).  With the flag
+`false` — the default — `saturateO` IS the previous definition
+(`saturateNaiveO`), so the paper and V engines are untouched;
+`lake exe frjvrun diff` stays ALL AGREE.
+
+**How the generation is identified.**  Not positionally.  `O.RS`/`O.IS`
+have no `DecidableEq` and `insertRO` filters subsumed rows, so a row's
+index is not a stable name for it.  The store is instead SPLIT —
+`DBG` = `rsN`/`rsO`, `isN`/`isO` — and `insertRG` is `insertRO` with the
+same test and the same filter applied to both halves, so
+`viewG d = { rs := d.rsN ++ d.rsO, … }` is exactly the `DBO` the naive
+loop holds at that point.  Rows are never identified, only kept apart.
+
+**One gap in §5's enumerator, found by `#guard`.**  At `k = 0` the
+identity FAILS, in the unsafe direction: `famsUpTo` reaches
+`combosLe (k - 1)` and truncates, so `famsUpTo l 0 = famsUpTo l 1` (all
+singletons), while `combosLe 0 new = [[]]` makes `famsDeltaUpTo _ _ 0 =
+[]`.  `roundStepG` therefore passes `max k 1`.  The `#guard`s at
+`famsDeltaUpTo` record the failure as well as the passing shapes.
+
+**The `max` compensation is now itself guarded** (2026-09-04).  `deltaOK`
+states the identity at a SINGLE `k` and so says nothing about the shape
+`roundStepG` actually calls — the delta at `max k 1` against
+`famsUpTo old k`.  Until `deltaOKmax` was added that step was asserted
+only in the prose above; `jmax = 0` and `pmax = 0` are admissible
+`Config` values, so the corner is reachable rather than hypothetical.
+Gate watched failing: replacing `max k 1` by `k` in `deltaOKmax` turns
+the two `k = 0` lines with a NON-EMPTY delta red, and only those.
+
+**Measured** (compiled binaries; §1–§4's absolute numbers are from the
+interpreted profiler and run ~10× slower).  Engine time only,
+`lake exe wscreen prof`, re-measured 2026-09-04 (the 2026-09-03 figures
+it replaces were within 6% on every row):
+
+| cell | budget | naive | semiNaive | speedup |
+|---|---|---|---|---|
+| `(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)` | jmax=3 pmax=2 | 559 ms | 218 ms | 2.6× |
+| `◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)` | jmax=3 pmax=2 | 211 ms | 120 ms | 1.8× |
+| `(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)` | jmax=5 pmax=4 | 79 739 ms | 38 776 ms | 2.1× |
+| `◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)` | jmax=5 pmax=4 | 19 846 ms | 14 441 ms | 1.4× |
+
+**§5's ~5× projection is not reached, and the projection was wrong.**  It
+read the 9.6× cut off ROUND 4 and applied it to the whole run.  Rounds 2
+and 3 are where most of the work is and almost everything in them is
+new, so the differential barely shrinks them; the elimination is
+concentrated in the last rounds, which is a constant-factor 2–3×, not
+5×.
+
+**End to end, and a correction (re-measured 2026-09-04).**  The
+2026-09-03 entry read "185.5 s → 139.2 s and 55.3 s → 48.6 s (1.33× and
+1.14×) … `checkClosed` plus the decision extraction cost ~100 s and
+~34 s".  Re-run as `pll φ --rounds=40 --jmax=5 --pmax=4 [--semi-naive]`,
+wall clock from the shell, the binary called directly with no other
+flags:
+
+| cell | verdict | naive | semi-naive | speedup | engine's share (naive) |
+|---|---|---|---|---|---|
+| `(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)` | PROVABLE | 85.0 s | 46.3 s | **1.84×** | 79.7 s = 94% |
+| `◯(◯p ∨ ◯q) ⊃ (◯p ∨ ◯q)` | DISPROVABLE | 53.6 s | 48.1 s | 1.11× | 19.8 s = 37% |
+
+The second row reproduces (55.3 → 48.6 against 53.6 → 48.1); **the first
+does not, and the conclusion drawn from it was wrong.**  On the PROVABLE
+cell the engine is 94% of `pll`'s run, not "under half", and the round's
+2.1× carries almost undiminished to 1.84× end to end.
+
+**And the residue is not `checkClosed`.**  `lake exe checkprobe` reports
+`check=0ms` on all 20 of its cells, against engine times up to 2 s; the
+store `checkClosed` scans is the 37-row one of §1, whatever the budget
+that produced it.  What costs 33.8 s on the DISPROVABLE cell — and only
+5.3 s on the PROVABLE one — is the OUTPUT LAYER on the refutation path:
+countermodel minimisation, the SVG, and the two-pass kernel certificate.
+So the next measurement belongs there, not in the certificate and not in
+the round.
+
+**Fixpoint.**  `lake exe wscreen snd` compares the two stores per cell
+under three notions — `EXACT` (same rows, same order), `PERM` (same
+rows, different order, zones compared as lists), `SET` (matched only up
+to set-equality of the zones, i.e. different representatives of a
+mutual-subsumption class).  18/18 curated cells agree: 14 `EXACT`, 4
+`PERM`, 0 `SET`, 0 `DIFFER`; the four profile runs above are all `PERM`.
+
+## 7. Corpus agreement over `batch/formulas.txt` (2026-09-04)
+
+The claim §6 has to survive is a COMPLETENESS one.  `checkClosed`
+verifies the engine's store whatever the strategy, so a defect in the
+delta logic cannot produce an unsound verdict — it can only produce an
+INCOMPLETE store, and the symptom would be a cell the naive loop settles
+and the differential one reports `not-closed-within-bound`.  That is
+what this sweep hunts.
+
+`lake exe pllbench --engine=frjw`, one mode on one cell per process
+under a 20 s wall cap, over all 129 cells; wall clock from the shell.
+Raw rows in `batch/semi-naive-agreement.tsv`.
+
+**129 / 129 cells agree, verdict for verdict**: 74 `valid`, 45
+`invalid`, 10 timeout, identically in both modes.  Not one cell that
+naive settles goes `don't-know` under semi-naive, and no cell settles
+that naive could not.  The ten timeouts are the SAME ten cells —
+083, 107, 111, 112, 118, 119, 120, 123, 124, 125 — so **none of the
+level-3 residue is rescued by this optimisation.**
+
+**End-to-end aggregate over the 119 settled cells: 132 440 ms →
+127 588 ms, 1.04×**, and the largest single win is 1.8×:
+
+| cell | formula | naive | semi-naive | speedup |
+|---|---|---|---|---|
+| 094 | `((◯p ⊃ ◯q) ⊃ ◯p) ⊃ ◯p` | 950 ms | 521 ms | 1.8× |
+| 090 | `((◯p ⊃ q) ⊃ q) ⊃ (◯p ∨ q)` | 668 ms | 466 ms | 1.4× |
+| 117 | `(◯(p ∨ q) ∧ (p ⊃ r) ∧ (q ⊃ r)) ⊃ ◯r` | 721 ms | 580 ms | 1.2× |
+| 103 | `◯(◯(◯p ∧ q) ⊃ q) ⊃ ◯q` | 10 538 ms | 8 772 ms | 1.2× |
+| 076 | `(◯p ⊃ ◯q) ⊃ ◯(p ⊃ q)` | 511 ms | 461 ms | 1.1× |
+| 082 | `(◯◯p ∧ ◯q) ⊃ ◯(◯p ∧ q)` | 10 520 ms | 10 155 ms | 1.04× |
+| 113 | `(¬¬(p ∨ ¬p)) ⊃ ((p ⊃ q) ∨ (q ⊃ p))` | 13 319 ms | 13 183 ms | 1.01× |
+| 126 | `◯(◯p ⊃ ◯q) ⊃ (◯p ⊃ ◯q)` | 18 846 ms | 18 860 ms | 1.00× |
+| 069 | `¬(p ∧ q) ⊃ (¬p ∨ ¬q)` | 6 022 ms | 6 143 ms | 0.98× |
+
+**A 2× engine buys 1.04× at this budget, and the split is the one §6
+ends on.**  The cells where the round IS the cost (094, 090, 117, 103)
+carry the whole visible win; the ones at the top of the table are
+dominated by the output layer and barely move.  0.98× on 069 is
+run-to-run noise, not a regression — the two modes reach identical
+stores there.
+
+The aggregate is low because `jmax=3 pmax=2` is a budget at which the
+round is cheap for most cells.  Raise the budget until the round is the
+work — §6's `--jmax=5 --pmax=4` row — and the same optimisation is
+worth 1.84×.  So: **real, and its size is entirely a function of how
+much of the run is saturation.**  Worth having, worth leaving OFF by
+default until a caller needs it, and NOT the thing that will settle the
+ten residual cells.
+
+## 8. The original open design decision (settled by §6)
 
 Semi-naive must identify which rows are new, and `O.RS`/`O.IS` carry no
 `DecidableEq`; the clean route is generation-tagged rows in `DBO`.  That
@@ -105,5 +239,13 @@ runner may legitimately go red.
 Recommended: a `Config.semiNaive` flag, default OFF, so the paper and V
 engines are untouched and the W engine opts in; validate with
 `wscreen`, `checkprobe` and a batch re-run before it becomes a default.
-NOT YET BUILT — awaiting Matthew's call between the flag and changing
-the loop outright with a re-baselined differential runner.
+
+**Built as recommended, and all three validations are now run**
+(2026-09-04): `wscreen` 18/18 PASS and `wscreen semi` 18/18 PASS, both
+`no alarms`; `checkprobe` and `checkprobe --semi-naive` both
+`alarms=0 gate-failures=0`, row counts and decisions identical cell for
+cell; the 129-cell batch re-run of §7 agreeing verdict for verdict; and
+`frjvrun diff` still ALL AGREE, so the flag-OFF path is the legacy
+engine unchanged.  The remaining decision — whether the flag ever
+becomes the DEFAULT — is Matthew's, and §7 is the argument for taking
+it slowly: the gain is 1.04× at the batch's own budget.
