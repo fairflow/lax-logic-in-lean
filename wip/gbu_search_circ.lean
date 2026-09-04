@@ -924,7 +924,7 @@ theorem not_evalR_root {G : Form} (h : ¬ ProvableV G) :
 #guard_msgs in
 #print axioms provableGbuC_of_not_provableV
 
-/-- info: 'FRJ.Gbu.not_evalR_root' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.Gbu.not_evalR_root' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms not_evalR_root
 

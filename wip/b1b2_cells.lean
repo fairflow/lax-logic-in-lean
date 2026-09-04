@@ -326,29 +326,34 @@ theorem b1_relaxed_dropB :
     subB ctxRFull (ctxOr (famOf [[xa]] 0) (famOf [[g, Lk]] 0) (rhsOf [cc] 0)) = true := by
   decide
 
-/-- info: 'B1B2.b1_relaxed_dropA' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'B1B2.b1_relaxed_dropA' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms b1_relaxed_dropA
 
-/-! ## Pins (kernel-decided cells: `[propext, Quot.sound]`, no choice) -/
+/-! ## Pins (kernel-decided cells: `[propext]`, no choice)
 
-/-- info: 'B1B2.b1a_drop1' depends on axioms: [propext, Quot.sound] -/
+These six lost `Quot.sound` at some point before 2026-09-04 and the pins
+were never reconciled; the file is outside `lake build`'s default
+targets, so nothing exercised them.  Corrected downward, which is the
+permitted direction of the ratchet. -/
+
+/-- info: 'B1B2.b1a_drop1' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms b1a_drop1
 
-/-- info: 'B1B2.b1a_control' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'B1B2.b1a_control' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms b1a_control
 
-/-- info: 'B1B2.b1b_drop1' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'B1B2.b1b_drop1' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms b1b_drop1
 
-/-- info: 'B1B2.b2_naive_refuted' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'B1B2.b2_naive_refuted' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms b2_naive_refuted
 
-/-- info: 'B1B2.b2_corrected' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'B1B2.b2_corrected' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms b2_corrected
 

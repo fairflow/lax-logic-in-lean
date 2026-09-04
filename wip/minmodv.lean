@@ -604,7 +604,7 @@ theorem completenessV_of_endpoints {G : Form} (K : Kripke)
     (hep : K.Endpoints) (hK : ¬ K.valid G) : ProvableV G :=
   provableV_of_provable (completeness_of_endpoints hep hK)
 
-/-- info: 'FRJ.circSupplyV_of_coneGrounded' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'FRJ.circSupplyV_of_coneGrounded' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms circSupplyV_of_coneGrounded
 
