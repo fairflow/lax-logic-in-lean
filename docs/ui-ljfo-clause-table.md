@@ -1281,7 +1281,12 @@ climbs to `r ∨ ◯s` at station fuel 10, strictly below `T` as formulas;
 but `E₁₀ ⟛ ◯s ⊃ r`, under which `T`, `r ∨ ◯s` and `r` coincide, so the
 cofinality instance holds at fuel 10, and with it cofinality for every
 sufficient `Δ` (each has `Δ ⊢ T`).  VALIDATED again.  The instance
-`E₁₄ ∧ T ⊢ A₁₄` (201 + 187 nodes) is recorded below when settled.
+`E₁₄ ∧ T ⊢ A₁₄` (201 + 187 nodes) was UNSETTLED at the 300 s bound —
+a frontier marker (re-run at a raised budget, or decompose as the
+record did for θmax: the `∧`/`∨` structure splits it into
+engine-sized leaves), not a failure.  Likewise `A₁₀ ⊢ θmax` on the
+first cell (339-node hypothesis) was unsettled at 300 s; its fuel-6
+twin is valid and the substitution argument covers every fuel.
 
 **The filter, sharpened by these two cells.**  A cell is closed by the
 instance `p := χ` (χ p-free) whenever `Γ[χ] ⊃ G[χ]` is sufficient —
