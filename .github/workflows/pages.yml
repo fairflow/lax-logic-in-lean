@@ -13,7 +13,10 @@ name: Blueprint Pages
 on:
   push:
     branches:
-      - main
+      # NOT main: FRJ/CalculusW.lean, FRJ/SoundW.lean and the wip/ modules the
+      # blueprint names by string do not exist on main, so it cannot build
+      # there.  main carries only the lakefile require.
+      - frjw-dev
       - publication/core
       - verso-blueprint
     paths:
