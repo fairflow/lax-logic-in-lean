@@ -1483,11 +1483,28 @@ station fuel 14, and for the weaker `X` and `T` at no fuel through 18
 guard` must go through the boxed disjunct `A(done ⇒ ◯↓(d ⊃ p))`, whose
 `c`-branch sits one parked-box level deeper than the outer `c`-branch
 that Δ = c uses, so the `X` instances are predicted about ten fuel
-units later, station fuel 22–24.  Station fuel 22 (`E` about 450,000
-nodes) is the last point the tools can reach; its verdict is recorded
-below.  What the `X`/`T` instances test is the E-chain's convergence
-to `∃p.Γ` itself (the `∀p` is `(∃p.Γ) ⊃ a`, and `T = (X ⊃ a) ⊃ a` is
-the `∀p` iff `∃p.Γ ⟛ X ⊃ a`).
+units later, station fuel 22–24.  What the `X`/`T` instances test is
+the E-chain's convergence to `∃p.Γ` itself (the `∀p` is `(∃p.Γ) ⊃ a`,
+and `T = (X ⊃ a) ⊃ a` is the `∀p` iff `∃p.Γ ⟛ X ⊃ a`).
+
+**Station fuel 22 confirms the prediction: `E₂₂ ∧ X ⊢ a` is TRUE**
+(search fuel 48; false at 16 and 32).  The depth needed exposes a
+posing defect in the searches above: `E_f` entered the context as one
+`∧`-chain, and the canonical chain is right-nested and sorted, so left
+focusing on the k-th conjunct costs k steps — the Δ = c derivations
+were found because their conjunct sorts near the front, and every
+`false` above at search fuel ≤ 32 is a depth artefact, not evidence.
+The searches are re-posed with the conjuncts of `E_f` as separate
+hypotheses (∧-left inversion, equivalent; `uifs esearch` now does
+this); their verdicts follow.  What stands regardless: the weaker
+consequence `◯(c ∨ ¬d) ⊃ a` enters the E-chain by station fuel 22,
+inside the predicted window, about three times its derivation height.
+
+**The other survivors** (`wip/ui_screen/esearch-stations.sh`, Δ = c,
+search fuel 16): at S6 — the cell WITH the Dyckhoff hypothesis, the
+closest match to the §4.11 family — and at S7, both cofinality
+instances are TRUE at station fuels 14 and 18, E-side and A-side.  The
+Dyckhoff hypothesis does not delay the chain.
 
 ---
 

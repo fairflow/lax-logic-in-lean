@@ -397,7 +397,13 @@ def esearch (station : String) (f : Nat) (sfuels : List Nat) (delta : String) (s
   -- E-side goal is always `a` (Γ ⊢ c ⊃ a at every station of the family)
   let goal : Neg := match side with
     | "A" => interpFS "p" f Γ [] (some G) | _ => .up (.atom "a")
-  let seq : LSeq := .inv [E, Δ] [] .tru goal
+  -- Enter the conjuncts of `E_f` as separate hypotheses (∧-left inversion,
+  -- equivalent): the canonical ∧-chain is right-nested and sorted, so left
+  -- focusing on the k-th conjunct would otherwise cost k search steps.
+  let rec conjN : Neg → List Neg
+    | .and M N => conjN M ++ conjN N
+    | M => [M]
+  let seq : LSeq := .inv (conjN E ++ [Δ]) [] .tru goal
   for sf in sfuels do
     let t0 ← IO.monoMsNow
     let r := LSeq.search sf seq
