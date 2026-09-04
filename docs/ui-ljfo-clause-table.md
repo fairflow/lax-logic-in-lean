@@ -1256,10 +1256,44 @@ true` as kernel `decide`s rather than native evaluation.
 X-free disjunct; goal not settled by `◯⊥`): the goal must be unboxed
 and `p` must occur with both polarities on the hypothesis side, so
 that neither the `⊥`- nor the `⊤`-instance is extremal.  The smallest
-such shape is `{◯p ⊃ r, s ⊃ ◯p} ⇒ r`; its instance-bounds are
-`ψ₀ = ((◯⊥ ⊃ r) ∧ (s ⊃ ◯⊥)) ⊃ r` from below and `s ∨ r` from above,
-and whether either is the `∀p` is the first oracle question (results
-in the session record).
+such shape is `{◯p ⊃ r, s ⊃ ◯p} ⇒ r`, and it was screened the same
+night (`pllbench --engine=g4c`, every cell settled in seconds unless
+marked):
+
+| claim | verdict |
+|---|---|
+| `ψ₀ = ((◯⊥ ⊃ r) ∧ (s ⊃ ◯⊥)) ⊃ r` sufficient (the ⊥-instance closes the cell) | **invalid** |
+| `s ∨ r` sufficient | valid |
+| `ψ₀ ⊢ s ∨ r` | invalid |
+| `Γ ⊢ ◯s ⊃ r` | valid |
+| `T := (◯s ⊃ r) ⊃ r` sufficient (the s-instance closes the cell) | **valid** |
+| `T ⊢ r ∨ ◯s` | invalid |
+| `A₆ ⊢ T`, `A₁₀ ⊢ T` (soundness + substitution `p := s`) | valid, valid |
+| `A₁₀ ⟛ r ∨ ◯s` (both directions) | valid |
+| cofinality instance `E₆ ∧ T ⊢ A₆` | **invalid** |
+| cofinality instance `E₁₀ ∧ T ⊢ A₁₀` | **valid** |
+
+So the ⊥-instance does not close this cell (the first cell of the
+campaign where that mechanism fails), but the `s`-instance does:
+`Γ ⊢ Γ[s] = {◯s ⊃ r, s ⊃ ◯s}` and `Γ[s] ⊃ r ⟛ T` is sufficient, so
+`T` is the cell's `∀p` by the same substitution argument.  The chain
+climbs to `r ∨ ◯s` at station fuel 10, strictly below `T` as formulas;
+but `E₁₀ ⟛ ◯s ⊃ r`, under which `T`, `r ∨ ◯s` and `r` coincide, so the
+cofinality instance holds at fuel 10, and with it cofinality for every
+sufficient `Δ` (each has `Δ ⊢ T`).  VALIDATED again.  The instance
+`E₁₄ ∧ T ⊢ A₁₄` (201 + 187 nodes) is recorded below when settled.
+
+**The filter, sharpened by these two cells.**  A cell is closed by the
+instance `p := χ` (χ p-free) whenever `Γ[χ] ⊃ G[χ]` is sufficient —
+then it is the `∀p` outright, and cofinality reduces to `E_f ⊢ Γ[χ]`
+plus the chain reaching `G[χ]` modulo `E_f`.  Both cells so far are
+instance-closed (`χ = ⊥`, `χ = s`).  A candidate that can refute
+cofinality — or be a Ghilardi–Zawadowski witness — must have NO
+sufficient instance, which is the situation in which a uniform
+interpolant, if it exists, is not a substitution instance (in IPC:
+`∀p.((p ⊃ q) ∨ (q ⊃ p)) = q ∨ ¬q`).  The plan's substitution-
+admissibility lemma makes this instance screen a certificate; until
+then it is an oracle screen, run before any chain is measured.
 
 ---
 

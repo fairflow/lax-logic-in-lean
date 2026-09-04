@@ -347,6 +347,11 @@ def row (tag : String) (n : Nat) (Γ : List Neg) (g : Option Neg) : IO Unit := d
 
 def gCirc : Neg := .circ (.atom "p")
 
+/-- The next-stratum cell `{◯p ⊃ r, s ⊃ ◯p} ⇒ r`: the ⊥-instance bound
+`ψ₀ = ((◯⊥ ⊃ r) ∧ (s ⊃ ◯⊥)) ⊃ r` is NOT sufficient (G4c, 2026-09-04),
+`s ∨ r` is, and `ψ₀ ⊬ s ∨ r`. -/
+def NEXT : List Neg := [Hs, .imp (.atom "s") (.circ (.atom "p"))]
+
 def main (args : List String) : IO Unit := do
   let fuels := if args.isEmpty then [8, 12, 16, 20, 24] else args.map String.toNat!
   for n in fuels do
@@ -355,3 +360,5 @@ def main (args : List String) : IO Unit := do
     row "GZ_E"  n GZ none
     row "GZ_A"  n GZ (some gCirc)
     row "GZ_Au" n GZ (some gUp)
+    row "NEXT_E" n NEXT none
+    row "NEXT_A" n NEXT (some goalR)
