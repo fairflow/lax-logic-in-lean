@@ -1238,8 +1238,18 @@ table a definition at all.
 order `μᵥ` is refuted at the box row by a hand computation, and §4.5
 shows the reset that breaks it is required.  Whether *some* well-founded
 order founds the retaining table is OPEN; the record's route A′.  The
-fuel-founded variant `LJFO.interpF` exists (`LJF/OFuel.lean`) with
-nothing proved about it.
+fuel-founded variant `LJFO.interpF` (`LJF/OFuel.lean`) is route (B),
+and its soundness pair is PROVED (2026-09-04, `LJF/OFuelSound.lean`,
+`eSoundF`/`aSoundF`, `[propext, Quot.sound]` — below the originals,
+which take `Classical.choice` from the weight-founded recursion):
+
+    eSoundF p : ∀ f todo done,   Inv (todo ++ done) [] tru (interpF p f todo done none)
+    aSoundF p : ∀ f todo done G, Inv (interpF p f todo done (some G) :: (todo ++ done)) [] tru G
+
+The twelve modal rows went through by weakening (`atkCimp` at
+`rest := done`), the `∃p` aggregate row easier than its original.  What
+remains OPEN for route (B) is cofinality (`ECofinalF`/`ACofinalF` in
+`wip/ui_routeB_statements.lean`, typed statements with no declaration).
 
 **O9.  The decide counts of §4.2.**  Two decides on `H` for Γ₁ and three
 for Γ₂ are the counts of the derivations I wrote down; **minimality of
