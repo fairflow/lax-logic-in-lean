@@ -20,7 +20,8 @@ site and its source links work for anyone.
 | `frjw-dev` | merged in during the assembly pass; does NOT yet have the assembled chapters back. |
 | `verso-blueprint` | superseded. Stale workflow, older base. Delete it. |
 
-**Open PRs:** #17 (portable recipe → `tooling`). #18 is closed.
+**Open PRs:** #19 (this blueprint → `frjw-dev`, for the FRJW agent to merge).
+#17 (portable recipe → `tooling`). #18 is closed.
 
 **Files**
 
@@ -83,6 +84,20 @@ than no blueprint at all.
 ---
 
 ## Traps
+
+**`#axioms_within`, not `#print axioms`, is the checker to grep for.** I wrote
+a `CHECK OUTSTANDING` note against N0a claiming its pins were missing. They
+were not: `LJF/OFuelSound.lean` ends with `#axioms_within eSoundF [propext,
+Quot.sound]` and three more. `#axioms_within` is defined in `Meta/Audit.lean`,
+is built on `collectAxioms`, bounds ONE declaration, and is what seven files
+under `LJF/` use. Searching only for `#print axioms` misses them. Repo-wide
+both idioms are in use, so **check for both before recording anything as
+unpinned.** (Caught by the FRJW agent, 2026-09-05.)
+
+**A `{uses "..."}` role only works inside a node.** Putting one in a chapter's
+prose preamble fails the build with `uses declaration outside an informal
+enviroment` (sic). In preamble text, name the node in plain words.
+
 
 **`{docstring X}` is almost always redundant.** `(lean := "X")` already
 renders kind, file, status chip, signature, constructors/fields AND the
@@ -162,12 +177,12 @@ undocumented — they are self-explanatory to a reader in the field.
   which worked example to show whole, how much of a proof to reproduce.
   `TODO` was renamed to `TO WRITE` throughout so a marker is unambiguously a
   writing task and never a programming one.
-- **The `#print axioms` pins in the UI chapter are asserted, not verified.**
-  N0a and N0h are recorded as `[propext, Quot.sound]` in the node table, but
-  neither declaration carries a pin and none was found elsewhere. Under the
-  standing rule that `#print axioms` is the only recognised checker, those two
-  statuses are hearsay. Another agent is sweeping the results; the pins will
-  come out of that.
+- **N0c and N0d are not attached yet.** Both are PROVED and pinned, but they
+  live in `LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean` and
+  `LJF/OFuelPCofinal.lean`, which arrive only with the merge into `frjw-dev`.
+  Attaching them before the merge breaks the build. First commit after the
+  merge should add `(lean := "LJFO.ecofinalP, LJFO.acofinalP")` and the N0c
+  family.
 - **The chapter is not on `frjw-dev`.** It lives on `blueprint-dev-chapter`
   and is intended to merge there.
 

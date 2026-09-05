@@ -24,6 +24,13 @@ only where the declaration is settled.  Where a statement is still drafted
 or carries a `sorry`, the node is prose: attaching a name that is about to
 change would break the build for no gain.
 
+Two nodes are an exception of a different kind.  N0c and N0d below are
+settled and pinned, but they live in
+`LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean` and
+`LJF/OFuelPCofinal.lean`, which reach this branch only with the merge into
+`frjw-dev`.  Attaching them before that merge would break the build, so they
+should be attached in the first commit after it.
+
 # Craig interpolation
 
 :::group "craig"
@@ -59,20 +66,27 @@ given fuel.  `E_f := interpF p f [] done none` and
 
 :::theorem "n0a_soundness" (parent := "routeB")
 N0a — *soundness at every fuel*.  `LJFO.eSoundF` and `LJFO.aSoundF`
-(`LJF/OFuelSound.lean`).  Recorded as PROVED in the node table.
+(`LJF/OFuelSound.lean`), PROVED and pinned `[propext, Quot.sound]`.
 
-CHECK OUTSTANDING: the table records the axioms as
-`[propext, Quot.sound]`, but neither declaration carries a `#print axioms`
-pin, and no pin for them was found elsewhere.  Under the standing rule that
-`#print axioms` is the only recognised checker, this is asserted rather than
-verified.  Adding the pins is a small job and would settle it.
+The pin is verified rather than asserted: `LJF/OFuelSound.lean` closes with
+`#axioms_within eSoundF [propext, Quot.sound]`, and the same for `aSoundF`,
+`eSoundFWitness` and `aSoundFWitness`.  Why the set is this small is worth
+recording — `Classical.choice` enters the *unfuelled* `eSound`/`aSound`
+through the well-founded recursion on the todo/done measure, and the fuel
+recursion does not use it.  Pinning tightly makes a regression that
+re-introduces choice an error rather than a silent widening.
 :::
 
 :::theorem "n0h_heights" (parent := "routeB")
 N0h — *height bounds* for every derivation transformer, the Step-0 table,
 with `LJFO.laxReleaseUp` and `LJFO.laxReleaseCirc`
-(`LJF/OFuelHeight.lean`, 844 lines).  PROVED, same pin caveat as
-{uses "n0a_soundness"}[].
+(`LJF/OFuelHeight.lean`, 1182 lines).  PROVED and pinned
+`[propext, Quot.sound]` in `LJF/OAudit.lean`.
+
+These two transformers were genuinely unpinned when this chapter was first
+drafted — only their size lemmas `szI_laxReleaseUp` and `szI_laxReleaseCirc`
+were — and the gap was closed on 2026-09-05 in answer to the note that stood
+here.
 :::
 
 :::theorem "n0b_rows" (parent := "routeB")
@@ -84,25 +98,47 @@ the reductions.  `LJFO.SatE2F`, `LJFO.SatA2F` and
 Depends on {uses "n0a_soundness"}[].
 :::
 
-# Where it is stopped
+# The parking repair
 
-:::proposition "n0c_cofinality" (parent := "routeB")
+:::theorem "n0c_cofinality" (parent := "routeB")
 N0c — *cofinality at a saturated station*: every sufficient `p`-free formula
-is reached at some fuel.  IN BUILD, re-authoring on {uses "n0e_parking"}[]:
-`SatE2P`, `SatA2P`, the 18-definition mutual of `LJF/O.lean` recast in
-fuel-carrying form — each traversal returns an `UpFrom` witness, thresholds
-combine by `max`, and about seventy `decreasing_by` sites are fed from the
-Part-10 bounds.  The typed obligations `TInvP`/`UEntryP` and the chain below
-them down to `ECofinalP`/`ACofinalP` are proved.
+is reached at some fuel.  *PROVED, and unconditional*, over
+{uses "n0e_parking"}[], pinned `[propext, Classical.choice, Quot.sound]`
+(§4.17).  `tinvP`, `uentryP`, `parkAntP`, `satE2P`, `satA2P` — the
+17-definition family in fuel-carrying form, as ONE `mutual` founded on
+$`μ = (\mathrm{hgt}, \mathrm{weight}, \mathrm{sizeOf})`, across
+`LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean` and `LJF/OFuelPCofinal.lean`.
+
+*Unconditional* is the word carrying the result.  The antecedent guard is a
+native recursive call at all twenty parked arms, so `ParkAntP` is a
+consequence of the construction rather than a hypothesis it must assume —
+and `DykAntP`, the hypothesis an earlier draft needed, was WITHDRAWN on
+2026-09-05 (§4.15–4.16).
 
 The history is worth keeping, because it is what forced the parking
 definition.  On `interpF` this family was *stopped twice*, and the
 obstruction was located exactly rather than described as difficulty: there
 is no station-first order (§4.11), and no height-first order either
 (§4.13), because the three reshaping processing clauses raise height.
-{uses "n0e_parking"}[] is the repair, not a workaround.
+{uses "n0e_parking"}[] is the repair, not a workaround — and the repair
+worked.
 
-Depends on {uses "n0a_soundness"}[] and {uses "n0b_rows"}[].
+Depends on {uses "n0a_soundness"}[], {uses "n0b_rows"}[] and
+{uses "n0e_parking"}[].
+:::
+
+:::theorem "n0d_cofinal" (parent := "routeB")
+N0d — the cofinality statements themselves: `ECofinalP` and `ACofinalP`,
+with their inhabitants `ecofinalP` and `acofinalP`
+(`LJF/OFuelPCofinal.lean`).  *PROVED* for `interpP`, pinned
+`[propext, Classical.choice, Quot.sound]` (§4.17).
+
+The `interpF` forms — `ECofinalF`, `ACofinalF`, and the upward-closed
+`ECofinalUp` and `ACofinalUp` — remain DRAFTED.  That asymmetry is the
+present shape of the route: the parking interpolant carries the results, and
+the original fuel interpolant is where they are still owed.
+
+Depends on {uses "n0c_cofinality"}[].
 :::
 
 :::definition "n0e_parking" (parent := "routeB")
@@ -141,7 +177,7 @@ rather than via the construction.  DRAFTED.
 
 :::theorem "n3_equivalence" (parent := "chain")
 N3 — *stabilisation ⟺ uniform interpolation, per cell*, given
-{uses "n0a_soundness"}[] and N0d.  This is the conceptual heart: it turns
+{uses "n0a_soundness"}[] and {uses "n0d_cofinal"}[].  This is the conceptual heart: it turns
 an open question about interpolants into an open question about chains.
 DRAFTED, carries a `sorry`.  Depends on {uses "n1_stabilises"}[] and
 {uses "n2_uipair"}[].
