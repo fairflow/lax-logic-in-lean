@@ -1,4 +1,6 @@
 import LaxLogic.FormattingUtils
+
+/-- Propositional Lax Logic formulae, long form -/
 inductive PLLFormula where
 | prop (constantName: String)
 | falsePLL
@@ -17,9 +19,11 @@ abbrev notPLL (F: PLLFormula) : PLLFormula := ifThen F falsePLL
 -- We use false implies false to as our cannoncial true value.
 abbrev truePLL := ifThen falsePLL falsePLL
 
+/-- Propositional constants -/
 def PropositionalConstant := {F: PLLFormula // ∃ (name:String ), F =  prop name }
 
 -- I originally used a sub-type for this, but I could not figure out how to derive DecidableEq
+/-- the type of implicational formulae -/
 inductive Conditional where
 | mk (F: PLLFormula) (h: ∃ (P Q:PLLFormula), F = ifThen P Q)
 deriving DecidableEq
