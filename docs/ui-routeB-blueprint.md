@@ -34,7 +34,7 @@ For every PLL formula φ and variable p there are p-free `∃p.φ` and `∀p.φ`
 (uniform interpolation, Pitts's sense).  The route: LJF◯'s fuel-founded
 retention interpolant `interpF` computes chains `E_f` (descending from ⊤)
 and `A_f` (ascending from ⊥); soundness at every fuel is PROVED; cofinality
-(every sufficient p-free formula is reached at some fuel) is IN BUILD;
+(every sufficient p-free formula is reached at some fuel) is BLOCKED on the definition decision N0e (§4.13);
 with both, **UI at a cell ⟺ the chains stabilise**; stabilisation at every
 cell is THE open theorem; the bridge transports LJF◯ to PLL.
 
@@ -80,7 +80,7 @@ through `jGoal`).
 graph TD
   interpF[interpF · LJF/OFuel] --> N0a[N0a soundness pair · PROVED]
   N0a --> N0b[N0b rows · processing · reductions · PROVED]
-  N0b --> N0c[N0c cofinality family · IN BUILD]
+  N0b --> N0c[N0c cofinality family · STOPPED twice]
   N0a --> N0c
   H[N0h height bounds · PROVED] --> N0e[N0e DECISION: interpP]
   N0e --> N0c
