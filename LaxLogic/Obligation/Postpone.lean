@@ -114,9 +114,11 @@ This adds no axiom. A declaration whose only holes are `postpone`s reports the
 axioms of its finished parts and nothing else. -/
 syntax (name := postponeTac) "postpone" : tactic
 
-@[tactic postponeTac]
-def elabPostpone : Tactic := fun _ => do
-  let g ← getMainGoal
+/-- The whole of `postpone`, on an explicit goal and without touching the goal
+list. Factored out so that `lax_apply` can postpone the obligation goals left
+by applying a holed theorem, through the *same* code path — a second
+implementation would be a second thing to keep correct. -/
+def postponeCore (g : MVarId) : MetaM Unit := do
   let keep := (← binderFVars.get).filterMap (fun e => e.fvarId?)
   -- Revert what the goal reaches, never the declaration's own binders: the
   -- obligation is a statement about THESE parameters, not about all of them.
@@ -143,7 +145,75 @@ def elabPostpone : Tactic := fun _ => do
   let m ← withLCtx {} {} (mkFreshExprMVar ty (kind := .natural) (userName := `obligation))
   g'.assign m
   inFlight.modify (·.push m.mvarId!)
+
+@[tactic postponeTac]
+def elabPostpone : Tactic := fun _ => do
+  postponeCore (← getMainGoal)
   replaceMainGoal []
+
+/-! ## `lax_apply` — borrowing a holed theorem
+
+`postpone` opens a debt. `lax_apply` **transfers** one: it applies a theorem
+that was itself built with `postponing theorem`, and re-postpones whichever of
+the resulting goals are that theorem's own obligations, so they land in the
+current declaration's ledger instead of having to be discharged on the spot.
+
+This is what makes the mechanism modular. Without it, using a holed lemma means
+proving its constraint immediately, which defeats the purpose: the whole point
+of abstracting a constraint is to go on reasoning while it is outstanding. With
+it, a proof can be assembled from holed components and the finished statement
+carries the accumulated debt — which is Mendler's monoid law
+`weak (c ++ d) φ = weak c (weak d φ)` (`Mendler.weak_append`) as an operation
+rather than a theorem.
+
+Goals that are *not* registered obligations are left for the caller, exactly as
+`apply` leaves them. -/
+
+/-- Every obligation constant currently known, including imported ones. -/
+private def obligationNames : MetaM NameSet := do
+  let mut s : NameSet := {}
+  for o in owedEntries (← getEnv) do
+    for e in o.obligations do
+      s := s.insert e.name
+  return s
+
+/-- Apply a theorem, postponing its obligations into the current ledger.
+
+`lax_apply h` behaves as `apply h`, except that any resulting goal whose head is
+an obligation constant of some `postponing theorem` is recorded by `postpone`
+rather than returned. The remaining goals — the lemma's ordinary hypotheses —
+are left to prove. -/
+syntax (name := laxApplyTac) "lax_apply" ppSpace term : tactic
+
+@[tactic laxApplyTac]
+def elabLaxApply : Tactic := fun stx => do
+  match stx with
+  | `(tactic| lax_apply $t:term) => do
+      let obs ← obligationNames
+      let g ← getMainGoal
+      let e ← g.withContext do
+        let e ← Term.elabTerm t none
+        Term.synthesizeSyntheticMVarsNoPostponing
+        instantiateMVars e
+      let gs ← g.apply e
+      let mut rest : List MVarId := []
+      let mut borrowed := 0
+      for g' in gs do
+        if ← g'.isAssigned then continue
+        let ty ← instantiateMVars (← g'.getType)
+        match ty.getAppFn.constName? with
+        | some n =>
+            if obs.contains n then
+              postponeCore g'
+              borrowed := borrowed + 1
+            else
+              rest := g' :: rest
+        | none => rest := g' :: rest
+      if borrowed == 0 then
+        logWarning "lax_apply: no obligation was borrowed; this is plain `apply`. \
+          Was the lemma built with `postponing theorem`?"
+      replaceMainGoal rest.reverse
+  | _ => throwUnsupportedSyntax
 
 /-- Deduplicate obligation types by syntactic equality, returning the distinct
 types and, for each original position, the index of its representative. -/

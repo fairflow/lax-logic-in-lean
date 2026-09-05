@@ -25,9 +25,19 @@ Theorem 1 (conservativity over HOL) is deliberately left for later work.
 | module | what is in it |
 | --- | --- |
 | `Modality.lean` | `LaxAll` (`◯∀`) and `LaxEx` (`◯∃`) by their Fig. 4 clauses; the rules `◯∧` and `◯⊃`; functoriality, monotonicity, strength; the one-witness case `Debt`; the two degeneracies that constrain any tool built on this. No imports. |
+| `Connectives.lean` | The rest of Fig. 4 as combinators on `Refined`: `tt`, `ff`, `and`, `or`, `imp`, `all`, `ex`, `boxAll`, `boxEx`, with the coherence rule tying `⊃_◯` to the Fig. 4 implication. |
 | `Timing.lean` | The reading the modality was invented for: on lower bounds over a clock, combining constraints is `max` and propagating one through a delay is `+`. Includes the paper's introductory example in general form. |
+| `Mendler.lean` | Mendler's constraint model `(Ω*, [], @)` (PhD §3.2): `weak` by iterated implication, the monoid laws, and the identification of `Refined γ` with his constraint predicate `M*`. |
+| `Tactics.lean` | `lax_abstract` / `lax_refine` (Fig. 4 read in each direction), `reduce_obligation` (the paper's (8) → (9) step), `discharge_obligation` (closing a constraint at a model). |
 | `Ledger.lean` | The persistent environment extension. Separate module because `initialize` cannot be consumed where it is declared. |
-| `Postpone.lean` | The `postpone` tactic, the `postponing theorem` command, and the `#obligations` / `#obligations_json` reports. |
+| `Postpone.lean` | The `postpone` tactic, `lax_apply` (borrowing another holed theorem's obligations), the `postponing theorem` command, and the `#obligations` / `#obligations_json` reports. |
+| `Conservativity.lean` | `#obligations_audit`: every ledger entry is a real theorem, every obligation a definition, no `sorryAx`, no mechanism-introduced axiom. Throws rather than reports. |
+| `Latch.lean`, `LatchSynth.lean` | The paper's RS latch (Figs. 7–8), first with the timing constraints assumed and then synthesised — recovering its equation (8) and reducing it to (9). |
+| `Adder.lean` | The repository's ripple-carry and carry-lookahead adders rerun on the `◯∀` side; the derived bounds agree with what the `◯∃` extractor computes; the 32-bit cycle-time obligation is refuted and then discharged after re-associating the fold. |
+| `Modular.lean` | Modular lax reasoning: a three-stage datapath in which each stage uses the previous *holed* theorem as an abstract lemma, so obligations accumulate by concatenation. The `C ⊃ φ` fold and the discharge at a constraint model. |
+| `BeliefLink.lean` | `Debt C A` is the open nucleus `u_C(A)` of the belief development, by `rfl`; `◯∀` is entailment in the pointwise Heyting algebra. |
+| `PLLBridge.lean` | `Debt C` is a sound interpretation of `◯` for the repository's own `LaxND`, by structural induction, depending on no axioms. |
+| `StdCtxBridge.lean` | Mendler's `Ω*` and Fairtlough–Mendler's `StdCtx` are different monoids that both land in `Debt` — conjunction and disjunction of the atomic constraints respectively. |
 | `Examples.lean` | Documentation and gate: every axiom claim pinned with `#guard_msgs`, including the negative case showing what `sorry` does to the same proof. |
 
 ## Quick start

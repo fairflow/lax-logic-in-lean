@@ -29,7 +29,16 @@ carry-lookahead adders (`PLLTimingRipple`, `PLLTimingLookahead`), which were
 built on the `◯∃` writer reading; the `◯∀` rerun derives the same bounds
 (`ripple_is_extracted`, `bal_is_extracted`), synthesises the cycle-time
 constraint, **refutes** it for a 32-bit ripple in a 1 ns cycle, and discharges
-it after re-associating the fold — the loop of the paper's Fig. 9, closed.
+it after re-associating the fold, closing the loop of the paper's Fig. 9.
+
+`Modular` is the step after: `lax_apply` applies a theorem that is *itself*
+holed and re-postpones its obligations into the caller's ledger, so a proof can
+be assembled from holed components and the finished statement carries the
+accumulated debt. Three stages of a datapath each borrow from the last; the
+borrowed obligations are the earlier theorems' own constants, by `rfl`. That is
+Mendler's monoid law `weak (c ++ d) φ = weak c (weak d φ)` as an operation
+rather than a theorem, and it is what makes the mechanism usable across a
+development rather than within one proof.
 
 `Examples` is documentation and gate at once: every axiom claim is pinned with
 `#guard_msgs`, including the negative case showing what `sorry` does to the same
@@ -75,6 +84,7 @@ import LaxLogic.Obligation.Timing
 import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.LatchSynth
 import LaxLogic.Obligation.Adder
+import LaxLogic.Obligation.Modular
 import LaxLogic.Obligation.BeliefLink
 import LaxLogic.Obligation.PLLBridge
 import LaxLogic.Obligation.StdCtxBridge

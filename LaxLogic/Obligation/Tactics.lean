@@ -108,6 +108,20 @@ macro_rules
             | (have := h _ _ (Nat.le_refl _); omega)
             | (intros; omega))
 
+/-- Discharge an obligation **at a constraint model**: the parameters are
+concrete, so the constraint is decidable arithmetic.
+
+This is the last step of the loop. `reduce_obligation` turns a synthesised
+constraint into a readable one for a human; `discharge_obligation` closes it
+outright once the delays and the clock period are fixed, so the concrete
+theorem is derived from the abstract one by evaluation rather than by a new
+proof. -/
+syntax (name := dischargeObligationTac) "discharge_obligation" : tactic
+
+macro_rules
+  | `(tactic| discharge_obligation) =>
+    `(tactic| first | omega | (intros; omega) | decide | (intros; decide))
+
 /-! ## Worked examples, which double as the tests -/
 
 section Examples
@@ -140,6 +154,10 @@ example (a f : Nat) : (∀ t, a ≤ t → f ≤ t) ↔ f ≤ a := by reduce_obli
 
 @[inherit_doc reduceObligationTac]
 example (a D : Nat) : (∀ t, a ≤ t → t < t + D) ↔ 0 < D := by reduce_obligation
+
+/-- `discharge_obligation` at a constraint model: the same shape, but with the
+delays fixed there is nothing left to state. -/
+example : ∀ t, 1000 ≤ t → 5 * 120 + 60 ≤ t := by discharge_obligation
 
 end Examples
 
