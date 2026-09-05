@@ -150,7 +150,15 @@ whole files and iterates against `check` — so its results are not comparable
 with a one-shot hosted prover in either direction. If you want to know how the
 harness would score, use the shim; if you want a lemma closed, use the skill.
 
-### It is a two-pass batch protocol, not a live endpoint
+### Three modes
+
+`--collect` and the default serve mode are a **two-pass batch protocol**:
+harvest the prompts, answer them, serve them. That works only when the
+prompt set is fixed in advance, which is true of `harness.py` and false of
+any agent loop. `--live` is the third mode, added for the latter; see "The
+ax-prover substitution" below.
+
+#### The two batch passes
 
 Someone has to produce the answers between the passes. In practice that is one
 fresh Claude Code subagent per prompt, which is what makes the k samples blind
@@ -190,6 +198,11 @@ the harness records as a failed sample, so a runaway cannot spend anything.
 | `--killswitch` | `runs/shim/STOP` | create the file to stop at once |
 | `--port` | 8088 | matches `harness.py --url` |
 | `--workdir` | `runs/shim` | holds `pending/`, `answers/`, `ledger.jsonl` |
+| `--live` | off | answer a miss by running `--answer-cmd` |
+| `--answer-cmd` | a tool-free `claude -p` | prompt on stdin, completion on stdout; `''` selects a file rendezvous |
+| `--answer-cwd` | `.` | working directory for that command |
+| `--answer-timeout` | 600s | per answer; the **caller's** HTTP timeout must exceed it |
+| `--ignore-tools` | off | answer a tool-offering request anyway, as plain text |
 
 Every request appends to `ledger.jsonl`. `runs/` is git-ignored.
 
@@ -198,51 +211,89 @@ Two runs done this way are recorded in
 [`run-2`](../docs/frjx-toolkit-run-2.md). The benchmark items they used are
 derived data and are not committed — regenerate with `extract.py`.
 
-### The ax-prover substitution — NOT IMPLEMENTED
+### The ax-prover substitution — live mode BUILT, tool calls NOT
 
 The standing requirement is to run **ax-prover itself** with Claude Code as its
-model, so that the agentic harness is tested without spending on gpt-5. Nothing
-in this toolkit does that. Two obstacles, both real:
+model, so the agentic harness is tested without spending on gpt-5. Two of the
+three pieces now exist.
 
-**Pointing ax-prover at the shim is SOLVED and needs no code.** ax-prover
-accepts an OpenAI-compatible endpoint:
+**1. Pointing ax-prover at the shim — SOLVED, no code.** ax-prover accepts an
+OpenAI-compatible endpoint, and `8088` is already the shim's default port. A
+ready config is committed at
+[`axprover/claude-shim-toolsoff.yaml`](axprover/claude-shim-toolsoff.yaml);
+copy it into `ax-prover-base/configs/`, since `import:` resolves relative to
+that directory.
 
-```yaml
-llm_configs:
-  <name>:
-    model: "<id>"
-    provider_config:
-      model_provider: "openai"        # set it explicitly: init_chat_model
-      base_url: "http://127.0.0.1:8088/v1"   # otherwise splits the id on ":"
-      api_key: "local-no-key-needed"
+**2. The live mode — BUILT.** `--live` blocks on a cache miss, runs
+`--answer-cmd` with the prompt on stdin, and returns its stdout as the
+completion. The answer is written back to `answers/<key>-<n>.txt`, so the run
+**replays offline afterwards for free** and a re-run spends nothing. The
+default answer command is a nested, tool-free `claude -p`: the agent loop
+belongs to ax-prover, so the nested Claude must be a pure text completer, and
+every tool is denied to it. `--answer-cmd ''` instead selects a **file
+rendezvous** — the prompt lands in `pending/`, and the shim waits for anyone to
+drop the answer file — which is the fallback when no non-interactive Claude is
+available.
+
+All four containment limits hold in live mode, and answers are produced one at
+a time under a lock so concurrent requests cannot race past a cap. Gates in
+[`test_claude_shim.sh`](test_claude_shim.sh) (17, no spend, stub answerer):
+
+```bash
+bash prover-toolkit/test_claude_shim.sh      # ALL GATES PASS
 ```
 
-That is a working, verified pattern — it is how a local llama-server was wired
-in — and `8088` is already `claude_shim.py`'s default port. The two were built
-to meet.
+**3. Tool calls — NOT DONE, and this is the real work.** The shim always
+returns `finish_reason: "stop"` with a text message. A faithful substitution
+needs it to pass the request's `tools` through to whoever answers and to return
+`tool_calls` with `finish_reason: "tool_calls"`. Until then, run tools-off.
 
-So only two obstacles remain, both in the shim:
+A request that *offers* tools is therefore **refused with a 400**, not
+answered. Measured, not assumed: with tools bound and the shim answering,
+langchain does not error — it takes the plain text turn, reports
+`tool_calls: []`, and the loop simply never calls a tool. A tools-on run would
+have looked like an agent that found its tools useless. `--ignore-tools`
+restores that behaviour for anyone who wants it; the refusal names the offered
+tools and reaches the caller as an `OpenAIInvalidRequestError` carrying the
+reason.
 
-1. **It is a batch protocol, and an agent loop is not batchable.** `--collect`
-   harvests the prompts, you answer them, they are served. That works when the
-   prompt set is fixed in advance. ax-prover's prompt *n+1* depends on its answer
-   to prompt *n*, so there is nothing to harvest. The shim needs a **live
-   mode** — block the request, obtain an answer, return it.
-2. **It cannot express a tool call.** It always returns
-   `finish_reason: "stop"` with a text message. The agentic loop's value *is*
-   the tools, so a faithful substitution needs the shim to pass the request's
-   `tools` through to whoever answers and to return `tool_calls` with
-   `finish_reason: "tool_calls"`. This is the real work, and it is why "swap
-   Claude Code in" is not a config change.
+The endpoint is checked against the clients that will actually use it: the
+`openai` SDK (`ChatCompletion` parses, `finish_reason` `stop`, `tool_calls`
+`None`) and `langchain_openai.ChatOpenAI`, which ax-prover reaches it through
+(`AIMessage`, and the null token counts are coerced to 0 rather than raising).
 
-**A cheaper first step exists:** run ax-prover with `proposer_tools: {}` and a
-memoryless processor, as the local-model config does. That exercises the agent
-loop's compiler feedback, reviewer and retry — strictly more of the harness than
-`harness.py` tests — while needing only the live mode, not tool calls.
+#### Running it, tools off
 
-Note that configuring ax-prover with an *Anthropic* model is already possible
-and is not this requirement: it bills `ANTHROPIC_API_KEY`. The point of the shim
-is to spend a Claude Code subscription instead.
+```bash
+# terminal 1
+python3 prover-toolkit/claude_shim.py --live --max-requests 40
+
+# terminal 2, from ax-prover-base
+ax-prover --config configs/claude-shim-toolsoff.yaml \
+    prove LaxLogic/Foo.lean:my_theorem --folder <repo>
+```
+
+Tools-off still exercises compiler feedback, the reviewer and retry across
+iterations — strictly more of the harness than `harness.py` tests, and the part
+that has never been measured for free.
+
+#### Two things block an actual run, neither of them design
+
+- **`ax-prover` is not installed here.** Not on `PATH`, and nothing named
+  `ax-prover*` under `~` to depth 6 (checked 2026-09-05). The configs staged
+  elsewhere are configs, not a checkout.
+- **The standalone `claude` CLI cannot authenticate.** `claude -p` exits with
+  *"OAuth session expired and could not be refreshed"*. This is not a sandbox
+  effect — it fails unsandboxed too. The desktop app refreshes its token via
+  the host rather than through the Keychain copy the CLI reads, so a session
+  running inside the app is authenticated while the CLI beside it is not. Fix
+  by signing the CLI in once from a terminal. Until then, use
+  `--answer-cmd ''` and answer by hand, or point `--answer-cmd` at any other
+  command that reads a prompt and prints a completion.
+
+Configuring ax-prover with an *Anthropic* model is already possible and is not
+this requirement: it bills `ANTHROPIC_API_KEY`. The point of the shim is to
+spend a Claude Code subscription instead.
 
 ## Known limitations
 

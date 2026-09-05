@@ -1,0 +1,74 @@
+# ax-prover driven by a Claude Code subscription, TOOLS OFF.
+#
+# This is the config half of the standing requirement: exercise the AGENTIC
+# harness (ax-prover) without spending on a metered API key.  The other half is
+# `claude_shim.py --live`, which serves an OpenAI-compatible endpoint whose
+# model is a nested, tool-free `claude -p`.
+#
+# NOT the same thing as `claude-proposer.yaml`, which configures an Anthropic
+# model directly and bills ANTHROPIC_API_KEY.  The whole point here is to spend
+# the subscription instead.
+#
+# Run:
+#
+#     # terminal 1 -- the endpoint
+#     python3 prover-toolkit/claude_shim.py --live --max-requests 40
+#
+#     # terminal 2 -- copy this into ax-prover-base/configs/ first, since
+#     # `import:` resolves relative to that directory
+#     ax-prover --config configs/claude-shim-toolsoff.yaml \
+#         prove LaxLogic/Foo.lean:my_theorem \
+#         --folder /Users/matthew/Lean/Sources/lax-logic-in-lean
+#
+# WHY TOOLS OFF.  `claude_shim.py` always answers `finish_reason: "stop"` with
+# a text message; it cannot express a tool call.  Binding tools to a proposer
+# it serves would produce malformed calls, not better proofs.  What remains
+# switched on -- compiler feedback, the reviewer, retry across iterations -- is
+# still strictly more of the harness than the one-shot `harness.py` route, and
+# it is the part that has never been measured for free.
+#
+# Restoring tools means teaching the shim to emit `tool_calls`, which is the
+# real work and is not done.  See prover-toolkit/README.md.
+
+import:
+  - llms.yaml
+  - default.yaml
+
+llm_configs:
+  claude_shim:
+    # The shim ignores this id (it echoes it back in the response and records
+    # it in runs/shim/pending/); the model is whichever one --answer-cmd names.
+    model: "claude-code"
+    provider_config:
+      # Set EXPLICITLY: init_chat_model otherwise splits the model string on
+      # ":" to infer a provider.
+      model_provider: "openai"
+      base_url: "http://127.0.0.1:8088/v1"
+      api_key: "local-no-key-needed"
+      # Recorded by the shim, not honoured by it: a nested `claude -p` has no
+      # temperature knob.  Do not read a temperature sweep into these numbers.
+      temperature: 1.0
+      max_tokens: 4096
+
+prover:
+  prover_llm: ${llm_configs.claude_shim}
+
+  # The shim cannot express a tool call; see the note above.
+  proposer_tools: {}
+
+  # Self-correction rounds against compiler feedback.  Keep this and the shim's
+  # --max-requests consistent: the shim refuses past its cap, and each refusal
+  # is recorded by ax-prover as a failed sample rather than as containment.
+  max_iterations: 8
+
+  memory_config:
+    class_name: MemorylessProcessor
+
+  # A separate LLM call that would spend a further shim request on prose.
+  summarize_output:
+    enabled: false
+
+runtime:
+  lean:
+    max_concurrent_builds: 8
+  log_level: "INFO"
