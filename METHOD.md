@@ -76,6 +76,37 @@ by **descent**, using whichever of these moves applies:
    room-carrying statement is not decide-feasible and *must be built* —
    that discovery re-scoped the campaign and is recorded as such.
 
+### 2.x · Cell-level testing of a FIXED statement: the four directions
+
+Moved here from `CLAUDE.md` on 2026-09-06. This applies to campaigns
+over a statement that is already designed and fixed — the ρ-tables, the
+rewrite database, the certificate corpus — where the cells are the
+object. It is NOT a method for design questions or for the refutation
+stage of a new statement, which rule 9 of `CLAUDE.md` answers with a few
+designed witness cells read off the rules.
+
+Every quantified candidate statement of such a campaign gets an
+extensional attack before a proof build is scoped, in four directions,
+in order of observed yield:
+
+1. **Corpus replay** — the repo's own hard instances first (they carry
+   content random cells miss).
+2. **Boundary cells** — the degenerate end of every axis: empty contexts,
+   `⊥`, p-carrying twins of p-free shapes, every NO-CASE corner of the
+   definition.
+3. **Frontier extension** — one step beyond every passing stratum; each
+   round's residue shape defines the next stratum, run before any proof
+   is scoped.
+4. **Branch coverage** — every match arm of the definition exercised by
+   an admissible cell; interactions can need 3-way combinations.
+
+Normalise before you search: pipe every probe's cells through the
+certified simpset first (invocation and caveats in `TOOLS.md` §1). Gate
+cells by the statement's own side conditions and record gate failures
+as such. Run banks COMPILED (a `lean_exe`), streaming one line per cell,
+each run bounded by a deadline. No silent caps: report every skip.
+Escalate certified fails to kernel level.
+
 ## 3 · Validation strategy
 
 Absence of a counterexample is not support. Before a build is scoped:
