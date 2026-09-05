@@ -111,6 +111,37 @@ theorem interp_somehow_idem (C : Prop) (v : String → Prop) (φ : PLLFormula) :
     interp C v (.somehow (.somehow φ)) ↔ interp C v (.somehow φ) :=
   ⟨fun h c => h c c, fun h c _ => h c⟩
 
+/-! ### `◯◯M` and `◯M`: equi-inhabited, but not the same term
+
+`interp_somehow_idem` says the two are equivalent *as propositions*. In `Prop`
+that is the end of the matter: `propext` turns the equivalence into an equality
+of propositions, and Lean's definitional proof irrelevance then makes any two
+proofs of it equal, so nothing distinguishes `◯◯M` from `◯M`.
+
+**Above `Prop` it should not collapse, and does not.** Under the writer reading
+of `PLLConstraints.lean`, `◯φ` is `M × ⟦φ⟧`, so `◯◯φ` is `M × (M × ⟦φ⟧)` — a
+genuinely different type. The multiplication that takes one to the other is a
+real computation, `(c, (d, a)) ↦ (op c d, a)`, and it is **not injective**: how
+the constraint was apportioned between the two modalities is destroyed. For the
+timing reading that apportionment is the point — `◯◯` records two delays and
+the multiplication is the deliberate act of adding them, so `1 then 2` and
+`3 then 0` are different proofs with the same total. -/
+
+/-- The monad multiplication of the writer reading: combine the two constraints
+of an iterated modality. -/
+def writerMul {M A : Type} (op : M → M → M) : M × (M × A) → M × A :=
+  fun p => (op p.1 p.2.1, p.2.2)
+
+/-- **The collapse loses information.** Two distinct proofs of `◯◯φ` with the
+same image under the multiplication — so above `Prop`, `◯◯` is strictly more
+informative than `◯`, and the equivalence of `interp_somehow_idem` is available
+only because `Prop` is proof-irrelevant. -/
+theorem writerMul_not_injective :
+    ((1, (2, ())) : Nat × (Nat × Unit)) ≠ (3, (0, ())) ∧
+      writerMul (· + ·) ((1, (2, ())) : Nat × (Nat × Unit))
+        = writerMul (· + ·) ((3, (0, ())) : Nat × (Nat × Unit)) :=
+  ⟨by decide, rfl⟩
+
 /-- With `C := True` the interpretation is the ordinary one: `◯` disappears.
 The degenerate end of the model, and a sanity check that `Debt` is not adding
 strength. -/
