@@ -1913,6 +1913,79 @@ independent obligation. -/
 def parkAntP_of (pant : ParkAntP p) (dant : DykAntP p) : ParkAntP p :=
   parkAntP_of_satA2P (satA2P_of pant dant)
 
+/-! # Part 8: what the height-first re-founding needs, and what it does
+not reach
+
+The remaining step for node N0c is to replace the `pant` parameter by a
+NATIVE call and re-found the family on
+`μ = (normalised height, station weight, size)`.  Two facts about that
+step are settled here, so that the next run starts from them. -/
+
+/-- **The native dispatch typechecks.**  At the dispatch site the family
+already holds `hm`, `hm2`, `hK` and `s_d : Stab Γ′ .tru Q`, so the
+antecedent guard of the four positive-antecedent shapes is the `∀p` entry
+at the SAME station applied to `Inv.stable s_d` — no weakening, no
+reshaping.  This term is what a re-founded family would inline where
+`parkAntGuard pant …` now stands, and its type is `parkAntGuard`'s
+exactly.  So the obstruction is the MEASURE, not the statement. -/
+def nativeParkAnt (pant : ParkAntP p) (dant : DykAntP p)
+    {done K Γ' : List Neg} {Q : Pos}
+    (hsat : Saturated done) (hP : ParkedCtxP done)
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) (hm2 : Sub done Γ')
+    (hK : PFreeCtx p K) (s : Stab Γ' .tru Q) :
+    UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+      (interpP p f [] done (some (.up Q)))) :=
+  UEntryQ pant dant done hsat hP hm hm2 hK (.up Q) (Inv.stable s)
+
+/-- **And its height edge is strict**, with the station unchanged: the
+argument `Inv.stable s_d` is strictly below the focus
+`Stab.lfoc h (.impL s_d lf′)` in normalised height.  `hgt_antDispatch`
+states this through a weakening; weakening is height-exact
+(`hgt_wk`), so it holds for the unweakened argument the native call
+takes. -/
+theorem nativeParkAnt_edge {Γ : List Neg} {j : JD} {Q : Pos} {N : Neg}
+    {P : Pos} (h : Neg.imp Q N ∈ Γ) (s_d : Stab Γ .tru Q)
+    (lf' : LFoc Γ N j P) :
+    hgtI (Inv.stable s_d) < hgtS (Stab.lfoc h (.impL s_d lf')) := by
+  have h1 := hgt_antDispatch (Sub.refl Γ) h s_d lf'
+  have h2 := hgt_wk (Sub.refl Γ) (Inv.stable s_d)
+  omega
+
+/-! ## The cell that exercises `DykAntP`
+
+The re-founding does NOT reach the Dyckhoff dispatch, and the smallest
+station that shows it is one parked Dyckhoff implication:
+
+    done = [ ↓(c ⊃ ↑a) ⊃ ↑e ],   goal  ↑e
+
+`done` is saturated (no parked `q`-implication has its atom present), and
+its single `∃p` row is
+
+    ( A(done ⇒ c ⊃ ↑a) ⊃ E(↑e :: []) )  ∧  E(↓↑a ⊃ ↑e :: [])
+
+whose guard is the `∀p` interpolant at the NEGATIVE goal `c ⊃ ↑a`.  A
+stable proof that focuses on the member supplies
+`s_d : Stab Γ′ .tru (↓(c ⊃ ↑a))`, and `LJF/OFuelHeight.lean` §10.4 turns
+that into `A(done ⇒ ↑↓(c ⊃ ↑a))` — by `interpPA_down_eq` a DISJUNCTION
+with `A(done ⇒ c ⊃ ↑a)` as its head disjunct, which does not project.
+`negOfDownStab` at the body `c ⊃ ↑a` would bridge the two and rises
+without bound (§7.3, `ceCyD`: 29 → 40, and the measured family
+`szI = 10n + 25`).  Hence `DykAntP`. -/
+
+/-- The station of the cell above. -/
+def dykCell : List Neg :=
+  [ .imp (.down (.imp (.atom "c") (.up (.atom "a")))) (.up (.atom "e")) ]
+
+/-- It is saturated, so the `∃p` read-off applies to it. -/
+theorem dykCell_saturated : Saturated dykCell := rfl
+
+/-- And it carries the Dyckhoff shape. -/
+theorem dykCell_parked : ParkedCtxP dykCell := by
+  intro Z hZ
+  rcases List.mem_cons.mp hZ with rfl | hZ
+  · exact ParkedNP.dyk _ _ _
+  · exact absurd hZ List.not_mem_nil
+
 end LJFO
 
 /-! ### Axiom audit -/
@@ -1960,6 +2033,13 @@ end LJFO
 #axioms_within LJFO.satE2P_of [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.satA2P_of [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.parkAntP_of [propext, Classical.choice, Quot.sound]
+
+/-! Part 8, the re-founding evidence. -/
+
+#axioms_within LJFO.nativeParkAnt [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.nativeParkAnt_edge [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.dykCell_saturated [propext]
+#axioms_within LJFO.dykCell_parked [propext]
 
 #axioms_within LJFO.qAssembleP [propext, Quot.sound]
 #axioms_within LJFO.boxAssembleP [propext, Quot.sound]
