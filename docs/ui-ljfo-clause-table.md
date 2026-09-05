@@ -1586,6 +1586,72 @@ by weakening, new minimality clauses as native calls), and it is a
 decision on what the interpolant IS — Matthew's.  Blueprint node N0e
 (`docs/ui-routeB-blueprint.md`).
 
+### 4.14 `interpP` built: soundness PROVED, the founding PROVED, the family is re-authoring (2026-09-05, 09:52)
+
+Matthew's decision (09:10): go ahead with the parking definition;
+soundness must be preserved.  One Opus run, merged as `e0f7ee2`
+(`LJF/OFuelP.lean` 601, `OFuelPSound.lean` 1894, `OFuelPMin.lean` 642,
+`OFuelPCof.lean` 369, `OFuelHeight.lean` +309 lines; `lake build LJF
+wipshared Production` exit 0; no `sorry` anywhere):
+
+* **The definition.**  `interpP` = `interpF` with exactly these changes:
+  the three reshaping clauses park their shape instead (`(Q₁∨Q₂) ⊃ N`,
+  `↓↑P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N` → `done`); each parked shape has an ∃p row
+  and an attack row in all eleven ∀p blocks, of the ◯-implication row's
+  form with the antecedent as the guard goal; the Dyckhoff rows carry
+  their guard at the full station.  Everything else byte-identical
+  (mechanical diff).  Principle: no rewriting of hypotheses — every
+  non-atomic implication parks and fires through the retained `∀p` of
+  its antecedent at the full station.
+* **Soundness PROVED, first**: `eSoundP`/`aSoundP` at
+  `[propext, Quot.sound]` (the `interpF` pair's set), pinned at both
+  bounds, gate watched failing (`[propext]` → error naming
+  `Quot.sound`).  The three new parking clauses are plain weakenings
+  (the simulation blocks of the reshaped hypotheses vanish); the new
+  rows go through as the twelve modal rows did (`atkPark`, the
+  antecedent-generic form of `atkCimp`, equal to it at `↓◯Q′` by `rfl`).
+* **Sanity, kernel-level**: `interpP = interpF` on the S1 station of
+  §4.12 (no changed shape) at every fuel 0–8 in ∃p mode and at a shifted
+  ∀p goal, 0–7 at a ◯-goal, by `decide` (`[propext]`); negative
+  controls — one station per changed clause — where the two DIFFER at
+  fuels 2–5, also kernel-checked, so the agreement is not vacuous.
+* **Rows, processing phase, reductions PROVED** (`OFuelPMin.lean`):
+  nine aggregate equations, twelve row memberships, `SatE2P`/`SatA2P`,
+  `eMinPP`/`aMinPP` unconditional on the station weight (`dec_park`
+  where the reshaping clauses used `dec_impor`/`dec_stripshift`/
+  `dec_curry`), `ECofinalP`/`ACofinalP` and their reductions in
+  `wip/ui_routeB_statements.lean`.
+* **The founding PROVED** (`OFuelHeight.lean` Part 10): one
+  phase-neutral height `hgt` (`hgtI d = szI d`, `hgtS s = szS s + 1`,
+  `hgtL = szL + 2`, `hgtR = szR + 2`, so that phase changes are `rfl`),
+  and the measure `μ = (hgt, station weight with the `LJF/O.lean`
+  offsets, sizeOf)`.  Every edge class: structural descent `<`;
+  antecedent dispatch for ALL FIVE parked shapes `<` (`hgt_antDispatch`);
+  fire continuation `<`; box row `=` with the station dropping; the two
+  release sites via `laxReleaseUp`/`laxReleaseCirc` `<`; goal inversion
+  `<` (`hgt_goalInv`); parking of all eight shapes exact with the
+  station dropping; `↑(P∨Q)`, `↑↓M`, `M∧N`, `⊥⊃N`, the fire scan `≤` with
+  the station dropping.  `invImpOr`/`invStrip`/`invCurry` do not occur;
+  `negOfDownStab`/`dykCommute` are never called.  Gate watched failing
+  (`hgt_boxRow` cannot be strengthened to `<`: opening a box is
+  height-neutral).
+* **Beneath the family, PROVED**: `parkAntP_of_satA2P` — the antecedent
+  dispatch is an instance of ∀p-cofinality at the same station, ONE
+  statement for all five shapes; `parkFireE` and its five instances —
+  the retention row's use in the two-fuel form (aggregate at `f+1`,
+  guard and continuation at `f`, thresholds by `max`), which `CimpAntF`
+  could only state; the chain `TInvP → SatE2P → ECofinalP`,
+  `UEntryP → SatA2P → ACofinalP`.
+* **Open, and now purely re-authoring**: the family itself — the
+  18-definition mutual of `LJF/O.lean` (lines 927–2062) in fuel-carrying
+  form, returning `UpFrom`/`UpFrom2` witnesses, thresholds combined by
+  `max`, `UStab`'s row-list block fuel-indexed, about seventy
+  `decreasing_by` sites fed from Part 10.  Typed obligations `TInvP`,
+  `UEntryP` (verbatim in `OFuelPCof.lean`); the agent judged it beyond
+  one run and did not leave it broken.  Exercising cell: S1 with
+  `K = [↑c]`, goal `↑e`, a focus on the ◯-implication forcing the
+  dispatch edge.  Next run: this re-authoring, group by group.
+
 ---
 
 ## 5 · OPEN list

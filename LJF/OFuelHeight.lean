@@ -841,6 +841,294 @@ theorem szI_laxReleaseCirc {Δ : List Neg} {P' : Pos}
 `jGoal .lax (.up P′) = .circ P′ = jGoal .tru (.circ P′)`. -/
 example (P' : Pos) : jGoal .lax (Neg.up P') = jGoal .tru (Neg.circ P') := rfl
 
+
+/-! # Part 10: the NORMALISED height, and the edge table of the parking
+family (route (B), node N0e)
+
+Parts 1-9 measure each judgment with its own height (`szI`, `szS`, `szL`,
+`szR`).  The family of `LJF/O.lean` traverses all four, so ordering it by
+"the derivation height" needs ONE number, comparable across a phase
+change.  The normalised height is that number: the height of the `Inv`
+one gets by re-wrapping the object with the phase constructors,
+
+    hgtI d  = szI d,        hgtS s  = szS s + 1 = szI (.stable s),
+    hgtL lf = szL lf + 2,   hgtR r  = szR r + 2.
+
+Under it the phase constructors are height-NEUTRAL (`hgt_stable`,
+`hgt_lfoc`, `hgt_rfoc`), which is what makes the FIRST component of
+
+    μ := (normalised height, station weight with the `LJF/O.lean`
+          offsets, derivation size)          lexicographic
+
+behave: a phase change keeps the height and the station and is paid for
+by the third component, exactly as `sizeOf` pays for it in the
+weight-founded family, while a station change is paid for by the second
+component as it already is there.
+
+This part collects, as lemmas, the height side of every edge class the
+`interpP` family (`LJF/OFuelP.lean`) contains.  The three PROCESSING
+edges that refuted the height order for `interpF` (§7.2) are absent —
+`interpP` parks those shapes — and the two release sites use Part 9. -/
+
+/-- Normalised height of an inversion. -/
+def hgtI {Γ : List Neg} {Ω : List Pos} {j : JD} {N : Neg}
+    (d : Inv Γ Ω j N) : Nat := szI d
+
+/-- Normalised height of a stable derivation. -/
+def hgtS {Γ : List Neg} {j : JD} {P : Pos} (s : Stab Γ j P) : Nat := szS s + 1
+
+/-- Normalised height of a left focus. -/
+def hgtL {Γ : List Neg} {N : Neg} {j : JD} {P : Pos}
+    (lf : LFoc Γ N j P) : Nat := szL lf + 2
+
+/-- Normalised height of a right focus. -/
+def hgtR {Γ : List Neg} {j : JD} {P : Pos} (r : RFocus Γ j P) : Nat :=
+  szR r + 2
+
+/-! ## 10.1 The phase constructors are height-neutral -/
+
+theorem hgt_stable {Γ : List Neg} {j : JD} {P : Pos} (s : Stab Γ j P) :
+    hgtI (Inv.stable s) = hgtS s := rfl
+
+theorem hgt_lfoc {Γ : List Neg} {N : Neg} {j : JD} {P : Pos}
+    (h : N ∈ Γ) (lf : LFoc Γ N j P) : hgtS (Stab.lfoc h lf) = hgtL lf := rfl
+
+theorem hgt_rfoc {Γ : List Neg} {j : JD} {P : Pos} (r : RFocus Γ j P) :
+    hgtS (Stab.rfoc r) = hgtR r := rfl
+
+/-- Weakening is height-EXACT, in normalised form (Part 1). -/
+theorem hgt_wk {Γ Γ' : List Neg} {Ω : List Pos} {j : JD} {N : Neg}
+    (H : Sub Γ Γ') (d : Inv Γ Ω j N) : hgtI (Inv.wk H d) = hgtI d :=
+  szI_wk H d
+
+/-! ## 10.2 Positivity -/
+
+theorem szR_pos {Γ : List Neg} {j : JD} {P : Pos} :
+    ∀ (r : RFocus Γ j P), 1 ≤ szR r
+  | .init _ | .or1 _ | .or2 _ | .rel _ => by simp only [szR]; omega
+
+theorem szI_pos {Γ : List Neg} {Ω : List Pos} {j : JD} {N : Neg} :
+    ∀ (d : Inv Γ Ω j N), 1 ≤ szI d
+  | .impR _ | .andR _ _ | .circR _ | .stable _ | .orL _ _ | .flsL
+  | .downL _ | .atomL _ => by simp only [szI]; omega
+
+theorem szL_pos {Γ : List Neg} {N : Neg} {j : JD} {P : Pos} :
+    ∀ (lf : LFoc Γ N j P), 1 ≤ szL lf
+  | .rel _ | .impL _ _ | .and1 _ | .and2 _ | .circL _ => by
+      simp only [szL]; omega
+
+theorem szS_pos {Γ : List Neg} {j : JD} {P : Pos} :
+    ∀ (s : Stab Γ j P), 1 ≤ szS s
+  | .rfoc _ | .lfoc _ _ | .laxOf _ => by simp only [szS]; omega
+
+/-! ## 10.3 The structural edges
+
+Every edge of the family that descends into a premise, in normalised
+form.  Each is strict except the three phase changes of 10.1, which are
+equalities and are paid for by the third component of `μ`. -/
+
+theorem hgt_impR {Γ : List Neg} {Ω : List Pos} {Q : Pos} {N : Neg}
+    (d : Inv Γ (Q :: Ω) .tru N) : hgtI d < hgtI (Inv.impR d) := by
+  simp only [hgtI, szI]; omega
+
+theorem hgt_andR1 {Γ : List Neg} {Ω : List Pos} {M N : Neg}
+    (d : Inv Γ Ω .tru M) (e : Inv Γ Ω .tru N) :
+    hgtI d < hgtI (Inv.andR d e) := by
+  have := szI_pos e; simp only [hgtI, szI]; omega
+
+theorem hgt_andR2 {Γ : List Neg} {Ω : List Pos} {M N : Neg}
+    (d : Inv Γ Ω .tru M) (e : Inv Γ Ω .tru N) :
+    hgtI e < hgtI (Inv.andR d e) := by
+  have := szI_pos d; simp only [hgtI, szI]; omega
+
+theorem hgt_circR {Γ : List Neg} {Ω : List Pos} {j : JD} {P : Pos}
+    (d : Inv Γ Ω .lax (.up P)) : hgtI d < hgtI (Inv.circR (j := j) d) := by
+  simp only [hgtI, szI]; omega
+
+theorem hgt_laxOf {Γ : List Neg} {P : Pos} (s : Stab Γ .tru P) :
+    hgtS s < hgtS (Stab.laxOf s) := by simp only [hgtS, szS]; omega
+
+theorem hgt_lfImpL_ant {Γ : List Neg} {j : JD} {Q : Pos} {N : Neg} {P : Pos}
+    (s : Stab Γ .tru Q) (lf : LFoc Γ N j P) :
+    hgtS s < hgtL (LFoc.impL s lf) := by
+  have := szL_pos lf; simp only [hgtS, hgtL, szL]; omega
+
+theorem hgt_lfImpL_cont {Γ : List Neg} {j : JD} {Q : Pos} {N : Neg} {P : Pos}
+    (s : Stab Γ .tru Q) (lf : LFoc Γ N j P) :
+    hgtL lf < hgtL (LFoc.impL s lf) := by
+  have := szS_pos s; simp only [hgtL, szL]; omega
+
+theorem hgt_lfAnd1 {Γ : List Neg} {j : JD} {M N : Neg} {P : Pos}
+    (lf : LFoc Γ M j P) : hgtL lf < hgtL (LFoc.and1 (N := N) lf) := by
+  simp only [hgtL, szL]; omega
+
+theorem hgt_lfAnd2 {Γ : List Neg} {j : JD} {M N : Neg} {P : Pos}
+    (lf : LFoc Γ N j P) : hgtL lf < hgtL (LFoc.and2 (M := M) lf) := by
+  simp only [hgtL, szL]; omega
+
+theorem hgt_lfRel {Γ : List Neg} {j : JD} {Q P : Pos}
+    (d : Inv Γ [Q] j (.up P)) : hgtI d < hgtL (LFoc.rel d) := by
+  simp only [hgtI, hgtL, szL]; omega
+
+theorem hgt_lfCircL {Γ : List Neg} {Q P : Pos}
+    (d : Inv Γ [Q] .lax (.up P)) : hgtI d < hgtL (LFoc.circL d) := by
+  simp only [hgtI, hgtL, szL]; omega
+
+theorem hgt_rfRel {Γ : List Neg} {j : JD} {N : Neg} (d : Inv Γ [] j N) :
+    hgtI d < hgtR (RFocus.rel d) := by simp only [hgtI, hgtR, szR]; omega
+
+theorem hgt_rfOr1 {Γ : List Neg} {j : JD} {P Q : Pos} (r : RFocus Γ j P) :
+    hgtR r < hgtR (RFocus.or1 (Q := Q) r) := by simp only [hgtR, szR]; omega
+
+theorem hgt_rfOr2 {Γ : List Neg} {j : JD} {P Q : Pos} (r : RFocus Γ j Q) :
+    hgtR r < hgtR (RFocus.or2 (P := P) r) := by simp only [hgtR, szR]; omega
+
+/-! ## 10.4 The antecedent dispatch — the edge the parking design exists for
+
+At a saturated station the family meets a focus on a parked implication,
+`Stab.lfoc h (.impL s_d lf′)`, and `interpP` asks for the `∀p` of the
+ANTECEDENT at the FULL station: one native call of the `∀p` entry on
+`Inv.stable s_d`, weakened.  The statement is generic in the antecedent
+positive `Q`, so it covers the ◯-implication and the Dyckhoff row of
+`interpF` and the three shapes `interpP` newly parks.  The edge drops the
+normalised height STRICTLY, so the station may stay put — which is
+exactly what a station-first order could not allow (the cycle of
+`docs/ui-ljfo-clause-table.md` §4.11). -/
+
+theorem hgt_antDispatch {Γ Γ₂ : List Neg} {j : JD} {Q : Pos} {N : Neg}
+    {P : Pos} (H : Sub Γ Γ₂) (h : Neg.imp Q N ∈ Γ)
+    (s_d : Stab Γ .tru Q) (lf' : LFoc Γ N j P) :
+    hgtI ((Inv.stable s_d).wk H) < hgtS (Stab.lfoc h (.impL s_d lf')) := by
+  have hp := szL_pos lf'
+  have hw := szI_wk H (Inv.stable s_d)
+  simp only [hgtI, hgtS, szI, szS, szL] at *
+  omega
+
+/-! ## 10.5 The fire continuation and the box row -/
+
+/-- **The fire continuation** — a parked implication's consequent enters
+the residual station on a STRICT subderivation. -/
+theorem hgt_fireCont {Γ Γ' : List Neg} {j : JD} {Q Q₀ : Pos} {N : Neg}
+    {P : Pos} {rest K : List Neg} (h : Neg.imp Q N ∈ Γ)
+    (s_d : Stab Γ .tru Q) (lf' : LFoc Γ N j P) (S : Sub Γ (N :: Γ'))
+    (h' : N ∈ N :: Γ')
+    (hsplit : ∀ Z ∈ Γ', Z = Neg.imp Q₀ N ∨ Z ∈ rest ∨ Z ∈ K) :
+    hgtI (fireClean hsplit (.stable (.lfoc h' (lf'.wk S))))
+      < hgtS (Stab.lfoc h (.impL s_d lf')) := by
+  have hb := szI_fireClean hsplit
+    (Inv.stable (Stab.lfoc h' (LFoc.wk S lf')))
+  have hw := szL_wk S lf'
+  have hs := szS_pos s_d
+  have e1 : szI (Inv.stable (Stab.lfoc h' (LFoc.wk S lf')))
+      = szL (LFoc.wk S lf') + 2 := rfl
+  have e2 : szS (Stab.lfoc h (LFoc.impL s_d lf'))
+      = szS s_d + szL lf' + 2 := rfl
+  simp only [hgtI, hgtS]
+  omega
+
+/-- **The box row** — opening a parked box is height-NEUTRAL, so the
+station weight has to pay, and it does (`dec_boxE`:
+`2·3^w(↑Q) + Σrest < 3^w(◯Q) + Σrest`). -/
+theorem hgt_boxRow {Γ Γ' : List Neg} {Q P : Pos} {rest K : List Neg}
+    (h : Neg.circ Q ∈ Γ) (d : Inv Γ [Q] .lax (.up P))
+    (S : Sub Γ (Neg.up Q :: Γ')) (h' : Neg.up Q ∈ Neg.up Q :: Γ')
+    (hsplit : ∀ Z ∈ Γ', Z = Neg.circ Q ∨ Z ∈ rest ∨ Z ∈ K) :
+    hgtI (boxClean hsplit (.stable (.lfoc h' (.rel (d.wk S)))))
+      ≤ hgtS (Stab.lfoc h (.circL d)) := by
+  have hb := szI_boxClean hsplit
+    (Inv.stable (Stab.lfoc h' (LFoc.rel (Inv.wk S d))))
+  have hw := szI_wk S d
+  have e1 : szI (Inv.stable (Stab.lfoc h' (LFoc.rel (Inv.wk S d))))
+      = szI (Inv.wk S d) + 3 := rfl
+  have e2 : szS (Stab.lfoc h (LFoc.circL d)) = szI d + 2 := rfl
+  simp only [hgtI, hgtS]
+  omega
+
+/-! ## 10.6 The two release sites, via Part 9
+
+`negOfDownStab` rises (Part 6: `+1` at `↑P′`, `+2` at `◯P′`; §7.3:
+unboundedly at a conjunction).  Part 9's replacements spend the `laxOf`
+the goal is about to acquire INSIDE the release continuation, and both
+land strictly below the caller's normalised height. -/
+
+theorem hgt_releaseUp {Δ : List Neg} {P' : Pos}
+    (s : Stab Δ .tru (.down (.up P'))) :
+    hgtI (laxReleaseUp s) < hgtS (Stab.laxOf s) := by
+  have := szI_laxReleaseUp s
+  simp only [hgtI, hgtS, szS] at *
+  omega
+
+theorem hgt_releaseCirc {Δ : List Neg} {P' : Pos}
+    (s : Stab Δ .tru (.down (.circ P'))) :
+    hgtI (laxReleaseCirc s) < hgtS (Stab.laxOf s) := by
+  have := szI_laxReleaseCirc s
+  simp only [hgtI, hgtS, szS] at *
+  omega
+
+/-! ## 10.7 Goal inversion, and the processing edges
+
+Goal inversion at an implication goal replays the derivation along one
+branch of the antecedent's inversion (`extract`), from the PREMISE of the
+`impR`; the replay is non-increasing (Part 3) and the premise is a strict
+subderivation, so the edge drops the height. -/
+
+theorem hgt_goalInv {Γ Γ₂ : List Neg} {Q : Pos} {N : Neg}
+    (d₁ : Inv Γ [Q] .tru N) (b : List Neg) (hb : b ∈ invertPos Q)
+    (H : Sub (b ++ Γ) Γ₂) :
+    hgtI ((extract [] d₁ b hb).wk H) < hgtI (Inv.impR d₁) := by
+  have h1 := szI_extract [] d₁ b hb
+  have h2 := szI_wk H (extract [] d₁ b hb)
+  have e1 : szI (Inv.impR d₁) = szI d₁ + 1 := rfl
+  simp only [List.nil_append] at h1 h2 ⊢
+  simp only [hgtI]
+  omega
+
+/-! The processing edges of `eMinPP`/`aMinPP` (`LJF/OFuelPMin.lean`).
+Each is height NON-INCREASING while the station weight drops:
+
+    parking (all EIGHT shapes)      `wk`                      EXACT (10.1)
+    `↑(P∨Q)` split, `↑↓M`           `invUp`                   ≤ (Part 6)
+    `M ∧ N`                         `invAndHyp`               ≤ (Part 6)
+    `⊥ ⊃ N`                         `invImpFls`               ≤ (Part 6)
+    fire scan                       `invFireHyp`              ≤ (Part 6)
+
+and the three that refuted the order for `interpF` — `invImpOr`,
+`invStrip`, `invCurry` (§7.2) — are NOT among them, because `interpP`
+parks `(Q₁∨Q₂) ⊃ N`, `↓↑P′ ⊃ N` and `↓(M₁∧M₂) ⊃ N` instead of reshaping
+them.  Restated in normalised form for completeness: -/
+
+theorem hgt_invUp {R : Pos} {Γ : List Neg} {j : JD} {C : Neg}
+    (hR : ∀ a : String, R ≠ .atom a)
+    (d : Inv (.up R :: Γ) [] j C) (b : List Neg) (hb : b ∈ invertPos R) :
+    hgtI (invUp d b hb) ≤ hgtI d := szI_invUp hR d b hb
+
+theorem hgt_invAndHyp {M N : Neg} {Γ : List Neg} {j : JD} {C : Neg}
+    (d : Inv (.and M N :: Γ) [] j C) : hgtI (invAndHyp d) ≤ hgtI d :=
+  szI_invAndHyp d
+
+theorem hgt_invImpFls {N : Neg} {Γ : List Neg} {j : JD} {C : Neg}
+    (d : Inv (.imp .fls N :: Γ) [] j C) : hgtI (invImpFls d) ≤ hgtI d :=
+  szI_invImpFls d
+
+theorem hgt_invFireHyp {a : String} {N : Neg} {done rest Δext : List Neg}
+    {j : JD} {C : Neg}
+    (h : (Neg.imp (.atom a) N, rest) ∈ splits done)
+    (d : Inv (done ++ Δext) [] j C) : hgtI (invFireHyp h d) ≤ hgtI d :=
+  szI_invFireHyp h d
+
+/-! ## 10.8 What Part 10 does NOT establish
+
+It is the height side of the edge table, not the founding.  Two things
+are still needed for `SatE2P`/`SatA2P` (`LJF/OFuelPMin.lean`):
+
+* the STATION side — the second component of `μ` — which is the
+  `LJF/O.lean` measure unchanged, discharged by the `ljf_dec_e` /
+  `ljf_dec_a` farms; the parking clauses use `dec_park`, where the three
+  reshaping clauses used `dec_impor` / `dec_stripshift` / `dec_curry`;
+* the family itself in fuel-carrying (`UpFrom`/`UpFrom2`) form.  The
+  witness bookkeeping is not a termination question and is not addressed
+  here. -/
+
 end LJFO
 
 /-! ### Axiom audit -/
@@ -871,3 +1159,24 @@ end LJFO
 #axioms_within LJFO.szI_laxReleaseUp [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.szI_laxReleaseCirc [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.szI_negOfDownStab_and [propext, Classical.choice, Quot.sound]
+
+/-! Part 10 -/
+
+#axioms_within LJFO.hgt_stable [propext]
+#axioms_within LJFO.hgt_lfoc [propext]
+#axioms_within LJFO.hgt_rfoc [propext]
+#axioms_within LJFO.hgt_wk [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_pos [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szS_pos [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szL_pos [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szR_pos [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_antDispatch [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_fireCont [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_boxRow [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_releaseUp [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_releaseCirc [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_goalInv [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_impR [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_laxOf [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_lfImpL_ant [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hgt_lfImpL_cont [propext, Classical.choice, Quot.sound]

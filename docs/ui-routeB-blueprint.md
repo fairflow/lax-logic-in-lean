@@ -34,7 +34,7 @@ For every PLL formula φ and variable p there are p-free `∃p.φ` and `∀p.φ`
 (uniform interpolation, Pitts's sense).  The route: LJF◯'s fuel-founded
 retention interpolant `interpF` computes chains `E_f` (descending from ⊤)
 and `A_f` (ascending from ⊥); soundness at every fuel is PROVED; cofinality
-(every sufficient p-free formula is reached at some fuel) is BLOCKED on the definition decision N0e (§4.13);
+(every sufficient p-free formula is reached at some fuel) is IN BUILD on the parking definition `interpP`, whose soundness and founding are PROVED (§4.14);
 with both, **UI at a cell ⟺ the chains stabilise**; stabilisation at every
 cell is THE open theorem; the bridge transports LJF◯ to PLL.
 
@@ -45,8 +45,8 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 | N0a | `eSoundF`, `aSoundF` — soundness at every fuel | `LJF/OFuelSound.lean` | **PROVED** `[propext, Quot.sound]` | `interpF` |
 | N0b | row equations at fuel; processing phase `eMinFF`/`aMinFF`; reductions `ecofinalF_of_satE2F`, `acofinalF_of_satA2F`; `cimpAntF_of_satA2F` | `LJF/OFuelMin.lean` | **PROVED** | N0a |
 | N0h | height bounds of every derivation transformer (the Step-0 table); `laxReleaseUp`/`laxReleaseCirc` | `LJF/OFuelHeight.lean` | **PROVED** (873 lines, pinned) | — |
-| N0c | `SatE2F`, `SatA2F` — cofinality at a saturated station (the family `TInvF`/`UEntryF`) | — | **STOPPED twice, obstruction exact** (§4.11: no station-first order; §4.13: no height-first order on `interpF` — the three reshaping processing clauses raise height) | N0a, N0b, N0e |
-| N0e | **DECISION**: the parking definition `interpP` — park `(Q₁∨Q₂) ⊃ N`, `↓↑P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N` (extend `ParkedN`), one retained-guard row each; soundness pair by weakening; then N0c founded on (height, weight) | new modules | **DECIDED 2026-09-05 09:20 (Matthew: go ahead; soundness must be preserved) — IN BUILD** (principle: no rewriting of hypotheses, every non-atomic implication fires through a retained guard; soundness pair first) | N0h |
+| N0e | `interpP`, the parking definition; `eSoundP`/`aSoundP`; rows, processing phase `eMinPP`/`aMinPP`, reductions; the founding `μ = (hgt, weight)` with every edge class discharged (Part 10); `parkAntP_of_satA2P`; `parkFireE` | `LJF/OFuelP.lean`, `OFuelPSound.lean`, `OFuelPMin.lean`, `OFuelPCof.lean`, `OFuelHeight.lean` Part 10 | **PROVED** — soundness `[propext, Quot.sound]`, kernel-checked agreement with `interpF` off the changed shapes, founding proved (§4.14) | N0h |
+| N0c | `SatE2P`, `SatA2P` — the family `TInvP`/`UEntryP` in fuel-carrying form (typed obligations in `OFuelPCof.lean`; the chain below them to `ECofinalP`/`ACofinalP` is proved) | `LJF/OFuelPCof.lean` | **IN BUILD — re-authoring** (the founding is proved; what remains is the 18-definition mutual returning `UpFrom` witnesses) | N0e |
 | N0d | `ECofinalF`, `ACofinalF` (approved statements) and their upward-closed forms `ECofinalUp`, `ACofinalUp` | `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | DRAFTED (projections of N0c's `UpFrom` witnesses) | N0c |
 | N1 | `EStabilises`, `AStabilises` — the chains eventually constant, the A-side modulo `E_f` | `wip/ui_routeB_blueprint.lean` | DRAFTED (statement) | — |
 | N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic | same | DRAFTED (statement) | — |
@@ -80,9 +80,9 @@ through `jGoal`).
 graph TD
   interpF[interpF · LJF/OFuel] --> N0a[N0a soundness pair · PROVED]
   N0a --> N0b[N0b rows · processing · reductions · PROVED]
-  N0b --> N0c[N0c cofinality family · STOPPED twice]
+  N0b --> N0c[N0c cofinality family · RE-AUTHORING]
   N0a --> N0c
-  H[N0h height bounds · PROVED] --> N0e[N0e DECISION: interpP]
+  H[N0h height bounds · PROVED] --> N0e[N0e interpP · sound · founded · PROVED]
   N0e --> N0c
   N0c --> N0d[N0d ECofinal/ACofinal, upward-closed · DRAFTED]
   N1[N1 EStabilises / AStabilises] --> N3
@@ -100,22 +100,19 @@ graph TD
 
 ## 4 · Work packages
 
-**WP1 — N0c, via N0e (decision pending).**  Step 0 is done and
-negative (§4.13): on `interpF` neither the station-first nor the
-height-first order founds the family, and the exact obstruction is the
-three processing clauses that reshape a parked implication's
-antecedent.  The design the table forces is `interpP`: park those three
-shapes (extend `ParkedN`), give each an aggregate row with its fire
-guarded by the retained `∀p` of its antecedent at the full station (as
-the ◯-implication rows are), re-prove the soundness pair by weakening
-(mechanical, as `eSoundF`/`aSoundF` were), transpose the row
-equations, then build the family on (derivation height, goal-free
-station weight) — every remaining processing edge is weakening (height
-exact) or a non-increasing transformer.  Also apply Part 9's
-`laxReleaseUp`/`laxReleaseCirc` at the two release sites and retain the
-Dyckhoff rows (removing `dykCommute`).  Deliverable: `SatE2P`/`SatA2P`
-PROVED and pinned, or a typed obligation with its clause and exercising
-cell.  Two to three agent runs.  Blocked on the decision.
+**WP1 — N0c on `interpP` (re-authoring, in build).**  N0e is done
+(§4.14): the definition, its soundness pair, the rows and processing
+phase, the reductions, and the founding — every edge class of the
+family descends under `μ = (hgt, station weight, sizeOf)` by proved
+lemmas.  What remains is the 18-definition mutual of `LJF/O.lean`
+(lines 927–2062) re-authored in fuel-carrying form: each traversal
+returns an `UpFrom`/`UpFrom2` witness, thresholds combine by `max`,
+`UStab`'s row-list block becomes fuel-indexed, and each of the ~70
+`decreasing_by` sites is fed the matching Part-10 bound.  The kit is in
+place (`UpFrom` combinators, `parkFireE` and its five instances,
+`parkAntP_of_satA2P`).  Deliverable: `TInvP`/`UEntryP` inhabited, hence
+`SatE2P`/`SatA2P`, `ecofinalP`/`acofinalP`, pinned; or a typed
+obligation per stuck clause.  One to two agent runs.
 
 **WP2 — N3.**  Forward: instantiate N0a at the stabilised fuel, minimality
 from N0d read at that fuel.  Backward: N0d applied to `E` and to `A`
