@@ -46,8 +46,8 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 | N0b | row equations at fuel; processing phase `eMinFF`/`aMinFF`; reductions `ecofinalF_of_satE2F`, `acofinalF_of_satA2F`; `cimpAntF_of_satA2F` | `LJF/OFuelMin.lean` | **PROVED** | N0a |
 | N0h | height bounds of every derivation transformer (the Step-0 table); `laxReleaseUp`/`laxReleaseCirc` | `LJF/OFuelHeight.lean` | **PROVED** (873 lines, pinned) | — |
 | N0e | `interpP`, the parking definition; `eSoundP`/`aSoundP`; rows, processing phase `eMinPP`/`aMinPP`, reductions; the founding `μ = (hgt, weight)` with every edge class discharged (Part 10); `parkAntP_of_satA2P`; `parkFireE` | `LJF/OFuelP.lean`, `OFuelPSound.lean`, `OFuelPMin.lean`, `OFuelPCof.lean`, `OFuelHeight.lean` Part 10 | **PROVED** — soundness `[propext, Quot.sound]`, kernel-checked agreement with `interpF` off the changed shapes, founding proved (§4.14) | N0h |
-| N0c | `tinvP`, `uentryP`, `satE2P`, `satA2P`, `ecofinalP`, `acofinalP` — the 17-definition family in fuel-carrying form over `interpP`, two `mutual` blocks on O.lean's (weight, size) pair | `LJF/OFuelPFam.lean` (2048), `wip/ui_routeB_statements.lean` | **BUILT, CONDITIONAL** on `ParkAntP p` ALONE (a fixpoint: discharged natively by re-founding on `μ = (hgt, weight, size)`, WP1b). `DykAntP` WITHDRAWN 2026-09-05: it was a defect of `interpP`'s Dyckhoff row, fixed by guarding at the antecedent's own goal `↑↓(Q′ ⊃ N′)`, soundness re-proved first at the same pins (§4.15–4.16) | N0e |
-| N0d | `ECofinalF`, `ACofinalF` (approved statements) and their upward-closed forms `ECofinalUp`, `ACofinalUp` | `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | DRAFTED (projections of N0c's `UpFrom` witnesses) | N0c |
+| N0c | `tinvP`, `uentryP`, `parkAntP`, `satE2P`, `satA2P` — the 17-definition family in fuel-carrying form over `interpP`, ONE `mutual` on `μ = (hgt, weight, sizeOf)` | `LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean`, `LJF/OFuelPCofinal.lean` | **PROVED, UNCONDITIONAL** `[propext, Classical.choice, Quot.sound]` (§4.17). The antecedent guard is a native recursive call at all twenty parked arms; `ParkAntP` is a consequence, not a hypothesis. `DykAntP` WITHDRAWN 2026-09-05 (§4.15–4.16) | N0e |
+| N0d | `ECofinalP`, `ACofinalP` and their inhabitants `ecofinalP`, `acofinalP`; `ECofinalF`/`ACofinalF` and the upward-closed forms `ECofinalUp`, `ACofinalUp` | `LJF/OFuelPCofinal.lean`, `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | **PROVED** for `interpP` `[propext, Classical.choice, Quot.sound]` (§4.17); the `interpF` forms remain DRAFTED | N0c |
 | N1 | `EStabilises`, `AStabilises` — the chains eventually constant, the A-side modulo `E_f` | `wip/ui_routeB_blueprint.lean` | DRAFTED (statement) | — |
 | N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic | same | DRAFTED (statement) | — |
 | N3 | `hasUI_of_stabilises`, `stabilises_of_hasUI` — W ⟺ UI per cell | same | DRAFTED (`sorry`) | N0a, N0d, N1, N2 |
@@ -80,11 +80,11 @@ through `jGoal`).
 graph TD
   interpF[interpF · LJF/OFuel] --> N0a[N0a soundness pair · PROVED]
   N0a --> N0b[N0b rows · processing · reductions · PROVED]
-  N0b --> N0c[N0c cofinality family · BUILT, conditional on ParkAntP]
+  N0b --> N0c[N0c cofinality family · PROVED, unconditional]
   N0a --> N0c
   H[N0h height bounds · PROVED] --> N0e[N0e interpP · sound · founded · PROVED]
   N0e --> N0c
-  N0c --> N0d[N0d ECofinal/ACofinal, upward-closed · DRAFTED]
+  N0c --> N0d[N0d ECofinalP/ACofinalP · PROVED]
   N1[N1 EStabilises / AStabilises] --> N3
   N2[N2 IsUIPair / HasUI] --> N3
   N0a --> N3[N3 W ⟺ UI per cell · sorry]
@@ -100,19 +100,22 @@ graph TD
 
 ## 4 · Work packages
 
-**WP1 — N0c on `interpP`: BUILT, conditional on `ParkAntP` (§4.15–4.16).**
-The family is in `LJF/OFuelPFam.lean`, sorry-free, pinned, on O.lean's
-(weight, size) pair with the one antecedent dispatch as a parameter.
+**WP1 — N0c and N0d on `interpP`: DONE, UNCONDITIONAL (§4.15–4.17).**
 **WP1a — DONE 2026-09-05** (36 min, merged 392949b): the Dyckhoff row
 guarded at the antecedent's own goal (14 sites, two of them a second
 copy of the row spec in `OFuelPFam` Part 3), soundness re-proved first
 at `[propext, Quot.sound]`, the negative control on
 `[↓(c ⊃ ↑a) ⊃ ↑e]` by `rfl`, `DykAntP` withdrawn, no measure work.
-**WP1b — the μ-re-founding** on `(hgt, station weight, sizeOf)` so that
-`ParkAntP` is a native recursive call (`nativeParkAnt` typechecks,
-`nativeParkAnt_edge` is strict): ~70 sites, height-equal sites via a
-`lex_of_le_of_lt` helper on the Part-10 bounds.  Deliverable:
-`ecofinalP`/`acofinalP` unconditional.
+**WP1b — DONE 2026-09-05** (§4.17): the family re-founded on
+`μ = (hgt, station weight, sizeOf)`, the guard native at all twenty
+parked arms, the two `mutual` blocks merged into one of seventeen
+definitions (the `∀p` side calls `TStabQ`, so they were separable only
+while the guard was a parameter).  Two additions Part 10 does not carry:
+the six `p`-eliminators measure `hgt(recursion argument) + hgtL lfP`,
+and `stabAtomCast` makes the refired atom's cast a rewrite.  The
+termination kit is split into `LJF/OFuelPFamKit.lean` with
+`wip/hgt_probe.lean` as its 3.7-second bench.
+`ecofinalP`/`acofinalP` are in `LJF/OFuelPCofinal.lean`, unconditional.
 
 **WP2 — N3.**  Forward: instantiate N0a at the stabilised fuel, minimality
 from N0d read at that fuel.  Backward: N0d applied to `E` and to `A`
@@ -168,7 +171,8 @@ HANDOFF §, blueprint chapter, paper.  Ongoing.
 `frjw-dev`: 40446bc (family merged) and after.  Files:
 `LJF/OFuel.lean`, `LJF/OFuelSound.lean`, `LJF/OFuelMin.lean`,
 `LJF/OFuelP.lean`, `LJF/OFuelPSound.lean`, `LJF/OFuelPMin.lean`,
-`LJF/OFuelPCof.lean`, `LJF/OFuelPFam.lean`, `LJF/OFuelHeight.lean`,
+`LJF/OFuelPCof.lean`, `LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean`,
+`LJF/OFuelPCofinal.lean`, `LJF/OFuelHeight.lean`, `wip/hgt_probe.lean`,
 `LaxLogic/PLLInstanceBound.lean`,
 `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean`,
 `wip/ui_retention_cell.lean`, `wip/ui_interpFS.lean`,

@@ -1879,6 +1879,99 @@ recursive call — about seventy sites, the height-equal ones through a
 `lex_of_le_of_lt` helper on the Part-10 bounds — after which
 `ecofinalP`/`acofinalP` are unconditional and N0c/N0d are PROVED.
 
+### 4.17 The family re-founded on the height; the guard NATIVE; `ecofinalP`/`acofinalP` UNCONDITIONAL — N0c and N0d PROVED (2026-09-05, WP1b)
+
+Built in one agent run.  `LJF/OFuelPFamKit.lean` (new, 264 lines),
+`LJF/OFuelPFam.lean` (1910 lines after the split), `LJF/OFuelPCofinal.lean`
+(new), `wip/hgt_probe.lean` (new bench), `wip/ui_routeB_statements.lean`,
+`lakefile.toml`, `Audit/Production.lean`.
+
+**The call graph, first — it did not halve the job.**  The brief's
+hypothesis was that with the guard native the `∃p` side calls the `∀p`
+side but not conversely, so that only the `∀p` block would need the new
+measure.  REFUTED, and in the opposite direction: the `∃p` block calls no
+`∀p` name, but the `∀p` block calls `TStabQ` — the `∃p` stable traversal
+— at FOUR sites (`UStabQ`'s and `UpElimQ`'s fired `q`-implication arms,
+through `qFireA`'s `∃p` witness; `ULFQ`'s and `UpLFQ`'s `.impL` arms).
+The two blocks were separable only while the guard was a parameter;
+native, the `∃p` side calls `UEntryQ` at ten sites and the strongly
+connected component is whole again.  The family is now ONE `mutual` of
+seventeen definitions, as `LJF/O.lean`'s is, and all of it takes μ.
+
+**The measure.**
+
+    μ  =  (normalised derivation height, station weight, `sizeOf`)
+
+lexicographic, the height of Part 10 and the second and third components
+exactly the pair the family already had — so no station obligation moves
+and `ljf_dec_e` / `ljf_dec_a` / `ljf_dec_p` discharge them unchanged,
+reached through `lex3_of_le` (height `≤`, pair pays) or bypassed by
+`Prod.Lex.left` (height strict).  176 recursive-call occurrences across
+the seventeen definitions; the strict class is every structural descent,
+the antecedent dispatch, the fire continuation, goal inversion and the
+two release sites, and the `≤` class is every parking, every phase change
+and every `wk`, where the equality is only propositional.
+
+**Two facts Part 10 does not state, and the run had to.**
+
+* **The `p`-eliminators need `lfP` in the measure.**  `TpElimQ`, `TpLFQ`,
+  `TpInvQ`, `UpElimQ`, `UpLFQ`, `UpInvGQ` carry an EXTRA derivation
+  `lfP : LFoc Γ′ M j P₀` beside the one they recurse on and SPLICE it into
+  the argument of their fire call,
+  `fireClean … (.stable (.lfoc h′ (.impL X (lfP.wk S))))`, so that
+  argument's height contains `szL lfP`, which the recursion argument does
+  not bound — `hgt_fireCont` is stated for a single `lf′` and does not
+  reach it.  Their first component is the SUM
+  `hgt(recursion argument) + hgtL lfP`.  Under it the fire edge is strict
+  (`szS s_b ≥ 1` pays), the entry edge from `TStabQ`/`UStabQ` is exact
+  with the station unchanged and `sizeOf` dropping, and the six edges
+  inside the group are strict.  This is a fact about the family's
+  argument lists, not about a transformer, which is why Part 10 has no
+  place for it.
+* **The cast on the refired atom.**  The two `p`-eliminators hold
+  `ha : a = p`, `hb : b = p` and must present `Stab _ .tru (↑a)` where
+  they hold `Stab _ .tru (↑b)`, by `(hb.trans ha.symm) ▸ …` at twelve
+  sites.  Under the `Eq.ndrec` the height is opaque to `simp`, so `szS X`
+  was an unbounded atom and the fire edge unprovable.  `stabAtomCast`
+  names the cast and `szS_stabAtomCast` makes its height a rewrite.
+
+**The kit, split out — the method point of the run.**  `LJF.OFuelPFam`
+costs 27 min to elaborate merged (522 s split), which is not a loop one
+can found a family in.  Part 1 (station-descent lemmas, `ljf_dec_p`) and
+the new Part 4b (the height side: `lex3_of_le`, `lex3_or_of_le`,
+`stabAtomCast`, `hgt_antDispatchN`, and the farms `hgt_close`,
+`hgt_body`, `hgt_dec`, `ljf_dec_pair`, `ljf_dec_h`) are now
+`LJF/OFuelPFamKit.lean`, which elaborates in seconds, and
+`wip/hgt_probe.lean` is the bench: one `example` per edge class, stated
+exactly as the `decreasing_by` goal presents it, checked in 3.7 s.  Two
+defects were found there in minutes that had each already cost a full
+family build:
+
+* `simp_wf` leaves the goal as `Prod.Lex … (h′,w′,s′) (h,w,s)`, and a `by`
+  block inside `refine lex3_of_le (by …) ?_` runs before the second
+  component is assigned — the height goal arrives as `szI d ≤ ?m`.  Two
+  `?_` and bullets fix it.
+* `szI_extract`'s `d` is typed at `Inv Γ (Ω₁ ++ R :: Ω₂) j C`, so with
+  `Ω₁ := []` its conclusion's `szI d` is a DIFFERENT atom from the goal's
+  `szI d` until `List.nil_append` normalises: `omega` reported two atoms
+  both printed `↑(szI d₁)`.  This is why `hgt_goalInv`'s own proof carries
+  a `simp only [List.nil_append]`.
+
+**Result.**  `parkAntGuard pant …` is replaced at all twenty parked arms
+by the native `UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d)`,
+the `pant` parameter is gone, and
+
+    tinvP, uentryP, parkAntP, satE2P, satA2P, ecofinalP, acofinalP
+      :  ⟨the statement⟩          — no parameter
+
+in `LJF/OFuelPCofinal.lean`, all at `[propext, Classical.choice,
+Quot.sound]` (the choice from the well-founded recursion, as in
+`LJF/O.lean`).  `ParkAntP` survives as a consequence
+(`parkAntP_of_satA2P (satA2P_of_uentryP uentryP)`), not a hypothesis.
+The module is imported by `Audit/Production.lean` and `LJF` is added to
+the `#axiom_sweep` roots, so the whole LJF◯ estate is now swept for
+`sorryAx`.  **N0c and N0d are PROVED.**
+
 ---
 
 ## 5 · OPEN list
