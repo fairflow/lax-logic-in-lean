@@ -51,7 +51,7 @@ globs = ["LJF.Base", "LJF.Complete", "LJF.OCore", "LJF.OUniverse", "LJF.ORows",
          "LJF.OHeight", "LJF.OFuel", "LJF.OFuelSound", "LJF.O", "LJF.OFuelMin",
          "LJF.OFuelHeight",
          "LJF.OFuelP", "LJF.OFuelPSound", "LJF.OFuelPMin", "LJF.OFuelPCof",
-         "LJF.OFuelPFam",
+         "LJF.OFuelPFamKit", "LJF.OFuelPFam", "LJF.OFuelPCofinal",
          "LJF.OSearch", "LJF.OBridge", "LJF.OAudit"]
 
 # RNDB: LAYER 3 — the dictionary database types (Claim/Evidence/Entry/

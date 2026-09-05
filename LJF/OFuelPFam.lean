@@ -56,109 +56,9 @@ Nothing in `LJF/OCore.lean`, `LJF/O.lean`, `LJF/OFuel*.lean` is touched;
 this module is purely additive.
 -/
 import LJF.OFuelPCof
+import LJF.OFuelPFamKit
 
 namespace LJFO
-
-/-! # Part 1: the generic station-descent lemmas
-
-`LJF/O.lean`'s descent farm names one lemma per parked shape
-(`dec_fireT`/`dec_fireS` for `a ⊃ N`, `dec_dykT`/`dec_dykS` for the
-Dyckhoff shape, `dec_cimpF` for the ◯-implication).  `interpP` parks
-three more, and all eight fire the same way, so the lemma is stated once,
-generic in the antecedent positive: the only fact used is
-`1 ≤ wPos Q`. -/
-
-/-- **The generic parked-implication fire drop.**  Firing `Q ⊃ N` at a
-station moves `3^(wPos Q + wNeg N + 1)` out and `2·3^(wNeg N)` in. -/
-theorem dec_parkT {done rest : List Neg} {Q : Pos} {N : Neg}
-    (h : (Neg.imp Q N, rest) ∈ splits done) :
-    2 * 3 ^ wNeg N + sum3 rest < sum3 done := by
-  have hs := splits_sum h
-  simp only [wNeg] at hs
-  have := p3_2 (a := wNeg N) (c := wPos Q + wNeg N + 1)
-    (by have := wPos_pos Q; omega)
-  omega
-
-/-- The same drop with slack `9`, the shape the `∀p` measures need. -/
-theorem dec_parkS {done rest : List Neg} {Q : Pos} {N : Neg}
-    (h : (Neg.imp Q N, rest) ∈ splits done) :
-    2 * 3 ^ wNeg N + sum3 rest + 9 < sum3 done := by
-  have hs := splits_sum h
-  simp only [wNeg] at hs
-  have h1 := p3_mono (a := wNeg N + 1 + 1) (b := wPos Q + wNeg N + 1)
-    (by have := wPos_pos Q; omega)
-  have h2 := p3_succ (wNeg N)
-  have h3 := p3_succ (wNeg N + 1)
-  have h4 := p3_mono (a := 1) (b := wNeg N) (wNeg_pos N)
-  omega
-
-/-- `dec_park` at a shared goal offset: parking the head of `todo` pays
-`3^(wNeg X)` out of the doubled `todo` side.  `LJF/O.lean`'s farm names
-the offset-free form and then one `p3_pos` alternative per parked shape;
-the three shapes `interpP` adds are covered by stating the offset. -/
-theorem dec_parkG {t d e g : Nat} :
-    2 * t + (3 ^ e + d) + g < 2 * (3 ^ e + t) + d + g := by
-  have := p3_pos e; omega
-
-/-- `dec_parkG` at the `∀p` measure, whose offset is a SUM (the goal
-weight and the family's constant). -/
-theorem dec_parkG2 {t d e g h : Nat} :
-    2 * t + (3 ^ e + d) + g + h < 2 * (3 ^ e + t) + d + g + h := by
-  have := p3_pos e; omega
-
-/-- Removing any member shrinks the station (the E-res component). -/
-theorem dec_restT {done rest : List Neg} {X : Neg}
-    (h : (X, rest) ∈ splits done) : sum3 rest < sum3 done := by
-  have hs := splits_sum h
-  have := p3_pos (wNeg X)
-  omega
-
-set_option hygiene false in
-/-- **The descent farm for the parking family.**  `LJF/O.lean`'s two
-farms, extended by the drops its shape-by-shape alternatives do not cover:
-the generic parked-implication fire (`dec_parkS`/`dec_parkT`), the generic
-parking drop at one and at two goal offsets (`dec_parkG`/`dec_parkG2`,
-where `LJF/O.lean` names one `p3_pos` alternative per parked shape), the
-`↓◯P′` release (two `p3_succ` steps, where `LJF/O.lean` released through
-`negOfDownStab` at `◯P′` and needed one), and each of these behind
-`Prod.Lex.left` for the pairs whose second components differ. -/
-macro "ljf_dec_p" : tactic => `(tactic| (
-    all_goals first
-      | ljf_dec_e
-      | ljf_dec_a
-      | (simp_wf
-         try simp only [sum3, sum3_append, goalW, wNeg, wPos]
-         first
-           | exact dec_parkG
-           | exact dec_parkG2
-           | (have h1 := dec_parkS (by assumption); omega)
-           | (have h1 := dec_parkT (by assumption); omega)
-           | (have h1 := dec_restT (by assumption); omega)
-           | (have h1 := p3_succ (wPos P'); have h2 := p3_succ (wPos P' + 1)
-              have h3 := p3_pos (wPos P'); omega)
-           | (refine Prod.Lex.left _ _ ?_
-              first
-                | omega
-                | exact dec_parkG
-                | exact dec_parkG2
-                | (have h1 := dec_parkS (by assumption); omega)
-                | (have h1 := dec_parkT (by assumption); omega)
-                | (have h1 := dec_restT (by assumption); omega)
-                | (have h1 := p3_succ (wPos P')
-                   have h2 := p3_succ (wPos P' + 1)
-                   have h3 := p3_pos (wPos P'); omega)))))
-
-/-- Two fuel units at once: a clause that opens a ◯-goal aggregate AND
-then one of its prefix rows spends two, because the prefix of a ◯-goal
-row list sits one fuel BELOW the aggregate and the row equations are
-stated at a successor. -/
-def UpFrom2.mk2 {P : Nat → Nat → Type} (n : Nat)
-    (k : ∀ e' f', n ≤ e' → n ≤ f' → P (e' + 2) (f' + 2)) : UpFrom2 P :=
-  UpFrom2.mk1 (n + 1) (fun e' f' he' hf' =>
-    match e', f', he', hf' with
-    | 0, _, he, _ => absurd he (by omega)
-    | _ + 1, 0, _, hf => absurd hf (by omega)
-    | e'' + 1, f'' + 1, he, hf => k e'' f'' (by omega) (by omega))
 
 /-! # Part 2: the fuel-carrying assemblers
 
@@ -561,8 +461,8 @@ def eMinQ : ∀ (todo done Δ : List Neg) (ψ : Neg), ParkedCtxP done →
             (fun Z hZ => List.mem_append_left _ hZ)
             hΔ PFreeΩ.nil hψ d
   termination_by todo done Δ ψ hP hΔ hψ j d =>
-    (2 * sum3 todo + sum3 done + 1, 0)
-  decreasing_by ljf_dec_p
+    (hgtI d, 2 * sum3 todo + sum3 done + 1, sizeOf d)
+  decreasing_by ljf_dec_h
 
 
 /-- Inversion-phase traversal, at fuel. -/
@@ -613,8 +513,8 @@ def TInvQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
             · exact List.mem_cons_self ..
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
   termination_by Γ' K Ω C j hm hm2 hK hΩ hC d =>
-    (2 * sum3 [] + sum3 done, sizeOf d)
-  decreasing_by ljf_dec_e
+    (hgtI d, 2 * sum3 [] + sum3 done, sizeOf d)
+  decreasing_by ljf_dec_h
 
 
 /-- Stable-phase traversal, at fuel: the dispatch point.  Eight parked
@@ -716,8 +616,8 @@ def TStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
           (hK _ ((hm _ h).resolve_left hd)) hp lf).map (fun _ x =>
             .lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd)) x)
   termination_by Γ' K P j hm hm2 hK hp s =>
-    (2 * sum3 [] + sum3 done, sizeOf s)
-  decreasing_by ljf_dec_p
+    (hgtS s, 2 * sum3 [] + sum3 done, sizeOf s)
+  decreasing_by ljf_dec_h
 
 
 /-- Right-focus traversal, at fuel. -/
@@ -744,8 +644,8 @@ def TRFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
       (TInvQ done hsat hP hm hm2 hK PFreeΩ.nil hp d).map
         (fun _ x => .rfoc (.rel x))
   termination_by Γ' K P j hm hm2 hK hp r =>
-    (2 * sum3 [] + sum3 done, sizeOf r)
-  decreasing_by ljf_dec_e
+    (hgtR r, 2 * sum3 [] + sum3 done, sizeOf r)
+  decreasing_by ljf_dec_h
 
 
 /-- Left-focus traversal on a kept hypothesis, at fuel. -/
@@ -772,8 +672,8 @@ def TLFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
   | _, _, _, _, _, hm, hm2, hK, hH, hp, .and2 lf =>
       (TLFQ done hsat hP hm hm2 hK hH.2 hp lf).map (fun _ x => .and2 x)
   termination_by Γ' K H P j hm hm2 hK hH hp lf =>
-    (2 * sum3 [] + sum3 done, sizeOf lf)
-  decreasing_by ljf_dec_e
+    (hgtL lf, 2 * sum3 [] + sum3 done, sizeOf lf)
+  decreasing_by ljf_dec_h
 
 
 /-- The `p`-fire eliminator, at fuel. -/
@@ -812,9 +712,9 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_b.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_b.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _))))))
               UpFrom.mk1 (max sa.1 cont.1) (fun f' hf' =>
                 unStable (qAssembleP (interpPE_eq hsat) (qimpConjMemP hXr) hcp
@@ -830,9 +730,9 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_d.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_d.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))).map (fun _ x => unStable x)
         | .imp (.down (.circ Q')) N_c, _, hd, .impL s_c lf_c =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -843,9 +743,9 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_c.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_c.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))).map (fun _ x => unStable x)
         | .imp (.or Qa Qb) N_o, _, hd, .impL s_o lf_o =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -856,9 +756,9 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_o.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_o.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))).map (fun _ x => unStable x)
         | .imp (.down (.up Pa)) N_s, _, hd, .impL s_s lf_s =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -869,9 +769,9 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_s.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_s.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))).map (fun _ x => unStable x)
         | .imp (.down (.and Ma Mb)) N_a, _, hd, .impL s_a lf_a =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -882,9 +782,9 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_a.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_a.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))).map (fun _ x => unStable x)
         | .circ _, _, _, lf => nomatch lf
         | .up .fls, hpk, _, _ => nomatch hpk
@@ -898,8 +798,8 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
           (fun _ x =>
             .lfoc (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd)) x)
   termination_by Γ' K M P₀ a b j hm hm2 hK hpT ha hb hXpkg lfP s =>
-    (2 * sum3 [] + sum3 done, sizeOf s)
-  decreasing_by ljf_dec_p
+    (hgtS s + hgtL lfP, 2 * sum3 [] + sum3 done, sizeOf s)
+  decreasing_by ljf_dec_h
 
 
 /-- Left focus on a kept hypothesis, inside a `p`-proof, at fuel. -/
@@ -928,8 +828,8 @@ def TpLFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
       (TpLFQ done hsat hP hm hm2 hK hH.2 hpT ha hb hXpkg lfP lf).map
         (fun _ x => .and2 x)
   termination_by Γ' K M P₀ H a b j hm hm2 hK hH hpT ha hb hXpkg lfP lf =>
-    (2 * sum3 [] + sum3 done, sizeOf lf)
-  decreasing_by ljf_dec_e
+    (hgtL lf + hgtL lfP, 2 * sum3 [] + sum3 done, sizeOf lf)
+  decreasing_by ljf_dec_h
 
 
 /-- Inversion inside a `p`-proof, goal re-targeted, at fuel. -/
@@ -980,8 +880,8 @@ def TpInvQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
             · exact List.mem_cons_self ..
             · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ hZ))))
   termination_by Γ' K M P₀ Ω a b j hm hm2 hK hΩ hpT ha hb hXpkg lfP d =>
-    (2 * sum3 [] + sum3 done, sizeOf d)
-  decreasing_by ljf_dec_e
+    (hgtI d + hgtL lfP, 2 * sum3 [] + sum3 done, sizeOf d)
+  decreasing_by ljf_dec_h
 
 end
 
@@ -1103,8 +1003,8 @@ def aMinQ : ∀ (todo done Δ : List Neg) (G : Neg), ParkedCtxP done →
             (fun Z hZ => List.mem_append_left _ hZ)
             hΔ G d
   termination_by todo done Δ G hP hΔ j d =>
-    (2 * sum3 todo + sum3 done + 3 ^ wNeg G + 4, 0)
-  decreasing_by ljf_dec_p
+    (hgtI d, 2 * sum3 todo + sum3 done + 3 ^ wNeg G + 4, sizeOf d)
+  decreasing_by ljf_dec_h
 
 
 /-- The `∀p` interpolant of any goal over a mixed saturated station. -/
@@ -1256,8 +1156,8 @@ def UEntryQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         rw [interpP_circ_laxRows hsat P₀]
         exact w.2 (e' + 1) f' (Nat.le_trans he' (Nat.le_succ _)) hf')
   termination_by Γ' K hm hm2 hK G j d =>
-    (2 * sum3 [] + sum3 done + 3 ^ wNeg G + 3, 0)
-  decreasing_by ljf_dec_a
+    (hgtI d, 2 * sum3 [] + sum3 done + 3 ^ wNeg G + 3, sizeOf d)
+  decreasing_by ljf_dec_h
 
 
 /-- Stable-phase `∀p` traversal: attack emission, at the row index. -/
@@ -1476,8 +1376,8 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
           keepFold (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
             (w.2 e' f' he' hf')⟩
   termination_by Γ' K P₀ j L hm hm2 hK kit s =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
-  decreasing_by ljf_dec_p
+    (hgtS s, 2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
+  decreasing_by ljf_dec_h
 
 
 /-- Right-focus `∀p` traversal, at the aggregate. -/
@@ -1582,8 +1482,8 @@ def URFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
   | _, _, .down (.and _ _), .lax, _, _, _, .rel dI => nomatch dI
   | _, _, .down (.imp _ _), .lax, _, _, _, .rel dI => nomatch dI
   termination_by Γ' K P₀ j hm hm2 hK r =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf r)
-  decreasing_by ljf_dec_a
+    (hgtR r, 2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf r)
+  decreasing_by ljf_dec_h
 
 
 /-- Left focus on a kept hypothesis, `∀p` mode, at the row index. -/
@@ -1613,8 +1513,8 @@ def ULFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
       let w := ULFQ done hsat hP hm hm2 hK kit hH.2 lf
       ⟨w.1, fun e' f' he' hf' => .and2 (w.2 e' f' he' hf')⟩
   termination_by Γ' K P₀ j L H hm hm2 hK kit hH lf =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
-  decreasing_by ljf_dec_a
+    (hgtL lf, 2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
+  decreasing_by ljf_dec_h
 
 
 /-- Inversion, `∀p` mode, goal re-targeted to the `jChain` positive. -/
@@ -1658,8 +1558,8 @@ def UInvGQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
           (PFreeCtx.cons (show PFreeN p (.up (.atom a)) from hΩ.head) hK)
           kit hΩ.tail d)
   termination_by Γ' K P₀ j L Ω hm hm2 hK kit hΩ d =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
-  decreasing_by ljf_dec_a
+    (hgtI d, 2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
+  decreasing_by ljf_dec_h
 
 
 /-- The `p`-fire eliminator, `∀p` mode. -/
@@ -1701,9 +1601,9 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                   (fireClean (splitHyp hm hXr) (.stable
                     (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                       (.impL
-                        ((hb.trans ha.symm) ▸
-                          Stab.lfoc (List.mem_cons_self ..)
-                            (lf_c.wk (Sub.grow _)))
+                        (stabAtomCast (hb.trans ha.symm)
+                          (Stab.lfoc (List.mem_cons_self ..)
+                            (lf_c.wk (Sub.grow _))))
                         (lfP.wk (Sub.grow _)))))))
         | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -1714,9 +1614,9 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_d.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_d.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))
         | .imp (.down (.circ Q')) N_c, _, hd, .impL s_c lf_c =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -1727,9 +1627,9 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_c.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_c.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))
         | .imp (.or Qa Qb) N_o, _, hd, .impL s_o lf_o =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -1740,9 +1640,9 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_o.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_o.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))
         | .imp (.down (.up Pa)) N_s, _, hd, .impL s_s lf_s =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -1753,9 +1653,9 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_s.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_s.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))
         | .imp (.down (.and Ma Mb)) N_a, _, hd, .impL s_a lf_a =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
@@ -1766,9 +1666,9 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
                 (fireClean (splitHyp hm hXr) (.stable
                   (.lfoc (List.mem_cons_of_mem _ (hm2 _ hXpkg))
                     (.impL
-                      ((hb.trans ha.symm) ▸
-                        Stab.lfoc (List.mem_cons_self ..)
-                          (lf_a.wk (Sub.grow _)))
+                      (stabAtomCast (hb.trans ha.symm)
+                        (Stab.lfoc (List.mem_cons_self ..)
+                          (lf_a.wk (Sub.grow _))))
                       (lfP.wk (Sub.grow _)))))))
         | .circ _, _, _, lf => nomatch lf
         | .up .fls, hpk, _, _ => nomatch hpk
@@ -1783,8 +1683,8 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
           keepFold (List.mem_cons_of_mem _ ((hm _ h).resolve_left hd))
             (w.2 e' f' he' hf')⟩
   termination_by Γ' K M P₀ j L a b hm hm2 hK kit ha hb hXpkg lfP s =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
-  decreasing_by ljf_dec_p
+    (hgtS s + hgtL lfP, 2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf s)
+  decreasing_by ljf_dec_h
 
 
 /-- Left focus on a kept hypothesis, inside an `∀p`-mode `p`-proof. -/
@@ -1815,8 +1715,8 @@ def UpLFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
       let w := UpLFQ done hsat hP hm hm2 hK kit hH.2 ha hb hXpkg lfP lf
       ⟨w.1, fun e' f' he' hf' => .and2 (w.2 e' f' he' hf')⟩
   termination_by Γ' K M P₀ j L H a b hm hm2 hK kit hH ha hb hXpkg lfP lf =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
-  decreasing_by ljf_dec_a
+    (hgtL lf + hgtL lfP, 2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf lf)
+  decreasing_by ljf_dec_h
 
 
 /-- Inversion inside an `∀p`-mode `p`-proof. -/
@@ -1869,8 +1769,8 @@ def UpInvGQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
           (PFreeCtx.cons (show PFreeN p (.up (.atom c)) from hΩ.head) hK)
           kit hΩ.tail ha hb hXpkg (lfP.wk (Sub.grow _)) d)
   termination_by Γ' K M P₀ j L Ω a b hm hm2 hK kit hΩ ha hb hXpkg lfP d =>
-    (2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
-  decreasing_by ljf_dec_a
+    (hgtI d + hgtL lfP, 2 * sum3 [] + sum3 done + 3 ^ wPos P₀ + 2, sizeOf d)
+  decreasing_by ljf_dec_h
 
 end
 
