@@ -2182,6 +2182,12 @@ the block to re-author is half the size.  Method for any development
 loop on the family, from the run: never re-elaborate `LJF.OFuelPFam`
 to test a body — check bodies as an `unsafe def` copy (3 s), the edge
 goals in the bench (5.8 s), and pay the real build once.
+
+**Verified after the two merges (PR #19 at ee8a0a5, WP1c at 6ee92a9):**
+full rebuild of `LJF`, `wipshared`, `Production` from the root module
+down, exit 0, 8953 jobs, 32 min wall (23:51–00:24); production axiom
+sweep 12 492 declarations within `[propext, Classical.choice,
+Quot.sound]`, the four `except`-held modules unchanged.
 ---
 
 ## 5 · OPEN list
