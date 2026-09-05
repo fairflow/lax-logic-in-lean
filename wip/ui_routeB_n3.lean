@@ -26,7 +26,8 @@ Contents:
 * N2  `IsUIPair`/`HasUI` for `interpP`.
 * N3  forward: `hasUI_of_stabEq` — PROVED from the two variables.
       backward: `stabilises_of_hasUI` — PROVED relative to `CutInv`.
-* N6  `IsUIPairPLL`/`PLL_UI` and the transport `pll_ui_of_ljfo`.
+* N6  `IsUIPairPLL`/`PLL_UI`, the polarisation fact `pfree_roundTripN`,
+      and the transport `isUIPairPLL_of_isUIPair` / `pll_ui_of_ljfo`.
 -/
 import LJF.OFuelP
 import LJF.OFuelPSound
@@ -695,6 +696,135 @@ def stabilises_of_hasUI {p : String} {done : List Neg} {G : Neg}
         · exact List.mem_cons_self ..
         · exact absurd hZ List.not_mem_nil)
 
+/-! # N6 · Transport to PLL through the focalization bridge
+
+`bridge_iff` (`LJF/OBridge.lean`) is a biconditional at every context, so
+both directions of a uniform-interpolant pair cross it.  Two cells are
+involved and they are different: the `∃p` side lives at the station
+`[negOfO φ]`, the `∀p` side at the cell `[] ⇒ negOfO φ` with the candidate
+hypothesis supplied as `Δ`.
+
+The one polarisation fact the transport needs turns out to be PROVABLE
+rather than an obligation: `p`-freeness survives the round trip
+`negOfO ∘ eraseNeg`, which is not the identity on `Neg` but does preserve
+the atoms. -/
+
+/-- `p`-freeness of a PLL formula, read through the polarisation. -/
+def PFreeF (p : String) (φ : PLLFormula) : Prop := PFreeN p (negOfO φ)
+
+/-- The two polarisations of a PLL formula have the same atoms, so
+`p`-freeness passes between them. -/
+theorem pfree_posOfO_of_negOfO {p : String} :
+    ∀ (χ : PLLFormula), PFreeN p (negOfO χ) → PFreeP p (posOfO χ)
+  | .prop _, h => h
+  | .falsePLL, h => h
+  | .or _ _, h => h
+  | .and _ _, h => h
+  | .ifThen _ _, h => h
+  | .somehow _, h => h
+
+mutual
+
+/-- **`p`-freeness survives the round trip** (negatives).  `eraseNeg`
+followed by `negOfO` is not the identity on `Neg` — polarity is
+reconstructed, not remembered — but it preserves the atoms. -/
+theorem pfree_roundTripN {p : String} :
+    ∀ {N : Neg}, PFreeN p N → PFreeN p (negOfO (eraseNeg N))
+  | .up _, h => pfree_roundTripP h
+  | .imp _ _, h =>
+      ⟨pfree_posOfO_of_negOfO _ (pfree_roundTripP h.1), pfree_roundTripN h.2⟩
+  | .and _ _, h => ⟨pfree_roundTripN h.1, pfree_roundTripN h.2⟩
+  | .circ _, h => pfree_posOfO_of_negOfO _ (pfree_roundTripP h)
+
+/-- The same for positives. -/
+theorem pfree_roundTripP {p : String} :
+    ∀ {P : Pos}, PFreeP p P → PFreeN p (negOfO (erasePos P))
+  | .atom _, h => h
+  | .fls, _ => trivial
+  | .or _ _, h =>
+      ⟨pfree_posOfO_of_negOfO _ (pfree_roundTripP h.1),
+       pfree_posOfO_of_negOfO _ (pfree_roundTripP h.2)⟩
+  | .down _, h => pfree_roundTripN h
+
+end
+
+/-- Pitts's pair for a PLL formula and a variable, in `LaxND`. -/
+structure IsUIPairPLL (p : String) (φ : PLLFormula) (E A : PLLFormula) : Type where
+  pfreeE : PFreeF p E
+  pfreeA : PFreeF p A
+  soundE : Nonempty (LaxND [φ] E)
+  minE : ∀ ψ, PFreeF p ψ → Nonempty (LaxND [φ] ψ) → Nonempty (LaxND [E] ψ)
+  soundA : Nonempty (LaxND [A] φ)
+  minA : ∀ ψ, PFreeF p ψ → Nonempty (LaxND [ψ] φ) → Nonempty (LaxND [ψ] A)
+
+/-- **Uniform interpolation for PLL.** -/
+def PLL_UI : Type :=
+  ∀ (p : String) (φ : PLLFormula), Σ (E A : PLLFormula), IsUIPairPLL p φ E A
+
+/-- **The transport.**  A uniform-interpolant pair at the station
+`[negOfO φ]` supplies `∃p.φ`, one at the cell `[] ⇒ negOfO φ` supplies
+`∀p.φ`, and erasure carries both back to PLL.  `CutInv` enters once, on
+the `∀p` side, to discharge the `E₀` that the cell's own minimality
+places beside the candidate hypothesis; `E₀` is derivable outright
+(`soundE` at the empty station), so this use of cut is a weakening in
+disguise and would go if `IsUIPair` were stated with the `E`-relativised
+`minA` made optional at the empty station. -/
+def isUIPairPLL_of_isUIPair (cut : CutInv) {p : String} {φ : PLLFormula}
+    {E A₁ E₀ A : Neg}
+    (uE : IsUIPair p [negOfO φ] (negOfO φ) E A₁)
+    (uA : IsUIPair p [] (negOfO φ) E₀ A) :
+    IsUIPairPLL p φ (eraseNeg E) (eraseNeg A) where
+  pfreeE := pfree_roundTripN uE.pfreeE
+  pfreeA := pfree_roundTripN uA.pfreeA
+  soundE := by
+    have h := Inv.sound uE.soundE
+    simp only [eraseCtx, List.map_cons, List.map_nil, List.nil_append,
+      (erase_polarise φ).2, goal] at h
+    exact ⟨h⟩
+  minE := by
+    intro ψ hψ hd
+    obtain ⟨d⟩ := (bridge_iff [φ] ψ).mp hd
+    have h0 : Inv ([negOfO φ] ++ []) [] .tru (negOfO ψ) :=
+      d.wk (fun Z hZ => List.mem_append.mpr (Or.inl hZ))
+    have h1 := uE.minE [] (negOfO ψ) pfreeCtx_nil hψ h0
+    have h := Inv.sound h1
+    simp only [eraseCtx, List.map_cons, List.map_nil, List.nil_append,
+      (erase_polarise ψ).2, goal] at h
+    exact ⟨h⟩
+  soundA := by
+    have h := Inv.sound uA.soundA
+    simp only [eraseCtx, List.map_cons, List.map_nil, List.nil_append,
+      (erase_polarise φ).2, goal] at h
+    exact ⟨h⟩
+  minA := by
+    intro ψ hψ hd
+    obtain ⟨d⟩ := (bridge_iff [ψ] φ).mp hd
+    have h0 : Inv ([] ++ [negOfO ψ]) [] .tru (negOfO φ) := d
+    have h1 := uA.minA [negOfO ψ] (pfreeCtx_singleton hψ) h0
+    have h2 : Inv ([] ++ [negOfO ψ]) [] .tru A := cut _ _ _ _ _ uA.soundE h1
+    have h := Inv.sound h2
+    simp only [eraseCtx, List.map_cons, List.map_nil, List.nil_append,
+      (erase_polarise ψ).2, goal] at h
+    exact ⟨h⟩
+
+/-- What the transport still needs, per formula: a uniform-interpolant
+pair at the polarised station and one at the polarised goal cell.  The
+second is an instance of N3 forward at the empty station (`Saturated []`,
+`ParkedCtxP []`); the first is N3 forward at the SATURATION of
+`[negOfO φ]`, so it also needs the processing phase `eMinPP`/`aMinPP`
+(`LJF/OFuelPMin.lean`) to move the pair from the saturated station back to
+`[negOfO φ]`.  That last step is WP4's, and is the only thing between this
+file and `PLL_UI`. -/
+def CellsFor (p : String) : Type :=
+  ∀ φ : PLLFormula, HasUI p [negOfO φ] (negOfO φ) × HasUI p [] (negOfO φ)
+
+/-- **Uniform interpolation for PLL, from the cells.** -/
+def pll_ui_of_ljfo (cut : CutInv) (cells : ∀ p, CellsFor p) : PLL_UI := by
+  intro p φ
+  obtain ⟨⟨E, A₁, uE⟩, ⟨E₀, A, uA⟩⟩ := cells p φ
+  exact ⟨eraseNeg E, eraseNeg A, isUIPairPLL_of_isUIPair cut uE uA⟩
+
+
 end LJFO
 
 /-! ## Pins
@@ -721,3 +851,13 @@ Measured with `#axioms_within_pin`, not retyped.  Nothing here reaches
 #axioms_within LJFO.hasUI_of_stabEq [propext, Quot.sound]
 #axioms_within LJFO.CutInv []
 #axioms_within LJFO.stabilises_of_hasUI [propext, Quot.sound]
+
+#axioms_within LJFO.PFreeF []
+#axioms_within LJFO.pfree_posOfO_of_negOfO []
+#axioms_within LJFO.pfree_roundTripN []
+#axioms_within LJFO.pfree_roundTripP []
+#axioms_within LJFO.IsUIPairPLL []
+#axioms_within LJFO.PLL_UI []
+#axioms_within LJFO.isUIPairPLL_of_isUIPair [propext, Quot.sound]
+#axioms_within LJFO.CellsFor []
+#axioms_within LJFO.pll_ui_of_ljfo [propext, Quot.sound]
