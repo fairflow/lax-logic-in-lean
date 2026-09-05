@@ -9,6 +9,7 @@ import LaxBlueprint.Chapters.Terms
 import LaxBlueprint.Chapters.Normalisation
 import LaxBlueprint.Chapters.StrongNorm
 import LaxBlueprint.Chapters.FRJW
+import LaxBlueprint.Chapters.UI
 import LaxBlueprint.Chapters.RN
 import LaxBlueprint.Chapters.Tools
 
@@ -30,6 +31,7 @@ here.
 {include 0 LaxBlueprint.Chapters.Normalisation}
 {include 0 LaxBlueprint.Chapters.StrongNorm}
 {include 0 LaxBlueprint.Chapters.FRJW}
+{include 0 LaxBlueprint.Chapters.UI}
 {include 0 LaxBlueprint.Chapters.RN}
 {include 0 LaxBlueprint.Chapters.Tools}
 
