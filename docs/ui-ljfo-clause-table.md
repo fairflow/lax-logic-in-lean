@@ -2019,6 +2019,113 @@ points instantiate the budgets at the actual μ.  Expected: elaboration in
 seconds, definitional unfolding for N3, and `Classical.choice` leaving
 the pins (no `WellFounded.fix`).  The statements `ECofinalP`/`ACofinalP`
 do not change.  Launched as WP1c.
+
+### 4.19 WP2: N1, N2 stated; N3 forward PROVED without cut; N3 backward and N6 PROVED relative to `CutInv` — over the cofinality statements as variables (2026-09-05, 20:40)
+
+Built in one agent run of 66 minutes on Matthew's direction ("state it
+in a variable and continue"), in a NEW module `wip/ui_routeB_n3.lean`
+(863 lines) that imports only `OFuelP`, `OFuelPSound`, `OFuelPMin`,
+`OBridge` — not the family — and takes `(s2 : SatE2P p) (a2 : SatA2P p)`
+as arguments; instantiating them with `LJFO.satE2P`/`satA2P` is one
+line for later.  Merged at 37fd8ca; verified here: `lake build
+wipshared` exit 0, pins measured, gate watched failing (`hasUI_of_stabEq`
+at `[propext]` → "depends on Quot.sound"), sorry sweep clean.
+**No `Classical.choice` anywhere**: every declaration is at
+`[propext, Quot.sound]` or below.
+
+**N1, literal and interderivable.**  `interpP` uses its fuel only as a
+bound, so stabilisation can be stated as the chain being constant AS A
+FORMULA:
+
+    EStabEq p done    := Σ′ f₀, ∀ f ≥ f₀,  E_f = E_{f₀}
+    AStabEq p done G  := Σ′ f₀, ∀ f ≥ f₀,  A_f(G) = A_{f₀}(G)
+
+(`Σ′` because the second component is a `Prop`).  The approved
+interderivable forms `EStabilises`/`AStabilises` (now over `interpP`) are
+derived from them by `idNeg` after the rewrite.
+
+**N2.**  `IsUIPair p done G E A`: `E`, `A` p-free; `done ⊢ E`;
+`minE : ∀ Δ ψ p-free, ∀ j, done ++ Δ ⊢ⱼ ψ → E :: Δ ⊢ⱼ ψ` (every
+judgment, since `SatE2P` carries `∀ j`); `A :: done ⊢ G`;
+`minA : ∀ Δ p-free, done ++ Δ ⊢ G → E :: Δ ⊢ A` at `tru` only — at
+`lax` the ∀p approximant of `jGoal j G` is the different formula
+`A(◯P)`, so the lax cell is the cell `done ⇒ ◯P`, covered by the same
+statement.  `HasUI p done G := Σ E A, IsUIPair p done G E A`.
+
+**N3 forward — PROVED, no cut:**
+
+    hasUI_of_stabEq : SatE2P p → SatA2P p → Saturated done → ParkedCtxP done →
+                      EStabEq p done → AStabEq p done G → HasUI p done G
+
+with `E := E_{f₀}`, `A := A_{f₁}`; soundness from `eSoundP`/`aSoundP` at
+the stabilisation fuel; minimality by reading the `UpFrom`/`UpFrom2`
+witness above both thresholds and rewriting with the literal
+stabilisation.  (Mechanisation point: destructure the witness before
+rewriting, or the motive fails.)  `interpP_pfree : ∀ f todo done g,
+PFreeN p (interpP p f todo done g)` PROVED (16 aggregate cases by
+`fun_induction`; the `interp_pfree` farm of `OCore.lean` does not
+transfer — refuting an alternative on an aggregate goal exhausts
+8 000 000 heartbeats).
+
+**N3 backward — PROVED relative to ONE obligation:**
+
+    CutInv := ∀ Γ Δ j N ψ,  Γ ⊢ N  →  N :: Δ ⊢ⱼ ψ  →  Γ ++ Δ ⊢ⱼ ψ
+    stabilises_of_hasUI : CutInv → SatE2P p → SatA2P p → Saturated done →
+                          ParkedCtxP done → HasUI p done G →
+                          EStabilises p done × AStabilises p done G
+
+Contraction and permutation come free from `Inv.wk`; the proof uses
+`CutInv` at `j = tru` only.  Where the two independent fuels of
+`UpFrom2` pay: `E_f, A_f ⊢ A_{f₀}` must read the cofinality instance at
+∃p-fuel `f` and ∀p-fuel `f₀`.  Cut admissibility for LJF◯ was not
+attempted; it is a work package of its own (review theme 4).
+
+**N6 — PROVED relative to `CutInv` and the per-cell pairs.**  The
+anticipated polarisation obstacle dissolved: `pfree_roundTripN :
+PFreeN p N → PFreeN p (negOfO (eraseNeg N))` (the round trip is not the
+identity on `Neg` but preserves atoms).  Then
+
+    IsUIPairPLL p φ E A := E, A p-free; [φ] ⊢ E; (∀ ψ p-free, [φ] ⊢ ψ → [E] ⊢ ψ);
+                           [A] ⊢ φ; (∀ ψ p-free, [ψ] ⊢ φ → [ψ] ⊢ A)      (in LaxND)
+    PLL_UI := ∀ p φ, Σ E A, IsUIPairPLL p φ E A
+    CellsFor p := ∀ φ, HasUI p [negOfO φ] (negOfO φ) × HasUI p [] (negOfO φ)
+    pll_ui_of_ljfo : CutInv → (∀ p, CellsFor p) → PLL_UI
+
+Two cells per formula, not one: the station `[negOfO φ]` supplies
+`∃p.φ`, the cell `[] ⇒ negOfO φ` supplies `∀p.φ`.  `CutInv` enters once,
+on the ∀p side, to discharge the `E₀` that the E-relativised `minA`
+leaves beside the candidate.  `CellsFor` is what N4 owes through N3
+forward: the second component is N3 at the empty station, the first is
+N3 at the SATURATION of `[negOfO φ]` plus `eMinPP`/`aMinPP` to move the
+pair back through the processing phase (that transfer is WP4's content).
+
+**Fuel irrelevance — a typed obligation, on N4's path, not N3's:**
+
+    FuelIrrelevance p := ∀ f todo done g,
+        interpP p (f+1) todo done g = interpP p f todo done g →
+        ∀ f′ ≥ f, interpP p f′ todo done g = interpP p f todo done g
+
+needs a `Defined` predicate mirroring interpP's thirty clauses; not
+built.  With it, ONE equality check at a station is literal
+stabilisation (`eStabEq_of_fuelStep`, `aStabEq_of_fuelStep`, proved).
+
+**What this does to N4.**  The literal form suggests stating the open
+theorem as TERMINATION OF `interpP`'S RECURSION at every saturated
+parked station — "there is a fuel `f` with `interpP p (f+1) [] done g =
+interpP p f [] done g`" — plus `FuelIrrelevance`.  Both are statements
+about the recursion, which is where WP3's loop-elimination argument
+lives, and N3 forward consumes exactly the literal form, so nothing is
+lost by strengthening.  That is the standing OPEN item O8 (termination
+of the retaining table) with its object made precise.  The refutation
+prong is unaffected: an A-chain ascending without bound refutes the
+literal form and, through N3 backward (relative to `CutInv`), `HasUI`
+for that cell.
+
+**The theorem chain, as it now stands** (every arrow machine-checked):
+
+    N4 (OPEN: stabilisation at every saturated station, literal form)
+      ─N3 forward─▶ CellsFor p (with WP4's transfer through the processing phase)
+      ─N6─▶ PLL_UI,   given CutInv (OPEN) and cofinality (PROVED, §4.17)
 ---
 
 ## 5 · OPEN list

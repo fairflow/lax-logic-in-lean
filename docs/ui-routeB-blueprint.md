@@ -48,12 +48,14 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 | N0e | `interpP`, the parking definition; `eSoundP`/`aSoundP`; rows, processing phase `eMinPP`/`aMinPP`, reductions; the founding `μ = (hgt, weight)` with every edge class discharged (Part 10); `parkAntP_of_satA2P`; `parkFireE` | `LJF/OFuelP.lean`, `OFuelPSound.lean`, `OFuelPMin.lean`, `OFuelPCof.lean`, `OFuelHeight.lean` Part 10 | **PROVED** — soundness `[propext, Quot.sound]`, kernel-checked agreement with `interpF` off the changed shapes, founding proved (§4.14) | N0h |
 | N0c | `tinvP`, `uentryP`, `parkAntP`, `satE2P`, `satA2P` — the 17-definition family in fuel-carrying form over `interpP`, ONE `mutual` on `μ = (hgt, weight, sizeOf)` | `LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean`, `LJF/OFuelPCofinal.lean` | **PROVED, UNCONDITIONAL** `[propext, Classical.choice, Quot.sound]` (§4.17). The antecedent guard is a native recursive call at all twenty parked arms; `ParkAntP` is a consequence, not a hypothesis. `DykAntP` WITHDRAWN 2026-09-05 (§4.15–4.16) | N0e |
 | N0d | `ECofinalP`, `ACofinalP` and their inhabitants `ecofinalP`, `acofinalP`; `ECofinalF`/`ACofinalF` and the upward-closed forms `ECofinalUp`, `ACofinalUp` | `LJF/OFuelPCofinal.lean`, `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | **PROVED** for `interpP` `[propext, Classical.choice, Quot.sound]` (§4.17); the `interpF` forms remain DRAFTED | N0c |
-| N1 | `EStabilises`, `AStabilises` — the chains eventually constant, the A-side modulo `E_f` | `wip/ui_routeB_blueprint.lean` | DRAFTED (statement) | — |
-| N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic | same | DRAFTED (statement) | — |
-| N3 | `hasUI_of_stabilises`, `stabilises_of_hasUI` — W ⟺ UI per cell | same | DRAFTED (`sorry`) | N0a, N0d, N1, N2 |
+| N1 | `EStabEq`, `AStabEq` — the chains LITERALLY constant from some fuel (`∀ f ≥ f₀, E_f = E_{f₀}`); `EStabilises`, `AStabilises` the interderivable forms, derived from them | `wip/ui_routeB_n3.lean` | **STATED**, `estabilises_of_stabEq`/`astabilises_of_stabEq` PROVED `[propext, Quot.sound]` (§4.19) | — |
+| N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic (`minE` at every judgment `j`; `minA` at `tru`, the lax cell being the cell `done ⇒ ◯P`) | `wip/ui_routeB_n3.lean` | **STATED** (axiom-free) | — |
+| N3 | `hasUI_of_stabEq` (forward), `stabilises_of_hasUI` (backward) — W ⟺ UI per cell | `wip/ui_routeB_n3.lean` | **forward PROVED** `[propext, Quot.sound]`, no cut, over `SatE2P`/`SatA2P` as variables; **backward PROVED relative to `CutInv`** (§4.19) | N0e, N0d, N1, N2 |
 | N4 | `StabilisationAll` — every saturated cell stabilises | same | **OPEN both ways** (`sorry` placeholder) | — |
 | N5 | `ljfo_ui_of_stabilisation` — UI for LJF◯ | same | DRAFTED (`sorry`) | N3, N4 |
-| N6 | `IsUIPairPLL`, `PLL_UI`, `pll_ui_of_ljfo` — transport to PLL | same | DRAFTED (`sorry`) | N5, `bridge_iff`, N0b |
+| N6 | `IsUIPairPLL`, `PLL_UI`, `pll_ui_of_ljfo : CutInv → (∀ p, CellsFor p) → PLL_UI` — transport to PLL; `pfree_roundTripN` proved | `wip/ui_routeB_n3.lean` | **PROVED relative to `CutInv` and `CellsFor`** `[propext, Quot.sound]` (§4.19) | `bridge_iff`, N3 |
+| N0k | `CutInv` — composition of `Inv` derivations: `Γ ⊢ N → N :: Δ ⊢ⱼ ψ → Γ ++ Δ ⊢ⱼ ψ` (LJF◯ has no cut lemma; its completeness is for polarised images only) | `wip/ui_routeB_n3.lean` | **OPEN** (typed obligation; needed by N3 backward and N6) | — |
+| N0i | `FuelIrrelevance` — one fuel step without change at a station implies the chain is constant above it | `wip/ui_routeB_n3.lean` | **OPEN** (typed obligation; on N4's path, not N3's) | — |
 | N7 | pins, hoist out of `wip/`, `Production` sweep, `TOOLS.md` | — | — | each node as it lands |
 | N8 | blueprint chapter (`LaxBlueprint/`), HANDOFF entry, paper | — | — | N7 |
 
@@ -87,11 +89,13 @@ graph TD
   N0c --> N0d[N0d ECofinalP/ACofinalP · PROVED]
   N1[N1 EStabilises / AStabilises] --> N3
   N2[N2 IsUIPair / HasUI] --> N3
-  N0a --> N3[N3 W ⟺ UI per cell · sorry]
+  N0a --> N3[N3 W ⟺ UI per cell · forward PROVED, backward rel. CutInv]
+  K[N0k CutInv · OPEN] --> N3
+  K --> N6
   N0d --> N3
   N4[N4 StabilisationAll · OPEN both ways] --> N5[N5 UI for LJF◯ · sorry]
   N3 --> N5
-  N5 --> N6[N6 transport to PLL · sorry]
+  N5 --> N6[N6 transport to PLL · PROVED rel. CutInv + CellsFor]
   B[bridge_iff · PROVED] --> N6
   N0b --> N6
   N6 --> N7[N7 pins · hoist · Production]
