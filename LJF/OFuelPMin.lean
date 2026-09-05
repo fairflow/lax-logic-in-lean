@@ -642,3 +642,9 @@ end LJFO
 #axioms_within LJFO.interpPA_and_eq [propext]
 #axioms_within LJFO.interpP_circ_laxRows [propext]
 #axioms_within LJFO.laxRowsP_of_eq [propext]
+
+/-! The two Dyckhoff row memberships, whose guard moved to the
+antecedent's own goal on 2026-09-05. -/
+
+#axioms_within LJFO.dykConjMemP [propext, Quot.sound]
+#axioms_within LJFO.laxRowsP_dykMem [propext, Quot.sound]

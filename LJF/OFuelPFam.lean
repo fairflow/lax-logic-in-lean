@@ -33,27 +33,24 @@ Three further differences, all forced by `interpP`'s definition
 
 ## What is conditional, and why
 
-Two typed obligations, in the `CimpAnt` idiom of `LJF/O.lean` (a
+ONE typed obligation, in the `CimpAnt` idiom of `LJF/O.lean` (a
 `def … : Type`, never a sorried theorem):
 
-* `ParkAntP` (`LJF/OFuelPCof.lean`) — the antecedent guard of the four
-  parked implications whose antecedent is a POSITIVE, at goal `↑Q`.  It
-  is an instance of `∀p`-cofinality itself at the same station
+* `ParkAntP` (`LJF/OFuelPCof.lean`) — the antecedent guard of the FIVE
+  parked implications, at the antecedent's own goal `↑Q`.  It is an
+  instance of `∀p`-cofinality itself at the same station
   (`parkAntP_of_satA2P`, proved), and `LJF/OFuelHeight.lean` §10.4 is the
   height fact that makes it a legitimate recursive call.  Taking it as a
   recursive call requires re-founding the family on
   `μ = (normalised height, station weight, size)`; this module is founded
   on `LJF/O.lean`'s `(station weight, size)` pair, so it takes the
   obligation as a parameter.
-* `DykAntP` (below) — the same for the Dyckhoff shape
-  `↓(Q′ ⊃ N′) ⊃ N`.  It is NOT an instance of `ParkAntP`: `interpP`'s
-  Dyckhoff row guards its fire by `A(done ⇒ Q′ ⊃ N′)`, a NEGATIVE goal,
-  while the dispatch of §10.4 supplies `A(done ⇒ ↑↓(Q′ ⊃ N′))`, and the
-  `↑↓` aggregate is a DISJUNCTION with the wanted formula as one
-  disjunct (`interpPA_down_eq`), so it does not project.  Bridging the
-  two would need `negOfDownStab` at an implication body, whose height
-  rise is unbounded (`LJF/OFuelHeight.lean` §7.3).  Recorded here as an
-  obligation rather than papered over.
+
+A second obligation `DykAntP`, for the Dyckhoff shape alone, stood here
+until 2026-09-05 and was WITHDRAWN: it existed only because
+`interpP`'s Dyckhoff row guarded by the antecedent's body rather than
+its goal, which the row no longer does (Part 4,
+`docs/ui-ljfo-clause-table.md` §4.15).
 
 Nothing in `LJF/OCore.lean`, `LJF/O.lean`, `LJF/OFuel*.lean` is touched;
 this module is purely additive.
@@ -314,14 +311,15 @@ def cimpFireA {done rest K : List Neg} {Q' : Pos} {N : Neg} {P₀ : Pos}
       (jBox j (nOrAll (L f)))) :=
   parkFireA hsat (fun _ => cimpConjMemP hXr) hmemA want cont
 
-/-- `↓(Q′ ⊃ N′) ⊃ N` — the guard at the FULL station. -/
+/-- `↓(Q′ ⊃ N′) ⊃ N` — the guard at the FULL station and at the
+antecedent's own goal `↑↓(Q′ ⊃ N′)`, like the other four. -/
 def dykFireA {done rest K : List Neg} {Q' : Pos} {N' N : Neg} {P₀ : Pos}
     {j : JD} {L : Nat → List Neg} (hsat : Saturated done)
     (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done)
-    (hmemA : ∀ f, nAnd (interpP p f [] done (some (.imp Q' N')))
+    (hmemA : ∀ f, nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
       (interpP p f [N] rest (some (jGoal j (.up P₀)))) ∈ L f)
     (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
-              (interpP p f [] done (some (.imp Q' N')))))
+              (interpP p f [] done (some (.up (.down (.imp Q' N')))))))
     (cont : UpFrom2 (fun e f => Inv (interpP p e [N] rest none :: K) [] .tru
               (interpP p f [N] rest (some (jGoal j (.up P₀)))))) :
     UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
@@ -394,7 +392,7 @@ structure RowKit (p : String) (done : List Neg) (j : JD) (P₀ : Pos)
   /-- The Dyckhoff row. -/
   dmem : ∀ (f : Nat) {Q' : Pos} {N' N : Neg} {rest : List Neg},
     (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done →
-    nAnd (interpP p f [] done (some (.imp Q' N')))
+    nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
          (interpP p f [N] rest (some (jGoal j (.up P₀)))) ∈ L f
   /-- The ◯-implication row. -/
   cmem : ∀ (f : Nat) {Q' : Pos} {N : Neg} {rest : List Neg},
@@ -422,28 +420,34 @@ structure RowKit (p : String) (done : List Neg) (j : JD) (P₀ : Pos)
     Neg.imp (.down (interpP p f [.up R] rest none))
       (interpP p f [.up R] rest (some (jGoal j (.up P₀)))) ∈ L f
 
-/-! # Part 4: the Dyckhoff antecedent obligation
+/-! # Part 4: the Dyckhoff antecedent obligation, WITHDRAWN (2026-09-05)
 
-`interpP`'s Dyckhoff rows guard their fire by `A(done ⇒ Q′ ⊃ N′)` — the
-antecedent's own NEGATIVE goal at the full station (`LJF/OFuelP.lean`
-(c)).  The generic dispatch of `LJF/OFuelHeight.lean` §10.4 delivers
-`A(done ⇒ ↑Q)` for an antecedent POSITIVE `Q`, which at `Q = ↓(Q′ ⊃ N′)`
-is `A(done ⇒ ↑↓(Q′ ⊃ N′))`; by `interpPA_down_eq` that aggregate is a
-DISJUNCTION whose first disjunct is the wanted `A(done ⇒ Q′ ⊃ N′)`, so it
-does not project, and the only transformer that would bridge the two —
-`negOfDownStab` at an implication body — rises unboundedly
-(`LJF/OFuelHeight.lean` §7.3).  So the Dyckhoff guard is isolated, as
-`CimpAnt` is in `LJF/O.lean`. -/
+An earlier draft of this module carried a second typed obligation
+`DykAntP` beside `ParkAntP`, for the Dyckhoff shape `↓(Q′ ⊃ N′) ⊃ N`
+alone.  It was not an instance of `ParkAntP` and the height-first
+re-founding did not reach it: `interpP`'s Dyckhoff row guarded its fire
+by `A(done ⇒ Q′ ⊃ N′)`, the antecedent's BODY (a negative), while the
+generic dispatch of `LJF/OFuelHeight.lean` §10.4 supplies
+`A(done ⇒ ↑Q)` at the antecedent POSITIVE `Q`, which at
+`Q = ↓(Q′ ⊃ N′)` is `A(done ⇒ ↑↓(Q′ ⊃ N′))` — by `interpPA_down_eq` a
+DISJUNCTION carrying the wanted formula as its head disjunct, so the
+implication ran the wrong way.
 
-/-- **The Dyckhoff antecedent dispatch obligation.** -/
-def DykAntP (p : String) : Type :=
-  ∀ (done K Γ' : List Neg) (Q' : Pos) (N' N : Neg),
-    Saturated done → ParkedCtxP done →
-    Neg.imp (.down (.imp Q' N')) N ∈ done →
-    (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-    Stab Γ' .tru (.down (.imp Q' N')) →
-    UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
-      (interpP p f [] done (some (.imp Q' N'))))
+That was a DEFECT OF THE ROW, not a gap in the dispatch: the Dyckhoff
+row was the one row of `interpP` violating `interpP`'s own principle
+(no rewriting of hypotheses — every non-atomic implication fires through
+the retained `∀p` of its ANTECEDENT).  The row now guards by
+`A(done ⇒ ↑↓(Q′ ⊃ N′))`, the antecedent's own goal, exactly as the
+◯-implication row guards by `A(done ⇒ ↑↓◯Q′)` (`LJF/OFuelP.lean` (c),
+`docs/ui-ljfo-clause-table.md` §4.15).  Soundness was re-proved for the
+changed row before anything downstream moved.  The four Dyckhoff arms of
+the family below are therefore ordinary parked arms
+(`parkAntGuard pant …` at `Q := ↓(Q′ ⊃ N′)`), the obligation is deleted,
+and `ParkAntP` — stated for every positive antecedent already — is the
+ONLY thing this family is conditional on.
+
+`dykCell` (Part 8) is kept as the cell that exercises the Dyckhoff
+dispatch. -/
 
 /-! # Part 5: the `∃p` side of the family
 
@@ -464,7 +468,7 @@ fixes the conclusion's instead). -/
 theorem pfreeCircUp {p : String} {P : Pos} (h : PFreeN p (.circ P)) :
     PFreeN p (.up P) := h
 
-variable (pant : ParkAntP p) (dant : DykAntP p)
+variable (pant : ParkAntP p)
 
 set_option maxHeartbeats 8000000 in
 mutual
@@ -669,7 +673,7 @@ def TStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (dykFireE hsat hXr
-              (dant done _ _ Q' N' N hsat hP hd hm hm2 hK s_d)
+              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
               (eMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hp
                 (fireClean (splitHyp hm hXr)
@@ -820,7 +824,7 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (dykFireE hsat hXr
-              (dant done _ _ Q' N' N_d hsat hP hd hm hm2 hK s_d)
+              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
               (eMinQ [N_d] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hpT
                 (fireClean (splitHyp hm hXr) (.stable
@@ -1400,7 +1404,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
             else
               let ⟨rest, hXr⟩ := splitAt done _ hd
               qFireA hsat hcp hXr (fun f => kit.qmem f hXr)
-                (TStabQ pant dant done hsat hP hm hm2 hK
+                (TStabQ pant done hsat hP hm hm2 hK
                   (show PFreeP p (Pos.atom c) from hcp) s_c)
                 (aMinQ [Nc] rest _ (.up _)
                   (ParkedCtxP.sub (splits_sub hXr) hP) hK
@@ -1410,7 +1414,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             dykFireA hsat hXr (fun f => kit.dmem f hXr)
-              (dant done _ _ Q' N' N hsat hP hd hm hm2 hK s_d)
+              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
               (aMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr)
@@ -1600,7 +1604,7 @@ def ULFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
       ⟨w.1, fun e' f' he' hf' => .circL (w.2 e' f' he' hf')⟩
   | _, _, _, _, _, _, hm, hm2, hK, kit, hH, .impL s lf =>
       UpFrom2.map₂ (fun _ _ x y => .impL x y)
-        (UpFrom.toUpFrom2 (TStabQ pant dant done hsat hP hm hm2 hK hH.1 s))
+        (UpFrom.toUpFrom2 (TStabQ pant done hsat hP hm hm2 hK hH.1 s))
         (ULFQ done hsat hP hm hm2 hK kit hH.2 lf)
   | _, _, _, _, _, _, hm, hm2, hK, kit, hH, .and1 lf =>
       let w := ULFQ done hsat hP hm hm2 hK kit hH.1 lf
@@ -1690,7 +1694,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
             else
               let ⟨rest, hXr⟩ := splitAt done _ hd
               qFireA hsat hcp hXr (fun f => kit.qmem f hXr)
-                (TStabQ pant dant done hsat hP hm hm2 hK
+                (TStabQ pant done hsat hP hm hm2 hK
                   (show PFreeP p (Pos.atom c) from hcp) s_c)
                 (aMinQ [Nc] rest _ (.up _)
                   (ParkedCtxP.sub (splits_sub hXr) hP) hK
@@ -1704,7 +1708,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             dykFireA hsat hXr (fun f => kit.dmem f hXr)
-              (dant done _ _ Q' N' N_d hsat hP hd hm hm2 hK s_d)
+              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
               (aMinQ [N_d] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr) (.stable
@@ -1800,7 +1804,7 @@ def UpLFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
   | _, _, _, _, _, _, _, _, _, hm, hm2, hK, kit, hH, ha, hb, hXpkg, lfP,
       .impL s lf =>
       UpFrom2.map₂ (fun _ _ x y => .impL x y)
-        (UpFrom.toUpFrom2 (TStabQ pant dant done hsat hP hm hm2 hK hH.1 s))
+        (UpFrom.toUpFrom2 (TStabQ pant done hsat hP hm hm2 hK hH.1 s))
         (UpLFQ done hsat hP hm hm2 hK kit hH.2 ha hb hXpkg lfP lf)
   | _, _, _, _, _, _, _, _, _, hm, hm2, hK, kit, hH, ha, hb, hXpkg, lfP,
       .and1 lf =>
@@ -1874,44 +1878,44 @@ end
 /-! # Part 7: the two entry points, and the chain
 
 `LJF/OFuelPCof.lean`'s `TInvP`/`UEntryP` are inhabited by the two
-traversals above.  Both are conditional on the antecedent dispatches, in
-the `CimpAnt` idiom: parameters, never assumptions.
+traversals above.  Both are conditional on the ONE antecedent dispatch
+`ParkAntP`, in the `CimpAnt` idiom: a parameter, never an assumption.
 
 The conditionality is a FIXPOINT requirement, not a gap in the
 bookkeeping.  `parkAntP_of_satA2P` (proved, `LJF/OFuelPCof.lean`) derives
 `ParkAntP p` from `SatA2P p`, which `satA2P_of_uentryP` derives from
-`UEntryP p` — so the four positive-antecedent dispatches are instances of
-the family's own `∀p` entry at the SAME station, applied to the
-antecedent's own subderivation, and `LJF/OFuelHeight.lean` §10.4 is the
-height fact that makes them legitimate recursive calls.  Taking them as
-such requires re-founding the family on
+`UEntryP p` — so ALL FIVE dispatches are instances of the family's own
+`∀p` entry at the SAME station, applied to the antecedent's own
+subderivation, and `LJF/OFuelHeight.lean` §10.4 is the height fact that
+makes them legitimate recursive calls.  Taking them as such requires
+re-founding the family on
 `μ = (normalised height, station weight, size)`; the family above is
 founded on `LJF/O.lean`'s station pair, which cannot pay for a call at an
-unchanged station (`docs/ui-ljfo-clause-table.md` §4.11).  `DykAntP` is a
-different matter: it is not an instance of the `∀p` entry at all
-(Part 4). -/
+unchanged station (`docs/ui-ljfo-clause-table.md` §4.11).  Since
+2026-09-05 the Dyckhoff shape is one of the five and needs nothing of its
+own (Part 4). -/
 
-/-- **The `∃p` traversal**, conditional on the two dispatches. -/
-def tinvP_of (pant : ParkAntP p) (dant : DykAntP p) : TInvP p :=
-  TInvQ pant dant
+/-- **The `∃p` traversal**, conditional on the antecedent dispatch. -/
+def tinvP_of (pant : ParkAntP p) : TInvP p :=
+  TInvQ pant
 
-/-- **The `∀p` entry**, conditional on the two dispatches. -/
-def uentryP_of (pant : ParkAntP p) (dant : DykAntP p) : UEntryP p :=
-  UEntryQ pant dant
+/-- **The `∀p` entry**, conditional on the antecedent dispatch. -/
+def uentryP_of (pant : ParkAntP p) : UEntryP p :=
+  UEntryQ pant
 
 /-- `SatE2P` follows. -/
-def satE2P_of (pant : ParkAntP p) (dant : DykAntP p) : SatE2P p :=
-  satE2P_of_tinvP (tinvP_of pant dant)
+def satE2P_of (pant : ParkAntP p) : SatE2P p :=
+  satE2P_of_tinvP (tinvP_of pant)
 
 /-- `SatA2P` follows. -/
-def satA2P_of (pant : ParkAntP p) (dant : DykAntP p) : SatA2P p :=
-  satA2P_of_uentryP (uentryP_of pant dant)
+def satA2P_of (pant : ParkAntP p) : SatA2P p :=
+  satA2P_of_uentryP (uentryP_of pant)
 
 /-- And so does the antecedent dispatch the family took as a parameter —
 which is what makes `ParkAntP` a fixpoint requirement rather than an
 independent obligation. -/
-def parkAntP_of (pant : ParkAntP p) (dant : DykAntP p) : ParkAntP p :=
-  parkAntP_of_satA2P (satA2P_of pant dant)
+def parkAntP_of (pant : ParkAntP p) : ParkAntP p :=
+  parkAntP_of_satA2P (satA2P_of pant)
 
 /-! # Part 8: what the height-first re-founding needs, and what it does
 not reach
@@ -1923,19 +1927,19 @@ step are settled here, so that the next run starts from them. -/
 
 /-- **The native dispatch typechecks.**  At the dispatch site the family
 already holds `hm`, `hm2`, `hK` and `s_d : Stab Γ′ .tru Q`, so the
-antecedent guard of the four positive-antecedent shapes is the `∀p` entry
+antecedent guard of all five parked shapes is the `∀p` entry
 at the SAME station applied to `Inv.stable s_d` — no weakening, no
 reshaping.  This term is what a re-founded family would inline where
 `parkAntGuard pant …` now stands, and its type is `parkAntGuard`'s
 exactly.  So the obstruction is the MEASURE, not the statement. -/
-def nativeParkAnt (pant : ParkAntP p) (dant : DykAntP p)
+def nativeParkAnt (pant : ParkAntP p)
     {done K Γ' : List Neg} {Q : Pos}
     (hsat : Saturated done) (hP : ParkedCtxP done)
     (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) (hm2 : Sub done Γ')
     (hK : PFreeCtx p K) (s : Stab Γ' .tru Q) :
     UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
       (interpP p f [] done (some (.up Q)))) :=
-  UEntryQ pant dant done hsat hP hm hm2 hK (.up Q) (Inv.stable s)
+  UEntryQ pant done hsat hP hm hm2 hK (.up Q) (Inv.stable s)
 
 /-- **And its height edge is strict**, with the station unchanged: the
 argument `Inv.stable s_d` is strictly below the focus
@@ -1951,26 +1955,31 @@ theorem nativeParkAnt_edge {Γ : List Neg} {j : JD} {Q : Pos} {N : Neg}
   have h2 := hgt_wk (Sub.refl Γ) (Inv.stable s_d)
   omega
 
-/-! ## The cell that exercises `DykAntP`
+/-! ## The cell that exercises the Dyckhoff dispatch
 
-The re-founding does NOT reach the Dyckhoff dispatch, and the smallest
-station that shows it is one parked Dyckhoff implication:
+The smallest station carrying one parked Dyckhoff implication:
 
     done = [ ↓(c ⊃ ↑a) ⊃ ↑e ],   goal  ↑e
 
 `done` is saturated (no parked `q`-implication has its atom present), and
-its single `∃p` row is
+its single `∃p` row is, since 2026-09-05,
 
-    ( A(done ⇒ c ⊃ ↑a) ⊃ E(↑e :: []) )  ∧  E(↓↑a ⊃ ↑e :: [])
+    ( ↓A(done ⇒ ↑↓(c ⊃ ↑a)) ⊃ E(↑e :: []) )  ∧  E(↓↑a ⊃ ↑e :: [])
 
-whose guard is the `∀p` interpolant at the NEGATIVE goal `c ⊃ ↑a`.  A
+whose guard is the `∀p` interpolant at the ANTECEDENT'S OWN GOAL.  A
 stable proof that focuses on the member supplies
 `s_d : Stab Γ′ .tru (↓(c ⊃ ↑a))`, and `LJF/OFuelHeight.lean` §10.4 turns
-that into `A(done ⇒ ↑↓(c ⊃ ↑a))` — by `interpPA_down_eq` a DISJUNCTION
-with `A(done ⇒ c ⊃ ↑a)` as its head disjunct, which does not project.
-`negOfDownStab` at the body `c ⊃ ↑a` would bridge the two and rises
-without bound (§7.3, `ceCyD`: 29 → 40, and the measured family
-`szI = 10n + 25`).  Hence `DykAntP`. -/
+that into exactly `A(done ⇒ ↑↓(c ⊃ ↑a))` — so the dispatch fires, and
+`parkAntGuard pant … s_d` is the whole of it.
+
+Before the change the row's guard was `A(done ⇒ c ⊃ ↑a)`, the
+antecedent's BODY, and §10.4's `A(done ⇒ ↑↓(c ⊃ ↑a))` is by
+`interpPA_down_eq` a DISJUNCTION carrying it as its head disjunct, which
+does not project; the only bridge, `negOfDownStab` at the body `c ⊃ ↑a`,
+rises without bound (§7.3, `ceCyD`: 29 → 40, and the measured family
+`szI = 10n + 25`).  That was the reason for the withdrawn `DykAntP`
+(Part 4).  The read-off of this station's row, kernel-checked, is
+`interpP_dykStation_row` in `LJF/OFuelPSound.lean`. -/
 
 /-- The station of the cell above. -/
 def dykCell : List Neg :=
@@ -2044,5 +2053,6 @@ end LJFO
 #axioms_within LJFO.qAssembleP [propext, Quot.sound]
 #axioms_within LJFO.boxAssembleP [propext, Quot.sound]
 #axioms_within LJFO.parkFireA [propext, Quot.sound]
+#axioms_within LJFO.dykFireA [propext, Quot.sound]
 #axioms_within LJFO.qFireA [propext, Quot.sound]
 #axioms_within LJFO.boxFireA [propext, Quot.sound]

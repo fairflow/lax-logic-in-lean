@@ -163,56 +163,61 @@ def acofinalP_of_uentryP {p : String} (u : UEntryP p) : ACofinalP p :=
 2026-09-05)
 
 `LJF/OFuelPFam.lean` inhabits `TInvP` and `UEntryP`: `LJF/O.lean`'s
-18-definition minimality family re-authored in fuel-carrying form over
-`interpP`, founded on `LJF/O.lean`'s station measure unchanged.  The whole
-chain below it is then inhabited too.  Both entry points are CONDITIONAL
-on two typed obligations, in the `CimpAnt` idiom — parameters, never
-assumptions, and no `sorry` anywhere:
+minimality family re-authored in fuel-carrying form over `interpP`,
+founded on `LJF/O.lean`'s station measure unchanged.  The whole chain
+below it is then inhabited too.  Both entry points are CONDITIONAL on ONE
+typed obligation, in the `CimpAnt` idiom — a parameter, never an
+assumption, and no `sorry` anywhere:
 
-* `ParkAntP p` (`LJF/OFuelPCof.lean`) — the antecedent guard of the four
-  parked implications whose antecedent is a positive.  This is a FIXPOINT
-  requirement, not a gap: `parkAntP_of_satA2P` derives it from `SatA2P p`,
-  which `satA2P_of_uentryP` derives from `UEntryP p`, so the dispatch is
-  an instance of the family's own `∀p` entry at the SAME station applied
-  to the antecedent's own subderivation, and `LJF/OFuelHeight.lean` §10.4
-  proves the height fact that makes it a legitimate recursive call.
-  Taking it as one needs the family re-founded on
-  `μ = (normalised height, station weight, size)`.
-* `DykAntP p` (`LJF/OFuelPFam.lean`) — the same for the Dyckhoff shape
-  `↓(Q′ ⊃ N′) ⊃ N`.  This is NOT an instance of `ParkAntP`: `interpP`'s
-  Dyckhoff row guards its fire by `A(done ⇒ Q′ ⊃ N′)`, a NEGATIVE goal,
-  while §10.4's dispatch supplies `A(done ⇒ ↑↓(Q′ ⊃ N′))`, and
-  `interpPA_down_eq` makes the latter a DISJUNCTION carrying the former as
-  one disjunct, so it does not project; the only bridge,
-  `negOfDownStab` at an implication body, rises unboundedly (§7.3).
+* `ParkAntP p` (`LJF/OFuelPCof.lean`) — the antecedent guard of the FIVE
+  parked implications, at the antecedent's own goal `↑Q`.  This is a
+  FIXPOINT requirement, not a gap: `parkAntP_of_satA2P` derives it from
+  `SatA2P p`, which `satA2P_of_uentryP` derives from `UEntryP p`, so the
+  dispatch is an instance of the family's own `∀p` entry at the SAME
+  station applied to the antecedent's own subderivation, and
+  `LJF/OFuelHeight.lean` §10.4 proves the height fact that makes it a
+  legitimate recursive call.  Taking it as one needs the family re-founded
+  on `μ = (normalised height, station weight, size)`.
 
-So `ECofinalP`/`ACofinalP` are NOT claimed: they are inhabited relative to
-the two obligations, exactly as `LJFO.satE2`/`satA2` are relative to
+A second obligation `DykAntP p`, for the Dyckhoff shape
+`↓(Q′ ⊃ N′) ⊃ N` alone, stood beside it until 2026-09-05 and is
+WITHDRAWN.  It was not an instance of `ParkAntP` because `interpP`'s
+Dyckhoff row guarded its fire by `A(done ⇒ Q′ ⊃ N′)`, the antecedent's
+BODY (a negative), while §10.4's dispatch supplies
+`A(done ⇒ ↑↓(Q′ ⊃ N′))`, which `interpPA_down_eq` makes a DISJUNCTION
+carrying the former as its head disjunct.  That was a defect of the ROW
+— the one row violating `interpP`'s own principle — and the row now
+guards by the antecedent's own goal like the other four
+(`docs/ui-ljfo-clause-table.md` §4.15).  Soundness was re-proved for the
+changed row first; `eSoundP`/`aSoundP` keep `[propext, Quot.sound]`.
+
+So `ECofinalP`/`ACofinalP` are STILL NOT claimed: they are inhabited
+relative to `ParkAntP`, exactly as `LJFO.satE2`/`satA2` are relative to
 `CimpAnt`. -/
 
 /-- **The `∃p` traversal at a saturated station**, conditional. -/
-def tinvP {p : String} (pant : ParkAntP p) (dant : DykAntP p) : TInvP p :=
-  tinvP_of pant dant
+def tinvP {p : String} (pant : ParkAntP p) : TInvP p :=
+  tinvP_of pant
 
 /-- **The `∀p` entry at a saturated station**, conditional. -/
-def uentryP {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
-    UEntryP p := uentryP_of pant dant
+def uentryP {p : String} (pant : ParkAntP p) :
+    UEntryP p := uentryP_of pant
 
 /-- `SatE2P`, conditional. -/
-def satE2P {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
-    SatE2P p := satE2P_of_tinvP (tinvP pant dant)
+def satE2P {p : String} (pant : ParkAntP p) :
+    SatE2P p := satE2P_of_tinvP (tinvP pant)
 
 /-- `SatA2P`, conditional. -/
-def satA2P {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
-    SatA2P p := satA2P_of_uentryP (uentryP pant dant)
+def satA2P {p : String} (pant : ParkAntP p) :
+    SatA2P p := satA2P_of_uentryP (uentryP pant)
 
 /-- `ECofinalP`, conditional. -/
-def ecofinalP {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
-    ECofinalP p := ecofinalP_of_tinvP (tinvP pant dant)
+def ecofinalP {p : String} (pant : ParkAntP p) :
+    ECofinalP p := ecofinalP_of_tinvP (tinvP pant)
 
 /-- `ACofinalP`, conditional. -/
-def acofinalP {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
-    ACofinalP p := acofinalP_of_uentryP (uentryP pant dant)
+def acofinalP {p : String} (pant : ParkAntP p) :
+    ACofinalP p := acofinalP_of_uentryP (uentryP pant)
 
 end LJFO
 
