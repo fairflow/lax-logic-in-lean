@@ -177,12 +177,35 @@ undocumented — they are self-explanatory to a reader in the field.
   which worked example to show whole, how much of a proof to reproduce.
   `TODO` was renamed to `TO WRITE` throughout so a marker is unambiguously a
   writing task and never a programming one.
-- **N0c and N0d are not attached yet.** Both are PROVED and pinned, but they
-  live in `LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean` and
-  `LJF/OFuelPCofinal.lean`, which arrive only with the merge into `frjw-dev`.
-  Attaching them before the merge breaks the build. First commit after the
-  merge should add `(lean := "LJFO.ecofinalP, LJFO.acofinalP")` and the N0c
-  family.
+- **N0c and N0d are not attached yet — this is the first job after the merge.**
+  Both are PROVED and pinned `[propext, Classical.choice, Quot.sound]`, but
+  all nine declarations live in `LJF/OFuelPCofinal.lean`, which reaches this
+  branch only with the merge into `frjw-dev`. Attaching before the merge
+  breaks the build.
+
+  The recipe, verified against `origin/frjw-dev` on 2026-09-05 — one import
+  covers all nine, because `LJF.OFuelPCofinal` itself imports
+  `LJF.OFuelPFam`:
+
+  ```
+  -- LaxBlueprint/Chapters/UI.lean, with the other imports
+  import LJF.OFuelPCofinal
+
+  -- N0c
+  (lean := "LJFO.tinvP, LJFO.uentryP, LJFO.parkAntP, LJFO.satE2P, LJFO.satA2P")
+
+  -- N0d
+  (lean := "LJFO.ECofinalP, LJFO.ACofinalP, LJFO.ecofinalP, LJFO.acofinalP")
+  ```
+
+  Then delete the "Two nodes are an exception of a different kind" paragraph
+  from the chapter's method note, which exists only to explain the gap.
+
+  **Caveat from the FRJW agent:** WP1c may make the family's pins choice-free.
+  If it does, the two nodes' recorded axiom set drops `Classical.choice` and
+  the chapter text needs that change too. Re-read the pins in
+  `LJF/OFuelPCofinal.lean` before writing the axiom set down; do not copy it
+  from here.
 - **The chapter is not on `frjw-dev`.** It lives on `blueprint-dev-chapter`
   and is intended to merge there.
 
