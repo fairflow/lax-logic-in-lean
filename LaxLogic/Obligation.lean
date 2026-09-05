@@ -21,6 +21,16 @@ closes a goal by recording it as an obligation rather than by asserting it, and
 The result is a complete, `sorry`-free theorem about a weaker proposition, where
 `sorry` would have given a tainted theorem about the intended one.
 
+**The case studies** are two circuits, each run both ways. `Latch`/`LatchSynth`
+take the paper's own RS latch (its Figs. 7–8), first with the timing constraints
+assumed and then with them synthesised, recovering its equation (8) and reducing
+it to (9). `Adder` does the same for the repository's ripple-carry and
+carry-lookahead adders (`PLLTimingRipple`, `PLLTimingLookahead`), which were
+built on the `◯∃` writer reading; the `◯∀` rerun derives the same bounds
+(`ripple_is_extracted`, `bal_is_extracted`), synthesises the cycle-time
+constraint, **refutes** it for a 32-bit ripple in a 1 ns cycle, and discharges
+it after re-associating the fold — the loop of the paper's Fig. 9, closed.
+
 `Examples` is documentation and gate at once: every axiom claim is pinned with
 `#guard_msgs`, including the negative case showing what `sorry` does to the same
 proof.
@@ -64,6 +74,7 @@ import LaxLogic.Obligation.Tactics
 import LaxLogic.Obligation.Timing
 import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.LatchSynth
+import LaxLogic.Obligation.Adder
 import LaxLogic.Obligation.BeliefLink
 import LaxLogic.Obligation.PLLBridge
 import LaxLogic.Obligation.StdCtxBridge
