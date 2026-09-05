@@ -338,4 +338,361 @@ theorem szI_simHyp {H : Neg} {Γ Δ₀ : List Neg} {j : JD} {C : Neg}
     szI (simHyp fl hΓ d) ≤ szI d :=
   (sz_simInv fl hH hfl).2.2.1 _ _ _ _ _ _ _ d
 
+
+/-! # Part 6: the transformers that ARE height-non-increasing
+
+Each is an instance of Part 5 (or of Part 4 through it): the hypothesis
+being simulated is never an atomic shift, and each continuation spends at
+most the focus constructor it consumes. -/
+
+/-- Uses of `M ∧ N`. -/
+theorem szI_invAndHyp {M N : Neg} {Γ : List Neg} {j : JD} {C : Neg}
+    (d : Inv (.and M N :: Γ) [] j C) : szI (invAndHyp d) ≤ szI d := by
+  rw [invAndHyp]
+  refine szI_simHyp _ (fun a => by simp) ?_ _ d
+  intro Δ' j' P hs lf
+  cases lf with
+  | and1 lf' => simp only [lfocAnd, szS, szL]; omega
+  | and2 lf' => simp only [lfocAnd, szS, szL]; omega
+
+/-- Uses of `⊥ ⊃ N`. -/
+theorem szI_invImpFls {N : Neg} {Γ : List Neg} {j : JD} {C : Neg}
+    (d : Inv (.imp .fls N :: Γ) [] j C) : szI (invImpFls d) ≤ szI d := by
+  rw [invImpFls]
+  refine szI_simHyp _ (fun a => by simp) ?_ _ d
+  intro Δ' j' P hs lf
+  have hb := (sz_routeStabT (k := fun {Δ''} (_ : Sub Δ' Δ'')
+      (r : RFocus Δ'' .tru .fls) => rfocFls (A := Stab Δ'' j' P) r)
+    (fun _ r => nomatch r)).1 Δ' (Sub.refl _) (lfocImp lf).1
+  have := sz_lfocImp lf
+  omega
+
+theorem szS_unStable_le {Δ : List Neg} {j : JD} {P : Pos}
+    (d : Inv Δ [] j (.up P)) : szS (unStable d) ≤ szI d := by
+  have := szS_unStable d; omega
+
+/-- Uses of a shifted hypothesis, at a non-atomic positive. -/
+theorem szI_invUp {R : Pos} {Γ : List Neg} {j : JD} {C : Neg}
+    (hR : ∀ a : String, R ≠ .atom a)
+    (d : Inv (.up R :: Γ) [] j C) (b : List Neg) (hb : b ∈ invertPos R) :
+    szI (invUp d b hb) ≤ szI d := by
+  rw [invUp]
+  refine szI_simHyp _ (fun a he => hR a (Neg.up.inj he).symm) ?_ _ d
+  intro Δ' j' P hs lf
+  refine Nat.le_trans (szS_unStable_le _) ?_
+  rw [szI_wk]
+  refine Nat.le_trans (szI_extract [] (lfocUp lf) b hb) ?_
+  show szI (lfocUp lf) ≤ szL lf + 1
+  have := szI_lfocUp lf
+  omega
+
+/-- Uses of a fired implication. -/
+theorem szI_invFireHyp {a : String} {N : Neg} {done rest Δext : List Neg}
+    {j : JD} {C : Neg}
+    (h : (Neg.imp (.atom a) N, rest) ∈ splits done)
+    (d : Inv (done ++ Δext) [] j C) : szI (invFireHyp h d) ≤ szI d := by
+  rw [invFireHyp]
+  refine (sz_simInv _ (fun c => by simp) ?_).2.2.1 _ _ _ _ _ _ _ d
+  intro Δ' j' P hs lf
+  have := sz_lfocImp lf
+  simp only [szS]; omega
+
+/-- Fired-context cleanup. -/
+theorem szI_fireClean {Q₀ : Pos} {N : Neg} {Γ' rest K : List Neg} {j : JD}
+    {C : Neg} (hsplit : ∀ Z ∈ Γ', Z = Neg.imp Q₀ N ∨ Z ∈ rest ∨ Z ∈ K)
+    (d : Inv (N :: Γ') [] j C) : szI (fireClean hsplit d) ≤ szI d := by
+  rw [fireClean]
+  refine (sz_simInv _ (fun c => by simp) ?_).2.2.1 _ _ _ _ _ _ _ d
+  intro Δ' j' P hs lf
+  have := sz_lfocImp lf
+  simp only [szS]; omega
+
+/-- Opened-box cleanup. -/
+theorem szI_boxClean {Q : Pos} {Γ' rest K : List Neg} {j : JD} {C : Neg}
+    (hsplit : ∀ Z ∈ Γ', Z = Neg.circ Q ∨ Z ∈ rest ∨ Z ∈ K)
+    (d : Inv (Neg.up Q :: Γ') [] j C) : szI (boxClean hsplit d) ≤ szI d := by
+  rw [boxClean]
+  refine (sz_simInv _ (fun c => by simp) ?_).2.2.1 _ _ _ _ _ _ _ d
+  intro Δ' j' P hs lf
+  cases lf with
+  | circL dQ => simp only [szS, szL]; omega
+
+/-- **`negOfDownStab` at a shifted body** rises by at most one. -/
+theorem szI_negOfDownStab_up {P : Pos} {Δ : List Neg}
+    (s : Stab Δ .tru (.down (.up P))) :
+    szI (negOfDownStab (.up P) s) ≤ szS s + 1 := by
+  rw [negOfDownStab]
+  have := (sz_relStab (k := fun {Δ'} (_ : Sub Δ Δ') (d : Inv Δ' [] .tru (.up P)) =>
+      unStable d) (fun _ d => by have := szS_unStable d; omega)).1 Δ (Sub.refl _) s
+  simp only [szI]; omega
+
+/-- **`negOfDownStab` at a boxed body** rises by at most two. -/
+theorem szI_negOfDownStab_circ {P : Pos} {Δ : List Neg}
+    (s : Stab Δ .tru (.down (.circ P))) :
+    szI (negOfDownStab (.circ P) s) ≤ szS s + 2 := by
+  rw [negOfDownStab]
+  have := (sz_relStab (k := fun {Δ'} (_ : Sub Δ Δ')
+      (d : Inv Δ' [] .tru (.circ P)) => unStable (circROf d))
+    (fun _ d => by
+      have h1 := szS_unStable (circROf d)
+      have h2 := szI_circROf d
+      omega)).1 Δ (Sub.refl _) s
+  simp only [szI]; omega
+
+/-! # Part 7: the transformers that are NOT
+
+Three processing clauses and one dispatch clause fail, and they fail for
+one structural reason: their continuation carries the CONTINUATION OF THE
+USE (`lf₂`, the left focus below the fired implication) into every
+right-focus leaf of the antecedent's proof.  An antecedent proof that
+branches — an `orL` under the inversion of a pending positive — therefore
+receives one copy of `lf₂` per branch, and the height, which sums over
+`orL`, grows.  Part 4's budget `szS (k hs r) ≤ szR r + 1` is exactly what
+excludes this, and Part 7.1 shows the budget cannot be relaxed even to
+`+ 2`. -/
+
+/-! ## 7.1 The Part 4 budget is tight
+
+`stabOr1 = routeStab (fun _ r => .rfoc (.or1 r))` has continuation budget
+`szR r + 2`, one more than Part 4 allows, and it raises the height by the
+NUMBER OF RIGHT-FOCUS LEAVES of its argument.  Two leaves, two units. -/
+
+/-- A two-leaf stable proof: the disjunction `u ∨ u` is inverted, and each
+branch focuses on the hypothesis `↑a`. -/
+def ceU : Pos := .or (.atom "u") (.atom "u")
+
+def ceΔ : List Neg := [Neg.up ceU, Neg.up (Pos.atom "a")]
+
+def ceS : Stab ceΔ .tru (.atom "a") :=
+  .lfoc (List.mem_cons_self ..)
+    (.rel (.orL (.atomL (.stable (.rfoc (.init (by simp [ceΔ])))))
+                (.atomL (.stable (.rfoc (.init (by simp [ceΔ])))))))
+
+/-- Before. -/
+theorem szS_ceS : szS ceS = 11 := rfl
+
+/-- After: `stabOr1` has raised the height by two — one per leaf.  So no
+bound `szS (routeStab k hs s) ≤ szS s` survives a continuation budget of
+`szR r + 2`, and Part 4's hypothesis cannot be weakened. -/
+theorem szS_stabOr1_ceS : szS (stabOr1 (B := Pos.atom "b") ceS) = 13 := by
+  simp [ceS, stabOr1, routeStab.eq_def, routeLFocT.eq_def, routeLFoc.eq_def,
+    routeInv.eq_def, szS, szR, szL, szI]
+
+/-! ## 7.2 `invImpOr`, `invStrip`, `invCurry` raise the height
+
+One cell each, of the same shape: the hypothesis is used ONCE, its
+antecedent is proved by a two-branch case analysis on `u ∨ u`, and the
+continuation of the use is a left focus of height 5.  The input height is
+kernel-checked (`rfl`); the transformed height is the repository
+evaluator's, since `simInv` is a well-founded recursion and does not
+reduce in the kernel.  `#guard` makes each measurement a build check.
+
+    transformer   szI d   szI (transformer d)
+    invImpOr       21          26   (+5)
+    invStrip       25          26   (+1)
+    invCurry       29          40   (+11)
+-/
+
+section Counterexamples
+
+/-- `(q ∨ q) ⊃ ↑z`, used once, antecedent proved by a case split. -/
+def ceOrH : Neg := .imp (.or (.atom "q") (.atom "q")) (Neg.up (Pos.atom "z"))
+def ceOrΔ : List Neg :=
+  [Neg.up ceU, Neg.up (Pos.atom "q"), Neg.up (Pos.atom "z")]
+def ceOrΓ : List Neg := ceOrH :: ceOrΔ
+
+def ceOrS1 : Stab ceOrΓ .tru (.or (.atom "q") (.atom "q")) :=
+  Stab.lfoc (N := Neg.up ceU) (by simp [ceOrΓ, ceOrΔ, ceU])
+    (.rel (.orL
+      (.atomL (.stable (.rfoc (.or1 (.init (by simp [ceOrΓ, ceOrΔ]))))))
+      (.atomL (.stable (.rfoc (.or1 (.init (by simp [ceOrΓ, ceOrΔ]))))))))
+
+def ceOrLf2 : LFoc ceOrΓ (Neg.up (Pos.atom "z")) .tru (.atom "z") :=
+  .rel (.atomL (.stable (.rfoc (.init (by simp [ceOrΓ, ceOrΔ])))))
+
+def ceOrD : Inv ceOrΓ [] .tru (.up (Pos.atom "z")) :=
+  .stable (.lfoc (List.mem_cons_self ..) (.impL ceOrS1 ceOrLf2))
+
+theorem szI_ceOrD : szI ceOrD = 21 := rfl
+
+#guard szI (invImpOr (Q₁ := .atom "q") (Q₂ := .atom "q")
+  (N := Neg.up (Pos.atom "z")) ceOrD) == 26
+
+/-- `↓↑q ⊃ ↑z`, same shape. -/
+def ceStH : Neg := .imp (.down (.up (.atom "q"))) (Neg.up (Pos.atom "z"))
+def ceStΔ : List Neg :=
+  [Neg.up ceU, Neg.up (Pos.atom "q"), Neg.up (Pos.atom "z")]
+def ceStΓ : List Neg := ceStH :: ceStΔ
+
+def ceStS1 : Stab ceStΓ .tru (.down (.up (.atom "q"))) :=
+  Stab.lfoc (N := Neg.up ceU) (by simp [ceStΓ, ceStΔ, ceU])
+    (.rel (.orL
+      (.atomL (.stable (.rfoc (.rel (.stable (.rfoc
+        (.init (by simp [ceStΓ, ceStΔ]))))))))
+      (.atomL (.stable (.rfoc (.rel (.stable (.rfoc
+        (.init (by simp [ceStΓ, ceStΔ]))))))))))
+
+def ceStLf2 : LFoc ceStΓ (Neg.up (Pos.atom "z")) .tru (.atom "z") :=
+  .rel (.atomL (.stable (.rfoc (.init (by simp [ceStΓ, ceStΔ])))))
+
+def ceStD : Inv ceStΓ [] .tru (.up (Pos.atom "z")) :=
+  .stable (.lfoc (List.mem_cons_self ..) (.impL ceStS1 ceStLf2))
+
+theorem szI_ceStD : szI ceStD = 25 := rfl
+
+#guard szI (invStrip (P' := .atom "q") (N := Neg.up (Pos.atom "z")) ceStD) == 26
+
+/-- `↓(⊤ ∧ ⊤) ⊃ ↑z`, same shape.  Currying splits one implication
+elimination into two, which is why this is the worst of the three. -/
+def ceCyH : Neg := .imp (.down (.and nTop nTop)) (Neg.up (Pos.atom "z"))
+def ceCyΔ : List Neg := [Neg.up ceU, Neg.up (Pos.atom "z")]
+def ceCyΓ : List Neg := ceCyH :: ceCyΔ
+
+def ceCyS1 : Stab ceCyΓ .tru (.down (.and nTop nTop)) :=
+  Stab.lfoc (N := Neg.up ceU) (by simp [ceCyΓ, ceCyΔ, ceU])
+    (.rel (.orL
+      (.atomL (.stable (.rfoc (.rel (.andR nTopIntro nTopIntro)))))
+      (.atomL (.stable (.rfoc (.rel (.andR nTopIntro nTopIntro)))))))
+
+def ceCyLf2 : LFoc ceCyΓ (Neg.up (Pos.atom "z")) .tru (.atom "z") :=
+  .rel (.atomL (.stable (.rfoc (.init (by simp [ceCyΓ, ceCyΔ])))))
+
+def ceCyD : Inv ceCyΓ [] .tru (.up (Pos.atom "z")) :=
+  .stable (.lfoc (List.mem_cons_self ..) (.impL ceCyS1 ceCyLf2))
+
+theorem szI_ceCyD : szI ceCyD = 29 := rfl
+
+#guard szI (invCurry (M₁ := nTop) (M₂ := nTop)
+  (N := Neg.up (Pos.atom "z")) ceCyD) == 40
+
+end Counterexamples
+
+/-! ## 7.3 `negOfDownStab` at a conjunction, and `dykCommute`
+
+The `and` clause applies the recursion TWICE to the same stable proof and
+joins with `andR`, whose height is the SUM.  So the spine of the argument
+is duplicated, and no bound `szI (negOfDownStab M s) ≤ szS s + c` with `c`
+independent of `M` and `s` can hold.  The equation is the mechanism; the
+family below is the measurement. -/
+
+/-- **The duplication, as an equation**: the `and` clause runs the recursion
+twice on the same `s`, and `szI` of `andR` is the sum. -/
+theorem szI_negOfDownStab_and {M₁ M₂ : Neg} {Δ : List Neg}
+    (s : Stab Δ .tru (.down (.and M₁ M₂))) :
+    szI (negOfDownStab (.and M₁ M₂) s)
+      = szI (negOfDownStab M₁ (relStab
+          (fun _ d => .rfoc (.rel (andROf1 d))) (Sub.refl _) s))
+      + szI (negOfDownStab M₂ (relStab
+          (fun _ d => .rfoc (.rel (andROf2 d))) (Sub.refl _) s))
+      + 1 := by
+  rw [negOfDownStab]; simp only [szI]
+
+/-- A family whose stable proof has a spine of `n` implication
+eliminations with trivial antecedents. -/
+def topArrow : Nat → Neg → Neg
+  | 0, N => N
+  | k+1, N => .imp (.down nTop) (topArrow k N)
+
+def ceMand : Neg := .and (Neg.up (Pos.atom "z")) (Neg.up (Pos.atom "z"))
+
+def ceXn (n : Nat) : Neg := topArrow n (Neg.up (.down ceMand))
+
+def ceΔn (n : Nat) : List Neg := [ceXn n]
+
+def ceChain (Γ : List Neg) :
+    ∀ k, LFoc Γ (topArrow k (Neg.up (.down ceMand))) .tru (.down ceMand)
+  | 0 => .rel (idPos (.down ceMand) Γ .tru)
+  | k+1 => .impL (.rfoc (.rel nTopIntro)) (ceChain Γ k)
+
+def ceSn (n : Nat) : Stab (ceΔn n) .tru (.down ceMand) :=
+  Stab.lfoc (N := ceXn n) (List.mem_cons_self ..) (ceChain (ceΔn n) n)
+
+/-! The measurement: `szS (ceSn n) = 5n + 23` while
+`szI (negOfDownStab ceMand (ceSn n)) = 10n + 25`.  The difference is
+`5n + 2`, unbounded, so no additive constant bounds `negOfDownStab` at a
+conjunction — and none bounds `dykCommute` either, since `dykCommute`
+calls `negOfDownStab N′` at the Dyckhoff hypothesis's consequent `N′`,
+which is an arbitrary negative. -/
+#guard ((List.range 6).map
+  (fun n => (szS (ceSn n), szI (negOfDownStab ceMand (ceSn n)))))
+  == [(23, 25), (28, 35), (33, 45), (38, 55), (43, 65), (48, 75)]
+
+/-! # Part 8: the verdict for `μ = (derivation height, station weight)`
+
+Collecting Parts 1-7 as the Step-0 table:
+
+    transformer                     height bound
+    `wk`                            EQUAL                      (Part 1)
+    forced-shape extractors         strictly smaller           (Part 2)
+    `extract`                       ≤                          (Part 3)
+    `invBranches`                   ≤ max + `sizePos R`        (Part 3)
+    `routeStab`,`routeStabT`        ≤, budget `szR r + 1`      (Part 4)
+    `relStab`                       ≤, budget `szI d`          (Part 4)
+    `simStab`/`simLFoc`/`simInv`    ≤, side conditions         (Part 5)
+    `simRFocus`                     ≤, and `rfoc`-headed       (Part 5)
+    `simHyp`                        ≤                          (Part 6)
+    `invAndHyp`                     ≤                          (Part 6)
+    `invImpFls`                     ≤                          (Part 6)
+    `invUp` (non-atomic positive)   ≤                          (Part 6)
+    `invFireHyp`                    ≤                          (Part 6)
+    `fireClean`, `boxClean`         ≤                          (Part 6)
+    `negOfDownStab` at `↑P`         ≤ `szS s + 1`              (Part 6)
+    `negOfDownStab` at `◯P`         ≤ `szS s + 2`              (Part 6)
+    `stabOr1`/`stabOr2`             RISES (per right-focus leaf)  (7.1)
+    `invImpOr`                      RISES (21 → 26)               (7.2)
+    `invStrip`                      RISES (25 → 26)               (7.2)
+    `invCurry`                      RISES (29 → 40)               (7.2)
+    `negOfDownStab` at `M₁ ∧ M₂`    RISES, unboundedly            (7.3)
+    `dykCommute`                    RISES, unboundedly            (7.3)
+
+The consequence for route (B).  The height-first order needs every
+transformer applied before a recursive call to be height-non-increasing,
+because the station weight is the SECOND component and processing edges
+drop it — a height rise there is fatal.  `invImpOr`, `invStrip` and
+`invCurry` are the interpolant's own PROCESSING clauses for the todo-heads
+`(Q₁ ∨ Q₂) ⊃ N`, `↓↑P′ ⊃ N` and `↓(M₁ ∧ M₂) ⊃ N`, reached from any station
+whose parked bodies have those shapes; all three rise.  So
+
+    μ = (derivation height, station weight)  does NOT found the family,
+
+and the obstruction is NOT confined to the Dyckhoff dispatch: it is in the
+processing phase, which the `interpR` fallback of the brief (Dyckhoff rows
+guarded at the full station) does not touch.  The one thing the fallback
+would buy — removing `dykCommute` and `negOfDownStab` at a conjunction —
+is necessary but not sufficient.
+
+What survives, and is the next candidate: a MAX-based height
+(`impL`, `andR`, `orL` taking `max` of their premises rather than the sum)
+turns the leaf-duplication of 7.1-7.2 from a multiplicative into an
+additive cost, because a duplicated continuation no longer adds twice.
+Whether the additive cost can then be financed by the station weight is
+open; it is not financed by any lexicographic order with height first,
+since the cost per processing step is a constant and the station weight
+sits below it. -/
+
 end LJFO
+
+/-! ### Axiom audit -/
+
+#axioms_within LJFO.szI_wk [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_extract [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_invBranches [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.sz_routeStab [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.sz_routeStabT [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.sz_relStab [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.sz_simInv [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_simHyp [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_invAndHyp [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_invImpFls [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_invUp [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_invFireHyp [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_fireClean [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_boxClean [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_negOfDownStab_up [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_negOfDownStab_circ [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szS_ceS [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szS_stabOr1_ceS [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_ceOrD [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_ceStD [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_ceCyD [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_negOfDownStab_and [propext, Classical.choice, Quot.sound]
