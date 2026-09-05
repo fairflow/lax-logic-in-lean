@@ -1679,6 +1679,148 @@ wipshared Production` exit 0; no `sorry` anywhere):
   `K = [↑c]`, goal `↑e`, a focus on the ◯-implication forcing the
   dispatch edge.  Next run: this re-authoring, group by group.
 
+### 4.15 The family BUILT on `interpP`, conditional on two antecedent dispatches; the Dyckhoff row's guard has the wrong polarity (2026-09-05, 12:20)
+
+**What landed** (`LJF/OFuelPFam.lean`, 2048 lines, one agent run of
+2 h 24 min; merged at 40446bc with the instance-bound commit; `lake build
+LJF wipshared Production` clean, 8949 jobs).  `LJF/O.lean`'s minimality
+family re-authored in fuel-carrying form over `interpP`: 17 definitions
+(O.lean's `dykAntC` is replaced by an obligation, see below) in TWO
+`mutual` blocks — the `∃p` side (`eMinQ`, `TInvQ`, `TStabQ`, `TRFQ`,
+`TLFQ`, `TpElimQ`, `TpLFQ`, `TpInvQ`) and the `∀p` side (`aMinQ`,
+`UEntryQ`, `UStabQ`, `URFQ`, `ULFQ`, `UInvGQ`, `UpElimQ`, `UpLFQ`,
+`UpInvGQ`) — each founded on `LJF/O.lean`'s lexicographic PAIR (station
+weight, `sizeOf`), NOT the height-first triple.  The split is possible
+because with the antecedent guards as parameters the `∃p` side calls
+nothing on the `∀p` side, so `LJF/O.lean`'s strongly connected component
+breaks in two; every one of the ~70 `decreasing_by` sites is discharged
+by `ljf_dec_e`/`ljf_dec_a` or five new alternatives (`dec_parkT`,
+`dec_parkS`, `dec_restT`, `dec_parkG`, `dec_parkG2`), so **no Part 11
+was needed** and `OFuelHeight.lean` is unchanged.  Entry points
+`tinvP_of`, `uentryP_of`, `satE2P_of`, `satA2P_of`; the chain in
+`wip/ui_routeB_statements.lean`:
+
+    tinvP, uentryP, satE2P, satA2P, ecofinalP, acofinalP
+      :  ParkAntP p → DykAntP p → ⟨the statement⟩
+
+No `sorry`, `admit`, `native_decide` or `partial` anywhere (swept).
+Pins, measured: the family and the chain `[propext, Classical.choice,
+Quot.sound]` (the choice from well-founded recursion, as in `LJF/O.lean`);
+the kit (`qAssembleP`, `boxAssembleP`, `parkFireA`, `qFireA`,
+`boxFireA`, `dec_parkT/S`, `dec_restT`) `[propext, Quot.sound]`;
+`dykCell_saturated`, `dykCell_parked` `[propext]`.  Three gates watched
+failing, one of them instructive: `Saturated dykCell` by `decide` left
+a `sorryAx` silently (no `DecidableEq` at the option type) and was
+caught only by the pin; `rfl` proves it.
+
+**Status: CONDITIONAL**, in the `CimpAnt` idiom — two typed obligations
+passed as parameters, never assumed.  `ECofinalP`/`ACofinalP` are NOT
+claimed.
+
+**(a) `ParkAntP p`** (`OFuelPCof.lean`, pre-existing) — the antecedent
+guard of the parked implications whose antecedent is a positive `Q`:
+
+    ParkAntP p := ∀ done K Γ′ Q N,  Saturated done → ParkedCtxP done →
+      (Q ⊃ N) ∈ done → Γ′ ⊆ done ∪ K → done ⊆ Γ′ → K p-free →
+      Stab Γ′ tru Q →
+      UpFrom2 (e f ↦ E_e :: K ⊢ A_f(done ⇒ ↑Q))
+
+A fixpoint requirement, not a gap: `parkAntP_of` (new) derives it from
+the family itself (`satA2P_of_uentryP` + `parkAntP_of_satA2P`), and
+Part 8 settles the two facts a native discharge needs — `nativeParkAnt`:
+at the dispatch site the family already holds `hm`, `hm2`, `hK` and
+`s_d : Stab Γ′ tru Q`, so the guard is literally
+`UEntryQ done … (.up Q) (Inv.stable s_d)`, no weakening, no reshaping,
+at exactly `parkAntGuard`'s type; and `nativeParkAnt_edge`:
+`hgtI (Inv.stable s_d) < hgtS (Stab.lfoc h (.impL s_d lf′))`, strict with
+the station unchanged (`hgt_antDispatch` + `hgt_wk`).  What stands
+between the family and an unconditional `ParkAntP` is the MEASURE: the
+family must be re-founded on `μ = (hgt, station weight, sizeOf)`, and at
+the many height-equal sites (every parking, every phase change, every
+`wk`) the equality is propositional (`hgt_wk`), so `Prod.Lex.right` does
+not apply syntactically — each such site needs its named Part-10 bound
+and a `lex_of_le_of_lt` helper.  About seventy sites, ~9 min per build;
+the agent did not start it inside its run.  Next run's work.
+
+**(b) `DykAntP p`** (`OFuelPFam.lean` Part 4, new) — the finding of the
+run.  The same obligation for the Dyckhoff shape `↓(Q′ ⊃ N′) ⊃ N`, with
+the guard goal `Q′ ⊃ N′` (a NEGATIVE) in place of `↑Q`:
+
+    DykAntP p := ∀ done K Γ′ Q′ N′ N,  Saturated done → ParkedCtxP done →
+      (↓(Q′ ⊃ N′) ⊃ N) ∈ done → Γ′ ⊆ done ∪ K → done ⊆ Γ′ → K p-free →
+      Stab Γ′ tru ↓(Q′ ⊃ N′) →
+      UpFrom2 (e f ↦ E_e :: K ⊢ A_f(done ⇒ Q′ ⊃ N′))
+
+This is NOT an instance of `ParkAntP`, and the height-first re-founding
+does not reach it.  `interpP`'s Dyckhoff row (§4.14 (c), carried over
+from `interpF`) is
+
+    ∃p:  ( ↓A(done ⇒ Q′ ⊃ N′) ⊃ E(N :: rest) )  ∧  E(↓N′ ⊃ N :: rest)
+    ∀p:    A(done ⇒ Q′ ⊃ N′)  ∧  A(N :: rest ⇒ goal)
+
+while the generic dispatch (`hgt_antDispatch`, §10.4) is generic in an
+antecedent POSITIVE and at `Q = ↓(Q′ ⊃ N′)` supplies
+`A(done ⇒ ↑↓(Q′ ⊃ N′))`.  By `interpPA_down_eq` that aggregate is a
+DISJUNCTION whose head disjunct is the wanted `A(done ⇒ Q′ ⊃ N′)`, so
+the implication runs the wrong way; the only transformer that bridges
+the two, `negOfDownStab` at an implication body, rises unboundedly
+(§7.3, `ceCyD` 29 → 40, `szI = 10n + 25`); and `dykCommute` lands at the
+RESIDUAL station where `interpP` retains the guard at the FULL one.
+Exercising cell, mechanised (`dykCell`, saturated by `rfl`, parked by
+construction):
+
+    done = [ ↓(c ⊃ ↑a) ⊃ ↑e ],   goal ↑e,
+    single ∃p row  ( A(done ⇒ c ⊃ ↑a) ⊃ E(↑e) ) ∧ E(↓↑a ⊃ ↑e)
+
+**Diagnosis.**  The Dyckhoff row is the ONE row of `interpP` that
+violates `interpP`'s own principle (§4.14: no rewriting of hypotheses —
+every non-atomic implication fires through the retained `∀p` of its
+antecedent).  The antecedent of `↓(Q′ ⊃ N′) ⊃ N` is the positive
+`↓(Q′ ⊃ N′)`, whose retained `∀p` is `A(done ⇒ ↑↓(Q′ ⊃ N′))`; the row
+guards by the BODY `Q′ ⊃ N′` instead, the `interpF` form.  The other
+four parked shapes and the ◯-implication all guard by `A(done ⇒ ↑Q)`
+(`OFuelP.lean` lines 196–209, 249–252 and the attack rows), and
+`ParkAntP` is already stated for every positive `Q`.
+
+**The fix, proposed (not built):** guard the Dyckhoff row by the
+antecedent's own goal, exactly as the ◯-implication row does with
+`↑↓◯Q′`:
+
+    ∃p:  ( ↓A(done ⇒ ↑↓(Q′ ⊃ N′)) ⊃ E(N :: rest) )  ∧  E(↓N′ ⊃ N :: rest)
+    ∀p:    A(done ⇒ ↑↓(Q′ ⊃ N′))  ∧  A(N :: rest ⇒ goal)
+
+In the Lean: `some (.imp Q' N')` → `some (.up (.down (.imp Q' N')))` at
+the twelve sites of `LJF/OFuelP.lean` (one `∃p` aggregate, eleven `∀p`
+attack rows), nothing else in the definition; the residual conjunct
+`E(↓N′ ⊃ N :: rest)` stays (sound by `resSim`).  Then `DykAntP` IS
+`ParkAntP` at `Q = ↓(Q′ ⊃ N′)`, the Dyckhoff arms of the family become
+parked arms, and the obligation is deleted.  Soundness, which must be
+re-proved for the row first: the new guard is WEAKER than the old
+(`interpPA_down_eq`: old ⊢ new), and the ◯-implication row is the
+template with `◯Q′` replaced by `Q′ ⊃ N′` — from `A, done ⊢ ↑↓(Q′ ⊃ N′)`
+the goal inverts to `Stab (A :: done) tru ↓(Q′ ⊃ N′)`, which is exactly
+the antecedent premise of `impL`, so the fire is immediate.  The
+kernel-checked agreement `interpP = interpF` on S1 (§4.14) is
+unaffected (S1 has no Dyckhoff hypothesis); `dykCell` is the cell on
+which the changed row must differ from the old (the negative control).
+Work: `OFuelP.lean` (12 sites), `OFuelPSound.lean` (Dyckhoff row cases
+by the ◯-implication template), `OFuelPMin.lean` (rows),
+`OFuelPCof.lean` (a `parkFireE` instance for `dyk`, already the shape
+`parkAntP_of_satA2P` covers), `OFuelPFam.lean` (four Dyckhoff arms →
+parked arms, `DykAntP` removed).  One run, soundness first; then the
+μ-re-founding run for `ParkAntP`.
+
+**Three mechanisation points from the run**, for the next one: a
+combinator argument does not fix a recursive call's indices the way a
+constructor application does (`circR` needed `pfreeCircUp`, three more
+sites needed `show`); a `let` before an anonymous constructor duplicated
+a match arm's binders so the termination goal compared `sizeOf` of two
+distinct fvars (`UpFrom2.map`); a `rw` inside an anonymous constructor
+cannot see through the un-β-reduced `UpFrom2` family (`UpFrom2.mk1`);
+and a ◯-goal clause that opens the aggregate AND rewrites one of its
+prefix rows spends two fuel units (`UpFrom2.mk2`), because the prefix
+sits one fuel below the aggregate.
+
 ---
 
 ## 5 · OPEN list
