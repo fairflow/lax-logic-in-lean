@@ -40,6 +40,8 @@ two tail pins likewise.  Nothing else moved, and `LJFOCore.lean`'s
 statements, definitions and rules are untouched.
 -/
 import LJF.O
+import LJF.OFuelHeight
+import Meta.Audit
 
 /-! ## Part 4 results (from `LJF.OCore`)
 
@@ -80,3 +82,12 @@ exists. -/
 /-- info: 'LJFO.satA2' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in
 #print axioms LJFO.satA2
+
+/-! ## Route (B), node N0h — the two release transformers of
+`LJF/OFuelHeight.lean` (2026-09-05).  Their size lemmas `szI_laxReleaseUp`
+and `szI_laxReleaseCirc` are pinned in that file; the transformers
+themselves were not, which the blueprint's UI chapter recorded as a
+check outstanding.  Measured with `#axioms_within_pin`. -/
+
+#axioms_within LJFO.laxReleaseUp [propext, Quot.sound]
+#axioms_within LJFO.laxReleaseCirc [propext, Quot.sound]
