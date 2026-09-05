@@ -26,7 +26,7 @@ postponing theorem split (n : Nat) : n + 0 = n ∧ n * 1 = n := by
   · postpone
 
 -- The debt is in the type.
-/-- info: LaxLogic.Obligation.Examples.split (obl1 : split.obligation1) (n : Nat) : n + 0 = n ∧ n * 1 = n -/
+/-- info: LaxLogic.Obligation.Examples.split (n : Nat) (obl1 : split.obligation1 n) : n + 0 = n ∧ n * 1 = n -/
 #guard_msgs in
 #check split
 
@@ -41,7 +41,7 @@ postponing theorem split (n : Nat) : n + 0 = n ∧ n * 1 = n := by
 accepted directly. -/
 
 theorem split' (n : Nat) : n + 0 = n ∧ n * 1 = n :=
-  split (fun m => Nat.mul_one m) n
+  split n (Nat.mul_one n)
 
 /-- info: 'LaxLogic.Obligation.Examples.split'' does not depend on any axioms -/
 #guard_msgs in
@@ -86,7 +86,7 @@ the top as a single list of outstanding goals. -/
 #guard_msgs (drop info) in
 postponing theorem combined :
     (∀ n : Nat, n + 0 = n ∧ n * 1 = n) ∧ ((0 : Nat) = 1) := by
-  exact ⟨split (by postpone), bogus (by postpone)⟩
+  exact ⟨fun n => split n (by postpone), bogus (by postpone)⟩
 
 /--
 info: LaxLogic.Obligation.Examples.combined (obl1 : combined.obligation1) (obl2 : combined.obligation2) :

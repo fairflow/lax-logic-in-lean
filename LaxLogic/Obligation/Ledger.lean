@@ -54,6 +54,14 @@ initialize obligationExt :
 currently being processed. Cleared at the start of each `postponing theorem`. -/
 initialize inFlight : IO.Ref (Array MVarId) ← IO.mkRef #[]
 
+/-- The declaration's own binders, which `postpone` must NOT revert.
+
+An obligation that re-quantified them would be a statement about *all*
+parameters rather than the ones at hand, and no assumption about the actual
+parameters could discharge it. Obligations are therefore predicates over the
+binders, applied to them in the finished statement. -/
+initialize binderFVars : IO.Ref (Array Expr) ← IO.mkRef #[]
+
 /-- Every declaration that owes something, in declaration order. -/
 def owedEntries (env : Environment) : Array Owed :=
   obligationExt.getState env

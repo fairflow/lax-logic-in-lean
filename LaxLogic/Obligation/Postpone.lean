@@ -57,6 +57,52 @@ namespace LaxLogic.Obligation
 
 open Lean Meta Elab Command Term Tactic
 
+/-- The part of the local context the goal actually reaches: the free variables
+of the target, closed under "its type mentions something already reachable".
+
+Reverting only these keeps an obligation legible. The closure is what makes it
+correct in practice: a hypothesis constraining a variable the goal mentions is
+itself reachable, so `ht : ta + D₁ ≤ t₁` survives when the goal mentions `t₁`,
+dragging `ta` and `D₁` in with it, while a dozen unrelated hypotheses about
+other signals do not.
+
+Dropping an unreachable hypothesis yields a *stronger* obligation, so the
+theorem `obligation → goal` is true either way; only provability is at stake,
+and a hypothesis the goal cannot see could not have been used to prove it. -/
+private def reachable (g : MVarId) (keep : Array FVarId) : MetaM (Array FVarId) :=
+  g.withContext do
+    let lctx ← getLCtx
+    let tgt ← instantiateMVars (← g.getType)
+    let mut rel : FVarIdSet := {}
+    for f in (collectFVars {} tgt).fvarIds do
+      if !keep.contains f then rel := rel.insert f
+    let mut changed := true
+    while changed do
+      changed := false
+      for d in lctx do
+        if d.isImplementationDetail || keep.contains d.fvarId then continue
+        let fs := (collectFVars {} (← instantiateMVars d.type)).fvarIds
+        if rel.contains d.fvarId || fs.any (fun f => rel.contains f) then
+          if !rel.contains d.fvarId then
+            rel := rel.insert d.fvarId; changed := true
+          for f in fs do
+            if !keep.contains f && !rel.contains f then
+              rel := rel.insert f; changed := true
+    let mut out : Array FVarId := #[]
+    for d in lctx do
+      if !d.isImplementationDetail && !keep.contains d.fvarId && rel.contains d.fvarId then
+        out := out.push d.fvarId
+    return out
+
+/-- Every local not among the declaration's binders: the safe fallback. -/
+private def allLocals (g : MVarId) (keep : Array FVarId) : MetaM (Array FVarId) :=
+  g.withContext do
+    let mut out : Array FVarId := #[]
+    for d in ← getLCtx do
+      if !d.isImplementationDetail && !keep.contains d.fvarId then
+        out := out.push d.fvarId
+    return out
+
 /-- Record the current goal as an obligation and close it.
 
 The whole local context is reverted into the target first, so the recorded
@@ -71,9 +117,20 @@ syntax (name := postponeTac) "postpone" : tactic
 @[tactic postponeTac]
 def elabPostpone : Tactic := fun _ => do
   let g ← getMainGoal
-  let g' ← g.revertAll
-  let ty ← instantiateMVars (← g'.getType)
-  if ty.hasFVar then
+  let keep := (← binderFVars.get).filterMap (fun e => e.fvarId?)
+  -- Revert what the goal reaches, never the declaration's own binders: the
+  -- obligation is a statement about THESE parameters, not about all of them.
+  let rel ← reachable g keep
+  let (_, gRel) ← g.revert rel
+  let tyRel ← instantiateMVars (← gRel.getType)
+  let stray (e : Expr) : Array FVarId :=
+    (collectFVars {} e).fvarIds.filter (fun f => !keep.contains f)
+  let (g', ty) ←
+    if (stray tyRel).isEmpty then pure (gRel, tyRel)
+    else do
+      let (_, gAll) ← g.revert (← allLocals g keep)
+      pure (gAll, ← instantiateMVars (← gAll.getType))
+  if !(stray ty).isEmpty then
     throwError "postpone: the goal still mentions local hypotheses after \
       reverting; this is a bug in postpone, please report the goal"
   -- A non-`Prop` goal would produce an ill-typed obligation definition, which
@@ -101,11 +158,14 @@ private def dedup (tys : Array Expr) : Array Expr × Array Nat := Id.run do
 
 /-- Add `name : Prop := ty` as a reducible definition, so that anything proving
 `ty` also proves `name` without an explicit unfolding step. -/
-private def addObligationDef (name : Name) (ty : Expr) : TermElabM Unit := do
-  let ty ← instantiateMVars (← Term.levelMVarToParam ty)
-  let ps := (collectLevelParams {} ty).params
+private def addObligationDef (name : Name) (bfvars : Array Expr) (ty : Expr) :
+    TermElabM Unit := do
+  let value ← instantiateMVars (← Term.levelMVarToParam (← mkLambdaFVars bfvars ty))
+  let dtype ← instantiateMVars
+    (← Term.levelMVarToParam (← mkForallFVars bfvars (.sort .zero)))
+  let ps := (collectLevelParams (collectLevelParams {} dtype) value).params
   addDecl (.defnDecl {
-    name, levelParams := ps.toList, type := .sort .zero, value := ty
+    name, levelParams := ps.toList, type := dtype, value
     hints := .abbrev, safety := .safe })
   setReducibleAttribute name
 
@@ -128,6 +188,7 @@ def elabPostponing : CommandElab := fun stx => do
     let entries ← liftTermElabM do
       inFlight.set #[]
       Term.elabBinders bs fun bfvars => do
+        binderFVars.set bfvars
         let type ← Term.elabType tyStx
         let val ← Term.elabTermEnsuringType bodyStx type
         Term.synthesizeSyntheticMVarsNoPostponing
@@ -138,10 +199,10 @@ def elabPostponing : CommandElab := fun stx => do
         let names := uniq.mapIdx fun i _ =>
           declName ++ Name.mkSimple s!"obligation{i + 1}"
         for n in names, t in uniq do
-          addObligationDef n t
+          addObligationDef n bfvars t
         let obTys ← names.mapM fun n => do
           let info ← getConstInfo n
-          pure (Lean.mkConst n (info.levelParams.map mkLevelParam))
+          pure (mkAppN (Lean.mkConst n (info.levelParams.map mkLevelParam)) bfvars)
         let decls : Array (Name × (Array Expr → TermElabM Expr)) :=
           names.mapIdx fun i _ =>
             (Name.mkSimple s!"obl{i + 1}", fun _ => pure obTys[i]!)
@@ -150,8 +211,8 @@ def elabPostponing : CommandElab := fun stx => do
           for m in ms, j in idx do
             m.assign hs[j]!
           let val ← instantiateMVars val
-          let value ← mkLambdaFVars hs (← mkLambdaFVars bfvars val)
-          let newType ← mkForallFVars hs (← mkForallFVars bfvars type)
+          let value ← mkLambdaFVars bfvars (← mkLambdaFVars hs val)
+          let newType ← mkForallFVars bfvars (← mkForallFVars hs type)
           -- Unassigned LEVEL metavariables make `addDecl` fail, and its
           -- `addAsAxiom` fallback then re-adds the declaration AS AN AXIOM,
           -- silently. Pinning them to parameters is not optional.
@@ -167,7 +228,11 @@ def elabPostponing : CommandElab := fun stx => do
           addDecl (.thmDecl {
             name := declName, levelParams := ps.toList, type := newType, value })
           Term.applyAttributes declName #[]
-          let entries := names.mapIdx fun i n => ({ name := n, type := uniq[i]! } : Entry)
+          -- Store the obligation ABSTRACTED over the binders: the raw type has
+          -- the binders free, and printing it outside their scope shows
+          -- `_fvar.28` rather than `sa`.
+          let absTys ← uniq.mapM fun t => mkLambdaFVars bfvars t
+          let entries := names.mapIdx fun i n => ({ name := n, type := absTys[i]! } : Entry)
           return entries
     modifyEnv (obligationExt.addEntry · { decl := declName, obligations := entries })
     if let some doc := doc? then
