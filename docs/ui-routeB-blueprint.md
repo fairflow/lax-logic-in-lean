@@ -54,7 +54,7 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 | N4 | `StabilisationAll` — every saturated cell stabilises | same | **OPEN both ways** (`sorry` placeholder) | — |
 | N5 | `ljfo_ui_of_stabilisation` — UI for LJF◯ | same | DRAFTED (`sorry`) | N3, N4 |
 | N6 | `IsUIPairPLL`, `PLL_UI`, `pll_ui_of_ljfo : CutInv → (∀ p, CellsFor p) → PLL_UI` — transport to PLL; `pfree_roundTripN` proved | `wip/ui_routeB_n3.lean` | **PROVED relative to `CutInv` and `CellsFor`** `[propext, Quot.sound]` (§4.19) | `bridge_iff`, N3 |
-| N0k | `CutInv` — composition of `Inv` derivations: `Γ ⊢ N → N :: Δ ⊢ⱼ ψ → Γ ++ Δ ⊢ⱼ ψ` (LJF◯ has no cut lemma; its completeness is for polarised images only) | `wip/ui_routeB_n3.lean` | **OPEN** (typed obligation; needed by N3 backward and N6) | — |
+| N0k | `CutInv` — composition of `Inv` derivations: `Γ ⊢ N → N :: Δ ⊢ⱼ ψ → Γ ++ Δ ⊢ⱼ ψ`. Reduces through the bridge to completeness at every polarisation, restated after the refutation stage as `PolInvT` (judgment `tru`) + `PolInvL` (`lax`, shifted goals `↑P` only): `PolInv` at `lax` for unshifted `⊃`/`∧` goals is REFUTED (no rule concludes them; certified) but that case is vacuous for `CutInv` | `wip/ui_routeB_n3.lean`, `wip/cutinv_cells.lean`, `docs/cutinv-cases.md` | **OPEN**; refutation stage DONE (§4.21): 14 steps from the completeness proof, 26 designed cells all PASS at `[]`, the ◯-free block (17 cells) a result in its own right; route (a) recommended with an 8-lemma transfer block | — |
 | N0i | `FuelIrrelevance` — one fuel step without change at a station implies the chain is constant above it | `wip/ui_routeB_n3.lean` | **OPEN** (typed obligation; on N4's path, not N3's) | — |
 | N7 | pins, hoist out of `wip/`, `Production` sweep, `TOOLS.md` | — | — | each node as it lands |
 | N8 | blueprint chapter (`LaxBlueprint/`), HANDOFF entry, paper | — | — | N7 |
@@ -154,6 +154,14 @@ lacks UI.  Both outcomes are results.  Unknown duration; the core.
 the station `[negOfO φ]` after processing by `eMinFF`; A-side of the cell
 `[] ⇒ negOfO φ`), erase (`eraseNeg`); minimality transports through
 `bridge_iff` both ways.  Days.
+
+**WP6 — `CutInv` by route (a).**  Refutation stage done (§4.21,
+`docs/cutinv-cases.md`).  Build: the eight transfer lemmas between `N`
+and its canonical form `⟦N⟧ = negOfO (eraseNeg N)` (goal, hypothesis,
+pending positive, focused positive, each way) in one mutual block on the
+formula, the delay cases exactly as the cells do them; `laxAdm`; then
+`PolInvT`/`PolInvL` from `FocalizationPLL`, and `CutInv` by erase,
+compose, re-focalise.  ◯-free steps first (rule 8).
 
 **WP5 — N7/N8.**  Pins (`#axioms_within`, measured sets), hoist from
 `wip/` into `LJF/`, `lake build Production` clean, `TOOLS.md` cells,

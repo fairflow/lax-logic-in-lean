@@ -2188,6 +2188,87 @@ full rebuild of `LJF`, `wipshared`, `Production` from the root module
 down, exit 0, 8953 jobs, 32 min wall (23:51–00:24); production axiom
 sweep 12 492 declarations within `[propext, Classical.choice,
 Quot.sound]`, the four `except`-held modules unchanged.
+
+### 4.21 `CutInv`, refutation stage — from the rules, 26 designed cells; `PolInv` as first stated REFUTED at the lax judgment (a judgment-form fact), restated; the ◯-free block a result in its own right (2026-09-06, 00:55)
+
+Matthew's two standing orders of tonight (rules 8 and 9 of `CLAUDE.md`)
+applied: a first run that began enumerating small polarised sequents was
+stopped; the replacement read the case list off the completeness proof
+and wrote two or three designed cells per step, ◯-free steps first.  One
+agent run of 20 minutes; `docs/cutinv-cases.md` (new), `wip/cutinv_cells.lean`
+(new, leaf module, builds in 12 s); merged at 7731ba3; sorry sweep clean;
+every cell kernel-checked at `[]` (closed terms of the inductive), the
+refutation certificates likewise; the pin gate watched failing on the
+boundary pin `Inv.sound` at `[]`, and a wrong-rule cell caught by
+elaboration and by its own pin (`sorryAx`).
+
+**The invariant and the case list.**  The canonical polarisation never
+writes `↑` around a `↓` or `↓` around an `↑`, so exactly two shapes lie
+outside the bridge's image: the positive delay `↓↑P` and the negative
+delay `↑↓N` — both written by route (B) (`↓↑P′ ⊃ N`, `↑↓(Q′ ⊃ N′)`,
+`↑↓◯Q′`, `◯↓(…)`).  Fourteen steps read off `focalizeSCO`: S1 `init`,
+S2 `botL`, S3 `andR`, S4 `andL`, S5 `orR`, S6 `orL`, S7 `impR`, S8 `impL`,
+S9 the positive delay, S10 the negative delay (the ◯-free block); S11
+`circR`, S12 `circL`, S13 `laxOf`, S14 the `lax` judgment itself.
+
+**The ◯-free block (rule 8): 17 cells, all PASS at `[]`.**  Liang–Miller's
+"delays are inert" for the ◯-free part of LJF◯, confirmed cell by cell.
+Every derivation is one of two moves — left delay elimination
+(`lfoc`/`rel`/`downL` on `↑↓M`; `downL` on a queued `↓↑P`) and right
+delay introduction (`stable`/`rfoc`/`rel`) — with `routeStab`/`stableFire`
+supplying them under a focus.  The cell with content is
+`⇒ ↓↑(a ∨ b) ⊃ ↑(b ∨ a)`: the delay pushes the case split out of the
+inversion phase and left focus recovers it (`stableFire` in miniature,
+since `invertPos (↓↑P) = [[↑P]]`).
+
+**The ◯ block: 9 cells PASS** (`↑a ⇒ ◯↓↑a`, `◯a ⇒ ◯↓↑a`, `↑↓◯a ⇒ ◯a`,
+the ◯-implication shape, `◯↓⊤`, …).  **S14 REFUTES `PolInv` as stated in
+§4.19**, with certificates: at `Ω = []`, `j = lax`, no constructor
+concludes an `imp` or an `and` goal (`impR`/`andR` write `tru`; `circR`
+and `stable` conclude `◯`/`↑`; the Ω-rules need a non-empty queue), so
+
+    Inv Γ [] lax (Q ⊃ N)   and   Inv Γ [] lax (M ∧ N)   are EMPTY
+    (lax_imp_empty, lax_and_empty: exhaustive cases)
+
+while `⊢ ◯(⊥ ⊃ ⊥)` is PLL-derivable (`s14_refute_nTop_erasure`, a `LaxND`
+term); hence `not_polInv : ¬ PolInv`.  Two qualifications, both
+certified: the failure is about the JUDGMENT FORM, not provability — the
+same erasure is derived at `lax` once the goal carries its shift,
+`↑↓(↑⊥ ⊃ ↑⊥)`; and it does not touch `CutInv`, whose premise and
+conclusion carry the same `j` and `ψ`, so those cases are vacuous
+(`cutinv_lax_imp`, `cutinv_lax_and`).  The underlying fact was already in
+the repository (`upMergeJ`'s docstring, `LJF/OCore.lean`) and is cited,
+not claimed.
+
+**The obligation, correctly stated:**
+
+    PolInvT := ∀ Γ ψ,  ⊢_ND (⌊Γ⌋ ⇒ ⌊ψ⌋)        →  Inv Γ [] tru ψ
+    PolInvL := ∀ Γ P,  ⊢_ND (⌊Γ⌋ ⇒ ◯⌊P⌋)       →  Inv Γ [] lax (↑P)
+
+and `CutInv` follows from them by erase (`Inv.sound`), compose
+(`subst1`), split on `j` (`laxAdm` for the two vacuous shapes),
+re-focalise.  No evidence against either; positive evidence at every
+step including the three modal ones, where the Liang–Miller argument
+had not been checked.
+
+**Route (a), recommended, with its lemma list** (`docs/cutinv-cases.md`
+§5 keys each case to the cell that does it by hand): eight transfer
+lemmas between `N` and its canonical form `⟦N⟧ = negOfO (eraseNeg N)`, one
+mutual block on the formula —
+
+    (A) Inv Γ Ω j ⟦N⟧ → Inv Γ Ω j N         (A′) the converse        goal
+    (B) Inv (⟦N⟧ :: Γ) Ω j C → Inv (N :: Γ) Ω j C   (B′)              hypothesis
+    (C) Inv Γ (⟦P⟧ :: Ω) j C → Inv Γ (P :: Ω) j C   (C′)              pending positive
+    (D) Stab Γ j ⟦P⟧ → Stab Γ j P           (D′)                      focused positive
+
+with the delay cases by `routeStab`, `invBranches`/`extract`/`stableFire`,
+`lfoc`/`rel`/`downL`, `stable`/`rfoc`/`rel`, and `circR` into `lax`; then
+`laxAdm`, `PolInvT`/`PolInvL` from `FocalizationPLL`, and `CutInv`.  The
+traversals needed (`routeStab`/`routeLFoc`/`routeInv`, `simHyp`, `extract`,
+`invBranches`, `stableFire`, `upMerge`/`upMergeJ`) all exist, proved and
+flag-threaded, in `LJF/OCore.lean`; direct cut admissibility (route b)
+would re-prove them under a cut measure and handle the lax flag's
+asymmetry besides.  WP6 in the blueprint; ◯-free steps first.
 ---
 
 ## 5 · OPEN list

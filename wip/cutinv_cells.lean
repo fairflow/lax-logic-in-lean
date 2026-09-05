@@ -451,9 +451,9 @@ info: 'CutInvCells.s6_delay_hides_split' does not depend on any axioms
 #axioms_within cutinv_lax_imp []
 #axioms_within cutinv_lax_and []
 
-#axioms_within_pin lax_imp_empty
-#axioms_within_pin lax_and_empty
-#axioms_within_pin not_polInv
-#axioms_within_pin not_polInv'
+#axioms_within lax_imp_empty []
+#axioms_within lax_and_empty []
+#axioms_within not_polInv []
+#axioms_within not_polInv' []
 
 end CutInvCells
