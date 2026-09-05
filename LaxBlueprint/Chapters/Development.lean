@@ -184,6 +184,26 @@ TODO.  Depends on {uses "truth_lemma"}[].
 :::
 
 
+:::proposition "completeness_twice" (parent := "compl")
+TODO.  Completeness is proved *twice*, by routes with different logical
+strength, and the difference is machine-checked rather than asserted:
+
+* `PLLND.completeness` — `[propext, Classical.choice, Quot.sound]`
+* `FRJ.Gbu.W.PLL_iff_laxND` — `[propext, Quot.sound]`
+* `FRJ.Gbu.W.decideLaxND` — `[propext, Quot.sound]`
+
+The canonical-model route above uses choice, at the maximal-consistent
+extension ({uses "maxconsistent"}[], via Zorn).  The Gbu◯/FRJW dichotomy
+route does not: for every formula it returns either a PLL proof or a PLL
+disproof carrying a countermodel, and that single construction yields
+completeness, decidability and the finite poset model property together.
+
+So Zorn is not ultimately needed.  The constructive route is the decision
+procedure, and it is developed in its own chapter; this node exists to
+point forward to it, because a reader meeting {uses "completeness"}[] here
+should not be left thinking choice is essential to it.
+:::
+
 :::theorem "adequacy" (parent := "compl") (lean := "PLLND.valid_iff_provable")
 TODO — soundness and completeness together.  Depends on
 {uses "soundness"}[] and {uses "completeness"}[].
