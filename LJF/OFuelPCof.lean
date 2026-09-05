@@ -128,9 +128,10 @@ def satA2P_of_uentryP {p : String} (u : UEntryP p) : SatA2P p :=
 `interpP`'s rows for the FIVE parked implication shapes — the
 ◯-implication and the Dyckhoff shape of `interpF`, and the three shapes
 `interpP` newly parks — all guard the fire by the `∀p` of the
-ANTECEDENT at the FULL station.  Using such a row asks for that `∀p`
-from a main-line stable proof of the antecedent.  One statement covers
-all five, generic in the antecedent positive `Q`.
+ANTECEDENT'S OWN GOAL `↑Q` at the FULL station (the Dyckhoff row since
+2026-09-05, `docs/ui-ljfo-clause-table.md` §4.15).  Using such a row
+asks for that `∀p` from a main-line stable proof of the antecedent.
+One statement covers all five, generic in the antecedent positive `Q`.
 
 Where `LJF/O.lean`'s `CimpAnt` asks for the `∀p` at the RESIDUAL station
 — unreachable from a proof over a context containing the full station,
@@ -269,9 +270,10 @@ def parkFireE {p : String} {done rest K : List Neg} {G' N C : Neg}
       (cont.2 f' (Nat.le_trans (Nat.le_max_right _ _) hf')))
 
 /-! The five instances, one per parked implication shape.  Each is
-`parkFireE` at its own row membership; the antecedent goal is `↑Q` for
-the four whose antecedent is a positive, and `Q′ ⊃ N′` for the Dyckhoff
-shape. -/
+`parkFireE` at its own row membership, and since 2026-09-05 all five
+take the antecedent goal `↑Q` at the antecedent positive `Q` — the
+Dyckhoff shape at `Q := ↓(Q′ ⊃ N′)` like the rest
+(`docs/ui-ljfo-clause-table.md` §4.15). -/
 
 /-- `↓◯Q′ ⊃ N` — the ◯-implication row of `interpF`, retained. -/
 def cimpFireE {p : String} {done rest K : List Neg} {Q' : Pos} {N C : Neg}
@@ -284,12 +286,13 @@ def cimpFireE {p : String} {done rest K : List Neg} {Q' : Pos} {N C : Neg}
   parkFireE hsat (fun _ => cimpConjMemP hXr) want cont
 
 /-- `↓(Q′ ⊃ N′) ⊃ N` — the Dyckhoff row, guard retained at the full
-station. -/
+station and at the antecedent's own goal `↑↓(Q′ ⊃ N′)`, so this is
+`parkFireE` at `Q := ↓(Q′ ⊃ N′)` exactly as the other four are. -/
 def dykFireE {p : String} {done rest K : List Neg} {Q' : Pos} {N' N C : Neg}
     {j : JD} (hsat : Saturated done)
     (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done)
     (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
-              (interpP p f [] done (some (.imp Q' N')))))
+              (interpP p f [] done (some (.up (.down (.imp Q' N')))))))
     (cont : UpFrom (fun e => Inv (interpP p e [N] rest none :: K) [] j C)) :
     UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
   parkFireE hsat (fun _ => dykConjMemP hXr) want cont
@@ -324,8 +327,10 @@ def andimpFireE {p : String} {done rest K : List Neg} {Ma Mb N C : Neg}
     UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
   parkFireE hsat (fun _ => andimpConjMemP hXr) want cont
 
-/-- And the guard the five need is exactly what `ParkAntP` delivers, for
-the four whose antecedent is a positive. -/
+/-- And the guard ALL FIVE need is exactly what `ParkAntP` delivers:
+`ParkAntP` is stated for every positive antecedent `Q`, and since the
+Dyckhoff row's guard moved to `↑↓(Q′ ⊃ N′)` its antecedent
+`↓(Q′ ⊃ N′)` is covered with no change to the obligation. -/
 def parkAntGuard {p : String} (pant : ParkAntP p)
     {done K Γ' : List Neg} {Q : Pos} {N : Neg}
     (hsat : Saturated done) (hP : ParkedCtxP done)
@@ -335,6 +340,22 @@ def parkAntGuard {p : String} (pant : ParkAntP p)
     UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
       (interpP p f [] done (some (.up Q)))) :=
   pant done K Γ' Q N hsat hP hX hm hm2 hK s
+
+/-- **The fold is exact.**  At `Q := ↓(Q′ ⊃ N′)` the guard `ParkAntP`
+delivers is precisely `dykFireE`'s `want`, so the Dyckhoff arms of the
+family are parked arms and no separate obligation is needed.  Before the
+guard moved to `↑↓(Q′ ⊃ N′)` this did not typecheck — the row wanted
+`interpP p f [] done (some (Q′ ⊃ N′))`, which `ParkAntP` cannot supply
+(`docs/ui-ljfo-clause-table.md` §4.15). -/
+example {p : String} (pant : ParkAntP p)
+    {done K Γ' : List Neg} {Q' : Pos} {N' N : Neg}
+    (hsat : Saturated done) (hP : ParkedCtxP done)
+    (hX : Neg.imp (.down (.imp Q' N')) N ∈ done)
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) (hm2 : Sub done Γ')
+    (hK : PFreeCtx p K) (s : Stab Γ' .tru (.down (.imp Q' N'))) :
+    UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+      (interpP p f [] done (some (.up (.down (.imp Q' N')))))) :=
+  parkAntGuard pant hsat hP hX hm hm2 hK s
 
 end LJFO
 

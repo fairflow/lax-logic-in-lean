@@ -30,11 +30,18 @@ and no others.  The principle they express:
         ∀p attack row  A(done ⇒ ↑Q)                 ∧  A(N :: rest ⇒ goal)
 
 (c) The Dyckhoff rows `↓(Q′ ⊃ N′) ⊃ N` carry their guard at the FULL
-    station too: `A(done ⇒ Q′ ⊃ N′)` in place of
-    `A(↓N′ ⊃ N :: rest ⇒ Q′ ⊃ N′)`.  This is the retention that removes
-    `dykCommute` (`LJF/OFuelHeight.lean` §7.3, §9), whose height rise is
-    unbounded.  The E-side residual component
-    `E(↓N′ ⊃ N :: rest)` is unchanged.
+    station too, and — since 2026-09-05 — at the ANTECEDENT'S OWN GOAL:
+    `A(done ⇒ ↑↓(Q′ ⊃ N′))` in place of `interpF`'s
+    `A(↓N′ ⊃ N :: rest ⇒ Q′ ⊃ N′)`.  Retention at the full station is
+    what removes `dykCommute` (`LJF/OFuelHeight.lean` §7.3, §9), whose
+    height rise is unbounded; the goal `↑↓(Q′ ⊃ N′)` — rather than the
+    body `Q′ ⊃ N′` — is what makes the row an instance of (b) at
+    `Q := ↓(Q′ ⊃ N′)`, so that the antecedent dispatch is the SAME
+    obligation as for the other four parked shapes.  Guarding by the
+    body was the one row of `interpP` violating `interpP`'s own
+    principle, and it forced a separate, unreachable obligation
+    (`DykAntP`); see `docs/ui-ljfo-clause-table.md` §4.15.  The E-side
+    residual component `E(↓N′ ⊃ N :: rest)` is unchanged.
 
 Fuel-0 defaults are unchanged (`⊤` in ∃p mode, `⊥` in ∀p mode), so every
 fuel level is still sound by construction.  The parked-shape predicate is
@@ -172,14 +179,16 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
             -- `a ⊃ N`, atom absent: guard the recursion by the atom
             | .imp (.atom a) N =>
                 pGuard p a nTop (.imp (.atom a) (interpP p f [N] rest none))
-            -- the Dyckhoff implication: what it yields, guarded by what
-            -- the goal interpolant of its antecedent demands — PAIRED with
-            -- the ∃p of the residual station, which the minimality
-            -- dispatch projects (third clause the (ii) induction forced;
-            -- sound because done ⊢ res via resSim)
+            -- the Dyckhoff implication: what it yields, guarded by the
+            -- ∀p of its ANTECEDENT'S OWN GOAL `↑↓(Q′ ⊃ N′)` at the full
+            -- station — the same row form as the ◯-implication below,
+            -- at `Q := ↓(Q′ ⊃ N′)` — PAIRED with the ∃p of the residual
+            -- station, which the minimality dispatch projects (third
+            -- clause the (ii) induction forced; sound because
+            -- done ⊢ res via resSim)
             | .imp (.down (.imp Q' N')) N =>
                 nAnd
-                  (.imp (.down (interpP p f [] done (some (.imp Q' N'))))
+                  (.imp (.down (interpP p f [] done (some (.up (.down (.imp Q' N'))))))
                        (interpP p f [N] rest none))
                   (interpP p f [.imp (.down N') N] rest none)
             -- a parked box: everything the opened station yields, boxed
@@ -243,7 +252,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.up (Pos.atom q)))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.up (Pos.atom q))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -265,7 +274,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.up Pos.fls))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.up Pos.fls)))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -289,7 +298,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.up (Pos.or P₁ P₂)))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.up (Pos.or P₁ P₂))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -312,7 +321,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.up (Pos.down M)))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.up (Pos.down M))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -335,7 +344,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ (.atom q)))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.circ (.atom q))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -361,7 +370,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ .fls))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.circ .fls)))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -389,7 +398,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ (.or P₁ P₂)))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.circ (.or P₁ P₂))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -415,7 +424,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ (.down (.up P'))))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.circ (.down (.up P')))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -441,7 +450,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ (.down (.circ P'))))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.circ (.down (.circ P')))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -467,7 +476,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ (.down (.and M₁ M₂))))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.circ (.down (.and M₁ M₂)))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -493,7 +502,7 @@ def interpP (p : String) : (fuel : Nat) → (todo done : List Neg) →
                   pGuard p a nBot
                     (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ (.down (.imp Q₀ N₀))))))
               | .imp (.down (.imp Q' N')) N, hXr =>
-                  nAnd (interpP p f [] done (some (.imp Q' N')))
+                  nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
                        (interpP p f [N] rest (some (.circ (.down (.imp Q₀ N₀)))))
               | .imp (.down (.circ Q')) N, hXr =>
                   nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
