@@ -179,6 +179,163 @@ theorem parkAnt_edge {Γ Γ₂ : List Neg} {j : JD} {Q : Pos} {N : Neg}
     hgtI ((Inv.stable s_d).wk H) < hgtS (Stab.lfoc h (.impL s_d lf')) :=
   hgt_antDispatch H h s_d lf'
 
+/-! ## The upward-closed witness kit
+
+`interpP` has no chain-monotonicity lemma, so every value the family
+produces is an `UpFrom`/`UpFrom2` witness (`LJF/OFuelMin.lean` Part 1)
+and every clause with more than one sub-result must combine thresholds
+by `max`.  Part 1 has the unary combinators; these are the binary and
+ternary ones the traversals need. -/
+
+/-- Combine two `UpFrom` witnesses at a common threshold. -/
+def UpFrom.map₂ {P Q R : Nat → Type} (k : ∀ f, P f → Q f → R f)
+    (w : UpFrom P) (v : UpFrom Q) : UpFrom R :=
+  ⟨max w.1 v.1, fun f hf =>
+    k f (w.2 f (Nat.le_trans (Nat.le_max_left _ _) hf))
+        (v.2 f (Nat.le_trans (Nat.le_max_right _ _) hf))⟩
+
+/-- Combine three. -/
+def UpFrom.map₃ {P Q R S : Nat → Type} (k : ∀ f, P f → Q f → R f → S f)
+    (w : UpFrom P) (v : UpFrom Q) (u : UpFrom R) : UpFrom S :=
+  UpFrom.map₂ (fun f x y => y x) w (UpFrom.map₂ (fun f y z x => k f x y z) v u)
+
+/-- Combine two `UpFrom2` witnesses. -/
+def UpFrom2.map₂ {P Q R : Nat → Nat → Type} (k : ∀ e f, P e f → Q e f → R e f)
+    (w : UpFrom2 P) (v : UpFrom2 Q) : UpFrom2 R :=
+  ⟨max w.1 v.1, fun e f he hf =>
+    k e f (w.2 e f (Nat.le_trans (Nat.le_max_left _ _) he)
+                   (Nat.le_trans (Nat.le_max_left _ _) hf))
+          (v.2 e f (Nat.le_trans (Nat.le_max_right _ _) he)
+                   (Nat.le_trans (Nat.le_max_right _ _) hf))⟩
+
+/-- An `UpFrom` witness read at the `∃p` fuel of an `UpFrom2` family. -/
+def UpFrom.toUpFrom2 {P : Nat → Type} (w : UpFrom P) :
+    UpFrom2 (fun e _ => P e) :=
+  ⟨w.1, fun e _ he _ => w.2 e he⟩
+
+/-! ## The ∃p row of a parked implication, assembled and fired
+
+`LJF/OCore.lean`'s `cimpAssembleN`, generalised in the antecedent's goal
+and moved to `interpP`.  One statement covers all FIVE parked implication
+shapes, because `interpP` gives them all the SAME row form: the fire
+guarded by the `∀p` of the antecedent at the full station, paired with a
+residual component `R` the assembler never inspects. -/
+
+/-- Fire a parked implication's `∃p` row: the guard supplies the
+antecedent, the recursively interpolated body is consumed through `δ`. -/
+def parkAssembleP {p : String} {f : Nat} {done rest K : List Neg}
+    {G' N C R : Neg} {L : List Neg}
+    (hE : interpP p (f + 1) [] done none = nAndAll L)
+    (hmem : nAnd (.imp (.down (interpP p f [] done (some G')))
+                       (interpP p f [N] rest none)) R ∈ L)
+    (sant : Inv (interpP p (f + 1) [] done none :: K) [] .tru
+      (interpP p f [] done (some G')))
+    {j : JD} (δ : Inv (interpP p f [N] rest none :: K) [] j C) :
+    Inv (interpP p (f + 1) [] done none :: K) [] j C :=
+  simHyp
+    (fl := fun hs lf =>
+      .lfoc (hs _ (List.mem_cons_self ..))
+        (hE.symm ▸ lfocAndAll hmem
+          (.and1 (.impL (.rfoc (.rel (sant.wk hs))) lf))))
+    (Sub.grow _) δ
+
+/-- **The retention row, used** — the clause of the `∃p` traversal that
+the retention design exists for, in isolation and in fuel-carrying form.
+Given the antecedent's `∀p` at the FULL station (an `UpFrom2` witness, of
+the shape `ParkAntP` delivers) and the continuation's `∃p` at the
+residual station, the fire of the row is available from some fuel on:
+take the aggregate at `f+1`, its guard at `f`, and the continuation at
+`f`, over the two thresholds' maximum.
+
+This is what `LJF/OFuelMin.lean`'s `CimpAntF` could only state: there the
+guard sits at the RESIDUAL station, so the two fuels cannot be lined up
+with a proof over the full station.  Here they line up, and the `UpFrom2`
+two-fuel form is exactly what makes them. -/
+def parkFireE {p : String} {done rest K : List Neg} {G' N C : Neg}
+    {R : Nat → Neg} {j : JD}
+    (hsat : Saturated done)
+    (hmem : ∀ f, nAnd (.imp (.down (interpP p f [] done (some G')))
+                            (interpP p f [N] rest none)) (R f)
+              ∈ eConjRowsP p f done)
+    (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+              (interpP p f [] done (some G'))))
+    (cont : UpFrom (fun e => Inv (interpP p e [N] rest none :: K) [] j C)) :
+    UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
+  UpFrom.mk1 (max want.1 cont.1) (fun f' hf' =>
+    parkAssembleP (interpPE_eq hsat) (hmem f')
+      (want.2 (f' + 1) f'
+        (Nat.le_trans (Nat.le_trans (Nat.le_max_left _ _) hf') (Nat.le_succ _))
+        (Nat.le_trans (Nat.le_max_left _ _) hf'))
+      (cont.2 f' (Nat.le_trans (Nat.le_max_right _ _) hf')))
+
+/-! The five instances, one per parked implication shape.  Each is
+`parkFireE` at its own row membership; the antecedent goal is `↑Q` for
+the four whose antecedent is a positive, and `Q′ ⊃ N′` for the Dyckhoff
+shape. -/
+
+/-- `↓◯Q′ ⊃ N` — the ◯-implication row of `interpF`, retained. -/
+def cimpFireE {p : String} {done rest K : List Neg} {Q' : Pos} {N C : Neg}
+    {j : JD} (hsat : Saturated done)
+    (hXr : (Neg.imp (.down (.circ Q')) N, rest) ∈ splits done)
+    (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+              (interpP p f [] done (some (.up (.down (.circ Q')))))))
+    (cont : UpFrom (fun e => Inv (interpP p e [N] rest none :: K) [] j C)) :
+    UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
+  parkFireE hsat (fun _ => cimpConjMemP hXr) want cont
+
+/-- `↓(Q′ ⊃ N′) ⊃ N` — the Dyckhoff row, guard retained at the full
+station. -/
+def dykFireE {p : String} {done rest K : List Neg} {Q' : Pos} {N' N C : Neg}
+    {j : JD} (hsat : Saturated done)
+    (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done)
+    (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+              (interpP p f [] done (some (.imp Q' N')))))
+    (cont : UpFrom (fun e => Inv (interpP p e [N] rest none :: K) [] j C)) :
+    UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
+  parkFireE hsat (fun _ => dykConjMemP hXr) want cont
+
+/-- `(Qa ∨ Qb) ⊃ N` — newly parked. -/
+def orimpFireE {p : String} {done rest K : List Neg} {Qa Qb : Pos} {N C : Neg}
+    {j : JD} (hsat : Saturated done)
+    (hXr : (Neg.imp (.or Qa Qb) N, rest) ∈ splits done)
+    (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+              (interpP p f [] done (some (.up (.or Qa Qb))))))
+    (cont : UpFrom (fun e => Inv (interpP p e [N] rest none :: K) [] j C)) :
+    UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
+  parkFireE hsat (fun _ => orimpConjMemP hXr) want cont
+
+/-- `↓↑Pa ⊃ N` — newly parked. -/
+def shimpFireE {p : String} {done rest K : List Neg} {Pa : Pos} {N C : Neg}
+    {j : JD} (hsat : Saturated done)
+    (hXr : (Neg.imp (.down (.up Pa)) N, rest) ∈ splits done)
+    (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+              (interpP p f [] done (some (.up (.down (.up Pa)))))))
+    (cont : UpFrom (fun e => Inv (interpP p e [N] rest none :: K) [] j C)) :
+    UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
+  parkFireE hsat (fun _ => shimpConjMemP hXr) want cont
+
+/-- `↓(Ma ∧ Mb) ⊃ N` — newly parked. -/
+def andimpFireE {p : String} {done rest K : List Neg} {Ma Mb N C : Neg}
+    {j : JD} (hsat : Saturated done)
+    (hXr : (Neg.imp (.down (.and Ma Mb)) N, rest) ∈ splits done)
+    (want : UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+              (interpP p f [] done (some (.up (.down (.and Ma Mb)))))))
+    (cont : UpFrom (fun e => Inv (interpP p e [N] rest none :: K) [] j C)) :
+    UpFrom (fun e => Inv (interpP p e [] done none :: K) [] j C) :=
+  parkFireE hsat (fun _ => andimpConjMemP hXr) want cont
+
+/-- And the guard the five need is exactly what `ParkAntP` delivers, for
+the four whose antecedent is a positive. -/
+def parkAntGuard {p : String} (pant : ParkAntP p)
+    {done K Γ' : List Neg} {Q : Pos} {N : Neg}
+    (hsat : Saturated done) (hP : ParkedCtxP done)
+    (hX : Neg.imp Q N ∈ done)
+    (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) (hm2 : Sub done Γ')
+    (hK : PFreeCtx p K) (s : Stab Γ' .tru Q) :
+    UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
+      (interpP p f [] done (some (.up Q)))) :=
+  pant done K Γ' Q N hsat hP hX hm hm2 hK s
+
 end LJFO
 
 /-! ### Axiom audit -/
@@ -191,3 +348,22 @@ end LJFO
 #axioms_within LJFO.satE2P_of_tinvP [propext]
 #axioms_within LJFO.satA2P_of_uentryP [propext]
 #axioms_within LJFO.parkAntP_of_satA2P [propext]
+
+#axioms_within LJFO.UpFrom.map₂ [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.UpFrom.map₃ [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.UpFrom2.map₂ [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.parkAssembleP [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.parkFireE [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.cimpFireE [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.dykFireE [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.orimpFireE [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.shimpFireE [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.andimpFireE [propext, Classical.choice, Quot.sound]
+
+#axioms_within LJFO.parkAssembleP [propext, Quot.sound]
+#axioms_within LJFO.parkFireE [propext, Quot.sound]
+#axioms_within LJFO.cimpFireE [propext, Quot.sound]
+#axioms_within LJFO.dykFireE [propext, Quot.sound]
+#axioms_within LJFO.orimpFireE [propext, Quot.sound]
+#axioms_within LJFO.shimpFireE [propext, Quot.sound]
+#axioms_within LJFO.andimpFireE [propext, Quot.sound]
