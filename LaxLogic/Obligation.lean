@@ -62,6 +62,7 @@ import LaxLogic.Obligation.Connectives
 import LaxLogic.Obligation.Timing
 import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.LatchSynth
+import LaxLogic.Obligation.BeliefLink
 import LaxLogic.Obligation.Ledger
 import LaxLogic.Obligation.Postpone
 import LaxLogic.Obligation.Conservativity
