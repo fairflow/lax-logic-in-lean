@@ -46,6 +46,11 @@ import FRJ.Gbu.W.Exclusion
 import FRJ.Gbu.W.Saturate
 import FRJ.Gbu.W.LaxND
 
+-- The LJF◯ uniform-interpolation route (B) chain: `interpP`, its
+-- soundness, the cofinality family and the two cofinality statements.
+-- Promoted 2026-09-05, when the family became unconditional.
+import LJF.OFuelPCofinal
+
 /-! ## Held out, 2026-09-04 — recorded debt, not exemptions
 
 The first run of this sweep found 7 violations in 10,947 declarations.
@@ -72,7 +77,7 @@ the whole estate, which is how a gate stops meaning anything.
 Each line here is a claim that something is not meeting the bar.  The
 list should get shorter. -/
 
-#axiom_sweep [LaxLogic, FRJ, Rewrite]
+#axiom_sweep [LaxLogic, FRJ, Rewrite, LJF]
   except [LaxLogic.BeliefExamples, LaxLogic.PLLSemUILayered,
           LaxLogic.PLLSemUIChar, LaxLogic.PLLSemUIHenkin]
   allowing [propext, Classical.choice, Quot.sound]

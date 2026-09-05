@@ -21,6 +21,7 @@ import LJF.OFuelPSound
 import LJF.OFuelPMin
 import LJF.OFuelPCof
 import LJF.OFuelPFam
+import LJF.OFuelPCofinal
 
 namespace LJFO
 
@@ -120,104 +121,43 @@ def esoundP (p : String) : ESoundP p := eSoundP p
 /-- `ASoundP` holds. -/
 def asoundP (p : String) : ASoundP p := aSoundP p
 
-/-- Cofinality, ∃ side, for `interpP`. -/
-def ECofinalP (p : String) : Type :=
-  ∀ (done Δ : List Neg) (ψ : Neg), Saturated done → ParkedCtxP done →
-    PFreeCtx p Δ → PFreeN p ψ →
-    ∀ {j : JD} (d : Inv (done ++ Δ) [] j ψ),
-      Σ f : Nat, Inv (interpP p f [] done none :: Δ) [] j ψ
+/-! The two cofinality statements for `interpP`, the reductions to
+cofinality at a saturated station, and the reductions to the two entry
+points of the family, are in `LJF/OFuelPCofinal.lean` (`ECofinalP`,
+`ACofinalP`, `ecofinalP_of_satE2P`, `acofinalP_of_satA2P`,
+`ecofinalP_of_tinvP`, `acofinalP_of_uentryP`).  They were hoisted out of
+this file on 2026-09-05, when the family became unconditional and the
+statements and their inhabitants could live in the production estate
+together. -/
 
-/-- Cofinality, ∀ side, for `interpP` (E-relativised, as `ACofinalF`). -/
-def ACofinalP (p : String) : Type :=
-  ∀ (done Δ : List Neg) (G : Neg), Saturated done → ParkedCtxP done →
-    PFreeCtx p Δ →
-    ∀ {j : JD} (d : Inv (done ++ Δ) [] j G),
-      Σ f : Nat, Inv (interpP p f [] done none :: Δ) [] .tru
-        (interpP p f [] done (some (jGoal j G)))
-
-/-- `ECofinalP` follows from cofinality at a saturated station. -/
-def ecofinalP_of_satE2P {p : String} (s2 : SatE2P p) : ECofinalP p :=
-  fun done Δ ψ hsat hP hΔ hψ _ d =>
-    let w := s2 done Δ ψ hsat hP hΔ hψ d
-    ⟨w.1, w.here⟩
-
-/-- `ACofinalP` follows likewise, on the diagonal of the two fuels. -/
-def acofinalP_of_satA2P {p : String} (a2 : SatA2P p) : ACofinalP p :=
-  fun done Δ G hsat hP hΔ _ d =>
-    let w := a2 done Δ G hsat hP hΔ d
-    ⟨w.1, w.here⟩
-
-/-! The whole chain, from the two typed entry points of the cofinality
-family (`LJF/OFuelPCof.lean`) down to the approved statements.  Only the
-top link is open. -/
-
-/-- `ECofinalP` from the `∃p` traversal. -/
-def ecofinalP_of_tinvP {p : String} (t : TInvP p) : ECofinalP p :=
-  ecofinalP_of_satE2P (satE2P_of_tinvP t)
-
-/-- `ACofinalP` from the `∀p` entry. -/
-def acofinalP_of_uentryP {p : String} (u : UEntryP p) : ACofinalP p :=
-  acofinalP_of_satA2P (satA2P_of_uentryP u)
-
-/-! ## The family, and exactly what it is conditional on (node N0c,
-2026-09-05)
+/-! ## The family, UNCONDITIONAL (nodes N0c and N0d, 2026-09-05)
 
 `LJF/OFuelPFam.lean` inhabits `TInvP` and `UEntryP`: `LJF/O.lean`'s
-minimality family re-authored in fuel-carrying form over `interpP`,
-founded on `LJF/O.lean`'s station measure unchanged.  The whole chain
-below it is then inhabited too.  Both entry points are CONDITIONAL on ONE
-typed obligation, in the `CimpAnt` idiom — a parameter, never an
-assumption, and no `sorry` anywhere:
+minimality family re-authored in fuel-carrying form over `interpP`.  Until
+2026-09-05 it carried ONE typed obligation, in the `CimpAnt` idiom — a
+parameter, never an assumption:
 
 * `ParkAntP p` (`LJF/OFuelPCof.lean`) — the antecedent guard of the FIVE
-  parked implications, at the antecedent's own goal `↑Q`.  This is a
+  parked implications, at the antecedent's own goal `↑Q`.  It was a
   FIXPOINT requirement, not a gap: `parkAntP_of_satA2P` derives it from
   `SatA2P p`, which `satA2P_of_uentryP` derives from `UEntryP p`, so the
   dispatch is an instance of the family's own `∀p` entry at the SAME
-  station applied to the antecedent's own subderivation, and
-  `LJF/OFuelHeight.lean` §10.4 proves the height fact that makes it a
-  legitimate recursive call.  Taking it as one needs the family re-founded
-  on `μ = (normalised height, station weight, size)`.
+  station applied to the antecedent's own subderivation.  What stood in
+  the way was the MEASURE: `LJF/O.lean`'s station-first pair cannot pay
+  for a call at an unchanged station.
 
-A second obligation `DykAntP p`, for the Dyckhoff shape
-`↓(Q′ ⊃ N′) ⊃ N` alone, stood beside it until 2026-09-05 and is
-WITHDRAWN.  It was not an instance of `ParkAntP` because `interpP`'s
-Dyckhoff row guarded its fire by `A(done ⇒ Q′ ⊃ N′)`, the antecedent's
-BODY (a negative), while §10.4's dispatch supplies
-`A(done ⇒ ↑↓(Q′ ⊃ N′))`, which `interpPA_down_eq` makes a DISJUNCTION
-carrying the former as its head disjunct.  That was a defect of the ROW
-— the one row violating `interpP`'s own principle — and the row now
-guards by the antecedent's own goal like the other four
-(`docs/ui-ljfo-clause-table.md` §4.15).  Soundness was re-proved for the
-changed row first; `eSoundP`/`aSoundP` keep `[propext, Quot.sound]`.
+The family is now founded on `μ = (normalised derivation height, station
+weight, sizeOf)` with the height of `LJF/OFuelHeight.lean` Part 10, under
+which the dispatch edge is strictly decreasing with the station unchanged
+(`hgt_antDispatch`, `nativeParkAnt_edge`).  The guard is a native
+recursive call and the parameter is gone.  A second obligation `DykAntP p`
+for the Dyckhoff shape alone was WITHDRAWN on the same day, when that row
+moved to the antecedent's own goal like the other four
+(`docs/ui-ljfo-clause-table.md` §4.15, §4.16).
 
-So `ECofinalP`/`ACofinalP` are STILL NOT claimed: they are inhabited
-relative to `ParkAntP`, exactly as `LJFO.satE2`/`satA2` are relative to
-`CimpAnt`. -/
-
-/-- **The `∃p` traversal at a saturated station**, conditional. -/
-def tinvP {p : String} (pant : ParkAntP p) : TInvP p :=
-  tinvP_of pant
-
-/-- **The `∀p` entry at a saturated station**, conditional. -/
-def uentryP {p : String} (pant : ParkAntP p) :
-    UEntryP p := uentryP_of pant
-
-/-- `SatE2P`, conditional. -/
-def satE2P {p : String} (pant : ParkAntP p) :
-    SatE2P p := satE2P_of_tinvP (tinvP pant)
-
-/-- `SatA2P`, conditional. -/
-def satA2P {p : String} (pant : ParkAntP p) :
-    SatA2P p := satA2P_of_uentryP (uentryP pant)
-
-/-- `ECofinalP`, conditional. -/
-def ecofinalP {p : String} (pant : ParkAntP p) :
-    ECofinalP p := ecofinalP_of_tinvP (tinvP pant)
-
-/-- `ACofinalP`, conditional. -/
-def acofinalP {p : String} (pant : ParkAntP p) :
-    ACofinalP p := acofinalP_of_uentryP (uentryP pant)
+`tinvP`, `uentryP`, `parkAntP`, `satE2P`, `satA2P`, `ecofinalP`,
+`acofinalP` are in `LJF/OFuelPCofinal.lean`, each with no parameter; the
+pins below measure them there. -/
 
 end LJFO
 
