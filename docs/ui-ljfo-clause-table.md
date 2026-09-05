@@ -1821,6 +1821,64 @@ and a ◯-goal clause that opens the aggregate AND rewrites one of its
 prefix rows spends two fuel units (`UpFrom2.mk2`), because the prefix
 sits one fuel below the aggregate.
 
+### 4.16 The Dyckhoff row fixed, soundness re-proved first; `DykAntP` WITHDRAWN — the family is conditional on `ParkAntP` alone (2026-09-05, 13:10)
+
+Built exactly as proposed in §4.15, in one agent run of 36 minutes,
+three commits (definition + soundness; rows + the `parkFireE` instance;
+the family), merged at 392949b and verified here (`lake build LJF
+wipshared Production`, exit 0; `LJF.OFuelPFam` 522 s).
+
+**The definition.**  `some (.imp Q' N')` → `some (.up (.down (.imp Q' N')))`
+at the twelve sites of `LJF/OFuelP.lean`, header (c) rewritten.  The
+brief's count was short by two: `OFuelPFam.lean` Part 3 carried the old
+guard in `dykFireA` (`hmemA`/`want`) and in the ∀p row-block record's
+field `dmem` — a SECOND COPY of the row specification, which must move
+whenever `interpP`'s ∀p rows move, and where a partial edit hides.  The
+first build failed on them and the `#axioms_within` pins caught the
+cascade as `sorryAx`, a gate firing unasked.
+
+**Soundness, first and unchanged.**  `eSoundP`, `aSoundP` at
+`[propext, Quot.sound]` as before.  The ∃p case is now the ◯-implication
+case verbatim (`aSoundP` at the goal `↑↓(Q′ ⊃ N′)`, then `unStable`,
+with `resSim` surviving only in the unchanged residual conjunct); the
+eleven ∀p rows lost their re-shift `.stable (.rfoc (.rel …))` and are
+plain `atkPark`.  The kernel agreement `interpP = interpF` on S1 and its
+three `≠` controls still pass.  The negative control on the exercising
+cell, by `rfl`, pinned `[propext]`, watched failing with the old guard
+`c ⊃ ↑a` in the expected formula:
+
+    interpP "p" 3 [] [↓(c ⊃ ↑a) ⊃ ↑e] none
+      = ⋀ [ ( ↓A₂([↓(c ⊃ ↑a) ⊃ ↑e] ⇒ ↑↓(c ⊃ ↑a)) ⊃ E₂(↑e) ) ∧ E₂(↓↑a ⊃ ↑e) ]
+
+**The family.**  The four Dyckhoff arms (`TStabQ`, `TpElimQ`, `UStabQ`,
+`UpElimQ`) are parked arms at `Q := ↓(Q′ ⊃ N′)`; `DykAntP` and every
+`dant` parameter are gone (Part 4 records the withdrawal); no measure
+work anywhere — every `decreasing_by` site in the converted arms goes
+through on `LJF/O.lean`'s (station weight, `sizeOf`) pair, and
+`OFuelHeight.lean` is untouched.  The chain now reads
+
+    tinvP, uentryP, satE2P, satA2P, ecofinalP, acofinalP  :  ParkAntP p → ⟨statement⟩
+
+and `ECofinalP`/`ACofinalP` are STILL NOT claimed.  Pins measured,
+unchanged: the family and chain `[propext, Classical.choice, Quot.sound]`;
+new `dykConjMemP`, `laxRowsP_dykMem`, `dykFireE`, `dykFireA`
+`[propext, Quot.sound]`; `parkAntP_of_satA2P` `[propext]`.  Five gates
+watched failing: the control with the old guard ("not a definitional
+equality"); the fold `example` at the end of `OFuelPCof.lean` with the
+pre-change `want` type (an elaboration-time gate that the fold stays
+exact); three new pin lines at `[propext]` (each "depends on
+Quot.sound").
+
+**What remains for N0c is one obligation and one job.**  `ParkAntP` is
+the single dispatch shape, and Part 8's `nativeParkAnt` and
+`nativeParkAnt_edge` already cover all five parked shapes, the Dyckhoff
+one now genuinely an instance (`hgt_antDispatch` is generic in the
+antecedent positive).  WP1b: re-found the family on
+`μ = (hgt, station weight, sizeOf)` so that the guard is a native
+recursive call — about seventy sites, the height-equal ones through a
+`lex_of_le_of_lt` helper on the Part-10 bounds — after which
+`ecofinalP`/`acofinalP` are unconditional and N0c/N0d are PROVED.
+
 ---
 
 ## 5 · OPEN list

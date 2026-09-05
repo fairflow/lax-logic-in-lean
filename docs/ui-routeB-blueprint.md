@@ -34,7 +34,7 @@ For every PLL formula φ and variable p there are p-free `∃p.φ` and `∀p.φ`
 (uniform interpolation, Pitts's sense).  The route: LJF◯'s fuel-founded
 retention interpolant `interpF` computes chains `E_f` (descending from ⊤)
 and `A_f` (ascending from ⊥); soundness at every fuel is PROVED; cofinality
-(every sufficient p-free formula is reached at some fuel) is BUILT on the parking definition `interpP` conditional on two antecedent dispatches (§4.15): one is a measure job, the other a one-row defect of `interpP` with a proposed fix;
+(every sufficient p-free formula is reached at some fuel) is BUILT on the parking definition `interpP` conditional on ONE antecedent dispatch, `ParkAntP`, a fixpoint that the re-founding on `μ = (hgt, weight, size)` discharges (§4.15–4.16; the Dyckhoff-row defect is fixed);
 with both, **UI at a cell ⟺ the chains stabilise**; stabilisation at every
 cell is THE open theorem; the bridge transports LJF◯ to PLL.
 
@@ -46,7 +46,7 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 | N0b | row equations at fuel; processing phase `eMinFF`/`aMinFF`; reductions `ecofinalF_of_satE2F`, `acofinalF_of_satA2F`; `cimpAntF_of_satA2F` | `LJF/OFuelMin.lean` | **PROVED** | N0a |
 | N0h | height bounds of every derivation transformer (the Step-0 table); `laxReleaseUp`/`laxReleaseCirc` | `LJF/OFuelHeight.lean` | **PROVED** (873 lines, pinned) | — |
 | N0e | `interpP`, the parking definition; `eSoundP`/`aSoundP`; rows, processing phase `eMinPP`/`aMinPP`, reductions; the founding `μ = (hgt, weight)` with every edge class discharged (Part 10); `parkAntP_of_satA2P`; `parkFireE` | `LJF/OFuelP.lean`, `OFuelPSound.lean`, `OFuelPMin.lean`, `OFuelPCof.lean`, `OFuelHeight.lean` Part 10 | **PROVED** — soundness `[propext, Quot.sound]`, kernel-checked agreement with `interpF` off the changed shapes, founding proved (§4.14) | N0h |
-| N0c | `tinvP`, `uentryP`, `satE2P`, `satA2P`, `ecofinalP`, `acofinalP` — the 17-definition family in fuel-carrying form over `interpP`, two `mutual` blocks on O.lean's (weight, size) pair | `LJF/OFuelPFam.lean` (2048), `wip/ui_routeB_statements.lean` | **BUILT, CONDITIONAL** on `ParkAntP p` (a fixpoint: discharged natively by re-founding on `μ = (hgt, weight, size)`, the next run) and `DykAntP p` (a defect of `interpP`'s Dyckhoff row: guard `A(done ⇒ Q′ ⊃ N′)` where the dispatch supplies `A(done ⇒ ↑↓(Q′ ⊃ N′))`; fix = guard by the antecedent's own goal, 12 sites, soundness re-proved first — §4.15) | N0e |
+| N0c | `tinvP`, `uentryP`, `satE2P`, `satA2P`, `ecofinalP`, `acofinalP` — the 17-definition family in fuel-carrying form over `interpP`, two `mutual` blocks on O.lean's (weight, size) pair | `LJF/OFuelPFam.lean` (2048), `wip/ui_routeB_statements.lean` | **BUILT, CONDITIONAL** on `ParkAntP p` ALONE (a fixpoint: discharged natively by re-founding on `μ = (hgt, weight, size)`, WP1b). `DykAntP` WITHDRAWN 2026-09-05: it was a defect of `interpP`'s Dyckhoff row, fixed by guarding at the antecedent's own goal `↑↓(Q′ ⊃ N′)`, soundness re-proved first at the same pins (§4.15–4.16) | N0e |
 | N0d | `ECofinalF`, `ACofinalF` (approved statements) and their upward-closed forms `ECofinalUp`, `ACofinalUp` | `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | DRAFTED (projections of N0c's `UpFrom` witnesses) | N0c |
 | N1 | `EStabilises`, `AStabilises` — the chains eventually constant, the A-side modulo `E_f` | `wip/ui_routeB_blueprint.lean` | DRAFTED (statement) | — |
 | N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic | same | DRAFTED (statement) | — |
@@ -80,7 +80,7 @@ through `jGoal`).
 graph TD
   interpF[interpF · LJF/OFuel] --> N0a[N0a soundness pair · PROVED]
   N0a --> N0b[N0b rows · processing · reductions · PROVED]
-  N0b --> N0c[N0c cofinality family · BUILT, conditional on ParkAntP + DykAntP]
+  N0b --> N0c[N0c cofinality family · BUILT, conditional on ParkAntP]
   N0a --> N0c
   H[N0h height bounds · PROVED] --> N0e[N0e interpP · sound · founded · PROVED]
   N0e --> N0c
@@ -100,15 +100,14 @@ graph TD
 
 ## 4 · Work packages
 
-**WP1 — N0c on `interpP`: BUILT, conditional (§4.15).**  The family
-is in `LJF/OFuelPFam.lean`, sorry-free, pinned, on O.lean's (weight,
-size) pair with the two antecedent dispatches as parameters.  Two runs
-remain.  **WP1a — the Dyckhoff row fix** (`OFuelP.lean`, 12 sites:
-`some (.imp Q' N')` → `some (.up (.down (.imp Q' N')))`), soundness
-re-proved FIRST by the ◯-implication template (the new guard is weaker;
-`A, done ⊢ ↑↓(Q′ ⊃ N′)` inverts to the `impL` premise), rows, a
-`parkFireE` instance for `dyk`, the family's four Dyckhoff arms become
-parked arms, `DykAntP` deleted; `dykCell` is the negative control.
+**WP1 — N0c on `interpP`: BUILT, conditional on `ParkAntP` (§4.15–4.16).**
+The family is in `LJF/OFuelPFam.lean`, sorry-free, pinned, on O.lean's
+(weight, size) pair with the one antecedent dispatch as a parameter.
+**WP1a — DONE 2026-09-05** (36 min, merged 392949b): the Dyckhoff row
+guarded at the antecedent's own goal (14 sites, two of them a second
+copy of the row spec in `OFuelPFam` Part 3), soundness re-proved first
+at `[propext, Quot.sound]`, the negative control on
+`[↓(c ⊃ ↑a) ⊃ ↑e]` by `rfl`, `DykAntP` withdrawn, no measure work.
 **WP1b — the μ-re-founding** on `(hgt, station weight, sizeOf)` so that
 `ParkAntP` is a native recursive call (`nativeParkAnt` typechecks,
 `nativeParkAnt_edge` is strict): ~70 sites, height-equal sites via a
