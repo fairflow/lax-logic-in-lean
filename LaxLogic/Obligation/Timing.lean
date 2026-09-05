@@ -104,6 +104,31 @@ example {P₁ P₂ Q : Refined Nat}
   have := pipeline h₁ h₂ hQ
   simpa using this
 
+/-- **The paper's introductory example, literally.**
+
+Fairtlough–Mendler–Cheng open with three component specifications (their ψ₁, ψ₂,
+ψ₃, p. 4), abstract them into constraint/formula pairs, compose in the abstract
+logic, and read the combined timing constraint off the result:
+
+    ψ₁ = ∀s.     (s ≥ 5)     ⊃ P₁ a s
+    ψ₂ = ∀s,y.   (s ≥ 9 - y) ⊃ P₂ (f y) s
+    ψ₃ = ∀t,y₁,y₂. (∃s. t ≥ s+35 ∧ P₁ y₁ s ∧ P₂ y₂ s) ⊃ Q (g y₁ y₂) t
+
+Note that ψ₂'s bound *depends on a value*, and that ψ₃'s conclusion is about a
+computed value `g y₁ y₂`. Both survive: the constraint arithmetic is independent
+of the value arithmetic, which is the separation of concerns the paper's Fig. 1
+is drawing. The derived bound is `max 5 (9 - a) + 35`, obtained here by a single
+application of `pipeline` rather than by hand. -/
+example
+    (a : Nat) (f : Nat → Nat) (g : Nat → Nat → Nat)
+    (P₁ P₂ Q : Nat → Nat → Prop)
+    (ψ₁ : ∀ s, 5 ≤ s → P₁ a s)
+    (ψ₂ : ∀ y s, 9 - y ≤ s → P₂ (f y) s)
+    (ψ₃ : ∀ y₁ y₂ t, (∃ s, s + 35 ≤ t ∧ P₁ y₁ s ∧ P₂ y₂ s) → Q (g y₁ y₂) t) :
+    ◯∀[from_ (max 5 (9 - a) + 35)] (fun t => Q (g a (f a)) t) :=
+  pipeline (P₁ := fun s => P₁ a s) (P₂ := fun s => P₂ (f a) s)
+    (fun s hs => ψ₁ s hs) (fun s hs => ψ₂ a s hs) (ψ₃ a (f a))
+
 /-! ### Why the obligation reading is the degenerate case of this one
 
 A proof obligation is a timing constraint on a one-point clock: there is nothing
