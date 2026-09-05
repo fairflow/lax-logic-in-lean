@@ -19,6 +19,7 @@ import LJF.OFuelMin
 import LJF.OFuelP
 import LJF.OFuelPSound
 import LJF.OFuelPMin
+import LJF.OFuelPCof
 
 namespace LJFO
 
@@ -145,6 +146,18 @@ def acofinalP_of_satA2P {p : String} (a2 : SatA2P p) : ACofinalP p :=
     let w := a2 done Δ G hsat hP hΔ d
     ⟨w.1, w.here⟩
 
+/-! The whole chain, from the two typed entry points of the cofinality
+family (`LJF/OFuelPCof.lean`) down to the approved statements.  Only the
+top link is open. -/
+
+/-- `ECofinalP` from the `∃p` traversal. -/
+def ecofinalP_of_tinvP {p : String} (t : TInvP p) : ECofinalP p :=
+  ecofinalP_of_satE2P (satE2P_of_tinvP t)
+
+/-- `ACofinalP` from the `∀p` entry. -/
+def acofinalP_of_uentryP {p : String} (u : UEntryP p) : ACofinalP p :=
+  acofinalP_of_satA2P (satA2P_of_uentryP u)
+
 end LJFO
 
 #axioms_within LJFO.ecofinalF_of_satE2F [propext, Classical.choice, Quot.sound]
@@ -153,3 +166,5 @@ end LJFO
 #axioms_within LJFO.asoundP [propext, Quot.sound]
 #axioms_within LJFO.ecofinalP_of_satE2P [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.acofinalP_of_satA2P [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.ecofinalP_of_tinvP [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.acofinalP_of_uentryP [propext, Classical.choice, Quot.sound]
