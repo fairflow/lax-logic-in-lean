@@ -2126,6 +2126,62 @@ for that cell.
     N4 (OPEN: stabilisation at every saturated station, literal form)
       ─N3 forward─▶ CellsFor p (with WP4's transfer through the processing phase)
       ─N6─▶ PLL_UI,   given CutInv (OPEN) and cofinality (PROVED, §4.17)
+
+### 4.20 WP1c: the budget refactor's premise REFUTED by measurement; where the 25 minutes and the choice axiom actually come from (2026-09-05, 23:50)
+
+One agent run of 3 h 25 min.  The family and `OFuelPCofinal.lean` are
+byte-identical to 776b162; committed are `OFuelPFamKit.lean` Part 4c
+(the budget transposition as groundwork, 181 lines, 1.5 s) and
+`wip/hgt_probe.lean` benching BOTH foundings (50 examples, 5.8 s).
+Merged with PR #19 at the same time; the verification build follows.
+
+**The measurement** (the same seventeen-definition block, same bodies,
+same tactic blocks, CPU on the agent's machine):
+
+    as `unsafe def` (no well-founded packing)               3.0 s
+    μ-founded, `debug.skipKernelTC := true`                 510 s
+    μ-founded, as committed (clean olean)                  1463 s
+
+So the 176 `decreasing_by` proofs are a minor part; the
+`WellFounded.fix` TRANSLATION costs ~507 s to elaborate and the KERNEL
+~950 s to check the packed term.  Section 4.18's diagnosis ("the
+packing of the mutual and its equation lemmas") was half right about
+the where and wrong about the what: the budget design (A), built in
+full — 108 arms patched, 17 signatures, bounds discharged by
+`autoParam` so no call site changed — still goes through
+`WellFounded.fix` (`termination_by (n, w, sizeOf)`), lengthens every
+telescope, makes every match motive dependent, and measured SLOWER
+(bodies-only probes ≥ 2084 s against ≥ 1393 s, both killed under
+contention).  Not installed.  Gates: a wrong budget class at a
+weakening site fails to elaborate; `ecofinalP` at `[propext]` fails on
+`Classical.choice, Quot.sound`.
+
+**Where `Classical.choice` comes from — not the recursion.**  A toy
+mutual well-founded definition pins at `[propext, Quot.sound]`.  The
+path is
+
+    eMinQ → eMinQ._mutual._proof_488 → atomMem_of_mem (LJF/O.lean)
+      → String.instTransOrd → String.le_antisymm → List.le_antisymm
+      → Classical.propDecidable → Classical.choice
+
+i.e. one membership lemma in `LJF/O.lean` proved through the string
+ORDER's antisymmetry instead of decidable equality.  Replacing that
+proof makes the whole route-(B) chain choice-free (review theme 7,
+now located).
+
+**The design that would elaborate in seconds** — recorded, not built.
+The family must not go through `WellFounded.fix` at all: an outer
+`Nat.rec` on the height budget, an inner `Nat.rec` on the station
+budget, and STRUCTURAL recursion on the derivation for the phase
+changes.  The enabling fact, established by the run: every edge between
+the `∃p` side and the `∀p` side is height-STRICT, so at a fixed height
+budget the two sides do not call each other and §4.17's strongly
+connected component breaks — the two-block form returns, one budget
+level down.  With review themes 1–2 (one parked shape; `attackRows`)
+the block to re-author is half the size.  Method for any development
+loop on the family, from the run: never re-elaborate `LJF.OFuelPFam`
+to test a body — check bodies as an `unsafe def` copy (3 s), the edge
+goals in the bench (5.8 s), and pay the real build once.
 ---
 
 ## 5 · OPEN list

@@ -122,12 +122,16 @@ termination kit is split into `LJF/OFuelPFamKit.lean` with
 `ecofinalP`/`acofinalP` are in `LJF/OFuelPCofinal.lean`, unconditional.
 **Verified in the session worktree 18:43** (build exit 0, pins measured,
 gate watched failing, sorry sweep clean; §4.17).
-**WP1c — the budget refactor (in build, §4.18).**  The 17-way
-well-founded `mutual` costs 1749 s to elaborate.  Re-found it as
-structural recursion on explicit budgets bounding μ, the bound carried
-as a hypothesis and instantiated at the entry points; statements
-unchanged; expected `[propext, Quot.sound]` and seconds to elaborate,
-which N3 needs in order to unfold the family.
+**WP1c — the budget refactor: premise REFUTED (§4.20).**  Measured:
+bodies 3 s; `WellFounded.fix` elaboration ~507 s; kernel check of the
+packed term ~950 s.  Budgets under `termination_by` are slower; not
+installed.  `Classical.choice` comes from `atomMem_of_mem` (a string-
+order proof in `LJF/O.lean`), not from the recursion.  Recorded design
+for seconds-scale elaboration: no `WellFounded.fix` — `Nat.rec` on a
+height budget, `Nat.rec` on a station budget, structural recursion on
+the derivation; possible because every ∃p/∀p edge is height-strict.
+Do after review themes 1–2 halve the block.  N3 (WP2) did not need to
+unfold the family after all: it takes `SatE2P`/`SatA2P` as variables.
 
 **WP2 — N3.**  Forward: instantiate N0a at the stabilised fuel, minimality
 from N0d read at that fuel.  Backward: N0d applied to `E` and to `A`
