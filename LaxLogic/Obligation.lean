@@ -61,4 +61,5 @@ import LaxLogic.Obligation.Modality
 import LaxLogic.Obligation.Timing
 import LaxLogic.Obligation.Ledger
 import LaxLogic.Obligation.Postpone
+import LaxLogic.Obligation.Conservativity
 import LaxLogic.Obligation.Examples

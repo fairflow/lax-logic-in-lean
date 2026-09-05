@@ -12,6 +12,7 @@ true but unproved, so nothing false enters the environment.
 -/
 
 import LaxLogic.Obligation.Postpone
+import LaxLogic.Obligation.Conservativity
 
 namespace LaxLogic.Obligation.Examples
 
@@ -119,6 +120,25 @@ theorem downstream (n : Nat) : n * 1 = n := (sorried n).2
 /-- info: 'LaxLogic.Obligation.Examples.downstream' depends on axioms: [sorryAx] -/
 #guard_msgs in
 #print axioms downstream
+
+/-! ## 6. The conservativity audit
+
+Matthew's ruling on the paper's Theorem 1: conservative over the logic
+underlying Lean — higher-order dependent type theory, with `propext` and
+`Quot.sound` if wanted, which come free as with any axiomatic extension. For the
+theory half that is true by construction. For the *tactic* half it has to be
+checked, because `addDecl` can add a name as an axiom when the kernel rejects
+it. This is that check, and it is a gate: it throws rather than reports. -/
+
+/--
+info: conservativity audit passed for 4 declaration(s); base-theory axioms only:
+  LaxLogic.Obligation.Examples.split — no axioms
+  LaxLogic.Obligation.Examples.bogus — no axioms
+  LaxLogic.Obligation.Examples.twice — no axioms
+  LaxLogic.Obligation.Examples.combined — no axioms
+-/
+#guard_msgs in
+#obligations_audit
 
 /-! `sorried` and `downstream` both carry `sorryAx`, while `split` and
 `combined` carry nothing — with the *same* amount actually proved. That

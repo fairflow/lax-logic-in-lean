@@ -43,8 +43,33 @@ for later work.
   obligation tracker actually uses.
 * `laxAll_image`, `laxEx_image` — the rule `◯⊃` of the paper (p. 9), propagating
   a constraint through an implication by `⊃_◯(r,p) = λz. ∃m. p m ∧ z = r m`.
+* `laxEx_sum`, `laxAll_sum` — disjunction. Fig. 3 fixes the witness type as a
+  SUM, and the two modalities then behave differently: `◯∃` distributes over
+  `∨`, while `◯∀` over the same constraint yields a CONJUNCTION.
 * functoriality, constraint monotonicity, strength, and the collapse to the
   one-witness case `Debt C A = C → A`.
+
+## Fig. 3, and what of it is covered
+
+The refinement type `|M|` fixes, for each connective, the witness type its
+constraint lives on. It is therefore a specification for this file: every row is
+a determinate addition, not a design question.
+
+    |P|     := α  if P :: α ⇒ 𝔹    |M₁ ∧ M₂| := |M₁| × |M₂|   -- `pair`      ✓
+    |true|  := 1                    |M₁ ∨ M₂| := |M₁| + |M₂|   -- `sum`       ✓
+    |false| := 1                    |M₁ ⊃ M₂| := |M₁| ⇒ |M₂|   -- elim only   ~
+                                    |∀x::α.M| := α ⇒ |M|       --             ✗
+                                    |∃x::α.M| := α × |M|       --             ✗
+    |◯∃M| := |M| ⇒ 𝔹   |◯∀M| := |M| ⇒ 𝔹                       -- `Constraint` ✓
+
+Note the last row: the constraint of a modal formula is a **predicate** on
+witnesses, `|M| ⇒ 𝔹`, not an element of `|M|`. That is exactly `Constraint γ`
+below. For every other connective the constraint is an element of the type
+shown, which is why `image` takes an honest function `γ → δ` rather than a
+relation.
+
+Still missing, each with its witness type already dictated above: the units,
+`⊃`-introduction (where the constraint is itself a function), `∀` and `∃`.
 -/
 
 universe u v w
@@ -195,6 +220,72 @@ theorem laxEx_meet {γ : Type u} {p q : Constraint γ} {M N : Refined γ}
     ◯∃[p] M ∧ ◯∃[q] N := by
   obtain ⟨z, ⟨hp, hq⟩, hM, hN⟩ := h
   exact ⟨⟨z, hp, hM⟩, ⟨z, hq, hN⟩⟩
+
+/-! ### `◯∨` — disjunction
+
+Fig. 3 sets `|M ∨ N| = |M| + |N|`, so a constraint for a disjunction lives on a
+SUM of witness types. Given that, the two modalities part company, and the
+asymmetry is the expected one: a sum is a coproduct, so `∃` over it splits into
+a disjunction while `∀` over it becomes a conjunction. -/
+
+/-- The constraint for a disjunction: `|M ∨ N| = |M| + |N|` (Fig. 3), with each
+injection constrained by its own side. -/
+def sum {γ : Type u} {δ : Type v} (p : Constraint γ) (q : Constraint δ) :
+    Constraint (γ ⊕ δ) :=
+  fun z => match z with | .inl w => p w | .inr v => q v
+
+/-- The disjunction of two abstract formulas, as a family over `|M| + |N|`. -/
+def either {γ : Type u} {δ : Type v} (M : Refined γ) (N : Refined δ) :
+    Refined (γ ⊕ δ) :=
+  fun z => match z with | .inl w => M w | .inr v => N v
+
+/-- **`◯∃` distributes over disjunction**, in both directions. A constrained
+witness for `M ∨ N` is precisely a constrained witness for one of them. -/
+theorem laxEx_sum {γ : Type u} {δ : Type v}
+    {p : Constraint γ} {q : Constraint δ} {M : Refined γ} {N : Refined δ} :
+    ◯∃[sum p q] (either M N) ↔ (◯∃[p] M ∨ ◯∃[q] N) := by
+  constructor
+  · rintro ⟨z | z, hz, hM⟩
+    · exact .inl ⟨z, hz, hM⟩
+    · exact .inr ⟨z, hz, hM⟩
+  · rintro (⟨w, hw, hM⟩ | ⟨v, hv, hN⟩)
+    · exact ⟨.inl w, hw, hM⟩
+    · exact ⟨.inr v, hv, hN⟩
+
+/-- **`◯∀` over the same sum constraint is a conjunction.** Not a failure of the
+disjunction rule but the `∀`/`Σ` duality: a universal over a coproduct is a
+product. So `◯∀` has no distribution law over `∨` — which is what one should
+expect of a weakening modality, and is worth knowing before looking for one. -/
+theorem laxAll_sum {γ : Type u} {δ : Type v}
+    {p : Constraint γ} {q : Constraint δ} {M : Refined γ} {N : Refined δ} :
+    ◯∀[sum p q] (either M N) ↔ (◯∀[p] M ∧ ◯∀[q] N) := by
+  constructor
+  · intro h
+    exact ⟨fun w hw => h (.inl w) hw, fun v hv => h (.inr v) hv⟩
+  · rintro ⟨h₁, h₂⟩ (z | z) hz
+    · exact h₁ z hz
+    · exact h₂ z hz
+
+/-- One-sided introduction: the constraint that admits only the left injection.
+The `∨`-introduction rule, with the constraint recording which disjunct was
+used. -/
+def inl {γ : Type u} {δ : Type v} (p : Constraint γ) : Constraint (γ ⊕ δ) :=
+  fun z => match z with | .inl w => p w | .inr _ => False
+
+@[inherit_doc inl]
+theorem laxEx_inl {γ : Type u} {δ : Type v}
+    {p : Constraint γ} {M : Refined γ} {N : Refined δ} (h : ◯∃[p] M) :
+    ◯∃[inl (δ := δ) p] (either M N) := by
+  obtain ⟨w, hw, hM⟩ := h
+  exact ⟨.inl w, hw, hM⟩
+
+@[inherit_doc inl]
+theorem laxAll_inl {γ : Type u} {δ : Type v}
+    {p : Constraint γ} {M : Refined γ} {N : Refined δ} (h : ◯∀[p] M) :
+    ◯∀[inl (δ := δ) p] (either M N) := by
+  rintro (z | z) hz
+  · exact h z hz
+  · exact hz.elim
 
 /-! ### `◯⊃` — propagating a constraint -/
 
