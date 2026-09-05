@@ -1,6 +1,8 @@
 import Verso
 import VersoManual
 import VersoBlueprint
+import LaxLogic.PLLLaxInfinite
+import wip.negFour
 import wip.rnClassify
 import wip.gapWidth
 
@@ -8,28 +10,68 @@ open Verso.Genre
 open Verso.Genre.Manual
 open Informal
 
-#doc (Manual) "The RN(◯,∅) lattice" =>
+#doc (Manual) "The variable-free fragment" =>
 
-`RN(◯,∅)` is the Rieger–Nishimura lattice of the one-variable fragment
-carried over to PLL: the `◯`-and-`⊥` formulas in a single variable, ordered
-by derivability and taken up to interderivability.  It is small enough to
-draw, which is the point of it — the whole ordering fits on a page, and
-questions intractable in general become finite computations here.
+`RN(◯,∅)` is the *variable-free* fragment of PLL: formulas built from `⊥`,
+the connectives and `◯`, with no propositional variables at all, taken up to
+interderivability.  The `∅` in the name is the empty set of variables.
 
-Two abbreviations run through everything below:
+It is *infinite*, and infinite in three independent ways — which is exactly
+what distinguishes it from the classical Rieger–Nishimura lattice it is
+named after.  Pure RN is the *one-variable* fragment of IPC: a ladder,
+infinite in height but of width at most two, and drawable.  `RN(◯,∅)` has no
+variables at all and is nonetheless infinite in height, in depth *and* in
+width.  That is what makes it worth studying rather than tabulating.
+
+What *is* finite, and what the Hasse diagram draws, is a scoped catalogue —
+the ρ-order: 462 cells with the `⊬` side kernel-pinned by certificates and
+the `⊢` side engine-certified, 22 representatives, 37 cover edges.  The
+catalogue is a studied portion of the fragment, not the fragment.  Keeping
+those two apart is the first thing to get right here, and the section
+headings below are arranged to keep them apart.
+
+Two abbreviations run through everything:
 
 $$`a := ◯⊥ \qquad b := ◯¬◯⊥ \;\; (= ◯¬a)`
 
-The data behind the diagram is a 462-cell matrix over PLL: the `⊬` side is
-kernel-pinned by certificates, the `⊢` side engine-certified, and the scoped
-Hasse diagram has 37 cover edges.  Sources are `RNDB/`,
-`docs/rho-structure.md` and `docs/rho-order.md`; the conjectures recorded
-alongside the regularities there are deliberately not repeated here.
+Sources are `RNDB/`, `docs/rho-structure.md` and `docs/rho-order.md`; the
+conjectures recorded alongside the regularities there are deliberately not
+repeated.
 
-# The shape of the order
+# The fragment is infinite
+
+:::group "rn_infinitudes"
+Three infinitudes, and a boundedness result that survives them.
+:::
+
+:::theorem "rn_infinite" (parent := "rn_infinitudes") (lean := "PLLND.LaxInfinite.closed_lax_infinite")
+`RN(◯,∅)` is infinite: its `⊣⊢`-Lindenbaum quotient over variable-free PLL
+formulas has infinitely many classes.  Reduced, sorry-free, to the
+Rieger–Nishimura independence.
+
+This is the result that says the fragment is a subject rather than a table.
+Note what it does *not* need: no variables, and no appeal to a modality
+beyond `◯⊥` and its negations.
+:::
+
+:::theorem "rn_bool_four" (parent := "rn_infinitudes") (lean := "PLLND.NegFour.neg_exactly_four")
+Against those infinitudes, one sharp bound: for every variable-free `A`, the
+negation $`¬A` is interderivable with one of $`⊥`, $`¬◯⊥`, $`¬¬◯⊥`, $`⊤`.
+Since the regular elements are the image of $`¬`, the booleanization of
+`RN(◯,∅)` has *exactly four* elements — and the result holds over an
+arbitrary axiom set.
+
+TO WRITE — this pairs well with {uses "rn_infinite"}[] and the pairing is
+worth making explicit: infinite in three directions, yet its Boolean
+skeleton is a four-element algebra.
+:::
+
+# The shape of the catalogue
 
 :::group "rn_shape"
-Four verified regularities, all certificate-backed.
+Four verified regularities of the ρ-order catalogue, all
+certificate-backed.  These are facts about the finite scoped portion, not
+about the whole fragment.
 :::
 
 :::proposition "rn_graded" (parent := "rn_shape")
@@ -106,7 +148,7 @@ rungs are pairwise distinct and all lie off the image.  Depends on
 :::
 
 :::theorem "rn_width" (parent := "rn_proved") (lean := "PLLND.RNEmbed.width_infinite, PLLND.RNEmbed.gap_incomparable")
-*`RN(◯,∅)` has unbounded width.*  The family
+*`RN(◯,∅)` has unbounded width* — one of the three infinitudes.  The family
 $$`\mathrm{gap}\,k \;:=\; ◯(\mathrm{rnSub}\,(2k{+}1)) ⊃ \mathrm{rnSub}\,(2k{+}1)`
 generalises the dictionary class $`q_8` level by level — $`\mathrm{gap}\,1`
 is $`q_8` — and for $`k ≥ 2` the $`\mathrm{gap}\,k` are pairwise

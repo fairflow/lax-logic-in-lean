@@ -18,7 +18,7 @@ open Verso.Genre
 open Verso.Genre.Manual
 open Informal
 
-#doc (Manual) "Gbu◯ and FRJW: proof, disproof, and the decision procedure" =>
+#doc (Manual) "The decision procedure" =>
 
 These two calculi are one object and should be read as one.  `Gbu◯(G)`
 proves; `FRJW(G)` disproves; both live over the signed subformulas of a
