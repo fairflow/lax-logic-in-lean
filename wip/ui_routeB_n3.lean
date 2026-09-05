@@ -589,6 +589,112 @@ def hasUI_of_stabEq {p : String} {done : List Neg} {G : Neg}
     rw [hE (n + f₀ + f₁) (by omega), hA (n + f₀ + f₁) (by omega)] at hd
     exact hd
 
+/-! # N3 backward · a uniform-interpolant pair makes the chains stabilise
+
+Here the LITERAL form is false in general — nothing makes the syntactic
+formula `E_f` equal to `E_{f₀}` once a pair exists — so the conclusion is
+the interderivable form, and the proof must COMPOSE derivations:
+`E_f ⊢ E` from cofinality at `ψ := E`, `E ⊢ E_{f₀}` from the pair's
+minimality applied to the soundness of `E_{f₀}`, hence `E_f ⊢ E_{f₀}`.
+LJF◯ has no cut lemma (`docs/calculus-map.md`), and the bridge's
+completeness `FocalizationPLL` is stated only for `negOfO`-polarised
+contexts, so the composition is stated as a typed obligation and the
+backward direction is proved RELATIVE to it.  Contraction and permutation
+are not part of the obligation: `Sub` is membership-inclusion, so `Inv.wk`
+supplies both. -/
+
+/-- **The composition principle** (OBLIGATION).  Cut at a negative
+formula, in the inversion phase with an empty pending zone.  The backward
+direction below instantiates it only at `j = .tru`; it is stated at every
+`j` because that is the form a cut-admissibility proof for LJF◯ would
+deliver. -/
+def CutInv : Type :=
+  ∀ (Γ Δ : List Neg) (j : JD) (N ψ : Neg),
+    Inv Γ [] .tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ
+
+/-- **N3, backward.**  From a uniform-interpolant pair, both chains
+stabilise up to interderivability — relative to `CutInv`. -/
+def stabilises_of_hasUI {p : String} {done : List Neg} {G : Neg}
+    (cut : CutInv) (s2 : SatE2P p) (a2 : SatA2P p)
+    (hsat : Saturated done) (hP : ParkedCtxP done)
+    (h : HasUI p done G) : EStabilises p done × AStabilises p done G := by
+  obtain ⟨E, A, u⟩ := h
+  -- cofinality of the ∃p-chain at `ψ := E`: `E_e ⊢ E` from the fuel `n` on
+  have hEdone : Inv (done ++ []) [] .tru E :=
+    u.soundE.wk (fun Z hZ => List.mem_append.mpr (Or.inl hZ))
+  obtain ⟨n, hv⟩ := s2 done [] E hsat hP pfreeCtx_nil u.pfreeE hEdone
+  -- cofinality of the ∀p-chain at `Δ := [A]`: `E_e, A ⊢ A_f` from the fuel `m` on
+  have hAdone : Inv (done ++ [A]) [] .tru G :=
+    u.soundA.wk (fun Z hZ => by
+      rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_append.mpr (Or.inr (List.mem_cons_self ..))
+      · exact List.mem_append.mpr (Or.inl hZ))
+  obtain ⟨m, hw⟩ := a2 done [A] G hsat hP (pfreeCtx_singleton u.pfreeA) hAdone
+  -- `E ⊢ E_k` at every fuel `k`, from minimality applied to `eSoundP`
+  have hEmin : ∀ k : Nat, Inv (E :: []) [] .tru (interpP p k [] done none) :=
+    fun k => u.minE [] _ pfreeCtx_nil (interpP_pfree p _ _ _ _)
+      ((eSoundP p k [] done).wk (fun Z hZ => List.mem_append.mpr (Or.inl hZ)))
+  -- `E, A_k ⊢ A` at every fuel `k`, from minimality applied to `aSoundP`
+  have hAmin : ∀ k : Nat, Inv (E :: [interpP p k [] done (some G)]) [] .tru A :=
+    fun k => u.minA _ (pfreeCtx_singleton (interpP_pfree p _ _ _ _))
+      ((aSoundP p k [] done G).wk (fun Z hZ => by
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_append.mpr (Or.inr (List.mem_cons_self ..))
+        · exact List.mem_append.mpr (Or.inl hZ)))
+  refine ⟨⟨n + m, fun f hf => ⟨?_, ?_⟩⟩, ⟨n + m, fun f hf => ⟨?_, ?_⟩⟩⟩
+  · -- `E_{f₀} ⊢ E_f`, by cut at `E`
+    have h1 : Inv (interpP p (n + m) [] done none :: []) [] .tru E :=
+      hv (n + m) (by omega)
+    exact cut _ _ _ _ _ h1 (hEmin f)
+  · -- `E_f ⊢ E_{f₀}`, by cut at `E`
+    have h1 : Inv (interpP p f [] done none :: []) [] .tru E := hv f (by omega)
+    exact cut _ _ _ _ _ h1 (hEmin (n + m))
+  · -- `E_f, A_{f₀} ⊢ A_f`: cut `E` into minimality, then cut `A` into cofinality
+    have hEf : Inv (interpP p f [] done none :: []) [] .tru E := hv f (by omega)
+    have hA : Inv ([interpP p f [] done none] ++
+        [interpP p (n + m) [] done (some G)]) [] .tru A :=
+      cut _ _ _ _ _ hEf (hAmin (n + m))
+    have hcof : Inv (interpP p f [] done none :: [A]) [] .tru
+        (interpP p f [] done (some (jGoal .tru G))) :=
+      hw f f (by omega) (by omega)
+    rw [jGoal_tru] at hcof
+    have hcof' : Inv (A :: [interpP p f [] done none]) [] .tru
+        (interpP p f [] done (some G)) :=
+      hcof.wk (fun Z hZ => by
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+        · rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_self ..
+          · exact absurd hZ List.not_mem_nil)
+    exact (cut _ _ _ _ _ hA hcof').wk (fun Z hZ => by
+      rcases List.mem_append.mp hZ with hZ | hZ
+      · exact hZ
+      · rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_self ..
+        · exact absurd hZ List.not_mem_nil)
+  · -- `E_f, A_f ⊢ A_{f₀}`: the same, with the ∃p fuel `f` and the ∀p fuel `f₀`
+    have hEf : Inv (interpP p f [] done none :: []) [] .tru E := hv f (by omega)
+    have hA : Inv ([interpP p f [] done none] ++ [interpP p f [] done (some G)])
+        [] .tru A := cut _ _ _ _ _ hEf (hAmin f)
+    have hcof : Inv (interpP p f [] done none :: [A]) [] .tru
+        (interpP p (n + m) [] done (some (jGoal .tru G))) :=
+      hw f (n + m) (by omega) (by omega)
+    rw [jGoal_tru] at hcof
+    have hcof' : Inv (A :: [interpP p f [] done none]) [] .tru
+        (interpP p (n + m) [] done (some G)) :=
+      hcof.wk (fun Z hZ => by
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+        · rcases List.mem_cons.mp hZ with rfl | hZ
+          · exact List.mem_cons_self ..
+          · exact absurd hZ List.not_mem_nil)
+    exact (cut _ _ _ _ _ hA hcof').wk (fun Z hZ => by
+      rcases List.mem_append.mp hZ with hZ | hZ
+      · exact hZ
+      · rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_self ..
+        · exact absurd hZ List.not_mem_nil)
+
 end LJFO
 
 /-! ## Pins
@@ -613,3 +719,5 @@ Measured with `#axioms_within_pin`, not retyped.  Nothing here reaches
 #axioms_within LJFO.pfreeCtx_nil []
 #axioms_within LJFO.pfreeCtx_singleton [propext]
 #axioms_within LJFO.hasUI_of_stabEq [propext, Quot.sound]
+#axioms_within LJFO.CutInv []
+#axioms_within LJFO.stabilises_of_hasUI [propext, Quot.sound]
