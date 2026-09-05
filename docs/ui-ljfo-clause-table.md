@@ -1064,9 +1064,19 @@ fuel 14 and reaches the true `∀p` at 18; `E` reaches the true `∃p` at
 the limit identified.  The cost: raw sizes grow about ×20 per four fuel
 units; the simplifier recovers the small answer only after the fact.
 
-**Station [◯p ⊃ r, ◯q], goal ◯p (the GZ-candidate cell of
-`docs/ljfo-plan.md`; `(◯p ⊃ r) ∧ ◯q ⊬ ◯p` by the oracle, so the true
-`∀p` is not `⊤` and is unknown):** the normal forms do not collapse.
+**Station [◯p ⊃ r, ◯q], goal ◯p:** the normal forms do not collapse.
+*CORRECTED 2026-09-04 22:00.*  This paragraph originally called the
+cell "the GZ-candidate cell" with its `∀p` "unknown".  Both are wrong
+against the record: `docs/ljfo-plan.md` named it a candidate on the
+morning of 2026-08-11 and RESOLVED it that afternoon from both prongs
+— its `∀p` is `θmax = ((◯⊥ ⊃ r) ∧ ◯q) ⊃ ◯⊥` (the station's
+⊥-instance ⊃ `◯⊥`, maximal because `◯⊥ ⊢ ◯p` re-derives the goal),
+and the chain of that day was proved logically stationary from f = 6
+(`A₆ ⟛ A₇ ⟛ A₈ ⟛ θmax` on the raw values).  The record's own warning:
+"stabilisation testing must be LOGICAL, never syntactic".  What the
+table below measures is the syntactic size of the new `interpF`
+chain; §4.10 does the logical test by the reduction the record's
+mechanism gives.
 
 | station fuel | `E` (nodes) | `A`, goal `◯p` | `A`, goal `↑↓◯p` (the plan's form) |
 |---|---|---|---|
@@ -1080,8 +1090,31 @@ Growth after the certified simplifier is about ×7 per four fuel units
 on every chain, and every element still carries `◯⊥` blocks — the
 fuel-exhaustion default under a box, replaced level by level.  This
 reproduces the plan's certified strict ascent (station fuels 3→4, 5→6)
-and extends the non-collapse to station fuel 18.  Whether consecutive
-levels become interderivable is the oracle question recorded next.
+and extends the non-collapse to station fuel 18.
+
+**Interderivability on the GZ chains: UNSETTLED at the G4c oracle's
+reach.**  Twenty-six cells were put to `pllbench --engine=g4c`:
+consecutive-level interderivability at station fuels 6↔10, 10↔14, 14↔18
+for all three chains (both directions), and sufficiency
+`A_f ∧ (◯p ⊃ r) ∧ ◯q ⊢ ◯p` for both `A` chains at 6, 10, 14, 18 —
+formulas of 43 to 29,504 nodes.  The oracle settled NONE of them; the
+first cell (`E` at fuel 6 versus fuel 10, 43 and 378 nodes) ran
+46 min 14 s without a verdict and was killed.  The 1314-node `E` cell
+of the separating station at station fuel 14 was likewise unsettled
+after more than ten minutes.  This is the reach limit
+`docs/ljfo-review-2026-08-11.md` §5c recorded ("the unfocused prover
+cannot practically decide the box-wrapped aggregates at p-carrying
+stations"), reproduced on the chain elements themselves.  So the
+statement W on the GZ cell — strict ascent or eventual stabilisation up
+to interderivability — is OPEN past station fuel 6, where
+`wip/ljfo_stab.lean`'s kernel search certified strict steps at 3→4 and
+5→6.  Two tools would reach further, and both are prerequisites for the
+refutation prong: the kernel-search engine (`LJF/OSearch.lean`) applied
+to the chain elements, and a certified simplifier inside the `interpF`
+iteration so the elements stay small enough to search.  What the
+measurement DOES establish is the contrast with the separating station:
+same pipeline, same fuels, one cell collapses to its known limit and
+the other grows ×7 per level with `◯⊥` blocks persisting.
 
 **A tooling defect found on the way, with its fix.**  Bounding a run by
 `perl -e 'alarm N; exec @ARGV' -- lake exe X …` bounds `lake`, not the
@@ -1091,6 +1124,467 @@ runs on.  That is what the "19 min 32 s" `pll` run of
 oracle job open past its cap here.  `batch/run.sh` and
 `batch/bench-run.sh` were already right — they exec `.lake/build/bin/…`
 directly; ad-hoc checks must do the same.
+
+### 4.9 The certified simplifier inside the iteration (2026-09-04)
+
+§4.8 named an in-iteration simplifier as a prerequisite; this section
+builds it and reports what it does and does not change.
+`wip/ui_interpFS.lean` is `interpF` with every clause's return wrapped
+in `simpN X := negOfO (Rewrite.simplifyWith Rewrite.fullSetC 40 (eraseNeg X))`
+(the certified pipeline, so every level is still interderivable with
+`interpF`'s), evaluated natively by `lake exe uifs`
+(`wip/ui_interpFS_run.lean`); eval fuel 8, 12, 16, 20, 24 = station fuel
+6, 10, 14, 18, 22 in §4.8's convention.  Node counts of the normal forms:
+
+| station fuel | `[G₁,H]` E | `[G₁,H]` A, goal r | GZ E | GZ A, goal `↑↓◯p` |
+|---|---|---|---|---|
+| 6 | 13 | 4 | 25 | 38 |
+| 10 | 83 | 53 | 226 | 339 |
+| 14 | 620 | 553 | 1475 | 2355 |
+| 18 | **45** | **`⊤`** | 9,989 | 16,126 |
+| 22 | **45** (same form) | **`⊤`** | 68,298 | 110,467 |
+
+Three findings, in the order they were forced.
+
+**(i) Placement changes nothing; the rule set is the limit.**  With the
+simpset as it stood, the in-iteration normal forms were node-for-node
+the sizes of §4.8's after-the-fact ones (GZ `A` 64 / 599 / 4279 /
+29,504) — wrapping each level buys speed (the whole sweep runs in 9 s
+against minutes of raw evaluation) and not one node of size.  The
+surviving blocks were `◯⊥ ∨ ◯((q ⊃ ◯⊥) ∨ ◯⊥)`: an inner box under a
+box, which `fullSetC` folds only when the two boxes are adjacent.
+
+**(ii) The absorption family, refuted before it was built.**  The
+candidate laws were put to the G4c oracle first
+(`pllbench --engine=g4c`, eight cells, all settled):
+
+| under an outer `◯` | → | ← |
+|---|---|---|
+| `◯(a ∨ ◯b)` vs `◯(a ∨ b)` | valid | valid |
+| `◯(a ∧ ◯b)` vs `◯(a ∧ b)` | valid | valid |
+| `◯(a ⊃ ◯b)` vs `◯(a ⊃ b)` | **invalid** | valid |
+| `◯(◯a ⊃ b)` vs `◯(a ⊃ b)` | valid | **invalid** |
+
+So an inner box absorbs through `∧`/`∨` and through neither position of
+`⊃`: an implication goal under a box is proved in true mode, where the
+inner box cannot be opened.  What went into `Rewrite/Canon.lean`, each
+with its `Interd` certificate (`canon_interd`, `simplifyWith_interd`
+still pinned at `[propext, Classical.choice, Quot.sound]`): `stripBox`
+— under a box, delete every `◯` reachable through `∧`/`∨`
+(`box_strip`, one induction; subsumes `◯◯φ = ◯φ`); `◯⊥ ∨ ◯ψ = ◯ψ` and
+`◯⊥ ∧ ◯ψ = ◯⊥` through the syntactic absorber test `absorbsBoxBot`
+(`boxBot_deriv`, `dropBoxBot_interd`, `collapseBoxBotAnd_interd`);
+`simpRounds` 4 → 32, because each round strips one box level and folds
+the constants it exposes, so the fixpoint needs about the box-nesting
+depth.  And a defect in the pre-existing chain machinery, found because
+the output showed `r ∨ (r ∨ (r ∨ …`: `insOr`/`insAnd` compared the new
+element with the whole chain and never with its head, so a duplicate
+head survived; fixed with `or_head_idem`/`and_head_idem`.
+
+**(iii) What the strengthened simplifier settles and what it does not.**
+On the separating station both chains now reach a SYNTACTIC fixpoint at
+station fuel 18 and hold it at 22: `A` is `⊤`, `E` is one 45-node form
+(provably `r` by §4.7, not syntactically).  On the GZ cell the `◯⊥`
+blocks are gone and the sizes fall by about a third, but the growth
+rate does not move: ×6.8 per four fuel units through station fuel 22.
+The residue is an `∧`/`∨` ladder of boxed implications,
+`((◯A ∧ ◯B) ∨ ◯((A ∧ B) ∨ C)) ∧ ◯D) ∨ …`, built by the aggregate
+clauses level by level.  The laws that would act on it are not modal
+absorption but `◯A ∧ ◯B = ◯(A ∧ B)` (the strength; a three-line
+certificate) and monotone absorption `◯X ∨ ◯Y = ◯Y` when `X` is a
+sub-conjunction of `Y` (a syntactic entailment test); whether they
+collapse the ladder or only thin it is untested, and no oracle can
+answer for the raw elements: the FRJW control on the fuel-6/10 `E`
+cells was unsettled at 600 s, and `LSeq.search` at search fuel 16, 24
+and 32 returned `false` in both directions, which certifies nothing.
+*Addendum 22:00: §4.10 shows the logical question at this cell never
+needed those oracles — the record's ⊥-instance mechanism reduces it to
+two small facts.*
+
+### 4.10 The cofinality refutation attempt on `{◯p ⊃ r, ◯q} ⇒ ◯p` — VALIDATED, not refuted (2026-09-04)
+
+The two route-(B) cofinality statements (`wip/ui_routeB_statements.lean`),
+instantiated at the cell with `done` the parked station and `Γ` its
+formulas:
+
+    ACofinalF:  ∀ p-free Δ,  Δ, Γ ⊢ ◯p  →  ∃ f.  E_f, Δ ⊢ A_f
+    ECofinalF:  ∀ p-free Δ ψ,  Δ, Γ ⊢ ψ  →  ∃ f.  E_f, Δ ⊢ ψ
+
+**The reduction (the record's mechanism, `docs/ljfo-plan.md` "closed
+from the proof side").**  Substituting `p := ⊥` in a derivation of
+`Δ, Γ ⊢ ◯p` gives `Δ, Γ[⊥] ⊢ ◯⊥`, i.e. `Δ ⊢ θmax` with
+`θmax = ((◯⊥ ⊃ r) ∧ ◯q) ⊃ ◯⊥`; and `Δ, Γ ⊢ ψ` gives `Δ, Γ[⊥] ⊢ ψ`.  So
+both statements hold at fuel `f` as soon as
+
+    (b)  E_f ⊢ (◯⊥ ⊃ r) ∧ ◯q          (E_f is at least the ⊥-instance)
+    (d)  ◯⊥ ⊢ A_f                     (A_f is ◯⊥-absorbing)
+
+since `(◯⊥ ⊃ r) ∧ ◯q ∧ θmax ⊢ ◯⊥`.  (b) and (d) are properties of the
+chain elements alone, so they can be tested at every fuel.
+
+**Syntactic prong (`lake exe uifs`, sufficient tests, every station
+fuel 6–22):** `E_f` has `◯q` as a conjunct and a conjunct `X ⊃ Y` with
+`X` ◯⊥-absorbing and `r` a conjunct of `Y` — true at 6, 10, 14, 18,
+22; `A_f` is ◯⊥-absorbing (`Rewrite.absorbsBoxBot`, whose certificate
+`boxBot_deriv` is a `LaxND` derivation of `◯⊥ ⊢ A_f`) — true at every
+fuel for BOTH goal forms, `◯p` and `↑↓◯p`.
+
+**Oracle prong (`pllbench --engine=g4c`, seven cells, 7 s in all):**
+
+| cell | verdict |
+|---|---|
+| `(◯⊥ ⊃ r) ∧ ◯q ∧ θmax ⊢ ◯⊥` | valid |
+| `θmax ∧ Γ ⊢ ◯p` (θmax sufficient) | valid |
+| `Γ ⊢ ◯p` (control: the cell is not trivial) | **invalid** |
+| (b) at station fuel 6 (`E` 25 nodes) and 10 (226 nodes) | valid, valid |
+| (d) at station fuel 6 (`A` 38 nodes) and 10 (339 nodes) | valid, valid |
+
+**Verdict.**  Neither cofinality statement can be refuted at this cell:
+for every p-free `Δ` the derivation goes `E_f, Δ ⊢ ◯⊥ ⊢ A_f` at every
+measured fuel.  Read with soundness (§O8: `A_f, Γ ⊢ ◯p`, hence
+`A_f ⊢ θmax` by the same substitution), the new `interpF` chain is
+LOGICALLY STATIONARY modulo `E_f` from station fuel 6 — `E_f ∧ A_f ⟛
+E_f ∧ θmax` — while its syntax grows ×6.8 per four fuel units.  This is
+the record's 2026-08-11 finding reproduced on the retaining chain, and
+its filter confirmed: a cell whose goal is settled by `◯⊥` cannot be a
+Ghilardi–Zawadowski witness.  What is NOT certified here: substitution
+admissibility (`Deriv Γ C → Deriv Γ[p:=χ] C[p:=χ]`, the plan's named
+adjunct, still without a term), and the per-fuel `absorbsBoxBot A_f =
+true` as kernel `decide`s rather than native evaluation.
+
+**The next stratum**, per the record's double filter (crank with no
+X-free disjunct; goal not settled by `◯⊥`): the goal must be unboxed
+and `p` must occur with both polarities on the hypothesis side, so
+that neither the `⊥`- nor the `⊤`-instance is extremal.  The smallest
+such shape is `{◯p ⊃ r, s ⊃ ◯p} ⇒ r`, and it was screened the same
+night (`pllbench --engine=g4c`, every cell settled in seconds unless
+marked):
+
+| claim | verdict |
+|---|---|
+| `ψ₀ = ((◯⊥ ⊃ r) ∧ (s ⊃ ◯⊥)) ⊃ r` sufficient (the ⊥-instance closes the cell) | **invalid** |
+| `s ∨ r` sufficient | valid |
+| `ψ₀ ⊢ s ∨ r` | invalid |
+| `Γ ⊢ ◯s ⊃ r` | valid |
+| `T := (◯s ⊃ r) ⊃ r` sufficient (the s-instance closes the cell) | **valid** |
+| `T ⊢ r ∨ ◯s` | invalid |
+| `A₆ ⊢ T`, `A₁₀ ⊢ T` (soundness + substitution `p := s`) | valid, valid |
+| `A₁₀ ⟛ r ∨ ◯s` (both directions) | valid |
+| cofinality instance `E₆ ∧ T ⊢ A₆` | **invalid** |
+| cofinality instance `E₁₀ ∧ T ⊢ A₁₀` | **valid** |
+
+So the ⊥-instance does not close this cell (the first cell of the
+campaign where that mechanism fails), but the `s`-instance does:
+`Γ ⊢ Γ[s] = {◯s ⊃ r, s ⊃ ◯s}` and `Γ[s] ⊃ r ⟛ T` is sufficient, so
+`T` is the cell's `∀p` by the same substitution argument.  The chain
+climbs to `r ∨ ◯s` at station fuel 10, strictly below `T` as formulas;
+but `E₁₀ ⟛ ◯s ⊃ r`, under which `T`, `r ∨ ◯s` and `r` coincide, so the
+cofinality instance holds at fuel 10, and with it cofinality for every
+sufficient `Δ` (each has `Δ ⊢ T`).  VALIDATED again.  The instance
+`E₁₄ ∧ T ⊢ A₁₄` (201 + 187 nodes) was UNSETTLED at the 300 s bound —
+a frontier marker (re-run at a raised budget, or decompose as the
+record did for θmax: the `∧`/`∨` structure splits it into
+engine-sized leaves), not a failure.  Likewise `A₁₀ ⊢ θmax` on the
+first cell (339-node hypothesis) was unsettled at 300 s; its fuel-6
+twin is valid and the substitution argument covers every fuel.
+
+**The filter, sharpened by these two cells.**  A cell is closed by the
+instance `p := χ` (χ p-free) whenever `Γ[χ] ⊃ G[χ]` is sufficient —
+then it is the `∀p` outright, and cofinality reduces to `E_f ⊢ Γ[χ]`
+plus the chain reaching `G[χ]` modulo `E_f`.  Both cells so far are
+instance-closed (`χ = ⊥`, `χ = s`).  A candidate that can refute
+cofinality — or be a Ghilardi–Zawadowski witness — must have NO
+sufficient instance, which is the situation in which a uniform
+interpolant, if it exists, is not a substitution instance (in IPC:
+`∀p.((p ⊃ q) ∨ (q ⊃ p)) = q ∨ ¬q`).  The plan's substitution-
+admissibility lemma makes this instance screen a certificate; until
+then it is an oracle screen, run before any chain is measured.
+
+### 4.11 The cofinality proof build — STOPPED at the founding of the recursion (2026-09-04, late)
+
+Matthew's direction: stop refuting, prove cofinality in general; if
+the proof does not go through, the stopping point defines the next
+candidates.  An Opus agent templated the weight-founded minimality
+family (`TInv`/`UEntry` and auxiliaries, `LJF/O.lean`, conditional on
+`CimpAnt`) onto `interpF`.  Result, all in `LJF/OFuelMin.lean`
+(755 lines, no `sorry`, merged as `10ffa22`):
+
+* **PROVED**: the ten aggregate equations and nine row memberships at
+  fuel `f+1` (`[propext]`); the processing phase `eMinFF`/`aMinFF` —
+  cofinality at a saturated station implies cofinality at every
+  station (`[propext, Classical.choice, Quot.sound]`); the reductions
+  `ecofinalF_of_satE2F`, `acofinalF_of_satA2F` from the saturated
+  forms `SatE2F`/`SatA2F` to the approved statements.
+* **The obligation, and what it is**: `CimpAntF` (the retention form of
+  `CimpAnt`, `rest` replaced by `done`) and
+  `cimpAntF_of_satA2F : SatA2F p → CimpAntF p` — every one of the four
+  `cAnt` sites type-checks as the predicted native call of `∀p`-
+  cofinality at the FULL station on the antecedent's subderivation.
+  So the obligation is an instance of the statement being proved; a
+  conditional port would be near-vacuous.
+* **STOPPED**: `TInvF`/`UEntryF` themselves, hence `ecofinalF`/
+  `acofinalF`.  The reason is the founding.  The weight-founded family
+  is ordered lexicographically by (station-and-goal weight, derivation
+  size).  Taking the retention discharge as a recursive call adds the
+  edge `E@done → A@done(↑↓◯Q′)`, which raises the goal weight; but the
+  family already has the opposite cross-edge `A@done(c) → E@done` (the
+  `↑c` conjunct of the `c ⊃ N` attack row, `LJF/O.lean:1580`).  Round
+  the cycle
+
+      A@done(↑c) → A@done c → E@done → A@done(↑↓◯c) → A@done(↓◯c)
+        → A@done(◯c) → A@done(↑c)
+
+  every edge is a strict subderivation, so a station-first measure must
+  be constant round it, hence goal-blind at `done`; a goal-blind
+  measure cannot pay for goal inversion `A@done(Q ⊃ N) → A@(b ++ done)(N)`
+  (derivation rebuilt by `extract`, station grown), and iterating that
+  edge from the retention goal `↑↓◯(↓(↑d ⊃ ↑c))` gives stations
+  `done, ↑d :: done, ↑d :: ↑d :: done, …` each carrying the cycle.  The
+  agent checked the arithmetic escapes (inflating the `∃p` side by
+  `max` over the ◯-goals, by `σ`, by `Σ 3^goal`; three-component
+  orders; scaling): all fail on `μ_A(done, small goal) ≥ μ_E(done) ≥
+  μ_A(done, large ◯-goal)`.
+* **The cell** (`wip/ui_retention_cell.lean`, kernel-checked at every
+  fuel): station `[↓◯c ⊃ ↑a, c ⊃ ↑a]` with `p ≠ c, a`; its `∃p` row
+  of the ◯-implication carries the retained guard at `done`, its `∀p`
+  attack row at goal `↑c` carries `↑c` — the two cross-edges, in the
+  aggregates themselves.
+
+**What survives, and the question it opens.**  The opposite order —
+derivation height first, station weight second — drops on every cycle
+edge; the station-changing edges use rebuilt derivations, so it needs
+height bounds for `wk`, `simInv`/`simHyp`/`simStab`, `routeStabT`,
+`extract`, `invBranches`, `relStab`, `negOfDownStab`, `dykCommute`.
+The last two raise the height by the size of the formula they rewrite,
+and that is not bookkeeping only: on a path that alternates a
+retention edge (height down by one) with a Dyckhoff fire (height up by
+`|φ|`), derivation-founded recursion is not obviously well-founded
+either.  Whether the fuel a derivation needs is finite is then a
+mathematical question, and it defines the refined candidate family:
+
+    a saturated station holding a ◯-implication `↓◯Q′ ⊃ N` whose
+    antecedent `Q′` contains a Dyckhoff implication, together with an
+    atom-implication `c ⊃ N′`, with `p` occurring in both polarities
+    (no instance `Γ[χ] ⊃ G[χ]` sufficient) and an unboxed goal.
+
+Screen it as §4.10 did — instance screen first, then the chain probe
+and the cofinality instances at station fuels 6/10/14 — before any
+height-founded refactor is scoped.  OPEN, both ways: no refutation, no
+proof; the obstruction is exact.
+
+### 4.12 The candidate family screened (2026-09-04/05, Matthew's (i))
+
+**The grid** (`wip/ui_screen/gen.py`, seven stations, not a
+sweep): the base cell `S1 = [◯(d ⊃ p) ⊃ a, c ⊃ ◯p] ⇒ a` — the box on
+`◯p` is what stops the composite `c ⊃ … ⊃ a` from being derivable,
+which had closed every earlier cell — with its unboxed twin `S2`
+(control), the box moved to the atom-implication's antecedent `S3`, the
+disjunctive goal `S5 = [◯(d ⊃ c) ⊃ p, c ⊃ p] ⇒ (p ⊃ q) ∨ (q ⊃ p)`, a
+Dyckhoff hypothesis added `S6 = S1 + (d ⊃ c) ⊃ e`, the goal `a ∨ c`
+`S7`, and `p` only positive `S8` (control).  Instance screen: fourteen
+`χ` (`⊥`, `⊤`, the atoms, their boxes, `¬d`, `◯¬d`, `¬c`, `¬q`), one
+G4c process per cell under a 60 s alarm, 105 cells in one minute.
+
+| station | `Γ ⊢ G` | closing instance | survivors |
+|---|---|---|---|
+| S1 | invalid | none of 14 | **survives** |
+| S2 | invalid | `χ = c` (as designed) | — |
+| S3 | invalid | `χ = ◯c` | — |
+| S5 | invalid | none of 10; four "don't-know" (engine budget) | survives, unsettled |
+| S6 | invalid | none of 14 | **survives** |
+| S7 | invalid | none of 14 | **survives** |
+| S8 | invalid | `χ = ⊤` (as designed) | — |
+
+At S1 the conjunction of eight instance bounds is not sufficient
+either.  So S1 is the first cell of the campaign whose `∀p` is neither
+an instance nor a finite conjunction of instances.
+
+**S1's interpolants, by hand and oracle.**  Sufficient p-free formulas:
+`a`, `c` (through `c → ◯p → ◯(d ⊃ p)`, monotonicity), `◯c`, `◯⊥`,
+`◯¬d`, `X := ◯(c ∨ ¬d)`; not sufficient: `◯(d ⊃ c)`, `◯(d ⊃ ◯⊥)`.
+For a p-free goal the `∀p` is `(∃p.Γ) ⊃ a` (a sufficient `Δ` has
+`Δ, E ⊢ a` by E-minimality, and conversely), and the weakest sufficient
+formula in hand is
+
+    T := (X ⊃ a) ⊃ a,    X = ◯(c ∨ ¬d),
+
+with `Γ ⊢ X ⊃ a` valid, `T` sufficient, and `T` strictly weaker than
+`a ∨ X` (both oracle-settled).  Whether `T` is the `∀p` is whether
+`∃p.Γ ⟛ X ⊃ a`.
+
+**The chains** (`lake exe uifs cand`, station fuels 6/10/14/18): S1
+`E` 20 / 290 / 2987 / 37,632, `A` 16 / 274 / 2973 / 37,618, growth ×12
+per four units; S6 `E` up to 176,412, S3 up to 861,870.  `A₆ ⟛ a ∨ ◯⊥`
+up to absorption.  The retained guard's own chain (`S1g`, goal
+`↑↓◯(d ⊃ p)`): `(c ∧ ◯⊥) ∨ ◯¬d` at 6, then 454 / 5687 / 70,575.
+
+**Cofinality instances at S1 (G4c, 300 s each):**
+
+| instance | fuel 6 | fuel 10 | fuel 14 |
+|---|---|---|---|
+| `E_f ∧ c ⊢ a` (E-side, Δ = c) | invalid | invalid | unsettled |
+| `E_f ∧ X ⊢ a` (E-side, Δ = X) | invalid | invalid | unsettled |
+| `E_f ∧ T ⊢ A_f` | invalid | invalid | unsettled |
+| `E_f ∧ (a ∨ X) ⊢ A_f` | invalid | invalid | unsettled |
+| `E_f ∧ c ⊢ A_f` | invalid | invalid | unsettled |
+| `A_f ⊢ T` (fails only if `T` is not the `∀p`) | valid | unsettled | unsettled |
+| `A_f ⊢ a ∨ X` | valid | invalid | invalid |
+
+S6 and S7 show the same pattern (all invalid at 6 and 10, unsettled at
+14; at S6 `A₁₀ ⊬ T`, so `T` is not S6's `∀p`, as expected with the
+extra hypothesis).
+
+**What the forms say.**  `E₁₀` at S1 is
+`(G ⊃ ((c ⊃ a ∧ ◯a) ∧ a)) ∧ (c ⊃ ((G′ ⊃ a ∧ ◯a) ∧ ◯(◯⊥ ⊃ a)))` with
+`G`, `G′` the retained guards, and every disjunct of `G′` pairs `c`
+with a BOXED residue — the guard is the `∀p` of a ◯-goal, computed as
+`◯(…)` by the ◯-goal rows, and its inner box row `↓E([↑p] rest) ⊃ A(…)`
+collapses to `⊤` only once the sub-station's `E` has itself reached
+`a`: one nesting level per parked box, about ten fuel units.  So the
+four-step consequence `c ⊃ a` is expected to appear in `E_f` at station
+fuel 12–14, exactly where the G4c oracle's reach ends.  The escalation
+is the focused kernel search (`LJFO.search`, sound by `search_sound`)
+on `E_f, ↑c ⊢ ↑a` — `lake exe uifs esearch <evalfuel> <sfuel>` — whose
+result is recorded below.
+
+**The focused search settles it — E-cofinality at S1 VALIDATED at
+station fuel 14.**  `LJFO.LSeq.search` on `E_f, ↑c ⊢ ↑a` (native
+evaluation of a search that is sound by `search_sound`; a `true` is a
+derivation):
+
+| station fuel | search fuel 16 | 24 | 32 |
+|---|---|---|---|
+| 10 (`E` 290 nodes) | false | false | false |
+| 14 (`E` 2987 nodes) | **true** | true | true |
+| 18 (`E` 37,632 nodes) | **true** | true | true |
+
+So the consequence `c ⊃ a` (derivation height about 4) enters the
+E-chain at station fuel 14, where the row analysis put it, and stays.
+The fuel is about 3.5 times the derivation height — the shape the
+proof's fuel function must have (a nesting level per parked box, not a
+step per rule).  This is evidence FOR cofinality on the first cell that
+no instance closes, and against the §4.11 family as a refutation
+candidate; the kernel pin of the fuel-14 derivation (a `decide` on a
+2987-node context) is not attempted here.
+
+**The other instances by the same engine** (`wip/ui_screen/esearch-run.sh`,
+search fuels 16 and 32 agree in every cell; `false` certifies nothing):
+
+| instance | station fuel 10 | 14 | 18 |
+|---|---|---|---|
+| `E_f ∧ c ⊢ a` (E-side, Δ = c) | false | **true** | true |
+| `E_f ∧ c ⊢ A_f` (A-side, Δ = c) | false | **true** | true |
+| `E_f ∧ X ⊢ a` (E-side, Δ = X = ◯(c ∨ ¬d)) | false | false | false |
+| `E_f ∧ T ⊢ A_f` (A-side, Δ = T) | false | false | false |
+
+So cofinality holds for the sufficient formula `c` on both sides from
+station fuel 14, and for the weaker `X` and `T` at no fuel through 18
+(37,632-node `E`).  The row analysis says why, with a number: `X ⊢
+guard` must go through the boxed disjunct `A(done ⇒ ◯↓(d ⊃ p))`, whose
+`c`-branch sits one parked-box level deeper than the outer `c`-branch
+that Δ = c uses, so the `X` instances are predicted about ten fuel
+units later, station fuel 22–24.  What the `X`/`T` instances test is
+the E-chain's convergence to `∃p.Γ` itself (the `∀p` is `(∃p.Γ) ⊃ a`,
+and `T = (X ⊃ a) ⊃ a` is the `∀p` iff `∃p.Γ ⟛ X ⊃ a`).
+
+**Station fuel 22 confirms the prediction: `E₂₂ ∧ X ⊢ a` is TRUE**
+(search fuel 48; false at 16 and 32).  The depth needed exposes a
+posing defect in the searches above: `E_f` entered the context as one
+`∧`-chain, and the canonical chain is right-nested and sorted, so left
+focusing on the k-th conjunct costs k steps — the Δ = c derivations
+were found because their conjunct sorts near the front, and every
+`false` above at search fuel ≤ 32 is a depth artefact, not evidence.
+The searches are re-posed with the conjuncts of `E_f` as separate
+hypotheses (∧-left inversion, equivalent; `uifs esearch` now does
+this); their verdicts follow.  What stands regardless: the weaker
+consequence `◯(c ∨ ¬d) ⊃ a` enters the E-chain by station fuel 22,
+inside the predicted window, about three times its derivation height.
+
+**The other survivors** (`wip/ui_screen/esearch-stations.sh`, Δ = c,
+search fuel 16): at S6 — the cell WITH the Dyckhoff hypothesis, the
+closest match to the §4.11 family — and at S7, both cofinality
+instances are TRUE at station fuels 14 and 18, E-side and A-side.  The
+Dyckhoff hypothesis does not delay the chain.
+
+**Re-posed verdicts and the frontier (2026-09-05, 01:34).**  With the
+conjuncts of `E_f` as separate hypotheses: Δ = c reproduces (false at
+10, true at 14); Δ = X is false at 10/14/18 through depth 32 and TRUE
+at 22 at depth 48 (reproducing the chain-posed verdict — the derivation
+is 33–48 steps deep, a box opened, a case split, the inner rows); so
+`◯(c ∨ ¬d) ⊃ a` enters the E-chain at station fuel 22 exactly, the
+predicted window.  The A-side instance for the conjectured `∀p`,
+`E_f ∧ T ⊢ A_f`, is false through depth 32 at every fuel and UNSETTLED
+at depth 48 (fuels 18, 22) and 64 (fuel 22), 30 min each: the goal is
+`A_f` itself (37,632 and about 450,000 nodes), which the search has to
+construct.  A frontier marker, not a failure — the next tool is a
+certified simplifier for the A-side or a kernel-side decision on the
+sub-goal `E_f ⊢ ∃p.Γ`.
+
+**Verdict of the screen.**  No cell of the §4.11 family refutes
+cofinality.  Every instance the tools could decide was VALIDATED, at
+the fuel the row analysis predicted: Δ = c on both sides from station
+fuel 14 at S1, S6, S7; Δ = X on the E-side at station fuel 22 at S1.
+The chain is slow — a consequence enters about three times its
+derivation height later, one parked-box nesting level per ~10 fuel
+units — and that number is the constraint on the proof's fuel
+function, not a counterexample.  Runners: `wip/ui_screen/`.
+
+### 4.13 The height-first founding — STOPPED, and the obstruction is now exact on both sides (2026-09-05, 09:03)
+
+Matthew's direction: no more testing, refound the family on derivation
+height first.  An Opus agent did Step 0 — height bounds for every
+derivation transformer the family uses — and the table decides the
+route.  `LJF/OFuelHeight.lean` (873 lines, every bound pinned at
+`[propext, Classical.choice, Quot.sound]`, merged as `45dce44`):
+
+| transformer | height |
+|---|---|
+| `wk` (all four judgments) | **equal** |
+| forced-shape extractors | strictly smaller |
+| `extract` | ≤ |
+| `invBranches` | ≤ max + `sizePos R` |
+| `routeStab`/`routeStabT`, `relStab`, `simStab`/`simLFoc`/`simInv`, `simRFocus`, `simHyp` | ≤ (with the stated budgets) |
+| `invAndHyp`, `invImpFls`, `invUp`, `invFireHyp`, `fireClean`, `boxClean` | ≤ |
+| `negOfDownStab` at `↑P` / `◯P` | ≤ `szS s + 1` / `+ 2` |
+| `stabOr1`/`stabOr2` | **rises** (per right-focus leaf; 11 → 13) |
+| **`invImpOr`, `invStrip`, `invCurry`** | **rise** (21 → 26, 25 → 26, 29 → 40), kernel-checked cells `ceOrD`, `ceStD`, `ceCyD` |
+| `negOfDownStab` at `M₁ ∧ M₂`, `dykCommute` | rise **unboundedly** (`szI = 10n + 25` on a measured family; proved as an equation) |
+| the max-based height | fails on the same three clauses (`dpD`: 13 → 18) |
+
+**Verdict.**  The order (derivation height, station weight) does not
+found the family, and not because of the Dyckhoff transformers: those
+rise unboundedly but LEAVE the family — Part 9 proves drop-in
+replacements for their two release sites (`laxReleaseUp`,
+`laxReleaseCirc`, height ≤ `szS (laxOf s)`, landing on the same `∀p`
+row), and the `interpR` retention removes the third.  The binding
+obstruction is in the PROCESSING phase: the three clauses that RESHAPE a
+parked implication's antecedent — `(Q₁∨Q₂) ⊃ N` into two implications,
+`↓↑P′ ⊃ N` into `P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N` curried — rebuild every use of
+the implication as a nest of constructors at the depth of the
+antecedent proof's focus leaves, so their derivation transformers raise
+the height while the station weight drops, and height is the first
+component.  The `interpR` fallback of the brief does not touch the
+processing phase, so it dies on the same three cells; the agent
+rightly did not build it.  Both natural derivation measures are
+refuted; the weight order of `LJF/O.lean` remains the only one that
+runs the processing phase, and §4.11's cycle remains the reason it
+cannot take the retention discharge.  The obstruction is exact on
+both sides.
+
+**What the table forces (Part 9).**  Every other processing clause
+either PARKS (weakening only, height exact) or is one of the six
+non-increasing transformers.  A height-founded family must therefore
+park those three shapes too — extend `ParkedN` by `(Q₁∨Q₂) ⊃ N`,
+`↓↑P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N`, each with an aggregate row whose fire is
+guarded by the retained `∀p` of its antecedent at the full station,
+exactly as the ◯-implication rows already are — instead of reshaping
+them.  Read as a principle: *no rewriting of hypotheses; every
+non-atomic implication fires through a retained guard.*  That is a
+definition change to `interpF` of a different order from `interpR`
+(new parked shapes, new rows in both aggregates, new soundness cases
+by weakening, new minimality clauses as native calls), and it is a
+decision on what the interpolant IS — Matthew's.  Blueprint node N0e
+(`docs/ui-routeB-blueprint.md`).
 
 ---
 
@@ -1142,8 +1636,20 @@ table a definition at all.
 order `μᵥ` is refuted at the box row by a hand computation, and §4.5
 shows the reset that breaks it is required.  Whether *some* well-founded
 order founds the retaining table is OPEN; the record's route A′.  The
-fuel-founded variant `LJFO.interpF` exists (`LJF/OFuel.lean`) with
-nothing proved about it.
+fuel-founded variant `LJFO.interpF` (`LJF/OFuel.lean`) is route (B),
+and its soundness pair is PROVED (2026-09-04, `LJF/OFuelSound.lean`,
+`eSoundF`/`aSoundF`, `[propext, Quot.sound]` — below the originals,
+which take `Classical.choice` from the weight-founded recursion):
+
+    eSoundF p : ∀ f todo done,   Inv (todo ++ done) [] tru (interpF p f todo done none)
+    aSoundF p : ∀ f todo done G, Inv (interpF p f todo done (some G) :: (todo ++ done)) [] tru G
+
+The twelve modal rows went through by weakening (`atkCimp` at
+`rest := done`), the `∃p` aggregate row easier than its original.  What
+remains OPEN for route (B) is cofinality (`ECofinalF`/`ACofinalF` in
+`wip/ui_routeB_statements.lean`, typed statements with no declaration):
+the proof build STOPPED at the founding of the recursion, with the
+obstruction exact and a candidate family defined — §4.11.
 
 **O9.  The decide counts of §4.2.**  Two decides on `H` for Γ₁ and three
 for Γ₂ are the counts of the derivations I wrote down; **minimality of

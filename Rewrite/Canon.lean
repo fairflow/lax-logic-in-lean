@@ -166,19 +166,259 @@ theorem mkImp_interd (a b : PLLFormula) : Interd (.ifThen a b) (mkImp a b) := by
   · next h => exact h ▸ imp_self a
   · exact Interd.refl _
 
+/-! ## Absorption of `◯` under an outer `◯`, through `∧`/`∨`
+
+Under an outer box an inner box in `∧`/`∨`-positive position is
+redundant: `◯(a ∨ ◯b) ⊣⊢ ◯(a ∨ b)` and `◯(a ∧ ◯b) ⊣⊢ ◯(a ∧ b)` — the
+goal is already lax, so the inner box can be opened.  NOT through `⊃`,
+in either position: `◯(a ⊃ ◯b) ⊬ ◯(a ⊃ b)` and `◯(a ⊃ b) ⊬ ◯(◯a ⊃ b)`
+(G4c countermodels, 2026-09-04), because an implication goal under a
+box is proved in true mode, where the inner box cannot be opened.
+`stripBox` deletes every `◯` reachable from the root through `∧`/`∨`
+alone; it subsumes `◯◯φ = ◯φ` (`box_idem`), which was the only case
+`mkBox` folded before. -/
+
+/-- Delete every `◯` reachable from the root through `∧`/`∨`. -/
+def stripBox : PLLFormula → PLLFormula
+  | .somehow a => stripBox a
+  | .and a b => .and (stripBox a) (stripBox b)
+  | .or a b => .or (stripBox a) (stripBox b)
+  | F => F
+
+/-- `[a] ⊢ ◯(stripBox a)`: a box met through `∧`/`∨` is opened into
+the lax goal. -/
+def stripBox_fwd : ∀ a : PLLFormula, LaxND [a] (.somehow (stripBox a))
+  | .somehow a =>
+      .laxElim (.iden (.head _))
+        ((stripBox_fwd a).rename (fun _ h => by simp at h; simp [h, stripBox]))
+  | .and a b =>
+      let da : LaxND [.and a b] (.somehow (stripBox a)) :=
+        .impElim (.impIntro ((stripBox_fwd a).rename (fun _ h => by simp at h; simp [h, stripBox])))
+          (.andElim1 (.iden (.head _)))
+      let db : LaxND [.and a b] (.somehow (stripBox b)) :=
+        .impElim (.impIntro ((stripBox_fwd b).rename (fun _ h => by simp at h; simp [h, stripBox])))
+          (.andElim2 (.iden (.head _)))
+      .laxElim da (.laxElim (db.rename (fun _ h => by simp at h; simp [h, stripBox]))
+        (.laxIntro (.andIntro (.iden (.tail _ (.head _))) (.iden (.head _)))))
+  | .or a b =>
+      .orElim (.iden (.head _))
+        (.laxElim ((stripBox_fwd a).rename (fun _ h => by simp at h; simp [h, stripBox]))
+          (.laxIntro (.orIntro1 (.iden (.head _)))))
+        (.laxElim ((stripBox_fwd b).rename (fun _ h => by simp at h; simp [h, stripBox]))
+          (.laxIntro (.orIntro2 (.iden (.head _)))))
+  | .prop _ => .laxIntro (.iden (.head _))
+  | .falsePLL => .laxIntro (.iden (.head _))
+  | .ifThen _ _ => .laxIntro (.iden (.head _))
+
+/-- `[stripBox a] ⊢ ◯a`: the deleted boxes are restored by `laxIntro`,
+lifted through `∧`/`∨`. -/
+def stripBox_bwd : ∀ a : PLLFormula, LaxND [stripBox a] (.somehow a)
+  | .somehow a => .laxIntro (stripBox_bwd a)
+  | .and a b =>
+      let da : LaxND [.and (stripBox a) (stripBox b)] (.somehow a) :=
+        .impElim (.impIntro ((stripBox_bwd a).rename (fun _ h => by simp at h; simp [h, stripBox])))
+          (.andElim1 (.iden (.head _)))
+      let db : LaxND [.and (stripBox a) (stripBox b)] (.somehow b) :=
+        .impElim (.impIntro ((stripBox_bwd b).rename (fun _ h => by simp at h; simp [h, stripBox])))
+          (.andElim2 (.iden (.head _)))
+      .laxElim da (.laxElim (db.rename (fun _ h => by simp at h; simp [h, stripBox]))
+        (.laxIntro (.andIntro (.iden (.tail _ (.head _))) (.iden (.head _)))))
+  | .or a b =>
+      .orElim (.iden (.head _))
+        (.laxElim ((stripBox_bwd a).rename (fun _ h => by simp at h; simp [h, stripBox]))
+          (.laxIntro (.orIntro1 (.iden (.head _)))))
+        (.laxElim ((stripBox_bwd b).rename (fun _ h => by simp at h; simp [h, stripBox]))
+          (.laxIntro (.orIntro2 (.iden (.head _)))))
+  | .prop _ => .laxIntro (.iden (.head _))
+  | .falsePLL => .laxIntro (.iden (.head _))
+  | .ifThen _ _ => .laxIntro (.iden (.head _))
+
+/-- `◯a ⊣⊢ ◯(stripBox a)`. -/
+theorem box_strip (a : PLLFormula) :
+    Interd (.somehow a) (.somehow (stripBox a)) :=
+  ⟨⟨.laxElim (.iden (.head _))
+      ((stripBox_fwd a).rename (fun _ h => by simp at h; simp [h, stripBox]))⟩,
+   ⟨.laxElim (.iden (.head _))
+      ((stripBox_bwd a).rename (fun _ h => by simp at h; simp [h, stripBox]))⟩⟩
+
 def mkBox (a : PLLFormula) : PLLFormula :=
   if a = topF then topF
-  else match a with
-    | .somehow _ => a
-    | _ => .somehow a
+  else .somehow (stripBox a)
 
 theorem mkBox_interd (a : PLLFormula) : Interd (.somehow a) (mkBox a) := by
   unfold mkBox
   split
   · next h => rw [h]; exact box_top
-  · split
-    · next x _ => exact box_idem x
-    · exact Interd.refl _
+  · exact box_strip a
+
+/-! ## `◯⊥` is the least boxed formula
+
+`◯⊥ ⊢ ◯ψ` for every `ψ`, so `◯⊥ ∨ ◯ψ ⊣⊢ ◯ψ`.  `absorbsBoxBot` is a
+syntactic sufficient condition for `◯⊥ ⊢ Y`; `dropBoxBot` deletes the
+`◯⊥` disjuncts along the right spine of an ∨-chain, and the chain is
+replaced by the result only when the result absorbs `◯⊥`. -/
+
+def boxBot : PLLFormula := .somehow .falsePLL
+
+def absorbsBoxBot : PLLFormula → Bool
+  | .somehow _ => true
+  | .or a b => absorbsBoxBot a || absorbsBoxBot b
+  | .and a b => absorbsBoxBot a && absorbsBoxBot b
+  | .ifThen _ b => absorbsBoxBot b
+  | _ => false
+
+/-- `[◯⊥] ⊢ Y` whenever `absorbsBoxBot Y`. -/
+def boxBot_deriv : ∀ Y : PLLFormula, absorbsBoxBot Y = true → LaxND [boxBot] Y
+  | .somehow _, _ =>
+      .laxElim (.iden (.head _)) (.falsoElim _ (.iden (.head _)))
+  | .or a b, h =>
+      if ha : absorbsBoxBot a = true then .orIntro1 (boxBot_deriv a ha)
+      else .orIntro2 (boxBot_deriv b (by simpa [absorbsBoxBot, ha] using h))
+  | .and a b, h =>
+      .andIntro (boxBot_deriv a (by simp [absorbsBoxBot] at h; exact h.1))
+                (boxBot_deriv b (by simp [absorbsBoxBot] at h; exact h.2))
+  | .ifThen _ b, h =>
+      .impIntro ((boxBot_deriv b h).rename (fun _ h => by simp at h; simp [h, stripBox]))
+  | .prop _, h => by simp [absorbsBoxBot] at h
+  | .falsePLL, h => by simp [absorbsBoxBot] at h
+
+/-- Delete the `◯⊥` disjuncts along the right spine of an ∨-chain. -/
+def dropBoxBot : PLLFormula → PLLFormula
+  | .or y rest =>
+      if y = boxBot then dropBoxBot rest
+      else if rest = boxBot then y
+      else .or y (dropBoxBot rest)
+  | F => F
+
+/-- `dropBoxBot c ⊢ c`: deleting a disjunct is weakening. -/
+theorem dropBoxBot_bwd : ∀ c : PLLFormula, Nonempty (LaxND [dropBoxBot c] c) := by
+  intro c
+  induction c with
+  | or y rest _ ih =>
+      by_cases hy : y = boxBot
+      · rw [dropBoxBot, if_pos hy]
+        obtain ⟨d⟩ := ih
+        exact ⟨.orIntro2 d⟩
+      · by_cases hr : rest = boxBot
+        · rw [dropBoxBot, if_neg hy, if_pos hr]
+          exact ⟨.orIntro1 (.iden (.head _))⟩
+        · rw [dropBoxBot, if_neg hy, if_neg hr]
+          obtain ⟨d⟩ := ih
+          exact ⟨.orElim (.iden (.head _)) (.orIntro1 (.iden (.head _)))
+            (.orIntro2 (d.rename (by intro ψ h; simp at h; simp [h, stripBox])))⟩
+  | prop _ => exact ⟨.iden (.head _)⟩
+  | falsePLL => exact ⟨.iden (.head _)⟩
+  | and _ _ _ _ => exact ⟨.iden (.head _)⟩
+  | ifThen _ _ _ _ => exact ⟨.iden (.head _)⟩
+  | somehow _ _ => exact ⟨.iden (.head _)⟩
+
+/-- `c ⊢ Z` given `◯⊥ ⊢ Z` and `dropBoxBot c ⊢ Z`: every disjunct of
+`c` is either a deleted `◯⊥` or a disjunct of `dropBoxBot c`. -/
+theorem dropBoxBot_elim : ∀ (c Z : PLLFormula),
+    Nonempty (LaxND [c, .ifThen boxBot Z, .ifThen (dropBoxBot c) Z] Z) := by
+  intro c
+  induction c with
+  | or y rest _ ih =>
+      intro Z
+      by_cases hy : y = boxBot
+      · rw [dropBoxBot, if_pos hy]
+        obtain ⟨d⟩ := ih Z
+        subst hy
+        exact ⟨.orElim (.iden (.head _))
+          (.impElim (.iden (by simp)) (.iden (.head _)))
+          (d.rename (by intro ψ h; simp at h; rcases h with rfl | rfl | rfl <;> simp))⟩
+      · by_cases hr : rest = boxBot
+        · rw [dropBoxBot, if_neg hy, if_pos hr]
+          subst hr
+          exact ⟨.orElim (.iden (.head _))
+            (.impElim (.iden (by simp)) (.iden (.head _)))
+            (.impElim (.iden (by simp)) (.iden (.head _)))⟩
+        · rw [dropBoxBot, if_neg hy, if_neg hr]
+          obtain ⟨d⟩ := ih Z
+          -- `d`, weakened into the second `orElim` branch under the
+          -- assumption `dropBoxBot rest ⊃ Z`
+          have d' : LaxND [.ifThen (dropBoxBot rest) Z, rest, .or y rest,
+              .ifThen boxBot Z, .ifThen (.or y (dropBoxBot rest)) Z] Z :=
+            d.rename (by intro ψ h; simp at h; rcases h with rfl | rfl | rfl <;> simp)
+          exact ⟨.orElim (.iden (.head _))
+            (.impElim (.iden (.tail _ (.tail _ (.tail _ (.head _)))))
+              (.orIntro1 (.iden (.head _))))
+            (.impElim (.impIntro d')
+              (.impIntro (.impElim
+                (.iden (.tail _ (.tail _ (.tail _ (.tail _ (.head _))))))
+                (.orIntro2 (.iden (.head _))))))⟩
+  | prop _ => intro Z; exact ⟨.impElim (.iden (.tail _ (.tail _ (.head _)))) (.iden (.head _))⟩
+  | falsePLL => intro Z; exact ⟨.impElim (.iden (.tail _ (.tail _ (.head _)))) (.iden (.head _))⟩
+  | and _ _ _ _ => intro Z; exact ⟨.impElim (.iden (.tail _ (.tail _ (.head _)))) (.iden (.head _))⟩
+  | ifThen _ _ _ _ => intro Z; exact ⟨.impElim (.iden (.tail _ (.tail _ (.head _)))) (.iden (.head _))⟩
+  | somehow _ _ => intro Z; exact ⟨.impElim (.iden (.tail _ (.tail _ (.head _)))) (.iden (.head _))⟩
+
+/-- `c ⊣⊢ dropBoxBot c` whenever the result absorbs `◯⊥`. -/
+theorem dropBoxBot_interd (c : PLLFormula)
+    (h : absorbsBoxBot (dropBoxBot c) = true) : Interd c (dropBoxBot c) := by
+  obtain ⟨d⟩ := dropBoxBot_elim c (dropBoxBot c)
+  obtain ⟨b⟩ := dropBoxBot_bwd c
+  refine ⟨⟨?_⟩, ⟨b⟩⟩
+  have d' : LaxND [.ifThen (dropBoxBot c) (dropBoxBot c),
+      .ifThen boxBot (dropBoxBot c), c] (dropBoxBot c) :=
+    d.rename (by intro ψ h; simp at h; rcases h with rfl | rfl | rfl <;> simp)
+  have e : LaxND [boxBot, c] (dropBoxBot c) :=
+    (boxBot_deriv _ h).rename (by intro ψ h; simp at h; simp [h])
+  exact .impElim (.impElim (.impIntro (.impIntro d')) (.impIntro e))
+    (.impIntro (.iden (.head _)))
+
+/-- Does the ∧-spine of `c` carry `◯⊥` as a conjunct? -/
+def hasBoxBotConj : PLLFormula → Bool
+  | .and a rest => (a = boxBot) || hasBoxBotConj rest
+  | c => c = boxBot
+
+/-- `[c] ⊢ ◯⊥` when `◯⊥` is a conjunct of `c`. -/
+theorem conjBoxBot : ∀ c : PLLFormula,
+    hasBoxBotConj c = true → Nonempty (LaxND [c] boxBot) := by
+  intro c
+  induction c with
+  | and a rest _ ih =>
+      intro h
+      simp [hasBoxBotConj] at h
+      rcases h with rfl | h
+      · exact ⟨.andElim1 (.iden (.head _))⟩
+      · obtain ⟨d⟩ := ih h
+        exact ⟨.impElim (.impIntro (d.rename (by intro ψ h; simp at h; simp [h])))
+          (.andElim2 (.iden (.head _)))⟩
+  | somehow a _ =>
+      intro h
+      simp [hasBoxBotConj, boxBot] at h
+      subst h
+      exact ⟨.iden (.head _)⟩
+  | prop _ => intro h; simp [hasBoxBotConj, boxBot] at h
+  | falsePLL => intro h; simp [hasBoxBotConj, boxBot] at h
+  | or _ _ _ _ => intro h; simp [hasBoxBotConj, boxBot] at h
+  | ifThen _ _ _ _ => intro h; simp [hasBoxBotConj, boxBot] at h
+
+/-- Collapse an ∧-chain to `◯⊥` when it carries `◯⊥` and every
+conjunct absorbs it: `◯⊥ ∧ ◯ψ ⊣⊢ ◯⊥`. -/
+def collapseBoxBotAnd (c : PLLFormula) : PLLFormula :=
+  if hasBoxBotConj c && absorbsBoxBot c then boxBot else c
+
+theorem collapseBoxBotAnd_interd (c : PLLFormula) :
+    Interd c (collapseBoxBotAnd c) := by
+  unfold collapseBoxBotAnd
+  split
+  · next h =>
+      simp at h
+      obtain ⟨d⟩ := conjBoxBot c h.1
+      exact ⟨⟨d⟩, ⟨boxBot_deriv c h.2⟩⟩
+  · exact Interd.refl _
+
+/-- Drop the `◯⊥` disjuncts of an ∨-chain when the remainder absorbs them. -/
+def dropBoxBotIf (c : PLLFormula) : PLLFormula :=
+  if absorbsBoxBot (dropBoxBot c) then dropBoxBot c else c
+
+theorem dropBoxBotIf_interd (c : PLLFormula) : Interd c (dropBoxBotIf c) := by
+  unfold dropBoxBotIf
+  split
+  · next h => exact dropBoxBot_interd c h
+  · exact Interd.refl _
 
 
 /-! ## Associativity and flattening
@@ -278,10 +518,26 @@ theorem consOr_interd (x c : PLLFormula) :
   · next h => exact h ▸ or_idem x
   · exact Interd.refl _
 
-/-- Insert `x` into a sorted ∧-chain. -/
+/-- `x ∧ (x ∧ t) ⊣⊢ x ∧ t`: a duplicate chain head. -/
+theorem and_head_idem (x t : PLLFormula) :
+    Interd (.and x (.and x t)) (.and x t) :=
+  ⟨⟨.andElim2 (.iden (.head _))⟩,
+   ⟨.andIntro (.andElim1 (.iden (.head _))) (.iden (.head _))⟩⟩
+
+/-- `x ∨ (x ∨ t) ⊣⊢ x ∨ t`: a duplicate chain head. -/
+theorem or_head_idem (x t : PLLFormula) :
+    Interd (.or x (.or x t)) (.or x t) :=
+  ⟨⟨.orElim (.iden (.head _)) (.orIntro1 (.iden (.head _))) (.iden (.head _))⟩,
+   ⟨.orIntro2 (.iden (.head _))⟩⟩
+
+/-- Insert `x` into a sorted ∧-chain.  An element equal to the head is
+dropped (`consAnd` only compares `x` with the whole chain, so without
+this test `r ∧ (r ∧ t)` survived — found 2026-09-04 on the interpolant
+chains). -/
 def insAnd (x : PLLFormula) : PLLFormula → PLLFormula
   | .and h t =>
-      if keyF x ≤ keyF h then consAnd x (.and h t) else consAnd h (insAnd x t)
+      if x = h then .and h t
+      else if keyF x ≤ keyF h then consAnd x (.and h t) else consAnd h (insAnd x t)
   | c => if keyF x ≤ keyF c then consAnd x c else consAnd c x
 
 theorem insAnd_interd (x : PLLFormula) :
@@ -291,9 +547,11 @@ theorem insAnd_interd (x : PLLFormula) :
   | and h t _ iht =>
       unfold insAnd
       split
-      · exact consAnd_interd _ _
-      · exact ((and_swap x h t).trans
-          (Interd.and_congr (Interd.refl h) iht)).trans (consAnd_interd _ _)
+      · next hx => subst hx; exact and_head_idem _ _
+      · split
+        · exact consAnd_interd _ _
+        · exact ((and_swap x h t).trans
+            (Interd.and_congr (Interd.refl h) iht)).trans (consAnd_interd _ _)
   | prop a => unfold insAnd; split
               · exact consAnd_interd _ _
               · exact (and_comm _ _).trans (consAnd_interd _ _)
@@ -329,9 +587,12 @@ theorem insAllAnd_interd :
   | ifThen a b _ _ => intro c; exact insAnd_interd _ _
   | somehow a _ => intro c; exact insAnd_interd _ _
 
+/-- Insert `x` into a sorted ∨-chain; an element equal to the head is
+dropped (see `insAnd`). -/
 def insOr (x : PLLFormula) : PLLFormula → PLLFormula
   | .or h t =>
-      if keyF x ≤ keyF h then consOr x (.or h t) else consOr h (insOr x t)
+      if x = h then .or h t
+      else if keyF x ≤ keyF h then consOr x (.or h t) else consOr h (insOr x t)
   | c => if keyF x ≤ keyF c then consOr x c else consOr c x
 
 theorem insOr_interd (x : PLLFormula) :
@@ -341,9 +602,11 @@ theorem insOr_interd (x : PLLFormula) :
   | or h t _ iht =>
       unfold insOr
       split
-      · exact consOr_interd _ _
-      · exact ((or_swap x h t).trans
-          (Interd.or_congr (Interd.refl h) iht)).trans (consOr_interd _ _)
+      · next hx => subst hx; exact or_head_idem _ _
+      · split
+        · exact consOr_interd _ _
+        · exact ((or_swap x h t).trans
+            (Interd.or_congr (Interd.refl h) iht)).trans (consOr_interd _ _)
   | prop a => unfold insOr; split
               · exact consOr_interd _ _
               · exact (or_comm _ _).trans (consOr_interd _ _)
@@ -381,10 +644,13 @@ theorem insAllOr_interd :
 /-! ## The canonicaliser -/
 
 /-- Bottom-up canonical form: constant folding, idempotence, canonical
-∧/∨ argument order, `◯◯φ = ◯φ`, `◯⊤ = ⊤`. -/
+∧/∨ argument order, `◯⊤ = ⊤`, `◯`-absorption through `∧`/`∨` under a
+box (`stripBox`, subsuming `◯◯φ = ◯φ`), and `◯⊥ ∨ ◯ψ = ◯ψ`
+(`dropBoxBotIf`).  The last two can leave a chain non-canonical
+(`stripBox` changes `keyF`s); `simpIter` re-canonicalises. -/
 def canon : PLLFormula → PLLFormula
-  | .and a b => insAllAnd (canon a) (canon b)
-  | .or a b => insAllOr (canon a) (canon b)
+  | .and a b => collapseBoxBotAnd (insAllAnd (canon a) (canon b))
+  | .or a b => dropBoxBotIf (insAllOr (canon a) (canon b))
   | .ifThen a b => mkImp (canon a) (canon b)
   | .somehow a => mkBox (canon a)
   | F => F
@@ -396,9 +662,11 @@ theorem canon_interd : ∀ φ : PLLFormula, Interd φ (canon φ) := by
   | prop a => exact Interd.refl _
   | falsePLL => exact Interd.refl _
   | and a b iha ihb =>
-      exact (Interd.and_congr iha ihb).trans (insAllAnd_interd _ _)
+      exact ((Interd.and_congr iha ihb).trans (insAllAnd_interd _ _)).trans
+        (collapseBoxBotAnd_interd _)
   | or a b iha ihb =>
-      exact (Interd.or_congr iha ihb).trans (insAllOr_interd _ _)
+      exact ((Interd.or_congr iha ihb).trans (insAllOr_interd _ _)).trans
+        (dropBoxBotIf_interd _)
   | ifThen a b iha ihb =>
       exact (Interd.imp_congr iha ihb).trans (mkImp_interd _ _)
   | somehow a iha =>
@@ -449,11 +717,14 @@ theorem simpIter_interd (rs : List RwRule) (n : Nat) :
       · rw [simpIter, if_neg h]
         exact ((norm_interd rs n φ).trans (canon_interd _)).trans (ih _)
 
-/-- Rounds of `norm`/`canon` alternation.  Three is empirically a
-fixpoint on every corpus screened so far; the iteration stops early
-whenever the form is stable, so a larger number costs nothing on
-cells that settle. -/
-def simpRounds : Nat := 4
+/-- Rounds of `norm`/`canon` alternation.  Three was empirically a
+fixpoint on every corpus screened before the `◯`-absorption passes;
+with them, each round strips one box level and folds the constants it
+exposes, so the fixpoint needs about as many rounds as the box-nesting
+depth (the fuel-20 interpolant chains of 2026-09-04 needed more than
+four).  The iteration stops early whenever the form is stable, so a
+larger bound costs nothing on cells that settle. -/
+def simpRounds : Nat := 32
 
 /-- **The pipeline**: canonicalise, then alternate rewriting and
 re-canonicalising to a fixpoint.  Interderivable with the input,
