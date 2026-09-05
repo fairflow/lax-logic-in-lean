@@ -44,7 +44,9 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 |---|---|---|---|---|
 | N0a | `eSoundF`, `aSoundF` — soundness at every fuel | `LJF/OFuelSound.lean` | **PROVED** `[propext, Quot.sound]` | `interpF` |
 | N0b | row equations at fuel; processing phase `eMinFF`/`aMinFF`; reductions `ecofinalF_of_satE2F`, `acofinalF_of_satA2F`; `cimpAntF_of_satA2F` | `LJF/OFuelMin.lean` | **PROVED** | N0a |
-| N0c | `SatE2F`, `SatA2F` — cofinality at a saturated station (the family `TInvF`/`UEntryF`, founded on derivation height) | `LJF/OFuelHeight.lean`, `LJF/OFuelCof.lean` (agent worktree) | **IN BUILD** (base e273a32) | N0a, N0b, height bounds of the transformers |
+| N0h | height bounds of every derivation transformer (the Step-0 table); `laxReleaseUp`/`laxReleaseCirc` | `LJF/OFuelHeight.lean` | **PROVED** (873 lines, pinned) | — |
+| N0c | `SatE2F`, `SatA2F` — cofinality at a saturated station (the family `TInvF`/`UEntryF`) | — | **STOPPED twice, obstruction exact** (§4.11: no station-first order; §4.13: no height-first order on `interpF` — the three reshaping processing clauses raise height) | N0a, N0b, N0e |
+| N0e | **DECISION**: the parking definition `interpP` — park `(Q₁∨Q₂) ⊃ N`, `↓↑P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N` (extend `ParkedN`), one retained-guard row each; soundness pair by weakening; then N0c founded on (height, weight) | new modules | **OPEN — Matthew's decision** (a change to what the interpolant is; principle: no rewriting of hypotheses, every non-atomic implication fires through a retained guard) | N0h |
 | N0d | `ECofinalF`, `ACofinalF` (approved statements) and their upward-closed forms `ECofinalUp`, `ACofinalUp` | `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | DRAFTED (projections of N0c's `UpFrom` witnesses) | N0c |
 | N1 | `EStabilises`, `AStabilises` — the chains eventually constant, the A-side modulo `E_f` | `wip/ui_routeB_blueprint.lean` | DRAFTED (statement) | — |
 | N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic | same | DRAFTED (statement) | — |
@@ -80,7 +82,8 @@ graph TD
   N0a --> N0b[N0b rows · processing · reductions · PROVED]
   N0b --> N0c[N0c cofinality family · IN BUILD]
   N0a --> N0c
-  H[height bounds of the transformers · IN BUILD] --> N0c
+  H[N0h height bounds · PROVED] --> N0e[N0e DECISION: interpP]
+  N0e --> N0c
   N0c --> N0d[N0d ECofinal/ACofinal, upward-closed · DRAFTED]
   N1[N1 EStabilises / AStabilises] --> N3
   N2[N2 IsUIPair / HasUI] --> N3
@@ -97,13 +100,22 @@ graph TD
 
 ## 4 · Work packages
 
-**WP1 — N0c (running).**  Refound the minimality family on (derivation
-height, goal-free station weight).  Step 0 decides the route: height
-bounds for the ten transformers; if `negOfDownStab`/`dykCommute` raise
-height, the designed fallback is uniform retention (`interpR`: the
-Dyckhoff rows' guards at the full station too), a definition change to be
-flagged.  Deliverable: `SatE2F`/`SatA2F` PROVED and pinned, or a typed
-obligation with its clause and exercising cell.  Days.
+**WP1 — N0c, via N0e (decision pending).**  Step 0 is done and
+negative (§4.13): on `interpF` neither the station-first nor the
+height-first order founds the family, and the exact obstruction is the
+three processing clauses that reshape a parked implication's
+antecedent.  The design the table forces is `interpP`: park those three
+shapes (extend `ParkedN`), give each an aggregate row with its fire
+guarded by the retained `∀p` of its antecedent at the full station (as
+the ◯-implication rows are), re-prove the soundness pair by weakening
+(mechanical, as `eSoundF`/`aSoundF` were), transpose the row
+equations, then build the family on (derivation height, goal-free
+station weight) — every remaining processing edge is weakening (height
+exact) or a non-increasing transformer.  Also apply Part 9's
+`laxReleaseUp`/`laxReleaseCirc` at the two release sites and retain the
+Dyckhoff rows (removing `dykCommute`).  Deliverable: `SatE2P`/`SatA2P`
+PROVED and pinned, or a typed obligation with its clause and exercising
+cell.  Two to three agent runs.  Blocked on the decision.
 
 **WP2 — N3.**  Forward: instantiate N0a at the stabilised fuel, minimality
 from N0d read at that fuel.  Backward: N0d applied to `E` and to `A`

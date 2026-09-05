@@ -1529,6 +1529,63 @@ derivation height later, one parked-box nesting level per ~10 fuel
 units — and that number is the constraint on the proof's fuel
 function, not a counterexample.  Runners: `wip/ui_screen/`.
 
+### 4.13 The height-first founding — STOPPED, and the obstruction is now exact on both sides (2026-09-05, 09:03)
+
+Matthew's direction: no more testing, refound the family on derivation
+height first.  An Opus agent did Step 0 — height bounds for every
+derivation transformer the family uses — and the table decides the
+route.  `LJF/OFuelHeight.lean` (873 lines, every bound pinned at
+`[propext, Classical.choice, Quot.sound]`, merged as `45dce44`):
+
+| transformer | height |
+|---|---|
+| `wk` (all four judgments) | **equal** |
+| forced-shape extractors | strictly smaller |
+| `extract` | ≤ |
+| `invBranches` | ≤ max + `sizePos R` |
+| `routeStab`/`routeStabT`, `relStab`, `simStab`/`simLFoc`/`simInv`, `simRFocus`, `simHyp` | ≤ (with the stated budgets) |
+| `invAndHyp`, `invImpFls`, `invUp`, `invFireHyp`, `fireClean`, `boxClean` | ≤ |
+| `negOfDownStab` at `↑P` / `◯P` | ≤ `szS s + 1` / `+ 2` |
+| `stabOr1`/`stabOr2` | **rises** (per right-focus leaf; 11 → 13) |
+| **`invImpOr`, `invStrip`, `invCurry`** | **rise** (21 → 26, 25 → 26, 29 → 40), kernel-checked cells `ceOrD`, `ceStD`, `ceCyD` |
+| `negOfDownStab` at `M₁ ∧ M₂`, `dykCommute` | rise **unboundedly** (`szI = 10n + 25` on a measured family; proved as an equation) |
+| the max-based height | fails on the same three clauses (`dpD`: 13 → 18) |
+
+**Verdict.**  The order (derivation height, station weight) does not
+found the family, and not because of the Dyckhoff transformers: those
+rise unboundedly but LEAVE the family — Part 9 proves drop-in
+replacements for their two release sites (`laxReleaseUp`,
+`laxReleaseCirc`, height ≤ `szS (laxOf s)`, landing on the same `∀p`
+row), and the `interpR` retention removes the third.  The binding
+obstruction is in the PROCESSING phase: the three clauses that RESHAPE a
+parked implication's antecedent — `(Q₁∨Q₂) ⊃ N` into two implications,
+`↓↑P′ ⊃ N` into `P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N` curried — rebuild every use of
+the implication as a nest of constructors at the depth of the
+antecedent proof's focus leaves, so their derivation transformers raise
+the height while the station weight drops, and height is the first
+component.  The `interpR` fallback of the brief does not touch the
+processing phase, so it dies on the same three cells; the agent
+rightly did not build it.  Both natural derivation measures are
+refuted; the weight order of `LJF/O.lean` remains the only one that
+runs the processing phase, and §4.11's cycle remains the reason it
+cannot take the retention discharge.  The obstruction is exact on
+both sides.
+
+**What the table forces (Part 9).**  Every other processing clause
+either PARKS (weakening only, height exact) or is one of the six
+non-increasing transformers.  A height-founded family must therefore
+park those three shapes too — extend `ParkedN` by `(Q₁∨Q₂) ⊃ N`,
+`↓↑P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N`, each with an aggregate row whose fire is
+guarded by the retained `∀p` of its antecedent at the full station,
+exactly as the ◯-implication rows already are — instead of reshaping
+them.  Read as a principle: *no rewriting of hypotheses; every
+non-atomic implication fires through a retained guard.*  That is a
+definition change to `interpF` of a different order from `interpR`
+(new parked shapes, new rows in both aggregates, new soundness cases
+by weakening, new minimality clauses as native calls), and it is a
+decision on what the interpolant IS — Matthew's.  Blueprint node N0e
+(`docs/ui-routeB-blueprint.md`).
+
 ---
 
 ## 5 · OPEN list
