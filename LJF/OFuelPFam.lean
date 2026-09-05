@@ -31,20 +31,32 @@ Three further differences, all forced by `interpP`'s definition
 * the antecedent guard of every parked implication sits at the FULL
   station, so `dykCommute` and `negOfDownStab` are never called.
 
-## What is conditional, and why
+## What is conditional, and why: NOTHING, since 2026-09-05
 
-ONE typed obligation, in the `CimpAnt` idiom of `LJF/O.lean` (a
-`def … : Type`, never a sorried theorem):
+The family carried ONE typed obligation, `ParkAntP`
+(`LJF/OFuelPCof.lean`) — the antecedent guard of the FIVE parked
+implications, at the antecedent's own goal `↑Q` — in the `CimpAnt` idiom
+of `LJF/O.lean` (a `def … : Type`, never a sorried theorem).  It was an
+instance of `∀p`-cofinality itself at the same station
+(`parkAntP_of_satA2P`, proved), so it was a FIXPOINT requirement rather
+than a gap; what stood in the way was the MEASURE.
 
-* `ParkAntP` (`LJF/OFuelPCof.lean`) — the antecedent guard of the FIVE
-  parked implications, at the antecedent's own goal `↑Q`.  It is an
-  instance of `∀p`-cofinality itself at the same station
-  (`parkAntP_of_satA2P`, proved), and `LJF/OFuelHeight.lean` §10.4 is the
-  height fact that makes it a legitimate recursive call.  Taking it as a
-  recursive call requires re-founding the family on
-  `μ = (normalised height, station weight, size)`; this module is founded
-  on `LJF/O.lean`'s `(station weight, size)` pair, so it takes the
-  obligation as a parameter.
+The guard is now a NATIVE recursive call at all twenty sites, the
+`pant` parameter is gone, and `parkAntP_of` is a consequence.  Two things
+made that possible:
+
+* the family is founded on `μ = (normalised derivation height, station
+  weight, sizeOf)` (`LJF/OFuelPFamKit.lean` Part 4b), under which the
+  dispatch edge is strictly decreasing with the station unchanged
+  (`hgt_antDispatch`, `hgt_antDispatchN`) — the one edge
+  `LJF/O.lean`'s station-first pair cannot pay for
+  (`docs/ui-ljfo-clause-table.md` §4.11);
+* the two `mutual` blocks are ONE.  With the guard a parameter the `∃p`
+  side called nothing on the `∀p` side and the strongly connected
+  component broke in two; native, the `∃p` side calls `UEntryQ` at ten
+  sites and the `∀p` side already called `TStabQ` at four, so the
+  component is whole again — seventeen definitions in one block, as in
+  `LJF/O.lean`.
 
 A second obligation `DykAntP`, for the Dyckhoff shape alone, stood here
 until 2026-09-05 and was WITHDRAWN: it existed only because
@@ -342,9 +354,8 @@ the retained `∀p` of its ANTECEDENT).  The row now guards by
 `docs/ui-ljfo-clause-table.md` §4.15).  Soundness was re-proved for the
 changed row before anything downstream moved.  The four Dyckhoff arms of
 the family below are therefore ordinary parked arms
-(`parkAntGuard pant …` at `Q := ↓(Q′ ⊃ N′)`), the obligation is deleted,
-and `ParkAntP` — stated for every positive antecedent already — is the
-ONLY thing this family is conditional on.
+(the native `UEntryQ … (.up ↓(Q′ ⊃ N′)) (Inv.stable s_d)` at
+`Q := ↓(Q′ ⊃ N′)`), and the obligation is deleted.
 
 `dykCell` (Part 8) is kept as the cell that exercises the Dyckhoff
 dispatch. -/
@@ -368,9 +379,7 @@ fixes the conclusion's instead). -/
 theorem pfreeCircUp {p : String} {P : Pos} (h : PFreeN p (.circ P)) :
     PFreeN p (.up P) := h
 
-variable (pant : ParkAntP p)
-
-set_option maxHeartbeats 8000000 in
+set_option maxHeartbeats 20000000 in
 mutual
 
 /-- Minimality of `∃p`, processing phase, at fuel — `eMinPP` with the
@@ -564,7 +573,7 @@ def TStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.circ Q')) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (cimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (eMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hp
                 (fireClean (splitHyp hm hXr)
@@ -573,7 +582,7 @@ def TStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (dykFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (eMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hp
                 (fireClean (splitHyp hm hXr)
@@ -582,7 +591,7 @@ def TStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.or Qa Qb) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (orimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (eMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hp
                 (fireClean (splitHyp hm hXr)
@@ -591,7 +600,7 @@ def TStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.up Pa)) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (shimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (eMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hp
                 (fireClean (splitHyp hm hXr)
@@ -600,7 +609,7 @@ def TStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.and Ma Mb)) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (andimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (eMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hp
                 (fireClean (splitHyp hm hXr)
@@ -724,7 +733,7 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (dykFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (eMinQ [N_d] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hpT
                 (fireClean (splitHyp hm hXr) (.stable
@@ -737,7 +746,7 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.circ Q')) N_c, _, hd, .impL s_c lf_c =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (cimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_c)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_c))
               (eMinQ [N_c] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hpT
                 (fireClean (splitHyp hm hXr) (.stable
@@ -750,7 +759,7 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.or Qa Qb) N_o, _, hd, .impL s_o lf_o =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (orimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_o)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_o))
               (eMinQ [N_o] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hpT
                 (fireClean (splitHyp hm hXr) (.stable
@@ -763,7 +772,7 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.up Pa)) N_s, _, hd, .impL s_s lf_s =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (shimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_s)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_s))
               (eMinQ [N_s] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hpT
                 (fireClean (splitHyp hm hXr) (.stable
@@ -776,7 +785,7 @@ def TpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.and Ma Mb)) N_a, _, hd, .impL s_a lf_a =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             (andimpFireE hsat hXr
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_a)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_a))
               (eMinQ [N_a] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK hpT
                 (fireClean (splitHyp hm hXr) (.stable
@@ -883,10 +892,8 @@ def TpInvQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
     (hgtI d + hgtL lfP, 2 * sum3 [] + sum3 done, sizeOf d)
   decreasing_by ljf_dec_h
 
-end
 
-
-/-! # Part 6: the `∀p` side of the family
+/- # Part 6: the `∀p` side of the family
 
 `LJF/O.lean`'s `aMinF`, `UEntry`, `UStab`, `URF`, `ULF`, `UInvG`,
 `UpElim`, `UpLF`, `UpInvG`, in fuel-carrying form.  Two conventions make
@@ -899,9 +906,6 @@ the bookkeeping local:
 * the two release sites use `laxReleaseUp` / `laxReleaseCirc`
   (`LJF/OFuelHeight.lean` §10.6), which land on the same `∀p` row as
   `negOfDownStab` did and do not raise the height. -/
-
-set_option maxHeartbeats 8000000 in
-mutual
 
 /-- Minimality of `∀p`, processing phase, at fuel. -/
 def aMinQ : ∀ (todo done Δ : List Neg) (G : Neg), ParkedCtxP done →
@@ -1304,7 +1308,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
             else
               let ⟨rest, hXr⟩ := splitAt done _ hd
               qFireA hsat hcp hXr (fun f => kit.qmem f hXr)
-                (TStabQ pant done hsat hP hm hm2 hK
+                (TStabQ done hsat hP hm hm2 hK
                   (show PFreeP p (Pos.atom c) from hcp) s_c)
                 (aMinQ [Nc] rest _ (.up _)
                   (ParkedCtxP.sub (splits_sub hXr) hP) hK
@@ -1314,7 +1318,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             dykFireA hsat hXr (fun f => kit.dmem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (aMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr)
@@ -1323,7 +1327,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.circ Q')) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             cimpFireA hsat hXr (fun f => kit.cmem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (aMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr)
@@ -1332,7 +1336,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.or Qa Qb) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             orimpFireA hsat hXr (fun f => kit.omem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (aMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr)
@@ -1341,7 +1345,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.up Pa)) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             shimpFireA hsat hXr (fun f => kit.smem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (aMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr)
@@ -1350,7 +1354,7 @@ def UStabQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.and Ma Mb)) N, _, hd, .impL s_d lf' =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             andimpFireA hsat hXr (fun f => kit.amem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (aMinQ [N] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr)
@@ -1504,7 +1508,7 @@ def ULFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
       ⟨w.1, fun e' f' he' hf' => .circL (w.2 e' f' he' hf')⟩
   | _, _, _, _, _, _, hm, hm2, hK, kit, hH, .impL s lf =>
       UpFrom2.map₂ (fun _ _ x y => .impL x y)
-        (UpFrom.toUpFrom2 (TStabQ pant done hsat hP hm hm2 hK hH.1 s))
+        (UpFrom.toUpFrom2 (TStabQ done hsat hP hm hm2 hK hH.1 s))
         (ULFQ done hsat hP hm hm2 hK kit hH.2 lf)
   | _, _, _, _, _, _, hm, hm2, hK, kit, hH, .and1 lf =>
       let w := ULFQ done hsat hP hm hm2 hK kit hH.1 lf
@@ -1594,7 +1598,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
             else
               let ⟨rest, hXr⟩ := splitAt done _ hd
               qFireA hsat hcp hXr (fun f => kit.qmem f hXr)
-                (TStabQ pant done hsat hP hm hm2 hK
+                (TStabQ done hsat hP hm hm2 hK
                   (show PFreeP p (Pos.atom c) from hcp) s_c)
                 (aMinQ [Nc] rest _ (.up _)
                   (ParkedCtxP.sub (splits_sub hXr) hP) hK
@@ -1608,7 +1612,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.imp Q' N')) N_d, _, hd, .impL s_d lf_d =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             dykFireA hsat hXr (fun f => kit.dmem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_d)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_d))
               (aMinQ [N_d] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr) (.stable
@@ -1621,7 +1625,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.circ Q')) N_c, _, hd, .impL s_c lf_c =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             cimpFireA hsat hXr (fun f => kit.cmem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_c)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_c))
               (aMinQ [N_c] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr) (.stable
@@ -1634,7 +1638,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.or Qa Qb) N_o, _, hd, .impL s_o lf_o =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             orimpFireA hsat hXr (fun f => kit.omem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_o)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_o))
               (aMinQ [N_o] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr) (.stable
@@ -1647,7 +1651,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.up Pa)) N_s, _, hd, .impL s_s lf_s =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             shimpFireA hsat hXr (fun f => kit.smem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_s)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_s))
               (aMinQ [N_s] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr) (.stable
@@ -1660,7 +1664,7 @@ def UpElimQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
         | .imp (.down (.and Ma Mb)) N_a, _, hd, .impL s_a lf_a =>
             let ⟨rest, hXr⟩ := splitAt done _ hd
             andimpFireA hsat hXr (fun f => kit.amem f hXr)
-              (parkAntGuard pant hsat hP hd hm hm2 hK s_a)
+              (UEntryQ done hsat hP hm hm2 hK (.up _) (Inv.stable s_a))
               (aMinQ [N_a] rest _ (.up _)
                 (ParkedCtxP.sub (splits_sub hXr) hP) hK
                 (fireClean (splitHyp hm hXr) (.stable
@@ -1704,7 +1708,7 @@ def UpLFQ (done : List Neg) (hsat : Saturated done) (hP : ParkedCtxP done) :
   | _, _, _, _, _, _, _, _, _, hm, hm2, hK, kit, hH, ha, hb, hXpkg, lfP,
       .impL s lf =>
       UpFrom2.map₂ (fun _ _ x y => .impL x y)
-        (UpFrom.toUpFrom2 (TStabQ pant done hsat hP hm hm2 hK hH.1 s))
+        (UpFrom.toUpFrom2 (TStabQ done hsat hP hm hm2 hK hH.1 s))
         (UpLFQ done hsat hP hm hm2 hK kit hH.2 ha hb hXpkg lfP lf)
   | _, _, _, _, _, _, _, _, _, hm, hm2, hK, kit, hH, ha, hb, hXpkg, lfP,
       .and1 lf =>
@@ -1795,51 +1799,47 @@ unchanged station (`docs/ui-ljfo-clause-table.md` §4.11).  Since
 2026-09-05 the Dyckhoff shape is one of the five and needs nothing of its
 own (Part 4). -/
 
-/-- **The `∃p` traversal**, conditional on the antecedent dispatch. -/
-def tinvP_of (pant : ParkAntP p) : TInvP p :=
-  TInvQ pant
+/-- **The `∃p` traversal**, UNCONDITIONAL. -/
+def tinvP_of : TInvP p :=
+  TInvQ
 
-/-- **The `∀p` entry**, conditional on the antecedent dispatch. -/
-def uentryP_of (pant : ParkAntP p) : UEntryP p :=
-  UEntryQ pant
+/-- **The `∀p` entry**, UNCONDITIONAL. -/
+def uentryP_of : UEntryP p :=
+  UEntryQ
 
 /-- `SatE2P` follows. -/
-def satE2P_of (pant : ParkAntP p) : SatE2P p :=
-  satE2P_of_tinvP (tinvP_of pant)
+def satE2P_of : SatE2P p :=
+  satE2P_of_tinvP tinvP_of
 
 /-- `SatA2P` follows. -/
-def satA2P_of (pant : ParkAntP p) : SatA2P p :=
-  satA2P_of_uentryP (uentryP_of pant)
+def satA2P_of : SatA2P p :=
+  satA2P_of_uentryP uentryP_of
 
-/-- And so does the antecedent dispatch the family took as a parameter —
-which is what makes `ParkAntP` a fixpoint requirement rather than an
-independent obligation. -/
-def parkAntP_of (pant : ParkAntP p) : ParkAntP p :=
-  parkAntP_of_satA2P (satA2P_of pant)
+/-- And so does the antecedent dispatch, which the family now takes as a
+native recursive call: `ParkAntP` was a fixpoint requirement, and the
+height-first founding is what closes the fixpoint. -/
+def parkAntP_of : ParkAntP p :=
+  parkAntP_of_satA2P satA2P_of
 
-/-! # Part 8: what the height-first re-founding needs, and what it does
-not reach
+/-! # Part 8: the native dispatch, isolated
 
-The remaining step for node N0c is to replace the `pant` parameter by a
-NATIVE call and re-found the family on
-`μ = (normalised height, station weight, size)`.  Two facts about that
-step are settled here, so that the next run starts from them. -/
+The term the twenty parked arms carry, and its height edge, named
+separately from the arms that use them. -/
 
-/-- **The native dispatch typechecks.**  At the dispatch site the family
-already holds `hm`, `hm2`, `hK` and `s_d : Stab Γ′ .tru Q`, so the
-antecedent guard of all five parked shapes is the `∀p` entry
-at the SAME station applied to `Inv.stable s_d` — no weakening, no
-reshaping.  This term is what a re-founded family would inline where
-`parkAntGuard pant …` now stands, and its type is `parkAntGuard`'s
-exactly.  So the obstruction is the MEASURE, not the statement. -/
-def nativeParkAnt (pant : ParkAntP p)
+/-- **The native dispatch.**  At the dispatch site the family already
+holds `hm`, `hm2`, `hK` and `s_d : Stab Γ′ .tru Q`, so the antecedent
+guard of all five parked shapes is the `∀p` entry at the SAME station
+applied to `Inv.stable s_d` — no weakening, no reshaping.  This is
+exactly the term the arms inline, at exactly the type the old
+`parkAntGuard` had. -/
+def nativeParkAnt
     {done K Γ' : List Neg} {Q : Pos}
     (hsat : Saturated done) (hP : ParkedCtxP done)
     (hm : ∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) (hm2 : Sub done Γ')
     (hK : PFreeCtx p K) (s : Stab Γ' .tru Q) :
     UpFrom2 (fun e f => Inv (interpP p e [] done none :: K) [] .tru
       (interpP p f [] done (some (.up Q)))) :=
-  UEntryQ pant done hsat hP hm hm2 hK (.up Q) (Inv.stable s)
+  UEntryQ done hsat hP hm hm2 hK (.up Q) (Inv.stable s)
 
 /-- **And its height edge is strict**, with the station unchanged: the
 argument `Inv.stable s_d` is strictly below the focus
@@ -1870,7 +1870,7 @@ whose guard is the `∀p` interpolant at the ANTECEDENT'S OWN GOAL.  A
 stable proof that focuses on the member supplies
 `s_d : Stab Γ′ .tru (↓(c ⊃ ↑a))`, and `LJF/OFuelHeight.lean` §10.4 turns
 that into exactly `A(done ⇒ ↑↓(c ⊃ ↑a))` — so the dispatch fires, and
-`parkAntGuard pant … s_d` is the whole of it.
+`UEntryQ done … (.up ↓(c ⊃ ↑a)) (Inv.stable s_d)` is the whole of it.
 
 Before the change the row's guard was `A(done ⇒ c ⊃ ↑a)`, the
 antecedent's BODY, and §10.4's `A(done ⇒ ↑↓(c ⊃ ↑a))` is by
