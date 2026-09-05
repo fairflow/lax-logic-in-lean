@@ -546,6 +546,49 @@ theorem pfreeCtx_singleton {p : String} {N : Neg} (h : PFreeN p N) :
   rcases List.mem_singleton.mp hZ with rfl
   exact h
 
+/-! # N3 forward · stabilisation gives a uniform-interpolant pair
+
+The point of the LITERAL form: no composition of derivations is needed.
+Soundness is `eSoundP`/`aSoundP` read at the stabilisation fuel.  For
+minimality, the cofinality variable delivers the fact at every fuel above a
+threshold; take the fuel above both the threshold and the stabilisation
+fuel and REWRITE with the stabilisation equation — the derivation the
+variable supplies is then literally at `E_{f₀}`, `A_{f₀'}`. -/
+
+/-- **N3, forward.**  If both chains are literally eventually constant at a
+saturated parked station, their stabilised values are a uniform-interpolant
+pair for the cell. -/
+def hasUI_of_stabEq {p : String} {done : List Neg} {G : Neg}
+    (s2 : SatE2P p) (a2 : SatA2P p)
+    (hsat : Saturated done) (hP : ParkedCtxP done)
+    (he : EStabEq p done) (ha : AStabEq p done G) : HasUI p done G := by
+  obtain ⟨f₀, hE⟩ := he
+  obtain ⟨f₁, hA⟩ := ha
+  refine ⟨interpP p f₀ [] done none, interpP p f₁ [] done (some G),
+    { pfreeE := interpP_pfree p _ _ _ _
+      pfreeA := interpP_pfree p _ _ _ _
+      soundE := eSoundP p f₀ [] done
+      soundA := aSoundP p f₁ [] done G
+      minE := ?_
+      minA := ?_ }⟩
+  · -- minimality of `E_{f₀}`: cofinality above `max (threshold, f₀)`, then the
+    -- stabilisation equation carries the derivation down to `f₀` itself
+    intro Δ ψ hΔ hψ j d
+    obtain ⟨n, hw⟩ := s2 done Δ ψ hsat hP hΔ hψ d
+    have hd : Inv (interpP p (n + f₀) [] done none :: Δ) [] j ψ :=
+      hw (n + f₀) (Nat.le_add_right _ _)
+    rw [hE (n + f₀) (Nat.le_add_left _ _)] at hd
+    exact hd
+  · -- minimality of `A_{f₁}`, `E`-relativised; `jGoal .tru G = G`
+    intro Δ hΔ d
+    obtain ⟨n, hw⟩ := a2 done Δ G hsat hP hΔ d
+    have hd : Inv (interpP p (n + f₀ + f₁) [] done none :: Δ) [] .tru
+        (interpP p (n + f₀ + f₁) [] done (some (jGoal .tru G))) :=
+      hw (n + f₀ + f₁) (n + f₀ + f₁) (by omega) (by omega)
+    rw [jGoal_tru] at hd
+    rw [hE (n + f₀ + f₁) (by omega), hA (n + f₀ + f₁) (by omega)] at hd
+    exact hd
+
 end LJFO
 
 /-! ## Pins
@@ -569,3 +612,4 @@ Measured with `#axioms_within_pin`, not retyped.  Nothing here reaches
 #axioms_within LJFO.HasUI []
 #axioms_within LJFO.pfreeCtx_nil []
 #axioms_within LJFO.pfreeCtx_singleton [propext]
+#axioms_within LJFO.hasUI_of_stabEq [propext, Quot.sound]
