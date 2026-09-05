@@ -497,6 +497,55 @@ def aStabEq_of_fuelStep {p : String} {done : List Neg} {G : Neg} {f : Nat}
     (fi : FuelIrrelevance p) (h : FuelStep p [] done (some G) f) : AStabEq p done G :=
   ⟨f, fun f' hf' => fi f [] done (some G) h f' hf'⟩
 
+/-! # N2 · The uniform-interpolant pair of a cell, intrinsic
+
+Pitts's pair for the sequent `done ⇒ G` and the variable `p`: `E` is the
+strongest `p`-free consequence of the station, `A` the weakest `p`-free
+formula sufficient for the goal, its minimality RELATIVE to `E` (exactly as
+`SatA2P` is stated).  Nothing here mentions a chain.
+
+Two adjustments to the drafted statement of `wip/ui_routeB_blueprint.lean`,
+both forced by what the inputs deliver:
+
+* `minE` is stated for EVERY judgment `j`, not just `.tru`.  `SatE2P` is
+  stated with `∀ {j : JD}`, so the general form is free, and it is strictly
+  stronger.
+* `minA` stays at `.tru`.  `SatA2P` sends a derivation at judgment `j` to
+  the `∀p` approximant of `jGoal j G` — a DIFFERENT goal when `j = .lax`
+  and `G = ↑P` (namely `◯P`).  A pair for the cell `done ⇒ G` can therefore
+  only be read off the `.tru` instance, where `jGoal .tru G = G`; the lax
+  cell is the cell `done ⇒ ◯P`, which this same statement covers. -/
+
+/-- `(E, A)` is a uniform-interpolant pair for the cell `done ⇒ G`. -/
+structure IsUIPair (p : String) (done : List Neg) (G : Neg) (E A : Neg) : Type where
+  pfreeE : PFreeN p E
+  pfreeA : PFreeN p A
+  /-- `Γ ⊢ E` -/
+  soundE : Inv done [] .tru E
+  /-- `Δ, Γ ⊢ⱼ ψ  →  Δ, E ⊢ⱼ ψ` for `p`-free `Δ`, `ψ`, at every judgment -/
+  minE : ∀ (Δ : List Neg) (ψ : Neg), PFreeCtx p Δ → PFreeN p ψ →
+    ∀ {j : JD}, Inv (done ++ Δ) [] j ψ → Inv (E :: Δ) [] j ψ
+  /-- `A, Γ ⊢ G` -/
+  soundA : Inv (A :: done) [] .tru G
+  /-- `Δ, Γ ⊢ G  →  Δ, E ⊢ A` for `p`-free `Δ` -/
+  minA : ∀ (Δ : List Neg), PFreeCtx p Δ →
+    Inv (done ++ Δ) [] .tru G → Inv (E :: Δ) [] .tru A
+
+/-- The cell has a uniform-interpolant pair. -/
+def HasUI (p : String) (done : List Neg) (G : Neg) : Type :=
+  Σ (E A : Neg), IsUIPair p done G E A
+
+/-! ### Two `p`-freeness facts used below -/
+
+theorem pfreeCtx_nil {p : String} : PFreeCtx p ([] : List Neg) :=
+  fun _ h => absurd h List.not_mem_nil
+
+theorem pfreeCtx_singleton {p : String} {N : Neg} (h : PFreeN p N) :
+    PFreeCtx p [N] := by
+  intro Z hZ
+  rcases List.mem_singleton.mp hZ with rfl
+  exact h
+
 end LJFO
 
 /-! ## Pins
@@ -516,3 +565,7 @@ Measured with `#axioms_within_pin`, not retyped.  Nothing here reaches
 #axioms_within LJFO.FuelIrrelevance [propext]
 #axioms_within LJFO.eStabEq_of_fuelStep [propext]
 #axioms_within LJFO.aStabEq_of_fuelStep [propext]
+#axioms_within LJFO.IsUIPair []
+#axioms_within LJFO.HasUI []
+#axioms_within LJFO.pfreeCtx_nil []
+#axioms_within LJFO.pfreeCtx_singleton [propext]
