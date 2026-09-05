@@ -89,6 +89,7 @@ import LaxLogic.NucleusJoin
 import LaxLogic.PLLCountermodel
 import LaxLogic.PLLSemUI
 import LaxLogic.PLLSemUICtx
+import LaxLogic.PLLInstanceBound
 import LaxLogic.PLLSemUIRes
 import LaxLogic.PLLSemUILaw
 import LaxLogic.PLLSemUISplit

@@ -1300,6 +1300,33 @@ interpolant, if it exists, is not a substitution instance (in IPC:
 admissibility lemma makes this instance screen a certificate; until
 then it is an oracle screen, run before any chain is measured.
 
+**The instance screen is now a certificate (2026-09-05,
+`LaxLogic/PLLInstanceBound.lean`, admitted to the `LaxLogic` root and
+`Production`).**  With `substND` (the substitution admissibility of
+`PLLSemUICtx.lean`) and `substP_of_not_mem`:
+
+    instanceBound  :  p ∉ atoms Δ  →  LaxND [Δ, Γ] G  →  LaxND [Δ] (Γ[χ] ⊃ G[χ])
+    instanceClosed :  p ∉ atoms χ  →  LaxND [Γ[χ] ⊃ G[χ], Γ] G
+                      →  IsWeakestSufficient p Γ G (Γ[χ] ⊃ G[χ])
+
+where `IsWeakestSufficient p Γ G ψ` packages `p ∉ atoms ψ`, `ψ, Γ ⊢ G`,
+and `∀ Δ p-free, (Δ, Γ ⊢ G) → (Δ ⊢ ψ)` — the cell's `∀p`, Pitts's sense.
+The two cells above are certified: `cell1_forall_p` (θmax, literally the
+`⊥`-instance bound, sufficiency by a hand `LaxND` derivation:
+`◯⊥ ⊃ r` from `◯p ⊃ r` since a box of `⊥` yields a box of anything;
+`◯q` from `Γ`; hence `◯⊥`, hence `◯p`) and `cell2_forall_p`
+(`Ts = ((◯s ⊃ r) ∧ (s ⊃ ◯s)) ⊃ r`, the literal `s`-instance bound, equal
+to the record's `T` up to the provable conjunct `s ⊃ ◯s`; sufficiency:
+open `◯s` under the lax goal `◯p`, fire `s ⊃ ◯p`, then `◯p ⊃ r`).
+Pins, measured: `instanceBound`, `instanceClosed`, both cells
+`[propext, Quot.sound]`; the two sufficiency derivations `θmax_suff`,
+`Ts_suff` are closed terms with **no axioms**.  The gate was watched
+failing on two controls (a bound omitting `propext`; a sorried twin).
+The IPC contrast stands as the filter's justification: a candidate with
+a sufficient p-free instance is settled by `instanceClosed` before any
+chain is measured; only a candidate with none can refute cofinality or
+be a Ghilardi–Zawadowski witness.
+
 ### 4.11 The cofinality proof build — STOPPED at the founding of the recursion (2026-09-04, late)
 
 Matthew's direction: stop refuting, prove cofinality in general; if

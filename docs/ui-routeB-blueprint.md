@@ -144,6 +144,14 @@ HANDOFF §, blueprint chapter, paper.  Ongoing.
 
 * The two earlier "GZ" cells are instance-closed (`∀p` = an instance
   `Γ[χ] ⊃ G[χ]`, χ = ⊥ and χ = s); cofinality validated at both.
+  **Certified in the kernel** (`LaxLogic/PLLInstanceBound.lean`,
+  2026-09-05): the instance bound `instanceBound` (Δ p-free, Δ, Γ ⊢ G ⟹
+  Δ ⊢ Γ[χ] ⊃ G[χ], by `substND`), instance closure `instanceClosed`
+  (a sufficient instance bound is the weakest sufficient p-free formula,
+  `IsWeakestSufficient`), and the two cells `cell1_forall_p`,
+  `cell2_forall_p`, all `[propext, Quot.sound]`; the two sufficiency
+  derivations are axiom-free closed terms.  This is the screening
+  principle of §4.10 as a theorem, usable on any future candidate.
 * S1 = `[◯(d ⊃ p) ⊃ a, c ⊃ ◯p] ⇒ a` is the first cell no instance closes;
   cofinality validated for Δ = c at station fuel 14 (both sides, also at
   S6 with a Dyckhoff hypothesis and at S7) and for Δ = ◯(c ∨ ¬d) at
