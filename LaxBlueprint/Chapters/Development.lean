@@ -53,7 +53,8 @@ VERSO CHEAT SHEET — everything used in this file, and nothing else.
                                 the whole block.
     $`x + y`                    inline maths (KaTeX).
     $$`\frac{a}{b}`             display maths.
-    *bold*  _emphasis_          NOTE: single asterisk.  `*bold*` is an error.
+    *bold*  _emphasis_          NOTE: single asterisk.  Doubling them is
+                                an error.
 
   Render (publishes nothing):   ./scripts/ci-pages.sh
   Add --pdf for a PDF.
@@ -76,9 +77,7 @@ The object language.
 :::
 
 :::definition "formula" (parent := "syntax") (lean := "PLLFormula")
-The formulas of PLL: intuitionistic propositional logic extended by a single
-unary modality.  The constructor names read long-form (`prop`, `falsePLL`,
-`ifThen`, `somehow`) rather than symbolically; `somehow` is `◯`.
+The type of PLL formulae in long form
 :::
 
 `(lean := "PLLFormula")` above already renders the declaration: its kind,
@@ -108,23 +107,17 @@ The proof system.
 :::
 
 :::definition "laxnd" (parent := "nd") (lean := "PLLND.LaxND")
-The reference system: natural deduction for PLL, over the slime-free
-formulation.  Everything else in the development is measured against this —
-the sequent calculus by cut elimination, the semantics by adequacy, the
-decision procedure by the bridge.
+Natural deduction style lax proofs as an inductive type
 :::
 
 
 :::definition "iplnd" (parent := "nd") (lean := "PLLND.IPLND")
-The intuitionistic fragment, carried alongside so that conservativity can be
-stated as a relation between two systems rather than as a property of one.
+The intuitionistic fragment, defined here as an inductive proposition
 :::
 
 
 :::definition "erase" (parent := "nd") (lean := "PLLND.erase, PLLND.isIPL")
-Erasing the modality, `◯φ ↦ φ` recursively, and the predicate for being
-modality-free.  These are the two halves of the translation that
-{uses "conservativity"}[] is stated over.
+Erases the modality, and adds the predicate for being modality-free.
 :::
 
 
