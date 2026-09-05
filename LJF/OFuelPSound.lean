@@ -25,11 +25,16 @@ Three families of change, one per definitional change, and nothing else:
   positive `↓◯Q′` generalised to an arbitrary `Q`; as there, it is
   instantiated at `rest := done`.
 
-* **the Dyckhoff rows.**  Their guard is now `A(done ⇒ Q′ ⊃ N′)` at the
-  full station, and `aSoundP p f [] done (Q′ ⊃ N′)` delivers it
-  verbatim: on that side the residual simulator `resSim` and the
-  crossed-station weakening both disappear.  `resSim` survives only in
-  the unchanged E-side component `E(↓N′ ⊃ N :: rest)`.
+* **the Dyckhoff rows.**  Their guard is now `A(done ⇒ ↑↓(Q′ ⊃ N′))` at
+  the full station — the antecedent's own goal (`LJF/OFuelP.lean` (c),
+  2026-09-05, `docs/ui-ljfo-clause-table.md` §4.15) — so the row is the
+  ◯-implication row at `Q := ↓(Q′ ⊃ N′)` and its cases are the
+  ◯-implication cases verbatim: `aSoundP p f [] done (↑↓(Q′ ⊃ N′))`
+  delivers the guard, `unStable` turns it into the focus, and the `∀p`
+  rows are `atkPark` like the other four parked shapes.  On that side
+  the residual simulator `resSim` and the crossed-station weakening
+  both disappear; `resSim` survives only in the unchanged E-side
+  component `E(↓N′ ⊃ N :: rest)`.
 
 Nothing in `LJF/OCore.lean`, `LJF/OFuel.lean`, `LJF/OFuelSound.lean` or
 `LJF/OFuelP.lean` is touched; this module is purely additive.
@@ -282,24 +287,27 @@ def eSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg),
                           List.mem_cons_of_mem _ (splits_sub hXr Z hZ))
                         (eSoundP p f [N] rest)
                   | imp Q' N' =>
-                      -- RETENTION on the Dyckhoff row: the guard is
-                      -- `A(done ⇒ Q′⊃N′)`, at the FULL station, so
-                      -- `aSoundP` at `done` delivers it verbatim — the
-                      -- residual simulator `resSim` is needed only for
-                      -- the unchanged E-side component.
+                      -- RETENTION on the Dyckhoff row, at the ANTECEDENT'S
+                      -- OWN GOAL: the guard is `A(done ⇒ ↑↓(Q′⊃N′))`, at
+                      -- the FULL station, so `aSoundP` at `done` delivers
+                      -- it verbatim and `unStable` turns it into the focus
+                      -- the fire needs — literally the ◯-implication case
+                      -- above with `◯Q′` replaced by `Q′ ⊃ N′`.  The
+                      -- residual simulator `resSim` is needed only for the
+                      -- unchanged E-side component.
                       refine .andR (.impR (.downL ?_))
                         (simHyp (fl := resSim (splits_mem hXr))
                           (splits_sub hXr)
                           (eSoundP p f [.imp (.down N') N] rest))
-                      have dM' : Inv (interpP p f [] done
-                          (some (.imp Q' N')) :: ([] ++ done)) []
-                          .tru (.imp Q' N') :=
-                        aSoundP p f [] done (.imp Q' N')
+                      have dArg : Inv (interpP p f [] done
+                          (some (.up (.down (.imp Q' N')))) :: ([] ++ done)) []
+                          .tru (.up (.down (.imp Q' N'))) :=
+                        aSoundP p f [] done (.up (.down (.imp Q' N')))
                       exact simHyp
                         (fl := fun hs lf =>
                           .lfoc (hs _ (List.mem_cons_of_mem _
                               (splits_mem hXr)))
-                            (.impL (.rfoc (.rel (dM'.wk hs))) lf))
+                            (.impL (unStable (dArg.wk hs)) lf))
                         (fun Z hZ =>
                           List.mem_cons_of_mem _ (splits_sub hXr Z hZ))
                         (eSoundP p f [N] rest)
@@ -551,7 +559,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.up (.atom q))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -633,7 +641,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.up .fls)).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -737,7 +745,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.up (.or P₁ P₂))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -825,7 +833,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsub _ (List.mem_cons_of_mem _ (splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsub _ (List.mem_cons_of_mem _ hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.up (.down M))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -920,7 +928,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.circ (.atom q))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -1061,7 +1069,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.circ .fls)).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -1225,7 +1233,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.circ (.or P₁ P₂))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -1366,7 +1374,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.circ (.down (.up P')))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -1507,7 +1515,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.circ (.down (.circ P')))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -1648,7 +1656,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.circ (.down (.and M₁ M₂)))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -1789,7 +1797,7 @@ def aSoundP (p : String) : ∀ (f : Nat) (todo done : List Neg) (G : Neg),
                           (hsubD _ ((splits_mem hXr))))
                         (fun Z hZ => List.mem_cons_of_mem _
                           (hsubD _ (hZ)))
-                        (.stable (.rfoc (.rel (aSoundP p f [] done (.imp Q' N')))))
+                        (aSoundP p f [] done (.up (.down (.imp Q' N'))))
                         ((aSoundP p f [N] rest (.circ (.down (.imp Q₀ N₀)))).wk
                           (Sub.cons _ (Sub.cons _ (splits_sub hXr))))
                   | circ Q' =>
@@ -1873,6 +1881,39 @@ def eSoundPWitness (p : String) : ESoundP' p := eSoundP p
 /-- `ASoundP` is inhabited. -/
 def aSoundPWitness (p : String) : ASoundP' p := aSoundP p
 
+/-! ## The Dyckhoff row, read off at the exercising cell
+
+The change of 2026-09-05 (`LJF/OFuelP.lean` (c),
+`docs/ui-ljfo-clause-table.md` §4.15) is invisible on the S1 station of
+`LJF/OFuelP.lean`, which carries no Dyckhoff hypothesis, so the kernel
+agreement `interpP = interpF` there says nothing about it.  The station
+that does exercise it is `dykCell` of `LJF/OFuelPFam.lean` Part 8 —
+restated here, since that module imports this one:
+
+    done = [ ↓(c ⊃ ↑a) ⊃ ↑e ],  saturated, one split, `rest = []`
+
+whose single `∃p` row is written out below.  The load-bearing subterm is
+the GUARD's goal: `↑↓(c ⊃ ↑a)`, the antecedent's own goal, where
+`interpF` — and `interpP` before the change — had the antecedent's BODY
+`c ⊃ ↑a`.  Kernel-checked by `rfl`. -/
+
+/-- `[ ↓(c ⊃ ↑a) ⊃ ↑e ]` — `LJF/OFuelPFam.lean`'s `dykCell`. -/
+def dykStation : List Neg :=
+  [ .imp (.down (.imp (.atom "c") (.up (.atom "a")))) (.up (.atom "e")) ]
+
+/-- The `∃p` aggregate at `dykStation`, fuel 3: one Dyckhoff row, whose
+guard is the `∀p` at the goal `↑↓(c ⊃ ↑a)`. -/
+theorem interpP_dykStation_row :
+    interpP "p" 3 [] dykStation none
+      = nAndAll
+          [ nAnd
+              (.imp (.down (interpP "p" 2 [] dykStation
+                  (some (.up (.down (.imp (.atom "c") (.up (.atom "a"))))))))
+                (interpP "p" 2 [.up (.atom "e")] [] none))
+              (interpP "p" 2
+                [.imp (.down (.up (.atom "a"))) (.up (.atom "e"))] [] none) ] :=
+  rfl
+
 end LJFO
 
 /-! ## Pins
@@ -1886,6 +1927,8 @@ fuel recursion spends no `Classical.choice`. -/
 #axioms_within LJFO.aSoundP [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.eSoundPWitness [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.aSoundPWitness [propext, Classical.choice, Quot.sound]
+
+#axioms_within LJFO.interpP_dykStation_row [propext]
 
 #axioms_within LJFO.atkPark [propext, Quot.sound]
 #axioms_within LJFO.eSoundP [propext, Quot.sound]
