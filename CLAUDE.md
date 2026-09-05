@@ -55,6 +55,19 @@ see rule 7).
    next refinement cycle. The section below is the cell-level stage of
    that pipeline.
 
+8. **Fragment first.** Every result of a modal route is proved for the
+   ◯-free fragment FIRST (the IPC instance, where the theorem is
+   textbook and the design faults show at a tenth of the cost), and only
+   then for PLL. Standing order, Matthew 2026-09-06: route (B) skipped
+   this and paid for it.
+9. **No brute-force refutation campaigns.** A refutation stage is
+   answered from the structure of the rules with a few DESIGNED witness
+   cells (two or three per case), never by enumerating a formula space
+   or replaying a corpus against a new design; the section below
+   describes cell-level testing of a statement already designed, not a
+   substitute for design. Standing order, Matthew 2026-09-02 and
+   2026-09-06.
+
 ## Testing for counterexamples
 
 Statement failures are a testing problem, not a proving problem: every
