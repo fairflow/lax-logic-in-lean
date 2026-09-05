@@ -109,3 +109,4 @@ import LaxLogic.PLLCandLeast
 import LaxLogic.IPCFocused
 import LaxLogic.LJF
 import LaxLogic.LJFComplete
+import LaxLogic.Obligation

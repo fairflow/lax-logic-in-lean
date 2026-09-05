@@ -1,0 +1,214 @@
+/-
+# `postpone` — a hole that records a debt instead of asserting the goal
+
+Lean's `sorry` elaborates to `sorryAx`, which inhabits the goal outright. A
+declaration containing one therefore *asserts* its statement on no evidence, and
+`#print axioms` reports only that something is missing, not what.
+
+`postpone` closes a goal differently. It reverts the local context into the
+target, records the resulting closed proposition as an **obligation**, and
+discharges the goal from a hypothesis. The enclosing `postponing theorem` then
+abstracts those hypotheses into the statement, so what gets added to the
+environment is
+
+    theorem foo : foo.obligation1 → … → foo.obligationN → <the intended goal>
+
+which is a complete, `sorry`-free theorem about a weaker statement. Its axioms
+are whatever the *finished* parts of the proof used; the holes contribute none.
+
+Discharging the obligations recovers the intended theorem:
+
+    theorem foo' : <the intended goal> := foo proof1 … proofN
+
+and obligations compose: a `postponing theorem` built from holed theorems in
+other modules accumulates their obligations alongside its own, which is
+`LaxLogic.Obligation.Debt.and` and `Debt.imp` doing the work.
+
+## Usage
+
+```lean
+postponing theorem split (n : Nat) : n + 0 = n ∧ n * 1 = n := by
+  refine ⟨?_, ?_⟩
+  · rfl
+  · postpone
+
+#obligations          -- human-readable report
+#obligations_json     -- one JSON object per declaration, for tooling
+```
+
+## Known limits of this first cut
+
+* `postpone` reverts the **whole** local context. That is the safe choice — a
+  hypothesis absent from the goal may still be needed to prove it — but it makes
+  obligations larger than necessary. Simplifying them is not done here.
+* Obligations are deduplicated by syntactic equality only, so two goals equal up
+  to definitional unfolding produce two constants.
+* The command re-implements only what it needs of `theorem`: a doc comment,
+  binders, a type and a body. Attributes, `private`/`protected`, mutual blocks
+  and the equation compiler are not supported.
+* `Prop` goals are the intended use. A hole standing for *data* rather than a
+  proof would make the obligation computational, which is a different design.
+-/
+
+import LaxLogic.Obligation.Ledger
+import LaxLogic.Obligation.Modality
+
+namespace LaxLogic.Obligation
+
+open Lean Meta Elab Command Term Tactic
+
+/-- Record the current goal as an obligation and close it.
+
+The whole local context is reverted into the target first, so the recorded
+proposition is closed and can be stated on its own. The goal is then discharged
+by a fresh metavariable living in the *empty* local context, which
+`postponing theorem` later replaces by a hypothesis of the finished statement.
+
+This adds no axiom. A declaration whose only holes are `postpone`s reports the
+axioms of its finished parts and nothing else. -/
+syntax (name := postponeTac) "postpone" : tactic
+
+@[tactic postponeTac]
+def elabPostpone : Tactic := fun _ => do
+  let g ← getMainGoal
+  let g' ← g.revertAll
+  let ty ← instantiateMVars (← g'.getType)
+  if ty.hasFVar then
+    throwError "postpone: the goal still mentions local hypotheses after \
+      reverting; this is a bug in postpone, please report the goal"
+  -- A non-`Prop` goal would produce an ill-typed obligation definition, which
+  -- the kernel rejects -- whereupon `addDecl`'s `addAsAxiom` fallback adds the
+  -- obligation AS AN AXIOM and the failure becomes invisible. Refuse first.
+  unless ← isProp ty do
+    throwError "postpone: the goal is not a proposition, so it cannot be \
+      recorded as an obligation. A hole standing for data rather than a proof \
+      is outside this library's scope.\n  goal after reverting: {ty}"
+  let m ← withLCtx {} {} (mkFreshExprMVar ty (kind := .natural) (userName := `obligation))
+  g'.assign m
+  inFlight.modify (·.push m.mvarId!)
+  replaceMainGoal []
+
+/-- Deduplicate obligation types by syntactic equality, returning the distinct
+types and, for each original position, the index of its representative. -/
+private def dedup (tys : Array Expr) : Array Expr × Array Nat := Id.run do
+  let mut uniq : Array Expr := #[]
+  let mut idx : Array Nat := #[]
+  for t in tys do
+    match uniq.findIdx? (· == t) with
+    | some j => idx := idx.push j
+    | none   => idx := idx.push uniq.size; uniq := uniq.push t
+  return (uniq, idx)
+
+/-- Add `name : Prop := ty` as a reducible definition, so that anything proving
+`ty` also proves `name` without an explicit unfolding step. -/
+private def addObligationDef (name : Name) (ty : Expr) : TermElabM Unit := do
+  let ty ← instantiateMVars (← Term.levelMVarToParam ty)
+  let ps := (collectLevelParams {} ty).params
+  addDecl (.defnDecl {
+    name, levelParams := ps.toList, type := .sort .zero, value := ty
+    hints := .abbrev, safety := .safe })
+  setReducibleAttribute name
+
+/-- Declare a theorem whose unproved goals are recorded as obligations rather
+than asserted.
+
+Each `postpone` in the body contributes one hypothesis to the front of the
+resulting statement, named `<decl>.obligation<i>` and added as a reducible
+`Prop`-valued definition so it can be stated and proved elsewhere. -/
+syntax (name := postponingDecl)
+  (docComment)? "postponing " "theorem " ident (ppSpace bracketedBinder)*
+    " : " term " := " term : command
+
+@[command_elab postponingDecl]
+def elabPostponing : CommandElab := fun stx => do
+  match stx with
+  | `(command| $[$doc?:docComment]? postponing theorem $nm:ident
+        $bs:bracketedBinder* : $tyStx:term := $bodyStx:term) => do
+    let declName := (← getCurrNamespace) ++ nm.getId
+    let entries ← liftTermElabM do
+      inFlight.set #[]
+      Term.elabBinders bs fun bfvars => do
+        let type ← Term.elabType tyStx
+        let val ← Term.elabTermEnsuringType bodyStx type
+        Term.synthesizeSyntheticMVarsNoPostponing
+        let ms ← inFlight.get
+        let rawTys ← ms.mapM fun m => do instantiateMVars (← m.getType)
+        let (uniq, idx) := dedup rawTys
+        -- Name and declare each distinct obligation before it is referred to.
+        let names := uniq.mapIdx fun i _ =>
+          declName ++ Name.mkSimple s!"obligation{i + 1}"
+        for n in names, t in uniq do
+          addObligationDef n t
+        let obTys ← names.mapM fun n => do
+          let info ← getConstInfo n
+          pure (Lean.mkConst n (info.levelParams.map mkLevelParam))
+        let decls : Array (Name × (Array Expr → TermElabM Expr)) :=
+          names.mapIdx fun i _ =>
+            (Name.mkSimple s!"obl{i + 1}", fun _ => pure obTys[i]!)
+        withLocalDeclsD decls fun hs => do
+          -- Each hole is discharged by the hypothesis for its representative.
+          for m in ms, j in idx do
+            m.assign hs[j]!
+          let val ← instantiateMVars val
+          let value ← mkLambdaFVars hs (← mkLambdaFVars bfvars val)
+          let newType ← mkForallFVars hs (← mkForallFVars bfvars type)
+          -- Unassigned LEVEL metavariables make `addDecl` fail, and its
+          -- `addAsAxiom` fallback then re-adds the declaration AS AN AXIOM,
+          -- silently. Pinning them to parameters is not optional.
+          let newType ← instantiateMVars (← Term.levelMVarToParam newType)
+          let value ← instantiateMVars (← Term.levelMVarToParam value)
+          let ps := (collectLevelParams (collectLevelParams {} newType) value).params
+          -- Refuse to hand the kernel a non-proposition. It would reject the
+          -- declaration, and `addDecl`'s `addAsAxiom` fallback would then add
+          -- the name AS AN AXIOM -- observed, and the reason this check exists.
+          unless ← isProp newType do
+            throwError "postponing theorem: the finished statement is not a \
+              proposition, so it cannot be added as a theorem.\n  {newType}"
+          addDecl (.thmDecl {
+            name := declName, levelParams := ps.toList, type := newType, value })
+          Term.applyAttributes declName #[]
+          let entries := names.mapIdx fun i n => ({ name := n, type := uniq[i]! } : Entry)
+          return entries
+    modifyEnv (obligationExt.addEntry · { decl := declName, obligations := entries })
+    if let some doc := doc? then
+      liftTermElabM <| Lean.addDocStringCore declName (← getDocStringText doc)
+    if entries.isEmpty then
+      logInfo m!"{declName} : owes nothing"
+    else
+      logInfo m!"{declName} owes {entries.size}: \
+        {entries.toList.map (·.name)}"
+  | _ => throwUnsupportedSyntax
+
+/-- Report every outstanding obligation in the current environment, including
+those inherited through `import`. -/
+elab "#obligations" : command => do
+  let st := owedEntries (← getEnv)
+  if st.isEmpty then
+    logInfo "no obligations recorded"
+    return
+  let mut total := 0
+  for o in st do
+    total := total + o.obligations.size
+    let lines ← liftTermElabM <| o.obligations.mapM fun e => do
+      pure m!"    {e.name} : {← ppExpr e.type}"
+    logInfo m!"{o.decl} owes {o.obligations.size}:\n{MessageData.joinSep lines.toList "\n"}"
+  logInfo m!"total outstanding: {total} across {st.size} declaration(s)"
+
+/-- The same report as machine-readable JSON, one object per declaration.
+
+This is the hook for an automated proving loop: the obligations are the goals to
+attack, they are named constants so a proof can be stated against them, and the
+count is a progress measure that a binary sorry-or-not cannot provide. -/
+elab "#obligations_json" : command => do
+  let st := owedEntries (← getEnv)
+  for o in st do
+    let obs ← liftTermElabM <| o.obligations.mapM fun e => do
+      pure <| Json.mkObj [
+        ("name", Json.str e.name.toString),
+        ("type", Json.str (toString (← ppExpr e.type)))]
+    logInfo (Json.mkObj [
+      ("decl", Json.str o.decl.toString),
+      ("count", Json.num o.obligations.size),
+      ("obligations", Json.arr obs)]).compress
+
+end LaxLogic.Obligation
