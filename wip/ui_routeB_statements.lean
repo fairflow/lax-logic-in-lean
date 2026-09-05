@@ -16,6 +16,9 @@ import LJF.O
 import LJF.OFuel
 import LJF.OFuelSound
 import LJF.OFuelMin
+import LJF.OFuelP
+import LJF.OFuelPSound
+import LJF.OFuelPMin
 
 namespace LJFO
 
@@ -88,7 +91,65 @@ def acofinalF_of_satA2F {p : String} (a2 : SatA2F p) : ACofinalF p :=
     let w := a2 done Δ G hsat hP hΔ d
     ⟨w.1, w.here⟩
 
+/-! ## The same four statements for the PARKING interpolant `interpP`
+
+`interpP` (`LJF/OFuelP.lean`, node N0e) is `interpF` with the three
+reshaping processing clauses replaced by PARKING clauses, a row for each
+newly parked shape, and the Dyckhoff rows' guard retained at the full
+station.  The statements are the same, with `interpP` for `interpF` and
+the extended parked-shape invariant `ParkedCtxP` for `ParkedCtx`. -/
+
+/-- E1 at every fuel, for `interpP`. -/
+def ESoundP (p : String) : Type :=
+  ∀ (f : Nat) (todo done : List Neg),
+    Inv (todo ++ done) [] .tru (interpP p f todo done none)
+
+/-- A1 at every fuel, for `interpP`. -/
+def ASoundP (p : String) : Type :=
+  ∀ (f : Nat) (todo done : List Neg) (G : Neg),
+    Inv (interpP p f todo done (some G) :: (todo ++ done)) [] .tru G
+
+/-! Both are INHABITED (`LJF/OFuelPSound.lean`, 2026-09-05), each
+`[propext, Quot.sound]` — the same measured set as the `interpF` pair. -/
+
+/-- `ESoundP` holds. -/
+def esoundP (p : String) : ESoundP p := eSoundP p
+
+/-- `ASoundP` holds. -/
+def asoundP (p : String) : ASoundP p := aSoundP p
+
+/-- Cofinality, ∃ side, for `interpP`. -/
+def ECofinalP (p : String) : Type :=
+  ∀ (done Δ : List Neg) (ψ : Neg), Saturated done → ParkedCtxP done →
+    PFreeCtx p Δ → PFreeN p ψ →
+    ∀ {j : JD} (d : Inv (done ++ Δ) [] j ψ),
+      Σ f : Nat, Inv (interpP p f [] done none :: Δ) [] j ψ
+
+/-- Cofinality, ∀ side, for `interpP` (E-relativised, as `ACofinalF`). -/
+def ACofinalP (p : String) : Type :=
+  ∀ (done Δ : List Neg) (G : Neg), Saturated done → ParkedCtxP done →
+    PFreeCtx p Δ →
+    ∀ {j : JD} (d : Inv (done ++ Δ) [] j G),
+      Σ f : Nat, Inv (interpP p f [] done none :: Δ) [] .tru
+        (interpP p f [] done (some (jGoal j G)))
+
+/-- `ECofinalP` follows from cofinality at a saturated station. -/
+def ecofinalP_of_satE2P {p : String} (s2 : SatE2P p) : ECofinalP p :=
+  fun done Δ ψ hsat hP hΔ hψ _ d =>
+    let w := s2 done Δ ψ hsat hP hΔ hψ d
+    ⟨w.1, w.here⟩
+
+/-- `ACofinalP` follows likewise, on the diagonal of the two fuels. -/
+def acofinalP_of_satA2P {p : String} (a2 : SatA2P p) : ACofinalP p :=
+  fun done Δ G hsat hP hΔ _ d =>
+    let w := a2 done Δ G hsat hP hΔ d
+    ⟨w.1, w.here⟩
+
 end LJFO
 
 #axioms_within LJFO.ecofinalF_of_satE2F [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.acofinalF_of_satA2F [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.esoundP [propext, Quot.sound]
+#axioms_within LJFO.asoundP [propext, Quot.sound]
+#axioms_within LJFO.ecofinalP_of_satE2P [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.acofinalP_of_satA2P [propext, Classical.choice, Quot.sound]
