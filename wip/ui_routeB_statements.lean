@@ -20,6 +20,7 @@ import LJF.OFuelP
 import LJF.OFuelPSound
 import LJF.OFuelPMin
 import LJF.OFuelPCof
+import LJF.OFuelPFam
 
 namespace LJFO
 
@@ -158,6 +159,61 @@ def ecofinalP_of_tinvP {p : String} (t : TInvP p) : ECofinalP p :=
 def acofinalP_of_uentryP {p : String} (u : UEntryP p) : ACofinalP p :=
   acofinalP_of_satA2P (satA2P_of_uentryP u)
 
+/-! ## The family, and exactly what it is conditional on (node N0c,
+2026-09-05)
+
+`LJF/OFuelPFam.lean` inhabits `TInvP` and `UEntryP`: `LJF/O.lean`'s
+18-definition minimality family re-authored in fuel-carrying form over
+`interpP`, founded on `LJF/O.lean`'s station measure unchanged.  The whole
+chain below it is then inhabited too.  Both entry points are CONDITIONAL
+on two typed obligations, in the `CimpAnt` idiom — parameters, never
+assumptions, and no `sorry` anywhere:
+
+* `ParkAntP p` (`LJF/OFuelPCof.lean`) — the antecedent guard of the four
+  parked implications whose antecedent is a positive.  This is a FIXPOINT
+  requirement, not a gap: `parkAntP_of_satA2P` derives it from `SatA2P p`,
+  which `satA2P_of_uentryP` derives from `UEntryP p`, so the dispatch is
+  an instance of the family's own `∀p` entry at the SAME station applied
+  to the antecedent's own subderivation, and `LJF/OFuelHeight.lean` §10.4
+  proves the height fact that makes it a legitimate recursive call.
+  Taking it as one needs the family re-founded on
+  `μ = (normalised height, station weight, size)`.
+* `DykAntP p` (`LJF/OFuelPFam.lean`) — the same for the Dyckhoff shape
+  `↓(Q′ ⊃ N′) ⊃ N`.  This is NOT an instance of `ParkAntP`: `interpP`'s
+  Dyckhoff row guards its fire by `A(done ⇒ Q′ ⊃ N′)`, a NEGATIVE goal,
+  while §10.4's dispatch supplies `A(done ⇒ ↑↓(Q′ ⊃ N′))`, and
+  `interpPA_down_eq` makes the latter a DISJUNCTION carrying the former as
+  one disjunct, so it does not project; the only bridge,
+  `negOfDownStab` at an implication body, rises unboundedly (§7.3).
+
+So `ECofinalP`/`ACofinalP` are NOT claimed: they are inhabited relative to
+the two obligations, exactly as `LJFO.satE2`/`satA2` are relative to
+`CimpAnt`. -/
+
+/-- **The `∃p` traversal at a saturated station**, conditional. -/
+def tinvP {p : String} (pant : ParkAntP p) (dant : DykAntP p) : TInvP p :=
+  tinvP_of pant dant
+
+/-- **The `∀p` entry at a saturated station**, conditional. -/
+def uentryP {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
+    UEntryP p := uentryP_of pant dant
+
+/-- `SatE2P`, conditional. -/
+def satE2P {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
+    SatE2P p := satE2P_of_tinvP (tinvP pant dant)
+
+/-- `SatA2P`, conditional. -/
+def satA2P {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
+    SatA2P p := satA2P_of_uentryP (uentryP pant dant)
+
+/-- `ECofinalP`, conditional. -/
+def ecofinalP {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
+    ECofinalP p := ecofinalP_of_tinvP (tinvP pant dant)
+
+/-- `ACofinalP`, conditional. -/
+def acofinalP {p : String} (pant : ParkAntP p) (dant : DykAntP p) :
+    ACofinalP p := acofinalP_of_uentryP (uentryP pant dant)
+
 end LJFO
 
 #axioms_within LJFO.ecofinalF_of_satE2F [propext, Classical.choice, Quot.sound]
@@ -168,3 +224,14 @@ end LJFO
 #axioms_within LJFO.acofinalP_of_satA2P [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.ecofinalP_of_tinvP [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.acofinalP_of_uentryP [propext, Classical.choice, Quot.sound]
+
+/-! The family and the whole chain below it, conditional on the two
+antecedent dispatches.  Same measured set as the weight-founded family of
+`LJF/O.lean` (`Classical.choice` from the well-founded recursion). -/
+
+#axioms_within LJFO.tinvP [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.uentryP [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.satE2P [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.satA2P [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.ecofinalP [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.acofinalP [propext, Classical.choice, Quot.sound]
