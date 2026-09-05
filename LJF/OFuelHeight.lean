@@ -617,6 +617,99 @@ which is an arbitrary negative. -/
   (fun n => (szS (ceSn n), szI (negOfDownStab ceMand (ceSn n)))))
   == [(23, 25), (28, 35), (33, 45), (38, 55), (43, 65), (48, 75)]
 
+/-! ## 7.4 The max-based height fails too
+
+The natural repair for 7.1-7.2 is a MAX-based height — `impL`, `andR` and
+`orL` taking the maximum of their premises instead of the sum — under
+which a continuation copied into two branches costs nothing extra.  It is
+not enough.  The continuation of a use is re-inserted at the DEPTH of the
+antecedent proof's right-focus leaves, so the value's height is
+`depth(s₁) + height(lf₂)` where the argument's was
+`max (height s₁) (height lf₂) + 1`; a tall continuation under a deep
+antecedent still rises.  `htI` below is that measure, and the same three
+clauses rise on the cells of 7.2 (`invStrip` only once the continuation is
+made tall, cell `dp*`):
+
+    cell                    szI before/after    htI before/after
+    invImpOr  (ceOrD)          21 → 26            11 → 13
+    invStrip  (ceStD)          25 → 26            13 → 13
+    invCurry  (ceCyD)          29 → 40            13 → 14
+    invStrip  (dpD, tall)      50 → 76            13 → 18
+-/
+
+mutual
+/-- Max-based height of a stable derivation. -/
+def htS : ∀ {Γ : List Neg} {j : JD} {P : Pos}, Stab Γ j P → Nat
+  | _, _, _, .rfoc r => htR r + 1
+  | _, _, _, .lfoc _ lf => htL lf + 1
+  | _, _, _, .laxOf s => htS s + 1
+/-- Max-based height of a right focus. -/
+def htR : ∀ {Γ : List Neg} {j : JD} {P : Pos}, RFocus Γ j P → Nat
+  | _, _, _, .init _ => 1
+  | _, _, _, .or1 r => htR r + 1
+  | _, _, _, .or2 r => htR r + 1
+  | _, _, _, .rel d => htI d + 1
+/-- Max-based height of a left focus. -/
+def htL : ∀ {Γ : List Neg} {N : Neg} {j : JD} {P : Pos}, LFoc Γ N j P → Nat
+  | _, _, _, _, .rel d => htI d + 1
+  | _, _, _, _, .impL s lf => max (htS s) (htL lf) + 1
+  | _, _, _, _, .and1 lf => htL lf + 1
+  | _, _, _, _, .and2 lf => htL lf + 1
+  | _, _, _, _, .circL d => htI d + 1
+/-- Max-based height of an inversion. -/
+def htI : ∀ {Γ : List Neg} {Ω : List Pos} {j : JD} {N : Neg}, Inv Γ Ω j N → Nat
+  | _, _, _, _, .impR d => htI d + 1
+  | _, _, _, _, .andR d e => max (htI d) (htI e) + 1
+  | _, _, _, _, .circR d => htI d + 1
+  | _, _, _, _, .stable s => htS s + 1
+  | _, _, _, _, .orL d e => max (htI d) (htI e) + 1
+  | _, _, _, _, .flsL => 1
+  | _, _, _, _, .downL d => htI d + 1
+  | _, _, _, _, .atomL d => htI d + 1
+end
+
+#guard htI ceOrD == 11
+#guard htI (invImpOr (Q₁ := .atom "q") (Q₂ := .atom "q")
+  (N := Neg.up (Pos.atom "z")) ceOrD) == 13
+#guard htI ceCyD == 13
+#guard htI (invCurry (M₁ := nTop) (M₂ := nTop)
+  (N := Neg.up (Pos.atom "z")) ceCyD) == 14
+
+/-- The tall-continuation cell: the consequent of the stripped hypothesis
+is a five-fold implication with trivial antecedents, so the continuation
+of the use is as tall as the antecedent's proof. -/
+def dpN : Neg :=
+  .imp (.down nTop) (.imp (.down nTop) (.imp (.down nTop)
+    (.imp (.down nTop) (.imp (.down nTop) (Neg.up (Pos.atom "z"))))))
+
+def dpH : Neg := .imp (.down (.up (.atom "q"))) dpN
+def dpΔ : List Neg :=
+  [Neg.up ceU, Neg.up (Pos.atom "q"), Neg.up (Pos.atom "z")]
+def dpΓ : List Neg := dpH :: dpΔ
+
+def dpS1 : Stab dpΓ .tru (.down (.up (.atom "q"))) :=
+  Stab.lfoc (N := Neg.up ceU) (by simp [dpΓ, dpΔ, ceU])
+    (.rel (.orL
+      (.atomL (.stable (.rfoc (.rel (.stable (.rfoc
+        (.init (by simp [dpΓ, dpΔ]))))))))
+      (.atomL (.stable (.rfoc (.rel (.stable (.rfoc
+        (.init (by simp [dpΓ, dpΔ]))))))))))
+
+def dpT : Stab dpΓ .tru (.down nTop) := .rfoc (.rel nTopIntro)
+
+def dpLf2 : LFoc dpΓ dpN .tru (.atom "z") :=
+  .impL dpT (.impL dpT (.impL dpT (.impL dpT (.impL dpT
+    (.rel (.atomL (.stable (.rfoc (.init (by simp [dpΓ, dpΔ]))))))))))
+
+def dpD : Inv dpΓ [] .tru (.up (Pos.atom "z")) :=
+  .stable (.lfoc (List.mem_cons_self ..) (.impL dpS1 dpLf2))
+
+theorem szI_dpD : szI dpD = 50 := rfl
+theorem htI_dpD : htI dpD = 13 := rfl
+
+#guard szI (invStrip (P' := .atom "q") (N := dpN) dpD) == 76
+#guard htI (invStrip (P' := .atom "q") (N := dpN) dpD) == 18
+
 /-! # Part 8: the verdict for `μ = (derivation height, station weight)`
 
 Collecting Parts 1-7 as the Step-0 table:
@@ -644,6 +737,7 @@ Collecting Parts 1-7 as the Step-0 table:
     `invCurry`                      RISES (29 → 40)               (7.2)
     `negOfDownStab` at `M₁ ∧ M₂`    RISES, unboundedly            (7.3)
     `dykCommute`                    RISES, unboundedly            (7.3)
+    (and all four rise under a max-based height too              (7.4))
 
 The consequence for route (B).  The height-first order needs every
 transformer applied before a recursive call to be height-non-increasing,
@@ -661,14 +755,29 @@ guarded at the full station) does not touch.  The one thing the fallback
 would buy — removing `dykCommute` and `negOfDownStab` at a conjunction —
 is necessary but not sufficient.
 
-What survives, and is the next candidate: a MAX-based height
-(`impL`, `andR`, `orL` taking `max` of their premises rather than the sum)
-turns the leaf-duplication of 7.1-7.2 from a multiplicative into an
-additive cost, because a duplicated continuation no longer adds twice.
-Whether the additive cost can then be financed by the station weight is
-open; it is not financed by any lexicographic order with height first,
-since the cost per processing step is a constant and the station weight
-sits below it. -/
+The max-based repair does not rescue it either (7.4): it removes the
+multiplicative cost of branch duplication but not the cost of INSERTION
+DEPTH — the continuation of a use is rebuilt at the depth of the
+antecedent proof's right-focus leaves — and the same three clauses rise
+under it, `invStrip` as soon as the continuation is as tall as the
+antecedent's proof.
+
+So the Step-0 answer is negative on both prescribed branches:
+
+* `interpF` unchanged, height-first: refuted (7.2);
+* `interpR` (Dyckhoff rows guarded at the full station), height-first:
+  refuted by the SAME cells, since 7.2 lies in the processing phase, which
+  the fallback does not touch.
+
+What the two measures have in common is that they are monotone under
+adding a constructor along a path, and every residual-firing clause of the
+interpolant rebuilds one use as a nest of constructors at the depth of
+another derivation.  A founding for route (B) therefore has to come from
+somewhere other than the derivation alone — the weight-founded order of
+`LJF/O.lean` remains the only one that runs the processing phase, and the
+termination note in `LJF/OFuelMin.lean` remains the reason it cannot take
+the retention discharge natively.  The obstruction is now exact on both
+sides. -/
 
 end LJFO
 
@@ -695,4 +804,6 @@ end LJFO
 #axioms_within LJFO.szI_ceOrD [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.szI_ceStD [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.szI_ceCyD [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_dpD [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.htI_dpD [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.szI_negOfDownStab_and [propext, Classical.choice, Quot.sound]
