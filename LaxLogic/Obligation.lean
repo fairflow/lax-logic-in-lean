@@ -59,6 +59,7 @@ Fig. 4 becomes definitional.
 
 import LaxLogic.Obligation.Modality
 import LaxLogic.Obligation.Connectives
+import LaxLogic.Obligation.Mendler
 import LaxLogic.Obligation.Timing
 import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.LatchSynth
