@@ -779,6 +779,68 @@ termination note in `LJF/OFuelMin.lean` remains the reason it cannot take
 the retention discharge natively.  The obstruction is now exact on both
 sides. -/
 
+
+/-! # Part 9: what the table says the design must be
+
+Two of the four failing transformers leave the family outright, and this
+part proves it.
+
+`negOfDownStab` and `dykCommute` are used at exactly three sites: the two
+`↓↑P′` / `↓◯P′` release clauses of `UStab` (`LJF/O.lean:1543,1547`) and the
+Dyckhoff antecedent dispatch `dykAntC`.  The releases do not need it: the
+`laxOf` the goal is about to acquire can be spent INSIDE the release
+continuation, and then the height does not rise at all.  The two
+replacements below land on the SAME `∀p` row as the originals, because
+`jGoal .lax (↑P′) = ◯P′ = jGoal .tru (◯P′)`.  The Dyckhoff dispatch is what
+the brief's `interpR` fallback removes.
+
+So a height-first founding is blocked by exactly one thing: the three
+PROCESSING clauses of 7.2, which RESHAPE a parked implication's antecedent
+(`(Q₁∨Q₂) ⊃ N`, `↓↑P′ ⊃ N`, `↓(M₁∧M₂) ⊃ N`) and simulate its uses.  Every
+other processing clause either parks (weakening only, height EXACT by Part
+1) or is one of the six Part 6 transformers.  The design that would make
+the whole family height-founded therefore has to PARK those three shapes
+too — extending `ParkedN` and giving each an aggregate row — rather than
+reshape them.  That is a change to `interpF` well beyond the `interpR`
+fallback, and it is the finding this module was built to produce. -/
+
+/-- Release a `↓↑P′` proof into the LAX inversion of `↑P′` without raising
+the height: the `laxOf` goes INSIDE the release continuation, where it pays
+for the `rfoc`/`rel` pair the release consumes. -/
+def laxReleaseUp {Δ : List Neg} {P' : Pos} (s : Stab Δ .tru (.down (.up P'))) :
+    Inv Δ [] .lax (.up P') :=
+  .stable (relStab (j := .lax) (fun _ d => .laxOf (unStable d)) (Sub.refl _) s)
+
+theorem szI_laxReleaseUp {Δ : List Neg} {P' : Pos}
+    (s : Stab Δ .tru (.down (.up P'))) :
+    szI (laxReleaseUp s) ≤ szS (Stab.laxOf s) := by
+  have := (sz_relStab (k := fun {Δ'} (_ : Sub Δ Δ')
+      (d : Inv Δ' [] .tru (.up P')) => Stab.laxOf (unStable d))
+    (fun _ d => by have := szS_unStable d; simp only [szS]; omega)).1
+    Δ (Sub.refl _) s
+  simp only [laxReleaseUp, szI, szS]; omega
+
+/-- Likewise for a boxed body: the `circR` the goal would need is consumed
+by the `circROf` in the continuation. -/
+def laxReleaseCirc {Δ : List Neg} {P' : Pos}
+    (s : Stab Δ .tru (.down (.circ P'))) : Inv Δ [] .lax (.up P') :=
+  .stable (relStab (j := .lax) (fun _ d => unStable (circROf d)) (Sub.refl _) s)
+
+theorem szI_laxReleaseCirc {Δ : List Neg} {P' : Pos}
+    (s : Stab Δ .tru (.down (.circ P'))) :
+    szI (laxReleaseCirc s) ≤ szS (Stab.laxOf s) := by
+  have := (sz_relStab (k := fun {Δ'} (_ : Sub Δ Δ')
+      (d : Inv Δ' [] .tru (.circ P')) => unStable (circROf d))
+    (fun _ d => by
+      have h1 := szS_unStable (circROf d)
+      have h2 := szI_circROf d
+      omega)).1 Δ (Sub.refl _) s
+  simp only [laxReleaseCirc, szI, szS]; omega
+
+/-- The two replacements land on the SAME `∀p` row as the originals:
+`jGoal .lax (.up P′) = .circ P′ = jGoal .tru (.circ P′)`. -/
+example (P' : Pos) : jGoal .lax (Neg.up P') = jGoal .tru (Neg.circ P') := rfl
+
 end LJFO
 
 /-! ### Axiom audit -/
@@ -806,4 +868,6 @@ end LJFO
 #axioms_within LJFO.szI_ceCyD [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.szI_dpD [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.htI_dpD [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_laxReleaseUp [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.szI_laxReleaseCirc [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.szI_negOfDownStab_and [propext, Classical.choice, Quot.sound]
