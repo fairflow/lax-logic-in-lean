@@ -1506,6 +1506,29 @@ closest match to the §4.11 family — and at S7, both cofinality
 instances are TRUE at station fuels 14 and 18, E-side and A-side.  The
 Dyckhoff hypothesis does not delay the chain.
 
+**Re-posed verdicts and the frontier (2026-09-05, 01:34).**  With the
+conjuncts of `E_f` as separate hypotheses: Δ = c reproduces (false at
+10, true at 14); Δ = X is false at 10/14/18 through depth 32 and TRUE
+at 22 at depth 48 (reproducing the chain-posed verdict — the derivation
+is 33–48 steps deep, a box opened, a case split, the inner rows); so
+`◯(c ∨ ¬d) ⊃ a` enters the E-chain at station fuel 22 exactly, the
+predicted window.  The A-side instance for the conjectured `∀p`,
+`E_f ∧ T ⊢ A_f`, is false through depth 32 at every fuel and UNSETTLED
+at depth 48 (fuels 18, 22) and 64 (fuel 22), 30 min each: the goal is
+`A_f` itself (37,632 and about 450,000 nodes), which the search has to
+construct.  A frontier marker, not a failure — the next tool is a
+certified simplifier for the A-side or a kernel-side decision on the
+sub-goal `E_f ⊢ ∃p.Γ`.
+
+**Verdict of the screen.**  No cell of the §4.11 family refutes
+cofinality.  Every instance the tools could decide was VALIDATED, at
+the fuel the row analysis predicted: Δ = c on both sides from station
+fuel 14 at S1, S6, S7; Δ = X on the E-side at station fuel 22 at S1.
+The chain is slow — a consequence enters about three times its
+derivation height later, one parked-box nesting level per ~10 fuel
+units — and that number is the constraint on the proof's fuel
+function, not a counterexample.  Runners: `wip/ui_screen/`.
+
 ---
 
 ## 5 · OPEN list
