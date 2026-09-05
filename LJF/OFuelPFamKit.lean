@@ -3,10 +3,13 @@ LJF◯ — the termination kit of the cofinality family for `interpP`
 (route (B), node N0c over node N0e).
 
 Split out of `LJF/OFuelPFam.lean` on 2026-09-05 so that the two farms can
-be exercised without re-elaborating the family, which costs a quarter of
-an hour.  Nothing here is new mathematics: Part 1 is the generic
-station-descent lemmas and the descent farm `ljf_dec_p` as they stood,
-Part 4b is the height side of the founding.
+be exercised without re-elaborating the family, which costs half an hour.
+Nothing here is new mathematics: Part 1 is the generic station-descent
+lemmas and the descent farm `ljf_dec_p` as they stood, Part 4b is the
+height side of the founding, and Part 4c is the budget transposition of
+Part 4b — groundwork for a founding that avoids `WellFounded.fix`, with
+the measurement that says why such a founding is what the elaboration
+time needs.  `wip/hgt_probe.lean` is the bench for both.
 -/
 import LJF.OFuelPCof
 
@@ -273,6 +276,176 @@ macro "ljf_dec_h" : tactic => `(tactic| (
            · ljf_dec_pair)
         | ljf_dec_pair
         | guard_target = True))
+
+/-! # Part 4c: the founding on EXPLICIT BUDGETS — the transposition, and
+why it does NOT buy the elaboration time (2026-09-05, WP1c)
+
+The intended re-founding.  Give each definition of the family two budgets
+— `n` above its height component and `w` above its station component — as
+implicit arguments, with the two bounds
+
+    hbn : ⟨the height of the recursion argument⟩ < n
+    hbw : ⟨the station weight with its goal offset⟩ < w
+
+as the last two arguments of its telescope, and recurse on
+`(n, w, sizeOf ⟨argument⟩)`.  Every descent is then SYNTACTIC: a
+height-strict call is at `n - 1`, a station-strict call at `n`, `w - 1`,
+and a call that changes neither is at `n`, `w` with the `sizeOf` paying,
+exactly as under μ.  No edge changes: the mathematics `ljf_dec_h` supplies
+inside `decreasing_by` — `hgt_dec` for the height, the station farms for
+the weight — is supplied at the CALL SITE instead, by the `autoParam`
+tactics below, on the bare inequality rather than on a `Prod.Lex` goal
+reached through `simp_wf`.  The three step lemmas are the whole of the
+transposition, and `wip/hgt_probe.lean` checks every edge class in both
+forms in seconds.
+
+**The premise it was built on is REFUTED.**  `LJF.OFuelPFam` costs 1749 s
+not because of the 176 `decreasing_by` proofs but because of the
+well-founded translation itself.  Three measurements of the SAME
+seventeen-definition block, same bodies, same matchers, same `by` blocks
+(2026-09-05):
+
+    as `unsafe def`, no well-founded packing at all        3 s
+    μ-founded, `set_option debug.skipKernelTC true`      510 s
+    μ-founded, as committed                            1749 s
+
+So the bodies and the matchers cost 3 s; the elaboration of the
+`WellFounded.fix` packing costs ~507 s, and the kernel spends ~1240 s
+type-checking the packed term.  Carrying the budgets makes the telescopes
+LONGER and the match motives dependent (`hbn` mentions the matched
+derivation), so the budget-founded family measured slower than the
+μ-founded one, not faster.  It is not installed in `LJF/OFuelPFam.lean`,
+which stands on μ.
+
+What the measurement says the family needs is a founding that does not go
+through `WellFounded.fix` at all: an outer `Nat.rec` on the height budget,
+an inner `Nat.rec` on the station budget, and a structural recursion on
+the derivation for the phase changes.  The budgets below are the device
+that makes it possible — every edge between the `∃p` and the `∀p` side is
+height-STRICT, so at a fixed height budget the two sides do not call each
+other and the strongly connected component of §4.17 breaks.  Part 4c is
+that groundwork, kept and exercised; it is not in use. -/
+
+/-- **The strict budget step**: a call that drops the component strictly
+is bounded by the predecessor of the budget. -/
+theorem bud_lt {a b n : Nat} (h : a < n) (k : b < a) : b < n - 1 := by omega
+
+/-- **The non-increasing budget step**: a call that does not raise the
+component keeps the budget. -/
+theorem bud_le {a b n : Nat} (h : a < n) (k : b ≤ a) : b < n := by omega
+
+/-- **A fresh budget**, for a component the caller does not bound: the
+entry points, and the station of every height-strict call. -/
+theorem bud_fresh {a : Nat} : a < a + 1 := Nat.lt_succ_self a
+
+/-! The processing arms of `eMinQ`/`aMinQ` that do NOT park, in the shape
+the doubled `todo` side presents them, at one goal offset (`∃p`, where it
+is the constant `1`) and at two (`∀p`, where they are `3 ^ wNeg G` and
+`4`).  `LJF/OCore.lean` states each without the doubling and without the
+offsets; these are the same facts where the family meets them. -/
+
+/-- Dropping the head of `todo` without parking it (the `⊥ ⊃ N` arm). -/
+theorem dec_dropG {t d e g : Nat} : 2 * t + d + g < 2 * (3 ^ e + t) + d + g := by
+  have := p3_pos e; omega
+
+/-- The same at two goal offsets. -/
+theorem dec_dropG2 {t d e g h : Nat} :
+    2 * t + d + g + h < 2 * (3 ^ e + t) + d + g + h := by
+  have := p3_pos e; omega
+
+/-- Splitting a conjunctive hypothesis: `M ∧ N` weighs `wNeg M + wNeg N + 3`. -/
+theorem dec_andG {m n t d g : Nat} :
+    2 * (3 ^ m + (3 ^ n + t)) + d + g < 2 * (3 ^ (m + n + 3) + t) + d + g := by
+  have := dec_and (m := m) (n := n) (t := t); omega
+
+/-- The same at two goal offsets. -/
+theorem dec_andG2 {m n t d g h : Nat} :
+    2 * (3 ^ m + (3 ^ n + t)) + d + g + h <
+      2 * (3 ^ (m + n + 3) + t) + d + g + h := by
+  have := dec_and (m := m) (n := n) (t := t); omega
+
+/-- Stripping a shift: `↑↓M` weighs `wNeg M + 1`. -/
+theorem dec_shiftG {m t d g : Nat} :
+    2 * (3 ^ m + t) + d + g < 2 * (3 ^ (m + 1) + t) + d + g := by
+  have := dec_shift1 (m := m) (t := t); omega
+
+/-- The same at two goal offsets. -/
+theorem dec_shiftG2 {m t d g h : Nat} :
+    2 * (3 ^ m + t) + d + g + h < 2 * (3 ^ (m + 1) + t) + d + g + h := by
+  have := dec_shift1 (m := m) (t := t); omega
+
+set_option hygiene false in
+/-- **The station side of a budget bound**, on the bare inequality
+`⟨callee's weight⟩ < ⟨caller's weight⟩` (or `≤`).  The alternatives are
+`LJF/OCore.lean`'s tuned station lemmas in the shapes the parking family
+presents them, cheapest first: the farm must FAIL FAST, because
+`ljf_bud_w` runs it twice at every height-strict call before falling
+through to a fresh budget. -/
+macro "ljf_wt" : tactic => `(tactic| (
+    try simp only [sum3, sum3_append, goalW, wNeg, wPos]
+    first
+      | omega
+      | exact dec_parkG
+      | exact dec_parkG2
+      | exact dec_dropG
+      | exact dec_dropG2
+      | exact dec_andG
+      | exact dec_andG2
+      | exact dec_shiftG
+      | exact dec_shiftG2
+      | exact dec_park
+      | exact dec_drop
+      | exact dec_shift1
+      | exact dec_and
+      | exact dec_curry
+      | exact dec_stripshift
+      | exact dec_circDirect
+      | exact dec_impor (wPos_pos _) (wPos_pos _)
+      | exact dec_orctx (by assumption)
+      | exact dec_orA (by assumption)
+      | exact dec_ainv (by assumption)
+      | exact dec_ainv0 (by assumption)
+      | exact dec_qimp_g (by assumption)
+      | exact dec_dyk2_g (by assumption)
+      | exact dec_cimp2_g (by assumption)
+      | exact dec_boxA_g (by assumption)
+      | (have h1 := dec_parkT (by assumption); omega)
+      | (have h1 := dec_parkS (by assumption); omega)
+      | (have h1 := dec_boxF (by assumption); omega)
+      | (have h1 := dec_restT (by assumption); omega)
+      | (have h1 := dec_parkT (findFire_mem (by assumption)); omega)
+      | (have h1 := dec_restT (findFire_mem (by assumption)); omega)
+      | (have h1 := invertPos_lt (P := Pos.or _ _)
+           (by intro a h; nomatch h) _ (by assumption)
+         simp only [wPos] at h1; omega)))
+
+set_option hygiene false in
+/-- **The height side of a budget bound.**  Strict first, then
+non-increasing, then a fresh budget for a call from outside the family
+(the entry points of `LJF/OFuelPCofinal.lean`).  A misclassified site
+cannot pass silently: a fresh height budget does not decrease, so the
+recursion's own `decreasing_by` rejects it. -/
+macro "ljf_bud_h" : tactic => `(tactic| (
+    first
+      | (refine bud_lt hbn ?_; hgt_dec)
+      | (refine bud_le hbn ?_; hgt_dec)
+      | exact bud_fresh))
+
+set_option hygiene false in
+/-- **The station side of a budget bound**, in the same three classes. -/
+macro "ljf_bud_w" : tactic => `(tactic| (
+    first
+      | (refine bud_lt hbw ?_; ljf_wt)
+      | (refine bud_le hbw ?_; ljf_wt)
+      | exact bud_fresh))
+
+/-! The decreasing farm of the budget founding — the `Prod.Lex` goals
+`(n', w', s') < (n, w, s)` with `n'`, `w'` literally `n`, `n - 1`, `w`,
+`w - 1` or a fresh successor — is NOT kept here: it cannot be exercised
+without the family, and nothing unexercised belongs in the kit.  Under
+the budgets those goals are `omega` against `hbn` and `hbw` except at the
+phase changes, where the `sizeOf` component pays and `ljf_dec_pair`
+discharges them unchanged. -/
 
 
 end LJFO
