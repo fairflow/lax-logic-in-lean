@@ -60,10 +60,12 @@ Fig. 4 becomes definitional.
 import LaxLogic.Obligation.Modality
 import LaxLogic.Obligation.Connectives
 import LaxLogic.Obligation.Mendler
+import LaxLogic.Obligation.Tactics
 import LaxLogic.Obligation.Timing
 import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.LatchSynth
 import LaxLogic.Obligation.BeliefLink
+import LaxLogic.Obligation.PLLBridge
 import LaxLogic.Obligation.Ledger
 import LaxLogic.Obligation.Postpone
 import LaxLogic.Obligation.Conservativity

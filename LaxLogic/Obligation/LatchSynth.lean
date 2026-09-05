@@ -43,6 +43,7 @@ circuit, is precisely the thing the verification was supposed to discover.
 import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.Postpone
 import LaxLogic.Obligation.Conservativity
+import LaxLogic.Obligation.Tactics
 
 namespace LaxLogic.Obligation.Latch
 
@@ -89,18 +90,14 @@ merely implied by it: the latch resets exactly when `r_in` is held high for
 theorem obligation1_iff :
     latch_synth.obligation1 rin sin qout qbar d₁ d₂ D₁ D₂ sa ta h1 h2 h3 hp1 hp2
       ↔ sa + 2 * d₁ + d₂ ≤ ta + D₁ := by
-  constructor
-  · intro h; have := h (ta + D₁) (Nat.le_refl _); omega
-  · intro h t₁ ht₁; omega
+  reduce_obligation
 
 /-- The same for the second constraint: the **internal memory constraint**, that
 at least one of the two gates has non-zero inertia. -/
 theorem obligation2_iff :
     latch_synth.obligation2 rin sin qout qbar d₁ d₂ D₁ D₂ sa ta h1 h2 h3 hp1 hp2
       ↔ 0 < D₂ + D₁ := by
-  constructor
-  · intro h; have := h (ta + D₁) (Nat.le_refl _); omega
-  · intro h t₁ _; omega
+  reduce_obligation
 
 end Reduce
 

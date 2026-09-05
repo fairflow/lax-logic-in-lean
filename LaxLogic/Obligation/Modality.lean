@@ -380,6 +380,10 @@ theorem debt_iff_laxAll (C A : Prop) :
     Debt C A ↔ ◯∀[fun _ : Unit => C] (fun _ : Unit => A) :=
   ⟨fun h _ hc => h hc, fun h hc => h () hc⟩
 
+/-- The unit: a finished proof owes nothing, so it owes anything. `◯I` of the
+paper, and the `laxIntro` rule of this development's natural deduction. -/
+theorem Debt.ret {A : Prop} (a : A) (C : Prop) : Debt C A := fun _ => a
+
 /-- Discharging the obligation yields the theorem outright. -/
 theorem Debt.discharge {C A : Prop} (h : Debt C A) (hc : C) : A := h hc
 
