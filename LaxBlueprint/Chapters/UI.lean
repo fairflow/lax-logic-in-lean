@@ -2,6 +2,7 @@ import Verso
 import VersoManual
 import VersoBlueprint
 import LaxLogic.PLLCraig
+import LJF.OFuelPCofinal
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -14,9 +15,16 @@ The aim, in one line: for every PLL formula `φ` and variable `p` there are
 
 This chapter is a *live* campaign, not a finished result, and it is
 deliberately written to say which parts are proved, which are stopped, and
-where exactly the obstruction sits.  Its source is
-`docs/ui-routeB-blueprint.md`, which is the maintained node table; this
-chapter is the reader's view of it and will drift unless kept in step.
+where exactly the obstruction sits.  Its sources are
+`docs/ui-routeB-blueprint.md`, the maintained node table, and
+`docs/ui-ljfo-clause-table.md`, the running record — currently to §4.20.
+This chapter is the reader's view of them and will drift unless kept in
+step; it has twice been a day stale already.
+
+As of §4.19 and §4.20 (2026-09-05) the shape is this: everything from N0a to
+N3 is proved, N5 carries the last `sorry`, and *one* mathematical question is
+open — {uses "n4_stabilisation_all"}[]. What is not proved elsewhere is
+carried as a named obligation in a signature.
 
 A note on method, since it explains what is and is not attached below.
 Route (B) is moving week by week, so nodes here carry `(lean := "...")`
@@ -24,12 +32,9 @@ only where the declaration is settled.  Where a statement is still drafted
 or carries a `sorry`, the node is prose: attaching a name that is about to
 change would break the build for no gain.
 
-Two nodes are an exception of a different kind.  N0c and N0d below are
-settled and pinned, but they live in
-`LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean` and
-`LJF/OFuelPCofinal.lean`, which reach this branch only with the merge into
-`frjw-dev`.  Attaching them before that merge would break the build, so they
-should be attached in the first commit after it.
+The WP2 nodes below are the current exception, and for the stated reason:
+`wip/ui_routeB_n3.lean` is proved and pinned, but N7 plans to hoist it out
+of `wip/`, so its names are the ones about to change.
 
 # Craig interpolation
 
@@ -100,7 +105,7 @@ Depends on {uses "n0a_soundness"}[].
 
 # The parking repair
 
-:::theorem "n0c_cofinality" (parent := "routeB")
+:::theorem "n0c_cofinality" (parent := "routeB") (lean := "LJFO.tinvP, LJFO.uentryP, LJFO.parkAntP, LJFO.satE2P, LJFO.satA2P")
 N0c — *cofinality at a saturated station*: every sufficient `p`-free formula
 is reached at some fuel.  *PROVED, and unconditional*, over
 {uses "n0e_parking"}[], pinned `[propext, Classical.choice, Quot.sound]`
@@ -108,6 +113,11 @@ is reached at some fuel.  *PROVED, and unconditional*, over
 17-definition family in fuel-carrying form, as ONE `mutual` founded on
 $`μ = (\mathrm{hgt}, \mathrm{weight}, \mathrm{sizeOf})`, across
 `LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean` and `LJF/OFuelPCofinal.lean`.
+
+The `Classical.choice` in that pin is *located*, not mysterious: WP1c
+traced it to `atomMem_of_mem` in `LJF/O.lean`, a proof about string order,
+and not to the recursion.  It will go when that lemma is reproved and not
+before.
 
 *Unconditional* is the word carrying the result.  The antecedent guard is a
 native recursive call at all twenty parked arms, so `ParkAntP` is a
@@ -127,7 +137,7 @@ Depends on {uses "n0a_soundness"}[], {uses "n0b_rows"}[] and
 {uses "n0e_parking"}[].
 :::
 
-:::theorem "n0d_cofinal" (parent := "routeB")
+:::theorem "n0d_cofinal" (parent := "routeB") (lean := "LJFO.ECofinalP, LJFO.ACofinalP, LJFO.ecofinalP, LJFO.acofinalP")
 N0d — the cofinality statements themselves: `ECofinalP` and `ACofinalP`,
 with their inhabitants `ecofinalP` and `acofinalP`
 (`LJF/OFuelPCofinal.lean`).  *PROVED* for `interpP`, pinned
@@ -161,31 +171,54 @@ Depends on {uses "n0h_heights"}[].
 # The chain to uniform interpolation
 
 :::group "chain"
-Statements drafted, proofs open.  These are stated in
-`wip/ui_routeB_blueprint.lean`.
+WP2, in `wip/ui_routeB_n3.lean`.  *Nothing in that file is a* `sorry`.
+Every case not proved is a *typed obligation* — a `def … : Type` passed as
+an argument, the `CimpAnt` idiom — so an unfinished step is a visible
+hypothesis in a signature rather than a hole in a proof.  The cofinality
+statements are taken as variables there, so the file stands independent of
+the family module while that is re-founded.
 :::
 
 :::definition "n1_stabilises" (parent := "chain")
-N1 — `EStabilises` and `AStabilises`: the chains eventually constant, the
-`A`-side modulo `E_f`.  DRAFTED.
+N1 — the chains eventually constant.  Two forms: `EStabEq`/`AStabEq`, where
+the chain is *literally* constant from some fuel on, and
+`EStabilises`/`AStabilises`, the same up to interderivability, with
+`estabilises_of_stabEq` and `astabilises_of_stabEq` between them.  PROVED,
+pinned `[propext]` and `[propext, Quot.sound]`.
+
+Alongside them sits the fuel-irrelevance side: `interpP_pfree` — the
+interpolants are `p`-free at *every* fuel, not merely in the limit — and
+`FuelIrrelevance`, the obligation that a recursion bottoming out below its
+fuel is fuel-invariant.
 :::
 
 :::definition "n2_uipair" (parent := "chain")
-N2 — `IsUIPair` and `HasUI`: Pitts's pair for a cell, stated intrinsically
-rather than via the construction.  DRAFTED.
+N2 — `IsUIPair` and `HasUI` for {uses "n0e_parking"}[]: Pitts's pair for a
+cell, stated intrinsically rather than via the construction.  Pinned `[]` —
+they depend on no axioms at all, being data.
 :::
 
 :::theorem "n3_equivalence" (parent := "chain")
-N3 — *stabilisation ⟺ uniform interpolation, per cell*, given
-{uses "n0a_soundness"}[] and {uses "n0d_cofinal"}[].  This is the conceptual heart: it turns
-an open question about interpolants into an open question about chains.
-DRAFTED, carries a `sorry`.  Depends on {uses "n1_stabilises"}[] and
-{uses "n2_uipair"}[].
+N3 — *stabilisation ⟺ uniform interpolation, per cell*.  Both directions are
+now proved, and they cost differently, which is the thing to notice:
+
+* *forward*, `hasUI_of_stabEq` — PROVED outright from the two cofinality
+  variables, `[propext, Quot.sound]`, no cut needed;
+* *backward*, `stabilises_of_hasUI` — PROVED *relative to* `CutInv`, the
+  composition principle: cut at a negative formula in the inversion phase
+  with an empty pending zone.  It is stated at every judgment `j` because
+  that is the form a cut-admissibility proof for LJF◯ would deliver, though
+  the backward direction instantiates it only at `j = .tru`.
+
+So the remaining debt in this node is not a gap in an argument but a named
+theorem someone must supply.  Depends on {uses "n1_stabilises"}[],
+{uses "n2_uipair"}[] and {uses "n0d_cofinal"}[].
 :::
 
 :::theorem "n4_stabilisation_all" (parent := "chain")
 N4 — `StabilisationAll`: every saturated cell stabilises.  *OPEN BOTH WAYS*,
-and this is the theorem the route exists to settle.
+and this is the theorem the route exists to settle.  It is now the only
+genuinely open mathematical question in the chain.
 
 Two prongs, and the point worth making to a reader is that *either outcome
 is a result*.  The proof prong bounds the fuel a cell needs uniformly over
@@ -200,12 +233,26 @@ PLL *lacks* uniform interpolation.
 :::
 
 :::theorem "n5_ljfo_ui" (parent := "chain")
-N5 — uniform interpolation for LJF◯, from {uses "n3_equivalence"}[] and
-{uses "n4_stabilisation_all"}[].  DRAFTED, `sorry`.
+N5 — `ljfo_ui_of_stabilisation`, uniform interpolation for LJF◯ at every
+saturated station, from {uses "n3_equivalence"}[] and
+{uses "n4_stabilisation_all"}[].  Still in `wip/ui_routeB_blueprint.lean`
+and still carrying a `sorry`; it is the one node WP2 did not reach.
 :::
 
 :::theorem "n6_transport" (parent := "chain")
-N6 — transport to PLL along the bridge: `PLL_UI := ∀ p φ, Σ E A,
-IsUIPairPLL p φ E A`.  DRAFTED, `sorry`.  Depends on
-{uses "n5_ljfo_ui"}[] and {uses "n0b_rows"}[].
+N6 — transport to PLL: `IsUIPairPLL`, `PLL_UI`, the polarisation fact
+`pfree_roundTripN`, and the transport itself,
+`isUIPairPLL_of_isUIPair` and `pll_ui_of_ljfo`.  PROVED relative to
+`CutInv` and to `CellsFor`, pinned `[propext, Quot.sound]`.
+
+`CellsFor` says what the transport still needs per formula: a
+uniform-interpolant pair at the polarised station and one at the polarised
+goal cell.  The second is an instance of N3 forward at the empty station;
+the first is N3 forward at the *saturation* of `[negOfO φ]`, so it also
+needs the processing phase `eMinPP`/`aMinPP` to carry the pair back from the
+saturated station.  That carrying step is WP4's, and — the sentence worth
+quoting to anyone asking how far the route has come — it is the only thing
+between that file and `PLL_UI`.
+
+Depends on {uses "n3_equivalence"}[] and {uses "n0b_rows"}[].
 :::
