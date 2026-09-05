@@ -116,6 +116,14 @@ and `stabAtomCast` makes the refired atom's cast a rewrite.  The
 termination kit is split into `LJF/OFuelPFamKit.lean` with
 `wip/hgt_probe.lean` as its 3.7-second bench.
 `ecofinalP`/`acofinalP` are in `LJF/OFuelPCofinal.lean`, unconditional.
+**Verified in the session worktree 18:43** (build exit 0, pins measured,
+gate watched failing, sorry sweep clean; §4.17).
+**WP1c — the budget refactor (in build, §4.18).**  The 17-way
+well-founded `mutual` costs 1749 s to elaborate.  Re-found it as
+structural recursion on explicit budgets bounding μ, the bound carried
+as a hypothesis and instantiated at the entry points; statements
+unchanged; expected `[propext, Quot.sound]` and seconds to elaborate,
+which N3 needs in order to unfold the family.
 
 **WP2 — N3.**  Forward: instantiate N0a at the stabilised fuel, minimality
 from N0d read at that fuel.  Backward: N0d applied to `E` and to `A`

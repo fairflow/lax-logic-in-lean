@@ -1972,6 +1972,53 @@ The module is imported by `Audit/Production.lean` and `LJF` is added to
 the `#axiom_sweep` roots, so the whole LJF◯ estate is now swept for
 `sorryAx`.  **N0c and N0d are PROVED.**
 
+
+**Verified in the session worktree (2026-09-05, 18:43), independently of
+the run's own report.**  The run itself was killed by an expired OAuth
+token while restoring its first gate injection (the height component
+of μ set to 0, which it reports fired); its clean HEAD 578ead2 was merged
+at 776b162 and `lake build LJF wipshared Production` exits 0 here, 8952
+jobs — `LJF.OFuelPFam` 1749 s (the one 17-way well-founded `mutual`;
+see §4.18), `LJF.OFuelPCofinal` 1.1 s — and the production axiom sweep,
+now with `LJF` among its roots, reports 12 480 declarations within
+`[propext, Classical.choice, Quot.sound]`.  Pins measured here with
+`#axioms_within_pin`: `tinvP`, `uentryP`, `parkAntP`, `satE2P`, `satA2P`,
+`ecofinalP`, `acofinalP`, each `[propext, Classical.choice, Quot.sound]`;
+the gate watched failing here on `ecofinalP` at `[propext, Quot.sound]`
+("depends on Classical.choice, which the bound does not allow").  Sorry
+sweep of `OFuelPFam.lean`, `OFuelPFamKit.lean`, `OFuelPCofinal.lean`,
+`wip/ui_routeB_statements.lean`: clean.  The two statements, as the
+kernel holds them (`#print`):
+
+    ECofinalP p := ∀ done Δ ψ,  Saturated done → ParkedCtxP done →
+                     Δ p-free → ψ p-free → ∀ j,  done ++ Δ ⊢ⱼ ψ  →
+                     Σ f,  E_f :: Δ ⊢ⱼ ψ
+    ACofinalP p := ∀ done Δ G,  Saturated done → ParkedCtxP done →
+                     Δ p-free → ∀ j,  done ++ Δ ⊢ⱼ G  →
+                     Σ f,  E_f :: Δ ⊢ A_f(jGoal j G)
+
+with `E_f = interpP p f [] done none`, `A_f(G) = interpP p f [] done (some G)`.
+Note the witness is a single fuel `Σ f`, not the upward-closed `UpFrom`
+form; the upward-closed statements (N0d's `ECofinalUp`/`ACofinalUp`) are
+projections of the family's `UpFrom2` witnesses and are still DRAFTED —
+N3's backward direction is what needs them.  **N0c and N0d for `interpP`
+are PROVED.**
+
+### 4.18 Build time, and the budget refactor (WP1c) — 2026-09-05, 18:45
+
+The 17-way `mutual` by well-founded recursion costs Lean 1749 s to
+elaborate (176 `decreasing_by` sites, then the packing of the mutual and
+its equation lemmas); no proof search and no `decide` is involved.  That
+is a maintenance liability, and N3 will need to UNFOLD the family.
+Matthew's suggestion (18:35): assert a termination bound, use it, refine
+it — make the recursion structural on explicit budgets bounding the
+components of μ, with the derivation's bound carried as a hypothesis, so
+that each site's descent proof becomes a stand-alone lemma that can be
+assumed first (a typed parameter) and discharged later, and the entry
+points instantiate the budgets at the actual μ.  Expected: elaboration in
+seconds, definitional unfolding for N3, and `Classical.choice` leaving
+the pins (no `WellFounded.fix`).  The statements `ECofinalP`/`ACofinalP`
+do not change.  Launched as WP1c.
 ---
 
 ## 5 · OPEN list
