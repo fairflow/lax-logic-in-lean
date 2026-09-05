@@ -14,8 +14,17 @@ They are the same operator, and this file says so in the only way that counts.
 Every identity below holds by `rfl`.
 
 * `debt_eq_openNucleus` — `Debt C A = u_C(A)` in the Heyting algebra `Prop`.
-  A recorded proof obligation *is* a hypothetical belief; discharging it is
-  turning hypothetical belief into belief.
+
+  Matthew's gloss, which is the accurate one: *"if I knew `C`, then I would
+  convert my belief in `A` to knowledge"*, or equivalently *"my belief in `A` is
+  contingent on `C` being true; if `C` is not, my belief is vacuous"*. The
+  looser "I would believe `A` given `C`" understates it — what is contingent is
+  not the belief but its **discharge into knowledge**, which is exactly what
+  `Debt.discharge` does.
+
+  The vacuity clause is not a figure of speech; it is `Debt.vacuous` below, and
+  it is why `debt_exists_vacuous` makes ◯ meaningless without a class of
+  admissible constraints.
 * `laxAll_iff_le` — `◯∀[p] M ↔ p ≤ M` in the pointwise Heyting algebra
   `γ → Prop`. So the weakening modality is entailment, and "the residual
   shrinks" is literally movement down that order.
@@ -65,5 +74,11 @@ theorem laxAll_iff_openNucleus {γ : Type u} (p M : Constraint γ) :
 
 /-- The one-witness case, for completeness. -/
 theorem debt_iff_le (C A : Prop) : Debt C A ↔ C ≤ A := Iff.rfl
+
+/-- **The vacuity clause.** If the constraint is false, the belief says nothing:
+`Debt False A` holds for every `A` whatever, so no knowledge is recoverable from
+it. This is the formal content of "if `C` is not true, my belief is vacuous",
+and the reason an obligation is only worth recording when it might hold. -/
+theorem Debt.vacuous (A : Prop) : Debt False A := fun h => h.elim
 
 end LaxLogic.Obligation
