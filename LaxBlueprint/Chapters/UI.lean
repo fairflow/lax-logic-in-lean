@@ -32,15 +32,15 @@ interpolant depending only on the antecedent and the shared variables.
 :::
 
 :::theorem "maehara" (parent := "craig") (lean := "PLLND.SC.maehara")
-TODO — Maehara's method on the cut-free sequent calculus.
+TO WRITE — Maehara's method on the cut-free sequent calculus.
 :::
 
 :::theorem "craig" (parent := "craig") (lean := "PLLND.craig_interpolation")
-TODO — Craig interpolation for PLL, from {uses "maehara"}[].
+TO WRITE — Craig interpolation for PLL, from {uses "maehara"}[].
 :::
 
 :::theorem "craig_imp" (parent := "craig") (lean := "PLLND.craig_implication")
-TODO — the implication form.
+TO WRITE — the implication form.
 :::
 
 # Route (B): the fuel-founded retention interpolant
@@ -52,7 +52,7 @@ Stabilisation everywhere is the open theorem.
 :::
 
 :::definition "interpF" (parent := "routeB")
-TODO — `LJFO.interpF` (`LJF/OFuel.lean`), the retention interpolant at a
+TO WRITE — `LJFO.interpF` (`LJF/OFuel.lean`), the retention interpolant at a
 given fuel.  `E_f := interpF p f [] done none` and
 `A_f := interpF p f [] done (some G)`.
 :::
@@ -87,24 +87,39 @@ Depends on {uses "n0a_soundness"}[].
 # Where it is stopped
 
 :::proposition "n0c_cofinality" (parent := "routeB")
-N0c — *cofinality at a saturated station*: every sufficient `p`-free
-formula is reached at some fuel.  **STOPPED TWICE, and the obstruction is
-exact**, which is worth more than a vague "hard": there is no station-first
-order (§4.11), and no height-first order on {uses "interpF"}[] either,
-because the three reshaping processing clauses raise height (§4.13).
+N0c — *cofinality at a saturated station*: every sufficient `p`-free formula
+is reached at some fuel.  IN BUILD, re-authoring on {uses "n0e_parking"}[]:
+`SatE2P`, `SatA2P`, the 18-definition mutual of `LJF/O.lean` recast in
+fuel-carrying form — each traversal returns an `UpFrom` witness, thresholds
+combine by `max`, and about seventy `decreasing_by` sites are fed from the
+Part-10 bounds.  The typed obligations `TInvP`/`UEntryP` and the chain below
+them down to `ECofinalP`/`ACofinalP` are proved.
 
-This is the node the whole route waits on.  Depends on
-{uses "n0a_soundness"}[], {uses "n0b_rows"}[] and {uses "n0e_parking"}[].
+The history is worth keeping, because it is what forced the parking
+definition.  On `interpF` this family was *stopped twice*, and the
+obstruction was located exactly rather than described as difficulty: there
+is no station-first order (§4.11), and no height-first order either
+(§4.13), because the three reshaping processing clauses raise height.
+{uses "n0e_parking"}[] is the repair, not a workaround.
+
+Depends on {uses "n0a_soundness"}[] and {uses "n0b_rows"}[].
 :::
 
 :::definition "n0e_parking" (parent := "routeB")
-N0e — the **parking definition** `interpP`: park `(Q₁∨Q₂) ⊃ N`,
-`↓↑P′ ⊃ N` and `↓(M₁∧M₂) ⊃ N`, one retained-guard row each, then found
-{uses "n0c_cofinality"}[] on `(height, weight)`.  The governing principle
-is no rewriting of hypotheses, and every non-atomic implication firing
-through a retained guard; the soundness pair comes first.
+N0e — the *parking definition* `interpP`.  PROVED (§4.14).
 
-DECIDED 2026-09-05, IN BUILD.  Depends on {uses "n0h_heights"}[].
+Park $`(Q_1∨Q_2) ⊃ N`, $`↓↑P' ⊃ N` and $`↓(M_1∧M_2) ⊃ N`, one retained-guard
+row each.  The governing principle is that no hypothesis is rewritten and
+every non-atomic implication fires through a retained guard; the soundness
+pair comes first, and `eSoundP`/`aSoundP` hold with the gate watched
+failing.  The rows, the processing phase and the reductions are proved, and
+so is the founding: under $`μ = (\mathrm{hgt}, \mathrm{weight},
+\mathrm{sizeOf})` every edge class descends, including the antecedent
+dispatch for all five parked shapes.  A kernel `decide` check confirms
+`interpP = interpF` on a station without the changed shapes at fuels 0–8,
+with negative controls.
+
+Depends on {uses "n0h_heights"}[].
 :::
 
 # The chain to uniform interpolation
@@ -125,7 +140,7 @@ rather than via the construction.  DRAFTED.
 :::
 
 :::theorem "n3_equivalence" (parent := "chain")
-N3 — **stabilisation ⟺ uniform interpolation, per cell**, given
+N3 — *stabilisation ⟺ uniform interpolation, per cell*, given
 {uses "n0a_soundness"}[] and N0d.  This is the conceptual heart: it turns
 an open question about interpolants into an open question about chains.
 DRAFTED, carries a `sorry`.  Depends on {uses "n1_stabilises"}[] and
@@ -133,9 +148,19 @@ DRAFTED, carries a `sorry`.  Depends on {uses "n1_stabilises"}[] and
 :::
 
 :::theorem "n4_stabilisation_all" (parent := "chain")
-N4 — `StabilisationAll`: every saturated cell stabilises.  **OPEN BOTH
-WAYS** — neither proved nor refuted, with a `sorry` placeholder.  This is
-THE open theorem of the route.
+N4 — `StabilisationAll`: every saturated cell stabilises.  *OPEN BOTH WAYS*,
+and this is the theorem the route exists to settle.
+
+Two prongs, and the point worth making to a reader is that *either outcome
+is a result*.  The proof prong bounds the fuel a cell needs uniformly over
+$`Δ`, by loop-elimination over the finite space of (station, goal) pairs, in
+the decider's style; the measured constraint is roughly one parked-box
+nesting level per ten fuel units, about three times the derivation height.
+The refutation prong looks for a cell whose `A`-chain ascends without bound
+— the Ghilardi–Zawadowski shape — using the §4.12 harness: instance screen,
+chain probe, cofinality instances by focused kernel search.  A
+non-stabilising cell would, with {uses "n3_equivalence"}[], be a proof that
+PLL *lacks* uniform interpolation.
 :::
 
 :::theorem "n5_ljfo_ui" (parent := "chain")

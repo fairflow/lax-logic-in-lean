@@ -31,39 +31,47 @@ Each half of `Step`, normalising on its own.
 :::
 
 :::definition "astep" (parent := "frag") (lean := "PLLND.AStep")
-TODO — the `let`-associativity fragment.
+The `let`-associativity fragment: re-bracketing nested binds, without
+touching any β-redex.
 :::
 
 :::definition "weight" (parent := "frag") (lean := "PLLND.Tm.weight")
-TODO — the weight that decreases along {uses "astep"}[].
+A weight on terms, strictly decreasing along {uses "astep"}[].
 :::
 
 :::theorem "assoc_sn" (parent := "frag") (lean := "PLLND.assoc_sn")
-TODO — assoc terminates, by {uses "weight"}[].  A genuinely simple
-argument, and worth showing as the contrast with what follows.
+Assoc terminates, by {uses "weight"}[].  The argument is genuinely simple —
+a natural-number measure and nothing else — and it is worth presenting for
+that reason, as the contrast against which the difficulty of the other
+fragment, and then of their union, can be seen.
 :::
 
 :::definition "rstep" (parent := "frag") (lean := "PLLND.RStep")
-TODO — the β fragment.
+The β fragment: one clause per connective.
 :::
 
 :::definition "rsn" (parent := "frag") (lean := "PLLND.RSN")
-TODO — the reducibility predicate.
+The reducibility predicate, defined by recursion on the type.  The `◯` clause
+is where the design decision sits: this is the value-style interpretation,
+and {uses "kont"}[] later replaces it.
 :::
 
 :::theorem "red_sn" (parent := "frag") (lean := "PLLND.Red.sn")
-TODO — reducible terms are strongly normalising.
+Reducible terms are strongly normalising — the easy half of the reducibility
+method.
 :::
 
 :::theorem "beta_sn" (parent := "frag") (lean := "PLLND.beta_sn")
-TODO — β is strongly normalising, by Kripke–Tait reducibility over
-{uses "rsn"}[] and {uses "red_sn"}[].
+β is strongly normalising, by Kripke–Tait reducibility over {uses "rsn"}[]
+and {uses "red_sn"}[].  Note the asymmetry with {uses "assoc_sn"}[]: no
+measure on terms does this, because β duplicates arbitrary subterms.
 :::
 
 :::theorem "step_split" (parent := "frag") (lean := "PLLND.step_split")
-TODO — every `Step` is an {uses "astep"}[] or an {uses "rstep"}[].  This is
-what makes "the two fragments" a partition rather than a manner of
-speaking.
+Every `Step` is an {uses "astep"}[] or an {uses "rstep"}[].  This is what
+makes "the two fragments" a partition rather than a manner of speaking, and
+it is what the next section needs in order to say that *both* halves
+terminate and the whole still might not.
 :::
 
 # The fragments do not compose
@@ -73,7 +81,7 @@ A negative result, and the reason the chapter needs a third method.
 :::
 
 :::proposition "no_quasicommutation" (parent := "nocomp")
-TODO.  Each fragment creates redexes of the other, so **both** orientations
+Each fragment creates redexes of the other, so *both* orientations
 of Bachmair–Dershowitz quasi-commutation fail, and {uses "assoc_sn"}[]
 together with {uses "beta_sn"}[] does not yield termination of
 {uses "step_split"}[]'s union.
@@ -99,22 +107,27 @@ Lindley–Stark ⊤⊤-lifting, and the theorem it delivers.
 :::
 
 :::definition "kont" (parent := "full")
-TODO — continuation stacks, and the biorthogonal `⊤⊤` closure that
-reinterprets the `◯`-clause.  The value-style interpretation used for
-{uses "beta_sn"}[] is exactly the `K = []` shadow of this one.
+Continuation stacks, and the biorthogonal `⊤⊤` closure that reinterprets the
+`◯`-clause: `◯A` is reducible when it behaves well against every reducible
+continuation, rather than when it holds a reducible value.  The value-style
+interpretation used for {uses "beta_sn"}[] is exactly the `K = []` shadow of
+this one, which is why the upgrade is a strengthening and not a fresh start.
 :::
 
 :::theorem "fundamental_step" (parent := "full") (lean := "PLLND.fundamental_step")
-TODO — the fundamental theorem of the logical relation, over the full
-reduction.  Uses {uses "kont"}[].
+The fundamental theorem of the logical relation, over the full reduction:
+every well-typed term is reducible under any reducible substitution.  Uses
+{uses "kont"}[].
 :::
 
 :::theorem "strong_normalisation" (parent := "full") (lean := "PLLND.strong_normalisation")
-TODO — strong normalisation of the full reduction: `SNt t` for every
-`t : Tm Γ φ`, β and assoc freely interleaved.  This closes what
-{uses "no_quasicommutation"}[] showed could not be closed compositionally.
+Strong normalisation of the full reduction: `SNt t` for every `t : Tm Γ φ`,
+β and assoc freely interleaved.  This closes what
+{uses "no_quasicommutation"}[] showed could not be closed compositionally,
+and it is the last of the three normalisation results.
 :::
 
 :::theorem "normalize_spec" (parent := "full") (lean := "PLLND.Tm.normalize_spec")
-TODO — the certified normaliser's specification.
+The certified normaliser's specification: the function terminates and
+delivers a normal form of its input.
 :::
