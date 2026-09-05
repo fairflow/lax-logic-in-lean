@@ -11,7 +11,9 @@ What changes, and nothing else:
 * the `∃p` station map `eConjRowsP` and the two `∀p` station maps
   `truStationRowsP`/`circStationRowsP` gain THREE rows each, for the
   shapes `interpP` newly parks, and their Dyckhoff row takes its guard at
-  the FULL station;
+  the FULL station and at the ANTECEDENT'S OWN GOAL `↑↓(Q′ ⊃ N′)`, so
+  that all five parked implication rows have literally one shape
+  (`LJF/OFuelP.lean` (c), 2026-09-05);
 * the aggregate equations and row memberships follow verbatim (they are
   `rfl`/`rowMem` against the new maps);
 * `SatE2P`/`SatA2P` are `SatE2F`/`SatA2F` with `interpP` and the extended
@@ -53,7 +55,7 @@ def eConjRowsP (p : String) (f : Nat) (done : List Neg) : List Neg :=
         pGuard p a nTop (.imp (.atom a) (interpP p f [N] rest none))
     | .imp (.down (.imp Q' N')) N =>
         nAnd
-          (.imp (.down (interpP p f [] done (some (.imp Q' N'))))
+          (.imp (.down (interpP p f [] done (some (.up (.down (.imp Q' N'))))))
                (interpP p f [N] rest none))
           (interpP p f [.imp (.down N') N] rest none)
     | .circ Q =>
@@ -108,7 +110,7 @@ theorem dykConjMemP {p : String} {f : Nat} {done : List Neg} {Q' : Pos}
     {N' N : Neg} {rest : List Neg}
     (hXr : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done) :
     nAnd
-      (.imp (.down (interpP p f [] done (some (.imp Q' N'))))
+      (.imp (.down (interpP p f [] done (some (.up (.down (.imp Q' N'))))))
            (interpP p f [N] rest none))
       (interpP p f [.imp (.down N') N] rest none) ∈ eConjRowsP p f done :=
   rowMem hXr
@@ -173,7 +175,7 @@ def truStationRowsP (p : String) (f : Nat) (done : List Neg) (G : Pos) :
         pGuard p a nBot
           (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.up G))))
     | .imp (.down (.imp Q' N')) N, hXr =>
-        nAnd (interpP p f [] done (some (.imp Q' N')))
+        nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
              (interpP p f [N] rest (some (.up G)))
     | .imp (.down (.circ Q')) N, hXr =>
         nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -270,7 +272,7 @@ def circStationRowsP (p : String) (f : Nat) (done : List Neg) (G : Pos) :
         pGuard p a nBot
           (nAnd (.up (.atom a)) (interpP p f [N] rest (some (.circ G))))
     | .imp (.down (.imp Q' N')) N, hXr =>
-        nAnd (interpP p f [] done (some (.imp Q' N')))
+        nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
              (interpP p f [N] rest (some (.circ G)))
     | .imp (.down (.circ Q')) N, hXr =>
         nAnd (interpP p f [] done (some (.up (.down (.circ Q')))))
@@ -342,7 +344,7 @@ theorem laxRowsP_qimpMem {p : String} {f : Nat} {done : List Neg} {Q : Pos}
 theorem laxRowsP_dykMem {p : String} {f : Nat} {done : List Neg} {Q : Pos}
     {Q' : Pos} {N' N : Neg} {rest : List Neg}
     (hsp : (Neg.imp (.down (.imp Q' N')) N, rest) ∈ splits done) :
-    nAnd (interpP p f [] done (some (.imp Q' N')))
+    nAnd (interpP p f [] done (some (.up (.down (.imp Q' N')))))
          (interpP p f [N] rest (some (.circ Q))) ∈ laxRowsP p f done Q :=
   rowMemR hsp
 
