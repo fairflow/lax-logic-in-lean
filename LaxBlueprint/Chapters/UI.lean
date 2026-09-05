@@ -22,9 +22,11 @@ This chapter is the reader's view of them and will drift unless kept in
 step; it has twice been a day stale already.
 
 As of §4.19 and §4.20 (2026-09-05) the shape is this: everything from N0a to
-N3 is proved, N5 carries the last `sorry`, and *one* mathematical question is
-open — {uses "n4_stabilisation_all"}[]. What is not proved elsewhere is
-carried as a named obligation in a signature.
+N3 is proved, and what is not proved is carried as a *named obligation in a
+signature* rather than as a hole.  Two things are genuinely open —
+{uses "n4_stabilisation_all"}[], the only open node and the one the route
+exists to settle, and `CutInv`, cut admissibility for LJF◯ in the form the
+backward direction needs, for which a refute-first screen is running.
 
 A note on method, since it explains what is and is not attached below.
 Route (B) is moving week by week, so nodes here carry `(lean := "...")`
@@ -234,9 +236,10 @@ PLL *lacks* uniform interpolation.
 
 :::theorem "n5_ljfo_ui" (parent := "chain")
 N5 — `ljfo_ui_of_stabilisation`, uniform interpolation for LJF◯ at every
-saturated station, from {uses "n3_equivalence"}[] and
-{uses "n4_stabilisation_all"}[].  Still in `wip/ui_routeB_blueprint.lean`
-and still carrying a `sorry`; it is the one node WP2 did not reach.
+saturated station.  *Subsumed* by WP2 rather than left behind by it: it is
+N3 forward applied at every cell.  The standing declaration in
+`wip/ui_routeB_blueprint.lean` still carries its `sorry`, but that `sorry`
+is now stale bookkeeping rather than a gap in the argument.
 :::
 
 :::theorem "n6_transport" (parent := "chain")
@@ -245,14 +248,22 @@ N6 — transport to PLL: `IsUIPairPLL`, `PLL_UI`, the polarisation fact
 `isUIPairPLL_of_isUIPair` and `pll_ui_of_ljfo`.  PROVED relative to
 `CutInv` and to `CellsFor`, pinned `[propext, Quot.sound]`.
 
-`CellsFor` says what the transport still needs per formula: a
-uniform-interpolant pair at the polarised station and one at the polarised
-goal cell.  The second is an instance of N3 forward at the empty station;
-the first is N3 forward at the *saturation* of `[negOfO φ]`, so it also
-needs the processing phase `eMinPP`/`aMinPP` to carry the pair back from the
-saturated station.  That carrying step is WP4's, and — the sentence worth
-quoting to anyone asking how far the route has come — it is the only thing
-between that file and `PLL_UI`.
+The signature is the honest statement of what is left:
+`pll_ui_of_ljfo : CutInv → (∀ p, CellsFor p) → PLL_UI`.  *Three* things
+stand between the file and `PLL_UI`, and only one of them is mechanical:
+
+* `CutInv` — OPEN.  A refute-first screen for it was launched on
+  2026-09-05.
+* `CellsFor p`, for every `p` and `φ` — this needs
+  {uses "n4_stabilisation_all"}[], fed through N3 forward, so it inherits
+  that node's *open both ways*.
+* WP4's transfer of the pair from the saturation of `[negOfO φ]` back
+  through the processing phase `eMinPP`/`aMinPP` — the only mechanical one
+  of the three.
+
+Put positively: *given* `CutInv` and stabilisation at every saturated
+station, the file yields `PLL_UI` up to WP4's transfer through the
+processing phase.
 
 Depends on {uses "n3_equivalence"}[] and {uses "n0b_rows"}[].
 :::
