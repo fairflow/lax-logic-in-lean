@@ -36,6 +36,7 @@ Theorem 1 (conservativity over HOL) is deliberately left for later work.
 | `Latch.lean`, `LatchSynth.lean` | The paper's RS latch (Figs. 7–8), first with the timing constraints assumed and then synthesised — recovering its equation (8) and reducing it to (9). |
 | `Adder.lean` | The repository's ripple-carry and carry-lookahead adders rerun on the `◯∀` side; the derived bounds agree with what the `◯∃` extractor computes; the 32-bit cycle-time obligation is refuted and then discharged after re-associating the fold. |
 | `Modular.lean` | Modular lax reasoning: a three-stage datapath in which each stage uses the previous *holed* theorem as an abstract lemma, so obligations accumulate by concatenation. The `C ⊃ φ` fold and the discharge at a constraint model. |
+| `Budget.lean` | A second constraint model: resource budgets, where separate pools add and a shared pool takes the max. Same tactics, same solver, different monoid — and its constraints are `max`-free, hence `Classical.choice`-free. |
 | `BeliefLink.lean` | `Debt C A` is the open nucleus `u_C(A)` of the belief development, by `rfl`; `◯∀` is entailment in the pointwise Heyting algebra. |
 | `PLLBridge.lean` | `Debt C` is a sound interpretation of `◯` for the repository's own `LaxND`, by structural induction, depending on no axioms. |
 | `StdCtxBridge.lean` | Mendler's `Ω*` and Fairtlough–Mendler's `StdCtx` are different monoids that both land in `Debt` — conjunction and disjunction of the atomic constraints respectively. |

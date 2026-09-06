@@ -7,3 +7,4 @@ LaxLogic/Verso_manual.pdf
 # scripts/md2eml.py output — regenerable mail drafts, don't track
 # (the Message-ID and Date change on every run).
 *.eml
+_out/

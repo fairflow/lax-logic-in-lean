@@ -93,6 +93,7 @@ import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.LatchSynth
 import LaxLogic.Obligation.Adder
 import LaxLogic.Obligation.Modular
+import LaxLogic.Obligation.Budget
 import LaxLogic.Obligation.BeliefLink
 import LaxLogic.Obligation.PLLBridge
 import LaxLogic.Obligation.StdCtxBridge

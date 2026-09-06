@@ -17,6 +17,12 @@ name = "mathlib"
 scope = "leanprover-community"
 rev = "v4.31.0"
 
+# LaxPaper: the Verso write-up of the obligation library (LaxLogic/Obligation).
+# Deliberately NOT in defaultTargets — it is the only target that pulls verso
+# into the import graph.  Render with scripts/paper-render.sh.
+[[lean_lib]]
+name = "LaxPaper"
+
 [[lean_lib]]
 name = "LaxLogic"
 
