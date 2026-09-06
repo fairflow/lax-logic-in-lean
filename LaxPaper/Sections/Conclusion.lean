@@ -10,6 +10,9 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Conclusion" =>
 
+What runs, what the right word for it is, what is still missing, and what would
+be worth doing next.
+
 # What runs
 
 The method of Fairtlough, Mendler and Cheng runs in Lean, and the step their

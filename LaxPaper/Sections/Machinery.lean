@@ -10,6 +10,10 @@ open LaxLogic.Obligation
 
 #doc (Manual) "The machinery" =>
 
+The two modalities and the equations that define them; the proof hole that
+records a goal instead of asserting it; and the ledger that makes the resulting
+debt reportable and auditable.
+
 # The two modalities
 
 The original paper's Fig. 4 defines the meaning of a constraint/formula pair

@@ -12,11 +12,12 @@
 # lands on a bare file index at the first click.  That is why this script starts
 # a server rather than telling you a path.
 #
-# Two flags matter and both were learned the hard way.
-#
-#   --depth 1   Without it the renderer splits at EVERY heading, so a section
-#               page becomes a table of contents and the prose is one more click
-#               away.  At depth 1 each section is one page.
+# On splitting.  The renderer splits at every heading, so each subsection gets
+# its own page and each section page carries that section's LEAD PROSE plus
+# links to its subsections.  A section with no lead prose therefore renders as a
+# bare table of contents -- which is what "the links resolve to index pages"
+# means.  The fix is prose, not `--depth`: every section file here has a lead
+# paragraph between its `#doc` line and its first heading.  Keep it that way.
 #
 #   --with-html-single   A single-page version, for reading straight through.
 #
@@ -32,7 +33,7 @@ PORT_SINGLE=${PORT_SINGLE:-8098}
 lake build LaxPaper
 rm -rf _out/paper
 lake lean LaxPaperMain.lean -- --run LaxPaperMain.lean --output _out/paper \
-  --depth 1 --with-html-single
+  --with-html-single
 test -f _out/paper/html-multi/index.html
 test -f _out/paper/html-single/index.html
 

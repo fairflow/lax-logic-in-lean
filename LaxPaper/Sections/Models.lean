@@ -11,6 +11,10 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Constraint models" =>
 
+A constraint model fixes what a constraint *is*: the witness type, and how two
+constraints combine. The modality and every tactic above are independent of that
+choice, so several models are carried side by side, one per module.
+
 A constraint model fixes what a constraint _is_: the witness type, and how two
 constraints combine.  The modality and every tactic above are independent of
 that choice, so the development carries several models side by side, one per

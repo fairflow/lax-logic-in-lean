@@ -10,6 +10,9 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Introduction" =>
 
+What the problem is, what Fairtlough, Mendler and Cheng do about it, and what
+this development adds to that.
+
 # The problem
 
 A verification that uses abstraction accumulates side conditions, and it

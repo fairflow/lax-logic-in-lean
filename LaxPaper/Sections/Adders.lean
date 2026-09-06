@@ -10,6 +10,10 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Case study: two adders" =>
 
+Two circuits the repository already contained, built on the other modality.
+Running them through this one turns the extracted delay into the constraint the
+claim is weakened by, and lets a design decision be made by refutation.
+
 The repository already contained two adders, built on the _other_ modality.
 Under the `◯∃` reading a proof term is evaluated in a writer monad over the
 delay monoid, so evaluating it **returns** a delay alongside the value; that is

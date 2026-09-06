@@ -10,6 +10,10 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Modularity: borrowing a constraint" =>
 
+A theorem carrying an outstanding constraint is of little use if it cannot be
+applied while the constraint is outstanding. This is the tactic that lets one be
+borrowed rather than discharged, and the evidence that the borrowing is verbatim.
+
 # The gap
 
 `postponing theorem` produces `C₁ ⊃ ⋯ ⊃ Cₙ ⊃ φ`.  That is the fold-back, and it

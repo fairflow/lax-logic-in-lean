@@ -10,6 +10,9 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Case study: a modular datapath" =>
 
+Three stages, each built on the previous one while its constraint is still
+outstanding. This is the test of whether the method composes.
+
 The latch and the adders each synthesise the constraints of one circuit.  This
 example is about the step after: building a second proof on top of the first
 _while its constraint is still outstanding_, so that the composite's constraint

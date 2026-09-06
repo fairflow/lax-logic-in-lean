@@ -10,6 +10,10 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Case study: the RS latch" =>
 
+The original paper's principal example, and the one where the difficulty is real:
+a sequential device whose functional behaviour depends on its timing, so the
+constraints cannot be set aside and recovered later.
+
 The original paper's principal example is the RS latch, the simplest of the
 three memory devices Herbert verified.  It is the case where the difficulty is
 real: the functional behaviour of a sequential device depends on its timing in

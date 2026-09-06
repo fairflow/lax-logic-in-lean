@@ -10,6 +10,10 @@ open LaxLogic.Obligation
 
 #doc (Manual) "Computing the reduced constraint" =>
 
+Where the original paper says "given such reasoning is built into constraint
+reductions" and prints the answer. Here the reduction is three rewrite lemmas,
+and it runs at the moment the obligation is recorded.
+
 # What the original leaves to the reader
 
 In the latch analysis of the original paper, the synthesised constraint at
