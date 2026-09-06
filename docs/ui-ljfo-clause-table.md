@@ -2727,6 +2727,106 @@ the polarity induction, the hard halves ◯-free first).
 
 ---
 
+### 4.26 WP9: `QBound` PROVED — the measure `μ = κ·W + ν` founds the loop-checked recursion; N4 for PLL rests on `PQEquiv` alone; the overnight crash and its cause (2026-09-06, 08:00)
+
+The run (46 minutes, four commits, agent branch @ 8ee7de9) was killed with
+the machine at about 04:30 — see the crash note at the end — but its
+commits survived; merged here at 6d0754a and verified: the five leaf
+modules build in 70 s with nothing upstream rebuilt (8620 jobs replayed,
+the family untouched), pins measured, gate watched failing, sorry sweep
+clean.  Files: `wip/ui_routeB_n4q_meas.lean` (the measure, the edge
+mirror, the Stage 0 cells), `wip/ui_routeB_n4q_gate.lean` (the gates),
+`wip/ui_routeB_n4q_clos.lean` (the closure, the flattening),
+`wip/ui_routeB_n4q_cong.lean` (the mirror is complete),
+`wip/ui_routeB_n4q_bound.lean` (the descent, `qBound`, N4 over `PQEquiv`
+alone), `docs/n4-bound.md` (the design record).
+
+**The measure is a `Nat` after all.**  §4.25 forced the shape
+`(K − |seen|, ν)` lexicographic and expected a well-founded order; the
+second component is bounded along the recursion by a quantity that is
+itself non-increasing, so the pair flattens:
+
+    clSt s   the subformula closure of todo ++ done ++ goal, closed under the Dyckhoff residual
+             ↓(Q′ ⊃ N′) ⊃ N  ↦  ↓N′ ⊃ N
+    κ s      the number of distinct compound antecedents of clSt s not in seen
+    W s      3 ^ (mxW (clSt s) + 1),  mxW = the largest wNeg in clSt s
+    ν s      2·sum3 todo + sum3 done + goalW goal
+    μ s   =  κ s · W s + ν s                                            (qMu)
+
+Two arithmetic facts do the work: along an ordinary edge (`clSt t ⊆ clSt s`,
+`seen` carried, `ν t < ν s`) `μ` strictly decreases; along a guard edge
+(`seen t = Q′ :: seen s`, `Q′ ∈ caOf (clSt s)`, `Q′ ∉ seen s`,
+`ν t < ν s + W s`) it strictly decreases because `κ` drops by one and the
+rise of `ν` is paid by `W` (`pow_ant_lt_bigW`: the member `Q′ ⊃ N` is in
+the closure, so `3 ^ wPos Q′ < W s`).  The Dyckhoff clause in the closure
+is the one place where the closure is more than "subformulas": without
+it the residual row introduces a compound antecedent absent from the
+original cell's closure and `κ` could rise.
+
+**The mirror, and the proof shape.**  `edgesQ s` lists the states
+`stepQ` consults at `s`; the descent is one lemma per edge (fourteen
+rows, `docs/n4-bound.md` §3; the `∀p` implication goal, where
+`invertPos Q` grows the station, is discharged by `impGoal_lt` because
+every branch of `invertPos Q` is a subformula of the goal), and
+
+    stepQ_congr    : (∀ t ∈ edgesQ s, atSt prev₁ t = atSt prev₂ t) →
+                     atSt (stepQ id p prev₁) s = atSt (stepQ id p prev₂) s
+    edges_decrease : ∀ t ∈ edgesQ s, qMu t < qMu s
+    qFounded p     : QFounded id p qMu
+    qBound p       : QBound p                                        [propext, Quot.sound]
+    n4_of_pqequiv  : PQEquiv p → ∀ done G, EStabilises p done × AStabilises p done G
+                                                                     [propext, Classical.choice, Quot.sound]
+    hasUI_of_pqequiv : SatE2P p → SatA2P p → PQEquiv p →
+                       Saturated done → ParkedCtxP done → HasUI p done G
+
+`stepQ_congr` (the mirror is COMPLETE) is proved structurally, one
+congruence lemma per row function, with no mention of the measure.
+
+**Stage 0, rule 9, before any proof.**  `qMu` was written as a computable
+function and checked in the kernel on the six ◯-free cells first, then the
+modal ones: the mirror is adequate at each cell (`adeq_circFree`,
+`adeq_modal`) and `μ` strictly decreases along every edge out of every
+state within three steps of the cell (`desc_circFree`, `desc_modal`).
+Gates watched failing, each a kernel-checked `= false`
+(`wip/ui_routeB_n4q_gate.lean`): drop `3^(wNeg goal)` from `ν` and cell
+(i) goes red (the term pays for `invertPos Q` entering the station);
+drop `κ` and cell (i) goes red in both modes (the guard edge raises `ν`,
+the very failure the loop check repairs — which is why the measure is a
+product, not a sum); `gate_control` shows the committed `qMu` passes at
+the same cell and depth.  Re-watched here: `qBound` at `[propext]` fails
+on `Quot.sound`; `n4_of_pqequiv` at `[propext, Quot.sound]` fails on
+`Classical.choice`.
+
+**Predicted against observed thresholds** (`interpG_stab_of_founded`
+gives `μ s + 1`; a prediction BELOW an observed threshold would be a
+contradiction):
+
+    cell (i)   ∀p: predicted 1000, observed 4      ∃p: 973 / 3
+    cell (iii) ∀p: 7372 / 12                       ∃p: 7291 / 9
+    cell (m10) ∀p: 199027 / 16                     ∃p: 199018 / 15
+
+Every prediction is far above, as it must be: `W` is a power of three
+over the whole closure and counts every state the recursion could visit.
+The `κ` column (1, 3, 3) is the one that tracks the depth of the guard
+graph.
+
+**Status.**  `QBound` PROVED (was OPEN at §4.25).  N4 for PLL now rests
+on ONE obligation, `PQEquiv p` (the redundancy lemma), through
+`n4_of_pqequiv`; uniform interpolation for PLL therefore rests on
+`PQEquiv` alone, over the cofinality statements as variables.
+
+**The crash, and the standing rule it produced.**  WP9 and WP10 ran in
+parallel; both cloned `.lake` from the repo root, which is checked out on
+the blueprint session's branch and has NO family olean, so each rebuilt
+the whole LJF chain including the 25-minute family at once, and the
+machine went down at about 04:30 (the interderivability run's transcript
+and its cell verdicts were lost; its module survived on disk, §4.27).
+Rule (memory `agent-lake-clone-source`, Matthew 07:30): clone the cache
+from the campaign worktree, verify `LJF/OFuelPFam.olean` exists before any
+build, one heavy run at a time, leaf builds by explicit module name.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each

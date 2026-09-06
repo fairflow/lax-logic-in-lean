@@ -55,7 +55,7 @@ interpolants agree with Pitts's.
 | N1 | `EStabilises`, `AStabilises` — the chains eventually constant up to interderivability, the A-side modulo `E_f`. The LITERAL forms `EStabEq`/`AStabEq` are REFUTED at every saturated station with a parked compound implication (six designed cells, kernel-checked; the self-referential attack row) | `wip/ui_routeB_n3.lean`, `wip/ui_routeB_n4_lit.lean` | **STATED**; literal forms **REFUTED** (§4.23) | — |
 | N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic (`minE` at every judgment `j`; `minA` at `tru`, the lax cell being the cell `done ⇒ ◯P`) | `wip/ui_routeB_n3.lean` | **STATED** (axiom-free) | — |
 | N3 | `hasUI_of_stabilises` (forward, through `cutInv`), `stabilises_of_hasUI′` (backward) — W ⟺ UI per cell, interderivable form, over `SatE2P`/`SatA2P` as variables | `wip/ui_routeB_n4.lean`, `wip/ui_routeB_n3_cut.lean` | **PROVED both ways** `[propext, Classical.choice, Quot.sound]` (§4.22–4.23) | N0e, N0d, N0k, N1, N2 |
-| N4 | `StabilisationAll` — every saturated cell stabilises (interderivable form). ◯-free instance: `n4_circFree_uncond`, by transport from `uniform_interpolation_IPC` through `polInvT` and N3 backward | `wip/ui_routeB_n4.lean`; restated as `StabilisationAllP` in `wip/ui_routeB_wp4.lean`; the loop-checked route `wip/ui_routeB_n4q*.lean`, `docs/n4-loopcheck.md` | **◯-free PROVED** `[propext, Classical.choice, Quot.sound]` (§4.23); **PLL OPEN both ways**, and since §4.24 the ONLY obligation between route (B) and `PLL_UI`. **Reduced (§4.25)** to two typed obligations about the recursion, not a cell: `n4_of_interpQ : PQEquiv p → QBound p → ∀ done G, EStabilises p done × AStabilises p done G`, with `QBound` (a measure founding the loop-checked `interpQ`) and `PQEquiv` (`interpP ⟛ interpQ` at every fuel and cell) both OPEN; eighteen designed cells, six of them Ghilardi–Zawadowski shapes, all bottom out; the per-station reset REFUTED on a ◯-free cell. WP9/WP10 in flight | N0k, N3, `uniform_interpolation_IPC` |
+| N4 | `StabilisationAll` — every saturated cell stabilises (interderivable form). ◯-free instance: `n4_circFree_uncond`, by transport from `uniform_interpolation_IPC` through `polInvT` and N3 backward | `wip/ui_routeB_n4.lean`; restated as `StabilisationAllP` in `wip/ui_routeB_wp4.lean`; the loop-checked route `wip/ui_routeB_n4q*.lean`, `docs/n4-loopcheck.md` | **◯-free PROVED** `[propext, Classical.choice, Quot.sound]` (§4.23); **PLL OPEN both ways**, and since §4.24 the ONLY obligation between route (B) and `PLL_UI`. **Reduced (§4.25)** to two typed obligations about the recursion, not a cell: `n4_of_interpQ : PQEquiv p → QBound p → ∀ done G, EStabilises p done × AStabilises p done G`, with `QBound` **PROVED** (§4.26: `qBound`, the measure `μ = κ·W + ν`, `[propext, Quot.sound]`) and `PQEquiv` (`interpP ⟛ interpQ` at every fuel and cell) **OPEN — the only obligation left**: `n4_of_pqequiv : PQEquiv p → ∀ done G, EStabilises p done × AStabilises p done G`; the easy halves of `PQEquiv` built by the crashed WP10 run, verification here pending (§4.27 to follow); eighteen designed cells, six of them Ghilardi–Zawadowski shapes, all bottom out; the per-station reset REFUTED on a ◯-free cell | N0k, N3, `uniform_interpolation_IPC` |
 | N5 | `hasUI_of_stab : SatE2P p → SatA2P p → StabilisationAllP p → ∀ todo done G, ParkedCtxP done → HasUI p (todo ++ done) G` — a uniform-interpolant pair at EVERY generalised station `(todo, done)` of LJF◯ from N4 at the saturated ones, through the transfer `stabP` (`eMinPP`'s recursion; eleven clauses transfer by rewriting, `↑⊥` is constant, `↑(P ∨ Q)` branches, cut only at threshold merging). Stabilisation and N3 restated at `(todo, done)`: `EStabilisesP`/`AStabilisesP`, `isUIPair_of_stabilisesP`, `stabilises_of_hasUICFP` | `wip/ui_routeB_wp4.lean` | **PROVED relative to N4** `[propext, Classical.choice, Quot.sound]` (§4.24) | N3, N4 |
 | N6 | `IsUIPairPLL`, `PLL_UI`, `pll_ui_of_ljfo′ : (∀ p, CellsFor p) → PLL_UI` — transport to PLL | `wip/ui_routeB_n3.lean`, `wip/ui_routeB_n3_cut.lean`, `wip/ui_routeB_wp4.lean` | **PROVED on IPC formulas** — `cellsFor_circFree`, `ipc_ui_routeB : (∀ p, SatE2P p) → (∀ p, SatA2P p) → IPC_UI_routeB`, tested against every p-free PLL formula, `◯` included, and AGREEING with `uniform_interpolation_IPC` up to interderivability (`routeB_agrees_IPC`); **PROVED relative to N4 alone** in general — `cellsFor_of_stab`, `pll_ui_of_stabilisationAll : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, StabilisationAllP p) → PLL_UI`; all `[propext, Classical.choice, Quot.sound]` (§4.22, §4.24) | `bridge_iff`, N3, N5, N0k |
 | N0k | `cutInv : Inv Γ [] tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ`, by polarisation invariance: the transfer block `bLL`/`gA`/`sD`/`fT`/`fS`/`bCtx` and `polInvT`/`polInvL`/`cutInvNE` at `[propext, Quot.sound]`; `cutInv` itself `[propext, Classical.choice, Quot.sound]` (the `Type` packaging of a `Nonempty` result through the `Prop`-valued bridge). ◯-free block `polInvT_circFree`/`cutInv_circFree` committed first. `(A′)` REFUTED (`notCanGoalConverse`) | `LJF/OPolInv.lean` | **PROVED** (§4.22) | — |
@@ -100,8 +100,8 @@ graph TD
   K[N0k CutInv · PROVED] --> N3
   K --> N6
   N0d --> N3
-  Q[QBound · OPEN] --> N4
-  PQ[PQEquiv · OPEN] --> N4
+  Q[QBound · PROVED] --> N4
+  PQ[PQEquiv · OPEN, easy halves PROVED] --> N4
   N4[N4 StabilisationAll · ◯-free PROVED, PLL OPEN, = QBound + PQEquiv] --> N5[N5 UI for LJF◯ · PROVED rel. N4]
   N3 --> N5
   N5 --> N6[N6 transport to PLL · IPC PROVED · PLL PROVED rel. N4]
@@ -205,14 +205,22 @@ close).  Eighteen designed cells — the six ◯-free cells, five modal, six
 Ghilardi–Zawadowski shapes, S1 — all literally constant, kernel-checked;
 no refutation of N4.  N4 for `interpP` PROVED over two obligations about
 the recursion: `n4_of_interpQ : PQEquiv p → QBound p → ∀ done G,
-EStabilises p done × AStabilises p done G`.  **WP9 (in flight) — `QBound`:**
-the measure `(K − |seen|, ν)` on a well-founded lexicographic order, the
-closure invariant and the `ν` descent; candidate checked on the cells in
-the kernel first.  **WP10 (in flight) — `PQEquiv`:** refute-first at fuels
-1–4 on six designed cells by the certified decider (the per-fuel form may
-hold only up to a fuel shift; the cofinal restatement is ready); then the
-easy halves by the polarity induction, the hard halves (the redundancy
-claim) ◯-free first.
+EStabilises p done × AStabilises p done G`.
+
+**WP9 — `QBound`: DONE 2026-09-06 (§4.26), `wip/ui_routeB_n4q_{meas,gate,clos,cong,bound}.lean`, `docs/n4-bound.md`.**
+The measure flattens to a `Nat`, `μ = κ·W + ν` (`κ` the compound
+antecedents of the Dyckhoff-closed subformula closure not yet in `seen`,
+`W` a power of three over the closure, `ν` `eMinPP`'s measure); the edge
+mirror `edgesQ` proved complete (`stepQ_congr`) and descending
+(`edges_decrease`); Stage 0 kernel checks on the cells first, two gates
+watched failing (no goal term; no `κ`).  `n4_of_pqequiv : PQEquiv p → ∀
+done G, EStabilises p done × AStabilises p done G`.
+
+**WP10 — `PQEquiv`: the easy halves built by the run (module recovered from the crashed worktree, verification here pending, §4.27 to follow); the hard halves OPEN.**
+`PQHard p` (∃p: `interpQ ⊢ interpP`; ∀p: `interpP ⊢ interpQ`, at every
+fuel and cell) is the one obligation between route (B) and uniform
+interpolation for PLL; the designed-cell verdicts at low fuels are the
+refutation stage, run one at a time.
 
 **WP6 — `CutInv` by route (a): DONE 2026-09-06 (§4.22).**  Refutation
 stage §4.21; then `LJF/OPolInv.lean`: the one-way transfer block on the
