@@ -52,7 +52,7 @@ globs = ["LJF.Base", "LJF.Complete", "LJF.OCore", "LJF.OUniverse", "LJF.ORows",
          "LJF.OFuelHeight",
          "LJF.OFuelP", "LJF.OFuelPSound", "LJF.OFuelPMin", "LJF.OFuelPCof",
          "LJF.OFuelPFamKit", "LJF.OFuelPFam", "LJF.OFuelPCofinal",
-         "LJF.OSearch", "LJF.OBridge", "LJF.OAudit"]
+         "LJF.OSearch", "LJF.OBridge", "LJF.OPolInv", "LJF.OAudit"]
 
 # RNDB: LAYER 3 — the dictionary database types (Claim/Evidence/Entry/
 # Frontier, the un-sorriable `ok` field).  Built by a delegated agent
@@ -206,7 +206,8 @@ globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test",
          "wip.pcll1pv_stage0", "wip.pcll1pv_stage1", "wip.pcll1pv_stage2", "wip.pcll1pv_stage2e", "wip.pcll1pv_stage2f", "wip.pcll1pv_stage2g", "wip.pcll1pv_stage2h", "wip.pcll1pv_stage2i", "wip.pcll1pv_stage2j", "wip.pcll1pv_stage3", "wip.pcll1pv_stage3b", "wip.pcll1pv_stage4", "wip.closed_frag_pins", "wip.task5",
          "wip.rnBank", "wip.rnFRJCerts", "wip.atomProbe", "wip.rcells", "wip.rcells_hand",
          "wip.ui_routeB_statements", "wip.hgt_probe", "wip.ui_retention_cell",
-         "wip.ui_routeB_blueprint", "wip.ui_routeB_n3", "wip.cutinv_cells"]
+         "wip.ui_routeB_blueprint", "wip.ui_routeB_n3", "wip.cutinv_cells",
+         "wip.ui_routeB_n3_cut"]
 
 # The CimpAnt frontier attack + φ★ cross-check, compiled (review round
 # 2026-08-11): the native oracle route for the LJF◯ interpolant cells.
