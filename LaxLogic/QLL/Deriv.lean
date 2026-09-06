@@ -11,6 +11,21 @@ assignment* system, so this is a typing relation on `Pf` rather than an
 intrinsically typed family: proof terms stay plain data that a checker can
 validate and that the Fig. 6 interpretation can consume.
 
+## No green slime
+
+Every constructor's *conclusion* has variable or constructor indices only.
+Two would otherwise have computed ones — `subst` (`Γ ++ …` and `substP`) and
+`allE` (`Form.openAt 0 t M`) — and both are written instead with a fresh index
+variable and an equational premise.  Computation in a *premise* is harmless;
+in a conclusion it is not invertible, so `cases` and dependent matching cannot
+decompose it and every proof over the family has to transport across an
+equation the unifier will not solve.  `#slime LaxLogic.QLL.Derivable` reports
+18 clean constructors.
+
+The family is `Prop`-valued, so nothing computes with a derivation, which
+limits the damage — but the soundness proof is case analysis on derivations
+and nothing else, so it is exactly where the damage would land.
+
 Two departures, both deliberate and both flagged at the constructor.
 
 * **`botE`.**  Fig. 5 has `false` in the syntax and no rule for it.  Ex falso
@@ -81,9 +96,11 @@ inductive Derivable : Ctx → Pf → Form → Prop where
   a bare `Bool`.  They are the same thing the shallow `LaxLogic.Obligation`
   ledger records.
   -/
-  | subst {Γ Γ' : Ctx} {x : String} {M N : Form} {q p : Pf} :
+  | subst {Γ Γ' Δ : Ctx} {x : String} {M N : Form} {q p r : Pf} :
       Derivable (Γ ++ (Pf.fvar x, M) :: Γ') q N →
-      Derivable (Γ ++ (p, M) :: Γ') (q.substP x p) N
+      Δ = Γ ++ (p, M) :: Γ' →
+      r = q.substP x p →
+      Derivable Δ r N
   /-- `true_I`. -/
   | topI {Γ : Ctx} :
       Derivable Γ .star .top
@@ -148,9 +165,10 @@ inductive Derivable : Ctx → Pf → Form → Prop where
       Derivable Γ (p.openIWith a) (M.openWith a) →
       Derivable Γ (.gen p) (.forall_ M)
   /-- `∀E`, written `π_t(p)`. -/
-  | allE {Γ : Ctx} {p : Pf} {M : Form} (t : Tm) :
+  | allE {Γ : Ctx} {p : Pf} {M N : Form} (t : Tm) :
       Derivable Γ p (.forall_ M) →
-      Derivable Γ (.inst t p) (M.openAt 0 t)
+      N = M.openAt 0 t →
+      Derivable Γ (.inst t p) N
   /-- `∃I`, written `ι_t(p)`. -/
   | exI {Γ : Ctx} {p : Pf} {M : Form} (t : Tm) :
       Derivable Γ p (M.openAt 0 t) →
