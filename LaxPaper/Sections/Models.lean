@@ -7,6 +7,7 @@ import LaxLogic.Obligation.Budget
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open LaxLogic.Obligation
 
 #doc (Manual) "Constraint models" =>
 
@@ -25,25 +26,25 @@ onwards".
 The models.
 :::
 
-:::definition "from_" (parent := "models") (uses := "laxall") (lean := "LaxLogic.Obligation.Timing.from_")
+:::definition "from_" (parent := "models") (uses := "laxall") (lean := "Timing.from_")
 Availability from a time onwards.
 :::
 
 The content of the model is that the two constraint operations specialise to the
 two operations of timing analysis:
 
-:::theorem "meet_lower" (parent := "models") (uses := "from_, laxall_meet") (lean := "LaxLogic.Obligation.Timing.meet_lowerBound")
+:::theorem "meet_lower" (parent := "models") (uses := "from_, laxall_meet") (lean := "Timing.meet_lowerBound")
 Combining constraints on a shared witness is `max` — parallel join.  The reason
 it is `max` and not `min` is that the constraints are lower bounds and they are
 conjoined: to have both signals you must wait for the later one.
 :::
 
-:::theorem "image_delay" (parent := "models") (uses := "from_, laxall_image") (lean := "LaxLogic.Obligation.Timing.image_delay")
+:::theorem "image_delay" (parent := "models") (uses := "from_, laxall_image") (lean := "Timing.image_delay")
 Propagating a constraint through a component of delay `d` shifts the bound by
 `d` — sequential composition.
 :::
 
-:::theorem "pipeline" (parent := "models") (uses := "meet_lower, image_delay") (lean := "LaxLogic.Obligation.Timing.pipeline")
+:::theorem "pipeline" (parent := "models") (uses := "meet_lower, image_delay") (lean := "Timing.pipeline")
 The two rules together, which is the original paper's introductory example in
 general form: two components available from `a` and `b` feed a third that needs
 both and adds `d`, giving `max a b + d`.
@@ -70,17 +71,17 @@ Nothing forced the timing reading.  `Budget.lean` instantiates the same
 machinery where the witness is a resource budget, and the difference is not the
 shape of one constraint but how two combine:
 
-:::definition "atLeast" (parent := "models") (uses := "laxall") (lean := "LaxLogic.Obligation.Budget.atLeast")
+:::definition "atLeast" (parent := "models") (uses := "laxall") (lean := "Budget.atLeast")
 A budget covering a cost.  Formally identical to `from_`.
 :::
 
-:::theorem "budget_combine" (parent := "models") (uses := "atLeast, laxall_image") (lean := "LaxLogic.Obligation.Budget.combine")
+:::theorem "budget_combine" (parent := "models") (uses := "atLeast, laxall_image") (lean := "Budget.combine")
 Two components drawn from **separate** pools cost the sum.  This is the case the
 timing reading never produces, and it is the paper's `⊃_◯` at the direct image
 along addition.
 :::
 
-:::theorem "budget_share" (parent := "models") (uses := "atLeast, laxall_meet") (lean := "LaxLogic.Obligation.Budget.share")
+:::theorem "budget_share" (parent := "models") (uses := "atLeast, laxall_meet") (lean := "Budget.share")
 Two components sharing **one** pool cost the max — which is the timing rule, so
 the timing model is the shared-resource case.
 :::
@@ -88,21 +89,21 @@ the timing model is the shared-resource case.
 The area of a prefix adder is a real constraint that the delay analysis of the
 next section cannot see:
 
-:::definition "treeGates" (parent := "models") (lean := "LaxLogic.Obligation.Budget.treeGates")
+:::definition "treeGates" (parent := "models") (lean := "Budget.treeGates")
 Merge cells in a balanced prefix tree of depth `k`, by the recursion the tree is
 built on.
 :::
 
-:::theorem "treeGates_eq" (parent := "models") (uses := "treeGates") (lean := "LaxLogic.Obligation.Budget.treeGates_eq")
+:::theorem "treeGates_eq" (parent := "models") (uses := "treeGates") (lean := "Budget.treeGates_eq")
 `treeGates k = 2ᵏ - 1`.
 :::
 
-:::theorem "tree32_fits" (parent := "models") (uses := "treeGates_eq, atLeast, postpone, solvefor") (lean := "LaxLogic.Obligation.Budget.tree32_fits")
+:::theorem "tree32_fits" (parent := "models") (uses := "treeGates_eq, atLeast, postpone, solvefor") (lean := "Budget.tree32_fits")
 The 32-bit block's thirty-one cells fit a forty-cell budget — discharged from a
 synthesised obligation, not an assumed one.
 :::
 
-:::theorem "tree32_too_big" (parent := "models") (uses := "treeGates_eq, postpone") (lean := "LaxLogic.Obligation.Budget.tree32_too_big")
+:::theorem "tree32_too_big" (parent := "models") (uses := "treeGates_eq, postpone") (lean := "Budget.tree32_too_big")
 And do not fit thirty: refuted, not unproved.
 :::
 
@@ -116,7 +117,7 @@ A proof obligation is a timing constraint on a clock with one tick.  There is
 nothing to schedule, so a constraint is just a proposition and `max`
 degenerates to conjunction:
 
-:::theorem "meet_unit" (parent := "models") (uses := "debt") (lean := "LaxLogic.Obligation.Timing.meet_unit")
+:::theorem "meet_unit" (parent := "models") (uses := "debt") (lean := "Timing.meet_unit")
 On a one-point clock, parallel composition is conjunction.
 :::
 
@@ -130,11 +131,11 @@ iterated implication, with the empty list as unit and append as composition.
 That is exactly the shape `postponing theorem` produces, and the ledger is the
 list.
 
-:::theorem "weak_singleton" (parent := "models") (uses := "weak, debt") (lean := "LaxLogic.Obligation.weak_singleton")
+:::theorem "weak_singleton" (parent := "models") (uses := "weak, debt") (lean := "weak_singleton")
 A one-element constraint is `Debt`.
 :::
 
-:::theorem "laxAll_as_weak" (parent := "models") (uses := "weak, laxall") (lean := "LaxLogic.Obligation.laxAll_as_weak")
+:::theorem "laxAll_as_weak" (parent := "models") (uses := "weak, laxall") (lean := "laxAll_as_weak")
 And `◯∀` is `weak` read pointwise.
 :::
 
@@ -157,11 +158,11 @@ the difference is not cosmetic: their units sit at opposite ends.  Mendler's
 `[]` is no weakening at all; theirs is total weakening.  Both land in `Debt`, at
 different combinations of the atomic constraints:
 
-:::theorem "weak_debt" (parent := "models") (uses := "weak, debt") (lean := "LaxLogic.Obligation.StdCtxBridge.weak_iff_debt_allOf")
+:::theorem "weak_debt" (parent := "models") (uses := "weak, debt") (lean := "StdCtxBridge.weak_iff_debt_allOf")
 Mendler's constraint is `Debt` at the **conjunction** of its demands.
 :::
 
-:::theorem "applyP_bot" (parent := "models") (uses := "debt") (lean := "LaxLogic.Obligation.StdCtxBridge.applyP_bot_iff")
+:::theorem "applyP_bot" (parent := "models") (uses := "debt") (lean := "StdCtxBridge.applyP_bot_iff")
 A standard constraint with every escape `⊥` is `Debt` at the **disjunction** of
 its preconditions, because a conjunction of clauses `Kᵢ ⊃ x` is discharged by
 any one of the `Kᵢ`.
@@ -172,7 +173,7 @@ any one of the `Kᵢ`.
 Finally, the readings above are models of the repository's own natural deduction
 system for propositional lax logic, not merely analogies to it.
 
-:::theorem "sound" (parent := "models") (uses := "debt") (lean := "LaxLogic.Obligation.PLLBridge.sound")
+:::theorem "sound" (parent := "models") (uses := "debt") (lean := "PLLBridge.sound")
 `Debt C` is a sound interpretation of `◯`, by structural induction: the two lax
 rules are the unit and the bind of `Debt` and nothing else.  This depends on no
 axioms.

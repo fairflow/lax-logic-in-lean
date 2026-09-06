@@ -6,6 +6,7 @@ import LaxLogic.Obligation
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open LaxLogic.Obligation
 
 #doc (Manual) "Conclusion" =>
 

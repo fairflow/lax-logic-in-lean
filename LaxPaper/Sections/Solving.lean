@@ -6,6 +6,7 @@ import LaxLogic.Obligation
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open LaxLogic.Obligation
 
 #doc (Manual) "Computing the reduced constraint" =>
 
@@ -69,17 +70,17 @@ solved form is computed by rewriting with them:
 The solver and the tactics around it.
 :::
 
-:::definition "oblIff" (parent := "solve") (lean := "LaxLogic.Obligation.Solve.oblIff")
+:::definition "oblIff" (parent := "solve") (lean := "Solve.oblIff")
 The (8) to (9) step: a constraint universally quantified over a time, with a
 lower bound as its hypothesis, is the bound instantiated at itself.  Depends on
 no axioms.
 :::
 
-:::definition "distrR" (parent := "solve") (uses := "oblIff") (lean := "LaxLogic.Obligation.Solve.distrR")
+:::definition "distrR" (parent := "solve") (uses := "oblIff") (lean := "Solve.distrR")
 `+` distributes over `max` on the right.
 :::
 
-:::definition "distrL" (parent := "solve") (uses := "oblIff") (lean := "LaxLogic.Obligation.Solve.distrL")
+:::definition "distrL" (parent := "solve") (uses := "oblIff") (lean := "Solve.distrL")
 And on the left.
 :::
 
@@ -90,7 +91,7 @@ assigns the **metavariable** on the right to whatever came out.  Nothing states
 the answer, and nothing unverified is trusted: the lemmas are theorems, so the
 equivalence is kernel-checked by construction.
 
-:::definition "reduceIff" (parent := "solve") (uses := "oblIff, distrR, distrL") (lean := "LaxLogic.Obligation.Solve.reduceIff")
+:::definition "reduceIff" (parent := "solve") (uses := "oblIff, distrR, distrL") (lean := "Solve.reduceIff")
 Compute the solved form into a metavariable, with the equivalence that certifies
 it.
 :::
@@ -105,7 +106,7 @@ At the moment the obligation is recorded, not afterwards.  That is the
 difference between the solved form being an extra theorem about the obligation
 and the solved form *being* the obligation:
 
-:::definition "reduceAtRecord" (parent := "solve") (uses := "reduceIff, postpone") (lean := "LaxLogic.Obligation.Solve.reduceAtRecord")
+:::definition "reduceAtRecord" (parent := "solve") (uses := "reduceIff, postpone") (lean := "Solve.reduceAtRecord")
 The reducer `postpone` calls as it records — the solved proposition, and a proof
 that it implies the goal.
 :::
@@ -115,7 +116,7 @@ So `#obligations` prints `n * δ ≤ T`, the finished statement quantifies over
 borrowed obligation is left verbatim, which costs nothing, because the callee's
 obligation was itself solved when *it* was recorded.
 
-:::definition "solvefor" (parent := "solve") (uses := "reduceAtRecord, debt") (lean := "LaxLogic.Obligation.Solve.solveFor")
+:::definition "solvefor" (parent := "solve") (uses := "reduceAtRecord, debt") (lean := "Solve.solveFor")
 What still runs afterwards: the fold of a declaration's obligations into the
 single implication `C ⊃ φ`.
 :::
@@ -146,11 +147,11 @@ is still supplied by a person.
 
 # The two remaining tactics
 
-:::definition "reduce_obligation" (parent := "solve") (uses := "oblIff") (lean := "LaxLogic.Obligation.reduceObligationTac")
+:::definition "reduce_obligation" (parent := "solve") (uses := "oblIff") (lean := "reduceObligationTac")
 The (8) to (9) step as a tactic, for the cases a person states by hand.
 :::
 
-:::definition "discharge_obligation" (parent := "solve") (uses := "solvefor") (lean := "LaxLogic.Obligation.dischargeObligationTac")
+:::definition "discharge_obligation" (parent := "solve") (uses := "solvefor") (lean := "dischargeObligationTac")
 Close a constraint once the delays and the deadline are fixed, so the concrete
 theorem follows from the abstract one by evaluation.
 :::

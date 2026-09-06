@@ -6,6 +6,7 @@ import LaxLogic.Obligation
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open LaxLogic.Obligation
 
 #doc (Manual) "Introduction" =>
 
@@ -102,7 +103,7 @@ mechanism *does* add declarations to the environment, by metaprogramming, and
 what must be ruled out is that it adds an axiom.  That is checked by a command,
 `#obligations_audit`, rather than by inspection.
 
-:::definition "intro_debt" (parent := "intro") (lean := "LaxLogic.Obligation.Debt")
+:::definition "intro_debt" (parent := "intro") (lean := "Debt")
 The one-witness case of the weakening modality, and the object the whole
 library is about: a claim held modulo an outstanding constraint.
 :::
