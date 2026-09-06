@@ -2,11 +2,11 @@
 # `LaxLogic.QLL.CertifyTests` — the checker's output is a derivation
 
 The point of this file is mostly in the *types*.  `d_identity` below has type
-`Derives qp[λu. u] [] (imp ⊤ ⊤)` and its value comes out of `certify`.
+`qd[⊢ λu. u : ⊤ ⊃ ⊤]` and its value comes out of `certify`.
 Nothing proves that the checker is sound; the type says it.
 -/
 import LaxLogic.QLL.Certify
-import LaxLogic.QLL.Surface
+import LaxLogic.QLL.Judgement
 
 namespace LaxLogic.QLL.CertifyTests
 
@@ -25,7 +25,7 @@ The *type* is the claim: had `certify` returned anything that was not a
 derivation of that formula from that context, this would not elaborate.  The
 `#guard` then says the checker actually succeeded rather than returning `none`.
 -/
-def d_identity : Option (Derives qp[λu. u] [] qf[⊤ ⊃ ⊤]) :=
+def d_identity : Option qd[⊢ λu. u : ⊤ ⊃ ⊤] :=
   (certify [] qp[λu. u] qf[⊤ ⊃ ⊤]).toOption.map Prod.fst
 
 #guard d_identity.isSome
