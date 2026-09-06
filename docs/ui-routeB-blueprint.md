@@ -227,7 +227,7 @@ that conjunct comes from on the `∀p` side is the exact obstruction.  Cell
 (ix) (§4.28) refutes the naive `∀p` hypothesis at a residue state too.
 Analysis (§4.28): every per-fuel form bottoms out in per-fuel minimality;
 the redundancy lemma lives at the derivation level (a re-attack at the same
-station contains a sub-derivation of the guard sequent).  **WP12 — LAUNCHED 09:50 on Matthew's decision (09:45), one agent, refute-first then the proof:** the (antecedent, station-set) loop check;
+station contains a sub-derivation of the guard sequent).  **WP12 — Stage 0 DONE 2026-09-06 (§4.29, `docs/n4-pair-design.md`): the pair-recording `interpR` built (`wip/ui_routeB_r_def.lean`), termination kernel-certified at every designed cell (thresholds to 34), the escape property as designed, soundness and the validation cells not refuted; the run was killed by an external access error at R3 and recovered here. Stage 1 (the proof: `QBoundR`, soundness, cofinality with escapes ◯-free first, `hasUI_R`, N3 backward for `interpP`, `pll_ui_R`) relaunched 15:35 as WP12b, one agent.** the (antecedent, station-set) loop check;
 soundness and top-level cofinality of the loop-checked recursion by the
 derivation-height induction with escapes; N3 forward for it, N3 backward for
 `interpP` — no `PQEquiv` at all.

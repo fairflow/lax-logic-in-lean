@@ -3041,6 +3041,53 @@ the pair recursion and N3 backward for `interpP`, plumbed to `PLL_UI`.
 
 ---
 
+### 4.29 WP12, Stage 0: the pair-recording loop check `interpR` built; the campaign refutes nothing (R1 termination at every cell incl. (iii) and the deep modal cells; R2 the escape property as designed; R3 soundness; R4 the validation cells); the run killed by an external access error and recovered; the proof stage relaunched (2026-09-06, 15:25)
+
+WP12 was launched at 09:50 on Matthew's decision.  The run built the
+definition (`wip/ui_routeB_r_def.lean`: `interpG` with the recording test
+on PAIRS (antecedent, station-as-a-set), the symmetric cut, step form, 12 s)
+and the cells (`wip/ui_routeB_r_cells.lean`), completed R1 and R2, and was
+killed at the start of R3 at about 11:25 by an organisation-level refusal
+of Claude Code access (HTTP 403; transient — a probe agent ran normally at
+14:31).  The files were recovered uncommitted, verified here (build 55 s,
+56 pins, sorry-free; 688f35a) and R3/R4 were run here one at a time.
+Record: `docs/n4-pair-design.md`.
+
+**R1 — termination, kernel-certified at every cell.**  Thresholds: the
+◯-free cells 3–17 ((iii) at 13, where the list-based reset climbed:
+the station stabilises as a set after one round); the modal cells to 34
+((m6), nested guards through a box, with a false fixpoint 29 fuels below;
+(m10) 34; S1 30–31).  Certificates at three fuels above each threshold;
+two gates watched failing (a claim one fuel too low, kernel `= false`).
+
+**R2 — the escape property.**  At cell (ix)'s same-station residue the
+datum `b` is sufficient, is NOT reached by `A^R` there, IS reached by
+`A^R(r) ∨ A^R(g)`, and lands at the guard `g` — exactly the escape of
+§4.28.  At the larger-station residues of (iii) and (vii) the re-attack is
+not cut and `A^R = A^P` literally at fuels 3–6 (interderivable at all
+fuels decided).  The bare "every sufficient datum reaches `A^R`" test
+measures the wrong statement — the datum `a ⊃ b` at (iii) is reached by
+neither `A^R` nor `A^P` — because cofinality is E-relativised
+(`E_e, Δ ⊢ A_f`); restated as the comparison, clean.
+
+**R3 — soundness** decided PROVED at every run the decider finished
+(fuels 3–6, three cells); the largest formulas SKIPPED at the deadline.
+
+**R4 — the validation cells.**  `{◯p ⊃ r, ◯q} ⇒ ◯p`: the ⊥-instance
+absorbed and reached; chains constant from fuel 8.  `{◯p ⊃ r, s ⊃ ◯p} ⇒ r`:
+the soundness cross-check PROVED at every fuel; the unrelativised
+`T ⊢ A^R` REFUTED (as for `interpP`, whose validation was E-relativised);
+the relativised check SKIPPED at size 20.  S1: SKIPPED at fuels 8, 14, 20 (sizes to 180), no verdict.
+
+**Verdict: no planned result refuted; the proof stage (WP12b) launched
+at 15:35**, one agent, cache from this worktree: literal
+stabilisation `QBoundR` (unseen pairs over the closure), soundness by
+transcription, cofinality with escapes by the family's height induction —
+◯-free first — then `hasUI_R`, `stabilisationAllP_of_R` through N3
+backward for `interpP`, and `pll_ui_R`.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
