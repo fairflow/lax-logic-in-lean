@@ -227,8 +227,7 @@ that conjunct comes from on the `∀p` side is the exact obstruction.  Cell
 (ix) (§4.28) refutes the naive `∀p` hypothesis at a residue state too.
 Analysis (§4.28): every per-fuel form bottoms out in per-fuel minimality;
 the redundancy lemma lives at the derivation level (a re-attack at the same
-station contains a sub-derivation of the guard sequent).  **Proposed WP12,
-pending Matthew's decision:** the (antecedent, station-set) loop check;
+station contains a sub-derivation of the guard sequent).  **WP12 — LAUNCHED 09:50 on Matthew's decision (09:45), one agent, refute-first then the proof:** the (antecedent, station-set) loop check;
 soundness and top-level cofinality of the loop-checked recursion by the
 derivation-height induction with escapes; N3 forward for it, N3 backward for
 `interpP` — no `PQEquiv` at all.

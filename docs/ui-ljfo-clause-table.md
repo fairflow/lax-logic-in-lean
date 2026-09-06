@@ -3027,7 +3027,17 @@ The cost centre is the cofinality family for the loop-checked recursion,
 a build of the family's class; the choice of continuing on the per-fuel
 `PQHard` (an induction hypothesis nobody has found, against evidence that
 per-fuel minimality obstructs) or re-founding on the derivation-level
-route is Matthew's.  Nothing is launched pending that decision.
+route is Matthew's.  **Decided 09:45** ("go ahead with WP12, one agent,
+refute-first, a selective and short campaign we hope, followed by a genuine
+proof attempt if the campaign does not refute the planned results"):
+**WP12 launched 09:50**, one agent, cache from this worktree.  Stage 0
+tests the planned results on designed cells — R1 termination of the pair
+design (cell (iii) decisive), R2 the escape property at cell (ix) and the
+no-escape property at larger-station residues of (iii)/(vii), R3 soundness,
+R4 top-level cofinality on the recorded validation cells incl. S1 — and
+stops on any refutation; Stage 1 is the proof: literal stabilisation,
+soundness, cofinality with escapes (◯-free family first), N3 forward for
+the pair recursion and N3 backward for `interpP`, plumbed to `PLL_UI`.
 
 ---
 
