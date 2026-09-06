@@ -199,14 +199,25 @@ Both ends of the mechanism survive the change unchanged in content:
 is what the loop was always doing; the numeric book was a lossy encoding of
 it.
 
-**A note on why the repair is not obviously refutable in turn.**  For the
-escape branch to be empty the booked derivation must be MINIMAL for its
-guard sequent.  For the value branch to fail the derivation `d` must use a
-row the record has cut, i.e. must left-focus the recorded implication — and
-that costs its own antecedent guard derivation plus the consequent chain, so
-`hgtI d` exceeds the minimal guard height and `GuardBound` fails.  That is an
-argument about instances, not a theorem; it is recorded because it is the
-reason no second counter-instance was found in this run.
+**Why the repair is not refutable the way `SatE2RD` was.**  The two branches
+cannot both fail.  For the value branch to fail the derivation `d` must use a
+row the record has cut — the cut rows are the ONLY thing the record removes
+from the interpolant — i.e. must left-focus the recorded implication; and that
+costs at least three units more than the guard derivation it contains:
+
+    hgt_fireCost : hgtS (Stab.lfoc h (.impL s lf)) = hgtS s + hgtL lf
+    hgtL_ge      : 3 ≤ hgtL lf
+    hgt_fire_above_guard :
+        hgtI (Inv.stable s) + 3 ≤ hgtI (Inv.stable (Stab.lfoc h (.impL s lf)))
+    hgtI_up_ge   : 3 ≤ hgtI d   for d : Inv Γ [] j (↑P)
+                                          all PROVED, [propext, Quot.sound]
+
+For the escape branch to be empty the booked `g` must be MINIMAL for the
+guard sequent; then `hgtI d ≥ hgtI g + 3 > hgtI g` and `GuardBound` fails, so
+the instance is not an instance.  Conversely, if `g` is far enough from
+minimal for `GuardBound` to hold, a shorter derivation of the guard sequent
+exists and IS an escape.  This is an argument about instances, not a proof of
+`SatE2RW`; what is proved is the arithmetic it turns on.
 
 ---
 
@@ -334,6 +345,7 @@ REACHED and that the step it has does not apply.
 | `refute_blocked` | **PROVED** |
 | `satE2R_of_escW`, `satA2R_of_escW`, `pll_ui_R_escW` | **PROVED** |
 | `escWOfCut`, `guardLoopW`, `satA2RW_of_uentryRW` | **PROVED** |
+| the fire-cost arithmetic (`hgt_fireCost`, `hgtL_ge`, `szS_ge_two`, `hgtS_ge`, `hgtI_up_ge`, `hgt_fire_above_guard`) | **PROVED** |
 | **`SatE2RW p`, `SatA2RW p`, `UEntryRW p`** | **OPEN** |
 | `bindBackI`, `hgt_bindBackI`, `hgt_keptSpan`, `bb_keptSpan` | **PROVED** |
 | `escC_crossDown`, `escC_crossAtom`, `escC_crossMem`, `escOfCutC` | **PROVED** |

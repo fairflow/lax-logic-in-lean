@@ -219,6 +219,73 @@ def guardLoopW (u : UEntryRW p) (done : List Neg)
   termination_by s _ => hgtI s
   decreasing_by exact hlt
 
+/-! # Part 6 · Why the repair is not refutable the way `SatE2RD` was
+
+The counter-instance of `wip/ui_routeB_r_refute.lean` worked because the
+value branch failed while the escape branch was empty.  Under the repaired
+book the two cannot both fail, and the reason is arithmetic.
+
+For the value branch to fail, the derivation `d` must use a row the record
+has cut — i.e. must left-focus a parked implication whose antecedent is
+recorded — because the cut rows are the ONLY thing the record removes from
+the interpolant.  Such a `d` contains a derivation of that pair's own guard
+sequent, and it costs at least three units MORE than that derivation
+(`hgt_fireCost`, `hgtL_ge`).  For the escape branch to be empty, the booked
+derivation `g` must be minimal for the guard sequent.  Then
+
+    hgtI d  ≥  (a guard derivation) + 3  ≥  hgtI g + 3  >  hgtI g
+
+so `GuardBound Δ seen bk (hgtI d)` fails and the instance is not an instance.
+Conversely, if `g` is far enough from minimal for `GuardBound` to hold, a
+shorter derivation of the guard sequent exists and IS an escape.
+
+This is an argument about instances, not a proof of `SatE2RW`.  What is
+proved here is the arithmetic it turns on. -/
+
+/-- **The cost of firing a parked implication**, exactly: the dispatch is its
+antecedent's guard derivation plus its consequent chain. -/
+theorem hgt_fireCost {Γ : List Neg} {j : JD} {Q : Pos} {N : Neg} {P : Pos}
+    (h : Neg.imp Q N ∈ Γ) (s : Stab Γ .tru Q) (lf : LFoc Γ N j P) :
+    hgtS (Stab.lfoc h (.impL s lf)) = hgtS s + hgtL lf := by
+  simp only [hgtS, hgtL, szS, szL]; omega
+
+/-- A consequent chain costs at least three. -/
+theorem hgtL_ge {Γ : List Neg} {N : Neg} {j : JD} {P : Pos}
+    (lf : LFoc Γ N j P) : 3 ≤ hgtL lf := by
+  have := szL_pos lf; simp only [hgtL]; omega
+
+/-- Every stable derivation spends a phase change and then a rule. -/
+theorem szS_ge_two {Γ : List Neg} {j : JD} {P : Pos} :
+    ∀ (s : Stab Γ j P), 2 ≤ szS s
+  | .rfoc r => by have := szR_pos r; simp only [szS]; omega
+  | .lfoc _ lf => by have := szL_pos lf; simp only [szS]; omega
+  | .laxOf s => by have := szS_pos s; simp only [szS]; omega
+
+theorem hgtS_ge {Γ : List Neg} {j : JD} {P : Pos} (s : Stab Γ j P) :
+    3 ≤ hgtS s := by
+  have := szS_ge_two s; simp only [hgtS]; omega
+
+/-- **No derivation of a shift goal is shorter than three.**  So a booked
+guard derivation of minimal height cannot be beaten by an escape that does
+not exist. -/
+theorem hgtI_up_ge {Γ : List Neg} {j : JD} {P : Pos}
+    (d : Inv Γ [] j (.up P)) : 3 ≤ hgtI d := by
+  cases d with
+  | stable s =>
+      have := szS_ge_two s
+      simp only [hgtI, szI]
+      omega
+
+/-- **So a fire is at least three above its own guard derivation.**  This is
+the inequality Part 6's argument turns on. -/
+theorem hgt_fire_above_guard {Γ : List Neg} {j : JD} {Q : Pos} {N : Neg}
+    {P : Pos} (h : Neg.imp Q N ∈ Γ) (s : Stab Γ .tru Q) (lf : LFoc Γ N j P) :
+    hgtI (Inv.stable s) + 3 ≤ hgtI (Inv.stable (Stab.lfoc h (.impL s lf))) := by
+  have h1 := hgt_fireCost h s lf
+  have h2 := hgtL_ge lf
+  simp only [hgtI, hgtS, szI] at *
+  omega
+
 end LJFO
 
 /-! ## Pins -/
@@ -233,3 +300,9 @@ end LJFO
 #axioms_within LJFO.escWOfCut [propext, Quot.sound]
 #axioms_within LJFO.satA2RW_of_uentryRW [propext]
 #axioms_within LJFO.guardLoopW [propext]
+#axioms_within LJFO.hgt_fireCost [propext, Quot.sound]
+#axioms_within LJFO.hgtL_ge [propext, Quot.sound]
+#axioms_within LJFO.szS_ge_two [propext, Quot.sound]
+#axioms_within LJFO.hgtS_ge [propext, Quot.sound]
+#axioms_within LJFO.hgtI_up_ge [propext, Quot.sound]
+#axioms_within LJFO.hgt_fire_above_guard [propext, Quot.sound]
