@@ -170,6 +170,57 @@ undocumented — they are self-explanatory to a reader in the field.
 
 ---
 
+## THE NEXT JOB — Matthew, 2026-09-06 02:20, for 05:00
+
+Three steps, in order. Everything needed is here; nothing needs re-deriving.
+
+**1. Merge `frjw-dev`.** It brings `58eba3f`: the FRJW agent has written all
+sixteen `TO WRITE` paragraphs across UI, Tools, RN, FRJW and Development
+(+184/-43, prose only — no node status changed, no `(lean := "...")` added or
+altered, no new nodes). They cannot build `LaxBlueprint` on their side, so
+**the Pages run is the only gate on that prose.** If a paragraph breaks the
+build, their instruction is to revert *that paragraph*, not the commit, and
+tell them which.
+
+**2. Add an N0k node to the UI chapter.** `CutInv` is PROVED (§4.22, WP6, by
+polarisation invariance). Verified against `LJF/OPolInv.lean` directly:
+
+```
+#axioms_within LJFO.polInvT   [propext, Quot.sound]
+#axioms_within LJFO.polInvL   [propext, Quot.sound]
+#axioms_within LJFO.cutInvNE  [propext, Quot.sound]
+#axioms_within LJFO.cutInv    [propext, Classical.choice, Quot.sound]
+```
+
+The node table row is `docs/ui-routeB-blueprint.md:57`. Note the choice in
+`cutInv` is *not* the `atomMem_of_mem` one — it is the `Type` packaging of a
+`Nonempty` result through the `Prop`-valued bridge, so WP1d will not clear
+it. The ◯-free block `polInvT_circFree`/`cutInv_circFree` landed first.
+
+**Careful:** the FRJW agent wrote "the N0k node in your UI chapter". There is
+no such node — it must be ADDED, not updated.
+
+**Consequential edits in the same chapter, which will otherwise contradict
+the new node:**
+
+- N3 becomes PROVED BOTH WAYS. It currently says the backward direction is
+  "PROVED *relative to* `CutInv`".
+- N6 becomes relative to `CellsFor` alone. It currently lists `CutInv` as
+  one of three things standing between the file and `PLL_UI`; that drops to
+  two.
+- The chapter preamble says "*Two* things are genuinely open — N4 … and
+  `CutInv`". **N4 is now the only open thing.** This sentence is wrong the
+  moment the merge lands.
+
+**3. Republish** — `gh workflow run pages.yml --ref blueprint-dev-chapter`.
+Expect ~11 minutes, as at 27fca24. If it is heading for 90, something has put
+`LJF/OFuelPFam.lean` back in the import closure.
+
+Do NOT attach anything under `LJF/` while doing this; see the N0c/N0d decision
+below.
+
+---
+
 ## What is NOT done
 
 - **15 `TO WRITE` markers remain**, down from 64. Each is a judgement call
