@@ -16,15 +16,25 @@ This chapter is a *live* campaign, not a finished result, and it is
 deliberately written to say which parts are proved, which are stopped, and
 where exactly the obstruction sits.  Its sources are
 `docs/ui-routeB-blueprint.md`, the maintained node table, and
-`docs/ui-ljfo-clause-table.md`, the running record — currently to §4.20.
+`docs/ui-ljfo-clause-table.md`, the running record — currently to §4.32.
 This chapter is the reader's view of them and will drift unless kept in
 step; it has twice been a day stale already.
 
-As of §4.28 (2026-09-06) the shape is this: everything from N0a through N3 is
-proved, N5 and N6 are proved relative to N4, and what is not proved is
-carried as a *named obligation in a signature* rather than as a hole.  **N4
-is the only obligation left between route (B) and `PLL_UI`** — its `◯`-free
-instance proved, and the PLL case reduced to a single statement, `PQHard`.
+As of §4.32 (2026-09-06, 16:20) the shape is this: everything from N0a
+through N3 is proved, N5 and N6 are proved relative to N4, and what is not
+proved is carried as a *named obligation in a signature* rather than as a
+hole.  **N4 is the only obligation left between route (B) and `PLL_UI`** —
+its `◯`-free instance proved, and the PLL case now resting on the
+*cofinality of the pair-recording recursion* at saturated stations.
+
+That last reduction changed on 2026-09-06, and this chapter records both
+readings, because the superseded one carries results of its own.  Until
+§4.28 the PLL case ran through a second recursion `interpQ` and reduced to
+one statement, `PQHard`; §4.28 refuted the naive induction for it and stated
+the obstruction exactly.  §4.29–§4.32 re-founded the reduction on a
+different recursion, `interpR`, which records *pairs* rather than stations —
+and reaches N4 with no `PQEquiv` at all.  The node "the pair-recording
+recursion" below carries it.
 
 These statuses move daily.  The maintained record is
 `docs/ui-routeB-blueprint.md` with `docs/ui-ljfo-clause-table.md`; where this
@@ -50,6 +60,14 @@ about to change:
   25-minute build on every publish, so these two stay prose until the
   refounding lands.  *The statements do not change under it* (§4.18) — only
   the founding does, so the prose below is not at risk of going stale.
+
+The WP12b material below is prose for the first of those reasons and not the
+second, and it is worth saying which: its modules import `LJF.OFuelP`,
+`OFuelPSound`, `OFuelPMin`, `OBridge` and `OPolInv`, and *not*
+`LJF.OFuelPCofinal` — so `LJF/OFuelPFam.lean` is not on their import closure
+and attaching them would not be expensive.  They stay prose because they are
+hours old and WP12c is still running against them.  The risk is the names,
+not the build; attach once WP12c settles.
 
 # Craig interpolation
 
@@ -252,6 +270,15 @@ the forms the route actually uses.
 Alongside them, `interpP_pfree`: the interpolants are `p`-free at *every*
 fuel, not merely in the limit.  `FuelIrrelevance` is recorded MOOT — its
 consumer's hypothesis is unsatisfiable at the stations of interest.
+
+The literal form is not lost for good, though: it is recovered by changing
+the *recursion*.  `RStabLitE`/`RStabLitA` (§4.30) are `EStabEq`/`AStabEq`
+verbatim, with `interpP p f [] done g` replaced by `interpR p f [] done g []`,
+and they are PROVED at **every** station, unconditionally — no saturation,
+no parking, no `◯`-freeness, `[propext, Quot.sound]`.  The form that has no
+instances for the station-recording recursion is a theorem for the
+pair-recording one.  That is the sharpest single statement of what the
+design in "the pair-recording recursion" below buys.
 :::
 
 :::definition "n2_uipair" (parent := "chain")
@@ -308,30 +335,110 @@ route (B) and `PLL_UI`, and it has been narrowed a long way since.
 `LJFIPC.uniform_interpolation_IPC` through `polInvT` and N3 backward.  So the
 question is not open across the board: it is open for `◯`.
 
-*For PLL it is OPEN both ways*, and §4.25 reduced it from a question about
-cells to two typed obligations about the recursion:
+*For PLL it is OPEN both ways.*  Two reductions of it exist; the second
+supersedes the first as a route, and leaves the first's findings standing.
+
+**The `interpQ` route (§4.25–§4.28) — superseded.**  It reduced N4 from a
+question about cells to two typed obligations about a station-recording
+recursion:
 
 $$`\mathsf{n4\_of\_interpQ} : \mathsf{PQEquiv}\ p → \mathsf{QBound}\ p → ∀\ \mathit{done}\ G,\ \mathsf{EStabilises}\ p\ \mathit{done} × \mathsf{AStabilises}\ p\ \mathit{done}\ G`
 
 `QBound` is PROVED (§4.26: `qBound`, on the measure $`μ = κ·W + ν`,
-`[propext, Quot.sound]`).  `PQEquiv` — that `interpP` and `interpQ` agree at
-every fuel and cell — is open, and since its easy halves are proved
-(`pqEquiv_of_hard : PQHard p → PQEquiv p`, §4.27), **`PLL_UI` rests on
-`PQHard` alone.**
+`[propext, Quot.sound]`), and the easy halves of `PQEquiv` are proved
+(`pqEquiv_of_hard : PQHard p → PQEquiv p`, §4.27), so this route left
+`PLL_UI` resting on `PQHard` alone.  `PQHard` is not closed.  What the record
+says about it, as of §4.28: it survives its designed refutation candidate at
+fuels 1–6; eighteen designed cells, six of them Ghilardi–Zawadowski shapes,
+all bottom out; the naive per-state simultaneous induction hypothesis is
+REFUTED on both halves; the per-station reset is REFUTED on a `◯`-free cell;
+fuel monotonicity of both recursions is PROVED.  §4.28 states the obstruction
+exactly — every per-fuel form bottoms out in per-fuel minimality.  None of
+that is retracted; it is why the route changed.
 
-What the record says about `PQHard`, as of §4.28: it survives its designed
-refutation candidate at fuels 1–6; eighteen designed cells, six of them
-Ghilardi–Zawadowski shapes, all bottom out; the naive per-state simultaneous
-induction hypothesis is REFUTED on both halves; the per-station reset is
-REFUTED on a `◯`-free cell; fuel monotonicity of both recursions is PROVED.
-The obstruction to a per-fuel proof is stated exactly and a derivation-level
-route proposed; the choice between routes is open.
+**The `interpR` route (§4.29–§4.32) — live.**  N4 for PLL is now reached
+without comparing two recursions at all:
+
+$$`\mathsf{stabilisationAllP\_of\_R} : \mathsf{SatE2P}\ p → \mathsf{SatA2P}\ p → \mathsf{SatE2R}\ p → \mathsf{SatA2R}\ p → \mathsf{StabilisationAllP}\ p`
+
+pinned `[propext, Classical.choice, Quot.sound]`.  `SatE2P` and `SatA2P` are
+inhabited already — `LJFO.satE2P`, `LJFO.satA2P` in `LJF/OFuelPCofinal.lean`
+— so the residue is the cofinality of the pair recursion alone.
+{uses "n4r_pair"}[] carries it.
 
 The older reading of this node as *termination of the recursion* (§4.19) has
 been withdrawn — the fuel is essential.
 
 Either outcome remains a result: a non-stabilising cell would, with
 {uses "n3_equivalence"}[], be a proof that PLL *lacks* uniform interpolation.
+:::
+
+:::theorem "n4r_pair" (parent := "chain")
+The pair-recording recursion `interpR`, and what it has bought — WP12 and
+WP12b, §4.29–§4.32.  `interpQ` records the *stations* already visited;
+`interpR` records *pairs*, an antecedent together with the station it was
+seen at, and cuts a guarded conjunct only when that same pair recurs.  Four
+things follow, none of them conditional on the route's open end.
+
+**Literal stabilisation — PROVED, unconditionally** (§4.30,
+`wip/ui_routeB_r_bound.lean`).  On the measure `rMu s = kap2 s · bigWR s +
+nuR s`, `edges_decreaseR` shows a strict decrease along every edge, giving
+`rFounded`, `rBound`, and `rStabLitE_uncond`/`rStabLitA_uncond`: the `∃p`
+and `∀p` chains are literally constant from some fuel on at *every* station.
+All `[propext, Quot.sound]`.  This is the point of the design — see
+{uses "n1_stabilises"}[], where the same form is refuted for `interpP`.
+
+**Soundness — PROVED** (§4.30, `wip/ui_routeB_r_sound.lean`).  Not a
+transcription of `interpP`'s soundness, but the easy halves for `interpR`
+(`interpP ⊢ interpR` in `∃p` mode, `interpR ⊢ interpP` in `∀p` mode)
+composed with `interpP`'s own soundness through {uses "n0k_cutinv"}[]:
+`eSoundR` and `aSoundR`, `[propext, Classical.choice, Quot.sound]`, the
+choice entering through `cutInv` and not through the argument.
+
+**The route plumbed — PROVED** (§4.31, `wip/ui_routeB_r_ui.lean`).
+`hasUI_R` is {uses "n3_equivalence"}[] forward for `interpR`; because literal
+stabilisation holds, both minimality clauses become a *rewrite*, so no cut is
+spent inside it.  `interpP` re-enters only at N3 backward, through
+`stabilises_of_hasUI′` — the two recursions are never compared fuel by fuel,
+which is precisely what `PQHard` asked for and what this route does without.
+The crown:
+
+$$`\mathsf{pll\_ui\_R} : (∀ p,\ \mathsf{SatE2P}\ p) → (∀ p,\ \mathsf{SatA2P}\ p) → (∀ p,\ \mathsf{SatE2R}\ p) → (∀ p,\ \mathsf{SatA2R}\ p) → \mathsf{PLL\_UI}`
+
+`[propext, Classical.choice, Quot.sound]`, with fuel monotonicity for
+`interpR` in place alongside it.
+
+**The residue — OPEN, and stated with escapes** (§4.32,
+`wip/ui_routeB_r_esc.lean`).  `SatE2R`/`SatA2R` are `LJF/OFuelPMin.lean`
+Part 5 verbatim at `interpR … []`.  They are `def … : Type` — typed
+parameters, never a `sorry`.  Stage 3 delivered the statement rather than the
+induction: `SatE2RE`/`SatA2RE` carry the escape rows the loop check cut
+(`escRowsR` on the `∀p` side, `escConjR` on the `∃p` side), and the
+specialisations `satE2R_of_escapes` and `satA2R_of_escapes` are PROVED — at
+the empty record both escape lists are empty (`escRowsR_nil`,
+`escConjR_nil`), so the generalisation collapses onto the residual.  Hence
+
+$$`\mathsf{pll\_ui\_R\_esc} : (∀ p,\ \mathsf{SatE2P}\ p) → (∀ p,\ \mathsf{SatA2P}\ p) → (∀ p,\ \mathsf{SatE2RE}\ p) → (∀ p,\ \mathsf{SatA2RE}\ p) → \mathsf{PLL\_UI}`
+
+`[propext, Classical.choice, Quot.sound]`.  The induction over the family is
+WP12c, running since 2026-09-06 16:20, `◯`-free rows first.
+
+Two findings of the stating run stand on their own, and neither is a
+consequence of the statements above.  Cofinality for `interpR` does *not*
+follow from cofinality for `interpP`: both easy halves point the wrong way,
+and monotonicity and stabilisation move along the fuel rather than between
+recursions, so the induction on the derivation has to be run again — which is
+where the loop check pays, the re-attack's guard sequent being a proper
+sub-derivation.  And the first component of the measure must be a *filtered*
+count of current candidate pairs rather than `bound − |seen|`, because along
+an ordinary edge the closure shrinks while the record persists.
+
+One caveat is flagged to WP12c rather than settled: on the `∃p` side, an
+escape at another recorded pair delivers the approximant at a lighter
+station, where the station weight drops but the height may not, and §4.20's
+table of height-strict and weight-strict edges decides whether the family's
+measure admits the step.  If it does not, the escape statements are to be
+adjusted with the specialisation theorems kept.
 :::
 
 :::theorem "n5_ljfo_ui" (parent := "chain")

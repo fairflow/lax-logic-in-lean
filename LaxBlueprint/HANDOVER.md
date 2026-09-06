@@ -72,6 +72,25 @@ and you are exactly where the last session left off.
 lake build LaxBlueprint && ./scripts/ci-pages.sh
 ```
 
+**Do not run that without asking.** Standing instruction from Matthew,
+2026-09-06 17:00, given while stopping a build of exactly this kind:
+
+> stop building. this is not needed. there's so much building on every agent
+> going on, you now have to request permission to build.
+
+Every agent on this machine compiles, and the contention is the cost he is
+managing — not this build's own six minutes. So: no `lake build`, no
+`ci-pages.sh`, no builds of any kind, without asking him first. That removes
+the local check that used to catch markup errors, so the compensating
+discipline is to review the markup statically before pushing:
+
+```bash
+awk '/^:::[a-z]/{o++} /^:::$/{c++} END{print o, c}' LaxBlueprint/Chapters/*.lean
+grep -n '{uses' LaxBlueprint/Chapters/UI.lean   # every hit must be INSIDE a ::: node (§5)
+```
+
+and to check that every `{uses "x"}` names a node the file defines.
+
 ```bash
 gh workflow run pages.yml --ref blueprint-dev-chapter
 ```
@@ -182,8 +201,8 @@ There is no one-off task list. The job is a loop:
 
 1. `git fetch origin`, see how far `frjw-dev` has moved, merge it.
 2. Re-derive current status from source (§4) and re-render the affected nodes.
-3. Build locally if the machine is free — it catches markup errors that would
-   otherwise cost a CI round trip — then push and publish.
+3. **Do not build. Ask first.** See the standing instruction below. Push
+   (always safe — `pages.yml` has no push trigger) and ask before publishing.
 4. Verify the live pages **by content**. Chapter pages split into per-section
    sub-pages: nodes live under e.g.
    `…/Towards-uniform-interpolation/The-chain-to-uniform-interpolation/`, not on
