@@ -92,9 +92,51 @@ def guardLoop (u : UEntryRD p) (done : List Neg)
   termination_by Γ' _ _ s _ => hgtI s
   decreasing_by exact hlt
 
+/-! # Part 3 · The other end: the escape a CUT site creates
+
+When the loop test fires at a station `done` for an antecedent `Qa`, the
+record contains a pair `(Qa, T)` with `sameSet T done`, and the traversal
+holds the antecedent sub-derivation of the derivation in hand — strictly
+lower, and at `done`.  `escOfCut` turns that into the escape: it walks the
+record to the recorded pair, moves the derivation to the recorded station by
+`wkSameSet`, and discharges the strict bound from the book invariant.
+
+Together with `guardLoop` this closes both ends of the escape mechanism: what
+a cut site produces, and what a recording site does with it.  What is left is
+the traversal that carries them. -/
+
+/-- **The escape a cut site creates.**  `h` is the height of the derivation
+in hand; `gd0` is its antecedent sub-derivation, strictly lower. -/
+def escOfCut {K : List Neg} :
+    ∀ (seen : SeenR) (b : HeightBook seen) (Qa : Pos) (done : List Neg) (h : Nat),
+      seenMemR seen Qa done = true → BookBound seen b h →
+      ∀ (gd0 : Inv (done ++ K) [] .tru (.up Qa)), hgtI gd0 < h →
+      EscD K seen b
+  | [], _, _, _, _, hmem, _, _, _ => absurd hmem (by simp [seenMemR])
+  | (Q, T) :: s, ⟨n, bs⟩, Qa, done, h, hmem, hb, gd0, hlt =>
+      if hQ : Q = Qa then
+        if hT : sameSet T done = true then
+          (by
+            subst hQ
+            refine .here (wkSameSet (sameSet_symm hT) gd0) ?_
+            have he : hgtI (wkSameSet (sameSet_symm hT) gd0) = hgtI gd0 := hgt_wk _ _
+            have h1 : h ≤ n := hb.1
+            omega)
+        else
+          .there (escOfCut s bs Qa done h
+            (by
+              simp only [seenMemR, if_pos hQ, if_neg hT] at hmem
+              exact hmem) hb.2 gd0 hlt)
+      else
+        .there (escOfCut s bs Qa done h
+          (by
+            simp only [seenMemR, if_neg hQ] at hmem
+            exact hmem) hb.2 gd0 hlt)
+
 end LJFO
 
 /-! ## Pins -/
 
 #axioms_within LJFO.satA2RD_of_uentryRD [propext]
 #axioms_within LJFO.guardLoop [propext]
+#axioms_within LJFO.escOfCut [propext, Quot.sound]

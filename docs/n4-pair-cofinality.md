@@ -26,7 +26,7 @@ Modules, all leaves under `wip/`, `LJF/` untouched:
 | `wip/ui_routeB_r_escd.lean` | the derivation-level design; `SatE2R`/`SatA2R` reduced to it | 31 s |
 | `wip/ui_routeB_r_proc.lean` | the processing phase of the family, at every record | 23 s |
 | `wip/ui_routeB_r_procd.lean` | the same block carrying derivation-level escapes | 15 s |
-| `wip/ui_routeB_r_guard.lean` | the recording-site loop, in the family's own types | 36 s |
+| `wip/ui_routeB_r_guard.lean` | both ends of the escape mechanism: the cut site and the recording-site loop | 36 s |
 
 ---
 
@@ -255,7 +255,25 @@ typed obligation (`wip/ui_routeB_r_guard.lean`):
 `hgtI s` as the head of the height book at each attempt, so an escape for the
 pair just recorded is required to beat the height in hand, and the loop is a
 well-founded recursion on `hgtI s`.  An escape for an older pair is passed up
-unchanged.  Gate watched failing: `guardLoop` at `[]` errors on `propext`.  The escape type and its emptiness at the empty record:
+unchanged.  Gate watched failing: `guardLoop` at `[]` errors on `propext`.
+
+The other end — what a CUT site produces — is PROVED in the same module:
+
+    escOfCut : ∀ seen b Qa done h, seenMemR seen Qa done = true →
+               BookBound seen b h →
+               ∀ (gd0 : Inv (done ++ K) [] .tru (↑Qa)), hgtI gd0 < h →
+               EscD K seen b                            PROVED, [propext, Quot.sound]
+
+It walks the record to the pair the loop test fired on, moves the derivation
+from the current station to the recorded one by `wkSameSet` (`hgt_wk`: the
+height is unchanged), and discharges the strict bound from the book
+invariant.  Its input is exactly what a cut site holds: the antecedent
+sub-derivation of the derivation in hand, `hgtI gd0 < hgtI d`.  Gate watched
+failing: `escOfCut` at `[propext]` errors on `Quot.sound`.
+
+So both ends of the escape mechanism are machine-checked — what a cut site
+produces and what a recording site does with it.  What is left is the
+traversal that carries them between the two.  The escape type and its emptiness at the empty record:
 
     HeightBook : SeenR → Type          -- one height per recorded pair
     EscD (K : List Neg) : (seen : SeenR) → HeightBook seen → Type
@@ -410,6 +428,7 @@ has one sub-result per branch of `invertPos` and must sequence them:
 | set-equal stations weaken into one another (`sameSet_subs`, `wkSameSet`) | **PROVED** |
 | the recording-site restart is well-founded (`escapeLoop`) | **PROVED**, axiom-free |
 | the recording-site loop in the family's types (`guardLoop`, over `UEntryRD`) | **PROVED**, `[propext]` |
+| the escape a cut site creates (`escOfCut`) | **PROVED** |
 | `EscD` empty at the empty record (`escD_nil_empty`) | **PROVED**, axiom-free |
 | the obligations WITHOUT the book invariant | unprovable — caught and repaired in this run |
 | the book invariant and its descent (`BookBound`, `bookBound_mono`, `bb_*`) | **PROVED** |
