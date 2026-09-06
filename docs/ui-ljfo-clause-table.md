@@ -3088,6 +3088,136 @@ backward for `interpP`, and `pll_ui_R`.
 
 ---
 
+### 4.30 WP12b, Stages 1–2: the pair recursion literally stabilises at EVERY station (`rBound`) and is SOUND at every state and every `seen` — verified here (2026-09-06, 16:05)
+
+The proof stage (one agent, launched 15:35 from bbced0f) committed its
+first two stages within twenty-five minutes; merged here at 1419ac6 and
+verified (`lake build` of the five new leaf modules 85 s, 8628 jobs
+replayed, nothing upstream; 104 pins accepted; sorry sweep clean; pins
+measured; gate watched failing).
+
+**Stage 1 — literal stabilisation, PROVED** (`wip/ui_routeB_r_meas.lean`,
+`_gate`, `_cong`, `_bound`; the template of §4.26 with the guard edge
+restated for the PAIR record):
+
+    rMu s := kap2 s · bigWR s + nuR s                          [propext, Quot.sound]
+    edges_decreaseR : ∀ t ∈ edgesR s, rMu t < rMu s            [propext, Quot.sound]
+    rFounded p : RFounded id p rMu;   rBound p : RBound p
+    rStabLitE_uncond p done : RStabLitE p done;  rStabLitA_uncond p done G : RStabLitA p done G
+
+literal stabilisation at EVERY station, unconditionally — no saturation, no
+parking, no ◯-freeness — since the bound is a statement about the recursion.
+Only the guard row of the edge table (`docs/n4-bound.md` §3) changes: the
+recorded pair is new, so `kap2` (unseen pairs over the closure) drops by one.
+
+**Stage 2 — soundness, PROVED by one cut on each side**
+(`wip/ui_routeB_r_sound.lean`): not a transcription of
+`LJF/OFuelPSound.lean` but the easy halves for `interpR` (`easyLvlR`:
+`interpP ⊢ interpR` in ∃p mode, `interpR ⊢ interpP` in ∀p mode, the polarity
+induction of §4.27 over the pair check) composed with `interpP`'s soundness
+through `cutInv`:
+
+    eSoundR p f todo done seen   : Inv (todo ++ done) [] .tru (interpR p f todo done none seen)
+    aSoundR p f todo done G seen : Inv (interpR p f todo done (some G) seen :: (todo ++ done)) [] .tru G
+                                                     [propext, Classical.choice, Quot.sound]
+
+(the choice from `cutInv`).  Gate re-watched here: `aSoundR` at `[propext]`
+fails on `Classical.choice, Quot.sound`.  Stage 3 (cofinality with
+escapes, ◯-free first) is in progress.
+
+---
+
+### 4.31 WP12b, Stage 4 (plumbed before Stage 3): uniform interpolation for PLL over the cofinality of the pair recursion alone — `pll_ui_R`; verified here (2026-09-06, 16:12)
+
+The proof run plumbed the route before attacking its hard stage, so that
+the residual obligation is named exactly.  Merged at 5dc1aad and verified
+(`wip/ui_routeB_r_mono.lean`, `wip/ui_routeB_r_ui.lean`: build 96 s,
+nothing upstream; pins measured; gate watched failing — `pll_ui_R` at
+`[propext, Quot.sound]` fails on `Classical.choice`; sorry sweep clean).
+
+    SatE2R p := ∀ done Δ ψ, Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
+                ∀ {j}, Inv (done ++ Δ) [] j ψ → UpFrom (fun e => Inv (interpR p e [] done none [] :: Δ) [] j ψ)
+    SatA2R p := ∀ done Δ G, Saturated done → ParkedCtxP done → PFreeCtx p Δ →
+                ∀ {j}, Inv (done ++ Δ) [] j G →
+                UpFrom2 (fun e f => Inv (interpR p e [] done none [] :: Δ) [] .tru (interpR p f [] done (some (jGoal j G)) []))
+                                                                              (LJF/OFuelPMin.lean Part 5, verbatim, at interpR … [])
+    hasUI_R : SatE2R p → SatA2R p → Saturated done → ParkedCtxP done → HasUI p done G
+              (N3 forward for interpR: the pair read off at the literal thresholds of rStabLit*_uncond,
+               sound by eSoundR/aSoundR, minimal by the cofinality variables)
+    stabilisationAllP_of_R : SatE2P p → SatA2P p → SatE2R p → SatA2R p → StabilisationAllP p
+              (N3 BACKWARD for interpP, stabilises_of_hasUI′ — the two recursions never compared fuel by fuel)
+    pll_ui_R : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, SatE2R p) → (∀ p, SatA2R p) → PLL_UI
+                                                                              [propext, Classical.choice, Quot.sound]
+
+Fuel monotonicity for `interpR` (`wip/ui_routeB_r_mono.lean`, the operator
+lemma of §4.28 over the pair check) is in place for the threshold merging
+Stage 3 needs.
+
+**What now stands between the repository and uniform interpolation for
+PLL: the cofinality of the pair recursion at saturated stations, `SatE2R`
+and `SatA2R`** (plus `SatE2P`/`SatA2P`, instantiated in one line by
+`LJFO.satE2P`/`satA2P` in the 25-minute module).  Stage 3 — the family's
+height induction with escapes, ◯-free first — is in progress
+(`wip/ui_routeB_r_esc.lean` building at 16:07).
+
+---
+
+### 4.32 WP12b, Stage 3 as delivered: the escape-carrying cofinality for the pair recursion STATED (typed obligations) and PROVED to specialise to `SatE2R`/`SatA2R`; the induction handed to WP12c (2026-09-06, 16:20)
+
+The proof run (44 minutes, four commits, merged through 9827650 and verified
+here) closed Stages 1, 2 and 4 (§4.30–§4.31) and stopped at Stage 3 with the
+statement written and checked but the induction not attempted — on the
+grounds that the escape statements are a statement-level design decision to
+be inspected (which is right, and they are inlined below for Matthew), and
+that the family could not be re-authored without importing the 25-minute
+module (which is wrong: a new family module is built as its own leaf; the
+old one is read, not imported).  `wip/ui_routeB_r_esc.lean` (build 39 s,
+seven pins, sorry-free):
+
+    escRowsR p f done seen := [ interpR p f [] done (some ↑Q) seen | (Q, T) ∈ seen, sameSet T done ]
+        — the ∀p escapes: the ∀p approximant of each guard sequent recorded AT THIS STATION
+    escConjR p f done seen := [ ↓interpR p f [] done (some ↑Qa) ((Qa, done) :: seen) ⊃ interpR p f [N] rest none seen
+                                | (Qa ⊃ N, rest) ∈ splits done, seenMemR seen Qa done ]
+        — the ∃p escapes: the guarded conjunct the loop check cut, one per recorded split
+    SatE2RE p := ∀ done Δ ψ seen, Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
+                 ∀ {j}, Inv (done ++ Δ) [] j ψ →
+                 UpFrom (fun e => Inv (nAndAll (interpR p e [] done none seen :: escConjR p e done seen) :: Δ) [] j ψ)
+    SatA2RE p := ∀ done Δ G seen, Saturated done → ParkedCtxP done → PFreeCtx p Δ →
+                 ∀ {j}, Inv (done ++ Δ) [] j G →
+                 UpFrom2 (fun e f => Inv (nAndAll (interpR p e [] done none seen :: escConjR p e done seen) :: Δ) [] .tru
+                                        (nOrAll (interpR p f [] done (some (jGoal j G)) seen :: escRowsR p f done seen)))
+    escRowsR_nil, escConjR_nil : at seen = [] both lists are []           [propext], [propext, Quot.sound]
+    satE2R_of_escapes : SatE2RE p → SatE2R p;  satA2R_of_escapes : SatA2RE p → SatA2R p
+    pll_ui_R_esc : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, SatE2RE p) → (∀ p, SatA2RE p) → PLL_UI
+                                                                           [propext, Classical.choice, Quot.sound]
+
+Two findings of the run stand on their own.  (a) **Cofinality for the pair
+recursion does not follow from cofinality for `interpP`**: both easy halves
+point the wrong way (`interpP ⊢ interpR` in ∃p mode, `interpR ⊢ interpP` in
+∀p mode), and monotonicity and stabilisation move along the fuel, not
+between recursions — so the induction on the derivation must be run again,
+which is where the loop check pays (the re-attack's guard sequent is a
+proper sub-derivation).  (b) The first component of the measure must be a
+FILTERED count of current candidate pairs, not `bound − |seen|`: along an
+ordinary edge the closure shrinks while the record persists.
+
+**One caveat for the induction, flagged to WP12c.**  On the ∃p side, when the
+∀p statement at a guard returns an ESCAPE for another recorded `Q′`, the
+∃p conjunct for `Q′` yields the approximant at the lighter station
+`N′ :: rest′`, and the derivation must be continued there (`Q′ ⊃ N′` is
+recoverable from `N′` by weakening): the station weight drops, the height
+may not, and §4.20's table of height-strict and weight-strict edges decides
+whether the family's measure admits the step; if not, the escape statements
+are to be adjusted (e.g. the ∃p escape carrying the lighter-station
+approximant directly) with the specialisation theorems kept.
+
+**WP12c launched 16:20**, one agent: the ◯-free family for `interpR` with
+escapes first (the modal rows drop; agreement with `ipc_ui_routeB` is the
+check), then the modal rows; a family-class build is expected and
+accepted; residual as a typed obligation if it does not close.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
