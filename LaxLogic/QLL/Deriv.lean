@@ -14,19 +14,52 @@ validate and that the Fig. 6 interpretation can consume.
 ## No green slime
 
 Every constructor's *conclusion* has variable or constructor indices only.
-Two would otherwise have computed ones — `subst` (`Γ ++ …` and `substP`) and
-`allE` (`Form.openAt 0 t M`) — and both are written instead with a fresh index
-variable and an equational premise.  Computation in a *premise* is harmless;
+One would otherwise have a computed one — `allE` (`Form.openAt 0 t M`) — and it
+is written instead with a fresh index variable and an equational premise.  Computation in a *premise* is harmless;
 in a conclusion it is not invertible, so `cases` and dependent matching cannot
 decompose it and every proof over the family has to transport across an
 equation the unifier will not solve.  `#slime LaxLogic.QLL.Derivable` reports
-18 clean constructors.
+17 clean constructors.
 
 The family is `Prop`-valued, so nothing computes with a derivation, which
 limits the damage — but the soundness proof is case analysis on derivations
 and nothing else, so it is exactly where the damage would land.
 
-Two departures, both deliberate and both flagged at the constructor.
+## Fig. 5's `Subst` is deliberately absent
+
+The figure lists `Subst` among the deduction rules:
+
+    Γ, z:M, Γ' ⊢ q : N
+    ─────────────────────────  (p :: |M|)
+    Γ, p:M, Γ' ⊢ q{p/z} : N
+
+It is not a rule of this family, for three reasons that agree.
+
+*It is not admissible, and it establishes nothing.*  Its side condition is
+`p :: |M|`, HOL typing, not `p : M`, refinement.  Replacing the entry turns
+every use of `var` on `z` into an occurrence of `p` that would need
+`Γ ⊢ p : M` — exactly what is not available.  So removing it removes no
+derivable judgement.
+
+*It is invisible in the proof term.*  It produces `q.substP x p`, which is just
+some term, so no checker driven by the term could ever be complete for a family
+containing it.  With it gone, `check` is complete for all of `Derivable` rather
+than for a fragment, and no statement needs an `isSubstFree` precondition.
+
+*Its content is semantic, and reappears there.*  What `Subst` records is
+
+    Derivable (Γ ++ (x,M) :: Γ') q N → p ⊨ M → q{p/x} ⊨ N
+
+— the substitution is justified exactly when the obligation is discharged.
+That is a lemma about the Fig. 4 refinement reading, not a rule of the
+calculus, and it matches the paper's own Fig. 9 picture in which abstraction
+and refinement are the outer loop *around* deduction rather than steps inside
+it.  `Pf.substP` is kept in `Syntax.lean` for that lemma.
+
+(Matthew's call, 2026-09-06, before the soundness proof was written against the
+larger family.)
+
+Two further departures, both deliberate and both flagged at the constructor.
 
 * **`botE`.**  Fig. 5 has `false` in the syntax and no rule for it.  Ex falso
   is added.
@@ -58,49 +91,16 @@ def FreshI (a : String) (Γ : Ctx) (p : Pf) (M : Form) : Prop :=
 /--
 `Derivable Γ p M` is the figure's `Γ ⊢ p : M`.
 
-`Γ` is a list of refinement pairs. Rule `var` fires only on a *variable* entry
-and `impI` can abstract only a variable entry, so `subst` is the only source of
-non-variable entries — see the note on `Ctx` in `Syntax.lean` for why that is
-the figure's own shape rather than an encoding artefact.
+`Γ` is a list of the paper's refinement pairs.  Rule `var` fires only on a
+*variable* entry and `impI` can abstract only a variable entry, so no rule here
+can use a non-variable one: `Derivable` is insensitive to them, and they are
+carried purely as the residual obligations the semantics will quantify over.
 -/
 inductive Derivable : Ctx → Pf → Form → Prop where
   /-- `I`.  Γ, z:M, Γ' ⊢ z : M — a variable entry, looked up by name. -/
   | var {Γ : Ctx} {x : String} {M : Form} :
       (Pf.fvar x, M) ∈ Γ →
       Derivable Γ (.fvar x) M
-  /--
-  `Subst`.  Replace a variable entry by a constraint term, substituting it
-  through the proof term.  The figure prints `q{p/x}` where the entry replaced
-  is `z`; read as `q{p/z}`.
-
-  **This is not a cut.**  The figure's side condition is `p :: |M|` — `p` has
-  the *refinement type* of `M`, in the sense of Fig. 3 — and not `p : M`, `p`
-  *refines* `M`, in the sense of Fig. 4.  The paper uses `::` for HOL typing
-  throughout (p. 7: "if `P :: α ⇒ 𝔹` and `p :: α`").  So `Subst` substitutes a
-  raw constraint term under a typing condition, where a cut would substitute a
-  derivation.  It establishes nothing about `M`; it records that a candidate
-  constraint has been supplied and leaves the refinement outstanding.
-
-  That is why `var` accepts only variable entries.  Admitting a term entry
-  there would let a merely well-typed candidate be *used* as though it were
-  established, which is the step this apparatus exists to defer.
-
-  Read as an inference rule it looks pathological — it is not stable under
-  normalisation, and it is not the admissible substitution lemma (which
-  substitutes a *derivation*: from `Γ, z:M ⊢ q:N` and `Γ ⊢ p:M` conclude
-  `Γ ⊢ q{p/z}:N`, and which is unaffected).  It is better read as the
-  *refinement step* of the paper's Fig. 9 method loop, written as a rule.
-
-  Consequence for the checker: the non-variable entries a derivation carries
-  are its **residual obligations**, and `check` should return them rather than
-  a bare `Bool`.  They are the same thing the shallow `LaxLogic.Obligation`
-  ledger records.
-  -/
-  | subst {Γ Γ' Δ : Ctx} {x : String} {M N : Form} {q p r : Pf} :
-      Derivable (Γ ++ (Pf.fvar x, M) :: Γ') q N →
-      Δ = Γ ++ (p, M) :: Γ' →
-      r = q.substP x p →
-      Derivable Δ r N
   /-- `true_I`. -/
   | topI {Γ : Ctx} :
       Derivable Γ .star .top

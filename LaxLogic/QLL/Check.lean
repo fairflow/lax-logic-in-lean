@@ -32,23 +32,19 @@ on `Derivable.subst` are constraint terms supplied under a typing condition
 whose refinement is still outstanding.  This is the same ledger the shallow
 `LaxLogic.Obligation` keeps.
 
-## The `Subst` gap — stated, not hidden
+## No `Subst`
 
-`Derivable.subst` produces `q.substP x p`, and nothing in the resulting term
-records that `Subst` was used.  No checker can therefore be complete for
-`Derivable` as it stands.  `check` is intended to be complete for the
-`Subst`-free fragment, which carries all of Fig. 5's logical content, with
-obligations read off the incoming context.  Closing the gap would mean a marker
-constructor in `Pf`, a departure from the figure; that is a decision, not an
-oversight, and it is additive if taken later.
+Fig. 5's `Subst` is not a rule of `Derivable` — see the note there.  It was
+invisible in the proof term, so a term-driven checker could never have been
+complete for a family containing it.  With it gone there is no fragment
+caveat and no `isSubstFree` precondition anywhere: `check` is intended to be
+complete for all of `Derivable`.
 
 ## Status of the harness theorems
 
-**OPEN.** Soundness (`check Γ p M = .ok obs → Derivable Γ p M`) and
-completeness for the `Subst`-free fragment are not proved, and no declaration
-asserts them here.  Soundness needs `freshFor_notMem` below; completeness needs
-a renaming lemma, because `Derivable` admits *any* fresh name while `check`
-picks one.
+Soundness is being proved in `Sound.lean`.  Completeness is **OPEN**, and no
+declaration asserts it: it needs a renaming lemma, because `Derivable` admits
+*any* fresh name while `check` picks one.
 -/
 import LaxLogic.QLL.Deriv
 
