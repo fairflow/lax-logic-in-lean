@@ -57,11 +57,14 @@ can re-supply, and then at a cost the traversal has already paid.
   (`hgt_keptSpan`), so the invariant `BookBound seen b (hgtI d + c)` is
   PRESERVED across the span (`bb_keptSpan`).  No book slack is needed;
   the accounting closes.
-* **Part 5.**  The residual, verbatim.  The GOAL-antecedent binder — the
-  `∃p` inversion traversal at `Inv.impR` followed by `downL`/`atomL`, where
-  the bound hypothesis is the antecedent of the goal being PROVED and is
-  therefore not available above — has no such step, and is stated as a
-  typed obligation (OPEN; no term is built).
+* **Part 5.**  The two binders that are NOT crossed, and the residual.
+  (i) a DISJUNCTIVE kept hypothesis — `Inv.orL` splits `↑(↓M₀ ∨ PB) ∈ K`
+  before the `downL`, and re-supplying `M₀` needs both branches where the
+  escape carries one; (ii) the GOAL antecedent — `Inv.impR` followed by
+  `downL`/`atomL`, where the bound hypothesis is the antecedent of the goal
+  being PROVED, so nothing above holds it AND the span grants only 2 units
+  (`hgt_goalSpan`) where a crossing costs 4.  Stated as one typed
+  obligation `EscBindOpenR` (OPEN; no term is built).
 
 `LJF/` is untouched; this module is a leaf.  The family modules
 `LJF.OFuelPFam`, `LJF.OFuelPFamKit`, `LJF.OFuelPCofinal` are NOT imported.
@@ -260,32 +263,61 @@ def escOfCutC {K : List Neg} {c : Nat} :
             simp only [seenMemR, if_neg hQ] at hmem
             exact hmem) hb.2 gd0 hlt)
 
-/-! # Part 5 · The residual, verbatim (OPEN)
+/-! # Part 5 · The two binders that are NOT crossed, and the residual
 
-Part 3 crosses every binder whose hypothesis the context above re-supplies.
-It does NOT cross the one binder whose hypothesis it does not: the
-antecedent of a goal.
+Part 3 crosses a binder whose hypothesis ONE left focus on a member of `K`
+re-supplies: `↑↓M₀ ∈ K` at cost 4, a hypothesis already kept at cost 0.
+Those are exactly the binders the `∀p` inversion traversal (`UInvGQ`)
+creates when it is entered from `ULFQ` at `LFoc.rel` with a kept `↑↓M₀` or
+a kept `↑a`.  Two other binders occur, and neither is crossed.
 
-`LJF/OFuelPFam.lean`'s `TInvQ` proves a `p`-free implication goal by
-`Inv.impR`, which puts the antecedent into `Ω`; the following `downL` /
+**(i) The disjunctive kept hypothesis.**  `UInvGQ` at `Inv.orL` splits
+`Ω = ↓M₀ ∨ PB :: Ω'` into its two branches before the `downL`.  Re-supplying
+`M₀` from `↑(↓M₀ ∨ PB) ∈ K` needs `Inv Γ [↓M₀ ∨ PB] .tru (↑P)`, i.e.
+`Inv.orL` applied to BOTH branches, and the escape carries only the left
+one.  Room is not the difficulty here — `hgt_orSpanL` shows the split
+grants `hgtI e + 2` units, more than the 4 a crossing costs — the
+DISCHARGE is.
+
+**(ii) The goal antecedent.**  `TInvQ` proves a `p`-free implication goal
+by `Inv.impR`, which puts the antecedent into `Ω`; the following `downL` /
 `atomL` binds it into `K`.  That hypothesis is the antecedent of the goal
-being PROVED, so nothing above holds it, and `bindBackI`'s premise
-`↑↓M₀ ∈ K` is unavailable.  A cut site below such a binder — the same
-parked `Qa ⊃ N ∈ done` re-attacked at a set-equal station, `interpR`'s ∃p
-row then `⊤` (`parkRowER_cut`) and the ∀p row `⊥` (`parkRowAR_cut`) —
-creates an escape whose derivation genuinely uses the bound hypothesis, and
-there is no step that takes it above the binder.
+being PROVED, so nothing above holds it and `bindBackI`'s premise is
+unavailable; and the span grants only 2 units (`hgt_goalSpan`) where a
+crossing costs 4, so the height accounting would fail even if a discharge
+existed.  Two independent reasons.
+
+A cut site below either binder — the same parked `Qa ⊃ N ∈ done`
+re-attacked at a set-equal station, `interpR`'s ∃p row then `⊤`
+(`parkRowER_cut`) and its ∀p row `⊥` (`parkRowAR_cut`), so the traversal
+must escape — creates an escape whose derivation genuinely uses the bound
+hypothesis, and there is no step that takes it above the binder.
 
 This is stated, not proved: no term of the type below is built, and no
 countermodel is claimed either.  It is the shape of §2 of
 `docs/n4-pair-cofinality.md` — a step at which the escape must move and
 has no clause. -/
 
-/-- **The goal-antecedent binder crossing** (OPEN).  What the `∃p`
-inversion traversal would need at `Inv.impR` followed by `Inv.downL`, where
-the bound hypothesis is the goal's own antecedent and `escC_crossDown`'s
-premise `↑↓M₀ ∈ K` is not available. -/
-def EscBindGoalR (p : String) : Type :=
+/-- **The goal-antecedent span grants 2.**  `Inv.impR` and `Inv.downL` cost
+one each, where `bindBackI` costs four. -/
+theorem hgt_goalSpan {Γ : List Neg} {Ω : List Pos} {M₀ N : Neg}
+    (x : Inv (M₀ :: Γ) Ω .tru N) :
+    hgtI (Inv.impR (Inv.downL x)) = hgtI x + 2 := by
+  simp only [hgtI, szI]
+
+/-- **The disjunctive span grants the other branch.**  Room is not the
+obstruction at `Inv.orL`; the discharge is. -/
+theorem hgt_orSpanL {Γ : List Neg} {Ω : List Pos} {j : JD} {M₀ N : Neg}
+    {PB : Pos} (x : Inv (M₀ :: Γ) Ω j N) (e : Inv Γ (PB :: Ω) j N) :
+    hgtI (Inv.orL (Inv.downL x) e) = hgtI x + hgtI e + 2 := by
+  simp only [hgtI, szI]; omega
+
+/-- **The binder crossing the family still lacks** (OPEN).  What the
+inversion traversals need at a `downL` binder whose hypothesis is NOT
+re-supplied by a single left focus on a member of `K`: the goal antecedent
+of (ii) and the disjunctive branch of (i).  `escC_crossDown` is this type
+with the extra premise `↑↓M₀ ∈ K`, and is PROVED. -/
+def EscBindOpenR (p : String) : Type :=
   ∀ (K : List Neg) (M₀ : Neg) (c : Nat) (seen : SeenR) (b : HeightBook seen),
     PFreeN p M₀ → PFreeCtx p K →
       EscC (M₀ :: K) (c + 4) seen b → EscC K c seen b
@@ -308,3 +340,5 @@ end LJFO
 #axioms_within LJFO.hgt_keptSpan [propext]
 #axioms_within LJFO.bb_keptSpan [propext, Quot.sound]
 #axioms_within LJFO.escOfCutC [propext, Quot.sound]
+#axioms_within LJFO.hgt_goalSpan [propext]
+#axioms_within LJFO.hgt_orSpanL [propext, Quot.sound]
