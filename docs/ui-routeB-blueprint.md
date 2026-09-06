@@ -50,11 +50,11 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 | N0d | `ECofinalP`, `ACofinalP` and their inhabitants `ecofinalP`, `acofinalP`; `ECofinalF`/`ACofinalF` and the upward-closed forms `ECofinalUp`, `ACofinalUp` | `LJF/OFuelPCofinal.lean`, `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | **PROVED** for `interpP` `[propext, Classical.choice, Quot.sound]` (§4.17); the `interpF` forms remain DRAFTED | N0c |
 | N1 | `EStabEq`, `AStabEq` — the chains LITERALLY constant from some fuel (`∀ f ≥ f₀, E_f = E_{f₀}`); `EStabilises`, `AStabilises` the interderivable forms, derived from them | `wip/ui_routeB_n3.lean` | **STATED**, `estabilises_of_stabEq`/`astabilises_of_stabEq` PROVED `[propext, Quot.sound]` (§4.19) | — |
 | N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic (`minE` at every judgment `j`; `minA` at `tru`, the lax cell being the cell `done ⇒ ◯P`) | `wip/ui_routeB_n3.lean` | **STATED** (axiom-free) | — |
-| N3 | `hasUI_of_stabEq` (forward), `stabilises_of_hasUI` (backward) — W ⟺ UI per cell | `wip/ui_routeB_n3.lean` | **forward PROVED** `[propext, Quot.sound]`, no cut, over `SatE2P`/`SatA2P` as variables; **backward PROVED relative to `CutInv`** (§4.19) | N0e, N0d, N1, N2 |
+| N3 | `hasUI_of_stabEq` (forward), `stabilises_of_hasUI′` (backward) — W ⟺ UI per cell, over `SatE2P`/`SatA2P` as variables | `wip/ui_routeB_n3.lean`, `wip/ui_routeB_n3_cut.lean` | **PROVED both ways** (§4.19, §4.22): forward `[propext, Quot.sound]`, backward `[propext, Classical.choice, Quot.sound]` through `cutInv` | N0e, N0d, N0k, N1, N2 |
 | N4 | `StabilisationAll` — every saturated cell stabilises | same | **OPEN both ways** (`sorry` placeholder) | — |
 | N5 | `ljfo_ui_of_stabilisation` — UI for LJF◯ | same | DRAFTED (`sorry`) | N3, N4 |
-| N6 | `IsUIPairPLL`, `PLL_UI`, `pll_ui_of_ljfo : CutInv → (∀ p, CellsFor p) → PLL_UI` — transport to PLL; `pfree_roundTripN` proved | `wip/ui_routeB_n3.lean` | **PROVED relative to `CutInv` and `CellsFor`** `[propext, Quot.sound]` (§4.19) | `bridge_iff`, N3 |
-| N0k | `CutInv` — composition of `Inv` derivations: `Γ ⊢ N → N :: Δ ⊢ⱼ ψ → Γ ++ Δ ⊢ⱼ ψ`. Reduces through the bridge to completeness at every polarisation, restated after the refutation stage as `PolInvT` (judgment `tru`) + `PolInvL` (`lax`, shifted goals `↑P` only): `PolInv` at `lax` for unshifted `⊃`/`∧` goals is REFUTED (no rule concludes them; certified) but that case is vacuous for `CutInv` | `wip/ui_routeB_n3.lean`, `wip/cutinv_cells.lean`, `docs/cutinv-cases.md` | **OPEN**; refutation stage DONE (§4.21): 14 steps from the completeness proof, 26 designed cells all PASS at `[]`, the ◯-free block (17 cells) a result in its own right; route (a) recommended with an 8-lemma transfer block | — |
+| N6 | `IsUIPairPLL`, `PLL_UI`, `pll_ui_of_ljfo′ : (∀ p, CellsFor p) → PLL_UI` — transport to PLL | `wip/ui_routeB_n3.lean`, `wip/ui_routeB_n3_cut.lean` | **PROVED relative to `CellsFor` alone** `[propext, Classical.choice, Quot.sound]` (§4.22) | `bridge_iff`, N3, N0k |
+| N0k | `cutInv : Inv Γ [] tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ`, by polarisation invariance: the transfer block `bLL`/`gA`/`sD`/`fT`/`fS`/`bCtx` and `polInvT`/`polInvL`/`cutInvNE` at `[propext, Quot.sound]`; `cutInv` itself `[propext, Classical.choice, Quot.sound]` (the `Type` packaging of a `Nonempty` result through the `Prop`-valued bridge). ◯-free block `polInvT_circFree`/`cutInv_circFree` committed first. `(A′)` REFUTED (`notCanGoalConverse`) | `LJF/OPolInv.lean` | **PROVED** (§4.22) | — |
 | N0i | `FuelIrrelevance` — one fuel step without change at a station implies the chain is constant above it | `wip/ui_routeB_n3.lean` | **OPEN** (typed obligation; on N4's path, not N3's) | — |
 | N7 | pins, hoist out of `wip/`, `Production` sweep, `TOOLS.md` | — | — | each node as it lands |
 | N8 | blueprint chapter (`LaxBlueprint/`), HANDOFF entry, paper | — | — | N7 |
@@ -89,8 +89,8 @@ graph TD
   N0c --> N0d[N0d ECofinalP/ACofinalP · PROVED]
   N1[N1 EStabilises / AStabilises] --> N3
   N2[N2 IsUIPair / HasUI] --> N3
-  N0a --> N3[N3 W ⟺ UI per cell · forward PROVED, backward rel. CutInv]
-  K[N0k CutInv · OPEN] --> N3
+  N0a --> N3[N3 W ⟺ UI per cell · PROVED both ways]
+  K[N0k CutInv · PROVED] --> N3
   K --> N6
   N0d --> N3
   N4[N4 StabilisationAll · OPEN both ways] --> N5[N5 UI for LJF◯ · sorry]
@@ -165,13 +165,13 @@ the station `[negOfO φ]` after processing by `eMinFF`; A-side of the cell
 `[] ⇒ negOfO φ`), erase (`eraseNeg`); minimality transports through
 `bridge_iff` both ways.  Days.
 
-**WP6 — `CutInv` by route (a).**  Refutation stage done (§4.21,
-`docs/cutinv-cases.md`).  Build: the eight transfer lemmas between `N`
-and its canonical form `⟦N⟧ = negOfO (eraseNeg N)` (goal, hypothesis,
-pending positive, focused positive, each way) in one mutual block on the
-formula, the delay cases exactly as the cells do them; `laxAdm`; then
-`PolInvT`/`PolInvL` from `FocalizationPLL`, and `CutInv` by erase,
-compose, re-focalise.  ◯-free steps first (rule 8).
+**WP6 — `CutInv` by route (a): DONE 2026-09-06 (§4.22).**  Refutation
+stage §4.21; then `LJF/OPolInv.lean`: the one-way transfer block on the
+formula (`bLL`, `gA`, `sD`, `fT`, `fS`, `bCtx`; the converse `(A′)` is
+refuted), `polInvT`/`polInvL` from `FocalizationPLL`, `cutInvNE` by
+erase, compose, re-focalise, and `cutInv` as its data form.  The ◯-free
+block committed first (rule 8); the restriction turned out inert.  N3
+backward and N6 consumed it: `pll_ui_of_ljfo′ : (∀ p, CellsFor p) → PLL_UI`.
 
 **WP5 — N7/N8.**  Pins (`#axioms_within`, measured sets), hoist from
 `wip/` into `LJF/`, `lake build Production` clean, `TOOLS.md` cells,

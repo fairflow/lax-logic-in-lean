@@ -2269,6 +2269,91 @@ traversals needed (`routeStab`/`routeLFoc`/`routeInv`, `simHyp`, `extract`,
 flag-threaded, in `LJF/OCore.lean`; direct cut admissibility (route b)
 would re-prove them under a cut measure and handle the lax flag's
 asymmetry besides.  WP6 in the blueprint; ◯-free steps first.
+
+### 4.22 WP6: `CutInv` PROVED by polarisation invariance; the ◯-free block first; `(A′)` refuted; N3 backward and N6 lose their obligation (2026-09-06, 01:35)
+
+One agent run of 32 minutes, three commits, merged at f7d361e and
+verified here: `lake build LJF wipshared Production` exit 0 (the family
+replayed; `LJF.OPolInv` 13 s), pins measured, the gate watched failing
+(`cutInv` at `[propext, Quot.sound]` → "depends on Classical.choice"),
+sorry sweep clean.  New production module `LJF/OPolInv.lean` (675
+lines; imports `OCore`, `OBridge`, `Meta.Audit` only) and the consumer
+`wip/ui_routeB_n3_cut.lean`.  **No typed obligation left**: `CutInv` is
+discharged, not parked.
+
+**The ◯-free block, first, as its own result (rule 8).**  Writing
+`⟦N⟧ = negOfO (eraseNeg N)`, `⟦P⟧ = posOfO (erasePos P)` for the
+canonical polarisation, the transfer block — one mutual recursion ON THE
+FORMULA, no derivation height anywhere, all in `Type` — is
+
+    bLL : ∀ N,  LFoc Δ ⟦N⟧ j P → LFoc Δ N j P
+    gA  : ∀ N,  Inv Γ [] j ⟦N⟧ → Inv Γ [] j N
+    sD  : ∀ P,  Stab Γ j ⟦P⟧ → Stab Γ j P
+    fT  : ∀ R b, b ∈ invertPos R → b ⊆ Δ → (∀ b′ ∈ invertPos ⟦R⟧, Inv (b′ ++ Δ) [] tru G) → Inv Δ [] tru G
+    fS  : the same for Stab
+    bCtx : Inv (Γ.map ⟦·⟧) [] j C → Inv Γ [] j C
+
+each delay case exactly as the cells of §4.21 do it (`routeStab`;
+`invBranches`/`extract`/`stableFire`/`upMerge`; `rel`/`downL`;
+`stable`/`rfoc`/`rel`).  Then, for ◯-free Γ, Δ, N, ψ at judgment `tru`:
+
+    polInvT_circFree : ⊢_ND (⌊Γ⌋ ⇒ ⌊ψ⌋) → Nonempty (Inv Γ [] tru ψ)         [propext, Quot.sound]
+    cutInv_circFree  : Inv Γ [] tru N → Inv (N :: Δ) [] tru ψ → Inv (Γ ++ Δ) [] tru ψ
+
+This is Liang–Miller's "delays are inert" for the ◯-free part of LJF◯,
+committed on its own (4a0d57e) before any modal step.  A finding: the
+◯-free restriction buys NOTHING in the transfer block — `◯` is handled
+in `bLL`/`gA`/`sD` exactly as `↑` and `∨` are — so the ◯-free statements
+are the general ones with inert hypotheses; the file records them that
+way.
+
+**The modal steps and the theorem.**
+
+    polInvT  : ∀ Γ ψ,  ⊢_ND (⌊Γ⌋ ⇒ ⌊ψ⌋)  → Nonempty (Inv Γ [] tru ψ)         [propext, Quot.sound]
+    polInvL  : ∀ Γ P,  ⊢_ND (⌊Γ⌋ ⇒ ◯⌊P⌋) → Nonempty (Inv Γ [] lax (↑P))       [propext, Quot.sound]
+    cutInvNE : Inv Γ [] tru N → Inv (N :: Δ) [] j ψ → Nonempty (Inv (Γ ++ Δ) [] j ψ)   [propext, Quot.sound]
+    cutInv   : Inv Γ [] tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ     [propext, Classical.choice, Quot.sound]
+
+At `lax`, a `⊃` or `∧` goal empties the SECOND premise (`laxImpEmpty`,
+`laxAndEmpty` — S14 of §4.21, used exactly as predicted); the shift goal
+is `polInvL`; the box goal is `polInvL` under `circR` after the ◯◯
+collapse.  `polInvT` is the bridge's converse at EVERY polarised sequent,
+so route (B)'s parked shapes and rows all cross to PLL and back — the
+reusable half of the work.
+
+**Where the choice axiom enters, exactly once, and why it stays.**
+`FocalizationPLL` factors through `PLLND.ND_to_SC` into the sequent
+calculus `SCh`, which is a `Prop`; so every re-focalisation in this
+development returns `Nonempty`, and `cutInv : … → Inv …` (data, which
+its consumers destructure) is `cutInvNE … |>.some`.  The mathematics is
+at `[propext, Quot.sound]` (`cutInvNE`); the `Type`-valued packaging costs
+the choice.  Removing it needs a `Type`-valued cut elimination for PLL
+(route b), not this package.
+
+**Refuted along the way: `(A′)`.**  The converse transfer
+`Inv Γ Ω j N → Nonempty (Inv Γ Ω j ⟦N⟧)` is FALSE (`notCanGoalConverse`,
+axiom-free), by cell 14.3: `Inv [] [] lax ↑↓(↑⊥ ⊃ ↑⊥)` is inhabited,
+its canonical form is `↑⊥ ⊃ ↑⊥`, and `Inv Γ [] lax (Q ⊃ N)` is empty.
+The block is one-way by design; `(B′)`, `(C′)`, `(D′)` were not needed.
+
+**Consumers.**  `cutInvOb : CutInv := cutInv` (definitional), and
+
+    stabilises_of_hasUI′ : SatE2P p → SatA2P p → Saturated done → ParkedCtxP done →
+                           HasUI p done G → EStabilises p done × AStabilises p done G
+    pll_ui_of_ljfo′      : (∀ p, CellsFor p) → PLL_UI
+
+both `[propext, Classical.choice, Quot.sound]`; the statements are
+literally the specified ones (`example : LJFO.CutInv := LJFO.cutInv`
+elaborates).  **N3 is PROVED in both directions** over the cofinality
+statements as variables; **N6 is PROVED relative to `CellsFor` alone.**
+What stands between the file and `PLL_UI` is now N4 (through N3 forward)
+and WP4's transfer through the processing phase.
+
+Gates watched failing: the two pins above; the negative-delay transfer
+dropped from `bLL`'s `↑↓M` arm (type mismatch + `sorryAx` in the pin);
+`polInvT` put where S14 forces `polInvL` (type mismatch).  Method trap
+recorded by the run: `lake env lean` and `lake build` differ on
+`autoImplicit`; verify with `lake build`.
 ---
 
 ## 5 · OPEN list
