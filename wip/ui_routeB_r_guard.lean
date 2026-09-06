@@ -48,7 +48,8 @@ def UEntryRD (p : String) : Type :=
   ∀ (done : List Neg), Saturated done → ParkedCtxP done →
     ∀ {Γ' K : List Neg},
       (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-      ∀ (G : Neg) (seen : SeenR) (b : HeightBook seen) {j : JD}, Inv Γ' [] j G →
+      ∀ (G : Neg) (seen : SeenR) (b : HeightBook seen) {j : JD}
+      (d : Inv Γ' [] j G), BookBound seen b (hgtI d) →
       Sum (UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: K) [] .tru
              (interpR p f [] done (some (jGoal j G)) seen)))
           (EscD K seen b)
@@ -56,9 +57,9 @@ def UEntryRD (p : String) : Type :=
 /-- The entry reduces to the saturated-station statement of
 `wip/ui_routeB_r_escd.lean`: take `Γ' := done ++ Δ`. -/
 def satA2RD_of_uentryRD (u : UEntryRD p) : SatA2RD p :=
-  fun done Δ G seen b hsat hP hΔ _ d =>
+  fun done Δ G seen b hsat hP hΔ _ d hb =>
     u done hsat hP (fun Z hZ => List.mem_append.mp hZ)
-      (fun Z hZ => List.mem_append_left _ hZ) hΔ G seen b d
+      (fun Z hZ => List.mem_append_left _ hZ) hΔ G seen b d hb
 
 /-! # Part 2 · The loop -/
 
@@ -74,20 +75,21 @@ def guardLoop (u : UEntryRD p) (done : List Neg)
     (hsat : Saturated done) (hP : ParkedCtxP done) {K : List Neg}
     (hK : PFreeCtx p K) (Qa : Pos) (seen : SeenR) (b : HeightBook seen) :
     ∀ {Γ' : List Neg}, (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' →
-      ∀ (s : Inv Γ' [] .tru (.up Qa)),
+      ∀ (s : Inv Γ' [] .tru (.up Qa)), BookBound seen b (hgtI s) →
       Sum (UpFrom2 (fun e f =>
              Inv (interpR p e [] done none ((Qa, done) :: seen) :: K) [] .tru
                  (interpR p f [] done (some (.up Qa)) ((Qa, done) :: seen))))
-          (EscD K seen b) := fun {Γ'} hm hm2 s =>
+          (EscD K seen b) := fun {Γ'} hm hm2 s hb =>
   match hu : u done hsat hP hm hm2 hK (.up Qa) ((Qa, done) :: seen)
-              (hgtI s, b) (j := .tru) s with
+              (hgtI s, b) (j := .tru) s ⟨Nat.le_refl _, hb⟩ with
   | .inl w => .inl (by rw [jGoal_tru] at w; exact w)
   | .inr (.here gd hlt) =>
       guardLoop u done hsat hP hK Qa seen b
         (Γ' := done ++ K) (fun Z hZ => List.mem_append.mp hZ)
         (fun Z hZ => List.mem_append_left _ hZ) gd
+        (bookBound_mono seen b (Nat.le_of_lt hlt) hb)
   | .inr (.there e) => .inr e
-  termination_by Γ' _ _ s => hgtI s
+  termination_by Γ' _ _ s _ => hgtI s
   decreasing_by exact hlt
 
 end LJFO

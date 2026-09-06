@@ -234,7 +234,7 @@ typed obligation (`wip/ui_routeB_r_guard.lean`):
 
     UEntryRD p := ∀ done, Saturated done → ParkedCtxP done →
                   ∀ {Γ' K}, (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
-                  ∀ G seen b {j}, Inv Γ' [] j G →
+                  ∀ G seen b {j} (d : Inv Γ' [] j G), BookBound seen b (hgtI d) →
                   Sum (UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: K) [] .tru
                          (interpR p f [] done (some (jGoal j G)) seen)))
                       (EscD K seen b)                                          -- OPEN
@@ -242,7 +242,7 @@ typed obligation (`wip/ui_routeB_r_guard.lean`):
     guardLoop : UEntryRD p → ∀ done, Saturated done → ParkedCtxP done →
                 ∀ {K}, PFreeCtx p K → ∀ Qa seen b {Γ'},
                 (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' →
-                ∀ (s : Inv Γ' [] .tru (↑Qa)),
+                ∀ (s : Inv Γ' [] .tru (↑Qa)), BookBound seen b (hgtI s) →
                 Sum (UpFrom2 (fun e f =>
                        Inv (interpR p e [] done none ((Qa, done) :: seen) :: K) [] .tru
                            (interpR p f [] done (some ↑Qa) ((Qa, done) :: seen))))
@@ -263,6 +263,30 @@ unchanged.  Gate watched failing: `guardLoop` at `[]` errors on `propext`.  The 
       | there : EscD K s bs → EscD K (e :: s) (n, bs)
     escD_nil_empty : EscD K [] PUnit.unit → False            PROVED, axiom-free
 
+**The book invariant, and a statement fault caught in this run.**  A first
+draft of the two obligations quantified over the height book with no relation
+to the derivation.  That draft is UNPROVABLE: at a cut site the traversal
+must return an escape, and the escape must beat a booked height that the
+statement leaves arbitrary — 0, for instance.  The obligations therefore
+carry
+
+    BookBound : ∀ (seen : SeenR), HeightBook seen → Nat → Prop
+      | [],     _, _ => True
+      | _ :: s, b, h => h ≤ b.1 ∧ BookBound s b.2 h
+    bookBound_nil  : BookBound [] b h                        PROVED, axiom-free
+    bookBound_mono : h ≤ h' → BookBound seen b h' → BookBound seen b h
+                                                             PROVED, axiom-free
+
+as a hypothesis at `hgtI d`: the derivation a state carries is no higher than
+any height booked in the record.  It holds at the top (`seen = []`, the book
+empty), it is re-established at a recording site (the head is booked as the
+guard derivation's own height, and the older entries survive because the
+guard derivation is a sub-derivation), and it descends with the derivation —
+`bb_park`, `bb_orBranch`, `bb_andHyp`, `bb_impFls`, `bb_fire` in
+`wip/ui_routeB_r_procd.lean`, each `LJF/OFuelHeight.lean` Part 10's height
+lemma for that edge.  With it a cut site can build its escape: the antecedent
+sub-derivation has `hgtI s_d < hgtI d ≤ n_k`.
+
 Both sides of the mutual return `Sum (ordinary conclusion) (EscD …)`, and NO
 escape formulas appear anywhere: the statements are `SatE2R` / `SatA2R` at an
 arbitrary record with an `EscD` alternative.  On the `∃p` side the escape
@@ -281,14 +305,14 @@ Gate watched failing: `satE2R_of_escD` at `[]` errors with "depends on
 def SatE2RD (p : String) : Type :=
   ∀ (done Δ : List Neg) (ψ : Neg) (seen : SeenR) (b : HeightBook seen),
     Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
-    ∀ {j : JD}, Inv (done ++ Δ) [] j ψ →
+    ∀ {j : JD} (d : Inv (done ++ Δ) [] j ψ), BookBound seen b (hgtI d) →
       Sum (UpFrom (fun e => Inv (interpR p e [] done none seen :: Δ) [] j ψ))
           (EscD Δ seen b)
 
 def SatA2RD (p : String) : Type :=
   ∀ (done Δ : List Neg) (G : Neg) (seen : SeenR) (b : HeightBook seen),
     Saturated done → ParkedCtxP done → PFreeCtx p Δ →
-    ∀ {j : JD}, Inv (done ++ Δ) [] j G →
+    ∀ {j : JD} (d : Inv (done ++ Δ) [] j G), BookBound seen b (hgtI d) →
       Sum (UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: Δ) [] .tru
              (interpR p f [] done (some (jGoal j G)) seen)))
           (EscD Δ seen b)
@@ -387,6 +411,8 @@ has one sub-result per branch of `invertPos` and must sequence them:
 | the recording-site restart is well-founded (`escapeLoop`) | **PROVED**, axiom-free |
 | the recording-site loop in the family's types (`guardLoop`, over `UEntryRD`) | **PROVED**, `[propext]` |
 | `EscD` empty at the empty record (`escD_nil_empty`) | **PROVED**, axiom-free |
+| the obligations WITHOUT the book invariant | unprovable — caught and repaired in this run |
+| the book invariant and its descent (`BookBound`, `bookBound_mono`, `bb_*`) | **PROVED** |
 | `satE2R_of_escD`, `satA2R_of_escD`, `pll_ui_R_escD` | **PROVED** |
 | the processing phase at every record (`eMinPRg`, `aMinPRg`) | **PROVED** |
 | the same block carrying derivation-level escapes (`eMinPRD`, `aMinPRD`, `seqSumG`) | **PROVED** |

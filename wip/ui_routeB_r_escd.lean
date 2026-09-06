@@ -160,6 +160,25 @@ inductive EscD (K : List Neg) : (seen : SeenR) → HeightBook seen → Type wher
 /-- **At the empty record there is no escape.** -/
 theorem escD_nil_empty {K : List Neg} (e : EscD K [] PUnit.unit) : False := nomatch e
 
+/-- **The book invariant.**  The derivation a state carries is no higher than
+any height booked in the record: at the site that recorded a pair the book
+was set to the height of the guard derivation THERE, and the traversal only
+ever descends.  Without it a state could not create an escape at all — the
+escape must beat a booked height, and a booked height is otherwise
+arbitrary. -/
+def BookBound : ∀ (seen : SeenR), HeightBook seen → Nat → Prop
+  | [], _, _ => True
+  | _ :: s, b, h => h ≤ b.1 ∧ BookBound s b.2 h
+
+theorem bookBound_nil {b : HeightBook []} {h : Nat} : BookBound [] b h := trivial
+
+/-- The invariant survives descending to a lower derivation. -/
+theorem bookBound_mono : ∀ (seen : SeenR) (b : HeightBook seen) {h h' : Nat},
+    h ≤ h' → BookBound seen b h' → BookBound seen b h
+  | [], _, _, _, _, _ => trivial
+  | _ :: s, b, _, _, hle, hb =>
+      ⟨Nat.le_trans hle hb.1, bookBound_mono s b.2 hle hb.2⟩
+
 /-! # Part 4 · The two obligations, verbatim (OPEN) -/
 
 /-- **The `∃p` traversal at a saturated station, with derivation-level
@@ -168,7 +187,7 @@ conclusion admitting an escape. -/
 def SatE2RD (p : String) : Type :=
   ∀ (done Δ : List Neg) (ψ : Neg) (seen : SeenR) (b : HeightBook seen),
     Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
-    ∀ {j : JD}, Inv (done ++ Δ) [] j ψ →
+    ∀ {j : JD} (d : Inv (done ++ Δ) [] j ψ), BookBound seen b (hgtI d) →
       Sum (UpFrom (fun e => Inv (interpR p e [] done none seen :: Δ) [] j ψ))
           (EscD Δ seen b)
 
@@ -177,7 +196,7 @@ def SatE2RD (p : String) : Type :=
 def SatA2RD (p : String) : Type :=
   ∀ (done Δ : List Neg) (G : Neg) (seen : SeenR) (b : HeightBook seen),
     Saturated done → ParkedCtxP done → PFreeCtx p Δ →
-    ∀ {j : JD}, Inv (done ++ Δ) [] j G →
+    ∀ {j : JD} (d : Inv (done ++ Δ) [] j G), BookBound seen b (hgtI d) →
       Sum (UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: Δ) [] .tru
              (interpR p f [] done (some (jGoal j G)) seen)))
           (EscD Δ seen b)
@@ -190,14 +209,14 @@ residuals of §4.31 outright, with no escape formulas anywhere. -/
 /-- **`SatE2R` from the escape-carrying `∃p` traversal.** -/
 noncomputable def satE2R_of_escD {p : String} (t : SatE2RD p) : SatE2R p :=
   fun done Δ ψ hsat hP hΔ hψ {_j} d =>
-    match t done Δ ψ [] PUnit.unit hsat hP hΔ hψ d with
+    match t done Δ ψ [] PUnit.unit hsat hP hΔ hψ d bookBound_nil with
     | .inl w => w
     | .inr e => (escD_nil_empty e).elim
 
 /-- **`SatA2R` from the escape-carrying `∀p` entry.** -/
 noncomputable def satA2R_of_escD {p : String} (a : SatA2RD p) : SatA2R p :=
   fun done Δ G hsat hP hΔ {_j} d =>
-    match a done Δ G [] PUnit.unit hsat hP hΔ d with
+    match a done Δ G [] PUnit.unit hsat hP hΔ d bookBound_nil with
     | .inl w => w
     | .inr e => (escD_nil_empty e).elim
 
@@ -219,6 +238,8 @@ end LJFO
 #axioms_within LJFO.parkRowAR_record []
 #axioms_within LJFO.escapeLoop []
 #axioms_within LJFO.escD_nil_empty []
+#axioms_within LJFO.bookBound_nil []
+#axioms_within LJFO.bookBound_mono []
 #axioms_within LJFO.satE2R_of_escD [propext]
 #axioms_within LJFO.satA2R_of_escD [propext]
 #axioms_within LJFO.pll_ui_R_escD [propext, Classical.choice, Quot.sound]
