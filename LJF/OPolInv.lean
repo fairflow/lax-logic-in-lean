@@ -41,8 +41,9 @@ are NOT proved here, and the goal-side converse is FALSE: cell 14.3 inhabits
 un-primed directions are needed, and only those are true.
 
 §4 assembles `polInvT` and the composition principle at the truth flag,
-`cutInvT`; §5 states them for the ◯-free fragment, which is Liang–Miller's
-"delays are inert" for the ◯-free part of LJF◯.  ONE axiom beyond the
+`cutInvT`; §4b adds the modal steps — `polInvL` and `cutInv` at every flag;
+§5 states the truth-flag results for the ◯-free fragment, which is
+Liang–Miller's "delays are inert" for the ◯-free part of LJF◯.  ONE axiom beyond the
 development's usual `[propext, Quot.sound]` is spent, and only where a
 derivation is wanted as DATA: focalization (`LJFO.FocalizationPLL`) factors
 through `PLLND.SCh`, which is a `Prop`, so the bridge can only return
@@ -500,6 +501,79 @@ theorem cutInvT (Γ Δ : List Neg) (N ψ : Neg)
           rw [eraseCtx_append]; exact List.mem_append_right _ hχ))
   exact polInvT (Γ ++ Δ) ψ ⟨subst1 e₂ e₁⟩
 
+/-! ## 4b. The modal steps: the lax flag, and `CutInv`
+
+Three facts fix the lax half.  `Inv Γ [] .lax N` is reached by the calculus
+only with `N` a shift or a box (`circR`'s premise), so at `lax` the goal shapes
+`⊃` and `∧` are empty (`laxImpEmpty`/`laxAndEmpty`); the shift goal is
+`polInvL`; and the box goal reduces to the shift goal by `circR`, its erasure
+`◯◯φ` collapsing to `◯φ` by `laxElim`. -/
+
+/-- **`PolInvL`** — the converse of the erasure bridge at the lax flag, at the
+SHIFTED goals `circR` produces:
+
+    ∀ Γ P,  Nonempty (LaxND ⌊Γ⌋ (◯⌊P⌋)) → Nonempty (Inv Γ [] .lax (↑P))
+
+The unrestricted lax statement `PolInv` is REFUTED (`docs/cutinv-cases.md`
+S14, cells 14.1/14.2); this is the restriction `CutInv` actually needs.  The
+route is `FocalizationPLL` at the box `◯⌊P⌋`, whose polarisation is
+`◯⟦P⟧`, then `circInv`, then the transfer block. -/
+theorem polInvL (Γ : List Neg) (P : Pos)
+    (h : Nonempty (LaxND (eraseCtx Γ) (.somehow (erasePos P)))) :
+    Nonempty (Inv Γ [] .lax (.up P)) := by
+  obtain ⟨d⟩ := FocalizationPLL (eraseCtx Γ) (.somehow (erasePos P)) h
+  rw [map_negOfO_eraseCtx] at d
+  exact ⟨bCtx Γ (.stable (sD P (unStable (circInv d))))⟩
+
+/-- **The composition principle, `Nonempty` form, at every flag.**
+
+    ∀ Γ Δ j N ψ,  Inv Γ [] .tru N → Inv (N :: Δ) [] j ψ →
+                  Nonempty (Inv (Γ ++ Δ) [] j ψ)
+
+At `tru` this is `cutInvT`.  At `lax`: the `⊃` and `∧` goals make the SECOND
+PREMISE empty, so those cases are vacuous and need no converse at all; the
+shift goal is `polInvL`; the box goal is `polInvL` under `circR`, after
+`laxElim` collapses `◯◯⌊P⌋` to `◯⌊P⌋`. -/
+theorem cutInvNE (Γ Δ : List Neg) (j : JD) (N ψ : Neg)
+    (d₁ : Inv Γ [] .tru N) (d₂ : Inv (N :: Δ) [] j ψ) :
+    Nonempty (Inv (Γ ++ Δ) [] j ψ) := by
+  cases j with
+  | tru => exact cutInvT Γ Δ N ψ d₁ d₂
+  | lax =>
+      have e₁ : LaxND (eraseCtx (Γ ++ Δ)) (eraseNeg N) :=
+        (Inv.sound d₁).rename (fun _ hχ => by
+          rw [eraseCtx_append]; exact List.mem_append_left _ hχ)
+      have e₂ : LaxND (eraseNeg N :: eraseCtx (Γ ++ Δ))
+          (.somehow (eraseNeg ψ)) :=
+        (Inv.sound d₂).rename (fun _ hχ => by
+          rcases List.mem_cons.mp hχ with rfl | hχ
+          · exact List.mem_cons_self ..
+          · exact List.mem_cons_of_mem _ (by
+              rw [eraseCtx_append]; exact List.mem_append_right _ hχ))
+      have e : LaxND (eraseCtx (Γ ++ Δ)) (.somehow (eraseNeg ψ)) := subst1 e₂ e₁
+      cases ψ with
+      | up P => exact polInvL (Γ ++ Δ) P ⟨e⟩
+      | circ P =>
+          obtain ⟨c⟩ := polInvL (Γ ++ Δ) P
+            ⟨LaxND.laxElim e (.iden (List.mem_cons_self ..))⟩
+          exact ⟨.circR c⟩
+      | imp _ _ => exact (laxImpEmpty d₂).elim
+      | and _ _ => exact (laxAndEmpty d₂).elim
+
+/-- **`CutInv`** — definitionally the obligation `LJFO.CutInv` of
+`wip/ui_routeB_n3.lean`:
+
+    ∀ Γ Δ j N ψ,  Inv Γ [] .tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ
+
+`cutInvNE` carries the content; this declaration only turns
+`Nonempty (Inv …)` into data, which is where — and the ONLY place where —
+`Classical.choice` is spent.  It cannot be avoided along this route:
+`FocalizationPLL` factors through `PLLND.ND_to_SC` into `PLLND.SCh`, which is
+a `Prop`, so no re-focalisation in this development returns a derivation. -/
+noncomputable def cutInv : ∀ (Γ Δ : List Neg) (j : JD) (N ψ : Neg),
+    Inv Γ [] .tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ :=
+  fun Γ Δ j N ψ d₁ d₂ => (cutInvNE Γ Δ j N ψ d₁ d₂).some
+
 /-! ## 5. The ◯-free fragment, as a result in its own right
 
 Liang–Miller's "delays are inert", for the ◯-free part of LJF◯ at judgment
@@ -586,6 +660,11 @@ Measured with `#axioms_within_pin`, not retyped. -/
 #axioms_within LJFO.eraseCtx_append [propext]
 #axioms_within LJFO.polInvT [propext, Quot.sound]
 #axioms_within LJFO.cutInvT [propext, Quot.sound]
+
+-- The modal steps.  `Classical.choice` enters at `cutInv` and nowhere else.
+#axioms_within LJFO.polInvL [propext, Quot.sound]
+#axioms_within LJFO.cutInvNE [propext, Quot.sound]
+#axioms_within LJFO.cutInv [propext, Classical.choice, Quot.sound]
 
 -- The ◯-free fragment.
 #axioms_within LJFO.CircFreeP []
