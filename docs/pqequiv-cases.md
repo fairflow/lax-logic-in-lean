@@ -146,3 +146,22 @@ hypothesis at the states a direct induction visits after the guard):
   honest restatement, and it suffices for N4 (`n4_of_interpQ` only needs
   the hard halves at all fuels above the literal threshold).
 
+## 6 · Cell (ix): the naive `∀p` hypothesis REFUTED at a residue state (09:40, `_probe/stage0d.lean`)
+
+`done = [(a∨b) ⊃ ↑c, c ⊃ ↑a]`, top goal `↑a`; residue state
+`r = (done ⇒ ↑a | [a∨b])` inside the guard task for `a∨b`; guard state
+`g = (done ⇒ ↑(a∨b) | [a∨b])`.  In `interpP` the self-attack row at `r`,
+`A(done ⇒ ↑(a∨b)) ∧ A([↑c, c ⊃ ↑a] ⇒ ↑a)`, contributes the datum `b`
+(`b ⊢ a∨b ⊢ c ⊢ a`); `interpQ` at `r` is `a ∨ c`.
+
+| fuel | naive ∀p `A^P(r) ⊢ A^Q(r|seen)` | `b ⊢ A^P(r)` | `b ⊢ A^Q(r|seen)` | escape `A^P(r) ⊢ A^Q(r|seen) ∨ A^Q(g|seen)` | guard `A^P(g) ⊢ A^Q(g|seen)` | top `PQHard` both ways |
+|---|---|---|---|---|---|---|
+| 3, 4 | PROVED (size 3, degenerate) | REFUTED | REFUTED | PROVED | PROVED | PROVED |
+| 5 | **REFUTED** (nrm 13) | PROVED (nrm 11) | REFUTED | PROVED (nrm 3) | PROVED | PROVED |
+| 6 | **REFUTED** (nrm 13) | PROVED (nrm 11) | REFUTED | PROVED (nrm 3) | PROVED (nrm 31) | PROVED |
+
+Both halves of the naive per-state statement are now refuted in the kernel
+(§3 for `∃p`, here for `∀p`); the escape-relativised `∀p` form and the
+top-level `PQHard` survive.  See `docs/ui-ljfo-clause-table.md` §4.28 for
+what this means for the proof.
+

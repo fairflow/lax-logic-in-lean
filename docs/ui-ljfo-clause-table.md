@@ -2906,6 +2906,131 @@ first; Stage 3 plumbs to `PLL_UI`.  Budget two hours of work.
 
 ---
 
+### 4.28 WP11: fuel monotonicity PROVED; the hard halves `PQHard` NOT closed — the naive simultaneous induction REFUTED, the obstruction stated exactly, and why every per-fuel form bottoms out in per-fuel minimality; the derivation-level route (loop elimination with escapes) and the (antecedent, station-set) design proposed (2026-09-06, 09:45)
+
+One agent run of 69 minutes, launched alone at 08:25 with the cache cloned
+from this worktree (family olean verified before any build; builds by
+explicit module name only; every decider run under a deadline), two
+commits, merged at 84b243f and verified here (`wip/ui_routeB_pqmono.lean`
+builds as a leaf; pins measured; gate watched failing; sorry sweep clean).
+Record: `docs/pqhard-cases.md`.
+
+**Stage 1 — fuel monotonicity, PROVED** (no lemma of this kind existed):
+
+    interpG_monoE : Inv [interpG rst p (f+1) todo done none seen] [] .tru (interpG rst p f todo done none seen)
+    interpG_monoA : Inv [interpG rst p f todo done (some G) seen] [] .tru (interpG rst p (f+1) todo done (some G) seen)
+    interpP_monoE / interpP_monoA : the same for interpP
+                                                         [propext, Classical.choice, Quot.sound]
+
+at every state, every `seen`, every reset policy; for `interpG` through one
+operator lemma (`stepQ` preserves `StepMono`), the sixteen processing
+clauses discharged once against an abstract level; the `+ k` forms and the
+`interpQ` instances named.  Gate re-watched here: `interpP_monoE` at
+`[propext, Quot.sound]` fails on `Classical.choice`.
+
+**Stage 0c — the induction hypothesis measured, and the decider's limit.**
+At the two designed sites where an `∃p` interpolant sits in the negative
+position of a `∀p` row inside a guard task (cells (iii) and (vii), branch
+`[↑a]`, `seen = [Q′]`): `E^Q ∧ C ⊢ E^P` PROVED with normal form of size 3
+(the dropped conjunct `C` is EXACTLY what is missing, nothing else); the
+naive `∀p` hypothesis at the row's consequent PROVED; the Q-row is not
+vacuous (`E^Q ⊬ A^Q`, REFUTED); hence the row transfers once relativised by
+`C`.  The calibration is decisive about the skips: the theorem `pqEasyE`
+itself is not decided within 300 s at `|E^P| ≥ 15`, so every TIMEOUT
+(six runs, and the guard-relativised candidates Q7/Q9) is a decider limit,
+not evidence.
+
+**The naive simultaneous induction is REFUTED, not merely unproved.**
+`HardLvl p 0` holds and `HardLvl p f` is false at cell (i) for `f = 3, 4, 5`
+(the certified countermodels of §4.27), so no step lemma
+`HardLvl p f → HardLvl p (f+1)` exists.
+
+**The obstruction, exactly.**  `seen` grows at one place, the guard call of
+`parkRowE`/`parkRowA`; transferring the `∀p` row there needs the relativised
+hypothesis at `Qa :: seen`, hence `C_{Qa}` — a conjunct of `E^P` at the
+station — and the `∀p` derivation holds only `A^P(done ⇒ ↑Qa)` there.  Where
+`C_{Qa}` comes from on the `∀p` side is OPEN.  `PQHard` stands unchanged.
+
+**Designed cell (ix), decided here after the merge** — the naive `∀p`
+hypothesis at a RESIDUE state, with a second hypothesis that makes the
+self-attack content non-trivial:
+
+    done = [(a∨b) ⊃ ↑c, c ⊃ ↑a],  top goal ↑a;  residue r = (done ⇒ ↑a | [a∨b])
+    interpP at r has the self-attack disjunct  A(done ⇒ ↑(a∨b)) ∧ A([↑c, c ⊃ ↑a] ⇒ ↑a)  ∋  b
+    interpQ at r:  a ∨ c
+
+Decided here (`_probe/stage0d.lean`, each fuel in about 13 s, no
+timeout):
+
+    fuel 3, 4 : all formulas literally constant of size 3 — settles nothing (NFEQ)
+    fuel 5, 6 : naive ∀p at r,  A^P(r) ⊢ A^Q(r | [a∨b])              REFUTED (certified)
+                witness         b ⊢ A^P(r)                            PROVED
+                witness         b ⊢ A^Q(r | [a∨b])                    REFUTED
+                escape form     A^P(r) ⊢ A^Q(r | seen) ∨ A^Q(g | seen)  PROVED
+                guard state     A^P(g) ⊢ A^Q(g | [a∨b])                PROVED (nrm 31 at fuel 6)
+                top level       A^P(t) ⊢ A^Q(t | [])   and back        PROVED
+
+So the naive `∀p` hypothesis is REFUTED too, at residue states — both halves
+of the naive per-state statement are now refuted, in the kernel — while
+`PQHard` at the top survives once more, and the escape form (the consequence
+`b` re-appears as the guard's own interpolant, through its `↑b` branch) is
+the shape that holds.
+
+**Why every per-fuel form bottoms out in per-fuel minimality.**  The self-
+attack content at a residue state is a datum `X` proving `Qa` from the
+station; it is sufficient for the residue goal by a cut (`Δ_inv, Qa ⊢ G`),
+and "a sufficient p-free datum is implied by the interpolant" is
+cofinality — true at SOME fuel, false at a given one.  The same happens in
+the `∀p` row through an `∃p` in negative position (the dropped conjunct is
+a station consequence `interpQ` never lists), in any goal-weakening lemma
+`A(S ⇒ ↑Qa) ⊢ A(S ⇒ N′)`, and in any station-set invariance.  So the
+per-fuel `PQHard`, although not refuted at the top on any designed cell, is
+the wrong STATEMENT for a proof: its induction hypotheses are refuted
+(§4.27, cell (ix)) and its escape-relativised forms need per-fuel
+minimality to absorb the escapes.  The honest statements are cofinal.
+
+**Where the redundancy lemma actually lives: the derivation level.**  A
+derivation of the residue sequent that re-attacks `Qa ⊃ N` at the SAME
+station contains, as a proper sub-derivation, a derivation of the guard
+sequent `done ⊢ Qa`; so in a cofinality argument by induction on the
+derivation height, the cut row costs nothing: the sub-derivation is smaller,
+the induction hypothesis at the guard state applies to it, and the
+consequence appears as an ESCAPE — a disjunct `A^Q(done ⇒ ↑Qa | seen)` —
+absorbed at the guard state, where it is the goal itself (cell (ix): `b`
+is recovered through the guard's `↑b` branch).  For a re-attack at a LARGER
+station the sub-derivation is not of the guard sequent, the escape would sit
+at the wrong station, and absorbing it needs goal weakening, which is
+per-fuel minimality again.  Two consequences:
+
+1. **The design should cut only genuine loops**: record the PAIR
+   (antecedent, station-as-a-set), cut a re-attack only at the same station
+   set.  This is the per-station policy §4.25 refuted, with the station
+   read as a set: cell (iii)'s station grows as a list (`↑a` each round)
+   but stabilises as a set after one round, so the pair check terminates
+   there; the measure is `κ₂·W + ν` with `κ₂` counting unseen pairs over the
+   (finite) closure and its subsets.  Escapes then arise only at same-station
+   residues and are absorbed at the guard by sub-derivation.
+2. **N4 should be obtained WITHOUT `PQEquiv`**: prove the loop-checked
+   recursion sound (a transcription of `LJF/OFuelPSound.lean`; the cut rows
+   are `⊥`/`⊤` and trivially sound) and cofinal at the top level, the
+   latter by the derivation-height induction with escapes (the family's
+   method, re-authored for the pair design — the loop-elimination lemma is
+   its new content, and it is the redundancy claim of §4.23 in its natural
+   form); with literal stabilisation (`QBound`, to be re-proved for the pair
+   design), N3 forward for the loop-checked recursion gives `HasUI` at every
+   saturated station, and N3 BACKWARD for `interpP` (`stabilises_of_hasUI′`,
+   PROVED over `SatE2P`/`SatA2P`) turns that into `StabilisationAllP`, hence
+   `PLL_UI` through WP4.  `interpP` is never compared with the loop-checked
+   recursion fuel by fuel.
+
+The cost centre is the cofinality family for the loop-checked recursion,
+a build of the family's class; the choice of continuing on the per-fuel
+`PQHard` (an induction hypothesis nobody has found, against evidence that
+per-fuel minimality obstructs) or re-founding on the derivation-level
+route is Matthew's.  Nothing is launched pending that decision.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
