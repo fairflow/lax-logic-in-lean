@@ -21,6 +21,29 @@
 #
 #   --with-html-single   A single-page version, for reading straight through.
 #
+# On presenting declarations -- settled 2026-09-06, do not redo the experiment.
+# Three forms exist and were tried:
+#
+#   (lean := "X")            the blueprint node.  Its signature block prints the
+#                            declaration's CANONICAL name,
+#                            `def LaxLogic.Obligation.LaxAll.{u}`, and there is
+#                            no way to shorten it from a document: Verso's
+#                            `ppSignature` takes a `showNamespace` flag and uses
+#                            it for inductive constructors, but no block exposes
+#                            it.  Changing that needs an upstream patch.
+#   {docstring X}            same renderer, same fully qualified name.
+#   ```anchor NAME```        SubVerso extraction of an anchored source region.
+#                            Renders AS WRITTEN, short names, and Verso checks
+#                            the document text against the source so the two
+#                            cannot drift.  Set up, evaluated, and REJECTED:
+#                            the rendered block carries type tooltips but ZERO
+#                            links -- no "defined in ..." source link and no
+#                            cross-references -- which costs more than the
+#                            shorter names gain.  (Trial and its revert are in
+#                            git: 5708cff and its revert.)
+#
+# So: `(lean := ...)` everywhere, and the fully qualified names stay.
+#
 # The output directory is REMOVED first: the renderer does not clean it, so
 # pages from a previous run with different settings survive and are served
 # alongside the new ones.
