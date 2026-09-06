@@ -48,14 +48,25 @@ worktree; he pulls.
 |---|---|
 | repo | `fairflow/lax-logic-in-lean` (public) |
 | Matthew's checkout | `/Users/matthew/Lean/Sources/lax-logic-in-lean` — **his**, do not push to it |
-| this work's worktree | `/Users/matthew/gtd/worktrees/lax-logic-in-lean/dev-chapter` |
-| branch | `blueprint-dev-chapter` (local ref `claude/blueprint-dev-chapter`) |
+| **what you work in** | **whatever checkout your session has.** See below — you cannot inherit a previous session's worktree. |
+| branch | `blueprint-dev-chapter` — this is the handover, not a path |
 | the blueprint | `LaxBlueprint/` — nine chapters under `Chapters/` |
 | the frontier | `frjw-dev`, the FRJW agent's branch. **Not yours to merge into**; open a PR and ask. |
 
+**How a fresh session picks this up.** Not by finding a path. Claude Desktop
+offers a worktree when a session starts: decline it and there is no worktree;
+accept it and you get a *fresh* one, unrelated to any previous session's. Either
+way you cannot take over the worktree the last session used, and taking one over
+would not be a safe design even if it were possible.
+
+So the handover is **the branch, on the remote** — which is why the previous
+session's last duty is always to commit and push everything. Your first move:
+
 ```bash
-cd /Users/matthew/gtd/worktrees/lax-logic-in-lean/dev-chapter && git fetch origin && git status
+git fetch origin && git checkout blueprint-dev-chapter && git pull --ff-only
 ```
+
+and you are exactly where the last session left off.
 
 ```bash
 lake build LaxBlueprint && ./scripts/ci-pages.sh
@@ -68,15 +79,46 @@ gh workflow run pages.yml --ref blueprint-dev-chapter
 Publishing is manual only — `pages.yml` has **no** push trigger, so pushing is
 always safe.
 
+### The verso fork, and the fully-qualified names
+
 `verso` is pinned to **`fairflow/verso @ v4.31.0-declsig-fix`**, a one-commit
 fork fixing a shadowed `declSigWithId` parser that silently disabled
-`showNamespace`/`constantInfo` in `ppSignature`. The root-level `[[require]]`
-sits *first*, ahead of `VersoBlueprint` and so ahead of `mathlib` — that order
-is load-bearing (§5). It resolves and builds green. **It makes no visible
-difference to this site**, because these chapters carry no `{docstring}` blocks;
-attachments render through blueprint's own `bp_external_decl_*` classes, not
-through `ppSignature`. Correct to carry, but do not expect it to change
-anything here.
+`showNamespace`/`constantInfo` in `Docstring.ppSignature`. The root-level
+`[[require]]` sits *first*, ahead of `VersoBlueprint` and so ahead of `mathlib`
+— that order is load-bearing (§5). It resolves and builds green.
+
+**The site still renders fully-qualified names, and here is exactly why.** Trace
+it once and it stays clear:
+
+```
+(lean := "FRJ.Gbu.W.gbuInv5")            in our chapter
+  → VersoBlueprint/ExternalDeclRender.lean:523
+        Verso.Genre.Manual.Signature.forName decl
+  → verso/VersoManual/Docstring.lean:315
+        Block.Docstring.ppSignature name (constantInfo := false)
+  → ppSignature (c) (showNamespace : Bool := true) …        ← the default
+```
+
+So the signature block that a reader actually sees is produced by
+`ppSignature` after all — the fork's fix **is** on our path, contrary to an
+earlier note in this file. But the fix only makes `showNamespace` *work*;
+`Signature.forName` never passes it, so it takes the default `true` and the
+namespace is printed. The fork was **necessary and not sufficient**.
+
+Completing it is a one-line change in *verso*, not verso-blueprint: have
+`Signature.forName` pass `showNamespace := false`, or thread it through as a
+parameter. That belongs to the prover-toolkit agent, who owns the fork.
+
+A separate, smaller effect is already available to us with no fork change.
+Verso-blueprint keeps two names per reference — `written` (the author's
+spelling, displayed in the hover and summary panels) and `canonical` (resolved,
+used for links), documented at `Data.lean:450`. Resolution goes through
+`Lean.resolveGlobalName` under `MonadResolveName`, so it honours `open`.
+**Measured on one node:** adding `open FRJ.Gbu.W` and writing
+`(lean := "gbuInv5")` shortened four of six occurrences — all in the hover and
+summary panels. The remaining ones are the rendered signature, which is the
+`ppSignature` path above. Worth doing only if the signature is fixed too;
+alone it makes the panels inconsistent with the signature beside them.
 
 A second, separate blueprint effort exists for the prover toolkit
 (`dolax-in-lean`), owned by the Lean prover-toolkit agent. Not yours. One
