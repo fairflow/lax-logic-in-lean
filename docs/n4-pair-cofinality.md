@@ -9,7 +9,7 @@ measured with `#axioms_within_pin` and asserted with `#axioms_within`),
 term built) or **DESIGN** (a statement written down, not through a refutation
 stage).
 
-**Headline.**  The induction is NOT closed.  What this run delivers is five
+**Headline.**  The induction is NOT closed.  What this run delivers is six
 sorry-free modules and one statement-level result: the escape statements
 handed over by §4.32 **cannot support the induction as written**, for a
 reason that is exact and localised, and the repair that does support it
@@ -26,6 +26,7 @@ Modules, all leaves under `wip/`, `LJF/` untouched:
 | `wip/ui_routeB_r_escd.lean` | the derivation-level design; `SatE2R`/`SatA2R` reduced to it | 31 s |
 | `wip/ui_routeB_r_proc.lean` | the processing phase of the family, at every record | 23 s |
 | `wip/ui_routeB_r_procd.lean` | the same block carrying derivation-level escapes | 15 s |
+| `wip/ui_routeB_r_guard.lean` | the recording-site loop, in the family's own types | 36 s |
 
 ---
 
@@ -228,7 +229,33 @@ everything else that is
 
     escapeLoop : (h : D → Nat) → ((d : D) → Sum R {d' : D // h d' < h d}) → D → R
 
-PROVED, axiom-free.  The escape type and its emptiness at the empty record:
+PROVED, axiom-free.  And in the family's own types, over the `∀p` entry as a
+typed obligation (`wip/ui_routeB_r_guard.lean`):
+
+    UEntryRD p := ∀ done, Saturated done → ParkedCtxP done →
+                  ∀ {Γ' K}, (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' → PFreeCtx p K →
+                  ∀ G seen b {j}, Inv Γ' [] j G →
+                  Sum (UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: K) [] .tru
+                         (interpR p f [] done (some (jGoal j G)) seen)))
+                      (EscD K seen b)                                          -- OPEN
+
+    guardLoop : UEntryRD p → ∀ done, Saturated done → ParkedCtxP done →
+                ∀ {K}, PFreeCtx p K → ∀ Qa seen b {Γ'},
+                (∀ Z ∈ Γ', Z ∈ done ∨ Z ∈ K) → Sub done Γ' →
+                ∀ (s : Inv Γ' [] .tru (↑Qa)),
+                Sum (UpFrom2 (fun e f =>
+                       Inv (interpR p e [] done none ((Qa, done) :: seen) :: K) [] .tru
+                           (interpR p f [] done (some ↑Qa) ((Qa, done) :: seen))))
+                    (EscD K seen b)                              PROVED, [propext]
+
+    satA2RD_of_uentryRD : UEntryRD p → SatA2RD p                 PROVED, [propext]
+
+`guardLoop`'s value is exactly the guard conjunct of `parkRowER` /
+`parkRowAR`, the `∀p` approximant at the EXTENDED record; its recursion books
+`hgtI s` as the head of the height book at each attempt, so an escape for the
+pair just recorded is required to beat the height in hand, and the loop is a
+well-founded recursion on `hgtI s`.  An escape for an older pair is passed up
+unchanged.  Gate watched failing: `guardLoop` at `[]` errors on `propext`.  The escape type and its emptiness at the empty record:
 
     HeightBook : SeenR → Type          -- one height per recorded pair
     EscD (K : List Neg) : (seen : SeenR) → HeightBook seen → Type
@@ -358,6 +385,7 @@ has one sub-result per branch of `invertPos` and must sequence them:
 | the record extension is confined to the guard call (`parkRowER_record`, `parkRowAR_record`) | **PROVED**, axiom-free |
 | set-equal stations weaken into one another (`sameSet_subs`, `wkSameSet`) | **PROVED** |
 | the recording-site restart is well-founded (`escapeLoop`) | **PROVED**, axiom-free |
+| the recording-site loop in the family's types (`guardLoop`, over `UEntryRD`) | **PROVED**, `[propext]` |
 | `EscD` empty at the empty record (`escD_nil_empty`) | **PROVED**, axiom-free |
 | `satE2R_of_escD`, `satA2R_of_escD`, `pll_ui_R_escD` | **PROVED** |
 | the processing phase at every record (`eMinPRg`, `aMinPRg`) | **PROVED** |
