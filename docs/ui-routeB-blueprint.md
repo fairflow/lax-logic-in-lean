@@ -137,11 +137,14 @@ from Matthew by the blueprint session): reprove `atomMem_of_mem` in
 `LJF/O.lean` choice-free.**  Its trailing bare `simp` closes
 `(a == a) = true` on `String` through the order's antisymmetry
 (`String.le_antisymm` → `Classical.propDecidable`); closing it by
-decidable equality removes the only `Classical.choice` in the route-(B)
-chain, so N0c, N0d and everything downstream drop to
-`[propext, Quot.sound]`.  Buys nothing for build time; it rides on the
-structural refounding's one family rebuild so the 25-minute pin sweep is
-paid once, not twice.
+decidable equality removes the `Classical.choice` of the COFINALITY chain,
+so N0c and N0d drop to `[propext, Quot.sound]`.  It does NOT touch the
+other source: `cutInv` (N0k) and everything through it (N3 backward, N6,
+N4's transport) carry `Classical.choice` from the `Type` packaging of a
+`Nonempty` result across the `Prop`-valued bridge (§4.22), which only a
+`Type`-valued cut elimination for PLL would remove.  Buys nothing for
+build time; it rides on the structural refounding's one family rebuild so
+the 25-minute pin sweep is paid once, not twice.
 
 **WP7 — N4 on ◯-free stations: DONE by transport (§4.23);** the literal
 form refuted; the bounded form and its redundancy lemma (the self-attack
