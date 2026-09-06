@@ -20,12 +20,15 @@ where exactly the obstruction sits.  Its sources are
 This chapter is the reader's view of them and will drift unless kept in
 step; it has twice been a day stale already.
 
-As of §4.19 and §4.20 (2026-09-05) the shape is this: everything from N0a to
-N3 is proved, and what is not proved is carried as a *named obligation in a
-signature* rather than as a hole.  Two things are genuinely open — N4, the
-only open node and the one the route exists to settle, and `CutInv`, cut
-admissibility for LJF◯ in the form the backward direction needs, for which a
-refute-first screen is running.
+As of §4.28 (2026-09-06) the shape is this: everything from N0a through N3 is
+proved, N5 and N6 are proved relative to N4, and what is not proved is
+carried as a *named obligation in a signature* rather than as a hole.  **N4
+is the only obligation left between route (B) and `PLL_UI`** — its `◯`-free
+instance proved, and the PLL case reduced to a single statement, `PQHard`.
+
+These statuses move daily.  The maintained record is
+`docs/ui-routeB-blueprint.md` with `docs/ui-ljfo-clause-table.md`; where this
+chapter and those disagree, they are right and this is stale.
 
 A note on method, since it explains what is and is not attached below.
 Route (B) is moving week by week, so nodes here carry `(lean := "...")`
@@ -230,16 +233,25 @@ the family module while that is re-founded.
 :::
 
 :::definition "n1_stabilises" (parent := "chain")
-N1 — the chains eventually constant.  Two forms: `EStabEq`/`AStabEq`, where
-the chain is *literally* constant from some fuel on, and
-`EStabilises`/`AStabilises`, the same up to interderivability, with
-`estabilises_of_stabEq` and `astabilises_of_stabEq` between them.  PROVED,
-pinned `[propext]` and `[propext, Quot.sound]`.
+N1 — the chains eventually constant.  STATED in two forms, and *only one of
+them survives*.
 
-Alongside them sits the fuel-irrelevance side: `interpP_pfree` — the
-interpolants are `p`-free at *every* fuel, not merely in the limit — and
-`FuelIrrelevance`, the obligation that a recursion bottoming out below its
-fuel is fuel-invariant.
+`EStabEq`/`AStabEq` ask for the chain to be *literally* constant from some
+fuel on.  That form is REFUTED (§4.23), in the kernel and by six designed
+cells: the `∀p` attack row of a parked `Q ⊃ N ∈ done` at goal `↑Q`
+reproduces the same call one fuel down, so the chain is strictly
+size-ascending.  `EStabEq`/`AStabEq` therefore have *no instances* at any
+saturated station carrying a retained compound implication.  The dividing
+line is saturation with such an implication, not weight —
+`literal_N1_dividing_line` packages all six cells, with an unsaturated
+control that *is* literally constant.
+
+`EStabilises`/`AStabilises`, the same statement up to interderivability, are
+the forms the route actually uses.
+
+Alongside them, `interpP_pfree`: the interpolants are `p`-free at *every*
+fuel, not merely in the limit.  `FuelIrrelevance` is recorded MOOT — its
+consumer's hypothesis is unsatisfiable at the stations of interest.
 :::
 
 :::definition "n2_uipair" (parent := "chain")
@@ -248,70 +260,112 @@ cell, stated intrinsically rather than via the construction.  Pinned `[]` —
 they depend on no axioms at all, being data.
 :::
 
+:::theorem "n0k_cutinv" (parent := "chain")
+N0k — `cutInv`, cut at a negative formula in the inversion phase with an
+empty pending zone:
+
+$$`\mathsf{Inv}\ Γ\ [\,]\ \mathsf{tru}\ N \;→\; \mathsf{Inv}\ (N :: Δ)\ [\,]\ j\ ψ \;→\; \mathsf{Inv}\ (Γ +\!\!+ Δ)\ [\,]\ j\ ψ`
+
+PROVED (§4.22), by *polarisation invariance* rather than by a cut-elimination
+argument, in `LJF/OPolInv.lean`.  The transfer block `bLL`, `gA`, `sD`, `fT`,
+`fS`, `bCtx`, and `polInvT`/`polInvL`/`cutInvNE`, pin at
+`[propext, Quot.sound]`; `cutInv` itself at
+`[propext, Classical.choice, Quot.sound]`, the choice entering through the
+`Type` packaging of a `Nonempty` result across the `Prop`-valued bridge and
+not through the argument.  The `◯`-free block
+`polInvT_circFree`/`cutInv_circFree` was committed first.  The converse
+`(A′)` is REFUTED (`notCanGoalConverse`).
+
+This is what {uses "n3_equivalence"}[] was formerly stated relative to.
+:::
+
 :::theorem "n3_equivalence" (parent := "chain")
-N3 — *stabilisation ⟺ uniform interpolation, per cell*.  Both directions are
-now proved, and they cost differently, which is the thing to notice:
+N3 — *stabilisation ⟺ uniform interpolation, per cell*.  PROVED BOTH WAYS,
+`[propext, Classical.choice, Quot.sound]` (§4.22–§4.23), in
+`wip/ui_routeB_n4.lean` and `wip/ui_routeB_n3_cut.lean`, with
+{uses "n0k_cutinv"}[] discharging what the backward direction was previously
+stated relative to.
 
-* *forward*, `hasUI_of_stabEq` — PROVED outright from the two cofinality
-  variables, `[propext, Quot.sound]`, no cut needed;
-* *backward*, `stabilises_of_hasUI` — PROVED *relative to* `CutInv`, the
-  composition principle: cut at a negative formula in the inversion phase
-  with an empty pending zone.  It is stated at every judgment `j` because
-  that is the form a cut-admissibility proof for LJF◯ would deliver, though
-  the backward direction instantiates it only at `j = .tru`.
+Both directions run through the *interderivable* forms of
+{uses "n1_stabilises"}[] — `hasUI_of_stabilises` forward,
+`stabilises_of_hasUI` backward.  An earlier `hasUI_of_stabEq`, over the
+literal forms, is not the live result: §4.23's dividing line is exactly its
+hypothesis, so it has no instances.  That is worth stating plainly, because
+the literal form is the one a reader would expect to be the stronger
+statement, and here it is the empty one.
 
-So the remaining debt in this node is not a gap in an argument but a named
-theorem someone must supply.  Depends on {uses "n1_stabilises"}[],
-{uses "n2_uipair"}[] and {uses "n0d_cofinal"}[].
+Depends on {uses "n1_stabilises"}[], {uses "n2_uipair"}[],
+{uses "n0d_cofinal"}[] and {uses "n0k_cutinv"}[].
 :::
 
 :::theorem "n4_stabilisation_all" (parent := "chain")
-N4 — `StabilisationAll`: every saturated cell stabilises.  *OPEN BOTH WAYS*,
-and this is the theorem the route exists to settle.  It is now the only
-genuinely open mathematical question in the chain.
+N4 — `StabilisationAll`: every saturated cell stabilises, in the
+interderivable form.  Since §4.24 this is the *only* obligation between
+route (B) and `PLL_UI`, and it has been narrowed a long way since.
 
-Two prongs, and the point worth making to a reader is that *either outcome
-is a result*.  The proof prong bounds the fuel a cell needs uniformly over
-$`Δ`, by loop-elimination over the finite space of (station, goal) pairs, in
-the decider's style; the measured constraint is roughly one parked-box
-nesting level per ten fuel units, about three times the derivation height.
-The refutation prong looks for a cell whose `A`-chain ascends without bound
-— the Ghilardi–Zawadowski shape — using the §4.12 harness: instance screen,
-chain probe, cofinality instances by focused kernel search.  A
-non-stabilising cell would, with {uses "n3_equivalence"}[], be a proof that
-PLL *lacks* uniform interpolation.
+*The `◯`-free instance is PROVED* — `n4_circFree_uncond`,
+`[propext, Classical.choice, Quot.sound]` (§4.23), by transport from
+`LJFIPC.uniform_interpolation_IPC` through `polInvT` and N3 backward.  So the
+question is not open across the board: it is open for `◯`.
+
+*For PLL it is OPEN both ways*, and §4.25 reduced it from a question about
+cells to two typed obligations about the recursion:
+
+$$`\mathsf{n4\_of\_interpQ} : \mathsf{PQEquiv}\ p → \mathsf{QBound}\ p → ∀\ \mathit{done}\ G,\ \mathsf{EStabilises}\ p\ \mathit{done} × \mathsf{AStabilises}\ p\ \mathit{done}\ G`
+
+`QBound` is PROVED (§4.26: `qBound`, on the measure $`μ = κ·W + ν`,
+`[propext, Quot.sound]`).  `PQEquiv` — that `interpP` and `interpQ` agree at
+every fuel and cell — is open, and since its easy halves are proved
+(`pqEquiv_of_hard : PQHard p → PQEquiv p`, §4.27), **`PLL_UI` rests on
+`PQHard` alone.**
+
+What the record says about `PQHard`, as of §4.28: it survives its designed
+refutation candidate at fuels 1–6; eighteen designed cells, six of them
+Ghilardi–Zawadowski shapes, all bottom out; the naive per-state simultaneous
+induction hypothesis is REFUTED on both halves; the per-station reset is
+REFUTED on a `◯`-free cell; fuel monotonicity of both recursions is PROVED.
+The obstruction to a per-fuel proof is stated exactly and a derivation-level
+route proposed; the choice between routes is open.
+
+The older reading of this node as *termination of the recursion* (§4.19) has
+been withdrawn — the fuel is essential.
+
+Either outcome remains a result: a non-stabilising cell would, with
+{uses "n3_equivalence"}[], be a proof that PLL *lacks* uniform interpolation.
 :::
 
 :::theorem "n5_ljfo_ui" (parent := "chain")
-N5 — `ljfo_ui_of_stabilisation`, uniform interpolation for LJF◯ at every
-saturated station.  *Subsumed* by WP2 rather than left behind by it: it is
-N3 forward applied at every cell.  The standing declaration in
-`wip/ui_routeB_blueprint.lean` still carries its `sorry`, but that `sorry`
-is now stale bookkeeping rather than a gap in the argument.
+N5 — uniform interpolation for LJF◯ at every saturated station.  PROVED
+relative to {uses "n4_stabilisation_all"}[],
+`[propext, Classical.choice, Quot.sound]` (§4.24), in
+`wip/ui_routeB_wp4.lean`, where N4 is restated as `StabilisationAllP`.
+
+The earlier draft `ljfo_ui_of_stabilisation` in
+`wip/ui_routeB_blueprint.lean` still carries a `sorry`; that file's `interpF`
+drafts of N1–N6 are superseded and are to be retired in one deliberate step
+with a supersession note, so the `sorry` is stale bookkeeping rather than a
+gap.
 :::
 
 :::theorem "n6_transport" (parent := "chain")
 N6 — transport to PLL: `IsUIPairPLL`, `PLL_UI`, the polarisation fact
-`pfree_roundTripN`, and the transport itself,
-`isUIPairPLL_of_isUIPair` and `pll_ui_of_ljfo`.  PROVED relative to
-`CutInv` and to `CellsFor`, pinned `[propext, Quot.sound]`.
+`pfree_roundTripN`, and the transport `pll_ui_of_ljfo′`.  All
+`[propext, Classical.choice, Quot.sound]` (§4.22, §4.24).
 
-The signature is the honest statement of what is left:
-`pll_ui_of_ljfo : CutInv → (∀ p, CellsFor p) → PLL_UI`.  *Three* things
-stand between the file and `PLL_UI`, and only one of them is mechanical:
+*PROVED on IPC formulas.*  `cellsFor_circFree` and
 
-* `CutInv` — OPEN.  A refute-first screen for it was launched on
-  2026-09-05.
-* `CellsFor p`, for every `p` and `φ` — this needs
-  {uses "n4_stabilisation_all"}[], fed through N3 forward, so it inherits
-  that node's *open both ways*.
-* WP4's transfer of the pair from the saturation of `[negOfO φ]` back
-  through the processing phase `eMinPP`/`aMinPP` — the only mechanical one
-  of the three.
+$$`\mathsf{ipc\_ui\_routeB} : (∀ p,\ \mathsf{SatE2P}\ p) → (∀ p,\ \mathsf{SatA2P}\ p) → \mathsf{IPC\_UI\_routeB}`
 
-Put positively: *given* `CutInv` and stabilisation at every saturated
-station, the file yields `PLL_UI` up to WP4's transfer through the
-processing phase.
+tested against every `p`-free PLL formula, `◯` included, and — the part worth
+pausing on — *agreeing* with `LJFIPC.uniform_interpolation_IPC` up to
+interderivability (`routeB_agrees_IPC`).  Two independently constructed
+interpolants, from different routes, giving the same answers: that is a
+check on the construction that no single-route proof can provide.
 
-Depends on {uses "n3_equivalence"}[] and {uses "n0b_rows"}[].
+*PROVED relative to {uses "n4_stabilisation_all"}[] alone* in general:
+`cellsFor_of_stab` and `pll_ui_of_stabilisationAll`.  So the transport is no
+longer conditional on anything but N4.
+
+Depends on {uses "n3_equivalence"}[], {uses "n5_ljfo_ui"}[],
+{uses "n0k_cutinv"}[] and {uses "n0b_rows"}[].
 :::
