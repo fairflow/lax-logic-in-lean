@@ -9,7 +9,7 @@ measured with `#axioms_within_pin` and asserted with `#axioms_within`),
 term built) or **DESIGN** (a statement written down, not through a refutation
 stage).
 
-**Headline.**  The induction is NOT closed.  What this run delivers is six
+**Headline.**  The induction is NOT closed.  What this run delivers is seven
 sorry-free modules and one statement-level result: the escape statements
 handed over by §4.32 **cannot support the induction as written**, for a
 reason that is exact and localised, and the repair that does support it
@@ -27,6 +27,7 @@ Modules, all leaves under `wip/`, `LJF/` untouched:
 | `wip/ui_routeB_r_proc.lean` | the processing phase of the family, at every record | 23 s |
 | `wip/ui_routeB_r_procd.lean` | the same block carrying derivation-level escapes | 15 s |
 | `wip/ui_routeB_r_guard.lean` | both ends of the escape mechanism: the cut site and the recording-site loop | 36 s |
+| `wip/ui_routeB_r_rows.lean` | the row layer for `interpR` at a saturated station | 10 s |
 
 ---
 
@@ -382,12 +383,27 @@ two `∨`-inversion equations, and `seqSum`, the sequencing that a `Sum`-valued
 (derivation-level-escape) version of these clauses needs at the one clause
 with several branches.
 
+`wip/ui_routeB_r_rows.lean` is the next block, `LJF/OFuelPMin.lean`
+Parts 2–4 for the pair recursion: the aggregate at fuel `f+1` as an equation
+for each of the nine goal shapes (`interpRE_eq`, `interpRA_imp_eq`,
+`interpRA_and_eq`, `interpRA_atomT_eq`, `interpRA_atomF_eq`,
+`interpRA_fls_eq`, `interpRA_or_eq`, `interpRA_down_eq`,
+`interpRA_circ_eq`, all `[propext]`), one membership lemma per row
+(`eRow_*Mem`, `aRow_*Mem`, all `[propext, Quot.sound]`) and the four
+equations a dispatch clause splits on — the two rows with the loop test open
+and the two with it fired (`parkRowER_open`, `parkRowER_cut`,
+`parkRowAR_open`, `parkRowAR_cut`, all axiom-free).  `parkRowAR_cut` is why
+the `∀p` side must escape: the row is `⊥`.  Gate watched failing:
+`interpRE_eq` at `[]` errors on `propext`.
+
 Two transcription differences from `interpP` were forced and are worth
 recording for whoever writes the saturated phase:
 
-* `stepR`'s `∨`-inversion maps over `invertPos` PLAIN where `interpP` maps
-  over `.attach`, so `memMapWitness` returns the branch alone and the
-  `maxOver` bound is read back through `List.mem_attach`;
+* `stepR`'s station maps and its `∨`-inversion map over their lists PLAIN
+  where `interpP`'s are `.attach` maps.  So every row membership is
+  `List.mem_map_of_mem` and needs no `rowMem`; and in the `∨`-inversion
+  clause `memMapWitness` returns the branch alone, so the `maxOver` bound is
+  read back through `List.mem_attach`;
 * `decreasing_by ljf_dec_e` is ambiguous in a leaf that sees both
   `LJF/OCore.lean`'s macro and `LJF/Base.lean`'s, so the alternatives are
   spelled out as in `stabP` (`wip/ui_routeB_wp4.lean`).
@@ -435,6 +451,7 @@ has one sub-result per branch of `invertPos` and must sequence them:
 | `satE2R_of_escD`, `satA2R_of_escD`, `pll_ui_R_escD` | **PROVED** |
 | the processing phase at every record (`eMinPRg`, `aMinPRg`) | **PROVED** |
 | the same block carrying derivation-level escapes (`eMinPRD`, `aMinPRD`, `seqSumG`) | **PROVED** |
+| the row layer at a saturated station (nine aggregate equations, fifteen row memberships, the four dispatch equations) | **PROVED** |
 | **`SatE2RD p`, `SatA2RD p`** | **OPEN** |
 | N4 for PLL | **OPEN**, over `SatE2RD` + `SatA2RD` alone |
 
