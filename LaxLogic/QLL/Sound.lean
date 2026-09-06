@@ -4,12 +4,14 @@
 Supporting lemmas for building derivations.
 
 These were written for a soundness *theorem* — `check Γ p M = .ok () →
-Derivable Γ p M` — under a `Prop`-valued family.  With `Derives` now
-`Type`-valued, that theorem is expected to disappear: a checker returning
-`Except Err (Derives p Γ M)` is sound by construction.  The lemmas survive the
-change, because constructing a derivation needs exactly what proving one
-needed: that `freshFor`'s choice satisfies the rule's freshness condition, and
-that a successful context lookup lands on a *variable* entry.
+Derivable p Γ M` — under a `Prop`-valued family.  That theorem is gone:
+`Certify.lean` returns `Except Err (Derives p Γ M)`, so soundness is typed
+rather than proved.
+
+The lemmas survived the change, as predicted, and `Certify.lean` uses all of
+them — constructing a derivation needs exactly what proving one needed: that
+`freshFor`'s choice satisfies the rule's freshness condition, and that a
+successful context lookup lands on a *variable* entry.
 
 -/
 import LaxLogic.QLL.Check

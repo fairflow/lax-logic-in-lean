@@ -18,12 +18,13 @@ One would otherwise have a computed one — `allE` (`Form.openAt 0 t M`) — and
 is written instead with a fresh index variable and an equational premise.  Computation in a *premise* is harmless;
 in a conclusion it is not invertible, so `cases` and dependent matching cannot
 decompose it and every proof over the family has to transport across an
-equation the unifier will not solve.  `#slime LaxLogic.QLL.Derivable` reports
+equation the unifier will not solve.  `#slime LaxLogic.QLL.Derives` reports
 17 clean constructors.
 
-The family is `Prop`-valued, so nothing computes with a derivation, which
-limits the damage — but the soundness proof is case analysis on derivations
-and nothing else, so it is exactly where the damage would land.
+This matters more here than it would for a `Prop`-valued family.  `Derives` is
+`Type`-valued, so derivations are data that gets taken apart, and an
+uninvertible index blocks the taking apart rather than merely making a proof
+awkward.
 
 ## Fig. 5's `Subst` is deliberately absent
 
@@ -89,11 +90,11 @@ def FreshI (a : String) (Γ : Ctx) (p : Pf) (M : Form) : Prop :=
   a ∉ Ctx.fvI Γ ∧ a ∉ p.fvI ∧ a ∉ M.fv
 
 /--
-`Derivable Γ p M` is the figure's `Γ ⊢ p : M`.
+`Derives p Γ M` is the figure's `Γ ⊢ p : M`, with the realiser first.
 
 `Γ` is a list of the paper's refinement pairs.  Rule `var` fires only on a
 *variable* entry and `impI` can abstract only a variable entry, so no rule here
-can use a non-variable one: `Derivable` is insensitive to them, and they are
+can use a non-variable one: `Derives` is insensitive to them, and they are
 carried purely as the residual obligations the semantics will quantify over.
 -/
 inductive Derives : Pf → Ctx → Form → Type where

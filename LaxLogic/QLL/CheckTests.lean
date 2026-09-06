@@ -39,7 +39,7 @@ open Form Pf
 
 /-! ## Obligations
 
-A context carrying a supplied constraint term — the shape `Subst` leaves
+A context carrying a supplied constraint term — the shape the refinement step leaves
 behind.  The check succeeds and the outstanding refinement comes back. -/
 
 /-- info: Except.ok [(LaxLogic.QLL.Pf.pair (LaxLogic.QLL.Pf.star) (LaxLogic.QLL.Pf.star), LaxLogic.QLL.Form.pred "C" [])] -/

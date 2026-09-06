@@ -218,13 +218,13 @@ The proof terms of Fig. 5.
 
 Binding, in the two independent de Bruijn spaces:
 
-| constructor | proof binders | individual binders |
-| :-- | :-- | :-- |
-| `lam p`            | `z` in `p`            | — |
-| `caseOr r p q`     | `y` in `p`, `z` in `q`| — |
-| `letQ _ p q`       | `z` in `q`            | — |
-| `gen p`            | —                     | `x` in `p` |
-| `caseEx r p`       | `z` in `p`            | `x` in `p` |
+| constructor        | proof binders          | individual binders|
+| :--                | :--                    | :--               |
+| `lam p`            | `z` in `p`             | —                 |
+| `caseOr r p q`     | `y` in `p`, `z` in `q` |  —                |
+| `letQ _ p q`       | `z` in `q`             | —                 |
+| `gen p`            | —                      | `x` in `p`        |
+| `caseEx r p`       | `z` in `p`             | `x` in `p`        |
 
 `inst` and `pack` carry an individual *term*, the `t` of `π_t(p)` and `ι_t(p)`;
 they bind nothing.
@@ -407,17 +407,19 @@ A context is a list of the paper's **refinement pairs** `p : M`, not a list of
 formulas.
 
 Fig. 5 forces this.  Rule `I` reads `Γ, z:M, Γ' ⊢ z : M` with `z` a *variable*,
-but `Subst` concludes `Γ, p:M, Γ' ⊢ q{p/z} : N` with `p :: |M|` an arbitrary
+but the figure's `Subst` writes `Γ, p:M, Γ'` with `p :: |M|` an arbitrary
 constraint term.  Both inhabit the same position, so the position holds pairs.
 
-The consequence is worth stating, because it explains a shape that otherwise
-looks wrong.  `I` fires only on a variable entry, and `⊃I` can only abstract a
-variable entry — `λp.…` is not a term for non-variable `p`.  Every
-context-extending rule extends with a *fresh variable*.  So `Subst` is the only
-rule that puts a non-variable in a context, and once it has, that slot is
-inert: nothing can use it and nothing can discharge it.  `Subst` does not
-create a hypothesis for later use; it records that an assumption has been *met*
-by a supplied constraint term.
+`Subst` is **not** a rule of `Derives` — see the note in `Deriv.lean` for why
+it is the refinement step of Fig. 9 rather than an inference rule.  Its shape
+survives here all the same, because a non-variable entry is what a supplied
+constraint looks like, and that is what the obligations are.
+
+No rule can use one.  `var` fires only on a variable entry, and `⊃I` can only
+abstract a variable entry — `λp.…` is not a term for non-variable `p` — and
+every context-extending rule extends with a *fresh variable*.  So a
+non-variable entry is inert: nothing uses it and nothing discharges it.  It is
+a recorded debt, read off by `Ctx.obligations`, not a hypothesis in play.
 -/
 abbrev Ctx := List (Pf × Form)
 

@@ -40,11 +40,36 @@ complete for a family containing it.  With it gone there is no fragment
 caveat and no `isSubstFree` precondition anywhere: `check` is intended to be
 complete for all of `Derivable`.
 
-## Status of the harness theorems
+## Status, and why this module still exists
 
-Soundness is being proved in `Sound.lean`.  Completeness is **OPEN**, and no
-declaration asserts it: it needs a renaming lemma, because `Derivable` admits
-*any* fresh name while `check` picks one.
+`Certify.lean` does the same job returning `Except Err (Derives p Γ M)`, so
+soundness there is typed rather than proved and this module's soundness
+theorem was never written.  That looks like supersession.  It is not, quite.
+
+### Supersession check: `Check.lean` → `Certify.lean`
+
+| constraint | source | here | `Certify` | verdict |
+| :-- | :-- | :-- | :-- | :-- |
+| decide a term against a goal, with a located error | this header | `Except Err Unit` | same errors | DISCHARGED |
+| an accepted term really *is* a derivation | this header, earlier revision | left OPEN | returned, typed | DISCHARGED, better |
+| **decide all of `Derives`, no fragment caveat** | this header, §"No `Subst`" | decides `π_c(⟨*\|x⟩) : ⊤` | rejects it, `notInferable` | **RE-OPENED** |
+| verdict readable as data | `CheckTests.lean` | `Err` has `Repr` | contains a derivation, no `Repr`; tests project | DISCHARGED via projection |
+
+Re-opened: **coverage of `∀`-elimination redexes**.  `Certify.infer'` refuses
+`⟨p | x⟩`, so a `gen` in inference position is rejected there and decided here.
+The example is exact: `⟨* | x⟩ : ∀x.⊤` is accepted by both, and
+`π_c(⟨* | x⟩) : ⊤` only by this module.  (A `gen` whose body does *not* infer,
+such as `⟨λu.u | x⟩`, is rejected by both — this module's `∀` inference needs
+the body to infer too.)
+
+Closable two ways: thread `lc` so `gen` infers, or prove every derivable
+judgement has a redex-free term, which would make `Certify` complete *up to
+normalisation*.  Until one is done, **this module is not redundant.**
+
+Completeness of either checker remains **OPEN**, and no declaration asserts it;
+it needs a renaming lemma, since `Derives` admits any fresh name while a
+checker picks one.
+
 -/
 import LaxLogic.QLL.Deriv
 
