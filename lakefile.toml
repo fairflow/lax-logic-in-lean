@@ -7,6 +7,17 @@ defaultTargets = ["LaxLogic", "FRJGbu"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 autoImplicit = false
 
+# verso: pinned to our fork, ahead of the root require for VersoBlueprint so
+# that this entry wins over the transitive dependency.  The fork carries one
+# commit on top of the v4.31.0 tag, fixing a bug by which `showNamespace` and
+# `constantInfo` in `Docstring.ppSignature` were silently ignored: a local
+# `declSigWithId` parser shadowed Lean's, so the quotations in `ppSignature`
+# matched a node kind the delaborator never emits.  Upstream report pending.
+[[require]]
+name = "verso"
+git = "https://github.com/fairflow/verso"
+rev = "v4.31.0-declsig-fix"
+
 [[require]]
 name = "VersoBlueprint"
 git = "https://github.com/leanprover/verso-blueprint"
