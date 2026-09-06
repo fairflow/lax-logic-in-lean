@@ -96,91 +96,182 @@ def FreshI (a : String) (Γ : Ctx) (p : Pf) (M : Form) : Prop :=
 can use a non-variable one: `Derivable` is insensitive to them, and they are
 carried purely as the residual obligations the semantics will quantify over.
 -/
-inductive Derivable : Ctx → Pf → Form → Prop where
+inductive Derives : Pf → Ctx → Form → Type where
   /-- `I`.  Γ, z:M, Γ' ⊢ z : M — a variable entry, looked up by name. -/
   | var {Γ : Ctx} {x : String} {M : Form} :
       (Pf.fvar x, M) ∈ Γ →
-      Derivable Γ (.fvar x) M
+      Derives (.fvar x) Γ M
   /-- `true_I`. -/
   | topI {Γ : Ctx} :
-      Derivable Γ .star .top
+      Derives .star Γ .top
   /-- Ex falso.  **Not in Fig. 5**; the figure has `false` in the syntax with
   no elimination rule. -/
   | botE {Γ : Ctx} {p : Pf} {M : Form} :
-      Derivable Γ p .bot →
-      Derivable Γ (.exf M p) M
+      Derives p Γ .bot →
+      Derives (.exf M p) Γ M
   /-- `∧I`. -/
   | andI {Γ : Ctx} {p q : Pf} {M N : Form} :
-      Derivable Γ p M → Derivable Γ q N →
-      Derivable Γ (.pair p q) (.and M N)
+      Derives p Γ M → Derives q Γ N →
+      Derives (.pair p q) Γ (.and M N)
   /-- `∧E`, first projection. -/
   | andE₁ {Γ : Ctx} {r : Pf} {M N : Form} :
-      Derivable Γ r (.and M N) →
-      Derivable Γ (.fst r) M
+      Derives r Γ (.and M N) →
+      Derives (.fst r) Γ M
   /-- `∧E`, second projection. -/
   | andE₂ {Γ : Ctx} {r : Pf} {M N : Form} :
-      Derivable Γ r (.and M N) →
-      Derivable Γ (.snd r) N
+      Derives r Γ (.and M N) →
+      Derives (.snd r) Γ N
   /-- `∨I`, left. -/
   | orI₁ {Γ : Ctx} {p : Pf} {M N : Form} :
-      Derivable Γ p M →
-      Derivable Γ (.inl p) (.or M N)
+      Derives p Γ M →
+      Derives (.inl p) Γ (.or M N)
   /-- `∨I`, right. -/
   | orI₂ {Γ : Ctx} {q : Pf} {M N : Form} :
-      Derivable Γ q N →
-      Derivable Γ (.inr q) (.or M N)
+      Derives q Γ N →
+      Derives (.inr q) Γ (.or M N)
   /-- `∨E`.  Two branches, each binding its own proof variable. -/
   | orE {Γ : Ctx} {r p q : Pf} {M N K : Form} (y z : String) :
       FreshP y Γ p → FreshP z Γ q →
-      Derivable Γ r (.or M N) →
-      Derivable ((Pf.fvar y, M) :: Γ) (p.openPWith y) K →
-      Derivable ((Pf.fvar z, N) :: Γ) (q.openPWith z) K →
-      Derivable Γ (.caseOr r p q) K
+      Derives r Γ (.or M N) →
+      Derives (p.openPWith y) ((Pf.fvar y, M) :: Γ) K →
+      Derives (q.openPWith z) ((Pf.fvar z, N) :: Γ) K →
+      Derives (.caseOr r p q) Γ K
   /-- `⊃I`.  Abstracts a *variable* entry; `λp.…` for non-variable `p` is not
-  a term, which is why a substituted entry can never be discharged. -/
+  a term, which is why a substituted entry could never be discharged. -/
   | impI {Γ : Ctx} {p : Pf} {M N : Form} (z : String) :
       FreshP z Γ p →
-      Derivable ((Pf.fvar z, M) :: Γ) (p.openPWith z) N →
-      Derivable Γ (.lam p) (.imp M N)
+      Derives (p.openPWith z) ((Pf.fvar z, M) :: Γ) N →
+      Derives (.lam p) Γ (.imp M N)
   /-- `⊃E`. -/
   | impE {Γ : Ctx} {p q : Pf} {M N : Form} :
-      Derivable Γ p (.imp M N) → Derivable Γ q M →
-      Derivable Γ (.app p q) N
+      Derives p Γ (.imp M N) → Derives q Γ M →
+      Derives (.app p q) Γ N
   /-- `◯I`, for either modality: the figure's side condition is only
   "if `Q = ∀` or `Q = ∃`". -/
   | circI {Γ : Ctx} {q : Q} {p : Pf} {M : Form} :
-      Derivable Γ p M →
-      Derivable Γ (.val q p) (.circ q M)
+      Derives p Γ M →
+      Derives (.val q p) Γ (.circ q M)
   /-- `◯E`, for either modality.  Both premises and the conclusion carry the
   *same* `Q`; the figure permits no mixing. -/
   | circE {Γ : Ctx} {q : Q} {p b : Pf} {M N : Form} (z : String) :
       FreshP z Γ b →
-      Derivable Γ p (.circ q M) →
-      Derivable ((Pf.fvar z, M) :: Γ) (b.openPWith z) (.circ q N) →
-      Derivable Γ (.letQ q p b) (.circ q N)
+      Derives p Γ (.circ q M) →
+      Derives (b.openPWith z) ((Pf.fvar z, M) :: Γ) (.circ q N) →
+      Derives (.letQ q p b) Γ (.circ q N)
   /-- `∀I`, written `⟨p | x⟩`.  Binds an *individual*, and so uses a different
   abstraction from `⊃I`'s `λ`. -/
   | allI {Γ : Ctx} {p : Pf} {M : Form} (a : String) :
       FreshI a Γ p M →
-      Derivable Γ (p.openIWith a) (M.openWith a) →
-      Derivable Γ (.gen p) (.forall_ M)
-  /-- `∀E`, written `π_t(p)`. -/
+      Derives (p.openIWith a) Γ (M.openWith a) →
+      Derives (.gen p) Γ (.forall_ M)
+  /-- `∀E`, written `π_t(p)`.  The equational premise keeps the conclusion's
+  index a variable; see the note on green slime above. -/
   | allE {Γ : Ctx} {p : Pf} {M N : Form} (t : Tm) :
-      Derivable Γ p (.forall_ M) →
+      Derives p Γ (.forall_ M) →
       N = M.openAt 0 t →
-      Derivable Γ (.inst t p) N
+      Derives (.inst t p) Γ N
   /-- `∃I`, written `ι_t(p)`. -/
   | exI {Γ : Ctx} {p : Pf} {M : Form} (t : Tm) :
-      Derivable Γ p (M.openAt 0 t) →
-      Derivable Γ (.pack t p) (.exists_ M)
+      Derives p Γ (M.openAt 0 t) →
+      Derives (.pack t p) Γ (.exists_ M)
   /-- `∃E`.  Binds an individual *and* a proof variable in the one branch —
   the only rule that binds in both sorts at once. -/
   | exE {Γ : Ctx} {r p : Pf} {M K : Form} (a z : String) :
       FreshI a Γ p M → a ∉ K.fv → FreshP z Γ p →
-      Derivable Γ r (.exists_ M) →
-      Derivable ((Pf.fvar z, M.openWith a) :: Γ) ((p.openIWith a).openPWith z) K →
-      Derivable Γ (.caseEx r p) K
+      Derives r Γ (.exists_ M) →
+      Derives ((p.openIWith a).openPWith z) ((Pf.fvar z, M.openWith a) :: Γ) K →
+      Derives (.caseEx r p) Γ K
 
-@[inherit_doc] notation:40 Γ " ⊢qll " p " : " M => Derivable Γ p M
+@[inherit_doc] notation:40 Γ " ⊢qll " p " : " M => Derives p Γ M
+
+/-! ## The `Prop`-valued view
+
+`Derives` is `Type`-valued, so a derivation is *data*: it can be transformed,
+normalised, and — the point, for this paper — it determines the constraint.
+Proof irrelevance would identify derivations that extract different
+constraints, so collapsing into `Prop` at the definition would have been wrong.
+
+Where irrelevance IS wanted, `Nonempty` supplies it and every rule lifts in one
+line.  There is only ever one family, so there is no equivalence to prove.
+(Matthew's design, 2026-09-06.)
+
+Note the asymmetry that makes this the right way round: `Derives → Derivable`
+is `Nonempty.intro`, while the reverse does not exist, and `Nonempty`
+eliminates only into `Prop`.  So the data is available exactly when it is
+sound to have it. -/
+
+/-- Derivability as a proposition: some derivation exists. -/
+abbrev Derivable (p : Pf) (Γ : Ctx) (M : Form) : Prop := Nonempty (Derives p Γ M)
+
+namespace Derivable
+
+theorem var {Γ x M} (h : (Pf.fvar x, M) ∈ Γ) : Derivable (.fvar x) Γ M := ⟨.var h⟩
+
+theorem topI {Γ} : Derivable .star Γ .top := ⟨.topI⟩
+
+theorem botE {Γ p M} : Derivable p Γ .bot → Derivable (.exf M p) Γ M
+  | ⟨d⟩ => ⟨.botE d⟩
+
+theorem andI {Γ p q M N} : Derivable p Γ M → Derivable q Γ N →
+    Derivable (.pair p q) Γ (.and M N)
+  | ⟨d⟩, ⟨e⟩ => ⟨.andI d e⟩
+
+theorem andE₁ {Γ r M N} : Derivable r Γ (.and M N) → Derivable (.fst r) Γ M
+  | ⟨d⟩ => ⟨.andE₁ d⟩
+
+theorem andE₂ {Γ r M N} : Derivable r Γ (.and M N) → Derivable (.snd r) Γ N
+  | ⟨d⟩ => ⟨.andE₂ d⟩
+
+theorem orI₁ {Γ p M N} : Derivable p Γ M → Derivable (.inl p) Γ (.or M N)
+  | ⟨d⟩ => ⟨.orI₁ d⟩
+
+theorem orI₂ {Γ q M N} : Derivable q Γ N → Derivable (.inr q) Γ (.or M N)
+  | ⟨d⟩ => ⟨.orI₂ d⟩
+
+theorem orE {Γ r p q M N K} (y z : String) (hy : FreshP y Γ p) (hz : FreshP z Γ q) :
+    Derivable r Γ (.or M N) →
+    Derivable (p.openPWith y) ((Pf.fvar y, M) :: Γ) K →
+    Derivable (q.openPWith z) ((Pf.fvar z, N) :: Γ) K →
+    Derivable (.caseOr r p q) Γ K
+  | ⟨d⟩, ⟨e⟩, ⟨f⟩ => ⟨.orE y z hy hz d e f⟩
+
+theorem impI {Γ p M N} (z : String) (hz : FreshP z Γ p) :
+    Derivable (p.openPWith z) ((Pf.fvar z, M) :: Γ) N →
+    Derivable (.lam p) Γ (.imp M N)
+  | ⟨d⟩ => ⟨.impI z hz d⟩
+
+theorem impE {Γ p q M N} : Derivable p Γ (.imp M N) → Derivable q Γ M →
+    Derivable (.app p q) Γ N
+  | ⟨d⟩, ⟨e⟩ => ⟨.impE d e⟩
+
+theorem circI {Γ q p M} : Derivable p Γ M → Derivable (.val q p) Γ (.circ q M)
+  | ⟨d⟩ => ⟨.circI d⟩
+
+theorem circE {Γ q p b M N} (z : String) (hz : FreshP z Γ b) :
+    Derivable p Γ (.circ q M) →
+    Derivable (b.openPWith z) ((Pf.fvar z, M) :: Γ) (.circ q N) →
+    Derivable (.letQ q p b) Γ (.circ q N)
+  | ⟨d⟩, ⟨e⟩ => ⟨.circE z hz d e⟩
+
+theorem allI {Γ p M} (a : String) (ha : FreshI a Γ p M) :
+    Derivable (p.openIWith a) Γ (M.openWith a) → Derivable (.gen p) Γ (.forall_ M)
+  | ⟨d⟩ => ⟨.allI a ha d⟩
+
+theorem allE {Γ p M N} (t : Tm) (h : N = M.openAt 0 t) :
+    Derivable p Γ (.forall_ M) → Derivable (.inst t p) Γ N
+  | ⟨d⟩ => ⟨.allE t d h⟩
+
+theorem exI {Γ p M} (t : Tm) : Derivable p Γ (M.openAt 0 t) →
+    Derivable (.pack t p) Γ (.exists_ M)
+  | ⟨d⟩ => ⟨.exI t d⟩
+
+theorem exE {Γ r p M K} (a z : String) (ha : FreshI a Γ p M) (hK : a ∉ K.fv)
+    (hz : FreshP z Γ p) :
+    Derivable r Γ (.exists_ M) →
+    Derivable ((p.openIWith a).openPWith z) ((Pf.fvar z, M.openWith a) :: Γ) K →
+    Derivable (.caseEx r p) Γ K
+  | ⟨d⟩, ⟨e⟩ => ⟨.exE a z ha hK hz d e⟩
+
+end Derivable
 
 end LaxLogic.QLL

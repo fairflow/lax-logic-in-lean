@@ -24,42 +24,52 @@ open Form Pf
 
 /-- `⊢ λz.z : M ⊃ M`.  Exercises `impI`'s freshness and proof-variable opening
 against `var`'s lookup. -/
-theorem identity (M : Form) : Derivable [] (lam (bvar 0)) (imp M M) := by
-  refine Derivable.impI "z" ⟨?_, ?_⟩ ?_
+def identity (M : Form) : Derives (lam (bvar 0)) [] (imp M M) := by
+  refine Derives.impI "z" ⟨?_, ?_⟩ ?_
   · show "z" ∉ ([] : List String); decide
   · show "z" ∉ ([] : List String); decide
-  · exact Derivable.var (List.Mem.head _)
+  · exact Derives.var (List.Mem.head _)
 
 /-- `⊢ val_Q(*) : ◯_Q ⊤`, for either modality — the rule is `Q`-parametric, so
 one derivation serves both. -/
-theorem val_top (q : Q) : Derivable [] (val q star) (circ q top) :=
-  Derivable.circI Derivable.topI
+def val_top (q : Q) : Derives (val q star) [] (circ q top) :=
+  Derives.circI Derives.topI
 
 /-- `⊢ ⟨λz.z | x⟩ : ∀x. P(x) ⊃ P(x)`.  The point of this one is the binder
 interaction: `allI` opens an *individual* while `impI` opens a *proof*
 variable, and neither may disturb the other's indices. -/
-theorem forall_identity : Derivable []
-    (gen (lam (bvar 0)))
+def forall_identity : Derives
+    (gen (lam (bvar 0))) []
     (forall_ (imp (pred "P" [Tm.bvar 0]) (pred "P" [Tm.bvar 0]))) := by
-  refine Derivable.allI "x" ⟨?_, ?_, ?_⟩ ?_
+  refine Derives.allI "x" ⟨?_, ?_, ?_⟩ ?_
   · show "x" ∉ ([] : List String); decide
   · show "x" ∉ ([] : List String); decide
   · show "x" ∉ ([] : List String); decide
-  · refine Derivable.impI "z" ⟨?_, ?_⟩ ?_
-    · show "z" ∉ ([] : List String); decide
-    · show "z" ∉ ([] : List String); decide
-    · exact Derivable.var (List.Mem.head _)
+  · refine Derives.impI "z" ⟨?_, ?_⟩ ?_
+    -- the goal here is `fvP` applied to an unreduced `openI`, so `simp` has no
+    -- rewrite to make; `decide` evaluates through it
+    · exact by decide
+    · exact by decide
+    · exact Derives.var (List.Mem.head _)
 
 /-- `p : ◯_Q M ⊢ let_Q z ⇐ p in val_Q(z) : ◯_Q M` — the monad's left unit, as a
 shape check on `circE`.  `M` must be supplied explicitly: `circE`'s `M` occurs
 only in its premises, so the conclusion does not determine it. -/
-theorem left_unit (q : Q) (M : Form) :
-    Derivable [(fvar "p", circ q M)] (letQ q (fvar "p") (val q (bvar 0))) (circ q M) := by
-  refine Derivable.circE (M := M) "z" ⟨?_, ?_⟩ ?_ ?_
+def left_unit (q : Q) (M : Form) :
+    Derives (letQ q (fvar "p") (val q (bvar 0))) [(fvar "p", circ q M)] (circ q M) := by
+  refine Derives.circE (M := M) "z" ⟨?_, ?_⟩ ?_ ?_
   · show "z" ∉ ["p"]; decide
   · show "z" ∉ ([] : List String); decide
-  · exact Derivable.var (List.Mem.head _)
-  · exact Derivable.circI (Derivable.var (List.Mem.head _))
+  · exact Derives.var (List.Mem.head _)
+  · exact Derives.circI (Derives.var (List.Mem.head _))
+
+/-! ### The `Prop` view comes for free
+
+`Nonempty` collapses a derivation to the proposition that one exists.  Nothing
+is proved here beyond `Nonempty.intro`; the point is that both views are
+available from the single family. -/
+
+example (M : Form) : Derivable (lam (bvar 0)) [] (imp M M) := ⟨identity M⟩
 
 /-! ### Axiom pins
 

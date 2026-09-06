@@ -1,20 +1,16 @@
 /-
 # `LaxLogic.QLL.Sound` — the checker only accepts derivations
 
-Statement 1 of the four distinguished in discussion with Matthew:
+Supporting lemmas for building derivations.
 
-    infer Γ p = .ok M   → Derivable Γ p M
-    check Γ p M = .ok () → Derivable Γ p M
+These were written for a soundness *theorem* — `check Γ p M = .ok () →
+Derivable Γ p M` — under a `Prop`-valued family.  With `Derives` now
+`Type`-valued, that theorem is expected to disappear: a checker returning
+`Except Err (Derives p Γ M)` is sound by construction.  The lemmas survive the
+change, because constructing a derivation needs exactly what proving one
+needed: that `freshFor`'s choice satisfies the rule's freshness condition, and
+that a successful context lookup lands on a *variable* entry.
 
-Both sides are internal to this development, so this establishes nothing
-mathematical about the paper.  What it buys is that `check`'s verdict *means*
-something: an accepted term is a derivation in the sense of Fig. 5, and the
-obligations `checkTop` returns are the obligations of a real derivation.  It is
-a prerequisite for the statements that do carry content — soundness against the
-Fig. 4 refinement reading, and sufficiency of the obligations.
-
-The proof follows the checker's own recursion, via the two-motive functional
-induction principle Lean generates for the mutual well-founded definition.
 -/
 import LaxLogic.QLL.Check
 
