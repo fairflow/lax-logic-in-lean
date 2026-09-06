@@ -37,6 +37,7 @@ Modules, all leaves under `wip/`, `LJF/` untouched:
 | `wip/ui_routeB_r_bindcell.lean` | the designed cell: the crossing is reached and the step does not apply | 14.4 s |
 | `wip/ui_routeB_r_refute.lean` | one-world semantics for `LJF◯`; `SatE2RD` REFUTED | 14.5 s |
 | `wip/ui_routeB_r_escw.lean` | the repaired residual, the mechanism re-proved over it | 14.3 s |
+| `wip/ui_routeB_r_grow.lean` | the station-growth repair REFUTED | 14.3 s |
 
 No 25-minute build was paid for: the family it would have compiled is not
 worth compiling until the statement question below is settled.
@@ -339,6 +340,7 @@ REACHED and that the step it has does not apply.
 | `hgt_goalSpan`, `hgt_orSpanL` | **PROVED** |
 | the escape crosses a disjunctive, a chained, or a goal-antecedent binder | **NO** — §4.3, statement-level; not refuted, unavailable |
 | `EscBindOpenR p` | **OPEN**, and §4.3 says why it should not be assumed |
+| the station-growth lemma `(grow)` of §6(b) | **REFUTED** (`Grow.growE_refuted`) |
 | the mutual family for `interpR`, ◯-free or otherwise | NOT BUILT — §1 says why it was not attempted |
 | N4 for PLL | **OPEN**, over `SatE2RW` + `SatA2RW`, with §4 in the way |
 
@@ -358,17 +360,36 @@ what is missing.  It is not a proof problem inside a clause; it is the
 absence of a clause.  Any candidate must say what an escape created under a
 binder means above it.
 
-**(b) Park the binder into the STATION instead of the context.**  The
-inversion phase adds `M₀` to `K`, which is invisible to `interpR`, so the
-loop test still fires below the binder at the same station.  If `M₀` were
-parked into `done` instead, the station below the binder is strictly larger
-as a SET, `sameSet` fails, and no cut site lies below a binder at all — the
-crossing is never needed.  The cost is a new lemma,
-`E^R(done), M₀ ⊢ E^R([M₀], done)` for `p`-free `M₀` (station growth by a
-`p`-free hypothesis), and a check that the measure survives: it does, because
-the station component is second and the height component drops at the
-binder, so a station INCREASE is affordable there.  This is the direction
-this run would take next.
+**(b) Park the binder into the STATION instead of the context — REFUTED in
+this run.**  The inversion phase adds `M₀` to `K`, which is invisible to
+`interpR`, so the loop test still fires below the binder at the same station.
+Parking `M₀` into `done` instead makes the station below the binder strictly
+larger as a SET, `sameSet` fails, and no cut site lies below a binder at all
+— the crossing would never be needed.  The measure survives it (the station
+component is second, the height component drops at the binder, and the step
+builds a CONCLUSION, whose height nothing constrains), so the whole repair
+rests on one new lemma:
+
+    E^R(done | seen),  M₀   ⊢   E^R([M₀], done | seen)          (grow)
+
+**`(grow)` is FALSE** (`wip/ui_routeB_r_grow.lean`), and the record is why.
+At a record that has already cut a fire row, `E^R(done | seen)` has LOST that
+row; at the larger station the recorded pair is no longer set-equal, the loop
+test does not fire, and `E^R([M₀], done | seen)` HAS the row back.  The
+larger station's interpolant is strictly stronger and the extra strength is
+not recoverable from `M₀`.  At the cell of §4.4 with `M₀ := ↑a`:
+
+    Grow.rowsA    : at `doneA = [↑a, X, ↑p]` the row of `X` is the guarded
+                    fire, not `⊤` (compare `BindCell.cellRows`)      [propext]
+    Grow.ev_guard : that guard holds in the model — the atom `a` is now in
+                    the station                                     [propext]
+    Grow.ev_fire  : its fire does not — it delivers `↑n`             [propext]
+    Grow.ev_grow  : so `E^R([↑a], done | seen)` is FALSE at every fuel ≥ 4
+    Grow.growE_refuted :
+        Inv [↑a, E^R(done | seen)] [] .tru (E^R([↑a], done | seen)) → False
+                                                    [propext, Quot.sound]
+
+So (b) is closed.
 
 **(c) Give up the localised loop.**  The escape mechanism exists to justify
 `interpR`'s `⊥`/`⊤` rows by a loop argument localised at a recording site.
@@ -399,3 +420,6 @@ One per module, quoted.
 * `wip/ui_routeB_r_escw.lean` — `refute_blocked` pinned at `[]`:
   `'LJFO.refute_blocked' depends on propext, Quot.sound, which the bound does
   not allow.  declared: []`
+* `wip/ui_routeB_r_grow.lean` — `Grow.ev_grow` pinned at `[]`:
+  `'LJFO.Grow.ev_grow' depends on propext, which the bound does not allow.
+  declared: []`
