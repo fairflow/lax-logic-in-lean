@@ -9,7 +9,7 @@ measured with `#axioms_within_pin` and asserted with `#axioms_within`),
 term built) or **DESIGN** (a statement written down, not through a refutation
 stage).
 
-**Headline.**  The induction is NOT closed.  What this run delivers is four
+**Headline.**  The induction is NOT closed.  What this run delivers is five
 sorry-free modules and one statement-level result: the escape statements
 handed over by §4.32 **cannot support the induction as written**, for a
 reason that is exact and localised, and the repair that does support it
@@ -25,6 +25,7 @@ Modules, all leaves under `wip/`, `LJF/` untouched:
 | `wip/ui_routeB_r_esc2.lean` | the escapes restated station-free; the four structural steps | 10 s |
 | `wip/ui_routeB_r_escd.lean` | the derivation-level design; `SatE2R`/`SatA2R` reduced to it | 31 s |
 | `wip/ui_routeB_r_proc.lean` | the processing phase of the family, at every record | 23 s |
+| `wip/ui_routeB_r_procd.lean` | the same block carrying derivation-level escapes | 15 s |
 
 ---
 
@@ -325,6 +326,23 @@ recording for whoever writes the saturated phase:
 Gate watched failing: `eMinPRg` at `[propext, Quot.sound]` errors with
 "depends on `Classical.choice`, which the bound does not allow".
 
+`wip/ui_routeB_r_procd.lean` is the same block over the `Sum`-valued
+statements of §6, i.e. the block as the final family will contain it:
+
+    eMinPRD : SatE2RD p → ∀ todo done Δ ψ seen b, ParkedCtxP done → PFreeCtx p Δ →
+              PFreeN p ψ → ∀ {j}, Inv ((todo ++ done) ++ Δ) [] j ψ →
+              Sum (UpFrom (fun e => Inv (interpR p e todo done none seen :: Δ) [] j ψ))
+                  (EscD Δ seen b)
+    aMinPRD : SatA2RD p → … the two-fuel form
+
+Every clause is the one above with the escape passed straight through — the
+processing phase never touches the record, so an escape arising below is an
+escape here, at the same record, height book and `p`-free context.  The only
+clause needing plumbing is the inversion of a disjunctive hypothesis, which
+has one sub-result per branch of `invertPos` and must sequence them:
+`seqSumG` (all succeed, or one escapes).  Gate watched failing: `aMinPRD` at
+`[propext, Quot.sound]` errors on `Classical.choice`.
+
 ---
 
 ## 8 · Status
@@ -343,6 +361,7 @@ Gate watched failing: `eMinPRg` at `[propext, Quot.sound]` errors with
 | `EscD` empty at the empty record (`escD_nil_empty`) | **PROVED**, axiom-free |
 | `satE2R_of_escD`, `satA2R_of_escD`, `pll_ui_R_escD` | **PROVED** |
 | the processing phase at every record (`eMinPRg`, `aMinPRg`) | **PROVED** |
+| the same block carrying derivation-level escapes (`eMinPRD`, `aMinPRD`, `seqSumG`) | **PROVED** |
 | **`SatE2RD p`, `SatA2RD p`** | **OPEN** |
 | N4 for PLL | **OPEN**, over `SatE2RD` + `SatA2RD` alone |
 
@@ -354,7 +373,8 @@ and the two lemmas any version of the saturated phase needs — record
 monotonicity and the confinement of the record extension — are theorems.
 
 **What is NOT delivered:** the saturated phase, i.e. the mutual family for
-`interpR`, ◯-free or otherwise.  It was not attempted: the analysis above
+`interpR`, ◯-free or otherwise (the processing phase of §7 is built, both
+escape-free and `Sum`-valued).  It was not attempted: the analysis above
 took the first two hours of the run, and re-authoring
 `LJF/OFuelPFam.lean`'s seventeen-definition mutual with `Sum`-valued returns
 and a recording-site loop inside the same strongly connected component is a
