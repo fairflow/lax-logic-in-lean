@@ -2,7 +2,7 @@
 # `LaxLogic.QLL.CertifyTests` — the checker's output is a derivation
 
 The point of this file is mostly in the *types*.  `d_identity` below has type
-`Derives (lam (bvar 0)) [] (imp ⊤ ⊤)` and its value comes out of `certify`.
+`Derives qp[λu. u] [] (imp ⊤ ⊤)` and its value comes out of `certify`.
 Nothing proves that the checker is sound; the type says it.
 -/
 import LaxLogic.QLL.Certify
@@ -25,8 +25,8 @@ The *type* is the claim: had `certify` returned anything that was not a
 derivation of that formula from that context, this would not elaborate.  The
 `#guard` then says the checker actually succeeded rather than returning `none`.
 -/
-def d_identity : Option (Derives (lam (bvar 0)) [] qf[⊤ ⊃ ⊤]) :=
-  (certify [] (lam (bvar 0)) qf[⊤ ⊃ ⊤]).toOption.map Prod.fst
+def d_identity : Option (Derives qp[λu. u] [] qf[⊤ ⊃ ⊤]) :=
+  (certify [] qp[λu. u] qf[⊤ ⊃ ⊤]).toOption.map Prod.fst
 
 #guard d_identity.isSome
 
@@ -36,23 +36,23 @@ private def ok {α : Type} (r : Except Err (α × List (Pf × Form))) : Bool := 
 private def obs {α : Type} (r : Except Err (α × List (Pf × Form))) : List (Pf × Form) :=
   match r with | .ok (_, o) => o | .error _ => []
 
-#guard ok (certify [] (lam (bvar 0)) qf[⊤ ⊃ ⊤])
-#guard ok (certify [] (val Q.all star) qf[◯∀ ⊤])
-#guard ok (certify [] (gen (lam (bvar 0)))
+#guard ok (certify [] qp[λu. u] qf[⊤ ⊃ ⊤])
+#guard ok (certify [] qp[val∀ *] qf[◯∀ ⊤])
+#guard ok (certify [] qp[⟨λu. u | x⟩]
              qf[∀x. P(x) ⊃ P(x)])
-#guard ok (certify [(fvar "p", circ Q.ex top)]
-             (letQ Q.ex (fvar "p") (val Q.ex (bvar 0))) qf[◯∃ ⊤])
+#guard ok (certify [(qp[p], qf[◯∃ ⊤])]
+             qp[let∃ u ⇐ p in val∃ u] qf[◯∃ ⊤])
 
 /-! ## Obligations survive a successful certification -/
 
-#guard obs (certify [(pair star star, pred "C" []), (fvar "z", top)] (fvar "z") top)
+#guard obs (certify [(pair star star, pred "C" []), (qp[z], qf[⊤])] qp[z] top)
         == [(pair star star, pred "C" [])]
 
 /-! ## Gates — each watched failing -/
 
-#guard ! ok (certify [] (lam (bvar 0)) qf[⊤ ⊃ ⊥])
-#guard ! ok (certify [] (val Q.all star) qf[◯∃ ⊤])
-#guard ! ok (certify [] (fst star) top)
+#guard ! ok (certify [] qp[λu. u] qf[⊤ ⊃ ⊥])
+#guard ! ok (certify [] qp[val∀ *] qf[◯∃ ⊤])
+#guard ! ok (certify [] qp[π₁ *] top)
 #guard ! ok (certify [] (bvar 3) top)
 
 /-! ## Refused β-redexes
@@ -63,14 +63,14 @@ introduction form cannot be inspected.  Never a mis-acceptance: the return type
 forbids that. -/
 
 -- (λu.u) * : ⊤
-#guard ! ok (certify [] (app (lam (bvar 0)) star) top)
+#guard ! ok (certify [] qp[(λu. u) *] top)
 -- case (ι_c *) of [ι_x(z) → z] : ⊤
-#guard ! ok (certify [] (caseEx (pack (Tm.fvar "c") star) (bvar 0)) top)
+#guard ! ok (certify [] qp[case ι[c] * of [ι[x](u) → u]] top)
 -- but π₁(*, *) IS accepted, because `pair` infers — so the limit is precisely
 -- "the subject must infer", not "no redexes"
-#guard ok (certify [] (fst (pair star star)) top)
+#guard ok (certify [] qp[π₁ (*, *)] top)
 -- and π_c(⟨* | x⟩) is now accepted too: inference for ∀ decides local
 -- closedness rather than refusing outright
-#guard ok (certify [] (inst (Tm.fvar "c") (gen star)) top)
+#guard ok (certify [] qp[π[c] ⟨* | x⟩] top)
 
 end LaxLogic.QLL.CertifyTests

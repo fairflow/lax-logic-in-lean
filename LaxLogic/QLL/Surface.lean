@@ -247,4 +247,205 @@ macro_rules
 syntax "qf[" qllForm "]" : term
 macro_rules | `(qf[$M]) => `(NForm.toForm [] nf[$M])
 
+/-! # Proof terms
+
+The same three pieces again — a named AST, a name→index function, a printer —
+but now with **two** binder stacks, because `λu. p` binds a proof variable,
+`⟨p | x⟩` binds an individual, and `case r of [ι[x](u) → p]` binds one of each.
+The stacks are independent, which is what makes that last case work.
+
+Concrete syntax, following Fig. 5 as closely as it can be parsed:
+
+| Fig. 5 | here |
+| :-- | :-- |
+| `*`, `(p,q)`, `π₁(r)`, `π₂(r)` | `*`, `(p, q)`, `π₁ r`, `π₂ r` |
+| `ι₁(p)`, `ι₂(q)` | `ι₁ p`, `ι₂ q` |
+| `case r of [ι₁(y) → p, ι₂(z) → q]` | the same |
+| `λz.p`, `p q` | `λu. p`, `p q` |
+| `val_Q(p)`, `let_Q z ⇐ p in q` | `val∀ p` / `val∃ p`, `let∀ u ⇐ p in q` |
+| `⟨p \| x⟩`, `π_t(p)`, `ι_t(p)` | `⟨p \| x⟩`, `π[t] p`, `ι[t] p` |
+| `case r of [ι_x(z) → p]` | `case r of [ι[x](u) → p]` |
+| — (ours) | `exf[M] p` |
+-/
+
+/-- Proof terms with named binders. -/
+inductive NPf where
+  | var    : String → NPf
+  | star   : NPf
+  | pair   : NPf → NPf → NPf
+  | fst    : NPf → NPf
+  | snd    : NPf → NPf
+  | inl    : NPf → NPf
+  | inr    : NPf → NPf
+  | caseOr : NPf → String → NPf → String → NPf → NPf
+  | lam    : String → NPf → NPf
+  | app    : NPf → NPf → NPf
+  | val    : Q → NPf → NPf
+  | letQ   : Q → String → NPf → NPf → NPf
+  | gen    : String → NPf → NPf
+  | inst   : NTm → NPf → NPf
+  | pack   : NTm → NPf → NPf
+  | caseEx : NPf → String → String → NPf → NPf
+  | exf    : NForm → NPf → NPf
+  deriving Inhabited
+
+/-- `ps` is the proof-variable binder stack, `is` the individual one. -/
+def NPf.toPf (ps is : List String) : NPf → Pf
+  | .var x            => match idxOf? ps x with
+                         | some i => .bvar i
+                         | none   => .fvar x
+  | .star             => .star
+  | .pair p q         => .pair (NPf.toPf ps is p) (NPf.toPf ps is q)
+  | .fst p            => .fst (NPf.toPf ps is p)
+  | .snd p            => .snd (NPf.toPf ps is p)
+  | .inl p            => .inl (NPf.toPf ps is p)
+  | .inr p            => .inr (NPf.toPf ps is p)
+  | .caseOr r y p z q => .caseOr (NPf.toPf ps is r)
+                           (NPf.toPf (y :: ps) is p) (NPf.toPf (z :: ps) is q)
+  | .lam u p          => .lam (NPf.toPf (u :: ps) is p)
+  | .app p q          => .app (NPf.toPf ps is p) (NPf.toPf ps is q)
+  | .val q p          => .val q (NPf.toPf ps is p)
+  | .letQ q u p b     => .letQ q (NPf.toPf ps is p) (NPf.toPf (u :: ps) is b)
+  | .gen x p          => .gen (NPf.toPf ps (x :: is) p)
+  | .inst t p         => .inst (NTm.toTm is t) (NPf.toPf ps is p)
+  | .pack t p         => .pack (NTm.toTm is t) (NPf.toPf ps is p)
+  | .caseEx r x u p   => .caseEx (NPf.toPf ps is r)
+                           (NPf.toPf (u :: ps) (x :: is) p)
+  | .exf M p          => .exf (NForm.toForm is M) (NPf.toPf ps is p)
+
+/-- Names for the two sorts, drawn from their own alphabets and avoiding what
+is already in scope. -/
+def Pf.toN (ps is avoidP avoidI : List String) : Pf → NPf
+  | .bvar i       => .var (ps[i]?.getD s!"?{i}")
+  | .fvar x       => .var x
+  | .star         => .star
+  | .pair p q     => .pair (Pf.toN ps is avoidP avoidI p) (Pf.toN ps is avoidP avoidI q)
+  | .fst p        => .fst (Pf.toN ps is avoidP avoidI p)
+  | .snd p        => .snd (Pf.toN ps is avoidP avoidI p)
+  | .inl p        => .inl (Pf.toN ps is avoidP avoidI p)
+  | .inr p        => .inr (Pf.toN ps is avoidP avoidI p)
+  | .caseOr r p q =>
+      let y := freshFrom proofName (ps ++ avoidP)
+      let z := freshFrom proofName (y :: ps ++ avoidP)
+      .caseOr (Pf.toN ps is avoidP avoidI r)
+        y (Pf.toN (y :: ps) is avoidP avoidI p)
+        z (Pf.toN (z :: ps) is avoidP avoidI q)
+  | .lam p        =>
+      let u := freshFrom proofName (ps ++ avoidP)
+      .lam u (Pf.toN (u :: ps) is avoidP avoidI p)
+  | .app p q      => .app (Pf.toN ps is avoidP avoidI p) (Pf.toN ps is avoidP avoidI q)
+  | .val q p      => .val q (Pf.toN ps is avoidP avoidI p)
+  | .letQ q p b   =>
+      let u := freshFrom proofName (ps ++ avoidP)
+      .letQ q u (Pf.toN ps is avoidP avoidI p) (Pf.toN (u :: ps) is avoidP avoidI b)
+  | .gen p        =>
+      let x := freshFrom indivName (is ++ avoidI)
+      .gen x (Pf.toN ps (x :: is) avoidP avoidI p)
+  | .inst t p     => .inst (Tm.toN is t) (Pf.toN ps is avoidP avoidI p)
+  | .pack t p     => .pack (Tm.toN is t) (Pf.toN ps is avoidP avoidI p)
+  | .caseEx r p   =>
+      let x := freshFrom indivName (is ++ avoidI)
+      let u := freshFrom proofName (ps ++ avoidP)
+      .caseEx (Pf.toN ps is avoidP avoidI r) x u
+        (Pf.toN (u :: ps) (x :: is) avoidP avoidI p)
+  | .exf M p      => .exf (Form.toN is avoidI M) (Pf.toN ps is avoidP avoidI p)
+
+/-- Precedence: application 80 (left), the prefix formers 90 with an atomic
+argument, `λ`/`let`/`case` 20 reaching right, atoms above all of it. -/
+def NPf.render (prec : Nat) : NPf → String
+  | .var x     => x
+  | .star      => "*"
+  | .pair p q  => "(" ++ NPf.render 0 p ++ ", " ++ NPf.render 0 q ++ ")"
+  | .fst p     => paren90 prec ("π₁ " ++ NPf.render 1000 p)
+  | .snd p     => paren90 prec ("π₂ " ++ NPf.render 1000 p)
+  | .inl p     => paren90 prec ("ι₁ " ++ NPf.render 1000 p)
+  | .inr p     => paren90 prec ("ι₂ " ++ NPf.render 1000 p)
+  | .val .all p => paren90 prec ("val∀ " ++ NPf.render 1000 p)
+  | .val .ex p  => paren90 prec ("val∃ " ++ NPf.render 1000 p)
+  | .inst t p  => paren90 prec ("π[" ++ NTm.render t ++ "] " ++ NPf.render 1000 p)
+  | .pack t p  => paren90 prec ("ι[" ++ NTm.render t ++ "] " ++ NPf.render 1000 p)
+  | .exf M p   => paren90 prec ("exf[" ++ NForm.render 0 M ++ "] " ++ NPf.render 1000 p)
+  | .app p q   =>
+      let s := NPf.render 80 p ++ " " ++ NPf.render 81 q
+      if prec > 80 then "(" ++ s ++ ")" else s
+  | .lam u p   => paren20 prec ("λ" ++ u ++ ". " ++ NPf.render 20 p)
+  | .gen x p   => "⟨" ++ NPf.render 0 p ++ " | " ++ x ++ "⟩"
+  | .letQ q u p b =>
+      let kw := match q with | .all => "let∀ " | .ex => "let∃ "
+      paren20 prec (kw ++ u ++ " ⇐ " ++ NPf.render 0 p ++ " in " ++ NPf.render 20 b)
+  | .caseOr r y p z q =>
+      paren20 prec ("case " ++ NPf.render 0 r ++ " of [ι₁(" ++ y ++ ") → " ++
+        NPf.render 0 p ++ ", ι₂(" ++ z ++ ") → " ++ NPf.render 0 q ++ "]")
+  | .caseEx r x u p =>
+      paren20 prec ("case " ++ NPf.render 0 r ++ " of [ι[" ++ x ++ "](" ++ u ++
+        ") → " ++ NPf.render 0 p ++ "]")
+where
+  paren90 (prec : Nat) (s : String) : String := if prec > 90 then "(" ++ s ++ ")" else s
+  paren20 (prec : Nat) (s : String) : String := if prec > 20 then "(" ++ s ++ ")" else s
+
+/-- Render a proof term in surface syntax.  Parses back inside `qp[…]`. -/
+def renderPf (p : Pf) : String :=
+  NPf.render 0 (Pf.toN [] [] p.fvP p.fvI p)
+
+instance : ToString Pf := ⟨renderPf⟩
+
+/-! ## Input notation for proof terms -/
+
+declare_syntax_cat qllPf
+
+syntax:max ident : qllPf
+syntax:max "*" : qllPf
+syntax:max "(" qllPf ", " qllPf ")" : qllPf
+syntax:max "(" qllPf ")" : qllPf
+syntax:max "⟨" qllPf " | " ident "⟩" : qllPf
+syntax:90 "π₁" ppSpace qllPf:max : qllPf
+syntax:90 "π₂" ppSpace qllPf:max : qllPf
+syntax:90 "ι₁" ppSpace qllPf:max : qllPf
+syntax:90 "ι₂" ppSpace qllPf:max : qllPf
+syntax:90 "val∀" ppSpace qllPf:max : qllPf
+syntax:90 "val∃" ppSpace qllPf:max : qllPf
+syntax:90 "π" noWs "[" qllTm:0 "]" ppSpace qllPf:max : qllPf
+syntax:90 "ι" noWs "[" qllTm:0 "]" ppSpace qllPf:max : qllPf
+syntax:90 "exf" noWs "[" qllForm:0 "]" ppSpace qllPf:max : qllPf
+syntax:80 qllPf:80 ppSpace qllPf:81 : qllPf
+syntax:20 "λ" ident ". " qllPf:20 : qllPf
+syntax:20 "let∀ " ident " ⇐ " qllPf:0 " in " qllPf:20 : qllPf
+syntax:20 "let∃ " ident " ⇐ " qllPf:0 " in " qllPf:20 : qllPf
+syntax:20 "case " qllPf " of " "[" "ι₁" "(" ident ")" " → " qllPf ", " "ι₂" "(" ident ")" " → " qllPf "]" : qllPf
+syntax:20 "case " qllPf " of " "[" "ι" noWs "[" ident "]" "(" ident ")" " → " qllPf "]" : qllPf
+
+syntax "np[" qllPf "]" : term
+
+macro_rules
+  | `(np[$x:ident])          => `(NPf.var $(Lean.quote x.getId.toString))
+  | `(np[*])                 => `(NPf.star)
+  | `(np[($p, $q)])          => `(NPf.pair np[$p] np[$q])
+  | `(np[($p)])              => `(np[$p])
+  | `(np[⟨$p | $x:ident⟩])   => `(NPf.gen $(Lean.quote x.getId.toString) np[$p])
+  | `(np[π₁ $p])             => `(NPf.fst np[$p])
+  | `(np[π₂ $p])             => `(NPf.snd np[$p])
+  | `(np[ι₁ $p])             => `(NPf.inl np[$p])
+  | `(np[ι₂ $p])             => `(NPf.inr np[$p])
+  | `(np[val∀ $p])           => `(NPf.val Q.all np[$p])
+  | `(np[val∃ $p])           => `(NPf.val Q.ex np[$p])
+  | `(np[π[$t] $p])          => `(NPf.inst nt[$t] np[$p])
+  | `(np[ι[$t] $p])          => `(NPf.pack nt[$t] np[$p])
+  | `(np[exf[$M] $p])        => `(NPf.exf nf[$M] np[$p])
+  | `(np[$p $q])             => `(NPf.app np[$p] np[$q])
+  | `(np[λ $u:ident . $p])   => `(NPf.lam $(Lean.quote u.getId.toString) np[$p])
+  | `(np[let∀ $u:ident ⇐ $p in $b]) =>
+      `(NPf.letQ Q.all $(Lean.quote u.getId.toString) np[$p] np[$b])
+  | `(np[let∃ $u:ident ⇐ $p in $b]) =>
+      `(NPf.letQ Q.ex $(Lean.quote u.getId.toString) np[$p] np[$b])
+  | `(np[case $r of [ι₁($y:ident) → $p, ι₂($z:ident) → $q]]) =>
+      `(NPf.caseOr np[$r] $(Lean.quote y.getId.toString) np[$p]
+                          $(Lean.quote z.getId.toString) np[$q])
+  | `(np[case $r of [ι[$x:ident]($u:ident) → $p]]) =>
+      `(NPf.caseEx np[$r] $(Lean.quote x.getId.toString)
+                          $(Lean.quote u.getId.toString) np[$p])
+
+/-- A proof term in surface syntax, as a locally nameless `Pf`. -/
+syntax "qp[" qllPf "]" : term
+macro_rules | `(qp[$p]) => `(NPf.toPf [] [] np[$p])
+
 end LaxLogic.QLL.Surface

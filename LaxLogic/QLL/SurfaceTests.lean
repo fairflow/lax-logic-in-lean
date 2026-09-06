@@ -86,4 +86,72 @@ the round trip a real property rather than a formality. -/
 #guard qf[∀x. ◯∀ (P(x) ∧ Q) ⊃ ∃y. ◯∃ R(x, y) ∨ ⊥]
         == qf[∀a. ◯∀ (P(a) ∧ Q) ⊃ ∃b. ◯∃ R(a, b) ∨ ⊥]
 
+/-! # Proof terms
+
+Same property, same shape of test: `renderPf` emits a string, and pasting it
+back inside `qp[…]` gives the same `Pf`. -/
+
+/-! ## Atoms, prefix formers, application -/
+
+#guard renderPf qp[λa. a] == "λu. u"
+#guard qp[λu. u] == qp[λa. a]
+
+#guard renderPf qp[(*, *)] == "(*, *)"
+#guard renderPf qp[π₁ (*, *)] == "π₁ (*, *)"
+#guard renderPf qp[f x] == "f x"
+#guard renderPf qp[λa. λb. a b] == "λu. λv. u v"
+#guard qp[λu. λv. u v] == qp[λa. λb. a b]
+
+-- application is left associative and a `λ` in head position needs its parens
+#guard renderPf qp[(λa. a) *] == "(λu. u) *"
+#guard qp[(λu. u) *] == qp[(λa. a) *]
+
+/-! ## The Fig. 5 formers -/
+
+#guard renderPf qp[val∀ *] == "val∀ *"
+#guard renderPf qp[ι[c] *] == "ι[c] *"
+#guard renderPf qp[π[c] ⟨* | y⟩] == "π[c] ⟨* | x⟩"
+#guard qp[π[c] ⟨* | x⟩] == qp[π[c] ⟨* | y⟩]
+
+#guard renderPf qp[let∃ a ⇐ h in val∃ a] == "let∃ u ⇐ h in val∃ u"
+#guard qp[let∃ u ⇐ h in val∃ u] == qp[let∃ a ⇐ h in val∃ a]
+
+#guard renderPf qp[case r of [ι₁(a) → a, ι₂(b) → b]]
+        == "case r of [ι₁(u) → u, ι₂(v) → v]"
+#guard qp[case r of [ι₁(u) → u, ι₂(v) → v]] == qp[case r of [ι₁(a) → a, ι₂(b) → b]]
+
+#guard renderPf qp[case r of [ι[y](a) → a]] == "case r of [ι[x](u) → u]"
+#guard qp[case r of [ι[x](u) → u]] == qp[case r of [ι[y](a) → a]]
+
+#guard renderPf qp[exf[⊥ ⊃ ⊤] h] == "exf[⊥ ⊃ ⊤] h"
+
+/-! ## Shadowing, in each sort -/
+
+#guard renderPf qp[λa. λa. a] == "λu. λv. v"
+#guard qp[λu. λv. v] == qp[λa. λa. a]
+
+#guard renderPf qp[⟨⟨π[y] * | y⟩ | y⟩] == "⟨⟨π[y] * | y⟩ | x⟩"
+#guard qp[⟨⟨π[y] * | y⟩ | x⟩] == qp[⟨⟨π[y] * | y⟩ | y⟩]
+
+/-! ## Capture avoidance, in each sort
+
+A free `u` must stop a proof binder taking `u`; a free `x` must stop an
+individual binder taking `x`.  These are the cases where a careless printer
+produces text that parses to a *different* term. -/
+
+#guard renderPf qp[λa. u] == "λv. u"
+#guard qp[λv. u] == qp[λa. u]
+
+#guard renderPf qp[⟨π[x] * | y⟩] == "⟨π[x] * | y⟩"
+#guard qp[⟨π[x] * | y⟩] == qp[⟨π[x] * | y⟩]
+
+/-! ## The two sorts do not interfere
+
+`⟨p | x⟩` binds an individual and `λu. p` binds a proof variable, in
+independent index spaces.  The printer draws them from separate alphabets, so
+which is which is visible on the page. -/
+
+#guard renderPf qp[⟨λa. π[y] a | y⟩] == "⟨λu. π[x] u | x⟩"
+#guard qp[⟨λu. π[x] u | x⟩] == qp[⟨λa. π[y] a | y⟩]
+
 end LaxLogic.QLL.SurfaceTests
