@@ -9,3 +9,8 @@ tactic.
 -/
 import LaxLogic.QLL.Syntax
 import LaxLogic.QLL.Deriv
+import LaxLogic.QLL.Lc
+import LaxLogic.QLL.Check
+import LaxLogic.QLL.Sound
+import LaxLogic.QLL.Certify
+import LaxLogic.QLL.Surface
