@@ -87,6 +87,20 @@ def fvList : List Tm → List String
 end
 
 mutual
+/-- Close over the named individual `a`, turning its free occurrences into the
+bound index `k`.  Inverse to `openAt` on locally closed terms; the checker uses
+it to recover `∀x.M` from an inferred body. -/
+def closeAt (k : Nat) (a : String) : Tm → Tm
+  | .bvar i  => .bvar i
+  | .fvar x  => if x = a then .bvar k else .fvar x
+  | .fn f ts => .fn f (closeAtList k a ts)
+/-- `closeAt` on a list of arguments. -/
+def closeAtList (k : Nat) (a : String) : List Tm → List Tm
+  | []      => []
+  | t :: ts => closeAt k a t :: closeAtList k a ts
+end
+
+mutual
 /-- Structural equality test. -/
 def beq : Tm → Tm → Bool
   | .bvar i,  .bvar j  => i == j
@@ -164,8 +178,24 @@ def openAt (k : Nat) (u : Tm) : Form → Form
   | .forall_ M  => .forall_ (openAt (k + 1) u M)
   | .exists_ M  => .exists_ (openAt (k + 1) u M)
 
+/-- Close over the named individual `a`, turning its free occurrences into the
+bound index `k`. -/
+def closeAt (k : Nat) (a : String) : Form → Form
+  | .top        => .top
+  | .bot        => .bot
+  | .pred P ts  => .pred P (Tm.closeAtList k a ts)
+  | .and M N    => .and (closeAt k a M) (closeAt k a N)
+  | .or M N     => .or (closeAt k a M) (closeAt k a N)
+  | .imp M N    => .imp (closeAt k a M) (closeAt k a N)
+  | .circ q M   => .circ q (closeAt k a M)
+  | .forall_ M  => .forall_ (closeAt (k + 1) a M)
+  | .exists_ M  => .exists_ (closeAt (k + 1) a M)
+
 /-- `M` with its outermost individual binder opened by the free individual `a`. -/
 abbrev openWith (a : String) (M : Form) : Form := openAt 0 (.fvar a) M
+
+/-- `M` with free occurrences of `a` bound by a fresh outermost binder. -/
+abbrev closeWith (a : String) (M : Form) : Form := closeAt 0 a M
 
 /-- The named free individuals of a formula. -/
 def fv : Form → List String
@@ -301,6 +331,31 @@ abbrev openPWith (x : String) (p : Pf) : Pf := openP 0 (.fvar x) p
 /-- `p` with its outermost bound individual opened by the free individual `a`. -/
 abbrev openIWith (a : String) (p : Pf) : Pf := openI 0 (.fvar a) p
 
+/--
+Number of proof-term nodes.  The checker recurses on opened bodies, which are
+not structural subterms, so termination is by this measure; opening with a
+variable preserves it (`Check.size_openP`, `Check.size_openI`).
+-/
+def size : Pf → Nat
+  | .bvar _       => 1
+  | .fvar _       => 1
+  | .star         => 1
+  | .pair p q     => size p + size q + 1
+  | .fst p        => size p + 1
+  | .snd p        => size p + 1
+  | .inl p        => size p + 1
+  | .inr p        => size p + 1
+  | .caseOr r p q => size r + size p + size q + 1
+  | .lam p        => size p + 1
+  | .app p q      => size p + size q + 1
+  | .val _ p      => size p + 1
+  | .letQ _ p b   => size p + size b + 1
+  | .gen p        => size p + 1
+  | .inst _ p     => size p + 1
+  | .pack _ p     => size p + 1
+  | .caseEx r p   => size r + size p + 1
+  | .exf _ p      => size p + 1
+
 /-- The named free **proof** variables of a proof term. -/
 def fvP : Pf → List String
   | .bvar _       => []
@@ -371,6 +426,18 @@ def Ctx.names : Ctx → List String
   | []                    => []
   | (.fvar x, _) :: Γ     => x :: Ctx.names Γ
   | _ :: Γ                => Ctx.names Γ
+
+/--
+The context entries that are **not** variables.
+
+By the reading recorded on `Derivable.subst`, these are exactly the residual
+refinement obligations a derivation carries: constraint terms supplied by
+`Subst` under a typing condition, whose refinement is still outstanding.
+-/
+def Ctx.obligations : Ctx → List (Pf × Form)
+  | []                => []
+  | (.fvar _, _) :: Γ => Ctx.obligations Γ
+  | e :: Γ            => e :: Ctx.obligations Γ
 
 /-- Every named free individual occurring in a context, in either component. -/
 def Ctx.fvI : Ctx → List String
