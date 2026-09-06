@@ -258,6 +258,49 @@ below.
 
 ---
 
+## Incoming: a Verso fork, NOT to be adopted yet
+
+The prover-toolkit session reports a real bug in stock Verso and has a fix on
+a fork. Their instruction from Matthew is to switch only once it is built and
+working, and their four-item checklist is not complete. **Do not adopt it as
+part of any routine blueprint job.**
+
+*The bug*, for the record: `PrettyPrint.lean:18` declares a parser named
+`declSigWithId` inside `Verso.Genre.Manual.Block.Docstring`, shadowing Lean's
+own. `ppSignature`'s two quotations then test for a node kind nothing
+produces, so `showNamespace` and `constantInfo` have been silently dead since
+the v4.30.0-rc1 bump (PR #827) — no error, no warning. Fix is 1 insertion, 3
+deletions. Fork: `https://github.com/fairflow/verso`, branch
+`v4.31.0-declsig-fix` @ `7fe88df1` is the one to consume, since we pin
+v4.31.0.
+
+**Two things from this session they should know before ticking the list.**
+
+*1. The `[[require]]` ORDER in `lakefile.toml` is load-bearing.*
+`VersoBlueprint` must come BEFORE `mathlib`; reversed, lake refuses with
+`mathlib: failed to fetch cache`, because verso pins `proofwidgets` at
+`2db6054a4432` and mathlib at `24b0d9dc081c`. Their plan is a root-level
+`[[require]] name = "verso"` to override the transitive one (currently
+`b677415e8a0b`, arriving via VersoBlueprint `6561770257aa`). Where that new
+require sits relative to the existing two is not a free choice, and the
+interaction with VersoBlueprint's own transitive verso is untested. This is
+the likeliest place for the "not yet confirmed empirically" item to fail.
+
+*2. Editing `lakefile.toml` costs a CI rebuild.* The Pages Lean build cache
+keys on `hashFiles('lean-toolchain', 'lake-manifest.json', 'lakefile.toml',
+'**/*.lean')`, and the FIRST restore-key also hashes `lakefile.toml`. Both
+miss on any lakefile edit. The bare `-lean-build-v1-` fallback still restores
+something, so it is not fully cold — but every verso-dependent module
+rebuilds regardless, which is the entire blueprint.
+
+*3. The output diff will be site-wide, not local.* They warn the fix changes
+rendered output (self-links gone from signatures, constructor names
+unqualified). This chapter set has 68 Lean-backed nodes, and `(lean := "...")`
+renders signatures, so the diff touches most pages. Worth one deliberate
+publish and a look, not a surprise mixed into another change.
+
+---
+
 ## What is NOT done
 
 - **15 `TO WRITE` markers remain**, down from 64. Each is a judgement call
