@@ -3963,3 +3963,62 @@ record in `docs/decider-outputs-design.md` §9.
 * **Not done**: engine efficiency (untouched; the 2 undecided cells and
   the 8.2 s worst case are its frontier), `Set` out of `PLLKripke`,
   named-variable printer, `--normalize`.
+
+## 2026-09-06 (evening) — HALT: the uniform-interpolation search for PLL paused at Matthew's instruction (19:20)
+
+**The instruction.**  "I think this is a good place to pause the search
+for UI.  Four or five kinda independent attempts, serious, building tens
+of thousands of lines, and repairs are ongoing while the tower gets ever
+more complex and higher.  We'll just bank the results and lick our
+wounds, if there are any.  And perhaps this task is not even ours to take
+on, it is Rosalie Iemhoff's.  So this is an instruction to HALT, tidy up
+your work before you stop completely but no more builds."  The five
+WP12d modules were already built (exit 0, 71 s); nothing was built after
+it.
+
+**Where route (B) stands, banked.**  The record is
+`docs/ui-ljfo-clause-table.md` §4.7–4.34 (§4.34 is the halt), the
+blueprint `docs/ui-routeB-blueprint.md`/`.html`, the per-package records
+`docs/n4-*.md` and `docs/pq*.md`, all on `frjw-dev`.
+
+* PROVED, `[propext, Classical.choice, Quot.sound]` unless stated:
+  soundness of the interpolant pair for LJF◯; unconditional cofinality
+  at the processing phase (`LJF/OFuelPCofinal.lean`, the 25-minute
+  family `LJF/OFuelPFam.lean`); N3 both ways; N4 on ◯-free stations
+  (`n4_circFree_uncond`, by transport from `uniform_interpolation_IPC`);
+  N5 relative to N4; N6: uniform interpolation for PLL at IPC formulas
+  outright (`ipc_ui_routeB`, agreeing with Pitts, `routeB_agrees_IPC`),
+  and for PLL relative to N4 alone (`pll_ui_of_stabilisationAll`).
+  The loop-checked recursions: `QBound` (`interpQ` terminates, the
+  measure `κ·W + ν`), the easy halves of `PQEquiv`, fuel monotonicity of
+  `interpP`/`interpG`/`interpR`; the pair recursion `interpR`: literal
+  stabilisation at EVERY station (`rBound`, choice-free), soundness,
+  `pll_ui_R`, the processing phase of its family at every record, record
+  monotonicity, set-equal weakening; the repaired reduction
+  `pll_ui_R_escW`; a one-world semantics for LJF◯ with soundness
+  (`no_inv_of_model`, the first refutation oracle for `Inv`).
+* REFUTED (kernel-checked): the per-station reset; the naive
+  per-fuel induction hypotheses for `PQHard`, both halves; the
+  formula-level escapes (unsuitable, §4.33); `SatE2RD` (§4.34, a
+  statement fault); the station-growth repair `(grow)` (§4.34).
+* OPEN: N4 for PLL, i.e. `StabilisationAllP`; equivalently `PQHard`
+  (route through `interpQ`) or `SatE2RW` + `SatA2RW` (route through
+  `interpR`), with the p-free binder crossing `EscBindOpenR` the named
+  missing clause of the escape design.  Uniform interpolation for PLL
+  itself: OPEN, in neither direction, as it has been throughout.
+
+**If the search is ever resumed** (not scheduled; Matthew's call):
+§4.34's assessment proposes carrying the recording-site interpolants on
+the left of the obligations (`RecCtx`), which removes the escape and the
+crossing on the ∃p side on paper; the ∀p side at a cut record with a
+foreign goal is the untested case.  Two designed cells are named there.
+Nothing of this is built.  The alternative recorded by the WP12d run is
+to give up the localised loop for a budgeted layered bisimulation (the
+Visser template, memory `visser-amalgamation-template`).
+
+**Housekeeping left as is.**  `lakefile.toml`'s `wipshared` list carries
+every `wip/ui_routeB_*` module; the interpF drafts and the `_probe/`
+harnesses were never retired; `LaxBlueprint/` untouched by this campaign;
+the structural refounding of `OFuelPFam` (§4.20) remains a design.  The
+agent worktree `agent-a5401eae81cb0a74d` is merged (691623b) and left in
+place per the standing rule.
