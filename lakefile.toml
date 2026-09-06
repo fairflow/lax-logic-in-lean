@@ -6,6 +6,18 @@ defaultTargets = ["LaxLogic", "FRJGbu"]
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 autoImplicit = false
+# Render a declaration's own name unqualified in `{docstring}` signatures
+# (`def LaxAll ...`, not `def LaxLogic.Obligation.LaxAll ...`).  Argument types
+# are unaffected; they already follow the ambient `open` declarations.
+#
+# The `weak.` prefix is required: without it Lean rejects `-D` for an option it
+# has not registered, and every module that does not import VersoManual (i.e.
+# nearly all of them) fails with "unknown configuration option".  `weak.` sets
+# it where it exists and ignores it elsewhere.
+#
+# Provided by our verso fork; a no-op on stock verso, where the flag this
+# option feeds is silently ignored.
+weak.verso.docstring.showNamespace = false
 
 # verso: pinned to our fork, ahead of the root require for VersoBlueprint so
 # that this entry wins over the transitive dependency.  The fork carries one
