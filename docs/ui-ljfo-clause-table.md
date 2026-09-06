@@ -2456,6 +2456,275 @@ OPEN both ways.  N6's `CellsFor` is now inhabited on ◯-free cells through
 the processing phase, which is the next mechanical package.
 ---
 
+### 4.24 WP4: the transfer through the processing phase PROVED — stabilisation and N3 restated at a generalised station; the ◯-free instance of `CellsFor` PROVED and shown to AGREE with `uniform_interpolation_IPC`; N5 a theorem; `PLL_UI` reduced to N4 alone (2026-09-06, 03:25)
+
+One agent run of 38 minutes, two commits, merged at 61c9812 and verified
+here (`lake build wipshared` exit 0; pins measured; gate watched failing;
+sorry sweep clean).  File: `wip/ui_routeB_wp4.lean` (892 lines), registered
+in `wipshared`.  Nothing under `LJF/` or `docs/` was touched by the run.
+
+**There is no branch-station lemma.**  The plan (§4.23: "the transfer of a
+pair from the saturation of `[negOfO φ]` back through the processing
+phase") began by enumerating the saturated stations that processing
+reaches from `[negOfO φ]`.  That enumeration is not needed and would be
+the wrong object: every input N3 consumes is already stated at a
+*generalised station* `(todo, done)` — soundness `eSoundP`/`aSoundP`
+(`LJF/OFuelPSound.lean`); the processing-phase cofinality `eMinPP`/`aMinPP`
+(`LJF/OFuelPMin.lean`), which take `SatE2P`/`SatA2P` at the saturated
+stations and run the fire scan and the whole processing phase themselves;
+and `interpP_circFreeN`.  The branch stations are named by `interpP`'s own
+recursion.  So WP4 is N1 and N3 restated over `(todo, done)`:
+
+    EStabilisesP p todo done   := Σ f₀, ∀ f ≥ f₀,  E_f ⟛ E_{f₀}                 (at (todo, done))
+    AStabilisesP p todo done G := Σ f₀, ∀ f ≥ f₀,  E_f ∧ A_f ⟛ E_f ∧ A_{f₀}     (goal G)
+    estabilisesP_nil : EStabilisesP p [] done = EStabilises p done := rfl   (astabilisesP_nil likewise)
+
+**Stage 1 (rule 8) — the ◯-free instance of `CellsFor`, PROVED.**
+
+    isUIPair_of_stabilisesP : SatE2P p → SatA2P p → ParkedCtxP done →
+        (E-chain constant from f₀) → (A-chain constant from f₁) →
+        IsUIPair p (todo ++ done) G (interpP p f₀ todo done none)
+                                    (interpP p f₁ todo done (some G))
+    stabilises_of_hasUICFP : SatE2P p → SatA2P p → ParkedCtxP done →
+        CircFreeCtx todo → CircFreeCtx done → CircFreeN G →
+        HasUICF p (todo ++ done) G → EStabilisesP p todo done × AStabilisesP p todo done G
+    cellsFor_circFree : SatE2P p → SatA2P p → ∀ φ, isIPL φ →
+        HasUI p [negOfO φ] (negOfO φ) × HasUI p [] (negOfO φ)
+    IPC_UI_routeB := ∀ p φ, isIPL φ → Σ E A, IsUIPairPLL p φ E A
+    ipc_ui_routeB : (∀ p, SatE2P p) → (∀ p, SatA2P p) → IPC_UI_routeB
+                                                  [propext, Classical.choice, Quot.sound]
+
+Saturation is never assumed: the two cells are the generalised stations
+`([negOfO φ], [])` and `([], [])`.  The ◯-free restriction of the test
+data (§4.23's `IsUIPairCF`) does NOT propagate: `HasUICF` is the input
+(Pitts's theorem cannot reach ◯-carrying test data), the output is
+unrestricted `HasUI`, because `eMinPP`/`aMinPP` are cofinal for every
+p-free test datum, `◯` included.  So `IPC_UI_routeB` is uniform
+interpolation for PLL at every IPC formula, tested against every p-free
+PLL formula.  `cutInv` enters as in `hasUI_of_stabilises`: once in `minE`,
+three times in `minA`; four more times in the backward direction.
+
+**The check against `uniform_interpolation_IPC` — the two constructions
+AGREE.**
+
+    routeB_agrees_IPC : isIPL φ → (w : IPCPairRouteB p φ) →
+        (Nonempty (LaxND [w.E] (exI p [φ]))  ∧ Nonempty (LaxND [exI p [φ]] w.E)) ∧
+        (Nonempty (LaxND [w.A] (allI p [] φ)) ∧ Nonempty (LaxND [allI p [] φ] w.A))
+
+Comparable because route (B)'s interpolants at an IPC formula are values
+of `interpP` at a ◯-free generalised station, hence ◯-free
+(`interpP_circFreeN`) and IPL after erasure (`isIPL_eraseNeg`), which is
+what Pitts's minimality demands of a test formula.  The two cells are the
+ones N6 uses (`∃p` at the station `[φ]`, `∀p` at the empty station with
+goal `φ`); the E-relativisation of `allI_min` is discharged outright,
+`exI p []` being a theorem.  Route (B) therefore computes Pitts's
+interpolants, up to interderivability, wherever both are defined.
+
+**Stage 2 — the transfer in general; N5 a theorem; `PLL_UI` from N4
+alone.**
+
+    StabilisationAllP p := ∀ done G, Saturated done → ParkedCtxP done →
+                           EStabilises p done × AStabilises p done G        (N4, OPEN)
+    stabP : StabilisationAllP p → ∀ todo done G, ParkedCtxP done → StabP p todo done G
+    hasUI_of_stab : SatE2P p → SatA2P p → StabilisationAllP p →
+        ∀ todo done G, ParkedCtxP done → HasUI p (todo ++ done) G            (N5)
+    cellsFor_of_stab : SatE2P p → SatA2P p → StabilisationAllP p → CellsFor p
+    pll_ui_of_stabilisationAll :
+        (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, StabilisationAllP p) → PLL_UI
+                                                  [propext, Classical.choice, Quot.sound]
+
+`stabP` runs `eMinPP`'s clause list on `eMinPP`'s measure
+`2·sum3 todo + sum3 done`.  Eleven of the thirteen processing clauses and
+the fire step satisfy `interpP p (f+1) todo done g = interpP p f todo′ done′ g`
+for EVERY goal slot, so stabilisation transfers by rewriting, no
+derivation touched (`StabP.step`; the fire step through
+`interpPFire_eq`).  `↑⊥` is constant from fuel 1 (`stabP_fls`).
+`↑(P ∨ Q)` is the only clause that builds a derivation (`stabP_or_at`),
+and its one focused step is
+
+    andAllImpUse : (↓E ⊃ A) ∈ l → Inv [E, nAndAll l] [] .tru A
+
+`cutInv` enters Stage 2 only in threshold merging: the `∀p` chain is
+E-relativised and the branching clause guards each row by that branch's
+`∃p` at the SAME fuel, so the two chains must stabilise from a common
+threshold (`StabAt.raiseTo`; `stabP_of_stabilises` at the leaf; two cuts
+per `∀p` row of `stabP_or_at`).  The `∃p` half of the branching clause,
+`StabP.step`, `stabP_fls` and `andAllImpUse` spend no cut.
+
+**Pins** (measured with `#axioms_within_pin`, asserted with
+`#axioms_within`): the chain statements, `StabAt`/`StabP`/
+`StabilisationAllP`, `swapInv2` and the two `_nil` equations `[propext]`;
+`circFree_posOfO`/`circFree_negOfO`/`IPC_UI_routeB`/`IPCPairRouteB` `[]`;
+`StabAt.mk1`, `StabP.step`, `stabP_fls`, `andAllImpUse`
+`[propext, Quot.sound]`; everything downstream of a cut at
+`[propext, Classical.choice, Quot.sound]`, the choice from `cutInv` and
+from `uniform_interpolation_IPC` and nowhere else.  Gates watched failing:
+`cellsFor_circFree` and `stabP` at `[propext, Quot.sound]` each fail on
+`Classical.choice` (both in the run; `stabP` re-watched here).
+
+**Method note.**  `decreasing_by ljf_dec_e` is unusable in a module that
+sees both `LJF/OCore.lean` and `LJF/Base.lean` (this one does, through
+`LJF.Complete`): the token is ambiguous, the wrong expansion elaborates,
+and every decreasing goal is left open with no diagnostic pointing at the
+cause.  The six alternatives needed are spelled out in the module's
+`decreasing_by`, with a comment.
+
+**Consequences for the blueprint.**  N5: PROVED relative to N4
+(`hasUI_of_stab`).  N6: `CellsFor` inhabited outright on IPC formulas
+(`cellsFor_circFree`, hence `ipc_ui_routeB`), and in general from N4
+(`cellsFor_of_stab`).  Uniform interpolation for PLL now rests on N4
+alone, over `SatE2P`/`SatA2P` as variables (instantiated by
+`LJFO.satE2P`/`satA2P` in one line, deferred with the 25-minute module).
+Everything Matthew's overnight goal names after N4 — "then go ahead with
+WP4, ◯-free, then complete WP4" — is done; WP8 (N4 for PLL through the
+loop-checked recursion) is the one thing left in flight.
+
+---
+
+### 4.25 WP8: N4 for PLL through the loop-checked recursion `interpQ` — NOT proved; the route built, eighteen designed cells all bottom out (no refutation), two blueprint design decisions REFUTED and repaired, N4 reduced to the two typed obligations `QBound` and `PQEquiv` (2026-09-06, 03:45)
+
+One agent run of 46 minutes, six commits, merged at 8654b8b and verified
+here (`lake build wipshared` exit 0; pins measured; gate watched failing;
+sorry sweep clean).  Files: `wip/ui_routeB_n4q.lean` (the definition and
+p-freeness), `wip/ui_routeB_n4q_cells.lean` (the eighteen designed cells),
+`wip/ui_routeB_n4q_thm.lean` (the theorems and the two obligations),
+`docs/n4-loopcheck.md` (the design record).  Rules 8 and 9 applied: the
+◯-free cells first; designed cells only, no enumeration.
+
+**The definition.**  `interpQ` is `interpP` with the self-attack loop cut
+in the definition: it carries `seen : List Pos`, the antecedents whose own
+goal has already been attacked, and the two clauses that differ are
+
+    parkRowE prev done Q′ N rest res seen =
+        (if Q′ ∈ seen then ⊤
+         else ↓A_prev(done ⇒ ↑Q′ | Q′ :: seen) ⊃ E_prev(N :: rest | seen))
+      ∧ E_prev(res ++ rest | seen)
+    parkRowA prev done Q′ N rest goal seen =
+        if Q′ ∈ seen then ⊥
+        else A_prev(done ⇒ ↑Q′ | Q′ :: seen)  ∧  A_prev(N :: rest ⇒ goal | seen)
+
+(`res = [↓N′ ⊃ N]` for the Dyckhoff row, `[]` for the other four compound
+shapes; every other clause of `interpP` transcribed with `seen` threaded).
+Written in STEP form, `interpG rst p (f+1) = stepQ rst p (interpG rst p f)`,
+so structural in the fuel: 11 s to elaborate, against the family's 25
+minutes.  Calibration, kernel-checked: `interpQ = interpP` wherever no
+compound implication is reached (the six `↑`/`∧`/`⊃` goal shapes, the
+seven ◯-goal shapes, every processing clause, the five compound rows at
+fuel 1), and `interpQ ≠ interpP` at cell (i) from fuel 2.  `interpG_pfree`
+PROVED, `[propext, Quot.sound]`.
+
+**REFUTED (1): the blueprint's per-station reset** (WP3's loop elimination,
+§4.19: "`seen` grows within a fixed station and the antecedents of a
+station are finitely many").  The recursion is parameterised by a reset
+map: `interpQ0 = interpG (fun _ => [])` per-station, `interpQ = interpG id`
+global.  The per-station policy does not terminate, and the counterexample
+is ◯-FREE: cell (iii) `[↓(a ⊃ ↑b) ⊃ ↑c] ⇒ ↑↓(a ⊃ ↑b)`.  The surviving loop
+runs through the ∀p goal inversion at an implication goal, where
+`invertPos` moves `↑a` INTO the station and `seen` is reset, the station
+one `↑a` longer each time round, so a per-station `seen` never sees the
+same station twice.
+
+    q0_3_not_const : ∀ f ∈ [12,13,14,15], interpQ0 "p" f [] cell3 (some goal3) [] ≠ interpQ0 "p" (f+1) …
+    q_3_const_there : ∀ f ∈ [12,13,14,15], interpQ  "p" f [] cell3 (some goal3) [] = interpQ  "p" (f+1) …
+                                                                                    [propext]
+
+**REFUTED (2): recording at the aggregate.**  Putting the goal's positive
+on `seen` when a ∀p aggregate sits at `↑Q` gives smaller interpolants
+(cell (iii) threshold 8 against 12) but `seen` must then be read as
+`seenOf(goal, seen)`, which DROPS at the ∃p companion of a disjunctive
+hypothesis in ∀p mode (`↑(P₁∨P₂) :: todo, done, some ↑Q ⟶ b ++ todo, done,
+none`), so the lexicographic measure does not close.  Committed: recording
+at the guard CALL SITE, which makes `seen` monotone along every edge.  A
+third finding from the first draft: the check must be SYMMETRIC (`⊥` for
+the ∀p disjunct, `⊤` for the ∃p conjunct) or cell (iii) still loops; that
+draft's chain plateaus at fuels 2–3 and resumes climbing — a false
+fixpoint — which is why every certificate below checks two or three fuels
+above its threshold and never one.
+
+**The cells: every one bottoms out; the refutation candidate did not
+fire.**  Literal constancy by `decide +kernel`, `[propext]`, forty
+decisions in 16 s; thresholds:
+
+    ◯-free (interpP literally REFUTED on five of these, §4.23):
+        (i) 4   (ii) 6   (iii) 12   (iv) 4   (v) 3   (vi) 5
+    modal:      (m1) 4   (m2) 6   (m3) 7   (m4) 6   (m5) 7
+    GZ shapes:  (m6) 10  (m7) 10  (m8) 10  (m9) 9   (m10) 16  (m11) 10
+    S1:         12 at ↑e, 13 at ◯g, 12 for ∃p
+
+(m6)–(m11) are the shapes that reach the Ghilardi–Zawadowski pattern: a
+◯-implication guarded through a box, a box whose opening makes a
+◯-implication, a fire that re-creates one under a box, two nested boxes,
+and the S1 variant whose fire re-creates the guard's own antecedent.
+`qm10_false_fixpoint`: (m10)'s ∃p chain repeats at fuel 12 and moves again
+at 14, kernel-checked — a single repeated level is not stabilisation for
+this recursion, a second and independent reason `FuelIrrelevance` (N0i)
+is unusable.
+
+**Stage 2 — N4 over two obligations.**  (a) PROVED, axiom-free:
+
+    QFounded rst p μ := ∀ prev₁ prev₂ s, (∀ t, μ t < μ s → prev₁ t = prev₂ t) →
+                        stepQ rst p prev₁ s = stepQ rst p prev₂ s
+    interpG_stab_of_founded : QFounded rst p μ → ∀ s f, μ s + 1 ≤ f →
+                              interpG rst p f s = interpG rst p (μ s + 1) s
+    qStabLitE_of_bound / qStabLitA_of_bound : QBound p → literal stabilisation at EVERY station
+
+OPEN — `QBound p := Σ′ μ, QFounded id p μ`.  For `interpP` no such `μ`
+exists (`not_fuelStep1A`); for `interpQ` its shape is forced by the edge
+table: `μ = (K − |seen|, ν)` with `ν = 2·sum3 todo + sum3 done + 3^(wNeg goal)`
+(`eMinPP`'s measure); the guard edges strictly decrease the first
+component (the row fires only when `Q′ ∉ seen`, the call is made at
+`Q′ :: seen`), every other edge carries `seen` and strictly decreases `ν`.
+Two components remain: the subformula-closure invariant bounding `K`
+(over the ORIGINAL cell's closure, since `invertPos` grows the station at
+the ∀p implication goal), and the per-clause `ν` descent (every inequality
+already in `LJF/OFuelPMin.lean`: `ljf_dec_e`/`ljf_dec_a`, `p3_2`, `p3_21`).
+
+OPEN — `PQEquiv p := ∀ f done g, IDeriv (interpP p f [] done g) (interpQ p f [] done g [])`,
+the redundancy lemma of `docs/n4-circfree-cases.md` §3.3 as data.  The
+easy halves are `interpQ ⊢ interpP` on the ∀p side (the dropped disjunct
+is `⊥`) and `interpP ⊢ interpQ` on the ∃p side (the dropped conjunct is
+`⊤`); the hard halves are the redundancy claim.  One interderivability,
+not two implications: the polarity table makes the four halves a single
+simultaneous induction (`A^Q ⊢ A^P` needs `A^P ⊢ A^Q` under `parkRowE`'s
+`↓A ⊃ E′`).
+
+PROVED over them, `[propext, Classical.choice, Quot.sound]` (the choice
+from `cutInv`'s data packaging alone):
+
+    n4_of_interpQ    : PQEquiv p → QBound p → ∀ done G, EStabilises p done × AStabilises p done G
+    hasUI_of_interpQ : SatE2P p → SatA2P p → PQEquiv p → QBound p →
+                       Saturated done → ParkedCtxP done → HasUI p done G
+    n4_circFree_intrinsic  (the ◯-free instance of the route)
+    n4_circFree_byPitts    (cross-check by elaboration: the same conclusion is already
+                            inhabited unconditionally by n4_circFree_uncond, so the two
+                            obligations cannot contradict a machine-checked theorem there)
+
+The conclusion needs no saturation, no parking, no ◯-freeness: both
+obligations are statements about the recursion, not about a cell, so N4
+comes out at every cell at once.  Soundness of `interpQ` is NOT built
+(the polarity argument of `docs/n4-loopcheck.md` §3 is an argument, not a
+proof); it is not needed on this route, which inherits `interpP`'s
+soundness through `PQEquiv`.
+
+**Gates watched failing** (quoted in the run): `qS1_A` at `[]` fails on
+`propext`; `n4_of_interpQ` at `[propext, Quot.sound]` fails on
+`Classical.choice`; a calibration defect (the lax prefix `◯↓◯P′` inverting
+to `↑P′`) was caught by `decide` proving the proposition false and the
+cell then depending on `sorryAx`.  Re-watched here: `n4_of_interpQ` at
+`[propext, Quot.sound]`.
+
+**Status of N4 for PLL: OPEN, in neither direction; no designed cell
+refutes it.**  Launched in parallel at 03:40: **WP9** (`QBound`, the
+measure — Stage 0 checks the candidate measure on the designed cells in
+the kernel before any proof; the founding generalised to a well-founded
+lexicographic order; the closure invariant and the `ν` descent) and
+**WP10** (`PQEquiv` — refute-first at fuels 1–4 on six designed cells with
+the certified decider, since the per-fuel form may hold only up to a fuel
+shift; the cofinal restatement ready if it fails; then the easy halves by
+the polarity induction, the hard halves ◯-free first).
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
