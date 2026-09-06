@@ -3127,6 +3127,41 @@ escapes, ◯-free first) is in progress.
 
 ---
 
+### 4.31 WP12b, Stage 4 (plumbed before Stage 3): uniform interpolation for PLL over the cofinality of the pair recursion alone — `pll_ui_R`; verified here (2026-09-06, 16:12)
+
+The proof run plumbed the route before attacking its hard stage, so that
+the residual obligation is named exactly.  Merged at 5dc1aad and verified
+(`wip/ui_routeB_r_mono.lean`, `wip/ui_routeB_r_ui.lean`: build 96 s,
+nothing upstream; pins measured; gate watched failing — `pll_ui_R` at
+`[propext, Quot.sound]` fails on `Classical.choice`; sorry sweep clean).
+
+    SatE2R p := ∀ done Δ ψ, Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
+                ∀ {j}, Inv (done ++ Δ) [] j ψ → UpFrom (fun e => Inv (interpR p e [] done none [] :: Δ) [] j ψ)
+    SatA2R p := ∀ done Δ G, Saturated done → ParkedCtxP done → PFreeCtx p Δ →
+                ∀ {j}, Inv (done ++ Δ) [] j G →
+                UpFrom2 (fun e f => Inv (interpR p e [] done none [] :: Δ) [] .tru (interpR p f [] done (some (jGoal j G)) []))
+                                                                              (LJF/OFuelPMin.lean Part 5, verbatim, at interpR … [])
+    hasUI_R : SatE2R p → SatA2R p → Saturated done → ParkedCtxP done → HasUI p done G
+              (N3 forward for interpR: the pair read off at the literal thresholds of rStabLit*_uncond,
+               sound by eSoundR/aSoundR, minimal by the cofinality variables)
+    stabilisationAllP_of_R : SatE2P p → SatA2P p → SatE2R p → SatA2R p → StabilisationAllP p
+              (N3 BACKWARD for interpP, stabilises_of_hasUI′ — the two recursions never compared fuel by fuel)
+    pll_ui_R : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, SatE2R p) → (∀ p, SatA2R p) → PLL_UI
+                                                                              [propext, Classical.choice, Quot.sound]
+
+Fuel monotonicity for `interpR` (`wip/ui_routeB_r_mono.lean`, the operator
+lemma of §4.28 over the pair check) is in place for the threshold merging
+Stage 3 needs.
+
+**What now stands between the repository and uniform interpolation for
+PLL: the cofinality of the pair recursion at saturated stations, `SatE2R`
+and `SatA2R`** (plus `SatE2P`/`SatA2P`, instantiated in one line by
+`LJFO.satE2P`/`satA2P` in the 25-minute module).  Stage 3 — the family's
+height induction with escapes, ◯-free first — is in progress
+(`wip/ui_routeB_r_esc.lean` building at 16:07).
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
