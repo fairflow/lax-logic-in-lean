@@ -2354,6 +2354,106 @@ dropped from `bLL`'s `↑↓M` arm (type mismatch + `sorryAx` in the pin);
 `polInvT` put where S14 forces `polInvL` (type mismatch).  Method trap
 recorded by the run: `lake env lean` and `lake build` differ on
 `autoImplicit`; verify with `lake build`.
+
+### 4.23 N4 on ◯-free stations: the literal form REFUTED, N3 forward re-derived through cut, the ◯-free instance PROVED by transport from `uniform_interpolation_IPC`; the bounded form OPEN (2026-09-06, 02:30)
+
+One agent run of 45 minutes, four commits, merged at cb18196 and verified
+here (`lake build LJF wipshared Production` exit 0; the three new leaf
+modules 12 s, 3 s, 24 s; pins measured; gate watched failing; sorry sweep
+clean).  Files: `wip/ui_routeB_n4_lit.lean`, `wip/ui_routeB_n4.lean`,
+`wip/ui_routeB_n4_cells.lean`, `docs/n4-circfree-cases.md`.  Rules 8 and 9
+applied: six designed cells, no enumeration; the ◯-free instance first.
+
+**Stage 1 — the LITERAL form of N1 is REFUTED, by design and in the
+kernel.**  The ∀p attack row of a parked `Q ⊃ N ∈ done` at the goal `↑Q` is
+`A_f(done ⇒ ↑Q) ∧ A_f(N :: rest ⇒ ↑Q)`, the same call one fuel down, so
+`A_{f+1}(done ⇒ ↑Q)` contains `A_f(done ⇒ ↑Q)` as a proper subterm and the
+chain is strictly size-ascending; the ∃p row carries the same guard, so
+`E_{f+1}` determines `A_f`.  Cells and size lemmas, all `∀ f`, kernel-checked:
+
+    (i)   done = [(a ∨ b) ⊃ ↑c],                       goal ↑(a ∨ b)   (the self-attack)
+    (ii)  done = [(a ∨ b) ⊃ ↑c, (c ∨ d) ⊃ ↑a],         goal ↑(a ∨ b)   (a 2-cycle: through the cross guards alone)
+    (iii) done = [↓(a ⊃ ↑b) ⊃ ↑c],                     goal ↑↓(a ⊃ ↑b) (the Dyckhoff shape)
+    (iv)  done = [↓↑a ⊃ ↑b],                           goal ↑↓↑a       (the shift shape)
+    (vi)  done = [(a ∨ b) ⊃ ↑c, ↓↑c ⊃ ↑d],             goal ↑d         (through a NESTED guard alone)
+
+    not_aStabEq1 : AStabEq p cell1 goal1 → False        not_eStabEq1 : EStabEq p cell1 → False
+    (and likewise 2, 2cd, 3, 4, 6)                       [propext, Quot.sound]
+    not_fuelStep1A/E : ¬ FuelStep p [] cell1 g f, every f
+
+So `EStabEq`/`AStabEq` have no instances at any saturated station with a
+parked compound implication, `FuelIrrelevance` is moot (its consumer's
+hypothesis is unsatisfiable there), and the "termination of the
+recursion" reading of N4 (§4.19) is DEAD: the fuel is essential.  The
+sixth cell is the control: (v) `done = [p ⊃ ↑c, ↑p]`, goal `↑c`, UNSATURATED,
+is literally constant from fuel 3 (`aStabEq5`, `eStabEq5`, `[propext]`).
+`literal_N1_dividing_line` packages all six: the dividing line is
+SATURATION with a retained compound implication, not weight — which is
+exactly `hasUI_of_stabEq`'s own hypothesis, so that theorem has no
+instances.  Growth ratios of the chains at fuels 0–5, by `decide +kernel`:
+2.2×, 2.1×, 1.8×, 1.8×, 3.3×; constant for (v).
+
+**Stage 2 — N3 forward, interderivably, through cut** (`cutInv`, §4.22):
+
+    hasUI_of_stabilises : SatE2P p → SatA2P p → Saturated done → ParkedCtxP done →
+                          EStabilises p done → AStabilises p done G → HasUI p done G
+                          [propext, Classical.choice, Quot.sound]
+
+`cutInv` enters four times: once in `minE` (compose `E_{f₀} ⊢ E_k` with
+cofinality's `E_k, Δ ⊢ⱼ ψ`), three times in `minA`.  N3 now consumes the
+interderivable form in both directions; `hasUI_of_stabEq` stays as a
+theorem with no instances.
+
+**Stage 4 — N4 on ◯-free stations, PROVED by transport** (rule 8, from
+`LJFIPC.uniform_interpolation_IPC`, `LJF/Complete.lean`):
+
+    n4_circFree_uncond : SatE2P p → SatA2P p → Saturated done → ParkedCtxP done →
+                         CircFreeCtx done → CircFreeN G →
+                         EStabilises p done × AStabilises p done G
+                         [propext, Classical.choice, Quot.sound]
+
+Pair `E := negOfO (∃p ⌊done⌋)`, `A := negOfO (∀p (⌊done⌋ ⇒ ⌊G⌋))`; erase with
+`Inv.sound`, apply the IPC property, re-focalise with `polInvT`/`polInvL`.
+The judgment restriction was NOT needed: at `lax` a ◯-free goal must be a
+shift, its erasure lands on `◯⌊P⌋`, and `LaxND.erased` brings it down since
+context and goal are IPL.  **A restriction that IS needed, and is not an
+artefact:** `IsUIPair.minE`/`minA` quantify over p-free test data `Δ`, `ψ`
+that may carry `◯`, and Pitts's theorem cannot supply those (`exI_min`
+needs `isIPL` of the test formula).  A pair against ◯-carrying test data at
+a ◯-free station IS uniform interpolation for PLL on ◯-free cells, the
+thing route (B) is built to prove.  So the transported pair is
+`IsUIPairCF` (test data also ◯-free), N3 backward is re-derived for it
+(`stabilises_of_hasUICF`), and nothing is lost because
+
+    interpP_circFreeN : CircFreeCtx todo → CircFreeCtx done → OptCircFree g →
+                        CircFreeN (interpP p f todo done g)          [propext, Quot.sound]
+
+certifies that the only test data the backward direction uses — the
+chain's own formulas — is ◯-free.  `Classical.choice` comes only from
+`cutInv`'s data packaging and from the IPC theorem.  Gates: three helper
+pins at `[propext]` fail on `Quot.sound`; `n4_circFree_uncond` at
+`[propext, Quot.sound]` fails on `Classical.choice`.
+
+**Stage 3 — the bounded form: OPEN, with three candidate shapes for the
+bound refuted.**  No cell can refute N4 on ◯-free stations now that it is
+proved; the cells refute three shapes for a fuel bound `W`: (v) refutes any
+plain sum over `done` (adding `↑p` makes the station heavier and the
+threshold smaller); (vi) refutes any `W′` built from the goal's
+subformulas; (ii) refutes a recursion on the guard's guard, since the
+guard graph cycles.  `docs/n4-circfree-cases.md` names the lemma the
+bounded proof needs first — the self-attack disjunct is REDUNDANT up to
+interderivability, which is exactly why the interderivable chain
+stabilises while the literal one does not — and the measure it should
+run on.  That lemma, and the bound, are the technique the modal case
+needs; N4 for PLL remains OPEN both ways.
+
+**Consequences for the blueprint.**  N1: the literal statements are
+withdrawn as candidates (REFUTED at every saturated station of interest);
+the interderivable forms stand.  N3: PROVED both ways in the interderivable
+form.  N4: the ◯-free instance PROVED (by transport); the PLL instance
+OPEN both ways.  N6's `CellsFor` is now inhabited on ◯-free cells through
+`hasUI_of_stabilises ∘ n4_circFree_uncond`, up to WP4's transfer through
+the processing phase, which is the next mechanical package.
 ---
 
 ## 5 · OPEN list

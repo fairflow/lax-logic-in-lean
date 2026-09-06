@@ -48,10 +48,10 @@ cell is THE open theorem; the bridge transports LJF◯ to PLL.
 | N0e | `interpP`, the parking definition; `eSoundP`/`aSoundP`; rows, processing phase `eMinPP`/`aMinPP`, reductions; the founding `μ = (hgt, weight)` with every edge class discharged (Part 10); `parkAntP_of_satA2P`; `parkFireE` | `LJF/OFuelP.lean`, `OFuelPSound.lean`, `OFuelPMin.lean`, `OFuelPCof.lean`, `OFuelHeight.lean` Part 10 | **PROVED** — soundness `[propext, Quot.sound]`, kernel-checked agreement with `interpF` off the changed shapes, founding proved (§4.14) | N0h |
 | N0c | `tinvP`, `uentryP`, `parkAntP`, `satE2P`, `satA2P` — the 17-definition family in fuel-carrying form over `interpP`, ONE `mutual` on `μ = (hgt, weight, sizeOf)` | `LJF/OFuelPFamKit.lean`, `LJF/OFuelPFam.lean`, `LJF/OFuelPCofinal.lean` | **PROVED, UNCONDITIONAL** `[propext, Classical.choice, Quot.sound]` (§4.17). The antecedent guard is a native recursive call at all twenty parked arms; `ParkAntP` is a consequence, not a hypothesis. `DykAntP` WITHDRAWN 2026-09-05 (§4.15–4.16) | N0e |
 | N0d | `ECofinalP`, `ACofinalP` and their inhabitants `ecofinalP`, `acofinalP`; `ECofinalF`/`ACofinalF` and the upward-closed forms `ECofinalUp`, `ACofinalUp` | `LJF/OFuelPCofinal.lean`, `wip/ui_routeB_statements.lean`, `wip/ui_routeB_blueprint.lean` | **PROVED** for `interpP` `[propext, Classical.choice, Quot.sound]` (§4.17); the `interpF` forms remain DRAFTED | N0c |
-| N1 | `EStabEq`, `AStabEq` — the chains LITERALLY constant from some fuel (`∀ f ≥ f₀, E_f = E_{f₀}`); `EStabilises`, `AStabilises` the interderivable forms, derived from them | `wip/ui_routeB_n3.lean` | **STATED**, `estabilises_of_stabEq`/`astabilises_of_stabEq` PROVED `[propext, Quot.sound]` (§4.19) | — |
+| N1 | `EStabilises`, `AStabilises` — the chains eventually constant up to interderivability, the A-side modulo `E_f`. The LITERAL forms `EStabEq`/`AStabEq` are REFUTED at every saturated station with a parked compound implication (six designed cells, kernel-checked; the self-referential attack row) | `wip/ui_routeB_n3.lean`, `wip/ui_routeB_n4_lit.lean` | **STATED**; literal forms **REFUTED** (§4.23) | — |
 | N2 | `IsUIPair`, `HasUI` — Pitts's pair for a cell, intrinsic (`minE` at every judgment `j`; `minA` at `tru`, the lax cell being the cell `done ⇒ ◯P`) | `wip/ui_routeB_n3.lean` | **STATED** (axiom-free) | — |
-| N3 | `hasUI_of_stabEq` (forward), `stabilises_of_hasUI′` (backward) — W ⟺ UI per cell, over `SatE2P`/`SatA2P` as variables | `wip/ui_routeB_n3.lean`, `wip/ui_routeB_n3_cut.lean` | **PROVED both ways** (§4.19, §4.22): forward `[propext, Quot.sound]`, backward `[propext, Classical.choice, Quot.sound]` through `cutInv` | N0e, N0d, N0k, N1, N2 |
-| N4 | `StabilisationAll` — every saturated cell stabilises | same | **OPEN both ways** (`sorry` placeholder) | — |
+| N3 | `hasUI_of_stabilises` (forward, through `cutInv`), `stabilises_of_hasUI′` (backward) — W ⟺ UI per cell, interderivable form, over `SatE2P`/`SatA2P` as variables | `wip/ui_routeB_n4.lean`, `wip/ui_routeB_n3_cut.lean` | **PROVED both ways** `[propext, Classical.choice, Quot.sound]` (§4.22–4.23) | N0e, N0d, N0k, N1, N2 |
+| N4 | `StabilisationAll` — every saturated cell stabilises (interderivable form). ◯-free instance: `n4_circFree_uncond`, by transport from `uniform_interpolation_IPC` through `polInvT` and N3 backward | `wip/ui_routeB_n4.lean` | **◯-free PROVED** `[propext, Classical.choice, Quot.sound]` (§4.23); **PLL OPEN both ways**; the fuel-bounded form OPEN (`docs/n4-circfree-cases.md`) | N0k, N3, `uniform_interpolation_IPC` |
 | N5 | `ljfo_ui_of_stabilisation` — UI for LJF◯ | same | DRAFTED (`sorry`) | N3, N4 |
 | N6 | `IsUIPairPLL`, `PLL_UI`, `pll_ui_of_ljfo′ : (∀ p, CellsFor p) → PLL_UI` — transport to PLL | `wip/ui_routeB_n3.lean`, `wip/ui_routeB_n3_cut.lean` | **PROVED relative to `CellsFor` alone** `[propext, Classical.choice, Quot.sound]` (§4.22) | `bridge_iff`, N3, N0k |
 | N0k | `cutInv : Inv Γ [] tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ`, by polarisation invariance: the transfer block `bLL`/`gA`/`sD`/`fT`/`fS`/`bCtx` and `polInvT`/`polInvL`/`cutInvNE` at `[propext, Quot.sound]`; `cutInv` itself `[propext, Classical.choice, Quot.sound]` (the `Type` packaging of a `Nonempty` result through the `Prop`-valued bridge). ◯-free block `polInvT_circFree`/`cutInv_circFree` committed first. `(A′)` REFUTED (`notCanGoalConverse`) | `LJF/OPolInv.lean` | **PROVED** (§4.22) | — |
@@ -87,13 +87,13 @@ graph TD
   H[N0h height bounds · PROVED] --> N0e[N0e interpP · sound · founded · PROVED]
   N0e --> N0c
   N0c --> N0d[N0d ECofinalP/ACofinalP · PROVED]
-  N1[N1 EStabilises / AStabilises] --> N3
+  N1[N1 stabilisation, interderivable · literal form REFUTED] --> N3
   N2[N2 IsUIPair / HasUI] --> N3
   N0a --> N3[N3 W ⟺ UI per cell · PROVED both ways]
   K[N0k CutInv · PROVED] --> N3
   K --> N6
   N0d --> N3
-  N4[N4 StabilisationAll · OPEN both ways] --> N5[N5 UI for LJF◯ · sorry]
+  N4[N4 StabilisationAll · ◯-free PROVED, PLL OPEN] --> N5[N5 UI for LJF◯ · sorry]
   N3 --> N5
   N5 --> N6[N6 transport to PLL · PROVED rel. CutInv + CellsFor]
   B[bridge_iff · PROVED] --> N6
@@ -142,6 +142,13 @@ chain, so N0c, N0d and everything downstream drop to
 `[propext, Quot.sound]`.  Buys nothing for build time; it rides on the
 structural refounding's one family rebuild so the 25-minute pin sweep is
 paid once, not twice.
+
+**WP7 — N4 on ◯-free stations: DONE by transport (§4.23);** the literal
+form refuted; the bounded form and its redundancy lemma (the self-attack
+disjunct is redundant up to interderivability) are the technique the modal
+case needs, OPEN.  **WP4 next:** the transfer of a pair from the saturation
+of `[negOfO φ]` back through the processing phase, which inhabits
+`CellsFor` on ◯-free cells and closes N6 there.
 
 **WP2 — N3.**  Forward: instantiate N0a at the stabilised fuel, minimality
 from N0d read at that fuel.  Backward: N0d applied to `E` and to `A`
