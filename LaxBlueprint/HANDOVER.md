@@ -109,6 +109,15 @@ Completing it is a one-line change in *verso*, not verso-blueprint: have
 `Signature.forName` pass `showNamespace := false`, or thread it through as a
 parameter. That belongs to the prover-toolkit agent, who owns the fork.
 
+Independently corroborated by that agent, 2026-09-06: *“the fork carries ONLY
+the bug fix and not a `showNamespace` option. So declaration names stay fully
+qualified.”* What the fork **did** change on this site, and it is real: a
+declaration's own name in its own signature no longer carries a self-link
+(`constantInfo := false` now works), and inductive constructors render
+unqualified (`Docstring.lean:309` already passes `showNamespace := false`, which
+now takes effect). So there *is* a call site passing the flag — just not the one
+that prints the top-level declaration name.
+
 A separate, smaller effect is already available to us with no fork change.
 Verso-blueprint keeps two names per reference — `written` (the author's
 spelling, displayed in the hover and summary panels) and `canonical` (resolved,
@@ -135,12 +144,29 @@ local builds contend for the same cores.
   Lean-backed.
 - **Nothing is pending.** No unpublished chapter text.
 
-**Measured build costs, so nobody guesses.** With the import closure warm and
-the lakefile unchanged, a publish is **11 minutes**; the run that also rebuilt
-verso from the fork after a `lakefile.toml` change took **13m23s**. Locally, with
-a warm closure, `lake build LaxBlueprint` is about **6 minutes** for 9050 jobs.
+**Measured build costs.** A publish takes **11–13½ minutes**; locally, with a
+warm closure, `lake build LaxBlueprint` is about **6–7 minutes** for 9050 jobs.
 If a run looks like heading for 90 minutes, something has put
 `LJF/OFuelPFam.lean` back in the import closure — see §5.
+
+*Do not attribute variation inside that range to the CI cache.* An earlier
+version of this file explained an 11 → 13½ minute difference as a cache miss
+after a `lakefile.toml` edit. That was a guess dressed as a measurement. The
+cache situation, checked against the API on 2026-09-06:
+
+| cache | size | from |
+|---|---|---|
+| `lake-Linux-X64-…` ×4 | 2.59 GB each | `lean_action_ci.yml`, duplicated across two branches |
+| `Linux-lake-packages-v1-…` | 2.68 GB | the Pages workflow |
+| `Linux-lean-build-v1-…` | **0.07 GB** | the Pages workflow |
+
+Total **13.11 GB against a 10 GB quota**, so eviction is continuous and the four
+near-duplicate CI caches occupy 79% of it. The Pages caches do exist — the
+prover-toolkit agent's report that they never persist is too strong — but the
+Lean build cache is only 70 MB, because the cached paths (`.lake/build/lib`,
+`.lake/build/ir`) cover the root package's own oleans and not `.lake/packages`.
+So it carries far less than its name suggests. Treat CI timings as a range and
+do not reason from warm-versus-cold.
 
 **The one fact that shapes this job:** `frjw-dev` moves several commits a day.
 It went eleven commits ahead within hours of the last merge. Any list of
