@@ -44,11 +44,11 @@ The latch.
 A signal high throughout a closed interval.
 :::
 
-:::definition "Theta1" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.Θ₁")
+:::definition "Theta1" (parent := "latch") (uses := "During") (lean := "LaxLogic.Obligation.Latch.Θ₁")
 The first NOR gate.
 :::
 
-:::definition "Theta2" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.Θ₂")
+:::definition "Theta2" (parent := "latch") (uses := "During") (lean := "LaxLogic.Obligation.Latch.Θ₂")
 The second NOR gate, the one that joins two signals — hence the `max` and `min`.
 :::
 
@@ -74,14 +74,14 @@ the memory effect.
 Progressiveness of the step relation on an interval.
 :::
 
-:::theorem "ind_sound" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.ind_sound")
+:::theorem "ind_sound" (parent := "latch") (uses := "Prog, During") (lean := "LaxLogic.Obligation.Latch.ind_sound")
 The induction principle, proved rather than assumed.
 :::
 
 The abstract form and its refinement agree by `rfl`, with no axioms — which is
 the coherence check that the abstraction really is the paper's.
 
-:::theorem "indForm_unfold" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.indForm_unfold")
+:::theorem "indForm_unfold" (parent := "latch") (uses := "laxall") (lean := "LaxLogic.Obligation.Latch.indForm_unfold")
 The abstract induction axiom and its refinement into base logic are the same
 proposition.
 :::
@@ -90,7 +90,7 @@ proposition.
 
 Stated conventionally, with the timing constraints as hypotheses:
 
-:::theorem "latch_resets" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.latch_resets")
+:::theorem "latch_resets" (parent := "latch") (uses := "Theta1, Theta2, ind_sound") (lean := "LaxLogic.Obligation.Latch.latch_resets")
 The reset transition: with `rin` held high long enough and at least one gate
 having non-zero inertia, `qout` is permanently low after the propagation delay.
 :::
@@ -100,7 +100,7 @@ having non-zero inertia, `qout` is permanently low after the propagation delay.
 The same derivation, with `postpone` at the two arithmetic side conditions of
 the induction step and nothing else changed:
 
-:::theorem "latch_synth" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.latch_synth")
+:::theorem "latch_synth" (parent := "latch") (uses := "latch_resets, postpone, reduceAtRecord") (lean := "LaxLogic.Obligation.Latch.latch_synth")
 The latch derivation carrying its obligations instead of its hypotheses.
 :::
 
@@ -124,13 +124,13 @@ quantified time on both sides — so it is reported and left, and its reduction 
 `0 < D₂ + D₁`, the **internal memory constraint** that at least one gate has
 non-zero inertia, is the one hand-written right-hand side in the case studies.
 
-:::theorem "obligation2_iff" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.obligation2_iff")
+:::theorem "obligation2_iff" (parent := "latch") (uses := "latch_synth") (lean := "LaxLogic.Obligation.Latch.obligation2_iff")
 The internal memory constraint, reduced by hand because the solver declines it.
 :::
 
 # The two routes agree
 
-:::theorem "latch_resets_synth" (parent := "latch") (lean := "LaxLogic.Obligation.Latch.latch_resets_synth")
+:::theorem "latch_resets_synth" (parent := "latch") (uses := "latch_synth, obligation2_iff") (lean := "LaxLogic.Obligation.Latch.latch_resets_synth")
 Discharging the synthesised obligations recovers the conventional statement: the
 constraint that was derived is the constraint the conventional theorem assumes.
 :::

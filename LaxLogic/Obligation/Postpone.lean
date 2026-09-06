@@ -118,7 +118,7 @@ syntax (name := postponeTac) "postpone" : tactic
 list. Factored out so that `lax_apply` can postpone the obligation goals left
 by applying a holed theorem, through the *same* code path — a second
 implementation would be a second thing to keep correct. -/
-def postponeCore (g : MVarId) : MetaM Unit := do
+def postponeCore (g : MVarId) : TermElabM Unit := do
   let keep := (← binderFVars.get).filterMap (fun e => e.fvarId?)
   -- Revert what the goal reaches, never the declaration's own binders: the
   -- obligation is a statement about THESE parameters, not about all of them.
@@ -142,9 +142,24 @@ def postponeCore (g : MVarId) : MetaM Unit := do
     throwError "postpone: the goal is not a proposition, so it cannot be \
       recorded as an obligation. A hole standing for data rather than a proof \
       is outside this library's scope.\n  goal after reverting: {ty}"
-  let m ← withLCtx {} {} (mkFreshExprMVar ty (kind := .natural) (userName := `obligation))
-  g'.assign m
-  inFlight.modify (·.push m.mvarId!)
+  -- Reduce the constraint HERE, not after the declaration is added: what gets
+  -- recorded should be the solved form, so that unfolding an obligation gives
+  -- the solved constraint and `#obligations` prints it.
+  let reduced ← do
+    match ← reducerHook.get with
+    | none => pure none
+    | some f => try f ty catch _ => pure none
+  match reduced with
+  | some (solved, prf) =>
+      let m ← withLCtx {} {}
+        (mkFreshExprMVar solved (kind := .natural) (userName := `obligation))
+      g'.assign (mkApp prf m)
+      inFlight.modify (·.push m.mvarId!)
+  | none =>
+      let m ← withLCtx {} {}
+        (mkFreshExprMVar ty (kind := .natural) (userName := `obligation))
+      g'.assign m
+      inFlight.modify (·.push m.mvarId!)
 
 @[tactic postponeTac]
 def elabPostpone : Tactic := fun _ => do
@@ -170,7 +185,7 @@ Goals that are *not* registered obligations are left for the caller, exactly as
 `apply` leaves them. -/
 
 /-- Every obligation constant currently known, including imported ones. -/
-private def obligationNames : MetaM NameSet := do
+private def obligationNames : TermElabM NameSet := do
   let mut s : NameSet := {}
   for o in owedEntries (← getEnv) do
     for e in o.obligations do

@@ -1,58 +1,62 @@
 /-
-# Computing the reduced constraints: a `(max, +)` solver
+# Solving the constraint, at the moment it is recorded
 
 `reduce_obligation` *proves* `obligation ↔ n·δ ≤ T`, but somebody has to write
-`n·δ ≤ T` down. That is the last place a human or an agent was still inserting
-the answer, and it is the place where a mistake would go unnoticed: a wrong
-right-hand side that happens to be equivalent is silently accepted, and a wrong
-one that is not equivalent merely fails to compile, having wasted the step.
+`n·δ ≤ T` down, and doing it afterwards leaves the recorded obligation holding
+the raw goal. This module removes both problems: the reduction is **computed**,
+and it happens **as `postpone` records the obligation**, so what the ledger
+holds, what `#obligations` prints, and what the finished statement quantifies
+over is the solved constraint.
 
-This module computes it instead.
+## The fragment, and why the reduction is forced
 
-## The normal form
-
-Every constraint synthesised by this library has the shape
+Every constraint this library synthesises has the shape
 
     ∀ z, A ≤ z → e ≤ z
 
-with `e` built from atoms by `+` and `max` — the two operations of
-`Timing.lean`'s table, and no others, because those are the only two the
-modality's rules introduce. Over that signature:
+with `e` built from atoms by `+` and `max` — those two and no others, because
+`meet` and `image` are the only combinators the modality's rules introduce, and
+on lower bounds they are exactly `max` and `+`. Over that signature the
+reduction is forced, and it is three rewrites:
 
-* `∀ z, A ≤ z → e ≤ z`  reduces to  `e ≤ A`  (the paper's (8) → (9));
-* `+` distributes over `max`: `max a b + c = max (a+c) (b+c)`, so every
-  expression normalises to a **max of sums**;
-* `max` splits on the left of `≤`: `max e₁ e₂ ≤ A ↔ e₁ ≤ A ∧ e₂ ≤ A`.
+* `oblIff` — the quantifier goes by instantiating at its own bound. This is the
+  paper's equation (8) to equation (9) step, the one it justifies with "given
+  such reasoning is built into constraint reductions".
+* `distrR`, `distrL` — `+` distributes over `max`, so `e` normalises to a max of
+  sums.
+* `Nat.max_le` — `max` splits on the left of `≤`.
 
-So the solved form of any such constraint is a **conjunction of linear
-inequalities** — which is what static timing analysis actually wants, one
-inequality per path. `max T tp + δsum ≤ Tclk` becomes
+So the solved form is a **conjunction of linear inequalities**, one per timing
+path, which is what static timing analysis wants and is finer than what a person
+writing the right-hand side by hand usually bothers with: `max T tp + δsum ≤
+Tclk` becomes `T + δsum ≤ Tclk ∧ tp + δsum ≤ Tclk`, naming the two paths.
 
-    T + δsum ≤ Tclk  ∧  tp + δsum ≤ Tclk
+## How the right-hand side is computed
 
-naming the two paths separately.
+Not by a normaliser. The goal `ty ↔ ?rhs` is stated with a **metavariable** on
+the right, `simp only` rewrites the left with the lemmas above, and `Iff.rfl`
+assigns `?rhs` to whatever came out. Nothing states the answer, and there is no
+unverified component to trust: the lemmas are theorems, so the equivalence is
+kernel-checked by construction.
 
-## Why the normaliser need not be verified
+Two things the earlier version got wrong and this one does not. It used `omega`
+as the certifier, and `omega` normalises `max` by a classical case split, so
+every constraint arising from a parallel join carried `Classical.choice`; the
+three lemmas here are `[propext]` at worst. And it ran after the declaration was
+added, so the obligation constant kept the raw form; this runs at `postpone`.
 
-It is a *search* device, in the sense this repository already uses for proof and
-countermodel discovery: it proposes the right-hand side, and `omega` certifies
-the resulting `↔` against the kernel. A bug in the normaliser cannot produce an
-unsound theorem; it can only produce one `omega` refuses to prove, which is a
-build failure. Nothing here is trusted.
+The two passes are not cosmetic: `simp` rewrites innermost-first, so splitting
+the `max` first would destroy the pattern `oblIff` matches.
 
-## What is automated, and what is not
+## What is still emitted afterwards
 
-`solve_obligations d` emits, for a declaration `d` built by
-`postponing theorem`:
+`solve_obligations d`, and the `postponing theorem` hook, add
+`d_debt : ∀ binders, Debt (⋀ᵢ obligationᵢ) <d's conclusion>` — the `C ⊃ φ` form
+over the whole constraint set, which discharges at a model with one `omega`.
 
-* `d.obligationᵢ_solved : ∀ binders, d.obligationᵢ … ↔ <computed>` for each
-  obligation, including the ones `lax_apply` borrowed from other modules;
-* `d_debt : ∀ binders, Debt (⋀ᵢ <computed>) <d's conclusion>` — the `C ⊃ φ`
-  form, with `C` the whole computed constraint set.
-
-Nothing is written by hand. An obligation whose shape is outside the fragment is
-reported and left alone; it still appears in the `Debt` fold, unreduced, so the
-statement stays true and the gap is visible rather than silent.
+An obligation outside the fragment is left alone; it still appears in the fold,
+so the statement stays true and the gap is visible rather than silent. The
+latch's internal memory constraint is the standing example.
 -/
 
 import LaxLogic.Obligation.Postpone
@@ -63,75 +67,6 @@ namespace LaxLogic.Obligation.Solve
 open Lean Meta Elab Command Term
 open LaxLogic.Obligation
 
-/-! ## The normal form -/
-
-/-- A sum: a multiset of atoms plus a constant. The `max`-free part of a
-`(max, +)` expression. -/
-structure Summand where
-  /-- The non-literal factors, in source order. -/
-  atoms : Array Expr
-  /-- The accumulated literal. -/
-  const : Nat
-  deriving Inhabited
-
-/-- Combine two summands: `(as, c) + (bs, d) = (as ++ bs, c + d)`. -/
-def Summand.add (a b : Summand) : Summand :=
-  { atoms := a.atoms ++ b.atoms, const := a.const + b.const }
-
-/-- Rebuild a summand as an expression: `a₁ + ⋯ + aₙ + c`, dropping a zero
-constant unless there is nothing else. -/
-def Summand.toExpr (s : Summand) : MetaM Expr := do
-  let lit := mkNatLit s.const
-  if s.atoms.isEmpty then return lit
-  let mut e := s.atoms[0]!
-  for a in s.atoms[1:] do
-    e ← mkAppM ``HAdd.hAdd #[e, a]
-  if s.const == 0 then return e
-  mkAppM ``HAdd.hAdd #[e, lit]
-
-/-- Normalise a `(max, +)` expression to a **max of sums**.
-
-`+` distributes over `max`, so the result is the cross product of the operands'
-normal forms; `max` is their union; a literal is a constant summand; anything
-else is an opaque atom. Unrecognised structure is therefore safe — it becomes an
-atom, and the worst that happens is a coarser constraint that `omega` may not
-certify. -/
-partial def normMP (e₀ : Expr) : MetaM (Array Summand) := do
-  -- `whnfCore` reduces projections and beta/iota redexes without unfolding
-  -- definitions, so `(a, b).snd` becomes `b` while `k * δ` is left alone.
-  let e ← whnfCore e₀
-  if let some n := e.nat? then
-    return #[{ atoms := #[], const := n }]
-  match e.getAppFnArgs with
-  | (``HAdd.hAdd, #[_, _, _, _, a, b]) => do
-      let as ← normMP a
-      let bs ← normMP b
-      let mut out : Array Summand := #[]
-      for x in as do
-        for y in bs do
-          out := out.push (x.add y)
-      return out
-  | (``Max.max, #[_, _, a, b]) => return (← normMP a) ++ (← normMP b)
-  | (``Nat.max, #[a, b])       => return (← normMP a) ++ (← normMP b)
-  -- Projection *functions* need delta, which `whnfCore` will not do; the two
-  -- that occur here are worth handling by hand rather than opening the door to
-  -- unfolding arithmetic and printing `Nat.mul k δ` back at the reader.
-  | (``Prod.fst, #[_, _, p]) =>
-      match p.getAppFnArgs with
-      | (``Prod.mk, #[_, _, x, _]) => normMP x
-      | _ => return #[{ atoms := #[e], const := 0 }]
-  | (``Prod.snd, #[_, _, p]) =>
-      match p.getAppFnArgs with
-      | (``Prod.mk, #[_, _, _, y]) => normMP y
-      | _ => return #[{ atoms := #[e], const := 0 }]
-  | _ => return #[{ atoms := #[e], const := 0 }]
-
-/-- Match `a ≤ b` at any type, returning the two sides. -/
-def matchLe? (e : Expr) : Option (Expr × Expr) :=
-  match e.getAppFnArgs with
-  | (``LE.le, #[_, _, a, b]) => some (a, b)
-  | _ => none
-
 /-- Right-nested conjunction of a non-empty array; `True` if empty. -/
 def mkConj (cs : Array Expr) : MetaM Expr := do
   if cs.isEmpty then return mkConst ``True
@@ -140,43 +75,70 @@ def mkConj (cs : Array Expr) : MetaM Expr := do
     e ← mkAppM ``And #[c, e]
   return e
 
-/-- The solved form of one obligation, or `none` if it is outside the fragment.
+/-! ## The reduction, as rewrite rules
 
-Expects `∀ z, A ≤ z → e ≤ z` (after reducible unfolding, which is what turns
-`from_ e z` into `e ≤ z`), and returns `⋀ sᵢ ≤ A` over the normal form of `e`.
-Duplicate paths are removed. -/
-def solvedForm (ty : Expr) : MetaM (Option Expr) := do
-  forallTelescopeReducing ty fun xs body => do
-    unless xs.size == 2 do return none
-    let z := xs[0]!
-    let h := xs[1]!
-    let hty ← whnfR (← inferType h)
-    let some (a, z') := matchLe? hty | return none
-    let a ← whnfCore a
-    let a ← match a.getAppFnArgs with
-      | (``Prod.fst, #[_, _, p]) =>
-          match p.getAppFnArgs with
-          | (``Prod.mk, #[_, _, x, _]) => pure x
-          | _ => pure a
-      | (``Prod.snd, #[_, _, p]) =>
-          match p.getAppFnArgs with
-          | (``Prod.mk, #[_, _, _, y]) => pure y
-          | _ => pure a
-      | _ => pure a
-    unless z' == z do return none
-    let body ← whnfR body
-    let some (lhs, z'') := matchLe? body | return none
-    unless z'' == z do return none
-    -- `A` and the left-hand side must not mention the bound time.
-    let zid := z.fvarId!
-    if a.hasAnyFVar (· == zid) || lhs.hasAnyFVar (· == zid) then return none
-    let sums ← normMP lhs
-    let mut cs : Array Expr := #[]
-    for s in sums do
-      let se ← s.toExpr
-      let c ← mkAppM ``LE.le #[se, a]
-      unless cs.any (· == c) do cs := cs.push c
-    return some (← mkConj cs)
+Three lemmas, and they are the whole solver.  Each is `[propext]` at worst, so
+a constraint reduced by them carries no `Classical.choice` — which the previous
+route, `omega`, could not manage, because it normalises `max` by a classical
+case split. -/
+
+/-- **The paper's (8) → (9)**: a constraint universally quantified over a time,
+with a lower bound as its hypothesis, is equivalent to the bound instantiated at
+itself.  Depends on no axioms. -/
+theorem oblIff (A e : Nat) : (∀ z, A ≤ z → e ≤ z) ↔ e ≤ A :=
+  ⟨fun h => h A (Nat.le_refl A), fun h _ hz => Nat.le_trans h hz⟩
+
+/-- `+` distributes over `max` on the right. -/
+theorem distrR (a b c : Nat) : max a b + c = max (a + c) (b + c) := by
+  rcases Nat.le_total a b with h | h
+  · rw [Nat.max_eq_right h, Nat.max_eq_right (Nat.add_le_add_right h c)]
+  · rw [Nat.max_eq_left h, Nat.max_eq_left (Nat.add_le_add_right h c)]
+
+/-- And on the left. -/
+theorem distrL (a b c : Nat) : c + max a b = max (c + a) (c + b) := by
+  rcases Nat.le_total a b with h | h
+  · rw [Nat.max_eq_right h, Nat.max_eq_right (Nat.add_le_add_left h c)]
+  · rw [Nat.max_eq_left h, Nat.max_eq_left (Nat.add_le_add_left h c)]
+
+/-- Compute the solved form of a constraint **into a metavariable**, together
+with the equivalence that certifies it.
+
+Nothing states the right-hand side.  The goal `ty ↔ ?rhs` is rewritten by the
+three lemmas above — first the quantifier step, then the distribution and the
+`max` split, which must be a second pass because `simp` rewrites innermost-first
+and would otherwise destroy the pattern `oblIff` matches — and `Iff.rfl` then
+assigns `?rhs` to whatever came out.
+
+`none` means the shape is outside the fragment and nothing was reduced. -/
+def reduceIff (ty : Expr) : TermElabM (Option (Expr × Expr)) := do
+  let rhs ← mkFreshExprMVar (mkSort .zero)
+  let goal ← mkAppM ``Iff #[ty, rhs]
+  let tac ← `(term|
+    by
+      try simp only [LaxLogic.Obligation.Timing.from_, LaxLogic.Obligation.Solve.oblIff]
+      try simp only [LaxLogic.Obligation.Solve.distrR, LaxLogic.Obligation.Solve.distrL,
+        Nat.max_le]
+      exact Iff.rfl)
+  let prf ←
+    try
+      let e ← Term.elabTermEnsuringType tac goal
+      Term.synthesizeSyntheticMVarsNoPostponing
+      pure (some e)
+    catch _ => pure none
+  match prf with
+  | none => return none
+  | some prf =>
+      let solved ← instantiateMVars rhs
+      -- Nothing was achieved, or the hole survived: treat as out of fragment.
+      if solved.hasExprMVar || solved == (← instantiateMVars ty) then return none
+      return some (solved, ← instantiateMVars prf)
+
+/-- The reducer `postpone` calls as it records: the solved proposition, and a
+proof that it implies the goal. -/
+def reduceAtRecord (ty : Expr) : TermElabM (Option (Expr × Expr)) := do
+  match ← reduceIff ty with
+  | none => return none
+  | some (solved, iff) => return some (solved, ← mkAppM ``Iff.mpr #[iff])
 
 /-! ## The command -/
 
@@ -231,80 +193,51 @@ emits `pipeline_meets_clock.obligationᵢ_solved` for each `i`, and
 `pipeline_meets_clock_debt`. -/
 syntax (name := solveObligationsCmd) "solve_obligations" ident : command
 
-/-- Solve and fold the obligations of `declName`. The command and the
-`postponing theorem` hook both call this. -/
+/-- Fold a declaration's obligations into the single implication `C ⊃ φ`.
+
+The obligations are already in solved form — `postpone` reduced each as it
+recorded it — so there is nothing left to compute here. What this adds is the
+fold: `d_debt : ∀ binders, Debt (⋀ᵢ obligationᵢ) <d's conclusion>`, which is the
+form a reader wants and the form that discharges at a constraint model with one
+call to `omega`. -/
 def solveFor (declName : Name) : CommandElabM Unit := do
-      let env ← getEnv
-      let some owed := (owedEntries env).find? (·.decl == declName)
-        | throwError "solve_obligations: {declName} is not in the obligation \
-            ledger; was it built with `postponing theorem`?"
-      let mut solvedNames : Array (Name × Option Expr) := #[]
-      let mut nBinders := 0
-      for e in owed.obligations do
-        let sName := e.name.appendAfter "_solved"
-        -- `e.type` is `fun binders => ty`.
-        let r ← liftTermElabM <| lambdaTelescope e.type fun bs ty => do
-          match ← solvedForm ty with
-          | none => pure (bs.size, none)
-          | some rhs => do
-              let info ← getConstInfo e.name
-              let ob := mkAppN (mkConst e.name (info.levelParams.map mkLevelParam)) bs
-              let stmt ← mkForallFVars bs (← mkAppM ``Iff #[ob, rhs])
-              pure (bs.size, some (stmt, ← mkLambdaFVars bs rhs))
-        nBinders := r.1
-        let r := r.2
-        match r with
-        | none =>
-            logWarning m!"solve_obligations: {e.name} is outside the \
-              (max, +) fragment; left unreduced"
-            solvedNames := solvedNames.push (sName, none)
-        | some (stmt, rhsAbs) =>
-            addCertified sName stmt
-            checkAdded sName
-            solvedNames := solvedNames.push (sName, some rhsAbs)
-      -- The `Debt` fold.
-      liftTermElabM do
-        let info ← getConstInfo declName
-        let n := owed.obligations.size
-        -- Bounded: the declaration's conclusion may itself be a `∀`, and an
-        -- unbounded telescope would swallow it (the latch's does).
-        forallBoundedTelescope info.type (some (nBinders + n)) fun xs goal => do
-          let bs := xs.extract 0 nBinders
-          let hs := xs.extract nBinders xs.size
-          let mut cs : Array Expr := #[]
-          for i in [0 : n] do
-            match solvedNames[i]!.2 with
-            | some rhsAbs => cs := cs.push (← instantiateLambda rhsAbs bs)
-            | none        => cs := cs.push (← inferType hs[i]!)
-          let conj ← mkConj cs
-          let dName := declName.appendAfter "_debt"
-          let stmt ← mkForallFVars bs (← mkAppM ``Debt #[conj, goal])
-          -- Proof: intro the conjunction, project, transport through each
-          -- `_solved` equivalence, apply the declaration.
-          let val ← withLocalDeclD `hc conj fun hc => do
-            let mut args : Array Expr := #[]
-            let mut rest := hc
-            for i in [0 : n] do
-              let comp ← if i + 1 == n then pure rest else mkAppM ``And.left #[rest]
-              if i + 1 != n then
-                rest ← mkAppM ``And.right #[rest]
-              match solvedNames[i]!.2 with
-              | none => args := args.push comp
-              | some _ =>
-                  let sInfo ← getConstInfo solvedNames[i]!.1
-                  let iff := mkAppN (mkConst solvedNames[i]!.1
-                    (sInfo.levelParams.map mkLevelParam)) bs
-                  args := args.push (← mkAppM ``Iff.mpr #[iff, comp])
-            let body := mkAppN (mkConst declName (info.levelParams.map mkLevelParam))
-              (bs ++ args)
-            mkLambdaFVars bs (← mkLambdaFVars #[hc] body)
-          let stmt ← instantiateMVars (← Term.levelMVarToParam stmt)
-          let val ← instantiateMVars (← Term.levelMVarToParam val)
-          let ps := (collectLevelParams (collectLevelParams {} stmt) val).params
-          addDecl (.thmDecl {
-            name := dName, levelParams := ps.toList, type := stmt, value := val })
-          logInfo m!"solve_obligations {declName}: {n} solved, folded into {dName}"
-      checkAdded (declName.appendAfter "_debt")
+  let env ← getEnv
+  let some owed := (owedEntries env).find? (·.decl == declName)
+    | throwError "solve_obligations: {declName} is not in the obligation \
+        ledger; was it built with `postponing theorem`?"
+  let n := owed.obligations.size
+  if n == 0 then return
+  let nBinders ← liftTermElabM <|
+    lambdaTelescope owed.obligations[0]!.type fun bs _ => pure bs.size
+  liftTermElabM do
+    let info ← getConstInfo declName
+    -- Bounded: the declaration's conclusion may itself be a `∀`, and an
+    -- unbounded telescope would swallow it (the latch's does).
+    forallBoundedTelescope info.type (some (nBinders + n)) fun xs goal => do
+      let bs := xs.extract 0 nBinders
+      let hs := xs.extract nBinders xs.size
+      let cs ← hs.mapM (fun h => inferType h)
+      let conj ← mkConj cs
+      let dName := declName.appendAfter "_debt"
+      let stmt ← mkForallFVars bs (← mkAppM ``Debt #[conj, goal])
+      let val ← withLocalDeclD `hc conj fun hc => do
+        let mut args : Array Expr := #[]
+        let mut rest := hc
+        for i in [0 : n] do
+          let comp ← if i + 1 == n then pure rest else mkAppM ``And.left #[rest]
+          if i + 1 != n then
+            rest ← mkAppM ``And.right #[rest]
+          args := args.push comp
+        let body := mkAppN (mkConst declName (info.levelParams.map mkLevelParam))
+          (bs ++ args)
+        mkLambdaFVars bs (← mkLambdaFVars #[hc] body)
+      let stmt ← instantiateMVars (← Term.levelMVarToParam stmt)
+      let val ← instantiateMVars (← Term.levelMVarToParam val)
+      let ps := (collectLevelParams (collectLevelParams {} stmt) val).params
+      addDecl (.thmDecl {
+        name := dName, levelParams := ps.toList, type := stmt, value := val })
+      logInfo m!"{declName}: {n} obligation(s) folded into {dName}"
+  checkAdded (declName.appendAfter "_debt")
 
 @[command_elab solveObligationsCmd]
 def elabSolveObligations : CommandElab := fun stx => do
@@ -320,5 +253,12 @@ def elabSolveObligations : CommandElab := fun stx => do
 that records obligations gets its reduced forms and its `Debt` fold in the same
 step, with nothing for the author to write. -/
 initialize solverHook.set (some solveFor)
+
+/-- And register the reducer, so that what `postpone` records is the **solved**
+constraint rather than the raw goal. This is the difference between solving as
+an afterthought and solving at the point the obligation comes into existence:
+with it, unfolding an obligation gives the solved form, `#obligations` prints
+it, and the `Debt` fold is over it. -/
+initialize reducerHook.set (some reduceAtRecord)
 
 end LaxLogic.Obligation.Solve

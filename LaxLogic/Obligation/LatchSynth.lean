@@ -44,6 +44,7 @@ import LaxLogic.Obligation.Latch
 import LaxLogic.Obligation.Postpone
 import LaxLogic.Obligation.Conservativity
 import LaxLogic.Obligation.Tactics
+import LaxLogic.Obligation.Solve
 
 namespace LaxLogic.Obligation.Latch
 
@@ -90,7 +91,8 @@ merely implied by it: the latch resets exactly when `r_in` is held high for
 theorem obligation1_iff :
     latch_synth.obligation1 rin sin qout qbar d₁ d₂ D₁ D₂ sa ta h1 h2 h3 hp1 hp2
       ↔ sa + 2 * d₁ + d₂ ≤ ta + D₁ := by
-  reduce_obligation
+  -- `omega` on an `Iff` goal reasons classically; splitting it first does not.
+  constructor <;> intro h <;> omega
 
 /-- The same for the second constraint: the **internal memory constraint**, that
 at least one of the two gates has non-zero inertia. -/
@@ -125,6 +127,10 @@ info: conservativity audit passed for 1 declaration(s); base-theory axioms only:
 -/
 #guard_msgs in
 #obligations_audit
+
+/-- info: 'LaxLogic.Obligation.Latch.obligation1_iff' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in
+#print axioms obligation1_iff
 
 /-- info: 'LaxLogic.Obligation.Latch.latch_resets_synth' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in

@@ -238,17 +238,20 @@ postponing theorem bal_meets_cycle
   refine laxAll_mono (fun z (hz : T ≤ z) => ?_) (bal_ready hm hleaf k)
   postpone   -- becomes the CYCLE-TIME constraint
 
-/-! ## 7. The synthesised constraints, reduced — by machine
+/-! ## 7. The synthesised constraints are already reduced
 
-Nothing below states what the constraints reduce to. `Solve.lean` computes it
-from the obligation and `omega` certifies the result, so `postponing theorem`
-above has already emitted
+Nothing below states what the constraints reduce to, and nothing reduces them
+either: `postpone` solved each one **as it recorded it**, so what the ledger
+holds and what the statements quantify over is
 
-    ripple_meets_cycle.obligation1_solved : … ↔ n * δ ≤ T
-    bal_meets_cycle.obligation1_solved    : … ↔ k * δ ≤ T
+    ripple_meets_cycle.obligation1 … = (n * δ ≤ T)
+    bal_meets_cycle.obligation1 …    = (k * δ ≤ T)
 
-together with `ripple_meets_cycle_debt` and `bal_meets_cycle_debt`, the `C ⊃ φ`
-forms. What used to be a hand-written right-hand side is now output. -/
+That is why the refutation below needs no equivalence to rewrite through: it
+unfolds the obligation constant and decides. The constant has to be *named* —
+being `@[reducible]` is enough for `whnfR` but not for `simp` or `decide` — but
+its right-hand side never is. `postponing theorem` also emitted
+`ripple_meets_cycle_debt` and `bal_meets_cycle_debt`, the `C ⊃ φ` forms. -/
 
 /-- Discharging the ripple's obligation recovers the conventional statement, in
 which the timing constraint is a hypothesis. The derived and the assumed
@@ -289,7 +292,7 @@ theorem ripple32_obligation_false
     (hnet : RippleNet Cy Pr PLLND.dCARRY)
     (hcin : ◯∀[from_ 0] (Cy 0)) (hp : ◯∀[from_ 0] Pr) :
     ¬ ripple_meets_cycle.obligation1 Cy Pr PLLND.dCARRY 32 1000 hnet hcin hp := by
-  rw [ripple_meets_cycle.obligation1_solved]
+  simp only [ripple_meets_cycle.obligation1]
   decide
 
 /-- **Step 2 — restructure.** The balanced fold over the same `2⁵ = 32` leaves
@@ -304,7 +307,7 @@ theorem lookahead32_obligation_holds
     (Gp : Refined Nat) (hm : MergeNet Gp PLLND.Lookahead.dMERGE)
     (hleaf : ◯∀[from_ 0] Gp) :
     bal_meets_cycle.obligation1 Gp PLLND.Lookahead.dMERGE 5 1000 hm hleaf := by
-  rw [bal_meets_cycle.obligation1_solved]
+  simp only [bal_meets_cycle.obligation1]
   decide
 
 /-- **The design decision, kernel-checked.** At 32 bits in a 1 ns cycle the

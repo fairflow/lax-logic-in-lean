@@ -40,16 +40,16 @@ Notation `◯∀[p] M` and `◯∃[p] M` is used throughout.  The rules the orig
 paper derives from Fig. 4 are here ordinary theorems, and the two that do the
 work in every example are the conjunction and implication rules.
 
-:::theorem "laxall_meet" (parent := "mach_modal") (lean := "LaxLogic.Obligation.laxAll_meet")
+:::theorem "laxall_meet" (parent := "mach_modal") (uses := "laxall") (lean := "LaxLogic.Obligation.laxAll_meet")
 The rule `◯∧`: constraints on a shared witness combine by conjunction.
 :::
 
-:::theorem "laxall_image" (parent := "mach_modal") (lean := "LaxLogic.Obligation.laxAll_image")
+:::theorem "laxall_image" (parent := "mach_modal") (uses := "laxall") (lean := "LaxLogic.Obligation.laxAll_image")
 The rule `◯⊃`: a constraint propagates through a component along the direct
 image of the component's refinement part.
 :::
 
-:::theorem "laxall_mono" (parent := "mach_modal") (lean := "LaxLogic.Obligation.laxAll_mono")
+:::theorem "laxall_mono" (parent := "mach_modal") (uses := "laxall") (lean := "LaxLogic.Obligation.laxAll_mono")
 `◯∀` is antitone in the constraint.  Every synthesised constraint in the case
 studies below arises as the side condition of one application of this rule: the
 offset between what a stage delivers and what the next demands.
@@ -57,14 +57,14 @@ offset between what a stage delivers and what the next demands.
 
 The one-witness case is the one the tactic machinery uses.
 
-:::definition "debt" (parent := "mach_modal") (lean := "LaxLogic.Obligation.Debt")
+:::definition "debt" (parent := "mach_modal") (uses := "laxall") (lean := "LaxLogic.Obligation.Debt")
 `Debt C A` is `A` modulo the outstanding constraint `C`.
 :::
 
 Read epistemically, `Debt C A` is the open nucleus of the repository's belief
 development, and this holds by `rfl` rather than by analogy.
 
-:::theorem "debt_nucleus" (parent := "mach_modal") (lean := "LaxLogic.Obligation.debt_eq_openNucleus")
+:::theorem "debt_nucleus" (parent := "mach_modal") (uses := "debt") (lean := "LaxLogic.Obligation.debt_eq_openNucleus")
 An obligation is a hypothetical belief: if the constraint were known, the belief
 in the claim would convert to knowledge; if the constraint is false, the belief
 is vacuous.
@@ -94,7 +94,7 @@ a complete, sorry-free theorem about a weaker statement, whose axioms are those
 of its finished parts.  In Mendler's notation from his thesis this is
 `weak [γₙ, …, γ₁] φ`, the constraint applied by iterated implication.
 
-:::definition "postpone" (parent := "mach_tactic") (lean := "LaxLogic.Obligation.postponeCore")
+:::definition "postpone" (parent := "mach_tactic") (uses := "debt") (lean := "LaxLogic.Obligation.postponeCore")
 The whole of `postpone`, on an explicit goal.  Factored out so that `lax_apply`
 can reuse it rather than reimplement it.
 :::
@@ -103,12 +103,12 @@ can reuse it rather than reimplement it.
 The tactic and the ledger.
 :::
 
-:::definition "weak" (parent := "mach_tactic") (lean := "LaxLogic.Obligation.weak")
+:::definition "weak" (parent := "mach_tactic") (uses := "debt") (lean := "LaxLogic.Obligation.weak")
 Mendler's `weak`: a constraint is a list of propositions, applied by iterated
 implication.  The unit is the empty list and composition is append.
 :::
 
-:::theorem "weak_append" (parent := "mach_tactic") (lean := "LaxLogic.Obligation.weak_append")
+:::theorem "weak_append" (parent := "mach_tactic") (uses := "weak") (lean := "LaxLogic.Obligation.weak_append")
 The monoid law of Mendler's triple.  This is why obligations from different
 holes, and from different modules, combine by concatenating ledgers.
 :::

@@ -111,12 +111,12 @@ A 32-bit block is a depth-5 tree, `treeGates 5 = 31` merge cells. -/
 /-- Thirty-one cells fit a forty-cell budget. -/
 theorem tree32_fits (Tree : Refined Nat) (hbuild : ◯∀[atLeast (treeGates 5)] Tree) :
     ◯∀[atLeast 40] Tree :=
-  tree_within_budget_debt Tree 5 40 hbuild (by decide)
+  tree_within_budget_debt Tree 5 40 hbuild (by simp only [tree_within_budget.obligation1]; decide)
 
 /-- And they do not fit a thirty-cell budget: **refuted**, not unproved. -/
 theorem tree32_too_big (Tree : Refined Nat) (hbuild : ◯∀[atLeast (treeGates 5)] Tree) :
     ¬ tree_within_budget.obligation1 Tree 5 30 hbuild := by
-  rw [tree_within_budget.obligation1_solved]
+  simp only [tree_within_budget.obligation1]
   decide
 
 /-- Cost adds across separate pools: two 32-bit blocks are 62 cells, and the
@@ -135,18 +135,12 @@ certified without `Classical.choice`. That contrast is the reason both models
 are in the repository. -/
 
 /--
-info: 'LaxLogic.Obligation.Budget.tree_within_budget.obligation1_solved' depends on axioms: [propext, Quot.sound]
--/
-#guard_msgs in
-#print axioms tree_within_budget.obligation1_solved
-
-/--
-info: 'LaxLogic.Obligation.Budget.tree_within_budget_debt' depends on axioms: [propext, Quot.sound]
+info: 'LaxLogic.Obligation.Budget.tree_within_budget_debt' depends on axioms: [propext]
 -/
 #guard_msgs in
 #print axioms tree_within_budget_debt
 
-/-- info: 'LaxLogic.Obligation.Budget.tree32_fits' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'LaxLogic.Obligation.Budget.tree32_fits' depends on axioms: [propext] -/
 #guard_msgs in
 #print axioms tree32_fits
 

@@ -45,11 +45,11 @@ caller's binders — so the following hold by `rfl` and depend on **no axioms**.
 Borrowing.
 :::
 
-:::theorem "borrowed_is_bal" (parent := "mod_borrow") (lean := "LaxLogic.Obligation.Modular.borrowed_is_bal")
+:::theorem "borrowed_is_bal" (parent := "mod_borrow") (uses := "postpone, weak_append, bal_meets_cycle") (lean := "LaxLogic.Obligation.Modular.borrowed_is_bal")
 The datapath's first obligation *is* the adder block's own obligation.
 :::
 
-:::theorem "borrowed_is_datapath" (parent := "mod_borrow") (lean := "LaxLogic.Obligation.Modular.borrowed_is_datapath")
+:::theorem "borrowed_is_datapath" (parent := "mod_borrow") (uses := "borrowed_is_bal, datapath") (lean := "LaxLogic.Obligation.Modular.borrowed_is_datapath")
 And the pipeline's first obligation is the datapath's first, which is the
 block's: borrowing composes transitively.
 :::

@@ -60,47 +60,79 @@ T + δsum ≤ Tclk  ∧  tp + δsum ≤ Tclk
 naming the two paths separately, where the hand-written version said
 `max T tp + δsum ≤ Tclk`.
 
-# The normaliser is not verified, and does not need to be
+# The reduction is three rewrite lemmas
 
-`Solve.lean` computes the right-hand side by ordinary metaprogramming over
-`Expr`.  It is a _search_ device in the sense this repository already uses for
-proof and countermodel discovery: it proposes the reduced form, and `omega`
-certifies the resulting equivalence against the kernel.  A bug in the
-normaliser cannot produce an unsound theorem.  It can only produce one `omega`
-refuses to prove, which is a build failure.
-
-Two hazards were guarded explicitly.  Generated theorems go through the ordinary
-`theorem` elaborator rather than `addDecl`, whose `addAsAxiom` fallback
-silently axiomatises anything that fails to check; and each result is then
-confirmed to be a theorem before the command returns.
-
-# It runs by itself
-
-A command the author has to invoke is still a place where the author supplies
-something.  `postponing theorem` therefore runs the solver as each declaration
-is recorded, through a hook that is inert unless the solver module is imported.
-The reduced forms and the `C ⊃ φ` fold are output, not input:
+There is no normaliser.  The three steps above are three theorems, and the
+solved form is computed by rewriting with them:
 
 :::group "solve"
 The solver and the tactics around it.
 :::
 
-:::definition "normmp" (parent := "solve") (lean := "LaxLogic.Obligation.Solve.normMP")
-Normalise a `(max, +)` expression to a max of sums.
+:::definition "oblIff" (parent := "solve") (lean := "LaxLogic.Obligation.Solve.oblIff")
+The (8) to (9) step: a constraint universally quantified over a time, with a
+lower bound as its hypothesis, is the bound instantiated at itself.  Depends on
+no axioms.
 :::
 
-:::definition "solvedform" (parent := "solve") (lean := "LaxLogic.Obligation.Solve.solvedForm")
-The solved form of one obligation, or nothing if it is outside the fragment.
+:::definition "distrR" (parent := "solve") (uses := "oblIff") (lean := "LaxLogic.Obligation.Solve.distrR")
+`+` distributes over `max` on the right.
 :::
 
-:::definition "solvefor" (parent := "solve") (lean := "LaxLogic.Obligation.Solve.solveFor")
-Solve and fold the obligations of a declaration.  Called by the
-`solve_obligations` command and by `postponing theorem` itself.
+:::definition "distrL" (parent := "solve") (uses := "oblIff") (lean := "LaxLogic.Obligation.Solve.distrL")
+And on the left.
 :::
 
-For a declaration `d` this emits `d.obligationᵢ_solved` for each obligation —
-including ones `lax_apply` borrowed transitively — and `d_debt`, the single
-implication over the whole computed constraint set.
+# The right-hand side is computed, not written
+
+`simp only` with those lemmas rewrites the left of `ty ↔ ?rhs`, and `Iff.rfl`
+assigns the **metavariable** on the right to whatever came out.  Nothing states
+the answer, and nothing unverified is trusted: the lemmas are theorems, so the
+equivalence is kernel-checked by construction.
+
+:::definition "reduceIff" (parent := "solve") (uses := "oblIff, distrR, distrL") (lean := "LaxLogic.Obligation.Solve.reduceIff")
+Compute the solved form into a metavariable, with the equivalence that certifies
+it.
+:::
+
+The two passes are not cosmetic.  `simp` rewrites innermost-first, so splitting
+the `max` before instantiating the quantifier would destroy the pattern the
+first lemma matches.
+
+# When the solving happens
+
+At the moment the obligation is recorded, not afterwards.  That is the
+difference between the solved form being an extra theorem about the obligation
+and the solved form *being* the obligation:
+
+:::definition "reduceAtRecord" (parent := "solve") (uses := "reduceIff, postpone") (lean := "LaxLogic.Obligation.Solve.reduceAtRecord")
+The reducer `postpone` calls as it records — the solved proposition, and a proof
+that it implies the goal.
+:::
+
+So `#obligations` prints `n * δ ≤ T`, the finished statement quantifies over
+`n * δ ≤ T`, and unfolding the obligation constant gives `n * δ ≤ T`.  A
+borrowed obligation is left verbatim, which costs nothing, because the callee's
+obligation was itself solved when *it* was recorded.
+
+:::definition "solvefor" (parent := "solve") (uses := "reduceAtRecord, debt") (lean := "LaxLogic.Obligation.Solve.solveFor")
+What still runs afterwards: the fold of a declaration's obligations into the
+single implication `C ⊃ φ`.
+:::
+
+# No `Classical.choice`
+
+An earlier version certified with `omega`, which normalises `max` by a classical
+case split, so every constraint arising from a parallel join carried
+`Classical.choice`.  The three lemmas are `[propext]` at worst, so the reduced
+constraints are clean and the contrast that used to be recorded here has gone
+with its cause.
+
+What remains is a different job: *discharging* a whole constraint set at a
+model is still one call to `omega`, and where that goal contains a `max` the
+classical split is still there.  That is a general-purpose decision procedure
+applied to concrete arithmetic, not part of the mechanism, and it is pinned
+where it occurs.
 
 # Outside the fragment
 
@@ -114,26 +146,15 @@ is still supplied by a person.
 
 # The two remaining tactics
 
-:::definition "reduce_obligation" (parent := "solve") (lean := "LaxLogic.Obligation.reduceObligationTac")
+:::definition "reduce_obligation" (parent := "solve") (uses := "oblIff") (lean := "LaxLogic.Obligation.reduceObligationTac")
 The (8) to (9) step as a tactic, for the cases a person states by hand.
 :::
 
-:::definition "discharge_obligation" (parent := "solve") (lean := "LaxLogic.Obligation.dischargeObligationTac")
+:::definition "discharge_obligation" (parent := "solve") (uses := "solvefor") (lean := "LaxLogic.Obligation.dischargeObligationTac")
 Close a constraint once the delays and the deadline are fixed, so the concrete
 theorem follows from the abstract one by evaluation.
 :::
 
 In practice the `Debt` fold makes the second largely unnecessary: because the
-whole constraint set is presented as one conjunction, a single `omega` closes
-it at a model.
-
-# Where `Classical.choice` enters
-
-`omega` normalises `max` through a classical case split.  So a constraint
-arising from a `meet` — a parallel join, the only source of `max` in this
-calculus — is certified with `Classical.choice`, and one that is not stays at
-`propext` and `Quot.sound`.  Both cases are pinned side by side in the
-development.  This is a property of the certifying tactic, not of the
-mathematics: `Nat.max_le` is `[propext]`, so a certificate built from
-`Nat.le_max_left` and `Nat.add_le_add_right` instead of `omega` would be clean.
-It is recorded as owed work rather than absorbed.
+whole constraint set is presented as one conjunction, a single `omega` closes it
+at a model.

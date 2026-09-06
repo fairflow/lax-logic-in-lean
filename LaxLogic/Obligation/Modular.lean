@@ -251,7 +251,7 @@ theorem pipeline_too_tight (Gp Pb Sum Q : Refined Nat)
     (hbuf : UnitSpec Sum Q 90) :
     ¬ pipeline_meets_clock.obligation3 Gp Pb Sum Q 120 60 90 600 200 700 750 5
         hm hleaf hpb hxor hbuf := by
-  rw [pipeline_meets_clock.obligation3_solved]
+  simp only [pipeline_meets_clock.obligation3]
   decide
 
 /-! ### The earliest schedule
@@ -310,39 +310,29 @@ info: conservativity audit passed for 4 declaration(s); base-theory axioms only:
 #guard_msgs in
 #print axioms pipeline_meets_clock
 
-/-! ### Where `Classical.choice` enters, and why
+/-! ### `Classical.choice` no longer enters
 
-A solved constraint is certified by `omega`, and `omega` normalises `max`
-through a classical case split. So a constraint that came from a `meet` — a
-parallel join, the only source of `max` in this calculus — is certified
-classically, and one that did not is not:
+An earlier version of this file recorded that every constraint arising from a
+`meet` — a parallel join, the only source of `max` here — was certified with
+`Classical.choice`, because the certifying tactic was `omega` and `omega`
+normalises `max` by a classical case split.
 
-* `datapath_meets_clock.obligation1_solved` (`k·δ ≤ T`): `[propext, Quot.sound]`;
-* `datapath_meets_clock.obligation2_solved` (the two paths through the XOR):
-  `[propext, Classical.choice, Quot.sound]`.
+That is fixed. The solver now reduces by three rewrite lemmas instead
+(`Solve.oblIff`, `Solve.distrR`, `Solve.distrL`, with `Nat.max_le`), each at
+`[propext]` or better, and it does so **as `postpone` records the obligation**
+rather than afterwards. So the `max`-carrying constraints of this file are as
+clean as the `max`-free ones, and the contrast that used to be pinned here has
+gone with the cause.
 
-Everything downstream of the second inherits it. This is a property of the
-certifying tactic, not of the mathematics: `Nat.max_le` is `[propext]`, so a
-certificate built from `Nat.le_max_left`/`Nat.add_le_add_right` instead of
-`omega` would be clean. Recorded here rather than papered over, and noted in
-`Solve.lean` as the next increment. -/
-
-/--
-info: 'LaxLogic.Obligation.Modular.datapath_meets_clock.obligation1_solved' depends on axioms: [propext, Quot.sound]
--/
-#guard_msgs in
-#print axioms datapath_meets_clock.obligation1_solved
+What is left is a different job. *Reducing* a constraint is now clean;
+*discharging* a whole constraint set at a model is still one call to `omega`
+(`pipeline_concrete`, `pipeline_earliest`), and `omega` still normalises the
+`max` those goals contain classically. That is a use of a general-purpose
+decision procedure on concrete arithmetic, not part of the mechanism, and it is
+pinned below rather than hidden. -/
 
 /--
-info: 'LaxLogic.Obligation.Modular.datapath_meets_clock.obligation2_solved' depends on axioms: [propext,
- Classical.choice,
- Quot.sound]
--/
-#guard_msgs in
-#print axioms datapath_meets_clock.obligation2_solved
-
-/--
-info: 'LaxLogic.Obligation.Modular.pipeline_meets_clock_debt' depends on axioms: [propext, Classical.choice, Quot.sound]
+info: 'LaxLogic.Obligation.Modular.pipeline_meets_clock_debt' depends on axioms: [propext, Quot.sound]
 -/
 #guard_msgs in
 #print axioms pipeline_meets_clock_debt

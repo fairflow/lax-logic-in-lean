@@ -72,6 +72,21 @@ is not imported the reference is `none` and nothing happens. -/
 initialize solverHook :
     IO.Ref (Option (Name → Elab.Command.CommandElabM Unit)) ← IO.mkRef none
 
+/-- Hook by which `postpone` reduces a constraint **as it records it**.
+
+Solving after the fact leaves the recorded constant holding the raw form, so
+that unfolding an obligation gives the unfolded constraint rather than the
+solved one, and `#obligations` prints the wrong thing. Reducing here instead
+means the obligation *is* the solved constraint, and everything downstream —
+`#obligations`, the fold, an unfolding read off by `simp only` — sees it.
+
+Given the reverted goal `ty`, an implementation returns the solved proposition
+together with a proof that it implies `ty`, or `none` if the shape is outside
+its fragment. `Solve.lean` sets this on import; when it is not imported the
+reference is `none` and `postpone` records the raw goal as before. -/
+initialize reducerHook :
+    IO.Ref (Option (Expr → Elab.TermElabM (Option (Expr × Expr)))) ← IO.mkRef none
+
 /-- Every declaration that owes something, in declaration order. -/
 def owedEntries (env : Environment) : Array Owed :=
   obligationExt.getState env
