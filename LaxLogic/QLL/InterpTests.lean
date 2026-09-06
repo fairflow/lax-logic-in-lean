@@ -34,6 +34,8 @@ def 𝔅 : Model where
   C    := Bool
   fn   := fun _ _ => ()
   atom := fun _ _ c => c = true
+  d₀   := ()
+  c₀   := false
 
 /-- The only valuation there is. -/
 def ρ : String → 𝔅.D := fun _ => ()
@@ -44,6 +46,7 @@ def ρ : String → 𝔅.D := fun _ => ()
 *constraint*, in the report's sense: the set of witnesses it admits. -/
 
 example : Val 𝔅 qf[P] = Bool := rfl
+example : Val 𝔅 qf[⊥] = Unit := rfl
 example : Val 𝔅 qf[◯∀ P] = (Bool → Prop) := rfl
 example : Val 𝔅 qf[◯∃ P] = (Bool → Prop) := rfl
 example : Val 𝔅 qf[∀a. P] = (Unit → Bool) := rfl

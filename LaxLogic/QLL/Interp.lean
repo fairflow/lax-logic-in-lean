@@ -35,6 +35,16 @@ recorded rather than silently made:
 * the report's `∀x::α.M` carries the sort at the binder; here there is one
   domain `D`, so `|∀x.M| = D ⇒ |M|`.
 
+## Non-empty types, as the report requires
+
+`|false| := 1`, not the empty type, and the report says why: "We must choose a
+non-empty type for each formula as empty types are inconsistent with our base
+logic."  HOL supplies that for free; Lean does not, so `Model` carries the two
+witnesses `d₀` and `c₀` explicitly and `Val.default` propagates them to every
+formula.  Nothing is weakened by this — it is the report's own side condition,
+made a field instead of a background assumption — and it is what lets ex falso
+(our addition, not the figure's) be interpreted at all.
+
 ## Bound variables are interpreted, not substituted
 
 `Sat` carries an environment: a list of domain elements for the de Bruijn
@@ -62,6 +72,11 @@ structure Model where
   fn : String → List D → D
   /-- `atom P ⟦t₁⟧ … ⟦tₙ⟧ c` — the constraint `c` witnesses `P(t₁,…,tₙ)`. -/
   atom : String → List D → C → Prop
+  /-- `D` is non-empty.  Also the value a loose index evaluates to, which
+  cannot arise for a locally closed term. -/
+  d₀ : D
+  /-- `C` is non-empty — the report's requirement on every refinement type. -/
+  c₀ : C
 
 variable (𝔐 : Model)
 
@@ -82,6 +97,43 @@ def Val : Form → Type
   | .forall_ M => 𝔐.D → Val M
   | .exists_ M => 𝔐.D × Val M
 
+/-- Every refinement type is inhabited — the report's side condition on Fig. 3,
+here discharged by recursion rather than assumed. -/
+def Val.default : (M : Form) → Val 𝔐 M
+  | .top       => ()
+  | .bot       => ()
+  | .pred _ _  => 𝔐.c₀
+  | .and M N   => (Val.default M, Val.default N)
+  | .or M _    => .inl (Val.default M)
+  | .imp _ N   => fun _ => Val.default N
+  | .circ _ _  => fun _ => True
+  | .forall_ M => fun _ => Val.default M
+  | .exists_ M => (𝔐.d₀, Val.default M)
+
+/-!
+## `|M| = |M{σ}|`
+
+The report states this in prose — "the mapping removes any dependency of types
+on object level terms" — and it is what makes `∀I` and `∃E` interpretable: the
+rules open a formula with a fresh individual, and the constraint type must not
+notice.  Here it is a theorem. -/
+
+/-- Opening a formula does not change its refinement type. -/
+theorem Val_openAt (u : Tm) : ∀ (M : Form) (k : Nat), Val 𝔐 (M.openAt k u) = Val 𝔐 M := by
+  intro M
+  induction M with
+  | top | bot | pred => intro _; rfl
+  | and M N ihM ihN => intro k; show (_ × _) = (_ × _); rw [ihM k, ihN k]
+  | or M N ihM ihN => intro k; show (_ ⊕ _) = (_ ⊕ _); rw [ihM k, ihN k]
+  | imp M N ihM ihN => intro k; show (_ → _) = (_ → _); rw [ihM k, ihN k]
+  | circ _ M ih => intro k; show (_ → Prop) = (_ → Prop); rw [ih k]
+  | forall_ M ih => intro k; show (_ → _) = (_ → _); rw [ih (k + 1)]
+  | exists_ M ih => intro k; show (_ × _) = (_ × _); rw [ih (k + 1)]
+
+/-- The instance the rules actually use. -/
+theorem Val_openWith (a : String) (M : Form) : Val 𝔐 (M.openWith a) = Val 𝔐 M :=
+  Val_openAt 𝔐 (.fvar a) M 0
+
 /-! ## Interpreting terms
 
 `env` gives the de Bruijn indices their values, innermost first; `ρ` valuates
@@ -89,7 +141,7 @@ the named free individuals. -/
 
 mutual
 def evalTm (env : List 𝔐.D) (ρ : String → 𝔐.D) : Tm → 𝔐.D
-  | .bvar i  => env[i]?.getD (ρ "")
+  | .bvar i  => env[i]?.getD 𝔐.d₀
   | .fvar x  => ρ x
   | .fn f ts => 𝔐.fn f (evalTms env ρ ts)
 def evalTms (env : List 𝔐.D) (ρ : String → 𝔐.D) : List Tm → List 𝔐.D
