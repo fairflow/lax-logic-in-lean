@@ -191,6 +191,96 @@ theorem qS1_E : ∀ f ∈ [13,14],
     interpQ "p" f [] s1Station none [] = interpQ "p" 12 [] s1Station none [] := by
   decide +kernel
 
+
+/-! # Part 2b · Harder modal shapes
+
+The refutation candidate of the package is a chain of stations that keeps
+reopening boxes — the Ghilardi–Zawadowski shape.  (m1)–(m5) do not reach it:
+they each have one box or one ◯-implication.  These six do, and none of them
+refutes the design.
+
+  (m6)  a ◯-implication whose BOXED ANTECEDENT carries another ◯-implication
+  (m7)  opening a box PRODUCES a ◯-implication whose guard reopens
+  (m8)  firing RE-CREATES the same ◯-implication under a box
+  (m9)  box opening creates a parked implication whose BODY is a box
+  (m10) the S1 variant whose FIRE re-creates the guard's antecedent — the
+        deepest threshold in the package, 16
+  (m11) two nested boxes -/
+
+/-- The inner ◯-implication `↓◯a ⊃ ↑b`. -/
+def qInner : Neg := .imp (.down (.circ (.atom "a"))) (.up (.atom "b"))
+/-- `↓(d ⊃ ↑a)`, S1's boxed antecedent body. -/
+def qDA : Pos := .down (.imp (.atom "d") (.up (.atom "a")))
+
+def m6 : List Neg := [.imp (.down (.circ (.down qInner))) (.up (.atom "c"))]
+def m7 : List Neg := [.circ (.down qInner), .circ (.atom "a")]
+def m8 : List Neg := [.imp (.down (.circ (.atom "a"))) (.circ (.down qInner))]
+def m9 : List Neg :=
+  [.circ (.down (.imp (.or (.atom "a") (.atom "b")) (.circ (.atom "c"))))]
+def m10 : List Neg :=
+  [.imp (.down (.circ qDA)) (.circ (.atom "g")), .imp (.atom "c") (.circ qDA)]
+def m11 : List Neg :=
+  [.circ (.down (.circ (.down (.imp (.or (.atom "a") (.atom "b")) (.up (.atom "c"))))))]
+
+/-- (m6) nested guards through a box.  Constant from 10. -/
+theorem qm6_A : ∀ f ∈ [11,12],
+    interpQ "p" f [] m6 (some (.up (.atom "c"))) []
+      = interpQ "p" 10 [] m6 (some (.up (.atom "c"))) [] := by
+  decide +kernel
+
+/-- (m6) the ∃p chain.  Constant from 10. -/
+theorem qm6_E : ∀ f ∈ [11,12],
+    interpQ "p" f [] m6 none [] = interpQ "p" 10 [] m6 none [] := by
+  decide +kernel
+
+/-- (m7) opening a box produces a ◯-implication whose guard reopens.
+Constant from 10. -/
+theorem qm7_A : ∀ f ∈ [11,12],
+    interpQ "p" f [] m7 (some (.circ (.atom "b"))) []
+      = interpQ "p" 10 [] m7 (some (.circ (.atom "b"))) [] := by
+  decide +kernel
+
+/-- (m8) firing re-creates the same ◯-implication under a box.
+Constant from 10. -/
+theorem qm8_A : ∀ f ∈ [11,12],
+    interpQ "p" f [] m8 (some (.circ (.atom "b"))) []
+      = interpQ "p" 10 [] m8 (some (.circ (.atom "b"))) [] := by
+  decide +kernel
+
+/-- (m9) a parked implication with a boxed body, made by opening a box.
+Constant from 9. -/
+theorem qm9_A : ∀ f ∈ [10,11,12],
+    interpQ "p" f [] m9 (some (.circ (.atom "d"))) []
+      = interpQ "p" 9 [] m9 (some (.circ (.atom "d"))) [] := by
+  decide +kernel
+
+/-- (m11) two nested boxes.  Constant from 10. -/
+theorem qm11_A : ∀ f ∈ [11,12],
+    interpQ "p" f [] m11 (some (.circ (.atom "d"))) []
+      = interpQ "p" 10 [] m11 (some (.circ (.atom "d"))) [] := by
+  decide +kernel
+
+/-- **(m10)**, the deepest cell in the package: the S1 variant whose fire
+re-creates the guard's antecedent.  Constant from 16 — and its ∃p chain has a
+FALSE fixpoint at 12/13 before it climbs again, which is why every certificate
+here checks two or three fuels above the threshold and never one. -/
+theorem qm10_A : ∀ f ∈ [17,18],
+    interpQ "p" f [] m10 (some (.circ (.atom "g"))) []
+      = interpQ "p" 16 [] m10 (some (.circ (.atom "g"))) [] := by
+  decide +kernel
+
+/-- (m10) the ∃p chain.  Constant from 15. -/
+theorem qm10_E : ∀ f ∈ [16,17],
+    interpQ "p" f [] m10 none [] = interpQ "p" 15 [] m10 none [] := by
+  decide +kernel
+
+/-- (m10) the false fixpoint, kernel-checked: the ∃p chain repeats at fuel 12
+and then moves again at 14.  A single repeated level is NOT stabilisation. -/
+theorem qm10_false_fixpoint :
+    interpQ "p" 12 [] m10 none [] = interpQ "p" 13 [] m10 none [] ∧
+    interpQ "p" 13 [] m10 none [] ≠ interpQ "p" 14 [] m10 none [] := by
+  constructor <;> decide +kernel
+
 /-! # Part 3 · The per-station policy is REFUTED
 
 The blueprint's WP3 loop elimination resets `seen` at every station change,
@@ -248,5 +338,14 @@ end LJFO
 #axioms_within LJFO.qS1_A [propext]
 #axioms_within LJFO.qS1_Ac [propext]
 #axioms_within LJFO.qS1_E [propext]
+#axioms_within LJFO.qm6_A [propext]
+#axioms_within LJFO.qm6_E [propext]
+#axioms_within LJFO.qm7_A [propext]
+#axioms_within LJFO.qm8_A [propext]
+#axioms_within LJFO.qm9_A [propext]
+#axioms_within LJFO.qm11_A [propext]
+#axioms_within LJFO.qm10_A [propext]
+#axioms_within LJFO.qm10_E [propext]
+#axioms_within LJFO.qm10_false_fixpoint [propext]
 #axioms_within LJFO.q0_3_not_const [propext]
 #axioms_within LJFO.q_3_const_there [propext]

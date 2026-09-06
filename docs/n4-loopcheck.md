@@ -8,7 +8,7 @@ measured), REFUTED (kernel-checked counterexample), or OPEN — kept rigidly
 distinct.
 
 Modules: `wip/ui_routeB_n4q.lean` (the definition and `p`-freeness),
-`wip/ui_routeB_n4q_cells.lean` (the twelve designed cells),
+`wip/ui_routeB_n4q_cells.lean` (the eighteen designed cells),
 `wip/ui_routeB_n4q_thm.lean` (the theorems and the two obligations).
 
 ---
@@ -246,11 +246,11 @@ Neither is built.  `QBound` is OPEN.
 
 Rule 9: designed cells, no enumeration.  The six ◯-free cells are those of
 `docs/n4-circfree-cases.md` — on five of which `interpP`'s literal chain is
-REFUTED — and five modal shapes chosen from the ways the recursion can loop
+REFUTED — and eleven modal shapes chosen from the ways the recursion can loop
 through a box, plus the running cell S1 of `docs/ui-ljfo-clause-table.md`
 §4.12.  Each verdict is a KERNEL-CHECKED equation
-`interpQ p f … = interpQ p W …` at three or four fuels above the threshold `W`
-(`decide +kernel`, 26 decisions in 4.5 s, every one `[propext]`).
+`interpQ p f … = interpQ p W …` at two or three fuels above the threshold `W`
+(`decide +kernel`, 35 decisions in 5.6 s, every one `[propext]`).
 
 | cell | station ⇒ goal | `interpP` | `interpQ` const from |
 |---|---|---|---|
@@ -265,6 +265,12 @@ through a box, plus the running cell S1 of `docs/ui-ljfo-clause-table.md`
 | (m3) | `[◯↓((a∨b) ⊃ ↑c)] ⇒ ◯c` — opening re-creates a parked implication | — | **7** |
 | (m4) | `[↓◯a ⊃ ◯b] ⇒ ◯b` — firing re-creates a box | — | **6** |
 | (m5) | `[◯a, ↓◯a ⊃ ↑b] ⇒ ◯b` — box and ◯-implication together | — | **7** |
+| (m6) | `[↓◯↓(↓◯a ⊃ ↑b) ⊃ ↑c]` — guards nested through a box | — | **10** (∃p: 10) |
+| (m7) | `[◯↓(↓◯a ⊃ ↑b), ◯a] ⇒ ◯b` — opening produces a ◯-implication whose guard reopens | — | **10** |
+| (m8) | `[↓◯a ⊃ ◯↓(↓◯a ⊃ ↑b)] ⇒ ◯b` — firing re-creates the ◯-implication under a box | — | **10** |
+| (m9) | `[◯↓((a∨b) ⊃ ◯c)] ⇒ ◯d` — a parked implication with a boxed body | — | **9** |
+| (m10) | `[↓◯(↓(d ⊃ ↑a)) ⊃ ◯g, c ⊃ ◯↓(d ⊃ ↑a)]` — the fire re-creates the guard's antecedent | — | **16** (∃p: 15) |
+| (m11) | `[◯↓◯↓((a∨b) ⊃ ↑c)] ⇒ ◯d` — two nested boxes | — | **10** |
 | **S1** | `[↓◯(↓(d ⊃ ↑a)) ⊃ ↑e, c ⊃ ◯g]` | — | **12** at `↑e`, **13** at `◯g`, **12** for `∃p` |
 
 Controls, also kernel-checked: `interpQ = interpP` where no parked compound
@@ -276,17 +282,28 @@ with a boxed body `[c ⊃ ◯g]`), and `interpQ ≠ interpP` at cell (i) from fu
 were chosen because a per-station `seen` cannot cut a loop through a box: the
 box row moves to a NEW station `[↑R] ++ rest`, so a chain of stations that keeps
 reopening boxes is exactly the Ghilardi–Zawadowski shape that would make PLL
-lack uniform interpolation.  Under the global policy every one of them bottoms
-out, and so does S1 — the cell that stopped the cofinality proof at the
-founding (§4.11) and survived the sharpened instance screen (§4.12).  So no
-designed cell refutes N4, and the modal case remains OPEN in the direction of
-proof, not of refutation.
+lack uniform interpolation.  (m6)–(m11) are the shapes that reach it — a
+◯-implication guarded through a box, a box whose opening MAKES a
+◯-implication, a fire that re-creates one under a box, two nested boxes, and
+the S1 variant whose fire re-creates the guard's own antecedent.  Under the
+global policy every one of them bottoms out, and so does S1 — the cell that
+stopped the cofinality proof at the founding (§4.11) and survived the sharpened
+instance screen (§4.12).  So no designed cell refutes N4, and the modal case
+remains OPEN in the direction of proof, not of refutation.
+
+**A false fixpoint is kernel-checked too.**  (m10)'s ∃p chain repeats at fuel
+12 and moves again at 14 (`qm10_false_fixpoint`), so a single repeated level is
+NOT stabilisation for this recursion — the reason every certificate here checks
+two or three fuels above the threshold and never one, and an independent
+confirmation that `FuelIrrelevance` (§4.19) would not have been usable even had
+it been proved.
 
 The thresholds also say what a closed-form bound must look like: it is not the
 station's weight (cell (v) is heavier than cell (i) and stabilises later than
 (i) but earlier than (iii)), and it grows with the DEPTH of the guard graph —
-S1's 12 against cell (i)'s 4 — which is what §4's lexicographic measure
-predicts, the first component being the number of distinct guard goals.
+(m10)'s 16 and S1's 12 against cell (i)'s 4 — which is what §4's lexicographic
+measure predicts, the first component being the number of distinct guard
+antecedents and the second the station weight.
 
 ---
 
@@ -339,7 +356,8 @@ with a machine-checked theorem there — and the loop-checked route buys nothing
 | `interpG_pfree` | PROVED `[propext, Quot.sound]` |
 | the per-station reset policy terminates | **REFUTED**, ◯-free cell (iii) |
 | recording at the aggregate closes the measure | **REFUTED**, the ∨-hypothesis edge (§1) |
-| literal constancy at the twelve cells, at the fuels tabled | PROVED `[propext]` |
+| literal constancy at the eighteen cells, at the fuels tabled | PROVED `[propext]` |
+| a single repeated fuel level is stabilisation | **REFUTED**, `qm10_false_fixpoint` |
 | `interpQ = interpP` where no compound implication is reached | PROVED `[propext]` |
 | `interpG_founded_eq`, `interpG_stab_of_founded` | PROVED, axiom-free |
 | `n4_of_interpQ`, `hasUI_of_interpQ`, `n4_circFree_intrinsic` | PROVED over `PQEquiv`, `QBound` |
