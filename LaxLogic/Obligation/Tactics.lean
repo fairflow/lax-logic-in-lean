@@ -160,6 +160,35 @@ example (a D : Nat) : (∀ t, a ≤ t → t < t + D) ↔ 0 < D := by reduce_obli
 delays fixed there is nothing left to state. -/
 example : ∀ t, 1000 ≤ t → 5 * 120 + 60 ≤ t := by discharge_obligation
 
+/-! ### Reading off an unfolding you do not already know
+
+A statement can be unfolded into a **metavariable**, so the unfolded form is
+*computed* rather than written down.  State the equivalence with a hole on the
+right, unfold the left, and close with `Iff.rfl`; unification assigns the hole.
+
+Two things to know.  `simp only` on its own leaves the goal `X' ↔ ?rhs` open —
+it will not guess that you want `Iff.rfl` — so the closing step is not optional.
+And simp needs the constant it is to unfold *named*: being `@[reducible]`, as
+obligations are, is not enough for simp, though it is enough for `whnfR`, which
+is why `Solve.lean` gets the same unfolding without simp at all.
+
+What this gives is the **unfolded** form, not the **solved** one.  Splitting a
+`max` and instantiating a universal at its own bound are arithmetic, not
+unfolding, so no simp set performs them; that is the work `Solve.lean` does. -/
+
+/-- The modal layer, unfolded into a hole: nothing on the right was stated. -/
+example (Gp : Constraint Nat) (T : Nat) : True := by
+  have h : ◯∀[Timing.from_ T] Gp ↔ ?rhs := by lax_refine; exact Iff.rfl
+  -- h : ◯∀[from_ T] Gp ↔ ∀ (z : ℕ), T ≤ z → Gp z
+  trivial
+
+/-- And a `Debt` form, which is the case that arises when reading a synthesised
+`C ⊃ φ` statement back into base logic. -/
+example (C : Prop) (Gp : Constraint Nat) (T : Nat) : True := by
+  have h : Debt C (◯∀[Timing.from_ T] Gp) ↔ ?rhs := by lax_refine; exact Iff.rfl
+  -- h : Debt C (◯∀[from_ T] Gp) ↔ C → ∀ (z : ℕ), T ≤ z → Gp z
+  trivial
+
 end Examples
 
 end LaxLogic.Obligation
