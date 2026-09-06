@@ -96,9 +96,12 @@ abbrev Refined (γ : Type u) : Type u := γ → Prop
 Read it as: `M` holds at every witness satisfying the constraint `p`. This is
 the modality a proof-obligation tracker wants, because it says exactly "`M`,
 modulo `p`". -/
+-- ANCHOR: laxAll
 def LaxAll {γ : Type u} (p : Constraint γ) (M : Refined γ) : Prop :=
   ∀ z, p z → M z
+-- ANCHOR_END: laxAll
 
+-- ANCHOR: laxEx
 /-- The **strengthening** lax modality `◯∃`, dual to `LaxAll`. Fig. 4 of
 Fairtlough–Mendler–Cheng:
 
@@ -107,6 +110,7 @@ Fairtlough–Mendler–Cheng:
 Read it as: `M` holds at some witness satisfying the constraint `p`. -/
 def LaxEx {γ : Type u} (p : Constraint γ) (M : Refined γ) : Prop :=
   ∃ z, p z ∧ M z
+-- ANCHOR_END: laxEx
 
 @[inherit_doc LaxAll]
 notation:1000 "◯∀[" p "]" M:1000 => LaxAll p M
@@ -206,10 +210,12 @@ theorem laxEx_pair {γ : Type u} {δ : Type v}
 /-- `◯∧` on a **shared** witness: two obligations conjoin, and the conjunction
 of the two claims follows. This is the form a proof-obligation tracker uses, and
 the reason a partial proof with several holes yields exactly one residual. -/
+-- ANCHOR: laxAllMeet
 theorem laxAll_meet {γ : Type u} {p q : Constraint γ} {M N : Refined γ}
     (hM : ◯∀[p] M) (hN : ◯∀[q] N) :
     ◯∀[meet p q] (fun z => M z ∧ N z) :=
   fun z hz => ⟨hM z hz.1, hN z hz.2⟩
+-- ANCHOR_END: laxAllMeet
 
 /-- `◯∃` on a shared witness. Note the asymmetry with `laxAll_meet`: for `◯∃`
 the two halves must be witnessed *at the same point*, so this takes a single

@@ -1,12 +1,17 @@
 import Verso
 import VersoManual
 import VersoBlueprint
+import Verso.Code.External
 import LaxLogic.Obligation
 
 open Verso.Genre
 open Verso.Genre.Manual
 open Informal
+open Verso.Code.External
 open LaxLogic.Obligation
+
+set_option verso.exampleProject "."
+set_option verso.exampleModule "LaxLogic.Obligation.Modality"
 
 #doc (Manual) "The machinery" =>
 
@@ -40,6 +45,43 @@ The weakening modality: the claim holds at every witness the constraint admits.
 :::definition "laxex" (parent := "mach_modal") (lean := "LaxEx")
 The strengthening modality: some admitted witness carries the claim.
 :::
+
+# The same three, taken from the source
+
+The three blocks below are **extracted from the library files**, not restated
+here: SubVerso reads the anchored regions of `LaxLogic/Obligation/Modality.lean`
+and Verso renders them.  Compare them with the nodes above, which render the
+elaborated signature and therefore print the declaration's canonical, fully
+qualified name.
+
+`LaxAll`, anchored around the declaration alone:
+
+```anchor laxAll
+def LaxAll {γ : Type u} (p : Constraint γ) (M : Refined γ) : Prop :=
+  ∀ z, p z → M z
+```
+
+`LaxEx`, anchored to include the docstring, so the whole source region shows:
+
+```anchor laxEx
+/-- The **strengthening** lax modality `◯∃`, dual to `LaxAll`. Fig. 4 of
+Fairtlough–Mendler–Cheng:
+
+    (p : ◯∃M)  =  ∃ z :: |M|.  p z  ∧  (z : M)
+
+Read it as: `M` holds at some witness satisfying the constraint `p`. -/
+def LaxEx {γ : Type u} (p : Constraint γ) (M : Refined γ) : Prop :=
+  ∃ z, p z ∧ M z
+```
+
+And a theorem, statement and proof:
+
+```anchor laxAllMeet
+theorem laxAll_meet {γ : Type u} {p q : Constraint γ} {M N : Refined γ}
+    (hM : ◯∀[p] M) (hN : ◯∀[q] N) :
+    ◯∀[meet p q] (fun z => M z ∧ N z) :=
+  fun z hz => ⟨hM z hz.1, hN z hz.2⟩
+```
 
 Notation `◯∀[p] M` and `◯∃[p] M` is used throughout.  The rules the original
 paper derives from Fig. 4 are here ordinary theorems, and the two that do the
