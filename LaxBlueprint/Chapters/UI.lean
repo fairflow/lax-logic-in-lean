@@ -39,15 +39,37 @@ interpolant depending only on the antecedent and the shared variables.
 :::
 
 :::theorem "maehara" (parent := "craig") (lean := "PLLND.SC.maehara")
-TO WRITE — Maehara's method on the cut-free sequent calculus.
+Maehara's method on the cut-free sequent calculus `SCh`/`SC` of
+`PLLSequent.lean`.  Given a derivation of `Γ ⊢ C` and a splitting of the
+context into two parts, the induction produces an interpolant `I` with
+`Γ₁ ⊢ I` and `I, Γ₂ ⊢ C` whose atoms occur both in `Γ₁` and in `Γ₂, C`.
+Because the left rules of `SCh` keep their principal formula in the context,
+the splitting is a membership assignment (`∀ ψ ∈ Γ, ψ ∈ Γ₁ ∨ ψ ∈ Γ₂`) rather
+than a partition, and the interpolants combine by `∧`, `∨` and `⊃` according
+to the side that carries the principal formula, with the split swapped for
+the minor premise of `⊃`-left.  The lax rules add nothing new to the
+combinatorics: `◯` on the right passes the interpolant through, and `◯` on the
+left boxes it.  The choice-free form `SC.maehara'` is pinned at
+`[propext, Quot.sound]`; the Mathlib-phrased wrapper adds `Classical.choice`.
 :::
 
 :::theorem "craig" (parent := "craig") (lean := "PLLND.craig_interpolation")
-TO WRITE — Craig interpolation for PLL, from {uses "maehara"}[].
+Craig interpolation for PLL, the sequent form, read off {uses "maehara"}[]
+at the append splitting `Γ₁ ++ Γ₂`: if `Γ₁ ++ Γ₂ ⊢ C` is derivable then some
+`I` has `Γ₁ ⊢ I`, `I, Γ₂ ⊢ C`, and every atom of `I` occurs in `Γ₁` and in
+`Γ₂, C`.  Since `SC` is proved equivalent to natural deduction, the Hilbert
+system and the term calculus, interpolation for `SC`-derivability is Craig
+interpolation for the logic, not for a presentation of it.  The interpolant
+is not unique and depends on `C`; removing that dependence is what the rest
+of the chapter is about.
 :::
 
 :::theorem "craig_imp" (parent := "craig") (lean := "PLLND.craig_implication")
-TO WRITE — the implication form.
+The implication form: if `⊢ A ⊃ B` then some `I` over the common atoms of
+`A` and `B` has `⊢ A ⊃ I` and `⊢ I ⊃ B`.  It is the sequent form at the
+splitting `[A]; []` after one cut with `⊃`-left, and it is the statement a
+textbook reader expects.  Both forms exist choice-free (primed) and in the
+Mathlib phrasing of atom sets (unprimed).
 :::
 
 # Route (B): the fuel-founded retention interpolant
@@ -59,9 +81,25 @@ Stabilisation everywhere is the open theorem.
 :::
 
 :::definition "interpF" (parent := "routeB")
-TO WRITE — `LJFO.interpF` (`LJF/OFuel.lean`), the retention interpolant at a
-given fuel.  `E_f := interpF p f [] done none` and
-`A_f := interpF p f [] done (some G)`.
+`LJFO.interpF` (`LJF/OFuel.lean`) and its parking refinement `LJFO.interpP`
+(`LJF/OFuelP.lean`), the retention interpolant at a given fuel.  The
+recursion follows the focused proof search of LJF◯ over a station
+`(todo, done)`: a processing phase consumes `todo` (atoms, shifts and
+conjunctions are unpacked; the implications whose antecedent is a compound
+positive, the boxes and the `◯`-implications are parked in `done`), and an
+aggregate phase reads the interpolant off the saturated `done`.  In `∃p`
+mode (`goal = none`) the read-off is a conjunction of one row per parked
+member; in `∀p` mode (`goal = some G`) it is a disjunction of the ways the
+station can advance `G`, one attack row per parked member.  Each row of a
+parked implication `Q ⊃ N` retains the `∀p` interpolant of its own antecedent
+at the full station as a guard, `A(done ⇒ ↑Q)`, which is what makes the
+antecedent dispatch an instance of the family's own recursion.  The fuel is
+used only as a bound: fuel `0` returns `⊤` in `∃p` mode and `⊥` in `∀p` mode,
+so every fuel level is sound by construction and the chains
+`E_f := interpP p f [] done none` and `A_f := interpP p f [] done (some G)`
+descend from `⊤` and ascend from `⊥`.  `interpP` agrees with `interpF` on
+every station without the three parked shapes, kernel-checked at fuels
+`0`–`8`, and differs on each of them, kernel-checked.
 :::
 
 :::theorem "n0a_soundness" (parent := "routeB")

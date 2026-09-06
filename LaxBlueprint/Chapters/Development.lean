@@ -246,7 +246,15 @@ Proofs as explicit data, with their own validity predicate — a different
 representation from {uses "laxnd"}[], kept for the parts of the development
 that need to compute with proofs rather than induct over them.
 
-TO WRITE — whether this representation is still load-bearing, or whether the
-term calculus has superseded it.
+It is load-bearing for exactly one theorem and superseded everywhere else.
+`PLLHilbert.lean` states the Hilbert system as a checker over explicit
+proof lists (`PLLProof.isValid`) and proves `hilbert_to_ND`, that a valid
+Hilbert proof of `φ` yields a natural-deduction derivation; that is the only
+module importing `PLLProof`, and the only place the explicit lists are
+computed with.  Every other part of the development that needs proofs as
+data uses the term calculus, whose terms are the derivations themselves
+with their reduction theory.  The representation is therefore kept as the
+Hilbert-side interface, not as a second proof format, and it would retire
+with a restatement of the Hilbert system over terms.
 :::
 

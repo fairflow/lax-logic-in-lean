@@ -61,9 +61,15 @@ Since the regular elements are the image of $`¬`, the booleanization of
 `RN(◯,∅)` has *exactly four* elements — and the result holds over an
 arbitrary axiom set.
 
-TO WRITE — this pairs well with {uses "rn_infinite"}[] and the pairing is
-worth making explicit: infinite in three directions, yet its Boolean
-skeleton is a four-element algebra.
+Set beside {uses "rn_infinite"}[], the two results bracket the closed
+fragment from opposite sides.  `RN(◯,∅)` is infinite in height, in width
+and in `◯`-depth, and has no floor, so no finite operation table can ever
+close it; yet its regular elements, the image of double negation, form a
+four-element Boolean algebra `⊥ < ¬◯⊥, ¬¬◯⊥ < ⊤`, over any axiom set.  The
+infinity lives entirely in the non-regular part, the Rieger–Nishimura-style
+ladder that `◯⊥` generates; the Boolean skeleton sees none of it.  That is
+the shape a reader should carry: an infinite Heyting algebra whose
+booleanization is the four-element one.
 :::
 
 # The shape of the catalogue
@@ -78,8 +84,14 @@ about the whole fragment.
 *Graded.*  Every cover edge spans exactly one rank.  The rank profile is
 `1-2-2-3-5-5-3-1`, so the height is 7.
 
-TO WRITE — whether to show the Hasse diagram inline.  It exists as
-`docs/rho-hasse-pll.svg` and carries far more than the profile does.
+The Hasse diagram of the catalogue is `docs/rho-hasse-pll.svg`, and the
+interactive explorer `docs/rn-explorer.html` draws the same order with the
+certificate of every edge one click away.  The profile above is the
+diagram's shadow; the diagram itself shows which classes are join-
+irreducible, where the two rails (the Rieger–Nishimura ladder at `a` and
+the modal rail from `◯¬a`) meet, and which covers are the `⊃`-classes.  The
+diagram is generated from the database, never drawn by hand, so it is exactly
+as trustworthy as the `ok` fields behind it.
 :::
 
 :::proposition "rn_irreducibles" (parent := "rn_shape")
@@ -173,16 +185,35 @@ evidence for.*  That is the design decision that makes a machine-maintained
 catalogue trustworthy, and it is why the `⊬` side of the 462-cell matrix can
 be relied on rather than spot-checked.
 
-TO WRITE — a worked entry, shown whole.  One example will explain this
-better than any description.
+A whole entry, as the database constructs it.  An interderivability entry
+is built by `interdEntryR1 id a b h`, where `h : Interd a b` is the proof;
+it fills four fields: `id`, the entry's identifier; `claim`, the pair
+`⟨a, b, Rel.interd, none⟩` (the two formulas, the relation, and no scope,
+since a positive relation needs none); `ev`, the evidence record, here
+`Evidence.proof Engine.hand`, naming the instrument that settled it; and
+`ok`, the proof that the claim is well-scoped, that the relation is
+positive, and `h` itself.  The `ok` field is a proof term, so an entry
+without evidence cannot be written down: the elaborator refuses it.  An
+entry with a negative relation (`⊬`) carries instead a kernel-checked
+countermodel certificate and the engine that found it, and its `ok` field
+is that certificate's soundness theorem applied.  Nothing in the catalogue
+is a table cell filled in by hand.
 :::
 
 :::definition "rn_order_def" (parent := "rn_db")
 `Lt`, `Covers` and `CoversIn` (`RNDB/Order.lean`): the strict order and the
 covering relation, the latter being what the Hasse diagram actually draws.
 
-TO WRITE — why covering is computed rather than read off the order, and
-what `CoversIn` scopes the covering to.
+Covering is computed rather than read off the order because the order is
+infinite and only finitely much of it is in the catalogue at any time.
+`Covers a b` in the absolute sense would assert that nothing in the whole
+fragment lies strictly between `a` and `b`, which no finite database can
+know; `CoversIn S a b` asserts `a < b` and that no member of the named set
+`S` lies strictly between, which the database can decide from its own
+entries.  The Hasse diagram draws `CoversIn R`, the covering relative to the
+current catalogue `R`, and a newly certified class can split an edge; that
+is the intended behaviour, and it is why the diagram is regenerated with
+the database rather than maintained.
 :::
 
 :::definition "rn_engines" (parent := "rn_db")
@@ -202,8 +233,17 @@ $`q_{13} = ◯ρ_{11}` are depth-2 `◯`-generators and leave it.  So the
 question is not whether the lattice extends, but what the right generated
 object is once a second `◯`-application is admitted.
 
-TO WRITE — the two things that would turn this into a statement: what is
-already known to survive at depth 2, and whether {uses "rn_width"}[]'s
-antichain construction lifts.  Both are answerable from the existing
-catalogue and `docs/rho-structure.md`; the work is to say it in a page.
+Two things are known and one is not.  Known: every representative of the
+catalogue is a Heyting-algebra term over `a` and `b` with exactly two
+`◯`-applications in the whole catalogue, `◯⊥` and `◯¬◯⊥`, so the catalogue
+is a depth-one object; and the first depth-two generators, `q₁₂ = ◯ρ₆` and
+`q₁₃ = ◯ρ₁₁`, are certified outside every known class, so the fragment does
+extend at depth two (`docs/rho-structure.md`, R4).  Not known: what the
+depth-two stratum is as a generated object.  The construction conjecture
+C1 of the same document proposes that the fragment is generated stratum by
+stratum by the `◯`-images of its own elements modulo `◯◯φ ≡ ◯φ` and
+`◯⊤ ≡ ⊤`, and names the depth-two generators to test.  Whether the
+antichain construction of {uses "rn_width"}[] lifts to depth two is the
+question that would make the stratum's width a theorem; nothing in the
+catalogue decides it either way, and it is recorded as OPEN.
 :::
