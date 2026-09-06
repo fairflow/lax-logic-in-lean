@@ -3088,6 +3088,45 @@ backward for `interpP`, and `pll_ui_R`.
 
 ---
 
+### 4.30 WP12b, Stages 1–2: the pair recursion literally stabilises at EVERY station (`rBound`) and is SOUND at every state and every `seen` — verified here (2026-09-06, 16:05)
+
+The proof stage (one agent, launched 15:35 from bbced0f) committed its
+first two stages within twenty-five minutes; merged here at 1419ac6 and
+verified (`lake build` of the five new leaf modules 85 s, 8628 jobs
+replayed, nothing upstream; 104 pins accepted; sorry sweep clean; pins
+measured; gate watched failing).
+
+**Stage 1 — literal stabilisation, PROVED** (`wip/ui_routeB_r_meas.lean`,
+`_gate`, `_cong`, `_bound`; the template of §4.26 with the guard edge
+restated for the PAIR record):
+
+    rMu s := kap2 s · bigWR s + nuR s                          [propext, Quot.sound]
+    edges_decreaseR : ∀ t ∈ edgesR s, rMu t < rMu s            [propext, Quot.sound]
+    rFounded p : RFounded id p rMu;   rBound p : RBound p
+    rStabLitE_uncond p done : RStabLitE p done;  rStabLitA_uncond p done G : RStabLitA p done G
+
+literal stabilisation at EVERY station, unconditionally — no saturation, no
+parking, no ◯-freeness — since the bound is a statement about the recursion.
+Only the guard row of the edge table (`docs/n4-bound.md` §3) changes: the
+recorded pair is new, so `kap2` (unseen pairs over the closure) drops by one.
+
+**Stage 2 — soundness, PROVED by one cut on each side**
+(`wip/ui_routeB_r_sound.lean`): not a transcription of
+`LJF/OFuelPSound.lean` but the easy halves for `interpR` (`easyLvlR`:
+`interpP ⊢ interpR` in ∃p mode, `interpR ⊢ interpP` in ∀p mode, the polarity
+induction of §4.27 over the pair check) composed with `interpP`'s soundness
+through `cutInv`:
+
+    eSoundR p f todo done seen   : Inv (todo ++ done) [] .tru (interpR p f todo done none seen)
+    aSoundR p f todo done G seen : Inv (interpR p f todo done (some G) seen :: (todo ++ done)) [] .tru G
+                                                     [propext, Classical.choice, Quot.sound]
+
+(the choice from `cutInv`).  Gate re-watched here: `aSoundR` at `[propext]`
+fails on `Classical.choice, Quot.sound`.  Stage 3 (cofinality with
+escapes, ◯-free first) is in progress.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
