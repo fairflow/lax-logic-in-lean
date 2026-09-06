@@ -48,9 +48,15 @@ repository proves Craig interpolation for PLL (`LaxLogic/PLLCraig.lean`).
 - *Verification.* Interpolants are how model checkers summarise "what has been
   established so far" about a program in the vocabulary of the next step.
 
-**What to stress in class.** The interpolant is not unique; the theorem is
-about existence. And it depends on `B`: a different `B` may need a different
-`C`. That dependence is what the next section removes.
+**What to stress in class.** A Craig interpolant is not unique, not even up
+to interderivability: for a fixed `A ⊢ B` the interpolants form an interval
+in the shared vocabulary, from the strongest shared consequence of `A` up to
+the weakest shared antecedent of `B`, and the interval can have two ends.
+Verified example: `A = q`, `B = q ∨ (s ⊃ s)`, shared vocabulary `{q}`; both
+`q` and `⊤` are interpolants, and `⊤ ⊬ q`. And the interpolant depends on
+`B`: a different `B` may need a different `C`. That dependence is what the
+next section removes, and removing it is also what makes the interpolant
+unique.
 
 ## 3. Uniform interpolation (Pitts, 1992)
 
@@ -185,10 +191,17 @@ whether the chains that the modality keeps reopening eventually say nothing new.
 show that `∀p.A ⊢ A[χ/p]` for every `p`-free `χ` and use it to bound
 `∀p.((p ⊃ q) ∨ (q ⊃ p))` from above by `q ∨ ¬q`.
 
-**Misconceptions to head off.** Interpolants are not unique. Uniform
-interpolation is strictly stronger than Craig. `∃p.A` is a formula of the
-propositional logic, not of a richer language, and that is the whole content.
-"Open" for PLL means no proof and no counterexample, not "probably false".
+**Misconceptions to head off.** Craig interpolants are not unique (an
+interval, §2); uniform interpolants are, up to interderivability: "strongest
+`p`-free consequence" names the least element of the `p`-free consequences
+under `⊢`, and a least element of a preorder is unique up to equivalence
+(dually for the weakest antecedent). So `∃p` and `∀p` are well-defined
+operations on the Lindenbaum algebra, the left and right adjoints of the
+inclusion of the `p`-free fragment; the repository proves the uniqueness as
+`IsExUIOn.unique` and `IsAllUIOn.unique`. Uniform interpolation is strictly
+stronger than Craig. `∃p.A` is a formula of the propositional logic, not of
+a richer language, and that is the whole content. "Open" for PLL means no
+proof and no counterexample, not "probably false".
 
 ## References
 

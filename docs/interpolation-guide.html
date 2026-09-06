@@ -73,10 +73,18 @@ theory, it is explicitly definable (Beth’s theorem, a corollary).</li>
 “what has been established so far” about a program in the vocabulary of
 the next step.</li>
 </ul>
-<p><strong>What to stress in class.</strong> The interpolant is not
-unique; the theorem is about existence. And it depends on
-<code>B</code>: a different <code>B</code> may need a different
-<code>C</code>. That dependence is what the next section removes.</p>
+<p><strong>What to stress in class.</strong> A Craig interpolant is not
+unique, not even up to interderivability: for a fixed <code>A ⊢ B</code>
+the interpolants form an interval in the shared vocabulary, from the
+strongest shared consequence of <code>A</code> up to the weakest shared
+antecedent of <code>B</code>, and the interval can have two ends.
+Verified example: <code>A = q</code>, <code>B = q ∨ (s ⊃ s)</code>,
+shared vocabulary <code>{q}</code>; both <code>q</code> and
+<code>⊤</code> are interpolants, and <code>⊤ ⊬ q</code>. And the
+interpolant depends on <code>B</code>: a different <code>B</code> may
+need a different <code>C</code>. That dependence is what the next
+section removes, and removing it is also what makes the interpolant
+unique.</p>
 <h2 id="uniform-interpolation-pitts-1992">3. Uniform interpolation
 (Pitts, 1992)</h2>
 <p>Ask for more: a summary of <code>A</code> in the language <em>without
@@ -275,11 +283,20 @@ checked.</li>
 every <code>p</code>-free <code>χ</code> and use it to bound
 <code>∀p.((p ⊃ q) ∨ (q ⊃ p))</code> from above by
 <code>q ∨ ¬q</code>.</p>
-<p><strong>Misconceptions to head off.</strong> Interpolants are not
-unique. Uniform interpolation is strictly stronger than Craig.
-<code>∃p.A</code> is a formula of the propositional logic, not of a
-richer language, and that is the whole content. “Open” for PLL means no
-proof and no counterexample, not “probably false”.</p>
+<p><strong>Misconceptions to head off.</strong> Craig interpolants are
+not unique (an interval, §2); uniform interpolants are, up to
+interderivability: “strongest <code>p</code>-free consequence” names the
+least element of the <code>p</code>-free consequences under
+<code>⊢</code>, and a least element of a preorder is unique up to
+equivalence (dually for the weakest antecedent). So <code>∃p</code> and
+<code>∀p</code> are well-defined operations on the Lindenbaum algebra,
+the left and right adjoints of the inclusion of the <code>p</code>-free
+fragment; the repository proves the uniqueness as
+<code>IsExUIOn.unique</code> and <code>IsAllUIOn.unique</code>. Uniform
+interpolation is strictly stronger than Craig. <code>∃p.A</code> is a
+formula of the propositional logic, not of a richer language, and that
+is the whole content. “Open” for PLL means no proof and no
+counterexample, not “probably false”.</p>
 <h2 id="references">References</h2>
 <ul>
 <li>W. Craig, <em>Three uses of the Herbrand–Gentzen theorem in relating
