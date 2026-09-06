@@ -132,6 +132,16 @@ height budget, `Nat.rec` on a station budget, structural recursion on
 the derivation; possible because every ∃p/∀p edge is height-strict.
 Do after review themes 1–2 halve the block.  N3 (WP2) did not need to
 unfold the family after all: it takes `SatE2P`/`SatA2P` as variables.
+**Bundled with it (WP1d, scheduled 2026-09-06 01:05, proposal relayed
+from Matthew by the blueprint session): reprove `atomMem_of_mem` in
+`LJF/O.lean` choice-free.**  Its trailing bare `simp` closes
+`(a == a) = true` on `String` through the order's antisymmetry
+(`String.le_antisymm` → `Classical.propDecidable`); closing it by
+decidable equality removes the only `Classical.choice` in the route-(B)
+chain, so N0c, N0d and everything downstream drop to
+`[propext, Quot.sound]`.  Buys nothing for build time; it rides on the
+structural refounding's one family rebuild so the 25-minute pin sweep is
+paid once, not twice.
 
 **WP2 — N3.**  Forward: instantiate N0a at the stabilised fuel, minimality
 from N0d read at that fuel.  Backward: N0d applied to `E` and to `A`
