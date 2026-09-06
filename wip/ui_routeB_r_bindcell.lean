@@ -15,14 +15,21 @@ traversal.  One cell, designed (CLAUDE.md rule 9), not a sweep.
     M₀    := ↑a                           so Qa = ↓M₀
     X     := Qa ⊃ ↑n                      the parked implication, compound
     done  := [X, ↑p]                      saturated, `p`-carrying
-    HK    := ↓(Qa ⊃ ↑c) ⊃ ↑Qa             a kept implication
-    K     := [HK, ↑c]                     `p`-free
+    HK    := ↓(Qa ⊃ ↑n) ⊃ ↑Qa             a kept implication
+    K     := [HK]                         `p`-free
     seen  := [(Qa, done)]                 the pair recorded at the site below
 
 `Qa` is provable at `done ++ K` only through `HK`, and `HK`'s antecedent is
-the implication `Qa ⊃ ↑c`, whose proof BINDS `M₀ = ↑a` (`Inv.impR` then
+the implication `Qa ⊃ ↑n`, whose proof BINDS `M₀ = ↑a` (`Inv.impR` then
 `Inv.downL`) and then attacks `X` again — at the same station, so the loop
 test fires (`cellCut`).  The derivation is `cellDeriv`.
+
+The goal is `↑n` throughout, and `X` is the only source of `n` in the whole
+sequent, so the cut site cannot avoid firing `X`: `cellRows` computes the
+∃p row list of `E^R(done | seen)` and it is
+`[⊤ ∧ E^R([], [↑p] | seen), ⊤]` — the fire of `X` has been replaced by `⊤`
+and nothing else mentions `n`.  So the traversal there has no row to use and
+must escape.
 
 ## What the cell settles
 
@@ -31,6 +38,9 @@ test fires (`cellCut`).  The derivation is `cellDeriv`.
   already holds the pair, so `interpR`'s ∃p row there is `⊤`
   (`parkRowER_cut`) and its ∀p row is `⊥` (`parkRowAR_cut`): the traversal
   has no row and must escape.
+* `cellRows` computes the whole ∃p row list at that record: the fire of `X`
+  is gone.  Since `X` is the only source of the goal atom `n`, the escape is
+  not a convenience there — it is the only outcome the traversal has.
 * `cellEscapePayload` is that escape's payload, `Inv.stable sInner`, and it
   lives at `M₀ :: (done ++ K)` — under the binder.
 * `cellHeight` : its height is strictly below the height booked at the
@@ -75,10 +85,10 @@ def done : List Neg := [X, .up (.atom "p")]
 
 /-- The kept implication whose antecedent is an IMPLICATION, so that proving
 it binds `M₀`. -/
-def HK : Neg := .imp (.down (.imp Qa (.up (.atom "c")))) (.up Qa)
+def HK : Neg := .imp (.down (.imp Qa (.up (.atom "n")))) (.up Qa)
 
 /-- The `p`-free ambient context. -/
-def K : List Neg := [HK, .up (.atom "c")]
+def K : List Neg := [HK]
 
 /-- The sequent's context. -/
 def Γ : List Neg := done ++ K
@@ -105,11 +115,7 @@ theorem cellPFreeK : PFreeCtx "p" K := by
   · show PFreeN "p" HK
     simp only [HK, Qa, PFreeN, PFreeP]
     exact ⟨⟨by decide, by decide⟩, by decide⟩
-  · rcases List.mem_cons.mp hZ with rfl | hZ
-    · show PFreeN "p" (Neg.up (.atom "c"))
-      simp only [PFreeN, PFreeP]
-      decide
-    · exact absurd hZ List.not_mem_nil
+  · exact absurd hZ List.not_mem_nil
 
 /-! # Part 3 · The derivation
 
@@ -124,24 +130,24 @@ payload — and it lives under the binder. -/
 def sInner : Stab (M0 :: Γ) .tru Qa :=
   .rfoc (.rel (.stable (.rfoc (.init (by decide)))))
 
-/-- The consequent chain of `X`, at any context holding `↑c`. -/
-def lfN (Δ : List Neg) (h : Neg.up (.atom "c") ∈ Neg.up (.atom "n") :: Δ) :
-    LFoc Δ (.up (.atom "n")) .tru (.atom "c") :=
-  .rel (.atomL (.stable (.rfoc (.init h))))
+/-- The consequent chain of `X`: the goal atom `n` arrives exactly here. -/
+def lfN (Δ : List Neg) :
+    LFoc Δ (.up (.atom "n")) .tru (.atom "n") :=
+  .rel (.atomL (.stable (.rfoc (.init (List.mem_cons_self ..)))))
 
 /-- **The cut site.**  `X` is attacked a SECOND time, at the same station
 `done`, below the binder; its antecedent sub-derivation is `sInner`, which
 uses the bound `M₀`. -/
-def xCut : Inv (M0 :: Γ) [] .tru (.up (.atom "c")) :=
-  .stable (.lfoc (by decide) (.impL sInner (lfN (M0 :: Γ) (by decide))))
+def xCut : Inv (M0 :: Γ) [] .tru (.up (.atom "n")) :=
+  .stable (.lfoc (by decide) (.impL sInner (lfN (M0 :: Γ))))
 
 /-- **The goal-antecedent binder.**  `Inv.impR` puts `Qa = ↓M₀` into `Ω`;
 `Inv.downL` binds `M₀`. -/
-def dGoal : Inv Γ [] .tru (.imp Qa (.up (.atom "c"))) :=
+def dGoal : Inv Γ [] .tru (.imp Qa (.up (.atom "n"))) :=
   .impR (.downL xCut)
 
 /-- `HK`'s antecedent, proved by the binder subtree. -/
-def sQH : Stab Γ .tru (.down (.imp Qa (.up (.atom "c")))) :=
+def sQH : Stab Γ .tru (.down (.imp Qa (.up (.atom "n")))) :=
   .rfoc (.rel dGoal)
 
 /-- `HK`'s consequent `↑Qa`, released. -/
@@ -154,8 +160,8 @@ and the height booked for the pair `(Qa, done)`. -/
 def sGuard : Stab Γ .tru Qa := .lfoc (by decide) (.impL sQH lfH)
 
 /-- **The cell.**  `X` attacked at the station `done`: the RECORDING SITE. -/
-def cellDeriv : Inv Γ [] .tru (.up (.atom "c")) :=
-  .stable (.lfoc (by decide) (.impL sGuard (lfN Γ (by decide))))
+def cellDeriv : Inv Γ [] .tru (.up (.atom "n")) :=
+  .stable (.lfoc (by decide) (.impL sGuard (lfN Γ)))
 
 /-! # Part 4 · What the cell settles -/
 
@@ -168,6 +174,14 @@ theorem cellRowE (prev : ApproxR) (N : Neg) (rest res : List Neg) :
     parkRowER id prev done Qa N rest res seen
       = nAnd nTop (prev res rest none seen) :=
   by rw [parkRowER_record, if_pos cellCut]
+
+/-- **The whole ∃p row list at the cut site's record.**  The fire of `X` has
+become `⊤`; the row of `↑p` is `⊤` because its atom IS `p`.  Nothing that
+remains mentions `n`, and `X` is the only source of `n` in the sequent, so
+the traversal has no route to the goal and must escape. -/
+theorem cellRows (prev : ApproxR) :
+    eRowsR id "p" prev done seen
+      = [nAnd nTop (prev [] [Neg.up (.atom "p")] none seen), nTop] := rfl
 
 /-- The ∀p row at the cut site, by `parkRowAR_cut`. -/
 theorem cellRowA (prev : ApproxR) (N : Neg) (rest : List Neg) (goal : Neg) :
@@ -205,6 +219,7 @@ end LJFO
 #axioms_within LJFO.BindCell.cellPFreeK [propext]
 #axioms_within LJFO.BindCell.cellDeriv [propext]
 #axioms_within LJFO.BindCell.cellCut []
+#axioms_within LJFO.BindCell.cellRows [propext]
 #axioms_within LJFO.BindCell.cellRowE []
 #axioms_within LJFO.BindCell.cellRowA []
 #axioms_within LJFO.BindCell.cellHeight [propext]
