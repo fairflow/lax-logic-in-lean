@@ -93,6 +93,32 @@ theorem parkRowAR_record (prev : ApproxR) (done : List Neg) (Qa : Pos) (N : Neg)
        else nAnd (prev [] done (some (.up Qa)) ((Qa, done) :: seen))
                  (prev [N] rest (some goal) seen)) := rfl
 
+/-! ## The set-equality at a cut site is absorbed by weakening
+
+The loop check fires when a pair `(Q, T)` is recorded whose station `T` is
+SET-EQUAL to the current one, not equal to it.  The escape must therefore
+carry a derivation at `T` where the traversal holds one at `done`; the two
+sequents differ only by the multiplicity and order of hypotheses, which
+`Inv.wk` absorbs.  Proved here so that §5 of `docs/n4-pair-cofinality.md`
+rests on a theorem and not on a picture. -/
+
+/-- **Set-equal stations weaken into one another.** -/
+theorem sameSet_subs {T S : List Neg} (h : sameSet T S = true) :
+    Sub T S ∧ Sub S T :=
+  ⟨fun X hX => ((sameSet_iff T S).mp h).1 X hX,
+   fun X hX => ((sameSet_iff T S).mp h).2 X hX⟩
+
+/-- **A derivation moves between set-equal stations.**  This is the step the
+escape takes at a cut site: the traversal holds a derivation at the current
+station `done`, the escape must carry one at the recorded station `T`, and
+`sameSet T done` is exactly what the loop check tested. -/
+def wkSameSet {T S Γ : List Neg} {Ω : List Pos} {j : JD} {C : Neg}
+    (h : sameSet T S = true) (d : Inv (T ++ Γ) Ω j C) : Inv (S ++ Γ) Ω j C :=
+  d.wk (fun Z hZ => by
+    rcases List.mem_append.mp hZ with hZ | hZ
+    · exact List.mem_append_left _ ((sameSet_subs h).1 Z hZ)
+    · exact List.mem_append_right _ hZ)
+
 /-! # Part 2 · The recording-site loop, abstractly
 
 The site that records a pair calls the guard sub-traversal; if that returns
@@ -187,6 +213,8 @@ end LJFO
 
 /-! ## Pins -/
 
+#axioms_within LJFO.sameSet_subs [propext, Quot.sound]
+#axioms_within LJFO.wkSameSet [propext, Quot.sound]
 #axioms_within LJFO.parkRowER_record []
 #axioms_within LJFO.parkRowAR_record []
 #axioms_within LJFO.escapeLoop []
