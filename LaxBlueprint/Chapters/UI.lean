@@ -2,7 +2,6 @@ import Verso
 import VersoManual
 import VersoBlueprint
 import LaxLogic.PLLCraig
-import LJF.OFuelPCofinal
 
 open Verso.Genre
 open Verso.Genre.Manual
@@ -34,9 +33,20 @@ only where the declaration is settled.  Where a statement is still drafted
 or carries a `sorry`, the node is prose: attaching a name that is about to
 change would break the build for no gain.
 
-The WP2 nodes below are the current exception, and for the stated reason:
-`wip/ui_routeB_n3.lean` is proved and pinned, but N7 plans to hoist it out
-of `wip/`, so its names are the ones about to change.
+Two exceptions, both for the same reason — the name or the founding is
+about to change:
+
+* the WP2 nodes: `wip/ui_routeB_n3.lean` is proved and pinned, but N7 plans
+  to hoist it out of `wip/`;
+* N0c and N0d: proved and pinned, but attaching them means importing
+  `LJF.OFuelPCofinal`, and hence `LJF/OFuelPFam.lean` — the module §4.20
+  measures at 1463 s on a clean build, because of the `WellFounded.fix`
+  packing rather than anything about its content.  §4.20 also records the
+  design that replaces that founding.  Tying this chapter's build to a
+  founding that is being replaced buys a derived status at the cost of a
+  25-minute build on every publish, so these two stay prose until the
+  refounding lands.  *The statements do not change under it* (§4.18) — only
+  the founding does, so the prose below is not at risk of going stale.
 
 # Craig interpolation
 
@@ -107,7 +117,7 @@ Depends on {uses "n0a_soundness"}[].
 
 # The parking repair
 
-:::theorem "n0c_cofinality" (parent := "routeB") (lean := "LJFO.tinvP, LJFO.uentryP, LJFO.parkAntP, LJFO.satE2P, LJFO.satA2P")
+:::theorem "n0c_cofinality" (parent := "routeB")
 N0c — *cofinality at a saturated station*: every sufficient `p`-free formula
 is reached at some fuel.  *PROVED, and unconditional*, over
 {uses "n0e_parking"}[], pinned `[propext, Classical.choice, Quot.sound]`
@@ -139,7 +149,7 @@ Depends on {uses "n0a_soundness"}[], {uses "n0b_rows"}[] and
 {uses "n0e_parking"}[].
 :::
 
-:::theorem "n0d_cofinal" (parent := "routeB") (lean := "LJFO.ECofinalP, LJFO.ACofinalP, LJFO.ecofinalP, LJFO.acofinalP")
+:::theorem "n0d_cofinal" (parent := "routeB")
 N0d — the cofinality statements themselves: `ECofinalP` and `ACofinalP`,
 with their inhabitants `ecofinalP` and `acofinalP`
 (`LJF/OFuelPCofinal.lean`).  *PROVED* for `interpP`, pinned

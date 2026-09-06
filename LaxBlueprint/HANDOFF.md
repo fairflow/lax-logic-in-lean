@@ -177,37 +177,43 @@ undocumented — they are self-explanatory to a reader in the field.
   which worked example to show whole, how much of a proof to reproduce.
   `TODO` was renamed to `TO WRITE` throughout so a marker is unambiguously a
   writing task and never a programming one.
-- **N0c and N0d are not attached yet — this is the first job after the merge.**
-  Both are PROVED and pinned `[propext, Classical.choice, Quot.sound]`, but
-  all nine declarations live in `LJF/OFuelPCofinal.lean`, which reaches this
-  branch only with the merge into `frjw-dev`. Attaching before the merge
-  breaks the build.
+- **N0c and N0d are deliberately NOT attached, and should stay that way for
+  now.** Matthew's decision, 2026-09-06. They are PROVED and pinned, and the
+  attachment was made and then reverted, so this is a settled decision rather
+  than an oversight — do not "fix" it.
 
-  The recipe, verified against `origin/frjw-dev` on 2026-09-05 — one import
-  covers all nine, because `LJF.OFuelPCofinal` itself imports
-  `LJF.OFuelPFam`:
+  Attaching them means `import LJF.OFuelPCofinal`, which chains to
+  `LJF/OFuelPFam.lean`. §4.20 measures that module at **1463 s on a clean
+  build** — not because it is large, but because the 17-way `mutual` goes
+  through `WellFounded.fix`: the same bodies as an `unsafe def` compile in
+  3.0 s. So one import line put a 25-minute module on the blueprint's
+  critical path, and every publish paid it.
+
+  §4.20 also records the design that removes it: outer `Nat.rec` on the
+  height budget, inner `Nat.rec` on the station budget, structural recursion
+  on the derivation. Tying this chapter's build to a founding that is being
+  replaced is not worth a 25-minute publish.
+
+  **When to revisit:** after the structural refounding lands. Then the import
+  is cheap and the attachment is worth having. The recipe, if so — one import
+  covers all nine, since `LJF.OFuelPCofinal` imports `LJF.OFuelPFam` itself:
 
   ```
-  -- LaxBlueprint/Chapters/UI.lean, with the other imports
   import LJF.OFuelPCofinal
-
   -- N0c
   (lean := "LJFO.tinvP, LJFO.uentryP, LJFO.parkAntP, LJFO.satE2P, LJFO.satA2P")
-
   -- N0d
   (lean := "LJFO.ECofinalP, LJFO.ACofinalP, LJFO.ecofinalP, LJFO.acofinalP")
   ```
 
-  Then delete the "Two nodes are an exception of a different kind" paragraph
-  from the chapter's method note, which exists only to explain the gap.
+  Re-read the pins from the file at that point rather than copying them from
+  here: WP1d bundles a choice-free reproof of `atomMem_of_mem`, which should
+  take these from `[propext, Classical.choice, Quot.sound]` to
+  `[propext, Quot.sound]`.
 
-  **Caveat from the FRJW agent:** WP1c may make the family's pins choice-free.
-  If it does, the two nodes' recorded axiom set drops `Classical.choice` and
-  the chapter text needs that change too. Re-read the pins in
-  `LJF/OFuelPCofinal.lean` before writing the axiom set down; do not copy it
-  from here.
-- **The chapter is not on `frjw-dev`.** It lives on `blueprint-dev-chapter`
-  and is intended to merge there.
+  **The general lesson**, which is the reusable part: an `(lean := "...")`
+  attachment costs whatever its module's *import closure* costs. Before
+  attaching, check what the import drags in — not just that the build passes.
 
 ---
 
