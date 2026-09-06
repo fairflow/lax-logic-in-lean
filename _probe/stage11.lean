@@ -128,6 +128,17 @@ def runSite (s : Site) (f : Nat) (q : String) (cfg : Config) : IO Unit := do
     one "Q5 E^Q |- A^Q            (is the Q-row trivial?)" (.ifThen eQ aQ) cfg
   if q = "Q0" || q = "all" then
     one "Q0 E^P |- E^Q            (easy ∃p, control)  " (.ifThen eP eQ) cfg
+  -- The relativisation the ∀p side actually HAS in hand where `seen` grows:
+  -- at `parkRowA` the first conjunct of the P-row is the guard interpolant
+  -- `A^P([], done, ↑Q′)`, at the fuel two above this row's state.
+  let gd := nrm (eraseNeg (interpP "p" (f + 2) [] s.done (some (.up s.qp))))
+  if q = "Q7" || q = "Q9" then
+    IO.println s!"    (guard relativiser |A^P_(f+2)([], done, ↑Q′)| = {sizeF gd})"
+  if q = "Q7" then
+    one "Q7 E^Q ∧ A^P(guard) |- E^P (guard-relativised ∃p)" (.ifThen (.and eQ gd) eP) cfg
+  if q = "Q9" then
+    one "Q9 A^P(guard) ∧ (E^P→A^P) |- (E^Q→A^Q) (the ROW, relativised)"
+      (.ifThen (.and gd (.ifThen eP aP)) (.ifThen eQ aQ)) cfg
 
 /-- Q6: the guard state itself, `∀p`. -/
 def runGuard (s : Site) (f : Nat) (cfg : Config) : IO Unit := do
