@@ -13,12 +13,20 @@ This module builds `interpP` (`LJF/OFuelP.lean`) again with ONE
 definitional change: a list `seen : List Pos` of the antecedents whose own
 goal has already been attacked, with
 
-* a ∀p aggregate at a shift goal `↑Q` putting `Q` on `seen` for its own
-  rows and for its goal-inversion calls;
 * the ∀p attack row of a parked compound implication `Q′ ⊃ N` replaced by
   `⊥` — the unit of the aggregate's `nOrAll` — when `Q′ ∈ seen`;
-* ∃p rows never dropped: they pass `seen` to their guard call, which is
-  where the check bites.
+* the ∃p row's guarded conjunct replaced by `⊤` — the unit of the
+  aggregate's `nAndAll` — on the same test, the residual component kept;
+* a guard call that IS emitted made at `Q′ :: seen`.
+
+Recording at the GUARD CALL SITE, and not at the aggregate, is what makes
+`seen` monotone along every edge of the recursion — it is extended only at
+a guard call, and only with an antecedent not already in it — which is
+what the measure of `wip/ui_routeB_n4q_thm.lean` §1 needs.  Recording the
+goal's positive at the aggregate instead gives smaller interpolants and
+earlier thresholds, but `seen` then drops at the ∃p companion of a
+disjunctive hypothesis in ∀p mode, and the measure does not close there;
+`docs/n4-loopcheck.md` §4 records the comparison.
 
 Dropping a disjunct of a ∀p aggregate makes it STRONGER and dropping a
 conjunct of an ∃p aggregate makes it WEAKER, so both soundness statements
@@ -32,6 +40,7 @@ station are finitely many".  That policy is REFUTED here (§ cell (iii)):
 the ∀p goal-inversion at an implication goal `Q ⊃ N` moves `invertPos Q`
 into the station and starts the goal again, so a station can grow without
 bound while `seen` is reset each time round, and the guard loop survives.
+The failure is ◯-FREE: it is cell (iii) of `docs/n4-circfree-cases.md`.
 The policy that does terminate carries `seen` across station changes as
 well.  The two are the two instances of ONE recursion, parameterised by
 the reset map `rst : List Pos → List Pos`:
@@ -62,24 +71,25 @@ theorem seenMem_cons_self (s : List Pos) (Q : Pos) : seenMem (Q :: s) Q = true :
 abbrev ApproxQ : Type := List Neg → List Neg → Option Neg → List Pos → Neg
 
 /-- The ∃p row of a parked compound implication `Qa ⊃ N`, loop-checked: the
-guard call inherits `seen`, the station-changing calls apply `rst`.  `res`
-is the extra todo of the Dyckhoff row (`[↓N′ ⊃ N]`), `[]` for the other
-four. -/
+guarded conjunct becomes `⊤` when `Qa` is already in `seen`, and the guard
+call that is emitted records `Qa`.  `res` is the extra todo of the
+Dyckhoff row (`[↓N′ ⊃ N]`), `[]` for the other four. -/
 def parkRowE (rst : List Pos → List Pos) (prev : ApproxQ)
     (done : List Neg) (Qa : Pos) (N : Neg) (rest res : List Neg)
     (seen : List Pos) : Neg :=
   nAnd (if seenMem seen Qa then nTop
-        else .imp (.down (prev [] done (some (.up Qa)) seen))
+        else .imp (.down (prev [] done (some (.up Qa)) (Qa :: seen)))
                   (prev [N] rest none (rst seen)))
        (prev res rest none (rst seen))
 
 /-- The ∀p attack row of a parked compound implication `Qa ⊃ N` at the goal
-`goal`, loop-checked: `⊥` when `Qa`'s own goal is already in `seen`. -/
+`goal`, loop-checked: `⊥` when `Qa`'s own goal is already in `seen`, and the
+guard call that is emitted records `Qa`. -/
 def parkRowA (rst : List Pos → List Pos) (prev : ApproxQ)
     (done : List Neg) (Qa : Pos) (N : Neg) (rest : List Neg) (goal : Neg)
     (seen : List Pos) : Neg :=
   if seenMem seen Qa then nBot
-  else nAnd (prev [] done (some (.up Qa)) seen)
+  else nAnd (prev [] done (some (.up Qa)) (Qa :: seen))
             (prev [N] rest (some goal) (rst seen))
 
 /-! # Part 2 · The row maps -/
@@ -159,16 +169,16 @@ def aggQ (rst : List Pos → List Pos) (p : String) (prev : ApproxQ)
   | some (.up (.atom q)) =>
       if atomMem q done then nTop
       else nOrAll (atomHead p q ++
-        aRowsQ rst p prev done (.up (.atom q)) false (.atom q :: seen))
+        aRowsQ rst p prev done (.up (.atom q)) false seen)
   | some (.up .fls) =>
-      nOrAll (aRowsQ rst p prev done (.up .fls) false (.fls :: seen))
+      nOrAll (aRowsQ rst p prev done (.up .fls) false seen)
   | some (.up (.or P₁ P₂)) =>
-      nOrAll ([prev [] done (some (.up P₁)) (.or P₁ P₂ :: seen),
-               prev [] done (some (.up P₂)) (.or P₁ P₂ :: seen)] ++
-        aRowsQ rst p prev done (.up (.or P₁ P₂)) false (.or P₁ P₂ :: seen))
+      nOrAll ([prev [] done (some (.up P₁)) seen,
+               prev [] done (some (.up P₂)) seen] ++
+        aRowsQ rst p prev done (.up (.or P₁ P₂)) false seen)
   | some (.up (.down M)) =>
-      nOrAll ([prev [] done (some M) (.down M :: seen)] ++
-        aRowsQ rst p prev done (.up (.down M)) false (.down M :: seen))
+      nOrAll ([prev [] done (some M) seen] ++
+        aRowsQ rst p prev done (.up (.down M)) false seen)
   | some (.circ Q) =>
       .circ (.down (nOrAll (laxPrefixQ prev done seen Q ++
         aRowsQ rst p prev done (.circ Q) true seen)))

@@ -64,33 +64,33 @@ theorem q_ne_p_cell1 : ∀ f ∈ [2,3,4],
 (`not_aStabEq1`…`not_aStabEq6d`).  `interpQ`'s are literally constant from the
 fuel recorded here. -/
 
-/-- (i) `[(a ∨ b) ⊃ ↑c] ⇒ ↑(a ∨ b)` — the self-attack.  Constant from 2. -/
-theorem q1_A : ∀ f ∈ [3,4,5,6],
-    interpQ "p" f [] cell1 (some goal1) [] = interpQ "p" 2 [] cell1 (some goal1) [] := by
+/-- (i) `[(a ∨ b) ⊃ ↑c] ⇒ ↑(a ∨ b)` — the self-attack.  Constant from 4. -/
+theorem q1_A : ∀ f ∈ [5,6,7],
+    interpQ "p" f [] cell1 (some goal1) [] = interpQ "p" 4 [] cell1 (some goal1) [] := by
   decide +kernel
 
 /-- (i) the ∃p chain.  Constant from 3. -/
-theorem q1_E : ∀ f ∈ [4,5,6,7],
+theorem q1_E : ∀ f ∈ [4,5,6],
     interpQ "p" f [] cell1 none [] = interpQ "p" 3 [] cell1 none [] := by
   decide +kernel
 
-/-- (ii) the 2-cycle `[(a∨b) ⊃ ↑c, (c∨d) ⊃ ↑a] ⇒ ↑(a∨b)`.  Constant from 4. -/
-theorem q2_A : ∀ f ∈ [5,6,7],
+/-- (ii) the 2-cycle `[(a∨b) ⊃ ↑c, (c∨d) ⊃ ↑a] ⇒ ↑(a∨b)`.  Constant from 6. -/
+theorem q2_A : ∀ f ∈ [7,8],
     interpQ "p" f [] cell2 (some goal2ab) []
-      = interpQ "p" 4 [] cell2 (some goal2ab) [] := by
+      = interpQ "p" 6 [] cell2 (some goal2ab) [] := by
   decide +kernel
 
 /-- (ii) at the other goal of the cycle. -/
-theorem q2_Acd : ∀ f ∈ [5,6,7],
+theorem q2_Acd : ∀ f ∈ [7,8],
     interpQ "p" f [] cell2 (some goal2cd) []
-      = interpQ "p" 4 [] cell2 (some goal2cd) [] := by
+      = interpQ "p" 6 [] cell2 (some goal2cd) [] := by
   decide +kernel
 
-/-- (iii) the Dyckhoff shape `[↓(a ⊃ ↑b) ⊃ ↑c] ⇒ ↑↓(a ⊃ ↑b)`.  Constant from 8
+/-- (iii) the Dyckhoff shape `[↓(a ⊃ ↑b) ⊃ ↑c] ⇒ ↑↓(a ⊃ ↑b)`.  Constant from 12
 — the LATEST of the ◯-free cells, and the one that refutes the per-station
 policy (Part 3). -/
-theorem q3_A : ∀ f ∈ [9,10,11],
-    interpQ "p" f [] cell3 (some goal3) [] = interpQ "p" 8 [] cell3 (some goal3) [] := by
+theorem q3_A : ∀ f ∈ [13,14],
+    interpQ "p" f [] cell3 (some goal3) [] = interpQ "p" 12 [] cell3 (some goal3) [] := by
   decide +kernel
 
 /-- (iii) the ∃p chain.  Constant from 9. -/
@@ -98,9 +98,9 @@ theorem q3_E : ∀ f ∈ [10,11,12],
     interpQ "p" f [] cell3 none [] = interpQ "p" 9 [] cell3 none [] := by
   decide +kernel
 
-/-- (iv) the shift shape `[↓↑a ⊃ ↑b] ⇒ ↑↓↑a`.  Constant from 2. -/
-theorem q4_A : ∀ f ∈ [3,4,5,6],
-    interpQ "p" f [] cell4 (some goal4) [] = interpQ "p" 2 [] cell4 (some goal4) [] := by
+/-- (iv) the shift shape `[↓↑a ⊃ ↑b] ⇒ ↑↓↑a`.  Constant from 4. -/
+theorem q4_A : ∀ f ∈ [5,6,7],
+    interpQ "p" f [] cell4 (some goal4) [] = interpQ "p" 4 [] cell4 (some goal4) [] := by
   decide +kernel
 
 /-- (v) the unsaturated control `[p ⊃ ↑c, ↑p] ⇒ ↑c`.  Constant from 3, as for
@@ -116,9 +116,9 @@ theorem q6_A : ∀ f ∈ [6,7,8],
   decide +kernel
 
 /-- (vi) at the inner goal.  Constant from 4. -/
-theorem q6_Aab : ∀ f ∈ [5,6,7],
+theorem q6_Aab : ∀ f ∈ [7,8],
     interpQ "p" f [] cell6 (some goal6ab) []
-      = interpQ "p" 4 [] cell6 (some goal6ab) [] := by
+      = interpQ "p" 6 [] cell6 (some goal6ab) [] := by
   decide +kernel
 
 /-! # Part 2 · The modal cells
@@ -143,10 +143,10 @@ theorem qm1_A : ∀ f ∈ [5,6,7],
       = interpQ "p" 4 [] m1 (some (.circ (.atom "b"))) [] := by
   decide +kernel
 
-/-- (m2) at the ◯-implication's own guard goal `↑↓◯a`.  Constant from 3. -/
-theorem qm2_A : ∀ f ∈ [4,5,6],
+/-- (m2) at the ◯-implication's own guard goal `↑↓◯a`.  Constant from 6. -/
+theorem qm2_A : ∀ f ∈ [7,8],
     interpQ "p" f [] m2 (some (.up (.down (.circ (.atom "a"))))) []
-      = interpQ "p" 3 [] m2 (some (.up (.down (.circ (.atom "a"))))) [] := by
+      = interpQ "p" 6 [] m2 (some (.up (.down (.circ (.atom "a"))))) [] := by
   decide +kernel
 
 /-- (m2) at the ◯-goal underneath it.  Constant from 5. -/
@@ -174,21 +174,21 @@ theorem qm5_A : ∀ f ∈ [8,9],
   decide +kernel
 
 /-- **S1**, the running cell `[↓◯(↓(d ⊃ ↑a)) ⊃ ↑e, c ⊃ ◯g]`, at the shift
-goal.  Constant from 13 — the deepest threshold measured. -/
-theorem qS1_A : ∀ f ∈ [14,15],
+goal.  Constant from 12 — the deepest threshold measured, with S1 at the ◯-goal. -/
+theorem qS1_A : ∀ f ∈ [13,14],
     interpQ "p" f [] s1Station (some (.up (.atom "e"))) []
-      = interpQ "p" 13 [] s1Station (some (.up (.atom "e"))) [] := by
+      = interpQ "p" 12 [] s1Station (some (.up (.atom "e"))) [] := by
   decide +kernel
 
-/-- **S1** at the ◯-goal.  Constant from 14. -/
-theorem qS1_Ac : ∀ f ∈ [15,16],
+/-- **S1** at the ◯-goal.  Constant from 13. -/
+theorem qS1_Ac : ∀ f ∈ [14,15],
     interpQ "p" f [] s1Station (some (.circ (.atom "g"))) []
-      = interpQ "p" 14 [] s1Station (some (.circ (.atom "g"))) [] := by
+      = interpQ "p" 13 [] s1Station (some (.circ (.atom "g"))) [] := by
   decide +kernel
 
-/-- **S1**, the ∃p chain.  Constant from 13. -/
-theorem qS1_E : ∀ f ∈ [14,15],
-    interpQ "p" f [] s1Station none [] = interpQ "p" 13 [] s1Station none [] := by
+/-- **S1**, the ∃p chain.  Constant from 12. -/
+theorem qS1_E : ∀ f ∈ [13,14],
+    interpQ "p" f [] s1Station none [] = interpQ "p" 12 [] s1Station none [] := by
   decide +kernel
 
 /-! # Part 3 · The per-station policy is REFUTED
@@ -203,18 +203,19 @@ it, and the cell is ◯-FREE, so the failure is not modal:
         bigger station,
 
 so the guard loop survives with the station growing by one `↑a` each time
-round.  The chain is not constant at any of the fuels below; each inequality
-is kernel-checked.  (This is not a `∀ f` refutation — that would need the
+round.  The chain is not constant at any of the fuels below, where the global
+policy already is; each inequality is kernel-checked.  (This is not a `∀ f` refutation — that would need the
 ascent lemma — but it settles the design question the policy was chosen for:
-`interpQ0` has no fixpoint below fuel 12 where `interpQ` has one at 8.) -/
+`interpQ0` has no repeated level through fuel 16 where `interpQ` has one at
+12.) -/
 
-theorem q0_3_not_const : ∀ f ∈ [8,9,10,11],
+theorem q0_3_not_const : ∀ f ∈ [12,13,14,15],
     interpQ0 "p" f [] cell3 (some goal3) []
       ≠ interpQ0 "p" (f + 1) [] cell3 (some goal3) [] := by
   decide +kernel
 
 /-- The same station, the same fuels, under the global policy: constant. -/
-theorem q_3_const_there : ∀ f ∈ [8,9,10,11],
+theorem q_3_const_there : ∀ f ∈ [12,13,14,15],
     interpQ "p" f [] cell3 (some goal3) []
       = interpQ "p" (f + 1) [] cell3 (some goal3) [] := by
   decide +kernel

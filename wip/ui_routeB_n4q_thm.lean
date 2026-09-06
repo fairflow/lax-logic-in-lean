@@ -18,8 +18,15 @@ form, so "the recursion bottoms out" is one statement about `stepQ`:
 — the step at `s` consults the level below only at states of strictly smaller
 `μ`.  From it, literal stabilisation follows by strong induction on `μ`
 (`interpG_founded_eq`), with the explicit threshold `μ s + 1`.  That
-implication is PROVED here, axiom-free.  Exhibiting a `μ` is the OPEN part,
-and the edge it must close is named in `docs/n4-loopcheck.md` §4.
+implication is PROVED here, axiom-free.  Exhibiting a `μ` is the OPEN part.
+Its shape is forced: `μ = (K - |seen|, ν)` lexicographic, with
+`ν = 2·sum3 todo + sum3 done + 3^(wNeg goal)` — the measure `eMinPP`/`aMinPP`
+already run on — and `K` a bound on the number of distinct guard antecedents
+reachable at the cell.  `seen` is extended ONLY at a guard call and only with
+an antecedent not already in it, so it is monotone along every edge and
+strictly increasing on exactly the edges where `ν` rises; what is left to
+build is the subformula-closure invariant that bounds `K`, and the per-clause
+`ν` descent.  `docs/n4-loopcheck.md` §4.
 
 **(b) The relation to `interpP`.**  `PQEquiv` — the two interpolants are
 interderivable at every fuel and every cell — is the redundancy lemma of
@@ -54,7 +61,8 @@ def atSt (F : List Neg → List Neg → Option Neg → List Pos → Neg) (s : QS
 step function at a state consults the level below only at states of strictly
 smaller `μ`.  For `interpP` no such `μ` exists — the guard row at the goal
 `↑Q` calls the same state one fuel down (`not_fuelStep1A`) — and the loop
-check is exactly the change that can make one exist. -/
+check is exactly the change that can make one exist.  See the module
+docstring for the shape `μ` must have. -/
 def QFounded (rst : List Pos → List Pos) (p : String) (μ : QState → Nat) : Prop :=
   ∀ (prev₁ prev₂ : ApproxQ) (s : QState),
     (∀ t : QState, μ t < μ s → atSt prev₁ t = atSt prev₂ t) →
