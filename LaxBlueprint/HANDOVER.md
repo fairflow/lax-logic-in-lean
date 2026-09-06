@@ -10,10 +10,23 @@ Published site: <https://fairflow.github.io/lax-logic-in-lean/>
 
 ## 0 · What this session is for — read before anything else
 
-**Your job is, almost exclusively, to document the frontier of this work —
-currently on `frjw-dev` — as a Verso blueprint published to GitHub Pages.**
+**The blueprint is worked by two sessions with a division Matthew set on
+2026-09-06 17:35:**
 
-Matthew's instruction, 2026-09-06:
+> the docs session owns the chapters; you stick to infrastructure
+
+| owner | owns |
+|---|---|
+| **the docs session** | `LaxBlueprint/Chapters/*.lean` — all chapter text, node statuses, prose, structure. Keeping the rendering in step with `frjw-dev`. |
+| **the infrastructure session** | `.github/workflows/*`, `lakefile.toml` build config, `scripts/ci-pages.sh`, the publish pipeline and its costs, Actions cache and quota, the verso pin. `LaxBlueprint/HANDOFF.md`. |
+
+If you are the docs session, §4 (deriving status) and §5's markup traps are
+yours; the build and publish mechanics are someone else's to change. If you are
+the infrastructure session, **do not edit the chapters** — report a defect to
+whoever holds the docs role and let them write it.
+
+Both sessions are bound by the same outer boundary, Matthew's instruction of
+2026-09-06:
 
 > You should not be trying to contribute to theorem proving here, unless asked
 > to on a different branch or topic. Do not try to cross the boundary into

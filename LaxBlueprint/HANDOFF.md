@@ -5,6 +5,78 @@ workflows, and the `lakefile.toml` change that supports them.
 
 ---
 
+## Ownership — this file is the infrastructure record
+
+Matthew, 2026-09-06 17:35: *"the docs session owns the chapters; you stick to
+infrastructure."* So `LaxBlueprint/Chapters/*.lean` belongs to the docs session
+and this file belongs to whoever holds the infrastructure role. `HANDOVER.md`
+is shared and carries the split at its head.
+
+**Infrastructure means:** `.github/workflows/*`, the `lakefile.toml` build
+configuration, `scripts/ci-pages.sh`, the publish pipeline and what it costs,
+Actions cache and quota, the verso pin and any fork adoption.
+
+**It does not mean the chapters.** If a page is wrong, report it to the docs
+session; do not edit the chapter yourself.
+
+---
+
+## Standing instruction: ASK BEFORE BUILDING
+
+Matthew, 2026-09-06 17:00:
+
+> stop building. this is not needed. there's so much building on every agent
+> going on, you now have to request permission to build.
+
+No `lake build`, no `./scripts/ci-pages.sh`, no `gh workflow run pages.yml`,
+without asking first. The cost he is managing is contention across every agent
+on the machine, not any one build's own minutes.
+
+Pushing remains safe and needs no permission: `pages.yml` has no push trigger,
+and since 2026-09-06 `lean_action_ci.yml` is branch-filtered (below).
+
+---
+
+## Open infrastructure items
+
+**1. The CI branch filter has not propagated.** `lean_action_ci.yml` had a bare
+`push:` and fired on every push to every branch — 39 runs in one day. It is now
+filtered to `frjw-dev`, with `pull_request` deliberately left unfiltered so every
+branch is still checked when it proposes a merge.
+
+*But GitHub reads the workflow file from the ref being pushed*, so the filter is
+live only on branches that carry it. `frjw-dev` (29 of the last 60 runs) and
+`lax-obligations` (13) keep running their unfiltered copies. To make it real it
+must land on `frjw-dev` — a PR for that agent to merge — and on `main` so new
+branches inherit it. **Not yet done; needs Matthew's go-ahead.**
+
+**2. `lax-obligations` loses per-push CI** under that filter, and nobody has
+consulted whoever works it. Their PRs are unaffected. One line to restore.
+
+**3. The Actions cache sits over quota.** Measured 2026-09-06: 13.11 GB against
+10 GB, so eviction runs continuously.
+
+| cache | size | from |
+|---|---|---|
+| `lake-Linux-X64-…` ×4 | 2.59 GB each | `lean_action_ci.yml`, two branches |
+| `Linux-lake-packages-v1-…` | 2.68 GB | Pages |
+| `Linux-lean-build-v1-…` | 0.07 GB | Pages |
+
+Caches are **scoped by branch** — siblings cannot share — so every additional
+publishing branch adds its own set. Deleting entries is possible
+(`gh api -X DELETE …/actions/caches/{id}`) but futile: the next push recreates
+them. Matthew has ruled deletion out. The lever is the filter, not the cache
+list. Note also that Pages has **one deployment target per repository**, so two
+branches cannot publish concurrently in any case.
+
+**4. The verso pin is necessary but not sufficient** for the fully-qualified
+names Matthew objects to. `Signature.forName` (`verso/VersoManual/Docstring.lean:315`)
+calls `ppSignature` without `showNamespace`, so it defaults to `true`. The
+remaining one-line change is in the fork, and belongs to the prover-toolkit
+agent who owns it.
+
+---
+
 ## What exists
 
 **Published site:** https://fairflow.github.io/lax-logic-in-lean/
