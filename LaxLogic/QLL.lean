@@ -10,23 +10,24 @@ first is decided by a program.
 | :-- | :-- |
 | `Syntax`  | `Tm`, `Q`, `Form`, `Pf`, `Ctx` — locally nameless, two binder sorts |
 | `Deriv`   | `Derives p Γ M` in `Type`, one constructor per rule of Fig. 5; `Derivable = Nonempty ∘ Derives` |
-| `Lc`      | local closedness and the open/close roundtrip; wanted for Figs. 3 and 4 |
-| `Check`   | the deciding checker, `Except Err Unit` |
-| `Certify` | the certificate-returning checker, `Except Err (Derives p Γ M)` — soundness typed, not proved |
-| `Sound`   | freshness and lookup lemmas, used to *build* derivations |
+| `Lc`      | local closedness, the open/close roundtrip, and deciding it |
+| `Kit`     | fresh names, size lemmas, errors, lookup — what the checker is built from |
+| `Certify` | the checker: `Except Err (Derives p Γ M)` — soundness typed, not proved |
 | `Surface` | named variables in and out; the printed form is the input form |
 
-Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.  Neither checker
-supersedes the other — see the supersession table in `Check.lean`.
+Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.
 
-**OPEN**, with nothing asserting otherwise: completeness of either checker, and
-everything downstream of Figs. 3 and 4 — the refinement reading `⊨`, soundness
-against it, and sufficiency of the residual obligations.
+There is **one** checker.  A `Prop`-returning one (`Check.lean`) existed
+alongside it until the two were shown to agree on a corpus; it is deleted.
+
+**OPEN**, with nothing asserting otherwise: completeness of the checker for
+normal terms, and everything downstream of Figs. 3 and 4 — the refinement
+reading `⊨`, soundness against it, and sufficiency of the residual
+obligations.  The checker refuses certain β-redexes; see `Certify.lean`.
 -/
 import LaxLogic.QLL.Syntax
 import LaxLogic.QLL.Deriv
 import LaxLogic.QLL.Lc
-import LaxLogic.QLL.Check
-import LaxLogic.QLL.Sound
+import LaxLogic.QLL.Kit
 import LaxLogic.QLL.Certify
 import LaxLogic.QLL.Surface

@@ -54,8 +54,22 @@ private def obs {α : Type} (r : Except Err (α × List (Pf × Form))) : List (P
 #guard ! ok (certify [] (fst star) top)
 #guard ! ok (certify [] (bvar 3) top)
 
--- The documented restriction: `⟨p | x⟩` is checkable but not inferable, so a
--- type-level β-redex is reported rather than accepted.
-#guard ! ok (certify [] (inst (Tm.fvar "c") (gen star)) top)
+/-! ## Refused β-redexes
+
+Derivable, and refused — the documented limit of bidirectional checking of
+Curry-style terms.  An elimination whose subject is a non-inferable
+introduction form cannot be inspected.  Never a mis-acceptance: the return type
+forbids that. -/
+
+-- (λu.u) * : ⊤
+#guard ! ok (certify [] (app (lam (bvar 0)) star) top)
+-- case (ι_c *) of [ι_x(z) → z] : ⊤
+#guard ! ok (certify [] (caseEx (pack (Tm.fvar "c") star) (bvar 0)) top)
+-- but π₁(*, *) IS accepted, because `pair` infers — so the limit is precisely
+-- "the subject must infer", not "no redexes"
+#guard ok (certify [] (fst (pair star star)) top)
+-- and π_c(⟨* | x⟩) is now accepted too: inference for ∀ decides local
+-- closedness rather than refusing outright
+#guard ok (certify [] (inst (Tm.fvar "c") (gen star)) top)
 
 end LaxLogic.QLL.CertifyTests

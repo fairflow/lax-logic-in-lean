@@ -12,24 +12,50 @@ so soundness is not proved, it is **typed**.  There is no theorem, and no gap
 between what the checker accepts and what the calculus derives.  This is only
 possible because `Derives` is `Type`-valued.
 
-Completeness remains a genuine theorem and is **OPEN**: nothing here asserts
-that every derivation is found, and it will need a renaming lemma, since
-`Derives` admits any fresh name while the checker picks one.
+## What it is *not* complete for
 
-## One restriction, deliberate and detectable
+Bidirectional checking of Curry-style terms cannot inspect an elimination whose
+subject is a non-inferable introduction form.  Concretely, these are derivable
+and are **refused**:
 
-`⟨p | x⟩` is **checkable but not inferable**.  Inferring it would mean closing
-the inferred body over the fresh individual and then re-opening it to match
-`allI`'s premise, and that roundtrip holds only for locally closed formulas —
-so inference would have to thread `lc` hypotheses through every case, or decide
-`lc` at runtime.  Neither is worth it for what is lost.
+    (λu.u) *                        `app` of a `lam`
+    case (ι_c *) of [ι_x(z) → z]    `caseEx` of a `pack`
 
-What is lost: terms in which a `⟨p | x⟩` sits in an elimination position, which
-means essentially `π_t(⟨p | x⟩)` — a type-level β-redex.  Such a term is
-reported as `notInferable`, never mis-accepted, and `Check.lean` still decides
-it.  `Lc.lean` remains, since Figs. 3 and 4 need it regardless.
+while `π₁(*, *)` is accepted, because `pair` does infer.  So the checker is
+complete for terms in which every elimination's subject infers — normal terms,
+in particular — and refuses certain β-redexes.  It never mis-accepts: the
+return type forbids it.
+
+This is a property of the bidirectional discipline, not of anything chosen
+here, and it was true of the earlier `Check.lean` too.  An earlier revision of
+this header claimed the checker was "complete for all of `Derivable`"; that was
+wrong, and the corpus in the commit that deleted `Check.lean` is what showed it.
+
+Completeness in the precise sense — every derivation of a *normal* term is
+found — remains a genuine theorem and is **OPEN**; nothing here asserts it, and
+it will need a renaming lemma, since `Derives` admits any fresh name while the
+checker picks one.
+
+## Inference for `∀`
+
+`⟨p | x⟩` infers by closing the inferred body over the fresh individual, which
+must then re-open to meet `allI`'s premise — and that roundtrip holds only for
+locally closed formulas.  Rather than thread `lc` hypotheses through every
+case, local closedness is *decided at the one place it is needed*
+(`Form.decLcAt`), and a body with a loose index is refused with
+`notLocallyClosed`.  That cannot arise for well-formed input, and it is a
+refusal, never a mis-acceptance.
+
+`allI`'s freshness condition mentions the formula, but the eigenvariable is
+chosen before the formula is known.  `Form.not_mem_fv_closeWith` closes that
+gap: whatever `A` turns out to be, `a` does not occur free in `closeWith a A`.
+
+An earlier revision refused `⟨p | x⟩` in inference position outright, which
+made this module incomplete where `Check.lean` was not — `π_c(⟨* | x⟩) : ⊤` is
+derivable and was rejected.  That gap is closed and `Check.lean` is gone.
+
 -/
-import LaxLogic.QLL.Sound
+import LaxLogic.QLL.Kit
 
 namespace LaxLogic.QLL
 
@@ -123,7 +149,18 @@ def infer' : (Γ : Ctx) → (p : Pf) → Except Err (Inferred Γ p)
   | _, .inl _    => .error (.notInferable "ι₁(p)")
   | _, .inr _    => .error (.notInferable "ι₂(q)")
   | _, .pack _ _ => .error (.notInferable "ι_t(p)")
-  | _, .gen _    => .error (.notInferable "⟨p | x⟩")
+  | Γ, .gen p    => do
+      let a := freshFor (Ctx.fvI Γ ++ p.fvI)
+      let ⟨A, d⟩ ← infer' Γ (p.openIWith a)
+      if h : Form.lc A then
+        pure ⟨.forall_ (Form.closeWith a A),
+          .allI a
+            ⟨(freshFor_notMem_of_mem_append (A := Ctx.fvI Γ) (B := p.fvI) rfl).1,
+             (freshFor_notMem_of_mem_append (A := Ctx.fvI Γ) (B := p.fvI) rfl).2,
+             Form.not_mem_fv_closeWith a A⟩
+            ((Form.openWith_closeWith a h).symm ▸ d)⟩
+      else
+        .error (.notLocallyClosed A)
   termination_by _ p => 2 * p.size
   decreasing_by
     all_goals try simp_wf
