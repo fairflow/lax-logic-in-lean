@@ -214,7 +214,7 @@ globs = ["wip.frjx", "wip.frjv_consequences", "wip.minmodv", "wip.minmodv_test",
          "wip.ui_routeB_pqmono", "wip.ui_routeB_r_def", "wip.ui_routeB_r_cells",
          "wip.ui_routeB_r_meas", "wip.ui_routeB_r_gate", "wip.ui_routeB_r_cong",
          "wip.ui_routeB_r_bound", "wip.ui_routeB_r_sound", "wip.ui_routeB_r_ui", "wip.ui_routeB_r_mono", "wip.ui_routeB_r_esc",
-         "wip.ui_routeB_r_seenmono", "wip.ui_routeB_r_esc2", "wip.ui_routeB_r_escd", "wip.ui_routeB_r_proc", "wip.ui_routeB_r_procd", "wip.ui_routeB_r_guard", "wip.ui_routeB_r_rows"]
+         "wip.ui_routeB_r_seenmono", "wip.ui_routeB_r_esc2", "wip.ui_routeB_r_escd", "wip.ui_routeB_r_proc", "wip.ui_routeB_r_procd", "wip.ui_routeB_r_guard", "wip.ui_routeB_r_rows", "wip.ui_routeB_r_bind", "wip.ui_routeB_r_bindcell", "wip.ui_routeB_r_refute", "wip.ui_routeB_r_escw", "wip.ui_routeB_r_grow"]
 
 # The CimpAnt frontier attack + φ★ cross-check, compiled (review round
 # 2026-08-11): the native oracle route for the LJF◯ interpolant cells.
