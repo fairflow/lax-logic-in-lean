@@ -58,6 +58,97 @@ theorem q_ne_p_cell1 : ∀ f ∈ [2,3,4],
     interpQ "p" f [] cell1 (some goal1) [] ≠ interpP "p" f [] cell1 (some goal1) := by
   decide +kernel
 
+
+/-! # Part 0b · Calibration: the transcription is faithful
+
+`interpQ` is a 400-line re-transcription of `interpP`, so the controls above
+are not enough: they exercise the atom rows, the `q`-implication rows with
+their fire, the box rows, the atom goal and the ◯ goal, and nothing else.
+These check the REMAINING clauses, all on the station
+
+    cStation = [c ⊃ ↑e, ◯a]
+
+which carries no parked compound implication, so the loop check never fires
+and any difference would be a transcription error and nothing else.  Every one
+is `decide +kernel`. -/
+
+/-- A station with a `q`-implication and a box: no compound implication, so
+`interpQ` must agree with `interpP` at every goal and every todo. -/
+def cStation : List Neg := [.imp (.atom "c") (.up (.atom "e")), .circ (.atom "a")]
+
+/-- The four `↑`-goal shapes and the two structural goals. -/
+theorem cal_goals : ∀ f ∈ [0,1,2,3,4],
+    (interpQ "p" f [] cStation (some (.up (.or (.atom "a") (.atom "b")))) []
+       = interpP "p" f [] cStation (some (.up (.or (.atom "a") (.atom "b"))))) ∧
+    (interpQ "p" f [] cStation (some (.up (.down (.up (.atom "a"))))) []
+       = interpP "p" f [] cStation (some (.up (.down (.up (.atom "a")))))) ∧
+    (interpQ "p" f [] cStation (some (.up .fls)) []
+       = interpP "p" f [] cStation (some (.up .fls))) ∧
+    (interpQ "p" f [] cStation (some (.and (.up (.atom "a")) (.up (.atom "b")))) []
+       = interpP "p" f [] cStation (some (.and (.up (.atom "a")) (.up (.atom "b"))))) ∧
+    (interpQ "p" f [] cStation (some (.imp (.atom "d") (.up (.atom "b")))) []
+       = interpP "p" f [] cStation (some (.imp (.atom "d") (.up (.atom "b"))))) ∧
+    (interpQ "p" f [] cStation (some (.imp (.or (.atom "d") (.atom "b")) (.up (.atom "e")))) []
+       = interpP "p" f [] cStation (some (.imp (.or (.atom "d") (.atom "b")) (.up (.atom "e"))))) := by
+  decide +kernel
+
+/-- The seven ◯-goal shapes: the lax prefix, clause by clause. -/
+theorem cal_circGoals : ∀ f ∈ [0,1,2,3],
+    (interpQ "p" f [] cStation (some (.circ (.atom "g"))) []
+       = interpP "p" f [] cStation (some (.circ (.atom "g")))) ∧
+    (interpQ "p" f [] cStation (some (.circ .fls)) []
+       = interpP "p" f [] cStation (some (.circ .fls))) ∧
+    (interpQ "p" f [] cStation (some (.circ (.or (.atom "g") (.atom "h")))) []
+       = interpP "p" f [] cStation (some (.circ (.or (.atom "g") (.atom "h"))))) ∧
+    (interpQ "p" f [] cStation (some (.circ (.down (.up (.atom "g"))))) []
+       = interpP "p" f [] cStation (some (.circ (.down (.up (.atom "g")))))) ∧
+    (interpQ "p" f [] cStation (some (.circ (.down (.circ (.atom "g"))))) []
+       = interpP "p" f [] cStation (some (.circ (.down (.circ (.atom "g")))))) ∧
+    (interpQ "p" f [] cStation
+        (some (.circ (.down (.and (.up (.atom "g")) (.up (.atom "h")))))) []
+       = interpP "p" f [] cStation
+        (some (.circ (.down (.and (.up (.atom "g")) (.up (.atom "h")))))) ) ∧
+    (interpQ "p" f [] cStation
+        (some (.circ (.down (.imp (.atom "g") (.up (.atom "h")))))) []
+       = interpP "p" f [] cStation
+        (some (.circ (.down (.imp (.atom "g") (.up (.atom "h")))))) ) := by
+  decide +kernel
+
+/-- The processing clauses: a disjunctive hypothesis in both modes, `↑⊥` in
+both modes, a conjunction, a shifted negative, an inert `⊥ ⊃ N`, and each of
+the three shapes `interpP` newly parks. -/
+theorem cal_processing : ∀ f ∈ [0,1,2,3,4],
+    (interpQ "p" f [.up (.or (.atom "d") (.atom "b"))] cStation none []
+       = interpP "p" f [.up (.or (.atom "d") (.atom "b"))] cStation none) ∧
+    (interpQ "p" f [.up (.or (.atom "d") (.atom "b"))] cStation (some (.up (.atom "e"))) []
+       = interpP "p" f [.up (.or (.atom "d") (.atom "b"))] cStation (some (.up (.atom "e")))) ∧
+    (interpQ "p" f [.up .fls] cStation none []
+       = interpP "p" f [.up .fls] cStation none) ∧
+    (interpQ "p" f [.up .fls] cStation (some (.up (.atom "e"))) []
+       = interpP "p" f [.up .fls] cStation (some (.up (.atom "e")))) ∧
+    (interpQ "p" f [.and (.up (.atom "d")) (.circ (.atom "b"))] cStation none []
+       = interpP "p" f [.and (.up (.atom "d")) (.circ (.atom "b"))] cStation none) ∧
+    (interpQ "p" f [.up (.down (.circ (.atom "d")))] cStation none []
+       = interpP "p" f [.up (.down (.circ (.atom "d")))] cStation none) ∧
+    (interpQ "p" f [.imp .fls (.up (.atom "e"))] cStation none []
+       = interpP "p" f [.imp .fls (.up (.atom "e"))] cStation none) := by
+  decide +kernel
+
+/-- The five compound-implication rows, in the ONE case where the check cannot
+fire: fuel 1, where the guard call is the fuel-0 default in both recursions.
+Each of `oimp`, `simp`, `aimp`, `dyk`, `cimp` is exercised. -/
+theorem cal_parkedRows_fuel1 :
+    (interpQ "p" 1 [] cell1 none [] = interpP "p" 1 [] cell1 none) ∧
+    (interpQ "p" 1 [] cell4 none [] = interpP "p" 1 [] cell4 none) ∧
+    (interpQ "p" 1 [] cell3 none [] = interpP "p" 1 [] cell3 none) ∧
+    (interpQ "p" 1 [] [.imp (.down (.and (.up (.atom "a")) (.up (.atom "b"))))
+                            (.up (.atom "c"))] none []
+       = interpP "p" 1 [] [.imp (.down (.and (.up (.atom "a")) (.up (.atom "b"))))
+                            (.up (.atom "c"))] none) ∧
+    (interpQ "p" 1 [] [.imp (.down (.circ (.atom "a"))) (.up (.atom "b"))] none []
+       = interpP "p" 1 [] [.imp (.down (.circ (.atom "a"))) (.up (.atom "b"))] none) := by
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> decide +kernel
+
 /-! # Part 1 · The six ◯-free cells
 
 `interpP`'s chains at these cells are strictly `sizeNeg`-ascending
@@ -319,6 +410,10 @@ end LJFO
 #axioms_within LJFO.q_eq_p_box [propext]
 #axioms_within LJFO.q_eq_p_qimpBox [propext]
 #axioms_within LJFO.q_ne_p_cell1 [propext]
+#axioms_within LJFO.cal_goals [propext]
+#axioms_within LJFO.cal_circGoals [propext]
+#axioms_within LJFO.cal_processing [propext]
+#axioms_within LJFO.cal_parkedRows_fuel1 [propext]
 #axioms_within LJFO.q1_A [propext]
 #axioms_within LJFO.q1_E [propext]
 #axioms_within LJFO.q2_A [propext]

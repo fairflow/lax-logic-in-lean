@@ -250,7 +250,7 @@ REFUTED — and eleven modal shapes chosen from the ways the recursion can loop
 through a box, plus the running cell S1 of `docs/ui-ljfo-clause-table.md`
 §4.12.  Each verdict is a KERNEL-CHECKED equation
 `interpQ p f … = interpQ p W …` at two or three fuels above the threshold `W`
-(`decide +kernel`, 35 decisions in 5.6 s, every one `[propext]`).
+(`decide +kernel`, 40 decisions in 16 s, every one `[propext]`).
 
 | cell | station ⇒ goal | `interpP` | `interpQ` const from |
 |---|---|---|---|
@@ -273,10 +273,25 @@ through a box, plus the running cell S1 of `docs/ui-ljfo-clause-table.md`
 | (m11) | `[◯↓◯↓((a∨b) ⊃ ↑c)] ⇒ ◯d` — two nested boxes | — | **10** |
 | **S1** | `[↓◯(↓(d ⊃ ↑a)) ⊃ ↑e, c ⊃ ◯g]` | — | **12** at `↑e`, **13** at `◯g`, **12** for `∃p` |
 
-Controls, also kernel-checked: `interpQ = interpP` where no parked compound
-implication is ever reached (cell (v); a bare box `[◯a]`; a `q`-implication
-with a boxed body `[c ⊃ ◯g]`), and `interpQ ≠ interpP` at cell (i) from fuel 2
-— so the change is located exactly at the rows it is meant to change.
+**Calibration.**  `interpQ` is a 400-line re-transcription of `interpP`, so
+sampling is not enough: a difference anywhere but the two loop-checked rows
+would be a transcription error.  On the station `[c ⊃ ↑e, ◯a]`, which carries
+no compound implication and where the check therefore never fires, `interpQ`
+and `interpP` are kernel-checked EQUAL at all six `↑`/`∧`/`⊃` goal shapes, at
+all seven ◯-goal shapes (the whole lax prefix, clause by clause), and on every
+processing clause — a disjunctive hypothesis in both modes, `↑⊥` in both modes,
+a conjunction, a shifted negative, an inert `⊥ ⊃ N` (`cal_goals`,
+`cal_circGoals`, `cal_processing`).  The five compound-implication rows
+(`oimp`, `simp`, `aimp`, `dyk`, `cimp`) are checked equal at fuel 1, the one
+fuel at which the guard call is the fuel-0 default in both recursions
+(`cal_parkedRows_fuel1`).  And `interpQ ≠ interpP` at cell (i) from fuel 2, so
+the change is located exactly at the rows it is meant to change.
+
+The calibration gate was watched failing: mistranscribing one arm of the lax
+prefix (`◯↓◯P′` inverting to `↑P′` instead of `◯P′`) makes `cal_circGoals`
+report
+
+    Tactic `decide` proved that the proposition … is false
 
 **The refutation candidate of this package did not fire.**  The modal shapes
 were chosen because a per-station `seen` cannot cut a loop through a box: the
