@@ -2827,6 +2827,85 @@ build, one heavy run at a time, leaf builds by explicit module name.
 
 ---
 
+### 4.27 WP10: the easy halves of `PQEquiv` PROVED; the candidates stage re-run one at a time — `PQHard` survives its designed refutation candidate, the naive per-state `∃p` hypothesis REFUTED at inner states; WP11 (the hard halves) launched (2026-09-06, 08:25)
+
+**The easy halves.**  The WP10 run's module `wip/ui_routeB_pqequiv.lean`
+survived the crash on disk, uncommitted.  Brought over, it failed to build
+here on ONE error (an `Or` eliminated into `Type` at `nOrAllPW`, line 76:
+`rcases hb' with rfl | rfl` on `b = [x] ∨ b = [nOrAll l]`), every other
+failure being the `sorryAx` that error induced, plus one wrong pin
+(`PW.refl` declared `[]`, actual `[propext, Quot.sound]`).  Repaired here
+by deciding the first disjunct (`if h1 : b = [x] then … else …`, decidable
+equality on `List Neg`) and transporting by `subst`; the module then builds
+in 18 s (8617 jobs replayed, nothing upstream).  Committed at 6be5667.
+
+    EasyLvl rst p f := (∀ todo done seen, Inv [interpP p f todo done none] [] .tru (interpG rst p f todo done none seen)) ×
+                       (∀ todo done G seen, Inv [interpG rst p f todo done (some G) seen] [] .tru (interpP p f todo done (some G)))
+    easyLvl rst p : ∀ f, EasyLvl rst p f                    [propext, Classical.choice, Quot.sound]
+    pqEasyE p f done   : Inv [interpP p f [] done none] [] .tru (interpQ p f [] done none [])
+    pqEasyA p f done G : Inv [interpQ p f [] done (some G) []] [] .tru (interpP p f [] done (some G))
+    PQHard p := (∀ f done,   Inv [interpQ p f [] done none []] [] .tru (interpP p f [] done none)) ×
+                (∀ f done G, Inv [interpP p f [] done (some G)] [] .tru (interpQ p f [] done (some G) []))
+    pqEquiv_of_hard : PQHard p → PQEquiv p
+
+Both halves hold at EVERY `seen` and under EVERY reset policy `rst` — the
+level below is consulted at every `seen`, so `seen` is universally
+quantified in the induction hypothesis and the policy is never inspected.
+Pins measured here as declared; gate watched failing: `pqEasyA` at
+`[propext, Quot.sound]` fails on `Classical.choice` (through `cutInv` in
+`impMono`).  With WP9, **uniform interpolation for PLL now rests on
+`PQHard` alone**, over the cofinality statements as variables.
+
+**The candidates stage** (Matthew, 07:30: "run a selection of the
+candidates one at a time; two hours max; then switch to the proof").  The
+crashed run's verdicts were lost; re-run here from 07:45 to 08:17, every
+run under a 300 s deadline, never two at once; record
+`docs/pqequiv-cases.md`; harnesses `_probe/stage0*.lean` (erase, normalise
+by `Rewrite.fullSetC`, decide by `FRJ.Arity.decideByEngine` with in-process
+certificates; the control batch: `p ⊢ ◯p` PROVED, `◯p ⊢ p` REFUTED, the cross
+cells (i)-∀p against (vi)-∀p REFUTED both ways).
+
+* Top level (`seen = []`), the statement `PQHard` names: cells (i), (iii),
+  (vi), (m1), (m6), (m10), fuels 1–3 and 4 on (i)/(iii) — 40 runs, every
+  direction PROVED, `NFEQ = true` in every run (the two interpolants are
+  literally the same formula after normalisation).  The designed candidate
+  **(vii)** `[↓((a∨b) ⊃ ↑c) ⊃ ↑g] ⇒ ↑↓((a∨b) ⊃ ↑c)` — a Dyckhoff-parked
+  implication with a disjunctive inner antecedent, so that inside the guard
+  task a branching row puts an `E` at a state where `E^Q ⊬ E^P` (below) in
+  NEGATIVE position — fuels 2–6, and (viii) (a box hypothesis, a lax goal)
+  fuels 3–5: PROVED both ways at every fuel, normal forms equal.  **`PQHard`
+  as stated is not refuted.**
+* Inner states (the states an induction on the fuel visits): the guard
+  state `([], done, some ↑Q′, [Q′])` and the `∃p` state `([], done, none,
+  [Q′])` for each compound antecedent `Q′`; and the residue states (goal a
+  residue of `Q′` after inversion).  The naive `∀p` hypothesis
+  `A^P_f(s) ⊢ A^Q_f(s | seen)` PROVED at every decided state (fuels 2–5;
+  sizes up to 35 against 3).  The naive `∃p` hypothesis
+  `E^Q_f(s | seen) ⊢ E^P_f(s)` **REFUTED**, kernel-certified, at (i) fuels
+  3–5, (iii) fuel 5, (m6) fuels 3–4: `interpQ` has dropped the conjunct
+  `↓A(done ⇒ ↑Q′) ⊃ E(N :: rest)`, a consequence of the station that
+  `interpP` adds as an explicit row.  Skips: (vi) inner at fuels 3 and 4
+  (deadline), reported.
+
+**What this fixes for the proof.**  The `∀p` hard half can be attempted by
+a direct induction on the fuel over the generalised state and every `seen`
+(at the guard state the self-attack row of `interpP` is the same state one
+fuel down; fuel monotonicity — no such lemma exists yet — lifts the
+hypothesis).  The `∃p` hard half must carry the dropped conjunct in its
+hypothesis at `seen ≠ []`, and how the two inductions mesh where such an
+`E` sits in the negative position of a `∀p` row is the open design
+question — the decider says the `∀p` statement holds there, so the
+mechanism is not row-wise.  If no per-fuel hypothesis survives, the cofinal
+form suffices for N4 and is the honest restatement.
+
+**WP11 launched 08:25** — ONE agent, cache cloned from this worktree with
+the family olean verified before any build, builds by explicit module
+name: Stage 0c tests the candidate hypotheses on the inner states before
+any proof; Stage 1 fuel monotonicity; Stage 2 the hard halves, ◯-free
+first; Stage 3 plumbs to `PLL_UI`.  Budget two hours of work.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
