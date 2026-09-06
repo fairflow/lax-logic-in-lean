@@ -3218,6 +3218,264 @@ accepted; residual as a typed obligation if it does not close.
 
 ---
 
+### 4.33 WP12c: the formula-level escape design of §4.32 shown UNSUITABLE at the statement level and replaced by DERIVATION-level escapes; the processing phase of the family for the pair recursion PROVED at every record; uniform interpolation for PLL rests on two height-booked obligations; the saturated phase handed to WP12d (2026-09-06, 17:55)
+
+One run of 89 minutes (relaunched at 16:19 after my first brief named a
+nonexistent merge target), ten commits, merged at 1d81de9 and verified
+here (seven leaf modules, 108 s, nothing upstream; pins measured; gate
+watched failing — `satE2R_of_escD` at `[]` fails on `propext`; sorry sweep
+clean).  Record: `docs/n4-pair-cofinality.md`.
+
+**The escape statements of §4.32 cannot support the induction** — not
+refuted (no countermodel claimed) but unsuitable, for two exact reasons.
+(1) They index the escapes by the CURRENT station, which changes along
+every station-changing edge, so no clause of the induction can move them;
+repaired by indexing by the record alone (`escConjS`/`escRowsS`, with four
+structural steps PROVED: `escHyp_record`, `escGoal_absorb`,
+`escHyp_recorded`, `escGoal_escape`).  (2) Fatal for any formula-level
+escape: at a station attack whose row is not cut, the ∃p traversal must
+discharge the row's guard through the ∀p statement at the extended record,
+and in an escape branch it then holds a ∀p formula about an ANCESTOR
+station while still owing its own goal; every use needs a transport — a
+cut — whose height the family's measure cannot pay, and escapes in the ∃p
+conclusion block the goal's own introductions.
+
+**The design that works: derivation-level escapes.**  The escape carries a
+derivation, not a formula — a recorded pair together with a derivation of
+that pair's own guard sequent strictly below the height booked at its
+recording site — caught at the recording site, which restarts,
+well-founded on the guard derivation's height.  Two facts make it work,
+both PROVED: the record extension is confined to the guard call
+(`parkRowER_record`, `parkRowAR_record`, axiom-free), and set-equal
+stations weaken into one another (`sameSet_subs`, `wkSameSet`).  Also
+PROVED: record monotonicity of `interpR` (`interpR_seenMonoE/A`), the
+recording-site restart well-founded (`escapeLoop`, axiom-free) and the loop
+in the family's types over the ∀p entry as a parameter (`guardLoop`,
+`[propext]`), the escape a cut site creates (`escOfCut`), the book
+invariant and its descent along every processing edge (`BookBound`,
+`bookBound_mono`, `bb_park`, `bb_orBranch`, `bb_andHyp`, `bb_impFls`,
+`bb_fire`), the processing phase at every record, escape-free and
+`Sum`-valued (`eMinPRg`/`aMinPRg`, `eMinPRD`/`aMinPRD`), and the row layer
+at a saturated station.  One correction caught inside the run: the
+obligations WITHOUT the book invariant are unprovable (a cut site must
+return an escape beating a booked height the statement left arbitrary).
+
+**The residual, verbatim** (`wip/ui_routeB_r_escd.lean`):
+
+    HeightBook seen := one Nat per recorded pair;   EscD Δ seen b := a recorded pair with a derivation
+        gd : Inv (T ++ Δ) [] .tru ↑Q of its guard sequent, hgtI gd < the height booked for it
+    BookBound seen b h := h ≤ every booked height
+    SatE2RD p := ∀ done Δ ψ seen (b : HeightBook seen), Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
+                 ∀ {j} (d : Inv (done ++ Δ) [] j ψ), BookBound seen b (hgtI d) →
+                 UpFrom (fun e => Inv (interpR p e [] done none seen :: Δ) [] j ψ)  ⊕  EscD Δ seen b
+    SatA2RD p := ∀ done Δ G seen (b : HeightBook seen), Saturated done → ParkedCtxP done → PFreeCtx p Δ →
+                 ∀ {j} (d : Inv (done ++ Δ) [] j G), BookBound seen b (hgtI d) →
+                 UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: Δ) [] .tru
+                                        (interpR p f [] done (some (jGoal j G)) seen))  ⊕  EscD Δ seen b
+    escD_nil_empty;  satE2R_of_escD : SatE2RD p → SatE2R p;  satA2R_of_escD : SatA2RD p → SatA2R p     [propext]
+    pll_ui_R_escD : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, SatE2RD p) → (∀ p, SatA2RD p) → PLL_UI
+                                                                             [propext, Classical.choice, Quot.sound]
+
+**Not delivered: the saturated phase** — the seventeen-definition mutual
+for `interpR` with `Sum`-valued returns and the recording-site loop inside
+the same strongly connected component; the analysis consumed the run.
+§8.1 of the record gives the founding it needs: the existing three-component
+measure `(normalised height, station weight, sizeOf)` carries the loop
+(the restart is at the escape's own derivation, strictly lower; the first
+call at the antecedent sub-derivation), and the per-clause height facts
+must also be exported as `≤` to descend the book invariant; and a note
+against building half of it (the ∀p side calls the ∃p side, so a ∃p
+development over the ∀p entry as a parameter leaves a fixpoint of the
+`ParkAntP` shape, not a reduction).
+
+**WP12d launched 17:52**, one agent: the ◯-free saturated phase first
+(the modal arms drop), bodies on a scratch copy with the founding
+deferred, then one paid founding build (a family-class build is
+expected); `pll_ui_R_circFree` checked against `ipc_ui_routeB`; then the
+modal arms; any clause that cannot be closed becomes a typed parameter,
+never a `sorry`.
+
+---
+
+### 4.34 WP12d: the saturated-phase family for the pair recursion NOT built — `SatE2RD` REFUTED (a statement fault, the record and the p-free context quantified independently; a one-world semantics for LJF◯ built as the refutation oracle), repaired by booking the guard DERIVATION; the station-growth repair REFUTED; the missing clause of the induction named — the escape must cross the p-free binders the inversion phase creates — with the crossings that ARE available PROVED and one designed cell where none applies (2026-09-06, 19:25)
+
+One run of 70 minutes (17:52–19:01), nine commits, merged at 691623b and
+verified here: five leaf modules by explicit name, 71 s in all (31, 10, 10, 10, 10 s), nothing upstream rebuilt; pins asserted in-module with `#axioms_within` and checked by the build; the gates were watched failing by the run, one per module, quoted in its record §7, and are NOT re-watched here (Matthew's halt instruction of 19:20 forbids further lake work); sorry sweep by byte scan clean (zero `sorry`/`sorryAx`/`admit`/`native_decide`, zero NUL bytes).  Record: `docs/n4-pair-family.md`.
+
+**`SatE2RD` is REFUTED.**  The ∃p obligation of §4.33 quantifies the record
+`seen` and the p-free context `Δ` INDEPENDENTLY and books a bare number per
+recorded pair, so nothing says a recorded pair was ever recordable at that
+`Δ`.  Counter-instance (`wip/ui_routeB_r_refute.lean`), with
+`Qa := ↓↑a`, `X := Qa ⊃ ↑n`:
+
+    p := "p",  done := [X, ↑p],  Δ := [],  ψ := Qa ⊃ ↑n,  seen := [(Qa, done)],  b := (hgtI refD, ())
+
+`refD : Inv done [] .tru ψ` exists and `BookBound` holds.  The value branch
+fails: at this record the ∃p row of `X` is `⊤` (`parkRowER_cut`) and the row
+of `↑p` is `⊤` (its atom is `p`), so the interpolant is built from `⊤` alone
+at every fuel (`BindCell.cellRows` by `rfl`, lifted to all fuels by
+`Refute.ev_interpR_done`), and the one-world model with `a` true, `n` false
+refutes `ψ`.  The escape branch fails: `EscD [] seen b` asks for a
+derivation of `done ⊢ ↑↓↑a`, refuted by the model with `a` false.
+
+    Refute.satE2RD_refuted : SatE2RD "p" → False                       [propext, Quot.sound]
+
+So `pll_ui_R_escD` (§4.33) stands as a theorem and is VACUOUS.  Not
+refuted: `interpR`; `SatE2R`/`SatA2R` (at `seen = []` the escape branch is
+empty and no row is cut); uniform interpolation for PLL.
+
+**The refutation oracle: a one-world semantics for LJF◯, PROVED.**  Nothing
+in `LJF/` had a semantics.  A single-point Kripke model with `◯` read as
+the identity nucleus:
+
+    evP v (atom a) = v a,  evP v ⊥ = false,  evP v (P ∨ Q) = evP v P || evP v Q,  evP v (↓M) = evN v M
+    evN v (↑P) = evP v P,  evN v (◯P) = evP v P,  evN v (Q ⊃ N) = !(evP v Q) || evN v N,  evN v (M ∧ N) = evN v M && evN v N
+
+    sndI : Inv Γ Ω j C → CtxT v Γ → OmT v Ω → evN v C = true;  sndS, sndR, sndL likewise (one mutual induction)
+    no_inv_of_model : CtxT v Γ → evN v C = false → Inv Γ [] j C → False              [propext, Quot.sound]
+
+Complete for nothing, but cheap and kernel-checked; it settled both
+branches above, and it is the first refutation tool for `Inv` in the
+repository.
+
+**The repair, and the residual restated (OPEN).**  Book what a recording
+site holds, its guard DERIVATION, not that derivation's height
+(`wip/ui_routeB_r_escw.lean`):
+
+    GuardBook Δ []           = PUnit
+    GuardBook Δ ((Q,T) :: s) = Inv (T ++ Δ) [] .tru (↑Q) × GuardBook Δ s
+    EscW Δ seen bk  := a recorded pair (Q,T) with gd : Inv (T ++ Δ) [] .tru (↑Q), hgtI gd < hgtI (its booked derivation)
+    GuardBound Δ seen bk h := h ≤ the height of every booked derivation
+
+    SatE2RW p := ∀ done Δ ψ seen (bk : GuardBook Δ seen), Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
+                 ∀ {j} (d : Inv (done ++ Δ) [] j ψ), GuardBound Δ seen bk (hgtI d) →
+                 UpFrom (fun e => Inv (interpR p e [] done none seen :: Δ) [] j ψ)  ⊕  EscW Δ seen bk
+    SatA2RW p := ∀ done Δ G seen (bk : GuardBook Δ seen), Saturated done → ParkedCtxP done → PFreeCtx p Δ →
+                 ∀ {j} (d : Inv (done ++ Δ) [] j G), GuardBound Δ seen bk (hgtI d) →
+                 UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: Δ) [] .tru
+                                        (interpR p f [] done (some (jGoal j G)) seen))  ⊕  EscW Δ seen bk
+
+The counter-instance is excluded outright: `refute_blocked : GuardBook []
+BindCell.seen → False` (there is no derivation of `done ⊢ ↑Qa` at `Δ = []`).
+PROVED over the repair: `escW_nil_empty`, `guardBound_nil`,
+`guardBound_mono` (axiom-free), `satE2R_of_escW : SatE2RW p → SatE2R p`,
+`satA2R_of_escW` (`[propext]`), `escWOfCut` (`[propext, Quot.sound]`),
+`satA2RW_of_uentryRW` and `guardLoopW` over the ∀p entry `UEntryRW` as a
+parameter (`[propext]`; the restart is now literally "book the smaller
+derivation"), and
+
+    pll_ui_R_escW : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, SatE2RW p) → (∀ p, SatA2RW p) → PLL_UI
+                                                                     [propext, Classical.choice, Quot.sound]
+
+The fire-cost arithmetic is PROVED (`hgt_fireCost`, `hgtL_ge`,
+`hgt_fire_above_guard`, `hgtI_up_ge`: a fire costs at least three units
+above the guard derivation it contains), and the record argues from it that
+the repaired pair cannot be refuted by an instance of the same shape.  That
+argument assumes the cut site's guard sub-derivation is a derivation of the
+BOOKED sequent, i.e. at the same `Δ`; it is not, when a binder intervenes
+(next paragraph), and I do not take it as evidence that `SatE2RW` is true.
+
+**Where the induction has no clause: the p-free binders.**  `K`, the
+p-free context the traversal runs at, is not constant in the saturated
+phase: `TInvQ`/`UInvGQ` extend it at `Inv.downL` and `Inv.atomL`, because
+the derivation binds a new p-free hypothesis there (a p-free goal
+antecedent by `Inv.impR`, or a kept hypothesis's body).  A recording site
+sits above such a binder and a cut site can sit below it, so an escape
+created below, whose payload is a derivation at `M₀ :: K`, must be brought
+back to `K`: a context STRENGTHENING.  PROVED available
+(`wip/ui_routeB_r_bind.lean`) exactly when one left focus on a member of
+`K` re-supplies the hypothesis:
+
+    bindBackI : ↑↓M₀ ∈ Γ → Inv (M₀ :: Γ) [] j (↑P) → Inv Γ [] j (↑P)     (four rules, no cut)     []
+    hgt_bindBackI : hgtI (bindBackI h x) = hgtI x + 4;   hgt_keptSpan : hgtS (Stab.lfoc h (.rel (.downL x))) = hgtI x + 4
+    EscC K c seen b := the escape with c units of height still to spend
+    escC_crossDown : ↑↓M₀ ∈ K → EscC (M₀ :: K) (c + 4) seen b → EscC K c seen b;  escC_crossAtom;  escC_crossMem;  bb_keptSpan
+
+so the four constructors rebuilt are exactly the four the traversal
+consumed, and the book invariant crosses a kept-hypothesis span with no
+slack.  NOT available (statement-level, not refuted): a disjunctive kept
+hypothesis (`Inv.orL` splits before the `downL`; the escape carries one
+branch); a kept hypothesis reached through a left-focus chain (`↑↓M₀` is a
+subformula of a member of `K`, not a member); and the GOAL antecedent
+(nothing above holds it, and `hgt_goalSpan : hgtI (Inv.impR (Inv.downL x))
+= hgtI x + 2` grants two units where a crossing costs four).  The residual
+is one typed obligation (OPEN):
+
+    EscBindOpenR p := ∀ K M₀ c seen b, PFreeN p M₀ → PFreeCtx p K → EscC (M₀ :: K) (c + 4) seen b → EscC K c seen b
+
+One designed cell (`wip/ui_routeB_r_bindcell.lean`, rule 9) exhibits the
+configuration as a kernel-checked derivation: with `HK := ↓(Qa ⊃ ↑n) ⊃ ↑Qa`
+kept, `Qa` is provable at `done ++ [HK]` only through `HK`, whose antecedent
+binds `↑a` by `impR`/`downL` and then fires `X` again at the same station;
+`cellCut` (the loop test fires below the binder), `cellRows` (the fire row
+of `X` is gone), `cellHeight` (the escape is well-formed where it is
+created), `cellCrossFails : ↑↓M₀ ∉ K ∧ M₀ ∉ K`, `cellGoalSpan` (two granted,
+four needed); all `[]` or `[propext]`.  No countermodel is claimed for the
+cell; it shows the step is reached and the step the family has does not
+apply.
+
+**The station-growth repair is REFUTED.**  Parking the binder into the
+STATION instead of `K` would make every station below a binder strictly
+larger as a set, so no cut site would lie below a binder and no crossing
+would be needed; the measure survives it; the whole repair rests on
+
+    E^R(done | seen), M₀  ⊢  E^R(M₀ :: done | seen)                                   (grow)
+
+and `(grow)` is FALSE (`wip/ui_routeB_r_grow.lean`): at a record that has
+cut a fire row, `E^R(done | seen)` has lost that row; at the larger station
+the recorded pair is no longer set-equal, the loop test does not fire, and
+`E^R(M₀ :: done | seen)` has the row back, strictly stronger and not
+recoverable from `M₀`.  At the cell with `M₀ := ↑a`: `Grow.rowsA`,
+`Grow.ev_guard`, `Grow.ev_fire`, `Grow.ev_grow` (false at every fuel ≥ 4),
+`Grow.growE_refuted : Inv [↑a, E^R(done|seen)] [] .tru (E^R([↑a] ++ done | seen)) → False`
+`[propext, Quot.sound]`.
+
+**Status after WP12d.**  `SatE2RD` REFUTED; `SatA2RD` OPEN and no longer
+load-bearing; `pll_ui_R_escD` PROVED and vacuous; `SatE2RW`, `SatA2RW`,
+`UEntryRW`, `EscBindOpenR` OPEN; the family for `interpR` NOT built (the
+statement question comes first); N4 for PLL OPEN, over `SatE2RW` +
+`SatA2RW`, with the binder crossing in the way.  Not delivered, correctly:
+`satE2RD_circFree`/`pll_ui_R_circFree`, instances of a refuted type.
+
+**Assessment (mine, DESIGN, nothing below is checked).**  The cell of the
+run is the Peirce configuration `((Qa ⊃ n) ⊃ Qa) ⊢ Qa`: the inner
+derivation of the recorded antecedent lives under a p-free hypothesis the
+recording site does not have, so no shorter derivation of the BOOKED
+sequent need exist; on the cell the value branch of `SatE2RW` at the cut
+record fails by the run's own model (`⊤, HK ⊬ ↑n`) and the escape branch
+fails if the booked derivation is minimal (a bounded-height claim, not a
+one-world claim).  I therefore expect `SatE2RW` to be REFUTED by the same
+cell once minimality is certified, and I read the whole escape design as
+answering the wrong question: an escape restarts the recording site,
+whereas what the cut site lacks is the ROW the record removed, and that row
+is present in the interpolant of the recording site itself, a formula the
+induction can carry on the left.  Restated obligation at a record: with
+`RecCtx_e(seen) := [E^R_e(T₁ | seen₁), E^R_e(T₂ | seen₂), …]` (the ∃p
+interpolant of each recorded station at the record it was recorded at, a
+function of `seen` and the fuel alone),
+
+    SatE2RC p := ∀ done Δ ψ seen, … → Inv (done ++ Δ) [] j ψ →
+                 UpFrom (fun e => Inv (interpR p e [] done none seen :: RecCtx_e seen ++ Δ) [] j ψ)
+
+which is `SatE2R` at `seen = []`, holds on the cell (`(Qa ⊃ n), HK ⊢ ↑n`),
+and closes the cut site of the ∃p side by the induction hypotheses on the
+guard sub-derivation and the continuation at the recording record (record
+monotonicity `interpR_seenMonoE` and set-equal weakening `wkSameSet` supply
+the transports), with no escape and no crossing.  The ∀p side at a cut
+record with the recorded antecedent as goal closes by the induction
+hypothesis on the guard sub-derivation (the loop cut O7, as always
+intended); the ∀p side at a cut record with a FOREIGN goal, where the
+derivation fires the cut row, is the one case I cannot close on paper and
+is where WP13's designed cell goes.  NOT launched.  At 19:20 Matthew HALTED the search for
+uniform interpolation: four or five independent serious attempts, tens of
+thousands of lines, repairs ongoing while the tower grows; the results are
+banked and the task may not be ours to take on (it is Rosalie Iemhoff's
+kind of problem).  The restated obligation and the two cells above are
+recorded as the first things to test if the search is ever resumed; no
+build of either was made.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
@@ -3225,7 +3483,7 @@ item says what would settle it.  **Standing note (2026-09-06, §4.25):**
 this list was written for the retaining table of §2–§3 and route A′; the
 live state is route (B)'s, and it is one line — uniform interpolation for
 PLL rests on N4 alone (§4.24), N4 rests on `QBound` and `PQEquiv` (§4.25),
-both OPEN.  O2 (`CimpAnt`) is superseded by the unconditional cofinality
+both OPEN.  **Since §4.29–4.34 (2026-09-06 evening):** N4 rests on the pair recursion `interpR` instead (`pll_ui_R`, §4.31); its escape-carrying obligations were refuted and repaired twice (§4.33, §4.34); the live obligations are `SatE2RW` + `SatA2RW` (§4.34), OPEN, with the p-free binder crossing `EscBindOpenR` the named missing clause and a restated record-context obligation proposed but untested; **the search was HALTED by Matthew at 19:20 on 2026-09-06 (§4.34)**.  O2 (`CimpAnt`) is superseded by the unconditional cofinality
 of §4.17; O7 (the loop cut) is now a definition, `interpQ`, with its
 literal termination the `QBound` obligation; O8 (termination of the
 retaining table) is answered for route (B) by the height-first founding
