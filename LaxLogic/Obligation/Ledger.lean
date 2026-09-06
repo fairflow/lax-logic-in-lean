@@ -62,6 +62,16 @@ parameters could discharge it. Obligations are therefore predicates over the
 binders, applied to them in the finished statement. -/
 initialize binderFVars : IO.Ref (Array Expr) ← IO.mkRef #[]
 
+/-- Hook by which `postponing theorem` runs the constraint solver.
+
+`Solve.lean` computes the reduced form of each obligation, and needs the ledger,
+so it imports `Postpone`; `postponing theorem` in turn wants to run it as soon
+as a declaration is recorded. Rather than merge the two modules, `Solve` sets
+this reference on import and `Postpone` calls whatever it finds. When `Solve`
+is not imported the reference is `none` and nothing happens. -/
+initialize solverHook :
+    IO.Ref (Option (Name → Elab.Command.CommandElabM Unit)) ← IO.mkRef none
+
 /-- Every declaration that owes something, in declaration order. -/
 def owedEntries (env : Environment) : Array Owed :=
   obligationExt.getState env

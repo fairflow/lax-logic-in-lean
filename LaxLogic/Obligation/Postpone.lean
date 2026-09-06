@@ -312,6 +312,11 @@ def elabPostponing : CommandElab := fun stx => do
     else
       logInfo m!"{declName} owes {entries.size}: \
         {entries.toList.map (·.name)}"
+      -- Solve the constraints straight away, if `Solve` is imported. Leaving
+      -- this to a separate command would put the reduced forms back in the
+      -- hands of whoever writes the file, which is the thing being removed.
+      if let some solve ← solverHook.get then
+        solve declName
   | _ => throwUnsupportedSyntax
 
 /-- Report every outstanding obligation in the current environment, including

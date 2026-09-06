@@ -31,6 +31,7 @@ Theorem 1 (conservativity over HOL) is deliberately left for later work.
 | `Tactics.lean` | `lax_abstract` / `lax_refine` (Fig. 4 read in each direction), `reduce_obligation` (the paper's (8) → (9) step), `discharge_obligation` (closing a constraint at a model). |
 | `Ledger.lean` | The persistent environment extension. Separate module because `initialize` cannot be consumed where it is declared. |
 | `Postpone.lean` | The `postpone` tactic, `lax_apply` (borrowing another holed theorem's obligations), the `postponing theorem` command, and the `#obligations` / `#obligations_json` reports. |
+| `Solve.lean` | The `(max, +)` normaliser and `solve_obligations`: computes each obligation's reduced form and the `Debt` fold, certified by `omega`. Registered with `postponing theorem`, so this happens automatically. |
 | `Conservativity.lean` | `#obligations_audit`: every ledger entry is a real theorem, every obligation a definition, no `sorryAx`, no mechanism-introduced axiom. Throws rather than reports. |
 | `Latch.lean`, `LatchSynth.lean` | The paper's RS latch (Figs. 7–8), first with the timing constraints assumed and then synthesised — recovering its equation (8) and reducing it to (9). |
 | `Adder.lean` | The repository's ripple-carry and carry-lookahead adders rerun on the `◯∀` side; the derived bounds agree with what the `◯∃` extractor computes; the 32-bit cycle-time obligation is refuted and then discharged after re-associating the fold. |

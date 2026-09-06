@@ -40,6 +40,14 @@ Mendler's monoid law `weak (c ++ d) φ = weak c (weak d φ)` as an operation
 rather than a theorem, and it is what makes the mechanism usable across a
 development rather than within one proof.
 
+`Solve` closes the last gap. It normalises a synthesised constraint over
+`(max, +)` — the only two operations the modality's rules introduce — into a
+conjunction of linear inequalities, one per timing path, and `postponing
+theorem` runs it as each declaration is recorded. So the reduced forms and the
+`C ⊃ φ` fold are *output*, not something an author writes down: the normaliser
+proposes and `omega` certifies, so a bug in it can only cause a build failure,
+never an unsound theorem.
+
 `Examples` is documentation and gate at once: every axiom claim is pinned with
 `#guard_msgs`, including the negative case showing what `sorry` does to the same
 proof.
@@ -91,4 +99,5 @@ import LaxLogic.Obligation.StdCtxBridge
 import LaxLogic.Obligation.Ledger
 import LaxLogic.Obligation.Postpone
 import LaxLogic.Obligation.Conservativity
+import LaxLogic.Obligation.Solve
 import LaxLogic.Obligation.Examples

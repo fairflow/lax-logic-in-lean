@@ -145,54 +145,34 @@ theorem borrowed_is_datapath
         hm hleaf hpb hxor hbuf
       = bal_meets_cycle.obligation1 Gp δ k T hm hleaf := rfl
 
-/-! ## 5. Calculating the offsets
+/-! ## 5. Calculating the offsets — by machine
 
-Every one of the seven obligations now outstanding reduces by the *same*
-tactic. None of them was written down in advance. -/
+There is no list of reduced constraints in this file. `postponing theorem` runs
+the `(max, +)` solver of `Solve.lean` as it records each declaration, so the
+five obligations above already have their solved forms in the environment:
 
-section Reduce
+    datapath_meets_clock.obligation1_solved : … ↔ k * δ ≤ T
+    datapath_meets_clock.obligation2_solved : … ↔ T + δsum ≤ Tclk ∧ tp + δsum ≤ Tclk
+    pipeline_meets_clock.obligation1_solved : … ↔ k * δ ≤ T
+    pipeline_meets_clock.obligation2_solved : … ↔ T + δsum ≤ Tclk ∧ tp + δsum ≤ Tclk
+    pipeline_meets_clock.obligation3_solved : … ↔ Tclk + δbuf ≤ Tout
+
+Note the second: the solver split `max T tp + δsum ≤ Tclk` into its two paths,
+which is what static timing analysis wants and what a person writing the
+right-hand side by hand would probably not have bothered to do.
+
+## 6. Folding them back in
+
+`postponing theorem` also emitted `datapath_meets_clock_debt` and
+`pipeline_meets_clock_debt`, the `C ⊃ φ` forms over the whole computed
+constraint set. The two statements below are about the *shape* of that fold
+rather than its content, so they are still worth writing down. -/
+
+section Fold
 variable (Gp Pb Sum Q : Refined Nat) (δ δsum δbuf T tp Tclk Tout k : Nat)
 variable (hm : MergeNet Gp δ) (hleaf : ◯∀[from_ 0] Gp)
 variable (hpb : ◯∀[from_ tp] Pb) (hxor : CellSpec Gp Pb Sum δsum)
 variable (hbuf : UnitSpec Sum Q δbuf)
-
-/-- The datapath's inherited constraint: the lookahead tree must fit before `T`. -/
-theorem datapath_obligation1_iff :
-    datapath_meets_clock.obligation1 Gp Pb Sum δ δsum T tp Tclk k hm hleaf hpb hxor
-      ↔ k * δ ≤ T := by
-  reduce_obligation
-
-/-- The datapath's own constraint: the sum XOR must fit after the later of the
-group carry and the local propagate. -/
-theorem datapath_obligation2_iff :
-    datapath_meets_clock.obligation2 Gp Pb Sum δ δsum T tp Tclk k hm hleaf hpb hxor
-      ↔ max T tp + δsum ≤ Tclk := by
-  reduce_obligation
-
-@[inherit_doc datapath_obligation1_iff]
-theorem pipeline_obligation1_iff :
-    pipeline_meets_clock.obligation1 Gp Pb Sum Q δ δsum δbuf T tp Tclk Tout k
-        hm hleaf hpb hxor hbuf ↔ k * δ ≤ T := by
-  reduce_obligation
-
-@[inherit_doc datapath_obligation2_iff]
-theorem pipeline_obligation2_iff :
-    pipeline_meets_clock.obligation2 Gp Pb Sum Q δ δsum δbuf T tp Tclk Tout k
-        hm hleaf hpb hxor hbuf ↔ max T tp + δsum ≤ Tclk := by
-  reduce_obligation
-
-/-- The pipeline's own constraint: the output buffer must fit before the
-deadline. -/
-theorem pipeline_obligation3_iff :
-    pipeline_meets_clock.obligation3 Gp Pb Sum Q δ δsum δbuf T tp Tclk Tout k
-        hm hleaf hpb hxor hbuf ↔ Tclk + δbuf ≤ Tout := by
-  reduce_obligation
-
-/-! ## 6. Folding them back in
-
-Two equivalent presentations of the same finished theorem. The first is
-Mendler's: the statement *is* `weak` at the ledger, read as a list. The second
-curries the list into one obligation, giving the `C ⊃ φ` form. -/
 
 /-- **The statement is `weak` at the ledger.** `weak [C₁,C₂,C₃] φ` is
 `C₁ ⊃ C₂ ⊃ C₃ ⊃ φ` by definition, so this typechecks with the theorem itself as
@@ -218,49 +198,50 @@ theorem pipeline_ledger_append (C₁ C₂ C₃ : Prop) :
       = weak [C₁, C₂] (weak [C₃] (◯∀[from_ Tout] Q)) :=
   weak_append [C₁, C₂] [C₃] _
 
-end Reduce
+end Fold
 
-/-- **The `C ⊃ φ` form.** The three constraints curried into one obligation:
-the pipeline delivers its output by the deadline *modulo* the conjunction of
-the three timing constraints, every one of them derived. -/
-theorem pipeline_as_debt
+/-! ### Expanding the `Debt` form to base logic
+
+`pipeline_meets_clock_debt` states the result in the `C ⊃ φ` form, with the
+component's constraints already abstracted. Getting from there to the fully
+concrete statement is a `simp only` over the definitions and nothing else —
+`Debt`, `LaxAll` and `from_` — which is what `lax_refine` does. Neither `simp`
+nor `decide` is needed; there is no content in the step, which is the point of
+`Debt` being an abbreviation rather than a structure. -/
+
+/-- The `C ⊃ φ` form and its base-logic expansion are the same proposition,
+by `lax_refine` alone. -/
+theorem pipeline_debt_expanded
     (Gp Pb Sum Q : Refined Nat) (δ δsum δbuf T tp Tclk Tout k : Nat)
     (hm : MergeNet Gp δ) (hleaf : ◯∀[from_ 0] Gp)
     (hpb : ◯∀[from_ tp] Pb) (hxor : CellSpec Gp Pb Sum δsum)
     (hbuf : UnitSpec Sum Q δbuf) :
-    Debt (k * δ ≤ T ∧ max T tp + δsum ≤ Tclk ∧ Tclk + δbuf ≤ Tout)
-      (◯∀[from_ Tout] Q) := by
-  rintro ⟨h1, h2, h3⟩
-  exact pipeline_meets_clock Gp Pb Sum Q δ δsum δbuf T tp Tclk Tout k
-    hm hleaf hpb hxor hbuf
-    ((pipeline_obligation1_iff Gp Pb Sum Q δ δsum δbuf T tp Tclk Tout k
-        hm hleaf hpb hxor hbuf).mpr h1)
-    ((pipeline_obligation2_iff Gp Pb Sum Q δ δsum δbuf T tp Tclk Tout k
-        hm hleaf hpb hxor hbuf).mpr h2)
-    ((pipeline_obligation3_iff Gp Pb Sum Q δ δsum δbuf T tp Tclk Tout k
-        hm hleaf hpb hxor hbuf).mpr h3)
+    Debt (k * δ ≤ T ∧ (T + δsum ≤ Tclk ∧ tp + δsum ≤ Tclk) ∧ Tclk + δbuf ≤ Tout)
+        (◯∀[from_ Tout] Q)
+      ↔ ((k * δ ≤ T ∧ (T + δsum ≤ Tclk ∧ tp + δsum ≤ Tclk) ∧ Tclk + δbuf ≤ Tout)
+          → ∀ z, Tout ≤ z → Q z) := by
+  lax_refine
 
 /-! ## 7. Discharging at a constraint model
 
-Fix the delays and the deadline and the constraints become decidable
-arithmetic. `discharge_obligation` closes all three, so the concrete theorem is
-obtained from the abstract one by *evaluation* — no new proof, and nothing
-restated.
+Fix the delays and the deadline and the whole constraint set becomes decidable
+arithmetic — one `omega`, not one per constraint, because the `Debt` fold
+presents it as a single conjunction.
 
 The model: prefix merge `120 ps` over a depth-5 tree (`Adder`'s 32-bit
 lookahead block, ready at `600`), local propagate at `200`, sum XOR `60`,
-output buffer `90`, deadline `1 ns`. -/
+output buffer `90`, internal deadline `700`, output deadline `1 ns`. -/
 
-/-- **The concrete theorem, derived automatically from the abstract one.** No
-timing hypothesis survives: `1000 ps` is enough. -/
+/-- **The concrete theorem, derived from the abstract one by evaluation.** No
+timing hypothesis survives, and no constraint was restated: the conjunction
+`by omega` closes is the one the solver computed. -/
 theorem pipeline_concrete (Gp Pb Sum Q : Refined Nat)
     (hm : MergeNet Gp 120) (hleaf : ◯∀[from_ 0] Gp)
     (hpb : ◯∀[from_ 200] Pb) (hxor : CellSpec Gp Pb Sum 60)
     (hbuf : UnitSpec Sum Q 90) :
     ◯∀[from_ 1000] Q :=
-  pipeline_meets_clock Gp Pb Sum Q 120 60 90 600 200 700 1000 5
-    hm hleaf hpb hxor hbuf
-    (by discharge_obligation) (by discharge_obligation) (by discharge_obligation)
+  pipeline_meets_clock_debt Gp Pb Sum Q 120 60 90 600 200 700 1000 5
+    hm hleaf hpb hxor hbuf (by omega)
 
 /-- And it bites: at a `750 ps` deadline the buffer's constraint is **false**,
 `700 + 90 = 790 > 750`. The model decides the design, in both directions. -/
@@ -270,8 +251,31 @@ theorem pipeline_too_tight (Gp Pb Sum Q : Refined Nat)
     (hbuf : UnitSpec Sum Q 90) :
     ¬ pipeline_meets_clock.obligation3 Gp Pb Sum Q 120 60 90 600 200 700 750 5
         hm hleaf hpb hxor hbuf := by
-  rw [pipeline_obligation3_iff]
+  rw [pipeline_meets_clock.obligation3_solved]
   decide
+
+/-! ### The earliest schedule
+
+The internal times `T` and `Tclk` are not really inputs: they are *scheduling
+choices*, and the natural one is to make each signal available as early as the
+derivation allows. Instantiating at that schedule satisfies every internal
+constraint by reflexivity, and the entire set collapses to a single inequality
+on the leaf delays and the deadline — which is the answer static timing
+analysis reports. -/
+
+/-- **The whole constraint set, at the earliest schedule, is one inequality.**
+Take `T := k·δ` and `Tclk := max (k·δ) tp + δsum`; then the pipeline meets any
+deadline `Tout` satisfying `max (k·δ) tp + δsum + δbuf ≤ Tout`, and nothing
+else is required. -/
+theorem pipeline_earliest
+    (Gp Pb Sum Q : Refined Nat) (δ δsum δbuf tp Tout k : Nat)
+    (hm : MergeNet Gp δ) (hleaf : ◯∀[from_ 0] Gp)
+    (hpb : ◯∀[from_ tp] Pb) (hxor : CellSpec Gp Pb Sum δsum)
+    (hbuf : UnitSpec Sum Q δbuf)
+    (hfit : max (k * δ) tp + δsum + δbuf ≤ Tout) :
+    ◯∀[from_ Tout] Q :=
+  pipeline_meets_clock_debt Gp Pb Sum Q δ δsum δbuf (k * δ) tp
+    (max (k * δ) tp + δsum) Tout k hm hleaf hpb hxor hbuf (by omega)
 
 /-! ## Gates
 
@@ -306,11 +310,52 @@ info: conservativity audit passed for 4 declaration(s); base-theory axioms only:
 #guard_msgs in
 #print axioms pipeline_meets_clock
 
-/-- info: 'LaxLogic.Obligation.Modular.pipeline_as_debt' depends on axioms: [propext, Quot.sound] -/
-#guard_msgs in
-#print axioms pipeline_as_debt
+/-! ### Where `Classical.choice` enters, and why
 
-/-- info: 'LaxLogic.Obligation.Modular.pipeline_concrete' depends on axioms: [propext, Quot.sound] -/
+A solved constraint is certified by `omega`, and `omega` normalises `max`
+through a classical case split. So a constraint that came from a `meet` — a
+parallel join, the only source of `max` in this calculus — is certified
+classically, and one that did not is not:
+
+* `datapath_meets_clock.obligation1_solved` (`k·δ ≤ T`): `[propext, Quot.sound]`;
+* `datapath_meets_clock.obligation2_solved` (the two paths through the XOR):
+  `[propext, Classical.choice, Quot.sound]`.
+
+Everything downstream of the second inherits it. This is a property of the
+certifying tactic, not of the mathematics: `Nat.max_le` is `[propext]`, so a
+certificate built from `Nat.le_max_left`/`Nat.add_le_add_right` instead of
+`omega` would be clean. Recorded here rather than papered over, and noted in
+`Solve.lean` as the next increment. -/
+
+/--
+info: 'LaxLogic.Obligation.Modular.datapath_meets_clock.obligation1_solved' depends on axioms: [propext, Quot.sound]
+-/
+#guard_msgs in
+#print axioms datapath_meets_clock.obligation1_solved
+
+/--
+info: 'LaxLogic.Obligation.Modular.datapath_meets_clock.obligation2_solved' depends on axioms: [propext,
+ Classical.choice,
+ Quot.sound]
+-/
+#guard_msgs in
+#print axioms datapath_meets_clock.obligation2_solved
+
+/--
+info: 'LaxLogic.Obligation.Modular.pipeline_meets_clock_debt' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms pipeline_meets_clock_debt
+
+/--
+info: 'LaxLogic.Obligation.Modular.pipeline_earliest' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in
+#print axioms pipeline_earliest
+
+/--
+info: 'LaxLogic.Obligation.Modular.pipeline_concrete' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
 #guard_msgs in
 #print axioms pipeline_concrete
 

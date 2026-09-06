@@ -63,6 +63,7 @@ import LaxLogic.Obligation.Timing
 import LaxLogic.Obligation.Postpone
 import LaxLogic.Obligation.Conservativity
 import LaxLogic.Obligation.Tactics
+import LaxLogic.Obligation.Solve
 import LaxLogic.PLLTimingLookahead
 
 namespace LaxLogic.Obligation.Adder
@@ -237,47 +238,29 @@ postponing theorem bal_meets_cycle
   refine laxAll_mono (fun z (hz : T ≤ z) => ?_) (bal_ready hm hleaf k)
   postpone   -- becomes the CYCLE-TIME constraint
 
-/-! ## 7. Reducing the synthesised constraints
+/-! ## 7. The synthesised constraints, reduced — by machine
 
-The paper performs, between its equations (8) and (9), the step of instantiating
-a universally quantified time at its own lower bound. `reduce_obligation` is
-that step, and it is the *same tactic* that reduced the latch's two obligations
-— no adder-specific case was added to it. -/
+Nothing below states what the constraints reduce to. `Solve.lean` computes it
+from the obligation and `omega` certifies the result, so `postponing theorem`
+above has already emitted
 
-/-- **The ripple's cycle-time constraint, reduced.** `n·δ ≤ T`: the carry chain
-must fit in the cycle.
+    ripple_meets_cycle.obligation1_solved : … ↔ n * δ ≤ T
+    bal_meets_cycle.obligation1_solved    : … ↔ k * δ ≤ T
 
-Note what the right-hand side does *not* mention: `Cy`, `Pr`, `hnet`, `hcin`,
-`hp`. The obligation is independent of the functional layer, which is the
-separation of concerns of the paper's Fig. 1 — and it is why the refutation
-below can be stated for every instance at once. -/
-theorem ripple_obligation_iff
-    (Cy : Nat → Refined Nat) (Pr : Refined Nat) (δ n T : Nat)
-    (hnet : RippleNet Cy Pr δ)
-    (hcin : ◯∀[from_ 0] (Cy 0)) (hp : ◯∀[from_ 0] Pr) :
-    ripple_meets_cycle.obligation1 Cy Pr δ n T hnet hcin hp ↔ n * δ ≤ T := by
-  reduce_obligation
-
-/-- **The balanced fold's cycle-time constraint, reduced.** `k·δ ≤ T`: the tree
-*depth* must fit in the cycle. Same theorem, same tactic; only the bound that
-`chain_ready` and `bal_ready` derive differs. -/
-theorem bal_obligation_iff
-    (Gp : Refined Nat) (δ k T : Nat)
-    (hm : MergeNet Gp δ) (hleaf : ◯∀[from_ 0] Gp) :
-    bal_meets_cycle.obligation1 Gp δ k T hm hleaf ↔ k * δ ≤ T := by
-  reduce_obligation
+together with `ripple_meets_cycle_debt` and `bal_meets_cycle_debt`, the `C ⊃ φ`
+forms. What used to be a hand-written right-hand side is now output. -/
 
 /-- Discharging the ripple's obligation recovers the conventional statement, in
 which the timing constraint is a hypothesis. The derived and the assumed
-constraint agree — the adder analogue of `latch_resets_synth`. -/
+constraint agree — the adder analogue of `latch_resets_synth`. Note that the
+proof is just the generated `Debt`: `n * δ ≤ T` was never typed here. -/
 theorem ripple_meets_cycle_of
     (Cy : Nat → Refined Nat) (Pr : Refined Nat) (δ n T : Nat)
     (hnet : RippleNet Cy Pr δ)
     (hcin : ◯∀[from_ 0] (Cy 0)) (hp : ◯∀[from_ 0] Pr)
     (hfit : n * δ ≤ T) :
     ◯∀[from_ T] (Cy n) :=
-  ripple_meets_cycle Cy Pr δ n T hnet hcin hp
-    ((ripple_obligation_iff Cy Pr δ n T hnet hcin hp).mpr hfit)
+  ripple_meets_cycle_debt Cy Pr δ n T hnet hcin hp hfit
 
 @[inherit_doc ripple_meets_cycle_of]
 theorem bal_meets_cycle_of
@@ -285,7 +268,7 @@ theorem bal_meets_cycle_of
     (hm : MergeNet Gp δ) (hleaf : ◯∀[from_ 0] Gp)
     (hfit : k * δ ≤ T) :
     ◯∀[from_ T] Gp :=
-  bal_meets_cycle Gp δ k T hm hleaf ((bal_obligation_iff Gp δ k T hm hleaf).mpr hfit)
+  bal_meets_cycle_debt Gp δ k T hm hleaf hfit
 
 /-! ## 8. The loop of Fig. 9, closed
 
@@ -306,7 +289,7 @@ theorem ripple32_obligation_false
     (hnet : RippleNet Cy Pr PLLND.dCARRY)
     (hcin : ◯∀[from_ 0] (Cy 0)) (hp : ◯∀[from_ 0] Pr) :
     ¬ ripple_meets_cycle.obligation1 Cy Pr PLLND.dCARRY 32 1000 hnet hcin hp := by
-  rw [ripple_obligation_iff]
+  rw [ripple_meets_cycle.obligation1_solved]
   decide
 
 /-- **Step 2 — restructure.** The balanced fold over the same `2⁵ = 32` leaves
@@ -321,7 +304,7 @@ theorem lookahead32_obligation_holds
     (Gp : Refined Nat) (hm : MergeNet Gp PLLND.Lookahead.dMERGE)
     (hleaf : ◯∀[from_ 0] Gp) :
     bal_meets_cycle.obligation1 Gp PLLND.Lookahead.dMERGE 5 1000 hm hleaf := by
-  rw [bal_obligation_iff]
+  rw [bal_meets_cycle.obligation1_solved]
   decide
 
 /-- **The design decision, kernel-checked.** At 32 bits in a 1 ns cycle the

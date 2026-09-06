@@ -32,6 +32,7 @@ rather than the paper's bare *abstraction* and *refinement*.
 
 import Lean
 import LaxLogic.Obligation.Connectives
+import LaxLogic.Obligation.Timing
 
 namespace LaxLogic.Obligation
 
@@ -84,7 +85,7 @@ syntax (name := laxRefineTac) "lax_refine" (Lean.Parser.Tactic.location)? : tact
 
 macro_rules
   | `(tactic| lax_refine $[$loc]?) =>
-    `(tactic| simp only [LaxAll, LaxEx, Debt, val, pair, meet, image, Stronger,
+    `(tactic| simp only [LaxAll, LaxEx, Debt, Timing.from_, val, pair, meet, image, Stronger,
         sum, either, inl, toFun, piC, sigC,
         Refined.tt, Refined.ff, Refined.and, Refined.or, Refined.imp,
         Refined.all, Refined.ex, Refined.boxAll, Refined.boxEx] $[$loc]?)
