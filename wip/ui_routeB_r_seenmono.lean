@@ -384,8 +384,8 @@ end LJFO
 
 /-! ## Pins -/
 
-#axioms_within LJFO.seenLe_cons [propext, Quot.sound]
-#axioms_within LJFO.seenLe_tail [propext, Quot.sound]
+#axioms_within LJFO.seenLe_cons [propext]
+#axioms_within LJFO.seenLe_tail [propext]
 #axioms_within LJFO.smStepR [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.interpR_seenMonoLvl [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.interpR_seenMonoE [propext, Classical.choice, Quot.sound]
