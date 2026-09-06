@@ -462,9 +462,35 @@ to be the wrong shape and why, the processing phase of the family is built,
 and the two lemmas any version of the saturated phase needs — record
 monotonicity and the confinement of the record extension — are theorems.
 
+### 8.1 The founding the next package needs
+
+`guardLoop` is stated over the `∀p` entry as a PARAMETER, but in the family
+that entry is the `∀p` traversal itself, so the loop belongs INSIDE the
+mutual — as `ParkAntP` did before the height re-founding of §4.17.  The
+measure carries it: `LJF/OFuelPFam.lean` is founded on
+`μ = (normalised derivation height, station weight, sizeOf)`, and
+
+* the loop's restart calls the entry with `gd`, where `hgtI gd < hgtI s` is
+  the escape's own bound, so the first component drops strictly;
+* the loop's first call is at `s`, the antecedent sub-derivation, whose
+  height is below the dispatching derivation's, so the loop's calls all sit
+  below the clause that opened it.
+
+So the same three-component measure founds the family with the loop in it,
+and no new component is needed.  The two facts to supply per clause are the
+ones the family's `decreasing_by` already proves; what is new is that they
+must ALSO be exported as `≤`, to descend the book invariant (`bb_*`, §5).
+
+**A note against re-deriving.**  The ∃p side cannot be closed alone over the
+`∀p` entry as a parameter and then composed: the `∀p` side calls the `∃p`
+side (`UStabQ` → `TStabQ`, `UEntryQ` → `aMinQ`), so a `∃p` development
+conditional on `UEntryRD` leaves a fixpoint, not a reduction — the same shape
+`ParkAntP` had.  The two halves must be one mutual, which is why this run did
+not build half of it.
+
 **What is NOT delivered:** the saturated phase, i.e. the mutual family for
 `interpR`, ◯-free or otherwise (the processing phase of §7 is built, both
-escape-free and `Sum`-valued).  It was not attempted: the analysis above
+escape-free and `Sum`-valued, and the row layer it reads with it).  It was not attempted: the analysis above
 took the first two hours of the run, and re-authoring
 `LJF/OFuelPFam.lean`'s seventeen-definition mutual with `Sum`-valued returns
 and a recording-site loop inside the same strongly connected component is a
