@@ -17,10 +17,11 @@ is not decoration: it exposes the reduced side condition, and `decide` cannot
 evaluate a goal that still mentions free variables.
 -/
 import LaxLogic.QLL.Deriv
+import LaxLogic.QLL.Surface
 
 namespace LaxLogic.QLL.Smoke
 
-open Form Pf
+open Form Pf LaxLogic.QLL.Surface
 
 /-- `⊢ λz.z : M ⊃ M`.  Exercises `impI`'s freshness and proof-variable opening
 against `var`'s lookup. -/
@@ -38,9 +39,7 @@ def val_top (q : Q) : Derives (val q star) [] (circ q top) :=
 /-- `⊢ ⟨λz.z | x⟩ : ∀x. P(x) ⊃ P(x)`.  The point of this one is the binder
 interaction: `allI` opens an *individual* while `impI` opens a *proof*
 variable, and neither may disturb the other's indices. -/
-def forall_identity : Derives
-    (gen (lam (bvar 0))) []
-    (forall_ (imp (pred "P" [Tm.bvar 0]) (pred "P" [Tm.bvar 0]))) := by
+def forall_identity : Derives (gen (lam (bvar 0))) [] qf[∀x. P(x) ⊃ P(x)] := by
   refine Derives.allI "x" ⟨?_, ?_, ?_⟩ ?_
   · show "x" ∉ ([] : List String); decide
   · show "x" ∉ ([] : List String); decide

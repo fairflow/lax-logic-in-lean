@@ -170,8 +170,8 @@ def NForm.render (prec : Nat) : NForm → String
   | .bot          => "⊥"
   | .pred P []    => P
   | .pred P ts    => P ++ "(" ++ NTm.renderList ts ++ ")"
-  | .circ .all M  => "◯∀" ++ NForm.render 40 M
-  | .circ .ex M   => "◯∃" ++ NForm.render 40 M
+  | .circ .all M  => "◯∀ " ++ NForm.render 40 M
+  | .circ .ex M   => "◯∃ " ++ NForm.render 40 M
   | .and M N      =>
       let s := NForm.render 36 M ++ " ∧ " ++ NForm.render 35 N
       if prec > 35 then "(" ++ s ++ ")" else s

@@ -42,10 +42,10 @@ give a different tree — which the second `#guard` of each pair checks. -/
 
 /-! ## The two modalities, kept visibly distinct -/
 
-#guard render qf[◯∀ P] == "◯∀P"
-#guard render qf[◯∃ P] == "◯∃P"
+#guard render qf[◯∀ P] == "◯∀ P"
+#guard render qf[◯∃ P] == "◯∃ P"
 #guard qf[◯∀ P] != qf[◯∃ P]
-#guard render qf[◯∀ (A ⊃ B)] == "◯∀(A ⊃ B)"
+#guard render qf[◯∀ (A ⊃ B)] == "◯∀ (A ⊃ B)"
 #guard qf[◯∀ (A ⊃ B)] == qf[◯∀ (A ⊃ B)]
 
 /-! ## Binders
@@ -82,7 +82,7 @@ the round trip a real property rather than a formality. -/
 /-! ## A formula using every construct at once -/
 
 #guard render qf[∀a. ◯∀ (P(a) ∧ Q) ⊃ ∃b. ◯∃ R(a, b) ∨ ⊥]
-        == "∀x. ◯∀(P(x) ∧ Q) ⊃ ∃y. ◯∃R(x, y) ∨ ⊥"
+        == "∀x. ◯∀ (P(x) ∧ Q) ⊃ ∃y. ◯∃ R(x, y) ∨ ⊥"
 #guard qf[∀x. ◯∀ (P(x) ∧ Q) ⊃ ∃y. ◯∃ R(x, y) ∨ ⊥]
         == qf[∀a. ◯∀ (P(a) ∧ Q) ⊃ ∃b. ◯∃ R(a, b) ∨ ⊥]
 
