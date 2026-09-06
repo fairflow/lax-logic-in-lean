@@ -3218,6 +3218,85 @@ accepted; residual as a typed obligation if it does not close.
 
 ---
 
+### 4.33 WP12c: the formula-level escape design of §4.32 shown UNSUITABLE at the statement level and replaced by DERIVATION-level escapes; the processing phase of the family for the pair recursion PROVED at every record; uniform interpolation for PLL rests on two height-booked obligations; the saturated phase handed to WP12d (2026-09-06, 17:55)
+
+One run of 89 minutes (relaunched at 16:19 after my first brief named a
+nonexistent merge target), ten commits, merged at 1d81de9 and verified
+here (seven leaf modules, 108 s, nothing upstream; pins measured; gate
+watched failing — `satE2R_of_escD` at `[]` fails on `propext`; sorry sweep
+clean).  Record: `docs/n4-pair-cofinality.md`.
+
+**The escape statements of §4.32 cannot support the induction** — not
+refuted (no countermodel claimed) but unsuitable, for two exact reasons.
+(1) They index the escapes by the CURRENT station, which changes along
+every station-changing edge, so no clause of the induction can move them;
+repaired by indexing by the record alone (`escConjS`/`escRowsS`, with four
+structural steps PROVED: `escHyp_record`, `escGoal_absorb`,
+`escHyp_recorded`, `escGoal_escape`).  (2) Fatal for any formula-level
+escape: at a station attack whose row is not cut, the ∃p traversal must
+discharge the row's guard through the ∀p statement at the extended record,
+and in an escape branch it then holds a ∀p formula about an ANCESTOR
+station while still owing its own goal; every use needs a transport — a
+cut — whose height the family's measure cannot pay, and escapes in the ∃p
+conclusion block the goal's own introductions.
+
+**The design that works: derivation-level escapes.**  The escape carries a
+derivation, not a formula — a recorded pair together with a derivation of
+that pair's own guard sequent strictly below the height booked at its
+recording site — caught at the recording site, which restarts,
+well-founded on the guard derivation's height.  Two facts make it work,
+both PROVED: the record extension is confined to the guard call
+(`parkRowER_record`, `parkRowAR_record`, axiom-free), and set-equal
+stations weaken into one another (`sameSet_subs`, `wkSameSet`).  Also
+PROVED: record monotonicity of `interpR` (`interpR_seenMonoE/A`), the
+recording-site restart well-founded (`escapeLoop`, axiom-free) and the loop
+in the family's types over the ∀p entry as a parameter (`guardLoop`,
+`[propext]`), the escape a cut site creates (`escOfCut`), the book
+invariant and its descent along every processing edge (`BookBound`,
+`bookBound_mono`, `bb_park`, `bb_orBranch`, `bb_andHyp`, `bb_impFls`,
+`bb_fire`), the processing phase at every record, escape-free and
+`Sum`-valued (`eMinPRg`/`aMinPRg`, `eMinPRD`/`aMinPRD`), and the row layer
+at a saturated station.  One correction caught inside the run: the
+obligations WITHOUT the book invariant are unprovable (a cut site must
+return an escape beating a booked height the statement left arbitrary).
+
+**The residual, verbatim** (`wip/ui_routeB_r_escd.lean`):
+
+    HeightBook seen := one Nat per recorded pair;   EscD Δ seen b := a recorded pair with a derivation
+        gd : Inv (T ++ Δ) [] .tru ↑Q of its guard sequent, hgtI gd < the height booked for it
+    BookBound seen b h := h ≤ every booked height
+    SatE2RD p := ∀ done Δ ψ seen (b : HeightBook seen), Saturated done → ParkedCtxP done → PFreeCtx p Δ → PFreeN p ψ →
+                 ∀ {j} (d : Inv (done ++ Δ) [] j ψ), BookBound seen b (hgtI d) →
+                 UpFrom (fun e => Inv (interpR p e [] done none seen :: Δ) [] j ψ)  ⊕  EscD Δ seen b
+    SatA2RD p := ∀ done Δ G seen (b : HeightBook seen), Saturated done → ParkedCtxP done → PFreeCtx p Δ →
+                 ∀ {j} (d : Inv (done ++ Δ) [] j G), BookBound seen b (hgtI d) →
+                 UpFrom2 (fun e f => Inv (interpR p e [] done none seen :: Δ) [] .tru
+                                        (interpR p f [] done (some (jGoal j G)) seen))  ⊕  EscD Δ seen b
+    escD_nil_empty;  satE2R_of_escD : SatE2RD p → SatE2R p;  satA2R_of_escD : SatA2RD p → SatA2R p     [propext]
+    pll_ui_R_escD : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, SatE2RD p) → (∀ p, SatA2RD p) → PLL_UI
+                                                                             [propext, Classical.choice, Quot.sound]
+
+**Not delivered: the saturated phase** — the seventeen-definition mutual
+for `interpR` with `Sum`-valued returns and the recording-site loop inside
+the same strongly connected component; the analysis consumed the run.
+§8.1 of the record gives the founding it needs: the existing three-component
+measure `(normalised height, station weight, sizeOf)` carries the loop
+(the restart is at the escape's own derivation, strictly lower; the first
+call at the antecedent sub-derivation), and the per-clause height facts
+must also be exported as `≤` to descend the book invariant; and a note
+against building half of it (the ∀p side calls the ∃p side, so a ∃p
+development over the ∀p entry as a parameter leaves a fixpoint of the
+`ParkAntP` shape, not a reduction).
+
+**WP12d launched 17:52**, one agent: the ◯-free saturated phase first
+(the modal arms drop), bodies on a scratch copy with the founding
+deferred, then one paid founding build (a family-class build is
+expected); `pll_ui_R_circFree` checked against `ipc_ui_routeB`; then the
+modal arms; any clause that cannot be closed becomes a typed parameter,
+never a `sorry`.
+
+---
+
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
