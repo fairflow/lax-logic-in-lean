@@ -53,9 +53,34 @@ inductive Derivable : Ctx → Pf → Form → Prop where
   | var {Γ : Ctx} {x : String} {M : Form} :
       (Pf.fvar x, M) ∈ Γ →
       Derivable Γ (.fvar x) M
-  /-- `Subst`.  Replace a variable entry by a constraint term, substituting it
+  /--
+  `Subst`.  Replace a variable entry by a constraint term, substituting it
   through the proof term.  The figure prints `q{p/x}` where the entry replaced
-  is `z`; read as `q{p/z}`. -/
+  is `z`; read as `q{p/z}`.
+
+  **This is not a cut.**  The figure's side condition is `p :: |M|` — `p` has
+  the *refinement type* of `M`, in the sense of Fig. 3 — and not `p : M`, `p`
+  *refines* `M`, in the sense of Fig. 4.  The paper uses `::` for HOL typing
+  throughout (p. 7: "if `P :: α ⇒ 𝔹` and `p :: α`").  So `Subst` substitutes a
+  raw constraint term under a typing condition, where a cut would substitute a
+  derivation.  It establishes nothing about `M`; it records that a candidate
+  constraint has been supplied and leaves the refinement outstanding.
+
+  That is why `var` accepts only variable entries.  Admitting a term entry
+  there would let a merely well-typed candidate be *used* as though it were
+  established, which is the step this apparatus exists to defer.
+
+  Read as an inference rule it looks pathological — it is not stable under
+  normalisation, and it is not the admissible substitution lemma (which
+  substitutes a *derivation*: from `Γ, z:M ⊢ q:N` and `Γ ⊢ p:M` conclude
+  `Γ ⊢ q{p/z}:N`, and which is unaffected).  It is better read as the
+  *refinement step* of the paper's Fig. 9 method loop, written as a rule.
+
+  Consequence for the checker: the non-variable entries a derivation carries
+  are its **residual obligations**, and `check` should return them rather than
+  a bare `Bool`.  They are the same thing the shallow `LaxLogic.Obligation`
+  ledger records.
+  -/
   | subst {Γ Γ' : Ctx} {x : String} {M N : Form} {q p : Pf} :
       Derivable (Γ ++ (Pf.fvar x, M) :: Γ') q N →
       Derivable (Γ ++ (p, M) :: Γ') (q.substP x p) N
