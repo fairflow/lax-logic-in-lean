@@ -212,6 +212,43 @@ the new node:**
   `CutInv`". **N4 is now the only open thing.** This sentence is wrong the
   moment the merge lands.
 
+**2b. §4.23 landed at 02:30 and it is the most important part of this job —
+the published chapter now presents a VACUOUS theorem as a result.** Verified
+against `wip/ui_routeB_n4_lit.lean` and §4.23, not taken on report.
+
+*The literal form of N1 is REFUTED*, in the kernel, by six designed cells.
+The ∀p attack row of a parked `Q ⊃ N ∈ done` at goal `↑Q` is
+`A_f(done ⇒ ↑Q) ∧ A_f(N :: rest ⇒ ↑Q)` — the same call one fuel down — so
+`A_{f+1}` contains `A_f` as a proper subterm and the chain is strictly
+size-ascending. Hence `EStabEq`/`AStabEq` have **no instances at any
+saturated station with a retained compound implication**. Growth ratios at
+fuels 0–5: 2.2x, 2.1x, 1.8x, 1.8x, 3.3x. The control (v), unsaturated, *is*
+literally constant from fuel 3, and `literal_N1_dividing_line` packages all
+six: the dividing line is saturation with a retained compound implication,
+not weight.
+
+Three consequences, each contradicting the live chapter:
+
+- **`hasUI_of_stabEq` has no instances.** The dividing line is *exactly that
+  theorem's own hypothesis*. The chapter's N3 node presents it as "PROVED
+  outright from the two cofinality variables, no cut needed" — true and
+  vacuous. It must be restated, and replaced as the live result by
+  `hasUI_of_stabilises` (interderivable form, through `cutInv`,
+  `[propext, Classical.choice, Quot.sound]`, `wip/ui_routeB_n4.lean`).
+- **`FuelIrrelevance` is moot** — its consumer's hypothesis is unsatisfiable
+  there. The chapter's N1 node lists it as a live obligation.
+- **The "termination of the recursion" reading of N4 (§4.19) is DEAD.** The
+  fuel is essential. Do not repeat that framing.
+
+*N4's ◯-free instance is PROVED*: `n4_circFree_uncond`,
+`[propext, Classical.choice, Quot.sound]`, by transport from
+`LJFIPC.uniform_interpolation_IPC`. The bounded form for PLL is OPEN. So N4
+is no longer flatly "open both ways" — it is open for PLL with its ◯-free
+instance settled, which is a better and more interesting statement.
+
+**Net effect on the preamble:** it currently says two things are open, N4 and
+`CutInv`. After §4.22 and §4.23 that is one — N4 for PLL itself.
+
 **3. Republish** — `gh workflow run pages.yml --ref blueprint-dev-chapter`.
 Expect ~11 minutes, as at 27fca24. If it is heading for 90, something has put
 `LJF/OFuelPFam.lean` back in the import closure.
