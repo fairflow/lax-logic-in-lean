@@ -156,9 +156,23 @@ otherwise, and $`\mathrm{seqSize}` is the total formula size.  Every
 recursive call goes to a cell of strictly smaller measure, and the order
 is well-founded.
 
-TO WRITE — the three components pay at different snapshots, and saying
-which pays where is what makes the termination argument readable rather
-than merely checkable.  §4 of `docs/frjw-explainer.md` has the trace.
+The three components pay at different moments, and naming which pays where
+is what makes the argument readable rather than merely checkable.  The
+first, the number of subformulas of the goal formula `G` not yet in the
+closure of the context, pays whenever a rule adds to the context a member
+whose closure grows: that is the saturation of a regular cell, and it is why
+regular cells terminate although their context is not shrinking.  The
+second, the type of the cell, pays at the two transitions that cannot be
+charged to either of the others: from a regular cell to an irregular one
+(`2` to `1` or `0`), and from an irregular cell with a `◯` in the goal to
+one without (`1` to `0`), the step where the modal member is spent.  The
+third, the total size of the sequent, pays within a phase, on every rule
+that decomposes the goal or focuses on a strictly smaller member without
+enlarging the closure.  A call never has to pay in more than one place,
+and the lexicographic order lets a larger later component be reset when
+an earlier one has paid.  §4 of `docs/frjw-explainer.md` walks the
+twenty-two stage boundaries of `searchW` with the infoview state at each,
+and shows for every recursive call which component it is charged to.
 :::
 
 :::theorem "dichotomy_cell" (parent := "frjw_cells") (lean := "FRJ.Gbu.W.searchW, FRJ.Gbu.W.dichotomyW")

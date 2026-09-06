@@ -1,0 +1,322 @@
+<title>Interpolation, Plainly</title>
+<style>
+:root{--paper:#f8f6f0;--ink:#1e2530;--muted:#5d6675;--rule:#d8d3c6;--card:#ffffff;--accent:#1f6f8b;--mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;--serif:"Source Serif 4",Georgia,"Times New Roman",serif;--sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--paper:#151920;--ink:#e6e4dc;--muted:#a3a9b4;--rule:#2c333e;--card:#1c222b;--accent:#6fb7d0}}
+:root[data-theme="dark"]{--paper:#151920;--ink:#e6e4dc;--muted:#a3a9b4;--rule:#2c333e;--card:#1c222b;--accent:#6fb7d0}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;margin:0}
+main{max-width:70ch;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+h1,h2,h3{font-family:var(--serif);text-wrap:balance;line-height:1.2}
+h1{font-size:2rem;font-weight:600;margin:0 0 .5rem}
+h2{font-size:1.35rem;font-weight:600;margin-top:2.2rem;padding-top:.8rem;border-top:1px solid var(--rule)}
+p{margin:.75rem 0}
+em{color:var(--muted)}
+code{font-family:var(--mono);font-size:.9em}
+pre{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:.9rem 1rem;overflow-x:auto;line-height:1.45;font-family:var(--mono);font-size:.88em}
+table{border-collapse:collapse;width:100%;font-size:.95rem;margin:1rem 0}
+th,td{text-align:left;padding:.45rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{color:var(--muted);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase}
+ul,ol{padding-left:1.4rem}
+li{margin:.3rem 0}
+hr{border:0;border-top:1px solid var(--rule);margin:1.5rem 0}
+a{color:var(--accent)}
+.wrap{overflow-x:auto}
+</style>
+<main>
+<h1
+id="interpolation-plainly-craig-uniform-and-why-lax-logic-is-the-hard-case">Interpolation,
+plainly: Craig, uniform, and why lax logic is the hard case</h1>
+<p><em>A guide for teaching, written 2026-09-06 for Matthew Fairtlough.
+Everything marked “verified” below was checked by hand in the Kripke
+semantics or by a one-line derivation; the results table cites the
+literature. The machine-checked parts of the lax-logic story live in the
+repository <code>lax-logic-in-lean</code>.</em></p>
+<hr />
+<h2 id="the-idea-in-one-picture">1. The idea in one picture</h2>
+<p>Two people are arguing. Alice knows about <code>p</code> and
+<code>q</code>; Bob knows about <code>q</code> and <code>r</code>. Alice
+asserts a sentence <code>A</code> in her vocabulary, and Bob accepts
+that <code>A</code> forces a sentence <code>B</code> in his:
+<code>A ⊢ B</code>. Since Alice and Bob share only the word
+<code>q</code>, the whole force of the argument must pass through
+<code>q</code>. <strong>Interpolation</strong> says that it does: there
+is a sentence <code>C</code> using only the shared vocabulary such that
+<code>A ⊢ C</code> and <code>C ⊢ B</code>. Alice can hand Bob
+<code>C</code> and keep <code>p</code> to herself.</p>
+<p>The interpolant is the <em>summary of <code>A</code> in the shared
+language</em>, and the point of the theorem is that a summary always
+exists inside the logic itself, without new symbols.</p>
+<p>A first example, verified by two one-line derivations:</p>
+<pre><code>p ∧ (p ⊃ q)  ⊢  q ∨ r         interpolant:  q
+p ∧ (p ⊃ q)  ⊢  q             and           q  ⊢  q ∨ r</code></pre>
+<h2 id="craigs-theorem-1957">2. Craig’s theorem (1957)</h2>
+<p><strong>Statement.</strong> In classical or intuitionistic
+propositional logic, if <code>A ⊢ B</code> then there is a formula
+<code>C</code> whose atoms occur in both <code>A</code> and
+<code>B</code>, with <code>A ⊢ C</code> and <code>C ⊢ B</code>. (Craig
+proved it for first-order logic; the propositional case is the one to
+teach first.)</p>
+<p><strong>Why it is true, in one sentence.</strong> Take a cut-free
+proof of <code>A ⊢ B</code> and split every sequent in it into an
+<code>A</code>-part and a <code>B</code>-part; at each rule one can
+write down a formula that separates the two parts, building the
+interpolant from the leaves up. This is Maehara’s method, and it is
+exactly how the lax-logic repository proves Craig interpolation for PLL
+(<code>LaxLogic/PLLCraig.lean</code>).</p>
+<p><strong>Why it matters.</strong> Three classical uses:</p>
+<ul>
+<li><em>Modularity.</em> If two theories share a vocabulary and are each
+consistent, and they agree on the shared part, their union is consistent
+(Robinson’s consistency theorem, equivalent to Craig).</li>
+<li><em>Definability.</em> If a symbol is implicitly defined by a
+theory, it is explicitly definable (Beth’s theorem, a corollary).</li>
+<li><em>Verification.</em> Interpolants are how model checkers summarise
+“what has been established so far” about a program in the vocabulary of
+the next step.</li>
+</ul>
+<p><strong>What to stress in class.</strong> A Craig interpolant is not
+unique, not even up to interderivability: for a fixed <code>A ⊢ B</code>
+the interpolants form an interval in the shared vocabulary, from the
+strongest shared consequence of <code>A</code> up to the weakest shared
+antecedent of <code>B</code>, and the interval can have two ends.
+Verified example: <code>A = q</code>, <code>B = q ∨ (s ⊃ s)</code>,
+shared vocabulary <code>{q}</code>; both <code>q</code> and
+<code>⊤</code> are interpolants, and <code>⊤ ⊬ q</code>. And the
+interpolant depends on <code>B</code>: a different <code>B</code> may
+need a different <code>C</code>. That dependence is what the next
+section removes, and removing it is also what makes the interpolant
+unique.</p>
+<h2 id="uniform-interpolation-pitts-1992">3. Uniform interpolation
+(Pitts, 1992)</h2>
+<p>Ask for more: a summary of <code>A</code> in the language <em>without
+<code>p</code></em> that works for <strong>every</strong> <code>B</code>
+at once. Two formulas do the job, if they exist:</p>
+<pre><code>∃p.A   the STRONGEST p-free consequence of A:
+       A ⊢ ∃p.A,  and for every p-free ψ,  A ⊢ ψ  iff  ∃p.A ⊢ ψ
+
+∀p.A   the WEAKEST p-free antecedent of A:
+       ∀p.A ⊢ A,  and for every p-free ψ,  ψ ⊢ A  iff  ψ ⊢ ∀p.A</code></pre>
+<p>“Uniform” means uniform in <code>B</code>: <code>∃p.A</code> is the
+one interpolant that serves every <code>B</code> not mentioning
+<code>p</code>. The notation is deliberate: these are propositional
+quantifiers, and a logic has uniform interpolation exactly when it can
+express its own second-order propositional quantifiers.</p>
+<p><strong>Classical logic: trivial.</strong> A propositional atom is
+either true or false, so</p>
+<pre><code>∃p.A  =  A[⊤/p] ∨ A[⊥/p]        ∀p.A  =  A[⊤/p] ∧ A[⊥/p]</code></pre>
+<p>This is quantifier elimination for Boolean algebra, and it is worth
+doing one example on the board:
+<code>∃p.(p ∧ (p ⊃ q)) = (⊤ ∧ q) ∨ (⊥ ∧ ⊤) = q</code>.</p>
+<p><strong>Intuitionistic logic: the recipe fails, the theorem
+survives.</strong> Take <code>A = (p ∨ ¬p) ⊃ q</code>. The classical
+recipe gives <code>q</code>. But <code>q</code> is <em>not</em> a
+consequence of <code>A</code> intuitionistically, because
+<code>p ∨ ¬p</code> is not provable, so nothing forces <code>q</code>.
+The true strongest <code>p</code>-free consequence is</p>
+<pre><code>∃p.((p ∨ ¬p) ⊃ q)  =  ¬¬q            (verified)</code></pre>
+<p>Two checks. <code>(p ∨ ¬p) ⊃ q ⊢ ¬¬q</code>, since <code>¬q</code>
+would give <code>¬(p ∨ ¬p)</code>, which is refutable. Strongest: in any
+Kripke model of <code>¬¬q</code> (every end point satisfies
+<code>q</code>), interpret <code>p</code> as <code>q</code>; then
+<code>p ∨ ¬p</code> holds exactly where <code>q</code> does, so
+<code>(p ∨ ¬p) ⊃ q</code> holds at the root, and any <code>p</code>-free
+<code>ψ</code> refuted somewhere in a model of <code>¬¬q</code> is
+refuted in a model of <code>A</code>. Hence every <code>p</code>-free
+consequence of <code>A</code> follows from <code>¬¬q</code>.</p>
+<p>Pitts’s theorem (1992) is that intuitionistic propositional logic has
+uniform interpolation: <code>∃p.A</code> and <code>∀p.A</code> always
+exist. Unlike the classical case there is no substitution recipe; the
+interpolants are computed by a terminating proof search (Dyckhoff’s
+contraction-free calculus G4ip is the standard vehicle), and they can be
+much larger than <code>A</code>.</p>
+<p><strong>Two small examples for the <code>∀</code> side</strong>
+(verified by the instance argument: substituting a constant for
+<code>p</code> bounds every candidate):</p>
+<pre><code>∀p.(p ⊃ q)  =  q          (p := ⊤ forces  ψ ⊢ q;  and  q ⊢ p ⊃ q)
+∀p.(q ⊃ p)  =  ¬q         (p := ⊥ forces  ψ ⊢ ¬q; and  ¬q ⊢ q ⊃ p)</code></pre>
+<p>The instance argument is worth naming for students: any
+<code>p</code>-free <code>ψ</code> with <code>ψ ⊢ A</code> also
+satisfies <code>ψ ⊢ A[χ/p]</code> for every <code>p</code>-free
+<code>χ</code>, so the instances <code>A[χ/p]</code> are upper bounds on
+<code>∀p.A</code>, and when one of them is itself a valid antecedent it
+<em>is</em> <code>∀p.A</code>. (In the repository this is the
+kernel-checked lemma <code>instanceClosed</code>.) The interesting cases
+are the ones no instance closes, such as</p>
+<pre><code>∀p.((p ⊃ q) ∨ (q ⊃ p))  =  q ∨ ¬q</code></pre>
+<p>where the answer is not a substitution instance of the body.</p>
+<h2 id="what-uniform-interpolation-buys">4. What uniform interpolation
+buys</h2>
+<ul>
+<li><strong>Forgetting inside the logic.</strong> <code>∃p.A</code> is
+“A with <code>p</code> forgotten”. A theory can be projected onto a
+sub-vocabulary without leaving propositional logic.</li>
+<li><strong>Second-order quantifiers for free.</strong> Quantified
+propositional intuitionistic logic collapses to the propositional logic:
+every <code>∃p</code>, <code>∀p</code> is definable.</li>
+<li><strong>Semantics.</strong> On Kripke models <code>∃p.A</code> is a
+<em>bisimulation quantifier</em>: “some model bisimilar to this one,
+except on <code>p</code>, satisfies <code>A</code>”. Uniform
+interpolation and bisimulation quantifiers are two faces of one property
+(Ghilardi–Zawadowski, Visser).</li>
+<li><strong>A sharper tool than Craig.</strong> Every logic with uniform
+interpolation has Craig interpolation (take
+<code>C = ∃(atoms of A not in B).A</code>), but not conversely; the
+table below has the counterexamples.</li>
+</ul>
+<h2 id="which-logics-have-it">5. Which logics have it</h2>
+<table>
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr>
+<th>logic</th>
+<th>Craig</th>
+<th>uniform</th>
+<th>reference</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>classical propositional</td>
+<td>yes</td>
+<td>yes, by substitution</td>
+<td>folklore</td>
+</tr>
+<tr>
+<td>intuitionistic (IPC)</td>
+<td>yes</td>
+<td><strong>yes</strong></td>
+<td>Pitts 1992; Ghilardi–Zawadowski 1995 (semantic proof)</td>
+</tr>
+<tr>
+<td>modal K</td>
+<td>yes</td>
+<td>yes</td>
+<td>Ghilardi 1995; Visser 1996</td>
+</tr>
+<tr>
+<td>Gödel–Löb GL</td>
+<td>yes</td>
+<td>yes</td>
+<td>Shavrukov 1993</td>
+</tr>
+<tr>
+<td>S4</td>
+<td>yes</td>
+<td><strong>no</strong></td>
+<td>Ghilardi–Zawadowski 1995</td>
+</tr>
+<tr>
+<td>K4</td>
+<td>yes</td>
+<td><strong>no</strong></td>
+<td>Bílková 2007</td>
+</tr>
+<tr>
+<td>propositional lax logic PLL</td>
+<td>yes (<code>PLLCraig.lean</code>, Maehara)</td>
+<td><strong>open</strong></td>
+<td>this campaign</td>
+</tr>
+</tbody>
+</table>
+<p>The S4 and K4 rows are the teaching point: Craig interpolation is
+common and uniform interpolation is not. What separates them is whether
+the “forgetting” operation stays inside the logic.</p>
+<h2 id="why-lax-logic-is-the-interesting-case">6. Why lax logic is the
+interesting case</h2>
+<p>Propositional lax logic adds one modality <code>◯</code> to
+intuitionistic logic, with <code>A ⊢ ◯A</code>, <code>◯◯A ⊢ ◯A</code>,
+and <code>A ⊢ B</code> giving <code>◯A ⊢ ◯B</code>: a nucleus, or a
+strong monad. Because <code>◯</code> is <em>reflexive</em>, the frame
+conditions that make K and GL behave are absent, and the frame
+conditions that break S4 are partly present. Nobody knows on which side
+of the table PLL falls.</p>
+<p>The campaign in the repository attacks it proof-theoretically, in the
+same spirit as Pitts but on a focused sequent calculus for PLL
+(LJF◯):</p>
+<ol type="1">
+<li>Define approximants <code>E_f</code> (descending from
+<code>⊤</code>) and <code>A_f</code> (ascending from <code>⊥</code>) by
+a fuel-bounded recursion over the sequent, mirroring the proof
+search.</li>
+<li>Prove soundness at every fuel (<code>Γ ⊢ E_f</code>,
+<code>A_f, Γ ⊢ G</code>) — <strong>proved</strong>.</li>
+<li>Prove cofinality: every <code>p</code>-free consequence, and every
+<code>p</code>-free sufficient antecedent, is reached at some fuel —
+<strong>proved</strong>, 2026-09-05.</li>
+<li>Prove that the approximants stabilise up to interderivability at
+every sequent — <strong>open</strong>; this is the theorem. With 2 and 3
+it is equivalent to uniform interpolation at that sequent, in both
+directions.</li>
+</ol>
+<p>For the <code>◯</code>-free fragment the whole route closes and
+recovers Pitts’s theorem (<code>uniform_interpolation_IPC</code>,
+machine-checked). For PLL the open step is exactly where the reflexive
+modality interferes with termination of the proof search: whether the
+chains that the modality keeps reopening eventually say nothing new.</p>
+<h2 id="a-ten-minute-board-sequence">7. A ten-minute board sequence</h2>
+<ol type="1">
+<li>Alice and Bob, the shared word <code>q</code>,
+<code>p ∧ (p ⊃ q) ⊢ q ∨ r</code> with interpolant <code>q</code>.</li>
+<li>State Craig; say “cut-free proof, split each sequent” for the proof
+idea.</li>
+<li>Ask: can we summarise <code>A</code> once and for all, for every
+<code>B</code>? Define <code>∃p.A</code> and <code>∀p.A</code>.</li>
+<li>Classical: <code>A[⊤] ∨ A[⊥]</code>; do
+<code>∃p.(p ∧ (p ⊃ q)) = q</code>.</li>
+<li>Intuitionistic: <code>(p ∨ ¬p) ⊃ q</code>; the recipe gives
+<code>q</code>, the truth is <code>¬¬q</code>. Say why <code>q</code>
+cannot follow (no excluded middle).</li>
+<li>State Pitts; show the table; point at S4 as the surprise.</li>
+<li>One sentence on lax logic: reflexive modality, open, and what “open”
+means when every individual interpolant we have ever computed has been
+checked.</li>
+</ol>
+<p><strong>Exercises</strong> (answers in §3): compute
+<code>∃p.(p ∧ (p ⊃ q))</code>, <code>∀p.(p ⊃ q)</code>,
+<code>∀p.(q ⊃ p)</code>; explain why the classical recipe fails for
+<code>(p ∨ ¬p) ⊃ q</code>; show that <code>∀p.A ⊢ A[χ/p]</code> for
+every <code>p</code>-free <code>χ</code> and use it to bound
+<code>∀p.((p ⊃ q) ∨ (q ⊃ p))</code> from above by
+<code>q ∨ ¬q</code>.</p>
+<p><strong>Misconceptions to head off.</strong> Craig interpolants are
+not unique (an interval, §2); uniform interpolants are, up to
+interderivability: “strongest <code>p</code>-free consequence” names the
+least element of the <code>p</code>-free consequences under
+<code>⊢</code>, and a least element of a preorder is unique up to
+equivalence (dually for the weakest antecedent). So <code>∃p</code> and
+<code>∀p</code> are well-defined operations on the Lindenbaum algebra,
+the left and right adjoints of the inclusion of the <code>p</code>-free
+fragment; the repository proves the uniqueness as
+<code>IsExUIOn.unique</code> and <code>IsAllUIOn.unique</code>. Uniform
+interpolation is strictly stronger than Craig. <code>∃p.A</code> is a
+formula of the propositional logic, not of a richer language, and that
+is the whole content. “Open” for PLL means no proof and no
+counterexample, not “probably false”.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>W. Craig, <em>Three uses of the Herbrand–Gentzen theorem in relating
+model theory and proof theory</em>, J. Symbolic Logic 22 (1957).</li>
+<li>A. M. Pitts, <em>On an interpretation of second order quantification
+in first order intuitionistic propositional logic</em>, J. Symbolic
+Logic 57 (1992).</li>
+<li>S. Ghilardi and M. Zawadowski, <em>Undefinability of propositional
+quantifiers in the modal system S4</em>, Studia Logica 55 (1995); and
+<em>A sheaf representation and duality for finitely presented Heyting
+algebras</em>, J. Symbolic Logic 60 (1995).</li>
+<li>A. Visser, <em>Uniform interpolation and layered bisimulation</em>,
+Gödel ’96, Lecture Notes in Logic 6 (1996).</li>
+<li>V. Shavrukov, <em>Subalgebras of diagonalizable algebras of theories
+containing arithmetic</em>, Dissertationes Mathematicae 323 (1993).</li>
+<li>M. Bílková, <em>Uniform interpolation and propositional quantifiers
+in modal logics</em>, Studia Logica 85 (2007).</li>
+<li>R. Dyckhoff, <em>Contraction-free sequent calculi for intuitionistic
+logic</em>, J. Symbolic Logic 57 (1992).</li>
+<li>M. Fairtlough and M. Mendler, <em>Propositional lax logic</em>,
+Information and Computation 137 (1997).</li>
+</ul>
+</main>

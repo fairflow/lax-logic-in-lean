@@ -813,8 +813,12 @@ second is an instance of N3 forward at the empty station (`Saturated []`,
 `ParkedCtxP []`); the first is N3 forward at the SATURATION of
 `[negOfO φ]`, so it also needs the processing phase `eMinPP`/`aMinPP`
 (`LJF/OFuelPMin.lean`) to move the pair from the saturated station back to
-`[negOfO φ]`.  That last step is WP4's, and is the only thing between this
-file and `PLL_UI`. -/
+`[negOfO φ]`.  That last step is WP4's, and it is the only MECHANICAL one
+of the three things between this file and `PLL_UI`: the other two are
+`CutInv` (OPEN, an obligation) and N4 — stabilisation at every saturated
+parked station, the open theorem — which `CellsFor` inherits through N3
+forward.  Given `CutInv` and N4, this file yields `PLL_UI` up to WP4's
+transfer. -/
 def CellsFor (p : String) : Type :=
   ∀ φ : PLLFormula, HasUI p [negOfO φ] (negOfO φ) × HasUI p [] (negOfO φ)
 

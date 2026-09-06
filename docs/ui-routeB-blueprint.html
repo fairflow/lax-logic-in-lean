@@ -1,0 +1,183 @@
+<title>Route (B) Blueprint</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#f7f6f1; --ink:#1d2430; --muted:#5b6472; --rule:#d9d5ca; --card:#ffffff;
+  --accent:#1f6f8b;
+  --proved:#1a7f5a; --build:#b7791f; --draft:#5b6472; --open:#b3261e;
+  --chip-proved:#e3f3ea; --chip-build:#fbefd6; --chip-draft:#e8e9ec; --chip-open:#fbe4e2;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --serif:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#151920; --ink:#e6e4dc; --muted:#a3a9b4; --rule:#2c333e; --card:#1c222b;
+    --accent:#6fb7d0;
+    --proved:#5fd39a; --build:#e6b453; --draft:#a3a9b4; --open:#f08a80;
+    --chip-proved:#173a2c; --chip-build:#3d2f12; --chip-draft:#2a3038; --chip-open:#4a1f1b;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#151920; --ink:#e6e4dc; --muted:#a3a9b4; --rule:#2c333e; --card:#1c222b;
+  --accent:#6fb7d0;
+  --proved:#5fd39a; --build:#e6b453; --draft:#a3a9b4; --open:#f08a80;
+  --chip-proved:#173a2c; --chip-build:#3d2f12; --chip-draft:#2a3038; --chip-open:#4a1f1b;
+}
+body{background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;margin:0}
+main{max-width:76ch;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+h1,h2,h3{font-family:var(--serif);text-wrap:balance;margin:0}
+h1{font-size:2rem;font-weight:600;line-height:1.15}
+h2{font-size:1.3rem;font-weight:600;margin-top:2.4rem;padding-top:.9rem;border-top:1px solid var(--rule)}
+h3{font-size:1.05rem;font-weight:600;margin-top:1.4rem}
+p{margin:.7rem 0;max-width:68ch}
+.lede{color:var(--muted);font-size:1rem;margin-top:.6rem}
+.eyebrow{font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);margin-bottom:.5rem}
+code,pre{font-family:var(--mono);font-size:.86em}
+pre{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:.9rem 1rem;overflow-x:auto;line-height:1.45}
+pre.mermaid{background:transparent;border:0;padding:0}
+.legend{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin:.9rem 0 0}
+.chip{display:inline-block;font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;padding:.15rem .5rem;border-radius:999px;white-space:nowrap}
+.chip.proved{background:var(--chip-proved);color:var(--proved)}
+.chip.build{background:var(--chip-build);color:var(--build)}
+.chip.draft{background:var(--chip-draft);color:var(--draft)}
+.chip.open{background:var(--chip-open);color:var(--open)}
+.nodes{display:grid;gap:.7rem;margin-top:1rem}
+.node{display:grid;grid-template-columns:3.2rem 1fr;gap:.4rem .9rem;background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--draft);border-radius:6px;padding:.75rem .9rem}
+.node.proved{border-left-color:var(--proved)}
+.node.build{border-left-color:var(--build)}
+.node.open{border-left-color:var(--open)}
+.node .id{font-family:var(--mono);font-weight:500;color:var(--muted);font-size:.9rem}
+.node .head{display:flex;flex-wrap:wrap;gap:.5rem;align-items:baseline}
+.node .name{font-weight:600}
+.node .meta{grid-column:2;color:var(--muted);font-size:.9rem}
+.node .meta code{color:var(--ink)}
+.wp{margin-top:1rem;padding:.8rem 1rem;border:1px solid var(--rule);border-radius:6px;background:var(--card)}
+.wp b{font-family:var(--serif);font-size:1.02rem}
+.est{color:var(--muted);font-size:.85rem;margin-left:.5rem}
+table{border-collapse:collapse;width:100%;font-size:.92rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:.4rem .6rem;border-bottom:1px solid var(--rule);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+.tablewrap{overflow-x:auto}
+a{color:var(--accent)}
+.foot{margin-top:3rem;color:var(--muted);font-size:.85rem;border-top:1px solid var(--rule);padding-top:.8rem}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+<main>
+<div class="eyebrow">lax-logic-in-lean · route (B) · drafted 2026-09-05</div>
+<h1>Route (B) Blueprint</h1>
+<p class="lede">Uniform interpolation for Propositional Lax Logic through LJF◯'s fuel-founded retention interpolant: the nodes, their status, their dependencies, and the work packages between the proved lemmas and the theorem.</p>
+
+<div class="legend">
+  <span class="chip proved">proved</span><span>sorry-free, axioms pinned</span>
+  <span class="chip build">in build</span><span>an agent is producing it</span>
+  <span class="chip draft">drafted</span><span>statement typed, body <code>sorry</code> (in <code>wip/</code> only)</span>
+  <span class="chip open">open</span><span>no proof attempted; may be true or false</span>
+</div>
+
+<h2>The aim in one line</h2>
+<p>For every PLL formula φ and variable p there are p-free <code>∃p.φ</code> and <code>∀p.φ</code>. The interpolant <code>interpP</code> computes chains <code>E_f</code> (descending from ⊤) and <code>A_f</code> (ascending from ⊥). Soundness at every fuel is proved; cofinality is <b>proved</b> on the parking definition <code>interpP</code>, unconditional (§4.17); with both, <b>UI at a cell ⟺ the chains stabilise</b> (N3, proved both ways). Stabilisation at every saturated station (N4) is <b>the</b> open theorem, proved on ◯-free stations (§4.23). The transport to PLL is proved (§4.24): <code>PLL_UI</code> rests on N4 alone, and holds outright on IPC formulas, where route (B)'s interpolants agree with Pitts's.</p>
+
+<h2>Nodes</h2>
+<div class="nodes">
+  <div class="node proved"><span class="id">N0a</span><div class="head"><span class="name">Soundness at every fuel</span><span class="chip proved">proved</span></div>
+    <div class="meta"><code>eSoundF</code>, <code>aSoundF</code> · <code>LJF/OFuelSound.lean</code> · axioms <code>[propext, Quot.sound]</code></div></div>
+  <div class="node proved"><span class="id">N0b</span><div class="head"><span class="name">Rows at fuel, processing phase, reductions</span><span class="chip proved">proved</span></div>
+    <div class="meta"><code>eMinFF</code>, <code>aMinFF</code>, <code>ecofinalF_of_satE2F</code>, <code>acofinalF_of_satA2F</code>, <code>cimpAntF_of_satA2F</code> · <code>LJF/OFuelMin.lean</code></div></div>
+  <div class="node proved"><span class="id">N0h</span><div class="head"><span class="name">Height bounds of every derivation transformer</span><span class="chip proved">proved</span></div>
+    <div class="meta">the Step-0 table, 873 lines, pinned · <code>wk</code> exact; <code>extract</code>, <code>sim*</code>, <code>route*</code>, <code>rel*</code> non-increasing; <code>invImpOr</code>, <code>invStrip</code>, <code>invCurry</code> RISE on kernel-checked cells; <code>negOfDownStab</code>/<code>dykCommute</code> rise unboundedly but leave the family (<code>laxReleaseUp</code>/<code>laxReleaseCirc</code>) · <code>LJF/OFuelHeight.lean</code></div></div>
+  <div class="node proved"><span class="id">N0e</span><div class="head"><span class="name">The parking definition <code>interpP</code>: sound, founded</span><span class="chip proved">proved</span></div>
+    <div class="meta">decided 2026-09-05 09:10 · <code>eSoundP</code>/<code>aSoundP</code> at <code>[propext, Quot.sound]</code>, gate watched failing · kernel <code>decide</code>: <code>interpP = interpF</code> on a station without the changed shapes at fuels 0–8, with negative controls · rows, processing phase, reductions proved · the founding proved: <code>μ = (hgt, weight, sizeOf)</code>, every edge class incl. the antecedent dispatch for all five parked shapes (Part 10) · <code>parkAntP_of_satA2P</code>, <code>parkFireE</code> · §4.14</div></div>
+  <div class="node proved"><span class="id">N0c</span><div class="head"><span class="name">Cofinality at a saturated station</span><span class="chip proved">proved · unconditional</span></div>
+    <div class="meta"><code>tinvP</code>, <code>uentryP</code>, <code>parkAntP</code>, <code>satE2P</code>, <code>satA2P</code> — the 17-definition family in fuel-carrying form over <code>interpP</code>, one <code>mutual</code> on <code>μ = (hgt, station weight, sizeOf)</code>; the antecedent guard a native recursive call at all twenty parked arms, <code>ParkAntP</code> a consequence · <code>LJF/OFuelPFamKit.lean</code>, <code>OFuelPFam.lean</code> · <code>[propext, Classical.choice, Quot.sound]</code>, verified 2026-09-05 18:43 (build exit 0, pins measured, gate watched failing) · <code>DykAntP</code> withdrawn · §4.15–4.17</div></div>
+  <div class="node proved"><span class="id">N0d</span><div class="head"><span class="name">Cofinality: <code>ECofinalP</code>, <code>ACofinalP</code></span><span class="chip proved">proved for interpP</span></div>
+    <div class="meta"><code>ecofinalP</code>, <code>acofinalP</code> with no parameter · <code>LJF/OFuelPCofinal.lean</code> · <code>[propext, Classical.choice, Quot.sound]</code> · the witness is a single fuel <code>Σ f</code>; the upward-closed forms <code>ECofinalUp</code>/<code>ACofinalUp</code> (N3's backward direction) remain drafted · §4.17</div></div>
+  <div class="node proved"><span class="id">N1</span><div class="head"><span class="name">Stabilisation, interderivable</span><span class="chip proved">stated · literal form refuted</span></div>
+    <div class="meta"><code>EStabilises</code>/<code>AStabilises</code> (the chains eventually constant up to interderivability, the A-side modulo <code>E_f</code>) stand. The literal forms <code>EStabEq</code>/<code>AStabEq</code> are REFUTED at every saturated station with a parked compound implication: the ∀p attack row of <code>Q ⊃ N</code> at goal <code>↑Q</code> contains the same call one fuel down, so the chain is strictly size-ascending (six designed cells, kernel-checked, <code>[propext, Quot.sound]</code>; the unsaturated control is literally constant) · §4.23</div></div>
+  <div class="node proved"><span class="id">N2</span><div class="head"><span class="name">Pitts's pair for a cell</span><span class="chip proved">stated</span></div>
+    <div class="meta"><code>IsUIPair</code>, <code>HasUI</code> — <code>minE</code> at every judgment, <code>minA</code> at <code>tru</code> (the lax cell is the cell <code>done ⇒ ◯P</code>) · axiom-free · §4.19</div></div>
+  <div class="node proved"><span class="id">N3</span><div class="head"><span class="name">Stabilisation ⟺ uniform interpolant at a cell</span><span class="chip proved">proved both ways</span></div>
+    <div class="meta"><code>hasUI_of_stabilises</code> (forward, interderivable form, <code>cutInv</code> used four times) and <code>stabilises_of_hasUI′</code> (backward), over <code>SatE2P</code>/<code>SatA2P</code> as variables · <code>[propext, Classical.choice, Quot.sound]</code> · §4.22–4.23</div></div>
+  <div class="node build"><span class="id">N4</span><div class="head"><span class="name">Stabilisation at every saturated station</span><span class="chip build">◯-free proved · PLL open</span></div>
+    <div class="meta">◯-free instance PROVED by transport: <code>n4_circFree_uncond : … → CircFreeCtx done → CircFreeN G → EStabilises × AStabilises</code>, from <code>LJFIPC.uniform_interpolation_IPC</code> through <code>polInvT</code> and N3 backward for the ◯-free pair <code>IsUIPairCF</code> (test data ◯-free, which is all the backward direction uses: <code>interpP_circFreeN</code>) · the PLL instance OPEN both ways; the fuel-bounded form OPEN, three candidate bound shapes refuted, the redundancy lemma named (<code>docs/n4-circfree-cases.md</code>) · §4.23 · since §4.24 the ONLY obligation between route (B) and <code>PLL_UI</code> (restated as <code>StabilisationAllP</code>, <code>wip/ui_routeB_wp4.lean</code>) · <b>reduced (§4.25)</b> to two typed obligations about the recursion, not a cell: <code>n4_of_interpQ : PQEquiv p → QBound p → ∀ done G, EStabilises p done × AStabilises p done G</code> over the loop-checked <code>interpQ</code> (<code>seen : List Pos</code>; a repeated guard yields <code>⊥</code>/<code>⊤</code>); <code>QBound</code> <b>PROVED</b> (§4.26: <code>qBound</code>, the measure <code>μ = κ·W + ν</code>, <code>[propext, Quot.sound]</code>) and <code>PQEquiv</code> (<code>interpP ⟛ interpQ</code> at every fuel and cell) <b>OPEN — the only obligation left</b>: <code>n4_of_pqequiv : PQEquiv p → ∀ done G, EStabilises p done × AStabilises p done G</code>; its easy halves <b>PROVED</b> (<code>pqEquiv_of_hard : PQHard p → PQEquiv p</code>, §4.27) so <code>PLL_UI</code> rests on <code>PQHard</code> alone; <code>PQHard</code> survives its designed refutation candidate at fuels 1–6, the naive per-state induction hypothesis REFUTED, both halves (§4.27–4.28); fuel monotonicity of both recursions PROVED (WP11); the obstruction to a per-fuel proof stated exactly and the derivation-level route (§4.28–4.29): the pair recursion built and its campaign clean, the proof stage (WP12b) in flight · eighteen designed cells, six of them Ghilardi–Zawadowski shapes, all bottom out — no refutation · the per-station reset of WP3 REFUTED on a ◯-free cell · <code>wip/ui_routeB_n4q*.lean</code>, <code>docs/n4-loopcheck.md</code></div></div>
+  <div class="node proved"><span class="id">N5</span><div class="head"><span class="name">UI at every generalised station of LJF◯</span><span class="chip proved">proved rel. N4</span></div>
+    <div class="meta"><code>hasUI_of_stab : SatE2P p → SatA2P p → StabilisationAllP p → ∀ todo done G, ParkedCtxP done → HasUI p (todo ++ done) G</code> · through the transfer <code>stabP</code> on <code>eMinPP</code>'s measure: eleven processing clauses and the fire step transfer stabilisation by rewriting, <code>↑⊥</code> is constant from fuel 1, <code>↑(P ∨ Q)</code> is the one clause that builds a derivation (<code>andAllImpUse</code>); <code>cutInv</code> only at threshold merging · stabilisation and N3 restated at a generalised station <code>(todo, done)</code> (<code>EStabilisesP</code>, <code>isUIPair_of_stabilisesP</code>, <code>stabilises_of_hasUICFP</code>), the <code>[]</code> instances the old ones by <code>rfl</code> · <code>wip/ui_routeB_wp4.lean</code> · <code>[propext, Classical.choice, Quot.sound]</code> · §4.24</div></div>
+  <div class="node proved"><span class="id">N6</span><div class="head"><span class="name">Transport to PLL</span><span class="chip proved">IPC proved · PLL proved rel. N4</span></div>
+    <div class="meta"><b>On IPC formulas, outright:</b> <code>cellsFor_circFree</code> and <code>ipc_ui_routeB : (∀ p, SatE2P p) → (∀ p, SatA2P p) → IPC_UI_routeB</code>, <code>IPC_UI_routeB := ∀ p φ, isIPL φ → Σ E A, IsUIPairPLL p φ E A</code> — tested against every p-free PLL formula, <code>◯</code> included (the ◯-free restriction sits on the input <code>HasUICF</code> only; <code>eMinPP</code>/<code>aMinPP</code> are cofinal for ◯-carrying test data) · checked against Pitts: <code>routeB_agrees_IPC</code> — route (B)'s <code>∃p.φ</code> ⟛ <code>exI p [φ]</code> and <code>∀p.φ</code> ⟛ <code>allI p [] φ</code> in <code>LaxND</code> · <b>in general:</b> <code>pll_ui_of_stabilisationAll : (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, StabilisationAllP p) → PLL_UI</code> through <code>cellsFor_of_stab</code> and <code>pll_ui_of_ljfo′</code> · <code>[propext, Classical.choice, Quot.sound]</code> · what remains before <code>PLL_UI</code>: N4 alone · §4.22, §4.24</div></div>
+  <div class="node proved"><span class="id">N0k</span><div class="head"><span class="name">Cut for Inv</span><span class="chip proved">proved</span></div>
+    <div class="meta"><code>cutInv : Inv Γ [] tru N → Inv (N :: Δ) [] j ψ → Inv (Γ ++ Δ) [] j ψ</code> by polarisation invariance: the one-way transfer block <code>bLL</code>/<code>gA</code>/<code>sD</code>/<code>fT</code>/<code>fS</code>/<code>bCtx</code> on the formula, <code>polInvT</code>/<code>polInvL</code> (the bridge's converse at every polarised sequent), <code>cutInvNE</code> — all <code>[propext, Quot.sound]</code>; <code>cutInv</code> itself <code>[propext, Classical.choice, Quot.sound]</code> (a <code>Nonempty</code> result packaged as data through the Prop-valued bridge). ◯-free block committed first; the restriction is inert. The converse transfer <code>(A′)</code> is REFUTED (<code>notCanGoalConverse</code>) · <code>LJF/OPolInv.lean</code> · §4.21–4.22</div></div>
+  <div class="node open"><span class="id">N0i</span><div class="head"><span class="name">Fuel irrelevance</span><span class="chip open">open · obligation</span></div>
+    <div class="meta"><code>FuelIrrelevance</code> — MOOT: its consumer's hypothesis is unsatisfiable at the stations of interest (§4.23), and for <code>interpQ</code> a single repeated level is not stabilisation (<code>qm10_false_fixpoint</code>, §4.25); on no path now</div></div>
+  <div class="node"><span class="id">N7</span><div class="head"><span class="name">Admission</span><span class="chip draft">ongoing</span></div>
+    <div class="meta">pins (<code>#axioms_within</code>), hoist out of <code>wip/</code>, <code>lake build Production</code> clean, <code>TOOLS.md</code> cells</div></div>
+  <div class="node"><span class="id">N8</span><div class="head"><span class="name">Blueprint chapter and paper</span><span class="chip draft">after N7</span></div>
+    <div class="meta"><code>LaxBlueprint/</code> chapter, HANDOFF §, the paper</div></div>
+</div>
+
+<h2>The statements</h2>
+<pre>EStabilises p done   := Σ f₀, ∀ f ≥ f₀,  E_{f₀} ⊢ E_f  ×  E_f ⊢ E_{f₀}
+AStabilises p done G := Σ f₀, ∀ f ≥ f₀,  E_f, A_{f₀} ⊢ A_f  ×  E_f, A_f ⊢ A_{f₀}
+
+IsUIPair p done G E A :=
+  E, A p-free;   Γ ⊢ E;   Δ, Γ ⊢ ψ → Δ, E ⊢ ψ   (p-free Δ, ψ)
+                 A, Γ ⊢ G;  Δ, Γ ⊢ G → Δ, E ⊢ A   (p-free Δ)
+
+N3:  EStabilises × AStabilises  ⟺  HasUI            (given N0a, N0d)
+N4:  StabilisationAllP p := ∀ done G, Saturated done → ParkedCtxP done → EStabilises × AStabilises
+N5:  StabilisationAllP p → ∀ todo done G, ParkedCtxP done → HasUI p (todo ++ done) G
+N6:  PLL_UI := ∀ p φ, Σ E A, IsUIPairPLL p φ E A
+     (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, StabilisationAllP p) → PLL_UI   PROVED (§4.24)
+     IPC_UI_routeB := ∀ p φ, isIPL φ → Σ E A, IsUIPairPLL p φ E A                 PROVED (§4.24)
+
+E_f := interpP p f [] done none      A_f := interpP p f [] done (some G)</pre>
+
+<h2>Dependency graph</h2>
+<pre class="mermaid">
+graph TD
+  I[interpF] --> N0a[N0a soundness · proved]
+  N0a --> N0b[N0b rows · processing · reductions · proved]
+  N0a --> N0c[N0c cofinality family · PROVED, unconditional]
+  N0b --> N0c
+  H[N0h height bounds · proved] --> N0e[N0e interpP · sound · founded · proved]
+  N0e --> N0c
+  N0c --> N0d[N0d ECofinalP / ACofinalP · PROVED]
+  N1[N1 stabilisation] --> N3[N3 W ⟺ UI per cell]
+  N2[N2 UI pair] --> N3
+  N0a --> N3
+  N0d --> N3
+  Q[QBound · proved] --> N4
+  PQ[PQEquiv · open, easy halves proved] --> N4
+  N4[N4 every saturated station stabilises · ◯-free proved · PLL open = QBound + PQEquiv] --> N5[N5 UI for LJF◯ · proved rel. N4]
+  N3 --> N5
+  N5 --> N6[N6 transport to PLL · IPC proved · PLL proved rel. N4]
+  B[bridge_iff · proved] --> N6
+  N0b --> N6
+  N6 --> N7[N7 admission]
+  N7 --> N8[N8 chapter · paper]
+</pre>
+
+<h2>Work packages</h2>
+<div class="wp"><b>WP1 · N0c and N0d on <code>interpP</code></b><span class="est">done · verified 18:43 · WP1c in build</span><p><b>WP1a</b> (36 min): the Dyckhoff row guarded at the antecedent's own goal, soundness re-proved first, <code>DykAntP</code> withdrawn. <b>WP1b</b>: the family re-founded on <code>μ = (hgt, station weight, sizeOf)</code>, one <code>mutual</code> of seventeen (the ∀p side calls <code>TStabQ</code>, so the blocks were separable only while the guard was a parameter), the guard native at all twenty parked arms, two facts beyond Part 10 (the p-eliminators measure <code>hgt + hgtL lfP</code>; the cast on the refired atom), the termination kit split into <code>OFuelPFamKit.lean</code> with a 3.7-second bench. <code>ecofinalP</code>/<code>acofinalP</code> unconditional in <code>OFuelPCofinal.lean</code>. <b>WP1c — premise refuted (§4.20):</b> measured, bodies 3 s; <code>WellFounded.fix</code> elaboration ~507 s; kernel check of the packed term ~950 s; budgets under <code>termination_by</code> are slower and were not installed. <code>Classical.choice</code> enters from <code>atomMem_of_mem</code> (a string-order proof in <code>LJF/O.lean</code>), not from the recursion. Recorded design: no <code>WellFounded.fix</code> at all — <code>Nat.rec</code> on a height budget, <code>Nat.rec</code> on a station budget, structural recursion on the derivation; possible because every ∃p/∀p edge is height-strict. After review themes 1–2.</p></div>
+<div class="wp"><b>WP2 · N3</b><span class="est">days</span><p>Forward: soundness at the stabilised fuel, minimality from cofinality read there. Backward: cofinality applied to E and to A gives a fuel from which <code>E_f ⟛ E</code> and <code>E_f ∧ A_f ⟛ E_f ∧ A</code>.</p></div>
+<div class="wp"><b>WP3 · N4, the theorem</b><span class="est">unknown · the core</span><p>Proof prong: bound the fuel a cell needs uniformly over Δ by loop-elimination over the finite (station, goal) space, in the decider's style; the measured constraint is one parked-box nesting level per ~10 fuel units, about three times the derivation height. Refutation prong: the §4.12 harness — instance screen, chain probe, cofinality instances by focused kernel search — on any cell suspected of unbounded ascent; a non-stabilising cell is, with N3, a proof that PLL lacks UI.</p></div>
+<div class="wp"><b>WP4 · N5, N6</b><span class="est">done 2026-09-06 · 38 min · §4.24</span><p>No branch-station lemma: every input of N3 is already stated at a generalised station <code>(todo, done)</code>, so stabilisation and N3 were restated there. Stage 1 (rule 8): <code>cellsFor_circFree</code>, <code>ipc_ui_routeB</code>, and the check <code>routeB_agrees_IPC</code> against Pitts's theorem — they agree. Stage 2: the transfer <code>stabP</code>, <code>hasUI_of_stab</code> (N5), <code>pll_ui_of_stabilisationAll</code> (N6 from N4 alone).</p></div>
+<div class="wp"><b>WP8 · N4 for PLL, the loop-checked recursion</b><span class="est">done as a reduction · 2026-09-06 · §4.25</span><p><code>interpQ</code> is <code>interpP</code> with the self-attack loop cut in the definition, in step form, structural in the fuel. Two design decisions refuted and repaired (the per-station reset, on a ◯-free cell; recording at the aggregate). Eighteen designed cells, six of them Ghilardi–Zawadowski shapes, all literally constant in the kernel: no refutation of N4. N4 for <code>interpP</code> proved over two obligations about the recursion: <code>n4_of_interpQ : PQEquiv p → QBound p → ∀ done G, EStabilises p done × AStabilises p done G</code>.</p></div>
+<div class="wp"><b>WP9 · <code>QBound</code></b><span class="est">done 2026-09-06 · §4.26</span><p>The measure flattens to a <code>Nat</code>, <code>μ = κ·W + ν</code>: <code>κ</code> counts the compound antecedents of the Dyckhoff-closed subformula closure not yet in <code>seen</code>, <code>W</code> is a power of three over the closure, <code>ν</code> is <code>eMinPP</code>'s measure. The edge mirror is complete (<code>stepQ_congr</code>) and descends (<code>edges_decrease</code>); Stage 0 kernel checks on the designed cells first; two gates watched failing (no goal term, no <code>κ</code>). Result: <code>n4_of_pqequiv : PQEquiv p → ∀ done G, EStabilises p done × AStabilises p done G</code>.</p></div>
+<div class="wp"><b>WP10 · <code>PQEquiv</code></b><span class="est">easy halves done · hard halves open · WP11 partial · §4.27–4.28</span><p><code>PQHard p</code> — at every fuel and cell, <code>interpQ ⊢ interpP</code> in ∃p mode and <code>interpP ⊢ interpQ</code> in ∀p mode — is the one obligation between route (B) and uniform interpolation for PLL. The designed-cell verdicts at low fuels are its refutation stage, run one at a time.</p></div>
+<div class="wp"><b>WP11 · <code>PQHard</code></b><span class="est">partial · 2026-09-06 · §4.28</span><p>Fuel monotonicity PROVED for both recursions at every state (<code>wip/ui_routeB_pqmono.lean</code>). The naive simultaneous induction REFUTED (no step lemma can exist); the row transfers once relativised by the dropped conjunct; where that conjunct comes from on the ∀p side is the exact obstruction. Analysis: every per-fuel form bottoms out in per-fuel minimality; the redundancy lemma lives at the derivation level. <b>WP12 — Stage 0 done (§4.29): the pair-recording <code>interpR</code> built, termination kernel-certified at every designed cell (thresholds to 34), the escape property as designed, soundness and the validation cells not refuted; the proof stage relaunched 15:35 as WP12b:</b> the (antecedent, station-set) loop check; soundness and top-level cofinality of the loop-checked recursion by the derivation-height induction with escapes; N3 forward for it and N3 backward for <code>interpP</code>, with no <code>PQEquiv</code> at all.</p></div>
+<div class="wp"><b>WP5 · N7, N8</b><span class="est">ongoing</span><p>Pins, hoisting, the Production sweep, TOOLS.md, HANDOFF, the blueprint chapter, the paper.</p></div>
+
+<h2>Evidence that shaped the statements</h2>
+<div class="tablewrap"><table>
+<tr><th>cell</th><th>finding</th><th>where</th></tr>
+<tr><td><code>{◯p ⊃ r, ◯q} ⇒ ◯p</code></td><td>instance-closed (χ = ⊥); cofinality validated at every fuel; <strong>∀p certified in the kernel</strong> (<code>cell1_forall_p</code>, <code>LaxLogic/PLLInstanceBound.lean</code>)</td><td>§4.10</td></tr>
+<tr><td><code>{◯p ⊃ r, s ⊃ ◯p} ⇒ r</code></td><td>instance-closed (χ = s); cofinality validated at station fuel 10; <strong>∀p certified in the kernel</strong> (<code>cell2_forall_p</code>)</td><td>§4.10</td></tr>
+<tr><td><code>[◯(d ⊃ p) ⊃ a, c ⊃ ◯p] ⇒ a</code> (S1)</td><td>no instance closes it; Δ = c at station fuel 14 (both sides), Δ = ◯(c ∨ ¬d) at 22, each where the row analysis predicted; the A-side ∀p instance is a frontier marker</td><td>§4.12</td></tr>
+<tr><td>first cofinality build</td><td>stopped at the founding: a cycle at a fixed station; the height-first order survives</td><td>§4.11</td></tr>
+</table></div>
+
+<h2>Working rules</h2>
+<p>Sorries live in <code>wip/</code> only; <code>lake build Experimental</code> allows them, <code>lake build Production</code> is the admission gate. A node is hoisted into <code>LJF/</code> when its sorry is gone and its pin holds. Inputs not yet proved enter as typed hypotheses, never as sorries in shared modules. Statement first; refute before building; watch every gate fail once; standard proof-theoretic language. Worktrees; never push <code>claude/*</code>; <code>scripts/campaign-push.sh frjw-dev</code>; read <code>TOOLS.md</code> before reaching for a tool.</p>
+
+<div class="foot">Source of truth: <code>docs/ui-routeB-blueprint.md</code> and <code>wip/ui_routeB_blueprint.lean</code> on <code>frjw-dev</code>; record in <code>docs/ui-ljfo-clause-table.md</code> §4.7–4.29.</div>
+</main>
