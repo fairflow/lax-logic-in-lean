@@ -2581,7 +2581,7 @@ loop-checked recursion) is the one thing left in flight.
 
 ---
 
-### 4.25 WP8: N4 for PLL through the loop-checked recursion `interpQ` — NOT proved; the route built, eighteen designed cells all bottom out (no refutation), two blueprint design decisions REFUTED and repaired, N4 reduced to the two typed obligations `QBound` and `PQEquiv` (2026-09-06, 03:45)
+### 4.25 WP8: N4 for PLL through the loop-checked recursion `interpQ` — NOT proved; the route built, eighteen designed cells all bottom out (no refutation), two blueprint design decisions REFUTED and repaired, N4 reduced to the two typed obligations `QBound` and `PQEquiv` (2026-09-06, 03:35)
 
 One agent run of 46 minutes, six commits, merged at 8654b8b and verified
 here (`lake build wipshared` exit 0; pins measured; gate watched failing;
@@ -2660,7 +2660,9 @@ at 14, kernel-checked — a single repeated level is not stabilisation for
 this recursion, a second and independent reason `FuelIrrelevance` (N0i)
 is unusable.
 
-**Stage 2 — N4 over two obligations.**  (a) PROVED, axiom-free:
+**Stage 2 — N4 over two obligations.**  (a) PROVED, `[propext, Quot.sound]`
+(measured here; the run's report said "axiom-free", which the file's own
+pins never claimed):
 
     QFounded rst p μ := ∀ prev₁ prev₂ s, (∀ t, μ t < μ s → prev₁ t = prev₂ t) →
                         stepQ rst p prev₁ s = stepQ rst p prev₂ s
@@ -2728,7 +2730,15 @@ the polarity induction, the hard halves ◯-free first).
 ## 5 · OPEN list
 
 Everything in this document that is not established, in one place.  Each
-item says what would settle it.
+item says what would settle it.  **Standing note (2026-09-06, §4.25):**
+this list was written for the retaining table of §2–§3 and route A′; the
+live state is route (B)'s, and it is one line — uniform interpolation for
+PLL rests on N4 alone (§4.24), N4 rests on `QBound` and `PQEquiv` (§4.25),
+both OPEN.  O2 (`CimpAnt`) is superseded by the unconditional cofinality
+of §4.17; O7 (the loop cut) is now a definition, `interpQ`, with its
+literal termination the `QBound` obligation; O8 (termination of the
+retaining table) is answered for route (B) by the height-first founding
+of §4.17.
 
 **O1.  Uniform interpolation for PLL.**  OPEN, in neither direction.
 Unchanged by this document.  (Standing claim discipline,
