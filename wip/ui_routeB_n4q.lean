@@ -427,3 +427,19 @@ theorem interpQ_pfree (p : String) (f : Nat) (todo done : List Neg)
   interpG_pfree id p f todo done g seen
 
 end LJFO
+
+/-! ## Pins -/
+
+#axioms_within LJFO.seenMem_cons_self [propext]
+#axioms_within LJFO.interpG_zero_none [propext]
+#axioms_within LJFO.interpG_zero_some [propext]
+#axioms_within LJFO.interpG_succ [propext]
+#axioms_within LJFO.pfree_parkRowE [propext, Quot.sound]
+#axioms_within LJFO.pfree_parkRowA [propext, Quot.sound]
+#axioms_within LJFO.pfree_eRowsQ [propext, Quot.sound]
+#axioms_within LJFO.pfree_aRowsQ [propext, Quot.sound]
+#axioms_within LJFO.pfree_laxPrefixQ [propext, Quot.sound]
+#axioms_within LJFO.pfree_aggQ [propext, Quot.sound]
+#axioms_within LJFO.pfree_stepQ [propext, Quot.sound]
+#axioms_within LJFO.interpG_pfree [propext, Quot.sound]
+#axioms_within LJFO.interpQ_pfree [propext, Quot.sound]
