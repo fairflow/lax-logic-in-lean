@@ -42,7 +42,9 @@ VERSO CHEAT SHEET — everything used in this file, and nothing else.
                                 deliberately no "done": effort is an
                                 estimate, status comes from the code.
 
-  In prose:
+  In prose INSIDE A NODE.  Not in a chapter's preamble: outside a node
+  these fail the build with "uses declaration outside an informal
+  enviroment" (sic).  In preamble text, name the node in words.
     {uses "label"}[]            a reference that ADDS a dependency edge.
                                 Empty [] means "generate the text for me".
     {bpref "label"}[]           a link with NO dependency edge.

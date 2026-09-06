@@ -22,10 +22,10 @@ step; it has twice been a day stale already.
 
 As of §4.19 and §4.20 (2026-09-05) the shape is this: everything from N0a to
 N3 is proved, and what is not proved is carried as a *named obligation in a
-signature* rather than as a hole.  Two things are genuinely open —
-{uses "n4_stabilisation_all"}[], the only open node and the one the route
-exists to settle, and `CutInv`, cut admissibility for LJF◯ in the form the
-backward direction needs, for which a refute-first screen is running.
+signature* rather than as a hole.  Two things are genuinely open — N4, the
+only open node and the one the route exists to settle, and `CutInv`, cut
+admissibility for LJF◯ in the form the backward direction needs, for which a
+refute-first screen is running.
 
 A note on method, since it explains what is and is not attached below.
 Route (B) is moving week by week, so nodes here carry `(lean := "...")`
