@@ -37,9 +37,10 @@ run the fire scan themselves.
 at the saturated parked stations reached by processing taken as a PARAMETER
 `StabilisationAllP` (the blueprint's N4, restated over `interpP`); the
 transfer through the processing phase is the recursion `stabP`, which mirrors
-`eMinPP`'s clause list: ten clauses in which `interpP` is LITERALLY the same
-formula one fuel down at the successor station, one constant clause, one
-branching clause, and the saturated leaf where the parameter is read.
+`eMinPP`'s clause list: eleven of the thirteen processing clauses (and the
+fire step) send `interpP` at `(todo, done)` one fuel up to LITERALLY `interpP`
+at the successor station, one clause is constant (`↑⊥`), one branches
+(`↑(P ∨ Q)`), and the saturated leaf is where the parameter is read.
 
 Nothing here is a `sorry`.  `SatE2P`/`SatA2P` are variables throughout, as in
 every work package since WP2; `LJFO.satE2P`/`satA2P` (`LJF/OFuelPCofinal.lean`)
@@ -452,6 +453,387 @@ theorem routeB_agrees_IPC {p : String} {φ : PLLFormula} (hφ : isIPL φ)
   · -- `∀p φ ⊢ A`: route (B)'s minimality at the `p`-free test formula `∀p φ`
     exact w.pair.minA _ (pfreeN_negOfO hAp) hAs
 
+/-! # 6 · Stage 2 · WP4 in general: the transfer through the processing phase
+
+Stage 1 got its stabilisation from Pitts's theorem, which stops at the ◯-free
+fragment.  In general the input is N4 — stabilisation at the SATURATED parked
+stations — and WP4 owes the transfer of it back through the processing phase.
+
+The transfer is a recursion on `(todo, done)` with `eMinPP`'s own measure
+`2·sum3 todo + sum3 done`, and `interpP`'s clause list makes it short: at
+eleven of the thirteen processing clauses, and at the fire step, `interpP` at
+`(todo, done)` one fuel up is LITERALLY `interpP` at the successor station,
+whatever the goal slot — so stabilisation transfers by rewriting, with no
+derivation touched (`StabP.step`).  One clause is constant (`↑⊥`), and ONE
+branches (`↑(P ∨ Q)`), where the `∃p` aggregate is an `nOrAll` and the `∀p`
+aggregate an `nAndAll` of guarded conjuncts; that clause is the only place a
+derivation is built (`stabP_or`), and its one focused step is `andAllImpUse`.
+
+Because the branching clause's `∀p` conjunct guards itself by the branch's own
+`∃p` at the SAME fuel, the two chains have to stabilise at a COMMON threshold;
+`StabAt`/`StabP` carry one, and `StabAt.raiseTo` moves a witness up to it.
+That is where `cutInv` enters the transfer. -/
+
+/-! ## 6.1 Cut in the shapes the transfer uses -/
+
+/-- Cut, one hypothesis: `[M] ⊢ N` and `[N] ⊢ ψ` give `[M] ⊢ ψ`. -/
+noncomputable def cut1N {M N ψ : Neg} (d₁ : Inv [M] [] .tru N)
+    (d₂ : Inv [N] [] .tru ψ) : Inv [M] [] .tru ψ :=
+  cutInv [M] [] .tru N ψ d₁ d₂
+
+/-- Cut at the FIRST of two hypotheses. -/
+noncomputable def cut2N {M K N ψ : Neg} (d₁ : Inv [M] [] .tru N)
+    (d₂ : Inv [N, K] [] .tru ψ) : Inv [M, K] [] .tru ψ :=
+  cutInv [M] [K] .tru N ψ d₁ d₂
+
+/-- Exchange, two hypotheses. -/
+def swapInv2 {M K ψ : Neg} (d : Inv [M, K] [] .tru ψ) : Inv [K, M] [] .tru ψ :=
+  d.wk (fun Z hZ => by
+    rcases List.mem_cons.mp hZ with rfl | hZ
+    · exact List.mem_cons_of_mem _ (List.mem_cons_self ..)
+    · rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_self ..
+      · exact absurd hZ List.not_mem_nil)
+
+/-- Cut at the SECOND of two hypotheses, contracting the first. -/
+noncomputable def cut2N' {M K N ψ : Neg} (d₁ : Inv [M, K] [] .tru N)
+    (d₂ : Inv [N, M] [] .tru ψ) : Inv [M, K] [] .tru ψ :=
+  (cutInv [M, K] [M] .tru N ψ d₁ d₂).wk (fun Z hZ => by
+    rcases List.mem_append.mp hZ with hZ | hZ
+    · exact hZ
+    · rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_self ..
+      · exact absurd hZ List.not_mem_nil)
+
+/-! ## 6.2 The two chains at a COMMON threshold -/
+
+/-- Both chains at a generalised station, stabilising from a GIVEN fuel. -/
+def StabAt (p : String) (todo done : List Neg) (G : Neg) (f₀ : Nat) : Type :=
+  ∀ f, f₀ ≤ f →
+    (Inv [interpP p f₀ todo done none] [] .tru (interpP p f todo done none) ×
+     Inv [interpP p f todo done none] [] .tru (interpP p f₀ todo done none)) ×
+    (Inv [interpP p f todo done none, interpP p f₀ todo done (some G)] [] .tru
+       (interpP p f todo done (some G)) ×
+     Inv [interpP p f todo done none, interpP p f todo done (some G)] [] .tru
+       (interpP p f₀ todo done (some G)))
+
+/-- Both chains stabilise, at some common threshold. -/
+def StabP (p : String) (todo done : List Neg) (G : Neg) : Type :=
+  Σ f₀ : Nat, StabAt p todo done G f₀
+
+/-- `UpFrom.mk1` for `StabAt`: `interpP`'s clauses fire at `f+1`, so every
+transporter below produces its content in successor form. -/
+def StabAt.mk1 {p : String} {todo done : List Neg} {G : Neg} {n : Nat}
+    (k : ∀ f', n ≤ f' →
+      (Inv [interpP p (n + 1) todo done none] [] .tru
+         (interpP p (f' + 1) todo done none) ×
+       Inv [interpP p (f' + 1) todo done none] [] .tru
+         (interpP p (n + 1) todo done none)) ×
+      (Inv [interpP p (f' + 1) todo done none,
+            interpP p (n + 1) todo done (some G)] [] .tru
+         (interpP p (f' + 1) todo done (some G)) ×
+       Inv [interpP p (f' + 1) todo done none,
+            interpP p (f' + 1) todo done (some G)] [] .tru
+         (interpP p (n + 1) todo done (some G)))) :
+    StabAt p todo done G (n + 1)
+  | 0, hf => absurd hf (by omega)
+  | f' + 1, hf => k f' (by omega)
+
+/-- The `∃p` half. -/
+def StabP.toE {p : String} {todo done : List Neg} {G : Neg}
+    (w : StabP p todo done G) : EStabilisesP p todo done :=
+  ⟨w.1, fun f hf => (w.2 f hf).1⟩
+
+/-- The `∀p` half. -/
+def StabP.toA {p : String} {todo done : List Neg} {G : Neg}
+    (w : StabP p todo done G) : AStabilisesP p todo done G :=
+  ⟨w.1, fun f hf => (w.2 f hf).2⟩
+
+/-- **Raising the threshold**, by cut: `E_n ⊢ E_{f₀} ⊢ E_f` and back, and the
+`E`-relativised `∀p` clauses composed the same way. -/
+noncomputable def StabAt.raiseTo {p : String} {todo done : List Neg} {G : Neg}
+    {f₀ n : Nat} (hn : f₀ ≤ n) (w : StabAt p todo done G f₀) :
+    StabAt p todo done G n := by
+  intro f hf
+  have wn := w n hn
+  have wf := w f (Nat.le_trans hn hf)
+  have hEfn : Inv [interpP p f todo done none] [] .tru
+      (interpP p n todo done none) := cut1N wf.1.2 wn.1.1
+  exact ⟨⟨cut1N wn.1.2 wf.1.1, hEfn⟩,
+    ⟨cut2N' (cut2N hEfn wn.2.2) (swapInv2 wf.2.1),
+     cut2N' wf.2.2 (swapInv2 (cut2N hEfn wn.2.1))⟩⟩
+
+/-- The two SEPARATE stabilisation statements merged at a common threshold —
+how the parameter is read at the saturated leaf. -/
+noncomputable def stabP_of_stabilises {p : String} {todo done : List Neg}
+    {G : Neg} (he : EStabilisesP p todo done) (ha : AStabilisesP p todo done G) :
+    StabP p todo done G := by
+  refine ⟨he.1 + ha.1, fun f hf => ?_⟩
+  have hen := he.2 (he.1 + ha.1) (Nat.le_add_right _ _)
+  have hef := he.2 f (by omega)
+  have han := ha.2 (he.1 + ha.1) (Nat.le_add_left _ _)
+  have haf := ha.2 f (by omega)
+  have hEfn : Inv [interpP p f todo done none] [] .tru
+      (interpP p (he.1 + ha.1) todo done none) := cut1N hef.2 hen.1
+  exact ⟨⟨cut1N hen.2 hef.1, hEfn⟩,
+    ⟨cut2N' (cut2N hEfn han.2) (swapInv2 haf.1),
+     cut2N' haf.2 (swapInv2 (cut2N hEfn han.1))⟩⟩
+
+/-! ## 6.3 The clause transporters -/
+
+/-- **The single-successor clauses.**  Whenever `interpP` at `(todo, done)`
+one fuel up is literally `interpP` at `(todo′, done′)`, whatever the goal
+slot, stabilisation transfers by rewriting — no derivation is touched.  Ten of
+the twelve processing clauses and the fire step are of this shape. -/
+noncomputable def StabP.step {p : String} {todo done todo' done' : List Neg}
+    {G : Neg} (w : StabP p todo' done' G)
+    (heq : ∀ (f : Nat) (g : Option Neg),
+      interpP p (f + 1) todo done g = interpP p f todo' done' g) :
+    StabP p todo done G :=
+  ⟨w.1 + 1, StabAt.mk1 (fun f' hf' => by
+    rw [heq f' none, heq f' (some G), heq w.1 none, heq w.1 (some G)]
+    exact w.2 f' hf')⟩
+
+/-- **The absurd hypothesis.**  `↑⊥` in `todo` makes both chains constant from
+fuel 1: `⊥` in `∃p` mode, `⊤` in `∀p` mode. -/
+noncomputable def stabP_fls {p : String} {todo done : List Neg} {G : Neg} :
+    StabP p (.up .fls :: todo) done G := by
+  have e1 : ∀ k : Nat, 1 ≤ k →
+      interpP p k (.up .fls :: todo) done none = nBot := by
+    intro k hk
+    obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+    rw [interpP]
+  have e2 : ∀ k : Nat, 1 ≤ k →
+      interpP p k (.up .fls :: todo) done (some G) = nTop := by
+    intro k hk
+    obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+    rw [interpP]
+  refine ⟨1, fun f hf => ?_⟩
+  rw [e1 1 (Nat.le_refl _), e1 f hf, e2 1 (Nat.le_refl _), e2 f hf]
+  exact ⟨⟨idNeg _ _ (List.mem_cons_self ..), idNeg _ _ (List.mem_cons_self ..)⟩,
+    ⟨nTopIntro, nTopIntro⟩⟩
+
+/-- **Using a `∀p` aggregate hypothesis** — the ONE focused step of the whole
+transfer.  From the branch's guard `E` and the aggregate `nAndAll l` carrying
+the row `↓E ⊃ A`, the branch's `A` follows:
+
+    [E, nAndAll l] ⊢ A          for  (↓E ⊃ A) ∈ l
+-/
+noncomputable def andAllImpUse {E A : Neg} {l : List Neg}
+    (hmem : Neg.imp (.down E) A ∈ l) : Inv [E, nAndAll l] [] .tru A :=
+  simHyp (H := A) (Γ := []) (Δ₀ := [E, nAndAll l])
+    (fun hs lf =>
+      .lfoc (hs _ (List.mem_cons_of_mem _ (List.mem_cons_self ..)))
+        (lfocAndAll hmem
+          (.impL (.rfoc (.rel (idNeg E _ (hs _ (List.mem_cons_self ..))))) lf)))
+    (fun _ h => absurd h List.not_mem_nil)
+    (idNeg A [A] (List.mem_cons_self ..))
+
+/-- **The branching clause.**  `↑(P ∨ Q)` in `todo` sends the `∃p` chain to an
+`nOrAll` over the branches and the `∀p` chain to an `nAndAll` of conjuncts
+`↓E_branch ⊃ A_branch`; from stabilisation on every branch AT THE COMMON
+THRESHOLD, both aggregates stabilise.  The `∃p` side is
+`nOrAllElim`/`nOrAllIntro` and spends NO cut; the `∀p` side is `nAndAllIntro`
+with `andAllImpUse` and two cuts per row — the branch's guard against the row,
+and the row's conclusion against the branch's own `∀p` step. -/
+noncomputable def stabP_or_at {p : String} {todo done : List Neg} {G : Neg}
+    {P Q : Pos} (n : Nat)
+    (brn : ∀ bh : {b : List Neg // b ∈ invertPos (Pos.or P Q)},
+      StabAt p (bh.1 ++ todo) done G n) :
+    StabAt p (.up (.or P Q) :: todo) done G (n + 1) := by
+  have eE : ∀ k : Nat,
+      interpP p (k + 1) (.up (.or P Q) :: todo) done none =
+        nOrAll ((invertPos (Pos.or P Q)).attach.map
+          (fun ⟨b, _⟩ => interpP p k (b ++ todo) done none)) :=
+    fun _ => by rw [interpP]
+  have eA : ∀ k : Nat,
+      interpP p (k + 1) (.up (.or P Q) :: todo) done (some G) =
+        nAndAll ((invertPos (Pos.or P Q)).attach.map
+          (fun ⟨b, _⟩ =>
+            Neg.imp (.down (interpP p k (b ++ todo) done none))
+              (interpP p k (b ++ todo) done (some G)))) :=
+    fun _ => by rw [interpP]
+  refine StabAt.mk1 (fun f' hnf => ?_)
+  rw [eE, eE, eA, eA]
+  refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
+  · -- `∃p`: every disjunct of the threshold aggregate implies its own
+    refine nOrAllElim _ (List.mem_cons_self ..) ?_
+    intro x hx Γ' hsub
+    obtain ⟨⟨b, hb⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+    subst hEq
+    exact nOrAllIntro (List.mem_map_of_mem hmem)
+      (((brn ⟨b, hb⟩) f' hnf).1.1.wk (fun Z hZ => by
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_self ..
+        · exact absurd hZ List.not_mem_nil))
+  · refine nOrAllElim _ (List.mem_cons_self ..) ?_
+    intro x hx Γ' hsub
+    obtain ⟨⟨b, hb⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+    subst hEq
+    exact nOrAllIntro (List.mem_map_of_mem hmem)
+      (((brn ⟨b, hb⟩) f' hnf).1.2.wk (fun Z hZ => by
+        rcases List.mem_cons.mp hZ with rfl | hZ
+        · exact List.mem_cons_self ..
+        · exact absurd hZ List.not_mem_nil))
+  · -- `∀p`, threshold aggregate ⊢ own aggregate, relative to the `∃p` one
+    refine nAndAllIntro ?_
+    intro x hx
+    obtain ⟨⟨b, hb⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+    subst hEq
+    refine .impR (.downL ?_)
+    have hrow : Neg.imp (.down (interpP p n (b ++ todo) done none))
+        (interpP p n (b ++ todo) done (some G)) ∈
+        (invertPos (Pos.or P Q)).attach.map
+          (fun ⟨b, _⟩ =>
+            Neg.imp (.down (interpP p n (b ++ todo) done none))
+              (interpP p n (b ++ todo) done (some G))) :=
+      List.mem_map_of_mem hmem
+    refine (cut2N' (cut2N ((brn ⟨b, hb⟩) f' hnf).1.2 (andAllImpUse hrow))
+      (swapInv2 ((brn ⟨b, hb⟩) f' hnf).2.1)).wk (fun Z hZ => ?_)
+    rcases List.mem_cons.mp hZ with rfl | hZ
+    · exact List.mem_cons_self ..
+    · rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (List.mem_cons_self ..))
+      · exact absurd hZ List.not_mem_nil
+  · refine nAndAllIntro ?_
+    intro x hx
+    obtain ⟨⟨b, hb⟩, hmem, hEq⟩ := memMapWitness _ _ x hx
+    subst hEq
+    refine .impR (.downL ?_)
+    have hrow : Neg.imp (.down (interpP p f' (b ++ todo) done none))
+        (interpP p f' (b ++ todo) done (some G)) ∈
+        (invertPos (Pos.or P Q)).attach.map
+          (fun ⟨b, _⟩ =>
+            Neg.imp (.down (interpP p f' (b ++ todo) done none))
+              (interpP p f' (b ++ todo) done (some G))) :=
+      List.mem_map_of_mem hmem
+    refine (cut2N' (cut2N ((brn ⟨b, hb⟩) f' hnf).1.1 (andAllImpUse hrow))
+      (swapInv2 (cut2N ((brn ⟨b, hb⟩) f' hnf).1.1
+        ((brn ⟨b, hb⟩) f' hnf).2.2))).wk (fun Z hZ => ?_)
+    rcases List.mem_cons.mp hZ with rfl | hZ
+    · exact List.mem_cons_self ..
+    · rcases List.mem_cons.mp hZ with rfl | hZ
+      · exact List.mem_cons_of_mem _ (List.mem_cons_of_mem _ (List.mem_cons_self ..))
+      · exact absurd hZ List.not_mem_nil
+
+/-- The branching clause, with the branch thresholds merged. -/
+noncomputable def stabP_or {p : String} {todo done : List Neg} {G : Neg}
+    {P Q : Pos}
+    (br : ∀ bh : {b : List Neg // b ∈ invertPos (Pos.or P Q)},
+      StabP p (bh.1 ++ todo) done G) :
+    StabP p (.up (.or P Q) :: todo) done G :=
+  ⟨maxOver (fun bh => (br bh).1) (invertPos (Pos.or P Q)).attach + 1,
+   stabP_or_at _ (fun bh => (br bh).2.raiseTo (le_maxOver (List.mem_attach _ bh)))⟩
+
+/-! ## 6.4 N4 for PLL, as a parameter, and the transfer -/
+
+/-- **N4 for PLL** — OPEN both ways — restated over `interpP`: the two chains
+stabilise at every SATURATED parked station.  This is
+`wip/ui_routeB_blueprint.lean`'s `StabilisationAll` with `ParkedCtx` replaced
+by the parking interpolant's own invariant `ParkedCtxP`. -/
+def StabilisationAllP (p : String) : Type :=
+  ∀ (done : List Neg) (G : Neg), Saturated done → ParkedCtxP done →
+    EStabilises p done × AStabilises p done G
+
+/-- **THE TRANSFER.**  Stabilisation at the saturated parked stations reached
+by processing carries back to EVERY generalised station:
+
+    StabilisationAllP p → ∀ todo done G, ParkedCtxP done → StabP p todo done G
+
+The recursion is `eMinPP`'s, on `2·sum3 todo + sum3 done`. -/
+noncomputable def stabP {p : String} (par : StabilisationAllP p) :
+    ∀ (todo done : List Neg) (G : Neg), ParkedCtxP done → StabP p todo done G
+  | .up (.atom a) :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.up (.atom a) :: done) G
+        (ParkedCtxP.cons (ParkedNP.atom a) hP)) (fun _ _ => by rw [interpP])
+  | .up .fls :: _, _, _, _ => stabP_fls
+  | .up (.or P Q) :: todo, done, G, hP =>
+      stabP_or (fun ⟨b, hb⟩ => stabP par (b ++ todo) done G hP)
+  | .up (.down M) :: todo, done, G, hP =>
+      StabP.step (stabP par (M :: todo) done G hP) (fun _ _ => by rw [interpP])
+  | .and M N :: todo, done, G, hP =>
+      StabP.step (stabP par (M :: N :: todo) done G hP) (fun _ _ => by rw [interpP])
+  | .imp .fls _ :: todo, done, G, hP =>
+      StabP.step (stabP par todo done G hP) (fun _ _ => by rw [interpP])
+  | .imp (.atom a) N :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.imp (.atom a) N :: done) G
+        (ParkedCtxP.cons (ParkedNP.qimp a N) hP)) (fun _ _ => by rw [interpP])
+  | .imp (.or Q₁ Q₂) N :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.imp (.or Q₁ Q₂) N :: done) G
+        (ParkedCtxP.cons (ParkedNP.oimp Q₁ Q₂ N) hP)) (fun _ _ => by rw [interpP])
+  | .imp (.down (.up P')) N :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.imp (.down (.up P')) N :: done) G
+        (ParkedCtxP.cons (ParkedNP.simp P' N) hP)) (fun _ _ => by rw [interpP])
+  | .imp (.down (.and M₁ M₂)) N :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.imp (.down (.and M₁ M₂)) N :: done) G
+        (ParkedCtxP.cons (ParkedNP.aimp M₁ M₂ N) hP)) (fun _ _ => by rw [interpP])
+  | .imp (.down (.imp Q' N')) N :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.imp (.down (.imp Q' N')) N :: done) G
+        (ParkedCtxP.cons (ParkedNP.dyk Q' N' N) hP)) (fun _ _ => by rw [interpP])
+  | .circ Q :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.circ Q :: done) G
+        (ParkedCtxP.cons (ParkedNP.box Q) hP)) (fun _ _ => by rw [interpP])
+  | .imp (.down (.circ Q')) N :: todo, done, G, hP =>
+      StabP.step (stabP par todo (.imp (.down (.circ Q')) N :: done) G
+        (ParkedCtxP.cons (ParkedNP.cimp Q' N) hP)) (fun _ _ => by rw [interpP])
+  | [], done, G, hP =>
+      match hf : findFire done (splits done) with
+      | some (_, N', rest) =>
+          StabP.step (stabP par [N'] rest G
+            (ParkedCtxP.sub (splits_sub (findFire_mem hf)) hP))
+            (fun k g => interpPFire_eq (f := k) hf g)
+      | none =>
+          let w := par done G hf hP
+          stabP_of_stabilises w.1 w.2
+  termination_by todo done G hP => 2 * sum3 todo + sum3 done
+  -- NOT `ljf_dec_e`: this module sees BOTH `LJF/OCore.lean`'s macro and
+  -- `LJF/Base.lean`'s (through `LJF.Complete`), and the token is ambiguous.
+  -- The alternatives actually needed, spelled out.
+  decreasing_by
+    all_goals simp_wf
+    all_goals try simp only [sum3, sum3_append, wNeg, wPos]
+    all_goals
+      first
+        | exact dec_park
+        | exact dec_drop
+        | exact dec_shift1
+        | exact dec_and
+        | (have h1 := invertPos_lt (P := Pos.or _ _)
+             (by intro a h; nomatch h) _ (by assumption)
+           simp only [wPos] at h1; omega)
+        | exact Nat.lt_of_lt_of_le (dec_fire (by assumption)) (by omega)
+        | omega
+
+/-! ## 6.5 What the transfer buys: N5 and N6 -/
+
+/-- **`CellsFor` from N4** — the transfer applied at the two cells N6 needs. -/
+noncomputable def cellsFor_of_stab {p : String} (s2 : SatE2P p) (a2 : SatA2P p)
+    (par : StabilisationAllP p) : CellsFor p := fun φ =>
+  ⟨hasUI_of_stabilisesP (todo := [negOfO φ]) (done := []) s2 a2 ParkedCtxP.nil
+      (stabP par [negOfO φ] [] (negOfO φ) ParkedCtxP.nil).toE
+      (stabP par [negOfO φ] [] (negOfO φ) ParkedCtxP.nil).toA,
+   hasUI_of_stabilisesP (todo := []) (done := []) s2 a2 ParkedCtxP.nil
+      (stabP par [] [] (negOfO φ) ParkedCtxP.nil).toE
+      (stabP par [] [] (negOfO φ) ParkedCtxP.nil).toA⟩
+
+/-- **N5, as a theorem.**  A uniform-interpolant pair at EVERY generalised
+station, from N4 at the saturated ones. -/
+noncomputable def hasUI_of_stab {p : String} (s2 : SatE2P p) (a2 : SatA2P p)
+    (par : StabilisationAllP p) (todo done : List Neg) (G : Neg)
+    (hP : ParkedCtxP done) : HasUI p (todo ++ done) G :=
+  hasUI_of_stabilisesP s2 a2 hP
+    (stabP par todo done G hP).toE (stabP par todo done G hP).toA
+
+/-- **N6 from N4 alone.**  Uniform interpolation for PLL follows from
+stabilisation at the saturated parked stations, over the two cofinality
+statements as variables:
+
+    (∀ p, SatE2P p) → (∀ p, SatA2P p) → (∀ p, StabilisationAllP p) → PLL_UI
+-/
+noncomputable def pll_ui_of_stabilisationAll (s2 : ∀ p, SatE2P p)
+    (a2 : ∀ p, SatA2P p) (par : ∀ p, StabilisationAllP p) : PLL_UI :=
+  pll_ui_of_ljfo' (fun p => cellsFor_of_stab (s2 p) (a2 p) (par p))
+
 end LJFO
 
 /-! ## Pins (Stage 1)
@@ -478,3 +860,33 @@ polarisation facts are below it. -/
 #axioms_within LJFO.IPCPairRouteB []
 #axioms_within LJFO.ipcPairRouteB [propext, Classical.choice, Quot.sound]
 #axioms_within LJFO.routeB_agrees_IPC [propext, Classical.choice, Quot.sound]
+
+/-! ## Pins (Stage 2)
+
+Measured with `#axioms_within_pin`.  The transfer itself spends no more than
+the composition principle does: the clause transporters and the focused step
+are at `[propext, Quot.sound]`, and `Classical.choice` enters exactly through
+`cutInv` — in `StabAt.raiseTo`, `stabP_of_stabilises` and the two `∀p` rows of
+the branching clause, i.e. wherever two thresholds have to be merged. -/
+
+#axioms_within LJFO.StabAt [propext]
+#axioms_within LJFO.StabP [propext]
+#axioms_within LJFO.StabAt.mk1 [propext, Quot.sound]
+#axioms_within LJFO.StabP.toE [propext]
+#axioms_within LJFO.StabP.toA [propext]
+#axioms_within LJFO.cut1N [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.cut2N [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.cut2N' [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.swapInv2 [propext]
+#axioms_within LJFO.StabAt.raiseTo [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.stabP_of_stabilises [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.StabP.step [propext, Quot.sound]
+#axioms_within LJFO.stabP_fls [propext, Quot.sound]
+#axioms_within LJFO.andAllImpUse [propext, Quot.sound]
+#axioms_within LJFO.stabP_or_at [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.stabP_or [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.StabilisationAllP [propext]
+#axioms_within LJFO.stabP [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.cellsFor_of_stab [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.hasUI_of_stab [propext, Classical.choice, Quot.sound]
+#axioms_within LJFO.pll_ui_of_stabilisationAll [propext, Classical.choice, Quot.sound]
