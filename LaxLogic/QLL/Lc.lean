@@ -297,4 +297,47 @@ theorem Form.lcAt_openAt : ∀ (A : Form) (k : Nat) (u : Tm), Tm.lcAt k u →
   | forall_ A ih | exists_ A ih =>
       intro k u hu h; exact ih (k + 1) u (Tm.lcAt_mono (Nat.le_succ k) u hu) h
 
+/-! ## Opening a proof term
+
+Opening a proof variable leaves the individual indices alone; opening an
+individual lowers their bound by one. -/
+
+theorem Pf.lcI_openP (z : String) : ∀ (p : Pf) (j k : Nat),
+    Pf.lcI k p → Pf.lcI k (Pf.openP j (.fvar z) p) := by
+  intro p
+  induction p with
+  | bvar i => intro j _ _; by_cases h : i = j <;> simp [Pf.openP, h, Pf.lcI]
+  | fvar _ | star => intro _ _ _; trivial
+  | pair _ _ ih₁ ih₂ | app _ _ ih₁ ih₂ | letQ _ _ _ ih₁ ih₂ =>
+      intro j k h; exact ⟨ih₁ _ k h.1, ih₂ _ k h.2⟩
+  | fst _ ih | snd _ ih | inl _ ih | inr _ ih | lam _ ih | val _ _ ih =>
+      intro j k h; exact ih _ k h
+  | gen _ ih => intro j k h; exact ih j (k + 1) h
+  | caseOr _ _ _ ih₁ ih₂ ih₃ =>
+      intro j k h; exact ⟨ih₁ _ k h.1, ih₂ _ k h.2.1, ih₃ _ k h.2.2⟩
+  | inst _ _ ih | pack _ _ ih => intro j k h; exact ⟨h.1, ih _ k h.2⟩
+  | exf _ _ ih => intro j k h; exact ⟨h.1, ih _ k h.2⟩
+  | caseEx _ _ ih₁ ih₂ => intro j k h; exact ⟨ih₁ _ k h.1, ih₂ _ (k + 1) h.2⟩
+
+theorem Pf.lcI_openI : ∀ (p : Pf) (k : Nat) (u : Tm), Tm.lcAt k u →
+    Pf.lcI (k + 1) p → Pf.lcI k (Pf.openI k u p) := by
+  intro p
+  induction p with
+  | bvar _ | fvar _ | star => intro _ _ _ _; trivial
+  | pair _ _ ih₁ ih₂ | app _ _ ih₁ ih₂ | letQ _ _ _ ih₁ ih₂ =>
+      intro k u hu h; exact ⟨ih₁ k u hu h.1, ih₂ k u hu h.2⟩
+  | fst _ ih | snd _ ih | inl _ ih | inr _ ih | lam _ ih | val _ _ ih =>
+      intro k u hu h; exact ih k u hu h
+  | caseOr _ _ _ ih₁ ih₂ ih₃ =>
+      intro k u hu h; exact ⟨ih₁ k u hu h.1, ih₂ k u hu h.2.1, ih₃ k u hu h.2.2⟩
+  | gen _ ih =>
+      intro k u hu h; exact ih (k + 1) u (Tm.lcAt_mono (Nat.le_succ k) u hu) h
+  | inst t _ ih | pack t _ ih =>
+      intro k u hu h; exact ⟨Tm.lcAt_openAt k u hu t h.1, ih k u hu h.2⟩
+  | exf A _ ih =>
+      intro k u hu h; exact ⟨Form.lcAt_openAt A k u hu h.1, ih k u hu h.2⟩
+  | caseEx _ _ ih₁ ih₂ =>
+      intro k u hu h
+      exact ⟨ih₁ k u hu h.1, ih₂ (k + 1) u (Tm.lcAt_mono (Nat.le_succ k) u hu) h.2⟩
+
 end LaxLogic.QLL
