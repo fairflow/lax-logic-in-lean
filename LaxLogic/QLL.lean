@@ -21,6 +21,8 @@ first is decided by a program.
 | `CLP`    | §3's two lax resolution rules, derived, and what they compute |
 | `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
 | `Rename` | renaming an individual through a derivation; re-basing an eigenvariable |
+| `Kripke` | the Kripke semantics: varying domains, two lax relations, fallible states |
+| `Prov`   | the consequence relation for the model theory, and its soundness |
 
 Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.
 
@@ -67,3 +69,5 @@ import LaxLogic.QLL.Sound
 import LaxLogic.QLL.CLP
 import LaxLogic.QLL.Weaken
 import LaxLogic.QLL.Rename
+import LaxLogic.QLL.Kripke
+import LaxLogic.QLL.Prov
