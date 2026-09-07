@@ -21,6 +21,10 @@ lake build LaxLogic.QLL.Tests
 | **the truth lemma, full first-order** (`truth_lemma1`) | `Complete1.lean` | as above |
 | **completeness, full first-order** (`completeness1`) | `Complete1.lean` | as above |
 | adequacy `Γ ⊢q A ↔ Γ ⊫ A` (`prv_iff_consequence`) | `Complete1.lean` | as above |
+| erasure `Derives → Prv` (`Derives.erase`) | `Bridge.lean` | `[propext, Quot.sound]` |
+| construction `PrvC → Derives` (`PrvC.toDerives`) | `Bridge.lean` | as above |
+| soundness for the term calculus (`Derives.consequence`) | `Bridge.lean` | `[propext, Classical.choice, Quot.sound]` |
+| **refinement is not complete** (`refinement_not_complete`) | `RefineIncomplete.lean` | as above |
 | `◯∀P ⊬ ◯∃P` and `◯∃P ⊬ ◯∀P` | `CompleteTests.lean` | as above |
 | the Constant Domain axiom is not derivable | `CompleteTests.lean` | as above |
 
@@ -65,13 +69,40 @@ formula's names need not occur in the conclusion), so it is kept as
 assignment with `d₀` and appealing to `force_congr`.  Nothing about the
 proof-theoretic side changed.
 
-## Still open
+## The bridge, and the one thing it leaves open
 
-* `Derives p Γ A → Prv Γ.forms A` (erasure) and `Prv Γ A → ∃ p, Derives p _ A`.
-  The two calculi are still bridged only informally.
-* Completeness of the *refinement* semantics of `Interp.lean`, which is a
-  translation into Lean and so cannot be complete against full Lean; a logic
-  from the literature has to be substituted first.
+Erasure holds for any derivation whose proof term is locally closed in its
+individual indices — the hypothesis `Sound.lean` already carries, and a
+necessary one, since `Derives.allE` puts no condition on the instantiated term
+while `Prv.allE` rightly demands local closedness.
+
+The converse is proved for `PrvC`, which is `Prv` with ex falso restricted to
+locally closed conclusions.  The restriction is not avoidable and not
+cosmetic: `Derives` records ex falso's conclusion in the proof term as
+`exf A p`, so a conclusion carrying a loose de Bruijn index forces a proof term
+that is not locally closed, and the abstraction steps of `∀I` and `∃E` cannot
+proceed.  A formula with a loose index is not a formula, so the defect is in
+`Prv.botE`.  It cannot be repaired there, because `bigOr_elim` derives an
+arbitrary `K` from the empty disjunction and its callers in the completeness
+proof supply formulas drawn from a theory, which are not locally closed in
+general.
+
+**Open:** `Prv Γ A → PrvC Γ A` for locally closed `Γ, A`.  This is a question
+about loose indices in cut formulas — plausibly answered by instantiating every
+loose index with a fixed closed term and showing `Prv` is closed under that
+map — not a question about the logic.
+
+## Refinement cannot be complete — and this is now a theorem
+
+`RefineIncomplete.refinement_not_complete`.  The Constant Domain entailment
+`∀x.(A ∨ B(x)) ⊢ A ∨ ∀x.B(x)` is refinement-valid in every model, because
+refining the conclusion needs only a case split on whether some individual
+takes the left disjunct — an argument Lean supplies and the object logic does
+not.  It is underivable, by the two-domain Kripke countermodel `cd_not_prv`,
+the same fact that forced the canonical model's domains to increase.  So the
+two semantics separate on a formula, and the separation measures the strength
+of the ambient logic.  A completeness result for refinement is meaningful only
+against a fixed object logic from the literature, never against Lean.
 
 ## The design decisions, and what forced them
 
