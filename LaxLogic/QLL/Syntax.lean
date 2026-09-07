@@ -3,7 +3,7 @@
 
 The syntax of the abstract language of
 
-> M. Fairtlough, M. Mendler and X. Cheng, *Abstraction and refinement in higher
+> A. Fairtlough, A. Mendler and X. Cheng, *Abstraction and refinement in higher
 > order logic*, TPHOLs 2001, LNCS 2152, 201–216,
 
 as a Lean datatype rather than a Lean predicate.  `LaxLogic.Obligation` is the
@@ -33,7 +33,7 @@ The modality subscript `Q` is kept in the syntax even though Fig. 5 gives
 `Q = ∀` or `Q = ∃`", and Fig. 6 carries the subscript without using it.  The
 two are told apart by the Fig. 4 refinement clauses
 
-    (p : ◯∀M) = ∀z::|M|. p z ⊃ (z : M)        (p : ◯∃M) = ∃z::|M|. p z ∧ (z : M)
+    (p : ◯∀A) = ∀z::|A|. p z ⊃ (z : A)        (p : ◯∃A) = ∃z::|A|. p z ∧ (z : A)
 
 which live in the interpretation, not the deduction system.
 -/
@@ -89,7 +89,7 @@ end
 mutual
 /-- Close over the named individual `a`, turning its free occurrences into the
 bound index `k`.  Inverse to `openAt` on locally closed terms; the checker uses
-it to recover `∀x.M` from an inferred body. -/
+it to recover `∀x.A` from an inferred body. -/
 def closeAt (k : Nat) (a : String) : Tm → Tm
   | .bvar i  => .bvar i
   | .fvar x  => if x = a then .bvar k else .fvar x
@@ -147,9 +147,9 @@ inductive Q where
   deriving Repr, DecidableEq, Inhabited
 
 /--
-Abstract formulas `M`, `N`.  `forall_` and `exists_` bind one individual: the
-body sits under a de Bruijn binder, so `∀x.M` is `forall_ M` with the bound
-occurrences of `x` in `M` written `Tm.bvar 0`.
+Abstract formulas `A`, `B`.  `forall_` and `exists_` bind one individual: the
+body sits under a de Bruijn binder, so `∀x.A` is `forall_ A` with the bound
+occurrences of `x` in `A` written `Tm.bvar 0`.
 -/
 inductive Form where
   | top     : Form
@@ -171,12 +171,12 @@ def openAt (k : Nat) (u : Tm) : Form → Form
   | .top        => .top
   | .bot        => .bot
   | .pred P ts  => .pred P (Tm.openAtList k u ts)
-  | .and M N    => .and (openAt k u M) (openAt k u N)
-  | .or M N     => .or (openAt k u M) (openAt k u N)
-  | .imp M N    => .imp (openAt k u M) (openAt k u N)
-  | .circ q M   => .circ q (openAt k u M)
-  | .forall_ M  => .forall_ (openAt (k + 1) u M)
-  | .exists_ M  => .exists_ (openAt (k + 1) u M)
+  | .and A B    => .and (openAt k u A) (openAt k u B)
+  | .or A B     => .or (openAt k u A) (openAt k u B)
+  | .imp A B    => .imp (openAt k u A) (openAt k u B)
+  | .circ q A   => .circ q (openAt k u A)
+  | .forall_ A  => .forall_ (openAt (k + 1) u A)
+  | .exists_ A  => .exists_ (openAt (k + 1) u A)
 
 /-- Close over the named individual `a`, turning its free occurrences into the
 bound index `k`. -/
@@ -184,30 +184,30 @@ def closeAt (k : Nat) (a : String) : Form → Form
   | .top        => .top
   | .bot        => .bot
   | .pred P ts  => .pred P (Tm.closeAtList k a ts)
-  | .and M N    => .and (closeAt k a M) (closeAt k a N)
-  | .or M N     => .or (closeAt k a M) (closeAt k a N)
-  | .imp M N    => .imp (closeAt k a M) (closeAt k a N)
-  | .circ q M   => .circ q (closeAt k a M)
-  | .forall_ M  => .forall_ (closeAt (k + 1) a M)
-  | .exists_ M  => .exists_ (closeAt (k + 1) a M)
+  | .and A B    => .and (closeAt k a A) (closeAt k a B)
+  | .or A B     => .or (closeAt k a A) (closeAt k a B)
+  | .imp A B    => .imp (closeAt k a A) (closeAt k a B)
+  | .circ q A   => .circ q (closeAt k a A)
+  | .forall_ A  => .forall_ (closeAt (k + 1) a A)
+  | .exists_ A  => .exists_ (closeAt (k + 1) a A)
 
-/-- `M` with its outermost individual binder opened by the free individual `a`. -/
-abbrev openWith (a : String) (M : Form) : Form := openAt 0 (.fvar a) M
+/-- `A` with its outermost individual binder opened by the free individual `a`. -/
+abbrev openWith (a : String) (A : Form) : Form := openAt 0 (.fvar a) A
 
-/-- `M` with free occurrences of `a` bound by a fresh outermost binder. -/
-abbrev closeWith (a : String) (M : Form) : Form := closeAt 0 a M
+/-- `A` with free occurrences of `a` bound by a fresh outermost binder. -/
+abbrev closeWith (a : String) (A : Form) : Form := closeAt 0 a A
 
 /-- The named free individuals of a formula. -/
 def fv : Form → List String
   | .top        => []
   | .bot        => []
   | .pred _ ts  => Tm.fvList ts
-  | .and M N    => fv M ++ fv N
-  | .or M N     => fv M ++ fv N
-  | .imp M N    => fv M ++ fv N
-  | .circ _ M   => fv M
-  | .forall_ M  => fv M
-  | .exists_ M  => fv M
+  | .and A B    => fv A ++ fv B
+  | .or A B     => fv A ++ fv B
+  | .imp A B    => fv A ++ fv B
+  | .circ _ A   => fv A
+  | .forall_ A  => fv A
+  | .exists_ A  => fv A
 
 end Form
 
@@ -272,7 +272,7 @@ def openP (k : Nat) (u : Pf) : Pf → Pf
   | .inst t p     => .inst t (openP k u p)
   | .pack t p     => .pack t (openP k u p)
   | .caseEx r p   => .caseEx (openP k u r) (openP (k + 1) u p)
-  | .exf M p      => .exf M (openP k u p)
+  | .exf A p      => .exf A (openP k u p)
 
 /-- Open the bound **individual** variable at index `k` with the term `u`.
 The index rises under individual binders only, and passes into the embedded
@@ -295,7 +295,7 @@ def openI (k : Nat) (u : Tm) : Pf → Pf
   | .inst t p     => .inst (Tm.openAt k u t) (openI k u p)
   | .pack t p     => .pack (Tm.openAt k u t) (openI k u p)
   | .caseEx r p   => .caseEx (openI k u r) (openI (k + 1) u p)
-  | .exf M p      => .exf (Form.openAt k u M) (openI k u p)
+  | .exf A p      => .exf (Form.openAt k u A) (openI k u p)
 
 /--
 Substitute the proof term `u` for the *named* free proof variable `x`.
@@ -322,7 +322,7 @@ def substP (x : String) (u : Pf) : Pf → Pf
   | .inst t p     => .inst t (substP x u p)
   | .pack t p     => .pack t (substP x u p)
   | .caseEx r p   => .caseEx (substP x u r) (substP x u p)
-  | .exf M p      => .exf M (substP x u p)
+  | .exf A p      => .exf A (substP x u p)
 
 /-- `p` with its outermost bound proof variable opened by the free proof
 variable `x`. -/
@@ -396,18 +396,18 @@ def fvI : Pf → List String
   | .inst t p     => Tm.fv t ++ fvI p
   | .pack t p     => Tm.fv t ++ fvI p
   | .caseEx r p   => fvI r ++ fvI p
-  | .exf M p      => Form.fv M ++ fvI p
+  | .exf A p      => Form.fv A ++ fvI p
 
 end Pf
 
 /-! ## Contexts -/
 
 /--
-A context is a list of the paper's **refinement pairs** `p : M`, not a list of
+A context is a list of the paper's **refinement pairs** `p : A`, not a list of
 formulas.
 
-Fig. 5 forces this.  Rule `I` reads `Γ, z:M, Γ' ⊢ z : M` with `z` a *variable*,
-but the figure's `Subst` writes `Γ, p:M, Γ'` with `p :: |M|` an arbitrary
+Fig. 5 forces this.  Rule `I` reads `Γ, z:A, Γ' ⊢ z : A` with `z` a *variable*,
+but the figure's `Subst` writes `Γ, p:A, Γ'` with `p :: |A|` an arbitrary
 constraint term.  Both inhabit the same position, so the position holds pairs.
 
 `Subst` is **not** a rule of `Derives` — see the note in `Deriv.lean` for why
@@ -444,7 +444,7 @@ def Ctx.obligations : Ctx → List (Pf × Form)
 /-- Every named free individual occurring in a context, in either component. -/
 def Ctx.fvI : Ctx → List String
   | []           => []
-  | (p, M) :: Γ  => p.fvI ++ M.fv ++ Ctx.fvI Γ
+  | (p, A) :: Γ  => p.fvI ++ A.fv ++ Ctx.fvI Γ
 
 /-- Every named free proof variable occurring in the term components. -/
 def Ctx.fvP : Ctx → List String

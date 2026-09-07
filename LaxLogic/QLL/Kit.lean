@@ -20,10 +20,10 @@ namespace LaxLogic.QLL
 /-! ## Fresh names -/
 
 /--
-A name not occurring in `used`: every name in the list concatenated onto a
+X name not occurring in `used`: every name in the list concatenated onto a
 `"z"`, so the result is strictly longer than any of them.
 
-Crude on purpose.  A counter would need a search to avoid collisions, and the
+Crude on purpose.  X counter would need a search to avoid collisions, and the
 freshness property is wanted as a *theorem* for soundness, not as a runtime
 check.
 -/
@@ -74,15 +74,15 @@ theorem size_openI (k : Nat) (u : Tm) (p : Pf) :
 
 /-- Why a check failed.  Carries enough to locate the fault. -/
 inductive Err where
-  /-- A de Bruijn index escaped its binder: the term is not locally closed. -/
+  /-- X de Bruijn index escaped its binder: the term is not locally closed. -/
   | looseIndex (i : Nat)
-  /-- A free proof variable with no variable entry in the context. -/
+  /-- X free proof variable with no variable entry in the context. -/
   | unbound (x : String)
   /-- The inferred formula had the wrong shape for the rule the term names. -/
   | expected (shape : String) (got : Form)
   /-- Inferred and required formulas differ. -/
   | mismatch (required got : Form)
-  /-- A term that cannot be inferred appeared where no goal was available. -/
+  /-- X term that cannot be inferred appeared where no goal was available. -/
   | notInferable (term : String)
   /-- `∃E`'s eigenvariable escaped into the conclusion. -/
   | escapes (a : String) (K : Form)
@@ -91,22 +91,22 @@ inductive Err where
   /-- Inference for `∀` produced a body with a loose de Bruijn index, so the
   open/close roundtrip is unavailable.  Cannot arise for well-formed input;
   refused rather than mis-accepted. -/
-  | notLocallyClosed (M : Form)
+  | notLocallyClosed (A : Form)
   deriving Repr, DecidableEq
 
 /-- The formula attached to a *variable* entry of the context. -/
 def Ctx.lookup? (Γ : Ctx) (x : String) : Option Form :=
   match Γ with
   | []                 => none
-  | (.fvar y, M) :: Γ' => if y = x then some M else Ctx.lookup? Γ' x
+  | (.fvar y, A) :: Γ' => if y = x then some A else Ctx.lookup? Γ' x
   | _ :: Γ'            => Ctx.lookup? Γ' x
 
 /-! ## Freshness, and lookup -/
 
-theorem freshFor_notMem_of_mem_append {A B : List String} {x : String}
-    (h : freshFor (A ++ B) = x) : x ∉ A ∧ x ∉ B := by
+theorem freshFor_notMem_of_mem_append {X Y : List String} {x : String}
+    (h : freshFor (X ++ Y) = x) : x ∉ X ∧ x ∉ Y := by
   subst h
-  have h := freshFor_notMem (A ++ B)
+  have h := freshFor_notMem (X ++ Y)
   exact ⟨fun hm => h (List.mem_append.mpr (Or.inl hm)),
          fun hm => h (List.mem_append.mpr (Or.inr hm))⟩
 
@@ -114,9 +114,9 @@ theorem freshP_freshFor (Γ : Ctx) (p : Pf) :
     FreshP (freshFor (Ctx.fvP Γ ++ p.fvP)) Γ p :=
   freshFor_notMem_of_mem_append rfl
 
-theorem freshI_freshFor (Γ : Ctx) (p : Pf) (M : Form) :
-    FreshI (freshFor (Ctx.fvI Γ ++ p.fvI ++ M.fv)) Γ p M := by
-  have h := freshFor_notMem (Ctx.fvI Γ ++ p.fvI ++ M.fv)
+theorem freshI_freshFor (Γ : Ctx) (p : Pf) (A : Form) :
+    FreshI (freshFor (Ctx.fvI Γ ++ p.fvI ++ A.fv)) Γ p A := by
+  have h := freshFor_notMem (Ctx.fvI Γ ++ p.fvI ++ A.fv)
   refine ⟨fun hm => h ?_, fun hm => h ?_, fun hm => h ?_⟩
   · exact List.mem_append.mpr (Or.inl (List.mem_append.mpr (Or.inl hm)))
   · exact List.mem_append.mpr (Or.inl (List.mem_append.mpr (Or.inr hm)))
@@ -124,10 +124,10 @@ theorem freshI_freshFor (Γ : Ctx) (p : Pf) (M : Form) :
 
 /-- The `∃E` case chooses away from the goal as well, so the eigenvariable
 condition comes for free. -/
-theorem freshI_freshFor4 (Γ : Ctx) (p : Pf) (M K : Form) :
-    FreshI (freshFor (Ctx.fvI Γ ++ p.fvI ++ M.fv ++ K.fv)) Γ p M ∧
-      freshFor (Ctx.fvI Γ ++ p.fvI ++ M.fv ++ K.fv) ∉ K.fv := by
-  have h := freshFor_notMem (Ctx.fvI Γ ++ p.fvI ++ M.fv ++ K.fv)
+theorem freshI_freshFor4 (Γ : Ctx) (p : Pf) (A K : Form) :
+    FreshI (freshFor (Ctx.fvI Γ ++ p.fvI ++ A.fv ++ K.fv)) Γ p A ∧
+      freshFor (Ctx.fvI Γ ++ p.fvI ++ A.fv ++ K.fv) ∉ K.fv := by
+  have h := freshFor_notMem (Ctx.fvI Γ ++ p.fvI ++ A.fv ++ K.fv)
   refine ⟨⟨fun hm => h ?_, fun hm => h ?_, fun hm => h ?_⟩, fun hm => h ?_⟩
   · exact List.mem_append.mpr (Or.inl (List.mem_append.mpr (Or.inl
       (List.mem_append.mpr (Or.inl hm)))))
@@ -140,12 +140,12 @@ theorem freshI_freshFor4 (Γ : Ctx) (p : Pf) (M K : Form) :
 
 /-- `Ctx.lookup?` only ever finds a *variable* entry, which is what `Derivable.var`
 requires. -/
-theorem lookup_mem {Γ : Ctx} {x : String} {M : Form} :
-    Ctx.lookup? Γ x = some M → (Pf.fvar x, M) ∈ Γ := by
+theorem lookup_mem {Γ : Ctx} {x : String} {A : Form} :
+    Ctx.lookup? Γ x = some A → (Pf.fvar x, A) ∈ Γ := by
   induction Γ with
   | nil => intro h; simp [Ctx.lookup?] at h
   | cons e Γ' ih =>
-    obtain ⟨q, N⟩ := e
+    obtain ⟨q, B⟩ := e
     match q with
     | .fvar y =>
         intro h

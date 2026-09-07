@@ -87,12 +87,12 @@ def NForm.toForm (bs : List String) : NForm → Form
   | .top          => .top
   | .bot          => .bot
   | .pred P ts    => .pred P (NTm.toTmList bs ts)
-  | .and M N      => .and (NForm.toForm bs M) (NForm.toForm bs N)
-  | .or M N       => .or (NForm.toForm bs M) (NForm.toForm bs N)
-  | .imp M N      => .imp (NForm.toForm bs M) (NForm.toForm bs N)
-  | .circ q M     => .circ q (NForm.toForm bs M)
-  | .forall_ x M  => .forall_ (NForm.toForm (x :: bs) M)
-  | .exists_ x M  => .exists_ (NForm.toForm (x :: bs) M)
+  | .and A B      => .and (NForm.toForm bs A) (NForm.toForm bs B)
+  | .or A B       => .or (NForm.toForm bs A) (NForm.toForm bs B)
+  | .imp A B      => .imp (NForm.toForm bs A) (NForm.toForm bs B)
+  | .circ q A     => .circ q (NForm.toForm bs A)
+  | .forall_ x A  => .forall_ (NForm.toForm (x :: bs) A)
+  | .exists_ x A  => .exists_ (NForm.toForm (x :: bs) A)
 
 /-! ## Locally nameless → named
 
@@ -136,16 +136,16 @@ def Form.toN (bs avoid : List String) : Form → NForm
   | .top       => .top
   | .bot       => .bot
   | .pred P ts => .pred P (Tm.toNList bs ts)
-  | .and M N   => .and (Form.toN bs avoid M) (Form.toN bs avoid N)
-  | .or M N    => .or (Form.toN bs avoid M) (Form.toN bs avoid N)
-  | .imp M N   => .imp (Form.toN bs avoid M) (Form.toN bs avoid N)
-  | .circ q M  => .circ q (Form.toN bs avoid M)
-  | .forall_ M =>
+  | .and A B   => .and (Form.toN bs avoid A) (Form.toN bs avoid B)
+  | .or A B    => .or (Form.toN bs avoid A) (Form.toN bs avoid B)
+  | .imp A B   => .imp (Form.toN bs avoid A) (Form.toN bs avoid B)
+  | .circ q A  => .circ q (Form.toN bs avoid A)
+  | .forall_ A =>
       let x := freshFrom indivName (bs ++ avoid)
-      .forall_ x (Form.toN (x :: bs) avoid M)
-  | .exists_ M =>
+      .forall_ x (Form.toN (x :: bs) avoid A)
+  | .exists_ A =>
       let x := freshFrom indivName (bs ++ avoid)
-      .exists_ x (Form.toN (x :: bs) avoid M)
+      .exists_ x (Form.toN (x :: bs) avoid A)
 
 /-! ## Rendering
 
@@ -170,27 +170,27 @@ def NForm.render (prec : Nat) : NForm → String
   | .bot          => "⊥"
   | .pred P []    => P
   | .pred P ts    => P ++ "(" ++ NTm.renderList ts ++ ")"
-  | .circ .all M  => "◯∀ " ++ NForm.render 40 M
-  | .circ .ex M   => "◯∃ " ++ NForm.render 40 M
-  | .and M N      =>
-      let s := NForm.render 36 M ++ " ∧ " ++ NForm.render 35 N
+  | .circ .all A  => "◯∀ " ++ NForm.render 40 A
+  | .circ .ex A   => "◯∃ " ++ NForm.render 40 A
+  | .and A B      =>
+      let s := NForm.render 36 A ++ " ∧ " ++ NForm.render 35 B
       if prec > 35 then "(" ++ s ++ ")" else s
-  | .or M N       =>
-      let s := NForm.render 31 M ++ " ∨ " ++ NForm.render 30 N
+  | .or A B       =>
+      let s := NForm.render 31 A ++ " ∨ " ++ NForm.render 30 B
       if prec > 30 then "(" ++ s ++ ")" else s
-  | .imp M N      =>
-      let s := NForm.render 26 M ++ " ⊃ " ++ NForm.render 25 N
+  | .imp A B      =>
+      let s := NForm.render 26 A ++ " ⊃ " ++ NForm.render 25 B
       if prec > 25 then "(" ++ s ++ ")" else s
-  | .forall_ x M  =>
-      let s := "∀" ++ x ++ ". " ++ NForm.render 20 M
+  | .forall_ x A  =>
+      let s := "∀" ++ x ++ ". " ++ NForm.render 20 A
       if prec > 26 then "(" ++ s ++ ")" else s
-  | .exists_ x M  =>
-      let s := "∃" ++ x ++ ". " ++ NForm.render 20 M
+  | .exists_ x A  =>
+      let s := "∃" ++ x ++ ". " ++ NForm.render 20 A
       if prec > 26 then "(" ++ s ++ ")" else s
 
 /-- Render a formula in surface syntax.  The result parses back inside `qf[…]`. -/
-def render (M : Form) : String :=
-  NForm.render 0 (Form.toN [] M.fv M)
+def render (A : Form) : String :=
+  NForm.render 0 (Form.toN [] A.fv A)
 
 instance : ToString Form := ⟨render⟩
 
@@ -234,18 +234,18 @@ macro_rules
   | `(nf[$P:ident($ts,*)])     =>
       `(NForm.pred $(Lean.quote P.getId.toString) [$[nt[$ts]],*])
   | `(nf[$P:ident])            => `(NForm.pred $(Lean.quote P.getId.toString) [])
-  | `(nf[◯∀ $M])               => `(NForm.circ Q.all nf[$M])
-  | `(nf[◯∃ $M])               => `(NForm.circ Q.ex nf[$M])
-  | `(nf[$M ∧ $N])             => `(NForm.and nf[$M] nf[$N])
-  | `(nf[$M ∨ $N])             => `(NForm.or nf[$M] nf[$N])
-  | `(nf[$M ⊃ $N])             => `(NForm.imp nf[$M] nf[$N])
-  | `(nf[∀ $x:ident . $M])     => `(NForm.forall_ $(Lean.quote x.getId.toString) nf[$M])
-  | `(nf[∃ $x:ident . $M])     => `(NForm.exists_ $(Lean.quote x.getId.toString) nf[$M])
-  | `(nf[($M)])                => `(nf[$M])
+  | `(nf[◯∀ $A])               => `(NForm.circ Q.all nf[$A])
+  | `(nf[◯∃ $A])               => `(NForm.circ Q.ex nf[$A])
+  | `(nf[$A ∧ $B])             => `(NForm.and nf[$A] nf[$B])
+  | `(nf[$A ∨ $B])             => `(NForm.or nf[$A] nf[$B])
+  | `(nf[$A ⊃ $B])             => `(NForm.imp nf[$A] nf[$B])
+  | `(nf[∀ $x:ident . $A])     => `(NForm.forall_ $(Lean.quote x.getId.toString) nf[$A])
+  | `(nf[∃ $x:ident . $A])     => `(NForm.exists_ $(Lean.quote x.getId.toString) nf[$A])
+  | `(nf[($A)])                => `(nf[$A])
 
 /-- A formula in surface syntax, as a locally nameless `Form`. -/
 syntax "qf[" qllForm "]" : term
-macro_rules | `(qf[$M]) => `(NForm.toForm [] nf[$M])
+macro_rules | `(qf[$A]) => `(NForm.toForm [] nf[$A])
 
 /-! # Proof terms
 
@@ -265,7 +265,7 @@ Concrete syntax, following Fig. 5 as closely as it can be parsed:
 | `val_Q(p)`, `let_Q z ⇐ p in q` | `val∀ p` / `val∃ p`, `let∀ u ⇐ p in q` |
 | `⟨p \| x⟩`, `π_t(p)`, `ι_t(p)` | `⟨p \| x⟩`, `π[t] p`, `ι[t] p` |
 | `case r of [ι_x(z) → p]` | `case r of [ι[x](u) → p]` |
-| — (ours) | `exf[M] p` |
+| — (ours) | `exf[A] p` |
 -/
 
 /-- Proof terms with named binders. -/
@@ -311,7 +311,7 @@ def NPf.toPf (ps is : List String) : NPf → Pf
   | .pack t p         => .pack (NTm.toTm is t) (NPf.toPf ps is p)
   | .caseEx r x u p   => .caseEx (NPf.toPf ps is r)
                            (NPf.toPf (u :: ps) (x :: is) p)
-  | .exf M p          => .exf (NForm.toForm is M) (NPf.toPf ps is p)
+  | .exf A p          => .exf (NForm.toForm is A) (NPf.toPf ps is p)
 
 /-- Names for the two sorts, drawn from their own alphabets and avoiding what
 is already in scope. -/
@@ -348,7 +348,7 @@ def Pf.toN (ps is avoidP avoidI : List String) : Pf → NPf
       let u := freshFrom proofName (ps ++ avoidP)
       .caseEx (Pf.toN ps is avoidP avoidI r) x u
         (Pf.toN (u :: ps) (x :: is) avoidP avoidI p)
-  | .exf M p      => .exf (Form.toN is avoidI M) (Pf.toN ps is avoidP avoidI p)
+  | .exf A p      => .exf (Form.toN is avoidI A) (Pf.toN ps is avoidP avoidI p)
 
 /-- Precedence: application 80 (left), the prefix formers 90 with an atomic
 argument, `λ`/`let`/`case` 20 reaching right, atoms above all of it. -/
@@ -364,7 +364,7 @@ def NPf.render (prec : Nat) : NPf → String
   | .val .ex p  => paren90 prec ("val∃ " ++ NPf.render 1000 p)
   | .inst t p  => paren90 prec ("π[" ++ NTm.render t ++ "] " ++ NPf.render 1000 p)
   | .pack t p  => paren90 prec ("ι[" ++ NTm.render t ++ "] " ++ NPf.render 1000 p)
-  | .exf M p   => paren90 prec ("exf[" ++ NForm.render 0 M ++ "] " ++ NPf.render 1000 p)
+  | .exf A p   => paren90 prec ("exf[" ++ NForm.render 0 A ++ "] " ++ NPf.render 1000 p)
   | .app p q   =>
       let s := NPf.render 80 p ++ " " ++ NPf.render 81 q
       if prec > 80 then "(" ++ s ++ ")" else s
@@ -430,7 +430,7 @@ macro_rules
   | `(np[val∃ $p])           => `(NPf.val Q.ex np[$p])
   | `(np[π[$t] $p])          => `(NPf.inst nt[$t] np[$p])
   | `(np[ι[$t] $p])          => `(NPf.pack nt[$t] np[$p])
-  | `(np[exf[$M] $p])        => `(NPf.exf nf[$M] np[$p])
+  | `(np[exf[$A] $p])        => `(NPf.exf nf[$A] np[$p])
   | `(np[$p $q])             => `(NPf.app np[$p] np[$q])
   | `(np[λ $u:ident . $p])   => `(NPf.lam $(Lean.quote u.getId.toString) np[$p])
   | `(np[let∀ $u:ident ⇐ $p in $b]) =>

@@ -12,18 +12,18 @@ Fig. 6 reads as six equations between terms:
 In the report they *are* equations, because a proof term there is already a HOL
 term and these constructors are notation for HOL terms.  Here `Pf` is a
 separate inductive, so the same content becomes a **function** — and it cannot
-be a function of the proof term alone, since `Val 𝔐 M` depends on the formula.
+be a function of the proof term alone, since `Val 𝔐 A` depends on the formula.
 It is a function of the derivation:
 
-    ⟦·⟧ : Derives p Γ M → PEnv 𝔐 Γ → (String → 𝔐.D) → Val 𝔐 M
+    ⟦·⟧ : Derives p Γ A → PEnv 𝔐 Γ → (String → 𝔐.D) → Val 𝔐 A
 
 Each of Fig. 6's equations reappears below as one defining clause, and
 `DenoteTests.lean` checks each by `rfl` against the equation as written.
 
 ## What the six equations say
 
-`val_Q` and `let_Q` are the two that are not already HOL.  With `|◯_Q M| =
-|M| ⇒ 𝔹`, a constraint *is* a predicate on `|M|`, and then
+`val_Q` and `let_Q` are the two that are not already HOL.  With `|◯_Q A| =
+|A| ⇒ 𝔹`, a constraint *is* a predicate on `|A|`, and then
 
     ⟦val_Q p⟧ = fun y => ⟦p⟧ = y                       the singleton {⟦p⟧}
     ⟦let_Q z ⇐ p in q⟧ = fun x => ∃ z, ⟦p⟧ z ∧ ⟦q⟧ z x  the union ⋃_{z ∈ p} q z
@@ -40,17 +40,17 @@ this module needs it.
 
 ## Two transports, both forced by the locally nameless representation
 
-`∀I` concludes `∀.M` from a premise about `M.openWith a`, and `∃E` puts
-`M.openWith a` into the context.  `Val` must not notice, and it does not —
+`∀I` concludes `∀.A` from a premise about `A.openWith a`, and `∃E` puts
+`A.openWith a` into the context.  `Val` must not notice, and it does not —
 `Val_openWith` is the report's "`|M| = |M{σ}|`" — but the equation is not
 definitional, so it appears as a `cast`.  That is the whole cost of the
 representation, and it is confined to three clauses.
 
 ## OPEN
 
-Soundness — if the environment satisfies `Γ` then `Sat 𝔐 [] ρ M ⟦d⟧` — is
+Soundness — if the environment satisfies `Γ` then `Refines 𝔐 [] ρ A ⟦d⟧` — is
 statable now and is **not proved here**.  It needs the opening lemma relating
-`Sat env ρ[a↦e] (M.openWith a)` to `Sat (e :: env) ρ M`, which is the standard
+`Refines env ρ[a↦e] (A.openWith a)` to `Refines (e :: env) ρ A`, which is the standard
 locally nameless substitution lemma and has not been done.
 -/
 import LaxLogic.QLL.Interp
@@ -91,7 +91,7 @@ def PEnv.lookup : {Γ : Ctx} → PEnv 𝔐 Γ → (e : Pf × Form) → e ∈ Γ 
           | tail _ h' => exact h')
 
 /-! `lookup` decides an equality of `Pf × Form`, which does not *compute* when
-the formulas are variables — `Form.decEq M M` is stuck on an opaque `M`.  These
+the formulas are variables — `Form.decEq A A` is stuck on an opaque `A`.  These
 two say what it returns anyway, by `dif_pos`/`dif_neg` rather than by
 evaluation, and are what makes a derivation with symbolic formulas unfold. -/
 
@@ -116,10 +116,10 @@ def upd (ρ : String → 𝔐.D) (a : String) (e : 𝔐.D) : String → 𝔐.D :
 The constraint a derivation denotes.
 
 One clause per rule of Fig. 5; the six clauses that are Fig. 6's own equations
-are marked.  The three `cast`s are `Val_openWith`, the report's `|M| = |M{σ}|`.
+are marked.  The three `cast`s are `Val_openWith`, the report's `|A| = |A{σ}|`.
 -/
-def denote : {Γ : Ctx} → {p : Pf} → {M : Form} →
-    Derives p Γ M → PEnv 𝔐 Γ → (String → 𝔐.D) → Val 𝔐 M
+def denote : {Γ : Ctx} → {p : Pf} → {A : Form} →
+    Derives p Γ A → PEnv 𝔐 Γ → (String → 𝔐.D) → Val 𝔐 A
   | _, _, _, .var h,      η, _ => PEnv.lookup 𝔐 η _ h
   | _, _, _, .topI,       _, _ => ()
   -- ex falso: our addition, and the reason `Model` carries `d₀`/`c₀`
@@ -158,7 +158,7 @@ def denote : {Γ : Ctx} → {p : Pf} → {M : Form} →
 @[inherit_doc] notation "⟦" d "⟧(" η ", " ρ ")" => denote _ d η ρ
 
 /-- A derivation from the empty context denotes a constraint outright. -/
-def denoteC {p : Pf} {M : Form} (d : Derives p [] M) (ρ : String → 𝔐.D) : Val 𝔐 M :=
+def denoteC {p : Pf} {A : Form} (d : Derives p [] A) (ρ : String → 𝔐.D) : Val 𝔐 A :=
   denote 𝔐 d .nil ρ
 
 end LaxLogic.QLL

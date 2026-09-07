@@ -23,9 +23,9 @@ namespace LaxLogic.QLL.Smoke
 
 open Form Pf LaxLogic.QLL.Surface
 
-/-- `⊢ λz.z : M ⊃ M`.  Exercises `impI`'s freshness and proof-variable opening
+/-- `⊢ λz.z : A ⊃ A`.  Exercises `impI`'s freshness and proof-variable opening
 against `var`'s lookup. -/
-def identity (M : Form) : Derives (lam (bvar 0)) [] (imp M M) := by
+def identity (A : Form) : Derives (lam (bvar 0)) [] (imp A A) := by
   refine Derives.impI "z" ⟨?_, ?_⟩ ?_
   · show "z" ∉ ([] : List String); decide
   · show "z" ∉ ([] : List String); decide
@@ -51,12 +51,12 @@ def forall_identity : Derives (gen (lam (bvar 0))) [] qf[∀x. P(x) ⊃ P(x)] :=
     · exact by decide
     · exact Derives.var (List.Mem.head _)
 
-/-- `p : ◯_Q M ⊢ let_Q z ⇐ p in val_Q(z) : ◯_Q M` — the monad's left unit, as a
-shape check on `circE`.  `M` must be supplied explicitly: `circE`'s `M` occurs
+/-- `p : ◯_Q A ⊢ let_Q z ⇐ p in val_Q(z) : ◯_Q A` — the monad's left unit, as a
+shape check on `circE`.  `A` must be supplied explicitly: `circE`'s `A` occurs
 only in its premises, so the conclusion does not determine it. -/
-def left_unit (q : Q) (M : Form) :
-    Derives (letQ q (fvar "p") (val q (bvar 0))) [(fvar "p", circ q M)] (circ q M) := by
-  refine Derives.circE (M := M) "z" ⟨?_, ?_⟩ ?_ ?_
+def left_unit (q : Q) (A : Form) :
+    Derives (letQ q (fvar "p") (val q (bvar 0))) [(fvar "p", circ q A)] (circ q A) := by
+  refine Derives.circE (A := A) "z" ⟨?_, ?_⟩ ?_ ?_
   · show "z" ∉ ["p"]; decide
   · show "z" ∉ ([] : List String); decide
   · exact Derives.var (List.Mem.head _)
@@ -68,7 +68,7 @@ def left_unit (q : Q) (M : Form) :
 is proved here beyond `Nonempty.intro`; the point is that both views are
 available from the single family. -/
 
-example (M : Form) : Derivable (lam (bvar 0)) [] (imp M M) := ⟨identity M⟩
+example (A : Form) : Derivable (lam (bvar 0)) [] (imp A A) := ⟨identity A⟩
 
 /-! ### Axiom pins
 

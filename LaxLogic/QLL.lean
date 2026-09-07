@@ -9,18 +9,31 @@ first is decided by a program.
 | module | what it holds |
 | :-- | :-- |
 | `Syntax`  | `Tm`, `Q`, `Form`, `Pf`, `Ctx` — locally nameless, two binder sorts |
-| `Deriv`   | `Derives p Γ M` in `Type`, one constructor per rule of Fig. 5; `Derivable = Nonempty ∘ Derives` |
+| `Deriv`   | `Derives p Γ A` in `Type`, one constructor per rule of Fig. 5; `Derivable = Nonempty ∘ Derives` |
 | `Lc`      | local closedness, the open/close roundtrip, and deciding it |
 | `Kit`     | fresh names, size lemmas, errors, lookup — what the checker is built from |
-| `Certify` | the checker: `Except Err (Derives p Γ M)` — soundness typed, not proved |
+| `Certify` | the checker: `Except Err (Derives p Γ A)` — soundness typed, not proved |
 | `Surface` | named variables in and out; the printed form is the input form |
-| `Judgement` | `qj[Γ ⊢ p : M]` (the proposition) and `qd[…]` (the type of its derivations) |
-| `Interp` | Figs. 3 and 4 — the refinement types `|M|` and the refinement relation `p : M` |
-| `Denote` | Fig. 6 — the constraint a derivation denotes, `⟦d⟧ : Val 𝔐 M` |
+| `Judgement` | `qj[Γ ⊢ p : A]` (the proposition) and `qd[…]` (the type of its derivations) |
+| `Interp` | Figs. 3 and 4 — the refinement types `|A|` and the refinement relation `p : A` |
+| `Denote` | Fig. 6 — the constraint a derivation denotes, `⟦d⟧ : Val 𝔐 A` |
 | `Sound`  | soundness: the denoted constraint refines the derived formula |
 | `CLP`    | §3's two lax resolution rules, derived, and what they compute |
 
 Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.
+
+## Two notational departures from the report
+
+* **Formulas are `A`, `B`, not `M`, `N`.**  The model is Fraktur `𝔐`, which
+  copies and pastes as a plain `M` — so a displayed statement mentioning both a
+  model and a formula becomes unreadable the moment anyone quotes it.  The
+  report has no models and could spend `M` on formulas; we cannot.  Verbatim
+  quotations of the report keep its letters.
+* **The refinement relation is `Refines`, not `Sat`.**  Fig. 4 is captioned
+  "Equations for abstraction and refinement" and `p : M` is read "`p` refines
+  `M`".  `Refines 𝔐 env ρ A v` is indexed by the witness `v`, so it is a
+  realizability relation, not satisfaction; `⊨` and `Sat` stay free for a
+  model-theoretic semantics of the modalities, which does not exist here.
 
 There is **one** checker.  A `Prop`-returning one (`Check.lean`) existed
 alongside it until the two were shown to agree on a corpus; it is deleted.

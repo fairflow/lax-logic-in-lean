@@ -20,50 +20,50 @@ variable (𝔐 : Model)
 /-! ## The six equations of Fig. 6 -/
 
 /-- `val_Q(x) = λy. x = y` — the singleton constraint. -/
-theorem eq_val {Γ : Ctx} {q : Q} {p : Pf} {M : Form}
-    (d : Derives p Γ M) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
+theorem eq_val {Γ : Ctx} {q : Q} {p : Pf} {A : Form}
+    (d : Derives p Γ A) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.circI (q := q) d) η ρ = fun y => denote 𝔐 d η ρ = y := rfl
 
 /-- `(let_Q z ⇐ p in q) = λx. ∃z. p z ∧ q x` — the union over the constraint. -/
-theorem eq_let {Γ : Ctx} {q : Q} {p b : Pf} {M N : Form} (z : String)
+theorem eq_let {Γ : Ctx} {q : Q} {p b : Pf} {A B : Form} (z : String)
     (hz : FreshP z Γ b)
-    (dp : Derives p Γ (.circ q M))
-    (db : Derives (b.openPWith z) ((Pf.fvar z, M) :: Γ) (.circ q N))
+    (dp : Derives p Γ (.circ q A))
+    (db : Derives (b.openPWith z) ((Pf.fvar z, A) :: Γ) (.circ q B))
     (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.circE z hz dp db) η ρ
       = fun x => ∃ w, denote 𝔐 dp η ρ w ∧ denote 𝔐 db (.cons w η) ρ x := rfl
 
 /-- `⟨p | x⟩ = λx. p`. -/
-theorem eq_gen {Γ : Ctx} {p : Pf} {M : Form} (a : String) (ha : FreshI a Γ p M)
-    (d : Derives (p.openIWith a) Γ (M.openWith a))
+theorem eq_gen {Γ : Ctx} {p : Pf} {A : Form} (a : String) (ha : FreshI a Γ p A)
+    (d : Derives (p.openIWith a) Γ (A.openWith a))
     (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.allI a ha d) η ρ
-      = fun e => cast (Val_openWith 𝔐 a M) (denote 𝔐 d η (upd 𝔐 ρ a e)) := rfl
+      = fun e => cast (Val_openWith 𝔐 a A) (denote 𝔐 d η (upd 𝔐 ρ a e)) := rfl
 
 /-- `π_t(p) = p t`. -/
-theorem eq_inst {Γ : Ctx} {p : Pf} {M N : Form} (t : Tm)
-    (d : Derives p Γ (.forall_ M)) (h : N = M.openAt 0 t)
+theorem eq_inst {Γ : Ctx} {p : Pf} {A B : Form} (t : Tm)
+    (d : Derives p Γ (.forall_ A)) (h : B = A.openAt 0 t)
     (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.allE t d h) η ρ
-      = cast ((congrArg (Val 𝔐) h).trans (Val_openAt 𝔐 t M 0)).symm
+      = cast ((congrArg (Val 𝔐) h).trans (Val_openAt 𝔐 t A 0)).symm
           (denote 𝔐 d η ρ (evalTm 𝔐 [] ρ t)) := rfl
 
 /-- `ι_t(p) = (t, p)`. -/
-theorem eq_pack {Γ : Ctx} {p : Pf} {M : Form} (t : Tm)
-    (d : Derives p Γ (M.openAt 0 t)) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
+theorem eq_pack {Γ : Ctx} {p : Pf} {A : Form} (t : Tm)
+    (d : Derives p Γ (A.openAt 0 t)) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.exI t d) η ρ
-      = (evalTm 𝔐 [] ρ t, cast (Val_openAt 𝔐 t M 0) (denote 𝔐 d η ρ)) := rfl
+      = (evalTm 𝔐 [] ρ t, cast (Val_openAt 𝔐 t A 0) (denote 𝔐 d η ρ)) := rfl
 
 /-- `case r of [ι_x(z) → p] = p{π₁(r)/x, π₂(r)/z}` — the two projections go to
 the individual and the proof variable respectively. -/
-theorem eq_caseEx {Γ : Ctx} {r p : Pf} {M K : Form} (a z : String)
-    (ha : FreshI a Γ p M) (hK : a ∉ K.fv) (hz : FreshP z Γ p)
-    (dr : Derives r Γ (.exists_ M))
-    (db : Derives ((p.openIWith a).openPWith z) ((Pf.fvar z, M.openWith a) :: Γ) K)
+theorem eq_caseEx {Γ : Ctx} {r p : Pf} {A K : Form} (a z : String)
+    (ha : FreshI a Γ p A) (hK : a ∉ K.fv) (hz : FreshP z Γ p)
+    (dr : Derives r Γ (.exists_ A))
+    (db : Derives ((p.openIWith a).openPWith z) ((Pf.fvar z, A.openWith a) :: Γ) K)
     (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.exE a z ha hK hz dr db) η ρ
       = denote 𝔐 db
-          (.cons (cast (Val_openWith 𝔐 a M).symm (denote 𝔐 dr η ρ).2) η)
+          (.cons (cast (Val_openWith 𝔐 a A).symm (denote 𝔐 dr η ρ).2) η)
           (upd 𝔐 ρ a (denote 𝔐 dr η ρ).1) := rfl
 
 /-! ## The clauses Fig. 6 leaves to HOL
@@ -72,28 +72,28 @@ Pairing, projection, injection, `case`, `λ` and application are already HOL
 terms in the report, so the figure does not list them.  They are still choices
 here, and these say which. -/
 
-theorem eq_pair {Γ : Ctx} {p q : Pf} {M N : Form}
-    (d : Derives p Γ M) (e : Derives q Γ N) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
+theorem eq_pair {Γ : Ctx} {p q : Pf} {A B : Form}
+    (d : Derives p Γ A) (e : Derives q Γ B) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.andI d e) η ρ = (denote 𝔐 d η ρ, denote 𝔐 e η ρ) := rfl
 
-theorem eq_fst {Γ : Ctx} {r : Pf} {M N : Form}
-    (d : Derives r Γ (.and M N)) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
+theorem eq_fst {Γ : Ctx} {r : Pf} {A B : Form}
+    (d : Derives r Γ (.and A B)) (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.andE₁ d) η ρ = (denote 𝔐 d η ρ).1 := rfl
 
-theorem eq_lam {Γ : Ctx} {p : Pf} {M N : Form} (z : String) (hz : FreshP z Γ p)
-    (d : Derives (p.openPWith z) ((Pf.fvar z, M) :: Γ) N)
+theorem eq_lam {Γ : Ctx} {p : Pf} {A B : Form} (z : String) (hz : FreshP z Γ p)
+    (d : Derives (p.openPWith z) ((Pf.fvar z, A) :: Γ) B)
     (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.impI z hz d) η ρ = fun v => denote 𝔐 d (.cons v η) ρ := rfl
 
-theorem eq_app {Γ : Ctx} {p q : Pf} {M N : Form}
-    (d : Derives p Γ (.imp M N)) (e : Derives q Γ M)
+theorem eq_app {Γ : Ctx} {p q : Pf} {A B : Form}
+    (d : Derives p Γ (.imp A B)) (e : Derives q Γ A)
     (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D) :
     denote 𝔐 (.impE d e) η ρ = denote 𝔐 d η ρ (denote 𝔐 e η ρ) := rfl
 
 /-! ## `val` is the unit of `let`
 
 Fig. 6's two special equations are the unit and bind of the powerset monad on
-`|M| ⇒ 𝔹`.  Left unit, pointwise, so no function extensionality is needed:
+`|A| ⇒ 𝔹`.  Left unit, pointwise, so no function extensionality is needed:
 binding a singleton is the same as substituting into it. -/
 
 theorem let_val_left_unit {α β : Type} (a : α) (f : α → β → Prop) (x : β) :
@@ -134,12 +134,12 @@ Pinned, not asserted clean.  Two sources, neither of them the interpretation:
   rebuilding `DecidableEq Tm` as a direct structural decision procedure instead
   of `decidable_of_iff ∘ beq_iff`; that is a change to `Syntax.lean`, and it is
   not made here.
-* `propext` reaches `evalTm` and `Sat` through the equation compiler's own
+* `propext` reaches `evalTm` and `Refines` through the equation compiler's own
   machinery, so it is below anything this development chose.
 
 What *is* clean is everything proved or defined here by structural recursion
 alone: the transport `Val_openAt` and the default `Val.default`.  Neither the
-refinement types nor the report's `|M| = |M{σ}|` costs an axiom. -/
+refinement types nor the report's `|A| = |A{σ}|` costs an axiom. -/
 
 /-- info: 'LaxLogic.QLL.denote' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms denote
@@ -156,7 +156,7 @@ refinement types nor the report's `|M| = |M{σ}|` costs an axiom. -/
 /-- info: 'LaxLogic.QLL.evalTm' depends on axioms: [propext] -/
 #guard_msgs in #print axioms evalTm
 
-/-- info: 'LaxLogic.QLL.Sat' depends on axioms: [propext] -/
-#guard_msgs in #print axioms Sat
+/-- info: 'LaxLogic.QLL.Refines' depends on axioms: [propext] -/
+#guard_msgs in #print axioms Refines
 
 end LaxLogic.QLL.DenoteTests

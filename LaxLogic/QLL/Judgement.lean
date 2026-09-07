@@ -1,5 +1,5 @@
 /-
-# `LaxLogic.QLL.Judgement` — `qj[Γ ⊢ p : M]`
+# `LaxLogic.QLL.Judgement` — `qj[Γ ⊢ p : A]`
 
 `qf[…]` gives a formula and `qp[…]` a proof term; a *judgement* needs both at
 once, together with a context, and writing the three brackets out by hand is
@@ -35,7 +35,7 @@ open LaxLogic.QLL
 
 /-! ## Printing -/
 
-/-- A context entry, `p : M`. -/
+/-- A context entry, `p : A`. -/
 def renderEntry (e : Pf × Form) : String :=
   renderPf e.1 ++ " : " ++ render e.2
 
@@ -44,15 +44,15 @@ def renderCtx (Γ : Ctx) : String :=
   ", ".intercalate (Γ.reverse.map renderEntry)
 
 /-- A judgement.  The result parses back inside `qj[…]` and `qd[…]`. -/
-def renderJ (p : Pf) (Γ : Ctx) (M : Form) : String :=
-  (if Γ.isEmpty then "" else renderCtx Γ ++ " ") ++ "⊢ " ++ renderPf p ++ " : " ++ render M
+def renderJ (p : Pf) (Γ : Ctx) (A : Form) : String :=
+  (if Γ.isEmpty then "" else renderCtx Γ ++ " ") ++ "⊢ " ++ renderPf p ++ " : " ++ render A
 
 /-! ## Input notation -/
 
 declare_syntax_cat qllEntry
 declare_syntax_cat qllJudge
 
-/-- `p : M` — a context entry.  The left-hand side is a full proof term, not
+/-- `p : A` — a context entry.  The left-hand side is a full proof term, not
 just a variable, because a residual obligation need not be a variable. -/
 syntax qllPf:0 " : " qllForm:0 : qllEntry
 
@@ -60,7 +60,7 @@ syntax qllEntry,* " ⊢ " qllPf:0 " : " qllForm:0 : qllJudge
 
 /-- A single context entry, as a `Pf × Form`. -/
 syntax "qe[" qllEntry "]" : term
-macro_rules | `(qe[$p:qllPf : $M:qllForm]) => `((qp[$p], qf[$M]))
+macro_rules | `(qe[$p:qllPf : $A:qllForm]) => `((qp[$p], qf[$A]))
 
 /-- A context in surface syntax, as a `Ctx`. -/
 syntax "qc[" qllEntry,* "]" : term
@@ -69,18 +69,18 @@ macro_rules
       let es := es.reverse
       `(([$[qe[$es]],*] : Ctx))
 
-/-- The *type of derivations* of a judgement: `Derives p Γ M`. -/
+/-- The *type of derivations* of a judgement: `Derives p Γ A`. -/
 syntax "qd[" qllJudge "]" : term
 
-/-- A judgement as a proposition: `Derivable p Γ M`. -/
+/-- A judgement as a proposition: `Derivable p Γ A`. -/
 syntax "qj[" qllJudge "]" : term
 
 macro_rules
-  | `(qd[$[$es],* ⊢ $p:qllPf : $M:qllForm]) => do
+  | `(qd[$[$es],* ⊢ $p:qllPf : $A:qllForm]) => do
       let es := es.reverse
-      `(Derives qp[$p] [$[qe[$es]],*] qf[$M])
-  | `(qj[$[$es],* ⊢ $p:qllPf : $M:qllForm]) => do
+      `(Derives qp[$p] [$[qe[$es]],*] qf[$A])
+  | `(qj[$[$es],* ⊢ $p:qllPf : $A:qllForm]) => do
       let es := es.reverse
-      `(Derivable qp[$p] [$[qe[$es]],*] qf[$M])
+      `(Derivable qp[$p] [$[qe[$es]],*] qf[$A])
 
 end LaxLogic.QLL.Surface

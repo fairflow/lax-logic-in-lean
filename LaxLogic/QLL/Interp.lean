@@ -7,10 +7,10 @@ Fig. 5 gives them **the same rules** — its modal side condition reads only "if
 `Q = ∀` or `Q = ∃`", and Fig. 6 carries the subscript without using it.  All the
 content of the distinction is here, in Fig. 4:
 
-    (p : ◯∀M) = ∀z::|M|. p z ⊃ (z : M)
-    (p : ◯∃M) = ∃z::|M|. p z ∧ (z : M)
+    (p : ◯∀A) = ∀z::|A|. p z ⊃ (z : A)
+    (p : ◯∃A) = ∃z::|A|. p z ∧ (z : A)
 
-`◯∀` says every witness the constraint admits refines `M`; `◯∃` says some
+`◯∀` says every witness the constraint admits refines `A`; `◯∃` says some
 witness does.  Weakening against strengthening.
 
 ## `⊨` is a shallow embedding, not a Kripke semantics
@@ -32,8 +32,8 @@ recorded rather than silently made:
 * a separate witness type `C` for atoms, so `atom : String → List D → C → Prop`
   reads "this constraint witnesses `P(t₁,…,tₙ)`".  Taking `C := D` recovers the
   report exactly.
-* the report's `∀x::α.M` carries the sort at the binder; here there is one
-  domain `D`, so `|∀x.M| = D ⇒ |M|`.
+* the report's `∀x::α.A` carries the sort at the binder; here there is one
+  domain `D`, so `|∀x.A| = D ⇒ |A|`.
 
 ## Non-empty types, as the report requires
 
@@ -47,7 +47,7 @@ made a field instead of a background assumption — and it is what lets ex falso
 
 ## Bound variables are interpreted, not substituted
 
-`Sat` carries an environment: a list of domain elements for the de Bruijn
+`Refines` carries an environment: a list of domain elements for the de Bruijn
 indices and a valuation for the named free individuals.  A quantifier extends
 the list.  So no opening happens during interpretation, and no freshness
 condition is needed — which is a good deal cleaner than substituting terms.
@@ -60,7 +60,7 @@ namespace LaxLogic.QLL
 A first-order structure: a domain of individuals, a witness type for atoms, and
 an interpretation of the predicate and function symbols.
 
-Not a Kripke model.  `Sat` below is a translation into Lean's own logic, in the
+Not a Kripke model.  `Refines` below is a translation into Lean's own logic, in the
 manner of the paper's translation into HOL.
 -/
 structure Model where
@@ -82,36 +82,36 @@ variable (𝔐 : Model)
 
 /-! ## Fig. 3 — refinement types
 
-`|M|`, the type of constraints for `M`.  It depends only on the *shape* of the
+`|A|`, the type of constraints for `A`.  It depends only on the *shape* of the
 formula, never on its terms, which is why nothing here needs an environment. -/
 
-/-- The report's `|M|`. -/
+/-- The report's `|A|`. -/
 def Val : Form → Type
   | .top       => Unit
   | .bot       => Unit
   | .pred _ _  => 𝔐.C
-  | .and M N   => Val M × Val N
-  | .or M N    => Val M ⊕ Val N
-  | .imp M N   => Val M → Val N
-  | .circ _ M  => Val M → Prop
-  | .forall_ M => 𝔐.D → Val M
-  | .exists_ M => 𝔐.D × Val M
+  | .and A B   => Val A × Val B
+  | .or A B    => Val A ⊕ Val B
+  | .imp A B   => Val A → Val B
+  | .circ _ A  => Val A → Prop
+  | .forall_ A => 𝔐.D → Val A
+  | .exists_ A => 𝔐.D × Val A
 
 /-- Every refinement type is inhabited — the report's side condition on Fig. 3,
 here discharged by recursion rather than assumed. -/
-def Val.default : (M : Form) → Val 𝔐 M
+def Val.default : (A : Form) → Val 𝔐 A
   | .top       => ()
   | .bot       => ()
   | .pred _ _  => 𝔐.c₀
-  | .and M N   => (Val.default M, Val.default N)
-  | .or M _    => .inl (Val.default M)
-  | .imp _ N   => fun _ => Val.default N
+  | .and A B   => (Val.default A, Val.default B)
+  | .or A _    => .inl (Val.default A)
+  | .imp _ B   => fun _ => Val.default B
   | .circ _ _  => fun _ => True
-  | .forall_ M => fun _ => Val.default M
-  | .exists_ M => (𝔐.d₀, Val.default M)
+  | .forall_ A => fun _ => Val.default A
+  | .exists_ A => (𝔐.d₀, Val.default A)
 
 /-!
-## `|M| = |M{σ}|`
+## `|A| = |A{σ}|`
 
 The report states this in prose — "the mapping removes any dependency of types
 on object level terms" — and it is what makes `∀I` and `∃E` interpretable: the
@@ -119,20 +119,20 @@ rules open a formula with a fresh individual, and the constraint type must not
 notice.  Here it is a theorem. -/
 
 /-- Opening a formula does not change its refinement type. -/
-theorem Val_openAt (u : Tm) : ∀ (M : Form) (k : Nat), Val 𝔐 (M.openAt k u) = Val 𝔐 M := by
-  intro M
-  induction M with
+theorem Val_openAt (u : Tm) : ∀ (A : Form) (k : Nat), Val 𝔐 (A.openAt k u) = Val 𝔐 A := by
+  intro A
+  induction A with
   | top | bot | pred => intro _; rfl
-  | and M N ihM ihN => intro k; show (_ × _) = (_ × _); rw [ihM k, ihN k]
-  | or M N ihM ihN => intro k; show (_ ⊕ _) = (_ ⊕ _); rw [ihM k, ihN k]
-  | imp M N ihM ihN => intro k; show (_ → _) = (_ → _); rw [ihM k, ihN k]
-  | circ _ M ih => intro k; show (_ → Prop) = (_ → Prop); rw [ih k]
-  | forall_ M ih => intro k; show (_ → _) = (_ → _); rw [ih (k + 1)]
-  | exists_ M ih => intro k; show (_ × _) = (_ × _); rw [ih (k + 1)]
+  | and A B ihM ihN => intro k; show (_ × _) = (_ × _); rw [ihM k, ihN k]
+  | or A B ihM ihN => intro k; show (_ ⊕ _) = (_ ⊕ _); rw [ihM k, ihN k]
+  | imp A B ihM ihN => intro k; show (_ → _) = (_ → _); rw [ihM k, ihN k]
+  | circ _ A ih => intro k; show (_ → Prop) = (_ → Prop); rw [ih k]
+  | forall_ A ih => intro k; show (_ → _) = (_ → _); rw [ih (k + 1)]
+  | exists_ A ih => intro k; show (_ × _) = (_ × _); rw [ih (k + 1)]
 
 /-- The instance the rules actually use. -/
-theorem Val_openWith (a : String) (M : Form) : Val 𝔐 (M.openWith a) = Val 𝔐 M :=
-  Val_openAt 𝔐 (.fvar a) M 0
+theorem Val_openWith (a : String) (A : Form) : Val 𝔐 (A.openWith a) = Val 𝔐 A :=
+  Val_openAt 𝔐 (.fvar a) A 0
 
 /-! ## Interpreting terms
 
@@ -151,25 +151,25 @@ end
 
 /-! ## Fig. 4 — the refinement relation
 
-`Sat 𝔐 env ρ M p` is the report's `p : M`, read as a proposition of the
-ambient logic.  Written `p ⊨ M` when the environment is understood. -/
+`Refines 𝔐 env ρ A p` is the report's `p : A`, read as a proposition of the
+ambient logic.  Written `p ⊨ A` when the environment is understood. -/
 
 /-- The zip/unzip equations of Fig. 4. -/
-def Sat (env : List 𝔐.D) (ρ : String → 𝔐.D) : (M : Form) → Val 𝔐 M → Prop
+def Refines (env : List 𝔐.D) (ρ : String → 𝔐.D) : (A : Form) → Val 𝔐 A → Prop
   | .top,       _ => True
   | .bot,       _ => False
   | .pred P ts, c => 𝔐.atom P (evalTms 𝔐 env ρ ts) c
-  | .and M N,   p => Sat env ρ M p.1 ∧ Sat env ρ N p.2
-  | .or M N,    p => match p with
-                     | .inl a => Sat env ρ M a
-                     | .inr b => Sat env ρ N b
-  | .imp M N,   f => ∀ z, Sat env ρ M z → Sat env ρ N (f z)
-  | .circ .all M, φ => ∀ z, φ z → Sat env ρ M z
-  | .circ .ex M,  φ => ∃ z, φ z ∧ Sat env ρ M z
-  | .forall_ M, f => ∀ d : 𝔐.D, Sat (d :: env) ρ M (f d)
-  | .exists_ M, p => Sat (p.1 :: env) ρ M p.2
+  | .and A B,   p => Refines env ρ A p.1 ∧ Refines env ρ B p.2
+  | .or A B,    p => match p with
+                     | .inl a => Refines env ρ A a
+                     | .inr b => Refines env ρ B b
+  | .imp A B,   f => ∀ z, Refines env ρ A z → Refines env ρ B (f z)
+  | .circ .all A, φ => ∀ z, φ z → Refines env ρ A z
+  | .circ .ex A,  φ => ∃ z, φ z ∧ Refines env ρ A z
+  | .forall_ A, f => ∀ d : 𝔐.D, Refines (d :: env) ρ A (f d)
+  | .exists_ A, p => Refines (p.1 :: env) ρ A p.2
 
 /-- A closed formula, in the empty environment. -/
-abbrev SatC (ρ : String → 𝔐.D) (M : Form) (p : Val 𝔐 M) : Prop := Sat 𝔐 [] ρ M p
+abbrev RefinesC (ρ : String → 𝔐.D) (A : Form) (p : Val 𝔐 A) : Prop := Refines 𝔐 [] ρ A p
 
 end LaxLogic.QLL

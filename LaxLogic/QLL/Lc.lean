@@ -1,11 +1,11 @@
 /-
 # `LaxLogic.QLL.Lc` — local closedness
 
-A de Bruijn representation admits junk: `pred "P" [Tm.bvar 5]` is a perfectly
+C de Bruijn representation admits junk: `pred "P" [Tm.bvar 5]` is a perfectly
 good `Form` and is not a formula of the object language.  `lcAt k` carves the
 real syntax out of the raw datatype — no index at or above `k` occurs loose.
 
-Only the **individual** index needs tracking.  A formula's well-formedness
+Only the **individual** index needs tracking.  C formula's well-formedness
 cannot depend on proof-variable indices, and opening a proof binder cannot
 create a loose individual, so `Pf.lcI` tracks one index and not two.  The
 checker already rejects loose *proof* indices at runtime (`Err.looseIndex`);
@@ -13,9 +13,9 @@ this layer is about the other sort.
 
 Wanted for three things, only one of which is the soundness proof:
 
-* the open/close roundtrip `openAt k (fvar a) (closeAt k a A) = A`, which
-  `infer`'s `∀` case needs and which holds only for locally closed `A`;
-* `⊨` and `|M|` (Figs. 3 and 4), defined by recursion on `Form`, which have no
+* the open/close roundtrip `openAt k (fvar a) (closeAt k a C) = C`, which
+  `infer`'s `∀` case needs and which holds only for locally closed `C`;
+* `⊨` and `|A|` (Figs. 3 and 4), defined by recursion on `Form`, which have no
   meaning on a formula with a loose index;
 * keeping `Derivable` from making claims about junk.
 -/
@@ -43,15 +43,15 @@ def Form.lcAt (k : Nat) : Form → Prop
   | .top       => True
   | .bot       => True
   | .pred _ ts => Tm.lcAtList k ts
-  | .and M N   => Form.lcAt k M ∧ Form.lcAt k N
-  | .or M N    => Form.lcAt k M ∧ Form.lcAt k N
-  | .imp M N   => Form.lcAt k M ∧ Form.lcAt k N
-  | .circ _ M  => Form.lcAt k M
-  | .forall_ M => Form.lcAt (k + 1) M
-  | .exists_ M => Form.lcAt (k + 1) M
+  | .and A B   => Form.lcAt k A ∧ Form.lcAt k B
+  | .or A B    => Form.lcAt k A ∧ Form.lcAt k B
+  | .imp A B   => Form.lcAt k A ∧ Form.lcAt k B
+  | .circ _ A  => Form.lcAt k A
+  | .forall_ A => Form.lcAt (k + 1) A
+  | .exists_ A => Form.lcAt (k + 1) A
 
-/-- A closed formula. -/
-abbrev Form.lc (M : Form) : Prop := Form.lcAt 0 M
+/-- C closed formula. -/
+abbrev Form.lc (A : Form) : Prop := Form.lcAt 0 A
 
 /-- No individual index at or above `k` occurs loose in the terms and formulas
 embedded in the proof term.  `gen` and `caseEx` raise `k`; the proof binders
@@ -74,12 +74,12 @@ def Pf.lcI (k : Nat) : Pf → Prop
   | .inst t p     => Tm.lcAt k t ∧ Pf.lcI k p
   | .pack t p     => Tm.lcAt k t ∧ Pf.lcI k p
   | .caseEx r p   => Pf.lcI k r ∧ Pf.lcI (k + 1) p
-  | .exf M p      => Form.lcAt k M ∧ Pf.lcI k p
+  | .exf A p      => Form.lcAt k A ∧ Pf.lcI k p
 
 /-- Every formula in the context is closed. -/
 def Ctx.lc : Ctx → Prop
   | []          => True
-  | (_, M) :: Γ => Form.lc M ∧ Ctx.lc Γ
+  | (_, A) :: Γ => Form.lc A ∧ Ctx.lc Γ
 
 /-! ## The open/close roundtrip
 
@@ -112,44 +112,44 @@ theorem Tm.openAtList_closeAtList (k : Nat) (a : String) :
 end
 
 theorem Form.openAt_closeAt (a : String) :
-    ∀ (k : Nat) (M : Form), Form.lcAt k M →
-      Form.openAt k (.fvar a) (Form.closeAt k a M) = M
+    ∀ (k : Nat) (A : Form), Form.lcAt k A →
+      Form.openAt k (.fvar a) (Form.closeAt k a A) = A
   | _, .top,       _ => rfl
   | _, .bot,       _ => rfl
   | k, .pred _ ts, h => by
       simp only [Form.lcAt] at h
       simp only [Form.closeAt, Form.openAt, Tm.openAtList_closeAtList k a ts h]
-  | k, .and M N,   h => by
+  | k, .and A B,   h => by
       simp only [Form.lcAt] at h
       simp only [Form.closeAt, Form.openAt,
-        Form.openAt_closeAt a k M h.1, Form.openAt_closeAt a k N h.2]
-  | k, .or M N,    h => by
+        Form.openAt_closeAt a k A h.1, Form.openAt_closeAt a k B h.2]
+  | k, .or A B,    h => by
       simp only [Form.lcAt] at h
       simp only [Form.closeAt, Form.openAt,
-        Form.openAt_closeAt a k M h.1, Form.openAt_closeAt a k N h.2]
-  | k, .imp M N,   h => by
+        Form.openAt_closeAt a k A h.1, Form.openAt_closeAt a k B h.2]
+  | k, .imp A B,   h => by
       simp only [Form.lcAt] at h
       simp only [Form.closeAt, Form.openAt,
-        Form.openAt_closeAt a k M h.1, Form.openAt_closeAt a k N h.2]
-  | k, .circ _ M,  h => by
+        Form.openAt_closeAt a k A h.1, Form.openAt_closeAt a k B h.2]
+  | k, .circ _ A,  h => by
       simp only [Form.lcAt] at h
-      simp only [Form.closeAt, Form.openAt, Form.openAt_closeAt a k M h]
-  | k, .forall_ M, h => by
+      simp only [Form.closeAt, Form.openAt, Form.openAt_closeAt a k A h]
+  | k, .forall_ A, h => by
       simp only [Form.lcAt] at h
-      simp only [Form.closeAt, Form.openAt, Form.openAt_closeAt a (k + 1) M h]
-  | k, .exists_ M, h => by
+      simp only [Form.closeAt, Form.openAt, Form.openAt_closeAt a (k + 1) A h]
+  | k, .exists_ A, h => by
       simp only [Form.lcAt] at h
-      simp only [Form.closeAt, Form.openAt, Form.openAt_closeAt a (k + 1) M h]
+      simp only [Form.closeAt, Form.openAt, Form.openAt_closeAt a (k + 1) A h]
 
 /-- The form the `∀` case of `infer` needs. -/
-theorem Form.openWith_closeWith {A : Form} (a : String) (h : Form.lc A) :
-    Form.openWith a (Form.closeWith a A) = A :=
-  Form.openAt_closeAt a 0 A h
+theorem Form.openWith_closeWith {C : Form} (a : String) (h : Form.lc C) :
+    Form.openWith a (Form.closeWith a C) = C :=
+  Form.openAt_closeAt a 0 C h
 
 /-! ## Deciding local closedness
 
 The checker needs `lcAt` as a *runtime test*, not as a threaded hypothesis: it
-is wanted at exactly one place, inference for `∀`.  A boolean twin plus its
+is wanted at exactly one place, inference for `∀`.  C boolean twin plus its
 characterisation gives the `Decidable` instance. -/
 
 mutual
@@ -178,32 +178,32 @@ def Form.lcAtB (k : Nat) : Form → Bool
   | .top       => true
   | .bot       => true
   | .pred _ ts => Tm.lcAtListB k ts
-  | .and M N   => Form.lcAtB k M && Form.lcAtB k N
-  | .or M N    => Form.lcAtB k M && Form.lcAtB k N
-  | .imp M N   => Form.lcAtB k M && Form.lcAtB k N
-  | .circ _ M  => Form.lcAtB k M
-  | .forall_ M => Form.lcAtB (k + 1) M
-  | .exists_ M => Form.lcAtB (k + 1) M
+  | .and A B   => Form.lcAtB k A && Form.lcAtB k B
+  | .or A B    => Form.lcAtB k A && Form.lcAtB k B
+  | .imp A B   => Form.lcAtB k A && Form.lcAtB k B
+  | .circ _ A  => Form.lcAtB k A
+  | .forall_ A => Form.lcAtB (k + 1) A
+  | .exists_ A => Form.lcAtB (k + 1) A
 
-theorem Form.lcAtB_iff : ∀ (k : Nat) (M : Form), Form.lcAtB k M = true ↔ Form.lcAt k M
+theorem Form.lcAtB_iff : ∀ (k : Nat) (A : Form), Form.lcAtB k A = true ↔ Form.lcAt k A
   | _, .top       => by simp [Form.lcAtB, Form.lcAt]
   | _, .bot       => by simp [Form.lcAtB, Form.lcAt]
   | k, .pred _ ts => by simp [Form.lcAtB, Form.lcAt, Tm.lcAtListB_iff k ts]
-  | k, .and M N   => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k M, Form.lcAtB_iff k N]
-  | k, .or M N    => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k M, Form.lcAtB_iff k N]
-  | k, .imp M N   => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k M, Form.lcAtB_iff k N]
-  | k, .circ _ M  => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k M]
-  | k, .forall_ M => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff (k + 1) M]
-  | k, .exists_ M => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff (k + 1) M]
+  | k, .and A B   => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k A, Form.lcAtB_iff k B]
+  | k, .or A B    => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k A, Form.lcAtB_iff k B]
+  | k, .imp A B   => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k A, Form.lcAtB_iff k B]
+  | k, .circ _ A  => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff k A]
+  | k, .forall_ A => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff (k + 1) A]
+  | k, .exists_ A => by simp [Form.lcAtB, Form.lcAt, Form.lcAtB_iff (k + 1) A]
 
-instance Form.decLcAt (k : Nat) (M : Form) : Decidable (Form.lcAt k M) :=
-  decidable_of_iff _ (Form.lcAtB_iff k M)
+instance Form.decLcAt (k : Nat) (A : Form) : Decidable (Form.lcAt k A) :=
+  decidable_of_iff _ (Form.lcAtB_iff k A)
 
 /-! ## Closing removes the name
 
 `allI`'s freshness condition mentions the formula, but inference chooses the
 eigenvariable *before* the formula is known.  This is what closes that gap:
-whatever `A` was, `a` does not occur free in `closeAt k a A`. -/
+whatever `C` was, `a` does not occur free in `closeAt k a C`. -/
 
 mutual
 theorem Tm.not_mem_fv_closeAt (k : Nat) (a : String) :
@@ -224,27 +224,27 @@ theorem Tm.not_mem_fvList_closeAtList (k : Nat) (a : String) :
 end
 
 theorem Form.not_mem_fv_closeAt (a : String) :
-    ∀ (k : Nat) (M : Form), a ∉ (Form.closeAt k a M).fv
+    ∀ (k : Nat) (A : Form), a ∉ (Form.closeAt k a A).fv
   | _, .top       => by simp [Form.closeAt, Form.fv]
   | _, .bot       => by simp [Form.closeAt, Form.fv]
   | k, .pred _ ts => by
       simpa [Form.closeAt, Form.fv] using Tm.not_mem_fvList_closeAtList k a ts
-  | k, .and M N   => by
+  | k, .and A B   => by
       simp only [Form.closeAt, Form.fv, List.mem_append, not_or]
-      exact ⟨Form.not_mem_fv_closeAt a k M, Form.not_mem_fv_closeAt a k N⟩
-  | k, .or M N    => by
+      exact ⟨Form.not_mem_fv_closeAt a k A, Form.not_mem_fv_closeAt a k B⟩
+  | k, .or A B    => by
       simp only [Form.closeAt, Form.fv, List.mem_append, not_or]
-      exact ⟨Form.not_mem_fv_closeAt a k M, Form.not_mem_fv_closeAt a k N⟩
-  | k, .imp M N   => by
+      exact ⟨Form.not_mem_fv_closeAt a k A, Form.not_mem_fv_closeAt a k B⟩
+  | k, .imp A B   => by
       simp only [Form.closeAt, Form.fv, List.mem_append, not_or]
-      exact ⟨Form.not_mem_fv_closeAt a k M, Form.not_mem_fv_closeAt a k N⟩
-  | k, .circ _ M  => Form.not_mem_fv_closeAt a k M
-  | k, .forall_ M => Form.not_mem_fv_closeAt a (k + 1) M
-  | k, .exists_ M => Form.not_mem_fv_closeAt a (k + 1) M
+      exact ⟨Form.not_mem_fv_closeAt a k A, Form.not_mem_fv_closeAt a k B⟩
+  | k, .circ _ A  => Form.not_mem_fv_closeAt a k A
+  | k, .forall_ A => Form.not_mem_fv_closeAt a (k + 1) A
+  | k, .exists_ A => Form.not_mem_fv_closeAt a (k + 1) A
 
 /-- The form the `∀` case of inference needs. -/
-theorem Form.not_mem_fv_closeWith (a : String) (A : Form) :
-    a ∉ (Form.closeWith a A).fv :=
-  Form.not_mem_fv_closeAt a 0 A
+theorem Form.not_mem_fv_closeWith (a : String) (C : Form) :
+    a ∉ (Form.closeWith a C).fv :=
+  Form.not_mem_fv_closeAt a 0 C
 
 end LaxLogic.QLL
