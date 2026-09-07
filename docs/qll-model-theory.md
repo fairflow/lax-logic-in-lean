@@ -15,12 +15,63 @@ lake build LaxLogic.QLL.Tests
 | Lindenbaum, by Zorn | `Complete.lean` | as above |
 | the truth lemma, quantifier-free fragment | `Complete.lean` | as above |
 | completeness, quantifier-free fragment | `Complete.lean` | as above |
+| `Countable Form`, and a schedule hitting each formula infinitely often | `Countable.lean` | `[propext, Classical.choice, Quot.sound]` |
+| renaming for `Prv`; the exists-fresh binders | `ProvFresh.lean` | `[propext]` |
+| **saturated Lindenbaum** (`exists_saturated`) | `Saturate.lean` | as above |
+| **the truth lemma, full first-order** (`truth_lemma1`) | `Complete1.lean` | as above |
+| **completeness, full first-order** (`completeness1`) | `Complete1.lean` | as above |
+| adequacy `Γ ⊢q A ↔ Γ ⊫ A` (`prv_iff_consequence`) | `Complete1.lean` | as above |
 | `◯∀P ⊬ ◯∃P` and `◯∃P ⊬ ◯∀P` | `CompleteTests.lean` | as above |
 | the Constant Domain axiom is not derivable | `CompleteTests.lean` | as above |
 
 `⊢q` is `Prv`: Fig. 5 with proof terms erased and the binding rules quantified
 cofinitely.  `⊫` is `Consequence` over the models of `Kripke.lean`: varying
 domains, fallible states, one reachability relation per modality.
+
+## First-order completeness: the three things that had to change
+
+**Maximality is not enough, and Zorn cannot be repaired.**  A maximal
+consistent theory need not be *saturated*: an inconsistency names finitely many
+falsified formulas, and `∃x A` entails no finite disjunction of its instances,
+so nothing forces a witness into `val`.  Witnesses have to interleave with the
+decisions, one per stage, along an enumeration of the formulas — hence
+`Countable.lean`, and hence `Good` is now *consistency plus totality* (every
+property the canonical model uses follows from those two), with Zorn demoted to
+one implementation of `exists_good_extension`.
+
+Henkin axioms cannot be added up front: from `∃y φ(y) ⊃ φ(c)` one derives
+`∃x (∃y φ(y) ⊃ φ(x))`, which is not valid.  What is conservative is adding the
+*instance* `φ(c)` at a stage where `∃y φ(y)` is already validated, and the proof
+of that is the elimination rule at a parameter fresh for the theory
+(`consistent_insert_witness`, on `Prv.exE_of_fresh`).
+
+**A world must keep a reserve.**  Each stage spends a name, so a construction
+spending every name leaves the limit with none fresh — and the
+universal-falsity case of the truth lemma needs a fresh one, because
+ω-completeness fails and no term already present will serve.  So the names are
+split: even slots are spent as witnesses, odd slots survive, and a formula
+mentioning a reserved name is never decided.  `Total` is therefore relative to
+the reserve, and a world's *domain* is the terms avoiding it — which is exactly
+why the domains increase, the point already forced by `cd_not_prv`.
+
+**The assignment covers the names that occur.**  `Assign` asked that every
+string denote an element of the domain.  That is unsatisfiable in the canonical
+model — the reserved names are precisely the ones its domain omits — and it is
+more than the semantics needs, since forcing depends only on the names a
+formula mentions.  `Consequence` now asks for an assignment on
+`ctxFv Γ ++ A.fv`.  The soundness *induction* still needs a total one (a cut
+formula's names need not occur in the conclusion), so it is kept as
+`ConsequenceT`; the stated soundness follows by completing the partial
+assignment with `d₀` and appealing to `force_congr`.  Nothing about the
+proof-theoretic side changed.
+
+## Still open
+
+* `Derives p Γ A → Prv Γ.forms A` (erasure) and `Prv Γ A → ∃ p, Derives p _ A`.
+  The two calculi are still bridged only informally.
+* Completeness of the *refinement* semantics of `Interp.lean`, which is a
+  translation into Lean and so cannot be complete against full Lean; a logic
+  from the literature has to be substituted first.
 
 ## The design decisions, and what forced them
 
