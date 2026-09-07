@@ -195,6 +195,9 @@ theorem resName_inj {f : Nat → Nat} (hf : StrictMono f) : Function.Injective (
 theorem oddNames_sub_unused {f : Nat → Nat} (k : Nat) : oddNames f ⊆ unused f k :=
   fun _ ⟨j, hj⟩ => Or.inr ⟨j, hj⟩
 
+theorem oddNames_sub_allNames {f : Nat → Nat} : oddNames f ⊆ allNames f :=
+  fun _ ⟨j, hj⟩ => ⟨2 * j + 1, hj⟩
+
 theorem unused_sub_allNames {f : Nat → Nat} {k : Nat} : unused f k ⊆ allNames f := by
   rintro x (⟨j, _, rfl⟩ | ⟨j, rfl⟩)
   · exact ⟨2 * j, rfl⟩

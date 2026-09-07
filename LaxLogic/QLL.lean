@@ -73,3 +73,4 @@ import LaxLogic.QLL.Rename
 import LaxLogic.QLL.Kripke
 import LaxLogic.QLL.Prov
 import LaxLogic.QLL.Complete
+import LaxLogic.QLL.Complete1

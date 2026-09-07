@@ -247,4 +247,54 @@ theorem Form.not_mem_fv_closeWith (a : String) (C : Form) :
     a ∉ (Form.closeWith a C).fv :=
   Form.not_mem_fv_closeAt a 0 C
 
+/-! ## Opening lowers the bound
+
+Every rule hands its premises an opened term, so local closedness has to travel
+with it.  Opening an individual lowers the bound by one. -/
+
+mutual
+theorem Tm.lcAt_mono : ∀ {k k' : Nat}, k ≤ k' → ∀ (t : Tm), Tm.lcAt k t → Tm.lcAt k' t
+  | _, _, hk, .bvar i, h => by
+      have : i < _ := h
+      show i < _
+      omega
+  | _, _, _,  .fvar _, _ => trivial
+  | _, _, hk, .fn _ ts, h => Tm.lcAtList_mono hk ts h
+theorem Tm.lcAtList_mono : ∀ {k k' : Nat}, k ≤ k' →
+    ∀ (ts : List Tm), Tm.lcAtList k ts → Tm.lcAtList k' ts
+  | _, _, _,  [],      _ => trivial
+  | _, _, hk, _ :: ts, h => ⟨Tm.lcAt_mono hk _ h.1, Tm.lcAtList_mono hk ts h.2⟩
+end
+
+mutual
+theorem Tm.lcAt_openAt : ∀ (k : Nat) (u : Tm), Tm.lcAt k u →
+    ∀ (t : Tm), Tm.lcAt (k + 1) t → Tm.lcAt k (Tm.openAt k u t)
+  | k, u, hu, .bvar i, h => by
+      by_cases hi : i = k
+      · subst hi; simpa [Tm.openAt] using hu
+      · have h' : i < k + 1 := h
+        simp only [Tm.openAt, if_neg hi]
+        show i < k
+        omega
+  | _, _, _,  .fvar _, _ => trivial
+  | k, u, hu, .fn _ ts, h => Tm.lcAtList_openAtList k u hu ts h
+theorem Tm.lcAtList_openAtList : ∀ (k : Nat) (u : Tm), Tm.lcAt k u →
+    ∀ (ts : List Tm), Tm.lcAtList (k + 1) ts → Tm.lcAtList k (Tm.openAtList k u ts)
+  | _, _, _,  [],      _ => trivial
+  | k, u, hu, _ :: ts, h =>
+      ⟨Tm.lcAt_openAt k u hu _ h.1, Tm.lcAtList_openAtList k u hu ts h.2⟩
+end
+
+theorem Form.lcAt_openAt : ∀ (A : Form) (k : Nat) (u : Tm), Tm.lcAt k u →
+    Form.lcAt (k + 1) A → Form.lcAt k (Form.openAt k u A) := by
+  intro A
+  induction A with
+  | top | bot => intro _ _ _ _; trivial
+  | pred _ ts => intro k u hu h; exact Tm.lcAtList_openAtList k u hu ts h
+  | and A B ihM ihN | or A B ihM ihN | imp A B ihM ihN =>
+      intro k u hu h; exact ⟨ihM k u hu h.1, ihN k u hu h.2⟩
+  | circ _ A ih => intro k u hu h; exact ih k u hu h
+  | forall_ A ih | exists_ A ih =>
+      intro k u hu h; exact ih (k + 1) u (Tm.lcAt_mono (Nat.le_succ k) u hu) h
+
 end LaxLogic.QLL

@@ -67,7 +67,7 @@ theorem ex_fails : ¬ two.force (.circ .ex P) false ρ₂ [] := by
 /-- **`◯∀ P ⊬ ◯∃ P`** — proved by soundness against the model above. -/
 theorem all_not_ex : ¬ Prv [.circ .all P] (.circ .ex P) := by
   intro h
-  exact ex_fails (h.sound two false ρ₂ (fun _ => trivial) (fun B hB => by
+  exact ex_fails (h.sound two false ρ₂ (fun _ _ => trivial) (fun B hB => by
     rcases List.mem_singleton.mp hB with rfl
     exact all_holds))
 
@@ -101,7 +101,7 @@ theorem all_fails' : ¬ two'.force (.circ .all P) false ρ₂' [] := by
 definable from the other, and one reachability relation would not do. -/
 theorem ex_not_all : ¬ Prv [.circ .ex P] (.circ .all P) := by
   intro h
-  exact all_fails' (h.sound two' false ρ₂' (fun _ => trivial) (fun B hB => by
+  exact all_fails' (h.sound two' false ρ₂' (fun _ _ => trivial) (fun B hB => by
     rcases List.mem_singleton.mp hB with rfl
     exact ex_holds'))
 
@@ -202,7 +202,7 @@ theorem cd_fails : ¬ dom2.force (.or FA (.forall_ FB)) false ρ₃ [] := by
 model whose two states have different domains. -/
 theorem cd_not_prv : ¬ Prv [.forall_ (.or FA FB)] (.or FA (.forall_ FB)) := by
   intro h
-  exact cd_fails (h.sound dom2 false ρ₃ (fun _ => Or.inr rfl) (fun B hB => by
+  exact cd_fails (h.sound dom2 false ρ₃ (fun _ _ => Or.inr rfl) (fun B hB => by
     rcases List.mem_singleton.mp hB with rfl
     exact cd_holds))
 
