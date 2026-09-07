@@ -18,6 +18,7 @@ first is decided by a program.
 | `Interp` | Figs. 3 and 4 — the refinement types `|M|` and the refinement relation `p : M` |
 | `Denote` | Fig. 6 — the constraint a derivation denotes, `⟦d⟧ : Val 𝔐 M` |
 | `Sound`  | soundness: the denoted constraint refines the derived formula |
+| `CLP`    | §3's two lax resolution rules, derived, and what they compute |
 
 Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.
 
@@ -48,3 +49,4 @@ import LaxLogic.QLL.Judgement
 import LaxLogic.QLL.Interp
 import LaxLogic.QLL.Denote
 import LaxLogic.QLL.Sound
+import LaxLogic.QLL.CLP

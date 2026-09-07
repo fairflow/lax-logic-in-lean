@@ -90,6 +90,22 @@ def PEnv.lookup : {Γ : Ctx} → PEnv 𝔐 Γ → (e : Pf × Form) → e ∈ Γ 
           | head => exact absurd rfl he
           | tail _ h' => exact h')
 
+/-! `lookup` decides an equality of `Pf × Form`, which does not *compute* when
+the formulas are variables — `Form.decEq M M` is stuck on an opaque `M`.  These
+two say what it returns anyway, by `dif_pos`/`dif_neg` rather than by
+evaluation, and are what makes a derivation with symbolic formulas unfold. -/
+
+theorem PEnv.lookup_head {e : Pf × Form} {Γ : Ctx}
+    (v : Val 𝔐 e.2) (η : PEnv 𝔐 Γ) (h : e ∈ e :: Γ) :
+    PEnv.lookup 𝔐 (.cons v η) e h = v := by
+  simp [PEnv.lookup]
+
+theorem PEnv.lookup_tail {a e : Pf × Form} {Γ : Ctx}
+    (v : Val 𝔐 a.2) (η : PEnv 𝔐 Γ) (h : e ∈ a :: Γ) (hne : ¬ (e = a)) :
+    PEnv.lookup 𝔐 (.cons v η) e h
+      = PEnv.lookup 𝔐 η e ((List.mem_cons.mp h).resolve_left hne) := by
+  simp [PEnv.lookup, hne]
+
 /-- `ρ` with the individual `a` sent to `e`. -/
 def upd (ρ : String → 𝔐.D) (a : String) (e : 𝔐.D) : String → 𝔐.D :=
   fun y => if y = a then e else ρ y
