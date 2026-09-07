@@ -124,6 +124,88 @@ theorem and_comm_prv : Prv [Form.and P Q] (Form.and Q P) :=
     exact ⟨⟨trivial, trivial⟩, ⟨trivial, trivial⟩⟩)
     ⟨trivial, trivial⟩ ⟨trivial, trivial⟩ and_comm_valid
 
+/-! ## Why the domains must vary
+
+The Constant Domain axiom
+
+    ∀x(A ∨ B x) ⊃ (A ∨ ∀x B x)          (`x` not free in `A`)
+
+is not intuitionistically valid, and it is refuted here by a model whose two
+states have *different* domains: one individual below, two above.  So the
+canonical model of a completeness proof for the full language cannot have
+constant domains, and the parameter set available at a state has to grow along
+the order.  That is the obstacle the quantifier-free restriction on
+`completeness` records, made concrete.
+
+The cell also exercises the quantifier clauses of `force`, including the one
+correction we took from the literature: `∀` ranges over the domain of the
+*successor*.  Read with the domain at the current state, `cd_holds` below
+would still go through but heredity would fail. -/
+
+/-- Two states and two individuals: `false` exists everywhere, `true` only
+above.  `A` holds above only; `B` holds of `false` only. -/
+def dom2 : KModel where
+  S := Bool
+  D := Bool
+  Dom s d := s = true ∨ d = false
+  Ri b b' := b = true → b' = true
+  RA b b' := b = true → b' = true
+  RE b b' := b = true → b' = true
+  Fl _ := False
+  refl_i _ := id
+  trans_i h h' := fun x => h' (h x)
+  refl_A _ := id
+  trans_A h h' := fun x => h' (h x)
+  sub_A h := h
+  refl_E _ := id
+  trans_E h h' := fun x => h' (h x)
+  sub_E h := h
+  dom_mono h hd := hd.imp h id
+  d₀ := false
+  dom_d₀ _ := Or.inr rfl
+  hered_Fl _ h := h
+  fn _ _ := false
+  I s P ds := (P = "A" ∧ s = true) ∨ (P = "B" ∧ ds = [false])
+  hered_I h hw := hw.imp (fun x => ⟨x.1, h x.2⟩) id
+  fn_dom _ := Or.inr rfl
+
+def ρ₃ : String → dom2.D := fun _ => false
+
+/-- `A`, with no free individual. -/
+def FA : Form := .pred "A" []
+/-- `B x`, with `x` the bound individual. -/
+def FB : Form := .pred "B" [.bvar 0]
+
+theorem cd_holds : dom2.force (.forall_ (.or FA FB)) false ρ₃ [] := by
+  intro v _ d hd
+  cases d
+  · exact Or.inr (Or.inr (Or.inr ⟨rfl, rfl⟩))
+  · rcases hd with hv | hd
+    · exact Or.inl (Or.inr (Or.inl ⟨rfl, hv⟩))
+    · exact Bool.noConfusion hd
+
+theorem cd_fails : ¬ dom2.force (.or FA (.forall_ FB)) false ρ₃ [] := by
+  rintro (hA | hall)
+  · rcases hA with hF | hI
+    · exact hF
+    · rcases hI with h | h
+      · exact Bool.noConfusion h.2
+      · exact absurd h.1 (by decide)
+  · rcases hall true (fun _ => rfl) true (Or.inl rfl) with hF | hI
+    · exact hF
+    · rcases hI with h | h
+      · exact absurd h.1 (by decide)
+      · have h2 : ([true] : List Bool) = [false] := h.2
+        simp at h2
+
+/-- **The Constant Domain axiom is not derivable.**  By soundness, against a
+model whose two states have different domains. -/
+theorem cd_not_prv : ¬ Prv [.forall_ (.or FA FB)] (.or FA (.forall_ FB)) := by
+  intro h
+  exact cd_fails (h.sound dom2 false ρ₃ (fun _ => Or.inr rfl) (fun B hB => by
+    rcases List.mem_singleton.mp hB with rfl
+    exact cd_holds))
+
 /-! ## Axioms -/
 
 /-- info: 'LaxLogic.QLL.CompleteTests.all_not_ex' depends on axioms: [propext, Classical.choice, Quot.sound] -/
