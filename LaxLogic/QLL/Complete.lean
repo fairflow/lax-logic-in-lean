@@ -19,6 +19,7 @@ containing `◯∀⊥` inconsistent, though `◯∀⊥` is satisfiable.
 `◯E` never mixes them — so the construction is written once, indexed by `q`.
 -/
 import LaxLogic.QLL.Prov
+import LaxLogic.QLL.Rename
 import Mathlib.Order.Zorn
 
 namespace LaxLogic.QLL
@@ -311,19 +312,64 @@ def Consistent (T : Theory) : Prop :=
 def MaxConsistent (T : Theory) : Prop :=
   Consistent T ∧ ∀ T', Consistent T' → T ≤ T' → T' ≤ T
 
-/-- Every formula is decided. -/
-def Total (T : Theory) : Prop := ∀ A : Form, A ∈ T.val ∨ A ∈ T.fal
+/-! ### The reserve
+
+A theory that decides *every* formula has no name left over: `val` will contain
+`⊤ ∨ P(c)` for every `c`, so no name is fresh for it, and the universal-falsity
+case of the truth lemma — which must produce a successor world with a *new*
+witness — cannot be served.  So totality is taken relative to a set `R` of
+reserved names, and the theory decides only the formulas avoiding `R`.
+
+`R = ∅` recovers plain totality, which is what the propositional case uses. -/
+
+/-- The formula uses no reserved name. -/
+def Avoids (R : Set String) (A : Form) : Prop := ∀ x ∈ A.fv, x ∉ R
+
+theorem Avoids.mono {R : Set String} {A B : Form} (h : Avoids R B)
+    (hsub : ∀ x ∈ A.fv, x ∈ B.fv) : Avoids R A := fun x hx => h x (hsub x hx)
+
+@[simp] theorem avoids_empty (A : Form) : Avoids ∅ A := fun _ _ h => h
+
+theorem Avoids.left {R : Set String} {A B : Form}
+    (h : Avoids R (.and A B) ∨ Avoids R (.or A B) ∨ Avoids R (.imp A B)) :
+    Avoids R A := by
+  rcases h with h | h | h <;>
+    exact h.mono (fun _ hx => by simp [Form.fv]; exact Or.inl hx)
+
+theorem Avoids.right {R : Set String} {A B : Form}
+    (h : Avoids R (.and A B) ∨ Avoids R (.or A B) ∨ Avoids R (.imp A B)) :
+    Avoids R B := by
+  rcases h with h | h | h <;>
+    exact h.mono (fun _ hx => by simp [Form.fv]; exact Or.inr hx)
+
+theorem Avoids.under {R : Set String} {A : Form} {q : Q}
+    (h : Avoids R (.circ q A) ∨ Avoids R (.forall_ A) ∨ Avoids R (.exists_ A)) :
+    Avoids R A := by
+  rcases h with h | h | h <;> exact h.mono (fun _ hx => by simpa [Form.fv] using hx)
+
+/-- Opening with a term that avoids the reserve keeps the formula in the
+language.  This is what makes the fragment closed under instantiation. -/
+theorem Avoids.openAt {R : Set String} {A : Form} {t : Tm} {k : Nat}
+    (hA : Avoids R A) (ht : ∀ x ∈ Tm.fv t, x ∉ R) : Avoids R (A.openAt k t) := by
+  intro x hx
+  rcases Form.fv_openAt x t A k hx with h | h
+  · exact ht x h
+  · exact hA x h
+
+/-- Every formula of the language is decided. -/
+def Total (R : Set String) (T : Theory) : Prop :=
+  ∀ A : Form, Avoids R A → A ∈ T.val ∨ A ∈ T.fal
 
 /-- What the canonical model's states need.  *Not* maximality: every property
 below follows from consistency and totality alone, and that matters, because
 the first-order construction produces a total theory directly and cannot
 produce a maximal one — saturation has to interleave with deciding formulas,
 and Zorn cannot interleave. -/
-structure Good (T : Theory) : Prop where
+structure Good (R : Set String) (T : Theory) : Prop where
   /-- No falsified disjunction is derivable. -/
   consistent : Consistent T
-  /-- Every formula is decided. -/
-  total : Total T
+  /-- Every formula of the language is decided. -/
+  total : Total R T
 
 private theorem chain_cover {c : Set Theory} (hc : IsChain (· ≤ ·) c)
     {y : Theory} (hy : y ∈ c) (sel : Theory → Set Form)
@@ -410,8 +456,8 @@ Zorn settles the propositional case on its own.  The first-order case cannot
 use it — see `Good` — so what maximality is really being used for is isolated
 here, and everything downstream depends only on the isolated property. -/
 
-theorem MaxConsistent.total {T : Theory} (hM : MaxConsistent T) : Total T := by
-  intro A
+theorem MaxConsistent.total {T : Theory} (hM : MaxConsistent T) : Total ∅ T := by
+  intro A _
   by_contra hcon
   push_neg at hcon
   obtain ⟨hv, hf⟩ := hcon
@@ -467,43 +513,43 @@ theorem MaxConsistent.total {T : Theory} (hM : MaxConsistent T) : Total T := by
         (by intro hnil; exact hneE (by simpa using (List.append_eq_nil_iff.mp hnil).1))
         (lax_mono (fun X h => List.mem_append.mpr (Or.inl h)) p))
 
-theorem MaxConsistent.good {T : Theory} (hM : MaxConsistent T) : Good T :=
+theorem MaxConsistent.good {T : Theory} (hM : MaxConsistent T) : Good ∅ T :=
   ⟨hM.1, hM.total⟩
 
 /-- The interface the canonical model uses.  Zorn is one implementation; the
 first-order construction is another, and the truth lemma does not care which. -/
 theorem exists_good_extension {T₀ : Theory} (h : Consistent T₀) :
-    ∃ T, T₀ ≤ T ∧ Good T := by
+    ∃ T, T₀ ≤ T ∧ Good ∅ T := by
   obtain ⟨T, hle, hM⟩ := exists_maxConsistent_extension h
   exact ⟨T, hle, hM.good⟩
 
 namespace Good
 
-variable {T : Theory}
+variable {R : Set String} {T : Theory}
 
 /-- A falsified formula is not derivable. -/
-theorem not_fal_deriv (hG : Good T) {A : Form} (hA : A ∈ T.fal)
+theorem not_fal_deriv (hG : Good R T) {A : Form} (hA : A ∈ T.fal)
     (hd : T.val ⊩q A) : False := by
   refine hG.1 [A] [] [] (by simpa using hA) (by simp) (by simp) (by simp) ?_
   rw [disjOf_fal]
   exact hd
 
-/-- `val` is deductively closed — from totality, not from maximality. -/
-theorem ded_closed (hG : Good T) {A : Form} (hd : T.val ⊩q A) : A ∈ T.val :=
-  (hG.2 A).resolve_right (fun hf => hG.not_fal_deriv hf hd)
+/-- `val` is deductively closed on the language — from totality, not from
+maximality. -/
+theorem ded_closed (hG : Good R T) {A : Form} (hav : Avoids R A)
+    (hd : T.val ⊩q A) : A ∈ T.val :=
+  (hG.2 A hav).resolve_right (fun hf => hG.not_fal_deriv hf hd)
 
-theorem mem_val_or_mem_fal (hG : Good T) (A : Form) : A ∈ T.val ∨ A ∈ T.fal := hG.2 A
-
-theorem not_mem_fal_of_mem_val (hG : Good T) {A : Form} (h : A ∈ T.val) :
+theorem not_mem_fal_of_mem_val (hG : Good R T) {A : Form} (h : A ∈ T.val) :
     A ∉ T.fal := fun hf => hG.not_fal_deriv hf (SetPrv.of_mem h)
 
 /-- Primeness. -/
-theorem or_mem (hG : Good T) {A B : Form} (h : Form.or A B ∈ T.val) :
-    A ∈ T.val ∨ B ∈ T.val := by
+theorem or_mem (hG : Good R T) {A B : Form} (hav : Avoids R (.or A B))
+    (h : Form.or A B ∈ T.val) : A ∈ T.val ∨ B ∈ T.val := by
   by_contra hcon
   push_neg at hcon
-  have hA : A ∈ T.fal := (hG.2 A).resolve_left hcon.1
-  have hB : B ∈ T.fal := (hG.2 B).resolve_left hcon.2
+  have hA : A ∈ T.fal := (hG.2 A (Avoids.left (Or.inr (Or.inl hav)))).resolve_left hcon.1
+  have hB : B ∈ T.fal := (hG.2 B (Avoids.right (Or.inr (Or.inl hav)))).resolve_left hcon.2
   have hmem : ∀ X ∈ [A, B], X ∈ T.fal := by
     intro X hX
     rcases List.mem_cons.mp hX with rfl | hX
@@ -515,39 +561,39 @@ theorem or_mem (hG : Good T) {A B : Form} (h : Form.or A B ∈ T.val) :
   exact SetPrv.of_mem h
 
 /-- Implication decomposes. -/
-theorem imp_mem (hG : Good T) {A B : Form} (h : Form.imp A B ∈ T.val) :
-    A ∈ T.fal ∨ B ∈ T.val := by
+theorem imp_mem (hG : Good R T) {A B : Form} (hav : Avoids R (.imp A B))
+    (h : Form.imp A B ∈ T.val) : A ∈ T.fal ∨ B ∈ T.val := by
   by_contra hcon
   push_neg at hcon
-  have hA : A ∈ T.val := (hG.2 A).resolve_right hcon.1
-  exact hcon.2 (hG.ded_closed (SetPrv.map₂ (fun _ p q => .impE p q)
-    (SetPrv.of_mem h) (SetPrv.of_mem hA)))
+  have hA : A ∈ T.val := (hG.2 A (Avoids.left (Or.inr (Or.inr hav)))).resolve_right hcon.1
+  exact hcon.2 (hG.ded_closed (Avoids.right (Or.inr (Or.inr hav)))
+    (SetPrv.map₂ (fun _ p q => .impE p q) (SetPrv.of_mem h) (SetPrv.of_mem hA)))
 
 /-- A falsified disjunction falsifies both disjuncts. -/
-theorem fal_or (hG : Good T) {A B : Form} (h : Form.or A B ∈ T.fal) :
-    A ∈ T.fal ∧ B ∈ T.fal := by
+theorem fal_or (hG : Good R T) {A B : Form} (hav : Avoids R (.or A B))
+    (h : Form.or A B ∈ T.fal) : A ∈ T.fal ∧ B ∈ T.fal := by
   constructor
-  · rcases hG.2 A with hA | hA
+  · rcases hG.2 A (Avoids.left (Or.inr (Or.inl hav))) with hA | hA
     · exact absurd (hG.not_fal_deriv h ((SetPrv.of_mem hA).map (fun _ p => .orI₁ p))) (by simp)
     · exact hA
-  · rcases hG.2 B with hB | hB
+  · rcases hG.2 B (Avoids.right (Or.inr (Or.inl hav))) with hB | hB
     · exact absurd (hG.not_fal_deriv h ((SetPrv.of_mem hB).map (fun _ p => .orI₂ p))) (by simp)
     · exact hB
 
 /-- A falsified conjunction falsifies one conjunct. -/
-theorem fal_and (hG : Good T) {A B : Form} (h : Form.and A B ∈ T.fal) :
-    A ∈ T.fal ∨ B ∈ T.fal := by
+theorem fal_and (hG : Good R T) {A B : Form} (hav : Avoids R (.and A B))
+    (h : Form.and A B ∈ T.fal) : A ∈ T.fal ∨ B ∈ T.fal := by
   by_contra hcon
   push_neg at hcon
-  have hA : A ∈ T.val := (hG.2 A).resolve_right hcon.1
-  have hB : B ∈ T.val := (hG.2 B).resolve_right hcon.2
+  have hA : A ∈ T.val := (hG.2 A (Avoids.left (Or.inl hav))).resolve_right hcon.1
+  have hB : B ∈ T.val := (hG.2 B (Avoids.right (Or.inl hav))).resolve_right hcon.2
   exact hG.not_fal_deriv h
     (SetPrv.map₂ (fun _ p q => .andI p q) (SetPrv.of_mem hA) (SetPrv.of_mem hB))
 
 /-- Modally falsified formulas are falsified. -/
-theorem mfal_sub_fal (hG : Good T) {q : Q} {A : Form} (h : A ∈ T.mfal q) :
-    A ∈ T.fal := by
-  rcases hG.2 A with hv | hf
+theorem mfal_sub_fal (hG : Good R T) {q : Q} {A : Form} (hav : Avoids R A)
+    (h : A ∈ T.mfal q) : A ∈ T.fal := by
+  rcases hG.2 A hav with hv | hf
   · exfalso
     have hlax : T.val ⊩q Form.circ q A := (SetPrv.of_mem hv).map (fun _ p => .circI p)
     cases q
@@ -559,18 +605,20 @@ theorem mfal_sub_fal (hG : Good T) {q : Q} {A : Form} (h : A ∈ T.mfal q) :
       exact hlax
   · exact hf
 
-/-- A falsified existential falsifies every instance. -/
-theorem fal_exists (hG : Good T) {A : Form} {t : Tm} (ht : Tm.lcAt 0 t)
-    (h : Form.exists_ A ∈ T.fal) : A.openAt 0 t ∈ T.fal := by
-  rcases hG.2 (A.openAt 0 t) with hv | hf
+/-- A falsified existential falsifies every instance in the language. -/
+theorem fal_exists (hG : Good R T) {A : Form} {t : Tm} (ht : Tm.lcAt 0 t)
+    (hav : Avoids R (A.openAt 0 t)) (h : Form.exists_ A ∈ T.fal) :
+    A.openAt 0 t ∈ T.fal := by
+  rcases hG.2 (A.openAt 0 t) hav with hv | hf
   · exact absurd (hG.not_fal_deriv h
       ((SetPrv.of_mem hv).map (fun _ p => .exI t ht p))) (by simp)
   · exact hf
 
 /-- Every instance of a validated universal is validated. -/
-theorem all_mem (hG : Good T) {A : Form} {t : Tm} (ht : Tm.lcAt 0 t)
-    (h : Form.forall_ A ∈ T.val) : A.openAt 0 t ∈ T.val :=
-  hG.ded_closed ((SetPrv.of_mem h).map (fun _ p => .allE t ht p))
+theorem all_mem (hG : Good R T) {A : Form} {t : Tm} (ht : Tm.lcAt 0 t)
+    (hav : Avoids R (A.openAt 0 t)) (h : Form.forall_ A ∈ T.val) :
+    A.openAt 0 t ∈ T.val :=
+  hG.ded_closed hav ((SetPrv.of_mem h).map (fun _ p => .allE t ht p))
 
 end Good
 
@@ -582,7 +630,7 @@ are constant here because the truth lemma below is proved for the
 quantifier-free fragment, where they are never consulted. -/
 
 /-- States of the canonical model. -/
-def MaxTheory : Type := {T : Theory // Good T}
+def MaxTheory : Type := {T : Theory // Good ∅ T}
 
 /-- The canonical model. -/
 def canonical : KModel where
@@ -671,23 +719,23 @@ theorem truth_lemma : ∀ (A : Form), QFree A → Form.lc A → ∀ T : MaxTheor
       intro hq hlc T
       constructor
       · intro h
-        exact ⟨(ihA hq.1 hlc.1 T).1 (T.2.ded_closed
+        exact ⟨(ihA hq.1 hlc.1 T).1 (T.2.ded_closed (avoids_empty _)
                  ((SetPrv.of_mem h).map (fun _ p => .andE₁ p))),
-               (ihB hq.2 hlc.2 T).1 (T.2.ded_closed
+               (ihB hq.2 hlc.2 T).1 (T.2.ded_closed (avoids_empty _)
                  ((SetPrv.of_mem h).map (fun _ p => .andE₂ p)))⟩
       · intro h hf
-        rcases T.2.fal_and h with h' | h'
+        rcases T.2.fal_and (avoids_empty _) h with h' | h'
         · exact (ihA hq.1 hlc.1 T).2 h' hf.1
         · exact (ihB hq.2 hlc.2 T).2 h' hf.2
   | or A B ihA ihB =>
       intro hq hlc T
       constructor
       · intro h
-        rcases T.2.or_mem h with h' | h'
+        rcases T.2.or_mem (avoids_empty _) h with h' | h'
         · exact Or.inl ((ihA hq.1 hlc.1 T).1 h')
         · exact Or.inr ((ihB hq.2 hlc.2 T).1 h')
       · intro h hf
-        obtain ⟨h₁, h₂⟩ := T.2.fal_or h
+        obtain ⟨h₁, h₂⟩ := T.2.fal_or (avoids_empty _) h
         rcases hf with hf | hf
         · exact (ihA hq.1 hlc.1 T).2 h₁ hf
         · exact (ihB hq.2 hlc.2 T).2 h₂ hf
@@ -695,7 +743,7 @@ theorem truth_lemma : ∀ (A : Form), QFree A → Form.lc A → ∀ T : MaxTheor
       intro hq hlc T
       constructor
       · intro h T' hle hfA
-        rcases T'.2.imp_mem (hle h) with h' | h'
+        rcases T'.2.imp_mem (avoids_empty _) (hle h) with h' | h'
         · exact absurd hfA ((ihA hq.1 hlc.1 T').2 h')
         · exact (ihB hq.2 hlc.2 T').1 h'
       · intro h hf
@@ -763,7 +811,7 @@ theorem truth_lemma : ∀ (A : Form), QFree A → Form.lc A → ∀ T : MaxTheor
             exact T.2.not_fal_deriv h (SetPrv.lax_collapse TA (fun X hX => hA' X hX) hder)
           obtain ⟨T', hle, hM'⟩ := exists_good_extension hcons
           obtain ⟨T₂, hRm, hfA⟩ := hf ⟨T', hM'⟩ hle.1
-          exact (ih hq hlc T₂).2 (T₂.2.mfal_sub_fal (hRm.2 (hle.2.2 .all rfl))) hfA
+          exact (ih hq hlc T₂).2 (T₂.2.mfal_sub_fal (avoids_empty _) (hRm.2 (hle.2.2 .all rfl))) hfA
       · constructor
         · intro h T₁ hle
           have hcons : Consistent
@@ -806,7 +854,7 @@ theorem truth_lemma : ∀ (A : Form), QFree A → Form.lc A → ∀ T : MaxTheor
             exact T.2.not_fal_deriv h (SetPrv.lax_collapse TE (fun X hX => hE X hX) hder)
           obtain ⟨T', hle, hM'⟩ := exists_good_extension hcons
           obtain ⟨T₂, hRm, hfA⟩ := hf ⟨T', hM'⟩ hle.1
-          exact (ih hq hlc T₂).2 (T₂.2.mfal_sub_fal (hRm.2 (hle.2.2 .ex rfl))) hfA
+          exact (ih hq hlc T₂).2 (T₂.2.mfal_sub_fal (avoids_empty _) (hRm.2 (hle.2.2 .ex rfl))) hfA
   | forall_ _ _ => intro hq _ _; exact absurd hq (by simp [QFree])
   | exists_ _ _ => intro hq _ _; exact absurd hq (by simp [QFree])
 
