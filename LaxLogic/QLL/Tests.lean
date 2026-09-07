@@ -10,3 +10,4 @@ import LaxLogic.QLL.JudgementTests
 import LaxLogic.QLL.CertifyTests
 import LaxLogic.QLL.InterpTests
 import LaxLogic.QLL.DenoteTests
+import LaxLogic.QLL.SoundTests

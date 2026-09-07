@@ -17,6 +17,7 @@ first is decided by a program.
 | `Judgement` | `qj[Γ ⊢ p : M]` (the proposition) and `qd[…]` (the type of its derivations) |
 | `Interp` | Figs. 3 and 4 — the refinement types `|M|` and the refinement relation `p : M` |
 | `Denote` | Fig. 6 — the constraint a derivation denotes, `⟦d⟧ : Val 𝔐 M` |
+| `Sound`  | soundness: the denoted constraint refines the derived formula |
 
 Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.
 
@@ -27,13 +28,15 @@ Figs. 3 and 4 are built.  `InterpTests.lean` exhibits one model and two
 constraints separating `○∀` from `○∃` in both directions, which is the content
 Fig. 5 does not carry: its modal rules are one schema for both.
 
-Fig. 6 is built too, so soundness — if the environment satisfies `Γ` then
-`Sat 𝔐 [] ρ M ⟦d⟧` — is now statable.
+Figs. 3, 4 and 6 are built and **soundness is proved**: if every assumption's
+constraint refines its formula then so does the one the derivation produces.
+Its one hypothesis is that the individual terms written into the proof term
+carry no loose index; see `Sound.lean` for why that is not avoidable and why
+nothing else is needed.
 
-**OPEN**, with nothing asserting otherwise: that soundness, which needs the
-locally nameless opening lemma for `Sat`; completeness of the checker for
-normal terms; and sufficiency of the residual obligations.  The checker
-refuses certain β-redexes; see `Certify.lean`.
+**OPEN**, with nothing asserting otherwise: completeness of the checker for
+normal terms, and sufficiency of the residual obligations.  The checker refuses
+certain β-redexes; see `Certify.lean`.
 -/
 import LaxLogic.QLL.Syntax
 import LaxLogic.QLL.Deriv
@@ -44,3 +47,4 @@ import LaxLogic.QLL.Surface
 import LaxLogic.QLL.Judgement
 import LaxLogic.QLL.Interp
 import LaxLogic.QLL.Denote
+import LaxLogic.QLL.Sound

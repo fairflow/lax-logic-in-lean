@@ -1,0 +1,605 @@
+/-
+# `LaxLogic.QLL.Sound` — the constraint a derivation denotes does refine the formula
+
+Fig. 5 builds derivations, Fig. 6 extracts a constraint from one, Fig. 4 says
+what it means for a constraint to refine a formula.  Soundness is the only
+statement that ties the three together:
+
+    PSat 𝔐 ρ Γ η  →  Sat 𝔐 [] ρ M (denote 𝔐 d η ρ)
+
+— if every assumption's constraint refines its formula, so does the one the
+derivation produces.
+
+## The one hypothesis, and why it is not avoidable
+
+`Pf.lcI 0 p`: the individual terms written into the proof term — the `t` of
+`π_t(p)` and `ι_t(p)` — carry no loose de Bruijn index.
+
+`Derives` does not require this, and it should not: Fig. 5 has no such side
+condition, and a loose index is a malformed *term*, not a bad inference.  But
+`M{t/x}` is meaningless when `t` has a loose index (it captures), so no
+semantics can validate `∀E` there.  The hypothesis says exactly that the terms
+are terms.  It costs the two propagation lemmas below and nothing else.
+
+Notably **no** local closedness of formulas or contexts is needed, and no
+regularity lemma.  That is not luck: `Sat_openAt` is stated for the
+environments soundness actually uses — the opened variable is the *last* one —
+and there an index past the end is out of range on both sides and evaluates to
+`d₀` either way.  Stated for a general environment the lemma would be false
+without `Form.lcAt (k+1) M`, and a regularity lemma to supply it would fail
+anyway: `∨I` guesses the other disjunct, so a derivable formula need not be
+locally closed. It is never inspected, which is why nothing here needs it.
+
+## Casts
+
+`Val_openAt` is a propositional equality, so every clause of the induction that
+crosses a binder carries a `cast`.  The six lemmas in the first section push a
+`cast` through a pair, a sum, a function and a pair with fixed first component;
+each is `subst`, then `rfl` — definitional proof irrelevance does the rest.
+-/
+import LaxLogic.QLL.Denote
+import LaxLogic.QLL.Lc
+
+namespace LaxLogic.QLL
+
+/-! ## Pushing a cast through a type former -/
+
+theorem cast_fst {A B A' B' : Type} (hA : A = A') (hB : B = B')
+    (h : (A × B) = (A' × B')) (v : A × B) : (cast h v).1 = cast hA v.1 := by
+  subst hA; subst hB; rfl
+
+theorem cast_snd {A B A' B' : Type} (hA : A = A') (hB : B = B')
+    (h : (A × B) = (A' × B')) (v : A × B) : (cast h v).2 = cast hB v.2 := by
+  subst hA; subst hB; rfl
+
+theorem cast_inl {A B A' B' : Type} (hA : A = A') (hB : B = B')
+    (h : (A ⊕ B) = (A' ⊕ B')) (a : A) : cast h (.inl a) = Sum.inl (cast hA a) := by
+  subst hA; subst hB; rfl
+
+theorem cast_inr {A B A' B' : Type} (hA : A = A') (hB : B = B')
+    (h : (A ⊕ B) = (A' ⊕ B')) (b : B) : cast h (.inr b) = Sum.inr (cast hB b) := by
+  subst hA; subst hB; rfl
+
+theorem cast_app {A B A' B' : Type} (hA : A = A') (hB : B = B')
+    (h : (A → B) = (A' → B')) (f : A → B) (x : A') :
+    (cast h f) x = cast hB (f (cast hA.symm x)) := by
+  subst hA; subst hB; rfl
+
+theorem cast_pred {A A' : Type} (hA : A = A')
+    (h : (A → Prop) = (A' → Prop)) (φ : A → Prop) (x : A') :
+    (cast h φ) x = φ (cast hA.symm x) := by
+  subst hA; rfl
+
+theorem cast_dfun {D A A' : Type} (hA : A = A')
+    (h : (D → A) = (D → A')) (f : D → A) (d : D) :
+    (cast h f) d = cast hA (f d) := by
+  subst hA; rfl
+
+theorem cast_dpair_fst {D A A' : Type} (hA : A = A')
+    (h : (D × A) = (D × A')) (v : D × A) : (cast h v).1 = v.1 := by
+  subst hA; rfl
+
+theorem cast_dpair_snd {D A A' : Type} (hA : A = A')
+    (h : (D × A) = (D × A')) (v : D × A) : (cast h v).2 = cast hA v.2 := by
+  subst hA; rfl
+
+theorem cast_left {A A' : Type} (h : A = A') (x : A) : cast h.symm (cast h x) = x := by
+  subst h; rfl
+
+theorem cast_right {A A' : Type} (h : A = A') (x : A') : cast h (cast h.symm x) = x := by
+  subst h; rfl
+
+variable (𝔐 : Model)
+
+/-! ## A closed term does not read the environment
+
+`Tm.lcAt 0 t` says no index occurs at all — there are no binders inside a term
+— so `evalTm` never reaches `env`. -/
+
+mutual
+theorem evalTm_lc (ρ : String → 𝔐.D) (env env' : List 𝔐.D) :
+    ∀ (t : Tm), Tm.lcAt 0 t → evalTm 𝔐 env ρ t = evalTm 𝔐 env' ρ t
+  | .bvar i,  h => absurd h (Nat.not_lt_zero i)
+  | .fvar _,  _ => rfl
+  | .fn _ ts, h => by
+      simp [evalTm, evalTms_lc ρ env env' ts h]
+theorem evalTms_lc (ρ : String → 𝔐.D) (env env' : List 𝔐.D) :
+    ∀ (ts : List Tm), Tm.lcAtList 0 ts → evalTms 𝔐 env ρ ts = evalTms 𝔐 env' ρ ts
+  | [],      _ => rfl
+  | t :: ts, h => by
+      simp [evalTms, evalTm_lc ρ env env' t h.1, evalTms_lc ρ env env' ts h.2]
+end
+
+/-! ## The environment, indexed
+
+Two facts about looking up in `env ++ [e]`.  The second is the whole reason
+this development needs no local closedness of formulas: past the end of `env`,
+both environments are out of range and both answer `d₀`. -/
+
+theorem getElem?_append_last {α : Type} (env : List α) (e : α) :
+    (env ++ [e])[env.length]? = some e := by
+  induction env with
+  | nil => rfl
+  | cons _ env ih => simp [ih]
+
+theorem getD_append_last {α : Type} (d e : α) :
+    ∀ (env : List α) (i : Nat), i ≠ env.length →
+      (env ++ [e])[i]?.getD d = env[i]?.getD d
+  | [],       0,     h => absurd rfl h
+  | [],       _ + 1, _ => rfl
+  | _ :: _,   0,     _ => rfl
+  | a :: env, i + 1, h => by
+      simpa using getD_append_last d e env i (fun hi => h (by simp [hi]))
+
+/-! ## Opening a term
+
+Substituting `u` for the outermost bound individual is the same as evaluating
+in an environment extended with `u`'s value — provided `u` is closed, which is
+what stops it reading the very environment it is being placed in. -/
+
+mutual
+theorem evalTm_openAt (ρ : String → 𝔐.D) (u : Tm) (hu : Tm.lcAt 0 u) (env : List 𝔐.D) :
+    ∀ (t : Tm),
+      evalTm 𝔐 env ρ (Tm.openAt env.length u t)
+        = evalTm 𝔐 (env ++ [evalTm 𝔐 [] ρ u]) ρ t
+  | .bvar i => by
+      by_cases h : i = env.length
+      · subst h
+        simp only [Tm.openAt, evalTm, getElem?_append_last]
+        exact evalTm_lc 𝔐 ρ env [] u hu
+      · simp only [Tm.openAt, if_neg h, evalTm]
+        exact (getD_append_last 𝔐.d₀ _ env i h).symm
+  | .fvar _ => rfl
+  | .fn _ ts => by simp [Tm.openAt, evalTm, evalTms_openAt ρ u hu env ts]
+theorem evalTms_openAt (ρ : String → 𝔐.D) (u : Tm) (hu : Tm.lcAt 0 u) (env : List 𝔐.D) :
+    ∀ (ts : List Tm),
+      evalTms 𝔐 env ρ (Tm.openAtList env.length u ts)
+        = evalTms 𝔐 (env ++ [evalTm 𝔐 [] ρ u]) ρ ts
+  | []      => rfl
+  | t :: ts => by
+      simp [Tm.openAtList, evalTms, evalTm_openAt ρ u hu env t,
+            evalTms_openAt ρ u hu env ts]
+end
+
+/-! ## The same six, specialised to `Val_openAt`
+
+`rw` matches syntactically, and `cast` carries its two types as implicit
+arguments, so the generic lemmas above never match a goal in which the cast is
+written at `Val 𝔐 (M.and N)` rather than at a product.  These say the same
+thing with the arguments spelled the way the induction produces them; each is
+the generic lemma accepted up to definitional unfolding of `Val`. -/
+
+section Push
+variable (u : Tm) (k : Nat)
+
+theorem cast_and_fst (M N : Form) (v : Val 𝔐 (Form.and M N)) :
+    (cast (Val_openAt 𝔐 u (Form.and M N) k).symm v).1
+      = cast (Val_openAt 𝔐 u M k).symm v.1 :=
+  cast_fst _ (Val_openAt 𝔐 u N k).symm _ v
+
+theorem cast_and_snd (M N : Form) (v : Val 𝔐 (Form.and M N)) :
+    (cast (Val_openAt 𝔐 u (Form.and M N) k).symm v).2
+      = cast (Val_openAt 𝔐 u N k).symm v.2 :=
+  cast_snd (Val_openAt 𝔐 u M k).symm _ _ v
+
+theorem cast_or_inl (M N : Form) (a : Val 𝔐 M) :
+    cast (Val_openAt 𝔐 u (Form.or M N) k).symm (Sum.inl a)
+      = Sum.inl (cast (Val_openAt 𝔐 u M k).symm a) :=
+  cast_inl _ (Val_openAt 𝔐 u N k).symm _ a
+
+theorem cast_or_inr (M N : Form) (b : Val 𝔐 N) :
+    cast (Val_openAt 𝔐 u (Form.or M N) k).symm (Sum.inr b)
+      = Sum.inr (cast (Val_openAt 𝔐 u N k).symm b) :=
+  cast_inr (Val_openAt 𝔐 u M k).symm _ _ b
+
+theorem cast_imp_app (M N : Form) (v : Val 𝔐 (Form.imp M N))
+    (z : Val 𝔐 (M.openAt k u)) :
+    (cast (Val_openAt 𝔐 u (Form.imp M N) k).symm v) z
+      = cast (Val_openAt 𝔐 u N k).symm (v (cast (Val_openAt 𝔐 u M k) z)) :=
+  cast_app (Val_openAt 𝔐 u M k).symm (Val_openAt 𝔐 u N k).symm _ v z
+
+theorem cast_circ_app (q : Q) (M : Form) (v : Val 𝔐 (Form.circ q M))
+    (z : Val 𝔐 (M.openAt k u)) :
+    (cast (Val_openAt 𝔐 u (Form.circ q M) k).symm v) z
+      = v (cast (Val_openAt 𝔐 u M k) z) :=
+  cast_pred (Val_openAt 𝔐 u M k).symm _ v z
+
+theorem cast_all_app (M : Form) (v : Val 𝔐 (Form.forall_ M)) (d : 𝔐.D) :
+    (cast (Val_openAt 𝔐 u (Form.forall_ M) k).symm v) d
+      = cast (Val_openAt 𝔐 u M (k + 1)).symm (v d) :=
+  cast_dfun (Val_openAt 𝔐 u M (k + 1)).symm _ v d
+
+theorem cast_ex_fst (M : Form) (v : Val 𝔐 (Form.exists_ M)) :
+    (cast (Val_openAt 𝔐 u (Form.exists_ M) k).symm v).1 = v.1 :=
+  cast_dpair_fst (Val_openAt 𝔐 u M (k + 1)).symm _ v
+
+theorem cast_ex_snd (M : Form) (v : Val 𝔐 (Form.exists_ M)) :
+    (cast (Val_openAt 𝔐 u (Form.exists_ M) k).symm v).2
+      = cast (Val_openAt 𝔐 u M (k + 1)).symm v.2 :=
+  cast_dpair_snd (Val_openAt 𝔐 u M (k + 1)).symm _ v
+
+end Push
+
+/-! ## Opening a formula
+
+The lemma the whole proof turns on.  Read from the right: to satisfy `M` in an
+environment whose *last* entry is `⟦u⟧` is to satisfy `M{u/x}` without it.
+
+Stated at the environments soundness uses — the opened variable last — so no
+`Form.lcAt` hypothesis is needed; see the header. -/
+
+theorem Sat_openAt (ρ : String → 𝔐.D) (u : Tm) (hu : Tm.lcAt 0 u) :
+    ∀ (M : Form) (env : List 𝔐.D) (v : Val 𝔐 M),
+      Sat 𝔐 env ρ (M.openAt env.length u) (cast (Val_openAt 𝔐 u M env.length).symm v)
+      ↔ Sat 𝔐 (env ++ [evalTm 𝔐 [] ρ u]) ρ M v := by
+  intro M
+  induction M with
+  | top => intro _ _; exact Iff.rfl
+  | bot => intro _ _; exact Iff.rfl
+  | pred P ts =>
+      intro env v
+      show 𝔐.atom P (evalTms 𝔐 env ρ (Tm.openAtList env.length u ts)) _ ↔ _
+      rw [evalTms_openAt 𝔐 ρ u hu env ts]
+      exact Iff.rfl
+  | and M N ihM ihN =>
+      intro env v
+      show Sat 𝔐 env ρ (M.openAt env.length u)
+             (cast (Val_openAt 𝔐 u (Form.and M N) env.length).symm v).1
+         ∧ Sat 𝔐 env ρ (N.openAt env.length u)
+             (cast (Val_openAt 𝔐 u (Form.and M N) env.length).symm v).2 ↔ _
+      rw [cast_and_fst, cast_and_snd]
+      exact and_congr (ihM env v.1) (ihN env v.2)
+  | or M N ihM ihN =>
+      intro env v
+      match v with
+      | Sum.inl a =>
+          show Sat 𝔐 env ρ ((Form.or M N).openAt env.length u)
+                 (cast (Val_openAt 𝔐 u (Form.or M N) env.length).symm (Sum.inl a)) ↔ _
+          rw [cast_or_inl]
+          exact ihM env a
+      | Sum.inr b =>
+          show Sat 𝔐 env ρ ((Form.or M N).openAt env.length u)
+                 (cast (Val_openAt 𝔐 u (Form.or M N) env.length).symm (Sum.inr b)) ↔ _
+          rw [cast_or_inr]
+          exact ihN env b
+  | imp M N ihM ihN =>
+      intro env v
+      show (∀ z, Sat 𝔐 env ρ (M.openAt env.length u) z
+              → Sat 𝔐 env ρ (N.openAt env.length u)
+                  ((cast (Val_openAt 𝔐 u (Form.imp M N) env.length).symm v) z)) ↔ _
+      simp only [cast_imp_app]
+      have eM := Val_openAt 𝔐 u M env.length
+      constructor
+      · intro H w hw
+        refine (ihN env (v w)).mp ?_
+        have hz : Sat 𝔐 env ρ (M.openAt env.length u) (cast eM.symm w) :=
+          (ihM env w).mpr hw
+        have := H (cast eM.symm w) hz
+        rwa [cast_right eM w] at this
+      · intro H z hz
+        have hw : Sat 𝔐 (env ++ [evalTm 𝔐 [] ρ u]) ρ M (cast eM z) := by
+          refine (ihM env (cast eM z)).mp ?_
+          rwa [cast_left eM z]
+        exact (ihN env (v (cast eM z))).mpr (H (cast eM z) hw)
+  | circ q M ih =>
+      intro env v
+      cases q with
+      | all =>
+          show (∀ z, (cast (Val_openAt 𝔐 u (Form.circ Q.all M) env.length).symm v) z
+                  → Sat 𝔐 env ρ (M.openAt env.length u) z) ↔ _
+          simp only [cast_circ_app]
+          have eM := Val_openAt 𝔐 u M env.length
+          constructor
+          · intro H w hw
+            refine (ih env w).mp (H (cast eM.symm w) ?_)
+            rwa [cast_right eM w]
+          · intro H z hz
+            have := (ih env (cast eM z)).mpr (H (cast eM z) hz)
+            rwa [cast_left eM z] at this
+      | ex =>
+          show (∃ z, (cast (Val_openAt 𝔐 u (Form.circ Q.ex M) env.length).symm v) z
+                  ∧ Sat 𝔐 env ρ (M.openAt env.length u) z) ↔ _
+          simp only [cast_circ_app]
+          have eM := Val_openAt 𝔐 u M env.length
+          constructor
+          · rintro ⟨z, hz, hs⟩
+            refine ⟨cast eM z, hz, (ih env (cast eM z)).mp ?_⟩
+            rwa [cast_left eM z]
+          · rintro ⟨w, hw, hs⟩
+            refine ⟨cast eM.symm w, ?_, ?_⟩
+            · rwa [cast_right eM w]
+            · exact (ih env w).mpr hs
+  | forall_ M ih =>
+      intro env v
+      show (∀ d, Sat 𝔐 (d :: env) ρ (M.openAt (env.length + 1) u)
+              ((cast (Val_openAt 𝔐 u (Form.forall_ M) env.length).symm v) d)) ↔ _
+      simp only [cast_all_app]
+      exact forall_congr' fun d => ih (d :: env) (v d)
+  | exists_ M ih =>
+      intro env v
+      show Sat 𝔐 ((cast (Val_openAt 𝔐 u (Form.exists_ M) env.length).symm v).1 :: env) ρ
+             (M.openAt (env.length + 1) u)
+             ((cast (Val_openAt 𝔐 u (Form.exists_ M) env.length).symm v).2) ↔ _
+      rw [cast_ex_fst, cast_ex_snd]
+      exact ih (v.1 :: env) v.2
+
+/-! ## Changing the valuation off a formula's free individuals
+
+`∀I` and `∃E` interpret their premise under `ρ` updated at the eigenvariable.
+Everything else in sight must not notice, and the freshness conditions the
+rules already carry are exactly what says so. -/
+
+mutual
+theorem evalTm_upd (ρ : String → 𝔐.D) (a : String) (e : 𝔐.D) (env : List 𝔐.D) :
+    ∀ (t : Tm), a ∉ Tm.fv t → evalTm 𝔐 env (upd 𝔐 ρ a e) t = evalTm 𝔐 env ρ t
+  | .bvar _,  _ => rfl
+  | .fvar x,  h => by
+      have : x ≠ a := fun hx => h (by simp [Tm.fv, hx])
+      simp [evalTm, upd, this]
+  | .fn _ ts, h => by simp [evalTm, evalTms_upd ρ a e env ts h]
+theorem evalTms_upd (ρ : String → 𝔐.D) (a : String) (e : 𝔐.D) (env : List 𝔐.D) :
+    ∀ (ts : List Tm), a ∉ Tm.fvList ts →
+      evalTms 𝔐 env (upd 𝔐 ρ a e) ts = evalTms 𝔐 env ρ ts
+  | [],      _ => rfl
+  | t :: ts, h => by
+      simp only [Tm.fvList, List.mem_append, not_or] at h
+      simp [evalTms, evalTm_upd ρ a e env t h.1, evalTms_upd ρ a e env ts h.2]
+end
+
+theorem Sat_upd (ρ : String → 𝔐.D) (a : String) (e : 𝔐.D) :
+    ∀ (M : Form) (env : List 𝔐.D) (v : Val 𝔐 M), a ∉ M.fv →
+      (Sat 𝔐 env (upd 𝔐 ρ a e) M v ↔ Sat 𝔐 env ρ M v) := by
+  intro M
+  induction M with
+  | top => intro _ _ _; exact Iff.rfl
+  | bot => intro _ _ _; exact Iff.rfl
+  | pred P ts =>
+      intro env v h
+      show 𝔐.atom P (evalTms 𝔐 env (upd 𝔐 ρ a e) ts) v ↔ _
+      rw [evalTms_upd 𝔐 ρ a e env ts h]
+      exact Iff.rfl
+  | and M N ihM ihN =>
+      intro env v h
+      simp only [Form.fv, List.mem_append, not_or] at h
+      exact and_congr (ihM env v.1 h.1) (ihN env v.2 h.2)
+  | or M N ihM ihN =>
+      intro env v h
+      simp only [Form.fv, List.mem_append, not_or] at h
+      match v with
+      | Sum.inl x => exact ihM env x h.1
+      | Sum.inr y => exact ihN env y h.2
+  | imp M N ihM ihN =>
+      intro env v h
+      simp only [Form.fv, List.mem_append, not_or] at h
+      exact forall_congr' fun z => imp_congr (ihM env z h.1) (ihN env (v z) h.2)
+  | circ q M ih =>
+      intro env v h
+      cases q with
+      | all => exact forall_congr' fun z => imp_congr Iff.rfl (ih env z h)
+      | ex  => exact exists_congr fun z => and_congr Iff.rfl (ih env z h)
+  | forall_ M ih => intro env v h; exact forall_congr' fun d => ih (d :: env) (v d) h
+  | exists_ M ih => intro env v h; exact ih (v.1 :: env) v.2 h
+
+end LaxLogic.QLL
+
+namespace LaxLogic.QLL
+
+/-! ## Local closedness survives both openings
+
+The soundness hypothesis is about the proof term the derivation *concludes*
+with; every rule hands its premises an opened term, so the hypothesis has to
+travel.  Opening a proof variable leaves the individual indices alone; opening
+an individual lowers the bound by one, which is what these say. -/
+
+mutual
+theorem Tm.lcAt_mono : ∀ {k k' : Nat}, k ≤ k' → ∀ (t : Tm), Tm.lcAt k t → Tm.lcAt k' t
+  | _, _, hk, .bvar i, h => by
+      have : i < _ := h
+      show i < _
+      omega
+  | _, _, _,  .fvar _, _ => trivial
+  | _, _, hk, .fn _ ts, h => Tm.lcAtList_mono hk ts h
+theorem Tm.lcAtList_mono : ∀ {k k' : Nat}, k ≤ k' →
+    ∀ (ts : List Tm), Tm.lcAtList k ts → Tm.lcAtList k' ts
+  | _, _, _,  [],      _ => trivial
+  | _, _, hk, _ :: ts, h => ⟨Tm.lcAt_mono hk _ h.1, Tm.lcAtList_mono hk ts h.2⟩
+end
+
+mutual
+theorem Tm.lcAt_openAt : ∀ (k : Nat) (u : Tm), Tm.lcAt k u →
+    ∀ (t : Tm), Tm.lcAt (k + 1) t → Tm.lcAt k (Tm.openAt k u t)
+  | k, u, hu, .bvar i, h => by
+      by_cases hi : i = k
+      · subst hi; simpa [Tm.openAt] using hu
+      · have h' : i < k + 1 := h
+        simp only [Tm.openAt, if_neg hi]
+        show i < k
+        omega
+  | _, _, _,  .fvar _, _ => trivial
+  | k, u, hu, .fn _ ts, h => Tm.lcAtList_openAtList k u hu ts h
+theorem Tm.lcAtList_openAtList : ∀ (k : Nat) (u : Tm), Tm.lcAt k u →
+    ∀ (ts : List Tm), Tm.lcAtList (k + 1) ts → Tm.lcAtList k (Tm.openAtList k u ts)
+  | _, _, _,  [],      _ => trivial
+  | k, u, hu, _ :: ts, h =>
+      ⟨Tm.lcAt_openAt k u hu _ h.1, Tm.lcAtList_openAtList k u hu ts h.2⟩
+end
+
+theorem Form.lcAt_openAt : ∀ (M : Form) (k : Nat) (u : Tm), Tm.lcAt k u →
+    Form.lcAt (k + 1) M → Form.lcAt k (Form.openAt k u M) := by
+  intro M
+  induction M with
+  | top | bot => intro _ _ _ _; trivial
+  | pred _ ts => intro k u hu h; exact Tm.lcAtList_openAtList k u hu ts h
+  | and M N ihM ihN | or M N ihM ihN | imp M N ihM ihN =>
+      intro k u hu h; exact ⟨ihM k u hu h.1, ihN k u hu h.2⟩
+  | circ _ M ih => intro k u hu h; exact ih k u hu h
+  | forall_ M ih | exists_ M ih =>
+      intro k u hu h; exact ih (k + 1) u (Tm.lcAt_mono (Nat.le_succ k) u hu) h
+
+theorem Pf.lcI_openP (z : String) : ∀ (p : Pf) (j k : Nat),
+    Pf.lcI k p → Pf.lcI k (Pf.openP j (.fvar z) p) := by
+  intro p
+  induction p with
+  | bvar i => intro j _ _; by_cases h : i = j <;> simp [Pf.openP, h, Pf.lcI]
+  | fvar _ | star => intro _ _ _; trivial
+  | pair _ _ ih₁ ih₂ | app _ _ ih₁ ih₂ | letQ _ _ _ ih₁ ih₂ =>
+      intro j k h; exact ⟨ih₁ _ k h.1, ih₂ _ k h.2⟩
+  | fst _ ih | snd _ ih | inl _ ih | inr _ ih | lam _ ih | val _ _ ih =>
+      intro j k h; exact ih _ k h
+  | gen _ ih => intro j k h; exact ih j (k + 1) h
+  | caseOr _ _ _ ih₁ ih₂ ih₃ =>
+      intro j k h; exact ⟨ih₁ _ k h.1, ih₂ _ k h.2.1, ih₃ _ k h.2.2⟩
+  | inst _ _ ih | pack _ _ ih => intro j k h; exact ⟨h.1, ih _ k h.2⟩
+  | exf _ _ ih => intro j k h; exact ⟨h.1, ih _ k h.2⟩
+  | caseEx _ _ ih₁ ih₂ => intro j k h; exact ⟨ih₁ _ k h.1, ih₂ _ (k + 1) h.2⟩
+
+theorem Pf.lcI_openI : ∀ (p : Pf) (k : Nat) (u : Tm), Tm.lcAt k u →
+    Pf.lcI (k + 1) p → Pf.lcI k (Pf.openI k u p) := by
+  intro p
+  induction p with
+  | bvar _ | fvar _ | star => intro _ _ _ _; trivial
+  | pair _ _ ih₁ ih₂ | app _ _ ih₁ ih₂ | letQ _ _ _ ih₁ ih₂ =>
+      intro k u hu h; exact ⟨ih₁ k u hu h.1, ih₂ k u hu h.2⟩
+  | fst _ ih | snd _ ih | inl _ ih | inr _ ih | lam _ ih | val _ _ ih =>
+      intro k u hu h; exact ih k u hu h
+  | caseOr _ _ _ ih₁ ih₂ ih₃ =>
+      intro k u hu h; exact ⟨ih₁ k u hu h.1, ih₂ k u hu h.2.1, ih₃ k u hu h.2.2⟩
+  | gen _ ih =>
+      intro k u hu h; exact ih (k + 1) u (Tm.lcAt_mono (Nat.le_succ k) u hu) h
+  | inst t _ ih | pack t _ ih =>
+      intro k u hu h; exact ⟨Tm.lcAt_openAt k u hu t h.1, ih k u hu h.2⟩
+  | exf M _ ih =>
+      intro k u hu h; exact ⟨Form.lcAt_openAt M k u hu h.1, ih k u hu h.2⟩
+  | caseEx _ _ ih₁ ih₂ =>
+      intro k u hu h
+      exact ⟨ih₁ k u hu h.1, ih₂ (k + 1) u (Tm.lcAt_mono (Nat.le_succ k) u hu) h.2⟩
+
+end LaxLogic.QLL
+
+namespace LaxLogic.QLL
+
+variable (𝔐 : Model)
+
+/-! ## An environment that satisfies its context -/
+
+/-- Every entry's value refines that entry's formula. -/
+inductive PSat (ρ : String → 𝔐.D) : (Γ : Ctx) → PEnv 𝔐 Γ → Prop where
+  | nil : PSat ρ [] .nil
+  | cons {e : Pf × Form} {Γ : Ctx} {v : Val 𝔐 e.2} {η : PEnv 𝔐 Γ} :
+      Sat 𝔐 [] ρ e.2 v → PSat ρ Γ η → PSat ρ (e :: Γ) (.cons v η)
+
+theorem PSat_lookup (ρ : String → 𝔐.D) : ∀ {Γ : Ctx} {η : PEnv 𝔐 Γ}, PSat 𝔐 ρ Γ η →
+    ∀ (e : Pf × Form) (h : e ∈ Γ), Sat 𝔐 [] ρ e.2 (PEnv.lookup 𝔐 η e h) := by
+  intro Γ η hη
+  induction hη with
+  | nil => intro e h; exact absurd h (fun hh => nomatch hh)
+  | @cons a Γ v η hv _ ih =>
+      intro e h
+      by_cases he : e = a
+      · subst he; simpa [PEnv.lookup] using hv
+      · simpa [PEnv.lookup, he] using ih e ((List.mem_cons.mp h).resolve_left he)
+
+theorem PSat_upd (ρ : String → 𝔐.D) (a : String) (e : 𝔐.D) :
+    ∀ {Γ : Ctx} {η : PEnv 𝔐 Γ}, a ∉ Ctx.fvI Γ → PSat 𝔐 ρ Γ η →
+      PSat 𝔐 (upd 𝔐 ρ a e) Γ η := by
+  intro Γ η ha hη
+  induction hη with
+  | nil => exact .nil
+  | @cons b Γ v η hv _ ih =>
+      have hb : a ∉ (b.1).fvI ++ (b.2).fv ++ Ctx.fvI Γ := by
+        cases b; exact ha
+      simp only [List.mem_append, not_or] at hb
+      exact .cons ((Sat_upd 𝔐 ρ a e b.2 [] v hb.1.2).mpr hv) (ih hb.2)
+
+/-! ## Soundness
+
+The constraint a derivation produces refines the formula it concludes, given
+that the assumptions' constraints refine theirs. -/
+
+theorem soundness : ∀ {Γ : Ctx} {p : Pf} {M : Form} (d : Derives p Γ M),
+    Pf.lcI 0 p → ∀ (η : PEnv 𝔐 Γ) (ρ : String → 𝔐.D), PSat 𝔐 ρ Γ η →
+      Sat 𝔐 [] ρ M (denote 𝔐 d η ρ) := by
+  intro Γ p M d
+  induction d with
+  | var h => intro _ η ρ hη; exact PSat_lookup 𝔐 ρ hη _ h
+  | topI => intro _ _ _ _; trivial
+  | botE _ ih => intro hlc η ρ hη; exact (ih hlc.2 η ρ hη).elim
+  | andI _ _ ih₁ ih₂ =>
+      intro hlc η ρ hη; exact ⟨ih₁ hlc.1 η ρ hη, ih₂ hlc.2 η ρ hη⟩
+  | andE₁ _ ih => intro hlc η ρ hη; exact (ih hlc η ρ hη).1
+  | andE₂ _ ih => intro hlc η ρ hη; exact (ih hlc η ρ hη).2
+  | orI₁ _ ih => intro hlc η ρ hη; exact ih hlc η ρ hη
+  | orI₂ _ ih => intro hlc η ρ hη; exact ih hlc η ρ hη
+  | @orE Γ r p q M N K y z hy hz dr d₁ d₂ ihr ih₁ ih₂ =>
+      intro hlc η ρ hη
+      show Sat 𝔐 [] ρ K (match denote 𝔐 dr η ρ with
+        | .inl a => denote 𝔐 d₁ (.cons a η) ρ
+        | .inr b => denote 𝔐 d₂ (.cons b η) ρ)
+      have hr := ihr hlc.1 η ρ hη
+      cases hw : denote 𝔐 dr η ρ with
+      | inl a =>
+          rw [hw] at hr
+          exact ih₁ (Pf.lcI_openP y p 0 0 hlc.2.1) (.cons a η) ρ (.cons hr hη)
+      | inr b =>
+          rw [hw] at hr
+          exact ih₂ (Pf.lcI_openP z q 0 0 hlc.2.2) (.cons b η) ρ (.cons hr hη)
+  | @impI Γ p M N z hz _ ih =>
+      intro hlc η ρ hη v hv
+      exact ih (Pf.lcI_openP z p 0 0 hlc) (.cons v η) ρ (.cons hv hη)
+  | impE _ _ ih₁ ih₂ =>
+      intro hlc η ρ hη; exact ih₁ hlc.1 η ρ hη _ (ih₂ hlc.2 η ρ hη)
+  | @circI Γ q p M _ ih =>
+      intro hlc η ρ hη
+      cases q with
+      | all => intro z hz; exact hz ▸ ih hlc η ρ hη
+      | ex  => exact ⟨_, rfl, ih hlc η ρ hη⟩
+  | @circE Γ q p b M N z hz dp db ihp ihb =>
+      intro hlc η ρ hη
+      have hp := ihp hlc.1 η ρ hη
+      have hlb := Pf.lcI_openP z b 0 0 hlc.2
+      cases q with
+      | all =>
+          intro x hx
+          obtain ⟨w, hw, hqx⟩ := hx
+          exact ihb hlb (.cons w η) ρ (.cons (hp w hw) hη) x hqx
+      | ex =>
+          obtain ⟨w, hw, hsw⟩ := hp
+          obtain ⟨x, hx, hsx⟩ := ihb hlb (.cons w η) ρ (.cons hsw hη)
+          exact ⟨x, ⟨w, hw, hx⟩, hsx⟩
+  | @allI Γ p M a ha d ih =>
+      intro hlc η ρ hη e
+      have hd := ih (Pf.lcI_openI p 0 (.fvar a) trivial hlc) η (upd 𝔐 ρ a e)
+        (PSat_upd 𝔐 ρ a e ha.1 hη)
+      have key := (Sat_openAt 𝔐 (upd 𝔐 ρ a e) (.fvar a) trivial M []
+        (cast (Val_openWith 𝔐 a M) (denote 𝔐 d η (upd 𝔐 ρ a e)))).mp
+        (by rw [cast_left (Val_openWith 𝔐 a M)]; exact hd)
+      have : evalTm 𝔐 [] (upd 𝔐 ρ a e) (.fvar a) = e := by simp [evalTm, upd]
+      rw [this] at key
+      exact (Sat_upd 𝔐 ρ a e M [e] _ ha.2.2).mp key
+  | @allE Γ p M N t d h ih =>
+      intro hlc η ρ hη
+      subst h
+      exact (Sat_openAt 𝔐 ρ t hlc.1 M [] (denote 𝔐 d η ρ (evalTm 𝔐 [] ρ t))).mpr
+        (ih hlc.2 η ρ hη (evalTm 𝔐 [] ρ t))
+  | @exI Γ p M t d ih =>
+      intro hlc η ρ hη
+      exact (Sat_openAt 𝔐 ρ t hlc.1 M [] (cast (Val_openAt 𝔐 t M 0) (denote 𝔐 d η ρ))).mp
+        (by rw [cast_left (Val_openAt 𝔐 t M 0)]; exact ih hlc.2 η ρ hη)
+  | @exE Γ r p M K a z ha hK hz dr db ihr ihb =>
+      intro hlc η ρ hη
+      have hr := ihr hlc.1 η ρ hη
+      have hw : Sat 𝔐 [] (upd 𝔐 ρ a (denote 𝔐 dr η ρ).1) (M.openWith a)
+          (cast (Val_openWith 𝔐 a M).symm (denote 𝔐 dr η ρ).2) := by
+        refine (Sat_openAt 𝔐 (upd 𝔐 ρ a (denote 𝔐 dr η ρ).1) (.fvar a) trivial M []
+          ((denote 𝔐 dr η ρ).2)).mpr ?_
+        have he : evalTm 𝔐 [] (upd 𝔐 ρ a (denote 𝔐 dr η ρ).1) (.fvar a)
+            = (denote 𝔐 dr η ρ).1 := by simp [evalTm, upd]
+        rw [he]
+        exact (Sat_upd 𝔐 ρ a _ M _ _ ha.2.2).mpr hr
+      have hlb := Pf.lcI_openP z (p.openIWith a) 0 0
+        (Pf.lcI_openI p 0 (.fvar a) trivial hlc.2)
+      have := ihb hlb (.cons (cast (Val_openWith 𝔐 a M).symm (denote 𝔐 dr η ρ).2) η)
+        (upd 𝔐 ρ a (denote 𝔐 dr η ρ).1) (.cons hw (PSat_upd 𝔐 ρ a _ ha.1 hη))
+      exact (Sat_upd 𝔐 ρ a _ K [] _ hK).mp this
+
+end LaxLogic.QLL
