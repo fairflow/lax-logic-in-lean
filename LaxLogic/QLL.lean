@@ -19,6 +19,7 @@ first is decided by a program.
 | `Denote` | Fig. 6 — the constraint a derivation denotes, `⟦d⟧ : Val 𝔐 A` |
 | `Sound`  | soundness: the denoted constraint refines the derived formula |
 | `CLP`    | §3's two lax resolution rules, derived, and what they compute |
+| `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
 
 Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.
 
@@ -63,3 +64,4 @@ import LaxLogic.QLL.Interp
 import LaxLogic.QLL.Denote
 import LaxLogic.QLL.Sound
 import LaxLogic.QLL.CLP
+import LaxLogic.QLL.Weaken

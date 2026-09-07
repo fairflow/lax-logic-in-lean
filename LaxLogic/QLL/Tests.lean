@@ -12,3 +12,4 @@ import LaxLogic.QLL.InterpTests
 import LaxLogic.QLL.DenoteTests
 import LaxLogic.QLL.SoundTests
 import LaxLogic.QLL.CLP
+import LaxLogic.QLL.Weaken
