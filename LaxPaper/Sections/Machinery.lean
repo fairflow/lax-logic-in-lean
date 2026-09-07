@@ -8,6 +8,8 @@ open Verso.Genre.Manual
 open Informal
 open LaxLogic.Obligation
 
+set_option verso.docstring.showNamespace false
+
 #doc (Manual) "The machinery" =>
 
 The two modalities and the equations that define them; the proof hole that
