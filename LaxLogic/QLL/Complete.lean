@@ -456,17 +456,15 @@ Zorn settles the propositional case on its own.  The first-order case cannot
 use it — see `Good` — so what maximality is really being used for is isolated
 here, and everything downstream depends only on the isolated property. -/
 
-theorem MaxConsistent.total {T : Theory} (hM : MaxConsistent T) : Total ∅ T := by
-  intro A _
+/-- The decision step.  A formula may always be added to `val` or to `fal`:
+if neither, the theory was already inconsistent.  Zorn uses this through
+maximality; the first-order construction uses it directly, at every stage. -/
+theorem consistent_split {T : Theory} (hT : Consistent T) (A : Form) :
+    Consistent ⟨insert A T.val, T.fal, T.mfal⟩ ∨
+      Consistent ⟨T.val, insert A T.fal, T.mfal⟩ := by
   by_contra hcon
   push_neg at hcon
-  obtain ⟨hv, hf⟩ := hcon
-  have h1 : ¬ Consistent ⟨T.val, insert A T.fal, T.mfal⟩ := fun hc =>
-    hf ((hM.2 _ hc ⟨subset_rfl, Set.subset_insert _ _, fun _ => subset_rfl⟩).2.1
-      (Set.mem_insert ..))
-  have h2 : ¬ Consistent ⟨insert A T.val, T.fal, T.mfal⟩ := fun hc =>
-    hv ((hM.2 _ hc ⟨Set.subset_insert _ _, subset_rfl, fun _ => subset_rfl⟩).1
-      (Set.mem_insert ..))
+  obtain ⟨h2, h1⟩ := hcon
   obtain ⟨Ds, TA, TE, hD, hA, hE, hne, hder⟩ := not_consistent_iff.mp h1
   obtain ⟨Ds₂, TA₂, TE₂, hD₂, hA₂, hE₂, hne₂, hder₂⟩ := not_consistent_iff.mp h2
   obtain ⟨Ds', hDs'⟩ : ∃ X, X = Ds.filter (fun D => decide ¬(D = A)) := ⟨_, rfl⟩
@@ -477,7 +475,7 @@ theorem MaxConsistent.total {T : Theory} (hM : MaxConsistent T) : Total ∅ T :=
     rcases hD D h.1 with hx | hx
     · exact absurd hx (by simpa using h.2)
     · exact hx
-  refine hM.1 (Ds' ++ Ds₂) (TA ++ TA₂) (TE ++ TE₂)
+  refine hT (Ds' ++ Ds₂) (TA ++ TA₂) (TE ++ TE₂)
     (fun D h => by rcases List.mem_append.mp h with h | h
                    · exact hDs'mem D h
                    · exact hD₂ D h)
@@ -512,6 +510,14 @@ theorem MaxConsistent.total {T : Theory} (hM : MaxConsistent T) : Total ∅ T :=
       disj_introM (Or.inr ⟨rfl, rfl⟩)
         (by intro hnil; exact hneE (by simpa using (List.append_eq_nil_iff.mp hnil).1))
         (lax_mono (fun X h => List.mem_append.mpr (Or.inl h)) p))
+
+theorem MaxConsistent.total {T : Theory} (hM : MaxConsistent T) : Total ∅ T := by
+  intro A _
+  rcases consistent_split hM.1 A with hc | hc
+  · exact Or.inl ((hM.2 _ hc ⟨Set.subset_insert .., subset_rfl, fun _ => subset_rfl⟩).1
+      (Set.mem_insert ..))
+  · exact Or.inr ((hM.2 _ hc ⟨subset_rfl, Set.subset_insert .., fun _ => subset_rfl⟩).2.1
+      (Set.mem_insert ..))
 
 theorem MaxConsistent.good {T : Theory} (hM : MaxConsistent T) : Good ∅ T :=
   ⟨hM.1, hM.total⟩
