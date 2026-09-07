@@ -115,9 +115,7 @@ theorem updρ_of_ne {M : KModel} (ρ : String → M.D) {a y : String} (d : M.D) 
 
 /-- **Soundness**: what is provable holds at every state of every model whose
 assignment is at that state and where the context holds. -/
-theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢q A) :
-    ∀ (M : KModel) (s : M.S) (ρ : String → M.D), M.Assign s ρ →
-      (∀ B ∈ Γ, M.force B s ρ []) → M.force A s ρ [] := by
+theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢q A) : Γ ⊫ A := by
   induction h with
   | var h => intro _ _ _ _ hΓ; exact hΓ _ h
   | topI => intro _ _ _ _ _; trivial

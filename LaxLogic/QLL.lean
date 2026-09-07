@@ -23,6 +23,7 @@ first is decided by a program.
 | `Rename` | renaming an individual through a derivation; re-basing an eigenvariable |
 | `Kripke` | the Kripke semantics: varying domains, two lax relations, fallible states |
 | `Prov`   | the consequence relation for the model theory, and its soundness |
+| `Complete` | the canonical model, and completeness on the quantifier-free fragment |
 
 Fig. 5's `Subst` is not a rule here; see `Deriv.lean`.
 
@@ -71,3 +72,4 @@ import LaxLogic.QLL.Weaken
 import LaxLogic.QLL.Rename
 import LaxLogic.QLL.Kripke
 import LaxLogic.QLL.Prov
+import LaxLogic.QLL.Complete

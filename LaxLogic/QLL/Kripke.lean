@@ -126,8 +126,6 @@ def force : Form → M.S → (String → M.D) → List M.D → Prop
   | .forall_ A,   s, ρ, β => ∀ v, M.Ri s v → ∀ d, M.Dom v d → force A v ρ (d :: β)
   | .exists_ A,   s, ρ, β => ∃ d, M.Dom s d ∧ force A s ρ (d :: β)
 
-@[inherit_doc] notation:50 M " ; " s ", " ρ ", " β " ⊩ " A => KModel.force M A s ρ β
-
 /-! ## The two structural facts -/
 
 /-- Heredity: forcing survives passage to a successor. -/
@@ -265,7 +263,7 @@ then needed. -/
 theorem getElem?_snoc {α : Type} (β : List α) (e : α) : (β ++ [e])[β.length]? = some e := by
   induction β with
   | nil => rfl
-  | cons _ β ih => simpa using ih
+  | cons _ β ih => simp
 
 theorem getD_snoc {α : Type} (d e : α) :
     ∀ (β : List α) (i : Nat), i ≠ β.length → (β ++ [e])[i]?.getD d = β[i]?.getD d
@@ -350,8 +348,8 @@ At every state of every model where the context holds, the conclusion holds. -/
 
 /-- `Γ ⊫ A`. -/
 def Consequence (Γ : List Form) (A : Form) : Prop :=
-  ∀ (M : KModel) (s : M.S) (ρ : String → M.D) (β : List M.D),
-    (∀ B ∈ Γ, M.force B s ρ β) → M.force A s ρ β
+  ∀ (M : KModel) (s : M.S) (ρ : String → M.D), M.Assign s ρ →
+    (∀ B ∈ Γ, M.force B s ρ []) → M.force A s ρ []
 
 @[inherit_doc] infix:55 " ⊫ " => Consequence
 
