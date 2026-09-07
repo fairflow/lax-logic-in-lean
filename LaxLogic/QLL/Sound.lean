@@ -1,14 +1,62 @@
 /-
-# `LaxLogic.QLL.Sound` — the constraint a derivation denotes does refine the formula
+# `LaxLogic.QLL.Sound` — Fig. 5 is sound for the refinement relation of Fig. 4
 
-Fig. 5 builds derivations, Fig. 6 extracts a constraint from one, Fig. 4 says
-what it means for a constraint to refine a formula.  Soundness is the only
-statement that ties the three together:
+## What is proved, with every binder written out
 
-    PSat 𝔐 ρ Γ η  →  Sat 𝔐 [] ρ M (denote 𝔐 d η ρ)
+For every model `𝔐`, every derivation `d` of `Γ ⊢ p : M` in Fig. 5 whose
+embedded individual terms are closed, every constraint environment `η` for `Γ`
+and every valuation `ρ`:
 
-— if every assumption's constraint refines its formula, so does the one the
-derivation produces.
+    (d : Derives p Γ M) → Pf.lcI 0 p →
+      PSat 𝔐 ρ Γ η → Sat 𝔐 [] ρ M (denote 𝔐 d η ρ)
+
+`d` is the subject of the theorem, not a free variable: it is bound first, and
+`p`, `Γ` and `M` are its indices.  It appears only on the right because that is
+where the object it produces lives — `denote 𝔐 d η ρ` is the constraint Fig. 6
+*extracts from the derivation*, so the statement cannot be made without naming
+the derivation.  The left-hand side constrains only the context.
+
+## What this is soundness *of*, and *against*
+
+Three things must be named or the word "soundness" says nothing.
+
+| | |
+| :-- | :-- |
+| the system | Fig. 5, `Derives` — the deep-embedded proof system |
+| the interpretation | Fig. 6, `denote` — the constraint extracted from a derivation |
+| the semantics | Fig. 4, `Sat` — the refinement relation, "this constraint refines that formula" |
+
+So: **Fig. 5 is sound for the refinement relation, under Fig. 6's
+extraction**.  In the report's own words (p. 207, of Fig. 5) the rules "are a
+variant of QLL [FW97] and derivable in the base logic from the equations of
+Fig. 4" — asserted there, discharged here.  The report can assert it because
+`p : M` is an abbreviation in HOL and each rule is then a HOL-derivable
+implication; in a deep embedding the same content is an induction over
+derivations.
+
+Standard names for a theorem of this shape, "if `Γ ⊢ e : τ` then `⟦e⟧ ∈ ⟦τ⟧`":
+
+* **soundness of the refinement system** — the usual phrase in refinement-type
+  work, where the semantics is a refinement of an underlying interpretation;
+* the **Fundamental Theorem** of a unary logical relation — `Sat` is a logical
+  predicate defined by recursion on the formula, `PSat` is its extension to
+  environments, and the theorem is "every syntactically well-typed term is
+  semantically well-typed";
+* **soundness of a realizability interpretation** — the classical name, since
+  `Val M` is the type of potential realisers, `Sat M v` reads "`v` realises
+  `M`", and `denote` extracts a realiser from a proof.
+
+## What it is NOT
+
+* It is **not** soundness of QLL against a model-theoretic semantics of the lax
+  modalities, `Γ ⊢ φ ⟹ Γ ⊨ φ`.  There is no Kripke semantics here at all;
+  `Sat` is a shallow embedding into Lean's own logic, indexed by a witness, so
+  it is a realizability relation and not a satisfaction relation.  That
+  soundness is a different statement about a different semantics, and is OPEN.
+* It is **not** the report's Theorem 1, conservativity of `p : M` over HOL.
+  Ours is relative to Lean in the same way theirs is relative to HOL.
+* Its converse — every constraint that refines `M` comes from a derivation —
+  is completeness of the refinement system, and is OPEN.
 
 ## The one hypothesis, and why it is not avoidable
 
@@ -120,7 +168,7 @@ theorem getElem?_append_last {α : Type} (env : List α) (e : α) :
     (env ++ [e])[env.length]? = some e := by
   induction env with
   | nil => rfl
-  | cons _ env ih => simp [ih]
+  | cons _ env ih => simp
 
 theorem getD_append_last {α : Type} (d e : α) :
     ∀ (env : List α) (i : Nat), i ≠ env.length →
