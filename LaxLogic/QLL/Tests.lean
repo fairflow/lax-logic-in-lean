@@ -16,3 +16,4 @@ import LaxLogic.QLL.Weaken
 import LaxLogic.QLL.Rename
 import LaxLogic.QLL.Prov
 import LaxLogic.QLL.Complete
+import LaxLogic.QLL.CompleteTests
