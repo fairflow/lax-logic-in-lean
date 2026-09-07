@@ -85,20 +85,6 @@ theorem Prv.weaken {Γ Δ : List Form} {A : Form} (h : Γ ⊢q A) (hs : ∀ B �
 
 /-! ## Soundness -/
 
-/-- The free individuals of a context. -/
-def ctxFv : List Form → List String
-  | []     => []
-  | A :: Γ => A.fv ++ ctxFv Γ
-
-theorem mem_ctxFv {Γ : List Form} {A : Form} {x : String}
-    (hA : A ∈ Γ) (hx : x ∈ A.fv) : x ∈ ctxFv Γ := by
-  induction Γ with
-  | nil => cases hA
-  | cons B Γ ih =>
-      rcases List.mem_cons.mp hA with rfl | h
-      · exact List.mem_append.mpr (Or.inl hx)
-      · exact List.mem_append.mpr (Or.inr (ih h))
-
 theorem assign_mono {M : KModel} {s v : M.S} {ρ : String → M.D}
     (h : M.Ri s v) (hρ : M.Assign s ρ) : M.Assign v ρ :=
   KModel.Assign.mono M h hρ
@@ -113,9 +99,10 @@ theorem updρ_eq {M : KModel} (ρ : String → M.D) (a : String) (d : M.D) :
 theorem updρ_of_ne {M : KModel} (ρ : String → M.D) {a y : String} (d : M.D) (h : y ≠ a) :
     updρ ρ a d y = ρ y := by simp [updρ, h]
 
-/-- **Soundness**: what is provable holds at every state of every model whose
-assignment is at that state and where the context holds. -/
-theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢q A) : Γ ⊫ A := by
+/-- **Soundness**, for a total assignment.  The induction needs one, because
+`⊃E` and the other rules with a cut formula must interpret names that the
+conclusion does not mention. -/
+theorem Prv.soundT {Γ : List Form} {A : Form} (h : Γ ⊢q A) : ConsequenceT Γ A := by
   induction h with
   | var h => intro _ _ _ _ hΓ; exact hΓ _ h
   | topI => intro _ _ _ _ _; trivial
@@ -222,5 +209,17 @@ theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢q A) : Γ ⊫ A := by
             (fun x hx => (updρ_of_ne ρ d (hneΓ x (mem_ctxFv hB' hx))).symm)).mp (hΓ B hB'))
       exact (M.force_congr K s (updρ ρ a d) ρ []
         (fun x hx => updρ_of_ne ρ d (hneK x hx))).mp key
+
+/-- **Soundness**.  The partial assignment is completed with `d₀`, and the two
+valuations agree on every name that occurs, so the forcing is the same. -/
+theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢q A) : Γ ⊫ A := by
+  intro M s ρ hρ hΓ
+  have key := h.soundT M s (M.fill (ctxFv Γ ++ A.fv) ρ) hρ.total (fun B hB => by
+    refine (M.force_congr B s ρ _ [] ?_).mp (hΓ B hB)
+    intro x hx
+    exact (KModel.fill_eq (List.mem_append_left _ (mem_ctxFv hB hx))).symm)
+  refine (M.force_congr A s _ ρ [] ?_).mp key
+  intro x hx
+  exact KModel.fill_eq (List.mem_append_right _ hx)
 
 end LaxLogic.QLL

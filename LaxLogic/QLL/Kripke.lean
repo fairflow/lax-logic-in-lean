@@ -346,8 +346,63 @@ end KModel
 
 At every state of every model where the context holds, the conclusion holds. -/
 
-/-- `Γ ⊫ A`. -/
+/-- The individual names free in a context. -/
+def ctxFv : List Form → List String
+  | []     => []
+  | A :: Γ => A.fv ++ ctxFv Γ
+
+theorem mem_ctxFv {Γ : List Form} {A : Form} {x : String}
+    (hA : A ∈ Γ) (hx : x ∈ A.fv) : x ∈ ctxFv Γ := by
+  induction Γ with
+  | nil => exact absurd hA (by simp)
+  | cons B Γ ih =>
+      rcases List.mem_cons.mp hA with rfl | hA
+      · exact List.mem_append_left _ hx
+      · exact List.mem_append_right _ (ih hA)
+
+namespace KModel
+
+variable (M : KModel)
+
+/-- `ρ` names an element of the domain, for each name in `S`.
+
+Not for *every* string: the semantics of a formula depends only on the
+valuation of the names occurring in it, and demanding more is not merely
+redundant — it is unsatisfiable in the canonical model, whose domain at a world
+is the terms of that world's language, and whose reserved names are precisely
+the ones that language omits.  A partial assignment extends to a total one by
+sending the rest to `d₀`, so nothing is lost: see `AssignOn.total`. -/
+def AssignOn (S : List String) (s : M.S) (ρ : String → M.D) : Prop :=
+  ∀ x ∈ S, M.Dom s (ρ x)
+
+open Classical in
+/-- The completion of a partial assignment. -/
+noncomputable def fill (S : List String) (ρ : String → M.D) : String → M.D :=
+  fun x => if x ∈ S then ρ x else M.d₀
+
+variable {M}
+
+theorem AssignOn.total {S : List String} {s : M.S} {ρ : String → M.D}
+    (h : M.AssignOn S s ρ) : M.Assign s (M.fill S ρ) := by
+  intro x
+  unfold KModel.fill
+  split
+  · exact h x ‹_›
+  · exact M.dom_d₀ s
+
+theorem fill_eq {S : List String} {ρ : String → M.D} {x : String} (h : x ∈ S) :
+    M.fill S ρ x = ρ x := by unfold KModel.fill; rw [if_pos h]
+
+end KModel
+
+/-- `Γ ⊫ A`, with `ρ` assigning the names that occur. -/
 def Consequence (Γ : List Form) (A : Form) : Prop :=
+  ∀ (M : KModel) (s : M.S) (ρ : String → M.D), M.AssignOn (ctxFv Γ ++ A.fv) s ρ →
+    (∀ B ∈ Γ, M.force B s ρ []) → M.force A s ρ []
+
+/-- The same with a total assignment: weaker, and what the soundness induction
+proves directly. -/
+def ConsequenceT (Γ : List Form) (A : Form) : Prop :=
   ∀ (M : KModel) (s : M.S) (ρ : String → M.D), M.Assign s ρ →
     (∀ B ∈ Γ, M.force B s ρ []) → M.force A s ρ []
 

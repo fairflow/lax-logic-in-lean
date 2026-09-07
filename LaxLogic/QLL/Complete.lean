@@ -888,7 +888,7 @@ theorem completeness {Γ : List Form} {A : Form}
     exact hn (hp.weaken (fun X hX => hL X hX))
   obtain ⟨T, hle, hM⟩ := exists_good_extension hcons
   refine (truth_lemma A hqA hlcA ⟨T, hM⟩).2 (hle.2.1 rfl) ?_
-  exact h canonical ⟨T, hM⟩ idρ (fun _ => trivial) (fun B hB =>
+  exact h canonical ⟨T, hM⟩ idρ (fun _ _ => trivial) (fun B hB =>
     (truth_lemma B (hΓ B hB).1 (hΓ B hB).2 ⟨T, hM⟩).1 (hle.1 hB))
 
 end LaxLogic.QLL
