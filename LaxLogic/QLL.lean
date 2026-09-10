@@ -77,3 +77,4 @@ import LaxLogic.QLL.Complete1
 import LaxLogic.QLL.RefineIncomplete
 import LaxLogic.QLL.Bridge
 import LaxLogic.QLL.Abstract
+import LaxLogic.QLL.PaperSemantics

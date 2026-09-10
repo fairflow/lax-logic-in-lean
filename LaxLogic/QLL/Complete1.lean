@@ -537,10 +537,15 @@ The reserve of the initial world is chosen above every name in `Γ` and `A`, so
 the identity valuation is an assignment there — which is exactly what the
 weakened `Assign` asks for, and what the total one could never have given. -/
 
-/-- **Completeness**: a locally closed consequence is derivable. -/
-theorem completeness1 {Γ : List Form} {A : Form}
-    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (h : Γ ⊫ A) : Γ ⊢q A := by
-  by_contra hn
+/-- The countermodel behind completeness, exposed.  Stage 0 of the CLP-paper
+plan needs the canonical world itself, not just the implication, in order to
+read it as a model of the paper's own Definition 3.2. -/
+theorem exists_countermodel {Γ : List Form} {A : Form}
+    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (hn : ¬ Γ ⊢q A) :
+    ∃ w : World,
+      (∀ x ∈ ctxFv Γ ++ A.fv, canon.Dom w (canonρ x)) ∧
+      (∀ B ∈ Γ, canon.force B w canonρ []) ∧
+      ¬ canon.force A w canonρ [] := by
   obtain ⟨f₀, hfdef⟩ : ∃ g : Nat → Nat, g = fun k => maxLen (ctxFv Γ ++ A.fv) + k :=
     ⟨_, rfl⟩
   have hf₀ : StrictMono f₀ := by
@@ -574,16 +579,23 @@ theorem completeness1 {Γ : List Form} {A : Form}
     intro X hsub x hx hm
     exact havoid x (hsub x hx) (oddNames_sub_allNames (hres ▸ hm))
   have hTw : w.T = T := by rw [hwdef]
-  refine truth_lemma1 A.size A rfl hA w
-    (havw A (fun x hx => List.mem_append_right _ hx)) |>.2 ?_ ?_
-  · rw [hTw]; exact hle.2.1 rfl
-  · refine h canon w canonρ (fun x hx => ⟨trivial, ?_⟩) (fun B hB => ?_)
-    · intro y hy hm
-      rw [show y = x by simpa [canonρ, Tm.fv] using hy] at hm
-      exact havoid x hx (oddNames_sub_allNames (hres ▸ hm))
-    · refine (truth_lemma1 B.size B rfl (hΓ B hB) w
-        (havw B (fun x hx => List.mem_append_left _ (mem_ctxFv hB hx)))).1 ?_
-      rw [hTw]; exact hle.1 hB
+  refine ⟨w, fun x hx => ⟨trivial, ?_⟩, fun B hB => ?_, ?_⟩
+  · intro y hy hm
+    rw [show y = x by simpa [canonρ, Tm.fv] using hy] at hm
+    exact havoid x hx (oddNames_sub_allNames (hres ▸ hm))
+  · refine (truth_lemma1 B.size B rfl (hΓ B hB) w
+      (havw B (fun x hx => List.mem_append_left _ (mem_ctxFv hB hx)))).1 ?_
+    rw [hTw]; exact hle.1 hB
+  · refine (truth_lemma1 A.size A rfl hA w
+      (havw A (fun x hx => List.mem_append_right _ hx))).2 ?_
+    rw [hTw]; exact hle.2.1 rfl
+
+/-- **Completeness**: a locally closed consequence is derivable. -/
+theorem completeness1 {Γ : List Form} {A : Form}
+    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (h : Γ ⊫ A) : Γ ⊢q A := by
+  by_contra hn
+  obtain ⟨w, hass, hΓf, hAf⟩ := exists_countermodel hΓ hA hn
+  exact hAf (h canon w canonρ hass hΓf)
 
 /-- **Adequacy**: for locally closed data, derivability and consequence coincide. -/
 theorem prv_iff_consequence {Γ : List Form} {A : Form}
