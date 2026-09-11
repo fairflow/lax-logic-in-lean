@@ -31,27 +31,38 @@ def freshFor : List String → String
   | []      => "z"
   | s :: ss => s ++ freshFor ss
 
-theorem freshFor_length : ∀ ss : List String,
-    (freshFor ss).length = 1 + (ss.map String.length).sum
+/-- The UTF-8 byte size of `freshFor ss` exceeds the sum over `ss`.
+
+Measured in bytes, not characters: in this toolchain `String.length` and
+`String.toList` depend on `Classical.choice`, so any statement mentioning them
+does, while `String.utf8ByteSize` depends on no axioms and
+`String.utf8ByteSize_append` only on `propext` and `Quot.sound`. -/
+theorem freshFor_byteSize : ∀ ss : List String,
+    (freshFor ss).utf8ByteSize = 1 + (ss.map String.utf8ByteSize).sum
   | []      => rfl
   | s :: ss => by
-      simp [freshFor, String.length_append, freshFor_length ss]
-      omega
+      show (s ++ freshFor ss).utf8ByteSize
+        = 1 + (s.utf8ByteSize + (ss.map String.utf8ByteSize).sum)
+      rw [String.utf8ByteSize_append, freshFor_byteSize ss, Nat.add_left_comm]
 
-theorem length_le_sum : ∀ (ss : List String) (s : String), s ∈ ss →
-    s.length ≤ (ss.map String.length).sum
-  | [],      _, h => absurd h (by simp)
+theorem byteSize_le_sum : ∀ (ss : List String) (s : String), s ∈ ss →
+    s.utf8ByteSize ≤ (ss.map String.utf8ByteSize).sum
+  | [],      _, h => nomatch h
   | t :: ts, s, h => by
+      show s.utf8ByteSize ≤ t.utf8ByteSize + (ts.map String.utf8ByteSize).sum
       rcases List.mem_cons.mp h with rfl | h'
-      · simp
-      · have := length_le_sum ts s h'; simp; omega
+      · exact Nat.le_add_right _ _
+      · exact Nat.le_trans (byteSize_le_sum ts s h') (Nat.le_add_left _ _)
 
 /-- `freshFor` does what its name says.  Soundness will need this. -/
 theorem freshFor_notMem (ss : List String) : freshFor ss ∉ ss := by
   intro h
-  have h1 := length_le_sum ss _ h
-  have h2 := freshFor_length ss
+  have h1 := byteSize_le_sum ss _ h
+  rw [freshFor_byteSize ss] at h1
   omega
+
+/-- info: 'LaxLogic.QLL.freshFor_notMem' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms freshFor_notMem
 
 /-! ## Size is preserved by opening
 

@@ -208,7 +208,7 @@ theorem cd_not_prv : ¬ Prv [.forall_ (.or FA FB)] (.or FA (.forall_ FB)) := by
 
 /-! ## Axioms -/
 
-/-- info: 'LaxLogic.QLL.CompleteTests.all_not_ex' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.CompleteTests.all_not_ex' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms all_not_ex
 
 /-- info: 'LaxLogic.QLL.CompleteTests.and_comm_prv' depends on axioms: [propext, Classical.choice, Quot.sound] -/

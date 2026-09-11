@@ -222,4 +222,14 @@ theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢q A) : Γ ⊫ A := by
   intro x hx
   exact KModel.fill_eq (List.mem_append_right _ hx)
 
+/-! Neither uses choice.  They did until `freshFor_notMem` (`Kit.lean`) was
+re-proved by byte size: in this toolchain `String.length` depends on
+`Classical.choice`. -/
+
+/-- info: 'LaxLogic.QLL.Prv.soundT' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms Prv.soundT
+
+/-- info: 'LaxLogic.QLL.Prv.sound' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms Prv.sound
+
 end LaxLogic.QLL

@@ -300,9 +300,9 @@ Every item of §5 is PROVED, sorry-free, with pinned axioms, except the
 | `QLL/Size.lean` | `4a4e526` | `Form.size`, hoisted from `Complete1.lean`; `size_openAt` | none |
 | `QLL/Horn.lean` | `4a4e526` | (N1) `IsSigma.pp_sel`; (N2) `Prv.of_sel`, `Prv.disj_sel`, `KModel.force_iff_sel`; (N3) `Clause.prv_toHorn`, `Clause.prv_of_toHorn`; `Prv.foralls_congr` | `[propext, Quot.sound]` or less |
 | `QLL/Herbrand.lean` | `d51cb21` | (L1) `Tp_LHM`; (L2) `LHM_least`; `HTrue_LHM_form`; (K1)–(K5) as `HFrame.evTm_lc`, `HTrue_*`, `Holds.toHTrue`, `Holds.of_HTrue`; (LL) `lloyd_completeness` | `[propext, Quot.sound]` |
-| | | (LL) `lloyd_prv_iff`, `lloyd_consequence_iff`, `vanEmden_Kowalski` | `+ Classical.choice`, via `Prv.sound` only |
+| | | (LL) `lloyd_prv_iff`, `lloyd_consequence_iff`, `vanEmden_Kowalski` | `[propext, Quot.sound]` (see the note on choice) |
 | `QLL/HerbrandLLP.lean` | `f395180` | (M1) `llpModel_clause`; (M2) `llpModel_sigma`, `llpModel_circ`; `llp_completeness0/1`; `llpCModel_force_iff` | `[propext, Quot.sound]` |
-| | | (T0) `thm_7_5_world0`, (T1) `thm_7_5_world1` | `+ Classical.choice`, via `Prv.sound` only |
+| | | (T0) `thm_7_5_world0`, (T1) `thm_7_5_world1` | `[propext, Quot.sound]` (see the note on choice) |
 | `QLL/HerbrandFix.lean` | this commit's parent | (L3) `LHM_iff_Tpow` | `[propext, Quot.sound]` |
 | | | (L4) `LHM_eq_lfp` | `+ Classical.choice` (Mathlib's `lfp`) |
 
@@ -327,9 +327,18 @@ Changes from the text above, all minor:
   `1 = true` of `llpModel Θ`, as in the draft.  The Herbrand-truth form
   follows by `llpModel_sigma`.
 
-On choice: every completeness half is free of it.  In stage H it enters only
-through `Prv.sound`/`Prv.soundT`, the soundness theorem of `Prov.lean`, and
-through Mathlib's `lfp` in L4.  Matthew deferred this question on 2026-09-11.
+On choice (updated later on 2026-09-11): stage H uses none, except through
+Mathlib's `lfp` in L4.  The soundness theorem `Prv.sound` used to carry it.
+The source was Lean's core `String` library, not the logic: in this toolchain
+`String.length` and `String.toList` depend on `Classical.choice`, and
+`Kit.freshFor_notMem`, the fresh-name lemma behind `∀I` and `∃E`, was proved
+by counting characters.  It is now proved by UTF-8 byte size instead
+(`String.utf8ByteSize` depends on no axioms), with `freshFor` itself
+unchanged.  `Prv.sound` and `Prv.soundT` are now `[propext, Quot.sound]`, and
+ten pins across the QLL files lost choice.  What still uses choice in QLL:
+the Lindenbaum completeness (`truth_lemma1`, `completeness1`,
+`prv_iff_consequence`, and so `thm_3_6`), `refinement_not_complete`,
+`CompleteTests.and_comm_prv`, and `LHM_eq_lfp`.
 
 Still open for §2's citations: Lloyd's section and theorem numbers are from
 memory.  The full text Matthew provided on 2026-09-11 (a claude.ai artifact)

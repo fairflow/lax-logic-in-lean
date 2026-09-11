@@ -326,10 +326,10 @@ theorem Derives.consequence {p : Pf} {Γ : Ctx} {A : Form}
 /-- info: 'LaxLogic.QLL.Derives.erase' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms Derives.erase
 
-/-- info: 'LaxLogic.QLL.PrvC.toDerives' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.PrvC.toDerives' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms PrvC.toDerives
 
-/-- info: 'LaxLogic.QLL.Derives.consequence' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.Derives.consequence' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms Derives.consequence
 
 end LaxLogic.QLL

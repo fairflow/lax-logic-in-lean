@@ -551,11 +551,10 @@ theorem or_no_least_model : ¬ ∃ I : String → List Tm → Prop,
 
 /-! ## Axioms
 
-The completeness half, `lloyd_completeness`, uses no choice: it instantiates
-the consequence at `herbrand1 (LHM RNone P)` and reads the derivation off
-`Holds`.  Choice enters `lloyd_prv_iff`, `lloyd_consequence_iff` and
-`vanEmden_Kowalski` only through `Prv.sound` (and `Prv.soundT` carries it
-too), the soundness theorem of `Prov.lean`; that question is deferred. -/
+Nothing here uses choice.  The completeness half, `lloyd_completeness`,
+instantiates the consequence at `herbrand1 (LHM RNone P)` and reads the
+derivation off `Holds`; the soundness half is `Prv.sound`, which is free of
+choice since `freshFor_notMem` (`Kit.lean`) was re-proved by byte size. -/
 
 /-- info: 'LaxLogic.QLL.HFrame.evTm_lc' depends on axioms: [propext] -/
 #guard_msgs in #print axioms HFrame.evTm_lc
@@ -581,19 +580,19 @@ too), the soundness theorem of `Prov.lean`; that question is deferred. -/
 /-- info: 'LaxLogic.QLL.lloyd_completeness' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms lloyd_completeness
 
-/-- info: 'LaxLogic.QLL.lloyd_prv_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.lloyd_prv_iff' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms lloyd_prv_iff
 
-/-- info: 'LaxLogic.QLL.lloyd_consequence_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.lloyd_consequence_iff' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms lloyd_consequence_iff
 
-/-- info: 'LaxLogic.QLL.vanEmden_Kowalski' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.vanEmden_Kowalski' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms vanEmden_Kowalski
 
 /-- info: 'LaxLogic.QLL.lem_HTrue' depends on axioms: [propext] -/
 #guard_msgs in #print axioms lem_HTrue
 
-/-- info: 'LaxLogic.QLL.lem_not_prv' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.lem_not_prv' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms lem_not_prv
 
 /-- info: 'LaxLogic.QLL.or_no_least_model' depends on axioms: [propext] -/

@@ -498,8 +498,8 @@ theorem circAll_not_circEx : ¬ Prv [.circ .all (.pred "P" [])] (.circ .ex (.pre
 
 /-! ## Axioms
 
-Both completeness halves use no choice; `thm_7_5_world0/1` take it in only
-through `Prv.sound`, as in `Herbrand.lean`. -/
+Nothing here uses choice: not the completeness halves, and not the
+soundness halves, which go through `Prv.sound`. -/
 
 /-- info: 'LaxLogic.QLL.HFrame.force_sigma' depends on axioms: [propext] -/
 #guard_msgs in #print axioms HFrame.force_sigma
@@ -519,16 +519,16 @@ through `Prv.sound`, as in `Herbrand.lean`. -/
 /-- info: 'LaxLogic.QLL.llp_completeness1' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms llp_completeness1
 
-/-- info: 'LaxLogic.QLL.thm_7_5_world0' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.thm_7_5_world0' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms thm_7_5_world0
 
-/-- info: 'LaxLogic.QLL.thm_7_5_world1' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.thm_7_5_world1' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms thm_7_5_world1
 
 /-- info: 'LaxLogic.QLL.llpCModel_force_iff' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms llpCModel_force_iff
 
-/-- info: 'LaxLogic.QLL.circAll_not_circEx' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+/-- info: 'LaxLogic.QLL.circAll_not_circEx' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms circAll_not_circEx
 
 end LaxLogic.QLL
