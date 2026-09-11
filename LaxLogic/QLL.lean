@@ -24,6 +24,9 @@ first is decided by a program.
 | `Horn`   | Horn clauses (primitive positive bodies); a Def 5.1 clause split into them by the draft's `ind(S)` |
 | `Herbrand` | Lloyd's least Herbrand model, as a one-world Kripke model; Lloyd's theorem and completeness for Horn programs |
 | `HerbrandLLP` | §7 on worlds 0 and 1: the two-world Herbrand model of a Def 5.1 program; Theorem 7.5 for `i = 0, 1` |
+| `CLPCore` | CLP proof trees with constraint leaves; `total`/`active`/`latent` (Def 8.1); `Θ ⊢ total(p) ⊃ S` |
+| `CLPOper` | Table 2 goal reduction; Theorem 9.4 and Corollary 9.8, `◯`-free |
+| `LinQ` | linear arithmetic over ℚ: Fourier–Motzkin, untrusted, with witness and Farkas checkers proved sound |
 | `ModalRelation` | side note: with `Rm = Ri`, models validate `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)`, which QLL does not prove |
 | `HerbrandFix` | Lloyd's fixpoint characterisations: `M_P = T_P↑ω`, and `M_P = OrderHom.lfp T_P` |
 | `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
@@ -99,3 +102,6 @@ import LaxLogic.QLL.Herbrand
 import LaxLogic.QLL.HerbrandLLP
 import LaxLogic.QLL.HerbrandFix
 import LaxLogic.QLL.ModalRelation
+import LaxLogic.QLL.CLPCore
+import LaxLogic.QLL.CLPOper
+import LaxLogic.QLL.LinQ
