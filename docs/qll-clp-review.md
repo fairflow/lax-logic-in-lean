@@ -204,10 +204,22 @@ refer to `docs/qll-clp-implementation-plan.md`.
 * REFUTED: Proposition 6.6, second half (`(p : θ)♭ ⊢ θ` for a modal clause):
   a one-world countermodel (`HerbrandCLP.p66_refuted`).  It holds once the
   table's constraints are assumed lax-true (`p66_with_lax`).
+* Wolfram through the Lean–Wolfram bridge (`~/Lean/mathematica-in-lean`, same
+  toolchain and mathlib commit; `scripts/clp-wolfram.sh` puts it on `LEAN_PATH`,
+  so it is not a Lake dependency).  `CLPWolfram` asks Wolfram for instances
+  (`FindInstance`), Farkas multipliers (`FindInstance` on the dual system) and
+  minima (`Minimize`); every answer goes through `certifyVerdict` or
+  `lowerBoundCert`, so Wolfram is outside the trusted base.  All its answers
+  were accepted: Example 6.1 (least `z = 44`), the mortgage program, an
+  infeasible scheduling branch, adders to 32 bits (least carry-out `4n + 3`).
+  On these sparse systems Fourier–Motzkin is faster (under a millisecond); on
+  the designed cell `±xᵢ ± xⱼ ≤ 1` (`n = 5`, feasible, and infeasible with
+  `Σ xᵢ ≥ 5`) Fourier–Motzkin gives up while Wolfram's instance and Farkas
+  refutation are checked.  (Before the fix below, that cell drove the
+  in-Lean solver to 24 GB: it now refuses an elimination step that would
+  exceed its row cap before building it.)
 * Not built: stage 1 (Fig. 1's Gentzen system); Def 6.5's refined clauses as
-  formulas (they are used through their instances, `RefinedBy`); a
-  programmatic Wolfram bridge (Wolfram was used once, by hand, to cross-check
-  the mortgage figures).
+  formulas (they are used through their instances, `RefinedBy`).
 
 Two decisions made in writing this.
 

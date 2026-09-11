@@ -260,4 +260,18 @@ def mortgage : Program :=
 /-- info: 'LaxLogic.QLL.CLPExamples.thm97_95' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms thm97_95
 
+/-- Precedence scheduling with one shared machine (a disjunctive constraint). -/
+def sched : Program :=
+  [ cl "schedule" ["Sa", "Sb", "Sc", "Sd", "E"] (conj [
+      geq (v "Sa") (num "0"),
+      geq (v "Sb") (plus (v "Sa") (num "3")),
+      geq (v "Sc") (plus (v "Sa") (num "3")),
+      geq (v "Sc") (num "4"),
+      geq (v "Sd") (plus (v "Sb") (num "2")),
+      geq (v "Sd") (plus (v "Sc") (num "4")),
+      geq (v "E") (plus (v "Sd") (num "2")),
+      at_ "disjoint" [v "Sc", num "4", v "Sb", num "2"]]),
+    cl "disjoint" ["X", "DX", "Y", "DY"] (geq (v "Y") (plus (v "X") (v "DX"))),
+    cl "disjoint" ["X", "DX", "Y", "DY"] (geq (v "X") (plus (v "Y") (v "DY"))) ]
+
 end LaxLogic.QLL.CLPExamples

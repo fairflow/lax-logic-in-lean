@@ -360,7 +360,9 @@ def fm (cs : List LinCon) (cap : Nat := 50000) : Verdict := Id.run do
       | some (_, k) => if p * n < k then some (x, p * n) else acc) none
     match best with
     | none => vars := []
-    | some (x, _) =>
+    | some (x, k) =>
+        -- refuse a step that would build more rows than the cap, before building them
+        if k > cap then return .unknown
         let (rest, used) := elimVar x rows
         if rest.length > cap then return .unknown
         stages := (x, used) :: stages
@@ -403,6 +405,36 @@ theorem solve_unsat {cs : List LinCon} {m : List ℚ} (h : solve cs = .unsat m) 
   · cases h
 
 
+/-- Any solver's verdict, checked.  `solve` checks `fm`'s answers this way, and an
+external oracle (a Wolfram kernel, say) gets the same guarantee: whatever it
+returns, a `.sat` or `.unsat` verdict survives only with a valid certificate. -/
+def certifyVerdict (cs : List LinCon) : Verdict → Verdict
+  | .sat w => if checkWitness cs (asg w) then .sat w else .unknown
+  | .unsat m => if checkFarkas (m.zip cs) then .unsat m else .unknown
+  | .unknown => .unknown
+
+theorem certifyVerdict_sat {cs : List LinCon} {v : Verdict} {w : List (String × ℚ)}
+    (h : certifyVerdict cs v = .sat w) : ∀ c ∈ cs, c.holds (asg w) := by
+  cases v with
+  | sat w' =>
+      simp only [certifyVerdict] at h
+      split at h
+      · rename_i hw; cases h; exact checkWitness_sound hw
+      · cases h
+  | unsat m => simp only [certifyVerdict] at h; split at h <;> cases h
+  | unknown => cases h
+
+theorem certifyVerdict_unsat {cs : List LinCon} {v : Verdict} {m : List ℚ}
+    (h : certifyVerdict cs v = .unsat m) : ¬ ∃ σ, ∀ c ∈ cs, c.holds σ := by
+  cases v with
+  | sat w => simp only [certifyVerdict] at h; split at h <;> cases h
+  | unsat m' =>
+      simp only [certifyVerdict] at h
+      split at h
+      · rename_i hf; cases h; exact checkFarkas_unsat hf
+      · cases h
+  | unknown => cases h
+
 /-! ## Axioms -/
 
 /-- info: 'LaxLogic.QLL.LinQ.checkWitness_sound' depends on axioms: [propext, Classical.choice, Quot.sound] -/
@@ -419,5 +451,12 @@ theorem solve_unsat {cs : List LinCon} {m : List ℚ} (h : solve cs = .unsat m) 
 
 /-- info: 'LaxLogic.QLL.LinQ.solve_unsat' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms solve_unsat
+
+
+/-- info: 'LaxLogic.QLL.LinQ.certifyVerdict_sat' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms certifyVerdict_sat
+
+/-- info: 'LaxLogic.QLL.LinQ.certifyVerdict_unsat' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms certifyVerdict_unsat
 
 end LaxLogic.QLL.LinQ

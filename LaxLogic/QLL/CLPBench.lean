@@ -81,25 +81,11 @@ def benchMortgage : IO Unit := do
       let det := entailsEq cs ⟨[("MP", 1), ("P", -k)], 0⟩
       IO.println s!"mortgage query 2 (D = 5, I = {name}, B = 0): checked {a.typed}; MP = {k} · P = {dec k 9}… · P, certified {det}"
 
-/-- Precedence scheduling with one shared machine (a disjunctive constraint). -/
-def sched : Program :=
-  [ cl "schedule" ["Sa", "Sb", "Sc", "Sd", "E"] (conj [
-      geq (v "Sa") (num "0"),
-      geq (v "Sb") (plus (v "Sa") (num "3")),
-      geq (v "Sc") (plus (v "Sa") (num "3")),
-      geq (v "Sc") (num "4"),
-      geq (v "Sd") (plus (v "Sb") (num "2")),
-      geq (v "Sd") (plus (v "Sc") (num "4")),
-      geq (v "E") (plus (v "Sd") (num "2")),
-      at_ "disjoint" [v "Sc", num "4", v "Sb", num "2"]]),
-    cl "disjoint" ["X", "DX", "Y", "DY"] (geq (v "Y") (plus (v "X") (v "DX"))),
-    cl "disjoint" ["X", "DX", "Y", "DY"] (geq (v "X") (plus (v "Y") (v "DY"))) ]
-
 def benchSched : IO Unit := do
   for d in [12, 11, 10] do
     let G := query (conj [at_ "schedule" [v "Sa", v "Sb", v "Sc", v "Sd", v "E"],
       leq (v "E") (num (toString d))])
-    match answer sched isLinC true 100 G with
+    match answer CLPExamples.sched isLinC true 100 G with
     | none => IO.println s!"schedule, deadline {d}: no answer (every branch refuted by the solver)"
     | some a =>
       let cs := (consOf a.constraint).getD []

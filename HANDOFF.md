@@ -214,6 +214,12 @@ implementation, §3 the application, §4 the plan with its status).
   Small terms only: `Kit.freshFor` doubles name length per nested binder, and
   `certify` on a 3-bit adder's term exhausted memory (38 GB, killed).  Do not
   run `certify` on deep terms until `freshFor` is made linear (task flagged).
-- NOT BUILT: stage 1 (Gentzen system); Def 6.5 as formulas; a programmatic
-  Wolfram bridge.
+- Wolfram: `scripts/clp-wolfram.sh` runs `LaxLogic/QLL/CLPWolfram.lean`
+  against the bridge `~/Lean/mathematica-in-lean` (same toolchain and mathlib
+  commit, put on `LEAN_PATH`, not a Lake dependency).  Wolfram is an untrusted
+  solver and optimiser; its answers are checked by `certifyVerdict` /
+  `lowerBoundCert`.  `TOOLS.md` (not on this branch) owes an entry for the
+  script at merge.  Fourier–Motzkin now refuses an elimination step that would
+  exceed its row cap before building it (a designed cell had driven it to 24 GB).
+- NOT BUILT: stage 1 (Gentzen system); Def 6.5 as formulas.
 
