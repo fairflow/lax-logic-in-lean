@@ -20,6 +20,8 @@ first is decided by a program.
 | `Sound`  | soundness: the denoted constraint refines the derived formula |
 | `CLP`    | §3's two lax resolution rules, derived, and what they compute |
 | `LLP`    | §5 of the CLP draft: Σ-formulas, program clauses, the five derived rules of Fig. 3 |
+| `Size`   | the size of a formula, unchanged by opening (induction through `∃`) |
+| `Horn`   | Horn clauses (primitive positive bodies); a Def 5.1 clause split into them by the draft's `ind(S)` |
 | `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
 | `Rename` | renaming an individual through a derivation; re-basing an eigenvariable |
 | `Kripke` | the Kripke semantics: varying domains, two lax relations, fallible states |
@@ -74,9 +76,11 @@ import LaxLogic.QLL.Rename
 import LaxLogic.QLL.Kripke
 import LaxLogic.QLL.Prov
 import LaxLogic.QLL.Complete
+import LaxLogic.QLL.Size
 import LaxLogic.QLL.Complete1
 import LaxLogic.QLL.RefineIncomplete
 import LaxLogic.QLL.Bridge
 import LaxLogic.QLL.Abstract
 import LaxLogic.QLL.PaperSemantics
 import LaxLogic.QLL.LLP
+import LaxLogic.QLL.Horn

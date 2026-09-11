@@ -23,30 +23,9 @@ identified, or `P(r)` and `P(z)` would have to be validated together.
 `∀x. A`, but it has the same size.
 -/
 import LaxLogic.QLL.Saturate
+import LaxLogic.QLL.Size
 
 namespace LaxLogic.QLL
-
-/-! ## Size
-
-Opening does not change it, which is what lets the quantifier cases recurse. -/
-
-/-- The number of connectives and binders. -/
-def Form.size : Form → Nat
-  | .top | .bot | .pred _ _ => 0
-  | .and A B | .or A B | .imp A B => A.size + B.size + 1
-  | .circ _ A | .forall_ A | .exists_ A => A.size + 1
-
-theorem Form.size_openAt (t : Tm) : ∀ (A : Form) (k : Nat), (A.openAt k t).size = A.size := by
-  intro A
-  induction A with
-  | top | bot | pred _ _ => intro _; rfl
-  | and _ _ ih₁ ih₂ | or _ _ ih₁ ih₂ | imp _ _ ih₁ ih₂ =>
-      intro k; simp [Form.openAt, Form.size, ih₁ k, ih₂ k]
-  | circ _ _ ih => intro k; simp [Form.openAt, Form.size, ih k]
-  | forall_ _ ih | exists_ _ ih => intro k; simp [Form.openAt, Form.size, ih (k + 1)]
-
-theorem Form.size_openWith (a : String) (A : Form) : (A.openWith a).size = A.size :=
-  Form.size_openAt (.fvar a) A 0
 
 /-! ## Terms, and the names they use -/
 
