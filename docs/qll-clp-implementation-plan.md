@@ -68,7 +68,12 @@ Lemma 9.6, Thm 9.7, Cor 9.8.
 
 **1 — the Gentzen system, Fig. 1.**  Independent; by the semantic route above.
 
-Order: 0 → 2 → 3 → 4 → 5 → 6, with 1 floating.
+**H — Horn clauses and Herbrand models.**  Added 2026-09-11; see
+`docs/qll-herbrand-horn-plan.md`.  Lloyd's least Herbrand model, Def 5.1
+clauses normalised to Horn clauses, and Theorem 7.5 for worlds 0 and 1.
+
+Order: 0 → 2 → H → 3 → 4 → 5 → 6, with 1 floating.  Done: 0 (`1f42e9e`),
+2 (`ab42b77`).
 
 ## Examples
 
