@@ -259,7 +259,7 @@ at a fallible world).  What remains for stage 5: `I₀ ≤ I₂`; world 2 forces
 | `Γ ⊫ A` | completeness by instantiating it at a Herbrand model |
 | `Prv.sound` | the soundness halves of (LL), (T0), (T1) |
 | `completeness1`, `prv_iff_consequence` | not used; stage H reproves their Horn/LLP instance independently, without Lindenbaum, which also cross-checks them |
-| `CModel`, `CModel.toKModel`, `thm_3_6` | `herbrand2` and the §7 model are `CModel`s with `Rm = Ri`; Def 7.1 becomes a predicate on `CModel`s |
+| `CModel`, `CModel.toKModel`, `thm_3_6` | the two-world model is a `CModel` whose modal relation is that of the draft's frame F, where every arrow is modal; Def 7.1 fixes F and is not a condition on `CModel`s in general (corrected 2026-09-11, see `docs/qll-clp-review.md` §0) |
 | Fig. 3 rules (`LLP.lean`), `CLP.impCirc` | the proof steps of the extraction in (T1) |
 | `Derives.erase`, `Derives.weakenCons`, `Kit.freshFor` | `Derives`-level extraction in stage 5 |
 | `IsSigma`, `Clause`, `Program` | normalised to `Horn` by `Clause.toHorn` |
