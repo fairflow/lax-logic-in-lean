@@ -19,6 +19,7 @@ first is decided by a program.
 | `Denote` | Fig. 6 — the constraint a derivation denotes, `⟦d⟧ : Val 𝔐 A` |
 | `Sound`  | soundness: the denoted constraint refines the derived formula |
 | `CLP`    | §3's two lax resolution rules, derived, and what they compute |
+| `LLP`    | §5 of the CLP draft: Σ-formulas, program clauses, the five derived rules of Fig. 3 |
 | `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
 | `Rename` | renaming an individual through a derivation; re-basing an eigenvariable |
 | `Kripke` | the Kripke semantics: varying domains, two lax relations, fallible states |
@@ -78,3 +79,4 @@ import LaxLogic.QLL.RefineIncomplete
 import LaxLogic.QLL.Bridge
 import LaxLogic.QLL.Abstract
 import LaxLogic.QLL.PaperSemantics
+import LaxLogic.QLL.LLP

@@ -56,7 +56,8 @@ def tmImp : Pf := .letQ q (.fvar "p") (.val q (.app (.fvar "r") (.bvar 0)))
 
 /-- The rule, derived.  Nothing outside Fig. 5 is used. -/
 def impCirc : Derives (tmImp q) (ctxImp q A B) (.circ q B) :=
-  .circE "z" ⟨by simp [ctxImp, Ctx.fvP, Pf.fvP], by simp [Pf.fvP]⟩
+  .circE "z" ⟨by simp only [ctxImp, Ctx.fvP, Pf.fvP] <;> decide,
+      by simp only [Pf.fvP] <;> decide⟩
     (.var (.head _))
     (.circI (.impE (.var (.tail _ (.tail _ (.head _)))) (.var (.head _))))
 
@@ -68,6 +69,9 @@ theorem impCirc_denote (𝔐 : Model) (φ : Val 𝔐 A → Prop) (f : Val 𝔐 A
     denote 𝔐 (impCirc q A B) (.cons φ (.cons f .nil)) ρ z
       ↔ ∃ m, φ m ∧ f m = z := by
   simp [impCirc, ctxImp, denote, PEnv.lookup_head, PEnv.lookup_tail]
+
+/-- info: 'LaxLogic.QLL.CLP.impCirc' depends on axioms: [propext] -/
+#guard_msgs in #print axioms impCirc
 
 /-! ## `∧◯` — combining two constraints -/
 
@@ -81,11 +85,16 @@ def tmAnd : Pf :=
 
 /-- The rule, derived. -/
 def andCirc : Derives (tmAnd q) (ctxAnd q A B) (.circ q (.and A B)) :=
-  .circE "w" ⟨by simp [ctxAnd, Ctx.fvP, Pf.fvP], by simp [Pf.fvP]⟩
+  .circE "w" ⟨by simp only [ctxAnd, Ctx.fvP, Pf.fvP] <;> decide,
+      by simp only [Pf.fvP] <;> decide⟩
     (.var (.head _))
-    (.circE "z" ⟨by simp [ctxAnd, Ctx.fvP, Pf.fvP], by simp [Pf.openP, Pf.fvP]⟩
+    (.circE "z" ⟨by simp only [ctxAnd, Ctx.fvP, Pf.fvP] <;> decide,
+        by simp only [Pf.openP, Pf.fvP] <;> decide⟩
       (.var (.tail _ (.tail _ (.head _))))
       (.circI (.andI (.var (.tail _ (.head _))) (.var (.head _)))))
+
+/-- info: 'LaxLogic.QLL.CLP.andCirc' depends on axioms: [propext] -/
+#guard_msgs in #print axioms andCirc
 
 /-- What §3 says it computes: `∧◯(p, q) = λ(w, z). p w ∧ q z`.
 
