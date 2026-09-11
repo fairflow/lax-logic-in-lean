@@ -296,7 +296,7 @@ theorem I4_hered {I₀ I₁ I₂ : String → List Tm → Prop} (h01 : ∀ p us,
       HFrame.four.le w v → I4 I₀ I₁ I₂ w p ts → I4 I₀ I₁ I₂ v p ts := by
   intro w v p ts h hI
   cases w <;> cases v <;>
-    first | exact hI | exact h01 _ _ hI | exact h02 _ _ hI | trivial | exact absurd h (by decide)
+    first | exact hI | exact h01 _ _ hI | exact h02 _ _ hI | trivial
 
 /-! ## The canonical model of an abstracted program -/
 
@@ -414,7 +414,7 @@ theorem canon_clause (hWF : ∀ c ∈ Θ, c.WF) {c : Clause} (hc : c ∈ Θ.abs 
       have hP1 := head1 (HTrue_mono (llpI0_le (Program.abs isC q Θ)) hS
         ((canon_sigma hS .w0 (by decide)).1 hb))
       cases q <;> intro u hu <;> cases u <;>
-        first | exact ⟨.w1, rfl, hP1⟩ | exact ⟨.w3, rfl, Or.inl rfl⟩ | exact (W4.le_false (show W4.leB _ _ = true from hu) rfl).elim
+        first | exact ⟨.w1, rfl, hP1⟩ | exact ⟨.w3, rfl, Or.inl rfl⟩
   | w1 =>
       have hP1 := head1 ((canon_sigma hS .w1 (by decide)).1 hb)
       cases q <;> intro u hu <;> cases u <;>

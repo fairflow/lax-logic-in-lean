@@ -48,7 +48,7 @@ theorem cd_refines {𝔐 : Model} (ρ : String → 𝔐.D)
     have hfd := hf d
     rw [hd] at hfd
     exact hfd
-  · push_neg at h
+  · push Not at h
     have h' : ∀ d : 𝔐.D, ∃ c : 𝔐.C, f d = .inr c := by
       intro d
       rcases hfd : f d with c | c

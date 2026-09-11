@@ -447,7 +447,7 @@ theorem not_consistent_iff {T : Theory} :
       (∀ A ∈ Ds, A ∈ T.fal) ∧ (∀ A ∈ TA, A ∈ T.mfal .all) ∧
       (∀ A ∈ TE, A ∈ T.mfal .ex) ∧ Ds ++ TA ++ TE ≠ [] ∧ T.val ⊩q disjOf Ds TA TE := by
   unfold Consistent
-  push_neg
+  push Not
   rfl
 
 /-! ### Maximality is one way to be total
@@ -463,7 +463,7 @@ theorem consistent_split {T : Theory} (hT : Consistent T) (A : Form) :
     Consistent ⟨insert A T.val, T.fal, T.mfal⟩ ∨
       Consistent ⟨T.val, insert A T.fal, T.mfal⟩ := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   obtain ⟨h2, h1⟩ := hcon
   obtain ⟨Ds, TA, TE, hD, hA, hE, hne, hder⟩ := not_consistent_iff.mp h1
   obtain ⟨Ds₂, TA₂, TE₂, hD₂, hA₂, hE₂, hne₂, hder₂⟩ := not_consistent_iff.mp h2
@@ -553,7 +553,7 @@ theorem not_mem_fal_of_mem_val (hG : Good R T) {A : Form} (h : A ∈ T.val) :
 theorem or_mem (hG : Good R T) {A B : Form} (hav : Avoids R (.or A B))
     (h : Form.or A B ∈ T.val) : A ∈ T.val ∨ B ∈ T.val := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hA : A ∈ T.fal := (hG.2 A (Avoids.left (Or.inr (Or.inl hav)))).resolve_left hcon.1
   have hB : B ∈ T.fal := (hG.2 B (Avoids.right (Or.inr (Or.inl hav)))).resolve_left hcon.2
   have hmem : ∀ X ∈ [A, B], X ∈ T.fal := by
@@ -570,7 +570,7 @@ theorem or_mem (hG : Good R T) {A B : Form} (hav : Avoids R (.or A B))
 theorem imp_mem (hG : Good R T) {A B : Form} (hav : Avoids R (.imp A B))
     (h : Form.imp A B ∈ T.val) : A ∈ T.fal ∨ B ∈ T.val := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hA : A ∈ T.val := (hG.2 A (Avoids.left (Or.inr (Or.inr hav)))).resolve_right hcon.1
   exact hcon.2 (hG.ded_closed (Avoids.right (Or.inr (Or.inr hav)))
     (SetPrv.map₂ (fun _ p q => .impE p q) (SetPrv.of_mem h) (SetPrv.of_mem hA)))
@@ -590,7 +590,7 @@ theorem fal_or (hG : Good R T) {A B : Form} (hav : Avoids R (.or A B))
 theorem fal_and (hG : Good R T) {A B : Form} (hav : Avoids R (.and A B))
     (h : Form.and A B ∈ T.fal) : A ∈ T.fal ∨ B ∈ T.fal := by
   by_contra hcon
-  push_neg at hcon
+  push Not at hcon
   have hA : A ∈ T.val := (hG.2 A (Avoids.left (Or.inl hav))).resolve_right hcon.1
   have hB : B ∈ T.val := (hG.2 B (Avoids.right (Or.inl hav))).resolve_right hcon.2
   exact hG.not_fal_deriv h

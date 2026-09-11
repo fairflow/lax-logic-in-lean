@@ -302,7 +302,7 @@ choose their own fresh names. -/
 def Ctx.ofForms (Γ : List Form) : Ctx := Γ.map (fun B => (Pf.fvar "u", B))
 
 theorem Ctx.covers_ofForms (Γ : List Form) : Ctx.Covers (Ctx.ofForms Γ) Γ :=
-  fun B hB => ⟨"u", List.mem_map_of_mem hB⟩
+  fun _ hB => ⟨"u", List.mem_map_of_mem hB⟩
 
 theorem Ctx.forms_ofForms (Γ : List Form) : Ctx.forms (Ctx.ofForms Γ) = Γ := by
   induction Γ with
