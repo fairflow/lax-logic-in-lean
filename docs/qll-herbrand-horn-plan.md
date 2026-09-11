@@ -34,10 +34,19 @@ disjunction of Horn bodies (the draft's `ind(S)`, `S♯g`, §6.2).
 * **Modal Horn clause**: the same with head `◯_q H`.
 * **Herbrand universe** `𝓗`: ground terms.  **Herbrand interpretation**: a set of
   ground atoms.  **Least Herbrand model** `M_P`, **immediate consequence
-  operator** `T_P` (van Emden and Kowalski 1976; Lloyd, *Foundations of Logic
-  Programming*, 2nd ed. 1987, §6, where `M_P = lfp T_P = T_P↑ω` and `M_P` is the
-  set of ground atoms that are logical consequences of `P`; section numbering
-  from memory, the book is not on this machine).
+  operator** `T_P`.  Primary source, read in full: M. H. van Emden and
+  R. A. Kowalski, *The semantics of predicate logic as a programming language*,
+  JACM 23(4), 1976, 733–742.  §5 gives the Herbrand-model semantics, the model
+  intersection property of Horn clauses, and the counterexample
+  `{P(a) ∨ P(b)}`.  §6 defines the transformation `T`.  §7 proves that the
+  Herbrand models are exactly the interpretations `I` with `T(I) ⊆ I`.  §8
+  proves `⋃ₘ Tᵐ(∅) = ∩M(A)`, i.e. `T↑ω`.  Their Herbrand universe is built
+  from the program's own symbols, with at least one constant assumed.
+  Textbook: J. W. Lloyd, *Foundations of Logic Programming* (1st ed. 1984,
+  2nd ed. 1987), the declarative-semantics part of the chapter on definite
+  programs.  Neither edition can be read here: the Internet Archive copy of the
+  1st edition is access-restricted, loan only.  So no theorem numbers of
+  Lloyd's are cited.
 * **Lloyd–Topor transformation** (Lloyd and Topor 1984): rewriting clause bodies
   with `∨`, `∃` into definite clauses.  Its positive part is what `ind(S)` does.
 * For §7's world 2, least models **relative to built-in relations** (Jaffar and
@@ -290,11 +299,12 @@ Every item of §5 is PROVED, sorry-free, with pinned axioms, except the
 | :-- | :-- | :-- | :-- |
 | `QLL/Size.lean` | `4a4e526` | `Form.size`, hoisted from `Complete1.lean`; `size_openAt` | none |
 | `QLL/Horn.lean` | `4a4e526` | (N1) `IsSigma.pp_sel`; (N2) `Prv.of_sel`, `Prv.disj_sel`, `KModel.force_iff_sel`; (N3) `Clause.prv_toHorn`, `Clause.prv_of_toHorn`; `Prv.foralls_congr` | `[propext, Quot.sound]` or less |
-| `QLL/Herbrand.lean` | `d51cb21` | (L1) `Tp_LHM`; (L2) `LHM_least`; `HTrue_LHM_form`; (K1)–(K5) as `HFrame.evTm_lc`, `HTrue_*`, `Holds.toHTrue`, `Holds.of_HTrue`; (LL) `lloyd_completeness` | `[propext, Quot.sound]` |
+| `QLL/Herbrand.lean` | `d51cb21` | (L1) `Tp_LHM`; (L2) `LHM_least`; `HTrue_LHM_form`; (K1)–(K3), (K5) as `HFrame.evTm_lc`, `HTrue_*`, `Holds.toHTrue`, `Holds.of_HTrue`; (LL) `lloyd_completeness` | `[propext, Quot.sound]` |
 | | | (LL) `lloyd_prv_iff`, `lloyd_consequence_iff`, `vanEmden_Kowalski` | `[propext, Quot.sound]` (see the note on choice) |
 | `QLL/HerbrandLLP.lean` | `f395180` | (M1) `llpModel_clause`; (M2) `llpModel_sigma`, `llpModel_circ`; `llp_completeness0/1`; `llpCModel_force_iff` | `[propext, Quot.sound]` |
 | | | (T0) `thm_7_5_world0`, (T1) `thm_7_5_world1` | `[propext, Quot.sound]` (see the note on choice) |
-| `QLL/HerbrandFix.lean` | this commit's parent | (L3) `LHM_iff_Tpow` | `[propext, Quot.sound]` |
+| `QLL/HerbrandFix.lean` | `e33381d` | (L3) `LHM_iff_Tpow` | `[propext, Quot.sound]` |
+| | added after the review below | (K4) `HTrue_form_iff`; van Emden–Kowalski §7 `prefixpoint_iff_model`; §5 `model_intersection`, `LHM_iff_all_models` | `[propext, Quot.sound]` |
 | | | (L4) `LHM_eq_lfp` | `+ Classical.choice` (Mathlib's `lfp`) |
 
 The two designed cells of §7 are kernel-checked in the repository:
@@ -330,7 +340,17 @@ the Lindenbaum completeness (`truth_lemma1`, `completeness1`,
 `prv_iff_consequence`, and so `thm_3_6`), `refinement_not_complete`,
 `CompleteTests.and_comm_prv`, and `LHM_eq_lfp`.
 
-Still open for §2's citations: Lloyd's section and theorem numbers are from
-memory.  The full text Matthew provided on 2026-09-11 (a claude.ai artifact)
-could not be read from the session: the public link returns only the page
-shell, and the `code/artifact` form of the same id reports it as not shared.
+**Review against the source (2026-09-11).**  The plan and the built stage
+were checked against van Emden and Kowalski 1976, read in full; Lloyd could
+not be read (see §2).  The one gap found is corrected in this revision.  Item
+(K4), a Horn clause is true in `I` exactly when `I` is closed under its ground
+instances, was listed above as built.  It was built only in the special case
+`I = M_P` (`HTrue_LHM_form`).  It is now proved for every `I`
+(`HTrue_form_iff`), and with it their §7 theorem (models = pre-fixpoints of
+`T`), the model intersection property, and `M_P` as the intersection of all
+Herbrand models.  Their counterexample `{P(a) ∨ P(b)}` is our
+`or_no_least_model`.  Their Herbrand universe comes from the program's
+symbols; ours is all locally closed terms (D3, extended), which changes no
+statement about the program's own atoms.  The claude.ai artifact of
+2026-09-11 is a references briefing, not the book.  It states that neither
+edition is freely available as a full-text PDF.

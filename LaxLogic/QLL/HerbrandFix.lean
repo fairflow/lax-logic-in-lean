@@ -72,6 +72,61 @@ theorem Tp_mono {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → 
   · exact Or.inr ⟨h, hh, ts, hlen, hts,
       HTrue_mono hIJ (h.body_pp.instAll ts).isSigma hb, hp, hus⟩
 
+/-! ## Models are the pre-fixpoints
+
+van Emden and Kowalski (JACM 1976), §§5 and 7: a Herbrand interpretation is a
+model of a Horn program exactly when `T` maps it into itself; Herbrand models
+of Horn clauses are closed under intersection; and the least Herbrand model is
+the intersection of all of them.  Here relative to built-in relations `R`. -/
+
+/-- (K4) A Horn clause is true in a Herbrand interpretation exactly when the
+interpretation is closed under the clause's ground instances. -/
+theorem HTrue_form_iff {I : String → List Tm → Prop} {h : Horn} (hW : h.WF) :
+    HTrue I h.form ↔ ∀ ts : List Tm, ts.length = h.arity → (∀ t ∈ ts, Tm.lcAt 0 t) →
+      HTrue I (Form.instAll ts h.body) → I h.head (Tm.instAllList ts h.args) := by
+  show HTrue I (Form.foralls h.arity (.imp h.body h.headForm)) ↔ _
+  rw [HTrue_foralls]
+  refine forall_congr' fun ts => forall_congr' fun hlen => forall_congr' fun hts => ?_
+  rw [Form.instAll_imp, HTrue_imp, HTrue_instAll_headForm]
+  show (_ → HTrue I (Form.instAll ts (.pred h.head h.args))) ↔ _
+  rw [Form.instAll_pred, HTrue_pred (Tm.lcAtList_instAllList ts _ hts (by rw [hlen]; exact hW.2))]
+
+/-- van Emden and Kowalski's theorem (§7): the pre-fixpoints of `T_P` are the
+Herbrand models of `P` (here: those containing `R`). -/
+theorem prefixpoint_iff_model (hP : ∀ h ∈ P, h.WF) {I : String → List Tm → Prop} :
+    (∀ p us, Tp R P I p us → I p us) ↔
+      (∀ p us, R p us → I p us) ∧ ∀ h ∈ P, HTrue I h.form := by
+  constructor
+  · intro hI
+    refine ⟨fun p us hr => hI p us (Or.inl hr), fun h hh => (HTrue_form_iff (hP h hh)).2 ?_⟩
+    intro ts hlen hts hb
+    exact hI _ _ (Or.inr ⟨h, hh, ts, hlen, hts, hb, rfl, rfl⟩)
+  · rintro ⟨hR, hM⟩ p us (hr | ⟨h, hh, ts, hlen, hts, hb, rfl, rfl⟩)
+    · exact hR _ _ hr
+    · exact (HTrue_form_iff (hP h hh)).1 (hM h hh) ts hlen hts hb
+
+/-- The model intersection property (§5): an intersection of Herbrand models of a
+Horn program is a Herbrand model of it. -/
+theorem model_intersection (hP : ∀ h ∈ P, h.WF) {α : Type} (J : α → String → List Tm → Prop)
+    (hJ : ∀ i, ∀ h ∈ P, HTrue (J i) h.form) :
+    ∀ h ∈ P, HTrue (fun p us => ∀ i, J i p us) h.form := by
+  have pre : ∀ i, ∀ p us, Tp RNone P (J i) p us → J i p us := fun i =>
+    (prefixpoint_iff_model (R := RNone) hP).2 ⟨fun _ _ hr => (hr : False).elim, hJ i⟩
+  exact ((prefixpoint_iff_model (R := RNone) hP).1 fun p us ht i =>
+    pre i p us (Tp_mono (fun _ _ hx => hx i) p us ht)).2
+
+/-- The least Herbrand model is the intersection of all Herbrand models (§5:
+their `D₂(P)` is the relation of `∩M(A)`). -/
+theorem LHM_iff_all_models (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
+    (p : String) (us : List Tm) :
+    LHM R P p us ↔ ∀ I : String → List Tm → Prop, (∀ p us, R p us → I p us) →
+      (∀ h ∈ P, HTrue I h.form) → I p us := by
+  constructor
+  · intro hl I hRI hM
+    exact LHM_least hR hP ((prefixpoint_iff_model hP).2 ⟨hRI, hM⟩) p us hl
+  · intro hall
+    exact hall (LHM R P) (fun _ _ hr => .base hr) (fun _ hh => HTrue_LHM_form hP hh)
+
 /-! ## `T_P↑ω` -/
 
 /-- `T_P↑n`, from the empty interpretation. -/
@@ -154,5 +209,17 @@ end
 
 /-- info: 'LaxLogic.QLL.LHM_eq_lfp' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms LHM_eq_lfp
+
+/-- info: 'LaxLogic.QLL.HTrue_form_iff' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms HTrue_form_iff
+
+/-- info: 'LaxLogic.QLL.prefixpoint_iff_model' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms prefixpoint_iff_model
+
+/-- info: 'LaxLogic.QLL.model_intersection' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms model_intersection
+
+/-- info: 'LaxLogic.QLL.LHM_iff_all_models' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms LHM_iff_all_models
 
 end LaxLogic.QLL
