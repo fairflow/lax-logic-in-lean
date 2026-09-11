@@ -288,3 +288,50 @@ rule 8).  Refutation stage (rule 9), designed cells only:
 3. **Order**: stage H before stage 3.  Recommended: it depends on neither 3 nor
    4, stage 5 needs it, and it gives a second, independent completeness proof
    for the fragment.
+
+## 9. Status, 2026-09-11: stage H built
+
+Decisions D1–D3 and the order H → 3 were approved by Matthew on 2026-09-11.
+Every item of §5 is PROVED, sorry-free, with pinned axioms, except the
+`Derives`-level extraction, which D6 already assigned to stage 5.
+
+| file | commit | what is proved | axioms |
+| :-- | :-- | :-- | :-- |
+| `QLL/Size.lean` | `4a4e526` | `Form.size`, hoisted from `Complete1.lean`; `size_openAt` | none |
+| `QLL/Horn.lean` | `4a4e526` | (N1) `IsSigma.pp_sel`; (N2) `Prv.of_sel`, `Prv.disj_sel`, `KModel.force_iff_sel`; (N3) `Clause.prv_toHorn`, `Clause.prv_of_toHorn`; `Prv.foralls_congr` | `[propext, Quot.sound]` or less |
+| `QLL/Herbrand.lean` | `d51cb21` | (L1) `Tp_LHM`; (L2) `LHM_least`; `HTrue_LHM_form`; (K1)–(K5) as `HFrame.evTm_lc`, `HTrue_*`, `Holds.toHTrue`, `Holds.of_HTrue`; (LL) `lloyd_completeness` | `[propext, Quot.sound]` |
+| | | (LL) `lloyd_prv_iff`, `lloyd_consequence_iff`, `vanEmden_Kowalski` | `+ Classical.choice`, via `Prv.sound` only |
+| `QLL/HerbrandLLP.lean` | `f395180` | (M1) `llpModel_clause`; (M2) `llpModel_sigma`, `llpModel_circ`; `llp_completeness0/1`; `llpCModel_force_iff` | `[propext, Quot.sound]` |
+| | | (T0) `thm_7_5_world0`, (T1) `thm_7_5_world1` | `+ Classical.choice`, via `Prv.sound` only |
+| `QLL/HerbrandFix.lean` | this commit's parent | (L3) `LHM_iff_Tpow` | `[propext, Quot.sound]` |
+| | | (L4) `LHM_eq_lfp` | `+ Classical.choice` (Mathlib's `lfp`) |
+
+The three designed cells of §7 are all kernel-checked in the repository:
+`circAll_not_circEx` (`HerbrandLLP.lean`), `lem_HTrue` with `lem_not_prv`,
+and `or_no_least_model` (`Herbrand.lean`).
+
+Changes from the text above, all minor:
+
+* **D3, extended.**  The Herbrand universe is the locally closed terms, with
+  free names counted as constants.  Under `ρ = Tm.fvar` every such term
+  evaluates to itself, so free names need no bookkeeping.  This is the device
+  of the canonical model in `Complete1.lean`.
+* **The Herbrand models are one construction.**  `HFrame.model` builds a
+  `KModel` on any preorder of worlds.  `herbrand1` is the one-world case, and
+  `herbrand2` (`HFrame.two`) the two-world one; stage 5 adds worlds 2 and 3
+  to the same construction.
+* **`Holds` ignores the modal flag.**  So `LHM` of all the Horn clauses of `Θ`
+  is `Π¹`'s least model, with no separate stripping of `◯`.  `Π⁰` is the
+  sub-program of non-modal clauses, `Program.horn0`.
+* **Theorem 7.5 is stated against forcing.**  At worlds `0 = false` and
+  `1 = true` of `llpModel Θ`, as in the draft.  The Herbrand-truth form
+  follows by `llpModel_sigma`.
+
+On choice: every completeness half is free of it.  In stage H it enters only
+through `Prv.sound`/`Prv.soundT`, the soundness theorem of `Prov.lean`, and
+through Mathlib's `lfp` in L4.  Matthew deferred this question on 2026-09-11.
+
+Still open for §2's citations: Lloyd's section and theorem numbers are from
+memory.  The full text Matthew provided on 2026-09-11 (a claude.ai artifact)
+could not be read from the session: the public link returns only the page
+shell, and the `code/artifact` form of the same id reports it as not shared.
