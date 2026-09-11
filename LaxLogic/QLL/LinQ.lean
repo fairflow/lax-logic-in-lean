@@ -40,27 +40,37 @@ def sumTerms (σ : String → ℚ) : List (String × ℚ) → ℚ
   | [] => 0
   | (x, a) :: l => a * σ x + sumTerms σ l
 
+/-- The value of a linear expression under an assignment. -/
 def Lin.eval (σ : String → ℚ) (e : Lin) : ℚ := sumTerms σ e.terms + e.const
 
+/-- Sum of linear expressions. -/
 def Lin.add (e f : Lin) : Lin := ⟨e.terms ++ f.terms, e.const + f.const⟩
+/-- Scalar multiple of a linear expression. -/
 def Lin.smul (a : ℚ) (e : Lin) : Lin := ⟨e.terms.map (fun p => (p.1, a * p.2)), a * e.const⟩
+/-- A variable as a linear expression. -/
 def Lin.var (x : String) : Lin := ⟨[(x, 1)], 0⟩
+/-- A constant as a linear expression. -/
 def Lin.cst (q : ℚ) : Lin := ⟨[], q⟩
+/-- Difference of linear expressions. -/
 def Lin.sub (e f : Lin) : Lin := e.add (f.smul (-1))
 
+/-- Evaluation of terms is additive over concatenation. -/
 theorem sumTerms_append (σ : String → ℚ) :
     ∀ l m : List (String × ℚ), sumTerms σ (l ++ m) = sumTerms σ l + sumTerms σ m
   | [], m => by simp [sumTerms]
   | (x, a) :: l, m => by simp only [List.cons_append, sumTerms, sumTerms_append σ l m]; ring
 
+/-- Evaluation of terms commutes with scaling. -/
 theorem sumTerms_smul (σ : String → ℚ) (c : ℚ) :
     ∀ l : List (String × ℚ), sumTerms σ (l.map (fun p => (p.1, c * p.2))) = c * sumTerms σ l
   | [] => by simp [sumTerms]
   | (x, a) :: l => by simp only [List.map_cons, sumTerms, sumTerms_smul σ c l]; ring
 
+/-- Evaluation is additive. -/
 theorem Lin.eval_add (σ : String → ℚ) (e f : Lin) : (e.add f).eval σ = e.eval σ + f.eval σ := by
   simp only [Lin.eval, Lin.add, sumTerms_append]; ring
 
+/-- Evaluation commutes with scaling. -/
 theorem Lin.eval_smul (σ : String → ℚ) (a : ℚ) (e : Lin) : (e.smul a).eval σ = a * e.eval σ := by
   simp only [Lin.eval, Lin.smul, sumTerms_smul]; ring
 
@@ -70,18 +80,21 @@ structure LinCon where
   k : Kind
   deriving Repr, Inhabited
 
+/-- A constraint `e ≤ 0`, `e < 0` or `e = 0` holds under an assignment. -/
 def LinCon.holds (σ : String → ℚ) (c : LinCon) : Prop :=
   match c.k with
   | .le => c.e.eval σ ≤ 0
   | .lt => c.e.eval σ < 0
   | .eq => c.e.eval σ = 0
 
+/-- The decision of `LinCon.holds`. -/
 def LinCon.holdsB (σ : String → ℚ) (c : LinCon) : Bool :=
   match c.k with
   | .le => decide (c.e.eval σ ≤ 0)
   | .lt => decide (c.e.eval σ < 0)
   | .eq => decide (c.e.eval σ = 0)
 
+/-- `holdsB` decides `holds`. -/
 theorem LinCon.holdsB_iff (σ : String → ℚ) (c : LinCon) : c.holdsB σ = true ↔ c.holds σ := by
   unfold holdsB holds; cases c.k <;> simp
 
@@ -90,8 +103,10 @@ theorem LinCon.holdsB_iff (σ : String → ℚ) (c : LinCon) : c.holdsB σ = tru
 /-- An assignment given as a finite table, `0` elsewhere. -/
 def asg (w : List (String × ℚ)) : String → ℚ := fun x => (w.lookup x).getD 0
 
+/-- Check an assignment against every constraint. -/
 def checkWitness (cs : List LinCon) (σ : String → ℚ) : Bool := cs.all (·.holdsB σ)
 
+/-- A checked witness satisfies the system. -/
 theorem checkWitness_sound {cs : List LinCon} {σ : String → ℚ} (h : checkWitness cs σ = true) :
     ∀ c ∈ cs, c.holds σ :=
   fun c hc => (LinCon.holdsB_iff σ c).1 (List.all_eq_true.1 h c hc)
@@ -101,6 +116,7 @@ def addCoeff (x : String) (a : ℚ) : List (String × ℚ) → List (String × �
   | [] => [(x, a)]
   | (y, b) :: l => if x = y then (y, a + b) :: l else (y, b) :: addCoeff x a l
 
+/-- Merging a coefficient into a term list does not change its value. -/
 theorem sumTerms_addCoeff (σ : String → ℚ) (x : String) (a : ℚ) :
     ∀ l, sumTerms σ (addCoeff x a l) = a * σ x + sumTerms σ l
   | [] => by simp [addCoeff, sumTerms]
@@ -114,12 +130,14 @@ theorem sumTerms_addCoeff (σ : String → ℚ) (x : String) (a : ℚ) :
 def norm (l : List (String × ℚ)) : List (String × ℚ) :=
   l.foldr (fun p acc => addCoeff p.1 p.2 acc) []
 
+/-- Normalisation (merging repeated variables) does not change the value. -/
 theorem sumTerms_norm (σ : String → ℚ) : ∀ l, sumTerms σ (norm l) = sumTerms σ l
   | [] => rfl
   | (x, a) :: l => by
       show sumTerms σ (addCoeff x a (norm l)) = _
       rw [sumTerms_addCoeff, sumTerms_norm σ l]; rfl
 
+/-- A term list with all coefficients zero has value zero. -/
 theorem sumTerms_zero (σ : String → ℚ) :
     ∀ l : List (String × ℚ), l.all (fun p => p.2 == 0) = true → sumTerms σ l = 0
   | [], _ => rfl
@@ -141,6 +159,8 @@ def okMult (p : ℚ × LinCon) : Bool :=
 /-- A strict inequality used with a positive multiplier. -/
 def strictUse (p : ℚ × LinCon) : Bool := p.2.k == .lt && decide (0 < p.1)
 
+/-- Under a satisfying assignment an admissible combination is non-positive, and negative
+when a strict constraint has a positive weight. -/
 theorem comb_nonpos (σ : String → ℚ) : ∀ l : List (ℚ × LinCon),
     (∀ p ∈ l, p.2.holds σ) → l.all okMult = true →
       (comb l).eval σ ≤ 0 ∧ (l.any strictUse = true → (comb l).eval σ < 0)
@@ -188,6 +208,7 @@ def checkFarkas (l : List (ℚ × LinCon)) : Bool :=
   l.all okMult && (norm (comb l).terms).all (fun p => p.2 == 0) &&
     (decide (0 < (comb l).const) || (decide (0 ≤ (comb l).const) && l.any strictUse))
 
+/-- A checked Farkas certificate refutes the system: no assignment satisfies it. -/
 theorem checkFarkas_sound {l : List (ℚ × LinCon)} (h : checkFarkas l = true) :
     ¬ ∃ σ, ∀ p ∈ l, p.2.holds σ := by
   rintro ⟨σ, hσ⟩
@@ -214,14 +235,17 @@ def digitsVal : List Char → Nat → Option Nat
   | [], acc => some acc
   | c :: cs, acc => if c.isDigit then digitsVal cs (10 * acc + (c.toNat - '0'.toNat)) else none
 
+/-- A natural number from its decimal digits. -/
 def natOfChars? : List Char → Option Nat
   | [] => none
   | cs => digitsVal cs 0
 
+/-- An integer from an optional sign and decimal digits. -/
 def intOfChars? : List Char → Option Int
   | '-' :: cs => (natOfChars? cs).map (fun n => -(n : Int))
   | cs => (natOfChars? cs).map (fun n => (n : Int))
 
+/-- Split a numeral at its first `/`. -/
 def splitSlash : List Char → List Char → List Char × Option (List Char)
   | [], acc => (acc.reverse, none)
   | '/' :: cs, acc => (acc.reverse, some cs)
@@ -254,6 +278,7 @@ def linOf : Tm → Option Lin
 def isLinC (B : String) : Bool :=
   B == "leq" || B == "lt" || B == "geq" || B == "gt" || B == "eq"
 
+/-- A constraint atom as a linear constraint, when its arguments are linear. -/
 def atomCon (B : String) (ts : List Tm) : Option LinCon :=
   match B, ts with
   | "leq", [a, b] => do let x ← linOf a; let y ← linOf b; pure ⟨x.sub y, .le⟩
@@ -275,6 +300,7 @@ def CSat (σ : String → ℚ) (A : Form) : Prop := ∃ cs, consOf A = some cs �
 
 /-! ## Fourier–Motzkin, untrusted -/
 
+/-- A row of the elimination: a linear constraint derived from the input, with its multipliers. -/
 structure Row where
   terms : List (String × ℚ)
   const : ℚ
@@ -282,8 +308,10 @@ structure Row where
   mult : List ℚ
   deriving Inhabited
 
+/-- The coefficient of a variable in a term list (first occurrence). -/
 def coeffOf (x : String) (l : List (String × ℚ)) : ℚ := (l.lookup x).getD 0
 
+/-- The combination `a·r + b·s` of two rows. -/
 def rowComb (a : ℚ) (r : Row) (b : ℚ) (s : Row) : Row :=
   { terms := (norm (r.terms.map (fun p => (p.1, a * p.2)) ++
         s.terms.map (fun p => (p.1, b * p.2)))).filter (fun p => p.2 != 0)
@@ -291,8 +319,10 @@ def rowComb (a : ℚ) (r : Row) (b : ℚ) (s : Row) : Row :=
     strict := r.strict || s.strict
     mult := List.zipWith (· + ·) (r.mult.map (a * ·)) (s.mult.map (b * ·)) }
 
+/-- The multiplier vector selecting one input constraint. -/
 def unitVec (n i : Nat) (a : ℚ) : List ℚ := (List.range n).map (fun j => if j = i then a else 0)
 
+/-- The input constraints as rows; an equation becomes two inequalities. -/
 def initRows (cs : List LinCon) : List Row :=
   let n := cs.length
   (cs.zipIdx).flatMap fun (c, i) =>
@@ -303,6 +333,7 @@ def initRows (cs : List LinCon) : List Row :=
     | .eq => [⟨t, c.e.const, false, unitVec n i 1⟩,
               ⟨t.map (fun p => (p.1, -p.2)), -c.e.const, false, unitVec n i (-1)⟩]
 
+/-- Eliminate one variable: combine each positive row with each negative one. -/
 def elimVar (x : String) (rows : List Row) : List Row × List Row :=
   let pos := rows.filter (fun r => decide (0 < coeffOf x r.terms))
   let neg := rows.filter (fun r => decide (coeffOf x r.terms < 0))
@@ -311,6 +342,7 @@ def elimVar (x : String) (rows : List Row) : List Row × List Row :=
     rowComb (-(coeffOf x N.terms)) P (coeffOf x P.terms) N
   (zero ++ new, pos ++ neg)
 
+/-- The variables still present. -/
 def rowsVars (rows : List Row) : List String :=
   rows.foldl (fun acc r => r.terms.foldl (fun acc p => if acc.contains p.1 then acc else p.1 :: acc) acc) []
 
@@ -318,6 +350,7 @@ def rowsVars (rows : List Row) : List String :=
 def restVal (σ : String → ℚ) (x : String) (r : Row) : ℚ :=
   (r.terms.filter (fun p => p.1 != x)).foldl (fun acc p => acc + p.2 * σ p.1) r.const
 
+/-- A value for an eliminated variable within the bounds of its rows (back-substitution). -/
 def chooseVal (σ : String → ℚ) (x : String) (rows : List Row) : ℚ :=
   let bounds := rows.map fun r =>
     let a := coeffOf x r.terms
@@ -339,6 +372,7 @@ def chooseVal (σ : String → ℚ) (x : String) (rows : List Row) : ℚ :=
   | none, some (u, s) => if s then u - 1 else u
   | some (l, _), some (u, _) => if l < u then (l + u) / 2 else l
 
+/-- A solver's answer: a witness, Farkas multipliers, or none. -/
 inductive Verdict
   | sat (w : List (String × ℚ))
   | unsat (mult : List ℚ)
@@ -384,6 +418,7 @@ def solve (cs : List LinCon) : Verdict :=
   | .unsat m => if checkFarkas (m.zip cs) then .unsat m else .unknown
   | .unknown => .unknown
 
+/-- `solve`'s satisfiable verdicts are correct. -/
 theorem solve_sat {cs : List LinCon} {w : List (String × ℚ)} (h : solve cs = .sat w) :
     ∀ c ∈ cs, c.holds (asg w) := by
   unfold solve at h
@@ -394,6 +429,7 @@ theorem solve_sat {cs : List LinCon} {w : List (String × ℚ)} (h : solve cs = 
   · split at h <;> cases h
   · cases h
 
+/-- `solve`'s unsatisfiable verdicts are correct. -/
 theorem solve_unsat {cs : List LinCon} {m : List ℚ} (h : solve cs = .unsat m) :
     ¬ ∃ σ, ∀ c ∈ cs, c.holds σ := by
   unfold solve at h
@@ -413,6 +449,7 @@ def certifyVerdict (cs : List LinCon) : Verdict → Verdict
   | .unsat m => if checkFarkas (m.zip cs) then .unsat m else .unknown
   | .unknown => .unknown
 
+/-- A satisfiable verdict kept by `certifyVerdict` is correct, whichever solver produced it. -/
 theorem certifyVerdict_sat {cs : List LinCon} {v : Verdict} {w : List (String × ℚ)}
     (h : certifyVerdict cs v = .sat w) : ∀ c ∈ cs, c.holds (asg w) := by
   cases v with
@@ -424,6 +461,7 @@ theorem certifyVerdict_sat {cs : List LinCon} {v : Verdict} {w : List (String ×
   | unsat m => simp only [certifyVerdict] at h; split at h <;> cases h
   | unknown => cases h
 
+/-- An unsatisfiable verdict kept by `certifyVerdict` is correct, whichever solver produced it. -/
 theorem certifyVerdict_unsat {cs : List LinCon} {v : Verdict} {m : List ℚ}
     (h : certifyVerdict cs v = .unsat m) : ¬ ∃ σ, ∀ c ∈ cs, c.holds σ := by
   cases v with

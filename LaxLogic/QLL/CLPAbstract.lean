@@ -63,12 +63,15 @@ def Form.strip (isC : String → Bool) : Form → Form
   | .forall_ A => .forall_ (A.strip isC)
   | .exists_ A => .exists_ (A.strip isC)
 
+/-- A constraint atom abstracts to `⊤`. -/
 theorem Form.strip_pred_C {isC : String → Bool} {B : String} (ts : List Tm) (h : isC B = true) :
     (Form.pred B ts).strip isC = .top := if_pos h
 
+/-- A program atom abstracts to itself. -/
 theorem Form.strip_pred_of {isC : String → Bool} {B : String} (ts : List Tm) (h : isC B = false) :
     (Form.pred B ts).strip isC = .pred B ts := if_neg (by rw [h]; decide)
 
+/-- Abstraction commutes with opening a binder. -/
 theorem Form.strip_openAt (isC : String → Bool) (t : Tm) :
     ∀ (A : Form) (k : Nat), (A.openAt k t).strip isC = (A.strip isC).openAt k t
   | .top, _ => rfl
@@ -86,6 +89,7 @@ theorem Form.strip_openAt (isC : String → Bool) (t : Tm) :
   | .forall_ A, k => congrArg Form.forall_ (Form.strip_openAt isC t A (k + 1))
   | .exists_ A, k => congrArg Form.exists_ (Form.strip_openAt isC t A (k + 1))
 
+/-- Abstraction commutes with instantiation. -/
 theorem Form.strip_instAll (isC : String → Bool) :
     ∀ (ts : List Tm) (A : Form), (Form.instAll ts A).strip isC = Form.instAll ts (A.strip isC)
   | [], _ => rfl
@@ -94,6 +98,7 @@ theorem Form.strip_instAll (isC : String → Bool) :
         = Form.instAll ts ((A.strip isC).openAt ts.length t)
       rw [Form.strip_instAll isC ts, Form.strip_openAt]
 
+/-- The abstraction of a Σ-formula is a Σ-formula. -/
 theorem IsSigma.strip (isC : String → Bool) {S : Form} (h : IsSigma S) : IsSigma (S.strip isC) := by
   induction h with
   | top => exact .top
@@ -106,6 +111,7 @@ theorem IsSigma.strip (isC : String → Bool) {S : Form} (h : IsSigma S) : IsSig
   | or _ _ ih₁ ih₂ => exact .or ih₁ ih₂
   | ex _ ih => exact .ex ih
 
+/-- Σ-formulas are closed under opening, by induction on `IsSigma`. -/
 theorem IsSigma.openAt' {A : Form} (h : IsSigma A) : ∀ (k : Nat) (t : Tm), IsSigma (A.openAt k t) := by
   induction h with
   | top => intro _ _; exact .top
@@ -124,6 +130,7 @@ def Program.abs (isC : String → Bool) (q : Q) (Θ : Program) : Program := Θ.m
 /-- Definition 5.1's requirement that no head is a constraint. -/
 def Program.HeadsOK (isC : String → Bool) (Θ : Program) : Prop := ∀ c ∈ Θ, isC c.head = false
 
+/-- Clause `w` of `Θ♯` is the abstraction of clause `w` of `Θ`. -/
 theorem Program.abs_getElem? {isC : String → Bool} {q : Q} {Θ : Program} {w : Nat} {c : Clause}
     (h : Θ[w]? = some c) : (Θ.abs isC q)[w]? = some (c.abs isC q) := by
   rw [Program.abs, List.getElem?_map, h]; rfl
@@ -230,19 +237,24 @@ inductive Wit where
 /-- `C × α`, with constraints as formulas. -/
 abbrev WM (α : Type) := Form × α
 
+/-- `val a = (⊤, a)`. -/
 def WM.val {α : Type} (a : α) : WM α := (.top, a)
 
+/-- `bind (c, a) f = (c ∧ π₁(f a), π₂(f a))`. -/
 def WM.bind {α β : Type} (m : WM α) (f : α → WM β) : WM β := (.and m.1 (f m.2).1, (f m.2).2)
 
 /-- Equality up to `⊣⊢` on the constraint. -/
 def WEq {α : Type} (m m' : WM α) : Prop := PEq m.1 m'.1 ∧ m.2 = m'.2
 
+/-- Left unit law, up to `⊣⊢`. -/
 theorem WM.bind_val_left {α β : Type} (a : α) (f : α → WM β) : WEq (WM.bind (WM.val a) f) (f a) :=
   ⟨PEq.top_and _, rfl⟩
 
+/-- Right unit law, up to `⊣⊢`. -/
 theorem WM.bind_val_right {α : Type} (m : WM α) : WEq (WM.bind m WM.val) m :=
   ⟨PEq.and_top _, rfl⟩
 
+/-- Associativity, up to `⊣⊢`. -/
 theorem WM.bind_assoc {α β γ : Type} (m : WM α) (f : α → WM β) (g : β → WM γ) :
     WEq (WM.bind (WM.bind m f) g) (WM.bind m fun a => WM.bind (f a) g) :=
   ⟨PEq.and_assoc _ _ _, rfl⟩
@@ -350,6 +362,7 @@ def Form.pureB (isC : String → Bool) : Form → Bool
   | .exists_ A => A.pureB isC
   | _ => true
 
+/-- Opening does not change purity. -/
 theorem Form.pureB_openAt (isC : String → Bool) (t : Tm) :
     ∀ (A : Form) (k : Nat), (A.openAt k t).pureB isC = A.pureB isC
   | .top, _ | .bot, _ | .pred _ _, _ | .imp _ _, _ | .circ _ _, _ | .forall_ _, _ => rfl
@@ -361,6 +374,7 @@ theorem Form.pureB_openAt (isC : String → Bool) (t : Tm) :
       rw [Form.pureB_openAt isC t A k, Form.pureB_openAt isC t B k]
   | .exists_ A, k => Form.pureB_openAt isC t A (k + 1)
 
+/-- A pure Σ-formula is its own abstraction. -/
 theorem Form.strip_pure (isC : String → Bool) {S : Form} (hS : IsSigma S) (hp : S.pureB isC = true) :
     S.strip isC = S := by
   induction hS with
@@ -376,6 +390,7 @@ theorem Form.strip_pure (isC : String → Bool) {S : Form} (hS : IsSigma S) (hp 
       exact congrArg₂ Form.or (ih₁ hp.1) (ih₂ hp.2)
   | ex _ ih => exact congrArg Form.exists_ (ih hp)
 
+/-- A proof of a pure query has active constraint `⊤`, up to `⊣⊢`. -/
 theorem CTyped.active_pure {isC : String → Bool} {Θ : Program} {S : Form} {p : CProof}
     (h : CTyped isC Θ S p) (hp : S.pureB isC = true) : PEq p.active .top := by
   induction h with
@@ -443,6 +458,8 @@ def RefinedBy (Δ : List Form) (Θa : Program) (T : Nat → List Tm → Wit → 
     Prv Δ (.imp (.and (T w ts z) (atW (Form.instAll ts c.body) z))
       (.pred c.head (Tm.instAllList ts (headVars c.arity))))
 
+/-- The invariant behind Theorem 6.8: the extracted witness is closed, the extracted
+constraint entails the instance it selects, and that instance entails the formula. -/
 theorem ATyped.refine {Δ : List Form} {Θa : Program} {T : Nat → List Tm → Wit → Form} {q : Q}
     (hR : RefinedBy Δ Θa T) {S : Form} {a : AProof} (h : ATyped Θa q S a) :
     (a.ext T).2.lc ∧ Prv Δ (.imp (a.ext T).1 (atW S (a.ext T).2)) ∧
@@ -477,6 +494,8 @@ theorem thm_6_8 {Δ : List Form} {Θa : Program} {T : Nat → List Tm → Wit �
   let r := h.refine hR
   .impI (.impE r.2.2.weaken_cons (.impE r.2.1.weaken_cons .hd))
 
+/-- At any witness, the table's constraints and the abstract instance together entail the
+concrete body: the core of Proposition 6.6. -/
 theorem ctable_atW (isC : String → Bool) {Γ : List Form} :
     ∀ (z : Wit) {S : Form}, IsSigma S → z.lc →
       Prv Γ (ctable isC S z) → Prv Γ (atW (S.strip isC) z) → Prv Γ S := by

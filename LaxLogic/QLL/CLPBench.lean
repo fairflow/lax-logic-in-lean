@@ -25,6 +25,7 @@ def dec (q : ℚ) (k : Nat) : String :=
   (if m < 0 then "-" else "") ++ String.ofList (s.take (s.length - k)) ++ "." ++
     String.ofList (s.drop (s.length - k))
 
+/-- One output of an `n`-bit adder: search, check, settle, certify. -/
 def benchAdder (n : Nat) : IO Unit := do
   let Θ := adder n
   let G := query (at_ s!"c{n}" [v "z"])
@@ -56,6 +57,7 @@ def benchAdderAll (n : Nat) : IO Unit := do
   let t2 ← IO.monoMsNow
   IO.println s!"adder-all n={n}: proof tree {psize p} nodes, {cs.length} constraints; checked {ok}; {outs.length} outputs settled, all certified {allOK}; latest output {worst}; search+check {t1-t0} ms, settle+certify {t2-t1} ms"
 
+/-- The mortgage program's two queries. -/
 def benchMortgage : IO Unit := do
   let G1 := query (at_ "mortgage" [v "P", num "120", num "1/100", num "172165/100", num "0"])
   let t0 ← IO.monoMsNow
@@ -81,6 +83,7 @@ def benchMortgage : IO Unit := do
       let det := entailsEq cs ⟨[("MP", 1), ("P", -k)], 0⟩
       IO.println s!"mortgage query 2 (D = 5, I = {name}, B = 0): checked {a.typed}; MP = {k} · P = {dec k 9}… · P, certified {det}"
 
+/-- Scheduling under three deadlines. -/
 def benchSched : IO Unit := do
   for d in [12, 11, 10] do
     let G := query (conj [at_ "schedule" [v "Sa", v "Sb", v "Sc", v "Sd", v "E"],

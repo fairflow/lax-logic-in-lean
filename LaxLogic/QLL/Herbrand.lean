@@ -50,12 +50,14 @@ namespace LaxLogic.QLL
 
 /-! ## Local closedness, through instantiation and selection -/
 
+/-- A list of terms, each locally closed at `k`, is locally closed at `k`. -/
 theorem Tm.lcAtList_of_forall {k : Nat} :
     ∀ {ts : List Tm}, (∀ t ∈ ts, Tm.lcAt k t) → Tm.lcAtList k ts
   | [],     _ => trivial
   | t :: _, h => ⟨h t (List.mem_cons.2 (Or.inl rfl)),
       Tm.lcAtList_of_forall fun u hu => h u (List.mem_cons.2 (Or.inr hu))⟩
 
+/-- The empty list of terms is locally closed. -/
 theorem Tm.lcAtList_nil {k : Nat} : Tm.lcAtList k [] := trivial
 
 /-- Instantiating the argument list of a clause head. -/
@@ -63,11 +65,13 @@ def Tm.instAllList : List Tm → List Tm → List Tm
   | [],      us => us
   | t :: ts, us => Tm.instAllList ts (Tm.openAtList ts.length t us)
 
+/-- Instantiating an atom instantiates its arguments. -/
 theorem Form.instAll_pred : ∀ (ts : List Tm) (P : String) (us : List Tm),
     Form.instAll ts (.pred P us) = .pred P (Tm.instAllList ts us)
   | [],      _, _  => rfl
   | t :: ts, P, us => Form.instAll_pred ts P (Tm.openAtList ts.length t us)
 
+/-- Closed instances of arguments closed at level `|t̃|` are closed. -/
 theorem Tm.lcAtList_instAllList : ∀ (ts us : List Tm), (∀ t ∈ ts, Tm.lcAt 0 t) →
     Tm.lcAtList ts.length us → Tm.lcAtList 0 (Tm.instAllList ts us)
   | [],      _,  _,   h => h
@@ -76,6 +80,7 @@ theorem Tm.lcAtList_instAllList : ∀ (ts us : List Tm), (∀ t ∈ ts, Tm.lcAt 
         (Tm.lcAtList_openAtList ts.length t
           (Tm.lcAt_mono (Nat.zero_le _) t (hts t (List.mem_cons.2 (Or.inl rfl)))) us h)
 
+/-- Instantiating all outer universals of a formula closed at level `|t̃|` by closed terms closes it. -/
 theorem Form.lcAt_instAll : ∀ (ts : List Tm) (A : Form), (∀ t ∈ ts, Tm.lcAt 0 t) →
     Form.lcAt ts.length A → Form.lcAt 0 (Form.instAll ts A)
   | [],      _, _,   h => h
@@ -84,6 +89,7 @@ theorem Form.lcAt_instAll : ∀ (ts : List Tm) (A : Form), (∀ t ∈ ts, Tm.lcA
         (Form.lcAt_openAt A ts.length t
           (Tm.lcAt_mono (Nat.zero_le _) t (hts t (List.mem_cons.2 (Or.inl rfl)))) h)
 
+/-- Selection preserves local closedness. -/
 theorem Form.lcAt_sel : ∀ (A : Form) (g : Idx) (k : Nat), Form.lcAt k A → Form.lcAt k (sel A g)
   | .top, g, _, h => by rw [sel_top]; exact h
   | .bot, g, _, h => by cases g <;> exact h
@@ -105,6 +111,7 @@ theorem Form.lcAt_sel : ∀ (A : Form) (g : Idx) (k : Nat), Form.lcAt k A → Fo
       | ex g => exact Form.lcAt_sel A g (k + 1) h
       | _ => exact h
 
+/-- Primitive positive formulas are closed under opening a binder. -/
 theorem IsPP.openAt {A : Form} (h : IsPP A) : ∀ (k : Nat) (t : Tm), IsPP (A.openAt k t) := by
   induction h with
   | top => intro _ _; exact .top
@@ -112,6 +119,7 @@ theorem IsPP.openAt {A : Form} (h : IsPP A) : ∀ (k : Nat) (t : Tm), IsPP (A.op
   | and _ _ ih₁ ih₂ => intro k t; exact .and (ih₁ k t) (ih₂ k t)
   | ex _ ih => intro k t; exact .ex (ih (k + 1) t)
 
+/-- Primitive positive formulas are closed under instantiation. -/
 theorem IsPP.instAll : ∀ (ts : List Tm) {A : Form}, IsPP A → IsPP (Form.instAll ts A)
   | [],      _, h => h
   | t :: ts, _, h => IsPP.instAll ts (h.openAt _ t)
@@ -186,6 +194,7 @@ theorem HFrame.evTm_lc (β : List Tm) :
   | .bvar i,   h => absurd h (Nat.not_lt_zero i)
   | .fvar _,   _ => rfl
   | .fn f ts,  h => congrArg (Tm.fn f) (HFrame.evTms_lc β ts h)
+/-- The list form of `HFrame.evTm_lc`. -/
 theorem HFrame.evTms_lc (β : List Tm) :
     ∀ ts : List Tm, Tm.lcAtList 0 ts → (F.model I hI).evTms Tm.fvar β ts = ts
   | [],      _ => rfl
@@ -217,10 +226,12 @@ abbrev herbrand1 (I : String → List Tm → Prop) : KModel :=
 def HTrue (I : String → List Tm → Prop) (A : Form) : Prop :=
   (herbrand1 I).force A () Tm.fvar []
 
+/-- In `herbrand1`, a closed term denotes itself. -/
 theorem herbrand1_evTm (I : String → List Tm → Prop) (t : Tm) (h : Tm.lcAt 0 t) :
     (herbrand1 I).evTm Tm.fvar [] t = t :=
   HFrame.evTm_lc HFrame.one (fun _ => I) (fun _ h => h) [] t h
 
+/-- The list form of `herbrand1_evTm`. -/
 theorem herbrand1_evTms (I : String → List Tm → Prop) (us : List Tm) (h : Tm.lcAtList 0 us) :
     (herbrand1 I).evTms Tm.fvar [] us = us :=
   HFrame.evTms_lc HFrame.one (fun _ => I) (fun _ h => h) [] us h
@@ -230,16 +241,20 @@ theorem herbrand1_evTms (I : String → List Tm → Prop) (us : List Tm) (h : Tm
 section
 variable {I : String → List Tm → Prop}
 
+/-- A closed atom is true exactly when it is in the interpretation. -/
 theorem HTrue_pred {p : String} {us : List Tm} (h : Tm.lcAtList 0 us) :
     HTrue I (.pred p us) ↔ I p us := by
   show False ∨ I p ((herbrand1 I).evTms Tm.fvar [] us) ↔ I p us
   rw [herbrand1_evTms I us h]
   exact ⟨fun h => h.resolve_left id, Or.inr⟩
 
+/-- Truth of a conjunction. -/
 theorem HTrue_and {A B : Form} : HTrue I (.and A B) ↔ HTrue I A ∧ HTrue I B := Iff.rfl
 
+/-- Truth of a disjunction. -/
 theorem HTrue_or {A B : Form} : HTrue I (.or A B) ↔ HTrue I A ∨ HTrue I B := Iff.rfl
 
+/-- Truth of an implication (one world, so classical on this clause). -/
 theorem HTrue_imp {A B : Form} : HTrue I (.imp A B) ↔ (HTrue I A → HTrue I B) :=
   ⟨fun h ha => h () trivial ha, fun h _ _ ha => h ha⟩
 
@@ -249,6 +264,7 @@ theorem HTrue_circ {q : Q} {A : Form} : HTrue I (.circ q A) ↔ HTrue I A := by
   · exact ⟨fun h => (h () trivial).elim fun _ hu => hu.2, fun h _ _ => ⟨(), trivial, h⟩⟩
   · exact ⟨fun h => (h () trivial).elim fun _ hu => hu.2, fun h _ _ => ⟨(), trivial, h⟩⟩
 
+/-- Truth of an existential: some closed term witnesses it. -/
 theorem HTrue_exists {A : Form} :
     HTrue I (.exists_ A) ↔ ∃ t, Tm.lcAt 0 t ∧ HTrue I (A.openAt 0 t) := by
   constructor
@@ -261,6 +277,7 @@ theorem HTrue_exists {A : Form} :
     rw [herbrand1_evTm I t ht] at e
     exact ⟨t, ht, e.1 h⟩
 
+/-- Truth of a universal: every closed instance is true. -/
 theorem HTrue_forall {A : Form} :
     HTrue I (.forall_ A) ↔ ∀ t, Tm.lcAt 0 t → HTrue I (A.openAt 0 t) := by
   constructor
@@ -273,6 +290,7 @@ theorem HTrue_forall {A : Form} :
     rw [herbrand1_evTm I t ht] at e
     exact e.1 (h t ht)
 
+/-- Truth of `∀ⁿ. A`: every closed instance by `n` terms is true. -/
 theorem HTrue_foralls : ∀ (m : Nat) (A : Form),
     HTrue I (Form.foralls m A) ↔
       ∀ ts : List Tm, ts.length = m → (∀ t ∈ ts, Tm.lcAt 0 t) → HTrue I (Form.instAll ts A)
@@ -312,6 +330,7 @@ theorem HTrue_foralls : ∀ (m : Nat) (A : Form),
         rw [e] at h'
         exact h'
 
+/-- In one world `◯` collapses: a modal head is true exactly when its atom is. -/
 theorem HTrue_instAll_headForm (h : Horn) (ts : List Tm) :
     HTrue I (Form.instAll ts h.headForm) ↔ HTrue I (Form.instAll ts h.headAtom) := by
   unfold Horn.headForm
@@ -370,6 +389,7 @@ theorem Holds.toHTrue (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h �
       exact (HTrue_pred (Tm.lcAtList_instAllList ts h.args hts
         (by rw [hlen]; exact (hP h hh).2))).2 (.fire hh hlen hts hb)
 
+/-- `Holds.of_HTrue`, by induction on a size bound. -/
 theorem Holds.of_HTrue_aux : ∀ (n : Nat) {φ : Form}, φ.size < n → IsPP φ → Form.lcAt 0 φ →
     HTrue (LHM R P) φ → Holds R P φ
   | 0, _, hn, _, _, _ => absurd hn (Nat.not_lt_zero _)
@@ -391,6 +411,7 @@ theorem Holds.of_HTrue {φ : Form} (hφ : IsPP φ) (hc : Form.lcAt 0 φ)
     (h : HTrue (LHM R P) φ) : Holds R P φ :=
   Holds.of_HTrue_aux _ (Nat.lt_succ_self _) hφ hc h
 
+/-- Atoms of the least model have closed arguments. -/
 theorem LHM_lc (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF)
     {p : String} {us : List Tm} (hl : LHM R P p us) : Tm.lcAtList 0 us := by
   cases hl with
@@ -472,11 +493,14 @@ theorem Holds.prv (hm : ∀ h ∈ P, h.modal = false) {φ : Form} (d : Holds RNo
       rw [← e]
       exact .impE hi ih
 
+/-- Lloyd's completeness, proof-theoretic half: a closed Σ-query true in the least model of a
+non-modal Horn program is provable from it. -/
 theorem prv_of_HTrue_LHM (hm : ∀ h ∈ P, h.modal = false) {S : Form} (hS : IsSigma S)
     (hc : Form.lcAt 0 S) (h : HTrue (LHM RNone P) S) : Prv (P.map Horn.form) S := by
   obtain ⟨g, hg, h⟩ := ((herbrand1 (LHM RNone P)).force_iff_sel hS () Tm.fvar []).1 h
   exact Prv.of_sel hS hg (Holds.prv hm (Holds.of_HTrue (hS.pp_sel hg) (Form.lcAt_sel S g 0 hc) h))
 
+/-- A consequence of a Horn program is true in its least model, which is a model. -/
 theorem HTrue_of_consequence (hP : ∀ h ∈ P, h.WF) {S : Form}
     (h : Consequence (P.map Horn.form) S) : HTrue (LHM RNone P) S :=
   h (herbrand1 (LHM RNone P)) () Tm.fvar (fun _ _ => trivial) fun B hB => by
@@ -496,6 +520,7 @@ theorem lloyd_completeness (hP : ∀ h ∈ P, h.WF) (hm : ∀ h ∈ P, h.modal =
     Prv (P.map Horn.form) S :=
   prv_of_HTrue_LHM hm hS hc (HTrue_of_consequence hP h)
 
+/-- **Lloyd's theorem**, as an equivalence: for closed Σ-queries, `P ⊫ S ⟺ P ⊢ S`. -/
 theorem lloyd_consequence_iff (hP : ∀ h ∈ P, h.WF) (hm : ∀ h ∈ P, h.modal = false)
     {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S) :
     Consequence (P.map Horn.form) S ↔ Prv (P.map Horn.form) S :=

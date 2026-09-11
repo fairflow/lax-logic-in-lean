@@ -26,16 +26,21 @@ open LaxLogic.QLL LaxLogic.QLL.Engine LaxLogic.QLL.LinQ LaxLogic.QLL.CLPExamples
 def unwire (s : String) : String :=
   String.ofList (((s.toList.dropWhile (· != '"')).drop 1).takeWhile (· != '"'))
 
+/-- The variables of a system, each once. -/
 def varsOf (cs : List LinCon) : List String :=
   (cs.flatMap fun c => c.e.terms.map (·.1)).eraseDups
 
+/-- The Wolfram symbol for a variable. -/
 def sym (vs : List String) (x : String) : String := s!"v{vs.idxOf x}"
 
+/-- A Wolfram list. -/
 def wlList (xs : List String) : String := "{" ++ ", ".intercalate xs ++ "}"
 
+/-- A linear expression in Wolfram syntax. -/
 def wlLin (vs : List String) (e : Lin) : String :=
   "(" ++ " + ".intercalate ((e.terms.map fun p => s!"({p.2})*{sym vs p.1}") ++ [s!"({e.const})"]) ++ ")"
 
+/-- A constraint in Wolfram syntax. -/
 def wlCon (vs : List String) (c : LinCon) : String :=
   wlLin vs c.e ++ (match c.k with | .le => " <= 0" | .lt => " < 0" | .eq => " == 0")
 
@@ -43,9 +48,11 @@ def wlCon (vs : List String) (c : LinCon) : String :=
 def findCmd (cons vars : List String) : String :=
   s!"Module[\{r = FindInstance[{wlList cons}, {wlList vars}, Reals]}, If[r === \{}, \"none\", StringRiffle[ToString[#, InputForm] & /@ ({wlList vars} /. First[r]), \",\"]]]"
 
+/-- Rationals from Wolfram's comma-separated reply. -/
 def parseVals (s : String) : Option (List ℚ) :=
   if s.isEmpty then some [] else (s.splitOn ",").mapM parseRat?
 
+/-- Send a command through the bridge and unwrap the string reply. -/
 def ask (t : Mathematica.Transport) (cmd : String) : IO String :=
   return unwire (← Mathematica.executeRaw t cmd)
 
@@ -105,11 +112,13 @@ def wolframMin (t : Mathematica.Transport) (cs : List LinCon) (z : String) :
       | none => return some (zstar, wok, false)
   | _ => return none
 
+/-- Print a verdict. -/
 def showV : Verdict → String
   | .sat _ => "sat (witness checked)"
   | .unsat _ => "unsat (Farkas certificate checked)"
   | .unknown => "unknown"
 
+/-- Run an action and measure it. -/
 def timed {α : Type} (act : IO α) : IO (α × Nat) := do
   let t0 ← IO.monoMsNow
   let a ← act
@@ -126,6 +135,7 @@ def compare (t : Mathematica.Transport) (name : String) (cs : List LinCon) (fmTo
     else pure ""
   IO.println s!"{name}: {cs.length} constraints, {(varsOf cs).length} variables; Wolfram: {showV vw}, {tw} ms{fmPart}"
 
+/-- Report Wolfram's certified minimum. -/
 def minimise (t : Mathematica.Transport) (name : String) (cs : List LinCon) (z : String)
     (expected : ℚ) : IO Unit := do
   let (r, tw) ← timed (wolframMin t cs z)
@@ -134,6 +144,7 @@ def minimise (t : Mathematica.Transport) (name : String) (cs : List LinCon) (z :
       IO.println s!"{name}: least {z} = {zstar} (expected {expected}); witness checked {wok}, lower bound checked {lok}; {tw} ms"
   | none => IO.println s!"{name}: Wolfram gave no minimum"
 
+/-- The answer constraint of the engine's first proof, as linear constraints. -/
 def consOfProof (Θ : Program) (G : Form) (eager : Bool) (fuel : Nat) : List LinCon :=
   match run Θ isLinC eager fuel G with
   | some (p, _) => (consOf p.total).getD []
@@ -152,6 +163,7 @@ def crossSystem (n : Nat) (infeasible : Bool) : List LinCon :=
     base ++ [⟨⟨(List.range n).map (fun i => (x i, (-1 : ℚ))), (n : ℚ)⟩, .le⟩]
   else base
 
+/-- The comparison runs. -/
 def main : IO Unit := do
   let t ← Mathematica.defaultTransport
   -- a designed cell where Fourier–Motzkin's elimination blows up

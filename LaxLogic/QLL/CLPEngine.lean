@@ -33,6 +33,7 @@ open LaxLogic.QLL LaxLogic.QLL.LinQ
 
 /-! ## Building programs -/
 
+/-- Decide whether a formula is a Σ-formula. -/
 def isSigmaB : Form → Bool
   | .top => true
   | .pred _ _ => true
@@ -40,6 +41,7 @@ def isSigmaB : Form → Bool
   | .exists_ A => isSigmaB A
   | _ => false
 
+/-- `isSigmaB` is sound. -/
 theorem isSigmaB_sound : ∀ A, isSigmaB A = true → IsSigma A
   | .top, _ => .top
   | .pred P ts, _ => .pred P ts
@@ -65,6 +67,7 @@ def mkClauseD (arity : Nat) (head : String) (body : Form) : Clause :=
 
 /-! ## The search -/
 
+/-- The search state: the constraint store and a counter for fresh variables. -/
 structure St where
   store : List Form
   fresh : Nat
@@ -84,6 +87,7 @@ def Program.index (Θ : Program) : Std.HashMap String (List (Clause × Nat)) :=
   Θ.zipIdx.foldr (fun cw m => if cw.1.modal then m else
     m.insert cw.1.head (cw :: m.getD cw.1.head [])) {}
 
+/-- The first success among alternatives: backtracking. -/
 def firstOf {α β : Type} : List α → (α → Option β) → Option β
   | [], _ => none
   | a :: l, f => match f a with
@@ -149,6 +153,7 @@ def proveAll (Θ : Program) (isC : String → Bool) (eager : Bool) :
           fun r => (.exI u r.1, r.2)
     | _ => []
 
+/-- Run the search from the empty store with a given clause index. -/
 def runWith (ix : String → List (Clause × Nat)) (isC : String → Bool) (eager : Bool)
     (fuel : Nat) (G : Form) : Option (CProof × St) :=
   solveK ix isC eager fuel G ⟨[], 0⟩ fun p st => some (p, st)
@@ -164,12 +169,14 @@ hashing is opaque to it). -/
 def Program.indexL (Θ : Program) (B : String) : List (Clause × Nat) :=
   Θ.zipIdx.filter fun cw => !cw.1.modal && cw.1.head == B
 
+/-- The engine with a list index, which the kernel can evaluate. -/
 def runL (Θ : Program) (isC : String → Bool) (eager : Bool) (fuel : Nat) (G : Form) :
     Option (CProof × St) :=
   runWith (Program.indexL Θ) isC eager fuel G
 
 /-! ## Certified answers -/
 
+/-- An answer: its proof tree, its total constraint, and whether `checkC` accepted the tree. -/
 structure Answer where
   proof : CProof
   constraint : Form
@@ -181,18 +188,22 @@ def Answer.verdict (a : Answer) : Verdict :=
   | some cs => solve cs
   | none => .unknown
 
+/-- Package a proof tree as an answer. -/
 def mkAnswer (Θ : Program) (isC : String → Bool) (G : Form) (p : CProof) : Answer :=
   ⟨p, p.total, checkC isC Θ G p⟩
 
+/-- Run the engine and package the first answer. -/
 def answer (Θ : Program) (isC : String → Bool) (eager : Bool) (fuel : Nat) (G : Form) :
     Option Answer :=
   (run Θ isC eager fuel G).map fun r => mkAnswer Θ isC G r.1
 
+/-- An accepted tree's total constraint entails the query. -/
 theorem mkAnswer_sound {Θ : Program} {isC : String → Bool} {G : Form} {p : CProof}
     (ht : (mkAnswer Θ isC G p).typed = true) :
     Prv Θ.forms (.imp (mkAnswer Θ isC G p).constraint G) :=
   (checkC_sound isC Θ p G ht).prv_total
 
+/-- **Answer soundness**: `Θ ⊢ a.constraint ⊃ G` for an answer whose tree was accepted. -/
 theorem answer_sound {Θ : Program} {isC : String → Bool} {eager : Bool} {fuel : Nat} {G : Form}
     {a : Answer} (h : answer Θ isC eager fuel G = some a) (ht : a.typed = true) :
     Prv Θ.forms (.imp a.constraint G) := by
@@ -203,6 +214,7 @@ theorem answer_sound {Θ : Program} {isC : String → Bool} {eager : Bool} {fuel
       rw [hr] at h; cases h
       exact mkAnswer_sound ht
 
+/-- A satisfiable verdict gives an assignment satisfying the answer constraint. -/
 theorem Answer.verdict_sat {a : Answer} {w : List (String × ℚ)} (h : a.verdict = .sat w) :
     CSat (asg w) a.constraint := by
   unfold Answer.verdict at h
@@ -225,6 +237,7 @@ def entailsLe (cs : List LinCon) (e : Lin) : Bool :=
   | .unsat _ => true
   | _ => false
 
+/-- Checked entailment is sound: every solution of `cs` has `e ≤ 0`. -/
 theorem entailsLe_sound {cs : List LinCon} {e : Lin} (h : entailsLe cs e = true) :
     ∀ σ, (∀ c ∈ cs, c.holds σ) → e.eval σ ≤ 0 := by
   intro σ hσ
@@ -246,6 +259,7 @@ theorem entailsLe_sound {cs : List LinCon} {e : Lin} (h : entailsLe cs e = true)
 def entailsEq (cs : List LinCon) (e : Lin) : Bool :=
   entailsLe cs e && entailsLe cs (e.smul (-1))
 
+/-- Checked entailment of an equation is sound. -/
 theorem entailsEq_sound {cs : List LinCon} {e : Lin} (h : entailsEq cs e = true) :
     ∀ σ, (∀ c ∈ cs, c.holds σ) → e.eval σ = 0 := by
   intro σ hσ
@@ -306,6 +320,7 @@ def critical (cs : List LinCon) (pred : Std.HashMap String Nat) : String → Nat
 def lowerBoundCert (cs : List LinCon) (z : String) (zstar : ℚ) (ms : List ℚ) : Bool :=
   checkFarkas ((ms ++ [1]).zip (cs ++ [(⟨⟨[(z, 1)], -zstar⟩, .lt⟩ : LinCon)]))
 
+/-- A checked lower-bound certificate: every solution has `z* ≤ z`. -/
 theorem lowerBoundCert_sound {cs : List LinCon} {z : String} {zstar : ℚ} {ms : List ℚ}
     (h : lowerBoundCert cs z zstar ms = true) (hlen : ms.length = cs.length) :
     ∀ σ, (∀ c ∈ cs, c.holds σ) → zstar ≤ σ z := by
@@ -331,6 +346,7 @@ def zc (z : String) : List (String × ℚ) → ℚ
 /-- `σ` with `z` raised to `r`. -/
 def raise (σ : String → ℚ) (z : String) (r : ℚ) : String → ℚ := fun y => if y = z then r else σ y
 
+/-- Raising `z` to `r` changes a linear form by its `z`-coefficient times `r − σ(z)`. -/
 theorem sumTerms_raise (σ : String → ℚ) (z : String) (r : ℚ) :
     ∀ l, sumTerms (raise σ z r) l = sumTerms σ l + zc z l * (r - σ z)
   | [] => by simp [sumTerms, zc]
@@ -345,6 +361,7 @@ so raising `z` preserves it: a settled signal stays settled. -/
 def upClosed (cs : List LinCon) (z : String) : Bool :=
   cs.all fun c => c.k != .eq && decide (zc z c.e.terms ≤ 0)
 
+/-- Raising a variable with non-positive coefficients in every inequality preserves solutions. -/
 theorem upClosed_sound {cs : List LinCon} {z : String} (h : upClosed cs z = true)
     {σ : String → ℚ} {r : ℚ} (hr : σ z ≤ r) (hσ : ∀ c ∈ cs, c.holds σ) :
     ∀ c ∈ cs, c.holds (raise σ z r) := by
@@ -362,12 +379,14 @@ theorem upClosed_sound {cs : List LinCon} {z : String} (h : upClosed cs z = true
   | lt => simp only [LinCon.holds] at hcs ⊢; rw [key]; linarith
   | eq => exact absurd rfl hc'.1
 
+/-- Satisfaction of a formula read as constraints, from satisfaction of its constraint list. -/
 theorem CSat.of_holds {σ : String → ℚ} {A : Form} (hs : (consOf A).isSome = true)
     (h : ∀ c ∈ (consOf A).getD [], c.holds σ) : CSat σ A := by
   cases hc : consOf A with
   | none => rw [hc] at hs; cases hs
   | some cs => exact ⟨cs, hc, by rw [hc] at h; exact h⟩
 
+/-- The least value of a variable, with a witness attaining it and multipliers refuting less. -/
 structure Settle where
   zstar : ℚ
   witness : List (String × ℚ)
@@ -375,6 +394,7 @@ structure Settle where
   witnessOK : Bool
   lowerOK : Bool
 
+/-- Longest paths through the difference constraints, with both certificates. -/
 def settle (cs : List LinCon) (z : String) : Settle :=
   let (v, pred) := earliest cs
   let zstar := v.getD z 0
@@ -386,6 +406,7 @@ def settle (cs : List LinCon) (z : String) : Settle :=
 
 /-! ## Printing -/
 
+/-- Print a term. -/
 partial def showTm : Tm → String
   | .bvar i => s!"#{i}"
   | .fvar x => x
@@ -398,6 +419,7 @@ def atomsOf : Form → List Form
   | .and A B => atomsOf A ++ atomsOf B
   | A => [A]
 
+/-- Print a formula. -/
 partial def showForm : Form → String
   | .top => "true"
   | .bot => "false"
@@ -410,6 +432,7 @@ partial def showForm : Form → String
   | .forall_ A => "∀." ++ showForm A
   | .exists_ A => "∃." ++ showForm A
 
+/-- Print an answer. -/
 def showAnswer (a : Answer) : String :=
   let c := " ∧ ".intercalate ((atomsOf a.constraint).map showForm)
   let v := match a.verdict with

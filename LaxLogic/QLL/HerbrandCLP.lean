@@ -84,6 +84,7 @@ theorem CTyped.of_sel_aux : ∀ (n : Nat) {S : Form}, S.size < n → IsSigma S �
               (by rw [ind_openAt]; exact hg₁) h₁
             exact ⟨.exI t p₁, .exI t ht hp₁, e₁⟩
 
+/-- A proof tree for the disjunct at an index gives one for the formula, with the same total. -/
 theorem CTyped.of_sel {S : Form} (hS : IsSigma S) {g : Idx} (hg : g ∈ ind S) {p : CProof}
     (h : CTyped isC Θ (sel S g) p) : ∃ p' : CProof, CTyped isC Θ S p' ∧ p'.total = p.total :=
   CTyped.of_sel_aux _ (Nat.lt_succ_self _) hS hg h
@@ -152,6 +153,8 @@ theorem CTyped.HTrue_of_total (hWF : ∀ c ∈ Θ, c.WF)
       rw [e] at hi
       exact HTrue_imp.1 hi hbody
 
+/-- Completeness at world 2: truth in the least model over `R` gives a proof tree whose
+total constraint is true in `R`. -/
 theorem CTyped.of_HTrue (hRC : ∀ p us, R p us → isC p = true)
     (hRlc : ∀ p us, R p us → Tm.lcAtList 0 us) (hm : ∀ c ∈ Θ, c.modal = false)
     {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S) (h : HTrue (LHM R Θ.horn) S) :
@@ -174,11 +177,13 @@ end
 
 /-! ## Extraction at world 2 -/
 
+/-- Truth in an interpretation is invariant under `⊣⊢`. -/
 theorem HTrue_of_PEq {I : String → List Tm → Prop} {A B : Form} (h : PEq A B) (ha : HTrue I A) :
     HTrue I B :=
   Prv.sound h.1 (herbrand1 I) () Tm.fvar (fun _ _ => trivial) (fun C hC => by
     rw [List.mem_singleton] at hC; subst hC; exact ha)
 
+/-- The constraint table of a body is a Σ-formula at every witness. -/
 theorem ctable_sigma (isC : String → Bool) : ∀ (z : Wit) (S : Form), IsSigma (ctable isC S z) := by
   intro z
   induction z with
@@ -188,6 +193,7 @@ theorem ctable_sigma (isC : String → Bool) : ∀ (z : Wit) (S : Form), IsSigma
   | inr a ih => intro S; cases S <;> first | exact .top | exact ih _ | (show IsSigma (if _ then _ else _); split <;> first | exact .top | exact .pred _ _)
   | pack t a ih => intro S; cases S <;> first | exact .top | exact ih _ | (show IsSigma (if _ then _ else _); split <;> first | exact .top | exact .pred _ _)
 
+/-- The table of a program is a Σ-formula everywhere. -/
 theorem Program.table_sigma (isC : String → Bool) (Θ : Program) :
     ∀ w ts z, IsSigma (Θ.table isC w ts z) := by
   intro w ts z
@@ -196,6 +202,7 @@ theorem Program.table_sigma (isC : String → Bool) (Θ : Program) :
   · exact ctable_sigma isC z _
   · exact .top
 
+/-- The constraint extracted from an abstract proof is a Σ-formula. -/
 theorem AProof.ext_sigma {T : Nat → List Tm → Wit → Form} (hT : ∀ w ts z, IsSigma (T w ts z)) :
     ∀ a : AProof, IsSigma (a.ext T).1
   | .val => .top
@@ -237,6 +244,7 @@ end
 
 /-! ## The canonical frame -/
 
+/-- The worlds of the canonical frame. -/
 inductive W4 where
   | w0 | w1 | w2 | w3
   deriving DecidableEq
@@ -250,9 +258,11 @@ def W4.leB : W4 → W4 → Bool
   | .w3, .w3 => true
   | _, _ => false
 
+/-- A false accessibility cannot hold. -/
 theorem W4.le_false {u v : W4} (h : W4.leB u v = true) (h' : W4.leB u v = false) : False := by
   rw [h] at h'; cases h'
 
+/-- The order is transitive. -/
 theorem W4.leB_trans {u v w : W4} (h₁ : W4.leB u v = true) (h₂ : W4.leB v w = true) :
     W4.leB u w = true := by
   cases u <;> cases v <;> cases w <;>
@@ -272,12 +282,14 @@ def HFrame.four : HFrame where
   m_trans := W4.leB_trans
   m_sub h := h
 
+/-- The interpretation of each world; the fallible world 3 makes everything true. -/
 def I4 (I₀ I₁ I₂ : String → List Tm → Prop) : W4 → String → List Tm → Prop
   | .w0 => I₀
   | .w1 => I₁
   | .w2 => I₂
   | .w3 => fun _ _ => True
 
+/-- The four-world interpretation is monotone when `I₀ ⊆ I₁` and `I₀ ⊆ I₂`. -/
 theorem I4_hered {I₀ I₁ I₂ : String → List Tm → Prop} (h01 : ∀ p us, I₀ p us → I₁ p us)
     (h02 : ∀ p us, I₀ p us → I₂ p us) :
     ∀ {w v : HFrame.four.W} {p : String} {ts : List Tm},
@@ -291,6 +303,7 @@ theorem I4_hered {I₀ I₁ I₂ : String → List Tm → Prop} (h01 : ∀ p us,
 section
 variable (isC : String → Bool) (q : Q) (Θ : Program) (R : String → List Tm → Prop)
 
+/-- `Π⁰` of an abstracted program is empty: every clause of `Θ♯` is modal. -/
 theorem Program.horn0_abs : (Θ.abs isC q).horn0 = [] := by
   induction Θ with
   | nil => rfl
@@ -306,6 +319,7 @@ abbrev canonI1 : String → List Tm → Prop := LHM RNone (Θ.abs isC q).horn
 /-- World 2: the least model of `Π² = Θ` over the constraint relations. -/
 abbrev canonI2 : String → List Tm → Prop := LHM R Θ.horn
 
+/-- World 0 of the canonical model has no atoms. -/
 theorem canonI0_empty (p : String) (us : List Tm) : ¬ canonI0 isC q Θ p us := by
   intro h
   have h' : Holds RNone [] (.pred p us) := by
@@ -314,6 +328,7 @@ theorem canonI0_empty (p : String) (us : List Tm) : ¬ canonI0 isC q Θ p us := 
   | base hr => exact hr
   | fire hh _ _ _ => exact absurd hh (List.not_mem_nil)
 
+/-- **Lemma 7.3**: the canonical interpretation is monotone along the frame. -/
 theorem canon_hered : ∀ {w v : HFrame.four.W} {p : String} {ts : List Tm},
     HFrame.four.le w v → I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R) w p ts →
       I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R) v p ts :=
@@ -329,11 +344,13 @@ end
 section
 variable {isC : String → Bool} {q : Q} {Θ : Program} {R : String → List Tm → Prop}
 
+/-- At a non-fallible world, a Σ-formula is forced exactly when true in the world's interpretation. -/
 theorem canon_sigma {S : Form} (hS : IsSigma S) (w : W4) (hw : w ≠ .w3) :
     (canonModel isC q Θ R).force S w Tm.fvar [] ↔
       HTrue (I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R) w) S :=
   HFrame.force_sigma HFrame.four (I4 (canonI0 isC q Θ) (canonI1 isC q Θ) (canonI2 Θ R)) (canon_hered isC q Θ R) hS w [] hw
 
+/-- Abstraction preserves local closedness. -/
 theorem Form.lcAt_strip (isC : String → Bool) : ∀ (A : Form) (k : Nat),
     Form.lcAt k A → Form.lcAt k (A.strip isC)
   | .top, _, h => h
@@ -350,11 +367,13 @@ theorem Form.lcAt_strip (isC : String → Bool) : ∀ (A : Form) (k : Nat),
   | .forall_ A, k, h => Form.lcAt_strip isC A (k + 1) h
   | .exists_ A, k, h => Form.lcAt_strip isC A (k + 1) h
 
+/-- The abstraction of a well-formed program is well formed. -/
 theorem Program.abs_WF (hWF : ∀ c ∈ Θ, c.WF) : ∀ c ∈ Θ.abs isC q, c.WF := by
   intro c hc
   obtain ⟨c₀, hc₀, rfl⟩ := List.mem_map.1 hc
   exact Form.lcAt_strip isC c₀.body c₀.arity (hWF c₀ hc₀)
 
+/-- Every modal clause of `Θ♯` uses `q`. -/
 theorem Program.abs_OnlyQ : (Θ.abs isC q).OnlyQ q := by
   intro c hc _
   obtain ⟨c₀, _, rfl⟩ := List.mem_map.1 hc
@@ -407,6 +426,7 @@ theorem canon_clause (hWF : ∀ c ∈ Θ, c.WF) {c : Clause} (hc : c ∈ Θ.abs 
       cases q <;> intro u hu <;> cases u <;>
         first | exact ⟨.w3, rfl, Or.inl rfl⟩ | exact (W4.le_false (show W4.leB _ _ = true from hu) rfl).elim
 
+/-- Lemma 7.2, as satisfaction: world 0 forces every formula of `Θ♯`. -/
 theorem canon_sat (hWF : ∀ c ∈ Θ, c.WF) :
     ∀ B ∈ (Θ.abs isC q).forms, (canonModel isC q Θ R).force B W4.w0 Tm.fvar [] := fun B hB => by
   obtain ⟨c, hc, rfl⟩ := List.mem_map.1 hB
@@ -464,20 +484,24 @@ any table `p`, `(p : θ)♭ ⊢ θ`.  Take `θ = ∀x. A(x) ⊃ ◯P(x)` and the
 is false.  With the constraint assumed lax-true, `∀x. ◯B(x)`, the entailment
 holds (`p66_with_lax`): that is the missing hypothesis. -/
 
+/-- The refined clause `∀x. A(x) ∧ B(x) ⊃ P(x)` of the countermodel. -/
 def p66Refined : Form :=
   .forall_ (.imp (.and (.pred "A" [.bvar 0]) (.pred "B" [.bvar 0])) (.pred "P" [.bvar 0]))
 
+/-- The abstract clause `∀x. A(x) ⊃ ◯P(x)` it is claimed to entail. -/
 def p66Abstract (q : Q) : Form :=
   .forall_ (.imp (.pred "A" [.bvar 0]) (.circ q (.pred "P" [.bvar 0])))
 
 /-- One world: `A` holds of every term, `B` and `P` of none. -/
 def p66I : String → List Tm → Prop := fun p _ => p = "A"
 
+/-- The refined clause is true in the one-world countermodel. -/
 theorem p66_refined_true : HTrue p66I p66Refined := by
   refine HTrue_forall.2 fun t _ => HTrue_imp.2 fun h => ?_
   have hB : False ∨ ("B" = "A") := h.2
   exact hB.elim False.elim (fun e => absurd e (by decide))
 
+/-- The abstract clause is false there. -/
 theorem p66_abstract_false (q : Q) : ¬ HTrue p66I (p66Abstract q) := by
   intro h
   have h1 := HTrue_imp.1 (HTrue_forall.1 h (.fn "c" []) trivial)

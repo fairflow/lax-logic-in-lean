@@ -39,12 +39,14 @@ inductive IsPP : Form → Prop
   | and {A B : Form} : IsPP A → IsPP B → IsPP (.and A B)
   | ex {A : Form} : IsPP A → IsPP (.exists_ A)
 
+/-- Primitive positive formulas are Σ-formulas. -/
 theorem IsPP.isSigma {A : Form} : IsPP A → IsSigma A
   | .top => .top
   | .pred P ts => .pred P ts
   | .and h₁ h₂ => .and h₁.isSigma h₂.isSigma
   | .ex h => .ex h.isSigma
 
+/-- Σ-formulas are closed under opening a binder. -/
 theorem IsSigma.openAt {A : Form} (h : IsSigma A) :
     ∀ (k : Nat) (t : Tm), IsSigma (A.openAt k t) := by
   induction h with
@@ -54,6 +56,7 @@ theorem IsSigma.openAt {A : Form} (h : IsSigma A) :
   | or _ _ ih₁ ih₂ => intro k t; exact .or (ih₁ k t) (ih₂ k t)
   | ex _ ih => intro k t; exact .ex (ih (k + 1) t)
 
+/-- Σ-formulas are closed under instantiating the outer universals. -/
 theorem IsSigma.instAll : ∀ (ts : List Tm) {A : Form}, IsSigma A → IsSigma (Form.instAll ts A)
   | [],      _, h => h
   | t :: ts, _, h => IsSigma.instAll ts (h.openAt _ t)
@@ -109,8 +112,10 @@ def sel : Form → Idx → Form
   | .exists_ A, .ex g       => .exists_ (sel A g)
   | A,          _           => A
 
+/-- Selection is the identity on `⊤`. -/
 theorem sel_top (g : Idx) : sel .top g = .top := by cases g <;> rfl
 
+/-- Selection is the identity on atoms. -/
 theorem sel_pred (P : String) (ts : List Tm) (g : Idx) : sel (.pred P ts) g = .pred P ts := by
   cases g <;> rfl
 
@@ -138,6 +143,7 @@ theorem IsSigma.pp_sel {S : Form} (hS : IsSigma S) : ∀ {g : Idx}, g ∈ ind S 
 
 /-! ## Selection commutes with instantiation -/
 
+/-- Opening a binder does not change the indices of a formula. -/
 theorem ind_openAt : ∀ (A : Form) (k : Nat) (t : Tm), ind (A.openAt k t) = ind A
   | .top, _, _ => rfl
   | .bot, _, _ => rfl
@@ -155,6 +161,7 @@ theorem ind_openAt : ∀ (A : Form) (k : Nat) (t : Tm), ind (A.openAt k t) = ind
       show ind (.exists_ (A.openAt (k + 1) t)) = ind (.exists_ A)
       simp only [ind, ind_openAt A (k + 1) t]
 
+/-- Selection commutes with opening a binder. -/
 theorem sel_openAt : ∀ (A : Form) (g : Idx) (k : Nat) (t : Tm),
     sel (A.openAt k t) g = (sel A g).openAt k t
   | .top, g, k, t => by
@@ -186,10 +193,12 @@ theorem sel_openAt : ∀ (A : Form) (g : Idx) (k : Nat) (t : Tm),
           rw [sel_openAt A g (k + 1) t]
       | _ => rfl
 
+/-- Instantiation does not change the indices. -/
 theorem ind_instAll : ∀ (ts : List Tm) (A : Form), ind (Form.instAll ts A) = ind A
   | [],      _ => rfl
   | t :: ts, A => (ind_instAll ts _).trans (ind_openAt A _ t)
 
+/-- Selection commutes with instantiation. -/
 theorem sel_instAll : ∀ (ts : List Tm) (A : Form) (g : Idx),
     sel (Form.instAll ts A) g = Form.instAll ts (sel A g)
   | [],      _, _ => rfl
@@ -202,9 +211,11 @@ theorem sel_instAll : ∀ (ts : List Tm) (A : Form) (g : Idx),
 
 `Form.size` is `Size.lean`'s, and opening does not change it. -/
 
+/-- The left component of a binary connective is smaller (the measure of the `_aux` inductions). -/
 theorem Form.size_lt_left {A B : Form} {n : Nat} (h : A.size + B.size + 1 < n + 1) : A.size < n :=
   Nat.lt_of_le_of_lt (Nat.le_add_right _ _) (Nat.lt_of_succ_lt_succ h)
 
+/-- The right component of a binary connective is smaller. -/
 theorem Form.size_lt_right {A B : Form} {n : Nat} (h : A.size + B.size + 1 < n + 1) : B.size < n :=
   Nat.lt_of_le_of_lt (Nat.le_add_left _ _) (Nat.lt_of_succ_lt_succ h)
 
@@ -215,6 +226,7 @@ def Form.disj : List Form → Form
   | []      => .bot
   | A :: As => .or A (Form.disj As)
 
+/-- ∨-introduction into the disjunction of a list. -/
 theorem Prv.disj_intro : ∀ {As : List Form} {A : Form} {Γ : List Form},
     A ∈ As → Prv Γ A → Prv Γ (Form.disj As)
   | [],      _, _, h, _  => nomatch h
@@ -223,6 +235,7 @@ theorem Prv.disj_intro : ∀ {As : List Form} {A : Form} {Γ : List Form},
       · exact .orI₁ hA
       · exact .orI₂ (Prv.disj_intro h hA)
 
+/-- ∨-elimination from the disjunction of a list. -/
 theorem Prv.disj_elim : ∀ {As : List Form} {Γ : List Form} {K : Form},
     Prv Γ (Form.disj As) → (∀ A ∈ As, Prv (A :: Γ) K) → Prv Γ K
   | [],      _, _, h, _  => .botE h
@@ -244,6 +257,7 @@ theorem Prv.cutAll : ∀ {Γ' Δ : List Form} {B : Form},
 
 /-! ## (N2) A Σ-formula is the disjunction of its selections -/
 
+/-- `Prv.of_sel`, by induction on a size bound. -/
 theorem Prv.of_sel_aux : ∀ (n : Nat) {S : Form}, S.size < n → IsSigma S →
     ∀ {g : Idx}, g ∈ ind S → ∀ {Γ : List Form}, Prv Γ (sel S g) → Prv Γ S
   | 0, _, hn, _, _, _, _, _ => absurd hn (Nat.not_lt_zero _)
@@ -275,6 +289,7 @@ theorem Prv.of_sel {S : Form} (hS : IsSigma S) {g : Idx} (hg : g ∈ ind S) {Γ 
     (h : Prv Γ (sel S g)) : Prv Γ S :=
   Prv.of_sel_aux _ (Nat.lt_succ_self _) hS hg h
 
+/-- `Prv.disj_sel`, by induction on a size bound. -/
 theorem Prv.disj_sel_aux : ∀ (n : Nat) {S : Form}, S.size < n → IsSigma S →
     ∀ {Γ : List Form}, Prv Γ S → Prv Γ (Form.disj ((ind S).map (sel S)))
   | 0, _, hn, _, _, _ => absurd hn (Nat.not_lt_zero _)
@@ -417,6 +432,7 @@ def Clause.toHorn (c : Clause) : List Horn :=
     { arity := c.arity, body := sel c.body g.1, body_pp := c.body_sigma.pp_sel g.2,
       head := c.head, args := headVars c.arity, modal := c.modal, q := c.q }
 
+/-- The Horn clauses of `∀x̃. S ⊃ H` are the formulas `∀x̃. sel S g ⊃ H`, one per index `g`. -/
 theorem Clause.map_form_toHorn (c : Clause) :
     c.toHorn.map Horn.form
       = ((ind c.body).map fun g => Form.imp (sel c.body g) c.headForm).map (Form.foralls c.arity) := by

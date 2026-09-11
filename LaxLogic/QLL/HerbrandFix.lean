@@ -17,6 +17,7 @@ namespace LaxLogic.QLL
 
 /-! ## Truth of Σ-formulas grows with the interpretation -/
 
+/-- `HTrue_mono`, under an environment of bound values. -/
 theorem HTrue_mono_aux {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → J p us)
     {S : Form} (hS : IsSigma S) :
     ∀ β : List Tm, (herbrand1 I).force S () Tm.fvar β → (herbrand1 J).force S () Tm.fvar β := by
@@ -32,10 +33,12 @@ theorem HTrue_mono_aux {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p 
   | or _ _ ih₁ ih₂ => intro β h; exact h.imp (ih₁ β) (ih₂ β)
   | ex _ ih => intro β h; obtain ⟨d, hd, h⟩ := h; exact ⟨d, hd, ih (d :: β) h⟩
 
+/-- Σ-formulas are monotone in the interpretation. -/
 theorem HTrue_mono {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → J p us)
     {S : Form} (hS : IsSigma S) (h : HTrue I S) : HTrue J S :=
   HTrue_mono_aux hIJ hS [] h
 
+/-- A formula whose opening is primitive positive is primitive positive. -/
 theorem IsPP.of_openAt : ∀ (A : Form) (k : Nat) (t : Tm), IsPP (A.openAt k t) → IsPP A
   | .top, _, _, _ => .top
   | .pred P ts, _, _, _ => .pred P ts
@@ -65,6 +68,7 @@ theorem Holds.isPP {φ : Form} (d : Holds R P φ) : IsPP φ := by
   | ex t _ _ ih => exact .ex (IsPP.of_openAt _ 0 t ih)
   | fire _ _ _ _ _ => exact .pred _ _
 
+/-- `T_P` is monotone. -/
 theorem Tp_mono {I J : String → List Tm → Prop} (hIJ : ∀ p us, I p us → J p us) :
     ∀ p us, Tp R P I p us → Tp R P J p us := by
   rintro p us (hr | ⟨h, hh, ts, hlen, hts, hb, hp, hus⟩)
@@ -134,15 +138,18 @@ def Tpow (R : String → List Tm → Prop) (P : List Horn) : Nat → String → 
   | 0     => fun _ _ => False
   | n + 1 => Tp R P (Tpow R P n)
 
+/-- `T_Pⁿ(∅) ⊆ T_Pⁿ⁺¹(∅)`. -/
 theorem Tpow_succ_mono : ∀ (n : Nat) p us, Tpow R P n p us → Tpow R P (n + 1) p us
   | 0,     _, _,  h => (h : False).elim
   | n + 1, p, us, h => Tp_mono (Tpow_succ_mono n) p us h
 
+/-- The iterates `T_Pⁿ(∅)` increase with `n`. -/
 theorem Tpow_mono {m n : Nat} (hmn : m ≤ n) : ∀ p us, Tpow R P m p us → Tpow R P n p us := by
   induction hmn with
   | refl => exact fun _ _ h => h
   | step _ ih => exact fun p us h => Tpow_succ_mono _ p us (ih p us h)
 
+/-- Every iterate `T_Pⁿ(∅)` lies in the least model. -/
 theorem Tpow_le_LHM (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF) :
     ∀ (n : Nat) p us, Tpow R P n p us → LHM R P p us
   | 0,     _, _,  h => (h : False).elim
@@ -183,6 +190,8 @@ def TpHom (R : String → List Tm → Prop) (P : List Horn) :
     (String → List Tm → Prop) →o (String → List Tm → Prop) :=
   ⟨Tp R P, fun _ _ hIJ => Tp_mono hIJ⟩
 
+/-- The least model is Mathlib's least fixpoint of `T_P`.  The only result of the Herbrand
+stage that uses `Classical.choice`, through `OrderHom.lfp`. -/
 theorem LHM_eq_lfp (hR : ∀ p us, R p us → Tm.lcAtList 0 us) (hP : ∀ h ∈ P, h.WF) :
     LHM R P = OrderHom.lfp (TpHom R P) := by
   have e := OrderHom.map_lfp (TpHom R P)

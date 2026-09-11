@@ -42,6 +42,7 @@ namespace LaxLogic.QLL
 
 /-! ## The least model grows with the program -/
 
+/-- Adding clauses preserves what holds. -/
 theorem Holds.mono {R : String → List Tm → Prop} {P P' : List Horn} (hPP : ∀ h ∈ P, h ∈ P')
     {φ : Form} (d : Holds R P φ) : Holds R P' φ := by
   induction d with
@@ -66,6 +67,7 @@ theorem HFrame.evTm_eq (G : HFrame) (J : G.W → String → List Tm → Prop)
   | .bvar _  => rfl
   | .fvar _  => rfl
   | .fn f ts => congrArg (Tm.fn f) (HFrame.evTms_eq G J hJ ρ β ts)
+/-- The list form of `HFrame.evTm_eq`. -/
 theorem HFrame.evTms_eq (G : HFrame) (J : G.W → String → List Tm → Prop)
     (hJ : ∀ {w v : G.W} {p : String} {ts : List Tm}, G.le w v → J w p ts → J v p ts)
     (ρ : String → Tm) (β : List Tm) :
@@ -94,6 +96,7 @@ theorem HFrame.force_sigma {S : Form} (hS : IsSigma S) :
   | or _ _ ih₁ ih₂ => intro w β hw; exact or_congr (ih₁ w β hw) (ih₂ w β hw)
   | ex _ ih => intro w β hw; exact exists_congr fun d => and_congr Iff.rfl (ih w (d :: β) hw)
 
+/-- Forcing a universal on a Herbrand frame: at every later world, every closed instance. -/
 theorem HFrame.force_forall {A : Form} {w : F.W} :
     (F.model I hI).force (.forall_ A) w Tm.fvar [] ↔
       ∀ v, F.le w v → ∀ t, Tm.lcAt 0 t → (F.model I hI).force (A.openAt 0 t) v Tm.fvar [] := by
@@ -109,6 +112,7 @@ theorem HFrame.force_forall {A : Form} {w : F.W} :
     rw [ev] at e
     exact e.1 (h v hv t ht)
 
+/-- Forcing `∀ⁿ. A` on a Herbrand frame: at every later world, every closed instance. -/
 theorem HFrame.force_foralls : ∀ (m : Nat) (A : Form) (w : F.W),
     (F.model I hI).force (Form.foralls m A) w Tm.fvar [] ↔
       ∀ v, F.le w v → ∀ ts : List Tm, ts.length = m → (∀ t ∈ ts, Tm.lcAt 0 t) →
@@ -156,15 +160,18 @@ end
 /-- A clause is closed: its body mentions only its own bound variables. -/
 def Clause.WF (c : Clause) : Prop := Form.lcAt c.arity c.body
 
+/-- The head arguments `x₁,…,xₘ` are locally closed at level `m`. -/
 theorem headVars_lc (m : Nat) : Tm.lcAtList m (headVars m) :=
   Tm.lcAtList_of_forall fun t ht => by
     obtain ⟨i, hi, rfl⟩ := List.mem_map.1 ht
     exact List.mem_range.1 (List.mem_reverse.1 hi)
 
+/-- The Horn clauses of a well-formed clause are well formed. -/
 theorem Clause.toHorn_WF {c : Clause} (hc : c.WF) {h : Horn} (hh : h ∈ c.toHorn) : h.WF := by
   obtain ⟨⟨g, _⟩, _, rfl⟩ := List.mem_map.1 hh
   exact ⟨Form.lcAt_sel c.body g c.arity hc, headVars_lc c.arity⟩
 
+/-- The Horn clauses of a clause keep its modal flag and modality. -/
 theorem Clause.toHorn_fields {c : Clause} {h : Horn} (hh : h ∈ c.toHorn) :
     h.modal = c.modal ∧ h.q = c.q := by
   obtain ⟨⟨g, _⟩, _, rfl⟩ := List.mem_map.1 hh
@@ -186,8 +193,10 @@ def Program.OnlyQ (Θ : Program) (q : Q) : Prop := ∀ c ∈ Θ, c.modal = true 
 section
 variable {Θ : Program}
 
+/-- The Horn clauses of `Π¹` are those of the program's clauses. -/
 theorem Program.mem_horn {h : Horn} : h ∈ Θ.horn ↔ ∃ c ∈ Θ, h ∈ c.toHorn := List.mem_flatMap
 
+/-- The Horn clauses of `Π⁰` come from non-modal clauses. -/
 theorem Program.mem_horn0 {h : Horn} (hh : h ∈ Θ.horn0) :
     ∃ c ∈ Θ, c.modal = false ∧ h ∈ c.toHorn := by
   obtain ⟨c, hc, hh⟩ := List.mem_flatMap.1 hh
@@ -195,14 +204,17 @@ theorem Program.mem_horn0 {h : Horn} (hh : h ∈ Θ.horn0) :
   | false => rw [hm] at hh; exact ⟨c, hc, hm, hh⟩
   | true => rw [hm] at hh; exact nomatch (hh : h ∈ ([] : List Horn))
 
+/-- Every Horn clause of a non-modal clause is in `Π⁰`. -/
 theorem Program.mem_horn0_of {c : Clause} (hc : c ∈ Θ) (hm : c.modal = false) {h : Horn}
     (hh : h ∈ c.toHorn) : h ∈ Θ.horn0 :=
   List.mem_flatMap.2 ⟨c, hc, by rw [hm]; exact hh⟩
 
+/-- `Π⁰ ⊆ Π¹`. -/
 theorem Program.horn0_sub {h : Horn} (hh : h ∈ Θ.horn0) : h ∈ Θ.horn := by
   obtain ⟨c, hc, -, hhc⟩ := Program.mem_horn0 hh
   exact Program.mem_horn.2 ⟨c, hc, hhc⟩
 
+/-- `Π⁰` has no modal clause. -/
 theorem Program.horn0_nonmodal : ∀ h ∈ Θ.horn0, h.modal = false := fun h hh => by
   obtain ⟨c, _, hm, hhc⟩ := Program.mem_horn0 hh
   rw [(Clause.toHorn_fields hhc).1]
@@ -225,6 +237,7 @@ def I01 (I₀ I₁ : String → List Tm → Prop) : Bool → String → List Tm 
   | false => I₀
   | true  => I₁
 
+/-- The two-world interpretation is monotone when `I₀ ⊆ I₁`. -/
 theorem I01_hered {I₀ I₁ : String → List Tm → Prop} (h01 : ∀ p us, I₀ p us → I₁ p us) :
     ∀ {w v : HFrame.two.W} {p : String} {ts : List Tm},
       HFrame.two.le w v → I01 I₀ I₁ w p ts → I01 I₀ I₁ v p ts := fun {w v _ _} hwv hI => by
@@ -246,6 +259,7 @@ abbrev llpI0 (Θ : Program) : String → List Tm → Prop := LHM RNone Θ.horn0
 /-- World 1: the least Herbrand model of `Π¹`. -/
 abbrev llpI1 (Θ : Program) : String → List Tm → Prop := LHM RNone Θ.horn
 
+/-- `M(Π⁰) ⊆ M(Π¹)`. -/
 theorem llpI0_le (Θ : Program) : ∀ p us, llpI0 Θ p us → llpI1 Θ p us :=
   fun _ _ h => Holds.mono (fun _ hh => Program.horn0_sub hh) h
 
@@ -255,6 +269,8 @@ abbrev llpModel (Θ : Program) : KModel := herbrand2 (llpI0 Θ) (llpI1 Θ) (llpI
 section
 variable {Θ : Program}
 
+/-- In the two-world model a Σ-formula is forced at a world exactly when it is true in that
+world's interpretation. -/
 theorem llpModel_sigma {S : Form} (hS : IsSigma S) (w : Bool) :
     (llpModel Θ).force S w Tm.fvar [] ↔ HTrue (I01 (llpI0 Θ) (llpI1 Θ) w) S :=
   HFrame.force_sigma HFrame.two (I01 (llpI0 Θ) (llpI1 Θ)) (I01_hered (llpI0_le Θ)) hS w [] id
@@ -327,6 +343,7 @@ theorem llpModel_clause (hΘ : ∀ c ∈ Θ, c.WF) {c : Clause} (hc : c ∈ Θ) 
     · exact fun _ _ => ⟨true, Or.inr rfl, hat⟩
     · exact fun _ _ => ⟨true, Or.inr rfl, hat⟩
 
+/-- Lemma 7.2 on the worlds `{0, 1}`: world 0 forces every clause of the program. -/
 theorem llp_sat (hΘ : ∀ c ∈ Θ, c.WF) : ∀ B ∈ Θ.forms, (llpModel Θ).force B false Tm.fvar [] :=
   fun B hB => by
     obtain ⟨c, hc, rfl⟩ := List.mem_map.1 hB
@@ -373,6 +390,7 @@ theorem Holds.prv_circ {q : Q} (hq : Θ.OnlyQ q) {φ : Form} (d : Holds RNone Θ
 
 /-! ## Theorem 7.5 at worlds 0 and 1 -/
 
+/-- Completeness at world 0: a closed Σ-query true in `M(Π⁰)` is provable. -/
 theorem llp_prv_of_HTrue0 {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S)
     (h : HTrue (llpI0 Θ) S) : Prv Θ.forms S := by
   obtain ⟨g, hg, h⟩ := ((herbrand1 _).force_iff_sel hS () Tm.fvar []).1 h
@@ -382,6 +400,7 @@ theorem llp_prv_of_HTrue0 {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S)
   obtain ⟨h, hh, rfl⟩ := List.mem_map.1 hA
   exact Program.prv_horn (Program.horn0_sub hh)
 
+/-- Completeness at world 1: a closed Σ-query true in `M(Π¹)` is provable under `◯_q`. -/
 theorem llp_prv_circ_of_HTrue1 {q : Q} (hq : Θ.OnlyQ q) {S : Form} (hS : IsSigma S)
     (hc : Form.lcAt 0 S) (h : HTrue (llpI1 Θ) S) : Prv Θ.forms (.circ q S) := by
   obtain ⟨g, hg, h⟩ := ((herbrand1 _).force_iff_sel hS () Tm.fvar []).1 h

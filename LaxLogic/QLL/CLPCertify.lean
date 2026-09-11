@@ -73,9 +73,11 @@ def anf (q : Q) (names : List String) : AProof → Nat → (Pf → Nat → Pf) �
       let z := s!"_z{n'}"
       .letQ q (.app (Pf.insts ts (.fvar (names.getD w "?"))) v) (closeP 0 z (K (.fvar z) (n' + 1)))
 
+/-- The let-flattened λ̄c term of an abstract proof, which `certify` accepts. -/
 def AProof.toPfN (q : Q) (names : List String) (a : AProof) : Pf :=
   anf q names a 0 fun v _ => .val q v
 
+/-- Proof-variable names for the clauses of a program. -/
 def clauseNames (n : Nat) : List String := (List.range n).map fun i => s!"θ{i}"
 
 /-- Run `certify` on the abstract image of a concrete proof tree, in the direct

@@ -15,6 +15,7 @@ def Form.size : Form → Nat
   | .and A B | .or A B | .imp A B => A.size + B.size + 1
   | .circ _ A | .forall_ A | .exists_ A => A.size + 1
 
+/-- Opening a binder does not change the size (atoms have size 0). -/
 theorem Form.size_openAt (t : Tm) : ∀ (A : Form) (k : Nat), (A.openAt k t).size = A.size
   | .top, _ | .bot, _ | .pred _ _, _ => rfl
   | .and A B, k | .or A B, k | .imp A B, k => by
@@ -27,6 +28,7 @@ theorem Form.size_openAt (t : Tm) : ∀ (A : Form) (k : Nat), (A.openAt k t).siz
       show (A.openAt (k + 1) t).size + 1 = A.size + 1
       rw [Form.size_openAt t A (k + 1)]
 
+/-- The same for opening with a named variable. -/
 theorem Form.size_openWith (a : String) (A : Form) : (A.openWith a).size = A.size :=
   Form.size_openAt (.fvar a) A 0
 

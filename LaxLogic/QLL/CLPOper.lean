@@ -60,28 +60,37 @@ inductive Steps (isC : String → Bool) (Θ : Program) (ok : Form → Prop) : Go
 /-- `A ⊣⊢ B`. -/
 def PEq (A B : Form) : Prop := Prv [A] B ∧ Prv [B] A
 
+/-- Cut for single-assumption contexts. -/
 theorem Prv.cut1 {A B C : Form} (h₁ : Prv [A] B) (h₂ : Prv [B] C) : Prv [A] C :=
   .impE ((Prv.impI h₂).weaken fun _ h => nomatch h) h₁
 
+/-- `⊣⊢` is reflexive. -/
 theorem PEq.refl (A : Form) : PEq A A := ⟨.hd, .hd⟩
+/-- `⊣⊢` is symmetric. -/
 theorem PEq.symm {A B : Form} (h : PEq A B) : PEq B A := ⟨h.2, h.1⟩
+/-- `⊣⊢` is transitive. -/
 theorem PEq.trans {A B C : Form} (h₁ : PEq A B) (h₂ : PEq B C) : PEq A C :=
   ⟨h₁.1.cut1 h₂.1, h₂.2.cut1 h₁.2⟩
 
+/-- `⊣⊢` is a congruence for `∧`. -/
 theorem PEq.and {A A' B B' : Form} (hA : PEq A A') (hB : PEq B B') :
     PEq (.and A B) (.and A' B') :=
   ⟨.andI (Prv.cut1 (.andE₁ .hd) hA.1) (Prv.cut1 (.andE₂ .hd) hB.1),
    .andI (Prv.cut1 (.andE₁ .hd) hA.2) (Prv.cut1 (.andE₂ .hd) hB.2)⟩
 
+/-- `∧` is associative up to `⊣⊢`. -/
 theorem PEq.and_assoc (A B C : Form) : PEq (.and (.and A B) C) (.and A (.and B C)) :=
   ⟨.andI (.andE₁ (.andE₁ .hd)) (.andI (.andE₂ (.andE₁ .hd)) (.andE₂ .hd)),
    .andI (.andI (.andE₁ .hd) (.andE₁ (.andE₂ .hd))) (.andE₂ (.andE₂ .hd))⟩
 
+/-- `∧` is commutative up to `⊣⊢`. -/
 theorem PEq.and_comm (A B : Form) : PEq (.and A B) (.and B A) :=
   ⟨.andI (.andE₂ .hd) (.andE₁ .hd), .andI (.andE₂ .hd) (.andE₁ .hd)⟩
 
+/-- `⊤` is a left unit for `∧` up to `⊣⊢`. -/
 theorem PEq.top_and (A : Form) : PEq (.and .top A) A := ⟨.andE₂ .hd, .andI .topI .hd⟩
 
+/-- `⊤` is a right unit for `∧` up to `⊣⊢`. -/
 theorem PEq.and_top (A : Form) : PEq (.and A .top) A := ⟨.andE₁ .hd, .andI .hd .topI⟩
 
 /-- `φ₁ ∧ (φ₂ ∧ ( … ∧ true))`. -/
@@ -108,6 +117,7 @@ inductive Forest (isC : String → Bool) (Θ : Program) : List Form → List CPr
   | cons {A : Form} {p : CProof} {gs : List Form} {ps : List CProof} :
       CTyped isC Θ A p → Forest isC Θ gs ps → Forest isC Θ (A :: gs) (p :: ps)
 
+/-- A forest for `l ++ x :: r` splits into forests for `l`, `r` and a tree for `x`. -/
 theorem Forest.split {isC : String → Bool} {Θ : Program} :
     ∀ (l : List Form) {x : Form} {r : List Form} {ps : List CProof},
       Forest isC Θ (l ++ x :: r) ps →
@@ -117,6 +127,7 @@ theorem Forest.split {isC : String → Bool} {Θ : Program} :
       obtain ⟨psl, p, psr, rfl, hl, hx, hr⟩ := Forest.split l h
       exact ⟨_ :: psl, p, psr, rfl, .cons ha hl, hx, hr⟩
 
+/-- A forest for `l ++ r` splits into forests for `l` and `r`. -/
 theorem Forest.split_app {isC : String → Bool} {Θ : Program} :
     ∀ (l : List Form) {r : List Form} {ps : List CProof}, Forest isC Θ (l ++ r) ps →
       ∃ psl psr, ps = psl ++ psr ∧ Forest isC Θ l psl ∧ Forest isC Θ r psr
@@ -125,6 +136,7 @@ theorem Forest.split_app {isC : String → Bool} {Θ : Program} :
       obtain ⟨psl, psr, rfl, hl, hr⟩ := Forest.split_app l h
       exact ⟨_ :: psl, psr, rfl, .cons ha hl, hr⟩
 
+/-- Forests for `l` and `r` join into one for `l ++ r`. -/
 theorem Forest.append {isC : String → Bool} {Θ : Program} :
     ∀ {l r : List Form} {psl psr : List CProof},
       Forest isC Θ l psl → Forest isC Θ r psr → Forest isC Θ (l ++ r) (psl ++ psr)
@@ -136,12 +148,14 @@ theorem Forest.append {isC : String → Bool} {Θ : Program} :
 /-- The totals of a forest, conjoined. -/
 def totals (ps : List CProof) : Form := conjs (ps.map CProof.total)
 
+/-- A tree's total can be moved to the front, up to `⊣⊢`. -/
 theorem totals_mid (psl psr : List CProof) (p : CProof) :
     PEq (totals (psl ++ p :: psr)) (.and p.total (totals (psl ++ psr))) := by
   unfold totals
   rw [List.map_append, List.map_cons, List.map_append]
   exact conjs_mid _ _ _
 
+/-- Totals depend only on the trees' totals. -/
 theorem totals_congr (psl psr : List CProof) {x y : CProof} (h : x.total = y.total) :
     totals (psl ++ x :: psr) = totals (psl ++ y :: psr) := by
   unfold totals; rw [List.map_append, List.map_cons, List.map_append, List.map_cons, h]

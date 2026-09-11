@@ -75,9 +75,11 @@ def CProof.latent : CProof → Form
 
 /-! ## Soundness: the answer constraint entails the goal -/
 
+/-- Weakening by one assumption. -/
 theorem Prv.weaken_cons {Γ : List Form} {A B : Form} (h : Prv Γ A) : Prv (B :: Γ) A :=
   h.weaken fun _ h => List.mem_cons.2 (Or.inr h)
 
+/-- The first assumption. -/
 theorem Prv.hd {Γ : List Form} {A : Form} : Prv (A :: Γ) A := .var (List.mem_cons.2 (Or.inl rfl))
 
 /-- **Answer soundness** (the `◯`-free Corollary 9.8). -/
@@ -147,6 +149,7 @@ def checkC (isC : String → Bool) (Θ : Program) : Form → CProof → Bool
       | none => false
   | _, _ => false
 
+/-- `checkC` is sound: a tree it accepts proves the formula. -/
 theorem checkC_sound (isC : String → Bool) (Θ : Program) :
     ∀ (p : CProof) (S : Form), checkC isC Θ S p = true → CTyped isC Θ S p
   | .top, S, h => by cases S <;> first | exact .top | exact absurd h (by simp [checkC])
