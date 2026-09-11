@@ -12,6 +12,12 @@ and handed to `certify`, the verified checker of `Certify.lean`, with the abstra
 program as the context (one proof variable per clause).  A success is a
 derivation `Derives p Γ (◯S)` in the calculus of TPHOLs 2001, obtained without
 any appeal to `ATyped`.
+
+**Scaling.**  Only small terms: `certify` names each binder `freshFor` of the
+names in scope, which concatenates them (`freshFor_byteSize`), so fresh names
+double in length with each nested `let`.  The term of a 3-bit adder (about 25
+nested lets) exhausted memory (38 GB, killed).  Do not run `certify` on deep
+terms until `freshFor` is made linear.
 -/
 import LaxLogic.QLL.CLPExamples
 import LaxLogic.QLL.Certify

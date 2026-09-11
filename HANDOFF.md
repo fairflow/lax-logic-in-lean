@@ -211,6 +211,9 @@ implementation, §3 the application, §4 the plan with its status).
   (`p66_with_lax`).
 - Built: abstract proofs as let-flattened λ̄c terms, accepted by `certify`
   (`CLPCertify`); the direct reading of Fig. 3 is refused (`notInferable`).
+  Small terms only: `Kit.freshFor` doubles name length per nested binder, and
+  `certify` on a 3-bit adder's term exhausted memory (38 GB, killed).  Do not
+  run `certify` on deep terms until `freshFor` is made linear (task flagged).
 - NOT BUILT: stage 1 (Gentzen system); Def 6.5 as formulas; a programmatic
   Wolfram bridge.
 

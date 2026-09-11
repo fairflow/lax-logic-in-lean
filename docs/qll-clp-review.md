@@ -194,8 +194,13 @@ refer to `docs/qll-clp-implementation-plan.md`.
 * Abstract proofs as λ̄c terms (`CLPCertify`): the direct reading of Fig. 3
   nests `let` in scrutinee position and the verified checker `certify` refuses
   it (`notInferable "ι_t(p)"`); the let-flattened term, equal by the monad's
-  commuting conversions, is accepted, for Examples 6.1 and 9.5 in the build
-  and for the generated adders in the bench.
+  commuting conversions, is accepted for Examples 6.1 and 9.5 (`#guard_msgs`
+  in the build).  It does not scale: `certify` names each binder
+  `freshFor` of the names in scope, which concatenates them
+  (`Kit.freshFor_byteSize`), so names double in length with every nested
+  `let`; on a 3-bit adder (about 25 nested lets) the run reached 38 GB and was
+  killed.  A fresh name one byte longer than the longest in scope would grow
+  linearly with the same freshness proof; flagged as a separate task.
 * REFUTED: Proposition 6.6, second half (`(p : θ)♭ ⊢ θ` for a modal clause):
   a one-world countermodel (`HerbrandCLP.p66_refuted`).  It holds once the
   table's constraints are assumed lax-true (`p66_with_lax`).
