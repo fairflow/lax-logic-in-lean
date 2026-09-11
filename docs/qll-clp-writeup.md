@@ -467,10 +467,12 @@ tree, checked by `checkC`:
 read directly, nest `let` in scrutinee position, and `certify`, a bidirectional
 checker, refuses them (`notInferable "ι_t(p)"`).  The let-flattened term —
 values combined purely, only clause applications `w t̃ v` `let`-bound — is
-equal by the monad's commuting conversions and is accepted.  `certify` does not
-scale: it names binders by concatenating the names in scope (`Kit.freshFor`),
-so names double in length per nested `let`; a 3-bit adder's term exhausted
-memory.  A linear fresh-name function is under way in a separate task.
+equal by the monad's commuting conversions and is accepted.  `certify` names
+each binder `Kit.freshFor` of the names in scope, which is one byte longer
+than the longest of them, so names grow by one byte per nested `let`.  (It
+used to concatenate them, so names doubled per binder and a 3-bit adder's
+term exhausted memory.)  The 3-bit adder is now a `#guard_msgs` in the build,
+and the 32-bit one (binder depth 257) certifies in about 0.1 s.
 
 ## 11. Examples, grouped by constraint domain and technique
 
