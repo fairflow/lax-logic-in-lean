@@ -72,17 +72,9 @@ principle that proof extraction is (induction on the stage at which an atom
 enters the model).  The equation with `OrderHom.lfp` is kept as a side theorem,
 with its choice pinned.
 
-**D5. Modal results are for single-modality programs.**  The least Herbrand
-model of the de-modalised program cannot tell `◯∀` from `◯∃`, and QLL can.
-Designed witness, kernel-checked in a scratch file this session (enters the
-repository in H3 with its pin):
-
-    ¬ ([◯∀ P] ⊢q ◯∃ P)
-
-by `Prv.sound` at the two-state model `false ≤ true`, `RA` the order, `RE`
-equality, `P` true at `true` only.  So the theorem T1 below is stated for
-programs whose modal clauses all carry the query's `q`; the paper has one `◯`,
-so it loses nothing.  T0 needs no restriction.
+**D5. Modal results are for single-modality programs**, as in the draft, which
+has one `◯`: T1 below assumes every modal clause carries the query's `q`.  T0
+needs no restriction.
 
 **D6. Extraction goes to `Prv` first.**  Theorem 7.5 speaks of LLP derivations
 with proof terms, needed only at world 2, where the constraint `|q|` is read off
@@ -269,12 +261,11 @@ at a fallible world).  What remains for stage 5: `I₀ ≤ I₂`; world 2 forces
 | :-- | :-- | :-- |
 | H1 `QLL/Horn.lean` | `IsPP`, `Horn`, `Horn.form`, `Idx`, `ind`, `sel`, `Clause.toHorn`, (N1)–(N3) | `LLP.lean` |
 | H2 `QLL/Herbrand.lean` | `Tm.Ground`, `Holds`, `T_P`, (L1)–(L4), `herbrand1`, `HTrue`, (K1)–(K5), (LL) | H1, `Prov.lean` |
-| H3 `QLL/HerbrandLLP.lean` | `Θ⁰`, `Θ¹`, `herbrand2` as `KModel` and `CModel`, (M1), (M2), (T0), (T1), the D5 witness | H2, `PaperSemantics.lean` |
+| H3 `QLL/HerbrandLLP.lean` | `Θ⁰`, `Θ¹`, `herbrand2` as `KModel` and `CModel`, (M1), (M2), (T0), (T1) | H2, `PaperSemantics.lean` |
 
 Order H1 → H2 → H3: H2 is the `◯`-free instance, H3 the modal one (CLAUDE.md
 rule 8).  Refutation stage (rule 9), designed cells only:
 
-* D5's mixed-modality cell: kernel-checked (scratch), enters in H3.
 * Why queries must be Σ: `P ∨ (P ⊃ ⊥)` is true in `herbrand1 ∅` but `[] ⊬q` it
   (two-state countermodel, `P` at the top state only).  To be checked in H2.
 * Why programs must be Horn: `[P ∨ Q]` has no least Herbrand model, since
@@ -306,9 +297,8 @@ Every item of §5 is PROVED, sorry-free, with pinned axioms, except the
 | `QLL/HerbrandFix.lean` | this commit's parent | (L3) `LHM_iff_Tpow` | `[propext, Quot.sound]` |
 | | | (L4) `LHM_eq_lfp` | `+ Classical.choice` (Mathlib's `lfp`) |
 
-The three designed cells of §7 are all kernel-checked in the repository:
-`circAll_not_circEx` (`HerbrandLLP.lean`), `lem_HTrue` with `lem_not_prv`,
-and `or_no_least_model` (`Herbrand.lean`).
+The two designed cells of §7 are kernel-checked in the repository:
+`lem_HTrue` with `lem_not_prv`, and `or_no_least_model` (`Herbrand.lean`).
 
 Changes from the text above, all minor:
 

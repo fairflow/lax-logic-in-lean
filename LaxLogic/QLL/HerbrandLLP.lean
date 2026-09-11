@@ -29,8 +29,7 @@ and the completeness halves `Θ.forms ⊫ S → Θ.forms ⊢q S` and
 modal clause and `impCirc` (CLP.lean) a non-modal one under `◯`.  So the Fig. 3
 calculus is complete for `◯`-queries against Definition 5.1 programs.
 
-The one-modality condition is needed (decision D5 of the plan): the model has
-`RA = RE`, and `circAll_not_circEx` shows `◯∀ P ⊬ ◯∃ P`.
+Modal clauses carry one modality `q`, as in the draft (`Program.OnlyQ`).
 
 `llpCModel Θ` is the same model as one of the draft's own Kripke constraint
 models (Definition 3.2), and agrees with `llpModel Θ` on `◯∃`-formulas by
@@ -449,7 +448,7 @@ theorem llpCModel_force_iff {Θ : Program} {A : Form} (hA : A.OnlyEx) (w : Bool)
     (llpCModel Θ).force A w Tm.fvar [] ↔ (llpModel Θ).force A w Tm.fvar [] :=
   (llpCModel Θ).force_iff A hA w Tm.fvar []
 
-/-! ## Why one modality -/
+/-! ## Side note: the two modalities -/
 
 /-- Two states `false ≤ true`: `RA` the order, `RE` equality, `P` true at `true`. -/
 def mixedModel : KModel where
@@ -480,8 +479,7 @@ def mixedModel : KModel where
     · rfl
   fn_dom _ := trivial
 
-/-- `◯∀ P ⊬ ◯∃ P`: the two lax modalities are not interchangeable, so the
-extraction for `◯_q`-queries needs every modal clause to carry `q`. -/
+/-- `◯∀ P ⊬ ◯∃ P`: why `Program.OnlyQ` is a hypothesis of `Holds.prv_circ`. -/
 theorem circAll_not_circEx : ¬ Prv [.circ .all (.pred "P" [])] (.circ .ex (.pred "P" [])) := by
   intro h
   have hA : mixedModel.force (.circ .all (.pred "P" [])) false (fun _ => ()) [] :=

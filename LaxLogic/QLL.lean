@@ -53,6 +53,13 @@ Figs. 3 and 4 are built.  `InterpTests.lean` exhibits one model and two
 constraints separating `○∀` from `○∃` in both directions, which is the content
 Fig. 5 does not carry: its modal rules are one schema for both.
 
+A side note on the two modalities.  At the level of abstract proofs a second
+one is redundant: Fig. 5 treats `○∀` and `○∃` alike, and every proof in this
+library is stated for a general `q`, so none needs redoing where a context
+tells them apart.  They play different roles in refinement (Figs. 3 and 4),
+and in the Kripke models `RA` and `RE` are separate relations (addendum: so
+`○∀ P ⊬ ○∃ P`, `circAll_not_circEx`).
+
 Figs. 3, 4 and 6 are built and **soundness is proved**: if every assumption's
 constraint refines its formula then so does the one the derivation produces.
 Its one hypothesis is that the individual terms written into the proof term
