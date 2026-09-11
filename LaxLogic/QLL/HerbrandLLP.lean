@@ -420,22 +420,22 @@ end
 
 /-! ## The same model in the draft's own terms -/
 
-/-- `llpModel Θ` as one of the draft's Kripke constraint models (Definition 3.2):
-one modal relation, here equal to `Ri`. -/
+/-- `llpModel Θ` as one of the draft's Kripke constraint models (Definition 3.2),
+with the frame's modal relation as its `Rm`. -/
 def llpCModel (Θ : Program) : CModel where
   S := Bool
   D := Tm
   Dom _ t := Tm.lcAt 0 t
   Ri := HFrame.two.le
-  Rm := HFrame.two.le
+  Rm := HFrame.two.m
   F _ := False
   fn f ds := .fn f ds
   I := I01 (llpI0 Θ) (llpI1 Θ)
   refl_i := HFrame.two.refl
   trans_i := HFrame.two.trans
-  refl_m := HFrame.two.refl
-  trans_m := HFrame.two.trans
-  m_sub_i h := h
+  refl_m := HFrame.two.m_refl
+  trans_m := HFrame.two.m_trans
+  m_sub_i := HFrame.two.m_sub
   hered_F _ h := h
   dom_mono _ h := h
   hered_I := I01_hered (llpI0_le Θ)

@@ -135,12 +135,19 @@ structure HFrame where
   trans : ∀ {u v w}, le u v → le v w → le u w
   Fl : W → Prop
   hered_Fl : ∀ {w v}, le w v → Fl w → Fl v
+  /-- The modal accessibility, the draft's `Rm`: a preorder inside `le`.  It is
+  a parameter, not `le`: with `m = le` and no fallible worlds `◯` is forced
+  exactly where `¬¬` is, and such models validate non-theorems of QLL
+  (`ModalRelation.lean`). -/
+  m : W → W → Prop
+  m_refl : ∀ w, m w w
+  m_trans : ∀ {u v w}, m u v → m v w → m u w
+  m_sub : ∀ {w v}, m w v → le w v
 
 /-- The Kripke model on a Herbrand frame: the locally closed terms as a constant
-domain, every function symbol interpreted as itself, and all three
-accessibility relations the frame's order.  The last makes `◯∀` and `◯∃`
-coincide, which is why the modal results built on it are for one modality at a
-time. -/
+domain, every function symbol interpreted as itself, the frame's order for
+`Ri`, and its modal relation for both `RA` and `RE`, as in the draft's
+constraint models, which have one `Rm`. -/
 def HFrame.model (F : HFrame) (I : F.W → String → List Tm → Prop)
     (hI : ∀ {w v : F.W} {p : String} {ts : List Tm}, F.le w v → I w p ts → I v p ts) :
     KModel where
@@ -148,17 +155,17 @@ def HFrame.model (F : HFrame) (I : F.W → String → List Tm → Prop)
   D := Tm
   Dom _ t := Tm.lcAt 0 t
   Ri := F.le
-  RA := F.le
-  RE := F.le
+  RA := F.m
+  RE := F.m
   Fl := F.Fl
   refl_i := F.refl
   trans_i := F.trans
-  refl_A := F.refl
-  trans_A := F.trans
-  sub_A h := h
-  refl_E := F.refl
-  trans_E := F.trans
-  sub_E h := h
+  refl_A := F.m_refl
+  trans_A := F.m_trans
+  sub_A := F.m_sub
+  refl_E := F.m_refl
+  trans_E := F.m_trans
+  sub_E := F.m_sub
   dom_mono _ h := h
   d₀ := .fn "c" []
   dom_d₀ _ := trivial
@@ -197,6 +204,10 @@ def HFrame.one : HFrame where
   trans _ _ := trivial
   Fl _ := False
   hered_Fl _ h := h
+  m _ _ := True
+  m_refl _ := trivial
+  m_trans _ _ := trivial
+  m_sub h := h
 
 /-- Lloyd's Herbrand interpretation `I`, as a one-world Kripke model. -/
 abbrev herbrand1 (I : String → List Tm → Prop) : KModel :=
@@ -502,7 +513,9 @@ end
 
 /-! ## Why the restrictions: two designed cells -/
 
-/-- Two worlds `false ≤ true`, nothing fallible. -/
+/-- Two worlds `false ≤ true`, nothing fallible, the arrow modal: the draft's §7
+frame restricted to its worlds 0 and 1 ("all arrows are `Rm` accessibilities",
+temp.pdf p. 17). -/
 def HFrame.two : HFrame where
   W := Bool
   le a b := a = false ∨ b = true
@@ -515,6 +528,15 @@ def HFrame.two : HFrame where
       · exact Or.inr rfl
   Fl _ := False
   hered_Fl _ h := h
+  m a b := a = false ∨ b = true
+  m_refl a := by cases a; exact Or.inl rfl; exact Or.inr rfl
+  m_trans := fun h₁ h₂ => by
+    rcases h₁ with rfl | rfl
+    · exact Or.inl rfl
+    · rcases h₂ with h | rfl
+      · exact (Bool.noConfusion h : False).elim
+      · exact Or.inr rfl
+  m_sub h := h
 
 /-- `P` true at the top world only. -/
 def lemModel : KModel :=
