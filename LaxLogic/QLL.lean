@@ -23,6 +23,7 @@ first is decided by a program.
 | `Size`   | the size of a formula, unchanged by opening (induction through `∃`) |
 | `Horn`   | Horn clauses (primitive positive bodies); a Def 5.1 clause split into them by the draft's `ind(S)` |
 | `Herbrand` | Lloyd's least Herbrand model, as a one-world Kripke model; Lloyd's theorem and completeness for Horn programs |
+| `HerbrandLLP` | §7 on worlds 0 and 1: the two-world Herbrand model of a Def 5.1 program; Theorem 7.5 for `i = 0, 1` |
 | `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
 | `Rename` | renaming an individual through a derivation; re-basing an eigenvariable |
 | `Kripke` | the Kripke semantics: varying domains, two lax relations, fallible states |
@@ -86,3 +87,4 @@ import LaxLogic.QLL.PaperSemantics
 import LaxLogic.QLL.LLP
 import LaxLogic.QLL.Horn
 import LaxLogic.QLL.Herbrand
+import LaxLogic.QLL.HerbrandLLP
