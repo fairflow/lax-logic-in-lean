@@ -181,3 +181,31 @@ an in-window-unreachable goal hook drives grinding.
 Full trail: branch HANDOFF.md (ten dated §§), branch `docs/frj-w4.md`
 §§8–13, engine `wip/frj_sat.lean` (corpus 28 pass / 5 control-ok /
 0 unresolved).
+
+## 2026-09-11 — QLL/CLP: the CLP draft mechanised in two passes (branch `lax-obligations`, worktree `review-pr16`)
+
+The draft is Fairtlough–Mendler–Walton, "First-order Lax Logic as a framework
+for CLP" (10 Sep 1997, unpublished).  Plan and review:
+`docs/qll-clp-review.md` (§0 the `Rm` critique, §1 value to CLP theory, §2
+implementation, §3 the application, §4 the plan with its status).
+
+- PROVED, `◯`-free pass: Lloyd / van Emden–Kowalski for Horn programs
+  (`Herbrand`, `HerbrandFix`); Thm 7.5 at worlds 0, 1 (`HerbrandLLP`); proof
+  trees with constraint leaves, `Θ ⊢ total(p) ⊃ S`, Table 2, Thm 9.4, Cor 9.8
+  (`CLPCore`, `CLPOper`); world 2 as the least model over the constraint
+  relations, both directions (`HerbrandCLP.world2_free`).
+- PROVED, `◯` pass: Thm 6.3, Lemmas 8.3/8.4, Thm 9.7, Thm 6.8 (arbitrary
+  tables, refinement through instances), Prop 6.6 first half, Cor 9.8 by the
+  draft's route (`CLPAbstract`); Lemma 7.2 and Thm 7.5 for `i = 0, 1, 2` on the
+  four-world frame (`HerbrandCLP`).  All `[propext]` / `[propext, Quot.sound]`.
+- REFUTED: modelling `◯` with `Rm = Ri` (`ModalRelation`: such models validate
+  `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)`, which QLL does not prove); `HFrame` now carries its
+  own modal relation.
+- Built and run: `CLPEngine` (SLD search whose answers carry proof trees checked
+  by a proved-sound checker; certified ℚ solver with witness and Farkas
+  certificates); Examples 6.1 and 9.5 run by the engine *inside the kernel*
+  (`CLPExamples`); `CLPBench` (not imported): adders to 449 clauses, mortgage,
+  scheduling.  Draft artefacts found: Example 2.1's figures (see the plan doc).
+- NOT BUILT: stage 1 (Gentzen system); Prop 6.6 second half; Def 6.5 as
+  formulas; `toPf` through `certify`; a programmatic Wolfram bridge.
+

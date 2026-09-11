@@ -75,7 +75,8 @@ clauses normalised to Horn clauses, and Theorem 7.5 for worlds 0 and 1.
 Order: 0 → 2 → H → 3 → 4 → 5 → 6, with 1 floating.
 
 **Superseded in part, 2026-09-11:** the revised plan, two passes (`◯`-free, then `◯`), with the engine and the examples, is §4 of `docs/qll-clp-review.md`.  Done: 0 (`1f42e9e`),
-2 (`ab42b77`).
+2 (`ab42b77`), H, and both passes of the revised plan except stage 1 (status in
+the review, §4).
 
 ## Examples
 

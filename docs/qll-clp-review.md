@@ -177,12 +177,25 @@ refer to `docs/qll-clp-implementation-plan.md`.
 | 5 | — | world 2 and the fallible world 3 over `Π²`; Thm 7.5 at `i = 2` |
 | 1 | Gentzen system (Fig. 1) | last, if time |
 
-**Status, 2026-09-11.**  `◯`-free pass: M, C1, C2 (proof trees, typing,
-`Θ ⊢ total(p) ⊃ S`), 6 (Table 2, Thm 9.4, Cor 9.8), E (`CLPEngine`) and X
-(`CLPExamples`, kernel-checked; `CLPBench`, run) are built.  Bench results:
-adders to `n = 64` (449 clauses) with carry-out settling at `4n + 3`, certified
-from both sides; the mortgage program exactly over ℚ; scheduling with a
-disjunctive machine constraint, backtracking under a deadline.
+**Status, 2026-09-11 (evening).**  Both passes are built, except stage 1.
+
+* `◯`-free pass: M, C1, C2 (proof trees, typing, `Θ ⊢ total(p) ⊃ S`), 6
+  (Table 2, Thm 9.4, Cor 9.8), E (`CLPEngine`) and X (`CLPExamples`,
+  kernel-checked; `CLPBench`, run).  Bench: adders to `n = 64` (449 clauses),
+  carry-out settling at `4n + 3`, certified from both sides; the mortgage
+  program exactly over ℚ; scheduling with a disjunctive machine constraint,
+  backtracking under a deadline.
+* `◯` pass (`CLPAbstract`, `HerbrandCLP`): abstraction and abstract proof trees
+  (Thm 6.3); the writer monad and extraction (Lemmas 8.3, 8.4, Thm 9.7);
+  refinement through clause instances, Thm 6.8 for arbitrary tables and Prop 6.6
+  (first half); the four-world canonical model, Lemma 7.2 and Thm 7.5 for
+  `i = 0, 1, 2`; Examples 6.1 and 9.5 carried through both passes.  Every
+  `◯`-pass theorem is pinned `[propext]` or `[propext, Quot.sound]`.
+* Not built: stage 1 (Fig. 1's Gentzen system); the second half of Prop 6.6;
+  Def 6.5's refined clauses as formulas (they are used through their
+  instances, `RefinedBy`); `toPf` (abstract proofs as λ̄c terms through
+  `certify`); a programmatic Wolfram bridge (Wolfram was used once, by hand, to
+  cross-check the mortgage figures).
 
 Two decisions made in writing this.
 

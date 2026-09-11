@@ -28,6 +28,7 @@ The engine finds the same answer, and exactly the two answers `c₁ ∧ c₃` an
 `c₂ ∧ c₄` when asked for all of them.
 -/
 import LaxLogic.QLL.CLPEngine
+import LaxLogic.QLL.CLPAbstract
 
 namespace LaxLogic.QLL.CLPExamples
 
@@ -145,6 +146,46 @@ theorem cor95 : Prv ex95.forms
     (.imp (.and (.and .top (c 1)) (c 3)) (.and .top (.and goal95 .top))) :=
   steps_sound steps95 rfl
 
+/-! ## The `◯` pass on the same examples
+
+The abstract proof of `◯B(z)` against `Θ♯` is the image of the concrete tree.
+Its extracted constraint is, verbatim,
+
+    (((true ∧ s≥5) ∧ (((true ∧ s≥9) ∧ (true ∧ true)) ∧ true)) ∧ true) ∧ (true ∧ (true ∧ z ≥ s+35))
+
+(with `s` the engine's `_v0`): the draft's `true ⊗ … ⊗` expression of §6, which it
+then simplifies to `z ≥ 44`.  Here the simplification is `⊣⊢` with the total
+constraint, whose projection is `ex61_answer`. -/
+
+theorem heads61 : ex61.HeadsOK isLinC := by unfold Program.HeadsOK; decide
+
+theorem abs61 : ATyped (ex61.abs isLinC .ex) .ex goal61 proof61.toA := by
+  have h := (checkC_sound isLinC ex61 proof61 goal61 check61).toA .ex heads61
+  rwa [Form.strip_pure isLinC (S := goal61) (.pred _ _) (by decide)] at h
+
+/-- `Θ♯₂ ⊢ ◯B(z)` (Theorem 6.3). -/
+theorem prvAbs61 : Prv (ex61.abs isLinC .ex).forms (.circ .ex goal61) := abs61.prv
+
+/-- The extracted constraint is the total constraint, up to `⊣⊢` (Theorem 9.7's content). -/
+theorem ext61 : PEq (proof61.toA.ext (ex61.table isLinC)).1 proof61.total :=
+  let h := checkC_sound isLinC ex61 proof61 goal61 check61
+  ((PEq.and_top _).symm.trans (PEq.and (PEq.refl _) (h.active_pure (by decide)).symm)).trans
+    (h.ext_total heads61)
+
+/-- Corollary 9.8 by the draft's route: `Θ ⊢ π₁|q| ⊃ B(z)`. -/
+theorem cor61 : Prv ex61.forms (.imp (proof61.toA.ext (ex61.table isLinC)).1 goal61) :=
+  cor_9_8_abs (by decide) abs61
+
+theorem heads95 : ex95.HeadsOK isC95 := by unfold Program.HeadsOK; decide
+
+/-- **Theorem 9.7 on Example 9.5**: the answer constraint `(true ∧ c₁) ∧ c₃` of the
+draft's six steps is, up to `⊣⊢`, the constraint extracted from an abstract proof
+of `◯Q` against `Θ♯`. -/
+theorem thm97_95 : ∃ p : CProof, CTyped isC95 ex95 goal95 p ∧
+    ATyped (ex95.abs isC95 .ex) .ex goal95 p.toA ∧
+    PEq (.and (.and .top (c 1)) (c 3)) (p.toA.ext (ex95.table isC95)).1 :=
+  thm_9_7 .ex heads95 steps95 (.pred _ _) (by decide)
+
 /-! ## Generated programs -/
 
 /-- A gate: its output settles `d` after all its inputs have. -/
@@ -202,5 +243,21 @@ def mortgage : Program :=
 
 /-- info: 'LaxLogic.QLL.CLPExamples.cor95' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms cor95
+
+
+/-- info: 'LaxLogic.QLL.CLPExamples.abs61' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms abs61
+
+/-- info: 'LaxLogic.QLL.CLPExamples.prvAbs61' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms prvAbs61
+
+/-- info: 'LaxLogic.QLL.CLPExamples.ext61' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms ext61
+
+/-- info: 'LaxLogic.QLL.CLPExamples.cor61' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs in #print axioms cor61
+
+/-- info: 'LaxLogic.QLL.CLPExamples.thm97_95' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms thm97_95
 
 end LaxLogic.QLL.CLPExamples
