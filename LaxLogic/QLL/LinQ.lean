@@ -208,14 +208,33 @@ theorem checkFarkas_unsat {cs : List LinCon} {ls : List ℚ} (h : checkFarkas (l
 
 /-! ## Reading constraint atoms -/
 
+/-- Decimal digits, by structural recursion over the characters, so that the
+kernel can evaluate it (`String.toNat?` and `splitOn` do not reduce there). -/
+def digitsVal : List Char → Nat → Option Nat
+  | [], acc => some acc
+  | c :: cs, acc => if c.isDigit then digitsVal cs (10 * acc + (c.toNat - '0'.toNat)) else none
+
+def natOfChars? : List Char → Option Nat
+  | [] => none
+  | cs => digitsVal cs 0
+
+def intOfChars? : List Char → Option Int
+  | '-' :: cs => (natOfChars? cs).map (fun n => -(n : Int))
+  | cs => (natOfChars? cs).map (fun n => (n : Int))
+
+def splitSlash : List Char → List Char → List Char × Option (List Char)
+  | [], acc => (acc.reverse, none)
+  | '/' :: cs, acc => (acc.reverse, some cs)
+  | c :: cs, acc => splitSlash cs (c :: acc)
+
+/-- A numeral `n` or `n/d`. -/
 def parseRat? (s : String) : Option ℚ :=
-  match s.splitOn "/" with
-  | [a] => a.toInt?.map (fun n : Int => (n : ℚ))
-  | [a, b] =>
-      match a.toInt?, b.toNat? with
+  match splitSlash s.toList [] with
+  | (a, none) => (intOfChars? a).map (fun n : Int => (n : ℚ))
+  | (a, some b) =>
+      match intOfChars? a, natOfChars? b with
       | some n, some d => if d = 0 then none else some ((n : ℚ) / d)
       | _, _ => none
-  | _ => none
 
 /-- A term as a linear expression, if it is one. -/
 def linOf : Tm → Option Lin

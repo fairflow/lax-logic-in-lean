@@ -177,6 +177,13 @@ refer to `docs/qll-clp-implementation-plan.md`.
 | 5 | — | world 2 and the fallible world 3 over `Π²`; Thm 7.5 at `i = 2` |
 | 1 | Gentzen system (Fig. 1) | last, if time |
 
+**Status, 2026-09-11.**  `◯`-free pass: M, C1, C2 (proof trees, typing,
+`Θ ⊢ total(p) ⊃ S`), 6 (Table 2, Thm 9.4, Cor 9.8), E (`CLPEngine`) and X
+(`CLPExamples`, kernel-checked; `CLPBench`, run) are built.  Bench results:
+adders to `n = 64` (449 clauses) with carry-out settling at `4n + 3`, certified
+from both sides; the mortgage program exactly over ℚ; scheduling with a
+disjunctive machine constraint, backtracking under a deadline.
+
 Two decisions made in writing this.
 
 * **Constraints are formulas.**  `⊗ = ∧`, `ε = ⊤`, and the monoid laws hold

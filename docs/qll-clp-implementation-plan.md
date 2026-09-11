@@ -81,7 +81,7 @@ Order: 0 → 2 → H → 3 → 4 → 5 → 6, with 1 floating.
 
 | example | status |
 | :-- | :-- |
-| 6.1 + two continuations, the three-component timing program | best target; the extracted constraint `(u≤5) ⊗ (u≤9) ⊗ (z ≥ u+35) = z ≥ 44` is checkable over a small linear-arithmetic constraint domain |
+| 6.1 + two continuations, the three-component timing program | **done** (`CLPExamples.ex61_answer`): the extracted constraint `(u≥5) ⊗ (u≥9) ⊗ (z ≥ u+35)`, projected onto `z`, is `z ≥ 44` |
 | 6.4, 6.7 | small, fully implementable |
 | 9.5 | implementable; the draft leaves steps k=2…6 blank, so we complete it |
 | 2.1, the CLP(ℝ) mortgage program | program and abstraction easy; reproducing `P = 120000` needs a real-arithmetic solver, a project of its own — **decision needed** |
@@ -111,3 +111,9 @@ Noted in passing, not hunted for.
 * Example 9.5 stops after `k = 1`; steps `k = 2…6` are headings with no content.
 * Two dangling references: "Definition ??" in Ex. 9.5, and a "Definition 7.2"
   cited in Thm 9.4's proof, where 7.2 is a Lemma.
+* Example 2.1's figures (checked exactly over ℚ by `CLPBench`, and in Wolfram):
+  the first query gives `P = 119999.9037…`, not `120000` (the payment
+  `1721.65` is rounded to cents); the second query's `MP = 0.263797522·P`
+  belongs to `I = 0.1` (exactly `161051/610510 = 0.2637974808…`, agreeing to 7
+  significant figures), not to the printed `I = 0.01`, which gives
+  `0.2060397996…`.

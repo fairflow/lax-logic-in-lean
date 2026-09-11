@@ -27,6 +27,8 @@ first is decided by a program.
 | `CLPCore` | CLP proof trees with constraint leaves; `total`/`active`/`latent` (Def 8.1); `Θ ⊢ total(p) ⊃ S` |
 | `CLPOper` | Table 2 goal reduction; Theorem 9.4 and Corollary 9.8, `◯`-free |
 | `LinQ` | linear arithmetic over ℚ: Fourier–Motzkin, untrusted, with witness and Farkas checkers proved sound |
+| `CLPEngine` | depth-first resolution with eager certified solving; every answer carries a checked proof tree; least settling times certified from both sides |
+| `CLPExamples` | Examples 6.1 and 9.5 run by the engine inside the kernel and checked there; generated adders and the mortgage program (run by `CLPBench`, which nothing imports) |
 | `ModalRelation` | side note: with `Rm = Ri`, models validate `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)`, which QLL does not prove |
 | `HerbrandFix` | Lloyd's fixpoint characterisations: `M_P = T_P↑ω`, and `M_P = OrderHom.lfp T_P` |
 | `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
@@ -105,3 +107,5 @@ import LaxLogic.QLL.ModalRelation
 import LaxLogic.QLL.CLPCore
 import LaxLogic.QLL.CLPOper
 import LaxLogic.QLL.LinQ
+import LaxLogic.QLL.CLPEngine
+import LaxLogic.QLL.CLPExamples
