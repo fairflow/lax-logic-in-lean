@@ -453,6 +453,60 @@ theorem canon_circ_w2 (S : Form) : (canonModel isC q Θ R).force (.circ q S) W4.
 end
 
 
+
+/-! ## Proposition 6.6, second half: REFUTED as stated
+
+The draft claims that for a modal clause `θ = ∀x̃. S ⊃ ◯P` without constraints and
+any table `p`, `(p : θ)♭ ⊢ θ`.  Take `θ = ∀x. A(x) ⊃ ◯P(x)` and the table
+`λx.λz.(B(x), ⋆)` with `B` a constraint: Definition 6.5 gives
+`(p : θ)♭ = ∀x. (A(x) ∧ B(x)) ⊃ P(x)`.  In the one-world Herbrand model where
+`A` holds of everything and `B`, `P` of nothing, the refinement is true and `θ`
+is false.  With the constraint assumed lax-true, `∀x. ◯B(x)`, the entailment
+holds (`p66_with_lax`): that is the missing hypothesis. -/
+
+def p66Refined : Form :=
+  .forall_ (.imp (.and (.pred "A" [.bvar 0]) (.pred "B" [.bvar 0])) (.pred "P" [.bvar 0]))
+
+def p66Abstract (q : Q) : Form :=
+  .forall_ (.imp (.pred "A" [.bvar 0]) (.circ q (.pred "P" [.bvar 0])))
+
+/-- One world: `A` holds of every term, `B` and `P` of none. -/
+def p66I : String → List Tm → Prop := fun p _ => p = "A"
+
+theorem p66_refined_true : HTrue p66I p66Refined := by
+  refine HTrue_forall.2 fun t _ => HTrue_imp.2 fun h => ?_
+  have hB : False ∨ ("B" = "A") := h.2
+  exact hB.elim False.elim (fun e => absurd e (by decide))
+
+theorem p66_abstract_false (q : Q) : ¬ HTrue p66I (p66Abstract q) := by
+  intro h
+  have h1 := HTrue_imp.1 (HTrue_forall.1 h (.fn "c" []) trivial)
+    (show False ∨ ("A" = "A") from Or.inr rfl)
+  have h3 : False ∨ ("P" = "A") := HTrue_circ.1 h1
+  exact h3.elim id (fun e => absurd e (by decide))
+
+/-- **Proposition 6.6, second half, REFUTED**: the refinement does not entail the
+abstract clause. -/
+theorem p66_refuted (q : Q) : ¬ Prv [p66Refined] (p66Abstract q) := fun h =>
+  p66_abstract_false q (Prv.sound h (herbrand1 p66I) () Tm.fvar (fun _ _ => trivial)
+    (fun B hB => by rw [List.mem_singleton] at hB; subst hB; exact p66_refined_true))
+
+/-- With the table's constraint lax-true, the entailment holds. -/
+theorem p66_with_lax (q : Q) :
+    Prv [p66Refined, .forall_ (.circ q (.pred "B" [.bvar 0]))] (p66Abstract q) := by
+  refine .allI [] fun a _ => ?_
+  show Prv _ (.imp (.pred "A" [.fvar a]) (.circ q (.pred "P" [.fvar a])))
+  refine .impI ?_
+  have hB : Prv (.pred "A" [.fvar a] :: [p66Refined, .forall_ (.circ q (.pred "B" [.bvar 0]))])
+      (.circ q (.pred "B" [.fvar a])) :=
+    .allE (.fvar a) trivial
+      (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl)))))))
+  have hR : Prv (.pred "A" [.fvar a] :: [p66Refined, .forall_ (.circ q (.pred "B" [.bvar 0]))])
+      (.imp (.and (.pred "A" [.fvar a]) (.pred "B" [.fvar a])) (.pred "P" [.fvar a])) :=
+    .allE (.fvar a) trivial (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl)))))
+  exact .circE hB (.circI (.impE hR.weaken_cons
+    (.andI (.var (List.mem_cons.2 (Or.inr (List.mem_cons.2 (Or.inl rfl))))) .hd)))
+
 /-! ## Axioms -/
 
 /-- info: 'LaxLogic.QLL.CTyped.of_sel' depends on axioms: [propext, Quot.sound] -/
@@ -493,5 +547,18 @@ end
 
 /-- info: 'LaxLogic.QLL.canon_circ_w2' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms canon_circ_w2
+
+
+/-- info: 'LaxLogic.QLL.p66_refined_true' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms p66_refined_true
+
+/-- info: 'LaxLogic.QLL.p66_abstract_false' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms p66_abstract_false
+
+/-- info: 'LaxLogic.QLL.p66_refuted' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms p66_refuted
+
+/-- info: 'LaxLogic.QLL.p66_with_lax' depends on axioms: [propext] -/
+#guard_msgs in #print axioms p66_with_lax
 
 end LaxLogic.QLL

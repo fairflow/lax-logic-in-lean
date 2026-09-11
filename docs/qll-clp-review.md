@@ -191,11 +191,18 @@ refer to `docs/qll-clp-implementation-plan.md`.
   (first half); the four-world canonical model, Lemma 7.2 and Thm 7.5 for
   `i = 0, 1, 2`; Examples 6.1 and 9.5 carried through both passes.  Every
   `◯`-pass theorem is pinned `[propext]` or `[propext, Quot.sound]`.
-* Not built: stage 1 (Fig. 1's Gentzen system); the second half of Prop 6.6;
-  Def 6.5's refined clauses as formulas (they are used through their
-  instances, `RefinedBy`); `toPf` (abstract proofs as λ̄c terms through
-  `certify`); a programmatic Wolfram bridge (Wolfram was used once, by hand, to
-  cross-check the mortgage figures).
+* Abstract proofs as λ̄c terms (`CLPCertify`): the direct reading of Fig. 3
+  nests `let` in scrutinee position and the verified checker `certify` refuses
+  it (`notInferable "ι_t(p)"`); the let-flattened term, equal by the monad's
+  commuting conversions, is accepted, for Examples 6.1 and 9.5 in the build
+  and for the generated adders in the bench.
+* REFUTED: Proposition 6.6, second half (`(p : θ)♭ ⊢ θ` for a modal clause):
+  a one-world countermodel (`HerbrandCLP.p66_refuted`).  It holds once the
+  table's constraints are assumed lax-true (`p66_with_lax`).
+* Not built: stage 1 (Fig. 1's Gentzen system); Def 6.5's refined clauses as
+  formulas (they are used through their instances, `RefinedBy`); a
+  programmatic Wolfram bridge (Wolfram was used once, by hand, to cross-check
+  the mortgage figures).
 
 Two decisions made in writing this.
 

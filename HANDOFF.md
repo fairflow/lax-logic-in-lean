@@ -206,6 +206,11 @@ implementation, §3 the application, §4 the plan with its status).
   certificates); Examples 6.1 and 9.5 run by the engine *inside the kernel*
   (`CLPExamples`); `CLPBench` (not imported): adders to 449 clauses, mortgage,
   scheduling.  Draft artefacts found: Example 2.1's figures (see the plan doc).
-- NOT BUILT: stage 1 (Gentzen system); Prop 6.6 second half; Def 6.5 as
-  formulas; `toPf` through `certify`; a programmatic Wolfram bridge.
+- REFUTED: the draft's Prop 6.6, second half (`HerbrandCLP.p66_refuted`,
+  one-world countermodel); true with the table's constraints lax-true
+  (`p66_with_lax`).
+- Built: abstract proofs as let-flattened λ̄c terms, accepted by `certify`
+  (`CLPCertify`); the direct reading of Fig. 3 is refused (`notInferable`).
+- NOT BUILT: stage 1 (Gentzen system); Def 6.5 as formulas; a programmatic
+  Wolfram bridge.
 

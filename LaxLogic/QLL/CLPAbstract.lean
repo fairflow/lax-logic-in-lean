@@ -35,7 +35,8 @@ Then, for every abstract proof `a` of `◯S`, and any table:
 so a concrete program proves the extracted constraint of any abstract proof
 against its abstraction, `Θ ⊢ π₁(ext a) ⊃ S` (Corollary 9.8 by the draft's
 route).  The second half of Proposition 6.6, `(p : θ)♭ ⊢ θ` for a modal clause,
-is not formalised.
+is REFUTED as stated (`HerbrandCLP.p66_refuted`, a one-world countermodel); it
+holds once the table's constraints are assumed lax-true (`p66_with_lax`).
 
 **The monad (Lemma 4.3 and Theorem 4.4, read equationally).**  The unit and
 associativity laws of `C × −`, and commutativity, hold up to `⊣⊢`

@@ -112,6 +112,9 @@ Noted in passing, not hunted for.
 * Example 9.5 stops after `k = 1`; steps `k = 2…6` are headings with no content.
 * Two dangling references: "Definition ??" in Ex. 9.5, and a "Definition 7.2"
   cited in Thm 9.4's proof, where 7.2 is a Lemma.
+* Proposition 6.6's second half, `(p : θ)♭ ⊢ θ`, is false as stated: a
+  one-world countermodel (`HerbrandCLP.p66_refuted`).  It needs the table's
+  constraints to be lax-true, `⊢ ◯c` (`p66_with_lax`).
 * Example 2.1's figures (checked exactly over ℚ by `CLPBench`, and in Wolfram):
   the first query gives `P = 119999.9037…`, not `120000` (the payment
   `1721.65` is rounded to cents); the second query's `MP = 0.263797522·P`
