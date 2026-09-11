@@ -222,4 +222,12 @@ implementation, §3 the application, §4 the plan with its status).
   script at merge.  Fourier–Motzkin now refuses an elimination step that would
   exceed its row cap before building it (a designed cell had driven it to 24 GB).
 - NOT BUILT: stage 1 (Gentzen system); Def 6.5 as formulas.
+- Evening: `docs/qll-clp-writeup.md` rewritten (14 sections): how constraints
+  are solved, the mapping to Jaffar–Maher's transition system and Theorem 6.1,
+  the abstraction/refinement reading, why two (then four) Herbrand worlds,
+  every example recomputable by hand and grouped by domain and technique, and
+  a table of the unsimplified constraints with causes and en-route remedies
+  (none implemented).  `docs/qll-clp-pruning-and-cut.md`: research note on
+  CLP pruning vs Prolog's cut (quiet pruning, left-zero monoids); no
+  implementation, by instruction.
 
