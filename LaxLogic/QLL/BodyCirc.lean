@@ -463,6 +463,55 @@ theorem AProof.ext_peq_of_entries_eq (T : Nat → List Tm → Wit → Form) {a a
   ⟨AProof.ext_prv_of_entries_subset T fun e he => (h e).2 he,
    AProof.ext_prv_of_entries_subset T fun e he => (h e).1 he⟩
 
+/-! ## `◯` over a conjunction: interderivable, but not the same realisers
+
+`◯(A ∧ B) ⊣⊢ ◯A ∧ ◯B` in QLL.  Under extraction the two sides have different
+types, `C × (|A| × |B|)` against `(C × |A|) × (C × |B|)`: on the left one
+constraint may relate both witnesses, on the right each constraint sees only
+its own.  The two directions of the equivalence are the double strength
+`dstr` and the duplication `dup`, and `dup ∘ dstr` is not the identity, so a
+clause body cannot be regrouped this way without changing what is extracted.
+In Fig. 3 as built here, `∧◯` is `dstr` (`AProof.ext_andC`): a constraint
+relating two subgoals' witnesses can live only in the table entry of the
+enclosing clause. -/
+
+/-- `◯(A ∧ B) ⊢ ◯A ∧ ◯B`. -/
+theorem circ_and_split (q : Q) (A B : Form) :
+    Prv [.circ q (.and A B)] (.and (.circ q A) (.circ q B)) :=
+  Prv.andI (Prv.circE Prv.hd (Prv.circI (Prv.andE₁ Prv.hd)))
+    (Prv.circE Prv.hd (Prv.circI (Prv.andE₂ Prv.hd)))
+
+/-- `◯A ∧ ◯B ⊢ ◯(A ∧ B)`. -/
+theorem circ_and_join (q : Q) (A B : Form) :
+    Prv [.and (.circ q A) (.circ q B)] (.circ q (.and A B)) :=
+  Prv.circE (Prv.andE₁ Prv.hd)
+    (Prv.circE (Prv.andE₂ (Prv.var (List.Mem.tail _ (List.Mem.head _))))
+      (Prv.circI (Prv.andI (Prv.var (List.Mem.tail _ (List.Mem.head _))) Prv.hd)))
+
+/-- The double strength: two independent computations combined. -/
+def dstr {α β : Type} (m : WM α × WM β) : WM (α × β) := (.and m.1.1 m.2.1, (m.1.2, m.2.2))
+
+/-- Duplication: one joint constraint handed to both components. -/
+def dup {α β : Type} (m : WM (α × β)) : WM α × WM β := ((m.1, m.2.1), (m.1, m.2.2))
+
+/-- `dstr ∘ dup` is the identity up to `⊣⊢`. -/
+theorem dstr_dup {α β : Type} (m : WM (α × β)) : WEq (dstr (dup m)) m :=
+  ⟨⟨Prv.andE₁ Prv.hd, Prv.andI Prv.hd Prv.hd⟩, rfl⟩
+
+/-- `dup ∘ dstr` is not: the first component of `((⊤, ⋆), (⊥, ⋆))` comes back as `(⊤ ∧ ⊥, ⋆)`. -/
+theorem not_dup_dstr :
+    ¬ WEq (dup (dstr ((Form.top, Wit.unit), (Form.bot, Wit.unit)))).1 (Form.top, Wit.unit) := by
+  intro h
+  have hb : Prv [Form.top] Form.bot := Prv.andE₂ h.1.2
+  have hs := Prv.sound hb BodyCirc.m2 BodyCirc.W2.w0 (fun _ => ()) (fun _ _ => trivial)
+    (fun B hB => by rcases List.mem_singleton.1 hB with rfl; trivial)
+  exact hs
+
+/-- Fig. 3's `∧◯` is the double strength: the second constraint does not see the first witness. -/
+theorem AProof.ext_andC (T : Nat → List Tm → Wit → Form) (p r : AProof) :
+    (AProof.andC p r).ext T = (.and (p.ext T).1 (.and (r.ext T).1 .top), .pair (p.ext T).2 (r.ext T).2) :=
+  rfl
+
 end LaxLogic.QLL
 
 namespace LaxLogic.QLL.BodyCirc

@@ -257,4 +257,24 @@ implementation, §3 the application, §4 the plan with its status).
   ◯-free fragment; the constraint framework's contribution is that `=` is a
   constraint solved in the domain.  We have no Herbrand equality solver, so
   constructor heads are logically available and computationally not.
+- CORRECTION (Matthew): `◯(P₁ ∧ P₂) ⊣⊢ ◯P₁ ∧ ◯P₂` does NOT "handle"
+  groupings under extraction — on the left one constraint may relate both
+  witnesses, on the right not.  Mechanised in `BodyCirc`: `circ_and_split`/
+  `circ_and_join` (provability), `dstr`/`dup` (the two realiser maps),
+  `dstr_dup` (identity up to ⊣⊢), `not_dup_dstr` (REFUTED: the round trip
+  turns `(⊤, ⋆)` into `(⊤ ∧ ⊥, ⋆)`); `AProof.ext_andC`: Fig. 3's `∧◯` is the
+  double strength, so cross-subgoal constraints live only in the table.
+- `LaxLogic/QLL/CLPMachine.lean` (new, not imported): SLD and SLD◯ in ONE
+  format — states are partial proof trees (`PTree`/`ATree`, open leaves =
+  the goal list), a step expands one leaf (`Expand`/`ExpandA`, identical
+  rule shapes, `cstr` ↦ `top`).  PROVED: every SLD step projects to a
+  Table 2 `Step` (`SLDStep.goal_step`); typing preserved, closed tree is a
+  `CProof`; Theorem 9.4 as a run invariant `c ⊣⊢ c₀ ∧ total q`
+  (`SLDSteps.store`); soundness wrt QLL for both machines (`SLDSteps.prv`,
+  `SLDCSteps.prv`); forward simulation SLD ⟹ SLD◯ under `toA`
+  (`Expand.toA`, `SLDSteps.toA`, heads not constraints).  OPEN, in order:
+  lifting Table 2 ⟹ SLD; SLD◯ ⟹ SLD under toA for `ok := ⊤` (fails at
+  `cstr` under pruning — that IS pruning); completeness (every typed tree is
+  a run); Herbrand soundness/completeness via `world2_free`, `thm_7_5_canon`;
+  the switching lemma (a diamond on `Expand`) for strategy independence.
 
