@@ -272,9 +272,23 @@ implementation, §3 the application, §4 the plan with its status).
   `CProof`; Theorem 9.4 as a run invariant `c ⊣⊢ c₀ ∧ total q`
   (`SLDSteps.store`); soundness wrt QLL for both machines (`SLDSteps.prv`,
   `SLDCSteps.prv`); forward simulation SLD ⟹ SLD◯ under `toA`
-  (`Expand.toA`, `SLDSteps.toA`, heads not constraints).  OPEN, in order:
-  lifting Table 2 ⟹ SLD; SLD◯ ⟹ SLD under toA for `ok := ⊤` (fails at
-  `cstr` under pruning — that IS pruning); completeness (every typed tree is
-  a run); Herbrand soundness/completeness via `world2_free`, `thm_7_5_canon`;
-  the switching lemma (a diamond on `Expand`) for strategy independence.
+  (`Expand.toA`, `SLDSteps.toA`, heads not constraints).
+- Later the same evening, also PROVED in `CLPMachine`: LIFTING — a Table 2
+  step from a tree's goal list is an expansion of that tree (`Step.lift`),
+  and runs lift (`Steps.lift`); with `SLDSteps.goal` this is the run-level
+  correspondence Table 2 ⟷ SLD on single goals.  THE SWITCHING LEMMA —
+  `ExpandAt` indexes the expanded leaf; expansions at different leaves
+  commute without pruning (`ExpandAt.diamond`), stores equal up to ⊣⊢.
+  Pruning put back: for `ok` closed under provable weakening (satisfiability
+  is; the implemented `satOK` is NOT, being incomplete on nonlinear stores),
+  pruned runs are exactly the unpruned runs whose final store passes `ok`
+  (`SLDSteps.noPrune_iff`) — pruning changes which prefixes are explored,
+  never which trees are reachable with an acceptable store.  Still OPEN:
+  SLD◯ ⟹ SLD under toA for `ok := ⊤`; completeness (typed tree ⟹ run);
+  the Herbrand corollaries.
+- BodyCirc additions pending Matthew's mid-turn points: selective `◯` on
+  disjuncts (`A ∨ ◯B`) as a new placement — realiser `|A| + (C × |B|)`, a
+  `◯`-free disjunct summons no entries so by the inclusion lemma its answer
+  `⊤` is entailed by every other answer of the goal (a sound `once`);
+  `◯(∧Γ ⊃ M)` as the witness-independent constraint; both stated, not built.
 
