@@ -20,6 +20,11 @@ body's `◯`:
 
     (A ∧ ◯B) ⊃ ◯P   ⊣⊢   (A ∧ B) ⊃ ◯P              (`clause3`, `clause4`)
     ∀t. (A t ∧ ◯B t) ⊃ ◯P t  ⊣⊢  ∀t. (A t ∧ B t) ⊃ ◯P t   (`fo_I_to_II`, `fo_II_to_I`)
+    ∀t. (∃s. ◯B s ∧ C s t) ⊃ ◯P t  ⊣⊢  ∀t. (∃s. B s ∧ C s t) ⊃ ◯P t
+                                       (`fo_ex_I_to_II`, `fo_ex_II_to_I`)
+
+the last being the shape a clause body actually has: the `◯` sits under the
+existential, and `◯E` still absorbs it.
 
 Since every clause of an abstract program `Θ♯` has a modal head, a body `◯`
 adds nothing there: it is `val`, contributing `⊤`.  Nesting the same `◯` adds
@@ -204,6 +209,84 @@ theorem fo_II_to_I (q : Q) : Prv [clII q] (clI q) := by
     Prv.allE (.fvar "w") trivial (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
   exact Prv.impE hcl (Prv.andI (Prv.andE₁ h2) hB)
 
+/-! ## The same with `◯` under an existential — the shape a clause body actually has -/
+
+/-- `∀t. (∃s. ◯B s ∧ C s t) ⊃ ◯P t`. -/
+def clEI (q : Q) : Form :=
+  .forall_ (.imp (.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .bvar 1])))
+    (.circ q (.pred "P" [.bvar 0])))
+
+/-- `∀t. (∃s. B s ∧ C s t) ⊃ ◯P t`. -/
+def clEII (q : Q) : Form :=
+  .forall_ (.imp (.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .bvar 1])))
+    (.circ q (.pred "P" [.bvar 0])))
+
+theorem fo_ex_I_to_II (q : Q) : Prv [clEI q] (clEII q) := by
+  refine Prv.allI_of_fresh (c := "w") (by cases q <;> decide) (by cases q <;> decide) ?_
+  show Prv [clEI q]
+    (.imp (.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"])))
+      (.circ q (.pred "P" [.fvar "w"])))
+  refine Prv.impI ?_
+  refine Prv.exE_of_fresh (c := "u") (by cases q <;> decide) (by cases q <;> decide)
+    (by cases q <;> decide) (Prv.var (List.Mem.head _)) ?_
+  have hbc : Prv [Form.and (.pred "B" [.fvar "u"]) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"])), clEI q]
+      (.and (.pred "B" [.fvar "u"]) (.pred "C" [.fvar "u", .fvar "w"])) :=
+    Prv.var (List.Mem.head _)
+  have hcl : Prv [Form.and (.pred "B" [.fvar "u"]) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"])), clEI q]
+      (.imp (.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])))
+        (.circ q (.pred "P" [.fvar "w"]))) :=
+    Prv.allE (.fvar "w") trivial
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _))))
+  have hex : Prv [Form.and (.pred "B" [.fvar "u"]) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"])), clEI q]
+      (.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"]))) :=
+    Prv.exI (.fvar "u") trivial (Prv.andI (Prv.circI (Prv.andE₁ hbc)) (Prv.andE₂ hbc))
+  exact Prv.impE hcl hex
+
+theorem fo_ex_II_to_I (q : Q) : Prv [clEII q] (clEI q) := by
+  refine Prv.allI_of_fresh (c := "w") (by cases q <;> decide) (by cases q <;> decide) ?_
+  show Prv [clEII q]
+    (.imp (.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])))
+      (.circ q (.pred "P" [.fvar "w"])))
+  refine Prv.impI ?_
+  refine Prv.exE_of_fresh (c := "u") (by cases q <;> decide) (by cases q <;> decide)
+    (by cases q <;> decide) (Prv.var (List.Mem.head _)) ?_
+  have h1 : Prv [Form.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])),
+      clEII q]
+      (.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"])) :=
+    Prv.var (List.Mem.head _)
+  refine Prv.circE (Prv.andE₁ h1) ?_
+  have h2 : Prv [Form.pred "B" [.fvar "u"],
+      Form.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])),
+      clEII q]
+      (.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"])) :=
+    Prv.var (List.Mem.tail _ (List.Mem.head _))
+  have hB : Prv [Form.pred "B" [.fvar "u"],
+      Form.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])),
+      clEII q]
+      (.pred "B" [.fvar "u"]) :=
+    Prv.var (List.Mem.head _)
+  have hcl : Prv [Form.pred "B" [.fvar "u"],
+      Form.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])),
+      clEII q]
+      (.imp (.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"])))
+        (.circ q (.pred "P" [.fvar "w"]))) :=
+    Prv.allE (.fvar "w") trivial
+      (Prv.var (List.Mem.tail _ (List.Mem.tail _ (List.Mem.tail _ (List.Mem.head _)))))
+  have hex : Prv [Form.pred "B" [.fvar "u"],
+      Form.and (.circ q (.pred "B" [.fvar "u"])) (.pred "C" [.fvar "u", .fvar "w"]),
+      Form.exists_ (.and (.circ q (.pred "B" [.bvar 0])) (.pred "C" [.bvar 0, .fvar "w"])),
+      clEII q]
+      (.exists_ (.and (.pred "B" [.bvar 0]) (.pred "C" [.bvar 0, .fvar "w"]))) :=
+    Prv.exI (.fvar "u") trivial (Prv.andI hB (Prv.andE₂ h2))
+  exact Prv.impE hcl hex
+
 /-! ## Indirect firing: a first-order program
 
     θ₀ : ∀s. s ≥ 5 ⊃ B(s)
@@ -266,6 +349,9 @@ theorem extQ : PEq (proofQ.toA.ext (exQ.table isLinC)).1 proofQ.total :=
 
 /-- info: 'LaxLogic.QLL.BodyCirc.fo_II_to_I' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms fo_II_to_I
+
+/-- info: 'LaxLogic.QLL.BodyCirc.fo_ex_II_to_I' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms fo_ex_II_to_I
 
 /-- info: 'LaxLogic.QLL.BodyCirc.extQ' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs in #print axioms extQ

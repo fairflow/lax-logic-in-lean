@@ -235,7 +235,9 @@ implementation, §3 the application, §4 the plan with its status).
   PLAIN head a body `◯` is strictly stronger (it discharges a constraint) —
   `body_circ_to_plain` PROVED, converse REFUTED by a two-world countermodel;
   with a MODAL head the two forms are interderivable (`clause3`/`clause4`,
-  and first-order `fo_I_to_II`/`fo_II_to_I`), so a body `◯` buys nothing in
+  first-order `fo_I_to_II`/`fo_II_to_I`, and with `◯` under an existential,
+  `fo_ex_I_to_II`/`fo_ex_II_to_I`, the shape a clause body actually has), so
+  a body `◯` buys nothing in
   an abstract program.  `circ_circ_iff`: `◯◯A ⊣⊢ ◯A`, so `◯`-depth cannot
   layer — that needs a family of modalities.  Worked first-order program
   (`exQ`, kernel-run) shows constraints firing indirectly through a matching
