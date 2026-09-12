@@ -230,4 +230,15 @@ implementation, §3 the application, §4 the plan with its status).
   (none implemented).  `docs/qll-clp-pruning-and-cut.md`: research note on
   CLP pruning vs Prolog's cut (quiet pruning, left-zero monoids); no
   implementation, by instruction.
+- `LaxLogic/QLL/BodyCirc.lean` (new, not imported by `QLL.lean`), answering
+  Matthew's question whether `◯` should be allowed in clause bodies: with a
+  PLAIN head a body `◯` is strictly stronger (it discharges a constraint) —
+  `body_circ_to_plain` PROVED, converse REFUTED by a two-world countermodel;
+  with a MODAL head the two forms are interderivable (`clause3`/`clause4`,
+  and first-order `fo_I_to_II`/`fo_II_to_I`), so a body `◯` buys nothing in
+  an abstract program.  `circ_circ_iff`: `◯◯A ⊣⊢ ◯A`, so `◯`-depth cannot
+  layer — that needs a family of modalities.  Worked first-order program
+  (`exQ`, kernel-run) shows constraints firing indirectly through a matching
+  head, with the indirect clause's table entry `⊤`: no extra constraint term
+  and no relaxation.
 
