@@ -243,4 +243,18 @@ implementation, §3 the application, §4 the plan with its status).
   (`exQ`, kernel-run) shows constraints firing indirectly through a matching
   head, with the indirect clause's table entry `⊤`: no extra constraint term
   and no relaxation.
+- The inclusion lemma (`BodyCirc`, [propext]): `AProof.entries` lists the
+  table entries `(w, t̃, z)` a derivation summons; `entries a ⊆ entries a'`
+  gives `π₁|a'|_T ⊢ π₁|a|_T` for every table (`ext_prv_of_entries_subset`),
+  equal entry sets give `⊣⊢`.  This is the abstract-level preference between
+  derivations that differ only in how they prove `◯S`: intensional content
+  = the entries, everything else is identified by the monad laws.
+- `LaxLogic/QLL/HeadFlatten.lean` (new, not imported): variable-only heads
+  lose nothing given equality — `∀y. S y ⊃ P(f y)` and its Clark flattening
+  `∀x. (∃y. x = f y ∧ S y) ⊃ P x` are interderivable, one direction from
+  reflexivity, the other from substitutivity in `P`; the same two axioms
+  suffice for a `◯P(f y)` head (`◯E` lifts substitutivity).  Native to the
+  ◯-free fragment; the constraint framework's contribution is that `=` is a
+  constraint solved in the domain.  We have no Herbrand equality solver, so
+  constructor heads are logically available and computationally not.
 

@@ -37,6 +37,16 @@ reached.  For `θ₂ : ∀t. P(t) ⊃ Q(t)`, whose body is a bare atom, the tabl
 entry is `true`, and the answer for `Q(z)` is exactly `θ₀`'s and `θ₁`'s
 constraints.  So exercising the body-`◯` form neither adds a constraint term
 nor relaxes one.
+
+**The inclusion lemma.**  What distinguishes two derivations of one `◯S` is
+the multiset of table entries they summon (`AProof.entries`); everything else
+is identified by the monad laws.  Inclusion of entries gives entailment of
+the extracted constraints for every table:
+
+    entries a ⊆ entries a'   →   π₁|a'|_T ⊢ π₁|a|_T          (`AProof.ext_prv_of_entries_subset`)
+
+so a derivation summoning fewer entries can be preferred at the abstract
+level, before any constraint is looked at.
 -/
 import LaxLogic.QLL.CLPExamples
 
@@ -335,6 +345,133 @@ theorem extQ : PEq (proofQ.toA.ext (exQ.table isLinC)).1 proofQ.total :=
 -- The indirect clause `θ₂` contributes nothing: its table entry is `⊤`.
 /-- info: "true" -/
 #guard_msgs in #eval showForm (exQ.table isLinC 2 [Tm.fvar "z"] proofQ.wit)
+
+end LaxLogic.QLL.BodyCirc
+
+namespace LaxLogic.QLL
+
+/-! ## The inclusion lemma: which table entries a derivation summons
+
+Two abstract derivations of the same `◯S` can differ in the clause applications
+they make, and only there: the monad laws (`WM.bind_*`) identify everything
+else.  The entries `(w, t̃, z)` a derivation summons fix its constraint
+parametrically in the table, and inclusion of entries gives entailment for
+*every* table — a preference between derivations that needs no domain. -/
+
+/-- The witness of an abstract proof; it does not depend on the table. -/
+def AProof.wit : AProof → Wit
+  | .val => .unit
+  | .andC p r => .pair p.wit r.wit
+  | .orL p => .inl p.wit
+  | .orR p => .inr p.wit
+  | .exC t p => .pack t p.wit
+  | .impC _ _ _ => .unit
+
+/-- `π₂|a|` is `a.wit`, whatever the table. -/
+theorem AProof.ext_snd (T : Nat → List Tm → Wit → Form) :
+    ∀ a : AProof, (a.ext T).2 = a.wit
+  | .val => rfl
+  | .andC p r => by
+      show Wit.pair (p.ext T).2 (r.ext T).2 = Wit.pair p.wit r.wit
+      rw [AProof.ext_snd T p, AProof.ext_snd T r]
+  | .orL p => by
+      show Wit.inl (p.ext T).2 = Wit.inl p.wit
+      rw [AProof.ext_snd T p]
+  | .orR p => by
+      show Wit.inr (p.ext T).2 = Wit.inr p.wit
+      rw [AProof.ext_snd T p]
+  | .exC t p => by
+      show Wit.pack t (p.ext T).2 = Wit.pack t p.wit
+      rw [AProof.ext_snd T p]
+  | .impC _ _ _ => rfl
+
+/-- The table entries a derivation summons: `(w, t̃, z)` at each clause application. -/
+def AProof.entries : AProof → List (Nat × List Tm × Wit)
+  | .val => []
+  | .andC p r => p.entries ++ r.entries
+  | .orL p => p.entries
+  | .orR p => p.entries
+  | .exC _ p => p.entries
+  | .impC w ts p => p.entries ++ [(w, ts, p.wit)]
+
+/-- Each summoned entry is entailed by the extracted constraint. -/
+theorem AProof.prv_entry (T : Nat → List Tm → Wit → Form) :
+    ∀ (a : AProof) (e : Nat × List Tm × Wit), e ∈ a.entries →
+      Prv [(a.ext T).1] (T e.1 e.2.1 e.2.2)
+  | .val, _, he => nomatch he
+  | .andC p r, e, he => by
+      have he' : e ∈ p.entries ++ r.entries := he
+      show Prv [Form.and (p.ext T).1 (.and (r.ext T).1 .top)] _
+      rcases List.mem_append.1 he' with h | h
+      · exact Prv.cut1 (Prv.andE₁ Prv.hd) (AProof.prv_entry T p e h)
+      · exact Prv.cut1 (Prv.andE₁ (Prv.andE₂ Prv.hd)) (AProof.prv_entry T r e h)
+  | .orL p, e, he => by
+      show Prv [Form.and (p.ext T).1 .top] _
+      exact Prv.cut1 (Prv.andE₁ Prv.hd) (AProof.prv_entry T p e he)
+  | .orR p, e, he => by
+      show Prv [Form.and (p.ext T).1 .top] _
+      exact Prv.cut1 (Prv.andE₁ Prv.hd) (AProof.prv_entry T p e he)
+  | .exC _ p, e, he => by
+      show Prv [Form.and (p.ext T).1 .top] _
+      exact Prv.cut1 (Prv.andE₁ Prv.hd) (AProof.prv_entry T p e he)
+  | .impC w ts p, e, he => by
+      have he' : e ∈ p.entries ++ [(w, ts, p.wit)] := he
+      show Prv [Form.and (p.ext T).1 (T w ts (p.ext T).2)] _
+      rcases List.mem_append.1 he' with h | h
+      · exact Prv.cut1 (Prv.andE₁ Prv.hd) (AProof.prv_entry T p e h)
+      · rw [List.mem_singleton.1 h, AProof.ext_snd T p]
+        exact Prv.andE₂ Prv.hd
+
+/-- The extracted constraint follows from the summoned entries. -/
+theorem AProof.prv_ext_of_entries (T : Nat → List Tm → Wit → Form) (Γ : List Form) :
+    ∀ a : AProof, (∀ e ∈ a.entries, Prv Γ (T e.1 e.2.1 e.2.2)) → Prv Γ (a.ext T).1
+  | .val, _ => Prv.topI
+  | .andC p r, h => by
+      have h' : ∀ e ∈ p.entries ++ r.entries, Prv Γ (T e.1 e.2.1 e.2.2) := h
+      show Prv Γ (Form.and (p.ext T).1 (.and (r.ext T).1 .top))
+      exact Prv.andI
+        (AProof.prv_ext_of_entries T Γ p fun e he => h' e (List.mem_append_left _ he))
+        (Prv.andI
+          (AProof.prv_ext_of_entries T Γ r fun e he => h' e (List.mem_append_right _ he))
+          Prv.topI)
+  | .orL p, h => by
+      show Prv Γ (Form.and (p.ext T).1 .top)
+      exact Prv.andI (AProof.prv_ext_of_entries T Γ p h) Prv.topI
+  | .orR p, h => by
+      show Prv Γ (Form.and (p.ext T).1 .top)
+      exact Prv.andI (AProof.prv_ext_of_entries T Γ p h) Prv.topI
+  | .exC _ p, h => by
+      show Prv Γ (Form.and (p.ext T).1 .top)
+      exact Prv.andI (AProof.prv_ext_of_entries T Γ p h) Prv.topI
+  | .impC w ts p, h => by
+      have h' : ∀ e ∈ p.entries ++ [(w, ts, p.wit)], Prv Γ (T e.1 e.2.1 e.2.2) := h
+      show Prv Γ (Form.and (p.ext T).1 (T w ts (p.ext T).2))
+      rw [AProof.ext_snd T p]
+      exact Prv.andI
+        (AProof.prv_ext_of_entries T Γ p fun e he => h' e (List.mem_append_left _ he))
+        (h' (w, ts, p.wit) (List.mem_append_right _ (List.mem_singleton.2 rfl)))
+
+/-- **The inclusion lemma.**  If every entry `a` summons is summoned by `a'`, then
+`a'`'s extracted constraint entails `a`'s, for every table. -/
+theorem AProof.ext_prv_of_entries_subset (T : Nat → List Tm → Wit → Form) {a a' : AProof}
+    (h : ∀ e ∈ a.entries, e ∈ a'.entries) : Prv [(a'.ext T).1] (a.ext T).1 :=
+  AProof.prv_ext_of_entries T _ a fun e he => AProof.prv_entry T a' e (h e he)
+
+/-- Derivations summoning the same entries extract the same constraint, up to `⊣⊢`. -/
+theorem AProof.ext_peq_of_entries_eq (T : Nat → List Tm → Wit → Form) {a a' : AProof}
+    (h : ∀ e, e ∈ a.entries ↔ e ∈ a'.entries) : PEq (a.ext T).1 (a'.ext T).1 :=
+  ⟨AProof.ext_prv_of_entries_subset T fun e he => (h e).2 he,
+   AProof.ext_prv_of_entries_subset T fun e he => (h e).1 he⟩
+
+end LaxLogic.QLL
+
+namespace LaxLogic.QLL.BodyCirc
+
+-- The entries the example's derivation summons: `θ₂` at `z`, `θ₁` at `z`, `θ₀` at `_v0`.
+/-- info: [(0, ["_v0"]), (1, ["z"]), (2, ["z"])] -/
+#guard_msgs in #eval proofQ.toA.entries.map fun e => (e.1, e.2.1.map Engine.showTm)
+/-- info: 'LaxLogic.QLL.AProof.ext_prv_of_entries_subset' depends on axioms: [propext] -/
+#guard_msgs in #print axioms AProof.ext_prv_of_entries_subset
 
 /-! ## Axioms -/
 
