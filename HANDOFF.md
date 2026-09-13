@@ -286,6 +286,16 @@ implementation, §3 the application, §4 the plan with its status).
   never which trees are reachable with an acceptable store.  Still OPEN:
   SLD◯ ⟹ SLD under toA for `ok := ⊤`; completeness (typed tree ⟹ run);
   the Herbrand corollaries.
+- 2026-09-13: THE PAPER, as a standalone Verso document (Matthew's choice,
+  local build authorised): `CLPPaper/` (root `Paper.lean`, twelve sections
+  under `Sections/`), `CLPPaperMain.lean`, `[[lean_lib]] CLPPaper` in
+  `lakefile.toml` (NOT in defaultTargets), rendered by
+  `scripts/clp-paper-render.sh` into `_out/clp-paper/{html-single,html-multi}`
+  and served over HTTP (never file://).  Modelled on `LaxPaper/`; every
+  theorem node carries `(lean := "…")`, 110 names verified; builds in ~20 s
+  on top of the built library, renders in ~30 s.  `BodyCirc`, `HeadFlatten`,
+  `CLPMachine` are now imported by `LaxLogic/QLL.lean` so `lake build` covers
+  them and the paper can import them.
 - BodyCirc additions pending Matthew's mid-turn points: selective `◯` on
   disjuncts (`A ∨ ◯B`) as a new placement — realiser `|A| + (C × |B|)`, a
   `◯`-free disjunct summons no entries so by the inclusion lemma its answer

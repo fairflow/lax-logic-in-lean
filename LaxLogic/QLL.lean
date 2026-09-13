@@ -33,6 +33,9 @@ first is decided by a program.
 | `CLPCertify` | abstract proofs as λ̄c terms (Fig. 3), let-flattened, accepted by `certify` |
 | `CLPExamples` | Examples 6.1 and 9.5 run by the engine inside the kernel and checked there; generated adders and the mortgage program (run by `CLPBench`, which nothing imports) |
 | `ModalRelation` | side note: with `Rm = Ri`, models validate `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)`, which QLL does not prove |
+| `BodyCirc` | `◯` in clause bodies: redundant under a modal head, a discharge under a plain one; `◯(A∧B)` against `◯A∧◯B` as realisers; the inclusion lemma on summoned table entries |
+| `HeadFlatten` | variable-only heads lose nothing given reflexivity and substitutivity; the same two axioms under a `◯` head |
+| `CLPMachine` | SLD and SLD◯ in one format on partial proof trees: projection to Table 2, lifting, Theorem 9.4 as an invariant, soundness of both, simulation under `toA`, the switching lemma, pruning put back |
 | `HerbrandFix` | Lloyd's fixpoint characterisations: `M_P = T_P↑ω`, and `M_P = OrderHom.lfp T_P` |
 | `Weaken` | a derivation's eigenvariables, and weakening under their avoidance |
 | `Rename` | renaming an individual through a derivation; re-basing an eigenvariable |
@@ -115,3 +118,6 @@ import LaxLogic.QLL.CLPExamples
 import LaxLogic.QLL.CLPAbstract
 import LaxLogic.QLL.HerbrandCLP
 import LaxLogic.QLL.CLPCertify
+import LaxLogic.QLL.BodyCirc
+import LaxLogic.QLL.HeadFlatten
+import LaxLogic.QLL.CLPMachine

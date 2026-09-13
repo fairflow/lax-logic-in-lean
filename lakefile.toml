@@ -23,6 +23,12 @@ rev = "v4.31.0"
 [[lean_lib]]
 name = "LaxPaper"
 
+# CLPPaper: the Verso paper on the CLP mechanisation (LaxLogic/QLL/CLP*,
+# BodyCirc, HeadFlatten, CLPMachine).  Deliberately NOT in defaultTargets, for
+# the same reason as LaxPaper.  Render with scripts/clp-paper-render.sh.
+[[lean_lib]]
+name = "CLPPaper"
+
 [[lean_lib]]
 name = "LaxLogic"
 
