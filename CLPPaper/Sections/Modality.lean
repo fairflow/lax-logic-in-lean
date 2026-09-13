@@ -146,17 +146,67 @@ constraints, with unification an untrusted oracle whose certificate is the
 substitution.
 :::
 
+# Decorating a disjunct
+
+A goal may be a disjunction, and one disjunct may carry the modality while the
+other does not: `A ∨ ◯B`, "either `A` outright, or `B` up to a constraint".
+Under an outer `◯` the decoration collapses; as a plain goal it is a genuine
+weakening.
+
+:::theorem "mod_disj_collapse" (parent := "mod") (lean := "LaxLogic.QLL.circ_or_circ_collapse")
+`◯(A ∨ ◯B) ⊢ ◯(A ∨ B)`.
+:::
+
+:::theorem "mod_disj_expand" (parent := "mod") (lean := "LaxLogic.QLL.circ_or_circ_expand")
+`◯(A ∨ B) ⊢ ◯(A ∨ ◯B)`: under `◯` the two goals are the same.
+:::
+
+:::theorem "mod_disj_weaker" (parent := "mod") (lean := "LaxLogic.QLL.or_to_or_circ")
+`A ∨ B ⊢ A ∨ ◯B`.
+:::
+
+:::theorem "mod_disj_refuted" (parent := "mod") (uses := "logic_sound") (lean := "LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or")
+REFUTED converse: `P ∨ ◯B` does not prove `P ∨ B`; in the two-world model the
+lax branch is the only one open.  So a plain decorated goal accepts the
+constraint-only route where the undecorated one does not.
+:::
+
+Under extraction a disjunction is a sum and each branch's constraint sits
+inside its injection: the realiser of `A ∨ ◯B` is `|A| + (C × |B|)`, one
+branch free and one costing a constraint.  What makes a branch free is not
+that it applies no clauses but that every clause it applies has a `⊤` table
+entry.
+
+:::theorem "mod_disj_sum" (parent := "mod") (uses := "abs_ext") (lean := "LaxLogic.QLL.AProof.ext_orL")
+`|∨◯ p| = (π₁|p| ∧ ⊤, inl π₂|p|)`: the branch's constraint travels with the
+injection.
+:::
+
+:::theorem "mod_disj_top" (parent := "mod") (uses := "mod_entries") (lean := "LaxLogic.QLL.AProof.ext_top_of_pure")
+A derivation whose summoned entries all have table value `⊤` extracts `⊤`.
+:::
+
+:::theorem "mod_disj_once" (parent := "mod") (uses := "mod_disj_top") (lean := "LaxLogic.QLL.AProof.once_of_pure")
+A sound `once`: every other derivation's answer entails such a derivation's.
+Succeed on the free branch and no other branch can be more general — what
+Prolog's cut does by fiat and Andorra's quiet guards by entailment, obtained
+here from the type.
+:::
+
+:::theorem "mod_disj_ex" (parent := "mod") (uses := "mod_disj_once, trees_checkC") (lean := "LaxLogic.QLL.BodyCirc.extD_top")
+Kernel-run instance: `Q(t) ⊂ R(t) ∨ ∃s. B(s) ∧ t ≥ s + 2` with `R`
+constraint-free.  The engine's first answer for `Q(z)` is `⊤` and its second
+is `B`'s constraint `s ≥ 5 ∧ z ≥ s + 2`; the free branch extracts `⊤` under
+the `◯` pass, and every other derivation's answer entails it.
+:::
+
 # Placements not yet built
 
-Decorating a disjunct, `A ∨ ◯B`: under an outer `◯` it collapses logically,
-but the realiser is `|A| + (C × |B|)`, one branch free and one costing a
-constraint; a `◯`-free disjunct summons no entries, so by the inclusion lemma
-its answer `⊤` is entailed by every other answer of the goal — a sound
-`once`.  A clause under the modality, `◯(∧Γ ⊃ M)`, carries a constraint
-independent of the body witness; between it and the LLP clause lies a
-three-level hierarchy by where the constraint may depend, and such a clause
-fires only against a modal goal, which constrains clause order.  Negative
-occurrences, `¬◯B`, read as negation as failure in the two-world model and
-are trivialised by the fallible world in the four-world one — so solvability
-and negation as failure are one frame parameter seen from two sides.  All
-three are stated with their cells and not built.
+A clause under the modality, `◯(∧Γ ⊃ M)`, carries a constraint independent of
+the body witness; between it and the LLP clause lies a three-level hierarchy
+by where the constraint may depend, and such a clause fires only against a
+modal goal, which constrains clause order.  Negative occurrences, `¬◯B`, read
+as negation as failure in the two-world model and are trivialised by the
+fallible world in the four-world one — so solvability and negation as failure
+are one frame parameter seen from two sides.  Both are stated with their
+cells and not built.

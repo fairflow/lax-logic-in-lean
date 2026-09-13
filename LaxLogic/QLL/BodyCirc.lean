@@ -512,15 +512,128 @@ theorem AProof.ext_andC (T : Nat → List Tm → Wit → Form) (p r : AProof) :
     (AProof.andC p r).ext T = (.and (p.ext T).1 (.and (r.ext T).1 .top), .pair (p.ext T).2 (r.ext T).2) :=
   rfl
 
+/-! ## Decorating a disjunct: `A ∨ ◯B`
+
+A goal may be a disjunction with the modality on one disjunct only: "either `A`
+outright, or `B` up to a constraint".  Under an outer `◯` the decoration
+collapses (`circ_or_circ_collapse`, `circ_or_circ_expand`); as a plain goal
+`A ∨ ◯B` is strictly weaker than `A ∨ B` (`or_to_or_circ`, and the REFUTED
+converse in `BodyCirc`).  Under extraction a disjunction is a sum with each
+branch's constraint inside its injection (`AProof.ext_orL`), so a branch whose
+summoned entries all have table value `⊤` extracts `⊤`
+(`AProof.ext_top_of_pure`), which every other answer of the goal entails
+(`AProof.once_of_pure`): a sound `once`. -/
+
+/-- `◯(A ∨ ◯B) ⊢ ◯(A ∨ B)`. -/
+theorem circ_or_circ_collapse (q : Q) (A B : Form) :
+    Prv [.circ q (.or A (.circ q B))] (.circ q (.or A B)) :=
+  Prv.circE Prv.hd (Prv.orE Prv.hd (Prv.circI (Prv.orI₁ Prv.hd))
+    (Prv.circE Prv.hd (Prv.circI (Prv.orI₂ Prv.hd))))
+
+/-- `◯(A ∨ B) ⊢ ◯(A ∨ ◯B)`: under `◯` the decoration is invisible. -/
+theorem circ_or_circ_expand (q : Q) (A B : Form) :
+    Prv [.circ q (.or A B)] (.circ q (.or A (.circ q B))) :=
+  Prv.circE Prv.hd
+    (Prv.circI (Prv.orE Prv.hd (Prv.orI₁ Prv.hd) (Prv.orI₂ (Prv.circI Prv.hd))))
+
+/-- `A ∨ B ⊢ A ∨ ◯B`: as a plain goal the decorated form is weaker. -/
+theorem or_to_or_circ (q : Q) (A B : Form) : Prv [.or A B] (.or A (.circ q B)) :=
+  Prv.orE Prv.hd (Prv.orI₁ Prv.hd) (Prv.orI₂ (Prv.circI Prv.hd))
+
+/-- `∨◯` is a sum: the branch's constraint travels with the injection. -/
+theorem AProof.ext_orL (T : Nat → List Tm → Wit → Form) (p : AProof) :
+    (AProof.orL p).ext T = (.and (p.ext T).1 .top, .inl (p.ext T).2) := rfl
+
+theorem AProof.ext_orR (T : Nat → List Tm → Wit → Form) (p : AProof) :
+    (AProof.orR p).ext T = (.and (p.ext T).1 .top, .inr (p.ext T).2) := rfl
+
+/-- A derivation whose summoned entries all have table value `⊤` extracts `⊤`. -/
+theorem AProof.ext_top_of_pure (T : Nat → List Tm → Wit → Form) (a : AProof)
+    (h : ∀ e ∈ a.entries, PEq (T e.1 e.2.1 e.2.2) .top) : PEq (a.ext T).1 .top :=
+  ⟨Prv.topI, AProof.prv_ext_of_entries T [.top] a fun e he => (h e he).2⟩
+
+/-- **A sound `once`.**  Every other derivation's answer entails such a derivation's. -/
+theorem AProof.once_of_pure (T : Nat → List Tm → Wit → Form) {a a' : AProof}
+    (h : ∀ e ∈ a.entries, PEq (T e.1 e.2.1 e.2.2) .top) :
+    Prv [(a'.ext T).1] (a.ext T).1 :=
+  Prv.cut1 Prv.topI (AProof.ext_top_of_pure T a h).2
+
 end LaxLogic.QLL
 
 namespace LaxLogic.QLL.BodyCirc
+
+open LaxLogic.QLL LaxLogic.QLL.Engine LaxLogic.QLL.LinQ LaxLogic.QLL.CLPExamples
 
 -- The entries the example's derivation summons: `θ₂` at `z`, `θ₁` at `z`, `θ₀` at `_v0`.
 /-- info: [(0, ["_v0"]), (1, ["z"]), (2, ["z"])] -/
 #guard_msgs in #eval proofQ.toA.entries.map fun e => (e.1, e.2.1.map Engine.showTm)
 /-- info: 'LaxLogic.QLL.AProof.ext_prv_of_entries_subset' depends on axioms: [propext] -/
 #guard_msgs in #print axioms AProof.ext_prv_of_entries_subset
+
+/-! ## Decorating a disjunct, concretely -/
+
+/-- REFUTED: `P ∨ ◯B ⊬ P ∨ B`; in the two-world model the lax branch is the only one open. -/
+theorem not_prv_or_circ_to_or :
+    ¬ Prv [.or (.pred "P" []) (.circ .ex (.pred "B" []))]
+        (.or (.pred "P" []) (.pred "B" [])) := by
+  intro h
+  have hyp : ∀ C ∈ [Form.or (.pred "P" []) (.circ .ex (.pred "B" []))],
+      m2.force C W2.w0 (fun _ => ()) [] := by
+    intro C hC
+    rcases List.mem_singleton.1 hC with rfl
+    refine Or.inr ?_
+    intro v _
+    cases v with
+    | w0 => exact ⟨W2.w1, rfl, Or.inr trivial⟩
+    | w1 => exact ⟨W2.w1, rfl, Or.inr trivial⟩
+  have hs := Prv.sound h m2 W2.w0 (fun _ => ()) (fun _ _ => trivial) hyp
+  rcases hs with h' | h'
+  · rcases h' with h'' | h''
+    · exact h''.elim
+    · have hp : ("P" : String) = "A" := h''
+      exact absurd hp (by decide)
+  · rcases h' with h'' | h''
+    · exact h''.elim
+    · have hb : ("B" : String) = "A" := h''
+      exact absurd hb (by decide)
+
+/-- `Q(t) ⊂ R(t) ∨ ∃s. B(s) ∧ t ≥ s + 2`, with `R` constraint-free. -/
+def exD : Program :=
+  [ cl "R" ["t"] (conj []),
+    cl "B" ["s"] (geq (v "s") (num "5")),
+    cl "Q" ["t"] (.or (at_ "R" [v "t"])
+      (exs ["s"] (conj [at_ "B" [v "s"], geq (v "t") (plus (v "s") (num "2"))]))) ]
+
+def goalD : Form := query (at_ "Q" [v "z"])
+
+def proofD : CProof := ((runL exD isLinC false 20 goalD).map (·.1)).getD .top
+
+theorem checkD : checkC isLinC exD goalD proofD = true := by decide +kernel
+
+theorem headsD : exD.HeadsOK isLinC := by unfold Program.HeadsOK; decide
+
+/-- Both branches: the free one answers `⊤`, the other carries `B`'s constraint. -/
+theorem allD_len : (proveAll exD isLinC false 20 goalD ⟨[], 0⟩).length = 2 := by
+  decide +kernel
+
+/-- info: ["true", "(geq(_v0, 5) ∧ geq(z, add(_v0, 2)))"] -/
+#guard_msgs in #eval (proveAll exD isLinC false 20 goalD ⟨[], 0⟩).map fun r => showForm r.1.total
+
+theorem totalD : proofD.total = .top := by decide +kernel
+
+/-- The free branch extracts `⊤` under the `◯` pass. -/
+theorem extD_top : PEq (proofD.toA.ext (exD.table isLinC)).1 .top :=
+  let h := checkC_sound isLinC exD proofD goalD checkD
+  have e : PEq (proofD.toA.ext (exD.table isLinC)).1 proofD.total :=
+    ((PEq.and_top _).symm.trans (PEq.and (PEq.refl _) (h.active_pure (by decide)).symm)).trans
+      (h.ext_total headsD)
+  totalD ▸ e
+
+/-- The sound `once`, on this program: every other derivation's answer entails the free
+branch's. -/
+theorem onceD (a' : AProof) :
+    Prv [(a'.ext (exD.table isLinC)).1] (proofD.toA.ext (exD.table isLinC)).1 :=
+  Prv.cut1 Prv.topI extD_top.2
 
 /-! ## Axioms -/
 
@@ -535,6 +648,17 @@ namespace LaxLogic.QLL.BodyCirc
 
 /-- info: 'LaxLogic.QLL.BodyCirc.fo_II_to_I' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms fo_II_to_I
+
+/-- info: 'LaxLogic.QLL.AProof.once_of_pure' depends on axioms: [propext] -/
+#guard_msgs in #print axioms AProof.once_of_pure
+
+/-- info: 'LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs in #print axioms not_prv_or_circ_to_or
+
+/--
+info: 'LaxLogic.QLL.BodyCirc.extD_top' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs in #print axioms extD_top
 
 /-- info: 'LaxLogic.QLL.BodyCirc.fo_ex_II_to_I' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs in #print axioms fo_ex_II_to_I

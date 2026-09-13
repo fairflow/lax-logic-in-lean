@@ -296,9 +296,24 @@ implementation, §3 the application, §4 the plan with its status).
   on top of the built library, renders in ~30 s.  `BodyCirc`, `HeadFlatten`,
   `CLPMachine` are now imported by `LaxLogic/QLL.lean` so `lake build` covers
   them and the paper can import them.
-- BodyCirc additions pending Matthew's mid-turn points: selective `◯` on
-  disjuncts (`A ∨ ◯B`) as a new placement — realiser `|A| + (C × |B|)`, a
-  `◯`-free disjunct summons no entries so by the inclusion lemma its answer
-  `⊤` is entailed by every other answer of the goal (a sound `once`);
-  `◯(∧Γ ⊃ M)` as the witness-independent constraint; both stated, not built.
+- 2026-09-13 (later): the disjunct decoration `A ∨ ◯B` BUILT in `BodyCirc.lean`
+  and in the paper (§ "Decorating a disjunct" of `Sections/Modality.lean`,
+  eight nodes `mod_disj_*`): `◯(A ∨ ◯B) ⊣⊢ ◯(A ∨ B)`, `A ∨ B ⊢ A ∨ ◯B`, the
+  converse REFUTED (`not_prv_or_circ_to_or`, two-world model `m2`),
+  `AProof.ext_orL/orR` (rfl), `AProof.ext_top_of_pure` (all summoned entries
+  `⊤` ⟹ extracts `⊤`), `AProof.once_of_pure` (every other answer entails it: a
+  sound `once`), and the kernel-run instance `exD` (`Q(t) ⊂ R(t) ∨ ∃s. B(s) ∧
+  t ≥ s+2`, `R` free): two answers `⊤` and `s ≥ 5 ∧ z ≥ s+2`, `extD_top`,
+  `onceD`.  The correction to the earlier pending note: what makes a branch
+  free is `⊤` table entries, not "summons no entries".  Still stated, not
+  built: `◯(∧Γ ⊃ M)` and `¬◯B`.
+- PDF of the paper (NOT committed; `_out/` is gitignored): `scripts/clp-paper-pdf.sh`
+  renders with `--with-tex`, patches Verso's `main.tex` (DejaVu Sans Mono from
+  TeX Live instead of the system font it asks for, DejaVu Sans as glyph
+  fallback for `◯ ℚ ⊨ ⊫ ⋃ ⋂ ⋁ ⊬`, A4) and runs `xelatex` three times: 39 pages,
+  0 missing glyphs.  The TeX backend prints each node's statement only (no
+  Lean name, no status chip); the browser route (`print.html` = html-single
+  plus a print stylesheet, printed by headless Brave) keeps the node panels
+  with code and status but is 87 pages / 9.5 MB and Brave never exits on its
+  own (run it under `gtimeout`).
 
