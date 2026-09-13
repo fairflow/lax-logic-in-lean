@@ -31,7 +31,10 @@ s = s.replace(r'\setmonofont{DejaVu Sans Mono}',
 extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold]' '\n'
   + ''.join('\\newunicodechar{%s}{{\\symbolfont %s}}\n' % (c, c) for c in '◯ℚ⊨⊫⋃⋂⋁⊬')
   + r'\usepackage[a4paper,margin=24mm]{geometry}' '\n'
-  + r'\fvset{fontsize=\small,breaklines=true}' '\n')
+  + r'\fvset{fontsize=\small,breaklines=true}' '\n'
+  # Verso emits code blocks as plain `verbatim`; route them through fancyvrb so
+  # the wide tables get the smaller face and line breaking.
+  + r'\RecustomVerbatimEnvironment{verbatim}{Verbatim}{fontsize=\small,breaklines=true}' '\n')
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)
 open(p, 'w', encoding='utf-8').write(s)
 EOF
