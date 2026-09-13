@@ -21,7 +21,8 @@ out=_out/clp-paper
 lake lean CLPPaperMain.lean -- --run CLPPaperMain.lean --output "$out" --with-tex \
   2>&1 | grep -v "not documented\|allowMissing\|^$" | tail -3
 
-rm -rf "$out/pdf"; mkdir -p "$out/pdf"; cp "$out/tex/main.tex" "$out/pdf/main.tex"
+mkdir -p "$out/pdf"; rm -f "$out/pdf"/main.* "$out/pdf"/xelatex*.out
+cp "$out/tex/main.tex" "$out/pdf/main.tex"
 python3 - "$out/pdf/main.tex" <<'EOF'
 import sys
 p = sys.argv[1]; s = open(p, encoding='utf-8').read()
