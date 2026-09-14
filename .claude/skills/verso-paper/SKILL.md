@@ -90,7 +90,10 @@ draft); the first line of `Paper.lean` is `` {buildStamp}`<Lib>/VERSION` ``
 `Version 0.3 · lax-obligations@0e190ea · built 2026-09-14 17:05 BST` in HTML
 and TeX from the file, `git` (branch, short hash, `+` when the tree is dirty)
 and the clock at build time.  The reader identifies the latest draft by the
-version; the hash says exactly what was built.
+version; the hash says exactly what was built.  `verso-paper.sh` deletes the
+compiled `Paper` module before `lake build` so the stamp is recomputed on
+every build (lake would otherwise keep the old one).  Build after
+committing, so the stamp carries the commit and no `+`.
 
 ## 3. Build and check
 

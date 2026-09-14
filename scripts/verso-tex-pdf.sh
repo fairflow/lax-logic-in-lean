@@ -26,6 +26,7 @@ extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, 
   + ''.join('\\newunicodechar{%s}{{\\symbolfont %s}}\n' % (c, c) for c in fallback)
   + r'\usepackage{amsmath,amssymb}' '\n'                      # \Vdash, \nvdash, \square, \rightsquigarrow (KaTeX has them too)
   + r'\usepackage[a4paper,margin=24mm]{geometry}' '\n'
+  + r'\hypersetup{colorlinks=true, urlcolor=blue!55!black, linkcolor=black, citecolor=black}' '\n'   # no link boxes
   + r'\fvset{fontsize=\small,breaklines=true}' '\n'
   + r'\RecustomVerbatimEnvironment{verbatim}{Verbatim}{fontsize=\small,breaklines=true}' '\n')
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)

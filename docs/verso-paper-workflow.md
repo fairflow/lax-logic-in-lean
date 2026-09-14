@@ -105,7 +105,11 @@ bumped by hand for every delivered draft; `Paper.lean` opens with
 reads the file, `git rev-parse --abbrev-ref HEAD`, `git rev-parse --short
 HEAD`, `git status --porcelain` (a `+` marks a dirty tree) and `date` when the
 document is built, and prints e.g. `Version 0.3 · lax-obligations@0e190ea ·
-built 2026-09-14 17:05 BST` in HTML and in the PDF.
+built 2026-09-14 17:05 BST` in HTML and in the PDF.  Because the stamp is
+computed when `Paper.lean` is elaborated, `verso-paper.sh` removes that
+module's compiled outputs before `lake build`, so it is recomputed on every
+build; the other modules stay incremental.  Build after committing and the
+stamp names the commit without a `+`.
 
 ## 4. Build
 

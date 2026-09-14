@@ -13,6 +13,10 @@
 set -euo pipefail
 lib=$1; main=$2; out=$3; pdf=$4
 cd "$(dirname "$0")/.."
+# The build stamp ({buildStamp} in <Lib>/Paper.lean) is computed when Paper.lean
+# is elaborated; lake would not recompile it for a new commit or a new day, so
+# its outputs are removed first and it is rebuilt every time (about 2 s).
+rm -f ".lake/build/lib/lean/$lib/Paper."*
 lake build "$lib"
 rm -rf "$out"
 lake lean "$main" -- --run "$main" --output "$out" --with-html-single --with-tex \
