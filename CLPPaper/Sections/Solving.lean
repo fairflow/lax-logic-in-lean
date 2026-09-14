@@ -1,9 +1,11 @@
 import Verso
 import VersoManual
 import LaxLogic.QLL
+import CLPPaper.Src
 
 open Verso.Genre
 open Verso.Genre.Manual
+open CLPPaper
 
 #doc (Manual) "Solving constraints with certificates" =>
 
@@ -32,9 +34,13 @@ A checked witness satisfies every constraint.
 
 {docstring LaxLogic.QLL.LinQ.checkWitness_sound +allowMissing}
 
+{srcLink}`LaxLogic.QLL.LinQ.checkWitness_sound`
+
 A checked Farkas certificate shows the system unsatisfiable.
 
 {docstring LaxLogic.QLL.LinQ.checkFarkas_unsat +allowMissing}
+
+{srcLink}`LaxLogic.QLL.LinQ.checkFarkas_unsat`
 
 Fourier–Motzkin elimination, untrusted.  Each constraint becomes a row with
 its multiplier vector; while variables remain, the variable with the fewest
@@ -44,14 +50,20 @@ back-substitution builds a witness.
 
 {docstring LaxLogic.QLL.LinQ.fm +allowMissing}
 
+{srcLink}`LaxLogic.QLL.LinQ.fm`
+
 A verdict `sat w` that passes certification has `w` a solution.
 
 {docstring LaxLogic.QLL.LinQ.certifyVerdict_sat +allowMissing}
+
+{srcLink}`LaxLogic.QLL.LinQ.certifyVerdict_sat`
 
 A verdict `unsat λ̃` that passes certification has the system unsatisfiable.
 Any solver may produce the verdict, and none has to be trusted.
 
 {docstring LaxLogic.QLL.LinQ.certifyVerdict_unsat +allowMissing}
+
+{srcLink}`LaxLogic.QLL.LinQ.certifyVerdict_unsat`
 
 # Entailment, least values, projection
 
@@ -66,15 +78,21 @@ Certified entailment by refutation.
 
 {docstring LaxLogic.QLL.Engine.entailsLe_sound +allowMissing}
 
+{srcLink}`LaxLogic.QLL.Engine.entailsLe_sound`
+
 A checked lower-bound certificate gives $`z* \le \sigma (z)` for every solution `σ`;
 with a witness attaining `z*`, the least value is certified from both sides.
 
 {docstring LaxLogic.QLL.Engine.lowerBoundCert_sound +allowMissing}
 
+{srcLink}`LaxLogic.QLL.Engine.lowerBoundCert_sound`
+
 If `z` has a non-positive coefficient in every inequality, raising `z`
 preserves solutions, so the projection onto `z` is exactly $`z \ge z*`.
 
 {docstring LaxLogic.QLL.Engine.upClosed_sound +allowMissing}
+
+{srcLink}`LaxLogic.QLL.Engine.upClosed_sound`
 
 # The engine
 
@@ -88,9 +106,13 @@ The search, as a strategy over the rules of Table 2.
 
 {docstring LaxLogic.QLL.Engine.solveK +allowMissing}
 
+{srcLink}`LaxLogic.QLL.Engine.solveK`
+
 An answer whose tree checks satisfies $`\Theta \vdash \mathit{constraint} \supset G`.
 
 {docstring LaxLogic.QLL.Engine.answer_sound +allowMissing}
+
+{srcLink}`LaxLogic.QLL.Engine.answer_sound`
 
 # Wolfram as an untrusted oracle
 

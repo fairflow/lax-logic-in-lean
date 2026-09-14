@@ -1,9 +1,11 @@
 import Verso
 import VersoManual
 import LaxLogic.QLL
+import CLPPaper.Src
 
 open Verso.Genre
 open Verso.Genre.Manual
+open CLPPaper
 
 #doc (Manual) "Quantified lax logic" =>
 
@@ -30,6 +32,8 @@ Natural deduction for QLL with cofinite quantifier rules.
 
 {docstring LaxLogic.QLL.Prv +allowMissing}
 
+{srcLink}`LaxLogic.QLL.Prv`
+
 # Models
 
 A Kripke model is a preorder of worlds with increasing domains, hereditary
@@ -44,14 +48,20 @@ Kripke models with fallible worlds and two modal relations.
 
 {docstring LaxLogic.QLL.KModel +allowMissing}
 
+{srcLink}`LaxLogic.QLL.KModel`
+
 Soundness: $`\Gamma \vdash A` implies $`\Gamma \Vdash A`.  Proved without choice.
 
 {docstring LaxLogic.QLL.Prv.sound +allowMissing}
+
+{srcLink}`LaxLogic.QLL.Prv.sound`
 
 Completeness on the fragment used here; the canonical model construction uses
 `Classical.choice`.
 
 {docstring LaxLogic.QLL.prv_iff_consequence +allowMissing}
+
+{srcLink}`LaxLogic.QLL.prv_iff_consequence`
 
 # The modal relation is a parameter
 
@@ -64,11 +74,15 @@ With $`R\_\exists = \mathit{Ri}`, the formula $`(\bigcirc A \supset \bigcirc B) 
 
 {docstring LaxLogic.QLL.circ_imp_of_rm_eq_ri +allowMissing}
 
+{srcLink}`LaxLogic.QLL.circ_imp_of_rm_eq_ri`
+
 QLL does not prove $`(\bigcirc P \supset \bigcirc Q) \supset \bigcirc (P \supset Q)`.  The countermodel has three worlds
 $`r \le s \le f`, `f` fallible, and the modal relation the identity together with
 `s → f`.  REFUTED cell for the claim that `R_m = Ri` is a free choice.
 
 {docstring LaxLogic.QLL.not_prv_circ_imp +allowMissing}
+
+{srcLink}`LaxLogic.QLL.not_prv_circ_imp`
 
 The Herbrand frames used later therefore carry their own modal preorder `m ⊆
 le`, and the draft's choice `m = le` is made deliberately, on frames whose

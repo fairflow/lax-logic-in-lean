@@ -56,6 +56,12 @@ The blueprint genre is reserved for the repo's live blueprint.
   (the docstring domain rejects duplicates); further mentions use
   `` {name}`Name` ``.  `+allowMissing` keeps a missing docstring a warning.
   Options: `hideFields`, `hideStructureConstructor`, `label := "…"`.
+* `{srcLink}\`Full.Name\`` (document-local role, `CLPPaper/Src.lean`) prints
+  `LaxLogic/QLL/BodyCirc.lean:528` linked to that line of the repository on
+  GitHub at the commit being built (`git rev-parse HEAD`, origin URL), in
+  HTML and in the PDF (`\oldhref`, the unmodified `\href` Verso's template
+  keeps).  Included *and* linked, then: the statement is printed by
+  `{docstring}`, the proof is one click away.  Push before the link is used.
 * Alternative when you want a checked statement without the docstring:
   a ```` ```signature ```` block containing `theorem Name (x : A) : T`; Verso
   elaborates it against the environment and fails the build if it is wrong.
@@ -89,6 +95,17 @@ statement, not a paraphrase; keep PROVED / REFUTED / OPEN in the prose.  The
 TeX build is the check: a bad macro is a TeX error, and the script reports the
 count.
 
+## 3b. Version and build stamp
+
+Every generated document carries a version number (humans recognise it) and
+the git hash (machines need it).  `CLPPaper/VERSION` holds the number,
+bumped by hand for every delivered draft; `Paper.lean` opens with
+`` {buildStamp}`CLPPaper/VERSION` ``, a role in `CLPPaper/Src.lean` that
+reads the file, `git rev-parse --abbrev-ref HEAD`, `git rev-parse --short
+HEAD`, `git status --porcelain` (a `+` marks a dirty tree) and `date` when the
+document is built, and prints e.g. `Version 0.3 · lax-obligations@0e190ea ·
+built 2026-09-14 17:05 BST` in HTML and in the PDF.
+
 ## 4. Build
 
 ```
@@ -107,8 +124,17 @@ has neither, and the transcriptions use `\Vdash`, `\nvdash`, `\square`,
 `\rightsquigarrow`).  A4, 24 mm margins.  The script reports TeX
 errors and missing glyphs; both must be 0.
 
-For the CLP paper the wrapper is `scripts/clp-paper.sh [--serve]`, writing
-`docs/clp-paper/{html-single,html-multi,tex}` and `docs/clp-paper.pdf`.
+After rendering, `verso-paper.sh` rewrites `html-single/index.html` so it can
+be opened from `file://`: Verso emits `<base href="./">`, section permalinks
+through `find/?domain=…&name=ID` and a local table of contents with
+`href=""`, all of which a browser turns into a directory listing when the
+file is opened directly.  The base tag is dropped, permalinks become `#ID`
+(the `name` is the heading's id), and the contents links are matched to
+their headings by section number.  `html-multi/` is left as Verso made it
+and needs a server.
+
+For the CLP paper the wrapper is `scripts/clp-paper.sh [--open|--serve]`,
+writing `docs/clp-paper/{html-single,html-multi,tex}` and `docs/clp-paper.pdf`.
 
 ## 5. Outputs are build artefacts
 

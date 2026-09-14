@@ -7,3 +7,5 @@ open Verso.Genre.Manual
 `scripts/clp-paper.sh`. -/
 def main (args : List String) : IO UInt32 :=
   manualMain (%doc CLPPaper.Paper) (options := args)
+    (config := { sourceLink := some "https://github.com/fairflow/lax-logic-in-lean",
+                 issueLink := some "https://github.com/fairflow/lax-logic-in-lean/issues" })

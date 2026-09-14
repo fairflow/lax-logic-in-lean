@@ -1,9 +1,11 @@
 import Verso
 import VersoManual
 import LaxLogic.QLL
+import CLPPaper.Src
 
 open Verso.Genre
 open Verso.Genre.Manual
+open CLPPaper
 
 #doc (Manual) "Proof trees and Table 2" =>
 
@@ -33,11 +35,15 @@ Proof trees with constraint leaves.
 
 {docstring LaxLogic.QLL.CProof +allowMissing}
 
+{srcLink}`LaxLogic.QLL.CProof`
+
 `CTyped isC Θ S p`: the tree `p` proves the Σ-goal `S` from `Θ`, constraint
 atoms (`isC`) as leaves, clause applications instantiating a clause's bound
 variables by the recorded terms.
 
 {docstring LaxLogic.QLL.CTyped +allowMissing}
+
+{srcLink}`LaxLogic.QLL.CTyped`
 
 Definition 8.1 splits the constraint leaves into the active ones, not under a
 clause application, and the latent ones, under one; `total` is all of them.
@@ -46,13 +52,19 @@ $$`\mathit{total}(p) \dashv\vdash \mathit{latent}(p) \land \mathit{active}(p)`
 
 {docstring LaxLogic.QLL.CProof.total_equiv +allowMissing}
 
+{srcLink}`LaxLogic.QLL.CProof.total_equiv`
+
 Answer soundness for trees: `CTyped Θ S p` gives $`\Theta \vdash \mathit{total}(p) \supset S`.
 
 {docstring LaxLogic.QLL.CTyped.prv_total +allowMissing}
 
+{srcLink}`LaxLogic.QLL.CTyped.prv_total`
+
 The checker is sound: `checkC Θ S p = true` gives `CTyped Θ S p`.
 
 {docstring LaxLogic.QLL.checkC_sound +allowMissing}
+
+{srcLink}`LaxLogic.QLL.checkC_sound`
 
 # Table 2
 
@@ -66,15 +78,21 @@ One step of Table 2, at any position of the goal list.
 
 {docstring LaxLogic.QLL.Step +allowMissing}
 
+{srcLink}`LaxLogic.QLL.Step`
+
 Theorem 9.4.  A run $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \varepsilon` yields trees `p₁,…,pₙ` with `pᵢ`
 proving `φᵢ` and $`c' \dashv\vdash c \land \mathit{total}(p_1) \land … \land \mathit{total}(p_n)`.  The parameter `ok`
 plays no part: pruning restricts the search and never the soundness.
 
 {docstring LaxLogic.QLL.steps_forest +allowMissing}
 
+{srcLink}`LaxLogic.QLL.steps_forest`
+
 Corollary 9.8.  $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \varepsilon` gives $`\Theta \vdash c' \supset c \land \varphi _1 \land … \land \varphi _n`.
 
 {docstring LaxLogic.QLL.steps_sound +allowMissing}
+
+{srcLink}`LaxLogic.QLL.steps_sound`
 
 # World 2 without `◯`
 
@@ -86,4 +104,6 @@ formed, for a closed Σ-goal:
 Theorem 6.1 in tree form.
 
 {docstring LaxLogic.QLL.world2_free +allowMissing}
+
+{srcLink}`LaxLogic.QLL.world2_free`
 

@@ -1,9 +1,11 @@
 import Verso
 import VersoManual
 import LaxLogic.QLL
+import CLPPaper.Src
 
 open Verso.Genre
 open Verso.Genre.Manual
+open CLPPaper
 
 #doc (Manual) "Constraint logic programming" =>
 

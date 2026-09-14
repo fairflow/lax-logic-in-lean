@@ -12,11 +12,15 @@ import CLPPaper.Sections.Examples
 import CLPPaper.Sections.Modality
 import CLPPaper.Sections.Pruning
 import CLPPaper.Sections.Status
+import CLPPaper.Src
 
 open Verso.Genre
 open Verso.Genre.Manual
+open CLPPaper
 
 #doc (Manual) "Lax Logic as a Framework for Constraint Logic Programming, Mechanised" =>
+
+{buildStamp}`CLPPaper/VERSION`
 
 A Lean 4 mechanisation of
 

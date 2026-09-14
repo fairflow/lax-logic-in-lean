@@ -19,5 +19,6 @@ lake lean "$main" -- --run "$main" --output "$out" --with-html-single --with-tex
   2>&1 | grep -v "allowMissing\|^$" | grep -v "^warning: .*is not documented" || true
 test -f "$out/html-single/index.html"
 test -f "$out/tex/main.tex"
+scripts/verso-html-local.py "$out/html-single/index.html"
 scripts/verso-tex-pdf.sh "$out/tex" "$pdf"
 du -sh "$out/html-single" "$out/html-multi" "$pdf" | sed 's/^/  /'

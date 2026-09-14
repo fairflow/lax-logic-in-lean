@@ -1,9 +1,11 @@
 import Verso
 import VersoManual
 import LaxLogic.QLL
+import CLPPaper.Src
 
 open Verso.Genre
 open Verso.Genre.Manual
+open CLPPaper
 
 #doc (Manual) "SLD and SLD◯: one machine for both passes" =>
 
@@ -44,14 +46,20 @@ no leaf is open.
 
 {docstring LaxLogic.QLL.SLD.PTree +allowMissing}
 
+{srcLink}`LaxLogic.QLL.SLD.PTree`
+
 SLD: one rule at one open leaf, store `c` to `c'`, with congruence rules
 through every node so the position is free.
 
 {docstring LaxLogic.QLL.SLD.Expand +allowMissing}
 
+{srcLink}`LaxLogic.QLL.SLD.Expand`
+
 SLD◯: the same rules on abstract partial trees, `cstr` gone, no store.
 
 {docstring LaxLogic.QLL.SLD.ExpandA +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.ExpandA`
 
 # The projection to Table 2, and lifting
 
@@ -59,23 +67,33 @@ Every SLD step is a Table 2 step on the projections.
 
 {docstring LaxLogic.QLL.SLD.SLDStep.goal_step +allowMissing}
 
+{srcLink}`LaxLogic.QLL.SLD.SLDStep.goal_step`
+
 A rule shape applied at a given open leaf of a tree — located by a split of
 `opens` — is an expansion of the tree.
 
 {docstring LaxLogic.QLL.SLD.PTree.lift +allowMissing}
 
+{srcLink}`LaxLogic.QLL.SLD.PTree.lift`
+
 Lifting: a Table 2 step from a tree's goal list is an expansion of that tree.
 
 {docstring LaxLogic.QLL.Step.lift +allowMissing}
+
+{srcLink}`LaxLogic.QLL.Step.lift`
 
 Runs lift: a Table 2 run from one goal is an SLD run on one tree.
 
 {docstring LaxLogic.QLL.Steps.lift +allowMissing}
 
+{srcLink}`LaxLogic.QLL.Steps.lift`
+
 Runs project.  With the previous node, Table 2 and the machine are the same
 relation on single goals, in both directions.
 
 {docstring LaxLogic.QLL.SLD.SLDSteps.goal +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.goal`
 
 # Soundness, and Theorem 9.4 as an invariant
 
@@ -87,14 +105,20 @@ and $`c \dashv\vdash c_0 \land \mathit{total} q`.  Theorem 9.4 in machine form.
 
 {docstring LaxLogic.QLL.SLD.SLDSteps.store +allowMissing}
 
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.store`
+
 Soundness of SLD with respect to QLL: the finished tree proves $`\mathit{total} q \supset S`.
 
 {docstring LaxLogic.QLL.SLD.SLDSteps.prv +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.prv`
 
 Soundness of SLD◯ with respect to QLL: a run from `[S]` that closes its tree
 gives an abstract proof, hence $`\Theta ^\sharp \vdash \bigcirc S`.
 
 {docstring LaxLogic.QLL.SLD.SLDCSteps.prv +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDCSteps.prv`
 
 # The simulation under `toA`
 
@@ -103,9 +127,13 @@ becomes `top`, every other rule is itself.  Heads must not be constraints.
 
 {docstring LaxLogic.QLL.SLD.Expand.toA +allowMissing}
 
+{srcLink}`LaxLogic.QLL.SLD.Expand.toA`
+
 The simulation on runs.
 
 {docstring LaxLogic.QLL.SLD.SLDSteps.toA +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.toA`
 
 The converse simulation holds only when `ok` accepts every store; under
 pruning it fails at `cstr`, and that failure is the exact content of pruning.
@@ -124,10 +152,14 @@ step is allowed and neither can be completed.
 
 {docstring LaxLogic.QLL.SLD.ExpandAt +allowMissing}
 
+{srcLink}`LaxLogic.QLL.SLD.ExpandAt`
+
 The switching lemma: without pruning, expansions at leaves $`i \ne j` have a
 common successor reached either way, with stores equal up to $`\dashv\vdash`.
 
 {docstring LaxLogic.QLL.SLD.ExpandAt.diamond +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.ExpandAt.diamond`
 
 Pruning is invisible to answers.  For `ok` closed under provable weakening —
 satisfiability is — and an acceptable initial store, the pruned runs are
@@ -136,6 +168,8 @@ which prefixes are explored, never which trees are reachable with an
 acceptable store.
 
 {docstring LaxLogic.QLL.SLD.SLDSteps.noPrune_iff +allowMissing}
+
+{srcLink}`LaxLogic.QLL.SLD.SLDSteps.noPrune_iff`
 
 The implemented test `satOK` is not closed under weakening, because it
 accepts nonlinear stores it cannot decide; so strategy independence holds for

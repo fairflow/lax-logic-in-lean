@@ -6,7 +6,17 @@ description: Build a paper about Lean work with Verso — vanilla (printable PDF
 # A Verso paper about Lean work
 
 The record of why is `docs/verso-paper-workflow.md`; this is the checklist.
-The worked example is `CLPPaper/` + `scripts/clp-paper.sh` (2026-09-14).
+The worked example is `CLPPaper/` + `scripts/clp-paper.sh` (2026-09-14) in
+`fairflow/lax-logic-in-lean`, branch `lax-obligations` (later `main`).  Project
+skills are read from the main checkout's `.claude/skills/`, not from a
+worktree or another branch, so this skill is also installed at
+`~/.claude/skills/verso-paper/` (a copy; the repo file is the source).  If
+the current branch lacks the scripts, fetch them from the branch that has
+them before step 3:
+
+```
+git checkout origin/lax-obligations -- scripts/verso-paper.sh scripts/verso-tex-pdf.sh scripts/lean-to-math.py scripts/blueprint-to-vanilla.py CLPPaper/Src.lean
+```
 
 ## 0. Fix the parameters first (ask if the request does not settle them)
 
@@ -15,7 +25,7 @@ The worked example is `CLPPaper/` + `scripts/clp-paper.sh` (2026-09-14).
 | genre | **vanilla** (`VersoManual`) / blueprint (`VersoBlueprint`) | vanilla; blueprint only for the repo's one Pages site |
 | engine | **Verso** (HTML + TeX from one source) / LaTeX only | Verso; Verso's `tex/main.tex` is a LaTeX document if hand editing is wanted |
 | outputs | PDF, HTML companion (one page + per section) | both |
-| Lean code | **included** (`{docstring Name}` prints the statement) / linked only | included; links do not survive printing |
+| Lean code | **included** (`{docstring Name}` prints the statement) and/or **linked** (`{srcLink}\`Name\`` → `path:line` → GitHub at the build commit) | both |
 | transcription | conventional-notation line above each Lean statement | yes (`docs/verso-paper-workflow.md` §3 has the dictionary) |
 | branch | where sources and scripts are pushed | the campaign branch; push by explicit `sha:refs/heads/<branch>` |
 | output paths | must be gitignored | `docs/<paper>/`, `docs/<paper>.pdf` |
@@ -41,7 +51,16 @@ Words.  PROVED / REFUTED / OPEN stated in the prose.
 $$`\Gamma \vdash \bigcirc A`
 
 {docstring Full.Name +allowMissing}
+
+{srcLink}`Full.Name`
 ```
+
+`srcLink` is a document-local role (`CLPPaper/Src.lean`: copy it into a new
+paper's lib): it reads the declaration's module and line from the
+environment and `git rev-parse HEAD` / `git remote get-url origin` at build
+time, so the link is to the exact line at the commit that was built (push
+before the reader follows it).  In TeX it is a real hyperlink via `\oldhref`
+(Verso's template footnotes every `\href`).
 
 * One `{docstring}` per name per document; later mentions `` {name}`Full.Name` ``.
 * Definitions: `{docstring}` prints constructors and fields (`hideFields`,
@@ -54,13 +73,28 @@ $$`\Gamma \vdash \bigcirc A`
 * First pass of the transcription: `scripts/lean-to-math.py <Lib>/Sections/*.lean`
   (formula-like code spans → `` $`…` ``/`` $$`…` ``); then read the diff.
 
+## 2b. Version and build stamp (every generated document carries both)
+
+`<Lib>/VERSION` holds a hand-bumped number (bump it for every delivered
+draft); the first line of `Paper.lean` is `` {buildStamp}`<Lib>/VERSION` ``
+(role in `CLPPaper/Src.lean`), which renders
+`Version 0.3 · lax-obligations@0e190ea · built 2026-09-14 17:05 BST` in HTML
+and TeX from the file, `git` (branch, short hash, `+` when the tree is dirty)
+and the clock at build time.  The reader identifies the latest draft by the
+version; the hash says exactly what was built.
+
 ## 3. Build and check
 
 ```
 scripts/verso-paper.sh <Lib> <Lib>Main.lean docs/<paper> docs/<paper>.pdf
 ```
 
-Expect `tex errors: 0`, `missing glyphs: 0`, and the page count.  Then look
+Expect `tex errors: 0`, `missing glyphs: 0`, the page count, and
+`html-single: … unresolved: 0 empty, 0 find/` — `verso-paper.sh` rewrites the
+one-page HTML so it reads from `file://` too (Verso's `<base href="./">`,
+`find/?…` permalinks and `href=""` table of contents all resolve to a
+directory listing when the file is opened directly; anchors survive).  The
+per-section `html-multi/` still needs a server.  Then look
 at two pages of the PDF (`pdftoppm -r 70 -png -f N -l N`) — a results page
 and a code-heavy page — before delivering.  `scripts/verso-tex-pdf.sh` is
 where the font patch lives (DejaVu from TeX Live, glyph fallback, A4,

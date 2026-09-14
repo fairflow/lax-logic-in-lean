@@ -350,3 +350,16 @@ companion, and conventional-notation transcriptions next to the Lean.  Done:
   Lean name only (no theorem counters in vanilla Verso); a document-local
   `theorem` directive with a TeX renderer is the next step if numbered
   cross-references are wanted.
+- Later on 2026-09-14: `CLPPaper/Src.lean` adds two document-local roles:
+  `{srcLink}`Name`` (path:line linked to GitHub at the build commit, in HTML
+  and PDF via `\oldhref`) after every `{docstring}`, and
+  `{buildStamp}`CLPPaper/VERSION`` (version · branch@hash[+] · build time) as
+  the first line of the paper; `CLPPaper/VERSION` = 0.3, bump per delivered
+  draft.  `scripts/verso-html-local.py` rewrites the one-page HTML so it
+  reads from `file://` (Verso's `<base href="./">`, `find/?…` permalinks and
+  `href=""` contents all became directory listings for Matthew).  The skill
+  is ALSO installed at `~/.claude/skills/verso-paper/` because project skills
+  are read from the main checkout's `.claude/skills/`, not from a worktree
+  or another branch (`/verso-paper` was unknown in his `tphols` session and
+  in mine).  Reader's flow: `git -C ~/Lean/qll-review merge --ff-only
+  lax-obligations`, `lake build`, `scripts/clp-paper.sh --open`.
