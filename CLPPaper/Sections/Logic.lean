@@ -1,11 +1,9 @@
 import Verso
 import VersoManual
-import VersoBlueprint
 import LaxLogic.QLL
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "Quantified lax logic" =>
 
@@ -28,13 +26,9 @@ general `q`.  Terms and formulas are locally nameless.  Provability
 
 so `◯` is a monad: `◯I` is the unit and `◯E` the bind.
 
-:::group "logic"
-The consequence relation and its models.
-:::
-
-:::definition "logic_prv" (parent := "logic") (lean := "LaxLogic.QLL.Prv")
 Natural deduction for QLL with cofinite quantifier rules.
-:::
+
+{docstring LaxLogic.QLL.Prv +allowMissing}
 
 # Models
 
@@ -46,18 +40,18 @@ fallible worlds at which every atom holds, and two modal relations
 w ⊨ ◯_q A   iff   for every v with w Ri v there is u with v R_q u and u ⊨ A.
 ```
 
-:::definition "logic_kmodel" (parent := "logic") (lean := "LaxLogic.QLL.KModel")
 Kripke models with fallible worlds and two modal relations.
-:::
 
-:::theorem "logic_sound" (parent := "logic") (uses := "logic_prv, logic_kmodel") (lean := "LaxLogic.QLL.Prv.sound")
+{docstring LaxLogic.QLL.KModel +allowMissing}
+
 Soundness: `Γ ⊢ A` implies `Γ ⊫ A`.  Proved without choice.
-:::
 
-:::theorem "logic_complete" (parent := "logic") (uses := "logic_sound") (lean := "LaxLogic.QLL.prv_iff_consequence")
+{docstring LaxLogic.QLL.Prv.sound +allowMissing}
+
 Completeness on the fragment used here; the canonical model construction uses
 `Classical.choice`.
-:::
+
+{docstring LaxLogic.QLL.prv_iff_consequence +allowMissing}
 
 # The modal relation is a parameter
 
@@ -66,15 +60,15 @@ be the intuitionistic order.  That is not harmless.  With no fallible worlds,
 `◯` is then forced exactly where `¬¬` is, and such models validate a formula
 QLL does not prove.
 
-:::theorem "logic_rm_ri" (parent := "logic") (uses := "logic_kmodel") (lean := "LaxLogic.QLL.circ_imp_of_rm_eq_ri")
 With `R_∃ = Ri`, the formula `(◯A ⊃ ◯B) ⊃ ◯(A ⊃ B)` is forced at every world.
-:::
 
-:::theorem "logic_not_prv" (parent := "logic") (uses := "logic_sound") (lean := "LaxLogic.QLL.not_prv_circ_imp")
+{docstring LaxLogic.QLL.circ_imp_of_rm_eq_ri +allowMissing}
+
 QLL does not prove `(◯P ⊃ ◯Q) ⊃ ◯(P ⊃ Q)`.  The countermodel has three worlds
 `r ≤ s ≤ f`, `f` fallible, and the modal relation the identity together with
 `s → f`.  REFUTED cell for the claim that `R_m = Ri` is a free choice.
-:::
+
+{docstring LaxLogic.QLL.not_prv_circ_imp +allowMissing}
 
 The Herbrand frames used later therefore carry their own modal preorder `m ⊆
 le`, and the draft's choice `m = le` is made deliberately, on frames whose

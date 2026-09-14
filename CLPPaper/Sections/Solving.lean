@@ -1,11 +1,9 @@
 import Verso
 import VersoManual
-import VersoBlueprint
 import LaxLogic.QLL
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "Solving constraints with certificates" =>
 
@@ -30,34 +28,30 @@ computed and normalised; the certificate is valid when every variable's
 coefficient is `0` and the constant is `> 0`, or `≥ 0` with a positive
 multiplier on some strict constraint.  Validity refutes the system.
 
-:::group "solve"
-The certified solver.
-:::
-
-:::theorem "solve_witness" (parent := "solve") (lean := "LaxLogic.QLL.LinQ.checkWitness_sound")
 A checked witness satisfies every constraint.
-:::
 
-:::theorem "solve_farkas" (parent := "solve") (lean := "LaxLogic.QLL.LinQ.checkFarkas_unsat")
+{docstring LaxLogic.QLL.LinQ.checkWitness_sound +allowMissing}
+
 A checked Farkas certificate shows the system unsatisfiable.
-:::
 
-:::definition "solve_fm" (parent := "solve") (lean := "LaxLogic.QLL.LinQ.fm")
+{docstring LaxLogic.QLL.LinQ.checkFarkas_unsat +allowMissing}
+
 Fourier–Motzkin elimination, untrusted.  Each constraint becomes a row with
 its multiplier vector; while variables remain, the variable with the fewest
 positive-negative pairs is eliminated, with a cap on the number of new rows;
 a contradiction row's multipliers are the Farkas certificate, and otherwise
 back-substitution builds a witness.
-:::
 
-:::theorem "solve_sat" (parent := "solve") (uses := "solve_witness") (lean := "LaxLogic.QLL.LinQ.certifyVerdict_sat")
+{docstring LaxLogic.QLL.LinQ.fm +allowMissing}
+
 A verdict `sat w` that passes certification has `w` a solution.
-:::
 
-:::theorem "solve_unsat" (parent := "solve") (uses := "solve_farkas") (lean := "LaxLogic.QLL.LinQ.certifyVerdict_unsat")
+{docstring LaxLogic.QLL.LinQ.certifyVerdict_sat +allowMissing}
+
 A verdict `unsat λ̃` that passes certification has the system unsatisfiable.
 Any solver may produce the verdict, and none has to be trusted.
-:::
+
+{docstring LaxLogic.QLL.LinQ.certifyVerdict_unsat +allowMissing}
 
 # Entailment, least values, projection
 
@@ -68,19 +62,19 @@ least solution is given by longest paths, and the path attaining the value of
 `z` — the critical path — gives multipliers `1` on its constraints and on
 `z − z* < 0`, a telescoping Farkas certificate.
 
-:::theorem "solve_entails" (parent := "solve") (uses := "solve_unsat") (lean := "LaxLogic.QLL.Engine.entailsLe_sound")
 Certified entailment by refutation.
-:::
 
-:::theorem "solve_lower" (parent := "solve") (uses := "solve_farkas") (lean := "LaxLogic.QLL.Engine.lowerBoundCert_sound")
+{docstring LaxLogic.QLL.Engine.entailsLe_sound +allowMissing}
+
 A checked lower-bound certificate gives `z* ≤ σ(z)` for every solution `σ`;
 with a witness attaining `z*`, the least value is certified from both sides.
-:::
 
-:::theorem "solve_up" (parent := "solve") (lean := "LaxLogic.QLL.Engine.upClosed_sound")
+{docstring LaxLogic.QLL.Engine.lowerBoundCert_sound +allowMissing}
+
 If `z` has a non-positive coefficient in every inequality, raising `z`
 preserves solutions, so the projection onto `z` is exactly `z ≥ z*`.
-:::
+
+{docstring LaxLogic.QLL.Engine.upClosed_sound +allowMissing}
 
 # The engine
 
@@ -90,13 +84,13 @@ get fresh variables from a counter; clauses are indexed by head.  With
 each constraint, and an `unsat` verdict fails the branch — the `→s`
 transition.  Every answer carries its proof tree.
 
-:::definition "solve_engine" (parent := "solve") (uses := "trees_cproof") (lean := "LaxLogic.QLL.Engine.solveK")
 The search, as a strategy over the rules of Table 2.
-:::
 
-:::theorem "solve_answer" (parent := "solve") (uses := "solve_engine, trees_checkC, trees_prv_total") (lean := "LaxLogic.QLL.Engine.answer_sound")
+{docstring LaxLogic.QLL.Engine.solveK +allowMissing}
+
 An answer whose tree checks satisfies `Θ ⊢ constraint ⊃ G`.
-:::
+
+{docstring LaxLogic.QLL.Engine.answer_sound +allowMissing}
 
 # Wolfram as an untrusted oracle
 

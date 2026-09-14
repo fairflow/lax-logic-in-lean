@@ -1,11 +1,9 @@
 import Verso
 import VersoManual
-import VersoBlueprint
 import LaxLogic.QLL
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "Examples" =>
 
@@ -35,19 +33,15 @@ c₄) ⊃ Q`.  Query `Q`.  The draft's six steps, as a Table 2 run:
   ⇝ (⊤ ∧ c₁) ∧ c₃ □ ε               Rule 1
 ```
 
-:::group "ex"
-The kernel-checked examples.
-:::
-
-:::theorem "ex_95" (parent := "ex") (uses := "trees_98") (lean := "LaxLogic.QLL.CLPExamples.cor95")
 Corollary 9.8 on Example 9.5: `Θ ⊢ (⊤ ∧ c₁) ∧ c₃ ⊃ ⊤ ∧ (Q ∧ ⊤)`.
-:::
 
-:::theorem "ex_95_97" (parent := "ex") (uses := "abs_97") (lean := "LaxLogic.QLL.CLPExamples.thm97_95")
+{docstring LaxLogic.QLL.CLPExamples.cor95 +allowMissing}
+
 Theorem 9.7 on Example 9.5: the answer of the six steps is `⊣⊢` the
 constraint extracted from an abstract proof of `◯Q`, which comes out as
 `((((⊤ ∧ c₁) ∧ (⊤ ∧ ⊤)) ∧ ⊤) ∧ (⊤ ∧ c₃))`.
-:::
+
+{docstring LaxLogic.QLL.CLPExamples.thm97_95 +allowMissing}
 
 # B. Difference constraints: Example 6.1
 
@@ -71,24 +65,24 @@ combination `(−u + 9) + (u − z + 35) + (z − 44) = 0` with a strict constra
 used is a contradiction.  `z` has coefficient `−1` in its only constraint, so
 the answer is upward closed in `z`.
 
-:::theorem "ex_61_check" (parent := "ex") (uses := "trees_checkC, solve_engine") (lean := "LaxLogic.QLL.CLPExamples.check61")
 The kernel runs the engine on Example 6.1 and accepts its tree.
-:::
 
-:::theorem "ex_61" (parent := "ex") (uses := "ex_61_check, solve_lower, solve_up") (lean := "LaxLogic.QLL.CLPExamples.ex61_answer")
+{docstring LaxLogic.QLL.CLPExamples.check61 +allowMissing}
+
 The draft's answer `z ≥ 44`: a value `r` for `z` extends to a solution of the
 answer constraint iff `44 ≤ r`.
-:::
 
-:::theorem "ex_61_ext" (parent := "ex") (uses := "ex_61_check, abs_ext_total") (lean := "LaxLogic.QLL.CLPExamples.ext61")
+{docstring LaxLogic.QLL.CLPExamples.ex61_answer +allowMissing}
+
 The `◯` pass extracts `(((⊤ ∧ u ≥ 5) ∧ (((⊤ ∧ u ≥ 9) ∧ (⊤ ∧ ⊤)) ∧ ⊤)) ∧ ⊤) ∧
 (⊤ ∧ (⊤ ∧ z ≥ u + 35))`, the draft's expression, and it is `⊣⊢` the total
 constraint.
-:::
 
-:::theorem "ex_61_cor" (parent := "ex") (uses := "ex_61_check, abs_98abs") (lean := "LaxLogic.QLL.CLPExamples.cor61")
+{docstring LaxLogic.QLL.CLPExamples.ext61 +allowMissing}
+
 Corollary 9.8 by the draft's route on Example 6.1.
-:::
+
+{docstring LaxLogic.QLL.CLPExamples.cor61 +allowMissing}
 
 # B, continued: scheduling and adders
 

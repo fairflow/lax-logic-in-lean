@@ -8,3 +8,7 @@ LaxLogic/Verso_manual.pdf
 # (the Message-ID and Date change on every run).
 *.eml
 _out/
+
+# Built papers (scripts/clp-paper.sh): HTML + PDF are build artefacts
+docs/clp-paper/
+docs/clp-paper.pdf

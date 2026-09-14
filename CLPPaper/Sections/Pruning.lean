@@ -1,11 +1,9 @@
 import Verso
 import VersoManual
-import VersoBlueprint
 import LaxLogic.QLL
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "Pruning and Prolog's cut" =>
 
@@ -61,15 +59,9 @@ the unpruned runs whose final store is satisfiable, so failure pruning is
 order-independent and answer-invisible.  Cut has no such theorem, and the
 reason is visible in the same place: it is not a function of the store.
 
-:::group "prune"
-The connection to the machine.
-:::
-
-:::theorem "prune_noprune" (parent := "prune") (uses := "mach_noprune, mach_diamond") (lean := "LaxLogic.QLL.SLD.SLDSteps.noPrune_iff")
 The pruning theorem, read as the formal content of "failure pruning is
 green": it changes the prefixes explored, not the trees reachable with an
 acceptable store.
-:::
 
 Directions that would build on this, each to start with a statement and
 designed cells: a certified pruning log (unsatisfiable, dominated, or not

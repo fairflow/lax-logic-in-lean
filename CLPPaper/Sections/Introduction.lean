@@ -1,11 +1,9 @@
 import Verso
 import VersoManual
-import VersoBlueprint
 import LaxLogic.QLL
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "Introduction" =>
 
@@ -75,13 +73,8 @@ construction before meeting it.  Each
 theorem node names its Lean declaration; the graph at the end shows what
 depends on what, and the summary the count of nodes by status.
 
-:::group "intro"
-The reading conventions.
-:::
-
-:::definition "intro_status" (parent := "intro")
 PROVED means kernel-checked, `sorry`-free, with the axiom set recorded; every
 node in this document carries a declaration and the compiler assigns its
 status.  REFUTED means a kernel-checked countermodel of the statement as
 written.  OPEN means neither: the statement is fixed and nothing asserts it.
-:::
+

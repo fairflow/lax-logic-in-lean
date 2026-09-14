@@ -1,12 +1,9 @@
 import VersoManual
-import VersoBlueprint.PreviewManifest
 import CLPPaper.Paper
 
-open Verso Doc
-open Verso.Genre Manual
+open Verso.Genre.Manual
 
+/-- Vanilla Verso (Manual genre): HTML and TeX from one source.  Render with
+`scripts/clp-paper.sh`. -/
 def main (args : List String) : IO UInt32 :=
-  Informal.PreviewManifest.blueprintMainWithPreviewData
-    (%doc CLPPaper.Paper)
-    args
-    (extensionImpls := by exact extension_impls%)
+  manualMain (%doc CLPPaper.Paper) (options := args)

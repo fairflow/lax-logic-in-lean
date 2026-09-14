@@ -1,11 +1,9 @@
 import Verso
 import VersoManual
-import VersoBlueprint
 import LaxLogic.QLL
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "What the modality buys: placements and realisers" =>
 
@@ -20,16 +18,11 @@ program after rewriting one to the other.
 Bodies are Σ-formulas, so `◯` cannot occur in them.  What would it do?  The
 answer turns on the head.
 
-:::group "mod"
-Placements of the modality.
-:::
-
-:::theorem "mod_body_plain" (parent := "mod") (lean := "LaxLogic.QLL.BodyCirc.body_circ_to_plain")
 With a plain head, a body `◯` implies the same clause with the `◯` deleted:
 `(A ∧ ◯B) ⊃ P ⊢ (A ∧ B) ⊃ P`.
-:::
 
-:::theorem "mod_body_plain_refuted" (parent := "mod") (uses := "logic_sound") (lean := "LaxLogic.QLL.BodyCirc.not_prv_plain_to_body_circ")
+{docstring LaxLogic.QLL.BodyCirc.body_circ_to_plain +allowMissing}
+
 REFUTED converse: `(A ∧ B) ⊃ P` does not prove `(A ∧ ◯B) ⊃ P`.  Two worlds
 `w0 ≤ w1`, every arrow modal, nothing fallible, `A` everywhere, `B` and `P`
 at `w1` only.  So with a plain head a body `◯` is strictly stronger: it lets a
@@ -38,26 +31,27 @@ which is exactly the fault of Proposition 6.6's second half, sound only under
 `⊢ ◯c`.  Read positively, `◯B ⊃ P` says "if `B` is derivable in the
 abstraction, conclude `P` concretely": abstract derivability as a guard, a
 two-level program whose least-model theorem is OPEN.
-:::
 
-:::theorem "mod_body_modal" (parent := "mod") (lean := "LaxLogic.QLL.BodyCirc.clause4")
+{docstring LaxLogic.QLL.BodyCirc.not_prv_plain_to_body_circ +allowMissing}
+
 With a modal head the two forms are interderivable, because `◯E` absorbs the
 body's `◯`: `(A ∧ B) ⊃ ◯P ⊢ (A ∧ ◯B) ⊃ ◯P`, and conversely.
-:::
 
-:::theorem "mod_body_modal_ex" (parent := "mod") (uses := "mod_body_modal") (lean := "LaxLogic.QLL.BodyCirc.fo_ex_II_to_I")
+{docstring LaxLogic.QLL.BodyCirc.clause4 +allowMissing}
+
 The same with the `◯` under an existential, the shape a body actually has:
 `∀t. (∃s. B s ∧ C s t) ⊃ ◯P t ⊢ ∀t. (∃s. ◯B s ∧ C s t) ⊃ ◯P t`, and
 conversely.  So in an abstract program, whose heads are all modal, a body `◯`
 adds nothing: it is `val`.
-:::
 
-:::theorem "mod_idem" (parent := "mod") (lean := "LaxLogic.QLL.BodyCirc.circ_circ_iff")
+{docstring LaxLogic.QLL.BodyCirc.fo_ex_II_to_I +allowMissing}
+
 `◯◯A ⊣⊢ ◯A`: nesting one modality on itself is not a layering device.  But
 `◯` under `⊃` and `⊥` does create structure — the variable-free fragment of
 intuitionistic logic has two classes and gains infinitely many when `◯` is
 added — so layers are to be sought in negative positions, not in depth.
-:::
+
+{docstring LaxLogic.QLL.BodyCirc.circ_circ_iff +allowMissing}
 
 # `◯` over a conjunction: interderivable, not the same realisers
 
@@ -68,30 +62,30 @@ its own.  The two directions of the equivalence are the double strength
 `dstr ((c₁,z₁),(c₂,z₂)) = (c₁ ∧ c₂, (z₁,z₂))` and the duplication
 `dup (c,(z₁,z₂)) = ((c,z₁),(c,z₂))`.
 
-:::theorem "mod_split" (parent := "mod") (lean := "LaxLogic.QLL.circ_and_split")
 `◯(A ∧ B) ⊢ ◯A ∧ ◯B`.
-:::
 
-:::theorem "mod_join" (parent := "mod") (lean := "LaxLogic.QLL.circ_and_join")
+{docstring LaxLogic.QLL.circ_and_split +allowMissing}
+
 `◯A ∧ ◯B ⊢ ◯(A ∧ B)`.
-:::
 
-:::theorem "mod_dstr_dup" (parent := "mod") (lean := "LaxLogic.QLL.dstr_dup")
+{docstring LaxLogic.QLL.circ_and_join +allowMissing}
+
 `dstr ∘ dup` is the identity up to `⊣⊢`.
-:::
 
-:::theorem "mod_not_dup_dstr" (parent := "mod") (uses := "logic_sound") (lean := "LaxLogic.QLL.not_dup_dstr")
+{docstring LaxLogic.QLL.dstr_dup +allowMissing}
+
 REFUTED: `dup ∘ dstr` is not; `((⊤,⋆),(⊥,⋆))` comes back with first
 component `(⊤ ∧ ⊥, ⋆)`.  A clause body cannot be regrouped this way without
 changing what is extracted.
-:::
 
-:::theorem "mod_andC" (parent := "mod") (uses := "abs_ext") (lean := "LaxLogic.QLL.AProof.ext_andC")
+{docstring LaxLogic.QLL.not_dup_dstr +allowMissing}
+
 Fig. 3's `∧◯` is `dstr`: the second subgoal's constraint never sees the
 first's witness.  A constraint relating two subgoals' witnesses can live only
 in the table entry of the enclosing clause — a design property of the draft,
 now visible.
-:::
+
+{docstring LaxLogic.QLL.AProof.ext_andC +allowMissing}
 
 # The inclusion lemma
 
@@ -100,18 +94,18 @@ and only there: the monad laws identify everything else.  The entries
 `(w, t̃, z)` a derivation summons fix its constraint parametrically in the
 table, and inclusion of entries gives entailment for every table.
 
-:::definition "mod_entries" (parent := "mod") (uses := "abs_aproof") (lean := "LaxLogic.QLL.AProof.entries")
 The table entries a derivation summons.
-:::
 
-:::theorem "mod_incl" (parent := "mod") (uses := "mod_entries, abs_ext") (lean := "LaxLogic.QLL.AProof.ext_prv_of_entries_subset")
+{docstring LaxLogic.QLL.AProof.entries +allowMissing}
+
 If every entry `a` summons is summoned by `a'`, then `a'`'s extracted
 constraint entails `a`'s, for every table.  Depends on `propext` only.
-:::
 
-:::theorem "mod_incl_eq" (parent := "mod") (uses := "mod_incl") (lean := "LaxLogic.QLL.AProof.ext_peq_of_entries_eq")
+{docstring LaxLogic.QLL.AProof.ext_prv_of_entries_subset +allowMissing}
+
 Equal entry sets give `⊣⊢`.
-:::
+
+{docstring LaxLogic.QLL.AProof.ext_peq_of_entries_eq +allowMissing}
 
 This is what lets derivations be compared at the abstract level, before any
 constraint is looked at: prefer the derivation that summons fewer entries.
@@ -126,15 +120,14 @@ equality axioms a constraint theory supplies — this is the first step of
 Clark's completed definition — and the same two axioms suffice under a modal
 head.
 
-:::theorem "mod_flat1" (parent := "mod") (lean := "LaxLogic.QLL.HeadFlatten.flat_to_orig")
 `∀x. (∃y. x = f y ∧ S y) ⊃ P x` with `∀x. x = x` proves `∀y. S y ⊃ P(f y)`.
-:::
 
-:::theorem "mod_flat2" (parent := "mod") (lean := "LaxLogic.QLL.HeadFlatten.orig_to_flat")
+{docstring LaxLogic.QLL.HeadFlatten.flat_to_orig +allowMissing}
+
 `∀y. S y ⊃ P(f y)` with `∀x y. x = y ⊃ P y ⊃ P x` proves the flattening.
-:::
 
-:::theorem "mod_flat_circ" (parent := "mod") (uses := "mod_flat2") (lean := "LaxLogic.QLL.HeadFlatten.orig_to_flat_circ")
+{docstring LaxLogic.QLL.HeadFlatten.orig_to_flat +allowMissing}
+
 The same with a `◯P(f y)` head and the same plain substitutivity axiom:
 `◯E` lifts it.  So the fact is native to the `◯`-free fragment and unchanged
 by `◯`; what the constraint framework contributes is that `=` is a constraint
@@ -144,7 +137,8 @@ logically available and computationally not; the recommended design is
 constructor heads as surface syntax elaborated to variable heads and `=`
 constraints, with unification an untrusted oracle whose certificate is the
 substitution.
-:::
+
+{docstring LaxLogic.QLL.HeadFlatten.orig_to_flat_circ +allowMissing}
 
 # Decorating a disjunct
 
@@ -153,23 +147,23 @@ other does not: `A ∨ ◯B`, "either `A` outright, or `B` up to a constraint".
 Under an outer `◯` the decoration collapses; as a plain goal it is a genuine
 weakening.
 
-:::theorem "mod_disj_collapse" (parent := "mod") (lean := "LaxLogic.QLL.circ_or_circ_collapse")
 `◯(A ∨ ◯B) ⊢ ◯(A ∨ B)`.
-:::
 
-:::theorem "mod_disj_expand" (parent := "mod") (lean := "LaxLogic.QLL.circ_or_circ_expand")
+{docstring LaxLogic.QLL.circ_or_circ_collapse +allowMissing}
+
 `◯(A ∨ B) ⊢ ◯(A ∨ ◯B)`: under `◯` the two goals are the same.
-:::
 
-:::theorem "mod_disj_weaker" (parent := "mod") (lean := "LaxLogic.QLL.or_to_or_circ")
+{docstring LaxLogic.QLL.circ_or_circ_expand +allowMissing}
+
 `A ∨ B ⊢ A ∨ ◯B`.
-:::
 
-:::theorem "mod_disj_refuted" (parent := "mod") (uses := "logic_sound") (lean := "LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or")
+{docstring LaxLogic.QLL.or_to_or_circ +allowMissing}
+
 REFUTED converse: `P ∨ ◯B` does not prove `P ∨ B`; in the two-world model the
 lax branch is the only one open.  So a plain decorated goal accepts the
 constraint-only route where the undecorated one does not.
-:::
+
+{docstring LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or +allowMissing}
 
 Under extraction a disjunction is a sum and each branch's constraint sits
 inside its injection: the realiser of `A ∨ ◯B` is `|A| + (C × |B|)`, one
@@ -177,28 +171,28 @@ branch free and one costing a constraint.  What makes a branch free is not
 that it applies no clauses but that every clause it applies has a `⊤` table
 entry.
 
-:::theorem "mod_disj_sum" (parent := "mod") (uses := "abs_ext") (lean := "LaxLogic.QLL.AProof.ext_orL")
 `|∨◯ p| = (π₁|p| ∧ ⊤, inl π₂|p|)`: the branch's constraint travels with the
 injection.
-:::
 
-:::theorem "mod_disj_top" (parent := "mod") (uses := "mod_entries") (lean := "LaxLogic.QLL.AProof.ext_top_of_pure")
+{docstring LaxLogic.QLL.AProof.ext_orL +allowMissing}
+
 A derivation whose summoned entries all have table value `⊤` extracts `⊤`.
-:::
 
-:::theorem "mod_disj_once" (parent := "mod") (uses := "mod_disj_top") (lean := "LaxLogic.QLL.AProof.once_of_pure")
+{docstring LaxLogic.QLL.AProof.ext_top_of_pure +allowMissing}
+
 A sound `once`: every other derivation's answer entails such a derivation's.
 Succeed on the free branch and no other branch can be more general — what
 Prolog's cut does by fiat and Andorra's quiet guards by entailment, obtained
 here from the type.
-:::
 
-:::theorem "mod_disj_ex" (parent := "mod") (uses := "mod_disj_once, trees_checkC") (lean := "LaxLogic.QLL.BodyCirc.extD_top")
+{docstring LaxLogic.QLL.AProof.once_of_pure +allowMissing}
+
 Kernel-run instance: `Q(t) ⊂ R(t) ∨ ∃s. B(s) ∧ t ≥ s + 2` with `R`
 constraint-free.  The engine's first answer for `Q(z)` is `⊤` and its second
 is `B`'s constraint `s ≥ 5 ∧ z ≥ s + 2`; the free branch extracts `⊤` under
 the `◯` pass, and every other derivation's answer entails it.
-:::
+
+{docstring LaxLogic.QLL.BodyCirc.extD_top +allowMissing}
 
 # Placements not yet built
 

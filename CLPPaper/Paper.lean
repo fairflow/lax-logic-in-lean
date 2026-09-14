@@ -1,8 +1,5 @@
 import Verso
 import VersoManual
-import VersoBlueprint
-import VersoBlueprint.Commands.Graph
-import VersoBlueprint.Commands.Summary
 import CLPPaper.Sections.Introduction
 import CLPPaper.Sections.CLP
 import CLPPaper.Sections.Logic
@@ -18,7 +15,6 @@ import CLPPaper.Sections.Status
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "Lax Logic as a Framework for Constraint Logic Programming, Mechanised" =>
 
@@ -32,8 +28,9 @@ together with what the mechanisation added: a certified constraint solver, an
 operational semantics in one format for both passes of the method, and a
 study of where the lax modality may be placed in a program and what each
 placement buys.  Every claim is machine-checked with pinned axioms, or labelled
-otherwise; each node below names the declaration that carries it, so its
-status is read off the compiler, not asserted here.  Numbered results refer
+otherwise; each result is followed by the Lean declaration that carries it,
+printed from the compiled library, so its statement is read off the compiler,
+not asserted here.  Numbered results refer
 to the draft.
 
 {include 0 CLPPaper.Sections.Introduction}
@@ -49,5 +46,3 @@ to the draft.
 {include 0 CLPPaper.Sections.Pruning}
 {include 0 CLPPaper.Sections.Status}
 
-{blueprint_graph}
-{blueprint_summary}

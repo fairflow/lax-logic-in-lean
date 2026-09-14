@@ -1,11 +1,9 @@
 import Verso
 import VersoManual
-import VersoBlueprint
 import LaxLogic.QLL
 
 open Verso.Genre
 open Verso.Genre.Manual
-open Informal
 
 #doc (Manual) "Constraint logic programming" =>
 
@@ -79,14 +77,9 @@ every verdict carries a certificate checked in Lean.  And the lax modality
 separates the program's logic from its constraints, which is the
 abstraction-and-refinement reading of the `◯` pass.
 
-:::group "clp"
-The conventional account and the correspondence.
-:::
-
-:::definition "clp_corr" (parent := "clp")
 The correspondence above is the map from Jaffar–Maher's transition system to
 the constructions of this document; the two rows that have no counterpart
 (`infer`, passive constraints) mark the two computational shortcuts taken
 here, and the projection row marks the one place where the domain's own
 theory is needed and only special cases are built.
-:::
+
