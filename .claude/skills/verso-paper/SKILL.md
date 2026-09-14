@@ -72,8 +72,25 @@ breakable verbatim); extend its `fallback` string if a new glyph is reported.
 blueprint imports and `{blueprint_graph}`/`{blueprint_summary}` from
 `Paper.lean`, swap the main for `manualMain`, rebuild, write the math lines.
 
-## 5. Deliver
+## 5. Deliver: serve, don't hand over paths
 
-Commit sources + scripts + `.gitignore`; push with the fast-forward guard;
-say the sha and "pull, then `scripts/<paper>.sh`"; SendUserFile the PDF.
-Record the paper in HANDOFF.md.
+The reader is on the same machine.  The outputs are build artefacts in the
+builder's checkout, which the reader's app cannot open by path; a local HTTP
+server can be opened from anywhere on the machine.  So:
+
+1. Commit sources + scripts + `.gitignore`; push with the fast-forward guard;
+   give the sha.
+2. `scripts/<paper>.sh --serve` (rooted at `docs/`, port 8096) and give the
+   reader `bash` blocks they can run with one click:
+   ```
+   open http://127.0.0.1:8096/<paper>.pdf
+   open http://127.0.0.1:8096/<paper>/html-single/
+   ```
+   `--serve-only` re-serves an existing build after a restart.
+3. SendUserFile the PDF as well when they are away from the machine.
+4. Their own copy: merge the branch into their checkout and run
+   `scripts/<paper>.sh`; lake rebuilds only what changed since that
+   checkout's last build (Mathlib and Verso come from the cache).
+5. Record the paper in HANDOFF.md.  Never give a path relative to the
+   builder's worktree; an absolute path in the reader's checkout is the only
+   openable form, and only after they have merged.

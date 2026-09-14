@@ -119,10 +119,17 @@ command, or is sent the PDF.  Serve HTML over HTTP (`--serve`), never
 
 ## 6. Delivery
 
-Push to the working branch and say so; Matthew pulls (a fast-forward merge
-into his review branch) and rebuilds, or is sent the PDF directly
-(SendUserFile).  Markdown links to files in a reply are not openable from his
-side: they resolve in the assistant's worktree.
+The reader and the builder share one machine but not one checkout, and the
+reader's app cannot open paths in the builder's worktree.  The outputs are
+therefore **served**: `scripts/clp-paper.sh --serve` starts
+`python3 -m http.server 8096` rooted at `docs/`, and the reader opens
+`http://127.0.0.1:8096/clp-paper.pdf` and
+`http://127.0.0.1:8096/clp-paper/html-single/` in any browser (one-click
+`open …` lines in the reply).  The sources are pushed as always; a reader who
+wants a private copy merges the branch and runs the same script, and lake
+rebuilds only what that checkout has not built.  A PDF is also sent directly
+(SendUserFile) for reading away from the machine.  Markdown links to files in
+a reply are dead: they resolve in the assistant's worktree.
 
 ## 7. Converting an existing blueprint paper
 
