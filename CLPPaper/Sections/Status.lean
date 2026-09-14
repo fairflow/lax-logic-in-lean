@@ -20,7 +20,7 @@ every node is computed by the compiler and shown in the summary below.
 
 # Why the constraints come out unsimplified
 
-The examples show `⊤` units, ground constraints kept after being checked,
+The examples show $`\top` units, ground constraints kept after being checked,
 unevaluated arithmetic, unmerged linear forms, duplicated constraints,
 re-derived shared subgoals, and unprojected local variables.  Each has a
 cause and a remedy that costs nothing certified:
@@ -41,7 +41,7 @@ dead local variables             no answer projection                     projec
                                                                           unreachable, two entailments each
 ```
 
-The `⊤` units are precisely the syntactic residue of the writer monad's
+The $`\top` units are precisely the syntactic residue of the writer monad's
 `val`, and the realiser section explains why they cannot simply be removed
 by regrouping: the grouping is information.
 

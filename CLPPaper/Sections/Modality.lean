@@ -7,7 +7,7 @@ open Verso.Genre.Manual
 
 #doc (Manual) "What the modality buys: placements and realisers" =>
 
-The draft places `◯` in one position, the clause head.  This section asks
+The draft places $`\bigcirc` in one position, the clause head.  This section asks
 what the other positions would do, and finds that the right notion for
 answering is not provability but the realiser: two provably equivalent
 formulas can have different realisers, and then a program is not the same
@@ -15,72 +15,72 @@ program after rewriting one to the other.
 
 # `◯` in a clause body
 
-Bodies are Σ-formulas, so `◯` cannot occur in them.  What would it do?  The
+Bodies are Σ-formulas, so $`\bigcirc` cannot occur in them.  What would it do?  The
 answer turns on the head.
 
-With a plain head, a body `◯` implies the same clause with the `◯` deleted:
-`(A ∧ ◯B) ⊃ P ⊢ (A ∧ B) ⊃ P`.
+With a plain head, a body $`\bigcirc` implies the same clause with the $`\bigcirc` deleted:
+$$`(A \land \bigcirc B) \supset P \vdash (A \land B) \supset P`
 
 {docstring LaxLogic.QLL.BodyCirc.body_circ_to_plain +allowMissing}
 
-REFUTED converse: `(A ∧ B) ⊃ P` does not prove `(A ∧ ◯B) ⊃ P`.  Two worlds
-`w0 ≤ w1`, every arrow modal, nothing fallible, `A` everywhere, `B` and `P`
-at `w1` only.  So with a plain head a body `◯` is strictly stronger: it lets a
+REFUTED converse: $`(A \land B) \supset P` does not prove $`(A \land \bigcirc B) \supset P`.  Two worlds
+$`w_0 \le w_1`, every arrow modal, nothing fallible, `A` everywhere, `B` and `P`
+at `w1` only.  So with a plain head a body $`\bigcirc` is strictly stronger: it lets a
 lax premise justify a non-lax conclusion — it *discharges* a constraint,
 which is exactly the fault of Proposition 6.6's second half, sound only under
-`⊢ ◯c`.  Read positively, `◯B ⊃ P` says "if `B` is derivable in the
+$`\vdash \bigcirc c`.  Read positively, $`\bigcirc B \supset P` says "if `B` is derivable in the
 abstraction, conclude `P` concretely": abstract derivability as a guard, a
 two-level program whose least-model theorem is OPEN.
 
 {docstring LaxLogic.QLL.BodyCirc.not_prv_plain_to_body_circ +allowMissing}
 
-With a modal head the two forms are interderivable, because `◯E` absorbs the
-body's `◯`: `(A ∧ B) ⊃ ◯P ⊢ (A ∧ ◯B) ⊃ ◯P`, and conversely.
+With a modal head the two forms are interderivable, because $`\bigcirc E` absorbs the
+body's $`\bigcirc`: $`(A \land B) \supset \bigcirc P \vdash (A \land \bigcirc B) \supset \bigcirc P`, and conversely.
 
 {docstring LaxLogic.QLL.BodyCirc.clause4 +allowMissing}
 
-The same with the `◯` under an existential, the shape a body actually has:
-`∀t. (∃s. B s ∧ C s t) ⊃ ◯P t ⊢ ∀t. (∃s. ◯B s ∧ C s t) ⊃ ◯P t`, and
-conversely.  So in an abstract program, whose heads are all modal, a body `◯`
+The same with the $`\bigcirc` under an existential, the shape a body actually has:
+$`\forall t. (\exists s. B s \land C s t) \supset \bigcirc P t \vdash \forall t. (\exists s. \bigcirc B s \land C s t) \supset \bigcirc P t`, and
+conversely.  So in an abstract program, whose heads are all modal, a body $`\bigcirc`
 adds nothing: it is `val`.
 
 {docstring LaxLogic.QLL.BodyCirc.fo_ex_II_to_I +allowMissing}
 
-`◯◯A ⊣⊢ ◯A`: nesting one modality on itself is not a layering device.  But
-`◯` under `⊃` and `⊥` does create structure — the variable-free fragment of
-intuitionistic logic has two classes and gains infinitely many when `◯` is
+$`\bigcirc \bigcirc A \dashv\vdash \bigcirc A`: nesting one modality on itself is not a layering device.  But
+$`\bigcirc` under $`\supset` and $`\bot` does create structure — the variable-free fragment of
+intuitionistic logic has two classes and gains infinitely many when $`\bigcirc` is
 added — so layers are to be sought in negative positions, not in depth.
 
 {docstring LaxLogic.QLL.BodyCirc.circ_circ_iff +allowMissing}
 
 # `◯` over a conjunction: interderivable, not the same realisers
 
-`◯(A ∧ B) ⊣⊢ ◯A ∧ ◯B` in QLL.  Under extraction the two sides have different
-types, `C × (|A| × |B|)` against `(C × |A|) × (C × |B|)`: on the left one
+$`\bigcirc (A \land B) \dashv\vdash \bigcirc A \land \bigcirc B` in QLL.  Under extraction the two sides have different
+types, $`C \times (|A| \times |B|)` against $`(C \times |A|) \times (C \times |B|)`: on the left one
 constraint may relate both witnesses, on the right each constraint sees only
 its own.  The two directions of the equivalence are the double strength
-`dstr ((c₁,z₁),(c₂,z₂)) = (c₁ ∧ c₂, (z₁,z₂))` and the duplication
+$`\mathit{dstr} ((c_1,z_1),(c_2,z_2)) = (c_1 \land c_2, (z_1,z_2))` and the duplication
 `dup (c,(z₁,z₂)) = ((c,z₁),(c,z₂))`.
 
-`◯(A ∧ B) ⊢ ◯A ∧ ◯B`.
+$$`\bigcirc (A \land B) \vdash \bigcirc A \land \bigcirc B`
 
 {docstring LaxLogic.QLL.circ_and_split +allowMissing}
 
-`◯A ∧ ◯B ⊢ ◯(A ∧ B)`.
+$$`\bigcirc A \land \bigcirc B \vdash \bigcirc (A \land B)`
 
 {docstring LaxLogic.QLL.circ_and_join +allowMissing}
 
-`dstr ∘ dup` is the identity up to `⊣⊢`.
+$`\mathit{dstr} \circ \mathit{dup}` is the identity up to $`\dashv\vdash`.
 
 {docstring LaxLogic.QLL.dstr_dup +allowMissing}
 
-REFUTED: `dup ∘ dstr` is not; `((⊤,⋆),(⊥,⋆))` comes back with first
-component `(⊤ ∧ ⊥, ⋆)`.  A clause body cannot be regrouped this way without
+REFUTED: $`\mathit{dup} \circ \mathit{dstr}` is not; $`((\top,\star),(\bot,\star))` comes back with first
+component $`(\top \land \bot, \star)`.  A clause body cannot be regrouped this way without
 changing what is extracted.
 
 {docstring LaxLogic.QLL.not_dup_dstr +allowMissing}
 
-Fig. 3's `∧◯` is `dstr`: the second subgoal's constraint never sees the
+Fig. 3's $`\land \bigcirc` is `dstr`: the second subgoal's constraint never sees the
 first's witness.  A constraint relating two subgoals' witnesses can live only
 in the table entry of the enclosing clause — a design property of the draft,
 now visible.
@@ -89,7 +89,7 @@ now visible.
 
 # The inclusion lemma
 
-Two derivations of one `◯S` can differ in the clause applications they make,
+Two derivations of one $`\bigcirc S` can differ in the clause applications they make,
 and only there: the monad laws identify everything else.  The entries
 `(w, t̃, z)` a derivation summons fix its constraint parametrically in the
 table, and inclusion of entries gives entailment for every table.
@@ -103,7 +103,7 @@ constraint entails `a`'s, for every table.  Depends on `propext` only.
 
 {docstring LaxLogic.QLL.AProof.ext_prv_of_entries_subset +allowMissing}
 
-Equal entry sets give `⊣⊢`.
+Equal entry sets give $`\dashv\vdash`.
 
 {docstring LaxLogic.QLL.AProof.ext_peq_of_entries_eq +allowMissing}
 
@@ -120,17 +120,17 @@ equality axioms a constraint theory supplies — this is the first step of
 Clark's completed definition — and the same two axioms suffice under a modal
 head.
 
-`∀x. (∃y. x = f y ∧ S y) ⊃ P x` with `∀x. x = x` proves `∀y. S y ⊃ P(f y)`.
+$`\forall x. (\exists y. x = f y \land S y) \supset P x` with $`\forall x. x = x` proves $`\forall y. S y \supset P(f y)`.
 
 {docstring LaxLogic.QLL.HeadFlatten.flat_to_orig +allowMissing}
 
-`∀y. S y ⊃ P(f y)` with `∀x y. x = y ⊃ P y ⊃ P x` proves the flattening.
+$`\forall y. S y \supset P(f y)` with $`\forall x y. x = y \supset P y \supset P x` proves the flattening.
 
 {docstring LaxLogic.QLL.HeadFlatten.orig_to_flat +allowMissing}
 
-The same with a `◯P(f y)` head and the same plain substitutivity axiom:
-`◯E` lifts it.  So the fact is native to the `◯`-free fragment and unchanged
-by `◯`; what the constraint framework contributes is that `=` is a constraint
+The same with a $`\bigcirc P(f y)` head and the same plain substitutivity axiom:
+$`\bigcirc E` lifts it.  So the fact is native to the $`\bigcirc`-free fragment and unchanged
+by $`\bigcirc`; what the constraint framework contributes is that `=` is a constraint
 solved in the domain rather than an algorithm wired into resolution.  This
 development has no Herbrand equality solver, so constructor heads are
 logically available and computationally not; the recommended design is
@@ -143,40 +143,40 @@ substitution.
 # Decorating a disjunct
 
 A goal may be a disjunction, and one disjunct may carry the modality while the
-other does not: `A ∨ ◯B`, "either `A` outright, or `B` up to a constraint".
-Under an outer `◯` the decoration collapses; as a plain goal it is a genuine
+other does not: $`A \lor \bigcirc B`, "either `A` outright, or `B` up to a constraint".
+Under an outer $`\bigcirc` the decoration collapses; as a plain goal it is a genuine
 weakening.
 
-`◯(A ∨ ◯B) ⊢ ◯(A ∨ B)`.
+$$`\bigcirc (A \lor \bigcirc B) \vdash \bigcirc (A \lor B)`
 
 {docstring LaxLogic.QLL.circ_or_circ_collapse +allowMissing}
 
-`◯(A ∨ B) ⊢ ◯(A ∨ ◯B)`: under `◯` the two goals are the same.
+$`\bigcirc (A \lor B) \vdash \bigcirc (A \lor \bigcirc B)`: under $`\bigcirc` the two goals are the same.
 
 {docstring LaxLogic.QLL.circ_or_circ_expand +allowMissing}
 
-`A ∨ B ⊢ A ∨ ◯B`.
+$$`A \lor B \vdash A \lor \bigcirc B`
 
 {docstring LaxLogic.QLL.or_to_or_circ +allowMissing}
 
-REFUTED converse: `P ∨ ◯B` does not prove `P ∨ B`; in the two-world model the
+REFUTED converse: $`P \lor \bigcirc B` does not prove $`P \lor B`; in the two-world model the
 lax branch is the only one open.  So a plain decorated goal accepts the
 constraint-only route where the undecorated one does not.
 
 {docstring LaxLogic.QLL.BodyCirc.not_prv_or_circ_to_or +allowMissing}
 
 Under extraction a disjunction is a sum and each branch's constraint sits
-inside its injection: the realiser of `A ∨ ◯B` is `|A| + (C × |B|)`, one
+inside its injection: the realiser of $`A \lor \bigcirc B` is $`|A| + (C \times |B|)`, one
 branch free and one costing a constraint.  What makes a branch free is not
-that it applies no clauses but that every clause it applies has a `⊤` table
+that it applies no clauses but that every clause it applies has a $`\top` table
 entry.
 
-`|∨◯ p| = (π₁|p| ∧ ⊤, inl π₂|p|)`: the branch's constraint travels with the
+$`|\lor \bigcirc p| = (\pi _1|p| \land \top, \mathit{inl} \pi _2|p|)`: the branch's constraint travels with the
 injection.
 
 {docstring LaxLogic.QLL.AProof.ext_orL +allowMissing}
 
-A derivation whose summoned entries all have table value `⊤` extracts `⊤`.
+A derivation whose summoned entries all have table value $`\top` extracts $`\top`.
 
 {docstring LaxLogic.QLL.AProof.ext_top_of_pure +allowMissing}
 
@@ -187,19 +187,19 @@ here from the type.
 
 {docstring LaxLogic.QLL.AProof.once_of_pure +allowMissing}
 
-Kernel-run instance: `Q(t) ⊂ R(t) ∨ ∃s. B(s) ∧ t ≥ s + 2` with `R`
-constraint-free.  The engine's first answer for `Q(z)` is `⊤` and its second
-is `B`'s constraint `s ≥ 5 ∧ z ≥ s + 2`; the free branch extracts `⊤` under
-the `◯` pass, and every other derivation's answer entails it.
+Kernel-run instance: $`Q(t) \subset R(t) \lor \exists s. B(s) \land t \ge s + 2` with `R`
+constraint-free.  The engine's first answer for `Q(z)` is $`\top` and its second
+is `B`'s constraint $`s \ge 5 \land z \ge s + 2`; the free branch extracts $`\top` under
+the $`\bigcirc` pass, and every other derivation's answer entails it.
 
 {docstring LaxLogic.QLL.BodyCirc.extD_top +allowMissing}
 
 # Placements not yet built
 
-A clause under the modality, `◯(∧Γ ⊃ M)`, carries a constraint independent of
+A clause under the modality, $`\bigcirc (\land \Gamma \supset M)`, carries a constraint independent of
 the body witness; between it and the LLP clause lies a three-level hierarchy
 by where the constraint may depend, and such a clause fires only against a
-modal goal, which constrains clause order.  Negative occurrences, `¬◯B`, read
+modal goal, which constrains clause order.  Negative occurrences, $`\lnot \bigcirc B`, read
 as negation as failure in the two-world model and are trivialised by the
 fallible world in the four-world one — so solvability and negation as failure
 are one frame parameter seen from two sides.  Both are stated with their

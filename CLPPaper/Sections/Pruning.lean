@@ -42,7 +42,7 @@ bound           branch cannot beat incumbent   none for optima    lowerBoundCert
 cut             first success in text order    essential          none possible
 ```
 
-Failure pruning is the constraint monoid's zero, `⊥ ∧ c ⊣⊢ ⊥ ⊣⊢ c ∧ ⊥`, a
+Failure pruning is the constraint monoid's zero, $`\bot \land c \dashv\vdash \bot \dashv\vdash c \land \bot`, a
 two-sided zero; that is why it commutes with everything and why Theorem 9.4
 holds for any `ok`.  Cut is a left zero, non-commutative; the commutativity
 of `⊗` is what selection independence rests on, so cut cannot live in the

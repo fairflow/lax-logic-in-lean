@@ -20,7 +20,7 @@ D      as above                        Wolfram through the bridge   compiled che
 
 # A. Uninterpreted constraints: Example 9.5
 
-Program, arity zero: `θ₀ = c₁ ⊃ P₁`, `θ₁ = c₂ ⊃ P₂`, `θ₂ = (P₁ ∧ c₃) ∨ (P₂ ∧
+Program, arity zero: $`\theta _0 = c_1 \supset P_1`, $`\theta _1 = c_2 \supset P_2`, `θ₂ = (P₁ ∧ c₃) ∨ (P₂ ∧
 c₄) ⊃ Q`.  Query `Q`.  The draft's six steps, as a Table 2 run:
 
 ```
@@ -33,19 +33,19 @@ c₄) ⊃ Q`.  Query `Q`.  The draft's six steps, as a Table 2 run:
   ⇝ (⊤ ∧ c₁) ∧ c₃ □ ε               Rule 1
 ```
 
-Corollary 9.8 on Example 9.5: `Θ ⊢ (⊤ ∧ c₁) ∧ c₃ ⊃ ⊤ ∧ (Q ∧ ⊤)`.
+Corollary 9.8 on Example 9.5: $`\Theta \vdash (\top \land c_1) \land c_3 \supset \top \land (Q \land \top)`.
 
 {docstring LaxLogic.QLL.CLPExamples.cor95 +allowMissing}
 
-Theorem 9.7 on Example 9.5: the answer of the six steps is `⊣⊢` the
-constraint extracted from an abstract proof of `◯Q`, which comes out as
-`((((⊤ ∧ c₁) ∧ (⊤ ∧ ⊤)) ∧ ⊤) ∧ (⊤ ∧ c₃))`.
+Theorem 9.7 on Example 9.5: the answer of the six steps is $`\dashv\vdash` the
+constraint extracted from an abstract proof of $`\bigcirc Q`, which comes out as
+$$`((((\top \land c_1) \land (\top \land \top)) \land \top) \land (\top \land c_3))`
 
 {docstring LaxLogic.QLL.CLPExamples.thm97_95 +allowMissing}
 
 # B. Difference constraints: Example 6.1
 
-Program: `θ₀ = ∀s. s ≥ 5 ⊃ A₁(s)`, `θ₁ = ∀s. s ≥ 9 ⊃ A₂(s)`, `θ₂ = ∀t. ∃s.
+Program: $`\theta _0 = \forall s. s \ge 5 \supset A_1(s)`, $`\theta _1 = \forall s. s \ge 9 \supset A_2(s)`, `θ₂ = ∀t. ∃s.
 (A₁(s) ∧ A₂(s) ∧ t ≥ s + 35) ⊃ B(t)`.  Query `B(z)`.  The engine's derivation
 (with `u` the fresh variable) resolves with `θ₂` at `t := z`, opens the
 existential at `u`, splits the conjunction, and resolves `A₁(u)` and `A₂(u)`
@@ -69,12 +69,12 @@ The kernel runs the engine on Example 6.1 and accepts its tree.
 
 {docstring LaxLogic.QLL.CLPExamples.check61 +allowMissing}
 
-The draft's answer `z ≥ 44`: a value `r` for `z` extends to a solution of the
-answer constraint iff `44 ≤ r`.
+The draft's answer $`z \ge 44`: a value `r` for `z` extends to a solution of the
+answer constraint iff $`44 \le r`.
 
 {docstring LaxLogic.QLL.CLPExamples.ex61_answer +allowMissing}
 
-The `◯` pass extracts `(((⊤ ∧ u ≥ 5) ∧ (((⊤ ∧ u ≥ 9) ∧ (⊤ ∧ ⊤)) ∧ ⊤)) ∧ ⊤) ∧
+The $`\bigcirc` pass extracts `(((⊤ ∧ u ≥ 5) ∧ (((⊤ ∧ u ≥ 9) ∧ (⊤ ∧ ⊤)) ∧ ⊤)) ∧ ⊤) ∧
 (⊤ ∧ (⊤ ∧ z ≥ u + 35))`, the draft's expression, and it is `⊣⊢` the total
 constraint.
 
@@ -92,7 +92,7 @@ pruning, earliest ends `12` on the first machine order and `11` on the
 second; with deadline `10` both branches are refuted by Farkas certificates
 whose multipliers are `1` on the critical path and on the deadline
 constraint.  Ripple-carry adders are generated with gate delays xor `3`, and
-`2`, or `2`; each gate is a clause `out(t) ⊂ ∃s. in₁(s) ∧ in₂(s) ∧ t ≥ s + d`,
+`2`, or `2`; each gate is a clause $`\mathit{out}(t) \subset \exists s. \mathit{in}_1(s) \land \mathit{in}_2(s) \land t \ge s + d`,
 and the carry-out of `n` bits settles at `4n + 3`, certified from both sides
 for `n` up to `64` (`449` clauses, `1794`-node tree, `513` constraints) and
 for all `33` outputs of a `32`-bit adder at once (`15330` nodes, `4385`
@@ -101,8 +101,8 @@ constraints and the critical path of six are listed in the write-up.
 
 # C. General coefficients: the mortgage program
 
-Example 2.1 over ℚ: `mortgage(P,D,I,MP,B) ⊂ D ≤ 1 ∧ B + MP = P·(I + 1)` and
-`mortgage(P,D,I,MP,B) ⊂ 1 < D ∧ mortgage(P·(I + 1) − MP, D − 1, I, MP, B)`.
+Example 2.1 over ℚ: $`\mathit{mortgage}(P,D,I,\mathit{MP},B) \subset D \le 1 \land B + \mathit{MP} = P\cdot (I + 1)` and
+$$`\mathit{mortgage}(P,D,I,\mathit{MP},B) \subset 1 < D \land \mathit{mortgage}(P\cdot (I + 1) − \mathit{MP}, D − 1, I, \mathit{MP}, B)`
 With `r = 1 + I` and `B = 0` the balances satisfy `P·r^D = MP·(1 + r + … +
 r^(D−1))`.  For `D = 2`, `I = 1/100` the constraints are `1 < 2`, `2 − 1 ≤ 1`
 and `0 + MP = (P·(1/100 + 1) − MP)·(1/100 + 1)`, read as `(201/100)·MP =
@@ -121,8 +121,8 @@ The systems above were also sent to Wolfram through the bridge and every
 answer passed the Lean checks: Example 6.1 sat and least `44`; the mortgage
 query sat; the schedule with deadline `10` unsat with a Farkas certificate;
 the adders sat with least `4n + 3` in `0.26` to `4.9` seconds against under a
-millisecond for elimination; and the designed system `±xᵢ ± xⱼ ≤ 1` over five
+millisecond for elimination; and the designed system $`±x_i ± x_j \le 1` over five
 variables, `40` constraints, where elimination grows the rows `40 → 88 → 411
 → 10211` and stops at the cap while Wolfram answers sat at `x = 0`, and with
-`Σxᵢ ≥ 5` added answers unsat with multipliers `1/5, 1/5, 2/5, 1/5, 2/5`
+$`\Sigma x_i \ge 5` added answers unsat with multipliers `1/5, 1/5, 2/5, 1/5, 2/5`
 whose combination is `1 > 0`.

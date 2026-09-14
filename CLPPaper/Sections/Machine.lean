@@ -29,13 +29,13 @@ clause   P(t̃)                  clause w t̃ [S_w[t̃]]          —
 ```
 
 SLD runs on a concrete program and threads a store.  SLD◯ runs on the
-abstract program, whose clause heads are all modal and whose bodies have `⊤`
+abstract program, whose clause heads are all modal and whose bodies have $`\top`
 where the constraints were, so `cstr` has become `top` and there is no store:
 the constraint is extracted from the finished tree.  Every judgement of SLD◯
-is lax, so `◯` appears in no rule; it appears in the QLL derivation that
-justifies each — `◯I ⊤I` for `top`; `◯E, ◯E, ◯I ∧I` for `and`; `◯E, ◯I ∨I` for
-the disjunction rules; `◯E, ◯I ∃I` for `ex`; and `∀E` on `∀x̃. S♯ ⊃ ◯P(x̃)`,
-`◯E` on the body's `◯S♯`, `⊃E` for `clause`.  These are the cases of the
+is lax, so $`\bigcirc` appears in no rule; it appears in the QLL derivation that
+justifies each — $`\bigcirc I \top I` for `top`; $`\bigcirc E, \bigcirc E, \bigcirc I \land I` for `and`; $`\bigcirc E, \bigcirc I \lor I` for
+the disjunction rules; $`\bigcirc E, \bigcirc I \exists I` for `ex`; and $`\forall E` on $`\forall \tilde{x}. S^\sharp \supset \bigcirc P(\tilde{x})`,
+$`\bigcirc E` on the body's $`\bigcirc S^\sharp`, $`\supset E` for `clause`.  These are the cases of the
 soundness proof of the abstract calculus.
 
 A `CProof` with open leaves; `opens` lists them left to right, `store`
@@ -80,19 +80,19 @@ relation on single goals, in both directions.
 # Soundness, and Theorem 9.4 as an invariant
 
 Typing is preserved by every step, and a closed typed tree is a proof tree;
-the store is `c₀ ∧ store` throughout the run.
+the store is $`c_0 \land \mathit{store}` throughout the run.
 
 A run from `c₀ □ [S]` that closes its tree to `q` has `q` a proof tree of `S`
-and `c ⊣⊢ c₀ ∧ total q`.  Theorem 9.4 in machine form.
+and $`c \dashv\vdash c_0 \land \mathit{total} q`.  Theorem 9.4 in machine form.
 
 {docstring LaxLogic.QLL.SLD.SLDSteps.store +allowMissing}
 
-Soundness of SLD with respect to QLL: the finished tree proves `total q ⊃ S`.
+Soundness of SLD with respect to QLL: the finished tree proves $`\mathit{total} q \supset S`.
 
 {docstring LaxLogic.QLL.SLD.SLDSteps.prv +allowMissing}
 
 Soundness of SLD◯ with respect to QLL: a run from `[S]` that closes its tree
-gives an abstract proof, hence `Θ♯ ⊢ ◯S`.
+gives an abstract proof, hence $`\Theta ^\sharp \vdash \bigcirc S`.
 
 {docstring LaxLogic.QLL.SLD.SLDCSteps.prv +allowMissing}
 
@@ -124,8 +124,8 @@ step is allowed and neither can be completed.
 
 {docstring LaxLogic.QLL.SLD.ExpandAt +allowMissing}
 
-The switching lemma: without pruning, expansions at leaves `i ≠ j` have a
-common successor reached either way, with stores equal up to `⊣⊢`.
+The switching lemma: without pruning, expansions at leaves $`i \ne j` have a
+common successor reached either way, with stores equal up to $`\dashv\vdash`.
 
 {docstring LaxLogic.QLL.SLD.ExpandAt.diamond +allowMissing}
 

@@ -18,11 +18,11 @@ constraints, resolution collects them into a store, and an answer is a
 constraint rather than a substitution.  The 1997 draft observes that the
 separation between the logical part of a program and its constraints is
 exactly what the lax modality of Fairtlough and Mendler expresses.  A clause
-`∀x̃. S ⊃ ◯P(x̃)` says that `P` follows from `S` *up to a constraint left
-unstated*; a query `◯G` asks for the constraint under which `G` holds.  The
+$`\forall \tilde{x}. S \supset \bigcirc P(\tilde{x})` says that `P` follows from `S` *up to a constraint left
+unstated*; a query $`\bigcirc G` asks for the constraint under which `G` holds.  The
 draft develops this in two passes.  First, ordinary CLP with built-in
 constraint atoms, proof trees with constraint leaves, and the operational
-semantics of Table 2 with its soundness theorems.  Second, the `◯` pass:
+semantics of Table 2 with its soundness theorems.  Second, the $`\bigcirc` pass:
 abstract the constraints out of the program, prove the abstract program in
 lax logic, and extract the constraint from the abstract proof by a writer
 monad.  Its Theorem 9.7 says the two passes compute the same answer.
@@ -39,7 +39,7 @@ significant program to show for it?
 On the theory, everything in the draft that is a theorem is now a theorem in
 Lean, in both passes, with two exceptions that turned out to be false as
 stated (Proposition 6.6's second half, and the equivalence of a body with its
-`◯`-decorated variant when the head is plain) and are refuted by kernel-checked
+$`\bigcirc`-decorated variant when the head is plain) and are refuted by kernel-checked
 countermodels.  Three things were added that the draft does not have.  A
 single operational semantics on partial proof trees serves both passes; Table
 2 is its projection, Theorem 9.4 becomes a step invariant, and the switching

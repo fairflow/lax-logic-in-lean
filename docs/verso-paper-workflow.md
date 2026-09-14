@@ -80,8 +80,14 @@ The Lean statement is printed by `{docstring}`; the transcription goes in the
 | `(a.ext T).1` | `\pi_1|a|_T` |
 | `Θ.HeadsOK isC` | prose ("no clause head is a constraint") |
 
-Keep the mathematical line a statement, not a paraphrase; keep PROVED /
-REFUTED / OPEN in the prose.
+`scripts/lean-to-math.py <Lib>/Sections/*.lean` makes the first pass: a code
+span that contains a logical symbol and no Lean-only token becomes math (a
+paragraph that is one formula becomes display math), with the dictionary
+above, `\mathit{}` for multi-letter identifiers and `w0 → w_0`; headings are
+left alone.  Read the diff and fix by hand.  Keep the mathematical line a
+statement, not a paraphrase; keep PROVED / REFUTED / OPEN in the prose.  The
+TeX build is the check: a bad macro is a TeX error, and the script reports the
+count.
 
 ## 4. Build
 
@@ -96,7 +102,9 @@ for the system font "DejaVu Sans Mono" (absent on a Mac) — we load TeX Live's
 copy by file name; the Source Pro text fonts lack `◯ ℚ ⊨ …` — DejaVu Sans is
 declared as a per-glyph fallback with `newunicodechar`; Verso emits plain
 `verbatim`, which cannot break lines — it is routed through fancyvrb at
-`\small` with `breaklines`.  A4, 24 mm margins.  The script reports TeX
+`\small` with `breaklines`; `amsmath`/`amssymb` are loaded (Verso's preamble
+has neither, and the transcriptions use `\Vdash`, `\nvdash`, `\square`,
+`\rightsquigarrow`).  A4, 24 mm margins.  The script reports TeX
 errors and missing glyphs; both must be 0.
 
 For the CLP paper the wrapper is `scripts/clp-paper.sh [--serve]`, writing

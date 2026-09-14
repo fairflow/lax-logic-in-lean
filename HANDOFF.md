@@ -290,7 +290,7 @@ implementation, §3 the application, §4 the plan with its status).
   local build authorised): `CLPPaper/` (root `Paper.lean`, twelve sections
   under `Sections/`), `CLPPaperMain.lean`, `[[lean_lib]] CLPPaper` in
   `lakefile.toml` (NOT in defaultTargets), rendered by
-  `scripts/clp-paper-render.sh` into `_out/clp-paper/{html-single,html-multi}`
+  `scripts/clp-paper-render.sh` into `_out/clp-paper/{html-single,html-multi}` (superseded 2026-09-14: `scripts/clp-paper.sh`, see below)
   and served over HTTP (never file://).  Modelled on `LaxPaper/`; every
   theorem node carries `(lean := "…")`, 110 names verified; builds in ~20 s
   on top of the built library, renders in ~30 s.  `BodyCirc`, `HeadFlatten`,
@@ -307,7 +307,7 @@ implementation, §3 the application, §4 the plan with its status).
   `onceD`.  The correction to the earlier pending note: what makes a branch
   free is `⊤` table entries, not "summons no entries".  Still stated, not
   built: `◯(∧Γ ⊃ M)` and `¬◯B`.
-- PDF of the paper (NOT committed; `_out/` is gitignored): `scripts/clp-paper-pdf.sh`
+- PDF of the paper (NOT committed; `_out/` is gitignored; superseded 2026-09-14 by `scripts/clp-paper.sh`): `scripts/clp-paper-pdf.sh`
   renders with `--with-tex`, patches Verso's `main.tex` (DejaVu Sans Mono from
   TeX Live instead of the system font it asks for, DejaVu Sans as glyph
   fallback for `◯ ℚ ⊨ ⊫ ⋃ ⋂ ⋁ ⊬`, A4) and runs `xelatex` three times: 39 pages,
@@ -317,3 +317,36 @@ implementation, §3 the application, §4 the plan with its status).
   with code and status but is 87 pages / 9.5 MB and Brave never exits on its
   own (run it under `gtimeout`).
 
+
+## 2026-09-14 — the paper workflow: vanilla Verso, PDF with the Lean statements, the `verso-paper` skill
+
+Matthew, after seeing the first PDF: links in my replies resolve in my
+worktree and are dead for him; the blueprint genre is for the one document
+GitHub Pages serves; a standalone paper about finished work should be vanilla
+Verso, with a printable PDF that carries every Lean statement, an HTML
+companion, and conventional-notation transcriptions next to the Lean.  Done:
+
+- `CLPPaper/` converted to vanilla `VersoManual` (56cf4fb): each result is
+  prose → `` $$`math` `` → `{docstring Name +allowMissing}`, which prints the
+  declaration's signature and docstring from the compiled library in HTML
+  **and** TeX (the blueprint nodes' code never reached TeX).  One `{docstring}`
+  per name per document; `scripts/blueprint-to-vanilla.py` did the node
+  rewrite, `scripts/lean-to-math.py` the first transcription pass.
+- Build: `scripts/clp-paper.sh [--serve]` → `docs/clp-paper/{html-single,
+  html-multi,tex}` + `docs/clp-paper.pdf`, both gitignored (built artefacts;
+  the source and scripts are what is pushed).  Generic:
+  `scripts/verso-paper.sh <lib> <Main> <out> <pdf>` and
+  `scripts/verso-tex-pdf.sh <texdir> <pdf>` (Verso asks for a system font a
+  Mac lacks: DejaVu from TeX Live by file name, per-glyph fallback, A4,
+  breakable verbatim; expect `tex errors: 0`, `missing glyphs: 0`).
+  Replaces `clp-paper-render.sh` and `clp-paper-pdf.sh`.
+- The process: `docs/verso-paper-workflow.md`; the skill:
+  `.claude/skills/verso-paper/SKILL.md` (parameters: genre, engine, outputs,
+  code included/linked, transcription, branch, output paths, delivery).
+- Delivery rule from now on: push, say "pull" (fast-forward into `tphols`),
+  SendUserFile the PDF; never a file link.
+- OPEN on the paper itself: the content ("extremely poor atm", Matthew) —
+  this round tested the process, not the prose.  Numbering of results is by
+  Lean name only (no theorem counters in vanilla Verso); a document-local
+  `theorem` directive with a TeX renderer is the next step if numbered
+  cross-references are wanted.

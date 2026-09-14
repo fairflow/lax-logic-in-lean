@@ -51,6 +51,8 @@ $$`\Gamma \vdash \bigcirc A`
   markup; math is `` $`…` `` / `` $$`…` ``.
 * Verify every name compiles before writing prose around it (`#check` in a
   scratch file against the built library).
+* First pass of the transcription: `scripts/lean-to-math.py <Lib>/Sections/*.lean`
+  (formula-like code spans → `` $`…` ``/`` $$`…` ``); then read the diff.
 
 ## 3. Build and check
 

@@ -9,7 +9,7 @@ open Verso.Genre.Manual
 
 The first pass: constraint logic programs with built-in constraint atoms,
 their proof trees, the goal reduction of Table 2, and the soundness theorems
-that connect them, all before `◯` enters.
+that connect them, all before $`\bigcirc` enters.
 
 # Proof trees
 
@@ -42,11 +42,11 @@ variables by the recorded terms.
 Definition 8.1 splits the constraint leaves into the active ones, not under a
 clause application, and the latent ones, under one; `total` is all of them.
 
-`total(p) ⊣⊢ latent(p) ∧ active(p)`.
+$$`\mathit{total}(p) \dashv\vdash \mathit{latent}(p) \land \mathit{active}(p)`
 
 {docstring LaxLogic.QLL.CProof.total_equiv +allowMissing}
 
-Answer soundness for trees: `CTyped Θ S p` gives `Θ ⊢ total(p) ⊃ S`.
+Answer soundness for trees: `CTyped Θ S p` gives $`\Theta \vdash \mathit{total}(p) \supset S`.
 
 {docstring LaxLogic.QLL.CTyped.prv_total +allowMissing}
 
@@ -66,13 +66,13 @@ One step of Table 2, at any position of the goal list.
 
 {docstring LaxLogic.QLL.Step +allowMissing}
 
-Theorem 9.4.  A run `c □ φ̃ ⇝* c' □ ε` yields trees `p₁,…,pₙ` with `pᵢ`
-proving `φᵢ` and `c' ⊣⊢ c ∧ total(p₁) ∧ … ∧ total(pₙ)`.  The parameter `ok`
+Theorem 9.4.  A run $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \varepsilon` yields trees `p₁,…,pₙ` with `pᵢ`
+proving `φᵢ` and $`c' \dashv\vdash c \land \mathit{total}(p_1) \land … \land \mathit{total}(p_n)`.  The parameter `ok`
 plays no part: pruning restricts the search and never the soundness.
 
 {docstring LaxLogic.QLL.steps_forest +allowMissing}
 
-Corollary 9.8.  `c □ φ̃ ⇝* c' □ ε` gives `Θ ⊢ c' ⊃ c ∧ φ₁ ∧ … ∧ φₙ`.
+Corollary 9.8.  $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \varepsilon` gives $`\Theta \vdash c' \supset c \land \varphi _1 \land … \land \varphi _n`.
 
 {docstring LaxLogic.QLL.steps_sound +allowMissing}
 

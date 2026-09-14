@@ -16,9 +16,9 @@ conventional answer constraint.
 
 # Abstraction
 
-`S♯` replaces each constraint atom by `⊤`; the clause `∀x̃. S ⊃ P(x̃)` becomes
-`∀x̃. S♯ ⊃ ◯_q P(x̃)`.  Abstract proof trees are the derivations of Fig. 3,
-whose judgement is always `◯S`: `val` at `⊤`, `∧◯`, `∨◯`, `∃◯`, and `⊃◯`, the
+`S♯` replaces each constraint atom by $`\top`; the clause $`\forall \tilde{x}. S \supset P(\tilde{x})` becomes
+$`\forall \tilde{x}. S^\sharp \supset \bigcirc _q P(\tilde{x})`.  Abstract proof trees are the derivations of Fig. 3,
+whose judgement is always $`\bigcirc S`: `val` at $`\top`, $`\land \bigcirc`, $`\lor \bigcirc`, $`\exists \bigcirc`, and $`\supset \bigcirc`, the
 application of a modal-headed clause.
 
 ```
@@ -31,12 +31,12 @@ Abstract proof trees, Fig. 3's derivations as data.
 
 {docstring LaxLogic.QLL.AProof +allowMissing}
 
-`ATyped Θ♯ q S a`: `a` proves `◯_q S`; the clause rule demands a modal head
+`ATyped Θ♯ q S a`: `a` proves $`\bigcirc _q S`; the clause rule demands a modal head
 of polarity `q`.
 
 {docstring LaxLogic.QLL.ATyped +allowMissing}
 
-Abstract proofs are proofs: `ATyped Θ♯ q S a` gives `Θ♯ ⊢ ◯_q S`.  Its cases
+Abstract proofs are proofs: `ATyped Θ♯ q S a` gives $`\Theta ^\sharp \vdash \bigcirc _q S`.  Its cases
 are the QLL derivations that justify each rule of Fig. 3.
 
 {docstring LaxLogic.QLL.ATyped.prv +allowMissing}
@@ -46,13 +46,13 @@ concrete tree for `S` maps to an abstract tree for `S♯` against `Θ♯`.
 
 {docstring LaxLogic.QLL.CTyped.toA +allowMissing}
 
-Theorem 6.3: `Θ ⊢ S` gives `Θ♯ ⊢ ◯_q S♯`.
+Theorem 6.3: $`\Theta \vdash S` gives $`\Theta ^\sharp \vdash \bigcirc _q S^\sharp`.
 
 {docstring LaxLogic.QLL.CTyped.prv_abs +allowMissing}
 
 # Extraction
 
-The writer monad `WM α = C × α` with `val a = (⊤, a)` and `bind (c, a) f =
+The writer monad $`\mathit{WM} \alpha = C \times \alpha` with $`\mathit{val} a = (\top, a)` and `bind (c, a) f =
 (c ∧ π₁(f a), π₂(f a))` satisfies the monad laws up to `⊣⊢`, and is
 commutative.  Witnesses are the values of the refinement types of
 Σ-formulas: unit, pairs, injections, packs with a term.  A table `T w t̃ z`
@@ -64,7 +64,7 @@ Extraction: an abstract proof and a table give a constraint and a witness.
 
 {docstring LaxLogic.QLL.AProof.ext +allowMissing}
 
-Commutativity of the writer monad up to `⊣⊢`: what selection-order
+Commutativity of the writer monad up to $`\dashv\vdash`: what selection-order
 independence rests on.  The monad laws the draft asks for do not include it.
 
 {docstring LaxLogic.QLL.WM.bind_comm +allowMissing}
@@ -75,18 +75,18 @@ tree's active constraint.
 {docstring LaxLogic.QLL.CTyped.ctable_wit +allowMissing}
 
 Lemma 8.4: the witness of `toA p` is `p`'s witness, and the extracted
-constraint is `⊣⊢` the latent constraint.
+constraint is $`\dashv\vdash` the latent constraint.
 
 {docstring LaxLogic.QLL.CTyped.ext_toA +allowMissing}
 
 Extracted constraint and active constraint together are the total constraint,
-up to `⊣⊢`.
+up to $`\dashv\vdash`.
 
 {docstring LaxLogic.QLL.CTyped.ext_total +allowMissing}
 
-Theorem 9.7.  For a pure query `φ`, a run `⊤ □ φ ⇝* c □ ε` yields a concrete
+Theorem 9.7.  For a pure query `φ`, a run $`\top \square \varphi \rightsquigarrow * c \square \varepsilon` yields a concrete
 tree `p` whose abstract image types against `Θ♯` and whose extracted
-constraint is `⊣⊢ c`: the two passes compute the same answer.
+constraint is $`\dashv\vdash c`: the two passes compute the same answer.
 
 {docstring LaxLogic.QLL.thm_9_7 +allowMissing}
 
@@ -94,11 +94,11 @@ constraint is `⊣⊢ c`: the two passes compute the same answer.
 
 Definition 6.5 recombines a table with an abstract clause into a concrete one.
 It is used through its instances: `RefinedBy Δ Θ♯ T` says that `Δ` proves
-`T w t̃ z ∧ (S_w[t̃] @ z) ⊃ P_w(t̃)` for every clause, instance and witness,
+$`T w \tilde{t} z \land (S_w[\tilde{t}] @ z) \supset P_w(\tilde{t})` for every clause, instance and witness,
 where `S @ z` is the disjunct of `S` that `z` selects with its existential
 witnesses substituted.  Then, for any table:
 
-Theorem 6.8: `RefinedBy Δ Θ♯ T` and `ATyped Θ♯ q S a` give `Δ ⊢ π₁|a| ⊃ S`.
+Theorem 6.8: `RefinedBy Δ Θ♯ T` and `ATyped Θ♯ q S a` give $`\Delta \vdash \pi _1|a| \supset S`.
 Uniform in the table.
 
 {docstring LaxLogic.QLL.thm_6_8 +allowMissing}
@@ -108,7 +108,7 @@ through its own table.
 
 {docstring LaxLogic.QLL.refinedBy_abs +allowMissing}
 
-Corollary 9.8 by the draft's route: an abstract proof of `◯S`, refined with
+Corollary 9.8 by the draft's route: an abstract proof of $`\bigcirc S`, refined with
 the concrete program's table, yields a constraint that implies `S` in the
 concrete program.
 
@@ -117,12 +117,12 @@ concrete program.
 The second half of Proposition 6.6, that a modal clause follows from its
 refinement, is false as stated.
 
-REFUTED: `∀x.(A x ∧ B x) ⊃ P x` does not prove `∀x. A x ⊃ ◯P x`.  One-world
+REFUTED: $`\forall x.(A x \land B x) \supset P x` does not prove $`\forall x. A x \supset \bigcirc P x`.  One-world
 countermodel: `A` everywhere, `B` and `P` nowhere.
 
 {docstring LaxLogic.QLL.p66_refuted +allowMissing}
 
-Repaired: with the table's constraints lax-true, `∀x. ◯B x`, the clause does
+Repaired: with the table's constraints lax-true, $`\forall x. \bigcirc B x`, the clause does
 follow.
 
 {docstring LaxLogic.QLL.p66_with_lax +allowMissing}
@@ -142,21 +142,21 @@ Lemma 7.3: the interpretation is monotone along the frame.
 
 {docstring LaxLogic.QLL.canon_hered +allowMissing}
 
-World 2 forces `◯S` for every `S`, through the fallible world 3: solvability
-is recorded in world 2's atoms only, and `◯⊥` holds there.
+World 2 forces $`\bigcirc S` for every `S`, through the fallible world 3: solvability
+is recorded in world 2's atoms only, and $`\bigcirc \bot` holds there.
 
 {docstring LaxLogic.QLL.canon_circ_w2 +allowMissing}
 
-Theorem 7.5 at world 0: `Θ♯ ⊢ S` iff `0 ⊨ S`.
+Theorem 7.5 at world 0: $`\Theta ^\sharp \vdash S` iff $`0 \models S`.
 
 {docstring LaxLogic.QLL.thm_7_5_canon0 +allowMissing}
 
-Theorem 7.5 at world 1: `Θ♯ ⊢ ◯_q S` iff `1 ⊨ S`.
+Theorem 7.5 at world 1: $`\Theta ^\sharp \vdash \bigcirc _q S` iff $`1 \models S`.
 
 {docstring LaxLogic.QLL.thm_7_5_canon1 +allowMissing}
 
-Theorem 7.5 at world 2: for a pure `S`, some abstract proof of `◯S` extracts
-a constraint true in `R` iff `2 ⊨ S`.  The draft asks for a solvable
+Theorem 7.5 at world 2: for a pure `S`, some abstract proof of $`\bigcirc S` extracts
+a constraint true in `R` iff $`2 \models S`.  The draft asks for a solvable
 constraint; with the witness terms chosen to be the solution, that is the
 same.
 

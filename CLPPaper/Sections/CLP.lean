@@ -28,8 +28,8 @@ derivation ends with no goals, and its store is the answer constraint.
 
 The survey's Theorem 6.1 relates this to the logical semantics.  The success
 set coincides with the least model over the domain (item 1).  An answer
-constraint `c` of a goal `G` satisfies `P, T ⊨ c → G`, with `T` the constraint
-theory (item 2, soundness).  If `P, T ⊨ c → G` then finitely many answers
+constraint `c` of a goal `G` satisfies $`P, T \models c \to G`, with `T` the constraint
+theory (item 2, soundness).  If $`P, T \models c \to G` then finitely many answers
 cover `c` (item 4): in general a disjunction of answers is needed, unlike in
 plain logic programming.  Answer projection — eliminating the local variables
 so that only the query's remain — is a separate step, quantifier elimination
@@ -75,7 +75,7 @@ the domain enters only semantically, through the relations of world 2, and
 computationally, through the solver.  The solver is outside the trusted base:
 every verdict carries a certificate checked in Lean.  And the lax modality
 separates the program's logic from its constraints, which is the
-abstraction-and-refinement reading of the `◯` pass.
+abstraction-and-refinement reading of the $`\bigcirc` pass.
 
 The correspondence above is the map from Jaffar–Maher's transition system to
 the constructions of this document; the two rows that have no counterpart
