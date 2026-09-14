@@ -57,7 +57,7 @@ Words.  PROVED / REFUTED / OPEN stated in the prose.
 
 Three roles, all generated from the compiled declaration at build time, none
 edited by hand: `{stmt}` (the statement as mathematics, from the type:
-binders → quantifiers, hypotheses → premises, the object language through the
+binders → quantifiers without type annotations, hypotheses → premises, the object language through the
 notation table in `CLPPaper/Math.lean`, generic fallback for the rest; a
 `def`/`inductive` prints nothing), `{docstring}` (Verso's own: signature +
 docstring), `{srcLink}` (`path:line` → GitHub at the build commit).

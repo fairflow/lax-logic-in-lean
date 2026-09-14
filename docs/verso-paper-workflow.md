@@ -76,9 +76,9 @@ The blueprint genre is reserved for the repo's live blueprint.
 `{stmt}\`Full.Name\`` (role in `CLPPaper/Math.lean`) prints the declaration's
 type as display mathematics, at build time, from the compiled environment:
 
-* `∀`-binders become quantifiers grouped by type
-  (`\forall\, q{:}\mathsf{Q},\ A\, B{:}\mathsf{Form}.`), hypotheses become
-  premises (one per line, `\Longrightarrow`), instance arguments vanish;
+* `∀`-binders become quantifiers without type annotations
+  (`\forall\, q,\ A,\ B.`; Matthew, 2026-09-14), hypotheses become premises
+  (one per line, `\Longrightarrow`), instance arguments vanish;
 * the object language goes through a notation table: `Prv Γ A` is
   `Γ ⊢ A`, `¬ Prv` is `⊬`, `PEq` is `⊣⊢`, `Form.and/or/imp/circ/forall_/exists_`
   are `∧ ∨ ⊃ ◯_q ∀x. ∃x.` with de Bruijn binders named `x, y, z, …` by depth,
@@ -129,7 +129,8 @@ for the system font "DejaVu Sans Mono" (absent on a Mac) — we load TeX Live's
 copy by file name; the Source Pro text fonts lack `◯ ℚ ⊨ …` — DejaVu Sans is
 declared as a per-glyph fallback with `newunicodechar`; Verso emits plain
 `verbatim`, which cannot break lines — it is routed through fancyvrb at
-`\small` with `breaklines`; `amsmath`/`amssymb` are loaded (Verso's preamble
+`\small` with `breaklines`; links are coloured text, not hyperref's boxes
+(Matthew: "goodbye and good riddance"); `amsmath`/`amssymb` are loaded (Verso's preamble
 has neither, and the transcriptions use `\Vdash`, `\nvdash`, `\square`,
 `\rightsquigarrow`).  A4, 24 mm margins.  The script reports TeX
 errors and missing glyphs; both must be 0.

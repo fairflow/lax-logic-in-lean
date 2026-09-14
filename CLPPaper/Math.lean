@@ -347,15 +347,9 @@ partial def quant (st : St) (p : Nat) (e : Expr) : MetaM String :=
         prems := prems.push (← generic st 1 ty)
       else
         vars := vars.push (ident d.userName.toString, ← generic st 9 ty)
-    -- group consecutive variables of one type
-    let mut groups : Array (Array String × String) := #[]
-    for (v, t) in vars do
-      if let some (vs, t') := groups.back? then
-        if t' == t then groups := groups.pop.push (vs.push v, t); continue
-      groups := groups.push (#[v], t)
-    let binder := if groups.isEmpty then "" else
-      "\\forall\\, " ++ ",\\ ".intercalate (groups.toList.map fun (vs, t) =>
-        "\\, ".intercalate vs.toList ++ "{:}" ++ t) ++ ".\\; "
+    -- binders without type annotations (Matthew, 2026-09-14): `∀ q, A, B.`
+    let binder := if vars.isEmpty then "" else
+      "\\forall\\, " ++ ",\\ ".intercalate (vars.toList.map (·.1)) ++ ".\\; "
     let concl ← generic st 0 body
     if p > 0 then
       if prems.isEmpty then return paren (binder ++ concl)
@@ -365,7 +359,7 @@ partial def quant (st : St) (p : Nat) (e : Expr) : MetaM String :=
       let lines := (if binder.isEmpty then [] else [binder]) ++
         (prems.toList.flatMap fun h => (breakRow h).map ("\\quad " ++ ·) |>.modifyLast (· ++ " \\;\\Longrightarrow")) ++
         ((breakRow concl).map ("\\qquad " ++ ·))
-      if prems.isEmpty && binder.isEmpty && lines.length == 1 then return concl
+      if prems.isEmpty && visLen (binder ++ concl) ≤ 78 then return binder ++ concl
       return rows lines
 end
 
