@@ -2,8 +2,15 @@
 # The CLP paper (CLPPaper/): HTML + PDF into docs/ (both gitignored).
 #
 #   scripts/clp-paper.sh                build docs/clp-paper/{html-single,html-multi,tex} and docs/clp-paper.pdf
+#   scripts/clp-paper.sh --open         ...then open the PDF and the one-page HTML (macOS `open`)
 #   scripts/clp-paper.sh --serve        ...then serve docs/ on http://127.0.0.1:8096/
 #   scripts/clp-paper.sh --serve-only   serve what is already built, no build
+#
+# The reader's flow in their own checkout, after `git merge --ff-only` and
+# `lake build` (which does not build CLPPaper: it is outside defaultTargets):
+#     scripts/clp-paper.sh --open
+# Runs from any directory (it cds to the repo root); incremental after the
+# first run (the first run compiles Verso if that checkout never has).
 #
 # Served URLs:  http://127.0.0.1:8096/clp-paper.pdf
 #               http://127.0.0.1:8096/clp-paper/html-single/   (one page)
@@ -18,6 +25,12 @@ if [ "${1:-}" != "--serve-only" ]; then
   scripts/verso-paper.sh CLPPaper CLPPaperMain.lean docs/clp-paper docs/clp-paper.pdf
 fi
 case "${1:-}" in
+  --open)
+    echo "  pdf:       $PWD/docs/clp-paper.pdf"
+    echo "  one page:  $PWD/docs/clp-paper/html-single/index.html"
+    open docs/clp-paper.pdf
+    open docs/clp-paper/html-single/index.html
+    ;;
   --serve|--serve-only)
     test -f docs/clp-paper.pdf || { echo "nothing built yet: run without --serve-only"; exit 1; }
     pkill -f "http.server $PORT" 2>/dev/null || true

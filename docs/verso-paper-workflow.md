@@ -119,17 +119,24 @@ command, or is sent the PDF.  Serve HTML over HTTP (`--serve`), never
 
 ## 6. Delivery
 
-The reader and the builder share one machine but not one checkout, and the
-reader's app cannot open paths in the builder's worktree.  The outputs are
-therefore **served**: `scripts/clp-paper.sh --serve` starts
-`python3 -m http.server 8096` rooted at `docs/`, and the reader opens
-`http://127.0.0.1:8096/clp-paper.pdf` and
-`http://127.0.0.1:8096/clp-paper/html-single/` in any browser (one-click
-`open …` lines in the reply).  The sources are pushed as always; a reader who
-wants a private copy merges the branch and runs the same script, and lake
-rebuilds only what that checkout has not built.  A PDF is also sent directly
-(SendUserFile) for reading away from the machine.  Markdown links to files in
-a reply are dead: they resolve in the assistant's worktree.
+The reader builds in their own checkout; everything needed is under git.
+Matthew's flow (2026-09-14):
+
+```
+git -C /Users/matthew/Lean/qll-review merge --ff-only lax-obligations
+lake build
+scripts/clp-paper.sh --open
+```
+
+The third line runs `lake build CLPPaper` (outside `defaultTargets`, so the
+plain `lake build` does not cover it; incremental after the first run, which
+compiles Verso if that checkout never has), renders HTML and TeX, compiles
+the PDF, and opens `docs/clp-paper.pdf` and
+`docs/clp-paper/html-single/index.html`.  Serving the outputs from the
+builder's worktree over HTTP (`--serve`) exists but was rejected as the
+delivery route; a PDF is also sent directly (SendUserFile) for reading away
+from the machine.  Markdown links to files in a reply are dead: they resolve
+in the assistant's worktree.
 
 ## 7. Converting an existing blueprint paper
 
