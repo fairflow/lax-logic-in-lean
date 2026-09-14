@@ -25,10 +25,16 @@ fallback = '◯ℚ⊨⊫⋃⋂⋁⊬⊢⊣⊤⊥∧∨⊃≥≤∀∃⟹⟺⇝�
 extra = (r'\newfontfamily\symbolfont{DejaVuSans}[Extension=.ttf, UprightFont=*, BoldFont=*-Bold]' '\n'
   + ''.join('\\newunicodechar{%s}{{\\symbolfont %s}}\n' % (c, c) for c in fallback)
   + r'\usepackage{amsmath,amssymb}' '\n'                      # \Vdash, \nvdash, \square, \rightsquigarrow (KaTeX has them too)
-  + r'\usepackage[a4paper,margin=24mm]{geometry}' '\n'
+  + r'\usepackage[a4paper,margin=24mm,headheight=26pt,headsep=14pt]{geometry}' '\n'
   + r'\hypersetup{colorlinks=true, urlcolor=blue!55!black, linkcolor=black, citecolor=black}' '\n'   # no link boxes
-  + r'\fvset{fontsize=\small,breaklines=true}' '\n'
-  + r'\RecustomVerbatimEnvironment{verbatim}{Verbatim}{fontsize=\small,breaklines=true}' '\n')
+  # the build stamp (\versoBuildStamp, defined by {buildStamp}) centred on its own
+  # line above the running heads; the header gets two lines
+  + r'\newcommand{\versoStampText}{\ifdefined\versoBuildStamp{\scriptsize\sffamily\versoBuildStamp}\fi}' '\n'
+  + r'\newcommand{\versoStampLine}{\ifdefined\versoBuildStamp{\scriptsize\sffamily\versoBuildStamp}\\[2pt]\fi}' '\n'
+  + r'\makeoddhead{headings}{}{\parbox{\textwidth}{\centering\versoStampLine\makebox[\textwidth]{{\slshape\rightmark}\hfill\thepage}}}{}' '\n'
+  + r'\makeevenhead{headings}{}{\parbox{\textwidth}{\centering\versoStampLine\makebox[\textwidth]{\thepage\hfill{\slshape\leftmark}}}}{}' '\n'
+  + r'\makeoddhead{plain}{}{\versoStampText}{}' '\n'
+  + r'\makeevenhead{plain}{}{\versoStampText}{}' '\n')
 s = s.replace('\\begin{document}', extra + '\\begin{document}', 1)
 open(p, 'w', encoding='utf-8').write(s)
 PY

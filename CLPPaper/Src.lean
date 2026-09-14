@@ -97,7 +97,10 @@ inline_extension Inline.buildStamp where
   toTeX := some <| fun _ _ data _ => do
     match FromJson.fromJson? (α := String) data with
     | .error e => do reportError s!"buildStamp: bad data: {e}"; pure .empty
-    | .ok t => pure <| .seq #[.raw "\\textsf{", .text t, .raw "}\\par"]
+    | .ok t =>
+      -- also define \versoBuildStamp, which the TeX step puts in every page header
+      pure <| .seq #[.raw "\\gdef\\versoBuildStamp{", .text t, .raw "}",
+        .raw "\\textsf{", .text t, .raw "}\\par"]
   toHtml := some <| fun _ _ data _ => do
     match FromJson.fromJson? (α := String) data with
     | .error e => do reportError s!"buildStamp: bad data: {e}"; pure .empty

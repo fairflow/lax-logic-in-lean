@@ -87,7 +87,10 @@ type as display mathematics, at build time, from the compiled environment:
 * everything else has a generic reading (`∧ ∨ ↔ = ≠ ∈ ∃ λ`, numerals, lists,
   pairs, `b = true` as `b`, applications as `\mathit{f}(a, b)` with implicit
   arguments dropped) and, last, Lean's own printer in typewriter;
-* a declaration whose type is not a proposition prints nothing.
+* a declaration whose type is not a proposition prints nothing;
+* rows longer than about 78 visible characters are broken at binary
+  connectives, shallowest parenthesis depth first, continuation rows
+  indented (neither KaTeX nor TeX breaks display mathematics by itself).
 
 The same declaration always gives the same mathematics and it cannot drift
 from the code; nothing in the output is edited by hand.  For another object
@@ -109,7 +112,9 @@ built 2026-09-14 17:05 BST` in HTML and in the PDF.  Because the stamp is
 computed when `Paper.lean` is elaborated, `verso-paper.sh` removes that
 module's compiled outputs before `lake build`, so it is recomputed on every
 build; the other modules stay incremental.  Build after committing and the
-stamp names the commit without a `+`.
+stamp names the commit without a `+`.  The stamp also defines
+`\versoBuildStamp`, which the TeX step centres above the running heads on
+every page (two-line header, `headheight=26pt`).
 
 ## 4. Build
 

@@ -104,6 +104,68 @@ def natLit? (e : Expr) : Option Nat :=
     | (``OfNat.ofNat, #[_, n, _]) => match n with | .lit (.natVal k) => some k | _ => none
     | _ => none
 
+/-! ### Line breaking
+
+Neither KaTeX nor TeX breaks display mathematics on its own.  A rendered row
+whose visible length exceeds `width` is broken, greedily, at binary
+connectives, preferring shallow parenthesis depth; continuation rows are
+indented.  Lengths are estimated on the TeX source: a control word counts
+one, braces and thin spaces none. -/
+
+/-- Estimated visible length of a TeX fragment. -/
+def visLen (s : String) : Nat := Id.run do
+  let mut n := 0
+  let mut cs := s.toList
+  while !cs.isEmpty do
+    match cs with
+    | '\\' :: c :: rest =>
+      if c.isAlpha then
+        let rest := rest.dropWhile Char.isAlpha
+        n := n + 1; cs := rest
+      else
+        cs := rest   -- \, \; \{ etc.: spacing or an escaped symbol
+        if c == '{' || c == '}' then n := n + 1
+    | '{' :: rest | '}' :: rest => cs := rest
+    | _ :: rest => n := n + 1; cs := rest
+    | [] => pure ()
+  return n
+
+/-- Break positions: (index, depth) just before a top-level connective. -/
+def breakPoints (s : String) : List (Nat × Nat) := Id.run do
+  let cs := s.toList.toArray
+  let mut depth := 0
+  let mut out : List (Nat × Nat) := []
+  let conns := [" \\iff ", " \\Longrightarrow ", " \\land ", " \\lor ", " \\vdash ", " \\dashv\\vdash "]
+  for i in [0:cs.size] do
+    let c := cs[i]!
+    if c == '(' || c == '[' then depth := depth + 1
+    else if c == ')' || c == ']' then depth := depth - 1
+    else if c == ' ' then
+      let rest := String.ofList (cs.toList.drop i)
+      if conns.any (rest.startsWith ·) then out := (i, depth) :: out
+  return out.reverse
+
+/-- Break `s` into rows of visible length about `width`. -/
+partial def breakRow (s : String) (width : Nat := 78) : List String :=
+  if visLen s ≤ width then [s] else
+  let pts := breakPoints s
+  if pts.isEmpty then [s] else
+  -- the shallowest depth available, then the rightmost point that keeps the first row within width
+  let minDepth := pts.foldl (fun m p => min m p.2) 1000
+  let candidates := pts.filter (·.2 ≤ minDepth + 1)
+  let fits := candidates.filter fun (i, _) => visLen (String.ofList (s.toList.take i)) ≤ width
+  let pick := match fits.reverse.head? with
+    | Option.some p => p
+    | Option.none => candidates.head!
+  let head := String.ofList (s.toList.take pick.1)
+  let tail := String.ofList (s.toList.drop pick.1) |>.trimAscii.copy
+  if head.trimAscii.isEmpty then [s] else
+  head :: (breakRow tail width |>.map ("\\quad " ++ ·))
+
+/-- Rows for `aligned`. -/
+def rows (lines : List String) : String :=
+  "\\begin{aligned}" ++ " \\\\ ".intercalate (lines.map ("&" ++ ·)) ++ "\\end{aligned}"
+
 /-- Precedences: 0 statement · 1 ⊃/⇒ · 2 ∨ · 3 ∧ · 4 prefix (◯, ¬) · 5 relations · 9 atoms. -/
 structure St where
   bound : List String := []      -- names for de Bruijn binders of the object language
@@ -295,16 +357,18 @@ partial def quant (st : St) (p : Nat) (e : Expr) : MetaM String :=
       "\\forall\\, " ++ ",\\ ".intercalate (groups.toList.map fun (vs, t) =>
         "\\, ".intercalate vs.toList ++ "{:}" ++ t) ++ ".\\; "
     let concl ← generic st 0 body
-    if prems.isEmpty then
-      return (if p > 0 then paren else id) (binder ++ concl)
-    else if p > 0 then
-      return paren (binder ++ " \\Longrightarrow ".intercalate (prems.toList ++ [concl]))
+    if p > 0 then
+      if prems.isEmpty then return paren (binder ++ concl)
+      else return paren (binder ++ " \\Longrightarrow ".intercalate (prems.toList ++ [concl]))
     else
-      -- statement layout: one premise per line
-      let lines := (if binder.isEmpty then #[] else #[binder]) ++
-        prems.map (fun h => s!"\\quad {h} \\;\\Longrightarrow") ++ #[s!"\\qquad {concl}"]
-      return "\\begin{aligned}" ++ " \\\\ ".intercalate (lines.toList.map ("&" ++ ·)) ++ "\\end{aligned}"
+      -- statement layout: binders, one premise per line, the conclusion; long rows broken
+      let lines := (if binder.isEmpty then [] else [binder]) ++
+        (prems.toList.flatMap fun h => (breakRow h).map ("\\quad " ++ ·) |>.modifyLast (· ++ " \\;\\Longrightarrow")) ++
+        ((breakRow concl).map ("\\qquad " ++ ·))
+      if prems.isEmpty && binder.isEmpty && lines.length == 1 then return concl
+      return rows lines
 end
+
 
 /-- The statement of `n` as TeX, or `none` when its type is not a proposition. -/
 def stmtOf (n : Name) : MetaM (Option String) := do
