@@ -26,7 +26,7 @@ git checkout origin/lax-obligations -- scripts/verso-paper.sh scripts/verso-tex-
 | engine | **Verso** (HTML + TeX from one source) / LaTeX only | Verso; Verso's `tex/main.tex` is a LaTeX document if hand editing is wanted |
 | outputs | PDF, HTML companion (one page + per section) | both |
 | Lean code | **included** (`{docstring Name}` prints the statement) and/or **linked** (`{srcLink}\`Name\`` → `path:line` → GitHub at the build commit) | both |
-| transcription | conventional-notation line above each Lean statement | yes (`docs/verso-paper-workflow.md` §3 has the dictionary) |
+| transcription | conventional-notation statement generated from the declaration's type (`{stmt}`) | yes; extend the notation table in `CLPPaper/Math.lean` for another object language |
 | branch | where sources and scripts are pushed | the campaign branch; push by explicit `sha:refs/heads/<branch>` |
 | output paths | must be gitignored | `docs/<paper>/`, `docs/<paper>.pdf` |
 | delivery | push + tell the reader to pull; SendUserFile the PDF | never a link to a worktree path |
@@ -48,12 +48,19 @@ scripts/<paper>.sh         scripts/verso-paper.sh <Lib> <Lib>Main.lean docs/<pap
 ```
 Words.  PROVED / REFUTED / OPEN stated in the prose.
 
-$$`\Gamma \vdash \bigcirc A`
+{stmt}`Full.Name`
 
 {docstring Full.Name +allowMissing}
 
 {srcLink}`Full.Name`
 ```
+
+Three roles, all generated from the compiled declaration at build time, none
+edited by hand: `{stmt}` (the statement as mathematics, from the type:
+binders → quantifiers, hypotheses → premises, the object language through the
+notation table in `CLPPaper/Math.lean`, generic fallback for the rest; a
+`def`/`inductive` prints nothing), `{docstring}` (Verso's own: signature +
+docstring), `{srcLink}` (`path:line` → GitHub at the build commit).
 
 `srcLink` is a document-local role (`CLPPaper/Src.lean`: copy it into a new
 paper's lib): it reads the declaration's module and line from the
@@ -70,8 +77,10 @@ before the reader follows it).  In TeX it is a real hyperlink via `\oldhref`
   markup; math is `` $`…` `` / `` $$`…` ``.
 * Verify every name compiles before writing prose around it (`#check` in a
   scratch file against the built library).
-* First pass of the transcription: `scripts/lean-to-math.py <Lib>/Sections/*.lean`
-  (formula-like code spans → `` $`…` ``/`` $$`…` ``); then read the diff.
+* Prose is the author's; formulas in prose are Verso math (`` $`…` ``).
+  `scripts/lean-to-math.py` converts Unicode formulas in *source* prose to
+  math once, as an authoring aid; it is not a build step and no output is
+  ever edited.
 
 ## 2b. Version and build stamp (every generated document carries both)
 
@@ -104,7 +113,8 @@ breakable verbatim); extend its `fallback` string if a new glyph is reported.
 
 `scripts/blueprint-to-vanilla.py <Lib>/Sections/*.lean`, then strip the
 blueprint imports and `{blueprint_graph}`/`{blueprint_summary}` from
-`Paper.lean`, swap the main for `manualMain`, rebuild, write the math lines.
+`Paper.lean`, swap the main for `manualMain`, add `{stmt}`/`{srcLink}` lines
+around each `{docstring}` (the converter's `--roles` does this), rebuild.
 
 ## 5. Deliver: the reader builds in their own checkout
 

@@ -71,29 +71,30 @@ The blueprint genre is reserved for the repo's live blueprint.
   math is `` $`…` `` inline and `` $$`…` `` displayed (KaTeX in HTML, native
   in TeX); code is verbatim.
 
-## 3. Transcribing Lean statements into conventional notation
+## 3. The mathematics is generated from the statements
 
-The Lean statement is printed by `{docstring}`; the transcription goes in the
-`$$`…`` line above it.  The dictionary used in the CLP paper:
+`{stmt}\`Full.Name\`` (role in `CLPPaper/Math.lean`) prints the declaration's
+type as display mathematics, at build time, from the compiled environment:
 
-| Lean | LaTeX |
-|---|---|
-| `Prv Γ A` / `PEq A B` | `\Gamma \vdash A` / `A \dashv\vdash B` |
-| `.circ q A` | `\bigcirc_q A` (or `\bigcirc A` when `q` is fixed) |
-| `.and .or .imp .top .bot` | `\land \lor \supset \top \bot` |
-| `.all A`, `.ex A` (locally nameless) | `\forall x.\,A(x)`, `\exists x.\,A(x)` |
-| `¬ Prv …` | `\nvdash` (state as REFUTED with the countermodel named) |
-| `(a.ext T).1` | `\pi_1|a|_T` |
-| `Θ.HeadsOK isC` | prose ("no clause head is a constraint") |
+* `∀`-binders become quantifiers grouped by type
+  (`\forall\, q{:}\mathsf{Q},\ A\, B{:}\mathsf{Form}.`), hypotheses become
+  premises (one per line, `\Longrightarrow`), instance arguments vanish;
+* the object language goes through a notation table: `Prv Γ A` is
+  `Γ ⊢ A`, `¬ Prv` is `⊬`, `PEq` is `⊣⊢`, `Form.and/or/imp/circ/forall_/exists_`
+  are `∧ ∨ ⊃ ◯_q ∀x. ∃x.` with de Bruijn binders named `x, y, z, …` by depth,
+  `Form.pred "geq" [a,b]` is `a ≥ b`, `Tm.fn "add"` is `+`, a list context is a
+  comma sequence and `Θ.forms` is `Θ`;
+* everything else has a generic reading (`∧ ∨ ↔ = ≠ ∈ ∃ λ`, numerals, lists,
+  pairs, `b = true` as `b`, applications as `\mathit{f}(a, b)` with implicit
+  arguments dropped) and, last, Lean's own printer in typewriter;
+* a declaration whose type is not a proposition prints nothing.
 
-`scripts/lean-to-math.py <Lib>/Sections/*.lean` makes the first pass: a code
-span that contains a logical symbol and no Lean-only token becomes math (a
-paragraph that is one formula becomes display math), with the dictionary
-above, `\mathit{}` for multi-letter identifiers and `w0 → w_0`; headings are
-left alone.  Read the diff and fix by hand.  Keep the mathematical line a
-statement, not a paraphrase; keep PROVED / REFUTED / OPEN in the prose.  The
-TeX build is the check: a bad macro is a TeX error, and the script reports the
-count.
+The same declaration always gives the same mathematics and it cannot drift
+from the code; nothing in the output is edited by hand.  For another object
+language, extend the table (`form`, `tm`, `ctx`, and the `generic` cases).
+The prose around a result is the author's; formulas in it are written as
+Verso math.  `scripts/lean-to-math.py` exists only as an authoring aid that
+converts Unicode formulas in *source* prose to math; it is not a build step.
 
 ## 3b. Version and build stamp
 

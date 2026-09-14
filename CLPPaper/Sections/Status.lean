@@ -2,10 +2,11 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper
+open CLPPaper CLPPaper.Math
 
 #doc (Manual) "Status, simplification, and what is not built" =>
 

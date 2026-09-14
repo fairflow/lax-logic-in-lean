@@ -2,10 +2,11 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper
+open CLPPaper CLPPaper.Math
 
 #doc (Manual) "Quantified lax logic" =>
 
@@ -30,6 +31,8 @@ so $`\bigcirc` is a monad: $`\bigcirc I` is the unit and $`\bigcirc E` the bind.
 
 Natural deduction for QLL with cofinite quantifier rules.
 
+{stmt}`LaxLogic.QLL.Prv`
+
 {docstring LaxLogic.QLL.Prv +allowMissing}
 
 {srcLink}`LaxLogic.QLL.Prv`
@@ -46,11 +49,15 @@ w ⊨ ◯_q A   iff   for every v with w Ri v there is u with v R_q u and u ⊨ 
 
 Kripke models with fallible worlds and two modal relations.
 
+{stmt}`LaxLogic.QLL.KModel`
+
 {docstring LaxLogic.QLL.KModel +allowMissing}
 
 {srcLink}`LaxLogic.QLL.KModel`
 
 Soundness: $`\Gamma \vdash A` implies $`\Gamma \Vdash A`.  Proved without choice.
+
+{stmt}`LaxLogic.QLL.Prv.sound`
 
 {docstring LaxLogic.QLL.Prv.sound +allowMissing}
 
@@ -58,6 +65,8 @@ Soundness: $`\Gamma \vdash A` implies $`\Gamma \Vdash A`.  Proved without choice
 
 Completeness on the fragment used here; the canonical model construction uses
 `Classical.choice`.
+
+{stmt}`LaxLogic.QLL.prv_iff_consequence`
 
 {docstring LaxLogic.QLL.prv_iff_consequence +allowMissing}
 
@@ -72,6 +81,8 @@ QLL does not prove.
 
 With $`R\_\exists = \mathit{Ri}`, the formula $`(\bigcirc A \supset \bigcirc B) \supset \bigcirc (A \supset B)` is forced at every world.
 
+{stmt}`LaxLogic.QLL.circ_imp_of_rm_eq_ri`
+
 {docstring LaxLogic.QLL.circ_imp_of_rm_eq_ri +allowMissing}
 
 {srcLink}`LaxLogic.QLL.circ_imp_of_rm_eq_ri`
@@ -79,6 +90,8 @@ With $`R\_\exists = \mathit{Ri}`, the formula $`(\bigcirc A \supset \bigcirc B) 
 QLL does not prove $`(\bigcirc P \supset \bigcirc Q) \supset \bigcirc (P \supset Q)`.  The countermodel has three worlds
 $`r \le s \le f`, `f` fallible, and the modal relation the identity together with
 `s → f`.  REFUTED cell for the claim that `R_m = Ri` is a free choice.
+
+{stmt}`LaxLogic.QLL.not_prv_circ_imp`
 
 {docstring LaxLogic.QLL.not_prv_circ_imp +allowMissing}
 

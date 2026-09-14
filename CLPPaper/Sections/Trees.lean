@@ -2,10 +2,11 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper
+open CLPPaper CLPPaper.Math
 
 #doc (Manual) "Proof trees and Table 2" =>
 
@@ -33,6 +34,8 @@ inductive CProof where
 
 Proof trees with constraint leaves.
 
+{stmt}`LaxLogic.QLL.CProof`
+
 {docstring LaxLogic.QLL.CProof +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CProof`
@@ -41,6 +44,8 @@ Proof trees with constraint leaves.
 atoms (`isC`) as leaves, clause applications instantiating a clause's bound
 variables by the recorded terms.
 
+{stmt}`LaxLogic.QLL.CTyped`
+
 {docstring LaxLogic.QLL.CTyped +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CTyped`
@@ -48,7 +53,7 @@ variables by the recorded terms.
 Definition 8.1 splits the constraint leaves into the active ones, not under a
 clause application, and the latent ones, under one; `total` is all of them.
 
-$$`\mathit{total}(p) \dashv\vdash \mathit{latent}(p) \land \mathit{active}(p)`
+{stmt}`LaxLogic.QLL.CProof.total_equiv`
 
 {docstring LaxLogic.QLL.CProof.total_equiv +allowMissing}
 
@@ -56,11 +61,15 @@ $$`\mathit{total}(p) \dashv\vdash \mathit{latent}(p) \land \mathit{active}(p)`
 
 Answer soundness for trees: `CTyped Θ S p` gives $`\Theta \vdash \mathit{total}(p) \supset S`.
 
+{stmt}`LaxLogic.QLL.CTyped.prv_total`
+
 {docstring LaxLogic.QLL.CTyped.prv_total +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CTyped.prv_total`
 
 The checker is sound: `checkC Θ S p = true` gives `CTyped Θ S p`.
+
+{stmt}`LaxLogic.QLL.checkC_sound`
 
 {docstring LaxLogic.QLL.checkC_sound +allowMissing}
 
@@ -76,6 +85,8 @@ clause.  Nothing in the rules fixes the order in which subgoals are selected.
 
 One step of Table 2, at any position of the goal list.
 
+{stmt}`LaxLogic.QLL.Step`
+
 {docstring LaxLogic.QLL.Step +allowMissing}
 
 {srcLink}`LaxLogic.QLL.Step`
@@ -84,11 +95,15 @@ Theorem 9.4.  A run $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \
 proving `φᵢ` and $`c' \dashv\vdash c \land \mathit{total}(p_1) \land … \land \mathit{total}(p_n)`.  The parameter `ok`
 plays no part: pruning restricts the search and never the soundness.
 
+{stmt}`LaxLogic.QLL.steps_forest`
+
 {docstring LaxLogic.QLL.steps_forest +allowMissing}
 
 {srcLink}`LaxLogic.QLL.steps_forest`
 
 Corollary 9.8.  $`c \square \tilde{\varphi } \rightsquigarrow * c' \square \varepsilon` gives $`\Theta \vdash c' \supset c \land \varphi _1 \land … \land \varphi _n`.
+
+{stmt}`LaxLogic.QLL.steps_sound`
 
 {docstring LaxLogic.QLL.steps_sound +allowMissing}
 
@@ -102,6 +117,8 @@ formed, for a closed Σ-goal:
 `S` is true in the least model over `R` iff some tree proves `S` with
 `total(p)` true in `R`.  This is the completeness half of the conventional
 Theorem 6.1 in tree form.
+
+{stmt}`LaxLogic.QLL.world2_free`
 
 {docstring LaxLogic.QLL.world2_free +allowMissing}
 

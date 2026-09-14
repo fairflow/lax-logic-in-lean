@@ -2,10 +2,11 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper
+open CLPPaper CLPPaper.Math
 
 #doc (Manual) "Examples" =>
 
@@ -37,13 +38,15 @@ c₄) ⊃ Q`.  Query `Q`.  The draft's six steps, as a Table 2 run:
 
 Corollary 9.8 on Example 9.5: $`\Theta \vdash (\top \land c_1) \land c_3 \supset \top \land (Q \land \top)`.
 
+{stmt}`LaxLogic.QLL.CLPExamples.cor95`
+
 {docstring LaxLogic.QLL.CLPExamples.cor95 +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CLPExamples.cor95`
 
 Theorem 9.7 on Example 9.5: the answer of the six steps is $`\dashv\vdash` the
 constraint extracted from an abstract proof of $`\bigcirc Q`, which comes out as
-$$`((((\top \land c_1) \land (\top \land \top)) \land \top) \land (\top \land c_3))`
+{stmt}`LaxLogic.QLL.CLPExamples.thm97_95`
 
 {docstring LaxLogic.QLL.CLPExamples.thm97_95 +allowMissing}
 
@@ -73,12 +76,16 @@ the answer is upward closed in `z`.
 
 The kernel runs the engine on Example 6.1 and accepts its tree.
 
+{stmt}`LaxLogic.QLL.CLPExamples.check61`
+
 {docstring LaxLogic.QLL.CLPExamples.check61 +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CLPExamples.check61`
 
 The draft's answer $`z \ge 44`: a value `r` for `z` extends to a solution of the
 answer constraint iff $`44 \le r`.
+
+{stmt}`LaxLogic.QLL.CLPExamples.ex61_answer`
 
 {docstring LaxLogic.QLL.CLPExamples.ex61_answer +allowMissing}
 
@@ -88,11 +95,15 @@ The $`\bigcirc` pass extracts `(((⊤ ∧ u ≥ 5) ∧ (((⊤ ∧ u ≥ 9) ∧ (
 (⊤ ∧ (⊤ ∧ z ≥ u + 35))`, the draft's expression, and it is `⊣⊢` the total
 constraint.
 
+{stmt}`LaxLogic.QLL.CLPExamples.ext61`
+
 {docstring LaxLogic.QLL.CLPExamples.ext61 +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CLPExamples.ext61`
 
 Corollary 9.8 by the draft's route on Example 6.1.
+
+{stmt}`LaxLogic.QLL.CLPExamples.cor61`
 
 {docstring LaxLogic.QLL.CLPExamples.cor61 +allowMissing}
 

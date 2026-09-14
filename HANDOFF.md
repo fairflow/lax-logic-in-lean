@@ -363,3 +363,15 @@ companion, and conventional-notation transcriptions next to the Lean.  Done:
   or another branch (`/verso-paper` was unknown in his `tphols` session and
   in mine).  Reader's flow: `git -C ~/Lean/qll-review merge --ff-only
   lax-obligations`, `lake build`, `scripts/clp-paper.sh --open`.
+- Later still (2026-09-14): Matthew's standing requirement restated — the
+  tool must go from the Lean sources to the paper with NO manual repair of
+  output, and the mathematics must correspond to the sources.  So
+  `CLPPaper/Math.lean` adds `{stmt}`Name``: the declaration's type rendered as
+  display mathematics at build time (binders → quantifiers, hypotheses →
+  premises, the object language `Prv/PEq/Form/Tm/Q` through a notation table,
+  generic fallback, typewriter last resort; non-propositions print nothing).
+  Every result is now prose → `{stmt}` → `{docstring}` → `{srcLink}`; the
+  hand-written display formulas before docstrings were removed;
+  `lean-to-math.py` is demoted to an authoring aid, not a build step.  Bug
+  found and fixed: `generic`/`form` recursed forever on a partially applied
+  `Form` constructor (SIGABRT 134 in the section build) — arity guards.

@@ -2,10 +2,11 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper
+open CLPPaper CLPPaper.Math
 
 #doc (Manual) "Abstraction, extraction and refinement" =>
 
@@ -31,12 +32,16 @@ inductive AProof where
 
 Abstract proof trees, Fig. 3's derivations as data.
 
+{stmt}`LaxLogic.QLL.AProof`
+
 {docstring LaxLogic.QLL.AProof +allowMissing}
 
 {srcLink}`LaxLogic.QLL.AProof`
 
 `ATyped Θ♯ q S a`: `a` proves $`\bigcirc _q S`; the clause rule demands a modal head
 of polarity `q`.
+
+{stmt}`LaxLogic.QLL.ATyped`
 
 {docstring LaxLogic.QLL.ATyped +allowMissing}
 
@@ -45,6 +50,8 @@ of polarity `q`.
 Abstract proofs are proofs: `ATyped Θ♯ q S a` gives $`\Theta ^\sharp \vdash \bigcirc _q S`.  Its cases
 are the QLL derivations that justify each rule of Fig. 3.
 
+{stmt}`LaxLogic.QLL.ATyped.prv`
+
 {docstring LaxLogic.QLL.ATyped.prv +allowMissing}
 
 {srcLink}`LaxLogic.QLL.ATyped.prv`
@@ -52,11 +59,15 @@ are the QLL derivations that justify each rule of Fig. 3.
 Theorem 6.3, at the level of terms: if no clause head is a constraint, a
 concrete tree for `S` maps to an abstract tree for `S♯` against `Θ♯`.
 
+{stmt}`LaxLogic.QLL.CTyped.toA`
+
 {docstring LaxLogic.QLL.CTyped.toA +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CTyped.toA`
 
 Theorem 6.3: $`\Theta \vdash S` gives $`\Theta ^\sharp \vdash \bigcirc _q S^\sharp`.
+
+{stmt}`LaxLogic.QLL.CTyped.prv_abs`
 
 {docstring LaxLogic.QLL.CTyped.prv_abs +allowMissing}
 
@@ -74,12 +85,16 @@ clause by clause of Fig. 3.
 
 Extraction: an abstract proof and a table give a constraint and a witness.
 
+{stmt}`LaxLogic.QLL.AProof.ext`
+
 {docstring LaxLogic.QLL.AProof.ext +allowMissing}
 
 {srcLink}`LaxLogic.QLL.AProof.ext`
 
 Commutativity of the writer monad up to $`\dashv\vdash`: what selection-order
 independence rests on.  The monad laws the draft asks for do not include it.
+
+{stmt}`LaxLogic.QLL.WM.bind_comm`
 
 {docstring LaxLogic.QLL.WM.bind_comm +allowMissing}
 
@@ -88,12 +103,16 @@ independence rests on.  The monad laws the draft asks for do not include it.
 Lemma 8.3: the concrete program's table entry at a tree's witness is the
 tree's active constraint.
 
+{stmt}`LaxLogic.QLL.CTyped.ctable_wit`
+
 {docstring LaxLogic.QLL.CTyped.ctable_wit +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CTyped.ctable_wit`
 
 Lemma 8.4: the witness of `toA p` is `p`'s witness, and the extracted
 constraint is $`\dashv\vdash` the latent constraint.
+
+{stmt}`LaxLogic.QLL.CTyped.ext_toA`
 
 {docstring LaxLogic.QLL.CTyped.ext_toA +allowMissing}
 
@@ -102,6 +121,8 @@ constraint is $`\dashv\vdash` the latent constraint.
 Extracted constraint and active constraint together are the total constraint,
 up to $`\dashv\vdash`.
 
+{stmt}`LaxLogic.QLL.CTyped.ext_total`
+
 {docstring LaxLogic.QLL.CTyped.ext_total +allowMissing}
 
 {srcLink}`LaxLogic.QLL.CTyped.ext_total`
@@ -109,6 +130,8 @@ up to $`\dashv\vdash`.
 Theorem 9.7.  For a pure query `φ`, a run $`\top \square \varphi \rightsquigarrow * c \square \varepsilon` yields a concrete
 tree `p` whose abstract image types against `Θ♯` and whose extracted
 constraint is $`\dashv\vdash c`: the two passes compute the same answer.
+
+{stmt}`LaxLogic.QLL.thm_9_7`
 
 {docstring LaxLogic.QLL.thm_9_7 +allowMissing}
 
@@ -125,12 +148,16 @@ witnesses substituted.  Then, for any table:
 Theorem 6.8: `RefinedBy Δ Θ♯ T` and `ATyped Θ♯ q S a` give $`\Delta \vdash \pi _1|a| \supset S`.
 Uniform in the table.
 
+{stmt}`LaxLogic.QLL.thm_6_8`
+
 {docstring LaxLogic.QLL.thm_6_8 +allowMissing}
 
 {srcLink}`LaxLogic.QLL.thm_6_8`
 
 Proposition 6.6, first half: a non-modal program refines its own abstraction
 through its own table.
+
+{stmt}`LaxLogic.QLL.refinedBy_abs`
 
 {docstring LaxLogic.QLL.refinedBy_abs +allowMissing}
 
@@ -139,6 +166,8 @@ through its own table.
 Corollary 9.8 by the draft's route: an abstract proof of $`\bigcirc S`, refined with
 the concrete program's table, yields a constraint that implies `S` in the
 concrete program.
+
+{stmt}`LaxLogic.QLL.cor_9_8_abs`
 
 {docstring LaxLogic.QLL.cor_9_8_abs +allowMissing}
 
@@ -150,12 +179,16 @@ refinement, is false as stated.
 REFUTED: $`\forall x.(A x \land B x) \supset P x` does not prove $`\forall x. A x \supset \bigcirc P x`.  One-world
 countermodel: `A` everywhere, `B` and `P` nowhere.
 
+{stmt}`LaxLogic.QLL.p66_refuted`
+
 {docstring LaxLogic.QLL.p66_refuted +allowMissing}
 
 {srcLink}`LaxLogic.QLL.p66_refuted`
 
 Repaired: with the table's constraints lax-true, $`\forall x. \bigcirc B x`, the clause does
 follow.
+
+{stmt}`LaxLogic.QLL.p66_with_lax`
 
 {docstring LaxLogic.QLL.p66_with_lax +allowMissing}
 
@@ -170,11 +203,15 @@ model of `Θ` over `R`, world 3 everything.
 
 Lemma 7.2: world 0 forces every clause of `Θ♯`.
 
+{stmt}`LaxLogic.QLL.canon_clause`
+
 {docstring LaxLogic.QLL.canon_clause +allowMissing}
 
 {srcLink}`LaxLogic.QLL.canon_clause`
 
 Lemma 7.3: the interpretation is monotone along the frame.
+
+{stmt}`LaxLogic.QLL.canon_hered`
 
 {docstring LaxLogic.QLL.canon_hered +allowMissing}
 
@@ -183,17 +220,23 @@ Lemma 7.3: the interpretation is monotone along the frame.
 World 2 forces $`\bigcirc S` for every `S`, through the fallible world 3: solvability
 is recorded in world 2's atoms only, and $`\bigcirc \bot` holds there.
 
+{stmt}`LaxLogic.QLL.canon_circ_w2`
+
 {docstring LaxLogic.QLL.canon_circ_w2 +allowMissing}
 
 {srcLink}`LaxLogic.QLL.canon_circ_w2`
 
 Theorem 7.5 at world 0: $`\Theta ^\sharp \vdash S` iff $`0 \models S`.
 
+{stmt}`LaxLogic.QLL.thm_7_5_canon0`
+
 {docstring LaxLogic.QLL.thm_7_5_canon0 +allowMissing}
 
 {srcLink}`LaxLogic.QLL.thm_7_5_canon0`
 
 Theorem 7.5 at world 1: $`\Theta ^\sharp \vdash \bigcirc _q S` iff $`1 \models S`.
+
+{stmt}`LaxLogic.QLL.thm_7_5_canon1`
 
 {docstring LaxLogic.QLL.thm_7_5_canon1 +allowMissing}
 
@@ -203,6 +246,8 @@ Theorem 7.5 at world 2: for a pure `S`, some abstract proof of $`\bigcirc S` ext
 a constraint true in `R` iff $`2 \models S`.  The draft asks for a solvable
 constraint; with the witness terms chosen to be the solution, that is the
 same.
+
+{stmt}`LaxLogic.QLL.thm_7_5_canon2`
 
 {docstring LaxLogic.QLL.thm_7_5_canon2 +allowMissing}
 

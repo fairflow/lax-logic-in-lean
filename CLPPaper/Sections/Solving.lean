@@ -2,10 +2,11 @@ import Verso
 import VersoManual
 import LaxLogic.QLL
 import CLPPaper.Src
+import CLPPaper.Math
 
 open Verso.Genre
 open Verso.Genre.Manual
-open CLPPaper
+open CLPPaper CLPPaper.Math
 
 #doc (Manual) "Solving constraints with certificates" =>
 
@@ -32,11 +33,15 @@ multiplier on some strict constraint.  Validity refutes the system.
 
 A checked witness satisfies every constraint.
 
+{stmt}`LaxLogic.QLL.LinQ.checkWitness_sound`
+
 {docstring LaxLogic.QLL.LinQ.checkWitness_sound +allowMissing}
 
 {srcLink}`LaxLogic.QLL.LinQ.checkWitness_sound`
 
 A checked Farkas certificate shows the system unsatisfiable.
+
+{stmt}`LaxLogic.QLL.LinQ.checkFarkas_unsat`
 
 {docstring LaxLogic.QLL.LinQ.checkFarkas_unsat +allowMissing}
 
@@ -48,11 +53,15 @@ positive-negative pairs is eliminated, with a cap on the number of new rows;
 a contradiction row's multipliers are the Farkas certificate, and otherwise
 back-substitution builds a witness.
 
+{stmt}`LaxLogic.QLL.LinQ.fm`
+
 {docstring LaxLogic.QLL.LinQ.fm +allowMissing}
 
 {srcLink}`LaxLogic.QLL.LinQ.fm`
 
 A verdict `sat w` that passes certification has `w` a solution.
+
+{stmt}`LaxLogic.QLL.LinQ.certifyVerdict_sat`
 
 {docstring LaxLogic.QLL.LinQ.certifyVerdict_sat +allowMissing}
 
@@ -60,6 +69,8 @@ A verdict `sat w` that passes certification has `w` a solution.
 
 A verdict `unsat λ̃` that passes certification has the system unsatisfiable.
 Any solver may produce the verdict, and none has to be trusted.
+
+{stmt}`LaxLogic.QLL.LinQ.certifyVerdict_unsat`
 
 {docstring LaxLogic.QLL.LinQ.certifyVerdict_unsat +allowMissing}
 
@@ -76,6 +87,8 @@ least solution is given by longest paths, and the path attaining the value of
 
 Certified entailment by refutation.
 
+{stmt}`LaxLogic.QLL.Engine.entailsLe_sound`
+
 {docstring LaxLogic.QLL.Engine.entailsLe_sound +allowMissing}
 
 {srcLink}`LaxLogic.QLL.Engine.entailsLe_sound`
@@ -83,12 +96,16 @@ Certified entailment by refutation.
 A checked lower-bound certificate gives $`z* \le \sigma (z)` for every solution `σ`;
 with a witness attaining `z*`, the least value is certified from both sides.
 
+{stmt}`LaxLogic.QLL.Engine.lowerBoundCert_sound`
+
 {docstring LaxLogic.QLL.Engine.lowerBoundCert_sound +allowMissing}
 
 {srcLink}`LaxLogic.QLL.Engine.lowerBoundCert_sound`
 
 If `z` has a non-positive coefficient in every inequality, raising `z`
 preserves solutions, so the projection onto `z` is exactly $`z \ge z*`.
+
+{stmt}`LaxLogic.QLL.Engine.upClosed_sound`
 
 {docstring LaxLogic.QLL.Engine.upClosed_sound +allowMissing}
 
@@ -104,11 +121,15 @@ transition.  Every answer carries its proof tree.
 
 The search, as a strategy over the rules of Table 2.
 
+{stmt}`LaxLogic.QLL.Engine.solveK`
+
 {docstring LaxLogic.QLL.Engine.solveK +allowMissing}
 
 {srcLink}`LaxLogic.QLL.Engine.solveK`
 
 An answer whose tree checks satisfies $`\Theta \vdash \mathit{constraint} \supset G`.
+
+{stmt}`LaxLogic.QLL.Engine.answer_sound`
 
 {docstring LaxLogic.QLL.Engine.answer_sound +allowMissing}
 
