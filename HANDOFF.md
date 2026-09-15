@@ -408,3 +408,43 @@ full module mapping: `docs/syntax-reorg-2026-09-15.md`.
 - **Built.** Every LaxLogic module and both paper libraries, after each step.
   `LaxLogic.QLL.CLPWolfram` needs the Wolfram bridge and is compiled only by
   `scripts/clp-wolfram.sh`, as at baseline.
+
+## 2026-09-15 (evening) — `syntax-reorg`: sequent contexts and PLL formula notation
+
+Matthew: "build the formula category, PLL first, with sequent-style
+contexts"; "Γ, A for A :: Γ is indeed conventional and convenient both
+sides"; "we don't have to use ⊃ … Use a double headed arrow".  Record:
+`docs/syntax-reorg-2026-09-15.md` §2.1.
+
+- **Contexts.** `Γ, A, B ⊢ C` is `B :: A :: Γ` (list) or
+  `insert B (insert A Γ)` (set), in input and in printing; `A, B ⊢ C` is
+  `[A, B]`; `⊢ C` the empty context.  `LaxLogic/Util/Turnstile.lean`.
+- **Formulas.** `◯A`, `A ∧ B`, `A ∨ B`, `A ↠ B`, `⊥`, scoped in `PLLND`
+  (`LaxLogic/PLL/Syntax/Formula.lean`).  No quotation brackets: the same
+  notation inside and outside sequents.  `∧ ∨ ⊥` are not overloaded notations
+  (that broke `FinComp` and `CtxCompleteness`): a scoped macro sends them to a
+  type-directed elaborator that yields the formula connective only where a
+  formula is expected, and `And`/`Or`/`Bot.bot` everywhere else.
+- **Precedence.** Sequent 26 (formula side and context entries 27, `↠` 27).
+  Costs, all reported as errors: `P ∧ (Γ ⊢ A)` needs parentheses; `¬ Γ ⊢ A`
+  is written `Γ ⊬ A`; a context without a context variable starts with an
+  identifier and is ambiguous when list and set defaults are both in scope.
+- **Binder guard.** The comma of `∀ x : T, …` / `∀ φ ∈ Ds, …` is not read as a
+  context comma: a zero-width check before the context identifier
+  (`Guard.ctxIdent`).  Without it the first build failed at
+  `LaxLogic/PLL/ND/Theorems.lean:159`.
+- **Candidate elaboration** runs without error recovery; with recovery a failed
+  candidate became `sorry` and `⊢` was reported ambiguous (first build:
+  `PLL/ND/Consequence.lean`, `QLL/Complete.lean`).
+- **Library edits** (11 lines).  Parentheses around a sequent after `∧`:
+  `PLL/Semantics/Completeness.lean` ×3, `QLL/Complete.lean` ×1.
+  `¬ Γ ⊢ A` → `Γ ⊬ A`: `PLL/Semantics/Completeness.lean`, `QLL/Complete1.lean`,
+  and `PLL/Semantics/FinComp.lean` ×4 (there after `∨`, so parenthesised).
+  One `#guard_msgs` pin now prints `SC [◯A₀] A₀` (`PLL/Search/Run.lean`).
+- **Built** (evening): every `LaxLogic/` module named individually (8751 jobs),
+  `LaxPaper`, `CLPPaper` and the 107 baseline-compiled `wip/` modules (9165
+  jobs), `scripts/clp-wolfram.sh` exit 0.  The `sorry` warnings are the eight
+  pre-existing ones, in seven files.  TurnstileTests pins: the ambiguity message was watched
+  failing (line wrapping) before it was fixed.
+- **Next.** QLL formula notation (`◯[q]`, `◯[∀]`, `◯[∃]`, quantifiers) and
+  the QLL proof-term judgement.

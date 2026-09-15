@@ -448,7 +448,7 @@ theorem SetPrv.disj_mono {Γ : Set Form} {Ds TA TE Ds' TA' TE' : List Form}
 theorem not_consistent_iff {T : Theory} :
     ¬ Consistent T ↔ ∃ Ds TA TE : List Form,
       (∀ A ∈ Ds, A ∈ T.fal) ∧ (∀ A ∈ TA, A ∈ T.mfal .all) ∧
-      (∀ A ∈ TE, A ∈ T.mfal .ex) ∧ Ds ++ TA ++ TE ≠ [] ∧ T.val ⊢ disjOf Ds TA TE := by
+      (∀ A ∈ TE, A ∈ T.mfal .ex) ∧ Ds ++ TA ++ TE ≠ [] ∧ (T.val ⊢ disjOf Ds TA TE) := by
   unfold Consistent
   push Not
   rfl

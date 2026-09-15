@@ -321,7 +321,7 @@ tactic could not tell the two apart).  `◯` admits no escape: -/
 
 /--
 error: pll_g4c: backward proof search in G4iLL″ found no derivation; the calculus is complete (`G4c.equiv_tm`), so the sequent is not PLL-derivable:
-  SC [A₀.somehow] A₀
+  SC [◯A₀] A₀
 -/
 #guard_msgs in
 example : SC [A₀.somehow] A₀ := by pll_g4c

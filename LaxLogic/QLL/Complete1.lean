@@ -520,7 +520,7 @@ weakened `Assign` asks for, and what the total one could never have given. -/
 plan needs the canonical world itself, not just the implication, in order to
 read it as a model of the paper's own Definition 3.2. -/
 theorem exists_countermodel {Γ : List Form} {A : Form}
-    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (hn : ¬ Γ ⊢ A) :
+    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (hn : Γ ⊬ A) :
     ∃ w : World,
       (∀ x ∈ ctxFv Γ ++ A.fv, canon.Dom w (canonρ x)) ∧
       (∀ B ∈ Γ, canon.force B w canonρ []) ∧

@@ -65,12 +65,12 @@ def disjOf : List PLLFormula → List PLLFormula → PLLFormula
 has its `disjOf` derivable from `val`. -/
 def Consistent (T : Theory) : Prop :=
   ∀ Ds Ts : List PLLFormula, (∀ φ ∈ Ds, φ ∈ T.fal) → (∀ φ ∈ Ts, φ ∈ T.mfal) →
-    Ds ++ Ts ≠ [] → ¬ T.val ⊢ disjOf Ds Ts
+    Ds ++ Ts ≠ [] → T.val ⊬ disjOf Ds Ts
 
 theorem not_consistent_iff {T : Theory} :
     ¬ Consistent T ↔ ∃ Ds Ts : List PLLFormula,
       (∀ φ ∈ Ds, φ ∈ T.fal) ∧ (∀ φ ∈ Ts, φ ∈ T.mfal) ∧ Ds ++ Ts ≠ [] ∧
-        T.val ⊢ disjOf Ds Ts := by
+        (T.val ⊢ disjOf Ds Ts) := by
   unfold Consistent
   push_neg
   rfl
@@ -256,7 +256,7 @@ private theorem val_ext {T : Theory} (hM : MaxConsistent T) {φ : PLLFormula}
     (h : φ ∉ T.val) :
     ∃ Ds Ts : List PLLFormula,
       (∀ ψ ∈ Ds, ψ ∈ T.fal) ∧ (∀ ψ ∈ Ts, ψ ∈ T.mfal) ∧ Ds ++ Ts ≠ [] ∧
-        insert φ T.val ⊢ disjOf Ds Ts := by
+        (insert φ T.val ⊢ disjOf Ds Ts) := by
   rw [← not_consistent_iff (T := ⟨insert φ T.val, T.fal, T.mfal⟩)]
   intro hcons
   exact h ((hM.2 _ hcons ⟨Set.subset_insert .., subset_rfl, subset_rfl⟩).1
@@ -267,7 +267,7 @@ private theorem fal_ext {T : Theory} (hM : MaxConsistent T) {φ : PLLFormula}
     (h : φ ∉ T.fal) :
     ∃ Ds Ts : List PLLFormula,
       (∀ ψ ∈ Ds, ψ ∈ insert φ T.fal) ∧ (∀ ψ ∈ Ts, ψ ∈ T.mfal) ∧
-        Ds ++ Ts ≠ [] ∧ T.val ⊢ disjOf Ds Ts := by
+        Ds ++ Ts ≠ [] ∧ (T.val ⊢ disjOf Ds Ts) := by
   rw [← not_consistent_iff (T := ⟨T.val, insert φ T.fal, T.mfal⟩)]
   intro hcons
   exact h ((hM.2 _ hcons ⟨subset_rfl, Set.subset_insert .., subset_rfl⟩).2.1

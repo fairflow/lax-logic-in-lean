@@ -44,7 +44,7 @@ variable (Γ : List PLLFormula) (A : PLLFormula) (n : Nat)
 /-- info: Γ ⊭ A : Prop -/
 #guard_msgs in #check Γ ⊭ A
 
-/-- info: A :: Γ ⊢[G4h n] A : Prop -/
+/-- info: Γ, A ⊢[G4h n] A : Prop -/
 #guard_msgs in #check A :: Γ ⊢[G4h n] A
 
 /-- info: Γ ⊬[G4h n] A : Prop -/
@@ -55,6 +55,72 @@ example : (Γ ⊢ A) = LaxND Γ A := rfl
 example : (Γ ⊬ A) = ¬ Nonempty (LaxND Γ A) := rfl
 example : (Γ ⊭ A) = ¬ Consequence Γ A := rfl
 end pll
+
+section pllContexts
+open PLLND
+variable (Γ : List PLLFormula) (S : Set PLLFormula) (p q r : PLLFormula) (n : Nat)
+
+-- sequent-style contexts: `Γ, A` is `A :: Γ`, both ways
+example : (Γ, p, q ⊢ p) = LaxND (q :: p :: Γ) p := rfl
+/-- info: Γ, p, q ⊢ p : Type -/
+#guard_msgs in #check LaxND (q :: p :: Γ) p
+/-- info: Γ, p ⊢[G4h n] q : Prop -/
+#guard_msgs in #check Γ, p ⊢[G4h n] q
+
+-- formula notation, the same inside and outside a sequent
+example : (Γ, ◯p ↠ q ⊢ r ∨ ⊥) = LaxND (.ifThen (.somehow p) q :: Γ) (.or r .falsePLL) := rfl
+/-- info: Γ, ◯p ↠ q ⊢ r ∨ ⊥ : Type -/
+#guard_msgs in #check LaxND (.ifThen (.somehow p) q :: Γ) (.or r .falsePLL)
+/-- info: ◯(p ∧ q) ↠ ◯p ∧ ◯q : PLLFormula -/
+#guard_msgs in #check ◯(p ∧ q) ↠ ◯p ∧ ◯q
+/-- info: Γ ⊬ p ↠ q : Prop -/
+#guard_msgs in #check Γ ⊬ p ↠ q
+/-- info: Γ ⊨ ◯p ↠ ◯q : Prop -/
+#guard_msgs in #check Γ ⊨ ◯p ↠ ◯q
+
+-- a set context selects `SetDeriv`, with comma and with `insert`
+example : (S, p ⊢ q) = SetDeriv (insert p S) q := rfl
+example : (insert p S ⊢ q) = SetDeriv (insert p S) q := rfl
+/-- info: S, p ⊢ q : Prop -/
+#guard_msgs in #check SetDeriv (insert p S) q
+
+-- no context variable: a list or a set, so a tag or brackets are needed
+/--
+error: `⊢` is ambiguous here (PLLND.LaxND, PLLND.SetDeriv): write `Γ ⊢[R] A` (a context without a context variable could be a list or a set: write `[A, B]` or `{A, B}`)
+-/
+#guard_msgs in #check p, q ⊢ r
+example : ([p, q] ⊢ r) = LaxND [p, q] r := rfl
+example : (p, q ⊢[LaxND] r) = LaxND [p, q] r := rfl
+-- the empty context prints as `[]` while a set default could also read `⊢`
+/-- info: [] ⊢ p ↠ p : Type -/
+#guard_msgs in #check LaxND [] (p ↠ p)
+
+-- implications between sequents; `Prop` connectives around a sequent need parentheses
+example : (Γ ⊢ p → Γ, p ⊢ q) = (LaxND Γ p → LaxND (p :: Γ) q) := rfl
+example : ((Γ ⊨ p) ∧ (Γ ⊨ q)) = (Consequence Γ p ∧ Consequence Γ q) := rfl
+-- the comma of an unbracketed binder belongs to the binder, not to a context
+example : (∀ C : PLLFormula, Γ ⊢ C) = ∀ C, LaxND Γ C := rfl
+example : (∀ x y : PLLFormula, Γ, x ⊢ y) = ∀ x y, LaxND (x :: Γ) y := rfl
+example (Ds : List PLLFormula) : (∀ φ ∈ Ds, Γ, φ ⊢ r) = ∀ φ ∈ Ds, LaxND (φ :: Γ) r := rfl
+example (Ds : List PLLFormula) :
+    (∀ φ ∈ Ds, insert φ S ⊢ r) = ∀ φ ∈ Ds, SetDeriv (insert φ S) r := rfl
+example : (∃ C : PLLFormula, S, C ⊢ C) = ∃ C, SetDeriv (insert C S) C := rfl
+example (h : Γ, p ⊢ q) : Γ, p ⊢ q := h
+-- `∧` between propositions and between formulas
+example (P Q R : Prop) : (P ∧ Q ∨ R) = ((P ∧ Q) ∨ R) := rfl
+example : (p ∧ q ∨ r) = .or (.and p q) r := rfl
+-- `⊥` is the formula where a formula is meant, Mathlib's `⊥` elsewhere
+example : (p = ⊥) = (p = PLLFormula.falsePLL) := rfl
+example : ((⊥ : Prop) = False) := rfl
+/-- info: p ∧ q : PLLFormula -/
+#guard_msgs in #check p ∧ q
+-- with the operand types unknown when `∧` is met, it is still `And`
+example (s t : List (Finset Nat)) (i : Nat) : Decidable (s[i]!.card ≤ 1 ∧ t[i]!.card ≤ 1) :=
+  inferInstance
+-- tuples, lists and tactic locations are unaffected
+example : (1, 2) = ((1 : Nat), (2 : Nat)) := rfl
+example : [p, q].length = 2 := rfl
+end pllContexts
 
 section qll
 open LaxLogic.QLL
@@ -74,6 +140,11 @@ example : (Γ ⊬ A) = ¬ Prv Γ A := rfl
 
 /-- info: Γ ⊨ A : Prop -/
 #guard_msgs in #check Γ ⊨ A
+
+example (B : Form) : (Γ, A ⊢ B) = Prv (A :: Γ) B := rfl
+example (B : Form) : (S, A ⊢ B) = SetPrv (insert A S) B := rfl
+/-- info: Γ, A ⊢ A : Prop -/
+#guard_msgs in #check Prv (A :: Γ) A
 end qll
 
 section both

@@ -165,7 +165,7 @@ full selection (empty selections aside): `disjOf` is monotone, so the full
 lists are the worst case. -/
 theorem cons_iff_check (T : FTheory) :
     T.Cons ↔ (T.fal = ∅ ∧ T.mfal = ∅) ∨
-      ¬ (↑T.val : Set PLLFormula) ⊢ disjOf T.fal.toList T.mfal.toList := by
+      ((↑T.val : Set PLLFormula) ⊬ disjOf T.fal.toList T.mfal.toList) := by
   constructor
   · intro hT
     by_cases he : T.fal = ∅ ∧ T.mfal = ∅
@@ -200,7 +200,7 @@ order are irrelevant).  This is the choice-free replacement for the
 theorem cons_iff_rep (T : FTheory) {lf lm : List PLLFormula}
     (hlf : ∀ x, x ∈ lf ↔ x ∈ T.fal) (hlm : ∀ x, x ∈ lm ↔ x ∈ T.mfal) :
     T.Cons ↔ (lf = [] ∧ lm = []) ∨
-      ¬ (↑T.val : Set PLLFormula) ⊢ disjOf lf lm := by
+      ((↑T.val : Set PLLFormula) ⊬ disjOf lf lm) := by
   constructor
   · intro hT
     by_cases he : lf = [] ∧ lm = []
@@ -309,10 +309,10 @@ theorem cons_insVal_or_insFal {T : FTheory} (hT : T.Cons) (φ : PLLFormula) :
     rw [List.mem_cons, hlf x]
     exact (Finset.mem_insert).symm
   have hc1 : ¬((lf = [] ∧ lm = []) ∨
-      ¬ (↑(insert φ T.val) : Set PLLFormula) ⊢ disjOf lf lm) :=
+      ((↑(insert φ T.val) : Set PLLFormula) ⊬ disjOf lf lm)) :=
     fun hc => h1 ((cons_iff_rep (T.insVal φ) hlf hlm).mpr hc)
   have hc2 : ¬((φ :: lf = [] ∧ lm = []) ∨
-      ¬ (↑T.val : Set PLLFormula) ⊢ disjOf (φ :: lf) lm) :=
+      ((↑T.val : Set PLLFormula) ⊬ disjOf (φ :: lf) lm)) :=
     fun hc => h2 ((cons_iff_rep (T.insFal φ) hlf₂ hlm).mpr hc)
   have hg₁ : ¬(lf = [] ∧ lm = []) := fun hA => hc1 (.inl hA)
   have hd₁ : (↑(insert φ T.val) : Set PLLFormula) ⊢ disjOf lf lm := by

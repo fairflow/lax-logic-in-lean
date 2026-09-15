@@ -53,8 +53,95 @@ prints the constant, so short when its namespace is open).  `¬ R Γ A` and
 `¬ Nonempty (R Γ A)` print with `⊬`/`⊭` under the same rule, but only in the
 form matching the relation's sort.
 
-**Precedence** 55, both sides 56, for all eight forms: `A :: Γ ⊢ B` is
-`(A :: Γ) ⊢ B`; `¬ Γ ⊢ A` is `¬ (Γ ⊢ A)`.  (`⊢-` was 70 and `⊨-` 60.)
+**Precedence** (first version) 55, both sides 56.  Superseded the same day by
+§2.1, which lowers a sequent to 26 so that formulas need no parentheses.
+
+### 2.1 Sequent-style contexts and PLL formula notation
+
+Matthew: "build the formula category, PLL first, with sequent-style
+contexts"; "sequents are great without :: and Γ, A for A :: Γ is indeed
+conventional and convenient both sides"; "we don't have to use ⊃ … Use a
+double headed arrow of some kind please instead."
+
+**Contexts.**
+
+    Γ, A, B ⊢ C    is  B :: A :: Γ ⊢ C              (list context)
+                   is  insert B (insert A Γ) ⊢ C     (set context)
+    A, B ⊢ C       is  [A, B] ⊢ C  (no context variable)
+    ⊢ C            is  [] ⊢ C  (or ∅)
+    A :: Γ ⊢ C, Γ ++ Δ ⊢ C, [p, q] ⊢ C, insert A S ⊢ C   still accepted
+
+Printing uses the same forms: `LaxND (p :: Γ) q` prints `Γ, p ⊢ q`.  An
+empty context prints as `⊢ C` only when no other in-scope default could read
+it; with `LaxND` and `SetDeriv` both defaults in `PLLND` it prints `[] ⊢ C`.
+
+**Formulas** (PLL, scoped in `PLLND`, `LaxLogic/PLL/Syntax/Formula.lean`):
+
+| notation | constructor | precedence |
+|---|---|---|
+| `◯A` | `somehow` | prefix, max |
+| `A ∧ B` | `and` | 35, right |
+| `A ∨ B` | `or` | 30, right |
+| `A ↠ B` | `ifThen` | 27, right |
+| `⊥` | `falsePLL` | atom |
+
+The notation is the same inside and outside a sequent, so no quotation
+brackets are needed.
+
+`∧`, `∨` and `⊥` keep the tokens and precedences of Lean's `And`/`Or` and
+Mathlib's `Bot.bot`, and are **not** overloaded notations.  The first version
+declared them as scoped notations, which makes every use a choice between two
+parses, and Lean elaborates such alternatives one by one without postponement.
+Two failures followed in the library build: `a[i]!.val ⊆ b[j]!.val ∧ …`
+inside an `if` was reported ambiguous (both alternatives elaborate while the
+operand types are unknown, `PLL/Semantics/FinComp.lean`), and in
+`x ⊓ xᶜ = ⊥` the formula `⊥` was chosen (the leaves of `=` are elaborated
+without an expected type, `PLL/Semantics/CtxCompleteness.lean`).  The design
+now: inside `PLLND`, a scoped macro sends `∧`, `∨`, `⊥` to one elaborator
+that waits for the expected type if it is not yet known, takes the formula
+connective when the expected type is `PLLFormula`, or, with no expected type
+at all, when the left operand elaborates to a formula, and otherwise
+elaborates `And`, `Or` or `Bot.bot` exactly as before.  Printing uses
+unexpanders to the same tokens.
+
+**Why these precedences.**  A sequent is 26, its context side 56, its formula
+side and every context entry after a comma 27.  The formula side must be
+parsed at a precedence at or below `↠` (27) so that `Γ ⊢ A ↠ B` needs no
+parentheses, and the sequent's own precedence must be below that, or a context
+entry `p ↠ q` would absorb a following `⊢`: with the sequent at 55,
+`Γ, p ↠ q ⊢ r` parses as `Γ, p ↠ (q ⊢ r)`.  `→` (25) and `↔` (20) stay
+outside: `Γ ⊢ A → Γ, A ⊢ B` is an implication between sequents.
+
+**Binders.**  In `∀ x : T, Γ ⊢ A` and `∀ φ ∈ Ds, Γ, φ ⊢ χ` the comma belongs
+to the binder, but a parser for `Γ, A ⊢ B` alone reads `T, Γ ⊢ A` as one
+sequent (observed in the first build: `LaxLogic/PLL/ND/Theorems.lean`, line
+159, "unexpected token '|'; expected ','").  So the identifier that opens a
+comma context goes through a zero-width check, `Guard.ctxIdent`, that reads
+the characters before it and refuses when it is the type of an unbracketed
+binder (`∀ ∃ Σ Π ∑ ∏ ⋃ ⋂ ⨆ ⨅ λ`, names, `:`) or the right side of a binder
+predicate (`∈ ∉ ⊆ ⊂ ⊇ ⊃ ≤ < ≥ > ≠`).  A hypothesis `(h : Γ, p ⊢ q)`, a
+statement `theorem t : Γ, p ⊢ q` and `have h : Γ, p ⊢ q` are unaffected.
+
+**Remaining cost of the low precedence** (each an error, never a silent
+misparse):
+
+* a sequent next to a `Prop` connective tighter than `→` is parenthesised:
+  `P ∧ (Γ ⊢ A)`, `P ∨ (Γ ⊬ A)`, `(Γ ⊢ A) ∧ P`;
+* `¬ Γ ⊢ A` does not parse as `¬ (Γ ⊢ A)`; write `Γ ⊬ A`;
+* the first entry before a comma is an identifier, so `◯p, q ⊢ r` is written
+  `Γ, ◯p, q ⊢ r` or `[◯p, q] ⊢ r`;
+* a context with no context variable is ambiguous when a list and a set
+  default are both in scope (`p, q ⊢ r` in `PLLND`); write `[p, q] ⊢ r` or
+  a tag.
+
+**Elaboration detail.**  Each candidate default is elaborated with error
+recovery switched off and no coercions: otherwise a failed candidate
+(`insert φ Γ` at a list type when `Γ` is a set) elaborates to `sorry` and
+counts as a fit, and `⊢` is reported ambiguous.  That was the first build's
+failure in `LaxLogic/PLL/ND/Consequence.lean` and `LaxLogic/QLL/Complete.lean`.
+
+**Not yet done.**  QLL formula notation (`◯[q]`, `◯[∀]`, `◯[∃]`, quantifiers)
+and the QLL proof-term judgement.
 
 ### Rejected alternatives
 
@@ -286,3 +373,27 @@ this mapping instead).  The mapping is executable: `scripts/reorg-2026-09-15.py`
   one `⊨-` → `⊨` in `wip/onevar.lean`.  Two over-eager glyph replacements
   (a printed `[q12]⊢q9` label, a `⊢-order` comment) and four `⊣⊢-` compounds
   were caught by this inspection and restored.
+
+**After §2.1 (contexts, formula notation, binder guard; 2026-09-15 evening).**
+
+* Every `LaxLogic/` module named individually except `QLL.CLPWolfram`:
+  `Build completed successfully (8751 jobs)`.  `LaxPaper`, `CLPPaper` and the
+  107 baseline `wip/` modules: `Build completed successfully (9165 jobs)`.
+  `scripts/clp-wolfram.sh`: exit 0.
+* `declaration uses sorry` warnings in `LaxLogic/`: the same eight warnings in
+  seven files as in the baseline builds (three in `PLL/SemUI`, four in the
+  Toolkit challenge corpus).
+* Failures met on the way, each a design fault fixed in the notation rather
+  than patched at the site: candidate elaboration with error recovery
+  (ambiguity reported for `insert φ Γ ⊢ ψ`), binder capture
+  (`∀ C : PLLFormula, S ⊢ A`), overloaded `∧`/`⊥` (FinComp, CtxCompleteness).
+  Site edits were only the parentheses and `⊬` rewrites listed in HANDOFF.
+* `LaxLogic/Util/TurnstileTests.lean` pins, besides the earlier ones: comma
+  contexts in both directions for list and set relations, formulas inside and
+  outside sequents, the no-context-variable ambiguity error, `[] ⊢ A` printing,
+  implications between sequents, the binder cases (`∀ x : T,`, `∀ x y : T,`,
+  `∀ φ ∈ Ds,`, `∃ C : T,`, a hypothesis `(h : Γ, p ⊢ q)`), `A = ⊥` for a
+  formula, and `∧` between propositions of not-yet-known type.
+* The 169 never-compiled `wip/` files were scanned for the idioms the lower
+  precedence rejects (`¬ Γ ⊢ A`, `P ∧ Γ ⊢ A`, `P ∨ Γ ⊢ A`, `Γ = Δ ⊢ A`) and
+  for competing formula notations: no occurrence outside comments and strings.
