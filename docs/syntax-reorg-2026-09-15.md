@@ -74,6 +74,7 @@ form matching the relation's sort.
 | `Γ ⊢q A` | `LaxLogic.QLL.Prv` | `Γ ⊢ A` | `LaxLogic.QLL` |
 | `Γ ⊩q A` | `LaxLogic.QLL.SetPrv` (Set context) | `Γ ⊢ A` | `LaxLogic.QLL` |
 | `Γ ⊫ A` | `LaxLogic.QLL.Consequence` | `Γ ⊨ A` | `LaxLogic.QLL` |
+| `Γ ⊩ φ` | `PLLND.SetDeriv` (Set context) | `Γ ⊢ φ` | `PLLND` |
 
 The search commands (`#search`, `#refute`, `#refuteConf`, `#searchNF`,
 `#refuteNF`, `#pinsrc`, `#draw`) parse `Γ ⊢ C` themselves; their context
@@ -81,10 +82,9 @@ argument is now parsed at precedence 56 so that it stops at the turnstile.
 
 ## 4. Deliberately not converted (next steps)
 
-* PLL `Γ ⊩ A` for `SetDeriv` (262 uses, many in `wip/`).  It is the set-context
-  relation, so under this design it becomes plain `⊢` exactly like QLL's
-  `SetPrv`; left alone here to keep this change reviewable, and because `⊩`
-  is conventionally forcing, which frees it.
+* (Done in a follow-up commit: PLL `SetDeriv` is plain `⊢` on a set context,
+  like QLL's `SetPrv`.  Only its 137 uses in Lean code were rewritten; the other
+  `⊩` in comments and printed countermodels are forcing and stay.)
 * `Γ ⊢qll p : A` (QLL proof-term judgement): a three-place judgement wants its
   own form, `Γ ⊢[R] p : A`.
 * Realisability `x ⊩ᵘ[Ev, w] φ` and friends: already bracketed and scoped.

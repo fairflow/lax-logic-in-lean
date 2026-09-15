@@ -77,17 +77,17 @@ namespace SetDeriv
 
 variable {Γ : Set PLLFormula}
 
-theorem andI {φ ψ : PLLFormula} (h₁ : Γ ⊩ φ) (h₂ : Γ ⊩ ψ) : Γ ⊩ φ.and ψ :=
+theorem andI {φ ψ : PLLFormula} (h₁ : Γ ⊢ φ) (h₂ : Γ ⊢ ψ) : Γ ⊢ φ.and ψ :=
   map₂ (fun p₁ p₂ => .andIntro p₁ p₂) h₁ h₂
 
-theorem andE1 {φ ψ : PLLFormula} (h : Γ ⊩ φ.and ψ) : Γ ⊩ φ :=
+theorem andE1 {φ ψ : PLLFormula} (h : Γ ⊢ φ.and ψ) : Γ ⊢ φ :=
   map (fun p => .andElim1 p) h
 
-theorem andE2 {φ ψ : PLLFormula} (h : Γ ⊩ φ.and ψ) : Γ ⊩ ψ :=
+theorem andE2 {φ ψ : PLLFormula} (h : Γ ⊢ φ.and ψ) : Γ ⊢ ψ :=
   map (fun p => .andElim2 p) h
 
 /-- `≡` is reflexive. -/
-theorem iff_refl (φ : PLLFormula) : Γ ⊩ iffPLL φ φ :=
+theorem iff_refl (φ : PLLFormula) : Γ ⊢ iffPLL φ φ :=
   andI (deduct (of_mem (Set.mem_insert ..))) (deduct (of_mem (Set.mem_insert ..)))
 
 /-- Congruence of `≡` for a binary connective, given the two implications
@@ -95,27 +95,27 @@ are compatible with it argument-wise.  Used via the three instances below. -/
 theorem iff_congr₂ {P P' Q Q' : PLLFormula}
     (conn : PLLFormula → PLLFormula → PLLFormula)
     (compat : ∀ {Δ : Set PLLFormula} {X X' Y Y' : PLLFormula},
-      Δ ⊩ iffPLL X X' → Δ ⊩ iffPLL Y Y' → Δ ⊩ (conn X Y).ifThen (conn X' Y'))
-    (h₁ : Γ ⊩ iffPLL P P') (h₂ : Γ ⊩ iffPLL Q Q') :
-    Γ ⊩ iffPLL (conn P Q) (conn P' Q') := by
+      Δ ⊢ iffPLL X X' → Δ ⊢ iffPLL Y Y' → Δ ⊢ (conn X Y).ifThen (conn X' Y'))
+    (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
+    Γ ⊢ iffPLL (conn P Q) (conn P' Q') := by
   refine andI (compat h₁ h₂) (compat ?_ ?_)
   · exact andI (andE2 h₁) (andE1 h₁)
   · exact andI (andE2 h₂) (andE1 h₂)
 
 theorem iff_congr_and {P P' Q Q' : PLLFormula}
-    (h₁ : Γ ⊩ iffPLL P P') (h₂ : Γ ⊩ iffPLL Q Q') :
-    Γ ⊩ iffPLL (P.and Q) (P'.and Q') := by
+    (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
+    Γ ⊢ iffPLL (P.and Q) (P'.and Q') := by
   refine iff_congr₂ PLLFormula.and (fun {Δ X X' Y Y'} hX hY => deduct ?_) h₁ h₂
-  have hXY : insert (X.and Y) Δ ⊩ X.and Y := of_mem (Set.mem_insert ..)
-  have hX' : insert (X.and Y) Δ ⊩ iffPLL X X' :=
+  have hXY : insert (X.and Y) Δ ⊢ X.and Y := of_mem (Set.mem_insert ..)
+  have hX' : insert (X.and Y) Δ ⊢ iffPLL X X' :=
     mono (Set.subset_insert ..) hX
-  have hY' : insert (X.and Y) Δ ⊩ iffPLL Y Y' :=
+  have hY' : insert (X.and Y) Δ ⊢ iffPLL Y Y' :=
     mono (Set.subset_insert ..) hY
   exact andI (mp (andE1 hX') (andE1 hXY)) (mp (andE1 hY') (andE2 hXY))
 
 theorem iff_congr_or {P P' Q Q' : PLLFormula}
-    (h₁ : Γ ⊩ iffPLL P P') (h₂ : Γ ⊩ iffPLL Q Q') :
-    Γ ⊩ iffPLL (P.or Q) (P'.or Q') := by
+    (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
+    Γ ⊢ iffPLL (P.or Q) (P'.or Q') := by
   refine iff_congr₂ PLLFormula.or (fun {Δ X X' Y Y'} hX hY => deduct ?_) h₁ h₂
   refine orE (of_mem (Set.mem_insert ..)) ?_ ?_
   · refine orL _ (mp ?_ (of_mem (Set.mem_insert ..)))
@@ -124,23 +124,23 @@ theorem iff_congr_or {P P' Q Q' : PLLFormula}
     exact mono ((Set.subset_insert ..).trans (Set.subset_insert ..)) (andE1 hY)
 
 theorem iff_congr_imp {P P' Q Q' : PLLFormula}
-    (h₁ : Γ ⊩ iffPLL P P') (h₂ : Γ ⊩ iffPLL Q Q') :
-    Γ ⊩ iffPLL (P.ifThen Q) (P'.ifThen Q') := by
+    (h₁ : Γ ⊢ iffPLL P P') (h₂ : Γ ⊢ iffPLL Q Q') :
+    Γ ⊢ iffPLL (P.ifThen Q) (P'.ifThen Q') := by
   refine iff_congr₂ PLLFormula.ifThen
     (fun {Δ X X' Y Y'} hX hY => deduct (deduct ?_)) h₁ h₂
   -- context:  X', X ⊃ Y, Δ  ⊢  Y'   (note `⊃` is contravariant on the left)
-  have hX'w : insert X' (insert (X.ifThen Y) Δ) ⊩ X := by
+  have hX'w : insert X' (insert (X.ifThen Y) Δ) ⊢ X := by
     refine mp ?_ (of_mem (Set.mem_insert ..))
     exact mono ((Set.subset_insert ..).trans (Set.subset_insert ..)) (andE2 hX)
-  have hY₀ : insert X' (insert (X.ifThen Y) Δ) ⊩ Y :=
+  have hY₀ : insert X' (insert (X.ifThen Y) Δ) ⊢ Y :=
     mp (of_mem (Set.mem_insert_of_mem _ (Set.mem_insert ..))) hX'w
   refine mp ?_ hY₀
   exact mono ((Set.subset_insert ..).trans (Set.subset_insert ..)) (andE1 hY)
 
 theorem iff_congr_somehow {P P' : PLLFormula}
-    (h : Γ ⊩ iffPLL P P') : Γ ⊩ iffPLL (somehow P) (somehow P') := by
-  have half : ∀ {X X' : PLLFormula}, Γ ⊩ iffPLL X X' →
-      Γ ⊩ (somehow X).ifThen (somehow X') := by
+    (h : Γ ⊢ iffPLL P P') : Γ ⊢ iffPLL (somehow P) (somehow P') := by
+  have half : ∀ {X X' : PLLFormula}, Γ ⊢ iffPLL X X' →
+      Γ ⊢ (somehow X).ifThen (somehow X') := by
     intro X X' hX
     refine deduct ?_
     refine somehow_mono (of_mem (Set.mem_insert ..)) ?_
@@ -156,7 +156,7 @@ open SetDeriv in
 from `M ≡ N` conclude `C[M] ≡ C[N]` for any context `C`. -/
 theorem extensionality_setDeriv (a : String) (M N : PLLFormula) :
     ∀ C : PLLFormula,
-      ({iffPLL M N} : Set PLLFormula) ⊩ iffPLL (substProp a M C) (substProp a N C)
+      ({iffPLL M N} : Set PLLFormula) ⊢ iffPLL (substProp a M C) (substProp a N C)
   | .prop b => by
       by_cases h : b = a
       · simp only [substProp, if_pos h]
@@ -178,7 +178,7 @@ theorem extensionality_setDeriv (a : String) (M N : PLLFormula) :
 theorem strong_extensionality (a : String) (M N C : PLLFormula) :
     Nonempty (LaxND [] ((iffPLL M N).ifThen
       (iffPLL (substProp a M C) (substProp a N C)))) := by
-  have h1 : insert (iffPLL M N) (∅ : Set PLLFormula) ⊩
+  have h1 : insert (iffPLL M N) (∅ : Set PLLFormula) ⊢
       iffPLL (substProp a M C) (substProp a N C) := by
     refine SetDeriv.mono ?_ (extensionality_setDeriv a M N C)
     intro x hx

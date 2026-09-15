@@ -135,7 +135,7 @@ still satisfy the ambient `MaxIn`. -/
 
 /-- `LaxND`-derivability from a set implies `DerivU`-derivability (`SDeriv`). -/
 theorem sderiv_of_setderiv {Γ : Set PLLFormula} {φ : PLLFormula}
-    (h : Γ ⊩ φ) : SDeriv Γ φ := by
+    (h : Γ ⊢ φ) : SDeriv Γ φ := by
   obtain ⟨L, hL, ⟨p⟩⟩ := h
   exact ⟨L, hL, DerivU.of_nd p⟩
 

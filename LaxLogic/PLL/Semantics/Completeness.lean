@@ -65,12 +65,12 @@ def disjOf : List PLLFormula → List PLLFormula → PLLFormula
 has its `disjOf` derivable from `val`. -/
 def Consistent (T : Theory) : Prop :=
   ∀ Ds Ts : List PLLFormula, (∀ φ ∈ Ds, φ ∈ T.fal) → (∀ φ ∈ Ts, φ ∈ T.mfal) →
-    Ds ++ Ts ≠ [] → ¬ T.val ⊩ disjOf Ds Ts
+    Ds ++ Ts ≠ [] → ¬ T.val ⊢ disjOf Ds Ts
 
 theorem not_consistent_iff {T : Theory} :
     ¬ Consistent T ↔ ∃ Ds Ts : List PLLFormula,
       (∀ φ ∈ Ds, φ ∈ T.fal) ∧ (∀ φ ∈ Ts, φ ∈ T.mfal) ∧ Ds ++ Ts ≠ [] ∧
-        T.val ⊩ disjOf Ds Ts := by
+        T.val ⊢ disjOf Ds Ts := by
   unfold Consistent
   push_neg
   rfl
@@ -81,8 +81,8 @@ open SetDeriv
 
 /-- Introduce `disjOf` from one of its `fal`-disjuncts. -/
 theorem disjOf_intro_fal {Γ : Set PLLFormula} {φ : PLLFormula}
-    {Ds Ts : List PLLFormula} (hmem : φ ∈ Ds) (h : Γ ⊩ φ) :
-    Γ ⊩ disjOf Ds Ts := by
+    {Ds Ts : List PLLFormula} (hmem : φ ∈ Ds) (h : Γ ⊢ φ) :
+    Γ ⊢ disjOf Ds Ts := by
   cases Ts with
   | nil => simpa using bigOr_intro hmem h
   | cons K Ts =>
@@ -92,7 +92,7 @@ theorem disjOf_intro_fal {Γ : Set PLLFormula} {φ : PLLFormula}
 
 /-- Introduce `disjOf` from its modal disjunct. -/
 theorem disjOf_intro_lax {Γ : Set PLLFormula} {Ds Ts : List PLLFormula}
-    (hne : Ts ≠ []) (h : Γ ⊩ .somehow (bigOr Ts)) : Γ ⊩ disjOf Ds Ts := by
+    (hne : Ts ≠ []) (h : Γ ⊢ .somehow (bigOr Ts)) : Γ ⊢ disjOf Ds Ts := by
   cases Ts with
   | nil => exact absurd rfl hne
   | cons K Ts =>
@@ -102,9 +102,9 @@ theorem disjOf_intro_lax {Γ : Set PLLFormula} {Ds Ts : List PLLFormula}
 
 /-- Eliminate `disjOf`. -/
 theorem disjOf_elim {Γ : Set PLLFormula} {χ : PLLFormula}
-    {Ds Ts : List PLLFormula} (h : Γ ⊩ disjOf Ds Ts)
-    (hD : ∀ φ ∈ Ds, insert φ Γ ⊩ χ)
-    (hT : Ts ≠ [] → insert (.somehow (bigOr Ts)) Γ ⊩ χ) : Γ ⊩ χ := by
+    {Ds Ts : List PLLFormula} (h : Γ ⊢ disjOf Ds Ts)
+    (hD : ∀ φ ∈ Ds, insert φ Γ ⊢ χ)
+    (hT : Ts ≠ [] → insert (.somehow (bigOr Ts)) Γ ⊢ χ) : Γ ⊢ χ := by
   cases Ts with
   | nil =>
       rw [disjOf_nil_right] at h
@@ -127,9 +127,9 @@ theorem disjOf_elim {Γ : Set PLLFormula} {χ : PLLFormula}
 /-- The workhorse: transform a `disjOf`-derivation by handling each
 `fal`-disjunct and injecting the modal part into a superlist. -/
 theorem disjOf_transform {Γ : Set PLLFormula} {Ds Ts Ds' Ts' : List PLLFormula}
-    (h : Γ ⊩ disjOf Ds Ts)
-    (hD : ∀ φ ∈ Ds, insert φ Γ ⊩ disjOf Ds' Ts')
-    (hT : ∀ φ ∈ Ts, φ ∈ Ts') : Γ ⊩ disjOf Ds' Ts' := by
+    (h : Γ ⊢ disjOf Ds Ts)
+    (hD : ∀ φ ∈ Ds, insert φ Γ ⊢ disjOf Ds' Ts')
+    (hT : ∀ φ ∈ Ts, φ ∈ Ts') : Γ ⊢ disjOf Ds' Ts' := by
   refine disjOf_elim h hD (fun hne => ?_)
   have hne' : Ts' ≠ [] := by
     cases Ts with
@@ -142,7 +142,7 @@ theorem disjOf_transform {Γ : Set PLLFormula} {Ds Ts Ds' Ts' : List PLLFormula}
 /-- Monotonicity of `disjOf` in both lists. -/
 theorem disjOf_mono {Γ : Set PLLFormula} {Ds Ts Ds' Ts' : List PLLFormula}
     (hDs : ∀ φ ∈ Ds, φ ∈ Ds') (hTs : ∀ φ ∈ Ts, φ ∈ Ts')
-    (h : Γ ⊩ disjOf Ds Ts) : Γ ⊩ disjOf Ds' Ts' :=
+    (h : Γ ⊢ disjOf Ds Ts) : Γ ⊢ disjOf Ds' Ts' :=
   disjOf_transform h
     (fun φ hφ => disjOf_intro_fal (hDs φ hφ) (of_mem (Set.mem_insert ..)))
     hTs
@@ -236,14 +236,14 @@ namespace MaxConsistent
 
 theorem not_fal_deriv {T : Theory} (hM : MaxConsistent T)
     {φ : PLLFormula} (hφ : φ ∈ T.fal)
-    (hd : T.val ⊩ φ) : False := by
+    (hd : T.val ⊢ φ) : False := by
   refine hM.1 [φ] [] (by simpa using hφ) (by simp) (by simp) ?_
   rw [disjOf_nil_right]
   exact bigOr_intro (List.mem_cons_self ..) hd
 
 /-- (i) deductive closure of the validated part. -/
 theorem ded_closed {T : Theory} (hM : MaxConsistent T)
-    {φ : PLLFormula} (hd : T.val ⊩ φ) : φ ∈ T.val := by
+    {φ : PLLFormula} (hd : T.val ⊢ φ) : φ ∈ T.val := by
   have hcons : Consistent ⟨insert φ T.val, T.fal, T.mfal⟩ := by
     intro Ds Ts h1 h2 hg hder
     exact hM.1 Ds Ts h1 h2 hg (SetDeriv.cut hd hder)
@@ -256,7 +256,7 @@ private theorem val_ext {T : Theory} (hM : MaxConsistent T) {φ : PLLFormula}
     (h : φ ∉ T.val) :
     ∃ Ds Ts : List PLLFormula,
       (∀ ψ ∈ Ds, ψ ∈ T.fal) ∧ (∀ ψ ∈ Ts, ψ ∈ T.mfal) ∧ Ds ++ Ts ≠ [] ∧
-        insert φ T.val ⊩ disjOf Ds Ts := by
+        insert φ T.val ⊢ disjOf Ds Ts := by
   rw [← not_consistent_iff (T := ⟨insert φ T.val, T.fal, T.mfal⟩)]
   intro hcons
   exact h ((hM.2 _ hcons ⟨Set.subset_insert .., subset_rfl, subset_rfl⟩).1
@@ -267,7 +267,7 @@ private theorem fal_ext {T : Theory} (hM : MaxConsistent T) {φ : PLLFormula}
     (h : φ ∉ T.fal) :
     ∃ Ds Ts : List PLLFormula,
       (∀ ψ ∈ Ds, ψ ∈ insert φ T.fal) ∧ (∀ ψ ∈ Ts, ψ ∈ T.mfal) ∧
-        Ds ++ Ts ≠ [] ∧ T.val ⊩ disjOf Ds Ts := by
+        Ds ++ Ts ≠ [] ∧ T.val ⊢ disjOf Ds Ts := by
   rw [← not_consistent_iff (T := ⟨T.val, insert φ T.fal, T.mfal⟩)]
   intro hcons
   exact h ((hM.2 _ hcons ⟨subset_rfl, Set.subset_insert .., subset_rfl⟩).2.1
@@ -284,7 +284,7 @@ theorem mem_val_or_mem_fal {T : Theory} (hM : MaxConsistent T)
   exfalso
   obtain ⟨Ds₁, Ts₁, hDs₁, hTs₁, hg₁, hd₁⟩ := hM.val_ext hv
   obtain ⟨Ds₂, Ts₂, hDs₂, hTs₂, hg₂, hd₂⟩ := hM.fal_ext hf
-  have hd : T.val ⊩ disjOf (Ds₁ ++ rmv φ Ds₂) (Ts₁ ++ Ts₂) := by
+  have hd : T.val ⊢ disjOf (Ds₁ ++ rmv φ Ds₂) (Ts₁ ++ Ts₂) := by
     refine disjOf_transform hd₂ (fun ψ hψ => ?_)
       (fun ψ hψ => List.mem_append.mpr (.inr hψ))
     by_cases he : ψ = φ
@@ -320,7 +320,7 @@ theorem or_mem {T : Theory} (hM : MaxConsistent T)
   push_neg at hcon
   obtain ⟨Ds₁, Ts₁, hDs₁, hTs₁, hg₁, hd₁⟩ := hM.val_ext hcon.1
   obtain ⟨Ds₂, Ts₂, hDs₂, hTs₂, hg₂, hd₂⟩ := hM.val_ext hcon.2
-  have hd : T.val ⊩ disjOf (Ds₁ ++ Ds₂) (Ts₁ ++ Ts₂) := by
+  have hd : T.val ⊢ disjOf (Ds₁ ++ Ds₂) (Ts₁ ++ Ts₂) := by
     refine orE (of_mem h) ?_ ?_
     · exact disjOf_mono (fun χ hχ => List.mem_append.mpr (.inl hχ))
         (fun χ hχ => List.mem_append.mpr (.inl hχ)) hd₁
@@ -342,12 +342,12 @@ theorem imp_mem {T : Theory} (hM : MaxConsistent T)
   push_neg at hcon
   obtain ⟨Ds₁, Ts₁, hDs₁, hTs₁, hg₁, hd₁⟩ := hM.val_ext hcon.2
   obtain ⟨Ds₂, Ts₂, hDs₂, hTs₂, hg₂, hd₂⟩ := hM.fal_ext hcon.1
-  have hd : T.val ⊩ disjOf (Ds₁ ++ rmv φ Ds₂) (Ts₁ ++ Ts₂) := by
+  have hd : T.val ⊢ disjOf (Ds₁ ++ rmv φ Ds₂) (Ts₁ ++ Ts₂) := by
     refine disjOf_transform hd₂ (fun χ hχ => ?_)
       (fun χ hχ => List.mem_append.mpr (.inr hχ))
     by_cases he : χ = φ
     · subst he
-      have hψ : insert χ T.val ⊩ ψ :=
+      have hψ : insert χ T.val ⊢ ψ :=
         mp (of_mem (Set.mem_insert_of_mem _ h)) (of_mem (Set.mem_insert ..))
       refine SetDeriv.cut hψ ?_
       refine disjOf_mono (fun χ' hχ' => List.mem_append.mpr (.inl hχ'))
@@ -373,11 +373,11 @@ theorem fal_or {T : Theory} (hM : MaxConsistent T)
     {φ ψ : PLLFormula} (h : φ.or ψ ∈ T.fal) :
     φ ∈ T.fal ∧ ψ ∈ T.fal := by
   have main : ∀ χ : PLLFormula,
-      (∀ Γ : Set PLLFormula, Γ ⊩ χ → Γ ⊩ φ.or ψ) → χ ∈ T.fal := by
+      (∀ Γ : Set PLLFormula, Γ ⊢ χ → Γ ⊢ φ.or ψ) → χ ∈ T.fal := by
     intro χ hinj
     by_contra hχ
     obtain ⟨Ds, Ts, hDs, hTs, hg, hd⟩ := hM.fal_ext hχ
-    have hd' : T.val ⊩ disjOf ((φ.or ψ) :: rmv χ Ds) Ts := by
+    have hd' : T.val ⊢ disjOf ((φ.or ψ) :: rmv χ Ds) Ts := by
       refine disjOf_transform hd (fun χ' hχ' => ?_) (fun χ' hχ' => hχ')
       by_cases he : χ' = χ
       · subst he
@@ -404,7 +404,7 @@ theorem fal_and {T : Theory} (hM : MaxConsistent T)
   push_neg at hcon
   obtain ⟨Ds₁, Ts₁, hDs₁, hTs₁, hg₁, hd₁⟩ := hM.fal_ext hcon.1
   obtain ⟨Ds₂, Ts₂, hDs₂, hTs₂, hg₂, hd₂⟩ := hM.fal_ext hcon.2
-  have hd : T.val ⊩
+  have hd : T.val ⊢
       disjOf ((φ.and ψ) :: (rmv φ Ds₁ ++ rmv ψ Ds₂)) (Ts₁ ++ Ts₂) := by
     refine disjOf_transform hd₁ (fun χ hχ => ?_)
       (fun χ hχ => List.mem_append.mpr (.inl hχ))
@@ -449,7 +449,7 @@ theorem mfal_sub_fal {T : Theory} (hM : MaxConsistent T)
     {φ : PLLFormula} (h : φ ∈ T.mfal) : φ ∈ T.fal := by
   by_contra hφ
   obtain ⟨Ds, Ts, hDs, hTs, hg, hd⟩ := hM.fal_ext hφ
-  have hd' : T.val ⊩ disjOf (rmv φ Ds) (φ :: Ts) := by
+  have hd' : T.val ⊢ disjOf (rmv φ Ds) (φ :: Ts) := by
     refine disjOf_transform hd (fun χ hχ => ?_)
       (fun χ hχ => List.mem_cons_of_mem _ hχ)
     by_cases he : χ = φ
@@ -554,7 +554,7 @@ theorem truth_lemma (φ : PLLFormula) :
           have hTs' : Ts = [] := list_sub_empty hTs
           subst hTs'
           rw [disjOf_nil_right] at hder
-          have hψ : insert φ T.1.val ⊩ ψ :=
+          have hψ : insert φ T.1.val ⊢ ψ :=
             SetDeriv.bigOr_collapse (fun χ hχ => hDs χ hχ) hder
           exact T.2.not_fal_deriv h (SetDeriv.deduct hψ)
         obtain ⟨T', hle, hM'⟩ := exists_maxConsistent_extension hcons
@@ -578,9 +578,9 @@ theorem truth_lemma (φ : PLLFormula) :
           | nil => exact hg rfl
           | cons K Ts =>
               rw [disjOf_nil_left] at hder
-              have himp : T₁.1.val ⊩ φ.ifThen (.somehow (bigOr (K :: Ts))) :=
+              have himp : T₁.1.val ⊢ φ.ifThen (.somehow (bigOr (K :: Ts))) :=
                 SetDeriv.deduct hder
-              have hlax : T₁.1.val ⊩ .somehow (bigOr (K :: Ts)) :=
+              have hlax : T₁.1.val ⊢ .somehow (bigOr (K :: Ts)) :=
                 SetDeriv.somehow_bind (SetDeriv.of_mem (hle h)) himp
               refine T₁.2.1 [] (K :: Ts) (by simp) hTs (by simp) ?_
               rwa [disjOf_nil_left]
@@ -597,7 +597,7 @@ theorem truth_lemma (φ : PLLFormula) :
           | nil => exact hg rfl
           | cons K Ts =>
               rw [disjOf_nil_left] at hder
-              have hφd : T.1.val ⊩ .somehow φ :=
+              have hφd : T.1.val ⊢ .somehow φ :=
                 SetDeriv.somehow_mono hder
                   (SetDeriv.bigOr_collapse (fun χ hχ => hTs χ hχ)
                     (SetDeriv.of_mem (Set.mem_insert ..)))
@@ -619,7 +619,7 @@ theorem completeness {Γ : List PLLFormula} {φ : PLLFormula}
     have hTs' : Ts = [] := list_sub_empty hTs
     subst hTs'
     rw [disjOf_nil_right] at hder
-    have hd : {ψ | ψ ∈ Γ} ⊩ φ :=
+    have hd : {ψ | ψ ∈ Γ} ⊢ φ :=
       SetDeriv.bigOr_collapse (fun χ hχ => hDs χ hχ) hder
     obtain ⟨L, hL, ⟨p⟩⟩ := hd
     exact hn ⟨p.rename hL⟩

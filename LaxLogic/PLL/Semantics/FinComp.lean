@@ -120,7 +120,7 @@ end FTheory
 /-- Set-derivability from a finset coercion is list-derivability from its
 `toList`. -/
 theorem setDeriv_coe_iff {V : Finset PLLFormula} {φ : PLLFormula} :
-    (↑V : Set PLLFormula) ⊩ φ ↔ Nonempty (LaxND V.toList φ) := by
+    (↑V : Set PLLFormula) ⊢ φ ↔ Nonempty (LaxND V.toList φ) := by
   constructor
   · rintro ⟨L, hL, ⟨p⟩⟩
     exact ⟨p.rename fun ψ hψ => Finset.mem_toList.mpr (hL ψ hψ)⟩
@@ -144,7 +144,7 @@ def setDerivB (V : Finset PLLFormula) (φ : PLLFormula) : Bool :=
               ⟨q.rename fun ψ hψ => p.mem_iff.mpr hψ⟩)⟩)
 
 theorem setDerivB_iff (V : Finset PLLFormula) (φ : PLLFormula) :
-    setDerivB V φ = true ↔ (↑V : Set PLLFormula) ⊩ φ := by
+    setDerivB V φ = true ↔ (↑V : Set PLLFormula) ⊢ φ := by
   rcases V with ⟨m, hm⟩
   induction m using Quotient.inductionOn with
   | h l =>
@@ -157,7 +157,7 @@ theorem setDerivB_iff (V : Finset PLLFormula) (φ : PLLFormula) :
         exact ⟨q.rename fun ψ hψ => hL ψ hψ⟩
 
 instance (V : Finset PLLFormula) (φ : PLLFormula) :
-    Decidable ((↑V : Set PLLFormula) ⊩ φ) :=
+    Decidable ((↑V : Set PLLFormula) ⊢ φ) :=
   decidable_of_iff _ (setDerivB_iff V φ)
 
 /-- Consistency of a finite triple is a single derivability check on the
@@ -165,7 +165,7 @@ full selection (empty selections aside): `disjOf` is monotone, so the full
 lists are the worst case. -/
 theorem cons_iff_check (T : FTheory) :
     T.Cons ↔ (T.fal = ∅ ∧ T.mfal = ∅) ∨
-      ¬ (↑T.val : Set PLLFormula) ⊩ disjOf T.fal.toList T.mfal.toList := by
+      ¬ (↑T.val : Set PLLFormula) ⊢ disjOf T.fal.toList T.mfal.toList := by
   constructor
   · intro hT
     by_cases he : T.fal = ∅ ∧ T.mfal = ∅
@@ -200,7 +200,7 @@ order are irrelevant).  This is the choice-free replacement for the
 theorem cons_iff_rep (T : FTheory) {lf lm : List PLLFormula}
     (hlf : ∀ x, x ∈ lf ↔ x ∈ T.fal) (hlm : ∀ x, x ∈ lm ↔ x ∈ T.mfal) :
     T.Cons ↔ (lf = [] ∧ lm = []) ∨
-      ¬ (↑T.val : Set PLLFormula) ⊩ disjOf lf lm := by
+      ¬ (↑T.val : Set PLLFormula) ⊢ disjOf lf lm := by
   constructor
   · intro hT
     by_cases he : lf = [] ∧ lm = []
@@ -309,22 +309,22 @@ theorem cons_insVal_or_insFal {T : FTheory} (hT : T.Cons) (φ : PLLFormula) :
     rw [List.mem_cons, hlf x]
     exact (Finset.mem_insert).symm
   have hc1 : ¬((lf = [] ∧ lm = []) ∨
-      ¬ (↑(insert φ T.val) : Set PLLFormula) ⊩ disjOf lf lm) :=
+      ¬ (↑(insert φ T.val) : Set PLLFormula) ⊢ disjOf lf lm) :=
     fun hc => h1 ((cons_iff_rep (T.insVal φ) hlf hlm).mpr hc)
   have hc2 : ¬((φ :: lf = [] ∧ lm = []) ∨
-      ¬ (↑T.val : Set PLLFormula) ⊩ disjOf (φ :: lf) lm) :=
+      ¬ (↑T.val : Set PLLFormula) ⊢ disjOf (φ :: lf) lm) :=
     fun hc => h2 ((cons_iff_rep (T.insFal φ) hlf₂ hlm).mpr hc)
   have hg₁ : ¬(lf = [] ∧ lm = []) := fun hA => hc1 (.inl hA)
-  have hd₁ : (↑(insert φ T.val) : Set PLLFormula) ⊩ disjOf lf lm := by
-    by_cases hD : (↑(insert φ T.val) : Set PLLFormula) ⊩ disjOf lf lm
+  have hd₁ : (↑(insert φ T.val) : Set PLLFormula) ⊢ disjOf lf lm := by
+    by_cases hD : (↑(insert φ T.val) : Set PLLFormula) ⊢ disjOf lf lm
     · exact hD
     · exact absurd (.inr hD) hc1
-  have hd₂ : (↑T.val : Set PLLFormula) ⊩ disjOf (φ :: lf) lm := by
-    by_cases hD : (↑T.val : Set PLLFormula) ⊩ disjOf (φ :: lf) lm
+  have hd₂ : (↑T.val : Set PLLFormula) ⊢ disjOf (φ :: lf) lm := by
+    by_cases hD : (↑T.val : Set PLLFormula) ⊢ disjOf (φ :: lf) lm
     · exact hD
     · exact absurd (.inr hD) hc2
   rw [coeInsert] at hd₁
-  have hd : (↑T.val : Set PLLFormula) ⊩
+  have hd : (↑T.val : Set PLLFormula) ⊢
       disjOf (lf ++ rmv φ (φ :: lf)) (lm ++ lm) := by
     refine disjOf_transform hd₂ (fun ψ hψ => ?_)
       (fun ψ hψ => List.mem_append.mpr (.inr hψ))
@@ -480,7 +480,7 @@ variable {cl : Finset PLLFormula} {T : FTheory}
 
 /-- Derivability of a falsified formula is absurd. -/
 theorem not_fal_deriv (hM : MaxIn cl T) {φ : PLLFormula} (hφ : φ ∈ T.fal)
-    (hd : (↑T.val : Set PLLFormula) ⊩ φ) : False := by
+    (hd : (↑T.val : Set PLLFormula) ⊢ φ) : False := by
   refine hM.1 [φ] [] (by simpa using hφ) (by simp) (by simp) ?_
   rw [disjOf_nil_right]
   exact bigOr_intro (List.mem_cons_self ..) hd
@@ -491,7 +491,7 @@ theorem not_mem_fal_of_mem_val (hM : MaxIn cl T) {φ : PLLFormula}
 
 /-- Deductive closure on the closure. -/
 theorem ded_closed (hM : MaxIn cl T) {φ : PLLFormula} (hφcl : φ ∈ cl)
-    (hd : (↑T.val : Set PLLFormula) ⊩ φ) : φ ∈ T.val := by
+    (hd : (↑T.val : Set PLLFormula) ⊢ φ) : φ ∈ T.val := by
   rcases hM.2.2 φ hφcl with hv | hf
   · exact hv
   · exact (hM.not_fal_deriv hf hd).elim
@@ -667,7 +667,7 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
                 exact absurd (hTs K (List.mem_cons_self ..)) not_mem_coe_empty
           subst hTs'
           rw [disjOf_nil_right, FTheory.toTheory_val, coeInsert] at hder
-          have hψd : (insert φ (↑T.1.val : Set PLLFormula)) ⊩ ψ := by
+          have hψd : (insert φ (↑T.1.val : Set PLLFormula)) ⊢ ψ := by
             refine bigOr_collapse (fun χ hχ => ?_) hder
             exact eq_of_mem_coe_singleton (hDs χ hχ)
           exact T.2.not_fal_deriv h (deduct hψd)
@@ -699,10 +699,10 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
           | nil => exact hg rfl
           | cons K Ts =>
               rw [disjOf_nil_left, FTheory.toTheory_val, coeInsert] at hder
-              have himp : (↑T₁.1.val : Set PLLFormula) ⊩
+              have himp : (↑T₁.1.val : Set PLLFormula) ⊢
                   φ.ifThen (.somehow (bigOr (K :: Ts))) :=
                 deduct hder
-              have hlax : (↑T₁.1.val : Set PLLFormula) ⊩
+              have hlax : (↑T₁.1.val : Set PLLFormula) ⊢
                   .somehow (bigOr (K :: Ts)) :=
                 somehow_bind (of_mem (Finset.mem_coe.mpr (hle h))) himp
               refine T₁.2.1 [] (K :: Ts) (fun φ' hφ' => nomatch hφ') hTs
@@ -728,7 +728,7 @@ theorem truth_lemma {cl : Finset PLLFormula} (hcl : SubClosed cl) :
           | nil => exact hg rfl
           | cons K Ts =>
               rw [disjOf_nil_left] at hder
-              have hφd : (↑T.1.val : Set PLLFormula) ⊩ .somehow φ := by
+              have hφd : (↑T.1.val : Set PLLFormula) ⊢ .somehow φ := by
                 refine somehow_mono hder ?_
                 refine bigOr_collapse (fun χ hχ => ?_)
                   (of_mem (Set.mem_insert ..))
@@ -794,7 +794,7 @@ theorem finite_canonical_countermodel {Γ : List PLLFormula} {C : PLLFormula}
           exact absurd (hTs K (List.mem_cons_self ..)) not_mem_coe_empty
     subst hTs'
     rw [disjOf_nil_right] at hder
-    have hd : (↑(toFin Γ) : Set PLLFormula) ⊩ C := by
+    have hd : (↑(toFin Γ) : Set PLLFormula) ⊢ C := by
       refine bigOr_collapse (fun χ hχ => ?_) hder
       exact eq_of_mem_coe_singleton (hDs χ hχ)
     obtain ⟨L, hL, ⟨p⟩⟩ := hd
