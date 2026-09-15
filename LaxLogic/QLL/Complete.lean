@@ -21,6 +21,7 @@ containing `◯∀⊥` inconsistent, though `◯∀⊥` is satisfiable.
 import LaxLogic.QLL.Prov
 import LaxLogic.QLL.Rename
 import Mathlib.Order.Zorn
+import LaxLogic.QLL.NotationOrder
 import LaxLogic.Util.Turnstile
 
 namespace LaxLogic.QLL

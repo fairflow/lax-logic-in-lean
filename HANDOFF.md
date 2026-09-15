@@ -448,3 +448,30 @@ sides"; "we don't have to use ⊃ … Use a double headed arrow".  Record:
   failing (line wrapping) before it was fixed.
 - **Next.** QLL formula notation (`◯[q]`, `◯[∀]`, `◯[∃]`, quantifiers) and
   the QLL proof-term judgement.
+
+## 2026-09-15 (late evening) — `syntax-reorg`: QLL modalities and quantifiers
+
+Matthew: "now do QLL: ◯[q], ◯[∀], ◯[∃] and quantifiers".  Record:
+`docs/syntax-reorg-2026-09-15.md` §2.2.
+
+- **Notation** (`LaxLogic/QLL/Notation.lean`, scoped to `LaxLogic.QLL`):
+  `◯[∀] A`, `◯[∃] A`, `◯[q] A`; `∧ ∨ ↠`; `∀' A`, `∃' A` over a de Bruijn body
+  (Mathlib's model-theory notation); `∀ x, A`, `∃ x, A` with `x : Tm` standing
+  for `.fvar "x"`, closed by the binder.  `⊥ ⊤` in
+  `LaxLogic/QLL/NotationOrder.lean`, because the QLL core imports no Mathlib.
+  Active downstream of `QLL/Lc.lean` and `QLL/Deriv.lean`.
+- **Printing** both ways: `Γ, ◯[∀] A ⊢ ◯[∃] A ∨ B`, `Γ ⊢ ∀' A → Γ ⊢ ∃' A`; a
+  body of constructors prints with fresh names (`∀ y, ∃ z, … Tm.fvar "x"`).
+- **Shared connectives.** `LaxLogic/Util/Connectives.lean` now holds `↠` and the
+  type-directed `∧ ∨ ⊥ ⊤` for every development, registered by
+  `attribute [scoped connective imp] Form.imp`; PLL moved onto it (pins
+  unchanged).  Needed because two scoped `↠` notations are overloaded when
+  both developments are open.
+- **Inside `LaxLogic.QLL`**, `∀ x, b` / `∃ x, b` with one untyped binder are
+  formulas only where `Form` is expected; elsewhere Lean's own (built-in
+  elaborator, or `Exists fun x => b`).
+- **Built:** every `LaxLogic/` module by name (8754 jobs), both papers and the
+  107 baseline wip modules (9168 jobs), `scripts/clp-wolfram.sh` exit 0; two
+  deliberately wrong pins watched failing.
+- **Not changed.** `Surface.lean`'s `qf[…]` still uses `◯∀ ◯∃ ⊃`;
+  `Form.pred` has no notation; the proof-term judgement `⊢qll` is next.

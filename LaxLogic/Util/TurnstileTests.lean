@@ -147,6 +147,52 @@ example (B : Form) : (S, A ⊢ B) = SetPrv (insert A S) B := rfl
 #guard_msgs in #check Prv (A :: Γ) A
 end qll
 
+section qllFormulas
+open LaxLogic.QLL
+variable (Γ : List Form) (A B : Form) (q : Q)
+
+-- the modalities (`LaxLogic/QLL/Notation.lean`)
+example : (◯[∀] A) = Form.circ .all A := rfl
+example : (◯[∃] A) = Form.circ .ex A := rfl
+example : (◯[q] A) = Form.circ q A := rfl
+/-- info: ◯[∀] A ↠ ◯[∃] B : Form -/
+#guard_msgs in #check Form.imp (.circ .all A) (.circ .ex B)
+/-- info: ◯[q] (A ∧ B) : Form -/
+#guard_msgs in #check Form.circ q (.and A B)
+
+-- in sequents, both ways
+example : (Γ, ◯[∀] A ⊢ ◯[∃] A ∨ B) = Prv (.circ .all A :: Γ) (.or (.circ .ex A) B) := rfl
+/-- info: Γ, ◯[∀] A ⊢ ◯[∃] A ∨ B : Prop -/
+#guard_msgs in #check Prv (.circ .all A :: Γ) (.or (.circ .ex A) B)
+
+-- `⊥ ⊤` (`LaxLogic/QLL/NotationOrder.lean`), and Mathlib's elsewhere
+example : (Γ ⊢ ⊤ ∧ ⊥) = Prv Γ (.and .top .bot) := rfl
+/-- info: Γ ⊢ ⊤ ↠ ⊥ : Prop -/
+#guard_msgs in #check Prv Γ (.imp .top .bot)
+example : ((⊤ : Prop) = True) := rfl
+
+-- quantifiers over a de Bruijn body
+example : (∀' A) = Form.forall_ A := rfl
+example : (∃' A) = Form.exists_ A := rfl
+/-- info: Γ ⊢ ∀' A → Γ ⊢ ∃' A : Prop -/
+#guard_msgs in #check Prv Γ (.forall_ A) → Prv Γ (.exists_ A)
+
+-- named quantifiers: `x : Tm` stands for `.fvar "x"`, closed by the binder
+example : (∀ x, Form.pred "P" [x] ↠ Form.pred "P" [x] : Form)
+    = .forall_ (.imp (.pred "P" [.bvar 0]) (.pred "P" [.bvar 0])) := rfl
+example : (Γ ⊢ ∃ x, Form.pred "P" [x]) = Prv Γ (.exists_ (.pred "P" [.bvar 0])) := rfl
+-- a body of constructors prints with names, avoiding the free `x`
+/-- info: ∀ x, Form.pred "P" [x] ↠ ◯[∃] (Form.pred "Q" [x]) : Form -/
+#guard_msgs in #check Form.forall_ (.imp (.pred "P" [.bvar 0]) (.circ .ex (.pred "Q" [.bvar 0])))
+/-- info: ∀ y, ∃ z, Form.pred "R" [y, z, Tm.fvar "x"] : Form -/
+#guard_msgs in #check Form.forall_ (.exists_ (.pred "R" [.bvar 1, .bvar 0, .fvar "x"]))
+
+-- Lean's own `∀ ∃ ∧ ∨` in the scope
+example : ∀ n, n + 0 = n := fun _ => rfl
+example : ∃ n, n = 3 := ⟨3, rfl⟩
+example (P Q : Prop) (h : P ∧ Q) : Q ∨ P := .inl h.2
+end qllFormulas
+
 section both
 open PLLND LaxLogic.QLL
 variable (Γ : List PLLFormula) (A : PLLFormula) (Δ : List Form) (B : Form)
@@ -157,6 +203,13 @@ variable (Γ : List PLLFormula) (A : PLLFormula) (Δ : List Form) (B : Form)
 
 /-- info: Δ ⊢ B : Prop -/
 #guard_msgs in #check Δ ⊢ B
+
+-- formulas of both developments, told apart by type
+example (p r : PLLFormula) (C D : Form) :
+    (p ↠ r) = PLLFormula.ifThen p r ∧ (C ↠ D) = Form.imp C D := ⟨rfl, rfl⟩
+example (C D : Form) : (Δ, C ∧ D ⊢ ◯[∀] B) = Prv (.and C D :: Δ) (.circ .all B) := rfl
+/-- info: (A ↠ A, B ↠ B) : PLLFormula × Form -/
+#guard_msgs in #check (PLLFormula.ifThen A A, Form.imp B B)
 
 -- Lean's own `⊢` in tactic locations is unaffected
 example (a b : Nat) (h : a + 0 = b) : a = b + 0 := by simp at h ⊢; exact h

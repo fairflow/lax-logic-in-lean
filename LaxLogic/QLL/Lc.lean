@@ -20,6 +20,7 @@ Wanted for three things, only one of which is the soundness proof:
 * keeping `Derivable` from making claims about junk.
 -/
 import LaxLogic.QLL.Syntax
+import LaxLogic.QLL.Notation
 
 namespace LaxLogic.QLL
 

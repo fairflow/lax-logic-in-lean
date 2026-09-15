@@ -77,6 +77,7 @@ with `Q` inert.  What tells the two modalities apart is the Fig. 4 refinement
 reading, which is not part of this judgement.
 -/
 import LaxLogic.QLL.Syntax
+import LaxLogic.QLL.Notation
 
 namespace LaxLogic.QLL
 

@@ -9,6 +9,7 @@ first is decided by a program.
 | module | what it holds |
 | :-- | :-- |
 | `Syntax`  | `Tm`, `Q`, `Form`, `Pf`, `Ctx` — locally nameless, two binder sorts |
+| `Notation` | formulas as Lean terms: `◯[∀] A`, `◯[∃] A`, `◯[q] A`, `∧ ∨ ↠`, `∀ x, A`, `∀' A`; `NotationOrder` adds `⊥ ⊤` |
 | `Deriv`   | `Derives p Γ A` in `Type`, one constructor per rule of Fig. 5; `Derivable = Nonempty ∘ Derives` |
 | `Lc`      | local closedness, the open/close roundtrip, and deciding it |
 | `Kit`     | fresh names, size lemmas, errors, lookup — what the checker is built from |
@@ -83,6 +84,8 @@ normal terms, and sufficiency of the residual obligations.  The checker refuses
 certain β-redexes; see `Certify.lean`.
 -/
 import LaxLogic.QLL.Syntax
+import LaxLogic.QLL.Notation
+import LaxLogic.QLL.NotationOrder
 import LaxLogic.QLL.Deriv
 import LaxLogic.QLL.Lc
 import LaxLogic.QLL.Kit

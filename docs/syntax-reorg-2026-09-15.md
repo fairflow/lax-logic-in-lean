@@ -140,8 +140,83 @@ recovery switched off and no coercions: otherwise a failed candidate
 counts as a fit, and `⊢` is reported ambiguous.  That was the first build's
 failure in `LaxLogic/PLL/ND/Consequence.lean` and `LaxLogic/QLL/Complete.lean`.
 
-**Not yet done.**  QLL formula notation (`◯[q]`, `◯[∀]`, `◯[∃]`, quantifiers)
-and the QLL proof-term judgement.
+**Not yet done** (after §2.1): QLL formula notation, done in §2.2; the QLL
+proof-term judgement `Γ ⊢qll p : A`.
+
+### 2.2 QLL formula notation: modalities and quantifiers
+
+Matthew: "now do QLL: ◯[q], ◯[∀], ◯[∃] and quantifiers"; earlier, "the
+modalities: ◯[q], ◯[∀], ◯[∃] if those are possible otherwise ◯[A] and ◯[E]".
+All three are possible.  `LaxLogic/QLL/Notation.lean`, scoped to
+`LaxLogic.QLL`:
+
+| notation | formula |
+|---|---|
+| `◯[∀] A`, `◯[∃] A` | `.circ .all A`, `.circ .ex A` |
+| `◯[q] A` | `.circ q A`, `q : Q` a variable |
+| `A ∧ B`, `A ∨ B`, `A ↠ B` | `.and`, `.or`, `.imp` |
+| `⊥`, `⊤` | `.bot`, `.top` (with `LaxLogic.QLL.NotationOrder`) |
+| `∀' A`, `∃' A` | `.forall_ A`, `.exists_ A`, `A` a de Bruijn body |
+| `∀ x, A`, `∃ x, A` | `.forall_ (A.closeWith "x")`, `x : Tm` standing for `.fvar "x"` |
+
+Examples, pinned in `LaxLogic/Util/TurnstileTests.lean`:
+
+    Γ, ◯[∀] A ⊢ ◯[∃] A ∨ B          -- Prv (.circ .all A :: Γ) (.or (.circ .ex A) B)
+    Γ ⊢ ∀' A → Γ ⊢ ∃' A
+    ∀ x, Form.pred "P" [x] ↠ ◯[∃] (Form.pred "Q" [x])
+
+**Two quantifier forms, because the development has two uses.**  The
+metatheory quantifies over bodies: `Prv Γ (.forall_ A) → Prv Γ (A.openAt 0 t)`.
+There `∀' A` is the direct reading, and it is Mathlib's notation for the de
+Bruijn quantifiers of first-order `BoundedFormula`.  Concrete formulas want
+names: `∀ x, A` elaborates `A` with a Lean variable `x : Tm`, replaces it by
+`.fvar "x"`, and closes over that name, which is the mathematical meaning of
+`∀x.A` (a free `x` in `A` becomes bound).  The CLP paper's generator prints
+`.forall_ A` as `∀x. A`, which is the body reading with a chosen name; the Lean
+notation keeps the two apart.
+
+**Printing.**  `.forall_ (A.closeWith "x")` prints `∀ x, A`.  A body built only
+from constructors, literals and bound individuals is opened with the first
+name of `x y z x1 …` not already in it and prints the same way; the printed
+term elaborates to one that is definitionally equal (`closeWith` computes the
+body back).  Every other body prints `∀' A`.
+
+**Shared connectives.**  With both `PLLND` and `LaxLogic.QLL` open, two scoped
+notations for `↠` would again be overloaded.  So `∧ ∨ ↠ ⊥ ⊤` moved to one
+module, `LaxLogic/Util/Connectives.lean`: `↠` is its syntax, and each
+development registers its constructors with a scoped attribute,
+`attribute [scoped connective imp] Form.imp`.  One elaborator per connective
+picks the constructor of the formula type that is expected, or, with no
+expected type, of the left operand's type; printing is one delaborator driven
+by the same registry.  PLL's notation from §2.1 now uses it too; its pins are
+unchanged.
+
+**Named quantifiers and Lean's `∀`.**  Inside `LaxLogic.QLL` a scoped macro sends
+`∀ x, b` and `∃ x, b` (one untyped binder) to an elaborator that builds the
+formula only when the expected type is `Form`, and otherwise elaborates Lean's
+own `∀` (calling the built-in elaborator, so the macro does not fire again) or
+Lean's own expansion `Exists fun x => b`.  A first attempt fell back to
+`∀ (x : _), b`: the explicit hole behaves differently from an omitted binder
+type in a declaration header, and `example : ∃ n, n = 3` failed.
+
+**`⊥` and `⊤`.**  The QLL core imports no Mathlib, and a second `⊥` syntax
+beside Mathlib's would be ambiguous wherever both are loaded (Lean does not
+merge overloaded alternatives that elaborate to the same term).  So `⊥ ⊤` for
+QLL live in `LaxLogic/QLL/NotationOrder.lean`, which imports
+`Mathlib.Order.Notation`; `LaxLogic/QLL/Complete.lean` imports it.  In the
+Mathlib-free core, `.bot` and `.top` are written as constructors and print as
+such.
+
+**Where the notation is active.**  `LaxLogic/QLL/Lc.lean` and
+`LaxLogic/QLL/Deriv.lean` import `Notation`, so every QLL module downstream of
+either has it; `Syntax`, `Surface`, `Interp`, `Size`, `Countable` and `LinQ`
+import only `Syntax` and do not.
+
+**Not changed.**  `Surface.lean`'s own category `qf[…]` still writes `◯∀`,
+`◯∃` and `⊃` in its input and in `render`.  Aligning it (`◯[∀]`, `↠`) would
+change the strings it renders, which `SurfaceTests.lean`, `Judgement.lean`,
+`CLP.lean`, `CLPCertify.lean` and `CLPExamples.lean` use; it is left as a
+separate step.  `Form.pred "P" [x]` has no notation.
 
 ### Rejected alternatives
 
@@ -397,3 +472,21 @@ this mapping instead).  The mapping is executable: `scripts/reorg-2026-09-15.py`
 * The 169 never-compiled `wip/` files were scanned for the idioms the lower
   precedence rejects (`¬ Γ ⊢ A`, `P ∧ Γ ⊢ A`, `P ∨ Γ ⊢ A`, `Γ = Δ ⊢ A`) and
   for competing formula notations: no occurrence outside comments and strings.
+
+**After §2.2 (QLL modalities and quantifiers, shared connectives).**
+
+* Every `LaxLogic/` module named individually except `QLL.CLPWolfram`:
+  `Build completed successfully (8754 jobs)`.  `LaxPaper`, `CLPPaper` and the
+  107 baseline `wip/` modules: `Build completed successfully (9168 jobs)`.
+  `scripts/clp-wolfram.sh`: exit 0.  `sorry` warnings unchanged.
+* The first full build failed in `PLL/Semantics/CtxCompleteness.lean` and the
+  test file: the `Bot.bot` fallback was quoted hygienically in a module without
+  Mathlib and could not resolve at the use site; fixed by a pre-resolved name.
+* New pins in `LaxLogic/Util/TurnstileTests.lean`: the three modalities in
+  both directions, in sequents, `⊥ ⊤` for formulas and for `Prop`, `∀'`/`∃'`,
+  named quantifiers in both directions including a free `x` avoided by the
+  printer, Lean's own `∀ ∃ ∧ ∨` inside the scope, and PLL and QLL formulas
+  with both developments open.  Two deliberately wrong pins (swapped
+  modalities; the capturing name `x`) were run and failed.
+* No `wip/` file opens `LaxLogic.QLL`, and no file outside the library uses
+  the tokens `◯[`, `∀'`, `∃'`, `↠`.
