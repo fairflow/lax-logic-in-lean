@@ -127,7 +127,7 @@ theorem andCirc_sound (𝔐 : Model) (η : PEnv 𝔐 (ctxAnd q A B)) (ρ : Strin
 
 /-! ## The proof terms, in surface syntax -/
 
-#guard renderPf (tmImp Q.all) == "let∀ u ⇐ p in val∀ (r u)"
-#guard renderPf (tmAnd Q.ex)  == "let∃ u ⇐ p in let∃ v ⇐ q in val∃ (u, v)"
+#guard renderPf (tmImp Q.all) == "let[∀] u ⇐ p in val[∀] (r u)"
+#guard renderPf (tmAnd Q.ex)  == "let[∃] u ⇐ p in let[∃] v ⇐ q in val[∃] (u, v)"
 
 end LaxLogic.QLL.CLP

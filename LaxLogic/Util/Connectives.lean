@@ -18,8 +18,17 @@ development's namespace is open:
     attribute [scoped connective imp] PLLFormula.ifThen
     attribute [scoped connective bot] PLLFormula.falsePLL
 
-The roles are `and`, `or`, `imp`, `bot`, `top`; the formula type is the result
-type of the constant.
+The roles are `and`, `or`, `imp`, `bot`, `top`, and `var` for a free-variable
+constructor `String → T` (`Tm.fvar`, `Pf.fvar`); the type is the result type of
+the constant.
+
+**Free names.**  In the positions a notation marks as holding a variable (the
+arguments of a QLL predicate, the proof term and the entries of a typing
+judgement), an identifier that names nothing in Lean (no local, no constant)
+is the free variable of that name: `P(x, a)` with `a` unbound is
+`.pred "P" [x, .fvar "a"]`.  Printing is the converse, and falls back to the
+constructor when the name would be read otherwise (a local or a constant of
+that name is in scope).
 
 **Input.**  `↠` (precedence 27, right) is syntax of this module.  `∧`, `∨`
 (Lean core) and `⊥`, `⊤` (Mathlib) keep their parsers; a development sends them
@@ -60,7 +69,7 @@ initialize connectives : ScopedEnvExtension Entry Entry (Array Entry) ←
     addEntry := fun s e => s.push e
   }
 
-def roles : List Name := [`and, `or, `imp, `bot, `top]
+def roles : List Name := [`and, `or, `imp, `bot, `top, `var]
 
 /-- The head constant of the result type of `c`. -/
 def resultType (c : Name) : MetaM Name := do
@@ -119,6 +128,37 @@ def ctorWanted? (role : Name) (expectedType? : Option Expr) (lhs? : Option Synta
   catch _ =>
     s.restore (restoreInfo := true)
     return none
+
+/-- An identifier that names no local and no constant: its string. -/
+def unboundName? (t : Syntax) : TermElabM (Option String) := do
+  let .ident _ _ n _ := t | return none
+  unless n.isAtomic && !n.hasMacroScopes do return none
+  if ((← getLCtx).findFromUserName? n).isSome then return none
+  unless (← resolveGlobalName n).isEmpty do return none
+  return some n.toString
+
+/-- Elaborate `t` at `T`, reading an unbound identifier as the free variable of `T`'s
+`var` constructor when it has one. -/
+def elabFree (t : Syntax) (T : Expr) : TermElabM Expr := do
+  if let some s ← unboundName? t then
+    if let some c ← headConst? T then
+      if let some k := ctorFor? (← getEnv) c `var then
+        return mkApp (mkConst k) (mkStrLit s)
+  elabTermEnsuringType t T
+
+/-- Print a free variable `var "s"` as the identifier `s` when that reads back. -/
+def delabFree : Delab := do
+  let e ← getExpr
+  if e.getAppNumArgs == 1 then
+    if let .const c _ := e.getAppFn then
+      if roleOf? (← getEnv) c == some `var then
+        if let .lit (.strVal s) := e.appArg!.consumeMData then
+          let n := Name.mkSimple s
+          if n.toString == s && isIdFirst (s.get 0) && s.toList.all isIdRest &&
+              ((← getLCtx).findFromUserName? n).isNone then
+            if (← resolveGlobalName n).isEmpty then
+              return mkIdent n
+  delab
 
 /-- Internal: `∧` inside a development. -/
 syntax (name := fmAnd) "fm_and% " term:max term:max : term

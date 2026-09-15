@@ -31,44 +31,44 @@ give a different tree — which the second `#guard` of each pair checks. -/
 #guard render qf[A ∧ B ∨ C] == "A ∧ B ∨ C"
 #guard qf[A ∧ B ∨ C] == qf[(A ∧ B) ∨ C]
 
-#guard render qf[A ⊃ B ⊃ C] == "A ⊃ B ⊃ C"
-#guard qf[A ⊃ B ⊃ C] == qf[A ⊃ (B ⊃ C)]
+#guard render qf[A ↠ B ↠ C] == "A ↠ B ↠ C"
+#guard qf[A ↠ B ↠ C] == qf[A ↠ (B ↠ C)]
 
-#guard render qf[(A ⊃ B) ⊃ C] == "(A ⊃ B) ⊃ C"
-#guard qf[(A ⊃ B) ⊃ C] == qf[(A ⊃ B) ⊃ C]
+#guard render qf[(A ↠ B) ↠ C] == "(A ↠ B) ↠ C"
+#guard qf[(A ↠ B) ↠ C] == qf[(A ↠ B) ↠ C]
 
 #guard render qf[(A ∨ B) ∧ C] == "(A ∨ B) ∧ C"
 #guard qf[(A ∨ B) ∧ C] == qf[(A ∨ B) ∧ C]
 
 /-! ## The two modalities, kept visibly distinct -/
 
-#guard render qf[◯∀ P] == "◯∀ P"
-#guard render qf[◯∃ P] == "◯∃ P"
-#guard qf[◯∀ P] != qf[◯∃ P]
-#guard render qf[◯∀ (A ⊃ B)] == "◯∀ (A ⊃ B)"
-#guard qf[◯∀ (A ⊃ B)] == qf[◯∀ (A ⊃ B)]
+#guard render qf[◯[∀] P] == "◯[∀] P"
+#guard render qf[◯[∃] P] == "◯[∃] P"
+#guard qf[◯[∀] P] != qf[◯[∃] P]
+#guard render qf[◯[∀] (A ↠ B)] == "◯[∀] (A ↠ B)"
+#guard qf[◯[∀] (A ↠ B)] == qf[◯[∀] (A ↠ B)]
 
 /-! ## Binders
 
 Input names are discarded; the printer supplies `x y z x₁ …`.  The round trip
 is up to the *term*, which is the only thing that was ever meaningful. -/
 
-#guard render qf[∀a. P(a)] == "∀x. P(x)"
-#guard qf[∀x. P(x)] == qf[∀a. P(a)]
+#guard render qf[∀ a, P(a)] == "∀ x, P(x)"
+#guard qf[∀ x, P(x)] == qf[∀ a, P(a)]
 
-#guard render qf[∀a. ∃b. R(a, b)] == "∀x. ∃y. R(x, y)"
-#guard qf[∀x. ∃y. R(x, y)] == qf[∀a. ∃b. R(a, b)]
+#guard render qf[∀ a, ∃ b, R(a, b)] == "∀ x, ∃ y, R(x, y)"
+#guard qf[∀ x, ∃ y, R(x, y)] == qf[∀ a, ∃ b, R(a, b)]
 
-#guard render qf[∀a. P(a) ⊃ P(a)] == "∀x. P(x) ⊃ P(x)"
-#guard qf[∀x. P(x) ⊃ P(x)] == qf[∀a. P(a) ⊃ P(a)]
+#guard render qf[∀ a, P(a) ↠ P(a)] == "∀ x, P(x) ↠ P(x)"
+#guard qf[∀ x, P(x) ↠ P(x)] == qf[∀ a, P(a) ↠ P(a)]
 
 /-! ## Shadowing
 
 An inner binder of the same name must capture, and the printer must then give
 the two binders different names. -/
 
-#guard render qf[∀a. ∀a. P(a)] == "∀x. ∀y. P(y)"
-#guard qf[∀x. ∀y. P(y)] == qf[∀a. ∀a. P(a)]
+#guard render qf[∀ a, ∀ a, P(a)] == "∀ x, ∀ y, P(y)"
+#guard qf[∀ x, ∀ y, P(y)] == qf[∀ a, ∀ a, P(a)]
 
 /-! ## Capture avoidance
 
@@ -76,15 +76,15 @@ the two binders different names. -/
 printed text would parse to a different formula.  This is the case that makes
 the round trip a real property rather than a formality. -/
 
-#guard render qf[∀q. P(x, q)] == "∀y. P(x, y)"
-#guard qf[∀y. P(x, y)] == qf[∀q. P(x, q)]
+#guard render qf[∀ q, P(x, q)] == "∀ y, P(x, y)"
+#guard qf[∀ y, P(x, y)] == qf[∀ q, P(x, q)]
 
 /-! ## A formula using every construct at once -/
 
-#guard render qf[∀a. ◯∀ (P(a) ∧ Q) ⊃ ∃b. ◯∃ R(a, b) ∨ ⊥]
-        == "∀x. ◯∀ (P(x) ∧ Q) ⊃ ∃y. ◯∃ R(x, y) ∨ ⊥"
-#guard qf[∀x. ◯∀ (P(x) ∧ Q) ⊃ ∃y. ◯∃ R(x, y) ∨ ⊥]
-        == qf[∀a. ◯∀ (P(a) ∧ Q) ⊃ ∃b. ◯∃ R(a, b) ∨ ⊥]
+#guard render qf[∀ a, ◯[∀] (P(a) ∧ Q) ↠ ∃ b, ◯[∃] R(a, b) ∨ ⊥]
+        == "∀ x, ◯[∀] (P(x) ∧ Q) ↠ ∃ y, ◯[∃] R(x, y) ∨ ⊥"
+#guard qf[∀ x, ◯[∀] (P(x) ∧ Q) ↠ ∃ y, ◯[∃] R(x, y) ∨ ⊥]
+        == qf[∀ a, ◯[∀] (P(a) ∧ Q) ↠ ∃ b, ◯[∃] R(a, b) ∨ ⊥]
 
 /-! # Proof terms
 
@@ -108,13 +108,13 @@ back inside `qp[…]` gives the same `Pf`. -/
 
 /-! ## The Fig. 5 formers -/
 
-#guard renderPf qp[val∀ *] == "val∀ *"
+#guard renderPf qp[val[∀] *] == "val[∀] *"
 #guard renderPf qp[ι[c] *] == "ι[c] *"
 #guard renderPf qp[π[c] ⟨* | y⟩] == "π[c] ⟨* | x⟩"
 #guard qp[π[c] ⟨* | x⟩] == qp[π[c] ⟨* | y⟩]
 
-#guard renderPf qp[let∃ a ⇐ h in val∃ a] == "let∃ u ⇐ h in val∃ u"
-#guard qp[let∃ u ⇐ h in val∃ u] == qp[let∃ a ⇐ h in val∃ a]
+#guard renderPf qp[let[∃] a ⇐ h in val[∃] a] == "let[∃] u ⇐ h in val[∃] u"
+#guard qp[let[∃] u ⇐ h in val[∃] u] == qp[let[∃] a ⇐ h in val[∃] a]
 
 #guard renderPf qp[case r of [ι₁(a) → a, ι₂(b) → b]]
         == "case r of [ι₁(u) → u, ι₂(v) → v]"
@@ -123,7 +123,7 @@ back inside `qp[…]` gives the same `Pf`. -/
 #guard renderPf qp[case r of [ι[y](a) → a]] == "case r of [ι[x](u) → u]"
 #guard qp[case r of [ι[x](u) → u]] == qp[case r of [ι[y](a) → a]]
 
-#guard renderPf qp[exf[⊥ ⊃ ⊤] h] == "exf[⊥ ⊃ ⊤] h"
+#guard renderPf qp[exf[⊥ ↠ ⊤] h] == "exf[⊥ ↠ ⊤] h"
 
 /-! ## Shadowing, in each sort -/
 

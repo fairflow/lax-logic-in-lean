@@ -216,7 +216,73 @@ import only `Syntax` and do not.
 `◯∃` and `⊃` in its input and in `render`.  Aligning it (`◯[∀]`, `↠`) would
 change the strings it renders, which `SurfaceTests.lean`, `Judgement.lean`,
 `CLP.lean`, `CLPCertify.lean` and `CLPExamples.lean` use; it is left as a
-separate step.  `Form.pred "P" [x]` has no notation.
+separate step.  `Form.pred "P" [x]` has no notation.  (Both done in §2.3.)
+
+### 2.3 The typing judgement, predicates, and the surface layer aligned
+
+Matthew: "now do the ⊢qll judgement and also the surface syntax it's ok to
+change other modules.  find a good notation for predicates".
+
+**The judgement.**  `Derives p Γ A` is written `Γ ⊢ p : A` and printed so,
+replacing `notation:40 Γ " ⊢qll " p " : " A`.  The turnstile module gained a
+third shape: `attribute [turnstile typing] R` registers `R p Γ A`, and every
+turnstile form takes an optional `: A` on its right.  Context entries may be
+typed, `u : B`, which for a context of pairs is `(u, B)`:
+
+    Γ, u : A ⊢ u : A                      -- Derives (.fvar "u") ((.fvar "u", A) :: Γ) A
+    Γ ⊢ p : A ↠ B → Γ ⊢ q : A → Γ ⊢ p.app q : B
+    Γ ⊬ p : A                             -- ¬ Nonempty (Derives p Γ A)
+    Γ ⊢[Derivable] p : A                  -- the Prop form, tagged
+
+`Derives` is the plain `⊢` inside `LaxLogic.QLL`; `Derivable`, the same
+judgement in `Prop`, is registered without being a default, so it prints with
+its tag.  When no typing judgement fits, `Γ ⊢ A : T` is the sequent ascribed the
+type `T`, as before, so `(Δ ⊢ A : Prop)` keeps its meaning.
+
+**Free names.**  In a judgement's proof-term position, on the left of a typed
+entry, and inside a predicate's parentheses, an identifier that names nothing in
+Lean is the free variable of that name (`Pf.fvar "u"`, `Tm.fvar "a"`), through a
+`var` role in `LaxLogic/Util/Connectives.lean`.  Printing is the converse, and
+writes the constructor when a local or constant of that name would capture it:
+`fun a ↦ P(a, Tm.fvar "a")`.
+
+**Predicates.**  `P(t, u)` is `.pred "P" [t, u]` and, where a `Tm` is expected,
+`f(t, u)` is `.fn "f" [t, u]`; `P()` and `c()` are the nullary cases.  This is
+the notation of mathematics and of `qf[…]`, and it is free in Lean: Lean
+rejects `f(x)` without a space.  Alternatives considered: `P⟨x, y⟩` (reads as
+an anonymous constructor), `"P"(x, y)` (quotes everywhere), and a separate
+predicate-symbol type (a representation change, out of scope).  Nullary atoms
+keep their parentheses at the Lean level, because a bare `P` is a Lean
+identifier; `qf[…]` keeps bare atoms.
+
+**The surface layer** (`Surface.lean`, `Judgement.lean`) now writes what the
+infoview shows:
+
+| was | now |
+|---|---|
+| `◯∀ A`, `◯∃ A` | `◯[∀] A`, `◯[∃] A` |
+| `A ⊃ B` | `A ↠ B` |
+| `∀x. A`, `∃x. A` | `∀ x, A`, `∃ x, A` |
+| `val∀ p`, `let∀ u ⇐ p in q` | `val[∀] p`, `let[∀] u ⇐ p in q` |
+
+Fig. 5's proof-term forms (`λu. p`, `⟨p | x⟩`, `π[t] p`, `case … of […]`) are
+unchanged: Lean application is juxtaposition, so proof terms cannot share
+Lean's term syntax and keep their own bracket.  Every `qf[…]`, `qp[…]`,
+`qd[…]`, `qj[…]`, `qc[…]` in the QLL files, the rendered strings pinned in
+`SurfaceTests.lean`, `JudgementTests.lean` and `CLP.lean`, the CLP engine's
+`showForm` and the checker's error messages were converted; comments written
+in paper notation were left alone.
+
+`qf[…]` and `qp[…]` are now evaluated when elaborated, so they denote literal
+constructor terms instead of calls of `NForm.toForm`/`NPf.toPf`.  Goals then
+show the formula in the term notation, a literal proof term prints as
+`qp[…]`, and a judgement with literal parts prints whole as `qd[…]`/`qj[…]`, in
+each case by rendering and reading the rendering back.
+
+**Known cosmetic defects, left** (Matthew: "it isn't worth breaking a head
+over"): Lean's parenthesizer leaks the precedence of `λ` out of the `qp[…]`
+bracket, so `Γ ⊢ (qp[λu. u]) : A` gets outer parentheses; and an empty context
+prints `qd[ ⊢ λu. u : ⊤ ↠ ⊤]` with a space.  Both parse back.
 
 ### Rejected alternatives
 
@@ -247,8 +313,7 @@ argument is now parsed at precedence 56 so that it stops at the turnstile.
 * (Done in a follow-up commit: PLL `SetDeriv` is plain `⊢` on a set context,
   like QLL's `SetPrv`.  Only its 137 uses in Lean code were rewritten; the other
   `⊩` in comments and printed countermodels are forcing and stay.)
-* `Γ ⊢qll p : A` (QLL proof-term judgement): a three-place judgement wants its
-  own form, `Γ ⊢[R] p : A`.
+* (Done in §2.3: `Γ ⊢qll p : A` is now the typing judgement `Γ ⊢ p : A`.)
 * Realisability `x ⊩ᵘ[Ev, w] φ` and friends: already bracketed and scoped.
 * Other calculi (`SC`, `G4c`, `G4h`, `LJF`, …) are not registered yet, so they
   still print as applications.  Registering one is one attribute line, and it
@@ -490,3 +555,20 @@ this mapping instead).  The mapping is executable: `scripts/reorg-2026-09-15.py`
   modalities; the capturing name `x`) were run and failed.
 * No `wip/` file opens `LaxLogic.QLL`, and no file outside the library uses
   the tokens `◯[`, `∀'`, `∃'`, `↠`.
+
+**After §2.3 (typing judgement, predicates, surface layer).**
+
+* Every `LaxLogic/` module named individually except `QLL.CLPWolfram`:
+  `Build completed successfully (8754 jobs)`.  `LaxPaper`, `CLPPaper` and the
+  107 baseline `wip/` modules: `Build completed successfully (9168 jobs)`.
+  `scripts/clp-wolfram.sh`: exit 0.  `sorry` warnings unchanged.
+* The surface round-trip gates (`SurfaceTests.lean`, `JudgementTests.lean`)
+  pass with the new forms.  Three existing pins in `TurnstileTests.lean` failed
+  when predicates began to print and were updated to the new output; new pins
+  cover predicates both ways, the free-name rule and its capture case, the
+  judgement both ways, `⊬`, `⊢[Derivable]`, the ascription fallback, and `qd[…]`
+  printing.  Two deliberately wrong judgement pins (the proof term printed as a
+  constructor; the entries in list order) were run and failed.
+* A scratch run exposed that stale build outputs of a module compiled against
+  the old turnstile registry crash Lean (exit 139) rather than report an error;
+  rebuilding the importer fixed it.

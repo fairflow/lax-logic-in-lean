@@ -36,6 +36,7 @@ The binder logic lives in `toForm`/`ofForm` and friends — ordinary total
 functions over a named AST — rather than inside an elaborator, so it is
 testable rather than merely trusted.
 -/
+import Lean
 import LaxLogic.QLL.Syntax
 
 namespace LaxLogic.QLL.Surface
@@ -161,17 +162,17 @@ def NTm.renderList : List NTm → String
   | t :: ts => NTm.render t ++ ", " ++ NTm.renderList ts
 end
 
-/-- Precedence: `⊃` 25 (right), `∨` 30, `∧` 35, `◯` 40.  A quantifier's *body*
+/-- Precedence: `↠` 25 (right), `∨` 30, `∧` 35, `◯` 40.  A quantifier's *body*
 reaches down to 20 so it extends as far right as possible, but the quantifier
-itself sits at 26 — otherwise `A ⊃ ∀x. P` would not parse, since `⊃`'s right
+itself sits at 26 — otherwise `A ↠ ∀ x, P` would not parse, since `↠`'s right
 operand requires 25. -/
 def NForm.render (prec : Nat) : NForm → String
   | .top          => "⊤"
   | .bot          => "⊥"
   | .pred P []    => P
   | .pred P ts    => P ++ "(" ++ NTm.renderList ts ++ ")"
-  | .circ .all A  => "◯∀ " ++ NForm.render 40 A
-  | .circ .ex A   => "◯∃ " ++ NForm.render 40 A
+  | .circ .all A  => "◯[∀] " ++ NForm.render 40 A
+  | .circ .ex A   => "◯[∃] " ++ NForm.render 40 A
   | .and A B      =>
       let s := NForm.render 36 A ++ " ∧ " ++ NForm.render 35 B
       if prec > 35 then "(" ++ s ++ ")" else s
@@ -179,13 +180,13 @@ def NForm.render (prec : Nat) : NForm → String
       let s := NForm.render 31 A ++ " ∨ " ++ NForm.render 30 B
       if prec > 30 then "(" ++ s ++ ")" else s
   | .imp A B      =>
-      let s := NForm.render 26 A ++ " ⊃ " ++ NForm.render 25 B
+      let s := NForm.render 26 A ++ " ↠ " ++ NForm.render 25 B
       if prec > 25 then "(" ++ s ++ ")" else s
   | .forall_ x A  =>
-      let s := "∀" ++ x ++ ". " ++ NForm.render 20 A
+      let s := "∀ " ++ x ++ ", " ++ NForm.render 20 A
       if prec > 26 then "(" ++ s ++ ")" else s
   | .exists_ x A  =>
-      let s := "∃" ++ x ++ ". " ++ NForm.render 20 A
+      let s := "∃ " ++ x ++ ", " ++ NForm.render 20 A
       if prec > 26 then "(" ++ s ++ ")" else s
 
 /-- Render a formula in surface syntax.  The result parses back inside `qf[…]`. -/
@@ -196,7 +197,7 @@ instance : ToString Form := ⟨render⟩
 
 /-! ## Input notation
 
-`qf[∀x. P(x) ⊃ P(x)]` elaborates to the locally nameless `Form`.  The named
+`qf[∀ x, P(x) ↠ P(x)]` elaborates to the locally nameless `Form`.  The named
 AST is built structurally by the macro; the name-to-index conversion is
 `NForm.toForm`, an ordinary function, so nothing subtle happens inside the
 elaborator. -/
@@ -211,13 +212,13 @@ syntax "⊤" : qllForm
 syntax "⊥" : qllForm
 syntax ident noWs "(" qllTm,* ")" : qllForm
 syntax ident : qllForm
-syntax:40 "◯∀" qllForm:40 : qllForm
-syntax:40 "◯∃" qllForm:40 : qllForm
+syntax:40 "◯[∀]" qllForm:40 : qllForm
+syntax:40 "◯[∃]" qllForm:40 : qllForm
 syntax:35 qllForm:36 " ∧ " qllForm:35 : qllForm
 syntax:30 qllForm:31 " ∨ " qllForm:30 : qllForm
-syntax:25 qllForm:26 " ⊃ " qllForm:25 : qllForm
-syntax:26 "∀" ident ". " qllForm:20 : qllForm
-syntax:26 "∃" ident ". " qllForm:20 : qllForm
+syntax:25 qllForm:26 " ↠ " qllForm:25 : qllForm
+syntax:26 "∀ " ident ", " qllForm:20 : qllForm
+syntax:26 "∃ " ident ", " qllForm:20 : qllForm
 syntax "(" qllForm ")" : qllForm
 
 syntax "nt[" qllTm "]" : term
@@ -234,18 +235,66 @@ macro_rules
   | `(nf[$P:ident($ts,*)])     =>
       `(NForm.pred $(Lean.quote P.getId.toString) [$[nt[$ts]],*])
   | `(nf[$P:ident])            => `(NForm.pred $(Lean.quote P.getId.toString) [])
-  | `(nf[◯∀ $A])               => `(NForm.circ Q.all nf[$A])
-  | `(nf[◯∃ $A])               => `(NForm.circ Q.ex nf[$A])
+  | `(nf[◯[∀] $A])               => `(NForm.circ Q.all nf[$A])
+  | `(nf[◯[∃] $A])               => `(NForm.circ Q.ex nf[$A])
   | `(nf[$A ∧ $B])             => `(NForm.and nf[$A] nf[$B])
   | `(nf[$A ∨ $B])             => `(NForm.or nf[$A] nf[$B])
-  | `(nf[$A ⊃ $B])             => `(NForm.imp nf[$A] nf[$B])
-  | `(nf[∀ $x:ident . $A])     => `(NForm.forall_ $(Lean.quote x.getId.toString) nf[$A])
-  | `(nf[∃ $x:ident . $A])     => `(NForm.exists_ $(Lean.quote x.getId.toString) nf[$A])
+  | `(nf[$A ↠ $B])             => `(NForm.imp nf[$A] nf[$B])
+  | `(nf[∀ $x:ident, $A])      => `(NForm.forall_ $(Lean.quote x.getId.toString) nf[$A])
+  | `(nf[∃ $x:ident, $A])      => `(NForm.exists_ $(Lean.quote x.getId.toString) nf[$A])
   | `(nf[($A)])                => `(nf[$A])
 
 /-- A formula in surface syntax, as a locally nameless `Form`. -/
-syntax "qf[" qllForm "]" : term
-macro_rules | `(qf[$A]) => `(NForm.toForm [] nf[$A])
+syntax (name := qfTerm) "qf[" qllForm "]" : term
+
+/-! `qf[…]` is evaluated when it is elaborated: the result is the literal constructor
+term of the `Form`, not a call of `NForm.toForm`, so goals show the formula itself
+(in the notation of `LaxLogic/QLL/Notation.lean` where that is open) and a
+definitional unfolding is never needed to see it. -/
+
+open Lean in
+/-- A list literal. -/
+def listExpr (α : Expr) (xs : List Expr) : Expr :=
+  xs.foldr (fun h t => mkApp3 (mkConst ``List.cons [Level.zero]) α h t)
+    (mkApp (mkConst ``List.nil [Level.zero]) α)
+
+open Lean in
+/-- An individual term as a constructor term. -/
+partial def tmExpr : Tm → Expr
+  | .bvar i => mkApp (mkConst ``Tm.bvar) (mkNatLit i)
+  | .fvar x => mkApp (mkConst ``Tm.fvar) (mkStrLit x)
+  | .fn f ts => mkApp2 (mkConst ``Tm.fn) (mkStrLit f) (listExpr (mkConst ``Tm) (ts.map tmExpr))
+
+open Lean in
+/-- A modality as a constructor term. -/
+def qExpr : Q → Expr
+  | .all => mkConst ``Q.all
+  | .ex => mkConst ``Q.ex
+
+open Lean in
+/-- A formula as a constructor term. -/
+partial def formExpr : Form → Expr
+  | .top => mkConst ``Form.top
+  | .bot => mkConst ``Form.bot
+  | .pred P ts => mkApp2 (mkConst ``Form.pred) (mkStrLit P) (listExpr (mkConst ``Tm) (ts.map tmExpr))
+  | .and A B => mkApp2 (mkConst ``Form.and) (formExpr A) (formExpr B)
+  | .or A B => mkApp2 (mkConst ``Form.or) (formExpr A) (formExpr B)
+  | .imp A B => mkApp2 (mkConst ``Form.imp) (formExpr A) (formExpr B)
+  | .circ q A => mkApp2 (mkConst ``Form.circ) (qExpr q) (formExpr A)
+  | .forall_ A => mkApp (mkConst ``Form.forall_) (formExpr A)
+  | .exists_ A => mkApp (mkConst ``Form.exists_) (formExpr A)
+
+open Lean Elab Term Meta in
+unsafe def evalFormImpl (e : Expr) : TermElabM Form := evalExpr Form (mkConst ``Form) e
+
+open Lean Elab Term Meta in
+@[implemented_by evalFormImpl] opaque evalForm (e : Expr) : TermElabM Form
+
+open Lean Elab Term Meta in
+@[term_elab qfTerm] def elabQf : TermElab := fun stx _ => do
+  let e ← elabTerm (← `(NForm.toForm [] nf[$(⟨stx[1]⟩)])) (some (mkConst ``Form))
+  synthesizeSyntheticMVarsNoPostponing
+  return formExpr (← evalForm (← instantiateMVars e))
 
 /-! # Proof terms
 
@@ -262,7 +311,7 @@ Concrete syntax, following Fig. 5 as closely as it can be parsed:
 | `ι₁(p)`, `ι₂(q)` | `ι₁ p`, `ι₂ q` |
 | `case r of [ι₁(y) → p, ι₂(z) → q]` | the same |
 | `λz.p`, `p q` | `λu. p`, `p q` |
-| `val_Q(p)`, `let_Q z ⇐ p in q` | `val∀ p` / `val∃ p`, `let∀ u ⇐ p in q` |
+| `val_Q(p)`, `let_Q z ⇐ p in q` | `val[∀] p` / `val[∃] p`, `let[∀] u ⇐ p in q` |
 | `⟨p \| x⟩`, `π_t(p)`, `ι_t(p)` | `⟨p \| x⟩`, `π[t] p`, `ι[t] p` |
 | `case r of [ι_x(z) → p]` | `case r of [ι[x](u) → p]` |
 | — (ours) | `exf[A] p` |
@@ -360,8 +409,8 @@ def NPf.render (prec : Nat) : NPf → String
   | .snd p     => paren90 prec ("π₂ " ++ NPf.render 1000 p)
   | .inl p     => paren90 prec ("ι₁ " ++ NPf.render 1000 p)
   | .inr p     => paren90 prec ("ι₂ " ++ NPf.render 1000 p)
-  | .val .all p => paren90 prec ("val∀ " ++ NPf.render 1000 p)
-  | .val .ex p  => paren90 prec ("val∃ " ++ NPf.render 1000 p)
+  | .val .all p => paren90 prec ("val[∀] " ++ NPf.render 1000 p)
+  | .val .ex p  => paren90 prec ("val[∃] " ++ NPf.render 1000 p)
   | .inst t p  => paren90 prec ("π[" ++ NTm.render t ++ "] " ++ NPf.render 1000 p)
   | .pack t p  => paren90 prec ("ι[" ++ NTm.render t ++ "] " ++ NPf.render 1000 p)
   | .exf A p   => paren90 prec ("exf[" ++ NForm.render 0 A ++ "] " ++ NPf.render 1000 p)
@@ -371,7 +420,7 @@ def NPf.render (prec : Nat) : NPf → String
   | .lam u p   => paren20 prec ("λ" ++ u ++ ". " ++ NPf.render 20 p)
   | .gen x p   => "⟨" ++ NPf.render 0 p ++ " | " ++ x ++ "⟩"
   | .letQ q u p b =>
-      let kw := match q with | .all => "let∀ " | .ex => "let∃ "
+      let kw := match q with | .all => "let[∀] " | .ex => "let[∃] "
       paren20 prec (kw ++ u ++ " ⇐ " ++ NPf.render 0 p ++ " in " ++ NPf.render 20 b)
   | .caseOr r y p z q =>
       paren20 prec ("case " ++ NPf.render 0 r ++ " of [ι₁(" ++ y ++ ") → " ++
@@ -402,15 +451,15 @@ syntax:90 "π₁" ppSpace qllPf:max : qllPf
 syntax:90 "π₂" ppSpace qllPf:max : qllPf
 syntax:90 "ι₁" ppSpace qllPf:max : qllPf
 syntax:90 "ι₂" ppSpace qllPf:max : qllPf
-syntax:90 "val∀" ppSpace qllPf:max : qllPf
-syntax:90 "val∃" ppSpace qllPf:max : qllPf
+syntax:90 "val[∀]" ppSpace qllPf:max : qllPf
+syntax:90 "val[∃]" ppSpace qllPf:max : qllPf
 syntax:90 "π" noWs "[" qllTm:0 "]" ppSpace qllPf:max : qllPf
 syntax:90 "ι" noWs "[" qllTm:0 "]" ppSpace qllPf:max : qllPf
 syntax:90 "exf" noWs "[" qllForm:0 "]" ppSpace qllPf:max : qllPf
 syntax:80 qllPf:80 ppSpace qllPf:81 : qllPf
 syntax:20 "λ" ident ". " qllPf:20 : qllPf
-syntax:20 "let∀ " ident " ⇐ " qllPf:0 " in " qllPf:20 : qllPf
-syntax:20 "let∃ " ident " ⇐ " qllPf:0 " in " qllPf:20 : qllPf
+syntax:20 "let[∀] " ident " ⇐ " qllPf:0 " in " qllPf:20 : qllPf
+syntax:20 "let[∃] " ident " ⇐ " qllPf:0 " in " qllPf:20 : qllPf
 syntax:20 "case " qllPf " of " "[" "ι₁" "(" ident ")" " → " qllPf ", " "ι₂" "(" ident ")" " → " qllPf "]" : qllPf
 syntax:20 "case " qllPf " of " "[" "ι" noWs "[" ident "]" "(" ident ")" " → " qllPf "]" : qllPf
 
@@ -426,16 +475,16 @@ macro_rules
   | `(np[π₂ $p])             => `(NPf.snd np[$p])
   | `(np[ι₁ $p])             => `(NPf.inl np[$p])
   | `(np[ι₂ $p])             => `(NPf.inr np[$p])
-  | `(np[val∀ $p])           => `(NPf.val Q.all np[$p])
-  | `(np[val∃ $p])           => `(NPf.val Q.ex np[$p])
+  | `(np[val[∀] $p])           => `(NPf.val Q.all np[$p])
+  | `(np[val[∃] $p])           => `(NPf.val Q.ex np[$p])
   | `(np[π[$t] $p])          => `(NPf.inst nt[$t] np[$p])
   | `(np[ι[$t] $p])          => `(NPf.pack nt[$t] np[$p])
   | `(np[exf[$A] $p])        => `(NPf.exf nf[$A] np[$p])
   | `(np[$p $q])             => `(NPf.app np[$p] np[$q])
   | `(np[λ $u:ident . $p])   => `(NPf.lam $(Lean.quote u.getId.toString) np[$p])
-  | `(np[let∀ $u:ident ⇐ $p in $b]) =>
+  | `(np[let[∀] $u:ident ⇐ $p in $b]) =>
       `(NPf.letQ Q.all $(Lean.quote u.getId.toString) np[$p] np[$b])
-  | `(np[let∃ $u:ident ⇐ $p in $b]) =>
+  | `(np[let[∃] $u:ident ⇐ $p in $b]) =>
       `(NPf.letQ Q.ex $(Lean.quote u.getId.toString) np[$p] np[$b])
   | `(np[case $r of [ι₁($y:ident) → $p, ι₂($z:ident) → $q]]) =>
       `(NPf.caseOr np[$r] $(Lean.quote y.getId.toString) np[$p]
@@ -445,7 +494,41 @@ macro_rules
                           $(Lean.quote u.getId.toString) np[$p])
 
 /-- A proof term in surface syntax, as a locally nameless `Pf`. -/
-syntax "qp[" qllPf "]" : term
-macro_rules | `(qp[$p]) => `(NPf.toPf [] [] np[$p])
+syntax (name := qpTerm) "qp[" qllPf "]" : term
+
+open Lean in
+/-- A proof term as a constructor term. -/
+partial def pfExpr : Pf → Expr
+  | .bvar i => mkApp (mkConst ``Pf.bvar) (mkNatLit i)
+  | .fvar x => mkApp (mkConst ``Pf.fvar) (mkStrLit x)
+  | .star => mkConst ``Pf.star
+  | .pair p q => mkApp2 (mkConst ``Pf.pair) (pfExpr p) (pfExpr q)
+  | .fst p => mkApp (mkConst ``Pf.fst) (pfExpr p)
+  | .snd p => mkApp (mkConst ``Pf.snd) (pfExpr p)
+  | .inl p => mkApp (mkConst ``Pf.inl) (pfExpr p)
+  | .inr p => mkApp (mkConst ``Pf.inr) (pfExpr p)
+  | .caseOr r p q => mkApp3 (mkConst ``Pf.caseOr) (pfExpr r) (pfExpr p) (pfExpr q)
+  | .lam p => mkApp (mkConst ``Pf.lam) (pfExpr p)
+  | .app p q => mkApp2 (mkConst ``Pf.app) (pfExpr p) (pfExpr q)
+  | .val q p => mkApp2 (mkConst ``Pf.val) (qExpr q) (pfExpr p)
+  | .letQ q p b => mkApp3 (mkConst ``Pf.letQ) (qExpr q) (pfExpr p) (pfExpr b)
+  | .gen p => mkApp (mkConst ``Pf.gen) (pfExpr p)
+  | .inst t p => mkApp2 (mkConst ``Pf.inst) (tmExpr t) (pfExpr p)
+  | .pack t p => mkApp2 (mkConst ``Pf.pack) (tmExpr t) (pfExpr p)
+  | .caseEx r p => mkApp2 (mkConst ``Pf.caseEx) (pfExpr r) (pfExpr p)
+  | .exf A p => mkApp2 (mkConst ``Pf.exf) (formExpr A) (pfExpr p)
+
+open Lean Elab Term Meta in
+unsafe def evalPfImpl (e : Expr) : TermElabM Pf := evalExpr Pf (mkConst ``Pf) e
+
+open Lean Elab Term Meta in
+@[implemented_by evalPfImpl] opaque evalPf (e : Expr) : TermElabM Pf
+
+open Lean Elab Term Meta in
+/-- `qp[…]`, evaluated to its constructor term like `qf[…]`. -/
+@[term_elab qpTerm] def elabQp : TermElab := fun stx _ => do
+  let e ← elabTerm (← `(NPf.toPf [] [] np[$(⟨stx[1]⟩)])) (some (mkConst ``Pf))
+  synthesizeSyntheticMVarsNoPostponing
+  return pfExpr (← evalPf (← instantiateMVars e))
 
 end LaxLogic.QLL.Surface

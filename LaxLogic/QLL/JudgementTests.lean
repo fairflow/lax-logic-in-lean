@@ -25,21 +25,21 @@ so the macro reverses. -/
 #guard qc[u : A, v : B] == [(qp[v], qf[B]), (qp[u], qf[A])]
 
 #guard renderCtx qc[u : A, v : B] == "u : A, v : B"
-#guard renderCtx qc[u : A ⊃ B, v : ∀a. P(a)] == "u : A ⊃ B, v : ∀x. P(x)"
+#guard renderCtx qc[u : A ↠ B, v : ∀ a, P(a)] == "u : A ↠ B, v : ∀ x, P(x)"
 
 -- an obligation need not be a variable
 #guard renderCtx qc[π₁ (*, *) : ⊤] == "π₁ (*, *) : ⊤"
 
 /-! ## Judgements -/
 
-#guard renderJ qp[λa. a] qc[] qf[⊤ ⊃ ⊤] == "⊢ λu. u : ⊤ ⊃ ⊤"
-#guard renderJ qp[u v] qc[u : A ⊃ B, v : A] qf[B] == "u : A ⊃ B, v : A ⊢ u v : B"
+#guard renderJ qp[λa. a] qc[] qf[⊤ ↠ ⊤] == "⊢ λu. u : ⊤ ↠ ⊤"
+#guard renderJ qp[u v] qc[u : A ↠ B, v : A] qf[B] == "u : A ↠ B, v : A ⊢ u v : B"
 
 -- and the parse of that text puts the pieces exactly there
-example : qj[u : A ⊃ B, v : A ⊢ u v : B]
-        = Derivable qp[u v] [(qp[v], qf[A]), (qp[u], qf[A ⊃ B])] qf[B] := rfl
+example : qj[u : A ↠ B, v : A ⊢ u v : B]
+        = Derivable qp[u v] [(qp[v], qf[A]), (qp[u], qf[A ↠ B])] qf[B] := rfl
 
-example : qd[⊢ λu. u : ⊤ ⊃ ⊤] = Derives qp[λu. u] [] qf[⊤ ⊃ ⊤] := rfl
+example : qd[⊢ λu. u : ⊤ ↠ ⊤] = Derives qp[λu. u] [] qf[⊤ ↠ ⊤] := rfl
 
 /-! ## `qj` is `Nonempty` of `qd`
 
@@ -51,12 +51,12 @@ example : qj[u : A ⊢ u : A] = Nonempty qd[u : A ⊢ u : A] := rfl
 
 example : qj[u : A ⊢ u : A] := ⟨.var (by decide)⟩
 
-example : qd[⊢ λu. u : ⊤ ⊃ ⊤] :=
+example : qd[⊢ λu. u : ⊤ ↠ ⊤] :=
   .impI "u" ⟨by decide, by decide⟩ (.var (by decide))
 
 /-! ## Individual and proof names stay free, and stay distinct -/
 
-#guard renderJ qp[⟨π[x] u | y⟩] qc[u : ∀a. P(a)] qf[∀a. P(x)]
-        == "u : ∀x. P(x) ⊢ ⟨π[x] u | y⟩ : ∀y. P(x)"
+#guard renderJ qp[⟨π[x] u | y⟩] qc[u : ∀ a, P(a)] qf[∀ a, P(x)]
+        == "u : ∀ x, P(x) ⊢ ⟨π[x] u | y⟩ : ∀ y, P(x)"
 
 end LaxLogic.QLL.JudgementTests

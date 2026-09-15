@@ -427,7 +427,7 @@ partial def showForm : Form → String
   | .pred P ts => P ++ "(" ++ ", ".intercalate (ts.map showTm) ++ ")"
   | .and A B => "(" ++ showForm A ++ " ∧ " ++ showForm B ++ ")"
   | .or A B => "(" ++ showForm A ++ " ∨ " ++ showForm B ++ ")"
-  | .imp A B => "(" ++ showForm A ++ " ⊃ " ++ showForm B ++ ")"
+  | .imp A B => "(" ++ showForm A ++ " ↠ " ++ showForm B ++ ")"
   | .circ _ A => "◯" ++ showForm A
   | .forall_ A => "∀." ++ showForm A
   | .exists_ A => "∃." ++ showForm A

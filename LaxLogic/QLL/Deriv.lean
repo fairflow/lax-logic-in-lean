@@ -78,6 +78,7 @@ reading, which is not part of this judgement.
 -/
 import LaxLogic.QLL.Syntax
 import LaxLogic.QLL.Notation
+import LaxLogic.Util.Turnstile
 
 namespace LaxLogic.QLL
 
@@ -184,7 +185,10 @@ inductive Derives : Pf → Ctx → Form → Type where
       Derives ((p.openIWith a).openPWith z) ((Pf.fvar z, A.openWith a) :: Γ) K →
       Derives (.caseEx r p) Γ K
 
-@[inherit_doc] notation:40 Γ " ⊢qll " p " : " A => Derives p Γ A
+-- `Γ ⊢ p : A` inside `LaxLogic.QLL`, `Γ ⊢[Derives] p : A` elsewhere; context entries are
+-- written `u : A` (`LaxLogic/Util/Turnstile.lean`).  Replaces `Γ ⊢qll p : A`.
+attribute [turnstile typing] Derives
+attribute [scoped turnstile_default] Derives
 
 /-! ## The `Prop`-valued view
 
@@ -204,6 +208,9 @@ sound to have it. -/
 
 /-- Derivability as a proposition: some derivation exists. -/
 abbrev Derivable (p : Pf) (Γ : Ctx) (A : Form) : Prop := Nonempty (Derives p Γ A)
+
+-- `Γ ⊢[Derivable] p : A`: the judgement as a proposition.
+attribute [turnstile typing] Derivable
 
 namespace Derivable
 

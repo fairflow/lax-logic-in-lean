@@ -18,6 +18,15 @@ Scoped to `LaxLogic.QLL`; the same inside a sequent (`Γ, A ⊢ B`,
 | `⊥`, `⊤` | `.bot`, `.top` | where Mathlib's `⊥ ⊤` are loaded: `LaxLogic.QLL.NotationOrder` |
 | `∀' A`, `∃' A` | `.forall_ A`, `.exists_ A` | `A` a body: index 0 is the bound individual |
 | `∀ x, A`, `∃ x, A` | `.forall_ (A.closeWith "x")` | `x : Tm` in `A` stands for `.fvar "x"` |
+| `P(t, u)`, `P()` | `.pred "P" [t, u]`, `.pred "P" []` | a predicate applied to individual terms |
+| `f(t, u)`, `c()` | `.fn "f" [t, u]`, `.fn "c" []` | a function term, where a `Tm` is expected |
+
+**Predicates** are written as in mathematics and in `qf[…]`: the symbol, then its
+arguments in parentheses with no space (Lean itself rejects `f(x)`, so the form is
+free).  Inside the parentheses an identifier that names nothing in Lean is a free
+individual: `P(x, a)` with `x` bound by `∀ x,` and `a` unbound is
+`.pred "P" [x, .fvar "a"]`, and prints back the same way.  A computed symbol is
+written with the constructor, `.pred c ts`.
 
 `◯[·]`, `∀'`, `∃'` bind as tightly as application arguments, so
 `◯[∀] (A ∧ B)` and `∀' (A ↠ B)` need their parentheses.  `∀ x, A` reaches as
@@ -45,6 +54,8 @@ attribute [scoped connective or] Form.or
 attribute [scoped connective imp] Form.imp
 attribute [scoped connective bot] Form.bot
 attribute [scoped connective top] Form.top
+attribute [scoped connective var] Tm.fvar
+attribute [scoped connective var] Pf.fvar
 
 scoped macro_rules | `($a ∧ $b) => `(fm_and% ($a) ($b))
 scoped macro_rules | `($a ∨ $b) => `(fm_or% ($a) ($b))
@@ -68,6 +79,31 @@ macro_rules
   | `(◯[$q] $A) => `(LaxLogic.QLL.Form.circ $q $A)
   | `(∀' $A) => `(LaxLogic.QLL.Form.forall_ $A)
   | `(∃' $A) => `(LaxLogic.QLL.Form.exists_ $A)
+
+/-! ## Predicates and function terms -/
+
+/-- `P(t, …)`: the predicate `P` on individual terms; `f(t, …)` where a `Tm` is expected:
+the function term `f`. -/
+scoped syntax:max (name := qllSymApp) ident noWs "(" term,* ")" : term
+
+/-- A list literal of type `List α`. -/
+def mkListLit (α : Expr) (xs : Array Expr) : Expr :=
+  xs.foldr (fun h t => mkApp3 (mkConst ``List.cons [Level.zero]) α h t)
+    (mkApp (mkConst ``List.nil [Level.zero]) α)
+
+@[term_elab qllSymApp] def elabSymApp : TermElab := fun stx expectedType? => do
+  let sym := stx[0].getId.eraseMacroScopes.toString
+  let args := stx[2].getSepArgs
+  tryPostponeIfNoneOrMVar expectedType?
+  let isTm ← match expectedType? with
+    | some T => pure ((← Connectives.headConst? T) == some ``Tm)
+    | none => pure false
+  let tm := Lean.mkConst ``Tm
+  let xs ← args.mapM fun a => Connectives.elabFree a tm
+  let e := mkApp2 (Lean.mkConst (if isTm then ``Tm.fn else ``Form.pred)) (mkStrLit sym) (mkListLit tm xs)
+  match expectedType? with
+  | some T => ensureHasType T e
+  | none => pure e
 
 /-! ## Named quantifiers -/
 
@@ -145,8 +181,8 @@ partial def listElems? : Expr → Option (Array Expr)
 
 /-- Rebuild a list literal of element type `α`. -/
 def mkList (α : Expr) (xs : Array Expr) : Expr :=
-  xs.foldr (fun h t => mkApp3 (mkConst ``List.cons [levelZero]) α h t)
-    (mkApp (mkConst ``List.nil [levelZero]) α)
+  xs.foldr (fun h t => mkApp3 (mkConst ``List.cons [Level.zero]) α h t)
+    (mkApp (mkConst ``List.nil [Level.zero]) α)
 
 /-- A term built from constructors, literals and local individuals, with `.bvar d`
 replaced by the loose bound variable 0. -/
@@ -235,6 +271,36 @@ def delabForall : Delab := delabQuant (fun x b => `(∀ $x:ident, $b)) (fun a =>
 
 @[delab app.LaxLogic.QLL.Form.exists_]
 def delabExists : Delab := delabQuant (fun x b => `(∃ $x:ident, $b)) (fun a => `(∃' $a))
+
+/-- A symbol that prints as an identifier and reads back as the same string. -/
+def symbolIdent? (s : String) : Option Ident :=
+  let n := Name.mkSimple s
+  if !s.isEmpty && n.toString == s && isIdFirst (s.get 0) && s.toList.all isIdRest then
+    some (mkIdent n)
+  else none
+
+/-- The elements of a list literal, each printed as a term with free names. -/
+partial def delabArgs : DelabM (Option (Array Term)) := do
+  let e ← getExpr
+  if e.isAppOfArity ``List.nil 1 then return some #[]
+  if e.isAppOfArity ``List.cons 3 then
+    let h ← withAppFn (withAppArg Connectives.delabFree)
+    let some t ← withAppArg delabArgs | return none
+    return some (#[h] ++ t)
+  return none
+
+/-- `P(t, …)` and `f(t, …)`. -/
+def delabSymApp : Delab := whenPPOption getPPNotation do
+  unless ← active do failure
+  let e ← getExpr
+  unless e.getAppNumArgs == 2 do failure
+  let some s := strLit? e.appFn!.appArg! | failure
+  let some P := symbolIdent? s | failure
+  let some args ← withAppArg delabArgs | failure
+  `($P:ident($args,*))
+
+@[delab app.LaxLogic.QLL.Form.pred] def delabPred : Delab := delabSymApp
+@[delab app.LaxLogic.QLL.Tm.fn] def delabFn : Delab := delabSymApp
 
 @[delab app.LaxLogic.QLL.Form.circ]
 def delabCirc : Delab := whenPPOption getPPNotation do

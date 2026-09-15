@@ -95,7 +95,7 @@ def infer' : (Γ : Ctx) → (p : Pf) → Except Err (Inferred Γ p)
       | .imp A B, d => do
           let dq ← check' Γ q A
           pure ⟨B, .impE d dq⟩
-      | C,        _ => .error (.expected "⊃" C)
+      | C,        _ => .error (.expected "↠" C)
   | Γ, .val q p  => do
       let ⟨A, dp⟩ ← infer' Γ p
       pure ⟨.circ q A, .circI dp⟩
@@ -173,7 +173,7 @@ def check' : (Γ : Ctx) → (p : Pf) → (A : Form) → Except Err (Derives p Γ
       let z := freshFor (Ctx.fvP Γ ++ p.fvP)
       let d ← check' ((Pf.fvar z, A) :: Γ) (p.openPWith z) B
       pure (.impI z (freshP_freshFor Γ p) d)
-  | _, .lam _, C => .error (.expected "⊃" C)
+  | _, .lam _, C => .error (.expected "↠" C)
   | Γ, .inl p, .or A _ => do
       let d ← check' Γ p A
       pure (.orI₁ d)

@@ -39,7 +39,7 @@ def val_top (q : Q) : Derives (val q star) [] (circ q top) :=
 /-- `⊢ ⟨λz.z | x⟩ : ∀x. P(x) ⊃ P(x)`.  The point of this one is the binder
 interaction: `allI` opens an *individual* while `impI` opens a *proof*
 variable, and neither may disturb the other's indices. -/
-def forall_identity : Derives (gen (lam (bvar 0))) [] qf[∀x. P(x) ⊃ P(x)] := by
+def forall_identity : Derives (gen (lam (bvar 0))) [] qf[∀ x, P(x) ↠ P(x)] := by
   refine Derives.allI "x" ⟨?_, ?_, ?_⟩ ?_
   · show "x" ∉ ([] : List String); decide
   · show "x" ∉ ([] : List String); decide

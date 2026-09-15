@@ -2,6 +2,7 @@ import LaxLogic.PLL.Semantics.Kripke
 import LaxLogic.PLL.G4.G4H
 import LaxLogic.QLL.Complete
 import LaxLogic.QLL.Kripke
+import LaxLogic.QLL.Judgement
 
 /-!
 # Pinned behaviour of the tagged turnstiles (`LaxLogic/Util/Turnstile.lean`)
@@ -182,9 +183,9 @@ example : (∀ x, Form.pred "P" [x] ↠ Form.pred "P" [x] : Form)
     = .forall_ (.imp (.pred "P" [.bvar 0]) (.pred "P" [.bvar 0])) := rfl
 example : (Γ ⊢ ∃ x, Form.pred "P" [x]) = Prv Γ (.exists_ (.pred "P" [.bvar 0])) := rfl
 -- a body of constructors prints with names, avoiding the free `x`
-/-- info: ∀ x, Form.pred "P" [x] ↠ ◯[∃] (Form.pred "Q" [x]) : Form -/
+/-- info: ∀ x, P(x) ↠ ◯[∃] Q(x) : Form -/
 #guard_msgs in #check Form.forall_ (.imp (.pred "P" [.bvar 0]) (.circ .ex (.pred "Q" [.bvar 0])))
-/-- info: ∀ y, ∃ z, Form.pred "R" [y, z, Tm.fvar "x"] : Form -/
+/-- info: ∀ y, ∃ z, R(y, z, x) : Form -/
 #guard_msgs in #check Form.forall_ (.exists_ (.pred "R" [.bvar 1, .bvar 0, .fvar "x"]))
 
 -- Lean's own `∀ ∃ ∧ ∨` in the scope
@@ -192,6 +193,48 @@ example : ∀ n, n + 0 = n := fun _ => rfl
 example : ∃ n, n = 3 := ⟨3, rfl⟩
 example (P Q : Prop) (h : P ∧ Q) : Q ∨ P := .inl h.2
 end qllFormulas
+
+section qllJudgements
+open LaxLogic.QLL
+variable (Γ : Ctx) (Δ : List Form) (A B : Form) (p q : Pf)
+
+-- predicates and function terms; an unbound name inside is a free individual
+example : (P(a, f(b)) : Form) = .pred "P" [.fvar "a", .fn "f" [.fvar "b"]] := rfl
+example : (P() : Form) = .pred "P" [] := rfl
+/-- info: R(a, c()) : Form -/
+#guard_msgs in #check Form.pred "R" [.fvar "a", .fn "c" []]
+/-- info: ∀ x, P(x) ↠ ◯[∃] Q(x, a) : Form -/
+#guard_msgs in #check (∀ x, P(x) ↠ ◯[∃] Q(x, a) : Form)
+example : (∀ x, P(x) : Form) = .forall_ (.pred "P" [.bvar 0]) := rfl
+/-- info: Δ, P(a) ⊢ Q(a) : Prop -/
+#guard_msgs in #check (Δ, P(a) ⊢ Q(a))
+-- a Lean local of the same name is itself, and the free individual then prints in full
+example (a : Tm) : (P(a) : Form) = .pred "P" [a] := rfl
+section
+variable (a : Tm)
+/-- info: P(a, Tm.fvar "a") : Form -/
+#guard_msgs in #check Form.pred "P" [a, .fvar "a"]
+end
+
+-- the typing judgement `Γ ⊢ p : A` (formerly `Γ ⊢qll p : A`)
+example : (Γ, u : A ⊢ u : A) = Derives (.fvar "u") ((.fvar "u", A) :: Γ) A := rfl
+/-- info: Γ, u : A ⊢ u : A : Type -/
+#guard_msgs in #check Derives (.fvar "u") ((.fvar "u", A) :: Γ) A
+/-- info: Γ ⊢ p : A ↠ B → Γ ⊢ q : A → Γ ⊢ p.app q : B : Type -/
+#guard_msgs in #check (Γ ⊢ p : A ↠ B) → (Γ ⊢ q : A) → (Γ ⊢ .app p q : B)
+/-- info: Γ ⊬ p : A : Prop -/
+#guard_msgs in #check ¬ Nonempty (Derives p Γ A)
+/-- info: Γ ⊢[Derivable] p : A : Prop -/
+#guard_msgs in #check Derivable p Γ A
+example : (Γ ⊢[Derivable] p : A) = Derivable p Γ A := rfl
+-- with no judgement for these types, `: T` is a type ascription as before
+/-- info: Δ ⊢ A : Prop -/
+#guard_msgs in #check (Δ ⊢ A : Prop)
+-- a judgement with literal parts prints whole in surface syntax
+/-- info: qd[u : A ↠ B, v : A ⊢ u v : B] : Type -/
+#guard_msgs in #check Derives (.app (.fvar "u") (.fvar "v"))
+  [(.fvar "v", .pred "A" []), (.fvar "u", .imp (.pred "A" []) (.pred "B" []))] (.pred "B" [])
+end qllJudgements
 
 section both
 open PLLND LaxLogic.QLL

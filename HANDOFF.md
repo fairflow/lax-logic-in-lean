@@ -475,3 +475,32 @@ Matthew: "now do QLL: ◯[q], ◯[∀], ◯[∃] and quantifiers".  Record:
   deliberately wrong pins watched failing.
 - **Not changed.** `Surface.lean`'s `qf[…]` still uses `◯∀ ◯∃ ⊃`;
   `Form.pred` has no notation; the proof-term judgement `⊢qll` is next.
+
+## 2026-09-15 (night) — `syntax-reorg`: the typing judgement, predicates, surface layer
+
+Matthew: "now do the ⊢qll judgement and also the surface syntax it's ok to
+change other modules.  find a good notation for predicates".  Record:
+`docs/syntax-reorg-2026-09-15.md` §2.3.
+
+- **Judgement.** `Γ ⊢ p : A` is `Derives p Γ A` (plain inside `LaxLogic.QLL`),
+  `Γ, u : B ⊢ p : A` extends the context by `(u, B)`, `Γ ⊬ p : A`,
+  `Γ ⊢[Derivable] p : A`.  `⊢qll` is gone.  Mechanism:
+  `attribute [turnstile typing] R` in `LaxLogic/Util/Turnstile.lean`; with no
+  typing judgement in play, `Γ ⊢ A : T` is still a type ascription.
+- **Predicates.** `P(x, a)` is `.pred "P" [x, .fvar "a"]`, `f(t)` a function term
+  where a `Tm` is expected, `P()` an atom (`LaxLogic/QLL/Notation.lean`).  An
+  unbound identifier in these argument positions, and in a judgement's proof
+  term or entry, is a free variable; printing is the converse.
+- **Surface layer** now matches the infoview: `◯[∀]`, `↠`, `∀ x, A`, `val[∀]`,
+  `let[∀]`; every bracket use, rendered-string pin, `CLPEngine.showForm` and the
+  checker's error messages converted.  `qf[…]`/`qp[…]` evaluate to literal
+  constructor terms; literal proof terms print `qp[…]`, literal judgements
+  `qd[…]`/`qj[…]`.
+- **Built:** every `LaxLogic/` module by name (8754 jobs), both papers and the
+  107 baseline wip modules (9168 jobs), `scripts/clp-wolfram.sh` exit 0; two
+  deliberately wrong judgement pins watched failing.
+- **Left as is** (cosmetic, both parse back): `Γ ⊢ (qp[λu. u]) : A` has outer
+  parentheses (Lean's parenthesizer), `qd[ ⊢ …]` has a space.
+- **Matthew, mid-session:** the surface brackets may become unnecessary now
+  that the term notation carries judgements; and baking our own syntax may not
+  be sensible given Lean's own features.  Assessment owed in the reply.

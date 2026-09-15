@@ -115,12 +115,12 @@ def 𝔅 : Model where
 
 def ρ₀ : String → 𝔅.D := fun _ => ()
 
-def d_val : qd[⊢ val∀ * : ◯∀ ⊤] := .circI .topI
+def d_val : qd[⊢ val[∀] * : ◯[∀] ⊤] := .circI .topI
 
 example : denoteC 𝔅 d_val ρ₀ () := rfl
 
 /-- And the derivation of `⊤ ⊃ ⊤` denotes the identity on `|⊤|`. -/
-def d_id : qd[⊢ λu. u : ⊤ ⊃ ⊤] := .impI "u" ⟨by decide, by decide⟩ (.var (by decide))
+def d_id : qd[⊢ λu. u : ⊤ ↠ ⊤] := .impI "u" ⟨by decide, by decide⟩ (.var (by decide))
 
 example : denoteC 𝔅 d_id ρ₀ () = () := rfl
 
