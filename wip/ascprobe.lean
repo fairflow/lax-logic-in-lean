@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Does the budget boundary MOVE with the size of the space?

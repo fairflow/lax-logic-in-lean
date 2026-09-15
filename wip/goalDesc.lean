@@ -20,7 +20,7 @@ families (`itpAfull = itpAgoal ++ itpAenv ++ truncation`):
 * the **truncation** disjunct, already discharged by `desc_of_oth`
   (`wip/cascadeBox.lean` §77).
 
-The clause tables (`LaxLogic/PLLG4UITrunc.lean`) have a structural
+The clause tables (`LaxLogic/PLL/UI/G4UITrunc.lean`) have a structural
 property worth naming, because it explains what is hard and what is not:
 
 > **every budget-decrementing recursive reference sits at the *same*

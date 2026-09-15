@@ -1,6 +1,6 @@
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLG4Gap
-import LaxLogic.PLLRun
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.G4.G4Gap
+import LaxLogic.PLL.Search.Run
 
 /-!
 # The verified algorithms, running: a curated demonstration suite

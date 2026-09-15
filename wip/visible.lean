@@ -1,5 +1,5 @@
-import LaxLogic.PLLSequent
-import LaxLogic.PLLLaxInfinite
+import LaxLogic.PLL.Sequent.Sequent
+import LaxLogic.PLL.Semantics.LaxInfinite
 import rnEmbed
 
 /-!

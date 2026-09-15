@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4HAdm
+import LaxLogic.PLL.G4.G4HAdm
 
 /-!
 # Spines, `weak_Imp`, and `L→→`-duplication for G4iLL″

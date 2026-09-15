@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-!
 # Starvation at the budget floor — first bricks of the `cascade_low_pos_box` campaign

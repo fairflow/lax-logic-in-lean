@@ -1,20 +1,20 @@
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # `PLLND.Search` — a sound-both-ways, incomplete decision aid for PLL sequents
 
 ## Reading order
 
-1. **`LaxLogic/PLLSearch.lean`** (this file) — the specification: what the
+1. **`LaxLogic/PLL/Search/Search.lean`** (this file) — the specification: what the
    staged procedure does, what is verified, what it costs.
-2. **`LaxLogic/PLLSearchCmd.lean`** — the `#search` / `#refute` /
+2. **`LaxLogic/PLL/Search/SearchCmd.lean`** — the `#search` / `#refute` /
    `#refuteConf` commands.  Start here if you only want to *ask* about a
    sequent; they print the verdict, the evidence and a paste-ready theorem.
-3. **`LaxLogic/PLLSearchEx.lean`** — worked examples: the thirteen Hilbert
+3. **`LaxLogic/PLL/Search/SearchEx.lean`** — worked examples: the thirteen Hilbert
    axioms run through the API, and the extraction lemma.
-4. **`LaxLogic/PLLSearchConf.lean`** — the PCLL half (`ConfluentU.DerivU`):
+4. **`LaxLogic/PLL/Search/SearchConf.lean`** — the PCLL half (`ConfluentU.DerivU`):
    confluence-filtered refutation and its certificate theorem.
-5. **`LaxLogic/PLLG4Term.lean`** — the engine: proof terms for G4iLL″ and the
+5. **`LaxLogic/PLL/G4/G4Term.lean`** — the engine: proof terms for G4iLL″ and the
    fuel-free (optionally budgeted) backward searcher.
 6. `docs/search-manual.md` — the same material for a logician who knows PLL
    but not this codebase.
@@ -51,7 +51,7 @@ Shortest route: the commands of `PLLSearchCmd.lean`, which print the
 verdict, the evidence, and a paste-ready pinned theorem.
 
 ```
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.Search.SearchCmd
 open PLLFormula PLLND PLLND.Search
 
 #search [] ⊢ (prop "p").ifThen ((prop "p").somehow)
@@ -847,7 +847,7 @@ def srcOfCM (M : FinCM) : String :=
 twenty-world model runs to several screens of pair lists.  `renderCM` prints
 one line per world: its `Rᵢ`-cover successors (the transitive reduction, so
 the implied edges are not repeated), its `Rₘ` successors, and the atoms it
-forces.  `LaxLogic/PLLDiagram.lean` draws the same information as a picture
+forces.  `LaxLogic/PLL/Search/Diagram.lean` draws the same information as a picture
 (`Diagram.toTikz` / `Diagram.toSvg`, over the same transitive reduction
 `Diagram.hasseRi`); the two are kept independent so that a user of the
 search API need not import the figure machinery, which does file IO. -/

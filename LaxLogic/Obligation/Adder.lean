@@ -64,7 +64,7 @@ import LaxLogic.Obligation.Postpone
 import LaxLogic.Obligation.Conservativity
 import LaxLogic.Obligation.Tactics
 import LaxLogic.Obligation.Solve
-import LaxLogic.PLLTimingLookahead
+import LaxLogic.PLL.Timing.TimingLookahead
 
 namespace LaxLogic.Obligation.Adder
 

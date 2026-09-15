@@ -1,5 +1,5 @@
-import LaxLogic.PLLSubst
-import LaxLogic.PLLSequent
+import LaxLogic.PLL.ND.Subst
+import LaxLogic.PLL.Sequent.Sequent
 
 /-!
 # Normal forms, progress, and weak normalisation via cut elimination

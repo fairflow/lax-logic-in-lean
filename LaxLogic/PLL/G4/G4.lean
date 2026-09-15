@@ -1,4 +1,4 @@
-import LaxLogic.PLLSequent
+import LaxLogic.PLL.Sequent.Sequent
 
 /-!
 # G4iLL: Iemhoff's terminating sequent calculus for PLL — the faithful transcription

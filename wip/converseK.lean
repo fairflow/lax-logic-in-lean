@@ -1,4 +1,4 @@
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # The converse of K fails in PLL — two pinned countermodels
@@ -12,7 +12,7 @@ Matthew asked for this on 2026-08-07, having produced the intuitionistic
 countermodel by hand (two worlds `0 < 1`, `A` true only at `1`) and asked
 whether it lifts to a constraint model.  It does, in two ways, and both
 are checked here by `FinCM.not_provable_of_check` — the certificate
-theorem of `LaxLogic/PLLCountermodelEmit.lean`, so these are kernel-level
+theorem of `LaxLogic/PLL/Semantics/CountermodelEmit.lean`, so these are kernel-level
 refutations, not `#eval` evidence.
 
 `FinCM` fields: `⟨worlds, Rᵢ-edges, Rₘ-edges, fallible worlds, valuation⟩`,

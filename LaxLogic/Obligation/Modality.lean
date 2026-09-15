@@ -430,7 +430,7 @@ So a lax modality is only meaningful relative to a *class* of admissible
 constraints. For Propositional Lax Logic that class is the standard constraints,
 and completeness with respect to them is Theorem 6 of Fairtlough and Mendler's
 solution to Curry's problem, machine-checked in this development at
-`LaxLogic/PLLCtxCompleteness.lean`. -/
+`LaxLogic/PLL/Semantics/CtxCompleteness.lean`. -/
 theorem debt_exists_vacuous (A : Prop) : ∃ C, Debt C A :=
   ⟨False, fun h => h.elim⟩
 

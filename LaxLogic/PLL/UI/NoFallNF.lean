@@ -1,4 +1,4 @@
-import LaxLogic.PLLNoFall
+import LaxLogic.PLL.UI.NoFall
 
 /-!
 # ◯-normalisation for PCLL + `¬◯⊥`, and the IPC calibration

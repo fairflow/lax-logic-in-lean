@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4Dec
+import LaxLogic.PLL.G4.G4Dec
 
 /-!
 # Probe: the one-variable quantifier value table
@@ -6,7 +6,7 @@ import LaxLogic.PLLG4Dec
 For every one-variable formula `M` (atoms ⊆ {p}) up to a weight cap,
 compute — via the G4c search oracle, sound on `true` — the CANDIDATE
 values of the two bisimulation quantifiers, and search for the
-certificates that the criteria of `LaxLogic/PLLSemUI.lean` turn into Lean
+certificates that the criteria of `LaxLogic/PLL/SemUI/SemUI.lean` turn into Lean
 proofs:
 
 * candidate ∀p-value  = the maximum of { closed ξ : ξ ⊢ M }  (Pitts'

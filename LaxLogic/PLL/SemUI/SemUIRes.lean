@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUICtx
+import LaxLogic.PLL.SemUI.SemUICtx
 
 /-!
 # The one-world residue obstruction: the general fails-half, PROVED

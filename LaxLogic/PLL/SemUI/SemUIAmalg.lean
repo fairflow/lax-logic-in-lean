@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUIOFree
+import LaxLogic.PLL.SemUI.SemUIOFree
 
 /-!
 # The amalgamation reduction: ◯-free definability in ALL variables

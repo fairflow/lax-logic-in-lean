@@ -1,4 +1,4 @@
-import LaxLogic.PLLKripke
+import LaxLogic.PLL.Semantics.Kripke
 import Mathlib.Tactic.DeriveFintype
 
 /-!

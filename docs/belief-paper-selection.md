@@ -52,7 +52,7 @@ below clean by any proof).
 
 The whole of §5 as drafted, plus three results cited in §7–§8, lived only in
 `wip/belief_realisability.lean`. Promoted 2026-07-18 to
-[`LaxLogic/BeliefRealisability.lean`](../LaxLogic/BeliefRealisability.lean)
+[`LaxLogic/Belief/Realisability.lean`](../LaxLogic/Belief/Realisability.lean)
 (root-imported; the file uses the library's `Pca`/`Evidence` from
 `PLLEvidence.lean` — no duplication), with **all 31 audits measured and
 `#guard_msgs`-pinned in-file**. Measured audits of the paper-cited results:

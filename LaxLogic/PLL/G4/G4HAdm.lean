@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4HInv
-import LaxLogic.PLLG4Adm
+import LaxLogic.PLL.G4.G4HInv
+import LaxLogic.PLL.G4.G4Adm
 
 /-!
 # The `G4c` rule API, generalised identity, telescoped MP

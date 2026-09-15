@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4HCut
-import LaxLogic.PLLTerms
+import LaxLogic.PLL.G4.G4HCut
+import LaxLogic.PLL.ND.Terms
 
 /-!
 # Completeness of G4iLL″, and the equivalences — unconditional

@@ -19,7 +19,7 @@ cases are
 and each contains `z ∨ ⊥`.
 
 That is not an accident of the example.  Reading the environment clause table
-(`itpAenv`, `LaxLogic/PLLG4UITrunc.lean`) at an **atom** goal `q ≠ p`, every
+(`itpAenv`, `LaxLogic/PLL/UI/G4UITrunc.lean`) at an **atom** goal `q ≠ p`, every
 clause either produces nothing or produces a disjunct with a conjunct
 
     itpA p S f b Γ' (prop q)      with `Γ'` of strictly smaller defect,

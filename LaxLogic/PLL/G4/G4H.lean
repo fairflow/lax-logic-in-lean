@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4P
+import LaxLogic.PLL.G4.G4P
 
 /-!
 # G4iLL″, height-indexed: the final repaired calculus `G4h`/`G4c`

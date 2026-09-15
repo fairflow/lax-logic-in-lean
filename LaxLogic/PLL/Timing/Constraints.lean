@@ -1,4 +1,4 @@
-import LaxLogic.PLLTerms
+import LaxLogic.PLL.ND.Terms
 
 /-!
 # Proof terms compute constraints (F&M §1(6): timing analysis)

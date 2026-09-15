@@ -1,6 +1,6 @@
 import wip.oracle2
-import LaxLogic.PLLSemUILaw
-import LaxLogic.PLLSemUIOFree
+import LaxLogic.PLL.SemUI.SemUILaw
+import LaxLogic.PLL.SemUI.SemUIOFree
 
 /-!
 # Sweep: do the semantic quantifiers agree with IPC on the ◯-free fragment?

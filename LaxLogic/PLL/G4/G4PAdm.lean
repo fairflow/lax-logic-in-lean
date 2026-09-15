@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4PInv
+import LaxLogic.PLL.G4.G4PInv
 
 /-!
 # Generalised identity for G4iLL′

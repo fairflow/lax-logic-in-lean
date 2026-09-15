@@ -1,4 +1,4 @@
-import LaxLogic.BeliefCollapse
+import LaxLogic.Belief.Collapse
 
 /-!
 # Open vs closed nuclei: hypothetical belief is invisible classically (§3b-2)

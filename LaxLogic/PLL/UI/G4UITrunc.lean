@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UIStab
+import LaxLogic.PLL.UI.G4UIStab
 
 /-!
 # Uniform interpolation, phase 4: the truncated quantifiers (v3)

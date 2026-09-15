@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4
-import LaxLogic.PLLFinsetKit
+import LaxLogic.PLL.G4.G4
+import LaxLogic.PLL.Syntax.FinsetKit
 
 /-!
 # Termination A: the finite formula space

@@ -1,4 +1,4 @@
-import LaxLogic.PLLConsequence
+import LaxLogic.PLL.ND.Consequence
 
 /-!
 # A cut-free sequent calculus for PLL, and cut elimination (F&M Theorem 2.6)

@@ -11,14 +11,14 @@ The quickest route is §2, four commands that take a sequent and print a
 verdict, the evidence for it, and a paste-ready theorem recording it.  §§3–6
 describe the functions behind the commands, for use inside programs.
 
-Modules: `LaxLogic/PLLSearchCmd.lean` (the commands),
-`LaxLogic/PLLSearch.lean` (the staged procedure and the API),
-`LaxLogic/PLLSearchConf.lean` (PCLL),
-`LaxLogic/PLLSearchNoFall.lean` (PCLL + `¬◯⊥`), `LaxLogic/PLLG4Term.lean` (the proof
-searcher), `LaxLogic/PLLCountermodelEmit.lean` (the verified countermodel
-checker and the simplifier), `LaxLogic/PLLDiagram.lean` +
-`LaxLogic/PLLDiagramCmd.lean` (pictures),
-`LaxLogic/PLLSearchEx.lean` (worked examples).
+Modules: `LaxLogic/PLL/Search/SearchCmd.lean` (the commands),
+`LaxLogic/PLL/Search/Search.lean` (the staged procedure and the API),
+`LaxLogic/PLL/Search/SearchConf.lean` (PCLL),
+`LaxLogic/PLL/Search/SearchNoFall.lean` (PCLL + `¬◯⊥`), `LaxLogic/PLL/G4/G4Term.lean` (the proof
+searcher), `LaxLogic/PLL/Semantics/CountermodelEmit.lean` (the verified countermodel
+checker and the simplifier), `LaxLogic/PLL/Search/Diagram.lean` +
+`LaxLogic/PLL/Search/DiagramCmd.lean` (pictures),
+`LaxLogic/PLL/Search/SearchEx.lean` (worked examples).
 
 ## 0. Which command do I want?
 
@@ -174,7 +174,7 @@ Four commands cover the everyday use of the toolkit.  Each takes a sequent
 and prints a block: the sequent in the usual notation, the verdict, the
 evidence, and Lean source for the theorem that records the finding.
 
-`LaxLogic/PLLSearchDemo.lean` is a runnable companion to §§2–7 of this
+`LaxLogic/PLL/Search/SearchDemo.lean` is a runnable companion to §§2–7 of this
 document: open it in VS Code, put the cursor on a command, and the info view
 shows that command's output.  Every example there is wrapped in
 `#guard_msgs_show`, which checks the output against the docstring above it
@@ -182,7 +182,7 @@ shows that command's output.  Every example there is wrapped in
 separated mechanically, the build fails if the printed text drifts, and the
 file can still be stepped through.  (Plain `#guard_msgs` deletes the messages
 it checks, which makes a file of `#guard_msgs`-wrapped commands show nothing
-at all in the info view.  `LaxLogic/GuardMsgsShow.lean` is the fifteen-line
+at all in the info view.  `LaxLogic/Util/GuardMsgsShow.lean` is the fifteen-line
 module that fixes that.)
 
 ### Setup
@@ -195,11 +195,11 @@ lake env lean MyFile.lean     # elaborate a file, running its #eval and #guard
 A file of your own needs two lines:
 
 ```lean
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.Search.SearchCmd
 open PLLFormula PLLND PLLND.Search
 ```
 
-Import `LaxLogic.PLLDiagramCmd` instead of `LaxLogic.PLLSearchCmd` to get
+Import `LaxLogic.PLL.Search.DiagramCmd` instead of `LaxLogic.PLL.Search.SearchCmd` to get
 `#draw` (§6) as well; it re-exports everything above.
 
 `PLLFormula` has a `Repr` instance printing `⊃`, `∧`, `∨`, `◯`, so formulas
@@ -702,7 +702,7 @@ that is, natural deduction from `Γ` together with finitely many instances of
 the scheme.  `DerivU` is sound and complete for *mutually confluent*
 constraint models, those satisfying `Rₘ x w → Rᵢ x v → ∃ u, Rᵢ w u ∧ Rₘ v u`
 (`derivU_iff_confluent_valid`).  Everything in this section lives in
-`LaxLogic/PLLSearchConf.lean`, namespace `PLLND.RNC`.
+`LaxLogic/PLL/Search/SearchConf.lean`, namespace `PLLND.RNC`.
 
 ### Proving in PCLL
 
@@ -791,12 +791,12 @@ holds the RNC(◯,{}) matrix.  Those files need `lake build wipshared` first.
 ## 6. Pictures
 
 The text picture of §2 stops being a picture at about six worlds.
-`LaxLogic/PLLDiagram.lean` draws a `FinCM` properly — as SVG for the screen,
-as TikZ for a paper — and `LaxLogic/PLLDiagramCmd.lean` wires it to the
+`LaxLogic/PLL/Search/Diagram.lean` draws a `FinCM` properly — as SVG for the screen,
+as TikZ for a paper — and `LaxLogic/PLL/Search/DiagramCmd.lean` wires it to the
 search as one command:
 
 ```lean
-import LaxLogic.PLLDiagramCmd
+import LaxLogic.PLL.Search.DiagramCmd
 open PLLFormula PLLND PLLND.Search
 
 #draw [premise] ⊢ goal to "docs/figures/demo-ordist.svg"
@@ -850,7 +850,7 @@ byte-identical across rebuilds.
 ## 7. PCLL + `¬◯⊥`
 
 Adding to PCLL the single axiom `¬◯⊥` gives the *infallible* system, in
-`LaxLogic/PLLNoFall.lean`, namespace `PLLND.NoFall`:
+`LaxLogic/PLL/UI/NoFall.lean`, namespace `PLLND.NoFall`:
 
 ```
 DerivUNoFall Γ φ  :=  DerivU (¬◯⊥ :: Γ) φ
@@ -868,7 +868,7 @@ non-interderivable variable-free formulas.
 
 ### `#searchNF` and `#refuteNF`
 
-The command pair of `LaxLogic/PLLSearchNoFall.lean` works like `#search` and
+The command pair of `LaxLogic/PLL/Search/SearchNoFall.lean` works like `#search` and
 `#refuteConf`:
 
 * `#searchNF Γ ⊢ C` tries a countermodel first — accepted only if mutually
@@ -902,7 +902,7 @@ The printed snippets use two certificate theorems:
   checked context is `Γ` itself: the axiom needs no checking, because every
   infallible model forces `¬◯⊥` everywhere (`NoFall.force_nobot`).
 
-`LaxLogic/PLLSearchDemo.lean` §6 runs all of this with pinned outputs.
+`LaxLogic/PLL/Search/SearchDemo.lean` §6 runs all of this with pinned outputs.
 
 ---
 
@@ -977,7 +977,7 @@ instances rather than the searcher described here.
   the only output left in such a file is that of the commands not wrapped —
   which is why the info view seems to jump to the end of the file and show
   one stale-looking block.  Use `#guard_msgs_show`
-  (`LaxLogic/GuardMsgsShow.lean`), which checks *and* displays.
+  (`LaxLogic/Util/GuardMsgsShow.lean`), which checks *and* displays.
 
 ---
 
@@ -994,7 +994,7 @@ typechecker has already checked a derivation the moment the searcher builds one
 — but there was no way to get `t` into a source file.  Running the searcher
 inside the kernel is not an option: it is deliberately kernel-opaque.
 
-`LaxLogic/PLLSearchPin.lean` supplies the missing step.
+`LaxLogic/PLL/Search/SearchPin.lean` supplies the missing step.
 
     #pinsrc Γ ⊢ C
     #pinsrc Γ ⊢ C with cfg

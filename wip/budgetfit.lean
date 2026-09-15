@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Budget extraction: measuring the room the descent actually needs
@@ -14,7 +14,7 @@ law and then been probed around its edges:
 * "`2 ≤ c`" is the obvious next guess — and it is *still a guess*.
 
 This file replaces guessing by **extraction**, in the sense the repo
-already uses for timing (`LaxLogic/PLLConstraints.lean`, after Mendler's
+already uses for timing (`LaxLogic/PLL/Timing/Constraints.lean`, after Mendler's
 *proofs-as-delays*): treat the budget as an unknown, run the object over
 a family of instances, and let the data say what the function is.
 
@@ -22,7 +22,7 @@ Two instruments.
 
 **§1 Shape coverage.**  The budget `b` is read at exactly two clause
 branches of `itpE`/`itpA` — the ones driven by a context/space formula of
-shape `(A ⊃ B) ⊃ D` or `◯A ⊃ B` (`LaxLogic/PLLG4UITrunc.lean`, lines
+shape `(A ⊃ B) ⊃ D` or `◯A ⊃ B` (`LaxLogic/PLL/UI/G4UITrunc.lean`, lines
 252-269 and 270-290).  A probe family containing no formula of either
 shape *cannot exercise the budget at all*, whatever else it tests.
 `budgetBlind` decides that, and `missingTags` reports which of the eleven
@@ -169,7 +169,7 @@ Covering a clause *shape* is not enough.  Each budget-gated branch also
 carries **guard conditions**, and `itpE`/`itpA` iterate over the
 **context**, not the space: a gated piece sitting in `S` but not in `Γ`
 drives nothing until growth puts it there.  Reading the two branches off
-`LaxLogic/PLLG4UITrunc.lean`:
+`LaxLogic/PLL/UI/G4UITrunc.lean`:
 
 * `◯A ⊃ B ∈ Γ` reaches its gate iff `B ∉ Γ`, `B ∈ S` and `◯A ⊃ B ∈ S`;
 * `(A ⊃ B) ⊃ D ∈ Γ` reaches its gate iff `D ∉ Γ`, `D ∈ S`,

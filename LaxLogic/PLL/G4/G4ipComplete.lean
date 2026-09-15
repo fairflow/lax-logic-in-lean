@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4HComp
-import LaxLogic.PLLNoFallNF
+import LaxLogic.PLL.G4.G4HComp
+import LaxLogic.PLL.UI.NoFallNF
 
 /-!
 # The `◯`-free base of G4iLL is Dyckhoff's G4ip, and it *is* complete

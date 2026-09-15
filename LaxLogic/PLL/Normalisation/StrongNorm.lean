@@ -1,5 +1,5 @@
-import LaxLogic.PLLNormal
-import LaxLogic.PLLTactics
+import LaxLogic.PLL.Normalisation.Normal
+import LaxLogic.PLL.ND.Tactics
 
 /-!
 # Towards strong normalisation: assoc termination and a certified reducer

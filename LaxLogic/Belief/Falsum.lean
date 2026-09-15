@@ -1,4 +1,4 @@
-import LaxLogic.PLLFrames
+import LaxLogic.PLL.Semantics.Frames
 
 /-!
 # The believer may believe the absurd: `◯⊥` is consistent and non-trivial

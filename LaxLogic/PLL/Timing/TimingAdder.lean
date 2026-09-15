@@ -1,4 +1,4 @@
-import LaxLogic.PLLTiming
+import LaxLogic.PLL.Timing.Timing
 
 /-!
 # The carry-skip adder slice: the false path at "tens of gates"

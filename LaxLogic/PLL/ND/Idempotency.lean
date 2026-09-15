@@ -1,4 +1,4 @@
-import LaxLogic.PLLConfluence
+import LaxLogic.PLL.Normalisation.Confluence
 
 /-!
 # Idempotence is inter-derivability, not isomorphism

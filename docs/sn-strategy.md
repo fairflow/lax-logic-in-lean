@@ -2,7 +2,7 @@
 
 > *"Actually I am unsure what strategy that SN proof would indicate; perhaps
 > the proof itself suggests an optimal one?"* — the question this note
-> answers, for the strong-normalisation proof in `LaxLogic/PLLTopTop.lean`.
+> answers, for the strong-normalisation proof in `LaxLogic/PLL/Normalisation/TopTop.lean`.
 
 Short answer, up front. Strong normalisation is **strategy-independent** —
 it says *every* reduction order terminates — so the proof cannot, and does

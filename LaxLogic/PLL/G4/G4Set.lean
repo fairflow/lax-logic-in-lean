@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4HComp
-import LaxLogic.PLLFinsetKit
+import LaxLogic.PLL.G4.G4HComp
+import LaxLogic.PLL.Syntax.FinsetKit
 
 /-!
 # Termination B: the cumulative set-context calculus `G4s`

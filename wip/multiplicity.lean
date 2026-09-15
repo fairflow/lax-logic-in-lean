@@ -1,4 +1,4 @@
-import LaxLogic.PLLDecide
+import LaxLogic.PLL.Search.Decide
 
 /-!
 # Is the contraction multiplicity bounded?

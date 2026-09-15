@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4P
-import LaxLogic.PLLG4Inv
+import LaxLogic.PLL.G4.G4P
+import LaxLogic.PLL.G4.G4Inv
 
 /-!
 # Inversion lemmas for G4iLL′

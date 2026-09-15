@@ -1,11 +1,11 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSemUIFrag
-import LaxLogic.PLLG4HComp
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.SemUI.SemUIFrag
+import LaxLogic.PLL.G4.G4HComp
 
 /-!
 # `nfcorrect` — the search normaliser is a PLL equivalence
 
-`PLLND.Search.nf` (`LaxLogic/PLLSearch.lean` §0) is the bottom-up pass of
+`PLLND.Search.nf` (`LaxLogic/PLL/Search/Search.lean` §0) is the bottom-up pass of
 Heyting `⊥`/`⊤` laws plus `◯⊤ ≡ ⊤`, `◯◯ ≡ ◯` that shrinks formulas before
 the untrusted stages of `PLLND.Search`.  Inside the search its correctness
 is *irrelevant* — every certificate is re-checked against the original
@@ -227,7 +227,7 @@ theorem interd_of_nfIter {n : Nat} {φ ψ : PLLFormula} (h : Interd (nfIter n φ
 /-! ### Calculus form
 
 `PLLND.Search`'s certificates come out as `G4c` objects; `G4c.equiv_nd`
-(unconditional, `LaxLogic/PLLG4HComp.lean`) moves them across. -/
+(unconditional, `LaxLogic/PLL/G4/G4HComp.lean`) moves them across. -/
 
 /-- `G4c [nf φ] ψ` gives `G4c [φ] ψ`. -/
 theorem g4c_of_nf {φ ψ : PLLFormula} (h : G4c [nf φ] ψ) : G4c [φ] ψ :=

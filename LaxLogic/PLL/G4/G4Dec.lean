@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4Set
-import LaxLogic.PLLG4Space
+import LaxLogic.PLL.G4.G4Set
+import LaxLogic.PLL.G4.G4Space
 
 /-!
 # Termination C: the decider — F&M Theorem 2.8

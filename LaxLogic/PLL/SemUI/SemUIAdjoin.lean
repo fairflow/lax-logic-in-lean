@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUISplit
+import LaxLogic.PLL.SemUI.SemUISplit
 
 /-!
 # The parametric point-adjunction: one construction, three surgeries

@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUILaw
+import LaxLogic.PLL.SemUI.SemUILaw
 
 /-!
 # The split variant, and `∀p.(((p ⊃ ◯⊥) ⊃ p) ⊃ p) = ◯⊥`

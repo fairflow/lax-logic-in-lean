@@ -1,6 +1,6 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSearchPin
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Search.SearchPin
 
 /-!
 # The other residual branch: the fresh-antecedent goal clause at budget 1

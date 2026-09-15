@@ -1,4 +1,4 @@
-import LaxLogic.FormattingUtils
+import LaxLogic.Util.FormattingUtils
 import Mathlib.Tactic
 inductive PLLFormula where
 | prop (constantName: String)

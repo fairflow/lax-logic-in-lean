@@ -23,7 +23,7 @@ and dually for `∀p`.  The decisive word is *uniform*: the interpolant must
 depend on `φ` and `p` alone, not on the `ψ` it is later compared with, nor on
 any ambient context.
 
-The construction in this repository (`LaxLogic/PLLG4UITrunc.lean`) builds the
+The construction in this repository (`LaxLogic/PLL/UI/G4UITrunc.lean`) builds the
 interpolants as explicit formulas by recursion on a **context** `Γ` inside a
 finite **space** `S` of formulas closed under immediate subformulas:
 
@@ -63,7 +63,7 @@ higher budget (the **ambient**).  Since `itpA` is a disjunction and lowering
 descent says it is no stronger, i.e. that the family has stabilised.
 
 The *converse* direction is free and unconditional: `itp_budget_mono` and
-`itp_budget_mono_le` in `LaxLogic/PLLG4UITrunc.lean`, sorry-free.
+`itp_budget_mono_le` in `LaxLogic/PLL/UI/G4UITrunc.lean`, sorry-free.
 
 **Where the descent is consumed.**  `itp_stab` / `itp_stab_le`
 (`wip/absorb_base.lean`) → `itp_adequate` (`wip/adequacy.lean`) →

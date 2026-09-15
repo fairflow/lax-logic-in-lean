@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4Gap
-import LaxLogic.PLLG4UI
+import LaxLogic.PLL.G4.G4Gap
+import LaxLogic.PLL.UI.G4UI
 
 /-!
 # Iemhoff's UI proof in its own habitat: quantifiers for G4iLL proper
@@ -17,7 +17,7 @@ adequacy statement read *derivability-relatively* (no cut anywhere)?
 
 ## The calculus
 
-We build on `PLLND.G4` of `LaxLogic/PLLG4.lean`, which *is* Iemhoff's
+We build on `PLLND.G4` of `LaxLogic/PLL/G4/G4.lean`, which *is* Iemhoff's
 G4iLL transcribed verbatim (checked once more against Figures 2.2/2.3
 of arXiv:2209.08976v1): `impLLax` = her `R◯→`, `impLLaxLax` = her
 `L◯→`; every left rule consumes its principal.  One flagged delta: the
@@ -1995,7 +1995,7 @@ end Adequacy
 
 /-! ## Verdict (task #13): Iemhoff's UI proof in its own habitat
 
-**Calculus.**  `PLLND.G4` of `LaxLogic/PLLG4.lean`, re-checked against
+**Calculus.**  `PLLND.G4` of `LaxLogic/PLL/G4/G4.lean`, re-checked against
 Figures 2.2/2.3 of arXiv:2209.08976v1 — it *is* her G4iLL (delta: the
 repo's `impLBot`, absent from her figure since `⊥` is not an atom for
 her; clauses supplied and flagged).

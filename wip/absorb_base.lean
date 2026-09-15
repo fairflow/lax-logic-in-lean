@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-!
 # WIP: the absorption base, ambient-relative form

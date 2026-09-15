@@ -1,10 +1,10 @@
 # The finite canonical model: a truth lemma with decided Lindenbaum steps
 
-Source: `LaxLogic/PLLFinComp.lean` (definitions `FTheory`, `MaxIn`,
+Source: `LaxLogic/PLL/Semantics/FinComp.lean` (definitions `FTheory`, `MaxIn`,
 `extendStep`/`extendAll`/`lindenbaum`, the `MaxIn.*` lemma suite,
 `canonFin`, `truth_lemma`, `finite_canonical_countermodel`,
 `canonFinCM`, `emitter_completeness`), mirroring the classical
-development of `LaxLogic/PLLCompleteness.lean` (F&M §4) case for case.
+development of `LaxLogic/PLL/Semantics/Completeness.lean` (F&M §4) case for case.
 The audit currently carries `Classical.choice` inherited from named
 residues of the decidability infrastructure (ledger §10, footnote);
 the construction itself invokes no maximality principle — that is its
@@ -205,7 +205,7 @@ theorem emitter_completeness {Γ : List PLLFormula} {C : PLLFormula}
 In words: every underivable sequent has a finite countermodel **as
 checker data** — the object the decoration theorem
 (`docs/annotated/adequacy-fullness.md`) consumes. The composition is
-`derivable_iff_no_realP_refutation` (`LaxLogic/PLLRealCompleteness.lean`):
+`derivable_iff_no_realP_refutation` (`LaxLogic/PLL/Realisability/RealCompleteness.lean`):
 derivability coincides with the absence of a realisability refutation,
 and the backward case decision is itself made by the decision procedure
 rather than excluded middle.

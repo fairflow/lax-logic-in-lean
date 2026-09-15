@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-!
 # The ◯-involving low-budget descent: the others-descent build

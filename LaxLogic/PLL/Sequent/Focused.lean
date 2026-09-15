@@ -1,10 +1,10 @@
-import LaxLogic.PLLPolar
+import LaxLogic.PLL.Syntax.Polar
 
 /-!
 # A focused calculus for PLL, with the judgment flag on the stable goal
 
 Step 3 of the programme in `docs/lax-logic-interpolation-handoff.md`, over
-`LaxLogic/PLLJudgmental.lean` (two judgments) and `LaxLogic/PLLPolar.lean`
+`LaxLogic/PLL/ND/Judgmental.lean` (two judgments) and `LaxLogic/PLL/Syntax/Polar.lean`
 (polarised syntax).
 
 ## The design decision, and why it came out well

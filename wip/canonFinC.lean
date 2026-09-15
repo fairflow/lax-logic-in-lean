@@ -1,5 +1,5 @@
-import LaxLogic.PLLFinComp
-import LaxLogic.PLLConfluentComplete
+import LaxLogic.PLL.Semantics.FinComp
+import LaxLogic.PLL.Semantics.ConfluentComplete
 
 /-!
 # `canonFinC` — the confluent finite canonical model (PCLL)  [WIP]

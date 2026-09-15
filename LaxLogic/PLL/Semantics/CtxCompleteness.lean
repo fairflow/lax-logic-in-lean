@@ -1,5 +1,5 @@
-import LaxLogic.PLLFiniteModel
-import LaxLogic.PLLTheorems
+import LaxLogic.PLL.Semantics.FiniteModel
+import LaxLogic.PLL.ND.Theorems
 
 /-!
 # Context-completeness for PLL (Fairtlough–Mendler, TYPES 2000, Theorem 6)
@@ -21,15 +21,15 @@ where
 
 ## What the codebase already provides (verified in Phase 1)
 
-* `PLLND.ConstraintModel` (`LaxLogic/PLLKripke.lean`) is **exactly** the paper's
+* `PLLND.ConstraintModel` (`LaxLogic/PLL/Semantics/Kripke.lean`) is **exactly** the paper's
   Def 3/4: `(W, Ri, Rm, F, V)` with `Rm ⊆ Ri`, `F` `Ri`-hereditary, `V`
   hereditary and full on `F`, and the ◯-clause
   `force w (◯φ) = ∀ v, Ri w v → ∃ u, Rm v u ∧ force u φ`.
   (Codebase uses *preorders*, the paper *partial orders*; immaterial for
   soundness/completeness/FMP.)
 * `PLLND.soundness`, `PLLND.completeness`, `PLLND.consequence_iff_derivable`
-  (`LaxLogic/PLLCompleteness.lean`) = the paper's cited **Theorem 5** (F&M 1997).
-* `PLLND.finite_model_property` (`LaxLogic/PLLFiniteModel.lean`) = **finite**
+  (`LaxLogic/PLL/Semantics/Completeness.lean`) = the paper's cited **Theorem 5** (F&M 1997).
+* `PLLND.finite_model_property` (`LaxLogic/PLL/Semantics/FiniteModel.lean`) = **finite**
   constraint-model completeness (F&M Thm 4.6) — the finite-model input Theorem 6's
   completeness direction needs.
 * `LaxND.rename`/`weaken` (structural), `iff_congr_*`, `strong_extensionality`,

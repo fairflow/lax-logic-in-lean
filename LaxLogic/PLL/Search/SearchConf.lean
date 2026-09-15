@@ -1,5 +1,5 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLConfluentComplete
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Semantics.ConfluentComplete
 
 /-!
 # `PLLND.RNC` — search and certificates for PCLL

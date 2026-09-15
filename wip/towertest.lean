@@ -133,7 +133,7 @@ def selfMode (bmax fb cap : Nat) : IO Unit := do
 /-! ## Decomposed agreement
 
 The tower's ∃-answer is an `andAll` and its ∀-answer an `orAll`
-(`LaxLogic/PLLG4UI.lean`), i.e. `c₁ ∧ (c₂ ∧ (… ∧ ⊤))` resp.
+(`LaxLogic/PLL/UI/G4UI.lean`), i.e. `c₁ ∧ (c₂ ∧ (… ∧ ⊤))` resp.
 `d₁ ∨ (d₂ ∨ (… ∨ ⊥))`.  That structure decomposes both agreement
 directions into searches on the *components*, which are one to three
 orders of magnitude smaller than the whole:
@@ -222,7 +222,7 @@ sizes {(comps.map sz)}, {big.length} over cap"
 
 /-! ## The PLL-equivalence normaliser, iterated
 
-`PLLND.Search.nf` (`LaxLogic/PLLSearch.lean` §0) is a bottom-up pass of
+`PLLND.Search.nf` (`LaxLogic/PLL/Search/Search.lean` §0) is a bottom-up pass of
 Heyting `⊥`/`⊤` laws plus `◯⊤ ≡ ⊤`, `◯◯ ≡ ◯` — all PLL equivalences.
 Iterating it to a fixpoint is what makes the big tower outputs legible. -/
 

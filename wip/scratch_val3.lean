@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 
 open PLLFormula
 namespace PLLND

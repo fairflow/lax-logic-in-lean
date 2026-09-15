@@ -1,4 +1,4 @@
-import LaxLogic.PLLNDCore
+import LaxLogic.PLL.ND.NDCore
 
 /-!
 # Kripke constraint models for PLL, and soundness

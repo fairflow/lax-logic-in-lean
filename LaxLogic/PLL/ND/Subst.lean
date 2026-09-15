@@ -1,4 +1,4 @@
-import LaxLogic.PLLTerms
+import LaxLogic.PLL.ND.Terms
 
 /-!
 # The substitution algebra (σ-calculus equations)

@@ -36,7 +36,7 @@ confirm it and it must not be cited as fact. No page numbers or theorem numbers 
    edited by Fairtlough, Mendler and Moggi). Any novelty claim must be stated against it.
 6. **The non-collapse is easy and sharp** (§3.4): in PLL2, `Jφ ⊢ ◯φ` but `◯φ ⊬ Jφ`, because
    `J⊥ = ∀p.p ≡ ⊥` while `◯⊥` is satisfiable — F&M's fallible-world countermodel, already
-   machine-checked in this repository (`LaxLogic/PLLFrames.lean`). So `◯` is a *primitive* worth
+   machine-checked in this repository (`LaxLogic/PLL/Semantics/Frames.lean`). So `◯` is a *primitive* worth
    adding: it is strictly weaker than the strongest second-order-definable lax modality.
 7. **And there is a positive definability result** (§3.4): restricting the quantifier to
    ◯-fixpoints, `◯φ ⊣⊢ ∀°p((φ→p)→p)` exactly. This is the propositional shadow of
@@ -411,7 +411,7 @@ The calculus (call it GLL) is Dyckhoff's G4ip plus
 
 [SEMI-VERIFIED — read off Iemhoff's LLAMA/ILLC slides of 25 January 2023, "On the existence of
 sequent calculi: uniform interpolation for Lax Logic", not off the published chapter.] These are
-exactly the rules the repository implements: `LaxLogic/PLLFocused.lean` line 111,
+exactly the rules the repository implements: `LaxLogic/PLL/Sequent/Focused.lean` line 111,
 `circL : Inv Γ [Q] .lax (.up P) → LFoc Γ (.circ Q) .lax P`, with the `.lax` mode marking the
 second judgment that L◯ needs.
 
@@ -536,7 +536,7 @@ for the Curry–Howard reading (§3.8). §3.3 records a sanity check: under the 
 
 ### 3.2 Natural-deduction rules
 
-PLL's own rules, in the repository's Hilbert presentation (`LaxLogic/PLLAxiom.lean`), are
+PLL's own rules, in the repository's Hilbert presentation (`LaxLogic/PLL/Syntax/Axiom.lean`), are
 
     ◯R:    φ → ◯φ                                    (`somehowR`)
     ◯M:    ◯◯φ → ◯φ                                  (`somehowM`)
@@ -579,7 +579,7 @@ and §3.5.
 
 ### 3.3 Semantics: second-order constraint models
 
-The repository's `ConstraintModel` (`LaxLogic/PLLKripke.lean`) is F&M's fallible two-frame
+The repository's `ConstraintModel` (`LaxLogic/PLL/Semantics/Kripke.lean`) is F&M's fallible two-frame
 structure: `W`, an intuitionistic accessibility `Ri` (reflexive, transitive), a modal
 accessibility `Rm` (reflexive, transitive, with `Rm ⊆ Ri`), a set `F ⊆ W` of fallible worlds
 (`Ri`-upward closed), and a valuation `V` that is `Ri`-persistent and **full on `F`** (fallible
@@ -634,7 +634,7 @@ with a unit — `J` is the strongest such.
 *Proof.* By §3.3, `J⊥ = ∀p.p ≡ ⊥`. So `◯⊥ → J⊥` is `◯⊥ → ⊥`, i.e. `¬◯⊥`. F&M's
 countermodel — two worlds `w₀ ≤ w₁` in both frames with `w₁` fallible — forces `◯⊥` at `w₀`
 while `w₀ ∉ F`. That countermodel is already machine-checked in this repository
-(`LaxLogic/PLLFrames.lean`, "Counter-model 1: `¬◯⊥` is not a theorem"). ∎
+(`LaxLogic/PLL/Semantics/Frames.lean`, "Counter-model 1: `¬◯⊥` is not a theorem"). ∎
 
 Together: **PLL2's `◯` is a genuinely new primitive**, strictly weaker than the lax modality
 that second-order quantification already defines. This is precisely the answer to "is PLL2 just
@@ -693,7 +693,7 @@ The ⊢ direction of the ◯-conjunct is **DERIVABLE**: by `eSound`, `Γ, φ ⊢
 `Γ,φ ⊢ ◯ψ` by cutting the unit `φ ⊢ ◯φ`. So the ◯-goals of `Γ,◯φ` are exactly those of `Γ,φ`,
 which is what makes the shape above plausible. What is not automatic is that `∃p Γ` and
 `◯∃p(Γ,φ)` *generate* all `p`-free consequences — that is the content of the conjecture, and it
-is exactly the clause the PLL extension of `LaxLogic/LJF.lean` will have to write down.
+is exactly the clause the PLL extension of `LaxLogic/Focusing/LJF.lean` will have to write down.
 
 ### 3.6 Names
 
@@ -720,7 +720,7 @@ quantifiers" is the natural refinement.
 
 **(a) The quantifier rules *are* the four obligations — exactly.**
 
-`LaxLogic/LJF.lean` states its contract as four properties E1, A1, E2, A2 (lines ~1100–1120),
+`LaxLogic/Focusing/LJF.lean` states its contract as four properties E1, A1, E2, A2 (lines ~1100–1120),
 with `interp p todo done none` the ∃-interpolant and `interp p todo done (some G)` the
 ∀-interpolant. Reading `interp p Γ none = ∃p(⋀Γ)` and `interp p Γ (some G) = ∀p(⋀Γ → G)`:
 
@@ -748,7 +748,7 @@ notation.
 
 **(b) Semantic reading.** §3.3. The Pitts-projection theorem, if it holds, is a statement about
 the *definable* range; the full range is expected to escape any r.e. axiomatisation. The
-repository's semantic-UI thread (`LaxLogic/PLLSemUI*.lean`) is computing objects on the
+repository's semantic-UI thread (`LaxLogic/PLL/SemUI/SemUI*.lean`) is computing objects on the
 semantic side; the second-order reading says exactly what those objects are supposed to be —
 the ⋀/⋁ over a definable family, not over all admissible propositions — and predicts that the
 two disagree.
@@ -805,7 +805,7 @@ Ordered by cost, cheapest first.
    than the Russell–Prawitz modality, and is exactly the Russell–Prawitz modality of its own
    algebras.*
 2. **[cheap]** Resolve the A2 discrepancy of §3.7(a): is the extra `∃p(Γ)` hypothesis needed?
-3. **[medium]** Extend `LaxLogic/LJF.lean` to `LJF◯` and check the ◯-clause conjecture of §3.5:
+3. **[medium]** Extend `LaxLogic/Focusing/LJF.lean` to `LJF◯` and check the ◯-clause conjecture of §3.5:
    `∃p(Γ, ◯φ) ≡ ∃p Γ ∧ ◯∃p(Γ, φ)`.
 4. **[medium]** Write out PLL2's ND rules and the second-order constraint semantics of §3.3;
    prove soundness. Confirm `∀p.p ≡ ⊥`.
@@ -954,16 +954,16 @@ corroborated by Valliappan's own "further work" statement (December 2025).
 
 ## 6. Repository cross-references
 
-* `LaxLogic/LJF.lean` — the focused calculus and the UI engine; Part 2 the weighted recursion,
+* `LaxLogic/Focusing/LJF.lean` — the focused calculus and the UI engine; Part 2 the weighted recursion,
   Part 4 `eSound`/`aSound` (E1/A1, unconditional), Part 5 `eMin`/`aMin` (E2/A2, modulo the
   saturated-context hypotheses `SatE2`/`SatA2`). The contract is stated in the block headed
   "The contract that remains".
-* `LaxLogic/PLLFocused.lean` — `LJF◯`, the lax extension; `circL` is the `L◯` rule, in the
+* `LaxLogic/PLL/Sequent/Focused.lean` — `LJF◯`, the lax extension; `circL` is the `L◯` rule, in the
   `.lax` mode.
-* `LaxLogic/PLLKripke.lean` — `ConstraintModel`, the fallible two-frame semantics used in §3.3.
-* `LaxLogic/PLLFrames.lean` — F&M's three countermodels by `decide`, including the `◯⊥`
+* `LaxLogic/PLL/Semantics/Kripke.lean` — `ConstraintModel`, the fallible two-frame semantics used in §3.3.
+* `LaxLogic/PLL/Semantics/Frames.lean` — F&M's three countermodels by `decide`, including the `◯⊥`
   countermodel that Proposition B (§3.4) rests on.
-* `LaxLogic/PLLAxiom.lean` — the Hilbert axioms `somehowR`, `somehowM`, `somehowS`,
+* `LaxLogic/PLL/Syntax/Axiom.lean` — the Hilbert axioms `somehowR`, `somehowM`, `somehowS`,
   `somehowBind` quoted in §3.2.
 * `docs/calculus-map.md` — which system each result belongs to; read before asserting
   provenance.

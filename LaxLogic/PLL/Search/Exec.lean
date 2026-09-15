@@ -1,7 +1,7 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLG4Gap
-import LaxLogic.PLLTiming
-import LaxLogic.PLLTimingAdder
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.G4.G4Gap
+import LaxLogic.PLL.Timing.Timing
+import LaxLogic.PLL.Timing.TimingAdder
 
 /-!
 # The compiled driver: canonical helpers, named instances, IO drivers

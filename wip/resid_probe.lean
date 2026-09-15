@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Probe: the ∀-residue DIRECTLY, by small-variant search

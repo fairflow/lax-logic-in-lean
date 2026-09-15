@@ -1,5 +1,5 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLAxiom
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Syntax.Axiom
 
 /-!
 # `PLLSearch` exercised: the Hilbert axioms of PLL

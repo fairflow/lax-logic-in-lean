@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4H
-import LaxLogic.PLLG4Inv
+import LaxLogic.PLL.G4.G4H
+import LaxLogic.PLL.G4.G4Inv
 
 /-!
 # Height-preserving inversions for G4iLL″

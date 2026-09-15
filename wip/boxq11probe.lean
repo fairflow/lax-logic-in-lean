@@ -1,7 +1,7 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSearchPin
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Search.SearchPin
 import wip.rnDict
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.SearchConf
 
 /-!
 # What IS `◯q11`?  The two surviving candidates, and placement

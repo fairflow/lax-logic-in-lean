@@ -41,7 +41,7 @@ equivalent to IPL provability of `φ^C` for *every* standard constraint, and
 every standard constraint of the `L = ⊥` fragment is a `Debt`.
 -/
 
-import LaxLogic.PLLCtxCompleteness
+import LaxLogic.PLL.Semantics.CtxCompleteness
 import LaxLogic.Obligation.PLLBridge
 
 namespace LaxLogic.Obligation.StdCtxBridge

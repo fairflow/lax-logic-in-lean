@@ -41,7 +41,7 @@ exactly that richer model. So this file is the easy half of the bridge, and the
 `StdCtx` connection is the part still to build.
 -/
 
-import LaxLogic.PLLNDCore
+import LaxLogic.PLL.ND.NDCore
 import LaxLogic.Obligation.Mendler
 
 namespace LaxLogic.Obligation.PLLBridge

@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUI
+import LaxLogic.PLL.SemUI.SemUI
 
 /-!
 # The ◯-free fragment under the semantic quantifiers: agreement with IPC

@@ -47,7 +47,7 @@ are available to the other.
 -/
 
 import LaxLogic.Obligation.Modality
-import LaxLogic.BeliefOpenClosed
+import LaxLogic.Belief.OpenClosed
 
 universe u
 

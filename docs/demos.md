@@ -1,6 +1,6 @@
 # The verified algorithms, running — a guided tour
 
-*Companion to `LaxLogic/PLLDemos.lean`. Every verdict quoted here is pinned
+*Companion to `LaxLogic/PLL/Search/Demos.lean`. Every verdict quoted here is pinned
 in that file by `#guard_msgs`, so it is re-checked on every build.*
 
 *Note: the `find` discussed below is the older **fuelled** search of
@@ -18,7 +18,7 @@ Timings were taken with `#time` on a warm build (Lean 4.22.0-rc3, Apple
 silicon); they are indicative, not benchmarks. Reproduce any of them with
 
 ```
-lake env lean LaxLogic/PLLDemos.lean
+lake env lean LaxLogic/PLL/Search/Demos.lean
 ```
 
 which compiles the whole suite (≈ 3.3 s including import loading) and runs

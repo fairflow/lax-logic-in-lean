@@ -523,8 +523,8 @@ application (hardware) as the correctness anchor.**
 
 **Internal (this repository, machine-checked or Lean-obligation)**
 - Route B model + proof obligations O1–O3: `docs/route-b-model.md`.
-- F&M constraint frame (mechanised): `LaxLogic/PLLKripke.lean` (`ConstraintModel`,
-  `force_hered`, `soundness`); non-confluence facts: `LaxLogic/PLLFrames.lean`
+- F&M constraint frame (mechanised): `LaxLogic/PLL/Semantics/Kripke.lean` (`ConstraintModel`,
+  `force_hered`, `soundness`); non-confluence facts: `LaxLogic/PLL/Semantics/Frames.lean`
   (`not_provable_somehow_or_dist`, `force_somehow_or_dist_of_confluent`).
 - Context completeness (Curry Thm 6, "belief = provability under a constraint"),
   infinite closed fragment: `wip/context_completeness.lean`, `wip/lax_infinite.lean`.

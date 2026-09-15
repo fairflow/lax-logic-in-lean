@@ -1,4 +1,4 @@
-import LaxLogic.PLLNDCore
+import LaxLogic.PLL.ND.NDCore
 
 /-!
 # Judgmental PLL: the two-judgment (Pfenning–Davies) presentation

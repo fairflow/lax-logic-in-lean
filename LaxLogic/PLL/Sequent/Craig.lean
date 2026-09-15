@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4Space
+import LaxLogic.PLL.G4.G4Space
 
 /-!
 # Craig interpolation for PLL (Maehara's method)

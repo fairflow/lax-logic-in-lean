@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUI
+import LaxLogic.PLL.SemUI.SemUI
 
 /-!
 # The box-commutation law: `∀p.◯φ = ◯(∀p.φ)`, `∃p.◯φ = ◯(∃p.φ)`

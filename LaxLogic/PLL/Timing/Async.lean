@@ -1,5 +1,5 @@
-import LaxLogic.PLLTimingLookahead
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Timing.TimingLookahead
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Two asynchronous elements: the C-element and the arbiter

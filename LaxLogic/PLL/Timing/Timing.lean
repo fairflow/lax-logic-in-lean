@@ -1,4 +1,4 @@
-import LaxLogic.PLLConstraints
+import LaxLogic.PLL.Timing.Constraints
 
 /-!
 # Proofs-as-delays: the `(ℕ, 0, +, max)` timing algebra and Mendler's `CIRC`

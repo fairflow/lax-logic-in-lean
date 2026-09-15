@@ -1,6 +1,6 @@
-import LaxLogic.FormattingUtils
-import LaxLogic.PLLFormula
-import LaxLogic.PLLAxiom
+import LaxLogic.Util.FormattingUtils
+import LaxLogic.PLL.Syntax.Formula
+import LaxLogic.PLL.Syntax.Axiom
 -- import Mathlib.Tactic
 
 open PLLFormula

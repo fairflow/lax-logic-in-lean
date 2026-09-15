@@ -1,5 +1,5 @@
-import LaxLogic.PLLTopTop
-import LaxLogic.PLLG4Term
+import LaxLogic.PLL.Normalisation.TopTop
+import LaxLogic.PLL.G4.G4Term
 
 /-!
 # Running the mechanisation: the normaliser as a program, and a

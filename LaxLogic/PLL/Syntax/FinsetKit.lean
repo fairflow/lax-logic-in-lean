@@ -1,4 +1,4 @@
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 
 /-!
 # A choice-free `Finset` toolkit

@@ -1,4 +1,4 @@
-import LaxLogic.PLLNDCore
+import LaxLogic.PLL.ND.NDCore
 
 /-!
 # Proof terms for PLL: the computational metalanguage, slime-free

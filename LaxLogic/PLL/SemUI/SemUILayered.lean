@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUITrace
+import LaxLogic.PLL.SemUI.SemUITrace
 
 /-!
 # The Litak–Visser route: layered bisimulations for PLL

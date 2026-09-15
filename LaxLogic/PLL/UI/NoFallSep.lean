@@ -1,5 +1,5 @@
-import LaxLogic.PLLNoFallNF
-import LaxLogic.PLLSearchNoFall
+import LaxLogic.PLL.UI.NoFallNF
+import LaxLogic.PLL.Search.SearchNoFall
 
 /-!
 # PCLL + `¬◯⊥` and PLL + `¬◯⊥` diverge on ◯-normalised sequents

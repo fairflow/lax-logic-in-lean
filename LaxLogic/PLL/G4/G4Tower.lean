@@ -1,5 +1,5 @@
-import LaxLogic.PLLDecide
-import LaxLogic.PLLG4Gap
+import LaxLogic.PLL.Search.Decide
+import LaxLogic.PLL.G4.G4Gap
 
 /-!
 # Multiplicity experiments: Howe's original sequent, and the tower question

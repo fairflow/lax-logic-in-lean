@@ -1,5 +1,5 @@
 import wip.towerkit
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # ROUND 5, probe 2 — the fresh-⊃-antecedent × γ-head corner

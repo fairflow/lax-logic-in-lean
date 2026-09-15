@@ -1,13 +1,13 @@
-import LaxLogic.PLLFrames
-import LaxLogic.PLLCountermodelEmit
-import LaxLogic.PLLEvidence
+import LaxLogic.PLL.Semantics.Frames
+import LaxLogic.PLL.Semantics.CountermodelEmit
+import LaxLogic.PLL.Realisability.Evidence
 
 /-!
 # Uniform and strategy realisability: the separations and the obstruction
 
 The `⊩ᵘ`/`⊩ˢ` half of the realisability development (design:
 `docs/route-b-model.md`; the completeness-grade `⊩ᵖ` relation and the
-decoration theorems live in `LaxLogic/PLLEvidence.lean`).  Source of the
+decoration theorems live in `LaxLogic/PLL/Realisability/Evidence.lean`).  Source of the
 belief paper's §5 and of the extraction results of its §7.
 
 Contents:

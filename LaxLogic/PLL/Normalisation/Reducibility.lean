@@ -1,5 +1,5 @@
-import LaxLogic.PLLStrongNorm
-import LaxLogic.PLLTactics
+import LaxLogic.PLL.Normalisation.StrongNorm
+import LaxLogic.PLL.ND.Tactics
 
 /-!
 # Strong normalisation of β-reduction (Kripke–Tait reducibility)

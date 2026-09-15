@@ -1,5 +1,5 @@
-import LaxLogic.PLLFrames
-import LaxLogic.PLLCompleteness
+import LaxLogic.PLL.Semantics.Frames
+import LaxLogic.PLL.Semantics.Completeness
 
 /-!
 # The closed lax fragment RN(◯,{}) is a rich intuitionistic structure

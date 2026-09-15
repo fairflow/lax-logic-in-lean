@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Case-splitting on the second component

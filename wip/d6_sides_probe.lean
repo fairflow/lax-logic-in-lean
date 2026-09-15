@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-! Secondary diagnostics for the gap-row forced-skip cell:
 (a) was the ∀-side sweep-refutable on `defaultFrames` alone (i.e. was

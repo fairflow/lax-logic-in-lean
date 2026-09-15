@@ -1,10 +1,10 @@
-import LaxLogic.PLLJudgmental
+import LaxLogic.PLL.ND.Judgmental
 
 /-!
 # Polarised syntax for PLL
 
 Step 2 of the programme in `docs/lax-logic-interpolation-handoff.md`, over the
-two-judgment base of `LaxLogic/PLLJudgmental.lean`.
+two-judgment base of `LaxLogic/PLL/ND/Judgmental.lean`.
 
 The polarisation follows the Twelf `lax-logic` development, whose target
 declares `circ : prop pos → prop neg` — so `◯` takes a **positive** proposition

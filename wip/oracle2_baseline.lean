@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLSemUI
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.SemUI.SemUI
 
 /-! Baseline for wip/oracle2.lean: the PLAIN one-sided oracle on the
 known-chaotic failing cases, at the fuels the probes used.  Expected to

@@ -1,10 +1,10 @@
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.PLL.SemUI.SemUIFrag
 
 /-!
 # `LJF`: the same structure, IPC only — the control experiment
 
 Matthew's test (2026-08-08): build the polarised/focused apparatus of
-`LaxLogic/PLLFocused.lean` **with the lax rules omitted**, keep every name the
+`LaxLogic/PLL/Sequent/Focused.lean` **with the lax rules omitted**, keep every name the
 same, and see whether the proposed uniform-interpolation proof actually runs.
 If the structure is right, everything except the `◯`-specific steps should go
 through; if it does not run here, it will not run for PLL either.

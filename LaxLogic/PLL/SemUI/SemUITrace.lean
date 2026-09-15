@@ -1,5 +1,5 @@
-import LaxLogic.PLLSemUIDesc
-import LaxLogic.PLLFinComp
+import LaxLogic.PLL.SemUI.SemUIDesc
+import LaxLogic.PLL.Semantics.FinComp
 
 /-!
 # The descriptions functor and the realisability gfp

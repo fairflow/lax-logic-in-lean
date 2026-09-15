@@ -1,4 +1,4 @@
-import LaxLogic.PLLReducibility
+import LaxLogic.PLL.Normalisation.Reducibility
 import Mathlib.SetTheory.Ordinal.Rank
 
 /-!

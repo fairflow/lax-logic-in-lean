@@ -1,4 +1,4 @@
-import LaxLogic.PLLDecide
+import LaxLogic.PLL.Search.Decide
 
 /-!
 # G4iLL is incomplete: a machine-checked separation from G3iLL

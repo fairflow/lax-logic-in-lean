@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.Search.SearchCmd
 import rnEmbed
 
 /-!

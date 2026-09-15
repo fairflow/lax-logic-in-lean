@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UI
+import LaxLogic.PLL.UI.G4UI
 
 /-!
 # UI phase 4a: adequacy of the Pitts quantifiers (E2/A2), height-fueled

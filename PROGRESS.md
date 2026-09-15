@@ -143,7 +143,7 @@ Consequences:
 ## 2. Oracle — state and inefficiencies
 
 **What it is.** `PLLND.search W as fuel V Γ C : Bool`
-(`LaxLogic/PLLG4Dec.lean:63`) — backward proof search for the complete
+(`LaxLogic/PLL/G4/G4Dec.lean:63`) — backward proof search for the complete
 calculus G4c, loop-checked by a visited set V.
 * `search … = true` ⇒ genuine derivation, at ANY fuel (`search_sound`).
   Kernel-grade yes.
@@ -210,8 +210,8 @@ object `descent_forcing` speaks about. (Cross-checked against the library
 Scratch-file route (recommended). Create e.g. `wip/scratch.lean`:
 
 ```lean
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLDemos
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.Search.Demos
 open PLLFormula PLLND
 
 -- formulas: prop "p", falsePLL, .and, .or, .ifThen, .somehow
@@ -240,7 +240,7 @@ Reading the answers:
   small weights) or a countermodel.
 
 CLI route: `scripts/laxrun.sh help` (compiled `lake exe laxrun`; drivers
-`runSearch`/`runQuant`/`runZoo` in `LaxLogic/PLLExec.lean`) — good for the
+`runSearch`/`runQuant`/`runZoo` in `LaxLogic/PLL/Search/Exec.lean`) — good for the
 packaged demos; the scratch file is more flexible for ad-hoc sequents.
 
 ---
@@ -254,8 +254,8 @@ packaged demos; the scratch file is more flexible for ad-hoc sequents.
 | `wip/onevar_probe.lean` | probe harness: nf simplifier + oracle sweeps (24 configs, X-configs, X9) |
 | `wip/slick_probe.lean` | (being written) canon-as-you-go interpolants + deep X9 |
 | `wip/lattice_cmp.lean` | RN(◯,{}) toolkit: `entails`/`equiv`/dedup/enumeration |
-| `LaxLogic/PLLG4Dec.lean` | the oracle (`search`, soundness/completeness, `decide`) |
-| `LaxLogic/PLLG4UITrunc.lean` | interpolants `itpE`/`itpA`, ascent `itp_budget_mono`, combinator `itpAfull_map` |
+| `LaxLogic/PLL/G4/G4Dec.lean` | the oracle (`search`, soundness/completeness, `decide`) |
+| `LaxLogic/PLL/UI/G4UITrunc.lean` | interpolants `itpE`/`itpA`, ascent `itp_budget_mono`, combinator `itpAfull_map` |
 
 ## 6. Status line (updated as work proceeds)
 
@@ -313,7 +313,7 @@ untouched. In one line each — details and file pointers in
 The semantic route (task #33) moved past its universal-property layer;
 the mathematics of §1–6 (syntactic route) is untouched. Full statements
 and file anchors in `docs/semantic-ui-route.md` §0; everything below is
-machine-checked in `LaxLogic/PLLSemUI.lean` (the file's only sorries
+machine-checked in `LaxLogic/PLL/SemUI/SemUI.lean` (the file's only sorries
 remain the two definability targets).
 
 * **The essential-fibre conjecture is PROVED, as an iff.** For p-free ξ:
@@ -366,11 +366,11 @@ remain the two definability targets).
 
 ## 9. 2026-07-19 (day session): graduation, the sandwich, the two-sided oracle
 
-* **Graduation**: the theory file is now `LaxLogic/PLLSemUI.lean`
+* **Graduation**: the theory file is now `LaxLogic/PLL/SemUI/SemUI.lean`
   (root-registered, sorry-free; definability = `Prop`-level conjectures
   `SemExDefinable`/`SemAllDefinable`; 27 flagship audits clean).
 * **The constraint–ladder comparison (Matthew's equivalence question),
-  PROVED as the sandwich** (`LaxLogic/PLLSemUICtx.lean`, instantiated
+  PROVED as the sandwich** (`LaxLogic/PLL/SemUI/SemUICtx.lean`, instantiated
   with the packaged tower quantifiers in `wip/semui_ctx_equiv.lean`,
   no sorryAx):
 
@@ -425,7 +425,7 @@ remain the two definability targets).
 
 ## 11. 2026-07-19 (evening, Matthew's instruction): the general fails-half PROVED
 
-`LaxLogic/PLLSemUIRes.lean` (library, audited; the collapse lemma at
+`LaxLogic/PLL/SemUI/SemUIRes.lean` (library, audited; the collapse lemma at
 [propext] alone): residue model + ResiduePair (the Lemma-7 shape at a
 non-fallible Rₘ-stable world) + the collapse `residue_applyC` (C[x] ↔ x
 at the residue point) + diagram derivations `diag_row1/row2` (via
@@ -490,7 +490,7 @@ PLLSearchEx (Hilbert axioms via PLLSearch, answers→decisions, both
 
 ## 16. 2026-07-20 overnight: split variant MECHANISED — frontier value PROVED
 
-LaxLogic/PLLSemUISplit.lean (sorry-free, audits pinned at
+LaxLogic/PLL/SemUI/SemUISplit.lean (sorry-free, audits pinned at
 [propext, Classical.choice, Quot.sound]).  t₃ = the split: duplicate
 the Rᵢ-cluster of z isomorphically strictly above itself (whole
 cluster, not one point — the pointwise m-zigzag forces this in
@@ -1747,7 +1747,7 @@ is §60.
 
 ## §60 (2026-07-27 late) — PCLL+¬◯⊥ (the infallible system): variable-free collapse, 1-variable UI, sound+complete semantics, search commands — ALL PROVED
 
-New library modules LaxLogic/PLLNoFall.lean, PLLSearchNoFall.lean
+New library modules LaxLogic/PLL/UI/NoFall.lean, PLLSearchNoFall.lean
 (imported from LaxLogic.lean; manual §6; demo §6 pinned).  The system:
 DerivUNoFall Γ φ := DerivU (¬◯⊥ :: Γ) φ — axiom = persistent
 hypothesis, legitimate because every rule carries its context and the
@@ -1800,7 +1800,7 @@ wall one variable up (the 1-variable target fragment of the ≥2-variable
 problem is Rieger–Nishimura-infinite even under ¬◯⊥); the syntactic
 technology is exactly what handles infinite target fragments (IPC).
 
-Landed tonight (LaxLogic/PLLNoFallNF.lean, PLLNoFallSep.lean; all
+Landed tonight (LaxLogic/PLL/UI/NoFallNF.lean, PLLNoFallSep.lean; all
 guard-pinned, [propext, Quot.sound] or clean-classical):
 
   * EquivNF congruence kit; the lattice-homomorphism laws: ◯ commutes
@@ -2011,7 +2011,7 @@ budget stop" and the descent-probe redirect) without the tower itself
 
 The tower (commits ≤ b32ee91, 2026-07-11, all ancestors of HEAD):
 
-  LaxLogic/PLLG4UITrunc.lean  base: weight/atoms, G4c/G4s/G4sh + cut,
+  LaxLogic/PLL/UI/G4UITrunc.lean  base: weight/atoms, G4c/G4s/G4sh + cut,
                               defect/mu measures, the TRUNCATED
                               QUANTIFIER TABLES itpE/itpA (fuel- and
                               budget-indexed), itp_pfree, itp_sound.
@@ -2701,7 +2701,7 @@ by probing around its edges:
 
 Matthew's proposal — keep the budget flexible until the required
 function is discovered — is the constraint-extraction discipline the
-repo already implements for timing (`LaxLogic/PLLConstraints.lean`,
+repo already implements for timing (`LaxLogic/PLL/Timing/Constraints.lean`,
 after Mendler's *proofs-as-delays*: `◯` as a writer monad over the
 delay algebra `(ℕ, 0, +, max)`, the constraint computed by the kernel
 from the proof term rather than supplied to it).  Adopted, in two
@@ -2764,9 +2764,9 @@ including `c = 0`; a `◯` goal fails only at `c = 0`.  Consistent with
 
 ### (2) Which system — headline, and the jargon retired
 
-`G4c` (= `∃n, G4h n`, `LaxLogic/PLLG4H.lean:97`) is the repaired
+`G4c` (= `∃n, G4h n`, `LaxLogic/PLL/G4/G4H.lean:97`) is the repaired
 G4iLL″ for **plain PLL**, proved equivalent to natural deduction
-(`equiv_nd`, `LaxLogic/PLLG4HComp.lean:109`).  So:
+(`equiv_nd`, `LaxLogic/PLL/G4/G4HComp.lean:109`).  So:
 
 * **Route 1, syntactic tower → UI for PLL.**  Crown
   `uniform_interpolation_PLL` (`wip/final.lean:173`), general in `φ`,
@@ -2894,7 +2894,7 @@ resolved by keeping both sides: the toolkit's §6 *Pictures* (`#draw`,
 SVG/TikZ) and this branch's §6 *PCLL + ¬◯⊥* both wanted the same number,
 so the latter is renumbered §7 and the tail bumped (§8 command-line
 tools, §9 failure modes) in both `docs/search-manual.md` and
-`LaxLogic/PLLSearchDemo.lean`.  The demo's remaining plain `#guard_msgs`
+`LaxLogic/PLL/Search/SearchDemo.lean`.  The demo's remaining plain `#guard_msgs`
 wrappers became `#guard_msgs_show`, matching the file's own prose and
 making the whole tour visible in the info view.
 
@@ -3144,7 +3144,7 @@ silently.
 
 ### A structural fact about the clause tables
 
-An exhaustive transcription of `itpE`/`itpA` (`LaxLogic/PLLG4UITrunc.lean`,
+An exhaustive transcription of `itpE`/`itpA` (`LaxLogic/PLL/UI/G4UITrunc.lean`,
 all seven `match b with` sites) establishes:
 
 > **every budget-decrementing recursive reference sits at the same context,
@@ -3436,7 +3436,7 @@ This discharges part of the exposition debt recorded in memory.
 Recorded so they are not retried.  Each was examined far enough to settle it.
 
 **1. Completeness for the constraint semantics.**  `consequence_iff_derivable`
-(`LaxLogic/PLLCompleteness.lean:634`) is full soundness *and* completeness for
+(`LaxLogic/PLL/Semantics/Completeness.lean:634`) is full soundness *and* completeness for
 the Fairtlough–Mendler constraint semantics, sorry-free, over list contexts.
 With `G4c.equiv_nd` this lets any sequent about the tables be proved
 semantically — attractive, because the descent's known obstruction is
@@ -3492,7 +3492,7 @@ opportunity, with the mechanism identified.
 
 ## §89 — `#pinsrc`: search-found proofs become theorems (30 July)
 
-`LaxLogic/PLLSearchPin.lean` (new, in the library), `wip/jumpPinned.lean`,
+`LaxLogic/PLL/Search/SearchPin.lean` (new, in the library), `wip/jumpPinned.lean`,
 `wip/pinnedFacts.lean` (new).  All sorry-free.
 
 ### The gap this closes
@@ -3792,7 +3792,7 @@ which mentions the context **under a `◯`**, so neither move applies: the guard
 Every file added in this session is **sorry-free**: `wip/floorRefute.lean`,
 `wip/goalDesc.lean`, `wip/envDesc.lean`, `wip/sealRefute.lean`,
 `wip/jumpPinned.lean`, `wip/pinnedFacts.lean`, `wip/boxedBranchS1.lean`,
-`wip/atomForce.lean`, `wip/floorImp.lean`, `LaxLogic/PLLSearchPin.lean`, plus the
+`wip/atomForce.lean`, `wip/floorImp.lean`, `LaxLogic/PLL/Search/SearchPin.lean`, plus the
 additions to `wip/descent2.lean`.  `lake build LaxLogic wipshared` is clean and
 reports `sorry` only in the files that carried one before this session.  Every
 `#guard_msgs` axiom audit in the new files passes as written.
@@ -5558,14 +5558,14 @@ Branch `probe/towerharden` off `7f1fdc7`.  Three named §54 follow-ups
 attacked; two closed, one reduced.
 
 **(b) `nf_interd` — CLOSED.**  `wip/nfcorrect.lean`.
-`PLLND.Search.nf` (`LaxLogic/PLLSearch.lean` §0) is what makes the
+`PLLND.Search.nf` (`LaxLogic/PLL/Search/Search.lean` §0) is what makes the
 tower's outputs legible — on φ♠ at `b = 1` it takes 88 202 nodes to
 391 — and every `nf`-level verdict of §54 was, until now, a claim about
 a formula the library said nothing about.  Now:
 `smash_interd : ∀ φ, Interd φ (smash φ)` (ten branches: the ⊥/⊤
 absorptions, idempotence at ∧/∨, `A ⊃ A ≡ ⊤`, and the two lax laws
 `◯⊤ ≡ ⊤`, `◯◯B ≡ ◯B`), then `nf_interd : ∀ φ, Interd φ (nf φ)` by the
-four `Interd` congruence rules of `LaxLogic/PLLSemUIFrag.lean`, then
+four `Interd` congruence rules of `LaxLogic/PLL/SemUI/SemUIFrag.lean`, then
 `nfIter_interd : ∀ n φ, Interd φ (nfIter n φ)` for the fixpoint
 iteration consumers actually run.  All three `[propext]` — no choice, no
 `Quot.sound`, no `sorryAx`.  The transfer rules
@@ -5582,7 +5582,7 @@ raw-table facts modulo their search certificates.
 **(c) the atoms lemma — REDUCED, not closed.**  `wip/toweratoms.lean`.
 The wanted statement is `atoms (itpE p S f b Γ) ⊆ atoms Γ`; its proof is
 the ≈500-line induction mirroring `itp_pfree`
-(`LaxLogic/PLLG4UITrunc.lean`:1961) clause for clause, which did not fit
+(`LaxLogic/PLL/UI/G4UITrunc.lean`:1961) clause for clause, which did not fit
 this session's budget.  What is closed instead is everything on either
 side of it: `atomFree_iff` (the bridge between the `Bool` predicate
 `atomFree` and the `Finset String` `atoms`, which the library also

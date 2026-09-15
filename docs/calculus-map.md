@@ -15,9 +15,9 @@ result is really about**.
 
 ### `LaxND` — natural deduction, the reference system
 
-* **File**: `LaxLogic/PLLNDCore.lean` ("a slime-free core ND system for PLL,
+* **File**: `LaxLogic/PLL/ND/NDCore.lean` ("a slime-free core ND system for PLL,
   with conservativity over IPL"), with the formula type in
-  `LaxLogic/PLLFormula.lean`.
+  `LaxLogic/PLL/Syntax/Formula.lean`.
 * **Whose**: standard; the axioms are Fairtlough and Mendler's `◯R`, `◯M`, `◯F`
   (Inf. Comput. 137(1), 1997, p. 5).
 * **Status here**: this is the reference notion of provability.
@@ -26,7 +26,7 @@ result is really about**.
 
 ### `SC` (F&M's GPLL) — the cut-free sequent calculus
 
-* **File**: `LaxLogic/PLLSequent.lean` ("a cut-free sequent calculus for PLL,
+* **File**: `LaxLogic/PLL/Sequent/Sequent.lean` ("a cut-free sequent calculus for PLL,
   and cut elimination, F&M Theorem 2.6").
 * **Whose**: Fairtlough and Mendler, 1997, Figure 2. Iemhoff calls it GPLL.
   It has explicit contraction.
@@ -44,7 +44,7 @@ result is really about**.
   published as a chapter, 2024). `G3iLL` is `G3ip` plus F&M's `R◯`/`L◯`;
   `G4iLL` is the contraction-free, terminating refinement.
 * **Status here**: **`G4iLL` is machine-checked INCOMPLETE for PLL**, and
-  contraction is not admissible in it — `LaxLogic/PLLG4Gap.lean`. The witness is
+  contraction is not admissible in it — `LaxLogic/PLL/G4/G4Gap.lean`. The witness is
   `◯((◯p→r)→◯p), ◯p→r ⇒ r`, derivable in `SC` and rejected by the verified
   `G4` decider; with two copies of `◯p→r` it *is* derivable, which is how
   contraction fails. The shape is Howe's (MSCS 2001, §5), so his conjecture that
@@ -57,7 +57,7 @@ result is really about**.
 
 ### `G4h` / `G4c` — the repaired calculus, and the one everything runs on
 
-* **File**: `LaxLogic/PLLG4H.lean` ("G4iLL″, height-indexed"). `G4h n Γ C` is
+* **File**: `LaxLogic/PLL/G4/G4H.lean` ("G4iLL″, height-indexed"). `G4h n Γ C` is
   the height-indexed relation; `G4c Γ C := ∃ n, G4h n Γ C` (`PLLG4H.lean:97`).
 * **Whose**: ours, repairing `G4iLL`. Revisions 2 and 3: `laxL` is `G3`'s `L◯`;
   `L◯→″` and `R◯→″` keep the full context in premise 1, following the `G3`
@@ -78,7 +78,7 @@ result is really about**.
 
 ### `DerivU` — PCLL, the confluent extension
 
-* **File**: `LaxLogic/PLLConfluentComplete.lean` ("completeness of
+* **File**: `LaxLogic/PLL/Semantics/ConfluentComplete.lean` ("completeness of
   PLL + `◯(A∨B) ⊃ (◯A∨◯B)` for confluent constraint models"); namespace
   `ConfluentU`.
 * **Whose**: the axiom and its frame condition are F&M's — Theorem 4.7, second
@@ -91,7 +91,7 @@ result is really about**.
 
 ### `DerivUNoFall` — PCLL plus `¬◯⊥`, the infallible extension
 
-* **File**: `LaxLogic/PLLNoFall.lean`.
+* **File**: `LaxLogic/PLL/UI/NoFall.lean`.
 * **Whose**: **the completeness result is F&M's** — Theorem 4.7, first bullet,
   p. 16: "PLL + ¬◯*false* is sound and complete for the class of constraint
   models with F = ∅", proved there by the same route (discard the unreachable
@@ -112,9 +112,9 @@ result is really about**.
 
 ### The term calculus and reduction
 
-Not a logic, but frequently confused with one. `LaxLogic/PLLG4Term.lean` gives
+Not a logic, but frequently confused with one. `LaxLogic/PLL/G4/G4Term.lean` gives
 proof terms for `G4c` and the searcher. Separately,
-`LaxLogic/PLLReducibility.lean` and `LaxLogic/PLLTopTop.lean` concern the
+`LaxLogic/PLL/Normalisation/Reducibility.lean` and `LaxLogic/PLL/Normalisation/TopTop.lean` concern the
 *proof-term* calculus of `LaxND` and its reduction: strong normalisation of the
 full interleaved reduction (β for every connective plus `let`-assoc) via
 Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about derivability.

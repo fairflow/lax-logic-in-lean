@@ -1,6 +1,6 @@
 import wip.cascadeBox
-import LaxLogic.PLLSearchCmd
-import LaxLogic.PLLSearchNoFall
+import LaxLogic.PLL.Search.SearchCmd
+import LaxLogic.PLL.Search.SearchNoFall
 
 /-!
 # `AmbGuardAscent` is FALSE — the interface refuted, kernel-checked

@@ -1,7 +1,7 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSearchPin
-import LaxLogic.PLLSearchNoFall
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Search.SearchPin
+import LaxLogic.PLL.Search.SearchNoFall
+import LaxLogic.PLL.Search.SearchConf
 import wip.rnDict
 
 /-!

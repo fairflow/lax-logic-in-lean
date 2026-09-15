@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Probe: the same-trace no-descent clause

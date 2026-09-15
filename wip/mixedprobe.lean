@@ -1,4 +1,4 @@
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 
 /-!
 # MixedCoverConj probe: does the JOIN of the stretch bound and the

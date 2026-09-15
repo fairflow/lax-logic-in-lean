@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUILayered
+import LaxLogic.PLL.SemUI.SemUILayered
 
 /-!
 # Fragment finiteness up to interderivability

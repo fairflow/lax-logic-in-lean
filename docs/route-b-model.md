@@ -1,7 +1,7 @@
 # Route B: a realisability constraint model for PLL — precise definition and proof obligations
 
 *Design document, 2026-07-16. Goal: enrich the Fairtlough–Mendler constraint
-semantics (mechanised in `LaxLogic/PLLKripke.lean`) with realisers at each world,
+semantics (mechanised in `LaxLogic/PLL/Semantics/Kripke.lean`) with realisers at each world,
 so that (i) worlds carry computational information, (ii) `◯M` is evaluated at a
 world against that information, and (iii) belief grows monotonically over a
 branching preorder. Everything below marked OPEN is a Lean obligation under the
@@ -224,7 +224,7 @@ so everything is stable under passing to the generated submodel. "A strategy to
 deal with future situations does not imply foreknowledge of what those
 situations will actually be" — exactly; the strategy is a function *on*
 presented futures, not a table *of* them. Mechanised: the `⊩ˢ` clause and its
-heredity in `LaxLogic/BeliefRealisability.lean` (`realS`, `realS_hered`) carry no
+heredity in `LaxLogic/Belief/Realisability.lean` (`realS`, `realS_hered`) carry no
 frame-decidability hypotheses at all.
 
 - **Bite vanishes:** `◯(A∨B)` regains a realiser at `r` (choose the disjunct per
@@ -324,7 +324,7 @@ pen-and-paper). The triptych statements for `⊩ˢ` are untouched — `⊩ˢ` re
 the right relation for the separation story; `⊩ᵖ` is the completeness-grade
 refinement the obstruction forces.*
 
-*Status 2026-07-17: **rung 5 COMPLETE for BOTH clauses**. `LaxLogic/BeliefRealisability.lean`
+*Status 2026-07-17: **rung 5 COMPLETE for BOTH clauses**. `LaxLogic/Belief/Realisability.lean`
 now has combinatory completeness (`Poly.abs_spec`, `Poly.eval_bump`), the two
 extractions `extract` (uniform, `[propext]`) and `extractS` (strategy, `[propext]`),
 and the two soundness-with-extraction theorems `extract_sound` and **`extractS_sound`**
@@ -367,7 +367,7 @@ idempotence is inter-derivability, not a computational identity; the nucleus
 picture is its propositional shadow).*
 
 *Status 2026-07-16: rungs 1–2 LANDED, plus triptych piece (i) — see
-`LaxLogic/BeliefRealisability.lean`: `Pca`, `Evidence`, `realU`, `realS`,
+`LaxLogic/Belief/Realisability.lean`: `Pca`, `Evidence`, `realU`, `realS`,
 `realU_hered`/`realS_hered` (increasing belief), `realU_of_fallible`/
 `realS_of_fallible` (all axiom-FREE), `natPca`, `fullEvidence`,
 `bite_uniform_split` (audit `[propext, Classical.choice, Quot.sound]`).

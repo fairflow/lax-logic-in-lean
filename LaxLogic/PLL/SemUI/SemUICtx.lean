@@ -1,5 +1,5 @@
-import LaxLogic.PLLSemUI
-import LaxLogic.PLLCtxCompleteness
+import LaxLogic.PLL.SemUI.SemUI
+import LaxLogic.PLL.Semantics.CtxCompleteness
 
 /-!
 # The constraint route vs the semantic quantifiers: the sandwich lemmas
@@ -8,7 +8,7 @@ Two candidate constructions of `∀p M` are on the table (2026-07-19):
 
 * the **ladder route**: `∀p M` as a meet of generator instances —
   substitutions `M[p := χ]` at closed-fragment rungs `χ`, plus the
-  frame-changing transforms `lowT`/`sideT` (`LaxLogic/PLLSemUI.lean`);
+  frame-changing transforms `lowT`/`sideT` (`LaxLogic/PLL/SemUI/SemUI.lean`);
 * the **constraint route**: translate `M` by a standard constraint `C`
   (each `◯ψ ↦ C[ψ^C]`, the TYPES-paper substitution `subC`), compute
   the IPC uniform interpolant of the box-free translation `M^C`, and

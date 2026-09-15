@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUIBox
+import LaxLogic.PLL.SemUI.SemUIBox
 
 /-!
 # The description graft — the second wave's frame layer

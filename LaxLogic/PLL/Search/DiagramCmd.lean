@@ -1,14 +1,14 @@
-import LaxLogic.PLLSearchCmd
-import LaxLogic.PLLDiagram
+import LaxLogic.PLL.Search.SearchCmd
+import LaxLogic.PLL.Search.Diagram
 
 /-!
 # `#draw` — a countermodel as a picture, in one command
 
-`LaxLogic/PLLDiagram.lean` renders a `FinCM` as SVG or TikZ, and
-`LaxLogic/PLLSearchCmd.lean` finds one; this module is the join.
+`LaxLogic/PLL/Search/Diagram.lean` renders a `FinCM` as SVG or TikZ, and
+`LaxLogic/PLL/Search/SearchCmd.lean` finds one; this module is the join.
 
 ```lean
-import LaxLogic.PLLDiagramCmd
+import LaxLogic.PLL.Search.DiagramCmd
 open PLLFormula PLLND PLLND.Search
 
 #draw [] ⊢ ((prop "p").somehow).ifThen (prop "p") to "docs/figures/esc.svg"

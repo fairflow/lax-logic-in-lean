@@ -32,7 +32,7 @@ against the real output (up to the newline-for-space normalisation that
 checked: on a mismatch `#guard_msgs` reports the error and this command
 re-emits nothing.
 
-Used by `LaxLogic/PLLSearchDemo.lean`, whose whole purpose is to be stepped
+Used by `LaxLogic/PLL/Search/SearchDemo.lean`, whose whole purpose is to be stepped
 through in the info view.
 -/
 

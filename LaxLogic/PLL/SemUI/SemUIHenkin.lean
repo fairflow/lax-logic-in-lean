@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUILayered
+import LaxLogic.PLL.SemUI.SemUILayered
 
 /-!
 # The witnessing-triple amalgam for PLL (Lemma 5.4 scaffold)

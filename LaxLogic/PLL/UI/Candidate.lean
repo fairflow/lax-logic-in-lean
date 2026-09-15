@@ -1,4 +1,4 @@
-import LaxLogic.PLLFocused
+import LaxLogic.PLL.Sequent.Focused
 
 /-!
 # Interpolation candidates, read off the focused rules
@@ -11,7 +11,7 @@ consuming a formula, sorted by polarity into *unconditional* (asynchronous) and
 
 The document notes the method "cannot be fully stated until the focused calculus
 is pinned down, because the closure clauses *literally are* the rules".  It is
-now pinned (`LaxLogic/PLLFocused.lean`), so this file states them.
+now pinned (`LaxLogic/PLL/Sequent/Focused.lean`), so this file states them.
 
 ## Over what? — the calculus forces the answer, and it is not the obvious one
 

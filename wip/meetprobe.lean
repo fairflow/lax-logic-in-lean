@@ -1,5 +1,5 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSearchPin
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Search.SearchPin
 import wip.rnDict
 
 /-!

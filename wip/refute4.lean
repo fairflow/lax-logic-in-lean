@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLG4Dec
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.G4.G4Dec
 
 /-!
 # refute4 — zoo adjudication of the GUARDED/CONSUMED reshaping laws

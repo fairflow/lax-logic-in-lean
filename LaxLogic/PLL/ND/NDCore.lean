@@ -1,4 +1,4 @@
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 
 /-!
 # A slime-free core ND system for PLL, with conservativity over IPL

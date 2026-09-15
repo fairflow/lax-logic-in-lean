@@ -1,4 +1,4 @@
-import LaxLogic.PLLConfluentComplete
+import LaxLogic.PLL.Semantics.ConfluentComplete
 
 /-!
 # PCLL + `¬◯⊥`: the infallible extension, and its one-variable uniform interpolation

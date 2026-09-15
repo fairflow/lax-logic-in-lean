@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.Search.SearchCmd
 
 /-!
 # `◯`-right is not invertible in the SINGLE-judgment presentation

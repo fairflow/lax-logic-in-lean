@@ -1,4 +1,4 @@
-import LaxLogic.PLLFormula
+import LaxLogic.PLL.Syntax.Formula
 
 /-!
 # CoverConj probe: is the `p`-valuation replaceable by a variable-free one?

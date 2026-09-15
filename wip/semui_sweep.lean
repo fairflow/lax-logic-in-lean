@@ -1,11 +1,11 @@
-import LaxLogic.PLLG4Dec
+import LaxLogic.PLL.G4.G4Dec
 
 /-!
 # Exhaustive sweep: the reconstruction sequents over all small formulas
 
 For EVERY raw one-variable formula M up to a weight cap (no semantic
 dedup — raw syntax, thousands of instances), test the two
-reconstruction sequents of `LaxLogic/PLLSemUI.lean`:
+reconstruction sequents of `LaxLogic/PLL/SemUI/SemUI.lean`:
 
     (∀-rec)   M[⊥], M[⊤], lowT p M, sideT p M  ⊢  M
     (∃-rec)   M  ⊢  M[⊥] ∨ M[⊤] ∨ M[◯⊥] ∨ lowT p M ∨ sideT p M

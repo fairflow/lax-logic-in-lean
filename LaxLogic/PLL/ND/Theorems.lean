@@ -1,4 +1,4 @@
-import LaxLogic.PLLConsequence
+import LaxLogic.PLL.ND.Consequence
 
 /-!
 # Proof-theoretic results for PLL (F&M §2)

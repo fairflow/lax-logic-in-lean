@@ -1,16 +1,16 @@
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSearchConf
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.Search.SearchConf
 
 /-!
 # `#search`, `#refute`, `#refuteConf` — the search API as commands
 
-`LaxLogic/PLLSearch.lean` returns dependent data (`Answer`, `Verdict`,
+`LaxLogic/PLL/Search/Search.lean` returns dependent data (`Answer`, `Verdict`,
 `Witness`), which is right for programs and wrong for a first look at a
 sequent: every example in the manual used to wrap the call in the same
 `match … with | .proved _ => "…"` boilerplate.  This module removes that.
 
 ```lean
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.Search.SearchCmd
 open PLLFormula PLLND PLLND.Search
 
 #search [] ⊢ (prop "p").ifThen ((prop "p").somehow)

@@ -3,9 +3,9 @@
 This directory holds annotated readings of two theorems from the
 `lax-logic-in-lean` development, prepared for the appendix of the
 companion paper: contraction for the repaired G4 calculus
-(`contraction.md`, from `LaxLogic/PLLG4HCtr.lean`) and strong
+(`contraction.md`, from `LaxLogic/PLL/G4/G4HCtr.lean`) and strong
 normalisation of the full proof-term reduction via Lindley–Stark
-⊤⊤-lifting (`strong-normalisation.md`, from `LaxLogic/PLLTopTop.lean`).
+⊤⊤-lifting (`strong-normalisation.md`, from `LaxLogic/PLL/Normalisation/TopTop.lean`).
 This page records the extraction method, the abbreviation conventions,
 and how to read the infoview snapshots reproduced in both documents.
 
@@ -133,7 +133,7 @@ mechanical trims, each flagged inline where it is used:
 
 Both documents read a *design decision*, not just a proof. The
 calculus underlying both — `G4h`/`G4c`, defined in
-`LaxLogic/PLLG4H.lean` — went through three revisions before
+`LaxLogic/PLL/G4/G4H.lean` — went through three revisions before
 contraction and cut separated cleanly for the lax modality; the design
 history and the nucleus countermodel that forced the third revision
 are in `docs/g4p-ladder.md`. `contraction.md` reads the payoff of that

@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.PLL.SemUI.SemUIFrag
 
 /-!
 # The chain criteria: refutation instruments for the two quantifiers
@@ -23,7 +23,7 @@ checkable obligations.
 criteria are REFUTATION-ONLY.  For the positive direction they are useless:
 proving that *no* chain escapes, for *every* `φ`, is not a route.  The
 positive route is the second-order candidate method — see
-`LaxLogic/PLLCandLeast.lean`, built alongside this file.
+`LaxLogic/PLL/UI/CandLeast.lean`, built alongside this file.
 -/
 
 namespace PLLND

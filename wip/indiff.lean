@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-!
 # WIP: syntactic fuel-indifference for the truncated quantifiers (v3.1)

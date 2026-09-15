@@ -1,11 +1,11 @@
-import LaxLogic.PLLSemUICtx
-import LaxLogic.PLLG4HComp
+import LaxLogic.PLL.SemUI.SemUICtx
+import LaxLogic.PLL.G4.G4HComp
 import final
 
 /-!
 # Instantiating the sandwich: the packaged IPC quantifiers satisfy the spec
 
-`LaxLogic/PLLSemUICtx.lean` proves the constraint-route sandwich against
+`LaxLogic/PLL/SemUI/SemUICtx.lean` proves the constraint-route sandwich against
 an ABSTRACT Pitts-style spec (`IsIPCAll`/`IsIPCEx`).  This file closes
 the loop with the box-free crown `uniform_interpolation_IPC`
 (`wip/final.lean`, sorryAx-free): the packaged quantifiers

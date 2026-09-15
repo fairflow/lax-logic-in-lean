@@ -661,7 +661,7 @@ chat, 2026-07-21.)
   `force_somehow_or_dist_of_confluent`): on mutually confluent models
   every instance of the distribution scheme
   `distF A B := ◯(A∨B) ⊃ (◯A ∨ ◯B)` is valid.
-* *Completeness* (`LaxLogic/PLLConfluentComplete.lean`):
+* *Completeness* (`LaxLogic/PLL/Semantics/ConfluentComplete.lean`):
   `derivU_iff_confluent_valid` — `DerivU Γ φ ↔ Γ ⊨ φ` over all mutually
   confluent models, where **`DerivU`** is natural deduction (`LaxND`)
   with finitely many instances of the scheme as extra hypotheses

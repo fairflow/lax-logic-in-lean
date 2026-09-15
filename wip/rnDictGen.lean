@@ -1,7 +1,7 @@
-import LaxLogic.PLLG4Term
-import LaxLogic.PLLSemUILayered
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.G4.G4Term
+import LaxLogic.PLL.SemUI.SemUILayered
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.Search.Search
 import wip.rnDict
 
 /-!

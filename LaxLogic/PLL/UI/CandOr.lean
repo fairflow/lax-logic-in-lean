@@ -1,4 +1,4 @@
-import LaxLogic.PLLCandidate
+import LaxLogic.PLL.UI.Candidate
 
 /-!
 # The attack on `cl_orL`: the consequence candidate

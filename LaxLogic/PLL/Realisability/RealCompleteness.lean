@@ -1,5 +1,5 @@
-import LaxLogic.PLLEvidence
-import LaxLogic.PLLFinComp
+import LaxLogic.PLL.Realisability.Evidence
+import LaxLogic.PLL.Semantics.FinComp
 
 /-!
 # Completeness of PLL for presented-strategy realisability

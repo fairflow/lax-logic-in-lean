@@ -1,4 +1,4 @@
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # Diagram export for finite constraint countermodels
@@ -273,7 +273,7 @@ private def demoLabels : List (String × String) :=
   [("∅", ""), ("∅", "p, ◯p"), ("◯p", ""), ("◯p, p", ""), ("⊥ (fallible)", "")]
 
 /-- The three-world fullness-obstruction frame of
-`LaxLogic/BeliefRealisability.lean` (`obsM`: `0 ≤ 1`, `0 ≤ 2`; `Rₘ`
+`LaxLogic/Belief/Realisability.lean` (`obsM`: `0 ≤ 1`, `0 ≤ 2`; `Rₘ`
 reflexive only; `t` at both leaves, `p` only at `1`, `q` only at `2`),
 duplicated here as data (this module predates the 2026-07-18 promotion,
 which made `obsM` importable).

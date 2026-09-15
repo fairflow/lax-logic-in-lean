@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4HStr
+import LaxLogic.PLL.G4.G4HStr
 
 /-!
 # Contraction for G4iLL″: height-preserving atomic, then full — cut-free

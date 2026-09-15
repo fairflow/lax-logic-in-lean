@@ -1,4 +1,4 @@
-import LaxLogic.BeliefCollapse
+import LaxLogic.Belief.Collapse
 
 /-!
 # `N(B) ≅ B`: nuclei on a Boolean algebra are an order isomorphism with `B`

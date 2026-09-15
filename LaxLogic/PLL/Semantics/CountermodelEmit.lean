@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4Term
-import LaxLogic.PLLKripke
+import LaxLogic.PLL.G4.G4Term
+import LaxLogic.PLL.Semantics.Kripke
 
 /-!
 # Executable countermodels: a verified checker and an emitter

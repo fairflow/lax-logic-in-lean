@@ -1,6 +1,6 @@
 # Contraction for G4iLL″, cut-free
 
-Source: `LaxLogic/PLLG4HCtr.lean`. Two theorems are read here:
+Source: `LaxLogic/PLL/G4/G4HCtr.lean`. Two theorems are read here:
 `G4h.contract_atom` (height-preserving contraction of an atom, the
 pilot case) and `G4c.contract_bounded`/`G4c.contract` (full
 contraction for an arbitrary formula, with **no cut anywhere in the

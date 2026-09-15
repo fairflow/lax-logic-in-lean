@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4Dec
+import LaxLogic.PLL.G4.G4Dec
 
 /-!
 # Uniform interpolation, phase 2: the Pitts quantifiers

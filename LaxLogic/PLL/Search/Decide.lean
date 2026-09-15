@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4
+import LaxLogic.PLL.G4.G4
 import Mathlib.Data.Multiset.DershowitzManna
 
 /-!

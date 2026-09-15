@@ -1,7 +1,7 @@
-import LaxLogic.PLLCtxCompleteness
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLG4Term
+import LaxLogic.PLL.Semantics.CtxCompleteness
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.G4.G4Term
 
 /-!
 # Probe: the constraint-commutation conjecture (Matthew, 2026-07-19)

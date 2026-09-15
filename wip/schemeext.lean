@@ -1,11 +1,11 @@
-import LaxLogic.PLLNoFall
+import LaxLogic.PLL.UI.NoFall
 
 /-!
 # Scheme extensions of PLL, and the chain-classification engine
 
 Shared infrastructure for the two new rungs of the ladder of logics
 (`wip/classical.lean`, `wip/linear.lean`), built to the pattern of
-`LaxLogic/PLLNoFall.lean`.
+`LaxLogic/PLL/UI/NoFall.lean`.
 
 `PLLNoFall.lean` adds the **closed** axiom `¬◯⊥` as a persistent hypothesis
 and notes that for an axiom *with variables* the hypothesis form would be

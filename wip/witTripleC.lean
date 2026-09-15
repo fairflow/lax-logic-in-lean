@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUIHenkin
+import LaxLogic.PLL.SemUI.SemUIHenkin
 import wip.canonFinC
 
 /-!

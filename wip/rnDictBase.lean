@@ -1,6 +1,6 @@
-import LaxLogic.PLLSemUIFrag
-import LaxLogic.PLLG4Term
-import LaxLogic.PLLTerms
+import LaxLogic.PLL.SemUI.SemUIFrag
+import LaxLogic.PLL.G4.G4Term
+import LaxLogic.PLL.ND.Terms
 
 /-!
 # Base layer for the certified RN(◯,{}) dictionary

@@ -79,7 +79,7 @@ move of the next session, not a late-evening edit.
 
 ## Metrics (Rule 4)
 
-| state | lines | clean `lake build LaxLogic.LJF` |
+| state | lines | clean `lake build LaxLogic.Focusing.LJF` |
 |---|---|---|
 | `ljf-ui-v1` (baseline) | 6,636 | 15 min 53.7 s |
 | rounds A+B | 6,247 | 15 min 34.2 s |

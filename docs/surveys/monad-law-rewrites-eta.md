@@ -158,7 +158,7 @@ Sources:
 - [Benton, Bierman, de Paiva, *Computational types from a logical perspective*, JFP 1998](https://www.semanticscholar.org/paper/Computational-Types-from-a-Logical-Perspective-Benton-Bierman/4111588f0d60ed2557a068598f75768db0fe3b00)
 - Surjective pairing confluence (typed vs untyped): [Curien & Di Cosmo, JFP](https://www.cambridge.org/core/journals/journal-of-functional-programming/article/confluent-reduction-for-the-calculus-with-surjective-pairing-and-terminal-object/325956525D5F9286604E8BA3C197AFA0), [Klop–de Vrijer, *Unique normal forms for λ-calculus with surjective pairing*](https://www.sciencedirect.com/science/article/pii/089054018990014X)
 
-Repo files read (absolute paths): `/Users/matthew/Lean/Sources/lax-logic-in-lean/.claude/worktrees/g4ill/LaxLogic/PLLTerms.lean`, `.../PLLStrongNorm.lean`, `.../PLLTopTop.lean`, `.../PLLNormal.lean`, `.../PLLReducibility.lean`, `.../PLLTactics.lean`.
+Repo files read (absolute paths): `/Users/matthew/Lean/Sources/lax-logic-in-lean/.claude/worktrees/g4ill/LaxLogic/PLL/ND/Terms.lean`, `.../PLLStrongNorm.lean`, `.../PLLTopTop.lean`, `.../PLLNormal.lean`, `.../PLLReducibility.lean`, `.../PLLTactics.lean`.
 
 🕒 2026-07-09 (BST)
 — Opus 4.8 (1M context) · effort unknown

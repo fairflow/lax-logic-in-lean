@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4UIAdq
+import LaxLogic.PLL.UI.G4UIAdq
 
 /-!
 # UI phase 4b: set-congruence of the quantifiers

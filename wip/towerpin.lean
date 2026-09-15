@@ -21,7 +21,7 @@ quantifiers run at budget `kcap (pieceClosure φ) + 1` — `339` for `φ★`,
 magnitude per budget step, so the prescribed budget denotes a formula far
 too large to write down, let alone search.  What makes the experiment
 conclusive anyway is `itp_budget_mono_le`
-(`LaxLogic/PLLG4UITrunc.lean`:1907, axiom-clean): on the ∃-side a larger
+(`LaxLogic/PLL/UI/G4UITrunc.lean`:1907, axiom-clean): on the ∃-side a larger
 budget gives a *stronger* formula, on the ∀-side a *weaker* one.  So a
 certified `T b ⊢ v` at a small budget `b` propagates to every budget above
 it, the prescribed one included (`eTower_test_up`), and dually on the ∀-side
@@ -153,8 +153,8 @@ theorem aRow_settled {C w : PLLFormula} (hw : IsPreInterp C w) {b b' : Nat}
 
 None of §1–§2 touches `wip/absorb_base.lean`: `itp_budget_mono_le`,
 `itp_sound` and `itp_pfree` all live in the axiom-clean
-`LaxLogic/PLLG4UITrunc.lean`, and the calculus bridge `G4c.equiv_nd` is
-unconditional (`LaxLogic/PLLG4HComp.lean`).  So the transfer apparatus is
+`LaxLogic/PLL/UI/G4UITrunc.lean`, and the calculus bridge `G4c.equiv_nd` is
+unconditional (`LaxLogic/PLL/G4/G4HComp.lean`).  So the transfer apparatus is
 independent of the tower's single open lemma `cascade_low_pos_box`. -/
 
 /-- info: 'TowerPin.eRow_settled' depends on axioms: [propext, Classical.choice, Quot.sound] -/

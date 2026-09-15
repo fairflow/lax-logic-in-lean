@@ -1,5 +1,5 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.Search.Search
 
 /-!
 # The positive side at the low-budget cells that decide the recursion

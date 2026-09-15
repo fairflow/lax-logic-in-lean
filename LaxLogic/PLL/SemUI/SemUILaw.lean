@@ -1,5 +1,5 @@
-import LaxLogic.PLLSemUIRes
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.SemUI.SemUIRes
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # The per-instance reconstruction law, made exact

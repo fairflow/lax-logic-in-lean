@@ -1,5 +1,5 @@
-import LaxLogic.PLLNDCore
-import LaxLogic.PLLProof
+import LaxLogic.PLL.ND.NDCore
+import LaxLogic.PLL.Syntax.Proof
 
 /-!
 # The Hilbert system embeds in natural deduction (half of F&M Theorem 2.3)

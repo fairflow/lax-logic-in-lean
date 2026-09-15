@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4PAdm
+import LaxLogic.PLL.G4.G4PAdm
 
 /-!
 # G4iLL′: the weak implication rule, and `◯`-spines

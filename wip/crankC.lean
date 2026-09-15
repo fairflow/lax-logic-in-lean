@@ -1,5 +1,5 @@
-import LaxLogic.PLLSemUILayered
-import LaxLogic.PLLFrames
+import LaxLogic.PLL.SemUI.SemUILayered
+import LaxLogic.PLL.Semantics.Frames
 
 /-!
 # `crankC` and rank preservation for PCLL (bare possibility)

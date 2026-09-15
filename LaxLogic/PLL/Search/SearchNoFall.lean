@@ -1,5 +1,5 @@
-import LaxLogic.PLLNoFall
-import LaxLogic.PLLSearchCmd
+import LaxLogic.PLL.UI.NoFall
+import LaxLogic.PLL.Search.SearchCmd
 
 /-!
 # `#searchNF`, `#refuteNF` — search and certificates for PCLL + `¬◯⊥`

@@ -1,4 +1,4 @@
-import LaxLogic.PLLTopTop
+import LaxLogic.PLL.Normalisation.TopTop
 
 /-!
 # Confluence of the proof-term reduction

@@ -1,4 +1,4 @@
-import LaxLogic.PLLTimingAdder
+import LaxLogic.PLL.Timing.TimingAdder
 
 /-!
 # The n-bit ripple-carry adder: linear carry delay, by induction

@@ -1,4 +1,4 @@
-import LaxLogic.PLLFrames
+import LaxLogic.PLL.Semantics.Frames
 import Mathlib.Order.Zorn
 
 /-!

@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4Set
+import LaxLogic.PLL.G4.G4Set
 
 /-!
 # Proof terms for G4iLL″, and a fuel-free proof searcher

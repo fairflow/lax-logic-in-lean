@@ -1,5 +1,5 @@
-import LaxLogic.PLLKripke
-import LaxLogic.PLLConsequence
+import LaxLogic.PLL.Semantics.Kripke
+import LaxLogic.PLL.ND.Consequence
 import Mathlib.Order.Zorn
 
 /-!

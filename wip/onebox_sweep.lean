@@ -1,6 +1,6 @@
 import wip.oracle2
-import LaxLogic.PLLSearch
-import LaxLogic.PLLSemUI
+import LaxLogic.PLL.Search.Search
+import LaxLogic.PLL.SemUI.SemUI
 
 /-!
 # Sweep: the one-◯ two-variable fragment — values and tower coverage

@@ -1,4 +1,4 @@
-import LaxLogic.PLLTimingRipple
+import LaxLogic.PLL.Timing.TimingRipple
 
 /-!
 # Carry-lookahead vs ripple: proof restructuring is circuit speed-up

@@ -1,5 +1,5 @@
-import LaxLogic.PLLConfluentComplete
-import LaxLogic.PLLG4H
+import LaxLogic.PLL.Semantics.ConfluentComplete
+import LaxLogic.PLL.G4.G4H
 
 /-!
 # G4cf — a cut-free sequent calculus for CONFLUENT PLL

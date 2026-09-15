@@ -1,6 +1,6 @@
 # Strong normalisation of the full reduction, via Lindley–Stark ⊤⊤-lifting
 
-Source: `LaxLogic/PLLTopTop.lean`, 1308 lines. This is the main
+Source: `LaxLogic/PLL/Normalisation/TopTop.lean`, 1308 lines. This is the main
 theorem of the two documents in this directory: strong normalisation
 of **every** one-step reduction of the PLL proof-term calculus,
 β for every connective *and* the monadic `let`-associativity law,
@@ -8,7 +8,7 @@ freely interleaved — `SNt t` for every typed term `t`. Extraction
 method and reading conventions: `docs/annotated/README.md`. The proof
 term calculus itself — `Tm`, its de Bruijn variables `Var`, renaming,
 substitution, and the reduction relation `Step` — lives in
-`LaxLogic/PLLTerms.lean`, skimmed below.
+`LaxLogic/PLL/ND/Terms.lean`, skimmed below.
 
 ## The calculus the reduction lives on (`PLLTerms.lean`)
 

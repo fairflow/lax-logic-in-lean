@@ -1,4 +1,4 @@
-import LaxLogic.PLLCandOr
+import LaxLogic.PLL.UI.CandOr
 
 /-!
 # The least candidate — the second-order object, and initiality

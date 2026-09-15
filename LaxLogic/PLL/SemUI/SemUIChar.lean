@@ -1,4 +1,4 @@
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.PLL.SemUI.SemUIFrag
 
 /-!
 # Characters over the finite fragment

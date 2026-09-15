@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4Gap
+import LaxLogic.PLL.G4.G4Gap
 
 /-!
 # G4iLL′: the first (single-retention) repair — superseded by G4iLL″

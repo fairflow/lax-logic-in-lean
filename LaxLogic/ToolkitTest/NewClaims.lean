@@ -1,4 +1,4 @@
-import LaxLogic.PLLKripke
+import LaxLogic.PLL.Semantics.Kripke
 
 /-! # Newly minted claims, for exercising the toolkit
 

@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4HCtr
+import LaxLogic.PLL.G4.G4HCtr
 
 /-!
 # Cut for G4iLL″: ex falso, atomic cut, the main cut, and self-absorption

@@ -1,5 +1,5 @@
-import LaxLogic.PLLCompleteness
-import LaxLogic.PLLFinsetKit
+import LaxLogic.PLL.Semantics.Completeness
+import LaxLogic.PLL.Syntax.FinsetKit
 
 /-!
 # The finite model property (F&M Theorem 4.6)

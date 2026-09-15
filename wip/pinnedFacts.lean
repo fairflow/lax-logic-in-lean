@@ -1,10 +1,10 @@
-import LaxLogic.PLLSearchPin
-import LaxLogic.PLLG4UITrunc
+import LaxLogic.PLL.Search.SearchPin
+import LaxLogic.PLL.UI.G4UITrunc
 
 /-!
 # Two more facts pinned: the `⊃`-jump-goal floor, and a floor interface instance
 
-Generated with `#pinsrc` (`LaxLogic/PLLSearchPin.lean`) and re-checked here
+Generated with `#pinsrc` (`LaxLogic/PLL/Search/SearchPin.lean`) and re-checked here
 from scratch.  Both were previously only probe output.
 
 **1. `desc_zero_imp_jump`** — the descent to budget `0` at a `⊃`-shaped jump

@@ -1,7 +1,7 @@
-import LaxLogic.PLLSearchCmd
-import LaxLogic.PLLDiagramCmd
-import LaxLogic.GuardMsgsShow
-import LaxLogic.PLLSearchNoFall
+import LaxLogic.PLL.Search.SearchCmd
+import LaxLogic.PLL.Search.DiagramCmd
+import LaxLogic.Util.GuardMsgsShow
+import LaxLogic.PLL.Search.SearchNoFall
 
 /-!
 # A runnable companion to `docs/search-manual.md`
@@ -20,7 +20,7 @@ info: <the output>
 <the command>
 ```
 
-`#guard_msgs_show` (`LaxLogic/GuardMsgsShow.lean`) does two things: it
+`#guard_msgs_show` (`LaxLogic/Util/GuardMsgsShow.lean`) does two things: it
 compares the command's output against the docstring and fails the build if
 they differ, and it leaves the output on screen.  Plain `#guard_msgs`
 *deletes* the messages it has checked, which is why the earlier version of
@@ -48,7 +48,7 @@ repeat any of that; it shows the same examples running.
 Your own file needs one line, and no more:
 
 ```lean
-import LaxLogic.PLLSearchCmd   -- or PLLDiagramCmd, which adds `#draw`
+import LaxLogic.PLL.Search.SearchCmd   -- or PLLDiagramCmd, which adds `#draw`
 open PLLFormula PLLND PLLND.Search
 ```
 
@@ -580,11 +580,11 @@ drawing  docs/figures/demo-ordist.svg
 /-! ## 7. PCLL + ¬◯⊥ (manual §7)
 
 The infallible system `NoFall.DerivUNoFall` — PCLL plus the single axiom
-`¬◯⊥` — has its own command pair, from `LaxLogic/PLLSearchNoFall.lean`
+`¬◯⊥` — has its own command pair, from `LaxLogic/PLL/Search/SearchNoFall.lean`
 (imported at the top of this file):
 
 ```
-import LaxLogic.PLLSearchNoFall
+import LaxLogic.PLL.Search.SearchNoFall
 ```
 
 `#searchNF` accepts a countermodel only if it is mutually confluent **and**

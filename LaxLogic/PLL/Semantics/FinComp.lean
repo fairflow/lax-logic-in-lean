@@ -1,7 +1,7 @@
-import LaxLogic.PLLCompleteness
-import LaxLogic.PLLFiniteModel
-import LaxLogic.PLLG4Dec
-import LaxLogic.PLLCountermodelEmit
+import LaxLogic.PLL.Semantics.Completeness
+import LaxLogic.PLL.Semantics.FiniteModel
+import LaxLogic.PLL.G4.G4Dec
+import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!
 # Finitary completeness for PLL — the canonical model without Zorn

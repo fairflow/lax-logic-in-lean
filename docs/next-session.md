@@ -278,7 +278,7 @@ scattered across `wip/`.
   artifact link — the frame runtime blocks its downloads and printing.
 * **The proof-state player** — `tools/proofstates/`, so a proof can be
   *watched* rather than only read:
-  `lake exe pstates LaxLogic/PLLTopTop.lean --decl principal --html out.html`.
+  `lake exe pstates LaxLogic/PLL/Normalisation/TopTop.lean --decl principal --html out.html`.
   Built in answer to a request Matthew has now made more than once.
 
 ---
@@ -342,7 +342,7 @@ them and when, for future archaeologists. Files from this round stay in place
 until then.
 
 **Rule 4 (metrics)**: measured on `ljf-simp-1` (LJF.lean has zero imports,
-so `lake build LaxLogic.LJF` is exactly the file's elaboration time):
+so `lake build LaxLogic.Focusing.LJF` is exactly the file's elaboration time):
 baseline 6,636 lines / 15 min 53.7 s → after rounds A+B+C+C2 **4,462
 lines / 13 min 52.0 s** (−33% lines, −13% compile), zero statement
 changes, all pins passing. Full log: `docs/ljf-simp-round1.md`. Round D

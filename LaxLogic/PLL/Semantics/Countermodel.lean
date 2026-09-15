@@ -1,4 +1,4 @@
-import LaxLogic.PLLFiniteModel
+import LaxLogic.PLL.Semantics.FiniteModel
 
 /-!
 # Countermodels for non-theorems of PLL — the extractor specification

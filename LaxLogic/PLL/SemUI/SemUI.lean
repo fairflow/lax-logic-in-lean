@@ -1,6 +1,6 @@
-import LaxLogic.PLLKripke
-import LaxLogic.PLLCompleteness
-import LaxLogic.PLLG4Space
+import LaxLogic.PLL.Semantics.Kripke
+import LaxLogic.PLL.Semantics.Completeness
+import LaxLogic.PLL.G4.G4Space
 
 /-!
 # The semantic route to uniform interpolation: bisimulation quantifiers

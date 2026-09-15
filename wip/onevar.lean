@@ -1,10 +1,10 @@
-import LaxLogic.PLLG4UITrunc
-import LaxLogic.PLLG4HCut
-import LaxLogic.PLLG4HComp
-import LaxLogic.PLLCompleteness
-import LaxLogic.PLLKripke
-import LaxLogic.PLLG4Space
-import LaxLogic.PLLG4Dec
+import LaxLogic.PLL.UI.G4UITrunc
+import LaxLogic.PLL.G4.G4HCut
+import LaxLogic.PLL.G4.G4HComp
+import LaxLogic.PLL.Semantics.Completeness
+import LaxLogic.PLL.Semantics.Kripke
+import LaxLogic.PLL.G4.G4Space
+import LaxLogic.PLL.G4.G4Dec
 
 /-!
 # One-variable probe of the sole open descent lemma

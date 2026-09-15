@@ -1,6 +1,6 @@
 # Reanimating constraint extraction: a chunky timing example for PLL-in-Lean
 
-*Proposal. Research agent, 2026-07-11. Companion to `LaxLogic/PLLConstraints.lean`.*
+*Proposal. Research agent, 2026-07-11. Companion to `LaxLogic/PLL/Timing/Constraints.lean`.*
 
 The repo already contains a working, `rfl`-checked constraint extractor
 (`PLLConstraints.lean`): `◯` is read as a writer monad `M × ⟦φ⟧`, `Tm.eval`
@@ -174,7 +174,7 @@ derivation the punchline needs; hand-write the two or three key terms.
 
 ## 4. Repo fit (what exists, what to add — honest)
 
-*Exists and is directly reusable* (`LaxLogic/PLLConstraints.lean`):
+*Exists and is directly reusable* (`LaxLogic/PLL/Timing/Constraints.lean`):
 - `sem : PLLFormula → Type` with `sem (somehow φ) = M × sem φ` — the writer
   reading of `◯`. `Env`, `Var.look`, and `Tm.eval` (parametric in `op,e`) are
   the extractor; it already evaluates proof terms to constraints.
@@ -240,7 +240,7 @@ untouched. Namespace `PLLND`.*
 
 ### What was mechanised
 
-**`LaxLogic/PLLTiming.lean` — the two-operation algebra + Mendler's `CIRC`.**
+**`LaxLogic/PLL/Timing/Timing.lean` — the two-operation algebra + Mendler's `CIRC`.**
 The extractor of `PLLConstraints.lean` is *imported unchanged* and instantiated
 at the delay algebra `(ℕ, 0, +, max)`: `Tm.eval (· + ·) 0` supplies Mendler's
 `η = (0,·)` and `μ = +` on the object-level `bind`, while the `max` (his
@@ -276,7 +276,7 @@ per-class proof `circUp_a1 : Tm [gINV, gAND, ◯d, ◯b] ◯c` **never mentions
   `dTopo = max(δ_OR, δ_INV) + δ_AND = 210`. The saving is exactly the
   non-sensitised `δ_OR − δ_INV = 80 ps`.
 
-**`LaxLogic/PLLTimingAdder.lean` — the carry-skip false path at scale.** An
+**`LaxLogic/PLL/Timing/TimingAdder.lean` — the carry-skip false path at scale.** An
 explicit 4-bit block (proposal candidate B), *not* descoped:
 - `rippleTm : Tm Γripple ◯c₄` — four ripple carry stages
   (`csᵢ : ◯cᵢ ⊃ ◯pᵢ ⊃ ◯cᵢ₊₁`, each `max + δ_carry`). `ripple_extract` (`rfl`)

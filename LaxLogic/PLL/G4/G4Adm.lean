@@ -1,4 +1,4 @@
-import LaxLogic.PLLG4Inv
+import LaxLogic.PLL.G4.G4Inv
 
 /-!
 # Generalised identity and telescoped modus ponens for G4iLL

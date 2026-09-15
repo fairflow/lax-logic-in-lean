@@ -1,5 +1,5 @@
 import wip.offImage
-import LaxLogic.PLLG4HComp
+import LaxLogic.PLL.G4.G4HComp
 
 /-!
 # `◯` reflects theoremhood — and `◯q11 ≢ ⊤`

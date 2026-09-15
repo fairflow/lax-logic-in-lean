@@ -1,11 +1,11 @@
-import LaxLogic.LJF
-import LaxLogic.PLLSequent
-import LaxLogic.PLLSemUIFrag
+import LaxLogic.Focusing.LJF
+import LaxLogic.PLL.Sequent.Sequent
+import LaxLogic.PLL.SemUI.SemUIFrag
 
 /-!
 # Focalization completeness for `LJF`, and uniform interpolation for IPC
 
-`LaxLogic/LJF.lean` builds a polarised focused calculus from scratch and proves
+`LaxLogic/Focusing/LJF.lean` builds a polarised focused calculus from scratch and proves
 **uniform interpolation for it**: `eSound`, `aSound`, `eMinF`, `aMinF`.  That
 file is deliberately self-contained — it has no bridge to the repository's
 natural-deduction system, so on its own the interpolation theorem is a theorem
@@ -27,7 +27,7 @@ Two routes were available.  The one taken here is the cheap one:
 * **completeness** (ND ⟹ `LJF`) is obtained by *simulating the repository's
   cut-free sequent calculus* `PLLND.SCh` rule by rule in `LJF`, and composing
   with `PLLND.ND_to_SC` (cut elimination, F&M Theorem 2.6, already machine
-  checked in `LaxLogic/PLLSequent.lean`).
+  checked in `LaxLogic/PLL/Sequent/Sequent.lean`).
 
 The alternative — proving identity expansion and cut admissibility for `LJF`
 itself, in the style of Simmons' *Structural focalization* — was rejected as
@@ -54,11 +54,11 @@ already-present branch of the inversion.
 
 ## Provenance
 
-* `LJF.*` — the focused calculus and its uniform interpolant, `LaxLogic/LJF.lean`.
+* `LJF.*` — the focused calculus and its uniform interpolant, `LaxLogic/Focusing/LJF.lean`.
 * `PLLND.LaxND` / `PLLND.SemUI.Deriv` — the canonical natural-deduction system
-  ("PLL proves"), `LaxLogic/PLLNDCore.lean` and `LaxLogic/PLLSemUIFrag.lean`.
+  ("PLL proves"), `LaxLogic/PLL/ND/NDCore.lean` and `LaxLogic/PLL/SemUI/SemUIFrag.lean`.
 * `PLLND.SCh` / `PLLND.ND_to_SC` — the cut-free sequent calculus and cut
-  elimination, `LaxLogic/PLLSequent.lean`.
+  elimination, `LaxLogic/PLL/Sequent/Sequent.lean`.
 
 See `docs/calculus-map.md`.
 -/

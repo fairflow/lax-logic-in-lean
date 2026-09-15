@@ -1,4 +1,4 @@
-import LaxLogic.PLLSearch
+import LaxLogic.PLL.Search.Search
 
 /-!
 # Pinning a found proof: from *evidence* to *theorem*
