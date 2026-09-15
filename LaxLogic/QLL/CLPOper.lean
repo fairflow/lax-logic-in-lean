@@ -20,7 +20,7 @@ solvable); it plays no part in soundness.
 
     d₀  ⊣⊢  d ∧ total(p₁) ∧ … ∧ total(pₙ)
 
-and so (**Corollary 9.8**, `steps_sound`) `Θ ⊢q d₀ ⊃ φᵢ` for every `i`.
+and so (**Corollary 9.8**, `steps_sound`) `Θ ⊢ d₀ ⊃ φᵢ` for every `i`.
 -/
 import LaxLogic.QLL.CLPCore
 

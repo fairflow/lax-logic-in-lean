@@ -14,7 +14,7 @@ incremental solving, here the latent constraint of the partial proof.
 
 **What is certified.**  For an answer `a`:
 
-    answer_sound :  a.typed = true  →  Θ.forms ⊢q a.constraint ⊃ G
+    answer_sound :  a.typed = true  →  Θ.forms ⊢ a.constraint ⊃ G
     answer_sat   :  a.verdict = .sat w  →  CSat (asg w) a.constraint
 
 where `a.typed` is the run-time check `checkC` (proved sound) of the tree the

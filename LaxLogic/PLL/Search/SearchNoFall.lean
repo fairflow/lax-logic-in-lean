@@ -264,25 +264,25 @@ end PLLND.NoFall
 /-- `#searchNF Γ ⊢ C` — the PCLL + `¬◯⊥` two-sided search: confluent
 infallible countermodels, positive search over the axiom as hypothesis.
 Append `with cfg` to supply a `Search.Config`. -/
-macro "#searchNF " Γ:term " ⊢ " C:term : command =>
+macro "#searchNF " Γ:term:56 " ⊢ " C:term : command =>
   `(command| #eval (IO.println
       (PLLND.NoFall.searchNFReport PLLND.Search.budgetedConfig $Γ $C) :
       IO Unit))
 
 @[inherit_doc «command#searchNF_⊢_»]
-macro "#searchNF " Γ:term " ⊢ " C:term " with " cfg:term : command =>
+macro "#searchNF " Γ:term:56 " ⊢ " C:term " with " cfg:term : command =>
   `(command| #eval (IO.println
       (PLLND.NoFall.searchNFReport $cfg $Γ $C) : IO Unit))
 
 /-- `#refuteNF Γ ⊢ C` — the PCLL + `¬◯⊥` version of `#refute`: only mutually
 confluent models with no fallible worlds are accepted, so the printed theorem
 refutes `NoFall.DerivUNoFall`. -/
-macro "#refuteNF " Γ:term " ⊢ " C:term : command =>
+macro "#refuteNF " Γ:term:56 " ⊢ " C:term : command =>
   `(command| #eval (IO.println
       (PLLND.NoFall.refuteNFReport PLLND.Search.budgetedConfig $Γ $C) :
       IO Unit))
 
 @[inherit_doc «command#refuteNF_⊢_»]
-macro "#refuteNF " Γ:term " ⊢ " C:term " with " cfg:term : command =>
+macro "#refuteNF " Γ:term:56 " ⊢ " C:term " with " cfg:term : command =>
   `(command| #eval (IO.println
       (PLLND.NoFall.refuteNFReport $cfg $Γ $C) : IO Unit))

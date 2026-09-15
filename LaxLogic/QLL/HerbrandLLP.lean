@@ -19,11 +19,11 @@ stage 5.
 For a closed program (`Clause.WF`) and a closed Σ-formula `S`, Theorem 7.5 at
 `i = 0, 1`:
 
-    Θ.forms ⊢q S       ↔  0 ⊨ S  ↔  HTrue (llpI0 Θ) S
-    Θ.forms ⊢q ◯_q S   ↔  1 ⊨ S  ↔  HTrue (llpI1 Θ) S     (every modal clause of Θ carries q)
+    Θ.forms ⊢ S       ↔  0 ⊨ S  ↔  HTrue (llpI0 Θ) S
+    Θ.forms ⊢ ◯_q S   ↔  1 ⊨ S  ↔  HTrue (llpI1 Θ) S     (every modal clause of Θ carries q)
 
-and the completeness halves `Θ.forms ⊫ S → Θ.forms ⊢q S` and
-`Θ.forms ⊫ ◯_q S → Θ.forms ⊢q ◯_q S` by Lloyd's route.  The extraction for
+and the completeness halves `Θ.forms ⊨ S → Θ.forms ⊢ S` and
+`Θ.forms ⊨ ◯_q S → Θ.forms ⊢ ◯_q S` by Lloyd's route.  The extraction for
 `◯_q S` is made of the stage 2 rules, at the level of `Prv`: `∧◯`, `∃◯` and
 `val(⋆)` assemble `◯` of a clause body from `◯` of its atoms, then `⊃◯` fires a
 modal clause and `impCirc` (CLP.lean) a non-modal one under `◯`.  So the Fig. 3

@@ -293,7 +293,7 @@ theorem finite_model_property {φ : PLLFormula} :
     exact soundness_valid p C w
   · intro h
     by_contra hn
-    have hcon : ¬ ([] ⊨- φ) := fun hc => hn (completeness hc)
+    have hcon : ¬ ([] ⊨ φ) := fun hc => hn (completeness hc)
     unfold Consequence at hcon
     push_neg at hcon
     obtain ⟨C, w, _, hforce⟩ := hcon

@@ -7,7 +7,7 @@ Definition 5.1 clauses without `◯`, whose bodies may contain atoms of
 applications whose leaves are constraint atoms, and its **total constraint**
 `total p` (Definition 8.1 of the draft) is the conjunction of those leaves.
 
-    CTyped.prv_total :  CTyped isC Θ S p  →  Θ.forms ⊢q total p ⊃ S
+    CTyped.prv_total :  CTyped isC Θ S p  →  Θ.forms ⊢ total p ⊃ S
 
 This is Corollary 9.8 in its `◯`-free form: the answer constraint of a proof
 entails the query.  `active` and `latent` split `total` at clause boundaries

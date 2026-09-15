@@ -21,8 +21,8 @@ applied by a checker.
 
 ## Where this sits
 
-* `Prv Γ A → Γ ⊫ A` — soundness, below.
-* `Γ ⊫ A → Prv Γ A` — completeness, in `Complete.lean`.
+* `Prv Γ A → Γ ⊨ A` — soundness, below.
+* `Γ ⊨ A → Prv Γ A` — completeness, in `Complete.lean`.
 * `Derives p Γ A → Prv Γ.forms A` — erasure, **OPEN**.  Each exists-fresh
   binder has to be re-based to every fresh name, which `Derives.renameI`
   supplies pointwise but which needs a recursion on the size of a derivation
@@ -33,6 +33,7 @@ applied by a checker.
 -/
 import LaxLogic.QLL.Kripke
 import LaxLogic.QLL.Kit
+import LaxLogic.Util.Turnstile
 
 namespace LaxLogic.QLL
 
@@ -58,11 +59,13 @@ inductive Prv : List Form → Form → Prop where
   | exE   {Γ A K} (L : List String) :
       Prv Γ (.exists_ A) → (∀ a, a ∉ L → Prv (A.openWith a :: Γ) K) → Prv Γ K
 
-@[inherit_doc] infix:55 " ⊢q " => Prv
+-- `Γ ⊢ A` inside `LaxLogic.QLL`, `Γ ⊢[Prv] A` elsewhere (`LaxLogic/Util/Turnstile.lean`).
+attribute [turnstile] Prv
+attribute [scoped turnstile_default] Prv
 
 /-- Weakening — free, because the binders are cofinite. -/
-theorem Prv.weaken {Γ Δ : List Form} {A : Form} (h : Γ ⊢q A) (hs : ∀ B ∈ Γ, B ∈ Δ) :
-    Δ ⊢q A := by
+theorem Prv.weaken {Γ Δ : List Form} {A : Form} (h : Γ ⊢ A) (hs : ∀ B ∈ Γ, B ∈ Δ) :
+    Δ ⊢ A := by
   induction h generalizing Δ with
   | var h => exact .var (hs _ h)
   | topI => exact .topI
@@ -102,7 +105,7 @@ theorem updρ_of_ne {M : KModel} (ρ : String → M.D) {a y : String} (d : M.D) 
 /-- **Soundness**, for a total assignment.  The induction needs one, because
 `⊃E` and the other rules with a cut formula must interpret names that the
 conclusion does not mention. -/
-theorem Prv.soundT {Γ : List Form} {A : Form} (h : Γ ⊢q A) : ConsequenceT Γ A := by
+theorem Prv.soundT {Γ : List Form} {A : Form} (h : Γ ⊢ A) : ConsequenceT Γ A := by
   induction h with
   | var h => intro _ _ _ _ hΓ; exact hΓ _ h
   | topI => intro _ _ _ _ _; trivial
@@ -212,7 +215,7 @@ theorem Prv.soundT {Γ : List Form} {A : Form} (h : Γ ⊢q A) : ConsequenceT Γ
 
 /-- **Soundness**.  The partial assignment is completed with `d₀`, and the two
 valuations agree on every name that occurs, so the forcing is the same. -/
-theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢q A) : Γ ⊫ A := by
+theorem Prv.sound {Γ : List Form} {A : Form} (h : Γ ⊢ A) : Γ ⊨ A := by
   intro M s ρ hρ hΓ
   have key := h.soundT M s (M.fill (ctxFv Γ ++ A.fv) ρ) hρ.total (fun B hB => by
     refine (M.force_congr B s ρ _ [] ?_).mp (hΓ B hB)

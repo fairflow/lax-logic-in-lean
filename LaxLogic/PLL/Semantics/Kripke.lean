@@ -1,4 +1,5 @@
 import LaxLogic.PLL.ND.NDCore
+import LaxLogic.Util.Turnstile
 
 /-!
 # Kripke constraint models for PLL, and soundness
@@ -91,11 +92,13 @@ constraint model where all hypotheses hold, the conclusion holds. -/
 def Consequence (Γ : List PLLFormula) (φ : PLLFormula) : Prop :=
   ∀ (C : ConstraintModel) (w : C.W), (∀ ψ ∈ Γ, C.force w ψ) → C.force w φ
 
-infix:60 " ⊨- " => Consequence
+-- `Γ ⊨ A` inside `PLLND`, `Γ ⊨[Consequence] A` elsewhere.
+attribute [turnstile consequence] Consequence
+attribute [scoped turnstile_default] Consequence
 
 /-- **Soundness** (Theorem 3.3), in sequent form. -/
 theorem soundness {Γ : List PLLFormula} {φ : PLLFormula}
-    (p : LaxND Γ φ) : Γ ⊨- φ := by
+    (p : LaxND Γ φ) : Γ ⊨ φ := by
   induction p with
   | @iden Γ φ h =>
       exact fun C w hΓ => hΓ φ h

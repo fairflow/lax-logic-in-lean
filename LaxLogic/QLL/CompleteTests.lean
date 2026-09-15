@@ -112,7 +112,7 @@ The commutativity of `∧` is read off the semantics and handed to
 
 def Q : Form := .pred "Q" []
 
-theorem and_comm_valid : [Form.and P Q] ⊫ Form.and Q P := by
+theorem and_comm_valid : [Form.and P Q] ⊨ Form.and Q P := by
   intro M s ρ _ hΓ
   have h := hΓ (Form.and P Q) (List.mem_singleton.mpr rfl)
   exact ⟨h.2, h.1⟩

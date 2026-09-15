@@ -612,7 +612,7 @@ theorem truth_lemma (φ : PLLFormula) :
 /-- **Completeness** (F&M Theorem 4.4, strengthened to sequents): a semantic
 consequence over a finite context is derivable. -/
 theorem completeness {Γ : List PLLFormula} {φ : PLLFormula}
-    (h : Γ ⊨- φ) : Nonempty (LaxND Γ φ) := by
+    (h : Γ ⊨ φ) : Nonempty (LaxND Γ φ) := by
   by_contra hn
   have hcons : Consistent ⟨{ψ | ψ ∈ Γ}, {φ}, ∅⟩ := by
     intro Ds Ts hDs hTs hg hder
@@ -632,7 +632,7 @@ theorem completeness {Γ : List PLLFormula} {φ : PLLFormula}
 /-- **Soundness and completeness combined**: derivability coincides with
 semantic consequence over constraint models. -/
 theorem consequence_iff_derivable {Γ : List PLLFormula} {φ : PLLFormula} :
-    Γ ⊨- φ ↔ Nonempty (LaxND Γ φ) :=
+    Γ ⊨ φ ↔ Nonempty (LaxND Γ φ) :=
   ⟨completeness, fun ⟨p⟩ => soundness p⟩
 
 /-- Validity coincides with theoremhood. -/

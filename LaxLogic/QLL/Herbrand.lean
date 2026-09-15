@@ -31,11 +31,11 @@ For a closed Horn program `P` (`Horn.WF`) and a closed Σ-formula `S`:
 
 and, when `P` has no modal heads and `R` is empty,
 
-    P.forms ⊢q S  ↔  HTrue (LHM P) S  ↔  P.forms ⊫ S
+    P.forms ⊢ S  ↔  HTrue (LHM P) S  ↔  P.forms ⊨ S
 
 For atoms this is van Emden and Kowalski's characterisation of the least
-Herbrand model, with `⊫` the Kripke consequence of `Kripke.lean`.  Its
-`⊫ → ⊢q` half is completeness for this fragment by Lloyd's route: instantiate
+Herbrand model, with `⊨` the Kripke consequence of `Kripke.lean`.  Its
+`⊨ → ⊢` half is completeness for this fragment by Lloyd's route: instantiate
 the consequence at the least Herbrand model, then read a derivation off the
 inductive definition, with terms of the model as the witnesses for `∃`.  No
 Lindenbaum construction is involved.
@@ -520,7 +520,7 @@ theorem lloyd_completeness (hP : ∀ h ∈ P, h.WF) (hm : ∀ h ∈ P, h.modal =
     Prv (P.map Horn.form) S :=
   prv_of_HTrue_LHM hm hS hc (HTrue_of_consequence hP h)
 
-/-- **Lloyd's theorem**, as an equivalence: for closed Σ-queries, `P ⊫ S ⟺ P ⊢ S`. -/
+/-- **Lloyd's theorem**, as an equivalence: for closed Σ-queries, `P ⊨ S ⟺ P ⊢ S`. -/
 theorem lloyd_consequence_iff (hP : ∀ h ∈ P, h.WF) (hm : ∀ h ∈ P, h.modal = false)
     {S : Form} (hS : IsSigma S) (hc : Form.lcAt 0 S) :
     Consequence (P.map Horn.form) S ↔ Prv (P.map Horn.form) S :=

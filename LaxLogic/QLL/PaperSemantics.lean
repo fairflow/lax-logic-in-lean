@@ -255,7 +255,7 @@ natural deduction system of its Figure 2. -/
 theorem thm_3_6 {Γ : List Form} {A : Form}
     (hΓlc : ∀ B ∈ Γ, Form.lc B) (hAlc : Form.lc A)
     (hΓex : ∀ B ∈ Γ, B.OnlyEx) (hAex : A.OnlyEx) :
-    Γ ⊢q A ↔ CConsequence Γ A := by
+    Γ ⊢ A ↔ CConsequence Γ A := by
   constructor
   · intro hd C s ρ hass hΓ
     refine (C.force_iff A hAex s ρ []).mpr ?_

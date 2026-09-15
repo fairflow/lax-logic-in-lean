@@ -21,31 +21,34 @@ containing `◯∀⊥` inconsistent, though `◯∀⊥` is satisfiable.
 import LaxLogic.QLL.Prov
 import LaxLogic.QLL.Rename
 import Mathlib.Order.Zorn
+import LaxLogic.Util.Turnstile
 
 namespace LaxLogic.QLL
 
 /-! ## Derivability from a set of hypotheses -/
 
-/-- `Γ ⊩q A`: some finite selection from `Γ` proves `A`. -/
+/-- `Γ ⊢ A`: some finite selection from `Γ` proves `A`. -/
 def SetPrv (Γ : Set Form) (A : Form) : Prop :=
   ∃ L : List Form, (∀ B ∈ L, B ∈ Γ) ∧ Prv L A
 
-@[inherit_doc] infix:55 " ⊩q " => SetPrv
+-- `S ⊢ A` for a set `S` inside `LaxLogic.QLL` (the context type selects it), `S ⊢[SetPrv] A` elsewhere.
+attribute [turnstile] SetPrv
+attribute [scoped turnstile_default] SetPrv
 
 namespace SetPrv
 
-theorem of_mem {Γ : Set Form} {A : Form} (h : A ∈ Γ) : Γ ⊩q A :=
+theorem of_mem {Γ : Set Form} {A : Form} (h : A ∈ Γ) : Γ ⊢ A :=
   ⟨[A], by simpa using h, .var (List.mem_cons_self ..)⟩
 
-theorem mono {Γ Γ' : Set Form} {A : Form} (hs : Γ ⊆ Γ') (h : Γ ⊩q A) : Γ' ⊩q A := by
+theorem mono {Γ Γ' : Set Form} {A : Form} (hs : Γ ⊆ Γ') (h : Γ ⊢ A) : Γ' ⊢ A := by
   obtain ⟨L, hL, hp⟩ := h; exact ⟨L, fun B hB => hs (hL B hB), hp⟩
 
-theorem map {Γ : Set Form} {A B : Form} (f : ∀ L, Prv L A → Prv L B) (h : Γ ⊩q A) :
-    Γ ⊩q B := by
+theorem map {Γ : Set Form} {A B : Form} (f : ∀ L, Prv L A → Prv L B) (h : Γ ⊢ A) :
+    Γ ⊢ B := by
   obtain ⟨L, hL, hp⟩ := h; exact ⟨L, hL, f L hp⟩
 
 theorem map₂ {Γ : Set Form} {A B C : Form}
-    (f : ∀ L, Prv L A → Prv L B → Prv L C) (h₁ : Γ ⊩q A) (h₂ : Γ ⊩q B) : Γ ⊩q C := by
+    (f : ∀ L, Prv L A → Prv L B → Prv L C) (h₁ : Γ ⊢ A) (h₂ : Γ ⊢ B) : Γ ⊢ C := by
   obtain ⟨L₁, hL₁, hp₁⟩ := h₁
   obtain ⟨L₂, hL₂, hp₂⟩ := h₂
   refine ⟨L₁ ++ L₂, fun B hB => ?_, f _ (hp₁.weaken (fun _ h => by simp [h]))
@@ -55,7 +58,7 @@ theorem map₂ {Γ : Set Form} {A B C : Form}
   · exact hL₂ B h
 
 /-- The deduction theorem. -/
-theorem deduct {Γ : Set Form} {A B : Form} (h : insert A Γ ⊩q B) : Γ ⊩q .imp A B := by
+theorem deduct {Γ : Set Form} {A B : Form} (h : insert A Γ ⊢ B) : Γ ⊢ .imp A B := by
   obtain ⟨L, hL, hp⟩ := h
   refine ⟨L.filter (fun C => decide (C ≠ A)), ?_, .impI (hp.weaken ?_)⟩
   · intro C hC
@@ -69,12 +72,12 @@ theorem deduct {Γ : Set Form} {A B : Form} (h : insert A Γ ⊩q B) : Γ ⊩q .
     · exact hCA ▸ List.mem_cons_self ..
     · exact List.mem_cons_of_mem _ (List.mem_filter.mpr ⟨hC, by simpa using hCA⟩)
 
-theorem cut {Γ : Set Form} {A B : Form} (h₁ : Γ ⊩q A) (h₂ : insert A Γ ⊩q B) : Γ ⊩q B :=
+theorem cut {Γ : Set Form} {A B : Form} (h₁ : Γ ⊢ A) (h₂ : insert A Γ ⊢ B) : Γ ⊢ B :=
   map₂ (fun _ p q => .impE q p) h₁ (deduct h₂)
 
 theorem map₃ {Γ : Set Form} {A B C K : Form}
     (f : ∀ L, Prv L A → Prv L B → Prv L C → Prv L K)
-    (h₁ : Γ ⊩q A) (h₂ : Γ ⊩q B) (h₃ : Γ ⊩q C) : Γ ⊩q K := by
+    (h₁ : Γ ⊢ A) (h₂ : Γ ⊢ B) (h₃ : Γ ⊢ C) : Γ ⊢ K := by
   obtain ⟨L₁, hL₁, p₁⟩ := h₁
   obtain ⟨L₂, hL₂, p₂⟩ := h₂
   obtain ⟨L₃, hL₃, p₃⟩ := h₃
@@ -90,7 +93,7 @@ theorem map₃ {Γ : Set Form} {A B C K : Form}
   · intro X h; simp [h]
 
 theorem orE' {Γ : Set Form} {A B K : Form}
-    (h : Γ ⊩q .or A B) (h₁ : insert A Γ ⊩q K) (h₂ : insert B Γ ⊩q K) : Γ ⊩q K :=
+    (h : Γ ⊢ .or A B) (h₁ : insert A Γ ⊢ K) (h₂ : insert B Γ ⊢ K) : Γ ⊢ K :=
   map₃ (fun _ p q r => .orE p (.impE (q.weaken (by intro _ h; simp [h]))
       (.var (List.mem_cons_self ..)))
     (.impE (r.weaken (by intro _ h; simp [h])) (.var (List.mem_cons_self ..))))
@@ -225,7 +228,7 @@ theorem disj_mono {Γ : List Form} {Ds TA TE Ds' TA' TE' : List Form}
 namespace SetPrv
 
 theorem bigOr_elim' {K : Form} : ∀ (As : List Form) (Γ : Set Form),
-    Γ ⊩q bigOr As → (∀ A ∈ As, insert A Γ ⊩q K) → Γ ⊩q K
+    Γ ⊢ bigOr As → (∀ A ∈ As, insert A Γ ⊢ K) → Γ ⊢ K
   | [],           _, h, _ => h.map (fun _ p => .botE p)
   | [A],          _, h, f => cut h (f A (by simp))
   | A :: B :: As, Γ, h, f =>
@@ -238,19 +241,19 @@ theorem bigOr_elim' {K : Form} : ∀ (As : List Form) (Γ : Set Form),
                 · exact Set.mem_insert_of_mem _ (Set.mem_insert_of_mem _ hX))))
 
 theorem bigOr_collapse {X : Form} : ∀ (Ds : List Form) (Γ : Set Form),
-    (∀ A ∈ Ds, A = X) → Γ ⊩q bigOr Ds → Γ ⊩q X := by
+    (∀ A ∈ Ds, A = X) → Γ ⊢ bigOr Ds → Γ ⊢ X := by
   intro Ds Γ f h
   refine bigOr_elim' Ds Γ h (fun A hA => ?_)
   rw [← f A hA]
   exact of_mem (Set.mem_insert ..)
 
 theorem lax_bind {Γ : Set Form} {q : Q} {A B : Form}
-    (h₁ : Γ ⊩q .circ q A) (h₂ : Γ ⊩q .imp A (.circ q B)) : Γ ⊩q .circ q B :=
+    (h₁ : Γ ⊢ .circ q A) (h₂ : Γ ⊢ .imp A (.circ q B)) : Γ ⊢ .circ q B :=
   map₂ (fun _ p₁ p₂ => .circE p₁ (.impE (p₂.weaken (by intro _ h; simp [h]))
     (.var (List.mem_cons_self ..)))) h₁ h₂
 
 theorem lax_collapse {Γ : Set Form} {q : Q} {X : Form} (Ts : List Form)
-    (hT : ∀ A ∈ Ts, A = X) (h : Γ ⊩q .circ q (bigOr Ts)) : Γ ⊩q .circ q X :=
+    (hT : ∀ A ∈ Ts, A = X) (h : Γ ⊢ .circ q (bigOr Ts)) : Γ ⊢ .circ q X :=
   h.map (fun L p => .circE p (bigOr_elim Ts (bigOr Ts :: L)
     (.var (List.mem_cons_self ..))
     (fun A hA => .circI (by rw [← hT A hA]; exact .var (List.mem_cons_self ..)))))
@@ -274,10 +277,10 @@ theorem disjOf_ex {Ts : List Form} (h : Ts ≠ []) :
 
 /-- `disj_elim`, over a set context. -/
 theorem SetPrv.disj_elim {Γ : Set Form} {K : Form} {Ds TA TE : List Form}
-    (h : Γ ⊩q disjOf Ds TA TE)
-    (hD : ∀ D ∈ Ds, insert D Γ ⊩q K)
-    (hA : TA ≠ [] → insert (.circ .all (bigOr TA)) Γ ⊩q K)
-    (hE : TE ≠ [] → insert (.circ .ex (bigOr TE)) Γ ⊩q K) : Γ ⊩q K :=
+    (h : Γ ⊢ disjOf Ds TA TE)
+    (hD : ∀ D ∈ Ds, insert D Γ ⊢ K)
+    (hA : TA ≠ [] → insert (.circ .all (bigOr TA)) Γ ⊢ K)
+    (hE : TE ≠ [] → insert (.circ .ex (bigOr TE)) Γ ⊢ K) : Γ ⊢ K :=
   SetPrv.bigOr_elim' _ Γ h (fun X hX => by
     rcases mem_disjList hX with hx | ⟨hne, rfl⟩ | ⟨hne, rfl⟩
     · exact hD X hx
@@ -306,7 +309,7 @@ theorem Theory.le_def {T T' : Theory} :
 def Consistent (T : Theory) : Prop :=
   ∀ Ds TA TE : List Form,
     (∀ A ∈ Ds, A ∈ T.fal) → (∀ A ∈ TA, A ∈ T.mfal .all) → (∀ A ∈ TE, A ∈ T.mfal .ex) →
-    Ds ++ TA ++ TE ≠ [] → ¬ (T.val ⊩q disjOf Ds TA TE)
+    Ds ++ TA ++ TE ≠ [] → ¬ (T.val ⊢ disjOf Ds TA TE)
 
 /-- Consistent, and maximal among consistent extensions. -/
 def MaxConsistent (T : Theory) : Prop :=
@@ -437,7 +440,7 @@ theorem exists_maxConsistent_extension {T₀ : Theory} (h₀ : Consistent T₀) 
 
 theorem SetPrv.disj_mono {Γ : Set Form} {Ds TA TE Ds' TA' TE' : List Form}
     (hD : ∀ A ∈ Ds, A ∈ Ds') (hA : ∀ A ∈ TA, A ∈ TA') (hE : ∀ A ∈ TE, A ∈ TE')
-    (h : Γ ⊩q disjOf Ds TA TE) : Γ ⊩q disjOf Ds' TA' TE' :=
+    (h : Γ ⊢ disjOf Ds TA TE) : Γ ⊢ disjOf Ds' TA' TE' :=
   h.map (fun _ p => LaxLogic.QLL.disj_mono hD hA hE p)
 
 /-! ## Properties of maximally consistent theories -/
@@ -445,7 +448,7 @@ theorem SetPrv.disj_mono {Γ : Set Form} {Ds TA TE Ds' TA' TE' : List Form}
 theorem not_consistent_iff {T : Theory} :
     ¬ Consistent T ↔ ∃ Ds TA TE : List Form,
       (∀ A ∈ Ds, A ∈ T.fal) ∧ (∀ A ∈ TA, A ∈ T.mfal .all) ∧
-      (∀ A ∈ TE, A ∈ T.mfal .ex) ∧ Ds ++ TA ++ TE ≠ [] ∧ T.val ⊩q disjOf Ds TA TE := by
+      (∀ A ∈ TE, A ∈ T.mfal .ex) ∧ Ds ++ TA ++ TE ≠ [] ∧ T.val ⊢ disjOf Ds TA TE := by
   unfold Consistent
   push Not
   rfl
@@ -535,7 +538,7 @@ variable {R : Set String} {T : Theory}
 
 /-- A falsified formula is not derivable. -/
 theorem not_fal_deriv (hG : Good R T) {A : Form} (hA : A ∈ T.fal)
-    (hd : T.val ⊩q A) : False := by
+    (hd : T.val ⊢ A) : False := by
   refine hG.1 [A] [] [] (by simpa using hA) (by simp) (by simp) (by simp) ?_
   rw [disjOf_fal]
   exact hd
@@ -543,7 +546,7 @@ theorem not_fal_deriv (hG : Good R T) {A : Form} (hA : A ∈ T.fal)
 /-- `val` is deductively closed on the language — from totality, not from
 maximality. -/
 theorem ded_closed (hG : Good R T) {A : Form} (hav : Avoids R A)
-    (hd : T.val ⊩q A) : A ∈ T.val :=
+    (hd : T.val ⊢ A) : A ∈ T.val :=
   (hG.2 A hav).resolve_right (fun hf => hG.not_fal_deriv hf hd)
 
 theorem not_mem_fal_of_mem_val (hG : Good R T) {A : Form} (h : A ∈ T.val) :
@@ -601,7 +604,7 @@ theorem mfal_sub_fal (hG : Good R T) {q : Q} {A : Form} (hav : Avoids R A)
     (h : A ∈ T.mfal q) : A ∈ T.fal := by
   rcases hG.2 A hav with hv | hf
   · exfalso
-    have hlax : T.val ⊩q Form.circ q A := (SetPrv.of_mem hv).map (fun _ p => .circI p)
+    have hlax : T.val ⊢ Form.circ q A := (SetPrv.of_mem hv).map (fun _ p => .circI p)
     cases q
     · refine hG.1 [] [A] [] (by simp) (by simpa using h) (by simp) (by simp) ?_
       rw [disjOf_all (by simp)]
@@ -765,7 +768,7 @@ theorem truth_lemma : ∀ (A : Form), QFree A → Form.lc A → ∀ T : MaxTheor
             | cons X _ => exact absurd (hE X (by simp)) (by simp)
           subst hTA; subst hTE
           rw [disjOf_fal] at hder
-          have hB : insert A T.1.val ⊩q B :=
+          have hB : insert A T.1.val ⊢ B :=
             SetPrv.bigOr_collapse Ds _ (fun X hX => hD X hX) hder
           exact T.2.not_fal_deriv h (SetPrv.deduct hB)
         obtain ⟨T', hle, hM'⟩ := exists_good_extension hcons
@@ -870,7 +873,7 @@ theorem truth_lemma : ∀ (A : Form), QFree A → Form.lc A → ∀ T : MaxTheor
 over a finite context is provable. -/
 theorem completeness {Γ : List Form} {A : Form}
     (hΓ : ∀ B ∈ Γ, QFree B ∧ Form.lc B) (hqA : QFree A) (hlcA : Form.lc A)
-    (h : Γ ⊫ A) : Γ ⊢q A := by
+    (h : Γ ⊨ A) : Γ ⊢ A := by
   by_contra hn
   have hcons : Consistent ⟨{B | B ∈ Γ}, {A}, fun _ => ∅⟩ := by
     intro Ds TA TE hD hA' hE hne hder

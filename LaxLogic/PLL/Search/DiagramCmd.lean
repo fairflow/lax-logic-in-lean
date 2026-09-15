@@ -70,14 +70,14 @@ end PLLND.Search
 /-- `#draw Γ ⊢ C to "path.svg"` — search for a countermodel as `#refute`
 does, write it to `path` as an SVG, and print the verdict, the scope and the
 path.  Append `with cfg` for a `Search.Config`. -/
-macro (name := drawCmd) "#draw " Γ:term " ⊢ " C:term " to " path:term :
+macro (name := drawCmd) "#draw " Γ:term:56 " ⊢ " C:term " to " path:term :
     command =>
   `(command| #eval (do
       IO.println (← PLLND.Search.drawReport PLLND.Search.budgetedConfig
         $Γ $C $path) : IO Unit))
 
 @[inherit_doc drawCmd]
-macro "#draw " Γ:term " ⊢ " C:term " to " path:term " with " cfg:term :
+macro "#draw " Γ:term:56 " ⊢ " C:term " to " path:term " with " cfg:term :
     command =>
   `(command| #eval (do
       IO.println (← PLLND.Search.drawReport $cfg $Γ $C $path) : IO Unit))

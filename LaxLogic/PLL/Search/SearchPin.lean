@@ -156,9 +156,9 @@ end Search
 end PLLND
 
 /-- Report a pasteable proof term for `Γ ⊢ C` (default configuration). -/
-macro "#pinsrc " Γ:term " ⊢ " C:term : command =>
+macro "#pinsrc " Γ:term:56 " ⊢ " C:term : command =>
   `(command| #eval IO.println (PLLND.Search.pinReport {} $Γ $C))
 
 /-- Report a pasteable proof term for `Γ ⊢ C` at an explicit configuration. -/
-macro "#pinsrc " Γ:term " ⊢ " C:term " with " cfg:term : command =>
+macro "#pinsrc " Γ:term:56 " ⊢ " C:term " with " cfg:term : command =>
   `(command| #eval IO.println (PLLND.Search.pinReport $cfg $Γ $C))

@@ -375,3 +375,36 @@ companion, and conventional-notation transcriptions next to the Lean.  Done:
   `lean-to-math.py` is demoted to an authoring aid, not a build step.  Bug
   found and fixed: `generic`/`form` recursed forever on a partially applied
   `Form` constructor (SIGABRT 134 in the section build) — arity guards.
+
+## 2026-09-15 — branch `syntax-reorg`: tagged turnstiles, and `LaxLogic/` reorganised
+
+Matthew: "design a new syntactic approach using true argument [tag] notation
+getting rid of ⊢- and ⊨- and while you do it, reorganise the directories and
+files … Make sure every file compiles; use a fresh branch."  Branched from
+`lax-obligations` @ bf6b462.  The record, with rejected alternatives and the
+full module mapping: `docs/syntax-reorg-2026-09-15.md`.
+
+- **Notation** (`LaxLogic/Util/Turnstile.lean`, Lean core only).  `Γ ⊢[R] A` is
+  `R Γ A` with the tag a true argument (the calculus itself, possibly partially
+  applied: `Γ ⊢[G4h n] C`); `⊨[R]` for semantic consequence; `⊬[R]`/`⊭[R]` are
+  `¬ R Γ A` for a Prop-valued relation and `¬ Nonempty (R Γ A)` for a
+  Type-valued one (LaxND).  Plain `⊢ ⊨ ⊬ ⊭` use the scope's defaults
+  (`attribute [scoped turnstile_default] R`), chosen by context then formula
+  type when several are open; printing drops the tag exactly when that is
+  unambiguous.  Converted: `⊢-` (LaxND), `⊨-` (PLL Consequence), `⊢q` (Prv),
+  `⊩q` (SetPrv, a Set context), `⊫` (QLL Consequence).  Not converted (next):
+  PLL `⊩` for SetDeriv, `⊢qll p : A`, the other calculi's registration, the
+  Toolkit challenge corpus's private `⊬`.  Pins: `LaxLogic/Util/TurnstileTests.lean`
+  (watched one fail).  The seven search/draw commands now parse their context
+  at precedence 56.
+- **Layout.** 115 top-level modules moved to `PLL/{Syntax,ND,Normalisation,
+  Semantics,Realisability,Sequent,G4,UI,SemUI,Search,Timing}`, `Belief/`,
+  `Focusing/`, `Util/`; names = old names minus the `PLL`/`Belief` prefix;
+  declaration names and namespaces unchanged.  First commit pure renames
+  (git rename detection carries other branches' edits), second the import and
+  path rewrite across LaxLogic/, wip/, papers, tools/, prover-toolkit/,
+  scripts/, docs/ (this file excepted).  `scripts/reorg-2026-09-15.py
+  --rewrite` re-applies the rewrite on any branch that merges this one.
+- **Built.** Every LaxLogic module and both paper libraries, after each step.
+  `LaxLogic.QLL.CLPWolfram` needs the Wolfram bridge and is compiled only by
+  `scripts/clp-wolfram.sh`, as at baseline.

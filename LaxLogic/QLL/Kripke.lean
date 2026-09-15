@@ -43,6 +43,7 @@ quantifier clauses touch `β`; only the eigenvariable rules touch `ρ`.  This is
 the same split `Refines` uses, so the two semantics line up.
 -/
 import LaxLogic.QLL.Lc
+import LaxLogic.Util.Turnstile
 
 namespace LaxLogic.QLL
 
@@ -395,7 +396,7 @@ theorem fill_eq {S : List String} {ρ : String → M.D} {x : String} (h : x ∈ 
 
 end KModel
 
-/-- `Γ ⊫ A`, with `ρ` assigning the names that occur. -/
+/-- `Γ ⊨ A`, with `ρ` assigning the names that occur. -/
 def Consequence (Γ : List Form) (A : Form) : Prop :=
   ∀ (M : KModel) (s : M.S) (ρ : String → M.D), M.AssignOn (ctxFv Γ ++ A.fv) s ρ →
     (∀ B ∈ Γ, M.force B s ρ []) → M.force A s ρ []
@@ -406,6 +407,8 @@ def ConsequenceT (Γ : List Form) (A : Form) : Prop :=
   ∀ (M : KModel) (s : M.S) (ρ : String → M.D), M.Assign s ρ →
     (∀ B ∈ Γ, M.force B s ρ []) → M.force A s ρ []
 
-@[inherit_doc] infix:55 " ⊫ " => Consequence
+-- `Γ ⊨ A` inside `LaxLogic.QLL`, `Γ ⊨[Consequence] A` elsewhere.
+attribute [turnstile consequence] Consequence
+attribute [scoped turnstile_default] Consequence
 
 end LaxLogic.QLL

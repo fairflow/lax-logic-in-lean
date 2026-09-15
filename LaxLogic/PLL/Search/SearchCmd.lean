@@ -204,34 +204,34 @@ sequent's `Γ` and `C` elaborate in the user's own scope, with the user's
 proof term or countermodel, and the paste-ready pinning snippet.  Append
 `with cfg` to supply a `Search.Config`; the default is
 `Search.budgetedConfig` (node budget on). -/
-macro "#search " Γ:term " ⊢ " C:term : command =>
+macro "#search " Γ:term:56 " ⊢ " C:term : command =>
   `(command| #eval (IO.println
       (PLLND.Search.searchReport PLLND.Search.budgetedConfig $Γ $C) : IO Unit))
 
 @[inherit_doc «command#search_⊢_»]
-macro "#search " Γ:term " ⊢ " C:term " with " cfg:term : command =>
+macro "#search " Γ:term:56 " ⊢ " C:term " with " cfg:term : command =>
   `(command| #eval (IO.println
       (PLLND.Search.searchReport $cfg $Γ $C) : IO Unit))
 
 /-- `#refute Γ ⊢ C` — run the countermodel engines only and print the model
 compactly together with the paste-ready underivability theorem. -/
-macro "#refute " Γ:term " ⊢ " C:term : command =>
+macro "#refute " Γ:term:56 " ⊢ " C:term : command =>
   `(command| #eval (IO.println
       (PLLND.Search.refuteReport PLLND.Search.budgetedConfig $Γ $C) : IO Unit))
 
 @[inherit_doc «command#refute_⊢_»]
-macro "#refute " Γ:term " ⊢ " C:term " with " cfg:term : command =>
+macro "#refute " Γ:term:56 " ⊢ " C:term " with " cfg:term : command =>
   `(command| #eval (IO.println
       (PLLND.Search.refuteReport $cfg $Γ $C) : IO Unit))
 
 /-- `#refuteConf Γ ⊢ C` — the PCLL version of `#refute`: only mutually
 confluent countermodels are accepted, so the printed theorem refutes
 `ConfluentU.DerivU`. -/
-macro "#refuteConf " Γ:term " ⊢ " C:term : command =>
+macro "#refuteConf " Γ:term:56 " ⊢ " C:term : command =>
   `(command| #eval (IO.println
       (PLLND.RNC.refuteConfReport PLLND.Search.budgetedConfig $Γ $C) : IO Unit))
 
 @[inherit_doc «command#refuteConf_⊢_»]
-macro "#refuteConf " Γ:term " ⊢ " C:term " with " cfg:term : command =>
+macro "#refuteConf " Γ:term:56 " ⊢ " C:term " with " cfg:term : command =>
   `(command| #eval (IO.println
       (PLLND.RNC.refuteConfReport $cfg $Γ $C) : IO Unit))

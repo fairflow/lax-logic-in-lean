@@ -318,7 +318,7 @@ theorem PrvC.derivable {Γ : List Form} {A : Form} (h : PrvC Γ A) :
 for: everything the model theory proves of `Prv` now says something about the
 calculus of Fig. 5. -/
 theorem Derives.consequence {p : Pf} {Γ : Ctx} {A : Form}
-    (d : Derives p Γ A) (hp : Pf.lcI 0 p) : Ctx.forms Γ ⊫ A :=
+    (d : Derives p Γ A) (hp : Pf.lcI 0 p) : Ctx.forms Γ ⊨ A :=
   Prv.sound (d.erase hp)
 
 /-! ## Axioms -/

@@ -11,8 +11,8 @@ the choices `g` made: the draft's `S♯g` before its existential quantifiers are
 pulled to the front.  Splitting a clause at its disjunctions is the positive
 part of the Lloyd–Topor transformation, and it is an equivalence:
 
-    [S] ⊢q ⋁_{g ∈ ind S} sel S g            [sel S g] ⊢q S      (g ∈ ind S)
-    [c.form] ⊢q h.form   (h ∈ c.toHorn)      c.toHorn.forms ⊢q c.form
+    [S] ⊢ ⋁_{g ∈ ind S} sel S g            [sel S g] ⊢ S      (g ∈ ind S)
+    [c.form] ⊢ h.form   (h ∈ c.toHorn)      c.toHorn.forms ⊢ c.form
 
 The forcing counterpart of the first line, `force_iff_sel`, is what the Herbrand
 models use.
@@ -284,7 +284,7 @@ theorem Prv.of_sel_aux : ∀ (n : Nat) {S : Form}, S.size < n → IsSigma S →
           rw [sel_openAt]
           exact .var (List.mem_cons.2 (Or.inl rfl))
 
-/-- `[sel S g] ⊢q S`. -/
+/-- `[sel S g] ⊢ S`. -/
 theorem Prv.of_sel {S : Form} (hS : IsSigma S) {g : Idx} (hg : g ∈ ind S) {Γ : List Form}
     (h : Prv Γ (sel S g)) : Prv Γ S :=
   Prv.of_sel_aux _ (Nat.lt_succ_self _) hS hg h
@@ -336,7 +336,7 @@ theorem Prv.disj_sel_aux : ∀ (n : Nat) {S : Form}, S.size < n → IsSigma S �
           rw [← sel_openAt]
           exact .var (List.mem_cons.2 (Or.inl rfl))
 
-/-- `[S] ⊢q ⋁_{g ∈ ind S} sel S g`. -/
+/-- `[S] ⊢ ⋁_{g ∈ ind S} sel S g`. -/
 theorem Prv.disj_sel {S : Form} (hS : IsSigma S) {Γ : List Form} (h : Prv Γ S) :
     Prv Γ (Form.disj ((ind S).map (sel S))) :=
   Prv.disj_sel_aux _ (Nat.lt_succ_self _) hS h
@@ -440,7 +440,7 @@ theorem Clause.map_form_toHorn (c : Clause) :
   exact List.attach_map_val (l := ind c.body)
     (f := fun g => Form.foralls c.arity (.imp (sel c.body g) c.headForm))
 
-/-- `[c.form] ⊢q h.form` for each of its Horn clauses. -/
+/-- `[c.form] ⊢ h.form` for each of its Horn clauses. -/
 theorem Clause.prv_toHorn (c : Clause) {h : Horn} (hh : h ∈ c.toHorn) : Prv [c.form] h.form := by
   obtain ⟨⟨g, hg⟩, _, rfl⟩ := List.mem_map.1 hh
   show Prv ([Form.imp c.body c.headForm].map (Form.foralls c.arity))
@@ -452,7 +452,7 @@ theorem Clause.prv_toHorn (c : Clause) {h : Horn} (hh : h ∈ c.toHorn) : Prv [c
   exact Prv.of_sel (c.body_sigma.instAll ts) (by rw [ind_instAll]; exact hg)
     (.var (List.mem_cons.2 (Or.inl rfl)))
 
-/-- `c.toHorn.forms ⊢q c.form`. -/
+/-- `c.toHorn.forms ⊢ c.form`. -/
 theorem Clause.prv_of_toHorn (c : Clause) : Prv (c.toHorn.map Horn.form) c.form := by
   rw [Clause.map_form_toHorn]
   refine Prv.foralls_congr c.arity _ (.imp c.body c.headForm) fun ts _ _ => ?_

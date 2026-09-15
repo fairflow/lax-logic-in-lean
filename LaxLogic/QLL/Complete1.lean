@@ -520,7 +520,7 @@ weakened `Assign` asks for, and what the total one could never have given. -/
 plan needs the canonical world itself, not just the implication, in order to
 read it as a model of the paper's own Definition 3.2. -/
 theorem exists_countermodel {Γ : List Form} {A : Form}
-    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (hn : ¬ Γ ⊢q A) :
+    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (hn : ¬ Γ ⊢ A) :
     ∃ w : World,
       (∀ x ∈ ctxFv Γ ++ A.fv, canon.Dom w (canonρ x)) ∧
       (∀ B ∈ Γ, canon.force B w canonρ []) ∧
@@ -571,14 +571,14 @@ theorem exists_countermodel {Γ : List Form} {A : Form}
 
 /-- **Completeness**: a locally closed consequence is derivable. -/
 theorem completeness1 {Γ : List Form} {A : Form}
-    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (h : Γ ⊫ A) : Γ ⊢q A := by
+    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) (h : Γ ⊨ A) : Γ ⊢ A := by
   by_contra hn
   obtain ⟨w, hass, hΓf, hAf⟩ := exists_countermodel hΓ hA hn
   exact hAf (h canon w canonρ hass hΓf)
 
 /-- **Adequacy**: for locally closed data, derivability and consequence coincide. -/
 theorem prv_iff_consequence {Γ : List Form} {A : Form}
-    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) : Γ ⊢q A ↔ Γ ⊫ A :=
+    (hΓ : ∀ B ∈ Γ, Form.lc B) (hA : Form.lc A) : Γ ⊢ A ↔ Γ ⊨ A :=
   ⟨Prv.sound, completeness1 hΓ hA⟩
 
 /-! ## Axioms -/

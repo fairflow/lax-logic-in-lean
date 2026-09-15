@@ -198,7 +198,7 @@ theorem onevar_descent (p : String) (S : Finset PLLFormula)
         (itpA p S fuel c Γ g) := by
   -- (1) The pure descent as a *semantic consequence* (drops `itpE`): the single
   -- hypothesis `force w (itpA (c+1))` feeds `descent_forcing`.
-  have hcons : [itpA p S fuel (c + 1) Γ g] ⊨- itpA p S fuel c Γ g := by
+  have hcons : [itpA p S fuel (c + 1) Γ g] ⊨ itpA p S fuel c Γ g := by
     intro M w hw
     exact descent_forcing p S Γ fuel c g J hd1 hroom hSv hΓv hgv M w
       (hw _ (List.Mem.head _))

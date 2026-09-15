@@ -1,4 +1,5 @@
 import LaxLogic.PLL.Syntax.Formula
+import LaxLogic.Util.Turnstile
 
 /-!
 # A slime-free core ND system for PLL, with conservativity over IPL
@@ -96,7 +97,9 @@ inductive LaxND : List PLLFormula → PLLFormula → Type
       (p₁ : LaxND Γ (.somehow φ)) (p₂ : LaxND (φ :: Γ) (.somehow ψ)) :
       LaxND Γ (.somehow ψ)
 
-infix:70 " ⊢- " => LaxND
+-- `Γ ⊢ A` inside `PLLND`, `Γ ⊢[LaxND] A` elsewhere (`LaxLogic/Util/Turnstile.lean`).
+attribute [turnstile] LaxND
+attribute [scoped turnstile_default] LaxND
 
 /-! ## Admissible structural rules
 
@@ -141,16 +144,16 @@ def LaxND.move {Γ Δ : List PLLFormula} {φ ψ : PLLFormula}
 
 /-! ## The usual PLL theorems, exchange-free -/
 
-def OI (Γ : List PLLFormula) (φ : PLLFormula) : Γ ⊢- .ifThen φ (.somehow φ) :=
+def OI (Γ : List PLLFormula) (φ : PLLFormula) : Γ ⊢ .ifThen φ (.somehow φ) :=
   .impIntro (.laxIntro (.iden (List.mem_cons_self ..)))
 
 def OM (Γ : List PLLFormula) (φ : PLLFormula) :
-    Γ ⊢- .ifThen (.somehow (.somehow φ)) (.somehow φ) :=
+    Γ ⊢ .ifThen (.somehow (.somehow φ)) (.somehow φ) :=
   .impIntro (.laxElim (.iden (List.mem_cons_self ..))
     (.iden (List.mem_cons_self ..)))
 
 def OSR (Γ : List PLLFormula) (φ ψ : PLLFormula) :
-    Γ ⊢- .ifThen (.and (.somehow φ) (.somehow ψ)) (.somehow (.and φ ψ)) :=
+    Γ ⊢ .ifThen (.and (.somehow φ) (.somehow ψ)) (.somehow (.and φ ψ)) :=
   .impIntro <|
     .laxElim (.andElim1 (.iden (List.mem_cons_self ..))) <|
       .laxElim (.andElim2 (.iden (List.mem_cons_of_mem _ (List.mem_cons_self ..)))) <|
