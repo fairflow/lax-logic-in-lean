@@ -150,3 +150,49 @@ first (all dormant):
 `/Users/matthew/gtd/worktrees/lax-logic-in-lean/blueprint-on-frjw` (six
 uncommitted blueprint chapters).  Worktrees are never removed by an agent
 (standing instruction); these are listed so you can decide what to keep.
+
+## 6. The merges as executed — 2026-09-16
+
+Done in the order above, `publication/core` left out by Matthew's instruction.
+`main` was 966 commits behind; every merge is committed locally and **not
+pushed**.
+
+| stage | commit | conflicts | notes |
+|---|---|---|---|
+| `ci/lean-action-branch-filter` | fast-forward to `1b6a763` | — | as predicted |
+| `blueprint-dev-chapter` | `7762096` | 1 (902 files changed) | a CI-comment clash; took theirs |
+| `FRJX` | `5b89507` | 4 | the predicted union merges |
+| `syntax-reorg` | `2b67671` | 25 | exactly the predicted set |
+| post-merge repairs | `b55c55e` | — | four semantic conflicts, below |
+
+The prediction was accurate as a *file* count, and that is its limit: a
+conflict-free textual merge is not a building tree.  Four defects survived it,
+each a collision between two lines that edited **different** files, so git saw
+nothing to report:
+
+1. **A second `⊬` parser.**  The union resolution in `PLL/ND/NDCore.lean`
+   restored `Underivable` and its `infix:70 " ⊬ "`, which `syntax-reorg` had
+   deleted in favour of the turnstile framework.  With two parsers in scope
+   every underivability statement became a `choice` node — `Ambiguous term …
+   [] ⊬ ⊥`, readings `PLLND.Underivable [] ⊥` and `¬ Nonempty (LaxND [] ⊥)` —
+   and five modules failed.  Deleted; nothing outside comments used the name.
+2. **Precedence.**  The blueprint line's new `stabCard` material writes
+   `[] ⊬ φ` under `∧`, which parsed at `infix:70` but not at the framework's
+   sequent precedence 26.  Three sites parenthesised.
+3. **A constructor added on one line, matched on the other.**  `FRJX` added
+   `FRJVi.liftI`; `FRJ/CalculusW.lean`, which `FRJX` does not carry, left
+   `toWi` non-exhaustive.  `FRJWi.lift` has the same signature, so the case is
+   forced.
+4. **A rename carrying divergent names.**  Git applied `FRJX`'s `liftI` hunks
+   to `FRJ/Gbu/Circ.lean` across the `wip/gbu_circ.lean` → `FRJ/Gbu/Circ.lean`
+   promotion.  The wip copy calls the zone `Th`, the promoted file `Θ`; two
+   ported lines named an unbound `Th`.
+
+Lesson for the next merge of this kind: predict conflicts with `merge-tree`, but
+budget for a build-and-repair pass of the same order — the damage is in the
+files git did **not** flag.
+
+**Verification.**  `lake build` (defaults `LaxLogic`, `FRJGbu`): 8746 jobs,
+exit 0.  Four `sorry` warnings, all the halted UI route (`SemUILayered`,
+`SemUIHenkin` ×2, `SemUIChar`), unchanged from baseline; every `#guard_msgs`
+axiom pin passes.

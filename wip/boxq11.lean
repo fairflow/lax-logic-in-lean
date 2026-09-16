@@ -116,8 +116,8 @@ theorem d_q9_bq11 : Deriv [q9] bq11 :=
 not `⊤`, not `q11` (strictly above it), not `q13`. -/
 theorem cBox11_settled :
     (¬ Interd bq11 q1) ∧
-    (Deriv [q11] bq11 ∧ [bq11] ⊬ q11) ∧
-    ([bq11] ⊬ q13 ∧ [q13] ⊬ bq11) :=
+    (Deriv [q11] bq11 ∧ ([bq11] ⊬ q11)) ∧
+    (([bq11] ⊬ q13) ∧ ([q13] ⊬ bq11)) :=
   ⟨cBox11_not_top, ⟨d_q11_bq11, ref_boxq11_q11⟩,
    ⟨ref_boxq11_q13, ref_q13_boxq11⟩⟩
 
@@ -133,8 +133,8 @@ theorem ref_q12_q11 : [q12] ⊬ q11 :=
 /-- **The ◯-chain is strictly increasing for three terms**:
 `q5 < q12 < ◯q11`, with `q5 = ◯rn3`, `q12 = ◯rn5`, `◯q11 = ◯rn7`. -/
 theorem chain_three_strict :
-    (Deriv [q5] q12 ∧ [q12] ⊬ q5) ∧
-    (Deriv [q12] bq11 ∧ [bq11] ⊬ q12) :=
+    (Deriv [q5] q12 ∧ ([q12] ⊬ q5)) ∧
+    (Deriv [q12] bq11 ∧ ([bq11] ⊬ q12)) :=
   ⟨⟨dSomehowElim (Deriv.iden (.head _))
       (dSomehowIntro (Deriv.orIntro1 (Deriv.iden (.head _)))),
     -- were q12 ⊢ q5, then q12 ⊢ q5 ∨ q6 = q9, against ladderdistr

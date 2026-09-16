@@ -4344,3 +4344,54 @@ change other modules.  find a good notation for predicates".  Record:
 - **Matthew, mid-session:** the surface brackets may become unnecessary now
   that the term notation carries judgements; and baking our own syntax may not
   be sensible given Lean's own features.  Assessment owed in the reply.
+
+## 2026-09-16 — the branch consolidation: four lines merged into `main`
+
+`main` was 966 commits behind the work.  Merged, in the order predicted by
+`docs/branch-map-2026-09-16.md` and on Matthew's instruction, with
+`publication/core` left out:
+
+    ci/lean-action-branch-filter   fast-forward to 1b6a763
+    blueprint-dev-chapter          7762096   1 conflict  (902 files changed)
+    FRJX                           5b89507   4 conflicts (the predicted unions)
+    syntax-reorg                   2b67671   25 conflicts (exactly as predicted)
+    post-merge repairs             b55c55e
+
+`tooling` stays separate by Matthew's decision; `publication/core` is an archive
+to extract from, not a merge.  **`main` is committed locally only, not pushed.**
+
+**The conflict prediction was accurate as a file count, and that is its limit.**
+Four defects survived a conflict-free textual merge, each a collision between two
+lines that edited *different* files, so git had nothing to report:
+
+1. A second `⊬` parser: the `NDCore.lean` union restored `Underivable` and its
+   `infix:70 " ⊬ "` that `syntax-reorg` had deleted, so every underivability
+   statement became a `choice` node (five modules failed).
+2. Precedence: the blueprint line's new `stabCard` material writes `[] ⊬ φ`
+   under `∧`, which parsed at `infix:70` but not at the framework's sequent
+   precedence 26 (three sites in `CtxCompleteness.lean`, four more in `wip/boxq11.lean`).
+3. `FRJX` added `FRJVi.liftI`; `FRJ/CalculusW.lean`, which `FRJX` does not
+   carry, left `toWi` non-exhaustive.  `FRJWi.lift` has the same signature, so
+   the missing case is forced.
+4. Git carried `FRJX`'s `liftI` hunks into `FRJ/Gbu/Circ.lean` across the
+   `wip/gbu_circ.lean` → `FRJ/Gbu/Circ.lean` promotion; the wip copy names the
+   zone `Th`, the promoted file `Θ`, so two ported lines named an unbound `Th`.
+
+Next time: predict with `merge-tree`, but budget a build-and-repair pass of the
+same size — the damage is in the files git does *not* flag.
+
+**Verification.**  `lake build` (defaults `LaxLogic`, `FRJGbu`): 8746 jobs,
+exit 0.  Every `LaxLogic/` module by name, 211 of them (`QLL.CLPWolfram`
+excepted, it needs Wolfram): 8770 jobs, exit 0.  `lake build LaxPaper CLPPaper
+LaxBlueprint`, which also pulls in the `wip/` modules the blueprint cites:
+9152 jobs, exit 0.  Four
+`sorry` warnings, all the halted UI route (`SemUILayered`, `SemUIHenkin` ×2,
+`SemUIChar`), unchanged from baseline; every `#guard_msgs` axiom pin passes, so
+no `sorryAx` leaked into FRJ.
+
+**Notation note** (Matthew's question, same day): `Γ ⊬[R] A` is the supported
+spelling and is not sugar one can do without — for a *Type*-valued relation
+`¬ (Γ ⊢[R] A)` does not typecheck (`Type 1` against `Prop`); the honest long
+form is `¬ Nonempty (Γ ⊢[R] A)`, which is exactly what `⊬` elaborates to.  For a
+`Prop`-valued relation it is `¬ R Γ A`.  The one rule to remember is precedence:
+a sequent sits at 26, so under `∧`, `∨` or `¬` it needs parentheses.
