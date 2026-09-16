@@ -157,6 +157,24 @@ Verified: `lake build FRJ FRJGbu` green, and the ledger gate reports the five
 new core lemmas and the 308 moved helpers as additions and MOVES, with no axiom
 change anywhere.
 
+**The two cases V and W share, done the same day.** `joinAt` and `joinOr` are
+not shared by all three: both carry the `kept` zone and a `KeptChain`, which
+`FRJr` has no analogue of, so `FRJ/Sound.lean`'s versions are a different proof
+and stay. Between `FRJVr` and `FRJWr` they are rename-only (`stab`/`th` against
+`Ξs`/`Θs`), so they moved into `FRJ/SoundCoreV.lean` — a second core module,
+because they speak of `KeptChain`, `RefAt` and `joinCtxAtVBase`, which arrive
+with `FRJ.RefAt` and `FRJ.CalculusV`, modules `FRJ/Sound.lean` neither imports
+nor should have to. Four proofs of 167 and 146 lines became four wrappers of
+twelve: `SoundV` 1,272 → 984, `SoundW` 1,287 → 999, against 383 new lines of
+core.
+
+Two mechanical traps, both caught by the compiler and worth naming because they
+will recur in any rename-driven merge: a blanket `stab → Ξs` rewrite also
+rewrote **named arguments** (`stab_mem_baseAtV (th := th)` became
+`(Θs := Θs)`, which is not that lemma's parameter), and the hypothesis list I
+copied included an `hC` that `joinAt` never had — its `hC` is a variable the
+body introduces with `intro C hC`.
+
 Two hypotheses had to be named explicitly, and they are the interesting
 residue: `hwfR` is `wfR d` composed with the context equation `hΓ`, and `hlhs`
 is `lhs_clo_of_steps` applied to the single `Step.join*` of the rule. Both were

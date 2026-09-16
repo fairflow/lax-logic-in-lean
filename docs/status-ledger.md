@@ -1,10 +1,10 @@
 # Proof-status ledger
 
-Generated 2026-09-16 16:53 BST from `f53a6ac` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
+Generated 2026-09-16 17:55 BST from `0061f60` by `scripts/ledger.lean`, which asks `Lean.collectAxioms` — the same function `#print axioms` uses, and by CLAUDE.md rule 1 the only sound oracle — about every declaration of every module listed in `docs/ledger-modules.txt`.
 
 This file is generated.  Edit `scripts/ledger-report.py`, never the text below; `scripts/check-ledger.sh` fails if `docs/status-ledger.jsonl` no longer matches the build.
 
-**28241 declarations** in **570 modules**: 12946 theorems, 15295 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
+**28244 declarations** in **571 modules**: 12948 theorems, 15296 definitions and data. **23 carry `sorryAx`** and **2 are `native_decide`-tainted**; the rest are kernel-checked under the axioms shown below.
 
 ## What the columns mean
 
@@ -44,7 +44,8 @@ This file is generated.  Edit `scripts/ledger-report.py`, never the text below; 
 | `FRJ.SaturateV` | 164 | 65 | 164 |  |  |
 | `FRJ.Search` | 500 | 75 | 500 |  |  |
 | `FRJ.Sound` | 14 | 14 | 14 |  |  |
-| `FRJ.SoundCore` | 31 | 29 | 31 |  |  |
+| `FRJ.SoundCore` | 32 | 29 | 32 |  |  |
+| `FRJ.SoundCoreV` | 2 | 2 | 2 |  |  |
 | `FRJ.SoundV` | 14 | 14 | 14 |  |  |
 | `FRJ.SoundW` | 15 | 15 | 15 |  |  |
 | `FRJ.Step` | 223 | 58 | 223 |  |  |
@@ -362,7 +363,7 @@ Every distinct axiom set in the estate, most common first.
 | axioms | declarations |
 |---|--:|
 | *(none — axiom-free)* | 12370 |
-| `propext`, `Quot.sound` | 8124 |
+| `propext`, `Quot.sound` | 8127 |
 | `propext` | 5296 |
 | `propext`, `Classical.choice`, `Quot.sound` | 2419 |
 | `sorryAx` | 8 |

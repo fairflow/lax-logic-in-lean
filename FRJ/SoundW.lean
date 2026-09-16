@@ -30,6 +30,7 @@ import FRJ.Sound
 import FRJ.ExtractW
 import FRJ.CalculusVLemmas
 import FRJ.SoundCore
+import FRJ.SoundCoreV
 
 namespace FRJ.W
 
@@ -64,171 +65,16 @@ theorem joinAt_case {G : Form} {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       ¬ (modR d).force
           (modR d).root F := by
   intro d
-  have hPJ : ClosedLbl (preR d) :=
-    preR_closed _
-  -- every component world forces its own label
-  have hcomp : ∀ (ji : (j : Fin (n + 1)) × RegIdx (prem j))
-      (x : (preI (prem ji.1) ji.2).W) (A : Form),
-      A ∈ (preI (prem ji.1) ji.2).lbl x →
-      (modR d).force (some ⟨ji, x⟩) A := by
-    intro ji x A hA
-    exact (join_force_comp hPJ (preI_closed (prem ji.1) ji.2) A x).mpr
-      (ihI0 ji.1 ji.2 x A hA)
-  -- (P2) and (P3) over the BASE context, by the secondary induction on
-  -- `size H`
-  have key : ∀ (k : Nat) (H : Form), H.size ≤ k →
-      (H ∈ impPart (joinCtxAtVBase Ξs Θs F) →
-        (modR d).force none H) ∧
-      (∀ j : Fin (n + 1), rhs j = H →
-        ¬ (modR d).force none H) := by
-    intro k
-    induction k with
-    | zero => intro H hH; exfalso; cases H <;> simp [Form.size] at hH
-    | succ k ih =>
-        intro H hH
-        constructor
-        · -- (P2)
-          intro hHimp
-          obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
-          match H, hHsh with
-          | .imp A B, _ =>
-              have hAu : A ∈ upsilon rhs := baseAtV_imp_head hJ2 hHmem
-              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
-              have hsz : A.size ≤ k := by
-                simp only [Form.size] at hH; omega
-              have hnA := (ih A hsz).2 j hj
-              intro v hv hAv
-              cases v with
-              | none => exact absurd hAv hnA
-              | some jx =>
-                  obtain ⟨ji, x⟩ := jx
-                  have hlblv : ∀ Y ∈ (preI (prem ji.1) ji.2).lbl x,
-                      (modR d).force (some ⟨ji, x⟩) Y :=
-                    fun Y hY => hcomp ji x Y hY
-                  have hmem : Form.imp A B ∈ (preR d).lbl none :=
-                    List.mem_append_left _ hHmem
-                  have hclo := hPJ none (some ⟨ji, x⟩) hv (.imp A B) hmem
-                  have : (modR d).force
-                      (some ⟨ji, x⟩) (.imp A B) := clo_forces hlblv hclo
-                  exact this _ ((modR d).le_refl _) hAv
-        · -- (P3)
-          intro j hj hcon
-          refine ihI j (preR d) hPJ none
-            (fun h => h) ?_ ?_ ?_ (by rw [hj]; exact hcon)
-          · exact lhs_clo_of_steps
-              (Relation.ReflTransGen.single
-                ⟨_, Step.joinAt (G := G) (F := F) j hJ1 hkc (CtxEq.refl _)⟩)
-          · intro i
-            refine ⟨some ⟨⟨j, i⟩, (preI (prem j) i).root⟩, .root _, ?_⟩
-            intro A
-            exact join_force_comp hPJ (preI_closed (prem j) i) A _
-          · intro K hK
-            rw [mem_cap] at hK
-            have hKG : K ∈ gHat G := wfI (prem j) (List.mem_append_left _ hK.1)
-            have hKG3 := hKG
-            simp only [gHat, List.mem_append] at hKG3
-            rcases hKG3 with (h | h) | h
-            · match K, (List.mem_filter.mp h).2 with
-              | .atom p, _ =>
-                  rcases stab_mem_baseAtV (G := G) (th := Θs) (F := F)
-                    hcirc hK.1 hKG with hb | hb
-                  · exact Or.inl (List.mem_append_left _ hb)
-                  · exact absurd (hb ▸ (mem_unionAll.mpr
-                      ⟨j, List.mem_filter.mpr
-                        ⟨hK.1, (List.mem_filter.mp h).2⟩⟩)) hFnot
-            · have hbase : K ∈ joinCtxAtVBase Ξs Θs F := by
-                rcases stab_mem_baseAtV (G := G) (th := Θs) (F := F)
-                  hcirc hK.1 hKG with hb | hb
-                · exact hb
-                · exact absurd (hb ▸ (List.mem_filter.mp h).2)
-                    (prime_not_isImp hF)
-              have hmem : K ∈ impPart (joinCtxAtVBase Ξs Θs F) :=
-                List.mem_filter.mpr ⟨hbase, (List.mem_filter.mp h).2⟩
-              have hsz : K.size ≤ k := by
-                have := size_lt_of_mem_sfm hK.2
-                rw [hj] at this; omega
-              exact (ih K hsz).1 hmem
-            · exfalso
-              have : K ∈ unionAll (fun j => circPart (Ξs j)) := mem_unionAll.mpr
-                ⟨j, List.mem_filter.mpr ⟨hK.1, (List.mem_filter.mp h).2⟩⟩
-              rw [hcirc] at this
-              exact List.not_mem_nil this
-  -- the base zone is forced at the root
-  have base_forced : ∀ X ∈ joinCtxAtVBase Ξs Θs F,
-      (modR d).force none X := by
-    intro X hX
-    have hXG : X ∈ gHat G := wfR d ((hΓ X).mpr (List.mem_append_left _ hX))
-    simp only [gHat, List.mem_append] at hXG
-    rcases hXG with (h | h) | h
-    · have hpv : X.isPV := (List.mem_filter.mp h).2
-      match X, hpv with
-      | .atom p, _ => exact Or.inl (List.mem_append_left _ hX)
-    · have himp : X.isImp := (List.mem_filter.mp h).2
-      exact (key X.size X (Nat.le_refl _)).1 (List.mem_filter.mpr ⟨hX, himp⟩)
-    · have hcx : X.isCirc := (List.mem_filter.mp h).2
-      match X, hcx with
-      | .circ Y, _ => exact absurd hX circ_not_mem_baseAtV
-  -- the four `refAt_refutes` invariants at the root
-  have hups : ∀ C ∈ upsilon rhs, ¬ (modR d).force none C := by
-    intro C hC
-    obtain ⟨j, -, hj⟩ := List.mem_map.mp hC
-    exact (key C.size C (Nat.le_refl _)).2 j hj
-  have hcone : ∀ c, (modR d).Rm none c → c = none := by
-    intro c hc
-    have hc' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxAtVBase Ξs Θs F ++ kept)
-        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-        (fun _ => false)).rm none c := hc
-    exact PreModel.join_rm_root_barren (fun _ => rfl) hc'
-  -- the kept zone is forced at the root, by induction on its chain
-  -- certificate: each link's antecedent is `RefAt`-refuted over the
-  -- base plus the earlier links
-  have kept_forced : ∀ (ks : List Form),
-      KeptChain (upsilon rhs) (joinCtxAtVBase Ξs Θs F) (thPool Θs) ks →
-      (∀ K ∈ ks, K ∈ kept) →
-      ∀ K ∈ ks, (modR d).force none K := by
-    intro ks hks
-    induction hks with
-    | nil => intro _ K hK; exact absurd hK List.not_mem_nil
-    | @cons Y B rest hrest hpool hY ih =>
-        intro hsub K hK
-        rcases List.mem_cons.mp hK with heq | hKmem
-        · subst heq
-          intro v hv hYv
-          cases v with
-          | none =>
-              -- the root itself: the antecedent is refuted
-              exact absurd hYv (refAt_refutes hups
-                (fun X hX => (List.mem_append.mp hX).elim (base_forced X)
-                  (fun hX' => ih
-                    (fun K' hK' => hsub K' (List.mem_cons_of_mem _ hK')) X hX'))
-                hcone (fun h => h) hY)
-          | some jx =>
-              -- above the root: (P2)'s above-root mechanism
-              obtain ⟨ji, x⟩ := jx
-              have hmem : Form.imp Y B ∈ (preR d).lbl none :=
-                List.mem_append_right _ (hsub _ List.mem_cons_self)
-              have hclo := hPJ none (some ⟨ji, x⟩) hv (.imp Y B) hmem
-              exact clo_forces (fun X hX => hcomp ji x X hX) hclo _
-                ((modR d).le_refl _) hYv
-        · exact ih (fun K' hK' => hsub K' (List.mem_cons_of_mem _ hK')) K hKmem
-  -- assemble
-  constructor
-  · intro w
-    cases w with
-    | none =>
-        intro X hX
-        rcases List.mem_append.mp hX with hX | hX
-        · exact base_forced X hX
-        · exact kept_forced kept hkc (fun _ h => h) X hX
-    | some jx =>
-        obtain ⟨ji, x⟩ := jx
-        intro X hX
-        exact hcomp ji x X hX
-  · refine not_force_prime hPJ hF ?_ (fun h => h)
-    intro hmem0
-    have hmem : F ∈ joinCtxAtVBase Ξs Θs F ++ kept := hmem0
-    exact prime_not_mem_ctxAtV hkc hF hFnot hmem
+  exact joinAt_core (Ms := fun j i => preI (prem j) i)
+    (elems := premIdxElems prem) (hcomplete := premIdxComplete prem)
+    hJ2 hcirc hkc hF hFnot
+    (fun j i => preI_closed (prem j) i)
+    (fun {X} hX => wfR d ((hΓ X).mpr (List.mem_append_left _ hX)))
+    (fun j => wfI (prem j))
+    (fun j => lhs_clo_of_steps
+      (Relation.ReflTransGen.single
+        ⟨_, Step.joinAt (G := G) (F := F) j hJ1 hkc (CtxEq.refl _)⟩))
+    ihI0 ihI (preR_closed d)
 
 theorem joinOr_case {G : Form} {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
     {rhs : Fin (n + 1) → Form} {C₁ C₂ : Form} {kept : List Form}
@@ -258,150 +104,16 @@ theorem joinOr_case {G : Form} {n : Nat} {Ξs Θs : Fin (n + 1) → List Form}
       ¬ (modR d).force
           (modR d).root (.or C₁ C₂) := by
   intro d
-  have hPJ : ClosedLbl (preR d) := preR_closed _
-  have hcomp : ∀ (ji : (j : Fin (n + 1)) × RegIdx (prem j))
-      (x : (preI (prem ji.1) ji.2).W) (A : Form),
-      A ∈ (preI (prem ji.1) ji.2).lbl x →
-      (modR d).force (some ⟨ji, x⟩) A := by
-    intro ji x A hA
-    exact (join_force_comp hPJ (preI_closed (prem ji.1) ji.2) A x).mpr
-      (ihI0 ji.1 ji.2 x A hA)
-  have key : ∀ (k : Nat) (H : Form), H.size ≤ k →
-      (H ∈ impPart (joinCtxOrVBase Ξs Θs) →
-        (modR d).force none H) ∧
-      (∀ j : Fin (n + 1), rhs j = H →
-        ¬ (modR d).force none H) := by
-    intro k
-    induction k with
-    | zero => intro H hH; exfalso; cases H <;> simp [Form.size] at hH
-    | succ k ih =>
-        intro H hH
-        constructor
-        · intro hHimp
-          obtain ⟨hHmem, hHsh⟩ := List.mem_filter.mp hHimp
-          match H, hHsh with
-          | .imp A B, _ =>
-              have hAu : A ∈ upsilon rhs := baseOrV_imp_head hJ2 hHmem
-              obtain ⟨j, -, hj⟩ := List.mem_map.mp hAu
-              have hsz : A.size ≤ k := by simp only [Form.size] at hH; omega
-              have hnA := (ih A hsz).2 j hj
-              intro v hv hAv
-              cases v with
-              | none => exact absurd hAv hnA
-              | some jx =>
-                  obtain ⟨ji, x⟩ := jx
-                  have hlblv : ∀ Y ∈ (preI (prem ji.1) ji.2).lbl x,
-                      (modR d).force (some ⟨ji, x⟩) Y :=
-                    fun Y hY => hcomp ji x Y hY
-                  have hmem : Form.imp A B ∈ (preR d).lbl none :=
-                    List.mem_append_left _ hHmem
-                  have hclo := hPJ none (some ⟨ji, x⟩) hv (.imp A B) hmem
-                  have hfv : (modR d).force
-                      (some ⟨ji, x⟩) (.imp A B) := clo_forces hlblv hclo
-                  exact hfv _ ((modR d).le_refl _) hAv
-        · intro j hj hcon
-          refine ihI j (preR d) hPJ none
-            (fun h => h) ?_ ?_ ?_ (by rw [hj]; exact hcon)
-          · exact lhs_clo_of_steps
-              (Relation.ReflTransGen.single
-                ⟨_, Step.joinOr (G := G) (C₁ := C₁) (C₂ := C₂) j hJ1 hkc (CtxEq.refl _)⟩)
-          · intro i
-            refine ⟨some ⟨⟨j, i⟩, (preI (prem j) i).root⟩, .root _, ?_⟩
-            intro A
-            exact join_force_comp hPJ (preI_closed (prem j) i) A _
-          · intro K hK
-            rw [mem_cap] at hK
-            have hKG : K ∈ gHat G := wfI (prem j) (List.mem_append_left _ hK.1)
-            have hKG3 := hKG
-            simp only [gHat, List.mem_append] at hKG3
-            rcases hKG3 with (h | h) | h
-            · match K, (List.mem_filter.mp h).2 with
-              | .atom p, _ =>
-                  exact Or.inl (List.mem_append_left _
-                    (stab_mem_baseOrV (G := G) (th := Θs) hcirc hK.1 hKG))
-            · have hmem : K ∈ impPart (joinCtxOrVBase Ξs Θs) :=
-                List.mem_filter.mpr
-                  ⟨stab_mem_baseOrV (G := G) (th := Θs) hcirc hK.1 hKG,
-                    (List.mem_filter.mp h).2⟩
-              have hsz : K.size ≤ k := by
-                have := size_lt_of_mem_sfm hK.2
-                rw [hj] at this; omega
-              exact (ih K hsz).1 hmem
-            · exfalso
-              have : K ∈ unionAll (fun j => circPart (Ξs j)) := mem_unionAll.mpr
-                ⟨j, List.mem_filter.mpr ⟨hK.1, (List.mem_filter.mp h).2⟩⟩
-              rw [hcirc] at this
-              exact List.not_mem_nil this
-  have base_forced : ∀ X ∈ joinCtxOrVBase Ξs Θs,
-      (modR d).force none X := by
-    intro X hX
-    have hXG : X ∈ gHat G := wfR d ((hΓ X).mpr (List.mem_append_left _ hX))
-    simp only [gHat, List.mem_append] at hXG
-    rcases hXG with (h | h) | h
-    · have hpv : X.isPV := (List.mem_filter.mp h).2
-      match X, hpv with
-      | .atom p, _ => exact Or.inl (List.mem_append_left _ hX)
-    · have himp : X.isImp := (List.mem_filter.mp h).2
-      exact (key X.size X (Nat.le_refl _)).1 (List.mem_filter.mpr ⟨hX, himp⟩)
-    · have hcx : X.isCirc := (List.mem_filter.mp h).2
-      match X, hcx with
-      | .circ Y, _ => exact absurd hX circ_not_mem_baseOrV
-  have hups : ∀ C ∈ upsilon rhs, ¬ (modR d).force none C := by
-    intro C hC
-    obtain ⟨j, -, hj⟩ := List.mem_map.mp hC
-    exact (key C.size C (Nat.le_refl _)).2 j hj
-  have hcone : ∀ c, (modR d).Rm none c → c = none := by
-    intro c hc
-    have hc' : (PreModel.join (premIdxElems prem) (premIdxComplete prem)
-        (joinCtxOrVBase Ξs Θs ++ kept)
-        (fun (ji : (j : Fin (n + 1)) × RegIdx (prem j)) => preI (prem ji.1) ji.2)
-        (fun _ => false)).rm none c := hc
-    exact PreModel.join_rm_root_barren (fun _ => rfl) hc'
-  have kept_forced : ∀ (ks : List Form),
-      KeptChain (upsilon rhs) (joinCtxOrVBase Ξs Θs) (thPool Θs) ks →
-      (∀ K ∈ ks, K ∈ kept) →
-      ∀ K ∈ ks, (modR d).force none K := by
-    intro ks hks
-    induction hks with
-    | nil => intro _ K hK; exact absurd hK List.not_mem_nil
-    | @cons Y B rest hrest hpool hY ih =>
-        intro hsub K hK
-        rcases List.mem_cons.mp hK with heq | hKmem
-        · subst heq
-          intro v hv hYv
-          cases v with
-          | none =>
-              exact absurd hYv (refAt_refutes hups
-                (fun X hX => (List.mem_append.mp hX).elim (base_forced X)
-                  (fun hX' => ih
-                    (fun K' hK' => hsub K' (List.mem_cons_of_mem _ hK')) X hX'))
-                hcone (fun h => h) hY)
-          | some jx =>
-              obtain ⟨ji, x⟩ := jx
-              have hmem : Form.imp Y B ∈ (preR d).lbl none :=
-                List.mem_append_right _ (hsub _ List.mem_cons_self)
-              have hclo := hPJ none (some ⟨ji, x⟩) hv (.imp Y B) hmem
-              exact clo_forces (fun X hX => hcomp ji x X hX) hclo _
-                ((modR d).le_refl _) hYv
-        · exact ih (fun K' hK' => hsub K' (List.mem_cons_of_mem _ hK')) K hKmem
-  -- the whole conclusion label is forced at the root
-  have hctxV : (modR d).forces none (joinCtxOrVBase Ξs Θs ++ kept) :=
-    fun X hX => (List.mem_append.mp hX).elim (base_forced X)
-      (kept_forced kept hkc (fun _ h => h) X)
-  constructor
-  · intro w
-    cases w with
-    | none =>
-        intro X hX
-        exact hctxV X hX
-    | some jx =>
-        obtain ⟨ji, x⟩ := jx
-        intro X hX
-        exact hcomp ji x X hX
-  · intro hcon
-    rcases hcon with h | h
-    · exact refAt_refutes hups hctxV hcone (fun h => h) hC.1 h
-    · exact refAt_refutes hups hctxV hcone (fun h => h) hC.2 h
+  exact joinOr_core (Ms := fun j i => preI (prem j) i)
+    (elems := premIdxElems prem) (hcomplete := premIdxComplete prem)
+    hJ2 hcirc hkc hC
+    (fun j i => preI_closed (prem j) i)
+    (fun {X} hX => wfR d ((hΓ X).mpr (List.mem_append_left _ hX)))
+    (fun j => wfI (prem j))
+    (fun j => lhs_clo_of_steps
+      (Relation.ReflTransGen.single
+        ⟨_, Step.joinOr (G := G) (C₁ := C₁) (C₂ := C₂) j hJ1 hkc (CtxEq.refl _)⟩))
+    ihI0 ihI (preR_closed d)
 
 /-- Each kept-chain member's antecedent has a `RefAt` certificate over
 the FULL conclusion context: the chain certifies it over the base plus

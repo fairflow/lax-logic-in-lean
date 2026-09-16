@@ -74,6 +74,7 @@ FRJ.Search.Pin
 FRJ.Search.Profile
 FRJ.Sound
 FRJ.SoundCore
+FRJ.SoundCoreV
 FRJ.SoundV
 FRJ.SoundW
 FRJ.Step

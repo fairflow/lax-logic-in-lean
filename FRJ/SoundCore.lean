@@ -363,6 +363,15 @@ def joinFModel {n : Nat} {Idx : Fin (n + 1) → Type}
     (Sum.elim (fun ji => Ms ji.1 ji.2) (fun _ : Unit => PreModel.leafF Ψ))
     (Sum.elim (fun _ => false) (fun _ => true))
 
+/-- The pre-model `preR` builds at an INFALLIBLE join (`joinAt`, `joinOr` of the
+V and W calculi): one component per premise, none of them a promise, over the
+join's own context. -/
+def joinIModel {n : Nat} {Idx : Fin (n + 1) → Type}
+    [DecidableEq ((j : Fin (n + 1)) × Idx j)]
+    (elems : List ((j : Fin (n + 1)) × Idx j)) (hcomplete : ∀ ji, ji ∈ elems)
+    (Ψ : List Form) (Ms : (j : Fin (n + 1)) → Idx j → PreModel) : PreModel :=
+  PreModel.join elems hcomplete Ψ (fun ji => Ms ji.1 ji.2) (fun _ => false)
+
 /-- The `joinAtP` case of soundness, for any family of component pre-models.
 
 `FRJ/Sound.lean`, `SoundV.lean` and `SoundW.lean` each instantiate this; the

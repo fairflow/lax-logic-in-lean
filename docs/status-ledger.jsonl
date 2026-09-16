@@ -5701,6 +5701,7 @@
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.joinCtxOrP_imp_head","kind":"theorem","module":"FRJ.SoundCore","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.joinCtxOr_imp_head","kind":"theorem","module":"FRJ.SoundCore","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.joinFModel","kind":"def","module":"FRJ.SoundCore","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"FRJ.joinIModel","kind":"def","module":"FRJ.SoundCore","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.joinOrF_core","kind":"theorem","module":"FRJ.SoundCore","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.joinOrP_core","kind":"theorem","module":"FRJ.SoundCore","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.joinPModel","kind":"def","module":"FRJ.SoundCore","native":false,"sorry":false}
@@ -5714,6 +5715,8 @@
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.stab_mem_joinCtxOr","kind":"theorem","module":"FRJ.SoundCore","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.stab_mem_joinCtxOrF","kind":"theorem","module":"FRJ.SoundCore","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.stab_mem_joinCtxOrP","kind":"theorem","module":"FRJ.SoundCore","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"FRJ.joinAt_core","kind":"theorem","module":"FRJ.SoundCoreV","native":false,"sorry":false}
+{"axioms":["propext","Quot.sound"],"decl":"FRJ.joinOr_core","kind":"theorem","module":"FRJ.SoundCoreV","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.V.joinAtF_case","kind":"theorem","module":"FRJ.SoundV","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.V.joinAtP_case","kind":"theorem","module":"FRJ.SoundV","native":false,"sorry":false}
 {"axioms":["propext","Quot.sound"],"decl":"FRJ.V.joinAt_case","kind":"theorem","module":"FRJ.SoundV","native":false,"sorry":false}
