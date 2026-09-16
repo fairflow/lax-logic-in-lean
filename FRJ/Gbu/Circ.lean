@@ -2177,7 +2177,7 @@ theorem gbuInv14 {G : Form} {D : FSeq → Prop} (hsat : Saturated G D)
       -- (Lift): the same zone enlargement; the rule has no tag or goal
       -- side condition to re-supply.
       obtain ⟨s', hs'mem, hsub⟩ :=
-        hsat.2 (.irr [] (Ω ++ Th) (.circ Z))
+        hsat.2 (.irr [] (Ω ++ Θ) (.circ Z))
           ⟨.liftI dr (fun X hX => by
               rcases List.mem_append.mp hX with hX' | hX'
               · refine ⟨?_, hΩ X hX'⟩
@@ -2358,7 +2358,7 @@ private theorem evalI_circ_lift {G : Form} {D : FSeq → Prop} (hsat : Saturated
       have hcov : ∀ X ∈ Ω, Clo _ X := fun X hX => (hTh X (by simpa using h2 hX)).1
       obtain ⟨dr'⟩ := hlift dr hcov
       obtain ⟨s', hs'mem, hsub⟩ :=
-        hsat.2 (.irr [] Th (.circ C)) ⟨.liftI dr' hTh⟩
+        hsat.2 (.irr [] Θ (.circ C)) ⟨.liftI dr' hTh⟩
       match s', hsub with
       | .irr St' Th' _, ⟨rfl, hSt, hTh'⟩ =>
           exact ⟨St', Th', hs'mem,

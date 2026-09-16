@@ -980,7 +980,7 @@ depth in `𝔻` — that every `C ∈ 𝔻` expands to an IPL theorem `φ^C`, ye
 PLL theorem. -/
 theorem corollary10 (𝔻 : Finset StdCtx) :
     ∃ φ : PLLFormula,
-      (∀ C ∈ 𝔻, Nonempty (LaxND [] (subC C φ))) ∧ [] ⊬ φ := by
+      (∀ C ∈ 𝔻, Nonempty (LaxND [] (subC C φ))) ∧ ([] ⊬ φ) := by
   refine ⟨chi (𝔻.sup List.length), ?_, lemma9 _⟩
   intro C hC
   exact lemma8 C (𝔻.sup List.length) (Finset.le_sup hC)
@@ -1021,7 +1021,7 @@ PLL: completeness demands `Rm`-relations with unboundedly many maximal clusters,
 and in particular no finite family of modal accessibility shapes suffices. -/
 theorem stabCard_bounded_incomplete (m : ℕ) :
     (∀ (M : ConstraintModel) [Fintype M.W], stabCard M ≤ m → ∀ w : M.W, M.force w (chi m))
-      ∧ [] ⊬ chi m :=
+      ∧ ([] ⊬ chi m) :=
   ⟨fun _ _ h w => chi_valid_of_stabCard h w, lemma9 m⟩
 
 open Classical in
@@ -1789,7 +1789,7 @@ example : [] ⊬ chi 2 := lemma9 2
 -- Corollary 10 on a concrete finite constraint set `{⊤, ⊥}`.
 example : ∃ φ : PLLFormula,
     (∀ C ∈ ({[], [(truePLL, falsePLL)]} : Finset StdCtx),
-      Nonempty (LaxND [] (subC C φ))) ∧ [] ⊬ φ :=
+      Nonempty (LaxND [] (subC C φ))) ∧ ([] ⊬ φ) :=
   corollary10 {[], [(truePLL, falsePLL)]}
 
 end Ctx

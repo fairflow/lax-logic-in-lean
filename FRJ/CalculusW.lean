@@ -320,7 +320,9 @@ def toWr {G : Form} : ∀ {t : Tag} {Γ : List Form} {C : Form},
 
 /-- Every irregular FRJV disproof is an irregular FRJW disproof.  The
 `impNotIn` case is the reconstruction `lift (impIn d hA hgoal) hTh`;
-`hAnot` is discarded. -/
+`hAnot` is discarded.  `FRJVi.liftI` (added on the FRJX line) and
+`FRJWi.lift` have the same signature, so that case is the identity on
+the rule. -/
 def toWi {G : Form} : ∀ {Ξ Θ : List Form} {C : Form},
     FRJVi G Ξ Θ C → FRJWi G Ξ Θ C
   | _, _, _, .axI F hF hg hTh => .axI F hF hg hTh
@@ -335,6 +337,7 @@ def toWi {G : Form} : ∀ {Ξ Θ : List Form} {C : Form},
   | _, _, _, .circNotIn d htag hTh hg =>
       .circNotIn (toWr d) htag hTh hg
   | _, _, _, .axIC F ats hats hFf hg hTh => .axIC F ats hats hFf hg hTh
+  | _, _, _, .liftI d hTh => .lift (toWr d) hTh
 
 end
 
