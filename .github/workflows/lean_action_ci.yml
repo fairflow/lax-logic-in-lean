@@ -7,13 +7,20 @@ on:
   # GitHub scopes caches by branch, so sibling branches cannot share one; the
   # repo sat at 13.1 GB against a 10 GB quota with eviction running constantly.
   #
-  # `pull_request` is deliberately left UNFILTERED: every branch still gets a
-  # full check when it proposes a merge, which is when it matters.  Any branch
-  # can also be built on demand via workflow_dispatch.
+  # Narrowed to `main` on Matthew's instruction, 2026-09-16, once the four
+  # lines were merged: `main` is now the consolidated line, and one branch
+  # means one ~2.6 GB cache instead of a per-branch cache under a 10 GB quota.
+  # The existing caches were deleted at the same time.
+  #
+  # `pull_request` is filtered to PRs *targeting* `main` — the check still runs
+  # where it matters, and a PR between side branches no longer mints a cache.
+  # Any branch can be built on demand via workflow_dispatch.
   push:
     branches:
-      - frjw-dev
+      - main
   pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
