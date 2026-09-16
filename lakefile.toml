@@ -82,7 +82,7 @@ name = "Reject"
 # on 2026-08-22 to modularise.  Dependency runs LJF -> LaxLogic only.
 [[lean_lib]]
 name = "LJF"
-globs = ["LJF.Base", "LJF.Complete", "LJF.OCore", "LJF.OUniverse", "LJF.ORows",
+globs = ["LJF.OCore", "LJF.OUniverse", "LJF.ORows",
          "LJF.OHeight", "LJF.OFuel", "LJF.OFuelSound", "LJF.O", "LJF.OFuelMin",
          "LJF.OFuelHeight",
          "LJF.OFuelP", "LJF.OFuelPSound", "LJF.OFuelPMin", "LJF.OFuelPCof",

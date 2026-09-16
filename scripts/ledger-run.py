@@ -69,9 +69,20 @@ def run_batch(mods, tmpdir, tag):
     return rows, None
 
 
-def main(mods_file, out_file):
+def olean_exists(m):
+    return os.path.exists(os.path.join(".lake", "build", "lib", "lean",
+                                       *m.split(".")) + ".olean")
+
+
+def main(mods_file, out_file, built_only=False):
     mods = [l.strip() for l in open(mods_file, encoding="utf-8")
             if l.strip() and not l.startswith("#")]
+    if built_only:
+        have = [m for m in mods if olean_exists(m)]
+        if len(have) != len(mods):
+            print(f"ledger: --built-only, skipping {len(mods) - len(have)} "
+                  f"module(s) with no .olean")
+        mods = have
     tmpdir = tempfile.mkdtemp(prefix="ledger-")
     graph = import_graph(mods)
     rows, pending, batch = [], list(mods), 0
@@ -109,4 +120,5 @@ def main(mods_file, out_file):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1], sys.argv[2]))
+    args = [a for a in sys.argv[1:] if not a.startswith("--")]
+    sys.exit(main(args[0], args[1], built_only="--built-only" in sys.argv))

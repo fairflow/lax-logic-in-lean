@@ -58,7 +58,7 @@ result is really about**.
 ### `G4h` / `G4c` — the repaired calculus, and the one everything runs on
 
 * **File**: `LaxLogic/PLL/G4/G4H.lean` ("G4iLL″, height-indexed"). `G4h n Γ C` is
-  the height-indexed relation; `G4c Γ C := ∃ n, G4h n Γ C` (`PLLG4H.lean:97`).
+  the height-indexed relation; `G4c Γ C := ∃ n, G4h n Γ C` (`LaxLogic/PLL/G4/G4H.lean:97`).
 * **Whose**: ours, repairing `G4iLL`. Revisions 2 and 3: `laxL` is `G3`'s `L◯`;
   `L◯→″` and `R◯→″` keep the full context in premise 1, following the `G3`
   `L⊃` discipline. That discipline is required rather than stylistic — the
@@ -66,14 +66,14 @@ result is really about**.
   unfixable.
 * **Status here**: unconditional and sorry-free — cut (`G4c.cut`), full
   contraction cut-free (`G4c.contract`), completeness (`completeness`,
-  `PLLG4HComp.lean:99`) and the equivalences `equiv_sc`, `equiv_nd`, `equiv_tm`.
+  `LaxLogic/PLL/G4/G4HComp.lean:99`) and the equivalences `equiv_sc`, `equiv_nd`, `equiv_tm`.
   So **`G4iLL″ = SC = LaxND = Tm`**: a complete cut-free calculus for PLL with
   all structural rules admissible.
 * **Depended on by**: essentially everything computational. The proof terms and
-  searcher (`PLLG4Term.lean`, including `G4cTm.find`), the decider
-  (`PLLG4Dec.lean`, F&M Theorem 2.8), the countermodel emitter
-  (`PLLCountermodelEmit.lean`), the interpolant tables `itpE`/`itpA`
-  (`PLLG4UITrunc.lean`) and hence the entire uniform-interpolation tower and the
+  searcher (`LaxLogic/PLL/G4/G4Term.lean`, including `G4cTm.find`), the decider
+  (`LaxLogic/PLL/G4/G4Dec.lean`, F&M Theorem 2.8), the countermodel emitter
+  (`LaxLogic/PLL/Semantics/CountermodelEmit.lean`), the interpolant tables `itpE`/`itpA`
+  (`LaxLogic/PLL/UI/G4UITrunc.lean`) and hence the entire uniform-interpolation tower and the
   nine-round cascade campaign in `wip/`.
 
 ### `DerivU` — PCLL, the confluent extension
@@ -102,7 +102,7 @@ result is really about**.
   distribution, so it applies verbatim to PLL + `¬◯⊥`), `exUI` / `allUI`
   (uniform interpolation into the variable-free fragment, trivial once that
   fragment is two elements — the ≥ 2-variable problem is deliberately not
-  asserted), and `derivUNoFall_iff_IPLND` in `PLLNoFallNF.lean`
+  asserted), and `derivUNoFall_iff_IPLND` in `LaxLogic/PLL/UI/NoFallNF.lean`
   (**conservativity over IPC on the `◯`-free fragment**: on `◯`-free sequents
   PCLL + `¬◯⊥` proves neither more nor less than IPC — both hypotheses are
   `isIPL`, so it says nothing about a formula carrying a `◯`.  Ours, not
@@ -110,7 +110,7 @@ result is really about**.
   full UI for IPC by Pitts).
 * **What `¬◯⊥` does NOT do, flagged 2026-08-31**: it does not collapse `◯`.
   `◯` survives on atoms and implications — that is exactly what the `◯`-normal
-  form of `PLLNoFallNF.lean` is for.  The word "collapse" in this development
+  form of `LaxLogic/PLL/UI/NoFallNF.lean` is for.  The word "collapse" in this development
   refers ONLY to the VARIABLE-FREE fragment (`varfree_dichotomy`), infinite in
   PLL and PCLL because `◯⊥` generates a Rieger–Nishimura-style ladder.
   Reading "infallible collapse" as "`◯` becomes vacuous" put a false claim
@@ -124,11 +124,11 @@ result is really about**.
 
 ### `LJF◯` — the lax-flagged focused calculus, and the interpolant
 
-* **Files**: `LaxLogic/LJFOCore.lean` (frozen — syntax, the four judgments,
+* **Files**: `LJF/OCore.lean` (frozen — syntax, the four judgments,
   weights, the modal interpolant `interp` with its termination, and soundness),
-  `LaxLogic/LJFORows.lean` (the three station maps `eConjRows` /
+  `LJF/ORows.lean` (the three station maps `eConjRows` /
   `truStationRows` / `laxRows`, and the nine aggregate equations),
-  `LaxLogic/LJFO.lean` (the minimality development). Direction-neutral
+  `LJF/O.lean` (the minimality development). Direction-neutral
   infrastructure: `LJFOHeight.lean` (height-indexed judgments + equivalence),
   `LJFOUniverse.lean` (subformula closures), `LJFOSearch.lean` (the decider
   round-trip), `LJFOFuel.lean` (`interpF`, the fuel-founded retention
@@ -285,19 +285,19 @@ Lindley–Stark `⊤⊤`-lifting. That is a result about terms, not about deriva
 
 | result | system | file |
 |---|---|---|
-| "PLL proves φ" | `LaxND` (`Deriv`) | `PLLNDCore.lean` |
-| cut elimination, disjunction property | `SC` | `PLLSequent.lean` |
-| decidability (F&M Thm 2.8) | `G4c` | `PLLG4Dec.lean` |
-| countermodels, `checkB` certificates | `G4c` + constraint models | `PLLCountermodelEmit.lean` |
-| the interpolant tables `itpE` / `itpA` | `G4c` | `PLLG4UITrunc.lean` |
+| "PLL proves φ" | `LaxND` (`Deriv`) | `LaxLogic/PLL/ND/NDCore.lean` |
+| cut elimination, disjunction property | `SC` | `LaxLogic/PLL/Sequent/Sequent.lean` |
+| decidability (F&M Thm 2.8) | `G4c` | `LaxLogic/PLL/G4/G4Dec.lean` |
+| countermodels, `checkB` certificates | `G4c` + constraint models | `LaxLogic/PLL/Semantics/CountermodelEmit.lean` |
+| the interpolant tables `itpE` / `itpA` | `G4c` | `LaxLogic/PLL/UI/G4UITrunc.lean` |
 | the uniform-interpolation tower and the cascade campaign | `G4c` | `wip/absorb_base.lean` and successors |
 | join-primality / visibility proofs | `SC` (Harrop induction) | `wip/visible.lean` |
 | the `◯`-depth hierarchy | `LaxND` + constraint models | `wip/depth*.lean` |
-| distribution, confluence | `DerivU` | `PLLConfluentComplete.lean` |
-| completeness for `F = ∅` (F&M Thm 4.7, first bullet) | `DerivUNoFall` | `PLLNoFall.lean` |
-| the VARIABLE-FREE collapse to `{⊥, ⊤}` | `DerivUNoFall` | `PLLNoFall.lean` |
-| conservativity over IPC on the `◯`-free fragment | `DerivUNoFall` | `PLLNoFallNF.lean` |
-| strong normalisation | proof terms of `LaxND` | `PLLTopTop.lean` |
+| distribution, confluence | `DerivU` | `LaxLogic/PLL/Semantics/ConfluentComplete.lean` |
+| completeness for `F = ∅` (F&M Thm 4.7, first bullet) | `DerivUNoFall` | `LaxLogic/PLL/UI/NoFall.lean` |
+| the VARIABLE-FREE collapse to `{⊥, ⊤}` | `DerivUNoFall` | `LaxLogic/PLL/UI/NoFall.lean` |
+| conservativity over IPC on the `◯`-free fragment | `DerivUNoFall` | `LaxLogic/PLL/UI/NoFallNF.lean` |
+| strong normalisation | proof terms of `LaxND` | `LaxLogic/PLL/Normalisation/TopTop.lean` |
 | the modal interpolant `interp`; E1/A1 soundness | `LJF◯` | `LJFOCore.lean` |
 | the station maps and the nine aggregate equations | `LJF◯` | `LJFORows.lean` |
 | E2/A2 minimality, conditional on `CimpAnt` | `LJF◯` | `LJFO.lean` |

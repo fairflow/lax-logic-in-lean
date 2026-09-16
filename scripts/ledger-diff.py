@@ -29,8 +29,19 @@ def load(path):
     return out
 
 
-def main(recorded_path, fresh_path):
+def main(recorded_path, fresh_path, scope_fresh=False):
     old, new = load(recorded_path), load(fresh_path)
+    if scope_fresh:
+        # the fresh run covered only part of the estate (CI builds the default
+        # targets, not the papers or `wip/`): compare within those modules and
+        # say nothing about the rest, rather than calling them all GONE
+        mods = {m for (m, _) in new}
+        dropped = {k for k in old if k[0] not in mods}
+        old = {k: v for k, v in old.items() if k[0] in mods}
+        if dropped:
+            print(f"ledger: scoped to {len(mods)} built module(s); "
+                  f"{len(dropped)} recorded declaration(s) outside that scope "
+                  "are not checked")
     regressions, stale = [], []
 
     for key in sorted(old.keys() - new.keys()):
@@ -78,4 +89,5 @@ def main(recorded_path, fresh_path):
 
 
 if __name__ == "__main__":
-    sys.exit(main(sys.argv[1], sys.argv[2]))
+    pos = [a for a in sys.argv[1:] if not a.startswith("--")]
+    sys.exit(main(pos[0], pos[1], scope_fresh="--scope-fresh" in sys.argv))

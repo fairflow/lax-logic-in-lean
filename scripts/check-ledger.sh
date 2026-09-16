@@ -2,8 +2,11 @@
 # The proof-status gate: regenerate the ledger from the built `.olean`s and
 # compare it with the recorded one.
 #
-#     scripts/check-ledger.sh            # check; 0 clean, 1 regression, 2 stale
-#     scripts/check-ledger.sh --update   # rewrite the record and the report
+#     scripts/check-ledger.sh              # check; 0 clean, 1 regression, 2 stale
+#     scripts/check-ledger.sh --update     # rewrite the record and the report
+#     scripts/check-ledger.sh --built-only # check only the modules that are
+#                                          # built here (for CI, which builds
+#                                          # the default targets and no more)
 #
 # It reads what is BUILT.  Build first (`lake build`, plus any module of
 # `docs/ledger-modules.txt` outside the default targets); a module in the list
@@ -25,7 +28,11 @@ REPORT=docs/status-ledger.md
 TMP=$(mktemp -t ledger.XXXXXX) || exit 3
 trap 'rm -f "$TMP"' EXIT
 
-python3 scripts/ledger-run.py "$MODS" "$TMP" || exit 3
+BUILT_ONLY=""
+SCOPE=""
+if [ "${1:-}" = "--built-only" ]; then BUILT_ONLY="--built-only"; SCOPE="--scope-fresh"; fi
+
+python3 scripts/ledger-run.py "$MODS" "$TMP" $BUILT_ONLY || exit 3
 
 if [ "${1:-}" = "--update" ]; then
   mv "$TMP" "$RECORD"
@@ -40,5 +47,5 @@ if [ ! -f "$RECORD" ]; then
   exit 3
 fi
 
-python3 scripts/ledger-diff.py "$RECORD" "$TMP"
+python3 scripts/ledger-diff.py "$RECORD" "$TMP" $SCOPE
 exit $?

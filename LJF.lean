@@ -6,15 +6,17 @@ The dependency runs ONE WAY: `LJF` imports `LaxLogic` modules (formulas,
 natural deduction, the constraint semantics); `LaxLogic` no longer
 imports any `LJF` module.
 
-* `LJF.Base`, `LJF.Complete` — LJF for IPC.
+* LJF for IPC lives in `LaxLogic/Focusing/` (`LaxLogic.Focusing.LJF`,
+  `LaxLogic.Focusing.LJFComplete`): the 2026-09-16 merge kept that location
+  and the `LJF.Base`/`LJF.Complete` copies were deleted.
 * `LJF.O*` — LJF◯, the lax extension: `OCore`, `OUniverse`, `ORows`,
   `OHeight`, `OFuel`, `O`, `OSearch`, `OBridge`, `OAudit`.
 
 `LJF.OBridge` carries `bridge_iff` and `FocalizationPLL`, which are what
 make an LJF◯ answer an answer about PLL at all.
 -/
-import LJF.Base
-import LJF.Complete
+import LaxLogic.Focusing.LJF
+import LaxLogic.Focusing.LJFComplete
 import LJF.OCore
 import LJF.OUniverse
 import LJF.ORows

@@ -208,18 +208,18 @@ re-derivation of the exhausted miner designs.*
 
 **Standing results (all pinned, green commits on `ljf-pll`):**
 
-* `LaxLogic/LJFOCore.lean` (frozen, zero imports): the lax-flagged
+* `LJF/OCore.lean` (frozen, zero imports): the lax-flagged
   focused calculus, the box-wrapped modal `interp` with the uniformised
   antecedent `A(rest ⇒ ↑↓◯Q′)`, termination, `interp_pfree`,
   **E1 (`eSound`) and A1 (`aSound`) proved outright**, the G4iLL-blocker
   standing test, five axiom pins.
-* `LaxLogic/LJFORows.lean` (imports only the core, since round 2 batch 2):
+* `LJF/ORows.lean` (imports only the core, since round 2 batch 2):
   the station maps named once — `eConjRows` (the `∃p` conjunct rows),
   `laxRows = laxPrefix ++ circStationRows` (the ◯-goal rows) — with the two
   aggregate equations `interpE_eq` and `interp_circ_laxRows`, the five
   `*ConjMem` projections, and the `rowMem`/`rowMemR` membership
   combinators.
-* `LaxLogic/LJFO.lean` (imports the core through `LJFORows`): the complete
+* `LJF/O.lean` (imports the core through `LJFORows`): the complete
   minimality development — **E2/A2 (`satE2`/`satA2`) sorry-free and
   machine-checked, conditional on the single isolated typed obligation
   `CimpAnt`** (the modal antecedent miner, staged exactly as `DykAnt`
@@ -308,7 +308,7 @@ its job. Resume layer 4 after the rounds, on Matthew's go.
 
 The layer-4 foundation, in place and green:
 
-* `LaxLogic/LJFOFuel.lean` — `interpF`, the fuel-founded RETENTION
+* `LJF/OFuel.lean` — `interpF`, the fuel-founded RETENTION
   interpolant: `interp` mirrored clause for clause on structural fuel,
   the modal rows carrying the (b)-guard `A(done ⇒ ↑↓◯Q′)` at the FULL
   station (12 sites), sound defaults at fuel 0 (⊤/⊥). Compiled first
@@ -694,7 +694,7 @@ move them verbatim into `Archive/` with a header note saying what superseded
 them and when, for future archaeologists. Files from this round stay in place
 until then.
 
-**Rule 4 (metrics)**: measured on `ljf-simp-1` (LJF.lean has zero imports,
+**Rule 4 (metrics)**: measured on `ljf-simp-1` (LaxLogic/Focusing/LJF.lean has zero imports,
 so `lake build LaxLogic.Focusing.LJF` is exactly the file's elaboration time):
 baseline 6,636 lines / 15 min 53.7 s → after rounds A+B+C+C2 **4,462
 lines / 13 min 52.0 s** (−33% lines, −13% compile), zero statement
@@ -716,7 +716,7 @@ session's opening move.
    their "admissibility of weakening/inversion" citations are the same
    moves, unmechanised).
 2. *Comparison against the shorter proofs.* Two in-repo comparators:
-   `IPCFocused.lean` (545 lines, ∃-side only, over the shared PLLFormula
+   `LaxLogic/Focusing/IPCFocused.lean` (545 lines, ∃-side only, over the shared PLLFormula
    stack — Matthew's 2026-08-08 control experiment) and the fuel/height route
    (`PLLG4UI` 1856 + `PLLG4UIAdq` 1113 + `PLLG4UITrunc` 4036 — adequacy by
    height induction, no sequent termination order). Question: what did the
