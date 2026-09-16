@@ -4395,3 +4395,62 @@ spelling and is not sugar one can do without — for a *Type*-valued relation
 form is `¬ Nonempty (Γ ⊢[R] A)`, which is exactly what `⊬` elaborates to.  For a
 `Prop`-valued relation it is `¬ R Γ A`.  The one rule to remember is precedence:
 a sequent sits at 26, so under `∧`, `∨` or `¬` it needs parentheses.
+
+## 2026-09-16 — the proof-status ledger, and a gate that has been watched failing
+
+Matthew is away for a fortnight; this is the campaign he asked for, on branch
+`ledger`.  Full record: `docs/ledger-campaign-2026-09-16.md`.
+
+**The question.** After four lines merged into `main`, nothing said which of the
+repository's stated results are machine-checked IN THE MERGED TREE, under which
+axioms, and which are OPEN — and a conflict-free merge had just broken four
+things silently.  `docs/calculus-map.md`, the designated provenance reference,
+predates the merge.
+
+**The record.**  `scripts/ledger.lean` asks `Lean.collectAxioms` about every
+declaration of every built module and writes `docs/status-ledger.jsonl`;
+`scripts/ledger-report.py` renders `docs/status-ledger.md`.  17,449
+declarations in 395 modules: 8,635 theorems, 8,370 axiom-free, 81 carrying
+`sorryAx` (4 in the library — the halted UI route — and the rest in `wip/`),
+2 `native_decide`-tainted.
+
+**The gate.**  `scripts/check-ledger.sh`: 0 clean, 1 REGRESSION (a new
+`sorryAx`, a new axiom, a new taint, a vanished declaration), 2 STALE
+(additions only), 3 could not run.  It runs in CI on `main` with `--built-only`,
+failing the run on 1 and annotating on 2.  Watched failing twice: the
+classifier by `scripts/test-ledger-diff.py` (six mutations, including the cases
+where it must stay silent), and the whole path once by hand —
+`Turnstile.generic_mono` rewritten to `sorry`, module rebuilt, `gate exit 1`
+naming the declaration, then restored and clean again.
+
+**Two things worth knowing.**
+
+- **`native_decide` does not cite `Lean.ofReduceBool` under Lean 4.31.**  It
+  mints a per-declaration axiom, `X._native.native_decide.ax_1_1`.  Every
+  description of the taint check in this repository's prose names the three
+  fixed axioms, which would see nothing.  Both spellings now count.
+- **The estate will not load into one environment**: the `ToolkitTest/` punched
+  copies re-declare the names they test, and several roots define `main`.  The
+  driver partitions on refusal — module plus everything importing it — so the
+  partition is a function of the module list alone.
+
+**Reconciliation.**  `scripts/claim-scan.py` + `scripts/reconcile-claims.py`
+check the prose against the record (`docs/claim-reconciliation.md`): 3,358
+claims of proof status, of which **only 845 (25%) name a Lean declaration**.
+660 confirmed, 922 citations name nothing built, and nothing is genuinely
+contradicted — the two flagged rows are one accurate sentence that says
+"machine-checked modulo two named holes".  The number that matters is the 2,513
+claims no machine can check.
+
+**Repairs.**  `lake build LJF` was broken by the merge (the root and the
+lakefile still globbed the deleted `LJF.Base`/`LJF.Complete`); fixed and
+verified, 3102 jobs.  `docs/calculus-map.md` and `docs/next-session.md` cited
+pre-merge flat paths — including the provenance table itself — now rewritten and
+checked to exist.  The 64 `wip/` files with bare imports (`import rnEmbed`) are
+repaired; they still do not build, because none is in a target, and putting 64
+unverified modules into one is Matthew's call.
+
+**For Matthew on return, three decisions:** `batch/`, `_probe/` and `Archive/`
+(302 files no target builds); the `Tools/` versus `tools/` case collision, which
+builds on macOS only and is a landmine for any case-sensitive checkout; and
+whether the bare-import `wip/` chain should join a target or be archived.
