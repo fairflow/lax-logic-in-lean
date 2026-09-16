@@ -103,7 +103,7 @@ non-trivial modal relation are NEEDED. -/
 theorem transparent_incomplete :
     (∀ C : ConstraintModel, Transparent C → ∀ w : C.W,
         C.force w (.ifThen (.somehow p) p))
-      ∧ [] ⊬ .ifThen (.somehow p) p :=
+      ∧ ([] ⊬ .ifThen (.somehow p) p) :=
   ⟨fun _ h w => transparent_forces_circ_imp h w, not_provable_circ_imp⟩
 
 
@@ -267,7 +267,7 @@ theorem not_provable_sep : [] ⊬ sep :=
 /-- **The `Rm = Ri` models are not enough.** -/
 theorem rmFull_incomplete :
     (∀ C : ConstraintModel, RmFull C → ∀ w : C.W, C.force w sep)
-      ∧ [] ⊬ sep :=
+      ∧ ([] ⊬ sep) :=
   ⟨fun _ h w => rmFull_forces_sep h w, not_provable_sep⟩
 
 /-- **The endpoint-seeing models are not enough** — so the class on which
@@ -275,7 +275,7 @@ theorem rmFull_incomplete :
 restriction, and the models outside it are needed for PLL. -/
 theorem endpointSeeing_incomplete :
     (∀ C : ConstraintModel, EndpointSeeing C → ∀ w : C.W, C.force w sep)
-      ∧ [] ⊬ sep :=
+      ∧ ([] ⊬ sep) :=
   ⟨fun _ h w => endpointSeeing_forces h w .falsePLL, not_provable_sep⟩
 
 end Need

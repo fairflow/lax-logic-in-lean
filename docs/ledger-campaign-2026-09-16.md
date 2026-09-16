@@ -102,6 +102,48 @@ the halted UI route in the library (`SemUILayered`, `SemUIHenkin` ×2,
 `SemUIChar`); the rest are in `wip/`, where a `sorry` is permitted by CLAUDE.md
 rule 1 and is the point of a blueprint file.
 
+## Every library, built once, on purpose
+
+The estate is what builds, so "what builds" had to stop being an accident. Every
+library in `lakefile.toml` that is not a default target was built:
+
+| library | outcome |
+|---|---|
+| `LaxPaper`, `CLPPaper`, `LaxBlueprint`, `LJF` | green |
+| `FRJO`, `BiLax`, `Reject`, `Rewrite`, `Meta` | green |
+| `RNDB`, `Certified`, `DecideTools`, `Tools`, `proofstates` | green |
+| `Production` (the axiom sweep) | **was red** — fixed, below |
+| `Experimental` (the `wip/` sweep) | **was red** — fixed, below |
+| `wipshared` | **red, and left red** — below |
+
+Three findings came out of it.
+
+**`FRJO` had never been built, and a PROVED claim lived there.** That is how a
+documented result can sit outside every check: `docs/disproof-handoff.md`'s
+"completeness for FRJ◯ is unconditional" cites `FRJO/Recon.lean`, and until this
+build not one `FRJO` declaration was in the ledger. It is now.
+
+**The `Production` gate was red from a fifth cross-branch collision.** The sweep
+(`Audit/Production.lean`) came into `main` from the pre-merge lineage; the
+module it trips over, `LaxLogic/Obligation/Examples.lean`, came from
+`syntax-reorg`. Neither branch had both. The two escaping declarations,
+`sorried` and `downstream`, are *demonstrations* — the module's §5 exists to
+show what one `sorry` does downstream, and both carry pins asserting `[sorryAx]`
+deliberately — so they are held out by module, with that reason written into the
+gate, exactly as the four earlier hold-outs are.
+
+**`Experimental` was red from the merge's `⊬` precedence, again.** Five more
+`wip/` files wrote `Γ ⊬ A` under `∧` or `¬`, which parsed at the old
+`infix:70` and not at the framework's sequent precedence 26
+(`rungbound`, `frame_need` ×3, `classical`). Fixed; the gate is green.
+
+**`wipshared` is red and is left red.** `wip/frjw_gcc.lean:44` names
+`V.WCounter.no_irregular_circ_imp_self`, which does not exist in the merged
+tree, and `wipx/frjx_screen.lean` carries pins from the frozen four-arm
+comparison. Both are the FRJW and FRJX lines meeting for the first time — a
+sixth collision — and both are mathematical content of those lines, not a
+mechanical repair. `frjw-dev` is not mine to touch.
+
 ## What the ledger does NOT cover, and why that matters
 
 The estate is what *builds*: 406 modules with an `.olean`. The repository holds
@@ -124,6 +166,34 @@ The estate is what *builds*: 406 modules with an `.olean`. The repository holds
   case-sensitive checkout (Linux CI) `lake build Tools` finds nothing. Known and
   documented in `tools/README.md` since 2026-08-21, still unresolved. It does
   not reach the default targets.
+
+## What the reconciliation actually settled
+
+Two contradictions were reported by the first scan. Neither survives inspection,
+and how they dissolved is worth recording, because both failure modes will
+recur.
+
+**The FRJ◯/FRJV "contradiction" was a conflation of two calculi.**
+`docs/disproof-handoff.md:1457` says completeness is unconditional; `TOOLS.md`
+and `docs/calculus-map.md` say FRJV completeness is OPEN. The first sentence is
+dated 2026-08-16 and is about **FRJO** (`FRJO/Recon.lean`); the second is about
+**FRJV**. The ledger settles the FRJV half outright: every `completenessV_*`
+theorem carries a hypothesis — `PledgeSupply`/`CircSupply`
+(`completenessV_of_supply`), `coneGrounded`, `discrete`, `endpoints`, a closure
+condition, or ◯-freeness — and there is no unconditional
+`completenessV`. OPEN is right.
+
+**The ledger could not speak to the FRJO half at all, and that was the finding.**
+`FRJO` is a library that nothing had built, so not one of its declarations was
+in the estate: a documented PROVED result sat outside the record entirely. The
+fix is not a judgment, it is a build — every library that is not a default
+target is now built and folded into the estate.
+
+**The two CONTRADICTED rows in `docs/claim-reconciliation.md` are one accurate
+sentence.** `docs/ui-proof-status-report.md` says "machine-checked **modulo two
+named holes**, `wit_pbisim` and `wit_force`", and the ledger agrees those two
+carry `sorryAx`. The scan is line-local; it flags the sentence because the
+holes' names share the line with the verdict word.
 
 ## The reconciliation corpus
 

@@ -135,7 +135,7 @@ theorem chain_bound_is_theorem {φ : PLLFormula}
 
 /-- Contrapositive, in the exact shape of the question. -/
 theorem no_witness (φ : PLLFormula) :
-    ¬ ((∀ k, Deriv [rnSub (2 * k + 1)] φ) ∧ [] ⊬ φ) := by
+    ¬ ((∀ k, Deriv [rnSub (2 * k + 1)] φ) ∧ ([] ⊬ φ)) := by
   rintro ⟨hA, hB⟩
   exact hB (chain_bound_is_theorem hA)
 

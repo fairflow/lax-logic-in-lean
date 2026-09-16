@@ -74,10 +74,21 @@ the whole estate, which is how a gate stops meaning anything.
   its supports as though they held.  Shelved work belongs in the
   experimental estate, not in `LaxLogic/`.
 
+* `LaxLogic.Obligation.Examples` — `sorried` and `downstream` (2026-09-16).
+  Unlike the entries above, these are not shelved work: the module's §5 exists
+  to SHOW what a `sorry` does to everything downstream, and both carry pins
+  asserting `[sorryAx]` deliberately.  The sweep and the demonstration arrived
+  in `main` from different branches on 2026-09-16 and had never met — a
+  cross-branch collision of the same family as the four in
+  `docs/branch-map-2026-09-16.md` §6, in a target nothing built.  Held out by
+  module, not by widening the allowance; if the demonstration ever moves to
+  `wip/`, delete this line.
+
 Each line here is a claim that something is not meeting the bar.  The
 list should get shorter. -/
 
 #axiom_sweep [LaxLogic, FRJ, Rewrite, LJF]
   except [LaxLogic.Belief.Examples, LaxLogic.PLL.SemUI.SemUILayered,
-          LaxLogic.PLL.SemUI.SemUIChar, LaxLogic.PLL.SemUI.SemUIHenkin]
+          LaxLogic.PLL.SemUI.SemUIChar, LaxLogic.PLL.SemUI.SemUIHenkin,
+          LaxLogic.Obligation.Examples]
   allowing [propext, Classical.choice, Quot.sound]
