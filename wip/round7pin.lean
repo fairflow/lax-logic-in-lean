@@ -1,5 +1,5 @@
-import round7core
-import round4probe3
+import wip.round7core
+import wip.round4probe3
 import LaxLogic.PLL.Semantics.CountermodelEmit
 
 /-!

@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-!
 # ROUND 7, PHASE 1 — the guard-stack candidates, replayed over the corpus

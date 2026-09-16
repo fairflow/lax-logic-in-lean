@@ -1,6 +1,6 @@
 import LaxLogic.PLL.UI.G4UITrunc
-import absorb_base
-import adequacy
+import wip.absorb_base
+import wip.adequacy
 
 /-!
 # WIP: packaging — the uniform-interpolation tower assembled

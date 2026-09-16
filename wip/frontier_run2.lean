@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-! # Frontier sampler — campaign 2: the reachable `J = 1` band
 

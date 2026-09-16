@@ -1,5 +1,5 @@
-import absorb_base
-import round4probe3
+import wip.absorb_base
+import wip.round4probe3
 import wip.towerkit
 
 /-!

@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-! # Frontier sampler — inspection pass (no search)
 

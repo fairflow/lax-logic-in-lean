@@ -1,4 +1,4 @@
-import round4Comp
+import wip.round4Comp
 
 /-!
 # ROUND 5 — the γ-γ core: the `◯`-goal descent's own γ-row is the irreducible

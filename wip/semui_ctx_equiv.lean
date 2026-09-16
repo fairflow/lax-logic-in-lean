@@ -1,6 +1,6 @@
 import LaxLogic.PLL.SemUI.SemUICtx
 import LaxLogic.PLL.G4.G4HComp
-import final
+import wip.final
 
 /-!
 # Instantiating the sandwich: the packaged IPC quantifiers satisfy the spec

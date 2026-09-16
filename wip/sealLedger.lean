@@ -1,4 +1,4 @@
-import absorb_base
+import wip.absorb_base
 
 /-!
 # The ledger cannot cross a `◯`-seal: the entry/seal dilemma, machine-checked

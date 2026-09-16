@@ -1,5 +1,5 @@
 import wip.towerkit
-import packaging
+import wip.packaging
 
 /-!
 # `towerpack` — the transcriptions really are `wip/packaging.lean`'s

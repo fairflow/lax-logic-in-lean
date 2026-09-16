@@ -1,5 +1,5 @@
-import round7core
-import round6force
+import wip.round7core
+import wip.round6force
 
 /-!
 # ROUND 8 — the goal-row absorption, certified interfaces

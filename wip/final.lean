@@ -1,9 +1,9 @@
 import LaxLogic.PLL.UI.G4UITrunc
-import absorb_base
-import adequacy
-import packaging
-import indiff
-import spaceindiff
+import wip.absorb_base
+import wip.adequacy
+import wip.packaging
+import wip.indiff
+import wip.spaceindiff
 
 /-!
 # Final assembly — uniform interpolation for PLL, packaged and audited

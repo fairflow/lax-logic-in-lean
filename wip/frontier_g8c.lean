@@ -1,4 +1,4 @@
-import frontier_g8
+import wip.frontier_g8
 
 /-!
 # ROUND 8, PHASE 1c — the goal-row obligation AT THE TWO INHERITED WITNESSES

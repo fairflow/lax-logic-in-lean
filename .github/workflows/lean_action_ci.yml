@@ -30,3 +30,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: leanprover/lean-action@v1
+
+      # The proof-status gate (`docs/ledger-campaign-2026-09-16.md`).  It reads
+      # the `.olean`s the step above produced, so `--built-only`: CI builds the
+      # default targets, not the papers or `wip/`, and the gate compares within
+      # that scope instead of reporting the rest as vanished.
+      #
+      # A REGRESSION (exit 1) fails the run: a declaration gained `sorryAx`, an
+      # axiom, or a `native_decide` taint, or vanished.  A STALE record (exit 2)
+      # is only an annotation — adding a theorem is not a fault, it means
+      # `scripts/check-ledger.sh --update` is owed.
+      - name: Proof-status ledger
+        run: |
+          set +e
+          scripts/check-ledger.sh --built-only
+          rc=$?
+          set -e
+          case $rc in
+            0) echo "ledger: clean" ;;
+            2) echo "::warning::the proof-status ledger is stale — run scripts/check-ledger.sh --update and commit docs/status-ledger.{jsonl,md}" ;;
+            1) echo "::error::the proof-status ledger reports a REGRESSION (see the log above)"; exit 1 ;;
+            *) echo "::error::the proof-status ledger could not be generated (exit $rc)"; exit 1 ;;
+          esac

@@ -1,5 +1,5 @@
 import LaxLogic.PLL.UI.G4UITrunc
-import absorb_base
+import wip.absorb_base
 
 /-!
 # WIP: adequacy of the truncated quantifiers (v3.1) — the P4a re-run

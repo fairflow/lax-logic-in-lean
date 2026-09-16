@@ -57,6 +57,31 @@ starts with the whole list, and on each refusal sets the offending module
 The partition is a function of the module list alone, so two runs of the same
 list produce the same rows: 13 modules currently load separately.
 
+## Watching it fail
+
+A gate nobody has watched fail is not evidence. Two tests, both run:
+
+**The classifier**, `scripts/test-ledger-diff.py`, mutates a copy of the record
+one way at a time and checks the verdict — a proof becomes a `sorry`, gains an
+axiom, becomes `native_decide`, disappears, drops an axiom, or a declaration is
+added — including that it stays *silent* where it should. Writing it caught a
+flaw in itself: the first clean theorem in this estate is axiom-free, so the
+"dropped an axiom" case was passing vacuously.
+
+**The whole path**, once, by hand. `Turnstile.generic_mono` in
+`LaxLogic/Util/TurnstileTests.lean` was rewritten to `sorry`, the module
+rebuilt, and the gate run:
+
+```
+ledger: 1 REGRESSION(S)
+  SORRY       Turnstile.generic_mono  (LaxLogic.Util.TurnstileTests) — now depends on `sorryAx`
+gate exit 1
+```
+
+The proof was then restored and the gate returned to `clean — 17449
+declarations, unchanged`. The two clean runs also show the ledger is
+deterministic: independent runs produce byte-identical records.
+
 ## What it says today
 
 17,449 declarations in 395 modules — 8,635 theorems, 8,814 definitions and

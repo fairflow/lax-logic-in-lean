@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-!
 # ROUND 9, PHASE 1y — does the fresh-row refutation propagate to `BoxDesc`?

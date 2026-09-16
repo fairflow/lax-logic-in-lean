@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-!
 # The frontier sampler's structural finding, machine-checked

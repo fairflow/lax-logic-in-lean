@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-!
 # ROUND 9, PHASE 1x — does the fresh-row refutation lift THROUGH the box?

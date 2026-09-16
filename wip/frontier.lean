@@ -1,5 +1,5 @@
-import frontierCore
-import round5refute
+import wip.frontierCore
+import wip.round5refute
 import Plausible
 
 /-!

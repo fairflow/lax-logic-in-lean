@@ -1,4 +1,4 @@
-import round6core
+import wip.round6core
 import wip.boxSndTight
 
 /-!

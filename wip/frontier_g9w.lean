@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-!
 # ROUND 9, PHASE 1w — the fresh-row refutation with a modal PREDECESSOR

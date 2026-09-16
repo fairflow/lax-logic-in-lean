@@ -1,7 +1,7 @@
 import LaxLogic.PLL.UI.G4UITrunc
-import absorb_base
-import adequacy
-import packaging
+import wip.absorb_base
+import wip.adequacy
+import wip.packaging
 
 /-!
 # WIP: space-indifference for the truncated quantifiers (v3.1)

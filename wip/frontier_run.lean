@@ -1,4 +1,4 @@
-import frontier
+import wip.frontier
 
 /-! # Frontier sampler — campaign 1
 
